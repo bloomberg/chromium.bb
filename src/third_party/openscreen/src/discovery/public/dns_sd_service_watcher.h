@@ -137,8 +137,8 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
     // querier_->ReinitializeQueries() is called.
     ErrorOr<T> record = conversion_(new_endpoint);
     if (record.is_error()) {
-      OSP_LOG << "Conversion of received record failed with error: "
-              << record.error();
+      OSP_LOG_INFO << "Conversion of received record failed with error: "
+                   << record.error();
       return;
     }
     records_[GetKey(new_endpoint)] =
@@ -152,8 +152,8 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
     if (it != records_.end()) {
       ErrorOr<T> record = conversion_(modified_endpoint);
       if (record.is_error()) {
-        OSP_LOG << "Conversion of received record failed with error: "
-                << record.error();
+        OSP_LOG_INFO << "Conversion of received record failed with error: "
+                     << record.error();
         return;
       }
       auto ptr = std::make_unique<T>(std::move(record.value()));
@@ -161,8 +161,9 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
 
       callback_(GetServices());
     } else {
-      OSP_LOG << "Received modified record for non-existent DNS-SD Instance "
-              << modified_endpoint.instance_id();
+      OSP_LOG_INFO
+          << "Received modified record for non-existent DNS-SD Instance "
+          << modified_endpoint.instance_id();
     }
   }
 
@@ -170,8 +171,9 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
     if (records_.erase(GetKey(old_endpoint))) {
       callback_(GetServices());
     } else {
-      OSP_LOG << "Received deletion of record for non-existent DNS-SD Instance "
-              << old_endpoint.instance_id();
+      OSP_LOG_INFO
+          << "Received deletion of record for non-existent DNS-SD Instance "
+          << old_endpoint.instance_id();
     }
   }
 
@@ -196,8 +198,9 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // Set of all instance ids found so far, mapped to the T type that it
   // represents. unique_ptr<T> entities are used so that the const refs returned
   // from GetServices() and the ServicesUpdatedCallback can persist even once
-  // this map is resized. NOTE: Unordered map is used because this set is in
-  // many cases expected to be large.
+  // this map is resized.
+  // NOTE: Unordered map is used because this set is in  many cases expected to
+  // be large.
   std::unordered_map<EndpointKey, std::unique_ptr<T>, PairHash> records_;
 
   // Represents whether discovery is currently running or not.

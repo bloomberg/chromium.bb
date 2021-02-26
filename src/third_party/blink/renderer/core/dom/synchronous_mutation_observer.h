@@ -76,12 +76,12 @@ class CORE_EXPORT SynchronousMutationObserver : public GarbageCollectedMixin {
   virtual void ContextDestroyed() {}
 
   // Call before clearing an observer list.
-  void ObserverListWillBeCleared();
+  void ObserverSetWillBeCleared();
 
   Document* GetDocument() const { return document_; }
   void SetDocument(Document*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SynchronousMutationObserver() = default;

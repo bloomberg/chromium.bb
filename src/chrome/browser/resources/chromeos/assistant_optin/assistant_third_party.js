@@ -10,6 +10,12 @@
  * Event 'loaded' will be fired when the page has been successfully loaded.
  */
 
+/**
+ * Name of the screen.
+ * @type {string}
+ */
+const THIRD_PARTY_SCREEN_ID = 'ThirdPartyScreen';
+
 Polymer({
   is: 'assistant-third-party',
 
@@ -53,6 +59,12 @@ Polymer({
    */
   sanitizer_: new HtmlSanitizer(),
 
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
+  /** @private {Object} */
+  webview_: null,
+
   /**
    * On-tap event handler for next button.
    *
@@ -63,9 +75,26 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    chrome.send(
-        'login.AssistantOptInFlowScreen.ThirdPartyScreen.userActed',
-        ['next-pressed']);
+    this.browserProxy_.userActed(THIRD_PARTY_SCREEN_ID, ['next-pressed']);
+  },
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Reset the webview and add load complete handler.
+   */
+  resetWebview() {
+    this.webview_ = document.createElement('webview');
+    this.webview_.id = 'overlay-webview';
+    this.webview_.classList.add('flex');
+    var webviewContainer = this.$['webview-container'];
+    this.webview_.onloadstop = function() {
+      webviewContainer.classList.remove('overlay-loading');
+    };
+    this.$$('#overlay-webview').replaceWith(this.webview_);
   },
 
   /**
@@ -88,7 +117,7 @@ Polymer({
    */
   showThirdPartyOverlay(url, title) {
     this.$['webview-container'].classList.add('overlay-loading');
-    this.$['overlay-webview'].src = url;
+    this.webview_.src = url;
     this.$['third-party-overlay'].setTitleAriaLabel(title);
     this.$['third-party-overlay'].showModal();
     this.$['overlay-close-button'].focus();
@@ -98,6 +127,7 @@ Polymer({
    * Hides overlay dialog.
    */
   hideOverlay() {
+    this.resetWebview();
     this.$['third-party-overlay'].close();
     if (this.lastFocusedElement) {
       this.lastFocusedElement.focus();
@@ -120,6 +150,7 @@ Polymer({
     this.$['third-party-dialog'].setAttribute(
         'aria-label', data['thirdPartyTitle']);
     this.$['title-text'].textContent = data['thirdPartyTitle'];
+    this.$['next-button'].labelForAria = data['thirdPartyContinueButton'];
     this.$['next-button-text'].textContent = data['thirdPartyContinueButton'];
     this.$['footer-text'].innerHTML =
         this.sanitizer_.sanitizeHtml(data['thirdPartyFooter']);
@@ -188,8 +219,7 @@ Polymer({
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
     if (!this.hidden && !this.screenShown_) {
-      chrome.send(
-          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
+      this.browserProxy_.screenShown(THIRD_PARTY_SCREEN_ID);
       this.screenShown_ = true;
     }
   },
@@ -200,17 +230,14 @@ Polymer({
   onShow() {
     this.$['overlay-close-button'].addEventListener(
         'click', this.hideOverlay.bind(this));
-    var webviewContainer = this.$['webview-container'];
-    this.$['overlay-webview'].addEventListener('contentload', function() {
-      webviewContainer.classList.remove('overlay-loading');
-    });
+    this.resetWebview();
 
     if (!this.settingZippyLoaded_ || !this.consentStringLoaded_) {
       this.reloadPage();
     } else {
-      this.$['next-button'].focus();
-      chrome.send(
-          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
+      Polymer.RenderStatus.afterNextRender(
+          this, () => this.$['next-button'].focus());
+      this.browserProxy_.screenShown(THIRD_PARTY_SCREEN_ID);
       this.screenShown_ = true;
     }
   },

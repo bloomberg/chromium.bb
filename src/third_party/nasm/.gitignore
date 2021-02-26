@@ -4,10 +4,12 @@
 *.dbg
 *.dep
 *.exe
+*.com
 *.lib
 *.i
 *.ith
 *.lst
+*.map
 *.mo32
 *.mo64
 *.o
@@ -39,7 +41,6 @@ tags
 TAGS
 /*.1
 /Makefile
-/asm/pptok.ph
 /config/config.h.in
 /config.log
 /config.status
@@ -48,6 +49,7 @@ TAGS
 /doc/*.dip
 /doc/*.hpj
 /doc/*.pdf
+/doc/*.pdf.xz
 /doc/*.ps
 /doc/*.rtf
 /doc/*.texi
@@ -57,6 +59,9 @@ TAGS
 /doc/info
 /doc/inslist.src
 /doc/version.src
+/doc/warnings.src
+/doc/fontpath
+/doc/Fontmap
 /misc/omfdump
 /nasm
 /ndisasm
@@ -80,3 +85,7 @@ TAGS
 /version.mak
 /version.sed
 /patches/
+/autoconf/aclocal.m4
+/autoconf/compile
+/autoconf/config.*
+/autoconf/install-sh

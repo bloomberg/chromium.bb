@@ -26,13 +26,12 @@ constexpr SkColor kResizeHandleIconColor = SK_ColorWHITE;
 
 namespace views {
 
-ResizeHandleButton::ResizeHandleButton(ButtonListener* listener)
-    : ImageButton(listener) {
+ResizeHandleButton::ResizeHandleButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   SetSize(gfx::Size(kResizeHandleButtonSize, kResizeHandleButtonSize));
   SetImageForQuadrant(OverlayWindowViews::WindowQuadrant::kBottomRight);
 
   // Accessibility.
-  SetFocusForPlatform();
   const base::string16 resize_button_label(
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_RESIZE_HANDLE_TEXT));
   SetAccessibleName(resize_button_label);

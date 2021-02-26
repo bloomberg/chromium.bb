@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -16,14 +17,14 @@ OobeScreenExitWaiter::OobeScreenExitWaiter(OobeScreenId target_screen)
 OobeScreenExitWaiter::~OobeScreenExitWaiter() = default;
 
 void OobeScreenExitWaiter::Wait() {
-  DCHECK_EQ(State::IDLE, state_);
+  ASSERT_EQ(State::IDLE, state_);
 
   OobeUI* oobe_ui = GetOobeUI();
   if (!oobe_ui || oobe_ui->current_screen() != target_screen_) {
     state_ = State::DONE;
     return;
   }
-  DCHECK(!run_loop_);
+  ASSERT_FALSE(run_loop_);
 
   oobe_ui_observer_.Add(GetOobeUI());
 
@@ -35,14 +36,14 @@ void OobeScreenExitWaiter::Wait() {
   run_loop_->Run();
   run_loop_.reset();
 
-  DCHECK_EQ(State::DONE, state_);
+  ASSERT_EQ(State::DONE, state_);
 
   oobe_ui_observer_.RemoveAll();
 }
 
 void OobeScreenExitWaiter::OnCurrentScreenChanged(OobeScreenId current_screen,
                                                   OobeScreenId new_screen) {
-  DCHECK_NE(state_, State::IDLE);
+  ASSERT_NE(state_, State::IDLE);
   if (new_screen != target_screen_)
     EndWait();
 }

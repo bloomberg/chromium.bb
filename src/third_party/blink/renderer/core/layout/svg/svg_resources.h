@@ -22,7 +22,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
@@ -49,6 +48,8 @@ class SVGResources {
 
  public:
   SVGResources();
+  SVGResources(const SVGResources&) = delete;
+  SVGResources& operator=(const SVGResources&) = delete;
 
   static SVGElementResourceClient* GetClient(const LayoutObject&);
   static FloatRect ReferenceBoxForEffects(const LayoutObject&);
@@ -68,8 +69,6 @@ class SVGResources {
                             const ComputedStyle* old_style,
                             const ComputedStyle&);
   static void ClearMarkers(SVGElement&, const ComputedStyle*);
-
-  void LayoutIfNeeded();
 
   static bool SupportsMarkers(const SVGElement&);
 
@@ -98,6 +97,8 @@ class SVGResources {
     return nullptr;
   }
 
+  bool HasClipOrMaskOrFilter() const { return !!clipper_filter_masker_data_; }
+
   // Paint servers
   LayoutSVGResourcePaintServer* Fill() const {
     return fill_stroke_data_ ? fill_stroke_data_->fill : nullptr;
@@ -114,12 +115,8 @@ class SVGResources {
   void BuildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
   // Methods operating on all cached resources
-  InvalidationModeMask RemoveClientFromCacheAffectingObjectBounds(
-      SVGElementResourceClient&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
-
-  static bool DifferenceNeedsLayout(const SVGResources*, const SVGResources*);
 
 #if DCHECK_IS_ON()
   void Dump(const LayoutObject*);
@@ -190,22 +187,14 @@ class SVGResources {
   std::unique_ptr<MarkerData> marker_data_;
   std::unique_ptr<FillStrokeData> fill_stroke_data_;
   LayoutSVGResourceContainer* linked_resource_;
-  DISALLOW_COPY_AND_ASSIGN(SVGResources);
 };
 
 class FilterData final : public GarbageCollected<FilterData> {
  public:
   FilterData(FilterEffect* last_effect, SVGFilterGraphNodeMap* node_map)
-      : last_effect_(last_effect),
-        node_map_(node_map),
-        state_(kRecordingContent) {}
+      : last_effect_(last_effect), node_map_(node_map) {}
 
-  void UpdateStateOnPrepare();
-  bool UpdateStateOnFinish();
-  bool ContentNeedsUpdate() const { return state_ == kRecordingContent; }
-  void UpdateContent(sk_sp<PaintRecord> content);
-  sk_sp<PaintFilter> CreateFilter();
-  FloatRect MapRect(const FloatRect& input_rect) const;
+  sk_sp<PaintFilter> BuildPaintFilter();
   // Perform a finegrained invalidation of the filter chain for the
   // specified filter primitive and attribute. Returns false if no
   // further invalidation is required, otherwise true.
@@ -214,35 +203,16 @@ class FilterData final : public GarbageCollected<FilterData> {
 
   void Dispose();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<FilterEffect> last_effect_;
   Member<SVGFilterGraphNodeMap> node_map_;
-
-  /*
-   * The state transitions should follow the following:
-   *
-   * RecordingContent->ReadyToPaint->GeneratingFilter->ReadyToPaint
-   *     |     ^                       |     ^
-   *     v     |                       v     |
-   * RecordingContentCycleDetected   GeneratingFilterCycleDetected
-   */
-  enum FilterDataState {
-    kRecordingContent,
-    kRecordingContentCycleDetected,
-    kReadyToPaint,
-    kGeneratingFilter,
-    kGeneratingFilterCycleDetected
-  };
-  FilterDataState state_;
 };
 
 class SVGElementResourceClient final
     : public GarbageCollected<SVGElementResourceClient>,
       public SVGResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGElementResourceClient);
-
  public:
   explicit SVGElementResourceClient(SVGElement*);
 
@@ -253,14 +223,35 @@ class SVGElementResourceClient final
   void FilterPrimitiveChanged(SVGFilterPrimitiveStandardAttributes& primitive,
                               const QualifiedName& attribute) override;
 
-  FilterData* UpdateFilterData();
-  bool ClearFilterData();
+  void UpdateFilterData(CompositorFilterOperations&);
+  void InvalidateFilterData();
+  void MarkFilterDataDirty();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SVGElement> element_;
   Member<FilterData> filter_data_;
+  bool filter_data_dirty_;
+};
+
+// Helper class for handling invalidation of resources (generally after the
+// reference box of a LayoutObject may have changed).
+class SVGResourceInvalidator {
+  STACK_ALLOCATED();
+
+ public:
+  explicit SVGResourceInvalidator(LayoutObject& object);
+
+  // Invalidate any associated clip-path/mask/filter.
+  void InvalidateEffects();
+
+  // Invalidate any associated paints (fill/stroke).
+  void InvalidatePaints();
+
+ private:
+  const SVGResources* resources_;
+  LayoutObject& object_;
 };
 
 }  // namespace blink

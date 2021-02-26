@@ -7,7 +7,7 @@
 
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoMalloc.h"
 #include "tools/sk_app/DawnWindowContext.h"
 
@@ -31,11 +31,13 @@ DawnWindowContext::DawnWindowContext(const DisplayParams& params,
 }
 
 void DawnWindowContext::initializeContext(int width, int height) {
+    SkASSERT(!fContext);
+
     fWidth = width;
     fHeight = height;
     fDevice = onInitializeContext();
-    fContext = GrContext::MakeDawn(fDevice, fDisplayParams.fGrContextOptions);
 
+    fContext = GrDirectContext::MakeDawn(fDevice, fDisplayParams.fGrContextOptions);
     if (!fContext) {
         return;
     }

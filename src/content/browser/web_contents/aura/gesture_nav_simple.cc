@@ -11,7 +11,7 @@
 #include "base/metrics/user_metrics.h"
 #include "cc/paint/paint_flags.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/web_contents/aura/types.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -519,13 +519,13 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   // Do not start a new gesture-nav if overscroll-behavior-x is not auto.
   if ((new_mode == OverscrollMode::OVERSCROLL_EAST ||
        new_mode == OverscrollMode::OVERSCROLL_WEST) &&
-      behavior.x != cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto) {
+      behavior.x != cc::OverscrollBehavior::Type::kAuto) {
     return;
   }
 
   // Do not start a new pull-to-refresh if overscroll-behavior-y is not auto.
   if (new_mode == OverscrollMode::OVERSCROLL_SOUTH &&
-      behavior.y != cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto) {
+      behavior.y != cc::OverscrollBehavior::Type::kAuto) {
     return;
   }
 

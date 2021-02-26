@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -18,7 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
-#include "components/google/core/common/google_util.h"
+#include "components/google/core/common/google_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -47,7 +46,7 @@ void TestMirrorRequestForProfile(net::EmbeddedTestServer* test_server,
   replace_host.SetHostStr(kGaiaDomain);
   gaia_url = gaia_url.ReplaceComponents(replace_host);
 
-  Browser* browser = new Browser(Browser::CreateParams(profile, true));
+  Browser* browser = Browser::Create(Browser::CreateParams(profile, true));
   ui_test_utils::NavigateToURLWithDisposition(
       browser, gaia_url, WindowOpenDisposition::SINGLETON_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
@@ -80,13 +79,13 @@ class ChromeOsMirrorAccountConsistencyTest : public chromeos::LoginManagerTest {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "www.google.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    command_line->AppendSwitch(switches::kIgnoreGooglePortNumbers);
   }
 
   void SetUpOnMainThread() override {
-    // The production code only allows known ports (80 for http and 443 for
-    // https), but the test server runs on a random port.
-    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
-
     // We can't use BrowserTestBase's EmbeddedTestServer because google.com
     // URL's have to be https.
     test_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -126,11 +125,17 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   PrefService* prefs = profile->GetPrefs();
   prefs->SetInteger(prefs::kIncognitoModeAvailability,
                     IncognitoModePrefs::DISABLED);
-
   ASSERT_EQ(1, signin::PROFILE_MODE_INCOGNITO_DISABLED);
-  TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=1,enable_account_consistency=true,"
-                              "consistency_enabled_by_default=false");
+
+  // TODO(http://crbug.com/1134144): This test seems to test supervised profiles
+  // instead of child accounts. With the current implementation,
+  // X-Chrome-Connected header gets a supervised=true argument only for child
+  // profiles. Verify if these tests needs to be updated to use child accounts
+  // or whether supervised profiles need to be supported as well.
+  TestMirrorRequestForProfile(
+      test_server_.get(), profile,
+      "source=Chrome,mode=1,enable_account_consistency=true,supervised=false,"
+      "consistency_enabled_by_default=false");
 }
 
 // Mirror is enabled for non-child accounts.
@@ -147,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   // With Chrome OS Account Manager enabled, this should be true.
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
-  TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=0,enable_account_consistency=true,"
-                              "consistency_enabled_by_default=false");
+  TestMirrorRequestForProfile(
+      test_server_.get(), profile,
+      "source=Chrome,mode=0,enable_account_consistency=true,supervised=false,"
+      "consistency_enabled_by_default=false");
 }

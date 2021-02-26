@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -52,7 +52,7 @@ const int kMaxDeviceTouchEventLogs = 7;
 // Clean up intermediate log files dumped during feedback creation.
 void CleanupEventLog(const std::vector<base::FilePath>& log_paths) {
   for (const base::FilePath& path : log_paths)
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
 }
 
 // Check for all known log paths and find the ones whose filenames match a

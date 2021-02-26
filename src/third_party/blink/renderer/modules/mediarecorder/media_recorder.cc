@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <limits>
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -17,7 +19,9 @@
 #include "third_party/blink/renderer/modules/mediarecorder/blob_event.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -325,8 +329,20 @@ bool MediaRecorder::isTypeSupported(ExecutionContext* context,
   // not available to support the concrete media encoding.
   // https://w3c.github.io/mediacapture-record/#dom-mediarecorder-istypesupported
   ContentType content_type(type);
-  return handler->CanSupportMimeType(content_type.GetType(),
-                                     content_type.Parameter("codecs"));
+  bool result = handler->CanSupportMimeType(content_type.GetType(),
+                                            content_type.Parameter("codecs"));
+  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+          blink::IdentifiableSurface::Type::kMediaRecorder_IsTypeSupported)) {
+    blink::IdentifiabilityMetricBuilder(context->UkmSourceID())
+        .Set(blink::IdentifiableSurface::FromTypeAndToken(
+                 blink::IdentifiableSurface::Type::
+                     kMediaRecorder_IsTypeSupported,
+                 IdentifiabilityBenignStringToken(type)),
+             result)
+        .Record(context->UkmRecorder());
+  }
+
+  return result;
 }
 
 const AtomicString& MediaRecorder::InterfaceName() const {
@@ -448,7 +464,7 @@ void MediaRecorder::DispatchScheduledEvent() {
     DispatchEvent(*event);
 }
 
-void MediaRecorder::Trace(Visitor* visitor) {
+void MediaRecorder::Trace(Visitor* visitor) const {
   visitor->Trace(stream_);
   visitor->Trace(recorder_handler_);
   visitor->Trace(scheduled_events_);

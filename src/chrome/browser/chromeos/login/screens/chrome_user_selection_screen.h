@@ -23,7 +23,7 @@ class ChromeUserSelectionScreen
     : public UserSelectionScreen,
       public policy::DeviceLocalAccountPolicyService::Observer {
  public:
-  explicit ChromeUserSelectionScreen(const std::string& display_type);
+  explicit ChromeUserSelectionScreen(DisplayedScreen display_type);
   ~ChromeUserSelectionScreen() override;
 
   // UserSelectionScreen:
@@ -51,11 +51,11 @@ class ChromeUserSelectionScreen
       policy::DeviceLocalAccountPolicyBroker* broker);
 
   // Notify the UI that the display name for a public session has changed,
-  // taking the display name from the |User| owned by |UserManager|.
+  // taking the display name from the `User` owned by `UserManager`.
   void SetPublicSessionDisplayName(const AccountId& account_id);
 
   // Send an updated list of locales for a public session to the UI, consisting
-  // of the |recommended_locales| followed by all other available locales.
+  // of the `recommended_locales` followed by all other available locales.
   void SetPublicSessionLocales(
       const AccountId& account_id,
       const std::vector<std::string>& recommended_locales);

@@ -31,7 +31,6 @@ class OutputSurfaceUnified : public OutputSurface {
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
-  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override {}
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
@@ -48,9 +47,6 @@ class OutputSurfaceUnified : public OutputSurface {
       UpdateVSyncParametersCallback callback) override {}
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
-  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
-      override;
-  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceUnified);

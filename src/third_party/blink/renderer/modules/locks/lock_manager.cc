@@ -88,7 +88,7 @@ class LockManager::LockRequestImpl final
 
   ~LockRequestImpl() override = default;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(resolver_);
     visitor->Trace(manager_);
     visitor->Trace(callback_);
@@ -414,7 +414,7 @@ bool LockManager::IsPendingRequest(LockRequestImpl* request) {
   return pending_requests_.Contains(request);
 }
 
-void LockManager::Trace(Visitor* visitor) {
+void LockManager::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);
@@ -440,7 +440,7 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
   if (!cached_allowed_.has_value()) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
     DCHECK(execution_context->IsContextThread());
-    SECURITY_DCHECK(execution_context->IsDocument() ||
+    SECURITY_DCHECK(execution_context->IsWindow() ||
                     execution_context->IsWorkerGlobalScope());
     if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
       LocalFrame* frame = window->GetFrame();
@@ -448,7 +448,8 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
         cached_allowed_ = false;
       } else if (auto* settings_client = frame->GetContentSettingsClient()) {
         // This triggers a sync IPC.
-        cached_allowed_ = settings_client->AllowWebLocks();
+        cached_allowed_ = settings_client->AllowStorageAccessSync(
+            WebContentSettingsClient::StorageType::kWebLocks);
       } else {
         cached_allowed_ = true;
       }
@@ -459,7 +460,8 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
         cached_allowed_ = true;
       } else {
         // This triggers a sync IPC.
-        cached_allowed_ = content_settings_client->AllowWebLocks();
+        cached_allowed_ = content_settings_client->AllowStorageAccessSync(
+            WebContentSettingsClient::StorageType::kWebLocks);
       }
     }
   }

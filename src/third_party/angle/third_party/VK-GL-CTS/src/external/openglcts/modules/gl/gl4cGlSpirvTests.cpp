@@ -104,7 +104,7 @@ ShaderBinary readSpirV(tcu::Resource* resource)
 	}
 
 	binary.binary.resize((resource->getSize() - resource->getPosition()) / sizeof(deUint32));
-	resource->read((deUint8*)binary.binary.data(), binary.binary.size() * sizeof(deUint32));
+	resource->read((deUint8*)binary.binary.data(), static_cast<deUint32>(binary.binary.size()) * sizeof(deUint32));
 
 	return binary;
 }
@@ -273,6 +273,8 @@ void SpirvModulesPositiveTest::init()
 /** Stub de-init method */
 void SpirvModulesPositiveTest::deinit()
 {
+	if (!m_context.getContextInfo().isExtensionSupported("GL_ARB_gl_spirv"))
+		return;
 	const Functions& gl = m_context.getRenderContext().getFunctions();
 
 	if (m_fbo)
@@ -793,7 +795,7 @@ tcu::TestNode::IterateResult SpirvModulesStateQueriesTest::iterate()
 
 	// 4) Check if ShaderSource command usage on Spir-V binary shader will change SPIR_V_BINARY_ARB state to FALSE
 	const char* source = m_vertex.c_str();
-	const int   length = m_vertex.length();
+	const int   length = static_cast<int>(m_vertex.length());
 	gl.shaderSource(shader->getShader(), 1, &source, &length);
 	GLU_EXPECT_NO_ERROR(gl.getError(), "shaderSource");
 
@@ -857,6 +859,9 @@ void SpirvModulesErrorVerificationTest::init()
 /** Stub de-init method */
 void SpirvModulesErrorVerificationTest::deinit()
 {
+	if (!m_context.getContextInfo().isExtensionSupported("GL_ARB_gl_spirv"))
+		return;
+
 	const Functions& gl = m_context.getRenderContext().getFunctions();
 
 	gl.deleteTextures(1, &m_textureId);
@@ -881,7 +886,7 @@ tcu::TestNode::IterateResult SpirvModulesErrorVerificationTest::iterate()
 	const Functions& gl = m_context.getRenderContext().getFunctions();
 
 	const char* shaderSrc = m_vertex.c_str();
-	const int   shaderLen = m_vertex.length();
+	const int   shaderLen = static_cast<int>(m_vertex.length());
 
 	ShaderBinary vertexBinary;
 
@@ -891,7 +896,7 @@ tcu::TestNode::IterateResult SpirvModulesErrorVerificationTest::iterate()
 	GLU_EXPECT_NO_ERROR(gl.getError(), "shaderSource");
 
 	gl.shaderBinary(1, &m_spirvShaderId, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, (GLvoid*)vertexBinary.binary.data(),
-					vertexBinary.binary.size() * sizeof(deUint32));
+					static_cast<deUint32>(vertexBinary.binary.size()) * sizeof(deUint32));
 	GLU_EXPECT_NO_ERROR(gl.getError(), "shaderBinary");
 
 	gl.attachShader(m_programId, m_spirvShaderId);
@@ -1968,6 +1973,8 @@ void SpirvGlslToSpirVSpecializationConstantsTest::init()
 /** Stub de-init method */
 void SpirvGlslToSpirVSpecializationConstantsTest::deinit()
 {
+	if (!m_context.getContextInfo().isExtensionSupported("GL_ARB_gl_spirv"))
+		return;
 	const Functions& gl = m_context.getRenderContext().getFunctions();
 
 	if (m_fbo)

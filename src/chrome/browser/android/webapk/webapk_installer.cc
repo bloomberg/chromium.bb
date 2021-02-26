@@ -18,6 +18,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -86,7 +88,7 @@ class CacheClearer : public content::BrowsingDataRemover::Observer {
                base::OnceClosure callback)
       : remover_(remover), install_callback_(std::move(callback)) {}
 
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     std::move(install_callback_).Run();
     delete this;  // Matches the new in FreeCacheAsync()
   }
@@ -209,13 +211,13 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();
     share_target->set_action(shortcut_info.share_target->action.spec());
     if (shortcut_info.share_target->method ==
-        blink::Manifest::ShareTarget::Method::kPost) {
+        blink::mojom::ManifestShareTarget_Method::kPost) {
       share_target->set_method("POST");
     } else {
       share_target->set_method("GET");
     }
     if (shortcut_info.share_target->enctype ==
-        blink::Manifest::ShareTarget::Enctype::kMultipartFormData) {
+        blink::mojom::ManifestShareTarget_Enctype::kMultipartFormData) {
       share_target->set_enctype("multipart/form-data");
     } else {
       share_target->set_enctype("application/x-www-form-urlencoded");
@@ -286,8 +288,8 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   for (const auto& manifest_shortcut_item : shortcut_info.shortcut_items) {
     auto* shortcut_item = web_app_manifest->add_shortcuts();
     shortcut_item->set_name(base::UTF16ToUTF8(manifest_shortcut_item.name));
-    shortcut_item->set_short_name(
-        base::UTF16ToUTF8(manifest_shortcut_item.short_name.string()));
+    shortcut_item->set_short_name(base::UTF16ToUTF8(
+        manifest_shortcut_item.short_name.value_or(base::string16())));
     shortcut_item->set_url(manifest_shortcut_item.url.spec());
 
     for (const auto& manifest_icon : manifest_shortcut_item.icons) {
@@ -476,9 +478,10 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
       base::android::ConvertUTF8ToJavaString(env, token);
 
   if (task_type_ == WebApkInstaller::INSTALL) {
-    webapk::TrackRequestTokenDuration(install_duration_timer_->Elapsed());
+    webapk::TrackRequestTokenDuration(install_duration_timer_->Elapsed(),
+                                      package_name);
     base::android::ScopedJavaLocalRef<jobject> java_primary_icon =
-        gfx::ConvertToJavaBitmap(&install_primary_icon_);
+        gfx::ConvertToJavaBitmap(install_primary_icon_);
     Java_WebApkInstaller_installWebApkAsync(
         env, java_ref_, java_webapk_package, webapk_version_, java_title,
         java_token, install_shortcut_info_->source, java_primary_icon);

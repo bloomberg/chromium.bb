@@ -8,14 +8,15 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -69,8 +71,8 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
                                    bool match_incognito_profile,
                                    std::string* error_message) {
   Profile* incognito_profile =
-      match_incognito_profile && profile->HasOffTheRecordProfile()
-          ? profile->GetOffTheRecordProfile()
+      match_incognito_profile && profile->HasPrimaryOTRProfile()
+          ? profile->GetPrimaryOTRProfile()
           : nullptr;
   for (auto* browser : *BrowserList::GetInstance()) {
     if ((browser->profile() == profile ||
@@ -301,6 +303,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
                                     ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                     : WindowOpenDisposition::NEW_BACKGROUND_TAB;
   navigate_params.tabstrip_index = index;
+  navigate_params.user_gesture = false;
   navigate_params.tabstrip_add_types = add_types;
   Navigate(&navigate_params);
 
@@ -412,6 +415,15 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->selected = tab_strip && tab_index == tab_strip->active_index();
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
   tab_object->pinned = tab_strip && tab_strip->IsTabPinned(tab_index);
+
+  tab_object->group_id = -1;
+  if (tab_strip) {
+    base::Optional<tab_groups::TabGroupId> group =
+        tab_strip->GetTabGroupForTab(tab_index);
+    if (group.has_value())
+      tab_object->group_id = tab_groups_util::GetGroupId(group.value());
+  }
+
   auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
   bool audible = false;
   if (audible_helper) {
@@ -686,8 +698,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     return false;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
-      include_incognito && profile->HasOffTheRecordProfile()
-          ? profile->GetOffTheRecordProfile()
+      include_incognito && profile->HasPrimaryOTRProfile()
+          ? profile->GetPrimaryOTRProfile()
           : nullptr;
   for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
@@ -731,8 +743,8 @@ ExtensionTabUtil::GetAllActiveWebContentsForContext(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
-      include_incognito && profile->HasOffTheRecordProfile()
-          ? profile->GetOffTheRecordProfile()
+      include_incognito && profile->HasPrimaryOTRProfile()
+          ? profile->GetPrimaryOTRProfile()
           : nullptr;
   for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
@@ -756,6 +768,14 @@ GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
 }
 
 bool ExtensionTabUtil::IsKillURL(const GURL& url) {
+#if DCHECK_IS_ON()
+  // Caller should ensure that |url| is already "fixed up" by
+  // url_formatter::FixupURL, which (among many other things) takes care
+  // of rewriting about:kill into chrome://kill/.
+  if (url.SchemeIs(url::kAboutScheme))
+    DCHECK(url.IsAboutBlank() || url.IsAboutSrcdoc());
+#endif
+
   static const char* const kill_hosts[] = {
       chrome::kChromeUICrashHost,         chrome::kChromeUIDelayedHangUIHost,
       chrome::kChromeUIHangUIHost,        chrome::kChromeUIKillHost,
@@ -763,19 +783,10 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
       content::kChromeUIBrowserCrashHost, content::kChromeUIMemoryExhaustHost,
   };
 
-  // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
-  GURL fixed_url =
-      url_formatter::FixupURL(url.possibly_invalid_spec(), std::string());
-  if (!fixed_url.SchemeIs(content::kChromeUIScheme))
+  if (!url.SchemeIs(content::kChromeUIScheme))
     return false;
 
-  base::StringPiece fixed_host = fixed_url.host_piece();
-  for (size_t i = 0; i < base::size(kill_hosts); ++i) {
-    if (fixed_host == kill_hosts[i])
-      return true;
-  }
-
-  return false;
+  return base::Contains(kill_hosts, url.host_piece());
 }
 
 bool ExtensionTabUtil::PrepareURLForNavigation(const std::string& url_string,
@@ -785,6 +796,13 @@ bool ExtensionTabUtil::PrepareURLForNavigation(const std::string& url_string,
   GURL url =
       ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string, extension);
 
+  // Ideally, the URL would only be "fixed" for user input (e.g. for URLs
+  // entered into the Omnibox), but some extensions rely on the legacy behavior
+  // where all navigations were subject to the "fixing".  See also
+  // https://crbug.com/1145381.
+  url = url_formatter::FixupURL(url.spec(), "" /* = desired_tld */);
+
+  // Reject invalid URLs.
   if (!url.is_valid()) {
     *error = ErrorUtils::FormatErrorMessage(tabs_constants::kInvalidUrlError,
                                             url_string);
@@ -797,17 +815,8 @@ bool ExtensionTabUtil::PrepareURLForNavigation(const std::string& url_string,
     return false;
   }
 
-  // Log if this navigation looks like it is to a devtools URL.
-  ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
-
   return_url->Swap(&url);
   return true;
-}
-
-void ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(const GURL& url) {
-  const bool is_devtools_scheme = url.SchemeIs(content::kChromeDevToolsScheme);
-  UMA_HISTOGRAM_BOOLEAN("Extensions.ApiUrlNavigationDevtools",
-                        is_devtools_scheme);
 }
 
 void ExtensionTabUtil::CreateTab(std::unique_ptr<WebContents> web_contents,

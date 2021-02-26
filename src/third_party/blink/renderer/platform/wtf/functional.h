@@ -36,13 +36,6 @@
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
-namespace blink {
-template <typename T>
-class Member;
-template <typename T>
-class WeakMember;
-}
-
 namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and
@@ -62,9 +55,10 @@ namespace WTF {
 // WTF::Bind(), WTF::BindRepeating and base::{Once,Repeating}Callback should
 // be used for same-thread closures only, i.e. the closures must be created,
 // executed and destructed on the same thread.
+//
 // Use CrossThreadBindOnce() and CrossThreadBindRepeating() if the function/task
 // is called or destructed on a (potentially) different thread from the current
-// thread.
+// thread. See cross_thread_functional.h for more details.
 
 // WTF::Bind() / WTF::BindRepeating() and move semantics
 // =====================================================
@@ -199,8 +193,7 @@ struct CheckGCedTypeRestriction {
                 "it with either WrapPersistent, WrapWeakPersistent, "
                 "WrapCrossThreadPersistent, WrapCrossThreadWeakPersistent, "
                 "RefPtr or unretained.");
-  static_assert(!IsSubclassOfTemplate<T, blink::Member>::value &&
-                    !IsSubclassOfTemplate<T, blink::WeakMember>::value,
+  static_assert(!WTF::IsMemberOrWeakMemberType<T>::value,
                 "Member and WeakMember are not allowed to bind into "
                 "WTF::Function. Wrap it with either WrapPersistent, "
                 "WrapWeakPersistent, WrapCrossThreadPersistent or "

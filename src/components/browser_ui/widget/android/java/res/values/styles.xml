@@ -3,13 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Card styles -->
     <style name="Card">
         <item name="android:background">@drawable/hairline_border_card_background</item>
     </style>
-    <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
-    <style name="CardTransparentForDark" tools:ignore="UnusedResources">
+    <style name="CardTransparentForDark">
         <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
     </style>
 
@@ -83,5 +82,15 @@
     <style name="TextBubbleAnimation">
         <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
         <item name="android:windowExitAnimation">@anim/textbubble_out</item>
+    </style>
+
+    <style name="AsyncImageView">
+        <item name="unavailableSrc">@drawable/async_image_view_unavailable</item>
+        <item name="waitingSrc">@drawable/async_image_view_waiting</item>
+    </style>
+
+    <style name="ChipAnimation">
+        <item name="android:windowEnterAnimation">@anim/chip_in</item>
+        <item name="android:windowExitAnimation">@anim/chip_out</item>
     </style>
 </resources>

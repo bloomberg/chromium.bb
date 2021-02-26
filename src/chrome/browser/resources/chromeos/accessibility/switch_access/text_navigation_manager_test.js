@@ -4,17 +4,8 @@
 
 GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessTextNavigationManagerTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessTextNavigationManagerTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-
+/** Text fixture for the text navigation manager. */
+SwitchAccessTextNavigationManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   setUp() {
     TextNavigationManager.initialize();
@@ -54,8 +45,8 @@ function runTextNavigationTest(testHelper, textParams) {
   const website = generateWebsiteWithTextArea(
       textId, textContent, initialTextIndex, textCols, textWrap);
 
-  testHelper.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, textId);
+  testHelper.runWithLoadedTree(website, function(root) {
+    const inputNode = this.findNodeById(textId);
     assertNotEquals(inputNode, null);
 
     setUpCursorChangeListener(
@@ -113,8 +104,8 @@ function runTextSelectionTest(testHelper, textParams) {
     navigationTargetIndex = targetTextStartIndex;
   }
 
-  testHelper.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, textId, testHelper);
+  testHelper.runWithLoadedTree(website, function(root) {
+    const inputNode = this.findNodeById(textId);
     assertNotEquals(inputNode, null);
     checkNodeIsFocused(inputNode);
     const callback = testHelper.newCallback(function() {
@@ -157,30 +148,10 @@ function generateWebsiteWithTextArea(id, contents, textIndex, cols, wrap) {
 }
 
 /**
- * Given the desktop node, returns the node with the given
- * id.
- * @param {!chrome.automation.AutomationNode} desktop
- * @param {string} id
- * @return {!chrome.automation.AutomationNode}
- */
-function findNodeById(desktop, id) {
-  // The loop ensures that the page has loaded before trying to find the node.
-  let inputNode;
-  while (inputNode == null) {
-    inputNode = new AutomationTreeWalker(
-                    desktop, constants.Dir.FORWARD,
-                    {visit: (node) => node.htmlAttributes.id === id})
-                    .next()
-                    .node;
-  }
-  return inputNode;
-}
-
-/**
  * Check that the node in the JS file matches the node in the test.
  * The nodes can be assumed to be the same if their roles match as there is only
  * one text input node on the generated webpage.
- * @param {!chrome.automation.AutomationNode} inputNode
+ * @param {!AutomationNode} inputNode
  */
 function checkNodeIsFocused(inputNode) {
   chrome.automation.getFocus((focusedNode) => {
@@ -198,7 +169,7 @@ function checkNodeIsFocused(inputNode) {
  * the text navigation and selection actions directly changes the text caret
  * to the correct index (with no intermediate movements).
  * @param {!SwitchAccessE2ETest} testHelper
- * @param {!chrome.automation.AutomationNode} inputNode
+ * @param {!AutomationNode} inputNode
  * @param {number} initialTextIndex
  * @param {number} targetTextStartIndex
  * @param {number} targetTextEndIndex
@@ -209,8 +180,8 @@ function setUpCursorChangeListener(
     targetTextEndIndex, callback) {
   // Ensures that the text index has changed before checking the new index.
   const checkActionFinished = function(tab) {
-    if (inputNode.textSelStart != initialTextIndex ||
-        inputNode.textSelEnd != initialTextIndex) {
+    if (inputNode.textSelStart !== initialTextIndex ||
+        inputNode.textSelEnd !== initialTextIndex) {
       checkTextIndex();
       if (callback) {
         callback();
@@ -343,8 +314,8 @@ TEST_F(
       const website =
           generateWebsiteWithTextArea('test', 'test123', 3, 20, 'hard');
 
-      this.runWithLoadedTree(website, function(desktop) {
-        const inputNode = findNodeById(desktop, 'test', this);
+      this.runWithLoadedTree(website, function(root) {
+        const inputNode = this.findNodeById('test');
         assertNotEquals(inputNode, null);
         checkNodeIsFocused(inputNode);
 
@@ -364,8 +335,8 @@ TEST_F(
       const website =
           generateWebsiteWithTextArea('test', 'test 123', 6, 20, 'hard');
 
-      this.runWithLoadedTree(website, function(desktop) {
-        const inputNode = findNodeById(desktop, 'test', this);
+      this.runWithLoadedTree(website, function(root) {
+        const inputNode = this.findNodeById('test');
         assertNotEquals(inputNode, null);
         checkNodeIsFocused(inputNode);
 

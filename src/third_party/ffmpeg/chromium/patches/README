@@ -837,12 +837,87 @@ Affects:
     libavutil/log.h
 
 ------------------------------------------------------------------
-commit 89875d230f63fa5eb5dc17dfaebfcbe3dc95c0c4
+commit 587a3f48499df05d3c65f1529fd08b0783217b39
 Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Tue Apr 28 15:36:52 2020 -0700
+Date:   Tue Apr 28 16:40:05 2020 -0700
 
-    Fix mismerge in MIPS code.
+    Updated ffmpeg for M84.
+
+    - README.chromium file
+    - Chromium patches file
+    - GN Configuration
+    - Fix mismerge in MIPS code.
+
+    Bug: 1061648
+
+    Change-Id: I7f91b326e87d1ab17dcf93356e8c0888b30ab967
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2171422
+    Reviewed-by: John Rummell <jrummell@chromium.org>
 
 Affects:
     libavcodec/mips/aacdec_mips.c
+
+------------------------------------------------------------------
+commit a3009baf841ca86aab37210dbec5e6d65b85d197
+Author: Nico Weber <thakis@chromium.org>
+Date:   Fri Jul 10 11:21:38 2020 -0400
+
+    Make sure arm assembly functions have hidden visibility.
+
+    This is the ARM port of 58315b1a02fa9761d0.
+
+    Bug: chromium:1103879
+    Change-Id: I470e62d7e49d547c4d12428f748e0d524fd3cdd8
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2290844
+    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+
+Affects:
+    libavutil/aarch64/asm.S
+
+------------------------------------------------------------------
+commit d2dd36c03501e995e8ce2d792d834392b2e62bfe
+Author: Nico Weber <thakis@chromium.org>
+Date:   Fri Jul 10 14:23:02 2020 -0400
+
+    Use correct comment syntax for arm assembly.
+
+    Apparently clang accepts ';' as comment character in arm64
+    assembly when targeting macOS, but not when targeting Android.
+
+    Bug: chromium:1103879
+    Change-Id: I23d1e6facbe3eddd25e58762de096fb9c1ffda15
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2292785
+    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+
+Affects:
+    libavutil/aarch64/asm.S
+
+------------------------------------------------------------------
+commit 45b753b2d1d27b673a14419070ccc9558774efc2
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Mon Aug 17 15:55:19 2020 -0700
+
+    Always use av_realloc() for ogg_stream |buf|.
+
+    Mixing av_malloc() with av_realloc() does not work when posix_memalign()
+    is available.
+
+    Bug: 721872
+    Change-Id: I3d6a9dc6a638ff210c5f32a99beff26f11d65b33
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2358822
+    Reviewed-by: John Rummell <jrummell@chromium.org>
+
+Affects:
+    libavformat/oggdec.c
+
+------------------------------------------------------------------
+commit 0493b979dfcfb2b028b9f6c6ffbaa4a5b27b64cf
+Author: Will Cassella <cassew@google.com>
+Date:   Thu Oct 1 16:21:01 2020 -0700
+
+    Remove UNCHECKED_BITSTREAM_READER
+
+Affects:
+    libavcodec/fraps.c
+    libavcodec/smacker.c
 

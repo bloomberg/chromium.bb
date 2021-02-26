@@ -16,6 +16,7 @@ package cgen
 
 import (
 	"fmt"
+	"strings"
 
 	a "github.com/google/wuffs/lang/ast"
 	t "github.com/google/wuffs/lang/token"
@@ -30,8 +31,15 @@ func (g *gen) writeExpr(b *buffer, n *a.Expr, depth uint32) error {
 	if cv := n.ConstValue(); cv != nil {
 		if typ := n.MType(); typ.IsNumTypeOrIdeal() {
 			b.writes(cv.String())
-		} else if typ.IsNullptr() || typ.IsStatus() {
+			if cv.Cmp(maxInt64) > 0 {
+				b.writeb('u')
+			}
+		} else if typ.IsNullptr() {
 			b.writes("NULL")
+		} else if typ.IsStatus() {
+			b.writes("wuffs_base__make_status(NULL)")
+		} else if !typ.IsBool() {
+			return fmt.Errorf("cannot generate C expression for %v constant of type %q", n.Str(g.tm), n.MType().Str(g.tm))
 		} else if cv.Cmp(zero) == 0 {
 			b.writes("false")
 		} else if cv.Cmp(one) == 0 {
@@ -68,19 +76,21 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 				b.writes("false")
 			}
 
-		} else if ident.IsStrLiteral(g.tm) {
-			if z := g.statusMap[n.StatusQID()]; z.cName != "" {
+		} else if ident.IsDQStrLiteral(g.tm) {
+			if z := g.statusMap[t.QID{0, n.Ident()}]; z.cName != "" {
+				b.writes("wuffs_base__make_status(")
 				b.writes(z.cName)
-			} else {
-				return fmt.Errorf("unrecognized status %s", n.StatusQID().Str(g.tm))
+				b.writes(")")
+				return nil
 			}
+			return fmt.Errorf("unrecognized status %s", n.Str(g.tm))
 
 		} else if c, ok := g.scalarConstsMap[t.QID{0, n.Ident()}]; ok {
 			b.writes(c.Value().ConstValue().String())
 
 		} else {
 			if n.GlobalIdent() {
-				b.writes(g.pkgPrefix)
+				b.writes(g.PKGPREFIX)
 			} else {
 				b.writes(vPrefix)
 			}
@@ -162,6 +172,12 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			b.writes("wuffs_base__slice_u8__subslice_ij(")
 		}
 
+		comma := ", "
+		if (mhs != nil) && (mhs.Operator() != 0) &&
+			(rhs != nil) && (rhs.Operator() != 0) {
+			comma = ",\n"
+		}
+
 		lhsIsArray := lhs.MType().IsArrayType()
 		if lhsIsArray {
 			// TODO: don't assume that the slice is a slice of base.u8.
@@ -171,17 +187,18 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			return err
 		}
 		if lhsIsArray {
-			b.printf(", %v)", lhs.MType().ArrayLength().ConstValue())
+			b.writes(comma)
+			b.printf("%v)", lhs.MType().ArrayLength().ConstValue())
 		}
 
 		if mhs != nil {
-			b.writeb(',')
+			b.writes(comma)
 			if err := g.writeExpr(b, mhs, depth); err != nil {
 				return err
 			}
 		}
 		if rhs != nil {
-			b.writeb(',')
+			b.writes(comma)
 			if err := g.writeExpr(b, rhs, depth); err != nil {
 				return err
 			}
@@ -197,6 +214,14 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			b.writes(aPrefix)
 			b.writes(n.Ident().Str(g.tm))
 			return nil
+		} else if (lhs.Operator() == 0) && n.Ident().IsDQStrLiteral(g.tm) {
+			if z := g.statusMap[t.QID{lhs.Ident(), n.Ident()}]; z.cName != "" {
+				b.writes("wuffs_base__make_status(")
+				b.writes(z.cName)
+				b.writes(")")
+				return nil
+			}
+			return fmt.Errorf("unrecognized status %s", n.Str(g.tm))
 		}
 
 		if err := g.writeExpr(b, lhs, depth); err != nil {
@@ -242,7 +267,7 @@ func (g *gen) writeExprUnaryOp(b *buffer, n *a.Expr, depth uint32) error {
 }
 
 func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
-	opName := ""
+	opName, lhsCast := "", false
 
 	op := n.Operator()
 	switch op {
@@ -256,10 +281,16 @@ func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
 			uOp = "sub"
 		}
 		b.printf("wuffs_base__u%d__sat_%s", uBits, uOp)
-		opName = ","
+		opName = ", "
 
 	case t.IDXBinaryAs:
 		return g.writeExprAs(b, n.LHS().AsExpr(), n.RHS().AsTypeExpr(), depth)
+
+	case t.IDXBinaryShiftL, t.IDXBinaryShiftR, t.IDXBinaryTildeModShiftL:
+		if lhs := n.LHS().AsExpr(); lhs.ConstValue() != nil {
+			lhsCast = true
+		}
+		fallthrough
 
 	default:
 		opName = cOpName(op)
@@ -269,14 +300,51 @@ func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
 	}
 
 	b.writeb('(')
-	if err := g.writeExpr(b, n.LHS().AsExpr(), depth); err != nil {
+
+	if lhsCast {
+		b.writes("((")
+		if err := g.writeCTypeName(b, n.LHS().AsExpr().MType(), "", ""); err != nil {
+			return err
+		}
+		b.writes(")(")
+	}
+	if err := g.writeExprRepr(b, n.LHS().AsExpr(), depth); err != nil {
 		return err
 	}
+	if lhsCast {
+		b.writes("))")
+	}
+
 	b.writes(opName)
-	if err := g.writeExpr(b, n.RHS().AsExpr(), depth); err != nil {
+
+	if err := g.writeExprRepr(b, n.RHS().AsExpr(), depth); err != nil {
 		return err
 	}
+
 	b.writeb(')')
+	return nil
+}
+
+func (g *gen) writeExprRepr(b *buffer, n *a.Expr, depth uint32) error {
+	isStatus := n.MType().IsStatus()
+	if isStatus {
+		if op := n.Operator(); ((op == 0) || (op == t.IDDot)) && n.Ident().IsDQStrLiteral(g.tm) {
+			qid := t.QID{0, n.Ident()}
+			if op == t.IDDot {
+				qid[0] = n.LHS().AsExpr().Ident()
+			}
+			if z := g.statusMap[qid]; z.cName != "" {
+				b.writes(z.cName)
+				return nil
+			}
+		}
+	}
+	if err := g.writeExpr(b, n, depth); err != nil {
+		return err
+	}
+	if isStatus {
+		b.writes(".repr")
+	}
 	return nil
 }
 
@@ -301,6 +369,9 @@ func (g *gen) writeExprAssociativeOp(b *buffer, n *a.Expr, depth uint32) error {
 	if opName == "" {
 		return fmt.Errorf("unrecognized operator %q", op.AmbiguousForm().Str(g.tm))
 	}
+	if len(n.Args()) > 3 {
+		opName = strings.TrimRight(opName, " ") + "\n"
+	}
 
 	b.writeb('(')
 	for i, o := range n.Args() {
@@ -321,8 +392,6 @@ func (g *gen) writeExprUserDefinedCall(b *buffer, n *a.Expr, depth uint32) error
 	recvTyp, addr := recv.MType(), "&"
 	if p := recvTyp.Decorator(); p == t.IDNptr || p == t.IDPtr {
 		recvTyp, addr = recvTyp.Inner(), ""
-	} else if recvTyp.IsStatus() {
-		addr = ""
 	}
 	if recvTyp.Decorator() != 0 {
 		return fmt.Errorf("cannot generate user-defined method call %q for receiver type %q",
@@ -336,7 +405,7 @@ func (g *gen) writeExprUserDefinedCall(b *buffer, n *a.Expr, depth uint32) error
 			return err
 		}
 		if len(n.Args()) > 0 {
-			b.writeb(',')
+			b.writes(", ")
 		}
 	}
 	return g.writeArgs(b, n.Args(), depth)
@@ -351,9 +420,11 @@ func (g *gen) writeCTypeName(b *buffer, n *a.TypeExpr, varNamePrefix string, var
 		o := n.Inner()
 		if o.Decorator() == 0 && o.QID() == (t.QID{t.IDBase, t.IDU8}) && !o.IsRefined() {
 			b.writes("wuffs_base__slice_u8")
-			b.writeb(' ')
-			b.writes(varNamePrefix)
-			b.writes(varName)
+			if varNamePrefix != "" {
+				b.writeb(' ')
+				b.writes(varNamePrefix)
+				b.writes(varName)
+			}
 			return nil
 		}
 		return fmt.Errorf("cannot convert Wuffs type %q to C", n.Str(g.tm))
@@ -362,9 +433,11 @@ func (g *gen) writeCTypeName(b *buffer, n *a.TypeExpr, varNamePrefix string, var
 		o := n.Inner()
 		if o.Decorator() == 0 && o.QID() == (t.QID{t.IDBase, t.IDU8}) && !o.IsRefined() {
 			b.writes("wuffs_base__table_u8")
-			b.writeb(' ')
-			b.writes(varNamePrefix)
-			b.writes(varName)
+			if varNamePrefix != "" {
+				b.writeb(' ')
+				b.writes(varNamePrefix)
+				b.writes(varName)
+			}
 			return nil
 		}
 		return fmt.Errorf("cannot convert Wuffs type %q to C", n.Str(g.tm))
@@ -408,9 +481,11 @@ func (g *gen) writeCTypeName(b *buffer, n *a.TypeExpr, varNamePrefix string, var
 		b.writeb('*')
 	}
 
-	b.writeb(' ')
-	b.writes(varNamePrefix)
-	b.writes(varName)
+	if varNamePrefix != "" {
+		b.writeb(' ')
+		b.writes(varNamePrefix)
+		b.writes(varName)
+	}
 
 	x = n
 	for ; x != nil && x.IsArrayType(); x = x.Inner() {
@@ -452,17 +527,20 @@ func isBaseRangeType(qid t.QID) bool {
 }
 
 var cTypeNames = [...]string{
-	t.IDI8:       "int8_t",
-	t.IDI16:      "int16_t",
-	t.IDI32:      "int32_t",
-	t.IDI64:      "int64_t",
-	t.IDU8:       "uint8_t",
-	t.IDU16:      "uint16_t",
-	t.IDU32:      "uint32_t",
-	t.IDU64:      "uint64_t",
-	t.IDBool:     "bool",
-	t.IDIOReader: "wuffs_base__io_buffer*",
-	t.IDIOWriter: "wuffs_base__io_buffer*",
+	t.IDI8:   "int8_t",
+	t.IDI16:  "int16_t",
+	t.IDI32:  "int32_t",
+	t.IDI64:  "int64_t",
+	t.IDU8:   "uint8_t",
+	t.IDU16:  "uint16_t",
+	t.IDU32:  "uint32_t",
+	t.IDU64:  "uint64_t",
+	t.IDBool: "bool",
+
+	t.IDIOReader:    "wuffs_base__io_buffer*",
+	t.IDIOWriter:    "wuffs_base__io_buffer*",
+	t.IDTokenReader: "wuffs_base__token_buffer*",
+	t.IDTokenWriter: "wuffs_base__token_buffer*",
 }
 
 const noSuchCOperator = " no_such_C_operator "
@@ -487,18 +565,15 @@ var cOpNames = [...]string{
 	t.IDPipeEq:           " |= ",
 	t.IDHatEq:            " ^= ",
 	t.IDPercentEq:        " %= ",
-	t.IDTildeModShiftLEq: " <<= ",
 	t.IDTildeModPlusEq:   " += ",
 	t.IDTildeModMinusEq:  " -= ",
+	t.IDTildeModStarEq:   " *= ",
+	t.IDTildeModShiftLEq: " <<= ",
 	t.IDTildeSatPlusEq:   noSuchCOperator,
 	t.IDTildeSatMinusEq:  noSuchCOperator,
 
 	t.IDEq:         " = ",
 	t.IDEqQuestion: " = ",
-
-	t.IDXUnaryPlus:  " + ",
-	t.IDXUnaryMinus: " - ",
-	t.IDXUnaryNot:   " ! ",
 
 	t.IDXBinaryPlus:           " + ",
 	t.IDXBinaryMinus:          " - ",
@@ -510,9 +585,10 @@ var cOpNames = [...]string{
 	t.IDXBinaryPipe:           " | ",
 	t.IDXBinaryHat:            " ^ ",
 	t.IDXBinaryPercent:        " % ",
-	t.IDXBinaryTildeModShiftL: " << ",
 	t.IDXBinaryTildeModPlus:   " + ",
 	t.IDXBinaryTildeModMinus:  " - ",
+	t.IDXBinaryTildeModStar:   " * ",
+	t.IDXBinaryTildeModShiftL: " << ",
 	t.IDXBinaryTildeSatPlus:   noSuchCOperator,
 	t.IDXBinaryTildeSatMinus:  noSuchCOperator,
 	t.IDXBinaryNotEq:          " != ",
@@ -532,4 +608,8 @@ var cOpNames = [...]string{
 	t.IDXAssociativeHat:  " ^ ",
 	t.IDXAssociativeAnd:  " && ",
 	t.IDXAssociativeOr:   " || ",
+
+	t.IDXUnaryPlus:  " + ",
+	t.IDXUnaryMinus: " - ",
+	t.IDXUnaryNot:   " ! ",
 }

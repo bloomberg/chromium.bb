@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
@@ -18,7 +19,14 @@ public class MockTab extends TabImpl {
      */
     public static Tab createAndInitialize(int id, boolean incognito) {
         TabImpl tab = new MockTab(id, incognito);
-        tab.initialize(null, null, null, null, null, false, null);
+        tab.initialize(null, null, null, null, null, false, null, null);
+        return tab;
+    }
+
+    public static TabImpl initializeWithCriticalPersistedTabData(
+            TabImpl tab, CriticalPersistedTabData criticalPersistedTabData) {
+        tab.getUserDataHost().setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+        tab.initialize(null, null, null, null, null, false, null, null);
         return tab;
     }
 
@@ -38,7 +46,7 @@ public class MockTab extends TabImpl {
     public void initialize(Tab parent, @Nullable @TabCreationState Integer creationState,
             LoadUrlParams loadUrlParams, WebContents webContents,
             @Nullable TabDelegateFactory delegateFactory, boolean initiallyHidden,
-            TabState tabState) {
+            TabState tabState, byte[] serializedCriticalPersistedTabData) {
         TabHelpers.initTabHelpers(this, parent);
     }
 }

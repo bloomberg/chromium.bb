@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -12,19 +13,20 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -97,22 +99,22 @@ class LoginScreenGuestButtonPolicyTest : public LoginScreenPolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
 
   // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // When there are no users - should be the same as OOBE.
-  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [false]);");
+  test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [false]);");
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
+  test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [true]);");
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   SetGuestModePolicy(false);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
+  test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [true]);");
   // Should not affect.
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
@@ -121,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, HasUsers) {
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
 
   // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -130,13 +132,13 @@ IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, HasUsers) {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Should not affect.
-  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
+  test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [true]);");
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   ash::LoginScreen::Get()->GetModel()->SetUserList({});
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [false]);");
+  test::ExecuteOobeJS("chrome.send('setIsFirstSigninStep', [false]);");
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
@@ -224,9 +226,16 @@ IN_PROC_BROWSER_TEST_F(LoginScreenButtonsLocalePolicy, UnifiedTrayLabelsText) {
   EXPECT_TRUE(unified_tray_test_api->IsBubbleViewVisible(
       ash::VIEW_ID_TRAY_ENTERPRISE, true /* open_tray */));
 
-  // Actual text on EnterpriseManagedView tooltip.
-  base::string16 actual_text =
-      unified_tray_test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE);
+  base::string16 actual_text;
+  if (ash::features::IsManagedDeviceUIRedesignEnabled()) {
+    // Actual text on UnifiedManagedDeviceView text.
+    actual_text = unified_tray_test_api->GetBubbleViewText(
+        ash::VIEW_ID_TRAY_ENTERPRISE_LABEL);
+  } else {
+    // Actual text on EnterpriseManagedView tooltip.
+    actual_text = unified_tray_test_api->GetBubbleViewTooltip(
+        ash::VIEW_ID_TRAY_ENTERPRISE);
+  }
 
   // Text on EnterpriseManagedView tooltip in current locale.
   base::string16 expected_text = l10n_util::GetStringFUTF16(

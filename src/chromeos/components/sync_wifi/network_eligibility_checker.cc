@@ -16,8 +16,8 @@ namespace sync_wifi {
 
 bool IsEligibleForSync(const std::string& guid,
                        bool is_connectable,
-                       const network_config::mojom::OncSource& onc_source,
                        const network_config::mojom::SecurityType& security_type,
+                       const network_config::mojom::OncSource& source,
                        bool log_result) {
   NetworkMetadataStore* network_metadata_store =
       NetworkHandler::IsInitialized()
@@ -25,6 +25,25 @@ bool IsEligibleForSync(const std::string& guid,
           : nullptr;
   if (!network_metadata_store)
     return false;
+
+  if (source == network_config::mojom::OncSource::kDevicePolicy ||
+      source == network_config::mojom::OncSource::kUserPolicy) {
+    if (log_result) {
+      NET_LOG(EVENT) << NetworkGuidId(guid)
+                     << " is not eligible, configured by policy.";
+    }
+    return false;
+  }
+
+  if (network_metadata_store->GetHasBadPassword(guid) &&
+      network_metadata_store->GetLastConnectedTimestamp(guid).is_zero()) {
+    if (log_result) {
+      NET_LOG(EVENT)
+          << NetworkGuidId(guid)
+          << " is not eligible, it has a bad password and has never connected.";
+    }
+    return false;
+  }
 
   if (!is_connectable) {
     if (log_result) {
@@ -34,8 +53,7 @@ bool IsEligibleForSync(const std::string& guid,
     return false;
   }
 
-  if (onc_source != network_config::mojom::OncSource::kUser &&
-      !network_metadata_store->GetIsCreatedByUser(guid)) {
+  if (!network_metadata_store->GetIsCreatedByUser(guid)) {
     if (log_result) {
       NET_LOG(EVENT) << NetworkGuidId(guid)
                      << " is not eligible, was not configured by user.";
@@ -49,16 +67,6 @@ bool IsEligibleForSync(const std::string& guid,
       NET_LOG(EVENT) << NetworkGuidId(guid)
                      << " is not eligible, security type not supported: "
                      << security_type;
-    }
-    return false;
-  }
-
-  base::TimeDelta timestamp =
-      network_metadata_store->GetLastConnectedTimestamp(guid);
-  if (timestamp.is_zero()) {
-    if (log_result) {
-      NET_LOG(EVENT) << NetworkGuidId(guid)
-                     << " is not eligible, never connected.";
     }
     return false;
   }

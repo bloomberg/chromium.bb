@@ -9,7 +9,6 @@
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/unowned_ptr.h"
 #include "xfa/fxfa/cxfa_fffield.h"
 
 class CFWL_Event;
@@ -21,8 +20,11 @@ class IFWL_WidgetDelegate;
 
 class CXFA_FFTextEdit : public CXFA_FFField {
  public:
-  explicit CXFA_FFTextEdit(CXFA_Node* pNode);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFTextEdit() override;
+
+  void PreFinalize() override;
+  void Trace(cppgc::Visitor* visitor) const override;
 
   // CXFA_FFField
   bool LoadWidget() override;
@@ -37,7 +39,7 @@ class CXFA_FFTextEdit : public CXFA_FFField {
   bool OnKillFocus(CXFA_FFWidget* pNewWidget) override WARN_UNUSED_RESULT;
   void OnProcessMessage(CFWL_Message* pMessage) override;
   void OnProcessEvent(CFWL_Event* pEvent) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
   void OnTextWillChange(CFWL_Widget* pWidget, CFWL_EventTextWillChange* change);
@@ -62,9 +64,10 @@ class CXFA_FFTextEdit : public CXFA_FFField {
   FormFieldType GetFormFieldType() override;
 
  protected:
+  explicit CXFA_FFTextEdit(CXFA_Node* pNode);
   uint32_t GetAlignment();
 
-  UnownedPtr<IFWL_WidgetDelegate> m_pOldDelegate;
+  cppgc::Member<IFWL_WidgetDelegate> m_pOldDelegate;
 
  private:
   bool CommitData() override;

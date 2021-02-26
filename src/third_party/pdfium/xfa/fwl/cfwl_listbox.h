@@ -13,9 +13,7 @@
 #include "xfa/fwl/cfwl_edit.h"
 #include "xfa/fwl/cfwl_event.h"
 #include "xfa/fwl/cfwl_listbox.h"
-#include "xfa/fwl/cfwl_listitem.h"
 #include "xfa/fwl/cfwl_widget.h"
-#include "xfa/fwl/cfwl_widgetproperties.h"
 
 #define FWL_STYLEEXT_LTB_MultiSelection (1L << 0)
 #define FWL_STYLEEXT_LTB_LeftAlign (0L << 4)
@@ -33,73 +31,85 @@ class CFX_DIBitmap;
 
 class CFWL_ListBox : public CFWL_Widget {
  public:
-  explicit CFWL_ListBox(const CFWL_App* pApp,
-                        std::unique_ptr<CFWL_WidgetProperties> properties,
-                        CFWL_Widget* pOuter);
+  class Item {
+   public:
+    explicit Item(const WideString& text);
+    ~Item();
+
+    CFX_RectF GetRect() const { return m_ItemRect; }
+    void SetRect(const CFX_RectF& rect) { m_ItemRect = rect; }
+    uint32_t GetStates() const { return m_dwStates; }
+    void SetStates(uint32_t dwStates) { m_dwStates = dwStates; }
+    WideString GetText() const { return m_wsText; }
+
+   private:
+    uint32_t m_dwStates = 0;
+    CFX_RectF m_ItemRect;
+    WideString m_wsText;
+  };
+
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_ListBox() override;
 
-  // CFWL_Widget
+  // CFWL_Widget:
+  void Trace(cppgc::Visitor* visitor) const override;
   FWL_Type GetClassID() const override;
   void Update() override;
   FWL_WidgetHit HitTest(const CFX_PointF& point) override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
-  void SetThemeProvider(IFWL_ThemeProvider* pThemeProvider) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessMessage(CFWL_Message* pMessage) override;
   void OnProcessEvent(CFWL_Event* pEvent) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
   int32_t CountItems(const CFWL_Widget* pWidget) const;
-  CFWL_ListItem* GetItem(const CFWL_Widget* pWidget, int32_t nIndex) const;
-  int32_t GetItemIndex(CFWL_Widget* pWidget, CFWL_ListItem* pItem);
-
-  CFWL_ListItem* AddString(const WideString& wsAdd);
+  Item* GetItem(const CFWL_Widget* pWidget, int32_t nIndex) const;
+  int32_t GetItemIndex(CFWL_Widget* pWidget, Item* pItem);
+  Item* AddString(const WideString& wsAdd);
   void RemoveAt(int32_t iIndex);
-  void DeleteString(CFWL_ListItem* pItem);
+  void DeleteString(Item* pItem);
   void DeleteAll();
-
   int32_t CountSelItems();
-  CFWL_ListItem* GetSelItem(int32_t nIndexSel);
+  Item* GetSelItem(int32_t nIndexSel);
   int32_t GetSelIndex(int32_t nIndex);
-  void SetSelItem(CFWL_ListItem* hItem, bool bSelect);
-
+  void SetSelItem(Item* hItem, bool bSelect);
   float GetItemHeight() const { return m_fItemHeight; }
   float CalcItemHeight();
 
  protected:
-  CFWL_ListItem* GetListItem(CFWL_ListItem* hItem, uint32_t dwKeyCode);
-  void SetSelection(CFWL_ListItem* hStart, CFWL_ListItem* hEnd, bool bSelected);
-  CFWL_ListItem* GetItemAtPoint(const CFX_PointF& point);
-  bool ScrollToVisible(CFWL_ListItem* hItem);
+  CFWL_ListBox(CFWL_App* pApp,
+               const Properties& properties,
+               CFWL_Widget* pOuter);
+
+  Item* GetListItem(Item* hItem, uint32_t dwKeyCode);
+  void SetSelection(Item* hStart, Item* hEnd, bool bSelected);
+  Item* GetItemAtPoint(const CFX_PointF& point);
+  bool ScrollToVisible(Item* hItem);
   void InitVerticalScrollBar();
   void InitHorizontalScrollBar();
   bool IsShowScrollBar(bool bVert);
-  CFWL_ScrollBar* GetVertScrollBar() const { return m_pVertScrollBar.get(); }
+  CFWL_ScrollBar* GetVertScrollBar() const { return m_pVertScrollBar; }
   const CFX_RectF& GetRTClient() const { return m_ClientRect; }
 
  private:
-  void SetSelectionDirect(CFWL_ListItem* hItem, bool bSelect);
+  void SetSelectionDirect(Item* hItem, bool bSelect);
   bool IsMultiSelection() const;
-  bool IsItemSelected(CFWL_ListItem* hItem);
+  bool IsItemSelected(Item* hItem);
   void ClearSelection();
   void SelectAll();
-  CFWL_ListItem* GetFocusedItem();
-  void SetFocusItem(CFWL_ListItem* hItem);
-  void DrawBkground(CXFA_Graphics* pGraphics,
-                    IFWL_ThemeProvider* pTheme,
-                    const CFX_Matrix* pMatrix);
-  void DrawItems(CXFA_Graphics* pGraphics,
-                 IFWL_ThemeProvider* pTheme,
-                 const CFX_Matrix* pMatrix);
-  void DrawItem(CXFA_Graphics* pGraphics,
-                IFWL_ThemeProvider* pTheme,
-                CFWL_ListItem* hItem,
+  Item* GetFocusedItem();
+  void SetFocusItem(Item* hItem);
+  void DrawBkground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawItems(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawItem(CFGAS_GEGraphics* pGraphics,
+                Item* hItem,
                 int32_t Index,
                 const CFX_RectF& rtItem,
                 const CFX_Matrix* pMatrix);
-  void DrawStatic(CXFA_Graphics* pGraphics, IFWL_ThemeProvider* pTheme);
+  void DrawStatic(CFGAS_GEGraphics* pGraphics);
   CFX_SizeF CalcSize(bool bAutoSize);
-  void UpdateItemSize(CFWL_ListItem* hItem,
+  void UpdateItemSize(Item* hItem,
                       CFX_SizeF& size,
                       float fWidth,
                       float fHeight,
@@ -112,7 +122,7 @@ class CFWL_ListBox : public CFWL_Widget {
   void OnLButtonUp(CFWL_MessageMouse* pMsg);
   void OnMouseWheel(CFWL_MessageMouseWheel* pMsg);
   void OnKeyDown(CFWL_MessageKey* pMsg);
-  void OnVK(CFWL_ListItem* hItem, bool bShift, bool bCtrl);
+  void OnVK(Item* hItem, bool bShift, bool bCtrl);
   bool OnScroll(CFWL_ScrollBar* pScrollBar,
                 CFWL_EventScroll::Code dwCode,
                 float fPos);
@@ -120,16 +130,15 @@ class CFWL_ListBox : public CFWL_Widget {
   CFX_RectF m_ClientRect;
   CFX_RectF m_StaticRect;
   CFX_RectF m_ContentRect;
-  std::unique_ptr<CFWL_ScrollBar> m_pHorzScrollBar;
-  std::unique_ptr<CFWL_ScrollBar> m_pVertScrollBar;
+  cppgc::Member<CFWL_ScrollBar> m_pHorzScrollBar;
+  cppgc::Member<CFWL_ScrollBar> m_pVertScrollBar;
   FDE_TextStyle m_TTOStyles;
   FDE_TextAlignment m_iTTOAligns = FDE_TextAlignment::kTopLeft;
   bool m_bLButtonDown = false;
   float m_fItemHeight = 0.0f;
   float m_fScorllBarWidth = 0.0f;
-  CFWL_ListItem* m_hAnchor = nullptr;
-  IFWL_ThemeProvider* m_pScrollBarTP = nullptr;
-  std::vector<std::unique_ptr<CFWL_ListItem>> m_ItemArray;
+  Item* m_hAnchor = nullptr;
+  std::vector<std::unique_ptr<Item>> m_ItemArray;
 };
 
 #endif  // XFA_FWL_CFWL_LISTBOX_H_

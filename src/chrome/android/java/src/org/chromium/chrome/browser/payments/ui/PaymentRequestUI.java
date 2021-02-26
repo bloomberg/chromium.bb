@@ -30,30 +30,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
+import org.chromium.chrome.browser.payments.ui.PaymentUiService.PaymentUisShowStateReconciler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -95,8 +98,11 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     public interface Client {
         /**
          * Asynchronously returns the default payment information.
+         * @param waitForUpdatedDetails Whether the payment details is pending for updating.
+         * @param callback Retrieves the data to show in the initial PaymentRequest UI.
          */
-        void getDefaultPaymentInformation(Callback<PaymentInformation> callback);
+        void getDefaultPaymentInformation(
+                boolean waitForUpdatedDetails, Callback<PaymentInformation> callback);
 
         /**
          * Asynchronously returns the full bill. Includes the total price and its breakdown into
@@ -286,6 +292,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     private final Client mClient;
     private final boolean mShowDataSource;
     private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
+    private final Profile mProfile;
 
     /**
      * The top level container of this UI. When needing to call show() or hide(), use {@link
@@ -352,16 +359,18 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
      * @param securityLevel   The security level of the page that invoked PaymentRequest.
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
+     * @param profile         The current profile that creates the PaymentRequestUI.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean canAddCards,
             boolean showDataSource, String title, String origin, int securityLevel,
             ShippingStrings shippingStrings,
-            PaymentUisShowStateReconciler paymentUisShowStateReconciler) {
+            PaymentUisShowStateReconciler paymentUisShowStateReconciler, Profile profile) {
         mContext = activity;
         mClient = client;
         mShowDataSource = showDataSource;
         mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
+        mProfile = profile;
 
         mReadyToPayNotifierForTest = new NotifierForTest(new Runnable() {
             @Override
@@ -403,12 +412,12 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
-        prepareRequestView(mContext, title, origin, securityLevel, canAddCards);
+        prepareRequestView(mContext, title, origin, securityLevel, canAddCards, profile);
 
-        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
+        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null, profile);
         DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
 
-        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
+        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null, profile);
         DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
@@ -422,35 +431,38 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
     /**
      * Shows the PaymentRequest UI. This will dim the background behind the PaymentRequest UI.
+     * @param waitForUpdatedDetails Whether the payment details is pending to be updated.
      */
-    public void show() {
+    public void show(boolean waitForUpdatedDetails) {
         mDialog.addBottomSheetView(mRequestView);
         mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
-        mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
-            @Override
-            public void onResult(PaymentInformation result) {
-                updateOrderSummarySection(result.getShoppingCart());
+        mClient.getDefaultPaymentInformation(
+                waitForUpdatedDetails, new Callback<PaymentInformation>() {
+                    @Override
+                    public void onResult(PaymentInformation result) {
+                        updateOrderSummarySection(result.getShoppingCart());
 
-                if (mClient.shouldShowShippingSection()) {
-                    updateSection(DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
-                    updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
-                }
+                        if (mClient.shouldShowShippingSection()) {
+                            updateSection(
+                                    DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
+                            updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
+                        }
 
-                if (mClient.shouldShowContactSection()) {
-                    updateSection(DataType.CONTACT_DETAILS, result.getContactDetails());
-                }
+                        if (mClient.shouldShowContactSection()) {
+                            updateSection(DataType.CONTACT_DETAILS, result.getContactDetails());
+                        }
 
-                mPaymentMethodSection.setDisplaySummaryInSingleLineInNormalMode(
-                        result.getPaymentMethods()
-                                .getDisplaySelectedItemSummaryInSingleLineInNormalMode());
-                updateSection(DataType.PAYMENT_METHODS, result.getPaymentMethods());
-                updatePayButtonEnabled();
+                        mPaymentMethodSection.setDisplaySummaryInSingleLineInNormalMode(
+                                result.getPaymentMethods()
+                                        .getDisplaySelectedItemSummaryInSingleLineInNormalMode());
+                        updateSection(DataType.PAYMENT_METHODS, result.getPaymentMethods());
+                        updatePayButtonEnabled();
 
-                // Hide the loading indicators and show the real sections.
-                changeSpinnerVisibility(false);
-                mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
-            }
-        });
+                        // Hide the loading indicators and show the real sections.
+                        changeSpinnerVisibility(false);
+                        mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
+                    }
+                });
     }
 
     /**
@@ -476,9 +488,10 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      * @param origin        The RFC6454 origin of the page.
      * @param securityLevel The security level of the page that invoked PaymentRequest.
      * @param canAddCards   Whether new cards can be added.
+     * @param profile       The current profile to pass PaymentRequestHeader.
      */
-    private void prepareRequestView(
-            Context context, String title, String origin, int securityLevel, boolean canAddCards) {
+    private void prepareRequestView(Context context, String title, String origin, int securityLevel,
+            boolean canAddCards, Profile profile) {
         mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
         assert mSpinnyLayout.getVisibility() == View.VISIBLE;
         mIsShowingSpinner = true;
@@ -488,7 +501,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         messageView.setText(R.string.payments_loading_message);
 
         ((PaymentRequestHeader) mRequestView.findViewById(R.id.header))
-                .setTitleAndOrigin(title, origin, securityLevel);
+                .setTitleAndOrigin(title, origin, securityLevel, profile);
 
         // Set up the buttons.
         mCloseButton = mRequestView.findViewById(R.id.close_button);
@@ -530,8 +543,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
         // Put payment method section on top of address section for
         // WEB_PAYMENTS_METHOD_SECTION_ORDER_V2.
-        boolean methodSectionOrderV2 =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_METHOD_SECTION_ORDER_V2);
+        boolean methodSectionOrderV2 = PaymentFeatureList.isEnabled(
+                PaymentFeatureList.WEB_PAYMENTS_METHOD_SECTION_ORDER_V2);
 
         // Add the necessary sections to the layout.
         mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
@@ -1119,12 +1132,10 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         if (!mShowDataSource) {
             message = mContext.getString(R.string.payments_card_and_address_settings);
         } else {
-            CoreAccountInfo coreAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                            ConsentLevel.SYNC);
-            if (coreAccountInfo != null) {
-                message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                        coreAccountInfo.getEmail());
+            String email = getEmail();
+            if (email != null) {
+                message = mContext.getString(
+                        R.string.payments_card_and_address_settings_signed_in, email);
             } else {
                 message =
                         mContext.getString(R.string.payments_card_and_address_settings_signed_out);
@@ -1147,6 +1158,17 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
                 R.dimen.editor_dialog_section_large_spacing);
         ViewCompat.setPaddingRelative(view, paddingSize, paddingSize, paddingSize, paddingSize);
         parent.addView(view);
+    }
+
+    /** @return The email of signed in user or null. */
+    @Nullable
+    private String getEmail() {
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(mProfile);
+        if (identityManager == null) return null;
+        CoreAccountInfo info = identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
+        if (info == null) return null;
+        return info.getEmail();
     }
 
     private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {
@@ -1436,12 +1458,14 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      * showPaymentRequestDialogWhenNoBottomSheet() and hidePaymentRequestDialog() instead of calling
      * this method directly.
      * @param visible True to show the dialog, false to hide the dialog.
+     * @return Whether setting visibility is successful.
      */
-    public void setVisible(boolean visible) {
+    public boolean setVisible(boolean visible) {
         if (visible) {
-            mDialog.show();
+            return mDialog.show();
         } else {
             mDialog.hide();
+            return true;
         }
     }
 

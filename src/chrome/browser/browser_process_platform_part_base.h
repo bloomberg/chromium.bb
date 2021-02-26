@@ -14,10 +14,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace policy {
-class ChromeBrowserPolicyConnector;
-}
-
 // A base class for platform-specific BrowserProcessPlatformPart
 // implementations. This class itself should never be used verbatim.
 class BrowserProcessPlatformPartBase {
@@ -30,7 +26,10 @@ class BrowserProcessPlatformPartBase {
   virtual void PlatformSpecificCommandLineProcessing(
       const base::CommandLine& command_line);
 
-  // Called from BrowserProcessImpl::StartTearDown().
+  // Called at the very beginning of BrowserProcessImpl::StartTearDown().
+  virtual void BeginStartTearDown();
+
+  // Called in the middle of BrowserProcessImpl::StartTearDown().
   virtual void StartTearDown();
 
   // Called from AttemptExitInternal().
@@ -38,9 +37,6 @@ class BrowserProcessPlatformPartBase {
 
   // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
   virtual void PreMainMessageLoopRun();
-
-  virtual std::unique_ptr<policy::ChromeBrowserPolicyConnector>
-  CreateBrowserPolicyConnector();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);

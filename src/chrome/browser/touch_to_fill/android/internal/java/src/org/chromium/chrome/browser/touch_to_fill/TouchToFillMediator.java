@@ -8,9 +8,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON_OR_FALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_BRANDING_MESSAGE;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.BRANDING_MESSAGE_ID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SINGLE_CREDENTIAL;
@@ -21,16 +18,15 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VI
 import androidx.annotation.Px;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;
@@ -90,11 +86,6 @@ class TouchToFillMediator {
                 sheetItems.add(new ListItem(TouchToFillProperties.ItemType.FILL_BUTTON, model));
             }
         }
-
-        sheetItems.add(new ListItem(TouchToFillProperties.ItemType.FOOTER,
-                new PropertyModel.Builder(TouchToFillProperties.FooterProperties.ALL_KEYS)
-                        .with(BRANDING_MESSAGE_ID, getBrandingMessageId())
-                        .build()));
 
         mModel.set(VISIBLE, true);
     }
@@ -161,29 +152,7 @@ class TouchToFillMediator {
      * @return True if a confirmation button should be shown at the end of the bottom sheet.
      */
     private boolean shouldCreateConfirmationButton(List<Credential> credentials) {
-        return credentials.size() == 1
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
-                        FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false);
-    }
-
-    /**
-     * Returns the id of the branding message to be shown. Returns 0 in case no message should be
-     * displayed.
-     */
-    private int getBrandingMessageId() {
-        int id = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.TOUCH_TO_FILL_ANDROID, FIELD_TRIAL_PARAM_BRANDING_MESSAGE, 0);
-        switch (id) {
-            case 1:
-                return R.string.touch_to_fill_branding_variation_1;
-            case 2:
-                return R.string.touch_to_fill_branding_variation_2;
-            case 3:
-                return R.string.touch_to_fill_branding_variation_3;
-            default:
-                return 0;
-        }
+        return credentials.size() == 1;
     }
 
     private PropertyModel createModel(Credential credential) {

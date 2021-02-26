@@ -106,6 +106,10 @@ void HungPagesTableModel::Reset() {
   widget_observer_.RemoveAll();
   tab_observers_.clear();
   render_widget_host_ = nullptr;
+
+  // Inform the table model observers that we cleared the model.
+  if (observer_)
+    observer_->OnModelChanged();
 }
 
 void HungPagesTableModel::RestartHangMonitorTimeout() {
@@ -277,7 +281,8 @@ HungRendererDialogView::HungRendererDialogView() {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
   auto info_label = std::make_unique<views::Label>(
-      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+      base::string16(), views::style::CONTEXT_DIALOG_BODY_TEXT,
+      views::style::STYLE_SECONDARY);
   info_label->SetMultiLine(true);
   info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
@@ -287,10 +292,6 @@ HungRendererDialogView::HungRendererDialogView() {
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
   hung_pages_table_ = hung_pages_table.get();
 
-  SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END,
-                                       hung_pages_table_model_->RowCount()));
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
@@ -367,8 +368,7 @@ void HungRendererDialogView::ShowForWebContents(
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
     ui::win::SetAppIdForWindow(
-        shell_integration::win::GetChromiumModelIdForProfile(
-            profile->GetPath()),
+        shell_integration::win::GetAppUserModelIdForBrowser(profile->GetPath()),
         views::HWNDForWidget(GetWidget()));
 #endif
 
@@ -425,7 +425,7 @@ void HungRendererDialogView::ForceCrashHungRenderer() {
   content::RenderProcessHost* rph =
       hung_pages_table_model_->GetRenderWidgetHost()->GetProcess();
   if (rph) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // A generic |CrashDumpHungChildProcess()| is not implemented for Linux.
     // Instead we send an explicit IPC to crash on the renderer's IO thread.
     rph->ForceCrash();
@@ -463,8 +463,10 @@ void HungRendererDialogView::UpdateLabels() {
   GetWidget()->UpdateWindowTitle();
   info_label_->SetText(l10n_util::GetPluralStringFUTF16(
       IDS_BROWSER_HANGMONITOR_RENDERER, hung_pages_table_model_->RowCount()));
-  // Update the "Exit" button.
-  DialogModelChanged();
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END,
+                                       hung_pages_table_model_->RowCount()));
 }
 
 void HungRendererDialogView::CloseDialogWithNoAction() {

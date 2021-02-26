@@ -1,9 +1,11 @@
-AXGroup AXDescription='PDF document containing 1 page'
+AXGroup
 ++AXGroup AXDescription='PDF document containing 1 page'
 ++++AXGroup AXDescription='Page 1'
 ++++++AXGroup
 ++++++++AXButton AXDescription='Hello'
 ++++++++++AXStaticText AXValue='Hello'
+++++++++++AXGroup
+++++++++++++AXStaticText AXValue='Text Note'
 ++++++++AXStaticText AXValue=', nice '
 ++++++++AXButton AXDescription='meeting'
 ++++++++++AXStaticText AXValue='meeting'

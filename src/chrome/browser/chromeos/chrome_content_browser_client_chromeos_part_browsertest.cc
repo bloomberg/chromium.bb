@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -12,8 +11,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 using ChromeContentBrowserClientChromeOsPartTest = InProcessBrowserTest;
 
@@ -24,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
-  const content::WebPreferences kDefaultPrefs;
+  const blink::web_pref::WebPreferences kDefaultPrefs;
   const int kDefaultFontSize = kDefaultPrefs.default_font_size;
   const int kDefaultFixedFontSize = kDefaultPrefs.default_fixed_font_size;
 
@@ -43,8 +42,8 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
   // The OS settings window still uses the default font sizes.
   Browser* browser = settings->FindBrowserForProfile(profile);
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  content::WebPreferences window_prefs =
-      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+  blink::web_pref::WebPreferences window_prefs =
+      web_contents->GetOrCreateWebPreferences();
   EXPECT_EQ(kDefaultFontSize, window_prefs.default_font_size);
   EXPECT_EQ(kDefaultFixedFontSize, window_prefs.default_fixed_font_size);
 }

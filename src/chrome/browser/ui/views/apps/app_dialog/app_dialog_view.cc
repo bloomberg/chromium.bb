@@ -12,36 +12,17 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-AppDialogView::AppDialogView(const std::string& app_name,
-                             const gfx::ImageSkia& image)
-    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
-      app_name_(app_name),
-      image_(image) {}
+AppDialogView::AppDialogView(const gfx::ImageSkia& image)
+    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE) {
+  SetIcon(image);
+  SetShowIcon(true);
+  SetShowCloseButton(false);
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+}
 
 AppDialogView::~AppDialogView() = default;
-
-gfx::Size AppDialogView::CalculatePreferredSize() const {
-  const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
-                                DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                            margins().width();
-  return gfx::Size(default_width, GetHeightForWidth(default_width));
-}
-
-ui::ModalType AppDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
-
-gfx::ImageSkia AppDialogView::GetWindowIcon() {
-  return image_;
-}
-
-bool AppDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-bool AppDialogView::ShouldShowWindowIcon() const {
-  return true;
-}
 
 void AppDialogView::InitializeView(const base::string16& heading_text) {
   SetButtons(ui::DIALOG_BUTTON_OK);
@@ -50,8 +31,13 @@ void AppDialogView::InitializeView(const base::string16& heading_text) {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  auto* label = AddChildView(std::make_unique<views::Label>(heading_text));
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetAllowCharacterBreak(true);
+  label_ = AddChildView(std::make_unique<views::Label>(heading_text));
+  label_->SetMultiLine(true);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_->SetAllowCharacterBreak(true);
+}
+
+void AppDialogView::SetLabelText(const base::string16& text) {
+  DCHECK(label_);
+  label_->SetText(text);
 }

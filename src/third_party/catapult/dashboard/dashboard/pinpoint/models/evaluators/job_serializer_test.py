@@ -42,6 +42,7 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
         {
             'arguments': mock.ANY,
             'bug_id': None,
+            'project': 'chromium',
             'cancel_reason': None,
             'comparison_mode': 'performance',
             'configuration': mock.ANY,
@@ -52,6 +53,7 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
             'name': mock.ANY,
             'quests': ['Build', 'Test'],
             'results_url': mock.ANY,
+            'started_time': mock.ANY,
             'state': [mock.ANY, mock.ANY],
             'status': 'Queued',
             'updated': mock.ANY,
@@ -87,6 +89,8 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
                 mock.ANY,
             'bug_id':
                 None,
+            'project':
+                'chromium',
             'cancel_reason':
                 None,
             'comparison_mode':
@@ -107,6 +111,8 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
                 mock.ANY,
             'quests': ['Build', 'Test', 'Get results'],
             'results_url':
+                mock.ANY,
+            'started_time':
                 mock.ANY,
             'status':
                 mock.ANY,

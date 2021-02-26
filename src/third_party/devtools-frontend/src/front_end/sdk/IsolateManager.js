@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 
 import {HeapProfilerModel} from './HeapProfilerModel.js';  // eslint-disable-line no-unused-vars
 import {RuntimeModel} from './RuntimeModel.js';
 import {SDKModelObserver, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!IsolateManager} */
+let isolateManagerInstance;
+
 /**
- * @implements {SDKModelObserver}
+ * @implements {SDKModelObserver<!RuntimeModel>}
  */
 export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
-    console.assert(!self.SDK.isolateManager, 'Use self.SDK.isolateManager singleton.');
     /** @type {!Map<string, !Isolate>} */
     this._isolates = new Map();
     // _isolateIdByModel contains null while the isolateId is being retrieved.
@@ -27,6 +26,17 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
     this._observers = new Set();
     TargetManager.instance().observeModels(RuntimeModel, this);
     this._pollId = 0;
+  }
+
+  /**
+   * @param {{forceNew: boolean}} opts
+   */
+  static instance({forceNew} = {forceNew: false}) {
+    if (!isolateManagerInstance || forceNew) {
+      isolateManagerInstance = new IsolateManager();
+    }
+
+    return isolateManagerInstance;
   }
 
   /**
@@ -106,6 +116,9 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     const isolate = this._isolates.get(isolateId);
+    if (!isolate) {
+      return;
+    }
     isolate._models.delete(model);
     if (isolate._models.size) {
       for (const observer of this._observers) {
@@ -128,7 +141,7 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @return {!IteratorIterable<!Isolate>}
+   * @return {!Iterable<!Isolate>}
    */
   isolates() {
     return this._isolates.values();
@@ -223,7 +236,7 @@ export class Isolate {
     }
     this._usedHeapSize = usage.usedSize;
     this._memoryTrend.add(this._usedHeapSize);
-    self.SDK.isolateManager.dispatchEventToListeners(Events.MemoryChanged, this);
+    IsolateManager.instance().dispatchEventToListeners(Events.MemoryChanged, this);
   }
 
   /**
@@ -251,7 +264,8 @@ export class Isolate {
    * @return {boolean}
    */
   isMainThread() {
-    return this.runtimeModel().target().id() === 'main';
+    const model = this.runtimeModel();
+    return model ? model.target().id() === 'main' : false;
   }
 
 }
@@ -265,15 +279,29 @@ export class MemoryTrend {
    */
   constructor(maxCount) {
     this._maxCount = maxCount | 0;
+    /** @type {number} */
+    this._base;
+    /** @type {number} */
+    this._index;
+    /** @type {!Array<number>} */
+    this._x;
+    /** @type {!Array<number>} */
+    this._y;
+    /** @type {number} */
+    this._sx;
+    /** @type {number} */
+    this._sy;
+    /** @type {number} */
+    this._sxx;
+    /** @type {number} */
+    this._sxy;
     this.reset();
   }
 
   reset() {
     this._base = Date.now();
     this._index = 0;
-    /** @type {!Array<number>} */
     this._x = [];
-    /** @type {!Array<number>} */
     this._y = [];
     this._sx = 0;
     this._sy = 0;

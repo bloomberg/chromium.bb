@@ -134,8 +134,7 @@ base::string16 GetValue(const AXNode* node, bool show_password) {
 bool HasOnlyTextAndImageChildren(const AXNode* node) {
   for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
     AXNode* child = node->GetUnignoredChildAtIndex(i);
-    if (child->data().role != ax::mojom::Role::kStaticText &&
-        child->data().role != ax::mojom::Role::kImage) {
+    if (!child->IsText() && !ui::IsImage(child->data().role)) {
       return false;
     }
   }
@@ -430,7 +429,6 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
     case ax::mojom::Role::kInputTime:
       return kAXSpinnerClassname;
     case ax::mojom::Role::kButton:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kPdfActionableHighlight:
       return kAXButtonClassname;
     case ax::mojom::Role::kCheckBox:

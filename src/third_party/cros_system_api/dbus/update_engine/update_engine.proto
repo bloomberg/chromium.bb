@@ -35,7 +35,7 @@ enum Operation {
 // |GetUpdateStatusAdvanced| DBus method or |StatusUpdateAdvanced| signal.
 //
 // NOTE: Keep this updated with:
-// update_engine/cient_library/include/update_engine/update_status.h
+// update_engine/client_library/include/update_engine/update_status.h
 message StatusResult {
   // When the update_engine last checked for updates (time_t: seconds from Unix
   // epoch).
@@ -62,4 +62,8 @@ message StatusResult {
 
   // The end-of-life date of the device in the number of days since Unix Epoch.
   int64 eol_date = 8;
+
+  // If true, the system will powerwash once the update is applied and the
+  // system is rebooted. This value is reliable on |UPDATE_NEED_REBOOT|.
+  bool will_powerwash_after_reboot = 9;
 }

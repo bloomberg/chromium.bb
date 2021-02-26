@@ -11,11 +11,8 @@ flutter_defines = [
   # Remove software rasterizers to save some code size.
   "SK_DISABLE_AAA",
 
-  # Flutter doesn't deserialize anything.
-  "SK_DISABLE_READBUFFER",
-  "SK_DISABLE_EFFECT_DESERIALIZATION",
-
   # Staging
+  "SK_SUPPORT_LEGACY_MATRIX_FACTORIES",
 
   # Fast low-precision software rendering isn't a priority for Flutter.
   "SK_DISABLE_LEGACY_SHADERCONTEXT",
@@ -24,5 +21,8 @@ flutter_defines = [
 ]
 
 if (!is_fuchsia) {
-  flutter_defines += [ "SK_GL" ]
+  flutter_defines += [
+    "SK_GL",
+    "SK_DISABLE_EFFECT_DESERIALIZATION",
+  ]
 }

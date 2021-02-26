@@ -9,6 +9,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_service.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 
@@ -35,6 +38,9 @@ CredentialProviderServiceFactory::CredentialProviderServiceFactory()
           "CredentialProviderService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
+  DependsOn(AuthenticationServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 CredentialProviderServiceFactory::~CredentialProviderServiceFactory() = default;
@@ -47,9 +53,17 @@ CredentialProviderServiceFactory::BuildServiceInstanceFor(
   scoped_refptr<password_manager::PasswordStore> password_store =
       IOSChromePasswordStoreFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);
+  AuthenticationService* authentication_service =
+      AuthenticationServiceFactory::GetForBrowserState(browser_state);
   ArchivableCredentialStore* credential_store =
       [[ArchivableCredentialStore alloc]
           initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
-  return std::make_unique<CredentialProviderService>(password_store,
-                                                     credential_store);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+
+  return std::make_unique<CredentialProviderService>(
+      password_store, authentication_service, credential_store,
+      identity_manager, sync_service);
 }

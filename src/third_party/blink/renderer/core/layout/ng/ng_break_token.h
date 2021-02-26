@@ -78,6 +78,8 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         flags_(0),
         is_break_before_(false),
         is_forced_break_(false),
+        is_caused_by_column_spanner_(false),
+        is_at_block_end_(false),
         break_appeal_(kBreakAppealPerfect),
         has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
@@ -95,7 +97,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // The following bitfields are only to be used by NGInlineBreakToken (it's
   // defined here to save memory, since that class has no bitfields).
 
-  unsigned flags_ : 2;  // NGInlineBreakTokenFlags
+  unsigned flags_ : 3;  // NGInlineBreakTokenFlags
 
   // The following bitfields are only to be used by NGBlockBreakToken (it's
   // defined here to save memory, since that class has no bitfields).
@@ -103,6 +105,13 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   unsigned is_break_before_ : 1;
 
   unsigned is_forced_break_ : 1;
+
+  unsigned is_caused_by_column_spanner_ : 1;
+
+  // Set when layout is past the block-end border edge. If we break when we're
+  // in this state, it means that something is overflowing, and thus establishes
+  // a parallel flow.
+  unsigned is_at_block_end_ : 1;
 
   // If the break is unforced, this is the appeal of the break. Higher is
   // better. Violating breaking rules decreases appeal. Forced breaks always

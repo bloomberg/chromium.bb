@@ -21,10 +21,6 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_session.h"
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 
 struct CdmConfig;
@@ -44,7 +40,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // via |result|.
   void CreateCdm(CdmFactory* cdm_factory,
                  const std::string& key_system,
-                 const url::Origin& security_origin,
                  const CdmConfig& cdm_config,
                  WebCdmCreatedCB web_cdm_created_cb);
 
@@ -60,7 +55,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Creates a new session and adds it to the internal map. RemoveSession()
   // must be called when destroying it, if RegisterSession() was called.
-  std::unique_ptr<WebContentDecryptionModuleSessionImpl> CreateSession();
+  std::unique_ptr<WebContentDecryptionModuleSessionImpl> CreateSession(
+      blink::WebEncryptedMediaSessionType session_type);
 
   // Adds a session to the internal map. Called once the session is successfully
   // initialized. Returns true if the session was registered, false if there is

@@ -4,10 +4,14 @@
 
 #include "ui/base/resource/resource_bundle_android.h"
 
+#include <utility>
+
 #include "base/android/apk_assets.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
@@ -56,11 +60,10 @@ bool LoadFromApkOrFile(const char* apk_path,
 int LoadLocalePakFromApk(const std::string& app_locale,
                          bool in_split,
                          base::MemoryMappedFile::Region* out_region) {
+  bool log_error = true;
   std::string locale_path_within_apk =
-      GetPathForAndroidLocalePakWithinApk(app_locale, in_split);
+      GetPathForAndroidLocalePakWithinApk(app_locale, in_split, log_error);
   if (locale_path_within_apk.empty()) {
-    LOG(WARNING) << "locale_path_within_apk.empty() for locale "
-                 << app_locale;
     return -1;
   }
   return base::android::OpenApkAsset(locale_path_within_apk, out_region);
@@ -95,16 +98,20 @@ void ResourceBundle::LoadCommonResources() {
 
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  if (g_locale_paks_in_apk) {
-    return !GetPathForAndroidLocalePakWithinApk(locale, false).empty();
+  bool log_error = false;
+  bool in_split = !g_locale_paks_in_apk;
+  if (!in_split) {
+    return !GetPathForAndroidLocalePakWithinApk(locale, in_split, log_error)
+                .empty();
   }
-  if (!GetPathForAndroidLocalePakWithinApk(locale, true).empty())
+  if (!GetPathForAndroidLocalePakWithinApk(locale, in_split, log_error).empty())
     return true;
-  return !GetLocaleFilePath(locale).empty();
+  const auto path = GetLocaleFilePath(locale);
+  return !path.empty() && base::PathExists(path);
 }
 
-std::string ResourceBundle::LoadLocaleResources(
-    const std::string& pref_locale) {
+std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale,
+                                                bool crash_on_failure) {
   DCHECK(!locale_resources_data_.get() &&
          !secondary_locale_resources_data_.get())
              << "locale.pak already loaded";
@@ -166,8 +173,11 @@ std::string ResourceBundle::LoadLocaleResources(
     }
     if (g_locale_pack_fd < 0) {
       // Otherwise, try to locate the extracted locale .pak file.
-      if (locale_file_path.empty())
-        locale_file_path = GetLocaleFilePath(app_locale);
+      if (locale_file_path.empty()) {
+        auto path = GetLocaleFilePath(app_locale);
+        if (base::PathExists(path))
+          locale_file_path = std::move(path);
+      }
 
       if (locale_file_path.empty()) {
         // It's possible that there is no locale.pak.
@@ -228,9 +238,10 @@ void LoadMainAndroidPackFile(const char* path_within_apk,
   }
 }
 
-void LoadPackFileFromApk(const std::string& path) {
+void LoadPackFileFromApk(const std::string& path,
+                         const std::string& split_name) {
   base::MemoryMappedFile::Region region;
-  int fd = base::android::OpenApkAsset(path, &region);
+  int fd = base::android::OpenApkAsset(path, split_name, &region);
   CHECK_GE(fd, 0) << "Could not find " << path << " in APK.";
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
       base::File(fd), region, ui::SCALE_FACTOR_NONE);
@@ -260,11 +271,13 @@ int GetSecondaryLocalePackFd(base::MemoryMappedFile::Region* out_region) {
 }
 
 std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale,
-                                                bool in_bundle) {
+                                                bool in_bundle,
+                                                bool log_error) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> ret =
       Java_ResourceBundle_getLocalePakResourcePath(
-          env, base::android::ConvertUTF8ToJavaString(env, locale), in_bundle);
+          env, base::android::ConvertUTF8ToJavaString(env, locale), in_bundle,
+          log_error);
   if (ret.obj() == nullptr) {
     return std::string();
   }

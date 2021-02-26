@@ -6,6 +6,8 @@
 module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
+[EnableIf=is_win]
+import "gpu/ipc/common/luid.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -26,6 +28,8 @@ struct GpuDevice {
   string driver_vendor;
   string driver_version;
   int32 cuda_compute_capability_major;
+  [EnableIf=is_win]
+  Luid luid;
 };
 
 // gpu::VideoCodecProfile
@@ -116,15 +120,6 @@ enum OverlaySupport {
   SOFTWARE,
 };
 
-// gpu::Dx12VulkanVersionInfo
-[EnableIf=is_win]
-struct Dx12VulkanVersionInfo {
-  bool supports_dx12;
-  bool supports_vulkan;
-  uint32 d3d12_feature_level;
-  uint32 vulkan_version;
-};
-
 // gpu::OverlayInfo
 [EnableIf=is_win]
 struct OverlayInfo {
@@ -132,6 +127,8 @@ struct OverlayInfo {
   bool supports_overlays;
   OverlaySupport yuy2_overlay_support;
   OverlaySupport nv12_overlay_support;
+  OverlaySupport bgra8_overlay_support;
+  OverlaySupport rgb10a2_overlay_support;
 };
 
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
@@ -167,7 +164,9 @@ struct GpuInfo {
   [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
   [EnableIf=is_win]
-  Dx12VulkanVersionInfo dx12_vulkan_version_info;
+  uint32 d3d12_feature_level;
+  [EnableIf=is_win]
+  uint32 vulkan_version;
   [EnableIf=is_win]
   OverlayInfo overlay_info;
 

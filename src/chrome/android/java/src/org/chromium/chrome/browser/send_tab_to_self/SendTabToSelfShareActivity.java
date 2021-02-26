@@ -4,69 +4,71 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
-import android.content.Context;
-
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
-import org.chromium.chrome.browser.share.ShareActivity;
+import org.chromium.chrome.browser.ChromeAccessorActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
+import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfCoordinator;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
  */
-public class SendTabToSelfShareActivity extends ShareActivity {
-    private static BottomSheetContent sBottomSheetContentForTesting;
+public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
+    private static BottomSheetController sBottomSheetControllerForTesting;
+    private static AndroidSyncSettings sAndroidSyncSettings;
 
     @Override
-    protected void handleShareAction(ChromeActivity triggeringActivity) {
+    public void handleAction(ChromeActivity triggeringActivity) {
         Tab tab = triggeringActivity.getActivityTabProvider().get();
         if (tab == null) return;
         NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
-        actionHandler(triggeringActivity, entry, triggeringActivity.getBottomSheetController(),
-                tab.getWebContents());
-    }
-
-    public static void actionHandler(Context context, NavigationEntry entry,
-            BottomSheetController controller, WebContents webContents) {
-        if (entry == null || controller == null) {
+        if (entry == null) return;
+        BottomSheetController controller =
+                getBottomSheetController(triggeringActivity.getWindowAndroid());
+        if (controller == null) {
             return;
         }
 
-        SendTabToSelfShareClickResult.recordClickResult(
-                SendTabToSelfShareClickResult.ClickType.SHOW_DEVICE_LIST);
+        boolean isSyncEnabled = getAndroidSyncSettings().isSyncEnabled();
         controller.requestShowContent(
-                createBottomSheetContent(context, entry, controller, webContents), true);
+                SendTabToSelfCoordinator.createBottomSheetContent(triggeringActivity,
+                        entry.getUrl(), entry.getTitle(), entry.getTimestamp(), controller,
+                        new SettingsLauncherImpl(), isSyncEnabled),
+                true);
         // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
         // automatically show since PeekStateEnabled is set to false.
         controller.expandSheet();
     }
 
-    static BottomSheetContent createBottomSheetContent(Context context, NavigationEntry entry,
-            BottomSheetController controller, WebContents webContents) {
-        if (sBottomSheetContentForTesting != null) {
-            return sBottomSheetContentForTesting;
-        }
-        return new DevicePickerBottomSheetContent(context, entry, controller, webContents);
+    public static boolean featureIsAvailable(Tab currentTab) {
+        return SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
     }
 
-    public static boolean featureIsAvailable(Tab currentTab) {
-        boolean shouldShow =
-                SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
-        if (shouldShow) {
-            SendTabToSelfShareClickResult.recordClickResult(
-                    SendTabToSelfShareClickResult.ClickType.SHOW_ITEM);
-        }
-        return shouldShow;
+    private BottomSheetController getBottomSheetController(WindowAndroid window) {
+        if (sBottomSheetControllerForTesting != null) return sBottomSheetControllerForTesting;
+        return BottomSheetControllerProvider.from(window);
+    }
+
+    private AndroidSyncSettings getAndroidSyncSettings() {
+        if (sAndroidSyncSettings != null) return sAndroidSyncSettings;
+        return AndroidSyncSettings.get();
     }
 
     @VisibleForTesting
-    public static void setBottomSheetContentForTesting(BottomSheetContent bottomSheetContent) {
-        sBottomSheetContentForTesting = bottomSheetContent;
+    public static void setBottomSheetControllerForTesting(BottomSheetController controller) {
+        sBottomSheetControllerForTesting = controller;
+    }
+
+    @VisibleForTesting
+    public static void setAndroidSyncSettingsForTesting(AndroidSyncSettings syncSettings) {
+        sAndroidSyncSettings = syncSettings;
     }
 }

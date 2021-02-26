@@ -9,29 +9,28 @@
 
 #include <memory>
 
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/prefinalizer.h"
 #include "xfa/fwl/ifwl_themeprovider.h"
-#include "xfa/fwl/theme/cfwl_barcodetp.h"
-#include "xfa/fwl/theme/cfwl_carettp.h"
-#include "xfa/fwl/theme/cfwl_checkboxtp.h"
-#include "xfa/fwl/theme/cfwl_comboboxtp.h"
-#include "xfa/fwl/theme/cfwl_datetimepickertp.h"
-#include "xfa/fwl/theme/cfwl_edittp.h"
-#include "xfa/fwl/theme/cfwl_listboxtp.h"
-#include "xfa/fwl/theme/cfwl_monthcalendartp.h"
-#include "xfa/fwl/theme/cfwl_pictureboxtp.h"
-#include "xfa/fwl/theme/cfwl_pushbuttontp.h"
-#include "xfa/fwl/theme/cfwl_scrollbartp.h"
-#include "xfa/fwl/theme/cfwl_widgettp.h"
-#include "xfa/fxfa/cxfa_ffapp.h"
 
-class CXFA_FWLTheme final : public IFWL_ThemeProvider {
+class CFDE_TextOut;
+class CXFA_FFApp;
+class CXFA_FFDoc;
+
+class CXFA_FWLTheme final : public cppgc::GarbageCollected<CXFA_FWLTheme>,
+                            public IFWL_ThemeProvider {
+  CPPGC_USING_PRE_FINALIZER(CXFA_FWLTheme, PreFinalize);
+
  public:
-  explicit CXFA_FWLTheme(CXFA_FFApp* pApp);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FWLTheme() override;
 
-  bool LoadCalendarFont(CXFA_FFDoc* doc);
+  void PreFinalize();
 
   // IFWL_ThemeProvider:
+  void Trace(cppgc::Visitor* visitor) const override;
   void DrawBackground(const CFWL_ThemeBackground& pParams) override;
   void DrawText(const CFWL_ThemeText& pParams) override;
   void CalcTextRect(const CFWL_ThemeText& pParams, CFX_RectF* pRect) override;
@@ -46,24 +45,15 @@ class CXFA_FWLTheme final : public IFWL_ThemeProvider {
   FX_COLORREF GetTextColor(const CFWL_ThemePart& pThemePart) const override;
   CFX_SizeF GetSpaceAboveBelow(const CFWL_ThemePart& pThemePart) const override;
 
- private:
-  CFWL_WidgetTP* GetTheme(CFWL_Widget* pWidget) const;
+  bool LoadCalendarFont(CXFA_FFDoc* doc);
 
-  std::unique_ptr<CFWL_CheckBoxTP> m_pCheckBoxTP;
-  std::unique_ptr<CFWL_ListBoxTP> m_pListBoxTP;
-  std::unique_ptr<CFWL_PictureBoxTP> m_pPictureBoxTP;
-  std::unique_ptr<CFWL_ScrollBarTP> m_pSrollBarTP;
-  std::unique_ptr<CFWL_EditTP> m_pEditTP;
-  std::unique_ptr<CFWL_ComboBoxTP> m_pComboBoxTP;
-  std::unique_ptr<CFWL_MonthCalendarTP> m_pMonthCalendarTP;
-  std::unique_ptr<CFWL_DateTimePickerTP> m_pDateTimePickerTP;
-  std::unique_ptr<CFWL_PushButtonTP> m_pPushButtonTP;
-  std::unique_ptr<CFWL_CaretTP> m_pCaretTP;
-  std::unique_ptr<CFWL_BarcodeTP> m_pBarcodeTP;
+ private:
+  CXFA_FWLTheme(cppgc::Heap* pHeap, CXFA_FFApp* pApp);
+
   std::unique_ptr<CFDE_TextOut> m_pTextOut;
   RetainPtr<CFGAS_GEFont> m_pCalendarFont;
+  cppgc::Member<CXFA_FFApp> const m_pApp;
   WideString m_wsResource;
-  UnownedPtr<CXFA_FFApp> const m_pApp;
   CFX_RectF m_Rect;
 };
 

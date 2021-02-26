@@ -28,6 +28,10 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/svg/pattern_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_preserve_aspect_ratio.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_rect.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_transform_list.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -83,7 +87,7 @@ SVGPatternElement::SVGPatternElement(Document& document)
   AddToPropertyMap(pattern_content_units_);
 }
 
-void SVGPatternElement::Trace(Visitor* visitor) {
+void SVGPatternElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -111,8 +115,12 @@ void SVGPatternElement::BuildPendingResource() {
     resource_->AddClient(EnsureSVGResourceClient());
 
   InvalidatePattern(layout_invalidation_reason::kSvgResourceInvalidated);
-  if (auto* layout_object = GetLayoutObject())
-    SVGResourcesCache::ResourceReferenceChanged(*layout_object);
+  if (auto* layout_object = GetLayoutObject()) {
+    if (!layout_object->Parent())
+      return;
+    SVGResourcesCache::UpdateResources(*layout_object);
+    InvalidateDependentPatterns();
+  }
 }
 
 void SVGPatternElement::ClearResourceReferences() {
@@ -192,8 +200,17 @@ void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
 
 void SVGPatternElement::InvalidatePattern(
     LayoutInvalidationReasonForTracing reason) {
-  if (auto* layout_object = ToLayoutSVGResourceContainer(GetLayoutObject()))
+  if (auto* layout_object = To<LayoutSVGResourceContainer>(GetLayoutObject()))
     layout_object->InvalidateCacheAndMarkForLayout(reason);
+}
+
+void SVGPatternElement::InvalidateDependentPatterns() {
+  NotifyIncomingReferences([](SVGElement& element) {
+    if (auto* pattern = DynamicTo<SVGPatternElement>(element)) {
+      pattern->InvalidatePattern(
+          layout_invalidation_reason::kSvgResourceInvalidated);
+    }
+  });
 }
 
 LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&,
@@ -215,7 +232,7 @@ static void SetPatternAttributes(const SVGPatternElement& element,
   if (!attributes.HasHeight() && element.height()->IsSpecified())
     attributes.SetHeight(element.height()->CurrentValue());
 
-  if (!attributes.HasViewBox() && element.HasValidViewBox())
+  if (!attributes.HasViewBox() && element.viewBox()->CurrentValue()->IsValid())
     attributes.SetViewBox(element.viewBox()->CurrentValue()->Value());
 
   if (!attributes.HasPreserveAspectRatio() &&
@@ -225,14 +242,13 @@ static void SetPatternAttributes(const SVGPatternElement& element,
   }
 
   if (!attributes.HasPatternUnits() && element.patternUnits()->IsSpecified()) {
-    attributes.SetPatternUnits(
-        element.patternUnits()->CurrentValue()->EnumValue());
+    attributes.SetPatternUnits(element.patternUnits()->CurrentEnumValue());
   }
 
   if (!attributes.HasPatternContentUnits() &&
       element.patternContentUnits()->IsSpecified()) {
     attributes.SetPatternContentUnits(
-        element.patternContentUnits()->CurrentValue()->EnumValue());
+        element.patternContentUnits()->CurrentEnumValue());
   }
 
   if (!attributes.HasPatternTransform() &&

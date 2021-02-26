@@ -10,7 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -260,15 +260,15 @@ void CreateMetadataTask::InitializeMetadataProto() {
 
     for (const auto& purpose : icon.purpose) {
       switch (purpose) {
-        case blink::Manifest::ImageResource::Purpose::ANY:
+        case blink::mojom::ManifestImageResource_Purpose::ANY:
           image_resource_proto->add_purpose(
               proto::BackgroundFetchOptions_ImageResource_Purpose_ANY);
           break;
-        case blink::Manifest::ImageResource::Purpose::BADGE:
+        case blink::mojom::ManifestImageResource_Purpose::MONOCHROME:
           image_resource_proto->add_purpose(
-              proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE);
+              proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME);
           break;
-        case blink::Manifest::ImageResource::Purpose::MASKABLE:
+        case blink::mojom::ManifestImageResource_Purpose::MASKABLE:
           image_resource_proto->add_purpose(
               proto::BackgroundFetchOptions_ImageResource_Purpose_MASKABLE);
           break;
@@ -344,7 +344,7 @@ void CreateMetadataTask::StoreMetadata() {
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
-      registration_id_.origin().GetURL(), entries,
+      registration_id_.origin(), entries,
       base::BindOnce(&CreateMetadataTask::DidStoreMetadata,
                      weak_factory_.GetWeakPtr()));
 }

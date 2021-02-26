@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "components/omnibox/browser/keyword_extensions_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -53,13 +53,14 @@ class ScopedEndExtensionKeywordMode {
  public:
   explicit ScopedEndExtensionKeywordMode(KeywordExtensionsDelegate* delegate);
   ~ScopedEndExtensionKeywordMode();
+  ScopedEndExtensionKeywordMode(const ScopedEndExtensionKeywordMode&) = delete;
+  ScopedEndExtensionKeywordMode& operator=(
+      const ScopedEndExtensionKeywordMode&) = delete;
 
   void StayInKeywordMode();
 
  private:
   KeywordExtensionsDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEndExtensionKeywordMode);
 };
 
 ScopedEndExtensionKeywordMode::ScopedEndExtensionKeywordMode(
@@ -251,7 +252,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       extensions_delegate_->IncrementInputId();
   }
 
-  if (input.from_omnibox_focus())
+  if (input.focus_type() != OmniboxFocusType::DEFAULT)
     return;
 
   GetTemplateURLService();
@@ -283,12 +284,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // relevances and we can just recreate the results synchronously anyway, we
   // don't bother.
   TemplateURLService::TURLsAndMeaningfulLengths matches;
-  model_->AddMatchingKeywords(
-      keyword, !remaining_input.empty(), &matches);
-  if (!OmniboxFieldTrial::KeywordRequiresPrefixMatch()) {
-    model_->AddMatchingDomainKeywords(
-        keyword, !remaining_input.empty(), &matches);
-  }
+  model_->AddMatchingKeywords(keyword, !remaining_input.empty(), &matches);
 
   for (auto i(matches.begin()); i != matches.end();) {
     const TemplateURL* template_url = i->first;
@@ -572,7 +568,14 @@ base::string16 KeywordProvider::CleanUserInputKeyword(
   }
 
   // Remove leading "www.", if any, and again try to find a matching keyword.
-  result = url_formatter::StripWWW(result);
+  // The 'www.' stripping is done directly here instead of calling
+  // url_formatter::StripWWW because we're not assuming that the keyword is a
+  // hostname.
+  const base::string16 kWww(base::ASCIIToUTF16("www."));
+  constexpr size_t kWwwLength = 4;
+  result = base::StartsWith(result, kWww, base::CompareCase::SENSITIVE)
+               ? result.substr(kWwwLength)
+               : result;
   if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
     return result;
 

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 
 namespace blink {
 
@@ -30,8 +30,7 @@ void MediaStreamVideoSink::ConnectEncodedToTrack(
     const EncodedVideoFrameCB& callback) {
   DCHECK(connected_encoded_track_.IsNull());
   connected_encoded_track_ = track;
-  MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(track);
+  MediaStreamVideoTrack* const video_track = MediaStreamVideoTrack::From(track);
   DCHECK(video_track);
   video_track->AddEncodedSink(this, callback);
 }
@@ -43,7 +42,7 @@ void MediaStreamVideoSink::DisconnectFromTrack() {
 
 void MediaStreamVideoSink::DisconnectEncodedFromTrack() {
   MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(connected_encoded_track_);
+      MediaStreamVideoTrack::From(connected_encoded_track_);
   if (video_track) {
     video_track->RemoveEncodedSink(this);
   }
@@ -55,9 +54,12 @@ void MediaStreamVideoSink::OnFrameDropped(
   if (connected_track_.IsNull())
     return;
 
-  if (auto* const video_track =
-          MediaStreamVideoTrack::GetVideoTrack(connected_track_))
+  if (auto* const video_track = MediaStreamVideoTrack::From(connected_track_))
     video_track->OnFrameDropped(reason);
+}
+
+double MediaStreamVideoSink::GetRequiredMinFramesPerSec() const {
+  return 0;
 }
 
 }  // namespace blink

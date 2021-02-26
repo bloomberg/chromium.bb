@@ -154,6 +154,9 @@ typedef struct VkLayerInstanceDispatchTable_ {
     PFN_vkGetDisplayModeProperties2KHR GetDisplayModeProperties2KHR;
     PFN_vkGetDisplayPlaneCapabilities2KHR GetDisplayPlaneCapabilities2KHR;
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR GetPhysicalDeviceFragmentShadingRatesKHR;
+
     // ---- VK_EXT_debug_report extension commands
     PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
     PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
@@ -233,6 +236,14 @@ typedef struct VkLayerInstanceDispatchTable_ {
 
     // ---- VK_EXT_headless_surface extension commands
     PFN_vkCreateHeadlessSurfaceEXT CreateHeadlessSurfaceEXT;
+
+    // ---- VK_EXT_directfb_surface extension commands
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    PFN_vkCreateDirectFBSurfaceEXT CreateDirectFBSurfaceEXT;
+#endif // VK_USE_PLATFORM_DIRECTFB_EXT
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT GetPhysicalDeviceDirectFBPresentationSupportEXT;
+#endif // VK_USE_PLATFORM_DIRECTFB_EXT
 } VkLayerInstanceDispatchTable;
 
 // Device function pointer dispatch table
@@ -498,6 +509,9 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkWaitSemaphoresKHR WaitSemaphoresKHR;
     PFN_vkSignalSemaphoreKHR SignalSemaphoreKHR;
 
+    // ---- VK_KHR_fragment_shading_rate extension commands
+    PFN_vkCmdSetFragmentShadingRateKHR CmdSetFragmentShadingRateKHR;
+
     // ---- VK_KHR_buffer_device_address extension commands
     PFN_vkGetBufferDeviceAddressKHR GetBufferDeviceAddressKHR;
     PFN_vkGetBufferOpaqueCaptureAddressKHR GetBufferOpaqueCaptureAddressKHR;
@@ -524,6 +538,14 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkGetPipelineExecutablePropertiesKHR GetPipelineExecutablePropertiesKHR;
     PFN_vkGetPipelineExecutableStatisticsKHR GetPipelineExecutableStatisticsKHR;
     PFN_vkGetPipelineExecutableInternalRepresentationsKHR GetPipelineExecutableInternalRepresentationsKHR;
+
+    // ---- VK_KHR_copy_commands2 extension commands
+    PFN_vkCmdCopyBuffer2KHR CmdCopyBuffer2KHR;
+    PFN_vkCmdCopyImage2KHR CmdCopyImage2KHR;
+    PFN_vkCmdCopyBufferToImage2KHR CmdCopyBufferToImage2KHR;
+    PFN_vkCmdCopyImageToBuffer2KHR CmdCopyImageToBuffer2KHR;
+    PFN_vkCmdBlitImage2KHR CmdBlitImage2KHR;
+    PFN_vkCmdResolveImage2KHR CmdResolveImage2KHR;
 
     // ---- VK_EXT_debug_marker extension commands
     PFN_vkDebugMarkerSetObjectTagEXT DebugMarkerSetObjectTagEXT;
@@ -686,6 +708,20 @@ typedef struct VkLayerDispatchTable_ {
 
     // ---- VK_EXT_host_query_reset extension commands
     PFN_vkResetQueryPoolEXT ResetQueryPoolEXT;
+
+    // ---- VK_EXT_extended_dynamic_state extension commands
+    PFN_vkCmdSetCullModeEXT CmdSetCullModeEXT;
+    PFN_vkCmdSetFrontFaceEXT CmdSetFrontFaceEXT;
+    PFN_vkCmdSetPrimitiveTopologyEXT CmdSetPrimitiveTopologyEXT;
+    PFN_vkCmdSetViewportWithCountEXT CmdSetViewportWithCountEXT;
+    PFN_vkCmdSetScissorWithCountEXT CmdSetScissorWithCountEXT;
+    PFN_vkCmdBindVertexBuffers2EXT CmdBindVertexBuffers2EXT;
+    PFN_vkCmdSetDepthTestEnableEXT CmdSetDepthTestEnableEXT;
+    PFN_vkCmdSetDepthWriteEnableEXT CmdSetDepthWriteEnableEXT;
+    PFN_vkCmdSetDepthCompareOpEXT CmdSetDepthCompareOpEXT;
+    PFN_vkCmdSetDepthBoundsTestEnableEXT CmdSetDepthBoundsTestEnableEXT;
+    PFN_vkCmdSetStencilTestEnableEXT CmdSetStencilTestEnableEXT;
+    PFN_vkCmdSetStencilOpEXT CmdSetStencilOpEXT;
 
     // ---- VK_NV_device_generated_commands extension commands
     PFN_vkGetGeneratedCommandsMemoryRequirementsNV GetGeneratedCommandsMemoryRequirementsNV;

@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 from HTMLParser import HTMLParser
+import os
 import unittest
 
 from fake_fetchers import ConfigureFakeFetchers
@@ -47,10 +48,6 @@ class _PatchServletDelegate(RenderServlet.Delegate):
 
   def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
     return HostFileSystemProvider.ForLocal(object_store_creator, **optargs)
-
-  def CreateGithubFileSystemProvider(self, object_store_creator):
-    return GithubFileSystemProvider.ForEmpty()
-
 
 class PatchServletTest(unittest.TestCase):
   def setUp(self):
@@ -120,6 +117,7 @@ class PatchServletTest(unittest.TestCase):
     self.assertEqual('/_patch/%s/%s' % (issue, redirect_path),
                      response.headers['Location'])
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   def testRender(self):
     # '_patch' is not included in paths below because it's stripped by Handler.
     issue = '14096030'

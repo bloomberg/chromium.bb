@@ -29,11 +29,11 @@ CrostiniInstallerPageHandler::CrostiniInstallerPageHandler(
     mojo::PendingReceiver<chromeos::crostini_installer::mojom::PageHandler>
         pending_page_handler,
     mojo::PendingRemote<chromeos::crostini_installer::mojom::Page> pending_page,
-    base::OnceClosure close_dialog_callback)
+    base::OnceClosure on_page_closed)
     : installer_ui_delegate_{installer_ui_delegate},
       receiver_{this, std::move(pending_page_handler)},
       page_{std::move(pending_page)},
-      close_dialog_callback_{std::move(close_dialog_callback)} {}
+      on_page_closed_{std::move(on_page_closed)} {}
 
 CrostiniInstallerPageHandler::~CrostiniInstallerPageHandler() = default;
 
@@ -43,9 +43,7 @@ void CrostiniInstallerPageHandler::Install(int64_t disk_size_bytes,
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing)) {
     options.disk_size_bytes = disk_size_bytes;
   }
-  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername)) {
-    options.container_username = username;
-  }
+  options.container_username = username;
   installer_ui_delegate_->Install(
       std::move(options),
       base::BindRepeating(&CrostiniInstallerPageHandler::OnProgressUpdate,
@@ -64,9 +62,9 @@ void CrostiniInstallerPageHandler::CancelBeforeStart() {
   installer_ui_delegate_->CancelBeforeStart();
 }
 
-void CrostiniInstallerPageHandler::Close() {
-  if (close_dialog_callback_) {
-    std::move(close_dialog_callback_).Run();
+void CrostiniInstallerPageHandler::OnPageClosed() {
+  if (on_page_closed_) {
+    std::move(on_page_closed_).Run();
   }
 }
 
@@ -92,6 +90,10 @@ void CrostiniInstallerPageHandler::RequestAmountOfFreeDiskSpace() {
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(&CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniInstallerPageHandler::RequestClosePage() {
+  page_->RequestClose();
 }
 
 void CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace(int64_t free_bytes) {

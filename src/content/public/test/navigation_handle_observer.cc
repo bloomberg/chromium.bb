@@ -36,6 +36,8 @@ void NavigationHandleObserver::DidStartNavigation(
   frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
   navigation_id_ = navigation_handle->GetNavigationId();
   navigation_start_ = navigation_handle->NavigationStart();
+  reload_type_ = navigation_handle->GetReloadType();
+  next_page_ukm_source_id_ = navigation_handle->GetNextPageUkmSourceId();
 }
 
 void NavigationHandleObserver::DidFinishNavigation(
@@ -67,6 +69,8 @@ void NavigationHandleObserver::DidFinishNavigation(
     has_committed_ = false;
     is_error_ = true;
   }
+
+  navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
 
   handle_ = nullptr;
 }

@@ -7,12 +7,17 @@ package org.chromium.chrome.browser.feed.v2;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.google.common.collect.ImmutableList;
 
@@ -33,6 +38,7 @@ import java.util.List;
 public class FeedListContentManagerTest implements ListContentManagerObserver {
     private FeedListContentManager mManager;
     private Context mContext;
+    private LinearLayout mParent;
 
     private boolean mItemRangeInserted;
     private int mItemRangeInsertedStartIndex;
@@ -50,6 +56,7 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
     @Before
     public void setUp() {
         mContext = Robolectric.buildActivity(Activity.class).get();
+        mParent = new LinearLayout(mContext);
         mManager = new FeedListContentManager(null, null);
         mManager.addObserver(this);
     }
@@ -191,10 +198,52 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
         assertTrue(mManager.isNativeView(4));
 
         assertArrayEquals("foo".getBytes(), mManager.getExternalViewBytes(0));
-        assertEquals(v2, mManager.getNativeView(1, null));
-        assertEquals(v3, mManager.getNativeView(2, null));
+        assertEquals(v2, getNativeView(mManager.getViewType(1)));
+        assertEquals(v3, getNativeView(mManager.getViewType(2)));
         assertArrayEquals("hello".getBytes(), mManager.getExternalViewBytes(3));
-        assertEquals(v5, mManager.getNativeView(4, null));
+        assertEquals(v5, getNativeView(mManager.getViewType(4)));
+    }
+
+    @Test
+    @SmallTest
+    public void testGetViewDataCreatesEnclosingViewOnce() {
+        View v = new View(mContext);
+        FeedListContentManager.FeedContent c = createNativeViewContent(v);
+
+        addContents(0, ImmutableList.of(c));
+
+        assertEquals(v, getNativeView(mManager.getViewType(0)));
+        ViewParent p = v.getParent();
+
+        // Remove and re-add the same view, but with a new NativeViewContent.
+        // This time, getNativeView() creates a new enclosing parent view.
+        removeContents(0, 1);
+        c = createNativeViewContent(v);
+        addContents(0, ImmutableList.of(c));
+        assertEquals(v, getNativeView(mManager.getViewType(0)));
+        assertNotEquals(p, v.getParent());
+    }
+
+    @Test
+    @SmallTest
+    public void testGetNativeViewAfterMove() {
+        View v1 = new View(mContext);
+        FeedListContentManager.FeedContent c1 = createNativeViewContent(v1);
+        View v0 = new View(mContext);
+        FeedListContentManager.FeedContent c0 = createNativeViewContent(v0);
+
+        addContents(0, ImmutableList.of(c1));
+        int t1 = mManager.getViewType(0);
+        addContents(0, ImmutableList.of(c0));
+        int t0 = mManager.getViewType(0);
+
+        assertEquals(1, t1);
+        assertEquals(2, t0);
+
+        assertEquals(t0, mManager.getViewType(0));
+        assertEquals(t1, mManager.getViewType(1));
+        assertEquals(v0, getNativeView(t0));
+        assertEquals(v1, getNativeView(t1));
     }
 
     @Override
@@ -271,5 +320,12 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
 
     private FeedListContentManager.FeedContent createNativeViewContent(View v) {
         return new FeedListContentManager.NativeViewContent(v.toString(), v);
+    }
+
+    private View getNativeView(int viewType) {
+        View view = mManager.getNativeView(viewType, mParent);
+        assertNotNull(view);
+        assertTrue(view instanceof FrameLayout);
+        return ((FrameLayout) view).getChildAt(0);
     }
 }

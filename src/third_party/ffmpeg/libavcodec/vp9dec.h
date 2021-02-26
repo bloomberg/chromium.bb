@@ -36,6 +36,8 @@
 #include "vp9dsp.h"
 #include "vp9shared.h"
 
+#define REF_INVALID_SCALE 0xFFFF
+
 enum MVJoint {
     MV_JOINT_ZERO,
     MV_JOINT_H,
@@ -221,6 +223,16 @@ struct VP9TileData {
     struct { int x, y; } min_mv, max_mv;
     int16_t *block_base, *block, *uvblock_base[2], *uvblock[2];
     uint8_t *eob_base, *uveob_base[2], *eob, *uveob[2];
+
+    // error message
+    int error_info;
+    struct {
+        unsigned int row:13;
+        unsigned int col:13;
+        unsigned int block_size_idx_x:2;
+        unsigned int block_size_idx_y:2;
+    } *block_structure;
+    unsigned int nb_block_structure;
 };
 
 void ff_vp9_fill_mv(VP9TileData *td, VP56mv *mv, int mode, int sb);

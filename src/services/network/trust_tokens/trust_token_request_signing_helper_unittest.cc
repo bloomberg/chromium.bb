@@ -13,9 +13,10 @@
 #include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time_to_iso8601.h"
 #include "components/cbor/reader.h"
@@ -23,9 +24,12 @@
 #include "components/cbor/writer.h"
 #include "net/base/request_priority.h"
 #include "net/http/structured_headers.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/test/signed_request_verification_util.h"
@@ -37,7 +41,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using ::testing::AnyOf;
 using ::testing::IsEmpty;
 using ::testing::Matches;
 using ::testing::Not;
@@ -66,6 +69,8 @@ class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
     NOTREACHED();
     return false;
   }
+
+  std::string GetAlgorithmIdentifier() override { return "fake-signer"; }
 };
 
 // IdentitySigner returns a "signature" over given signing data whose value
@@ -84,6 +89,7 @@ class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
               base::span<const uint8_t> verification_key) override {
     return std::equal(data.begin(), data.end(), signature.begin());
   }
+  std::string GetAlgorithmIdentifier() override { return "identity-signer"; }
 };
 
 // FailingSigner always fails the Sign and Verify options.
@@ -99,32 +105,40 @@ class FailingSigner : public TrustTokenRequestSigningHelper::Signer {
               base::span<const uint8_t> verification_key) override {
     return false;
   }
+  std::string GetAlgorithmIdentifier() override { return "failing-signer"; }
 };
 
-// Reconstructs |request|'s canonical request data, extracts the signature from
+// Reconstructs |request|'s canonical request data, extracts the signatures from
 // |request|'s Sec-Signature header, and uses the verification algorithm
 // provided by the template parameter |Signer| to check that the Sec-Signature
-// header's contained signature verifies.
+// header's contained signatures verify.
 template <typename Signer>
-void ReconstructSigningDataAndAssertSignatureVerifies(
-    net::URLRequest* request) {
+void ReconstructSigningDataAndAssertSignaturesVerify(
+    net::URLRequest* request,
+    size_t num_expected_signatures) {
   std::string error;
-  bool success = test::ReconstructSigningDataAndVerifySignature(
+
+  std::map<std::string, std::string> verification_keys_per_issuer;
+  bool success = test::ReconstructSigningDataAndVerifySignatures(
       request->url(), request->extra_request_headers(),
-      base::BindOnce([](base::span<const uint8_t> data,
-                        base::span<const uint8_t> signature,
-                        base::span<const uint8_t> verification_key) {
-        return Signer().Verify(data, signature, verification_key);
+      base::BindRepeating([](base::span<const uint8_t> data,
+                             base::span<const uint8_t> signature,
+                             base::span<const uint8_t> verification_key,
+                             const std::string& signing_alg) {
+        return Signer().Verify(data, signature, verification_key) &&
+               signing_alg == Signer().GetAlgorithmIdentifier();
       }),
-      &error);
+      &error, &verification_keys_per_issuer);
 
   ASSERT_TRUE(success) << error;
+  ASSERT_EQ(verification_keys_per_issuer.size(), num_expected_signatures);
 }
 
-// Verifies that |request| has a Sec-Signature header with a "sig" field and
-// extracts the request's signature from this field.
-void AssertHasSignatureAndExtract(const net::URLRequest& request,
-                                  std::string* signature_out) {
+// Verifies that |request| has a Sec-Signature header containing signatures and
+// extracts the signature for each issuer to |signatures_out|.
+void AssertHasSignaturesAndExtract(
+    const net::URLRequest& request,
+    std::map<std::string, std::string>* signatures_out) {
   std::string signature_header;
   ASSERT_TRUE(request.extra_request_headers().GetHeader("Sec-Signature",
                                                         &signature_header));
@@ -132,12 +146,22 @@ void AssertHasSignatureAndExtract(const net::URLRequest& request,
   base::Optional<net::structured_headers::Dictionary> maybe_dictionary =
       net::structured_headers::ParseDictionary(signature_header);
   ASSERT_TRUE(maybe_dictionary);
-  ASSERT_TRUE(maybe_dictionary->contains("sig"));
+  ASSERT_TRUE(maybe_dictionary->contains("signatures"));
 
-  net::structured_headers::Item& sig_item =
-      maybe_dictionary->at("sig").member.front().item;
-  ASSERT_TRUE(sig_item.is_byte_sequence());
-  *signature_out = sig_item.GetString();
+  for (auto& issuer_and_params : maybe_dictionary->at("signatures").member) {
+    net::structured_headers::Item& issuer_item = issuer_and_params.item;
+    ASSERT_TRUE(issuer_item.is_string());
+
+    auto signature_iterator = std::find_if(
+        issuer_and_params.params.begin(), issuer_and_params.params.end(),
+        [](auto& param) { return param.first == "sig"; });
+
+    ASSERT_TRUE(signature_iterator != issuer_and_params.params.end())
+        << "Missing signature";
+    ASSERT_TRUE(signature_iterator->second.is_byte_sequence());
+    signatures_out->emplace(issuer_item.GetString(),
+                            signature_iterator->second.GetString());
+  }
 }
 
 // Assert that the given signing data is a concatenation of the domain separator
@@ -148,7 +172,7 @@ void AssertDecodesToCborAndExtractField(base::StringPiece signing_data,
                                         base::StringPiece field_name,
                                         std::string* field_value_out) {
   base::Optional<cbor::Value> parsed = cbor::Reader::Read(base::as_bytes(
-      // Skip over the "Trust Token v0" domain separator.
+      // Skip over the domain separator (e.g. "Trust Token v0").
       base::make_span(signing_data)
           .subspan(base::size(TrustTokenRequestSigningHelper::
                                   kRequestSigningDomainSeparator))));
@@ -177,6 +201,13 @@ MATCHER_P2(Header,
   return Matches(other_matcher)(header);
 }
 
+SuitableTrustTokenOrigin CreateSuitableOriginOrDie(base::StringPiece spec) {
+  base::Optional<SuitableTrustTokenOrigin> maybe_origin =
+      SuitableTrustTokenOrigin::Create(GURL(spec));
+  CHECK(maybe_origin) << "Failed to create a SuitableTrustTokenOrigin!";
+  return *maybe_origin;
+}
+
 }  // namespace
 
 TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
@@ -198,10 +229,11 @@ TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  // In failure cases, the signing helper should return kOk but attach an empty
-  // SRR header.
+  // In failure cases---in particular, in this case where none of the provided
+  // issuers has a redemption record in storage---the signing helper should
+  // return kOk but attach an empty RR header.
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
 }
 
@@ -218,10 +250,11 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
   params.additional_headers_to_sign = std::vector<std::string>{"Sec-Time"};
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  my_record.set_body("SRR body");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  my_record.set_body("RR body");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FakeSigner>(),
@@ -232,7 +265,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
       url::Origin::Create(GURL("https://initiator.com/")));
 
   my_request->SetExtraRequestHeaderByName(
-      "Signed-Headers", "Sec-Signed-Redemption-Record", /*overwrite=*/true);
+      "Signed-Headers", "Sec-Redemption-Record", /*overwrite=*/true);
 
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
@@ -243,10 +276,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
       "Signed-Headers", &signed_headers_header_value));
 
   // Headers should have been merged and lower-cased.
-  EXPECT_THAT(base::SplitString(signed_headers_header_value, ",",
-                                base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL),
-              UnorderedElementsAre(StrEq("sec-time"),
-                                   StrEq("sec-signed-redemption-record")));
+  EXPECT_THAT(
+      base::SplitString(signed_headers_header_value, ",", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_ALL),
+      UnorderedElementsAre(StrEq("sec-time"), StrEq("sec-redemption-record")));
 }
 
 TEST_F(TrustTokenRequestSigningHelperTest,
@@ -263,9 +296,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FakeSigner>(),
@@ -285,9 +319,9 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   // In failure cases, the signing helper should return kOk but attach an empty
-  // SRR header.
+  // RR header.
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -308,9 +342,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       "this header name is definitely not in "
       "TrustTokenRequestSigningHelper::kSignableRequestHeaders"};
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FakeSigner>(),
@@ -323,7 +358,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -345,10 +380,11 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
   params.should_add_timestamp = true;
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  my_record.set_body("look at me, I'm an SRR body");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  my_record.set_body("look at me, I'm an RR body");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FakeSigner>(),
@@ -365,7 +401,10 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
       Header("Sec-Time", StrEq(base::TimeToISO8601(base::Time::Now()))));
 }
 
-// Test SRR attachment without request signing:
+// Test RR attachment without request signing:
+// - The two issuers with stored redemption records should appear in the header.
+// - A third issuer without a corresponding redemption record in storage
+// shouldn't appear in the header.
 TEST_F(TrustTokenRequestSigningHelperTest,
        RedemptionRecordAttachmentWithoutSigning) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
@@ -375,11 +414,26 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.should_add_timestamp = true;
   params.sign_request_data = mojom::TrustTokenSignRequestData::kOmit;
+  params.issuers.push_back(
+      *SuitableTrustTokenOrigin::Create(GURL("https://second-issuer.example")));
 
-  SignedTrustTokenRedemptionRecord my_record;
-  my_record.set_body("look at me! I'm a signed redemption record");
-  my_record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  TrustTokenRedemptionRecord first_issuer_record;
+  first_issuer_record.set_body("look at me! I'm a redemption record");
+  first_issuer_record.set_public_key("key");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             first_issuer_record);
+
+  TrustTokenRedemptionRecord second_issuer_record;
+  second_issuer_record.set_body(
+      "I'm another redemption record, distinct from the first");
+  second_issuer_record.set_public_key("some other key");
+  store->SetRedemptionRecord(params.issuers.back(), params.toplevel,
+                             second_issuer_record);
+
+  // Attempting to sign with an issuer with no redemption record in storage
+  // should be fine, resulting in the issuer getting ignored.
+  params.issuers.push_back(
+      *SuitableTrustTokenOrigin::Create(GURL("https://third-issuer.example")));
 
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<IdentitySigner>(),
@@ -391,8 +445,23 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   ASSERT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-  EXPECT_THAT(*my_request,
-              Header("Sec-Signed-Redemption-Record", StrEq(my_record.body())));
+
+  std::string redemption_record_header;
+  ASSERT_TRUE(my_request->extra_request_headers().GetHeader(
+      "Sec-Redemption-Record", &redemption_record_header));
+  std::map<SuitableTrustTokenOrigin, std::string> redemption_records_per_issuer;
+  std::string error;
+  ASSERT_TRUE(test::ExtractRedemptionRecordsFromHeader(
+      redemption_record_header, &redemption_records_per_issuer, &error))
+      << error;
+
+  EXPECT_THAT(
+      redemption_records_per_issuer,
+      UnorderedElementsAre(
+          Pair(CreateSuitableOriginOrDie("https://issuer.com"),
+               StrEq(first_issuer_record.body())),
+          Pair(CreateSuitableOriginOrDie("https://second-issuer.example"),
+               StrEq(second_issuer_record.body()))));
   EXPECT_THAT(*my_request, Header("Sec-Time"));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
 }
@@ -406,14 +475,15 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  my_record.set_body("look at me, I'm an SRR body");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  my_record.set_body("look at me, I'm an RR body");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   // Giving an IdentitySigner to |helper| will mean that |helper| should provide
   // its entire signing data in the request's Sec-Signature header's "sig"
-  // field. ReconstructSigningDataAndAssertSignatureVerifies then reproduces
+  // field. ReconstructSigningDataAndAssertSignaturesVerify then reproduces
   // this canonical data's construction and checks that the reconstructed data
   // matches what |helper| produced.
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
@@ -429,11 +499,11 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   ASSERT_NO_FATAL_FAILURE(
-      ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get()));
+      ReconstructSigningDataAndAssertSignaturesVerify<IdentitySigner>(
+          my_request.get(), /*num_expected_signatures=*/1));
 }
 
-// Test a round-trip sign-and-verify with signed headers.
+// Test a round-trip sign-and-verify with signed headers and multiple issuers.
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
@@ -441,12 +511,20 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
-  SignedTrustTokenRedemptionRecord record;
-  record.set_body("I am a signed token redemption record");
+  TrustTokenRedemptionRecord record;
+  record.set_body("I am a token redemption record");
   record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, record);
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel, record);
   params.additional_headers_to_sign =
-      std::vector<std::string>{"Sec-Signed-Redemption-Record"};
+      std::vector<std::string>{"Sec-Redemption-Record"};
+
+  params.issuers.push_back(
+      *SuitableTrustTokenOrigin::Create(GURL("https://second-issuer.example")));
+  TrustTokenRedemptionRecord other_record;
+  other_record.set_body("I am a different token redemption record");
+  other_record.set_public_key("some other key");
+  store->SetRedemptionRecord(params.issuers.back(), params.toplevel,
+                             other_record);
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
@@ -460,8 +538,8 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
 
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
-      ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get()));
+      ReconstructSigningDataAndAssertSignaturesVerify<IdentitySigner>(
+          my_request.get(), /*num_expected_signatures=*/2));
 }
 
 // Test a round-trip sign-and-verify with signed headers when adding a timestamp
@@ -476,10 +554,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   params.additional_headers_to_sign = std::vector<std::string>{"sec-time"};
   params.should_add_timestamp = true;
 
-  SignedTrustTokenRedemptionRecord record;
-  record.set_body("I am a signed token redemption record");
+  TrustTokenRedemptionRecord record;
+  record.set_body("I am a token redemption record");
   record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, record);
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel, record);
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
@@ -494,15 +572,17 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
 
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
-      ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get()));
+      ReconstructSigningDataAndAssertSignaturesVerify<IdentitySigner>(
+          my_request.get(), /*num_expected_signatures=*/1));
 
-  std::string signature_string;
+  // Because we're using an IdentitySigner, each signature will have value
+  // equal to the base64-encoded request signing data.
+  std::map<std::string, std::string> signatures;
   ASSERT_NO_FATAL_FAILURE(
-      AssertHasSignatureAndExtract(*my_request, &signature_string));
-  std::string retrieved_url_spec;
+      AssertHasSignaturesAndExtract(*my_request, &signatures));
+  std::string retrieved_timestamp;
   ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
-      signature_string, "sec-time", &retrieved_url_spec));
+      signatures.begin()->second, "sec-time", &retrieved_timestamp));
 }
 
 // Test a round-trip sign-and-verify additionally signing over the destination
@@ -516,12 +596,12 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kInclude;
 
-  SignedTrustTokenRedemptionRecord record;
-  record.set_body("I am a signed token redemption record");
+  TrustTokenRedemptionRecord record;
+  record.set_body("I am a token redemption record");
   record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, record);
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel, record);
   params.additional_headers_to_sign =
-      std::vector<std::string>{"Sec-Signed-Redemption-Record"};
+      std::vector<std::string>{"Sec-Redemption-Record"};
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
@@ -535,28 +615,28 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   // In addition to testing that the signing data equals
-  // ReconstructSigningDataAndAssertSignatureVerifies's reconstruction of the
+  // ReconstructSigningDataAndAssertSignaturesVerify's reconstruction of the
   // data, explicitly check that it contains a "destination" field with the
   // right value.
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   ASSERT_NO_FATAL_FAILURE(
-      ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get()));
+      ReconstructSigningDataAndAssertSignaturesVerify<IdentitySigner>(
+          my_request.get(), /*num_expected_signatures=*/1));
 
-  // Because we're using an IdentitySigner, |signature_string| will have value
+  // Because we're using an IdentitySigner, each signature will have value
   // equal to the base64-encoded request signing data.
-  std::string signature_string;
+  std::map<std::string, std::string> signatures;
   ASSERT_NO_FATAL_FAILURE(
-      AssertHasSignatureAndExtract(*my_request, &signature_string));
+      AssertHasSignaturesAndExtract(*my_request, &signatures));
   std::string retrieved_url;
   ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
-      signature_string, "destination", &retrieved_url));
+      signatures.begin()->second, "destination", &retrieved_url));
   ASSERT_EQ(retrieved_url, "destination.com");
 }
 
 // When signing fails, the request should have an empty
-// Sec-Signed-Redemption-Record header attached, and none of the other headers
+// Sec-Redemption-Record header attached, and none of the other headers
 // that could potentially be added during signing.
 TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
@@ -566,19 +646,24 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
   params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
 
-  SignedTrustTokenRedemptionRecord my_record;
+  TrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
-  store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
+  my_record.set_signing_key("signing key");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
 
   params.should_add_timestamp = true;
   params.additional_headers_to_sign =
-      std::vector<std::string>{"Sec-Signed-Redemption-Record"};
+      std::vector<std::string>{"Sec-Redemption-Record"};
 
   // FailingSigner will fail to sign the request, so we should see the operation
   // fail.
+  net::RecordingTestNetLog net_log;
   TrustTokenRequestSigningHelper helper(
       store.get(), std::move(params), std::make_unique<FailingSigner>(),
-      std::make_unique<TrustTokenRequestCanonicalizer>());
+      std::make_unique<TrustTokenRequestCanonicalizer>(),
+      net::NetLogWithSource::Make(&net_log,
+                                  net::NetLogSourceType::URL_REQUEST));
 
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(
@@ -590,7 +675,136 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Time")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
-  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
+  EXPECT_TRUE(base::ranges::any_of(
+      net_log.GetEntriesWithType(
+          net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING),
+      [](const net::NetLogEntry& entry) {
+        base::Optional<std::string> key = net::GetOptionalStringValueFromParams(
+            entry, "failed_signing_params.key");
+        base::Optional<std::string> issuer =
+            net::GetOptionalStringValueFromParams(
+                entry, "failed_signing_params.issuer");
+        return key && *key == "signing key" && issuer &&
+               *issuer == "https://issuer.com";
+      }));
+}
+
+// Test a round-trip sign-and-verify with signed headers when adding additional
+// signing data.
+TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyAdditionalSigningData) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
+  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
+  params.possibly_unsafe_additional_signing_data =
+      "some additional data to sign";
+
+  TrustTokenRedemptionRecord record;
+  record.set_body("I am a token redemption record");
+  record.set_public_key("key");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel, record);
+
+  auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
+  TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
+                                        std::make_unique<IdentitySigner>(),
+                                        std::move(canonicalizer));
+
+  auto my_request = MakeURLRequest("https://destination.com/");
+  my_request->set_initiator(
+      url::Origin::Create(GURL("https://initiator.com/")));
+  mojom::TrustTokenOperationStatus result =
+      ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
+
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  ASSERT_NO_FATAL_FAILURE(
+      ReconstructSigningDataAndAssertSignaturesVerify<IdentitySigner>(
+          my_request.get(), /*num_expected_signatures=*/1));
+
+  // Because we're using an IdentitySigner, each signature will have value
+  // equal to the base64-encoded request signing data.
+  std::map<std::string, std::string> signatures;
+  ASSERT_NO_FATAL_FAILURE(
+      AssertHasSignaturesAndExtract(*my_request, &signatures));
+  std::string retrieved_additional_signing_data;
+  ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
+      signatures.begin()->second, "sec-trust-tokens-additional-signing-data",
+      &retrieved_additional_signing_data));
+
+  EXPECT_EQ(retrieved_additional_signing_data, "some additional data to sign");
+}
+
+TEST_F(TrustTokenRequestSigningHelperTest,
+       RejectsOnOverlongAdditionalSigningData) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
+  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
+  params.possibly_unsafe_additional_signing_data =
+      std::string(kTrustTokenAdditionalSigningDataMaxSizeBytes + 1, 'a');
+
+  TrustTokenRedemptionRecord my_record;
+  my_record.set_public_key("key");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
+
+  TrustTokenRequestSigningHelper helper(
+      store.get(), std::move(params), std::make_unique<FakeSigner>(),
+      std::make_unique<TrustTokenRequestCanonicalizer>());
+
+  auto my_request = MakeURLRequest("https://destination.com/");
+  my_request->set_initiator(
+      url::Origin::Create(GURL("https://initiator.com/")));
+
+  mojom::TrustTokenOperationStatus result =
+      ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
+
+  // In failure cases, the signing helper should return kOk but attach an empty
+  // RR header.
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
+  EXPECT_THAT(*my_request,
+              Not(Header("Sec-Trust-Tokens-Additional-Signing-Data")));
+}
+
+TEST_F(TrustTokenRequestSigningHelperTest,
+       RejectsOnAdditionalSigningDataThatIsNotAValidHeaderValue) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
+  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
+  params.possibly_unsafe_additional_signing_data = "\r";
+
+  TrustTokenRedemptionRecord my_record;
+  my_record.set_public_key("key");
+  store->SetRedemptionRecord(params.issuers.front(), params.toplevel,
+                             my_record);
+
+  TrustTokenRequestSigningHelper helper(
+      store.get(), std::move(params), std::make_unique<FakeSigner>(),
+      std::make_unique<TrustTokenRequestCanonicalizer>());
+
+  auto my_request = MakeURLRequest("https://destination.com/");
+  my_request->set_initiator(
+      url::Origin::Create(GURL("https://initiator.com/")));
+
+  mojom::TrustTokenOperationStatus result =
+      ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
+
+  // In failure cases, the signing helper should return kOk but attach an empty
+  // RR header.
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  EXPECT_THAT(*my_request, Header("Sec-Redemption-Record", IsEmpty()));
+  EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
+  EXPECT_THAT(*my_request,
+              Not(Header("Sec-Trust-Tokens-Additional-Signing-Data")));
 }
 
 }  // namespace network

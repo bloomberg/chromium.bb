@@ -6,14 +6,12 @@
 
 #include "core/fxcrt/css/cfx_csssyntaxparser.h"
 
-#include <algorithm>
-
 #include "core/fxcrt/css/cfx_cssdata.h"
 #include "core/fxcrt/css/cfx_cssdeclaration.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/notreached.h"
 
 namespace {
 
@@ -34,7 +32,7 @@ void CFX_CSSSyntaxParser::SetParseOnlyDeclarations() {
 
 CFX_CSSSyntaxStatus CFX_CSSSyntaxParser::DoSyntaxParse() {
   m_Output.Clear();
-  if (m_bError)
+  if (m_bHasError)
     return CFX_CSSSyntaxStatus::kError;
 
   while (!m_Input.IsEOF()) {
@@ -43,7 +41,7 @@ CFX_CSSSyntaxStatus CFX_CSSSyntaxParser::DoSyntaxParse() {
       case SyntaxMode::kRuleSet:
         switch (wch) {
           case '}':
-            m_bError = true;
+            m_bHasError = true;
             return CFX_CSSSyntaxStatus::kError;
           case '/':
             if (m_Input.GetNextChar() == '*') {
@@ -59,7 +57,7 @@ CFX_CSSSyntaxStatus CFX_CSSSyntaxParser::DoSyntaxParse() {
               m_eMode = SyntaxMode::kSelector;
               return CFX_CSSSyntaxStatus::kStyleRule;
             } else {
-              m_bError = true;
+              m_bHasError = true;
               return CFX_CSSSyntaxStatus::kError;
             }
             break;
@@ -169,7 +167,7 @@ void CFX_CSSSyntaxParser::SaveMode(SyntaxMode mode) {
 
 bool CFX_CSSSyntaxParser::RestoreMode() {
   if (m_ModeStack.empty()) {
-    m_bError = true;
+    m_bHasError = true;
     return false;
   }
   m_eMode = m_ModeStack.top();

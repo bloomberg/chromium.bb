@@ -15,74 +15,71 @@
 #include "src/utils/blocking_counter.h"
 
 namespace libgav1 {
-namespace {
 
-template <typename Pixel>
-void ExtendLine(uint8_t* const line_start, const int width, const int left,
-                const int right) {
-  auto* const start = reinterpret_cast<Pixel*>(line_start);
-  const Pixel* src = start;
-  Pixel* dst = start - left;
-  // Copy to left and right borders.
-  Memset(dst, src[0], left);
-  Memset(dst + (left + width), src[width - 1], right);
-}
-
-}  // namespace
-
-template <bool in_place>
-void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& buffers,
-                               const std::array<int, kMaxPlanes>& strides,
+void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& src,
                                const std::array<int, kMaxPlanes>& rows,
-                               size_t line_buffer_offset) {
-  uint8_t* const line_buffer_start =
-      in_place ? nullptr
-               : superres_line_buffer_ + line_buffer_offset +
-                     kSuperResHorizontalBorder * pixel_size_;
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = subsampling_x_[plane];
+                               const int line_buffer_row,
+                               const std::array<uint8_t*, kMaxPlanes>& dst) {
+  int plane = kPlaneY;
+  do {
     const int plane_width =
-        MultiplyBy4(frame_header_.columns4x4) >> subsampling_x;
-    uint8_t* input = buffers[plane];
-    const uint32_t input_stride = strides[plane];
+        MultiplyBy4(frame_header_.columns4x4) >> subsampling_x_[plane];
 #if LIBGAV1_MAX_BITDEPTH >= 10
     if (bitdepth_ >= 10) {
-      for (int y = 0; y < rows[plane]; ++y, input += input_stride) {
-        if (!in_place) {
-          memcpy(line_buffer_start, input, plane_width * sizeof(uint16_t));
-        }
-        ExtendLine<uint16_t>(in_place ? input : line_buffer_start, plane_width,
-                             kSuperResHorizontalBorder,
-                             kSuperResHorizontalBorder);
-        dsp_.super_res_row(in_place ? input : line_buffer_start,
-                           super_res_info_[plane].upscaled_width,
-                           super_res_info_[plane].initial_subpixel_x,
-                           super_res_info_[plane].step,
-                           input - (in_place ? input_stride : 0));
+      auto* input = reinterpret_cast<uint16_t*>(src[plane]);
+      auto* output = reinterpret_cast<uint16_t*>(dst[plane]);
+      const ptrdiff_t stride = frame_buffer_.stride(plane) / sizeof(uint16_t);
+      if (rows[plane] > 0) {
+        dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
+                       input, stride, rows[plane], plane_width,
+                       super_res_info_[plane].upscaled_width,
+                       super_res_info_[plane].initial_subpixel_x,
+                       super_res_info_[plane].step, output);
+      }
+      // In the multi-threaded case, the |superres_line_buffer_| holds the last
+      // input row. Apply SuperRes for that row.
+      if (line_buffer_row >= 0) {
+        auto* const line_buffer_start =
+            reinterpret_cast<uint16_t*>(superres_line_buffer_.data(plane)) +
+            line_buffer_row * superres_line_buffer_.stride(plane) /
+                sizeof(uint16_t) +
+            kSuperResHorizontalBorder;
+        dsp_.super_res(
+            superres_coefficients_[static_cast<int>(plane != 0)],
+            line_buffer_start, /*stride=*/0,
+            /*height=*/1, plane_width, super_res_info_[plane].upscaled_width,
+            super_res_info_[plane].initial_subpixel_x,
+            super_res_info_[plane].step, output + rows[plane] * stride);
       }
       continue;
     }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
-    for (int y = 0; y < rows[plane]; ++y, input += input_stride) {
-      if (!in_place) {
-        memcpy(line_buffer_start, input, plane_width);
-      }
-      ExtendLine<uint8_t>(in_place ? input : line_buffer_start, plane_width,
-                          kSuperResHorizontalBorder, kSuperResHorizontalBorder);
-      dsp_.super_res_row(in_place ? input : line_buffer_start,
-                         super_res_info_[plane].upscaled_width,
-                         super_res_info_[plane].initial_subpixel_x,
-                         super_res_info_[plane].step,
-                         input - (in_place ? input_stride : 0));
+    uint8_t* input = src[plane];
+    uint8_t* output = dst[plane];
+    if (rows[plane] > 0) {
+      dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
+                     input, frame_buffer_.stride(plane), rows[plane],
+                     plane_width, super_res_info_[plane].upscaled_width,
+                     super_res_info_[plane].initial_subpixel_x,
+                     super_res_info_[plane].step, output);
     }
-  }
+    // In the multi-threaded case, the |superres_line_buffer_| holds the last
+    // input row. Apply SuperRes for that row.
+    if (line_buffer_row >= 0) {
+      uint8_t* const line_buffer_start =
+          superres_line_buffer_.data(plane) +
+          line_buffer_row * superres_line_buffer_.stride(plane) +
+          kSuperResHorizontalBorder;
+      dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
+                     line_buffer_start, /*stride=*/0,
+                     /*height=*/1, plane_width,
+                     super_res_info_[plane].upscaled_width,
+                     super_res_info_[plane].initial_subpixel_x,
+                     super_res_info_[plane].step,
+                     output + rows[plane] * frame_buffer_.stride(plane));
+    }
+  } while (++plane < planes_);
 }
-
-// Used by post_filter_test.cc.
-template void PostFilter::ApplySuperRes<false>(
-    const std::array<uint8_t*, kMaxPlanes>& buffers,
-    const std::array<int, kMaxPlanes>& strides,
-    const std::array<int, kMaxPlanes>& rows, size_t line_buffer_offset);
 
 void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4,
                                                   bool is_last_row) {
@@ -90,142 +87,112 @@ void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4,
   assert(DoSuperRes());
   // If not doing cdef, then LR needs two rows of border with superres applied.
   const int num_rows_extra = (DoCdef() || !DoRestoration()) ? 0 : 2;
-  std::array<uint8_t*, kMaxPlanes> buffers;
-  std::array<int, kMaxPlanes> strides;
+  std::array<uint8_t*, kMaxPlanes> src;
+  std::array<uint8_t*, kMaxPlanes> dst;
   std::array<int, kMaxPlanes> rows;
-  // Apply superres for the last 8-num_rows_extra rows of the previous
-  // superblock.
-  if (row4x4_start > 0) {
-    const int row4x4 = row4x4_start - 2;
-    for (int plane = 0; plane < planes_; ++plane) {
-      const int row =
-          (MultiplyBy4(row4x4) >> subsampling_y_[plane]) + num_rows_extra;
-      const ptrdiff_t row_offset = row * frame_buffer_.stride(plane);
-      buffers[plane] = cdef_buffer_[plane] + row_offset;
-      strides[plane] = frame_buffer_.stride(plane);
-      // Note that the |num_rows_extra| subtraction is done after the value is
-      // subsampled since we always need to work on |num_rows_extra| extra rows
-      // irrespective of the plane subsampling.
-      rows[plane] = (8 >> subsampling_y_[plane]) - num_rows_extra;
-    }
-    ApplySuperRes<true>(buffers, strides, rows, /*line_buffer_offset=*/0);
-  }
-  // Apply superres for the current superblock row (except for the last
-  // 8-num_rows_extra rows).
   const int num_rows4x4 =
       std::min(sb4x4, frame_header_.rows4x4 - row4x4_start) -
       (is_last_row ? 0 : 2);
-  for (int plane = 0; plane < planes_; ++plane) {
-    const ptrdiff_t row_offset =
-        (MultiplyBy4(row4x4_start) >> subsampling_y_[plane]) *
-        frame_buffer_.stride(plane);
-    buffers[plane] = cdef_buffer_[plane] + row_offset;
-    strides[plane] = frame_buffer_.stride(plane);
-    // Note that the |num_rows_extra| subtraction is done after the value is
-    // subsampled since we always need to work on |num_rows_extra| extra rows
-    // irrespective of the plane subsampling.
-    rows[plane] = (MultiplyBy4(num_rows4x4) >> subsampling_y_[plane]) +
-                  (is_last_row ? 0 : num_rows_extra);
+  if (row4x4_start > 0) {
+    const int row4x4 = row4x4_start - 2;
+    int plane = kPlaneY;
+    do {
+      const int row =
+          (MultiplyBy4(row4x4) >> subsampling_y_[plane]) + num_rows_extra;
+      const ptrdiff_t row_offset = row * frame_buffer_.stride(plane);
+      src[plane] = cdef_buffer_[plane] + row_offset;
+      dst[plane] = superres_buffer_[plane] + row_offset;
+      // Note that the |num_rows_extra| subtraction is done after the value is
+      // subsampled since we always need to work on |num_rows_extra| extra rows
+      // irrespective of the plane subsampling.
+      // Apply superres for the last 8-|num_rows_extra| rows of the previous
+      // superblock.
+      rows[plane] = (8 >> subsampling_y_[plane]) - num_rows_extra;
+      // Apply superres for the current superblock row (except for the last
+      // 8-|num_rows_extra| rows).
+      rows[plane] += (MultiplyBy4(num_rows4x4) >> subsampling_y_[plane]) +
+                     (is_last_row ? 0 : num_rows_extra);
+    } while (++plane < planes_);
+  } else {
+    // Apply superres for the current superblock row (except for the last
+    // 8-|num_rows_extra| rows).
+    int plane = kPlaneY;
+    do {
+      const ptrdiff_t row_offset =
+          (MultiplyBy4(row4x4_start) >> subsampling_y_[plane]) *
+          frame_buffer_.stride(plane);
+      src[plane] = cdef_buffer_[plane] + row_offset;
+      dst[plane] = superres_buffer_[plane] + row_offset;
+      // Note that the |num_rows_extra| addition is done after the value is
+      // subsampled since we always need to work on |num_rows_extra| extra rows
+      // irrespective of the plane subsampling.
+      rows[plane] = (MultiplyBy4(num_rows4x4) >> subsampling_y_[plane]) +
+                    (is_last_row ? 0 : num_rows_extra);
+    } while (++plane < planes_);
   }
-  ApplySuperRes<true>(buffers, strides, rows, /*line_buffer_offset=*/0);
+  ApplySuperRes(src, rows, /*line_buffer_row=*/-1, dst);
 }
 
 void PostFilter::ApplySuperResThreaded() {
-  const int num_threads = thread_pool_->num_threads() + 1;
-  // The number of rows4x4 that will be processed by each thread in the thread
-  // pool (other than the current thread).
-  const int thread_pool_rows4x4 = frame_header_.rows4x4 / num_threads;
-  // For the current thread, we round up to process all the remaining rows so
-  // that the current thread's job will potentially run the longest.
-  const int current_thread_rows4x4 =
-      frame_header_.rows4x4 - (thread_pool_rows4x4 * (num_threads - 1));
-  // The size of the line buffer required by each thread. In the multi-threaded
-  // case we are guaranteed to have a line buffer which can store |num_threads|
-  // rows at the same time.
-  const size_t line_buffer_size = (MultiplyBy4(frame_header_.columns4x4) +
-                                   MultiplyBy2(kSuperResHorizontalBorder)) *
-                                  pixel_size_;
-  size_t line_buffer_offset = 0;
+  int num_threads = thread_pool_->num_threads() + 1;
+  // The number of rows that will be processed by each thread in the thread pool
+  // (other than the current thread).
+  int thread_pool_rows = height_ / num_threads;
+  thread_pool_rows = std::max(thread_pool_rows, 1);
+  // Make rows of Y plane even when there is subsampling for the other planes.
+  if ((thread_pool_rows & 1) != 0 && subsampling_y_[kPlaneU] != 0) {
+    ++thread_pool_rows;
+  }
+  // Adjust the number of threads to what we really need.
+  num_threads = Clip3(height_ / thread_pool_rows, 1, num_threads);
+  // For the current thread, we round up to process all the remaining rows.
+  int current_thread_rows = height_ - thread_pool_rows * (num_threads - 1);
+  // Make rows of Y plane even when there is subsampling for the other planes.
+  if ((current_thread_rows & 1) != 0 && subsampling_y_[kPlaneU] != 0) {
+    ++current_thread_rows;
+  }
+  assert(current_thread_rows > 0);
   BlockingCounter pending_workers(num_threads - 1);
-  for (int i = 0, row4x4_start = 0; i < num_threads; ++i,
-           row4x4_start += thread_pool_rows4x4,
-           line_buffer_offset += line_buffer_size) {
-    std::array<uint8_t*, kMaxPlanes> buffers;
-    std::array<int, kMaxPlanes> strides;
+  for (int line_buffer_row = 0, row_start = 0; line_buffer_row < num_threads;
+       ++line_buffer_row, row_start += thread_pool_rows) {
+    std::array<uint8_t*, kMaxPlanes> src;
+    std::array<uint8_t*, kMaxPlanes> dst;
     std::array<int, kMaxPlanes> rows;
-    for (int plane = 0; plane < planes_; ++plane) {
-      strides[plane] = frame_buffer_.stride(plane);
-      buffers[plane] =
-          GetBufferOffset(cdef_buffer_[plane], strides[plane],
-                          static_cast<Plane>(plane), row4x4_start, 0);
-      if (i < num_threads - 1) {
-        rows[plane] = MultiplyBy4(thread_pool_rows4x4) >> subsampling_y_[plane];
-      } else {
-        rows[plane] =
-            MultiplyBy4(current_thread_rows4x4) >> subsampling_y_[plane];
-      }
-    }
-    if (i < num_threads - 1) {
-      thread_pool_->Schedule([this, buffers, strides, rows, line_buffer_offset,
-                              &pending_workers]() {
-        ApplySuperRes<false>(buffers, strides, rows, line_buffer_offset);
-        pending_workers.Decrement();
-      });
+    int plane = kPlaneY;
+    do {
+      src[plane] =
+          GetBufferOffset(cdef_buffer_[plane], frame_buffer_.stride(plane),
+                          static_cast<Plane>(plane), row_start, 0);
+      dst[plane] =
+          GetBufferOffset(superres_buffer_[plane], frame_buffer_.stride(plane),
+                          static_cast<Plane>(plane), row_start, 0);
+      rows[plane] =
+          (((line_buffer_row < num_threads - 1) ? thread_pool_rows
+                                                : current_thread_rows) >>
+           subsampling_y_[plane]) -
+          1;
+      const int plane_width =
+          MultiplyBy4(frame_header_.columns4x4) >> subsampling_x_[plane];
+      uint8_t* const input =
+          src[plane] + rows[plane] * frame_buffer_.stride(plane);
+      uint8_t* const line_buffer_start =
+          superres_line_buffer_.data(plane) +
+          line_buffer_row * superres_line_buffer_.stride(plane) +
+          kSuperResHorizontalBorder * pixel_size_;
+      memcpy(line_buffer_start, input, plane_width * pixel_size_);
+    } while (++plane < planes_);
+    if (line_buffer_row < num_threads - 1) {
+      thread_pool_->Schedule(
+          [this, src, rows, line_buffer_row, dst, &pending_workers]() {
+            ApplySuperRes(src, rows, line_buffer_row, dst);
+            pending_workers.Decrement();
+          });
     } else {
-      ApplySuperRes<false>(buffers, strides, rows, line_buffer_offset);
+      ApplySuperRes(src, rows, line_buffer_row, dst);
     }
   }
   // Wait for the threadpool jobs to finish.
   pending_workers.Wait();
-}
-
-// This function lives in this file so that it has access to ExtendLine<>.
-void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
-  assert(row4x4_start >= 0);
-  assert(DoCdef());
-  assert(DoRestoration());
-  for (int sb_y = 0; sb_y < sb4x4; sb_y += 16) {
-    const int row4x4 = row4x4_start + sb_y;
-    for (int plane = 0; plane < planes_; ++plane) {
-      CopyDeblockedPixels(static_cast<Plane>(plane), row4x4);
-    }
-    const int row_offset_start = DivideBy4(row4x4);
-    if (DoSuperRes()) {
-      std::array<uint8_t*, kMaxPlanes> buffers = {
-          deblock_buffer_.data(kPlaneY) +
-              row_offset_start * deblock_buffer_.stride(kPlaneY),
-          deblock_buffer_.data(kPlaneU) +
-              row_offset_start * deblock_buffer_.stride(kPlaneU),
-          deblock_buffer_.data(kPlaneV) +
-              row_offset_start * deblock_buffer_.stride(kPlaneV)};
-      std::array<int, kMaxPlanes> strides = {deblock_buffer_.stride(kPlaneY),
-                                             deblock_buffer_.stride(kPlaneU),
-                                             deblock_buffer_.stride(kPlaneV)};
-      std::array<int, kMaxPlanes> rows = {4, 4, 4};
-      ApplySuperRes<false>(buffers, strides, rows,
-                           /*line_buffer_offset=*/0);
-    }
-    // Extend the left and right boundaries needed for loop restoration.
-    for (int plane = 0; plane < planes_; ++plane) {
-      uint8_t* src = deblock_buffer_.data(plane) +
-                     row_offset_start * deblock_buffer_.stride(plane);
-      const int plane_width =
-          RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
-      for (int i = 0; i < 4; ++i) {
-#if LIBGAV1_MAX_BITDEPTH >= 10
-        if (bitdepth_ >= 10) {
-          ExtendLine<uint16_t>(src, plane_width, kRestorationBorder,
-                               kRestorationBorder);
-        } else  // NOLINT.
-#endif
-        {
-          ExtendLine<uint8_t>(src, plane_width, kRestorationBorder,
-                              kRestorationBorder);
-        }
-        src += deblock_buffer_.stride(plane);
-      }
-    }
-  }
 }
 
 }  // namespace libgav1

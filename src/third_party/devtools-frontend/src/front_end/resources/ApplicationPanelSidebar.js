@@ -28,6 +28,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
@@ -45,6 +48,7 @@ import {Database as DatabaseModelDatabase, DatabaseModel, Events as DatabaseMode
 import {DatabaseQueryView, Events as DatabaseQueryViewEvents} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
 import {DOMStorage, DOMStorageModel, Events as DOMStorageModelEvents} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
+import {FrameDetailsView, OpenedWindowDetailsView, WorkerDetailsView} from './FrameDetailsView.js';
 import {Database as IndexedDBModelDatabase, DatabaseId, Events as IndexedDBModelEvents, Index, IndexedDBModel, ObjectStore} from './IndexedDBModel.js';  // eslint-disable-line no-unused-vars
 import {IDBDatabaseView, IDBDataView} from './IndexedDBViews.js';
 import {ServiceWorkerCacheView} from './ServiceWorkerCacheViews.js';
@@ -65,7 +69,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
 
     this._sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
     this._sidebarTree.element.classList.add('resources-sidebar');
-    this._sidebarTree.registerRequiredCSS('resources/resourcesSidebar.css');
+    this._sidebarTree.registerRequiredCSS('resources/resourcesSidebar.css', {enableLegacyPatching: true});
     this._sidebarTree.element.classList.add('filter-all');
     // Listener needs to have been set up before the elements are added
     this._sidebarTree.addEventListener(UI.TreeOutline.Events.ElementAttached, this._treeElementAdded, this);
@@ -352,22 +356,35 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _treeElementAdded(event) {
+    // On tree item selection its itemURL and those of its parents are persisted.
+    // On reload/navigation we check for matches starting from the root on the
+    // path to the current element. Matching nodes are expanded until we hit a
+    // mismatch. This way we ensure that the longest matching path starting from
+    // the root is expanded, even if we cannot match the whole path.
     const selection = this._panel.lastSelectedItemPath();
     if (!selection.length) {
       return;
     }
     const element = event.data;
-    const index = selection.indexOf(element.itemURL);
-    if (index < 0) {
-      return;
+    const elementPath = [element];
+    for (let parent = element.parent; parent && parent.itemURL; parent = parent.parent) {
+      elementPath.push(parent);
     }
-    for (let parent = element.parent; parent; parent = parent.parent) {
-      parent.expand();
+
+    let i = selection.length - 1;
+    let j = elementPath.length - 1;
+    while (i >= 0 && j >= 0 && selection[i] === elementPath[j].itemURL) {
+      if (!elementPath[j].expanded) {
+        if (i > 0) {
+          elementPath[j].expand();
+        }
+        if (!elementPath[j].selected) {
+          elementPath[j].select();
+        }
+      }
+      i--;
+      j--;
     }
-    if (index > 0) {
-      element.expand();
-    }
-    element.select();
   }
 
   _reset() {
@@ -680,7 +697,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
       return;
     }
 
-    const listNode = nodeUnderMouse.enclosingNodeOrSelfWithNodeName('li');
+    const listNode = UI.UIUtils.enclosingNodeOrSelfWithNodeName(nodeUnderMouse, 'li');
     if (!listNode) {
       return;
     }
@@ -899,7 +916,7 @@ export class BackgroundServiceTreeElement extends BaseStorageTreeElement {
       this._view = new BackgroundServiceView(this._serviceName, this._model);
     }
     this.showView(this._view);
-    self.UI.context.setFlavor(BackgroundServiceView, this._view);
+    UI.Context.Context.instance().setFlavor(BackgroundServiceView, this._view);
     return false;
   }
 }
@@ -1235,8 +1252,8 @@ export class ClearStorageTreeElement extends BaseStorageTreeElement {
    * @param {!UI.Panel.PanelWithSidebar} storagePanel
    */
   constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('Clear storage'), false);
-    const icon = UI.Icon.Icon.create('mediumicon-clear-storage', 'resource-tree-item');
+    super(storagePanel, Common.UIString.UIString('Storage'), false);
+    const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
@@ -1475,9 +1492,8 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
   update(database, entriesUpdated) {
     this._database = database;
     const objectStoreNames = {};
-    const objectStoreNamesSorted = Object.keys(this._database.objectStores).sort();
-    for (const objectStoreName of objectStoreNamesSorted) {
-      const objectStore = this._database.objectStores[objectStoreName];
+    for (const objectStoreName of [...this._database.objectStores.keys()].sort()) {
+      const objectStore = this._database.objectStores.get(objectStoreName);
       objectStoreNames[objectStore.name] = true;
       if (!this._idbObjectStoreTreeElements[objectStore.name]) {
         const idbObjectStoreTreeElement =
@@ -1610,8 +1626,7 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
     this._objectStore = objectStore;
 
     const indexNames = {};
-    for (const indexName in this._objectStore.indexes) {
-      const index = this._objectStore.indexes[indexName];
+    for (const index of this._objectStore.indexes.values()) {
       indexNames[index.name] = true;
       if (!this._idbIndexTreeElements[index.name]) {
         const idbIndexTreeElement = new IDBIndexTreeElement(
@@ -1847,6 +1862,10 @@ export class CookieTreeElement extends BaseStorageTreeElement {
     return 'cookies://' + this._cookieDomain;
   }
 
+  cookieDomain() {
+    return this._cookieDomain;
+  }
+
   /**
    * @override
    */
@@ -1924,8 +1943,7 @@ export class ApplicationCacheFrameTreeElement extends BaseStorageTreeElement {
     this._manifestURL = manifestURL;
     this._refreshTitles(frame);
 
-    const icon = UI.Icon.Icon.create('largeicon-navigator-folder', 'navigator-tree-item');
-    icon.classList.add('navigator-folder-tree-item');
+    const icon = UI.Icon.Icon.create('mediumicon-frame-top', 'navigator-folder-tree-item');
     this.setLeadingIcons([icon]);
   }
 
@@ -2004,6 +2022,9 @@ export class StorageCategoryView extends UI.Widget.VBox {
   }
 }
 
+/**
+ * @implements {SDK.SDKModel.Observer}
+ */
 export class ResourcesSection {
   /**
    * @param {!UI.Panel.PanelWithSidebar} storagePanel
@@ -2014,38 +2035,82 @@ export class ResourcesSection {
     this._treeElement = treeElement;
     /** @type {!Map<string, !FrameTreeElement>} */
     this._treeElementForFrameId = new Map();
+    /** @type {!Map<string, !FrameTreeElement>} */
+    this._treeElementForTargetId = new Map();
 
-    function addListener(eventType, handler, target) {
-      SDK.SDKModel.TargetManager.instance().addModelListener(
-          SDK.ResourceTreeModel.ResourceTreeModel, eventType, event => handler.call(target, event.data));
-    }
-    addListener(SDK.ResourceTreeModel.Events.FrameAdded, this._frameAdded, this);
-    addListener(SDK.ResourceTreeModel.Events.FrameNavigated, this._frameNavigated, this);
-    addListener(SDK.ResourceTreeModel.Events.FrameDetached, this._frameDetached, this);
-    addListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this);
+    const frameManager = SDK.FrameManager.FrameManager.instance();
+    frameManager.addEventListener(
+        SDK.FrameManager.Events.FrameAddedToTarget, event => this._frameAdded(event.data.frame), this);
+    frameManager.addEventListener(
+        SDK.FrameManager.Events.FrameRemoved, event => this._frameDetached(event.data.frameId), this);
+    frameManager.addEventListener(
+        SDK.FrameManager.Events.FrameNavigated, event => this._frameNavigated(event.data.frame), this);
+    frameManager.addEventListener(
+        SDK.FrameManager.Events.ResourceAdded, event => this._resourceAdded(event.data.resource), this);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    const resourceTreeModel = mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-    const mainFrame = resourceTreeModel && resourceTreeModel.mainFrame;
-    if (mainFrame) {
-      this._frameAdded(mainFrame);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.ChildTargetManager.ChildTargetManager, SDK.ChildTargetManager.Events.TargetCreated, this._windowOpened,
+        this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.ChildTargetManager.ChildTargetManager, SDK.ChildTargetManager.Events.TargetInfoChanged, this._windowChanged,
+        this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.ChildTargetManager.ChildTargetManager, SDK.ChildTargetManager.Events.TargetDestroyed, this._windowDestroyed,
+        this);
+
+    SDK.SDKModel.TargetManager.instance().observeTargets(this);
+
+    for (const frame of frameManager.getAllFrames()) {
+      if (!this._treeElementForFrameId.get(frame.id)) {
+        this._addFrameAndParents(frame);
+      }
+      const childTargetManager = frame.resourceTreeModel().target().model(SDK.ChildTargetManager.ChildTargetManager);
+      for (const targetInfo of childTargetManager.targetInfos()) {
+        this._windowOpened({data: {targetInfo}});
+      }
     }
   }
 
   /**
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
-   * @returns {?SDK.ResourceTreeModel.ResourceTreeFrame}
+   * @override
+   * @param {!SDK.SDKModel.Target} target
    */
-  static _getParentFrame(frame) {
-    const parentFrame = frame.parentFrame;
-    if (parentFrame) {
-      return parentFrame;
+  targetAdded(target) {
+    if (target.type() === 'worker') {
+      this._workerAdded(target);
     }
-    const parentTarget = frame.resourceTreeModel().target().parentTarget();
-    if (!parentTarget) {
-      return null;
+  }
+
+  /**
+   * @param {!SDK.SDKModel.Target} target
+   * @return {!Promise<void>}
+   */
+  async _workerAdded(target) {
+    const parentTargetId = target.parentTarget().id();
+    const frameTreeElement = this._treeElementForTargetId.get(parentTargetId);
+    const targetInfo =
+        (await target.parentTarget().targetAgent().invoke_getTargetInfo({targetId: target.id()})).targetInfo;
+    if (frameTreeElement && targetInfo) {
+      frameTreeElement.workerCreated(targetInfo);
     }
-    return parentTarget.model(SDK.ResourceTreeModel.ResourceTreeModel).mainFrame;
+  }
+
+  /**
+   * @override
+   * @param {!SDK.SDKModel.Target} target
+   */
+  targetRemoved(target) {
+  }
+
+  /**
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
+   */
+  _addFrameAndParents(frame) {
+    const parentFrame = frame.parentFrame();
+    if (parentFrame && !this._treeElementForFrameId.get(parentFrame.id)) {
+      this._addFrameAndParents(parentFrame);
+    }
+    this._frameAdded(frame);
   }
 
   /**
@@ -2057,7 +2122,7 @@ export class ResourcesSection {
       return false;
     }
     let treeElement = this._treeElementForFrameId.get(frame.id);
-    if (!treeElement && !this._expandFrame(ResourcesSection._getParentFrame(frame))) {
+    if (!treeElement && !this._expandFrame(frame.parentFrame())) {
       return false;
     }
     treeElement = this._treeElementForFrameId.get(frame.id);
@@ -2088,26 +2153,43 @@ export class ResourcesSection {
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
   _frameAdded(frame) {
-    const parentFrame = ResourcesSection._getParentFrame(frame);
+    const parentFrame = frame.parentFrame();
     const parentTreeElement = parentFrame ? this._treeElementForFrameId.get(parentFrame.id) : this._treeElement;
     if (!parentTreeElement) {
       return;
     }
+
+    const existingElement = this._treeElementForFrameId.get(frame.id);
+    if (existingElement) {
+      this._treeElementForFrameId.delete(frame.id);
+      if (existingElement.parent) {
+        existingElement.parent.removeChild(existingElement);
+      }
+    }
+
     const frameTreeElement = new FrameTreeElement(this, frame);
     this._treeElementForFrameId.set(frame.id, frameTreeElement);
+    const targetId = frame.resourceTreeModel().target().id();
+    if (!this._treeElementForTargetId.get(targetId)) {
+      this._treeElementForTargetId.set(targetId, frameTreeElement);
+    }
     parentTreeElement.appendChild(frameTreeElement);
+
+    for (const resource of frame.resources()) {
+      this._resourceAdded(resource);
+    }
   }
 
   /**
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
+   * @param {string} frameId
    */
-  _frameDetached(frame) {
-    const frameTreeElement = this._treeElementForFrameId.get(frame.id);
+  _frameDetached(frameId) {
+    const frameTreeElement = this._treeElementForFrameId.get(frameId);
     if (!frameTreeElement) {
       return;
     }
 
-    this._treeElementForFrameId.delete(frame.id);
+    this._treeElementForFrameId.delete(frameId);
     if (frameTreeElement.parent) {
       frameTreeElement.parent.removeChild(frameTreeElement);
     }
@@ -2136,9 +2218,51 @@ export class ResourcesSection {
     frameTreeElement.appendResource(resource);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _windowOpened(event) {
+    const targetInfo = /** @type {!Protocol.Target.TargetInfo} */ (event.data);
+    // Events for DevTools windows are ignored because they do not have an openerId
+    if (targetInfo.openerId && targetInfo.type === 'page') {
+      const frameTreeElement = this._treeElementForFrameId.get(targetInfo.openerId);
+      if (frameTreeElement) {
+        this._treeElementForTargetId.set(targetInfo.targetId, frameTreeElement);
+        frameTreeElement.windowOpened(targetInfo);
+      }
+    }
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _windowDestroyed(event) {
+    const targetId = /** @type {string} */ (event.data);
+    const frameTreeElement = this._treeElementForTargetId.get(targetId);
+    if (frameTreeElement) {
+      frameTreeElement.windowDestroyed(targetId);
+      this._treeElementForTargetId.delete(targetId);
+    }
+  }
+
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _windowChanged(event) {
+    const targetInfo = /** @type {!Protocol.Target.TargetInfo} */ (event.data);
+    // Events for DevTools windows are ignored because they do not have an openerId
+    if (targetInfo.openerId && targetInfo.type === 'page') {
+      const frameTreeElement = this._treeElementForFrameId.get(targetInfo.openerId);
+      if (frameTreeElement) {
+        frameTreeElement.windowChanged(targetInfo);
+      }
+    }
+  }
+
   reset() {
     this._treeElement.removeChildren();
     this._treeElementForFrameId.clear();
+    this._treeElementForTargetId.clear();
   }
 }
 
@@ -2149,33 +2273,69 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    */
   constructor(section, frame) {
     super(section._panel, '', false);
-    this._populated = false;
     this._section = section;
     this._frame = frame;
     this._frameId = frame.id;
-    this._categoryElements = {};
-    this._treeElementForResource = {};
+    /** @type {!Map<string, !StorageCategoryTreeElement>} */
+    this._categoryElements = new Map();
+    /** @type {!Map<string, !FrameResourceTreeElement>} */
+    this._treeElementForResource = new Map();
+    /** @type {!Map<string, !BaseStorageTreeElement>} */
+    this._treeElementForWindow = new Map();
     this.setExpandable(true);
     this.frameNavigated(frame);
+    /** @type {?FrameDetailsView} */
+    this._view = null;
+  }
 
-    const icon = UI.Icon.Icon.create('largeicon-navigator-frame', 'navigator-tree-item');
-    icon.classList.add('navigator-frame-tree-item');
-    this.setLeadingIcons([icon]);
+  /**
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
+   */
+  getIconTypeForFrame(frame) {
+    if (frame.isTopFrame()) {
+      return frame.unreachableUrl() ? 'mediumicon-frame-blocked' : 'mediumicon-frame';
+    }
+    return frame.unreachableUrl() ? 'mediumicon-frame-embedded-blocked' : 'mediumicon-frame-embedded';
   }
 
   /**
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
   frameNavigated(frame) {
+    const icon = UI.Icon.Icon.create(this.getIconTypeForFrame(frame));
+    if (frame.unreachableUrl()) {
+      icon.classList.add('red-icon');
+    }
+    this.setLeadingIcons([icon]);
     this.invalidateChildren();
+
     this._frameId = frame.id;
-    this.title = frame.displayName();
-    this._categoryElements = {};
-    this._treeElementForResource = {};
+    if (this.title !== frame.displayName()) {
+      this.title = frame.displayName();
+      UI.ARIAUtils.setAccessibleName(this.listItemElement, this.title);
+      if (this.parent) {
+        const parent = this.parent;
+        // Insert frame at new position to preserve correct alphabetical order
+        parent.removeChild(this);
+        parent.appendChild(this);
+      }
+    }
+    this._categoryElements.clear();
+    this._treeElementForResource.clear();
+
+    if (this.selected) {
+      this._view = new FrameDetailsView(this._frame);
+      this.showView(this._view);
+    } else {
+      this._view = null;
+    }
   }
 
   get itemURL() {
-    return 'frame://' + encodeURI(this.titleAsText());
+    // This is used to persist over reloads/navigation which frame was selected.
+    // A frame's title can change on DevTools refresh, so we resort to using
+    // the URL instead (even though it is not guaranteed to be unique).
+    return 'frame://' + encodeURI(this._frame.url);
   }
 
   /**
@@ -2185,17 +2345,25 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._section._panel.showCategoryView(this.titleAsText(), null);
+    if (!this._view) {
+      this._view = new FrameDetailsView(this._frame);
+    } else {
+      this._view.update();
+    }
+    this.showView(this._view);
 
     this.listItemElement.classList.remove('hovered');
     SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     return false;
   }
 
+  /**
+   * @param {boolean} hovered
+   */
   set hovered(hovered) {
     if (hovered) {
       this.listItemElement.classList.add('hovered');
-      this._frame.resourceTreeModel().domModel().overlayModel().highlightFrame(this._frameId);
+      this._frame.highlight();
     } else {
       this.listItemElement.classList.remove('hovered');
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -2206,9 +2374,6 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    * @param {!SDK.Resource.Resource} resource
    */
   appendResource(resource) {
-    if (!this._populated) {
-      return;
-    }
     const statusCode = resource['statusCode'];
     if (statusCode >= 301 && statusCode <= 303) {
       return;
@@ -2217,16 +2382,80 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     const resourceType = resource.resourceType();
     const categoryName = resourceType.name();
     let categoryElement =
-        resourceType === Common.ResourceType.resourceTypes.Document ? this : this._categoryElements[categoryName];
+        resourceType === Common.ResourceType.resourceTypes.Document ? this : this._categoryElements.get(categoryName);
     if (!categoryElement) {
       categoryElement =
           new StorageCategoryTreeElement(this._section._panel, resource.resourceType().category().title, categoryName);
-      this._categoryElements[resourceType.name()] = categoryElement;
-      this._insertInPresentationOrder(this, categoryElement);
+      this._categoryElements.set(resourceType.name(), categoryElement);
+      this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
     }
     const resourceTreeElement = new FrameResourceTreeElement(this._section._panel, resource);
-    this._insertInPresentationOrder(categoryElement, resourceTreeElement);
-    this._treeElementForResource[resource.url] = resourceTreeElement;
+    categoryElement.appendChild(resourceTreeElement, FrameTreeElement._presentationOrderCompare);
+    this._treeElementForResource.set(resource.url, resourceTreeElement);
+
+    if (this._view) {
+      this._view.update();
+    }
+  }
+
+  /**
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  windowOpened(targetInfo) {
+    const categoryKey = 'OpenedWindows';
+    let categoryElement = this._categoryElements.get(categoryKey);
+    if (!categoryElement) {
+      categoryElement = new StorageCategoryTreeElement(this._section._panel, ls`Opened Windows`, categoryKey);
+      this._categoryElements.set(categoryKey, categoryElement);
+      this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
+    }
+    if (!this._treeElementForWindow.get(targetInfo.targetId)) {
+      const windowTreeElement = new FrameWindowTreeElement(this._section._panel, targetInfo);
+      categoryElement.appendChild(windowTreeElement);
+      this._treeElementForWindow.set(targetInfo.targetId, windowTreeElement);
+    }
+  }
+
+  /**
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  workerCreated(targetInfo) {
+    const categoryKey = 'Workers';
+    let categoryElement = this._categoryElements.get(categoryKey);
+    if (!categoryElement) {
+      categoryElement = new StorageCategoryTreeElement(this._section._panel, ls`Workers`, categoryKey);
+      this._categoryElements.set(categoryKey, categoryElement);
+      this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
+    }
+    if (!this._treeElementForWindow.get(targetInfo.targetId)) {
+      const workerTreeElement = new WorkerTreeElement(this._section._panel, targetInfo);
+      categoryElement.appendChild(workerTreeElement);
+      this._treeElementForWindow.set(targetInfo.targetId, workerTreeElement);
+    }
+  }
+
+  /**
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  windowChanged(targetInfo) {
+    const windowTreeElement = this._treeElementForWindow.get(targetInfo.targetId);
+    if (!windowTreeElement) {
+      return;
+    }
+    if (windowTreeElement.title !== targetInfo.title) {
+      windowTreeElement.title = targetInfo.title;
+    }
+    windowTreeElement.update(targetInfo);
+  }
+
+  /**
+   * @param {string} targetId
+   */
+  windowDestroyed(targetId) {
+    const windowTreeElement = this._treeElementForWindow.get(targetId);
+    if (windowTreeElement) {
+      windowTreeElement.windowClosed();
+    }
   }
 
   /**
@@ -2234,7 +2463,7 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    * @return {?SDK.Resource.Resource}
    */
   resourceByURL(url) {
-    const treeElement = this._treeElementForResource[url];
+    const treeElement = this._treeElementForResource.get(url);
     return treeElement ? treeElement._resource : null;
   }
 
@@ -2243,14 +2472,19 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    * @param {!UI.TreeOutline.TreeElement} treeElement
    */
   appendChild(treeElement) {
-    if (!this._populated) {
-      return;
-    }
-    this._insertInPresentationOrder(this, treeElement);
+    super.appendChild(treeElement, FrameTreeElement._presentationOrderCompare);
   }
 
-  _insertInPresentationOrder(parentTreeElement, childTreeElement) {
-    // Insert in the alphabetical order, first frames, then resources. Document resource goes last.
+  /**
+   * Order elements by type (first frames, then resources, last Document resources)
+   * and then each of these groups in the alphabetical order.
+   * @param {!UI.TreeOutline.TreeElement} treeElement1
+   * @param {!UI.TreeOutline.TreeElement} treeElement2
+   */
+  static _presentationOrderCompare(treeElement1, treeElement2) {
+    /**
+     * @param {*} treeElement
+     */
     function typeWeight(treeElement) {
       if (treeElement instanceof StorageCategoryTreeElement) {
         return 2;
@@ -2261,43 +2495,9 @@ export class FrameTreeElement extends BaseStorageTreeElement {
       return 3;
     }
 
-    function compare(treeElement1, treeElement2) {
-      const typeWeight1 = typeWeight(treeElement1);
-      const typeWeight2 = typeWeight(treeElement2);
-
-      let result;
-      if (typeWeight1 > typeWeight2) {
-        result = 1;
-      } else if (typeWeight1 < typeWeight2) {
-        result = -1;
-      } else {
-        result = treeElement1.titleAsText().localeCompare(treeElement2.titleAsText());
-      }
-      return result;
-    }
-
-    const childCount = parentTreeElement.childCount();
-    let i;
-    for (i = 0; i < childCount; ++i) {
-      if (compare(childTreeElement, parentTreeElement.childAt(i)) < 0) {
-        break;
-      }
-    }
-    parentTreeElement.insertChild(childTreeElement, i);
-  }
-
-  /**
-   * @override
-   * @returns {!Promise}
-   */
-  async onpopulate() {
-    this._populated = true;
-    for (const child of this._frame.childFrames) {
-      this._section._frameAdded(child);
-    }
-    for (const resource of this._frame.resources()) {
-      this.appendResource(resource);
-    }
+    const typeWeight1 = typeWeight(treeElement1);
+    const typeWeight2 = typeWeight(treeElement2);
+    return typeWeight1 - typeWeight2 || treeElement1.titleAsText().localeCompare(treeElement2.titleAsText());
   }
 }
 
@@ -2316,8 +2516,7 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
     this.tooltip = resource.url;
     this._resource[FrameResourceTreeElement._symbol] = this;
 
-    const icon = UI.Icon.Icon.create('largeicon-navigator-file', 'navigator-tree-item');
-    icon.classList.add('navigator-file-tree-item');
+    const icon = UI.Icon.Icon.create('mediumicon-manifest', 'navigator-file-tree-item');
     icon.classList.add('navigator-' + resource.resourceType().name() + '-tree-item');
     this.setLeadingIcons([icon]);
   }
@@ -2408,6 +2607,106 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
       return;
     }
     view.revealPosition(line, column, true);
+  }
+}
+
+class FrameWindowTreeElement extends BaseStorageTreeElement {
+  /**
+   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  constructor(storagePanel, targetInfo) {
+    super(storagePanel, targetInfo.title || ls`Window without title`, false);
+    this._targetInfo = targetInfo;
+    this._isWindowClosed = false;
+    this._view = null;
+    this.updateIcon(targetInfo.canAccessOpener);
+  }
+
+  /**
+   * @param {boolean} canAccessOpener
+   */
+  updateIcon(canAccessOpener) {
+    const iconType = canAccessOpener ? 'mediumicon-frame-opened' : 'mediumicon-frame';
+    const icon = UI.Icon.Icon.create(iconType);
+    this.setLeadingIcons([icon]);
+  }
+
+  /**
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  update(targetInfo) {
+    if (targetInfo.canAccessOpener !== this._targetInfo.canAccessOpener) {
+      this.updateIcon(targetInfo.canAccessOpener);
+    }
+    this._targetInfo = targetInfo;
+    if (this._view) {
+      this._view.setTargetInfo(targetInfo);
+      this._view.update();
+    }
+  }
+
+  windowClosed() {
+    this.listItemElement.classList.add('window-closed');
+    this._isWindowClosed = true;
+    if (this._view) {
+      this._view.setIsWindowClosed(true);
+      this._view.update();
+    }
+  }
+
+  /**
+   * @override
+   * @param {boolean=} selectedByUser
+   * @return {boolean}
+   */
+  onselect(selectedByUser) {
+    super.onselect(selectedByUser);
+    if (!this._view) {
+      this._view = new OpenedWindowDetailsView(this._targetInfo, this._isWindowClosed);
+    } else {
+      this._view.update();
+    }
+    this.showView(this._view);
+    return false;
+  }
+}
+
+class WorkerTreeElement extends BaseStorageTreeElement {
+  /**
+   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  constructor(storagePanel, targetInfo) {
+    super(storagePanel, targetInfo.title || targetInfo.url || ls`worker`, false);
+    this._targetInfo = targetInfo;
+    this._view = null;
+    const icon = UI.Icon.Icon.create('mediumicon-service-worker', 'navigator-file-tree-item');
+    this.setLeadingIcons([icon]);
+  }
+
+  /**
+   * @override
+   * @param {boolean=} selectedByUser
+   * @return {boolean}
+   */
+  onselect(selectedByUser) {
+    super.onselect(selectedByUser);
+    if (!this._view) {
+      this._view = new WorkerDetailsView(this._targetInfo);
+    } else {
+      this._view.update();
+    }
+    this.showView(this._view);
+    return false;
+  }
+
+
+  /**
+   * @return {string}
+   */
+  get itemURL() {
+    return 'dedicated-workers://';
   }
 }
 

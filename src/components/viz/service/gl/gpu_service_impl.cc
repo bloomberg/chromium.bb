@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -52,7 +53,7 @@
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "skia/buildflags.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gl/gl_context.h"
@@ -88,7 +89,7 @@
 #include "ui/gl/direct_composition_surface_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/cocoa/quartz_util.h"
 #endif
 
@@ -293,7 +294,7 @@ void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
   gpu_info->video_encode_accelerator_supported_profiles =
       media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-              gpu_preferences));
+              gpu_preferences, gpu_workarounds));
 #endif
 }
 
@@ -324,7 +325,7 @@ GpuServiceImpl::GpuServiceImpl(
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu,
-    const gpu::GpuExtraInfo& gpu_extra_info,
+    const gfx::GpuExtraInfo& gpu_extra_info,
     gpu::VulkanImplementation* vulkan_implementation,
     base::OnceCallback<void(base::Optional<ExitCode>)> exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -367,7 +368,8 @@ GpuServiceImpl::GpuServiceImpl(
     // If GL is using a real GPU, the gpu_info will be passed in and vulkan will
     // use the same GPU.
     vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
-        vulkan_implementation_, context_options,
+        vulkan_implementation_, gpu_preferences_.vulkan_heap_memory_limit,
+        gpu_preferences_.vulkan_sync_cpu_memory_limit,
         (is_native_vulkan && is_native_gl) ? &gpu_info : nullptr);
     if (vulkan_context_provider_) {
       // If Vulkan is supported, then OOP-R is supported.
@@ -393,16 +395,23 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
-#if BUILDFLAG(USE_VAAPI)
+#if BUILDFLAG(USE_VAAPI_IMAGE_CODECS)
   image_decode_accelerator_worker_ =
       media::VaapiImageDecodeAcceleratorWorker::Create();
-#endif
+#endif  // BUILDFLAG(USE_VAAPI_IMAGE_CODECS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
       gpu::kGpuFeatureStatusEnabled) {
     metal_context_provider_ = MetalContextProvider::Create(context_options);
   }
+#endif
+
+#if defined(OS_WIN)
+  auto info_callback = base::BindRepeating(
+      &GpuServiceImpl::UpdateOverlayAndHDRInfo, weak_ptr_factory_.GetWeakPtr());
+  gl::DirectCompositionSurfaceWin::SetOverlayHDRGpuInfoUpdateCallback(
+      info_callback);
 #endif
 
   gpu_memory_buffer_factory_ =
@@ -421,22 +430,44 @@ GpuServiceImpl::~GpuServiceImpl() {
   GetLogMessageManager()->ShutdownLogging();
 
   // Destroy the receiver on the IO thread.
-  base::WaitableEvent wait;
-  auto destroy_receiver_task = base::BindOnce(
-      [](mojo::Receiver<mojom::GpuService>* receiver,
-         base::WaitableEvent* wait) {
-        receiver->reset();
-        wait->Signal();
-      },
-      &receiver_, &wait);
-  if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
-    wait.Wait();
+  {
+    base::WaitableEvent wait;
+    auto destroy_receiver_task = base::BindOnce(
+        [](mojo::Receiver<mojom::GpuService>* receiver,
+           base::WaitableEvent* wait) {
+          receiver->reset();
+          wait->Signal();
+        },
+        &receiver_, base::Unretained(&wait));
+    if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
+      wait.Wait();
+  }
 
   if (watchdog_thread_)
     watchdog_thread_->OnGpuProcessTearDown();
 
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
+
+  // Destroy |gpu_memory_buffer_factory_| on the IO thread since its weakptrs
+  // are checked there.
+  {
+    base::WaitableEvent wait;
+    auto destroy_gmb_factory = base::BindOnce(
+        [](std::unique_ptr<gpu::GpuMemoryBufferFactory> gmb_factory,
+           base::WaitableEvent* wait) {
+          gmb_factory.reset();
+          wait->Signal();
+        },
+        std::move(gpu_memory_buffer_factory_), base::Unretained(&wait));
+
+    if (io_runner_->PostTask(FROM_HERE, std::move(destroy_gmb_factory))) {
+      // |gpu_memory_buffer_factory_| holds a raw pointer to
+      // |vulkan_context_provider_|. Waiting here enforces the correct order
+      // of destruction.
+      wait.Wait();
+    }
+  }
 
   // Scheduler must be destroyed before sync point manager is destroyed.
   scheduler_.reset();
@@ -640,7 +671,8 @@ void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
   DCHECK(main_runner_->BelongsToCurrentThread());
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
-          gpu_preferences_, protected_buffer_manager_),
+          gpu_preferences_, gpu_channel_manager_->gpu_driver_bug_workarounds(),
+          protected_buffer_manager_),
       std::move(vda_receiver));
 }
 
@@ -648,7 +680,8 @@ void GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread(
     mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<arc::GpuArcVideoEncodeAccelerator>(gpu_preferences_),
+      std::make_unique<arc::GpuArcVideoEncodeAccelerator>(
+          gpu_preferences_, gpu_channel_manager_->gpu_driver_bug_workarounds()),
       std::move(vea_receiver));
 }
 
@@ -699,7 +732,7 @@ void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
   media::MojoVideoEncodeAcceleratorProvider::Create(
       std::move(vea_provider_receiver),
       base::BindRepeating(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
-      gpu_preferences_);
+      gpu_preferences_, gpu_channel_manager_->gpu_driver_bug_workarounds());
 }
 
 void GpuServiceImpl::CreateGpuMemoryBuffer(
@@ -768,12 +801,12 @@ void GpuServiceImpl::RequestHDRStatus(RequestHDRStatusCallback callback) {
 void GpuServiceImpl::RequestHDRStatusOnMainThread(
     RequestHDRStatusCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  bool hdr_enabled = false;
+
 #if defined(OS_WIN)
-  hdr_enabled = gl::DirectCompositionSurfaceWin::IsHDRSupported();
+  hdr_enabled_ = gl::DirectCompositionSurfaceWin::IsHDRSupported();
 #endif
   io_runner_->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(callback), hdr_enabled));
+                       base::BindOnce(std::move(callback), hdr_enabled_));
 }
 
 void GpuServiceImpl::RegisterDisplayContext(
@@ -836,6 +869,10 @@ void GpuServiceImpl::DidLoseContext(bool offscreen,
 void GpuServiceImpl::DidUpdateOverlayInfo(
     const gpu::OverlayInfo& overlay_info) {
   gpu_host_->DidUpdateOverlayInfo(gpu_info_.overlay_info);
+}
+
+void GpuServiceImpl::DidUpdateHDRStatus(bool hdr_enabled) {
+  gpu_host_->DidUpdateHDRStatus(hdr_enabled);
 }
 #endif
 
@@ -968,12 +1005,6 @@ void GpuServiceImpl::DisplayAdded() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
-
-#if defined(OS_WIN)
-  // Update overlay info in the GPU process and send the updated data back to
-  // the GPU host in the Browser process through mojom if the info has changed.
-  UpdateOverlayInfo();
-#endif
 }
 
 void GpuServiceImpl::DisplayRemoved() {
@@ -986,12 +1017,19 @@ void GpuServiceImpl::DisplayRemoved() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
+}
 
-#if defined(OS_WIN)
-  // Update overlay info in the GPU process and send the updated data back to
-  // the GPU host in the Browser process through mojom if the info has changed.
-  UpdateOverlayInfo();
-#endif
+void GpuServiceImpl::DisplayMetricsChanged() {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::DisplayMetricsChanged, weak_ptr_));
+    return;
+  }
+  DVLOG(1) << "GPU: Display Metrics changed";
+
+  if (!in_host_process())
+    ui::GpuSwitchingManager::GetInstance()->NotifyDisplayMetricsChanged();
 }
 
 void GpuServiceImpl::DestroyAllChannels() {
@@ -1048,7 +1086,7 @@ void GpuServiceImpl::OnMemoryPressure(
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void GpuServiceImpl::BeginCATransaction() {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(FROM_HERE, base::BindOnce(&ui::BeginCATransaction));
@@ -1141,12 +1179,20 @@ gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
 }
 
 #if defined(OS_WIN)
-void GpuServiceImpl::UpdateOverlayInfo() {
+void GpuServiceImpl::UpdateOverlayAndHDRInfo() {
   gpu::OverlayInfo old_overlay_info = gpu_info_.overlay_info;
   gpu::CollectHardwareOverlayInfo(&gpu_info_.overlay_info);
 
+  // Update overlay info in the GPU process and send the updated data back to
+  // the GPU host in the Browser process through mojom if the info has changed.
   if (old_overlay_info != gpu_info_.overlay_info)
     DidUpdateOverlayInfo(gpu_info_.overlay_info);
+
+  // Update HDR status in the GPU process through the GPU host mojom.
+  bool old_hdr_enabled_status = hdr_enabled_;
+  hdr_enabled_ = gl::DirectCompositionSurfaceWin::IsHDRSupported();
+  if (old_hdr_enabled_status != hdr_enabled_)
+    DidUpdateHDRStatus(hdr_enabled_);
 }
 #endif
 

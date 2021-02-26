@@ -18,7 +18,6 @@
       </div>
       <template is="dom-if" if="[[shouldShowParentButton_(parentStatus_)]]"
           restamp>
-        <div class="separator"></div>
         <cr-button id="safetyCheckParentButton" class="action-button"
             on-click="onRunSafetyCheckClick_" no-search
             aria-label="$i18n{safetyCheckParentButtonAriaLabel}">
@@ -27,7 +26,6 @@
       </template>
       <template is="dom-if" if="[[shouldShowParentIconButton_(parentStatus_)]]"
           restamp>
-        <div class="separator"></div>
         <cr-icon-button id="safetyCheckParentIconButton"
             iron-icon="settings:refresh"
             on-click="onRunSafetyCheckClick_"
@@ -37,12 +35,16 @@
     </div>
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
-      <settings-safety-check-updates-element>
-      </settings-safety-check-updates-element>
-      <settings-safety-check-passwords-element>
-      </settings-safety-check-passwords-element>
-      <settings-safety-check-safe-browsing-element>
-      </settings-safety-check-safe-browsing-element>
-      <settings-safety-check-extensions-element>
-      </settings-safety-check-extensions-element>
+      <settings-safety-check-updates-child>
+      </settings-safety-check-updates-child>
+      <settings-safety-check-passwords-child>
+      </settings-safety-check-passwords-child>
+      <settings-safety-check-safe-browsing-child>
+      </settings-safety-check-safe-browsing-child>
+      <settings-safety-check-extensions-child>
+      </settings-safety-check-extensions-child>
+<if expr="_google_chrome and is_win">
+      <settings-safety-check-chrome-cleaner-child id="chromeCleanerChild">
+      </settings-safety-check-chrome-cleaner-child>
+</if>
     </iron-collapse>

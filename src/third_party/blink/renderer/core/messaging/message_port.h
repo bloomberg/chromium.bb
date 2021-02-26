@@ -57,7 +57,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public ActiveScriptWrappable<MessagePort>,
                                 public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
  public:
   explicit MessagePort(ExecutionContext&);
@@ -132,7 +131,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   // For testing only: allows inspection of the entangled channel.
   ::MojoHandle EntangledHandleForTesting() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // mojo::MessageReceiver implementation.

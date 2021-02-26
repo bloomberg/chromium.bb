@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 
+#include "cc/base/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_options.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
@@ -103,32 +104,24 @@ bool EventHandlerRegistry::HasEventHandlers(
   return targets_[handler_class].size();
 }
 
-bool EventHandlerRegistry::UpdateEventHandlerTargets(
+void EventHandlerRegistry::UpdateEventHandlerTargets(
     ChangeOperation op,
     EventHandlerClass handler_class,
     EventTarget* target) {
   EventTargetSet* targets = &targets_[handler_class];
-  if (op == kAdd) {
-    if (!targets->insert(target).is_new_entry) {
-      // Just incremented refcount, no real change.
-      return false;
-    }
-  } else {
-    DCHECK(op == kRemove || op == kRemoveAll);
-    DCHECK(op == kRemoveAll || targets->Contains(target));
-
-    if (op == kRemoveAll) {
-      if (!targets->Contains(target))
-        return false;
+  switch (op) {
+    case kAdd:
+      targets->insert(target);
+      return;
+    case kRemove:
+      DCHECK(targets->Contains(target));
+      targets->erase(target);
+      return;
+    case kRemoveAll:
       targets->RemoveAll(target);
-    } else {
-      if (!targets->erase(target)) {
-        // Just decremented refcount, no real update.
-        return false;
-      }
-    }
+      return;
   }
-  return true;
+  NOTREACHED();
 }
 
 bool EventHandlerRegistry::UpdateEventHandlerInternal(
@@ -136,21 +129,13 @@ bool EventHandlerRegistry::UpdateEventHandlerInternal(
     EventHandlerClass handler_class,
     EventTarget* target) {
   unsigned old_num_handlers = targets_[handler_class].size();
-  bool target_set_changed =
-      UpdateEventHandlerTargets(op, handler_class, target);
+  UpdateEventHandlerTargets(op, handler_class, target);
   unsigned new_num_handlers = targets_[handler_class].size();
 
   bool handlers_changed = old_num_handlers != new_num_handlers;
+  if (op != kRemoveAll && handlers_changed)
+    NotifyHandlersChanged(target, handler_class, new_num_handlers > 0);
 
-  if (op != kRemoveAll) {
-    if (handlers_changed)
-      NotifyHandlersChanged(target, handler_class, new_num_handlers > 0);
-
-    if (target_set_changed) {
-      NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(target),
-                                             handler_class);
-    }
-  }
   return handlers_changed;
 }
 
@@ -234,10 +219,6 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
     if (handlers_changed[i]) {
       bool has_handlers = targets_[handler_class].Contains(&target);
       NotifyHandlersChanged(&target, handler_class, has_handlers);
-    }
-    if (target_set_changed[i]) {
-      NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(&target),
-                                             handler_class);
     }
   }
 }
@@ -323,28 +304,29 @@ void EventHandlerRegistry::NotifyHandlersChanged(
       if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
         layout_view->MarkEffectiveAllowedTouchActionChanged();
     }
+  } else if (handler_class == kWheelEventBlocking) {
+    if (base::FeatureList::IsEnabled(::features::kWheelEventRegions)) {
+      if (auto* node = target->ToNode()) {
+        if (auto* layout_object = node->GetLayoutObject()) {
+          layout_object->MarkBlockingWheelEventHandlerChanged();
+          auto* continuation = layout_object->VirtualContinuation();
+          while (continuation) {
+            continuation->MarkBlockingWheelEventHandlerChanged();
+            continuation = continuation->VirtualContinuation();
+          }
+        }
+      } else if (auto* dom_window = target->ToLocalDOMWindow()) {
+        // This event handler is on a window. Ensure the layout view is
+        // invalidated because the layout view tracks the window's blocking
+        // wheel event handler rects.
+        if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
+          layout_view->MarkBlockingWheelEventHandlerChanged();
+      }
+    }
   }
 }
 
-void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
-    LocalFrame* frame,
-    EventHandlerClass handler_class) {
-  // TODO(keishi): Added for crbug.com/1090687. Change to CHECK once bug is
-  // fixed.
-  if (!GetPage())
-    return;
-  ScrollingCoordinator* scrolling_coordinator =
-      GetPage()->GetScrollingCoordinator();
-  if (scrolling_coordinator &&
-      (handler_class == kTouchAction ||
-       handler_class == kTouchStartOrMoveEventBlocking ||
-       handler_class == kTouchStartOrMoveEventBlockingLowLatency)) {
-    scrolling_coordinator->TouchEventTargetRectsDidChange(
-        &frame->LocalFrameRoot());
-  }
-}
-
-void EventHandlerRegistry::Trace(Visitor* visitor) {
+void EventHandlerRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->template RegisterWeakCallbackMethod<
       EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);

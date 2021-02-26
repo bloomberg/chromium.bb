@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
 namespace blink {
 
@@ -36,34 +35,34 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   int Value() const;
 
-  const String& MarkerText() const;
-
   bool IsEmpty() const;
 
-  LayoutListMarker* Marker() const {
+  LayoutObject* Marker() const {
+    NOT_DESTROYED();
     Element* list_item = To<Element>(GetNode());
-    if (LayoutObject* marker =
-            list_item->PseudoElementLayoutObject(kPseudoIdMarker)) {
-      if (marker->IsListMarker())
-        return ToLayoutListMarker(marker);
-      NOTREACHED();
-    }
-    return nullptr;
+    return list_item->PseudoElementLayoutObject(kPseudoIdMarker);
   }
 
-  ListItemOrdinal& Ordinal() { return ordinal_; }
+  ListItemOrdinal& Ordinal() {
+    NOT_DESTROYED();
+    return ordinal_;
+  }
   void OrdinalValueChanged();
 
-  const char* GetName() const override { return "LayoutListItem"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutListItem";
+  }
 
   void RecalcVisualOverflow() override;
 
+  void UpdateMarkerTextIfNeeded();
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectListItem || LayoutBlockFlow::IsOfType(type);
   }
-
-  void WillBeDestroyed() override;
 
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
@@ -87,11 +86,18 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   bool PrepareForBlockDirectionAlign(const LayoutObject*);
 
+  void UpdateLayout() override;
+
   ListItemOrdinal ordinal_;
   bool need_block_direction_align_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListItem, IsListItem());
+template <>
+struct DowncastTraits<LayoutListItem> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsListItem();
+  }
+};
 
 }  // namespace blink
 

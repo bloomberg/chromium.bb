@@ -20,13 +20,12 @@ SkColor kPlaybackIconColor = SK_ColorWHITE;
 
 namespace views {
 
-PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
-    : ImageButton(listener) {
+PlaybackImageButton::PlaybackImageButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
   // Accessibility.
-  SetFocusForPlatform();
   const base::string16 playback_accessible_button_label(
       l10n_util::GetStringUTF16(
           IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT));

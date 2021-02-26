@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
 
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -32,7 +32,7 @@ SensorProxy::SensorProxy(device::mojom::blink::SensorType sensor_type,
 
 SensorProxy::~SensorProxy() {}
 
-void SensorProxy::Trace(Visitor* visitor) {
+void SensorProxy::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
   visitor->Trace(provider_);
   PageVisibilityObserver::Trace(visitor);
@@ -129,10 +129,6 @@ bool SensorProxy::ShouldSuspendUpdates() const {
       this_frame->GetSecurityContext()->GetSecurityOrigin();
 
   return !focused_frame_origin->CanAccess(this_origin);
-}
-
-device::mojom::blink::SensorProvider* SensorProxy::sensor_provider() const {
-  return provider_->sensor_provider();
 }
 
 }  // namespace blink

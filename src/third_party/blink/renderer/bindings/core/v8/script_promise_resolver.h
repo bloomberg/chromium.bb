@@ -38,7 +38,6 @@ namespace blink {
 class CORE_EXPORT ScriptPromiseResolver
     : public GarbageCollected<ScriptPromiseResolver>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   USING_PRE_FINALIZER(ScriptPromiseResolver, Dispose);
 
  public:
@@ -97,7 +96,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // promise is pending and the associated ExecutionContext isn't stopped.
   void KeepAliveWhilePending();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   typedef ScriptPromise::InternalResolver Resolver;

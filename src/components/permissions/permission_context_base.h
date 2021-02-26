@@ -16,7 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_result.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
 
 class GURL;
 
@@ -133,7 +133,8 @@ class PermissionContextBase : public KeyedService {
                                    const GURL& embedding_origin,
                                    BrowserPermissionCallback callback,
                                    bool persist,
-                                   ContentSetting content_setting);
+                                   ContentSetting content_setting,
+                                   bool is_one_time);
 
   // Implementors can override this method to update the icons on the
   // url bar with the result of the new permission.
@@ -149,10 +150,19 @@ class PermissionContextBase : public KeyedService {
   // (for example for desktop notifications).
   virtual void UpdateContentSetting(const GURL& requesting_origin,
                                     const GURL& embedding_origin,
-                                    ContentSetting content_setting);
+                                    ContentSetting content_setting,
+                                    bool is_one_time);
 
   // Whether the permission should be restricted to secure origins.
   virtual bool IsRestrictedToSecureOrigins() const = 0;
+
+  // Called by PermissionDecided when the user has made a permission decision.
+  // Subclasses may override this method to perform context-specific logic
+  // before the content setting is changed and the permission callback is run.
+  virtual void UserMadePermissionDecision(const PermissionRequestID& id,
+                                          const GURL& requesting_origin,
+                                          const GURL& embedding_origin,
+                                          ContentSetting content_setting);
 
   ContentSettingsType content_settings_type() const {
     return content_settings_type_;
@@ -172,15 +182,8 @@ class PermissionContextBase : public KeyedService {
                          const GURL& requesting_origin,
                          const GURL& embedding_origin,
                          BrowserPermissionCallback callback,
-                         ContentSetting content_setting);
-
-  // Called when the user has made a permission decision. This is a hook for
-  // descendent classes to do appropriate things they might need to do when this
-  // happens.
-  virtual void UserMadePermissionDecision(const PermissionRequestID& id,
-                                          const GURL& requesting_origin,
-                                          const GURL& embedding_origin,
-                                          ContentSetting content_setting);
+                         ContentSetting content_setting,
+                         bool is_one_time);
 
   content::BrowserContext* browser_context_;
   const ContentSettingsType content_settings_type_;

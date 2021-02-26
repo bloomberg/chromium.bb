@@ -18,6 +18,8 @@
 namespace v8 {
 namespace internal {
 
+#include "torque-generated/src/objects/js-regexp-tq-inl.inc"
+
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSRegExp)
 OBJECT_CONSTRUCTORS_IMPL_CHECK_SUPER(JSRegExpResult, JSArray)
 OBJECT_CONSTRUCTORS_IMPL_CHECK_SUPER(JSRegExpResultIndices, JSArray)
@@ -38,6 +40,7 @@ int JSRegExp::CaptureCount() const {
   switch (TypeTag()) {
     case ATOM:
       return 0;
+    case EXPERIMENTAL:
     case IRREGEXP:
       return Smi::ToInt(DataAt(kIrregexpCaptureCountIndex));
     default:
@@ -66,7 +69,7 @@ String JSRegExp::Pattern() {
 
 Object JSRegExp::CaptureNameMap() {
   DCHECK(this->data().IsFixedArray());
-  DCHECK_EQ(TypeTag(), IRREGEXP);
+  DCHECK(TypeSupportsCaptures(TypeTag()));
   Object value = DataAt(kIrregexpCaptureNameMapIndex);
   DCHECK_NE(value, Smi::FromInt(JSRegExp::kUninitializedValue));
   return value;
@@ -82,6 +85,14 @@ void JSRegExp::SetDataAt(int index, Object value) {
   DCHECK_GE(index,
             kDataIndex);  // Only implementation data can be set this way.
   FixedArray::cast(data()).set(index, value);
+}
+
+void JSRegExp::SetCaptureNameMap(Handle<FixedArray> capture_name_map) {
+  if (capture_name_map.is_null()) {
+    SetDataAt(JSRegExp::kIrregexpCaptureNameMapIndex, Smi::zero());
+  } else {
+    SetDataAt(JSRegExp::kIrregexpCaptureNameMapIndex, *capture_name_map);
+  }
 }
 
 bool JSRegExp::HasCompiledCode() const {

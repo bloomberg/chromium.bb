@@ -20,9 +20,9 @@
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -55,6 +55,9 @@ constexpr char kTestOriginSubDomainOfAbusivePrompts[] =
     "https://b.abusive-prompts.com/";
 constexpr char kTestOriginAbusivePromptsWarn[] =
     "https://warn-abusive-prompts.com/";
+constexpr char kTestOriginAbusiveContent[] = "https://abusive-content.com/";
+constexpr char kTestOriginAbusiveContentWarn[] =
+    "https://warn-abusive-content.com/";
 
 constexpr const char* kAllTestingOrigins[] = {
     kTestOriginNoData,
@@ -65,6 +68,8 @@ constexpr const char* kAllTestingOrigins[] = {
     kTestOriginAbusivePrompts,
     kTestOriginSubDomainOfAbusivePrompts,
     kTestOriginAbusivePromptsWarn,
+    kTestOriginAbusiveContent,
+    kTestOriginAbusiveContentWarn,
 };
 
 }  // namespace
@@ -72,8 +77,7 @@ constexpr const char* kAllTestingOrigins[] = {
 class ContextualNotificationPermissionUiSelectorTest : public testing::Test {
  public:
   ContextualNotificationPermissionUiSelectorTest()
-      : testing_profile_(std::make_unique<TestingProfile>()),
-        contextual_selector_(testing_profile_.get()) {}
+      : testing_profile_(std::make_unique<TestingProfile>()) {}
   ~ContextualNotificationPermissionUiSelectorTest() override = default;
 
  protected:
@@ -153,6 +157,21 @@ class ContextualNotificationPermissionUiSelectorTest : public testing::Test {
     testing_preload_data_.SetOriginReputation(
         url::Origin::Create(GURL(kTestOriginAbusivePromptsWarn)),
         std::move(reputation_abusive_warn));
+
+    SiteReputation reputation_abusive_content;
+    reputation_abusive_content.set_notification_ux_quality(
+        SiteReputation::ABUSIVE_CONTENT);
+    testing_preload_data_.SetOriginReputation(
+        url::Origin::Create(GURL(kTestOriginAbusiveContent)),
+        std::move(reputation_abusive_content));
+
+    SiteReputation reputation_abusive_content_warn;
+    reputation_abusive_content_warn.set_notification_ux_quality(
+        SiteReputation::ABUSIVE_CONTENT);
+    reputation_abusive_content_warn.set_warning_only(true);
+    testing_preload_data_.SetOriginReputation(
+        url::Origin::Create(GURL(kTestOriginAbusiveContentWarn)),
+        std::move(reputation_abusive_content_warn));
   }
 
   void AddUrlToFakeApiAbuseBlocklist(const GURL& url) {
@@ -210,6 +229,8 @@ class ContextualNotificationPermissionUiSelectorTest : public testing::Test {
 // With all the field trials enabled, test all combinations of:
 //   (a) quiet UI being enabled/disabled in prefs, and
 //   (b) positive/negative Safe Browsing verdicts.
+// The ContextualNotificationPermissionUiSelector should only take into account
+// the Safe Browsing verdict and ignore the user pref.
 TEST_F(ContextualNotificationPermissionUiSelectorTest,
        PrefAndSafeBrowsingCombinations) {
   using Config = QuietNotificationPermissionUiConfig;
@@ -219,15 +240,20 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
       {{Config::kEnableAdaptiveActivation, "true"},
        {Config::kEnableCrowdDenyTriggering, "true"},
        {Config::kEnableAbusiveRequestBlocking, "true"},
-       {Config::kEnableAbusiveRequestWarning, "true"}});
+       {Config::kEnableAbusiveRequestWarning, "true"},
+       {Config::kEnableAbusiveContentTriggeredRequestBlocking, "true"},
+       {Config::kEnableAbusiveContentTriggeredRequestWarning, "true"}});
 
   LoadTestPreloadData();
 
-  {
-    SetQuietUiEnabledInPrefs(false);
+  for (const bool quiet_ui_enabled_in_prefs : {false, true}) {
+    SetQuietUiEnabledInPrefs(quiet_ui_enabled_in_prefs);
     ClearSafeBrowsingBlocklist();
 
-    SCOPED_TRACE("Quiet UI disabled in prefs, Safe Browsing verdicts negative");
+    SCOPED_TRACE(quiet_ui_enabled_in_prefs ? "Quiet UI enabled in prefs"
+                                           : "Quiet UI disabled in prefs");
+    SCOPED_TRACE("Safe Browsing verdicts negative");
+
     for (const auto* origin_string : kAllTestingOrigins) {
       SCOPED_TRACE(origin_string);
       QueryAndExpectDecisionForUrl(GURL(origin_string), Decision::UseNormalUi(),
@@ -235,21 +261,8 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
     }
   }
 
-  {
-    SetQuietUiEnabledInPrefs(true);
-    ClearSafeBrowsingBlocklist();
-
-    SCOPED_TRACE("Quiet UI enabled in prefs, Safe Browsing verdicts negative");
-    for (const auto* origin_string : kAllTestingOrigins) {
-      SCOPED_TRACE(origin_string);
-      QueryAndExpectDecisionForUrl(GURL(origin_string),
-                                   QuietUiReason::kEnabledInPrefs,
-                                   Decision::ShowNoWarning());
-    }
-  }
-
-  {
-    SetQuietUiEnabledInPrefs(false);
+  for (const bool quiet_ui_enabled_in_prefs : {false, true}) {
+    SetQuietUiEnabledInPrefs(quiet_ui_enabled_in_prefs);
     LoadTestSafeBrowsingBlocklist();
 
     const struct {
@@ -270,42 +283,16 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
          QuietUiReason::kTriggeredDueToAbusiveRequests},
         {kTestOriginAbusivePromptsWarn, Decision::UseNormalUi(),
          WarningReason::kAbusiveRequests},
+        {kTestOriginAbusiveContent,
+         QuietUiReason::kTriggeredDueToAbusiveContent},
+        {kTestOriginAbusiveContentWarn, Decision::UseNormalUi(),
+         WarningReason::kAbusiveContent},
     };
 
-    SCOPED_TRACE("Quiet UI disabled in prefs, Safe Browsing verdicts positive");
-    for (const auto& test : kTestCases) {
-      SCOPED_TRACE(test.origin_string);
-      QueryAndExpectDecisionForUrl(GURL(test.origin_string),
-                                   test.expected_ui_reason,
-                                   test.expected_warning_reason);
-    }
-  }
+    SCOPED_TRACE(quiet_ui_enabled_in_prefs ? "Quiet UI enabled in prefs"
+                                           : "Quiet UI disabled in prefs");
+    SCOPED_TRACE("Safe Browsing verdicts positive");
 
-  {
-    SetQuietUiEnabledInPrefs(true);
-    LoadTestSafeBrowsingBlocklist();
-
-    const struct {
-      const char* origin_string;
-      base::Optional<QuietUiReason> expected_ui_reason =
-          Decision::UseNormalUi();
-      base::Optional<WarningReason> expected_warning_reason =
-          Decision::ShowNoWarning();
-    } kTestCases[] = {
-        {kTestOriginNoData, QuietUiReason::kEnabledInPrefs},
-        {kTestOriginUnknown, QuietUiReason::kEnabledInPrefs},
-        {kTestOriginAcceptable, QuietUiReason::kEnabledInPrefs},
-        {kTestOriginSpammy, QuietUiReason::kTriggeredByCrowdDeny},
-        {kTestOriginSpammyWarn, QuietUiReason::kEnabledInPrefs},
-        {kTestOriginAbusivePrompts,
-         QuietUiReason::kTriggeredDueToAbusiveRequests},
-        {kTestOriginSubDomainOfAbusivePrompts,
-         QuietUiReason::kTriggeredDueToAbusiveRequests},
-        {kTestOriginAbusivePromptsWarn, QuietUiReason::kEnabledInPrefs,
-         WarningReason::kAbusiveRequests},
-    };
-
-    SCOPED_TRACE("Quiet UI enabled in prefs, Safe Browsing verdicts positive");
     for (const auto& test : kTestCases) {
       SCOPED_TRACE(test.origin_string);
       QueryAndExpectDecisionForUrl(GURL(test.origin_string),
@@ -319,7 +306,6 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest, FeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kQuietNotificationPrompts);
 
-  SetQuietUiEnabledInPrefs(true);
   LoadTestPreloadData();
   LoadTestSafeBrowsingBlocklist();
 
@@ -330,7 +316,7 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest, FeatureDisabled) {
   }
 }
 
-// The feature is enabled but no adaptive triggers are enabled.
+// The feature is enabled but no triggers are enabled.
 TEST_F(ContextualNotificationPermissionUiSelectorTest, AllTriggersDisabled) {
   using Config = QuietNotificationPermissionUiConfig;
   base::test::ScopedFeatureList feature_list;
@@ -344,8 +330,7 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest, AllTriggersDisabled) {
 
   for (const auto* origin_string : kAllTestingOrigins) {
     SCOPED_TRACE(origin_string);
-    QueryAndExpectDecisionForUrl(GURL(origin_string),
-                                 QuietUiReason::kEnabledInPrefs,
+    QueryAndExpectDecisionForUrl(GURL(origin_string), Decision::UseNormalUi(),
                                  Decision::ShowNoWarning());
   }
 }
@@ -359,7 +344,6 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest, OnlyCrowdDenyEnabled) {
       {{Config::kEnableAdaptiveActivation, "true"},
        {Config::kEnableCrowdDenyTriggering, "true"}});
 
-  SetQuietUiEnabledInPrefs(false);
   LoadTestPreloadData();
   LoadTestSafeBrowsingBlocklist();
 
@@ -374,6 +358,81 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest, OnlyCrowdDenyEnabled) {
       {kTestOriginAbusivePrompts},
       {kTestOriginSubDomainOfAbusivePrompts},
       {kTestOriginAbusivePromptsWarn},
+      {kTestOriginAbusiveContent},
+      {kTestOriginAbusiveContentWarn},
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.origin_string);
+    QueryAndExpectDecisionForUrl(GURL(test.origin_string),
+                                 test.expected_ui_reason,
+                                 test.expected_warning_reason);
+  }
+}
+
+// The feature is enabled but only the `abusive content` trigger is enabled.
+TEST_F(ContextualNotificationPermissionUiSelectorTest,
+       OnlyAbusiveContentBlockingEnabled) {
+  using Config = QuietNotificationPermissionUiConfig;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kQuietNotificationPrompts,
+      {{Config::kEnableAdaptiveActivation, "true"},
+       {Config::kEnableAbusiveContentTriggeredRequestBlocking, "true"}});
+
+  LoadTestPreloadData();
+  LoadTestSafeBrowsingBlocklist();
+
+  const struct {
+    const char* origin_string;
+    base::Optional<QuietUiReason> expected_ui_reason = Decision::UseNormalUi();
+    base::Optional<WarningReason> expected_warning_reason =
+        Decision::ShowNoWarning();
+  } kTestCases[] = {
+      {kTestOriginSpammy},
+      {kTestOriginSpammyWarn},
+      {kTestOriginAbusivePrompts},
+      {kTestOriginSubDomainOfAbusivePrompts},
+      {kTestOriginAbusivePromptsWarn},
+      {kTestOriginAbusiveContent, QuietUiReason::kTriggeredDueToAbusiveContent},
+      {kTestOriginAbusiveContentWarn},
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.origin_string);
+    QueryAndExpectDecisionForUrl(GURL(test.origin_string),
+                                 test.expected_ui_reason,
+                                 test.expected_warning_reason);
+  }
+}
+
+// The feature is enabled but only the `abusive content` warning is enabled.
+TEST_F(ContextualNotificationPermissionUiSelectorTest,
+       OnlyAbusiveContentWarningsEnabled) {
+  using Config = QuietNotificationPermissionUiConfig;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kQuietNotificationPrompts,
+      {{Config::kEnableAdaptiveActivation, "true"},
+       {Config::kEnableAbusiveContentTriggeredRequestWarning, "true"}});
+
+  LoadTestPreloadData();
+  LoadTestSafeBrowsingBlocklist();
+
+  const struct {
+    const char* origin_string;
+    base::Optional<QuietUiReason> expected_ui_reason = Decision::UseNormalUi();
+    base::Optional<WarningReason> expected_warning_reason =
+        Decision::ShowNoWarning();
+  } kTestCases[] = {
+      {kTestOriginSpammy},
+      {kTestOriginSpammyWarn},
+      {kTestOriginAbusivePrompts},
+      {kTestOriginSubDomainOfAbusivePrompts},
+      {kTestOriginAbusivePromptsWarn},
+      {kTestOriginAbusiveContent},
+      {kTestOriginAbusiveContentWarn, Decision::UseNormalUi(),
+       WarningReason::kAbusiveContent},
   };
 
   for (const auto& test : kTestCases) {
@@ -394,7 +453,6 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
       {{Config::kEnableAdaptiveActivation, "true"},
        {Config::kEnableAbusiveRequestBlocking, "true"}});
 
-  SetQuietUiEnabledInPrefs(false);
   LoadTestPreloadData();
   LoadTestSafeBrowsingBlocklist();
 
@@ -411,6 +469,8 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
       {kTestOriginSubDomainOfAbusivePrompts,
        QuietUiReason::kTriggeredDueToAbusiveRequests},
       {kTestOriginAbusivePromptsWarn},
+      {kTestOriginAbusiveContent},
+      {kTestOriginAbusiveContentWarn},
   };
 
   for (const auto& test : kTestCases) {
@@ -431,7 +491,6 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
       {{Config::kEnableAdaptiveActivation, "true"},
        {Config::kEnableAbusiveRequestWarning, "true"}});
 
-  SetQuietUiEnabledInPrefs(false);
   LoadTestPreloadData();
   LoadTestSafeBrowsingBlocklist();
 
@@ -447,6 +506,8 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
       {kTestOriginSubDomainOfAbusivePrompts},
       {kTestOriginAbusivePromptsWarn, Decision::UseNormalUi(),
        WarningReason::kAbusiveRequests},
+      {kTestOriginAbusiveContent},
+      {kTestOriginAbusiveContentWarn},
   };
 
   for (const auto& test : kTestCases) {
@@ -461,17 +522,13 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
        CrowdDenyHoldbackChance) {
   const struct {
     std::string holdback_chance;
-    bool enabled_in_prefs;
     base::Optional<QuietUiReason> expected_ui_reason;
     bool expected_histogram_bucket;
   } kTestCases[] = {
       // 100% chance to holdback, the UI used should be the normal UI.
-      {"1.0", false, Decision::UseNormalUi(), true},
+      {"1.0", Decision::UseNormalUi(), true},
       // 0% chance to holdback, the UI used should be the quiet UI.
-      {"0.0", false, QuietUiReason::kTriggeredByCrowdDeny},
-      // 100% chance to holdback but the quiet UI is enabled by the user in
-      // prefs, the UI used should be the quiet UI.
-      {"1.0", true, QuietUiReason::kEnabledInPrefs, true},
+      {"0.0", QuietUiReason::kTriggeredByCrowdDeny},
   };
 
   LoadTestPreloadData();
@@ -479,7 +536,6 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
 
   for (const auto& test : kTestCases) {
     SCOPED_TRACE(test.holdback_chance);
-    SCOPED_TRACE(test.enabled_in_prefs);
 
     using Config = QuietNotificationPermissionUiConfig;
     base::test::ScopedFeatureList feature_list;
@@ -488,10 +544,10 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
         {{Config::kEnableAdaptiveActivation, "true"},
          {Config::kEnableAbusiveRequestBlocking, "true"},
          {Config::kEnableAbusiveRequestWarning, "true"},
+         {Config::kEnableAbusiveContentTriggeredRequestBlocking, "true"},
+         {Config::kEnableAbusiveContentTriggeredRequestWarning, "true"},
          {Config::kEnableCrowdDenyTriggering, "true"},
          {Config::kCrowdDenyHoldBackChance, test.holdback_chance}});
-
-    SetQuietUiEnabledInPrefs(test.enabled_in_prefs);
 
     base::HistogramTester histograms;
     QueryAndExpectDecisionForUrl(GURL(kTestOriginSpammy),
@@ -503,10 +559,15 @@ TEST_F(ContextualNotificationPermissionUiSelectorTest,
                                  QuietUiReason::kTriggeredDueToAbusiveRequests,
                                  Decision::ShowNoWarning());
     QueryAndExpectDecisionForUrl(GURL(kTestOriginAbusivePromptsWarn),
-                                 test.enabled_in_prefs
-                                     ? QuietUiReason::kEnabledInPrefs
-                                     : Decision::UseNormalUi(),
+                                 Decision::UseNormalUi(),
                                  WarningReason::kAbusiveRequests);
+
+    QueryAndExpectDecisionForUrl(GURL(kTestOriginAbusiveContent),
+                                 QuietUiReason::kTriggeredDueToAbusiveContent,
+                                 Decision::ShowNoWarning());
+    QueryAndExpectDecisionForUrl(GURL(kTestOriginAbusiveContentWarn),
+                                 Decision::UseNormalUi(),
+                                 WarningReason::kAbusiveContent);
 
     auto expected_bucket = static_cast<base::HistogramBase::Sample>(
         test.expected_histogram_bucket);

@@ -120,6 +120,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         codec_list[0] = &DECODER_SYMBOL(FFMPEG_DECODER);
         avcodec_register(&DECODER_SYMBOL(FFMPEG_DECODER));
 
+#if FFMPEG_DECODER == tiff || FFMPEG_DECODER == tdsc
+        extern AVCodec DECODER_SYMBOL(mjpeg);
+        codec_list[1] = &DECODER_SYMBOL(mjpeg);
+        avcodec_register(&DECODER_SYMBOL(mjpeg));
+#endif
+
         c = &DECODER_SYMBOL(FFMPEG_DECODER);
 #else
         avcodec_register_all();
@@ -139,24 +145,30 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     maxpixels = maxpixels_per_frame * maxiteration;
     maxsamples = maxsamples_per_frame * maxiteration;
     switch (c->id) {
+    case AV_CODEC_ID_AGM:         maxpixels  /= 1024;  break;
     case AV_CODEC_ID_BINKVIDEO:   maxpixels  /= 32;    break;
     case AV_CODEC_ID_CFHD:        maxpixels  /= 128;   break;
     case AV_CODEC_ID_DIRAC:       maxpixels  /= 8192;  break;
-    case AV_CODEC_ID_DST:         maxsamples /= 8192;  break;
+    case AV_CODEC_ID_DST:         maxsamples /= 1<<20; break;
     case AV_CODEC_ID_DXV:         maxpixels  /= 32;    break;
     case AV_CODEC_ID_FFWAVESYNTH: maxsamples /= 16384; break;
     case AV_CODEC_ID_G2M:         maxpixels  /= 64;    break;
     case AV_CODEC_ID_GDV:         maxpixels  /= 512;   break;
     case AV_CODEC_ID_GIF:         maxpixels  /= 16;    break;
+    case AV_CODEC_ID_HAP:         maxpixels  /= 128;   break;
+    case AV_CODEC_ID_HEVC:        maxpixels  /= 16384; break;
     case AV_CODEC_ID_HNM4_VIDEO:  maxpixels  /= 128;   break;
     case AV_CODEC_ID_IFF_ILBM:    maxpixels  /= 128;   break;
     case AV_CODEC_ID_INDEO4:      maxpixels  /= 128;   break;
+    case AV_CODEC_ID_LAGARITH:    maxpixels  /= 1024;  break;
     case AV_CODEC_ID_LSCR:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_MOTIONPIXELS:maxpixels  /= 256;   break;
     case AV_CODEC_ID_MP4ALS:      maxsamples /= 65536; break;
     case AV_CODEC_ID_MSRLE:       maxpixels  /= 16;    break;
     case AV_CODEC_ID_MSS2:        maxpixels  /= 16384; break;
     case AV_CODEC_ID_MSZH:        maxpixels  /= 128;   break;
+    case AV_CODEC_ID_PNG:         maxpixels  /= 128;   break;
+    case AV_CODEC_ID_APNG:        maxpixels  /= 128;   break;
     case AV_CODEC_ID_QTRLE:       maxpixels  /= 16;    break;
     case AV_CODEC_ID_RASC:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_SANM:        maxpixels  /= 16;    break;
@@ -168,6 +180,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_TRUEMOTION2: maxpixels  /= 1024;  break;
     case AV_CODEC_ID_VP7:         maxpixels  /= 256;   break;
     case AV_CODEC_ID_VP9:         maxpixels  /= 4096;  break;
+    case AV_CODEC_ID_WMV3IMAGE:   maxpixels  /= 8192;  break;
+    case AV_CODEC_ID_WS_VQA:      maxpixels  /= 16384; break;
     case AV_CODEC_ID_ZEROCODEC:   maxpixels  /= 128;   break;
     }
 
@@ -204,7 +218,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             if (flags & 8)
                 ctx->err_recognition |= AV_EF_EXPLODE;
         }
-        if (flags & 0x10)
+        if ((flags & 0x10) && c->id != AV_CODEC_ID_H264)
             ctx->flags2 |= AV_CODEC_FLAG2_FAST;
 
         if (flags & 0x40)

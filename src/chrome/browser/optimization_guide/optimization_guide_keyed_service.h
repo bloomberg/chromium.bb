@@ -36,7 +36,7 @@ class OptimizationGuideBridge;
 class OptimizationGuideService;
 class TopHostProvider;
 class PredictionManager;
-class PredictionManagerBrowserTest;
+class PredictionManagerBrowserTestBase;
 }  // namespace optimization_guide
 
 class GURL;
@@ -51,23 +51,27 @@ class OptimizationGuideKeyedService
   ~OptimizationGuideKeyedService() override;
 
   // optimization_guide::OptimizationGuideDecider implementation:
-  void RegisterOptimizationTypesAndTargets(
-      const std::vector<optimization_guide::proto::OptimizationType>&
-          optimization_types,
+  void RegisterOptimizationTargets(
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets) override;
-  optimization_guide::OptimizationGuideDecision ShouldTargetNavigation(
+  void ShouldTargetNavigationAsync(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target)
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      const base::flat_map<optimization_guide::proto::ClientModelFeature,
+                           float>& client_model_feature_values,
+      optimization_guide::OptimizationGuideTargetDecisionCallback callback)
       override;
-  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata) override;
+  void RegisterOptimizationTypes(
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types) override;
   void CanApplyOptimizationAsync(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback) override;
+  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata) override;
 
   // Adds hints for a URL with provided metadata to the optimization guide.
   // For testing purposes only. This will flush any callbacks for |url| that
@@ -78,13 +82,20 @@ class OptimizationGuideKeyedService
       optimization_guide::proto::OptimizationType optimization_type,
       const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
 
+  // Override the decision returned by |ShouldTargetNavigation|
+  // for |optimization_target|. For testing purposes only.
+  void OverrideTargetDecisionForTesting(
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      optimization_guide::OptimizationGuideDecision
+          optimization_guide_decision);
+
  private:
   friend class ChromeBrowsingDataRemoverDelegate;
   friend class HintsFetcherBrowserTest;
   friend class OptimizationGuideKeyedServiceBrowserTest;
   friend class OptimizationGuideWebContentsObserver;
   friend class ProfileManager;
-  friend class optimization_guide::PredictionManagerBrowserTest;
+  friend class optimization_guide::PredictionManagerBrowserTestBase;
   friend class optimization_guide::android::OptimizationGuideBridge;
 
   // Initializes the service. |optimization_guide_service| is the

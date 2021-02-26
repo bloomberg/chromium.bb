@@ -12,13 +12,14 @@
 #include "android_webview/browser/gfx/parent_output_surface.h"
 #include "android_webview/browser/gfx/skia_output_surface_dependency_webview.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
+#include "gpu/ipc/single_task_sequence.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/init/gl_factory.h"
@@ -27,13 +28,20 @@ namespace android_webview {
 
 namespace {
 
-void OnContextLost() {
-  NOTREACHED() << "Non owned context lost!";
+void OnContextLost(bool synthetic_loss) {
+  // TODO(https://crbug.com/1112841): Debugging contexts losts. WebView will
+  // intentionally crash in HardwareRendererViz::OnViz::DisplayOutputSurface
+  // that will happen after this callback. That crash happens on viz thread and
+  // doesn't have any useful information. Crash here on RenderThread to
+  // understand the reason of context losts.
+  LOG(FATAL) << "Non owned context lost!";
 }
 
 }  // namespace
 
-OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
+OutputSurfaceProviderWebview::OutputSurfaceProviderWebview(
+    AwVulkanContextProvider* vulkan_context_provider)
+    : vulkan_context_provider_(vulkan_context_provider) {
   // Should be kept in sync with compositor_impl_android.cc.
   renderer_settings_.allow_antialiasing = false;
   renderer_settings_.highp_threshold_min = 2048;
@@ -43,8 +51,9 @@ OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
 
   renderer_settings_.use_skia_renderer = features::IsUsingSkiaRenderer();
 
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  enable_vulkan_ = command_line->HasSwitch(switches::kWebViewEnableVulkan);
+  enable_vulkan_ = features::IsUsingVulkan();
+  DCHECK(!enable_vulkan_ || vulkan_context_provider_);
+
   enable_shared_image_ =
       base::FeatureList::IsEnabled(features::kEnableSharedImageForWebview);
   LOG_IF(FATAL, enable_vulkan_ && !enable_shared_image_)
@@ -70,6 +79,7 @@ void OutputSurfaceProviderWebview::InitializeContext() {
     // We need to draw to FBO for External Stencil support with SkiaRenderer
     gl_surface_ = base::MakeRefCounted<AwGLSurfaceExternalStencil>();
   } else {
+    // TODO(crbug.com/1143279): Should not be needed when vulkan is enabled.
     gl_surface_ = base::MakeRefCounted<AwGLSurface>();
   }
 
@@ -83,15 +93,11 @@ void OutputSurfaceProviderWebview::InitializeContext() {
         share_group.get(), gl_surface_.get(), gl::GLContextAttribs());
     gl_context->MakeCurrent(gl_surface_.get());
 
-    auto vulkan_context_provider =
-        enable_vulkan_ ? AwVulkanContextProvider::GetOrCreateInstance()
-                       : nullptr;
-
     shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
         share_group, gl_surface_, std::move(gl_context),
         false /* use_virtualized_gl_contexts */, base::BindOnce(&OnContextLost),
         GpuServiceWebView::GetInstance()->gpu_preferences().gr_context_type,
-        vulkan_context_provider.get());
+        vulkan_context_provider_);
     if (!enable_vulkan_) {
       auto feature_info = base::MakeRefCounted<gpu::gles2::FeatureInfo>(
           workarounds, GpuServiceWebView::GetInstance()->gpu_feature_info());
@@ -115,20 +121,42 @@ void OutputSurfaceProviderWebview::InitializeContext() {
   }
 }
 
-std::unique_ptr<viz::OutputSurface>
-OutputSurfaceProviderWebview::CreateOutputSurface() {
+std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+OutputSurfaceProviderWebview::CreateDisplayController() {
   DCHECK(gl_surface_)
       << "InitializeContext() must be called before CreateOutputSurface()";
 
   if (renderer_settings_.use_skia_renderer) {
     auto skia_dependency = std::make_unique<SkiaOutputSurfaceDependencyWebView>(
         TaskQueueWebView::GetInstance(), GpuServiceWebView::GetInstance(),
-        shared_context_state_.get(), gl_surface_.get());
-    return viz::SkiaOutputSurfaceImpl::Create(std::move(skia_dependency),
-                                              renderer_settings_);
+        shared_context_state_.get(), gl_surface_.get(),
+        vulkan_context_provider_);
+    return std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
+        std::move(skia_dependency));
+  } else {
+    return std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
+        DeferredGpuCommandService::GetInstance(), nullptr);
+  }
+}
+
+std::unique_ptr<viz::OutputSurface>
+OutputSurfaceProviderWebview::CreateOutputSurface(
+    viz::DisplayCompositorMemoryAndTaskController*
+        display_compositor_controller) {
+  DCHECK(gl_surface_)
+      << "InitializeContext() must be called before CreateOutputSurface()";
+  DCHECK(display_compositor_controller)
+      << "CreateDisplayController() must be called before "
+         "CreateOutputSurface()";
+
+  if (renderer_settings_.use_skia_renderer) {
+    return viz::SkiaOutputSurfaceImpl::Create(
+        display_compositor_controller, renderer_settings_, debug_settings());
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
-        gl_surface_, DeferredGpuCommandService::GetInstance());
+        gl_surface_, DeferredGpuCommandService::GetInstance(),
+        display_compositor_controller->gpu_task_scheduler(),
+        display_compositor_controller->controller_on_gpu());
     return std::make_unique<ParentOutputSurface>(gl_surface_,
                                                  std::move(context_provider));
   }

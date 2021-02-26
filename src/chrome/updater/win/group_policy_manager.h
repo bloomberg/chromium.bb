@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "chrome/updater/policy_manager.h"
 
@@ -27,9 +28,8 @@ class GroupPolicyManager : public PolicyManagerInterface {
   bool IsManaged() const override;
 
   bool GetLastCheckPeriodMinutes(int* minutes) const override;
-  bool GetUpdatesSuppressedTimes(int* start_hour,
-                                 int* start_min,
-                                 int* duration_min) const override;
+  bool GetUpdatesSuppressedTimes(
+      UpdatesSuppressedTimes* suppressed_times) const override;
   bool GetDownloadPreferenceGroupPolicy(
       std::string* download_preference) const override;
   bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) const override;
@@ -39,6 +39,8 @@ class GroupPolicyManager : public PolicyManagerInterface {
                                         int* install_policy) const override;
   bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
                                        int* update_policy) const override;
+  bool GetTargetChannel(const std::string& app_id,
+                        std::string* channel) const override;
   bool GetTargetVersionPrefix(
       const std::string& app_id,
       std::string* target_version_prefix) const override;

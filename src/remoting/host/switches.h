@@ -34,9 +34,9 @@ extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
 extern const char kProcessTypeEvaluateCapability[];
 extern const char kProcessTypeFileChooser[];
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 extern const char kProcessTypeXSessionChooser[];
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 extern const char kEvaluateCapabilitySwitchName[];
 
@@ -61,7 +61,7 @@ extern const char kOutputSwitchName[];
 // processes.
 extern const char kMojoPipeToken[];
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // NativeMessagingHost switch to check for required OS permissions and request
 // them if necessary.
 extern const char kCheckPermissionSwitchName[];
@@ -71,7 +71,7 @@ extern const char kCheckAccessibilityPermissionSwitchName[];
 
 // Command line switch to check for Screen Recording permission.
 extern const char kCheckScreenRecordingPermissionSwitchName[];
-#endif  // defined OS_MACOSX
+#endif  // defined OS_APPLE
 
 }  // namespace remoting
 

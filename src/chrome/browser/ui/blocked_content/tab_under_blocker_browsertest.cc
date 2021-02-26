@@ -12,13 +12,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -65,8 +65,7 @@ class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
     policy::PolicyMap policy;
     policy.Set(policy::key::kDefaultPopupsSetting,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(popup_setting),
+               policy::POLICY_SOURCE_CLOUD, base::Value(popup_setting),
                nullptr /* external_data_fetcher */);
     provider_.UpdateChromePolicy(policy);
   }
@@ -107,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
   EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
   navigation_observer.Wait();
 
-  EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
+  EXPECT_TRUE(blocked_content::PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
   EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 
@@ -146,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
   navigation_observer.Wait();
 
-  EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
+  EXPECT_TRUE(blocked_content::PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
   EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 
@@ -182,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   const std::string script =
       "var evt = new MouseEvent('click', {"
       "  view : window,"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       "  metaKey : true"
 #else
       "  ctrlKey : true"
@@ -309,9 +308,9 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, ControlledBySetting) {
   {
     HostContentSettingsMap* settings_map =
         HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-    settings_map->SetContentSettingDefaultScope(
-        top_level_url, GURL(), ContentSettingsType::POPUPS, std::string(),
-        CONTENT_SETTING_ALLOW);
+    settings_map->SetContentSettingDefaultScope(top_level_url, GURL(),
+                                                ContentSettingsType::POPUPS,
+                                                CONTENT_SETTING_ALLOW);
     content::TestNavigationObserver tab_under_observer(opener, 1);
     const GURL cross_origin_url =
         embedded_test_server()->GetURL("a.com", "/title1.html");

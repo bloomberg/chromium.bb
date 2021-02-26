@@ -13,6 +13,7 @@ import sys
 
 import extract_histograms
 import merge_xml
+import histogram_paths
 
 _DATE_FILE_RE = re.compile(r".*MAJOR_BRANCH_DATE=(.+).*")
 _CURRENT_MILESTONE_RE = re.compile(r"MAJOR=([0-9]{2,3})\n")
@@ -220,6 +221,14 @@ def _GenerateFileContent(descriptions, branch_file_content,
   return header_file_content
 
 
+def CheckUnsyncedHistograms(inputs):
+  """Checks whether --inputs is in sync with |histogram_paths.ALL_XMLS|."""
+  all_xmls_set = set(histogram_paths.ALL_XMLS)
+  inputs_set = set(os.path.abspath(input) for input in inputs)
+  to_add, to_remove = all_xmls_set - inputs_set, inputs_set - all_xmls_set
+  return to_add, to_remove
+
+
 def _GenerateFile(arguments):
   """Generates header file containing array with hashes of expired histograms.
 
@@ -232,6 +241,16 @@ def _GenerateFile(arguments):
       arguments.major_branch_date_filepath: File path for base date.
       arguments.milestone_filepath: File path for milestone information.
   """
+  # Assert that the |--inputs| is the same as |histogram_paths.ALL_XMLS| to make
+  # sure we have the most updated list of histogram descriptions. Otherwise,
+  # inform the cl owner to update the --inputs.
+  to_add, to_remove = CheckUnsyncedHistograms(arguments.inputs)
+  assert len(to_add) == 0 and len(to_remove) == 0, (
+      "The --inputs is not in sync with the most updated list of xmls. Please "
+      "update the inputs in "
+      "components/metrics/generate_expired_histograms_array.gni.\n"
+      "  add: %s\n  remove: %s" % (', '.join(to_add), ', '.join(to_remove)))
+
   descriptions = merge_xml.MergeFiles(arguments.inputs)
   with open(arguments.major_branch_date_filepath, "r") as date_file:
     branch_file_content = date_file.read()

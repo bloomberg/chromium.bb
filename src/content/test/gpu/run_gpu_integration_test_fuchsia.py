@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
+
 from gpu_tests import path_util
 
 sys.path.insert(0,
@@ -27,10 +27,13 @@ def main():
   args, gpu_test_args = parser.parse_known_args()
   ConfigureLogging(args)
 
-  # If output directory is not set, assume the script is being launched
+  additional_target_args = {}
+
+  # If output_dir is not set, assume the script is being launched
   # from the output directory.
-  if not args.output_directory:
-    args.output_directory = os.getcwd()
+  if not args.out_dir:
+    args.out_dir = os.getcwd()
+    additional_target_args['out_dir'] = args.out_dir
 
   # Create a temporary log file that Telemetry will look to use to build
   # an artifact when tests fail.
@@ -38,10 +41,10 @@ def main():
   if not args.system_log_file:
     args.system_log_file = os.path.join(tempfile.mkdtemp(), 'system-log')
     temp_log_file = True
+    additional_target_args['system_log_file'] = args.system_log_file
 
-  package_names = ['web_engine', 'web_engine_shell']
-  web_engine_dir = os.path.join(args.output_directory, 'gen', 'fuchsia',
-                                'engine')
+  package_names = ['web_engine_with_webui', 'web_engine_shell']
+  web_engine_dir = os.path.join(args.out_dir, 'gen', 'fuchsia', 'engine')
   gpu_script = [
       os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test', 'gpu',
                    'run_gpu_integration_test.py')
@@ -50,12 +53,17 @@ def main():
   # Pass all other arguments to the gpu integration tests.
   gpu_script.extend(gpu_test_args)
   try:
-    with GetDeploymentTargetForArgs(args) as target:
+    with GetDeploymentTargetForArgs(additional_target_args) as target:
       target.Start()
-      _, fuchsia_ssh_port = target._GetEndpoint()
-      gpu_script.extend(['--fuchsia-ssh-config-dir', args.output_directory])
-      gpu_script.extend(['--fuchsia-ssh-port', str(fuchsia_ssh_port)])
+      fuchsia_device_address, fuchsia_ssh_port = target._GetEndpoint()
+      gpu_script.extend(['--chromium-output-directory', args.out_dir])
+      gpu_script.extend(['--fuchsia-device-address', fuchsia_device_address])
+      gpu_script.extend(['--fuchsia-ssh-config', target._GetSshConfigPath()])
+      if fuchsia_ssh_port:
+        gpu_script.extend(['--fuchsia-ssh-port', str(fuchsia_ssh_port)])
       gpu_script.extend(['--fuchsia-system-log-file', args.system_log_file])
+      if args.verbose:
+        gpu_script.append('-v')
 
       # Set up logging of WebEngine
       listener = target.RunCommandPiped(['log_listener'],
@@ -65,8 +73,8 @@ def main():
           lambda package_name: os.path.join(
               web_engine_dir, package_name, 'ids.txt'),
           package_names)
-      symbolizer = RunSymbolizer(listener.stdout, open(args.system_log_file,
-                                                       'w'), build_ids_paths)
+      RunSymbolizer(listener.stdout, open(args.system_log_file, 'w'),
+                    build_ids_paths)
 
       # Keep the Amber repository live while the test runs.
       with target.GetAmberRepo():

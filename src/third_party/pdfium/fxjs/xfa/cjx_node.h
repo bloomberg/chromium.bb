@@ -16,7 +16,7 @@ class CXFA_Node;
 
 class CJX_Node : public CJX_Tree {
  public:
-  explicit CJX_Node(CXFA_Node* node);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CJX_Node() override;
 
   // CJX_Object:
@@ -40,9 +40,9 @@ class CJX_Node : public CJX_Tree {
   JSE_PROP(ns);
   JSE_PROP(oneOfChild);
 
-  CXFA_Node* GetXFANode() const;
-
  protected:
+  explicit CJX_Node(CXFA_Node* node);
+
   XFA_EventError execSingleEventByName(WideStringView wsEventName,
                                        XFA_Element eType);
 

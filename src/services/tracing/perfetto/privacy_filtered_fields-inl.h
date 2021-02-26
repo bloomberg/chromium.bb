@@ -30,8 +30,9 @@ constexpr int kClockIndices[] = {1, 2, 3, 4, -1};
 constexpr MessageInfo kClock = {kClockIndices, nullptr};
 
 // Proto Message: ClockSnapshot
-constexpr int kClockSnapshotIndices[] = {1, -1};
-constexpr MessageInfo const* kClockSnapshotComplexMessages[] = {&kClock};
+constexpr int kClockSnapshotIndices[] = {1, 2, -1};
+constexpr MessageInfo const* kClockSnapshotComplexMessages[] = {&kClock,
+                                                                nullptr};
 constexpr MessageInfo kClockSnapshot = {kClockSnapshotIndices,
                                         kClockSnapshotComplexMessages};
 
@@ -154,15 +155,45 @@ constexpr int kComponentInfoIndices[] = {1, 2, -1};
 constexpr MessageInfo kComponentInfo = {kComponentInfoIndices, nullptr};
 
 // Proto Message: ChromeLatencyInfo
-constexpr int kChromeLatencyInfoIndices[] = {1, 2, 3, 4, 5, -1};
+constexpr int kChromeLatencyInfoIndices[] = {1, 2, 3, 4, 5, 6, -1};
 constexpr MessageInfo const* kChromeLatencyInfoComplexMessages[] = {
-    nullptr, nullptr, nullptr, &kComponentInfo, nullptr};
+    nullptr, nullptr, nullptr, &kComponentInfo, nullptr, nullptr};
 constexpr MessageInfo kChromeLatencyInfo = {kChromeLatencyInfoIndices,
                                             kChromeLatencyInfoComplexMessages};
 
+// Proto Message: ChromeFrameReporter
+constexpr int kChromeFrameReporterIndices[] = {1, 2, 3, 4, -1};
+constexpr MessageInfo kChromeFrameReporter = {kChromeFrameReporterIndices,
+                                              nullptr};
+
+// Proto Message: ChromeMessagePump
+constexpr int kChromeMessagePumpIndices[] = {1, -1};
+constexpr MessageInfo kChromeMessagePump = {kChromeMessagePumpIndices, nullptr};
+
+// Proto Message: ChromeMojoEventInfo
+constexpr int kChromeMojoEventInfoIndices[] = {1, -1};
+constexpr MessageInfo kChromeMojoEventInfo = {kChromeMojoEventInfoIndices,
+                                              nullptr};
+
+// Proto Message: ChromeApplicationStateInfo
+constexpr int kChromeApplicationStateInfoIndices[] = {1, -1};
+constexpr MessageInfo kChromeApplicationStateInfo = {
+    kChromeApplicationStateInfoIndices, nullptr};
+
+// Proto Message: ChromeRendererSchedulerState
+constexpr int kChromeRendererSchedulerStateIndices[] = {1, -1};
+constexpr MessageInfo kChromeRendererSchedulerState = {
+    kChromeRendererSchedulerStateIndices, nullptr};
+
+// Proto Message: ChromeWindowHandleEventInfo
+constexpr int kChromeWindowHandleEventInfoIndices[] = {1, 2, -1};
+constexpr MessageInfo kChromeWindowHandleEventInfo = {
+    kChromeWindowHandleEventInfoIndices, nullptr};
+
 // Proto Message: TrackEvent
 constexpr int kTrackEventIndices[] = {1,  2,  3,  5,  6,  9,  10, 11, 12, 16,
-                                      17, 24, 25, 26, 27, 28, 29, 30, 31, -1};
+                                      17, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+                                      33, 34, 35, 36, 38, 39, 40, 41, 42, -1};
 constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
@@ -182,6 +213,16 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     &kChromeHistogramSample,
     &kChromeLatencyInfo,
     nullptr,
+    nullptr,
+    &kChromeFrameReporter,
+    &kSourceLocation,
+    nullptr,
+    &kChromeMessagePump,
+    nullptr,
+    &kChromeMojoEventInfo,
+    &kChromeApplicationStateInfo,
+    &kChromeRendererSchedulerState,
+    &kChromeWindowHandleEventInfo,
     nullptr};
 constexpr MessageInfo kTrackEvent = {kTrackEventIndices,
                                      kTrackEventComplexMessages};
@@ -344,7 +385,7 @@ constexpr MessageInfo kTrackDescriptor = {kTrackDescriptorIndices,
                                           kTrackDescriptorComplexMessages};
 
 // Proto Message: TracePacket
-// EDIT: Manually whitelisted: 3 (trusted_uid).
+// EDIT: Manually allowlisted: 3 (trusted_uid).
 constexpr int kTracePacketIndices[] = {3,  6,  8,  10, 11, 12, 13, 35, 36, 41,
                                        42, 43, 44, 51, 54, 56, 58, 59, 60, -1};
 constexpr MessageInfo const* kTracePacketComplexMessages[] = {

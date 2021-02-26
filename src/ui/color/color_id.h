@@ -5,7 +5,7 @@
 #ifndef UI_COLOR_COLOR_ID_H_
 #define UI_COLOR_COLOR_ID_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
@@ -16,9 +16,9 @@
   E(kColorAlertHighSeverity, NativeTheme::kColorId_AlertSeverityHigh) \
   E(kColorAlertLowSeverity, NativeTheme::kColorId_AlertSeverityLow) \
   E(kColorAlertMediumSeverity, NativeTheme::kColorId_AlertSeverityMedium) \
-  E_CPONLY(kColorBorderAndSeparatorForeground) \
   E_CPONLY(kColorDisabledForeground) \
   E_CPONLY(kColorItemSelectionBackground) \
+  E_CPONLY(kColorMidground) \
   E_CPONLY(kColorPrimaryBackground) \
   E_CPONLY(kColorPrimaryForeground) \
   E_CPONLY(kColorSecondaryForeground) \
@@ -26,91 +26,97 @@
   E_CPONLY(kColorTextSelectionBackground) \
   \
   /* Further UI element colors */ \
+  E(kColorAvatarHeaderArt, NativeTheme::kColorId_AvatarHeaderArt) \
+  E(kColorAvatarIconGuest, NativeTheme::kColorId_AvatarIconGuest) \
+  E(kColorAvatarIconIncognito, NativeTheme::kColorId_AvatarIconIncognito) \
   E(kColorBubbleBackground, NativeTheme::kColorId_BubbleBackground) \
   E(kColorBubbleFooterBackground, \
     NativeTheme::kColorId_BubbleFooterBackground) \
   E(kColorButtonBackground, NativeTheme::kColorId_ButtonColor) \
-  E(kColorButtonBorder, NativeTheme::kColorId_ButtonBorderColor) \
-  E(kColorButtonDisabledForeground, NativeTheme::kColorId_ButtonDisabledColor) \
-  E(kColorButtonForeground, NativeTheme::kColorId_ButtonEnabledColor) \
   /* TODO(https://crbug.com/1003612): Map this to old color id. */ \
-  E_CPONLY(kColorButtonPressedBackground) \
-  E(kColorButtonProminentBackground, \
+  E_CPONLY(kColorButtonBackgroundPressed) \
+  E(kColorButtonBackgroundProminent, \
     NativeTheme::kColorId_ProminentButtonColor) \
-  E(kColorButtonProminentDisabledBackground, \
+  E(kColorButtonBackgroundProminentDisabled, \
     NativeTheme::kColorId_ProminentButtonDisabledColor) \
-  E(kColorButtonProminentFocusedBackground, \
+  E(kColorButtonBackgroundProminentFocused, \
     NativeTheme::kColorId_ProminentButtonFocusedColor) \
-  E(kColorButtonProminentForeground, \
+  E(kColorButtonBorder, NativeTheme::kColorId_ButtonBorderColor) \
+  E(kColorButtonBorderDisabled, \
+    NativeTheme::kColorId_DisabledButtonBorderColor) \
+  E(kColorButtonForeground, NativeTheme::kColorId_ButtonEnabledColor) \
+  E(kColorButtonForegroundDisabled, NativeTheme::kColorId_ButtonDisabledColor) \
+  E(kColorButtonForegroundProminent, \
     NativeTheme::kColorId_TextOnProminentButtonColor) \
-  E(kColorButtonUncheckedForeground, \
+  E(kColorButtonForegroundUnchecked, \
     NativeTheme::kColorId_ButtonUncheckedColor) \
   E(kColorDialogBackground, NativeTheme::kColorId_DialogBackground) \
   E(kColorDialogForeground, NativeTheme::kColorId_DialogForeground) \
   E(kColorFocusableBorderFocused, NativeTheme::kColorId_FocusedBorderColor) \
   E(kColorFocusableBorderUnfocused, \
     NativeTheme::kColorId_UnfocusedBorderColor) \
-  E(kColorMenuIcon, NativeTheme::kColorId_MenuIconColor) \
   E(kColorIcon, NativeTheme::kColorId_DefaultIconColor) \
-  E(kColorLabelDisabledForeground, NativeTheme::kColorId_LabelDisabledColor) \
   E(kColorLabelForeground, NativeTheme::kColorId_LabelEnabledColor) \
-  E(kColorLabelSecondaryForeground, NativeTheme::kColorId_LabelSecondaryColor) \
+  E(kColorLabelForegroundDisabled, NativeTheme::kColorId_LabelDisabledColor) \
+  E(kColorLabelForegroundSecondary, NativeTheme::kColorId_LabelSecondaryColor) \
   E(kColorLabelSelectionBackground, \
     NativeTheme::kColorId_LabelTextSelectionBackgroundFocused) \
   E(kColorLabelSelectionForeground, \
     NativeTheme::kColorId_LabelTextSelectionColor) \
-  E(kColorLinkDisabledForeground, NativeTheme::kColorId_LinkDisabled) \
   E(kColorLinkForeground, NativeTheme::kColorId_LinkEnabled) \
-  E(kColorLinkPressedForeground, NativeTheme::kColorId_LinkPressed) \
+  E(kColorLinkForegroundDisabled, NativeTheme::kColorId_LinkDisabled) \
+  E(kColorLinkForegroundPressed, NativeTheme::kColorId_LinkPressed) \
   E(kColorMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
   E(kColorMenuBorder, NativeTheme::kColorId_MenuBorderColor) \
+  E(kColorMenuIcon, NativeTheme::kColorId_MenuIconColor) \
   E(kColorMenuItemBackgroundAlertedInitial, \
     NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor) \
   E(kColorMenuItemBackgroundAlertedTarget, \
     NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor) \
-  E(kColorMenuItemDisabledForeground, \
-    NativeTheme::kColorId_DisabledMenuItemForegroundColor) \
+  E(kColorMenuItemBackgroundHighlighted, \
+    NativeTheme::kColorId_HighlightedMenuItemBackgroundColor) \
+  E(kColorMenuItemBackgroundSelected, \
+    NativeTheme::kColorId_FocusedMenuItemBackgroundColor) \
   E(kColorMenuItemForeground, \
     NativeTheme::kColorId_EnabledMenuItemForegroundColor) \
-  E(kColorMenuItemHighlightedBackground, \
-    NativeTheme::kColorId_HighlightedMenuItemBackgroundColor) \
-  E(kColorMenuItemHighlightedForeground, \
+  E(kColorMenuItemForegroundDisabled, \
+    NativeTheme::kColorId_DisabledMenuItemForegroundColor) \
+  E(kColorMenuItemForegroundHighlighted, \
     NativeTheme::kColorId_HighlightedMenuItemForegroundColor) \
-  E(kColorMenuItemSecondaryForeground, \
+  E(kColorMenuItemForegroundSecondary, \
     NativeTheme::kColorId_MenuItemMinorTextColor) \
-  E(kColorMenuItemSelectedBackground, \
-    NativeTheme::kColorId_FocusedMenuItemBackgroundColor) \
-  E(kColorMenuItemSelectedForeground, \
+  E(kColorMenuItemForegroundSelected, \
     NativeTheme::kColorId_SelectedMenuItemForegroundColor) \
   E(kColorMenuSeparator, NativeTheme::kColorId_MenuSeparatorColor) \
+  E(kColorTabBorderSelected, NativeTheme::kColorId_TabSelectedBorderColor) \
   E(kColorTabContentSeparator, NativeTheme::kColorId_TabBottomBorder) \
   E(kColorTabForeground, NativeTheme::kColorId_TabTitleColorInactive) \
-  E(kColorTabSelectedForeground, \
+  E(kColorTabForegroundSelected, \
     NativeTheme::kColorId_TabTitleColorActive) \
   E(kColorTableBackground, NativeTheme::kColorId_TableBackground) \
+  E(kColorTableBackgroundSelectedFocused, \
+    NativeTheme::kColorId_TableSelectionBackgroundFocused) \
+  E(kColorTableBackgroundSelectedUnfocused, \
+    NativeTheme::kColorId_TableSelectionBackgroundUnfocused) \
   E(kColorTableForeground, NativeTheme::kColorId_TableText) \
+  E(kColorTableForegroundSelectedFocused, \
+    NativeTheme::kColorId_TableSelectedText) \
+  E(kColorTableForegroundSelectedUnfocused, \
+    NativeTheme::kColorId_TableSelectedTextUnfocused) \
   E(kColorTableGroupingIndicator, \
     NativeTheme::kColorId_TableGroupingIndicatorColor) \
   E(kColorTableHeaderBackground, NativeTheme::kColorId_TableHeaderBackground) \
   E(kColorTableHeaderForeground, NativeTheme::kColorId_TableHeaderText) \
   E(kColorTableHeaderSeparator, NativeTheme::kColorId_TableHeaderSeparator) \
-  E(kColorTableSelectedFocusedBackground, \
-    NativeTheme::kColorId_TableSelectionBackgroundFocused) \
-  E(kColorTableSelectedFocusedForeground, \
-    NativeTheme::kColorId_TableSelectedText) \
-  E(kColorTableSelectedUnfocusedBackground, \
-    NativeTheme::kColorId_TableSelectionBackgroundUnfocused) \
-  E(kColorTableSelectedUnfocusedForeground, \
-    NativeTheme::kColorId_TableSelectedTextUnfocused) \
   E(kColorTextfieldBackground, \
     NativeTheme::kColorId_TextfieldDefaultBackground) \
-  E(kColorTextfieldDisabledBackground, \
+  E(kColorTextfieldBackgroundDisabled, \
     NativeTheme::kColorId_TextfieldReadOnlyBackground) \
-  E(kColorTextfieldDisabledForeground, \
-    NativeTheme::kColorId_TextfieldReadOnlyColor) \
-  E(kColorTextfieldPlaceholderForeground, \
-    NativeTheme::kColorId_TextfieldPlaceholderColor) \
   E(kColorTextfieldForeground, NativeTheme::kColorId_TextfieldDefaultColor) \
+  E(kColorTextfieldForegroundDisabled, \
+    NativeTheme::kColorId_TextfieldReadOnlyColor) \
+  E(kColorTextfieldForegroundPlaceholder, \
+    NativeTheme::kColorId_TextfieldPlaceholderColor) \
   E(kColorTextfieldSelectionBackground, \
     NativeTheme::kColorId_TextfieldSelectionBackgroundFocused) \
   E(kColorTextfieldSelectionForeground, \
@@ -119,14 +125,14 @@
   E(kColorTooltipBackground, NativeTheme::kColorId_TooltipBackground) \
   E(kColorTooltipForeground, NativeTheme::kColorId_TooltipText) \
   E(kColorTreeBackground, NativeTheme::kColorId_TreeBackground) \
-  E(kColorTreeNodeForeground, NativeTheme::kColorId_TreeText) \
-  E(kColorTreeNodeSelectedFocusedBackground, \
+  E(kColorTreeNodeBackgroundSelectedFocused, \
     NativeTheme::kColorId_TreeSelectionBackgroundFocused) \
-  E(kColorTreeNodeSelectedFocusedForeground, \
-    NativeTheme::kColorId_TreeSelectedText) \
-  E(kColorTreeNodeSelectedUnfocusedBackground, \
+  E(kColorTreeNodeBackgroundSelectedUnfocused, \
     NativeTheme::kColorId_TreeSelectionBackgroundUnfocused) \
-  E(kColorTreeNodeSelectedUnfocusedForeground, \
+  E(kColorTreeNodeForeground, NativeTheme::kColorId_TreeText) \
+  E(kColorTreeNodeForegroundSelectedFocused, \
+    NativeTheme::kColorId_TreeSelectedText) \
+  E(kColorTreeNodeForegroundSelectedUnfocused, \
     NativeTheme::kColorId_TreeSelectedTextUnfocused) \
   E(kColorWindowBackground, NativeTheme::kColorId_WindowBackground)
 
@@ -165,7 +171,7 @@
   E(kColorNativeWindowText, COLOR_WINDOWTEXT)
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MACOSX_COLOR_IDS \
   E(kColorTableBackgroundAlternate, \
     NativeTheme::kColorId_TableBackgroundAlternate)
@@ -175,7 +181,7 @@
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
   WIN_COLOR_IDS
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
   MACOSX_COLOR_IDS

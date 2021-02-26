@@ -14,9 +14,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/webui_url_constants.h"
@@ -37,19 +39,35 @@ void FindWebTasks(Profile* profile,
   DCHECK(!entries.empty());
   DCHECK(result_list);
 
+  // WebApps only have full support files backed by inodes, so tasks provided by
+  // most Web Apps will be skipped if any non-native files are present. "System"
+  // Web Apps are an exception: we have more control over what they can do, so
+  // tasks provided by System Web Apps are the only ones permitted at present.
+  // See https://crbug.com/1079065.
+  bool has_special_file = false;
+  for (const auto& entry : entries) {
+    if (util::IsUnderNonNativeLocalPath(profile, entry.path)) {
+      has_special_file = true;
+      break;
+    }
+  }
+
   web_app::WebAppProviderBase* provider =
       web_app::WebAppProviderBase::GetProviderBase(profile);
   web_app::AppRegistrar& registrar = provider->registrar();
-  web_app::FileHandlerManager& file_handler_manager =
-      provider->file_handler_manager();
+  web_app::OsIntegrationManager& os_integration_manager =
+      provider->os_integration_manager();
 
-  auto app_ids = registrar.GetAppIds();
+  std::vector<web_app::AppId> app_ids = registrar.GetAppIds();
   for (const auto& app_id : app_ids) {
-    if (!file_handler_manager.IsFileHandlingAPIAvailable(app_id))
+    if (has_special_file && app_id != chromeos::default_web_apps::kMediaAppId)
+      continue;
+
+    if (!os_integration_manager.IsFileHandlingAPIAvailable(app_id))
       continue;
 
     const auto* file_handlers =
-        file_handler_manager.GetEnabledFileHandlers(app_id);
+        os_integration_manager.GetEnabledFileHandlers(app_id);
 
     if (!file_handlers)
       continue;
@@ -101,7 +119,7 @@ void ExecuteWebTask(Profile* profile,
     return;
   }
 
-  if (!provider->file_handler_manager().IsFileHandlingAPIAvailable(
+  if (!provider->os_integration_manager().IsFileHandlingAPIAvailable(
           task.app_id)) {
     std::move(done).Run(
         extensions::api::file_manager_private::TASK_RESULT_FAILED,
@@ -124,9 +142,18 @@ void ExecuteWebTask(Profile* profile,
   for (const auto& file_system_url : file_system_urls)
     launch_files->file_paths.push_back(file_system_url.path());
 
+  // App Service doesn't exist in Incognito mode but apps can be
+  // launched (ie. default handler to open a download from its
+  // notification) from Incognito mode. Use the base profile in these
+  // cases (see crbug.com/1111695).
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    profile = profile->GetOriginalProfile();
+  }
+  DCHECK(
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
+
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   proxy->LaunchAppWithFiles(
       task.app_id, launch_container,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
@@ -134,8 +161,11 @@ void ExecuteWebTask(Profile* profile,
                           /* preferred_containner=*/false),
       apps::mojom::LaunchSource::kFromFileManager, std::move(launch_files));
 
-  std::move(done).Run(
-      extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
+  // In a multiprofile session, web apps always open on the current desktop,
+  // regardless of which profile owns the files being opened, so use
+  // TASK_RESULT_OPENED.
+  std::move(done).Run(extensions::api::file_manager_private::TASK_RESULT_OPENED,
+                      "");
 }
 
 }  // namespace file_tasks

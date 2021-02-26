@@ -48,9 +48,9 @@ void IntersectionObservation::ComputeIntersection(
     return;
   DCHECK(observer_->root());
   unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
-  IntersectionGeometry geometry(root_geometry, *observer_->root(), *Target(),
-                                observer_->thresholds(), geometry_flags,
-                                cached_rects_.get());
+  IntersectionGeometry geometry(
+      root_geometry, *observer_->root(), *Target(), observer_->thresholds(),
+      observer_->TargetMargin(), geometry_flags, cached_rects_.get());
   ProcessIntersectionGeometry(geometry);
 }
 
@@ -58,9 +58,9 @@ void IntersectionObservation::ComputeIntersection(unsigned compute_flags) {
   if (!ShouldCompute(compute_flags))
     return;
   unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
-  IntersectionGeometry geometry(observer_->root(), *Target(),
-                                observer_->RootMargin(),
-                                observer_->thresholds(), geometry_flags);
+  IntersectionGeometry geometry(
+      observer_->root(), *Target(), observer_->RootMargin(),
+      observer_->thresholds(), observer_->TargetMargin(), geometry_flags);
   ProcessIntersectionGeometry(geometry);
 }
 
@@ -93,7 +93,7 @@ void IntersectionObservation::InvalidateCachedRects() {
     cached_rects_->valid = false;
 }
 
-void IntersectionObservation::Trace(Visitor* visitor) {
+void IntersectionObservation::Trace(Visitor* visitor) const {
   visitor->Trace(observer_);
   visitor->Trace(entries_);
   visitor->Trace(target_);
@@ -103,6 +103,16 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) {
   DCHECK(Observer());
   if (!target_ || !observer_->RootIsValid() | !observer_->GetExecutionContext())
     return false;
+
+  // If we're processing post-layout deliveries only and we don't have a
+  // post-layout delivery observer, then return early.
+  if (flags & kPostLayoutDeliveryOnly) {
+    if (Observer()->GetDeliveryBehavior() !=
+        IntersectionObserver::kDeliverDuringPostLayoutSteps) {
+      return false;
+    }
+  }
+
   if (flags &
       (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
                                    : kExplicitRootObserversNeedUpdate)) {
@@ -120,12 +130,12 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) {
     return false;
   }
   if (target_->isConnected() && Observer()->trackVisibility()) {
-    FrameOcclusionState occlusion_state =
+    mojom::blink::FrameOcclusionState occlusion_state =
         target_->GetDocument().GetFrame()->GetOcclusionState();
     // If we're tracking visibility, and we don't have occlusion information
     // from our parent frame, then postpone computing intersections until a
     // later lifecycle when the occlusion information is known.
-    if (occlusion_state == FrameOcclusionState::kUnknown)
+    if (occlusion_state == mojom::blink::FrameOcclusionState::kUnknown)
       return false;
   }
   last_run_time_ = timestamp;

@@ -40,6 +40,7 @@ namespace signin_metrics {
 enum class AccessPoint;
 enum class PromoAction;
 enum class Reason;
+enum class ReauthAccessPoint;
 enum class SourceForRefreshTokenOperation;
 }  // namespace signin_metrics
 
@@ -102,6 +103,21 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
       const std::string& last_email,
       const std::string& email,
       base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback);
+
+  // Shows the reauth prompt for |account_id| as either:
+  // - a tab-modal dialog on top of the currently active tab, or
+  // - a new tab
+  // |account_id| should be signed into the content area. Otherwise, the method
+  // fails with |kAccountNotSignedIn| error.
+  // |access_point| indicates a call site of this method.
+  // Calls |reauth_callback| on completion of the reauth flow, or on error. The
+  // callback may be called synchronously. The user may also ignore the reauth
+  // indefinitely.
+  // Returns a handle that aborts the ongoing reauth on destruction.
+  virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
+      const CoreAccountId& account_id,
+      signin_metrics::ReauthAccessPoint access_point,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
@@ -111,19 +127,6 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser_|'s window.
   void ShowModalSigninErrorDialog();
-
-  // Shows the reauth prompt for |account_id| as either:
-  // - a browser-modal dialog on top of the |browser_|'s window, or
-  // - a popup window
-  // |account_id| should be signed into the content area. Otherwise, the method
-  // fails with |kAccountNotSignedIn| error.
-  // Calls |reauth_callback| on completion of the reauth flow, or on error. The
-  // callback may be called synchronously. The user may also ignore the reauth
-  // indefinitely.
-  // Returns a handle that aborts the ongoing reauth on destruction.
-  virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
-      const CoreAccountId& account_id,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   // Returns true if the modal dialog is shown.
   bool ShowsModalDialog();
@@ -139,7 +142,10 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   void OnModalSigninClosed() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
+                           ErrorDialogDefaultFocus);
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
+  friend class SigninReauthViewControllerBrowserTest;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
@@ -154,9 +160,14 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();
 
+  // Returns the modal dialog delegate.
+  SigninViewControllerDelegate* GetModalDialogDelegateForTesting();
+
   // Browser owning this controller.
   Browser* browser_;
 
+  // |delegate_| owns itself and calls OnModalSigninClosed() before being
+  // destroyed.
   SigninViewControllerDelegate* delegate_ = nullptr;
   ScopedObserver<SigninViewControllerDelegate,
                  SigninViewControllerDelegate::Observer>

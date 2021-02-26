@@ -31,15 +31,7 @@ class OverlayMediaNotificationFrameView : public views::NonClientFrameView {
     return bounds();
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (!bounds().Contains(point))
-      return HTNOWHERE;
-
-    // TODO(steimel): This should be smarter, but we need to figure out how we
-    // want to handle dragging vs click-to-go-to-tab.
-    if (GetDraggingBounds().Contains(point))
-      return HTCAPTION;
-
-    return HTCLIENT;
+    return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override {}
@@ -60,6 +52,7 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
   explicit OverlayMediaNotificationWidgetDelegate(
       OverlayMediaNotificationView* widget)
       : widget_(widget) {
+    SetOwnedByWidget(true);
     DCHECK(widget_);
   }
   OverlayMediaNotificationWidgetDelegate(
@@ -72,9 +65,9 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
   bool ShouldShowWindowTitle() const override { return false; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new OverlayMediaNotificationFrameView();
+    return std::make_unique<OverlayMediaNotificationFrameView>();
   }
 
  private:
@@ -87,7 +80,8 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
 OverlayMediaNotificationView::OverlayMediaNotificationView(
     const std::string& id,
     std::unique_ptr<MediaNotificationContainerImplView> notification,
-    gfx::Rect bounds)
+    gfx::Rect bounds,
+    gfx::NativeWindow context)
     : id_(id), notification_(notification.get()) {
   DCHECK(notification_);
 
@@ -103,6 +97,9 @@ OverlayMediaNotificationView::OverlayMediaNotificationView(
   params.name = "OverlayMediaNotificationView";
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.delegate = new OverlayMediaNotificationWidgetDelegate(this);
+  params.delegate->SetTitle(notification_->GetTitle());
+  if (context)
+    params.context = context;
   Init(std::move(params));
   GetContentsView()->AddChildView(std::move(notification));
 }
@@ -119,10 +116,16 @@ void OverlayMediaNotificationView::ShowNotification() {
   // that we don't close before it's set.
   DCHECK(manager_);
   Show();
+
+  notification_->OnOverlayNotificationShown(this);
 }
 
 void OverlayMediaNotificationView::CloseNotification() {
   CloseWithReason(ClosedReason::kUnspecified);
+}
+
+void OverlayMediaNotificationView::UpdateTitle(const base::string16& title) {
+  widget_delegate()->SetTitle(title);
 }
 
 void OverlayMediaNotificationView::OnNativeWidgetDestroyed() {

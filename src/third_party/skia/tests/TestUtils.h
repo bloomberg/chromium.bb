@@ -5,6 +5,9 @@
  * found in the LICENSE file.
  */
 
+#ifndef TestUtils_DEFINED
+#define TestUtils_DEFINED
+
 #include "include/core/SkBitmap.h"
 #include "src/gpu/GrDataUtils.h"
 #include "tests/Test.h"
@@ -14,42 +17,22 @@ class GrSurfaceProxy;
 typedef uint32_t GrColor;
 
 // Ensure that reading back from 'srcContext' as RGBA 8888 matches 'expectedPixelValues
-void TestReadPixels(skiatest::Reporter*, GrSurfaceContext* srcContext,
+void TestReadPixels(skiatest::Reporter*, GrDirectContext*, GrSurfaceContext* srcContext,
                     uint32_t expectedPixelValues[], const char* testName);
 
 // See if trying to write RGBA 8888 pixels to 'dstContext' matches matches the
 // expectation ('expectedToWork')
-void TestWritePixels(skiatest::Reporter*, GrSurfaceContext* srcContext, bool expectedToWork,
-                     const char* testName);
+void TestWritePixels(skiatest::Reporter*, GrDirectContext*, GrSurfaceContext* srcContext,
+                     bool expectedToWork, const char* testName);
 
 // Ensure that the pixels can be copied from 'proxy' viewed as colorType, to an RGBA 8888
 // destination (both texture-backed and rendertarget-backed).
-void TestCopyFromSurface(skiatest::Reporter*, GrContext*, GrSurfaceProxy* proxy,
+void TestCopyFromSurface(skiatest::Reporter*, GrDirectContext*, GrSurfaceProxy* proxy,
                          GrSurfaceOrigin origin, GrColorType colorType,
                          uint32_t expectedPixelValues[], const char* testName);
 
 // Fills data with a red-green gradient
 void FillPixelData(int width, int height, GrColor* data);
-
-// Create a solid colored backend texture and syncs the CPU to wait for upload to finish
-bool CreateBackendTexture(GrContext* context,
-                          GrBackendTexture* backendTex,
-                          int width, int height,
-                          SkColorType colorType,
-                          const SkColor4f& color,
-                          GrMipMapped mipMapped,
-                          GrRenderable renderable,
-                          GrProtected = GrProtected::kNo);
-
-bool CreateBackendTexture(GrContext*,
-                          GrBackendTexture* backendTex,
-                          const SkImageInfo& ii,
-                          const SkColor4f& color,
-                          GrMipMapped,
-                          GrRenderable,
-                          GrProtected = GrProtected::kNo);
-
-void DeleteBackendTexture(GrContext*, const GrBackendTexture& backendTex);
 
 // Checks srcBuffer and dstBuffer contain the same colors
 bool DoesFullBufferContainCorrectColor(const GrColor* srcBuffer,
@@ -106,3 +89,5 @@ void CheckSingleThreadedProxyRefs(skiatest::Reporter* reporter,
                                   GrSurfaceProxy* proxy,
                                   int32_t expectedProxyRefs,
                                   int32_t expectedBackingRefs);
+
+#endif

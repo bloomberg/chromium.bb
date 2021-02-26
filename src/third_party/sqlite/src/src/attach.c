@@ -293,7 +293,9 @@ static void detachFunc(
     sqlite3_snprintf(sizeof(zErr),zErr, "cannot detach database %s", zName);
     goto detach_error;
   }
-  if( sqlite3BtreeIsInReadTrans(pDb->pBt) || sqlite3BtreeIsInBackup(pDb->pBt) ){
+  if( sqlite3BtreeTxnState(pDb->pBt)!=SQLITE_TXN_NONE
+   || sqlite3BtreeIsInBackup(pDb->pBt)
+  ){
     sqlite3_snprintf(sizeof(zErr),zErr, "database %s is locked", zName);
     goto detach_error;
   }
@@ -597,6 +599,9 @@ int sqlite3FixTriggerStep(
       return 1;
     }
     if( sqlite3FixExprList(pFix, pStep->pExprList) ){
+      return 1;
+    }
+    if( pStep->pFrom && sqlite3FixSrcList(pFix, pStep->pFrom) ){
       return 1;
     }
 #ifndef SQLITE_OMIT_UPSERT

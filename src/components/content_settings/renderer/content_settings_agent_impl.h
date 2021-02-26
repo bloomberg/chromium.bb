@@ -24,9 +24,9 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
-struct WebEnabledClientHints;
 class WebFrame;
 class WebURL;
 }  // namespace blink
@@ -47,8 +47,8 @@ class ContentSettingsAgentImpl
    public:
     virtual ~Delegate();
 
-    // Return true if this scheme should be whitelisted for content settings.
-    virtual bool IsSchemeWhitelisted(const std::string& scheme);
+    // Return true if this scheme should be allowlisted for content settings.
+    virtual bool IsSchemeAllowlisted(const std::string& scheme);
 
     // Allows the delegate to override logic for various
     // blink::WebContentSettingsClient methods. If an optional value is
@@ -56,16 +56,13 @@ class ContentSettingsAgentImpl
     virtual base::Optional<bool> AllowReadFromClipboard();
     virtual base::Optional<bool> AllowWriteToClipboard();
     virtual base::Optional<bool> AllowMutationEvents();
-    virtual base::Optional<bool> AllowRunningInsecureContent(
-        bool allowed_per_settings,
-        const blink::WebURL& resource_url);
     virtual void PassiveInsecureContentFound(const blink::WebURL& resource_url);
   };
 
-  // Set |should_whitelist| to true if |render_frame()| contains content that
-  // should be whitelisted for content settings.
+  // Set |should_allowlist| to true if |render_frame()| contains content that
+  // should be allowlisted for content settings.
   ContentSettingsAgentImpl(content::RenderFrame* render_frame,
-                           bool should_whitelist,
+                           bool should_allowlist,
                            std::unique_ptr<Delegate> delegate);
   ~ContentSettingsAgentImpl() override;
 
@@ -79,19 +76,19 @@ class ContentSettingsAgentImpl
   // Sends an IPC notification that the specified content type was blocked.
   void DidBlockContentType(ContentSettingsType settings_type);
 
+  // Helper to convert StorageType to its Mojo counterpart.
+  static mojom::ContentSettingsManager::StorageType ConvertToMojoStorageType(
+      StorageType storage_type);
+
   // blink::WebContentSettingsClient:
-  bool AllowDatabase() override;
-  void RequestFileSystemAccessAsync(
-      base::OnceCallback<void(bool)> callback) override;
+  void AllowStorageAccess(StorageType storage_type,
+                          base::OnceCallback<void(bool)> callback) override;
+  bool AllowStorageAccessSync(StorageType type) override;
   bool AllowImage(bool enabled_per_settings,
                   const blink::WebURL& image_url) override;
-  bool AllowIndexedDB() override;
-  bool AllowCacheStorage() override;
-  bool AllowWebLocks() override;
   bool AllowScript(bool enabled_per_settings) override;
   bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;
-  bool AllowStorage(bool local) override;
   bool AllowReadFromClipboard(bool default_value) override;
   bool AllowWriteToClipboard(bool default_value) override;
   bool AllowMutationEvents(bool default_value) override;
@@ -101,13 +98,6 @@ class ContentSettingsAgentImpl
                                    const blink::WebURL& url) override;
   bool AllowPopupsAndRedirects(bool default_value) override;
   void PassiveInsecureContentFound(const blink::WebURL& resource_url) override;
-  void PersistClientHints(
-      const blink::WebEnabledClientHints& enabled_client_hints,
-      base::TimeDelta duration,
-      const blink::WebURL& url) override;
-  void GetAllowedClientHintsFromSource(
-      const blink::WebURL& url,
-      blink::WebEnabledClientHints* client_hints) const override;
   bool ShouldAutoupgradeMixedContent() override;
 
   bool allow_running_insecure_content() const {
@@ -132,18 +122,16 @@ class ContentSettingsAgentImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplBrowserTest,
-                           WhitelistedSchemes);
+                           AllowlistedSchemes);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplBrowserTest,
                            ContentSettingsInterstitialPages);
 
   // RenderFrameObserver implementation.
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
 
   // mojom::ContentSettingsAgent:
   void SetAllowRunningInsecureContent() override;
-  void SetAsInterstitial() override;
   void SetDisabledMixedContentUpgrades() override;
 
   void OnContentSettingsAgentRequest(
@@ -153,13 +141,9 @@ class ContentSettingsAgentImpl
   void ClearBlockedContentSettings();
 
   // Helpers.
-  // True if |render_frame()| contains content that is white-listed for content
+  // True if |render_frame()| contains content that is allowlisted for content
   // settings.
-  bool IsWhitelistedForContentSettings() const;
-
-  // Common logic for AllowIndexedDB, AllowCacheStorage, etc.
-  bool AllowStorageAccess(
-      mojom::ContentSettingsManager::StorageType storage_type);
+  bool IsAllowlistedForContentSettings() const;
 
   // A getter for |content_settings_manager_| that ensures it is bound.
   mojom::ContentSettingsManager& GetContentSettingsManager();
@@ -178,18 +162,17 @@ class ContentSettingsAgentImpl
   // Stores if images, scripts, and plugins have actually been blocked.
   base::flat_set<ContentSettingsType> content_blocked_;
 
-  // Caches the result of AllowStorage.
-  using StoragePermissionsKey = std::pair<GURL, bool>;
+  // Caches the result of AllowStorageAccess.
+  using StoragePermissionsKey = std::pair<url::Origin, StorageType>;
   base::flat_map<StoragePermissionsKey, bool> cached_storage_permissions_;
 
   // Caches the result of AllowScript.
   base::flat_map<blink::WebFrame*, bool> cached_script_permissions_;
 
-  bool is_interstitial_page_ = false;
   bool mixed_content_autoupgrades_disabled_ = false;
 
-  // If true, IsWhitelistedForContentSettings will always return true.
-  const bool should_whitelist_;
+  // If true, IsAllowlistedForContentSettings will always return true.
+  const bool should_allowlist_;
 
   std::unique_ptr<Delegate> delegate_;
 

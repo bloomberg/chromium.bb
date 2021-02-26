@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
@@ -30,17 +31,10 @@ const base::Feature kOptimizationHints {
 #endif  // defined(OS_ANDROID)
 };
 
-// Enables Optimization Hints that are marked as experimental. Optimizations are
-// marked experimental by setting an experiment name in the "experiment_name"
-// field of the Optimization proto. This allows experiments at the granularity
-// of a single PreviewType for a single host (or host suffix). The intent is
-// that optimizations that may not work properly for certain sites can be tried
-// at a small scale via Finch experiments. Experimental optimizations can be
-// activated by enabling this feature and passing an experiment name as a
-// parameter called "experiment_name" that matches the experiment name in the
-// Optimization proto.
-const base::Feature kOptimizationHintsExperiments{
-    "OptimizationHintsExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
+// Feature flag that contains a feature param that specifies the field trials
+// that are allowed to be sent up to the Optimization Guide Server.
+const base::Feature kOptimizationHintsFieldTrials{
+    "OptimizationHintsFieldTrials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fetching from a remote Optimization Guide Service.
 const base::Feature kRemoteOptimizationGuideFetching {
@@ -58,7 +52,12 @@ const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
 
 // Enables the prediction of optimization targets.
 const base::Feature kOptimizationTargetPrediction{
-    "OptimizationTargetPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OptimizationTargetPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables out-of-service evaluation of prediction models via the ML Service.
+const base::Feature kOptimizationTargetPredictionUsingMLService{
+    "OptimizationGuidePredictionUsingMLService",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
@@ -237,6 +236,12 @@ size_t MaxHostModelFeaturesCacheSize() {
       kOptimizationTargetPrediction, "max_host_model_features_cache_size", 100);
 }
 
+size_t MaxHostKeyedHintCacheSize() {
+  size_t max_host_keyed_hint_cache_size = GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_host_keyed_hint_cache_size", 30);
+  return max_host_keyed_hint_cache_size;
+}
+
 size_t MaxURLKeyedHintCacheSize() {
   size_t max_url_keyed_hint_cache_size = GetFieldTrialParamByFeatureAsInt(
       kOptimizationHints, "max_url_keyed_hint_cache_size", 30);
@@ -245,8 +250,9 @@ size_t MaxURLKeyedHintCacheSize() {
   return max_url_keyed_hint_cache_size;
 }
 
-bool IsOptimizationTargetPredictionEnabled() {
-  return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
+bool ShouldPersistHintsToDisk() {
+  return GetFieldTrialParamByFeatureAsBool(kOptimizationHints,
+                                           "persist_hints_to_disk", true);
 }
 
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
@@ -265,7 +271,7 @@ int PredictionModelFetchRandomMinDelaySecs() {
 
 int PredictionModelFetchRandomMaxDelaySecs() {
   return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
-                                          "fetch_random_max_delay_secs", 180);
+                                          "fetch_random_max_delay_secs", 60);
 }
 
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
@@ -278,6 +284,27 @@ base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
       value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   return base::flat_set<std::string>(app_packages_list.begin(),
                                      app_packages_list.end());
+}
+
+base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      kOptimizationHintsFieldTrials, "allowed_field_trial_names");
+  if (value.empty())
+    return {};
+
+  std::vector<std::string> allowed_field_trial_names = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  base::flat_set<uint32_t> allowed_field_trial_name_hashes;
+  for (const auto& allowed_field_trial_name : allowed_field_trial_names) {
+    allowed_field_trial_name_hashes.insert(
+        variations::HashName(allowed_field_trial_name));
+  }
+  return allowed_field_trial_name_hashes;
+}
+
+bool ShouldUseMLServiceForPrediction() {
+  return base::FeatureList::IsEnabled(
+      kOptimizationTargetPredictionUsingMLService);
 }
 
 }  // namespace features

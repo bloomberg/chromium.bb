@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
@@ -61,16 +60,19 @@ class LoggingObserver : public VolumeManagerObserver {
       VOLUME_UNMOUNTED,
       FORMAT_STARTED,
       FORMAT_COMPLETED,
+      PARTITION_STARTED,
+      PARTITION_COMPLETED,
       RENAME_STARTED,
       RENAME_COMPLETED
     } type;
 
     // Available on DEVICE_ADDED, DEVICE_REMOVED, VOLUME_MOUNTED,
-    // VOLUME_UNMOUNTED, FORMAT_STARTED and FORMAT_COMPLETED.
+    // VOLUME_UNMOUNTED, FORMAT_STARTED, FORMAT_COMPLETED. PARTITION_STARTED,
+    // PARTITION_COMPLETED.
     std::string device_path;
 
     // Available on FORMAT_STARTED, FORMAT_COMPLETED, RENAME_STARTED and
-    // RENAME_COMPLETED.
+    // RENAME_COMPLETED, PARTITION_STARTED, PARTITION_COMPLETED.
     std::string device_label;
 
     // Available on DISK_ADDED.
@@ -79,7 +81,8 @@ class LoggingObserver : public VolumeManagerObserver {
     // Available on VOLUME_MOUNTED and VOLUME_UNMOUNTED.
     chromeos::MountError mount_error;
 
-    // Available on FORMAT_STARTED and FORMAT_COMPLETED.
+    // Available on FORMAT_STARTED and FORMAT_COMPLETED, PARTITION_STARTED,
+    // PARTITION_COMPLETED.
     bool success;
   };
 
@@ -158,6 +161,28 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
+  void OnPartitionStarted(const std::string& device_path,
+                          const std::string& device_label,
+                          bool success) override {
+    Event event;
+    event.type = Event::PARTITION_STARTED;
+    event.device_path = device_path;
+    event.device_label = device_label;
+    event.success = success;
+    events_.push_back(event);
+  }
+
+  void OnPartitionCompleted(const std::string& device_path,
+                            const std::string& device_label,
+                            bool success) override {
+    Event event;
+    event.type = Event::PARTITION_COMPLETED;
+    event.device_path = device_path;
+    event.device_label = device_label;
+    event.success = success;
+    events_.push_back(event);
+  }
+
   void OnRenameStarted(const std::string& device_path,
                        const std::string& device_label,
                        bool success) override {
@@ -214,7 +239,6 @@ class VolumeManagerTest : public testing::Test {
           drive_integration_service_(
               std::make_unique<drive::DriveIntegrationService>(
                   profile_.get(),
-                  nullptr,
                   std::string(),
                   base::FilePath())),
           volume_manager_(std::make_unique<VolumeManager>(
@@ -762,6 +786,87 @@ TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
   EXPECT_FALSE(event.success);
 
   // When "format" is done, VolumeManager requests to mount it.
+  ASSERT_EQ(1U, disk_mount_manager_->mount_requests().size());
+  const FakeDiskMountManager::MountRequest& mount_request =
+      disk_mount_manager_->mount_requests()[0];
+  EXPECT_EQ("device1", mount_request.source_path);
+  EXPECT_EQ("", mount_request.source_format);
+  EXPECT_EQ("", mount_request.mount_label);
+  EXPECT_EQ(chromeos::MOUNT_TYPE_DEVICE, mount_request.type);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnPartitionEvent_Started) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnPartitionEvent(DiskMountManager::PARTITION_STARTED,
+                                     chromeos::PARTITION_ERROR_NONE, "device1",
+                                     "label1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::PARTITION_STARTED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
+  EXPECT_TRUE(event.success);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnPartitionEvent_StartFailed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnPartitionEvent(DiskMountManager::PARTITION_STARTED,
+                                     chromeos::PARTITION_ERROR_UNKNOWN,
+                                     "device1", "label1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::PARTITION_STARTED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
+  EXPECT_FALSE(event.success);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnPartitionEvent_Completed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnPartitionEvent(DiskMountManager::PARTITION_COMPLETED,
+                                     chromeos::PARTITION_ERROR_NONE, "device1",
+                                     "label1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::PARTITION_COMPLETED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
+  EXPECT_TRUE(event.success);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnPartitionEvent_CompletedFailed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnPartitionEvent(DiskMountManager::PARTITION_COMPLETED,
+                                     chromeos::PARTITION_ERROR_UNKNOWN,
+                                     "device1", "label1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::PARTITION_COMPLETED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
+  EXPECT_FALSE(event.success);
+
+  // When "partitioning" fails, VolumeManager requests to mount it for retry.
   ASSERT_EQ(1U, disk_mount_manager_->mount_requests().size());
   const FakeDiskMountManager::MountRequest& mount_request =
       disk_mount_manager_->mount_requests()[0];

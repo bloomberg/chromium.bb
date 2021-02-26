@@ -106,12 +106,12 @@
     DOMRectReadOnly boundingBox(Element element);
 
     [RaisesException] void setMarker(Document document, Range range, DOMString markerType);
-    [RaisesException] unsigned long markerCountForNode(Node node, DOMString markerType);
-    unsigned long activeMarkerCountForNode(Node node);
-    [RaisesException] Range markerRangeForNode(Node node, DOMString markerType, unsigned long index);
-    [RaisesException] DOMString markerDescriptionForNode(Node node, DOMString markerType, unsigned long index);
-    [RaisesException] unsigned long markerBackgroundColorForNode(Node node, DOMString markerType, unsigned long index);
-    [RaisesException] unsigned long markerUnderlineColorForNode(Node node, DOMString markerType, unsigned long index);
+    [RaisesException] unsigned long markerCountForNode(Text text, DOMString markerType);
+    unsigned long activeMarkerCountForNode(Text text);
+    [RaisesException] Range markerRangeForNode(Text text, DOMString markerType, unsigned long index);
+    [RaisesException] DOMString markerDescriptionForNode(Text text, DOMString markerType, unsigned long index);
+    [RaisesException] unsigned long markerBackgroundColorForNode(Text text, DOMString markerType, unsigned long index);
+    [RaisesException] unsigned long markerUnderlineColorForNode(Text text, DOMString markerType, unsigned long index);
     [RaisesException] void addTextMatchMarker(Range range, DOMString matchStatus);
     [RaisesException] void addCompositionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString underlineStyleValue, DOMString textColorValue, DOMString backgroundColorValue);
     [RaisesException] void addActiveSuggestionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString backgroundColorValue);
@@ -130,6 +130,7 @@
     [RaisesException] void setAutofilledValue(Element inputElement, DOMString value);
     [RaisesException] void setEditingValue(Element inputElement, DOMString value);
     [RaisesException] void setAutofilled(Element inputElement, boolean enabled);
+    [RaisesException] void setSelectionRangeForNumberType(Element inputElement, unsigned long start, unsigned long end);
 
     Range rangeFromLocationAndLength(Element scope, long rangeLocation, long rangeLength);
     unsigned long locationFromRange(Element scope, Range range);
@@ -205,7 +206,6 @@
     DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] DOMRectList nonFastScrollableRects(Document document);
-    [RaisesException] void markGestureScrollRegionDirty(Document document);
 
     void evictAllResources();
 
@@ -217,14 +217,17 @@
     sequence<DOMString> shortcutIconURLs(Document document);
     sequence<DOMString> allIconURLs(Document document);
     [RaisesException] long numberOfPages(optional double pageWidthInPixels = 800, optional double pageHeightInPixels = 600);
-    [RaisesException] DOMString pageProperty(DOMString propertyName, long pageNumber);
-    [RaisesException] DOMString pageSizeAndMarginsInPixels(long pageIndex, long width, long height, long marginTop, long marginRight, long marginBottom, long marginLeft);
+    [RaisesException] DOMString pageProperty(DOMString propertyName, unsigned long pageNumber);
+    [RaisesException] DOMString pageSizeAndMarginsInPixels(unsigned long pageIndex, long width, long height, long marginTop, long marginRight, long marginBottom, long marginLeft);
 
     [RaisesException] float pageScaleFactor();
     [RaisesException] void setPageScaleFactor(float scaleFactor);
     [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
 
+    [RaisesException] float pageZoomFactor();
+
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
+    void setMaxNumberOfFramesToTen(boolean enable);
 
     // HTMLMediaElement, HTMLAudioElement and HTMLVideoElement.
     DOMString effectivePreload(HTMLMediaElement mediaElement);
@@ -317,6 +320,10 @@
     // attribute returns the currently interested element on the page.
     readonly attribute Element? interestedElement;
 
+    // Returns true if page associated with current internals object is
+    // active.
+    boolean isActivated();
+
     boolean isInCanvasFontCache(Document document, DOMString fontString);
     unsigned long canvasFontCacheMaxFonts();
 
@@ -363,13 +370,16 @@
     boolean setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
+
+    // Translate an event's DOMHighResTimeStamp in seconds into a monotonic time
+    // in milliseconds.
+    long long zeroBasedDocumentTimeToMonotonicTime(double domHighResTimeStamp);
+
     long long currentTimeTicks();
 
     DOMString getScrollAnimationState(Node node);
 
     DOMString getProgrammaticScrollAnimationState(Node node);
-
-    DOMRect visualRect(Node node);
 
     OriginTrialsTest originTrialsTest();
 
@@ -405,6 +415,11 @@
     // instances that track visibility.
     boolean isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
 
+    // Disable the frequency capping for overlay popup detection. This
+    // eliminates the need to for waitings in web tests to trigger a detection
+    // event.
+    void DisableFrequencyCappingForOverlayPopupDetection();
+
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.
     [RaisesException] void addEmbedderCustomElementName(DOMString name);
@@ -434,4 +449,6 @@
 
     // Request generation of a Reporting report.
     void generateTestReport(DOMString message);
+
+    [RaisesException] void setIsAdSubframe(HTMLIFrameElement iframe);
 };

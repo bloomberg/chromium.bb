@@ -35,15 +35,15 @@ AtomicString TaskAttributionTiming::containerType() const {
   return container_type_;
 }
 
-String TaskAttributionTiming::containerSrc() const {
+AtomicString TaskAttributionTiming::containerSrc() const {
   return container_src_;
 }
 
-String TaskAttributionTiming::containerId() const {
+AtomicString TaskAttributionTiming::containerId() const {
   return container_id_;
 }
 
-String TaskAttributionTiming::containerName() const {
+AtomicString TaskAttributionTiming::containerName() const {
   return container_name_;
 }
 
@@ -55,7 +55,7 @@ void TaskAttributionTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddString("containerName", containerName());
 }
 
-void TaskAttributionTiming::Trace(Visitor* visitor) {
+void TaskAttributionTiming::Trace(Visitor* visitor) const {
   PerformanceEntry::Trace(visitor);
 }
 

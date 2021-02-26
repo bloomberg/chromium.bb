@@ -24,6 +24,9 @@ export class StatusView {
     this._inspectedURL = '';
     this._textChangedAt = 0;
     this._fastFactsQueued = FastFacts.slice();
+    /**
+     * @type {{id: string, message: string, progressBarClass: string, statusMessagePrefix: string} | null}
+     */
     this._currentPhase = null;
     this._scheduledTextChangeTimeout = null;
     this._scheduledFastFactTimeout = null;
@@ -36,8 +39,9 @@ export class StatusView {
   }
 
   _render() {
-    const dialogRoot =
-        UI.Utils.createShadowRootWithCoreStyles(this._dialog.contentElement, 'lighthouse/lighthouseDialog.css');
+    const dialogRoot = UI.Utils.createShadowRootWithCoreStyles(
+        this._dialog.contentElement,
+        {cssFile: 'lighthouse/lighthouseDialog.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const lighthouseViewElement = dialogRoot.createChild('div', 'lighthouse-view vbox');
 
     const cancelButton = UI.UIUtils.createTextButton(ls`Cancel`, this._cancel.bind(this));
@@ -93,6 +97,7 @@ export class StatusView {
     const pageHost = parsedURL && parsedURL.host;
     const statusHeader = pageHost ? ls`Auditing ${pageHost}` : ls`Auditing your web page`;
     this._renderStatusHeader(statusHeader);
+    // @ts-ignore TS expects Document, but gets Element (show takes Element|Document)
     this._dialog.show(dialogRenderElement);
   }
 
@@ -100,7 +105,9 @@ export class StatusView {
    * @param {string=} statusHeader
    */
   _renderStatusHeader(statusHeader) {
-    this._statusHeader.textContent = `${statusHeader}…`;
+    if (this._statusHeader) {
+      this._statusHeader.textContent = `${statusHeader}…`;
+    }
   }
 
   hide() {
@@ -131,7 +138,11 @@ export class StatusView {
     }
 
     const nextPhase = this._getPhaseForMessage(message);
+
+    // @ts-ignore indexOf null is valid.
     const nextPhaseIndex = StatusPhases.indexOf(nextPhase);
+
+    // @ts-ignore indexOf null is valid.
     const currentPhaseIndex = StatusPhases.indexOf(this._currentPhase);
     if (!nextPhase && !this._currentPhase) {
       this._commitTextChange(Common.UIString.UIString('Lighthouse is warming up…'));
@@ -142,8 +153,11 @@ export class StatusView {
       this._scheduleTextChange(text);
       this._scheduleFastFactCheck();
       this._resetProgressBarClasses();
-      this._progressBar.classList.add(nextPhase.progressBarClass);
-      UI.ARIAUtils.setProgressBarValue(this._progressBar, nextPhaseIndex, text);
+
+      if (this._progressBar) {
+        this._progressBar.classList.add(nextPhase.progressBarClass);
+        UI.ARIAUtils.setProgressBarValue(this._progressBar, nextPhaseIndex, text);
+      }
     }
   }
 
@@ -160,8 +174,10 @@ export class StatusView {
       return phase.message;
     }
 
-    const deviceType = RuntimeSettings.find(item => item.setting.name === 'lighthouse.device_type').setting.get();
-    const throttling = RuntimeSettings.find(item => item.setting.name === 'lighthouse.throttling').setting.get();
+    const deviceTypeSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.device_type');
+    const throttleSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.throttling');
+    const deviceType = deviceTypeSetting ? deviceTypeSetting.setting.get() : '';
+    const throttling = throttleSetting ? throttleSetting.setting.get() : '';
     const match = LoadingMessages.find(item => {
       return item.deviceType === deviceType && item.throttling === throttling;
     });
@@ -174,15 +190,13 @@ export class StatusView {
    * @return {?StatusPhases}
    */
   _getPhaseForMessage(message) {
-    return StatusPhases.find(phase => message.startsWith(phase.statusMessagePrefix));
+    return StatusPhases.find(phase => message.startsWith(phase.statusMessagePrefix)) || null;
   }
 
   _resetProgressBarClasses() {
-    if (!this._progressBar) {
-      return;
+    if (this._progressBar) {
+      this._progressBar.className = 'lighthouse-progress-bar';
     }
-
-    this._progressBar.className = 'lighthouse-progress-bar';
   }
 
   _scheduleFastFactCheck() {
@@ -244,19 +258,31 @@ export class StatusView {
    */
   renderBugReport(err) {
     console.error(err);
-    clearTimeout(this._scheduledFastFactTimeout);
-    clearTimeout(this._scheduledTextChangeTimeout);
-    this._resetProgressBarClasses();
-    this._progressBar.classList.add('errored');
+    if (this._scheduledFastFactTimeout) {
+      window.clearTimeout(this._scheduledFastFactTimeout);
+    }
 
-    this._commitTextChange('');
-    this._statusText.createChild('p').createTextChild(Common.UIString.UIString('Ah, sorry! We ran into an error.'));
-    if (KnownBugPatterns.some(pattern => pattern.test(err.message))) {
-      const message = Common.UIString.UIString(
-          'Try to navigate to the URL in a fresh Chrome profile without any other tabs or extensions open and try again.');
-      this._statusText.createChild('p').createTextChild(message);
-    } else {
-      this._renderBugReportBody(err, this._inspectedURL);
+    if (this._scheduledTextChangeTimeout) {
+      window.clearTimeout(this._scheduledTextChangeTimeout);
+    }
+
+    this._resetProgressBarClasses();
+
+    if (this._progressBar) {
+      this._progressBar.classList.add('errored');
+    }
+
+    if (this._statusText) {
+      this._commitTextChange('');
+      UI.UIUtils.createTextChild(
+          this._statusText.createChild('p'), Common.UIString.UIString('Ah, sorry! We ran into an error.'));
+      if (KnownBugPatterns.some(pattern => pattern.test(err.message))) {
+        const message = Common.UIString.UIString(
+            'Try to navigate to the URL in a fresh Chrome profile without any other tabs or extensions open and try again.');
+        UI.UIUtils.createTextChild(this._statusText.createChild('p'), message);
+      } else {
+        this._renderBugReportBody(err, this._inspectedURL);
+      }
     }
   }
 
@@ -273,7 +299,9 @@ export class StatusView {
    * @param {boolean} show
    */
   toggleCancelButton(show) {
-    this._cancelButton.style.visibility = show ? 'visible' : 'hidden';
+    if (this._cancelButton) {
+      this._cancelButton.style.visibility = show ? 'visible' : 'hidden';
+    }
   }
 
   /**
@@ -281,18 +309,25 @@ export class StatusView {
    * @param {string} auditURL
    */
   _renderBugReportBody(err, auditURL) {
+    const chromeVersion = navigator.userAgent.match(/Chrome\/(\S+)/) || ['', 'Unknown'];
+    // @ts-ignore Lighthouse sets `friendlyMessage` on certain
+    // important errors such as PROTOCOL_TIMEOUT.
+    const errorMessage = err.friendlyMessage || err.message;
     const issueBody = `
-${err.message}
+${errorMessage}
 \`\`\`
 Channel: DevTools
 Initial URL: ${auditURL}
-Chrome Version: ${navigator.userAgent.match(/Chrome\/(\S+)/)[1]}
+Chrome Version: ${chromeVersion[1]}
 Stack Trace: ${err.stack}
 \`\`\`
 `;
-    this._statusText.createChild('p').createTextChild(
-        ls`If this issue is reproducible, please report it at the Lighthouse GitHub repo.`);
-    this._statusText.createChild('code', 'monospace').createTextChild(issueBody.trim());
+    if (this._statusText) {
+      UI.UIUtils.createTextChild(
+          this._statusText.createChild('p'),
+          ls`If this issue is reproducible, please report it at the Lighthouse GitHub repo.`);
+      UI.UIUtils.createTextChild(this._statusText.createChild('code', 'monospace'), issueBody.trim());
+    }
   }
 }
 
@@ -312,11 +347,12 @@ const KnownBugPatterns = [
   /^You probably have multiple tabs open/,
 ];
 
-/** @typedef {{message: string, progressBarClass: string}} */
+/** @typedef {{id: string, message: string, progressBarClass: string, statusMessagePrefix: string}} */
 export const StatusPhases = [
   {
     id: 'loading',
     progressBarClass: 'loading',
+    message: ls`Lighthouse is loading the page.`,
     statusMessagePrefix: 'Loading page',
   },
   {

@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
@@ -105,8 +106,9 @@ class CookiesGetFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetCookieListCallback(const net::CookieStatusList& cookie_status_list,
-                             const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies);
 
   GURL url_;
   mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
@@ -130,8 +132,9 @@ class CookiesGetAllFunction : public ExtensionFunction {
   // For the two different callback signatures for getting cookies for a URL vs
   // getting all cookies. They do the same thing.
   void GetAllCookiesCallback(const net::CookieList& cookie_list);
-  void GetCookieListCallback(const net::CookieStatusList& cookie_status_list,
-                             const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies);
 
   GURL url_;
   mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
@@ -150,10 +153,10 @@ class CookiesSetFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void SetCanonicalCookieCallback(
-      net::CanonicalCookie::CookieInclusionStatus set_cookie_result);
-  void GetCookieListCallback(const net::CookieStatusList& cookie_list,
-                             const net::CookieStatusList& excluded_cookies);
+  void SetCanonicalCookieCallback(net::CookieAccessResult set_cookie_result);
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies);
 
   enum { NO_RESPONSE, SET_COMPLETED, GET_COMPLETED } state_;
   GURL url_;

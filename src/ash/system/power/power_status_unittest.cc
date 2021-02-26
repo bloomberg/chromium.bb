@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,17 +204,17 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_percent);
   gfx::Image empty_image = get_battery_image();
 
-  // 16% and 17% look different (assuming a height of 16, i.e. kTrayIconSize).
-  prop.set_battery_percent(16.0);
+  // 10% and 20% look different.
+  prop.set_battery_percent(10.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(16, power_status_->GetBatteryImageInfo().charge_percent);
-  gfx::Image image_16 = get_battery_image();
-  EXPECT_FALSE(gfx::test::AreImagesEqual(empty_image, image_16));
-  prop.set_battery_percent(17.0);
+  EXPECT_EQ(10.0, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_10 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(empty_image, image_10));
+  prop.set_battery_percent(20.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(17, power_status_->GetBatteryImageInfo().charge_percent);
-  gfx::Image image_17 = get_battery_image();
-  EXPECT_FALSE(gfx::test::AreImagesEqual(image_16, image_17));
+  EXPECT_EQ(20.0, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_20 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(image_10, image_20));
 
   // 99% and 100% look different.
   prop.set_battery_percent(99.0);
@@ -281,6 +281,16 @@ TEST_F(PowerStatusTest, MissingBatteryTimeEstimates) {
   power_status_->SetProtoForTesting(prop);
   time = power_status_->GetBatteryTimeToEmpty();
   EXPECT_FALSE(time) << *time << " returned despite negative estimate";
+}
+
+TEST_F(PowerStatusTest, PreferredMinimumExternalPower) {
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::USB);
+  prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
+  prop.set_preferred_minimum_external_power(23.45);
+  power_status_->SetProtoForTesting(prop);
+
+  EXPECT_EQ(23.45, power_status_->GetPreferredMinimumPower());
 }
 
 }  // namespace ash

@@ -31,22 +31,13 @@ private:
     SkBitmap    fBitmap;
     bool        fWeOwnThePixels;
 
-    typedef SkSurface_Base INHERITED;
+    using INHERITED = SkSurface_Base;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool SkSurfaceValidateRasterInfo(const SkImageInfo& info, size_t rowBytes) {
     if (!SkImageInfoIsValid(info)) {
-        return false;
-    }
-
-    if (info.colorType() == kR8G8_unorm_SkColorType ||
-        info.colorType() == kR16G16_unorm_SkColorType ||
-        info.colorType() == kR16G16_float_SkColorType ||
-        info.colorType() == kA16_unorm_SkColorType ||
-        info.colorType() == kA16_float_SkColorType ||
-        info.colorType() == kR16G16B16A16_unorm_SkColorType) {
         return false;
     }
 

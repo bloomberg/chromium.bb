@@ -7,16 +7,12 @@ assert(is_fuchsia)
 import("//build/buildflag_header.gni")
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
-import("//fuchsia/release_channel.gni")
 import("//testing/test.gni")
 
 declare_args() {
   # Set to a non-zero value to enable remote debugging on that port in WebRunner.
   web_runner_remote_debugging_port = 0
 }
-
-_cast_runner_package_name = "cast_runner${release_channel_suffix}"
-_web_runner_package_name = "web_runner${release_channel_suffix}"
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
@@ -38,6 +34,7 @@ source_set("common") {
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",
+    "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx/geometry",
     "//url",
   ]
@@ -63,25 +60,46 @@ source_set("cast_runner_core") {
     "cast/cast_component.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
-    "cast/named_message_port_connector.cc",
-    "cast/named_message_port_connector.h",
+    "cast/cast_runner_switches.cc",
+    "cast/cast_runner_switches.h",
+    "cast/cast_streaming.cc",
+    "cast/cast_streaming.h",
+    "cast/create_web_message.cc",
+    "cast/create_web_message.h",
+    "cast/named_message_port_connector_fuchsia.cc",
+    "cast/named_message_port_connector_fuchsia.h",
     "cast/pending_cast_component.cc",
     "cast/pending_cast_component.h",
   ]
-  data_deps = [ "//chromecast/bindings:named_message_port_connector_resources" ]
+  data = [
+    "cast/data/receiver.html",
+    rebase_path(
+        "//components/cast/named_message_port_connector/named_message_port_connector.js"),
+  ]
   deps = [
     "//base",
+    "//components/cast/message_port",
+    "//components/cast/named_message_port_connector:named_message_port_connector",
     "//fuchsia/base",
     "//fuchsia/base:modular",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.diagnostics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular",
+    "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//url",
   ]
+
   public_deps = [
     ":common",
     "//fuchsia:cast_fidl",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
+  ]
+
+  # Keep CastRunner trim by ensuring that large browser dependencies don't creep in.
+  assert_no_deps = [
+    "//content/public/common",
+    "//third_party/blink/public/common",
   ]
   visibility = [ ":*" ]
 }
@@ -95,24 +113,24 @@ executable("cast_runner_exe") {
     "//base",
     "//fuchsia/base",
   ]
+
+  data_deps = [ ":cast_runner_core" ]
   visibility = [ ":*" ]
 }
 
 cr_fuchsia_package("cast_runner_pkg") {
   binary = ":cast_runner_exe"
-  package_name_override = _cast_runner_package_name
-  archive_name_override = "cast_runner"
-  component_name_override = "cast_runner"
+  package_name_override = "cast_runner"
   manifest = "cast/cast_runner.cmx"
 }
 
 fuchsia_package_runner("cast_runner") {
   package = ":cast_runner_pkg"
-  archive_name_override = "cast_runner"
+  package_name_override = "cast_runner"
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "web_engine${release_channel_suffix}",
+        "web_engine",
       ] ]
 }
 
@@ -148,6 +166,7 @@ test("cast_runner_unittests") {
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
+  data_deps = [ ":cast_runner_core" ]
 }
 
 test("cast_runner_integration_tests") {
@@ -158,6 +177,7 @@ test("cast_runner_integration_tests") {
     ":cast_runner_test_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//components/cast/message_port",
     "//fuchsia/base:test_support",
     "//net:test_support",
     "//testing/gtest",
@@ -167,16 +187,24 @@ test("cast_runner_integration_tests") {
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]
-  package_deps = [ [
-        "//fuchsia/engine:web_engine",
-        "web_engine",
-      ] ]
+  data_deps = [ ":cast_runner_core" ]
+  package_deps = [
+    [
+      ":cast_runner_pkg",
+      "cast_runner",
+    ],
+    [
+      "//fuchsia/engine:web_engine",
+      "web_engine",
+    ],
+  ]
+  manifest = "runners_integration_tests.test-cmx"
 }
 
 test("cast_runner_browsertests") {
   sources = [
     "cast/api_bindings_client_browsertest.cc",
-    "cast/named_message_port_connector_browsertest.cc",
+    "cast/named_message_port_connector_fuchsia_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [ "cast/testdata" ]
@@ -184,6 +212,8 @@ test("cast_runner_browsertests") {
     ":cast_runner_core",
     ":cast_runner_test_core",
     "//base/test:test_support",
+    "//components/cast/message_port",
+    "//components/cast/message_port:test_message_port_receiver",
     "//content/public/browser",
     "//content/test:test_support",
     "//fuchsia/base",
@@ -208,19 +238,17 @@ executable("web_runner_exe") {
 
 cr_fuchsia_package("web_runner_pkg") {
   binary = ":web_runner_exe"
-  package_name_override = _web_runner_package_name
-  component_name_override = "web_runner"
-  archive_name_override = "web_runner"
+  package_name_override = "web_runner"
   manifest = "web/web_runner.cmx"
 }
 
 fuchsia_package_runner("web_runner") {
   package = ":web_runner_pkg"
-  archive_name_override = "web_runner"
+  package_name_override = "web_runner"
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "web_engine${release_channel_suffix}",
+        "web_engine",
       ] ]
 }
 
@@ -230,6 +258,7 @@ test("web_runner_integration_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//components/cast/message_port",
     "//fuchsia/base:modular",
     "//net:test_support",
     "//testing/gtest",
@@ -245,6 +274,7 @@ test("web_runner_integration_tests") {
       "web_runner",
     ],
   ]
+  manifest = "runners_integration_tests.test-cmx"
 }
 
 if (is_official_build) {

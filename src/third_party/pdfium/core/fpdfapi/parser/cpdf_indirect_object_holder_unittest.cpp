@@ -4,13 +4,10 @@
 
 #include "core/fpdfapi/parser/cpdf_indirect_object_holder.h"
 
-#include <memory>
-#include <utility>
-
 #include "core/fpdfapi/parser/cpdf_null.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check.h"
 
 namespace {
 

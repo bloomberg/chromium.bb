@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 
+#include <algorithm>
+#include <sstream>
+
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
+#include "chromeos/components/local_search_service/local_search_service_sync.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -16,77 +19,185 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-std::vector<local_search_service::Data> ConceptVectorToDataVector(
+std::vector<int> GetMessageIds(const SearchConcept* concept) {
+  // Start with only the canonical ID.
+  std::vector<int> alt_tag_message_ids{concept->canonical_message_id};
+
+  // Add alternate IDs, if they exist.
+  for (size_t i = 0; i < SearchConcept::kMaxAltTagsPerConcept; ++i) {
+    int curr_alt_tag_message_id = concept->alt_tag_ids[i];
+    if (curr_alt_tag_message_id == SearchConcept::kAltTagEnd)
+      break;
+    alt_tag_message_ids.push_back(curr_alt_tag_message_id);
+  }
+
+  return alt_tag_message_ids;
+}
+
+}  // namespace
+
+SearchTagRegistry::ScopedTagUpdater::ScopedTagUpdater(
+    SearchTagRegistry* registry)
+    : registry_(registry) {}
+
+SearchTagRegistry::ScopedTagUpdater::ScopedTagUpdater(ScopedTagUpdater&&) =
+    default;
+
+SearchTagRegistry::ScopedTagUpdater::~ScopedTagUpdater() {
+  std::vector<const SearchConcept*> pending_adds;
+  std::vector<const SearchConcept*> pending_removals;
+
+  for (const auto& map_entry : pending_updates_) {
+    const std::string& result_id = map_entry.first;
+    const SearchConcept* concept = map_entry.second.first;
+    bool is_pending_add = map_entry.second.second;
+
+    // If tag metadata is present for this tag, it has already been added and is
+    // present in LocalSearchServiceSync.
+    bool is_concept_already_added =
+        registry_->GetTagMetadata(result_id) != nullptr;
+
+    // Only add concepts which are intended to be added and have not yet been
+    // added; only remove concepts which are intended to be removed and have
+    // already been added.
+    if (is_pending_add && !is_concept_already_added)
+      pending_adds.push_back(concept);
+    if (!is_pending_add && is_concept_already_added)
+      pending_removals.push_back(concept);
+  }
+
+  if (!pending_adds.empty())
+    registry_->AddSearchTags(pending_adds);
+  if (!pending_removals.empty())
+    registry_->RemoveSearchTags(pending_removals);
+}
+
+void SearchTagRegistry::ScopedTagUpdater::AddSearchTags(
     const std::vector<SearchConcept>& search_tags) {
+  ProcessPendingSearchTags(search_tags, /*is_pending_add=*/true);
+}
+
+void SearchTagRegistry::ScopedTagUpdater::RemoveSearchTags(
+    const std::vector<SearchConcept>& search_tags) {
+  ProcessPendingSearchTags(search_tags, /*is_pending_add=*/false);
+}
+
+void SearchTagRegistry::ScopedTagUpdater::ProcessPendingSearchTags(
+    const std::vector<SearchConcept>& search_tags,
+    bool is_pending_add) {
+  for (const auto& concept : search_tags) {
+    std::string result_id = ToResultId(concept);
+    auto it = pending_updates_.find(result_id);
+    if (it == pending_updates_.end()) {
+      pending_updates_.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(result_id),
+                               std::forward_as_tuple(&concept, is_pending_add));
+    } else {
+      it->second.second = is_pending_add;
+    }
+  }
+}
+
+SearchTagRegistry::SearchTagRegistry(
+    local_search_service::LocalSearchServiceSync* local_search_service)
+    : index_(local_search_service->GetIndexSync(
+          local_search_service::IndexId::kCrosSettings,
+          local_search_service::Backend::kLinearMap,
+          g_browser_process ? g_browser_process->local_state() : nullptr)) {}
+
+SearchTagRegistry::~SearchTagRegistry() = default;
+
+void SearchTagRegistry::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SearchTagRegistry::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+SearchTagRegistry::ScopedTagUpdater SearchTagRegistry::StartUpdate() {
+  return ScopedTagUpdater(this);
+}
+
+void SearchTagRegistry::AddSearchTags(
+    const std::vector<const SearchConcept*>& search_tags) {
+  index_->AddOrUpdateSync(ConceptVectorToDataVector(search_tags));
+
+  // Add each concept to the map. Note that it is safe to take the address of
+  // each concept because all concepts are allocated via static
+  // base::NoDestructor objects in the Get*SearchConcepts() helper functions.
+  for (const auto* concept : search_tags)
+    result_id_to_metadata_list_map_[ToResultId(*concept)] = concept;
+
+  NotifyRegistryUpdated();
+}
+
+void SearchTagRegistry::RemoveSearchTags(
+    const std::vector<const SearchConcept*>& search_tags) {
+  std::vector<std::string> data_ids;
+  for (const auto* concept : search_tags) {
+    std::string result_id = ToResultId(*concept);
+    result_id_to_metadata_list_map_.erase(result_id);
+    data_ids.push_back(std::move(result_id));
+  }
+
+  index_->DeleteSync(data_ids);
+
+  NotifyRegistryUpdated();
+}
+
+const SearchConcept* SearchTagRegistry::GetTagMetadata(
+    const std::string& result_id) const {
+  const auto it = result_id_to_metadata_list_map_.find(result_id);
+  if (it == result_id_to_metadata_list_map_.end())
+    return nullptr;
+  return it->second;
+}
+
+// static
+std::string SearchTagRegistry::ToResultId(const SearchConcept& concept) {
+  std::stringstream ss;
+  switch (concept.type) {
+    case mojom::SearchResultType::kSection:
+      ss << concept.id.section;
+      break;
+    case mojom::SearchResultType::kSubpage:
+      ss << concept.id.subpage;
+      break;
+    case mojom::SearchResultType::kSetting:
+      ss << concept.id.setting;
+      break;
+  }
+  ss << "," << concept.canonical_message_id;
+  return ss.str();
+}
+
+std::vector<local_search_service::Data>
+SearchTagRegistry::ConceptVectorToDataVector(
+    const std::vector<const SearchConcept*>& search_tags) {
   std::vector<local_search_service::Data> data_list;
 
-  for (const auto& concept : search_tags) {
-    std::vector<base::string16> search_tags;
-
-    // Add the canonical tag.
-    search_tags.push_back(
-        l10n_util::GetStringUTF16(concept.canonical_message_id));
-
-    // Add all alternate tags.
-    for (size_t i = 0; i < SearchConcept::kMaxAltTagsPerConcept; ++i) {
-      int curr_alt_tag = concept.alt_tag_ids[i];
-      if (curr_alt_tag == SearchConcept::kAltTagEnd)
-        break;
-      search_tags.push_back(l10n_util::GetStringUTF16(curr_alt_tag));
+  for (const auto* concept : search_tags) {
+    // Create a list of Content objects, which use the stringified version of
+    // message IDs as identifiers.
+    std::vector<local_search_service::Content> content_list;
+    for (int message_id : GetMessageIds(concept)) {
+      content_list.emplace_back(
+          /*id=*/base::NumberToString(message_id),
+          /*content=*/l10n_util::GetStringUTF16(message_id));
     }
 
-    // Note: A stringified version of the canonical tag message ID is used as
-    // the identifier for this search data.
-    data_list.emplace_back(base::NumberToString(concept.canonical_message_id),
-                           search_tags);
+    // Compute an identifier for this result; the same ID format it used in
+    // GetTagMetadata().
+    data_list.emplace_back(ToResultId(*concept), std::move(content_list));
   }
 
   return data_list;
 }
 
-}  // namespace
-
-SearchTagRegistry::SearchTagRegistry(
-    local_search_service::LocalSearchService* local_search_service)
-    : index_(local_search_service->GetIndex(
-          local_search_service::IndexId::kCrosSettings)) {}
-
-SearchTagRegistry::~SearchTagRegistry() = default;
-
-void SearchTagRegistry::AddSearchTags(
-    const std::vector<SearchConcept>& search_tags) {
-  if (!base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
-    return;
-
-  index_->AddOrUpdate(ConceptVectorToDataVector(search_tags));
-
-  // Add each concept to the map. Note that it is safe to take the address of
-  // each concept because all concepts are allocated via static
-  // base::NoDestructor objects in the Get*SearchConcepts() helper functions.
-  for (const auto& concept : search_tags)
-    canonical_id_to_metadata_map_[concept.canonical_message_id] = &concept;
-}
-
-void SearchTagRegistry::RemoveSearchTags(
-    const std::vector<SearchConcept>& search_tags) {
-  if (!base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
-    return;
-
-  std::vector<std::string> ids;
-  for (const auto& concept : search_tags) {
-    canonical_id_to_metadata_map_.erase(concept.canonical_message_id);
-    ids.push_back(base::NumberToString(concept.canonical_message_id));
-  }
-
-  index_->Delete(ids);
-}
-
-const SearchConcept* SearchTagRegistry::GetCanonicalTagMetadata(
-    int canonical_message_id) const {
-  const auto it = canonical_id_to_metadata_map_.find(canonical_message_id);
-  if (it == canonical_id_to_metadata_map_.end())
-    return nullptr;
-  return it->second;
+void SearchTagRegistry::NotifyRegistryUpdated() {
+  for (auto& observer : observer_list_)
+    observer.OnRegistryUpdated();
 }
 
 }  // namespace settings

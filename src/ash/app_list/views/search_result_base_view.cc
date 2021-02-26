@@ -12,7 +12,8 @@
 
 namespace ash {
 
-SearchResultBaseView::SearchResultBaseView() : Button(this) {
+SearchResultBaseView::SearchResultBaseView() {
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetInstallFocusRingOnFocus(false);
 }
 
@@ -60,12 +61,10 @@ bool SearchResultBaseView::SelectNextResultAction(bool reverse_tab_order) {
   return true;
 }
 
-void SearchResultBaseView::NotifyA11yResultSelected() {
-  if (actions_view_ && actions_view_->HasSelectedAction()) {
-    actions_view_->NotifyA11yResultSelected();
-    return;
-  }
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+views::View* SearchResultBaseView::GetSelectedView() {
+  if (actions_view_ && actions_view_->HasSelectedAction())
+    return actions_view_->GetSelectedView();
+  return this;
 }
 
 void SearchResultBaseView::SetResult(SearchResult* result) {
@@ -110,10 +109,8 @@ void SearchResultBaseView::ClearResult() {
 }
 
 void SearchResultBaseView::SelectInitialResultAction(bool reverse_tab_order) {
-  if (actions_view_ && actions_view_->SelectInitialAction(reverse_tab_order))
-    return;
-
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  if (actions_view_)
+    actions_view_->SelectInitialAction(reverse_tab_order);
 }
 
 void SearchResultBaseView::ClearSelectedResultAction() {

@@ -42,14 +42,6 @@ class MultiProfileUserController {
     // Owner of the device is not allowed to be added as a secondary user.
     NOT_ALLOWED_OWNER_AS_SECONDARY,
 
-    // Not allowed since it is potentially "tainted" with policy-pushed
-    // certificates.
-    NOT_ALLOWED_POLICY_CERT_TAINTED,
-
-    // Not allowed since primary user is already "tainted" with policy-pushed
-    // certificates.
-    NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
-
     // Not allowed since primary user policy forbids it to be part of
     // multi-profiles session.
     NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS,
@@ -66,7 +58,7 @@ class MultiProfileUserController {
   static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the cached policy value for |user_email|.
+  // Returns the cached policy value for `user_email`.
   std::string GetCachedValue(const std::string& user_email) const;
 
   // Returns primary user policy (only ALLOW,
@@ -78,7 +70,7 @@ class MultiProfileUserController {
   static ash::MultiProfileUserBehavior UserBehaviorStringToEnum(
       const std::string& behavior);
 
-  // Returns true if user allowed to be in the current session. If |reason| not
+  // Returns true if user allowed to be in the current session. If `reason` not
   // null stores UserAllowedInSessionReason enum that describes actual reason.
   bool IsUserAllowedInSession(const std::string& user_email,
                               UserAllowedInSessionReason* reason) const;

@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_adbe_jsconsole.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -27,6 +27,8 @@ CXFA_ADBE_JSConsole::CXFA_ADBE_JSConsole(CXFA_Document* doc,
                 XFA_Element::ADBE_JSConsole,
                 {},
                 kADBE_JSConsoleAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_ADBE_JSConsole::~CXFA_ADBE_JSConsole() = default;

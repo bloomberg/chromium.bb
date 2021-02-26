@@ -11,10 +11,13 @@ static_library("common") {
     "cloud_print_cdd_conversion.h",
     "print_messages.cc",
     "print_messages.h",
+    "printing_param_traits.cc",
+    "printing_param_traits.h",
     "printing_param_traits_macros.h",
   ]
 
   deps = [
+    ":mojo_interfaces",
     "//base",
     "//components/cloud_devices/common:common",
     "//ipc",
@@ -39,7 +42,25 @@ mojom("mojo_interfaces") {
     "//ui/gfx/geometry/mojom",
   ]
 
+  enabled_features = []
   if (enable_print_preview) {
-    enabled_features = [ "enable_print_preview" ]
+    enabled_features += [ "enable_print_preview" ]
   }
+  if (enable_tagged_pdf) {
+    public_deps += [ "//ui/accessibility/mojom" ]
+    enabled_features += [ "enable_tagged_pdf" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "printing_param_traits_unittest.cc" ]
+  deps = [
+    ":common",
+    "//ipc:test_support",
+    "//printing/mojom",
+    "//skia",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
 }

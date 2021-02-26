@@ -11,7 +11,7 @@
 
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -445,12 +445,11 @@ TEST_F(SessionControllerImplPrefsTest, Observer) {
   // Setup 2 users.
   TestSessionControllerClient* session = GetSessionControllerClient();
   // Disable auto-provision of PrefService for each user.
-  constexpr bool kEnableSettings = true;
   constexpr bool kProvidePrefService = false;
   session->AddUserSession(kUser1, user_manager::USER_TYPE_REGULAR,
-                          kEnableSettings, kProvidePrefService);
+                          kProvidePrefService);
   session->AddUserSession(kUser2, user_manager::USER_TYPE_REGULAR,
-                          kEnableSettings, kProvidePrefService);
+                          kProvidePrefService);
 
   // The observer is not notified because the PrefService for kUser1 is not yet
   // ready.

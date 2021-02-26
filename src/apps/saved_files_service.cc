@@ -13,7 +13,8 @@
 #include <utility>
 
 #include "apps/saved_files_service_factory.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/file_system/saved_file_entry.h"
@@ -67,7 +68,8 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
 
   std::unique_ptr<base::DictionaryValue> file_entry_dict =
       std::make_unique<base::DictionaryValue>();
-  file_entry_dict->SetKey(kFileEntryPath, CreateFilePathValue(file_entry.path));
+  file_entry_dict->SetKey(kFileEntryPath,
+                          util::FilePathToValue(file_entry.path));
   file_entry_dict->SetBoolean(kFileEntryIsDirectory, file_entry.is_directory);
   file_entry_dict->SetInteger(kFileEntrySequenceNumber,
                               file_entry.sequence_number);
@@ -124,8 +126,9 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
     const base::Value* path_value;
     if (!file_entry->Get(kFileEntryPath, &path_value))
       continue;
-    base::FilePath file_path;
-    if (!GetValueAsFilePath(*path_value, &file_path))
+    base::Optional<base::FilePath> file_path =
+        util::ValueToFilePath(*path_value);
+    if (!file_path)
       continue;
     bool is_directory = false;
     file_entry->GetBoolean(kFileEntryIsDirectory, &is_directory);
@@ -135,7 +138,7 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
     if (!sequence_number)
       continue;
     result.push_back(
-        SavedFileEntry(it.key(), file_path, is_directory, sequence_number));
+        SavedFileEntry(it.key(), *file_path, is_directory, sequence_number));
   }
   return result;
 }
@@ -145,6 +148,8 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
 class SavedFilesService::SavedFiles {
  public:
   SavedFiles(content::BrowserContext* context, const std::string& extension_id);
+  SavedFiles(const SavedFiles&) = delete;
+  SavedFiles& operator=(const SavedFiles&) = delete;
   ~SavedFiles();
 
   void RegisterFileEntry(const std::string& id,
@@ -174,8 +179,6 @@ class SavedFilesService::SavedFiles {
   // sequence_number. Values are a subset of values in registered_file_entries_.
   // This should be kept in sync with file entries stored in extension prefs.
   std::map<int, SavedFileEntry*> saved_file_lru_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavedFiles);
 };
 
 // static
@@ -308,7 +311,7 @@ void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {
   SavedFileEntry* file_entry = it->second.get();
   int old_sequence_number = file_entry->sequence_number;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // crbug.com/983844 Convert path from legacy Download/ to MyFiles/Downloads/
   // so entries saved before MyFiles don't fail. TODO(lucmult): Remove this
   // after M-83.

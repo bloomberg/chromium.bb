@@ -32,7 +32,6 @@ class MODULES_EXPORT MediaSession final
     : public ScriptWrappable,
       public ExecutionContextClient,
       public blink::mojom::blink::MediaSessionClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -54,7 +53,7 @@ class MODULES_EXPORT MediaSession final
   // internally when a new MediaMetadata object is set.
   void OnMetadataChanged();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class V8MediaSession;

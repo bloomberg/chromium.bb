@@ -19,7 +19,7 @@
 
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
 
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -60,7 +60,7 @@ class SubtargetGeometry {
  public:
   SubtargetGeometry(Node* node, const FloatQuad& quad)
       : node_(node), quad_(quad) {}
-  void Trace(Visitor* visitor) { visitor->Trace(node_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(node_); }
 
   Node* GetNode() const { return node_; }
   FloatQuad Quad() const { return quad_; }

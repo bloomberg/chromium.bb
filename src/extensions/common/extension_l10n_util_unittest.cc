@@ -143,6 +143,36 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
   EXPECT_EQ("Not in the US or GB.", bundle->GetL10nMessage("not_in_US_or_GB"));
 }
 
+TEST(ExtensionL10nUtil, LoadMessageCatalogsLowercaseLocales) {
+  extension_l10n_util::ScopedLocaleForTest scoped_locale("en-US");
+  base::FilePath install_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_lowercase_locales")
+                    .Append(kLocaleFolder);
+
+  std::string error;
+  std::unique_ptr<MessageBundle> bundle(
+      extension_l10n_util::LoadMessageCatalogs(
+          install_dir, "en-US", GzippedMessagesPermission::kDisallow, &error));
+  ASSERT_TRUE(bundle);
+  EXPECT_TRUE(error.empty());
+  const base::FilePath locale_uppercase_path = install_dir.AppendASCII("en_US");
+  const base::FilePath locale_lowercase_path = install_dir.AppendASCII("en_us");
+  if (base::PathExists(locale_uppercase_path) &&
+      base::PathExists(locale_lowercase_path)) {
+    // Path system is case-insensitive.
+    EXPECT_EQ("color lowercase", bundle->GetL10nMessage("color"));
+  } else {
+    EXPECT_EQ("", bundle->GetL10nMessage("color"));
+  }
+  std::set<std::string> all_locales;
+  extension_l10n_util::GetAllLocales(&all_locales);
+  EXPECT_FALSE(extension_l10n_util::ShouldSkipValidation(
+      install_dir, locale_uppercase_path, all_locales));
+  EXPECT_FALSE(extension_l10n_util::ShouldSkipValidation(
+      install_dir, locale_lowercase_path, all_locales));
+}
+
 TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   extension_l10n_util::ScopedLocaleForTest scoped_locale("sr");
   base::ScopedTempDir temp;
@@ -178,11 +208,11 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   std::string error;
   EXPECT_FALSE(extension_l10n_util::LoadMessageCatalogs(
       src_path, "en_US", GzippedMessagesPermission::kDisallow, &error));
-  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
+  EXPECT_NE(std::string::npos,
+            error.find(ErrorUtils::FormatErrorMessage(
                 errors::kLocalesInvalidLocale,
                 base::UTF16ToUTF8(messages_file.LossyDisplayName()),
-                "Line: 1, column: 10, Unexpected token."),
-            error);
+                "Line: 1, column: 10,")));
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {

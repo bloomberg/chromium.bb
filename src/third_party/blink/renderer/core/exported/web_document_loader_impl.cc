@@ -172,20 +172,32 @@ void WebDocumentLoaderImpl::ResumeParser() {
 }
 
 bool WebDocumentLoaderImpl::HasBeenLoadedAsWebArchive() const {
-  return archive_ || (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess);
+  return archive_;
 }
 
-WebURLRequest::PreviewsState WebDocumentLoaderImpl::GetPreviewsState() const {
+PreviewsState WebDocumentLoaderImpl::GetPreviewsState() const {
   return DocumentLoader::GetPreviewsState();
 }
 
 WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
-  if (archive_) {
-    DCHECK(archive_->MainResource());
-    return {archive_load_result_, archive_->MainResource()->Url(),
-            archive_->Date()};
+  if (archive_ &&
+      archive_->LoadResult() == mojom::blink::MHTMLLoadResult::kSuccess) {
+    return {
+        archive_->LoadResult(),
+        archive_->MainResource()->Url(),
+        archive_->Date(),
+    };
   }
-  return {archive_load_result_, WebURL(), base::Time()};
+
+  // TODO(arthursonzogni): Returning MHTMLLoadResult::kSuccess when there are no
+  // archive is very misleading. Consider adding a new enum value to
+  // discriminate success versus no archive.
+  return {
+      archive_ ? archive_->LoadResult()
+               : mojom::blink::MHTMLLoadResult::kSuccess,
+      WebURL(),
+      base::Time(),
+  };
 }
 
 bool WebDocumentLoaderImpl::HadUserGesture() const {
@@ -196,7 +208,7 @@ bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
   return DocumentLoader::IsListingFtpDirectory();
 }
 
-void WebDocumentLoaderImpl::Trace(Visitor* visitor) {
+void WebDocumentLoaderImpl::Trace(Visitor* visitor) const {
   DocumentLoader::Trace(visitor);
 }
 

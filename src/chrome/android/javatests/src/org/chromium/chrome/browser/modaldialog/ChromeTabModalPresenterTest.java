@@ -4,19 +4,21 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkCurrentPresenter;
 import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkDialogDismissalCause;
 import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkPendingSize;
@@ -24,10 +26,11 @@ import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtil
 import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.showDialog;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.test.espresso.Espresso;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -53,8 +56,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -118,6 +119,7 @@ public class ChromeTabModalPresenterTest {
         mActivity.getToolbarManager()
                 .getToolbarLayoutForTesting()
                 .getLocationBar()
+                .getFakeboxDelegate()
                 .addUrlFocusChangeListener(mTestObserver);
         mTabModalPresenter =
                 (ChromeTabModalPresenter) mManager.getPresenterForTest(ModalDialogType.TAB);
@@ -193,7 +195,7 @@ public class ChromeTabModalPresenterTest {
         showDialog(mManager, dialog1, ModalDialogType.TAB);
         showDialog(mManager, dialog2, ModalDialogType.TAB);
         checkPendingSize(mManager, ModalDialogType.TAB, 1);
-        onView(withId(R.id.tab_modal_dialog_container))
+        onViewWaiting(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
                         allOf(hasDescendant(withText("1")), not(hasDescendant(withText("2"))))));
         checkBrowserControls(true);
@@ -399,7 +401,7 @@ public class ChromeTabModalPresenterTest {
         showDialog(mManager, dialog1, ModalDialogType.TAB);
         showDialog(mManager, dialog2, ModalDialogType.TAB);
         checkPendingSize(mManager, ModalDialogType.TAB, 1);
-        onView(withId(R.id.tab_modal_dialog_container))
+        onViewWaiting(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("1"))));
         checkCurrentPresenter(mManager, ModalDialogType.TAB);
 
@@ -431,7 +433,7 @@ public class ChromeTabModalPresenterTest {
 
         // Show a tab modal dialog and verify it shows.
         showDialog(mManager, dialog1, ModalDialogType.TAB);
-        onView(withId(R.id.tab_modal_dialog_container))
+        onViewWaiting(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("1"))));
         checkCurrentPresenter(mManager, ModalDialogType.TAB);
 
@@ -540,6 +542,23 @@ public class ChromeTabModalPresenterTest {
         Assert.assertEquals(BrowserControlsState.BOTH, getBrowserControlsConstraints());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"ModalDialog"})
+    // Ensures an exception isn't thrown when a dialog is dismissed and the View is no longer
+    // attached to a Window. See https://crbug.com/1127254 for the specifics.
+    public void testDismissAfterRemovingView() throws Throwable {
+        PropertyModel dialog1 = createDialog(mActivity, mManager, "1", null);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mManager.showDialog(dialog1, ModalDialogType.TAB);
+            ViewGroup containerParent = (ViewGroup) mTabModalPresenter.getContainerParentForTest();
+            // This is a bit hacky and intended to correspond to a case where the hosting
+            // ViewGroup is no longer attached to a Window.
+            containerParent.removeAllViews();
+            mManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
+        });
+    }
+
     @BrowserControlsState
     private int getBrowserControlsConstraints() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -566,7 +585,6 @@ public class ChromeTabModalPresenterTest {
 
     private void ensureDialogContainerVisible() {
         final View dialogContainer = mTabModalPresenter.getDialogContainerForTest();
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(View.VISIBLE, () -> dialogContainer.getVisibility()));
+        onViewWaiting(allOf(is(dialogContainer), isDisplayed()));
     }
 }

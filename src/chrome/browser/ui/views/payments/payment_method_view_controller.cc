@@ -9,17 +9,18 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "components/payments/content/autofill_payment_app.h"
+#include "components/payments/content/payment_app.h"
 #include "components/payments/content/payment_request_state.h"
-#include "components/payments/core/autofill_payment_app.h"
-#include "components/payments/core/payment_app.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,26 +40,16 @@ namespace payments {
 
 namespace {
 
-enum class PaymentMethodViewControllerTags : int {
-  // The tag for the button that triggers the "add card" flow. Starts at
-  // |PAYMENT_REQUEST_COMMON_TAG_MAX| not to conflict with tags common to all
-  // views.
-  ADD_CREDIT_CARD_BUTTON = static_cast<int>(
-      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
-  // This value is passed to inner views so they can use it as a starting tag.
-  MAX_TAG,
-};
-
 class PaymentMethodListItem : public PaymentRequestItemList::Item {
  public:
   // Does not take ownership of |app|, which should not be null and should
   // outlive this object. |list| is the PaymentRequestItemList object that will
   // own this.
-  PaymentMethodListItem(PaymentApp* app,
-                        PaymentRequestSpec* spec,
-                        PaymentRequestState* state,
+  PaymentMethodListItem(base::WeakPtr<PaymentApp> app,
+                        base::WeakPtr<PaymentRequestSpec> spec,
+                        base::WeakPtr<PaymentRequestState> state,
                         PaymentRequestItemList* list,
-                        PaymentRequestDialogView* dialog,
+                        base::WeakPtr<PaymentRequestDialogView> dialog,
                         bool selected)
       : PaymentRequestItemList::Item(
             spec,
@@ -75,24 +66,28 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 
  private:
   void ShowEditor() {
+    if (!app_)
+      return;
+
     switch (app_->type()) {
       case PaymentApp::Type::AUTOFILL:
         // Since we are a list item, we only care about the on_edited callback.
         dialog_->ShowCreditCardEditor(
             BackNavigationType::kPaymentSheet,
-            static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
             /*on_edited=*/
-            base::BindOnce(
-                &PaymentRequestState::SetSelectedApp, state()->AsWeakPtr(),
-                app_,
-                PaymentRequestState::SectionSelectionStatus::kEditedSelected),
+            base::BindOnce(&PaymentRequestState::SetSelectedApp, state(), app_),
             /*on_added=*/
             base::OnceCallback<void(const autofill::CreditCard&)>(),
-            static_cast<AutofillPaymentApp*>(app_)->credit_card());
+            static_cast<AutofillPaymentApp*>(app_.get())->credit_card());
         return;
+      case PaymentApp::Type::UNDEFINED:
+        // Intentionally fall through.
       case PaymentApp::Type::NATIVE_MOBILE_APP:
+        // Intentionally fall through.
       case PaymentApp::Type::SERVICE_WORKER_APP:
-        // We cannot edit a native mobile app and service worker app.
+        // Intentionally fall through.
+      case PaymentApp::Type::INTERNAL:
+        // We cannot edit these types of payment apps.
         return;
     }
     NOTREACHED();
@@ -100,16 +95,19 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 
   // PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateExtraView() override {
-    std::unique_ptr<views::ImageView> icon_view = CreateAppIconView(
-        app_->icon_resource_id(), app_->icon_image_skia(), app_->GetLabel());
-    return icon_view;
+    return app_ ? CreateAppIconView(app_->icon_resource_id(),
+                                    app_->icon_bitmap(), app_->GetLabel())
+                : nullptr;
   }
 
   std::unique_ptr<views::View> CreateContentView(
       base::string16* accessible_content) override {
     DCHECK(accessible_content);
     auto card_info_container = std::make_unique<views::View>();
-    card_info_container->set_can_process_events_within_subtree(false);
+    if (!app_)
+      return card_info_container;
+
+    card_info_container->SetCanProcessEventsWithinSubtree(false);
 
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
@@ -127,8 +125,8 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     base::string16 missing_info;
     if (!app_->IsCompleteForPayment()) {
       missing_info = app_->GetMissingInfoLabel();
-      auto missing_info_label =
-          std::make_unique<views::Label>(missing_info, CONTEXT_BODY_TEXT_SMALL);
+      auto missing_info_label = std::make_unique<views::Label>(
+          missing_info, CONTEXT_DIALOG_BODY_TEXT_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_LinkEnabled));
@@ -143,9 +141,8 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   }
 
   void SelectedStateChanged() override {
-    if (selected()) {
-      state()->SetSelectedApp(
-          app_, PaymentRequestState::SectionSelectionStatus::kSelected);
+    if (app_ && selected()) {
+      state()->SetSelectedApp(app_);
       dialog_->GoBack();
     }
   }
@@ -159,15 +156,15 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     // PerformSelectionFallback is called, where the app can be made complete.
     // This applies only to AutofillPaymentApp, each one of which is a credit
     // card, so PerformSelectionFallback will open the card editor.
-    return app_->IsCompleteForPayment();
+    return app_ && app_->IsCompleteForPayment();
   }
 
   void PerformSelectionFallback() override { ShowEditor(); }
 
   void EditButtonPressed() override { ShowEditor(); }
 
-  PaymentApp* app_;
-  PaymentRequestDialogView* dialog_;
+  base::WeakPtr<PaymentApp> app_;
+  base::WeakPtr<PaymentRequestDialogView> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
 };
@@ -175,9 +172,9 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 }  // namespace
 
 PaymentMethodViewController::PaymentMethodViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog)
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog)
     : PaymentRequestSheetController(spec, state, dialog),
       payment_method_list_(dialog),
       enable_add_card_(!state->is_retry_called() &&
@@ -186,7 +183,7 @@ PaymentMethodViewController::PaymentMethodViewController(
       state->available_apps();
   for (const auto& app : available_apps) {
     auto item = std::make_unique<PaymentMethodListItem>(
-        app.get(), spec, state, &payment_method_list_, dialog,
+        app->AsWeakPtr(), spec, state, &payment_method_list_, dialog,
         app.get() == state->selected_app());
     payment_method_list_.AddItem(std::move(item));
   }
@@ -214,38 +211,30 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
   content_view->AddChildView(list_view.release());
 }
 
-void PaymentMethodViewController::ButtonPressed(views::Button* sender,
-                                                const ui::Event& event) {
-  if (sender->tag() == GetSecondaryButtonTag()) {
-    // Only provide the |on_added| callback, in response to this button.
-    dialog()->ShowCreditCardEditor(
-        BackNavigationType::kPaymentSheet,
-        static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
-        /*on_edited=*/base::OnceClosure(),
-        /*on_added=*/
-        base::BindOnce(&PaymentRequestState::AddAutofillPaymentApp,
-                       state()->AsWeakPtr(), /*selected=*/true),
-        /*credit_card=*/nullptr);
-  } else {
-    PaymentRequestSheetController::ButtonPressed(sender, event);
-  }
+bool PaymentMethodViewController::ShouldShowPrimaryButton() {
+  return false;
+}
+
+bool PaymentMethodViewController::ShouldShowSecondaryButton() {
+  return enable_add_card_;
 }
 
 base::string16 PaymentMethodViewController::GetSecondaryButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
 }
 
-int PaymentMethodViewController::GetSecondaryButtonTag() {
-  return static_cast<int>(
-      PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON);
+views::Button::PressedCallback
+PaymentMethodViewController::GetSecondaryButtonCallback() {
+  return base::BindRepeating(
+      &PaymentRequestDialogView::ShowCreditCardEditor, dialog(),
+      BackNavigationType::kPaymentSheet, base::RepeatingClosure(),
+      base::BindRepeating(&PaymentRequestState::AddAutofillPaymentApp, state(),
+                          true),
+      nullptr);
 }
 
 int PaymentMethodViewController::GetSecondaryButtonId() {
   return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
-}
-
-bool PaymentMethodViewController::ShouldShowSecondaryButton() {
-  return enable_add_card_;
 }
 
 }  // namespace payments

@@ -14,6 +14,8 @@
 
 syntax = "proto3";
 
+option optimize_for = LITE_RUNTIME;
+
 package private_membership.rlwe;
 
 import "private_membership.proto";
@@ -98,11 +100,11 @@ enum RlweUseCase {
   TEST_USE_CASE2 = 2;
   TEST_USE_CASE3 = 3;
 
-  // The initial state of Chrome OS device, used for Zero Touch and
-  // License Packaging.
-  CROS_INITIAL_STATE = 4;
+  reserved 4;
 
-  // Add more use cases.
+  // The device state of Chrome OS device, used for Zero Touch,
+  // License Packaging and Forced Reenrollment.
+  CROS_DEVICE_STATE = 5;
 }
 
 // Parameters for the hashed buckets (first level).

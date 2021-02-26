@@ -8,37 +8,33 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Process;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.PostMessageServiceConnection;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.MetricsUtils;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ClientManagerTest {
-    @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
     private static final String URL = "https://www.android.com";
     private static final String HTTP_URL = "http://www.android.com";
 
@@ -52,7 +48,7 @@ public class ClientManagerTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         RequestThrottler.purgeAllEntriesForTesting();
         mClientManager = new ClientManager();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -131,7 +127,6 @@ public class ClientManagerTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testPredictionOutcomeSuccess() {
         Assert.assertTrue(mClientManager.newSession(mSession, mUid, null, null, null));
         Assert.assertTrue(
@@ -197,11 +192,9 @@ public class ClientManagerTest {
                     mSession, Origin.create(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return cm.getPostMessageOriginForSessionForTesting(mSession) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    cm.getPostMessageOriginForSessionForTesting(mSession), Matchers.notNullValue());
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

@@ -10,6 +10,8 @@
 #include "ui/base/hit_test.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace wl {
 
@@ -155,9 +157,123 @@ gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
       child_bounds.size());
 }
 
+wl_output_transform ToWaylandTransform(gfx::OverlayTransform transform) {
+  switch (transform) {
+    case gfx::OVERLAY_TRANSFORM_NONE:
+      return WL_OUTPUT_TRANSFORM_NORMAL;
+    case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+      return WL_OUTPUT_TRANSFORM_FLIPPED;
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+      return WL_OUTPUT_TRANSFORM_FLIPPED_180;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+      return WL_OUTPUT_TRANSFORM_90;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+      return WL_OUTPUT_TRANSFORM_180;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+      return WL_OUTPUT_TRANSFORM_270;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
+gfx::Rect ApplyWaylandTransform(const gfx::Rect& rect,
+                                const gfx::Size& bounds,
+                                wl_output_transform transform) {
+  gfx::Rect result = rect;
+  switch (transform) {
+    case WL_OUTPUT_TRANSFORM_NORMAL:
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED:
+      result.set_x(bounds.width() - rect.x() - rect.width());
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+      result.set_x(rect.y());
+      result.set_y(rect.x());
+      result.set_width(rect.height());
+      result.set_height(rect.width());
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+      result.set_y(bounds.height() - rect.y() - rect.height());
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+      result.set_x(bounds.height() - rect.y() - rect.height());
+      result.set_y(bounds.width() - rect.x() - rect.width());
+      result.set_width(rect.height());
+      result.set_height(rect.width());
+      break;
+    case WL_OUTPUT_TRANSFORM_90:
+      result.set_x(rect.y());
+      result.set_y(bounds.width() - rect.x() - rect.width());
+      result.set_width(rect.height());
+      result.set_height(rect.width());
+      break;
+    case WL_OUTPUT_TRANSFORM_180:
+      result.set_x(bounds.width() - rect.x() - rect.width());
+      result.set_y(bounds.height() - rect.y() - rect.height());
+      break;
+    case WL_OUTPUT_TRANSFORM_270:
+      result.set_x(bounds.height() - rect.y() - rect.height());
+      result.set_y(rect.x());
+      result.set_width(rect.height());
+      result.set_height(rect.width());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return result;
+}
+
+gfx::Size ApplyWaylandTransform(const gfx::Size& size,
+                                wl_output_transform transform) {
+  gfx::Size result = size;
+  switch (transform) {
+    case WL_OUTPUT_TRANSFORM_NORMAL:
+    case WL_OUTPUT_TRANSFORM_FLIPPED:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+    case WL_OUTPUT_TRANSFORM_180:
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+    case WL_OUTPUT_TRANSFORM_90:
+    case WL_OUTPUT_TRANSFORM_270:
+      result.set_width(size.height());
+      result.set_height(size.width());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return result;
+}
+
 bool IsMenuType(ui::PlatformWindowType type) {
   return type == ui::PlatformWindowType::kMenu ||
          type == ui::PlatformWindowType::kPopup;
+}
+
+ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface) {
+  if (!surface)
+    return nullptr;
+  auto* wayland_surface = static_cast<ui::WaylandSurface*>(
+      wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
+  if (!wayland_surface)
+    return nullptr;
+  return wayland_surface->root_window();
+}
+
+gfx::Rect TranslateWindowBoundsToParentDIP(ui::WaylandWindow* window,
+                                           ui::WaylandWindow* parent_window) {
+  DCHECK(window);
+  DCHECK(parent_window);
+  DCHECK_EQ(window->buffer_scale(), parent_window->buffer_scale());
+  DCHECK_EQ(window->ui_scale(), parent_window->ui_scale());
+  return gfx::ScaleToRoundedRect(
+      wl::TranslateBoundsToParentCoordinates(window->GetBounds(),
+                                             parent_window->GetBounds()),
+      1.0 / window->buffer_scale());
 }
 
 }  // namespace wl

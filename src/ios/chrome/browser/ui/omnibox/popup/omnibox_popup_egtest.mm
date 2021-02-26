@@ -135,7 +135,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Check that both tabs are opened (and that we switched tab and not just
   // navigated.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridOpenButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:
@@ -146,7 +146,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that the switch to open tab button isn't displayed for the current tab.
-- (void)testNotSwitchButtonOnCurrentTab {
+// TODO(crbug.com/1128463): Test is flaky on simulators.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNotSwitchButtonOnCurrentTab \
+  DISABLED_testNotSwitchButtonOnCurrentTab
+#else
+#define MAYBE_testNotSwitchButtonOnCurrentTab testNotSwitchButtonOnCurrentTab
+#endif
+- (void)MAYBE_testNotSwitchButtonOnCurrentTab {
 // TODO(crbug.com/1067817): Test won't pass on iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -269,13 +276,22 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey waitForMainTabCount:1];
 }
 
-- (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
+// TODO(crbug.com/1128463): Test is flaky on simulators.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
+  DISABLED_testDontCloseNTPWhenSwitchingWithForwardHistory
+#else
+#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
+  testDontCloseNTPWhenSwitchingWithForwardHistory
+#endif
+- (void)MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory {
 // TODO(crbug.com/1067817): Test won't pass on iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
   }
 #endif
+
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];
@@ -301,14 +317,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that switching to closed tab opens the tab in foreground, except if it
 // is from NTP without history.
 - (void)testSwitchToClosedTab {
-#if defined(CHROME_EARL_GREY_2)
   if (@available(iOS 13, *)) {
     if ([ChromeEarlGrey isIPadIdiom]) {
       // TODO(crbug.com/992480):test fails on iPad.
       EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
     }
   }
-#endif
 // TODO(crbug.com/1067817): Test won't pass on iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -340,7 +354,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Try to switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the URL has been opened in a new foreground tab.
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
@@ -398,7 +412,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   [[EarlGrey selectElementWithMatcher:row]
       assertWithMatcher:grey_sufficientlyVisible()];
-  GREYAssertTrue([ChromeEarlGrey isKeyboardShownWithError:nil],
+  GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
                  @"Keyboard Should be Shown");
 
   // Scroll the popup.
@@ -413,10 +427,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // The keyboard should only be dismissed on phones. Ipads, even in
   // multitasking, are considered tall enough to fit all suggestions.
   if ([ChromeEarlGrey isIPadIdiom]) {
-    GREYAssertTrue([ChromeEarlGrey isKeyboardShownWithError:nil],
+    GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
                    @"Keyboard Should be Shown");
   } else {
-    GREYAssertFalse([ChromeEarlGrey isKeyboardShownWithError:nil],
+    GREYAssertFalse([EarlGrey isKeyboardShownWithError:nil],
                     @"Keyboard Should not be Shown");
   }
 }

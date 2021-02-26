@@ -31,6 +31,9 @@ import * as UI from '../ui/ui.js';
 
 import {ConsoleView} from './ConsoleView.js';
 
+/** @type {!ConsolePanel} */
+let consolePanelInstance;
+
 /**
  * @unrestricted
  */
@@ -41,15 +44,21 @@ export class ConsolePanel extends UI.Panel.Panel {
   }
 
   /**
+   * @param {{forceNew: ?boolean}=} opts
    * @return {!ConsolePanel}
    */
-  static instance() {
-    return /** @type {!ConsolePanel} */ (self.runtime.sharedInstance(ConsolePanel));
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!consolePanelInstance || forceNew) {
+      consolePanelInstance = new ConsolePanel();
+    }
+
+    return consolePanelInstance;
   }
 
   static _updateContextFlavor() {
     const consoleView = ConsolePanel.instance()._view;
-    self.UI.context.setFlavor(ConsoleView, consoleView.isShowing() ? consoleView : null);
+    UI.Context.Context.instance().setFlavor(ConsoleView, consoleView.isShowing() ? consoleView : null);
   }
 
   /**
@@ -57,9 +66,9 @@ export class ConsolePanel extends UI.Panel.Panel {
    */
   wasShown() {
     super.wasShown();
-    const wrapper = WrapperView._instance;
+    const wrapper = wrapperViewInstance;
     if (wrapper && wrapper.isShowing()) {
-      self.UI.inspectorView.setDrawerMinimized(true);
+      UI.InspectorView.InspectorView.instance().setDrawerMinimized(true);
     }
     this._view.show(this.element);
     ConsolePanel._updateContextFlavor();
@@ -72,9 +81,9 @@ export class ConsolePanel extends UI.Panel.Panel {
     super.willHide();
     // The minimized drawer has 0 height, and showing Console inside may set
     // Console's scrollTop to 0. Unminimize before calling show to avoid this.
-    self.UI.inspectorView.setDrawerMinimized(false);
-    if (WrapperView._instance) {
-      WrapperView._instance._showViewInWrapper();
+    UI.InspectorView.InspectorView.instance().setDrawerMinimized(false);
+    if (wrapperViewInstance) {
+      wrapperViewInstance._showViewInWrapper();
     }
     ConsolePanel._updateContextFlavor();
   }
@@ -88,15 +97,15 @@ export class ConsolePanel extends UI.Panel.Panel {
   }
 }
 
-/**
- * @unrestricted
- */
+/** @type {?WrapperView} */
+let wrapperViewInstance = null;
+
 export class WrapperView extends UI.Widget.VBox {
   constructor() {
     super();
     this.element.classList.add('console-view-wrapper');
 
-    WrapperView._instance = this;
+    wrapperViewInstance = this;
 
     this._view = ConsoleView.instance();
   }
@@ -108,7 +117,7 @@ export class WrapperView extends UI.Widget.VBox {
     if (!ConsolePanel.instance().isShowing()) {
       this._showViewInWrapper();
     } else {
-      self.UI.inspectorView.setDrawerMinimized(true);
+      UI.InspectorView.InspectorView.instance().setDrawerMinimized(true);
     }
     ConsolePanel._updateContextFlavor();
   }
@@ -117,7 +126,7 @@ export class WrapperView extends UI.Widget.VBox {
    * @override
    */
   willHide() {
-    self.UI.inspectorView.setDrawerMinimized(false);
+    UI.InspectorView.InspectorView.instance().setDrawerMinimized(false);
     ConsolePanel._updateContextFlavor();
   }
 
@@ -128,21 +137,19 @@ export class WrapperView extends UI.Widget.VBox {
 
 /**
  * @implements {Common.Revealer.Revealer}
- * @unrestricted
  */
 export class ConsoleRevealer {
   /**
    * @override
    * @param {!Object} object
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
-  reveal(object) {
+  async reveal(object) {
     const consoleView = ConsoleView.instance();
     if (consoleView.isShowing()) {
       consoleView.focus();
-      return Promise.resolve();
+      return;
     }
-    UI.ViewManager.ViewManager.instance().showView('console-view');
-    return Promise.resolve();
+    await UI.ViewManager.ViewManager.instance().showView('console-view');
   }
 }

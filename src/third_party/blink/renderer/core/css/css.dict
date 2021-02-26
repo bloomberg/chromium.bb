@@ -338,7 +338,6 @@
 "grid"
 "inline-grid"
 "math"
-"inline-math"
 "contents"
 "-webkit-flex"
 "-webkit-inline-flex"
@@ -926,6 +925,9 @@
 "jis-b5"
 "jis-b4"
 "hidden-matchable"
+"more"
+"less"
+"forced"
 
 # at-rules
 "@charset"

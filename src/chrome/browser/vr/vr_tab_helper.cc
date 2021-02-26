@@ -4,12 +4,11 @@
 
 #include "chrome/browser/vr/vr_tab_helper.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/xr_runtime_manager.h"
-#include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 #if defined(OS_ANDROID)
 #include "base/feature_list.h"
@@ -19,8 +18,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #endif
 
+using blink::web_pref::WebPreferences;
 using content::WebContents;
-using content::WebPreferences;
 
 namespace vr {
 
@@ -35,10 +34,10 @@ void VrTabHelper::SetIsInVr(bool is_in_vr) {
 
   is_in_vr_ = is_in_vr;
 
-  WebPreferences web_prefs =
-      web_contents_->GetRenderViewHost()->GetWebkitPreferences();
+  blink::web_pref::WebPreferences web_prefs =
+      web_contents_->GetOrCreateWebPreferences();
   web_prefs.immersive_mode_enabled = is_in_vr_;
-  web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
+  web_contents_->SetWebPreferences(web_prefs);
 }
 
 /* static */
@@ -111,7 +110,6 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
   if (!IsInVr(contents))
     return false;
 
-  bool suppress = false;
   switch (element) {
     // The following are suppressed if in VR.
     case UiSuppressedElement::kHttpAuth:
@@ -131,19 +129,12 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
     // suppression.
     case UiSuppressedElement::kFileAccessPermission:
     case UiSuppressedElement::kContextMenu:
-      suppress = true;
-      break;
+      return true;
     case UiSuppressedElement::kPlaceholderForPreviousHighValue:
     case UiSuppressedElement::kCount:
-      suppress = false;
       NOTREACHED();
-      break;
+      return false;
   }
-  if (suppress) {
-    UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredSuppressedUI", element,
-                              UiSuppressedElement::kCount);
-  }
-  return suppress;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(VrTabHelper)

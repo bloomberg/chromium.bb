@@ -7,7 +7,6 @@
 #include "include/cppgc/internal/api-constants.h"
 #include "src/base/macros.h"
 #include "src/heap/cppgc/gc-info-table.h"
-#include "src/heap/cppgc/heap-object-header-inl.h"
 
 namespace cppgc {
 namespace internal {
@@ -26,6 +25,16 @@ void HeapObjectHeader::Finalize() {
   if (gc_info.finalize) {
     gc_info.finalize(Payload());
   }
+}
+
+HeapObjectName HeapObjectHeader::GetName() const {
+  const GCInfo& gc_info = GlobalGCInfoTable::GCInfoFromIndex(GetGCInfoIndex());
+  return gc_info.name(Payload());
+}
+
+void HeapObjectHeader::Trace(Visitor* visitor) const {
+  const GCInfo& gc_info = GlobalGCInfoTable::GCInfoFromIndex(GetGCInfoIndex());
+  return gc_info.trace(visitor, Payload());
 }
 
 }  // namespace internal

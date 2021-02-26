@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_events.h"
@@ -42,6 +43,15 @@ class MEDIA_EXPORT MediaLog {
  public:
   static const char kEventKey[];
   static const char kStatusText[];
+
+// Maximum limit for the total number of logs kept per renderer. At the time of
+// writing, 512 events of the kind: { "property": value } together consume ~88kb
+// of memory on linux.
+#if defined(OS_ANDROID)
+  static constexpr size_t kLogLimit = 128;
+#else
+  static constexpr size_t kLogLimit = 512;
+#endif
 
   // Constructor is protected, see below.
   virtual ~MediaLog();
@@ -179,16 +189,6 @@ class MEDIA_EXPORT MediaLog {
 
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogRecord> CreateRecord(MediaLogRecord::Type type);
-
-  enum : size_t {
-    // Max length of URLs in Created/Load events. Exceeding triggers truncation.
-    kMaxUrlLength = 1000,
-  };
-
-  // URLs (for Created and Load events) may be of arbitrary length from the
-  // untrusted renderer. This method truncates to |kMaxUrlLength| before storing
-  // the event, and sets the last 3 characters to an ellipsis.
-  static std::string TruncateUrlString(std::string log_string);
 
   // The underlying media log.
   scoped_refptr<ParentLogRecord> parent_log_record_;

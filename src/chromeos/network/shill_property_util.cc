@@ -11,6 +11,7 @@
 
 #include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -196,11 +197,10 @@ std::unique_ptr<NetworkUIData> GetUIDataFromValue(
     return std::unique_ptr<NetworkUIData>();
   if (ui_data_str.empty())
     return std::make_unique<NetworkUIData>();
-  std::unique_ptr<base::Value> ui_data_dict(
-      chromeos::onc::ReadDictionaryFromJson(ui_data_str));
-  if (!ui_data_dict)
+  base::Value ui_data_dict = chromeos::onc::ReadDictionaryFromJson(ui_data_str);
+  if (!ui_data_dict.is_dict())
     return std::unique_ptr<NetworkUIData>();
-  return std::make_unique<NetworkUIData>(*ui_data_dict);
+  return std::make_unique<NetworkUIData>(ui_data_dict);
 }
 
 std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
@@ -282,7 +282,7 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
     // Ethernet and EthernetEAP don't have any additional identifying
     // properties.
   } else {
-    NOTREACHED() << "Unsupported network type " << type;
+    NET_LOG(ERROR) << "Unsupported network type " << type;
     success = false;
   }
   if (!success) {

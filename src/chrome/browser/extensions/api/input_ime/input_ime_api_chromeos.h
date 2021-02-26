@@ -68,6 +68,30 @@ class InputImeSetCursorPositionFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputImeSetAssistiveWindowPropertiesFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.setAssistiveWindowProperties",
+                             INPUT_IME_SETASSISTIVEWINDOWPROPERTIES)
+
+ protected:
+  ~InputImeSetAssistiveWindowPropertiesFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class InputImeSetAssistiveWindowButtonHighlightedFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.setAssistiveWindowButtonHighlighted",
+                             INPUT_IME_SETASSISTIVEWINDOWBUTTONHIGHLIGHTED)
+ protected:
+  ~InputImeSetAssistiveWindowButtonHighlightedFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class InputImeSetMenuItemsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)
@@ -176,7 +200,7 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   void UnregisterAllImes(const std::string& extension_id);
 
   chromeos::InputMethodEngine* GetEngine(const std::string& extension_id);
-  input_method::InputMethodEngineBase* GetEngineIfActive(
+  chromeos::InputMethodEngineBase* GetEngineIfActive(
       const std::string& extension_id,
       std::string* error) override;
 

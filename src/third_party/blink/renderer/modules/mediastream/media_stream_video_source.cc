@@ -15,9 +15,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -31,6 +32,15 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     return nullptr;
   }
   return static_cast<MediaStreamVideoSource*>(source.GetPlatformSource());
+}
+
+// static
+MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
+    MediaStreamSource* source) {
+  if (!source || source->GetType() != MediaStreamSource::kTypeVideo) {
+    return nullptr;
+  }
+  return static_cast<MediaStreamVideoSource*>(source->GetPlatformSource());
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource() : state_(NEW) {
@@ -188,7 +198,8 @@ void MediaStreamVideoSource::ReconfigureTrack(
   UpdateTrackSettings(track, adapter_settings);
 }
 
-void MediaStreamVideoSource::StopForRestart(RestartCallback callback) {
+void MediaStreamVideoSource::StopForRestart(RestartCallback callback,
+                                            bool send_black_frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ != STARTED) {
     Thread::Current()->GetTaskRunner()->PostTask(
@@ -201,6 +212,21 @@ void MediaStreamVideoSource::StopForRestart(RestartCallback callback) {
   track_adapter_->StopFrameMonitoring();
   state_ = STOPPING_FOR_RESTART;
   restart_callback_ = std::move(callback);
+
+  if (send_black_frame) {
+    const base::Optional<gfx::Size> source_size =
+        track_adapter_->source_frame_size();
+    scoped_refptr<media::VideoFrame> black_frame =
+        media::VideoFrame::CreateBlackFrame(
+            source_size.has_value() ? *source_size
+                                    : gfx::Size(kDefaultWidth, kDefaultHeight));
+    PostCrossThreadTask(
+        *io_task_runner(), FROM_HERE,
+        CrossThreadBindOnce(&VideoTrackAdapter::DeliverFrameOnIO,
+                            track_adapter_, black_frame,
+                            base::TimeTicks::Now()));
+  }
+
   StopSourceForRestartImpl();
 }
 
@@ -480,6 +506,11 @@ void MediaStreamVideoSource::UpdateTrackSettings(
 
 bool MediaStreamVideoSource::SupportsEncodedOutput() const {
   return false;
+}
+
+VideoCaptureFeedbackCB MediaStreamVideoSource::GetFeedbackCallback() const {
+  // Each source implementation has to implement its own feedback callbacks.
+  return base::DoNothing();
 }
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(

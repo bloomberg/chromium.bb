@@ -27,7 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
 // without the trailing semicolon.  For now, disable the extra semi warning
 // so Xcode indexing works for the egtest.
@@ -35,7 +34,6 @@
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(OmniboxAppInterface);
 #pragma clang diagnostic pop
-#endif  // defined(CHROME_EARL_GREY_2)
 
 using base::test::ios::kWaitForUIElementTimeout;
 
@@ -150,19 +148,19 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-#if defined(CHROME_EARL_GREY_1)
-//  Flaky on EG1.
-#define MAYBE_testXClientData DISABLED_testXClientData
-#else
-#define MAYBE_testXClientData testXClientData
-#endif
-- (void)MAYBE_testXClientData {
+- (void)testXClientData {
 // TODO(crbug.com/1067815): Test doesn't pass on iPad device.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"testXClientData doesn't pass on iPad device.");
   }
 #endif
+
+  // TODO(crbug.com/1120723) This test is flakily because of a DCHECK in
+  // ios/web.  Clearing browser history first works around the problem, but
+  // shouldn't be necessary otherwise.  Remove once the bug is fixed.
+  [ChromeEarlGrey clearBrowsingHistory];
+
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 
@@ -233,7 +231,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [self openPage1];
 
   if ([ChromeEarlGrey isCompactWidth]) {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::TabShareButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
 }
@@ -299,6 +297,13 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 - (void)testFocusingOmniboxDismissesEditMenu {
+// TODO(crbug.com/1129095): Re-enable test for iOS 12 device.
+#if !TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
+  }
+#endif
+
   [self openPage1];
 
   // Long pressing should open edit menu.
@@ -468,19 +473,6 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
-  // TODO(crbug.com/1078784): This is flaky on iOS 13 iPad, probably linked to
-  // Apple help on the keyboard.
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad, iOS 13 and later.");
-  }
-
-// TODO(crbug.com/1046787): Test is failing for EG1.
-#if defined(CHROME_EARL_GREY_1)
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
-  }
-#endif
-
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -547,10 +539,9 @@ id<GREYMatcher> SearchCopiedTextButton() {
   // Cut the text.
   [[EarlGrey selectElementWithMatcher:CutButton()] performAction:grey_tap()];
 
-  // Pressing should allow pasting.
-  // Click on the omnibox.
+  // Long pressing should allow pasting.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
+      performAction:grey_longPress()];
   // Verify that system text selection callout is displayed (Search Copied
   // Text).
   GREYCondition* searchCopiedTextButtonIsDisplayed = [GREYCondition
@@ -633,6 +624,12 @@ id<GREYMatcher> SearchCopiedTextButton() {
 #define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
 #endif
 - (void)MAYBE_testNoDefaultMatch {
+  // TODO(crbug.com/1105869) Omnibox pasteboard suggestions are currently
+  // disabled on iOS14.
+  if (@available(iOS 14, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
+  }
+
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.

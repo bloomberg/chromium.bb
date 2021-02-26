@@ -7,18 +7,20 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/ui/media_router/media_router_file_dialog.h"
+#include "chrome/browser/ui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
+#include "components/media_router/browser/media_router_factory.h"
+#include "components/media_router/browser/media_routes_observer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/test/button_test_api.h"
 
 namespace media_router {
 
@@ -128,8 +130,8 @@ void MediaRouterUiForTest::ChooseSourceType(
   CastDialogView* dialog_view = CastDialogView::GetInstance();
   CHECK(dialog_view);
 
-  dialog_view->ButtonPressed(dialog_view->sources_button_for_test(),
-                             CreateMousePressedEvent());
+  views::test::ButtonTestApi(dialog_view->sources_button_for_test())
+      .NotifyClick(CreateMousePressedEvent());
   int source_index;
   switch (source_type) {
     case CastDialogView::kTab:

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -16,11 +15,9 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
+if (is_win) {
+  import("//build/toolchain/win/midl.gni")
+}
 
 mojom("ax_constants_mojo") {
   sources = [ "ax_constants.mojom" ]
@@ -37,10 +34,14 @@ mojom_component("ax_enums_mojo") {
 # included by Blink. The rule of thumb (for now) is that it's
 # anything platform-neutral (no platform/ directory) that
 # relates to a single accessibility node (no trees, etc.).
-jumbo_component("ax_base") {
+component("ax_base") {
   defines = [ "AX_BASE_IMPLEMENTATION" ]
 
   sources = [
+    "accessibility_features.cc",
+    "accessibility_features.h",
+    "accessibility_switches.cc",
+    "accessibility_switches.h",
     "ax_base_export.h",
     "ax_enum_util.cc",
     "ax_enum_util.h",
@@ -48,6 +49,8 @@ jumbo_component("ax_base") {
     "ax_event.h",
     "ax_event_intent.cc",
     "ax_event_intent.h",
+    "ax_mode.cc",
+    "ax_mode.h",
     "ax_node_data.cc",
     "ax_node_data.h",
     "ax_node_text_styles.cc",
@@ -56,6 +59,8 @@ jumbo_component("ax_base") {
     "ax_relative_bounds.h",
     "ax_role_properties.cc",
     "ax_role_properties.h",
+    "ax_tree_id.cc",
+    "ax_tree_id.h",
   ]
 
   public_deps = [
@@ -63,6 +68,7 @@ jumbo_component("ax_base") {
     ":ax_enums_mojo",
     "//base",
     "//base:i18n",
+    "//base/util/values:values_util",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -70,18 +76,24 @@ jumbo_component("ax_base") {
   ]
 }
 
-jumbo_component("accessibility") {
+#if (is_win) {
+#  midl("ichromeaccessible") {
+#    sources = [
+#      "platform/ichromeaccessible.idl",
+#    ]
+#  }
+#}
+
+component("accessibility") {
   defines = [ "AX_IMPLEMENTATION" ]
 
   sources = [
-    "accessibility_features.cc",
-    "accessibility_features.h",
-    "accessibility_switches.cc",
-    "accessibility_switches.h",
     "ax_action_data.cc",
     "ax_action_data.h",
     "ax_action_handler.cc",
     "ax_action_handler.h",
+    "ax_action_handler_base.cc",
+    "ax_action_handler_base.h",
     "ax_action_target.h",
     "ax_active_popup.cc",
     "ax_active_popup.h",
@@ -93,8 +105,6 @@ jumbo_component("accessibility") {
     "ax_export.h",
     "ax_language_detection.cc",
     "ax_language_detection.h",
-    "ax_mode.cc",
-    "ax_mode.h",
     "ax_mode_observer.h",
     "ax_node.cc",
     "ax_node.h",
@@ -115,8 +125,6 @@ jumbo_component("accessibility") {
     "ax_tree_combiner.h",
     "ax_tree_data.cc",
     "ax_tree_data.h",
-    "ax_tree_id.cc",
-    "ax_tree_id.h",
     "ax_tree_id_registry.cc",
     "ax_tree_id_registry.h",
     "ax_tree_manager.h",
@@ -132,85 +140,21 @@ jumbo_component("accessibility") {
     "ax_tree_update_forward.h",
     "null_ax_action_target.cc",
     "null_ax_action_target.h",
-
-    # ax_android_constants* are used in ax_assistant_structure.cc.
-    "platform/ax_android_constants.cc",
-    "platform/ax_android_constants.h",
-
-    # ax_platform_node* are used for enable/disable accessibility and
-    # test_ax_node_wrapper.
-    "platform/ax_platform_node.cc",
-    "platform/ax_platform_node.h",
-    "platform/ax_platform_node_base.cc",
-    "platform/ax_platform_node_base.h",
-    "platform/ax_platform_node_delegate.h",
-    "platform/ax_platform_node_delegate_base.cc",
-    "platform/ax_platform_node_delegate_base.h",
-
-    # ax_platform_node_test_helper.{cc,h} are used in
-    # browser_view_browsertest.cc
-    "platform/ax_platform_node_test_helper.cc",
-    "platform/ax_platform_node_test_helper.h",
-
-    # ax_unique_id.{cc,h} are used in browser_accessibility.cc and
-    # view_accessibility.cc
-    "platform/ax_unique_id.cc",
-    "platform/ax_unique_id.h",
-
-    # compute_attributes.{cc,h} are used in
-    # accessibility_tree_formatter_blink.cc
-    "platform/compute_attributes.cc",
-    "platform/compute_attributes.h",
   ]
 
-  deps = [ "//third_party/cld_3/src/src:cld_3" ]
+  deps = [
+    "//base/util/values:values_util",
+    "//third_party/cld_3/src/src:cld_3",
+  ]
 
   public_deps = [
     ":ax_base",
-    "//ui/display",
+    "//ui/accessibility/platform",
   ]
 
-  if (has_native_accessibility) {
-    sources += [
-      "platform/ax_platform_text_boundary.cc",
-      "platform/ax_platform_text_boundary.h",
-    ]
-
-    if (use_atk) {
-      # ax_platform_text_boundary.h includes atk.h, so ATK is needed as a public
-      # config to ensure anything that includes this is able to find atk.h.
-      public_configs = [ "//build/config/linux/atk" ]
-    }
-  }
-
-  if (is_win) {
-    sources += [
-      "platform/ax_fragment_root_delegate_win.h",
-      "platform/ax_fragment_root_win.cc",
-      "platform/ax_fragment_root_win.h",
-      "platform/ax_platform_node_delegate_utils_win.cc",
-      "platform/ax_platform_node_delegate_utils_win.h",
-      "platform/ax_platform_node_textchildprovider_win.cc",
-      "platform/ax_platform_node_textchildprovider_win.h",
-      "platform/ax_platform_node_textprovider_win.cc",
-      "platform/ax_platform_node_textprovider_win.h",
-      "platform/ax_platform_node_textrangeprovider_win.cc",
-      "platform/ax_platform_node_textrangeprovider_win.h",
-      "platform/ax_platform_node_win.cc",
-      "platform/ax_platform_node_win.h",
-      "platform/ax_platform_relation_win.cc",
-      "platform/ax_platform_relation_win.h",
-      "platform/ax_system_caret_win.cc",
-      "platform/ax_system_caret_win.h",
-    ]
-
-    public_deps += [ "//third_party/iaccessible2" ]
-
-    libs = [
-      "oleacc.lib",
-      "uiautomationcore.lib",
-    ]
-  }
+  # Allows the files from //ui/accessibility/platform includes headers
+  # from this directory.
+  allow_circular_includes_from = [ "//ui/accessibility/platform" ]
 
   if (!is_ios) {
     sources += [
@@ -223,40 +167,6 @@ jumbo_component("accessibility") {
       "//ipc",
       "//ui/gfx/ipc/skia",
     ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "platform/ax_platform_node_mac.h",
-      "platform/ax_platform_node_mac.mm",
-    ]
-
-    libs = [
-      "AppKit.framework",
-      "Foundation.framework",
-    ]
-  }
-
-  if (use_atk) {
-    sources += [
-      "platform/atk_util_auralinux.cc",
-      "platform/atk_util_auralinux.h",
-      "platform/atk_util_auralinux_gtk.cc",
-      "platform/ax_platform_atk_hyperlink.cc",
-      "platform/ax_platform_atk_hyperlink.h",
-      "platform/ax_platform_node_auralinux.cc",
-      "platform/ax_platform_node_auralinux.h",
-    ]
-
-    configs += [ "//build/config/linux/atk" ]
-
-    if (use_glib) {
-      configs += [ "//build/config/linux:glib" ]
-    }
-
-    if (use_x11) {
-      public_deps += [ "//ui/gfx/x" ]
-    }
   }
 
   if (use_aura) {
@@ -281,14 +191,20 @@ source_set("ax_assistant") {
 static_library("test_support") {
   testonly = true
   sources = [
-    # test_ax_node_wrapper.{cc,h} are used in ax_range_unittest.cc
-    "platform/test_ax_node_wrapper.cc",
-    "platform/test_ax_node_wrapper.h",
+    "test_ax_node_helper.cc",
+    "test_ax_node_helper.h",
     "test_ax_tree_manager.cc",
     "test_ax_tree_manager.h",
     "tree_generator.cc",
     "tree_generator.h",
   ]
+
+  if (has_native_accessibility) {
+    sources += [
+      "platform/test_ax_node_wrapper.cc",
+      "platform/test_ax_node_wrapper.h",
+    ]
+  }
 
   deps = [ ":accessibility" ]
 }
@@ -322,25 +238,9 @@ test("accessibility_unittests") {
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
     "platform/ax_unique_id_unittest.cc",
+    "platform/inspect/property_node_unittest.cc",
     "run_all_unittests.cc",
   ]
-
-  if (is_win) {
-    sources += [
-      "platform/ax_fragment_root_win_unittest.cc",
-      "platform/ax_platform_node_textchildprovider_win_unittest.cc",
-      "platform/ax_platform_node_textprovider_win_unittest.cc",
-      "platform/ax_platform_node_textrangeprovider_win_unittest.cc",
-      "platform/ax_platform_node_win_unittest.cc",
-      "platform/ax_platform_node_win_unittest.h",
-    ]
-  }
-
-  if (has_native_accessibility) {
-    # This test depends heavily on NativeViewAccessible, which is only
-    # implemented on these platforms.
-    sources += [ "platform/ax_platform_node_base_unittest.cc" ]
-  }
 
   deps = [
     ":accessibility",
@@ -357,22 +257,40 @@ test("accessibility_unittests") {
     "//ui/gfx:test_support",
   ]
 
-  if (is_win) {
-    deps += [ "//third_party/iaccessible2" ]
+  if (has_native_accessibility) {
+    # This test depends heavily on NativeViewAccessible, which is only
+    # implemented on these platforms.
+    sources += [ "platform/ax_platform_node_base_unittest.cc" ]
 
-    libs = [
-      "oleacc.lib",
-      "uiautomationcore.lib",
-    ]
-  }
+    if (is_win) {
+      sources += [
+        "platform/ax_fragment_root_win_unittest.cc",
+        "platform/ax_platform_node_textchildprovider_win_unittest.cc",
+        "platform/ax_platform_node_textprovider_win_unittest.cc",
+        "platform/ax_platform_node_textrangeprovider_win_unittest.cc",
+        "platform/ax_platform_node_win_unittest.cc",
+        "platform/ax_platform_node_win_unittest.h",
+      ]
 
-  if (use_atk) {
-    sources += [
-      "platform/atk_util_auralinux_unittest.cc",
-      "platform/ax_platform_node_auralinux_unittest.cc",
-    ]
+      deps += [
+        "//third_party/iaccessible2",
+        "//ui/accessibility/platform:ichromeaccessible",
+      ]
 
-    configs += [ "//build/config/linux/atk" ]
+      libs = [
+        "oleacc.lib",
+        "uiautomationcore.lib",
+      ]
+    }
+
+    if (use_atk) {
+      sources += [
+        "platform/atk_util_auralinux_unittest.cc",
+        "platform/ax_platform_node_auralinux_unittest.cc",
+      ]
+
+      configs += [ "//build/config/linux/atk" ]
+    }
   }
 }
 

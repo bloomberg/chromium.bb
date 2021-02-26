@@ -8,6 +8,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/views/controls/resize_area_delegate.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 
 namespace views {
@@ -77,8 +78,7 @@ void ResizeArea::SetInitialPosition(int event_x) {
   initial_position_ = point.x();
 }
 
-BEGIN_METADATA(ResizeArea)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(ResizeArea, View)
+END_METADATA
 
 }  // namespace views

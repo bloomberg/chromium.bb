@@ -191,7 +191,6 @@ void CopySubTextureINTERNALImmediate(GLint xoffset,
                                      GLsizei width,
                                      GLsizei height,
                                      GLboolean unpack_flip_y,
-                                     GLboolean unpack_premultiply_alpha,
                                      const GLbyte* mailboxes) {
   const uint32_t size =
       raster::cmds::CopySubTextureINTERNALImmediate::ComputeSize();
@@ -199,8 +198,7 @@ void CopySubTextureINTERNALImmediate(GLint xoffset,
       GetImmediateCmdSpaceTotalSize<
           raster::cmds::CopySubTextureINTERNALImmediate>(size);
   if (c) {
-    c->Init(xoffset, yoffset, x, y, width, height, unpack_flip_y,
-            unpack_premultiply_alpha, mailboxes);
+    c->Init(xoffset, yoffset, x, y, width, height, unpack_flip_y, mailboxes);
   }
 }
 
@@ -224,6 +222,28 @@ void WritePixelsINTERNALImmediate(GLint x_offset,
     c->Init(x_offset, y_offset, src_width, src_height, row_bytes,
             src_sk_color_type, src_sk_alpha_type, shm_id, shm_offset,
             pixels_offset, mailbox);
+  }
+}
+
+void ReadbackImagePixelsINTERNALImmediate(GLint src_x,
+                                          GLint src_y,
+                                          GLuint dst_width,
+                                          GLuint dst_height,
+                                          GLuint row_bytes,
+                                          GLuint dst_sk_color_type,
+                                          GLuint dst_sk_alpha_type,
+                                          GLint shm_id,
+                                          GLuint shm_offset,
+                                          GLuint pixels_offset,
+                                          const GLbyte* mailbox) {
+  const uint32_t size =
+      raster::cmds::ReadbackImagePixelsINTERNALImmediate::ComputeSize();
+  raster::cmds::ReadbackImagePixelsINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::ReadbackImagePixelsINTERNALImmediate>(size);
+  if (c) {
+    c->Init(src_x, src_y, dst_width, dst_height, row_bytes, dst_sk_color_type,
+            dst_sk_alpha_type, shm_id, shm_offset, pixels_offset, mailbox);
   }
 }
 

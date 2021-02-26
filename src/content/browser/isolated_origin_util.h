@@ -91,15 +91,21 @@ class CONTENT_EXPORT IsolatedOriginUtil {
                                             const url::Origin& isolated_origin);
 
   // Check if |origin| is a valid isolated origin.  Invalid isolated origins
-  // include unique origins, origins that don't have an HTTP or HTTPS scheme,
+  // include opaque origins, origins that don't have an HTTP or HTTPS scheme,
   // and origins without a valid registry-controlled domain.  IP addresses are
   // allowed.
   static bool IsValidIsolatedOrigin(const url::Origin& origin);
 
-  // Returns |true| if the two arguments have the same scheme and port, and
-  // |sub_origin|'s host is a strict subdomain of |base_origin|'s.
-  static bool IsStrictSubdomain(const url::Origin& sub_origin,
-                                const url::Origin& base_origin);
+  // Check if |origin| is a valid origin for opt-in origin isolation. Invalid
+  // origins for this purpose include opaque origins, origins that don't have a
+  // HTTP or HTTPS scheme, and origins that are not secure contexts.
+  static bool IsValidOriginForOptInIsolation(const url::Origin& origin);
+
+ private:
+  // Used to implement both IsValidIsolatedOrigin and
+  // IsValidOriginForOptInIsolation.
+  static bool IsValidIsolatedOriginImpl(const url::Origin& origin,
+                                        bool check_has_registry_domain);
 };
 
 }  // namespace content

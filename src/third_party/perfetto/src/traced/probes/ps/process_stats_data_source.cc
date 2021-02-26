@@ -383,7 +383,9 @@ void ProcessStatsDataSource::Tick(
     return;
   ProcessStatsDataSource& thiz = *weak_this;
   uint32_t period_ms = thiz.poll_period_ms_;
-  uint32_t delay_ms = period_ms - (base::GetWallTimeMs().count() % period_ms);
+  uint32_t delay_ms =
+      period_ms -
+      static_cast<uint32_t>(base::GetWallTimeMs().count() % period_ms);
   thiz.task_runner_->PostDelayedTask(
       std::bind(&ProcessStatsDataSource::Tick, weak_this), delay_ms);
   thiz.WriteAllProcessStats();
@@ -399,9 +401,9 @@ void ProcessStatsDataSource::Tick(
 }
 
 void ProcessStatsDataSource::WriteAllProcessStats() {
-  // TODO(primiano): implement whitelisting of processes by names.
+  // TODO(primiano): implement filtering of processes by names.
   // TODO(primiano): Have a pid cache to avoid wasting cycles reading kthreads
-  // proc files over and over. Same for non-whitelist processes (see above).
+  // proc files over and over. Same for non-filtered processes (see above).
 
   CacheProcFsScanStartTimestamp();
   PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_WRITE_ALL_PROCESS_STATS);
@@ -442,8 +444,10 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
 
     if (record_thread_time_in_state_ && ShouldWriteThreadStats(pid)) {
       if (auto task_dir = OpenProcTaskDir(pid)) {
-        while (int32_t tid = ReadNextNumericDir(*task_dir))
+        while (int32_t tid = ReadNextNumericDir(*task_dir)) {
           WriteThreadStats(pid, tid);
+          pids.insert(tid);
+        }
       }
     }
 
@@ -615,9 +619,15 @@ void ProcessStatsDataSource::WriteThreadStats(int32_t pid, int32_t tid) {
   // ...
   // Pairs of CPU frequency and the number of ticks at that frequency.
   std::string time_in_state = ReadProcPidFile(tid, "time_in_state");
+  // Bail if time_in_state does not have cpuN headings. Parsing this data
+  // without them is more complicated and requires additional information.
+  if (!base::StartsWith(time_in_state, "cpu"))
+    return;
   protos::pbzero::ProcessStats_Thread* thread = nullptr;
   base::StringSplitter entries(std::move(time_in_state), '\n');
   uint32_t last_cpu = 0;
+  // Whether all frequencies with non-zero ticks are added to cpu_freq_indices.
+  bool full = true;
   while (entries.Next()) {
     std::string line(entries.cur_token());
     if (base::StartsWith(line, "cpu")) {
@@ -653,7 +663,12 @@ void ProcessStatsDataSource::WriteThreadStats(int32_t pid, int32_t tid) {
       }
       thread->add_cpu_freq_indices(freq_index);
       thread->add_cpu_freq_ticks(ticks);
+    } else {
+      full = false;
     }
+  }
+  if (full && thread != nullptr) {
+    thread->set_cpu_freq_full(true);
   }
 }
 

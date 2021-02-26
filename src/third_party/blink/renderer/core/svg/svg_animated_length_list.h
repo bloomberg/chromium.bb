@@ -42,7 +42,6 @@ namespace blink {
 class SVGAnimatedLengthList final : public ScriptWrappable,
                                     public SVGAnimatedProperty<SVGLengthList> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedLengthList);
 
  public:
   SVGAnimatedLengthList(SVGElement* context_element,
@@ -52,7 +51,7 @@ class SVGAnimatedLengthList final : public ScriptWrappable,
                                            attribute_name,
                                            initial_value) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     SVGAnimatedProperty<SVGLengthList>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

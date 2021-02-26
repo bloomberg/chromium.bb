@@ -6,17 +6,14 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -116,7 +113,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
         base::ASCIIToUTF16(content::kFlashPluginName), fake_flash_path_,
         base::ASCIIToUTF16("100.0"),
         base::ASCIIToUTF16("Fake Flash Description."));
-    mime_type.mime_type = content::kFlashPluginSwfMimeType;
+    mime_type.mime_type = "application/x-shockwave-flash";
     fake_flash.mime_types.push_back(mime_type);
     fake_flash.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
     PluginService::GetInstance()->RegisterInternalPlugin(fake_flash, false);
@@ -158,7 +155,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
     // Pass in a fake Flash plugin info.
     content::WebPluginInfo plugin_info(
-        base::ASCIIToUTF16(content::kFlashPluginName), base::FilePath(),
+        base::ASCIIToUTF16("Shockwave Flash"), base::FilePath(),
         base::ASCIIToUTF16("1"), base::ASCIIToUTF16("Fake Flash"));
 
     PluginUtils::GetPluginContentSetting(
@@ -230,152 +227,5 @@ TEST_F(PluginInfoHostImplTest, FindEnabledPlugin) {
                                               &actual_mime_type, NULL));
     EXPECT_EQ(chrome::mojom::PluginStatus::kNotFound, status);
     EXPECT_EQ(FILE_PATH_LITERAL(""), plugin.path.value());
-  }
-}
-
-TEST_F(PluginInfoHostImplTest, PreferHtmlOverPlugins) {
-  // The HTML5 By Default feature hides Flash using the plugin filter.
-  filter_.set_plugin_enabled(fake_flash_path_, false);
-
-  // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
-  // origins are blocked.
-  url::Origin main_frame_origin =
-      url::Origin::Create(GURL("http://example.com"));
-
-  chrome::mojom::PluginStatus status;
-  content::WebPluginInfo plugin;
-  std::string actual_mime_type;
-  EXPECT_TRUE(context()->FindEnabledPlugin(
-      0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
-      &plugin, &actual_mime_type, NULL));
-  EXPECT_EQ(chrome::mojom::PluginStatus::kFlashHiddenPreferHtml, status);
-
-  PluginMetadata::SecurityStatus security_status =
-      PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
-
-  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
-                                security_status, content::kFlashPluginName,
-                                &status);
-  EXPECT_EQ(chrome::mojom::PluginStatus::kBlockedNoLoading, status);
-
-  // Now enable plugins.
-  host_content_settings_map()->SetDefaultContentSetting(
-      ContentSettingsType::PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-
-  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
-                                security_status, content::kFlashPluginName,
-                                &status);
-  EXPECT_EQ(chrome::mojom::PluginStatus::kPlayImportantContent, status);
-}
-
-TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
-  filter_.set_plugin_enabled(fake_flash_path_, true);
-
-  // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
-  // origins are blocked.
-  url::Origin main_frame_origin =
-      url::Origin::Create(GURL("http://example.com"));
-
-  chrome::mojom::PluginStatus status;
-  content::WebPluginInfo plugin;
-  std::string actual_mime_type;
-  ASSERT_TRUE(context()->FindEnabledPlugin(
-      0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
-      &plugin, &actual_mime_type, nullptr));
-  ASSERT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
-
-  host_content_settings_map()->SetContentSettingDefaultScope(
-      main_frame_origin.GetURL(), GURL(), ContentSettingsType::PLUGINS,
-      std::string(), CONTENT_SETTING_ALLOW);
-
-  ASSERT_FALSE(
-      profile()->GetPrefs()->GetBoolean(prefs::kRunAllFlashInAllowMode));
-
-  PluginMetadata::SecurityStatus security_status =
-      PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
-  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
-                                security_status, content::kFlashPluginName,
-                                &status);
-  EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kPlayImportantContent));
-
-  // Reset the status to allowed.
-  status = chrome::mojom::PluginStatus::kAllowed;
-
-  profile()->GetPrefs()->SetBoolean(prefs::kRunAllFlashInAllowMode, true);
-
-  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
-                                security_status, content::kFlashPluginName,
-                                &status);
-  EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
-}
-
-TEST_F(PluginInfoHostImplTest, PluginsOnlyAllowedInWhitelistedSchemes) {
-  host_content_settings_map()->SetDefaultContentSetting(
-      ContentSettingsType::PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-
-  VerifyPluginContentSetting(GURL("http://example.com"), "foo",
-                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
-                             false);
-  VerifyPluginContentSetting(GURL("https://example.com"), "foo",
-                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
-                             false);
-  VerifyPluginContentSetting(GURL("file://foobar/"), "foo",
-                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
-                             false);
-  VerifyPluginContentSetting(GURL("chrome-extension://extension-id"), "foo",
-                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
-                             false);
-  VerifyPluginContentSetting(GURL("unknown-scheme://foobar"), "foo",
-                             CONTENT_SETTING_BLOCK, true, false);
-}
-
-TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
-  HostContentSettingsMap* map = host_content_settings_map();
-  {
-    bool is_managed = false;
-    EXPECT_EQ(
-        CONTENT_SETTING_BLOCK,
-        PluginUtils::UnsafeGetRawDefaultFlashContentSetting(map, &is_managed));
-    EXPECT_FALSE(is_managed);
-  }
-
-  // Set plugins to Plugin Power Saver on example.com and subdomains.
-  GURL host("http://example.com/");
-  map->SetContentSettingDefaultScope(host, GURL(), ContentSettingsType::PLUGINS,
-                                     std::string(),
-                                     CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-
-  GURL unmatched_host("https://www.google.com");
-  EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
-      map->GetContentSetting(unmatched_host, unmatched_host,
-                             ContentSettingsType::PLUGINS, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
-            map->GetContentSetting(host, host, ContentSettingsType::PLUGINS,
-                                   std::string()));
-
-  VerifyPluginContentSetting(host, std::string(),
-                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, false,
-                             false);
-  VerifyPluginContentSetting(unmatched_host, std::string(),
-                             CONTENT_SETTING_BLOCK, false, false);
-
-  // Block plugins via policy.
-  sync_preferences::TestingPrefServiceSyncable* prefs =
-      profile()->GetTestingPrefService();
-  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
-
-  // All plugins should be blocked now.
-  VerifyPluginContentSetting(host, std::string(), CONTENT_SETTING_BLOCK, true,
-                             true);
-  VerifyPluginContentSetting(unmatched_host, std::string(),
-                             CONTENT_SETTING_BLOCK, true, true);
-  {
-    bool is_managed = false;
-    EXPECT_EQ(
-        CONTENT_SETTING_BLOCK,
-        PluginUtils::UnsafeGetRawDefaultFlashContentSetting(map, &is_managed));
-    EXPECT_TRUE(is_managed);
   }
 }

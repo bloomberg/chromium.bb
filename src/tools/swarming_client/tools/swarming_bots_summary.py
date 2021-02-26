@@ -18,8 +18,9 @@ import subprocess
 import sys
 
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 
 _EPOCH = datetime.datetime.utcfromtimestamp(0)
 
@@ -30,9 +31,17 @@ MAJOR_OS, MINOR_OS, MINOR_OS_GPU = range(3)
 def fetch_data(verbose, swarming, out_json):
   """Fetches data from swarming and writes it to out_json."""
   cmd = [
-    sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-    'query', '-S', swarming, '--json', out_json, '--limit', '0', '--progress',
-    'bots/list',
+      sys.executable,
+      os.path.join(CLIENT_DIR, 'swarming.py'),
+      'query',
+      '-S',
+      swarming,
+      '--json',
+      out_json,
+      '--limit',
+      '0',
+      '--progress',
+      'bots/list',
   ]
   if verbose:
     cmd.extend(['--verbose'] * 3)
@@ -93,16 +102,23 @@ def main():
 
   group = optparse.OptionGroup(parser, 'Grouping')
   group.add_option(
-      '--major-os', action='store_const',
-      dest='bucket', const=MAJOR_OS,
+      '--major-os',
+      action='store_const',
+      dest='bucket',
+      const=MAJOR_OS,
       help='Classify by OS type, independent of OS version')
   group.add_option(
-      '--minor-os', action='store_const',
-      dest='bucket', const=MINOR_OS,
+      '--minor-os',
+      action='store_const',
+      dest='bucket',
+      const=MINOR_OS,
       help='Classify by minor OS version')
   group.add_option(
-      '--gpu', action='store_const',
-      dest='bucket', const=MINOR_OS_GPU, default=MINOR_OS_GPU,
+      '--gpu',
+      action='store_const',
+      dest='bucket',
+      const=MINOR_OS_GPU,
+      default=MINOR_OS_GPU,
       help='Classify by minor OS version and GPU type when requested (default)')
   parser.add_option_group(group)
 

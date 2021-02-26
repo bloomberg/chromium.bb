@@ -70,10 +70,7 @@ config("dawn_native_internal") {
 
 config("dawn_native_weak_framework") {
   if (is_mac && dawn_enable_metal) {
-    ldflags = [
-      "-weak_framework",
-      "Metal",
-    ]
+    weak_frameworks = [ "Metal.framework" ]
   }
 }
 
@@ -132,7 +129,8 @@ source_set("dawn_native_sources") {
     ":dawn_native_headers",
     ":dawn_native_utils_gen",
     "${dawn_root}/src/common",
-    "${dawn_shaderc_dir}:spirv_cross",
+    "${dawn_root}/third_party/gn/spirv_cross:spirv_cross",
+    "${dawn_spirv_tools_dir}:spvtools_opt",
     "${dawn_spirv_tools_dir}:spvtools_val",
   ]
   defines = []
@@ -144,10 +142,7 @@ source_set("dawn_native_sources") {
   # Dependencies that are needed to compile dawn_native entry points in
   # FooBackend.cpp need to be public deps so they are propagated to the
   # dawn_native target
-  public_deps = [
-    "${dawn_root}/src/dawn_platform",
-    "${dawn_shaderc_dir}:libshaderc_spvc",
-  ]
+  public_deps = [ "${dawn_root}/src/dawn_platform" ]
 
   sources = get_target_outputs(":dawn_native_utils_gen")
   sources += [
@@ -159,10 +154,10 @@ source_set("dawn_native_sources") {
     "BackendConnection.h",
     "BindGroup.cpp",
     "BindGroup.h",
-    "BindGroupAndStorageBarrierTracker.h",
     "BindGroupLayout.cpp",
     "BindGroupLayout.h",
     "BindGroupTracker.h",
+    "BindingInfo.cpp",
     "BindingInfo.h",
     "BuddyAllocator.cpp",
     "BuddyAllocator.h",
@@ -188,12 +183,18 @@ source_set("dawn_native_sources") {
     "ComputePassEncoder.h",
     "ComputePipeline.cpp",
     "ComputePipeline.h",
+    "CopyTextureForBrowserHelper.cpp",
+    "CopyTextureForBrowserHelper.h",
+    "CreateReadyPipelineTracker.cpp",
+    "CreateReadyPipelineTracker.h",
     "Device.cpp",
     "Device.h",
     "DynamicUploader.cpp",
     "DynamicUploader.h",
     "EncodingContext.cpp",
     "EncodingContext.h",
+    "EnumClassBitmasks.h",
+    "EnumMaskIterator.h",
     "Error.cpp",
     "Error.h",
     "ErrorData.cpp",
@@ -208,13 +209,13 @@ source_set("dawn_native_sources") {
     "Extensions.h",
     "Fence.cpp",
     "Fence.h",
-    "FenceSignalTracker.cpp",
-    "FenceSignalTracker.h",
     "Format.cpp",
     "Format.h",
     "Forward.h",
     "Instance.cpp",
     "Instance.h",
+    "IntegerTypes.h",
+    "InternalPipelineStore.h",
     "ObjectBase.cpp",
     "ObjectBase.h",
     "PassResourceUsage.h",
@@ -226,8 +227,12 @@ source_set("dawn_native_sources") {
     "Pipeline.h",
     "PipelineLayout.cpp",
     "PipelineLayout.h",
+    "PooledResourceMemoryAllocator.cpp",
+    "PooledResourceMemoryAllocator.h",
     "ProgrammablePassEncoder.cpp",
     "ProgrammablePassEncoder.h",
+    "QuerySet.cpp",
+    "QuerySet.h",
     "Queue.cpp",
     "Queue.h",
     "RenderBundle.cpp",
@@ -250,6 +255,8 @@ source_set("dawn_native_sources") {
     "Sampler.h",
     "ShaderModule.cpp",
     "ShaderModule.h",
+    "SpirvUtils.cpp",
+    "SpirvUtils.h",
     "StagingBuffer.cpp",
     "StagingBuffer.h",
     "Surface.cpp",
@@ -308,12 +315,17 @@ source_set("dawn_native_sources") {
       "d3d12/HeapAllocatorD3D12.h",
       "d3d12/HeapD3D12.cpp",
       "d3d12/HeapD3D12.h",
+      "d3d12/IntegerTypes.h",
       "d3d12/NativeSwapChainImplD3D12.cpp",
       "d3d12/NativeSwapChainImplD3D12.h",
+      "d3d12/PageableD3D12.cpp",
+      "d3d12/PageableD3D12.h",
       "d3d12/PipelineLayoutD3D12.cpp",
       "d3d12/PipelineLayoutD3D12.h",
       "d3d12/PlatformFunctions.cpp",
       "d3d12/PlatformFunctions.h",
+      "d3d12/QuerySetD3D12.cpp",
+      "d3d12/QuerySetD3D12.h",
       "d3d12/QueueD3D12.cpp",
       "d3d12/QueueD3D12.h",
       "d3d12/RenderPassBuilderD3D12.cpp",
@@ -328,6 +340,8 @@ source_set("dawn_native_sources") {
       "d3d12/ResourceHeapAllocationD3D12.h",
       "d3d12/SamplerD3D12.cpp",
       "d3d12/SamplerD3D12.h",
+      "d3d12/SamplerHeapCacheD3D12.cpp",
+      "d3d12/SamplerHeapCacheD3D12.h",
       "d3d12/ShaderModuleD3D12.cpp",
       "d3d12/ShaderModuleD3D12.h",
       "d3d12/ShaderVisibleDescriptorAllocatorD3D12.cpp",
@@ -349,7 +363,7 @@ source_set("dawn_native_sources") {
   }
 
   if (dawn_enable_metal) {
-    libs += [
+    frameworks = [
       "Cocoa.framework",
       "IOKit.framework",
       "IOSurface.framework",
@@ -376,6 +390,8 @@ source_set("dawn_native_sources") {
       "metal/Forward.h",
       "metal/PipelineLayoutMTL.h",
       "metal/PipelineLayoutMTL.mm",
+      "metal/QuerySetMTL.h",
+      "metal/QuerySetMTL.mm",
       "metal/QueueMTL.h",
       "metal/QueueMTL.mm",
       "metal/RenderPipelineMTL.h",
@@ -436,6 +452,8 @@ source_set("dawn_native_sources") {
       "opengl/PipelineGL.h",
       "opengl/PipelineLayoutGL.cpp",
       "opengl/PipelineLayoutGL.h",
+      "opengl/QuerySetGL.cpp",
+      "opengl/QuerySetGL.h",
       "opengl/QueueGL.cpp",
       "opengl/QueueGL.h",
       "opengl/RenderPipelineGL.cpp",
@@ -485,6 +503,8 @@ source_set("dawn_native_sources") {
       "vulkan/NativeSwapChainImplVk.h",
       "vulkan/PipelineLayoutVk.cpp",
       "vulkan/PipelineLayoutVk.h",
+      "vulkan/QuerySetVk.cpp",
+      "vulkan/QuerySetVk.h",
       "vulkan/QueueVk.cpp",
       "vulkan/QueueVk.h",
       "vulkan/RenderPassCache.cpp",
@@ -509,6 +529,8 @@ source_set("dawn_native_sources") {
       "vulkan/UtilsVulkan.h",
       "vulkan/VulkanError.cpp",
       "vulkan/VulkanError.h",
+      "vulkan/VulkanExtensions.cpp",
+      "vulkan/VulkanExtensions.h",
       "vulkan/VulkanFunctions.cpp",
       "vulkan/VulkanFunctions.h",
       "vulkan/VulkanInfo.cpp",
@@ -572,7 +594,6 @@ source_set("dawn_native_sources") {
 
   if (dawn_enable_wgsl) {
     deps += [ "${dawn_tint_dir}:libtint" ]
-    defines += [ "DAWN_ENABLE_WGSL" ]
   }
 }
 

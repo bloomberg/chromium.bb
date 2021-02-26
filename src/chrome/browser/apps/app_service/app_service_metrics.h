@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace apps {
 
@@ -21,7 +21,7 @@ enum class BuiltInAppName {
   kSettings = 1,
   kContinueReading = 2,
   kCameraDeprecated = 3,
-  kDiscover = 4,
+  // kDiscover = 4, obsolete
   kPluginVm = 5,
   kReleaseNotes = 6,
   kMaxValue = kReleaseNotes,
@@ -33,6 +33,8 @@ void RecordAppLaunch(const std::string& app_id,
 void RecordBuiltInAppSearchResult(const std::string& app_id);
 
 void RecordAppBounce(const apps::AppUpdate& app);
+
+void RecordAppsPerNotification(int count);
 
 }  // namespace apps
 

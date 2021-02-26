@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_HISTORY_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -37,9 +38,10 @@
 
 namespace blink {
 
-class LocalFrame;
+class LocalDOMWindow;
 class KURL;
 class ExceptionState;
+class HistoryItem;
 class SecurityOrigin;
 class ScriptState;
 
@@ -47,10 +49,9 @@ class ScriptState;
 class CORE_EXPORT History final : public ScriptWrappable,
                                   public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(History);
 
  public:
-  explicit History(LocalFrame*);
+  explicit History(LocalDOMWindow*);
 
   unsigned length(ExceptionState&) const;
   ScriptValue state(ScriptState*, ExceptionState&);
@@ -76,7 +77,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
 
   bool IsSameAsCurrentState(SerializedScriptValue*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);
@@ -92,11 +93,12 @@ class CORE_EXPORT History final : public ScriptWrappable,
   void StateObjectAdded(scoped_refptr<SerializedScriptValue>,
                         const String& title,
                         const String& url,
-                        HistoryScrollRestorationType,
+                        mojom::blink::ScrollRestorationType,
                         WebFrameLoadType,
                         ExceptionState&);
   SerializedScriptValue* StateInternal() const;
-  HistoryScrollRestorationType ScrollRestorationInternal() const;
+  mojom::blink::ScrollRestorationType ScrollRestorationInternal() const;
+  HistoryItem* GetHistoryItem() const;
 
   scoped_refptr<SerializedScriptValue> last_state_object_requested_;
 };

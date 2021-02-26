@@ -38,7 +38,7 @@ class MockVideoCaptureDevice final
   MOCK_METHOD0(MaybeSuspendDevice, void());
   MOCK_METHOD0(ResumeDevice, void());
   MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD2(OnUtilizationReport, void(int, double));
+  MOCK_METHOD2(OnUtilizationReport, void(int, media::VideoFrameFeedback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureDevice);
@@ -138,12 +138,13 @@ class MockVideoCaptureObserver final
                  receiver_.BindNewPipeAndPassRemote());
   }
 
-  void FinishConsumingBuffer(int32_t buffer_id, double utilization) {
+  void FinishConsumingBuffer(int32_t buffer_id,
+                             media::VideoFrameFeedback feedback) {
     EXPECT_TRUE(buffers_.find(buffer_id) != buffers_.end());
     const auto iter = frame_infos_.find(buffer_id);
     EXPECT_TRUE(iter != frame_infos_.end());
     frame_infos_.erase(iter);
-    host_->ReleaseBuffer(device_id_, buffer_id, utilization);
+    host_->ReleaseBuffer(device_id_, buffer_id, feedback);
   }
 
   void Stop() { host_->Stop(device_id_); }
@@ -161,9 +162,9 @@ class MockVideoCaptureObserver final
 
 media::mojom::VideoFrameInfoPtr GetVideoFrameInfo() {
   return media::mojom::VideoFrameInfo::New(
-      base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY),
-      media::PIXEL_FORMAT_I420, gfx::Size(320, 180), gfx::Rect(320, 180),
-      gfx::ColorSpace::CreateREC709(), nullptr);
+      base::TimeDelta(), media::VideoFrameMetadata(), media::PIXEL_FORMAT_I420,
+      gfx::Size(320, 180), gfx::Rect(320, 180), gfx::ColorSpace::CreateREC709(),
+      nullptr);
 }
 
 }  // namespace
@@ -187,8 +188,8 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     run_loop.Run();
 
     // The video capture device is launched.
-    EXPECT_TRUE(!!launched_device_);
-    EXPECT_TRUE(!!frame_receiver_);
+    EXPECT_TRUE(launched_device_);
+    EXPECT_TRUE(frame_receiver_);
   }
 
   ~SingleClientVideoCaptureHostTest() override {
@@ -227,12 +228,11 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
 
   void FinishConsumingBuffer(int buffer_context_id,
                              int feedback_id,
-                             double utilization) {
+                             const media::VideoFrameFeedback& feedback) {
     base::RunLoop run_loop;
-    EXPECT_CALL(*launched_device_,
-                OnUtilizationReport(feedback_id, utilization))
+    EXPECT_CALL(*launched_device_, OnUtilizationReport(feedback_id, feedback))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    consumer_->FinishConsumingBuffer(buffer_context_id, utilization);
+    consumer_->FinishConsumingBuffer(buffer_context_id, feedback);
     run_loop.Run();
   }
 
@@ -270,7 +270,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
 TEST_F(SingleClientVideoCaptureHostTest, Basic) {
   CreateBuffer(1, 0);
   FrameReadyInBuffer(1, 0, 5);
-  FinishConsumingBuffer(0, 5, 1.0);
+  FinishConsumingBuffer(0, 5, media::VideoFrameFeedback(1.0));
   RetireBuffer(1, 0);
 }
 
@@ -290,7 +290,7 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
   FrameReadyInBuffer(0, 1, 7);
 
   // Finish consuming frame in the retired buffer 0.
-  FinishConsumingBuffer(0, 3, 1.0);
+  FinishConsumingBuffer(0, 3, media::VideoFrameFeedback(1.0));
   // The retired buffer is expected to be destroyed since the consumer finished
   // consuming the frame in that buffer.
   base::RunLoop run_loop;
@@ -298,7 +298,7 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   run_loop.Run();
 
-  FinishConsumingBuffer(1, 7, 0.5);
+  FinishConsumingBuffer(1, 7, media::VideoFrameFeedback(0.5));
   RetireBuffer(0, 1);
 }
 

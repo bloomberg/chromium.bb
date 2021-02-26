@@ -31,20 +31,16 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define WL_HIDE_DEPRECATED 1
 
 #include "wayland-util.h"
-#include "wayland-server-core.h"
 
 /* Invalid memory address */
 #define WL_ARRAY_POISON_PTR (void *) 4
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
-#define container_of(ptr, type, member) ({				\
-	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
 
 #define WL_MAP_SERVER_SIDE 0
 #define WL_MAP_CLIENT_SIDE 1
@@ -235,26 +231,6 @@ zalloc(size_t s)
 {
 	return calloc(1, s);
 }
-
-struct wl_priv_signal {
-	struct wl_list listener_list;
-	struct wl_list emit_list;
-};
-
-void
-wl_priv_signal_init(struct wl_priv_signal *signal);
-
-void
-wl_priv_signal_add(struct wl_priv_signal *signal, struct wl_listener *listener);
-
-struct wl_listener *
-wl_priv_signal_get(struct wl_priv_signal *signal, wl_notify_func_t notify);
-
-void
-wl_priv_signal_emit(struct wl_priv_signal *signal, void *data);
-
-void
-wl_priv_signal_final_emit(struct wl_priv_signal *signal, void *data);
 
 void
 wl_connection_close_fds_in(struct wl_connection *connection, int max);

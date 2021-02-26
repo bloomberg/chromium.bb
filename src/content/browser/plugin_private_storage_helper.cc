@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
@@ -32,6 +31,7 @@
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -269,7 +269,7 @@ class PluginPrivateDataDeletionHelper {
         callback_(std::move(callback)) {}
   ~PluginPrivateDataDeletionHelper() = default;
 
-  void CheckOriginsOnFileTaskRunner(const std::set<url::Origin>& origins);
+  void CheckOriginsOnFileTaskRunner(const std::vector<url::Origin>& origins);
 
  private:
   // Keeps track of the pending work. When |task_count_| goes to 0 then
@@ -287,7 +287,7 @@ class PluginPrivateDataDeletionHelper {
 };
 
 void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
-    const std::set<url::Origin>& origins) {
+    const std::vector<url::Origin>& origins) {
   DCHECK(filesystem_context_->default_file_task_runner()
              ->RunsTasksInCurrentSequence());
   IncrementTaskCount();
@@ -329,8 +329,8 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
               filesystem_context_.get(), origin.GetURL().GetOrigin(),
               plugin_path.BaseName().MaybeAsASCII(), begin_, end_,
               decrement_callback);
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &PluginPrivateDataByOriginChecker::CheckFilesOnIOThread,
               base::Unretained(helper)));
@@ -404,10 +404,10 @@ void ClearPluginPrivateDataOnFileTaskRunner(
           storage::kFileSystemTypePluginPrivate);
   storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
 
-  // Determine the set of origins used.
-  std::set<url::Origin> origins;
-  quota_util->GetOriginsForTypeOnFileTaskRunner(
-      storage::kFileSystemTypePluginPrivate, &origins);
+  // Determine the origins used.
+  std::vector<url::Origin> origins =
+      quota_util->GetOriginsForTypeOnFileTaskRunner(
+          storage::kFileSystemTypePluginPrivate);
 
   if (origins.empty()) {
     // No origins, so nothing to do.
@@ -429,7 +429,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
 
     // List should only contain the one value that matches.
     origins.clear();
-    origins.insert(storage_origin);
+    origins.push_back(storage_origin);
   }
 
   // If a filter is provided, determine which origins match.
@@ -437,11 +437,11 @@ void ClearPluginPrivateDataOnFileTaskRunner(
     DCHECK(storage_origin_url.is_empty())
         << "Only 1 of |storage_origin_url| and |origin_matcher| should be "
            "specified.";
-    std::set<url::Origin> origins_to_check;
+    std::vector<url::Origin> origins_to_check;
     origins_to_check.swap(origins);
-    for (const auto& origin : origins_to_check) {
+    for (auto& origin : origins_to_check) {
       if (origin_matcher.Run(origin, special_storage_policy.get()))
-        origins.insert(origin);
+        origins.push_back(std::move(origin));
     }
 
     // If no origins matched, there is nothing to do.

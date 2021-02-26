@@ -5,9 +5,10 @@
 
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 
-#include "base/i18n/rtl.h"
+#import <MaterialComponents/MaterialActivityIndicator.h>
 
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
@@ -23,7 +24,6 @@
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -138,7 +138,10 @@ UIImage* DefaultFaviconImage() {
                   action:@selector(tabWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
 
-    if (DragAndDropIsEnabled()) {
+    // TODO(crbug.com/1101363): A new and improved drop interaction in the tab
+    // strip controller supercedes this interaction. Remove this codepath once
+    // the experimental flag is removed.
+    if (!DragAndDropIsEnabled()) {
       _dropInteraction =
           [[DropAndNavigateInteraction alloc] initWithDelegate:self];
       [self addInteraction:_dropInteraction];
@@ -207,6 +210,7 @@ UIImage* DefaultFaviconImage() {
   [_activityIndicator startAnimating];
   [_activityIndicator setHidden:NO];
   [_faviconView setHidden:YES];
+  [_faviconView setImage:DefaultFaviconImage()];
 }
 
 - (void)stopProgressSpinner {
@@ -515,6 +519,17 @@ UIImage* DefaultFaviconImage() {
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region
     API_AVAILABLE(ios(13.4)) {
+  // Hovering over this tab view and closing the tab simultaneously could result
+  // in this tab view having been removed from the window at the beginning of
+  // this method. If this tab view has already been removed from the view
+  // hierarchy, a nil pointer style should be returned so that the pointer
+  // remains with a default style. Attempting to construct a UITargetedPreview
+  // with a tab view that has already been removed from the hierarchy will
+  // result in a crash with an exception stating that the view has no window.
+  if (!_backgroundImageView.window) {
+    return nil;
+  }
+
   UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
   parameters.visiblePath = [self borderPath];
 
@@ -533,7 +548,7 @@ UIImage* DefaultFaviconImage() {
 #pragma mark - Touch events
 
 - (void)closeButtonPressed {
-  [_delegate tabViewcloseButtonPressed:self];
+  [_delegate tabViewCloseButtonPressed:self];
 }
 
 - (void)tabWasTapped {

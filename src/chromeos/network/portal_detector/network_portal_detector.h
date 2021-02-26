@@ -7,8 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace chromeos {
 
@@ -25,21 +25,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
     CAPTIVE_PORTAL_STATUS_ONLINE = 2,
     CAPTIVE_PORTAL_STATUS_PORTAL = 3,
     CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED = 4,
-    CAPTIVE_PORTAL_STATUS_COUNT
-  };
-
-  struct CaptivePortalState {
-    CaptivePortalState()
-        : status(CAPTIVE_PORTAL_STATUS_UNKNOWN),
-          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {}
-
-    bool operator==(const CaptivePortalState& o) const {
-      return status == o.status && response_code == o.response_code;
-    }
-
-    CaptivePortalStatus status;
-    int response_code;
-    base::TimeTicks time;
+    CAPTIVE_PORTAL_STATUS_COUNT,
+    kMaxValue = CAPTIVE_PORTAL_STATUS_COUNT  // For UMA_HISTOGRAM_ENUMERATION
   };
 
   class Observer {
@@ -50,10 +37,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
     // current portal state for the active network, which can be
     // currently in the unknown state, for instance, if portal
     // detection is in process for the active network. Note, that
-    // |network| may be NULL.
+    // |network| may be null.
     virtual void OnPortalDetectionCompleted(
         const NetworkState* network,
-        const CaptivePortalState& state) = 0;
+        const CaptivePortalStatus status) = 0;
 
     // Called on Shutdown, allows removal of observers. Primarly used in tests.
     virtual void OnShutdown() {}
@@ -69,7 +56,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
 
   // Adds |observer| to the observers list and immediately calls
   // OnPortalDetectionCompleted() with the active network (which may
-  // be NULL) and captive portal state for the active network (which
+  // be null) and captive portal state for the active network (which
   // may be unknown, if, for instance, portal detection is in process
   // for the active network).
   //
@@ -82,9 +69,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
   // Removes |observer| from the observers list.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Returns Captive Portal state for the network specified by |service_path|.
-  virtual CaptivePortalState GetCaptivePortalState(
-      const std::string& service_path) = 0;
+  // Returns CaptivePortalStatus for the the default network or UNKNOWN.
+  virtual CaptivePortalStatus GetCaptivePortalStatus() = 0;
 
   // Returns true if portal detection is enabled.
   virtual bool IsEnabled() = 0;
@@ -97,10 +83,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
   virtual void Enable(bool start_detection) = 0;
 
   // Starts or restarts portal detection for the default network. If not
-  // currently in the idle state, does nothing unless |force| is true in which
-  // case any current detection is stopped and a new attempt is started. Returns
-  // true if a new portal detection attempt was started.
-  virtual bool StartPortalDetection(bool force) = 0;
+  // currently in the idle state, does nothing. Returns true if a new portal
+  // detection attempt was started.
+  virtual void StartPortalDetection() = 0;
 
   // Sets current strategy according to |id|. If current detection id
   // doesn't equal to |id|, detection is restarted.

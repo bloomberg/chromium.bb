@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//ui/webui/webui_features.gni")
@@ -11,6 +10,7 @@ group("resources") {
   public_deps = [
     ":ui_resources_grd",
     ":ui_unscaled_resources_grd",
+    ":webui_generated_resources_grd",
     ":webui_resources_grd",
   ]
 }
@@ -41,7 +41,7 @@ grit("webui_resources_grd") {
 
   deps = [ "//ui/webui/resources:modulize" ]
   if (is_chromeos) {
-    deps += [ "//ui/webui/resources/css:cros_colors_css" ]
+    deps += [ "//ui/chromeos/colors:cros_colors_css" ]
   }
 
   outputs = [
@@ -50,9 +50,18 @@ grit("webui_resources_grd") {
     "grit/webui_resources_map.h",
     "webui_resources.pak",
   ]
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+}
+
+grit("webui_generated_resources_grd") {
+  enable_input_discovery_for_gn_analyze = false
+  source = "$root_gen_dir/ui/webui/resources/webui_generated_resources.grd"
+  deps = [ "//ui/webui/resources:build_grd" ]
+
+  outputs = [
+    "grit/webui_generated_resources.h",
+    "grit/webui_generated_resources_map.cc",
+    "grit/webui_generated_resources_map.h",
+    "webui_generated_resources.pak",
   ]
 }
 
@@ -66,7 +75,7 @@ if (!is_mac) {
 
 # On iOS and Mac the string resources need to go into a locale subfolder, which
 # introduces an extra dependency.
-if (is_ios || is_mac) {
+if (is_apple) {
   group("ui_test_pak") {
     public_deps = [
       ":repack_ui_test_mac_locale_pack",
@@ -138,6 +147,7 @@ repack("repack_ui_test_pak_100_percent") {
   sources = [
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",

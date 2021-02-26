@@ -12,7 +12,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.chrome.browser.util.BitmapCache;
+import org.chromium.components.browser_ui.util.BitmapCache;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
@@ -86,15 +86,9 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+    public void fetchGif(final Params params, Callback<BaseGifImage> callback) {
         assert mBitmapCache != null && mImageFetcher != null : "fetchGif called after destroy";
-        mImageFetcher.fetchGif(url, clientName, callback);
-    }
-
-    @Override
-    public void fetchImage(
-            String url, String clientName, int width, int height, Callback<Bitmap> callback) {
-        fetchImage(ImageFetcher.Params.create(url, clientName, width, height), callback);
+        mImageFetcher.fetchGif(params, callback);
     }
 
     @Override

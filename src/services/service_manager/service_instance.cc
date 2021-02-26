@@ -156,7 +156,7 @@ void ServiceInstance::StartWithRemote(
 #if !defined(OS_IOS)
 bool ServiceInstance::StartWithProcessHost(
     std::unique_ptr<ServiceProcessHost> host,
-    SandboxType sandbox_type) {
+    sandbox::policy::SandboxType sandbox_type) {
   DCHECK(!service_remote_);
   DCHECK(!process_host_);
 
@@ -473,6 +473,7 @@ void ServiceInstance::RegisterServiceInstance(
   if (!service_manager_->RegisterService(identity, std::move(service_remote),
                                          std::move(metadata_receiver))) {
     std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
+    return;
   }
 
   std::move(callback).Run(mojom::ConnectResult::SUCCEEDED);

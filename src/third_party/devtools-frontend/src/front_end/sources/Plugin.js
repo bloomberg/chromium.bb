@@ -40,7 +40,7 @@ export class Plugin {
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateLineGutterContextMenu(contextMenu, lineNumber) {
     return Promise.resolve();
@@ -50,7 +50,7 @@ export class Plugin {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
     return Promise.resolve();

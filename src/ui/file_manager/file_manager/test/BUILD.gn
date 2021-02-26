@@ -19,7 +19,6 @@ action("create_test_main") {
     "//ui/file_manager/file_manager/foreground/js/elements_importer.js",
     "//ui/file_manager/file_manager/foreground/js/main_scripts.js",
     "//ui/file_manager/file_manager/main.html",
-    "//ui/webui/resources/css/text_defaults.css",
     "check_select.js",
     "crostini_mount.js",
     "crostini_share.js",
@@ -28,6 +27,7 @@ action("create_test_main") {
     "menu.js",
     "progress_center.js",
   ]
+  deps = [ "//ui/resources:webui_resources_grd" ]
   args = [ "--output=" + rebase_path(output, root_build_dir) ]
   outputs = [ output ]
 }

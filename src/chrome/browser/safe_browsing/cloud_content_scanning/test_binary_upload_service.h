@@ -9,7 +9,6 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace safe_browsing {
 
@@ -19,14 +18,15 @@ class TestBinaryUploadService : public BinaryUploadService {
   ~TestBinaryUploadService() override = default;
 
   void MaybeUploadForDeepScanning(std::unique_ptr<Request> request) override;
-  void SetResponse(Result result, DeepScanningClientResponse response);
+  void SetResponse(Result result,
+                   enterprise_connectors::ContentAnalysisResponse response);
 
   bool was_called() { return was_called_; }
   void ClearWasCalled();
 
  private:
   Result saved_result_ = Result::UNKNOWN;
-  DeepScanningClientResponse saved_response_ = DeepScanningClientResponse();
+  enterprise_connectors::ContentAnalysisResponse saved_response_;
   bool was_called_ = false;
 };
 

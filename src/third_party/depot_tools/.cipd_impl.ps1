@@ -86,6 +86,77 @@ function Get-Actual-SHA256($path) {
 }
 
 
+# Download a file to a particular path.
+function Download-File {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [string]
+      $UserAgent,
+
+      [Parameter(Mandatory = $true)]
+      [string]
+      $Url,
+
+      [Parameter(Mandatory = $true)]
+      [string]
+      $Path
+  )
+
+  $wc = (New-Object System.Net.WebClient)
+  $wc.Headers.Add("User-Agent", $UserAgent)
+  try {
+    # Download failures were reported on Windows 8.1 without this line.
+    [System.Net.ServicePointManager]::SecurityProtocol = `
+            [System.Net.SecurityProtocolType]::Tls12
+    $wc.DownloadFile($Url, $Path)
+  }
+  catch {
+    $err = $_.Exception.Message
+    throw "Failed to download the file, check your network connection, $err"
+  }
+  finally {
+    $wc.Dispose()
+  }
+}
+
+
+# Retry a command with a delay between each.
+function Retry-Command {
+  [CmdletBinding()]
+  param (
+      [Parameter(Mandatory = $true)]
+      [scriptblock]
+      $Command,
+
+      [int]
+      $MaxAttempts = 3,
+
+      [timespan]
+      $Delay = (New-TimeSpan -Seconds 5)
+  )
+
+  $attempt = 0
+  while ($attempt -lt $MaxAttempts) {
+    try {
+      $Command.Invoke()
+      return
+    }
+    catch {
+      $attempt += 1
+      $exception = $_.Exception.InnerException
+      if ($attempt -lt $MaxAttempts) {
+        echo $exception.Message
+        echo "Retrying after a short nap..."
+        Start-Sleep -Seconds $Delay.TotalSeconds
+      } else {
+        throw $exception
+      }
+    }
+  }
+}
+
+
 $ExpectedSHA256 = Get-Expected-SHA256 $Platform
 $Version = (Get-Content $VersionFile).Trim()
 $URL = "$BackendURL/client?platform=$Platform&version=$Version"
@@ -108,12 +179,8 @@ while ($CipdLockFile -eq $null) {
 $TmpPath = $CipdBinary + ".tmp"
 try {
   echo "Downloading CIPD client for $Platform from $URL..."
-  $wc = (New-Object System.Net.WebClient)
-  $wc.Headers.Add("User-Agent", $UserAgent)
-  try {
-    $wc.DownloadFile($URL, $TmpPath)
-  } catch {
-    throw "Failed to download the file, check your network connection"
+  Retry-Command -Command {
+    Download-File -UserAgent $UserAgent -Url $URL -Path $TmpPath
   }
 
   $ActualSHA256 = Get-Actual-SHA256 $TmpPath

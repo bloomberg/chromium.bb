@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -60,7 +61,7 @@
 // Coordinator for displaying a modal overlay with native activity indicator to
 // prevent the user from interacting with the page.
 @property(nonatomic, strong)
-    ChromeActivityOverlayCoordinator* chromeActivityOverlayCoordinator;
+    ChromeActivityOverlayCoordinator* overlayCoordinator;
 
 @property(nonatomic, readonly, strong)
     UIBarButtonItem* clearBrowsingDataBarButton;
@@ -168,18 +169,6 @@
   self.navigationController.toolbarHidden = NO;
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-  // Write data type cell selection states back to the browser state.
-  NSArray* dataTypeItems = [self.tableViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
-  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
-    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
-    self.browserState->GetPrefs()->SetBoolean(dataTypeItem.prefName,
-                                              dataTypeItem.checked);
-  }
-}
-
 - (void)loadModel {
   [super loadModel];
   [self.dataManager loadModel:self.tableViewModel];
@@ -276,9 +265,10 @@
       DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
       TableViewClearBrowsingDataItem* clearBrowsingDataItem =
           base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-      clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
-      [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
-      [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+      self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
+                                                !clearBrowsingDataItem.checked);
+      // UI update will be trigerred by data manager.
       break;
     }
     default:
@@ -297,15 +287,22 @@
 
 #pragma mark - ClearBrowsingDataConsumer
 
-- (void)updateCellsForItem:(ListItem*)item {
+- (void)updateCellsForItem:(TableViewItem*)item reload:(BOOL)reload {
   if (self.suppressTableViewUpdates)
     return;
 
-  // Reload the item instead of reconfiguring it. This might update
-  // TableViewTextLinkItems which which can have different number of lines,
-  // thus the cell height needs to adapt accordingly.
-  [self reloadCellsForItems:@[ item ]
-           withRowAnimation:UITableViewRowAnimationAutomatic];
+  if (!reload) {
+    [self reconfigureCellsForItems:@[ item ]];
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItem:static_cast<TableViewItem*>(item)];
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+  } else {
+    // Reload the item instead of reconfiguring it. This might update
+    // TableViewTextLinkItems which which can have different number of lines,
+    // thus the cell height needs to adapt accordingly.
+    [self reloadCellsForItems:@[ item ]
+             withRowAnimation:UITableViewRowAnimationAutomatic];
+  }
 }
 
 - (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
@@ -316,14 +313,16 @@
       base::UserMetricsAction("MobileClearBrowsingDataTriggeredFromUIRefresh"));
 
   // Show activity indicator modal while removal is happening.
-  self.chromeActivityOverlayCoordinator =
-      [[ChromeActivityOverlayCoordinator alloc]
-          initWithBaseViewController:self.navigationController
-                             browser:_browser];
-  self.chromeActivityOverlayCoordinator.messageText =
-      l10n_util::GetNSStringWithFixup(
-          IDS_IOS_CLEAR_BROWSING_DATA_ACTIVITY_MODAL);
-  [self.chromeActivityOverlayCoordinator start];
+  self.overlayCoordinator = [[ChromeActivityOverlayCoordinator alloc]
+      initWithBaseViewController:self.navigationController
+                         browser:_browser];
+
+  self.overlayCoordinator.messageText = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_CLEAR_BROWSING_DATA_ACTIVITY_MODAL);
+
+  self.overlayCoordinator.blockAllWindows = YES;
+
+  [self.overlayCoordinator start];
 
   __weak ClearBrowsingDataTableViewController* weakSelf = self;
   dispatch_time_t timeOneSecondLater =
@@ -337,11 +336,21 @@
     // (<1sec), so ensure that overlay displays for at
     // least 1 second instead of looking like a glitch.
     dispatch_after(timeOneSecondLater, dispatch_get_main_queue(), ^{
-      [self.chromeActivityOverlayCoordinator stop];
+      [self.overlayCoordinator stop];
       if (completionBlock)
         completionBlock();
     });
   };
+
+  // If browsing History will be cleared set the kLastClearBrowsingDataTime.
+  // TODO(crbug.com/1085419): This pref is used by the Feed to prevent the
+  // showing of customized content after history has been cleared. We might want
+  // to create a specific Pref for this.
+  if (IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
+    browserState->GetPrefs()->SetInt64(
+        browsing_data::prefs::kLastClearBrowsingDataTime,
+        base::Time::Now().ToTimeT());
+  }
 
   [self.dispatcher
       removeBrowsingDataForBrowserState:browserState
@@ -393,7 +402,7 @@
 
 - (BOOL)presentationControllerShouldDismiss:
     (UIPresentationController*)presentationController {
-  return !self.chromeActivityOverlayCoordinator.started;
+  return !self.overlayCoordinator.started;
 }
 
 #pragma mark - Private Helpers

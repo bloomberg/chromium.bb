@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -120,17 +120,22 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 }
 
+TEST_F(BrowserTaskExecutorTest, GetTaskRunnerWithBrowserTaskTraits) {
+  StrictMockTask task_1;
+
+  GetUIThreadTaskRunner({BrowserTaskType::kPreconnect})
+      ->PostTask(FROM_HERE, task_1.Get());
+
+  EXPECT_CALL(task_1, Run);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+}
+
 // Helper to perform the same tets for all BrowserThread::ID values.
 class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
  protected:
   class TestExecutor : public BaseBrowserTaskExecutor {
    public:
     ~TestExecutor() override = default;
-
-    BrowserThread::ID GetCurrentThreadID() const override {
-      NOTREACHED();
-      return BrowserThread::UI;
-    }
   };
 
  private:

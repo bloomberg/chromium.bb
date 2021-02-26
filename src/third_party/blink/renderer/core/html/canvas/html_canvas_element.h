@@ -33,6 +33,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -73,24 +75,17 @@ class HTMLCanvasElement;
 class ImageBitmapOptions;
 class IntSize;
 
-#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
-class
-    CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext;
-typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext
-    RenderingContext;
-#else
 class
     CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext;
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext
     RenderingContext;
-#endif
 
 // This contains the information of HTML Canvas Element,
-// There are four different types of context this HTML Canvas can contain.
+// There are four different types of rendering context this HTML Canvas can own.
 // It can be a 3D Context (WebGL or WebGL2), 2D Context,
-// BitmapRenderingContext or it can have no context (Offscreencanvas).
+// BitmapRenderingContext or it can have no context (Offscreen placeholder).
 // To check the no context case is good to check if there is a placeholder.
-// For 3D and 2D contexts there are Is3D or Is2D functions.
+// For 3D and 2D contexts there are Is3D or IsRenderingContext2D functions.
 // The remaining case is BitmaprenderingContext.
 //
 // TODO (juanmihd): Study if a refactor of context could help in simplifying
@@ -104,7 +99,6 @@ class CORE_EXPORT HTMLCanvasElement final
       public ImageBitmapSource,
       public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, Dispose);
 
  public:
@@ -155,7 +149,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
 
-  void UpdateFilterQuality();
   void Paint(GraphicsContext&,
              const PhysicalRect&,
              bool flatten_composited_layers);
@@ -202,7 +195,6 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&,
@@ -221,12 +213,14 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
   bool ShouldAccelerate2dContext() const override;
-  unsigned GetMSAASampleCountFor2dContext() const override;
   SkFilterQuality FilterQuality() const override;
   bool LowLatencyEnabled() const override;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
-      AccelerationHint hint) override;
+      RasterModeHint hint) override;
   bool IsPrinting() const override;
+
+  // CanvasRenderingContextHost implementation.
+  UkmParameters GetUkmParameters() override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);
@@ -241,7 +235,7 @@ class CORE_EXPORT HTMLCanvasElement final
   // OffscreenCanvasPlaceholder implementation.
   void SetOffscreenCanvasResource(scoped_refptr<CanvasResource>,
                                   unsigned resource_id) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetResourceProviderForTesting(std::unique_ptr<CanvasResourceProvider>,
                                      std::unique_ptr<Canvas2DLayerBridge>,
@@ -250,6 +244,8 @@ class CORE_EXPORT HTMLCanvasElement final
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);
 
+  bool StyleChangeNeedsDidDraw(const ComputedStyle* old_style,
+                               const ComputedStyle& new_style);
   void StyleDidChange(const ComputedStyle* old_style,
                       const ComputedStyle& new_style);
   void LayoutObjectDestroyed();
@@ -283,6 +279,10 @@ class CORE_EXPORT HTMLCanvasElement final
     return DispatchEvent(*event);
   }
 
+  // Gets the settings of this Html Canvas Element. If there is a frame, it will
+  // return the settings from the frame. If it is a frameless element it will
+  // try to fetch the global dom window and get the settings from there.
+  Settings* GetSettings() const;
   bool IsWebGL1Enabled() const override;
   bool IsWebGL2Enabled() const override;
   bool IsWebGLBlocked() const override;
@@ -292,7 +292,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions*,
-                              ExceptionState&) override;
+                              ExceptionState&);
 
   bool NeedsUnbufferedInputEvents() const { return needs_unbuffered_input_; }
 
@@ -300,8 +300,7 @@ class CORE_EXPORT HTMLCanvasElement final
     needs_unbuffered_input_ = value;
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
-                                            AccelerationHint) const;
+  scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer) const;
 
   // Returns the cc layer containing the contents. It's the cc layer of
   // SurfaceLayerBridge() or RenderingContext(), or nullptr if the canvas is not
@@ -313,27 +312,33 @@ class CORE_EXPORT HTMLCanvasElement final
   // returned.
   RespectImageOrientationEnum RespectImageOrientation() const;
 
+  bool IsCanvasClear() { return canvas_is_clear_; }
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
  private:
   void Dispose();
 
-  void RecordIdentifiabilityMetric(const blink::IdentifiableSurface& surface,
-                                   int64_t value) const;
+  void RecordIdentifiabilityMetric(IdentifiableSurface surface,
+                                   IdentifiableToken value) const;
+
+  // If the user is enrolled in the identifiability study, report the canvas
+  // type, and if applicable, canvas digest, taint bits, and
+  // |canvas_contents_token|, which represents the current bitmap displayed by
+  // this canvas.
+  void IdentifiabilityReportWithDigest(
+      IdentifiableToken canvas_contents_token) const;
 
   void PaintInternal(GraphicsContext&, const PhysicalRect&);
+  void UpdateFilterQuality(SkFilterQuality filter_quality);
 
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
   static CanvasRenderingContextFactory* GetRenderingContextFactory(int);
 
-  enum AccelerationCriteria {
-    kNormalAccelerationCriteria,
-    kIgnoreResourceLimitCriteria,
-  };
-  bool ShouldAccelerate(AccelerationCriteria) const;
+  bool ShouldAccelerate() const;
 
   void ParseAttribute(const AttributeModificationParams&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
@@ -341,8 +346,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Reset();
 
-  std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer();
-  std::unique_ptr<Canvas2DLayerBridge> CreateUnaccelerated2dBuffer();
+  std::unique_ptr<Canvas2DLayerBridge> Create2DLayerBridge(
+      RasterMode raster_mode);
   void SetCanvas2DLayerBridgeInternal(std::unique_ptr<Canvas2DLayerBridge>);
 
   void SetSurfaceSize(const IntSize&);
@@ -365,8 +370,7 @@ class CORE_EXPORT HTMLCanvasElement final
       const CanvasContextCreationAttributesCore&);
 
   scoped_refptr<StaticBitmapImage> GetSourceImageForCanvasInternal(
-      SourceImageStatus*,
-      AccelerationHint);
+      SourceImageStatus*);
 
   void OnContentsCcLayerChanged();
 

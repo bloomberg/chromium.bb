@@ -37,8 +37,8 @@ protected:
     SkPictureShader(SkReadBuffer&);
     void flatten(SkWriteBuffer&) const override;
     bool onAppendStages(const SkStageRec&) const override;
-    skvm::Color onProgram(skvm::Builder*, skvm::F32 x, skvm::F32 y, skvm::Color paint,
-                          const SkMatrix& ctm, const SkMatrix* localM,
+    skvm::Color onProgram(skvm::Builder*, skvm::Coord device, skvm::Coord local, skvm::Color paint,
+                          const SkMatrixProvider&, const SkMatrix* localM,
                           SkFilterQuality quality, const SkColorInfo& dst,
                           skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const override;
 
@@ -68,7 +68,7 @@ private:
         SkShaderBase::Context*  fBitmapShaderContext;
         void*                   fBitmapShaderContextStorage;
 
-        typedef Context INHERITED;
+        using INHERITED = Context;
     };
 
     sk_sp<SkPicture>    fPicture;
@@ -78,7 +78,7 @@ private:
     const uint32_t            fUniqueID;
     mutable std::atomic<bool> fAddedToCache;
 
-    typedef SkShaderBase INHERITED;
+    using INHERITED = SkShaderBase;
 };
 
 #endif // SkPictureShader_DEFINED

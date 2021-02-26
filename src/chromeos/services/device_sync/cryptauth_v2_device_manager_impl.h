@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
@@ -28,10 +27,10 @@ namespace chromeos {
 
 namespace device_sync {
 
-class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthDeviceSyncer;
 class CryptAuthKeyRegistry;
+class SyncedBluetoothAddressTracker;
 
 // Implementation of CryptAuthV2DeviceManager that considers three sources of
 // DeviceSync requests:
@@ -48,28 +47,25 @@ class CryptAuthV2DeviceManagerImpl
   class Factory {
    public:
     static std::unique_ptr<CryptAuthV2DeviceManager> Create(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const cryptauthv2::ClientAppMetadata& client_app_metadata,
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
-        PrefService* pref_service,
-        std::unique_ptr<base::OneShotTimer> timer =
-            std::make_unique<base::OneShotTimer>());
+        PrefService* pref_service);
     static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<CryptAuthV2DeviceManager> CreateInstance(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const cryptauthv2::ClientAppMetadata& client_app_metadata,
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
-        PrefService* pref_service,
-        std::unique_ptr<base::OneShotTimer> timer) = 0;
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* test_factory_;
@@ -79,24 +75,15 @@ class CryptAuthV2DeviceManagerImpl
 
  protected:
   CryptAuthV2DeviceManagerImpl(
-      ClientAppMetadataProvider* client_app_metadata_provider,
+      const cryptauthv2::ClientAppMetadata& client_app_metadata,
       CryptAuthDeviceRegistry* device_registry,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
-      PrefService* pref_service,
-      std::unique_ptr<base::OneShotTimer> timer);
+      PrefService* pref_service);
 
  private:
-  enum class State {
-    kIdle,
-    kWaitingForClientAppMetadata,
-    kWaitingForDeviceSync
-  };
-
-  friend std::ostream& operator<<(std::ostream& stream, const State& state);
-
   // CryptAuthV2DeviceManager:
   void Start() override;
   const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& GetSyncedDevices()
@@ -118,38 +105,20 @@ class CryptAuthV2DeviceManagerImpl
       const base::Optional<std::string>& session_id,
       const base::Optional<CryptAuthFeatureType>& feature_type) override;
 
-  void SetState(State state);
-  void OnTimeout();
-
-  void OnClientAppMetadataFetched(
-      const base::Optional<cryptauthv2::ClientAppMetadata>&
-          client_app_metadata);
-  void AttemptDeviceSync();
   void OnDeviceSyncFinished(CryptAuthDeviceSyncResult device_sync_result);
 
-  State state_ = State::kIdle;
-
-  // The time of the last state change. Used for execution time metrics.
-  base::TimeTicks last_state_change_timestamp_;
-
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
-  base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
+  std::unique_ptr<SyncedBluetoothAddressTracker>
+      synced_bluetooth_address_tracker_;
   std::unique_ptr<CryptAuthDeviceSyncer> device_syncer_;
 
-  ClientAppMetadataProvider* client_app_metadata_provider_ = nullptr;
+  cryptauthv2::ClientAppMetadata client_app_metadata_;
   CryptAuthDeviceRegistry* device_registry_ = nullptr;
   CryptAuthKeyRegistry* key_registry_ = nullptr;
   CryptAuthClientFactory* client_factory_ = nullptr;
   CryptAuthGCMManager* gcm_manager_ = nullptr;
   CryptAuthScheduler* scheduler_ = nullptr;
   PrefService* pref_service_ = nullptr;
-  std::unique_ptr<base::OneShotTimer> timer_;
-
-  // For weak pointers used in callbacks. These weak pointers are invalidated
-  // when the current DeviceSync attempt finishes in order to cancel outstanding
-  // callbacks.
-  base::WeakPtrFactory<CryptAuthV2DeviceManagerImpl> callback_weak_ptr_factory_{
-      this};
 
   // For sending a weak pointer to the scheduler, whose lifetime exceeds that of
   // CryptAuthV2DeviceManagerImpl.

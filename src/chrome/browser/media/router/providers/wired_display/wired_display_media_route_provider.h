@@ -16,8 +16,8 @@
 #include "base/containers/flat_set.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
-#include "chrome/common/media_router/media_route_provider_helper.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/media_route_provider_helper.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -56,14 +56,14 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
                    const url::Origin& origin,
                    int32_t tab_id,
                    base::TimeDelta timeout,
-                   bool incognito,
+                   bool off_the_record,
                    CreateRouteCallback callback) override;
   void JoinRoute(const std::string& media_source,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  int32_t tab_id,
                  base::TimeDelta timeout,
-                 bool incognito,
+                 bool off_the_record,
                  JoinRouteCallback callback) override;
   void ConnectRouteByRouteId(const std::string& media_source,
                              const std::string& route_id,
@@ -71,7 +71,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
                              const url::Origin& origin,
                              int32_t tab_id,
                              base::TimeDelta timeout,
-                             bool incognito,
+                             bool off_the_record,
                              ConnectRouteByRouteIdCallback callback) override;
   void TerminateRoute(const std::string& route_id,
                       TerminateRouteCallback callback) override;

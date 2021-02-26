@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/win/control_flow_guard.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/timestamp.gni")
 import("//build/toolchain/goma.gni")
@@ -82,14 +83,22 @@ config("compiler") {
     # Don't look for includes in %INCLUDE%.
     cflags += [ "/X" ]
 
+    # Required to make the 19041 SDK compatible with clang-cl.
+    # See https://crbug.com/1089996 issue #2 for details.
+    cflags += [ "/D__WRL_ENABLE_FUNCTION_STATICS__" ]
+
     # Tell clang which version of MSVC to emulate.
     cflags += [ "-fmsc-version=1916" ]
 
-    # Emit table of address-taken functions for Control-Flow Guard (CFG). We
-    # don't emit the CFG checks themselves, but this enables the functions to
-    # be called by code that is built with those checks enabled, such as system
-    # libraries.
-    cflags += [ "/guard:cf,nochecks" ]
+    # Emit table of address-taken functions for Control-Flow Guard (CFG).
+    # This is needed to allow functions to be called by code that is built
+    # with CFG enabled, such as system libraries.
+    # The CFG guards are only emitted if |win_enable_cfg_guards| is enabled.
+    if (win_enable_cfg_guards) {
+      cflags += [ "/guard:cf" ]
+    } else {
+      cflags += [ "/guard:cf,nochecks" ]
+    }
 
     if (is_component_build) {
       cflags += [
@@ -121,9 +130,6 @@ config("compiler") {
     if (use_clang_diagnostics_format) {
       cflags += [ "/clang:-fdiagnostics-format=clang" ]
     }
-
-    # Clang runtime libraries, such as the sanitizer runtimes, live here.
-    lib_dirs = [ "$clang_base_path/lib/clang/$clang_version/lib/windows" ]
   }
 
   if (use_lld && !use_thin_lto && (is_clang || !use_goma)) {
@@ -265,7 +271,7 @@ config("runtime_library") {
 # manually override this config for their compiles.
 config("winver") {
   defines = [
-    "NTDDI_VERSION=NTDDI_WIN10_RS2",
+    "NTDDI_VERSION=NTDDI_WIN10_VB",
 
     # We can't say `=_WIN32_WINNT_WIN10` here because some files do
     # `#if WINVER < 0x0600` without including windows.h before,
@@ -343,17 +349,22 @@ config("common_linker_setup") {
 config("cfi_linker") {
   # Control Flow Guard (CFG)
   # https://msdn.microsoft.com/en-us/library/windows/desktop/mt637065.aspx
-  # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG can’t be
+  # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG cannot be
   # turned on either.
-  # CFG seems to lead to random corruption with incremental linking so turn off
-  # CFG in component builds. https://crbug.com/812421
   # ASan and CFG leads to slow process startup. Chromium's test runner uses
   # lots of child processes, so this means things are really slow. Disable CFG
   # for now. https://crbug.com/846966
-  if (!is_debug && !is_component_build && !is_asan) {
-    # Turn on CFG, except for longjmp because it relies on compiler support
-    # which clang doesn't have yet.
-    ldflags = [ "/guard:cf,nolongjmp" ]
+  # TODO(thakis): Re-enable in release component builds once they work again,
+  # https://crbug.com/1147194
+  if (!is_debug && !is_asan && !is_component_build) {
+    # Turn on CFG bitmap generation and CFG load config.
+    if (target_cpu == "arm64") {
+      # longjmp protection is temporarily disabled on Windows on Arm64 due to
+      # a code-generation defect. https://crbug.com/1126549
+      ldflags = [ "/guard:cf,nolongjmp" ]
+    } else {
+      ldflags = [ "/guard:cf" ]
+    }
   }
 }
 

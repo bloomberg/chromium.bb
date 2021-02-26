@@ -7,15 +7,20 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/embedder_support/switches.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -327,6 +332,32 @@ void AdTaggingBrowserTest::NavigateFrame(
       << navigation_observer.last_net_error_code();
 }
 
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       AdContentSettingAllowed_AdTaggingDisabled) {
+  HostContentSettingsMapFactory::GetForProfile(
+      web_contents()->GetBrowserContext())
+      ->SetDefaultContentSetting(ContentSettingsType::ADS,
+                                 CONTENT_SETTING_ALLOW);
+
+  TestSubresourceFilterObserver observer(web_contents());
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Create an ad frame.
+  RenderFrameHost* ad_frame =
+      CreateSrcFrame(GetWebContents(), GetURL("frame_factory.html?2&ad=true"));
+
+  // Verify that we are not evaluating subframe navigations.
+  EXPECT_FALSE(observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+
+  // Child frame created by ad script.
+  RenderFrameHost* ad_frame_tagged_by_script = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html?1"));
+
+  // No frames should be detected by script heuristics.
+  EXPECT_FALSE(observer.GetIsAdSubframe(
+      ad_frame_tagged_by_script->GetFrameTreeNodeId()));
+}
+
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FramesByURL) {
   TestSubresourceFilterObserver observer(web_contents());
 
@@ -383,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
   // Navigate away and ensure we report same origin.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
-                                      FrameData::OriginStatus::kSame, 1);
+                                      ad_metrics::OriginStatus::kSame, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
@@ -426,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   // Navigate away and ensure we report cross origin.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
-                                      FrameData::OriginStatus::kCross, 1);
+                                      ad_metrics::OriginStatus::kCross, 1);
 }
 
 // Ad script creates a frame and navigates it same origin.
@@ -448,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   // Navigate away and ensure we report same origin.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
-                                      FrameData::OriginStatus::kSame, 1);
+                                      ad_metrics::OriginStatus::kSame, 1);
 }
 
 // Test that a subframe with a non-ad url but loaded by ad script is an ad.
@@ -726,7 +757,7 @@ void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
 void ExpectWindowOpenUmaEntry(const base::HistogramTester& histogram_tester,
                               bool from_ad_subframe,
                               bool from_ad_script) {
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   blink::FromAdState state =
       blink::GetFromAdState(from_ad_subframe, from_ad_script);
   histogram_tester.ExpectBucketCount(kWindowOpenFromAdStateHistogram, state,

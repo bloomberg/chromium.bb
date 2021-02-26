@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_TIMING_H_
 
 #include "base/time/time.h"
+#include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -46,7 +47,6 @@ class DocumentLoader;
 class DocumentParserTiming;
 class DocumentTiming;
 class InteractiveDetector;
-class LocalFrame;
 class PaintTiming;
 class PaintTimingDetector;
 class ResourceLoadTiming;
@@ -57,10 +57,22 @@ class ScriptValue;
 class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
                                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
  public:
-  explicit PerformanceTiming(LocalFrame*);
+  struct BackForwardCacheRestoreTiming {
+    uint64_t navigation_start;
+    uint64_t first_paint;
+    std::array<uint64_t,
+               WebPerformance::
+                   kRequestAnimationFramesToRecordAfterBackForwardCacheRestore>
+        request_animation_frames;
+    base::Optional<base::TimeDelta> first_input_delay;
+  };
+
+  using BackForwardCacheRestoreTimings =
+      WTF::Vector<BackForwardCacheRestoreTiming>;
+
+  explicit PerformanceTiming(ExecutionContext*);
 
   uint64_t navigationStart() const;
   uint64_t inputStart() const;
@@ -92,6 +104,8 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // fetchStart.  Intended to be used for correlation with other events internal
   // to blink. Not to be exposed to JavaScript.
   base::TimeTicks NavigationStartAsMonotonicTime() const;
+  // The timings after the page is restored from back-forward cache.
+  BackForwardCacheRestoreTimings BackForwardCacheRestore() const;
   // The time the first paint operation was performed.
   uint64_t FirstPaint() const;
   // The time the first paint operation for image was performed.
@@ -124,6 +138,16 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
+  // Experimental versions of the above metrics. Currently these are computed by
+  // considering the largest content seen so far, regardless of DOM node
+  // removal.
+  uint64_t ExperimentalLargestImagePaint() const;
+  uint64_t ExperimentalLargestImagePaintSize() const;
+  uint64_t ExperimentalLargestTextPaint() const;
+  uint64_t ExperimentalLargestTextPaintSize() const;
+  // The time at which the frame is first eligible for painting due to not
+  // being throttled. A zero value indicates throttling.
+  uint64_t FirstEligibleToPaint() const;
   // The time at which we are notified of the first input or scroll event which
   // causes the largest contentful paint algorithm to stop.
   uint64_t FirstInputOrScrollNotifiedTimestamp() const;
@@ -139,6 +163,12 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   base::Optional<base::TimeDelta> LongestInputDelay() const;
   // The timestamp of the event whose delay is reported by LongestInputDelay().
   base::Optional<base::TimeDelta> LongestInputTimestamp() const;
+  // The duration of event handlers processing the first input event.
+  base::Optional<base::TimeDelta> FirstInputProcessingTime() const;
+  // The duration between the user's first scroll and display update.
+  base::Optional<base::TimeDelta> FirstScrollDelay() const;
+  // The hardware timestamp of the first scroll.
+  base::Optional<base::TimeDelta> FirstScrollTimestamp() const;
 
   uint64_t ParseStart() const;
   uint64_t ParseStop() const;
@@ -147,13 +177,16 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   uint64_t ParseBlockedOnScriptExecutionDuration() const;
   uint64_t ParseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
 
+  // The time of the first paint after a portal activation.
+  base::Optional<base::TimeTicks> LastPortalActivatedPaint() const;
+
   typedef uint64_t (PerformanceTiming::*PerformanceTimingGetter)() const;
   using NameToAttributeMap = HashMap<AtomicString, PerformanceTimingGetter>;
   static const NameToAttributeMap& GetAttributeMapping();
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   uint64_t MonotonicTimeToIntegerMilliseconds(base::TimeTicks) const;
 

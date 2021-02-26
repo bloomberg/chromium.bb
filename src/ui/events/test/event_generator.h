@@ -288,11 +288,17 @@ class EventGenerator {
   // Set force of touch PointerDetails.
   void SetTouchForce(float force) { touch_pointer_details_.force = force; }
 
-  // Generates a touch press event.
-  void PressTouch();
+  // Generates a touch press event. If |touch_location_in_screen| is not null,
+  // the touch press event will happen at |touch_location_in_screen|. Otherwise,
+  // it will happen at the current event location |current_screen_location_|.
+  void PressTouch(const base::Optional<gfx::Point>& touch_location_in_screen =
+                      base::nullopt);
 
-  // Generates a touch press event with |touch_id|.
-  void PressTouchId(int touch_id);
+  // Generates a touch press event with |touch_id|. See PressTouch() event for
+  // the description of |touch_location_in_screen| parameter.
+  void PressTouchId(int touch_id,
+                    const base::Optional<gfx::Point>& touch_location_in_screen =
+                        base::nullopt);
 
   // Generates a ET_TOUCH_MOVED event to |point|.
   void MoveTouch(const gfx::Point& point);
@@ -437,13 +443,17 @@ class EventGenerator {
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
-  void PressKey(KeyboardCode key_code, int flags);
+  void PressKey(KeyboardCode key_code,
+                int flags,
+                int source_device_id = ED_UNKNOWN_DEVICE);
 
   // Generates a key release event. On platforms except Windows and X11, a key
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
-  void ReleaseKey(KeyboardCode key_code, int flags);
+  void ReleaseKey(KeyboardCode key_code,
+                  int flags,
+                  int source_device_id = ED_UNKNOWN_DEVICE);
 
   // Dispatch the event to the WindowEventDispatcher.
   void Dispatch(Event* event);
@@ -460,7 +470,10 @@ class EventGenerator {
   void Init(gfx::NativeWindow root_window, gfx::NativeWindow target_window);
 
   // Dispatch a key event to the WindowEventDispatcher.
-  void DispatchKeyEvent(bool is_press, KeyboardCode key_code, int flags);
+  void DispatchKeyEvent(bool is_press,
+                        KeyboardCode key_code,
+                        int flags,
+                        int source_device_id);
 
   void UpdateCurrentDispatcher(const gfx::Point& point);
   void PressButton(int flag);

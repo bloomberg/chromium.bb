@@ -5,12 +5,16 @@
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/login/version_updater/update_time_estimator.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -37,23 +41,11 @@ const int kBeforeVerifyingProgress = 74;
 const int kBeforeFinalizingProgress = 81;
 const int kProgressComplete = 100;
 
-// Minimum timestep between two consecutive measurements for the download rates.
-constexpr const base::TimeDelta kMinTimeStep = base::TimeDelta::FromSeconds(1);
-
 // Defines what part of update progress does download part takes.
 const int kDownloadProgressIncrement = 60;
 
-// Smooth factor that is used for the average downloading speed
-// estimation.
-// avg_speed = smooth_factor * cur_speed + (1.0 - smooth_factor) *
-// avg_speed.
-const double kDownloadSpeedSmoothFactor = 0.1;
-
-// Minimum allowed value for the average downloading speed.
-const double kDownloadAverageSpeedDropBound = 1e-8;
-
-// An upper bound for possible downloading time left estimations.
-constexpr const base::TimeDelta kMaxTimeLeft = base::TimeDelta::FromDays(1);
+// Period of time between planned updates.
+constexpr const base::TimeDelta kUpdateTime = base::TimeDelta::FromSeconds(1);
 
 }  // anonymous namespace
 
@@ -72,12 +64,7 @@ VersionUpdater::~VersionUpdater() {
 }
 
 void VersionUpdater::Init() {
-  download_start_progress_ = 0;
-  download_last_progress_ = 0;
-  is_download_average_speed_computed_ = false;
-  download_average_speed_ = 0;
-  is_downloading_update_ = false;
-  ignore_idle_status_ = true;
+  time_estimator_ = UpdateTimeEstimator();
   is_first_detection_notification_ = true;
   update_info_ = UpdateInfo();
 }
@@ -147,8 +134,8 @@ void VersionUpdater::GetEolInfo(EolInfoCallback callback) {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
   // Request the End of Life (Auto Update Expiration) status. Bind to a weak_ptr
-  // bound method rather than passing |callback| directly so that |callback|
-  // does not outlive |this|.
+  // bound method rather than passing `callback` directly so that `callback`
+  // does not outlive `this`.
   update_engine_client->GetEolInfo(
       base::BindOnce(&VersionUpdater::OnGetEolInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -196,6 +183,8 @@ void VersionUpdater::UpdateStatusChanged(
     ignore_idle_status_ = false;
   }
 
+  time_estimator_.Update(status);
+
   bool exit_update = false;
   switch (status.current_operation()) {
     case update_engine::Operation::CHECKING_FOR_UPDATE:
@@ -208,19 +197,15 @@ void VersionUpdater::UpdateStatusChanged(
       update_info_.progress_unavailable = false;
       break;
     case update_engine::Operation::DOWNLOADING:
-      if (!is_downloading_update_) {
-        is_downloading_update_ = true;
-
-        download_start_time_ = download_last_time_ = tick_clock_->NowTicks();
-        download_start_progress_ = status.progress();
-        download_last_progress_ = status.progress();
-        is_download_average_speed_computed_ = false;
-        download_average_speed_ = 0.0;
-        update_info_.progress_message =
-            l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE);
-        update_info_.progress_unavailable = false;
-      }
-      UpdateDownloadingStats(status);
+      update_info_.progress_message =
+          l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE);
+      update_info_.progress_unavailable = false;
+      update_info_.progress =
+          kBeforeDownloadProgress +
+          static_cast<int>(status.progress() * kDownloadProgressIncrement);
+      update_info_.show_estimated_time_left = time_estimator_.HasDownloadTime();
+      update_info_.estimated_time_left_in_secs =
+          time_estimator_.GetDownloadTimeLeft().InSeconds();
       break;
     case update_engine::Operation::VERIFYING:
       update_info_.progress = kBeforeVerifyingProgress;
@@ -267,85 +252,60 @@ void VersionUpdater::UpdateStatusChanged(
       NOTREACHED();
   }
 
+  if (time_estimator_.HasTotalTime(status.current_operation())) {
+    const auto update_status = time_estimator_.GetUpdateStatus();
+    update_info_.total_time_left = update_status.time_left;
+    update_info_.better_update_progress = update_status.progress;
+    if (!refresh_timer_) {
+      refresh_timer_ = std::make_unique<base::RepeatingTimer>(tick_clock_);
+      refresh_timer_->Start(FROM_HERE, kUpdateTime, this,
+                            &VersionUpdater::RefreshTimeLeftEstimation);
+    }
+  } else {
+    if (refresh_timer_) {
+      refresh_timer_->Stop();
+      refresh_timer_.reset();
+    }
+  }
+
   delegate_->UpdateInfoChanged(update_info_);
   if (exit_update)
     StartExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
-void VersionUpdater::UpdateDownloadingStats(
-    const update_engine::StatusResult& status) {
-  base::TimeTicks download_current_time = tick_clock_->NowTicks();
-  if (download_current_time >= download_last_time_ + kMinTimeStep) {
-    // Estimate downloading rate.
-    double progress_delta =
-        std::max(status.progress() - download_last_progress_, 0.0);
-    double time_delta =
-        (download_current_time - download_last_time_).InSecondsF();
-    double download_rate = status.new_size() * progress_delta / time_delta;
-
-    download_last_time_ = download_current_time;
-    download_last_progress_ = status.progress();
-
-    // Estimate time left.
-    double progress_left = std::max(1.0 - status.progress(), 0.0);
-    if (!is_download_average_speed_computed_) {
-      download_average_speed_ = download_rate;
-      is_download_average_speed_computed_ = true;
-    }
-    download_average_speed_ =
-        kDownloadSpeedSmoothFactor * download_rate +
-        (1.0 - kDownloadSpeedSmoothFactor) * download_average_speed_;
-    if (download_average_speed_ < kDownloadAverageSpeedDropBound) {
-      time_delta = (download_current_time - download_start_time_).InSecondsF();
-      download_average_speed_ = status.new_size() *
-                                (status.progress() - download_start_progress_) /
-                                time_delta;
-    }
-    double work_left = progress_left * status.new_size();
-    // time_left is in seconds.
-    double time_left = work_left / download_average_speed_;
-    // |time_left| may be large enough or even +infinity. So we must
-    // |bound possible estimations.
-    time_left = std::min(time_left, kMaxTimeLeft.InSecondsF());
-
-    update_info_.show_estimated_time_left = true;
-    update_info_.estimated_time_left_in_secs = static_cast<int>(time_left);
-  }
-
-  int download_progress =
-      static_cast<int>(status.progress() * kDownloadProgressIncrement);
-  update_info_.progress = kBeforeDownloadProgress + download_progress;
+void VersionUpdater::RefreshTimeLeftEstimation() {
+  const auto update_status = time_estimator_.GetUpdateStatus();
+  update_info_.total_time_left = update_status.time_left;
+  update_info_.better_update_progress = update_status.progress;
+  delegate_->UpdateInfoChanged(update_info_);
 }
 
 void VersionUpdater::OnPortalDetectionCompleted(
     const NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalState& state) {
+    const NetworkPortalDetector::CaptivePortalStatus status) {
   VLOG(1) << "VersionUpdater::OnPortalDetectionCompleted(): "
           << "network=" << (network ? network->path() : "") << ", "
-          << "state.status=" << state.status << ", "
-          << "state.response_code=" << state.response_code;
+          << "status=" << status;
 
   // Wait for sane detection results.
   if (network &&
-      state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
+      status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
     return;
   }
 
   // Restart portal detection for the first notification about offline state.
   if ((!network ||
-       state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE) &&
+       status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE) &&
       is_first_detection_notification_) {
     is_first_detection_notification_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce([]() {
-          network_portal_detector::GetInstance()->StartPortalDetection(
-              false /* force */);
+          network_portal_detector::GetInstance()->StartPortalDetection();
         }));
     return;
   }
   is_first_detection_notification_ = false;
 
-  NetworkPortalDetector::CaptivePortalStatus status = state.status;
   if (update_info_.state == State::STATE_ERROR) {
     // In the case of online state hide error message and proceed to
     // the update stage. Otherwise, update error message content.

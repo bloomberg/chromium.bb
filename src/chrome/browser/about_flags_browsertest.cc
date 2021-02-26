@@ -5,13 +5,15 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/unexpire_flags.h"
+#include "chrome/browser/unexpire_flags_gen.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -138,17 +140,23 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   AboutFlagsBrowserTest() {
-    about_flags::testing::SetFeatureEntries(
-        {{kFlagName, "name-1", "description-1", -1,
-          ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
-         {kExpiredFlagName, "name-2", "description-2", -1,
-          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
-         {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
-          SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}});
-    flags::testing::SetFlagExpiredPredicate(
-        base::BindLambdaForTesting([&](const std::string& name) -> bool {
-          return expiration_enabled_ && name == kExpiredFlagName;
-        }));
+    std::vector<flags_ui::FeatureEntry> entries = {
+        {kFlagName, "name-1", "description-1", -1,
+         ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
+        {kExpiredFlagName, "name-2", "description-2", -1,
+         SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
+        {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
+         SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}};
+    unexpire_name_ = base::StringPrintf("temporary-unexpire-flags-m%d",
+                                        CHROME_VERSION_MAJOR - 1);
+    flags_ui::FeatureEntry expiry_entry = {
+        unexpire_name_.c_str(), "unexpire name", "unexpire desc", -1,
+        SINGLE_VALUE_TYPE("unexpire-dummy-switch")};
+    entries.push_back(expiry_entry);
+    about_flags::testing::SetFeatureEntries(entries);
+
+    flags::testing::SetFlagExpiration(kExpiredFlagName,
+                                      CHROME_VERSION_MAJOR - 1);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -156,8 +164,6 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  void set_expiration_enabled(bool enabled) { expiration_enabled_ = enabled; }
-
   bool has_initial_command_line() const { return GetParam(); }
 
   std::string GetInitialCommandLine() const {
@@ -180,6 +186,7 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
   bool expiration_enabled_ = true;
+  std::string unexpire_name_;
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -305,7 +312,20 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 }
 
-// Crashes on Win.  http://crbug.com/1025213
+class AboutFlagsUnexpiredBrowserTest : public AboutFlagsBrowserTest {
+ public:
+  AboutFlagsUnexpiredBrowserTest() {
+    const base::Feature* unexpire =
+        flags::GetUnexpireFeatureForMilestone(CHROME_VERSION_MAJOR - 1);
+    feature_list_.InitWithFeatures({*unexpire}, {});
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AboutFlagsUnexpiredBrowserTest,
+                         ::testing::Values(true));
+
+// Crashes on Win.  http://crbug.com/1108357
 #if defined(OS_WIN)
 #define MAYBE_ExpiryHidesFlag DISABLED_ExpiryHidesFlag
 #else
@@ -317,18 +337,18 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_ExpiryHidesFlag) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
   EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+}
 
-  set_expiration_enabled(false);
-
+IN_PROC_BROWSER_TEST_P(AboutFlagsUnexpiredBrowserTest, MAYBE_ExpiryHidesFlag) {
   NavigateToFlagsPage();
-  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
   EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
 }
 
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
-  set_expiration_enabled(false);
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -340,7 +360,6 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
 
 // Flaky everywhere: https://crbug.com/1024028
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
-  set_expiration_enabled(true);
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -350,6 +369,30 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
       kExpiredFlagSwitchName));
 }
 #endif
+
+// Regression test for https://crbug.com/1101828:
+// Test that simply setting a flag (without the backing feature) is sufficient
+// to consider a flag unexpired. This test checks that by using a flag with the
+// expected unexpire name, but wired to a dummy switch rather than the usual
+// feature.
+//
+// This isn't a perfect regression test - that would require two separate
+// browser restarts:
+// 1) Enable temporary-unexpire-flags-m$M, restart
+// 2) Enable the test flag (which is only visible after the previous restart),
+//    restart
+// 3) Ensure that the test flag got applied at startup
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, RawFlagUnexpiryWorks) {
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+  ToggleEnableDropdown(contents, unexpire_name_.c_str(), true);
+
+  NavigateToFlagsPage();
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
+}
 
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
   NavigateToFlagsPage();
@@ -370,7 +413,10 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
           "const e = document.createEvent('HTMLEvents');"
           "e.initEvent('change', true, true);"
           "s.dispatchEvent(e);",
-          kFlagWithOptionSelectorName)));
+          kFlagWithOptionSelectorName),
+      // Execute script in an isolated world to avoid causing a Trusted Types
+      // violation due to eval.
+      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
 }
 
 }  // namespace

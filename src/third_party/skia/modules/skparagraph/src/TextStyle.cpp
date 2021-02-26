@@ -6,31 +6,7 @@
 namespace skia {
 namespace textlayout {
 
-TextStyle::TextStyle() : fFontStyle() {
-    fFontFamilies.reserve(1);
-    fFontFamilies.emplace_back(DEFAULT_FONT_FAMILY);
-    fColor = SK_ColorWHITE;
-    fDecoration.fType = TextDecoration::kNoDecoration;
-    // Does not make sense to draw a transparent object, so we use it as a default
-    // value to indicate no decoration color was set.
-    fDecoration.fColor = SK_ColorTRANSPARENT;
-    fDecoration.fStyle = TextDecorationStyle::kSolid;
-    fDecoration.fMode = TextDecorationMode::kGaps;
-    // Thickness is applied as a multiplier to the default thickness of the font.
-    fDecoration.fThicknessMultiplier = 1.0;
-    fFontSize = 14.0;
-    fLetterSpacing = 0.0;
-    fWordSpacing = 0.0;
-    fHeight = 1.0;
-    fHeightOverride = false;
-    fHasBackground = false;
-    fHasForeground = false;
-    fTextBaseline = TextBaseline::kAlphabetic;
-    fLocale = "";
-    fIsPlaceholder = false;
-}
-
-TextStyle:: TextStyle(const TextStyle& other, bool placeholder) {
+TextStyle::TextStyle(const TextStyle& other, bool placeholder) {
     fColor = other.fColor;
     fFontSize = other.fFontSize;
     fFontFamilies = other.fFontFamilies;
@@ -119,14 +95,12 @@ bool TextStyle::equalsByFonts(const TextStyle& that) const {
 bool TextStyle::matchOneAttribute(StyleType styleType, const TextStyle& other) const {
     switch (styleType) {
         case kForeground:
-            if (fHasForeground) {
-                return other.fHasForeground && fForeground == other.fForeground;
-            } else {
-                return !other.fHasForeground && fColor == other.fColor;
-            }
+            return (!fHasForeground && !other.fHasForeground && fColor == other.fColor) ||
+                   ( fHasForeground &&  other.fHasForeground && fForeground == other.fForeground);
 
         case kBackground:
-            return (fHasBackground == other.fHasBackground && fBackground == other.fBackground);
+            return (!fHasBackground && !other.fHasBackground) ||
+                   ( fHasBackground &&  other.fHasBackground && fBackground == other.fBackground);
 
         case kShadow:
             if (fTextShadows.size() != other.fTextShadows.size()) {

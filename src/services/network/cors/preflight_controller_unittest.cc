@@ -21,8 +21,10 @@
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,8 +229,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
   base::test::TaskEnvironment task_environment_(
       base::test::TaskEnvironment::MainThreadType::IO);
   TestURLLoaderFactory url_loader_factory;
-  PreflightController preflight_controller(
-      {} /* extra_safelisted_header_names */, nullptr /* network_service */);
+  PreflightController preflight_controller(nullptr /* network_service */);
 
   network::ResourceRequest request;
   request.url = GURL("https://example.com/");
@@ -236,12 +237,14 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
   preflight_controller.PerformPreflightCheck(
       base::BindOnce([](int, base::Optional<CorsErrorStatus>) {}), request,
       WithTrustedHeaderClient(false), false /* tainted */,
-      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, 0 /* process_id */);
+      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, 0 /* process_id */,
+      net::IsolationInfo());
 
   preflight_controller.PerformPreflightCheck(
       base::BindOnce([](int, base::Optional<CorsErrorStatus>) {}), request,
       WithTrustedHeaderClient(true), false /* tainted */,
-      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, 0 /* process_id */);
+      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, 0 /* process_id */,
+      net::IsolationInfo());
 
   ASSERT_EQ(2, url_loader_factory.NumPending());
   EXPECT_EQ(mojom::kURLLoadOptionAsCorsPreflight,
@@ -288,7 +291,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieStatusList& cookies_with_status,
+      const net::CookieAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override {
     on_raw_request_called_ = true;
   }
@@ -296,7 +299,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieAndLineStatusList& cookies_with_status,
+      const net::CookieAndLineAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override {
     on_raw_response_called_ = true;
@@ -341,19 +344,29 @@ class PreflightControllerTest : public testing::Test {
   PreflightControllerTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         test_initiator_origin_(
-            url::Origin::Create(GURL("http://example.com/"))) {
+            url::Origin::Create(GURL("http://example.com/"))),
+        access_control_allow_origin_(test_initiator_origin_) {
     CorsURLLoaderFactory::SetAllowExternalPreflightsForTesting(true);
     mojo::Remote<mojom::NetworkService> network_service_remote;
     network_service_ = NetworkService::Create(
         network_service_remote.BindNewPipeAndPassReceiver());
 
+    auto context_params = mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_service_remote->CreateNetworkContext(
         network_context_remote_.BindNewPipeAndPassReceiver(),
-        mojom::NetworkContextParams::New());
+        std::move(context_params));
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
+    // We use network::CorsURLLoaderFactory for "internal" URLLoaderFactory
+    // used by the PreflightController. Hence here we disable CORS as otherwise
+    // the URLLoader would create a CORS-preflight for the preflight request.
+    params->disable_web_security = true;
     params->is_corb_enabled = false;
     network_context_remote_->CreateURLLoaderFactory(
         url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
@@ -373,8 +386,10 @@ class PreflightControllerTest : public testing::Test {
 
   GURL GetURL(const std::string& path) { return test_server_.GetURL(path); }
 
-  void PerformPreflightCheck(const ResourceRequest& request,
-                             bool tainted = false) {
+  void PerformPreflightCheck(
+      const ResourceRequest& request,
+      bool tainted = false,
+      net::IsolationInfo isolation_info = net::IsolationInfo()) {
     DCHECK(preflight_controller_);
     run_loop_ = std::make_unique<base::RunLoop>();
     preflight_controller_->PerformPreflightCheck(
@@ -382,12 +397,19 @@ class PreflightControllerTest : public testing::Test {
                        base::Unretained(this)),
         request, WithTrustedHeaderClient(false), tainted,
         TRAFFIC_ANNOTATION_FOR_TESTS, url_loader_factory_remote_.get(),
-        0 /* process_id */);
+        0 /* process_id */, isolation_info);
     run_loop_->Run();
+  }
+
+  void SetAccessControlAllowOrigin(const url::Origin origin) {
+    access_control_allow_origin_ = origin;
   }
 
   const url::Origin& test_initiator_origin() const {
     return test_initiator_origin_;
+  }
+  const url::Origin& access_control_allow_origin() const {
+    return access_control_allow_origin_;
   }
   int net_error() const { return net_error_; }
   base::Optional<CorsErrorStatus> status() { return status_; }
@@ -397,8 +419,10 @@ class PreflightControllerTest : public testing::Test {
 
  private:
   void SetUp() override {
-    preflight_controller_ = std::make_unique<PreflightController>(
-        std::vector<std::string>(), network_service_.get());
+    SetAccessControlAllowOrigin(test_initiator_origin_);
+
+    preflight_controller_ =
+        std::make_unique<PreflightController>(network_service_.get());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &PreflightControllerTest::ServePreflight, base::Unretained(this)));
@@ -423,7 +447,7 @@ class PreflightControllerTest : public testing::Test {
       const url::Origin origin =
           net::test_server::ShouldHandle(request, "/tainted")
               ? url::Origin()
-              : test_initiator_origin();
+              : access_control_allow_origin();
       response->AddCustomHeader(header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
       response->AddCustomHeader(header_names::kAccessControlAllowMethods,
@@ -438,6 +462,7 @@ class PreflightControllerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   const url::Origin test_initiator_origin_;
+  url::Origin access_control_allow_origin_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<NetworkService> network_service_;
@@ -501,6 +526,69 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(4u, access_count());
+}
+
+TEST_F(PreflightControllerTest, CheckRequestNetworkIsolationKey) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.url = GetURL("/allow");
+  const url::Origin& origin = test_initiator_origin();
+  request.request_initiator = origin;
+  ResourceRequest::TrustedParams trusted_params;
+  trusted_params.isolation_info =
+      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
+                                 origin, origin, net::SiteForCookies());
+  request.trusted_params = {trusted_params};
+
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());
+
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+
+  url::Origin second_origin = url::Origin::Create(GURL("https://example.com/"));
+  request.request_initiator = second_origin;
+  SetAccessControlAllowOrigin(second_origin);
+  request.trusted_params->isolation_info =
+      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
+                                 origin, second_origin, net::SiteForCookies());
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(2u, access_count());
+}
+
+TEST_F(PreflightControllerTest, CheckFactoryNetworkIsolationKey) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.url = GetURL("/allow");
+  const url::Origin& origin = test_initiator_origin();
+  request.request_initiator = origin;
+
+  const net::IsolationInfo isolation_info =
+      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
+                                 origin, origin, net::SiteForCookies());
+
+  PerformPreflightCheck(request, false, isolation_info);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());
+
+  PerformPreflightCheck(request, false, isolation_info);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+
+  PerformPreflightCheck(request, false, net::IsolationInfo());
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(2u, access_count());  // Should not be from the preflight cache.
 }
 
 TEST_F(PreflightControllerTest, CheckTaintedRequest) {

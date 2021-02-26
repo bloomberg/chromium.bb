@@ -8,24 +8,39 @@
 #include <d3d11.h>
 #include <memory>
 
+#include "build/build_config.h"
+#include "device/vr/openxr/openxr_util.h"
 #include "device/vr/vr_export.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
 namespace device {
 
+// OpenXrStatics must outlive all other OpenXR objects. It owns the XrInstance
+// and will destroy it in the destructor.
 class DEVICE_VR_EXPORT OpenXrStatics {
  public:
   OpenXrStatics();
   ~OpenXrStatics();
 
+  const OpenXrExtensionEnumeration* GetExtensionEnumeration() const {
+    return &extension_enumeration_;
+  }
+
+  XrInstance GetXrInstance();
+
   bool IsHardwareAvailable();
   bool IsApiAvailable();
 
+#if defined(OS_WIN)
+  LUID GetLuid(const OpenXrExtensionHelper& extension_helper);
+#endif
+
  private:
   XrInstance instance_;
+  OpenXrExtensionEnumeration extension_enumeration_;
 };
 
 }  // namespace device
 
-#endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_STATICS_H_
+#endif  // DEVICE_VR_OPENXR_OPENXR_STATICS_H_

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -44,7 +45,7 @@ class EnrollmentScreen
       public EnrollmentScreenView::Controller,
       public ActiveDirectoryJoinDelegate {
  public:
-  enum class Result { COMPLETED, BACK };
+  enum class Result { COMPLETED, BACK, SKIPPED_FOR_TESTS };
 
   static std::string GetResultString(Result result);
 
@@ -95,6 +96,7 @@ class EnrollmentScreen
 
  protected:
   // BaseScreen:
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
 
@@ -129,8 +131,8 @@ class EnrollmentScreen
   // Creates an enrollment helper if needed.
   void CreateEnrollmentHelper();
 
-  // Clears auth in |enrollment_helper_|. Deletes |enrollment_helper_| and runs
-  // |callback| on completion. See the comment for
+  // Clears auth in `enrollment_helper_`. Deletes `enrollment_helper_` and runs
+  // `callback` on completion. See the comment for
   // EnterpriseEnrollmentHelper::ClearAuth for details.
   void ClearAuth(const base::Closure& callback);
 
@@ -142,7 +144,7 @@ class EnrollmentScreen
   void ShowEnrollmentStatusOnSuccess();
 
   // Logs an UMA event in one of the "Enrollment.*" histograms, depending on
-  // |enrollment_mode_|.
+  // `enrollment_mode_`.
   void UMA(policy::MetricEnrollment sample);
 
   // Do attestation based enrollment.

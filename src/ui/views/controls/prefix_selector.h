@@ -44,7 +44,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
 
   // ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  void ConfirmCompositionText(bool keep_selection) override;
+  uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
   void InsertChar(const ui::KeyEvent& event) override;
@@ -80,6 +80,14 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
+
+#if defined(OS_CHROMEOS)
+  gfx::Range GetAutocorrectRange() const override;
+  gfx::Rect GetAutocorrectCharacterBounds() const override;
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range) override;
+  void ClearAutocorrectRange() override;
 #endif
 
 #if defined(OS_WIN)

@@ -9,14 +9,14 @@ set(SHADERC_SPIRV_TOOLS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-tools" CACHE 
   "Location of spirv-tools source")
 set(SHADERC_SPIRV_HEADERS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-headers" CACHE STRING
   "Location of spirv-headers source")
-set(SHADERC_SPIRV_CROSS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-cross" CACHE STRING
-  "Location of SPIRV-Cross source")
 set(SHADERC_GLSLANG_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/glslang" CACHE STRING
   "Location of glslang source")
 set(SHADERC_EFFCEE_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/effcee" CACHE STRING
   "Location of effcee source")
 set(SHADERC_RE2_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/re2" CACHE STRING
   "Location of re2 source")
+set(SHADERC_TINT_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/tint" CACHE STRING
+  "Location of tint source")
 
 set( SKIP_GLSLANG_INSTALL ${SHADERC_SKIP_INSTALL} )
 set( SKIP_SPIRV_TOOLS_INSTALL ${SHADERC_SKIP_INSTALL} )
@@ -33,6 +33,7 @@ if(${SHADERC_ENABLE_TESTS})
 endif()
 
 set(OLD_PLATFORM_TOOLSET ${CMAKE_GENERATOR_TOOLSET})
+check_cxx_compiler_flag(-fPIC COMPILER_SUPPORTS_PIC)
 
 
 if (IS_DIRECTORY ${SHADERC_SPIRV_HEADERS_DIR})
@@ -78,24 +79,22 @@ if (NOT TARGET glslang)
   endif()
 endif()
 
-if (SHADERC_ENABLE_SPVC)
-  if (NOT TARGET spirv-cross-core)
-    if (IS_DIRECTORY ${SHADERC_SPIRV_CROSS_DIR})
-      # Add -fPIC to SPIRV-Cross build, if supported
-      check_cxx_compiler_flag(-fPIC COMPILER_SUPPORTS_PIC)
-      if (COMPILER_SUPPORTS_PIC)
-        set(CXX_BACK ${CMAKE_CXX_FLAGS})
-        set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
-        # cmake inserts a semicolon, change it to a space.
-        string(REGEX REPLACE ";" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-        add_subdirectory(${SHADERC_SPIRV_CROSS_DIR} spirv-cross)
-        set(CMAKE_CXX_FLAGS ${CXX_BACK})
-      else()
-        add_subdirectory(${SHADERC_SPIRV_CROSS_DIR} spirv-cross)
+if (SHADERC_ENABLE_WGSL_OUTPUT)
+  # Use Google Tint for WGSL output.
+  if (NOT TARGET libtint)
+    if (IS_DIRECTORY ${SHADERC_TINT_DIR})
+      if (NOT IS_DIRECTORY ${SHADERC_TINT_DIR}/out/docs)
+        # The Tint Doxygen configuration assumes it can write to the out/docs
+        # source directory.
+        message(STATUS "Tint source directory out/docs does not exist. Disabling doc generation")
+        set(TINT_BUILD_DOCS OFF)
       endif()
-    endif()
-    if (NOT TARGET spirv-cross-core)
-      message(FATAL_ERROR "SPIRV-Cross was not found - required for compilation")
+      set(TINT_BUILD_SPV_READER ON CACHE BOOL "Built Tint SPIR-V reader" FORCE)
+      set(TINT_BUILD_WGSL_WRITER ON CACHE BOOL "Build Tint WGSL writer" FORCE)
+      add_subdirectory(${SHADERC_TINT_DIR} tint)
     endif()
   endif()
-endif (SHADERC_ENABLE_SPVC)
+  if (NOT TARGET libtint)
+    message(FATAL_ERROR "Tint was not found - required for WGSL output")
+  endif()
+endif (SHADERC_ENABLE_WGSL_OUTPUT)

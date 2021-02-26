@@ -492,6 +492,34 @@ bool ValidateES3TexImageParametersBase(const Context *context,
             }
             break;
 
+        case TextureType::CubeMapArray:
+            if (!isSubImage && width != height)
+            {
+                context->validationError(GL_INVALID_VALUE, kCubemapFacesEqualDimensions);
+                return false;
+            }
+
+            if (width > (caps.maxCubeMapTextureSize >> level))
+            {
+                context->validationError(GL_INVALID_VALUE, kResourceMaxTextureSize);
+                return false;
+            }
+
+            if (width > (caps.max3DTextureSize >> level) ||
+                height > (caps.max3DTextureSize >> level) ||
+                depth > (caps.max3DTextureSize >> level))
+            {
+                context->validationError(GL_INVALID_VALUE, kResourceMaxTextureSize);
+                return false;
+            }
+
+            if (!isSubImage && depth % 6 != 0)
+            {
+                context->validationError(GL_INVALID_VALUE, kCubemapInvalidDepth);
+                return false;
+            }
+            break;
+
         default:
             context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
             return false;
@@ -667,6 +695,50 @@ bool ValidateES3TexImageParametersBase(const Context *context,
         {
             context->validationError(GL_INVALID_OPERATION, kBufferMapped);
             return false;
+        }
+    }
+
+    if (context->getExtensions().webglCompatibility)
+    {
+        // Define:
+        //   DataStoreWidth  = (GL_UNPACK_ROW_LENGTH ? GL_UNPACK_ROW_LENGTH : width)
+        //   DataStoreHeight = (GL_UNPACK_IMAGE_HEIGHT ? GL_UNPACK_IMAGE_HEIGHT : height)
+        //
+        // WebGL 2.0 imposes the following additional constraints:
+        //
+        // 1) texImage2D and texSubImage2D generate INVALID_OPERATION if:
+        //      GL_UNPACK_SKIP_PIXELS + width > DataStoreWidth
+        //    except for texImage2D if no GL_PIXEL_UNPACK_BUFFER is
+        //    bound and _pixels_ is null.
+        //
+        // 2) texImage3D and texSubImage3D generate INVALID_OPERATION if:
+        //      GL_UNPACK_SKIP_PIXELS + width > DataStoreWidth
+        //      GL_UNPACK_SKIP_ROWS + height > DataStoreHeight
+        //    except for texImage3D if no GL_PIXEL_UNPACK_BUFFER is
+        //    bound and _pixels_ is null.
+        if (!pixelUnpackBuffer && !pixels && !isSubImage)
+        {
+            // Exception case for texImage2D or texImage3D, above.
+        }
+        else
+        {
+            const auto &unpack   = context->getState().getUnpackState();
+            GLint dataStoreWidth = unpack.rowLength ? unpack.rowLength : width;
+            if (unpack.skipPixels + width > dataStoreWidth)
+            {
+                context->validationError(GL_INVALID_OPERATION, kInvalidUnpackParametersForWebGL);
+                return false;
+            }
+            if (target == TextureTarget::_3D || target == TextureTarget::_2DArray)
+            {
+                GLint dataStoreHeight = unpack.imageHeight ? unpack.imageHeight : height;
+                if (unpack.skipRows + height > dataStoreHeight)
+                {
+                    context->validationError(GL_INVALID_OPERATION,
+                                             kInvalidUnpackParametersForWebGL);
+                    return false;
+                }
+            }
         }
     }
 
@@ -1207,6 +1279,35 @@ bool ValidateES3TexStorageParametersBase(const Context *context,
         }
         break;
 
+        case TextureType::CubeMapArray:
+        {
+            if (width != height)
+            {
+                context->validationError(GL_INVALID_VALUE, kCubemapFacesEqualDimensions);
+                return false;
+            }
+
+            if (width > caps.maxCubeMapTextureSize)
+            {
+                context->validationError(GL_INVALID_VALUE, kResourceMaxTextureSize);
+                return false;
+            }
+
+            if (width > caps.max3DTextureSize || height > caps.max3DTextureSize ||
+                depth > caps.max3DTextureSize)
+            {
+                context->validationError(GL_INVALID_VALUE, kResourceMaxTextureSize);
+                return false;
+            }
+
+            if (depth % 6 != 0)
+            {
+                context->validationError(GL_INVALID_VALUE, kCubemapInvalidDepth);
+                return false;
+            }
+        }
+        break;
+
         default:
             UNREACHABLE();
             return false;
@@ -1419,6 +1520,22 @@ bool ValidateFramebufferTextureLayer(const Context *context,
             }
             break;
 
+            case TextureType::CubeMapArray:
+            {
+                if (level > log2(caps.max3DTextureSize))
+                {
+                    context->validationError(GL_INVALID_VALUE, kFramebufferTextureInvalidMipLevel);
+                    return false;
+                }
+
+                if (layer >= caps.max3DTextureSize)
+                {
+                    context->validationError(GL_INVALID_VALUE, kFramebufferTextureInvalidLayer);
+                    return false;
+                }
+            }
+            break;
+
             default:
                 context->validationError(GL_INVALID_OPERATION,
                                          kFramebufferTextureLayerIncorrectTextureType);
@@ -1588,9 +1705,9 @@ bool ValidateReadBuffer(const Context *context, GLenum src)
     {
         GLuint drawBuffer = static_cast<GLuint>(src - GL_COLOR_ATTACHMENT0);
 
-        if (drawBuffer >= static_cast<GLuint>(context->getCaps().maxDrawBuffers))
+        if (drawBuffer >= static_cast<GLuint>(context->getCaps().maxColorAttachments))
         {
-            context->validationError(GL_INVALID_OPERATION, kExceedsMaxDrawBuffers);
+            context->validationError(GL_INVALID_OPERATION, kExceedsMaxColorAttachments);
             return false;
         }
     }
@@ -1812,6 +1929,25 @@ static bool ValidateBindBufferCommon(const Context *context,
             if (buffer.value != 0 && (offset % caps.shaderStorageBufferOffsetAlignment) != 0)
             {
                 context->validationError(GL_INVALID_VALUE, kShaderStorageBufferOffsetAlignment);
+                return false;
+            }
+            break;
+        }
+        case BufferBinding::Texture:
+        {
+            if (!context->getExtensions().textureBufferAny())
+            {
+                context->validationError(GL_INVALID_ENUM, kTextureBufferExtensionNotAvailable);
+                return false;
+            }
+            if (index != 0)
+            {
+                context->validationError(GL_INVALID_VALUE, kIndexExceedsMaxUniformBufferBindings);
+                return false;
+            }
+            if (buffer.value != 0 && (offset % caps.textureBufferOffsetAlignment) != 0)
+            {
+                context->validationError(GL_INVALID_VALUE, kTextureBufferOffsetAlignment);
                 return false;
             }
             break;
@@ -2690,6 +2826,11 @@ bool ValidateIndexedStateQuery(const Context *context, GLenum pname, GLuint inde
         case GL_BLEND_EQUATION_RGB:
         case GL_BLEND_EQUATION_ALPHA:
         case GL_COLOR_WRITEMASK:
+            if (!context->getExtensions().drawBuffersIndexedAny())
+            {
+                context->validationError(GL_INVALID_ENUM, kDrawBuffersIndexedExtensionNotAvailable);
+                return false;
+            }
             if (index >= static_cast<GLuint>(caps.maxDrawBuffers))
             {
                 context->validationError(GL_INVALID_VALUE, kIndexExceedsMaxDrawBuffer);
@@ -4526,9 +4667,12 @@ bool ValidateGetTexLevelParameterfvANGLE(const Context *context,
                                          GLenum pname,
                                          const GLfloat *params)
 {
-    if (!context->getExtensions().textureMultisample)
+    if (!context->getExtensions().textureMultisample &&
+        !context->getExtensions().getTexLevelParameterANGLE)
     {
-        context->validationError(GL_INVALID_OPERATION, kMultisampleTextureExtensionOrES31Required);
+        context->validationError(
+            GL_INVALID_OPERATION,
+            kMultisampleTextureExtensionOrGetTexLevelParameterExtensionOrES31Required);
         return false;
     }
 
@@ -4541,9 +4685,12 @@ bool ValidateGetTexLevelParameterivANGLE(const Context *context,
                                          GLenum pname,
                                          const GLint *params)
 {
-    if (!context->getExtensions().textureMultisample)
+    if (!context->getExtensions().textureMultisample &&
+        !context->getExtensions().getTexLevelParameterANGLE)
     {
-        context->validationError(GL_INVALID_OPERATION, kMultisampleTextureExtensionOrES31Required);
+        context->validationError(
+            GL_INVALID_OPERATION,
+            kMultisampleTextureExtensionOrGetTexLevelParameterExtensionOrES31Required);
         return false;
     }
 

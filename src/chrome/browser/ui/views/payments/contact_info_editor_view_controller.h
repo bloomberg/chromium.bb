@@ -26,9 +26,9 @@ class ContactInfoEditorViewController : public EditorViewController {
   // Passing nullptr as |profile| indicates that we are editing a new profile;
   // other arguments should never be null.
   ContactInfoEditorViewController(
-      PaymentRequestSpec* spec,
-      PaymentRequestState* state,
-      PaymentRequestDialogView* dialog,
+      base::WeakPtr<PaymentRequestSpec> spec,
+      base::WeakPtr<PaymentRequestState> state,
+      base::WeakPtr<PaymentRequestDialogView> dialog,
       BackNavigationType back_navigation_type,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
@@ -79,12 +79,12 @@ class ContactInfoEditorViewController : public EditorViewController {
     base::string16 Format(const base::string16& text) override;
     bool IsValidTextfield(views::Textfield* textfield,
                           base::string16* error_message) override;
-    bool IsValidCombobox(views::Combobox* combobox,
+    bool IsValidCombobox(ValidatingCombobox* combobox,
                          base::string16* error_message) override;
     bool TextfieldValueChanged(views::Textfield* textfield,
                                bool was_blurred) override;
-    bool ComboboxValueChanged(views::Combobox* combobox) override;
-    void ComboboxModelChanged(views::Combobox* combobox) override {}
+    bool ComboboxValueChanged(ValidatingCombobox* combobox) override;
+    void ComboboxModelChanged(ValidatingCombobox* combobox) override {}
 
    private:
     bool ValidateTextfield(views::Textfield* textfield,

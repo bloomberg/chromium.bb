@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 
+#import <MaterialComponents/MaterialPalettes.h>
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -13,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_articles_header_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
@@ -20,6 +24,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
@@ -27,8 +32,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -50,6 +53,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeMostVisited,
   ItemTypePromo,
   ItemTypeLearnMore,
+  ItemTypeDiscover,
   ItemTypeUnknown,
 };
 
@@ -62,6 +66,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierLogo,
   SectionIdentifierPromo,
   SectionIdentifierLearnMore,
+  SectionIdentifierDiscover,
   SectionIdentifierDefault,
 };
 
@@ -79,6 +84,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypePromo;
   if (type == ItemTypeLearnMore)
     return ContentSuggestionTypeLearnMore;
+  if (type == ItemTypeDiscover)
+    return ContentSuggestionTypeDiscover;
   // Add new type here
 
   // Default type.
@@ -98,7 +105,8 @@ ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
       return ItemTypePromo;
     case ContentSuggestionsSectionLearnMore:
       return ItemTypeLearnMore;
-
+    case ContentSuggestionsSectionDiscover:
+      return ItemTypeDiscover;
     case ContentSuggestionsSectionLogo:
     case ContentSuggestionsSectionUnknown:
       return ItemTypeUnknown;
@@ -121,7 +129,8 @@ SectionIdentifier SectionIdentifierForInfo(
       return SectionIdentifierPromo;
     case ContentSuggestionsSectionLearnMore:
       return SectionIdentifierLearnMore;
-
+    case ContentSuggestionsSectionDiscover:
+      return SectionIdentifierDiscover;
     case ContentSuggestionsSectionUnknown:
       return SectionIdentifierDefault;
   }
@@ -150,6 +159,10 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 // All SectionIdentifier from ContentSuggestions.
 @property(nonatomic, strong)
     NSMutableSet<NSNumber*>* sectionIdentifiersFromContentSuggestions;
+// Discover feed header to prevent it from being recreated each time view is
+// reloaded.
+@property(nonatomic, strong)
+    ContentSuggestionsDiscoverHeaderItem* discoverFeedHeader;
 
 @end
 
@@ -190,6 +203,15 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 
   if (self.collectionViewController)
     [self reloadAllData];
+}
+
+- (ContentSuggestionsDiscoverHeaderItem*)discoverFeedHeader {
+  if (!_discoverFeedHeader) {
+    _discoverFeedHeader = [[ContentSuggestionsDiscoverHeaderItem alloc]
+               initWithType:ItemTypeHeader
+        discoverFeedVisible:self.discoverFeedVisible];
+  }
+  return _discoverFeedHeader;
 }
 
 #pragma mark - ContentSuggestionsDataSink
@@ -497,7 +519,9 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
     if ([model hasSectionForSectionIdentifier:sectionIdentifier] ||
         (!sectionInfo.showIfEmpty &&
-         [self.dataSource itemsForSectionInfo:sectionInfo].count == 0)) {
+         [self.dataSource itemsForSectionInfo:sectionInfo].count == 0) ||
+        (IsFromContentSuggestionsService(sectionIdentifier) &&
+         IsDiscoverFeedEnabled())) {
       continue;
     }
 
@@ -561,6 +585,11 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
              sectionIdentifierForSection:section] == SectionIdentifierLogo;
 }
 
+- (BOOL)isDiscoverSection:(NSInteger)section {
+  return [self.collectionViewController.collectionViewModel
+             sectionIdentifierForSection:section] == SectionIdentifierDiscover;
+}
+
 - (BOOL)isPromoSection:(NSInteger)section {
   return [self.collectionViewController.collectionViewModel
              sectionIdentifierForSection:section] == SectionIdentifierPromo;
@@ -570,6 +599,10 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return IsFromContentSuggestionsService(
       [self.collectionViewController.collectionViewModel
           sectionIdentifierForSection:section]);
+}
+
+- (BOOL)isDiscoverItem:(NSInteger)itemType {
+  return itemType == ItemTypeDiscover;
 }
 
 - (void)dismissItem:(CSCollectionViewItem*)item {
@@ -619,6 +652,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
 
+  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+  if ([self isDiscoverSection:section]) {
+    [model setHeader:[self headerForSectionInfo:sectionInfo]
+        forSectionWithIdentifier:sectionIdentifier];
+    return;
+  }
+
   if (![model headerForSectionWithIdentifier:sectionIdentifier] &&
       sectionInfo.title) {
     DCHECK(IsFromContentSuggestionsService(sectionIdentifier));
@@ -636,6 +676,10 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 // Returns the header for this |sectionInfo|.
 - (CollectionViewItem*)headerForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
+  if (SectionIdentifierForInfo(sectionInfo) == SectionIdentifierDiscover) {
+    self.discoverFeedHeader.title = sectionInfo.title;
+    return self.discoverFeedHeader;
+  }
   DCHECK(SectionIdentifierForInfo(sectionInfo) == SectionIdentifierArticles);
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   ContentSuggestionsArticlesHeaderItem* header =
@@ -794,6 +838,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
+}
+
+#pragma mark - DiscoverFeedHeaderChanging
+
+- (void)changeDiscoverFeedHeaderVisibility:(BOOL)visible {
+  self.discoverFeedVisible = visible;
+  self.discoverFeedHeader.discoverFeedVisible = visible;
 }
 
 @end

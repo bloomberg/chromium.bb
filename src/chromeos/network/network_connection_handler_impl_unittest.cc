@@ -12,16 +12,19 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_observer.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -32,6 +35,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -94,38 +98,34 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
     return last_delegate_function_type_;
   }
 
-  void ConnectToNetwork(
-      const std::string& service_path,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) override {
+  void ConnectToNetwork(const std::string& service_path,
+                        base::OnceClosure success_callback,
+                        StringErrorCallback error_callback) override {
     last_delegate_function_type_ = DelegateFunctionType::CONNECT;
     last_service_path_ = service_path;
     last_success_callback_ = std::move(success_callback);
-    last_error_callback_ = error_callback;
+    last_error_callback_ = std::move(error_callback);
   }
 
-  void DisconnectFromNetwork(
-      const std::string& service_path,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) override {
+  void DisconnectFromNetwork(const std::string& service_path,
+                             base::OnceClosure success_callback,
+                             StringErrorCallback error_callback) override {
     last_delegate_function_type_ = DelegateFunctionType::DISCONNECT;
     last_service_path_ = service_path;
     last_success_callback_ = std::move(success_callback);
-    last_error_callback_ = error_callback;
+    last_error_callback_ = std::move(error_callback);
   }
 
   std::string& last_service_path() { return last_service_path_; }
 
   base::OnceClosure& last_success_callback() { return last_success_callback_; }
 
-  network_handler::StringResultCallback& last_error_callback() {
-    return last_error_callback_;
-  }
+  StringErrorCallback& last_error_callback() { return last_error_callback_; }
 
  private:
   std::string last_service_path_;
   base::OnceClosure last_success_callback_;
-  network_handler::StringResultCallback last_error_callback_;
+  StringErrorCallback last_error_callback_;
   DelegateFunctionType last_delegate_function_type_;
 };
 
@@ -205,8 +205,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         service_path,
         base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
                        base::Unretained(this)),
-        base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerImplTest::ErrorCallback,
+                       base::Unretained(this)),
         true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
     task_environment_.RunUntilIdle();
   }
@@ -216,8 +216,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         service_path,
         base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
                        base::Unretained(this)),
-        base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&NetworkConnectionHandlerImplTest::ErrorCallback,
+                       base::Unretained(this)));
     task_environment_.RunUntilIdle();
   }
 
@@ -273,15 +273,13 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   void SetupPolicy(const std::string& network_configs_json,
                    const base::DictionaryValue& global_config,
                    bool user_policy) {
-    std::string error;
-    std::unique_ptr<base::Value> network_configs_value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-            &error);
-    ASSERT_TRUE(network_configs_value) << error;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
     base::ListValue* network_configs = nullptr;
-    ASSERT_TRUE(network_configs_value->GetAsList(&network_configs));
+    ASSERT_TRUE(parsed_json.value->GetAsList(&network_configs));
 
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
@@ -392,16 +390,16 @@ TEST_F(NetworkConnectionHandlerImplTest,
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
-       NetworkConnectionHandlerConnectBlockedByBlacklist) {
+       NetworkConnectionHandlerConnectBlockedBySSID) {
   std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
   ASSERT_FALSE(wifi0_service_path.empty());
 
   // Set a device policy which blocks wifi0.
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::Value::ListStorage blocked;
+  blocked.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
   base::DictionaryValue global_config;
-  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
-                       base::Value(blacklist));
+  global_config.SetKey(::onc::global_network_config::kBlockedHexSSIDs,
+                       base::Value(blocked));
   SetupPolicy("[]", global_config, false /* load as device policy */);
   SetupPolicy("[]", base::DictionaryValue(), true /* load as user policy */);
 
@@ -411,7 +409,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
             GetResultAndReset());
 
-  // Set a user policy, which configures wifi0 (==whitelisted).
+  // Set a user policy, which configures wifi0 (==allowed).
   SetupPolicy(kPolicyWifi0, base::DictionaryValue(),
               true /* load as user policy */);
   Connect(wifi0_service_path);
@@ -585,12 +583,41 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectToTetherNetwork_Failure) {
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::CONNECT,
             fake_tether_delegate()->last_delegate_function_type());
   EXPECT_EQ(kTetherGuid, fake_tether_delegate()->last_service_path());
-  fake_tether_delegate()->last_error_callback().Run(
-      NetworkConnectionHandler::kErrorConnectFailed);
+  std::move(fake_tether_delegate()->last_error_callback())
+      .Run(NetworkConnectionHandler::kErrorConnectFailed);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer()->GetRequested(kTetherGuid));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed,
             network_connection_observer()->GetResult(kTetherGuid));
+}
+
+TEST_F(NetworkConnectionHandlerImplTest,
+       ConnectToVpnNetworkWhenProhibited_Failure) {
+  // This test tests a code that accesses NetworkHandler::Get() directly (when
+  // checking if VPN is disabled by policy when attempting to connect to a VPN
+  // network), so NetworkStateTestHelper can not be used here. That's because
+  // NetworkStateTestHelper initializes a NetworkStateHandler for testing, but
+  // NetworkHandler::Initialize() constructs its own NetworkStateHandler
+  // instance and NetworkHandler::Get() uses it.
+  NetworkHandler::Initialize();
+  NetworkHandler::Get()
+      ->prohibited_technologies_handler()
+      ->AddGloballyProhibitedTechnology(shill::kTypeVPN);
+
+  const std::string kVpnGuid = "vpn_guid";
+  const std::string kShillJsonStringTemplate =
+      R"({"GUID": "$1", "Type": "vpn", "State": "idle",
+            "Provider": {"Type": "l2tpipsec", "Host": "host"}})";
+
+  const std::string shill_json_string =
+      base::ReplaceStringPlaceholders(kShillJsonStringTemplate, {kVpnGuid},
+                                      /*offsets=*/nullptr);
+  const std::string vpn_service_path = ConfigureService(shill_json_string);
+  ASSERT_FALSE(vpn_service_path.empty());
+
+  Connect(/*service_path=*/vpn_service_path);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
+            GetResultAndReset());
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
@@ -652,8 +679,8 @@ TEST_F(NetworkConnectionHandlerImplTest, DisconnectFromTetherNetwork_Failure) {
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::DISCONNECT,
             fake_tether_delegate()->last_delegate_function_type());
   EXPECT_EQ(kTetherGuid, fake_tether_delegate()->last_service_path());
-  fake_tether_delegate()->last_error_callback().Run(
-      NetworkConnectionHandler::kErrorConnectFailed);
+  std::move(fake_tether_delegate()->last_error_callback())
+      .Run(NetworkConnectionHandler::kErrorConnectFailed);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer()->GetRequested(kTetherGuid));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed,

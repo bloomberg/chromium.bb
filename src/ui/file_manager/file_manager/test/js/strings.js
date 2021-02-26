@@ -3,26 +3,30 @@
 // found in the LICENSE file.
 
 // loadTimeData contains localized content.  It is populated with
-// file_manager_strings.grpd and chromeos_strings.grdp during build.
+// file_manager_strings.grdp and chromeos_strings.grdp during build.
 
 loadTimeData.data = $GRDP;
 
 // Extend with additional fields not found in grdp files.
 loadTimeData.overrideValues({
+  'COPY_IMAGE_ENABLED': false,
   'CROSTINI_ENABLED': true,
-  'FILES_NG_ENABLED': false,
-  'FEEDBACK_PANEL_ENABLED': false,
-  'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +
-      '/goodies.html?utm_source=filesapp&utm_medium=banner&utm_campaign=gsg',
+  'FILES_CAMERA_FOLDER_ENABLED': false,
+  'FILES_NG_ENABLED': true,
+  'FILES_SINGLE_PARTITION_FORMAT_ENABLED': false,
+  'FILES_TRANSFER_DETAILS_ENABLED': true,
+  'FILES_TRASH_ENABLED': true,
+  'FILTERS_IN_RECENTS_ENABLED': false,
   'GOOGLE_DRIVE_OVERVIEW_URL':
       'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
   'ARC_USB_STORAGE_UI_ENABLED': true,
   'PLUGIN_VM_ENABLED': true,
+  'UNIFIED_MEDIA_VIEW_ENABLED': false,
   'UI_LOCALE': 'en_US',
-  'ZIP_NO_NACL': false,
-  'language': 'en-US',
-  'textdirection': 'ltr',
+  'ZIP_MOUNT': false,
+  'ZIP_PACK': false,
+  'ZIP_UNPACK': false,
 });
 
 // Overwrite LoadTimeData.prototype.data setter as nop.

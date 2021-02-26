@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -39,7 +38,6 @@ class TreeView;
 // content settings tab helper.
 class CollectedCookiesViews
     : public views::DialogDelegateView,
-      public views::ButtonListener,
       public views::TabbedPaneListener,
       public views::TreeViewController,
       public content::WebContentsUserData<CollectedCookiesViews> {
@@ -51,13 +49,9 @@ class CollectedCookiesViews
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
@@ -74,8 +68,9 @@ class CollectedCookiesViews
 
   explicit CollectedCookiesViews(content::WebContents* web_contents);
 
-  std::unique_ptr<views::View> CreateAllowedPane();
+  void OnDialogClosed();
 
+  std::unique_ptr<views::View> CreateAllowedPane();
   std::unique_ptr<views::View> CreateBlockedPane();
 
   // Creates and returns the "buttons pane", which is the view in the

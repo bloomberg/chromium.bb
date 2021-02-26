@@ -1,0 +1,211 @@
+{% macro generateMethodAnnotation(method) %}
+  /**
+{%-   for param in method.parameters %}
+   * @param { {{param.kind|param_type_in_js_module}} } {{param.name|sanitize_identifier}}
+{%-   endfor -%}
+{%-   if method.response_parameters != None %}
+{%-     if method.response_parameters|length == 0 %}
+   * @return {!Promise}
+{%-     else %}
+   * @return {!Promise<{
+{%-       for response_parameter in method.response_parameters %}
+        {{response_parameter.name}}: {{response_parameter.kind|param_type_in_js_module}},
+{%-       endfor %}
+   *  }>}
+{%-     endif %}
+{%-   endif %}
+   */
+{% endmacro %}
+
+/**
+ * @implements {mojo.internal.interfaceSupport.PendingReceiver}
+ */
+export const {{interface.name}}PendingReceiver = class {
+  /** @param {!MojoHandle} handle */
+  constructor(handle) {
+    /** @public {!MojoHandle} */
+    this.handle = handle;
+  }
+};
+
+/** @interface */
+export const {{interface.name}}Interface = class {
+{%-  for method in interface.methods %}
+  {{generateMethodAnnotation(method)}}
+  {{method.name}}(
+{%-   for param in method.parameters -%}
+{{param.name|sanitize_identifier}}{% if not loop.last %}, {% endif %}
+{%-   endfor -%}
+) {}
+{%- endfor %}
+};
+
+/**
+ * @implements { {{interface.name}}Interface }
+ */
+export const {{interface.name}}Remote = class {
+  /** @param {MojoHandle=} opt_handle */
+  constructor(opt_handle) {
+    /**
+     * @private {!mojo.internal.interfaceSupport.InterfaceRemoteBase<!{{interface.name}}PendingReceiver>}
+     */
+    this.proxy =
+        new mojo.internal.interfaceSupport.InterfaceRemoteBase(
+          {{interface.name}}PendingReceiver,
+          opt_handle);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper<!{{interface.name}}PendingReceiver>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper(this.proxy);
+
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.proxy.getConnectionErrorEventRouter();
+  }
+
+{%- for method in interface.methods -%}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+
+  {{generateMethodAnnotation(method)}}
+  {{method.name}}(
+{%- for param in method.parameters %}
+      {{param.name}}{%- if not loop.last %},{% endif %}
+{%- endfor -%}) {
+{%- if method.response_parameters != None %}
+    return this.proxy.sendMessage(
+{%- else %}
+    this.proxy.sendMessage(
+{%- endif %}
+        {{method.ordinal}},
+        {{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{interface_message_id}}_ResponseParamsSpec.$,
+{%-   else %}
+        null,
+{%-   endif %}
+        [
+{%- for param in method.parameters %}
+          {{param.name}}{%- if not loop.last %},{% endif %}
+{%- endfor %}
+        ]);
+  }
+{%-  endfor %}
+};
+
+/**
+ * An object which receives request messages for the {{interface.name}}
+ * mojom interface. Must be constructed over an object which implements that
+ * interface.
+ */
+export const {{interface.name}}Receiver = class {
+  /**
+   * @param {!{{interface.name}}Interface } impl
+   */
+  constructor(impl) {
+    /** @private {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<!{{interface.name}}Remote>} */
+    this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
+        {{interface.name}}Remote);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{interface.name}}Remote>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
+
+{%  for method in interface.methods %}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+    this.helper_internal_.registerHandler(
+        {{method.ordinal}},
+        {{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{interface_message_id}}_ResponseParamsSpec.$,
+{%-   else %}
+        null,
+{%-   endif %}
+        impl.{{method.name}}.bind(impl));
+{%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.helper_internal_.getConnectionErrorEventRouter();
+  }
+};
+
+export const {{interface.name}} = class {
+  /**
+   * @return {!string}
+   */
+  static get $interfaceName() {
+    return "{{mojom_namespace}}.{{interface.name}}";
+  }
+
+  /**
+   * Returns a remote for this interface which sends messages to the browser.
+   * The browser must have an interface request binder registered for this
+   * interface and accessible to the calling document's frame.
+   *
+   * @return {!{{interface.name}}Remote}
+   */
+  static getRemote() {
+    let remote = new {{interface.name}}Remote;
+    Mojo.bindInterface("{{mojom_namespace}}.{{interface.name}}",
+                       remote.$.bindNewPipeAndPassReceiver().handle);
+    return remote;
+  }
+};
+
+{#--- Enums #}
+{% from "lite/enum_definition_for_module.tmpl" import enum_def with context %}
+{%- for enum in interface.enums %}
+{{enum_def(enum)}}
+{%-  endfor %}
+
+/**
+ * An object which receives request messages for the {{interface.name}}
+ * mojom interface and dispatches them as callbacks. One callback receiver exists
+ * on this object for each message defined in the mojom interface, and each
+ * receiver can have any number of listeners added to it.
+ */
+export const {{interface.name}}CallbackRouter = class {
+  constructor() {
+    this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
+      {{interface.name}}Remote);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{interface.name}}Remote>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
+
+    this.router_ = new mojo.internal.interfaceSupport.CallbackRouter;
+{%  for method in interface.methods %}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceCallbackReceiver}
+     */
+    this.{{method.name}} =
+        new mojo.internal.interfaceSupport.InterfaceCallbackReceiver(
+            this.router_);
+
+    this.helper_internal_.registerHandler(
+        {{method.ordinal}},
+        {{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{interface_message_id}}_ResponseParamsSpec.$,
+        this.{{method.name}}.createReceiverHandler(true /* expectsResponse */));
+{%-   else %}
+        null,
+        this.{{method.name}}.createReceiverHandler(false /* expectsResponse */));
+{%-   endif %}
+{%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.helper_internal_.getConnectionErrorEventRouter();
+  }
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   */
+  removeListener(id) {
+    return this.router_.removeListener(id);
+  }
+};

@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -18,11 +18,12 @@
 #include "content/browser/bluetooth/bluetooth_blocklist.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
+#include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -157,38 +158,6 @@ bool MatchesFilters(
   return false;
 }
 
-std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
-    const base::Optional<
-        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
-  // There isn't much support for GATT over BR/EDR from neither platforms nor
-  // devices so performing a Dual scan will find devices that the API is not
-  // able to interact with. To avoid wasting power and confusing users with
-  // devices they are not able to interact with, we only perform an LE Scan.
-  auto discovery_filter = std::make_unique<device::BluetoothDiscoveryFilter>(
-      device::BLUETOOTH_TRANSPORT_LE);
-
-  if (filters) {
-    for (const auto& filter : filters.value()) {
-      device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
-      bool useful_filter = false;
-      if (filter->services) {
-        device_filter.uuids =
-            base::flat_set<device::BluetoothUUID>(filter->services.value());
-        useful_filter = true;
-      }
-      if (filter->name) {
-        device_filter.name = filter->name.value();
-        useful_filter = true;
-      }
-      if (useful_filter) {
-        discovery_filter->AddDeviceFilter(device_filter);
-      }
-    }
-  }
-
-  return discovery_filter;
-}
-
 void StopDiscoverySession(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   // Nothing goes wrong if the discovery session fails to stop, and we don't
@@ -197,25 +166,25 @@ void StopDiscoverySession(
   discovery_session->Stop();
 }
 
-UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {
+UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooserEvent event) {
   switch (event) {
-    case BluetoothChooser::Event::DENIED_PERMISSION:
+    case BluetoothChooserEvent::DENIED_PERMISSION:
       return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_DENIED_PERMISSION;
-    case BluetoothChooser::Event::CANCELLED:
+    case BluetoothChooserEvent::CANCELLED:
       return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_CANCELLED;
-    case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
+    case BluetoothChooserEvent::SHOW_OVERVIEW_HELP:
       return UMARequestDeviceOutcome::BLUETOOTH_OVERVIEW_HELP_LINK_PRESSED;
-    case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
+    case BluetoothChooserEvent::SHOW_ADAPTER_OFF_HELP:
       return UMARequestDeviceOutcome::ADAPTER_OFF_HELP_LINK_PRESSED;
-    case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
+    case BluetoothChooserEvent::SHOW_NEED_LOCATION_HELP:
       return UMARequestDeviceOutcome::NEED_LOCATION_HELP_LINK_PRESSED;
-    case BluetoothChooser::Event::SELECTED:
+    case BluetoothChooserEvent::SELECTED:
       // We can't know if we are going to send a success message yet because
       // the device could have vanished. This event should be histogramed
       // manually after checking if the device is still around.
       NOTREACHED();
       return UMARequestDeviceOutcome::SUCCESS;
-    case BluetoothChooser::Event::RESCAN:
+    case BluetoothChooserEvent::RESCAN:
       return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_RESCAN;
   }
   NOTREACHED();
@@ -323,7 +292,7 @@ void BluetoothDeviceChooserController::GetDevice(
       &BluetoothDeviceChooserController::OnBluetoothChooserEvent,
       base::Unretained(this));
 
-  if (WebContentsDelegate* delegate = web_contents_->GetDelegate()) {
+  if (auto* delegate = GetContentClient()->browser()->GetBluetoothDelegate()) {
     chooser_ = delegate->RunBluetoothChooser(render_frame_host_,
                                              std::move(chooser_event_handler));
   }
@@ -335,7 +304,7 @@ void BluetoothDeviceChooserController::GetDevice(
 
   if (!chooser_->CanAskForScanningPermission()) {
     DVLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
-    OnBluetoothChooserEvent(BluetoothChooser::Event::DENIED_PERMISSION,
+    OnBluetoothChooserEvent(BluetoothChooserEvent::DENIED_PERMISSION,
                             "" /* device_address */);
     return;
   }
@@ -385,7 +354,7 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
         powered ? BluetoothChooser::AdapterPresence::POWERED_ON
                 : BluetoothChooser::AdapterPresence::POWERED_OFF);
     if (powered) {
-      OnBluetoothChooserEvent(BluetoothChooser::Event::RESCAN,
+      OnBluetoothChooserEvent(BluetoothChooserEvent::RESCAN,
                               "" /* device_address */);
     }
   }
@@ -495,14 +464,14 @@ void BluetoothDeviceChooserController::OnStartDiscoverySessionFailed() {
 }
 
 void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
-    BluetoothChooser::Event event,
+    BluetoothChooserEvent event,
     const std::string& device_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Shouldn't recieve an event from a closed chooser.
   DCHECK(chooser_);
 
   switch (event) {
-    case BluetoothChooser::Event::RESCAN:
+    case BluetoothChooserEvent::RESCAN:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       device_ids_.clear();
       PopulateConnectedDevices();
@@ -510,31 +479,31 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
       StartDeviceDiscovery();
       // No need to close the chooser so we return.
       return;
-    case BluetoothChooser::Event::DENIED_PERMISSION:
+    case BluetoothChooserEvent::DENIED_PERMISSION:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(
           WebBluetoothResult::CHOOSER_NOT_SHOWN_USER_DENIED_PERMISSION_TO_SCAN);
       break;
-    case BluetoothChooser::Event::CANCELLED:
+    case BluetoothChooserEvent::CANCELLED:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(WebBluetoothResult::CHOOSER_CANCELLED);
       break;
-    case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
+    case BluetoothChooserEvent::SHOW_OVERVIEW_HELP:
       DVLOG(1) << "Overview Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(WebBluetoothResult::CHOOSER_CANCELLED);
       break;
-    case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
+    case BluetoothChooserEvent::SHOW_ADAPTER_OFF_HELP:
       DVLOG(1) << "Adapter Off Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(WebBluetoothResult::CHOOSER_CANCELLED);
       break;
-    case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
+    case BluetoothChooserEvent::SHOW_NEED_LOCATION_HELP:
       DVLOG(1) << "Need Location Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(WebBluetoothResult::CHOOSER_CANCELLED);
       break;
-    case BluetoothChooser::Event::SELECTED:
+    case BluetoothChooserEvent::SELECTED:
       RecordNumOfDevices(options_->accept_all_devices, device_ids_.size());
       // RecordRequestDeviceOutcome is called in the callback, because the
       // device may have vanished.
@@ -566,6 +535,47 @@ void BluetoothDeviceChooserController::PostErrorCallback(
           FROM_HERE, base::BindOnce(std::move(error_callback_), error))) {
     DLOG(WARNING) << "No TaskRunner.";
   }
+}
+
+// static
+std::unique_ptr<device::BluetoothDiscoveryFilter>
+BluetoothDeviceChooserController::ComputeScanFilter(
+    const base::Optional<
+        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
+  // There isn't much support for GATT over BR/EDR from neither platforms nor
+  // devices so performing a Dual scan will find devices that the API is not
+  // able to interact with. To avoid wasting power and confusing users with
+  // devices they are not able to interact with, we only perform an LE Scan.
+  auto discovery_filter = std::make_unique<device::BluetoothDiscoveryFilter>(
+      device::BLUETOOTH_TRANSPORT_LE);
+
+  if (filters) {
+    for (const auto& filter : filters.value()) {
+      device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+      // Keep track of whether this filter can be converted accurately.
+      bool has_supported_fields = false;
+      if (filter->services) {
+        device_filter.uuids =
+            base::flat_set<device::BluetoothUUID>(filter->services.value());
+        has_supported_fields = true;
+      }
+      if (filter->name) {
+        device_filter.name = filter->name.value();
+        has_supported_fields = true;
+      }
+
+      // If we don't have any supported fields in this filter then we cannot
+      // filter any devices as we don't want to filter out devices which would
+      // have passed these unsupported filter criteria.
+      if (!has_supported_fields) {
+        discovery_filter->ClearDeviceFilters();
+        return discovery_filter;
+      }
+      discovery_filter->AddDeviceFilter(device_filter);
+    }
+  }
+
+  return discovery_filter;
 }
 
 }  // namespace content

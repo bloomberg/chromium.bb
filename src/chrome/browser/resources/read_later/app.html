@@ -1,0 +1,76 @@
+<style include="mwb-shared-style">
+  #top-container {
+    display: flex;
+  }
+
+  #header {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+    font-size: 15px;
+    height: var(--mwb-item-height);
+    margin: 0;
+    padding-inline-start: var(--mwb-list-item-horizontal-margin);
+  }
+
+  cr-icon-button {
+    border-radius: 50%;
+    margin-inline-end: 4px;
+    margin-top: 4px;
+    --cr-icon-button-fill-color: var(--google-grey-refresh-700);
+    --cr-icon-button-icon-size: var(--mwb-icon-size);
+    --cr-icon-button-size: 24px;
+  }
+
+  cr-icon-button:hover {
+    background-color: rgba(var(--google-grey-900-rgb), .1);
+  }
+
+  #read-later-list {
+    max-height: 444px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .mwb-list-item:focus-within {
+    background-color: var(--mwb-list-item-hover-background-color);
+  }
+
+  .mwb-list-item:active {
+    background-color: var(--mwb-list-item-selected-background-color);
+  }
+
+  .sub-heading {
+    align-items: center;
+    border-bottom: 1px solid #dbdbdb;
+    color: var(--cr-secondary-text-color);
+    display: flex;
+    font-size: 11px;
+    height: 24px;
+    margin-inline-start: var(--mwb-list-item-horizontal-margin);
+    margin-top: 4px;
+  }
+</style>
+
+<div id="top-container">
+  <div id="header">$i18n{title}</div>
+  <cr-icon-button id="closeButton" aria-label="$i18n{tooltipClose}"
+      disable-ripple iron-icon="cr:close" on-click="onCloseClick_"
+      title="$i18n{tooltipClose}">
+  </cr-icon-button>
+</div>
+<div id="read-later-list">
+  <iron-selector id="selector" on-keydown="onItemKeyDown_"
+      attr-for-selected="data-url" selectable="read-later-item">
+    <div class="sub-heading">$i18n{unreadHeader}</div>
+    <template id="ureadItemsList" is="dom-repeat" items="[[unreadItems_]]">
+      <read-later-item data-url$="[[item.url.url]]" on-focus="onItemFocus_"
+          class="mwb-list-item" data="[[item]]" tabindex="0"></read-later-item>
+    </template>
+    <div class="sub-heading">$i18n{readHeader}</div>
+    <template id="readItemsList" is="dom-repeat" items="[[readItems_]]">
+      <read-later-item data-url$="[[item.url.url]]" on-focus="onItemFocus_"
+          class="mwb-list-item" data="[[item]]" tabindex="0"></read-later-item>
+    </template>
+  </iron-selector>
+</div>

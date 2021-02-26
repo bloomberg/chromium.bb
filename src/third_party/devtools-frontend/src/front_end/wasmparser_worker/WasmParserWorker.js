@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2020 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,109 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as WasmDis from '../third_party/wasmparser/package/dist/esm/WasmDis.js';
+import * as WasmParser from '../third_party/wasmparser/package/dist/esm/WasmParser.js';
+
 /**
- * @param {string} mimeType
- * @return {function(string, function(string, ?string, number, number):(!Object|undefined))}
+ * @param {!{data: !{method:string, params: !{content: string}}}} event
  */
-
-import * as WasmDis from '../third_party/wasmparser/WasmDis.js';
-import * as WasmParser from '../third_party/wasmparser/WasmParser.js';
-
-self.onmessage = async function(event) {
-  const method = /** @type {string} */ (event.data.method);
-  const params = /** @type !{content: string} */ (event.data.params);
-  if (!method || method !== 'disassemble') {
+self.onmessage = function(event) {
+  const method = (event.data.method);
+  const params = (event.data.params);
+  if (method !== 'disassemble') {
     return;
   }
 
-  const response = await fetch(`data:application/wasm;base64,${params.content}`);
-  const buffer = await response.arrayBuffer();
-  const data = new Uint8Array(buffer);
+  try {
+    const dataBuffer = Common.Base64.decode(params.content);
 
-  const parser = new WasmParser.BinaryReader();
-  parser.setData(data, 0, data.length);
-  const nameGenerator = new WasmDis.DevToolsNameGenerator();
-  nameGenerator.read(parser);
-  const dis = new WasmDis.WasmDisassembler();
-  dis.nameResolver = nameGenerator.getNameResolver();
-  dis.addOffsets = true;
-  dis.maxLines = 1000000;
-  parser.setData(data, 0, data.length);
-  dis.disassembleChunk(parser);
-  const result = dis.getResult();
-  this.postMessage({
-    source: result.lines.join('\n'),
-    offsets: result.offsets,
-    functionBodyOffsets: result.functionBodyOffsets,
-  });
+    let parser = new WasmParser.BinaryReader();
+    parser.setData(dataBuffer, 0, dataBuffer.byteLength);
+    const nameGenerator = new WasmDis.DevToolsNameGenerator();
+    nameGenerator.read(parser);
+
+    const data = new Uint8Array(dataBuffer);
+    parser = new WasmParser.BinaryReader();
+    const dis = new WasmDis.WasmDisassembler();
+    dis.addOffsets = true;
+    dis.exportMetadata = nameGenerator.getExportMetadata();
+    dis.nameResolver = nameGenerator.getNameResolver();
+    const lines = [];
+    const offsets = [];
+    const functionBodyOffsets = [];
+    const MAX_LINES = 1000 * 1000;
+    let chunkSize = 128 * 1024;
+    let buffer = new Uint8Array(chunkSize);
+    let pendingSize = 0;
+    let offsetInModule = 0;
+    for (let i = 0; i < data.length;) {
+      if (chunkSize > data.length - i) {
+        chunkSize = data.length - i;
+      }
+      const bufferSize = pendingSize + chunkSize;
+      if (buffer.byteLength < bufferSize) {
+        const newBuffer = new Uint8Array(bufferSize);
+        newBuffer.set(buffer);
+        buffer = newBuffer;
+      }
+      while (pendingSize < bufferSize) {
+        buffer[pendingSize++] = data[i++];
+      }
+      parser.setData(buffer.buffer, 0, bufferSize, i === data.length);
+
+      // The disassemble will attemp to fetch the data as much as possible.
+      const finished = dis.disassembleChunk(parser, offsetInModule);
+
+      const result =
+          /** @type {!{lines: !Array<string>, offsets: !Array<number>, functionBodyOffsets: !Array<!{start:number, end:number}>}} */
+          (dis.getResult());
+      for (const line of result.lines) {
+        lines.push(line);
+      }
+      for (const offset of result.offsets) {
+        offsets.push(offset);
+      }
+      for (const functionBodyOffset of result.functionBodyOffsets) {
+        functionBodyOffsets.push(functionBodyOffset);
+      }
+
+      if (lines.length > MAX_LINES) {
+        lines[MAX_LINES] = ';; .... text is truncated due to size';
+        lines.splice(MAX_LINES + 1);
+        if (offsets) {
+          offsets.splice(MAX_LINES + 1);
+        }
+        break;
+      }
+      if (finished) {
+        break;
+      }
+
+      if (parser.position === 0) {
+        // Parser did not consume anything, needs more data.
+        pendingSize = bufferSize;
+        continue;
+      }
+
+      // Shift the data to the beginning of the buffer.
+      const pending = parser.data.subarray(parser.position, parser.length);
+      pendingSize = pending.length;
+      buffer.set(pending);
+      offsetInModule += parser.position;
+
+      const percentage = Math.floor((offsetInModule / data.length) * 100);
+      this.postMessage({event: 'progress', params: {percentage}});
+    }
+
+    this.postMessage({event: 'progress', params: {percentage: 99}});
+
+    const source = lines.join('\n');
+
+    this.postMessage({event: 'progress', params: {percentage: 100}});
+
+    this.postMessage({method: 'disassemble', result: {source, offsets, functionBodyOffsets}});
+  } catch (error) {
+    this.postMessage({method: 'disassemble', error});
+  }
 };
-
-/* Legacy exported object */
-self.WasmParserWorker = self.WasmParserWorker || {};
-
-/* Legacy exported object */
-WasmParserWorker = WasmParserWorker || {};

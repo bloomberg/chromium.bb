@@ -8,10 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "media/base/video_codecs.h"
+#include "third_party/blink/renderer/platform/peerconnection/gpu_codec_support_waiter.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
+#include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 
 namespace media {
 class GpuVideoAcceleratorFactories;
@@ -31,11 +30,13 @@ class RTCVideoEncoderFactory : public webrtc::VideoEncoderFactory {
   std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
       const webrtc::SdpVideoFormat& format) override;
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
-  webrtc::VideoEncoderFactory::CodecInfo QueryVideoEncoder(
-      const webrtc::SdpVideoFormat& format) const override;
 
  private:
+  void CheckAndWaitEncoderSupportStatusIfNeeded() const;
+
   media::GpuVideoAcceleratorFactories* gpu_factories_;
+
+  GpuCodecSupportWaiter gpu_codec_support_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoderFactory);
 };

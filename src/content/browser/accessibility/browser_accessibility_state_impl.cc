@@ -11,7 +11,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -89,8 +88,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 
   // Other things must be done on the UI thread (e.g. to access PrefService).
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread,
                      this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
@@ -158,11 +157,12 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {
   UpdateHistogramsOnOtherThread();
 }
 
+void BrowserAccessibilityStateImpl::SetCaretBrowsingState(bool enabled) {
+  caret_browsing_enabled_ = enabled;
+}
+
 bool BrowserAccessibilityStateImpl::IsCaretBrowsingEnabled() const {
-  // TODO(crbug.com/1018947): Refine this check once UX provided to toggle caret
-  // browsing mode.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCaretBrowsing);
+  return caret_browsing_enabled_;
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
@@ -178,8 +178,9 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
 #if defined(OS_WIN)
   UMA_HISTOGRAM_ENUMERATION(
       "Accessibility.WinHighContrastTheme",
-      ui::NativeTheme::GetInstanceForNativeUi()->GetHighContrastColorScheme(),
-      ui::NativeTheme::HighContrastColorScheme::kMaxValue);
+      ui::NativeTheme::GetInstanceForNativeUi()
+          ->GetPlatformHighContrastColorScheme(),
+      ui::NativeTheme::PlatformHighContrastColorScheme::kMaxValue);
 #endif
 }
 
@@ -199,7 +200,7 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() {
   return accessibility_mode_;
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MAC)
 void BrowserAccessibilityStateImpl::PlatformInitialize() {}
 
 void BrowserAccessibilityStateImpl::

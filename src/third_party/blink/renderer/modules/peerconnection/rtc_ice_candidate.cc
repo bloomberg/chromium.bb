@@ -49,7 +49,7 @@ RTCIceCandidate* RTCIceCandidate::Create(
     const RTCIceCandidateInit* candidate_init,
     ExceptionState& exception_state) {
   if (candidate_init->sdpMid().IsNull() &&
-      !candidate_init->hasSdpMLineIndex()) {
+      !candidate_init->hasSdpMLineIndexNonNull()) {
     exception_state.ThrowTypeError("sdpMid and sdpMLineIndex are both null.");
     return nullptr;
   }
@@ -57,8 +57,8 @@ RTCIceCandidate* RTCIceCandidate::Create(
   String sdp_mid = candidate_init->sdpMid();
 
   base::Optional<uint16_t> sdp_m_line_index;
-  if (candidate_init->hasSdpMLineIndex()) {
-    sdp_m_line_index = candidate_init->sdpMLineIndex();
+  if (candidate_init->hasSdpMLineIndexNonNull()) {
+    sdp_m_line_index = candidate_init->sdpMLineIndexNonNull();
   } else {
     UseCounter::Count(context,
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
@@ -94,7 +94,7 @@ RTCIceCandidatePlatform* RTCIceCandidate::PlatformCandidate() const {
   return platform_candidate_;
 }
 
-void RTCIceCandidate::Trace(Visitor* visitor) {
+void RTCIceCandidate::Trace(Visitor* visitor) const {
   visitor->Trace(platform_candidate_);
   ScriptWrappable::Trace(visitor);
 }
@@ -127,7 +127,7 @@ String RTCIceCandidate::type() const {
   return platform_candidate_->Type();
 }
 
-String RTCIceCandidate::tcpType() const {
+base::Optional<String> RTCIceCandidate::tcpType() const {
   return platform_candidate_->TcpType();
 }
 

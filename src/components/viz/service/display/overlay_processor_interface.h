@@ -6,11 +6,13 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_INTERFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
+#include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
@@ -21,7 +23,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -30,6 +32,7 @@ class DisplayResourceProvider;
 }
 
 namespace viz {
+struct DebugRendererSettings;
 class OutputSurface;
 class RendererSettings;
 
@@ -40,7 +43,7 @@ class RendererSettings;
 // for overlay processing that each platform needs to implement.
 class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;
@@ -50,7 +53,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 #endif
 
   using FilterOperationsMap =
-      base::flat_map<RenderPassId, cc::FilterOperations*>;
+      base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>;
 
   virtual bool DisableSplittingQuads() const;
 
@@ -58,8 +61,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   static void RecordOverlayDamageRectHistograms(
       bool is_overlay,
       bool has_occluding_surface_damage,
-      bool zero_damage_rect,
-      bool occluding_damage_equal_to_damage_rect);
+      bool zero_damage_rect);
 
   // Data needed to represent |OutputSurface| as an overlay plane. Due to the
   // default values for the primary plane, this is a partial list of
@@ -96,32 +98,37 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       const gpu::Mailbox& mailbox);
 
   static std::unique_ptr<OverlayProcessorInterface> CreateOverlayProcessor(
+      OutputSurface* output_surface,
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
+      DisplayCompositorMemoryAndTaskController* display_controller,
+      gpu::SharedImageInterface* shared_image_interface,
       const RendererSettings& renderer_settings,
-      gpu::SharedImageManager* shared_image_manager,
-      gpu::MemoryTracker* memory_tracker,
-      scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
-      gpu::SharedImageInterface* shared_image_interface);
+      const DebugRendererSettings* debug_settings);
 
-  virtual ~OverlayProcessorInterface() {}
+  virtual ~OverlayProcessorInterface() = default;
 
   virtual bool IsOverlaySupported() const = 0;
+  // Returns a bounding rectangle of the last set of overlay planes scheduled.
+  // It's expected to be called after ProcessForOverlays at frame N-1 has been
+  // called and before GetAndResetOverlayDamage at frame N.
+  virtual gfx::Rect GetPreviousFrameOverlaysBoundingRect() const = 0;
   virtual gfx::Rect GetAndResetOverlayDamage() = 0;
 
   // Returns true if the platform supports hw overlays and surface occluding
   // damage rect needs to be computed since it will be used by overlay
   // processor.
-  virtual bool NeedsSurfaceOccludingDamageRect() const = 0;
+  virtual bool NeedsSurfaceDamageRectList() const = 0;
 
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
   virtual void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
-      RenderPassList* render_passes,
+      AggregatedRenderPassList* render_passes,
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
+      SurfaceDamageRectList* surface_damage_rect_list,
       OutputSurfaceOverlayPlane* output_surface_plane,
       CandidateList* overlay_candidates,
       gfx::Rect* damage_rect,
@@ -153,7 +160,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // approximate signale for when the overlays are presented.
   virtual void OverlayPresentationComplete();
 
-  // These two functions are used by Android SurfaceControl.
+  // These two functions are used by Android SurfaceControl, and SetViewportSize
+  // is also used for Windows DC layers.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}
   virtual void SetViewportSize(const gfx::Size& size) {}
 

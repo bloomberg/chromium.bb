@@ -10,6 +10,7 @@ import "attestation_ca.proto";
 import "keystore.proto";
 
 package attestation;
+option go_package = "attestation_proto";
 
 enum AttestationStatus {
   STATUS_SUCCESS = 0;
@@ -21,6 +22,9 @@ enum AttestationStatus {
   STATUS_REQUEST_DENIED_BY_CA = 6;
   STATUS_CA_NOT_AVAILABLE = 7;
   STATUS_NOT_SUPPORTED = 8;
+  // The error that is translated into by the client to indicate any kind of
+  // D-Bus error.
+  STATUS_DBUS_ERROR = 9;
 }
 
 enum ACAType {
@@ -311,6 +315,8 @@ message FinishCertificateRequestReply {
   // first followed by intermediate CA certificate(s).
   // The PCA root certificate is not included.
   optional bytes certificate = 2;
+  // The public key (X.509/DER SubjectPublicKeyInfo).
+  optional bytes public_key = 3;
 }
 
 // Goes through the entire cert process, including creating cert, sending the
@@ -347,6 +353,8 @@ message GetCertificateReply {
   // first followed by intermediate CA certificate(s).
   // The PCA root certificate is not included.
   optional bytes certificate = 2;
+  // The public key (X.509/DER SubjectPublicKeyInfo).
+  optional bytes public_key = 3;
 }
 
 // Sign a challenge for an enterprise device / user.  This challenge is

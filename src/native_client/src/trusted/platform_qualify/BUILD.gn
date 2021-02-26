@@ -46,7 +46,7 @@ static_library("platform_qual_lib") {
     sources += [ "osx/nacl_os_qualify.c" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "linux/nacl_os_qualify.c" ]
   }
 

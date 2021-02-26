@@ -67,14 +67,17 @@ class ReputationService : public KeyedService {
   // will be called regardless of whether |url| is flagged or
   // not. (Specifically, |callback| will be called with SafetyTipStatus::kNone
   // if the url is not flagged).
-  void GetReputationStatus(const GURL& url, ReputationCheckCallback callback);
+  void GetReputationStatus(const GURL& url,
+                           content::WebContents* web_contents,
+                           ReputationCheckCallback callback);
 
-  // Tells the service that the user has explicitly ignored the warning, and
-  // records a histogram.
-  // Exposed in subsequent results from GetReputationStatus.
-  void SetUserIgnore(content::WebContents* web_contents,
-                     const GURL& url,
-                     SafetyTipInteraction interaction);
+  // Returns whether the user has dismissed a similar warning, and thus no
+  // warning should be shown for the provided url.
+  bool IsIgnored(const GURL& url) const;
+
+  // Tells the service that the user has explicitly ignored the warning (thus
+  // adding to the profile-wide allowlist)..
+  void SetUserIgnore(const GURL& url);
 
   // Tells the service that the user has the UI disabled, and thus the warning
   // should be ignored.  This ensures that subsequent loads of the page are not
@@ -88,15 +91,13 @@ class ReputationService : public KeyedService {
                                       size_t num_new_keywords);
 
  private:
-  // Returns whether the warning should be shown on the given URL. This is
-  // mostly just a helper function to ensure that we always query the allowlist
-  // by origin.
-  bool IsIgnored(const GURL& url) const;
-
   // Callback once we have up-to-date |engaged_sites|. Performs checks on the
-  // navigated |url|. Displays the warning when needed.
+  // navigated |url|. |has_delayed_warning| is true if the relevant WebContents
+  // is currently delaying a Safe Browsing warning (an experiment described in
+  // https://crbug.com/1057157). Displays the Safety Tip warning when needed.
   void GetReputationStatusWithEngagedSites(
       const GURL& url,
+      bool has_delayed_warning,
       ReputationCheckCallback callback,
       const std::vector<DomainInfo>& engaged_sites);
 

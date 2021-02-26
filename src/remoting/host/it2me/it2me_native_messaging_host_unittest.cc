@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -117,16 +118,17 @@ class MockIt2MeHost : public It2MeHost {
   void Connect(std::unique_ptr<ChromotingHostContext> context,
                std::unique_ptr<base::DictionaryValue> policies,
                std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-               std::unique_ptr<RegisterSupportHostRequest> register_request,
-               std::unique_ptr<LogToServer> log_to_server,
                base::WeakPtr<It2MeHost::Observer> observer,
-               std::unique_ptr<SignalStrategy> signal_strategy,
+               CreateDeferredConnectContext create_connection_context,
                const std::string& username,
                const protocol::IceConfig& ice_config) override;
   void Disconnect() override;
 
  private:
   ~MockIt2MeHost() override = default;
+
+  void CreateConnectionContextOnNetworkThread(
+      CreateDeferredConnectContext create_connection_context);
 
   void RunSetState(It2MeHostState state);
 
@@ -137,10 +139,8 @@ void MockIt2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-    std::unique_ptr<RegisterSupportHostRequest> register_request,
-    std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
+    CreateDeferredConnectContext create_connection_context,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
@@ -151,8 +151,11 @@ void MockIt2MeHost::Connect(
 
   host_context_ = std::move(context);
   observer_ = std::move(observer);
-  signal_strategy_ = std::move(signal_strategy);
-  register_request_ = std::move(register_request);
+
+  host_context()->network_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MockIt2MeHost::CreateConnectionContextOnNetworkThread,
+                     this, std::move(create_connection_context)));
 
   OnPolicyUpdate(std::move(policies));
 
@@ -182,7 +185,20 @@ void MockIt2MeHost::Disconnect() {
     return;
   }
 
+  log_to_server_.reset();
+  register_request_.reset();
+  signal_strategy_.reset();
+
   RunSetState(kDisconnected);
+}
+
+void MockIt2MeHost::CreateConnectionContextOnNetworkThread(
+    CreateDeferredConnectContext create_connection_context) {
+  DCHECK(host_context()->network_task_runner()->BelongsToCurrentThread());
+  auto context = std::move(create_connection_context).Run(host_context());
+  log_to_server_ = std::move(context->log_to_server);
+  register_request_ = std::move(context->register_request);
+  signal_strategy_ = std::move(context->signal_strategy);
 }
 
 void MockIt2MeHost::RunSetState(It2MeHostState state) {
@@ -253,7 +269,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   base::File input_write_file_;
   base::File output_read_file_;
 
-  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   std::unique_ptr<base::RunLoop> test_run_loop_;
 
   std::unique_ptr<base::Thread> host_thread_;
@@ -273,9 +289,8 @@ class It2MeNativeMessagingHostTest : public testing::Test {
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
-  task_environment_ =
-      std::make_unique<base::test::SingleThreadTaskEnvironment>();
-  test_run_loop_.reset(new base::RunLoop());
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>();
+  test_run_loop_ = std::make_unique<base::RunLoop>();
 
   // Run the host on a dedicated thread.
   host_thread_.reset(new base::Thread("host_thread"));
@@ -556,11 +571,11 @@ void It2MeNativeMessagingHostTest::StartHost() {
       new It2MeNativeMessagingHost(
           /*needs_elevation=*/false, std::move(policy_watcher),
           std::move(context), std::move(factory)));
-  it2me_host->SetPolicyErrorClosureForTesting(
-      base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                 task_environment_->GetMainThreadTaskRunner(), FROM_HERE,
-                 base::Bind(&It2MeNativeMessagingHostTest::ExitPolicyRunLoop,
-                            base::Unretained(this))));
+  it2me_host->SetPolicyErrorClosureForTesting(base::BindOnce(
+      base::IgnoreResult(&base::TaskRunner::PostTask),
+      task_environment_->GetMainThreadTaskRunner(), FROM_HERE,
+      base::BindOnce(&It2MeNativeMessagingHostTest::ExitPolicyRunLoop,
+                     base::Unretained(this))));
   it2me_host->Start(pipe_.get());
 
   pipe_->Start(std::move(it2me_host), std::move(channel));

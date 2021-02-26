@@ -10,15 +10,22 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 
+using drmModeModeInfo = struct _drmModeModeInfo;
+
 namespace display {
-class DisplayMode;
 struct GammaRampRGBEntry;
+}  // namespace display
+
+namespace gfx {
+class ColorSpace;
 }
 
 namespace ui {
@@ -45,21 +52,24 @@ class DrmGpuDisplayManager {
   bool TakeDisplayControl();
   void RelinquishDisplayControl();
 
-  bool ConfigureDisplay(int64_t id,
-                        const display::DisplayMode& display_mode,
-                        const gfx::Point& origin);
-  bool DisableDisplay(int64_t id);
-  bool GetHDCPState(int64_t display_id, display::HDCPState* state);
-  bool SetHDCPState(int64_t display_id, display::HDCPState state);
+  base::flat_map<int64_t, bool> ConfigureDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests);
+  bool GetHDCPState(int64_t display_id,
+                    display::HDCPState* state,
+                    display::ContentProtectionMethod* protection_method);
+  bool SetHDCPState(int64_t display_id,
+                    display::HDCPState state,
+                    display::ContentProtectionMethod protection_method);
   void SetColorMatrix(int64_t display_id,
                       const std::vector<float>& color_matrix);
-  void SetBackgroundColor(int64_t display_id,
-                          const uint64_t background_color);
+  void SetBackgroundColor(int64_t display_id, const uint64_t background_color);
   void SetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
   void SetPrivacyScreen(int64_t display_id, bool enabled);
+
+  void SetColorSpace(int64_t crtc_id, const gfx::ColorSpace& color_space);
 
  private:
   DrmDisplay* FindDisplay(int64_t display_id);

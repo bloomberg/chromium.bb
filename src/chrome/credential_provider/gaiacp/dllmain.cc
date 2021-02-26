@@ -33,7 +33,6 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_module.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
@@ -67,6 +66,9 @@ STDAPI DllCanUnloadNow(void) {
 
 // Returns a class factory to create an object of the requested type.
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
+  // This is performed in here to avoid from doing substantial work in DLLMain.
+  _AtlModule.LogProcessDetails();
+
   // Check to see if the credential provider has crashed too much recently.
   // If it has then do not allow it to create any credential providers.
   if (!credential_provider::WriteToStartupSentinel()) {
@@ -78,11 +80,14 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 
   HRESULT hr = _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 
-  // Start refreshing token handle validity as soon as possible so that when
-  // their validity is requested later on by the credential providers they may
-  // already be available and no wait is needed.
-  if (SUCCEEDED(hr))
+  if (SUCCEEDED(hr)) {
+    // Start refreshing token handle validity as soon as possible so that when
+    // their validity is requested later on by the credential providers they may
+    // already be available and no wait is needed.
     _AtlModule.RefreshTokenHandleValidity();
+
+    _AtlModule.CheckGCPWExtension();
+  }
 
   return hr;
 }

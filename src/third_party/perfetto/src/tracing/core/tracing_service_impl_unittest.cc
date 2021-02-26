@@ -62,6 +62,7 @@ using ::testing::Not;
 using ::testing::Property;
 using ::testing::StrictMock;
 using ::testing::StringMatchResultListener;
+using ::testing::StrNe;
 
 namespace perfetto {
 
@@ -157,9 +158,9 @@ class TracingServiceImplTest : public testing::Test {
   }
 
   void WaitForNextSyncMarker() {
-    tracing_session()->last_snapshot_time = base::TimeMillis(0);
+    tracing_session()->should_emit_sync_marker = true;
     static int attempt = 0;
-    while (tracing_session()->last_snapshot_time == base::TimeMillis(0)) {
+    while (tracing_session()->should_emit_sync_marker) {
       auto checkpoint_name = "wait_snapshot_" + std::to_string(attempt++);
       auto timer_expired = task_runner.CreateCheckpoint(checkpoint_name);
       task_runner.PostDelayedTask([timer_expired] { timer_expired(); }, 1);
@@ -706,16 +707,18 @@ TEST_F(TracingServiceImplTest, StartTracingTriggerMultipleTraces) {
   auto checkpoint_name = "on_tracing_disabled_consumer_1_and_2";
   auto on_tracing_disabled = task_runner.CreateCheckpoint(checkpoint_name);
   std::atomic<size_t> counter(0);
-  EXPECT_CALL(*consumer_1, OnTracingDisabled()).WillOnce(Invoke([&]() {
-    if (++counter == 2u) {
-      on_tracing_disabled();
-    }
-  }));
-  EXPECT_CALL(*consumer_2, OnTracingDisabled()).WillOnce(Invoke([&]() {
-    if (++counter == 2u) {
-      on_tracing_disabled();
-    }
-  }));
+  EXPECT_CALL(*consumer_1, OnTracingDisabled(_))
+      .WillOnce(InvokeWithoutArgs([&]() {
+        if (++counter == 2u) {
+          on_tracing_disabled();
+        }
+      }));
+  EXPECT_CALL(*consumer_2, OnTracingDisabled(_))
+      .WillOnce(InvokeWithoutArgs([&]() {
+        if (++counter == 2u) {
+          on_tracing_disabled();
+        }
+      }));
 
   EXPECT_CALL(*producer, StopDataSource(id1));
   EXPECT_CALL(*producer, StopDataSource(id2));
@@ -1389,12 +1392,14 @@ TEST_F(TracingServiceImplTest, WriteIntoFileAndStopOnMaxSize) {
 
   // The preamble packets are:
   // Trace start clock snapshot
+  // Trace most recent clock snapshot
+  // Trace synchronisation
   // Config
   // SystemInfo
-  // Trace read clock snapshot
-  // Trace synchronisation
+  // Tracing started (TracingServiceEvent)
   // All data source started (TracingServiceEvent)
-  static const int kNumPreamblePackets = 6;
+  // Tracing disabled (TracingServiceEvent)
+  static const int kNumPreamblePackets = 8;
   static const int kNumTestPackets = 9;
   static const char kPayload[] = "1234567890abcdef-";
 
@@ -2773,9 +2778,9 @@ TEST_F(TracingServiceImplTest, AbortIfTraceDurationIsTooLong) {
   EXPECT_CALL(*producer, SetupDataSource(_, _)).Times(0);
   consumer->EnableTracing(trace_config);
 
-  // The trace is aborted immediately, 5s here is just some slack for the thread
-  // ping-pongs for slow devices.
-  consumer->WaitForTracingDisabled(5000);
+  // The trace is aborted immediately, the default timeout here is just some
+  // slack for the thread ping-pongs for slow devices.
+  consumer->WaitForTracingDisabled();
 }
 
 TEST_F(TracingServiceImplTest, GetTraceStats) {
@@ -3140,6 +3145,121 @@ TEST_F(TracingServiceImplTest, ObserveAllDataSourceStartedNoAck) {
   }
 }
 
+TEST_F(TracingServiceImplTest, LifecycleEventSmoke) {
+  using TracingServiceEvent = protos::gen::TracingServiceEvent;
+  using TracingServiceEventFnPtr = bool (TracingServiceEvent::*)() const;
+  auto has_lifecycle_field = [](TracingServiceEventFnPtr ptr) {
+    return Contains(Property(&protos::gen::TracePacket::service_event,
+                             Property(ptr, Eq(true))));
+  };
+  std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
+  consumer->Connect(svc.get());
+
+  std::unique_ptr<MockProducer> producer = CreateMockProducer();
+  producer->Connect(svc.get(), "mock_producer");
+  producer->RegisterDataSource("data_source");
+
+  TraceConfig trace_config;
+  trace_config.add_buffers()->set_size_kb(128);
+  trace_config.add_data_sources()->mutable_config()->set_name("data_source");
+
+  consumer->EnableTracing(trace_config);
+
+  producer->WaitForTracingSetup();
+  producer->WaitForDataSourceSetup("data_source");
+  producer->WaitForDataSourceStart("data_source");
+  task_runner.RunUntilIdle();
+
+  auto packets = consumer->ReadBuffers();
+  EXPECT_THAT(packets,
+              has_lifecycle_field(&TracingServiceEvent::tracing_started));
+  EXPECT_THAT(packets, has_lifecycle_field(
+                           &TracingServiceEvent::all_data_sources_started));
+  EXPECT_THAT(packets,
+              has_lifecycle_field(
+                  &TracingServiceEvent::read_tracing_buffers_completed));
+
+  std::unique_ptr<TraceWriter> writer =
+      producer->CreateTraceWriter("data_source");
+  {
+    auto tp = writer->NewTracePacket();
+    tp->set_for_testing()->set_str("payload");
+  }
+
+  auto flush_request = consumer->Flush();
+  producer->WaitForFlush(writer.get());
+  ASSERT_TRUE(flush_request.WaitForReply());
+
+  packets = consumer->ReadBuffers();
+  EXPECT_THAT(packets, has_lifecycle_field(
+                           &TracingServiceEvent::all_data_sources_flushed));
+  EXPECT_THAT(packets,
+              has_lifecycle_field(
+                  &TracingServiceEvent::read_tracing_buffers_completed));
+
+  consumer->DisableTracing();
+  producer->WaitForDataSourceStop("data_source");
+  consumer->WaitForTracingDisabled();
+
+  packets = consumer->ReadBuffers();
+  EXPECT_THAT(packets,
+              has_lifecycle_field(&TracingServiceEvent::tracing_disabled));
+  EXPECT_THAT(packets,
+              has_lifecycle_field(
+                  &TracingServiceEvent::read_tracing_buffers_completed));
+}
+
+TEST_F(TracingServiceImplTest, LifecycleMultipleFlushEventsQueued) {
+  std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
+  consumer->Connect(svc.get());
+
+  std::unique_ptr<MockProducer> producer = CreateMockProducer();
+  producer->Connect(svc.get(), "mock_producer");
+  producer->RegisterDataSource("data_source");
+
+  TraceConfig trace_config;
+  trace_config.add_buffers()->set_size_kb(128);
+  trace_config.add_data_sources()->mutable_config()->set_name("data_source");
+
+  consumer->EnableTracing(trace_config);
+
+  producer->WaitForTracingSetup();
+  producer->WaitForDataSourceSetup("data_source");
+  producer->WaitForDataSourceStart("data_source");
+  task_runner.RunUntilIdle();
+
+  std::unique_ptr<TraceWriter> writer =
+      producer->CreateTraceWriter("data_source");
+  {
+    auto tp = writer->NewTracePacket();
+    tp->set_for_testing()->set_str("payload");
+  }
+
+  auto flush_request = consumer->Flush();
+  producer->WaitForFlush(writer.get());
+  ASSERT_TRUE(flush_request.WaitForReply());
+
+  {
+    auto tp = writer->NewTracePacket();
+    tp->set_for_testing()->set_str("payload");
+  }
+
+  flush_request = consumer->Flush();
+  producer->WaitForFlush(writer.get());
+  ASSERT_TRUE(flush_request.WaitForReply());
+
+  auto packets = consumer->ReadBuffers();
+  uint32_t count = 0;
+  for (const auto& packet : packets) {
+    count += packet.service_event().all_data_sources_flushed();
+  }
+  ASSERT_EQ(count, 2u);
+
+  consumer->DisableTracing();
+  producer->WaitForDataSourceStop("data_source");
+  consumer->WaitForTracingDisabled();
+}
+
 TEST_F(TracingServiceImplTest, QueryServiceState) {
   std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
   consumer->Connect(svc.get());
@@ -3209,14 +3329,15 @@ TEST_F(TracingServiceImplTest, LimitSessionsPerUid) {
 
   // Create a bunch of legit sessions (2 uids * 5 sessions).
   for (int i = 0; i < kMaxConcurrentTracingSessionsPerUid * kUids; i++) {
-    start_new_session(/*uid=*/i % kUids);
+    start_new_session(/*uid=*/static_cast<uid_t>(i) % kUids);
   }
 
   // Any other session now should fail for the two uids.
   for (int i = 0; i <= kUids; i++) {
-    auto* consumer = start_new_session(/*uid=*/i % kUids);
+    auto* consumer = start_new_session(/*uid=*/static_cast<uid_t>(i) % kUids);
     auto on_fail = task_runner.CreateCheckpoint("uid_" + std::to_string(i));
-    EXPECT_CALL(*consumer, OnTracingDisabled()).WillOnce(Invoke(on_fail));
+    EXPECT_CALL(*consumer, OnTracingDisabled(StrNe("")))
+        .WillOnce(InvokeWithoutArgs(on_fail));
   }
 
   // Wait for failure (only after both attempts).

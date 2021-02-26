@@ -24,6 +24,7 @@
 #include "av1/common/common.h"
 #include "av1/common/resize.h"
 
+#include "config/aom_dsp_rtcd.h"
 #include "config/aom_scale_rtcd.h"
 
 // Filters for interpolation (0.5-band) - note this also filters integer pels.
@@ -1188,9 +1189,48 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
-void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                 YV12_BUFFER_CONFIG *dst, int bd,
-                                 const int num_planes) {
+void av1_resize_and_extend_frame_c(const YV12_BUFFER_CONFIG *src,
+                                   YV12_BUFFER_CONFIG *dst,
+                                   const InterpFilter filter,
+                                   const int phase_scaler,
+                                   const int num_planes) {
+  const int src_w = src->y_crop_width;
+  const int src_h = src->y_crop_height;
+  const uint8_t *const srcs[3] = { src->y_buffer, src->u_buffer,
+                                   src->v_buffer };
+  const int src_strides[3] = { src->y_stride, src->uv_stride, src->uv_stride };
+  uint8_t *const dsts[3] = { dst->y_buffer, dst->u_buffer, dst->v_buffer };
+  const int dst_strides[3] = { dst->y_stride, dst->uv_stride, dst->uv_stride };
+  assert(filter == BILINEAR || filter == EIGHTTAP_SMOOTH ||
+         filter == EIGHTTAP_REGULAR);
+  const InterpKernel *const kernel =
+      filter == BILINEAR ? av1_bilinear_filters : av1_sub_pel_filters_8smooth;
+  const int dst_w = dst->y_crop_width;
+  const int dst_h = dst->y_crop_height;
+  for (int i = 0; i < AOMMIN(num_planes, MAX_MB_PLANE); ++i) {
+    const int factor = (i == 0 || i == 3 ? 1 : 2);
+    const int src_stride = src_strides[i];
+    const int dst_stride = dst_strides[i];
+    for (int y = 0; y < dst_h; y += 16) {
+      const int y_q4 = y * (16 / factor) * src_h / dst_h + phase_scaler;
+      for (int x = 0; x < dst_w; x += 16) {
+        const int x_q4 = x * (16 / factor) * src_w / dst_w + phase_scaler;
+        const uint8_t *src_ptr = srcs[i] +
+                                 (y / factor) * src_h / dst_h * src_stride +
+                                 (x / factor) * src_w / dst_w;
+        uint8_t *dst_ptr = dsts[i] + (y / factor) * dst_stride + (x / factor);
+
+        aom_scaled_2d(src_ptr, src_stride, dst_ptr, dst_stride, kernel,
+                      x_q4 & 0xf, 16 * src_w / dst_w, y_q4 & 0xf,
+                      16 * src_h / dst_h, 16 / factor, 16 / factor);
+      }
+    }
+  }
+}
+
+void av1_resize_and_extend_frame_nonnormative(const YV12_BUFFER_CONFIG *src,
+                                              YV12_BUFFER_CONFIG *dst, int bd,
+                                              const int num_planes) {
   // TODO(dkovalev): replace YV12_BUFFER_CONFIG with aom_image_t
 
   // We use AOMMIN(num_planes, MAX_MB_PLANE) instead of num_planes to quiet
@@ -1298,14 +1338,36 @@ void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
   aom_extend_frame_borders(dst, num_planes);
 }
 
-YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
-                                          YV12_BUFFER_CONFIG *unscaled,
-                                          YV12_BUFFER_CONFIG *scaled) {
-  const int num_planes = av1_num_planes(cm);
-  if (cm->width != unscaled->y_crop_width ||
-      cm->height != unscaled->y_crop_height) {
-    av1_resize_and_extend_frame(unscaled, scaled, (int)cm->seq_params.bit_depth,
-                                num_planes);
+YV12_BUFFER_CONFIG *av1_scale_if_required(
+    AV1_COMMON *cm, YV12_BUFFER_CONFIG *unscaled, YV12_BUFFER_CONFIG *scaled,
+    const InterpFilter filter, const int phase, const bool use_optimized_scaler,
+    const bool for_psnr) {
+  // If scaling is performed for the sole purpose of calculating PSNR, then our
+  // target dimensions are superres upscaled width/height. Otherwise our target
+  // dimensions are coded width/height.
+  const bool scaling_required =
+      for_psnr ? (cm->superres_upscaled_width != unscaled->y_crop_width ||
+                  cm->superres_upscaled_height != unscaled->y_crop_height)
+               : (cm->width != unscaled->y_crop_width ||
+                  cm->height != unscaled->y_crop_height);
+
+  if (scaling_required) {
+    const int num_planes = av1_num_planes(cm);
+#if CONFIG_AV1_HIGHBITDEPTH
+    if (use_optimized_scaler && cm->seq_params.bit_depth == AOM_BITS_8) {
+      av1_resize_and_extend_frame(unscaled, scaled, filter, phase, num_planes);
+    } else {
+      av1_resize_and_extend_frame_nonnormative(
+          unscaled, scaled, (int)cm->seq_params.bit_depth, num_planes);
+    }
+#else
+    if (use_optimized_scaler) {
+      av1_resize_and_extend_frame(unscaled, scaled, filter, phase, num_planes);
+    } else {
+      av1_resize_and_extend_frame_nonnormative(
+          unscaled, scaled, (int)cm->seq_params.bit_depth, num_planes);
+    }
+#endif
     return scaled;
   } else {
     return unscaled;

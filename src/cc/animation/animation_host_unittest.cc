@@ -332,9 +332,11 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 
   // Create scroll timeline that links scroll animation and worklet animation
   // together. Use timerange so that we have 1:1 time & scroll mapping.
-  auto scroll_timeline =
-      ScrollTimeline::Create(element_id, ScrollTimeline::ScrollDown,
-                             base::nullopt, base::nullopt, 100);
+  std::vector<double> scroll_offsets;
+  scroll_offsets.push_back(0);
+  scroll_offsets.push_back(100);
+  auto scroll_timeline = ScrollTimeline::Create(
+      element_id, ScrollTimeline::ScrollDown, scroll_offsets, 100);
 
   // Create a worklet animation that is bound to the scroll timeline.
   scoped_refptr<WorkletAnimation> worklet_animation(
@@ -363,6 +365,9 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 }
 
 TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   PropertyTrees property_trees;
   property_trees.is_main_thread = false;
   property_trees.is_active = true;
@@ -370,15 +375,18 @@ TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
 
   // Create scroll timeline that links scroll animation and scroll-linked
   // animation together.
+  std::vector<double> scroll_offsets;
+  scroll_offsets.push_back(0);
+  scroll_offsets.push_back(100);
   auto scroll_timeline = ScrollTimeline::Create(
-      element_id_, ScrollTimeline::ScrollDown, 0, 100, 1000);
+      element_id_, ScrollTimeline::ScrollDown, scroll_offsets, 1000);
 
   int animation_id = 11;
   // Create an animation that is bound to the scroll timeline.
   scoped_refptr<Animation> animation = Animation::Create(animation_id);
   host_impl_->AddAnimationTimeline(scroll_timeline);
   scroll_timeline->AttachAnimation(animation);
-  animation->AddToTicking();
+
   ASSERT_TRUE(animation->IsScrollLinkedAnimation());
 
   animation->AttachElement(element_id_);
@@ -393,7 +401,7 @@ TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
   EXPECT_TRUE(host_impl_->TickAnimations(base::TimeTicks(),
                                          property_trees.scroll_tree, false));
 
-  EXPECT_EQ(keyframe_model->run_state(), KeyframeModel::PAUSED);
+  EXPECT_EQ(keyframe_model->run_state(), KeyframeModel::STARTING);
   double tick_time = (scroll_timeline->CurrentTime(scroll_tree, false).value() -
                       base::TimeTicks())
                          .InSecondsF();
@@ -402,6 +410,23 @@ TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
   scroll_timeline->DetachAnimation(animation);
   EXPECT_FALSE(host_impl_->TickAnimations(base::TimeTicks(),
                                           property_trees.scroll_tree, false));
+}
+
+TEST_F(AnimationHostTest, PushPropertiesToImpl) {
+  std::unique_ptr<AnimationHost> host(
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN));
+  std::unique_ptr<AnimationHost> host_impl(
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL));
+
+  host->SetHasCanvasInvalidation(true);
+  host->SetHasInlineStyleMutation(true);
+
+  EXPECT_FALSE(host_impl->HasCanvasInvalidation());
+  EXPECT_FALSE(host_impl->HasJSAnimation());
+
+  host->PushPropertiesTo(host_impl.get());
+  EXPECT_TRUE(host_impl->HasCanvasInvalidation());
+  EXPECT_TRUE(host_impl->HasJSAnimation());
 }
 
 TEST_F(AnimationHostTest, ScrollTimelineOffsetUpdatedByScrollAnimation) {
@@ -428,8 +453,12 @@ TEST_F(AnimationHostTest, ScrollTimelineOffsetUpdatedByScrollAnimation) {
   timeline_->AttachAnimation(mock_scroll_animation);
   host_impl_->AddToTicking(mock_scroll_animation);
 
+  std::vector<double> scroll_offsets;
+  scroll_offsets.push_back(0);
+  scroll_offsets.push_back(100);
+
   auto scroll_timeline = ScrollTimeline::Create(
-      element_id_, ScrollTimeline::ScrollDown, 0, 100, 1000);
+      element_id_, ScrollTimeline::ScrollDown, scroll_offsets, 1000);
 
   host_impl_->TickAnimations(base::TimeTicks(), property_trees.scroll_tree,
                              false);

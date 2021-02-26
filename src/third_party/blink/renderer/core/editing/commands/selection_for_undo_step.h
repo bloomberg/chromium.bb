@@ -54,7 +54,7 @@ class SelectionForUndoStep final {
 
   bool IsValidFor(const Document&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // |base_| and |extent_| can be disconnected from document.
@@ -73,6 +73,8 @@ class SelectionForUndoStep::Builder final {
 
  public:
   Builder();
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
 
   const SelectionForUndoStep& Build() const { return selection_; }
 
@@ -84,12 +86,10 @@ class SelectionForUndoStep::Builder final {
   Builder& SetBaseAndExtentAsForwardSelection(const Position& base,
                                               const Position& extent);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   SelectionForUndoStep selection_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 VisibleSelection CreateVisibleSelection(const SelectionForUndoStep&);

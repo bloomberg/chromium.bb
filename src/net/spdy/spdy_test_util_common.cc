@@ -42,7 +42,7 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using net::test::IsError;
@@ -95,7 +95,7 @@ std::unique_ptr<MockWrite[]> ChopWriteFrame(
 // |headers| gets filled in from |extra_headers|.
 void AppendToHeaderBlock(const char* const extra_headers[],
                          int extra_header_count,
-                         spdy::SpdyHeaderBlock* headers) {
+                         spdy::Http2HeaderBlock* headers) {
   if (!extra_header_count)
     return;
 
@@ -106,8 +106,8 @@ void AppendToHeaderBlock(const char* const extra_headers[],
 
   // Copy in the headers.
   for (int i = 0; i < extra_header_count; i++) {
-    base::StringPiece key(extra_headers[i * 2]);
-    base::StringPiece value(extra_headers[i * 2 + 1]);
+    absl::string_view key(extra_headers[i * 2]);
+    absl::string_view value(extra_headers[i * 2 + 1]);
     DCHECK(!key.empty()) << "Header key must not be empty.";
     headers->AppendValueOrAddHeader(key, value);
   }
@@ -187,7 +187,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers,
+                 spdy::Http2HeaderBlock headers,
                  base::TimeTicks recv_first_byte_time) override {
     if (has_priority) {
       priority_ = spdy::Http2WeightToSpdy3Priority(weight);
@@ -215,7 +215,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                       int delta_window_size) override {}
   void OnPushPromise(spdy::SpdyStreamId stream_id,
                      spdy::SpdyStreamId promised_stream_id,
-                     spdy::SpdyHeaderBlock headers) override {}
+                     spdy::Http2HeaderBlock headers) override {}
   void OnAltSvc(spdy::SpdyStreamId stream_id,
                 base::StringPiece origin,
                 const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
@@ -346,6 +346,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
+      http2_end_stream_with_data_frame(false),
       net_log(nullptr),
       disable_idle_sockets_close_on_memory_pressure(false),
       enable_early_data(false),
@@ -400,6 +401,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_websocket_over_http2 =
       session_deps->enable_websocket_over_http2;
   params.greased_http2_frame = session_deps->greased_http2_frame;
+  params.http2_end_stream_with_data_frame =
+      session_deps->http2_end_stream_with_data_frame;
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
   params.enable_early_data = session_deps->enable_early_data;
@@ -452,7 +455,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
       HttpAuthHandlerFactory::CreateDefault());
   storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
   storage_.set_quic_context(std::make_unique<QuicContext>());
-  storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
+  storage_.set_job_factory(std::make_unique<URLRequestJobFactory>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
 
@@ -669,7 +672,7 @@ SpdyTestUtil::SpdyTestUtil()
 SpdyTestUtil::~SpdyTestUtil() = default;
 
 void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
-                                       spdy::SpdyHeaderBlock* headers) const {
+                                       spdy::Http2HeaderBlock* headers) const {
   std::string scheme, host, path;
   ParseUrl(url, &scheme, &host, &path);
   (*headers)[spdy::kHttp2AuthorityHeader] = host;
@@ -678,50 +681,51 @@ void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlock(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructGetHeaderBlock(
     base::StringPiece url) {
   return ConstructHeaderBlock("GET", url, nullptr);
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlockForProxy(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructGetHeaderBlockForProxy(
     base::StringPiece url) {
   return ConstructGetHeaderBlock(url);
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructHeadHeaderBlock(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructHeadHeaderBlock(
     base::StringPiece url,
     int64_t content_length) {
   return ConstructHeaderBlock("HEAD", url, nullptr);
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructPostHeaderBlock(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructPostHeaderBlock(
     base::StringPiece url,
     int64_t content_length) {
   return ConstructHeaderBlock("POST", url, &content_length);
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructPutHeaderBlock(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructPutHeaderBlock(
     base::StringPiece url,
     int64_t content_length) {
   return ConstructHeaderBlock("PUT", url, &content_length);
 }
 
 std::string SpdyTestUtil::ConstructSpdyReplyString(
-    const spdy::SpdyHeaderBlock& headers) const {
+    const spdy::Http2HeaderBlock& headers) const {
   std::string reply_string;
-  for (spdy::SpdyHeaderBlock::const_iterator it = headers.begin();
+  for (spdy::Http2HeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
-    std::string key = it->first.as_string();
+    auto key = std::string(it->first);
     // Remove leading colon from pseudo headers.
     if (key[0] == ':')
       key = key.substr(1);
     for (const std::string& value :
-         base::SplitString(it->second, base::StringPiece("\0", 1),
-                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+         base::SplitString(base::StringViewToStringPiece(it->second),
+                           base::StringPiece("\0", 1), base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_ALL)) {
       reply_string += key + ": " + value + "\n";
     }
   }
@@ -808,7 +812,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyGet(
     const char* const url,
     spdy::SpdyStreamId stream_id,
     RequestPriority request_priority) {
-  spdy::SpdyHeaderBlock block(ConstructGetHeaderBlock(url));
+  spdy::Http2HeaderBlock block(ConstructGetHeaderBlock(url));
   return ConstructSpdyHeaders(stream_id, std::move(block), request_priority,
                               true);
 }
@@ -818,7 +822,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyGet(
     int extra_header_count,
     int stream_id,
     RequestPriority request_priority) {
-  spdy::SpdyHeaderBlock block;
+  spdy::Http2HeaderBlock block;
   block[spdy::kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(default_url_.spec(), &block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
@@ -832,7 +836,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyConnect(
     int stream_id,
     RequestPriority priority,
     const HostPortPair& host_port_pair) {
-  spdy::SpdyHeaderBlock block;
+  spdy::Http2HeaderBlock block;
   block[spdy::kHttp2MethodHeader] = "CONNECT";
   block[spdy::kHttp2AuthorityHeader] = host_port_pair.ToString();
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
@@ -845,13 +849,13 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
     int stream_id,
     int associated_stream_id,
     const char* url) {
-  spdy::SpdyHeaderBlock push_promise_header_block;
+  spdy::Http2HeaderBlock push_promise_header_block;
   push_promise_header_block[spdy::kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
   spdy::SpdySerializedFrame push_promise_frame(ConstructSpdyPushPromise(
       associated_stream_id, stream_id, std::move(push_promise_header_block)));
 
-  spdy::SpdyHeaderBlock headers_header_block;
+  spdy::Http2HeaderBlock headers_header_block;
   headers_header_block[spdy::kHttp2StatusHeader] = "200";
   headers_header_block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &headers_header_block);
@@ -870,13 +874,13 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
     const char* url,
     const char* status,
     const char* location) {
-  spdy::SpdyHeaderBlock push_promise_header_block;
+  spdy::Http2HeaderBlock push_promise_header_block;
   push_promise_header_block[spdy::kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
   spdy::SpdySerializedFrame push_promise_frame(ConstructSpdyPushPromise(
       associated_stream_id, stream_id, std::move(push_promise_header_block)));
 
-  spdy::SpdyHeaderBlock headers_header_block;
+  spdy::Http2HeaderBlock headers_header_block;
   headers_header_block["hello"] = "bye";
   headers_header_block[spdy::kHttp2StatusHeader] = status;
   headers_header_block["location"] = location;
@@ -891,7 +895,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPushPromise(
     spdy::SpdyStreamId associated_stream_id,
     spdy::SpdyStreamId stream_id,
-    spdy::SpdyHeaderBlock headers) {
+    spdy::Http2HeaderBlock headers) {
   spdy::SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
                                        std::move(headers));
   return spdy::SpdySerializedFrame(
@@ -902,7 +906,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPushHeaders(
     int stream_id,
     const char* const extra_headers[],
     int extra_header_count) {
-  spdy::SpdyHeaderBlock header_block;
+  spdy::Http2HeaderBlock header_block;
   header_block[spdy::kHttp2StatusHeader] = "200";
   AppendToHeaderBlock(extra_headers, extra_header_count, &header_block);
   spdy::SpdyHeadersIR headers(stream_id, std::move(header_block));
@@ -912,7 +916,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPushHeaders(
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyResponseHeaders(
     int stream_id,
-    spdy::SpdyHeaderBlock headers,
+    spdy::Http2HeaderBlock headers,
     bool fin) {
   spdy::SpdyHeadersIR spdy_headers(stream_id, std::move(headers));
   spdy_headers.set_fin(fin);
@@ -922,7 +926,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyResponseHeaders(
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyHeaders(
     int stream_id,
-    spdy::SpdyHeaderBlock block,
+    spdy::Http2HeaderBlock block,
     RequestPriority priority,
     bool fin) {
   // Get the stream id of the next highest priority request
@@ -956,7 +960,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyHeaders(
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReply(
     int stream_id,
-    spdy::SpdyHeaderBlock headers) {
+    spdy::Http2HeaderBlock headers) {
   spdy::SpdyHeadersIR reply(stream_id, std::move(headers));
   return spdy::SpdySerializedFrame(response_spdy_framer_.SerializeFrame(reply));
 }
@@ -966,7 +970,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(
     const char* const* const extra_headers,
     int extra_header_count,
     int stream_id) {
-  spdy::SpdyHeaderBlock block;
+  spdy::Http2HeaderBlock block;
   block[spdy::kHttp2StatusHeader] = status;
   block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
@@ -983,7 +987,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyGetReply(
     const char* const extra_headers[],
     int extra_header_count,
     int stream_id) {
-  spdy::SpdyHeaderBlock block;
+  spdy::Http2HeaderBlock block;
   block[spdy::kHttp2StatusHeader] = "200";
   block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
@@ -998,7 +1002,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPost(
     RequestPriority priority,
     const char* const extra_headers[],
     int extra_header_count) {
-  spdy::SpdyHeaderBlock block(ConstructPostHeaderBlock(url, content_length));
+  spdy::Http2HeaderBlock block(ConstructPostHeaderBlock(url, content_length));
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdyHeaders(stream_id, std::move(block), priority, false);
 }
@@ -1006,7 +1010,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyPost(
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructChunkedSpdyPost(
     const char* const extra_headers[],
     int extra_header_count) {
-  spdy::SpdyHeaderBlock block;
+  spdy::Http2HeaderBlock block;
   block[spdy::kHttp2MethodHeader] = "POST";
   AddUrlToHeaderBlock(default_url_.spec(), &block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
@@ -1029,7 +1033,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(
     int stream_id,
     base::StringPiece data,
     bool fin) {
-  spdy::SpdyDataIR data_ir(stream_id, data);
+  spdy::SpdyDataIR data_ir(stream_id, base::StringPieceToStringView(data));
   data_ir.set_fin(fin);
   return spdy::SpdySerializedFrame(
       headerless_spdy_framer_.SerializeData(data_ir));
@@ -1040,7 +1044,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(
     base::StringPiece data,
     bool fin,
     int padding_length) {
-  spdy::SpdyDataIR data_ir(stream_id, data);
+  spdy::SpdyDataIR data_ir(stream_id, base::StringPieceToStringView(data));
   data_ir.set_fin(fin);
   data_ir.set_padding_len(padding_length);
   return spdy::SpdySerializedFrame(
@@ -1074,13 +1078,13 @@ void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {
 }
 
 // static
-spdy::SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(
+spdy::Http2HeaderBlock SpdyTestUtil::ConstructHeaderBlock(
     base::StringPiece method,
     base::StringPiece url,
     int64_t* content_length) {
   std::string scheme, host, path;
   ParseUrl(url, &scheme, &host, &path);
-  spdy::SpdyHeaderBlock headers;
+  spdy::Http2HeaderBlock headers;
   headers[spdy::kHttp2MethodHeader] = method.as_string();
   headers[spdy::kHttp2AuthorityHeader] = host.c_str();
   headers[spdy::kHttp2SchemeHeader] = scheme.c_str();

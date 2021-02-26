@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
@@ -32,7 +33,7 @@ void RecordChallengeKeyResult(
                                 result_code);
 }
 
-// Checks if |url| matches one of the |patterns|.
+// Checks if `url` matches one of the `patterns`.
 bool IsDeviceWebBasedAttestationEnabledForUrl(const GURL& url,
                                               const base::ListValue* patterns) {
   if (!patterns) {
@@ -83,7 +84,7 @@ void SamlChallengeKeyHandler::Run(Profile* profile,
     return;
   }
 
-  BuildResponseForWhitelistedUrl(url);
+  BuildResponseForAllowlistedUrl(url);
 }
 
 void SamlChallengeKeyHandler::SetTpmResponseTimeoutForTesting(
@@ -91,10 +92,10 @@ void SamlChallengeKeyHandler::SetTpmResponseTimeoutForTesting(
   tpm_response_timeout_for_testing_ = timeout;
 }
 
-void SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl(const GURL& url) {
+void SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl(const GURL& url) {
   CrosSettings* settings = CrosSettings::Get();
   CrosSettingsProvider::TrustedStatus status = settings->PrepareTrustedValues(
-      base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl,
+      base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl,
                      weak_factory_.GetWeakPtr(), url));
 
   const base::ListValue* patterns = nullptr;

@@ -39,11 +39,17 @@ constexpr size_t kMaxWireBufferSize =
     std::min(IPC::Channel::kMaximumMessageSize,
              static_cast<size_t>(1024 * 1024));
 
+constexpr size_t kDawnReturnCmdsOffset =
+    offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer);
+
+static_assert(kDawnReturnCmdsOffset < kMaxWireBufferSize, "");
+
 class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
  public:
   WireServerCommandSerializer(DecoderClient* client,
                               DawnDeviceClientID device_client_id);
   ~WireServerCommandSerializer() override = default;
+  size_t GetMaximumAllocationSize() const final;
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
 
@@ -68,37 +74,29 @@ WireServerCommandSerializer::WireServerCommandSerializer(
   header->device_client_id = device_client_id;
 }
 
-void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
-  // TODO(enga): Handle chunking commands if size +
-  // offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)>
-  // kMaxWireBufferSize.
-  size_t total_wire_buffer_size =
-      (base::CheckedNumeric<size_t>(size) +
-       base::CheckedNumeric<size_t>(
-           offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)))
-          .ValueOrDie();
-  if (total_wire_buffer_size > kMaxWireBufferSize) {
-    NOTREACHED();
-    return nullptr;
-  }
+size_t WireServerCommandSerializer::GetMaximumAllocationSize() const {
+  return kMaxWireBufferSize - kDawnReturnCmdsOffset;
+}
 
-  // |next_offset| should never be more than kMaxWireBufferSize +
-  // kMaxWireBufferSize.
+void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
+  // Note: Dawn will never call this function with |size| >
+  // GetMaximumAllocationSize().
   DCHECK_LE(put_offset_, kMaxWireBufferSize);
-  DCHECK_LE(size, kMaxWireBufferSize);
+  DCHECK_LE(size, GetMaximumAllocationSize());
+
+  // Statically check that kMaxWireBufferSize + kMaxWireBufferSize is
+  // a valid uint32_t. We can add put_offset_ and size without overflow.
   static_assert(base::CheckAdd(kMaxWireBufferSize, kMaxWireBufferSize)
                     .IsValid<uint32_t>(),
                 "");
-  uint32_t next_offset = put_offset_ + size;
-
+  uint32_t next_offset = put_offset_ + static_cast<uint32_t>(size);
   if (next_offset > buffer_.size()) {
     Flush();
     // TODO(enga): Keep track of how much command space the application is using
     // and adjust the buffer size accordingly.
 
-    DCHECK_EQ(put_offset_,
-              offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer));
-    next_offset = put_offset_ + size;
+    DCHECK_EQ(put_offset_, kDawnReturnCmdsOffset);
+    next_offset = put_offset_ + static_cast<uint32_t>(size);
   }
 
   uint8_t* ptr = &buffer_[put_offset_];
@@ -107,8 +105,7 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
 }
 
 bool WireServerCommandSerializer::Flush() {
-  if (put_offset_ >
-      offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)) {
+  if (put_offset_ > kDawnReturnCmdsOffset) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WireServerCommandSerializer::Flush", "bytes", put_offset_);
 
@@ -117,7 +114,7 @@ bool WireServerCommandSerializer::Flush() {
                             "DawnReturnCommands", return_trace_id++);
 
     client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
-    put_offset_ = offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer);
+    put_offset_ = kDawnReturnCmdsOffset;
   }
   return true;
 }
@@ -148,6 +145,7 @@ class DawnDeviceAndWireServer {
   ~DawnDeviceAndWireServer();
 
   WGPUDevice GetWGPUDevice() const;
+  bool HasPollingWork() const;
   void PerformPollingWork();
   error::Error HandleDawnCommands(const volatile char* dawn_commands,
                                   size_t size);
@@ -179,6 +177,8 @@ class DawnDeviceAndWireServer {
   base::flat_map<std::tuple<uint32_t, uint32_t>,
                  std::unique_ptr<SharedImageRepresentationAndAccess>>
       associated_shared_image_map_;
+
+  bool has_polling_work_ = false;
 };
 
 DawnDeviceAndWireServer::DawnDeviceAndWireServer(
@@ -218,7 +218,7 @@ WGPUDevice DawnDeviceAndWireServer::GetWGPUDevice() const {
 }
 
 void DawnDeviceAndWireServer::PerformPollingWork() {
-  dawn_procs_.deviceTick(wgpu_device_);
+  has_polling_work_ = dawn_native::DeviceTick(wgpu_device_);
   wire_serializer_->Flush();
 }
 
@@ -229,6 +229,7 @@ error::Error DawnDeviceAndWireServer::HandleDawnCommands(
     NOTREACHED();
     return error::kLostContext;
   }
+  has_polling_work_ = dawn_native::DeviceTick(wgpu_device_);
   wire_serializer_->Flush();
   return error::kNoError;
 }
@@ -306,6 +307,10 @@ error::Error DawnDeviceAndWireServer::DissociateMailbox(
 
   associated_shared_image_map_.erase(it);
   return error::kNoError;
+}
+
+bool DawnDeviceAndWireServer::HasPollingWork() const {
+  return has_polling_work_;
 }
 
 }  // namespace
@@ -386,9 +391,14 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool HasMoreIdleWork() const override { return false; }
   void PerformIdleWork() override {}
 
-  // TODO(crbug.com/940985): Optimize so that this only returns true when
-  // deviceTick is needed.
-  bool HasPollingWork() const override { return true; }
+  bool HasPollingWork() const override {
+    for (auto& iter : dawn_device_and_wire_servers_) {
+      if (iter.second->HasPollingWork()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   void PerformPollingWork() override {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
@@ -435,10 +445,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           const volatile void* buffer,
                           int num_entries,
                           int* entries_processed) override;
-  base::StringPiece GetLogPrefix() override {
-    NOTIMPLEMENTED();
-    return "";
-  }
+  base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
                  gl::GLImage* image,
@@ -557,10 +564,13 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       const WGPUDeviceProperties& requested_device_properties);
 
   void SendAdapterProperties(DawnRequestAdapterSerial request_adapter_serial,
-                             uint32_t adapter_service_id,
-                             const dawn_native::Adapter& adapter);
+                             int32_t adapter_service_id,
+                             const dawn_native::Adapter& adapter,
+                             const char* error_message = nullptr);
   void SendRequestedDeviceInfo(DawnDeviceClientID device_client_id,
                                bool is_request_device_success);
+
+  const GrContextType gr_context_type_;
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -572,6 +582,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
   std::vector<dawn_native::Adapter> dawn_adapters_;
+
+  bool disable_dawn_robustness_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGPUDecoderImpl);
 };
@@ -608,13 +620,15 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     gles2::Outputter* outputter,
     const GpuPreferences& gpu_preferences)
     : WebGPUDecoder(client, command_buffer_service, outputter),
+      gr_context_type_(gpu_preferences.gr_context_type),
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
               memory_tracker)),
       dawn_platform_(new DawnPlatform()),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
-      dawn_instance_(new dawn_native::Instance()) {
+      dawn_instance_(new dawn_native::Instance()),
+      disable_dawn_robustness_(gpu_preferences.disable_dawn_robustness) {
   dawn_instance_->SetPlatform(dawn_platform_.get());
   dawn_instance_->EnableBackendValidation(
       gpu_preferences.enable_dawn_backend_validation);
@@ -650,6 +664,17 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
   dawn_native::DeviceDescriptor device_descriptor;
   if (request_device_properties.textureCompressionBC) {
     device_descriptor.requiredExtensions.push_back("texture_compression_bc");
+  }
+  if (request_device_properties.shaderFloat16) {
+    device_descriptor.requiredExtensions.push_back("shader_float16");
+  }
+
+  if (request_device_properties.timestampQuery) {
+    device_descriptor.requiredExtensions.push_back("timestamp_query");
+  }
+
+  if (disable_dawn_robustness_) {
+    device_descriptor.forceEnabledToggles.push_back("disable_robustness");
   }
 
   WGPUDevice wgpu_device =
@@ -816,15 +841,29 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 
 void WebGPUDecoderImpl::SendAdapterProperties(
     DawnRequestAdapterSerial request_adapter_serial,
-    uint32_t adapter_service_id,
-    const dawn_native::Adapter& adapter) {
-  WGPUDeviceProperties adapter_properties = adapter.GetAdapterProperties();
+    int32_t adapter_service_id,
+    const dawn_native::Adapter& adapter,
+    const char* error_message) {
+  WGPUDeviceProperties adapter_properties;
+  size_t serialized_adapter_properties_size = 0;
 
-  size_t serialized_adapter_properties_size =
-      dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
+  if (adapter) {
+    adapter_properties = adapter.GetAdapterProperties();
+    serialized_adapter_properties_size =
+        dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
+  } else {
+    // If there's no adapter, the adapter_service_id should be -1
+    DCHECK_EQ(adapter_service_id, -1);
+  }
+
+  size_t error_message_size =
+      error_message == nullptr ? 0 : strlen(error_message);
+
+  // Get serialization space for the return struct and variable-length data:
+  // The serialized adapter properties, the error message, and null-terminator.
   std::vector<char> serialized_buffer(
       offsetof(cmds::DawnReturnAdapterInfo, deserialized_buffer) +
-      serialized_adapter_properties_size);
+      serialized_adapter_properties_size + error_message_size + 1);
 
   cmds::DawnReturnAdapterInfo* return_adapter_info =
       reinterpret_cast<cmds::DawnReturnAdapterInfo*>(serialized_buffer.data());
@@ -836,9 +875,28 @@ void WebGPUDecoderImpl::SendAdapterProperties(
   return_adapter_info->header.request_adapter_serial = request_adapter_serial;
   return_adapter_info->header.adapter_service_id = adapter_service_id;
 
-  // Set serialized adapter properties
-  dawn_wire::SerializeWGPUDeviceProperties(
-      &adapter_properties, return_adapter_info->deserialized_buffer);
+  DCHECK(serialized_adapter_properties_size <=
+         std::numeric_limits<uint32_t>::max());
+
+  return_adapter_info->adapter_properties_size =
+      static_cast<uint32_t>(serialized_adapter_properties_size);
+
+  if (adapter) {
+    // Set serialized adapter properties
+    dawn_wire::SerializeWGPUDeviceProperties(
+        &adapter_properties, return_adapter_info->deserialized_buffer);
+  }
+
+  // Copy the error message
+  memcpy(return_adapter_info->deserialized_buffer +
+             serialized_adapter_properties_size,
+         error_message, error_message_size);
+
+  // Write the null-terminator.
+  // We don't copy (error_message_size + 1) above because |error_message| may
+  // be nullptr instead of zero-length.
+  return_adapter_info->deserialized_buffer[serialized_adapter_properties_size +
+                                           error_message_size] = '\0';
 
   client()->HandleReturnData(base::make_span(
       reinterpret_cast<const uint8_t*>(serialized_buffer.data()),
@@ -870,9 +928,21 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   DawnRequestAdapterSerial request_adapter_serial =
       static_cast<DawnRequestAdapterSerial>(c.request_adapter_serial);
 
+  if (gr_context_type_ != GrContextType::kVulkan) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+    SendAdapterProperties(request_adapter_serial, -1, nullptr,
+                          "WebGPU on Linux requires command-line flag "
+                          "--enable-features=Vulkan,UseSkiaRenderer");
+    return error::kNoError;
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+  }
+
   int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
   if (requested_adapter_index < 0) {
-    return error::kLostContext;
+    // There are no adapters to return since webgpu is not supported here
+    SendAdapterProperties(request_adapter_serial, requested_adapter_index,
+                          nullptr);
+    return error::kNoError;
   }
 
   // Currently we treat the index of the adapter in dawn_adapters_ as the id of
@@ -880,8 +950,7 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
   const dawn_native::Adapter& adapter = dawn_adapters_[requested_adapter_index];
-  SendAdapterProperties(request_adapter_serial,
-                        static_cast<uint32_t>(requested_adapter_index),
+  SendAdapterProperties(request_adapter_serial, requested_adapter_index,
                         adapter);
 
   return error::kNoError;

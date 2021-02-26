@@ -352,43 +352,6 @@ TEST(STLUtilTest, ConstCastIterator) {
   RunConstCastIteratorTest<std::unordered_multiset<int>>();
 }
 
-TEST(STLUtilTest, STLIsSorted) {
-  {
-    std::set<int> set;
-    set.insert(24);
-    set.insert(1);
-    set.insert(12);
-    EXPECT_TRUE(STLIsSorted(set));
-  }
-
-  {
-    std::set<ComparableValue> set;
-    set.insert(ComparableValue(24));
-    set.insert(ComparableValue(1));
-    set.insert(ComparableValue(12));
-    EXPECT_TRUE(STLIsSorted(set));
-  }
-
-  {
-    std::vector<int> vector;
-    vector.push_back(1);
-    vector.push_back(1);
-    vector.push_back(4);
-    vector.push_back(64);
-    vector.push_back(12432);
-    EXPECT_TRUE(STLIsSorted(vector));
-    vector.back() = 1;
-    EXPECT_FALSE(STLIsSorted(vector));
-  }
-
-  {
-    int array[] = {1, 1, 4, 64, 12432};
-    EXPECT_TRUE(STLIsSorted(array));
-    array[4] = 1;
-    EXPECT_FALSE(STLIsSorted(array));
-  }
-}
-
 TEST(STLUtilTest, STLSetDifference) {
   std::set<int> a1;
   a1.insert(1);
@@ -538,30 +501,6 @@ TEST(STLUtilTest, STLSetIntersection) {
     result.push_back(4);
     EXPECT_EQ(result, STLSetIntersection<std::vector<int> >(a2, a1));
   }
-}
-
-TEST(STLUtilTest, STLIncludes) {
-  std::set<int> a1;
-  a1.insert(1);
-  a1.insert(2);
-  a1.insert(3);
-  a1.insert(4);
-
-  std::set<int> a2;
-  a2.insert(3);
-  a2.insert(4);
-
-  std::set<int> a3;
-  a3.insert(3);
-  a3.insert(4);
-  a3.insert(5);
-
-  EXPECT_TRUE(STLIncludes<std::set<int> >(a1, a2));
-  EXPECT_FALSE(STLIncludes<std::set<int> >(a1, a3));
-  EXPECT_FALSE(STLIncludes<std::set<int> >(a2, a1));
-  EXPECT_FALSE(STLIncludes<std::set<int> >(a2, a3));
-  EXPECT_FALSE(STLIncludes<std::set<int> >(a3, a1));
-  EXPECT_TRUE(STLIncludes<std::set<int> >(a3, a2));
 }
 
 TEST(Erase, String) {

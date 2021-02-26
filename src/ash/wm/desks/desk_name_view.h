@@ -34,10 +34,20 @@ class ASH_EXPORT DeskNameView
 
   void SetTextAndElideIfNeeded(const base::string16& text);
 
+  // If this view has focus, make the view's border visible and change
+  // background to its active color. If it doesn't have focus, hide the view's
+  // border and change background to its default color.
+  void UpdateViewAppearance();
+
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnThemeChanged() override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
@@ -49,9 +59,16 @@ class ASH_EXPORT DeskNameView
  private:
   void UpdateBorderState();
 
+  // Returns the background color for this view based on whether it has focus
+  // and if the mouse is entering/exiting the view.
+  SkColor GetBackgroundColor() const;
+
   // Owned by this View via `View::border_`. This is just a convenient pointer
   // to it.
   WmHighlightItemBorder* border_ptr_;
+
+  // Full text without being elided.
+  base::string16 full_text_;
 };
 
 }  // namespace ash

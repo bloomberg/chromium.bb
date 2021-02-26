@@ -194,6 +194,9 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/rss+xml", "rss"},
     {"application/vnd.android.package-archive", "apk"},
     {"application/vnd.mozilla.xul+xml", "xul"},
+    {"application/vnd.ms-excel", "xls"},
+    {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "xlsx"},
     {"application/x-gzip", "gz,tgz"},
     {"application/x-mpegurl", "m3u8"},
     {"application/x-shockwave-flash", "swf,swl"},
@@ -245,7 +248,7 @@ static const char* FindMimeType(const MimeInfo (&mappings)[num_mappings],
 static base::FilePath::StringType StringToFilePathStringType(
     const base::StringPiece& string_piece) {
 #if defined(OS_WIN)
-  return base::UTF8ToUTF16(string_piece);
+  return base::UTF8ToWide(string_piece);
 #else
   return string_piece.as_string();
 #endif

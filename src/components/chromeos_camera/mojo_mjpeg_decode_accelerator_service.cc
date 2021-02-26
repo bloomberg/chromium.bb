@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/platform_file.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -185,57 +185,6 @@ void MojoMjpegDecodeAcceleratorService::Decode(
 
   DCHECK(accelerator_);
   accelerator_->Decode(std::move(input_buffer), frame);
-}
-
-void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
-    int32_t buffer_id,
-    mojo::ScopedHandle input_handle,
-    uint32_t input_buffer_size,
-    int32_t coded_size_width,
-    int32_t coded_size_height,
-    mojo::ScopedHandle output_handle,
-    uint32_t output_buffer_size,
-    DecodeWithFDCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::PlatformFile input_fd;
-  base::PlatformFile output_fd;
-  MojoResult result;
-
-  result = mojo::UnwrapPlatformFile(std::move(input_handle), &input_fd);
-  if (result != MOJO_RESULT_OK) {
-    std::move(callback).Run(
-        buffer_id,
-        ::chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
-    return;
-  }
-
-  result = mojo::UnwrapPlatformFile(std::move(output_handle), &output_fd);
-  if (result != MOJO_RESULT_OK) {
-    std::move(callback).Run(
-        buffer_id,
-        ::chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
-    return;
-  }
-
-  base::subtle::PlatformSharedMemoryRegion input_shm_region =
-      base::subtle::PlatformSharedMemoryRegion::Take(
-          base::ScopedFD(input_fd),
-          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
-          input_buffer_size, base::UnguessableToken::Create());
-  media::BitstreamBuffer in_buffer(buffer_id, std::move(input_shm_region),
-                                   input_buffer_size);
-  gfx::Size coded_size(coded_size_width, coded_size_height);
-
-  base::subtle::PlatformSharedMemoryRegion output_shm_region =
-      base::subtle::PlatformSharedMemoryRegion::Take(
-          base::ScopedFD(output_fd),
-          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
-          output_buffer_size, base::UnguessableToken::Create());
-  mojo::ScopedSharedBufferHandle output_scoped_handle =
-      mojo::WrapPlatformSharedMemoryRegion(std::move(output_shm_region));
-
-  Decode(std::move(in_buffer), coded_size, std::move(output_scoped_handle),
-         output_buffer_size, std::move(callback));
 }
 
 void MojoMjpegDecodeAcceleratorService::DecodeWithDmaBuf(

@@ -5,6 +5,9 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 #define CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 
+#include <memory>
+#include <sstream>
+
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -101,6 +104,10 @@ class CC_EXPORT FrameSequenceTracker {
 
   std::unique_ptr<FrameSequenceMetrics> TakeMetrics();
 
+  // Called by the destructor of FrameSequenceTrackerCollection, asking its
+  // |metrics_| to report.
+  void CleanUp();
+
  private:
   friend class FrameSequenceTrackerCollection;
   friend class FrameSequenceTrackerTest;
@@ -117,9 +124,6 @@ class CC_EXPORT FrameSequenceTracker {
   }
   FrameSequenceMetrics::ThroughputData& main_throughput() {
     return metrics_->main_throughput();
-  }
-  FrameSequenceMetrics::ThroughputData& aggregated_throughput() {
-    return metrics_->aggregated_throughput();
   }
 
   void ScheduleTerminate();
@@ -205,6 +209,9 @@ class CC_EXPORT FrameSequenceTracker {
   // scheduled to report histogram.
   base::TimeTicks first_frame_timestamp_;
 
+  // Tracks the presentation timestamp of the previous frame.
+  base::TimeTicks last_frame_presentation_timestamp_;
+
   // Keeps track of whether the impl-frame being processed did not have any
   // damage from the compositor (i.e. 'impl damage').
   bool frame_had_no_compositor_damage_ = false;
@@ -230,14 +237,6 @@ class CC_EXPORT FrameSequenceTracker {
   uint64_t last_processed_main_sequence_ = 0;
   uint64_t last_processed_main_sequence_latency_ = 0;
 
-  // Used to compute aggregated throughput.
-  // When expecting a main frame, we accumulate the number of impl frames
-  // presented because if that main frame ends up with no-damage, then we should
-  // count the impl frames that were produced in the meantime.
-  uint32_t impl_frames_produced_while_expecting_main_ = 0;
-  // Each entry is a frame token, inserted at ReportSubmitFrame.
-  base::circular_deque<uint32_t> expecting_main_when_submit_impl_;
-
   // Handle off-screen main damage case. In this case, the sequence is typically
   // like: b(1)B(0,1)E(1)n(1)e(1)b(2)n(2)e(2)...b(10)E(2)B(10,10)n(10)e(10).
   // Note that between two 'E's, all the impl frames caused no damage, and
@@ -247,19 +246,10 @@ class CC_EXPORT FrameSequenceTracker {
   // TODO(xidachen): remove this one.
   uint64_t current_begin_main_sequence_ = 0;
 
-  // Tracks some data to generate useful trace events.
-  struct TraceData {
-    explicit TraceData(const void* trace_id);
-    const void* trace_id;
-    base::TimeTicks last_timestamp = base::TimeTicks::Now();
-    int frame_count = 0;
-
-    void Advance(base::TimeTicks new_timestamp);
-  } trace_data_;
-
   // True when an impl-impl is not ended. A tracker is ready for termination
   // only when the last impl-frame is ended (ReportFrameEnd).
   bool is_inside_frame_ = false;
+
 
 #if DCHECK_IS_ON()
   // This stringstream represents a sequence of frame reporting activities on

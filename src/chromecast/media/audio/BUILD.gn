@@ -13,6 +13,15 @@ declare_args() {
   default_output_buffer_size_in_frames = 2048
 }
 
+cast_source_set("audio_log") {
+  sources = [
+    "audio_log.cc",
+    "audio_log.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
 cast_source_set("audio_io_thread") {
   sources = [
     "audio_io_thread.cc",
@@ -57,12 +66,32 @@ cast_source_set("interleaved_channel_mixer") {
   ]
 }
 
+cast_source_set("cma_audio_output") {
+  sources = [
+    "cma_audio_output.cc",
+    "cma_audio_output.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/common/mojom",
+    "//chromecast/media/base",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//chromecast/public/media",
+    "//media",
+  ]
+}
+
 cast_source_set("audio") {
   sources = [
     "cast_audio_input_stream.cc",
     "cast_audio_input_stream.h",
     "cast_audio_manager.cc",
     "cast_audio_manager.h",
+    "cast_audio_manager_helper.cc",
+    "cast_audio_manager_helper.h",
     "cast_audio_mixer.cc",
     "cast_audio_mixer.h",
     "cast_audio_output_stream.cc",
@@ -74,11 +103,14 @@ cast_source_set("audio") {
 
   deps = [
     ":audio_buildflags",
+    ":cma_audio_output",
     "//base",
     "//chromecast/base",
     "//chromecast/common/mojom",
     "//chromecast/media/api",
+    "//chromecast/media/audio/capture_service:common",
     "//chromecast/media/audio/capture_service:receiver",
+    "//chromecast/media/audio/capture_service:utils",
     "//chromecast/media/audio/mixer_service:common",
     "//chromecast/media/audio/mixer_service:output_stream_connection",
     "//chromecast/media/audio/mixer_service:proto",
@@ -97,9 +129,13 @@ cast_source_set("audio") {
       "cast_audio_manager_alsa.cc",
       "cast_audio_manager_alsa.h",
     ]
-    deps += [
-      ":audio_buildflags",
-      "//content/public/browser",
+    deps += [ ":audio_buildflags" ]
+  }
+
+  if (is_android) {
+    sources += [
+      "cast_audio_manager_android.cc",
+      "cast_audio_manager_android.h",
     ]
   }
 

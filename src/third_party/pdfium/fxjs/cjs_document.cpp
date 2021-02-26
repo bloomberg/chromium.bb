@@ -110,11 +110,11 @@ const JSMethodSpec CJS_Document::MethodSpecs[] = {
     {"submitForm", submitForm_static},
     {"syncAnnotScan", syncAnnotScan_static}};
 
-int CJS_Document::ObjDefnID = -1;
+uint32_t CJS_Document::ObjDefnID = 0;
 const char CJS_Document::kName[] = "Document";
 
 // static
-int CJS_Document::GetObjDefnID() {
+uint32_t CJS_Document::GetObjDefnID() {
   return ObjDefnID;
 }
 
@@ -1254,7 +1254,7 @@ CJS_Result CJS_Document::getPageNthWord(
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict);
-  page->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(page.Get()));
+  page->SetRenderCache(std::make_unique<CPDF_PageRenderCache>(page.Get()));
   page->ParseContent();
 
   int nWords = 0;
@@ -1309,7 +1309,7 @@ CJS_Result CJS_Document::getPageNumWords(
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict);
-  page->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(page.Get()));
+  page->SetRenderCache(std::make_unique<CPDF_PageRenderCache>(page.Get()));
   page->ParseContent();
 
   int nWords = 0;

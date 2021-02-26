@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_MEDIA_CONTROLLER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/scoped_singleton_resetter_for_test.h"
 #include "base/containers/flat_map.h"
 #include "components/account_id/account_id.h"
 
@@ -23,16 +24,7 @@ enum class MediaCaptureState {
 
 class ASH_PUBLIC_EXPORT MediaController {
  public:
-  // Helper class to reset ShutdowController instance in constructor and
-  // restore it in destructor so that tests could create its own instance.
-  class ScopedResetterForTest {
-   public:
-    ScopedResetterForTest();
-    ~ScopedResetterForTest();
-
-   private:
-    MediaController* const instance_;
-  };
+  using ScopedResetterForTest = ScopedSingletonResetterForTest<MediaController>;
 
   // Gets the singleton MediaController instance.
   static MediaController* Get();
@@ -49,6 +41,13 @@ class ASH_PUBLIC_EXPORT MediaController {
   // MediaCaptureState representing every user's state.
   virtual void NotifyCaptureState(
       const base::flat_map<AccountId, MediaCaptureState>& capture_states) = 0;
+  // Called when a VM's media capture state changes. There is no `AccountId` in
+  // the argument because only the primary account/profile can launch a VM.
+  //
+  // TODO(b/167491603): We should consider merging this with
+  // `NotifyCaptureState()` if the browser also uses the same systray capturing
+  // indicators as VMs'.
+  virtual void NotifyVmCaptureState(MediaCaptureState capture_state) = 0;
 
  protected:
   MediaController();

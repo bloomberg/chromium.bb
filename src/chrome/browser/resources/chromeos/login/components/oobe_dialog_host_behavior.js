@@ -10,43 +10,27 @@
 
 /** @polymerBehavior */
 var OobeDialogHostBehavior = {
-  properties: {
-    /**
-     * True when dialog is displayed in full-screen mode.
-     */
-    fullScreenDialog: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-  },
+  properties: {},
 
   /**
    * Triggers onBeforeShow for elements matched by |selector|.
-   * and sets |fullScreenDialog| attribute on them.
    * @param {string=} selector CSS selector (optional).
    */
-  propagateFullScreenMode(selector) {
+  propagateOnBeforeShow(selector) {
     if (!selector)
       selector = 'oobe-dialog';
 
     var screens = Polymer.dom(this.root).querySelectorAll(selector);
     for (var i = 0; i < screens.length; ++i) {
-      if (this.fullScreenDialog)
-        screens[i].fullScreenDialog = true;
-
       screens[i].onBeforeShow();
     }
   },
 
   /**
-   * Pass down fullScreenDialog attribute.
+   * Trigger onBeforeShow for all children.
    */
   onBeforeShow() {
-    if (document.documentElement.hasAttribute('full-screen-dialog'))
-      this.fullScreenDialog = true;
-
-    this.propagateFullScreenMode();
+    this.propagateOnBeforeShow();
   },
 
   /**
@@ -59,6 +43,18 @@ var OobeDialogHostBehavior = {
       /** @type {{updateLocalizedContent: function()}}}*/ (screens[i])
           .updateLocalizedContent();
     }
+  },
+
+  addSubmitListener(element, id) {
+    element.addEventListener('keydown', (function(id, e) {
+                                          if (e.keyCode != 13)
+                                            return;
+                                          this.onFieldSubmit(id);
+                                        }).bind(this, id));
+  },
+
+  onFieldSubmit(id) {
+    console.error('Override this method in your element.');
   },
 };
 

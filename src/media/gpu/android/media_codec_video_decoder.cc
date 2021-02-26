@@ -8,19 +8,19 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
+#include "media/base/async_destroy_video_decoder.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -227,13 +227,34 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
       enable_threaded_texture_mailboxes_(
-          gpu_preferences.enable_threaded_texture_mailboxes) {
+          gpu_preferences.enable_threaded_texture_mailboxes),
+      allow_nonsecure_overlays_(
+          base::FeatureList::IsEnabled(media::kAllowNonSecureOverlays)) {
   DVLOG(2) << __func__;
   surface_chooser_helper_.chooser()->SetClientCallbacks(
-      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
-                 weak_factory_.GetWeakPtr(), nullptr));
+      base::BindRepeating(&MediaCodecVideoDecoder::OnSurfaceChosen,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&MediaCodecVideoDecoder::OnSurfaceChosen,
+                          weak_factory_.GetWeakPtr(), nullptr));
+}
+
+std::unique_ptr<VideoDecoder> MediaCodecVideoDecoder::Create(
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    std::unique_ptr<MediaLog> media_log,
+    DeviceInfo* device_info,
+    CodecAllocator* codec_allocator,
+    std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+    AndroidOverlayMojoFactoryCB overlay_factory_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
+    std::unique_ptr<VideoFrameFactory> video_frame_factory) {
+  auto* decoder = new MediaCodecVideoDecoder(
+      gpu_preferences, gpu_feature_info, std::move(media_log), device_info,
+      codec_allocator, std::move(surface_chooser),
+      std::move(overlay_factory_cb), std::move(request_overlay_info_cb),
+      std::move(video_frame_factory));
+  return std::make_unique<AsyncDestroyVideoDecoder<MediaCodecVideoDecoder>>(
+      base::WrapUnique(decoder));
 }
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
@@ -242,38 +263,42 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   ReleaseCodec();
 }
 
-void MediaCodecVideoDecoder::Destroy() {
+void MediaCodecVideoDecoder::DestroyAsync(
+    std::unique_ptr<MediaCodecVideoDecoder> decoder) {
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "MediaCodecVideoDecoder::Destroy");
+  DCHECK(decoder);
+
+  // This will be destroyed by a call to |DeleteSoon|
+  // in |OnCodecDrained|.
+  auto* self = decoder.release();
 
   // Cancel pending callbacks.
   //
   // WARNING: This will lose the callback we've given to MediaCodecBridge for
   // asynchronous notifications; so we must not leave this function with any
   // work necessary from StartTimerOrPumpCodec().
-  weak_factory_.InvalidateWeakPtrs();
+  self->weak_factory_.InvalidateWeakPtrs();
 
-  if (media_crypto_context_) {
+  if (self->media_crypto_context_) {
     // Cancel previously registered callback (if any).
-    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
-    if (cdm_registration_id_)
-      media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
-    media_crypto_context_ = nullptr;
-    cdm_registration_id_ = 0;
+    self->event_cb_registration_.reset();
+    self->media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
+    self->media_crypto_context_ = nullptr;
   }
 
   // Mojo callbacks require that they're run before destruction.
-  if (reset_cb_)
-    std::move(reset_cb_).Run();
+  if (self->reset_cb_)
+    std::move(self->reset_cb_).Run();
 
   // Cancel callbacks we no longer want.
-  codec_allocator_weak_factory_.InvalidateWeakPtrs();
-  CancelPendingDecodes(DecodeStatus::ABORTED);
-  StartDrainingCodec(DrainType::kForDestroy);
+  self->codec_allocator_weak_factory_.InvalidateWeakPtrs();
+  self->CancelPendingDecodes(DecodeStatus::ABORTED);
+  self->StartDrainingCodec(DrainType::kForDestroy);
 
   // Per the WARNING above. Validate that no draining work remains.
-  if (using_async_api_)
-    DCHECK(!drain_type_.has_value());
+  if (self->using_async_api_)
+    DCHECK(!self->drain_type_.has_value());
 }
 
 void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -383,8 +408,11 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
 
   media_crypto_context_ = cdm_context->GetMediaCryptoContext();
 
-  // Register CDM callbacks. The callbacks registered will be posted back to
-  // this thread via BindToCurrentLoop.
+  // CdmContext will always post the registered callback back to this thread.
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &MediaCodecVideoDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
+
+  // The callback will be posted back to this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::BindOnce(&MediaCodecVideoDecoder::OnMediaCryptoReady,
                      weak_factory_.GetWeakPtr(), std::move(init_cb))));
@@ -421,16 +449,6 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   media_crypto_ = *media_crypto;
   requires_secure_codec_ = requires_secure_video_codec;
 
-  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
-  // destructed, UnregisterPlayer() must have been called and |this| has been
-  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
-  // called.
-  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
-      media::BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::OnKeyAdded,
-                                          weak_factory_.GetWeakPtr())),
-      base::DoNothing());
-
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
   // to TextureOwner rather than fail composition.  For L1, it's required.
   surface_chooser_helper_.SetSecureSurfaceMode(
@@ -442,8 +460,12 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   std::move(init_cb).Run(OkStatus());
 }
 
-void MediaCodecVideoDecoder::OnKeyAdded() {
+void MediaCodecVideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DVLOG(2) << __func__;
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
+
   waiting_for_key_ = false;
   StartTimerOrPumpCodec();
 }
@@ -471,10 +493,16 @@ void MediaCodecVideoDecoder::StartLazyInit() {
     overlay_mode = VideoFrameFactory::OverlayMode::kRequestPromotionHints;
   }
 
+  // Regardless of whether we're using SurfaceControl or Dialog overlays, don't
+  // allow any overlays in A/B power testing mode, unless this requires a
+  // secure surface.  Don't fail the playback for power testing.
+  if (!requires_secure_codec_ && !allow_nonsecure_overlays_)
+    overlay_mode = VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
+
   video_frame_factory_->Initialize(
-      overlay_mode,
-      base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
-                 weak_factory_.GetWeakPtr()));
+      overlay_mode, base::BindRepeating(
+                        &MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
+                        weak_factory_.GetWeakPtr()));
 }
 
 void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
@@ -488,10 +516,16 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
   }
   texture_owner_bundle_ = new CodecSurfaceBundle(std::move(texture_owner));
 
+  // This is for A/B power testing only.  Turn off Dialog-based overlays in
+  // power testing mode, unless we need them for L1 content.
+  // See https://crbug.com/1081346 .
+  const bool allowed_for_experiment =
+      requires_secure_codec_ || allow_nonsecure_overlays_;
+
   // Overlays are disabled when |enable_threaded_texture_mailboxes| is true
   // (http://crbug.com/582170).
   if (enable_threaded_texture_mailboxes_ ||
-      !device_info_->SupportsOverlaySurfaces()) {
+      !device_info_->SupportsOverlaySurfaces() || !allowed_for_experiment) {
     OnSurfaceChosen(nullptr);
     return;
   }
@@ -781,9 +815,10 @@ void MediaCodecVideoDecoder::StartTimerOrPumpCodec() {
   // at this frequency is likely overkill in the steady state.
   const auto kPollingPeriod = base::TimeDelta::FromMilliseconds(10);
   if (!pump_codec_timer_.IsRunning()) {
-    pump_codec_timer_.Start(FROM_HERE, kPollingPeriod,
-                            base::Bind(&MediaCodecVideoDecoder::PumpCodec,
-                                       base::Unretained(this), false));
+    pump_codec_timer_.Start(
+        FROM_HERE, kPollingPeriod,
+        base::BindRepeating(&MediaCodecVideoDecoder::PumpCodec,
+                            base::Unretained(this), false));
   }
 }
 
@@ -975,7 +1010,7 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
   if (reset_generation == reset_generation_) {
     // TODO(liberato): We might actually have a SW decoder.  Consider setting
     // this to false if so, especially for higher bitrates.
-    frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+    frame->metadata()->power_efficient = true;
     output_cb_.Run(std::move(frame));
   }
 }
@@ -1014,7 +1049,7 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // Skip the drain if possible. Only VP8 codecs need draining because
   // they can hang in release() or flush() otherwise
   // (http://crbug.com/598963).
-  // TODO(watk): Strongly consider blacklisting VP8 (or specific MediaCodecs)
+  // TODO(watk): Strongly consider blocking VP8 (or specific MediaCodecs)
   // instead. Draining is responsible for a lot of complexity.
   if (decoder_config_.codec() != kCodecVP8 || !codec_ || codec_->IsFlushed() ||
       codec_->IsDrained() || using_async_api_) {

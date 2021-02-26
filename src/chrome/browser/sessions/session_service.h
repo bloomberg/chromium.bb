@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/token.h"
 #include "chrome/browser/defaults.h"
@@ -172,6 +171,9 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   void SetWindowAppName(const SessionID& window_id,
                         const std::string& app_name);
 
+  void SetWindowUserTitle(const SessionID& window_id,
+                          const std::string& user_title);
+
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
   void TabRestored(content::WebContents* tab, bool pinned);
@@ -192,9 +194,7 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
-  base::CancelableTaskTracker::TaskId GetLastSession(
-      sessions::GetLastSessionCallback callback,
-      base::CancelableTaskTracker* tracker);
+  void GetLastSession(sessions::GetLastSessionCallback callback);
 
   // CommandStorageManagerDelegate:
   bool ShouldUseDelayedSave() override;
@@ -225,6 +225,7 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation1);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation2);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemoveUnusedRestoreWindowsTest);
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, Workspace);
   FRIEND_TEST_ALL_PREFIXES(NoStartupWindowTest, DontInitSessionServiceForApps);
 
   typedef std::map<SessionID, std::pair<int, int>> IdToRange;

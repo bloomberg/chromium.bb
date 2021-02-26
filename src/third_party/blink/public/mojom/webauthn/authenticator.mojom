@@ -36,6 +36,8 @@ enum AuthenticatorStatus {
   OPAQUE_DOMAIN,
   INVALID_PROTOCOL,
   BAD_RELYING_PARTY_ID,
+  CANNOT_READ_AND_WRITE_LARGE_BLOB,
+  INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB,
   UNKNOWN_ERROR,
 };
 
@@ -60,6 +62,9 @@ struct CommonCredentialInfo {
   // A blob of data containing the JSON serialization of client data passed
   // to the authenticator.
   array<uint8> client_data_json;
+
+  // A blob of data returned by the authenticator after generating an assertion.
+  array<uint8> authenticator_data;
 };
 
 // Content of user verification method extension returned by
@@ -91,6 +96,20 @@ struct MakeCredentialAuthenticatorResponse {
   bool echo_hmac_create_secret;
   bool hmac_create_secret;
 
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `prf` extension output. If
+  // so, |prf| contains the value of the `enabled` member.
+  bool echo_prf;
+  bool prf;
+
+  // The DER-encoded, ASN.1 public key of the newly created credential. May be
+  // missing if the browser does not understand the public-key type.
+  array<uint8>? public_key_der;
+
+  // The COSE algorithm of the newly created credential.
+  // See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+  int32 public_key_algo;
+
   // Only supported by fido2 devices on android, will eventually supported by
   // other platform.
   // True if getClientExtensionResults() called on the returned
@@ -100,13 +119,25 @@ struct MakeCredentialAuthenticatorResponse {
   bool echo_user_verification_methods;
   [EnableIf=is_android]
   array<UvmEntry>? user_verification_methods;
+
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `credProps` extension
+  // output. |has_cred_props_rk| indicates if the rk member in that extension
+  // output should be set to the value in |cred_props_rk|.
+  bool echo_cred_props;
+  bool has_cred_props_rk;
+  bool cred_props_rk;
+
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `largeBlob` extension output.
+  // |supports_large_blob| indicates the value the `supported` member in that
+  // extension output should be.
+  bool echo_large_blob;
+  bool supports_large_blob;
 };
 
 struct GetAssertionAuthenticatorResponse {
   CommonCredentialInfo info;
-
-  // A blob of data returned by the authenticator after generating an assertion.
-  array<uint8> authenticator_data;
 
   // Cryptographic signature proving possession of the credential private key.
   array<uint8> signature;
@@ -131,6 +162,28 @@ struct GetAssertionAuthenticatorResponse {
   bool echo_user_verification_methods;
   [EnableIf=is_android]
   array<UvmEntry>? user_verification_methods;
+
+  // echo_prf indicates whether the PRF extension should be present in the
+  // output.
+  bool echo_prf;
+  // prf_results contains PRF outputs to include in the extension, if any.
+  PRFValues? prf_results;
+  // prf_not_evaluated indicates the the PRF inputs could not be processed
+  // because of a lack of operating system support.
+  bool prf_not_evaluated;
+
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `largeBlob` extension output.
+  bool echo_large_blob;
+  // Value that getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain for the `largeBlob`
+  // extension output `blob` parameter.
+  array<uint8>? large_blob;
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `largeBlob` extension output
+  // with a `written` parameter. The value is indicated by |large_blob_written|.
+  bool echo_large_blob_written;
+  bool large_blob_written;
 };
 
 // Information about the relying party. These fields take arbitrary input.
@@ -204,6 +257,16 @@ struct CableRegistration {
   array<uint8, 65> relying_party_public_key;
 };
 
+// See https://w3c.github.io/webauthn/#dictdef-authenticationextensionsprfvalues
+struct PRFValues {
+  // In the Javascript-to-native direction, id is the credential ID for these
+  // inputs. If null then these are the default values for when no credential
+  // IDs match. In the other direction, id will always be null.
+  array<uint8>? id;
+  array<uint8, 32> first;
+  array<uint8, 32>? second;
+};
+
 // Parameters passed into calls to GetAssertion.
 struct PublicKeyCredentialRequestOptions {
   // An indefinite-length blob passed from the the relying party server,
@@ -242,6 +305,23 @@ struct PublicKeyCredentialRequestOptions {
   // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
   [EnableIf=is_android]
   bool user_verification_methods;
+
+  // prf is true if the request contained a PRF extension.
+  bool prf;
+
+  // List of PRF inputs. The first element may have a null |id| member,
+  // indicating that it's the default value when none of the elements with a
+  // credential ID match. Otherwise all elements must have an |id| member and
+  // must be sorted lexicographically by it.
+  array<PRFValues> prf_inputs;
+
+  // If true, attempt to read the large blob associated to the credential.
+  // https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputs-read
+  bool large_blob_read;
+
+  // If present, large blob to be written on the credential.
+  // https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputs-write
+  array<uint8>? large_blob_write;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -252,6 +332,13 @@ enum AttestationConveyancePreference {
   // A non-standard addition that we hope will become standard. This indicates
   // that the RP desires individual attestaion from the device.
   ENTERPRISE,
+};
+
+// https://w3c.github.io/webauthn/#enum-residentKeyRequirement
+enum ResidentKeyRequirement {
+  DISCOURAGED,
+  PREFERRED,
+  REQUIRED,
 };
 
 // https://w3c.github.io/webauthn/#enumdef-authenticatorattachment.
@@ -269,15 +356,21 @@ enum ProtectionPolicy {
     UV_REQUIRED,
 };
 
+// https://w3c.github.io/webauthn#enumdef-largeblobsupport
+enum LargeBlobSupport {
+    NOT_REQUESTED,
+    REQUIRED,
+    PREFERRED,
+};
+
 // See https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria.
 struct AuthenticatorSelectionCriteria {
   // Filter authenticators by attachment type.
   AuthenticatorAttachment authenticator_attachment;
 
-  // Whether the authenticator should store the created key so that the key
-  // can later be selected given only an RP ID (e.g. when |allow_credentials|
-  // is empty).
-  bool require_resident_key;
+  // Indicates a requirement or preference for creating a client-side
+  // discoverable credential. If set, overrides |require_resident_key|.
+  ResidentKeyRequirement resident_key;
 
   // Indicates the relying party's need for a user-verifying authenticator.
   UserVerificationRequirement user_verification;
@@ -325,6 +418,11 @@ struct PublicKeyCredentialCreationOptions {
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#sctn-hmac-secret-extension
   bool hmac_create_secret;
 
+  // Whether the PRF extension was present. (Evaluation of the PRF at creation
+  // time is never supported currently, owing to a lack of hardware support.)
+  // https://w3c.github.io/webauthn/#prf-extension
+  bool prf_enable;
+
   // Only supported by fido2 devices on android, will eventually supported by
   // other platform.
   // Whether the user verification method extension is requested by
@@ -342,6 +440,14 @@ struct PublicKeyCredentialCreationOptions {
   // The contents of the appidExclude extension, if any. See
   // https://w3c.github.io/webauthn/#sctn-appid-exclude-extension
   string? appid_exclude;
+
+  // Whether the credProps extension was requested.
+  // https://w3c.github.io/webauthn/#sctn-authenticator-credential-properties-extension
+  bool cred_props;
+
+  // The level of largeBlob support requested by the relying party.
+  // https://w3c.github.io/webauthn/#sctn-large-blob-extension
+  LargeBlobSupport large_blob_enable;
 };
 
 enum PublicKeyCredentialType {

@@ -70,6 +70,11 @@
           <option value="2050">2050</option>
         </select>
         Fallback: <input type="text" id="fallback_entry" name="fallback_entry"/><br/>
+        <select id="fallback_dropdown">
+          <option value="null">None</option>
+          <option value="mastercard">Master Card</option>
+          <option value="visa">Visa Card</option>
+        </select>
         Created Dropdown: <div id="js_dropdown_value" onclick="onDropdown()">Click me</div>
         <ul id="js_dropdown_options" style="display: none;">
           <li onclick="onOption('2020')">2020</li>
@@ -89,13 +94,31 @@
       </form>
     </div>
 
+    <h4>Login Form</h4>
+    <div>
+      <form id="form5" action="https://example.com/" method="post">
+        <div>Username: <input type="text" id="login-username" name="login-username"></div>
+        <div>Password: <input type="password" id="login-password" name="login-password"></div>
+      </form>
+    </div>
+
     <h4>Password Form</h4>
     <div>
       <form id="form3" action="https://example.com/" method="post">
-        <div>Username: <input type="text" id="username" name="username"><div>
+        <div>Username: <input type="text" id="username" name="username"></div>
         <div>Old password: <input type="password" id="old-password" name="old-password"></div>
         <div>New password: <input type="password" id="new-password" name="new-password"></div>
         <div>Confirmation password: <input type="password" id="password-conf" name="password-conf"></div>
+      </form>
+    </div>
+
+    <h4>Address</h4>
+    <div>
+      <form id="form4" action="https://example.com" method="post">
+        Name: <input type="text" id="address_name" name="name" autocomplete="name"/><br/>
+        Street: <input type="text" id="street" name="street-address" autocomplete="street-address"/><br/>
+        Zip: <input type="text" id="zip" autocomplete="postal-code"/><br/>
+        State: <input type="text" id="state" autocomplete="address-level1"/><br/>
       </form>
     </div>
 

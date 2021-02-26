@@ -37,8 +37,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback) override;
+               base::OnceClosure callback,
+               ErrorCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool CanPower() const override;
@@ -46,24 +46,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   bool IsPeripheralRoleSupported() const override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override;
+                       base::OnceClosure callback,
+                       ErrorCallback error_callback) override;
   bool IsDiscovering() const override;
   UUIDList GetUUIDs() const override;
-  void CreateRfcommService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
-  void CreateL2capService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
+  void CreateRfcommService(const BluetoothUUID& uuid,
+                           const ServiceOptions& options,
+                           CreateServiceCallback callback,
+                           CreateServiceErrorCallback error_callback) override;
+  void CreateL2capService(const BluetoothUUID& uuid,
+                          const ServiceOptions& options,
+                          CreateServiceCallback callback,
+                          CreateServiceErrorCallback error_callback) override;
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) override;
   std::vector<BluetoothAdvertisement*> GetPendingAdvertisementsForTesting()
       const override;
   BluetoothLocalGattService* GetGattService(
@@ -198,21 +196,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementWatcher* watcher,
       ABI::Windows::Devices::Bluetooth::Advertisement::
-          IBluetoothLEAdvertisementReceivedEventArgs* received);
+          IBluetoothLEAdvertisementReceivedEventArgs* args);
+
+  void OnAdvertisementWatcherStopped(
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          IBluetoothLEAdvertisementWatcher* watcher,
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          IBluetoothLEAdvertisementWatcherStoppedEventArgs* args);
 
   void OnRegisterAdvertisement(BluetoothAdvertisement* advertisement,
-                               const CreateAdvertisementCallback& callback);
+                               CreateAdvertisementCallback callback);
 
   void OnRegisterAdvertisementError(
       BluetoothAdvertisement* advertisement,
-      const AdvertisementErrorCallback& error_callback,
+      AdvertisementErrorCallback error_callback,
       BluetoothAdvertisement::ErrorCode error_code);
 
   void TryRemoveRadioStateChangedHandler();
 
   void TryRemovePoweredRadioEventHandlers();
 
-  void RemoveAdvertisementReceivedHandler();
+  void RemoveAdvertisementWatcherEventHandlers();
 
   bool is_initialized_ = false;
   bool radio_access_allowed_ = false;
@@ -237,7 +241,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
 
-  EventRegistrationToken advertisement_received_token_;
+  base::Optional<EventRegistrationToken> advertisement_received_token_;
+  base::Optional<EventRegistrationToken> advertisement_watcher_stopped_token_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                              IBluetoothLEAdvertisementWatcher>
       ble_advertisement_watcher_;

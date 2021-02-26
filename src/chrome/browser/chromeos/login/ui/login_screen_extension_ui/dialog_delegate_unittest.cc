@@ -47,7 +47,7 @@ TEST_F(DialogDelegateUnittest, Test) {
       extension->short_name(), extension->GetResourceURL(kResourcePath),
       false /*can_be_closed_by_user*/, close_callback_wait.QuitClosure());
 
-  // |delegate| will delete itself when calling |OnDialogClosed()| at the end of
+  // `delegate` will delete itself when calling `OnDialogClosed()` at the end of
   // the test.
   DialogDelegate* delegate = new DialogDelegate(&create_options);
 
@@ -59,14 +59,14 @@ TEST_F(DialogDelegateUnittest, Test) {
                 extensions::Extension::GetBaseURLFromExtensionId(kExtensionId),
                 kResourcePath),
             delegate->GetDialogContentURL());
-  EXPECT_FALSE(delegate->CanResizeDialog());
+  EXPECT_FALSE(delegate->can_resize());
   EXPECT_TRUE(delegate->ShouldShowDialogTitle());
   EXPECT_TRUE(delegate->ShouldCenterDialogTitleText());
   EXPECT_FALSE(delegate->ShouldCloseDialogOnEscape());
 
-  EXPECT_FALSE(delegate->CanCloseDialog());
+  EXPECT_FALSE(delegate->OnDialogCloseRequested());
   delegate->set_can_close(true);
-  EXPECT_TRUE(delegate->CanCloseDialog());
+  EXPECT_TRUE(delegate->OnDialogCloseRequested());
 
   delegate->OnDialogClosed(std::string());
   close_callback_wait.Run();

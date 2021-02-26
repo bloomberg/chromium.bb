@@ -47,7 +47,19 @@ class CHROMEOS_EXPORT Pagemap {
   // will be resized to the appropriate length for the caller.
   bool GetEntries(uint64_t address,
                   uint64_t length,
-                  std::vector<PagemapEntry>* entries);
+                  std::vector<PagemapEntry>* entries) const;
+
+  // GetNumberOfPagesPresent is a helper which makes it easy to quickly
+  // determine the number of pages in core for the region specified by |address|
+  // and |length|. On success the function will return true and pages_present
+  // will be set accordingly.
+  bool GetNumberOfPagesPresent(uint64_t address,
+                               uint64_t length,
+                               uint64_t* pages_present) const;
+
+  // IsFullyPresent is a small helper around GetNumberOfPagesPresent which
+  // returns true if every page in the range is presnt.
+  bool IsFullyPresent(uint64_t address, uint64_t length) const;
 
  private:
   friend class PagemapTest;

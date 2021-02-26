@@ -30,8 +30,16 @@ message MakeCredentialRequest {
   string rp_id = 2;
   // Whether to store as a resident credential. Currently not implemented.
   bool resident_credential = 3;
-  // Resident credentials not implemented yet; this field will be ignored.
-  bytes user_entity = 4;
+  // User id for listing credentials to the user.
+  bytes user_id = 4;
+  // MakeCredential should fail if any excluded credential belongs to this
+  // device.
+  repeated bytes excluded_credential_id = 5;
+  // Id used to idenfity the window that initiated the request.
+  uint64 request_id = 6;
+  // User display name for listing credentials to the user.
+  string user_display_name = 7;
+  // Next ID: 8
 }
 
 message MakeCredentialResponse {
@@ -42,6 +50,9 @@ message MakeCredentialResponse {
     VERIFICATION_TIMEOUT = 3;
     INVALID_REQUEST = 4;
     INTERNAL_ERROR = 5;
+    // An excluded credential belongs to this device.
+    EXCLUDED_CREDENTIAL_ID = 6;
+    REQUEST_PENDING = 7;
   }
 
   MakeCredentialStatus status = 1;
@@ -70,6 +81,9 @@ message GetAssertionRequest {
   bytes client_data_hash = 3;
   // Currently must not be empty; resident credentials not implemented yet.
   repeated bytes allowed_credential_id = 4;
+  // Id used to identify the window that initiated the request.
+  uint64 request_id = 5;
+  // Next ID: 6
 }
 
 message Assertion {
@@ -88,6 +102,9 @@ message GetAssertionResponse {
     VERIFICATION_TIMEOUT = 3;
     INVALID_REQUEST = 4;
     INTERNAL_ERROR = 5;
+    // No allowed credential belongs to this device.
+    UNKNOWN_CREDENTIAL_ID = 6;
+    REQUEST_PENDING = 7;
   }
 
   GetAssertionStatus status = 1;
@@ -104,6 +121,33 @@ message HasCredentialsRequest {
 }
 
 message HasCredentialsResponse {
+  enum HasCredentialsStatus {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    INVALID_REQUEST = 2;
+    INTERNAL_ERROR = 3;
+    // No specified credential belongs to this device.
+    UNKNOWN_CREDENTIAL_ID = 4;
+  }
+
+  HasCredentialsStatus status = 1;
   // Valid or resident credentials for the specified rp_id.
-  repeated bytes credential_id = 1;
+  repeated bytes credential_id = 2;
+}
+
+// Dismiss user verification UI and abort the operation.
+message CancelWebAuthnFlowRequest {
+  // Id used to identify the window that initiated the request.
+  uint64 request_id = 1;
+}
+
+message CancelWebAuthnFlowResponse {
+  bool canceled = 1;
+}
+
+// Check whether user-verifying platform authenticator is available.
+message IsUvpaaRequest {}
+
+message IsUvpaaResponse {
+  bool available = 1;
 }

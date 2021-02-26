@@ -62,20 +62,19 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwThreadUtils;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
-import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
 import org.chromium.components.content_capture.ContentCaptureFeatures;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SmartClipProvider;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.url.GURL;
 
 import java.io.BufferedWriter;
@@ -307,6 +306,10 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             } else if (!mFactory.hasStarted()) {
                 if (Looper.myLooper() == Looper.getMainLooper()) {
                     mFactory.startYourEngines(true);
+                } else {
+                    // Record which thread we're on now so we can track whether the final UI thread
+                    // decision differed.
+                    mFactory.getAwInit().setFirstWebViewConstructedOn(Looper.myLooper());
                 }
             }
 
@@ -441,12 +444,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     private void checkThread() {
         if (!ThreadUtils.runningOnUiThread()) {
             final RuntimeException threadViolation = createThreadException();
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                @Override
-                public void run() {
-                    throw threadViolation;
-                }
-            });
+            AwThreadUtils.postToUiThreadLooper(() -> { throw threadViolation; });
             throw createThreadException();
         }
     }
@@ -2359,7 +2357,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void setBackgroundColor(final int color) {
         mFactory.startYourEngines(false);
         if (checkNeedsPost()) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            mFactory.addTask(new Runnable() {
                 @Override
                 public void run() {
                     setBackgroundColor(color);
@@ -2376,7 +2374,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         // is still null. We set the layer type in initForReal in that case.
         if (mAwContents == null) return;
         if (checkNeedsPost()) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            mFactory.addTask(new Runnable() {
                 @Override
                 public void run() {
                     setLayerType(layerType, paint);

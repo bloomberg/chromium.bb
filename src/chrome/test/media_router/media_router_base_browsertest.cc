@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
@@ -80,7 +79,7 @@ void MediaRouterBaseBrowserTest::UninstallMRExtension() {
 bool MediaRouterBaseBrowserTest::ConditionalWait(
     base::TimeDelta timeout,
     base::TimeDelta interval,
-    const base::Callback<bool(void)>& callback) {
+    const base::RepeatingCallback<bool(void)>& callback) {
   base::ElapsedTimer timer;
   do {
     if (callback.Run())

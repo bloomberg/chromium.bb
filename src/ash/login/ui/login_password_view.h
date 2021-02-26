@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
+#include "ash/login/ui/login_palette.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -17,8 +18,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class Button;
-class ButtonListener;
 class ImageView;
 class Separator;
 class Textfield;
@@ -26,12 +25,14 @@ class ToggleImageButton;
 }  // namespace views
 
 namespace ash {
-class LoginButton;
+class ArrowButtonView;
 enum class EasyUnlockIconId;
 
-// Contains a textfield instance with a submit button when the display password
-// button feature is disabled, and a display password button otherwise. The user
-// can type a password into the textfield and hit enter to submit.
+// Contains a textfield and a submit button. When the display password button
+// feature is enabled, the textfield contains a button in the form of an eye
+// icon that the user can click on to reveal the password. Submitting a password
+// will make it read only and prevent further submissions until the controller
+// sets ReadOnly to false again.
 //
 // This view is always rendered via layers.
 //
@@ -39,21 +40,20 @@ enum class EasyUnlockIconId;
 // When the display password button feature is disabled, the password view looks
 // like this:
 //
-// * * * * * *     =>
+// * * * * * *         (=>)
 // ------------------
 //
 // When the display password button feature is enabled, the password view looks
 // like this by default:
 //
-//  * * * * * *    (\)
+//  * * * * * *    (\)  (=>)
 //  ------------------
 //
 //  or this, in display mode:
 //
-//  1 2 3 4 5 6    (o)
+//  1 2 3 4 5 6    (o)  (=>)
 //  ------------------
 class ASH_EXPORT LoginPasswordView : public views::View,
-                                     public views::ButtonListener,
                                      public views::TextfieldController,
                                      public ImeControllerImpl::Observer {
  public:
@@ -82,10 +82,9 @@ class ASH_EXPORT LoginPasswordView : public views::View,
       base::RepeatingCallback<void(const base::string16& password)>;
   using OnPasswordTextChanged = base::RepeatingCallback<void(bool is_empty)>;
   using OnEasyUnlockIconHovered = base::RepeatingClosure;
-  using OnEasyUnlockIconTapped = base::RepeatingClosure;
 
   // Must call |Init| after construction.
-  LoginPasswordView();
+  explicit LoginPasswordView(const LoginPalette& palette);
   ~LoginPasswordView() override;
 
   // |on_submit| is called when the user hits enter (or pressed the submit arrow
@@ -95,7 +94,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   void Init(const OnPasswordSubmit& on_submit,
             const OnPasswordTextChanged& on_password_text_changed,
             const OnEasyUnlockIconHovered& on_easy_unlock_icon_hovered,
-            const OnEasyUnlockIconTapped& on_easy_unlock_icon_tapped);
+            views::Button::PressedCallback on_easy_unlock_icon_tapped);
 
   // Is the password field enabled when there is no text?
   void SetEnabledOnEmptyPassword(bool enabled);
@@ -144,12 +143,6 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // Invert the textfield type and toggle the display password button.
   void InvertPasswordDisplayingState();
-
-  // views::ButtonListener:
-  // Handles click on the display password button. Therefore, it inverts the
-  // display password button icon's (show/hide) and shows/hides the content of
-  // the password field.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Hides the password. When |chromevox_exception| is true, the password is not
   // hidden if ChromeVox is enabled.
@@ -205,10 +198,12 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // through the password and make the characters read out loud one by one).
   std::unique_ptr<base::RetainingOneShotTimer> hide_password_timer_;
 
+  LoginPalette palette_;
+
   views::View* password_row_ = nullptr;
 
   LoginTextfield* textfield_ = nullptr;
-  LoginButton* submit_button_ = nullptr;
+  ArrowButtonView* submit_button_ = nullptr;
   DisplayPasswordButton* display_password_button_ = nullptr;
   views::ImageView* capslock_icon_ = nullptr;
   views::Separator* separator_ = nullptr;

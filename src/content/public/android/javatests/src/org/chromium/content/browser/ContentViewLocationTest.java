@@ -5,7 +5,8 @@
 package org.chromium.content.browser;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -16,17 +17,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
-
-import java.util.concurrent.Callable;
 
 /**
  * Test suite for ensureing that Geolocation interacts as expected
@@ -72,10 +72,10 @@ public class ContentViewLocationTest {
             try {
                 mJavascriptHelper.waitUntilHasValue();
             } catch (Exception e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
             int result = Integer.parseInt(mJavascriptHelper.getJsonResultAndClear());
-            Assert.assertThat(result, Matchers.greaterThan(0));
+            Criteria.checkThat(result, Matchers.greaterThan(0));
         });
     }
 
@@ -86,12 +86,9 @@ public class ContentViewLocationTest {
     }
 
     private void ensureGeolocationRunning(final boolean running) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(running, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mMockLocationProvider.isRunning();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mMockLocationProvider.isRunning(), Matchers.is(running));
+        });
     }
 
     @Before

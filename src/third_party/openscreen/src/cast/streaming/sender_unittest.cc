@@ -8,10 +8,11 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <limits>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -36,13 +37,8 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "util/alarm.h"
+#include "util/chrono_helpers.h"
 #include "util/yet_another_bit_vector.h"
-
-using std::chrono::duration_cast;
-using std::chrono::microseconds;
-using std::chrono::milliseconds;
-using std::chrono::nanoseconds;
-using std::chrono::seconds;
 
 using testing::_;
 using testing::AtLeast;
@@ -528,8 +524,7 @@ TEST_F(SenderTest, ComputesInFlightMediaDuration) {
 TEST_F(SenderTest, RespondsToNetworkLatencyChanges) {
   // The expected maximum error in time calculations is one tick of the RTCP
   // report block's delay type.
-  constexpr auto kEpsilon =
-      duration_cast<nanoseconds>(RtcpReportBlock::Delay(1));
+  constexpr auto kEpsilon = to_nanoseconds(RtcpReportBlock::Delay(1));
 
   // Before the Sender has the necessary information to compute the network
   // round-trip time, GetMaxInFlightMediaDuration() will return half the target
@@ -572,8 +567,8 @@ TEST_F(SenderTest, RespondsToNetworkLatencyChanges) {
   // Create the Receiver Report "reply," and simulate it being sent across the
   // network, back to the Sender.
   receiver()->SetReceiverReport(
-      sender_report_id,
-      duration_cast<RtcpReportBlock::Delay>(kReceiverProcessingDelay));
+      sender_report_id, std::chrono::duration_cast<RtcpReportBlock::Delay>(
+                            kReceiverProcessingDelay));
   receiver()->TransmitRtcpFeedbackPacket();
   SimulateExecution(kInboundDelay);
 

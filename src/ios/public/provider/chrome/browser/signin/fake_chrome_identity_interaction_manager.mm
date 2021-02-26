@@ -24,7 +24,6 @@
 @interface FakeChromeIdentityInteractionManager () {
   SigninCompletionCallback _completionCallback;
   UIViewController* _viewController;
-  BOOL _isCanceling;
 }
 
 @end
@@ -98,11 +97,9 @@
 
 @synthesize fakeIdentity = _fakeIdentity;
 
-- (BOOL)isCanceling {
-  return _isCanceling;
-}
-
-- (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                    completion:
+                                        (SigninCompletionCallback)completion {
   _completionCallback = completion;
   _viewController =
       [[FakeAddAccountViewController alloc] initWithInteractionManager:self];
@@ -112,39 +109,46 @@
                          completion:nil];
 }
 
-- (void)reauthenticateUserWithID:(NSString*)userID
-                           email:(NSString*)userEmail
-                      completion:(SigninCompletionCallback)completion {
-  [self addAccountWithCompletion:completion];
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                     userEmail:(NSString*)userEmail
+                                    completion:
+                                        (SigninCompletionCallback)completion {
+  [self addAccountWithPresentingViewController:viewController
+                                    completion:completion];
 }
 
-- (void)cancelAndDismissAnimated:(BOOL)animated {
-  _isCanceling = YES;
+- (void)cancelAddAccountWithAnimation:(BOOL)animated
+                           completion:(void (^)(void))completion {
   [self dismissAndRunCompletionCallbackWithError:[self canceledError]
-                                        animated:animated];
-  _isCanceling = NO;
+                                        animated:animated
+                                      completion:completion];
 }
 
 - (void)addAccountViewControllerDidTapSignIn {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentity(_fakeIdentity);
-  [self dismissAndRunCompletionCallbackWithError:nil animated:YES];
+  [self dismissAndRunCompletionCallbackWithError:nil
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)addAccountViewControllerDidTapCancel {
   [self dismissAndRunCompletionCallbackWithError:[self canceledError]
-                                        animated:YES];
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)addAccountViewControllerDidThrowUnhandledError {
   [self dismissAndRunCompletionCallbackWithError:[self unhandledError]
-                                        animated:YES];
+                                        animated:YES
+                                      completion:nil];
 }
 
 #pragma mark Helper
 
 - (void)dismissAndRunCompletionCallbackWithError:(NSError*)error
-                                        animated:(BOOL)animated {
+                                        animated:(BOOL)animated
+                                      completion:(void (^)(void))completion {
   if (!_viewController) {
     [self runCompletionCallbackWithError:error];
     return;
@@ -153,6 +157,9 @@
       dismissViewControllerAnimated:animated
                          completion:^{
                            [self runCompletionCallbackWithError:error];
+                           if (completion) {
+                             completion();
+                           }
                          }];
 }
 
@@ -162,7 +169,7 @@
     // Ensure self is not destroyed in the callback.
     NS_VALID_UNTIL_END_OF_SCOPE FakeChromeIdentityInteractionManager*
         strongSelf = self;
-    _completionCallback(error ? nil : _fakeIdentity, error);
+    _completionCallback(_fakeIdentity, error);
     _completionCallback = nil;
   }
 }

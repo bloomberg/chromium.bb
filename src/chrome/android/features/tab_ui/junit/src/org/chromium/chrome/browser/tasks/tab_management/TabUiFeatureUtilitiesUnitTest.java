@@ -24,8 +24,9 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +42,11 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Mock
     CommandLine mCommandLine;
 
+    private void setAccessibilityEnabledForTesting(Boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(value));
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -48,7 +54,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         when(mCommandLine.isNativeImplementation()).thenReturn(true);
         CommandLine.setInstanceForTesting(mCommandLine);
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(false);
+        setAccessibilityEnabledForTesting(false);
         CachedFeatureFlags.resetFlagsForTesting();
     }
 
@@ -56,15 +62,14 @@ public class TabUiFeatureUtilitiesUnitTest {
     public void tearDown() {
         CommandLine.reset();
         CachedFeatureFlags.resetFlagsForTesting();
-        AccessibilityUtil.setAccessibilityEnabledForTesting(null);
+        setAccessibilityEnabledForTesting(null);
         DeviceClassManager.resetForTesting();
         SysUtils.resetForTesting();
     }
 
     @Test
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_NoEnabledFlags() {
@@ -77,7 +82,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -90,15 +95,13 @@ public class TabUiFeatureUtilitiesUnitTest {
     private void cacheFeatureFlags() {
         List<String> featuresToCache = Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
-                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
     }
 
     @Test
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_NoEnabledFlags() {
@@ -110,7 +113,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isGridTabSwitcherEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -122,8 +125,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_Layout() {
         // clang-format on
@@ -135,7 +137,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -148,8 +150,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_Layout() {
         // clang-format on
@@ -161,7 +162,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -175,8 +176,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_LayoutGroup() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -187,7 +187,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -201,8 +201,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_LayoutGroup() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -213,7 +212,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -225,8 +224,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_Group() {
         // clang-format on
@@ -238,7 +236,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -250,8 +248,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_Group() {
         // clang-format on
@@ -263,7 +260,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -275,8 +272,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_Continuation() {
         // clang-format on
@@ -288,7 +284,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -300,8 +296,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Test
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_Continuation() {
         // clang-format on
@@ -313,7 +308,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -327,7 +322,6 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_AllFlags() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -338,7 +332,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -352,7 +346,6 @@ public class TabUiFeatureUtilitiesUnitTest {
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_AllFlags() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -364,7 +357,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -377,8 +370,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_LayoutContinuation() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -389,7 +381,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -402,8 +394,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_LayoutContinuation() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -414,7 +405,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -427,8 +418,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testCacheGridTabSwitcher_HighEnd_GroupContinuation() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -439,7 +429,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -452,8 +442,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
                                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testCacheGridTabSwitcher_LowEnd_GroupContinuation() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)).thenReturn(true);
@@ -464,7 +453,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -477,8 +466,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testCacheGridAndGroup_LowEnd_enabledThenDisabled_withContinuationFlag() {
         // clang-format on
         when(mCommandLine.hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)).thenReturn(true);

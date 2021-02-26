@@ -12,7 +12,7 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/shared_copy_on_write.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 
 class CPDF_Object;
 class CPDF_TransferFunc;
@@ -80,8 +80,7 @@ class CPDF_GeneralState {
  private:
   class StateData final : public Retainable {
    public:
-    template <typename T, typename... Args>
-    friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+    CONSTRUCT_VIA_MAKE_RETAIN;
 
     RetainPtr<StateData> Clone() const;
 

@@ -34,9 +34,6 @@
 
 namespace {
 
-constexpr char kGeneratedPath[] =
-    "@out_folder@/gen/chrome/browser/resources/welcome/";
-
 const char kPreviewBackgroundPath[] = "preview-background.jpg";
 
 bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
@@ -82,6 +79,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"next", IDS_WELCOME_NEXT},
       {"noThanks", IDS_NO_THANKS},
       {"skip", IDS_WELCOME_SKIP},
+      {"stepsLabel", IDS_WELCOME_STEPS},
 
       // Sign-in view strings.
       {"signInHeader", IDS_WELCOME_SIGNIN_VIEW_HEADER},
@@ -132,7 +130,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
       content::WebUIDataSource::Create(url.host());
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kWelcomeResources, kWelcomeResourcesSize),
-      kGeneratedPath, IDR_WELCOME_HTML);
+      "", IDR_WELCOME_WELCOME_HTML);
 
   // Add welcome strings.
   AddStrings(html_source);

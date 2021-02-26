@@ -23,13 +23,20 @@ extern "C" {
 #include "aom/aom_integer.h"
 #include "aom/internal/aom_image_internal.h"
 
+/*!\cond */
+
 #define AOMINNERBORDERINPIXELS 160
 #define AOM_INTERP_EXTEND 4
 #define AOM_BORDER_IN_PIXELS 288
 #define AOM_ENC_NO_SCALE_BORDER 160
 #define AOM_DEC_BORDER_IN_PIXELS 64
 
+/*!\endcond */
+/*!
+ * \brief YV12 frame buffer data structure
+ */
 typedef struct yv12_buffer_config {
+  /*!\cond */
   union {
     struct {
       int y_width;
@@ -106,7 +113,10 @@ typedef struct yv12_buffer_config {
   int corrupted;
   int flags;
   aom_metadata_array_t *metadata;
+  /*!\endcond */
 } YV12_BUFFER_CONFIG;
+
+/*!\cond */
 
 #define YV12_FLAG_HIGHBITDEPTH 8
 
@@ -129,6 +139,7 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 
 int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
+/*!\endcond */
 /*!\brief Removes metadata from YUV_BUFFER_CONFIG struct.
  *
  * Frees metadata in frame buffer.
@@ -140,10 +151,12 @@ void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
 /*!\brief Copy metadata to YUV_BUFFER_CONFIG struct.
  *
- * Copies metadata in frame buffer.
+ * Copies metadata to frame buffer.
  * Frame buffer will clear any previous metadata and will reallocate the
  * metadata array to the new metadata size. Then, it will copy the new metadata
  * array into it.
+ * If arr metadata pointer points to the same address as current metadata in the
+ * frame buffer, function will do nothing and return 0.
  * Returns 0 on success or -1 on failure.
  *
  * \param[in]    ybf       Frame buffer struct pointer

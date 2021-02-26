@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -50,6 +51,13 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
     STATE_ACTIVE = 1 << 6,
   };
 
+  // Returns whether |event| should be handled by a ShelfAppButton if a context
+  // menu for the view is shown. Note that the context menu controller will
+  // redirect gesture events to the hotseat widget if the context menu was shown
+  // for a ShelfAppButton). The hotseat widget uses this method to determine
+  // whether such events can/should be dropped without handling.
+  static bool ShouldHandleEventFromContextMenu(const ui::GestureEvent* event);
+
   ShelfAppButton(ShelfView* shelf_view,
                  ShelfButtonDelegate* shelf_button_delegate);
   ~ShelfAppButton() override;
@@ -64,6 +72,10 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   void AddState(State state);
   void ClearState(State state);
   int state() const { return state_; }
+
+  // Clears drag drag state that might have been set by gesture handling when a
+  // gesture ends. No-op if the drag state has already been cleared.
+  void ClearDragStateOnGestureEnd();
 
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;
@@ -105,6 +117,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Return the bounds in the local coordinates enclosing the small ripple area.
   gfx::Rect CalculateSmallRippleArea() const;
+
+  // Gets the color of the |notification_indicator_| for test usage.
+  SkColor GetNotificationIndicatorColorForTest();
 
  protected:
   // ui::EventHandler:
@@ -194,6 +209,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // A timer to activate the ink drop ripple during a long press.
   base::OneShotTimer ripple_activation_timer_;
+
+  std::unique_ptr<ShelfButtonDelegate::ScopedActiveInkDropCount>
+      ink_drop_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfAppButton);
 };

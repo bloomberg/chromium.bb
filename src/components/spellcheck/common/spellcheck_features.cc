@@ -13,11 +13,6 @@ namespace spellcheck {
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-const base::Feature kWinUseHybridSpellChecker{
-    "WinUseHybridSpellChecker", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 bool UseBrowserSpellChecker() {
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   return false;
@@ -31,20 +26,14 @@ bool UseBrowserSpellChecker() {
 
 #if defined(OS_WIN)
 const base::Feature kWinUseBrowserSpellChecker{
-    "WinUseBrowserSpellChecker", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WinUseBrowserSpellChecker", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kWinDelaySpellcheckServiceInit{
+    "WinDelaySpellcheckServiceInit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool WindowsVersionSupportsSpellchecker() {
   return base::win::GetVersion() > base::win::Version::WIN7 &&
          base::win::GetVersion() < base::win::Version::WIN_LAST;
-}
-
-bool UseWinHybridSpellChecker() {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  return base::FeatureList::IsEnabled(spellcheck::kWinUseHybridSpellChecker) &&
-         UseBrowserSpellChecker();
-#else
-  return false;
-#endif
 }
 #endif  // defined(OS_WIN)
 

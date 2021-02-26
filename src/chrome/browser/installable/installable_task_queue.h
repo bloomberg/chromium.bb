@@ -58,13 +58,19 @@ class InstallableTaskQueue {
   // Clears all tasks from the main and paused list.
   void Reset();
 
+  // Clears all tasks from the main and paused list, and then calls the callback
+  // on all of them with the given status code.
+  void ResetWithError(InstallableStatusCode code);
+
  private:
   friend class InstallableManagerBrowserTest;
+  friend class InstallableManagerOfflineCapabilityBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerPassesWhenWaiting);
-
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerNoFetchHandlerFails);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
 
   // The list of <params, callback> pairs that have come from a call to
   // InstallableManager::GetData.

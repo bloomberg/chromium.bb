@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.notifications.settings;
 
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,6 +20,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
@@ -34,8 +37,6 @@ import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -131,11 +132,8 @@ public class NotificationSettingsTest {
             fromWebsites.performClick();
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getTopFragment() instanceof SingleCategorySettings;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getTopFragment(), Matchers.instanceOf(SingleCategorySettings.class));
         });
 
         SingleCategorySettings fragment = (SingleCategorySettings) getTopFragment();

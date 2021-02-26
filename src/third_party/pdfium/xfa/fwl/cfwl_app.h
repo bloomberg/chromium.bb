@@ -7,13 +7,15 @@
 #ifndef XFA_FWL_CFWL_APP_H_
 #define XFA_FWL_CFWL_APP_H_
 
-#include <memory>
-
-#include "core/fxcrt/timerhandler_iface.h"
+#include "core/fxcrt/cfx_timer.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fwl/cfwl_widgetmgr.h"
 
 class CFWL_NoteDriver;
-class CFWL_WidgetMgr;
+class IFWL_ThemeProvider;
 
 enum FWL_KeyFlag {
   FWL_KEYFLAG_Ctrl = 1 << 0,
@@ -25,26 +27,41 @@ enum FWL_KeyFlag {
   FWL_KEYFLAG_MButton = 1 << 6
 };
 
-class CFWL_App {
+class CFWL_App final : public cppgc::GarbageCollected<CFWL_App> {
  public:
-  class AdapterIface {
+  class AdapterIface : public cppgc::GarbageCollectedMixin {
    public:
     virtual ~AdapterIface() = default;
     virtual CFWL_WidgetMgr::AdapterIface* GetWidgetMgrAdapter() = 0;
-    virtual TimerHandlerIface* GetTimerHandler() = 0;
+    virtual CFX_Timer::HandlerIface* GetTimerHandler() = 0;
+    virtual IFWL_ThemeProvider* GetThemeProvider() = 0;
+    virtual cppgc::Heap* GetHeap() = 0;
   };
 
-  explicit CFWL_App(AdapterIface* pAdapter);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_App();
 
-  AdapterIface* GetAdapterNative() const { return m_pAdapterNative.Get(); }
-  CFWL_WidgetMgr* GetWidgetMgr() const { return m_pWidgetMgr.get(); }
-  CFWL_NoteDriver* GetNoteDriver() const { return m_pNoteDriver.get(); }
+  void Trace(cppgc::Visitor* visitor) const;
+
+  CFWL_WidgetMgr::AdapterIface* GetWidgetMgrAdapter() const {
+    return m_pAdapter->GetWidgetMgrAdapter();
+  }
+  CFX_Timer::HandlerIface* GetTimerHandler() const {
+    return m_pAdapter->GetTimerHandler();
+  }
+  IFWL_ThemeProvider* GetThemeProvider() const {
+    return m_pAdapter->GetThemeProvider();
+  }
+  cppgc::Heap* GetHeap() const { return m_pAdapter->GetHeap(); }
+  CFWL_WidgetMgr* GetWidgetMgr() const { return m_pWidgetMgr; }
+  CFWL_NoteDriver* GetNoteDriver() const { return m_pNoteDriver; }
 
  private:
-  UnownedPtr<AdapterIface> const m_pAdapterNative;
-  std::unique_ptr<CFWL_WidgetMgr> m_pWidgetMgr;
-  std::unique_ptr<CFWL_NoteDriver> m_pNoteDriver;
+  explicit CFWL_App(AdapterIface* pAdapter);
+
+  cppgc::Member<AdapterIface> const m_pAdapter;
+  cppgc::Member<CFWL_WidgetMgr> m_pWidgetMgr;
+  cppgc::Member<CFWL_NoteDriver> m_pNoteDriver;
 };
 
 #endif  // XFA_FWL_CFWL_APP_H_

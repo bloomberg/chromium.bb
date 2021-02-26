@@ -21,10 +21,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "absl/base/attributes.h"
-#include "absl/strings/string_view.h"
 #include "examples/file_reader_interface.h"
 
 namespace libgav1 {
@@ -42,7 +41,7 @@ class FileReader : public FileReaderInterface {
   // ReadTemporalUnit() may return truncated data.
   // Returns nullptr when the file does not exist, cannot be read, or is not an
   // IVF file.
-  static std::unique_ptr<FileReaderInterface> Open(absl::string_view file_name,
+  static std::unique_ptr<FileReaderInterface> Open(const std::string& file_name,
                                                    bool error_tolerant = false);
 
   FileReader() = delete;
@@ -62,10 +61,10 @@ class FileReader : public FileReaderInterface {
   // The |timestamp| pointer is optional: callers not interested in timestamps
   // can pass nullptr. When |timestamp| is not a nullptr, this function returns
   // the presentation timestamp from the IVF frame header.
-  ABSL_MUST_USE_RESULT bool ReadTemporalUnit(std::vector<uint8_t>* tu_data,
-                                             int64_t* timestamp) override;
+  /*LIBGAV1_MUST_USE_RESULT*/ bool ReadTemporalUnit(
+      std::vector<uint8_t>* tu_data, int64_t* timestamp) override;
 
-  ABSL_MUST_USE_RESULT bool IsEndOfFile() const override {
+  /*LIBGAV1_MUST_USE_RESULT*/ bool IsEndOfFile() const override {
     return feof(file_) != 0;
   }
 

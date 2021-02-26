@@ -16,9 +16,10 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
+#include "components/no_state_prefetch/renderer/prerender_helper.h"
 #include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
@@ -200,6 +201,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if defined(OS_ANDROID)
       client_data_header,
+      /* night_mode_enabled= */ false,
 #endif
       ChromeRenderThreadObserver::GetDynamicParams()));
 
@@ -213,6 +215,13 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       MaybeCreateThrottle(request, render_frame_id);
   if (throttle)
     throttles.push_back(std::move(throttle));
+
+  if (render_frame_id != MSG_ROUTING_NONE) {
+    auto throttle = lite_video::LiteVideoURLLoaderThrottle::MaybeCreateThrottle(
+        request, render_frame_id);
+    if (throttle)
+      throttles.push_back(std::move(throttle));
+  }
 
   return throttles;
 }

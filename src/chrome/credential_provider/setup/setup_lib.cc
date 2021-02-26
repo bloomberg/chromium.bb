@@ -4,8 +4,8 @@
 
 #include "chrome/credential_provider/setup/setup_lib.h"
 
-#include <shlobj.h>
 #include <atlbase.h>
+#include <shlobj.h>
 #include <iomanip>
 #include <string>
 
@@ -26,32 +26,18 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/extension/extension_strings.h"
+#include "chrome/credential_provider/extension/extension_utils.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/setup/gcpw_files.h"
+#include "chrome/credential_provider/setup/setup_utils.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 
 namespace credential_provider {
 
 namespace {
-
-constexpr base::FilePath::CharType kCredentialProviderDll[] =
-    FILE_PATH_LITERAL("Gaia1_0.dll");
-
-constexpr base::FilePath::CharType kCredentialProviderSetupExe[] =
-    FILE_PATH_LITERAL("gcp_setup.exe");
-
-// List of files to install.  If the file list is changed here, make sure to
-// update the files added in make_setup.py.
-constexpr const base::FilePath::CharType* kFilenames[] = {
-    kCredentialProviderSetupExe, FILE_PATH_LITERAL("gcp_eventlog_provider.dll"),
-    kCredentialProviderDll,  // Base name to the CP dll.
-};
-
-// List of dlls to register.  Must be a subset of kFilenames.
-constexpr const base::FilePath::CharType* kRegsiterDlls[] = {
-    kCredentialProviderDll,
-};
 
 // Creates the directory where GCP is to be installed.
 base::FilePath CreateInstallDirectory() {
@@ -76,7 +62,7 @@ base::FilePath CreateInstallDirectory() {
 // and are copied to the same relative path under |dest_path|.
 HRESULT InstallFiles(const base::FilePath& src_path,
                      const base::FilePath& dest_path,
-                     const base::FilePath::CharType* const names[],
+                     const base::FilePath::StringType names[],
                      size_t length) {
   for (size_t i = 0; i < length; ++i) {
     base::FilePath src = src_path.Append(names[i]);
@@ -106,7 +92,7 @@ HRESULT InstallFiles(const base::FilePath& src_path,
 // |dest_path|.  |fakes| is non-null during unit tests to install fakes into
 // the loaded DLL.
 HRESULT RegisterDlls(const base::FilePath& dest_path,
-                     const base::FilePath::CharType* const names[],
+                     const base::FilePath::StringType names[],
                      size_t length,
                      FakesForTesting* fakes) {
   bool has_failures = false;
@@ -144,7 +130,7 @@ HRESULT RegisterDlls(const base::FilePath& dest_path,
 // |dest_path|.  |fakes| is non-null during unit tests to install fakes into
 // the loaded DLL.
 HRESULT UnregisterDlls(const base::FilePath& dest_path,
-                       const base::FilePath::CharType* const names[],
+                       const base::FilePath::StringType names[],
                        size_t length,
                        FakesForTesting* fakes) {
   bool has_failures = false;
@@ -171,31 +157,6 @@ HRESULT UnregisterDlls(const base::FilePath& dest_path,
 
 }  // namespace
 
-namespace switches {
-
-// These are command line switches to the setup program.
-
-// Indicates the handle of the parent setup process when setup relaunches itself
-// during uninstall.
-const char kParentHandle[] = "parent-handle";
-
-// Indicates the full path to the GCP installation to delete.  This switch is
-// only used during uninstall.
-const char kInstallPath[] = "install-path";
-
-// Indicates to setup that it is being run to inunstall GCP.  If this switch
-// is not present the assumption is to install GCP.
-const char kUninstall[] = "uninstall";
-
-// Command line arguments used to either enable or disable stats and crash
-// dump collection.  When either of these command line args is used setup
-// will perform the requested action and exit without trying to install or
-// uninstall anything.  Disable takes precedence over enable.
-const char kEnableStats[] = "enable-stats";
-const char kDisableStats[] = "disable-stats";
-
-}  // namespace switches
-
 HRESULT DoInstall(const base::FilePath& installer_path,
                   const base::string16& product_version,
                   FakesForTesting* fakes) {
@@ -215,12 +176,17 @@ HRESULT DoInstall(const base::FilePath& installer_path,
   }
 
   base::FilePath src_path = installer_path.DirName();
-  HRESULT hr =
-      InstallFiles(src_path, dest_path, kFilenames, base::size(kFilenames));
+  auto install_files =
+      credential_provider::GCPWFiles::Get()->GetEffectiveInstallFiles();
+  HRESULT hr = InstallFiles(src_path, dest_path, install_files.data(),
+                            install_files.size());
   if (FAILED(hr))
     return hr;
 
-  hr = RegisterDlls(dest_path, kRegsiterDlls, base::size(kRegsiterDlls), fakes);
+  auto register_dlls =
+      credential_provider::GCPWFiles::Get()->GetRegistrationFiles();
+  hr = RegisterDlls(dest_path, register_dlls.data(), register_dlls.size(),
+                    fakes);
   if (FAILED(hr))
     return hr;
 
@@ -240,10 +206,19 @@ HRESULT DoInstall(const base::FilePath& installer_path,
     // through.
   }
 
-  hr = WriteCredentialProviderRegistryValues();
+  hr = WriteCredentialProviderRegistryValues(dest_path);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "WriteCredentialProviderRegistryValues failed hr="
                  << putHR(hr);
+  }
+
+  if (extension::IsGCPWExtensionEnabled()) {
+    DWORD error_code = extension::InstallGCPWExtension(
+        dest_path.Append(kCredentialProviderExtensionExe));
+    if (error_code != ERROR_SUCCESS) {
+      LOGFN(ERROR) << "InstallGCPWExtension failed win32=" << error_code;
+      return HRESULT_FROM_WIN32(error_code);
+    }
   }
 
   return S_OK;
@@ -254,9 +229,11 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
                     FakesForTesting* fakes) {
   bool has_failures = false;
 
+  auto register_dlls =
+      credential_provider::GCPWFiles::Get()->GetRegistrationFiles();
   // Do all actions best effort and keep going.
-  has_failures |= FAILED(UnregisterDlls(dest_path, kRegsiterDlls,
-                                        base::size(kRegsiterDlls), fakes));
+  has_failures |= FAILED(UnregisterDlls(dest_path, register_dlls.data(),
+                                        register_dlls.size(), fakes));
 
   // If the DLLs are unregistered, Credential Provider will not be loaded by
   // Winlogon. Therefore, it is safe to delete the startup sentinel file at this
@@ -264,9 +241,12 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
   if (!has_failures)
     DeleteStartupSentinel();
 
+  has_failures |=
+      FAILED(HRESULT_FROM_WIN32(extension::UninstallGCPWExtension()));
+
   // Delete all files in the destination directory.  This directory does not
   // contain any configuration files or anything else user generated.
-  if (!base::DeleteFileRecursively(dest_path)) {
+  if (!base::DeletePathRecursively(dest_path)) {
     has_failures = true;
     ScheduleDirectoryForDeletion(dest_path);
   }
@@ -274,7 +254,14 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
   // |dest_path| is of the form %ProgramFile%\Google\GCP\VERSION.  Now try to
   // delete the parent directory if possible.
   if (base::IsDirectoryEmpty(dest_path.DirName()))
-    has_failures |= !base::DeleteFile(dest_path.DirName(), false);
+    has_failures |= !base::DeleteFile(dest_path.DirName());
+
+  StandaloneInstallerConfigurator* installer_config =
+      StandaloneInstallerConfigurator::Get();
+  if (installer_config->IsStandaloneInstallation()) {
+    has_failures |= FAILED(HRESULT_FROM_WIN32(
+        StandaloneInstallerConfigurator::Get()->RemoveUninstallKey()));
+  }
 
   // TODO(rogerta): ask user to reboot if anything went wrong during uninstall.
 
@@ -325,12 +312,6 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path) {
   base::Process process(base::LaunchProcess(cmdline, options));
 
   return process.IsValid() ? S_OK : E_FAIL;
-}
-
-void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
-                               size_t* count) {
-  *names = kFilenames;
-  *count = base::size(kFilenames);
 }
 
 int EnableStatsCollection(const base::CommandLine& cmdline) {
@@ -391,17 +372,25 @@ HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe) {
   return HRESULT_FROM_WIN32(status);
 }
 
-HRESULT WriteCredentialProviderRegistryValues() {
+HRESULT WriteCredentialProviderRegistryValues(
+    const base::FilePath& install_path) {
+  HRESULT hr =
+      StandaloneInstallerConfigurator::Get()->AddUninstallKey(install_path);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "AddUninstallKey  hr=" << putHR(hr);
+    return hr;
+  }
+
   base::win::RegKey key;
   LONG status = key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_SET_VALUE);
   if (status != ERROR_SUCCESS) {
-    HRESULT hr = HRESULT_FROM_WIN32(status);
+    hr = HRESULT_FROM_WIN32(status);
     LOGFN(ERROR) << "Unable to create " << kGcpRootKeyName
                  << " hr=" << putHR(hr);
     return hr;
   }
 
-  return HRESULT_FROM_WIN32(status);
+  return S_OK;
 }
 
 }  // namespace credential_provider

@@ -5,7 +5,7 @@
 #ifndef PLATFORM_API_TASK_RUNNER_H_
 #define PLATFORM_API_TASK_RUNNER_H_
 
-#include <future>  // NOLINT
+#include <future>
 #include <utility>
 
 #include "platform/api/time.h"

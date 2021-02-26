@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,12 +49,14 @@ namespace {
 
 // Maintain the UI controls and web view for web shell
 class ShellWindowDelegateView : public views::WidgetDelegateView,
-                                public views::TextfieldController,
-                                public views::ButtonListener {
+                                public views::TextfieldController {
  public:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
-  ShellWindowDelegateView(Shell* shell) : shell_(shell) {}
+  explicit ShellWindowDelegateView(Shell* shell) : shell_(shell) {
+    SetHasWindowSizeControls(true);
+    InitShellWindow();
+  }
 
   ~ShellWindowDelegateView() override {}
 
@@ -100,7 +104,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   void UpdateLoadProgress(double progress = 0.) {
     std::string stop_text("Stop");
-    if (stop_button_->state() == views::Button::STATE_NORMAL)
+    if (stop_button_->GetState() == views::Button::STATE_NORMAL)
       stop_text = base::StringPrintf("Stop (%.0f%%)", progress * 100);
     stop_button_->SetText(base::ASCIIToUTF16(stop_text));
   }
@@ -131,32 +135,38 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
     views::ColumnSet* toolbar_column_set = toolbar_layout->AddColumnSet(0);
     // Back button
-    auto back_button =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Back"));
+    auto back_button = std::make_unique<views::MdTextButton>(
+        base::BindRepeating(&Shell::GoBackOrForward,
+                            base::Unretained(shell_.get()), -1),
+        base::ASCIIToUTF16("Back"));
     gfx::Size back_button_size = back_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
         views::GridLayout::ColumnSize::kFixed, back_button_size.width(),
         back_button_size.width() / 2);
     // Forward button
-    auto forward_button =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Forward"));
+    auto forward_button = std::make_unique<views::MdTextButton>(
+        base::BindRepeating(&Shell::GoBackOrForward,
+                            base::Unretained(shell_.get()), 1),
+        base::ASCIIToUTF16("Forward"));
     gfx::Size forward_button_size = forward_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
         views::GridLayout::ColumnSize::kFixed, forward_button_size.width(),
         forward_button_size.width() / 2);
     // Refresh button
-    auto refresh_button =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Refresh"));
+    auto refresh_button = std::make_unique<views::MdTextButton>(
+        base::BindRepeating(&Shell::Reload, base::Unretained(shell_.get())),
+        base::ASCIIToUTF16("Refresh"));
     gfx::Size refresh_button_size = refresh_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
         views::GridLayout::ColumnSize::kFixed, refresh_button_size.width(),
         refresh_button_size.width() / 2);
     // Stop button
-    auto stop_button =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop (100%)"));
+    auto stop_button = std::make_unique<views::MdTextButton>(
+        base::BindRepeating(&Shell::Stop, base::Unretained(shell_.get())),
+        base::ASCIIToUTF16("Stop (100%)"));
     int stop_button_width = stop_button->GetPreferredSize().width();
     toolbar_column_set->AddColumn(views::GridLayout::FILL,
                                   views::GridLayout::CENTER, 0,
@@ -192,11 +202,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     }
 
     layout->AddPaddingRow(0, 5);
-
-    InitAccelerators();
   }
 
   void InitAccelerators() {
+    // This function must be called when part of the widget hierarchy.
+    DCHECK(GetWidget());
     static const ui::KeyboardCode keys[] = {ui::VKEY_F5, ui::VKEY_BROWSER_BACK,
                                             ui::VKEY_BROWSER_FORWARD};
     for (size_t i = 0; i < base::size(keys); ++i) {
@@ -226,29 +236,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     return false;
   }
 
-  // Overridden from ButtonListener
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == back_button_)
-      shell_->GoBackOrForward(-1);
-    else if (sender == forward_button_)
-      shell_->GoBackOrForward(1);
-    else if (sender == refresh_button_)
-      shell_->Reload();
-    else if (sender == stop_button_)
-      shell_->Stop();
-  }
-
   // Overridden from WidgetDelegateView
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
   base::string16 GetWindowTitle() const override { return title_; }
-  void WindowClosing() override {
-    if (shell_) {
-      delete shell_;
-      shell_ = nullptr;
-    }
-  }
 
   // Overridden from View
   gfx::Size GetMinimumSize() const override {
@@ -256,12 +245,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // (preferred) size.
     return gfx::Size();
   }
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override {
-    if (details.is_add && details.child == this) {
-      InitShellWindow();
-    }
-  }
+  void AddedToWidget() override { InitAccelerators(); }
 
   // Overridden from AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
@@ -281,8 +265,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
  private:
-  // Hold a reference of Shell for deleting it when the window is closing
-  Shell* shell_;
+  std::unique_ptr<Shell> shell_;
 
   // Window title
   base::string16 title_;
@@ -382,7 +365,7 @@ void Shell::PlatformSetContents() {
   views::WidgetDelegate* widget_delegate = window_widget_->widget_delegate();
   ShellWindowDelegateView* delegate_view =
       static_cast<ShellWindowDelegateView*>(widget_delegate);
-  delegate_view->AttachTab(tab_.get(), content_size_);
+  delegate_view->AttachTab(tab(), content_size_);
   window_->GetHost()->Show();
   window_widget_->Show();
 }

@@ -9,8 +9,6 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/class_property.h"
 
 class SkRegion;
@@ -21,14 +19,15 @@ template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }  // namespace aura
 
+namespace chromeos {
+enum class WindowStateType;
+}
+
 namespace gfx {
 class Rect;
 }
 
 namespace ash {
-
-enum class WindowPinType;
-enum class WindowStateType;
 
 class WindowBackdrop;
 
@@ -51,11 +50,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowBackdrop*>* const
     kWindowBackdropKey;
 
-// If set to true, the window will be replaced by a black rectangle when taking
-// screenshot for assistant. Used to preserve privacy for incognito windows.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kBlockedForAssistantSnapshotKey;
-
 // If true, the window can attach into another window.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanAttachToAnotherWindowKey;
@@ -73,29 +67,9 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kHideInOverviewKey;
 
-// Whether the shelf should be hidden when this window is put into fullscreen.
-// Exposed because some windows want to explicitly opt-out of this.
+// A property key to indicate whether we should hide this window in the shelf.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kHideShelfWhenFullscreenKey;
-
-// Whether entering fullscreen means that a window should automatically enter
-// immersive mode. This is false for some client windows, such as Chrome Apps.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kImmersiveImpliedByFullscreen;
-
-// Whether immersive is currently active (in ImmersiveFullscreenController
-// parlance, "enabled").
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kImmersiveIsActive;
-
-// The bounds of the top container in screen coordinates.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
-    kImmersiveTopContainerBoundsInScreen;
-
-// The type of window for logging immersive metrics. Type:
-// ImmersiveFullscreenController::WindowType.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int>* const
-    kImmersiveWindowType;
+    kHideInShelfKey;
 
 // If true, the window is the target window for the tab-dragged window. The key
 // is used by overview to show a highlight indication to indicate which overview
@@ -108,10 +82,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsDraggingTabsKey;
 
-// If true, the window is currently showing in overview mode.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kIsShowingInOverviewKey;
-
 // If true, the window will be ignored when mirroring the desk contents into
 // the desk's mini_view.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -123,10 +93,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kForceVisibleInMiniViewKey;
 
-// A property key to tell if the window's opacity should be managed by WM.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowManagerManagesOpacityKey;
-
 // A property key to store whether we should minimize a window when a system
 // synthesized back event (back gesture, back button) is processed by this
 // window and when this window is at the bottom of its navigation stack.
@@ -134,8 +100,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool*>* const
     kMinimizeOnBackKey;
 
 // A property key to store the window state the window had before entering PIP.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
-    kPrePipWindowStateTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    chromeos::WindowStateType>* const kPrePipWindowStateTypeKey;
 
 // If true, the current PIP window is spawned from this window.
 // Android PIP has two types of behavior depending on how many activities the
@@ -177,8 +143,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 // take preference over the current state if
 // |kRestoreWindowStateTypeOverrideKey| is set. This is used by e.g. the tablet
 // mode window manager.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
-    kRestoreWindowStateTypeOverrideKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    chromeos::WindowStateType>* const kRestoreWindowStateTypeOverrideKey;
 
 // A property key to store whether search key accelerator is reserved for a
 // window. This is used to pass through search key accelerators to Android
@@ -205,40 +171,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkRegion*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
     kTabDraggingSourceWindowKey;
 
-// A property key to store the active color on the window frame.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
-    kFrameActiveColorKey;
-// A property key to store the inactive color on the window frame.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
-    kFrameInactiveColorKey;
-// A property key that is set to true when the window frame should look like it
-// is in restored state, but actually isn't. Set while dragging a maximized
-// window.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kFrameRestoreLookKey;
-
-// A property key whose value is shown in alt-tab/overview mode. If non-value
-// is set, the window's title is used.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<base::string16*>* const
-    kWindowOverviewTitleKey;
-
-// A property key to store ash::WindowPinType for a window.
-// When setting this property to PINNED or TRUSTED_PINNED, the window manager
-// will try to fullscreen the window and pin it on the top of the screen. If the
-// window manager failed to do it, the property will be restored to NONE. When
-// setting this property to NONE, the window manager will restore the window.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowPinType>* const
-    kWindowPinTypeKey;
-
 // A property key to indicate whether ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPositionManagedTypeKey;
-
-// A property key to indicate ash's extended window state.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
-    kWindowStateTypeKey;
 
 // A property key to indicate pip window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

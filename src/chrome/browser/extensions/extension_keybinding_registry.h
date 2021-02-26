@@ -20,6 +20,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace ui {
@@ -28,7 +29,6 @@ class Accelerator;
 
 namespace extensions {
 
-class ActiveTabPermissionGranter;
 class Extension;
 
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
@@ -45,9 +45,8 @@ class ExtensionKeybindingRegistry : public CommandService::Observer,
 
   class Delegate {
    public:
-    // Gets the ActiveTabPermissionGranter for the active tab, if any.
-    // If there is no active tab then returns NULL.
-    virtual ActiveTabPermissionGranter* GetActiveTabPermissionGranter() = 0;
+    // Returns the currently active WebContents, or nullptr if there is none.
+    virtual content::WebContents* GetWebContentsForExtension() = 0;
   };
 
   // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by
@@ -63,11 +62,6 @@ class ExtensionKeybindingRegistry : public CommandService::Observer,
   bool shortcut_handling_suspended() const {
     return shortcut_handling_suspended_;
   }
-
-  // Execute the command bound to |accelerator| and provided by the extension
-  // with |extension_id|, if it exists.
-  void ExecuteCommand(const std::string& extension_id,
-                      const ui::Accelerator& accelerator);
 
   // Check whether the specified |accelerator| has been registered.
   bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;

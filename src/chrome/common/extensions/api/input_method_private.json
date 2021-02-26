@@ -77,7 +77,8 @@
           "spellCheck": {"type": "boolean", "description": "Whether the text field wants spell-check."},
           "shouldDoLearning": {"type": "boolean", "description": "Whether text entered into the text field should be used to improve typing suggestions for the user."},
           "focusReason": {"$ref": "FocusReason", "description": "How the text field was focused"},
-          "hasBeenPassword": {"type": "boolean", "description": "Whether the text field has ever been a password field."}
+          "hasBeenPassword": {"type": "boolean", "description": "Whether the text field has ever been a password field."},
+          "appKey": {"type": "string", "optional": true, "description": "Key of the app associated with this text field if any."}
         }
       },
       {
@@ -525,7 +526,7 @@
       }, {
         "name": "setCompositionRange",
         "type": "function",
-        "description": "Set the composition range. If this extension does not own the active IME, this fails.",
+        "description": "(Deprecated) Set the composition range. If this extension does not own the active IME, this fails. Use setComposingRange instead.",
         "parameters": [
           {
             "name": "parameters",
@@ -571,7 +572,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not. On failure, chrome.runtime.lastError is set.",
+            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not. On failure, $(ref:runtime.lastError) is set.",
             "parameters": [
               {
                 "name": "success",
@@ -581,11 +582,208 @@
           }
         ]
       }, {
+        "name": "setComposingRange",
+        "type": "function",
+        "description": "Sets the composing range. If this extension does not own the active IME, this fails.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where the composition text will be set",
+                "type": "integer"
+              },
+              "start": {
+                "description": "The starting index of the composing range, in bytes.",
+                "type": "integer"
+              },
+              "end": {
+                "description": "The ending index of the composing range, in bytes. The order of the start and end index does not matter.",
+                "type": "integer"
+              },
+              "segments": {
+                "description": "List of segments and their associated types.",
+                "type": "array",
+                "optional": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "description": "Index of the character to start this segment at",
+                      "type": "integer"
+                    },
+                    "end": {
+                      "description": "Index of the character to end this segment after.",
+                      "type": "integer"
+                    },
+                    "style": {
+                      "$ref": "UnderlineStyle",
+                      "description": "The type of the underline to modify this segment."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation is complete. On failure, $(ref:runtime.lastError) is set."
+          }
+        ]
+      }, {
+        "name": "getAutocorrectRange",
+        "type": "function",
+        "description": "Get the autocorrected word's bounds. Returns an empty range if there is no autocorrected word.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the autocorrected context.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with the bounds of the autocorrect word when the operation completes. On failure, $(ref:runtime.lastError) is set.",
+            "parameters": [
+              {
+                "name": "autocorrectCharacterBounds",
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "description": "The start index of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "end": {
+                    "description": "The end index of the autocorrected word's bounds.",
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }, {
+        "name": "getAutocorrectCharacterBounds",
+        "type": "function",
+        "description": "Get the screen coordinates of the autocorrected word's bounds.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the autocorrected context.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with screen coordinates of the autocorrect word when the operation completes. On failure, $(ref:runtime.lastError) is set.",
+            "parameters": [
+              {
+                "name": "autocorrectCharacterBounds",
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "description": "The x-coordinate of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "y": {
+                    "description": "The y-coordinate of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "The width of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "height":{
+                    "description": "The height of the autocorrected word's bounds.",
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }, {
+        "name": "setAutocorrectRange",
+        "type": "function",
+        "description": "Set the autocorrect range and autocorrect word. If this extension does not own the active IME, this fails.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context to autocorrect.",
+                "type": "integer"
+              },
+              "autocorrectString": {
+                "description": "Autocorrect suggestion to display.",
+                "type": "string"
+              },
+              "selectionStart": {
+                "description": "Start of the selection range.",
+                "type": "integer"
+              },
+              "selectionEnd": {
+                "description": "End of the selection range.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes. On failure, chrome.runtime.lastError is set.",
+            "parameters": []
+          }
+        ]
+      }, {
         "name": "reset",
         "type": "function",
         "description": "Resets the current engine to its initial state. Fires an OnReset event.",
         "parameters": []
-      }
+      },
+      {
+        "name": "onAutocorrect",
+        "type": "function",
+        "description": "Called after a word has been autocorrected to show some UI for autocorrect.",
+        "platforms": ["chromeos"],
+      "parameters": [{
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+                "contextID": {
+                    "description": "ID of the context where the autocorrect occurred.",
+                    "type": "integer"
+                },
+                "typedWord": {
+                    "type": "string",
+                    "description": "Corrected word will be replaced by this when clicking undo"
+                },
+                "correctedWord": {
+                    "type": "string",
+                    "description": "Needed to know the length of the autocorrected text to show the correct length of underline."
+                },
+                "startIndex": {
+                    "type": "integer",
+                    "description": "Offset index (in code units) in surroundingInfo (see onSurroundingTextChanged) for the start of the autocorrected text"
+                }
+            }
+        }]
+    }
     ],
     "events": [
       {
@@ -726,6 +924,31 @@
             "name": "isProjected",
             "type": "boolean",
             "description": "Whether the screen is projected."
+          }
+        ]
+      }, {
+        "name": "onSuggestionsChanged",
+        "type": "function",
+        "description": "This event is sent when a new set of suggestions has been generated",
+        "parameters": [
+          {
+            "name": "suggestions",
+            "type": "array",
+            "description": "List of suggestions to display, in order of relevance",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
+      }, {
+        "name": "onInputMethodOptionsChanged",
+        "type": "function",
+        "description": "This event is sent when input method options are changed.",
+        "parameters": [
+          {
+            "name": "engineID",
+            "type": "string",
+            "description": "The engine ID for the input method being changed."
           }
         ]
       }

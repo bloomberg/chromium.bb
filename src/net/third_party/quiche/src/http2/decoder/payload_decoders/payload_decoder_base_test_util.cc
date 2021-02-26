@@ -4,9 +4,9 @@
 
 #include "net/third_party/quiche/src/http2/decoder/payload_decoders/payload_decoder_base_test_util.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/http2/decoder/frame_decoder_state_test_util.h"
 #include "net/third_party/quiche/src/http2/http2_structures_test_util.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -76,7 +76,7 @@ DecodeStatus PayloadDecoderBaseTest::ResumeDecoding(DecodeBuffer* db) {
 
 ::testing::AssertionResult
 PayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
-    quiche::QuicheStringPiece payload,
+    absl::string_view payload,
     Validator validator) {
   VERIFY_TRUE(frame_header_is_set_);
   // Cap the payload to be decoded at the declared payload length. This is
@@ -86,8 +86,7 @@ PayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
   // Note that it is OK if the payload is too short; the validator may be
   // designed to check for that.
   if (payload.size() > frame_header_.payload_length) {
-    payload =
-        quiche::QuicheStringPiece(payload.data(), frame_header_.payload_length);
+    payload = absl::string_view(payload.data(), frame_header_.payload_length);
   }
   DecodeBuffer db(payload);
   ResetDecodeSpeedCounters();

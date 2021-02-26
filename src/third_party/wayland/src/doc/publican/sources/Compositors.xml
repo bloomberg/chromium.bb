@@ -52,7 +52,7 @@
       run nested under the system compositor. Nesting is feasible because
       the protocol is asynchronous; roundtrips would be too expensive
       when nesting is involved. If no system compositor is present, a
-      session compositor can run directly on the hw.
+      session compositor can run directly on the hardware.
      </para>
      <para>
       X applications can continue working under a session compositor

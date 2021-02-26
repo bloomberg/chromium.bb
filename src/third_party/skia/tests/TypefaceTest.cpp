@@ -100,6 +100,22 @@ DEF_TEST(TypefaceStyle, reporter) {
     }
 }
 
+DEF_TEST(TypefacePostScriptName, reporter) {
+    sk_sp<SkTypeface> typeface(MakeResourceAsTypeface("fonts/Em.ttf"));
+    if (!typeface) {
+        // Not all SkFontMgr can MakeFromStream().
+        return;
+    }
+
+    SkString postScriptName;
+    bool hasName = typeface->getPostScriptName(&postScriptName);
+    bool hasName2 = typeface->getPostScriptName(nullptr);
+    REPORTER_ASSERT(reporter, hasName == hasName2);
+    if (hasName) {
+        REPORTER_ASSERT(reporter, postScriptName == SkString("Em"));
+    }
+}
+
 DEF_TEST(TypefaceRoundTrip, reporter) {
     sk_sp<SkTypeface> typeface(MakeResourceAsTypeface("fonts/7630.otf"));
     if (!typeface) {
@@ -117,26 +133,42 @@ DEF_TEST(TypefaceRoundTrip, reporter) {
 
 DEF_TEST(FontDescriptorNegativeVariationSerialize, reporter) {
     SkFontDescriptor desc;
-    SkFixed axis = -SK_Fixed1;
-    auto font = std::make_unique<SkMemoryStream>("a", 1, false);
-    desc.setFontData(std::make_unique<SkFontData>(std::move(font), 0, &axis, 1));
+    SkFontArguments::VariationPosition::Coordinate* variation = desc.setVariationCoordinates(1);
+    variation[0] = { 0, -1.0f };
 
     SkDynamicMemoryWStream stream;
     desc.serialize(&stream);
     SkFontDescriptor descD;
     SkFontDescriptor::Deserialize(stream.detachAsStream().get(), &descD);
-    std::unique_ptr<SkFontData> fontData = descD.detachFontData();
-    if (!fontData) {
-        REPORT_FAILURE(reporter, "fontData", SkString());
+
+    if (descD.getVariationCoordinateCount() != 1) {
+        REPORT_FAILURE(reporter, "descD.getVariationCoordinateCount() != 1", SkString());
         return;
     }
 
-    if (fontData->getAxisCount() != 1) {
-        REPORT_FAILURE(reporter, "fontData->getAxisCount() != 1", SkString());
+    REPORTER_ASSERT(reporter, descD.getVariation()[0].value == -1.0f);
+};
+
+DEF_TEST(FontDescriptorDeserializeOldFormat, reporter) {
+    // From ossfuzz:26254
+    const uint8_t old_serialized_desc[] = {
+        0x0, //style
+        0xff, 0xfb, 0x0, 0x0, 0x0, // kFontAxes
+        0x0, // coordinateCount
+        0xff, 0xff, 0x0, 0x0, 0x0, // kSentinel
+        0x0, // data length
+    };
+
+    SkMemoryStream stream(old_serialized_desc, sizeof(old_serialized_desc), false);
+    SkFontDescriptor desc;
+    if (!SkFontDescriptor::Deserialize(&stream, &desc)) {
+        REPORT_FAILURE(reporter, "!SkFontDescriptor::Deserialize(&stream, &desc)",
+                       SkString("bytes should be recognized unless removing support"));
         return;
     }
-
-    REPORTER_ASSERT(reporter, fontData->getAxis()[0] == -SK_Fixed1);
+    // This call should not crash and should not return a valid SkFontData.
+    std::unique_ptr<SkFontData> data = desc.maybeAsSkFontData();
+    REPORTER_ASSERT(reporter, !data);
 };
 
 DEF_TEST(TypefaceAxes, reporter) {
@@ -168,6 +200,9 @@ DEF_TEST(TypefaceAxes, reporter) {
         return;  // The number of axes is unknown.
     }
     REPORTER_ASSERT(reporter, count == numberOfAxesInDistortable);
+
+    // Variable font conservative bounds don't vary, so ensure they aren't reported.
+    REPORTER_ASSERT(reporter, typeface->getBounds().isEmpty());
 
     SkFontArguments::VariationPosition::Coordinate positionRead[numberOfAxesInDistortable];
     count = typeface->getVariationDesignPosition(positionRead, SK_ARRAY_COUNT(positionRead));

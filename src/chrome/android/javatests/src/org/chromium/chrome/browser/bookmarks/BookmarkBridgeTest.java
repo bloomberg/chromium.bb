@@ -4,20 +4,19 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
+import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -33,12 +32,11 @@ import java.util.List;
 /**
  * Tests for bookmark bridge
  */
-@RetryOnFailure(message = "crbug.com/740786")
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class BookmarkBridgeTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private BookmarkBridge mBookmarkBridge;
     private BookmarkId mMobileNode;
@@ -59,6 +57,11 @@ public class BookmarkBridgeTest {
             mDesktopNode = mBookmarkBridge.getDesktopFolderId();
             mOtherNode = mBookmarkBridge.getOtherFolderId();
         });
+    }
+
+    @After
+    public void tearDown() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> mBookmarkBridge.removeAllUserBookmarks());
     }
 
     @Test

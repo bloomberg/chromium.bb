@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
-#include "third_party/blink/renderer/core/frame/fragment_directive.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -45,13 +44,10 @@
 
 namespace blink {
 
-Location::Location(DOMWindow* dom_window)
-    : dom_window_(dom_window),
-      fragment_directive_(MakeGarbageCollected<FragmentDirective>()) {}
+Location::Location(DOMWindow* dom_window) : dom_window_(dom_window) {}
 
-void Location::Trace(Visitor* visitor) {
+void Location::Trace(Visitor* visitor) const {
   visitor->Trace(dom_window_);
-  visitor->Trace(fragment_directive_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -100,11 +96,6 @@ String Location::search() const {
 
 String Location::origin() const {
   return DOMURLUtilsReadOnly::origin(Url());
-}
-
-FragmentDirective* Location::fragmentDirective() const {
-  GetDocument()->CountUse(WebFeature::kLocationFragmentDirectiveAccessed);
-  return fragment_directive_;
 }
 
 DOMStringList* Location::ancestorOrigins() const {
@@ -243,14 +234,14 @@ void Location::reload() {
 }
 
 void Location::SetLocation(const String& url,
-                           LocalDOMWindow* current_window,
+                           LocalDOMWindow* incumbent_window,
                            LocalDOMWindow* entered_window,
                            ExceptionState* exception_state,
                            SetLocationPolicy set_location_policy) {
   if (!IsAttached())
     return;
 
-  if (!current_window->GetFrame())
+  if (!incumbent_window->GetFrame())
     return;
 
   Document* entered_document = entered_window->document();
@@ -261,8 +252,8 @@ void Location::SetLocation(const String& url,
   if (completed_url.IsNull())
     return;
 
-  if (!current_window->GetFrame()->CanNavigate(*dom_window_->GetFrame(),
-                                               completed_url)) {
+  if (!incumbent_window->GetFrame()->CanNavigate(*dom_window_->GetFrame(),
+                                                 completed_url)) {
     if (exception_state) {
       exception_state->ThrowSecurityError(
           "The current window does not have permission to navigate the target "
@@ -282,14 +273,14 @@ void Location::SetLocation(const String& url,
   // URLs. Although the spec states we should perform this check on task
   // execution, there are concerns about the correctness of that statement,
   // see http://github.com/whatwg/html/issues/2591.
-  Document* current_document = current_window->document();
-  if (current_document && completed_url.ProtocolIsJavaScript()) {
+  if (completed_url.ProtocolIsJavaScript()) {
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
-    if (!current_document->GetContentSecurityPolicyForWorld()->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
-            nullptr /* element */, script_source, String() /* nonce */,
-            current_document->Url(), OrdinalNumber())) {
+    if (!incumbent_window->GetContentSecurityPolicyForCurrentWorld()
+             ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                           nullptr /* element */, script_source,
+                           String() /* nonce */, incumbent_window->Url(),
+                           OrdinalNumber())) {
       return;
     }
   }
@@ -305,14 +296,13 @@ void Location::SetLocation(const String& url,
     activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
 
-  FrameLoadRequest request(current_window->document(),
-                           ResourceRequest(completed_url));
+  FrameLoadRequest request(incumbent_window, ResourceRequest(completed_url));
   request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
 
-  current_window->GetFrame()->MaybeLogAdClickNavigation();
+  incumbent_window->GetFrame()->MaybeLogAdClickNavigation();
   dom_window_->GetFrame()->Navigate(request, frame_load_type);
 }
 

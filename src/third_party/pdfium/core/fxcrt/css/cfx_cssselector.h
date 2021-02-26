@@ -8,35 +8,26 @@
 #define CORE_FXCRT_CSS_CFX_CSSSELECTOR_H_
 
 #include <memory>
-#include <utility>
 
-#include "core/fxcrt/css/cfx_css.h"
 #include "core/fxcrt/fx_string.h"
 
 class CFX_CSSSelector {
  public:
   static std::unique_ptr<CFX_CSSSelector> FromString(WideStringView str);
 
-  CFX_CSSSelector(CFX_CSSSelectorType eType,
-                  const wchar_t* psz,
-                  int32_t iLen,
-                  bool bIgnoreCase);
+  CFX_CSSSelector(WideStringView str, std::unique_ptr<CFX_CSSSelector> next);
   ~CFX_CSSSelector();
 
-  CFX_CSSSelectorType GetType() const;
-  uint32_t GetNameHash() const;
-  CFX_CSSSelector* GetNextSelector() const;
-
-  void SetNext(std::unique_ptr<CFX_CSSSelector> pNext) {
-    m_pNext = std::move(pNext);
-  }
+  bool is_descendant() const { return is_descendant_; }
+  uint32_t name_hash() const { return name_hash_; }
+  const CFX_CSSSelector* next_selector() const { return next_.get(); }
 
  private:
-  void SetType(CFX_CSSSelectorType eType) { m_eType = eType; }
+  void set_is_descendant() { is_descendant_ = true; }
 
-  CFX_CSSSelectorType m_eType;
-  uint32_t m_dwHash;
-  std::unique_ptr<CFX_CSSSelector> m_pNext;
+  bool is_descendant_ = false;
+  const uint32_t name_hash_;
+  const std::unique_ptr<CFX_CSSSelector> next_;
 };
 
 #endif  // CORE_FXCRT_CSS_CFX_CSSSELECTOR_H_

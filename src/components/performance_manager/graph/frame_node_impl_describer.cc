@@ -5,12 +5,14 @@
 #include "components/performance_manager/graph/frame_node_impl_describer.h"
 
 #include <sstream>
+#include <string>
+#include <utility>
 
-#include "base/task/task_traits.h"
 #include "base/values.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
-#include "components/performance_manager/public/frame_priority/frame_priority.h"
+#include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/graph/node_data_describer_registry.h"
+#include "components/performance_manager/public/graph/node_data_describer_util.h"
 
 namespace performance_manager {
 
@@ -18,32 +20,24 @@ namespace {
 
 const char kDescriberName[] = "FrameNodeImpl";
 
-// TODO(1077305): Move the following to a public describer_utils helper.
+std::string ViewportIntersectionToString(
+    const base::Optional<gfx::Rect>& viewport_intersection) {
+  if (!viewport_intersection.has_value())
+    return "Nullopt";
 
-// Mojo enums have std::stream support. This converts them to a std::string.
-template <typename MojoEnum>
-std::string MojoEnumToString(MojoEnum mojo_enum_value) {
-  std::stringstream ss;
-  ss << mojo_enum_value;
-  return ss.str();
+  return viewport_intersection->ToString();
 }
 
-// Converts a string to a base::Value, where null strings go to a null value
-// instead of an empty string.
-base::Value MaybeNullStringToValue(base::StringPiece str) {
-  if (str.data() == nullptr)
-    return base::Value();
-  return base::Value(str);
-}
-
-base::Value PriorityAndReasonToValue(
-    const frame_priority::PriorityAndReason& priority_and_reason) {
-  base::Value priority(base::Value::Type::DICTIONARY);
-  priority.SetStringKey(
-      "priority", base::TaskPriorityToString(priority_and_reason.priority()));
-  priority.SetPath("reason",
-                   MaybeNullStringToValue(priority_and_reason.reason()));
-  return priority;
+std::string FrameNodeVisibilityToString(FrameNode::Visibility visibility) {
+  switch (visibility) {
+    // using FrameNode::Visibility;
+    case FrameNode::Visibility::kUnknown:
+      return "Unknown";
+    case FrameNode::Visibility::kVisible:
+      return "Visible";
+    case FrameNode::Visibility::kNotVisible:
+      return "Not visible";
+  }
 }
 
 }  // namespace
@@ -83,7 +77,7 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
   // Frame node properties.
   ret.SetIntKey("frame_tree_node_id", impl->frame_tree_node_id_);
   ret.SetIntKey("render_frame_id", impl->render_frame_id_);
-  ret.SetStringKey("dev_tools_token", impl->dev_tools_token_.ToString());
+  ret.SetStringKey("frame_token", impl->frame_token_.value().ToString());
   ret.SetIntKey("browsing_instance_id", impl->browsing_instance_id_);
   ret.SetIntKey("site_instance_id", impl->site_instance_id_);
   ret.SetStringKey("lifecycle_state",
@@ -95,6 +89,12 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
   ret.SetBoolKey("is_current", impl->is_current_.value());
   ret.SetKey("priority",
              PriorityAndReasonToValue(impl->priority_and_reason_.value()));
+  ret.SetBoolKey("is_audible", impl->is_audible_.value());
+  ret.SetStringKey(
+      "viewport_intersection",
+      ViewportIntersectionToString(impl->viewport_intersection_.value()));
+  ret.SetStringKey("visibility",
+                   FrameNodeVisibilityToString(impl->visibility_.value()));
 
   return ret;
 }

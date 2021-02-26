@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
@@ -42,6 +43,19 @@ WebApp::WebApp(const WebApp& web_app) = default;
 
 WebApp& WebApp::operator=(WebApp&& web_app) = default;
 
+const SortedSizesPx& WebApp::downloaded_icon_sizes(IconPurpose purpose) const {
+  switch (purpose) {
+    case IconPurpose::ANY:
+      return downloaded_icon_sizes_any_;
+    case IconPurpose::MONOCHROME:
+      // TODO (crbug.com/1114638): Download monochrome icons.
+      NOTREACHED();
+      return downloaded_icon_sizes_monochrome_;
+    case IconPurpose::MASKABLE:
+      return downloaded_icon_sizes_maskable_;
+  }
+}
+
 void WebApp::AddSource(Source::Type source) {
   sources_[source] = true;
 }
@@ -66,6 +80,10 @@ bool WebApp::IsSynced() const {
 
 bool WebApp::IsDefaultApp() const {
   return sources_[Source::kDefault];
+}
+
+bool WebApp::IsPolicyInstalledApp() const {
+  return sources_[Source::kPolicy];
 }
 
 bool WebApp::IsSystemApp() const {
@@ -112,9 +130,9 @@ void WebApp::SetDescription(const std::string& description) {
   description_ = description;
 }
 
-void WebApp::SetLaunchUrl(const GURL& launch_url) {
-  DCHECK(!launch_url.is_empty() && launch_url.is_valid());
-  launch_url_ = launch_url;
+void WebApp::SetStartUrl(const GURL& start_url) {
+  DCHECK(!start_url.is_empty() && start_url.is_valid());
+  start_url_ = start_url;
 }
 
 void WebApp::SetScope(const GURL& scope) {
@@ -124,6 +142,10 @@ void WebApp::SetScope(const GURL& scope) {
 
 void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
   theme_color_ = theme_color;
+}
+
+void WebApp::SetBackgroundColor(base::Optional<SkColor> background_color) {
+  background_color_ = background_color;
 }
 
 void WebApp::SetDisplayMode(DisplayMode display_mode) {
@@ -139,12 +161,26 @@ void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
     case DisplayMode::kUndefined:
     case DisplayMode::kMinimalUi:
     case DisplayMode::kFullscreen:
+    case DisplayMode::kWindowControlsOverlay:
       NOTREACHED();
       FALLTHROUGH;
     case DisplayMode::kStandalone:
       user_display_mode_ = DisplayMode::kStandalone;
       break;
   }
+}
+
+void WebApp::SetDisplayModeOverride(
+    std::vector<DisplayMode> display_mode_override) {
+  display_mode_override_ = std::move(display_mode_override);
+}
+
+void WebApp::SetUserPageOrdinal(syncer::StringOrdinal page_ordinal) {
+  user_page_ordinal_ = std::move(page_ordinal);
+}
+
+void WebApp::SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal) {
+  user_launch_ordinal_ = std::move(launch_ordinal);
 }
 
 void WebApp::SetWebAppChromeOsData(
@@ -164,13 +200,31 @@ void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
   icon_infos_ = std::move(icon_infos);
 }
 
-void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
-  std::sort(sizes.begin(), sizes.end());
-  downloaded_icon_sizes_ = std::move(sizes);
+void WebApp::SetDownloadedIconSizes(IconPurpose purpose, SortedSizesPx sizes) {
+  switch (purpose) {
+    case IconPurpose::ANY:
+      downloaded_icon_sizes_any_ = std::move(sizes);
+      break;
+    case IconPurpose::MONOCHROME:
+      // TODO (crbug.com/1114638): Add monochrome icons support.
+      NOTREACHED();
+      break;
+    case IconPurpose::MASKABLE:
+      downloaded_icon_sizes_maskable_ = std::move(sizes);
+      break;
+  }
+}
+
+void WebApp::SetIsGeneratedIcon(bool is_generated_icon) {
+  is_generated_icon_ = is_generated_icon;
 }
 
 void WebApp::SetFileHandlers(apps::FileHandlers file_handlers) {
   file_handlers_ = std::move(file_handlers);
+}
+
+void WebApp::SetShareTarget(base::Optional<apps::ShareTarget> share_target) {
+  share_target_ = std::move(share_target);
 }
 
 void WebApp::SetAdditionalSearchTerms(
@@ -178,79 +232,120 @@ void WebApp::SetAdditionalSearchTerms(
   additional_search_terms_ = std::move(additional_search_terms);
 }
 
-void WebApp::SetShortcutInfos(
-    std::vector<WebAppShortcutMenuItemInfo> shortcut_infos) {
-  shortcut_infos_ = std::move(shortcut_infos);
+void WebApp::SetProtocolHandlers(
+    std::vector<apps::ProtocolHandlerInfo> handlers) {
+  protocol_handlers_ = std::move(handlers);
 }
 
-void WebApp::SetDownloadedShortcutIconsSizes(
+void WebApp::SetUrlHandlers(apps::UrlHandlers url_handlers) {
+  url_handlers_ = std::move(url_handlers);
+}
+
+void WebApp::SetShortcutsMenuItemInfos(
+    std::vector<WebApplicationShortcutsMenuItemInfo>
+        shortcuts_menu_item_infos) {
+  shortcuts_menu_item_infos_ = std::move(shortcuts_menu_item_infos);
+}
+
+void WebApp::SetDownloadedShortcutsMenuIconsSizes(
     std::vector<std::vector<SquareSizePx>> sizes) {
-  downloaded_shortcut_icons_sizes_ = std::move(sizes);
+  downloaded_shortcuts_menu_icons_sizes_ = std::move(sizes);
 }
 
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo() = default;
-
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
-    const WebAppShortcutMenuItemInfo& other) = default;
-
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
-    WebAppShortcutMenuItemInfo&&) noexcept = default;
-
-WebApp::WebAppShortcutMenuItemInfo::~WebAppShortcutMenuItemInfo() = default;
-
-WebApp::WebAppShortcutMenuItemInfo&
-WebApp::WebAppShortcutMenuItemInfo::operator=(
-    const WebAppShortcutMenuItemInfo&) = default;
-
-WebApp::WebAppShortcutMenuItemInfo&
-WebApp::WebAppShortcutMenuItemInfo::operator=(
-    WebAppShortcutMenuItemInfo&&) noexcept = default;
-
-void WebApp::SetSyncData(SyncData sync_data) {
-  sync_data_ = std::move(sync_data);
+void WebApp::SetLastLaunchTime(const base::Time& time) {
+  last_launch_time_ = time;
 }
 
-WebApp::SyncData::SyncData() = default;
+void WebApp::SetInstallTime(const base::Time& time) {
+  install_time_ = time;
+}
 
-WebApp::SyncData::~SyncData() = default;
+void WebApp::SetRunOnOsLoginMode(RunOnOsLoginMode mode) {
+  run_on_os_login_mode_ = mode;
+}
 
-WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
+void WebApp::SetSyncFallbackData(SyncFallbackData sync_fallback_data) {
+  sync_fallback_data_ = std::move(sync_fallback_data);
+}
 
-WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
+void WebApp::SetLaunchQueryParams(
+    base::Optional<std::string> launch_query_params) {
+  launch_query_params_ = std::move(launch_query_params);
+}
 
-std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data) {
-  return out << "theme_color: " << ColorToString(sync_data.theme_color)
-             << " name: " << sync_data.name;
+WebApp::SyncFallbackData::SyncFallbackData() = default;
+
+WebApp::SyncFallbackData::~SyncFallbackData() = default;
+
+WebApp::SyncFallbackData::SyncFallbackData(
+    const SyncFallbackData& sync_fallback_data) = default;
+
+WebApp::SyncFallbackData& WebApp::SyncFallbackData::operator=(
+    SyncFallbackData&& sync_fallback_data) = default;
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApp::SyncFallbackData& sync_fallback_data) {
+  out << "    theme_color: " << ColorToString(sync_fallback_data.theme_color)
+      << std::endl
+      << "    name: " << sync_fallback_data.name << std::endl
+      << "    scope: " << sync_fallback_data.scope << std::endl;
+  for (const WebApplicationIconInfo& icon : sync_fallback_data.icon_infos)
+    out << "    icon_info: " << icon << std::endl;
+  return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
-  const std::string display_mode =
-      blink::DisplayModeToString(app.display_mode_);
-  const std::string user_display_mode =
-      blink::DisplayModeToString(app.user_display_mode_);
-  const bool is_locally_installed = app.is_locally_installed_;
-  const bool is_in_sync_install = app.is_in_sync_install_;
-
   out << "app_id: " << app.app_id_ << std::endl
       << "  name: " << app.name_ << std::endl
-      << "  launch_url: " << app.launch_url_ << std::endl
+      << "  start_url: " << app.start_url_ << std::endl
+      << "  launch_query_params: "
+      << (app.launch_query_params_ ? *app.launch_query_params_ : std::string())
+      << std::endl
       << "  scope: " << app.scope_ << std::endl
       << "  theme_color: " << ColorToString(app.theme_color_) << std::endl
-      << "  display_mode: " << display_mode << std::endl
-      << "  user_display_mode: " << user_display_mode << std::endl
+      << "  background_color: " << ColorToString(app.background_color_)
+      << std::endl
+      << "  display_mode: " << blink::DisplayModeToString(app.display_mode_)
+      << std::endl
+      << "  display_override: " << app.display_mode_override_.size()
+      << std::endl;
+  for (const DisplayMode& mode : app.display_mode_override_)
+    out << "    " << blink::DisplayModeToString(mode) << std::endl;
+  out << "  user_display_mode: "
+      << blink::DisplayModeToString(app.user_display_mode_) << std::endl
+      << "  user_page_ordinal: " << app.user_page_ordinal_.ToDebugString()
+      << std::endl
+      << "  user_launch_ordinal: " << app.user_launch_ordinal_.ToDebugString()
+      << std::endl
       << "  sources: " << app.sources_.to_string() << std::endl
-      << "  is_locally_installed: " << is_locally_installed << std::endl
-      << "  is_in_sync_install: " << is_in_sync_install << std::endl
-      << "  sync_data: " << app.sync_data_ << std::endl
-      << "  description: " << app.description_ << std::endl;
+      << "  is_locally_installed: " << app.is_locally_installed_ << std::endl
+      << "  is_in_sync_install: " << app.is_in_sync_install_ << std::endl
+      << "  sync_fallback_data: " << std::endl
+      << app.sync_fallback_data_ << "  description: " << app.description_
+      << std::endl
+      << "  last_launch_time: " << app.last_launch_time_ << std::endl
+      << "  install_time: " << app.install_time_ << std::endl
+      << "  is_generated_icon: " << app.is_generated_icon_ << std::endl
+      << "  run_on_os_login_mode: "
+      << RunOnOsLoginModeToString(app.run_on_os_login_mode_) << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
-    out << "  icon_url: " << icon << std::endl;
-  for (SquareSizePx size : app.downloaded_icon_sizes_)
-    out << "  icon_size_on_disk: " << size << std::endl;
+    out << "  icon_info: " << icon << std::endl;
+  for (SquareSizePx size : app.downloaded_icon_sizes_any_)
+    out << "  downloaded_icon_sizes_any_: " << size << std::endl;
+  for (SquareSizePx size : app.downloaded_icon_sizes_maskable_)
+    out << "  downloaded_icon_sizes_maskable_: " << size << std::endl;
   for (const apps::FileHandler& file_handler : app.file_handlers_)
     out << "  file_handler: " << file_handler << std::endl;
+  if (app.share_target_)
+    out << "  share_target: " << *app.share_target_ << std::endl;
   for (const std::string& additional_search_term : app.additional_search_terms_)
     out << "  additional_search_term: " << additional_search_term << std::endl;
+  for (const apps::ProtocolHandlerInfo& protocol_handler :
+       app.protocol_handlers_) {
+    out << "  protocol_handler: " << protocol_handler << std::endl;
+  }
+  for (const apps::UrlHandlerInfo& url_handler : app.url_handlers_)
+    out << "  url_handler: " << url_handler << std::endl;
 
   out << " chromeos_data: " << app.chromeos_data_.has_value() << std::endl;
   if (app.chromeos_data_.has_value())
@@ -259,32 +354,48 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   return out;
 }
 
-bool operator==(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2) {
-  return std::tie(sync_data1.name, sync_data1.theme_color) ==
-         std::tie(sync_data2.name, sync_data2.theme_color);
+bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2) {
+  return std::tie(sync_fallback_data1.name, sync_fallback_data1.theme_color,
+                  sync_fallback_data1.scope, sync_fallback_data1.icon_infos) ==
+         std::tie(sync_fallback_data2.name, sync_fallback_data2.theme_color,
+                  sync_fallback_data2.scope, sync_fallback_data2.icon_infos);
 }
 
-bool operator!=(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2) {
-  return !(sync_data1 == sync_data2);
+bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2) {
+  return !(sync_fallback_data1 == sync_fallback_data2);
 }
 
 bool operator==(const WebApp& app1, const WebApp& app2) {
-  return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
-                  app1.description_, app1.scope_, app1.theme_color_,
-                  app1.icon_infos_, app1.downloaded_icon_sizes_,
-                  app1.display_mode_, app1.user_display_mode_,
-                  app1.chromeos_data_, app1.is_locally_installed_,
-                  app1.is_in_sync_install_, app1.file_handlers_,
-                  app1.additional_search_terms_, app1.sync_data_) ==
-         std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
-                  app2.description_, app2.scope_, app2.theme_color_,
-                  app2.icon_infos_, app2.downloaded_icon_sizes_,
-                  app2.display_mode_, app2.user_display_mode_,
-                  app2.chromeos_data_, app2.is_locally_installed_,
-                  app2.is_in_sync_install_, app2.file_handlers_,
-                  app2.additional_search_terms_, app2.sync_data_);
+  return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.start_url_,
+                  app1.launch_query_params_, app1.description_, app1.scope_,
+                  app1.theme_color_, app1.background_color_, app1.icon_infos_,
+                  app1.downloaded_icon_sizes_any_,
+                  app1.downloaded_icon_sizes_maskable_, app1.is_generated_icon_,
+                  app1.display_mode_, app1.display_mode_override_,
+                  app1.user_display_mode_, app1.user_page_ordinal_,
+                  app1.user_launch_ordinal_, app1.chromeos_data_,
+                  app1.is_locally_installed_, app1.is_in_sync_install_,
+                  app1.file_handlers_, app1.share_target_,
+                  app1.additional_search_terms_, app1.protocol_handlers_,
+                  app1.url_handlers_, app1.sync_fallback_data_,
+                  app1.last_launch_time_, app1.install_time_,
+                  app1.run_on_os_login_mode_) ==
+         std::tie(app2.app_id_, app2.sources_, app2.name_, app2.start_url_,
+                  app2.launch_query_params_, app2.description_, app2.scope_,
+                  app2.theme_color_, app2.background_color_, app2.icon_infos_,
+                  app2.downloaded_icon_sizes_any_,
+                  app2.downloaded_icon_sizes_maskable_, app2.is_generated_icon_,
+                  app2.display_mode_, app2.display_mode_override_,
+                  app2.user_display_mode_, app2.user_page_ordinal_,
+                  app2.user_launch_ordinal_, app2.chromeos_data_,
+                  app2.is_locally_installed_, app2.is_in_sync_install_,
+                  app2.file_handlers_, app2.share_target_,
+                  app2.additional_search_terms_, app2.protocol_handlers_,
+                  app2.url_handlers_, app2.sync_fallback_data_,
+                  app2.last_launch_time_, app2.install_time_,
+                  app2.run_on_os_login_mode_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

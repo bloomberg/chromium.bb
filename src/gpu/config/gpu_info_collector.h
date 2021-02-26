@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
-#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_export.h"
+#include "ui/gfx/gpu_extra_info.h"
 
 #if defined(OS_WIN)
 #include <d3dcommon.h>
@@ -45,8 +45,11 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 #if defined(OS_WIN)
 // Collect the DirectX Disagnostics information about the attached displays.
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
-GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(
-    Dx12VulkanVersionInfo* dx12_vulkan_version_info);
+GPU_EXPORT uint32_t GetGpuSupportedD3D12Version();
+GPU_EXPORT void RecordGpuSupportedDx12VersionHistograms(
+    uint32_t d3d12_feature_level);
+GPU_EXPORT uint32_t
+GetGpuSupportedVulkanVersion(const gpu::GPUInfo::GPUDevice& gpu_device);
 
 // Iterate through all adapters and create a hardware D3D11 device on each
 // adapter. If succeeded, query the highest feature level it supports and
@@ -59,6 +62,9 @@ GPU_EXPORT bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
 
 // Collect the hardware overlay support flags.
 GPU_EXPORT void CollectHardwareOverlayInfo(OverlayInfo* overlay_info);
+
+// Identify the active GPU based on LUIDs.
+bool IdentifyActiveGPUWithLuid(GPUInfo* gpu_info);
 #endif  // OS_WIN
 
 // Create a GL context and collect GL strings and versions.
@@ -78,7 +84,7 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 GPU_EXPORT void CollectGraphicsInfoForTesting(GPUInfo* gpu_info);
 
 // Collect Graphics info related to the current process
-GPU_EXPORT bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
+GPU_EXPORT bool CollectGpuExtraInfo(gfx::GpuExtraInfo* gpu_extra_info,
                                     const GpuPreferences& prefs);
 
 }  // namespace gpu

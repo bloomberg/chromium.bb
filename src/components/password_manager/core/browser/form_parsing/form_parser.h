@@ -16,10 +16,57 @@
 
 namespace autofill {
 struct FormData;
-struct PasswordForm;
 }  // namespace autofill
 
 namespace password_manager {
+
+struct PasswordForm;
+
+// The susbset of autocomplete flags related to passwords.
+enum class AutocompleteFlag {
+  kNone,
+  kUsername,
+  kCurrentPassword,
+  kNewPassword,
+  // Represents the whole family of cc-* flags + OTP flag.
+  kNonPassword
+};
+
+// How likely is user interaction for a given field?
+// Note: higher numeric values should match higher likeliness to allow using the
+// standard operator< for comparison of likeliness.
+enum class Interactability {
+  // When the field is invisible.
+  kUnlikely = 0,
+  // When the field is visible/focusable.
+  kPossible = 1,
+  // When the user actually typed into the field before.
+  kCertain = 2,
+};
+
+// A wrapper around FormFieldData, carrying some additional data used during
+// parsing.
+struct ProcessedField {
+  // This points to the wrapped FormFieldData.
+  const autofill::FormFieldData* field;
+
+  // The flag derived from field->autocomplete_attribute.
+  AutocompleteFlag autocomplete_flag = AutocompleteFlag::kNone;
+
+  // True if field->form_control_type == "password".
+  bool is_password = false;
+
+  // True if field is predicted to be a password.
+  bool is_predicted_as_password = false;
+
+  // True if the server predicts that this field is not a password field.
+  bool server_hints_not_password = false;
+
+  // True if the server predicts that this field is not a username field.
+  bool server_hints_not_username = false;
+
+  Interactability interactability = Interactability::kUnlikely;
+};
 
 // This class takes care of parsing FormData into PasswordForm and managing
 // related metadata.
@@ -39,7 +86,7 @@ class FormDataParser {
     kHtmlBasedClassifier = 2,
     kAutocompleteAttribute = 3,
     kServerSidePrediction = 4,
-    kCount
+    kMaxValue = kServerSidePrediction,
   };
 
   // Records whether password fields with a "readonly" attribute were ignored
@@ -77,15 +124,16 @@ class FormDataParser {
     predictions_ = std::move(predictions);
   }
 
+  void reset_predictions() { predictions_.reset(); }
+
   const base::Optional<FormPredictions>& predictions() { return predictions_; }
 
   ReadonlyPasswordFields readonly_status() { return readonly_status_; }
 
   // Parse DOM information |form_data| into Password Manager's form
   // representation PasswordForm. Return nullptr when parsing is unsuccessful.
-  std::unique_ptr<autofill::PasswordForm> Parse(
-      const autofill::FormData& form_data,
-      Mode mode);
+  std::unique_ptr<PasswordForm> Parse(const autofill::FormData& form_data,
+                                      Mode mode);
 
  private:
   // Predictions are an optional source of server-side information about field
@@ -103,6 +151,14 @@ class FormDataParser {
 // Returns the value of PasswordForm::signon_realm for an HTML form with the
 // origin |url|.
 std::string GetSignonRealm(const GURL& url);
+
+// Find the first element in |username_predictions| (i.e. the most reliable
+// prediction) that occurs in |processed_fields| and has interactability level
+// at least |username_max|.
+const autofill::FormFieldData* FindUsernameInPredictions(
+    const std::vector<autofill::FieldRendererId>& username_predictions,
+    const std::vector<ProcessedField>& processed_fields,
+    Interactability username_max);
 
 }  // namespace password_manager
 

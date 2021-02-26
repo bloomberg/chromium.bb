@@ -11,7 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,8 +82,8 @@ std::string BluetoothAdapterAndroid::GetName() const {
 }
 
 void BluetoothAdapterAndroid::SetName(const std::string& name,
-                                      const base::Closure& callback,
-                                      const ErrorCallback& error_callback) {
+                                      base::OnceClosure callback,
+                                      ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -106,10 +106,9 @@ bool BluetoothAdapterAndroid::IsDiscoverable() const {
                                                     j_adapter_);
 }
 
-void BluetoothAdapterAndroid::SetDiscoverable(
-    bool discoverable,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothAdapterAndroid::SetDiscoverable(bool discoverable,
+                                              base::OnceClosure callback,
+                                              ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -126,26 +125,27 @@ BluetoothAdapter::UUIDList BluetoothAdapterAndroid::GetUUIDs() const {
 void BluetoothAdapterAndroid::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run("Not Implemented");
+  std::move(error_callback).Run("Not Implemented");
 }
 
 void BluetoothAdapterAndroid::CreateL2capService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run("Not Implemented");
+  std::move(error_callback).Run("Not Implemented");
 }
 
 void BluetoothAdapterAndroid::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-    const CreateAdvertisementCallback& callback,
-    const AdvertisementErrorCallback& error_callback) {
-  error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+    CreateAdvertisementCallback callback,
+    AdvertisementErrorCallback error_callback) {
+  std::move(error_callback)
+      .Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
 BluetoothLocalGattService* BluetoothAdapterAndroid::GetGattService(

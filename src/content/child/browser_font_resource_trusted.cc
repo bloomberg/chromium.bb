@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "content/public/common/web_preferences.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
@@ -19,18 +18,18 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/platform/web_font.h"
 #include "third_party/blink/public/platform/web_font_description.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_run.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
-using blink::WebFloatRect;
 using blink::WebFont;
 using blink::WebFontDescription;
 using blink::WebRect;
@@ -44,9 +43,9 @@ namespace {
 // undefined reference linker error.
 const char kCommonScript[] = "Zyyy";
 
-base::string16 GetFontFromMap(const ScriptFontFamilyMap& map,
+base::string16 GetFontFromMap(const blink::web_pref::ScriptFontFamilyMap& map,
                               const std::string& script) {
-  ScriptFontFamilyMap::const_iterator it = map.find(script);
+  blink::web_pref::ScriptFontFamilyMap::const_iterator it = map.find(script);
   if (it != map.end())
     return it->second;
   return base::string16();
@@ -398,10 +397,10 @@ int32_t BrowserFontResource_Trusted::PixelOffsetForCharacter(
       // 0 characters starting at the character in question, it would give us
       // a 0-width rect around the insertion point. But that will be on the
       // right side of the character for an RTL run, which would be wrong.
-      WebFloatRect rect = font_->SelectionRectForText(
+      gfx::RectF rect = font_->SelectionRectForText(
           run, gfx::PointF(), font_->Height(), char_offset - run_begin,
           char_offset - run_begin + 1);
-      return cur_pixel_offset + static_cast<int>(rect.x);
+      return cur_pixel_offset + static_cast<int>(rect.x());
     } else {
       // Character is past this run, account for the pixels and continue
       // looking.

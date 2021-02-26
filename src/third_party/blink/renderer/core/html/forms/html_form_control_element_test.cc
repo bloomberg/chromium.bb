@@ -20,8 +20,6 @@ namespace {
 class MockFormValidationMessageClient
     : public GarbageCollected<MockFormValidationMessageClient>,
       public ValidationMessageClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockFormValidationMessageClient);
-
  public:
   void ShowValidationMessage(const Element& anchor,
                              const String&,
@@ -45,7 +43,7 @@ class MockFormValidationMessageClient
   void DocumentDetached(const Document&) override {}
   void DidChangeFocusTo(const Element*) override {}
   void WillBeDestroyed() override {}
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(anchor_);
     ValidationMessageClient::Trace(visitor);
   }

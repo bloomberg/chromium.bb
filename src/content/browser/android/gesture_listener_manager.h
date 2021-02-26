@@ -43,6 +43,8 @@ class CONTENT_EXPORT GestureListenerManager : public RenderWidgetHostConnector {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean enabled);
+  bool has_listeners_attached() const { return has_listeners_attached_; }
+  void SetHasListenersAttached(JNIEnv* env, jboolean enabled);
   void GestureEventAck(const blink::WebGestureEvent& event,
                        blink::mojom::InputEventResultState ack_result);
   void DidStopFlinging();
@@ -60,6 +62,7 @@ class CONTENT_EXPORT GestureListenerManager : public RenderWidgetHostConnector {
                         const float top_shown_pix,
                         bool top_changed);
   void UpdateOnTouchDown();
+  void OnRootScrollOffsetChanged(const gfx::Vector2dF& root_scroll_offset);
 
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(
@@ -82,6 +85,9 @@ class CONTENT_EXPORT GestureListenerManager : public RenderWidgetHostConnector {
 
   // A weak reference to the Java GestureListenerManager object.
   JavaObjectWeakGlobalRef java_ref_;
+
+  // True if there is at least one listener attached.
+  bool has_listeners_attached_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureListenerManager);
 };

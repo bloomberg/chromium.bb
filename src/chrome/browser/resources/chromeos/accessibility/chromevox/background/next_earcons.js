@@ -58,7 +58,7 @@ NextEarcons = class extends AbstractEarcons {
     if (!AbstractEarcons.enabled) {
       return;
     }
-    if (localStorage['enableEarconLogging'] == 'true') {
+    if (localStorage['enableEarconLogging'] === 'true') {
       LogStore.getInstance().writeTextLog(earcon, LogStore.LogType.EARCON);
       console.log('Earcon ' + earcon);
     }
@@ -140,6 +140,15 @@ NextEarcons = class extends AbstractEarcons {
       case Earcon.SLIDER:
         this.engine_.onSlider();
         break;
+      case Earcon.SMART_STICKY_MODE_OFF:
+        this.engine_.onSmartStickyModeOff();
+        break;
+      case Earcon.SMART_STICKY_MODE_ON:
+        this.engine_.onSmartStickyModeOn();
+        break;
+      case Earcon.NO_POINTER_ANCHOR:
+        this.engine_.onNoPointerAnchor();
+        break;
       case Earcon.WRAP:
       case Earcon.WRAP_EDGE:
         this.engine_.onWrap();
@@ -167,7 +176,7 @@ NextEarcons = class extends AbstractEarcons {
   updateShouldPanForDevices_(devices) {
     this.shouldPan_ = !devices.some((device) => {
       return device.isActive &&
-          device.deviceType == chrome.audio.DeviceType.INTERNAL_SPEAKER;
+          device.deviceType === chrome.audio.DeviceType.INTERNAL_SPEAKER;
     });
   }
 };

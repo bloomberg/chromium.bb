@@ -31,9 +31,7 @@ class ScopedGoogleUpdateIsMachine {
     env_->SetVar("GoogleUpdateIsMachine", value ? "1" : "0");
   }
 
-  ~ScopedGoogleUpdateIsMachine() {
-    env_->UnSetVar("GoogleUpdateIsMachine");
-  }
+  ~ScopedGoogleUpdateIsMachine() { env_->UnSetVar("GoogleUpdateIsMachine"); }
 
  private:
   std::unique_ptr<base::Environment> env_;
@@ -42,6 +40,7 @@ class ScopedGoogleUpdateIsMachine {
 class TestConfiguration : public Configuration {
  public:
   explicit TestConfiguration(const wchar_t* command_line) {
+    EXPECT_TRUE(Initialize(::GetModuleHandle(nullptr)));
     EXPECT_TRUE(ParseCommandLine(command_line));
   }
 
@@ -68,23 +67,8 @@ class MiniInstallerConfigurationTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MiniInstallerConfigurationTest);
 };
 
-// Test that the operation type is CLEANUP iff --cleanup is on the cmdline.
-TEST_F(MiniInstallerConfigurationTest, Operation) {
-  EXPECT_EQ(Configuration::INSTALL_PRODUCT,
-            TestConfiguration(L"spam.exe").operation());
-  EXPECT_EQ(Configuration::INSTALL_PRODUCT,
-            TestConfiguration(L"spam.exe --clean").operation());
-  EXPECT_EQ(Configuration::INSTALL_PRODUCT,
-            TestConfiguration(L"spam.exe --cleanupthis").operation());
-
-  EXPECT_EQ(Configuration::CLEANUP,
-            TestConfiguration(L"spam.exe --cleanup").operation());
-  EXPECT_EQ(Configuration::CLEANUP,
-            TestConfiguration(L"spam.exe --cleanup now").operation());
-}
-
 TEST_F(MiniInstallerConfigurationTest, Program) {
-  EXPECT_TRUE(NULL == mini_installer::Configuration().program());
+  EXPECT_EQ(nullptr, mini_installer::Configuration().program());
   EXPECT_TRUE(std::wstring(L"spam.exe") ==
               TestConfiguration(L"spam.exe").program());
   EXPECT_TRUE(std::wstring(L"spam.exe") ==
@@ -101,9 +85,9 @@ TEST_F(MiniInstallerConfigurationTest, ArgumentCount) {
 
 TEST_F(MiniInstallerConfigurationTest, CommandLine) {
   static const wchar_t* const kCommandLines[] = {
-    L"",
-    L"spam.exe",
-    L"spam.exe --foo",
+      L"",
+      L"spam.exe",
+      L"spam.exe --foo",
   };
   for (size_t i = 0; i < _countof(kCommandLines); ++i) {
     EXPECT_TRUE(std::wstring(kCommandLines[i]) ==
@@ -142,8 +126,39 @@ TEST_F(MiniInstallerConfigurationTest, IsSystemLevel) {
 
 TEST_F(MiniInstallerConfigurationTest, HasInvalidSwitch) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").has_invalid_switch());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome-frame")
-                  .has_invalid_switch());
+  EXPECT_TRUE(
+      TestConfiguration(L"spam.exe --chrome-frame").has_invalid_switch());
+  EXPECT_TRUE(TestConfiguration(L"spam.exe --cleanup").has_invalid_switch());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesDefaultTrue) {
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesFalse) {
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"0"),
+      ERROR_SUCCESS);
+  EXPECT_FALSE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesBogusValues) {
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L""),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"1"),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"hello"),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
 }
 
 }  // namespace mini_installer

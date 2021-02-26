@@ -5,9 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrPath.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
@@ -33,11 +32,11 @@ GrStencilAndCoverPathRenderer::GrStencilAndCoverPathRenderer(GrResourceProvider*
 }
 
 static bool has_matrix(const GrFragmentProcessor& fp) {
-    if (fp.sampleMatrix().fKind != SkSL::SampleMatrix::Kind::kNone) {
+    if (fp.sampleUsage().hasMatrix()) {
         return true;
     }
     for (int i = fp.numChildProcessors() - 1; i >= 0; --i) {
-        if (has_matrix(fp.childProcessor(i))) {
+        if (fp.childProcessor(i) && has_matrix(*fp.childProcessor(i))) {
             return true;
         }
     }
@@ -61,11 +60,9 @@ GrStencilAndCoverPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const 
     // The lack of vertex shaders means we can't move transform matrices into the vertex shader. We
     // could do the transform in the fragment processor, but that would be very slow, so instead we
     // just avoid using this path renderer in the face of transformed FPs.
-    if (args.fPaint) {
-        for (int i = args.fPaint->numColorFragmentProcessors() - 1; i >= 0; --i) {
-            if (has_matrix(*args.fPaint->getColorFragmentProcessor(i))) {
-                return CanDrawPath::kNo;
-            }
+    if (args.fPaint && args.fPaint->hasColorFragmentProcessor()) {
+        if (has_matrix(*args.fPaint->getColorFragmentProcessor())) {
+            return CanDrawPath::kNo;
         }
     }
     return CanDrawPath::kYes;
@@ -101,7 +98,7 @@ void GrStencilAndCoverPathRenderer::onStencilPath(const StencilPathArgs& args) {
                               "GrStencilAndCoverPathRenderer::onStencilPath");
     sk_sp<GrPath> p(get_gr_path(fResourceProvider, *args.fShape));
     args.fRenderTargetContext->priv().stencilPath(
-            *args.fClip, args.fDoStencilMSAA, *args.fViewMatrix, std::move(p));
+            args.fClip, args.fDoStencilMSAA, *args.fViewMatrix, std::move(p));
 }
 
 bool GrStencilAndCoverPathRenderer::onDrawPath(const DrawPathArgs& args) {
@@ -111,7 +108,8 @@ bool GrStencilAndCoverPathRenderer::onDrawPath(const DrawPathArgs& args) {
 
     const SkMatrix& viewMatrix = *args.fViewMatrix;
 
-    bool doStencilMSAA = GrAAType::kNone != args.fAAType;
+    // Any AA will use stencil MSAA
+    GrAAType stencilAAType = GrAAType::kNone != args.fAAType ? GrAAType::kMSAA : GrAAType::kNone;
 
     sk_sp<GrPath> path(get_gr_path(fResourceProvider, *args.fShape));
 
@@ -125,15 +123,16 @@ bool GrStencilAndCoverPathRenderer::onDrawPath(const DrawPathArgs& args) {
                                            args.fRenderTargetContext->height()); // Inverse fill.
 
         // fake inverse with a stencil and cover
-        GrAppliedClip appliedClip;
-        if (!args.fClip->apply(
-                args.fContext, args.fRenderTargetContext, doStencilMSAA, true, &appliedClip,
-                &devBounds)) {
+        GrAppliedClip appliedClip(args.fRenderTargetContext->dimensions());
+        if (args.fClip && args.fClip->apply(
+                args.fContext, args.fRenderTargetContext, stencilAAType, true, &appliedClip,
+                &devBounds) == GrClip::Effect::kClippedOut) {
             return true;
         }
-        GrStencilClip stencilClip(appliedClip.stencilStackID());
+        GrStencilClip stencilClip(args.fRenderTargetContext->dimensions(),
+                                  appliedClip.stencilStackID());
         if (appliedClip.scissorState().enabled()) {
-            stencilClip.fixedClip().setScissor(appliedClip.scissorState().rect());
+            SkAssertResult(stencilClip.fixedClip().setScissor(appliedClip.scissorState().rect()));
         }
         if (appliedClip.windowRectsState().enabled()) {
             stencilClip.fixedClip().setWindowRectangles(appliedClip.windowRectsState().windows(),
@@ -142,7 +141,7 @@ bool GrStencilAndCoverPathRenderer::onDrawPath(const DrawPathArgs& args) {
         // Just ignore the analytic FPs (if any) during the stencil pass. They will still clip the
         // final draw and it is meaningless to multiply by coverage when drawing to stencil.
         args.fRenderTargetContext->priv().stencilPath(
-                stencilClip, GrAA(doStencilMSAA), viewMatrix, std::move(path));
+                &stencilClip, GrAA(stencilAAType == GrAAType::kMSAA), viewMatrix, std::move(path));
 
         {
             static constexpr GrUserStencilSettings kInvertedCoverPass(
@@ -174,19 +173,16 @@ bool GrStencilAndCoverPathRenderer::onDrawPath(const DrawPathArgs& args) {
 
             // We have to suppress enabling MSAA for mixed samples or we will get seams due to
             // coverage modulation along the edge where two triangles making up the rect meet.
-            GrAA doStencilMSAA = GrAA::kNo;
-            if (GrAAType::kMSAA == args.fAAType) {
-                doStencilMSAA = GrAA::kYes;
-            }
+            GrAA coverAA = GrAA(args.fAAType == GrAAType::kMSAA);
             args.fRenderTargetContext->priv().stencilRect(
-                    *args.fClip, &kInvertedCoverPass, std::move(args.fPaint), doStencilMSAA,
+                    args.fClip, &kInvertedCoverPass, std::move(args.fPaint), coverAA,
                     coverMatrix, coverBounds, &localMatrix);
         }
     } else {
-        std::unique_ptr<GrDrawOp> op = GrDrawPathOp::Make(
-                args.fContext, viewMatrix, std::move(args.fPaint), GrAA(doStencilMSAA),
-                std::move(path));
-        args.fRenderTargetContext->addDrawOp(*args.fClip, std::move(op));
+        GrOp::Owner op = GrDrawPathOp::Make(
+                args.fContext, viewMatrix, std::move(args.fPaint),
+                GrAA(stencilAAType == GrAAType::kMSAA), std::move(path));
+        args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
     }
 
     return true;

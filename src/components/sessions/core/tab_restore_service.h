@@ -69,7 +69,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     // The type of the entry.
     const Type type;
 
-    // The time when the window or tab was closed.
+    // The time when the window or tab was closed. Not always set - can be
+    // nullptr or 0 in cases where a timestamp isn't available at entry
+    // creation.
     base::Time timestamp;
 
     // Is this entry from the last session? This is set to true for entries that
@@ -150,6 +152,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // If an application window, the name of the app.
     std::string app_name;
+
+    // User-set title of the window, if there is one.
+    std::string user_title;
 
     // Where and how the window is displayed.
     gfx::Rect bounds;

@@ -17,8 +17,8 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_utils.h"
+#include "skia/ext/skia_utils_base.h"
+#include "skia/public/mojom/bitmap.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -32,9 +32,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "url/gurl.h"
+
+namespace extensions {
 
 namespace {
 
@@ -83,14 +84,13 @@ gfx::Image ExtensionAction::FallbackIcon() {
 
 const int ExtensionAction::kDefaultTabId = -1;
 
-ExtensionAction::ExtensionAction(const extensions::Extension& extension,
-                                 const extensions::ActionInfo& manifest_data)
+ExtensionAction::ExtensionAction(const Extension& extension,
+                                 const ActionInfo& manifest_data)
     : extension_id_(extension.id()),
       extension_name_(extension.name()),
       action_type_(manifest_data.type),
       default_state_(manifest_data.default_state) {
-  SetIsVisible(kDefaultTabId,
-               default_state_ == extensions::ActionInfo::STATE_ENABLED);
+  SetIsVisible(kDefaultTabId, default_state_ == ActionInfo::STATE_ENABLED);
   Populate(extension, manifest_data);
 }
 
@@ -117,30 +117,40 @@ void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
   SetValue(&icon_, tab_id, image);
 }
 
-bool ExtensionAction::ParseIconFromCanvasDictionary(
+ExtensionAction::IconParseResult ExtensionAction::ParseIconFromCanvasDictionary(
     const base::DictionaryValue& dict,
     gfx::ImageSkia* icon) {
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
        iter.Advance()) {
-    std::string binary_string64;
-    IPC::Message pickle;
+    std::string byte_string;
+    std::string base64_string;
+    const void* bytes = nullptr;
+    size_t num_bytes = 0;
     if (iter.value().is_blob()) {
-      pickle = IPC::Message(
-          reinterpret_cast<const char*>(iter.value().GetBlob().data()),
-          iter.value().GetBlob().size());
-    } else if (iter.value().GetAsString(&binary_string64)) {
-      std::string binary_string;
-      if (!base::Base64Decode(binary_string64, &binary_string))
-        return false;
-      pickle = IPC::Message(binary_string.c_str(), binary_string.length());
+      bytes = iter.value().GetBlob().data();
+      num_bytes = iter.value().GetBlob().size();
+    } else if (iter.value().GetAsString(&base64_string)) {
+      if (!base::Base64Decode(base64_string, &byte_string))
+        return IconParseResult::kDecodeFailure;
+      bytes = byte_string.c_str();
+      num_bytes = byte_string.length();
     } else {
       continue;
     }
-    base::PickleIterator pickle_iter(pickle);
+    SkBitmap unsafe_bitmap;
+    if (!skia::mojom::InlineBitmap::Deserialize(bytes, num_bytes,
+                                                &unsafe_bitmap)) {
+      return IconParseResult::kUnpickleFailure;
+    }
+    CHECK(!unsafe_bitmap.isNull());
+    // On receipt of an arbitrary bitmap from the renderer, we convert to an N32
+    // 32bpp bitmap. Other pixel sizes can lead to out-of-bounds mistakes when
+    // transferring the pixels out of the/ bitmap into other buffers.
     SkBitmap bitmap;
-    if (!IPC::ReadParam(&pickle, &pickle_iter, &bitmap))
-      return false;
-    CHECK(!bitmap.isNull());
+    if (!skia::SkBitmapToN32OpaqueOrPremul(unsafe_bitmap, &bitmap)) {
+      NOTREACHED() << "Unable to convert bitmap for icon";
+      return IconParseResult::kUnpickleFailure;
+    }
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
     const int kActionIconMaxSize = 10 * ActionIconSize();
@@ -150,7 +160,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     float scale = static_cast<float>(bitmap.width()) / ActionIconSize();
     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
-  return true;
+  return IconParseResult::kSuccess;
 }
 
 gfx::Image ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
@@ -223,7 +233,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
 }
 
 void ExtensionAction::SetDefaultIconImage(
-    std::unique_ptr<extensions::IconImage> icon_image) {
+    std::unique_ptr<IconImage> icon_image) {
   default_icon_image_ = std::move(icon_image);
 }
 
@@ -242,7 +252,7 @@ gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
     // letter of the extension name) rather than the default (puzzle piece).
     // Note that this is only if we can't find any better image (e.g. a product
     // icon).
-    placeholder_icon_image_ = extensions::ExtensionIconPlaceholder::CreateImage(
+    placeholder_icon_image_ = ExtensionIconPlaceholder::CreateImage(
         ActionIconSize(), extension_name_);
   }
 
@@ -299,8 +309,8 @@ void ExtensionAction::SetDefaultIconForTest(
   default_icon_ = std::move(default_icon);
 }
 
-void ExtensionAction::Populate(const extensions::Extension& extension,
-                               const extensions::ActionInfo& manifest_data) {
+void ExtensionAction::Populate(const Extension& extension,
+                               const ActionInfo& manifest_data) {
   // If the manifest doesn't specify a title, set it to |extension|'s name.
   const std::string& title = !manifest_data.default_title.empty()
                                  ? manifest_data.default_title
@@ -313,8 +323,7 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
     default_icon_.reset(new ExtensionIconSet(manifest_data.default_icon));
   } else {
     // Fall back to the product icons if no action icon exists.
-    const ExtensionIconSet& product_icons =
-        extensions::IconsInfo::GetIcons(&extension);
+    const ExtensionIconSet& product_icons = IconsInfo::GetIcons(&extension);
     if (!product_icons.empty())
       default_icon_.reset(new ExtensionIconSet(product_icons));
   }
@@ -335,3 +344,5 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
   // width.
   return FallbackIcon().Width();
 }
+
+}  // namespace extensions

@@ -38,15 +38,23 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
@@ -56,8 +64,10 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
+#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -98,6 +108,7 @@ class TestWebFrameClient;
 class TestWebRemoteFrameClient;
 class TestWebWidgetClient;
 class TestWebViewClient;
+class TestWidgetInputHandlerHost;
 class WebViewHelper;
 
 cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings();
@@ -176,21 +187,17 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
-struct InjectedScrollGestureData {
-  gfx::Vector2dF delta;
-  ScrollGranularity granularity;
-  CompositorElementId scrollable_area_element_id;
-  WebInputEvent::Type type;
-};
-
-class TestWebWidgetClient : public WebWidgetClient {
+class TestWebWidgetClient : public WebWidgetClient,
+                            public mojom::blink::WidgetHost {
  public:
   TestWebWidgetClient();
   ~TestWebWidgetClient() override = default;
 
   // This method must be called just after the allocation of |widget| and
   // before usage of this class occurs.
-  void SetFrameWidget(WebFrameWidget* widget);
+  void SetFrameWidget(
+      WebFrameWidget* widget,
+      mojo::AssociatedRemote<mojom::blink::Widget> widget_remote);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const cc::LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
@@ -198,55 +205,82 @@ class TestWebWidgetClient : public WebWidgetClient {
   bool AnimationScheduled() const { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
 
-  bool HaveScrollEventHandlers() const;
+  size_t CursorSetCount() const { return cursor_set_count_; }
 
-  int VisuallyNonEmptyLayoutCount() const {
-    return visually_non_empty_layout_count_;
-  }
-  int FinishedParsingLayoutCount() const {
-    return finished_parsing_layout_count_;
-  }
-  int FinishedLoadingLayoutCount() const {
-    return finished_loading_layout_count_;
-  }
-  const Vector<InjectedScrollGestureData>& GetInjectedScrollGestureData()
-      const {
-    return injected_scroll_gesture_data_;
+  bool HaveScrollEventHandlers() const;
+  const Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>&
+  GetInjectedScrollEvents() const {
+    return injected_scroll_events_;
   }
 
   cc::TaskGraphRunner* task_graph_runner() { return &test_task_graph_runner_; }
+
+  scheduler::WebThreadScheduler* main_thread_scheduler() {
+    return &fake_thread_scheduler_;
+  }
 
   void set_layer_tree_host(cc::LayerTreeHost* layer_tree_host) {
     layer_tree_host_ = layer_tree_host;
   }
 
+  // The returned pointer is valid after AllocateNewLayerTreeFrameSink() occurs,
+  // until another call to AllocateNewLayerTreeFrameSink() happens. This
+  // pointer is valid to use from the main thread for tests that use a single
+  // threaded compositor, such as SimCompositor tests.
+  cc::FakeLayerTreeFrameSink* LastCreatedFrameSink();
+
+  virtual ScreenInfo GetInitialScreenInfo();
+
+  mojo::PendingAssociatedRemote<mojom::blink::WidgetHost> BindNewWidgetHost();
+
  protected:
+  // Allow subclasses to provide their own input handler host.
+  virtual TestWidgetInputHandlerHost* GetInputHandlerHost();
+
   // WebWidgetClient overrides;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
-  void SetPageScaleStateAndLimits(float page_scale_factor,
-                                  bool is_pinch_gesture_active,
-                                  float minimum,
-                                  float maximum) override;
-  void InjectGestureScrollEvent(WebGestureDevice device,
-                                const gfx::Vector2dF& delta,
-                                ScrollGranularity granularity,
-                                cc::ElementId scrollable_area_element_id,
-                                WebInputEvent::Type injected_type) override;
-  void DidMeaningfulLayout(WebMeaningfulLayout) override;
-  viz::FrameSinkId GetFrameSinkId() override;
-  void RequestNewLayerTreeFrameSink(
-      LayerTreeFrameSinkCallback callback) override;
+  std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
+      override;
+  void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) override;
+  bool ShouldAutoDetermineCompositingToLCDTextSetting() override {
+    return false;
+  }
+
+  // mojom::blink::WidgetHost overrides:
+  void SetCursor(const ui::Cursor& cursor) override;
+  void SetToolTipText(const String& tooltip_text,
+                      base::i18n::TextDirection text_direction_hint) override;
+  void TextInputStateChanged(
+      ui::mojom::blink::TextInputStatePtr state) override;
+  void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                              base::i18n::TextDirection anchor_dir,
+                              const gfx::Rect& focus_rect,
+                              base::i18n::TextDirection focus_dir,
+                              bool is_anchor_first) override;
+  void CreateFrameSink(
+      mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink>
+          compositor_frame_sink_receiver,
+      mojo::PendingRemote<viz::mojom::blink::CompositorFrameSinkClient>
+          compositor_frame_sink_client) override;
+  void RegisterRenderFrameMetadataObserver(
+      mojo::PendingReceiver<cc::mojom::blink::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
+      mojo::PendingRemote<cc::mojom::blink::RenderFrameMetadataObserver>
+          render_frame_metadata_observer) override;
 
  private:
   WebFrameWidget* frame_widget_ = nullptr;
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
   cc::TestTaskGraphRunner test_task_graph_runner_;
+  cc::FakeLayerTreeFrameSink* last_created_frame_sink_ = nullptr;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
-  Vector<InjectedScrollGestureData> injected_scroll_gesture_data_;
+  Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>
+      injected_scroll_events_;
+  std::unique_ptr<TestWidgetInputHandlerHost> widget_input_handler_host_;
   bool animation_scheduled_ = false;
-  int visually_non_empty_layout_count_ = 0;
-  int finished_parsing_layout_count_ = 0;
-  int finished_loading_layout_count_ = 0;
+  size_t cursor_set_count_ = 0;
+  viz::FrameSinkId frame_sink_id_;
+  mojo::AssociatedReceiver<mojom::blink::WidgetHost> receiver_{this};
 };
 
 class TestWebViewClient : public WebViewClient {
@@ -265,8 +299,9 @@ class TestWebViewClient : public WebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicy::FeatureState&,
-                      const SessionStorageNamespaceId&) override;
+                      const FeaturePolicyFeatureState&,
+                      const SessionStorageNamespaceId&,
+                      bool& consumed_user_gesture) override;
 
  private:
   WTF::Vector<std::unique_ptr<WebViewHelper>> child_web_views_;
@@ -337,7 +372,7 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
   // See external/wpt/css/fonts/ahem/README for more about the 'Ahem' font.
   void LoadAhem();
 
-  void Resize(WebSize);
+  void Resize(const gfx::Size&);
 
   void Reset();
 
@@ -371,6 +406,9 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
   std::unique_ptr<TestWebWidgetClient> owned_test_web_widget_client_;
   TestWebWidgetClient* test_web_widget_client_ = nullptr;
 
+  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
+      agent_group_scheduler_;
+
   // The Platform should not change during the lifetime of the test!
   Platform* const platform_;
 
@@ -397,7 +435,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
   void BindWidgetClient(std::unique_ptr<WebWidgetClient>);
 
   // WebLocalFrameClient:
-  void FrameDetached(DetachType) override;
+  void FrameDetached() override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   blink::mojom::blink::TreeScopeType,
                                   const WebString& name,
@@ -409,9 +447,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
   void DidStopLoading() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
       override {
-    // TODO(kinuko,toyoshim): Stop using Platform's URLLoaderFactory, but create
-    // its own WebURLLoaderFactoryWithMock. (crbug.com/751425)
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
+    return std::make_unique<WebURLLoaderFactoryWithMock>(
+        WebURLLoaderMockFactory::GetSingletonInstance());
   }
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
   WebEffectiveConnectionType GetEffectiveConnectionType() override;
@@ -424,6 +461,17 @@ class TestWebFrameClient : public WebLocalFrameClient {
   WebPlugin* CreatePlugin(const WebPluginParams& params) override;
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
+  void DidMeaningfulLayout(WebMeaningfulLayout) override;
+
+  int VisuallyNonEmptyLayoutCount() const {
+    return visually_non_empty_layout_count_;
+  }
+  int FinishedParsingLayoutCount() const {
+    return finished_parsing_layout_count_;
+  }
+  int FinishedLoadingLayoutCount() const {
+    return finished_loading_layout_count_;
+  }
 
  private:
   void CommitNavigation(std::unique_ptr<WebNavigationInfo>);
@@ -443,6 +491,9 @@ class TestWebFrameClient : public WebLocalFrameClient {
   std::unique_ptr<WebWidgetClient> owned_widget_client_;
   WebEffectiveConnectionType effective_connection_type_;
   Vector<String> console_messages_;
+  int visually_non_empty_layout_count_ = 0;
+  int finished_parsing_layout_count_ = 0;
+  int finished_loading_layout_count_ = 0;
 
   base::WeakPtrFactory<TestWebFrameClient> weak_factory_{this};
 };
@@ -463,12 +514,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 
   // WebRemoteFrameClient:
   void FrameDetached(DetachType) override;
-  void ForwardPostMessage(WebLocalFrame* source_frame,
-                          WebRemoteFrame* target_frame,
-                          WebSecurityOrigin target_origin,
-                          WebDOMMessageEvent) override {}
-
-  AssociatedInterfaceProvider* GetAssociatedInterfaceProvider() {
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
     return associated_interface_provider_.get();
   }
 
@@ -481,6 +527,26 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   // This is null from when the client is created until it is initialized with
   // Bind().
   WebRemoteFrame* frame_ = nullptr;
+};
+
+class TestWidgetInputHandlerHost : public mojom::blink::WidgetInputHandlerHost {
+ public:
+  mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> BindNewRemote();
+
+  void SetTouchActionFromMain(cc::TouchAction touch_action) override;
+  void DidOverscroll(mojom::blink::DidOverscrollParamsPtr params) override;
+  void DidStartScrollingViewport() override;
+  void ImeCancelComposition() override;
+  void ImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const WTF::Vector<gfx::Rect>& bounds) override;
+  void SetMouseCapture(bool capture) override;
+  void RequestMouseLock(bool from_user_gesture,
+                        bool unadjusted_movement,
+                        RequestMouseLockCallback callback) override;
+
+ private:
+  mojo::Receiver<mojom::blink::WidgetInputHandlerHost> receiver_{this};
 };
 
 }  // namespace frame_test_helpers

@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_helper_win.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/win/titlebar_config.h"
@@ -12,7 +13,6 @@
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/views_features.h"
 
@@ -71,8 +71,18 @@ SkColor ThemeHelperWin::GetDefaultColor(
   }
 
   if (DwmColorsAllowed(theme_supplier)) {
-    if (id == ThemeProperties::COLOR_ACCENT_BORDER)
-      return dwm_accent_border_color_;
+    // In Windows 10, native inactive borders are #555555 with 50% alpha.
+    // Prior to version 1809, native active borders use the accent color.
+    // In version 1809 and following, the active border is #262626 with 66%
+    // alpha unless the accent color is also used for the frame.
+    if (id == ThemeProperties::COLOR_ACCENT_BORDER_ACTIVE) {
+      return (base::win::GetVersion() >= base::win::Version::WIN10_RS5 &&
+              !dwm_frame_color_)
+                 ? SkColorSetARGB(0xa8, 0x26, 0x26, 0x26)
+                 : dwm_accent_border_color_;
+    }
+    if (id == ThemeProperties::COLOR_ACCENT_BORDER_INACTIVE)
+      return SkColorSetARGB(0x80, 0x55, 0x55, 0x55);
 
     // When we're custom-drawing the titlebar we want to use either the colors
     // we calculated in OnDwmKeyUpdated() or the default colors. When we're not
@@ -199,6 +209,7 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_ICON_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
+    case ThemeProperties::COLOR_OMNIBOX_RESULTS_FOCUS_BAR:
       system_theme_color = ui::NativeTheme::SystemThemeColor::kHighlightText;
       break;
 
@@ -281,6 +292,7 @@ void ThemeHelperWin::OnDwmKeyUpdated() {
 
   // Watch for future changes.
   if (!dwm_key_->StartWatching(base::BindOnce(&ThemeHelperWin::OnDwmKeyUpdated,
-                                              base::Unretained(this))))
+                                              base::Unretained(this)))) {
     dwm_key_.reset();
+  }
 }

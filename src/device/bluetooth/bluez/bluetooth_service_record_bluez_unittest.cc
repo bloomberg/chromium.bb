@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -56,11 +56,11 @@ class BluetoothServiceRecordBlueZTest : public device::BluetoothTestBlueZ {
     last_seen_handle_ = 0;
     adapter_bluez_->CreateServiceRecord(
         record,
-        base::Bind(
+        base::BindOnce(
             &BluetoothServiceRecordBlueZTest::CreateServiceSuccessCallback,
             base::Unretained(this)),
-        base::Bind(&BluetoothServiceRecordBlueZTest::ErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothServiceRecordBlueZTest::ErrorCallback,
+                       base::Unretained(this)));
     EXPECT_EQ(old_success_callbacks + 1, success_callbacks_);
     EXPECT_EQ(old_error_callbacks, error_callbacks_);
     EXPECT_NE(0u, last_seen_handle_);
@@ -72,11 +72,11 @@ class BluetoothServiceRecordBlueZTest : public device::BluetoothTestBlueZ {
     const size_t old_error_callbacks = error_callbacks_;
     adapter_bluez_->RemoveServiceRecord(
         handle,
-        base::Bind(
+        base::BindOnce(
             &BluetoothServiceRecordBlueZTest::RemoveServiceSuccessCallback,
             base::Unretained(this)),
-        base::Bind(&BluetoothServiceRecordBlueZTest::ErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothServiceRecordBlueZTest::ErrorCallback,
+                       base::Unretained(this)));
     size_t success = expect_success ? 1 : 0;
     EXPECT_EQ(old_success_callbacks + success, success_callbacks_);
     EXPECT_EQ(old_error_callbacks + 1 - success, error_callbacks_);
@@ -87,10 +87,11 @@ class BluetoothServiceRecordBlueZTest : public device::BluetoothTestBlueZ {
     const size_t old_error_callbacks = error_callbacks_;
     records_.clear();
     device->GetServiceRecords(
-        base::Bind(&BluetoothServiceRecordBlueZTest::GetServiceRecordsCallback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothServiceRecordBlueZTest::ErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &BluetoothServiceRecordBlueZTest::GetServiceRecordsCallback,
+            base::Unretained(this)),
+        base::BindOnce(&BluetoothServiceRecordBlueZTest::ErrorCallback,
+                       base::Unretained(this)));
     size_t success = expect_success ? 1 : 0;
     EXPECT_EQ(old_success_callbacks + success, success_callbacks_);
     EXPECT_EQ(old_error_callbacks + 1 - success, error_callbacks_);
@@ -184,7 +185,7 @@ TEST_F(BluetoothServiceRecordBlueZTest, GetServiceRecords) {
       static_cast<BluetoothDeviceBlueZ*>(adapter_->GetDevice(
           bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress));
   GetServiceRecords(device, false);
-  device->Connect(nullptr, GetOnceCallback(Call::EXPECTED),
+  device->Connect(nullptr, GetCallback(Call::EXPECTED),
                   GetConnectErrorCallback(Call::NOT_EXPECTED));
   GetServiceRecords(device, true);
   VerifyRecords();

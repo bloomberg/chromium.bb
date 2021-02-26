@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -33,9 +34,17 @@
 
 namespace blink {
 
-FetchParameters::FetchParameters(ResourceRequest resource_request)
+// static
+FetchParameters FetchParameters::CreateForTest(
+    ResourceRequest resource_request) {
+  return FetchParameters(std::move(resource_request), nullptr);
+}
+
+FetchParameters::FetchParameters(ResourceRequest resource_request,
+                                 scoped_refptr<const DOMWrapperWorld> world)
     : resource_request_(std::move(resource_request)),
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
+      options_(std::move(world)),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
       image_request_behavior_(kNone) {}

@@ -90,18 +90,9 @@
         .then(addStreamToBothConnectionsAndNegotiate)
         .catch(failTest);
 
-    function hasExpectedResolution(elementName) {
-      // Returns a promise that video is playing and has the expected
-      // resolution.
-      return detectVideoPlaying('remote-view-1').then(resolution => {
-        assertEquals(expected_width, resolution.width);
-        assertEquals(expected_height, resolution.height);
-      });
-    }
-
     Promise.all([
-      hasExpectedResolution('remote-view-1'),
-      hasExpectedResolution('remote-view-2')
+      detectVideoPlayingWithExpectedResolution('remote-view-1', expected_width, expected_height),
+      detectVideoPlayingWithExpectedResolution('remote-view-2', expected_width, expected_height)
     ]).then(reportTestSuccess);
   }
 
@@ -223,9 +214,13 @@
     setOfferSdpTransform(removeVideoCodec);
 
     setOnLocalDescriptionError(function(error) {
-      var expectedMsg = 'Failed to set local offer sdp: Failed to set local' +
-          ' video description recv parameters.';
-      assertEquals(expectedMsg, error.message);
+      var expectedMsg1 = 'Failed to set local offer sdp: Failed to set local ' +
+          'video description recv parameters.';
+      var expectedMsg2 = 'Failed to set local offer sdp: Failed to set local ' +
+          'video description recv parameters for m-section with mid=\'video\'.';
+      assertTrue(
+          expectedMsg1 === error.message ||
+          expectedMsg2 === error.message);
       reportTestSuccess();
     });
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
@@ -757,13 +752,13 @@
   }
 
   async function CanSetupH264VideoCallOnSupportedDevice() {
+    // Setup one way video call, prioritize H264 and verify that it used.
     createConnections(null);
     setOfferSdpTransform(maybePreferH264SendCodec);
     navigator.mediaDevices.getUserMedia({audio: false, video: true})
-        .then(addStreamToBothConnectionsAndNegotiate)
+        .then(addStreamToTheFirstConnectionAndNegotiate)
         .catch(failTest);
 
-    await detectVideoPlaying('remote-view-1');
     await detectVideoPlaying('remote-view-2');
 
     assertEquals(gLocalStream.getVideoTracks().length, 1);

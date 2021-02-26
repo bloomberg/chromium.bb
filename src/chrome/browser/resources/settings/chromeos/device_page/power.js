@@ -11,7 +11,9 @@ Polymer({
   is: 'settings-power',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
+    settings.RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -110,6 +112,20 @@ Polymer({
         return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kPowerIdleBehaviorWhileCharging,
+        chromeos.settings.mojom.Setting.kPowerSource,
+        chromeos.settings.mojom.Setting.kSleepWhenLaptopLidClosed,
+        chromeos.settings.mojom.Setting.kPowerIdleBehaviorWhileOnBattery,
+      ]),
+    },
   },
 
   /** @private {?settings.DevicePageBrowserProxy} */
@@ -132,6 +148,36 @@ Polymer({
         'power-management-settings-changed',
         this.powerManagementSettingsChanged_.bind(this));
     this.browserProxy_.requestPowerManagementSettings();
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    if (settingId === chromeos.settings.mojom.Setting.kPowerSource &&
+        this.$.powerSource.hidden) {
+      // If there is only 1 power source, there is no dropdown to focus.
+      // Stop the deep link attempt in this case.
+      return false;
+    }
+
+    // Continue with deep link attempt.
+    return true;
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.POWER) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -188,7 +234,7 @@ Polymer({
    * @private
    */
   hasSingleOption_(idleOptions) {
-    return idleOptions.length == 1;
+    return idleOptions.length === 1;
   },
 
   /** @private */
@@ -249,7 +295,7 @@ Polymer({
         // "Suspend" and "do nothing" share the "sleep" label and communicate
         // their state via the toggle state.
         this.lidClosedLabel_ = loadTimeData.getString('powerLidSleepLabel');
-        pref.value = behavior == settings.LidClosedBehavior.SUSPEND;
+        pref.value = behavior === settings.LidClosedBehavior.SUSPEND;
         break;
       case settings.LidClosedBehavior.STOP_SESSION:
         this.lidClosedLabel_ = loadTimeData.getString('powerLidSignOutLabel');
@@ -275,7 +321,7 @@ Polymer({
    * @private
    */
   getIdleOption_(idleBehavior, currIdleBehavior) {
-    const selected = idleBehavior == currIdleBehavior;
+    const selected = idleBehavior === currIdleBehavior;
     switch (idleBehavior) {
       case settings.IdleBehavior.DISPLAY_OFF_SLEEP:
         return {
@@ -295,10 +341,16 @@ Polymer({
           name: loadTimeData.getString('powerIdleDisplayOn'),
           selected: selected
         };
-      case settings.IdleBehavior.OTHER:
+      case settings.IdleBehavior.SHUT_DOWN:
         return {
           value: idleBehavior,
-          name: loadTimeData.getString('powerIdleOther'),
+          name: loadTimeData.getString('powerIdleDisplayShutDown'),
+          selected: selected
+        };
+      case settings.IdleBehavior.STOP_SESSION:
+        return {
+          value: idleBehavior,
+          name: loadTimeData.getString('powerIdleDisplayStopSession'),
           selected: selected
         };
       default:

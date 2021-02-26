@@ -41,8 +41,9 @@ class PLATFORM_EXPORT CachedMetadataSender {
 };
 
 // Returns whether we should use isolated code cache for a particular response.
-PLATFORM_EXPORT bool ShouldUseIsolatedCodeCache(mojom::RequestContextType,
-                                                const ResourceResponse&);
+PLATFORM_EXPORT bool ShouldUseIsolatedCodeCache(
+    mojom::blink::RequestContextType,
+    const ResourceResponse&);
 
 // Handler class for caching operations.
 class CachedMetadataHandler : public GarbageCollected<CachedMetadataHandler> {
@@ -71,7 +72,7 @@ class CachedMetadataHandler : public GarbageCollected<CachedMetadataHandler> {
   };
 
   virtual ~CachedMetadataHandler() = default;
-  virtual void Trace(Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) const {}
 
   // Reset existing metadata. Subclasses can ignore setting new metadata after
   // clearing with |kDiscardLocally| to save memory.

@@ -4,10 +4,22 @@
 
 package org.chromium.chrome.browser.portals;
 
+import android.annotation.TargetApi;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiSelector;
+import android.text.TextUtils;
 import android.view.View;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,29 +28,40 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.login.ChromeHttpAuthHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
+import org.chromium.components.location.LocationUtils;
+import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -51,19 +74,27 @@ import java.util.concurrent.TimeoutException;
         "enable-blink-features=OverscrollCustomization"})
 public class PortalsTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private EmbeddedTestServer mTestServer;
 
     @Before
     public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        // Some devices have geolocation disabled, so override LocationUtils to always show
+        // geolocation as enabled to prevent flakes in the permissions tests.
+        LocationUtils.setFactory(() -> new LocationUtils() {
+            @Override
+            public boolean isSystemLocationSettingEnabled() {
+                return true;
+            }
+        });
     }
 
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
+        LocationUtils.setFactory(null);
     }
 
     private class TabContentsSwapObserver extends EmptyTabObserver {
@@ -122,10 +153,11 @@ public class PortalsTest {
         swapWaiter.waitForCallback(currSwapCount, 1);
     }
 
-    private List<HistoryItem> getBrowsingHistory() throws TimeoutException {
+    private List<HistoryItem> getBrowsingHistory(Tab tab) throws TimeoutException {
         TestBrowsingHistoryObserver observer = new TestBrowsingHistoryObserver();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowsingHistoryBridge provider = new BrowsingHistoryBridge(/* isIncognito */ false);
+            Profile profile = Profile.fromWebContents(tab.getWebContents());
+            BrowsingHistoryBridge provider = new BrowsingHistoryBridge(profile);
             provider.setObserver(observer);
             provider.queryHistory(/* query */ "");
         });
@@ -247,6 +279,7 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
+    @DisabledTest(message = "https://crbug.com/1024850")
     public void testTouchTransfer() throws Exception {
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
                 "/chrome/test/data/android/portals/touch-transfer.html?event=overscroll"));
@@ -288,7 +321,7 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
-    @DisabledTest // Disabled due to flakiness. See https://crbug.com/1024850
+    @DisabledTest(message = "https://crbug.com/1024850")
     public void testTouchTransferAfterTouchStartActivate() throws Exception {
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
                 "/chrome/test/data/android/portals/touch-transfer.html?event=touchstart"));
@@ -428,9 +461,11 @@ public class PortalsTest {
         final ChromeHttpAuthHandler authHandler = helper.getAuthHandler();
         Assert.assertNotNull(authHandler);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true, authHandler::isShowingAuthDialog));
+        CriteriaHelper.pollUiThread(authHandler::isShowingAuthDialog);
         ThreadUtils.runOnUiThread(() -> authHandler.proceed("basicuser", "secret"));
-        CriteriaHelper.pollUiThread(Criteria.equals("basicuser/secret", portalContents::getTitle));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(portalContents.getTitle(), Matchers.is("basicuser/secret"));
+        });
     }
 
     /**
@@ -452,7 +487,7 @@ public class PortalsTest {
 
         // Content loaded in a portal should not be considered a page visit by the
         // user.
-        List<HistoryItem> history = getBrowsingHistory();
+        List<HistoryItem> history = getBrowsingHistory(tab);
         Assert.assertEquals(1, history.size());
         Assert.assertEquals(mainUrl, history.get(0).getUrl());
         Assert.assertEquals(mainTitle, history.get(0).getTitle());
@@ -461,11 +496,276 @@ public class PortalsTest {
 
         // Now that the portal has activated, its contents are presented to the user
         // as a navigation in the tab, so this should be considered a page visit.
-        history = getBrowsingHistory();
+        history = getBrowsingHistory(tab);
         Assert.assertEquals(2, history.size());
         Assert.assertEquals(portalUrl, history.get(0).getUrl());
         Assert.assertEquals(portalTitle, history.get(0).getTitle());
         Assert.assertEquals(mainUrl, history.get(1).getUrl());
         Assert.assertEquals(mainTitle, history.get(1).getTitle());
+    }
+
+    interface NotificationPredicate {
+        boolean test(StatusBarNotification notification);
+    }
+
+    private NotificationPredicate mMediaCaptureNotificationPred = notification
+            -> TextUtils.equals(notification.getTag(), "MediaCaptureNotificationService");
+    private NotificationPredicate mMediaPlaybackNotificationPred =
+            notification -> notification.getId() == R.id.media_playback_notification;
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForNotification(NotificationPredicate pred) {
+        waitForNotification(pred, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForNotification(NotificationPredicate pred, long maxTimeoutMs) {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            StatusBarNotification notifications[] =
+                    ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                             Context.NOTIFICATION_SERVICE))
+                            .getActiveNotifications();
+            for (StatusBarNotification statusBarNotification : notifications) {
+                if (pred.test(statusBarNotification)) {
+                    return true;
+                }
+            }
+            return false;
+        }, maxTimeoutMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForNoNotifications(NotificationPredicate pred) {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            StatusBarNotification notifications[] =
+                    ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                             Context.NOTIFICATION_SERVICE))
+                            .getActiveNotifications();
+            for (StatusBarNotification statusBarNotification : notifications) {
+                if (pred.test(statusBarNotification)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testMediaCaptureNotificationVisibleAfterAdoption() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/media-capture.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Start video capture.
+        JavaScriptUtils.executeJavaScript(tab.getWebContents(), "start()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        }, 12000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        // Accept permissions request by clicking button on permissions dialog.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            permissionDialogController.clickButtonForTest(
+                    ModalDialogProperties.ButtonType.POSITIVE);
+        });
+        // Wait for video capture notification.
+        waitForNotification(mMediaCaptureNotificationPred, 12000);
+        // Activate portal.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Wait for adoption to complete.
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        // Check if notification is still shown.
+        waitForNotification(mMediaCaptureNotificationPred);
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testMediaNotificationDisappearsAfterActivation() throws Exception {
+        String mainUrl =
+                mTestServer.getURL("/chrome/test/data/android/portals/media-notification.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Start video playback.
+        DOMUtils.clickNode(tab.getWebContents(), "video");
+        // Wait for media notification.
+        waitForNotification(mMediaPlaybackNotificationPred);
+        // Activate portal.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Wait for adoption to complete.
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        // Notification should disappear.
+        waitForNoNotifications(mMediaPlaybackNotificationPred);
+        // Activate predecessor.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Media notification should show again.
+        waitForNotification(mMediaPlaybackNotificationPred);
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals", "AppBanners"})
+    public void testAppBannerTriggerableAfterActivation() throws Exception {
+        // Based on AppBannerManagerTest.
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/about.html"));
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final WebContents contents = tab.getWebContents();
+        Assert.assertNotNull(contents);
+
+        final String url = WebappTestPage.getServiceWorkerUrlWithAction(
+                mTestServer, "call_stashed_prompt_on_click");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
+                    .resetBaseScoreForUrl(url, 10);
+        });
+
+        JavaScriptUtils.executeJavaScript(contents,
+                "let portal = document.createElement('portal');\n"
+                        + "portal.src = '" + url + "';\n"
+                        + "portal.onload = () => portal.activate();\n"
+                        + "document.body.appendChild(portal);");
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(tab.getTitle(), Matchers.is("Web app banner test page"));
+        });
+        CriteriaHelper.pollUiThread(() -> !AppBannerManager.forTab(tab).isRunningForTesting());
+        TouchCommon.singleClickView(tab.getView());
+
+        String expectedDialogTitle = ThreadUtils.runOnUiThreadBlocking(() -> {
+            return mActivityTestRule.getActivity().getString(
+                    AppBannerManager.getHomescreenLanguageOption(tab).titleTextId);
+        });
+        UiObject dialogUiObject = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                                          .findObject(new UiSelector().text(expectedDialogTitle));
+        Assert.assertTrue(dialogUiObject.waitForExists(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedWhenRequestedByPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(portalContents, "requestLocation()"));
+        Assert.assertEquals("\"denied\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "queryGeolocationPermission()"));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedInPortalAfterBeingGrantedInPortalHost() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        Assert.assertEquals("\"prompt\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "queryGeolocationPermission()"));
+        // Request geolocation.
+        JavaScriptUtils.executeJavaScript(tab.getWebContents(), "requestLocation()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        });
+        // Accept permissions request by clicking button on permissions dialog.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            permissionDialogController.clickButtonForTest(
+                    ModalDialogProperties.ButtonType.POSITIVE);
+        });
+        // Assert that main page has geolocation permissions.
+        Assert.assertEquals("\"granted\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "queryGeolocationPermission()"));
+        // Check portal for geolocation permission status and assert that it is denied.
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        Assert.assertEquals("\"denied\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "queryGeolocationPermission()"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionShouldBeDeniedAfterActivatingPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        WebContents webContents = tab.getWebContents();
+        Assert.assertEquals("\"prompt\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        webContents, "queryGeolocationPermission()"));
+        JavaScriptUtils.executeJavaScript(webContents, "requestLocation()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        });
+        // Activate portal while dialog is visible.
+        executeScriptAndAwaitSwap(tab, "activatePortal()");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        // Permission should be denied.
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "waitForRequestLocationToResolve()"));
+        // Permission dialog should not be visible anymore.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            Assert.assertFalse(permissionDialogController.isDialogShownForTest());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedWhenRequestedByAdoptedPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        // Activate portal and adopt predecessor.
+        executeScriptAndAwaitSwap(tab, "activatePortal()");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        // Request for geolocation should be denied.
+        JavaScriptUtils.executeJavaScript(portalContents, "requestLocation()");
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "waitForRequestLocationToResolve()"));
     }
 }

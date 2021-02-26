@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/fxcrt/xml/cfx_xmldocument.h"
+#include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmltext.h"
 #include "fxjs/cfx_v8.h"
 #include "fxjs/js_resources.h"
@@ -27,7 +28,7 @@ CJX_Packet::CJX_Packet(CXFA_Packet* packet) : CJX_Node(packet) {
   DefineMethods(MethodSpecs);
 }
 
-CJX_Packet::~CJX_Packet() {}
+CJX_Packet::~CJX_Packet() = default;
 
 bool CJX_Packet::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
@@ -77,7 +78,8 @@ CJS_Result CJX_Packet::removeAttribute(
   return CJS_Result::Success(runtime->NewNull());
 }
 
-void CJX_Packet::content(CFXJSE_Value* pValue,
+void CJX_Packet::content(v8::Isolate* pIsolate,
+                         CFXJSE_Value* pValue,
                          bool bSetting,
                          XFA_Attribute eAttribute) {
   CFX_XMLElement* element = ToXMLElement(GetXFANode()->GetXMLMappingNode());
@@ -87,9 +89,9 @@ void CJX_Packet::content(CFXJSE_Value* pValue,
           GetXFANode()
               ->GetDocument()
               ->GetNotify()
-              ->GetHDOC()
+              ->GetFFDoc()
               ->GetXMLDocument()
-              ->CreateNode<CFX_XMLText>(pValue->ToWideString()));
+              ->CreateNode<CFX_XMLText>(pValue->ToWideString(pIsolate)));
     }
     return;
   }
@@ -98,5 +100,5 @@ void CJX_Packet::content(CFXJSE_Value* pValue,
   if (element)
     wsTextData = element->GetTextData();
 
-  pValue->SetString(wsTextData.ToUTF8().AsStringView());
+  pValue->SetString(pIsolate, wsTextData.ToUTF8().AsStringView());
 }

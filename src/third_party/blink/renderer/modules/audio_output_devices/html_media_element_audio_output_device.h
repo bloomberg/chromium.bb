@@ -20,14 +20,12 @@ class ScriptState;
 class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
     : public GarbageCollected<HTMLMediaElementAudioOutputDevice>,
       public Supplement<HTMLMediaElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
-
  public:
   static const char kSupplementName[];
 
   HTMLMediaElementAudioOutputDevice();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
                                  HTMLMediaElement&,

@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,6 +30,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
@@ -98,8 +99,9 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Regression test for crbug.com/937761.
+// Disabled due to flakiness https://crbug.com/1031090.
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       SSLCertificateCachedCorrectly) {
+                       DISABLED_SSLCertificateCachedCorrectly) {
   net::EmbeddedTestServer embedded_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   embedded_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK,
@@ -207,6 +209,7 @@ class LoaderFactoryInterceptingBrowserClient : public TestContentBrowserClient {
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       base::Optional<int64_t> navigation_id,
+      ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
@@ -273,8 +276,9 @@ class LoaderFactoryInterceptingBrowserClient : public TestContentBrowserClient {
   std::vector<std::unique_ptr<PassThroughURLLoaderFactory>> proxies_;
 };
 
+// Timeout waiting for "AppCache updated" title (http://crbug.com/1080708).
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       AppCacheRequestsAreProxied) {
+                       DISABLED_AppCacheRequestsAreProxied) {
   LoaderFactoryInterceptingBrowserClient browser_client;
   ContentBrowserClient* original_client =
       SetBrowserClientForTesting(&browser_client);

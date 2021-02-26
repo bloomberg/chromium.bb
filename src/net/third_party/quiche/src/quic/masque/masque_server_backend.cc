@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quiche/src/quic/masque/masque_server_backend.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -28,7 +28,7 @@ MasqueServerBackend::MasqueServerBackend(const std::string& server_authority,
 }
 
 bool MasqueServerBackend::MaybeHandleMasqueRequest(
-    const spdy::SpdyHeaderBlock& request_headers,
+    const spdy::Http2HeaderBlock& request_headers,
     const std::string& request_body,
     QuicSimpleServerBackend::RequestHandler* request_handler) {
   auto path_pair = request_headers.find(":path");
@@ -40,9 +40,9 @@ bool MasqueServerBackend::MaybeHandleMasqueRequest(
     // This request is missing required headers.
     return false;
   }
-  quiche::QuicheStringPiece path = path_pair->second;
-  quiche::QuicheStringPiece scheme = scheme_pair->second;
-  quiche::QuicheStringPiece method = method_pair->second;
+  absl::string_view path = path_pair->second;
+  absl::string_view scheme = scheme_pair->second;
+  absl::string_view method = method_pair->second;
   if (scheme != "https" || method != "POST" || request_body.empty()) {
     // MASQUE requests MUST be a non-empty https POST.
     return false;
@@ -60,7 +60,7 @@ bool MasqueServerBackend::MaybeHandleMasqueRequest(
       // Cannot enforce missing authority.
       return false;
     }
-    quiche::QuicheStringPiece authority = authority_pair->second;
+    absl::string_view authority = authority_pair->second;
     if (server_authority_ != authority) {
       // This request does not match server_authority.
       return false;
@@ -100,7 +100,7 @@ bool MasqueServerBackend::MaybeHandleMasqueRequest(
 }
 
 void MasqueServerBackend::FetchResponseFromBackend(
-    const spdy::SpdyHeaderBlock& request_headers,
+    const spdy::Http2HeaderBlock& request_headers,
     const std::string& request_body,
     QuicSimpleServerBackend::RequestHandler* request_handler) {
   if (MaybeHandleMasqueRequest(request_headers, request_body,

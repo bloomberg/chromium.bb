@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crosapi/browser_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,31 +48,34 @@ namespace {
 
 // Chrome is pinned explicitly.
 const char* kDefaultPinnedApps[] = {
-    extension_misc::kGmailAppId, extension_misc::kGoogleDocAppId,
-    extension_misc::kYoutubeAppId, arc::kPlayStoreAppId};
+    extension_misc::kFilesManagerAppId, extension_misc::kGmailAppId,
+    extension_misc::kGoogleDocAppId, extension_misc::kYoutubeAppId,
+    arc::kPlayStoreAppId};
 
 const char* kDefaultPinnedApps7Apps[] = {
-    extension_misc::kGmailAppId,        extension_misc::kGoogleDocAppId,
-    extension_misc::kGooglePhotosAppId, extension_misc::kFilesManagerAppId,
+    extension_misc::kFilesManagerAppId, extension_misc::kGmailAppId,
+    extension_misc::kGoogleDocAppId,    extension_misc::kGooglePhotosAppId,
     extension_misc::kYoutubeAppId,      arc::kPlayStoreAppId};
 
-const char* kDefaultPinnedApps10Apps[] = {extension_misc::kGmailAppId,
+const char* kDefaultPinnedApps10Apps[] = {extension_misc::kFilesManagerAppId,
+                                          extension_misc::kGmailAppId,
                                           extension_misc::kCalendarAppId,
                                           extension_misc::kGoogleDocAppId,
                                           extension_misc::kGoogleSheetsAppId,
                                           extension_misc::kGoogleSlidesAppId,
-                                          extension_misc::kFilesManagerAppId,
                                           extension_misc::kCameraAppId,
                                           extension_misc::kGooglePhotosAppId,
                                           arc::kPlayStoreAppId};
 
 const char* kTabletFormFactorDefaultPinnedApps[] = {
-    arc::kGmailAppId, extension_misc::kGoogleDocAppId, arc::kYoutubeAppId,
-    arc::kPlayStoreAppId};
+    extension_misc::kFilesManagerAppId, arc::kGmailAppId,
+    extension_misc::kGoogleDocAppId, arc::kYoutubeAppId, arc::kPlayStoreAppId};
 
 const char kDefaultPinnedAppsKey[] = "default";
 const char kDefaultPinnedApps7AppsKey[] = "7apps";
 const char kDefaultPinnedApps10AppsKey[] = "10apps";
+
+bool skip_pinned_apps_from_sync_for_test = false;
 
 bool IsLegacyCameraAppId(const std::string& app_id) {
   return app_id ==
@@ -186,7 +190,8 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   // apps is likely override it. There is a case when App sync is disabled and
   // in last case local cache is available immediately.
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    if (settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
+    if (settings->IsOsSyncFeatureEnabled() &&
+        settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
         !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
              ->IsSyncing()) {
       return false;
@@ -202,7 +207,8 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   // If shelf pin layout rolls preference is not started yet then we cannot say
   // if we rolled layout or not.
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    if (settings->GetSelectedOsTypes().Has(
+    if (settings->IsOsSyncFeatureEnabled() &&
+        settings->GetSelectedOsTypes().Has(
             UserSelectableOsType::kOsPreferences) &&
         !PrefServiceSyncableFromProfile(profile)->AreOsPrefsSyncing()) {
       return false;
@@ -457,8 +463,10 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   app_list::AppListSyncableService* const syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(helper->profile());
   // Some unit tests may not have it or service may not be initialized.
-  if (!syncable_service || !syncable_service->IsInitialized())
+  if (!syncable_service || !syncable_service->IsInitialized() ||
+      skip_pinned_apps_from_sync_for_test) {
     return std::vector<ash::ShelfID>();
+  }
 
   std::vector<PinInfo> pin_infos;
 
@@ -604,6 +612,19 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   InsertPinsAfterChromeAndBeforeFirstPinnedApp(
       helper, syncable_service, GetAppsPinnedByPolicy(helper), &pin_infos);
 
+  // If Lacros is enabled and allowed for this user type, ensure the Lacros icon
+  // is pinned.
+  if (chromeos::features::IsLacrosSupportEnabled() &&
+      crosapi::browser_util::IsLacrosAllowed()) {
+    syncer::StringOrdinal lacros_position =
+        syncable_service->GetPinPosition(extension_misc::kLacrosAppId);
+    if (!lacros_position.IsValid()) {
+      // If Lacros isn't already pinned, add it to the right of the Chrome icon.
+      InsertPinsAfterChromeAndBeforeFirstPinnedApp(
+          helper, syncable_service, {extension_misc::kLacrosAppId}, &pin_infos);
+    }
+  }
+
   // Sort pins according their ordinals.
   std::sort(pin_infos.begin(), pin_infos.end(), ComparePinInfo());
 
@@ -688,4 +709,8 @@ void SetPinPosition(Profile* profile,
   else
     pin_position = syncer::StringOrdinal::CreateInitialOrdinal();
   syncable_service->SetPinPosition(app_id, pin_position);
+}
+
+void SkipPinnedAppsFromSyncForTest() {
+  skip_pinned_apps_from_sync_for_test = true;
 }

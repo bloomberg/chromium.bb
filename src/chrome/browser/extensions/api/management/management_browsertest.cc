@@ -5,13 +5,13 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -87,8 +87,7 @@ class ExtensionHostDestructionObserver
   }
 
   // ExtensionHostObserver:
-  void OnExtensionHostDestroyed(
-      const extensions::ExtensionHost* host) override {
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override {
     if (host == host_) {
       extension_host_observer_.Remove(host_);
       run_loop_.Quit();
@@ -717,8 +716,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
   install_observer.WaitForExtensionWillBeInstalled();
@@ -822,8 +820,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
 
@@ -863,8 +860,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // and force enable it too.
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
 
   extensions::TestExtensionRegistryObserver extension_observer(registry);
   UpdateProviderPolicy(policies);

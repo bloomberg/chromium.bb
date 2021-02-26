@@ -54,7 +54,7 @@ class RemoteObjectImpl implements RemoteObject {
      * These identifiers must not collide.
      */
     interface ObjectIdAllocator {
-        int getObjectId(Object object);
+        int getObjectId(Object object, Class<? extends Annotation> safeAnnotationClass);
         Object getObjectById(int id);
     }
 
@@ -80,6 +80,13 @@ class RemoteObjectImpl implements RemoteObject {
     private final WeakReference<Object> mTarget;
 
     /**
+     * Annotation required on all exposed methods.
+     * If null, no annotation is required.
+     * In practice, this is usually {@link android.webkit.JavascriptInterface}.
+     */
+    private final Class<? extends Annotation> mSafeAnnotationClass;
+
+    /**
      * Allocates IDs for other Java objects.
      *
      * Cannot be held strongly, because it may (via the objects it holds) contain
@@ -97,11 +104,18 @@ class RemoteObjectImpl implements RemoteObject {
      */
     private final SortedMap<String, List<Method>> mMethods = new TreeMap<>();
 
+    /**
+     * If true, allows an object context's inspection when {@link #getMethods} is called.
+     */
+    private final boolean mAllowInspection;
+
     public RemoteObjectImpl(Object target, Class<? extends Annotation> safeAnnotationClass,
-            Auditor auditor, ObjectIdAllocator objectIdAllocator) {
+            Auditor auditor, ObjectIdAllocator objectIdAllocator, boolean allowInspection) {
         mTarget = new WeakReference<>(target);
+        mSafeAnnotationClass = safeAnnotationClass;
         mAuditor = auditor;
         mObjectIdAllocator = new WeakReference<>(objectIdAllocator);
+        mAllowInspection = allowInspection;
 
         for (Method method : target.getClass().getMethods()) {
             if (safeAnnotationClass != null && !method.isAnnotationPresent(safeAnnotationClass)) {
@@ -125,6 +139,10 @@ class RemoteObjectImpl implements RemoteObject {
 
     @Override
     public void getMethods(GetMethodsResponse callback) {
+        if (!mAllowInspection) {
+            callback.call(new String[0]);
+            return;
+        }
         Set<String> methodNames = mMethods.keySet();
         callback.call(methodNames.toArray(new String[methodNames.size()]));
     }
@@ -192,8 +210,8 @@ class RemoteObjectImpl implements RemoteObject {
             return;
         }
 
-        RemoteInvocationResult mojoResult =
-                convertResult(result, method.getReturnType(), objectIdAllocator);
+        RemoteInvocationResult mojoResult = convertResult(
+                result, method.getReturnType(), objectIdAllocator, mSafeAnnotationClass);
         callback.call(mojoResult);
     }
 
@@ -373,8 +391,8 @@ class RemoteObjectImpl implements RemoteObject {
         }
     }
 
-    private static RemoteInvocationResult convertResult(
-            Object result, Class<?> returnType, ObjectIdAllocator objectIdAllocator) {
+    private static RemoteInvocationResult convertResult(Object result, Class<?> returnType,
+            ObjectIdAllocator objectIdAllocator, Class<? extends Annotation> safeAnnotationClass) {
         // Methods returning arrays should not be called (for legacy reasons).
         assert !returnType.isArray();
 
@@ -403,7 +421,7 @@ class RemoteObjectImpl implements RemoteObject {
         } else if (result == null) {
             resultValue.setSingletonValue(SingletonJavaScriptValue.NULL);
         } else {
-            int objectId = objectIdAllocator.getObjectId(result);
+            int objectId = objectIdAllocator.getObjectId(result, safeAnnotationClass);
             resultValue.setObjectId(objectId);
         }
         RemoteInvocationResult mojoResult = new RemoteInvocationResult();

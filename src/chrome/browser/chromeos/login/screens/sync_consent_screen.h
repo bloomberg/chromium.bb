@@ -26,14 +26,22 @@ namespace chromeos {
 // sign-in flow.
 class SyncConsentScreen : public BaseScreen,
                           public syncer::SyncServiceObserver {
- private:
-  enum SyncScreenBehavior {
-    UNKNOWN,  // Not yet known.
-    SHOW,     // Screen should be shown.
-    SKIP      // Skip screen for this user.
+ public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Public for testing. See
+  // GetSyncScreenBehavior() for documentation on each case.
+  enum class SyncScreenBehavior {
+    kUnknown = 0,
+    kShow = 1,
+    kSkipNonGaiaAccount = 2,
+    kSkipPublicAccount = 3,
+    kSkipFeaturePolicy = 4,
+    kSkipAndEnableNonBrandedBuild = 5,
+    kSkipAndEnableEmphemeralUser = 6,
+    kSkipAndEnableScreenPolicy = 7,
+    kMaxValue = kSkipAndEnableScreenPolicy
   };
 
- public:
   enum ConsentGiven { CONSENT_NOT_GIVEN, CONSENT_GIVEN };
 
   enum class Result { NEXT, NOT_APPLICABLE };
@@ -71,7 +79,7 @@ class SyncConsentScreen : public BaseScreen,
                     const ScreenExitCallback& exit_callback);
   ~SyncConsentScreen() override;
 
-  // Inits |user_|, its |profile_| and |behavior_| before using the screen.
+  // Inits `user_`, its `profile_` and `behavior_` before using the screen.
   void Init();
 
   // syncer::SyncServiceObserver:
@@ -85,14 +93,21 @@ class SyncConsentScreen : public BaseScreen,
   void OnContinueWithDefaults(const std::vector<int>& consent_description,
                               const int consent_confirmation);
 
-  // Reacts to "Accept and Continue".
-  void OnAcceptAndContinue(const std::vector<int>& consent_description,
-                           int consent_confirmation,
-                           bool enable_os_sync,
-                           bool enable_browser_sync);
+  // Reacts to "Yes, I'm in" and "No, thanks".
+  void OnContinue(const std::vector<int>& consent_description,
+                  int consent_confirmation,
+                  SyncConsentScreenHandler::UserChoice choice);
+
+  // Configures OS sync and browser sync.
+  void UpdateSyncSettings(bool enable_sync);
+
+  // Enables sync if required when skipping the dialog.
+  void MaybeEnableSyncForSkip();
 
   static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting(
       bool value);
+
+  static bool IsBrandedBuildForTesting();
 
   // Sets internal condition "Sync disabled by policy" for tests.
   void SetProfileSyncDisabledByPolicyForTesting(bool value);
@@ -114,15 +129,18 @@ class SyncConsentScreen : public BaseScreen,
   }
 
  private:
+  // Marks the dialog complete and runs `exit_callback_`.
+  void Finish(Result result);
+
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
 
   // Returns new SyncScreenBehavior value.
   SyncScreenBehavior GetSyncScreenBehavior() const;
 
-  // Calculates updated |behavior_| and performs required update actions.
+  // Calculates updated `behavior_` and performs required update actions.
   void UpdateScreen();
 
   // Records user Sync consent.
@@ -138,7 +156,7 @@ class SyncConsentScreen : public BaseScreen,
 
   // Controls screen appearance.
   // Spinner is shown until sync status has been decided.
-  SyncScreenBehavior behavior_ = UNKNOWN;
+  SyncScreenBehavior behavior_ = SyncScreenBehavior::kUnknown;
 
   SyncConsentScreenView* const view_;
   ScreenExitCallback exit_callback_;

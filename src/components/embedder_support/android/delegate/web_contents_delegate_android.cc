@@ -23,6 +23,7 @@
 #include "content/public/common/resource_request_body_android.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "ui/android/view_android.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -313,8 +314,7 @@ bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
 }
 
 void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
-    WebContents* web_contents,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
@@ -390,12 +390,8 @@ bool WebContentsDelegateAndroid::ShouldAnimateBrowserControlsHeightChanges() {
 }
 
 bool WebContentsDelegateAndroid::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* contents) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return false;
-  return Java_WebContentsDelegateAndroid_controlsResizeView(env, obj);
+    content::WebContents* contents) {
+  return contents->GetNativeView()->ControlsResizeView();
 }
 
 }  // namespace web_contents_delegate_android

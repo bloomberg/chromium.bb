@@ -27,17 +27,37 @@ void ComputeOpacity(LayerAnimationInfo* animation_info,
   }
 
   float opacity;
-  if (start_delta < fade_in_time) {
-    opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-  } else {
-    opacity = 1.0 - (change_delta.InSecondsF() /
-                     (fade_in_time + fade_out_time).InSecondsF());
-  }
+  if (start_delta < fade_in_time)
+    opacity = start_delta / fade_in_time;
+  else
+    opacity = 1.0 - (change_delta / (fade_in_time + fade_out_time));
 
   // Layer::SetOpacity will throw an error if we're not within 0...1.
-  opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
+  animation_info->opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
+}
 
-  animation_info->opacity = opacity;
+void ComputeOffset(LayerAnimationInfo* animation_info,
+                   base::TimeTicks timestamp) {
+  if (timestamp < animation_info->start_time)
+    timestamp = animation_info->start_time;
+
+  float change_delta = (timestamp - animation_info->start_time).InSecondsF();
+
+  if (animation_info->offset > animation_info->offset_bound) {
+    animation_info->offset = animation_info->offset_bound;
+    animation_info->animation_rate *= -1;
+  } else if (animation_info->offset < 0) {
+    animation_info->offset = 0;
+    animation_info->animation_rate *= -1;
+  }
+
+  float offset_delta = animation_info->offset_bound *
+                       (change_delta / animation_info->animation_rate);
+  animation_info->offset += offset_delta;
+
+  if (animation_info->offset > animation_info->offset_bound) {
+    animation_info->offset = 0;
+  }
 }
 
 }  // namespace ash

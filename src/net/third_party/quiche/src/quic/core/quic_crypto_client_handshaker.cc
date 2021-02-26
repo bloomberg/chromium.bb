@@ -128,6 +128,10 @@ bool QuicCryptoClientHandshaker::EarlyDataAccepted() const {
   return num_client_hellos_ == 1;
 }
 
+ssl_early_data_reason_t QuicCryptoClientHandshaker::EarlyDataReason() const {
+  return early_data_reason_;
+}
+
 bool QuicCryptoClientHandshaker::ReceivedInchoateReject() const {
   QUIC_BUG_IF(!one_rtt_keys_available_);
   return num_client_hellos_ >= 3;
@@ -169,6 +173,30 @@ void QuicCryptoClientHandshaker::OnHandshakeDoneReceived() {
 size_t QuicCryptoClientHandshaker::BufferSizeLimitForLevel(
     EncryptionLevel level) const {
   return QuicCryptoHandshaker::BufferSizeLimitForLevel(level);
+}
+
+bool QuicCryptoClientHandshaker::KeyUpdateSupportedLocally() const {
+  return false;
+}
+
+std::unique_ptr<QuicDecrypter>
+QuicCryptoClientHandshaker::AdvanceKeysAndCreateCurrentOneRttDecrypter() {
+  // Key update is only defined in QUIC+TLS.
+  DCHECK(false);
+  return nullptr;
+}
+
+std::unique_ptr<QuicEncrypter>
+QuicCryptoClientHandshaker::CreateCurrentOneRttEncrypter() {
+  // Key update is only defined in QUIC+TLS.
+  DCHECK(false);
+  return nullptr;
+}
+
+void QuicCryptoClientHandshaker::OnConnectionClosed(
+    QuicErrorCode /*error*/,
+    ConnectionCloseSource /*source*/) {
+  next_state_ = STATE_CONNECTION_CLOSED;
 }
 
 void QuicCryptoClientHandshaker::HandleServerConfigUpdateMessage(
@@ -236,6 +264,9 @@ void QuicCryptoClientHandshaker::DoHandshakeLoop(
         break;
       case STATE_NONE:
         QUIC_NOTREACHED();
+        return;
+      case STATE_CONNECTION_CLOSED:
+        rv = QUIC_FAILURE;
         return;  // We are done.
     }
   } while (rv != QUIC_PENDING && next_state_ != STATE_NONE);
@@ -281,7 +312,17 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   // inchoate or subsequent hello.
   session()->config()->ToHandshakeMessage(&out, session()->transport_version());
 
+  bool fill_inchoate_client_hello = false;
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
+    early_data_reason_ = ssl_early_data_no_session_offered;
+    fill_inchoate_client_hello = true;
+  } else if (session()->config()->HasClientRequestedIndependentOption(
+                 kQNZ2, session()->perspective()) &&
+             num_client_hellos_ == 1) {
+    early_data_reason_ = ssl_early_data_disabled;
+    fill_inchoate_client_hello = true;
+  }
+  if (fill_inchoate_client_hello) {
     crypto_config_->FillInchoateClientHello(
         server_id_, session()->supported_versions().front(), cached,
         session()->connection()->random_generator(),
@@ -306,7 +347,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
     chlo_hash_ = CryptoUtils::HashHandshakeMessage(out, Perspective::IS_CLIENT);
     session()->connection()->set_fully_pad_crypto_handshake_packets(
         crypto_config_->pad_inchoate_hello());
-    SendHandshakeMessage(out);
+    SendHandshakeMessage(out, ENCRYPTION_INITIAL);
     return;
   }
 
@@ -333,7 +374,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   next_state_ = STATE_RECV_SHLO;
   session()->connection()->set_fully_pad_crypto_handshake_packets(
       crypto_config_->pad_full_hello());
-  SendHandshakeMessage(out);
+  SendHandshakeMessage(out, ENCRYPTION_INITIAL);
   // Be prepared to decrypt with the new server write key.
   delegate_->OnNewEncryptionKeyAvailable(
       ENCRYPTION_ZERO_RTT,
@@ -345,6 +386,9 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
       /*latch_once_used=*/true);
   encryption_established_ = true;
   delegate_->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
+  if (early_data_reason_ == ssl_early_data_unknown && num_client_hellos_ > 1) {
+    early_data_reason_ = ssl_early_data_peer_declined;
+  }
 }
 
 void QuicCryptoClientHandshaker::DoReceiveREJ(
@@ -481,7 +525,6 @@ void QuicCryptoClientHandshaker::DoVerifyProofComplete(
     if (!one_rtt_keys_available()) {
       next_state_ = STATE_SEND_CHLO;
     } else {
-      // TODO: Enable Expect-Staple. https://crbug.com/631101
       next_state_ = STATE_NONE;
     }
   }
@@ -520,6 +563,9 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
     stream_->OnUnrecoverableError(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
                                   "unencrypted SHLO message");
     return;
+  }
+  if (num_client_hellos_ == 1) {
+    early_data_reason_ = ssl_early_data_accepted;
   }
 
   std::string error_details;

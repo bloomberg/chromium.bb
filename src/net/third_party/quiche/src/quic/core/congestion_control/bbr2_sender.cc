@@ -11,8 +11,10 @@
 #include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
+#include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 namespace quic {
@@ -73,8 +75,10 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
              /*cwnd_gain=*/1.0,
              /*pacing_gain=*/kInitialPacingGain,
              old_sender ? &old_sender->sampler_ : nullptr),
-      initial_cwnd_(
-          cwnd_limits().ApplyLimits(initial_cwnd_in_packets * kDefaultTCPMSS)),
+      initial_cwnd_(cwnd_limits().ApplyLimits(
+          (GetQuicReloadableFlag(quic_copy_bbr_cwnd_to_bbr2) && old_sender)
+              ? old_sender->GetCongestionWindow()
+              : (initial_cwnd_in_packets * kDefaultTCPMSS))),
       cwnd_(initial_cwnd_),
       pacing_rate_(kInitialPacingGain * QuicBandwidth::FromBytesAndTimeDelta(
                                             cwnd_,
@@ -84,6 +88,10 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
       probe_bw_(this, &model_),
       probe_rtt_(this, &model_),
       last_sample_is_app_limited_(false) {
+  if (GetQuicReloadableFlag(quic_copy_bbr_cwnd_to_bbr2) && old_sender) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_copy_bbr_cwnd_to_bbr2);
+  }
+
   QUIC_DVLOG(2) << this << " Initializing Bbr2Sender. mode:" << mode_
                 << ", PacingRate:" << pacing_rate_ << ", Cwnd:" << cwnd_
                 << ", CwndLimits:" << cwnd_limits() << "  @ " << now;
@@ -92,16 +100,6 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
 
 void Bbr2Sender::SetFromConfig(const QuicConfig& config,
                                Perspective perspective) {
-  if (config.HasClientRequestedIndependentOption(kBBR9, perspective)) {
-    params_.flexible_app_limited = true;
-  }
-  if (GetQuicReloadableFlag(
-          quic_avoid_overestimate_bandwidth_with_aggregation) &&
-      config.HasClientRequestedIndependentOption(kBSAO, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_avoid_overestimate_bandwidth_with_aggregation, 4, 4);
-    model_.EnableOverestimateAvoidance();
-  }
   if (config.HasClientRequestedIndependentOption(kB2NA, perspective)) {
     params_.add_ack_height_to_queueing_threshold = false;
   }
@@ -122,10 +120,18 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
     QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fewer_startup_round_trips, 2, 2);
     params_.startup_full_bw_rounds = 2;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_ignore_inflight_lo) &&
-      config.HasClientRequestedIndependentOption(kB2LO, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_ignore_inflight_lo);
+  if (config.HasClientRequestedIndependentOption(kB2LO, perspective)) {
     params_.ignore_inflight_lo = true;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_use_tcp_inflight_hi_headroom) &&
+      config.HasClientRequestedIndependentOption(kB2HR, perspective)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_use_tcp_inflight_hi_headroom);
+    params_.inflight_hi_headroom = 0.15;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd) &&
+      config.HasClientRequestedIndependentOption(kICW1, perspective)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 1, 4);
+    max_cwnd_when_network_parameters_adjusted_ = 100 * kDefaultTCPMSS;
   }
 
   ApplyConnectionOptions(config.ClientRequestedIndependentOptions(perspective));
@@ -133,11 +139,26 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
 
 void Bbr2Sender::ApplyConnectionOptions(
     const QuicTagVector& connection_options) {
-  if (GetQuicReloadableFlag(quic_bbr2_lower_startup_cwnd_gain) &&
-      ContainsQuicTag(connection_options, kBBQ2)) {
-    // 2 is the lower, derived gain for CWND.
-    params_.startup_cwnd_gain = 2;
-    params_.drain_cwnd_gain = 2;
+  if (ContainsQuicTag(connection_options, kBBQ2)) {
+    params_.startup_cwnd_gain = 2.885;
+    params_.drain_cwnd_gain = 2.885;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_no_exit_startup_on_loss_with_bw_growth) &&
+      ContainsQuicTag(connection_options, kB2NE)) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_bbr2_no_exit_startup_on_loss_with_bw_growth);
+    params_.always_exit_startup_on_excess_loss = false;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
+      ContainsQuicTag(connection_options, kB2SL)) {
+    params_.startup_loss_exit_use_max_delivered_for_inflight_hi = true;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
+      ContainsQuicTag(connection_options, kB2H2)) {
+    params_.limit_inflight_hi_by_max_delivered = true;
+  }
+  if (ContainsQuicTag(connection_options, kBSAO)) {
+    model_.EnableOverestimateAvoidance();
   }
 }
 
@@ -162,19 +183,38 @@ const Limits<QuicByteCount>& Bbr2Sender::cwnd_limits() const {
 }
 
 void Bbr2Sender::AdjustNetworkParameters(const NetworkParams& params) {
-  model_.UpdateNetworkParameters(params.bandwidth, params.rtt);
+  model_.UpdateNetworkParameters(params.rtt);
 
   if (mode_ == Bbr2Mode::STARTUP) {
     const QuicByteCount prior_cwnd = cwnd_;
 
-    // Normally UpdateCongestionWindow updates |cwnd_| towards the target by a
-    // small step per congestion event, by changing |cwnd_| to the bdp at here
-    // we are reducing the number of updates needed to arrive at the target.
-    cwnd_ = model_.BDP(model_.BandwidthEstimate());
-    UpdateCongestionWindow(0);
+    QuicBandwidth effective_bandwidth =
+        std::max(params.bandwidth, model_.BandwidthEstimate());
+    connection_stats_->cwnd_bootstrapping_rtt_us =
+        model_.MinRtt().ToMicroseconds();
+    if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd)) {
+      if (params.max_initial_congestion_window > 0) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 2,
+                                     4);
+        max_cwnd_when_network_parameters_adjusted_ =
+            params.max_initial_congestion_window * kDefaultTCPMSS;
+      } else {
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_support_max_bootstrap_cwnd, 3,
+                                     4);
+      }
+      cwnd_ = cwnd_limits().ApplyLimits(
+          std::min(max_cwnd_when_network_parameters_adjusted_,
+                   model_.BDP(effective_bandwidth)));
+    } else {
+      cwnd_ = cwnd_limits().ApplyLimits(model_.BDP(effective_bandwidth));
+    }
+
     if (!params.allow_cwnd_to_decrease) {
       cwnd_ = std::max(cwnd_, prior_cwnd);
     }
+
+    pacing_rate_ = std::max(pacing_rate_, QuicBandwidth::FromBytesAndTimeDelta(
+                                              cwnd_, model_.MinRtt()));
   }
 }
 
@@ -359,9 +399,6 @@ void Bbr2Sender::OnApplicationLimited(QuicByteCount bytes_in_flight) {
   if (bytes_in_flight >= GetCongestionWindow()) {
     return;
   }
-  if (params().flexible_app_limited && IsPipeSufficientlyFull()) {
-    return;
-  }
 
   model_.OnApplicationLimited();
   QUIC_DVLOG(2) << this << " Becoming application limited. Last sent packet: "
@@ -397,41 +434,7 @@ void Bbr2Sender::OnExitQuiescence(QuicTime now) {
 
 bool Bbr2Sender::ShouldSendProbingPacket() const {
   // TODO(wub): Implement ShouldSendProbingPacket properly.
-  if (!BBR2_MODE_DISPATCH(IsProbingForBandwidth())) {
-    return false;
-  }
-
-  // TODO(b/77975811): If the pipe is highly under-utilized, consider not
-  // sending a probing transmission, because the extra bandwidth is not needed.
-  // If flexible_app_limited is enabled, check if the pipe is sufficiently full.
-  if (params().flexible_app_limited) {
-    const bool is_pipe_sufficiently_full = IsPipeSufficientlyFull();
-    QUIC_DVLOG(3) << this << " CWND: " << GetCongestionWindow()
-                  << ", inflight: " << unacked_packets_->bytes_in_flight()
-                  << ", pacing_rate: " << PacingRate(0)
-                  << ", flexible_app_limited: true, ShouldSendProbingPacket: "
-                  << !is_pipe_sufficiently_full;
-    return !is_pipe_sufficiently_full;
-  } else {
-    return true;
-  }
-}
-
-bool Bbr2Sender::IsPipeSufficientlyFull() const {
-  QuicByteCount bytes_in_flight = unacked_packets_->bytes_in_flight();
-  // See if we need more bytes in flight to see more bandwidth.
-  if (mode_ == Bbr2Mode::STARTUP) {
-    // STARTUP exits if it doesn't observe a 25% bandwidth increase, so the CWND
-    // must be more than 25% above the target.
-    return bytes_in_flight >= GetTargetCongestionWindow(1.5);
-  }
-  if (model_.pacing_gain() > 1) {
-    // Super-unity PROBE_BW doesn't exit until 1.25 * BDP is achieved.
-    return bytes_in_flight >= GetTargetCongestionWindow(model_.pacing_gain());
-  }
-  // If bytes_in_flight are above the target congestion window, it should be
-  // possible to observe the same or more bandwidth if it's available.
-  return bytes_in_flight >= GetTargetCongestionWindow(1.1);
+  return BBR2_MODE_DISPATCH(IsProbingForBandwidth());
 }
 
 std::string Bbr2Sender::GetDebugState() const {

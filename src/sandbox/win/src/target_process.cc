@@ -24,6 +24,7 @@
 #include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "sandbox/win/src/sid.h"
+#include "sandbox/win/src/startup_information_helper.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
@@ -139,11 +140,13 @@ TargetProcess::~TargetProcess() {
 ResultCode TargetProcess::Create(
     const wchar_t* exe_path,
     const wchar_t* command_line,
-    bool inherit_handles,
-    const base::win::StartupInformation& startup_info,
+    std::unique_ptr<StartupInformationHelper> startup_info_helper,
     base::win::ScopedProcessInformation* target_info,
     DWORD* win_error) {
   exe_name_.reset(_wcsdup(exe_path));
+
+  base::win::StartupInformation* startup_info =
+      startup_info_helper->GetStartupInformation();
 
   // the command line needs to be writable by CreateProcess().
   std::unique_ptr<wchar_t, base::FreeDeleter> cmd_line(_wcsdup(command_line));
@@ -152,7 +155,7 @@ ResultCode TargetProcess::Create(
   DWORD flags =
       CREATE_SUSPENDED | CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS;
 
-  if (startup_info.has_extended_startup_info())
+  if (startup_info->has_extended_startup_info())
     flags |= EXTENDED_STARTUPINFO_PRESENT;
 
   if (job_ && base::win::GetVersion() < base::win::Version::WIN8) {
@@ -161,6 +164,7 @@ ResultCode TargetProcess::Create(
     flags |= CREATE_BREAKAWAY_FROM_JOB;
   }
 
+  bool inherit_handles = startup_info_helper->ShouldInheritHandles();
   PROCESS_INFORMATION temp_process_info = {};
   if (!::CreateProcessAsUserW(lockdown_token_.Get(), exe_path, cmd_line.get(),
                               nullptr,  // No security attribute.
@@ -168,15 +172,17 @@ ResultCode TargetProcess::Create(
                               inherit_handles, flags,
                               nullptr,  // Use the environment of the caller.
                               nullptr,  // Use current directory of the caller.
-                              startup_info.startup_info(),
+                              startup_info->startup_info(),
                               &temp_process_info)) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_CREATE_PROCESS;
   }
   base::win::ScopedProcessInformation process_info(temp_process_info);
 
-  if (job_) {
-    // Assign the suspended target to the windows job object.
+  if (job_ && !startup_info_helper->HasJobsToAssociate()) {
+    DCHECK(base::win::GetVersion() < base::win::Version::WIN10);
+    // Assign the suspended target to the windows job object. On Win 10
+    // this happens through PROC_THREAD_ATTRIBUTE_JOB_LIST.
     if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
       *win_error = ::GetLastError();
       ::TerminateProcess(process_info.process_handle(), 0);
@@ -282,15 +288,6 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
     return SBOX_ERROR_CREATE_FILE_MAPPING;
   }
 
-  DWORD access = FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY;
-  HANDLE target_shared_section;
-  if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_.Get(),
-                         sandbox_process_info_.process_handle(),
-                         &target_shared_section, access, false, 0)) {
-    *win_error = ::GetLastError();
-    return SBOX_ERROR_DUPLICATE_SHARED_SECTION;
-  }
-
   void* shared_memory = ::MapViewOfFile(
       shared_section_.Get(), FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
   if (!shared_memory) {
@@ -303,14 +300,6 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
 
   ResultCode ret;
   // Set the global variables in the target. These are not used on the broker.
-  g_shared_section = target_shared_section;
-  ret = TransferVariable("g_shared_section", &g_shared_section,
-                         sizeof(g_shared_section));
-  g_shared_section = nullptr;
-  if (SBOX_ALL_OK != ret) {
-    *win_error = ::GetLastError();
-    return ret;
-  }
   g_shared_IPC_size = shared_IPC_size;
   ret = TransferVariable("g_shared_IPC_size", &g_shared_IPC_size,
                          sizeof(g_shared_IPC_size));
@@ -334,6 +323,24 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return SBOX_ERROR_NO_SPACE;
+
+  DWORD access = FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY;
+  HANDLE target_shared_section;
+  if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_.Get(),
+                         sandbox_process_info_.process_handle(),
+                         &target_shared_section, access, false, 0)) {
+    *win_error = ::GetLastError();
+    return SBOX_ERROR_DUPLICATE_SHARED_SECTION;
+  }
+
+  g_shared_section = target_shared_section;
+  ret = TransferVariable("g_shared_section", &g_shared_section,
+                         sizeof(g_shared_section));
+  g_shared_section = nullptr;
+  if (SBOX_ALL_OK != ret) {
+    *win_error = ::GetLastError();
+    return ret;
+  }
 
   // After this point we cannot use this handle anymore.
   ::CloseHandle(sandbox_process_info_.TakeThreadHandle());
@@ -369,10 +376,11 @@ ResultCode TargetProcess::AssignLowBoxToken(
   return SBOX_ALL_OK;
 }
 
-TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
-  TargetProcess* target =
-      new TargetProcess(base::win::ScopedHandle(), base::win::ScopedHandle(),
-                        nullptr, nullptr, std::vector<Sid>());
+std::unique_ptr<TargetProcess> MakeTestTargetProcess(HANDLE process,
+                                                     HMODULE base_address) {
+  auto target = std::make_unique<TargetProcess>(
+      base::win::ScopedHandle(), base::win::ScopedHandle(), nullptr, nullptr,
+      std::vector<Sid>());
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

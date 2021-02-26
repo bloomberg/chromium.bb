@@ -8,7 +8,9 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
@@ -62,7 +64,7 @@ bool ModulatorImplBase::ImportMapsEnabled() const {
 void ModulatorImplBase::FetchTree(
     const KURL& url,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType context_type,
+    mojom::blink::RequestContextType context_type,
     network::mojom::RequestDestination destination,
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -75,7 +77,7 @@ void ModulatorImplBase::FetchTree(
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType context_type,
+    mojom::blink::RequestContextType context_type,
     network::mojom::RequestDestination destination,
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
@@ -262,21 +264,10 @@ ScriptValue ModulatorImplBase::InstantiateModule(
   return ModuleRecord::Instantiate(script_state_, module_record, source_url);
 }
 
-Vector<Modulator::ModuleRequest>
-ModulatorImplBase::ModuleRequestsFromModuleRecord(
+Vector<ModuleRequest> ModulatorImplBase::ModuleRequestsFromModuleRecord(
     v8::Local<v8::Module> module_record) {
   ScriptState::Scope scope(script_state_);
-  Vector<String> specifiers =
-      ModuleRecord::ModuleRequests(script_state_, module_record);
-  Vector<TextPosition> positions =
-      ModuleRecord::ModuleRequestPositions(script_state_, module_record);
-  DCHECK_EQ(specifiers.size(), positions.size());
-  Vector<ModuleRequest> requests;
-  requests.ReserveInitialCapacity(specifiers.size());
-  for (wtf_size_t i = 0; i < specifiers.size(); ++i) {
-    requests.emplace_back(specifiers[i], positions[i]);
-  }
-  return requests;
+  return ModuleRecord::ModuleRequests(script_state_, module_record);
 }
 
 void ModulatorImplBase::ProduceCacheModuleTreeTopLevel(
@@ -305,7 +296,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
 
   module_script->ProduceCache();
 
-  Vector<Modulator::ModuleRequest> child_specifiers =
+  Vector<ModuleRequest> child_specifiers =
       ModuleRequestsFromModuleRecord(record);
 
   for (const auto& module_request : child_specifiers) {
@@ -326,84 +317,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
   }
 }
 
-// <specdef href="https://html.spec.whatwg.org/C/#run-a-module-script">
-ModuleEvaluationResult ModulatorImplBase::ExecuteModule(
-    ModuleScript* module_script,
-    CaptureEvalErrorFlag capture_error) {
-  // <spec step="1">If rethrow errors is not given, let it be false.</spec>
-
-  // <spec step="2">Let settings be the settings object of script.</spec>
-  //
-  // The settings object is |this|.
-
-  // <spec step="3">Check if we can run script with settings. If this returns
-  // "do not run" then return NormalCompletion(empty).</spec>
-  if (IsScriptingDisabled())
-    return ModuleEvaluationResult::Empty();
-
-  // <spec step="4">Prepare to run script given settings.</spec>
-  //
-  // This is placed here to also cover ModuleRecord::ReportException().
-  ScriptState::EscapableScope scope(script_state_);
-
-  // <spec step="5">Let evaluationStatus be null.</spec>
-  //
-  // |result| corresponds to "evaluationStatus of [[Type]]: throw".
-  ModuleEvaluationResult result = ModuleEvaluationResult::Empty();
-
-  // <spec step="6">If script's error to rethrow is not null, ...</spec>
-  if (module_script->HasErrorToRethrow()) {
-    // <spec step="6">... then set evaluationStatus to Completion { [[Type]]:
-    // throw, [[Value]]: script's error to rethrow, [[Target]]: empty }.</spec>
-    result = ModuleEvaluationResult::FromException(
-        module_script->CreateErrorToRethrow().V8Value());
-  } else {
-    // <spec step="7">Otherwise:</spec>
-
-    // <spec step="7.1">Let record be script's record.</spec>
-    v8::Local<v8::Module> record = module_script->V8Module();
-    CHECK(!record.IsEmpty());
-
-    // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
-    result = ModuleRecord::Evaluate(script_state_, record,
-                                    module_script->SourceURL());
-
-    // <spec step="7.2">... If Evaluate fails to complete as a result of the
-    // user agent aborting the running script, then set evaluationStatus to
-    // Completion { [[Type]]: throw, [[Value]]: a new "QuotaExceededError"
-    // DOMException, [[Target]]: empty }.</spec>
-
-    // [not specced] Store V8 code cache on successful evaluation.
-    if (result.IsSuccess()) {
-      TaskRunner()->PostTask(
-          FROM_HERE,
-          WTF::Bind(&ModulatorImplBase::ProduceCacheModuleTreeTopLevel,
-                    WrapWeakPersistent(this), WrapPersistent(module_script)));
-    }
-  }
-
-  // <spec step="8">If evaluationStatus is an abrupt completion, then:</spec>
-  if (result.IsException()) {
-    // <spec step="8.1">If rethrow errors is true, rethrow the exception given
-    // by evaluationStatus.[[Value]].</spec>
-    if (capture_error == CaptureEvalErrorFlag::kCapture)
-      return result.Escape(&scope);
-
-    // <spec step="8.2">Otherwise, report the exception given by
-    // evaluationStatus.[[Value]] for script.</spec>
-    ModuleRecord::ReportException(script_state_, result.GetException());
-  }
-
-  // <spec step="9">Clean up after running script with settings.</spec>
-  //
-  // Implemented as the ScriptState::Scope destructor.
-  if (base::FeatureList::IsEnabled(features::kTopLevelAwait))
-    return result.Escape(&scope);
-  else
-    return ModuleEvaluationResult::Empty();
-}
-
-void ModulatorImplBase::Trace(Visitor* visitor) {
+void ModulatorImplBase::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);

@@ -36,6 +36,7 @@ class FakeMessageCenter : public MessageCenter {
   Notification* FindVisibleNotificationById(const std::string& id) override;
   NotificationList::Notifications FindNotificationsByAppId(
       const std::string& app_id) override;
+  NotificationList::Notifications GetNotifications() override;
   const NotificationList::Notifications& GetVisibleNotifications() override;
   NotificationList::PopupNotifications GetPopupNotifications() override;
   void AddNotification(std::unique_ptr<Notification> notification) override;
@@ -78,13 +79,12 @@ class FakeMessageCenter : public MessageCenter {
 
  protected:
   void DisableTimersForTest() override;
-  const base::ObserverList<MessageCenterObserver>::Unchecked& observer_list()
-      const {
+  const base::ObserverList<MessageCenterObserver>& observer_list() const {
     return observers_;
   }
 
  private:
-  base::ObserverList<MessageCenterObserver>::Unchecked observers_;
+  base::ObserverList<MessageCenterObserver> observers_;
   NotificationList notifications_;
   NotificationList::Notifications visible_notifications_;
   std::vector<NotificationBlocker*> blockers_;

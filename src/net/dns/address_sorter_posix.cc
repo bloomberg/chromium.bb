@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#if defined(OS_MACOSX) || defined(OS_BSD)
+#if defined(OS_APPLE) || defined(OS_BSD)
 #include <sys/socket.h>  // Must be included before ifaddrs.h.
 #include <ifaddrs.h>
 #include <net/if.h>
@@ -28,7 +28,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/datagram_client_socket.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "net/base/address_tracker_linux.h"
 #endif
 
@@ -329,7 +329,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
 void AddressSorterPosix::OnIPAddressChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_map_.clear();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   const internal::AddressTrackerLinux* tracker =
       NetworkChangeNotifier::GetAddressTracker();
   if (!tracker)
@@ -346,7 +346,7 @@ void AddressSorterPosix::OnIPAddressChanged() {
     info.prefix_length = msg.ifa_prefixlen;
     FillPolicy(address, &info);
   }
-#elif defined(OS_MACOSX) || defined(OS_BSD)
+#elif defined(OS_APPLE) || defined(OS_BSD)
   // It's not clear we will receive notification when deprecated flag changes.
   // Socket for ioctl.
   int ioctl_socket = socket(AF_INET6, SOCK_DGRAM, 0);

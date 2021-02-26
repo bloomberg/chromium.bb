@@ -47,7 +47,7 @@ StaticContainedRangeMap<AddressType, EntryType>::StaticContainedRangeMap(
     const char *base)
     : base_(*(reinterpret_cast<const AddressType*>(base))),
       entry_size_(*(reinterpret_cast<const uint32_t*>(base + sizeof(base_)))),
-      entry_ptr_(reinterpret_cast<const EntryType *>(
+      entry_ptr_(reinterpret_cast<const EntryType*>(
           base + sizeof(base_) + sizeof(entry_size_))),
       map_(base + sizeof(base_) + sizeof(entry_size_) + entry_size_) {
   if (entry_size_ == 0)
@@ -57,7 +57,7 @@ StaticContainedRangeMap<AddressType, EntryType>::StaticContainedRangeMap(
 
 template<typename AddressType, typename EntryType>
 bool StaticContainedRangeMap<AddressType, EntryType>::RetrieveRange(
-    const AddressType &address, const EntryType *&entry) const {
+    const AddressType& address, const EntryType*& entry) const {
 
   // Get an iterator to the child range whose high address is equal to or
   // greater than the supplied address.  If the supplied address is higher

@@ -47,6 +47,8 @@ source_set("ui") {
   ]
 
   sources = [
+    "cookie_blocking_error_logger.h",
+    "cookie_blocking_error_logger.mm",
     "crw_swipe_recognizer_provider.h",
     "crw_touch_tracking_recognizer.h",
     "crw_touch_tracking_recognizer.mm",
@@ -124,6 +126,10 @@ source_set("wk_web_view_configuration_provider") {
   ]
 
   sources = [
+    "wk_content_rule_list_provider.h",
+    "wk_content_rule_list_provider.mm",
+    "wk_content_rule_list_util.h",
+    "wk_content_rule_list_util.mm",
     "wk_web_view_configuration_provider.h",
     "wk_web_view_configuration_provider.mm",
     "wk_web_view_configuration_provider_observer.h",

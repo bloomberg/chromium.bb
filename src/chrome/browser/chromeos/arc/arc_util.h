@@ -74,10 +74,6 @@ bool IsArcAllowedForProfile(const Profile* profile);
 // Account has been signed into ARC.
 bool IsArcProvisioned(const Profile* profile);
 
-// Returns true if the profile is unmanaged or if the policy
-// EcryptfsMigrationStrategy for the user doesn't disable the migration.
-bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile);
-
 // Returns true if the profile is temporarily blocked to run ARC in the current
 // session, because the filesystem storing the profile is incompatible with the
 // currently installed ARC version.
@@ -178,6 +174,9 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);
 // Returns true if Play Store package is present and can be launched in this
 // session.
 bool IsPlayStoreAvailable();
+
+// Returns whether adding secondary account to ARC++ is enabled for child user.
+bool IsSecondaryAccountForChildEnabled();
 
 // Skip to show OOBE/in sesion UI asking users to set up ARC OptIn preferences,
 // iff all of them are managed by the admin policy.

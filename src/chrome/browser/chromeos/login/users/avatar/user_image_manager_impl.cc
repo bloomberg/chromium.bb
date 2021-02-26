@@ -59,82 +59,9 @@ const int kProfileDataDownloadRetryIntervalSec = 300;
 // Delay betweeen subsequent profile refresh attempts (24 hrs).
 const int kProfileRefreshIntervalSec = 24 * 3600;
 
-// Enum for reporting histograms about profile picture download.
-enum ProfileDownloadResult {
-  kDownloadSuccessChanged,
-  kDownloadSuccess,
-  kDownloadFailure,
-  kDownloadDefault,
-  kDownloadCached,
-
-  // Must be the last, convenient count.
-  kDownloadResultsCount
-};
-
-// Time histogram prefix for a cached profile image download.
-const char kProfileDownloadCachedTime[] =
-    "UserImage.ProfileDownloadTime.Cached";
-// Time histogram prefix for the default profile image download.
-const char kProfileDownloadDefaultTime[] =
-    "UserImage.ProfileDownloadTime.Default";
-// Time histogram prefix for a failed profile image download.
-const char kProfileDownloadFailureTime[] =
-    "UserImage.ProfileDownloadTime.Failure";
-// Time histogram prefix for a successful profile image download.
-const char kProfileDownloadSuccessTime[] =
-    "UserImage.ProfileDownloadTime.Success";
-// Time histogram suffix for a profile image download after login.
-const char kProfileDownloadReasonLoggedIn[] = "LoggedIn";
-// Time histogram suffix for a profile image download when the user chooses the
-// profile image but it has not been downloaded yet.
-const char kProfileDownloadReasonProfileImageChosen[] = "ProfileImageChosen";
-// Time histogram suffix for a scheduled profile image download.
-const char kProfileDownloadReasonScheduled[] = "Scheduled";
-// Time histogram suffix for a profile image download retry.
-const char kProfileDownloadReasonRetry[] = "Retry";
-
 static bool g_ignore_profile_data_download_delay_ = false;
 
-// Add a histogram showing the time it takes to download profile image.
-// Separate histograms are reported for each download |reason| and |result|.
-void AddProfileImageTimeHistogram(ProfileDownloadResult result,
-                                  const std::string& download_reason,
-                                  const base::TimeDelta& time_delta) {
-  std::string histogram_name;
-  switch (result) {
-    case kDownloadFailure:
-      histogram_name = kProfileDownloadFailureTime;
-      break;
-    case kDownloadDefault:
-      histogram_name = kProfileDownloadDefaultTime;
-      break;
-    case kDownloadSuccess:
-      histogram_name = kProfileDownloadSuccessTime;
-      break;
-    case kDownloadCached:
-      histogram_name = kProfileDownloadCachedTime;
-      break;
-    default:
-      NOTREACHED();
-  }
-  if (!download_reason.empty()) {
-    histogram_name += ".";
-    histogram_name += download_reason;
-  }
-
-  static const base::TimeDelta min_time = base::TimeDelta::FromMilliseconds(1);
-  static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(50);
-  const size_t bucket_count(50);
-
-  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      histogram_name, min_time, max_time, bucket_count,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->AddTime(time_delta);
-
-  DVLOG(1) << "Profile image download time: " << time_delta.InSecondsF();
-}
-
-// Converts |image_index| to UMA histogram value.
+// Converts `image_index` to UMA histogram value.
 int ImageIndexToHistogramIndex(int image_index) {
   switch (image_index) {
     case user_manager::User::USER_IMAGE_EXTERNAL:
@@ -147,8 +74,8 @@ int ImageIndexToHistogramIndex(int image_index) {
   }
 }
 
-// Saves |image_bytes| at |image_path|, and delete the old file at
-// |old_image_path| if needed.
+// Saves `image_bytes` at `image_path`, and delete the old file at
+// `old_image_path` if needed.
 bool SaveAndDeleteImage(scoped_refptr<base::RefCountedBytes> image_bytes,
                         const base::FilePath& image_path,
                         const base::FilePath& old_image_path) {
@@ -160,7 +87,7 @@ bool SaveAndDeleteImage(scoped_refptr<base::RefCountedBytes> image_bytes,
     return false;
   }
   if (!old_image_path.empty() && old_image_path != image_path) {
-    if (!base::DeleteFile(old_image_path, false /* recursive */)) {
+    if (!base::DeleteFile(old_image_path)) {
       LOG(ERROR) << "Failed to delete old image: "
                  << old_image_path.AsUTF8Unsafe();
       return false;
@@ -208,42 +135,42 @@ void UserImageManager::RegisterPrefs(PrefRegistrySimple* registry) {
 // Every image load or update is encapsulated by a Job. The Job is allowed to
 // perform tasks on background threads or in helper processes but:
 // * Changes to User objects and local state as well as any calls to the
-//   |parent_| must be performed on the thread that the Job is created on only.
-// * File writes and deletions must be performed via the |parent_|'s
-//   |background_task_runner_| only.
+//   `parent_` must be performed on the thread that the Job is created on only.
+// * File writes and deletions must be performed via the `parent_`'s
+//   `background_task_runner_` only.
 //
 // Only one of the Load*() and Set*() methods may be called per Job.
 class UserImageManagerImpl::Job {
  public:
-  // The |Job| will update the user object corresponding to |parent|.
+  // The `Job` will update the user object corresponding to `parent`.
   explicit Job(UserImageManagerImpl* parent);
   ~Job();
 
-  // Loads the image at |image_path| or one of the default images,
-  // depending on |image_index|, and updates the user object with the
+  // Loads the image at `image_path` or one of the default images,
+  // depending on `image_index`, and updates the user object with the
   // new image.
   void LoadImage(base::FilePath image_path,
                  const int image_index,
                  const GURL& image_url);
 
   // Sets the user image in local state to the default image indicated
-  // by |default_image_index|. Also updates the user object with the
+  // by `default_image_index`. Also updates the user object with the
   // new image.
   void SetToDefaultImage(int default_image_index);
 
-  // Saves the |user_image| to disk and sets the user image in local
+  // Saves the `user_image` to disk and sets the user image in local
   // state to that image. Also updates the user with the new image.
   void SetToImage(int image_index,
                   std::unique_ptr<user_manager::UserImage> user_image);
 
-  // Decodes the JPEG image |data|, crops and resizes the image, saves
+  // Decodes the JPEG image `data`, crops and resizes the image, saves
   // it to disk and sets the user image in local state to that image.
   // Also updates the user object with the new image.
   void SetToImageData(std::unique_ptr<std::string> data);
 
-  // Loads the image at |path|, transcodes it to JPEG format, saves
+  // Loads the image at `path`, transcodes it to JPEG format, saves
   // the image to disk and sets the user image in local state to that
-  // image.  If |resize| is true, the image is cropped and resized
+  // image.  If `resize` is true, the image is cropped and resized
   // before transcoding.  Also updates the user object with the new
   // image.
   void SetToPath(const base::FilePath& path,
@@ -256,16 +183,16 @@ class UserImageManagerImpl::Job {
   void OnLoadImageDone(bool save,
                        std::unique_ptr<user_manager::UserImage> user_image);
 
-  // Updates the user object with |user_image|.
+  // Updates the user object with `user_image`.
   void UpdateUser(std::unique_ptr<user_manager::UserImage> user_image);
 
-  // Updates the user object with |user_image|, and saves the image
+  // Updates the user object with `user_image`, and saves the image
   // bytes. Local state will be updated as needed.
   void UpdateUserAndSaveImage(
       std::unique_ptr<user_manager::UserImage> user_image);
 
-  // Saves |image_bytes| to disk in |image_format| if
-  // |image_is_safe_format|. Local state will be updated as needed.
+  // Saves `image_bytes` to disk in `image_format` if
+  // `image_is_safe_format`. Local state will be updated as needed.
   void SaveImageAndUpdateLocalState(
       bool image_is_safe_format,
       scoped_refptr<base::RefCountedBytes> image_bytes,
@@ -273,7 +200,7 @@ class UserImageManagerImpl::Job {
 
   // Called back after the user image has been saved to
   // disk. Updates the user image information in local state. The
-  // information is only updated if |success| is true (indicating that
+  // information is only updated if `success` is true (indicating that
   // the image was saved successfully) or the user image is the
   // profile image (indicating that even if the image could not be
   // saved because it is not available right now, it will be
@@ -282,10 +209,10 @@ class UserImageManagerImpl::Job {
 
   // Updates the user image in local state, setting it to one of the
   // default images or the saved user image, depending on
-  // |image_index_|.
+  // `image_index_`.
   void UpdateLocalState();
 
-  // Notifies the |parent_| that the Job is done.
+  // Notifies the `parent_` that the Job is done.
   void NotifyJobDone();
 
   const std::string& user_id() const { return parent_->user_id(); }
@@ -328,7 +255,7 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
     NotifyJobDone();
   } else if (image_index_ == user_manager::User::USER_IMAGE_EXTERNAL ||
              image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
-    // Load the user image from a file referenced by |image_path|. This happens
+    // Load the user image from a file referenced by `image_path`. This happens
     // asynchronously. ROBUST_PNG_CODEC can be used here because LoadImage() is
     // called only for users whose user image has previously been set by one of
     // the Set*() methods, which transcode to JPEG or PNG format.
@@ -567,7 +494,7 @@ void UserImageManagerImpl::LoadUserImage() {
   const base::DictionaryValue* image_properties = nullptr;
   prefs_images->GetDictionaryWithoutPathExpansion(user_id(), &image_properties);
 
-  // If the user image for |user_id| is managed by policy and the policy-set
+  // If the user image for `user_id` is managed by policy and the policy-set
   // image is being loaded and persisted right now, let that job continue. It
   // will update the user image when done.
   if (IsUserImageManaged() && job_.get())
@@ -618,20 +545,24 @@ void UserImageManagerImpl::LoadUserImage() {
 }
 
 void UserImageManagerImpl::UserLoggedIn(bool user_is_new, bool user_is_local) {
+  // Reset the downloaded profile image as a new user logged in.
+  downloaded_profile_image_ = gfx::ImageSkia();
+  profile_image_url_ = GURL();
+  profile_image_requested_ = false;
+
+  is_random_image_set_ = false;
   const user_manager::User* user = GetUser();
   if (user_is_new) {
-    if (!user_is_local)
+    if (!user_is_local) {
       SetInitialUserImage();
+      is_random_image_set_ = true;
+      DownloadProfileImage();
+    }
   } else {
     UMA_HISTOGRAM_EXACT_LINEAR("UserImage.LoggedIn",
                                ImageIndexToHistogramIndex(user->image_index()),
                                default_user_image::kHistogramImagesCount);
   }
-
-  // Reset the downloaded profile image as a new user logged in.
-  downloaded_profile_image_ = gfx::ImageSkia();
-  profile_image_url_ = GURL();
-  profile_image_requested_ = false;
 
   user_image_sync_observer_.reset();
   TryToCreateImageSyncObserver();
@@ -649,12 +580,12 @@ void UserImageManagerImpl::UserProfileCreated() {
             ? base::TimeDelta()
             : base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
         base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
-                       base::Unretained(this), kProfileDownloadReasonLoggedIn));
+                       base::Unretained(this)));
     // Schedule periodic refreshes of the profile data.
     profile_download_periodic_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
         base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this), kProfileDownloadReasonScheduled));
+                   base::Unretained(this)));
   } else {
     profile_download_one_shot_timer_.Stop();
     profile_download_periodic_timer_.Stop();
@@ -662,6 +593,7 @@ void UserImageManagerImpl::UserProfileCreated() {
 }
 
 void UserImageManagerImpl::SaveUserDefaultImageIndex(int default_image_index) {
+  is_random_image_set_ = false;
   if (IsUserImageManaged())
     return;
   job_.reset(new Job(this));
@@ -703,7 +635,7 @@ void UserImageManagerImpl::SaveUserImageFromProfileImage() {
   // If no profile image has been downloaded yet, ensure that a download is
   // started.
   if (downloaded_profile_image_.isNull())
-    DownloadProfileData(kProfileDownloadReasonProfileImageChosen);
+    DownloadProfileData();
 }
 
 void UserImageManagerImpl::DeleteUserImage() {
@@ -711,9 +643,9 @@ void UserImageManagerImpl::DeleteUserImage() {
   DeleteUserImageAndLocalStateEntry(kUserImageProperties);
 }
 
-void UserImageManagerImpl::DownloadProfileImage(const std::string& reason) {
+void UserImageManagerImpl::DownloadProfileImage() {
   profile_image_requested_ = true;
-  DownloadProfileData(reason);
+  DownloadProfileData();
 }
 
 const gfx::ImageSkia& UserImageManagerImpl::DownloadedProfileImage() const {
@@ -800,7 +732,7 @@ bool UserImageManagerImpl::IsPreSignin() const {
 
 void UserImageManagerImpl::OnProfileDownloadSuccess(
     ProfileDownloader* downloader) {
-  // Ensure that the |profile_downloader_| is deleted when this method returns.
+  // Ensure that the `profile_downloader_` is deleted when this method returns.
   std::unique_ptr<ProfileDownloader> profile_downloader(
       profile_downloader_.release());
   DCHECK_EQ(downloader, profile_downloader.get());
@@ -813,53 +745,33 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   if (!downloading_profile_image_)
     return;
 
-  ProfileDownloadResult result = kDownloadFailure;
-  switch (downloader->GetProfilePictureStatus()) {
-    case ProfileDownloader::PICTURE_SUCCESS:
-      result = kDownloadSuccess;
-      break;
-    case ProfileDownloader::PICTURE_CACHED:
-      result = kDownloadCached;
-      break;
-    case ProfileDownloader::PICTURE_DEFAULT:
-      result = kDownloadDefault;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult", result,
-                            kDownloadResultsCount);
-  DCHECK(!profile_image_load_start_time_.is_null());
-  AddProfileImageTimeHistogram(
-      result, profile_image_download_reason_,
-      base::TimeTicks::Now() - profile_image_load_start_time_);
-
   // Ignore the image if it is no longer needed.
   if (!NeedProfileImage())
     return;
 
   const user_manager::User* const user = GetUser();
 
-  if (result == kDownloadDefault) {
+  if (downloader->GetProfilePictureStatus() ==
+      ProfileDownloader::PICTURE_DEFAULT) {
     user_manager_->NotifyUserProfileImageUpdateFailed(*user);
   } else {
     profile_image_requested_ = false;
   }
 
   // Nothing to do if the picture is cached or is the default avatar.
-  if (result != kDownloadSuccess)
+  if (downloader->GetProfilePictureStatus() !=
+      ProfileDownloader::PICTURE_SUCCESS)
     return;
 
   downloaded_profile_image_ =
       gfx::ImageSkia::CreateFrom1xBitmap(downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
-  if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE) {
+  if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE ||
+      is_random_image_set_) {
+    is_random_image_set_ = false;
     VLOG(1) << "Updating profile image for logged-in user.";
-    UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadSuccessChanged, kDownloadResultsCount);
-    // This will persist |downloaded_profile_image_| to disk.
+    // This will persist `downloaded_profile_image_` to disk.
     SaveUserImageFromProfileImage();
   }
 
@@ -873,22 +785,13 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
   DCHECK_EQ(downloader, profile_downloader_.get());
   profile_downloader_.reset();
 
-  if (downloading_profile_image_) {
-    UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadFailure, kDownloadResultsCount);
-    DCHECK(!profile_image_load_start_time_.is_null());
-    AddProfileImageTimeHistogram(
-        kDownloadFailure, profile_image_download_reason_,
-        base::TimeTicks::Now() - profile_image_load_start_time_);
-  }
-
   if (reason == ProfileDownloaderDelegate::NETWORK_ERROR) {
     // Retry download after a delay if a network error occurred.
     profile_download_one_shot_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kProfileDataDownloadRetryIntervalSec),
         base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
-                       base::Unretained(this), kProfileDownloadReasonRetry));
+                       base::Unretained(this)));
   }
 
   user_manager_->NotifyUserProfileImageUpdateFailed(*GetUser());
@@ -907,7 +810,7 @@ void UserImageManagerImpl::TryToInitDownloadedProfileImage() {
   const user_manager::User* user = GetUser();
   if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE &&
       downloaded_profile_image_.isNull() && !user->image_is_stub()) {
-    // Initialize the |downloaded_profile_image_| for the currently logged-in
+    // Initialize the `downloaded_profile_image_` for the currently logged-in
     // user if it has not been initialized already, the user image is the
     // profile image and the user image has been loaded successfully.
     VLOG(1) << "Profile image initialized from disk.";
@@ -923,7 +826,7 @@ bool UserImageManagerImpl::NeedProfileImage() const {
           profile_image_requested_);
 }
 
-void UserImageManagerImpl::DownloadProfileData(const std::string& reason) {
+void UserImageManagerImpl::DownloadProfileData() {
   if (!IsUserLoggedInAndHasGaiaAccount())
     return;
 
@@ -937,8 +840,6 @@ void UserImageManagerImpl::DownloadProfileData(const std::string& reason) {
   }
 
   downloading_profile_image_ = NeedProfileImage();
-  profile_image_download_reason_ = reason;
-  profile_image_load_start_time_ = base::TimeTicks::Now();
   profile_downloader_.reset(new ProfileDownloader(this));
   profile_downloader_->Start();
 }
@@ -955,8 +856,8 @@ void UserImageManagerImpl::DeleteUserImageAndLocalStateEntry(
   image_properties->GetString(kImagePathNodeName, &image_path);
   if (!image_path.empty()) {
     background_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                  base::FilePath(image_path), false));
+        FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(),
+                                  base::FilePath(image_path)));
   }
   update->RemoveWithoutPathExpansion(user_id(), nullptr);
 }

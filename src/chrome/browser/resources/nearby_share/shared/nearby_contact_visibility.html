@@ -1,0 +1,391 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="nearby_contact_manager.html">
+<link rel="import" href="nearby_page_template.html">
+<link rel="import" href="nearby_share_settings_behavior.html">
+<link rel="import" href="nearby_shared_icons.html">
+
+<dom-module id="nearby-contact-visibility">
+  <template>
+    <style include="cr-icons cr-shared-style">
+      :host {
+        --card-border-color: var(--google-grey-300);
+        --cr-card-radio-button-padding: 4px 12px 4px 12px;
+        --iron-icon-height: var(--cr-icon-size);
+        --iron-icon-width: var(--cr-icon-size);
+      }
+
+      .grey-icon {
+        color: var(--google-grey-refresh-700);
+      }
+
+      #main {
+        display: flex;
+        flex-direction: column;
+        line-height: 20px;
+      }
+
+      #visibilityRadioGroup {
+        display: flex;
+        justify-content: center;
+        margin-block-end: 16px;
+      }
+
+      cr-card-radio-button {
+        border: 1px solid var(--card-border-color);
+        box-shadow: none;
+        flex: 1;
+        margin-block-end: 0;
+        margin-block-start: 0;
+        margin-inline-end: 5px;
+        margin-inline-start: 5px;
+        padding: 0;
+        width: auto;
+        --cr-card-radio-button-checkmark-left: var(--cr-button-edge-spacing);
+        --cr-card-radio-button-checkmark-right: auto;
+        --cr-card-radio-button-checkmark-top: auto;
+      }
+
+      cr-card-radio-button[checked] {
+        border: 2px solid var(--cr-checked-color);
+      }
+
+      cr-card-radio-button:first-child {
+        margin-inline-start: 0;
+      }
+
+      cr-card-radio-button:last-child {
+        margin-inline-end: 0;
+      }
+
+      .card-contents {
+        color: var(--google-blue-600);
+      }
+
+      .card-icon {
+        fill: var(--google-blue-600);
+        margin-inline-end: 8px;
+      }
+
+      cr-card-radio-button[checked] .card-icon {
+        visibility: hidden;
+      }
+
+      .card-label {
+        display: inline-flex;
+      }
+
+      #zeroStateContainer {
+        display: flex;
+        justify-content: center;
+        margin: 8px;
+      }
+
+      #zeroStateImageContainer {
+        flex-basis: 50%;
+        margin-inline-end: 24px;
+        margin-inline-start: auto;
+        text-align: end;
+      }
+
+      #zeroStateImage {
+        height: 200px;
+        width: 200px;
+      }
+
+      #zeroStateTextContainer {
+        display: flex;
+        flex-basis: 50%;
+        flex-direction: column;
+        justify-content: center;
+        margin-inline-end: 8px;
+        margin-inline-start: 8px;
+      }
+
+      #zeroStateText {
+        margin-block-end: 12px;
+      }
+
+      #zeroStateInfoContainer {
+        align-items: center;
+        display: flex;
+      }
+
+      #zeroStateIcon {
+        color: var(--cr-secondary-text-color);
+        margin-inline-end: 8px;
+      }
+
+      #contactsPending {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      #contactsFailed {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      #contactsFailedImage {
+        height: 100%;
+        margin-inline-end: 24px;
+        width: 100%;
+      }
+
+      .viz-description-section {
+        margin-block-end: 8px;
+      }
+
+      .explanation-section {
+        display: flex;
+      }
+
+      .padded-icon {
+        margin-inline-end: 16px;
+        margin-inline-start: 12px;
+        min-height: var(--cr-icon-size);
+        min-width: var(--cr-icon-size);
+      }
+
+      #contactList {
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
+      }
+
+      #contactsHeading {
+        font-size: 1.2rem;
+      }
+
+      .contacts-section {
+        height: 72px;
+      }
+
+      .contact-item {
+        display: flex;
+        height: 50px;
+        padding-block-end: 8px;
+        padding-block-start: 8px;
+      }
+
+      .contact-item[disabled] {
+        opacity: var(--cr-disabled-opacity);
+      }
+
+      .contact-toggle {
+        align-self: center;
+        margin-inline-end: 12px;
+        margin-inline-start: auto;
+      }
+
+      .contact-icon {
+        align-self: center;
+      }
+
+      #noContactsContainer {
+        align-items: center;
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
+        display: flex;
+        flex-direction: column;
+        padding-block-end: 16px;
+        padding-block-start: 16px;
+      }
+
+      #noContactsContainer .cr-secondary-text {
+        text-align: center;
+        width: 80%;
+      }
+
+      #noContactsImage {
+        height: 100px;
+        margin-block-end: 8px;
+        width: 100%;
+      }
+    </style>
+    <div id="main">
+
+      <cr-radio-group id="visibilityRadioGroup"
+          disabled="[[disableRadioGroup_(contactsState)]]"
+          selected="{{selectedVisibility}}">
+        <cr-card-radio-button id="allContacts" class="flex" name="all">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:contact-all" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              $i18n{nearbyShareContactVisibilityAll}
+            </div>
+          </div>
+        </cr-card-radio-button>
+        <cr-card-radio-button id="someContacts" class="flex" name="some">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:contact-group" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              $i18n{nearbyShareContactVisibilitySome}
+            </div>
+          </div>
+        </cr-card-radio-button>
+        <cr-card-radio-button id="noContacts" class="flex" name="none">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:visibility-off" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              $i18n{nearbyShareContactVisibilityNone}
+            </div>
+          </div>
+        </cr-card-radio-button>
+      </cr-radio-group>
+
+      <!-- Zero state is shown only when no selection has been made yet. -->
+      <template is="dom-if"
+          if="[[showZeroState_(selectedVisibility, contactsState)]]">
+        <div id="zeroStateContainer">
+          <div id="zeroStateImageContainer">
+            <iron-icon id="zeroStateImage"
+                icon="nearby-images:nearby-device-visibility">
+            </iron-icon>
+          </div>
+          <div id="zeroStateTextContainer">
+            <div id="zeroStateText" class="cr-title-text">
+              $i18n{nearbyShareContactVisibilityZeroStateText}
+            </div>
+            <div id="zeroStateInfoContainer">
+              <iron-icon id="zeroStateIcon" icon="cr:info"></iron-icon>
+              <div class="cr-secondary-text">
+                $i18n{nearbyShareContactVisibilityZeroStateInfo}
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Shown when contacts are currently being downloaded. -->
+      <template is="dom-if"
+          if="[[inContactsState_(contactsState, ContactsState.PENDING)]]">
+        <div id="contactsPending" class="contacts-section">
+          <div>$i18n{nearbyShareContactVisibilityDownloading}</div>
+        </div>
+      </template>
+
+      <!-- Shown when contacts download has failed. -->
+      <template is="dom-if"
+          if="[[inContactsState_(contactsState, ContactsState.FAILED)]]"
+          on-dom-change="domChangeDownloadFailed_">
+        <div id="contactsFailed" class="contacts-section">
+          <iron-icon id="contactsFailedImage"
+              icon="nearby-images:contacts-download-failed">
+          </iron-icon>
+          <div>
+            $i18nRaw{nearbyShareContactVisibilityDownloadFailed}
+          </div>
+        </div>
+      </template>
+
+      <template is="dom-if"
+          if="[[showExplanationState_(selectedVisibility,
+              contactsState)]]">
+        <div id="explanation">
+
+          <div class="explanation-section">
+            <iron-icon icon="nearby20:radar" class="padded-icon grey-icon">
+            </iron-icon>
+            <div class="viz-description-section">
+              <div class="cr-title-text">
+                $i18n{nearbyShareContactVisibilityOthersTitle}
+              </div>
+              <div class="cr-secondary-text">
+                $i18n{nearbyShareContactVisibilityOthers}
+              </div>
+            </div>
+          </div>
+
+          <div class="explanation-section">
+            <iron-icon icon="nearby20:visibility" class="padded-icon grey-icon">
+            </iron-icon>
+            <div class="viz-description-section">
+              <div class="cr-title-text">
+                $i18n{nearbyShareContactVisibilityOwnTitle}
+              </div>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'all')]]">
+                <div class="cr-secondary-text">
+                  $i18n{nearbyShareContactVisibilityOwnAll}
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'some')]]">
+                <div class="cr-secondary-text">
+                  $i18n{nearbyShareContactVisibilityOwnSome}
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'none')]]">
+                <div class="cr-secondary-text">
+                  $i18n{nearbyShareContactVisibilityOwnNone}
+                </div>
+              </template>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Show when the user has downloaded contacts but there are none.-->
+        <template is="dom-if"
+            if="[[showEmptyState_(selectedVisibility, contactsState)]]">
+          <div id="noContactsContainer">
+            <iron-icon id="noContactsImage"
+                icon="nearby-images:contacts-empty">
+            </iron-icon>
+            <div class="cr-title-text">
+              $i18n{nearbyShareContactVisibilityNoContactsTitle}
+            </div>
+            <div class="cr-secondary-text">
+              $i18n{nearbyShareContactVisibilityNoContactsSubtitle}
+            </div>
+          </div>
+        </template>
+
+        <!-- Show when the user has one or more contacts downloaded. -->
+        <template is="dom-if"
+            if="[[showContactList_(selectedVisibility,
+                contactsState)]]">
+          <iron-list id="contactList" items="[[contacts]]"
+              class="contacts-section">
+            <template>
+              <div class="contact-item"
+                  disabled$="[[isVisibility_(selectedVisibility,'none')]]">
+                <iron-icon icon="cr:person"
+                    class="padded-icon grey-icon contact-icon">
+                </iron-icon>
+                <div>
+                  <div class="cr-title-text">[[item.name]]</div>
+                  <div class="cr-secondary-text">[[item.description]]</div>
+                </div>
+                <template is="dom-if"
+                    if="[[showContactCheckBoxes_(selectedVisibility)]]">
+                  <cr-toggle class="contact-toggle" checked="{{item.checked}}"
+                      disabled="[[!isVisibility_(selectedVisibility,'some')]]"
+                      on-click="syncContactToggleState_">
+                  </cr-toggle>
+                </template>
+              </div>
+            </template>
+          </iron-list>
+        </template>
+
+      </div>
+    </template>
+  </template>
+  <script src="nearby_contact_visibility.js"></script>
+</dom-module>

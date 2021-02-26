@@ -29,6 +29,20 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
   static constexpr base::TimeDelta kMaxAge = base::TimeDelta::FromMinutes(10);
   static constexpr size_t kMaxRecordedQueries = 256;
 
+  // How recently an ID needs to be recorded in a recent query to be considered
+  // "recognized".
+  static constexpr base::TimeDelta kMaxRecognizedIdAge =
+      base::TimeDelta::FromSeconds(15);
+
+  // Numbers of ID mismatches required to set the |low_entropy_| flag. Also
+  // serves as the max number of mismatches to be recorded, as no more entries
+  // are recorded after setting the flag.
+  static constexpr size_t kUnrecognizedIdMismatchThreshold = 8;
+  static constexpr size_t kRecognizedIdMismatchThreshold = 128;
+
+  // Number of reuses of the same port required to set the |low_entropy_| flag.
+  static constexpr int kPortReuseThreshold = 2;
+
   DnsUdpTracker();
   ~DnsUdpTracker();
 
@@ -37,6 +51,12 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
 
   void RecordQuery(uint16_t port, uint16_t query_id);
   void RecordResponseId(uint16_t query_id, uint16_t response_id);
+  void RecordConnectionError(int connection_error);
+
+  // If true, the entropy from random UDP port and DNS ID has been detected to
+  // potentially be low, e.g. due to exhaustion of the port pool or mismatches
+  // on IDs.
+  bool low_entropy() const { return low_entropy_; }
 
   void set_tick_clock_for_testing(base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
@@ -45,10 +65,17 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
  private:
   struct QueryData;
 
-  void PurgeOldQueries();
+  void PurgeOldRecords();
   void SaveQuery(QueryData query);
+  void SaveIdMismatch(uint16_t it);
 
+  bool low_entropy_ = false;
   base::circular_deque<QueryData> recent_queries_;
+
+  // Times of recent ID mismatches, separated by whether or not the ID was
+  // recognized from recent queries.
+  base::circular_deque<base::TimeTicks> recent_unrecognized_id_hits_;
+  base::circular_deque<base::TimeTicks> recent_recognized_id_hits_;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 };

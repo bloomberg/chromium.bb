@@ -58,7 +58,7 @@ PP_Resource PepperInProcessResourceCreation::CreateBrowserFont(
   // GPU process whether these features are blacklisted or not.
   gpu::GpuFeatureInfo gpu_feature_info;
   ppapi::Preferences prefs(PpapiPreferencesBuilder::Build(
-      host_impl_->GetRenderViewForInstance(instance)->GetWebkitPreferences(),
+      host_impl_->GetRenderViewForInstance(instance)->GetBlinkPreferences(),
       gpu_feature_info));
   return (new BrowserFontResource_Trusted(
               host_impl_->in_process_router()->GetPluginConnection(instance),
@@ -122,13 +122,6 @@ PP_Resource PepperInProcessResourceCreation::CreatePrinting(
   return (new ppapi::proxy::PrintingResource(
               host_impl_->in_process_router()->GetPluginConnection(instance),
               instance))->GetReference();
-}
-
-PP_Resource PepperInProcessResourceCreation::CreateTrueTypeFont(
-    PP_Instance instance,
-    const PP_TrueTypeFontDesc_Dev* desc) {
-  NOTIMPLEMENTED();
-  return 0;
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateURLLoader(

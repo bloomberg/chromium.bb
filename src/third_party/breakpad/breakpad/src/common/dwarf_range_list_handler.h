@@ -51,7 +51,7 @@ namespace google_breakpad {
 
 class DwarfRangeListHandler: public dwarf2reader::RangeListHandler {
  public:
-  DwarfRangeListHandler(uint64_t base_address, vector<Module::Range> *ranges)
+  DwarfRangeListHandler(uint64_t base_address, vector<Module::Range>* ranges)
       : base_address_(base_address), ranges_(ranges) { }
 
   ~DwarfRangeListHandler() { }
@@ -71,7 +71,7 @@ class DwarfRangeListHandler: public dwarf2reader::RangeListHandler {
   uint64_t base_address_;
 
   // The list of ranges to be populated
-  vector<Module::Range> *ranges_;
+  vector<Module::Range>* ranges_;
 };
 
 } // namespace google_breakpad

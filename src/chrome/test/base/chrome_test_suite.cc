@@ -31,7 +31,7 @@
 #include "chromeos/constants/chromeos_paths.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -59,11 +59,10 @@ ChromeTestSuite::ChromeTestSuite(int argc, char** argv)
     : content::ContentTestSuiteBase(argc, argv) {
 }
 
-ChromeTestSuite::~ChromeTestSuite() {
-}
+ChromeTestSuite::~ChromeTestSuite() = default;
 
 void ChromeTestSuite::Initialize() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif
@@ -93,7 +92,7 @@ void ChromeTestSuite::Initialize() {
   // DICE feature gets the right test coverage.
   AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Look in the framework bundle for resources.
   base::FilePath path;
   base::PathService::Get(base::DIR_EXE, &path);
@@ -103,7 +102,7 @@ void ChromeTestSuite::Initialize() {
 }
 
 void ChromeTestSuite::Shutdown() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::SetOverrideFrameworkBundle(NULL);
 #endif
 

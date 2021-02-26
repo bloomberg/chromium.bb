@@ -49,7 +49,7 @@ void DeleteEmptyDirectories(base::FilePath directory) {
     // folders list for the corresponding UwS, because they are not necessarily
     // matched by any rule by the scanner.
     LOG(INFO) << "Deleting empty directory " << SanitizePath(directory);
-    if (!base::DeleteFile(directory, /*recursive=*/false))
+    if (!base::DeleteFile(directory))
       break;
     directory = directory.DirName();
   }
@@ -62,15 +62,15 @@ bool IsSafeNameForDeletion(const base::FilePath& path) {
   if (path.empty())
     return false;
 
-  const base::string16& path_str = path.value();
+  const std::wstring& path_str = path.value();
   // Disallow anything with "\..\".
-  if (path_str.find(L"\\..\\") != base::string16::npos)
+  if (path_str.find(L"\\..\\") != std::wstring::npos)
     return false;
 
   // Ensure the path does not specify a drive root: require a character other
   // than \/:. after the last :
   size_t last_colon_pos = path_str.rfind(L':');
-  if (last_colon_pos == base::string16::npos)
+  if (last_colon_pos == std::wstring::npos)
     return true;
   for (size_t index = last_colon_pos + 1; index < path_str.size(); ++index) {
     wchar_t character = path_str[index];
@@ -194,7 +194,7 @@ void FileRemover::RemoveFile(const base::FilePath& path,
     return;
   }
 
-  if (!base::DeleteFile(path, /*recursive=*/false)) {
+  if (!base::DeleteFile(path)) {
     // If the attempt to delete the file fails, propagate the failure as
     // normal so that the engine knows about it and can try a backup action,
     // but also register the file for post-reboot removal in case the engine

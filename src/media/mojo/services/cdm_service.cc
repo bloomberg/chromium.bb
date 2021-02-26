@@ -4,8 +4,11 @@
 
 #include "media/mojo/services/cdm_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/cdm_factory.h"
 #include "media/cdm/cdm_module.h"
 #include "media/media_buildflags.h"
@@ -14,10 +17,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <vector>
 #include "sandbox/mac/seatbelt_extension.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace media {
 
@@ -39,7 +42,7 @@ namespace {
 //     CDMs too early (e.g. during page navigation) which could cause errors
 //     (session closed) on the client side. See https://crbug.com/821171 for
 //     details.
-class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
+class CdmFactoryImpl final : public DeferredDestroy<mojom::CdmFactory> {
  public:
   CdmFactoryImpl(CdmService::Client* client,
                  mojo::PendingRemote<mojom::FrameInterfaceFactory> interfaces)
@@ -56,18 +59,23 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   ~CdmFactoryImpl() final { DVLOG(1) << __func__; }
 
   // mojom::CdmFactory implementation.
-  void CreateCdm(
-      const std::string& key_system,
-      mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final {
+  void CreateCdm(const std::string& key_system,
+                 const CdmConfig& cdm_config,
+                 CreateCdmCallback callback) final {
     DVLOG(2) << __func__;
 
     auto* cdm_factory = GetCdmFactory();
-    if (!cdm_factory)
+    if (!cdm_factory) {
+      std::move(callback).Run(mojo::NullRemote(), base::nullopt,
+                              mojo::NullRemote(),
+                              "CDM Factory creation failed");
       return;
+    }
 
-    cdm_receivers_.Add(
-        std::make_unique<MojoCdmService>(cdm_factory, &cdm_service_context_),
-        std::move(receiver));
+    MojoCdmService::Create(
+        cdm_factory, &cdm_service_context_, key_system, cdm_config,
+        base::BindOnce(&CdmFactoryImpl::OnCdmServiceCreated,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // DeferredDestroy<mojom::CdmFactory> implemenation.
@@ -92,6 +100,24 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
       std::move(destroy_cb_).Run();
   }
 
+  void OnCdmServiceCreated(CreateCdmCallback callback,
+                           std::unique_ptr<MojoCdmService> cdm_service,
+                           mojo::PendingRemote<mojom::Decryptor> decryptor,
+                           const std::string& error_message) {
+    if (!cdm_service) {
+      std::move(callback).Run(mojo::NullRemote(), base::nullopt,
+                              mojo::NullRemote(), error_message);
+      return;
+    }
+
+    auto cdm_id = cdm_service->cdm_id();
+    mojo::PendingRemote<mojom::ContentDecryptionModule> remote;
+    cdm_receivers_.Add(std::move(cdm_service),
+                       remote.InitWithNewPipeAndPassReceiver());
+    std::move(callback).Run(std::move(remote), cdm_id, std::move(decryptor),
+                            "");
+  }
+
   // Must be declared before the receivers below because the bound objects might
   // take a raw pointer of |cdm_service_context_| and assume it's always
   // available.
@@ -102,6 +128,9 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<CdmFactoryImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmFactoryImpl);
 };
@@ -119,13 +148,13 @@ CdmService::~CdmService() {
   DVLOG(1) << __func__;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void CdmService::LoadCdm(
     const base::FilePath& cdm_path,
     mojo::PendingRemote<mojom::SeatbeltExtensionTokenProvider> token_provider) {
 #else
 void CdmService::LoadCdm(const base::FilePath& cdm_path) {
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   DVLOG(1) << __func__ << ": cdm_path = " << cdm_path.value();
 
   // Ignore request if service has already stopped.
@@ -138,7 +167,7 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::vector<std::unique_ptr<sandbox::SeatbeltExtension>> extensions;
 
   if (token_provider) {
@@ -157,7 +186,7 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
       extensions.push_back(std::move(extension));
     }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   std::vector<CdmHostFilePath> cdm_host_file_paths;
@@ -170,10 +199,10 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
   // This may trigger the sandbox to be sealed.
   client_->EnsureSandboxed();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   for (auto&& extension : extensions)
     extension->Revoke();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Always called within the sandbox.
   if (success)

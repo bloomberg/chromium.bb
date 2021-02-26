@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -82,6 +83,15 @@ void FakePermissionBrokerClient::OpenPath(const std::string& path,
       base::BindOnce(&chromeos::OpenPath, path, std::move(callback),
                      std::move(error_callback),
                      base::ThreadTaskRunnerHandle::Get()));
+}
+
+void FakePermissionBrokerClient::ClaimDevicePath(
+    const std::string& path,
+    uint32_t allowed_interfaces_mask,
+    int lifeline_fd,
+    OpenPathCallback callback,
+    ErrorCallback error_callback) {
+  OpenPath(path, std::move(callback), std::move(error_callback));
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(

@@ -57,6 +57,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action);
 std::ostream& operator<<(std::ostream& output, const ParseResult& result);
 std::ostream& operator<<(std::ostream& output,
                          const base::Optional<RequestAction>& action);
+std::ostream& operator<<(std::ostream& output, LoadRulesetResult result);
 
 // Returns true if the given extension's indexed static rulesets are all valid.
 // Should be called on a sequence where file IO is allowed.
@@ -77,7 +78,8 @@ RulesetSource CreateTemporarySource(RulesetID id = kMinValidStaticRulesetID,
 
 api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
     api::declarative_net_request::HeaderOperation operation,
-    std::string header);
+    std::string header,
+    base::Optional<std::string> value);
 
 bool EqualsForTesting(
     const api::declarative_net_request::ModifyHeaderInfo& lhs,
@@ -114,6 +116,29 @@ class RulesetManagerObserver : public RulesetManager::TestObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<GURL> observed_requests_;
   SEQUENCE_CHECKER(sequence_checker_);
+};
+
+// Helper to wait for warnings thrown for a given extension. This must be
+// constructed before warnings are added.
+class WarningServiceObserver : public WarningService::Observer {
+ public:
+  WarningServiceObserver(WarningService* warning_service,
+                         const ExtensionId& extension_id);
+  ~WarningServiceObserver();
+  WarningServiceObserver(const WarningServiceObserver&) = delete;
+  WarningServiceObserver& operator=(const WarningServiceObserver&) = delete;
+
+  // Should only be called once per WarningServiceObserver lifetime.
+  void WaitForWarning();
+
+ private:
+  // WarningService::Observer override:
+  void ExtensionWarningsChanged(
+      const ExtensionIdSet& affected_extensions) override;
+
+  ScopedObserver<WarningService, WarningService::Observer> observer_;
+  const ExtensionId extension_id_;
+  base::RunLoop run_loop_;
 };
 
 }  // namespace declarative_net_request

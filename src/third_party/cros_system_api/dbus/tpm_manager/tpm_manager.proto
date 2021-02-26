@@ -14,6 +14,9 @@ enum TpmManagerStatus {
   STATUS_SUCCESS = 0;
   STATUS_DEVICE_ERROR = 1;
   STATUS_NOT_AVAILABLE = 2;
+  // The error that is translated into by the client to indicate any kind of
+  // D-Bus error.
+  STATUS_DBUS_ERROR = 3;
 }
 
 // Result codes. For convenience, keep these in sync with Brillo NVRAM HAL
@@ -216,7 +219,7 @@ message GetSpaceInfoReply {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// A series of request and reply messages for the ownership interface methods.
+// A series of request and reply messages for the tpm manager interface methods.
 ////////////////////////////////////////////////////////////////////////////////
 message GetTpmStatusRequest {
   reserved 1;
@@ -229,9 +232,25 @@ message GetTpmStatusReply {
   // Whether the TPM has been owned.
   optional bool owned = 3;
   // Local TPM management data (including the owner password if available).
+  // TODO(b/168852740): Refine the comments above.
   optional LocalData local_data = 4;
 
   reserved 5 to 9;
+}
+
+message GetTpmNonsensitiveStatusRequest {
+}
+
+message GetTpmNonsensitiveStatusReply {
+  optional TpmManagerStatus status = 1;
+  // Whether a TPM is enabled on the system.
+  optional bool is_enabled = 2;
+  // Whether the TPM has been owned.
+  optional bool is_owned = 3;
+  // Whether the owner password is still retained.
+  optional bool is_owner_password_present = 4;
+  // Whether tpm manager is capable of reset DA.
+  optional bool has_reset_lock_permissions = 5;
 }
 
 message GetVersionInfoRequest {

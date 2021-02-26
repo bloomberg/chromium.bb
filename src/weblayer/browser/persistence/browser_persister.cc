@@ -18,13 +18,13 @@
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/persistence/browser_persistence_common.h"
 #include "weblayer/browser/profile_impl.h"
@@ -64,10 +64,10 @@ BrowserPersister::BrowserPersister(const base::FilePath& path,
       rebuild_on_next_save_(false),
       crypto_key_(decryption_key) {
   browser_->AddObserver(this);
-  command_storage_manager_->ScheduleGetCurrentSessionCommands(
+  command_storage_manager_->GetCurrentSessionCommands(
       base::BindOnce(&BrowserPersister::OnGotCurrentSessionCommands,
-                     base::Unretained(this)),
-      decryption_key, &cancelable_task_tracker_);
+                     weak_factory_.GetWeakPtr()),
+      decryption_key);
 }
 
 BrowserPersister::~BrowserPersister() {
@@ -105,8 +105,9 @@ void BrowserPersister::OnGeneratedNewCryptoKey(
 }
 
 void BrowserPersister::OnTabAdded(Tab* tab) {
-  content::WebContents* web_contents =
-      static_cast<TabImpl*>(tab)->web_contents();
+  auto* tab_impl = static_cast<TabImpl*>(tab);
+  data_observer_.Add(tab_impl);
+  content::WebContents* web_contents = tab_impl->web_contents();
   auto* tab_helper = sessions::SessionTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetWindowID(browser_session_id_);
@@ -130,10 +131,11 @@ void BrowserPersister::OnTabAdded(Tab* tab) {
 }
 
 void BrowserPersister::OnTabRemoved(Tab* tab, bool active_tab_changed) {
+  auto* tab_impl = static_cast<TabImpl*>(tab);
+  data_observer_.Remove(tab_impl);
   // Allow the associated sessionStorage to get deleted; it won't be needed
   // in the session restore.
-  content::WebContents* web_contents =
-      static_cast<TabImpl*>(tab)->web_contents();
+  content::WebContents* web_contents = tab_impl->web_contents();
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents->GetController().GetDefaultSessionStorageNamespace();
   session_storage_namespace->SetShouldPersist(false);
@@ -159,6 +161,16 @@ void BrowserPersister::OnActiveTabChanged(Tab* tab) {
   const int index = tab == nullptr ? -1 : GetIndexOfTab(browser_, tab);
   ScheduleCommand(sessions::CreateSetSelectedTabInWindowCommand(
       browser_session_id_, index));
+}
+
+void BrowserPersister::OnDataChanged(
+    TabImpl* tab,
+    const std::map<std::string, std::string>& data) {
+  if (rebuild_on_next_save_)
+    return;
+
+  ScheduleCommand(
+      sessions::CreateSetTabDataCommand(GetSessionIDForTab(tab), data));
 }
 
 void BrowserPersister::SetTabUserAgentOverride(
@@ -265,6 +277,9 @@ void BrowserPersister::OnGotCurrentSessionCommands(
   ScheduleRebuildOnNextSave();
 
   RestoreBrowserState(browser_, std::move(commands));
+
+  is_restore_in_progress_ = false;
+  browser_->OnRestoreCompleted();
 }
 
 void BrowserPersister::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {

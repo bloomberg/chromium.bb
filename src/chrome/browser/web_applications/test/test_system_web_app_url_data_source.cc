@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -28,6 +28,11 @@ constexpr char kPwaHtml[] =
 </html>
 )";
 
+constexpr char kPage2Html[] =
+    R"(
+<!DOCTYPE html><title>Page 2</title>
+  )";
+
 constexpr char kSwJs[] = "globalThis.addEventListener('fetch', event => {});";
 
 }  // namespace
@@ -43,10 +48,12 @@ void AddTestURLDataSource(const std::string& source_name,
                           content::BrowserContext* browser_context) {
   content::WebUIDataSource* data_source =
       content::WebUIDataSource::Create(source_name);
+  data_source->DisableTrustedTypesCSP();
   data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
   data_source->SetRequestFilter(
       base::BindLambdaForTesting([](const std::string& path) {
-        return path == "manifest.json" || path == "pwa.html";
+        return path == "manifest.json" || path == "pwa.html" ||
+               path == "page2.html";
       }),
       base::BindLambdaForTesting(
           [manifest_text](const std::string& id,
@@ -59,6 +66,8 @@ void AddTestURLDataSource(const std::string& source_name,
               ref_contents->data() = kPwaHtml;
             else if (id == "sw.js")
               ref_contents->data() = kSwJs;
+            else if (id == "page2.html")
+              ref_contents->data() = kPage2Html;
             else
               NOTREACHED();
 

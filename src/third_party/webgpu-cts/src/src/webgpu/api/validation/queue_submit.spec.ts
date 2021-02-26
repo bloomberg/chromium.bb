@@ -2,13 +2,13 @@ export const description = `
 queue submit validation tests.
 `;
 
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 
-export const g = new TestGroup(ValidationTest);
+export const g = makeTestGroup(ValidationTest);
 
-g.test('submitting with a mapped buffer is disallowed', async t => {
+g.test('submitting_with_a_mapped_buffer_is_disallowed').fn(async t => {
   const buffer = t.device.createBuffer({
     size: 4,
     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
@@ -28,8 +28,8 @@ g.test('submitting with a mapped buffer is disallowed', async t => {
   // Submitting when the buffer has never been mapped should succeed
   t.queue.submit([getCommandBuffer()]);
 
-  // Map the buffer, submitting when the buffer is mapped should fail
-  await buffer.mapWriteAsync();
+  // Map the buffer, submitting when the buffer is mapped (even with no getMappedRange) should fail
+  await buffer.mapAsync(GPUMapMode.WRITE);
   t.queue.submit([]);
 
   t.expectValidationError(() => {

@@ -23,9 +23,6 @@
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
-const NSString* kHeaderEtag = @"ETag";
-const NSString* kHeaderXRetryAfter = @"X-Retry-After";
-
 using ResponseStartedCallback =
     update_client::NetworkFetcher::ResponseStartedCallback;
 using ProgressCallback = update_client::NetworkFetcher::ProgressCallback;
@@ -98,6 +95,7 @@ using DownloadToFileCompleteCallback =
           initWithResponseStartedCallback:std::move(responseStartedCallback)
                          progressCallback:progressCallback]) {
     _postRequestCompleteCallback = std::move(postRequestCompleteCallback);
+    _downloadedData.reset([[NSMutableData alloc] init]);
   }
   return self;
 }
@@ -107,9 +105,6 @@ using DownloadToFileCompleteCallback =
 - (void)URLSession:(NSURLSession*)session
           dataTask:(NSURLSessionDataTask*)dataTask
     didReceiveData:(NSData*)data {
-  if (_downloadedData == nil) {
-    _downloadedData.reset([[NSMutableData alloc] init]);
-  }
   [_downloadedData appendData:data];
 
   int64_t current = 0;
@@ -151,12 +146,23 @@ using DownloadToFileCompleteCallback =
 
   NSHTTPURLResponse* response = (NSHTTPURLResponse*)task.response;
   NSDictionary* headers = response.allHeaderFields;
+
+  NSString* headerEtag =
+      base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderEtag);
   NSString* etag = @"";
-  if ([headers objectForKey:kHeaderEtag]) {
-    etag = [headers objectForKey:kHeaderEtag];
+  if ([headers objectForKey:headerEtag]) {
+    etag = [headers objectForKey:headerEtag];
+  }
+  NSString* headerXCupServerProof = base::SysUTF8ToNSString(
+      update_client::NetworkFetcher::kHeaderXCupServerProof);
+  NSString* cupServerProof = @"";
+  if ([headers objectForKey:headerXCupServerProof]) {
+    cupServerProof = [headers objectForKey:headerXCupServerProof];
   }
   int64_t retryAfterResult = -1;
-  NSString* xRetryAfter = [headers objectForKey:kHeaderXRetryAfter];
+  NSString* xRetryAfter = [headers
+      objectForKey:base::SysUTF8ToNSString(
+                       update_client::NetworkFetcher::kHeaderXRetryAfter)];
   if (xRetryAfter) {
     retryAfterResult = [xRetryAfter intValue];
   }
@@ -165,8 +171,10 @@ using DownloadToFileCompleteCallback =
       FROM_HERE,
       base::BindOnce(std::move(_postRequestCompleteCallback),
                      std::make_unique<std::string>(
-                         base::SysNSStringToUTF8(response.description)),
-                     error.code, std::string(base::SysNSStringToUTF8(etag)),
+                         reinterpret_cast<const char*>([_downloadedData bytes]),
+                         [_downloadedData length]),
+                     error.code, base::SysNSStringToUTF8(etag),
+                     base::SysNSStringToUTF8(cupServerProof),
                      retryAfterResult));
 }
 
@@ -246,9 +254,10 @@ using DownloadToFileCompleteCallback =
                                                        error:nil];
   NSNumber* fileSizeAttribute = attributes[NSFileSize];
   int64_t fileSize = [fileSizeAttribute integerValue];
+  NSInteger statusCode = response.statusCode == 200 ? 0 : response.statusCode;
   _callbackRunner->PostTask(
       FROM_HERE, base::BindOnce(std::move(_downloadToFileCompleteCallback),
-                                response.statusCode, fileSize));
+                                statusCode, fileSize));
 }
 
 @end
@@ -266,6 +275,7 @@ NetworkFetcher::~NetworkFetcher() = default;
 void NetworkFetcher::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
@@ -288,8 +298,18 @@ void NetworkFetcher::PostRequest(
   base::scoped_nsobject<NSMutableURLRequest> urlRequest(
       [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)]);
   [urlRequest setHTTPMethod:@"POST"];
-  [urlRequest setHTTPBody:[base::SysUTF8ToNSString(post_data)
-                              dataUsingEncoding:NSUTF8StringEncoding]];
+  base::scoped_nsobject<NSData> body(
+      [[NSData alloc] initWithBytes:post_data.c_str() length:post_data.size()]);
+  [urlRequest setHTTPBody:body];
+  [urlRequest addValue:base::SysUTF8ToNSString(content_type)
+      forHTTPHeaderField:@"Content-Type"];
+
+  // Post additional headers could overwrite existing headers with the same key,
+  // such as "Content-Type" above.
+  for (const auto& header : post_additional_headers) {
+    [urlRequest setValue:base::SysUTF8ToNSString(header.second)
+        forHTTPHeaderField:base::SysUTF8ToNSString(header.first)];
+  }
   VLOG(1) << "Posting data: " << post_data.c_str();
 
   NSURLSessionDataTask* dataTask = [session dataTaskWithRequest:urlRequest];

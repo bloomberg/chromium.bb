@@ -128,7 +128,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       }
     } else if (is_mac || is_ios) {
       defines += [ "MACHO" ]
-    } else if (is_linux || is_android || is_fuchsia) {
+    } else if (is_linux || is_android || is_fuchsia || is_chromeos) {
       defines += [ "ELF" ]
     }
   }
@@ -155,12 +155,18 @@ static_library("simd") {
     sources = [
       "simd/arm/arm/jsimd.c",
       "simd/arm/arm/jsimd_neon.S",
+      "simd/arm/common/jccolor-neon.c",
+      "simd/arm/common/jcgray-neon.c",
+      "simd/arm/common/jcsample-neon.c",
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
+      "simd/arm/common/jfdctfst-neon.c",
+      "simd/arm/common/jfdctint-neon.c",
       "simd/arm/common/jidctfst-neon.c",
       "simd/arm/common/jidctint-neon.c",
       "simd/arm/common/jidctred-neon.c",
+      "simd/arm/common/jquanti-neon.c",
     ]
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_speed" ]
@@ -168,12 +174,18 @@ static_library("simd") {
     sources = [
       "simd/arm/arm64/jsimd.c",
       "simd/arm/arm64/jsimd_neon.S",
+      "simd/arm/common/jccolor-neon.c",
+      "simd/arm/common/jcgray-neon.c",
+      "simd/arm/common/jcsample-neon.c",
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
+      "simd/arm/common/jfdctfst-neon.c",
+      "simd/arm/common/jfdctint-neon.c",
       "simd/arm/common/jidctfst-neon.c",
       "simd/arm/common/jidctint-neon.c",
       "simd/arm/common/jidctred-neon.c",
+      "simd/arm/common/jquanti-neon.c",
     ]
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_speed" ]
@@ -269,5 +281,86 @@ static_library("libjpeg") {
     sources += [ "jsimd_none.c" ]
   } else {
     public_deps += [ ":simd" ]
+  }
+}
+
+static_library("turbojpeg") {
+  sources = [
+    "turbojpeg.c",
+    "transupp.c",
+    "jdatadst-tj.c",
+    "jdatasrc-tj.c",
+    "rdbmp.c",
+    "rdppm.c",
+    "wrbmp.c",
+    "wrppm.c",
+  ]
+
+  defines = [
+    "WITH_SIMD",
+    "BMP_SUPPORTED",
+    "PPM_SUPPORTED",
+  ]
+
+  configs += [ ":libjpeg_config" ]
+
+  public_configs = [ ":libjpeg_config" ]
+  public_deps = [
+    ":libjpeg",
+  ]
+}
+
+if (build_with_chromium) {
+  import("//testing/test.gni")
+
+  test("libjpeg_turbo_unittests") {
+    testonly = true
+
+    sources = [
+      "cdjpeg.c",
+      "cjpeg.c",
+      "djpeg.c",
+      "gtest/cjpeg-gtest-wrapper.cpp",
+      "gtest/djpeg-gtest-wrapper.cpp",
+      "gtest/gtest-utils.cpp",
+      "gtest/jpegtran-gtest-wrapper.cpp",
+      "gtest/tjbench-gtest-wrapper.cpp",
+      "gtest/tjunittest-gtest-wrapper.cpp",
+      "jpegtran.c",
+      "md5/md5.c",
+      "md5/md5hl.c",
+      "tjbench.c",
+      "tjunittest.c",
+      "tjutil.c",
+      "rdcolmap.c",
+      "rdgif.c",
+      "rdswitch.c",
+    ]
+
+    deps = [
+      ":turbojpeg",
+      "//base",
+      "//testing/gtest",
+      "//testing/gtest:gtest_main",
+    ]
+
+    data = [
+      "testimages/"
+    ]
+
+    defines = [
+      "GTEST",
+      "WITH_SIMD",
+      "BMP_SUPPORTED",
+      "PPM_SUPPORTED",
+    ]
+
+    include_dirs = [
+      "//third_party/googletest/src/googletest/include/gtest",
+      ".",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 }

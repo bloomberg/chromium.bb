@@ -5,6 +5,7 @@
 #ifndef DISCOVERY_MDNS_MDNS_TRACKERS_H_
 #define DISCOVERY_MDNS_MDNS_TRACKERS_H_
 
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -82,7 +83,7 @@ class MdnsTracker {
   MdnsSender* const sender_;
   TaskRunner* const task_runner_;
   const ClockNowFunctionPtr now_function_;
-  Alarm send_alarm_;  // TODO(yakimakha): Use cancelable task when available
+  Alarm send_alarm_;
   MdnsRandom* const random_delay_;
   TrackerType tracker_type_;
 

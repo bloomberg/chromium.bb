@@ -2,15 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/extension_repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
+
+assert(
+    ios_enable_credential_provider_extension,
+    "ios_enable_credential_provider_extension must be true to depend on //ios/chrome/credential_provider_extension")
 
 group("resources") {
   deps = [ "//ios/chrome/credential_provider_extension/strings" ]
@@ -24,6 +28,11 @@ extension_repack_all_locales("packed_resources") {
 
 tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
+
+  # TODO(crbug.com/1140474): Remove once iOS 14.2 reaches mass adoption.
+  if (ios_lock_to_version != "") {
+    args = [ "--lock-to-version=$ios_lock_to_version" ]
+  }
 }
 
 compile_entitlements("entitlements") {
@@ -50,6 +59,7 @@ ios_appex_bundle("credential_provider_extension") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":account_verification_provider",
     ":metrics_util",
     ":password_util",
     ":reauthentication_handler",
@@ -59,16 +69,16 @@ ios_appex_bundle("credential_provider_extension") {
     "//ios/chrome/common/credential_provider",
     "//ios/chrome/common/credential_provider:ui",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/credential_provider_extension/resources",
     "//ios/chrome/credential_provider_extension/ui",
-    ios_account_verification_provider_target,
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 
   assert_no_deps = ios_extension_assert_no_deps
 
-  libs = [
+  frameworks = [
     "AuthenticationServices.framework",
     "Foundation.framework",
     "UIKit.framework",
@@ -78,6 +88,7 @@ ios_appex_bundle("credential_provider_extension") {
     "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
     "CREDENTIAL_PROVIDER_EXTENSION_BUNDLE_ID=$chromium_bundle_id.CredentialProviderExtension",
+    "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
   ]
 
   entitlements_target = ":entitlements"
@@ -96,6 +107,22 @@ generate_localizable_strings("system_strings") {
   packed_locales = ios_packed_locales_as_mac_outputs
   output_filenames = [ "Localizable.strings" ]
   deps = [ _packed_resources_target ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "metrics_util_unittest.mm",
+    "password_util_unittest.mm",
+  ]
+  deps = [
+    ":metrics_util",
+    ":password_util",
+    "//base",
+    "//ios/chrome/common/app_group",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("reauthentication_handler") {
@@ -121,8 +148,9 @@ source_set("password_util") {
   deps = [
     "//base",
     "//ios/chrome/common/app_group",
+    "//ios/chrome/credential_provider_extension:metrics_util",
   ]
-  libs = [
+  frameworks = [
     "Security.framework",
     "Foundation.framework",
   ]
@@ -138,5 +166,28 @@ source_set("metrics_util") {
     "//base",
     "//ios/chrome/common/app_group",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider") {
+  public_deps = [ ":account_verification_provider_header" ]
+  deps = [ ios_account_verification_provider_target ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  frameworks = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider_header") {
+  sources = [ "account_verification_provider.h" ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  frameworks = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider_implementation") {
+  sources = [ "account_verification_provider.mm" ]
+  deps = [ ":account_verification_provider_header" ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  frameworks = [ "Foundation.framework" ]
 }

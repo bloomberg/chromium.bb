@@ -13,8 +13,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/db/safebrowsing.pb.h"
+#include "components/safe_browsing/core/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -74,6 +76,17 @@ static const int kV4TimerStartIntervalSecMax = 300;
 
 // Maximum time, in seconds, to wait for a response to an update request.
 static const int kV4TimerUpdateWaitSecMax = 15 * 60;  // 15 minutes
+
+#if defined(OS_IOS)
+// Maximum number of entries in each list, when the limited list size experiment
+// is enabled.
+static const int kMaximumEntriesPerLimitedList = 1 << 18;
+
+// Maximum number of entries in each list, when the limited list size experiment
+// is not enabled.
+// TODO(crbug.com/1129162): Review and adjust this limit periodically.
+static const int kMaximumEntriesPerList = 1 << 20;
+#endif
 
 ChromeClientInfo::SafeBrowsingReportingPopulation GetReportingLevelProtoValue(
     ExtendedReportingLevel reporting_level) {
@@ -213,6 +226,7 @@ void V4UpdateProtocolManager::ScheduleNextUpdateAfterInterval(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(interval >= base::TimeDelta());
 
+  next_update_time_ = Time::Now() + interval;
   // Unschedule any current timer.
   update_timer_.Stop();
   update_timer_.Start(FROM_HERE, interval, this,
@@ -240,6 +254,13 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
     list_update_request->mutable_constraints()->add_supported_compressions(RAW);
     list_update_request->mutable_constraints()->add_supported_compressions(
         RICE);
+
+#if defined(OS_IOS)
+    list_update_request->mutable_constraints()->set_max_database_entries(
+        base::FeatureList::IsEnabled(kLimitedListSizeForIOS)
+            ? kMaximumEntriesPerLimitedList
+            : kMaximumEntriesPerList);
+#endif
   }
 
   if (!extended_reporting_level_callback_.is_null()) {
@@ -342,6 +363,8 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   GetUpdateUrlAndHeaders(req_base64, &resource_request->url,
                          &resource_request->headers);
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies))
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);
@@ -441,11 +464,11 @@ void V4UpdateProtocolManager::CollectUpdateInfo(
 
   if (last_response_time_.ToJavaTime()) {
     update_info->set_last_update_time_millis(last_response_time_.ToJavaTime());
+  }
 
-    // We should only find the next update if the last_response is valid.
-    base::Time next_update = last_response_time_ + next_update_interval_;
-    if (next_update.ToJavaTime())
-      update_info->set_next_update_time_millis(next_update.ToJavaTime());
+  if (next_update_time_) {
+    update_info->set_next_update_time_millis(
+        next_update_time_.value().ToJavaTime());
   }
 }
 

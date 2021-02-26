@@ -78,8 +78,12 @@ def _CheckTestExpectations(input_api, output_api):
     results = []
     os_path = input_api.os_path
     sys.path.append(
-        os_path.join(os_path.dirname(os_path.abspath(inspect.getfile(_CheckTestExpectations))), '..', 'tools'))
-    from blinkpy.web_tests.lint_test_expectations import PresubmitCheckTestExpectations
+        os_path.join(
+            os_path.dirname(
+                os_path.abspath(inspect.getfile(_CheckTestExpectations))),
+                '..', 'tools'))
+    from blinkpy.web_tests.lint_test_expectations_presubmit import (
+        PresubmitCheckTestExpectations)
     results.extend(PresubmitCheckTestExpectations(input_api, output_api))
     return results
 
@@ -89,8 +93,7 @@ def _CheckForJSTest(input_api, output_api):
     jstest_re = input_api.re.compile(r'resources/js-test.js')
 
     def source_file_filter(path):
-        return input_api.FilterSourceFile(path,
-                                          white_list=[r'\.(html|js|php|pl|svg)$'])
+        return input_api.FilterSourceFile(path, files_to_check=[r'\.(html|js|php|pl|svg)$'])
 
     errors = input_api.canned_checks._FindNewViolationsOfRule(
         lambda _, x: not jstest_re.search(x), input_api, source_file_filter)

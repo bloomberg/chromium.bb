@@ -28,7 +28,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
@@ -438,7 +438,7 @@ TEST_F(StatusAreaWidgetCollapseStateTest, ImeMenuShownWithVirtualKeyboard) {
   Shell::Get()
       ->system_tray_model()
       ->virtual_keyboard()
-      ->OnArcInputMethodSurfaceBoundsChanged(gfx::Rect(0, 0, 100, 100));
+      ->OnArcInputMethodBoundsChanged(gfx::Rect(0, 0, 100, 100));
   EXPECT_TRUE(ime_menu_->GetVisible());
   EXPECT_FALSE(palette_->GetVisible());
   EXPECT_FALSE(virtual_keyboard_->GetVisible());

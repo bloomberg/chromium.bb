@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -38,7 +39,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -50,7 +50,7 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/view_type_utils.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
@@ -64,22 +64,6 @@ using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
 namespace {
-
-// These strings must be kept in sync with handleAccelerator()
-// in display_manager.js.
-const char kAccelNameCancel[] = "cancel";
-const char kAccelNameEnableDebugging[] = "debugging";
-const char kAccelNameEnrollment[] = "enrollment";
-const char kAccelNameKioskEnable[] = "kiosk_enable";
-const char kAccelNameVersion[] = "version";
-const char kAccelNameReset[] = "reset";
-const char kAccelNameDeviceRequisition[] = "device_requisition";
-const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
-const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
-const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
-const char kAccelNameBootstrappingSlave[] = "bootstrapping_slave";
-const char kAccelNameDemoMode[] = "demo_mode";
-const char kAccelSendFeedback[] = "send_feedback";
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -110,8 +94,9 @@ const char WebUILoginView::kViewClassName[] =
 
 // WebUILoginView public: ------------------------------------------------------
 
-WebUILoginView::WebUILoginView(const WebViewSettings& settings)
-    : settings_(settings) {
+WebUILoginView::WebUILoginView(const WebViewSettings& settings,
+                               base::WeakPtr<LoginDisplayHostWebUI> controller)
+    : settings_(settings), controller_(controller) {
   ChromeKeyboardControllerClient::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -121,48 +106,19 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
-  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] = kAccelNameCancel;
-  accel_map_[ui::Accelerator(ui::VKEY_E,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameEnrollment;
-  if (KioskAppManager::IsConsumerKioskEnabled()) {
-    accel_map_[ui::Accelerator(ui::VKEY_K,
-                               ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-        kAccelNameKioskEnable;
+  for (size_t i = 0; i < ash::kLoginAcceleratorDataLength; ++i) {
+    ui::Accelerator accelerator(ash::kLoginAcceleratorData[i].keycode,
+                                ash::kLoginAcceleratorData[i].modifiers);
+    // Show reset conflicts with rotate screen when --ash-dev-shortcuts is
+    // passed. Favor --ash-dev-shortcuts since that is explicitly added.
+    if (ash::kLoginAcceleratorData[i].action ==
+            ash::LoginAcceleratorAction::kEnableConsumerKiosk &&
+        !KioskAppManager::IsConsumerKioskEnabled()) {
+      continue;
+    }
+
+    accel_map_[accelerator] = ash::kLoginAcceleratorData[i].action;
   }
-  accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
-      kAccelNameVersion;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameReset;
-  accel_map_[ui::Accelerator(ui::VKEY_X,
-      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameEnableDebugging;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameDeviceRequisition;
-  accel_map_[
-      ui::Accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameDeviceRequisitionRemora;
-
-  accel_map_[ui::Accelerator(ui::VKEY_S,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameAppLaunchBailout;
-
-  accel_map_[ui::Accelerator(ui::VKEY_N,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameAppLaunchNetworkConfig;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameBootstrappingSlave;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAccelNameDemoMode;
-
-  accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelSendFeedback;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
     AddAccelerator(i->first);
@@ -183,7 +139,7 @@ WebUILoginView::~WebUILoginView() {
   ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
 
   // Clear any delegates we have set on the WebView.
-  WebContents* web_contents = web_view()->GetWebContents();
+  WebContents* web_contents = web_view_->GetWebContents();
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(nullptr);
   web_contents->SetDelegate(nullptr);
@@ -216,27 +172,22 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  blink::mojom::RendererPreferences* prefs =
-      web_contents->GetMutableRendererPrefs();
+  blink::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, ProfileHelper::GetSigninProfile());
-
-  performance_manager::PerformanceManagerRegistry::GetInstance()
-      ->CreatePageNodeForWebContents(web_contents);
 }
 
 void WebUILoginView::Init() {
-  Profile* signin_profile = ProfileHelper::GetSigninProfile();
-  if (!webui_login_) {
-    webui_login_ = std::make_unique<views::WebView>(signin_profile);
-    webui_login_->set_owned_by_client();
-  }
+  // Init() should only be called once.
+  DCHECK(!web_view_);
+  auto web_view =
+      std::make_unique<views::WebView>(ProfileHelper::GetSigninProfile());
+  WebContents* web_contents = web_view->GetWebContents();
 
-  WebContents* web_contents = web_view()->GetWebContents();
-  InitializeWebView(web_view(), settings_.web_view_title);
+  InitializeWebView(web_view.get(), settings_.web_view_title);
+  web_view->set_allow_accelerators(true);
 
-  web_view()->set_allow_accelerators(true);
-  AddChildView(web_view());
+  web_view_ = AddChildView(std::move(web_view));
 
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(this);
@@ -248,7 +199,7 @@ const char* WebUILoginView::GetClassName() const {
 }
 
 void WebUILoginView::RequestFocus() {
-  web_view()->RequestFocus();
+  web_view_->RequestFocus();
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -285,18 +236,9 @@ bool WebUILoginView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   AccelMap::const_iterator entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
-
-  if (!web_view())
-    return true;
-
-  content::WebUI* web_ui = GetWebUI();
-  if (web_ui) {
-    base::Value accel_name(entry->second);
-    web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
-                                         accel_name);
-  }
-
-  return true;
+  if (controller_)
+    return controller_->HandleAccelerator(entry->second);
+  return false;
 }
 
 gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
@@ -304,16 +246,16 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::LoadURL(const GURL& url) {
-  web_view()->LoadInitialURL(url);
-  web_view()->RequestFocus();
+  web_view_->LoadInitialURL(url);
+  web_view_->RequestFocus();
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {
-  return web_view()->web_contents()->GetWebUI();
+  return web_view_->web_contents()->GetWebUI();
 }
 
 content::WebContents* WebUILoginView::GetWebContents() {
-  return web_view()->web_contents();
+  return web_view_->web_contents();
 }
 
 OobeUI* WebUILoginView::GetOobeUI() {
@@ -341,8 +283,8 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
-  DCHECK(web_view());
-  web_view()->SetBoundsRect(bounds());
+  DCHECK(web_view_);
+  web_view_->SetBoundsRect(bounds());
 
   for (auto& observer : observer_list_)
     observer.OnPositionRequiresUpdate();
@@ -355,9 +297,9 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
 
 void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
-  web_view()->web_contents()->FocusThroughTabTraversal(reverse);
+  web_view_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
-  web_view()->web_contents()->Focus();
+  web_view_->web_contents()->Focus();
 
   content::WebUI* web_ui = GetWebUI();
   if (web_ui)
@@ -390,10 +332,6 @@ void WebUILoginView::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
-}
-
-views::WebView* WebUILoginView::web_view() {
-  return webui_login_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -448,19 +386,8 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   if (!forward_keyboard_event_)
     return false;
 
-  // For default tab order, after login UI, try focusing the system tray.
-  if (!reverse && MoveFocusToSystemTray(reverse))
-    return true;
-
-  // If initial MoveFocusToSystemTray was skipped due to lock screen app being
-  // a preferred option (due to traversal direction), try focusing system tray
-  // again.
-  if (reverse && MoveFocusToSystemTray(reverse))
-    return true;
-
-  // Since neither system tray nor a lock screen app window was focusable, the
-  // focus should stay in the login UI.
-  AboutToRequestFocusFromTabTraversal(reverse);
+  // FocusLoginShelf focuses either system tray or login shelf buttons.
+  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
   return true;
 }
 
@@ -491,11 +418,6 @@ bool WebUILoginView::PreHandleGestureEvent(
 
 void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
   AboutToRequestFocusFromTabTraversal(reverse);
-}
-
-bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
-  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
-  return true;
 }
 
 void WebUILoginView::OnLoginPromptVisible() {

@@ -139,6 +139,11 @@ base::Optional<base::TimeDelta> InteractiveDetector::GetFirstInputDelay()
   return page_event_times_.first_input_delay;
 }
 
+WTF::Vector<base::Optional<base::TimeDelta>>
+InteractiveDetector::GetFirstInputDelaysAfterBackForwardCacheRestore() const {
+  return page_event_times_.first_input_delays_after_back_forward_cache_restore;
+}
+
 base::Optional<base::TimeTicks> InteractiveDetector::GetFirstInputTimestamp()
     const {
   return page_event_times_.first_input_timestamp;
@@ -152,6 +157,21 @@ base::Optional<base::TimeDelta> InteractiveDetector::GetLongestInputDelay()
 base::Optional<base::TimeTicks> InteractiveDetector::GetLongestInputTimestamp()
     const {
   return page_event_times_.longest_input_timestamp;
+}
+
+base::Optional<base::TimeDelta>
+InteractiveDetector::GetFirstInputProcessingTime() const {
+  return page_event_times_.first_input_processing_time;
+}
+
+base::Optional<base::TimeTicks> InteractiveDetector::GetFirstScrollTimestamp()
+    const {
+  return page_event_times_.first_scroll_timestamp;
+}
+
+base::Optional<base::TimeDelta> InteractiveDetector::GetFirstScrollDelay()
+    const {
+  return page_event_times_.frist_scroll_delay;
 }
 
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(
@@ -174,7 +194,7 @@ bool InteractiveDetector::PageWasBackgroundedSinceEvent(
   }
 
   return false;
-}  // namespace blink
+}
 
 void InteractiveDetector::HandleForInputDelay(
     const Event& event,
@@ -224,7 +244,6 @@ void InteractiveDetector::HandleForInputDelay(
     event_timestamp = event_platform_timestamp;
   }
 
-  pending_pointerdown_delay_ = base::TimeDelta();
   pending_pointerdown_timestamp_ = base::TimeTicks();
   bool interactive_timing_metrics_changed = false;
 
@@ -260,12 +279,19 @@ void InteractiveDetector::HandleForInputDelay(
     g_num_long_input_events++;
   }
 
-  // Record input delay UKM.
-  ukm::SourceId source_id = GetSupplementable()->UkmSourceID();
-  DCHECK_NE(source_id, ukm::kInvalidSourceId);
-  ukm::builders::InputEvent(source_id)
-      .SetInteractiveTiming_InputDelay(delay.InMilliseconds())
-      .Record(GetUkmRecorder());
+  // ELements in |first_input_delays_after_back_forward_cache_restore| is
+  // allocated when the page is restored from the back-forward cache. If the
+  // last element exists and this is nullopt value, the first input has not come
+  // yet after the last time when the page is restored from the cache.
+  if (!page_event_times_.first_input_delays_after_back_forward_cache_restore
+           .IsEmpty() &&
+      !page_event_times_.first_input_delays_after_back_forward_cache_restore
+           .back()
+           .has_value()) {
+    page_event_times_.first_input_delays_after_back_forward_cache_restore
+        .back() = delay;
+  }
+
   if (GetSupplementable()->Loader()) {
     GetSupplementable()->Loader()->DidObserveInputDelay(delay);
   }
@@ -588,7 +614,7 @@ void InteractiveDetector::ContextDestroyed() {
   LongTaskDetector::Instance().UnregisterObserver(this);
 }
 
-void InteractiveDetector::Trace(Visitor* visitor) {
+void InteractiveDetector::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
@@ -610,4 +636,75 @@ void InteractiveDetector::SetUkmRecorderForTesting(
     ukm::UkmRecorder* test_ukm_recorder) {
   ukm_recorder_ = test_ukm_recorder;
 }
+
+void InteractiveDetector::RecordInputEventTimingUKM(
+    const Event& event,
+    base::TimeTicks event_timestamp,
+    base::TimeTicks processing_start,
+    base::TimeTicks processing_end) {
+  DCHECK(event.isTrusted());
+
+  // This only happens sometimes on tests unrelated to InteractiveDetector. It
+  // is safe to ignore events that are not properly initialized.
+  if (event_timestamp.is_null())
+    return;
+
+  // We can't report a pointerDown until the pointerUp, in case it turns into a
+  // scroll.
+  if (event.type() == event_type_names::kPointerdown) {
+    pending_pointerdown_processing_time_ = processing_end - processing_start;
+    return;
+  }
+
+  base::TimeDelta input_delay;
+  base::TimeDelta processing_time;
+  if (event.type() == event_type_names::kPointerup) {
+    // PointerUp by itself is not considered a significant input.
+    if (!pending_pointerdown_processing_time_)
+      return;
+
+    input_delay = pending_pointerdown_delay_;
+    processing_time = pending_pointerdown_processing_time_.value();
+  } else {
+    processing_time = processing_end - processing_start;
+    input_delay = processing_start - event_timestamp;
+  }
+  pending_pointerdown_delay_ = base::TimeDelta();
+  pending_pointerdown_processing_time_ = base::nullopt;
+
+  // Record InputDelay and Input Event Processing Time UKM.
+  ukm::SourceId source_id = GetSupplementable()->UkmSourceID();
+  DCHECK_NE(source_id, ukm::kInvalidSourceId);
+  ukm::builders::InputEvent(source_id)
+      .SetInteractiveTiming_InputDelay(input_delay.InMilliseconds())
+      .SetInteractiveTiming_ProcessingTime(processing_time.InMilliseconds())
+      .Record(GetUkmRecorder());
+
+  if (!page_event_times_.first_input_processing_time) {
+    page_event_times_.first_input_processing_time = processing_time;
+    if (GetSupplementable()->Loader()) {
+      GetSupplementable()->Loader()->DidChangePerformanceTiming();
+    }
+  }
+}
+
+void InteractiveDetector::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
+  if (!page_event_times_.frist_scroll_delay.has_value()) {
+    page_event_times_.frist_scroll_delay = first_scroll_delay;
+    page_event_times_.first_scroll_timestamp = first_scroll_timestamp;
+    if (GetSupplementable()->Loader()) {
+      GetSupplementable()->Loader()->DidChangePerformanceTiming();
+    }
+  }
+}
+
+void InteractiveDetector::OnRestoredFromBackForwardCache() {
+  // Allocate the last element with 0, which indicates that the first input
+  // after this navigation doesn't happen yet.
+  page_event_times_.first_input_delays_after_back_forward_cache_restore
+      .push_back(base::nullopt);
+}
+
 }  // namespace blink

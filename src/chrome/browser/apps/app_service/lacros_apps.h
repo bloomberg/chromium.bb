@@ -7,8 +7,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom-forward.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -18,7 +18,7 @@ namespace apps {
 // An app publisher (in the App Service sense) for the "LaCrOS" app icon,
 // which launches the lacros-chrome binary.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class LacrosApps : public apps::PublisherBase {
  public:
   explicit LacrosApps(const mojo::Remote<apps::mojom::AppService>& app_service);
@@ -43,7 +43,7 @@ class LacrosApps : public apps::PublisherBase {
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override;

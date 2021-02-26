@@ -17,9 +17,14 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/ui/base/window_properties.h"
+#endif  // defined(OS_CHROMEOS)
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Permission*)
 
@@ -29,7 +34,9 @@ namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
-// Application Id set by the client.
+// Application Id set by the client. For example:
+// "org.chromium.arc.<task-id>" for ARC++ shell surfaces.
+// "org.chromium.lacros.<window-id>" for Lacros browser shell surfaces.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr)
 
 // Startup Id set by the client.
@@ -57,6 +64,18 @@ bool ShouldHTComponentBlocked(int component) {
   }
 }
 
+// Find the lowest targeter in the parent chain.
+aura::WindowTargeter* FindTargeter(ui::EventTarget* target) {
+  do {
+    ui::EventTargeter* targeter = target->GetEventTargeter();
+    if (targeter)
+      return static_cast<aura::WindowTargeter*>(targeter);
+    target = target->GetParentTarget();
+  } while (target);
+
+  return nullptr;
+}
+
 }  // namespace
 
 void SetShellApplicationId(aura::Window* window,
@@ -78,6 +97,11 @@ void SetArcAppType(aura::Window* window) {
                       static_cast<int>(ash::AppType::ARC_APP));
 }
 
+void SetLacrosAppType(aura::Window* window) {
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::LACROS));
+}
+
 void SetShellStartupId(aura::Window* window,
                        const base::Optional<std::string>& id) {
   TRACE_EVENT1("exo", "SetStartupId", "startup_id", id ? *id : "null");
@@ -90,6 +114,16 @@ void SetShellStartupId(aura::Window* window,
 
 const std::string* GetShellStartupId(aura::Window* window) {
   return window->GetProperty(kStartupIdKey);
+}
+
+void SetShellUseImmersiveForFullscreen(aura::Window* window, bool value) {
+#if defined(OS_CHROMEOS)
+  window->SetProperty(chromeos::kImmersiveImpliedByFullscreen, value);
+
+  // Ensure the shelf is fully hidden in plain fullscreen, but shown
+  // (auto-hides based on mouse movement) when in immersive fullscreen.
+  window->SetProperty(chromeos::kHideShelfWhenFullscreenKey, !value);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void SetShellClientAccessibilityId(aura::Window* window,
@@ -112,6 +146,10 @@ const base::Optional<int32_t> GetShellClientAccessibilityId(
     return id;
 }
 
+bool IsShellMainSurfaceKey(const void* key) {
+  return kMainSurfaceKey == key;
+}
+
 void SetShellMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
 }
@@ -130,13 +168,14 @@ ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window) {
   return static_cast<ShellSurfaceBase*>(widget->widget_delegate());
 }
 
-Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
+Surface* GetTargetSurfaceForLocatedEvent(
+    const ui::LocatedEvent* original_event) {
   aura::Window* window =
       WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow();
-  gfx::PointF location_in_target_f = event->location_f();
-
-  if (!window)
-    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
+  if (!window) {
+    return Surface::AsSurface(
+        static_cast<aura::Window*>(original_event->target()));
+  }
 
   Surface* main_surface = GetShellMainSurface(window);
   // Skip if the event is captured by non exo windows.
@@ -149,12 +188,31 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
       return nullptr;
   }
 
-  while (true) {
-    gfx::Point location_in_target = gfx::ToFlooredPoint(location_in_target_f);
-    aura::Window* focused = window->GetEventHandlerForPoint(location_in_target);
+  // Create a clone of the event as targeter may update it during the
+  // search.
+  auto cloned = ui::Event::Clone(*original_event);
+  ui::LocatedEvent* event = cloned->AsLocatedEvent();
 
-    if (focused)
-      return Surface::AsSurface(focused);
+  while (true) {
+    gfx::PointF location_in_target_f = event->location_f();
+    gfx::Point location_in_target = event->location();
+    ui::EventTarget* event_target = window;
+    aura::WindowTargeter* targeter = FindTargeter(event_target);
+    DCHECK(targeter);
+
+    aura::Window* focused =
+        static_cast<aura::Window*>(targeter->FindTargetForEvent(window, event));
+
+    if (focused) {
+      Surface* surface = Surface::AsSurface(focused);
+      if (focused != window)
+        return surface;
+      else if (surface && surface->HitTest(location_in_target)) {
+        // If the targeting fallback to the root (first) window, test the
+        // hit region again.
+        return surface;
+      }
+    }
 
     // If the event falls into the place where the window system should care
     // about (i.e. window caption), do not check the transient parent but just
@@ -170,8 +228,8 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
     if (!parent_window)
       return main_surface;
 
-    aura::Window::ConvertPointToTarget(window, parent_window,
-                                       &location_in_target_f);
+    event->set_location_f(location_in_target_f);
+    event_target->ConvertEventToTarget(parent_window, event);
     window = parent_window;
   }
 }

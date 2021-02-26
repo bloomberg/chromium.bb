@@ -259,24 +259,10 @@ TEST(IPAddressTest, V6ParseThreeDigitValue) {
 
 TEST(IPAddressTest, IPEndpointBoolOperator) {
   IPEndpoint endpoint;
-  if (endpoint) {
-    FAIL();
-  }
-
-  endpoint = IPEndpoint{{192, 168, 0, 1}, 80};
-  if (!endpoint) {
-    FAIL();
-  }
-
-  endpoint = IPEndpoint{{192, 168, 0, 1}, 0};
-  if (!endpoint) {
-    FAIL();
-  }
-
-  endpoint = IPEndpoint{{}, 80};
-  if (!endpoint) {
-    FAIL();
-  }
+  ASSERT_FALSE((endpoint));
+  ASSERT_TRUE((IPEndpoint{{192, 168, 0, 1}, 80}));
+  ASSERT_TRUE((IPEndpoint{{192, 168, 0, 1}, 0}));
+  ASSERT_TRUE((IPEndpoint{{}, 80}));
 }
 
 TEST(IPAddressTest, IPEndpointParse) {
@@ -315,6 +301,131 @@ TEST(IPAddressTest, IPEndpointParse) {
   EXPECT_FALSE(IPEndpoint::Parse("[abcd::1] :99"));
   EXPECT_FALSE(IPEndpoint::Parse("[abcd::1]: 99"));
   EXPECT_FALSE(IPEndpoint::Parse("[abcd::1]:99 "));
+}
+
+TEST(IPAddressTest, IPAddressComparisons) {
+  const IPAddress kV4Low{192, 168, 0, 1};
+  const IPAddress kV4High{192, 168, 0, 2};
+  const IPAddress kV6Low{0, 0, 0, 0, 0, 0, 0, 1};
+  const IPAddress kV6High{0, 0, 1, 0, 0, 0, 0, 0};
+
+  EXPECT_TRUE(kV4Low == kV4Low);
+  EXPECT_TRUE(kV4High == kV4High);
+  EXPECT_TRUE(kV6Low == kV6Low);
+  EXPECT_TRUE(kV6High == kV6High);
+  EXPECT_FALSE(kV4Low == kV4High);
+  EXPECT_FALSE(kV4High == kV4Low);
+  EXPECT_FALSE(kV6Low == kV6High);
+  EXPECT_FALSE(kV6High == kV6Low);
+
+  EXPECT_FALSE(kV4Low != kV4Low);
+  EXPECT_FALSE(kV4High != kV4High);
+  EXPECT_FALSE(kV6Low != kV6Low);
+  EXPECT_FALSE(kV6High != kV6High);
+  EXPECT_TRUE(kV4Low != kV4High);
+  EXPECT_TRUE(kV4High != kV4Low);
+  EXPECT_TRUE(kV6Low != kV6High);
+  EXPECT_TRUE(kV6High != kV6Low);
+
+  EXPECT_TRUE(kV4Low < kV4High);
+  EXPECT_TRUE(kV4High < kV6Low);
+  EXPECT_TRUE(kV6Low < kV6High);
+  EXPECT_FALSE(kV6High < kV6Low);
+  EXPECT_FALSE(kV6Low < kV4High);
+  EXPECT_FALSE(kV4High < kV4Low);
+
+  EXPECT_FALSE(kV4Low > kV4High);
+  EXPECT_FALSE(kV4High > kV6Low);
+  EXPECT_FALSE(kV6Low > kV6High);
+  EXPECT_TRUE(kV6High > kV6Low);
+  EXPECT_TRUE(kV6Low > kV4High);
+  EXPECT_TRUE(kV4High > kV4Low);
+
+  EXPECT_TRUE(kV4Low <= kV4High);
+  EXPECT_TRUE(kV4High <= kV6Low);
+  EXPECT_TRUE(kV6Low <= kV6High);
+  EXPECT_TRUE(kV4Low <= kV4Low);
+  EXPECT_TRUE(kV4High <= kV4High);
+  EXPECT_TRUE(kV6Low <= kV6Low);
+  EXPECT_TRUE(kV6High <= kV6High);
+  EXPECT_FALSE(kV6High <= kV6Low);
+  EXPECT_FALSE(kV6Low <= kV4High);
+  EXPECT_FALSE(kV4High <= kV4Low);
+
+  EXPECT_FALSE(kV4Low >= kV4High);
+  EXPECT_FALSE(kV4High >= kV6Low);
+  EXPECT_FALSE(kV6Low >= kV6High);
+  EXPECT_TRUE(kV4Low >= kV4Low);
+  EXPECT_TRUE(kV4High >= kV4High);
+  EXPECT_TRUE(kV6Low >= kV6Low);
+  EXPECT_TRUE(kV6High >= kV6High);
+  EXPECT_TRUE(kV6High >= kV6Low);
+  EXPECT_TRUE(kV6Low >= kV4High);
+  EXPECT_TRUE(kV4High >= kV4Low);
+}
+
+TEST(IPAddressTest, IPEndpointComparisons) {
+  const IPEndpoint kV4LowHighPort{{192, 168, 0, 1}, 1000};
+  const IPEndpoint kV4LowLowPort{{192, 168, 0, 1}, 1};
+  const IPEndpoint kV4High{{192, 168, 0, 2}, 22};
+  const IPEndpoint kV6Low{{0, 0, 0, 0, 0, 0, 0, 1}, 22};
+  const IPEndpoint kV6High{{0, 0, 1, 0, 0, 0, 0, 0}, 22};
+
+  EXPECT_TRUE(kV4LowHighPort == kV4LowHighPort);
+  EXPECT_TRUE(kV4High == kV4High);
+  EXPECT_TRUE(kV6Low == kV6Low);
+  EXPECT_TRUE(kV6High == kV6High);
+
+  EXPECT_TRUE(kV4LowLowPort != kV4LowHighPort);
+  EXPECT_TRUE(kV4LowLowPort != kV4High);
+  EXPECT_TRUE(kV4High != kV6Low);
+  EXPECT_TRUE(kV6Low != kV6High);
+
+  EXPECT_TRUE(kV4LowLowPort < kV4LowHighPort);
+  EXPECT_TRUE(kV4LowLowPort < kV4High);
+  EXPECT_TRUE(kV4High < kV6Low);
+  EXPECT_TRUE(kV6Low < kV6High);
+
+  EXPECT_TRUE(kV4LowHighPort > kV4LowLowPort);
+  EXPECT_TRUE(kV4High > kV4LowLowPort);
+  EXPECT_TRUE(kV6Low > kV4High);
+  EXPECT_TRUE(kV6High > kV6Low);
+
+  EXPECT_TRUE(kV4LowLowPort <= kV4LowHighPort);
+  EXPECT_TRUE(kV4LowLowPort <= kV4High);
+  EXPECT_TRUE(kV4High <= kV6Low);
+  EXPECT_TRUE(kV6Low <= kV6High);
+  EXPECT_TRUE(kV4LowLowPort <= kV4LowHighPort);
+  EXPECT_TRUE(kV4LowLowPort <= kV4High);
+  EXPECT_TRUE(kV4High <= kV6Low);
+  EXPECT_TRUE(kV6Low <= kV6High);
+
+  EXPECT_FALSE(kV4LowLowPort >= kV4LowHighPort);
+  EXPECT_FALSE(kV4LowLowPort >= kV4High);
+  EXPECT_FALSE(kV4High >= kV6Low);
+  EXPECT_FALSE(kV6Low >= kV6High);
+  EXPECT_TRUE(kV4LowHighPort >= kV4LowLowPort);
+  EXPECT_TRUE(kV4High >= kV4LowLowPort);
+  EXPECT_TRUE(kV6Low >= kV4High);
+  EXPECT_TRUE(kV6High >= kV6Low);
+  EXPECT_TRUE(kV4LowHighPort >= kV4LowLowPort);
+  EXPECT_TRUE(kV4High >= kV4LowLowPort);
+  EXPECT_TRUE(kV6Low >= kV4High);
+  EXPECT_TRUE(kV6High >= kV6Low);
+}
+
+TEST(IPAddressTest, OstreamOperatorForIPv4) {
+  std::ostringstream oss;
+  oss << IPAddress{192, 168, 1, 2};
+  EXPECT_EQ("192.168.1.2", oss.str());
+
+  oss.str("");
+  oss << IPAddress{192, 168, 0, 2};
+  EXPECT_EQ("192.168.0.2", oss.str());
+
+  oss.str("");
+  oss << IPAddress{23, 45, 67, 89};
+  EXPECT_EQ("23.45.67.89", oss.str());
 }
 
 }  // namespace openscreen

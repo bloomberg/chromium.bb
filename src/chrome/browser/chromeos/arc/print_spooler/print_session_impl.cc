@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/arc_custom_tab.h"
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_util.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printing_service.h"
+#include "components/arc/intent_helper/custom_tab.h"
 #include "components/arc/mojom/print_common.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
@@ -47,7 +47,8 @@ constexpr int kMinimumPdfSize = 50;
 
 // Converts a color mode to its Mojo type.
 mojom::PrintColorMode ToArcColorMode(int color_mode) {
-  base::Optional<bool> is_color = printing::IsColorModelSelected(color_mode);
+  base::Optional<bool> is_color = printing::IsColorModelSelected(
+      printing::ColorModeToColorModel(color_mode));
   return is_color.value() ? mojom::PrintColorMode::COLOR
                           : mojom::PrintColorMode::MONOCHROME;
 }
@@ -146,13 +147,13 @@ mojom::PrintDocumentRequestPtr PrintDocumentRequestFromJobSettings(
 base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
     mojo::ScopedHandle preview_document,
     size_t data_size) {
-  base::PlatformFile platform_file;
+  base::ScopedPlatformFile platform_file;
   if (mojo::UnwrapPlatformFile(std::move(preview_document), &platform_file) !=
       MOJO_RESULT_OK) {
     return base::ReadOnlySharedMemoryRegion();
   }
 
-  base::File src_file(platform_file);
+  base::File src_file(std::move(platform_file));
   if (!src_file.IsValid()) {
     DPLOG(ERROR) << "Source file is invalid.";
     return base::ReadOnlySharedMemoryRegion();
@@ -210,9 +211,10 @@ bool IsPdfPluginLoaded(content::WebContents* web_contents) {
 // static
 mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
-    std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    mojom::PrintSessionInstancePtr instance) {
-  if (!custom_tab || !instance)
+    std::unique_ptr<CustomTab> custom_tab,
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance) {
+  DCHECK(custom_tab);
+  if (!instance)
     return mojo::NullRemote();
 
   // This object will be deleted when the mojo connection is closed.
@@ -225,8 +227,8 @@ mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
 
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
-    std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    mojom::PrintSessionInstancePtr instance,
+    std::unique_ptr<CustomTab> custom_tab,
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
     mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
     : ArcCustomTabModalDialogHost(std::move(custom_tab), web_contents.get()),
       instance_(std::move(instance)),
@@ -368,7 +370,7 @@ void PrintSessionImpl::StartPrintAfterPluginIsLoaded() {
       FROM_HERE,
       base::BindOnce(&PrintSessionImpl::StartPrintNow,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(100));
+      base::TimeDelta::FromMilliseconds(500));
 }
 
 void PrintSessionImpl::StartPrintNow() {

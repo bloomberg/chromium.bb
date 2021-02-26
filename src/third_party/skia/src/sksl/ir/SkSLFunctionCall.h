@@ -8,6 +8,7 @@
 #ifndef SKSL_FUNCTIONCALL
 #define SKSL_FUNCTIONCALL
 
+#include "include/private/SkTArray.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 
@@ -16,19 +17,36 @@ namespace SkSL {
 /**
  * A function invocation.
  */
-struct FunctionCall : public Expression {
-    FunctionCall(int offset, const Type& type, const FunctionDeclaration& function,
-                 std::vector<std::unique_ptr<Expression>> arguments)
-    : INHERITED(offset, kFunctionCall_Kind, type)
-    , fFunction(std::move(function))
-    , fArguments(std::move(arguments)) {}
+class FunctionCall final : public Expression {
+public:
+    static constexpr Kind kExpressionKind = Kind::kFunctionCall;
+
+    FunctionCall(int offset, const Type* type, const FunctionDeclaration* function,
+                 ExpressionArray arguments)
+        : INHERITED(offset, kExpressionKind, type)
+        , fFunction(*function)
+        , fArguments(std::move(arguments)) {}
+
+    ~FunctionCall() override {}
+
+    const FunctionDeclaration& function() const {
+        return fFunction;
+    }
+
+    ExpressionArray& arguments() {
+        return fArguments;
+    }
+
+    const ExpressionArray& arguments() const {
+        return fArguments;
+    }
 
     bool hasProperty(Property property) const override {
-        if (property == Property::kSideEffects && (fFunction.fModifiers.fFlags &
+        if (property == Property::kSideEffects && (this->function().modifiers().fFlags &
                                                    Modifiers::kHasSideEffects_Flag)) {
             return true;
         }
-        for (const auto& arg : fArguments) {
+        for (const auto& arg : this->arguments()) {
             if (arg->hasProperty(property)) {
                 return true;
             }
@@ -37,32 +55,34 @@ struct FunctionCall : public Expression {
     }
 
     std::unique_ptr<Expression> clone() const override {
-        std::vector<std::unique_ptr<Expression>> cloned;
-        for (const auto& arg : fArguments) {
+        ExpressionArray cloned;
+        cloned.reserve_back(this->arguments().size());
+        for (const auto& arg : this->arguments()) {
             cloned.push_back(arg->clone());
         }
-        return std::unique_ptr<Expression>(new FunctionCall(fOffset, fType, fFunction,
-                                                            std::move(cloned)));
+        return std::make_unique<FunctionCall>(fOffset, &this->type(), &this->function(),
+                                              std::move(cloned));
     }
 
     String description() const override {
-        String result = String(fFunction.fName) + "(";
+        String result = String(this->function().name()) + "(";
         String separator;
-        for (size_t i = 0; i < fArguments.size(); i++) {
+        for (size_t i = 0; i < this->arguments().size(); i++) {
             result += separator;
-            result += fArguments[i]->description();
+            result += this->arguments()[i]->description();
             separator = ", ";
         }
         result += ")";
         return result;
     }
 
+private:
     const FunctionDeclaration& fFunction;
-    std::vector<std::unique_ptr<Expression>> fArguments;
+    ExpressionArray fArguments;
 
-    typedef Expression INHERITED;
+    using INHERITED = Expression;
 };
 
-} // namespace
+}  // namespace SkSL
 
 #endif

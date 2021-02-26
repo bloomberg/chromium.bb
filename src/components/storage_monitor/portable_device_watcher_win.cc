@@ -123,9 +123,9 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
 // application that communicates with the device.
 bool GetClientInformation(
     Microsoft::WRL::ComPtr<IPortableDeviceValues>* client_info) {
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), nullptr,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(client_info->GetAddressOf()));
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDeviceValues), nullptr,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*client_info)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDeviceValues";
     return false;
@@ -152,9 +152,9 @@ bool SetUp(const base::string16& pnp_device_id,
   if (!GetClientInformation(&client_info))
     return false;
 
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDevice), nullptr,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(device->GetAddressOf()));
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDevice), nullptr,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*device)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDevice";
     return false;
@@ -181,9 +181,9 @@ REFPROPERTYKEY GetUniqueIdPropertyKey(const base::string16& object_id) {
 bool PopulatePropertyKeyCollection(
     const base::string16& object_id,
     Microsoft::WRL::ComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
-  HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceKeyCollection), nullptr, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(properties_to_read->GetAddressOf()));
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceKeyCollection),
+                                  nullptr, CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&(*properties_to_read)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create IPortableDeviceKeyCollection instance";
     return false;
@@ -215,14 +215,14 @@ bool GetObjectUniqueId(IPortableDevice* device,
   DCHECK(device);
   DCHECK(unique_id);
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content;
-  HRESULT hr = device->Content(content.GetAddressOf());
+  HRESULT hr = device->Content(&content);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceContent interface";
     return false;
   }
 
   Microsoft::WRL::ComPtr<IPortableDeviceProperties> properties;
-  hr = content->Properties(properties.GetAddressOf());
+  hr = content->Properties(&properties);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceProperties interface";
     return false;
@@ -234,7 +234,7 @@ bool GetObjectUniqueId(IPortableDevice* device,
 
   Microsoft::WRL::ComPtr<IPortableDeviceValues> properties_values;
   if (FAILED(properties->GetValues(object_id.c_str(), properties_to_read.Get(),
-                                   properties_values.GetAddressOf()))) {
+                                   &properties_values))) {
     return false;
   }
 
@@ -265,7 +265,7 @@ bool GetRemovableStorageObjectIds(
   DCHECK(device);
   DCHECK(storage_object_ids);
   Microsoft::WRL::ComPtr<IPortableDeviceCapabilities> capabilities;
-  HRESULT hr = device->Capabilities(capabilities.GetAddressOf());
+  HRESULT hr = device->Capabilities(&capabilities);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceCapabilities interface";
     return false;
@@ -273,7 +273,7 @@ bool GetRemovableStorageObjectIds(
 
   Microsoft::WRL::ComPtr<IPortableDevicePropVariantCollection> storage_ids;
   hr = capabilities->GetFunctionalObjects(WPD_FUNCTIONAL_CATEGORY_STORAGE,
-                                          storage_ids.GetAddressOf());
+                                          &storage_ids);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDevicePropVariantCollection";
     return false;
@@ -393,9 +393,9 @@ bool GetPortableDeviceManager(
     Microsoft::WRL::ComPtr<IPortableDeviceManager>* portable_device_mgr) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceManager), nullptr, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(portable_device_mgr->GetAddressOf()));
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceManager), nullptr,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&(*portable_device_mgr)));
   if (SUCCEEDED(hr))
     return true;
 

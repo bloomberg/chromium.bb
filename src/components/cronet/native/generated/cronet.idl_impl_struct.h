@@ -79,7 +79,7 @@ struct Cronet_EngineParams {
   std::string user_agent;
   std::string accept_language;
   std::string storage_path;
-  bool enable_quic = false;
+  bool enable_quic = true;
   bool enable_http2 = true;
   bool enable_brotli = true;
   Cronet_EngineParams_HTTP_CACHE_MODE http_cache_mode =
@@ -151,6 +151,8 @@ struct Cronet_UrlRequestParams {
   std::vector<Cronet_RawDataPtr> annotations;
   Cronet_RequestFinishedInfoListenerPtr request_finished_listener = nullptr;
   Cronet_ExecutorPtr request_finished_executor = nullptr;
+  Cronet_UrlRequestParams_IDEMPOTENCY idempotency =
+      Cronet_UrlRequestParams_IDEMPOTENCY_DEFAULT_IDEMPOTENCY;
 
  private:
   DISALLOW_ASSIGN(Cronet_UrlRequestParams);

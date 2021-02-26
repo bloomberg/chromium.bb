@@ -36,23 +36,26 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
   ASSERT_FALSE(GetManager()
                    .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS)
                    .has_value());
-  Browser* app_browser =
-      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
+
+  WaitForTestSystemAppInstall();
+
+  // Don't wait for load here, because we navigate to chrome error page instead.
+  // The App's launch URL won't be loaded.
+  Browser* app_browser;
+  LaunchAppWithoutWaiting(web_app::SystemAppType::SETTINGS, &app_browser);
+
   ASSERT_TRUE(GetManager()
                   .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS)
                   .has_value());
 
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   content::WebUI* web_ui = web_contents->GetCommittedWebUI();
   ASSERT_TRUE(web_ui);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CHROME_URLS_DISABLED_PAGE_HEADER),
             web_contents->GetTitle());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SettingsAppIntegrationTest,
-                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
-                                           web_app::ProviderType::kWebApps),
-                         web_app::ProviderTypeParamToString);
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_MANIFEST_INSTALL_P(
+    SettingsAppIntegrationTest);

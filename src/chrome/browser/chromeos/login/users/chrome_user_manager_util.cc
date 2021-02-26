@@ -25,39 +25,41 @@ bool AreAllUsersAllowed(const user_manager::UserList& users,
   DeviceSettingsProvider::DecodePolicies(device_settings_proto,
                                          &decoded_policies);
 
-  bool supervised_users_allowed = false;
-  decoded_policies.GetBoolean(kAccountsPrefSupervisedUsersEnabled,
-                              &supervised_users_allowed);
-
   bool is_guest_allowed = false;
   decoded_policies.GetBoolean(kAccountsPrefAllowGuest, &is_guest_allowed);
 
   const base::Value* value;
-  const base::ListValue* whitelist;
+  const base::ListValue* allowlist;
   if (decoded_policies.GetValue(kAccountsPrefUsers, &value)) {
-    value->GetAsList(&whitelist);
+    value->GetAsList(&allowlist);
   }
+
+  bool allow_family_link = false;
+  decoded_policies.GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,
+                              &allow_family_link);
 
   bool allow_new_user = false;
   decoded_policies.GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
 
   for (user_manager::User* user : users) {
-    bool is_user_whitelisted =
+    const bool is_user_allowlisted =
         user->HasGaiaAccount() &&
         CrosSettings::FindEmailInList(
-            whitelist, user->GetAccountId().GetUserEmail(), nullptr);
-    if (!IsUserAllowed(
-            *user, supervised_users_allowed, is_guest_allowed,
-            user->HasGaiaAccount() && (allow_new_user || is_user_whitelisted)))
+            allowlist, user->GetAccountId().GetUserEmail(), nullptr);
+    const bool is_allowed_because_family_link =
+        allow_family_link && user->IsChild();
+    const bool is_gaia_user_allowed =
+        allow_new_user || is_user_allowlisted || is_allowed_because_family_link;
+    if (!IsUserAllowed(*user, is_guest_allowed,
+                       user->HasGaiaAccount() && is_gaia_user_allowed))
       return false;
   }
   return true;
 }
 
 bool IsUserAllowed(const user_manager::User& user,
-                   bool supervised_users_allowed,
                    bool is_guest_allowed,
-                   bool is_user_whitelisted) {
+                   bool is_user_allowlisted) {
   DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
          user.GetType() == user_manager::USER_TYPE_GUEST ||
          user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
@@ -66,11 +68,10 @@ bool IsUserAllowed(const user_manager::User& user,
   if (user.GetType() == user_manager::USER_TYPE_GUEST && !is_guest_allowed) {
     return false;
   }
-  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED &&
-      !supervised_users_allowed) {
+  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED) {
     return false;
   }
-  if (user.HasGaiaAccount() && !is_user_whitelisted) {
+  if (user.HasGaiaAccount() && !is_user_allowlisted) {
     return false;
   }
   return true;

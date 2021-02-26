@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace arc {
@@ -73,19 +73,17 @@ void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
 void FakeIntentHelperInstance::HandleUrl(const std::string& url,
                                          const std::string& package_name) {}
 
-void FakeIntentHelperInstance::HandleUrlListDeprecated(
-    std::vector<mojom::UrlWithMimeTypePtr> urls,
-    mojom::ActivityNamePtr activity,
-    mojom::ActionType action) {}
-
 void FakeIntentHelperInstance::InitDeprecated(
-    mojom::IntentHelperHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::DoNothing());
+    mojo::PendingRemote<mojom::IntentHelperHost> host_remote) {
+  Init(std::move(host_remote), base::DoNothing());
 }
 
-void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr,
-                                    InitCallback callback) {
-  host_ = std::move(host_ptr);
+void FakeIntentHelperInstance::Init(
+    mojo::PendingRemote<mojom::IntentHelperHost> host_remote,
+    InitCallback callback) {
+  // For every change in a connection bind latest remote.
+  host_remote_.reset();
+  host_remote_.Bind(std::move(host_remote));
   std::move(callback).Run();
 }
 
@@ -159,5 +157,7 @@ FakeIntentHelperInstance::GetBroadcastsForAction(
                [action](const Broadcast& b) { return b.action == action; });
   return result;
 }
+
+void FakeIntentHelperInstance::RequestDomainVerificationStatusUpdate() {}
 
 }  // namespace arc

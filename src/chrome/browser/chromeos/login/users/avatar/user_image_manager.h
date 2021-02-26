@@ -46,7 +46,7 @@ class UserImageManager {
   // Indicates that a user profile was created.
   virtual void UserProfileCreated() = 0;
 
-  // Sets user image to the default image with index |image_index|, sends
+  // Sets user image to the default image with index `image_index`, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   virtual void SaveUserDefaultImageIndex(int image_index) = 0;
 
@@ -61,7 +61,7 @@ class UserImageManager {
 
   // Sets profile image as user image for the user, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If
-  // the user is not logged-in or the last |DownloadProfileImage| call
+  // the user is not logged-in or the last `DownloadProfileImage` call
   // has failed, a default grey avatar will be used until the user logs
   // in and profile image is downloaded successfully.
   virtual void SaveUserImageFromProfileImage() = 0;
@@ -70,10 +70,9 @@ class UserImageManager {
   virtual void DeleteUserImage() = 0;
 
   // Starts downloading the profile image for the user.  If user's image
-  // index is |USER_IMAGE_PROFILE|, newly downloaded image is immediately
-  // set as user's current picture.  |reason| is an arbitrary string
-  // (used to report UMA histograms with download times).
-  virtual void DownloadProfileImage(const std::string& reason) = 0;
+  // index is `USER_IMAGE_PROFILE`, newly downloaded image is immediately
+  // set as user's current picture.
+  virtual void DownloadProfileImage() = 0;
 
   // Returns the result of the last successful profile image download, if any.
   // Otherwise, returns an empty bitmap.

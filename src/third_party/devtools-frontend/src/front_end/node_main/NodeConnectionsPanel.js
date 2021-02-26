@@ -9,12 +9,12 @@ import * as UI from '../ui/ui.js';
 export class NodeConnectionsPanel extends UI.Panel.Panel {
   constructor() {
     super('node-connection');
-    this.registerRequiredCSS('node_main/nodeConnectionsPanel.css');
+    this.registerRequiredCSS('node_main/nodeConnectionsPanel.css', {enableLegacyPatching: true});
     this.contentElement.classList.add('node-panel');
 
     const container = this.contentElement.createChild('div', 'node-panel-center');
 
-    const image = container.createChild('img', 'node-panel-logo');
+    const image = /** @type {!HTMLImageElement} */ (container.createChild('img', 'node-panel-logo'));
     image.src = 'https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg';
 
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
@@ -51,7 +51,7 @@ export class NodeConnectionsPanel extends UI.Panel.Panel {
  */
 export class NodeConnectionsView extends UI.Widget.VBox {
   /**
-   * @param {function(!Adb.NetworkDiscoveryConfig)} callback
+   * @param {function(!Adb.NetworkDiscoveryConfig):void} callback
    */
   constructor(callback) {
     super();
@@ -67,7 +67,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
 
     /** @type {!UI.ListWidget.ListWidget<!Adb.PortForwardingRule>} */
     this._list = new UI.ListWidget.ListWidget(this);
-    this._list.registerRequiredCSS('node_main/nodeConnectionsPanel.css');
+    this._list.registerRequiredCSS('node_main/nodeConnectionsPanel.css', {enableLegacyPatching: true});
     this._list.element.classList.add('network-discovery-list');
     const placeholder = document.createElement('div');
     placeholder.classList.add('network-discovery-list-empty');
@@ -137,7 +137,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
   /**
    * @override
    * @param {!Adb.PortForwardingRule} rule
-   * @param {!UI.ListWidget.Editor} editor
+   * @param {!UI.ListWidget.Editor<!Adb.PortForwardingRule>} editor
    * @param {boolean} isNew
    */
   commitEdit(rule, editor, isNew) {
@@ -151,7 +151,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
   /**
    * @override
    * @param {!Adb.PortForwardingRule} rule
-   * @return {!UI.ListWidget.Editor}
+   * @return {!UI.ListWidget.Editor<!Adb.PortForwardingRule>}
    */
   beginEdit(rule) {
     const editor = this._createEditor();
@@ -184,10 +184,16 @@ export class NodeConnectionsView extends UI.Widget.VBox {
     function addressValidator(rule, index, input) {
       const match = input.value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
       if (!match) {
-        return {valid: false};
+        return {
+          valid: false,
+          errorMessage: undefined,
+        };
       }
       const port = parseInt(match[2], 10);
-      return {valid: port <= 65535};
+      return {
+        valid: port <= 65535,
+        errorMessage: undefined,
+      };
     }
   }
 }

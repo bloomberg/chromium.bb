@@ -8,11 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
+import android.os.Handler;
 import android.text.TextUtils;
 
-import androidx.annotation.StringRes;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,44 +21,41 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.chrome.browser.banners.AppMenuVerbiage;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager and its C++
  * counterpart.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AddToHomescreenTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
@@ -151,15 +149,16 @@ public class AddToHomescreenTest {
 
         TestAddToHomescreenCoordinator(Context context, WindowAndroid windowAndroid,
                 ModalDialogManager modalDialogManager, String title) {
-            super(context, windowAndroid, modalDialogManager);
+            super(null, context, windowAndroid, modalDialogManager);
             mTitle = title;
         }
 
         @Override
         protected AddToHomescreenDialogView initView(
-                @StringRes int titleText, AddToHomescreenViewDelegate delegate) {
+                AppBannerManager.InstallStringPair installStrings,
+                AddToHomescreenViewDelegate delegate) {
             return new AddToHomescreenDialogView(
-                    mActivityContext, mModalDialogManager, titleText, delegate) {
+                    mActivityContext, mModalDialogManager, installStrings, delegate) {
                 @Override
                 void setTitle(String title) {
                     if (TextUtils.isEmpty(mTitle)) {
@@ -169,7 +168,7 @@ public class AddToHomescreenTest {
 
                 @Override
                 void setCanSubmit(boolean canSubmit) {
-                    mDelegate.onAddToHomescreen(mTitle);
+                    new Handler().post(() -> mDelegate.onAddToHomescreen(mTitle));
                 }
             };
         }
@@ -308,12 +307,11 @@ public class AddToHomescreenTest {
         addShortcutToTab(mTab, "", true);
 
         // Make sure that the splash screen image was downloaded.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return dataStorageFactory.mSplashImage != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
         });
+
+        Assert.assertTrue(ShortcutHelper.sSplashImageMap.isEmpty());
 
         // Test that bitmap sizes match expectations.
         int idealSize = mActivity.getResources().getDimensionPixelSize(
@@ -350,17 +348,16 @@ public class AddToHomescreenTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             boolean started = new TestAddToHomescreenCoordinator(mActivity,
                     mActivity.getWindowAndroid(), mActivity.getModalDialogManager(), title)
-                                      .showForAppMenu(tab.getWebContents());
+                                      .showForAppMenu(tab.getWebContents(),
+                                              AppMenuVerbiage.APP_MENU_OPTION_ADD_TO_HOMESCREEN);
             Assert.assertEquals(expectAdded, started);
         });
 
         // Make sure that the shortcut was added.
         if (expectAdded) {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mShortcutHelperDelegate.mRequestedShortcutIntent != null;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(
+                        mShortcutHelperDelegate.mRequestedShortcutIntent, Matchers.notNullValue());
             });
         }
     }
@@ -376,15 +373,13 @@ public class AddToHomescreenTest {
                     null);
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getModel(false)
-                        .getCount();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity()
+                                       .getTabModelSelector()
+                                       .getModel(false)
+                                       .getCount(),
+                    Matchers.is(2));
+        });
 
         TabModel tabModel = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         Assert.assertEquals(0, tabModel.indexOf(mTab));

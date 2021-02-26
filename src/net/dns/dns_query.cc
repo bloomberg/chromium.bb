@@ -100,7 +100,10 @@ DnsQuery::DnsQuery(uint16_t id,
                    const OptRecordRdata* opt_rdata,
                    PaddingStrategy padding_strategy)
     : qname_size_(qname.size()) {
-  DCHECK(!DNSDomainToString(qname).empty());
+#if DCHECK_IS_ON()
+  base::Optional<std::string> dotted_name = DnsDomainToString(qname);
+  DCHECK(dotted_name && !dotted_name.value().empty());
+#endif  // DCHECK_IS_ON()
 
   size_t buffer_size = kHeaderSize + QuestionSize(qname_size_);
   base::Optional<OptRecordRdata> merged_opt_rdata =
@@ -147,6 +150,15 @@ DnsQuery::DnsQuery(uint16_t id,
 
 DnsQuery::DnsQuery(scoped_refptr<IOBufferWithSize> buffer)
     : io_buffer_(std::move(buffer)) {}
+
+DnsQuery::DnsQuery(const DnsQuery& query) {
+  CopyFrom(query);
+}
+
+DnsQuery& DnsQuery::operator=(const DnsQuery& query) {
+  CopyFrom(query);
+  return *this;
+}
 
 DnsQuery::~DnsQuery() = default;
 
@@ -221,12 +233,16 @@ void DnsQuery::set_flags(uint16_t flags) {
 }
 
 DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
+  CopyFrom(orig);
+  header_->id = base::HostToNet16(id);
+}
+
+void DnsQuery::CopyFrom(const DnsQuery& orig) {
   qname_size_ = orig.qname_size_;
   io_buffer_ = base::MakeRefCounted<IOBufferWithSize>(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
          io_buffer_.get()->size());
   header_ = reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
-  header_->id = base::HostToNet16(id);
 }
 
 bool DnsQuery::ReadHeader(base::BigEndianReader* reader,

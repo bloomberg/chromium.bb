@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.flags;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,10 +14,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.FieldTrials;
 
@@ -31,15 +29,14 @@ public final class FieldTrialsInstrumentationTest {
     private static final String sFeature2 = ChromeFeatureList.TEST_DEFAULT_ENABLED;
 
     @Rule
-    public ChromeActivityTestRule<? extends ChromeActivity> mActivityRule =
-            new ChromeActivityTestRule(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
     public void setup() {
-        mActivityRule.startMainActivityOnBlankPage();
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @Test

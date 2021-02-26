@@ -13,7 +13,6 @@
 #include "core/fxcrt/cfx_datetime.h"
 #include "xfa/fwl/cfwl_event.h"
 #include "xfa/fwl/cfwl_widget.h"
-#include "xfa/fwl/cfwl_widgetproperties.h"
 
 #define FWL_ITEMSTATE_MCD_Flag (1L << 0)
 #define FWL_ITEMSTATE_MCD_Selected (1L << 1)
@@ -22,18 +21,17 @@ class CFWL_MessageMouse;
 
 class CFWL_MonthCalendar final : public CFWL_Widget {
  public:
-  CFWL_MonthCalendar(const CFWL_App* app,
-                     std::unique_ptr<CFWL_WidgetProperties> properties,
-                     CFWL_Widget* pOuter);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_MonthCalendar() override;
 
   // FWL_WidgetImp
   FWL_Type GetClassID() const override;
   CFX_RectF GetAutosizedWidgetRect() override;
   void Update() override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessMessage(CFWL_Message* pMessage) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
   void SetSelect(int32_t iYear, int32_t iMonth, int32_t iDay);
@@ -88,48 +86,28 @@ class CFWL_MonthCalendar final : public CFWL_Widget {
     WideString wsDay;
   };
 
-  void DrawBackground(CXFA_Graphics* pGraphics,
-                      IFWL_ThemeProvider* pTheme,
-                      const CFX_Matrix* pMatrix);
-  void DrawHeadBK(CXFA_Graphics* pGraphics,
-                  IFWL_ThemeProvider* pTheme,
-                  const CFX_Matrix* pMatrix);
-  void DrawLButton(CXFA_Graphics* pGraphics,
-                   IFWL_ThemeProvider* pTheme,
-                   const CFX_Matrix* pMatrix);
-  void DrawRButton(CXFA_Graphics* pGraphics,
-                   IFWL_ThemeProvider* pTheme,
-                   const CFX_Matrix* pMatrix);
-  void DrawCaption(CXFA_Graphics* pGraphics,
-                   IFWL_ThemeProvider* pTheme,
-                   const CFX_Matrix* pMatrix);
-  void DrawSeparator(CXFA_Graphics* pGraphics,
-                     IFWL_ThemeProvider* pTheme,
-                     const CFX_Matrix* pMatrix);
-  void DrawDatesInBK(CXFA_Graphics* pGraphics,
-                     IFWL_ThemeProvider* pTheme,
-                     const CFX_Matrix* pMatrix);
-  void DrawWeek(CXFA_Graphics* pGraphics,
-                IFWL_ThemeProvider* pTheme,
-                const CFX_Matrix* pMatrix);
-  void DrawToday(CXFA_Graphics* pGraphics,
-                 IFWL_ThemeProvider* pTheme,
-                 const CFX_Matrix* pMatrix);
-  void DrawDatesIn(CXFA_Graphics* pGraphics,
-                   IFWL_ThemeProvider* pTheme,
-                   const CFX_Matrix* pMatrix);
-  void DrawDatesOut(CXFA_Graphics* pGraphics,
-                    IFWL_ThemeProvider* pTheme,
-                    const CFX_Matrix* pMatrix);
-  void DrawDatesInCircle(CXFA_Graphics* pGraphics,
-                         IFWL_ThemeProvider* pTheme,
+  CFWL_MonthCalendar(CFWL_App* app,
+                     const Properties& properties,
+                     CFWL_Widget* pOuter);
+
+  void DrawBackground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawHeadBK(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawLButton(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawRButton(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawCaption(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawSeparator(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawDatesInBK(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawWeek(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawToday(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawDatesIn(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawDatesOut(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawDatesInCircle(CFGAS_GEGraphics* pGraphics,
                          const CFX_Matrix* pMatrix);
   CFX_SizeF CalcSize();
   void Layout();
   void CalcHeadSize();
   void CalcTodaySize();
   void CalDateItem();
-  void GetCapValue();
   void InitDate();
   void ClearDateItem();
   void ResetDateItem();

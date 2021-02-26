@@ -70,43 +70,54 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
   return urls;
 }
 
-std::unique_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
+std::unique_ptr<ChromeSettingsOverrides::SearchProvider> ParseSearchEngine(
     ChromeSettingsOverrides* overrides,
     base::string16* error) {
   if (!overrides->search_provider)
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   if (!CreateManifestURL(overrides->search_provider->search_url)) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         overrides->search_provider->search_url);
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   }
   if (overrides->search_provider->prepopulated_id)
     return std::move(overrides->search_provider);
-  if (!overrides->search_provider->name ||
-      !overrides->search_provider->keyword ||
-      !overrides->search_provider->encoding ||
-      !overrides->search_provider->favicon_url) {
-    *error =
-        base::ASCIIToUTF16(manifest_errors::kInvalidSearchEngineMissingKeys);
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+
+  auto get_missing_key_error = [](const char* missing_key) {
+    return extensions::ErrorUtils::FormatErrorMessageUTF16(
+        manifest_errors::kInvalidSearchEngineMissingKeys, missing_key);
+  };
+
+  if (!overrides->search_provider->name) {
+    *error = get_missing_key_error("name");
+    return nullptr;
+  }
+  if (!overrides->search_provider->keyword) {
+    *error = get_missing_key_error("keyword");
+    return nullptr;
+  }
+  if (!overrides->search_provider->encoding) {
+    *error = get_missing_key_error("encoding");
+    return nullptr;
+  }
+  if (!overrides->search_provider->favicon_url) {
+    *error = get_missing_key_error("favicon_url");
+    return nullptr;
   }
   if (!CreateManifestURL(*overrides->search_provider->favicon_url)) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         *overrides->search_provider->favicon_url);
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   }
   return std::move(overrides->search_provider);
 }
 
 std::string FormatUrlForDisplay(const GURL& url) {
-  base::StringPiece host = url.host_piece();
   // A www. prefix is not informative and thus not worth the limited real estate
   // in the permissions UI.
-  // TODO(catmullings): Ideally, we wouldn't be using custom code to format URLs
-  // here, since we have a number of methods that do that more universally.
-  return base::UTF16ToUTF8(url_formatter::StripWWW(base::UTF8ToUTF16(host)));
+  return url_formatter::StripWWW(url.host());
 }
 
 }  // namespace
@@ -135,14 +146,28 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   if (!settings)
     return false;
 
-  std::unique_ptr<SettingsOverrides> info(new SettingsOverrides);
-  info->homepage = ParseHomepage(*settings, error);
-  info->search_engine = ParseSearchEngine(settings.get(), error);
-  info->startup_pages = ParseStartupPage(*settings, error);
+  // TODO(crbug.com/1101130): Any of {homepage, search_engine, startup_pages}'s
+  // parse failure should result in hard error. Currently, Parse fails only when
+  // all of these fail to parse.
+  auto info = std::make_unique<SettingsOverrides>();
+  base::string16 homepage_error;
+  info->homepage = ParseHomepage(*settings, &homepage_error);
+  base::string16 search_engine_error;
+  info->search_engine = ParseSearchEngine(settings.get(), &search_engine_error);
+  base::string16 startup_pages_error;
+  info->startup_pages = ParseStartupPage(*settings, &startup_pages_error);
   if (!info->homepage && !info->search_engine && info->startup_pages.empty()) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        manifest_errors::kInvalidEmptyDictionary,
-        manifest_keys::kSettingsOverride);
+    if (!homepage_error.empty()) {
+      *error = homepage_error;
+    } else if (!search_engine_error.empty()) {
+      *error = search_engine_error;
+    } else if (!startup_pages_error.empty()) {
+      *error = startup_pages_error;
+    } else {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          manifest_errors::kInvalidEmptyDictionary,
+          manifest_keys::kSettingsOverride);
+    }
     return false;
   }
 

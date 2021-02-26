@@ -5,6 +5,17 @@
 /**
  * @fileoverview Polymer element for displaying network nameserver options.
  */
+
+/**
+ * UI configuration options for nameservers.
+ * @enum {string}
+ */
+const NameserversType = {
+  AUTOMATIC: 'automatic',
+  CUSTOM: 'custom',
+  GOOGLE: 'google'
+};
+
 Polymer({
   is: 'network-nameservers',
 
@@ -30,11 +41,21 @@ Polymer({
 
     /**
      * The selected nameserver type.
-     * @private
+     * @private {!NameserversType}
      */
     nameserversType_: {
       type: String,
-      value: 'automatic',
+      value: NameserversType.AUTOMATIC,
+    },
+
+    /**
+     * Enum values for |nameserversType_|.
+     * @private {NameserversType}
+     */
+    nameserversTypeEnum_: {
+      readOnly: true,
+      type: Object,
+      value: NameserversType,
     },
 
     /** @private */
@@ -66,10 +87,49 @@ Polymer({
   MAX_NAMESERVERS: 4,
 
   /**
-   * Saved nameservers when switching to 'automatic'.
+   * Saved nameservers from the NameserversType.CUSTOM tab. If this is empty, it
+   * means that the user has not entered any custom nameservers yet.
    * @private {!Array<string>}
    */
-  savedNameservers_: [],
+  savedCustomNameservers_: [],
+
+  /**
+   * The last manually performed selection of the nameserver type. If this is
+   * null, no explicit selection has been done for this network yet.
+   * @private {?NameserversType}
+   */
+  savedNameserversType_: null,
+
+  /*
+   * Returns the nameserver type CrRadioGroupElement.
+   * @return {?CrRadioGroupElement}
+   */
+  getNameserverRadioButtons() {
+    return /** @type {?CrRadioGroupElement} */ (this.$$('#nameserverType'));
+  },
+
+  /**
+   * Returns true if the nameservers in |nameservers1| match the nameservers in
+   * |nameservers2|, ignoring order and empty / 0.0.0.0 entries.
+   * @param {!Array<string>} nameservers1
+   * @param {!Array<string>} nameservers2
+   */
+  nameserversMatch_(nameservers1, nameservers2) {
+    const nonEmptySortedNameservers1 =
+        this.clearEmptyNameServers_(nameservers1).sort();
+    const nonEmptySortedNameservers2 =
+        this.clearEmptyNameServers_(nameservers2).sort();
+    if (nonEmptySortedNameservers1.length !==
+        nonEmptySortedNameservers2.length) {
+      return false;
+    }
+    for (let i = 0; i < nonEmptySortedNameservers1.length; i++) {
+      if (nonEmptySortedNameservers1[i] !== nonEmptySortedNameservers2[i]) {
+        return false;
+      }
+    }
+    return true;
+  },
 
   /**
    * Returns true if |nameservers| contains any all google nameserver entries
@@ -78,30 +138,38 @@ Polymer({
    * @private
    */
   isGoogleNameservers_(nameservers) {
-    const matches = [];
-    for (let i = 0; i < nameservers.length; ++i) {
-      const nameserver = nameservers[i];
-      if (nameserver === this.EMPTY_NAMESERVER) {
-        continue;
-      }
-      let valid = false;
-      for (let j = 0; j < this.GOOGLE_NAMESERVERS.length; ++j) {
-        if (nameserver === this.GOOGLE_NAMESERVERS[j]) {
-          valid = true;
-          matches[j] = true;
-          break;
-        }
-      }
-      if (!valid) {
-        return false;
-      }
+    return this.nameserversMatch_(nameservers, this.GOOGLE_NAMESERVERS);
+  },
+
+  /**
+   * Returns the nameservers enforced by policy. If nameservers are not being
+   * enforced, returns null.
+   * @return {Array<string>|null}
+   */
+  getPolicyEnforcedNameservers_() {
+    const staticIpConfig =
+        this.managedProperties && this.managedProperties.staticIpConfig;
+    if (!staticIpConfig || !staticIpConfig.nameServers) {
+      return null;
     }
-    for (let j = 0; j < this.GOOGLE_NAMESERVERS.length; ++j) {
-      if (!matches[j]) {
-        return false;
-      }
+    return /** @type {Array<string>|null} */ (
+        this.getEnforcedPolicyValue(staticIpConfig.nameServers));
+  },
+
+  /**
+   * Returns the nameservers recommended by policy. If nameservers are not being
+   * recommended, returns null. Note: also returns null if nameservers are being
+   * enforced by policy.
+   * @return {Array<string>|null}
+   */
+  getPolicyRecommendedNameservers_() {
+    const staticIpConfig =
+        this.managedProperties && this.managedProperties.staticIpConfig;
+    if (!staticIpConfig || !staticIpConfig.nameServers) {
+      return null;
     }
-    return true;
+    return /** @type {Array<string>|null} */ (
+        this.getRecommendedPolicyValue(staticIpConfig.nameServers));
   },
 
   /** @private */
@@ -111,62 +179,57 @@ Polymer({
     }
 
     if (!oldValue || newValue.guid !== oldValue.guid) {
-      this.savedNameservers_ = [];
+      this.savedCustomNameservers_ = [];
+      this.savedNameserversType_ = null;
     }
 
     // Update the 'nameservers' property.
     let nameservers = [];
     const ipv4 = OncMojo.getIPConfigForType(this.managedProperties, 'IPv4');
     if (ipv4 && ipv4.nameServers) {
-      nameservers = ipv4.nameServers;
+      nameservers = ipv4.nameServers.slice();
     }
 
     // Update the 'nameserversType' property.
-    let configType;
-    if (this.managedProperties.nameServersConfigType) {
-      configType =
-          OncMojo.getActiveValue(this.managedProperties.nameServersConfigType);
-    }
-    let type;
+    const configType =
+        OncMojo.getActiveValue(this.managedProperties.nameServersConfigType);
+    /** @type {NameserversType} */ let type;
     if (configType === 'Static') {
-      if (this.isGoogleNameservers_(nameservers)) {
-        type = 'google';
+      if (this.isGoogleNameservers_(nameservers) &&
+          this.savedNameserversType_ !== NameserversType.CUSTOM) {
+        type = NameserversType.GOOGLE;
         nameservers = this.GOOGLE_NAMESERVERS;  // Use consistent order.
       } else {
-        type = 'custom';
+        type = NameserversType.CUSTOM;
       }
     } else {
-      type = 'automatic';
+      type = NameserversType.AUTOMATIC;
       nameservers = this.clearEmptyNameServers_(nameservers);
     }
     this.setNameservers_(type, nameservers, false /* send */);
   },
 
   /**
-   * @param {string} nameserversType
+   * @param {!NameserversType} nameserversType
    * @param {!Array<string>} nameservers
    * @param {boolean} sendNameservers If true, send the nameservers once they
    *     have been set in the UI.
    * @private
    */
   setNameservers_(nameserversType, nameservers, sendNameservers) {
-    if (nameserversType === 'custom') {
+    if (nameserversType === NameserversType.CUSTOM) {
       // Add empty entries for unset custom nameservers.
       for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
         nameservers[i] = this.EMPTY_NAMESERVER;
       }
-      if (!this.isGoogleNameservers_(nameservers)) {
-        this.savedNameservers_ = nameservers.slice();
-      }
+    } else {
+      nameservers = this.clearEmptyNameServers_(nameservers);
     }
     this.nameservers_ = nameservers;
-    // Set nameserversType_ after dom-repeat has been stamped.
-    this.async(() => {
-      this.nameserversType_ = nameserversType;
-      if (sendNameservers) {
-        this.sendNameServers_();
-      }
-    });
+    this.nameserversType_ = nameserversType;
+    if (sendNameservers) {
+      this.sendNameServers_();
+    }
   },
 
   /**
@@ -178,14 +241,7 @@ Polymer({
     if (!managedProperties) {
       return false;
     }
-    if (managedProperties.nameServersConfigType &&
-        this.isNetworkPolicyEnforced(managedProperties.nameServersConfigType)) {
-      return false;
-    }
-    if (managedProperties.staticIpConfig &&
-        managedProperties.staticIpConfig.nameServers &&
-        this.isNetworkPolicyEnforced(
-            managedProperties.staticIpConfig.nameServers)) {
+    if (this.isNetworkPolicyEnforced(managedProperties.nameServersConfigType)) {
       return false;
     }
     return true;
@@ -201,11 +257,10 @@ Polymer({
     if (!managedProperties) {
       return false;
     }
-    if (nameserversType !== 'custom') {
+    if (nameserversType !== NameserversType.CUSTOM) {
       return false;
     }
-    if (managedProperties.nameServersConfigType &&
-        this.isNetworkPolicyEnforced(managedProperties.nameServersConfigType)) {
+    if (this.isNetworkPolicyEnforced(managedProperties.nameServersConfigType)) {
       return false;
     }
     if (managedProperties.staticIpConfig &&
@@ -218,8 +273,8 @@ Polymer({
   },
 
   /**
-   * @param {string} nameserversType
-   * @param {string} type
+   * @param {NameserversType} nameserversType
+   * @param {NameserversType} type
    * @param {!Array<string>} nameservers
    * @return {boolean}
    * @private
@@ -228,7 +283,7 @@ Polymer({
     if (nameserversType !== type) {
       return false;
     }
-    return type === 'custom' || nameservers.length > 0;
+    return type === NameserversType.CUSTOM || nameservers.length > 0;
   },
 
   /**
@@ -241,6 +296,37 @@ Polymer({
   },
 
   /**
+   * Returns currently configured custom nameservers, to be used when toggling
+   * to 'custom' from 'automatic' or 'google', prefer nameservers in the
+   * following priority:
+   *
+   * 1) policy-enforced nameservers,
+   * 2) previously manually entered nameservers (|savedCustomNameservers_|),
+   * 3) policy-recommended nameservers,
+   * 4) active nameservers (e.g. from DHCP).
+   * @return {!Array<string>} nameservers
+   * @private
+   */
+  getCustomNameServers_() {
+    const policyEnforcedNameservers = this.getPolicyEnforcedNameservers_();
+    if (policyEnforcedNameservers !== null) {
+      return policyEnforcedNameservers.slice();
+    }
+
+    if (this.savedCustomNameservers_.length > 0) {
+      return this.savedCustomNameservers_;
+    }
+
+    const policyRecommendedNameservers =
+        this.getPolicyRecommendedNameservers_();
+    if (policyRecommendedNameservers !== null) {
+      return policyRecommendedNameservers.slice();
+    }
+
+    return this.nameservers_;
+  },
+
+  /**
    * Event triggered when the selected type changes. Updates nameservers and
    * sends the change value if necessary.
    * @private
@@ -248,24 +334,24 @@ Polymer({
   onTypeChange_() {
     const type = this.$$('#nameserverType').selected;
     this.nameserversType_ = type;
-    if (type === 'custom') {
-      // Restore the saved nameservers.
-      this.setNameservers_(type, this.savedNameservers_, true /* send */);
+    this.savedNameserversType_ = type;
+    if (type === NameserversType.CUSTOM) {
+      this.setNameservers_(type, this.getCustomNameServers_(), true /* send */);
       return;
     }
     this.sendNameServers_();
   },
 
   /**
-   * Event triggered when a nameserver value changes.
+   * Event triggered when a |nameservers_| value changes through the custom
+   * namservers UI.
+   * This gets called after data-binding updates a |nameservers_[i]| entry.
+   * This saves the custom nameservers and reflects that change to the backend
+   * (sending the custom nameservers).
    * @private
    */
   onValueChange_() {
-    if (this.nameserversType_ !== 'custom') {
-      // If a user inputs Google nameservers in the custom nameservers fields,
-      // |nameserversType| will change to 'google' so don't send the values.
-      return;
-    }
+    this.savedCustomNameservers_ = this.nameservers_.slice();
     this.sendNameServers_();
   },
 
@@ -276,25 +362,18 @@ Polymer({
   sendNameServers_() {
     const type = this.nameserversType_;
 
-    if (type === 'custom') {
-      const nameservers = new Array(this.MAX_NAMESERVERS);
-      for (let i = 0; i < this.MAX_NAMESERVERS; ++i) {
-        const nameserverInput = this.$$('#nameserver' + i);
-        nameservers[i] = nameserverInput ? nameserverInput.value : '';
-      }
-      this.nameservers_ = nameservers;
-      this.savedNameservers_ = nameservers.slice();
+    if (type === NameserversType.CUSTOM) {
       this.fire('nameservers-change', {
         field: 'nameServers',
-        value: nameservers,
+        value: this.nameservers_,
       });
-    } else if (type === 'google') {
+    } else if (type === NameserversType.GOOGLE) {
       this.nameservers_ = this.GOOGLE_NAMESERVERS;
       this.fire('nameservers-change', {
         field: 'nameServers',
         value: this.GOOGLE_NAMESERVERS,
       });
-    } else {  // type === automatic
+    } else {  // type === NameserversType.AUTOMATIC
       // If not connected, properties will clear. Otherwise they may or may not
       // change so leave them as-is.
       if (!OncMojo.connectionStateIsConnected(
@@ -316,7 +395,8 @@ Polymer({
    * @private
    */
   clearEmptyNameServers_(nameservers) {
-    return nameservers.filter((nameserver) => !!nameserver);
+    return nameservers.filter(
+        (nameserver) => (!!nameserver && nameserver !== this.EMPTY_NAMESERVER));
   },
 
   /**

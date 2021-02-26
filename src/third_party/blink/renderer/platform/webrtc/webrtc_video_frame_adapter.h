@@ -7,7 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/memory/ref_counted.h"
+
+#include "base/optional.h"
+#include "base/synchronization/lock.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_pool.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/video/video_frame_buffer.h"
 
@@ -20,10 +25,27 @@ namespace blink {
 class PLATFORM_EXPORT WebRtcVideoFrameAdapter
     : public webrtc::VideoFrameBuffer {
  public:
-  enum class LogStatus { kNoLogging, kLogToWebRtc };
+  class PLATFORM_EXPORT BufferPoolOwner
+      : public base::RefCountedThreadSafe<BufferPoolOwner> {
+   public:
+    BufferPoolOwner();
 
+    scoped_refptr<media::VideoFrame> CreateFrame(media::VideoPixelFormat format,
+                                                 const gfx::Size& coded_size,
+                                                 const gfx::Rect& visible_rect,
+                                                 const gfx::Size& natural_size,
+                                                 base::TimeDelta timestamp);
+
+   private:
+    friend class base::RefCountedThreadSafe<BufferPoolOwner>;
+    ~BufferPoolOwner();
+
+    media::VideoFramePool pool_;
+  };
+
+  explicit WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame);
   WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame,
-                          LogStatus log_to_webrtc);
+                          scoped_refptr<BufferPoolOwner> scaled_buffer_pool);
 
   scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
 
@@ -34,19 +56,24 @@ class PLATFORM_EXPORT WebRtcVideoFrameAdapter
 
   rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
   const webrtc::I420BufferInterface* GetI420() const override;
+  rtc::scoped_refptr<webrtc::VideoFrameBuffer> GetMappedFrameBuffer(
+      rtc::ArrayView<webrtc::VideoFrameBuffer::Type> types) override;
 
  protected:
   ~WebRtcVideoFrameAdapter() override;
 
-  rtc::scoped_refptr<webrtc::I420BufferInterface> CreateFrameAdapter() const;
+  rtc::scoped_refptr<webrtc::VideoFrameBuffer> CreateFrameAdapter() const;
+
+  mutable base::Lock adapter_lock_;
 
   // Used to cache result of CreateFrameAdapter. Which is called from const
   // GetI420().
-  mutable rtc::scoped_refptr<webrtc::I420BufferInterface> frame_adapter_;
+  mutable rtc::scoped_refptr<webrtc::VideoFrameBuffer> frame_adapter_
+      GUARDED_BY(adapter_lock_);
 
   scoped_refptr<media::VideoFrame> frame_;
 
-  const LogStatus log_to_webrtc_;
+  mutable scoped_refptr<BufferPoolOwner> scaled_frame_pool_;
 };
 
 }  // namespace blink

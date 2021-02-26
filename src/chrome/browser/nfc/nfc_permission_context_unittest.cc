@@ -6,10 +6,10 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_request_manager.h"
@@ -115,9 +115,9 @@ void NfcPermissionContextTests::CheckPermissionMessageSentInternal(
 void NfcPermissionContextTests::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   nfc_permission_context_ = static_cast<NfcPermissionContext*>(
       PermissionManagerFactory::GetForProfile(profile())
@@ -167,8 +167,7 @@ void NfcPermissionContextTests::RequestManagerDocumentLoadCompleted(
 ContentSetting NfcPermissionContextTests::GetNfcContentSetting(GURL frame_0,
                                                                GURL frame_1) {
   return HostContentSettingsMapFactory::GetForProfile(profile())
-      ->GetContentSetting(frame_0, frame_1, ContentSettingsType::NFC,
-                          std::string());
+      ->GetContentSetting(frame_0, frame_1, ContentSettingsType::NFC);
 }
 
 void NfcPermissionContextTests::SetNfcContentSetting(
@@ -176,9 +175,8 @@ void NfcPermissionContextTests::SetNfcContentSetting(
     GURL frame_1,
     ContentSetting content_setting) {
   return HostContentSettingsMapFactory::GetForProfile(profile())
-      ->SetContentSettingDefaultScope(frame_0, frame_1,
-                                      ContentSettingsType::NFC, std::string(),
-                                      content_setting);
+      ->SetContentSettingDefaultScope(
+          frame_0, frame_1, ContentSettingsType::NFC, content_setting);
 }
 
 bool NfcPermissionContextTests::HasActivePrompt() {

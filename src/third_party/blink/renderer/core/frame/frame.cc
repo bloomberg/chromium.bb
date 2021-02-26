@@ -36,13 +36,17 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -51,7 +55,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/xmlhttprequest/main_thread_disallow_synchronous_xhr_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -59,21 +62,54 @@
 
 namespace blink {
 
+// static
+Frame* Frame::ResolveFrame(const base::UnguessableToken& frame_token) {
+  if (!frame_token)
+    return nullptr;
+
+  // The frame token could refer to either a RemoteFrame or a LocalFrame, so
+  // need to check both.
+  auto* remote = RemoteFrame::FromFrameToken(frame_token);
+  if (remote)
+    return remote;
+
+  auto* local = LocalFrame::FromFrameToken(frame_token);
+  if (local)
+    return local;
+
+  return nullptr;
+}
+
+// static
+Frame* Frame::ResolveFrame(const FrameToken& frame_token) {
+  if (frame_token.Is<RemoteFrameToken>())
+    return RemoteFrame::FromFrameToken(frame_token.GetAs<RemoteFrameToken>());
+  DCHECK(frame_token.Is<LocalFrameToken>());
+  return LocalFrame::FromFrameToken(frame_token.GetAs<LocalFrameToken>());
+}
+
 Frame::~Frame() {
   InstanceCounters::DecrementCounter(InstanceCounters::kFrameCounter);
   DCHECK(!owner_);
   DCHECK(IsDetached());
 }
 
-void Frame::Trace(Visitor* visitor) {
+void Frame::Trace(Visitor* visitor) const {
   visitor->Trace(tree_node_);
   visitor->Trace(page_);
   visitor->Trace(owner_);
   visitor->Trace(window_proxy_manager_);
   visitor->Trace(dom_window_);
   visitor->Trace(client_);
+  visitor->Trace(opener_);
+  visitor->Trace(parent_);
+  visitor->Trace(previous_sibling_);
+  visitor->Trace(next_sibling_);
+  visitor->Trace(first_child_);
+  visitor->Trace(last_child_);
   visitor->Trace(navigation_rate_limiter_);
   visitor->Trace(window_agent_factory_);
+  visitor->Trace(opened_frame_tracker_);
 }
 
 void Frame::Detach(FrameDetachType type) {
@@ -81,7 +117,7 @@ void Frame::Detach(FrameDetachType type) {
   // Detach() can be re-entered, so this can't simply DCHECK(IsAttached()).
   DCHECK(!IsDetached());
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
-  MainThreadDisallowSynchronousXHRScope disallow_synchronous_xhr;
+  PageDismissalScope in_page_dismissal;
 
   DetachImpl(type);
 
@@ -94,7 +130,7 @@ void Frame::Detach(FrameDetachType type) {
   if (!client_)
     return;
 
-  client_->SetOpener(nullptr);
+  SetOpener(nullptr);
   // After this, we must no longer talk to the client since this clears
   // its owning reference back to our owning LocalFrame.
   client_->Detached(type);
@@ -110,6 +146,7 @@ void Frame::Detach(FrameDetachType type) {
   // the frame tree. https://crbug.com/578349.
   DisconnectOwnerElement();
   page_ = nullptr;
+  embedding_token_ = base::nullopt;
 }
 
 void Frame::DisconnectOwnerElement() {
@@ -208,9 +245,11 @@ void Frame::DidChangeVisibilityState() {
     child_frames[i]->DidChangeVisibilityState();
 }
 
-void Frame::NotifyUserActivationInLocalTree() {
-  for (Frame* node = this; node; node = node->Tree().Parent())
-    node->user_activation_state_.Activate();
+void Frame::NotifyUserActivationInFrameTree(
+    mojom::blink::UserActivationNotificationType notification_type) {
+  for (Frame* node = this; node; node = node->Tree().Parent()) {
+    node->user_activation_state_.Activate(notification_type);
+  }
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
@@ -226,36 +265,44 @@ void Frame::NotifyUserActivationInLocalTree() {
       if (local_frame_node &&
           security_origin->CanAccess(
               local_frame_node->GetSecurityContext()->GetSecurityOrigin())) {
-        node->user_activation_state_.Activate();
+        node->user_activation_state_.Activate(notification_type);
       }
     }
   }
 }
 
-bool Frame::ConsumeTransientUserActivationInLocalTree() {
+bool Frame::ConsumeTransientUserActivationInFrameTree() {
   bool was_active = user_activation_state_.IsActive();
-
   Frame& root = Tree().Top();
+
+  // To record UMA once per consumption, we arbitrarily picked the LocalFrame
+  // for root.
+  if (IsA<LocalFrame>(root))
+    root.user_activation_state_.RecordPreconsumptionUma();
+
   for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root))
     node->user_activation_state_.ConsumeIfActive();
 
   return was_active;
 }
 
-void Frame::ClearUserActivationInLocalTree() {
+void Frame::ClearUserActivationInFrameTree() {
   for (Frame* node = this; node; node = node->Tree().TraverseNext(this))
     node->user_activation_state_.Clear();
-}
-
-void Frame::TransferUserActivationFrom(Frame* other) {
-  if (other)
-    user_activation_state_.TransferFrom(other->user_activation_state_);
 }
 
 void Frame::SetOwner(FrameOwner* owner) {
   owner_ = owner;
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
+}
+
+bool Frame::IsAdSubframe() const {
+  return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
+}
+
+bool Frame::IsAdRoot() const {
+  return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
 }
 
 void Frame::UpdateInertIfPossible() {
@@ -305,9 +352,23 @@ const std::string& Frame::ToTraceValue() {
   return trace_value_.value();
 }
 
+void Frame::SetEmbeddingToken(const base::UnguessableToken& embedding_token) {
+  embedding_token_ = embedding_token;
+  if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(Owner())) {
+    // The embedding token is also used as the AXTreeID to reference the child
+    // accessibility tree for an HTMLFrameOwnerElement, so we need to notify the
+    // AXObjectCache object whenever this changes, to get the AX tree updated.
+    if (AXObjectCache* cache = owner->GetDocument().ExistingAXObjectCache())
+      cache->EmbeddingTokenChanged(owner);
+  }
+}
+
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,
+             Frame* parent,
+             Frame* previous_sibling,
+             FrameInsertType insert_type,
              const base::UnguessableToken& frame_token,
              WindowProxyManager* window_proxy_manager,
              WindowAgentFactory* inheriting_agent_factory)
@@ -317,6 +378,7 @@ Frame::Frame(FrameClient* client,
       ad_frame_type_(mojom::blink::AdFrameType::kNonAd),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
+      parent_(parent),
       navigation_rate_limiter_(*this),
       window_agent_factory_(inheriting_agent_factory
                                 ? inheriting_agent_factory
@@ -325,6 +387,11 @@ Frame::Frame(FrameClient* client,
       devtools_frame_token_(client->GetDevToolsFrameToken()),
       frame_token_(frame_token) {
   InstanceCounters::IncrementCounter(InstanceCounters::kFrameCounter);
+  if (parent_ && insert_type == FrameInsertType::kInsertInConstructor) {
+    parent_->InsertAfter(this, previous_sibling);
+  } else {
+    CHECK(!previous_sibling);
+  }
 }
 
 void Frame::Initialize() {
@@ -361,7 +428,35 @@ void Frame::ApplyFrameOwnerProperties(
   owner->SetAllowFullscreen(properties->allow_fullscreen);
   owner->SetAllowPaymentRequest(properties->allow_payment_request);
   owner->SetIsDisplayNone(properties->is_display_none);
+  owner->SetColorScheme(properties->color_scheme);
   owner->SetRequiredCsp(properties->required_csp);
+}
+
+void Frame::InsertAfter(Frame* new_child, Frame* previous_sibling) {
+  // Parent must match the one set in the constructor
+  CHECK_EQ(new_child->parent_, this);
+
+  Frame* next;
+  if (!previous_sibling) {
+    // Insert at the beginning if no previous sibling is specified.
+    next = first_child_;
+    first_child_ = new_child;
+  } else {
+    DCHECK_EQ(previous_sibling->parent_, this);
+    next = previous_sibling->next_sibling_;
+    previous_sibling->next_sibling_ = new_child;
+    new_child->previous_sibling_ = previous_sibling;
+  }
+
+  if (next) {
+    new_child->next_sibling_ = next;
+    next->previous_sibling_ = new_child;
+  } else {
+    last_child_ = new_child;
+  }
+
+  Tree().InvalidateScopedChildCount();
+  GetPage()->IncrementSubframeCount();
 }
 
 void Frame::ScheduleFormSubmission(FrameScheduler* scheduler,
@@ -375,10 +470,229 @@ void Frame::CancelFormSubmission() {
   form_submit_navigation_task_.Cancel();
 }
 
-STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
-                   WebLocalFrameClient::DetachType::kRemove);
-STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
-                   WebLocalFrameClient::DetachType::kSwap);
+bool Frame::IsFormSubmissionPending() {
+  return form_submit_navigation_task_.IsActive();
+}
+
+void Frame::FocusPage(LocalFrame* originating_frame) {
+  // We only allow focus to move to the |frame|'s page when the request comes
+  // from a user gesture. (See https://bugs.webkit.org/show_bug.cgi?id=33389.)
+  if (originating_frame &&
+      LocalFrame::HasTransientUserActivation(originating_frame)) {
+    // Ask the broswer process to focus the page.
+    GetPage()->GetChromeClient().FocusPage();
+
+    // Tattle on the frame that called |window.focus()|.
+    originating_frame->GetLocalFrameHostRemote().DidCallFocus();
+  }
+
+  // Always report the attempt to focus the page to the Chrome client for
+  // testing purposes (i.e. see WebViewTest.FocusExistingFrameOnNavigate()).
+  GetPage()->GetChromeClient().DidFocusPage();
+}
+
+void Frame::SetOpenerDoNotNotify(Frame* opener) {
+  if (opener_)
+    opener_->opened_frame_tracker_.Remove(this);
+  if (opener)
+    opener->opened_frame_tracker_.Add(this);
+  opener_ = opener;
+}
+
+Frame* Frame::Top() {
+  Frame* parent;
+  for (parent = this; parent->Parent(); parent = parent->Parent()) {
+  }
+  return parent;
+}
+
+bool Frame::Swap(WebFrame* frame) {
+  using std::swap;
+  // TODO(dcheng): This should not be reachable. Reaching this implies `Swap()`
+  // is being called on an already-detached frame which should never happen...
+  if (!IsAttached())
+    return false;
+  // Important: do not cache frame tree pointers (e.g.  `previous_sibling_`,
+  // `next_sibling_`, `first_child_`, `last_child_`) here. It is possible for
+  // `DetachDocument()` to mutate the frame tree and cause cached values to
+  // become invalid.
+  FrameOwner* owner = owner_;
+  FrameSwapScope frame_swap_scope(owner);
+  Page* page = page_;
+  AtomicString name = Tree().GetName();
+
+  // Unload the current Document in this frame: this calls unload handlers,
+  // detaches child frames, etc. Since this runs script, make sure this frame
+  // wasn't detached before continuing with the swap.
+  if (!DetachDocument()) {
+    // If the Swap() fails, it should be because the frame has been detached
+    // already. Otherwise the caller will not detach the frame when we return
+    // false, and the browser and renderer will disagree about the destruction
+    // of |this|.
+    CHECK(!IsAttached());
+    return false;
+  }
+
+  // TODO(dcheng): This probably isn't necessary if we fix the ordering of
+  // events in `Swap()`, e.g. `Detach()` should not happen before `new_frame` is
+  // swapped in.
+  // If there is a local parent, it might incorrectly declare itself complete
+  // during the detach phase of this swap. Suppress its completion until swap is
+  // over, at which point its completion will be correctly dependent on its
+  // newly swapped-in child.
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent_.Get());
+  std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
+      parent_local_frame ? std::make_unique<IncrementLoadEventDelayCount>(
+                               *parent_local_frame->GetDocument())
+                         : nullptr;
+
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WindowProxyManager::GlobalProxyVector global_proxies;
+  GetWindowProxyManager()->ClearForSwap();
+  GetWindowProxyManager()->ReleaseGlobalProxies(global_proxies);
+
+  // This must be before Detach so DidChangeOpener is not called.
+  Frame* original_opener = opener_;
+  if (original_opener)
+    SetOpenerDoNotNotify(nullptr);
+
+  // Although the Document in this frame is now unloaded, many resources
+  // associated with the frame itself have not yet been freed yet. Note that
+  // after `Detach()` returns, `this` is detached but *not* yet unlinked from
+  // the frame tree.
+  // TODO(dcheng): Merge this into the `DetachDocument()` step above. Executing
+  // parts of `Detach()` twice is confusing.
+  Detach(FrameDetachType::kSwap);
+  if (frame->IsWebRemoteFrame()) {
+    CHECK(!WebFrame::ToCoreFrame(*frame));
+    To<WebRemoteFrameImpl>(frame)->InitializeCoreFrame(
+        *page, owner, WebFrame::FromFrame(parent_), nullptr,
+        FrameInsertType::kInsertLater, name, &window_agent_factory());
+    // At this point, a `RemoteFrame` will have already updated
+    // `Page::MainFrame()` or `FrameOwner::ContentFrame()` as appropriate, and
+    // its `parent_` pointer is also populated.
+  } else {
+    // This is local frame created by `WebLocalFrame::CreateProvisional()`. The
+    // `parent` pointer was set when it was constructed; however,
+    // `Page::MainFrame()` or `FrameOwner::ContentFrame()` updates are deferred
+    // until after `new_frame` is linked into the frame tree.
+    // TODO(dcheng): Make local and remote frame updates more uniform.
+  }
+
+  Frame* new_frame = WebFrame::ToCoreFrame(*frame);
+  CHECK(new_frame);
+
+  // At this point, `new_frame->parent_` is correctly set, but `new_frame`'s
+  // sibling pointers are both still null and not yet updated. In addition, the
+  // parent frame (if any) still has not updated its `first_child_` and
+  // `last_child_` pointers.
+  CHECK_EQ(new_frame->parent_, parent_);
+  CHECK(!new_frame->previous_sibling_);
+  CHECK(!new_frame->next_sibling_);
+  if (previous_sibling_) {
+    previous_sibling_->next_sibling_ = new_frame;
+  }
+  swap(previous_sibling_, new_frame->previous_sibling_);
+  if (next_sibling_) {
+    next_sibling_->previous_sibling_ = new_frame;
+  }
+  swap(next_sibling_, new_frame->next_sibling_);
+
+  if (parent_) {
+    if (parent_->first_child_ == this) {
+      parent_->first_child_ = new_frame;
+    }
+    if (parent_->last_child_ == this) {
+      parent_->last_child_ = new_frame;
+    }
+    // Not strictly necessary, but keep state as self-consistent as possible.
+    parent_ = nullptr;
+  }
+
+  if (original_opener) {
+    new_frame->SetOpenerDoNotNotify(original_opener);
+  }
+  opened_frame_tracker_.TransferTo(new_frame);
+
+  // Clone the state of the current Frame into the one being swapped in.
+  if (auto* new_local_frame = DynamicTo<LocalFrame>(new_frame)) {
+    // A `LocalFrame` being swapped in is created provisionally, so
+    // `Page::MainFrame()` or `FrameOwner::ContentFrame()` needs to be updated
+    // to point to the newly swapped-in frame.
+    DCHECK_EQ(owner, new_local_frame->Owner());
+    if (owner) {
+      owner->SetContentFrame(*new_local_frame);
+
+      if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+        frame_owner_element->SetEmbeddedContentView(new_local_frame->View());
+      }
+    } else {
+      Page* other_page = new_local_frame->GetPage();
+      other_page->SetMainFrame(new_local_frame);
+      // This trace event is needed to detect the main frame of the
+      // renderer in telemetry metrics. See crbug.com/692112#c11.
+      TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
+                           TRACE_EVENT_SCOPE_THREAD, "frame",
+                           ::blink::ToTraceValue(new_local_frame));
+    }
+  }
+
+  new_frame->GetWindowProxyManager()->SetGlobalProxies(global_proxies);
+
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+    if (auto* new_local_frame = DynamicTo<LocalFrame>(new_frame)) {
+      probe::FrameOwnerContentUpdated(new_local_frame, frame_owner_element);
+    } else if (auto* old_local_frame = DynamicTo<LocalFrame>(this)) {
+      // TODO(dcheng): What is this probe for? Shouldn't it happen *before*
+      // detach?
+      probe::FrameOwnerContentUpdated(old_local_frame, frame_owner_element);
+    }
+  }
+
+  return true;
+}
+
+void Frame::RemoveChild(Frame* child) {
+  CHECK_EQ(child->parent_, this);
+  child->parent_ = nullptr;
+
+  if (first_child_ == child) {
+    first_child_ = child->next_sibling_;
+  } else {
+    CHECK(child->previous_sibling_)
+        << " child " << child << " child->previous_sibling_ "
+        << child->previous_sibling_;
+    child->previous_sibling_->next_sibling_ = child->next_sibling_;
+  }
+
+  if (last_child_ == child) {
+    last_child_ = child->previous_sibling_;
+  } else {
+    CHECK(child->next_sibling_);
+    child->next_sibling_->previous_sibling_ = child->previous_sibling_;
+  }
+
+  child->previous_sibling_ = child->next_sibling_ = nullptr;
+
+  Tree().InvalidateScopedChildCount();
+  GetPage()->DecrementSubframeCount();
+}
+
+void Frame::DetachFromParent() {
+  if (!Parent())
+    return;
+
+  // TODO(dcheng): This should really just check if there's a parent, and call
+  // RemoveChild() if so. Once provisional frames are removed, this check can be
+  // simplified to just check Parent(). See https://crbug.com/578349.
+  if (auto* local_frame = DynamicTo<LocalFrame>(this)) {
+    if (local_frame->IsProvisional()) {
+      return;
+    }
+  }
+  Parent()->RemoveChild(this);
+}
+
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
                    WebRemoteFrameClient::DetachType::kRemove);
 STATIC_ASSERT_ENUM(FrameDetachType::kSwap,

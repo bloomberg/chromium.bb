@@ -18,10 +18,18 @@ namespace cellular_setup {
 namespace {
 
 constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
+    {"activationCode", IDS_CELLULAR_SETUP_ESIM_PAGE_ACTIVATION_CODE},
     {"cancel", IDS_CANCEL},
     {"back", IDS_CELLULAR_SETUP_BACK_LABEL},
-    {"finish", IDS_CELLULAR_SETUP_FINISH_LABEL},
+    {"done", IDS_CELLULAR_SETUP_DONE_LABEL},
+    {"eSimFlowSetup", IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL},
+    {"eSimFlowSetupMessage",
+     IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_MESSAGE},
+    {"establishNetworkConnectionMessage",
+     IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION},
+    {"next", IDS_CELLULAR_SETUP_NEXT_LABEL},
     {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL},
+    {"skipDiscovery", IDS_CELLULAR_SETUP_SKIP_DISCOVERY_LABEL},
     {"simDetectPageTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE},
     {"simDetectPageErrorTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE},
     {"simDetectPageErrorMessage",
@@ -34,11 +42,19 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_TITLE},
     {"provisioningPageErrorMessage",
      IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_MESSAGE},
+    {"pSimFlowSetup", IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_LABEL},
+    {"pSimFlowSetupMessage",
+     IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_MESSAGE},
     {"finalPageTitle", IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE},
     {"finalPageMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_MESSAGE},
     {"finalPageErrorTitle", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_TITLE},
-    {"finalPageErrorMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE}};
-
+    {"finalPageErrorMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE},
+    {"scanQRCode", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE},
+    {"switchCamera", IDS_CELLULAR_SETUP_ESIM_PAGE_SWITCH_CAMERA},
+    {"useCamera", IDS_CELLULAR_SETUP_ESIM_PAGE_USE_CAMERA},
+    {"scanQRCodeSuccess", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_SUCCESS},
+    {"qrCodeRetry", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY},
+    {"profileListPageMessage", IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE}};
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {

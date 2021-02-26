@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -15,14 +20,23 @@ class MediaDialogViewObserver;
 class MediaNotificationContainerImplView;
 class MediaNotificationListView;
 class MediaNotificationService;
+class NewBadgeLabel;
+class Profile;
+
+namespace views {
+class Label;
+class ToggleButton;
+}
 
 // Dialog that shows media controls that control the active media session.
 class MediaDialogView : public views::BubbleDialogDelegateView,
                         public MediaDialogDelegate,
-                        public MediaNotificationContainerObserver {
+                        public MediaNotificationContainerObserver,
+                        public speech::SODAInstaller::Observer {
  public:
-  static void ShowDialog(views::View* anchor_view,
-                         MediaNotificationService* service);
+  static views::Widget* ShowDialog(views::View* anchor_view,
+                                   MediaNotificationService* service,
+                                   Profile* profile);
   static void HideDialog();
   static bool IsShowing();
 
@@ -35,13 +49,14 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void HideMediaSession(const std::string& id) override;
   std::unique_ptr<OverlayMediaNotification> PopOut(const std::string& id,
                                                    gfx::Rect bounds) override;
+  void HideMediaDialog() override;
 
   // views::View implementation.
   void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
 
   // MediaNotificationContainerObserver implementation.
-  void OnContainerExpanded(bool expanded) override;
+  void OnContainerSizeChanged() override;
   void OnContainerMetadataChanged() override;
   void OnContainerActionsChanged() override;
   void OnContainerClicked(const std::string& id) override {}
@@ -49,6 +64,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override {
   }
+  void OnAudioSinkChosen(const std::string& id,
+                         const std::string& sink_id) override {}
 
   void AddObserver(MediaDialogViewObserver* observer);
   void RemoveObserver(MediaDialogViewObserver* observer);
@@ -59,8 +76,10 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   const MediaNotificationListView* GetListViewForTesting() const;
 
  private:
+  friend class MediaDialogViewBrowserTest;
   explicit MediaDialogView(views::View* anchor_view,
-                           MediaNotificationService* service);
+                           MediaNotificationService* service,
+                           Profile* profile);
   ~MediaDialogView() override;
 
   static MediaDialogView* instance_;
@@ -72,7 +91,20 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void Init() override;
   void WindowClosing() override;
 
+  // views::Button::PressedCallback
+  void LiveCaptionButtonPressed(const ui::Event& event);
+
+  void ToggleLiveCaption(bool enabled);
+  void UpdateBubbleSize();
+
+  // SODAInstaller::Observer overrides:
+  void OnSODAInstalled() override;
+  void OnSODAError() override;
+  void OnSODAProgress(int progress) override;
+
   MediaNotificationService* const service_;
+
+  Profile* const profile_;
 
   MediaNotificationListView* const active_sessions_view_;
 
@@ -81,6 +113,12 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   // A map of all containers we're currently observing.
   std::map<const std::string, MediaNotificationContainerImplView*>
       observed_containers_;
+
+  views::View* live_caption_container_ = nullptr;
+  // TODO(crbug.com/1055150): Remove live_caption_title_new_badge_ by M93.
+  NewBadgeLabel* live_caption_title_new_badge_ = nullptr;
+  views::Label* live_caption_title_ = nullptr;
+  views::ToggleButton* live_caption_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogView);
 };

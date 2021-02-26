@@ -109,7 +109,6 @@ suite('AllSites', function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
     Router.getInstance().resetRouteForTesting();
-    loadTimeData.overrideValues({enableStoragePressureUI: false});
   });
 
   /**
@@ -121,7 +120,6 @@ suite('AllSites', function() {
   function setUpAllSites(prefs, sortOrder) {
     browserProxy.setPrefs(prefs);
     if (sortOrder) {
-      loadTimeData.overrideValues({enableStoragePressureUI: true});
       Router.getInstance().navigateTo(
           routes.SITE_SETTINGS_ALL, new URLSearchParams(`sort=${sortOrder}`));
     } else {
@@ -505,11 +503,12 @@ suite('AllSites', function() {
     assertTrue(overflowMenu.open);
 
     // Open the clear data dialog and tap the |buttonType| button.
-    assertFalse(testElement.$.confirmClearData.get().open);
+    assertFalse(testElement.$.confirmClearDataNew.get().open);
     menuItems[1].click();
-    assertTrue(testElement.$.confirmClearData.get().open);
+    assertTrue(testElement.$.confirmClearDataNew.get().open);
     const actionButtonList =
-        testElement.$.confirmClearData.get().getElementsByClassName(buttonType);
+        testElement.$.confirmClearDataNew.get().getElementsByClassName(
+            buttonType);
     assertEquals(1, actionButtonList.length);
     testElement.actionMenuModel_ = {
       index: 0,
@@ -518,7 +517,7 @@ suite('AllSites', function() {
     actionButtonList[0].click();
 
     // Check the dialog and overflow menu are now both closed.
-    assertFalse(testElement.$.confirmClearData.get().open);
+    assertFalse(testElement.$.confirmClearDataNew.get().open);
     assertFalse(overflowMenu.open);
   }
 
@@ -692,11 +691,12 @@ suite('AllSites', function() {
     const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
 
     // Open the clear data dialog and tap the |buttonType| button.
-    assertFalse(testElement.$.confirmClearData.get().open);
+    assertFalse(testElement.$.confirmClearDataNew.get().open);
     menuItems[1].click();
-    assertTrue(testElement.$.confirmClearData.get().open);
+    assertTrue(testElement.$.confirmClearDataNew.get().open);
     const actionButtonList =
-        testElement.$.confirmClearData.get().getElementsByClassName(buttonType);
+        testElement.$.confirmClearDataNew.get().getElementsByClassName(
+            buttonType);
     assertEquals(1, actionButtonList.length);
     testElement.actionMenuModel_ = {
       index: 0,
@@ -707,7 +707,7 @@ suite('AllSites', function() {
     actionButtonList[0].click();
 
     // Check the dialog and overflow menu are now both closed.
-    assertFalse(testElement.$.confirmClearData.get().open);
+    assertFalse(testElement.$.confirmClearDataNew.get().open);
     assertFalse(overflowMenu.open);
   }
 

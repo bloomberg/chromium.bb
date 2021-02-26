@@ -86,17 +86,6 @@ WARN_UNUSED_RESULT bool NavigateToURL(Shell* window,
                                       const GURL& url,
                                       const GURL& expected_commit_url);
 
-// Perform a renderer-initiated navigation of |window| to |url|, blocking
-// until the navigation finishes.  The navigation is done by assigning
-// location.href in the frame |adapter|. Returns true if the page was loaded
-// successfully and the last committed URL matches |url|.
-WARN_UNUSED_RESULT bool NavigateToURLFromRenderer(
-    const ToRenderFrameHost& adapter,
-    const GURL& url);
-WARN_UNUSED_RESULT bool NavigateToURLFromRendererWithoutUserGesture(
-    const ToRenderFrameHost& adapter,
-    const GURL& url);
-
 // Navigates |window| to |url|, blocking until the given number of navigations
 // finishes.
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
@@ -119,8 +108,31 @@ void ReloadBypassingCacheBlockUntilNavigationsComplete(
     Shell* window,
     int number_of_navigations);
 
-// Wait until an application modal dialog is requested.
-void WaitForAppModalDialog(Shell* window);
+// A class to help with waiting for at least one javascript dialog to be
+// requested.
+//
+// On creation or Restart, it uses set_dialog_request_callback to
+// capture any future dialog request. Calling Wait() will
+// either return immediately because a dialog has already been called or it will
+// wait, processing events until one is requested.
+//
+// That means, object should be constructed, or Restart() called, before section
+// that could request a modal dialog.
+class AppModalDialogWaiter {
+ public:
+  explicit AppModalDialogWaiter(Shell* shell);
+  void Restart();
+  void Wait();
+
+  bool WasDialogRequestedCallbackCalled() {
+    return was_dialog_request_callback_called_;
+  }
+
+ private:
+  void EarlyCallback();
+  bool was_dialog_request_callback_called_ = false;
+  Shell* shell_;
+};
 
 // Extends the ToRenderFrameHost mechanism to content::Shells.
 RenderFrameHost* ConvertToRenderFrameHost(Shell* shell);
@@ -151,7 +163,7 @@ class ShellAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
 };
 
-#if defined OS_MACOSX
+#if defined(OS_MAC)
 // An observer of the RenderWidgetHostViewCocoa which is the NSView
 // corresponding to the page.
 class RenderWidgetHostViewCocoaObserver {

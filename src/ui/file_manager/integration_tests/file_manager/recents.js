@@ -74,18 +74,57 @@ async function verifyBreadcrumbsPath(appId, expectedPath) {
   chrome.test.assertEq(expectedPath, path);
 }
 
+/**
+ * Opens given file's containing folder by choosing "Go to file location"
+ * context menu item.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} itemName Name of the file to open containing folder.
+ */
+async function goToFileLocation(appId, itemName) {
+  // Select the item.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [itemName]));
+
+  // Right-click the selected file.
+  await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
+
+  // Click 'Go to file location' menu command.
+  const goToLocationMenu = '#file-context-menu:not([hidden]) ' +
+      '[command="#go-to-file-location"]:not([hidden]):not([disabled])';
+  remoteCall.waitAndClickElement(appId, goToLocationMenu);
+}
+
 testcase.recentsDownloads = async () => {
   // Populate downloads.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Verifies file list in Recents.
   await verifyRecents(appId);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // Downloads since the file in Recents is from Downloads.
+  await goToFileLocation(appId, ENTRIES.desktop.nameText);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+  await verifyBreadcrumbsPath(appId, '/My files/Downloads');
 };
 
 testcase.recentsDrive = async () => {
   // Populate drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+  // Verifies file list in Recents.
   await verifyRecents(appId);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // My Drive since the file in Recents is from Google Drive.
+  await goToFileLocation(appId, ENTRIES.desktop.nameText);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET));
+  await verifyBreadcrumbsPath(appId, '/My Drive');
 };
 
 testcase.recentsCrostiniNotMounted = async () => {
@@ -118,6 +157,31 @@ testcase.recentsDownloadsAndDriveWithOverlap = async () => {
   // Populate both downloads and drive with overlapping sets of files.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   await verifyRecents(appId, RECENT_ENTRY_SET.concat(RECENT_ENTRY_SET));
+};
+
+testcase.recentsNested = async () => {
+  // Populate downloads with nested folder structure. |desktop| is added to
+  // ensure Recents has different files to Downloads/A/B/C
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS,
+      NESTED_ENTRY_SET.concat([ENTRIES.deeplyBurriedSmallJpeg]), []);
+
+  // Verifies file list in Recents.
+  await verifyRecents(appId, [ENTRIES.deeplyBurriedSmallJpeg]);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // Downloads/A/B/C since the file in Recents is from Downloads/A/B/C.
+  await goToFileLocation(appId, ENTRIES.deeplyBurriedSmallJpeg.nameText);
+  await remoteCall.waitForElement(appId, `[scan-completed="C"]`);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.deeplyBurriedSmallJpeg]));
+  await verifyBreadcrumbsPath(appId, '/My files/Downloads/A/B/C');
+
+  // Check: The directory should be highlighted in the directory tree.
+  await remoteCall.waitForElement(
+      appId,
+      '.tree-item[full-path-for-testing="/Downloads/A/B/C"] > ' +
+          '.tree-row[selected][active]');
 };
 
 testcase.recentAudioDownloads = async () => {

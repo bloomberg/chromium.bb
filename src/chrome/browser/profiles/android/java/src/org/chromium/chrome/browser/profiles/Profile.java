@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.profiles;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -17,6 +19,8 @@ import org.chromium.content_public.browser.WebContents;
  * Wrapper that allows passing a Profile reference around in the Java layer.
  */
 public class Profile implements BrowserContextHandle {
+    private static Profile sLastUsedProfileForTesting;
+
     /** Holds OTRProfileID for OffTheRecord profiles. Is null for regular profiles. */
     @Nullable
     private final OTRProfileID mOTRProfileID;
@@ -34,24 +38,16 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
-     * Returns the original profile, even if it is called in an incognito context.
-     *
-     * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
-     *
-     * @deprecated use {@link #getLastUsedRegularProfile()} instead.
-     */
-    @Deprecated
-    public static Profile getLastUsedProfile() {
-        return getLastUsedRegularProfile();
-    }
-
-    /**
      * Returns the regular (i.e., not off-the-record) profile.
      *
      * Note: The function name uses the "last used" terminology for consistency with
      * profile_manager.cc which supports multiple regular profiles.
      */
     public static Profile getLastUsedRegularProfile() {
+        if (sLastUsedProfileForTesting != null) {
+            return sLastUsedProfileForTesting;
+        }
+        ThreadUtils.assertOnUiThread();
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!ProfileManager.isInitialized()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
@@ -81,17 +77,6 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
-     * Returns the primary OffTheRecord profile.
-     *
-     * @deprecated use {@link #getOffTheRecordProfile(OTRProfileID)} or {@link
-     *         #getPrimaryOTRProfile()} instead.
-     */
-    @Deprecated
-    public Profile getOffTheRecordProfile() {
-        return getPrimaryOTRProfile();
-    }
-
-    /**
      * Returns the OffTheRecord profile with given OTRProfileiD.
      *
      * @param profileID {@link OTRProfileID} object.
@@ -118,17 +103,6 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
-     * Returns if primary OffTheRecord profile exists.
-     *
-     * @deprecated use {@link #hasOffTheRecordProfile(OTRProfileID)} or {@link
-     *         #hasPrimaryOTRProfile()} instead.
-     */
-    @Deprecated
-    public boolean hasOffTheRecordProfile() {
-        return hasPrimaryOTRProfile();
-    }
-
-    /**
      * Returns if OffTheRecord profile with given OTRProfileID exists.
      *
      * @param profileID {@link OTRProfileID} object.
@@ -144,6 +118,13 @@ public class Profile implements BrowserContextHandle {
      */
     public boolean hasPrimaryOTRProfile() {
         return ProfileJni.get().hasPrimaryOTRProfile(mNativeProfileAndroid, Profile.this);
+    }
+
+    /**
+     * Returns if the profile is a primary OTR Profile.
+     */
+    public boolean isPrimaryOTRProfile() {
+        return ProfileJni.get().isPrimaryOTRProfile(mNativeProfileAndroid, Profile.this);
     }
 
     public ProfileKey getProfileKey() {
@@ -202,6 +183,15 @@ public class Profile implements BrowserContextHandle {
         return mNativeProfileAndroid;
     }
 
+    /**
+     * Sets for testing the profile to be returned by {@link #getLastUsedRegularProfile()}.
+     */
+    @CheckDiscard("Test-only setter.")
+    @VisibleForTesting
+    public static void setLastUsedProfileForTesting(Profile profile) {
+        sLastUsedProfileForTesting = profile;
+    }
+
     @NativeMethods
     public interface Natives {
         Object getLastUsedRegularProfile();
@@ -215,6 +205,7 @@ public class Profile implements BrowserContextHandle {
                 long nativeProfileAndroid, Profile caller, OTRProfileID otrProfileID);
         boolean hasPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);
         boolean isOffTheRecord(long nativeProfileAndroid, Profile caller);
+        boolean isPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);
         boolean isChild(long nativeProfileAndroid, Profile caller);
         void wipe(long nativeProfileAndroid, Profile caller);
         Object getProfileKey(long nativeProfileAndroid, Profile caller);

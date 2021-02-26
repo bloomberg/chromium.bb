@@ -18,8 +18,6 @@ class NavigatorNetworkInformation final
     : public GarbageCollected<NavigatorNetworkInformation>,
       public Supplement<Navigator>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
-
  public:
   static const char kSupplementName[];
 
@@ -29,7 +27,7 @@ class NavigatorNetworkInformation final
 
   explicit NavigatorNetworkInformation(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NetworkInformation* connection();

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "src/text_format.h"
+
 #include "port/protobuf.h"
 
 namespace protobuf_mutator {
@@ -27,7 +28,9 @@ bool ParseTextMessage(const uint8_t* data, size_t size, Message* output) {
 bool ParseTextMessage(const std::string& data, protobuf::Message* output) {
   output->Clear();
   TextFormat::Parser parser;
+  parser.SetRecursionLimit(100);
   parser.AllowPartialMessage(true);
+  parser.AllowUnknownField(true);
   if (!parser.ParseFromString(data, output)) {
     output->Clear();
     return false;

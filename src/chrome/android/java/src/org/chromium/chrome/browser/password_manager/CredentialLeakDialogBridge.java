@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.password_manager;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -27,7 +28,7 @@ public class CredentialLeakDialogBridge {
         mActivity = new WeakReference<>(activity);
         mCredentialLeakDialog = new PasswordManagerDialogCoordinator(
                 activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
-                activity.getFullscreenManager(), activity.getControlContainerHeightResource());
+                activity.getBrowserControlsManager(), activity.getControlContainerHeightResource());
     }
 
     @CalledByNative
@@ -41,14 +42,24 @@ public class CredentialLeakDialogBridge {
             String positiveButton, String negativeButton) {
         if (mActivity.get() == null) return;
 
-        PasswordManagerDialogContents contents = new PasswordManagerDialogContents(
-                credentialLeakTitle, credentialLeakDetails, R.drawable.password_check_warning,
-                positiveButton, negativeButton, this::onClick);
+        PasswordManagerDialogContents contents = createDialogContents(
+                credentialLeakTitle, credentialLeakDetails, positiveButton, negativeButton);
         contents.setPrimaryButtonFilled(negativeButton != null);
         contents.setHelpButtonCallback(this::showHelpArticle);
 
         mCredentialLeakDialog.initialize(mActivity.get(), contents);
         mCredentialLeakDialog.showDialog();
+    }
+
+    private PasswordManagerDialogContents createDialogContents(String credentialLeakTitle,
+            String credentialLeakDetails, String positiveButton, String negativeButton) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)) {
+            return new PasswordManagerDialogContents(credentialLeakTitle, credentialLeakDetails,
+                    R.drawable.password_check_warning, positiveButton, negativeButton,
+                    this::onClick);
+        }
+        return new PasswordManagerDialogContents(credentialLeakTitle, credentialLeakDetails,
+                R.drawable.password_checkup_warning, positiveButton, negativeButton, this::onClick);
     }
 
     @CalledByNative
@@ -79,7 +90,7 @@ public class CredentialLeakDialogBridge {
 
         Profile profile = Profile.fromWebContents(
                 mActivity.get().getActivityTabProvider().get().getWebContents());
-        HelpAndFeedback.getInstance().show(mActivity.get(),
+        HelpAndFeedbackLauncherImpl.getInstance().show(mActivity.get(),
                 mActivity.get().getString(R.string.help_context_password_leak_detection), profile,
                 null);
     }

@@ -436,7 +436,7 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
 void TypedURLSyncBridge::Init() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  history_backend_observer_.Add(history_backend_);
+  history_backend_observation_.Observe(history_backend_);
   LoadMetadata();
 }
 
@@ -641,8 +641,10 @@ TypedURLSyncBridge::MergeResult TypedURLSyncBridge::MergeUrls(
       }
       visit_ix = visits->insert(
           visit_ix,
-          VisitRow(url.id(), new_visit->first, 0, new_visit->second, 0,
-                   HistoryBackend::IsTypedIncrement(new_visit->second)));
+          VisitRow(url.id(), new_visit->first, /*referring_visit=*/0,
+                   new_visit->second, /*segment_id=*/0,
+                   HistoryBackend::IsTypedIncrement(new_visit->second),
+                   /*publicly_routable=*/false));
       ++visit_ix;
     }
   }
@@ -1032,8 +1034,8 @@ bool TypedURLSyncBridge::ShouldIgnoreUrl(const GURL& url) {
     return true;
 
   // Ignore username and password, since history backend will remove user name
-  // and password in URLDatabase::GURLToDatabaseURL and send username/password
-  // removed url to sync later.
+  // and password in database_utils::GurlToDatabaseUrl and send
+  // username/password removed url to sync later.
   if (url.has_username() || url.has_password())
     return true;
 
@@ -1098,8 +1100,10 @@ bool TypedURLSyncBridge::FixupURLAndGetVisits(URLRow* url,
       return false;
     }
 
-    VisitRow visit(url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED,
-                   0, true);
+    VisitRow visit(url->id(), url->last_visit(), /*referring_visit=*/0,
+                   ui::PAGE_TRANSITION_TYPED,
+                   /*segment_id=*/0, /*incremented_omnibox_typed_score=*/true,
+                   /*publicly_routable=*/false);
     visits->push_back(visit);
   }
 

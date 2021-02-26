@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/symlink.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -40,7 +41,7 @@ config("client_config") {
   if (is_android) {
     include_dirs += [ "breakpad/src/common/android/include" ]
   }
-  if (is_chromeos) {
+  if (is_ash) {
     defines = [ "__CHROMEOS__" ]
   }
 }
@@ -81,8 +82,6 @@ if (!is_win) {
   if (current_toolchain == host_toolchain) {
     # Contains the code shared by both {micro,mini}dump_stackwalk.
     static_library("stackwalk_common") {
-      # Always want these files included regardless of platform.
-      set_sources_assignment_filter([])
       sources = [
         "breakpad/src/common/path_helper.cc",
         "breakpad/src/common/path_helper.h",
@@ -187,8 +186,6 @@ if (!is_win) {
         "max_len=128000",
       ]
 
-      # Always want these files included regardless of platform.
-      set_sources_assignment_filter([])
       sources += [
         "breakpad/src/processor/exploitability_linux.cc",
         "breakpad/src/processor/exploitability_linux.h",
@@ -227,8 +224,6 @@ if (!is_win) {
       configs += [ "//build/config/compiler:no_chromium_code" ]
       configs += default_breakpad_configs
 
-      # Always want these files included regardless of platform.
-      set_sources_assignment_filter([])
       sources += [
         "breakpad/src/processor/exploitability_linux.cc",
         "breakpad/src/processor/exploitability_linux.h",
@@ -240,7 +235,6 @@ if (!is_win) {
     }
 
     executable("minidump_dump") {
-      set_sources_assignment_filter([])
       sources = [
         "breakpad/src/processor/basic_code_module.h",
         "breakpad/src/processor/basic_code_modules.cc",
@@ -328,7 +322,7 @@ if (is_mac) {
       configs -= [ "//build/config/compiler:no_rtti" ]
       configs += [ "//build/config/compiler:rtti" ]
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
 
       if (!is_debug) {
         # dump_syms crashes when built at -O1, -O2, and -O3.  It does
@@ -342,13 +336,19 @@ if (is_mac) {
 
     executable("symupload") {
       sources = [
+        "breakpad/src/common/mac/HTTPGetRequest.m",
         "breakpad/src/common/mac/HTTPMultipartUpload.m",
+        "breakpad/src/common/mac/HTTPPutRequest.m",
+        "breakpad/src/common/mac/HTTPRequest.m",
+        "breakpad/src/common/mac/HTTPSimplePostRequest.m",
+        "breakpad/src/common/mac/SymbolCollectorClient.m",
+        "breakpad/src/common/mac/encoding_util.m",
         "breakpad/src/tools/mac/symupload/symupload.m",
       ]
 
       include_dirs = [ "breakpad/src/common/mac" ]
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
 
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -415,7 +415,7 @@ if (is_mac) {
       "breakpad/src/common/mac",
       "breakpad/src",
     ]
-    libs = [
+    frameworks = [
       "CoreServices.framework",
       "Foundation.framework",
     ]
@@ -465,7 +465,7 @@ if (is_mac) {
   }
 }
 
-if (is_linux || is_android) {
+if (is_linux || is_chromeos || is_android) {
   if (current_toolchain == host_toolchain) {
     executable("symupload") {
       sources = [
@@ -563,8 +563,6 @@ if (is_linux || is_android) {
   }
 
   static_library("client") {
-    # Want all these sources for both Linux and Android.
-    set_sources_assignment_filter([])
     sources = [
       "breakpad/src/client/linux/crash_generation/crash_generation_client.cc",
       "breakpad/src/client/linux/crash_generation/crash_generation_client.h",
@@ -628,7 +626,7 @@ if (is_linux || is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     public_configs = [ ":client_config" ]
 
-    if (current_cpu == "arm" && is_chromeos) {
+    if (current_cpu == "arm" && is_ash) {
       # Avoid running out of registers in
       # linux_syscall_support.h:sys_clone()'s inline assembly.
       cflags = [ "-marm" ]
@@ -645,7 +643,6 @@ if (is_linux || is_android) {
   }
 
   static_library("processor_support") {
-    set_sources_assignment_filter([])
     sources = [
       "breakpad/src/common/scoped_ptr.h",
       "breakpad/src/processor/basic_code_modules.cc",
@@ -675,7 +672,6 @@ if (is_linux || is_android) {
   }
 
   test("breakpad_unittests") {
-    set_sources_assignment_filter([])
     sources = [
       "breakpad/src/client/linux/handler/exception_handler_unittest.cc",
       "breakpad/src/client/linux/minidump_writer/cpu_set_unittest.cc",
@@ -746,7 +742,6 @@ if (is_linux || is_android) {
   }
 
   executable("linux_dumper_unittest_helper") {
-    set_sources_assignment_filter([])
     testonly = true
     sources = [ "breakpad/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc" ]
     deps = [ ":processor_support" ]
@@ -759,7 +754,6 @@ if (is_linux || is_android) {
   }
 
   executable("generate_test_dump") {
-    set_sources_assignment_filter([])
     testonly = true
     sources = [ "linux/generate-test-dump.cc" ]
 
@@ -778,7 +772,6 @@ if (is_linux || is_android) {
   }
 
   executable("minidump-2-core") {
-    set_sources_assignment_filter([])
     sources = [
       "breakpad/src/common/path_helper.cc",
       "breakpad/src/common/path_helper.h",
@@ -791,7 +784,6 @@ if (is_linux || is_android) {
   }
 
   executable("core-2-minidump") {
-    set_sources_assignment_filter([])
     sources = [ "breakpad/src/tools/linux/core2md/core2md.cc" ]
 
     deps = [ ":client" ]
@@ -1003,7 +995,6 @@ if (is_win) {
 
 if (is_ios) {
   static_library("client") {
-    set_sources_assignment_filter([])
     sources = [
       "breakpad/src/client/ios/Breakpad.h",
       "breakpad/src/client/ios/Breakpad.mm",
@@ -1032,6 +1023,8 @@ if (is_ios) {
       "breakpad/src/common/convert_UTF.h",
       "breakpad/src/common/long_string_dictionary.cc",
       "breakpad/src/common/mac/HTTPMultipartUpload.m",
+      "breakpad/src/common/mac/HTTPRequest.m",
+      "breakpad/src/common/mac/encoding_util.m",
       "breakpad/src/common/mac/file_id.cc",
       "breakpad/src/common/mac/file_id.h",
       "breakpad/src/common/mac/macho_id.cc",
@@ -1050,7 +1043,6 @@ if (is_ios) {
       "breakpad/src/common/string_conversion.h",
       "breakpad/src/google_breakpad/common/minidump_format.h",
     ]
-    set_sources_assignment_filter(sources_assignment_filter)
 
     include_dirs = [
       "breakpad/src",

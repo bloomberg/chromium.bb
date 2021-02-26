@@ -49,7 +49,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 
   FloatSize ImageSize(const Document&,
                       float multiplier,
-                      const LayoutSize& default_object_size,
+                      const FloatSize& default_object_size,
                       RespectImageOrientationEnum) const override;
   bool HasIntrinsicSize() const override { return fixed_size_; }
   void AddClient(ImageResourceObserver*) override;
@@ -64,7 +64,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   bool IsUsingCustomProperty(const AtomicString& custom_property_name,
                              const Document&) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool IsEqual(const StyleImage&) const override;

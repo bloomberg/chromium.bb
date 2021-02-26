@@ -11,20 +11,25 @@ import android.view.ViewStub;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CallbackController;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ThemeColorProvider;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
+import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonView;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -47,28 +52,38 @@ public class StartSurfaceToolbarCoordinator {
     private ThemeColorProvider mThemeColorProvider;
     private OnClickListener mTabSwitcherClickListener;
     private OnLongClickListener mTabSwitcherLongClickListener;
+    private MenuButtonCoordinator mMenuButtonCoordinator;
+    private CallbackController mCallbackController = new CallbackController();
 
     StartSurfaceToolbarCoordinator(ViewStub startSurfaceToolbarStub,
-            IdentityDiscController identityDiscController,
-            UserEducationHelper userEducationHelper, ThemeColorProvider provider) {
+            UserEducationHelper userEducationHelper,
+            OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier,
+            ObservableSupplier<Boolean> identityDiscStateSupplier, ThemeColorProvider provider,
+            MenuButtonCoordinator menuButtonCoordinator,
+            Supplier<ButtonData> identityDiscButtonSupplier) {
         mStub = startSurfaceToolbarStub;
+
+        layoutStateProviderSupplier.onAvailable(
+                mCallbackController.makeCancelable(this::setLayoutStateProvider));
+
         mPropertyModel =
                 new PropertyModel.Builder(StartSurfaceToolbarProperties.ALL_KEYS)
                         .with(StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE,
-                                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER
+                                !StartSurfaceConfiguration
+                                                .START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB
                                                 .getValue()
-                                        ? false
-                                        : true)
+                                        && !StartSurfaceConfiguration
+                                                    .START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue())
                         .with(StartSurfaceToolbarProperties.IN_START_SURFACE_MODE, false)
                         .with(StartSurfaceToolbarProperties.MENU_IS_VISIBLE, true)
                         .with(StartSurfaceToolbarProperties.IS_VISIBLE, true)
                         .build();
 
-        // START_SURFACE_HIDE_INCOGNITO_SWITCH and START_SURFACE_SHOW_STACK_TAB_SWITCHER should not
-        // be both true.
-        assert !(StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue()
+        // START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB and START_SURFACE_SHOW_STACK_TAB_SWITCHER
+        // should not be both true.
+        assert !(StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB.getValue()
                 && StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
-        mToolbarMediator = new StartSurfaceToolbarMediator(mPropertyModel, identityDiscController,
+        mToolbarMediator = new StartSurfaceToolbarMediator(mPropertyModel,
                 (iphCommandBuilder)
                         -> {
                     // TODO(crbug.com/865801): Replace the null check with an assert after fixing or
@@ -77,10 +92,13 @@ public class StartSurfaceToolbarCoordinator {
                     userEducationHelper.requestShowIPH(
                             iphCommandBuilder.setAnchorView(mView.getIdentityDiscView()).build());
                 },
+                StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB.getValue(),
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue(),
-                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
+                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue(),
+                menuButtonCoordinator, identityDiscStateSupplier, identityDiscButtonSupplier);
 
         mThemeColorProvider = provider;
+        mMenuButtonCoordinator = menuButtonCoordinator;
     }
 
     /**
@@ -90,18 +108,20 @@ public class StartSurfaceToolbarCoordinator {
         mToolbarMediator.destroy();
         if (mIncognitoSwitchCoordinator != null) mIncognitoSwitchCoordinator.destroy();
         if (mTabSwitcherButtonCoordinator != null) mTabSwitcherButtonCoordinator.destroy();
+        if (mMenuButtonCoordinator != null) {
+            mMenuButtonCoordinator.destroy();
+            mMenuButtonCoordinator = null;
+        }
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
         mTabSwitcherButtonCoordinator = null;
         mTabSwitcherButtonView = null;
         mTabCountProvider = null;
         mThemeColorProvider = null;
         mTabSwitcherClickListener = null;
         mTabSwitcherLongClickListener = null;
-    }
-    /**
-     * @param appMenuButtonHelper The helper for managing menu button interactions.
-     */
-    void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
-        mToolbarMediator.setAppMenuButtonHelper(appMenuButtonHelper);
     }
 
     /**
@@ -140,14 +160,6 @@ public class StartSurfaceToolbarCoordinator {
     }
 
     /**
-     * Called to set the visibility in Start Surface mode.
-     * @param shouldShowStartSurfaceToolbar whether the toolbar should be visible.
-     */
-    void setStartSurfaceToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
-        mToolbarMediator.setStartSurfaceToolbarVisibility(shouldShowStartSurfaceToolbar);
-    }
-
-    /**
      * Called when accessibility status changes.
      * @param enabled whether accessibility status is enabled.
      */
@@ -156,18 +168,11 @@ public class StartSurfaceToolbarCoordinator {
     }
 
     /**
-     * @param isVisible Whether the bottom toolbar is visible.
+     * @param layoutStateProvider The {@link LayoutStateProvider} to observe layout state changes.
      */
-    void onBottomToolbarVisibilityChanged(boolean isVisible) {
-        mToolbarMediator.onBottomToolbarVisibilityChanged(isVisible);
-    }
-
-    /**
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} to observe overview state
-     *         changes.
-     */
-    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mToolbarMediator.setOverviewModeBehavior(overviewModeBehavior);
+    private void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+        assert layoutStateProvider != null;
+        mToolbarMediator.setLayoutStateProvider(layoutStateProvider);
     }
 
     /**
@@ -203,18 +208,55 @@ public class StartSurfaceToolbarCoordinator {
         }
     }
 
+    /**
+     * Called when start surface state is changed.
+     * @param newState The new {@link StartSurfaceState}.
+     * @param shouldShowStartSurfaceToolbar Whether or not should show start surface toolbar.
+     */
+    void onStartSurfaceStateChanged(
+            @StartSurfaceState int newState, boolean shouldShowStartSurfaceToolbar) {
+        mToolbarMediator.onStartSurfaceStateChanged(newState, shouldShowStartSurfaceToolbar);
+    }
+
+    /**
+     * Triggered when the offset of start surface header view is changed.
+     * @param verticalOffset The start surface header view's offset.
+     */
+    void onStartSurfaceHeaderOffsetChanged(int verticalOffset) {
+        mToolbarMediator.onStartSurfaceHeaderOffsetChanged(verticalOffset);
+    }
+
+    /**
+     * @param toolbarHeight The height of start surface toolbar.
+     * @return Whether or not toolbar container view should be hidden.
+     */
+    boolean shouldHideToolbarContainer(int toolbarHeight) {
+        return mToolbarMediator.shouldHideToolbarContainer(toolbarHeight);
+    }
+
     void onNativeLibraryReady() {
         // It is possible that the {@link mIncognitoSwitchCoordinator} isn't created because
         // inflate() is called when the native library isn't ready. So create it now.
         if (isInflated()) {
+            assert mTabModelSelector != null;
             maybeCreateIncognitoSwitchCoordinator();
         }
         mToolbarMediator.onNativeLibraryReady();
     }
 
+    /**
+     * @param highlight If the new tab button should be highlighted.
+     */
+    void setNewTabButtonHighlight(boolean highlight) {
+        mToolbarMediator.setNewTabButtonHighlight(highlight);
+    }
+
     private void inflate() {
         mStub.setLayoutResource(R.layout.start_top_toolbar);
         mView = (StartSurfaceToolbarView) mStub.inflate();
+        mMenuButtonCoordinator.setMenuButton(mView.findViewById(R.id.menu_button_wrapper));
+        mMenuButtonCoordinator.setVisibility(
+                mPropertyModel.get(StartSurfaceToolbarProperties.MENU_IS_VISIBLE));
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 mPropertyModel, mView, StartSurfaceToolbarViewBinder::bind);
         if (LibraryLoader.getInstance().isInitialized()) {
@@ -243,7 +285,9 @@ public class StartSurfaceToolbarCoordinator {
     }
 
     private void maybeCreateIncognitoSwitchCoordinator() {
-        if (mIncognitoSwitchCoordinator != null) return;
+        if (mIncognitoSwitchCoordinator != null || mTabModelSelector == null) {
+            return;
+        }
 
         if (IncognitoUtils.isIncognitoModeEnabled()
                 && !StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue()) {

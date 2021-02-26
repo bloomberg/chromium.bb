@@ -8,10 +8,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
@@ -40,7 +40,7 @@ class ModuleScriptTestModulator final : public DummyModulator {
     return Vector<ModuleRequest>();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     DummyModulator::Trace(visitor);
   }
@@ -98,20 +98,16 @@ class ModuleScriptTest : public ::testing::Test, public ParametrizedModuleTest {
   // Tests |window.foo| is set correctly, and reset |window.foo| for the next
   // test.
   static void TestFoo(V8TestingScope& scope) {
-    v8::Local<v8::Value> value = scope.GetFrame()
-                                     .GetScriptController()
-                                     .ExecuteScriptInMainWorldAndReturnValue(
-                                         ScriptSourceCode("window.foo"), KURL(),
-                                         SanitizeScriptErrors::kSanitize);
+    v8::Local<v8::Value> value =
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode("window.foo"))
+            ->RunScriptAndReturnValue(&scope.GetWindow());
     EXPECT_TRUE(value->IsNumber());
     EXPECT_EQ(kScriptRepeatLength,
               value->NumberValue(scope.GetContext()).ToChecked());
 
-    scope.GetFrame()
-        .GetScriptController()
-        .ExecuteScriptInMainWorldAndReturnValue(
-            ScriptSourceCode("window.foo = undefined;"), KURL(),
-            SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode("window.foo = undefined;"))
+        ->RunScript(&scope.GetWindow());
   }
 
   // Accessors for ModuleScript private members.
@@ -171,10 +167,8 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithoutDiscarding) {
                                           module_script->V8Module(),
                                           module_script->SourceURL())
                     .IsEmpty());
-    ASSERT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(),
-                                       module_script->V8Module(),
-                                       module_script->SourceURL())
-                    .IsSuccess());
+    ASSERT_EQ(module_script->RunScriptAndReturnValue().GetResultType(),
+              ScriptEvaluationResult::ResultType::kSuccess);
     TestFoo(scope);
 
     Checkpoint checkpoint;
@@ -250,10 +244,10 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithoutDiscarding) {
   // via ScriptSourceCode+ScriptResource, but here they are passed via
   // ScriptSourceCode constructor for inline scripts. So far, this is sufficient
   // for unit testing.
-  scope.GetFrame().GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(LargeSourceText(), ScriptSourceLocationType::kInternal,
-                       cache_handler),
-      KURL(), SanitizeScriptErrors::kSanitize);
+                       cache_handler))
+      ->RunScript(&scope.GetWindow());
 
   checkpoint.Call(4);
 
@@ -297,10 +291,8 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithDiscarding) {
                                           module_script->V8Module(),
                                           module_script->SourceURL())
                     .IsEmpty());
-    ASSERT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(),
-                                       module_script->V8Module(),
-                                       module_script->SourceURL())
-                    .IsSuccess());
+    ASSERT_EQ(module_script->RunScriptAndReturnValue().GetResultType(),
+              ScriptEvaluationResult::ResultType::kSuccess);
     TestFoo(scope);
 
     Checkpoint checkpoint;
@@ -391,11 +383,10 @@ TEST_P(ModuleScriptTest, V8CodeCacheWithDiscarding) {
   // via ScriptSourceCode+ScriptResource, but here they are passed via
   // ScriptSourceCode constructor for inline scripts. So far, this is sufficient
   // for unit testing.
-  scope.GetFrame().GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
+  ClassicScript::CreateUnspecifiedScript(
       ScriptSourceCode(LargeSourceText(), ScriptSourceLocationType::kInternal,
-                       cache_handler),
-      KURL(), SanitizeScriptErrors::kSanitize);
-
+                       cache_handler))
+      ->RunScript(&scope.GetWindow());
   checkpoint.Call(4);
 
   TestFoo(scope);

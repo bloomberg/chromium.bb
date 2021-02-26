@@ -20,10 +20,13 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_audio_frame.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_video_frame.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_attachment.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -59,14 +62,14 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return true;
   }
   if (wrapper_type_info == V8FileSystemFileHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+      RuntimeEnabledFeatures::NativeFileSystemEnabled(
           ExecutionContext::From(GetScriptState()))) {
     return WriteNativeFileSystemHandle(
         kNativeFileSystemFileHandleTag,
         wrappable->ToImpl<NativeFileSystemHandle>());
   }
   if (wrapper_type_info == V8FileSystemDirectoryHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+      RuntimeEnabledFeatures::NativeFileSystemEnabled(
           ExecutionContext::From(GetScriptState()))) {
     return WriteNativeFileSystemHandle(
         kNativeFileSystemDirectoryHandleTag,
@@ -80,9 +83,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(pem.certificate().c_str());
     return true;
   }
-  if (wrapper_type_info == V8RTCEncodedAudioFrame::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
-          ExecutionContext::From(GetScriptState()))) {
+  if (wrapper_type_info == V8RTCEncodedAudioFrame::GetWrapperTypeInfo()) {
     if (IsForStorage()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "An RTCEncodedAudioFrame cannot be "
@@ -91,9 +92,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     }
     return WriteRTCEncodedAudioFrame(wrappable->ToImpl<RTCEncodedAudioFrame>());
   }
-  if (wrapper_type_info == V8RTCEncodedVideoFrame::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
-          ExecutionContext::From(GetScriptState()))) {
+  if (wrapper_type_info == V8RTCEncodedVideoFrame::GetWrapperTypeInfo()) {
     if (IsForStorage()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "An RTCEncodedVideoFrame cannot be "
@@ -101,6 +100,26 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
       return false;
     }
     return WriteRTCEncodedVideoFrame(wrappable->ToImpl<RTCEncodedVideoFrame>());
+  }
+  if (wrapper_type_info == V8VideoFrame::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::WebCodecsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    if (IsForStorage()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "A VideoFrame cannot be serialized for "
+                                        "storage.");
+      return false;
+    }
+    auto* video_frame = wrappable->ToImpl<VideoFrame>();
+
+    if (!video_frame->frame()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "Cannot serialize destroyed VideoFrame.");
+      return false;
+    }
+
+    return WriteVideoFrame(video_frame);
   }
   return false;
 }
@@ -325,6 +344,20 @@ bool V8ScriptValueSerializerForModules::WriteRTCEncodedVideoFrame(
 
   WriteTag(kRTCEncodedVideoFrameTag);
   WriteUint32(index);
+  return true;
+}
+
+bool V8ScriptValueSerializerForModules::WriteVideoFrame(
+    VideoFrame* video_frame) {
+  auto* attachment =
+      GetSerializedScriptValue()->GetOrCreateAttachment<VideoFrameAttachment>();
+  auto& frames = attachment->Handles();
+  frames.push_back(video_frame->handle());
+  const uint32_t index = static_cast<uint32_t>(frames.size() - 1);
+
+  WriteTag(kVideoFrameTag);
+  WriteUint32(index);
+
   return true;
 }
 

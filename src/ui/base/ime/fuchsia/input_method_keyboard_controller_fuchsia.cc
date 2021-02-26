@@ -7,9 +7,10 @@
 #include <lib/sys/cpp/component_context.h>
 #include <utility>
 
-#include "base/fuchsia/default_context.h"
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
+#include "base/fuchsia/process_context.h"
+#include "base/notreached.h"
 
 namespace ui {
 
@@ -17,7 +18,7 @@ InputMethodKeyboardControllerFuchsia::InputMethodKeyboardControllerFuchsia(
     fuchsia::ui::input::ImeService* ime_service)
     : ime_service_(ime_service),
       ime_visibility_(
-          base::fuchsia::ComponentContextForCurrentProcess()
+          base::ComponentContextForProcess()
               ->svc()
               ->Connect<fuchsia::ui::input::ImeVisibilityService>()) {
   DCHECK(ime_service_);

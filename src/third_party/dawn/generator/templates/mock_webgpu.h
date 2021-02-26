@@ -52,6 +52,14 @@ class ProcTableAsClass {
         {% endfor %}
 
         // Stores callback and userdata and calls the On* methods
+        void DeviceCreateReadyComputePipeline(WGPUDevice self,
+                                              WGPUComputePipelineDescriptor const * descriptor,
+                                              WGPUCreateReadyComputePipelineCallback callback,
+                                              void* userdata);
+        void DeviceCreateReadyRenderPipeline(WGPUDevice self,
+                                             WGPURenderPipelineDescriptor const * descriptor,
+                                             WGPUCreateReadyRenderPipelineCallback callback,
+                                             void* userdata);
         void DeviceSetUncapturedErrorCallback(WGPUDevice self,
                                     WGPUErrorCallback callback,
                                     void* userdata);
@@ -59,18 +67,28 @@ class ProcTableAsClass {
                                          WGPUDeviceLostCallback callback,
                                          void* userdata);
         bool DevicePopErrorScope(WGPUDevice self, WGPUErrorCallback callback, void* userdata);
-        void BufferMapReadAsync(WGPUBuffer self,
-                                WGPUBufferMapReadCallback callback,
-                                void* userdata);
-        void BufferMapWriteAsync(WGPUBuffer self,
-                                 WGPUBufferMapWriteCallback callback,
-                                 void* userdata);
+        void BufferMapAsync(WGPUBuffer self,
+                            WGPUMapModeFlags mode,
+                            size_t offset,
+                            size_t size,
+                            WGPUBufferMapCallback callback,
+                            void* userdata);
         void FenceOnCompletion(WGPUFence self,
                                uint64_t value,
                                WGPUFenceOnCompletionCallback callback,
                                void* userdata);
 
         // Special cased mockable methods
+        virtual void OnDeviceCreateReadyComputePipelineCallback(
+            WGPUDevice device,
+            WGPUComputePipelineDescriptor const * descriptor,
+            WGPUCreateReadyComputePipelineCallback callback,
+            void* userdata) = 0;
+        virtual void OnDeviceCreateReadyRenderPipelineCallback(
+            WGPUDevice device,
+            WGPURenderPipelineDescriptor const * descriptor,
+            WGPUCreateReadyRenderPipelineCallback callback,
+            void* userdata) = 0;
         virtual void OnDeviceSetUncapturedErrorCallback(WGPUDevice device,
                                               WGPUErrorCallback callback,
                                               void* userdata) = 0;
@@ -80,30 +98,35 @@ class ProcTableAsClass {
         virtual bool OnDevicePopErrorScopeCallback(WGPUDevice device,
                                               WGPUErrorCallback callback,
                                               void* userdata) = 0;
-        virtual void OnBufferMapReadAsyncCallback(WGPUBuffer buffer,
-                                                  WGPUBufferMapReadCallback callback,
-                                                  void* userdata) = 0;
-        virtual void OnBufferMapWriteAsyncCallback(WGPUBuffer buffer,
-                                                   WGPUBufferMapWriteCallback callback,
-                                                   void* userdata) = 0;
+        virtual void OnBufferMapAsyncCallback(WGPUBuffer buffer,
+                                              WGPUBufferMapCallback callback,
+                                              void* userdata) = 0;
         virtual void OnFenceOnCompletionCallback(WGPUFence fence,
                                                  uint64_t value,
                                                  WGPUFenceOnCompletionCallback callback,
                                                  void* userdata) = 0;
 
         // Calls the stored callbacks
+        void CallDeviceCreateReadyComputePipelineCallback(WGPUDevice device,
+                                                          WGPUCreateReadyPipelineStatus status,
+                                                          WGPUComputePipeline pipeline,
+                                                          const char* message);
+        void CallDeviceCreateReadyRenderPipelineCallback(WGPUDevice device,
+                                                         WGPUCreateReadyPipelineStatus status,
+                                                         WGPURenderPipeline pipeline,
+                                                         const char* message);
         void CallDeviceErrorCallback(WGPUDevice device, WGPUErrorType type, const char* message);
         void CallDeviceLostCallback(WGPUDevice device, const char* message);
-        void CallMapReadCallback(WGPUBuffer buffer, WGPUBufferMapAsyncStatus status, const void* data, uint64_t dataLength);
-        void CallMapWriteCallback(WGPUBuffer buffer, WGPUBufferMapAsyncStatus status, void* data, uint64_t dataLength);
+        void CallMapAsyncCallback(WGPUBuffer buffer, WGPUBufferMapAsyncStatus status);
         void CallFenceOnCompletionCallback(WGPUFence fence, WGPUFenceCompletionStatus status);
 
         struct Object {
             ProcTableAsClass* procs = nullptr;
             WGPUErrorCallback deviceErrorCallback = nullptr;
+            WGPUCreateReadyComputePipelineCallback createReadyComputePipelineCallback = nullptr;
+            WGPUCreateReadyRenderPipelineCallback createReadyRenderPipelineCallback = nullptr;
             WGPUDeviceLostCallback deviceLostCallback = nullptr;
-            WGPUBufferMapReadCallback mapReadCallback = nullptr;
-            WGPUBufferMapWriteCallback mapWriteCallback = nullptr;
+            WGPUBufferMapCallback mapAsyncCallback = nullptr;
             WGPUFenceOnCompletionCallback fenceOnCompletionCallback = nullptr;
             void* userdata = 0;
         };
@@ -135,11 +158,25 @@ class MockProcTable : public ProcTableAsClass {
             MOCK_METHOD(void, {{as_MethodSuffix(type.name, Name("release"))}}, ({{as_cType(type.name)}} self), (override));
         {% endfor %}
 
+        MOCK_METHOD(void,
+                    OnDeviceCreateReadyComputePipelineCallback,
+                    (WGPUDevice device, WGPUComputePipelineDescriptor const * descriptor,
+                     WGPUCreateReadyComputePipelineCallback callback,
+                     void* userdata),
+                    (override));
+        MOCK_METHOD(void,
+                    OnDeviceCreateReadyRenderPipelineCallback,
+                    (WGPUDevice device, WGPURenderPipelineDescriptor const * descriptor,
+                     WGPUCreateReadyRenderPipelineCallback callback,
+                     void* userdata),
+                    (override));
         MOCK_METHOD(void, OnDeviceSetUncapturedErrorCallback, (WGPUDevice device, WGPUErrorCallback callback, void* userdata), (override));
         MOCK_METHOD(void, OnDeviceSetDeviceLostCallback, (WGPUDevice device, WGPUDeviceLostCallback callback, void* userdata), (override));
         MOCK_METHOD(bool, OnDevicePopErrorScopeCallback, (WGPUDevice device, WGPUErrorCallback callback, void* userdata), (override));
-        MOCK_METHOD(void, OnBufferMapReadAsyncCallback, (WGPUBuffer buffer, WGPUBufferMapReadCallback callback, void* userdata), (override));
-        MOCK_METHOD(void, OnBufferMapWriteAsyncCallback, (WGPUBuffer buffer, WGPUBufferMapWriteCallback callback, void* userdata), (override));
+        MOCK_METHOD(void,
+                    OnBufferMapAsyncCallback,
+                    (WGPUBuffer buffer, WGPUBufferMapCallback callback, void* userdata),
+                    (override));
         MOCK_METHOD(void, OnFenceOnCompletionCallback, (WGPUFence fence, uint64_t value, WGPUFenceOnCompletionCallback callback, void* userdata), (override));
 };
 

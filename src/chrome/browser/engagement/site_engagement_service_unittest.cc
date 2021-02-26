@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -19,6 +19,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
@@ -68,11 +69,9 @@ class SiteEngagementChangeWaiter : public content_settings::Observer {
   }
 
   // Overridden from content_settings::Observer:
-  void OnContentSettingChanged(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier) override {
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type) override {
     if (content_type == ContentSettingsType::SITE_ENGAGEMENT)
       Proceed();
   }
@@ -469,8 +468,8 @@ TEST_F(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
   // The https and http versions of www.google.com should be separate.
   GURL url1("ftp://www.google.com/");
   GURL url2("file://blah");
-  GURL url3("chrome://");
-  GURL url4("about://config");
+  GURL url3("chrome://version/");
+  GURL url4("chrome://config");
 
   NavigateAndCommit(url1);
   service->HandleUserInput(web_contents(),
@@ -551,7 +550,14 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   EXPECT_DOUBLE_EQ(0.0, service_->GetScore(url2));
 }
 
-TEST_F(SiteEngagementServiceTest, CheckHistograms) {
+// Disabled due to flakiness on Builder Linux Tests. crbug.com/1137759
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_CheckHistograms DISABLED_CheckHistograms
+#else
+#define MAYBE_CheckHistograms CheckHistograms
+#endif
+
+TEST_F(SiteEngagementServiceTest, MAYBE_CheckHistograms) {
   base::HistogramTester histograms;
 
   base::Time current_day = GetReferenceTime();
@@ -1629,7 +1635,7 @@ TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   service->AddPoints(url2, 2);
 
   auto incognito_service = base::WrapUnique(
-      new SiteEngagementService(profile()->GetOffTheRecordProfile(), &clock_));
+      new SiteEngagementService(profile()->GetPrimaryOTRProfile(), &clock_));
   EXPECT_EQ(1, incognito_service->GetScore(url1));
   EXPECT_EQ(2, incognito_service->GetScore(url2));
   EXPECT_EQ(0, incognito_service->GetScore(url3));
@@ -1670,7 +1676,7 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   HostContentSettingsMap* incognito_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
-          profile()->GetOffTheRecordProfile());
+          profile()->GetPrimaryOTRProfile());
 
   // All scores are 0 to start.
   EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
@@ -1697,7 +1703,7 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
                                               incognito_settings_map, url2));
 
   SiteEngagementService* incognito_service =
-      SiteEngagementService::Get(profile()->GetOffTheRecordProfile());
+      SiteEngagementService::Get(profile()->GetPrimaryOTRProfile());
   ASSERT_TRUE(incognito_service);
   incognito_service->AddPoints(url1, 3);
   incognito_service->AddPoints(url2, 1);

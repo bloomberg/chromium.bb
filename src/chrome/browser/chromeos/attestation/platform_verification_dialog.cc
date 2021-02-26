@@ -34,20 +34,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace {
-
-std::unique_ptr<views::ImageButton> CreateLearnMoreButton(
-    views::ButtonListener* listener) {
-  auto learn_more_button = views::CreateVectorImageButtonWithNativeTheme(
-      listener, vector_icons::kHelpOutlineIcon);
-  learn_more_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
-  learn_more_button->SetFocusForPlatform();
-  return learn_more_button;
-}
-
-}  // namespace
-
 namespace chromeos {
 namespace attestation {
 
@@ -97,8 +83,13 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
-  learn_more_button_ =
-      DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
+  auto* learn_more_button = DialogDelegate::SetExtraView(
+      views::CreateVectorImageButtonWithNativeTheme(
+          base::BindRepeating(&PlatformVerificationDialog::ButtonPressed,
+                              base::Unretained(this)),
+          vector_icons::kHelpOutlineIcon));
+  learn_more_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -116,6 +107,10 @@ PlatformVerificationDialog::PlatformVerificationDialog(
   DialogDelegate::SetCloseCallback(base::BindOnce(
       run_callback, base::Unretained(this), CONSENT_RESPONSE_NONE));
 
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+
   // Explanation string.
   auto label = std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
       IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, domain_));
@@ -125,23 +120,18 @@ PlatformVerificationDialog::PlatformVerificationDialog(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
 }
 
-ui::ModalType PlatformVerificationDialog::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
-gfx::Size PlatformVerificationDialog::CalculatePreferredSize() const {
-  const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
-  return gfx::Size(
-      default_width,
-      GetLayoutManager()->GetPreferredHeightForWidth(this, default_width));
-}
-
-void PlatformVerificationDialog::ButtonPressed(views::Button* sender,
-                                               const ui::Event& event) {
-  if (sender != learn_more_button_)
+void PlatformVerificationDialog::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
     return;
 
+  views::Widget* widget = GetWidget();
+  if (widget)
+    widget->Close();
+}
+
+void PlatformVerificationDialog::ButtonPressed() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
 
@@ -156,17 +146,6 @@ void PlatformVerificationDialog::ButtonPressed(views::Button* sender,
   } else {
     ShowSingletonTab(browser, learn_more_url);
   }
-}
-
-void PlatformVerificationDialog::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
-
-  views::Widget* widget = GetWidget();
-  if (widget)
-    widget->Close();
 }
 
 }  // namespace attestation

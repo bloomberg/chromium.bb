@@ -28,6 +28,8 @@ import gclient_utils
 import scm
 import subprocess2
 
+DEFAULT_BRANCH = 'master'
+
 
 def write(path, content):
   f = open(path, 'wb')
@@ -160,7 +162,11 @@ class FakeReposBase(object):
     except (OSError, subprocess2.CalledProcessError):
       return False
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
+      # TODO(crbug.com/114712) use git.init -b and remove 'checkout' once git is
+      # upgraded to 2.28 on all builders.
       subprocess2.check_call(['git', 'init', '-q', join(self.git_base, repo)])
+      subprocess2.check_call(['git', 'checkout', '-q', '-b', DEFAULT_BRANCH],
+                             cwd=join(self.git_base, repo))
       self.git_hashes[repo] = [(None, None)]
     self.populateGit()
     self.initialized = True
@@ -204,7 +210,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 16
+  NB_GIT_REPOS = 17
 
   def populateGit(self):
     # Testing:
@@ -688,7 +694,7 @@ hooks = [{
       'origin': 'git/repo_14@2\n'
     })
 
-    # A repo with a hook to be recursed in, without use_relative_hooks
+    # A repo with a hook to be recursed in, without use_relative_paths
     self._commit_git('repo_15', {
       'DEPS': textwrap.dedent("""\
         hooks = [{
@@ -698,11 +704,10 @@ hooks = [{
         }]"""),
       'origin': 'git/repo_15@2\n'
     })
-    # A repo with a hook to be recursed in, with use_relative_hooks
+    # A repo with a hook to be recursed in, with use_relative_paths
     self._commit_git('repo_16', {
       'DEPS': textwrap.dedent("""\
         use_relative_paths=True
-        use_relative_hooks=True
         hooks = [{
           "name": "relative_cwd",
           "pattern": ".",
@@ -710,6 +715,19 @@ hooks = [{
         }]"""),
       'relative.py': 'pass',
       'origin': 'git/repo_16@2\n'
+    })
+    # A repo with a gclient_gn_args_file and use_relative_paths
+    self._commit_git('repo_17', {
+      'DEPS': textwrap.dedent("""\
+        use_relative_paths=True
+        vars = {
+          'toto': 'tata',
+        }
+        gclient_gn_args_file = 'repo17_gclient.args'
+        gclient_gn_args = [
+          'toto',
+        ]"""),
+      'origin': 'git/repo_17@2\n'
     })
 
 class FakeRepoSkiaDEPS(FakeReposBase):

@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/serial/bluetooth_serial_device_enumerator.h"
 #include "services/device/serial/serial_device_enumerator.h"
 
 namespace base {
@@ -38,22 +39,28 @@ class SerialPortManagerImpl : public mojom::SerialPortManager,
   void Bind(mojo::PendingReceiver<mojom::SerialPortManager> receiver);
   void SetSerialEnumeratorForTesting(
       std::unique_ptr<SerialDeviceEnumerator> fake_enumerator);
+  void SetBluetoothSerialEnumeratorForTesting(
+      std::unique_ptr<BluetoothSerialDeviceEnumerator>
+          fake_bluetooth_enumerator);
 
  private:
   // mojom::SerialPortManager methods:
   void SetClient(
       mojo::PendingRemote<mojom::SerialPortManagerClient> client) override;
   void GetDevices(GetDevicesCallback callback) override;
-  void GetPort(
-      const base::UnguessableToken& token,
-      mojo::PendingReceiver<mojom::SerialPort> receiver,
-      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) override;
+  void OpenPort(const base::UnguessableToken& token,
+                bool use_alternate_path,
+                device::mojom::SerialConnectionOptionsPtr options,
+                mojo::PendingRemote<mojom::SerialPortClient> client,
+                mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
+                OpenPortCallback callback) override;
 
   // SerialDeviceEnumerator::Observer methods:
   void OnPortAdded(const mojom::SerialPortInfo& port) override;
   void OnPortRemoved(const mojom::SerialPortInfo& port) override;
 
   std::unique_ptr<SerialDeviceEnumerator> enumerator_;
+  std::unique_ptr<BluetoothSerialDeviceEnumerator> bluetooth_enumerator_;
   ScopedObserver<SerialDeviceEnumerator, SerialDeviceEnumerator::Observer>
       observed_enumerator_{this};
 

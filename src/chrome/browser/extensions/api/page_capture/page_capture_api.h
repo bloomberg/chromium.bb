@@ -24,6 +24,10 @@ class WebContents;
 
 namespace extensions {
 
+#if defined(OS_CHROMEOS)
+class PermissionIDSet;
+#endif
+
 class PageCaptureSaveAsMHTMLFunction : public ExtensionFunction {
  public:
   PageCaptureSaveAsMHTMLFunction();
@@ -31,11 +35,15 @@ class PageCaptureSaveAsMHTMLFunction : public ExtensionFunction {
   // Test specific delegate used to test that the temporary file gets deleted.
   class TestDelegate {
    public:
-    // Called on the UI thread when the temporary file that contains the
+    // Called on the IO thread when the temporary file that contains the
     // generated data has been created.
-    virtual void OnTemporaryFileCreated(const base::FilePath& temp_file) = 0;
+    virtual void OnTemporaryFileCreated(
+        scoped_refptr<storage::ShareableFileReference> temp_file) = 0;
   };
   static void SetTestDelegate(TestDelegate* delegate);
+
+  // ExtensionFunction:
+  void OnServiceWorkerAck() override;
 
  private:
   ~PageCaptureSaveAsMHTMLFunction() override;

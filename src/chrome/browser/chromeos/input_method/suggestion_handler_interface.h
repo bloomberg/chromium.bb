@@ -8,6 +8,13 @@
 #include <string>
 #include "base/strings/string16.h"
 
+namespace ui {
+namespace ime {
+struct AssistiveWindowButton;
+struct SuggestionDetails;
+}  // namespace ime
+}  // namespace ui
+
 namespace chromeos {
 
 // An interface to handler suggestion related calls from assistive suggester.
@@ -23,13 +30,36 @@ class SuggestionHandlerInterface {
   // confirmed_text - the confirmed text that the user has typed so far.
   // show_tab - whether to show "tab" in the suggestion window.
   virtual bool SetSuggestion(int context_id,
-                             const base::string16& text,
-                             const size_t confirmed_length,
-                             const bool show_tab,
+                             const ui::ime::SuggestionDetails& details,
                              std::string* error) = 0;
 
   // Commit the suggestion and hide the window.
   virtual bool AcceptSuggestion(int context_id, std::string* error) = 0;
+
+  virtual void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) = 0;
+
+  // Highlights or unhighlights a given assistive button based on the given
+  // parameters. No-op if context_id doesn't match or engine is not active.
+  virtual bool SetButtonHighlighted(
+      int context_id,
+      const ui::ime::AssistiveWindowButton& button,
+      bool highlighted,
+      std::string* error) = 0;
+
+  // Click the given button in assitive window.
+  virtual void ClickButton(const ui::ime::AssistiveWindowButton& button) = 0;
+
+  virtual bool AcceptSuggestionCandidate(int context_id,
+                                         const base::string16& candidate,
+                                         std::string* error) = 0;
+
+  // Shows/Hides given assistive window. No-op if context_id doesn't match or
+  // engine is not active.
+  virtual bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error) = 0;
 };
 
 }  // namespace chromeos

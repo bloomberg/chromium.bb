@@ -19,8 +19,6 @@ namespace blink {
 
 class PLATFORM_EXPORT FontFallbackMap : public FontCacheClient,
                                         public FontSelectorClient {
-  USING_GARBAGE_COLLECTED_MIXIN(FontFallbackMap);
-
  public:
   explicit FontFallbackMap(FontSelector* font_selector)
       : font_selector_(font_selector) {}
@@ -30,7 +28,7 @@ class PLATFORM_EXPORT FontFallbackMap : public FontCacheClient,
   scoped_refptr<FontFallbackList> Get(const FontDescription& font_description);
   void Remove(const FontDescription& font_description);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // FontSelectorClient

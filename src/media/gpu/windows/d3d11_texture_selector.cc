@@ -12,16 +12,19 @@
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/direct_composition_surface_win.h"
 
 namespace media {
 
 TextureSelector::TextureSelector(VideoPixelFormat pixfmt,
                                  DXGI_FORMAT output_dxgifmt,
-                                 bool supports_swap_chain)
+                                 ComD3D11VideoDevice video_device,
+                                 ComD3D11DeviceContext device_context)
     : pixel_format_(pixfmt),
       output_dxgifmt_(output_dxgifmt),
-      supports_swap_chain_(supports_swap_chain) {}
+      video_device_(std::move(video_device)),
+      device_context_(std::move(device_context)) {}
+
+TextureSelector::~TextureSelector() = default;
 
 bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
                       const gpu::GpuDriverBugWorkarounds& workarounds) {
@@ -41,11 +44,9 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     DXGI_FORMAT decoder_output_format,
     TextureSelector::HDRMode hdr_output_mode,
     const FormatSupportChecker* format_checker,
+    ComD3D11VideoDevice video_device,
+    ComD3D11DeviceContext device_context,
     MediaLog* media_log) {
-  bool supports_nv12_decode_swap_chain =
-      gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
-  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds);
-
   VideoPixelFormat output_pixel_format;
   DXGI_FORMAT output_dxgi_format;
   base::Optional<gfx::ColorSpace> output_color_space;
@@ -127,18 +128,11 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
           output_color_space.reset();
         }
 
-        // TODO(liberato): Handle HLG, if we can get the input color space.
-        // The rough outline looks something like this:
-#if 0
-        if (hlg) {
-        video_context1->VideoProcessorSetStreamColorSpace1(
-        d3d11_processor_.Get(), 0,
-        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
-    video_context1->VideoProcessorSetOutputColorSpace1(
-        d3d11_processor_.Get(), DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
-    dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
-  }
-#endif
+        // TODO(liberato): Handle HLG, if we can get the input color space. The
+        // VideoProcessor doesn't support HLG, so we need to use it only for YUV
+        // -> RGB conversion by setting the input color space to PQ YUV and the
+        // output color space to PQ RGB. The texture should then be marked as
+        // full range HLG so that Chrome's color management can fix it up.
       }
       break;
     }
@@ -151,12 +145,11 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   }
 
   // If we're trying to produce an output texture that's different from what
-  // the decoder is providing, then we need to copy it.
-  needs_texture_copy = (decoder_output_format != output_dxgi_format);
-
-  // Force texture copy on if requested for debugging.
-  if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
-    needs_texture_copy = true;
+  // the decoder is providing, then we need to copy it.  If sharing decoder
+  // textures is not allowed, then copy either way.
+  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds) ||
+                            (decoder_output_format != output_dxgi_format) ||
+               base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy);
 
   MEDIA_LOG(INFO, media_log)
       << "D3D11VideoDecoder output color space: "
@@ -167,26 +160,28 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is copying textures";
     return std::make_unique<CopyTextureSelector>(
         output_pixel_format, decoder_output_format, output_dxgi_format,
-        output_color_space,
-        supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
+        output_color_space, std::move(video_device), std::move(device_context));
   } else {
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is binding textures";
     // Binding can't change the color space.  The consumer has to do it, if they
     // want to.
     DCHECK(!output_color_space);
-    return std::make_unique<TextureSelector>(output_pixel_format,
-                                             output_dxgi_format,
-                                             supports_nv12_decode_swap_chain);
+    return std::make_unique<TextureSelector>(
+        output_pixel_format, output_dxgi_format, std::move(video_device),
+        std::move(device_context));
   }
 }
 
 std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
-    ComD3D11VideoDevice video_device,
-    ComD3D11DeviceContext device_context,
     gfx::Size size) {
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
-  return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat());
+  return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat(),
+                                                   PixelFormat());
+}
+
+bool TextureSelector::WillCopyForTesting() const {
+  return false;
 }
 
 CopyTextureSelector::CopyTextureSelector(
@@ -194,16 +189,21 @@ CopyTextureSelector::CopyTextureSelector(
     DXGI_FORMAT input_dxgifmt,
     DXGI_FORMAT output_dxgifmt,
     base::Optional<gfx::ColorSpace> output_color_space,
-    bool supports_swap_chain)
-    : TextureSelector(pixfmt, output_dxgifmt, supports_swap_chain),
-      output_color_space_(std::move(output_color_space)) {}
+    ComD3D11VideoDevice video_device,
+    ComD3D11DeviceContext device_context)
+    : TextureSelector(pixfmt,
+                      output_dxgifmt,
+                      std::move(video_device),
+                      std::move(device_context)),
+      output_color_space_(std::move(output_color_space)),
+      video_processor_proxy_(
+          base::MakeRefCounted<VideoProcessorProxy>(this->video_device(),
+                                                    this->device_context())) {}
 
 CopyTextureSelector::~CopyTextureSelector() = default;
 
 std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
-    ComD3D11VideoDevice video_device,
-    ComD3D11DeviceContext device_context,
     gfx::Size size) {
   D3D11_TEXTURE2D_DESC texture_desc = {};
   texture_desc.MipLevels = 1;
@@ -214,13 +214,6 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
   texture_desc.Usage = D3D11_USAGE_DEFAULT;
   texture_desc.BindFlags =
       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-
-  // Decode swap chains do not support shared resources.
-  // TODO(sunnyps): Find a workaround for when the decoder moves to its own
-  // thread and D3D device.  See https://crbug.com/911847
-  texture_desc.MiscFlags =
-      supports_swap_chain_ ? 0 : D3D11_RESOURCE_MISC_SHARED;
-
   texture_desc.Width = size.width();
   texture_desc.Height = size.height();
 
@@ -229,9 +222,14 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     return nullptr;
 
   return std::make_unique<CopyingTexture2DWrapper>(
-      size, std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat()),
-      std::make_unique<VideoProcessorProxy>(video_device, device_context),
-      out_texture, output_color_space_);
+      size,
+      std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat(),
+                                                PixelFormat()),
+      video_processor_proxy_, out_texture, output_color_space_);
+}
+
+bool CopyTextureSelector::WillCopyForTesting() const {
+  return true;
 }
 
 }  // namespace media

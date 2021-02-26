@@ -27,6 +27,8 @@
 
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -58,6 +60,7 @@
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -69,7 +72,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -258,7 +260,7 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
   auto* style =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value, /* important */ false,
-                     frame.GetDocument()->GetSecureContextMode());
+                     frame.DomWindow()->GetSecureContextMode());
   // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a
   // good reason for that?
   switch (source) {
@@ -717,8 +719,14 @@ static bool ExecuteToggleOverwrite(LocalFrame& frame,
                                    Event*,
                                    EditorCommandSource,
                                    const String&) {
-  frame.GetEditor().ToggleOverwriteModeEnabled();
-  return true;
+  // Overwrite mode is disabled by-default. We only return true
+  // if the flag is enabled explicitly by the user in about:flags page.
+  if (base::FeatureList::IsEnabled(features::kInsertKeyToggleMode)) {
+    frame.GetEditor().ToggleOverwriteModeEnabled();
+    return true;
+  }
+  // We return false to match the expectation of the ExecCommand.
+  return false;
 }
 
 static bool ExecutePrint(LocalFrame& frame,
@@ -1955,9 +1963,8 @@ bool EditorCommand::Execute(const String& parameter,
 
   GetFrame().GetDocument()->UpdateStyleAndLayout(
       DocumentUpdateReason::kEditing);
-  DEFINE_STATIC_LOCAL(SparseHistogram, command_histogram,
-                      ("WebCore.Editing.Commands"));
-  command_histogram.Sample(static_cast<int>(command_->command_type));
+  base::UmaHistogramSparse("WebCore.Editing.Commands",
+                           static_cast<int>(command_->command_type));
   return command_->execute(*frame_, triggering_event, source_, parameter);
 }
 

@@ -55,13 +55,13 @@ class Snapshot : public AllStatic {
       Isolate* isolate, std::vector<Context>* contexts,
       const std::vector<SerializeInternalFieldsCallback>&
           embedder_fields_serializers,
-      const DisallowHeapAllocation& no_gc,
+      const DisallowGarbageCollection& no_gc,
       SerializerFlags flags = kDefaultSerializerFlags);
 
   // Convenience helper for the above when only serializing a single context.
   static v8::StartupData Create(
       Isolate* isolate, Context default_context,
-      const DisallowHeapAllocation& no_gc,
+      const DisallowGarbageCollection& no_gc,
       SerializerFlags flags = kDefaultSerializerFlags);
 
   // ---------------- Deserialization -----------------------------------------
@@ -91,6 +91,7 @@ class Snapshot : public AllStatic {
   static bool EmbedsScript(Isolate* isolate);
   V8_EXPORT_PRIVATE static bool VerifyChecksum(const v8::StartupData* data);
   static bool ExtractRehashability(const v8::StartupData* data);
+  static bool VersionIsValid(const v8::StartupData* data);
 
   // To be implemented by the snapshot source.
   static const v8::StartupData* DefaultSnapshotBlob();

@@ -45,8 +45,8 @@ class FocusNotificationObserver : public ActivationChangeObserver,
         activation_changed_count_(0),
         focus_changed_count_(0),
         reactivation_count_(0),
-        reactivation_requested_window_(NULL),
-        reactivation_actual_window_(NULL) {}
+        reactivation_requested_window_(nullptr),
+        reactivation_actual_window_(nullptr) {}
   ~FocusNotificationObserver() override {}
 
   void ExpectCounts(int activation_changed_count, int focus_changed_count) {
@@ -260,7 +260,7 @@ class DeleteOnActivationChangeObserver : public ActivationChangeObserver,
 
   // Overridden from WindowDeleter:
   aura::Window* GetDeletedWindow() override {
-    return did_delete_ ? window_ : NULL;
+    return did_delete_ ? window_ : nullptr;
   }
 
  private:
@@ -299,7 +299,7 @@ class DeleteOnLoseFocusChangeObserver
 
   // Overridden from WindowDeleter:
   aura::Window* GetDeletedWindow() override {
-    return did_delete_ ? window_ : NULL;
+    return did_delete_ ? window_ : nullptr;
   }
 
  private:
@@ -338,8 +338,8 @@ class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
   }
   ~ScopedTargetFocusNotificationObserver() override {
     if (tracker_.Contains(target_)) {
-      SetActivationChangeObserver(target_, NULL);
-      aura::client::SetFocusChangeObserver(target_, NULL);
+      SetActivationChangeObserver(target_, nullptr);
+      aura::client::SetFocusChangeObserver(target_, nullptr);
     }
   }
 
@@ -367,8 +367,7 @@ class SimpleEventHandler : public ui::EventHandler {
 class FocusShiftingActivationObserver : public ActivationChangeObserver {
  public:
   explicit FocusShiftingActivationObserver(aura::Window* activated_window)
-      : activated_window_(activated_window),
-        shift_focus_to_(NULL) {}
+      : activated_window_(activated_window), shift_focus_to_(nullptr) {}
   ~FocusShiftingActivationObserver() override {}
 
   void set_shift_focus_to(aura::Window* shift_focus_to) {
@@ -448,7 +447,7 @@ class ActivateWhileActivatingObserver : public ActivationChangeObserver {
 // in tests for those FocusRules implementations.
 class TestFocusRules : public BaseFocusRules {
  public:
-  TestFocusRules() : focus_restriction_(NULL) {}
+  TestFocusRules() : focus_restriction_(nullptr) {}
 
   // Restricts focus and activation to this window and its child hierarchy.
   void set_focus_restriction(aura::Window* focus_restriction) {
@@ -549,7 +548,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   void TearDown() override {
     root_window()->RemovePreTargetHandler(focus_controller_.get());
     aura::test::AuraTestBase::TearDown();
-    test_focus_rules_ = NULL;  // Owned by FocusController.
+    test_focus_rules_ = nullptr;  // Owned by FocusController.
     focus_controller_.reset();
   }
 
@@ -640,21 +639,21 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Overridden from FocusControllerTestBase:
   void BasicFocus() override {
-    EXPECT_EQ(NULL, GetFocusedWindow());
+    EXPECT_FALSE(GetFocusedWindow());
     FocusWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
     FocusWindowById(2);
     EXPECT_EQ(2, GetFocusedWindowId());
   }
   void BasicActivation() override {
-    EXPECT_EQ(NULL, GetActiveWindow());
+    EXPECT_FALSE(GetActiveWindow());
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
     // Verify that attempting to deactivate NULL does not crash and does not
     // change activation.
-    DeactivateWindow(NULL);
+    DeactivateWindow(nullptr);
     EXPECT_EQ(2, GetActiveWindowId());
     DeactivateWindow(GetActiveWindow());
     EXPECT_EQ(1, GetActiveWindowId());
@@ -775,7 +774,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(11, GetFocusedWindowId());
   }
   void FocusRulesOverride() override {
-    EXPECT_EQ(NULL, GetFocusedWindow());
+    EXPECT_FALSE(GetFocusedWindow());
     FocusWindowById(11);
     EXPECT_EQ(11, GetFocusedWindowId());
 
@@ -786,7 +785,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     int focused_window = IsInputEvent() ? 11 : 211;
     EXPECT_EQ(focused_window, GetFocusedWindowId());
 
-    test_focus_rules()->set_focus_restriction(NULL);
+    test_focus_rules()->set_focus_restriction(nullptr);
     FocusWindowById(12);
     EXPECT_EQ(12, GetFocusedWindowId());
   }
@@ -805,7 +804,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(active_window, GetActiveWindowId());
     EXPECT_EQ(active_window, GetFocusedWindowId());
 
-    test_focus_rules()->set_focus_restriction(NULL);
+    test_focus_rules()->set_focus_restriction(nullptr);
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());
@@ -840,7 +839,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     // Simulate a focus reset by the ActivationChangeObserver. This should
     // trigger the default setting in FocusController.
-    observer->set_shift_focus_to(NULL);
+    observer->set_shift_focus_to(nullptr);
     ActivateWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
 
@@ -1180,16 +1179,16 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
   // Tests that a handled mouse or gesture event does not trigger a window
   // activation.
   void IgnoreHandledEvent() {
-    EXPECT_EQ(NULL, GetActiveWindow());
+    EXPECT_FALSE(GetActiveWindow());
     aura::Window* w1 = root_window()->GetChildById(1);
     SimpleEventHandler handler;
     root_window()->AddPreTargetHandler(&handler,
                                        ui::EventTarget::Priority::kSystem);
     ui::test::EventGenerator generator(root_window(), w1);
     generator.ClickLeftButton();
-    EXPECT_EQ(NULL, GetActiveWindow());
+    EXPECT_FALSE(GetActiveWindow());
     generator.GestureTapAt(w1->bounds().CenterPoint());
-    EXPECT_EQ(NULL, GetActiveWindow());
+    EXPECT_FALSE(GetActiveWindow());
     root_window()->RemovePreTargetHandler(&handler);
     generator.ClickLeftButton();
     EXPECT_EQ(1, GetActiveWindowId());
@@ -1278,7 +1277,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   // Overridden from FocusControllerTestBase:
   void BasicFocus() override {
-    EXPECT_EQ(NULL, GetFocusedWindow());
+    EXPECT_FALSE(GetFocusedWindow());
 
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
@@ -1291,7 +1290,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
   void BasicActivation() override {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
 
-    EXPECT_EQ(NULL, GetActiveWindow());
+    EXPECT_FALSE(GetActiveWindow());
 
     aura::Window* w2 = root_window()->GetChildById(2);
     ActivateWindow(w2);
@@ -1335,7 +1334,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     observer3.ExpectCounts(1, 1);
   }
   void FocusRulesOverride() override {
-    EXPECT_EQ(NULL, GetFocusedWindow());
+    EXPECT_FALSE(GetFocusedWindow());
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
     EXPECT_EQ(211, GetFocusedWindowId());
@@ -1346,7 +1345,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     // it to 11.
     EXPECT_EQ(11, GetFocusedWindowId());
 
-    test_focus_rules()->set_focus_restriction(NULL);
+    test_focus_rules()->set_focus_restriction(nullptr);
   }
   void ActivationRulesOverride() override {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
@@ -1366,7 +1365,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     EXPECT_EQ(3, GetActiveWindowId());
     EXPECT_EQ(3, GetFocusedWindowId());
 
-    test_focus_rules()->set_focus_restriction(NULL);
+    test_focus_rules()->set_focus_restriction(nullptr);
     ActivateWindow(root_window()->GetChildById(2));
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());

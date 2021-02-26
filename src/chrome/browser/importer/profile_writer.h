@@ -21,9 +21,12 @@ struct ImportedBookmarkEntry;
 class Profile;
 
 namespace autofill {
-struct PasswordForm;
 class AutofillEntry;
 }
+
+namespace password_manager {
+struct PasswordForm;
+}  // namespace password_manager
 
 // ProfileWriter encapsulates profile for writing entries into it.
 // This object must be invoked on UI thread.
@@ -38,7 +41,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   virtual bool TemplateURLServiceIsLoaded() const;
 
   // Helper methods for adding data to local stores.
-  virtual void AddPasswordForm(const autofill::PasswordForm& form);
+  virtual void AddPasswordForm(const password_manager::PasswordForm& form);
 
   virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source);

@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 import './strings.m.js';
-import './most_visited.js';
-import './customize_dialog.js';
-import './voice_search_overlay.js';
-import './untrusted_iframe.js';
+import './iframe.js';
 import './fakebox.js';
 import './realbox.js';
 import './logo.js';
+import './modules/module_wrapper.js';
+import './modules/modules.js'; // Registers module descriptors.
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {hexColorToSkColor, skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -21,8 +22,28 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
-import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
+import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog_types.js';
+import {ModuleDescriptor} from './modules/module_descriptor.js';
+import {ModuleRegistry} from './modules/module_registry.js';
+import {oneGoogleBarApi} from './one_google_bar_api.js';
+import {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
+import {$$} from './utils.js';
+
+/**
+ * @typedef {{
+ *   commandId: promoBrowserCommand.mojom.Command<number>,
+ *   clickInfo: !promoBrowserCommand.mojom.ClickInfo
+ * }}
+ */
+let CommandData;
+
+// Adds a <script> tag that holds the lazy loaded code.
+function ensureLazyLoaded() {
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = './lazy_load.js';
+  document.body.appendChild(script);
+}
 
 class AppElement extends PolymerElement {
   static get is() {
@@ -50,6 +71,13 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
+      oneGoogleBarModalOverlaysEnabled_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('oneGoogleBarModalOverlaysEnabled'),
+      },
+
+      /** @private */
       oneGoogleBarIframePath_: {
         type: String,
         value: () => {
@@ -57,12 +85,13 @@ class AppElement extends PolymerElement {
           params.set(
               'paramsencoded',
               btoa(window.location.search.replace(/^[?]/, '&')));
-          return `one-google-bar?${params}`;
+          return `chrome-untrusted://new-tab-page/one-google-bar?${params}`;
         },
       },
 
       /** @private */
       oneGoogleBarLoaded_: {
+        observer: 'oneGoogleBarLoadedChange_',
         type: Boolean,
         value: false,
       },
@@ -81,12 +110,6 @@ class AppElement extends PolymerElement {
         value: false,
         computed: `computeShowIframedOneGoogleBar_(iframeOneGoogleBarEnabled_,
             lazyRender_)`,
-      },
-
-      /** @private */
-      promoLoaded_: {
-        type: Boolean,
-        value: false,
       },
 
       /** @private {!newTabPage.mojom.Theme} */
@@ -143,6 +166,12 @@ class AppElement extends PolymerElement {
         type: Boolean,
       },
 
+      /** @private {skia.mojom.SkColor} */
+      backgroundColor_: {
+        computed: 'computeBackgroundColor_(showBackgroundImage_, theme_)',
+        type: Object,
+      },
+
       /** @private */
       logoColor_: {
         type: String,
@@ -167,12 +196,72 @@ class AppElement extends PolymerElement {
         computed: 'computeRealboxShown_(theme_)',
       },
 
+      /** @private */
+      modulesEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('modulesEnabled'),
+        reflectToAttribute: true,
+      },
+
+      /** @private */
+      modulesVisible_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
+      /** @private */
+      middleSlotPromoLoaded_: Boolean,
+
+      /** @private */
+      modulesLoaded_: Boolean,
+
+      /**
+       * In order to avoid flicker, the promo and modules are hidden until both
+       * are loaded. If modules are disabled, the promo is shown as soon as it
+       * is loaded.
+       * @private
+       */
+      promoAndModulesLoaded_: {
+        type: Boolean,
+        computed: `computePromoAndModulesLoaded_(middleSlotPromoLoaded_,
+            modulesLoaded_)`,
+        reflectToAttribute: true,
+      },
+
+      /** @private */
+      modulesLoadedAndVisible_: {
+        type: Boolean,
+        computed: `computeModulesLoadedAndVisible_(promoAndModulesLoaded_,
+            modulesVisible_)`,
+        observer: 'onModulesLoadedAndVisibleChange_',
+      },
+
       /**
        * If true, renders additional elements that were not deemed crucial to
        * to show up immediately on load.
        * @private
        */
       lazyRender_: Boolean,
+
+      /** @private {!Array<!ModuleDescriptor>} */
+      moduleDescriptors_: Object,
+
+      /**
+       * The <ntp-module-wrapper> element of the last dismissed module.
+       * @type {?Element}
+       * @private
+       */
+      dismissedModuleWrapper_: {
+        type: Object,
+        value: null,
+      },
+
+      /**
+       * The message shown in the toast when a module is dismissed.
+       * @type {string}
+       * @private
+       */
+      dismissModuleToastMessage_: String,
     };
   }
 
@@ -181,10 +270,14 @@ class AppElement extends PolymerElement {
     super();
     /** @private {!newTabPage.mojom.PageCallbackRouter} */
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
     /** @private {!BackgroundManager} */
     this.backgroundManager_ = BackgroundManager.getInstance();
     /** @private {?number} */
     this.setThemeListenerId_ = null;
+    /** @private {?number} */
+    this.setModulesVisibleListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
     this.loadOneGoogleBar_();
@@ -209,20 +302,24 @@ class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
-    this.eventTracker_.add(window, 'message', ({data}) => {
+    this.setModulesVisibleListenerId_ =
+        this.callbackRouter_.setModulesVisible.addListener(visible => {
+          this.modulesVisible_ = visible;
+        });
+    this.pageHandler_.updateModulesVisible();
+    this.eventTracker_.add(window, 'message', (event) => {
+      /** @type {!Object} */
+      const data = event.data;
       // Something in OneGoogleBar is sending a message that is received here.
       // Need to ignore it.
       if (typeof data !== 'object') {
         return;
       }
-      if ('frameType' in data) {
-        if (data.frameType === 'promo') {
-          this.handlePromoMessage_(data);
-        } else if (data.frameType === 'one-google-bar') {
-          this.handleOneGoogleBarMessage_(data);
-        }
+      if ('frameType' in data && data.frameType === 'one-google-bar') {
+        this.handleOneGoogleBarMessage_(event);
       }
     });
+    this.eventTracker_.add(window, 'keydown', e => this.onWindowKeydown_(e));
     if (this.shouldPrintPerformance_) {
       // It is possible that the background image has already loaded by now.
       // If it has, we request it to re-send the load time so that we can
@@ -254,8 +351,10 @@ class AppElement extends PolymerElement {
   /** @override */
   ready() {
     super.ready();
+    this.pageHandler_.onAppRendered(BrowserProxy.getInstance().now());
     // Let the browser breath and then render remaining elements.
     BrowserProxy.getInstance().waitForLazyRender().then(() => {
+      ensureLazyLoaded();
       this.lazyRender_ = true;
     });
     this.printPerformance_();
@@ -288,13 +387,14 @@ class AppElement extends PolymerElement {
   async loadOneGoogleBar_() {
     if (this.iframeOneGoogleBarEnabled_) {
       const oneGoogleBar = document.querySelector('#oneGoogleBar');
-      oneGoogleBar.remove();
+      if (oneGoogleBar) {
+        oneGoogleBar.remove();
+      }
       return;
     }
 
-    const {parts} =
-        await BrowserProxy.getInstance().handler.getOneGoogleBarParts(
-            window.location.search.replace(/^[?]/, '&'));
+    const {parts} = await this.pageHandler_.getOneGoogleBarParts(
+        window.location.search.replace(/^[?]/, '&'));
     if (!parts) {
       return;
     }
@@ -327,12 +427,12 @@ class AppElement extends PolymerElement {
     endOfBodyScript.appendChild(document.createTextNode(parts.endOfBodyScript));
     document.body.appendChild(endOfBodyScript);
 
-    BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
-        BrowserProxy.getInstance().now());
+    this.pageHandler_.onOneGoogleBarRendered(BrowserProxy.getInstance().now());
+    oneGoogleBarApi.trackDarkModeChanges();
   }
 
   /** @private */
-  async onOneGoogleBarDarkThemeEnabledChange_() {
+  onOneGoogleBarDarkThemeEnabledChange_() {
     if (!this.oneGoogleBarLoaded_) {
       return;
     }
@@ -343,16 +443,7 @@ class AppElement extends PolymerElement {
       });
       return;
     }
-    const {gbar} = /** @type {{gbar}} */ (window);
-    if (!gbar) {
-      return;
-    }
-    const oneGoogleBar =
-        await /** @type {!{a: {bf: function(): !Promise<{pc: !Function}>}}} */ (
-            gbar)
-            .a.bf();
-    oneGoogleBar.pc.call(
-        oneGoogleBar, this.oneGoogleBarDarkThemeEnabled_ ? 1 : 0);
+    oneGoogleBarApi.setForegroundLight(this.oneGoogleBarDarkThemeEnabled_);
   }
 
   /**
@@ -427,9 +518,37 @@ class AppElement extends PolymerElement {
         !!this.theme_;
   }
 
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computePromoAndModulesLoaded_() {
+    return this.middleSlotPromoLoaded_ &&
+        (!loadTimeData.getBoolean('modulesEnabled') || this.modulesLoaded_);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeModulesLoadedAndVisible_() {
+    return this.promoAndModulesLoaded_ && this.modulesVisible_;
+  }
+
   /** @private */
-  onVoiceSearchClick_() {
+  async onLazyRendered_() {
+    if (!loadTimeData.getBoolean('modulesEnabled')) {
+      return;
+    }
+    this.moduleDescriptors_ =
+        await ModuleRegistry.getInstance().initializeModules();
+  }
+
+  /** @private */
+  onOpenVoiceSearch_() {
     this.showVoiceSearchOverlay_ = true;
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kActivateSearchBox);
   }
 
   /** @private */
@@ -445,6 +564,27 @@ class AppElement extends PolymerElement {
   /** @private */
   onVoiceSearchOverlayClose_() {
     this.showVoiceSearchOverlay_ = false;
+  }
+
+  /**
+   * Handles <CTRL> + <SHIFT> + <.> (also <CMD> + <SHIFT> + <.> on mac) to open
+   * voice search.
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onWindowKeydown_(e) {
+    let ctrlKeyPressed = e.ctrlKey;
+    // <if expr="is_macosx">
+    ctrlKeyPressed = ctrlKeyPressed || e.metaKey;
+    // </if>
+    if (ctrlKeyPressed && e.code === 'Period' && e.shiftKey) {
+      this.showVoiceSearchOverlay_ = true;
+      this.pageHandler_.onVoiceSearchAction(
+          newTabPage.mojom.VoiceSearchAction.kActivateKeyboard);
+    }
+    if (ctrlKeyPressed && e.key === 'z') {
+      this.onUndoDismissModuleButtonClick_();
+    }
   }
 
   /**
@@ -484,6 +624,13 @@ class AppElement extends PolymerElement {
       this.backgroundManager_.setBackgroundColor(this.theme_.backgroundColor);
     }
     this.updateBackgroundImagePath_();
+  }
+
+  /** @private */
+  onModulesLoadedAndVisibleChange_() {
+    if (this.modulesLoadedAndVisible_) {
+      this.pageHandler_.onModulesRendered(BrowserProxy.getInstance().now());
+    }
   }
 
   /**
@@ -547,9 +694,20 @@ class AppElement extends PolymerElement {
    * @private
    */
   computeDoodleAllowed_() {
-    return !this.showBackgroundImage_ && this.theme_ &&
-        this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT &&
+    return loadTimeData.getBoolean('themeModeDoodlesEnabled') ||
+        !this.showBackgroundImage_ && this.theme_ && this.theme_.isDefault &&
         !this.theme_.isDark;
+  }
+
+  /**
+   * @return {skia.mojom.SkColor}
+   * @private
+   */
+  computeBackgroundColor_() {
+    if (this.showBackgroundImage_) {
+      return null;
+    }
+    return this.theme_ && this.theme_.backgroundColor;
   }
 
   /**
@@ -587,59 +745,217 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * Handles messages from the OneGoogleBar iframe. The messages that are
-   * handled include show bar on load and overlay updates.
-   * 'overlaysUpdated' message includes the updated array of overlay rects that
-   * are shown.
-   * @param {!Object} data
+   * Sends the command received from the given source and origin to the browser.
+   * Relays the browser response to whether or not a promo containing the given
+   * command can be shown back to the source promo frame. |commandSource| and
+   * |commandOrigin| are used only to send the response back to the source promo
+   * frame and should not be used for anything else.
+   * @param {Object} messageData Data received from the source promo frame.
+   * @param {Window} commandSource Source promo frame.
+   * @param {string} commandOrigin Origin of the source promo frame.
    * @private
    */
-  handleOneGoogleBarMessage_(data) {
+  canShowPromoWithBrowserCommand_(messageData, commandSource, commandOrigin) {
+    // Make sure we don't send unsupported commands to the browser.
+    /** @type {!promoBrowserCommand.mojom.Command} */
+    const commandId = Object.values(promoBrowserCommand.mojom.Command)
+                          .includes(messageData.commandId) ?
+        messageData.commandId :
+        promoBrowserCommand.mojom.Command.kUnknownCommand;
+
+    PromoBrowserCommandProxy.getInstance()
+        .handler.canShowPromoWithCommand(commandId)
+        .then(({canShow}) => {
+          const response = {messageType: messageData.messageType};
+          response[messageData.commandId] = canShow;
+          commandSource.postMessage(response, commandOrigin);
+        });
+  }
+
+  /**
+   * Sends the command and the accompanying mouse click info received from the
+   * promo of the given source and origin to the browser. Relays the execution
+   * status response back to the source promo frame. |commandSource| and
+   * |commandOrigin| are used only to send the execution status response back to
+   * the source promo frame and should not be used for anything else.
+   * @param {!CommandData} commandData Command and mouse click info.
+   * @param {Window} commandSource Source promo frame.
+   * @param {string} commandOrigin Origin of the source promo frame.
+   * @private
+   */
+  executePromoBrowserCommand_(commandData, commandSource, commandOrigin) {
+    // Make sure we don't send unsupported commands to the browser.
+    /** @type {!promoBrowserCommand.mojom.Command} */
+    const commandId = Object.values(promoBrowserCommand.mojom.Command)
+                          .includes(commandData.commandId) ?
+        commandData.commandId :
+        promoBrowserCommand.mojom.Command.kUnknownCommand;
+
+    PromoBrowserCommandProxy.getInstance()
+        .handler.executeCommand(commandId, commandData.clickInfo)
+        .then(({commandExecuted}) => {
+          commandSource.postMessage(commandExecuted, commandOrigin);
+        });
+  }
+
+  /**
+   * Handles messages from the OneGoogleBar iframe. The messages that are
+   * handled include show bar on load and overlay updates.
+   *
+   * 'overlaysUpdated' message includes the updated array of overlay rects that
+   * are shown.
+   *
+   * When modal overlays are enabled, activate/deactivate controls if the
+   * OneGoogleBar is layered on top of #content with a backdrop. This would
+   * happen when OneGoogleBar has an overlay open.
+   * @param {!MessageEvent} event
+   * @private
+   */
+  handleOneGoogleBarMessage_(event) {
+    /** @type {!Object} */
+    const data = event.data;
     if (data.messageType === 'loaded') {
+      if (!this.oneGoogleBarModalOverlaysEnabled_) {
+        const oneGoogleBar = $$(this, '#oneGoogleBar');
+        oneGoogleBar.style.clipPath = 'url(#oneGoogleBarClipPath)';
+        oneGoogleBar.style.zIndex = '1000';
+      }
       this.oneGoogleBarLoaded_ = true;
-      BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
+      this.pageHandler_.onOneGoogleBarRendered(
           BrowserProxy.getInstance().now());
     } else if (data.messageType === 'overlaysUpdated') {
-      this.$.oneGoogleBarClipPath.querySelectorAll('rect:not(:first-child)')
-          .forEach(el => {
-            el.remove();
-          });
+      this.$.oneGoogleBarClipPath.querySelectorAll('rect').forEach(el => {
+        el.remove();
+      });
       const overlayRects = /** @type {!Array<!DOMRect>} */ (data.data);
       overlayRects.forEach(({x, y, width, height}) => {
         const rectElement =
             document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rectElement.setAttribute('x', x);
-        rectElement.setAttribute('y', y);
-        rectElement.setAttribute('width', width);
-        rectElement.setAttribute('height', height);
+        // Add 8px around every rect to ensure shadows are not cutoff.
+        rectElement.setAttribute('x', x - 8);
+        rectElement.setAttribute('y', y - 8);
+        rectElement.setAttribute('width', width + 16);
+        rectElement.setAttribute('height', height + 16);
         this.$.oneGoogleBarClipPath.appendChild(rectElement);
       });
+    } else if (data.messageType === 'activate') {
+      this.$.oneGoogleBarOverlayBackdrop.toggleAttribute('show', true);
+      $$(this, '#oneGoogleBar').style.zIndex = '1000';
+    } else if (data.messageType === 'deactivate') {
+      this.$.oneGoogleBarOverlayBackdrop.toggleAttribute('show', false);
+      $$(this, '#oneGoogleBar').style.zIndex = '0';
+    } else if (data.messageType === 'can-show-promo-with-browser-command') {
+      this.canShowPromoWithBrowserCommand_(data, event.source, event.origin);
+    } else if (data.messageType === 'execute-browser-command') {
+      this.executePromoBrowserCommand_(
+          /** @type {!CommandData} */ (data.data), event.source, event.origin);
     }
   }
 
+  /** @private */
+  oneGoogleBarLoadedChange_() {
+    if (this.oneGoogleBarLoaded_ && this.iframeOneGoogleBarEnabled_ &&
+        this.oneGoogleBarModalOverlaysEnabled_) {
+      this.setupShortcutDragDropOneGoogleBarWorkaround_();
+    }
+  }
+
+  /** @private */
+  onMiddleSlotPromoLoaded_() {
+    this.middleSlotPromoLoaded_ = true;
+    // The promo is always shown when modules are enabled since it will not
+    // overlap with other elements.
+    if (this.modulesEnabled_) {
+      return;
+    }
+    const onResize = () => {
+      const promoElement = $$(this, 'ntp-middle-slot-promo');
+      promoElement.hidden =
+          $$(this, '#mostVisited').getBoundingClientRect().bottom >=
+          promoElement.offsetTop;
+    };
+    this.eventTracker_.add(window, 'resize', onResize);
+    onResize();
+  }
+
+  /** @private */
+  onModulesLoaded_() {
+    this.modulesLoaded_ = true;
+  }
+
   /**
-   * Handle messages from promo iframe. This shows the promo on load and sets
-   * up the show/hide logic (in case there is an overlap with most-visited
-   * tiles).
-   * @param {!Object} data
+   * @param {!CustomEvent<string>} e Event notifying a module was dismissed.
+   *     Contains the message to show in the toast.
    * @private
    */
-  handlePromoMessage_(data) {
-    if (data.messageType === 'loaded') {
-      this.promoLoaded_ = true;
-      const onResize = () => {
-        const hidePromo = this.$.mostVisited.getBoundingClientRect().bottom >=
-            $$(this, '#promo').offsetTop;
-        $$(this, '#promo').style.opacity = hidePromo ? 0 : 1;
-      };
-      this.eventTracker_.add(window, 'resize', onResize);
-      onResize();
-      BrowserProxy.getInstance().handler.onPromoRendered(
-          BrowserProxy.getInstance().now());
-    } else if (data.messageType === 'link-clicked') {
-      BrowserProxy.getInstance().handler.onPromoLinkClicked(
-          BrowserProxy.getInstance().now());
-    }
+  onDismissModule_(e) {
+    this.dismissedModuleWrapper_ = /** @type {!Element} */ (e.target);
+
+    // Notify the user.
+    this.dismissModuleToastMessage_ = e.detail;
+    $$(this, '#dismissModuleToast').show();
+    // Notify the backend.
+    this.pageHandler_.onDismissModule(
+        this.dismissedModuleWrapper_.descriptor.id);
+  }
+
+  /**
+   * @private
+   */
+  onUndoDismissModuleButtonClick_() {
+    // Restore the module.
+    this.dismissedModuleWrapper_.restore();
+    // Notify the user.
+    $$(this, '#dismissModuleToast').hide();
+    // Notify the backend.
+    this.pageHandler_.onRestoreModule(
+        this.dismissedModuleWrapper_.descriptor.id);
+
+    this.dismissedModuleWrapper_ = null;
+  }
+
+  /**
+   * During a shortcut drag, an iframe behind ntp-most-visited will prevent
+   * 'dragover' events from firing. To workaround this, 'pointer-events: none'
+   * can be set on the iframe. When doing this after the 'dragstart' event is
+   * fired is too late. We can instead set 'pointer-events: none' when the
+   * pointer enters ntp-most-visited.
+   *
+   * 'pointerenter' and pointerleave' events fire during drag. The iframe
+   * 'pointer-events' needs to be reset to the original value when 'dragend'
+   * fires if the pointer has left ntp-most-visited.
+   * @private
+   */
+  setupShortcutDragDropOneGoogleBarWorkaround_() {
+    const iframe = $$(this, '#oneGoogleBar');
+    let resetAtDragEnd = false;
+    let dragging = false;
+    let originalPointerEvents;
+    this.eventTracker_.add(this.$.mostVisited, 'pointerenter', () => {
+      if (dragging) {
+        resetAtDragEnd = false;
+        return;
+      }
+      originalPointerEvents = getComputedStyle(iframe).pointerEvents;
+      iframe.style.pointerEvents = 'none';
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'pointerleave', () => {
+      if (dragging) {
+        resetAtDragEnd = true;
+        return;
+      }
+      iframe.style.pointerEvents = originalPointerEvents;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragstart', () => {
+      dragging = true;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragend', () => {
+      dragging = false;
+      if (resetAtDragEnd) {
+        resetAtDragEnd = false;
+        iframe.style.pointerEvents = originalPointerEvents;
+      }
+    });
   }
 
   /** @private */

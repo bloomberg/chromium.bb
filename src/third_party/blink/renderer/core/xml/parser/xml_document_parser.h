@@ -71,13 +71,11 @@ class XMLParserContext : public RefCounted<XMLParserContext> {
 
 class XMLDocumentParser final : public ScriptableDocumentParser,
                                 public XMLParserScriptRunnerHost {
-  USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
-
  public:
   explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
   ~XMLDocumentParser() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Exposed for callbacks:
   void HandleError(XMLErrors::ErrorType, const char* message, TextPosition);
@@ -218,6 +216,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
 
   XMLErrors xml_errors_;
 
+  Member<Document> document_;
   Member<XMLParserScriptRunner> script_runner_;
   TextPosition script_start_position_;
 

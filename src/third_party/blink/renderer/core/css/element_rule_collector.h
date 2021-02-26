@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
@@ -76,7 +75,7 @@ class MatchedRule {
     return GetRuleData()->Specificity() + specificity_;
   }
   const CSSStyleSheet* ParentStyleSheet() const { return parent_style_sheet_; }
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(parent_style_sheet_);
     visitor->Trace(rule_data_);
   }
@@ -104,7 +103,7 @@ using StyleRuleList = HeapVector<Member<StyleRule>>;
 // Create one, ask what rules the ElementResolveContext matches
 // and then let it go out of scope.
 // FIXME: Currently it modifies the ComputedStyle but should not!
-class ElementRuleCollector {
+class CORE_EXPORT ElementRuleCollector {
   STACK_ALLOCATED();
 
  public:
@@ -113,6 +112,8 @@ class ElementRuleCollector {
                        MatchResult&,
                        ComputedStyle*,
                        EInsideLink);
+  ElementRuleCollector(const ElementRuleCollector&) = delete;
+  ElementRuleCollector& operator=(const ElementRuleCollector&) = delete;
   ~ElementRuleCollector();
 
   void SetMode(SelectorChecker::Mode mode) { mode_ = mode; }
@@ -147,8 +148,8 @@ class ElementRuleCollector {
   void FinishAddingUserRules() {
     result_.FinishAddingUserRules();
   }
-  void FinishAddingAuthorRulesForTreeScope() {
-    result_.FinishAddingAuthorRulesForTreeScope();
+  void FinishAddingAuthorRulesForTreeScope(const TreeScope& tree_scope) {
+    result_.FinishAddingAuthorRulesForTreeScope(tree_scope);
   }
   void SetIncludeEmptyRules(bool include) { include_empty_rules_ = include; }
   bool IncludeEmptyRules() const { return include_empty_rules_; }
@@ -165,6 +166,9 @@ class ElementRuleCollector {
                                    const MatchRequest&,
                                    PartNames* = nullptr);
 
+  bool Match(SelectorChecker&,
+             const SelectorChecker::SelectorCheckingContext&,
+             MatchResult&);
   void DidMatchRule(const RuleData*,
                     const SelectorChecker::MatchResult&,
                     ShadowV0CascadeOrder,
@@ -199,7 +203,6 @@ class ElementRuleCollector {
   Member<RuleIndexList> css_rule_list_;
   Member<StyleRuleList> style_rule_list_;
   MatchResult& result_;
-  DISALLOW_COPY_AND_ASSIGN(ElementRuleCollector);
 };
 
 }  // namespace blink

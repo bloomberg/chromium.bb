@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/scoped_guest_button_blocker.h"
 
 namespace {
@@ -42,16 +43,9 @@ void TestLoginScreen::EnableAddUserButton(bool enable) {}
 
 void TestLoginScreen::EnableShutdownButton(bool enable) {}
 
-void TestLoginScreen::ShowGuestButtonInOobe(bool show) {}
+void TestLoginScreen::SetIsFirstSigninStep(bool is_first) {}
 
 void TestLoginScreen::ShowParentAccessButton(bool show) {}
-
-void TestLoginScreen::ShowParentAccessWidget(
-    const AccountId& child_account_id,
-    base::OnceCallback<void(bool success)> callback,
-    ash::ParentAccessRequestReason reason,
-    bool extra_dimmer,
-    base::Time validation_time) {}
 
 void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
 

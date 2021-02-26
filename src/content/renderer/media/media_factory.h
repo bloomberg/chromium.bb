@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "build/buildflag.h"
+#include "build/chromecast_buildflags.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/routing_token_callback.h"
@@ -18,13 +19,16 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_renderer_factory.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
-#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_media_inspector.h"
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+// Needed by remoting sender.
+#include "media/mojo/mojom/remoting.mojom.h"
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
 namespace blink {
 class BrowserInterfaceBrokerProxy;
@@ -55,6 +59,7 @@ namespace content {
 
 class RenderFrameImpl;
 class MediaInterfaceFactory;
+struct RenderFrameMediaPlaybackOptions;
 
 // Assist to RenderFrameImpl in creating various media clients.
 class MediaFactory {
@@ -113,8 +118,8 @@ class MediaFactory {
  private:
   std::unique_ptr<media::RendererFactorySelector> CreateRendererFactorySelector(
       media::MediaLog* media_log,
-      bool use_media_player,
-      bool enable_mojo_renderer,
+      blink::WebURL url,
+      const RenderFrameMediaPlaybackOptions& renderer_media_playback_options,
       media::DecoderFactory* decoder_factory,
       std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
       base::WeakPtr<media::MediaObserver>* out_media_observer);
@@ -123,7 +128,6 @@ class MediaFactory {
       blink::WebMediaPlayerClient* client,
       blink::MediaInspectorContext* inspector_context,
       const blink::WebString& sink_id,
-      const blink::WebSecurityOrigin& security_origin,
       blink::WebLocalFrame* frame,
       viz::FrameSinkId parent_frame_sink_id,
       const cc::LayerTreeSettings& settings);

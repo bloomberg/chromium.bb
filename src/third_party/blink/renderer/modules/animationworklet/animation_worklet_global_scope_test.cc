@@ -6,15 +6,15 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
@@ -102,14 +102,10 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                           base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-    ScriptState::Scope scope(script_state);
-    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
+    ASSERT_TRUE(
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
+            ->RunScriptOnWorkerOrWorklet(*global_scope));
+
     waitable_event->Signal();
   }
 
@@ -117,13 +113,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                                     base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
-    ScriptState::Scope scope(script_state);
 
     {
       // registerAnimator() with a valid class definition should define an
@@ -135,8 +124,9 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               animate () {}
             });
           )JS";
-      ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
-          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
+      ASSERT_TRUE(
+          ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
+              ->RunScriptOnWorkerOrWorklet(*global_scope));
 
       AnimatorDefinition* definition =
           global_scope->FindDefinitionForTest("test");
@@ -147,8 +137,9 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
       // registerAnimator() with a null class definition should fail to define
       // an animator.
       String source_code = "registerAnimator('null', null);";
-      ASSERT_FALSE(global_scope->ScriptController()->Evaluate(
-          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
+      ASSERT_FALSE(
+          ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
+              ->RunScriptOnWorkerOrWorklet(*global_scope));
       EXPECT_FALSE(global_scope->FindDefinitionForTest("null"));
     }
 
@@ -157,18 +148,28 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     waitable_event->Signal();
   }
 
+  static bool RunScriptAndGetBoolean(AnimationWorkletGlobalScope* global_scope,
+                                     const String& script) {
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    DCHECK(script_state);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    DCHECK(isolate);
+    ScriptState::Scope scope(script_state);
+
+    ScriptEvaluationResult result =
+        global_scope->ScriptController()->EvaluateAndReturnValue(
+            ScriptSourceCode(script), SanitizeScriptErrors::kSanitize);
+    DCHECK_EQ(result.GetResultType(),
+              ScriptEvaluationResult::ResultType::kSuccess);
+    return ToBoolean(isolate, result.GetSuccessValue(), ASSERT_NO_EXCEPTION);
+  }
+
   void RunConstructAndAnimateTestOnWorklet(
       WorkerThread* thread,
       base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
-    ScriptState::Scope scope(script_state);
 
     String source_code =
         R"JS(
@@ -187,21 +188,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               }
             });
         )JS";
-    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
+    ASSERT_TRUE(
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
+            ->RunScriptOnWorkerOrWorklet(*global_scope));
 
-    ScriptValue constructed_before =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().constructed"));
-    EXPECT_FALSE(
-        ToBoolean(isolate, constructed_before.V8Value(), ASSERT_NO_EXCEPTION))
+    EXPECT_FALSE(RunScriptAndGetBoolean(
+        global_scope, "Function('return this')().constructed"))
         << "constructor is not invoked";
 
-    ScriptValue animated_before =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().animated"));
-    EXPECT_FALSE(
-        ToBoolean(isolate, animated_before.V8Value(), ASSERT_NO_EXCEPTION))
+    EXPECT_FALSE(RunScriptAndGetBoolean(global_scope,
+                                        "Function('return this')().animated"))
         << "animate function is invoked early";
 
     // Passing a new input state with a new animation id should cause the
@@ -217,18 +213,12 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         ProxyClientMutate(state, global_scope);
     EXPECT_EQ(output->animations.size(), 1ul);
 
-    ScriptValue constructed_after =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().constructed"));
-    EXPECT_TRUE(
-        ToBoolean(isolate, constructed_after.V8Value(), ASSERT_NO_EXCEPTION))
+    EXPECT_TRUE(RunScriptAndGetBoolean(global_scope,
+                                       "Function('return this')().constructed"))
         << "constructor is not invoked";
 
-    ScriptValue animated_after =
-        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
-            ScriptSourceCode("Function('return this')().animated"));
-    EXPECT_TRUE(
-        ToBoolean(isolate, animated_after.V8Value(), ASSERT_NO_EXCEPTION))
+    EXPECT_TRUE(RunScriptAndGetBoolean(global_scope,
+                                       "Function('return this')().animated"))
         << "animate function is not invoked";
 
     waitable_event->Signal();
@@ -238,14 +228,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                                       base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
-    ScriptState::Scope scope(script_state);
-
     String source_code =
         R"JS(
             class Stateful {
@@ -266,8 +248,9 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             registerAnimator('stateless_animator', Stateless);
             registerAnimator('foo', Foo);
         )JS";
-    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
+    ASSERT_TRUE(
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source_code))
+            ->RunScriptOnWorkerOrWorklet(*global_scope));
 
     AnimatorDefinition* first_definition =
         global_scope->FindDefinitionForTest("stateful_animator");
@@ -288,23 +271,15 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
     ASSERT_TRUE(global_scope);
     ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
-    ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(
-            R"JS(
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(
+                                               R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"),
-        SanitizeScriptErrors::kDoNotSanitize);
+          )JS"))
+        ->RunScriptOnWorkerOrWorklet(*global_scope);
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
@@ -335,25 +310,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
     ASSERT_TRUE(global_scope);
     ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
-
-    ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(
-            R"JS(
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(
+                                               R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"),
-        SanitizeScriptErrors::kDoNotSanitize);
+          )JS"))
+        ->RunScriptOnWorkerOrWorklet(*global_scope);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
@@ -392,25 +358,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
         static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
     ASSERT_TRUE(global_scope);
     ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
-
-    ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(
-            R"JS(
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(
+                                               R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"),
-        SanitizeScriptErrors::kDoNotSanitize);
+          )JS"))
+        ->RunScriptOnWorkerOrWorklet(*global_scope);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;

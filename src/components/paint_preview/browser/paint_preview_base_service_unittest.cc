@@ -8,11 +8,13 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/paint_preview/browser/paint_preview_base_service_test_factory.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/test_utils.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -141,6 +143,8 @@ class PaintPreviewBaseServiceTest : public content::RenderViewHostTestHarness {
     PaintPreviewBaseServiceTestFactory::GetInstance()->SetTestingFactory(
         rejection_policy_key_.get(),
         base::BindRepeating(&BuildServiceWithRejectionPolicy));
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL("https://www.chromium.org"));
   }
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {
@@ -186,28 +190,28 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 50,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 50,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
              const base::FilePath& expected_path,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 0);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 0);
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
             auto token = base::UnguessableToken::Deserialize(
-                proto->root_frame().embedding_token_high(),
-                proto->root_frame().embedding_token_low());
+                result->proto.root_frame().embedding_token_high(),
+                result->proto.root_frame().embedding_token_low());
 #if defined(OS_WIN)
             base::FilePath path = base::FilePath(
-                base::UTF8ToUTF16(proto->root_frame().file_path()));
+                base::UTF8ToUTF16(result->proto.root_frame().file_path()));
             base::FilePath name(
                 base::UTF8ToUTF16(base::StrCat({token.ToString(), ".skp"})));
 #else
             base::FilePath path =
-                base::FilePath(proto->root_frame().file_path());
+                base::FilePath(result->proto.root_frame().file_path());
             base::FilePath name(base::StrCat({token.ToString(), ".skp"}));
 #endif
             EXPECT_EQ(path.DirName(), expected_path);
@@ -240,14 +244,14 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_EQ(proto, nullptr);
+            EXPECT_EQ(result, nullptr);
             std::move(quit_closure).Run();
           },
           loop.QuitClosure(),
@@ -275,14 +279,14 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_EQ(proto, nullptr);
+            EXPECT_EQ(result, nullptr);
             std::move(quit_closure).Run();
           },
           loop.QuitClosure(),

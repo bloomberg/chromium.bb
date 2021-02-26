@@ -26,8 +26,6 @@ import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.signin.ChildAccountStatus;
 
@@ -40,7 +38,6 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
-@Features.EnableFeatures(ChromeFeatureList.CHROME_DUET)
 public class FirstRunFlowSequencerTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -62,7 +59,6 @@ public class FirstRunFlowSequencerTest {
         public boolean isSignedIn;
         public boolean isSyncAllowed;
         public List<Account> googleAccounts;
-        public boolean hasAnyUserSeenToS;
         public boolean shouldSkipFirstUseHints;
         public boolean isFirstRunEulaAccepted;
         public boolean shouldShowDataReductionPage;
@@ -97,11 +93,6 @@ public class FirstRunFlowSequencerTest {
         @Override
         public List<Account> getGoogleAccounts() {
             return googleAccounts;
-        }
-
-        @Override
-        public boolean hasAnyUserSeenToS() {
-            return hasAnyUserSeenToS;
         }
 
         @Override
@@ -157,7 +148,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isSyncAllowed = true;
         mSequencer.googleAccounts =
                 Collections.singletonList(new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE));
-        mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isFirstRunEulaAccepted = true;
         mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
@@ -175,7 +165,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
         mSequencer.googleAccounts = Collections.emptyList();
-        mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
@@ -202,7 +191,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isSyncAllowed = true;
         mSequencer.googleAccounts =
                 Collections.singletonList(new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE));
-        mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.initializeSharedState(ChildAccountStatus.REGULAR_CHILD);
@@ -230,7 +218,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
         mSequencer.googleAccounts = Collections.emptyList();
-        mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
         mSequencer.shouldShowSearchEnginePage = false;
@@ -257,7 +244,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
         mSequencer.googleAccounts = Collections.emptyList();
-        mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
         mSequencer.shouldShowSearchEnginePage = true;
@@ -275,22 +261,5 @@ public class FirstRunFlowSequencerTest {
         assertEquals(ChildAccountStatus.NOT_CHILD,
                 bundle.getInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS));
         assertEquals(4, bundle.size());
-    }
-
-    @Test
-    @Feature({"FirstRun"})
-    public void testBottomToolbarEnabledAfterFirstRun() {
-        mSequencer.isFirstRunFlowComplete = false;
-        mSequencer.isSignedIn = false;
-        mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = Collections.emptyList();
-        mSequencer.hasAnyUserSeenToS = false;
-        mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
-
-        mSequencer.processFreEnvironmentPreNative();
-
-        assertTrue(BottomToolbarConfiguration.isBottomToolbarEnabled());
     }
 }

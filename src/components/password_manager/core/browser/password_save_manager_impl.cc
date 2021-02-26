@@ -20,11 +20,10 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
-using autofill::PasswordForm;
-using autofill::ValueElementPair;
 
 namespace password_manager {
 
@@ -40,7 +39,7 @@ ValueElementPair PasswordToSave(const PasswordForm& form) {
 
 PasswordForm PendingCredentialsForNewCredentials(
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const base::string16& password_element,
     bool is_http_auth,
     bool is_credential_api_save) {
@@ -48,7 +47,8 @@ PasswordForm PendingCredentialsForNewCredentials(
     return parsed_submitted_form;
 
   PasswordForm pending_credentials = parsed_submitted_form;
-  pending_credentials.form_data = observed_form;
+  if (observed_form)
+    pending_credentials.form_data = *observed_form;
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials.password_value.clear();
   // The password element should be determined earlier in |PasswordToSave|.
@@ -56,6 +56,7 @@ PasswordForm PendingCredentialsForNewCredentials(
   // The new password's value and element name should be empty.
   pending_credentials.new_password_value.clear();
   pending_credentials.new_password_element.clear();
+  pending_credentials.new_password_element_renderer_id = FieldRendererId();
   return pending_credentials;
 }
 
@@ -154,7 +155,7 @@ void PasswordSaveManagerImpl::Init(
 
 void PasswordSaveManagerImpl::CreatePendingCredentials(
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const FormData& submitted_form,
     bool is_http_auth,
     bool is_credential_api_save) {
@@ -171,7 +172,8 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
       submitted_form, generated_password, is_http_auth, is_credential_api_save,
       similar_saved_form);
 
-  SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
+  if (votes_uploader_)
+    SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
 }
 
 void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
@@ -206,12 +208,12 @@ void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
   }
 }
 
-void PasswordSaveManagerImpl::ResetPendingCrednetials() {
+void PasswordSaveManagerImpl::ResetPendingCredentials() {
   pending_credentials_ = PasswordForm();
   pending_credentials_state_ = PendingCredentialsState::NONE;
 }
 
-void PasswordSaveManagerImpl::Save(const FormData& observed_form,
+void PasswordSaveManagerImpl::Save(const FormData* observed_form,
                                    const PasswordForm& parsed_submitted_form) {
   if (IsPasswordUpdate() &&
       pending_credentials_.type == PasswordForm::Type::kGenerated &&
@@ -238,7 +240,7 @@ void PasswordSaveManagerImpl::Save(const FormData& observed_form,
 
 void PasswordSaveManagerImpl::Update(
     const PasswordForm& credentials_to_update,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
@@ -314,7 +316,8 @@ void PasswordSaveManagerImpl::PasswordNoLongerGenerated() {
       PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordDeleted);
 }
 
-void PasswordSaveManagerImpl::MoveCredentialsToAccountStore() {
+void PasswordSaveManagerImpl::MoveCredentialsToAccountStore(
+    metrics_util::MoveToAccountStoreTrigger) {
   // Moving credentials is only supported in MultiStorePasswordSaveManager.
   NOTREACHED();
 }
@@ -371,7 +374,7 @@ PendingCredentialsState PasswordSaveManagerImpl::ComputePendingCredentialsState(
 PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
     PendingCredentialsState pending_credentials_state,
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const FormData& submitted_form,
     const base::Optional<base::string16>& generated_password,
     bool is_http_auth,
@@ -403,7 +406,7 @@ PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
       password_manager_util::UpdateMetadataForUsage(&pending_credentials);
 
       // Update |pending_credentials| in order to be able correctly save it.
-      pending_credentials.origin = parsed_submitted_form.origin;
+      pending_credentials.url = parsed_submitted_form.url;
       pending_credentials.signon_realm = parsed_submitted_form.signon_realm;
       pending_credentials.action = parsed_submitted_form.action;
       break;
@@ -442,7 +445,7 @@ PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
   return pending_credentials;
 }
 
-std::pair<const autofill::PasswordForm*, PendingCredentialsState>
+std::pair<const PasswordForm*, PendingCredentialsState>
 PasswordSaveManagerImpl::FindSimilarSavedFormAndComputeState(
     const PasswordForm& parsed_submitted_form) const {
   const PasswordForm* similar_saved_form =
@@ -454,7 +457,7 @@ PasswordSaveManagerImpl::FindSimilarSavedFormAndComputeState(
 }
 
 void PasswordSaveManagerImpl::SavePendingToStore(
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
   UploadVotesAndMetrics(observed_form, parsed_submitted_form);
 
@@ -490,16 +493,24 @@ base::string16 PasswordSaveManagerImpl::GetOldPassword(
 }
 
 void PasswordSaveManagerImpl::UploadVotesAndMetrics(
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
+  metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+      parsed_submitted_form.submission_event);
+  metrics_recorder_->SetSubmissionIndicatorEvent(
+      parsed_submitted_form.submission_event);
+
   if (IsNewLogin()) {
     metrics_util::LogNewlySavedPasswordIsGenerated(
         pending_credentials_.type == PasswordForm::Type::kGenerated,
         client_->GetPasswordFeatureManager()
             ->ComputePasswordAccountStorageUsageLevel());
-    votes_uploader_->SendVotesOnSave(observed_form, parsed_submitted_form,
-                                     form_fetcher_->GetBestMatches(),
-                                     &pending_credentials_);
+    // Don't send votes if there was no observed form.
+    if (observed_form) {
+      votes_uploader_->SendVotesOnSave(*observed_form, parsed_submitted_form,
+                                       form_fetcher_->GetBestMatches(),
+                                       &pending_credentials_);
+    }
     return;
   }
 
@@ -517,11 +528,12 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
       base::UserMetricsAction("PasswordManager_LoginFollowingAutofill"));
 
   // Check to see if this form is a candidate for password generation.
-  // Do not send votes on change password forms, since they were already sent
-  // in Update() method.
-  if (!parsed_submitted_form.IsPossibleChangePasswordForm()) {
+  // Do not send votes if there was no observed form. Furthermore, don't send
+  // votes on change password forms, since they were already sent in Update()
+  // method.
+  if (observed_form && !parsed_submitted_form.IsPossibleChangePasswordForm()) {
     votes_uploader_->SendVoteOnCredentialsReuse(
-        observed_form, parsed_submitted_form, &pending_credentials_);
+        *observed_form, parsed_submitted_form, &pending_credentials_);
   }
   if (IsPasswordUpdate()) {
     votes_uploader_->UploadPasswordVote(
@@ -541,9 +553,9 @@ FormSaver* PasswordSaveManagerImpl::GetFormSaverForGeneration() {
   return form_saver_.get();
 }
 
-std::vector<const autofill::PasswordForm*>
+std::vector<const PasswordForm*>
 PasswordSaveManagerImpl::GetRelevantMatchesForGeneration(
-    const std::vector<const autofill::PasswordForm*>& matches) {
+    const std::vector<const PasswordForm*>& matches) {
   return matches;
 }
 

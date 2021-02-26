@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/quic/core/chlo_extractor.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
@@ -36,7 +37,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_time_wait_list_manager_peer.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
@@ -133,8 +133,9 @@ class TestDispatcher : public QuicDispatcher {
   MOCK_METHOD(std::unique_ptr<QuicSession>,
               CreateQuicSession,
               (QuicConnectionId connection_id,
+               const QuicSocketAddress& self_address,
                const QuicSocketAddress& peer_address,
-               quiche::QuicheStringPiece alpn,
+               absl::string_view alpn,
                const quic::ParsedQuicVersion& version),
               (override));
 
@@ -441,7 +442,7 @@ class QuicDispatcherTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     QuicConnectionId connection_id = TestConnectionId(++connection_id_);
     QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(connection_id, client_address,
+                CreateQuicSession(connection_id, _, client_address,
                                   Eq(ExpectedAlpnForVersion(version)), _))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, connection_id, client_address,
@@ -463,12 +464,16 @@ class QuicDispatcherTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     QuicConnectionId connection_id = TestConnectionId(++connection_id_);
     QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(connection_id, client_address, _, _))
+                CreateQuicSession(connection_id, _, client_address, _, _))
         .Times(0);
     ProcessFirstFlight(version, client_address, connection_id);
   }
 
   void TestTlsMultiPacketClientHello(bool add_reordering);
+
+  void TestVersionNegotiationForUnknownVersionInvalidShortInitialConnectionId(
+      const QuicConnectionId& server_connection_id,
+      const QuicConnectionId& client_connection_id);
 
   ParsedQuicVersion version_;
   MockQuicConnectionHelper mock_helper_;
@@ -506,7 +511,7 @@ TEST_P(QuicDispatcherTestAllVersions, TlsClientHelloCreatesSession) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -557,7 +562,7 @@ void QuicDispatcherTestBase::TestTlsMultiPacketClientHello(
 
   // Processing the second packet should create the new session.
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(server_connection_id, client_address,
+              CreateQuicSession(server_connection_id, _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, server_connection_id, client_address,
@@ -580,11 +585,76 @@ TEST_P(QuicDispatcherTestAllVersions, TlsMultiPacketClientHelloWithReordering) {
   TestTlsMultiPacketClientHello(/*add_reordering=*/true);
 }
 
+TEST_P(QuicDispatcherTestAllVersions, LegacyVersionEncapsulation) {
+  if (!version_.HasLongHeaderLengths()) {
+    // Decapsulating Legacy Version Encapsulation packets from these versions
+    // is not currently supported in QuicDispatcher.
+    return;
+  }
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  QuicConnectionId server_connection_id = TestConnectionId();
+  QuicConfig client_config = DefaultQuicConfig();
+  client_config.SetClientConnectionOptions(QuicTagVector{kQLVE});
+  std::vector<std::unique_ptr<QuicReceivedPacket>> packets =
+      GetFirstFlightOfPackets(version_, client_config, server_connection_id);
+  ASSERT_EQ(packets.size(), 1u);
+
+  // Validate that Legacy Version Encapsulation is actually being used by
+  // checking the version of the packet before processing it.
+  PacketHeaderFormat format = IETF_QUIC_LONG_HEADER_PACKET;
+  QuicLongHeaderType long_packet_type;
+  bool version_present;
+  bool has_length_prefix;
+  QuicVersionLabel version_label;
+  ParsedQuicVersion parsed_version = ParsedQuicVersion::Unsupported();
+  QuicConnectionId destination_connection_id, source_connection_id;
+  bool retry_token_present;
+  absl::string_view retry_token;
+  std::string detailed_error;
+  const QuicErrorCode error = QuicFramer::ParsePublicHeaderDispatcher(
+      QuicEncryptedPacket(packets[0]->data(), packets[0]->length()),
+      kQuicDefaultConnectionIdLength, &format, &long_packet_type,
+      &version_present, &has_length_prefix, &version_label, &parsed_version,
+      &destination_connection_id, &source_connection_id, &retry_token_present,
+      &retry_token, &detailed_error);
+  ASSERT_THAT(error, IsQuicNoError()) << detailed_error;
+  EXPECT_EQ(format, GOOGLE_QUIC_PACKET);
+  EXPECT_TRUE(version_present);
+  EXPECT_FALSE(has_length_prefix);
+  EXPECT_EQ(parsed_version, LegacyVersionForEncapsulation());
+  EXPECT_EQ(destination_connection_id, server_connection_id);
+  EXPECT_EQ(source_connection_id, EmptyQuicConnectionId());
+  EXPECT_FALSE(retry_token_present);
+  EXPECT_TRUE(detailed_error.empty());
+
+  // Processing the packet should create a new session.
+  EXPECT_CALL(*dispatcher_,
+              CreateQuicSession(server_connection_id, _, client_address,
+                                Eq(ExpectedAlpn()), _))
+      .WillOnce(Return(ByMove(CreateSession(
+          dispatcher_.get(), config_, server_connection_id, client_address,
+          &mock_helper_, &mock_alarm_factory_, &crypto_config_,
+          QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_))));
+  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
+              ProcessUdpPacket(_, _, _))
+      .Times(2);
+
+  ProcessReceivedPacket(packets[0]->Clone(), client_address, version_,
+                        server_connection_id);
+  EXPECT_EQ(dispatcher_->session_map().size(), 1u);
+
+  // Processing the same packet a second time should also be routed by the
+  // dispatcher to the right connection (we expect ProcessUdpPacket to be
+  // called twice, see the EXPECT_CALL above).
+  ProcessReceivedPacket(std::move(packets[0]), client_address, version_,
+                        server_connection_id);
+}
+
 TEST_P(QuicDispatcherTestAllVersions, ProcessPackets) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -601,7 +671,7 @@ TEST_P(QuicDispatcherTestAllVersions, ProcessPackets) {
   ProcessFirstFlight(client_address, TestConnectionId(1));
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(2), client_address,
+              CreateQuicSession(TestConnectionId(2), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(2), client_address,
@@ -631,7 +701,7 @@ TEST_P(QuicDispatcherTestAllVersions, DispatcherDoesNotRejectPacketNumberZero) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -659,7 +729,7 @@ TEST_P(QuicDispatcherTestOneVersion, StatelessVersionNegotiation) {
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(
       *time_wait_list_manager_,
       SendVersionNegotiationPacket(TestConnectionId(1), _, _, _, _, _, _, _))
@@ -674,7 +744,7 @@ TEST_P(QuicDispatcherTestOneVersion,
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               SendVersionNegotiationPacket(connection_id, _, _, _, _, _, _, _))
       .Times(1);
@@ -687,7 +757,7 @@ TEST_P(QuicDispatcherTestOneVersion,
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               SendVersionNegotiationPacket(
                   TestConnectionId(1), TestConnectionId(2), _, _, _, _, _, _))
@@ -700,7 +770,7 @@ TEST_P(QuicDispatcherTestOneVersion, NoVersionNegotiationWithSmallPacket) {
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               SendVersionNegotiationPacket(_, _, _, _, _, _, _, _))
       .Times(0);
@@ -724,7 +794,7 @@ TEST_P(QuicDispatcherTestOneVersion,
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               SendVersionNegotiationPacket(_, _, _, _, _, _, _, _))
       .Times(1);
@@ -743,7 +813,7 @@ TEST_P(QuicDispatcherTestAllVersions, Shutdown) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(_, client_address, Eq(ExpectedAlpn()), _))
+              CreateQuicSession(_, _, client_address, Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
           &mock_helper_, &mock_alarm_factory_, &crypto_config_,
@@ -771,7 +841,7 @@ TEST_P(QuicDispatcherTestAllVersions, TimeWaitListManager) {
   // Create a new session.
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   QuicConnectionId connection_id = TestConnectionId(1);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, _, client_address,
                                               Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, connection_id, client_address,
@@ -800,8 +870,7 @@ TEST_P(QuicDispatcherTestAllVersions, TimeWaitListManager) {
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _))
       .Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   ProcessPacket(client_address, connection_id, true, "data");
 }
@@ -813,12 +882,11 @@ TEST_P(QuicDispatcherTestAllVersions, NoVersionPacketToTimeWaitListManager) {
   QuicConnectionId connection_id = TestConnectionId(1);
   // Dispatcher forwards all packets for this connection_id to the time wait
   // list manager.
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _))
       .Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, SendPublicReset(_, _, _, _, _))
       .Times(1);
@@ -835,10 +903,9 @@ TEST_P(QuicDispatcherTestAllVersions,
   QuicReceivedPacket packet(short_packet, 22, QuicTime::Zero());
   char valid_size_packet[23] = {0x70, 0xa7, 0x02, 0x6c};
   QuicReceivedPacket packet2(valid_size_packet, 23, QuicTime::Zero());
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   // Verify small packet is silently dropped.
   EXPECT_CALL(*time_wait_list_manager_, SendPublicReset(_, _, _, _, _))
@@ -863,7 +930,7 @@ TEST_P(QuicDispatcherTestAllVersions, LongConnectionIdLengthReplaced) {
       QuicUtils::CreateReplacementConnectionId(bad_connection_id);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(fixed_connection_id, client_address,
+              CreateQuicSession(fixed_connection_id, _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, fixed_connection_id, client_address,
@@ -900,7 +967,7 @@ TEST_P(QuicDispatcherTestAllVersions, InvalidShortConnectionIdLengthReplaced) {
   // validation is still enabled.
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(fixed_connection_id, client_address,
+              CreateQuicSession(fixed_connection_id, _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, fixed_connection_id, client_address,
@@ -931,7 +998,7 @@ TEST_P(QuicDispatcherTestAllVersions, MixGoodAndBadConnectionIdLengthPackets) {
       QuicUtils::CreateReplacementConnectionId(bad_connection_id);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -948,7 +1015,7 @@ TEST_P(QuicDispatcherTestAllVersions, MixGoodAndBadConnectionIdLengthPackets) {
   ProcessFirstFlight(client_address, TestConnectionId(1));
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(fixed_connection_id, client_address,
+              CreateQuicSession(fixed_connection_id, _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, fixed_connection_id, client_address,
@@ -981,18 +1048,17 @@ TEST_P(QuicDispatcherTestAllVersions, ProcessPacketWithZeroPort) {
 
   // dispatcher_ should drop this packet.
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address, _, _))
+              CreateQuicSession(TestConnectionId(1), _, client_address, _, _))
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   ProcessPacket(client_address, TestConnectionId(1), /*has_version_flag=*/true,
                 "data");
 }
 
 TEST_P(QuicDispatcherTestAllVersions,
-       ProcessPacketWithInvalidShortInitialConnectionId) {
+       DropPacketWithKnownVersionAndInvalidShortInitialConnectionId) {
   if (!version_.AllowsVariableLengthConnectionIds()) {
     return;
   }
@@ -1001,141 +1067,195 @@ TEST_P(QuicDispatcherTestAllVersions,
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   // dispatcher_ should drop this packet.
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, client_address, _, _))
-      .Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   ProcessFirstFlight(client_address, EmptyQuicConnectionId());
 }
 
-TEST_P(QuicDispatcherTestAllVersions, OKSeqNoPacketProcessed) {
-  if (version_.UsesTls()) {
-    // QUIC+TLS allows clients to start with any packet number.
-    return;
-  }
+void QuicDispatcherTestBase::
+    TestVersionNegotiationForUnknownVersionInvalidShortInitialConnectionId(
+        const QuicConnectionId& server_connection_id,
+        const QuicConnectionId& client_connection_id) {
+  SetQuicReloadableFlag(quic_send_version_negotiation_for_short_connection_ids,
+                        true);
+  CreateTimeWaitListManager();
+
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
-  QuicConnectionId connection_id = TestConnectionId(1);
 
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
-                                Eq(ExpectedAlpn()), _))
-      .WillOnce(Return(ByMove(CreateSession(
-          dispatcher_.get(), config_, TestConnectionId(1), client_address,
-          &mock_helper_, &mock_alarm_factory_, &crypto_config_,
-          QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_))));
-  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
-              ProcessUdpPacket(_, _, _))
-      .WillOnce(WithArg<2>(Invoke([this](const QuicEncryptedPacket& packet) {
-        ValidatePacket(TestConnectionId(1), packet);
-      })));
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              SendVersionNegotiationPacket(
+                  server_connection_id, client_connection_id,
+                  /*ietf_quic=*/true,
+                  /*use_length_prefix=*/true, _, _, client_address, _))
+      .Times(1);
+  ProcessFirstFlight(ParsedQuicVersion::ReservedForNegotiation(),
+                     client_address, server_connection_id,
+                     client_connection_id);
+}
 
-  // A packet whose packet number is the largest that is allowed to start a
-  // connection.
-  EXPECT_CALL(*dispatcher_,
-              ShouldCreateOrBufferPacketForConnection(
-                  ReceivedPacketInfoConnectionIdEquals(connection_id)));
-  ProcessPacket(client_address, connection_id, true, SerializeCHLO(),
-                CONNECTION_ID_PRESENT, PACKET_4BYTE_PACKET_NUMBER,
-                QuicDispatcher::kMaxReasonableInitialPacketNumber);
+TEST_P(QuicDispatcherTestOneVersion,
+       VersionNegotiationForUnknownVersionInvalidShortInitialConnectionId) {
+  TestVersionNegotiationForUnknownVersionInvalidShortInitialConnectionId(
+      EmptyQuicConnectionId(), EmptyQuicConnectionId());
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       VersionNegotiationForUnknownVersionInvalidShortInitialConnectionId2) {
+  char server_connection_id_bytes[3] = {1, 2, 3};
+  QuicConnectionId server_connection_id(server_connection_id_bytes,
+                                        sizeof(server_connection_id_bytes));
+  TestVersionNegotiationForUnknownVersionInvalidShortInitialConnectionId(
+      server_connection_id, EmptyQuicConnectionId());
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       VersionNegotiationForUnknownVersionInvalidShortInitialConnectionId3) {
+  char client_connection_id_bytes[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+  QuicConnectionId client_connection_id(client_connection_id_bytes,
+                                        sizeof(client_connection_id_bytes));
+  TestVersionNegotiationForUnknownVersionInvalidShortInitialConnectionId(
+      EmptyQuicConnectionId(), client_connection_id);
 }
 
 TEST_P(QuicDispatcherTestOneVersion, VersionsChangeInFlight) {
   VerifyVersionNotSupported(QuicVersionReservedForNegotiation());
   for (ParsedQuicVersion version : CurrentSupportedVersions()) {
     VerifyVersionSupported(version);
+    QuicDisableVersion(version);
+    VerifyVersionNotSupported(version);
+    QuicEnableVersion(version);
+    VerifyVersionSupported(version);
   }
-
-  // Turn off version Q050.
-  SetQuicReloadableFlag(quic_disable_version_q050, true);
-  VerifyVersionNotSupported(
-      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_50));
-
-  // Turn on version Q050.
-  SetQuicReloadableFlag(quic_disable_version_q050, false);
-  VerifyVersionSupported(
-      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_50));
 }
 
 TEST_P(QuicDispatcherTestOneVersion,
-       RejectDeprecatedVersionsWithVersionNegotiation) {
-  static_assert(quic::SupportedVersions().size() == 8u,
-                "Please add deprecated versions to this test");
+       RejectDeprecatedVersionDraft28WithVersionNegotiation) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   CreateTimeWaitListManager();
-
-  {
-    char packet47[kMinPacketSizeForVersionNegotiation] = {
-        0xC0, 'Q', '0', '4', '7', /*connection ID length byte*/ 0x50};
-    QuicReceivedPacket received_packet47(
-        packet47, kMinPacketSizeForVersionNegotiation, QuicTime::Zero());
-    EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-    EXPECT_CALL(*time_wait_list_manager_,
-                SendVersionNegotiationPacket(_, _, _, _, _, _, _, _))
-        .Times(1);
-    dispatcher_->ProcessPacket(server_address_, client_address,
-                               received_packet47);
-  }
-
-  {
-    char packet45[kMinPacketSizeForVersionNegotiation] = {
-        0xC0, 'Q', '0', '4', '5', /*connection ID length byte*/ 0x50};
-    QuicReceivedPacket received_packet45(
-        packet45, kMinPacketSizeForVersionNegotiation, QuicTime::Zero());
-    EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-    EXPECT_CALL(*time_wait_list_manager_,
-                SendVersionNegotiationPacket(_, _, _, _, _, _, _, _))
-        .Times(1);
-    dispatcher_->ProcessPacket(server_address_, client_address,
-                               received_packet45);
-  }
-
-  {
-    char packet44[kMinPacketSizeForVersionNegotiation] = {
-        0xFF, 'Q', '0', '4', '4', /*connection ID length byte*/ 0x50};
-    QuicReceivedPacket received_packet44(
-        packet44, kMinPacketSizeForVersionNegotiation, QuicTime::Zero());
-    EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-    EXPECT_CALL(*time_wait_list_manager_,
-                SendVersionNegotiationPacket(_, _, _, _, _, _, _, _))
-        .Times(1);
-    dispatcher_->ProcessPacket(server_address_, client_address,
-                               received_packet44);
-  }
-}
-
-TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbeOld) {
-  SetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids, false);
-  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
-  CreateTimeWaitListManager();
-  char packet[1200];
-  char destination_connection_id_bytes[] = {0x56, 0x4e, 0x20, 0x70,
-                                            0x6c, 0x7a, 0x20, 0x21};
-  EXPECT_TRUE(QuicFramer::WriteClientVersionNegotiationProbePacket(
-      packet, sizeof(packet), destination_connection_id_bytes,
-      sizeof(destination_connection_id_bytes)));
-  QuicEncryptedPacket encrypted(packet, sizeof(packet), false);
-  std::unique_ptr<QuicReceivedPacket> received_packet(
-      ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
-  QuicConnectionId client_connection_id = EmptyQuicConnectionId();
-  QuicConnectionId server_connection_id(
-      destination_connection_id_bytes, sizeof(destination_connection_id_bytes));
-  bool ietf_quic = true;
-  bool use_length_prefix =
-      GetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids);
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 0xFF, 0x00, 0x00, 28, /*destination connection ID length*/ 0x08};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(
       *time_wait_list_manager_,
-      SendVersionNegotiationPacket(server_connection_id, client_connection_id,
-                                   ietf_quic, use_length_prefix, _, _, _, _))
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/true, _, _, _, _))
       .Times(1);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-
-  dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
 }
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionDraft25WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 0xFF, 0x00, 0x00, 25, /*destination connection ID length*/ 0x08};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/true, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionQ049WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 'Q', '0', '4', '9', /*destination connection ID length*/ 0x08};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/true, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionQ048WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 'Q', '0', '4', '8', /*connection ID length byte*/ 0x50};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/false, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionQ047WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 'Q', '0', '4', '7', /*connection ID length byte*/ 0x50};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/false, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionQ045WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet[kMinPacketSizeForVersionNegotiation] = {
+      0xC0, 'Q', '0', '4', '5', /*connection ID length byte*/ 0x50};
+  QuicReceivedPacket received_packet(packet, ABSL_ARRAYSIZE(packet),
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/false, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionQ044WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  char packet44[kMinPacketSizeForVersionNegotiation] = {
+      0xFF, 'Q', '0', '4', '4', /*connection ID length byte*/ 0x50};
+  QuicReceivedPacket received_packet44(
+      packet44, kMinPacketSizeForVersionNegotiation, QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/false, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address,
+                             received_packet44);
+}
+
+static_assert(quic::SupportedVersions().size() == 7u,
+              "Please add new RejectDeprecatedVersion tests above this assert "
+              "when deprecating versions");
 
 TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbe) {
-  SetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   CreateTimeWaitListManager();
   char packet[1200];
@@ -1150,15 +1270,12 @@ TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbe) {
   QuicConnectionId client_connection_id = EmptyQuicConnectionId();
   QuicConnectionId server_connection_id(
       destination_connection_id_bytes, sizeof(destination_connection_id_bytes));
-  bool ietf_quic = true;
-  bool use_length_prefix =
-      GetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids);
-  EXPECT_CALL(
-      *time_wait_list_manager_,
-      SendVersionNegotiationPacket(server_connection_id, client_connection_id,
-                                   ietf_quic, use_length_prefix, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_,
+              SendVersionNegotiationPacket(
+                  server_connection_id, client_connection_id,
+                  /*ietf_quic=*/true, /*use_length_prefix=*/true, _, _, _, _))
       .Times(1);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
 
   dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
 }
@@ -1187,53 +1304,7 @@ class SavingWriter : public QuicPacketWriterWrapper {
   std::vector<std::unique_ptr<QuicEncryptedPacket>> packets_;
 };
 
-TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbeEndToEndOld) {
-  SetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids, false);
-
-  SavingWriter* saving_writer = new SavingWriter();
-  // dispatcher_ takes ownership of saving_writer.
-  QuicDispatcherPeer::UseWriter(dispatcher_.get(), saving_writer);
-
-  QuicTimeWaitListManager* time_wait_list_manager = new QuicTimeWaitListManager(
-      saving_writer, dispatcher_.get(), mock_helper_.GetClock(),
-      &mock_alarm_factory_);
-  // dispatcher_ takes ownership of time_wait_list_manager.
-  QuicDispatcherPeer::SetTimeWaitListManager(dispatcher_.get(),
-                                             time_wait_list_manager);
-  char packet[1200] = {};
-  char destination_connection_id_bytes[] = {0x56, 0x4e, 0x20, 0x70,
-                                            0x6c, 0x7a, 0x20, 0x21};
-  EXPECT_TRUE(QuicFramer::WriteClientVersionNegotiationProbePacket(
-      packet, sizeof(packet), destination_connection_id_bytes,
-      sizeof(destination_connection_id_bytes)));
-  QuicEncryptedPacket encrypted(packet, sizeof(packet), false);
-  std::unique_ptr<QuicReceivedPacket> received_packet(
-      ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-
-  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
-  dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
-  ASSERT_EQ(1u, saving_writer->packets()->size());
-
-  char source_connection_id_bytes[255] = {};
-  uint8_t source_connection_id_length = 0;
-  std::string detailed_error = "foobar";
-  EXPECT_TRUE(QuicFramer::ParseServerVersionNegotiationProbeResponse(
-      (*(saving_writer->packets()))[0]->data(),
-      (*(saving_writer->packets()))[0]->length(), source_connection_id_bytes,
-      &source_connection_id_length, &detailed_error));
-  EXPECT_EQ("", detailed_error);
-
-  // The source connection ID of the probe response should match the
-  // destination connection ID of the probe request.
-  quiche::test::CompareCharArraysWithHexError(
-      "parsed probe", source_connection_id_bytes, source_connection_id_length,
-      destination_connection_id_bytes, sizeof(destination_connection_id_bytes));
-}
-
 TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbeEndToEnd) {
-  SetQuicFlag(FLAGS_quic_prober_uses_length_prefixed_connection_ids, true);
-
   SavingWriter* saving_writer = new SavingWriter();
   // dispatcher_ takes ownership of saving_writer.
   QuicDispatcherPeer::UseWriter(dispatcher_.get(), saving_writer);
@@ -1253,14 +1324,14 @@ TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbeEndToEnd) {
   QuicEncryptedPacket encrypted(packet, sizeof(packet), false);
   std::unique_ptr<QuicReceivedPacket> received_packet(
       ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
 
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
   ASSERT_EQ(1u, saving_writer->packets()->size());
 
   char source_connection_id_bytes[255] = {};
-  uint8_t source_connection_id_length = 0;
+  uint8_t source_connection_id_length = sizeof(source_connection_id_bytes);
   std::string detailed_error = "foobar";
   EXPECT_TRUE(QuicFramer::ParseServerVersionNegotiationProbeResponse(
       (*(saving_writer->packets()))[0]->data(),
@@ -1273,55 +1344,6 @@ TEST_P(QuicDispatcherTestOneVersion, VersionNegotiationProbeEndToEnd) {
   quiche::test::CompareCharArraysWithHexError(
       "parsed probe", source_connection_id_bytes, source_connection_id_length,
       destination_connection_id_bytes, sizeof(destination_connection_id_bytes));
-}
-
-TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTestOld) {
-  if (GetQuicReloadableFlag(quic_remove_android_conformance_test_workaround)) {
-    // TODO(b/139691956) Remove this test once the flag is deprecated.
-    return;
-  }
-  SavingWriter* saving_writer = new SavingWriter();
-  // dispatcher_ takes ownership of saving_writer.
-  QuicDispatcherPeer::UseWriter(dispatcher_.get(), saving_writer);
-
-  QuicTimeWaitListManager* time_wait_list_manager = new QuicTimeWaitListManager(
-      saving_writer, dispatcher_.get(), mock_helper_.GetClock(),
-      &mock_alarm_factory_);
-  // dispatcher_ takes ownership of time_wait_list_manager.
-  QuicDispatcherPeer::SetTimeWaitListManager(dispatcher_.get(),
-                                             time_wait_list_manager);
-  // clang-format off
-  static const unsigned char packet[] = {
-    // Android UDP network conformance test packet as it was before this change:
-    // https://android-review.googlesource.com/c/platform/cts/+/1104285
-    0x0c,  // public flags: 8-byte connection ID, 1-byte packet number
-    0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,  // 8-byte connection ID
-    0x01,  // 1-byte packet number
-    0x00,  // private flags
-    0x07,  // PING frame
-  };
-  // clang-format on
-
-  QuicEncryptedPacket encrypted(reinterpret_cast<const char*>(packet),
-                                sizeof(packet), false);
-  std::unique_ptr<QuicReceivedPacket> received_packet(
-      ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
-
-  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
-  dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
-  ASSERT_EQ(1u, saving_writer->packets()->size());
-
-  // The Android UDP network conformance test directly checks that bytes 1-9
-  // of the response match the connection ID that was sent.
-  static const char connection_id_bytes[] = {0x71, 0x72, 0x73, 0x74,
-                                             0x75, 0x76, 0x77, 0x78};
-  ASSERT_GE((*(saving_writer->packets()))[0]->length(),
-            1u + sizeof(connection_id_bytes));
-  quiche::test::CompareCharArraysWithHexError(
-      "response connection ID", &(*(saving_writer->packets()))[0]->data()[1],
-      sizeof(connection_id_bytes), connection_id_bytes,
-      sizeof(connection_id_bytes));
 }
 
 TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTest) {
@@ -1340,7 +1362,57 @@ TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTest) {
   // clang-format off
   static const unsigned char packet[1200] = {
     // Android UDP network conformance test packet as it was after this change:
+    // https://android-review.googlesource.com/c/platform/cts/+/1454515
+    0xc0,  // long header
+    0xaa, 0xda, 0xca, 0xca,  // reserved-space version number
+    0x08,  // destination connection ID length
+    0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,  // 8-byte connection ID
+    0x00,  // source connection ID length
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(reinterpret_cast<const char*>(packet),
+                                sizeof(packet), false);
+  std::unique_ptr<QuicReceivedPacket> received_packet(
+      ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
+
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
+  ASSERT_EQ(1u, saving_writer->packets()->size());
+
+  // The Android UDP network conformance test directly checks that these bytes
+  // of the response match the connection ID that was sent.
+  ASSERT_GE((*(saving_writer->packets()))[0]->length(), 15u);
+  quiche::test::CompareCharArraysWithHexError(
+      "response connection ID", &(*(saving_writer->packets()))[0]->data()[7], 8,
+      reinterpret_cast<const char*>(&packet[6]), 8);
+}
+
+TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTestOld) {
+  // WARNING: this test covers an old Android Conformance Test that has now been
+  // changed, but it'll take time for the change to propagate through the
+  // Android ecosystem. The Android team has asked us to keep this test
+  // supported until at least 2021-03-31. After that date, and when we drop
+  // support for sending QUIC version negotiation packets using the legacy
+  // Google QUIC format (Q001-Q043), then we can delete this test.
+  // TODO(dschinazi) delete this test after 2021-03-31
+  SavingWriter* saving_writer = new SavingWriter();
+  // dispatcher_ takes ownership of saving_writer.
+  QuicDispatcherPeer::UseWriter(dispatcher_.get(), saving_writer);
+
+  QuicTimeWaitListManager* time_wait_list_manager = new QuicTimeWaitListManager(
+      saving_writer, dispatcher_.get(), mock_helper_.GetClock(),
+      &mock_alarm_factory_);
+  // dispatcher_ takes ownership of time_wait_list_manager.
+  QuicDispatcherPeer::SetTimeWaitListManager(dispatcher_.get(),
+                                             time_wait_list_manager);
+  // clang-format off
+  static const unsigned char packet[1200] = {
+    // Android UDP network conformance test packet as it was after this change:
     // https://android-review.googlesource.com/c/platform/cts/+/1104285
+    // but before this change:
+    // https://android-review.googlesource.com/c/platform/cts/+/1454515
     0x0d,  // public flags: version, 8-byte connection ID, 1-byte packet number
     0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,  // 8-byte connection ID
     0xaa, 0xda, 0xca, 0xaa,  // reserved-space version number
@@ -1354,7 +1426,7 @@ TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTest) {
                                 sizeof(packet), false);
   std::unique_ptr<QuicReceivedPacket> received_packet(
       ConstructReceivedPacket(encrypted, mock_helper_.GetClock()->Now()));
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
 
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   dispatcher_->ProcessPacket(server_address_, client_address, *received_packet);
@@ -1373,17 +1445,12 @@ TEST_P(QuicDispatcherTestOneVersion, AndroidConformanceTest) {
 }
 
 TEST_P(QuicDispatcherTestAllVersions, DoNotProcessSmallPacket) {
-  if (!version_.HasIetfInvariantHeader()) {
-    // We only drop small packets when using IETF_QUIC_LONG_HEADER_PACKET.
-    return;
-  }
   CreateTimeWaitListManager();
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, SendPacket(_, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   ProcessPacket(client_address, TestConnectionId(1), /*has_version_flag=*/true,
                 version_, SerializeCHLO(), /*full_padding=*/false,
@@ -1442,7 +1509,7 @@ TEST_P(QuicDispatcherTestAllVersions, StopAcceptingNewConnections) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -1460,7 +1527,7 @@ TEST_P(QuicDispatcherTestAllVersions, StopAcceptingNewConnections) {
 
   // No more new connections afterwards.
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(2), client_address,
+              CreateQuicSession(TestConnectionId(2), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .Times(0u);
   ProcessFirstFlight(client_address, TestConnectionId(2));
@@ -1481,7 +1548,7 @@ TEST_P(QuicDispatcherTestAllVersions, StartAcceptingNewConnections) {
 
   // No more new connections afterwards.
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(2), client_address,
+              CreateQuicSession(TestConnectionId(2), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .Times(0u);
   ProcessFirstFlight(client_address, TestConnectionId(2));
@@ -1490,7 +1557,7 @@ TEST_P(QuicDispatcherTestAllVersions, StartAcceptingNewConnections) {
   EXPECT_TRUE(dispatcher_->accept_new_connections());
 
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(1), client_address,
+              CreateQuicSession(TestConnectionId(1), _, client_address,
                                 Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, TestConnectionId(1), client_address,
@@ -1509,7 +1576,7 @@ TEST_P(QuicDispatcherTestOneVersion, SelectAlpn) {
   EXPECT_EQ(QuicDispatcherPeer::SelectAlpn(dispatcher_.get(), {""}), "");
   EXPECT_EQ(QuicDispatcherPeer::SelectAlpn(dispatcher_.get(), {"hq"}), "hq");
   // Q033 is no longer supported but Q050 is.
-  QuicEnableVersion(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_50));
+  QuicEnableVersion(ParsedQuicVersion::Q050());
   EXPECT_EQ(
       QuicDispatcherPeer::SelectAlpn(dispatcher_.get(), {"h3-Q033", "h3-Q050"}),
       "h3-Q050");
@@ -1532,10 +1599,9 @@ TEST_P(QuicDispatcherTestStrayPacketConnectionId,
 
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   QuicConnectionId connection_id = TestConnectionId(1);
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
 
   ProcessPacket(client_address, connection_id, true, "data",
@@ -1574,7 +1640,7 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTestBase {
     QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(_, client_address, Eq(ExpectedAlpn()), _))
+                CreateQuicSession(_, _, client_address, Eq(ExpectedAlpn()), _))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, TestConnectionId(1), client_address,
             &helper_, &alarm_factory_, &crypto_config_,
@@ -1590,7 +1656,7 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTestBase {
     ProcessFirstFlight(client_address, TestConnectionId(1));
 
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(_, client_address, Eq(ExpectedAlpn()), _))
+                CreateQuicSession(_, _, client_address, Eq(ExpectedAlpn()), _))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, TestConnectionId(2), client_address,
             &helper_, &alarm_factory_, &crypto_config_,
@@ -1916,8 +1982,8 @@ TEST_P(BufferedPacketStoreTest, ProcessNonChloPacketBeforeChlo) {
 
   // When CHLO arrives, a new session should be created, and all packets
   // buffered should be delivered to the session.
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(conn_id, client_addr_, Eq(ExpectedAlpn()), _))
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, _, client_addr_,
+                                              Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, conn_id, client_addr_, &mock_helper_,
           &mock_alarm_factory_, &crypto_config_,
@@ -1951,8 +2017,8 @@ TEST_P(BufferedPacketStoreTest, ProcessNonChloPacketsUptoLimitAndProcessChlo) {
   data_connection_map_[conn_id].pop_back();
   // When CHLO arrives, a new session should be created, and all packets
   // buffered should be delivered to the session.
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(conn_id, client_addr_, Eq(ExpectedAlpn()), _))
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, _, client_addr_,
+                                              Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, conn_id, client_addr_, &mock_helper_,
           &mock_alarm_factory_, &crypto_config_,
@@ -2003,7 +2069,7 @@ TEST_P(BufferedPacketStoreTest,
                   ShouldCreateOrBufferPacketForConnection(
                       ReceivedPacketInfoConnectionIdEquals(conn_id)));
     }
-    EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, client_address,
+    EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, _, client_address,
                                                 Eq(ExpectedAlpn()), _))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, conn_id, client_address, &mock_helper_,
@@ -2031,8 +2097,8 @@ TEST_P(BufferedPacketStoreTest, DeliverEmptyPackets) {
   QuicConnectionId conn_id = TestConnectionId(1);
   EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(
                                 ReceivedPacketInfoConnectionIdEquals(conn_id)));
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(conn_id, client_addr_, Eq(ExpectedAlpn()), _))
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, _, client_addr_,
+                                              Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, conn_id, client_addr_, &mock_helper_,
           &mock_alarm_factory_, &crypto_config_,
@@ -2051,8 +2117,8 @@ TEST_P(BufferedPacketStoreTest, ReceiveRetransmittedCHLO) {
 
   // When CHLO arrives, a new session should be created, and all packets
   // buffered should be delivered to the session.
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(conn_id, client_addr_, Eq(ExpectedAlpn()), _))
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, _, client_addr_,
+                                              Eq(ExpectedAlpn()), _))
       .Times(1)  // Only triggered by 1st CHLO.
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, conn_id, client_addr_, &mock_helper_,
@@ -2121,7 +2187,7 @@ TEST_P(BufferedPacketStoreTest, ProcessCHLOsUptoLimitAndBufferTheRest) {
             ReceivedPacketInfoConnectionIdEquals(TestConnectionId(conn_id))));
     if (conn_id <= kMaxNumSessionsToCreate) {
       EXPECT_CALL(*dispatcher_,
-                  CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                  CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                     Eq(ExpectedAlpn()), _))
           .WillOnce(Return(ByMove(CreateSession(
               dispatcher_.get(), config_, TestConnectionId(conn_id),
@@ -2156,7 +2222,7 @@ TEST_P(BufferedPacketStoreTest, ProcessCHLOsUptoLimitAndBufferTheRest) {
        conn_id <= kMaxNumSessionsToCreate + kDefaultMaxConnectionsInStore;
        ++conn_id) {
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                   Eq(ExpectedAlpn()), _))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, TestConnectionId(conn_id), client_addr_,
@@ -2172,7 +2238,7 @@ TEST_P(BufferedPacketStoreTest, ProcessCHLOsUptoLimitAndBufferTheRest) {
             })));
   }
   EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(TestConnectionId(kNumCHLOs), client_addr_,
+              CreateQuicSession(TestConnectionId(kNumCHLOs), _, client_addr_,
                                 Eq(ExpectedAlpn()), _))
       .Times(0);
 
@@ -2192,7 +2258,7 @@ TEST_P(BufferedPacketStoreTest, BufferDuplicatedCHLO) {
     // Last CHLO will be buffered. Others will create connection right away.
     if (conn_id <= kMaxNumSessionsToCreate) {
       EXPECT_CALL(*dispatcher_,
-                  CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                  CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                     Eq(ExpectedAlpn()), _))
           .WillOnce(Return(ByMove(CreateSession(
               dispatcher_.get(), config_, TestConnectionId(conn_id),
@@ -2219,7 +2285,7 @@ TEST_P(BufferedPacketStoreTest, BufferDuplicatedCHLO) {
   size_t packets_buffered = 2;
 
   // Reset counter and process buffered CHLO.
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(last_connection, client_addr_,
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(last_connection, _, client_addr_,
                                               Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, last_connection, client_addr_,
@@ -2245,7 +2311,7 @@ TEST_P(BufferedPacketStoreTest, BufferNonChloPacketsUptoLimitWithChloBuffered) {
     // Last CHLO will be buffered. Others will create connection right away.
     if (conn_id <= kMaxNumSessionsToCreate) {
       EXPECT_CALL(*dispatcher_,
-                  CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                  CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                     Eq(ExpectedAlpn()), _))
           .WillOnce(Return(ByMove(CreateSession(
               dispatcher_.get(), config_, TestConnectionId(conn_id),
@@ -2273,8 +2339,9 @@ TEST_P(BufferedPacketStoreTest, BufferNonChloPacketsUptoLimitWithChloBuffered) {
   }
 
   // Reset counter and process buffered CHLO.
-  EXPECT_CALL(*dispatcher_, CreateQuicSession(last_connection_id, client_addr_,
-                                              Eq(ExpectedAlpn()), _))
+  EXPECT_CALL(*dispatcher_,
+              CreateQuicSession(last_connection_id, _, client_addr_,
+                                Eq(ExpectedAlpn()), _))
       .WillOnce(Return(ByMove(CreateSession(
           dispatcher_.get(), config_, last_connection_id, client_addr_,
           &mock_helper_, &mock_alarm_factory_, &crypto_config_,
@@ -2309,7 +2376,7 @@ TEST_P(BufferedPacketStoreTest, ReceiveCHLOForBufferedConnection) {
        ++conn_id) {
     if (conn_id <= kMaxNumSessionsToCreate + 1) {
       EXPECT_CALL(*dispatcher_,
-                  CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                  CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                     Eq(ExpectedAlpn()), _))
           .WillOnce(Return(ByMove(CreateSession(
               dispatcher_.get(), config_, TestConnectionId(conn_id),
@@ -2340,7 +2407,8 @@ TEST_P(BufferedPacketStoreTest, ReceiveCHLOForBufferedConnection) {
 // Regression test for b/117874922.
 TEST_P(BufferedPacketStoreTest, ProcessBufferedChloWithDifferentVersion) {
   // Ensure the preferred version is not supported by the server.
-  SetQuicReloadableFlag(quic_enable_version_draft_27, false);
+  QuicDisableVersion(AllSupportedVersions().front());
+
   uint64_t last_connection_id = kMaxNumSessionsToCreate + 5;
   ParsedQuicVersionVector supported_versions = CurrentSupportedVersions();
   for (uint64_t conn_id = 1; conn_id <= last_connection_id; ++conn_id) {
@@ -2350,7 +2418,7 @@ TEST_P(BufferedPacketStoreTest, ProcessBufferedChloWithDifferentVersion) {
     if (conn_id <= kMaxNumSessionsToCreate) {
       EXPECT_CALL(
           *dispatcher_,
-          CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+          CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                             Eq(ExpectedAlpnForVersion(version)), version))
           .WillOnce(Return(ByMove(CreateSession(
               dispatcher_.get(), config_, TestConnectionId(conn_id),
@@ -2376,7 +2444,7 @@ TEST_P(BufferedPacketStoreTest, ProcessBufferedChloWithDifferentVersion) {
     ParsedQuicVersion version =
         supported_versions[(conn_id - 1) % supported_versions.size()];
     EXPECT_CALL(*dispatcher_,
-                CreateQuicSession(TestConnectionId(conn_id), client_addr_,
+                CreateQuicSession(TestConnectionId(conn_id), _, client_addr_,
                                   Eq(ExpectedAlpnForVersion(version)), version))
         .WillOnce(Return(ByMove(CreateSession(
             dispatcher_.get(), config_, TestConnectionId(conn_id), client_addr_,

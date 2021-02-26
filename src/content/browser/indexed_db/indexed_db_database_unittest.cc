@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -679,6 +679,10 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
   base::MockCallback<blink::mojom::IDBTransaction::PutCallback> callback;
+
+  // Set in-flight memory to a reasonably large number to prevent underflow in
+  // |PutOperation|
+  transaction_->in_flight_memory() += 1000;
 
   auto put_params = std::make_unique<IndexedDBDatabase::PutOperationParams>();
   put_params->object_store_id = store_id;

@@ -28,7 +28,6 @@
 #include "base/auto_reset.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -397,9 +396,7 @@ void BackdropController::UpdateBackdropInternal() {
 
   // Updating the back drop widget should not affect the shelf's auto hide
   // state.
-  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    auto_hide_lock.emplace(ash::Shelf::ForWindow(container_));
+  Shelf::ScopedAutoHideLock auto_hide_lock(ash::Shelf::ForWindow(container_));
 
   // We are either destroying the backdrop widget or changing the order of
   // windows which will cause recursion.
@@ -464,7 +461,7 @@ void BackdropController::UpdateAccessibilityMode() {
     return;
 
   const bool enabled =
-      Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
+      Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
   if (enabled) {
     if (!backdrop_event_handler_) {
       backdrop_event_handler_ = std::make_unique<BackdropEventHandler>();
@@ -493,7 +490,7 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
   if (window->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::ARC_APP) &&
       wm::IsActiveWindow(window) &&
-      Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
+      Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
     return true;
   }
 

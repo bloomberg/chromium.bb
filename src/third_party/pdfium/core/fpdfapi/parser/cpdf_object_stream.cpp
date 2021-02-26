@@ -28,7 +28,7 @@ bool CPDF_ObjectStream::IsObjectsStreamObject(const CPDF_Object* object) {
   if (!stream_dict)
     return false;
 
-  if (stream_dict->GetStringFor("Type") != "ObjStm")
+  if (stream_dict->GetNameFor("Type") != "ObjStm")
     return false;
 
   const CPDF_Number* number_of_objects =
@@ -55,8 +55,8 @@ std::unique_ptr<CPDF_ObjectStream> CPDF_ObjectStream::Create(
     const CPDF_Stream* stream) {
   if (!IsObjectsStreamObject(stream))
     return nullptr;
-  // The ctor of CPDF_ObjectStream is protected. Use WrapUnique instead
-  // MakeUnique.
+
+  // Protected constructor.
   return pdfium::WrapUnique(new CPDF_ObjectStream(stream));
 }
 
@@ -74,7 +74,7 @@ CPDF_ObjectStream::CPDF_ObjectStream(const CPDF_Stream* obj_stream)
 CPDF_ObjectStream::~CPDF_ObjectStream() = default;
 
 bool CPDF_ObjectStream::HasObject(uint32_t obj_number) const {
-  return pdfium::ContainsKey(objects_offsets_, obj_number);
+  return pdfium::Contains(objects_offsets_, obj_number);
 }
 
 RetainPtr<CPDF_Object> CPDF_ObjectStream::ParseObject(

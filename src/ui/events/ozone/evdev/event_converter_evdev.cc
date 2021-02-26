@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/device_util_linux.h"
@@ -51,7 +51,7 @@ EventConverterEvdev::~EventConverterEvdev() {
 }
 
 void EventConverterEvdev::Start() {
-  base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+  base::CurrentUIThread::Get()->WatchFileDescriptor(
       fd_, true, base::MessagePumpForUI::WATCH_READ, &controller_, this);
   watching_ = true;
 }
@@ -104,6 +104,10 @@ bool EventConverterEvdev::HasMouse() const {
   return false;
 }
 
+bool EventConverterEvdev::HasPointingStick() const {
+  return false;
+}
+
 bool EventConverterEvdev::HasTouchpad() const {
   return false;
 }
@@ -133,6 +137,20 @@ std::vector<ui::GamepadDevice::Axis> EventConverterEvdev::GetGamepadAxes()
     const {
   NOTREACHED();
   return std::vector<ui::GamepadDevice::Axis>();
+}
+
+bool EventConverterEvdev::GetGamepadRumbleCapability() const {
+  NOTREACHED();
+  return false;
+}
+
+void EventConverterEvdev::PlayVibrationEffect(uint8_t amplitude,
+                                              uint16_t duration_millis) {
+  NOTREACHED();
+}
+
+void EventConverterEvdev::StopVibration() {
+  NOTREACHED();
 }
 
 int EventConverterEvdev::GetTouchPoints() const {

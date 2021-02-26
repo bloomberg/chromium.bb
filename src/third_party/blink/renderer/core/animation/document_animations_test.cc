@@ -22,6 +22,7 @@ class MockAnimationTimeline : public AnimationTimeline {
  public:
   MockAnimationTimeline(Document* document) : AnimationTimeline(document) {}
 
+  MOCK_METHOD0(Phase, TimelinePhase());
   MOCK_CONST_METHOD0(IsActive, bool());
   MOCK_METHOD0(ZeroTimeInSeconds, double());
   MOCK_METHOD0(InitialStartTimeForAnimations,
@@ -34,7 +35,9 @@ class MockAnimationTimeline : public AnimationTimeline {
   MOCK_METHOD0(ScheduleNextService, void());
   MOCK_METHOD0(EnsureCompositorTimeline, CompositorAnimationTimeline*());
 
-  void Trace(Visitor* visitor) override { AnimationTimeline::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    AnimationTimeline::Trace(visitor);
+  }
 
  protected:
   MOCK_METHOD0(CurrentPhaseAndTime, PhaseAndTime());
@@ -59,8 +62,7 @@ class DocumentAnimationsTest : public RenderingTest {
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    document->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
-    document->View()->RunPostLifecycleSteps();
+    document->View()->UpdateAllLifecyclePhasesForTest();
   }
 
   Persistent<Document> document;
@@ -132,8 +134,8 @@ TEST_F(DocumentAnimationsTest, UpdateAnimationsUpdatesAllTimelines) {
   EXPECT_CALL(*timeline1, ScheduleNextService());
   EXPECT_CALL(*timeline2, ScheduleNextService());
 
-  document->GetDocumentAnimations().UpdateAnimations(
-      DocumentLifecycle::kPaintClean, nullptr);
+  document->GetFrame()->LocalFrameRoot().View()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
 
   // Verify that animations count is correctly updated on animation host.
   cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();

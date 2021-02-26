@@ -81,14 +81,14 @@ class StackwalkerX86 : public Stackwalker {
   // to construct the frame that called frames.back(). The caller
   // takes ownership of the returned frame. Return NULL on failure.
   StackFrameX86* GetCallerByWindowsFrameInfo(
-      const vector<StackFrame*> &frames,
+      const vector<StackFrame*>& frames,
       WindowsFrameInfo* windows_frame_info,
       bool stack_scan_allowed);
 
   // Use cfi_frame_info (derived from STACK CFI records) to construct
   // the frame that called frames.back(). The caller takes ownership
   // of the returned frame. Return NULL on failure.
-  StackFrameX86* GetCallerByCFIFrameInfo(const vector<StackFrame*> &frames,
+  StackFrameX86* GetCallerByCFIFrameInfo(const vector<StackFrame*>& frames,
                                          CFIFrameInfo* cfi_frame_info);
 
   // Assuming a traditional frame layout --- where the caller's %ebp
@@ -96,7 +96,7 @@ class StackwalkerX86 : public Stackwalker {
   // %ebp points to the saved %ebp --- construct the frame that called
   // frames.back(). The caller takes ownership of the returned frame.
   // Return NULL on failure.
-  StackFrameX86* GetCallerByEBPAtBase(const vector<StackFrame*> &frames,
+  StackFrameX86* GetCallerByEBPAtBase(const vector<StackFrame*>& frames,
                                       bool stack_scan_allowed);
 
   // Stores the CPU context corresponding to the innermost stack frame to

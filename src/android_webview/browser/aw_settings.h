@@ -11,9 +11,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace content {
+namespace blink {
+namespace web_pref {
 struct WebPreferences;
 }
+}  // namespace blink
 
 namespace android_webview {
 
@@ -83,8 +85,10 @@ class AwSettings : public content::WebContentsObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void PopulateWebPreferences(content::WebPreferences* web_prefs);
+  void PopulateWebPreferences(blink::web_pref::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
+  bool IsDarkMode(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
@@ -99,6 +103,7 @@ class AwSettings : public content::WebContentsObserver {
   bool javascript_can_open_windows_automatically_;
   bool allow_third_party_cookies_;
   bool allow_file_access_;
+  bool is_dark_mode_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

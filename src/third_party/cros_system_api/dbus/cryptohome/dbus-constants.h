@@ -58,11 +58,9 @@ const char kCryptohomeAsyncDoesUsersExist[] = "AsyncDoesUsersExist";
 const char kCryptohomeInstallAttributesGet[] = "InstallAttributesGet";
 const char kCryptohomeInstallAttributesSet[] = "InstallAttributesSet";
 const char kCryptohomeInstallAttributesCount[] = "InstallAttributesCount";
-const char kCryptohomeInstallAttributesFinalize[] =
-    "InstallAttributesFinalize";
+const char kCryptohomeInstallAttributesFinalize[] = "InstallAttributesFinalize";
 const char kCryptohomeInstallAttributesIsReady[] = "InstallAttributesIsReady";
-const char kCryptohomeInstallAttributesIsSecure[] =
-    "InstallAttributesIsSecure";
+const char kCryptohomeInstallAttributesIsSecure[] = "InstallAttributesIsSecure";
 const char kCryptohomeInstallAttributesIsInvalid[] =
     "InstallAttributesIsInvalid";
 const char kCryptohomeInstallAttributesIsFirstInstall[] =
@@ -118,10 +116,8 @@ const char kCryptohomeTpmAttestationGetKeyPayload[] =
     "TpmAttestationGetKeyPayload";
 const char kCryptohomeTpmAttestationSetKeyPayload[] =
     "TpmAttestationSetKeyPayload";
-const char kCryptohomeTpmAttestationDeleteKey[] =
-    "TpmAttestationDeleteKey";
-const char kCryptohomeTpmAttestationDeleteKeys[] =
-    "TpmAttestationDeleteKeys";
+const char kCryptohomeTpmAttestationDeleteKey[] = "TpmAttestationDeleteKey";
+const char kCryptohomeTpmAttestationDeleteKeys[] = "TpmAttestationDeleteKeys";
 const char kCryptohomeTpmAttestationGetEnrollmentId[] =
     "TpmAttestationGetEnrollmentId";
 const char kCryptohomeTpmGetVersionStructured[] = "TpmGetVersionStructured";
@@ -161,6 +157,10 @@ const char kCryptohomeLockToSingleUserMountUntilReboot[] =
     "LockToSingleUserMountUntilReboot";
 const char kCryptohomeGetRsuDeviceId[] = "GetRsuDeviceId";
 const char kCryptohomeCheckHealth[] = "CheckHealth";
+const char kCryptohomeStartFingerprintAuthSession[] =
+    "StartFingerprintAuthSession";
+const char kCryptohomeEndFingerprintAuthSession[] = "EndFingerprintAuthSession";
+const char kCryptohomeGetWebAuthnSecret[] = "GetWebAuthnSecret";
 
 // Signals of the |kCryptohomeInterface| interface:
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
@@ -192,6 +192,10 @@ enum MountError {
   MOUNT_ERROR_SETUP_GROUP_ACCESS_FAILED = 17,
   MOUNT_ERROR_MOUNT_HOMES_AND_DAEMON_STORES_FAILED = 18,
   MOUNT_ERROR_TPM_UPDATE_REQUIRED = 19,
+  // DANGER: returning this MOUNT_ERROR_VAULT_UNRECOVERABLE may cause vault
+  // destruction. Only use it if the vault destruction is the
+  // acceptable/expected behaviour upon returning error.
+  MOUNT_ERROR_VAULT_UNRECOVERABLE = 20,
   MOUNT_ERROR_USER_DOES_NOT_EXIST = 32,
   MOUNT_ERROR_TPM_NEEDS_REBOOT = 64,
   // Encrypted in old method, need migration before mounting.

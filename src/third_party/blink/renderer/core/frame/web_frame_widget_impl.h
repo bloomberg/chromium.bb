@@ -43,7 +43,6 @@
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -53,22 +52,22 @@
 
 namespace cc {
 class Layer;
-struct BeginMainFrameMetrics;
 }
 
 namespace blink {
-class Frame;
 class Element;
-class HTMLPlugInElement;
 class LocalFrame;
 class PaintLayerCompositor;
 class WebFrameWidget;
 class WebMouseEvent;
-class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
 
-class WebFrameWidgetImpl final : public WebFrameWidgetBase,
-                                 public PageWidgetEventHandler {
+// Implements WebFrameWidget for a child local root frame (OOPIF). This object
+// is created in the child renderer and attached to the OOPIF's WebLocalFrame.
+//
+// For the main frame's WebFrameWidget implementation, see WebViewFrameWidget.
+//
+class WebFrameWidgetImpl final : public WebFrameWidgetBase {
  public:
   WebFrameWidgetImpl(
       util::PassKey<WebFrameWidget>,
@@ -80,40 +79,38 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
           widget_host,
       CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
-          widget);
+          widget,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const viz::FrameSinkId& frame_sink_id,
+      bool hidden,
+      bool never_composited);
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:
-  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-             base::OnceCallback<void()> cleanup_task) override;
-  WebSize Size() override;
-  void Resize(const WebSize&) override;
-  void DidEnterFullscreen() override;
-  void DidExitFullscreen() override;
+  void Close(
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
+  gfx::Size Size() override;
+  void Resize(const gfx::Size&) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
-  void ThemeChanged() override;
-  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
-  WebInputEventResult DispatchBufferedTouchEvents() override;
-  WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
-  void SetCursorVisibilityState(bool is_visible) override;
 
   void MouseCaptureLost() override;
-  void SetFocus(bool enable) override;
-  bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
+  void SetRemoteViewportIntersection(
+      const mojom::blink::ViewportIntersectionState& intersection_state)
+      override;
   void SetIsInertForSubFrame(bool) override;
   void SetInheritedEffectiveTouchActionForSubFrame(TouchAction) override;
   void UpdateRenderThrottlingStatusForSubFrame(bool is_throttled,
                                                bool subtree_throttled) override;
-  WebURL GetURLForDebugTrace() override;
+
+  void SetViewportIntersection(
+      mojom::blink::ViewportIntersectionStatePtr intersection_state) override;
 
   // WebFrameWidget implementation.
-  void DidDetachLocalFrameTree() override;
-  WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
-
-  Frame* FocusedCoreFrame() const;
+  void SetZoomLevelForTesting(double zoom_level) override;
+  void ResetZoomLevelForTesting() override;
+  void SetDeviceScaleFactorForTesting(float factor) override;
 
   // Returns the currently focused Element or null if no element has focus.
   Element* FocusedElement() const;
@@ -122,57 +119,43 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return true; }
+  bool ForTopLevelFrame() const override { return false; }
   void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr) override;
   void DidCreateLocalRootView() override;
-  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
+  void SetAutoResizeMode(bool auto_resize,
+                         const gfx::Size& min_size_before_dsf,
+                         const gfx::Size& max_size_before_dsf,
+                         float device_scale_factor) override;
+  void ApplyVisualPropertiesSizing(
+      const VisualProperties& visual_properties) override;
+  void CalculateSelectionBounds(gfx::Rect& anchor, gfx::Rect& focus) override;
 
   // FrameWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
+  bool ShouldHandleImeEvents() override;
 
   // WidgetBaseClient overrides:
-  void BeginMainFrame(base::TimeTicks last_frame_time) override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(
-      base::TimeTicks,
-      cc::ActiveFrameSequenceTrackers trackers) override;
-  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
-      override;
-  void BeginUpdateLayers() override;
-  void EndUpdateLayers() override;
-  void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
-  void DidBeginMainFrame() override;
+  void FocusChanged(bool enable) override;
+  gfx::Rect ViewportVisibleRect() override;
+
+  // blink::mojom::FrameWidget
+  void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
+  void DisableDeviceEmulation() override;
 
   void UpdateMainFrameLayoutSize();
 
-  // Event related methods:
-  void MouseContextMenu(const WebMouseEvent&);
-
-  void Trace(Visitor*) override;
-
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
-
-  // Perform a hit test for a point relative to the root frame of the page.
-  HitTestResult HitTestResultForRootFramePos(
-      const FloatPoint& pos_in_root_frame);
 
   void UpdateLayerTreeViewport();
 
   // PageWidgetEventHandler functions
   void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
-  void HandleMouseDown(LocalFrame&, const WebMouseEvent&) override;
-  WebInputEventResult HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
-  WebInputEventResult HandleMouseWheel(LocalFrame&,
-                                       const WebMouseWheelEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
-  WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
-  PageWidgetEventHandler* GetPageWidgetEventHandler() override;
   LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
 
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
@@ -186,16 +169,10 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       PhysicalRect& rect_to_scroll,
       mojom::blink::ScrollIntoViewParamsPtr& params);
 
-  base::Optional<WebSize> size_;
-
-  // If set, the (plugin) element which has mouse capture.
-  Member<HTMLPlugInElement> mouse_capture_element_;
+  base::Optional<gfx::Size> size_;
 
   // Metrics gathering timing information
   base::Optional<base::TimeTicks> update_layers_start_time_;
-  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
-
-  bool suppress_next_keypress_event_ = false;
 
   bool did_suspend_parsing_ = false;
 
@@ -203,6 +180,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_ = true;
+
+  gfx::Rect compositor_visible_rect_;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

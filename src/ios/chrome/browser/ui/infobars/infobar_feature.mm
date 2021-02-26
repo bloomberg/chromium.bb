@@ -18,27 +18,6 @@ const base::Feature kInfobarOverlayUI{"InfobarOverlayUI",
 // Feature enabled by default since it will always be checked along
 // kIOSInfobarUIReboot, effectively working as a kill switch. Meaning that if
 // kIOSInfobarUIReboot is not enabled this feature won't work.
-const base::Feature kConfirmInfobarMessagesUI{"ConfirmInfobarMessagesUI",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Feature enabled by default since it will always be checked along
-// kIOSInfobarUIReboot, effectively working as a kill switch. Meaning that if
-// kIOSInfobarUIReboot is not enabled this feature won't work.
-const base::Feature kCrashRestoreInfobarMessagesUI{
-    "CrashRestoreInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Feature enabled by default since it will always be checked along
-// kIOSInfobarUIReboot, effectively working as a kill switch. Meaning that if
-// kIOSInfobarUIReboot is not enabled this feature won't work.
-const base::Feature kBlockPopupInfobarMessagesUI{
-    "BlockPopupInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDownloadInfobarMessagesUI{
-    "DownloadInfobarMessagesUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature enabled by default since it will always be checked along
-// kIOSInfobarUIReboot, effectively working as a kill switch. Meaning that if
-// kIOSInfobarUIReboot is not enabled this feature won't work.
 const base::Feature kSaveCardInfobarMessagesUI{
     "SaveCardInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -52,51 +31,12 @@ const base::Feature kInfobarUIRebootOnlyiOS13{"InfobarUIRebootOnlyiOS13",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsInfobarUIRebootEnabled() {
-  // Enable Messages to 100% in Dev, Canary and Beta.
-  switch (GetChannel()) {
-    case version_info::Channel::BETA:
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-      return YES;
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::STABLE:
-      break;
-  }
-
-  if (base::FeatureList::IsEnabled(kInfobarUIRebootOnlyiOS13)) {
-    if (@available(iOS 13, *)) {
-      return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
-    } else {
-      return NO;
-    }
-  } else {
-    return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
-  }
+  return base::FeatureList::IsEnabled(kIOSInfobarUIReboot);
 }
 
 bool IsInfobarOverlayUIEnabled() {
   return IsInfobarUIRebootEnabled() &&
          base::FeatureList::IsEnabled(kInfobarOverlayUI);
-}
-
-bool IsConfirmInfobarMessagesUIEnabled() {
-  return base::FeatureList::IsEnabled(kConfirmInfobarMessagesUI) &&
-         IsInfobarUIRebootEnabled();
-}
-
-bool IsCrashRestoreInfobarMessagesUIEnabled() {
-  return base::FeatureList::IsEnabled(kCrashRestoreInfobarMessagesUI) &&
-         IsInfobarUIRebootEnabled();
-}
-
-bool IsBlockPopupInfobarMessagesUIEnabled() {
-  return base::FeatureList::IsEnabled(kBlockPopupInfobarMessagesUI) &&
-         IsInfobarUIRebootEnabled();
-}
-
-bool IsDownloadInfobarMessagesUIEnabled() {
-  return base::FeatureList::IsEnabled(kDownloadInfobarMessagesUI) &&
-         IsInfobarUIRebootEnabled();
 }
 
 bool IsSaveCardInfobarMessagesUIEnabled() {

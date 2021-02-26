@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 
@@ -76,18 +75,22 @@ void ServiceWorkerInstalledScriptsSender::StartSendingScript(
 
   current_sending_url_ = script_url;
 
-  std::unique_ptr<ServiceWorkerResponseReader> response_reader =
-      owner_->context()->storage()->CreateResponseReader(resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> resource_reader;
+  owner_->context()
+      ->registry()
+      ->GetRemoteStorageControl()
+      ->CreateResourceReader(resource_id,
+                             resource_reader.BindNewPipeAndPassReceiver());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "SendingScript", this,
                                     "script_url", current_sending_url_.spec());
   reader_ = std::make_unique<ServiceWorkerInstalledScriptReader>(
-      std::move(response_reader), this);
+      std::move(resource_reader), this);
   reader_->Start();
 }
 
 void ServiceWorkerInstalledScriptsSender::OnStarted(
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<net::IOBufferWithSize> metadata,
+    base::Optional<mojo_base::BigBuffer> metadata,
     mojo::ScopedDataPipeConsumerHandle body_handle,
     mojo::ScopedDataPipeConsumerHandle meta_data_handle) {
   DCHECK(response_head);
@@ -183,7 +186,8 @@ void ServiceWorkerInstalledScriptsSender::Abort(
     case ServiceWorkerInstalledScriptReader::FinishedReason::kSuccess:
       NOTREACHED();
       return;
-    case ServiceWorkerInstalledScriptReader::FinishedReason::kNoHttpInfoError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::
+        kNoResponseHeadError:
     case ServiceWorkerInstalledScriptReader::FinishedReason::
         kResponseReaderError:
       owner_->SetStartWorkerStatusCode(
@@ -201,8 +205,13 @@ void ServiceWorkerInstalledScriptsSender::Abort(
       if (owner_->context()) {
         ServiceWorkerRegistration* registration =
             owner_->context()->GetLiveRegistration(owner_->registration_id());
-        // This can destruct |this|.
-        registration->ForceDelete();
+        DCHECK(registration);
+        // Check if the registation is still alive. The registration may have
+        // already been deleted while this service worker was running.
+        if (!registration->is_uninstalled()) {
+          // This can destruct |this|.
+          registration->ForceDelete();
+        }
       }
       return;
     case ServiceWorkerInstalledScriptReader::FinishedReason::

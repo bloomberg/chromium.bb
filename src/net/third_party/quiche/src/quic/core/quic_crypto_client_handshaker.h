@@ -40,6 +40,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   int num_sent_client_hellos() const override;
   bool IsResumption() const override;
   bool EarlyDataAccepted() const override;
+  ssl_early_data_reason_t EarlyDataReason() const override;
   bool ReceivedInchoateReject() const override;
   int num_scup_messages_received() const override;
   std::string chlo_hash() const override;
@@ -50,12 +51,16 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   CryptoMessageParser* crypto_message_parser() override;
   HandshakeState GetHandshakeState() const override;
   size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
+  bool KeyUpdateSupportedLocally() const override;
+  std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
+      override;
+  std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
   void OnOneRttPacketAcknowledged() override {}
   void OnHandshakePacketSent() override {}
   void OnConnectionClosed(QuicErrorCode /*error*/,
-                          ConnectionCloseSource /*source*/) override {}
+                          ConnectionCloseSource /*source*/) override;
   void OnHandshakeDoneReceived() override;
-  void OnApplicationState(
+  void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> /*application_state*/) override {
     QUICHE_NOTREACHED();
   }
@@ -103,6 +108,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
     STATE_RECV_SHLO,
     STATE_INITIALIZE_SCUP,
     STATE_NONE,
+    STATE_CONNECTION_CLOSED,
   };
 
   // Handles new server config and optional source-address token provided by the
@@ -151,6 +157,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   // num_client_hellos_ contains the number of client hello messages that this
   // connection has sent.
   int num_client_hellos_;
+
+  ssl_early_data_reason_t early_data_reason_ = ssl_early_data_unknown;
 
   QuicCryptoClientConfig* const crypto_config_;
 

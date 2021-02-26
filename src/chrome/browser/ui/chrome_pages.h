@@ -11,6 +11,7 @@
 
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
@@ -18,6 +19,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #endif
 
@@ -61,6 +63,11 @@ enum FeedbackSource {
   kFeedbackSourceDesktopTabGroups,
   kFeedbackSourceMediaApp,
   kFeedbackSourceHelpApp,
+  kFeedbackSourceKaleidoscope,
+  kFeedbackSourceNetworkHealthPage,
+  kFeedbackSourceTabSearch,
+  kFeedbackSourceCameraApp,
+  kFeedbackSourceCaptureMode,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -93,7 +100,7 @@ void ShowFeedbackPage(const GURL& page_url,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
-void LaunchReleaseNotes(Profile* profile);
+void LaunchReleaseNotes(Profile* profile, apps::mojom::LaunchSource source);
 void ShowBetaForum(Browser* browser);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
@@ -128,6 +135,7 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
 void ShowPasswordCheck(Browser* browser);
+void ShowSafeBrowsingEnhancedProtection(Browser* browser);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
@@ -143,7 +151,10 @@ void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
                            AppManagementEntryPoint entry_point);
 
-void ShowPrintManagementApp(Profile* profile);
+void ShowPrintManagementApp(Profile* profile,
+                            PrintManagementAppEntryPoint entry_point);
+
+void ShowConnectivityDiagnosticsApp(Profile* profile);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

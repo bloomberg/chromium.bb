@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: inputMethodPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.inputMethodPrivate = {};
 
 /**
@@ -107,7 +105,8 @@ chrome.inputMethodPrivate.AutoCapitalizeType = {
  *   spellCheck: boolean,
  *   shouldDoLearning: boolean,
  *   focusReason: !chrome.inputMethodPrivate.FocusReason,
- *   hasBeenPassword: boolean
+ *   hasBeenPassword: boolean,
+ *   appKey: (string|undefined)
  * }}
  */
 chrome.inputMethodPrivate.InputContext;
@@ -160,7 +159,7 @@ chrome.inputMethodPrivate.InputMethodSettings;
  * @param {function({
  *   isPhysicalKeyboardAutocorrectEnabled: boolean,
  *   isImeMenuActivated: boolean
- * }):void} callback Callback which is called with the config object.
+ * }): void} callback Callback which is called with the config object.
  */
 chrome.inputMethodPrivate.getInputMethodConfig = function(callback) {};
 
@@ -170,13 +169,13 @@ chrome.inputMethodPrivate.getInputMethodConfig = function(callback) {};
  *   id: string,
  *   name: string,
  *   indicator: string
- * }>):void} callback Callback which is called with the input method objects.
+ * }>): void} callback Callback which is called with the input method objects.
  */
 chrome.inputMethodPrivate.getInputMethods = function(callback) {};
 
 /**
  * Gets the current input method.
- * @param {function(string):void} callback Callback which is called with the
+ * @param {function(string): void} callback Callback which is called with the
  *     current input method.
  */
 chrome.inputMethodPrivate.getCurrentInputMethod = function(callback) {};
@@ -185,37 +184,37 @@ chrome.inputMethodPrivate.getCurrentInputMethod = function(callback) {};
  * Sets the current input method.
  * @param {string} inputMethodId The input method ID to be set as current input
  *     method.
- * @param {function():void=} callback Callback which is called once the current
+ * @param {function(): void=} callback Callback which is called once the current
  *     input method is set. If unsuccessful $(ref:runtime.lastError) is set.
  */
 chrome.inputMethodPrivate.setCurrentInputMethod = function(inputMethodId, callback) {};
 
 /**
  * Fetches a list of all the words currently in the dictionary.
- * @param {function(!Array<string>):void} callback Callback which is called once
- *     the list of dictionary words are ready.
+ * @param {function(!Array<string>): void} callback Callback which is called
+ *     once the list of dictionary words are ready.
  */
 chrome.inputMethodPrivate.fetchAllDictionaryWords = function(callback) {};
 
 /**
  * Adds a single word to be stored in the dictionary.
  * @param {string} word A new word to add to the dictionary.
- * @param {function():void=} callback Callback which is called once the word is
+ * @param {function(): void=} callback Callback which is called once the word is
  *     added. If unsuccessful $(ref:runtime.lastError) is set.
  */
 chrome.inputMethodPrivate.addWordToDictionary = function(word, callback) {};
 
 /**
  * Gets whether the encrypt sync is enabled.
- * @param {function(boolean):void=} callback Callback which is called to provide
- *     the result.
+ * @param {function(boolean): void=} callback Callback which is called to
+ *     provide the result.
  */
 chrome.inputMethodPrivate.getEncryptSyncEnabled = function(callback) {};
 
 /**
  * Sets the XKB layout for the given input method.
  * @param {string} xkb_name The XKB layout name.
- * @param {function():void=} callback Callback which is called when the layout
+ * @param {function(): void=} callback Callback which is called when the layout
  *     is set.
  */
 chrome.inputMethodPrivate.setXkbLayout = function(xkb_name, callback) {};
@@ -226,7 +225,7 @@ chrome.inputMethodPrivate.setXkbLayout = function(xkb_name, callback) {};
  * @param {{
  *   contextID: number
  * }} parameters
- * @param {function():void=} callback Called when the operation completes.
+ * @param {function(): void=} callback Called when the operation completes.
  */
 chrome.inputMethodPrivate.finishComposingText = function(parameters, callback) {};
 
@@ -237,8 +236,8 @@ chrome.inputMethodPrivate.finishComposingText = function(parameters, callback) {
  *   selectionStart: (number|undefined),
  *   selectionEnd: (number|undefined)
  * }} parameters
- * @param {function(boolean):void=} callback Called when the operation completes
- *     with a boolean indicating if the text was accepted or not.
+ * @param {function(boolean): void=} callback Called when the operation
+ *     completes with a boolean indicating if the text was accepted or not.
  */
 chrome.inputMethodPrivate.setSelectionRange = function(parameters, callback) {};
 
@@ -252,14 +251,14 @@ chrome.inputMethodPrivate.notifyImeMenuItemActivated = function(engineID, name) 
 /**
  * Shows the input view window. If the input view window is already shown, this
  * function will do nothing.
- * @param {function():void=} callback Called when the operation completes.
+ * @param {function(): void=} callback Called when the operation completes.
  */
 chrome.inputMethodPrivate.showInputView = function(callback) {};
 
 /**
  * Hides the input view window. If the input view window is already hidden, this
  * function will do nothing.
- * @param {function():void=} callback Called when the operation completes.
+ * @param {function(): void=} callback Called when the operation completes.
  */
 chrome.inputMethodPrivate.hideInputView = function(callback) {};
 
@@ -277,7 +276,7 @@ chrome.inputMethodPrivate.openOptionsPage = function(inputMethodId) {};
  *   y: number,
  *   w: number,
  *   h: number
- * }>):void} callback Callback which is called to provide the result
+ * }>): void} callback Callback which is called to provide the result
  */
 chrome.inputMethodPrivate.getCompositionBounds = function(callback) {};
 
@@ -291,7 +290,7 @@ chrome.inputMethodPrivate.getCompositionBounds = function(callback) {};
  *   before: string,
  *   selected: string,
  *   after: string
- * }):void} callback Callback which is called to provide the result
+ * }): void} callback Callback which is called to provide the result
  */
 chrome.inputMethodPrivate.getSurroundingText = function(beforeLength, afterLength, callback) {};
 
@@ -299,7 +298,7 @@ chrome.inputMethodPrivate.getSurroundingText = function(beforeLength, afterLengt
  * Gets the current values of all settings for a particular input method
  * @param {string} engineID The ID of the engine (e.g. 'zh-t-i0-pinyin',
  *     'xkb:us::eng')
- * @param {function((!chrome.inputMethodPrivate.InputMethodSettings|undefined)):void}
+ * @param {function((!chrome.inputMethodPrivate.InputMethodSettings|undefined)): void}
  *     callback Callback to receive the settings
  */
 chrome.inputMethodPrivate.getSettings = function(engineID, callback) {};
@@ -310,14 +309,14 @@ chrome.inputMethodPrivate.getSettings = function(engineID, callback) {};
  *     'xkb:us::eng')
  * @param {!chrome.inputMethodPrivate.InputMethodSettings} settings The settings
  *     to set
- * @param {function():void=} callback Callback to notify that the new value has
+ * @param {function(): void=} callback Callback to notify that the new value has
  *     been set
  */
 chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {};
 
 /**
- * Set the composition range. If this extension does not own the active IME,
- * this fails.
+ * (Deprecated) Set the composition range. If this extension does not own the
+ * active IME, this fails. Use setComposingRange instead.
  * @param {{
  *   contextID: number,
  *   selectionBefore: number,
@@ -328,16 +327,88 @@ chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {
  *     style: !chrome.inputMethodPrivate.UnderlineStyle
  *   }>|undefined)
  * }} parameters
- * @param {function(boolean):void=} callback Called when the operation completes
- *     with a boolean indicating if the text was accepted or not. On failure,
- *     chrome.runtime.lastError is set.
+ * @param {function(boolean): void=} callback Called when the operation
+ *     completes with a boolean indicating if the text was accepted or not. On
+ *     failure, $(ref:runtime.lastError) is set.
  */
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
+
+/**
+ * Sets the composing range. If this extension does not own the active IME, this
+ * fails.
+ * @param {{
+ *   contextID: number,
+ *   start: number,
+ *   end: number,
+ *   segments: (!Array<{
+ *     start: number,
+ *     end: number,
+ *     style: !chrome.inputMethodPrivate.UnderlineStyle
+ *   }>|undefined)
+ * }} parameters
+ * @param {function(): void=} callback Called when the operation is complete. On
+ *     failure, $(ref:runtime.lastError) is set.
+ */
+chrome.inputMethodPrivate.setComposingRange = function(parameters, callback) {};
+
+/**
+ * Get the autocorrected word's bounds.
+ * @param {{
+ *   contextID: number
+ * }} parameters
+ * @param {function({
+ *   start: number,
+ *   end: number
+ * }): void} callback Called with the bounds of the autocorrect word when the
+ *     operation completes. On failure, $(ref:runtime.lastError) is set.
+ */
+chrome.inputMethodPrivate.getAutocorrectRange = function(parameters, callback) {};
+
+/**
+ * Get the screen coordinates of the autocorrected word's bounds.
+ * @param {{
+ *   contextID: number
+ * }} parameters
+ * @param {function({
+ *   x: number,
+ *   y: number,
+ *   width: number,
+ *   height: number
+ * }): void} callback Called with screen coordinates of the autocorrect word
+ *     when the operation completes. On failure, $(ref:runtime.lastError) is
+ *     set.
+ */
+chrome.inputMethodPrivate.getAutocorrectCharacterBounds = function(parameters, callback) {};
+
+/**
+ * Set the autocorrect range and autocorrect word. If this extension does not
+ * own the active IME, this fails.
+ * @param {{
+ *   contextID: number,
+ *   autocorrectString: string,
+ *   selectionStart: number,
+ *   selectionEnd: number
+ * }} parameters
+ * @param {function(): void=} callback Called when the operation completes. On
+ *     failure, chrome.runtime.lastError is set.
+ */
+chrome.inputMethodPrivate.setAutocorrectRange = function(parameters, callback) {};
 
 /**
  * Resets the current engine to its initial state. Fires an OnReset event.
  */
 chrome.inputMethodPrivate.reset = function() {};
+
+/**
+ * Called after a word has been autocorrected to show some UI for autocorrect.
+ * @param{{
+ *  contextID: number,
+ *  typedWord: string,
+ *  correctedWord: string,
+ *  startIndex: number
+ * }} parameters
+ */
+chrome.inputMethodPrivate.onAutocorrect = function(parameters) {};
 
 /**
  * Fired when the input method is changed.
@@ -403,3 +474,15 @@ chrome.inputMethodPrivate.onSettingsChanged;
  * @type {!ChromeEvent}
  */
 chrome.inputMethodPrivate.onScreenProjectionChanged;
+
+/**
+ * This event is sent when a new set of suggestions has been generated
+ * @type {!ChromeEvent}
+ */
+chrome.inputMethodPrivate.onSuggestionsChanged;
+
+/**
+ * This event is sent when input method options are changed.
+ * @type {!ChromeEvent}
+ */
+chrome.inputMethodPrivate.onInputMethodOptionsChanged;

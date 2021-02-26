@@ -5,8 +5,9 @@
 #include <wrl.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_dxgi.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
@@ -62,12 +63,11 @@ base::OnceClosure GpuMemoryBufferImplDXGI::AllocateForTesting(
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
 
-  HRESULT hr = d3d11_device->CreateTexture2D(&desc, nullptr,
-                                             d3d11_texture.GetAddressOf());
+  HRESULT hr = d3d11_device->CreateTexture2D(&desc, nullptr, &d3d11_texture);
   DCHECK(SUCCEEDED(hr));
 
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
-  hr = d3d11_texture.CopyTo(dxgi_resource.GetAddressOf());
+  hr = d3d11_texture.As(&dxgi_resource);
   DCHECK(SUCCEEDED(hr));
 
   HANDLE texture_handle;

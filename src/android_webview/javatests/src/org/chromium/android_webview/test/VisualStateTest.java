@@ -11,8 +11,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Base64;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -22,13 +23,13 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -98,7 +99,7 @@ public class VisualStateTest {
         }
     }
 
-    private static class SlowBlueImage extends AwWebResourceResponse {
+    private static class SlowBlueImage extends WebResourceResponseInfo {
         // This image delays returning data for 1 (scaled) second in order to simlate a slow network
         // connection.
         public static final long IMAGE_LOADING_DELAY_MS = scaleTimeout(1000);
@@ -218,7 +219,7 @@ public class VisualStateTest {
                     }
 
                     @Override
-                    public AwWebResourceResponse shouldInterceptRequest(
+                    public WebResourceResponseInfo shouldInterceptRequest(
                             AwWebResourceRequest request) {
                         if (request.url.equals("intercepted://blue.png")) {
                             try {

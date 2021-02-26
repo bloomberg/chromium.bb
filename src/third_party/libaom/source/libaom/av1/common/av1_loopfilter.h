@@ -33,6 +33,7 @@ enum lf_path {
   LF_PATH_SLOW,
 };
 
+/*!\cond */
 enum { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } UENUM1BYTE(EDGE_DIR);
 typedef struct {
   uint64_t bits[4];
@@ -118,6 +119,16 @@ typedef struct {
   uint8_t lvl[MAX_MB_PLANE][MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
 } loop_filter_info_n;
 
+typedef struct LoopFilterWorkerData {
+  YV12_BUFFER_CONFIG *frame_buffer;
+  struct AV1Common *cm;
+  struct macroblockd_plane planes[MAX_MB_PLANE];
+  // TODO(Ranjit): When the filter functions are modified to use xd->lossless
+  // add lossless as a member here.
+  MACROBLOCKD *xd;
+} LFWorkerData;
+/*!\endcond */
+
 /* assorted loopfilter functions which get used elsewhere */
 struct AV1Common;
 struct macroblockd;
@@ -128,6 +139,11 @@ void av1_loop_filter_init(struct AV1Common *cm);
 void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
                                 int plane_end);
 
+/*!\brief Apply AV1 loop filter
+ *
+ * \ingroup in_loop_filter
+ * \callgraph
+ */
 #if CONFIG_LPF_MASK
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *xd, int is_decoding,
@@ -147,15 +163,6 @@ void av1_filter_block_plane_horz(const struct AV1Common *const cm,
                                  const MACROBLOCKD *const xd, const int plane,
                                  const MACROBLOCKD_PLANE *const plane_ptr,
                                  const uint32_t mi_row, const uint32_t mi_col);
-
-typedef struct LoopFilterWorkerData {
-  YV12_BUFFER_CONFIG *frame_buffer;
-  struct AV1Common *cm;
-  struct macroblockd_plane planes[MAX_MB_PLANE];
-  // TODO(Ranjit): When the filter functions are modified to use xd->lossless
-  // add lossless as a member here.
-  MACROBLOCKD *xd;
-} LFWorkerData;
 
 uint8_t av1_get_filter_level(const struct AV1Common *cm,
                              const loop_filter_info_n *lfi_n, const int dir_idx,

@@ -6,12 +6,19 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/unguessable_token.h"
+#include "components/paint_preview/common/capture_result.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-forward.h"
+#include "components/paint_preview/common/version.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,19 +33,6 @@
 namespace paint_preview {
 
 namespace {
-
-// Creates an old style id of Process ID || Routing ID. This should only be used
-// for looking up the main frame's filler GUID in cases where only the
-// RenderFrameHost is available (such as in RenderFrameDeleted()).
-uint64_t MakeOldStyleId(content::RenderFrameHost* render_frame_host) {
-  return (static_cast<uint64_t>(render_frame_host->GetProcess()->GetID())
-          << 32) |
-         render_frame_host->GetRoutingID();
-}
-
-uint64_t MakeOldStyleId(const content::GlobalFrameRoutingId& id) {
-  return (static_cast<uint64_t>(id.child_id) << 32) | id.frame_routing_id;
-}
 
 // Converts gfx::Rect to its RectProto form.
 void RectToRectProto(const gfx::Rect& rect, RectProto* proto) {
@@ -57,6 +51,8 @@ PaintPreviewCaptureResponseToPaintPreviewFrameProto(
     PaintPreviewFrameProto* proto) {
   proto->set_embedding_token_high(frame_guid.GetHighForSerialization());
   proto->set_embedding_token_low(frame_guid.GetLowForSerialization());
+  proto->set_scroll_offset_x(response->scroll_offsets.width());
+  proto->set_scroll_offset_y(response->scroll_offsets.height());
 
   std::vector<base::UnguessableToken> frame_guids;
   for (const auto& id_pair : response->content_id_to_embedding_token) {
@@ -92,34 +88,183 @@ void RecordUkmCaptureData(ukm::SourceId source_id,
       .Record(ukm::UkmRecorder::Get());
 }
 
+base::flat_set<base::UnguessableToken> CreateAcceptedTokenList(
+    content::RenderFrameHost* render_frame_host) {
+  auto rfhs = render_frame_host->GetFramesInSubtree();
+  std::vector<base::UnguessableToken> tokens;
+  tokens.reserve(rfhs.size());
+  for (content::RenderFrameHost* rfh : rfhs) {
+    auto maybe_token = rfh->GetEmbeddingToken();
+    if (maybe_token.has_value())
+      tokens.push_back(maybe_token.value());
+  }
+  return base::flat_set<base::UnguessableToken>(std::move(tokens));
+}
+
+mojom::PaintPreviewCaptureParamsPtr CreateRecordingRequestParams(
+    RecordingPersistence persistence,
+    const RecordingParams& capture_params,
+    base::File file) {
+  mojom::PaintPreviewCaptureParamsPtr mojo_params =
+      mojom::PaintPreviewCaptureParams::New();
+  mojo_params->persistence = persistence;
+  mojo_params->capture_links = capture_params.capture_links;
+  mojo_params->guid = capture_params.document_guid;
+  mojo_params->clip_rect = capture_params.clip_rect;
+  // For now treat all clip rects as hints only. This API should be exposed
+  // when clip_rects are used intentionally to limit capture time.
+  mojo_params->clip_rect_is_hint = true;
+  mojo_params->is_main_frame = capture_params.is_main_frame;
+  mojo_params->file = std::move(file);
+  mojo_params->max_capture_size = capture_params.max_capture_size;
+  return mojo_params;
+}
+
+// Unconditionally create or overwrite a file for writing.
+base::File CreateOrOverwriteFileForWriting(const base::FilePath& path) {
+  base::File file(path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  return file;
+}
+
+using RecordingRequestParamsReadyCallback =
+    base::OnceCallback<void(mojom::PaintPreviewStatus,
+                            mojom::PaintPreviewCaptureParamsPtr)>;
+
+void OnSerializedRecordingFileCreated(
+    const RecordingParams& capture_params,
+    const base::FilePath& filename,
+    RecordingRequestParamsReadyCallback callback,
+    base::File file) {
+  if (!file.IsValid()) {
+    DLOG(ERROR) << "File create failed: " << file.error_details();
+    std::move(callback).Run(mojom::PaintPreviewStatus::kFileCreationError, {});
+  } else {
+    std::move(callback).Run(
+        mojom::PaintPreviewStatus::kOk,
+        CreateRecordingRequestParams(RecordingPersistence::kFileSystem,
+                                     capture_params, std::move(file)));
+  }
+}
+
+// Prepare the PaintPreviewRecorder mojo params request object. If |persistence|
+// is |RecordingPersistence::kFileSystem|, this will create the file that will
+// act as the sink for the recording.
+void PrepareRecordingRequestParams(
+    RecordingPersistence persistence,
+    const base::FilePath& frame_filepath,
+    const RecordingParams& capture_params,
+    RecordingRequestParamsReadyCallback callback) {
+  if (persistence == RecordingPersistence::kFileSystem) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&CreateOrOverwriteFileForWriting, frame_filepath),
+        base::BindOnce(&OnSerializedRecordingFileCreated, capture_params,
+                       frame_filepath, std::move(callback)));
+  } else {
+    std::move(callback).Run(
+        mojom::PaintPreviewStatus::kOk,
+        CreateRecordingRequestParams(persistence, capture_params, {}));
+  }
+}
+
 }  // namespace
 
-PaintPreviewClient::PaintPreviewParams::PaintPreviewParams()
-    : is_main_frame(false), max_per_capture_size(0) {}
+PaintPreviewClient::PaintPreviewParams::PaintPreviewParams(
+    RecordingPersistence persistence)
+    : persistence(persistence),
+      inner(RecordingParams(base::UnguessableToken::Create())) {}
 
 PaintPreviewClient::PaintPreviewParams::~PaintPreviewParams() = default;
 
-PaintPreviewClient::PaintPreviewData::PaintPreviewData() = default;
+PaintPreviewClient::InProgressDocumentCaptureState::
+    InProgressDocumentCaptureState() = default;
 
-PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
+PaintPreviewClient::InProgressDocumentCaptureState::
+    ~InProgressDocumentCaptureState() {
+  if (persistence == RecordingPersistence::kFileSystem &&
+      should_clean_up_files) {
+    for (const auto& subframe_guid : awaiting_subframes) {
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          base::BindOnce(base::GetDeleteFileCallback(),
+                         FilePathForFrame(subframe_guid)));
+    }
 
-PaintPreviewClient::PaintPreviewData&
-PaintPreviewClient::PaintPreviewData::operator=(
-    PaintPreviewData&& rhs) noexcept = default;
+    for (const auto& subframe_guid : finished_subframes) {
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          base::BindOnce(base::GetDeleteFileCallback(),
+                         FilePathForFrame(subframe_guid)));
+    }
+  }
+}
 
-PaintPreviewClient::PaintPreviewData::PaintPreviewData(
-    PaintPreviewData&& other) noexcept = default;
+PaintPreviewClient::InProgressDocumentCaptureState&
+PaintPreviewClient::InProgressDocumentCaptureState::operator=(
+    InProgressDocumentCaptureState&& rhs) noexcept = default;
 
-PaintPreviewClient::CreateResult::CreateResult(base::File file,
-                                               base::File::Error error)
-    : file(std::move(file)), error(error) {}
+PaintPreviewClient::InProgressDocumentCaptureState::
+    InProgressDocumentCaptureState(
+        InProgressDocumentCaptureState&& other) noexcept = default;
 
-PaintPreviewClient::CreateResult::~CreateResult() = default;
+base::FilePath
+PaintPreviewClient::InProgressDocumentCaptureState::FilePathForFrame(
+    const base::UnguessableToken& frame_guid) {
+  return root_dir.AppendASCII(base::StrCat({frame_guid.ToString(), ".skp"}));
+}
 
-PaintPreviewClient::CreateResult::CreateResult(CreateResult&& other) = default;
+void PaintPreviewClient::InProgressDocumentCaptureState::RecordSuccessfulFrame(
+    const base::UnguessableToken& frame_guid,
+    bool is_main_frame,
+    mojom::PaintPreviewCaptureResponsePtr response) {
+  // Records the data from a processed frame if it was captured successfully.
+  had_success = true;
 
-PaintPreviewClient::CreateResult& PaintPreviewClient::CreateResult::operator=(
-    CreateResult&& other) = default;
+  PaintPreviewFrameProto* frame_proto;
+  if (is_main_frame) {
+    main_frame_blink_recording_time = response->blink_recording_time;
+    frame_proto = proto.mutable_root_frame();
+    frame_proto->set_is_main_frame(true);
+  } else {
+    frame_proto = proto.add_subframes();
+    frame_proto->set_is_main_frame(false);
+  }
+
+  if (persistence == RecordingPersistence::kFileSystem) {
+    // Safe since |filename| is always in the form: "{hexadecimal}.skp".
+    frame_proto->set_file_path(FilePathForFrame(frame_guid).AsUTF8Unsafe());
+  } else {
+    DCHECK(response->skp.has_value());
+    serialized_skps.insert({frame_guid, std::move(response->skp.value())});
+  }
+
+  std::vector<base::UnguessableToken> remote_frame_guids =
+      PaintPreviewCaptureResponseToPaintPreviewFrameProto(
+          std::move(response), frame_guid, frame_proto);
+
+  for (const auto& remote_frame_guid : remote_frame_guids) {
+    // Don't wait again for a frame that was already captured. Also don't wait
+    // on frames that navigated during capture and have new embedding tokens.
+    if (!base::Contains(finished_subframes, remote_frame_guid) &&
+        base::Contains(accepted_tokens, remote_frame_guid)) {
+      awaiting_subframes.insert(remote_frame_guid);
+    }
+  }
+}
+
+std::unique_ptr<CaptureResult>
+PaintPreviewClient::InProgressDocumentCaptureState::IntoCaptureResult() && {
+  // Do not clean up files since we're about to return to the user.
+  should_clean_up_files = false;
+
+  std::unique_ptr<CaptureResult> result =
+      std::make_unique<CaptureResult>(persistence);
+  result->proto = std::move(proto);
+  result->serialized_skps = std::move(serialized_skps);
+  result->capture_success = had_success;
+  return result;
+}
 
 PaintPreviewClient::PaintPreviewClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -130,32 +275,61 @@ void PaintPreviewClient::CapturePaintPreview(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host,
     PaintPreviewCallback callback) {
-  if (base::Contains(all_document_data_, params.document_guid)) {
-    std::move(callback).Run(params.document_guid,
-                            mojom::PaintPreviewStatus::kGuidCollision, nullptr);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (base::Contains(all_document_data_, params.inner.document_guid)) {
+    std::move(callback).Run(params.inner.document_guid,
+                            mojom::PaintPreviewStatus::kGuidCollision, {});
     return;
   }
-  PaintPreviewData document_data;
+  if (!render_frame_host || params.inner.document_guid.is_empty()) {
+    std::move(callback).Run(params.inner.document_guid,
+                            mojom::PaintPreviewStatus::kFailed, {});
+    return;
+  }
+  const GURL& url = render_frame_host->GetLastCommittedURL();
+  if (!url.is_valid()) {
+    std::move(callback).Run(params.inner.document_guid,
+                            mojom::PaintPreviewStatus::kFailed, {});
+    return;
+  }
+
+  InProgressDocumentCaptureState document_data;
+  document_data.should_clean_up_files = true;
+  document_data.persistence = params.persistence;
   document_data.root_dir = params.root_dir;
+  auto* metadata = document_data.proto.mutable_metadata();
+  metadata->set_url(url.spec());
+  metadata->set_version(kPaintPreviewVersion);
   document_data.callback = std::move(callback);
-  document_data.root_url = render_frame_host->GetLastCommittedURL();
   document_data.source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents());
-  all_document_data_.insert({params.document_guid, std::move(document_data)});
+  document_data.accepted_tokens = CreateAcceptedTokenList(render_frame_host);
+  document_data.capture_links = params.inner.capture_links;
+  document_data.max_per_capture_size = params.inner.max_capture_size;
+  all_document_data_.insert(
+      {params.inner.document_guid, std::move(document_data)});
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "paint_preview", "PaintPreviewClient::CapturePaintPreview",
-      TRACE_ID_LOCAL(&all_document_data_[params.document_guid]));
-  CapturePaintPreviewInternal(params, render_frame_host);
+      TRACE_ID_LOCAL(&all_document_data_[params.inner.document_guid]));
+  CapturePaintPreviewInternal(params.inner, render_frame_host);
 }
 
 void PaintPreviewClient::CaptureSubframePaintPreview(
     const base::UnguessableToken& guid,
     const gfx::Rect& rect,
     content::RenderFrameHost* render_subframe_host) {
-  PaintPreviewParams params;
-  params.document_guid = guid;
+  if (guid.is_empty())
+    return;
+
+  auto it = all_document_data_.find(guid);
+  if (it == all_document_data_.end())
+    return;
+
+  RecordingParams params(guid);
   params.clip_rect = rect;
   params.is_main_frame = false;
+  params.capture_links = it->second.capture_links;
+  params.max_capture_size = it->second.max_per_capture_size;
   CapturePaintPreviewInternal(params, render_subframe_host);
 }
 
@@ -164,23 +338,20 @@ void PaintPreviewClient::RenderFrameDeleted(
   // TODO(crbug/1044983): Investigate possible issues with cleanup if just
   // a single subframe gets deleted.
   auto maybe_token = render_frame_host->GetEmbeddingToken();
-  bool is_main_frame = false;
-  if (!maybe_token.has_value()) {
-    uint64_t old_style_id = MakeOldStyleId(render_frame_host);
-    auto it = main_frame_guids_.find(old_style_id);
-    if (it == main_frame_guids_.end())
-      return;
-    maybe_token = it->second;
-    is_main_frame = true;
-  }
+  if (!maybe_token.has_value())
+    return;
+
+  bool is_main_frame = render_frame_host->GetParent() == nullptr;
   base::UnguessableToken frame_guid = maybe_token.value();
   auto it = pending_previews_on_subframe_.find(frame_guid);
   if (it == pending_previews_on_subframe_.end())
     return;
+
   for (const auto& document_guid : it->second) {
     auto data_it = all_document_data_.find(document_guid);
     if (data_it == all_document_data_.end())
       continue;
+
     auto* document_data = &data_it->second;
     document_data->awaiting_subframes.erase(frame_guid);
     document_data->finished_subframes.insert(frame_guid);
@@ -201,42 +372,16 @@ void PaintPreviewClient::RenderFrameDeleted(
   pending_previews_on_subframe_.erase(frame_guid);
 }
 
-PaintPreviewClient::CreateResult PaintPreviewClient::CreateFileHandle(
-    const base::FilePath& path) {
-  base::File file(path,
-                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  return CreateResult(std::move(file), file.error_details());
-}
-
-mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
-    const PaintPreviewParams& params,
-    base::File file) {
-  mojom::PaintPreviewCaptureParamsPtr mojo_params =
-      mojom::PaintPreviewCaptureParams::New();
-  mojo_params->guid = params.document_guid;
-  mojo_params->clip_rect = params.clip_rect;
-  mojo_params->is_main_frame = params.is_main_frame;
-  mojo_params->file = std::move(file);
-  mojo_params->max_capture_size = params.max_per_capture_size;
-  return mojo_params;
-}
-
 void PaintPreviewClient::CapturePaintPreviewInternal(
-    const PaintPreviewParams& params,
+    const RecordingParams& params,
     content::RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Use a frame's embedding token as its GUID. Note that we create a GUID for
-  // the main frame so that we can treat it the same as other frames.
+  // Use a frame's embedding token as its GUID.
   auto token = render_frame_host->GetEmbeddingToken();
-  if (params.is_main_frame && !token.has_value()) {
-    token = base::UnguessableToken::Create();
-    main_frame_guids_.insert(
-        {MakeOldStyleId(render_frame_host), token.value()});
-  }
 
   // This should be impossible, but if it happens in a release build just abort.
   if (!token.has_value()) {
-    DVLOG(1) << "Error: Attempted to capture a non-main frame without an "
+    DVLOG(1) << "Error: Attempted to capture a frame without an "
                 "embedding token.";
     NOTREACHED();
     return;
@@ -247,33 +392,38 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
     return;
   auto* document_data = &it->second;
 
+  // The embedding token should be in the list of tokens in the tree when
+  // capture was started. If this is not the case then the frame may have
+  // navigated. This is unsafe to capture.
   base::UnguessableToken frame_guid = token.value();
+  if (!base::Contains(document_data->accepted_tokens, frame_guid))
+    return;
+
   if (params.is_main_frame)
     document_data->root_frame_token = frame_guid;
   // Deduplicate data if a subframe is required multiple times.
   if (base::Contains(document_data->awaiting_subframes, frame_guid) ||
       base::Contains(document_data->finished_subframes, frame_guid))
     return;
-  base::FilePath file_path = document_data->root_dir.AppendASCII(
-      base::StrCat({frame_guid.ToString(), ".skp"}));
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&CreateFileHandle, file_path),
+
+  PrepareRecordingRequestParams(
+      document_data->persistence, document_data->FilePathForFrame(frame_guid),
+      params,
       base::BindOnce(&PaintPreviewClient::RequestCaptureOnUIThread,
-                     weak_ptr_factory_.GetWeakPtr(), params, frame_guid,
+                     weak_ptr_factory_.GetWeakPtr(), frame_guid, params,
                      content::GlobalFrameRoutingId(
                          render_frame_host->GetProcess()->GetID(),
-                         render_frame_host->GetRoutingID()),
-                     file_path));
+                         render_frame_host->GetRoutingID())));
 }
 
 void PaintPreviewClient::RequestCaptureOnUIThread(
-    const PaintPreviewParams& params,
     const base::UnguessableToken& frame_guid,
+    const RecordingParams& params,
     const content::GlobalFrameRoutingId& render_frame_id,
-    const base::FilePath& file_path,
-    CreateResult result) {
+    mojom::PaintPreviewStatus status,
+    mojom::PaintPreviewCaptureParamsPtr capture_params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   auto it = all_document_data_.find(params.document_guid);
   if (it == all_document_data_.end())
     return;
@@ -281,18 +431,21 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
   if (!document_data->callback)
     return;
 
-  if (result.error != base::File::FILE_OK) {
-    std::move(document_data->callback)
-        .Run(params.document_guid,
-             mojom::PaintPreviewStatus::kFileCreationError, nullptr);
+  if (status != mojom::PaintPreviewStatus::kOk) {
+    std::move(document_data->callback).Run(params.document_guid, status, {});
     return;
   }
 
+  // If the render frame host navigated or is no longer around treat this as a
+  // failure as a navigation occurring during capture is bad.
   auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
-  if (!render_frame_host) {
+  if (!render_frame_host ||
+      render_frame_host->GetEmbeddingToken().value_or(
+          base::UnguessableToken::Null()) != frame_guid ||
+      !capture_params) {
     std::move(document_data->callback)
         .Run(params.document_guid, mojom::PaintPreviewStatus::kCaptureFailed,
-             nullptr);
+             {});
     return;
   }
 
@@ -312,38 +465,56 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
         &interface_ptrs_[frame_guid]);
   }
+
+  // For the main frame, apply a clip rect if one is provided.
+  if (params.is_main_frame)
+    capture_params->clip_rect_is_hint = false;
+
   interface_ptrs_[frame_guid]->CapturePaintPreview(
-      CreateMojoParams(params, std::move(result.file)),
+      std::move(capture_params),
       base::BindOnce(&PaintPreviewClient::OnPaintPreviewCapturedCallback,
-                     weak_ptr_factory_.GetWeakPtr(), params.document_guid,
-                     frame_guid, params.is_main_frame, file_path,
+                     weak_ptr_factory_.GetWeakPtr(), frame_guid, params,
                      render_frame_id));
 }
 
 void PaintPreviewClient::OnPaintPreviewCapturedCallback(
-    const base::UnguessableToken& guid,
     const base::UnguessableToken& frame_guid,
-    bool is_main_frame,
-    const base::FilePath& filename,
+    const RecordingParams& params,
     const content::GlobalFrameRoutingId& render_frame_id,
     mojom::PaintPreviewStatus status,
     mojom::PaintPreviewCaptureResponsePtr response) {
   // There is no retry logic so always treat a frame as processed regardless of
   // |status|
-  MarkFrameAsProcessed(guid, frame_guid);
+  MarkFrameAsProcessed(params.document_guid, frame_guid);
 
-  if (status == mojom::PaintPreviewStatus::kOk)
-    status = RecordFrame(guid, frame_guid, is_main_frame, filename,
-                         render_frame_id, std::move(response));
-  auto it = all_document_data_.find(guid);
+  // If the render frame host navigated or is no longer around treat this as a
+  // failure as a navigation occurring during capture is bad.
+  auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
+  if (!render_frame_host || render_frame_host->GetEmbeddingToken().value_or(
+                                base::UnguessableToken::Null()) != frame_guid) {
+    status = mojom::PaintPreviewStatus::kCaptureFailed;
+  }
+
+  auto it = all_document_data_.find(params.document_guid);
   if (it == all_document_data_.end())
     return;
   auto* document_data = &it->second;
-  if (status != mojom::PaintPreviewStatus::kOk)
+
+  if (status == mojom::PaintPreviewStatus::kOk) {
+    document_data->RecordSuccessfulFrame(frame_guid, params.is_main_frame,
+                                         std::move(response));
+  } else {
     document_data->had_error = true;
 
+    // If this is the main frame we should just abort the capture on failure.
+    if (params.is_main_frame) {
+      OnFinished(params.document_guid, document_data);
+      return;
+    }
+  }
+
   if (document_data->awaiting_subframes.empty())
-    OnFinished(guid, document_data);
+    OnFinished(params.document_guid, document_data);
 }
 
 void PaintPreviewClient::MarkFrameAsProcessed(
@@ -360,64 +531,20 @@ void PaintPreviewClient::MarkFrameAsProcessed(
   document_data->awaiting_subframes.erase(frame_guid);
 }
 
-mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
-    const base::UnguessableToken& guid,
-    const base::UnguessableToken& frame_guid,
-    bool is_main_frame,
-    const base::FilePath& filename,
-    const content::GlobalFrameRoutingId& render_frame_id,
-    mojom::PaintPreviewCaptureResponsePtr response) {
-  auto it = all_document_data_.find(guid);
-  if (it == all_document_data_.end())
-    return mojom::PaintPreviewStatus::kCaptureFailed;
-  auto* document_data = &it->second;
-  if (!document_data->proto) {
-    document_data->proto = std::make_unique<PaintPreviewProto>();
-    document_data->proto->mutable_metadata()->set_url(
-        document_data->root_url.spec());
-  }
-
-  PaintPreviewProto* proto_ptr = document_data->proto.get();
-
-  PaintPreviewFrameProto* frame_proto;
-  if (is_main_frame) {
-    document_data->main_frame_blink_recording_time =
-        response->blink_recording_time;
-    frame_proto = proto_ptr->mutable_root_frame();
-    frame_proto->set_is_main_frame(true);
-    uint64_t old_style_id = MakeOldStyleId(render_frame_id);
-    main_frame_guids_.erase(old_style_id);
-  } else {
-    frame_proto = proto_ptr->add_subframes();
-    frame_proto->set_is_main_frame(false);
-  }
-  // Safe since always HEX.skp.
-  frame_proto->set_file_path(filename.AsUTF8Unsafe());
-
-  std::vector<base::UnguessableToken> remote_frame_guids =
-      PaintPreviewCaptureResponseToPaintPreviewFrameProto(
-          std::move(response), frame_guid, frame_proto);
-
-  for (const auto& remote_frame_guid : remote_frame_guids) {
-    if (!base::Contains(document_data->finished_subframes, remote_frame_guid))
-      document_data->awaiting_subframes.insert(remote_frame_guid);
-  }
-  return mojom::PaintPreviewStatus::kOk;
-}
-
-void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
-                                    PaintPreviewData* document_data) {
+void PaintPreviewClient::OnFinished(
+    base::UnguessableToken guid,
+    InProgressDocumentCaptureState* document_data) {
   if (!document_data || !document_data->callback)
     return;
 
   TRACE_EVENT_NESTABLE_ASYNC_END2(
       "paint_preview", "PaintPreviewClient::CapturePaintPreview",
-      TRACE_ID_LOCAL(document_data), "success", document_data->proto != nullptr,
+      TRACE_ID_LOCAL(document_data), "success", document_data->had_success,
       "subframes", document_data->finished_subframes.size());
 
   base::UmaHistogramBoolean("Browser.PaintPreview.Capture.Success",
-                            document_data->proto != nullptr);
-  if (document_data->proto) {
+                            document_data->had_success);
+  if (document_data->had_success) {
     base::UmaHistogramCounts100(
         "Browser.PaintPreview.Capture.NumberOfFramesCaptured",
         document_data->finished_subframes.size());
@@ -428,16 +555,18 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
     // At a minimum one frame was captured successfully, it is up to the
     // caller to decide if a partial success is acceptable based on what is
     // contained in the proto.
-    std::move(document_data->callback)
-        .Run(guid,
-             document_data->had_error
-                 ? mojom::PaintPreviewStatus::kPartialSuccess
-                 : mojom::PaintPreviewStatus::kOk,
-             std::move(document_data->proto));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(document_data->callback), guid,
+                       document_data->had_error
+                           ? mojom::PaintPreviewStatus::kPartialSuccess
+                           : mojom::PaintPreviewStatus::kOk,
+                       std::move(*document_data).IntoCaptureResult()));
   } else {
     // A proto could not be created indicating all frames failed to capture.
-    std::move(document_data->callback)
-        .Run(guid, mojom::PaintPreviewStatus::kFailed, nullptr);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(document_data->callback), guid,
+                                  mojom::PaintPreviewStatus::kFailed, nullptr));
   }
   all_document_data_.erase(guid);
 }

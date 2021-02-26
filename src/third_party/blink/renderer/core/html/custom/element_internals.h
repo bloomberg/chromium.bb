@@ -21,11 +21,10 @@ class ValidityStateFlags;
 class CORE_EXPORT ElementInternals : public ScriptWrappable,
                                      public ListedElement {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ElementInternals);
 
  public:
   ElementInternals(HTMLElement& target);
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   HTMLElement& Target() const { return *target_; }
   void DidUpgrade();
@@ -54,6 +53,8 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   DOMTokenList* states();
 
   bool HasState(const AtomicString& state) const;
+
+  ShadowRoot* shadowRoot() const;
 
   // We need these functions because we are reflecting ARIA attributes.
   // See dom/aria_attributes.idl.

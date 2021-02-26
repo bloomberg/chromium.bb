@@ -8,12 +8,12 @@
 
 #include <stddef.h>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "absl/base/macros.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/quiche/src/http2/tools/random_decoder_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionSuccess;
@@ -31,12 +31,12 @@ class HpackVarintDecoderTest : public RandomDecoderTest,
         suffix_(Http2HexDecode(::testing::get<1>(GetParam()))),
         prefix_length_(0) {}
 
-  void DecodeExpectSuccess(quiche::QuicheStringPiece data,
+  void DecodeExpectSuccess(absl::string_view data,
                            uint32_t prefix_length,
                            uint64_t expected_value) {
     Validator validator = [expected_value, this](
-                              const DecodeBuffer& db,
-                              DecodeStatus status) -> AssertionResult {
+                              const DecodeBuffer& /*db*/,
+                              DecodeStatus /*status*/) -> AssertionResult {
       VERIFY_EQ(expected_value, decoder_.value())
           << "Value doesn't match expected: " << decoder_.value()
           << " != " << expected_value;
@@ -52,9 +52,8 @@ class HpackVarintDecoderTest : public RandomDecoderTest,
     EXPECT_EQ(expected_value, decoder_.value());
   }
 
-  void DecodeExpectError(quiche::QuicheStringPiece data,
-                         uint32_t prefix_length) {
-    Validator validator = [](const DecodeBuffer& db,
+  void DecodeExpectError(absl::string_view data, uint32_t prefix_length) {
+    Validator validator = [](const DecodeBuffer& /*db*/,
                              DecodeStatus status) -> AssertionResult {
       VERIFY_EQ(DecodeStatus::kDecodeError, status);
       return AssertionSuccess();
@@ -64,7 +63,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest,
   }
 
  private:
-  AssertionResult Decode(quiche::QuicheStringPiece data,
+  AssertionResult Decode(absl::string_view data,
                          uint32_t prefix_length,
                          const Validator validator) {
     prefix_length_ = prefix_length;
@@ -261,7 +260,7 @@ struct {
 };
 
 TEST_P(HpackVarintDecoderTest, Success) {
-  for (size_t i = 0; i < QUICHE_ARRAYSIZE(kSuccessTestData); ++i) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(kSuccessTestData); ++i) {
     DecodeExpectSuccess(Http2HexDecode(kSuccessTestData[i].data),
                         kSuccessTestData[i].prefix_length,
                         kSuccessTestData[i].expected_value);
@@ -302,7 +301,7 @@ struct {
     {"ff80feffffffffffffff8100", 8}};
 
 TEST_P(HpackVarintDecoderTest, Error) {
-  for (size_t i = 0; i < QUICHE_ARRAYSIZE(kErrorTestData); ++i) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(kErrorTestData); ++i) {
     DecodeExpectError(Http2HexDecode(kErrorTestData[i].data),
                       kErrorTestData[i].prefix_length);
   }

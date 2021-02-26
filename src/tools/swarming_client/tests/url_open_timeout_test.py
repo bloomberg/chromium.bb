@@ -125,6 +125,7 @@ class UrlOpenTimeoutTest(auto_stub.TestCase):
 
   def tearDown(self):
     self.server.stop()
+    self.server.server_close()
     self.server = None
     super(UrlOpenTimeoutTest, self).tearDown()
 

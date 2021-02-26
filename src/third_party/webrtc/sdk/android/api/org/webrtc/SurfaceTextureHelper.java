@@ -199,6 +199,10 @@ public class SurfaceTextureHelper {
     oesTextureId = GlUtil.generateTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
     surfaceTexture = new SurfaceTexture(oesTextureId);
     setOnFrameAvailableListener(surfaceTexture, (SurfaceTexture st) -> {
+      if (hasPendingTexture) {
+        Logging.d(TAG, "A frame is already pending, dropping frame.");
+      }
+
       hasPendingTexture = true;
       tryDeliverTextureFrame();
     }, handler);
@@ -259,6 +263,17 @@ public class SurfaceTextureHelper {
     handler.post(() -> {
       this.textureWidth = textureWidth;
       this.textureHeight = textureHeight;
+      tryDeliverTextureFrame();
+    });
+  }
+
+  /**
+   * Forces a frame to be produced. If no new frame is available, the last frame is sent to the
+   * listener again.
+   */
+  public void forceFrame() {
+    handler.post(() -> {
+      hasPendingTexture = true;
       tryDeliverTextureFrame();
     });
   }

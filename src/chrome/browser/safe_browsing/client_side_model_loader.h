@@ -64,7 +64,7 @@ class ModelLoader {
   // Constructs a model loader to fetch a model using |url_loader_factory|.
   // When ScheduleFetch is called, |update_renderers| will be called on the
   // same sequence if the fetch is successful.
-  ModelLoader(base::Closure update_renderers,
+  ModelLoader(base::RepeatingClosure update_renderers,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               bool is_extended_reporting);
   virtual ~ModelLoader();
@@ -78,6 +78,9 @@ class ModelLoader {
   // sequence as ScheduleFetch.
   virtual void CancelFetcher();
 
+  // Only used in tests.
+  void SetModelStrForTesting(const std::string& model_str) { model_str_ = model_str; }
+
   const std::string& model_str() const { return model_str_; }
   const std::string& name() const { return name_; }
 
@@ -87,19 +90,24 @@ class ModelLoader {
 
  protected:
   // For testing only.
-  ModelLoader(base::Closure update_renderers,
+  ModelLoader(base::RepeatingClosure update_renderers,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const std::string& model_name);
 
   // This is called periodically to check whether a new client model is
-  // available for download.
-  virtual void StartFetch();
+  // available for download. If |only_from_cache| is true, we will not make a
+  // network request, but will instead try to fetch the model from the local
+  // cache.
+  virtual void StartFetch(bool only_from_cache);
 
   // This method is called when we're done fetching the model either because
   // we hit an error somewhere or because we're actually done fetch and
   // validating the model.  If |max_age| is not 0, it's used to schedule the
   // next fetch.
   virtual void EndFetch(ClientModelStatus status, base::TimeDelta max_age);
+
+  // If the model isn't yet loaded, model_str_ will be empty.
+  std::string model_str_;
 
  private:
   // Use Finch to pick a model number.
@@ -124,13 +132,11 @@ class ModelLoader {
   // Full URL of the model.
   const GURL url_;
 
-  // If the model isn't yet loaded, model_str_ will be empty.
-  std::string model_str_;
   std::unique_ptr<ClientSideModel> model_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Callback to invoke when we've got a new model.  CSD will send it around.
-  base::Closure update_renderers_callback_;
+  base::RepeatingClosure update_renderers_callback_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -146,6 +152,7 @@ class ModelLoader {
 
   friend class ClientSideDetectionServiceTest;
   friend class ModelLoaderTest;
+  FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, FetchModelFromLocalFileTest);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, FetchModelTest);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, ModelHasValidHashIds);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, ModelNamesTest);

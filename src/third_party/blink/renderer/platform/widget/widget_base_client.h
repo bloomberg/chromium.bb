@@ -5,35 +5,40 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_CLIENT_H_
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
 
 namespace cc {
 class LayerTreeFrameSink;
 struct BeginMainFrameMetrics;
-class RenderFrameMetadataObserver;
 }  // namespace cc
 
 namespace blink {
+
+class FrameWidget;
+class WebGestureEvent;
+class WebMouseEvent;
 
 // This class is part of the foundation of all widgets. It provides
 // callbacks from the compositing infrastructure that the individual widgets
 // will need to implement.
 class WidgetBaseClient {
  public:
-  // Dispatch any pending input. This method will called before
-  // dispatching a RequestAnimationFrame to the widget.
-  virtual void DispatchRafAlignedInput(base::TimeTicks frame_time) = 0;
+  // Called to record the time taken to dispatch rAF aligned input.
+  virtual void RecordDispatchRafAlignedInputTime(
+      base::TimeTicks raf_aligned_input_start_time) {}
 
   // Called to update the document lifecycle, advance the state of animations
   // and dispatch rAF.
   virtual void BeginMainFrame(base::TimeTicks frame_time) = 0;
-
-  // Called to record the time between when the widget was marked visible
-  // until the compositor begain producing a frame.
-  virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) = 0;
 
   // Requests that the lifecycle of the widget be updated.
   virtual void UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -93,19 +98,112 @@ class WidgetBaseClient {
   virtual void DidBeginMainFrame() {}
   virtual void DidCommitAndDrawCompositorFrame() {}
 
-  virtual void OnDeferMainFrameUpdatesChanged(bool defer) {}
-  virtual void OnDeferCommitsChanged(bool defer) {}
-
-  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
-      std::unique_ptr<cc::LayerTreeFrameSink>,
-      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
-
-  // Requests a LayerTreeFrameSink to submit CompositorFrames to.
-  virtual void RequestNewLayerTreeFrameSink(
-      LayerTreeFrameSinkCallback callback) = 0;
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) {}
 
   virtual void WillBeginMainFrame() {}
   virtual void DidCompletePageScaleAnimation() {}
+
+  virtual std::unique_ptr<cc::LayerTreeFrameSink>
+  AllocateNewLayerTreeFrameSink() = 0;
+
+  virtual void FocusChangeComplete() {}
+
+  virtual WebInputEventResult DispatchBufferedTouchEvents() = 0;
+  virtual WebInputEventResult HandleInputEvent(
+      const WebCoalescedInputEvent&) = 0;
+  virtual bool SupportsBufferedTouchEvents() = 0;
+
+  virtual void DidHandleKeyEvent() {}
+  virtual bool WillHandleGestureEvent(const WebGestureEvent& event) = 0;
+  virtual void WillHandleMouseEvent(const WebMouseEvent& event) = 0;
+  virtual void ObserveGestureEventAndResult(
+      const WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) = 0;
+
+  virtual WebTextInputType GetTextInputType() {
+    return WebTextInputType::kWebTextInputTypeNone;
+  }
+
+  // Called to inform the Widget of the mouse cursor's visibility.
+  virtual void SetCursorVisibilityState(bool is_visible) {}
+
+  // The FrameWidget interface if this is a FrameWidget.
+  virtual blink::FrameWidget* FrameWidget() { return nullptr; }
+
+  // Called to inform the Widget that it has gained or lost keyboard focus.
+  virtual void FocusChanged(bool) {}
+
+  // Call to schedule an animation.
+  virtual void ScheduleAnimation() {}
+
+  // TODO(bokan): Temporary to unblock synthetic gesture events running under
+  // VR. https://crbug.com/940063
+  virtual bool ShouldAckSyntheticInputImmediately() { return false; }
+
+  // Apply the visual properties.
+  virtual void UpdateVisualProperties(
+      const VisualProperties& visual_properties) = 0;
+
+  // A callback to apply the updated screen rects, return true if it
+  // was handled. If not handled WidgetBase will apply the screen
+  // rects as the new values.
+  virtual bool UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                 const gfx::Rect& window_screen_rect) {
+    return false;
+  }
+
+  // Convert screen coordinates to device emulated coordinates (scaled
+  // coordinates when devtools is used). This occurs for popups where their
+  // window bounds are emulated.
+  virtual void ScreenRectToEmulated(gfx::Rect& screen_rect) {}
+  virtual void EmulatedToScreenRect(gfx::Rect& screen_rect) {}
+
+  // Signal the orientation has changed.
+  virtual void OrientationChanged() {}
+
+  // Return the original (non-emulated) screen info.
+  virtual const ScreenInfo& GetOriginalScreenInfo() = 0;
+
+  // Indication that the surface and screen were updated.
+  virtual void DidUpdateSurfaceAndScreen(
+      const ScreenInfo& previous_original_screen_info) {}
+
+  // Return the viewport visible rect.
+  virtual gfx::Rect ViewportVisibleRect() = 0;
+
+  // The screen orientation override.
+  virtual base::Optional<mojom::blink::ScreenOrientation>
+  ScreenOrientationOverride() {
+    return base::nullopt;
+  }
+
+  // Return the overridden device scale factor for testing.
+  virtual float GetDeviceScaleFactorForTesting() { return 0.f; }
+
+  // Test-specific methods below this point.
+  virtual void ScheduleAnimationForWebTests() {}
+
+  // Inform the widget that it was hidden.
+  virtual void WasHidden() {}
+
+  // Inform the widget that it was shown.
+  virtual void WasShown(bool was_evicted) {}
+
+  virtual void RunPaintBenchmark(int repeat_count,
+                                 cc::PaintBenchmarkResult& result) {}
+
+  // When the WebWidget is part of a frame tree, returns the active url for
+  // main frame of that tree, if the main frame is local in that tree. When
+  // the WebWidget is of a different kind (e.g. a popup) it returns the active
+  // url for the main frame of the frame tree that spawned the WebWidget, if
+  // the main frame is local in that tree. When the relevant main frame is
+  // remote in that frame tree, then the url is not known, and an empty url is
+  // returned.
+  virtual KURL GetURLForDebugTrace() = 0;
 };
 
 }  // namespace blink

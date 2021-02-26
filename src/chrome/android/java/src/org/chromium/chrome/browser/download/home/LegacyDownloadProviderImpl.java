@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.home;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.ObserverList;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.download.DownloadInfo;
@@ -22,12 +21,14 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineContentProvider.Observer;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,8 +55,7 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
     public void onDownloadItemCreated(DownloadItem item) {
         if (!canShowDownloadItem(item)) return;
         for (OfflineContentProvider.Observer observer : mObservers) {
-            observer.onItemsAdded(
-                    CollectionUtil.newArrayList(DownloadItem.createOfflineItem(item)));
+            observer.onItemsAdded(Collections.singletonList(DownloadItem.createOfflineItem(item)));
         }
     }
 
@@ -170,7 +170,7 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
     @Override
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
         assert false : "Not supported.";
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(null));
     }
 
     @Override
@@ -201,6 +201,12 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
             OfflineItem item, String name, Callback</*RenameResult*/ Integer> callback) {
         DownloadManagerService.getDownloadManagerService().renameDownload(
                 item.id, name, callback, item.isOffTheRecord);
+    }
+
+    @Override
+    public void changeSchedule(final OfflineItem item, final OfflineItemSchedule schedule) {
+        DownloadManagerService.getDownloadManagerService().changeSchedule(
+                item.id, schedule, item.isOffTheRecord);
     }
 
     /**

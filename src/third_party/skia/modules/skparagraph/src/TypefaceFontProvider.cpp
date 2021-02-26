@@ -24,6 +24,10 @@ SkFontStyleSet* TypefaceFontProvider::onMatchFamily(const char familyName[]) con
     return nullptr;
 }
 
+sk_sp<SkTypeface> TypefaceFontProvider::onMakeFromFontData(std::unique_ptr<SkFontData>) const {
+    return nullptr;
+}
+
 size_t TypefaceFontProvider::registerTypeface(sk_sp<SkTypeface> typeface) {
     if (typeface == nullptr) {
         return 0;
@@ -76,7 +80,9 @@ SkTypeface* TypefaceFontStyleSet::matchStyle(const SkFontStyle& pattern) {
 }
 
 void TypefaceFontStyleSet::appendTypeface(sk_sp<SkTypeface> typeface) {
-    fStyles.emplace_back(std::move(typeface));
+    if (typeface.get() != nullptr) {
+        fStyles.emplace_back(std::move(typeface));
+    }
 }
 
 }  // namespace textlayout

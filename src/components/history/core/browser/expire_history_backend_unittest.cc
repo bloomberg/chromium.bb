@@ -16,19 +16,18 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
+#include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database.h"
-#include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_observer.h"
@@ -140,7 +139,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<HistoryDatabase> main_db_;
-  std::unique_ptr<ThumbnailDatabase> thumb_db_;
+  std::unique_ptr<favicon::FaviconDatabase> thumb_db_;
   scoped_refptr<TopSitesImpl> top_sites_;
 
   // base::Time at the beginning of the test, so everybody agrees what "now" is.
@@ -162,7 +161,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
       main_db_.reset();
 
     base::FilePath thumb_name = path().Append(kFaviconsFilename);
-    thumb_db_.reset(new ThumbnailDatabase(nullptr));
+    thumb_db_ = std::make_unique<favicon::FaviconDatabase>();
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();
 
@@ -189,7 +188,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     top_sites_->ShutdownOnUIThread();
     top_sites_ = nullptr;
 
-    if (base::MessageLoopCurrent::Get())
+    if (base::CurrentThread::Get())
       base::RunLoop().RunUntilIdle();
 
     pref_service_.reset();
@@ -206,9 +205,9 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
                         const RedirectList& redirects,
                         base::Time visit_time) override {}
   void NotifyURLsModified(const URLRows& rows,
-                          bool is_from_expiration) override {
+                          UrlsModifiedReason reason) override {
     urls_modified_notifications_.push_back(
-        std::make_pair(is_from_expiration, rows));
+        std::make_pair(reason == UrlsModifiedReason::kExpired, rows));
   }
   void NotifyURLsDeleted(DeletionInfo deletion_info) override {
     urls_deleted_notifications_.push_back(std::move(deletion_info));
@@ -303,19 +302,19 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 
   // Four times for each visit.
   VisitRow visit_row1(url_id, last_visit_time - base::TimeDelta::FromDays(4), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row1, SOURCE_SYNCED);
 
   VisitRow visit_row2(url_id, last_visit_time - base::TimeDelta::FromDays(3), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   VisitRow visit_row3(url_id, last_visit_time - base::TimeDelta::FromDays(2), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row3, SOURCE_EXTENSION);
 
   VisitRow visit_row4(url_id, last_visit_time, 0, ui::PAGE_TRANSITION_TYPED, 0,
-                      true);
+                      true, false);
   main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 
@@ -328,7 +327,7 @@ bool ExpireHistoryTest::HasFavicon(favicon_base::FaviconID favicon_id) {
 favicon_base::FaviconID ExpireHistoryTest::GetFavicon(
     const GURL& page_url,
     favicon_base::IconType icon_type) {
-  std::vector<IconMapping> icon_mappings;
+  std::vector<favicon::IconMapping> icon_mappings;
   if (thumb_db_->GetIconMappingsForPageURL(page_url, {icon_type},
                                            &icon_mappings)) {
     return icon_mappings[0].icon_id;
@@ -952,10 +951,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_EQ(0, new_url_row2.typed_count());
   EXPECT_EQ(0, new_url_row2.visit_count());
 
-  // Thumbnails and favicons should still exist. Note that we keep thumbnails
-  // that may have been updated since the time threshold. Since the URL still
-  // exists in history, this should not be a privacy problem, we only update
-  // the visit counts in this case for consistency anyway.
+  // Favicons should still exist.
   favicon_base::FaviconID favicon_id =
       GetFavicon(url_row1.url(), favicon_base::IconType::kFavicon);
   EXPECT_TRUE(HasFavicon(favicon_id));
@@ -1120,7 +1116,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
   GURL url("http://google.com/favicon.ico");
   favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
       url, favicon_base::IconType::kFavicon, favicon,
-      FaviconBitmapType::ON_DEMAND,
+      favicon::FaviconBitmapType::ON_DEMAND,
       GetOldFaviconThreshold() - base::TimeDelta::FromSeconds(1), gfx::Size());
   ASSERT_NE(0, icon_id);
   GURL page_url("http://google.com/");
@@ -1146,7 +1142,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
   GURL url("http://google.com/favicon.ico");
   favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
       url, favicon_base::IconType::kFavicon, favicon,
-      FaviconBitmapType::ON_DEMAND,
+      favicon::FaviconBitmapType::ON_DEMAND,
       GetOldFaviconThreshold() - base::TimeDelta::FromSeconds(1), gfx::Size());
   ASSERT_NE(0, icon_id);
   GURL page_url1("http://google.com/1");
@@ -1159,10 +1155,10 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
 
   // Nothing gets deleted.
   EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
-  std::vector<FaviconBitmap> favicon_bitmaps;
+  std::vector<favicon::FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(thumb_db_->GetFaviconBitmaps(icon_id, &favicon_bitmaps));
   EXPECT_EQ(1u, favicon_bitmaps.size());
-  std::vector<IconMapping> icon_mapping;
+  std::vector<favicon::IconMapping> icon_mapping;
   EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url1, &icon_mapping));
   EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url2, &icon_mapping));
   EXPECT_EQ(2u, icon_mapping.size());
@@ -1186,7 +1182,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
   GURL url("http://google.com/favicon.ico");
   favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
       url, favicon_base::IconType::kFavicon, favicon,
-      FaviconBitmapType::ON_DEMAND,
+      favicon::FaviconBitmapType::ON_DEMAND,
       GetOldFaviconThreshold() - base::TimeDelta::FromSeconds(1), gfx::Size());
   ASSERT_NE(0, icon_id);
   GURL page_url("http://google.com/");
@@ -1217,7 +1213,7 @@ TEST_F(ExpireHistoryTest,
   GURL url("http://google.com/favicon.ico");
   favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
       url, favicon_base::IconType::kFavicon, favicon,
-      FaviconBitmapType::ON_DEMAND,
+      favicon::FaviconBitmapType::ON_DEMAND,
       GetOldFaviconThreshold() - base::TimeDelta::FromSeconds(1), gfx::Size());
   ASSERT_NE(0, icon_id);
   GURL page_url1("http://google.com/1");
@@ -1229,10 +1225,10 @@ TEST_F(ExpireHistoryTest,
 
   // Nothing gets deleted.
   EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
-  std::vector<FaviconBitmap> favicon_bitmaps;
+  std::vector<favicon::FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(thumb_db_->GetFaviconBitmaps(icon_id, &favicon_bitmaps));
   EXPECT_EQ(1u, favicon_bitmaps.size());
-  std::vector<IconMapping> icon_mapping;
+  std::vector<favicon::IconMapping> icon_mapping;
   EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url1, &icon_mapping));
   EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url2, &icon_mapping));
   EXPECT_EQ(2u, icon_mapping.size());

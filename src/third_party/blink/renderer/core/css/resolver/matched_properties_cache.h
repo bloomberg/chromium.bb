@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCHED_PROPERTIES_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCHED_PROPERTIES_CACHE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -36,7 +35,7 @@ namespace blink {
 class ComputedStyle;
 class StyleResolverState;
 
-class CachedMatchedProperties final
+class CORE_EXPORT CachedMatchedProperties final
     : public GarbageCollected<CachedMatchedProperties> {
  public:
   // Caches data of MatchedProperties. See |MatchedPropertiesCache::Cache| for
@@ -49,19 +48,24 @@ class CachedMatchedProperties final
   scoped_refptr<ComputedStyle> computed_style;
   scoped_refptr<ComputedStyle> parent_computed_style;
 
-  Vector<CSSPropertyName> dependencies;
+  // g_null_atom-terminated array of property names.
+  //
+  // Note that this stores AtomicString for both standard and custom
+  // properties, for memory saving purposes. (CSSPropertyName is twice as
+  // big).
+  std::unique_ptr<AtomicString[]> dependencies;
 
   void Set(const ComputedStyle&,
            const ComputedStyle& parent_style,
            const MatchedPropertiesVector&,
-           const HashSet<CSSPropertyName>& dependencies);
+           const HashSet<CSSPropertyName>& new_dependencies);
   void Clear();
 
   // True if the computed value for each dependency is equal for the
   // cached parent style vs. the incoming parent style.
   bool DependenciesEqual(const StyleResolverState&);
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*) const {}
 
   bool operator==(const MatchedPropertiesVector& properties);
   bool operator!=(const MatchedPropertiesVector& properties);
@@ -72,6 +76,8 @@ class CORE_EXPORT MatchedPropertiesCache {
 
  public:
   MatchedPropertiesCache();
+  MatchedPropertiesCache(const MatchedPropertiesCache&) = delete;
+  MatchedPropertiesCache& operator=(const MatchedPropertiesCache&) = delete;
   ~MatchedPropertiesCache() { DCHECK(cache_.IsEmpty()); }
 
   class CORE_EXPORT Key {
@@ -79,7 +85,13 @@ class CORE_EXPORT MatchedPropertiesCache {
 
    public:
     explicit Key(const MatchResult&);
-    bool IsValid() const { return hash_ != 0; }
+
+    bool IsValid() const {
+      // If hash_ happens to compute to the empty value or the deleted value,
+      // the corresponding MatchResult can't be cached.
+      return hash_ != HashTraits<unsigned>::EmptyValue() &&
+             !HashTraits<unsigned>::IsDeletedValue(hash_);
+    }
 
    private:
     friend class MatchedPropertiesCache;
@@ -103,7 +115,7 @@ class CORE_EXPORT MatchedPropertiesCache {
   static bool IsCacheable(const StyleResolverState&);
   static bool IsStyleCacheable(const ComputedStyle&);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // The cache is mapping a hash to a cached entry where the entry is kept as
@@ -118,7 +130,6 @@ class CORE_EXPORT MatchedPropertiesCache {
   void RemoveCachedMatchedPropertiesWithDeadEntries(const LivenessBroker&);
 
   Cache cache_;
-  DISALLOW_COPY_AND_ASSIGN(MatchedPropertiesCache);
 };
 
 }  // namespace blink

@@ -45,6 +45,10 @@ gfx::Rect FakeScrollbar::ForwardButtonRect() const {
   return forward_button_rect_;
 }
 
+bool FakeScrollbar::JumpOnTrackClick() const {
+  return false;
+}
+
 bool FakeScrollbar::SupportsDragSnapBack() const {
   return false;
 }
@@ -58,7 +62,7 @@ float FakeScrollbar::Opacity() const {
 }
 
 bool FakeScrollbar::NeedsRepaintPart(ScrollbarPart part) const {
-  if (part == THUMB)
+  if (part == ScrollbarPart::THUMB)
     return needs_repaint_thumb_;
   return needs_repaint_track_;
 }

@@ -18,11 +18,11 @@
 
 #include "api/task_queue/task_queue_factory.h"
 #include "api/voip/voip_base.h"
+#include "api/voip/voip_statistics.h"
 #include "audio/voip/audio_egress.h"
 #include "audio/voip/audio_ingress.h"
-#include "modules/rtp_rtcp/include/rtp_rtcp.h"
+#include "modules/rtp_rtcp/source/rtp_rtcp_impl2.h"
 #include "modules/utility/include/process_thread.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/ref_count.h"
 
 namespace webrtc {
@@ -46,9 +46,11 @@ class AudioChannel : public rtc::RefCountInterface {
   ChannelId GetId() const { return id_; }
 
   // APIs to start/stop audio channel on each direction.
-  void StartSend();
+  // StartSend/StartPlay returns false if encoder/decoders
+  // have not been set, respectively.
+  bool StartSend();
   void StopSend();
-  void StartPlay();
+  bool StartPlay();
   void StopPlay();
 
   // APIs relayed to AudioEgress.
@@ -62,6 +64,12 @@ class AudioChannel : public rtc::RefCountInterface {
   absl::optional<SdpAudioFormat> GetEncoderFormat() const {
     return egress_->GetEncoderFormat();
   }
+  void RegisterTelephoneEventType(int rtp_payload_type, int sample_rate_hz) {
+    egress_->RegisterTelephoneEventType(rtp_payload_type, sample_rate_hz);
+  }
+  bool SendTelephoneEvent(int dtmf_event, int duration_ms) {
+    return egress_->SendTelephoneEvent(dtmf_event, duration_ms);
+  }
 
   // APIs relayed to AudioIngress.
   bool IsPlaying() const { return ingress_->IsPlaying(); }
@@ -74,6 +82,7 @@ class AudioChannel : public rtc::RefCountInterface {
   void SetReceiveCodecs(const std::map<int, SdpAudioFormat>& codecs) {
     ingress_->SetReceiveCodecs(codecs);
   }
+  IngressStatistics GetIngressStatistics();
 
  private:
   // ChannelId that this audio channel belongs for logging purpose.
@@ -88,7 +97,7 @@ class AudioChannel : public rtc::RefCountInterface {
   // Listed in order for safe destruction of AudioChannel object.
   // Synchronization for these are handled internally.
   std::unique_ptr<ReceiveStatistics> receive_statistics_;
-  std::unique_ptr<RtpRtcp> rtp_rtcp_;
+  std::unique_ptr<ModuleRtpRtcpImpl2> rtp_rtcp_;
   std::unique_ptr<AudioIngress> ingress_;
   std::unique_ptr<AudioEgress> egress_;
 };

@@ -63,9 +63,6 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
                                 uint8_t *oy, int oy_stride, uint8_t *ou,
                                 uint8_t *ov, int ouv_stride, int oheight,
                                 int owidth, int bd);
-void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                 YV12_BUFFER_CONFIG *dst, int bd,
-                                 const int num_planes);
 
 void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
                                 int src_stride, uint8_t *dst, int dst_stride,
@@ -74,9 +71,14 @@ void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
                                             const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst);
 
-YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
-                                          YV12_BUFFER_CONFIG *unscaled,
-                                          YV12_BUFFER_CONFIG *scaled);
+YV12_BUFFER_CONFIG *av1_scale_if_required(
+    AV1_COMMON *cm, YV12_BUFFER_CONFIG *unscaled, YV12_BUFFER_CONFIG *scaled,
+    const InterpFilter filter, const int phase, const bool use_optimized_scaler,
+    const bool for_psnr);
+
+void av1_resize_and_extend_frame_nonnormative(const YV12_BUFFER_CONFIG *src,
+                                              YV12_BUFFER_CONFIG *dst, int bd,
+                                              const int num_planes);
 
 // Calculates the scaled dimensions from the given original dimensions and the
 // resize scale denominator.

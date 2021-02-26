@@ -7,17 +7,21 @@
 #include <unordered_map>
 
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace ui {
 
 class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
+                                      public IItemContainerProvider,
                                       public IRawElementProviderFragmentRoot,
                                       public IRawElementProviderAdviseEvents {
  public:
   BEGIN_COM_MAP(AXFragmentRootPlatformNodeWin)
+  COM_INTERFACE_ENTRY(IItemContainerProvider)
   COM_INTERFACE_ENTRY(IRawElementProviderFragmentRoot)
   COM_INTERFACE_ENTRY(IRawElementProviderAdviseEvents)
   COM_INTERFACE_ENTRY_CHAIN(AXPlatformNodeWin)
@@ -38,19 +42,80 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   }
 
   //
+  // IItemContainerProvider methods.
+  //
+  IFACEMETHODIMP FindItemByProperty(
+      IRawElementProviderSimple* start_after_element,
+      PROPERTYID property_id,
+      VARIANT value,
+      IRawElementProviderSimple** result) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ITEMCONTAINER_FINDITEMBYPROPERTY);
+    UIA_VALIDATE_CALL_1_ARG(result);
+    *result = nullptr;
+
+    // We currently only support the custom UIA property ID for unique id.
+    if (property_id ==
+            UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId() &&
+        value.vt == VT_BSTR) {
+      int32_t ax_unique_id;
+      if (!base::StringToInt(value.bstrVal, &ax_unique_id))
+        return S_OK;
+
+      // In the Windows accessibility platform implementation, id 0 represents
+      // self; a positive id represents the immediate descendants; and a
+      // negative id represents a unique id that can be mapped to any node.
+      if (AXPlatformNodeWin* result_platform_node =
+              static_cast<AXPlatformNodeWin*>(GetFromUniqueId(-ax_unique_id))) {
+        if (start_after_element) {
+          Microsoft::WRL::ComPtr<AXPlatformNodeWin> start_after_platform_node;
+          if (!SUCCEEDED(start_after_element->QueryInterface(
+                  IID_PPV_ARGS(&start_after_platform_node))))
+            return E_INVALIDARG;
+
+          // We want |result| to be nullptr if it comes before or is equal to
+          // |start_after_element|.
+          if (start_after_platform_node->CompareTo(*result_platform_node) >= 0)
+            return S_OK;
+        }
+
+        return result_platform_node->QueryInterface(IID_PPV_ARGS(result));
+      }
+    }
+
+    return E_INVALIDARG;
+  }
+
+  //
   // IRawElementProviderSimple methods.
   //
 
   IFACEMETHODIMP get_HostRawElementProvider(
       IRawElementProviderSimple** host_element_provider) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
     UIA_VALIDATE_CALL_1_ARG(host_element_provider);
 
     HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
     return UiaHostProviderFromHwnd(hwnd, host_element_provider);
   }
 
+  IFACEMETHODIMP GetPatternProvider(PATTERNID pattern_id,
+                                    IUnknown** result) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
+    UIA_VALIDATE_CALL_1_ARG(result);
+    *result = nullptr;
+
+    if (pattern_id == UIA_ItemContainerPatternId) {
+      AddRef();
+      *result = static_cast<IItemContainerProvider*>(this);
+      return S_OK;
+    }
+
+    return AXPlatformNodeWin::GetPatternProviderImpl(pattern_id, result);
+  }
+
   IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
                                   VARIANT* result) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
     UIA_VALIDATE_CALL_1_ARG(result);
 
     switch (property_id) {
@@ -84,6 +149,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP get_FragmentRoot(
       IRawElementProviderFragmentRoot** fragment_root) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FRAGMENTROOT);
     UIA_VALIDATE_CALL_1_ARG(fragment_root);
 
     QueryInterface(IID_PPV_ARGS(fragment_root));
@@ -97,6 +163,8 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
       double screen_physical_pixel_x,
       double screen_physical_pixel_y,
       IRawElementProviderFragment** element_provider) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ELEMENT_PROVIDER_FROM_POINT);
+    WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_ELEMENT_PROVIDER_FROM_POINT);
     UIA_VALIDATE_CALL_1_ARG(element_provider);
 
     *element_provider = nullptr;
@@ -124,6 +192,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   }
 
   IFACEMETHODIMP GetFocus(IRawElementProviderFragment** focus) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FOCUS);
     UIA_VALIDATE_CALL_1_ARG(focus);
 
     *focus = nullptr;
@@ -157,6 +226,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   //
   IFACEMETHODIMP AdviseEventAdded(EVENTID event_id,
                                   SAFEARRAY* property_ids) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADVISE_EVENT_ADDED);
     if (event_id == UIA_LiveRegionChangedEventId) {
       live_region_change_listeners_++;
 
@@ -179,6 +249,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP AdviseEventRemoved(EVENTID event_id,
                                     SAFEARRAY* property_ids) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADVISE_EVENT_REMOVED);
     if (event_id == UIA_LiveRegionChangedEventId) {
       DCHECK(live_region_change_listeners_ > 0);
       live_region_change_listeners_--;

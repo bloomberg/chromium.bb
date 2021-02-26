@@ -40,8 +40,10 @@ constexpr int kLoadingAnimationStrokeWidthDp = 2;
 // the browser theme.
 bool ShouldThemifyFaviconForUrl(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
+         url.host_piece() != chrome::kChromeUIAppLauncherPageHost &&
          url.host_piece() != chrome::kChromeUIHelpHost &&
-         url.host_piece() != chrome::kChromeUIAppLauncherPageHost;
+         url.host_piece() != chrome::kChromeUIVersionHost &&
+         url.host_piece() != chrome::kChromeUINetExportHost;
 }
 
 bool NetworkStateIsAnimated(TabNetworkState network_state) {
@@ -58,6 +60,8 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
   explicit CrashAnimation(TabIcon* target)
       : gfx::LinearAnimation(base::TimeDelta::FromSeconds(1), 25, this),
         target_(target) {}
+  CrashAnimation(const CrashAnimation&) = delete;
+  CrashAnimation& operator=(const CrashAnimation&) = delete;
   ~CrashAnimation() override = default;
 
   // gfx::Animation overrides:
@@ -75,8 +79,6 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 
  private:
   TabIcon* target_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashAnimation);
 };
 
 TabIcon::TabIcon()
@@ -85,7 +87,7 @@ TabIcon::TabIcon()
       favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),
                                  gfx::LinearAnimation::kDefaultFrameRate,
                                  this) {
-  set_can_process_events_within_subtree(false);
+  SetCanProcessEventsWithinSubtree(false);
 
   // The minimum size to avoid clipping the attention indicator.
   const int preferred_width =

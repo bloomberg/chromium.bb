@@ -61,7 +61,7 @@ void StartCrashReporter(const std::string& version) {
   base::PathService::Get(base::FILE_EXE, &handler_path);
 
   base::FilePath database_path;
-  if (!GetProductDirectory(&database_path)) {
+  if (!GetVersionedDirectory(&database_path)) {
     LOG(DFATAL) << "Failed to get the database path.";
     return;
   }
@@ -116,8 +116,7 @@ int CrashReporterMain() {
   }
   argv_as_utf8[argv.size()] = nullptr;
 
-  return crashpad::HandlerMain(static_cast<int>(argv.size()),
-                               argv_as_utf8.get(),
+  return crashpad::HandlerMain(argv.size(), argv_as_utf8.get(),
                                /*user_stream_sources=*/nullptr);
 }
 

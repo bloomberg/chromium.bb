@@ -26,9 +26,13 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Persistence from '../persistence/persistence.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
+
+/** @type {!CallStackSidebarPane} */
+let callstackSidebarPaneInstance;
 
 /**
  * @implements {UI.ContextFlavorListener.ContextFlavorListener}
@@ -36,9 +40,12 @@ import * as Workspace from '../workspace/workspace.js';
  * @unrestricted
  */
 export class CallStackSidebarPane extends UI.View.SimpleView {
+  /**
+   * @private
+   */
   constructor() {
     super(Common.UIString.UIString('Call Stack'), true);
-    this.registerRequiredCSS('sources/callStackSidebarPane.css');
+    this.registerRequiredCSS('sources/callStackSidebarPane.css', {enableLegacyPatching: true});
 
     this._blackboxedMessageElement = this._createBlackboxedMessageElement();
     this.contentElement.appendChild(this._blackboxedMessageElement);
@@ -77,6 +84,18 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!callstackSidebarPaneInstance || forceNew) {
+      callstackSidebarPaneInstance = new CallStackSidebarPane();
+    }
+
+    return callstackSidebarPaneInstance;
+  }
+
+  /**
    * @override
    * @param {?Object} object
    */
@@ -91,22 +110,23 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
   }
 
   /**
-   * @return {!Promise<undefined>}
+   * @return {!Promise<void>}
    */
   async _doUpdate() {
     this._locationPool.disposeAll();
 
-    const details = self.UI.context.flavor(SDK.DebuggerModel.DebuggerPausedDetails);
+    const details = UI.Context.Context.instance().flavor(SDK.DebuggerModel.DebuggerPausedDetails);
     if (!details) {
       this.setDefaultFocusedElement(this._notPausedMessageElement);
       this._notPausedMessageElement.classList.remove('hidden');
       this._blackboxedMessageElement.classList.add('hidden');
       this._showMoreMessageElement.classList.add('hidden');
       this._items.replaceAll([]);
-      self.UI.context.setFlavor(SDK.DebuggerModel.CallFrame, null);
+      UI.Context.Context.instance().setFlavor(SDK.DebuggerModel.CallFrame, null);
       return;
     }
 
+    /** @type {?SDK.DebuggerModel.DebuggerModel} */
     let debuggerModel = details.debuggerModel;
     this._notPausedMessageElement.classList.add('hidden');
 
@@ -114,27 +134,30 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     for (const frame of details.callFrames) {
       const itemPromise =
           Item.createForDebuggerCallFrame(frame, this._locationPool, this._refreshItem.bind(this)).then(item => {
-            item[debuggerCallFrameSymbol] = frame;
+            itemToCallFrame.set(item, frame);
             return item;
           });
       itemPromises.push(itemPromise);
     }
     const items = await Promise.all(itemPromises);
 
+    /** @type {(?Protocol.Runtime.StackTrace|undefined)} */
     let asyncStackTrace = details.asyncStackTrace;
     if (!asyncStackTrace && details.asyncStackTraceId) {
       if (details.asyncStackTraceId.debuggerId) {
-        debuggerModel = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(details.asyncStackTraceId.debuggerId);
+        debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerIdResyncIfNecessary(
+            details.asyncStackTraceId.debuggerId);
       }
       asyncStackTrace = debuggerModel ? await debuggerModel.fetchAsyncStackTrace(details.asyncStackTraceId) : null;
     }
-    let peviousStackTrace = details.callFrames;
+    /** @type {!Array<!{functionName: string}>} */
+    let previousStackTrace = details.callFrames;
     let maxAsyncStackChainDepth = this._maxAsyncStackChainDepth;
     while (asyncStackTrace && maxAsyncStackChainDepth > 0) {
       let title = '';
       const isAwait = asyncStackTrace.description === 'async function';
-      if (isAwait && peviousStackTrace.length && asyncStackTrace.callFrames.length) {
-        const lastPreviousFrame = peviousStackTrace[peviousStackTrace.length - 1];
+      if (isAwait && previousStackTrace.length && asyncStackTrace.callFrames.length) {
+        const lastPreviousFrame = previousStackTrace[previousStackTrace.length - 1];
         const lastPreviousFrameName = UI.UIUtils.beautifyFunctionName(lastPreviousFrame.functionName);
         title = UI.UIUtils.asyncStackTraceLabel('await in ' + lastPreviousFrameName);
       } else {
@@ -145,12 +168,13 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
           title, debuggerModel, asyncStackTrace.callFrames, this._locationPool, this._refreshItem.bind(this)));
 
       --maxAsyncStackChainDepth;
-      peviousStackTrace = asyncStackTrace.callFrames;
+      previousStackTrace = asyncStackTrace.callFrames;
       if (asyncStackTrace.parent) {
         asyncStackTrace = asyncStackTrace.parent;
       } else if (asyncStackTrace.parentId) {
         if (asyncStackTrace.parentId.debuggerId) {
-          debuggerModel = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(asyncStackTrace.parentId.debuggerId);
+          debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerIdResyncIfNecessary(
+              asyncStackTrace.parentId.debuggerId);
         }
         asyncStackTrace = debuggerModel ? await debuggerModel.fetchAsyncStackTrace(asyncStackTrace.parentId) : null;
       } else {
@@ -177,13 +201,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    */
   _refreshItem(item) {
     this._scheduledForUpdateItems.add(item);
-    this._updateItemThrottler.schedule(innerUpdate.bind(this));
-
-    /**
-     * @this {!CallStackSidebarPane}
-     * @return {!Promise<undefined>}
-     */
-    function innerUpdate() {
+    this._updateItemThrottler.schedule(async () => {
       const items = Array.from(this._scheduledForUpdateItems);
       this._scheduledForUpdateItems.clear();
 
@@ -207,8 +225,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         this._blackboxedMessageElement.classList.toggle('hidden', this._showBlackboxed || !hasBlackboxed);
       }
       delete this._muteActivateItem;
-      return Promise.resolve();
-    }
+    });
   }
 
   /**
@@ -220,10 +237,12 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     const element = document.createElement('div');
     element.classList.add('call-frame-item');
     const title = element.createChild('div', 'call-frame-item-title');
-    title.createChild('div', 'call-frame-title-text').textContent = item.title;
+    const titleElement = title.createChild('div', 'call-frame-title-text');
+    titleElement.textContent = item.title;
     if (item.isAsyncHeader) {
       element.classList.add('async-header');
     } else {
+      titleElement.title = item.title;
       const linkElement = element.createChild('div', 'call-frame-location');
       linkElement.textContent = item.linkText.trimMiddle(30);
       linkElement.title = item.linkText;
@@ -231,11 +250,11 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
       if (item.isBlackboxed) {
         UI.ARIAUtils.setDescription(element, ls`blackboxed`);
       }
-      if (!item[debuggerCallFrameSymbol]) {
+      if (!itemToCallFrame.has(item)) {
         UI.ARIAUtils.setDisabled(element, true);
       }
     }
-    const isSelected = item[debuggerCallFrameSymbol] === self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const isSelected = itemToCallFrame.get(item) === UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     element.classList.toggle('selected', isSelected);
     UI.ARIAUtils.setSelected(element, isSelected);
     element.classList.toggle('hidden', !this._showBlackboxed && item.isBlackboxed);
@@ -267,8 +286,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @override
    * @param {?Item} from
    * @param {?Item} to
-   * @param {?Element} fromElement
-   * @param {?Element} toElement
+   * @param {?HTMLElement} fromElement
+   * @param {?HTMLElement} toElement
    */
   selectedItemChanged(from, to, fromElement, toElement) {
     if (fromElement) {
@@ -341,7 +360,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
       return;
     }
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    const debuggerCallFrame = item[debuggerCallFrameSymbol];
+    const debuggerCallFrame = itemToCallFrame.get(item);
     if (debuggerCallFrame) {
       contextMenu.defaultSection().appendItem(
           Common.UIString.UIString('Restart frame'), () => debuggerCallFrame.restart());
@@ -373,11 +392,11 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
       return;
     }
     this._list.selectItem(item);
-    const debuggerCallFrame = item[debuggerCallFrameSymbol];
+    const debuggerCallFrame = itemToCallFrame.get(item);
     const oldItem = this.activeCallFrameItem();
     if (debuggerCallFrame && oldItem !== item) {
       debuggerCallFrame.debuggerModel.setSelectedCallFrame(debuggerCallFrame);
-      self.UI.context.setFlavor(SDK.DebuggerModel.CallFrame, debuggerCallFrame);
+      UI.Context.Context.instance().setFlavor(SDK.DebuggerModel.CallFrame, debuggerCallFrame);
       if (oldItem) {
         this._refreshItem(oldItem);
       }
@@ -391,9 +410,9 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @return {?Item}
    */
   activeCallFrameItem() {
-    const callFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     if (callFrame) {
-      return this._items.find(callFrameItem => callFrameItem[debuggerCallFrameSymbol] === callFrame) || null;
+      return this._items.find(callFrameItem => itemToCallFrame.get(callFrameItem) === callFrame) || null;
     }
     return null;
   }
@@ -403,7 +422,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode) {
-    const binding = self.Persistence.persistence.binding(uiSourceCode);
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     if (binding) {
       uiSourceCode = binding.network;
     }
@@ -441,7 +460,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     const startIndex = oldItem ? this._items.indexOf(oldItem) + 1 : 0;
     for (let i = startIndex; i < this._items.length; i++) {
       const newItem = this._items.at(i);
-      if (newItem[debuggerCallFrameSymbol]) {
+      if (itemToCallFrame.has(newItem)) {
         this._activateItem(newItem);
         break;
       }
@@ -453,7 +472,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     const startIndex = oldItem ? this._items.indexOf(oldItem) - 1 : this._items.length - 1;
     for (let i = startIndex; i >= 0; i--) {
       const newItem = this._items.at(i);
-      if (newItem[debuggerCallFrameSymbol]) {
+      if (itemToCallFrame.has(newItem)) {
         this._activateItem(newItem);
         break;
       }
@@ -473,7 +492,9 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
   }
 }
 
-export const debuggerCallFrameSymbol = Symbol('debuggerCallFrame');
+/** @type {!WeakMap<!Item, !SDK.DebuggerModel.CallFrame>} */
+const itemToCallFrame = new WeakMap();
+
 export const elementSymbol = Symbol('element');
 export const defaultMaxAsyncStackChainDepth = 32;
 
@@ -488,13 +509,12 @@ export class ActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const callStackSidebarPane = self.runtime.sharedInstance(CallStackSidebarPane);
     switch (actionId) {
       case 'debugger.next-call-frame':
-        callStackSidebarPane._selectNextCallFrameOnStack();
+        CallStackSidebarPane.instance()._selectNextCallFrameOnStack();
         return true;
       case 'debugger.previous-call-frame':
-        callStackSidebarPane._selectPreviousCallFrameOnStack();
+        CallStackSidebarPane.instance()._selectPreviousCallFrameOnStack();
         return true;
     }
     return false;
@@ -505,7 +525,7 @@ export class Item {
   /**
    * @param {!SDK.DebuggerModel.CallFrame} frame
    * @param {!Bindings.LiveLocation.LiveLocationPool} locationPool
-   * @param {function(!Item)} updateDelegate
+   * @param {function(!Item):void} updateDelegate
    * @return {!Promise<!Item>}
    */
   static async createForDebuggerCallFrame(frame, locationPool, updateDelegate) {
@@ -520,13 +540,14 @@ export class Item {
    * @param {?SDK.DebuggerModel.DebuggerModel} debuggerModel
    * @param {!Array<!Protocol.Runtime.CallFrame>} frames
    * @param {!Bindings.LiveLocation.LiveLocationPool} locationPool
-   * @param {function(!Item)} updateDelegate
+   * @param {function(!Item):void} updateDelegate
    * @return {!Promise<!Array<!Item>>}
    */
   static async createItemsForAsyncStack(title, debuggerModel, frames, locationPool, updateDelegate) {
-    const whiteboxedItemsSymbol = Symbol('whiteboxedItems');
+    /** @type {!WeakMap<!Item, !Set<!Item>>} */
+    const headerItemToItemsSet = new WeakMap();
     const asyncHeaderItem = new Item(title, updateDelegate);
-    asyncHeaderItem[whiteboxedItemsSymbol] = new Set();
+    headerItemToItemsSet.set(asyncHeaderItem, new Set());
     asyncHeaderItem.isAsyncHeader = true;
 
     const asyncFrameItems = [];
@@ -558,15 +579,17 @@ export class Item {
     function update(item) {
       updateDelegate(item);
       let shouldUpdate = false;
-      const items = asyncHeaderItem[whiteboxedItemsSymbol];
-      if (item.isBlackboxed) {
-        items.delete(item);
-        shouldUpdate = items.size === 0;
-      } else {
-        shouldUpdate = items.size === 0;
-        items.add(item);
+      const items = headerItemToItemsSet.get(asyncHeaderItem);
+      if (items) {
+        if (item.isBlackboxed) {
+          items.delete(item);
+          shouldUpdate = items.size === 0;
+        } else {
+          shouldUpdate = items.size === 0;
+          items.add(item);
+        }
+        asyncHeaderItem.isBlackboxed = items.size === 0;
       }
-      asyncHeaderItem.isBlackboxed = asyncHeaderItem[whiteboxedItemsSymbol].size === 0;
       if (shouldUpdate) {
         updateDelegate(asyncHeaderItem);
       }
@@ -575,7 +598,7 @@ export class Item {
 
   /**
    * @param {string} title
-   * @param {function(!Item)} updateDelegate
+   * @param {function(!Item):void} updateDelegate
    */
   constructor(title, updateDelegate) {
     this.isBlackboxed = false;

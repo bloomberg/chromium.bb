@@ -12,7 +12,6 @@ cr.define('settings', function() {
    * during testing have been implemented.
    *
    * @constructor
-   * @implements {InputMethodPrivate}
    */
   /* #export */ function FakeInputMethodPrivate() {}
 
@@ -20,6 +19,8 @@ cr.define('settings', function() {
     getCurrentInputMethod: function(callback) {
       callback(null);
     },
+
+    setCurrentInputMethod: () => {},
 
     get onChanged() {
       return {

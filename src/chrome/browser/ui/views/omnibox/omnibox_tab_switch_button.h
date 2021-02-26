@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_TAB_SWITCH_BUTTON_H_
 
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/layout/flex_layout_types.h"
 
 class OmniboxPopupContentsView;
 class OmniboxResultView;
 
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
-  OmniboxTabSwitchButton(OmniboxPopupContentsView* popup_contents_view,
+  OmniboxTabSwitchButton(PressedCallback callback,
+                         OmniboxPopupContentsView* popup_contents_view,
                          OmniboxResultView* result_view,
                          const base::string16& hint,
                          const base::string16& hint_short,
@@ -21,28 +23,21 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   ~OmniboxTabSwitchButton() override;
 
   // views::MdTextButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void StateChanged(ButtonState old_state) override;
   void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // Returns the FlexRule that should be used to size this button.
+  static views::FlexRule GetFlexRule();
 
   // Called by parent views to change background on external (not mouse related)
   // event (tab key).
   void UpdateBackground();
 
-  // Called by parent view to provide the width of the surrounding area
-  // so the button can adjust its size or even presence.
-  void ProvideWidthHint(int width);
-
-  // Called to indicate button has been focused.
-  void ProvideFocusHint();
-
  private:
   // Consults the parent views to see if the button is selected.
   bool IsSelected() const;
-
-  // Helper function to translate parent width into goal width, and
-  // pass back the text at that width.
-  int CalculateGoalWidth(int parent_width, base::string16* goal_text);
 
   // The ancestor views.
   OmniboxPopupContentsView* const popup_contents_view_;

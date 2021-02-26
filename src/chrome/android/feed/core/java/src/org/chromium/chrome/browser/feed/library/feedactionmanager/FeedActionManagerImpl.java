@@ -14,8 +14,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
@@ -33,11 +32,16 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.feed.R;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamUploadableAction;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
+import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,6 +91,8 @@ public class FeedActionManagerImpl implements ActionManager {
     private final double mViewportCoverageThreshold;
     private final long mViewDurationMsThreshold;
 
+    private boolean mCanUploadClicksAndViewsWhenNoticePresent;
+
     FeedActionManagerImpl(Store store, ThreadUtils threadUtils, TaskQueue taskQueue,
             MainThreadRunner mainThreadRunner, ViewHandler viewHandler, Clock clock,
             BasicLoggingApi basicLoggingApi) {
@@ -120,6 +126,11 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     @Override
+    public void setCanUploadClicksAndViewsWhenNoticeCardIsPresent(boolean canUploadClicksAndViews) {
+        mCanUploadClicksAndViewsWhenNoticePresent = canUploadClicksAndViews;
+    }
+
+    @Override
     public void dismissLocal(List<String> contentIds,
             List<StreamDataOperation> streamDataOperations, @Nullable String sessionId) {
         executeStreamDataOperations(streamDataOperations, sessionId);
@@ -141,7 +152,13 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     @Override
-    public void createAndUploadAction(String contentId, ActionPayload payload) {
+    public void createAndUploadAction(
+            String contentId, ActionPayload payload, ActionManager.UploadActionType type) {
+        // Don't upload click actions when logging is disabled.
+        if (!canUploadClicksAndViews() && type == ActionManager.UploadActionType.CLICK) {
+            return;
+        }
+
         mTaskQueue.execute(Task.CREATE_AND_UPLOAD, TaskType.BACKGROUND, () -> {
             HashSet<StreamUploadableAction> actionSet = new HashSet<>();
             long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
@@ -155,7 +172,13 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     @Override
-    public void createAndStoreAction(String contentId, ActionPayload payload) {
+    public void createAndStoreAction(
+            String contentId, ActionPayload payload, ActionManager.UploadActionType type) {
+        // Don't store click actions when logging is disabled.
+        if (!canUploadClicksAndViews() && type == ActionManager.UploadActionType.CLICK) {
+            return;
+        }
+
         mTaskQueue.execute(Task.CREATE_AND_STORE, TaskType.BACKGROUND, () -> {
             long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
             StreamUploadableAction action = StreamUploadableAction.newBuilder()
@@ -354,8 +377,13 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     private void reportViewActions(Runnable doneCallback) {
+        // Don't report when logging is disabled.
+        if (!canUploadClicksAndViews()) {
+            return;
+        }
+
         Set<StreamUploadableAction> actions = new HashSet<>();
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+        if (FeedFeatures.isReportingUserActions()) {
             Iterator<Map.Entry<String, ViewActionData>> entryIterator =
                     mContentData.entrySet().iterator();
 
@@ -474,5 +502,15 @@ public class FeedActionManagerImpl implements ActionManager {
         public static ViewActionData createUntrackedWithZeroDuration(ActionPayload actionPayload) {
             return new ViewActionData(actionPayload, 0L, false);
         }
+    }
+
+    private boolean canUploadClicksAndViews() {
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)) {
+            return true;
+        }
+        boolean wasNoticePresent = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                           .getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD);
+        return mCanUploadClicksAndViewsWhenNoticePresent || !wasNoticePresent;
     }
 }

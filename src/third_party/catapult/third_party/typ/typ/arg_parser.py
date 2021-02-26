@@ -107,14 +107,28 @@ class ArgumentParser(argparse.ArgumentParser):
                               help=('Name of test type to include in the '
                                     'uploaded data (e.g., '
                                     '"telemetry_unittests").'))
-            self.add_argument('--write-full-results-to', metavar='FILENAME',
+            self.add_argument('--write-full-results-to',
+                              '--isolated-script-test-output',
+                              type=str,
+                              metavar='FILENAME',
                               action='store',
                               help=('If specified, writes the full results to '
                                     'that path.'))
+            self.add_argument('--isolated-script-test-perf-output',
+                              type=str,
+                              metavar='FILENAME',
+                              action='store',
+                              help='(ignored/unsupported)')
             self.add_argument('--write-trace-to', metavar='FILENAME',
                               action='store',
                               help=('If specified, writes the trace to '
                                     'that path.'))
+            self.add_argument('--disable-resultsink',
+                              action='store_true',
+                              default=False,
+                              help=('Explicitly disable ResultSink integration '
+                                    'instead of automatically determining '
+                                    'based off LUCI_CONTEXT.'))
             self.add_argument('tests', nargs='*', default=[],
                               help=argparse.SUPPRESS)
 
@@ -133,7 +147,9 @@ class ArgumentParser(argparse.ArgumentParser):
                               default=False,
                               help=('Runs as quietly as possible '
                                     '(only prints errors).'))
-            self.add_argument('-r', '--repeat', default=1, type=int,
+            self.add_argument('-r', '--repeat',
+                              '--isolated-script-test-repeat',
+                              default=1, type=int,
                               help='The number of times to repeat running each '
                                     'test. Note that if the tests are A, B, C '
                                     'and repeat is 2, the execution order would'
@@ -152,6 +168,11 @@ class ArgumentParser(argparse.ArgumentParser):
                               dest='tags', default=[], action='append',
                               help=('test tags (conditions) that apply to '
                                     'this run (can specify multiple times'))
+            self.add_argument('-i', '--ignore-tag',
+                              dest='ignored_tags', default=[], action='append',
+                              help=('test tags (conditions) to treat as '
+                                    'ignored for the purposes of tag '
+                                    'validation.'))
             self.add_argument('-X', '--expectations-file',
                               dest='expectations_files',
                               default=[], action='append',
@@ -168,7 +189,9 @@ class ArgumentParser(argparse.ArgumentParser):
             self.add_argument('--shard-index', default=0, type=int,
                               help=('Shard index (0..total_shards-1) of this '
                                     'test run.'))
-            self.add_argument('--retry-limit', type=int, default=0,
+            self.add_argument('--retry-limit',
+                              '--isolated-script-test-launcher-retry-limit',
+                              type=int, default=0,
                               help='Retries each failure up to N times.')
             self.add_argument('--retry-only-retry-on-failure-tests',
                               action='store_true',
@@ -187,6 +210,10 @@ class ArgumentParser(argparse.ArgumentParser):
             self.add_argument('--test-name-prefix', default='', action='store',
                               help=('Specifies the prefix that will be removed'
                                     ' from test names'))
+            self.add_argument('--isolated-outdir',
+                              type=str,
+                              metavar='PATH',
+                              help='directory to write output to (ignored)')
 
         if discovery or running:
             self.add_argument('-P', '--path', action='append', default=[],
@@ -202,7 +229,9 @@ class ArgumentParser(argparse.ArgumentParser):
                               help=('Globs of test names to skip ('
                                     'defaults to %(default)s).'))
             self.add_argument(
-                '--test-filter', type=str, default='', action='store',
+                '--test-filter',
+                '--isolated-script-test-filter',
+                type=str, default='', action='store',
                 help='Pass a double-colon-separated ("::") list of exact test '
                 'names or globs, to run just that subset of tests. fnmatch will '
                 'be used to match globs to test names')

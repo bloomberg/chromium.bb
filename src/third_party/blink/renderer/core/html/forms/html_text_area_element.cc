@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_focus_options.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -46,7 +47,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_text_control_multi_line.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -102,6 +106,42 @@ FormControlState HTMLTextAreaElement::SaveFormControlState() const {
 void HTMLTextAreaElement::RestoreFormControlState(
     const FormControlState& state) {
   setValue(state[0]);
+}
+
+int HTMLTextAreaElement::scrollWidth() {
+  if (SuggestedValue().IsEmpty())
+    return TextControlElement::scrollWidth();
+  // If in preview state, fake the scroll width to prevent that any information
+  // about the suggested content can be derived from the size.
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
+  auto* editor = InnerEditorElement();
+  auto* editor_box = editor ? editor->GetLayoutBox() : nullptr;
+  auto* box = GetLayoutBox();
+  if (!box || !editor_box)
+    return TextControlElement::scrollWidth();
+  LayoutUnit width =
+      editor_box->ClientWidth() + box->PaddingLeft() + box->PaddingRight();
+  return AdjustForAbsoluteZoom::AdjustLayoutUnit(width, box->StyleRef())
+      .Round();
+}
+
+int HTMLTextAreaElement::scrollHeight() {
+  if (SuggestedValue().IsEmpty())
+    return TextControlElement::scrollHeight();
+  // If in preview state, fake the scroll height to prevent that any
+  // information about the suggested content can be derived from the size.
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
+  auto* editor = InnerEditorElement();
+  auto* editor_box = editor ? editor->GetLayoutBox() : nullptr;
+  auto* box = GetLayoutBox();
+  if (!box || !editor_box)
+    return TextControlElement::scrollHeight();
+  LayoutUnit height =
+      editor_box->ClientHeight() + box->PaddingTop() + box->PaddingBottom();
+  return AdjustForAbsoluteZoom::AdjustLayoutUnit(height, box->StyleRef())
+      .Round();
 }
 
 void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {
@@ -212,10 +252,17 @@ void HTMLTextAreaElement::ParseAttribute(
   }
 }
 
-LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&,
-                                                      LegacyLayout) {
+bool HTMLTextAreaElement::TypeShouldForceLegacyLayout() const {
+  if (RuntimeEnabledFeatures::LayoutNGTextControlEnabled())
+    return false;
   UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByTextControl);
-  return new LayoutTextControlMultiLine(this);
+  return true;
+}
+
+LayoutObject* HTMLTextAreaElement::CreateLayoutObject(
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return LayoutObjectFactory::CreateTextControlMultiLine(*this, style, legacy);
 }
 
 void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {
@@ -609,7 +656,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->setAttribute(html_names::kIdAttr,
-                              shadow_element_names::Placeholder());
+                              shadow_element_names::kIdPlaceholder);
     placeholder->SetInlineStyleProperty(
         CSSPropertyID::kDisplay,
         IsPlaceholderVisible() ? CSSValueID::kBlock : CSSValueID::kNone, true);

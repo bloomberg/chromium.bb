@@ -48,13 +48,6 @@
 
 namespace blink {
 
-namespace {
-
-constexpr char kInterfaceMapLabel[] =
-    "V8PerIsolateData::interface_template_map_for_v8_context_snapshot_";
-
-}  // namespace
-
 // Function defined in third_party/blink/public/web/blink.h.
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
@@ -81,14 +74,11 @@ V8PerIsolateData::V8PerIsolateData(
                          : gin::IsolateHolder::kAllowAtomicsWait,
           IsMainThread() ? gin::IsolateHolder::IsolateType::kBlinkMainThread
                          : gin::IsolateHolder::IsolateType::kBlinkWorkerThread),
-      interface_template_map_for_v8_context_snapshot_(GetIsolate(),
-                                                      kInterfaceMapLabel),
       string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(std::make_unique<V8PrivateProperty>()),
       constructor_mode_(ConstructorMode::kCreateNewObject),
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
-      is_reporting_exception_(false),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   GetIsolate()->Enter();
@@ -100,22 +90,24 @@ V8PerIsolateData::V8PerIsolateData(
 
 // This constructor is used for creating a V8 context snapshot. It must run on
 // the main thread.
-V8PerIsolateData::V8PerIsolateData()
-    : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
+// TODO(yukishiino): This constructor may not be necessary.  Probably We can
+// reuse V8PerIsolateData(task_runner, v8_context_snapshot_mode) constructor.
+V8PerIsolateData::V8PerIsolateData(
+    V8ContextSnapshotMode v8_context_snapshot_mode)
+    : v8_context_snapshot_mode_(v8_context_snapshot_mode),
       isolate_holder_(Thread::Current()->GetTaskRunner(),
                       gin::IsolateHolder::kSingleThread,
                       gin::IsolateHolder::kAllowAtomicsWait,
                       gin::IsolateHolder::IsolateType::kBlinkMainThread,
                       gin::IsolateHolder::IsolateCreationMode::kCreateSnapshot),
-      interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(std::make_unique<V8PrivateProperty>()),
       constructor_mode_(ConstructorMode::kCreateNewObject),
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
-      is_reporting_exception_(false),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   CHECK(IsMainThread());
+  CHECK_EQ(v8_context_snapshot_mode_, V8ContextSnapshotMode::kTakeSnapshot);
 
   // SnapshotCreator enters the isolate, so we don't call Isolate::Enter() here.
   g_main_thread_per_isolate_data = this;
@@ -133,7 +125,7 @@ v8::Isolate* V8PerIsolateData::Initialize(
     V8ContextSnapshotMode context_mode) {
   V8PerIsolateData* data = nullptr;
   if (context_mode == V8ContextSnapshotMode::kTakeSnapshot) {
-    data = new V8PerIsolateData();
+    data = new V8PerIsolateData(context_mode);
   } else {
     data = new V8PerIsolateData(task_runner, context_mode);
   }
@@ -164,6 +156,8 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
     data->profiler_group_->WillBeDestroyed();
     data->profiler_group_ = nullptr;
   }
+
+  data->ClearScriptRegexpContext();
 
   // Detach V8's garbage collector.
   // Need to finalize an already running garbage collection as otherwise
@@ -202,10 +196,8 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   data->private_property_.reset();
   data->string_cache_->Dispose();
   data->string_cache_.reset();
-  data->interface_template_map_for_non_main_world_.clear();
-  data->interface_template_map_for_main_world_.clear();
-  data->operation_template_map_for_non_main_world_.clear();
-  data->operation_template_map_for_main_world_.clear();
+  data->v8_template_map_for_main_world_.clear();
+  data->v8_template_map_for_non_main_worlds_.clear();
   if (IsMainThread())
     g_main_thread_per_isolate_data = nullptr;
 
@@ -214,68 +206,81 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   delete data;
 }
 
-V8PerIsolateData::V8FunctionTemplateMap&
-V8PerIsolateData::SelectInterfaceTemplateMap(const DOMWrapperWorld& world) {
-  return world.IsMainWorld() ? interface_template_map_for_main_world_
-                             : interface_template_map_for_non_main_world_;
-}
-
-V8PerIsolateData::V8FunctionTemplateMap&
-V8PerIsolateData::SelectOperationTemplateMap(const DOMWrapperWorld& world) {
-  return world.IsMainWorld() ? operation_template_map_for_main_world_
-                             : operation_template_map_for_non_main_world_;
-}
-
-v8::Local<v8::FunctionTemplate> V8PerIsolateData::FindOrCreateOperationTemplate(
-    const DOMWrapperWorld& world,
-    const void* key,
-    v8::FunctionCallback callback,
-    v8::Local<v8::Value> data,
-    v8::Local<v8::Signature> signature,
-    int length) {
-  auto& map = SelectOperationTemplateMap(world);
-  auto result = map.find(key);
-  if (result != map.end())
-    return result->value.Get(GetIsolate());
-
-  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(
-      GetIsolate(), callback, data, signature, length);
-  templ->RemovePrototype();
-  map.insert(key, v8::Eternal<v8::FunctionTemplate>(GetIsolate(), templ));
-  return templ;
-}
-
-v8::Local<v8::FunctionTemplate> V8PerIsolateData::FindInterfaceTemplate(
+v8::Local<v8::Template> V8PerIsolateData::FindV8Template(
     const DOMWrapperWorld& world,
     const void* key) {
-  if (GetV8ContextSnapshotMode() == V8ContextSnapshotMode::kTakeSnapshot) {
-    const WrapperTypeInfo* type = reinterpret_cast<const WrapperTypeInfo*>(key);
-    return interface_template_map_for_v8_context_snapshot_.Get(type);
-  }
-
-  auto& map = SelectInterfaceTemplateMap(world);
+  auto& map = SelectV8TemplateMap(world);
   auto result = map.find(key);
   if (result != map.end())
     return result->value.Get(GetIsolate());
-  return v8::Local<v8::FunctionTemplate>();
+  return v8::Local<v8::Template>();
 }
 
-void V8PerIsolateData::SetInterfaceTemplate(
-    const DOMWrapperWorld& world,
-    const void* key,
-    v8::Local<v8::FunctionTemplate> value) {
-  if (GetV8ContextSnapshotMode() == V8ContextSnapshotMode::kTakeSnapshot) {
-    auto& map = interface_template_map_for_v8_context_snapshot_;
-    const WrapperTypeInfo* type = reinterpret_cast<const WrapperTypeInfo*>(key);
-    map.Set(type, value);
-  } else {
-    auto& map = SelectInterfaceTemplateMap(world);
-    map.insert(key, v8::Eternal<v8::FunctionTemplate>(GetIsolate(), value));
-  }
+void V8PerIsolateData::AddV8Template(const DOMWrapperWorld& world,
+                                     const void* key,
+                                     v8::Local<v8::Template> value) {
+  auto& map = SelectV8TemplateMap(world);
+  auto result = map.insert(key, v8::Eternal<v8::Template>(GetIsolate(), value));
+  DCHECK(result.is_new_entry);
+}
+
+bool V8PerIsolateData::HasInstance(const WrapperTypeInfo* wrapper_type_info,
+                                   v8::Local<v8::Value> untrusted_value) {
+  RUNTIME_CALL_TIMER_SCOPE(GetIsolate(),
+                           RuntimeCallStats::CounterId::kHasInstance);
+  return HasInstance(wrapper_type_info, untrusted_value,
+                     v8_template_map_for_main_world_) ||
+         HasInstance(wrapper_type_info, untrusted_value,
+                     v8_template_map_for_non_main_worlds_);
+}
+
+bool V8PerIsolateData::HasInstance(const WrapperTypeInfo* wrapper_type_info,
+                                   v8::Local<v8::Value> untrusted_value,
+                                   const V8TemplateMap& map) {
+  auto result = map.find(wrapper_type_info);
+  if (result == map.end())
+    return false;
+  v8::Local<v8::Template> v8_template = result->value.Get(GetIsolate());
+  DCHECK(v8_template->IsFunctionTemplate());
+  return v8_template.As<v8::FunctionTemplate>()->HasInstance(untrusted_value);
+}
+
+bool V8PerIsolateData::HasInstanceOfUntrustedType(
+    const WrapperTypeInfo* untrusted_wrapper_type_info,
+    v8::Local<v8::Value> untrusted_value) {
+  RUNTIME_CALL_TIMER_SCOPE(GetIsolate(),
+                           RuntimeCallStats::CounterId::kHasInstance);
+  return HasInstanceOfUntrustedType(untrusted_wrapper_type_info,
+                                    untrusted_value,
+                                    v8_template_map_for_main_world_) ||
+         HasInstanceOfUntrustedType(untrusted_wrapper_type_info,
+                                    untrusted_value,
+                                    v8_template_map_for_non_main_worlds_);
+}
+
+bool V8PerIsolateData::HasInstanceOfUntrustedType(
+    const WrapperTypeInfo* untrusted_wrapper_type_info,
+    v8::Local<v8::Value> untrusted_value,
+    const V8TemplateMap& map) {
+  auto result = map.find(untrusted_wrapper_type_info);
+  if (result == map.end())
+    return false;
+  v8::Local<v8::Template> v8_template = result->value.Get(GetIsolate());
+  if (!v8_template->IsFunctionTemplate())
+    return false;
+  return v8_template.As<v8::FunctionTemplate>()->HasInstance(untrusted_value);
+}
+
+V8PerIsolateData::V8TemplateMap& V8PerIsolateData::SelectV8TemplateMap(
+    const DOMWrapperWorld& world) {
+  return world.IsMainWorld() ? v8_template_map_for_main_world_
+                             : v8_template_map_for_non_main_worlds_;
 }
 
 void V8PerIsolateData::ClearPersistentsForV8ContextSnapshot() {
-  interface_template_map_for_v8_context_snapshot_.Clear();
+  v8_template_map_for_main_world_.clear();
+  v8_template_map_for_non_main_worlds_.clear();
+  eternal_name_cache_.clear();
   private_property_.reset();
 }
 
@@ -308,63 +313,20 @@ v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {
     LEAK_SANITIZER_DISABLED_SCOPE;
     v8::Local<v8::Context> context(v8::Context::New(GetIsolate()));
     script_regexp_script_state_ = MakeGarbageCollected<ScriptState>(
-        context, DOMWrapperWorld::Create(GetIsolate(),
-                                         DOMWrapperWorld::WorldType::kRegExp));
+        context,
+        DOMWrapperWorld::Create(GetIsolate(),
+                                DOMWrapperWorld::WorldType::kRegExp),
+        /* execution_context = */ nullptr);
   }
   return script_regexp_script_state_->GetContext();
 }
 
 void V8PerIsolateData::ClearScriptRegexpContext() {
-  if (script_regexp_script_state_)
+  if (script_regexp_script_state_) {
     script_regexp_script_state_->DisposePerContextData();
+    script_regexp_script_state_->DissociateContext();
+  }
   script_regexp_script_state_ = nullptr;
-}
-
-bool V8PerIsolateData::HasInstance(
-    const WrapperTypeInfo* untrusted_wrapper_type_info,
-    v8::Local<v8::Value> value) {
-  RUNTIME_CALL_TIMER_SCOPE(GetIsolate(),
-                           RuntimeCallStats::CounterId::kHasInstance);
-  return HasInstance(untrusted_wrapper_type_info, value,
-                     interface_template_map_for_main_world_) ||
-         HasInstance(untrusted_wrapper_type_info, value,
-                     interface_template_map_for_non_main_world_);
-}
-
-bool V8PerIsolateData::HasInstance(
-    const WrapperTypeInfo* untrusted_wrapper_type_info,
-    v8::Local<v8::Value> value,
-    V8FunctionTemplateMap& map) {
-  auto result = map.find(untrusted_wrapper_type_info);
-  if (result == map.end())
-    return false;
-  v8::Local<v8::FunctionTemplate> templ = result->value.Get(GetIsolate());
-  return templ->HasInstance(value);
-}
-
-v8::Local<v8::Object> V8PerIsolateData::FindInstanceInPrototypeChain(
-    const WrapperTypeInfo* info,
-    v8::Local<v8::Value> value) {
-  v8::Local<v8::Object> wrapper = FindInstanceInPrototypeChain(
-      info, value, interface_template_map_for_main_world_);
-  if (!wrapper.IsEmpty())
-    return wrapper;
-  return FindInstanceInPrototypeChain(
-      info, value, interface_template_map_for_non_main_world_);
-}
-
-v8::Local<v8::Object> V8PerIsolateData::FindInstanceInPrototypeChain(
-    const WrapperTypeInfo* info,
-    v8::Local<v8::Value> value,
-    V8FunctionTemplateMap& map) {
-  if (value.IsEmpty() || !value->IsObject())
-    return v8::Local<v8::Object>();
-  auto result = map.find(info);
-  if (result == map.end())
-    return v8::Local<v8::Object>();
-  v8::Local<v8::FunctionTemplate> templ = result->value.Get(GetIsolate());
-  return v8::Local<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(
-      templ);
 }
 
 void V8PerIsolateData::AddEndOfScopeTask(base::OnceClosure task) {

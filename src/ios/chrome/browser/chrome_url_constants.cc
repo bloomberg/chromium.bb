@@ -10,6 +10,7 @@
 #include "ios/components/webui/web_ui_url_constants.h"
 
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
+const char kChromeUICookiesSettingsURL[] = "chrome://settings/coookies";
 const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
@@ -37,6 +38,7 @@ const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIIntersitialsHost[] = "interstitials";
+const char kChromeUIManagementHost[] = "management";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
@@ -63,6 +65,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIFlagsHost,
     kChromeUIHistogramHost,
     kChromeUIInspectHost,
+    kChromeUIManagementHost,
     kChromeUINetExportHost,
     kChromeUINewTabHost,
     kChromeUINTPTilesInternalsHost,
@@ -119,3 +122,6 @@ const char kReadingListReferrerURL[] =
     "chrome://do_not_consider_for_most_visited/reading_list";
 
 const char kChromeUIAboutNewTabURL[] = "about://newtab/";
+
+const char kManagementLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=is_chrome_managed";

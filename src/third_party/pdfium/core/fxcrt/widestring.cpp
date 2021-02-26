@@ -322,7 +322,7 @@ WideString WideString::Format(const wchar_t* pFormat, ...) {
   return ret;
 }
 
-WideString::WideString() {}
+WideString::WideString() = default;
 
 WideString::WideString(const WideString& other) : m_pData(other.m_pData) {}
 
@@ -383,7 +383,7 @@ WideString::WideString(const std::initializer_list<WideStringView>& list) {
   }
 }
 
-WideString::~WideString() {}
+WideString::~WideString() = default;
 
 WideString& WideString::operator=(const wchar_t* str) {
   if (!str || !str[0])
@@ -410,7 +410,7 @@ WideString& WideString::operator=(const WideString& that) {
   return *this;
 }
 
-WideString& WideString::operator=(WideString&& that) {
+WideString& WideString::operator=(WideString&& that) noexcept {
   if (m_pData != that.m_pData)
     m_pData = std::move(that.m_pData);
 
@@ -692,6 +692,16 @@ ByteString WideString::ToUTF16LE() const {
   }
   result.ReleaseBuffer(len * 2 + 2);
   return result;
+}
+
+WideString WideString::EncodeEntities() const {
+  WideString ret = *this;
+  ret.Replace(L"&", L"&amp;");
+  ret.Replace(L"<", L"&lt;");
+  ret.Replace(L">", L"&gt;");
+  ret.Replace(L"\'", L"&apos;");
+  ret.Replace(L"\"", L"&quot;");
+  return ret;
 }
 
 WideString WideString::Substr(size_t first, size_t count) const {

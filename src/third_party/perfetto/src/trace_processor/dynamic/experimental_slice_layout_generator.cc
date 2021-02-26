@@ -95,7 +95,52 @@ std::unique_ptr<Table> ExperimentalSliceLayoutGenerator::ComputeTable(
 
   StringPool::Id filter_id =
       string_pool_->InternString(base::StringView(filter_string));
-  return AddLayoutColumn(*slice_table_, selected_tracks, filter_id);
+
+  // Try and find the table in the cache.
+  auto it = layout_table_cache_.find(filter_id);
+  if (it != layout_table_cache_.end()) {
+    return std::unique_ptr<Table>(new Table(it->second.Copy()));
+  }
+
+  // Find all the slices for the tracks we want to filter and create a RowMap
+  // out of them.
+  // TODO(lalitm): Update this to use iterator (as this code will be slow after
+  // the event table is implemented).
+  // TODO(lalitm): consider generalising this by adding OR constraint support to
+  // Constraint and Table::Filter. We definitely want to wait until we have more
+  // usecases before implementing that though because it will be a significant
+  // amount of work.
+  RowMap rm;
+  for (uint32_t i = 0; i < slice_table_->row_count(); ++i) {
+    if (selected_tracks.count(slice_table_->track_id()[i]) > 0) {
+      rm.Insert(i);
+    }
+  }
+
+  // Apply the row map to the table to cut down on the number of rows we have to
+  // go through.
+  Table filtered_table = slice_table_->Apply(std::move(rm));
+
+  // Compute the table and add it to the cache for future use.
+  Table layout_table = ComputeLayoutTable(filtered_table, filter_id);
+  auto res = layout_table_cache_.emplace(filter_id, std::move(layout_table));
+  return std::unique_ptr<Table>(new Table(res.first->second.Copy()));
+}
+
+// Build up a table of slice id -> root slice id by observing each
+// (id, opt_parent_id) pair in order.
+tables::SliceTable::Id ExperimentalSliceLayoutGenerator::InsertSlice(
+    std::map<tables::SliceTable::Id, tables::SliceTable::Id>& id_map,
+    tables::SliceTable::Id id,
+    base::Optional<tables::SliceTable::Id> parent_id) {
+  if (parent_id) {
+    tables::SliceTable::Id root_id = id_map[parent_id.value()];
+    id_map[id] = root_id;
+    return root_id;
+  } else {
+    id_map[id] = id;
+    return id;
+  }
 }
 
 // The problem we're trying to solve is this: given a number of tracks each of
@@ -127,37 +172,37 @@ std::unique_ptr<Table> ExperimentalSliceLayoutGenerator::ComputeTable(
 // 3. Go though each slice and give it a layout_depth by summing it's
 //    current depth and the root layout_depth of the stalactite it belongs to.
 //
-//
-std::unique_ptr<Table> ExperimentalSliceLayoutGenerator::AddLayoutColumn(
+Table ExperimentalSliceLayoutGenerator::ComputeLayoutTable(
     const Table& table,
-    const std::set<TrackId>& selected,
     StringPool::Id filter_id) {
-  const auto& track_id_col =
-      *table.GetTypedColumnByName<tables::TrackTable::Id>("track_id");
-  const auto& depth_col = *table.GetTypedColumnByName<uint32_t>("depth");
-  const auto& ts_col = *table.GetTypedColumnByName<int64_t>("ts");
-  const auto& dur_col = *table.GetTypedColumnByName<int64_t>("dur");
+  std::map<tables::SliceTable::Id, GroupInfo> groups;
+  // Map of id -> root_id
+  std::map<tables::SliceTable::Id, tables::SliceTable::Id> id_map;
 
-  std::map<TrackId, GroupInfo> groups;
+  const auto& id_col = table.GetIdColumnByName<tables::SliceTable::Id>("id");
+  const auto& parent_id_col =
+      table.GetTypedColumnByName<base::Optional<tables::SliceTable::Id>>(
+          "parent_id");
+  const auto& depth_col = table.GetTypedColumnByName<uint32_t>("depth");
+  const auto& ts_col = table.GetTypedColumnByName<int64_t>("ts");
+  const auto& dur_col = table.GetTypedColumnByName<int64_t>("dur");
 
   // Step 1:
   // Find the bounding box (start ts, end ts, and max depth) for each group
-  // TODO(lalitm): Update this to use iterator (will be slow after event table)
+  // TODO(lalitm): Update this to use iterator (as this code will be slow after
+  // the event table is implemented)
   for (uint32_t i = 0; i < table.row_count(); ++i) {
-    TrackId track_id = track_id_col[i];
-    if (selected.count(track_id) == 0) {
-      continue;
-    }
-
+    tables::SliceTable::Id id = id_col[i];
+    base::Optional<tables::SliceTable::Id> parent_id = parent_id_col[i];
     uint32_t depth = depth_col[i];
     int64_t start = ts_col[i];
     int64_t dur = dur_col[i];
     int64_t end = start + dur;
-
-    std::map<TrackId, GroupInfo>::iterator it;
+    InsertSlice(id_map, id, parent_id);
+    std::map<tables::SliceTable::Id, GroupInfo>::iterator it;
     bool inserted;
     std::tie(it, inserted) = groups.emplace(
-        std::piecewise_construct, std::forward_as_tuple(track_id),
+        std::piecewise_construct, std::forward_as_tuple(id_map[id]),
         std::forward_as_tuple(start, end, depth + 1));
     if (!inserted) {
       it->second.max_height = std::max(it->second.max_height, depth + 1);
@@ -165,14 +210,26 @@ std::unique_ptr<Table> ExperimentalSliceLayoutGenerator::AddLayoutColumn(
     }
   }
 
+  // Sort the groups by ts
+  std::vector<GroupInfo*> sorted_groups;
+  sorted_groups.resize(groups.size());
+  size_t idx = 0;
+  for (auto& group : groups) {
+    sorted_groups[idx++] = &group.second;
+  }
+  std::sort(std::begin(sorted_groups), std::end(sorted_groups),
+            [](const GroupInfo* group1, const GroupInfo* group2) {
+              return group1->start < group2->start;
+            });
+
   // Step 2:
   // Go though each group and choose a depth for the root slice.
   // We keep track of those groups where the start time has passed but the
   // end time has not in this vector:
   std::vector<GroupInfo*> still_open;
-  for (auto& id_group : groups) {
-    int64_t start = id_group.second.start;
-    uint32_t max_height = id_group.second.max_height;
+  for (GroupInfo* group : sorted_groups) {
+    int64_t start = group->start;
+    uint32_t max_height = group->max_height;
 
     // Discard all 'closed' groups where that groups end_ts is < our start_ts:
     {
@@ -211,43 +268,33 @@ std::unique_ptr<Table> ExperimentalSliceLayoutGenerator::AddLayoutColumn(
     }
 
     // Add this group to the open groups & re
-    still_open.push_back(&id_group.second);
+    still_open.push_back(group);
 
     // Set our root layout depth:
-    id_group.second.layout_depth = layout_depth;
+    group->layout_depth = layout_depth;
   }
 
   // Step 3: Add the two new columns layout_depth and filter_track_ids:
-  std::unique_ptr<SparseVector<int64_t>> layout_depth_column(
-      new SparseVector<int64_t>());
-  std::unique_ptr<SparseVector<StringPool::Id>> filter_column(
-      new SparseVector<StringPool::Id>());
+  std::unique_ptr<NullableVector<int64_t>> layout_depth_column(
+      new NullableVector<int64_t>());
+  std::unique_ptr<NullableVector<StringPool::Id>> filter_column(
+      new NullableVector<StringPool::Id>());
 
   for (uint32_t i = 0; i < table.row_count(); ++i) {
-    TrackId track_id = track_id_col[i];
+    tables::SliceTable::Id id = id_col[i];
     uint32_t depth = depth_col[i];
-    if (selected.count(track_id) == 0) {
-      // Don't care about depth for slices from non-selected tracks:
-      layout_depth_column->Append(0);
-      // We (ab)use this column to also filter out all the slices we don't care
-      // about by giving it a different value.
-      filter_column->Append(empty_string_id_);
-    } else {
-      // Each slice depth is it's current slice depth + root slice depth of the
-      // group:
-      layout_depth_column->Append(depth + groups.at(track_id).layout_depth);
-      // We must set this to the value we got in the constraint to ensure our
-      // rows are not filtered out:
-      filter_column->Append(filter_id);
-    }
+    // Each slice depth is it's current slice depth + root slice depth of the
+    // group:
+    layout_depth_column->Append(depth + groups.at(id_map[id]).layout_depth);
+    // We must set this to the value we got in the constraint to ensure our
+    // rows are not filtered out:
+    filter_column->Append(filter_id);
   }
-
-  return std::unique_ptr<Table>(new Table(
-      table
-          .ExtendWithColumn("layout_depth", std::move(layout_depth_column),
-                            TypedColumn<int64_t>::default_flags())
-          .ExtendWithColumn("filter_track_ids", std::move(filter_column),
-                            TypedColumn<StringPool::Id>::default_flags())));
+  return table
+      .ExtendWithColumn("layout_depth", std::move(layout_depth_column),
+                        TypedColumn<int64_t>::default_flags())
+      .ExtendWithColumn("filter_track_ids", std::move(filter_column),
+                        TypedColumn<StringPool::Id>::default_flags());
 }
 
 }  // namespace trace_processor

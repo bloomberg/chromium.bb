@@ -9,10 +9,9 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
-class Button;
-class ButtonListener;
 class ImageButton;
 class LabelButton;
 }  // namespace views
@@ -24,11 +23,11 @@ void ConfigureBubbleMenuItem(views::Button* button, int button_id);
 std::unique_ptr<views::LabelButton> CreateBubbleMenuItem(
     int button_id,
     const base::string16& name,
-    views::ButtonListener* listener);
+    views::Button::PressedCallback callback);
 
 // Convience method for creating a menu item used inside a bubble with an image.
 std::unique_ptr<views::ImageButton> CreateBubbleMenuItem(
     int id,
-    views::ButtonListener* listener);
+    views::Button::PressedCallback callback);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_BUBBLE_MENU_ITEM_FACTORY_H_

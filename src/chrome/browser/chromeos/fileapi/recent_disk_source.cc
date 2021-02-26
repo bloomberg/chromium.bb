@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +30,8 @@ namespace {
 constexpr char kAudioMimeType[] = "audio/*";
 constexpr char kImageMimeType[] = "image/*";
 constexpr char kVideoMimeType[] = "video/*";
+constexpr char kAmrMimeType[] = "audio/amr";
+constexpr char kAmrExtension[] = ".amr";
 
 void OnReadDirectoryOnIOThread(
     const storage::FileSystemOperation::ReadDirectoryCallback& callback,
@@ -39,8 +40,8 @@ void OnReadDirectoryOnIOThread(
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(callback, result, std::move(entries), has_more));
 }
 
@@ -60,8 +61,8 @@ void OnGetMetadataOnIOThread(
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result, info));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result, info));
 }
 
 void GetMetadataOnIOThread(
@@ -88,8 +89,13 @@ bool MatchesFileType(const base::FilePath& path,
   // TODO(fukino): It is better to have better coverage of file extensions to be
   // consistent with file-type detection on Android system. crbug.com/1034874.
   std::string mime_type;
-  if (!net::GetMimeTypeFromFile(path, &mime_type))
-    return false;
+  if (!net::GetMimeTypeFromFile(path, &mime_type)) {
+    const base::FilePath::StringType ext = path.Extension();
+    if (base::ToLowerASCII(ext) != kAmrExtension) {
+      return false;
+    }
+    mime_type = kAmrMimeType;
+  }
 
   switch (file_type) {
     case RecentSource::FileType::kAudio:
@@ -153,8 +159,8 @@ void RecentDiskSource::ScanDirectory(const base::FilePath& path, int depth) {
   storage::FileSystemURL url = BuildDiskURL(path);
 
   ++inflight_readdirs_;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ReadDirectoryOnIOThread,
           base::WrapRefCounted(params_.value().file_system_context()), url,
@@ -191,8 +197,8 @@ void RecentDiskSource::OnReadDirectory(
       }
       storage::FileSystemURL url = BuildDiskURL(subpath);
       ++inflight_stats_;
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &GetMetadataOnIOThread,
               base::WrapRefCounted(params_.value().file_system_context()), url,

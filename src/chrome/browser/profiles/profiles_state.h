@@ -16,11 +16,16 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #endif
 
+struct AccountInfo;
 class Browser;
 class PrefRegistrySimple;
+class PrefService;
 class Profile;
 
-namespace base { class FilePath; }
+namespace base {
+class CommandLine;
+class FilePath;
+}  // namespace base
 
 namespace profiles {
 
@@ -71,6 +76,13 @@ void UpdateProfileName(Profile* profile,
 // implemented as off-the-record profiles.
 bool IsRegularOrGuestSession(Browser* browser);
 
+// Returns true if starting in guest mode is requested at startup (e.g. through
+// command line argument). If |show_warning| is true, send a warning if guest
+// mode is requested but not allowed by policy.
+bool IsGuestModeRequested(const base::CommandLine& command_line,
+                          PrefService* local_state,
+                          bool show_warning);
+
 // Returns true if sign in is required to browse as this profile.  Call with
 // profile->GetPath() if you have a profile pointer.
 // TODO(mlerman): Refactor appropriate calls to
@@ -108,6 +120,14 @@ bool IsPublicSession();
 
 // Returns whether public session restrictions are enabled.
 bool ArePublicSessionRestrictionsEnabled();
+
+#if !defined(OS_CHROMEOS)
+// Returns the default name for a new signed-in profile, based on
+// `account_info`.
+base::string16 GetDefaultNameForNewSignedInProfile(
+    const AccountInfo& account_info);
+#endif  // !defined(OS_CHROMEOS)
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles

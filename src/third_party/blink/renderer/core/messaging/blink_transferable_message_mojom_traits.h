@@ -10,7 +10,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor_mojom_traits.h"
-#include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message_mojom_traits.h"
@@ -19,9 +19,8 @@
 namespace mojo {
 
 template <>
-struct CORE_EXPORT
-    StructTraits<blink::mojom::blink::TransferableMessage::DataView,
-                 blink::BlinkTransferableMessage> {
+struct CORE_EXPORT StructTraits<blink::mojom::TransferableMessageDataView,
+                                blink::BlinkTransferableMessage> {
   static blink::BlinkCloneableMessage& message(
       blink::BlinkTransferableMessage& input) {
     return input;
@@ -39,10 +38,10 @@ struct CORE_EXPORT
   static Vector<blink::MessagePortDescriptor> stream_channels(
       blink::BlinkTransferableMessage& input) {
     Vector<blink::MessagePortDescriptor> result;
-    auto& stream_channels = input.message->GetStreamChannels();
-    result.ReserveInitialCapacity(stream_channels.size());
-    for (const auto& port : stream_channels)
-      result.push_back(port.ReleaseHandle());
+    auto& streams = input.message->GetStreams();
+    result.ReserveInitialCapacity(streams.size());
+    for (const auto& stream : streams)
+      result.push_back(stream.channel.ReleaseHandle());
     return result;
   }
 
@@ -59,22 +58,13 @@ struct CORE_EXPORT
     return input.user_activation;
   }
 
-  static bool transfer_user_activation(
-      const blink::BlinkTransferableMessage& input) {
-    return input.transfer_user_activation;
-  }
-
-  static bool allow_autoplay(const blink::BlinkTransferableMessage& input) {
-    return input.allow_autoplay;
-  }
-
-  static bool Read(blink::mojom::blink::TransferableMessage::DataView,
+  static bool Read(blink::mojom::TransferableMessageDataView,
                    blink::BlinkTransferableMessage* out);
 };
 
 template <>
 class CORE_EXPORT
-    StructTraits<blink::mojom::blink::SerializedArrayBufferContents::DataView,
+    StructTraits<blink::mojom::SerializedArrayBufferContentsDataView,
                  blink::ArrayBufferContents> {
  public:
   static mojo_base::BigBuffer contents(
@@ -84,7 +74,7 @@ class CORE_EXPORT
     return mojo_base::BigBuffer(
         base::make_span(allocation_start, array_buffer_contents.DataLength()));
   }
-  static bool Read(blink::mojom::blink::SerializedArrayBufferContents::DataView,
+  static bool Read(blink::mojom::SerializedArrayBufferContentsDataView,
                    blink::ArrayBufferContents* out);
 };
 

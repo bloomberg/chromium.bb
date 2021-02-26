@@ -8,17 +8,17 @@
 #include <utility>
 
 #include "cc/base/math_util.h"
-#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
-#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/service/display/aggregated_frame.h"
 
 namespace viz {
 
 DamageFrameAnnotator::DamageFrameAnnotator() = default;
 DamageFrameAnnotator::~DamageFrameAnnotator() = default;
 
-void DamageFrameAnnotator::AnnotateAggregatedFrame(CompositorFrame* frame) {
+void DamageFrameAnnotator::AnnotateAggregatedFrame(AggregatedFrame* frame) {
   DCHECK(frame);
   auto* root_render_pass = frame->render_pass_list.back().get();
 
@@ -34,7 +34,8 @@ void DamageFrameAnnotator::AnnotateAggregatedFrame(CompositorFrame* frame) {
   annotations_.clear();
 }
 
-void DamageFrameAnnotator::AnnotateRootRenderPass(RenderPass* render_pass) {
+void DamageFrameAnnotator::AnnotateRootRenderPass(
+    AggregatedRenderPass* render_pass) {
   const size_t num_quads_to_add = annotations_.size();
 
   // Insert |num_quads_to_add| new DebugBorderDrawQuad at start of list. The
@@ -52,7 +53,7 @@ void DamageFrameAnnotator::AnnotateRootRenderPass(RenderPass* render_pass) {
     SharedQuadState* new_sqs = render_pass->shared_quad_state_list
                                    .AllocateAndConstruct<SharedQuadState>();
     new_sqs->SetAll(annotation.transform, output_rect, output_rect,
-                    gfx::RRectF(), output_rect, true, false, 1.f,
+                    gfx::MaskFilterInfo(), output_rect, true, false, 1.f,
                     SkBlendMode::kSrcOver, 0);
 
     DebugBorderDrawQuad* new_quad =

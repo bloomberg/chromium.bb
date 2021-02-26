@@ -7,14 +7,11 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 namespace scheduler {
-
-const base::Feature kHighPriorityInputOnCompositorThread{
-    "BlinkSchedulerHighPriorityInputOnCompositorThread",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDedicatedWorkerThrottling{
     "BlinkSchedulerWorkerThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -85,7 +82,7 @@ constexpr base::FeatureParam<double> kCompositorBudgetRecoveryRate{
 // compositor is a BeginMainFrame task instead of any compositor task.
 const base::Feature kPrioritizeCompositingUntilBeginMainFrame{
     "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // LOAD PRIORITY EXPERIMENT CONTROLS
 
@@ -176,9 +173,133 @@ const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
     "PrioritizeCompositingAndLoadingDuringEarlyLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prioritizes one BeginMainFrame after input.
+const base::Feature kPrioritizeCompositingAfterInput{
+    "PrioritizeCompositingAfterInput", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable setting high priority database task type from field trial parameters.
 const base::Feature kHighPriorityDatabaseTaskType{
     "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When features::kIntensiveWakeUpThrottling is enabled, wake ups from timers
+// with a high nesting level are limited to 1 per
+// GetIntensiveWakeUpThrottlingDurationBetweenWakeUp() in a page that has been
+// backgrounded for GetIntensiveWakeUpThrottlingGracePeriod(). If
+// CanIntensivelyThrottleLowNestingLevel() is true, this policy is also applied
+// to timers with a non-zero delay and a low nesting level.
+//
+// Intensive wake up throttling is enforced in addition to other throttling
+// mechanisms:
+//  - 1 wake up per second in a background page or hidden cross-origin frame
+//  - 1% CPU time in a page that has been backgrounded for 10 seconds
+//
+// Feature tracking bug: https://crbug.com/1075553
+//
+// Note that features::kIntensiveWakeUpThrottling should not be read from;
+// rather the provided accessors should be used, which also take into account
+// the managed policy override of the feature.
+//
+// Parameter name and default values, exposed for testing.
+constexpr int kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default =
+    60;
+constexpr const char*
+    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Name =
+        "duration_between_wake_ups_seconds";
+constexpr int kIntensiveWakeUpThrottling_GracePeriodSeconds_Default = 5 * 60;
+constexpr const char*
+    kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Name =
+        "can_intensively_throttle_low_nesting_level";
+constexpr const bool
+    kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Default =
+        false;
+
+// Exposed so that multiple tests can tinker with the policy override.
+PLATFORM_EXPORT void
+ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();
+// Determines if the feature is enabled, taking into account base::Feature
+// settings and policy overrides.
+PLATFORM_EXPORT bool IsIntensiveWakeUpThrottlingEnabled();
+// Duration between wake ups for the kIntensiveWakeUpThrottling feature.
+PLATFORM_EXPORT base::TimeDelta
+GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
+// Grace period after hiding a page during which there is no intensive wake up
+// throttling for the kIntensiveWakeUpThrottling feature.
+PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
+// The duration for which intensive throttling should be inhibited for
+// same-origin frames when the page title or favicon is updated. 0 seconds means
+// that updating the title or favicon has no effect on intensive throttling.
+PLATFORM_EXPORT base::TimeDelta
+GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate();
+// Whether timers with a non-zero delay and a low nesting level can be
+// intensively throttled.
+PLATFORM_EXPORT bool CanIntensivelyThrottleLowNestingLevel();
+
+// Per-agent scheduling experiments.
+constexpr base::Feature kPerAgentSchedulingExperiments{
+    "BlinkSchedulerPerAgentSchedulingExperiments",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Queues the per-agent scheduling experiment should affect.
+enum class PerAgentAffectedQueues {
+  // Strategy only applies to non-main agent timer queues. These can be safely
+  // disabled/deprioritized without causing any known issues.
+  kTimerQueues,
+  // Strategy applies to all non-main agent queues. This may cause some task
+  // ordering issues.
+  kAllQueues,
+};
+
+constexpr base::FeatureParam<PerAgentAffectedQueues>::Option
+    kPerAgentQueuesOptions[] = {
+        {PerAgentAffectedQueues::kTimerQueues, "timer-queues"},
+        {PerAgentAffectedQueues::kAllQueues, "all-queues"}};
+
+constexpr base::FeatureParam<PerAgentAffectedQueues> kPerAgentQueues{
+    &kPerAgentSchedulingExperiments, "queues",
+    PerAgentAffectedQueues::kTimerQueues, &kPerAgentQueuesOptions};
+
+// Effect the per-agent scheduling strategy should have.
+enum class PerAgentSlowDownMethod {
+  // Affected queues will be disabled.
+  kDisable,
+  // Affected queues will have their priority reduced to |kBestEffortPriority|.
+  kBestEffort,
+};
+
+constexpr base::FeatureParam<PerAgentSlowDownMethod>::Option
+    kPerAgentMethodOptions[] = {
+        {PerAgentSlowDownMethod::kDisable, "disable"},
+        {PerAgentSlowDownMethod::kBestEffort, "best-effort"}};
+
+constexpr base::FeatureParam<PerAgentSlowDownMethod> kPerAgentMethod{
+    &kPerAgentSchedulingExperiments, "method", PerAgentSlowDownMethod::kDisable,
+    &kPerAgentMethodOptions};
+
+// Delay to wait after the signal is reached, before "stopping" the strategy.
+constexpr base::FeatureParam<int> kPerAgentDelayMs{
+    &kPerAgentSchedulingExperiments, "delay_ms", 0};
+
+// Signal the per-agent scheduling strategy should wait for.
+enum class PerAgentSignal {
+  // Strategy will be active until all main frames reach First Meaningful Paint
+  // (+delay, if set).
+  kFirstMeaningfulPaint,
+  // Strategy will be active until all main frames finish loading (+delay, if
+  // set).
+  kOnLoad,
+  // Strategy will be active until the delay has passed since all main frames
+  // were created (or navigated).
+  kDelayOnly,
+};
+
+constexpr base::FeatureParam<PerAgentSignal>::Option kPerAgentSignalOptions[] =
+    {{PerAgentSignal::kFirstMeaningfulPaint, "fmp"},
+     {PerAgentSignal::kOnLoad, "onload"},
+     {PerAgentSignal::kDelayOnly, "delay"}};
+
+constexpr base::FeatureParam<PerAgentSignal> kPerAgentSignal{
+    &kPerAgentSchedulingExperiments, "signal",
+    PerAgentSignal::kFirstMeaningfulPaint, &kPerAgentSignalOptions};
 
 }  // namespace scheduler
 }  // namespace blink

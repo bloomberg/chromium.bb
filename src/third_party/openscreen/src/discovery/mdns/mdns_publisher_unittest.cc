@@ -4,7 +4,7 @@
 
 #include "discovery/mdns/mdns_publisher.h"
 
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <vector>
 
 #include "discovery/common/config.h"
@@ -86,8 +86,7 @@ class MdnsPublisherTest : public testing::Test {
 
   ~MdnsPublisherTest() {
     // Clear out any remaining calls in the task runner queue.
-    clock_.Advance(
-        std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1)));
+    clock_.Advance(Clock::to_duration(std::chrono::seconds(1)));
   }
 
  protected:
@@ -360,7 +359,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
   EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
       .WillRepeatedly(Return(true));
   constexpr Clock::duration kOneSecond =
-      std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
+      Clock::to_duration(std::chrono::seconds(1));
 
   // First announce, at registration.
   const MdnsRecord record = GetFakeARecord(domain_);

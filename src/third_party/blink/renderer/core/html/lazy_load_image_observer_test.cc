@@ -205,7 +205,7 @@ TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
   bool is_lazyload_image_enabled = GetParam();
   SetLazyLoadEnabled(is_lazyload_image_enabled);
   SimRequest image_resource("https://example.com/img.png", "image/png");
-  LoadMainResource(String::Format(R"HTML(
+  LoadMainResource(R"HTML(
         <style>
         #deferred_image {
           height:200px;
@@ -214,7 +214,7 @@ TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
         </style>
         <div style='height:10000px;'></div>
         <div id="deferred_image"></div>
-      )HTML"));
+      )HTML");
 
   if (!is_lazyload_image_enabled)
     image_resource.Complete(ReadTestImage());
@@ -314,7 +314,7 @@ TEST_P(LazyLoadImagesSimTest, ImgSrcset) {
   if (!GetParam())  // Only test when LazyImage is enabled.
     return;
   SetLazyLoadEnabled(true);
-  WebView().Resize(WebSize(100, 1));
+  WebView().Resize(gfx::Size(100, 1));
   LoadMainResource(R"HTML(
         <body onload='console.log("main body onload");'>
           <div style='height:10000px;'></div>
@@ -329,7 +329,7 @@ TEST_P(LazyLoadImagesSimTest, ImgSrcset) {
   EXPECT_FALSE(ConsoleMessages().Contains("deferred_image onload"));
 
   // Resizing should not load the image.
-  WebView().MainFrameWidget()->Resize(WebSize(200, 1));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 1));
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_FALSE(ConsoleMessages().Contains("deferred_image onload"));
@@ -419,8 +419,8 @@ class LazyLoadImagesParamsTest : public SimTest,
         1000 /*http_rtt_msec*/, 100 /*max_bandwidth_mbps*/);
 
     SimTest::SetUp();
-    WebView().MainFrameWidget()->Resize(
-        WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameViewWidget()->Resize(
+        gfx::Size(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
 
@@ -749,8 +749,8 @@ class LazyLoadAutomaticImagesTest : public SimTest {
         WebEffectiveConnectionType::kType4G, 1000 /*http_rtt_msec*/,
         100 /*max_bandwidth_mbps*/);
     SimTest::SetUp();
-    WebView().MainFrameWidget()->Resize(
-        WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameViewWidget()->Resize(
+        gfx::Size(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
     settings.SetLazyImageLoadingDistanceThresholdPx4G(
@@ -854,6 +854,40 @@ class LazyLoadAutomaticImagesTest : public SimTest {
   ScopedLazyImageVisibleLoadTimeMetricsForTest
       scoped_lazy_image_visible_load_time_metrics_for_test_ = true;
 };
+
+TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToUnset) {
+  TestLoadImageExpectingLazyLoad("id='my_image' loading='lazy'");
+
+  // The body's load event should have already fired.
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
+
+  Element* img = GetDocument().getElementById("my_image");
+  ASSERT_TRUE(img);
+  img->removeAttribute(html_names::kLoadingAttr);
+
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
+
+  SimSubresourceRequest img_resource("https://example.com/image.png",
+                                     "image/png");
+
+  // The img should still be deferred because automatic lazy loading is enabled.
+  // Scroll down until it is visible.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 150), mojom::blink::ScrollType::kProgrammatic);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  img_resource.Complete(ReadTestImage());
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+}
 
 TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToEager) {
   TestLoadImageExpectingLazyLoad("id='my_image' loading='lazy'");

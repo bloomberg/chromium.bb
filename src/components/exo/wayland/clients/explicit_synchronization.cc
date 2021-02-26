@@ -14,7 +14,7 @@
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace exo {
@@ -88,7 +88,7 @@ void ExplicitSynchronizationClient::Run() {
             .toSkColor());
 
     // Create an EGLSyncKHR object to signal when rendering is done.
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     buffer->egl_sync.reset(new ScopedEglSync(
         eglCreateSyncKHR(eglGetCurrentDisplay(), egl_sync_type_, nullptr)));
     DCHECK(buffer->egl_sync->is_valid());

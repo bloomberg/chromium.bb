@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
 
@@ -22,6 +22,7 @@ class TranslateWaiter : ContentTranslateDriver::Observer {
   enum class WaitEvent {
     kLanguageDetermined,
     kPageTranslated,
+    kIsPageTranslatedChanged
   };
 
   TranslateWaiter(ContentTranslateDriver* translate_driver,
@@ -37,11 +38,13 @@ class TranslateWaiter : ContentTranslateDriver::Observer {
   void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type) override;
+  void OnIsPageTranslatedChanged(content::WebContents* source) override;
 
  private:
   WaitEvent wait_event_;
-  ScopedObserver<ContentTranslateDriver, ContentTranslateDriver::Observer>
-      scoped_observer_{this};
+  base::ScopedObservation<ContentTranslateDriver,
+                          ContentTranslateDriver::Observer>
+      scoped_observation_{this};
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateWaiter);

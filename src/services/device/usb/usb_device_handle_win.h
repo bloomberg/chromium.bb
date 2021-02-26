@@ -86,8 +86,8 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   ~UsbDeviceHandleWin() override;
 
   void UpdateFunction(int interface_number,
-                      const base::string16& function_driver,
-                      const base::string16& function_path);
+                      const std::wstring& function_driver,
+                      const std::wstring& function_path);
 
  private:
   struct Interface;
@@ -102,8 +102,8 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     const mojom::UsbInterfaceInfo* info;
 
     // In a composite device each function has its own driver and path to open.
-    base::string16 function_driver;
-    base::string16 function_path;
+    std::wstring function_driver;
+    std::wstring function_path;
     base::win::ScopedHandle function_handle;
 
     ScopedWinUsbHandle handle;
@@ -130,6 +130,13 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
 
   void OpenInterfaceHandle(Interface* interface,
                            OpenInterfaceCallback callback);
+
+  // Interfaces on a USB device are organized into "functions". When making a
+  // request to a device the first interface of each function is the one that
+  // has a valid |function_handle|. This function finds the correct interface
+  // for making requests to the provided interface based on the device's driver
+  // configuration.
+  Interface* GetFirstInterfaceForFunction(Interface* interface);
   void OnFunctionAvailable(OpenInterfaceCallback callback,
                            Interface* interface);
   void OnFirstInterfaceOpened(int interface_number,

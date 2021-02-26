@@ -5,11 +5,41 @@
 #ifndef BASE_MEMORY_CHECKED_PTR_H_
 #define BASE_MEMORY_CHECKED_PTR_H_
 
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
+#include "base/allocator/partition_allocator/partition_ref_count.h"
+#include "base/allocator/partition_allocator/partition_tag.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/partition_alloc_buildflags.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
+
+#define ENABLE_CHECKED_PTR2_OR_MTE_IMPL 0
+#if ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+static_assert(ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR ||
+                  ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+              "CheckedPtr2OrMTEImpl can only by used if tags are enabled");
+#endif
+
+#define ENABLE_BACKUP_REF_PTR_IMPL 0
+#if ENABLE_BACKUP_REF_PTR_IMPL
+static_assert(ENABLE_REF_COUNT_FOR_BACKUP_REF_PTR,
+              "BackupRefPtrImpl can only by used if PartitionRefCount is "
+              "enabled");
+#endif
+
+#define CHECKED_PTR2_USE_NO_OP_WRAPPER 0
+#define CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER 0
+
+// Set it to 1 to avoid branches when dereferencing the pointer.
+#define CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING 1
 
 namespace base {
 
@@ -22,8 +52,302 @@ namespace internal {
 
 struct CheckedPtrNoOpImpl {
   // Wraps a pointer, and returns its uintptr_t representation.
-  static ALWAYS_INLINE uintptr_t WrapRawPtr(const void* const_ptr) {
-    return reinterpret_cast<uintptr_t>(const_ptr);
+  // Use |const volatile| to prevent compiler error. These will be dropped
+  // anyway when casting to uintptr_t and brought back upon pointer extraction.
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
+    return reinterpret_cast<uintptr_t>(cv_ptr);
+  }
+
+  // Notifies the allocator when a wrapped pointer is being removed or replaced.
+  static ALWAYS_INLINE void ReleaseWrappedPtr(uintptr_t) {}
+
+  // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
+  // constexpr.
+  static constexpr ALWAYS_INLINE uintptr_t GetWrappedNullPtr() {
+    // This relies on nullptr and 0 being equal in the eyes of reinterpret_cast,
+    // which apparently isn't true in all environments.
+    return 0;
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function is allowed to crash on nullptr.
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
+      uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function must handle nullptr gracefully.
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForExtraction(
+      uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, without making an assertion
+  // on whether memory was freed or not.
+  static ALWAYS_INLINE void* UnsafelyUnwrapPtrForComparison(
+      uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static ALWAYS_INLINE constexpr uintptr_t Upcast(uintptr_t wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    return reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(wrapped_ptr)));
+  }
+
+  // Advance the wrapped pointer by |delta| bytes.
+  static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
+    return wrapped_ptr + delta;
+  }
+
+  // Returns a copy of a wrapped pointer, without making an assertion
+  // on whether memory was freed or not.
+  static ALWAYS_INLINE uintptr_t Duplicate(uintptr_t wrapped_ptr) {
+    return wrapped_ptr;
+  }
+
+  // This is for accounting only, used by unit tests.
+  static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+};
+
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+
+constexpr int kValidAddressBits = 48;
+constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
+constexpr int kGenerationBits = sizeof(uintptr_t) * 8 - kValidAddressBits;
+constexpr uintptr_t kGenerationMask = ~kAddressMask;
+constexpr int kTopBitShift = 63;
+constexpr uintptr_t kTopBit = 1ull << kTopBitShift;
+static_assert(kTopBit << 1 == 0, "kTopBit should really be the top bit");
+static_assert((kTopBit & kGenerationMask) > 0,
+              "kTopBit bit must be inside the generation region");
+
+#if BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+// This functionality is outside of CheckedPtr2OrMTEImpl, so that it can be
+// overridden by tests.
+struct CheckedPtr2OrMTEImplPartitionAllocSupport {
+  // Checks if the necessary support is enabled in PartitionAlloc for |ptr|.
+  static ALWAYS_INLINE bool EnabledForPtr(void* ptr) {
+    // CheckedPtr2 and MTECheckedPtr algorithms work only when memory is
+    // allocated by PartitionAlloc, from normal buckets pool. CheckedPtr2
+    // additionally requires that the pointer points to the beginning of the
+    // allocated slot.
+    //
+    // TODO(bartekn): Allow direct-map buckets for MTECheckedPtr, once
+    // PartitionAlloc supports it. (Currently not implemented for simplicity,
+    // but there are no technological obstacles preventing it; whereas in case
+    // of CheckedPtr2, PartitionAllocGetSlotOffset won't work with direct-map.)
+    return IsManagedByPartitionAllocNormalBuckets(ptr)
+    // Checking offset is not needed for ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+    // but call it anyway for apples-to-apples comparison with
+    // ENABLE_TAG_FOR_CHECKED_PTR2.
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
+           && base::internal::PartitionAllocGetSlotOffset(ptr) == 0
+#endif
+        ;
+  }
+
+  // Returns pointer to the tag that protects are pointed by |ptr|.
+  static ALWAYS_INLINE void* TagPointer(void* ptr) {
+    return PartitionTagPointer(ptr);
+  }
+};
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+
+template <typename PartitionAllocSupport>
+struct CheckedPtr2OrMTEImpl {
+  // This implementation assumes that pointers are 64 bits long and at least 16
+  // top bits are unused. The latter is harder to verify statically, but this is
+  // true for all currently supported 64-bit architectures (DCHECK when wrapping
+  // will verify that).
+  static_assert(sizeof(void*) >= 8, "Need 64-bit pointers");
+
+  // Wraps a pointer, and returns its uintptr_t representation.
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
+    void* ptr = const_cast<void*>(cv_ptr);
+    uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+#if !CHECKED_PTR2_USE_NO_OP_WRAPPER
+    // Make sure that the address bits that will be used for generation are 0.
+    // If they aren't, they'd fool the unwrapper into thinking that the
+    // protection is enabled, making it try to read and compare the generation.
+    DCHECK_EQ(ExtractGeneration(addr), 0ull);
+
+    // Return a not-wrapped |addr|, if it's either nullptr or if the protection
+    // for this pointer is disabled.
+    if (!PartitionAllocSupport::EnabledForPtr(ptr)) {
+      return addr;
+    }
+
+    // Read the generation and place it in the top bits of the address.
+    // Even if PartitionAlloc's tag has less than kGenerationBits, we'll read
+    // what's given and pad the rest with 0s.
+    static_assert(sizeof(PartitionTag) * 8 <= kGenerationBits, "");
+    uintptr_t generation = *(static_cast<volatile PartitionTag*>(
+        PartitionAllocSupport::TagPointer(ptr)));
+
+    generation <<= kValidAddressBits;
+    addr |= generation;
+#endif  // !CHECKED_PTR2_USE_NO_OP_WRAPPER
+    return addr;
+  }
+
+  // Notifies the allocator when a wrapped pointer is being removed or replaced.
+  // No-op for CheckedPtr2OrMTEImpl.
+  static ALWAYS_INLINE void ReleaseWrappedPtr(uintptr_t) {}
+
+  // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
+  // constexpr.
+  static constexpr ALWAYS_INLINE uintptr_t GetWrappedNullPtr() {
+    return kWrappedNullPtr;
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function is allowed to crash on nullptr.
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
+      uintptr_t wrapped_ptr) {
+    uintptr_t ptr_generation = wrapped_ptr >> kValidAddressBits;
+    if (ptr_generation > 0) {
+      // Read the generation provided by PartitionAlloc.
+      //
+      // Cast to volatile to ensure memory is read. E.g. in a tight loop, the
+      // compiler could cache the value in a register and thus could miss that
+      // another thread freed memory and cleared generation.
+      uintptr_t read_generation = *static_cast<volatile PartitionTag*>(
+          PartitionAllocSupport::TagPointer(ExtractPtr(wrapped_ptr)));
+#if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
+      // Use hardware to detect generation mismatch. CPU will crash if top bits
+      // aren't all 0 (technically it won't if all bits are 1, but that's a
+      // kernel mode address, which isn't allowed either).
+      read_generation <<= kValidAddressBits;
+      return reinterpret_cast<void*>(read_generation ^ wrapped_ptr);
+#else
+      if (UNLIKELY(ptr_generation != read_generation))
+        IMMEDIATE_CRASH();
+      return reinterpret_cast<void*>(wrapped_ptr & kAddressMask);
+#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
+    }
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function must handle nullptr gracefully.
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForExtraction(
+      uintptr_t wrapped_ptr) {
+    // SafelyUnwrapPtrForDereference handles nullptr case well.
+    return SafelyUnwrapPtrForDereference(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, without making an assertion
+  // on whether memory was freed or not.
+  static ALWAYS_INLINE void* UnsafelyUnwrapPtrForComparison(
+      uintptr_t wrapped_ptr) {
+    return ExtractPtr(wrapped_ptr);
+  }
+
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static ALWAYS_INLINE uintptr_t Upcast(uintptr_t wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
+    if (IsPtrUnaffectedByUpcast<To, From>())
+      return wrapped_ptr;
+
+    // CheckedPtr2 doesn't support a pointer pointing in the middle of an
+    // allocated object, so disable the generation tag.
+    //
+    // Clearing tag is not needed for ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+    // but do it anyway for apples-to-apples comparison with
+    // ENABLE_TAG_FOR_CHECKED_PTR2.
+    uintptr_t base_addr = reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(ExtractPtr(wrapped_ptr))));
+    return base_addr;
+#elif ENABLE_TAG_FOR_MTE_CHECKED_PTR
+    // The top-bit generation tag must not affect the result of upcast.
+    return reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(wrapped_ptr)));
+#else
+    static_assert(std::is_void<To>::value,  // Always false.
+                  "Unknown tagging mode");
+    return 0;
+#endif
+  }
+
+  // Advance the wrapped pointer by |delta| bytes.
+  static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
+    // Mask out the generation to disable the protection. It's not supported for
+    // pointers inside an allocation.
+    return ExtractAddress(wrapped_ptr) + delta;
+  }
+
+  // Returns a copy of a wrapped pointer, without making an assertion
+  // on whether memory was freed or not.
+  static ALWAYS_INLINE uintptr_t Duplicate(uintptr_t wrapped_ptr) {
+    return wrapped_ptr;
+  }
+
+  // This is for accounting only, used by unit tests.
+  static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+
+ private:
+  static ALWAYS_INLINE uintptr_t ExtractAddress(uintptr_t wrapped_ptr) {
+    return wrapped_ptr & kAddressMask;
+  }
+  static ALWAYS_INLINE void* ExtractPtr(uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(ExtractAddress(wrapped_ptr));
+  }
+  static ALWAYS_INLINE uintptr_t ExtractGeneration(uintptr_t wrapped_ptr) {
+    return wrapped_ptr & kGenerationMask;
+  }
+
+  template <typename To, typename From>
+  static constexpr ALWAYS_INLINE bool IsPtrUnaffectedByUpcast() {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    uintptr_t d = 0x10000;
+    From* dp = reinterpret_cast<From*>(d);
+    To* bp = dp;
+    uintptr_t b = reinterpret_cast<uintptr_t>(bp);
+    return b == d;
+  }
+
+  // This relies on nullptr and 0 being equal in the eyes of reinterpret_cast,
+  // which apparently isn't true in some rare environments.
+  static constexpr uintptr_t kWrappedNullPtr = 0;
+};
+
+#if ENABLE_BACKUP_REF_PTR_IMPL
+
+struct BackupRefPtrImpl {
+  // Note that `BackupRefPtrImpl` itself is not thread-safe. If multiple threads
+  // modify the same smart pointer object without synchronization, a data race
+  // will occur.
+
+  // Wraps a pointer, and returns its uintptr_t representation.
+  // Use |const volatile| to prevent compiler error. These will be dropped
+  // anyway when casting to uintptr_t and brought back upon pointer extraction.
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
+    void* ptr = const_cast<void*>(cv_ptr);
+    uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+
+    if (LIKELY(IsManagedByPartitionAllocNormalBuckets(ptr)))
+      PartitionRefCountPointer(ptr)->AddRef();
+
+    return addr;
+  }
+
+  // Notifies the allocator when a wrapped pointer is being removed or replaced.
+  static ALWAYS_INLINE void ReleaseWrappedPtr(uintptr_t wrapped_ptr) {
+    void* ptr = reinterpret_cast<void*>(wrapped_ptr);
+
+    // This check already covers the nullptr case.
+    if (LIKELY(IsManagedByPartitionAllocNormalBuckets(ptr)))
+      PartitionRefCountPointer(ptr)->Release();
   }
 
   // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
@@ -55,23 +379,34 @@ struct CheckedPtrNoOpImpl {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static ALWAYS_INLINE constexpr uintptr_t Upcast(uintptr_t wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    return reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(wrapped_ptr)));
+  }
+
   // Advance the wrapped pointer by |delta| bytes.
   static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
+  }
+
+  // Returns a copy of a wrapped pointer, without making an assertion
+  // on whether memory was freed or not. This method increments the reference
+  // count of the allocation slot.
+  static ALWAYS_INLINE uintptr_t Duplicate(uintptr_t wrapped_ptr) {
+    return WrapRawPtr(reinterpret_cast<void*>(wrapped_ptr));
   }
 
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
-template <typename T>
-struct DereferencedPointerType {
-  using Type = decltype(*std::declval<T*>());
-};
-// This explicitly doesn't define any type aliases, since dereferencing void is
-// invalid.
-template <>
-struct DereferencedPointerType<void> {};
+#endif  // ENABLE_BACKUP_REF_PTR_IMPL
+
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 
@@ -89,24 +424,70 @@ struct DereferencedPointerType<void> {};
 // 2. Keep this class as small as possible, while still satisfying goal #1 (i.e.
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
-template <typename T, typename Impl = internal::CheckedPtrNoOpImpl>
+template <typename T,
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    BUILDFLAG(USE_PARTITION_ALLOC)
+
+#if ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+          typename Impl = internal::CheckedPtr2OrMTEImpl<
+              internal::CheckedPtr2OrMTEImplPartitionAllocSupport>>
+#elif ENABLE_BACKUP_REF_PTR_IMPL
+          typename Impl = internal::BackupRefPtrImpl>
+#else
+          typename Impl = internal::CheckedPtrNoOpImpl>
+#endif
+
+#else  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) &&
+       // BUILDFLAG(USE_PARTITION_ALLOC)
+          typename Impl = internal::CheckedPtrNoOpImpl>
+#endif
 class CheckedPtr {
  public:
+#if ENABLE_BACKUP_REF_PTR_IMPL
+
+  // BackupRefPtr requires a non-trivial default constructor, destructor, etc.
+  constexpr ALWAYS_INLINE CheckedPtr() noexcept
+      : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
+
+  CheckedPtr(const CheckedPtr& p) noexcept
+      : wrapped_ptr_(Impl::Duplicate(p.wrapped_ptr_)) {}
+
+  CheckedPtr(CheckedPtr&& p) noexcept {
+    wrapped_ptr_ = p.wrapped_ptr_;
+    p.wrapped_ptr_ = Impl::GetWrappedNullPtr();
+  }
+
+  CheckedPtr& operator=(const CheckedPtr& p) {
+    // Duplicate before releasing, in case the pointer is assigned to itself.
+    uintptr_t new_ptr = Impl::Duplicate(p.wrapped_ptr_);
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
+    wrapped_ptr_ = new_ptr;
+    return *this;
+  }
+
+  CheckedPtr& operator=(CheckedPtr&& p) {
+    if (LIKELY(this != &p)) {
+      Impl::ReleaseWrappedPtr(wrapped_ptr_);
+      wrapped_ptr_ = p.wrapped_ptr_;
+      p.wrapped_ptr_ = Impl::GetWrappedNullPtr();
+    }
+    return *this;
+  }
+
+  ALWAYS_INLINE ~CheckedPtr() noexcept {
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
+    // Work around external issues where CheckedPtr is used after destruction.
+    wrapped_ptr_ = Impl::GetWrappedNullPtr();
+  }
+
+#else  // ENABLE_BACKUP_REF_PTR_IMPL
+
   // CheckedPtr can be trivially default constructed (leaving |wrapped_ptr_|
   // uninitialized).  This is needed for compatibility with raw pointers.
   //
   // TODO(lukasza): Always initialize |wrapped_ptr_|.  Fix resulting build
   // errors.  Analyze performance impact.
   constexpr CheckedPtr() noexcept = default;
-
-  // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
-  // NOLINTNEXTLINE(runtime/explicit)
-  constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
-      : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
-
-  // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
-  // NOLINTNEXTLINE(runtime/explicit)
-  ALWAYS_INLINE CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
 
   // In addition to nullptr_t ctor above, CheckedPtr needs to have these
   // as |=default| or |constexpr| to avoid hitting -Wglobal-constructors in
@@ -118,12 +499,79 @@ class CheckedPtr {
   CheckedPtr& operator=(const CheckedPtr&) noexcept = default;
   CheckedPtr& operator=(CheckedPtr&&) noexcept = default;
 
+  ~CheckedPtr() = default;
+
+#endif  // ENABLE_BACKUP_REF_PTR_IMPL
+
+  // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
+  // NOLINTNEXTLINE(runtime/explicit)
+  constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
+      : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
+
+  // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
+  // NOLINTNEXTLINE(runtime/explicit)
+  ALWAYS_INLINE CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
+
+  // Deliberately implicit in order to support implicit upcast.
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  ALWAYS_INLINE CheckedPtr(const CheckedPtr<U, Impl>& ptr) noexcept
+      : wrapped_ptr_(
+            Impl::Duplicate(Impl::template Upcast<T, U>(ptr.wrapped_ptr_))) {}
+  // Deliberately implicit in order to support implicit upcast.
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  ALWAYS_INLINE CheckedPtr(CheckedPtr<U, Impl>&& ptr) noexcept
+      : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {
+#if ENABLE_BACKUP_REF_PTR_IMPL
+    ptr.wrapped_ptr_ = Impl::GetWrappedNullPtr();
+#endif
+  }
+
+  ALWAYS_INLINE CheckedPtr& operator=(std::nullptr_t) noexcept {
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
+    wrapped_ptr_ = Impl::GetWrappedNullPtr();
+    return *this;
+  }
   ALWAYS_INLINE CheckedPtr& operator=(T* p) noexcept {
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
     wrapped_ptr_ = Impl::WrapRawPtr(p);
     return *this;
   }
 
-  ~CheckedPtr() = default;
+  // Upcast assignment
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  ALWAYS_INLINE CheckedPtr& operator=(const CheckedPtr<U, Impl>& ptr) noexcept {
+    DCHECK(reinterpret_cast<uintptr_t>(this) !=
+           reinterpret_cast<uintptr_t>(&ptr));
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
+    wrapped_ptr_ =
+        Impl::Duplicate(Impl::template Upcast<T, U>(ptr.wrapped_ptr_));
+    return *this;
+  }
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  ALWAYS_INLINE CheckedPtr& operator=(CheckedPtr<U, Impl>&& ptr) noexcept {
+    DCHECK(reinterpret_cast<uintptr_t>(this) !=
+           reinterpret_cast<uintptr_t>(&ptr));
+    Impl::ReleaseWrappedPtr(wrapped_ptr_);
+    wrapped_ptr_ = Impl::template Upcast<T, U>(ptr.wrapped_ptr_);
+#if ENABLE_BACKUP_REF_PTR_IMPL
+    ptr.wrapped_ptr_ = Impl::GetWrappedNullPtr();
+#endif
+    return *this;
+  }
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as
   // possible, so use it only if absolutely necessary (e.g. for const_cast).
@@ -133,11 +581,10 @@ class CheckedPtr {
     return wrapped_ptr_ != Impl::GetWrappedNullPtr();
   }
 
-  // Use SFINAE to avoid defining |operator*| for T=void, which wouldn't compile
-  // due to |void&|.
   template <typename U = T,
-            typename V = typename internal::DereferencedPointerType<U>::Type>
-  ALWAYS_INLINE V& operator*() const {
+            typename Unused = std::enable_if_t<
+                !std::is_void<typename std::remove_cv<U>::type>::value>>
+  ALWAYS_INLINE U& operator*() const {
     return *GetForDereference();
   }
   ALWAYS_INLINE T* operator->() const { return GetForDereference(); }
@@ -153,64 +600,103 @@ class CheckedPtr {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
   }
-
   ALWAYS_INLINE CheckedPtr& operator--() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, -sizeof(T));
     return *this;
   }
-
+  ALWAYS_INLINE CheckedPtr operator++(int /* post_increment */) {
+    CheckedPtr result = *this;
+    ++(*this);
+    return result;
+  }
+  ALWAYS_INLINE CheckedPtr operator--(int /* post_decrement */) {
+    CheckedPtr result = *this;
+    --(*this);
+    return result;
+  }
   ALWAYS_INLINE CheckedPtr& operator+=(ptrdiff_t delta_elems) {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems * sizeof(T));
     return *this;
   }
-
   ALWAYS_INLINE CheckedPtr& operator-=(ptrdiff_t delta_elems) {
     return *this += -delta_elems;
   }
 
-  ALWAYS_INLINE bool operator==(T* p) const { return GetForComparison() == p; }
-  ALWAYS_INLINE bool operator!=(T* p) const { return !operator==(p); }
-
-  // Useful for cases like this:
-  //   class Base {};
-  //   class Derived : public Base {};
-  //   Derived d;
-  //   CheckedPtr<Derived> derived_ptr = &d;
-  //   Base* base_ptr = &d;
-  //   if (derived_ptr == base_ptr) {...}
-  // Without these, such comparisons would end up calling |operator T*()|.
+  // Be careful to cover all cases with CheckedPtr being on both sides, left
+  // side only and right side only. If any case is missed, a more costly
+  // |operator T*()| will get called, instead of |operator==|.
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs,
+                                       const CheckedPtr& rhs) {
+    return lhs.GetForComparison() == rhs.GetForComparison();
+  }
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs,
+                                       const CheckedPtr& rhs) {
+    return !(lhs == rhs);
+  }
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, T* rhs) {
+    return lhs.GetForComparison() == rhs;
+  }
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, T* rhs) {
+    return !(lhs == rhs);
+  }
+  friend ALWAYS_INLINE bool operator==(T* lhs, const CheckedPtr& rhs) {
+    return rhs == lhs;  // Reverse order to call the operator above.
+  }
+  friend ALWAYS_INLINE bool operator!=(T* lhs, const CheckedPtr& rhs) {
+    return rhs != lhs;  // Reverse order to call the operator above.
+  }
+  // Needed for cases like |derived_ptr == base_ptr|. Without these, a more
+  // costly |operator T*()| will get called, instead of |operator==|.
   template <typename U>
-  ALWAYS_INLINE bool operator==(U* p) const {
-    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
-    // doesn't, comparison between |T*| and |const T*| is fine.
-    return GetForComparison() == static_cast<std::add_const_t<T>*>(p);
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs,
+                                       const CheckedPtr<U, Impl>& rhs) {
+    // Add |const volatile| when casting, in case |U| has any. Even if |T|
+    // doesn't, comparison between |T*| and |const volatile T*| is fine.
+    return lhs.GetForComparison() ==
+           static_cast<std::add_cv_t<T>*>(rhs.GetForComparison());
   }
   template <typename U>
-  ALWAYS_INLINE bool operator!=(U* p) const {
-    return !operator==(p);
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs,
+                                       const CheckedPtr<U, Impl>& rhs) {
+    return !(lhs == rhs);
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, U* rhs) {
+    // Add |const volatile| when casting, in case |U| has any. Even if |T|
+    // doesn't, comparison between |T*| and |const volatile T*| is fine.
+    return lhs.GetForComparison() == static_cast<std::add_cv_t<T>*>(rhs);
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, U* rhs) {
+    return !(lhs == rhs);
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator==(U* lhs, const CheckedPtr& rhs) {
+    return rhs == lhs;  // Reverse order to call the operator above.
+  }
+  template <typename U>
+  friend ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr& rhs) {
+    return rhs != lhs;  // Reverse order to call the operator above.
+  }
+  // Needed for comparisons against nullptr. Without these, a slightly more
+  // costly version would be called that extracts wrapped pointer, as opposed
+  // to plain comparison against 0.
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, std::nullptr_t) {
+    return !lhs;
+  }
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, std::nullptr_t) {
+    return !!lhs;  // Use !! otherwise the costly implicit cast will be used.
+  }
+  friend ALWAYS_INLINE bool operator==(std::nullptr_t, const CheckedPtr& rhs) {
+    return !rhs;
+  }
+  friend ALWAYS_INLINE bool operator!=(std::nullptr_t, const CheckedPtr& rhs) {
+    return !!rhs;  // Use !! otherwise the costly implicit cast will be used.
   }
 
-  ALWAYS_INLINE bool operator==(const CheckedPtr& other) const {
-    return GetForComparison() == other.GetForComparison();
-  }
-  ALWAYS_INLINE bool operator!=(const CheckedPtr& other) const {
-    return !operator==(other);
-  }
-  template <typename U, typename I>
-  ALWAYS_INLINE bool operator==(const CheckedPtr<U, I>& other) const {
-    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
-    // doesn't, comparison between |T*| and |const T*| is fine.
-    return GetForComparison() ==
-           static_cast<std::add_const_t<T>*>(other.GetForComparison());
-  }
-  template <typename U, typename I>
-  ALWAYS_INLINE bool operator!=(const CheckedPtr<U, I>& other) const {
-    return !operator==(other);
-  }
-
-  ALWAYS_INLINE void swap(CheckedPtr& other) noexcept {
+  friend ALWAYS_INLINE void swap(CheckedPtr& lhs, CheckedPtr& rhs) noexcept {
     Impl::IncrementSwapCountForTest();
-    std::swap(wrapped_ptr_, other.wrapped_ptr_);
+    std::swap(lhs.wrapped_ptr_, rhs.wrapped_ptr_);
   }
 
  private:
@@ -218,13 +704,21 @@ class CheckedPtr {
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
   // because it knows that the caller will crash on nullptr.
   ALWAYS_INLINE T* GetForDereference() const {
+#if CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER
+    return static_cast<T*>(Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_));
+#else
     return static_cast<T*>(Impl::SafelyUnwrapPtrForDereference(wrapped_ptr_));
+#endif
   }
   // This getter is meant for situations where the raw pointer is meant to be
   // extracted outside of this class, but not necessarily with an intention to
   // dereference. It mustn't crash on nullptr.
   ALWAYS_INLINE T* GetForExtraction() const {
+#if CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER
+    return static_cast<T*>(Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_));
+#else
     return static_cast<T*>(Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_));
+#endif
   }
   // This getter is meant *only* for situations where the pointer is meant to be
   // compared (guaranteeing no dereference or extraction outside of this class).
@@ -240,32 +734,6 @@ class CheckedPtr {
   template <typename U, typename V>
   friend class CheckedPtr;
 };
-
-// These are for cases where a raw pointer is on the left hand side. Reverse
-// order, so that |CheckedPtr::operator==()| kicks in, which will compare more
-// efficiently. Otherwise the CheckedPtr operand would have to be cast to raw
-// pointer, which may be more costly.
-template <typename T, typename I>
-ALWAYS_INLINE bool operator==(T* lhs, const CheckedPtr<T, I>& rhs) {
-  return rhs == lhs;
-}
-template <typename T, typename I>
-ALWAYS_INLINE bool operator!=(T* lhs, const CheckedPtr<T, I>& rhs) {
-  return !operator==(lhs, rhs);
-}
-template <typename T, typename I, typename U>
-ALWAYS_INLINE bool operator==(U* lhs, const CheckedPtr<T, I>& rhs) {
-  return rhs == lhs;
-}
-template <typename T, typename I, typename U>
-ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr<T, I>& rhs) {
-  return !operator==(lhs, rhs);
-}
-
-template <typename T, typename I>
-ALWAYS_INLINE void swap(CheckedPtr<T, I>& lhs, CheckedPtr<T, I>& rhs) noexcept {
-  lhs.swap(rhs);
-}
 
 }  // namespace base
 

@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -14,10 +15,11 @@ import {ConsolePanel} from './ConsolePanel.js';
 export class ConsolePrompt extends UI.Widget.Widget {
   constructor() {
     super();
-    this.registerRequiredCSS('console/consolePrompt.css');
+    this.registerRequiredCSS('console/consolePrompt.css', {enableLegacyPatching: true});
     this._addCompletionsFromHistory = true;
     this._history = new ConsoleHistoryManager();
 
+    /** @type {string} */
     this._initialText = '';
     /** @type {?UI.TextEditor.TextEditor} */
     this._editor = null;
@@ -41,7 +43,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
     this._eagerPreviewElement.classList.toggle('hidden', !this._eagerEvalSetting.get());
 
     this.element.tabIndex = 0;
-    /** @type {?Promise} */
+    /** @type {?Promise<void>} */
     this._previewRequestForTest = null;
 
     /** @type {?UI.TextEditor.AutocompleteConfig} */
@@ -49,20 +51,25 @@ export class ConsolePrompt extends UI.Widget.Widget {
 
     this._highlightingNode = false;
 
-    self.runtime.extension(UI.TextEditor.TextEditorFactory).instance().then(gotFactory.bind(this));
+    const extension = /** @type {!Root.Runtime.Extension} */ (
+        Root.Runtime.Runtime.instance().extension(UI.TextEditor.TextEditorFactory));
+    extension.instance().then(factory => {
+      gotFactory.call(this, /** @type {!UI.TextEditor.TextEditorFactory} */ (factory));
+    });
 
     /**
      * @param {!UI.TextEditor.TextEditorFactory} factory
      * @this {ConsolePrompt}
      */
     function gotFactory(factory) {
-      this._editor = factory.createEditor({
+      const options = {
         devtoolsAccessibleName: ls`Console prompt`,
         lineNumbers: false,
         lineWrapping: true,
         mimeType: 'javascript',
         autoHeight: true
-      });
+      };
+      this._editor = factory.createEditor(/** @type {!UI.TextEditor.Options} */ (options));
 
       this._defaultAutocompleteConfig =
           ObjectUI.JavaScriptAutocomplete.JavaScriptAutocompleteConfig.createConfigForEditor(this._editor);
@@ -77,7 +84,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
       this._editor.addEventListener(UI.TextEditor.Events.SuggestionChanged, this._onTextChanged, this);
 
       this.setText(this._initialText);
-      delete this._initialText;
+      this._initialText = '';
       if (this.hasFocus()) {
         this.focus();
       }
@@ -110,7 +117,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
     // ConsoleView and prompt both use a throttler, so we clear the preview
     // ASAP to avoid inconsistency between a fresh viewport and stale preview.
     if (this._eagerEvalSetting.get()) {
-      const asSoonAsPossible = !this._editor.textWithCurrentSuggestion();
+      const asSoonAsPossible = !this._editor || !this._editor.textWithCurrentSuggestion();
       this._previewRequestForTest = this._textChangeThrottler.schedule(this._requestPreviewBound, asSoonAsPossible);
     }
     this._updatePromptIcon();
@@ -118,25 +125,28 @@ export class ConsolePrompt extends UI.Widget.Widget {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async _requestPreview() {
+    if (!this._editor) {
+      return;
+    }
     const text = this._editor.textWithCurrentSuggestion().trim();
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     const {preview, result} =
         await ObjectUI.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(text, true /* throwOnSideEffect */, 500);
     this._innerPreviewElement.removeChildren();
     if (preview.deepTextContent() !== this._editor.textWithCurrentSuggestion().trim()) {
       this._innerPreviewElement.appendChild(preview);
     }
-    if (result && result.object && result.object.subtype === 'node') {
+    if (result && 'object' in result && result.object && result.object.subtype === 'node') {
       this._highlightingNode = true;
       SDK.OverlayModel.OverlayModel.highlightObjectAsDOMNode(result.object);
     } else if (this._highlightingNode) {
       this._highlightingNode = false;
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
-    if (result) {
+    if (result && executionContext) {
       executionContext.runtimeModel.releaseEvaluationResult(result);
     }
   }
@@ -207,6 +217,9 @@ export class ConsolePrompt extends UI.Widget.Widget {
    * @param {!Event} event
    */
   _editorKeyDown(event) {
+    if (!this._editor) {
+      return;
+    }
     const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
     let newText;
     let isPrevious;
@@ -311,7 +324,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
 
     if (await this._enterWillEvaluate()) {
       await this._appendCommand(str, true);
-    } else {
+    } else if (this._editor) {
       this._editor.newlineAndIndent();
     }
     this._enterProcessedForTest();
@@ -323,7 +336,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
    */
   async _appendCommand(text, useCommandLineAPI) {
     this.setText('');
-    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (currentExecutionContext) {
       const executionContext = currentExecutionContext;
       const message = SDK.ConsoleModel.ConsoleModel.instance().addCommandMessage(executionContext, text);
@@ -364,7 +377,7 @@ export class ConsolePrompt extends UI.Widget.Widget {
       result.push(
           {text: item.substring(text.length - prefix.length), iconType: 'smallicon-text-prompt', isSecondary: true});
     }
-    return result;
+    return /** @type {!UI.SuggestBox.Suggestions} */ (result);
   }
 
   /**
@@ -385,10 +398,13 @@ export class ConsolePrompt extends UI.Widget.Widget {
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
   async _wordsWithQuery(queryRange, substituteRange, force) {
+    if (!this._editor || !this._defaultAutocompleteConfig || !this._defaultAutocompleteConfig.suggestionsCallback) {
+      return [];
+    }
     const query = this._editor.text(queryRange);
     const words = await this._defaultAutocompleteConfig.suggestionsCallback(queryRange, substituteRange, force);
     const historyWords = this._historyCompletions(query, force);
-    return words.concat(historyWords);
+    return words ? words.concat(historyWords) : historyWords;
   }
 
   _editorSetForTest() {

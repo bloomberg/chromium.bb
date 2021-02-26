@@ -6,9 +6,8 @@
 #define ASH_SYSTEM_BLUETOOTH_BLUETOOTH_POWER_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/containers/queue.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_type.h"

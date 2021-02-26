@@ -19,7 +19,7 @@ namespace favicon_base {
 
 struct FallbackIconStyle;
 
-typedef int64_t FaviconID;
+using FaviconID = int64_t;
 
 // Defines the icon types.
 //
@@ -29,10 +29,10 @@ typedef int64_t FaviconID;
 // blink::mojom::FaviconIconType enums
 //
 // The values of the IconTypes are used to select the priority in which favicon
-// data is returned in HistoryBackend and ThumbnailDatabase.
+// data is returned.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ui.favicon
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.favicon
 enum class IconType {
   kInvalid = 0,
   kFavicon,
@@ -95,7 +95,7 @@ struct FaviconRawBitmapResult {
 
 // Define type with same structure as FaviconRawBitmapResult for passing data to
 // HistoryBackend::SetFavicons().
-typedef FaviconRawBitmapResult FaviconRawBitmapData;
+using FaviconRawBitmapData = FaviconRawBitmapResult;
 
 // Result returned by LargeIconService::GetLargeIconOrFallbackStyle(). Contains
 // either the bitmap data if the favicon database has a sufficiently large

@@ -4,14 +4,19 @@
 
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 
+#include "ui/base/x/x11_idle_query.h"
+#include "ui/base/x/x11_screensaver_window_finder.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/util/display_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/ozone/platform/x11/x11_window_ozone.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
+#include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
@@ -26,10 +31,6 @@ float GetDeviceScaleFactor() {
   if (display::Display::HasForceDeviceScaleFactor())
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
   return device_scale_factor;
-}
-
-gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
-  return gfx::ConvertPointToDIP(GetDeviceScaleFactor(), pixel_point);
 }
 
 }  // namespace
@@ -73,27 +74,34 @@ display::Display X11ScreenOzone::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
+  base::Optional<gfx::Point> point_in_pixels;
   if (ui::X11EventSource::HasInstance()) {
-    base::Optional<gfx::Point> point =
-        ui::X11EventSource::GetInstance()
-            ->GetRootCursorLocationFromCurrentEvent();
-    if (point)
-      return PixelToDIPPoint(point.value());
+    point_in_pixels = ui::X11EventSource::GetInstance()
+                          ->GetRootCursorLocationFromCurrentEvent();
   }
-  return PixelToDIPPoint(GetCursorLocation());
+  if (!point_in_pixels) {
+    // This call is expensive so we explicitly only call it when
+    // |point_in_pixels| is not set. We note that base::Optional::value_or()
+    // would cause it to be called regardless.
+    point_in_pixels = GetCursorLocation();
+  }
+  // TODO(danakj): Should this be rounded? Or kept as a floating point?
+  return gfx::ToFlooredPoint(
+      gfx::ConvertPointToDips(*point_in_pixels, GetDeviceScaleFactor()));
 }
 
 gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
   X11TopmostWindowFinder finder;
-  return finder.FindWindowAt(point);
+  return static_cast<gfx::AcceleratedWidget>(finder.FindWindowAt(point));
 }
 
 gfx::AcceleratedWidget X11ScreenOzone::GetLocalProcessWidgetAtPoint(
     const gfx::Point& point,
     const std::set<gfx::AcceleratedWidget>& ignore) const {
   X11TopmostWindowFinder finder;
-  return finder.FindLocalProcessWindowAt(point, ignore);
+  return static_cast<gfx::AcceleratedWidget>(
+      finder.FindLocalProcessWindowAt(point, ignore));
 }
 
 display::Display X11ScreenOzone::GetDisplayNearestPoint(
@@ -105,12 +113,27 @@ display::Display X11ScreenOzone::GetDisplayNearestPoint(
 }
 
 display::Display X11ScreenOzone::GetDisplayMatching(
-    const gfx::Rect& match_rect) const {
+    const gfx::Rect& match_rect_in_pixels) const {
+  gfx::Rect match_rect = gfx::ToEnclosingRect(
+      gfx::ConvertRectToDips(match_rect_in_pixels, GetDeviceScaleFactor()));
   const display::Display* matching_display =
       display::FindDisplayWithBiggestIntersection(
-          x11_display_manager_->displays(),
-          gfx::ConvertRectToDIP(GetDeviceScaleFactor(), match_rect));
+          x11_display_manager_->displays(), match_rect);
   return matching_display ? *matching_display : GetPrimaryDisplay();
+}
+
+void X11ScreenOzone::SetScreenSaverSuspended(bool suspend) {
+  SuspendX11ScreenSaver(suspend);
+}
+
+bool X11ScreenOzone::IsScreenSaverActive() const {
+  // Usually the screensaver is used to lock the screen.
+  return ScreensaverWindowFinder::ScreensaverWindowExists();
+}
+
+base::TimeDelta X11ScreenOzone::CalculateIdleTime() const {
+  IdleQueryX11 idle_query;
+  return base::TimeDelta::FromSeconds(idle_query.IdleTime());
 }
 
 void X11ScreenOzone::AddObserver(display::DisplayObserver* observer) {
@@ -125,7 +148,13 @@ std::string X11ScreenOzone::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-bool X11ScreenOzone::DispatchXEvent(XEvent* xev) {
+base::Value X11ScreenOzone::GetGpuExtraInfoAsListValue(
+    const gfx::GpuExtraInfo& gpu_extra_info) {
+  return ui::GpuExtraInfoAsListValue(gpu_extra_info.system_visual,
+                                     gpu_extra_info.rgba_visual);
+}
+
+bool X11ScreenOzone::DispatchXEvent(x11::Event* xev) {
   return x11_display_manager_->ProcessEvent(xev);
 }
 

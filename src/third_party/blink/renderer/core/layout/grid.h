@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
@@ -18,9 +17,20 @@
 
 namespace blink {
 
+struct OrderedTrackIndexSetHashTraits : public HashTraits<size_t> {
+  static const bool kEmptyValueIsZero = false;
+  static size_t EmptyValue() { return UINT_MAX; }
+
+  static void ConstructDeletedValue(size_t& slot, bool) { slot = UINT_MAX - 1; }
+  static bool IsDeletedValue(const size_t& value) {
+    return value == UINT_MAX - 1;
+  }
+};
+
 // TODO(svillar): Perhaps we should use references here.
 typedef Vector<LayoutBox*, 1> GridItemList;
-typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
+typedef LinkedHashSet<size_t, OrderedTrackIndexSetHashTraits>
+    OrderedTrackIndexSet;
 
 class LayoutGrid;
 class GridIterator;
@@ -57,13 +67,12 @@ class CORE_EXPORT Grid {
   size_t GridItemPaintOrder(const LayoutBox&) const;
   void SetGridItemPaintOrder(const LayoutBox&, size_t order);
 
-  int SmallestTrackStart(GridTrackSizingDirection) const;
-  void SetSmallestTracksStart(int row_start, int column_start);
+  size_t ExplicitGridStart(GridTrackSizingDirection) const;
+  void SetExplicitGridStart(size_t row_start, size_t column_start);
 
   size_t AutoRepeatTracks(GridTrackSizingDirection) const;
   void SetAutoRepeatTracks(size_t auto_repeat_rows, size_t auto_repeat_columns);
 
-  typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
   void SetAutoRepeatEmptyColumns(std::unique_ptr<OrderedTrackIndexSet>);
   void SetAutoRepeatEmptyRows(std::unique_ptr<OrderedTrackIndexSet>);
 
@@ -91,6 +100,8 @@ class CORE_EXPORT Grid {
         size_t fixed_track_span,
         size_t varying_track_span) = 0;
 
+    GridIterator(const GridIterator&) = delete;
+    GridIterator& operator=(const GridIterator&) = delete;
     virtual ~GridIterator() = default;
 
    protected:
@@ -105,7 +116,6 @@ class CORE_EXPORT Grid {
     size_t row_index_;
     size_t column_index_;
     size_t child_index_;
-    DISALLOW_COPY_AND_ASSIGN(GridIterator);
   };
 
   virtual std::unique_ptr<GridIterator> CreateIterator(
@@ -124,8 +134,8 @@ class CORE_EXPORT Grid {
 
   OrderIterator order_iterator_;
 
-  int smallest_column_start_{0};
-  int smallest_row_start_{0};
+  size_t explicit_column_start_{0};
+  size_t explicit_row_start_{0};
 
   size_t auto_repeat_columns_{0};
   size_t auto_repeat_rows_{0};
@@ -285,6 +295,8 @@ class ListGridIterator final : public Grid::GridIterator {
                    GridTrackSizingDirection,
                    size_t fixed_track_index,
                    size_t varying_track_index = 0);
+  ListGridIterator(const ListGridIterator&) = delete;
+  ListGridIterator& operator=(const ListGridIterator&) = delete;
 
   LayoutBox* NextGridItem() override;
   std::unique_ptr<GridArea> NextEmptyGridArea(
@@ -294,7 +306,6 @@ class ListGridIterator final : public Grid::GridIterator {
  private:
   const ListGrid& grid_;
   ListGrid::GridCell* cell_node_{nullptr};
-  DISALLOW_COPY_AND_ASSIGN(ListGridIterator);
 };
 
 }  // namespace blink

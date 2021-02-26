@@ -28,6 +28,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/string_view.h"
 #include "src/trace_processor/sqlite/sqlite_utils.h"
+#include "src/trace_processor/tp_metatrace.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -50,6 +51,24 @@ base::Optional<std::string> HasDuplicateColumns(
     names.insert(col.name());
   }
   return base::nullopt;
+}
+
+inline std::string EscapedSqliteValueAsString(sqlite3_value* value) {
+  switch (sqlite3_value_type(value)) {
+    case SQLITE_INTEGER:
+      return std::to_string(sqlite3_value_int64(value));
+    case SQLITE_FLOAT:
+      return std::to_string(sqlite3_value_double(value));
+    case SQLITE_TEXT: {
+      // If str itself contains a single quote, we need to escape it with
+      // another single quote.
+      const char* str =
+          reinterpret_cast<const char*>(sqlite3_value_text(value));
+      return "'" + base::ReplaceAll(str, "'", "''") + "'";
+    }
+    default:
+      PERFETTO_FATAL("Unknown value type %d", sqlite3_value_type(value));
+  }
 }
 
 }  // namespace
@@ -224,7 +243,27 @@ int SpanJoinOperatorTable::BestIndex(const QueryConstraints& qc,
         (ob.size() == 1 && is_first_ob_partition) ||
         (ob.size() == 2 && is_first_ob_partition && is_second_ob_ts);
   }
+
+  const auto& cs = qc.constraints();
+  for (uint32_t i = 0; i < cs.size(); ++i) {
+    if (cs[i].op == kSourceGeqOpCode) {
+      info->sqlite_omit_constraint[i] = true;
+    }
+  }
+
   return SQLITE_OK;
+}
+
+int SpanJoinOperatorTable::FindFunction(const char* name,
+                                        FindFunctionFn* fn,
+                                        void**) {
+  if (base::CaseInsensitiveEqual(name, "source_geq")) {
+    *fn = [](sqlite3_context* ctx, int, sqlite3_value**) {
+      sqlite3_result_error(ctx, "Should not be called.", -1);
+    };
+    return kSourceGeqOpCode;
+  }
+  return 0;
 }
 
 std::vector<std::string>
@@ -239,12 +278,22 @@ SpanJoinOperatorTable::ComputeSqlConstraintsForDefinition(
     if (col_name == "")
       continue;
 
-    if (col_name == kTsColumnName || col_name == kDurColumnName) {
-      // Allow SQLite handle any constraints on ts or duration.
+    // Le constraints can be passed straight to the child tables as they won't
+    // affect the span join computation. Similarily, source_geq constraints
+    // explicitly request that they are passed as geq constraints to the source
+    // tables.
+    if (col_name == kTsColumnName && !sqlite_utils::IsOpLe(cs.op) &&
+        cs.op != kSourceGeqOpCode)
       continue;
-    }
-    auto op = sqlite_utils::OpToString(cs.op);
-    auto value = sqlite_utils::SqliteValueAsString(argv[i]);
+
+    // Allow SQLite handle any constraints on duration apart from source_geq
+    // constraints.
+    if (col_name == kDurColumnName && cs.op != kSourceGeqOpCode)
+      continue;
+
+    auto op = sqlite_utils::OpToString(
+        cs.op == kSourceGeqOpCode ? SQLITE_INDEX_CONSTRAINT_GE : cs.op);
+    auto value = EscapedSqliteValueAsString(argv[i]);
 
     constraints.emplace_back("`" + col_name + "`" + op + value);
   }
@@ -262,7 +311,11 @@ util::Status SpanJoinOperatorTable::CreateTableDefinition(
         desc.name.c_str());
   }
 
-  auto cols = sqlite_utils::GetColumnsForTable(db_, desc.name);
+  std::vector<SqliteTable::Column> cols;
+  auto status = sqlite_utils::GetColumnsForTable(db_, desc.name, cols);
+  if (!status.ok()) {
+    return status;
+  }
 
   uint32_t required_columns_found = 0;
   uint32_t ts_idx = std::numeric_limits<uint32_t>::max();
@@ -332,6 +385,8 @@ SpanJoinOperatorTable::Cursor::Cursor(SpanJoinOperatorTable* table, sqlite3* db)
 int SpanJoinOperatorTable::Cursor::Filter(const QueryConstraints& qc,
                                           sqlite3_value** argv,
                                           FilterHistory) {
+  PERFETTO_TP_TRACE("SPAN_JOIN_XFILTER");
+
   util::Status status = t1_.Initialize(qc, argv);
   if (!status.ok())
     return SQLITE_ERROR;

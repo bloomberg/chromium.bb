@@ -57,7 +57,7 @@ StringTreatNullAsEmptyStringOrLong::StringTreatNullAsEmptyStringOrLong(const Str
 StringTreatNullAsEmptyStringOrLong::~StringTreatNullAsEmptyStringOrLong() = default;
 StringTreatNullAsEmptyStringOrLong& StringTreatNullAsEmptyStringOrLong::operator=(const StringTreatNullAsEmptyStringOrLong&) = default;
 
-void StringTreatNullAsEmptyStringOrLong::Trace(Visitor* visitor) {
+void StringTreatNullAsEmptyStringOrLong::Trace(Visitor* visitor) const {
 }
 
 void V8StringTreatNullAsEmptyStringOrLong::ToImpl(
@@ -73,7 +73,7 @@ void V8StringTreatNullAsEmptyStringOrLong::ToImpl(
     return;
 
   if (v8_value->IsNumber()) {
-    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetLong(cpp_value);
@@ -81,7 +81,7 @@ void V8StringTreatNullAsEmptyStringOrLong::ToImpl(
   }
 
   {
-    V8StringResource<kTreatNullAsEmptyString> cpp_value = v8_value;
+    V8StringResource<kTreatNullAsEmptyString> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

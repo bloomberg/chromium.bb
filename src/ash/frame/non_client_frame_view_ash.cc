@@ -10,10 +10,6 @@
 
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/public/cpp/default_frame_header.h"
-#include "ash/public/cpp/frame_utils.h"
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -24,6 +20,11 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/default_frame_header.h"
+#include "chromeos/ui/frame/frame_utils.h"
+#include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -38,6 +39,12 @@
 DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*)
 
 namespace ash {
+
+using ::chromeos::ImmersiveFullscreenController;
+using ::chromeos::kFrameActiveColorKey;
+using ::chromeos::kFrameInactiveColorKey;
+using ::chromeos::kImmersiveImpliedByFullscreen;
+using ::chromeos::WindowStateType;
 
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
                              kNonClientFrameViewAshKey,
@@ -203,8 +210,10 @@ const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 
 NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     : frame_(frame),
-      header_view_(new HeaderView(frame)),
+      header_view_(new HeaderView(frame, this)),
       overlay_view_(new OverlayView(header_view_)) {
+  DCHECK(frame_);
+
   header_view_->set_immersive_mode_changed_callback(base::BindRepeating(
       &NonClientFrameViewAsh::InvalidateLayout, weak_factory_.GetWeakPtr()));
 
@@ -253,7 +262,7 @@ void NonClientFrameViewAsh::SetFrameColors(SkColor active_frame_color,
 }
 
 void NonClientFrameViewAsh::SetCaptionButtonModel(
-    std::unique_ptr<CaptionButtonModel> model) {
+    std::unique_ptr<chromeos::CaptionButtonModel> model) {
   header_view_->caption_button_container()->SetModel(std::move(model));
   header_view_->UpdateCaptionButtons();
 }
@@ -283,7 +292,7 @@ gfx::Rect NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int NonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderNonClientHitTest(this, point);
+  return chromeos::FrameBorderNonClientHitTest(this, point);
 }
 
 void NonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
@@ -303,12 +312,6 @@ void NonClientFrameViewAsh::UpdateWindowTitle() {
 
 void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
-}
-
-void NonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
-  // The icons differ between active and inactive.
-  header_view_->SchedulePaint();
-  frame_->non_client_view()->Layout();
 }
 
 gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
@@ -376,6 +379,10 @@ int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
   return header_view_->GetPreferredHeight();
 }
 
+int NonClientFrameViewAsh::NonClientTopBorderPreferredHeight() const {
+  return header_view_->GetPreferredHeight();
+}
+
 const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
 }
@@ -408,9 +415,14 @@ bool NonClientFrameViewAsh::DoesIntersectRect(const views::View* target,
   return false;
 }
 
-FrameCaptionButtonContainerView*
+chromeos::FrameCaptionButtonContainerView*
 NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
   return header_view_->caption_button_container();
+}
+
+void NonClientFrameViewAsh::PaintAsActiveChanged() {
+  header_view_->GetFrameHeader()->SetPaintAsActive(ShouldPaintAsActive());
+  frame_->non_client_view()->Layout();
 }
 
 }  // namespace ash

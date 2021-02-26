@@ -9,10 +9,10 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -23,7 +23,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -90,7 +90,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
       auto iter = std::find(window_->parent()->children().begin(),
                             window_->parent()->children().end(), window_);
       DCHECK(iter != window_->parent()->children().end());
-      aura::Window* topmost_transient_child = NULL;
+      aura::Window* topmost_transient_child = nullptr;
       for (++iter; iter != window_->parent()->children().end(); ++iter) {
         if (base::Contains(transient_children, *iter))
           topmost_transient_child = *iter;
@@ -128,7 +128,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
     layer_owner_->root()->SuppressPaint();
 
     window_->RemoveObserver(this);
-    window_ = NULL;
+    window_ = nullptr;
   }
 
   aura::Window* window_;
@@ -139,21 +139,24 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserverBase);
 };
 
-class HidingWindowMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  HidingWindowMetricsReporter() = default;
-  ~HidingWindowMetricsReporter() override = default;
+// TODO(crbug.com/1021774): Find a better home and merge with
+//     ash::metris_util::ForSmoothness.
+using SmoothnessCallback = base::RepeatingCallback<void(int smoothness)>;
+ui::AnimationThroughputReporter::ReportCallback ForSmoothness(
+    SmoothnessCallback callback) {
+  return base::BindRepeating(
+      [](SmoothnessCallback callback,
+         const cc::FrameSequenceMetrics::CustomReportData& data) {
+        const int smoothness =
+            std::floor(100.0f * data.frames_produced / data.frames_expected);
+        callback.Run(smoothness);
+      },
+      std::move(callback));
+}
 
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Ash.Window.AnimationSmoothness.Hide", value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HidingWindowMetricsReporter);
-};
-
-base::LazyInstance<HidingWindowMetricsReporter>::Leaky g_reporter_hide =
-    LAZY_INSTANCE_INITIALIZER;
+void ReportHideSmoothness(int smoothness) {
+  UMA_HISTOGRAM_PERCENTAGE("Ash.Window.AnimationSmoothness.Hide", smoothness);
+}
 
 }  // namespace
 
@@ -300,8 +303,12 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   // Property sets within this scope will be implicitly animated.
   ScopedHidingAnimationSettings hiding_settings(window);
-  hiding_settings.layer_animation_settings()->SetAnimationMetricsReporter(
-      g_reporter_hide.Pointer());
+
+  // Report animation smoothness for animations created within this scope.
+  ui::AnimationThroughputReporter reporter(
+      hiding_settings.layer_animation_settings()->GetAnimator(),
+      ForSmoothness(base::BindRepeating(&ReportHideSmoothness)));
+
   // Render surface caching may not provide a benefit when animating the opacity
   // of a single layer.
   if (!window->layer()->children().empty())
@@ -410,7 +417,7 @@ class RotateHidingWindowAnimationObserver
   ~RotateHidingWindowAnimationObserver() override {}
 
   // Destroys itself after |last_sequence| ends or is aborted. Does not take
-  // ownership of |last_sequence|, which should not be NULL.
+  // ownership of |last_sequence|, which should not be nullptr.
   void SetLastSequence(ui::LayerAnimationSequence* last_sequence) {
     last_sequence->AddObserver(this);
   }
@@ -436,7 +443,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kWindowAnimation_Rotate_DurationMS);
 
-  RotateHidingWindowAnimationObserver* observer = NULL;
+  RotateHidingWindowAnimationObserver* observer = nullptr;
 
   if (!show) {
     observer = new RotateHidingWindowAnimationObserver(window);
@@ -667,7 +674,7 @@ bool WindowAnimationsDisabled(aura::Window* window) {
 
   // Tests of animations themselves should still run even if the machine is
   // being accessed via Remote Desktop.
-  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
+  if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() ==
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION)
     return false;
 

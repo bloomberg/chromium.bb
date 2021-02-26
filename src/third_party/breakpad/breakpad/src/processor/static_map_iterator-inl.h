@@ -43,7 +43,7 @@ namespace google_breakpad {
 
 template<typename Key, typename Value, typename Compare>
 StaticMapIterator<Key, Value, Compare>::StaticMapIterator(const char* base,
-                                                            const int &index):
+                                                            const int& index):
       index_(index), base_(base) {
   // See static_map.h for documentation on
   // bytes format of serialized StaticMap data.

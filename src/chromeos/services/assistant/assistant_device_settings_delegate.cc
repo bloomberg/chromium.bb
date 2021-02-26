@@ -8,17 +8,16 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/services/assistant/cros_platform_api.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "libassistant/shared/public/platform_audio_output.h"
-#include "ui/accessibility/accessibility_switches.h"
 
 namespace client_op = ::assistant::api::client_op;
 
@@ -197,8 +196,7 @@ class DoNotDisturbSetting : public Setting {
   }
 
  private:
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() {
+  ash::AssistantNotificationController* assistant_notification_controller() {
     return context_->assistant_notification_controller();
   }
 
@@ -248,6 +246,7 @@ class BrightnessSetting : public SettingWithDeviceAction {
            client_op::ModifySettingArgs request, bool success,
            double current_value) {
           if (!success || !this_) {
+            LOG(WARNING) << "Failed to get brightness level";
             return;
           }
           HandleSliderChange(
@@ -274,11 +273,7 @@ AssistantDeviceSettingsDelegate::AssistantDeviceSettingsDelegate(
   AddSetting(std::make_unique<NightLightSetting>(context));
   AddSetting(std::make_unique<DoNotDisturbSetting>(context));
   AddSetting(std::make_unique<BrightnessSetting>(context));
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
-    AddSetting(std::make_unique<SwitchAccessSetting>(context));
-  }
+  AddSetting(std::make_unique<SwitchAccessSetting>(context));
 }
 
 AssistantDeviceSettingsDelegate::~AssistantDeviceSettingsDelegate() = default;
@@ -293,6 +288,8 @@ bool AssistantDeviceSettingsDelegate::IsSettingSupported(
 
 void AssistantDeviceSettingsDelegate::HandleModifyDeviceSetting(
     const client_op::ModifySettingArgs& modify_setting_args) {
+  VLOG(1) << "Assistant: Modifying Device Setting '"
+          << modify_setting_args.setting_id() << "'";
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
 
   for (const auto& setting : settings_) {

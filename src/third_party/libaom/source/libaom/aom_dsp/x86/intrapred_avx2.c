@@ -10,6 +10,7 @@
  */
 
 #include <immintrin.h>
+
 #include "config/aom_dsp_rtcd.h"
 #include "aom_dsp/x86/intrapred_x86.h"
 #include "aom_dsp/x86/lpf_common_sse2.h"

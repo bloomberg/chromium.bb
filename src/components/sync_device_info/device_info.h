@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace base {
@@ -69,11 +69,14 @@ class DeviceInfo {
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
-             const base::SysInfo::HardwareInfo& hardware_info,
+             const std::string& manufacturer_name,
+             const std::string& model_name,
              base::Time last_updated_timestamp,
              base::TimeDelta pulse_interval,
              bool send_tab_to_self_receiving_enabled,
-             const base::Optional<SharingInfo>& sharing_info);
+             const base::Optional<SharingInfo>& sharing_info,
+             const std::string& fcm_registration_token,
+             const ModelTypeSet& interested_data_types);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -103,7 +106,11 @@ class DeviceInfo {
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
 
-  const base::SysInfo::HardwareInfo& hardware_info() const;
+  // The device manufacturer name.
+  const std::string& manufacturer_name() const;
+
+  // The device model name.
+  const std::string& model_name() const;
 
   // Returns the time at which this device was last updated to the sync servers.
   base::Time last_updated_timestamp() const;
@@ -118,6 +125,12 @@ class DeviceInfo {
 
   // Returns Sharing related info of the device.
   const base::Optional<SharingInfo>& sharing_info() const;
+
+  // Returns the FCM registration token for sync invalidations.
+  const std::string& fcm_registration_token() const;
+
+  // Returns the data types for which this device receives invalidations.
+  const ModelTypeSet& interested_data_types() const;
 
   // Gets the OS in string form.
   std::string GetOSString() const;
@@ -140,9 +153,13 @@ class DeviceInfo {
 
   void set_client_name(const std::string& client_name);
 
+  void set_fcm_registration_token(const std::string& fcm_token);
+
+  void set_interested_data_types(const ModelTypeSet& data_types);
+
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
-  std::unique_ptr<base::DictionaryValue> ToValue();
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
  private:
   const std::string guid_;
@@ -155,7 +172,7 @@ class DeviceInfo {
 
   const sync_pb::SyncEnums::DeviceType device_type_;
 
-  std::string signin_scoped_device_id_;
+  const std::string signin_scoped_device_id_;
 
   // Exposing |guid| would lead to a stable unique id for a device which
   // can potentially be used for tracking. Public ids are privacy safe
@@ -163,7 +180,9 @@ class DeviceInfo {
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
 
-  base::SysInfo::HardwareInfo hardware_info_;
+  const std::string manufacturer_name_;
+
+  const std::string model_name_;
 
   const base::Time last_updated_timestamp_;
 
@@ -172,6 +191,12 @@ class DeviceInfo {
   bool send_tab_to_self_receiving_enabled_;
 
   base::Optional<SharingInfo> sharing_info_;
+
+  // An FCM registration token obtained by sync invalidations service.
+  std::string fcm_registration_token_;
+
+  // Data types for which this device receives invalidations.
+  ModelTypeSet interested_data_types_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

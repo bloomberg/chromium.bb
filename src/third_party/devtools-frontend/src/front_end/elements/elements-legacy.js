@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as ElementsModule from './elements.js';
 
 self.Elements = self.Elements || {};
@@ -36,9 +38,6 @@ Elements.ElementStatePaneWidget = ElementsModule.ElementStatePaneWidget.ElementS
 
 /** @constructor */
 Elements.ElementStatePaneWidget.ButtonProvider = ElementsModule.ElementStatePaneWidget.ButtonProvider;
-
-/** @constructor */
-Elements.ElementsBreadcrumbs = ElementsModule.ElementsBreadcrumbs.ElementsBreadcrumbs;
 
 /** @constructor */
 Elements.ElementsPanel = ElementsModule.ElementsPanel.ElementsPanel;
@@ -81,6 +80,9 @@ Elements.InspectElementModeController.ToggleSearchActionDelegate =
 Elements.MarkerDecorator = ElementsModule.MarkerDecorator.MarkerDecorator;
 
 Elements.GenericDecorator = ElementsModule.MarkerDecorator.GenericDecorator;
+
+/** @constructor */
+Elements.LayoutSidebarPane = ElementsModule.LayoutSidebarPane.LayoutSidebarPane;
 
 /** @constructor */
 Elements.MetricsSidebarPane = ElementsModule.MetricsSidebarPane.MetricsSidebarPane;

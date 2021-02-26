@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------- *
  *
- *   Copyright 1996-2018 The NASM Authors - All Rights Reserved
+ *   Copyright 1996-2020 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
  *
@@ -177,9 +177,6 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 #include "nasm.h"
 #include "nasmlib.h"
@@ -213,8 +210,8 @@ enum match_result {
     /*
      * Matching success; the conditional ones first
      */
-    MOK_JUMP,   /* Matching OK but needs jmp_match() */
-    MOK_GOOD    /* Matching unconditionally OK */
+    MOK_JUMP,		/* Matching OK but needs jmp_match() */
+    MOK_GOOD		/* Matching unconditionally OK */
 };
 
 typedef struct {
@@ -264,8 +261,7 @@ static int has_prefix(insn * ins, enum prefix_pos pos, int prefix)
 static void assert_no_prefix(insn * ins, enum prefix_pos pos)
 {
     if (ins->prefixes[pos])
-        nasm_error(ERR_NONFATAL, "invalid %s prefix",
-		   prefix_name(ins->prefixes[pos]));
+        nasm_nonfatal("invalid %s prefix", prefix_name(ins->prefixes[pos]));
 }
 
 static const char *size_name(int size)
@@ -294,8 +290,8 @@ static const char *size_name(int size)
 
 static void warn_overflow(int size)
 {
-    nasm_error(ERR_WARNING | ERR_PASS2 | ERR_WARN_NOV,
-            "%s data exceeds bounds", size_name(size));
+    nasm_warn(ERR_PASS2 | WARN_NUMBER_OVERFLOW, "%s data exceeds bounds",
+               size_name(size));
 }
 
 static void warn_overflow_const(int64_t data, int size)
@@ -333,10 +329,22 @@ static void warn_overflow_out(int64_t data, int size, enum out_sign sign)
  * generator at the same time, flatten unnecessary relocations,
  * and verify backend compatibility.
  */
+/*
+ * This warning is currently issued by backends, but in the future
+ * this code should be centralized.
+ *
+ *!zeroing [on] RESx in initialized section becomes zero
+ *!  a \c{RESx} directive was used in a section which contains
+ *!  initialized data, and the output format does not support
+ *!  this. Instead, this will be replaced with explicit zero
+ *!  content, which may produce a large output file.
+ */
 static void out(struct out_data *data)
 {
-    static int32_t lineno = 0;     /* static!!! */
-    static const char *lnfname = NULL;
+    static struct last_debug_info {
+        struct src_location where;
+        int32_t segment;
+    } dbg;
     union {
         uint8_t b[8];
         uint64_t q;
@@ -370,6 +378,8 @@ static void out(struct out_data *data)
         amax = ofmt->maxbits >> 3; /* Maximum address size in bytes */
         if ((ofmt->flags & OFMT_KEEP_ADDR) == 0 && data->tsegment == fixseg &&
             data->twrt == NO_SEG) {
+            if (asize >= (size_t)(data->bits >> 3))
+                data->sign = OUT_WRAP; /* Support address space wrapping for low-bit modes */
             warn_overflow_out(addrval, asize, data->sign);
             xdata.q = cpu_to_le64(addrval);
             data->data = xdata.b;
@@ -390,24 +400,31 @@ static void out(struct out_data *data)
     }
 
     /*
-     * this call to src_get determines when we call the
-     * debug-format-specific "linenum" function
-     * it updates lineno and lnfname to the current values
-     * returning 0 if "same as last time", -2 if lnfname
-     * changed, and the amount by which lineno changed,
-     * if it did. thus, these variables must be static
+     * If the source location or output segment has changed,
+     * let the debug backend know. Some backends really don't
+     * like being given a NULL filename as can happen if we
+     * use -Lb and expand a macro, so filter out that case.
      */
-
-    if (src_get(&lineno, &lnfname))
-        dfmt->linenum(lnfname, lineno, data->segment);
+    data->where = src_where();
+    if (data->where.filename &&
+        (!src_location_same(data->where, dbg.where) |
+         (data->segment != dbg.segment))) {
+        dbg.where   = data->where;
+        dbg.segment = data->segment;
+        dfmt->linenum(dbg.where.filename, dbg.where.lineno, data->segment);
+    }
 
     if (asize > amax) {
         if (data->type == OUT_RELADDR || data->sign == OUT_SIGNED) {
-            nasm_error(ERR_NONFATAL,
-                    "%u-bit signed relocation unsupported by output format %s",
-                       (unsigned int)(asize << 3), ofmt->shortname);
+            nasm_nonfatal("%u-bit signed relocation unsupported by output format %s",
+                          (unsigned int)(asize << 3), ofmt->shortname);
         } else {
-            nasm_error(ERR_WARNING | ERR_WARN_ZEXTRELOC,
+            /*!
+             *!zext-reloc [on] relocation zero-extended to match output format
+             *!  warns that a relocation has been zero-extended due
+             *!  to limitations in the output format.
+             */
+            nasm_warn(WARN_ZEXT_RELOC,
                        "%u-bit %s relocation zero-extended from %u bits",
                        (unsigned int)(asize << 3),
                        data->type == OUT_SEGMENT ? "segment" : "unsigned",
@@ -422,10 +439,8 @@ static void out(struct out_data *data)
         ofmt->output(data);
     } else {
         /* Outputting to ABSOLUTE section - only reserve is permitted */
-        if (data->type != OUT_RESERVE) {
-            nasm_error(ERR_NONFATAL, "attempt to assemble code in [ABSOLUTE]"
-                       " space");
-        }
+        if (data->type != OUT_RESERVE)
+            nasm_nonfatal("attempt to assemble code in [ABSOLUTE] space");
         /* No need to push to the backend */
     }
 
@@ -470,7 +485,7 @@ static inline void out_reserve(struct out_data *data, uint64_t size)
 static void out_segment(struct out_data *data, const struct operand *opx)
 {
     if (opx->opflags & OPFLAG_RELATIVE)
-        nasm_error(ERR_NONFATAL, "segment references cannot be relative");
+        nasm_nonfatal("segment references cannot be relative");
 
     data->type = OUT_SEGMENT;
     data->sign = OUT_UNSIGNED;
@@ -490,7 +505,7 @@ static void out_imm(struct out_data *data, const struct operand *opx,
          * already called ofmt->segbase() for us.  Sigh.
          */
         if (size < 2)
-            nasm_error(ERR_NONFATAL, "segment reference must be 16 bits");
+            nasm_nonfatal("segment reference must be 16 bits");
 
         data->type = OUT_SEGMENT;
     } else {
@@ -517,7 +532,7 @@ static void out_reladdr(struct out_data *data, const struct operand *opx,
                         int size)
 {
     if (opx->opflags & OPFLAG_RELATIVE)
-        nasm_error(ERR_NONFATAL, "invalid use of self-relative expression");
+        nasm_nonfatal("invalid use of self-relative expression");
 
     data->type = OUT_RELADDR;
     data->sign = OUT_SIGNED;
@@ -559,11 +574,113 @@ static bool jmp_match(int32_t segment, int64_t offset, int bits,
     if (is_byte && c == 0371 && ins->prefixes[PPS_REP] == P_BND) {
         /* jmp short (opcode eb) cannot be used with bnd prefix. */
         ins->prefixes[PPS_REP] = P_none;
-        nasm_error(ERR_WARNING | ERR_WARN_BND | ERR_PASS2 ,
-                "jmp short does not init bnd regs - bnd prefix dropped.");
+        /*!
+         *!bnd [on] invalid BND prefixes
+         *!  warns about ineffective use of the \c{BND} prefix when the
+         *!  \c{JMP} instruction is converted to the \c{SHORT} form.
+         *!  This should be extremely rare since the short \c{JMP} only
+         *!  is applicable to jumps inside the same module, but if
+         *!  it is legitimate, it may be necessary to use
+         *!  \c{bnd jmp dword}.
+         */
+        nasm_warn(WARN_BND | ERR_PASS2 ,
+                   "jmp short does not init bnd regs - bnd prefix dropped");
     }
 
     return is_byte;
+}
+
+static inline int64_t merge_resb(insn *ins, int64_t isize)
+{
+    int nbytes = resb_bytes(ins->opcode);
+
+    if (likely(!nbytes))
+        return isize;
+
+    if (isize != nbytes * ins->oprs[0].offset)
+        return isize;           /* Has prefixes of some sort */
+
+    ins->oprs[0].offset *= ins->times;
+    isize *= ins->times;
+    ins->times = 1;
+    return isize;
+}
+
+/* This must be handle non-power-of-2 alignment values */
+static inline size_t pad_bytes(size_t len, size_t align)
+{
+    size_t partial = len % align;
+    return partial ? align - partial : 0;
+}
+
+static void out_eops(struct out_data *data, const extop *e)
+{
+    while (e) {
+        size_t dup = e->dup;
+
+        switch (e->type) {
+        case EOT_NOTHING:
+            break;
+
+        case EOT_EXTOP:
+            while (dup--)
+                out_eops(data, e->val.subexpr);
+            break;
+
+        case EOT_DB_NUMBER:
+            if (e->elem > 8) {
+                nasm_nonfatal("integer supplied as %d-bit data",
+                              e->elem << 3);
+            } else {
+                while (dup--) {
+                    data->insoffs = 0;
+                    data->inslen = data->size = e->elem;
+                    data->tsegment = e->val.num.segment;
+                    data->toffset  = e->val.num.offset;
+                    data->twrt = e->val.num.wrt;
+                    data->relbase = 0;
+                    if (e->val.num.segment != NO_SEG &&
+                        (e->val.num.segment & 1)) {
+                        data->type = OUT_SEGMENT;
+                        data->sign = OUT_UNSIGNED;
+                    } else {
+                        data->type = e->val.num.relative
+                            ? OUT_RELADDR : OUT_ADDRESS;
+                        data->sign = OUT_WRAP;
+                    }
+                    out(data);
+                }
+            }
+            break;
+
+        case EOT_DB_FLOAT:
+        case EOT_DB_STRING:
+        case EOT_DB_STRING_FREE:
+        {
+            size_t pad, len;
+
+            pad = pad_bytes(e->val.string.len, e->elem);
+            len = e->val.string.len + pad;
+
+            while (dup--) {
+                data->insoffs = 0;
+                data->inslen = len;
+                out_rawdata(data, e->val.string.data, e->val.string.len);
+                if (pad)
+                    out_rawdata(data, zero_buffer, pad);
+            }
+            break;
+        }
+
+        case EOT_DB_RESERVE:
+            data->insoffs = 0;
+            data->inslen = dup * e->elem;
+            out_reserve(data, data->inslen);
+            break;
+        }
+
+        e = e->next;
+    }
 }
 
 /* This is totally just a wild guess what is reasonable... */
@@ -574,7 +691,9 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
     struct out_data data;
     const struct itemplate *temp;
     enum match_result m;
-    int64_t wsize;              /* size for DB etc. */
+
+    if (instruction->opcode == I_none)
+        return 0;
 
     nasm_zero(data);
     data.offset = start;
@@ -582,51 +701,10 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
     data.itemp = NULL;
     data.bits = bits;
 
-    wsize = db_bytes(instruction->opcode);
-    if (wsize == -1)
-        return 0;
-
-    if (wsize) {
-        extop *e;
-
-        list_for_each(e, instruction->eops) {
-            if (e->type == EOT_DB_NUMBER) {
-                if (wsize > 8) {
-                    nasm_error(ERR_NONFATAL,
-                               "integer supplied to a DT, DO, DY or DZ"
-                               " instruction");
-                } else {
-                    data.insoffs = 0;
-                    data.inslen = data.size = wsize;
-                    data.toffset = e->offset;
-                    data.twrt = e->wrt;
-                    data.relbase = 0;
-                    if (e->segment != NO_SEG && (e->segment & 1)) {
-                        data.tsegment = e->segment;
-                        data.type = OUT_SEGMENT;
-                        data.sign = OUT_UNSIGNED;
-                    } else {
-                        data.tsegment = e->segment;
-                        data.type = e->relative ? OUT_RELADDR : OUT_ADDRESS;
-                        data.sign = OUT_WRAP;
-                    }
-                    out(&data);
-                }
-            } else if (e->type == EOT_DB_STRING ||
-                       e->type == EOT_DB_STRING_FREE) {
-                int align = e->stringlen % wsize;
-                if (align)
-                    align = wsize - align;
-
-                data.insoffs = 0;
-                data.inslen = e->stringlen + align;
-
-                out_rawdata(&data, e->stringval, e->stringlen);
-                out_rawdata(&data, zero_buffer, align);
-            }
-        }
+    if (opcode_is_db(instruction->opcode)) {
+        out_eops(&data, instruction->eops);
     } else if (instruction->opcode == I_INCBIN) {
-        const char *fname = instruction->eops->stringval;
+        const char *fname = instruction->eops->val.string.data;
         FILE *fp;
         size_t t = instruction->times; /* INCBIN handles TIMES by itself */
         off_t base = 0;
@@ -641,33 +719,33 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
 
         fp = nasm_open_read(fname, NF_BINARY|NF_FORMAP);
         if (!fp) {
-            nasm_error(ERR_NONFATAL, "`incbin': unable to open file `%s'",
-                  fname);
+            nasm_nonfatal("`incbin': unable to open file `%s'",
+                          fname);
             goto done;
         }
 
         len = nasm_file_size(fp);
 
         if (len == (off_t)-1) {
-            nasm_error(ERR_NONFATAL, "`incbin': unable to get length of file `%s'",
-                       fname);
+            nasm_nonfatal("`incbin': unable to get length of file `%s'",
+                          fname);
             goto close_done;
         }
 
         if (instruction->eops->next) {
-            base = instruction->eops->next->offset;
+            base = instruction->eops->next->val.num.offset;
             if (base >= len) {
                 len = 0;
             } else {
                 len -= base;
                 if (instruction->eops->next->next &&
-                    len > (off_t)instruction->eops->next->next->offset)
-                    len = (off_t)instruction->eops->next->next->offset;
+                    len > (off_t)instruction->eops->next->next->val.num.offset)
+                    len = (off_t)instruction->eops->next->next->val.num.offset;
             }
         }
 
         lfmt->set_offset(data.offset);
-        lfmt->uplevel(LIST_INCBIN);
+        lfmt->uplevel(LIST_INCBIN, len);
 
         if (!len)
             goto end_incbin;
@@ -699,9 +777,8 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
                 off_t l = len;
 
                 if (fseeko(fp, base, SEEK_SET) < 0 || ferror(fp)) {
-                    nasm_error(ERR_NONFATAL,
-                               "`incbin': unable to seek on file `%s'",
-                               fname);
+                    nasm_nonfatal("`incbin': unable to seek on file `%s'",
+                                  fname);
                     goto end_incbin;
                 }
                 while (l > 0) {
@@ -712,9 +789,8 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
                          * actually changes while we are reading
                          * it.
                          */
-                        nasm_error(ERR_NONFATAL,
-                                   "`incbin': unexpected EOF while"
-                                   " reading file `%s'", fname);
+                        nasm_nonfatal("`incbin': unexpected EOF while"
+                                      " reading file `%s'", fname);
                         goto end_incbin;
                     }
                     out_rawdata(&data, buf, m);
@@ -725,13 +801,12 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
     end_incbin:
         lfmt->downlevel(LIST_INCBIN);
         if (instruction->times > 1) {
-            lfmt->uplevel(LIST_TIMES);
+            lfmt->uplevel(LIST_TIMES, instruction->times);
             lfmt->downlevel(LIST_TIMES);
         }
         if (ferror(fp)) {
-            nasm_error(ERR_NONFATAL,
-                       "`incbin': error while"
-                       " reading file `%s'", fname);
+            nasm_nonfatal("`incbin': error while"
+                          " reading file `%s'", fname);
         }
     close_done:
         if (buf)
@@ -752,68 +827,112 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
 
         if (m == MOK_GOOD) {
             /* Matches! */
-            int64_t insn_size = calcsize(data.segment, data.offset,
-                                         bits, instruction, temp);
-            nasm_assert(insn_size >= 0);
+            if (unlikely(itemp_has(temp, IF_OBSOLETE))) {
+                errflags warning;
+                const char *whathappened;
+                const char *validity;
+                bool never = itemp_has(temp, IF_NEVER);
+
+                /*
+                 * If IF_OBSOLETE is set, warn the user. Different
+                 * warning classes for "obsolete but valid for this
+                 * specific CPU" and "obsolete and gone."
+                 *
+                 *!obsolete-removed [on] instruction obsolete and removed on the target CPU
+                 *!  warns for an instruction which has been removed
+                 *!  from the architecture, and is no longer included
+                 *!  in the CPU definition given in the \c{[CPU]}
+                 *!  directive, for example \c{POP CS}, the opcode for
+                 *!  which, \c{0Fh}, instead is an opcode prefix on
+                 *!  CPUs newer than the first generation 8086.
+                 *
+                 *!obsolete-nop [on] instruction obsolete and is a noop on the target CPU
+                 *!  warns for an instruction which has been removed
+                 *!  from the architecture, but has been architecturally
+                 *!  defined to be a noop for future CPUs.
+                 *
+                 *!obsolete-valid [on] instruction obsolete but valid on the target CPU
+                 *!  warns for an instruction which has been removed
+                 *!  from the architecture, but is still valid on the
+                 *!  specific CPU given in the \c{CPU} directive. Code
+                 *!  using these instructions is most likely not
+                 *!  forward compatible.
+                 */
+
+                whathappened = never ? "never implemented" : "obsolete";
+
+                if (!never && !iflag_cmp_cpu_level(&insns_flags[temp->iflag_idx], &cpu)) {
+                    warning = WARN_OBSOLETE_VALID;
+                    validity = "but valid on";
+                } else if (itemp_has(temp, IF_NOP)) {
+                    warning = WARN_OBSOLETE_NOP;
+                    validity = "and is a noop on";
+                } else {
+                    warning = WARN_OBSOLETE_REMOVED;
+                    validity = never ? "and invalid on" : "and removed from";
+                }
+
+                nasm_warn(warning, "instruction %s %s the target CPU",
+                          whathappened, validity);
+            }
 
             data.itemp = temp;
             data.bits = bits;
             data.insoffs = 0;
-            data.inslen = insn_size;
+
+            data.inslen = calcsize(data.segment, data.offset,
+                                   bits, instruction, temp);
+            nasm_assert(data.inslen >= 0);
+            data.inslen = merge_resb(instruction, data.inslen);
 
             gencode(&data, instruction);
-            nasm_assert(data.insoffs == insn_size);
+            nasm_assert(data.insoffs == data.inslen);
         } else {
             /* No match */
             switch (m) {
             case MERR_OPSIZEMISSING:
-                nasm_error(ERR_NONFATAL, "operation size not specified");
+                nasm_nonfatal("operation size not specified");
                 break;
             case MERR_OPSIZEMISMATCH:
-                nasm_error(ERR_NONFATAL, "mismatch in operand sizes");
+                nasm_nonfatal("mismatch in operand sizes");
                 break;
             case MERR_BRNOTHERE:
-                nasm_error(ERR_NONFATAL,
-                           "broadcast not permitted on this operand");
+                nasm_nonfatal("broadcast not permitted on this operand");
                 break;
             case MERR_BRNUMMISMATCH:
-                nasm_error(ERR_NONFATAL,
-                           "mismatch in the number of broadcasting elements");
+                nasm_nonfatal("mismatch in the number of broadcasting elements");
                 break;
             case MERR_MASKNOTHERE:
-                nasm_error(ERR_NONFATAL,
-                           "mask not permitted on this operand");
+                nasm_nonfatal("mask not permitted on this operand");
                 break;
             case MERR_DECONOTHERE:
-                nasm_error(ERR_NONFATAL, "unsupported mode decorator for instruction");
+                nasm_nonfatal("unsupported mode decorator for instruction");
                 break;
             case MERR_BADCPU:
-                nasm_error(ERR_NONFATAL, "no instruction for this cpu level");
+                nasm_nonfatal("no instruction for this cpu level");
                 break;
             case MERR_BADMODE:
-                nasm_error(ERR_NONFATAL, "instruction not supported in %d-bit mode",
-                           bits);
+                nasm_nonfatal("instruction not supported in %d-bit mode", bits);
                 break;
             case MERR_ENCMISMATCH:
-                nasm_error(ERR_NONFATAL, "specific encoding scheme not available");
+                nasm_nonfatal("specific encoding scheme not available");
                 break;
             case MERR_BADBND:
-                nasm_error(ERR_NONFATAL, "bnd prefix is not allowed");
+                nasm_nonfatal("bnd prefix is not allowed");
                 break;
             case MERR_BADREPNE:
-                nasm_error(ERR_NONFATAL, "%s prefix is not allowed",
-                           (has_prefix(instruction, PPS_REP, P_REPNE) ?
-                            "repne" : "repnz"));
+                nasm_nonfatal("%s prefix is not allowed",
+                              (has_prefix(instruction, PPS_REP, P_REPNE) ?
+                               "repne" : "repnz"));
                 break;
             case MERR_REGSETSIZE:
-                nasm_error(ERR_NONFATAL, "invalid register set size");
+                nasm_nonfatal("invalid register set size");
                 break;
             case MERR_REGSET:
-                nasm_error(ERR_NONFATAL, "register set not valid for operand");
+                nasm_nonfatal("register set not valid for operand");
                 break;
             default:
-                nasm_error(ERR_NONFATAL,
-                           "invalid combination of opcode and operands");
+                nasm_nonfatal("invalid combination of opcode and operands");
                 break;
             }
 
@@ -823,60 +942,203 @@ int64_t assemble(int32_t segment, int64_t start, int bits, insn *instruction)
     return data.offset - start;
 }
 
+static int32_t eops_typeinfo(const extop *e)
+{
+    int32_t typeinfo = 0;
+
+    while (e) {
+        switch (e->type) {
+        case EOT_NOTHING:
+            break;
+
+        case EOT_EXTOP:
+            typeinfo |= eops_typeinfo(e->val.subexpr);
+            break;
+
+        case EOT_DB_FLOAT:
+            switch (e->elem) {
+            case  1: typeinfo |= TY_BYTE;  break;
+            case  2: typeinfo |= TY_WORD;  break;
+            case  4: typeinfo |= TY_FLOAT; break;
+            case  8: typeinfo |= TY_QWORD; break; /* double? */
+            case 10: typeinfo |= TY_TBYTE; break; /* long double? */
+            case 16: typeinfo |= TY_YWORD; break;
+            case 32: typeinfo |= TY_ZWORD; break;
+            default: break;
+            }
+            break;
+
+        default:
+            switch (e->elem) {
+            case  1: typeinfo |= TY_BYTE;  break;
+            case  2: typeinfo |= TY_WORD;  break;
+            case  4: typeinfo |= TY_DWORD; break;
+            case  8: typeinfo |= TY_QWORD; break;
+            case 10: typeinfo |= TY_TBYTE; break;
+            case 16: typeinfo |= TY_YWORD; break;
+            case 32: typeinfo |= TY_ZWORD; break;
+            default: break;
+            }
+            break;
+        }
+        e = e->next;
+    }
+
+    return typeinfo;
+}
+
+static inline void debug_set_db_type(insn *instruction)
+{
+
+    int32_t typeinfo = TYS_ELEMENTS(instruction->operands);
+
+    typeinfo |= eops_typeinfo(instruction->eops);
+    dfmt->debug_typevalue(typeinfo);
+}
+
+static void debug_set_type(insn *instruction)
+{
+    int32_t typeinfo;
+
+    if (opcode_is_resb(instruction->opcode)) {
+        typeinfo = TYS_ELEMENTS(instruction->oprs[0].offset);
+
+        switch (instruction->opcode) {
+        case I_RESB:
+            typeinfo |= TY_BYTE;
+            break;
+        case I_RESW:
+            typeinfo |= TY_WORD;
+            break;
+        case I_RESD:
+            typeinfo |= TY_DWORD;
+            break;
+        case I_RESQ:
+            typeinfo |= TY_QWORD;
+            break;
+        case I_REST:
+            typeinfo |= TY_TBYTE;
+            break;
+        case I_RESO:
+            typeinfo |= TY_OWORD;
+            break;
+        case I_RESY:
+            typeinfo |= TY_YWORD;
+            break;
+        case I_RESZ:
+            typeinfo |= TY_ZWORD;
+            break;
+        default:
+            panic();
+        }
+    } else {
+        typeinfo = TY_LABEL;
+    }
+
+    dfmt->debug_typevalue(typeinfo);
+}
+
+
+/* Proecess an EQU directive */
+static void define_equ(insn * instruction)
+{
+    if (!instruction->label) {
+        nasm_nonfatal("EQU not preceded by label");
+    } else if (instruction->operands == 1 &&
+               (instruction->oprs[0].type & IMMEDIATE) &&
+               instruction->oprs[0].wrt == NO_SEG) {
+        define_label(instruction->label,
+                     instruction->oprs[0].segment,
+                     instruction->oprs[0].offset, false);
+    } else if (instruction->operands == 2
+               && (instruction->oprs[0].type & IMMEDIATE)
+               && (instruction->oprs[0].type & COLON)
+               && instruction->oprs[0].segment == NO_SEG
+               && instruction->oprs[0].wrt == NO_SEG
+               && (instruction->oprs[1].type & IMMEDIATE)
+               && instruction->oprs[1].segment == NO_SEG
+               && instruction->oprs[1].wrt == NO_SEG) {
+        define_label(instruction->label,
+                     instruction->oprs[0].offset | SEG_ABS,
+                     instruction->oprs[1].offset, false);
+    } else {
+        nasm_nonfatal("bad syntax for EQU");
+    }
+}
+
+static int64_t len_extops(const extop *e)
+{
+    int64_t isize = 0;
+    size_t pad;
+
+    while (e) {
+        switch (e->type) {
+        case EOT_NOTHING:
+            break;
+
+        case EOT_EXTOP:
+            isize += e->dup * len_extops(e->val.subexpr);
+            break;
+
+        case EOT_DB_STRING:
+        case EOT_DB_STRING_FREE:
+        case EOT_DB_FLOAT:
+            pad = pad_bytes(e->val.string.len, e->elem);
+            isize += e->dup * (e->val.string.len + pad);
+            break;
+
+        case EOT_DB_NUMBER:
+            warn_overflow_const(e->val.num.offset, e->elem);
+            isize += e->dup * e->elem;
+            break;
+
+        case EOT_DB_RESERVE:
+            isize += e->dup;
+            break;
+        }
+
+        e = e->next;
+    }
+
+    return isize;
+}
+
 int64_t insn_size(int32_t segment, int64_t offset, int bits, insn *instruction)
 {
     const struct itemplate *temp;
     enum match_result m;
+    int64_t isize = 0;
 
-    if (instruction->opcode == I_none)
+    if (instruction->opcode == I_none) {
         return 0;
-
-    if (opcode_is_db(instruction->opcode)) {
-        extop *e;
-        int32_t isize, osize, wsize;
-
-        isize = 0;
-        wsize = db_bytes(instruction->opcode);
-        nasm_assert(wsize > 0);
-
-        list_for_each(e, instruction->eops) {
-            int32_t align;
-
-            osize = 0;
-            if (e->type == EOT_DB_NUMBER) {
-                osize = 1;
-                warn_overflow_const(e->offset, wsize);
-            } else if (e->type == EOT_DB_STRING ||
-                       e->type == EOT_DB_STRING_FREE)
-                osize = e->stringlen;
-
-            align = (-osize) % wsize;
-            if (align < 0)
-                align += wsize;
-            isize += osize + align;
-        }
+    } else if (instruction->opcode == I_EQU) {
+        define_equ(instruction);
+        return 0;
+    } else if (opcode_is_db(instruction->opcode)) {
+        isize = len_extops(instruction->eops);
+        debug_set_db_type(instruction);
         return isize;
-    }
-
-    if (instruction->opcode == I_INCBIN) {
-        const char *fname = instruction->eops->stringval;
+    } else if (instruction->opcode == I_INCBIN) {
+        const extop *e = instruction->eops;
+        const char *fname = e->val.string.data;
         off_t len;
 
         len = nasm_file_size_by_path(fname);
         if (len == (off_t)-1) {
-            nasm_error(ERR_NONFATAL, "`incbin': unable to get length of file `%s'",
-                       fname);
+            nasm_nonfatal("`incbin': unable to get length of file `%s'",
+                          fname);
             return 0;
         }
 
-        if (instruction->eops->next) {
-            if (len <= (off_t)instruction->eops->next->offset) {
+        e = e->next;
+        if (e) {
+            if (len <= (off_t)e->val.num.offset) {
                 len = 0;
             } else {
-                len -= instruction->eops->next->offset;
-                if (instruction->eops->next->next &&
-                    len > (off_t)instruction->eops->next->next->offset) {
-                    len = (off_t)instruction->eops->next->next->offset;
+                len -= e->val.num.offset;
+                e = e->next;
+                if (e && len > (off_t)e->val.num.offset) {
+                    len = (off_t)e->val.num.offset;
                 }
             }
         }
@@ -885,17 +1147,21 @@ int64_t insn_size(int32_t segment, int64_t offset, int bits, insn *instruction)
         instruction->times = 1; /* Tell the upper layer to not iterate */
 
         return len;
-    }
-
-    /* Check to see if we need an address-size prefix */
-    add_asp(instruction, bits);
-
-    m = find_match(&temp, instruction, segment, offset, bits);
-    if (m == MOK_GOOD) {
-        /* we've matched an instruction. */
-        return calcsize(segment, offset, bits, instruction, temp);
     } else {
-        return -1;                  /* didn't match any instruction */
+        /* Normal instruction, or RESx */
+
+        /* Check to see if we need an address-size prefix */
+        add_asp(instruction, bits);
+
+        m = find_match(&temp, instruction, segment, offset, bits);
+        if (m != MOK_GOOD)
+            return -1;              /* No match */
+
+        isize = calcsize(segment, offset, bits, instruction, temp);
+        debug_set_type(instruction);
+        isize = merge_resb(instruction, isize);
+
+        return isize;
     }
 }
 
@@ -918,22 +1184,27 @@ static void bad_hle_warn(const insn * ins, uint8_t hleok)
     if (!is_class(MEMORY, ins->oprs[0].type))
         ww = w_inval;           /* HLE requires operand 0 to be memory */
 
+    /*!
+     *!hle [on] invalid HLE prefixes
+     *!  warns about invalid use of the HLE \c{XACQUIRE} or \c{XRELEASE}
+     *!  prefixes.
+     */
     switch (ww) {
     case w_none:
         break;
 
     case w_lock:
         if (ins->prefixes[PPS_LOCK] != P_LOCK) {
-            nasm_error(ERR_WARNING | ERR_WARN_HLE | ERR_PASS2,
-                    "%s with this instruction requires lock",
-                    prefix_name(rep_pfx));
+            nasm_warn(WARN_HLE | ERR_PASS2,
+                       "%s with this instruction requires lock",
+                       prefix_name(rep_pfx));
         }
         break;
 
     case w_inval:
-        nasm_error(ERR_WARNING | ERR_WARN_HLE | ERR_PASS2,
-                "%s invalid with this instruction",
-                prefix_name(rep_pfx));
+        nasm_warn(WARN_HLE | ERR_PASS2,
+                   "%s invalid with this instruction",
+                   prefix_name(rep_pfx));
         break;
     }
 }
@@ -1130,7 +1401,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
             if (pfx == P_O16)
                 break;
             if (pfx != P_none)
-                nasm_error(ERR_WARNING | ERR_PASS2, "invalid operand size prefix");
+                nasm_warn(WARN_OTHER|ERR_PASS2, "invalid operand size prefix");
             else
                 ins->prefixes[PPS_OSIZE] = P_O16;
             break;
@@ -1142,7 +1413,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
             if (pfx == P_O32)
                 break;
             if (pfx != P_none)
-                nasm_error(ERR_WARNING | ERR_PASS2, "invalid operand size prefix");
+                nasm_warn(WARN_OTHER|ERR_PASS2, "invalid operand size prefix");
             else
                 ins->prefixes[PPS_OSIZE] = P_O32;
             break;
@@ -1197,13 +1468,13 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
 
         case 0340:
             if (!absolute_op(&ins->oprs[0]))
-                nasm_error(ERR_NONFATAL, "attempt to reserve non-constant"
-                        " quantity of BSS space");
+                nasm_nonfatal("attempt to reserve non-constant"
+                              " quantity of BSS space");
             else if (ins->oprs[0].opflags & OPFLAG_FORWARD)
-                nasm_error(ERR_WARNING | ERR_PASS1,
-                           "forward reference in RESx can have unpredictable results");
+                nasm_warn(WARN_OTHER, "forward reference in RESx "
+                           "can have unpredictable results");
             else
-                length += ins->oprs[0].offset;
+                length += ins->oprs[0].offset * resb_bytes(ins->opcode);
             break;
 
         case 0341:
@@ -1315,7 +1586,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
 
                 if (process_ea(opy, &ea_data, bits,
                                rfield, rflags, ins, &errmsg) != eat) {
-                    nasm_error(ERR_NONFATAL, "%s", errmsg);
+                    nasm_nonfatal("%s", errmsg);
                     return -1;
                 } else {
                     ins->rex |= ea_data.rex;
@@ -1335,7 +1606,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
 
     if (ins->rex & REX_NH) {
         if (ins->rex & REX_H) {
-            nasm_error(ERR_NONFATAL, "instruction cannot use high registers");
+            nasm_nonfatal("instruction cannot use high registers");
             return -1;
         }
         ins->rex &= ~REX_P;        /* Don't force REX prefix due to high reg */
@@ -1359,7 +1630,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
         int bad32 = REX_R|REX_W|REX_X|REX_B;
 
         if (ins->rex & REX_H) {
-            nasm_error(ERR_NONFATAL, "cannot use high register in AVX instruction");
+            nasm_nonfatal("cannot use high register in AVX instruction");
             return -1;
         }
         switch (ins->vex_wlp & 060) {
@@ -1377,11 +1648,11 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
         }
 
         if (bits != 64 && ((ins->rex & bad32) || ins->vexreg > 7)) {
-            nasm_error(ERR_NONFATAL, "invalid operands in non-64-bit mode");
+            nasm_nonfatal("invalid operands in non-64-bit mode");
             return -1;
         } else if (!(ins->rex & REX_EV) &&
                    ((ins->vexreg > 15) || (ins->evex_p[0] & 0xf0))) {
-            nasm_error(ERR_NONFATAL, "invalid high-16 register in non-AVX-512");
+            nasm_nonfatal("invalid high-16 register in non-AVX-512");
             return -1;
         }
         if (ins->rex & REX_EV)
@@ -1393,7 +1664,7 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
             length += 2;
     } else if (ins->rex & REX_MASK) {
         if (ins->rex & REX_H) {
-            nasm_error(ERR_NONFATAL, "cannot use high register in rex instruction");
+            nasm_nonfatal("cannot use high register in rex instruction");
             return -1;
         } else if (bits == 64) {
             length++;
@@ -1405,15 +1676,18 @@ static int64_t calcsize(int32_t segment, int64_t offset, int bits,
             lockcheck = false;  /* Already errored, no need for warning */
             length++;
         } else {
-            nasm_error(ERR_NONFATAL, "invalid operands in non-64-bit mode");
+            nasm_nonfatal("invalid operands in non-64-bit mode");
             return -1;
         }
     }
 
     if (has_prefix(ins, PPS_LOCK, P_LOCK) && lockcheck &&
         (!itemp_has(temp,IF_LOCK) || !is_class(MEMORY, ins->oprs[0].type))) {
-        nasm_error(ERR_WARNING | ERR_WARN_LOCK | ERR_PASS2 ,
-                "instruction is not lockable");
+        /*!
+         *!lock [on] LOCK prefix on unlockable instructions
+         *!  warns about \c{LOCK} prefixes on unlockable instructions.
+         */
+        nasm_warn(WARN_LOCK | ERR_PASS2 , "instruction is not lockable");
     }
 
     bad_hle_warn(ins, hleok);
@@ -1475,24 +1749,21 @@ static int emit_prefix(struct out_data *data, const int bits, insn *ins)
             c = 0xF3;
             break;
         case R_CS:
-            if (bits == 64) {
-                nasm_error(ERR_WARNING | ERR_PASS2,
-                           "cs segment base generated, but will be ignored in 64-bit mode");
-            }
+            if (bits == 64)
+                nasm_warn(WARN_OTHER|ERR_PASS2, "cs segment base generated, "
+                           "but will be ignored in 64-bit mode");
             c = 0x2E;
             break;
         case R_DS:
-            if (bits == 64) {
-                nasm_error(ERR_WARNING | ERR_PASS2,
-                           "ds segment base generated, but will be ignored in 64-bit mode");
-            }
+            if (bits == 64)
+                nasm_warn(WARN_OTHER|ERR_PASS2, "ds segment base generated, "
+                           "but will be ignored in 64-bit mode");
             c = 0x3E;
             break;
         case R_ES:
-            if (bits == 64) {
-                nasm_error(ERR_WARNING | ERR_PASS2,
-                           "es segment base generated, but will be ignored in 64-bit mode");
-            }
+            if (bits == 64)
+                nasm_warn(WARN_OTHER|ERR_PASS2, "es segment base generated, "
+                           "but will be ignored in 64-bit mode");
             c = 0x26;
             break;
         case R_FS:
@@ -1503,21 +1774,19 @@ static int emit_prefix(struct out_data *data, const int bits, insn *ins)
             break;
         case R_SS:
             if (bits == 64) {
-                nasm_error(ERR_WARNING | ERR_PASS2,
-                           "ss segment base generated, but will be ignored in 64-bit mode");
+                nasm_warn(WARN_OTHER|ERR_PASS2, "ss segment base generated, "
+                           "but will be ignored in 64-bit mode");
             }
             c = 0x36;
             break;
         case R_SEGR6:
         case R_SEGR7:
-            nasm_error(ERR_NONFATAL,
-                       "segr6 and segr7 cannot be used as prefixes");
+            nasm_nonfatal("segr6 and segr7 cannot be used as prefixes");
             break;
         case P_A16:
             if (bits == 64) {
-                nasm_error(ERR_NONFATAL,
-                           "16-bit addressing is not supported "
-                           "in 64-bit mode");
+                nasm_nonfatal("16-bit addressing is not supported "
+                              "in 64-bit mode");
             } else if (bits != 16)
                 c = 0x67;
             break;
@@ -1527,9 +1796,8 @@ static int emit_prefix(struct out_data *data, const int bits, insn *ins)
             break;
         case P_A64:
             if (bits != 64) {
-                nasm_error(ERR_NONFATAL,
-                           "64-bit addressing is only supported "
-                           "in 64-bit mode");
+                nasm_nonfatal("64-bit addressing is only supported "
+			      "in 64-bit mode");
             }
             break;
         case P_ASP:
@@ -1651,7 +1919,7 @@ static void gencode(struct out_data *data, insn *ins)
                 int64_t delta = opx->offset - data->offset
                     - (data->inslen - data->insoffs);
                 if (delta > 127 || delta < -128)
-                    nasm_error(ERR_NONFATAL, "short jump is out of range");
+                    nasm_nonfatal("short jump is out of range");
             }
             out_reladdr(data, opx, 1);
             break;
@@ -1679,8 +1947,7 @@ static void gencode(struct out_data *data, insn *ins)
 
         case4(074):
             if (opx->segment == NO_SEG)
-                nasm_error(ERR_NONFATAL, "value referenced by FAR is not"
-                        " relocatable");
+                nasm_nonfatal("value referenced by FAR is not relocatable");
             out_segment(data, opx);
             break;
 
@@ -1692,14 +1959,12 @@ static void gencode(struct out_data *data, insn *ins)
             c = *codes++;
             opx = &ins->oprs[c >> 3];
             opy = &ins->oprs[c & 7];
-            if (!absolute_op(opy)) {
-                nasm_error(ERR_NONFATAL,
-                        "non-absolute expression not permitted as argument %d",
-                        c & 7);
-            } else if (opy->offset & ~mask) {
-                nasm_error(ERR_WARNING | ERR_PASS2 | ERR_WARN_NOV,
+            if (!absolute_op(opy))
+                nasm_nonfatal("non-absolute expression not permitted "
+                              "as argument %d", c & 7);
+            else if (opy->offset & ~mask)
+                nasm_warn(ERR_PASS2 | WARN_NUMBER_OVERFLOW,
                            "is4 argument exceeds bounds");
-            }
             c = opy->offset & mask;
             goto emit_is4;
          }
@@ -1720,8 +1985,8 @@ static void gencode(struct out_data *data, insn *ins)
         case4(0254):
             if (absolute_op(opx) &&
                 (int32_t)opx->offset != (int64_t)opx->offset) {
-                nasm_error(ERR_WARNING | ERR_PASS2 | ERR_WARN_NOV,
-                        "signed dword immediate exceeds bounds");
+                nasm_warn(ERR_PASS2 | WARN_NUMBER_OVERFLOW,
+                           "signed dword immediate exceeds bounds");
             }
             out_imm(data, opx, 4, OUT_SIGNED);
             break;
@@ -1790,7 +2055,7 @@ static void gencode(struct out_data *data, insn *ins)
                     /* If this wasn't explicitly byte-sized, warn as though we
                      * had fallen through to the imm16/32/64 case.
                      */
-                    nasm_error(ERR_WARNING | ERR_PASS2 | ERR_WARN_NOV,
+                    nasm_warn(ERR_PASS2 | WARN_NUMBER_OVERFLOW,
                                "%s value exceeds bounds",
                                (opx->type & BITS8) ? "signed byte" :
                                s == 16 ? "word" :
@@ -1823,7 +2088,6 @@ static void gencode(struct out_data *data, insn *ins)
             break;
 
         case 0313:
-            ins->rex = 0;
             break;
 
         case4(0314):
@@ -1876,7 +2140,7 @@ static void gencode(struct out_data *data, insn *ins)
             if (ins->oprs[0].segment != NO_SEG)
                 nasm_panic("non-constant BSS size in pass two");
 
-            out_reserve(data, ins->oprs[0].offset);
+            out_reserve(data, ins->oprs[0].offset * resb_bytes(ins->opcode));
             break;
 
         case 0341:
@@ -1948,7 +2212,7 @@ static void gencode(struct out_data *data, insn *ins)
 
                 if (process_ea(opy, &ea_data, bits,
                                rfield, rflags, ins, &errmsg) != eat)
-                    nasm_error(ERR_NONFATAL, "%s", errmsg);
+                    nasm_nonfatal("%s", errmsg);
 
                 p = bytes;
                 *p++ = ea_data.modrm;
@@ -2164,8 +2428,7 @@ static uint8_t get_broadcast_num(opflags_t opflags, opflags_t brsize)
     uint8_t brcast_num;
 
     if (brsize > BITS64)
-        nasm_error(ERR_FATAL,
-            "size of broadcasting element is greater than 64 bits");
+        nasm_fatal("size of broadcasting element is greater than 64 bits");
 
     /*
      * The shift term is to take care of the extra BITS80 inserted
@@ -2250,6 +2513,9 @@ static enum match_result matches(const struct itemplate *itemp,
         break;
     case IF_GENBIT(IF_SZ):
         asize = BITS512;
+        break;
+    case IF_GENBIT(IF_ANYSIZE):
+        asize = SIZE_MASK;
         break;
     case IF_GENBIT(IF_SIZE):
         switch (bits) {
@@ -2510,15 +2776,23 @@ static enum ea_type process_ea(operand *input, ea *output, int bits,
         if (input->basereg == -1 &&
             (input->indexreg == -1 || input->scale == 0)) {
             /*
-             * It's a pure offset.
+             * It's a pure offset. If it is an IMMEDIATE, it is a pattern
+             * in insns.dat which allows an immediate to be used as a memory
+             * address, in which case apply the default REL/ABS.
              */
-            if (bits == 64 && ((input->type & IP_REL) == IP_REL)) {
-                if (input->segment == NO_SEG ||
-                    (input->opflags & OPFLAG_RELATIVE)) {
-                    nasm_error(ERR_WARNING | ERR_PASS2,
-                               "absolute address can not be RIP-relative");
-                    input->type &= ~IP_REL;
-                    input->type |= MEMORY;
+            if (bits == 64) {
+                if (is_class(IMMEDIATE, input->type)) {
+                    if (!(input->eaflags & EAF_ABS) &&
+                        ((input->eaflags & EAF_REL) || globalrel))
+                        input->type |= IP_REL;
+                }
+                if ((input->type & IP_REL) == IP_REL) {
+                    if (input->segment == NO_SEG ||
+                        (input->opflags & OPFLAG_RELATIVE)) {
+                        nasm_warn(WARN_OTHER|ERR_PASS2, "absolute address can not be RIP-relative");
+                        input->type &= ~IP_REL;
+                        input->type |= MEMORY;
+                    }
                 }
             }
 
@@ -2530,10 +2804,8 @@ static enum ea_type process_ea(operand *input, ea *output, int bits,
 
             if (eaflags & EAF_BYTEOFFS ||
                 (eaflags & EAF_WORDOFFS &&
-                 input->disp_size != (addrbits != 16 ? 32 : 16))) {
-                nasm_error(ERR_WARNING | ERR_PASS1,
-                           "displacement size ignored on absolute address");
-            }
+                 input->disp_size != (addrbits != 16 ? 32 : 16)))
+                nasm_warn(WARN_OTHER, "displacement size ignored on absolute address");
 
             if (bits == 64 && (~input->type & IP_REL)) {
                 output->sib_present = true;
@@ -2989,7 +3261,7 @@ static void add_asp(insn *ins, int addrbits)
         ins->addr_size = (addrbits == 32) ? 16 : 32;
     } else {
         /* Impossible... */
-        nasm_error(ERR_NONFATAL, "impossible combination of address sizes");
+        nasm_nonfatal("impossible combination of address sizes");
         ins->addr_size = addrbits; /* Error recovery */
     }
 

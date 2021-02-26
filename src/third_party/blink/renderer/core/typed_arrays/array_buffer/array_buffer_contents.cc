@@ -38,9 +38,8 @@ namespace blink {
 ArrayBufferContents::ArrayBufferContents(void* data,
                                          size_t length,
                                          DataDeleter deleter) {
-  if (!data) {
-    return;
-  }
+  DCHECK(data || length == 0);
+
   backing_store_ =
       v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
 }
@@ -116,9 +115,8 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
   if (policy == kZeroInitialize) {
     flags |= base::PartitionAllocZeroFill;
   }
-  void* data = PartitionAllocGenericFlags(
-      WTF::Partitions::ArrayBufferPartition(), flags, size,
-      WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
+  void* data = WTF::Partitions::ArrayBufferPartition()->AllocFlags(
+      flags, size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
   InstanceCounters::IncrementCounter(
       InstanceCounters::kArrayBufferContentsCounter);
   return data;

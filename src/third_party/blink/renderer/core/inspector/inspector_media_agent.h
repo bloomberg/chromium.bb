@@ -9,12 +9,13 @@
 #include <vector>
 
 #include "third_party/blink/public/web/web_media_inspector.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Media.h"
 
 namespace blink {
+
+class LocalFrame;
 
 class CORE_EXPORT InspectorMediaAgent final
     : public InspectorBaseAgent<protocol::Media::Metainfo> {
@@ -40,7 +41,7 @@ class CORE_EXPORT InspectorMediaAgent final
   void PlayersCreated(const Vector<WebString>&);
 
   // blink-gc methods.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RegisterAgent();

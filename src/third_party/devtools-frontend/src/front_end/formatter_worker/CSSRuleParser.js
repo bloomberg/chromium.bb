@@ -13,29 +13,38 @@ export const CSSParserStates = {
   AtRule: 'AtRule'
 };
 
+/** @typedef {*} */
+let Rule;  // eslint-disable-line no-unused-vars
+
 /**
- * @param {string} text
- */
-export function parseCSS(text) {
-  _innerParseCSS(text, postMessage);
-}
+ * @typedef {{ chunk: Array.<!Rule>, isLastChunk: boolean }} */
+let Chunk;  // eslint-disable-line no-unused-vars
 
 /**
  * @param {string} text
- * @param {function(*)} chunkCallback
+ * @param {function({ chunk: !Array.<!Rule>, isLastChunk:boolean}):void} chunkCallback
  */
-export function _innerParseCSS(text, chunkCallback) {
+export function parseCSS(text, chunkCallback) {
   const chunkSize = 100000;  // characters per data chunk
   const lines = text.split('\n');
+  /** @type {!Array.<!Rule>} */
   let rules = [];
   let processedChunkCharacters = 0;
 
   let state = CSSParserStates.Initial;
+  /** @type {!Rule} */
   let rule;
+  /** @type {*} */
   let property;
   const UndefTokenType = new Set();
 
+  /** @type {!Array.<!Rule>} */
   let disabledRules = [];
+
+  /**
+   *
+   * @param {!Chunk} chunk
+   */
   function disabledRulesCallback(chunk) {
     disabledRules = disabledRules.concat(chunk.chunk);
   }
@@ -108,7 +117,7 @@ export function _innerParseCSS(text, chunkCallback) {
           const uncommentedText = tokenValue.substring(2, tokenValue.length - 2);
           const fakeRule = 'a{\n' + uncommentedText + '}';
           disabledRules = [];
-          _innerParseCSS(fakeRule, disabledRulesCallback);
+          parseCSS(fakeRule, disabledRulesCallback);
           if (disabledRules.length === 1 && disabledRules[0].properties.length === 1) {
             const disabledProperty = disabledRules[0].properties[0];
             disabledProperty.disabled = true;
@@ -170,6 +179,7 @@ export function _innerParseCSS(text, chunkCallback) {
     }
   }
   const tokenizer = createTokenizer('text/css');
+  /** @type {number} */
   let lineNumber;
   for (lineNumber = 0; lineNumber < lines.length; ++lineNumber) {
     const line = lines[lineNumber];
@@ -179,6 +189,8 @@ export function _innerParseCSS(text, chunkCallback) {
   chunkCallback({chunk: rules, isLastChunk: true});
 
   /**
+   * @param {number} lineNumber
+   * @param {number} columnNumber
    * @return {!{startLine: number, startColumn: number, endLine: number, endColumn: number}}
    */
   function createRange(lineNumber, columnNumber) {

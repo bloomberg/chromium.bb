@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/x11/x11_window_ozone.h"
+#include "ui/platform_window/x11/x11_window.h"
 
 #include <memory>
 #include <utility>
@@ -16,6 +16,7 @@
 #include "ui/events/event.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/x/event.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -45,9 +46,7 @@ ACTION_P(CloneEvent, event_ptr) {
 // is more than enough.
 class TestScreen : public display::ScreenBase {
  public:
-  TestScreen() {
-    ProcessDisplayChanged({}, true);
-  }
+  TestScreen() { ProcessDisplayChanged({}, true); }
   ~TestScreen() override = default;
   TestScreen(const TestScreen& screen) = delete;
   TestScreen& operator=(const TestScreen& screen) = delete;
@@ -71,8 +70,8 @@ class X11WindowOzoneTest : public testing::Test {
   ~X11WindowOzoneTest() override = default;
 
   void SetUp() override {
-    XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSource>(display);
+    auto* connection = x11::Connection::Get();
+    event_source_ = std::make_unique<X11EventSource>(connection);
 
     test_screen_ = new TestScreen();
     display::Screen::SetScreenInstance(test_screen_);
@@ -88,16 +87,15 @@ class X11WindowOzoneTest : public testing::Test {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window = std::make_unique<X11WindowOzone>(delegate);
+    auto window = std::make_unique<X11Window>(delegate);
     window->Initialize(std::move(init_params));
     return std::move(window);
   }
 
-  void DispatchXEvent(XEvent* event, gfx::AcceleratedWidget widget) {
-    DCHECK_EQ(GenericEvent, event->type);
-    XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(event->xcookie.data);
-    device_event->event = widget;
+  void DispatchXEvent(x11::Event* event, gfx::AcceleratedWidget widget) {
+    auto* device_event = event->As<x11::Input::DeviceEvent>();
+    DCHECK(device_event);
+    device_event->event = static_cast<x11::Window>(widget);
     event_source_->ProcessXEvent(event);
   }
 
@@ -186,8 +184,8 @@ TEST_F(X11WindowOzoneTest, SendPlatformEventToCapturedWindow) {
   EXPECT_EQ(gfx::Point(-277, 215), event->AsLocatedEvent()->location());
 }
 
-// This test case ensures window_manager properly provides X11WindowOzone
-// instances as they are created/destroyed.
+// This test case ensures window_manager properly provides X11Window instances
+// as they are created/destroyed.
 TEST_F(X11WindowOzoneTest, GetWindowFromAcceleratedWigets) {
   MockPlatformWindowDelegate delegate;
   gfx::Rect bounds(0, 0, 100, 100);
@@ -225,12 +223,12 @@ TEST_F(X11WindowOzoneTest, MouseEnterAndDelete) {
   auto window_2 = CreatePlatformWindow(&delegate_2, bounds_2, &widget_2);
 
   EXPECT_CALL(delegate_1, OnMouseEnter()).Times(1);
-  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_1.get()));
+  window_manager()->MouseOnWindow(static_cast<X11Window*>(window_1.get()));
   // The mouse is already on window_1, and this should not call OnMouseEnter.
-  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_1.get()));
+  window_manager()->MouseOnWindow(static_cast<X11Window*>(window_1.get()));
 
   EXPECT_CALL(delegate_2, OnMouseEnter()).Times(1);
-  window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_2.get()));
+  window_manager()->MouseOnWindow(static_cast<X11Window*>(window_2.get()));
 
   EXPECT_EQ(window_2.get(),
             window_manager()->window_mouse_currently_on_for_test());

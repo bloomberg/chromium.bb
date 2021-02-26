@@ -5,8 +5,8 @@
 import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -15,7 +15,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_source_set("base") {
+source_set("base") {
   # Do not expand the visibility here without double-checking with OWNERS, this
   # is a roll-up target which is part of the //media component. Most other DEPs
   # should be using //media and not directly DEP this roll-up target.
@@ -24,7 +24,7 @@ jumbo_source_set("base") {
 
   # TODO(dalecurtis): Replace this with empty targets on non-mac so
   # we can just include //media/base/mac in media_subcomponent_deps.
-  if (is_ios || is_mac) {
+  if (is_apple) {
     visibility += [ "//media/base/mac" ]
   }
 
@@ -37,6 +37,8 @@ jumbo_source_set("base") {
     "android_overlay_config.cc",
     "android_overlay_config.h",
     "android_overlay_mojo_factory.h",
+    "async_destroy_video_decoder.h",
+    "async_destroy_video_encoder.h",
     "audio_block_fifo.cc",
     "audio_block_fifo.h",
     "audio_buffer.cc",
@@ -56,6 +58,8 @@ jumbo_source_set("base") {
     "audio_decoder_config.h",
     "audio_discard_helper.cc",
     "audio_discard_helper.h",
+    "audio_encoder.cc",
+    "audio_encoder.h",
     "audio_fifo.cc",
     "audio_fifo.h",
     "audio_hash.cc",
@@ -126,6 +130,8 @@ jumbo_source_set("base") {
     "data_source.h",
     "decode_status.cc",
     "decode_status.h",
+    "decoder.cc",
+    "decoder.h",
     "decoder_buffer.cc",
     "decoder_buffer.h",
     "decoder_buffer_queue.cc",
@@ -158,8 +164,6 @@ jumbo_source_set("base") {
     "format_utils.h",
     "frame_rate_estimator.cc",
     "frame_rate_estimator.h",
-    "hdr_metadata.cc",
-    "hdr_metadata.h",
     "key_system_names.cc",
     "key_system_names.h",
     "key_system_properties.cc",
@@ -226,6 +230,8 @@ jumbo_source_set("base") {
     "multi_channel_resampler.h",
     "null_video_sink.cc",
     "null_video_sink.h",
+    "offloading_video_encoder.cc",
+    "offloading_video_encoder.h",
     "output_device_info.cc",
     "output_device_info.h",
     "overlay_info.cc",
@@ -237,8 +243,6 @@ jumbo_source_set("base") {
     "pipeline_metadata.h",
     "pipeline_status.cc",
     "pipeline_status.h",
-    "player_tracker.cc",
-    "player_tracker.h",
     "provision_fetcher.h",
     "ranges.cc",
     "ranges.h",
@@ -294,8 +298,11 @@ jumbo_source_set("base") {
     "time_delta_interpolator.h",
     "time_source.h",
     "timestamp_constants.h",
+    "tuneable.cc",
+    "tuneable.h",
     "unaligned_shared_memory.cc",
     "unaligned_shared_memory.h",
+    "use_after_free_checker.h",
     "user_input_monitor.cc",
     "user_input_monitor.h",
     "video_bitrate_allocation.cc",
@@ -312,6 +319,8 @@ jumbo_source_set("base") {
     "video_encoder.h",
     "video_frame.cc",
     "video_frame.h",
+    "video_frame_feedback.cc",
+    "video_frame_feedback.h",
     "video_frame_layout.cc",
     "video_frame_layout.h",
     "video_frame_metadata.cc",
@@ -328,6 +337,8 @@ jumbo_source_set("base") {
     "video_types.h",
     "video_util.cc",
     "video_util.h",
+    "wait_and_replace_sync_token_client.cc",
+    "wait_and_replace_sync_token_client.h",
     "waiting.h",
     "wall_clock_time_source.cc",
     "wall_clock_time_source.h",
@@ -342,15 +353,20 @@ jumbo_source_set("base") {
     "//media:media_buildflags",
     "//media:shared_memory_support",
     "//ui/gfx:color_space",
+    "//ui/gl",
   ]
   deps = [
     "//base/allocator:buildflags",
+    "//base/util/values:values_util",
+    "//build:chromeos_buildflags",
     "//components/system_media_controls/linux/buildflags",
+    "//gpu/command_buffer/client:interface_base",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:common",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
     "//ui/display:display",
+    "//ui/events:events",
     "//ui/events:events_base",
     "//url:url",
   ]
@@ -376,34 +392,36 @@ jumbo_source_set("base") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
+      "//ui/base:features",
       "//ui/events:events_base",
+      "//ui/events/devices/x11",
       "//ui/gfx/x",
     ]
   } else if (is_mac) {
     sources += [ "user_input_monitor_mac.cc" ]
-    libs = [
+    frameworks = [
       "CoreVideo.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
+      "IOSurface.framework",
     ]
   } else if (is_win) {
     sources += [ "user_input_monitor_win.cc" ]
   } else {
     defines += [ "DISABLE_USER_INPUT_MONITOR" ]
   }
-
-  if (is_linux || is_win) {
-    sources += [
-      "keyboard_event_counter.cc",
-      "keyboard_event_counter.h",
-    ]
+  if (use_x11) {
+    deps += [ "//ui/base/x" ]
+  }
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 
   # Note: should also work on is_posix || is_fuchsia
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "scopedfd_helper.cc",
       "scopedfd_helper.h",
@@ -411,13 +429,17 @@ jumbo_source_set("base") {
   }
 
   if (is_win) {
-    public_deps += [ "//media/base/win:d3d11" ]
+    public_deps += [ "//media/base/win:mf_cdm_proxy" ]
   }
 
-  if (is_chromecast || is_fuchsia) {
-    sources += [ "demuxer_memory_limit_low.cc" ]
-  } else if (is_android) {
+  # TODO(ziyangch): Check |is_chromecast| first when using cast media pipeline
+  # on Android cast devices.
+  if (is_android) {
     sources += [ "demuxer_memory_limit_android.cc" ]
+  } else if (is_chromecast) {
+    sources += [ "demuxer_memory_limit_cast.cc" ]
+  } else if (is_fuchsia) {
+    sources += [ "demuxer_memory_limit_low.cc" ]
   } else {
     sources += [ "demuxer_memory_limit_default.cc" ]
   }
@@ -504,7 +526,7 @@ static_library("test_support") {
   ]
 
   if (is_win) {
-    public_deps += [ "//media/base/win:d3d11_test_support" ]
+    public_deps += [ "//media/base/win:test_support" ]
   }
 }
 
@@ -556,6 +578,7 @@ source_set("unit_tests") {
     "moving_average_unittest.cc",
     "multi_channel_resampler_unittest.cc",
     "null_video_sink_unittest.cc",
+    "offloading_video_encoder_unittest.cc",
     "pipeline_impl_unittest.cc",
     "ranges_unittest.cc",
     "reentrancy_checker_unittest.cc",
@@ -571,6 +594,7 @@ source_set("unit_tests") {
     "text_ranges_unittest.cc",
     "text_renderer_unittest.cc",
     "time_delta_interpolator_unittest.cc",
+    "tuneable_unittest.cc",
     "unaligned_shared_memory_unittest.cc",
     "user_input_monitor_unittest.cc",
     "vector_math_unittest.cc",
@@ -593,6 +617,7 @@ source_set("unit_tests") {
   ]
   deps = [
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/viz/common",
     "//gpu/command_buffer/common",
     "//media:test_support",
@@ -603,13 +628,10 @@ source_set("unit_tests") {
     "//ui/gfx",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//media/base/mac:unit_tests" ]
   }
 
-  if (is_linux || is_win) {
-    sources += [ "keyboard_event_counter_unittest.cc" ]
-  }
   if (is_win) {
     sources += [ "win/dxgi_device_scope_handle_unittest.cc" ]
     deps += [ "//media/base/win:media_foundation_util" ]
@@ -617,6 +639,10 @@ source_set("unit_tests") {
       "d3d11.lib",
       "mfplat.lib",
     ]
+  }
+
+  if (is_chromecast && !is_android) {
+    sources += [ "demuxer_memory_limit_cast_unittest.cc" ]
   }
 }
 

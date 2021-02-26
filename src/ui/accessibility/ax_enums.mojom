@@ -27,7 +27,7 @@ module ax.mojom;
 
 enum Event {
   kNone,
-  kActiveDescendantChanged,  // Web
+  kActiveDescendantChanged,
   kAlert,
   kAriaAttributeChanged,   // Implicit
   kAutocorrectionOccured,  // Unknown: http://crbug.com/392498
@@ -47,7 +47,6 @@ enum Event {
   kHitTestResult,
   kHover,
   kImageFrameUpdated,     // Web
-  kInvalidStatusChanged,  // Implicit
   kLayoutComplete,        // Web
   kLiveRegionCreated,     // Implicit
   kLiveRegionChanged,     // Web
@@ -56,13 +55,11 @@ enum Event {
   kLocationChanged,       // Web
   kMediaStartedPlaying,   // Native / Automation
   kMediaStoppedPlaying,   // Native / Automation
-  kMenuEnd,               // Native / Win
-  kMenuListItemSelected,  // Web
+  kMenuEnd,               // Native / web: menu interaction has ended.
   kMenuListValueChanged,  // Web
-  kMenuPopupEnd,          // Native
-  kMenuPopupHide,         // Native / AuraLinux
-  kMenuPopupStart,        // Native
-  kMenuStart,             // Native / Win
+  kMenuPopupEnd,          // Native / web: a menu/submenu is hidden/closed.
+  kMenuPopupStart,        // Native / web: a menu/submenu is shown/opened.
+  kMenuStart,             // Native / web: menu interaction has begun.
   kMouseCanceled,
   kMouseDragged,
   kMouseMoved,
@@ -77,19 +74,19 @@ enum Event {
   kSelection,                // Native
   kSelectionAdd,             // Native
   kSelectionRemove,          // Native
-  kShow,                     // Remove: http://crbug.com/392502
+  kShow,                     // Native / Automation
   kStateChanged,             // Native / Automation
   kTextChanged,
-  kWindowActivated,             // Native
-  kWindowDeactivated,           // Native
-  kWindowVisibilityChanged,     // Native
+  // TODO(nektar): Remove kTextSelectionChanged.
   kTextSelectionChanged,
   kTooltipClosed,
   kTooltipOpened,
-  kTreeChanged,  // Accessibility tree changed. Don't
-                 // explicitly fire an accessibility event,
-                 // only implicitly due to the change.
+  kTreeChanged,  // Don't explicitly fire this event.
+  // TODO(nektar): Remove kValueChanged.
   kValueChanged,
+  kWindowActivated,             // Native
+  kWindowDeactivated,           // Native
+  kWindowVisibilityChanged,     // Native
 };
 
 // Accessibility object roles.
@@ -177,6 +174,8 @@ enum Role {
   kDocNoteRef,
   kDocNotice,
   kDocPageBreak,
+  kDocPageFooter,
+  kDocPageHeader,
   kDocPageList,
   kDocPart,
   kDocPreface,
@@ -243,7 +242,6 @@ enum Role {
   kMath,
   kMenu,
   kMenuBar,
-  kMenuButton, // TODO: kMenuButton is not used anywhere, consider removal.
   kMenuItem,
   kMenuItemCheckBox,
   kMenuItemRadio,
@@ -503,8 +501,9 @@ enum StringAttribute {
   // Only used when invalid_state == invalid_state_other.
   kAriaInvalidValue,
   kAutoComplete,
+  kCheckedStateDescription,
   kChildTreeId,
-  kClassName,  // Native / Android
+  kClassName,
   kContainerLiveRelevant,
   kContainerLiveStatus,
   kDescription,
@@ -634,6 +633,9 @@ enum IntAttribute {
   // The list style type. Only available on list items.
   kListStyle,
 
+  // Specifies the alignment of the text, e.g. left, center, right, justify
+  kTextAlign,
+
   // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
 
@@ -684,6 +686,9 @@ enum FloatAttribute {
   // range [0, 900] represent keywords such as light, normal, bold, etc. 0 is
   // the default.
   kFontWeight,
+
+  // The text indent of the text, in mm.
+  kTextIndent,
 };
 
 // These attributes can take three states:
@@ -731,8 +736,17 @@ enum BoolAttribute {
   // overflow: hidden or clip children by default.
   kClipsChildren,
 
+  // Indicates that this node is not selectable because the style has
+  // user-select: none. Note that there may be other reasons why a node is
+  // not selectable - for example, bullets in a list. However, this attribute
+  // is only set on user-select: none.
+  kNotUserSelectableStyle,
+
   // Indicates whether this node is selected or unselected.
   kSelected,
+
+  // Indicates whether this node is selected due to selection follows focus.
+  kSelectedFromFocus,
 
   // Indicates whether this node supports text location.
   kSupportsTextLocation,
@@ -834,28 +848,81 @@ enum MarkerType {
 // forward movement will always move to the next node in depth-first pre-order
 // traversal.
 enum MoveDirection {
-  kForward,
+  kNone,
   kBackward,
-  kNone = kForward
+  kForward
 };
 
-// Describes the edit or selection command that resulted in a selection or a
-// text changed event.
+// Describes the edit or selection command that resulted in a selection, a text
+// changed or a text attributes changed event.
+//
+// An edit command, such as "kInsert" or "kDelete" is further described by its
+// "InputEvent" - see the relevant enum in this file.
+// A selection command may be further described by its "TextBoundary" and
+// "MoveDirection" - see the relevant enums in this file.
 enum Command {
+  kNone,
   kClearSelection,
-  kCut,
   kDelete,
   kDictate,
   kExtendSelection,  // The existing selection has been extended or shrunk.
-  kFormat,  // The text attributes, such as font size, have changed.
+  kFormat,  // Some text attributes, such as font weight, have changed.
+  kHistory,  // An undo or a redo operation has been performed.
   kInsert,
-  kMarker,  // A document marker has been added or removed.
+  kMarker,  // Document markers have been added or removed.
   kMoveSelection,  // The selection has been moved by a specific granularity.
-  kPaste,
-  kReplace,
-  kSetSelection,  // A completely new selection has been set.
-  kType,
-  kNone = kType
+  kSetSelection  // A completely new selection has been set.
+};
+
+// Describes an edit command in more detail.
+//
+// Please keep in sync with the following specification and file:
+// https://w3c.github.io/input-events/#h-interface-inputevent-attributes
+// //third_party/blink/renderer/core/events/input_event.h
+enum InputEventType {
+  kNone,
+  // Insertion.
+  kInsertText,
+  kInsertLineBreak,
+  kInsertParagraph,
+  kInsertOrderedList,
+  kInsertUnorderedList,
+  kInsertHorizontalRule,
+  kInsertFromPaste,
+  kInsertFromDrop,
+  kInsertFromYank,
+  kInsertTranspose,
+  kInsertReplacementText,
+  kInsertCompositionText,
+  // Deletion.
+  kDeleteWordBackward,
+  kDeleteWordForward,
+  kDeleteSoftLineBackward,
+  kDeleteSoftLineForward,
+  kDeleteHardLineBackward,
+  kDeleteHardLineForward,
+  kDeleteContentBackward,
+  kDeleteContentForward,
+  kDeleteByCut,
+  kDeleteByDrag,
+  // History.
+  kHistoryUndo,
+  kHistoryRedo,
+  // Formatting.
+  kFormatBold,
+  kFormatItalic,
+  kFormatUnderline,
+  kFormatStrikeThrough,
+  kFormatSuperscript,
+  kFormatSubscript,
+  kFormatJustifyCenter,
+  kFormatJustifyFull,
+  kFormatJustifyRight,
+  kFormatJustifyLeft,
+  kFormatIndent,
+  kFormatOutdent,
+  kFormatRemove,
+  kFormatSetBlockTextDirection
 };
 
 // Defines a set of text boundaries in the accessibility tree.
@@ -870,6 +937,7 @@ enum Command {
 //
 // TODO(nektar): Split TextBoundary into TextUnit and TextBoundary.
 enum TextBoundary {
+  kNone,
   kCharacter,
   kFormat,
   kLineEnd,
@@ -888,11 +956,19 @@ enum TextBoundary {
   kWebPage,
   kWordEnd,
   kWordStart,
-  kWordStartOrEnd,
-  kNone = kObject
+  kWordStartOrEnd
 };
 
-enum TextDirection {
+// Types of text alignment according to the IAccessible2 Object Attributes spec.
+enum TextAlign {
+  kNone,
+  kLeft,
+  kRight,
+  kCenter,
+  kJustify,
+};
+
+enum WritingDirection {
   kNone,
   kLtr,
   kRtl,
@@ -984,14 +1060,14 @@ enum SortDirection {
 enum NameFrom {
   kNone,
   kUninitialized,
-  kAttribute,
+  kAttribute,  // E.g. aria-label.
   kAttributeExplicitlyEmpty,
-  kCaption,
+  kCaption,  // E.g. in the case of a table, from a caption element.
   kContents,
-  kPlaceholder,
-  kRelatedElement,
-  kTitle,
-  kValue,
+  kPlaceholder,  // E.g. from an HTML placeholder attribute on a text field.
+  kRelatedElement, // E.g. from a figcaption Element in a figure.
+  kTitle,  // E.g. <input type="text" title="title">.
+  kValue,  // E.g. <input type="button" value="Button's name">.
 };
 
 enum DescriptionFrom {
@@ -1033,6 +1109,7 @@ enum Gesture {
   kTap2,
   kTap3,
   kTap4,
+  kTouchExplore,
 };
 
 enum TextAffinity {

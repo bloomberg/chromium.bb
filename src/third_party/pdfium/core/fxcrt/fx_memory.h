@@ -35,29 +35,30 @@ pdfium::base::PartitionAllocatorGeneric& GetGeneralPartitionAllocator();
 pdfium::base::PartitionAllocatorGeneric& GetStringPartitionAllocator();
 
 void FXMEM_InitializePartitionAlloc();
-NOINLINE void FX_OutOfMemoryTerminate();
+NOINLINE void FX_OutOfMemoryTerminate(size_t size);
 
 // These never return nullptr, and must return cleared memory.
 #define FX_Alloc(type, size) \
-  static_cast<type*>(internal::CallocOrDie(size, sizeof(type)))
+  static_cast<type*>(pdfium::internal::CallocOrDie(size, sizeof(type)))
 #define FX_Alloc2D(type, w, h) \
-  static_cast<type*>(internal::CallocOrDie2D(w, h, sizeof(type)))
+  static_cast<type*>(pdfium::internal::CallocOrDie2D(w, h, sizeof(type)))
 #define FX_Realloc(type, ptr, size) \
-  static_cast<type*>(internal::ReallocOrDie(ptr, size, sizeof(type)))
+  static_cast<type*>(pdfium::internal::ReallocOrDie(ptr, size, sizeof(type)))
 
 // May return nullptr, but returns cleared memory otherwise.
 #define FX_TryAlloc(type, size) \
-  static_cast<type*>(internal::Calloc(size, sizeof(type)))
+  static_cast<type*>(pdfium::internal::Calloc(size, sizeof(type)))
 #define FX_TryRealloc(type, ptr, size) \
-  static_cast<type*>(internal::Realloc(ptr, size, sizeof(type)))
+  static_cast<type*>(pdfium::internal::Realloc(ptr, size, sizeof(type)))
 
 // These never return nullptr, but return uninitialized memory.
 // TOOD(thestig): Add FX_TryAllocUninit() if there is a use case.
 #define FX_AllocUninit(type, size) \
-  static_cast<type*>(internal::AllocOrDie(size, sizeof(type)))
+  static_cast<type*>(pdfium::internal::AllocOrDie(size, sizeof(type)))
 #define FX_AllocUninit2D(type, w, h) \
-  static_cast<type*>(internal::AllocOrDie2D(w, h, sizeof(type)))
+  static_cast<type*>(pdfium::internal::AllocOrDie2D(w, h, sizeof(type)))
 
+namespace pdfium {
 namespace internal {
 
 void* Alloc(size_t num_members, size_t member_size);
@@ -71,23 +72,9 @@ void* CallocOrDie2D(size_t w, size_t h, size_t member_size);
 void* ReallocOrDie(void* ptr, size_t num_members, size_t member_size);
 
 }  // namespace internal
+}  // namespace pdfium
 
 void FX_Free(void* ptr);
-
-// The FX_ArraySize(arr) macro returns the # of elements in an array arr.
-// The expression is a compile-time constant, and therefore can be
-// used in defining new arrays, for example.  If you use FX_ArraySize on
-// a pointer by mistake, you will get a compile-time error.
-//
-// One caveat is that FX_ArraySize() doesn't accept any array of an
-// anonymous type or a type defined inside a function.
-#define FX_ArraySize(array) (sizeof(ArraySizeHelper(array)))
-
-// This template function declaration is used in defining FX_ArraySize.
-// Note that the function doesn't need an implementation, as we only
-// use its type.
-template <typename T, size_t N>
-char (&ArraySizeHelper(T (&array)[N]))[N];
 
 // Round up to the power-of-two boundary N.
 template <int N, typename T>

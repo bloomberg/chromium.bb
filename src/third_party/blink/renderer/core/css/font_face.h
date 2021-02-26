@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
@@ -56,12 +55,12 @@ class FontFaceDescriptors;
 class StringOrArrayBufferOrArrayBufferView;
 class CSSPropertyValueSet;
 class StyleRuleFontFace;
+struct FontMetricsOverride;
 
 class CORE_EXPORT FontFace : public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
                              public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FontFace);
 
  public:
   enum LoadStatusType { kUnloaded, kLoading, kLoaded, kError };
@@ -76,6 +75,8 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   FontFace(ExecutionContext*,
            const AtomicString& family,
            const FontFaceDescriptors*);
+  FontFace(const FontFace&) = delete;
+  FontFace& operator=(const FontFace&) = delete;
   ~FontFace() override;
 
   const AtomicString& family() const { return family_; }
@@ -86,6 +87,9 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   String variant() const;
   String featureSettings() const;
   String display() const;
+  String ascentOverride() const;
+  String descentOverride() const;
+  String lineGapOverride() const;
 
   // FIXME: Changing these attributes should affect font matching.
   void setFamily(ExecutionContext*, const AtomicString& s, ExceptionState&) {
@@ -98,6 +102,9 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   void setVariant(ExecutionContext*, const String&, ExceptionState&);
   void setFeatureSettings(ExecutionContext*, const String&, ExceptionState&);
   void setDisplay(ExecutionContext*, const String&, ExceptionState&);
+  void setAscentOverride(ExecutionContext*, const String&, ExceptionState&);
+  void setDescentOverride(ExecutionContext*, const String&, ExceptionState&);
+  void setLineGapOverride(ExecutionContext*, const String&, ExceptionState&);
 
   String status() const;
   ScriptPromise loaded(ScriptState* script_state) {
@@ -115,7 +122,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   size_t ApproximateBlankCharacterCount() const;
   FontDisplay GetFontDisplay() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool HadBlankText() const;
 
@@ -124,7 +131,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
     virtual ~LoadFontCallback() = default;
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);
@@ -133,6 +140,12 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
 
   // ScriptWrappable:
   bool HasPendingActivity() const final;
+
+  bool HasFontMetricsOverride() const {
+    return ascent_override_ || descent_override_ || line_gap_override_ ||
+           advance_override_ || advance_proportional_override_;
+  }
+  FontMetricsOverride GetFontMetricsOverride() const;
 
  private:
   static FontFace* Create(ExecutionContext*,
@@ -172,13 +185,17 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   Member<const CSSValue> variant_;
   Member<const CSSValue> feature_settings_;
   Member<const CSSValue> display_;
+  Member<const CSSValue> ascent_override_;
+  Member<const CSSValue> descent_override_;
+  Member<const CSSValue> line_gap_override_;
+  Member<const CSSValue> advance_override_;
+  Member<const CSSValue> advance_proportional_override_;
   LoadStatusType status_;
   Member<DOMException> error_;
 
   Member<LoadedProperty> loaded_property_;
   Member<CSSFontFace> css_font_face_;
   HeapVector<Member<LoadFontCallback>> callbacks_;
-  DISALLOW_COPY_AND_ASSIGN(FontFace);
 };
 
 using FontFaceArray = HeapVector<Member<FontFace>>;

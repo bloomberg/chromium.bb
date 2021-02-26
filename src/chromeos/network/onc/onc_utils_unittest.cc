@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,7 +29,7 @@ std::unique_ptr<base::Value> ReadTestJson(const std::string& filename) {
   base::FilePath path;
   std::unique_ptr<base::Value> result;
   if (!test_utils::GetTestDataPath("network", filename, &path)) {
-    NOTREACHED() << "Unable to get test file path for: " << filename;
+    LOG(FATAL) << "Unable to get test file path for: " << filename;
     return result;
   }
   JSONFileValueDeserializer deserializer(path,
@@ -45,39 +46,35 @@ std::unique_ptr<base::Value> ReadTestJson(const std::string& filename) {
 namespace onc {
 
 TEST(ONCDecrypterTest, BrokenEncryptionIterations) {
-  std::unique_ptr<base::Value> encrypted_onc =
-      test_utils::ReadTestDictionary("broken-encrypted-iterations.onc");
+  base::Value encrypted_onc =
+      test_utils::ReadTestDictionaryValue("broken-encrypted-iterations.onc");
 
-  std::unique_ptr<base::Value> decrypted_onc =
-      Decrypt("test0000", *encrypted_onc);
+  base::Value decrypted_onc = Decrypt("test0000", encrypted_onc);
 
-  EXPECT_EQ(nullptr, decrypted_onc.get());
+  EXPECT_TRUE(decrypted_onc.is_none());
 }
 
 TEST(ONCDecrypterTest, BrokenEncryptionZeroIterations) {
-  std::unique_ptr<base::Value> encrypted_onc =
-      test_utils::ReadTestDictionary("broken-encrypted-zero-iterations.onc");
+  base::Value encrypted_onc = test_utils::ReadTestDictionaryValue(
+      "broken-encrypted-zero-iterations.onc");
 
-  std::string error;
-  std::unique_ptr<base::Value> decrypted_onc =
-      Decrypt("test0000", *encrypted_onc);
+  base::Value decrypted_onc = Decrypt("test0000", encrypted_onc);
 
-  EXPECT_EQ(nullptr, decrypted_onc.get());
+  EXPECT_TRUE(decrypted_onc.is_none());
 }
 
 TEST(ONCDecrypterTest, LoadEncryptedOnc) {
-  std::unique_ptr<base::Value> encrypted_onc =
-      test_utils::ReadTestDictionary("encrypted.onc");
-  std::unique_ptr<base::Value> expected_decrypted_onc =
-      test_utils::ReadTestDictionary("decrypted.onc");
+  base::Value encrypted_onc =
+      test_utils::ReadTestDictionaryValue("encrypted.onc");
+  base::Value expected_decrypted_onc =
+      test_utils::ReadTestDictionaryValue("decrypted.onc");
 
   std::string error;
-  std::unique_ptr<base::Value> actual_decrypted_onc =
-      Decrypt("test0000", *encrypted_onc);
+  base::Value actual_decrypted_onc = Decrypt("test0000", encrypted_onc);
 
   base::Value emptyDict;
-  EXPECT_TRUE(test_utils::Equals(expected_decrypted_onc.get(),
-                                 actual_decrypted_onc.get()));
+  EXPECT_TRUE(
+      test_utils::Equals(&expected_decrypted_onc, &actual_decrypted_onc));
 }
 
 namespace {
@@ -129,8 +126,8 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
   certs["cert_google"] = "pem_google";
   certs["cert_webkit"] = "pem_webkit";
 
-  for (base::DictionaryValue::Iterator it(*test_cases);
-       !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*test_cases); !it.IsAtEnd();
+       it.Advance()) {
     SCOPED_TRACE("Test case: " + it.key());
 
     const base::DictionaryValue* test_case = NULL;
@@ -148,11 +145,11 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
     std::unique_ptr<base::ListValue> actual_resolved_onc(
         networks_with_cert_refs->DeepCopy());
 
-    bool success = ResolveServerCertRefsInNetworks(certs,
-                                                   actual_resolved_onc.get());
+    bool success =
+        ResolveServerCertRefsInNetworks(certs, actual_resolved_onc.get());
     EXPECT_EQ(expected_success, success);
-    EXPECT_TRUE(test_utils::Equals(expected_resolved_onc,
-                                   actual_resolved_onc.get()));
+    EXPECT_TRUE(
+        test_utils::Equals(expected_resolved_onc, actual_resolved_onc.get()));
   }
 }
 

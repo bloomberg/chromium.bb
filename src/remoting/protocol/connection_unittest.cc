@@ -143,8 +143,8 @@ class TestAudioSource : public AudioSource {
   bool Start(const PacketCapturedCallback& callback) override {
     callback_ = callback;
     timer_.Start(FROM_HERE, kAudioPacketDuration,
-                 base::Bind(&TestAudioSource::GenerateAudioSamples,
-                            base::Unretained(this)));
+                 base::BindRepeating(&TestAudioSource::GenerateAudioSamples,
+                                     base::Unretained(this)));
     return true;
   }
 
@@ -392,10 +392,12 @@ class ConnectionTest : public testing::Test,
     // VideoStub otherwise.
     if (is_using_webrtc()) {
       client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
-          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+          base::BindRepeating(&base::RunLoop::Quit,
+                              base::Unretained(&run_loop)));
     } else {
       client_video_renderer_.GetVideoStub()->set_on_frame_callback(
-          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+          base::BindRepeating(&base::RunLoop::Quit,
+                              base::Unretained(&run_loop)));
     }
 
     run_loop.Run();
@@ -427,7 +429,7 @@ class ConnectionTest : public testing::Test,
 
     base::RunLoop run_loop;
     client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback(
-        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+        base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
     client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback({});
 
@@ -528,7 +530,8 @@ TEST_P(ConnectionTest, Events) {
   run_loop.Run();
 }
 
-TEST_P(ConnectionTest, Video) {
+// TODO(crbug.com/1143311): Test is flaky.
+TEST_P(ConnectionTest, DISABLED_Video) {
   Connect();
 
   std::unique_ptr<VideoStream> video_stream =
@@ -541,9 +544,10 @@ TEST_P(ConnectionTest, Video) {
   }
 }
 
+// TODO(crbug.com/1143311): Test is flaky.
 // Verifies that the VideoStream doesn't loose any video frames while the
 // connection is being established.
-TEST_P(ConnectionTest, VideoWithSlowSignaling) {
+TEST_P(ConnectionTest, DISABLED_VideoWithSlowSignaling) {
   // Add signaling delay to slow down connection handshake.
   host_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
   client_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
@@ -576,7 +580,8 @@ TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
   run_loop.Run();
 }
 
-TEST_P(ConnectionTest, VideoStats) {
+// TODO(crbug.com/1146302): Test is flaky.
+TEST_P(ConnectionTest, DISABLED_VideoStats) {
   // Currently this test only works for WebRTC because for ICE connections stats
   // are reported by SoftwareVideoRenderer which is not used in this test.
   // TODO(sergeyu): Fix this.
@@ -631,7 +636,7 @@ TEST_P(ConnectionTest, VideoStats) {
 }
 
 // Slow/fails on Linux ASan/TSan (http://crbug.com/1045344).
-#if defined(OS_LINUX) && \
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
 #define MAYBE_Audio DISABLED_Audio
 #else
@@ -648,7 +653,9 @@ TEST_P(ConnectionTest, MAYBE_Audio) {
   client_audio_player_.Verify();
 }
 
-TEST_P(ConnectionTest, FirstCaptureFailed) {
+// Flaky on multiple platforms
+// https://crbug.com/1143671
+TEST_P(ConnectionTest, DISABLED_FirstCaptureFailed) {
   Connect();
 
   auto capturer = std::make_unique<TestScreenCapturer>();
@@ -658,7 +665,9 @@ TEST_P(ConnectionTest, FirstCaptureFailed) {
   WaitNextVideoFrame();
 }
 
-TEST_P(ConnectionTest, SecondCaptureFailed) {
+// Flaky on multiple platforms
+// https://crbug.com/1143671
+TEST_P(ConnectionTest, DISABLED_SecondCaptureFailed) {
   Connect();
 
   auto capturer = std::make_unique<TestScreenCapturer>();

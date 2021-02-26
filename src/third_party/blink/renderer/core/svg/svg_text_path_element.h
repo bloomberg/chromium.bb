@@ -43,7 +43,6 @@ DECLARE_SVG_ENUM_MAP(SVGTextPathSpacingType);
 class SVGTextPathElement final : public SVGTextContentElement,
                                  public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGTextPathElement);
 
  public:
   // Forward declare enumerations in the W3C naming scheme, for IDL generation.
@@ -66,7 +65,7 @@ class SVGTextPathElement final : public SVGTextContentElement,
     return spacing_.Get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~SVGTextPathElement() override;

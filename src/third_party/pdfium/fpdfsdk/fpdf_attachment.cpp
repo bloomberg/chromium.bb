@@ -26,7 +26,6 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -202,7 +201,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFAttachment_SetFile(FPDF_ATTACHMENT attachment,
                        FPDF_DOCUMENT document,
                        const void* contents,
-                       const unsigned long len) {
+                       unsigned long len) {
   CPDF_Object* pFile = CPDFObjectFromFPDFAttachment(attachment);
   CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document);
   if (!pFile || !pFile->IsDictionary() || !pDoc || len > INT_MAX)
@@ -248,17 +247,23 @@ FPDFAttachment_SetFile(FPDF_ATTACHMENT attachment,
   return true;
 }
 
-FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFAttachment_GetFile(FPDF_ATTACHMENT attachment,
                        void* buffer,
-                       unsigned long buflen) {
+                       unsigned long buflen,
+                       unsigned long* out_buflen) {
+  if (!out_buflen)
+    return false;
+
   CPDF_Object* pFile = CPDFObjectFromFPDFAttachment(attachment);
   if (!pFile)
-    return 0;
+    return false;
 
   CPDF_Stream* pFileStream = CPDF_FileSpec(pFile).GetFileStream();
   if (!pFileStream)
-    return 0;
+    return false;
 
-  return DecodeStreamMaybeCopyAndReturnLength(pFileStream, buffer, buflen);
+  *out_buflen =
+      DecodeStreamMaybeCopyAndReturnLength(pFileStream, buffer, buflen);
+  return true;
 }

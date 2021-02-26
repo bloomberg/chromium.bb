@@ -31,7 +31,7 @@ class TlsChloExtractorTest : public QuicTestWithParam<ParsedQuicVersion> {
           QuicSocketAddress(TestPeerIPAddress(), kTestPort), *packet);
       std::string detailed_error;
       bool retry_token_present;
-      quiche::QuicheStringPiece retry_token;
+      absl::string_view retry_token;
       const QuicErrorCode error = QuicFramer::ParsePublicHeaderDispatcher(
           *packet, /*expected_destination_connection_id_length=*/0,
           &packet_info.form, &packet_info.long_packet_type,
@@ -48,8 +48,9 @@ class TlsChloExtractorTest : public QuicTestWithParam<ParsedQuicVersion> {
 
   void ValidateChloDetails() {
     EXPECT_TRUE(tls_chlo_extractor_.HasParsedFullChlo());
-    ASSERT_EQ(tls_chlo_extractor_.alpns().size(), 1u);
-    EXPECT_EQ(tls_chlo_extractor_.alpns()[0], AlpnForVersion(version_));
+    std::vector<std::string> alpns = tls_chlo_extractor_.alpns();
+    ASSERT_EQ(alpns.size(), 1u);
+    EXPECT_EQ(alpns[0], AlpnForVersion(version_));
     EXPECT_EQ(tls_chlo_extractor_.server_name(), TestHostname());
   }
 
@@ -127,7 +128,7 @@ TEST_P(TlsChloExtractorTest, MoveAssignmentBetweenPackets) {
       QuicSocketAddress(TestPeerIPAddress(), kTestPort), *packets_[0]);
   std::string detailed_error;
   bool retry_token_present;
-  quiche::QuicheStringPiece retry_token;
+  absl::string_view retry_token;
   const QuicErrorCode error = QuicFramer::ParsePublicHeaderDispatcher(
       *packets_[0], /*expected_destination_connection_id_length=*/0,
       &packet_info.form, &packet_info.long_packet_type,

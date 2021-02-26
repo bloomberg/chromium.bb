@@ -49,7 +49,9 @@
 #include "deUniquePtr.hpp"
 #include "deSharedPtr.hpp"
 #include "deMath.h"
+
 #include <limits>
+#include <map>
 
 using namespace vk;
 
@@ -108,6 +110,37 @@ struct TestConfig
 	deUint8						stencilExpectedValue;
 	bool						separateDepthStencilLayouts;
 	bool						unusedResolve;
+	tcu::Maybe<VkFormat>		compatibleFormat;
+};
+
+// Auxiliar class to group depth formats by compatibility in bit size and format. Note there is at most one alternative format for
+// each given format as of the time this comment is being written, and the alternative (compatible) format for a given format can
+// only remove aspects but not add them. That is, we cannot use a depth/stencil attachment to resolve a depth-only attachment.
+//
+// See:
+//	* VUID-VkSubpassDescriptionDepthStencilResolve-pDepthStencilResolveAttachment-03181
+//	* VUID-VkSubpassDescriptionDepthStencilResolve-pDepthStencilResolveAttachment-03182
+class DepthCompatibilityManager
+{
+public:
+	DepthCompatibilityManager ()
+		: m_compatibleFormats()
+	{
+		m_compatibleFormats[VK_FORMAT_D32_SFLOAT_S8_UINT]	= VK_FORMAT_D32_SFLOAT;
+		m_compatibleFormats[VK_FORMAT_D16_UNORM_S8_UINT]	= VK_FORMAT_D16_UNORM;
+		m_compatibleFormats[VK_FORMAT_D24_UNORM_S8_UINT]	= VK_FORMAT_X8_D24_UNORM_PACK32;
+	}
+
+	VkFormat getAlternativeFormat (VkFormat format) const
+	{
+		const auto itr = m_compatibleFormats.find(format);
+		if (itr != end(m_compatibleFormats))
+			return itr->second;
+		return VK_FORMAT_UNDEFINED;
+	}
+
+private:
+	std::map<VkFormat, VkFormat> m_compatibleFormats;
 };
 
 float get16bitDepthComponent(deUint8* pixelPtr)
@@ -140,6 +173,7 @@ public:
 
 protected:
 	bool						isFeaturesSupported				(void);
+	bool						isSupportedFormat				(Context& context, VkFormat format) const;
 	VkSampleCountFlagBits		sampleCountBitFromSampleCount	(deUint32 count) const;
 
 	VkImageSp					createImage						(deUint32 sampleCount, VkImageUsageFlags additionalUsage = 0u);
@@ -148,7 +182,8 @@ protected:
 	AllocationSp				createBufferMemory				(void);
 	VkBufferSp					createBuffer					(void);
 
-	Move<VkRenderPass>			createRenderPass				(void);
+	Move<VkRenderPass>			createRenderPass				(VkFormat vkformat);
+	Move<VkRenderPass>			createRenderPassCompatible		(void);
 	Move<VkFramebuffer>			createFramebuffer				(VkRenderPass renderPass, VkImageViewSp multisampleImageView, VkImageViewSp singlesampleImageView);
 	Move<VkPipelineLayout>		createRenderPipelineLayout		(void);
 	Move<VkPipeline>			createRenderPipeline			(VkRenderPass renderPass, VkPipelineLayout renderPipelineLayout);
@@ -178,6 +213,7 @@ protected:
 	AllocationSp					m_bufferMemory;
 
 	Unique<VkRenderPass>			m_renderPass;
+	Unique<VkRenderPass>			m_renderPassCompatible;
 	Unique<VkFramebuffer>			m_framebuffer;
 	Unique<VkPipelineLayout>		m_renderPipelineLayout;
 	Unique<VkPipeline>				m_renderPipeline;
@@ -205,7 +241,8 @@ DepthStencilResolveTest::DepthStencilResolveTest (Context& context, TestConfig c
 	, m_buffer					(createBuffer())
 	, m_bufferMemory			(createBufferMemory())
 
-	, m_renderPass				(createRenderPass())
+	, m_renderPass				(createRenderPass(m_config.format))
+	, m_renderPassCompatible	(createRenderPassCompatible())
 	, m_framebuffer				(createFramebuffer(*m_renderPass, m_multisampleImageView, m_singlesampleImageView))
 	, m_renderPipelineLayout	(createRenderPipelineLayout())
 	, m_renderPipeline			(createRenderPipeline(*m_renderPass, *m_renderPipelineLayout))
@@ -241,10 +278,12 @@ bool DepthStencilResolveTest::isFeaturesSupported()
 
 	// check if both modes are supported
 	VkResolveModeFlagBits depthResolveMode		= m_config.depthResolveMode;
-	VkResolveModeFlagBits stencilResolveMode		= m_config.stencilResolveMode;
+	VkResolveModeFlagBits stencilResolveMode	= m_config.stencilResolveMode;
+
 	if ((depthResolveMode != VK_RESOLVE_MODE_NONE) &&
 		!(depthResolveMode & dsResolveProperties.supportedDepthResolveModes))
 		TCU_THROW(NotSupportedError, "Depth resolve mode not supported");
+
 	if ((stencilResolveMode != VK_RESOLVE_MODE_NONE) &&
 		!(stencilResolveMode & dsResolveProperties.supportedStencilResolveModes))
 		TCU_THROW(NotSupportedError, "Stencil resolve mode not supported");
@@ -263,6 +302,13 @@ bool DepthStencilResolveTest::isFeaturesSupported()
 	{
 		// when independentResolveNone and independentResolve are VK_FALSE then both modes must be the same
 		TCU_THROW(NotSupportedError, "Implementation doesn't support diferent resolve modes");
+	}
+
+	// Check alternative format support if needed.
+	if (m_config.compatibleFormat)
+	{
+		if (! isSupportedFormat(m_context, m_config.compatibleFormat.get()))
+			TCU_THROW(NotSupportedError, "Alternative image format for compatibility test not supported");
 	}
 
 	return true;
@@ -382,12 +428,12 @@ VkImageViewSp DepthStencilResolveTest::createImageView (VkImageSp image, deUint3
 	return safeSharedPtr(new Unique<VkImageView>(vk::createImageView(m_vkd, m_device, &pCreateInfo)));
 }
 
-Move<VkRenderPass> DepthStencilResolveTest::createRenderPass (void)
+Move<VkRenderPass> DepthStencilResolveTest::createRenderPass (VkFormat vkformat)
 {
 	// When the depth/stencil resolve attachment is unused, it needs to be cleared outside the render pass so it has the expected values.
 	if (m_config.unusedResolve)
 	{
-		const tcu::TextureFormat			format			(mapVkFormat(m_config.format));
+		const tcu::TextureFormat			format			(mapVkFormat(vkformat));
 		const Unique<VkCommandBuffer>		commandBuffer	(allocateCommandBuffer(m_vkd, m_device, *m_commandPool, vk::VK_COMMAND_BUFFER_LEVEL_PRIMARY));
 		const vk::VkImageSubresourceRange	imageRange		=
 		{
@@ -506,17 +552,23 @@ Move<VkRenderPass> DepthStencilResolveTest::createRenderPass (void)
 		attachmentRefStencil,								// const void*						pNext;
 		0u,													// deUint32							attachment;
 		layout,												// VkImageLayout					layout;
-		0u													// VkImageAspectFlags				aspectMask;
+		m_config.aspectFlag									// VkImageAspectFlags				aspectMask;
 	);
 
 	const vk::VkImageLayout		singleSampleInitialLayout = (m_config.unusedResolve ? VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED);
+
+
+	const tcu::TextureFormat			format			(mapVkFormat(vkformat));
+	VkImageAspectFlags aspectFlags =
+		((tcu::hasDepthComponent(format.order)		? static_cast<vk::VkImageAspectFlags>(vk::VK_IMAGE_ASPECT_DEPTH_BIT)	: 0u) |
+		 (tcu::hasStencilComponent(format.order)	? static_cast<vk::VkImageAspectFlags>(vk::VK_IMAGE_ASPECT_STENCIL_BIT)	: 0u));
 
 	const AttachmentDescription2 singlesampleAttachment		// VkAttachmentDescription2
 	(
 															// VkStructureType					sType;
 		attachmentDescriptionStencil,						// const void*						pNext;
 		0u,													// VkAttachmentDescriptionFlags		flags;
-		m_config.format,									// VkFormat							format;
+		vkformat,											// VkFormat							format;
 		VK_SAMPLE_COUNT_1_BIT,								// VkSampleCountFlagBits			samples;
 		VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				loadOp;
 		VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				storeOp;
@@ -531,7 +583,7 @@ Move<VkRenderPass> DepthStencilResolveTest::createRenderPass (void)
 		DE_NULL,												// const void*						pNext;
 		(m_config.unusedResolve ? VK_ATTACHMENT_UNUSED : 1u),	// deUint32							attachment;
 		layout,													// VkImageLayout					layout;
-		0u														// VkImageAspectFlags				aspectMask;
+		aspectFlags												// VkImageAspectFlags				aspectMask;
 	);
 
 	std::vector<AttachmentDescription2> attachments;
@@ -580,6 +632,31 @@ Move<VkRenderPass> DepthStencilResolveTest::createRenderPass (void)
 	);
 
 	return renderPassCreator.createRenderPass(m_vkd, m_device);
+}
+
+// Checks format support.
+// Note: we need the context because this is called from the constructor only after m_config has been set.
+bool DepthStencilResolveTest::isSupportedFormat (Context& context, VkFormat format) const
+{
+	const VkImageUsageFlags	usage	= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+									| VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+									| (m_config.unusedResolve ? VK_IMAGE_USAGE_TRANSFER_DST_BIT : static_cast<vk::VkImageUsageFlagBits>(0u));
+	VkImageFormatProperties	props;
+
+	const auto&	vki				= context.getInstanceInterface();
+	const auto	physicalDevice	= context.getPhysicalDevice();
+	const auto	formatCheck		= vki.getPhysicalDeviceImageFormatProperties(physicalDevice, format, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0u, &props);
+
+	return (formatCheck == VK_SUCCESS);
+}
+
+Move<VkRenderPass> DepthStencilResolveTest::createRenderPassCompatible (void)
+{
+	// Early exit if we are not testing compatibility.
+	if (! m_config.compatibleFormat)
+		return {};
+
+	return createRenderPass(m_config.compatibleFormat.get());
 }
 
 Move<VkFramebuffer> DepthStencilResolveTest::createFramebuffer (VkRenderPass renderPass, VkImageViewSp multisampleImageView, VkImageViewSp singlesampleImageView)
@@ -792,7 +869,7 @@ void DepthStencilResolveTest::submit (void)
 			VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 			DE_NULL,
 
-			*m_renderPass,
+			(m_config.compatibleFormat ? *m_renderPassCompatible : *m_renderPass),
 			*m_framebuffer,
 
 			{
@@ -838,7 +915,7 @@ void DepthStencilResolveTest::submit (void)
 			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 			DE_NULL,
 
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 			VK_ACCESS_TRANSFER_READ_BIT,
 
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -1299,6 +1376,8 @@ void initTests (tcu::TestCaseGroup* group)
 		{ 255u,			255u,	255u,	255u,	255u,	255u },	// RESOLVE_MODE_MAX_BIT
 	};
 
+	const DepthCompatibilityManager compatManager;
+
 	tcu::TestContext& testCtx(group->getTestContext());
 
 	// Misc tests.
@@ -1407,8 +1486,23 @@ void initTests (tcu::TestCaseGroup* group)
 										0u,
 										useSeparateDepthStencilLayouts,
 										unusedResolve,
+										tcu::nothing<VkFormat>(),
 									};
 									formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
+
+									if (sampleCountNdx == 0 && imageDataNdx == 0)
+									{
+										const auto compatibleFormat = compatManager.getAlternativeFormat(format);
+
+										if (compatibleFormat != VK_FORMAT_UNDEFINED)
+										{
+											std::string	compatibilityTestName			= "compatibility_" + name;
+											TestConfig compatibilityTestConfig			= testConfig;
+											compatibilityTestConfig.compatibleFormat	= tcu::just(compatibleFormat);
+
+											formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, compatibilityTestName.c_str(), compatibilityTestName.c_str(), compatibilityTestConfig));
+										}
+									}
 								}
 								if (hasStencil)
 								{
@@ -1435,8 +1529,21 @@ void initTests (tcu::TestCaseGroup* group)
 										expectedValue,
 										useSeparateDepthStencilLayouts,
 										unusedResolve,
+										tcu::nothing<VkFormat>(),
 									};
 									formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
+
+									// All formats with stencil and depth aspects have incompatible formats and sizes in the depth
+									// aspect, so their only alternative is the VK_FORMAT_S8_UINT format. Finally, that stencil-only
+									// format has no compatible formats that can be used.
+									if (sampleCountNdx == 0 && imageDataNdx == 0 && hasDepth)
+									{
+										std::string	compatibilityTestName			= "compatibility_" + name;
+										TestConfig compatibilityTestConfig			= testConfig;
+										compatibilityTestConfig.compatibleFormat	= tcu::just(VK_FORMAT_S8_UINT);
+
+										formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, compatibilityTestName.c_str(), compatibilityTestName.c_str(), compatibilityTestConfig));
+									}
 								}
 							}
 						}
@@ -1524,6 +1631,7 @@ void initTests (tcu::TestCaseGroup* group)
 									0u,
 									useSeparateDepthStencilLayouts,
 									unusedResolve,
+									tcu::nothing<VkFormat>(),
 								};
 								formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
 							}
@@ -1556,6 +1664,7 @@ void initTests (tcu::TestCaseGroup* group)
 									expectedValue,
 									useSeparateDepthStencilLayouts,
 									unusedResolve,
+									tcu::nothing<VkFormat>(),
 								};
 								formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
 							}

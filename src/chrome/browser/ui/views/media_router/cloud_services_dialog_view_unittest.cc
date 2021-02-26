@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_router/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,7 +27,7 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
     window_ = std::make_unique<TestBrowserWindow>();
     Browser::CreateParams browser_params(profile_.get(), true);
     browser_params.window = window_.get();
-    browser_ = std::make_unique<Browser>(browser_params);
+    browser_ = std::unique_ptr<Browser>(Browser::Create(browser_params));
 
     anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();

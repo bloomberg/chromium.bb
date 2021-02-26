@@ -35,6 +35,11 @@
 #define EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE 0x33AF
 #endif /* EGL_ANGLE_display_texture_share_group */
 
+#ifndef EGL_ANGLE_display_semaphore_share_group
+#define EGL_ANGLE_display_semaphore_share_group 1
+#define EGL_DISPLAY_SEMAPHORE_SHARE_GROUP_ANGLE 0x348D
+#endif /* EGL_ANGLE_display_semaphore_share_group */
+
 #ifndef EGL_ANGLE_create_context_client_arrays
 #define EGL_ANGLE_create_context_client_arrays 1
 #define EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE 0x3452
@@ -63,6 +68,11 @@
 #define EGL_LOW_POWER_ANGLE 0x0001
 #define EGL_HIGH_POWER_ANGLE 0x0002
 #endif /* EGL_ANGLE_power_preference */
+
+#ifndef EGL_NV_robustness_video_memory_purge
+#define EGL_NV_robustness_video_memory_purge 1
+#define EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x334C
+#endif /*EGL_NV_robustness_video_memory_purge */
 
 using ui::GetLastEGLErrorString;
 
@@ -128,9 +138,17 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     context_attributes.push_back(EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT);
     context_attributes.push_back(attribs.robust_buffer_access ? EGL_TRUE
                                                               : EGL_FALSE);
-    context_attributes.push_back(
-        EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
-    context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
+    if (attribs.lose_context_on_reset) {
+      context_attributes.push_back(
+          EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
+      context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
+
+      if (GLSurfaceEGL::IsRobustnessVideoMemoryPurgeSupported()) {
+        context_attributes.push_back(
+            EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV);
+        context_attributes.push_back(EGL_TRUE);
+      }
+    }
   } else {
     // At some point we should require the presence of the robustness
     // extension and remove this code path.
@@ -179,6 +197,14 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.global_texture_share_group ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.global_texture_share_group);
+  }
+
+  if (GLSurfaceEGL::IsDisplaySemaphoreShareGroupSupported()) {
+    context_attributes.push_back(EGL_DISPLAY_SEMAPHORE_SHARE_GROUP_ANGLE);
+    context_attributes.push_back(
+        attribs.global_semaphore_share_group ? EGL_TRUE : EGL_FALSE);
+  } else {
+    DCHECK(!attribs.global_semaphore_share_group);
   }
 
   if (GLSurfaceEGL::IsCreateContextClientArraysSupported()) {
@@ -269,8 +295,20 @@ YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
   return yuv_to_rgb_converter.get();
 }
 
+void GLContextEGL::SetVisibility(bool visibility) {
+  if (GLSurfaceEGL::IsANGLEPowerPreferenceSupported()) {
+    // It doesn't matter whether this context was explicitly allocated
+    // with a power preference - ANGLE will take care of any default behavior.
+    if (visibility) {
+      eglReacquireHighPowerGPUANGLE(display_, context_);
+    } else {
+      eglReleaseHighPowerGPUANGLE(display_, context_);
+    }
+  }
+}
+
 void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   bool has_backpressure_fences = HasBackpressureFences();
 #else
   bool has_backpressure_fences = false;
@@ -300,7 +338,7 @@ void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
     }
 
     yuv_to_rgb_converters_.clear();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     DestroyBackpressureFences();
 #endif
 
@@ -319,7 +357,7 @@ void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
   }
 }
 
-bool GLContextEGL::MakeCurrent(GLSurface* surface) {
+bool GLContextEGL::MakeCurrentImpl(GLSurface* surface) {
   DCHECK(context_);
   if (lost_)
     return false;
@@ -408,7 +446,7 @@ void* GLContextEGL::GetHandle() {
   return context_;
 }
 
-unsigned int GLContextEGL::CheckStickyGraphicsResetStatus() {
+unsigned int GLContextEGL::CheckStickyGraphicsResetStatusImpl() {
   DCHECK(IsCurrent(nullptr));
   DCHECK(g_current_gl_driver);
   const ExtensionsGL& ext = g_current_gl_driver->ext;

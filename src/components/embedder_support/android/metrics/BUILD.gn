@@ -21,10 +21,11 @@ static_library("metrics") {
   deps = [
     ":jni",
     "//components/metrics",
-    "//components/metrics:gpu",
+    "//components/metrics:content",
     "//components/metrics:net",
     "//components/metrics:ui",
     "//components/prefs",
+    "//components/ukm",
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//content/public/browser",
@@ -41,6 +42,8 @@ android_library("java") {
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/metrics_proto:metrics_proto_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

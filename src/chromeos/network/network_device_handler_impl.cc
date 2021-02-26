@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -25,8 +25,8 @@
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -52,171 +52,51 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   return NetworkDeviceHandler::kErrorUnknown;
 }
 
+void GetPropertiesCallback(const std::string& device_path,
+                           network_handler::ResultCallback callback,
+                           base::Optional<base::Value> result) {
+  if (!result) {
+    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(device_path);
+    std::move(callback).Run(device_path, base::nullopt);
+    return;
+  }
+  std::move(callback).Run(device_path, std::move(result));
+}
+
 void InvokeErrorCallback(const std::string& device_path,
-                         const network_handler::ErrorCallback& error_callback,
+                         network_handler::ErrorCallback error_callback,
                          const std::string& error_name) {
   std::string error_msg = "Device Error: " + error_name;
   NET_LOG(ERROR) << error_msg << ": " << device_path;
-  network_handler::RunErrorCallback(error_callback, device_path, error_name,
-                                    error_msg);
+  network_handler::RunErrorCallback(std::move(error_callback), device_path,
+                                    error_name, error_msg);
 }
 
-void HandleShillCallFailure(
-    const std::string& device_path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& shill_error_name,
-    const std::string& shill_error_message) {
+void HandleShillCallFailure(const std::string& device_path,
+                            network_handler::ErrorCallback error_callback,
+                            const std::string& shill_error_name,
+                            const std::string& shill_error_message) {
   network_handler::ShillErrorCallbackFunction(
-      GetErrorNameForShillError(shill_error_name), device_path, error_callback,
-      shill_error_name, shill_error_message);
+      GetErrorNameForShillError(shill_error_name), device_path,
+      std::move(error_callback), shill_error_name, shill_error_message);
 }
 
-void SetDevicePropertyInternal(
-    const std::string& device_path,
-    const std::string& property_name,
-    const base::Value& value,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+void SetDevicePropertyInternal(const std::string& device_path,
+                               const std::string& property_name,
+                               const base::Value& value,
+                               base::OnceClosure callback,
+                               network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.SetProperty: " << property_name << " = " << value;
   ShillDeviceClient::Get()->SetProperty(
-      dbus::ObjectPath(device_path), property_name, value, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), property_name, value, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
-// Struct containing TDLS Operation parameters.
-struct TDLSOperationParams {
-  TDLSOperationParams() : retry_count(0) {}
-  std::string operation;
-  std::string next_operation;
-  std::string ip_or_mac_address;
-  int retry_count;
-};
-
-// Forward declare for PostDelayedTask.
-void CallPerformTDLSOperation(
-    const std::string& device_path,
-    const TDLSOperationParams& params,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback);
-
-void TDLSSuccessCallback(const std::string& device_path,
-                         const TDLSOperationParams& params,
-                         const network_handler::StringResultCallback& callback,
-                         const network_handler::ErrorCallback& error_callback,
-                         const std::string& result) {
-  std::string event_desc = "TDLSSuccessCallback: " + params.operation;
-  if (!result.empty())
-    event_desc += ": " + result;
-  NET_LOG(EVENT) << event_desc << ": " << device_path;
-
-  if (params.operation != shill::kTDLSStatusOperation && !result.empty()) {
-    NET_LOG(ERROR) << "Unexpected TDLS result: " + result << ": "
-                   << device_path;
-  }
-
-  TDLSOperationParams new_params;
-  const int64_t kRequestStatusDelayMs = 500;
-  int64_t request_delay_ms = 0;
-  if (params.operation == shill::kTDLSStatusOperation) {
-    // If this is the last operation, or the result is 'Nonexistent',
-    // return the result.
-    if (params.next_operation.empty() ||
-        result == shill::kTDLSNonexistentState) {
-      if (!callback.is_null())
-        callback.Run(result);
-      return;
-    }
-    // Otherwise start the next operation.
-    new_params.operation = params.next_operation;
-  } else if (params.operation == shill::kTDLSDiscoverOperation) {
-    // Send a delayed Status request followed by a Setup request.
-    request_delay_ms = kRequestStatusDelayMs;
-    new_params.operation = shill::kTDLSStatusOperation;
-    new_params.next_operation = shill::kTDLSSetupOperation;
-  } else if (params.operation == shill::kTDLSSetupOperation ||
-             params.operation == shill::kTDLSTeardownOperation) {
-    // Send a delayed Status request.
-    request_delay_ms = kRequestStatusDelayMs;
-    new_params.operation = shill::kTDLSStatusOperation;
-  } else {
-    NET_LOG(ERROR) << "Unexpected TDLS operation: " + params.operation;
-    NOTREACHED();
-  }
-
-  new_params.ip_or_mac_address = params.ip_or_mac_address;
-
-  base::TimeDelta request_delay;
-  if (!ShillDeviceClient::Get()->GetTestInterface())
-    request_delay = base::TimeDelta::FromMilliseconds(request_delay_ms);
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&CallPerformTDLSOperation, device_path, new_params,
-                     callback, error_callback),
-      request_delay);
-}
-
-void TDLSErrorCallback(const std::string& device_path,
-                       const TDLSOperationParams& params,
-                       const network_handler::StringResultCallback& callback,
-                       const network_handler::ErrorCallback& error_callback,
-                       const std::string& dbus_error_name,
-                       const std::string& dbus_error_message) {
-  // If a Setup operation receives an InProgress error, retry.
-  const int kMaxRetries = 5;
-  if ((params.operation == shill::kTDLSDiscoverOperation ||
-       params.operation == shill::kTDLSSetupOperation) &&
-      dbus_error_name == shill::kErrorResultInProgress &&
-      params.retry_count < kMaxRetries) {
-    TDLSOperationParams retry_params = params;
-    ++retry_params.retry_count;
-    NET_LOG(EVENT) << "TDLS Retry: " << params.retry_count << ": "
-                   << device_path;
-    const int64_t kReRequestDelayMs = 1000;
-    base::TimeDelta request_delay;
-    if (!ShillDeviceClient::Get()->GetTestInterface())
-      request_delay = base::TimeDelta::FromMilliseconds(kReRequestDelayMs);
-
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&CallPerformTDLSOperation, device_path, retry_params,
-                       callback, error_callback),
-        request_delay);
-    return;
-  }
-
-  NET_LOG(ERROR) << "TDLS Operation: " << params.operation
-                 << " Error: " << dbus_error_name << ": " << dbus_error_message
-                 << ": " << device_path;
-  if (error_callback.is_null())
-    return;
-
-  const std::string error_name =
-      dbus_error_name == shill::kErrorResultInProgress
-          ? NetworkDeviceHandler::kErrorTimeout
-          : NetworkDeviceHandler::kErrorUnknown;
-  const std::string& error_detail = params.ip_or_mac_address;
-  std::unique_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateDBusErrorData(device_path, error_name,
-                                           error_detail, dbus_error_name,
-                                           dbus_error_message));
-  error_callback.Run(error_name, std::move(error_data));
-}
-
-void CallPerformTDLSOperation(
-    const std::string& device_path,
-    const TDLSOperationParams& params,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  LOG(ERROR) << "TDLS: " << params.operation;
-  NET_LOG(EVENT) << "CallPerformTDLSOperation: " << params.operation << ": "
-                 << device_path;
-  ShillDeviceClient::Get()->PerformTDLSOperation(
-      dbus::ObjectPath(device_path), params.operation, params.ip_or_mac_address,
-      base::BindOnce(&TDLSSuccessCallback, device_path, params, callback,
-                     error_callback),
-      base::BindOnce(&TDLSErrorCallback, device_path, params, callback,
-                     error_callback));
+std::unique_ptr<base::DictionaryValue> GetErrorData(const std::string& name) {
+  auto error_data = std::make_unique<base::DictionaryValue>();
+  error_data->SetString(network_handler::kErrorName, name);
+  return error_data;
 }
 
 }  // namespace
@@ -230,94 +110,97 @@ NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
 
 void NetworkDeviceHandlerImpl::GetDeviceProperties(
     const std::string& device_path,
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    network_handler::ResultCallback callback) const {
   ShillDeviceClient::Get()->GetProperties(
       dbus::ObjectPath(device_path),
-      base::BindOnce(&network_handler::GetPropertiesCallback,
-                     std::move(callback), error_callback, device_path));
+      base::BindOnce(&GetPropertiesCallback, device_path, std::move(callback)));
 }
 
 void NetworkDeviceHandlerImpl::SetDeviceProperty(
     const std::string& device_path,
     const std::string& property_name,
     const base::Value& value,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const char* const property_blacklist[] = {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const char* const property_blocked[] = {
       // Must only be changed by policy/owner through.
       shill::kCellularAllowRoamingProperty};
 
-  for (size_t i = 0; i < base::size(property_blacklist); ++i) {
-    if (property_name == property_blacklist[i]) {
+  for (size_t i = 0; i < base::size(property_blocked); ++i) {
+    if (property_name == property_blocked[i]) {
       InvokeErrorCallback(
-          device_path, error_callback,
-          "SetDeviceProperty called on blacklisted property " + property_name);
+          device_path, std::move(error_callback),
+          "SetDeviceProperty called on blocked property " + property_name);
       return;
     }
   }
 
-  SetDevicePropertyInternal(device_path, property_name, value, callback,
-                            error_callback);
+  SetDevicePropertyInternal(device_path, property_name, value,
+                            std::move(callback), std::move(error_callback));
 }
 
 void NetworkDeviceHandlerImpl::RegisterCellularNetwork(
     const std::string& device_path,
     const std::string& network_id,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.RegisterCellularNetwork: " << device_path
                 << " Id: " << network_id;
   ShillDeviceClient::Get()->Register(
-      dbus::ObjectPath(device_path), network_id, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), network_id, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::RequirePin(
     const std::string& device_path,
     bool require_pin,
     const std::string& pin,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.RequirePin: " << device_path << ": " << require_pin;
   ShillDeviceClient::Get()->RequirePin(
-      dbus::ObjectPath(device_path), pin, require_pin, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), pin, require_pin, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::EnterPin(
     const std::string& device_path,
     const std::string& pin,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.EnterPin: " << device_path;
   ShillDeviceClient::Get()->EnterPin(
-      dbus::ObjectPath(device_path), pin, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), pin, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::UnblockPin(
     const std::string& device_path,
     const std::string& puk,
     const std::string& new_pin,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.UnblockPin: " << device_path;
   ShillDeviceClient::Get()->UnblockPin(
-      dbus::ObjectPath(device_path), puk, new_pin, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), puk, new_pin, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::ChangePin(
     const std::string& device_path,
     const std::string& old_pin,
     const std::string& new_pin,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Device.ChangePin: " << device_path;
   ShillDeviceClient::Get()->ChangePin(
-      dbus::ObjectPath(device_path), old_pin, new_pin, callback,
-      base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
+      dbus::ObjectPath(device_path), old_pin, new_pin, std::move(callback),
+      base::BindOnce(&HandleShillCallFailure, device_path,
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::SetCellularAllowRoaming(
@@ -343,113 +226,106 @@ void NetworkDeviceHandlerImpl::SetUsbEthernetMacAddressSource(
   ApplyUsbEthernetMacAddressSourceToShill();
 }
 
-void NetworkDeviceHandlerImpl::SetWifiTDLSEnabled(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
-    return;
-
-  TDLSOperationParams params;
-  params.operation =
-      enabled ? shill::kTDLSDiscoverOperation : shill::kTDLSTeardownOperation;
-  params.ip_or_mac_address = ip_or_mac_address;
-  CallPerformTDLSOperation(device_state->path(), params, callback,
-                           error_callback);
-}
-
-void NetworkDeviceHandlerImpl::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
-    return;
-
-  TDLSOperationParams params;
-  params.operation = shill::kTDLSStatusOperation;
-  params.ip_or_mac_address = ip_or_mac_address;
-  CallPerformTDLSOperation(device_state->path(), params, callback,
-                           error_callback);
-}
-
 void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketConnection(
     const net::IPEndPoint& ip_endpoint,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState();
+  if (!device_state) {
+    if (error_callback) {
+      std::move(error_callback)
+          .Run(kErrorDeviceMissing, GetErrorData(kErrorDeviceMissing));
+    }
     return;
+  }
 
   NET_LOG(USER) << "Device.AddWakeOnWifi: " << device_state->path();
   ShillDeviceClient::Get()->AddWakeOnPacketConnection(
-      dbus::ObjectPath(device_state->path()), ip_endpoint, callback,
+      dbus::ObjectPath(device_state->path()), ip_endpoint, std::move(callback),
       base::BindOnce(&HandleShillCallFailure, device_state->path(),
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketOfTypes(
     const std::vector<std::string>& types,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState();
+  if (!device_state) {
+    if (error_callback) {
+      std::move(error_callback)
+          .Run(kErrorDeviceMissing, GetErrorData(kErrorDeviceMissing));
+    }
     return;
+  }
 
   NET_LOG(USER) << "Device.AddWifiWakeOnPacketOfTypes: " << device_state->path()
                 << " Types: " << base::JoinString(types, " ");
   ShillDeviceClient::Get()->AddWakeOnPacketOfTypes(
-      dbus::ObjectPath(device_state->path()), types, callback,
+      dbus::ObjectPath(device_state->path()), types, std::move(callback),
       base::BindOnce(&HandleShillCallFailure, device_state->path(),
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketConnection(
     const net::IPEndPoint& ip_endpoint,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState();
+  if (!device_state) {
+    if (error_callback) {
+      std::move(error_callback)
+          .Run(kErrorDeviceMissing, GetErrorData(kErrorDeviceMissing));
+    }
     return;
+  }
 
   NET_LOG(USER) << "Device.RemoveWakeOnWifi: " << device_state->path();
   ShillDeviceClient::Get()->RemoveWakeOnPacketConnection(
-      dbus::ObjectPath(device_state->path()), ip_endpoint, callback,
+      dbus::ObjectPath(device_state->path()), ip_endpoint, std::move(callback),
       base::BindOnce(&HandleShillCallFailure, device_state->path(),
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketOfTypes(
     const std::vector<std::string>& types,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState();
+  if (!device_state) {
+    if (error_callback) {
+      std::move(error_callback)
+          .Run(kErrorDeviceMissing, GetErrorData(kErrorDeviceMissing));
+    }
     return;
+  }
 
   NET_LOG(USER) << "Device.RemoveWifiWakeOnPacketOfTypes: "
                 << device_state->path()
                 << " Types: " << base::JoinString(types, " ");
   ShillDeviceClient::Get()->RemoveWakeOnPacketOfTypes(
-      dbus::ObjectPath(device_state->path()), types, callback,
+      dbus::ObjectPath(device_state->path()), types, std::move(callback),
       base::BindOnce(&HandleShillCallFailure, device_state->path(),
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::RemoveAllWifiWakeOnPacketConnections(
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
+    base::OnceClosure callback,
+    network_handler::ErrorCallback error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState();
+  if (!device_state) {
+    if (error_callback) {
+      std::move(error_callback)
+          .Run(kErrorDeviceMissing, GetErrorData(kErrorDeviceMissing));
+    }
     return;
+  }
 
   NET_LOG(USER) << "Device.RemoveAllWakeOnWifi: " << device_state->path();
   ShillDeviceClient::Get()->RemoveAllWakeOnPacketConnections(
-      dbus::ObjectPath(device_state->path()), callback,
+      dbus::ObjectPath(device_state->path()), std::move(callback),
       base::BindOnce(&HandleShillCallFailure, device_state->path(),
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void NetworkDeviceHandlerImpl::DeviceListChanged() {
@@ -501,8 +377,7 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
 }
 
 void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
-  const DeviceState* device_state =
-      GetWifiDeviceState(network_handler::ErrorCallback());
+  const DeviceState* device_state = GetWifiDeviceState();
   if (!device_state) {
     // We'll need to ask if this is supported when we find a Wi-Fi
     // device.
@@ -517,8 +392,7 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
           device_state->path(),
           base::BindOnce(
               &NetworkDeviceHandlerImpl::HandleMACAddressRandomization,
-              weak_ptr_factory_.GetWeakPtr()),
-          network_handler::ErrorCallback());
+              weak_ptr_factory_.GetWeakPtr()));
       return;
     case MACAddressRandomizationSupport::SUPPORTED:
       SetDevicePropertyInternal(
@@ -569,11 +443,11 @@ void NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError(
     const std::string& device_path,
     const std::string& device_mac_address,
     const std::string& mac_address_source,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
-  HandleShillCallFailure(device_path, error_callback, shill_error_name,
-                         shill_error_message);
+  HandleShillCallFailure(device_path, std::move(error_callback),
+                         shill_error_name, shill_error_message);
   if (shill_error_name == shill::kErrorResultNotSupported &&
       mac_address_source == usb_ethernet_mac_address_source_) {
     mac_address_change_not_supported_.insert(device_mac_address);
@@ -665,10 +539,12 @@ void NetworkDeviceHandlerImpl::
 
 void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
     const std::string& device_path,
-    const base::DictionaryValue& properties) {
-  bool supported;
-  if (!properties.GetBooleanWithoutPathExpansion(
-          shill::kMacAddressRandomizationSupportedProperty, &supported)) {
+    base::Optional<base::Value> properties) {
+  if (!properties)
+    return;
+  base::Optional<bool> supported =
+      properties->FindBoolKey(shill::kMacAddressRandomizationSupportedProperty);
+  if (!supported.has_value()) {
     if (base::SysInfo::IsRunningOnChromeOS()) {
       NET_LOG(ERROR) << "Failed to determine if device " << device_path
                      << " supports MAC address randomization";
@@ -677,7 +553,7 @@ void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
   }
 
   // Try to set MAC address randomization if it's supported.
-  if (supported) {
+  if (*supported) {
     mac_addr_randomization_supported_ =
         MACAddressRandomizationSupport::SUPPORTED;
     ApplyMACAddressRandomizationToShill();
@@ -687,21 +563,9 @@ void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
   }
 }
 
-const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state =
-      network_state_handler_->GetDeviceStateByType(NetworkTypePattern::WiFi());
-  if (!device_state) {
-    if (error_callback.is_null())
-      return nullptr;
-    std::unique_ptr<base::DictionaryValue> error_data(
-        new base::DictionaryValue);
-    error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
-    error_callback.Run(kErrorDeviceMissing, std::move(error_data));
-    return nullptr;
-  }
-
-  return device_state;
+const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState() {
+  return network_state_handler_->GetDeviceStateByType(
+      NetworkTypePattern::WiFi());
 }
 
 }  // namespace chromeos

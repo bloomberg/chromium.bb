@@ -61,7 +61,10 @@ class GLImageAHardwareBuffer::ScopedHardwareBufferFenceSyncImpl
   ScopedHardwareBufferFenceSyncImpl(
       scoped_refptr<GLImageAHardwareBuffer> image,
       base::android::ScopedHardwareBufferHandle handle)
-      : ScopedHardwareBufferFenceSync(std::move(handle), base::ScopedFD()),
+      : ScopedHardwareBufferFenceSync(std::move(handle),
+                                      base::ScopedFD(),
+                                      base::ScopedFD(),
+                                      false /* is_video */),
         image_(std::move(image)) {}
   ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
@@ -72,10 +75,8 @@ class GLImageAHardwareBuffer::ScopedHardwareBufferFenceSyncImpl
       return;
 
     gfx::GpuFenceHandle handle;
-    handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
-    handle.native_fd =
-        base::FileDescriptor(fence_fd.release(), /*auto_close=*/true);
-    gfx::GpuFence gpu_fence(handle);
+    handle.owned_fd = std::move(fence_fd);
+    gfx::GpuFence gpu_fence(std::move(handle));
     auto gl_fence = GLFence::CreateFromGpuFence(gpu_fence);
     gl_fence->ServerWait();
   }

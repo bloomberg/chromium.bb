@@ -15,8 +15,7 @@
 
 namespace base {
 class Value;
-class DictionaryValue;
-}  // namespace base
+}
 
 namespace dbus {
 class Bus;
@@ -31,7 +30,6 @@ namespace chromeos {
 // DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
  public:
-  typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ListValueCallback ListValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
   typedef ShillClientHelper::StringCallback StringCallback;
@@ -55,14 +53,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                                         const std::string& ipconfig_path,
                                         bool visible) = 0;
     // Sets the properties for a service but does not add it to the Manager
-    // or Profile. Returns the properties for the service.
-    virtual base::DictionaryValue* SetServiceProperties(
-        const std::string& service_path,
-        const std::string& guid,
-        const std::string& name,
-        const std::string& type,
-        const std::string& state,
-        bool visible) = 0;
+    // or Profile. Returns the properties for the service as a dictionary Value.
+    virtual base::Value* SetServiceProperties(const std::string& service_path,
+                                              const std::string& guid,
+                                              const std::string& name,
+                                              const std::string& type,
+                                              const std::string& state,
+                                              bool visible) = 0;
 
     // Removes a Service to the Manager and Service stubs.
     virtual void RemoveService(const std::string& service_path) = 0;
@@ -72,8 +69,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                                     const std::string& property,
                                     const base::Value& value) = 0;
 
-    // Returns properties for |service_path| or null if no Service matches.
-    virtual const base::DictionaryValue* GetServiceProperties(
+    // Returns properties for |service_path| as a dictionary Value or null if no
+    // Service matches.
+    virtual const base::Value* GetServiceProperties(
         const std::string& service_path) const = 0;
 
     // If the service referenced by |service_path| is not visible (according to
@@ -134,10 +132,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) = 0;
 
-  // Calls GetProperties method.
-  // |callback| is called after the method call succeeds.
+  // Calls the GetProperties DBus method and invokes |callback| when complete.
+  // |callback| receives a dictionary Value containing the Service properties on
+  // success or nullopt on failure.
   virtual void GetProperties(const dbus::ObjectPath& service_path,
-                             DictionaryValueCallback callback) = 0;
+                             DBusMethodCallback<base::Value> callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.
@@ -147,10 +146,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                            base::OnceClosure callback,
                            ErrorCallback error_callback) = 0;
 
-  // Calls SetProperties method.
-  // |callback| is called after the method call succeeds.
+  // Calls the SetProperties DBus method with |properties| which must be a
+  // dictionary Value. Invokes |callback| on success or |error_callback| on
+  // failure.
   virtual void SetProperties(const dbus::ObjectPath& service_path,
-                             const base::DictionaryValue& properties,
+                             const base::Value& properties,
                              base::OnceClosure callback,
                              ErrorCallback error_callback) = 0;
 
@@ -186,13 +186,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                       base::OnceClosure callback,
                       ErrorCallback error_callback) = 0;
 
-  // Calls ActivateCellularModem method.
-  // |callback| is called after the method call succeeds.
-  virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                                     const std::string& carrier,
-                                     base::OnceClosure callback,
-                                     ErrorCallback error_callback) = 0;
-
   // Calls the CompleteCellularActivation method.
   // |callback| is called after the method call succeeds.
   virtual void CompleteCellularActivation(const dbus::ObjectPath& service_path,
@@ -201,8 +194,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
 
   // Calls the GetLoadableProfileEntries method.
   // |callback| is called after the method call succeeds.
-  virtual void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
-                                         DictionaryValueCallback callback) = 0;
+  virtual void GetLoadableProfileEntries(
+      const dbus::ObjectPath& service_path,
+      DBusMethodCallback<base::Value> callback) = 0;
 
   // Retrieves the saved passphrase for the given network.
   virtual void GetWiFiPassphrase(const dbus::ObjectPath& service_path,

@@ -3,29 +3,28 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
-import {$, $$, getBrowserAndPages, resourcesPath, waitFor} from '../../shared/helper.js';
+
+import {$, $$, getBrowserAndPages, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {triggerFindDialog} from '../helpers/search-helpers.js';
 
 describe('The Search Panel', async () => {
   it('provides results across scopes', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
     const SEARCH_QUERY = '[aria-label="Search Query"]';
     const SEARCH_RESULTS = '.search-results';
     const SEARCH_FILE_RESULT = '.search-result';
     const SEARCH_CHILDREN_RESULT = '.search-match-link';
 
     // Load the search page, which has results in the HTML, JS, and CSS.
-    await target.goto(`${resourcesPath}/search/search.html`);
+    await goToResource('search/search.html');
 
     // Launch the search panel.
     await triggerFindDialog(frontend);
     await waitFor(SEARCH_QUERY);
-    const query = await $(SEARCH_QUERY);
-    const inputElement = query.asElement();
+    const inputElement = await $(SEARCH_QUERY);
     if (!inputElement) {
       assert.fail('Unable to find search input field');
-      return;
     }
 
     // Go ahead and search.
@@ -34,32 +33,42 @@ describe('The Search Panel', async () => {
     await frontend.keyboard.press('Enter');
 
     // Wait for results.
-    await waitFor(SEARCH_RESULTS);
-    const resultsContainer = await $(SEARCH_RESULTS);
-    await waitFor(SEARCH_FILE_RESULT, resultsContainer);
+    const resultsContainer = await waitFor(SEARCH_RESULTS);
 
-    // Process the results into something manageable.
-    const fileResults = await $$(SEARCH_FILE_RESULT, resultsContainer);
-    const files = await fileResults.evaluate(result => result.map((value: Element) => {
+    const fileResults = await waitForFunction(async () => {
+      const results = await $$(SEARCH_FILE_RESULT, resultsContainer);
+      return results.length === 3 ? results : undefined;
+    });
+
+    interface FileSearchResult {
+      matchesCount: number;
+      fileName: string;
+    }
+
+    const files: FileSearchResult[] = await Promise.all(fileResults.map(result => result.evaluate(value => {
       const SEARCH_RESULT_FILE_NAME = '.search-result-file-name';
       const SEARCH_RESULT_MATCHES_COUNT = '.search-result-matches-count';
 
       // Wrap the entries with the file details.
       return {
-        fileName: value.querySelector(SEARCH_RESULT_FILE_NAME)!.firstChild!.textContent,
-        matchesCount: value.querySelector(SEARCH_RESULT_MATCHES_COUNT)!.textContent,
+        fileName: value.querySelector(SEARCH_RESULT_FILE_NAME)!.firstChild!.textContent as string,
+        matchesCount: parseInt(value.querySelector(SEARCH_RESULT_MATCHES_COUNT)!.textContent as string, 10),
       };
-    }));
+    })));
+
+    files.sort((a, b) => {
+      return a.matchesCount - b.matchesCount;
+    });
 
     assert.deepEqual(files, [
-      {fileName: 'search.css', matchesCount: '3'},
-      {fileName: 'search.js', matchesCount: '5'},
-      {fileName: 'search.html', matchesCount: '4'},
+      {fileName: 'search.css', matchesCount: 3},
+      {fileName: 'search.html', matchesCount: 4},
+      {fileName: 'search.js', matchesCount: 5},
     ]);
 
     // Now step through the actual entries of the search result.
     const entryResults = await $$(SEARCH_CHILDREN_RESULT, resultsContainer);
-    const entries = await entryResults.evaluate(result => result.map((value: Element) => {
+    const entries = await Promise.all(entryResults.map(result => result.evaluate(value => {
       const SEARCH_MATCH_LINE_NUMBER = '.search-match-line-number';
       const SEARCH_MATCH_CONTENT = '.search-match-content';
 
@@ -67,7 +76,7 @@ describe('The Search Panel', async () => {
         line: value.querySelector(SEARCH_MATCH_LINE_NUMBER)!.textContent,
         content: value.querySelector(SEARCH_MATCH_CONTENT)!.textContent,
       };
-    }));
+    })));
 
     assert.deepEqual(entries, [
       {line: '7', content: 'div.searchTestUniqueString {'},

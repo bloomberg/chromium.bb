@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -154,9 +154,9 @@ void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
 }
 
 void PrintJobWorker::GetSettings(bool ask_user_for_settings,
-                                 int document_page_count,
+                                 uint32_t document_page_count,
                                  bool has_selection,
-                                 MarginType margin_type,
+                                 mojom::MarginType margin_type,
                                  bool is_scripted,
                                  bool is_modifiable,
                                  SettingsCallback callback) {
@@ -169,14 +169,14 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // When we delegate to a destination, we don't ask the user for settings.
   // TODO(mad): Ask the destination for settings.
   if (ask_user_for_settings) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
                        base::Unretained(this), document_page_count,
                        has_selection, is_scripted, std::move(callback)));
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&PrintJobWorker::UseDefaultSettings,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&PrintJobWorker::UseDefaultSettings,
                                   base::Unretained(this), std::move(callback)));
   }
 }
@@ -185,8 +185,8 @@ void PrintJobWorker::SetSettings(base::Value new_settings,
                                  SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
                                 base::Unretained(this), std::move(new_settings),
                                 std::move(callback)));
 }
@@ -197,8 +197,8 @@ void PrintJobWorker::SetSettingsFromPOD(
     SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
                                 base::Unretained(this), std::move(new_settings),
                                 std::move(callback)));
 }
@@ -217,11 +217,23 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
     // not thread-safe and have to be accessed on the UI thread.
     base::ScopedAllowBlocking allow_blocking;
 #endif
-    scoped_refptr<PrintBackend> print_backend = PrintBackend::CreateInstance(
-        nullptr, g_browser_process->GetApplicationLocale());
+    scoped_refptr<PrintBackend> print_backend =
+        PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
     std::string printer_name = *new_settings.FindStringKey(kSettingDeviceName);
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
         print_backend->GetPrinterDriverInfo(printer_name));
+
+#if defined(OS_LINUX) && defined(USE_CUPS) && !defined(OS_CHROMEOS)
+    PrinterBasicInfo basic_info;
+    if (print_backend->GetPrinterBasicInfo(printer_name, &basic_info)) {
+      base::Value advanced_settings(base::Value::Type::DICTIONARY);
+      for (const auto& pair : basic_info.options)
+        advanced_settings.SetStringKey(pair.first, pair.second);
+
+      new_settings.SetKey(kSettingAdvancedSettings,
+                          std::move(advanced_settings));
+    }
+#endif  // defined(OS_LINUX) && defined(USE_CUPS) && !defined(OS_CHROMEOS)
   }
 
   PrintingContext::Result result;
@@ -252,11 +264,16 @@ void PrintJobWorker::GetSettingsDone(SettingsCallback callback,
   std::move(callback).Run(printing_context_->TakeAndResetSettings(), result);
 }
 
-void PrintJobWorker::GetSettingsWithUI(int document_page_count,
+void PrintJobWorker::GetSettingsWithUI(uint32_t document_page_count,
                                        bool has_selection,
                                        bool is_scripted,
                                        SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (document_page_count > kMaxPageCount) {
+    GetSettingsDone(std::move(callback), PrintingContext::Result::FAILED);
+    return;
+  }
 
   content::WebContents* web_contents = GetWebContents();
 
@@ -282,17 +299,25 @@ void PrintJobWorker::GetSettingsWithUI(int document_page_count,
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  if (web_contents && web_contents->IsFullscreenForCurrentTab())
+  if (web_contents && web_contents->IsFullscreen())
     web_contents->ExitFullscreen(true);
 
   printing_context_->AskUserForSettings(
-      document_page_count, has_selection, is_scripted,
+      base::checked_cast<int>(document_page_count), has_selection, is_scripted,
       base::BindOnce(&PrintJobWorker::GetSettingsDone,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PrintJobWorker::UseDefaultSettings(SettingsCallback callback) {
-  PrintingContext::Result result = printing_context_->UseDefaultSettings();
+  PrintingContext::Result result;
+  {
+#if defined(OS_WIN)
+    // Blocking is needed here because Windows printer drivers are oftentimes
+    // not thread-safe and have to be accessed on the UI thread.
+    base::ScopedAllowBlocking allow_blocking;
+#endif
+    result = printing_context_->UseDefaultSettings();
+  }
   GetSettingsDone(std::move(callback), result);
 }
 
@@ -398,7 +423,7 @@ bool PrintJobWorker::OnNewPageHelperGdi() {
   }
 
   while (true) {
-    scoped_refptr<PrintedPage> page = document_->GetPage(page_number_.ToInt());
+    scoped_refptr<PrintedPage> page = document_->GetPage(page_number_.ToUint());
     if (!page) {
       PostWaitForPage();
       return false;

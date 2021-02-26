@@ -25,7 +25,7 @@ namespace login_screen_extension_ui {
 class DialogDelegate;
 
 // A WebDialogView used by chrome.loginScreenUi API calls. It hides the close
-// button if |DialogDelegate::CanCloseDialog()| is false.
+// button if `DialogDelegate::CanCloseDialog()` is false.
 class WebDialogView : public views::WebDialogView,
                       public ash::SystemTrayFocusObserver {
  public:
@@ -37,7 +37,6 @@ class WebDialogView : public views::WebDialogView,
   ~WebDialogView() override;
 
   // views::WebDialogView
-  bool ShouldShowCloseButton() const override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
 
   // ash::SystemTrayFocusObserver

@@ -11,6 +11,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/version_info/channel.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -52,10 +53,11 @@ class FeedNetworkImpl : public FeedNetwork {
 
   void SendQueryRequest(
       const feedwire::Request& request,
+      bool force_signed_out_request,
       base::OnceCallback<void(QueryRequestResult)> callback) override;
 
   void SendActionRequest(
-      const feedwire::ActionRequest& request,
+      const feedwire::UploadActionsRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) override;
 
   // Cancels all pending requests immediately. This could be used, for example,
@@ -70,6 +72,8 @@ class FeedNetworkImpl : public FeedNetwork {
   void Send(const GURL& url,
             const std::string& request_type,
             std::string request_body,
+            bool force_signed_out_request,
+            bool host_overridden,
             base::OnceCallback<void(FeedNetworkImpl::RawResponse)> callback);
 
   void SendComplete(NetworkFetch* fetch,

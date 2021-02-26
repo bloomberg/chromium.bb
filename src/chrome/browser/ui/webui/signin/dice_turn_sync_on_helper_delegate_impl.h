@@ -25,22 +25,6 @@ class DiceTurnSyncOnHelperDelegateImpl : public DiceTurnSyncOnHelper::Delegate,
   ~DiceTurnSyncOnHelperDelegateImpl() override;
 
  private:
-  // User input handler for the signin confirmation dialog.
-  class SigninDialogDelegate : public ui::ProfileSigninConfirmationDelegate {
-   public:
-    explicit SigninDialogDelegate(
-        DiceTurnSyncOnHelper::SigninChoiceCallback callback);
-    ~SigninDialogDelegate() override;
-    void OnCancelSignin() override;
-    void OnContinueSignin() override;
-    void OnSigninWithNewProfile() override;
-
-   private:
-    DiceTurnSyncOnHelper::SigninChoiceCallback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(SigninDialogDelegate);
-  };
-
   // DiceTurnSyncOnHelper::Delegate:
   void ShowLoginError(const std::string& email,
                       const std::string& error_message) override;
@@ -52,6 +36,9 @@ class DiceTurnSyncOnHelperDelegateImpl : public DiceTurnSyncOnHelper::Delegate,
       const std::string& email,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
+      base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+          callback) override;
+  void ShowSyncDisabledConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
   void ShowSyncSettings() override;

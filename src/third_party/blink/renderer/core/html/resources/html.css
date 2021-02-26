@@ -248,7 +248,8 @@ table {
     border-collapse: separate;
     border-spacing: 2px;
     border-color: gray;
-    box-sizing: border-box
+    box-sizing: border-box;
+    text-indent: initial
 }
 
 thead {
@@ -395,7 +396,7 @@ fieldset {
 }
 
 button {
-    -webkit-appearance: button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
 }
 
 /* Form controls don't go vertical. */
@@ -437,14 +438,16 @@ input[type="search" i] {
 }
 
 input::-webkit-textfield-decoration-container {
-    display: flex;
+    display: flex !important;
     align-items: center;
     -webkit-user-modify: read-only !important;
     content: none !important;
+    writing-mode: inherit !important;
+    -internal-align-self-block: center;
 }
 
 input::-webkit-clear-button {
-    -webkit-appearance: searchfield-cancel-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     display: inline-block;
     cursor: default;
     flex: none;
@@ -460,7 +463,7 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
 }
 
 input[type="search" i]::-webkit-search-cancel-button {
-    -webkit-appearance: searchfield-cancel-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     display: block;
     cursor: default;
     flex: none;
@@ -477,7 +480,7 @@ input[type="search" i]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-se
 }
 
 input::-webkit-inner-spin-button {
-    -webkit-appearance: inner-spin-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     display: inline-block;
     cursor: default;
     flex: none;
@@ -500,6 +503,7 @@ textarea {
     -webkit-appearance: textarea; /* AutoAppearanceFor() should match to this. */
     background-color: -internal-light-dark(white, black);
     border: 1px solid;
+    column-count: initial !important;
     -webkit-rtl-ordering: logical;
     flex-direction: column;
     resize: auto;
@@ -512,7 +516,10 @@ textarea {
 ::-webkit-input-placeholder {
     -webkit-text-security: none;
     color: #757575;
+    direction: inherit !important;
     pointer-events: none !important;
+    text-orientation: inherit !important;
+    writing-mode: inherit !important;
 }
 
 input::-webkit-input-placeholder {
@@ -560,7 +567,10 @@ input[type="hidden" i], input[type="image" i], input[type="file" i] {
 input[type="file" i] {
     align-items: baseline;
     color: inherit;
+    overflow: hidden !important;
     text-align: start !important;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 input[type="image" i] {
@@ -597,16 +607,17 @@ input[type="radio" i], input[type="checkbox" i] {
 
 input[type="button" i], input[type="submit" i], input[type="reset" i] {
     -internal-empty-line-height: fabricated;
-    -webkit-appearance: push-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     -webkit-user-select: none;
     white-space: pre
 }
 
 input[type="file" i]::-webkit-file-upload-button {
-    -webkit-appearance: push-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     -webkit-user-modify: read-only !important;
     white-space: nowrap;
     margin: 0;
+    margin-inline-end: 4px;
     font-size: inherit;
 }
 
@@ -631,12 +642,20 @@ input[type="range" i] {
 }
 
 input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
-    -webkit-appearance: inherit; /* AutoAppearanceFor() should match to this. */
+    appearance: inherit;
     flex: 1;
     min-inline-size: 0;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: flex;
+}
+
+input[type="range" i]:-internal-has-datalist::-webkit-slider-container {
+    /*
+     * See LayoutThemeDefault. "22px" is
+     * 2 * (SliderTickOffsetFromTrackCenter() + SliderTickSize().Height()).
+     */
+    min-block-size: 22px;
 }
 
 input[type="range" i]::-webkit-slider-runnable-track {
@@ -650,7 +669,7 @@ input[type="range" i]::-webkit-slider-runnable-track {
 }
 
 input[type="range" i]::-webkit-slider-thumb, input[type="range" i]::-webkit-media-slider-thumb {
-    -webkit-appearance: sliderthumb-horizontal; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: block;
@@ -698,17 +717,17 @@ param {
 }
 
 input[type="checkbox" i] {
-    -webkit-appearance: checkbox; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     box-sizing: border-box;
 }
 
 input[type="radio" i] {
-    -webkit-appearance: radio; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     box-sizing: border-box;
 }
 
 input[type="color" i] {
-    -webkit-appearance: square-button; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     width: 44px;
     height: 23px;
     background-color: ButtonFace;
@@ -878,7 +897,7 @@ output {
 /* meter */
 
 meter {
-    -webkit-appearance: meter; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     box-sizing: border-box;
     display: inline-block;
     height: 1em;
@@ -888,7 +907,7 @@ meter {
 }
 
 meter::-webkit-meter-inner-element {
-    -webkit-appearance: inherit; /* AutoAppearanceFor() should match to this. */
+    appearance: inherit;
     box-sizing: inherit;
     display: none;
     -webkit-user-modify: read-only !important;
@@ -936,7 +955,7 @@ meter::-webkit-meter-even-less-good-value {
 /* progress */
 
 progress {
-    -webkit-appearance: progress-bar; /* AutoAppearanceFor() should match to this. */
+    appearance: auto;
     box-sizing: border-box;
     display: inline-block;
     height: 1em;
@@ -1155,13 +1174,23 @@ dialog {
     position: absolute;
     left: 0;
     right: 0;
-    width: -webkit-fit-content;
-    height: -webkit-fit-content;
+    width: fit-content;
+    height: fit-content;
     margin: auto;
     border: solid;
     padding: 1em;
     background: -internal-light-dark(white, black);
     color: -internal-light-dark(black, white);
+}
+
+dialog:-internal-modal {
+    position: fixed;
+    overflow: auto;
+    top: 0;
+    bottom: 0;
+    /* 6px + 2em = border + padding, as by default box-sizing is content-box. */
+    max-width: calc(100% - 6px - 2em);
+    max-height: calc(100% - 6px - 2em);
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

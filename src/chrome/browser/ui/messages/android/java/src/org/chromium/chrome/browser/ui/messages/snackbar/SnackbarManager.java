@@ -16,8 +16,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.UnownedUserData;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -30,7 +31,7 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link SnackbarController#onDismissNoAction(Object)}. Note, snackbars of
  * {@link Snackbar#TYPE_PERSISTENT} do not get automatically dismissed after a timeout.
  */
-public class SnackbarManager implements OnClickListener, ActivityStateListener {
+public class SnackbarManager implements OnClickListener, ActivityStateListener, UnownedUserData {
     /**
      * Interface that shows the ability to provide a snackbar manager.
      */
@@ -178,6 +179,7 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
      */
     @Override
     public void onClick(View v) {
+        mView.announceActionForAccessibility();
         mSnackbars.removeCurrentDueToAction();
         updateView();
     }
@@ -252,7 +254,7 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
         int durationMs = snackbar.getDuration();
         if (durationMs == 0) durationMs = sSnackbarDurationMs;
 
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             durationMs *= 2;
             if (durationMs < sAccessibilitySnackbarDurationMs) {
                 durationMs = sAccessibilitySnackbarDurationMs;

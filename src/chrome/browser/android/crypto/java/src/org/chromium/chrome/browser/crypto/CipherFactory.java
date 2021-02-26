@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.crypto;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
+import androidx.annotation.AnyThread;
+
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SecureRandomInitializer;
@@ -23,7 +25,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
@@ -49,7 +50,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Explicitly ending the session destroys the {@link Bundle}, making the previous session's data
  * unreadable.
  */
-@ThreadSafe
+@AnyThread
 public class CipherFactory {
     private static final String TAG = "CipherFactory";
     static final int NUM_BYTES = 16;
@@ -269,19 +270,27 @@ public class CipherFactory {
      *
      */
     public boolean restoreFromBundle(Bundle savedInstanceState) {
-        if (savedInstanceState == null) return false;
+        if (savedInstanceState == null) {
+            Log.i(TAG, "#restoreFromBundle, no savedInstanceState.");
+            return false;
+        }
 
         byte[] wrappedKey = savedInstanceState.getByteArray(BUNDLE_KEY);
         byte[] iv = savedInstanceState.getByteArray(BUNDLE_IV);
-        if (wrappedKey == null || iv == null) return false;
+        if (wrappedKey == null || iv == null) {
+            Log.i(TAG, "#restoreFromBundle, no wrapped key or no iv.");
+            return false;
+        }
 
         try {
             Key bundledKey = new SecretKeySpec(wrappedKey, "AES");
             synchronized (mDataLock) {
                 if (mData == null) {
+                    Log.i(TAG, "#restoreFromBundle, creating new CipherData.");
                     mData = new CipherData(bundledKey, iv);
                     return true;
                 } else if (mData.key.equals(bundledKey) && Arrays.equals(mData.iv, iv)) {
+                    Log.i(TAG, "#restoreFromBundle, using existing CipherData.");
                     return true;
                 } else {
                     Log.e(TAG, "Attempted to restore different cipher data.");

@@ -4,32 +4,39 @@
 
 package org.chromium.chrome.browser.accessibility.settings;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import android.app.Instrumentation;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import androidx.preference.Preference;
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 
@@ -44,9 +51,10 @@ public class AccessibilitySettingsTest {
     public SettingsActivityTestRule<AccessibilitySettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AccessibilitySettings.class);
 
-    @Before
-    public void setUp() {
-        mSettingsActivityTestRule.startSettingsActivity();
+    @After
+    public void tearDown() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false));
     }
 
     /**
@@ -57,7 +65,9 @@ public class AccessibilitySettingsTest {
     @SmallTest
     @Feature({"Accessibility"})
     public void testAccessibilitySettings() throws Exception {
+        mSettingsActivityTestRule.startSettingsActivity();
         AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
         TextScalePreference textScalePref =
                 (TextScalePreference) accessibilitySettings.findPreference(
                         AccessibilitySettings.PREF_TEXT_SCALE);
@@ -103,8 +113,53 @@ public class AccessibilitySettingsTest {
     @Test
     @SmallTest
     @Feature({"Accessibility"})
-    public void testCaptionPreferences() {
+    public void testChangedFontPrefSavedOnStop() {
+        mSettingsActivityTestRule.startSettingsActivity();
         AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
+        TextScalePreference textScalePref =
+                accessibilitySettings.findPreference(AccessibilitySettings.PREF_TEXT_SCALE);
+
+        // Change text scale a couple of times.
+        userSetTextScale(accessibilitySettings, textScalePref, 0.5f);
+        userSetTextScale(accessibilitySettings, textScalePref, 1.75f);
+
+        Assert.assertEquals("Histogram should not be recorded yet.", 0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        FontSizePrefs.FONT_SIZE_CHANGE_HISTOGRAM));
+
+        // Simulate activity stopping.
+        TestThreadUtils.runOnUiThreadBlocking(() -> accessibilitySettings.onStop());
+
+        Assert.assertEquals("Histogram should have been recorded once.", 1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        FontSizePrefs.FONT_SIZE_CHANGE_HISTOGRAM));
+        Assert.assertEquals("Histogram should have recorded final value.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        FontSizePrefs.FONT_SIZE_CHANGE_HISTOGRAM, 175));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    public void testUnchangedFontPrefNotSavedOnStop() {
+        mSettingsActivityTestRule.startSettingsActivity();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
+        // Simulate activity stopping.
+        TestThreadUtils.runOnUiThreadBlocking(() -> accessibilitySettings.onStop());
+        Assert.assertEquals("Histogram should not have been recorded.", 0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        FontSizePrefs.FONT_SIZE_CHANGE_HISTOGRAM));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    public void testCaptionPreferences() {
+        mSettingsActivityTestRule.startSettingsActivity();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
         Preference captionsPref =
                 accessibilitySettings.findPreference(AccessibilitySettings.PREF_CAPTIONS);
         Assert.assertNotNull(captionsPref);
@@ -118,6 +173,56 @@ public class AccessibilitySettingsTest {
                 .perform(click());
         monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
         Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
+        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    @Features.DisableFeatures({ContentFeatureList.EXPERIMENTAL_ACCESSIBILITY_LABELS})
+    public void testImageDescriptionsPreferences_Disabled() {
+        mSettingsActivityTestRule.startSettingsActivity();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
+        Preference imageDescriptionsPref =
+                accessibilitySettings.findPreference(AccessibilitySettings.PREF_IMAGE_DESCRIPTIONS);
+
+        Assert.assertNotNull(imageDescriptionsPref);
+        Assert.assertFalse(
+                "Image Descriptions should not be visible", imageDescriptionsPref.isVisible());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    @Features.EnableFeatures({ContentFeatureList.EXPERIMENTAL_ACCESSIBILITY_LABELS})
+    public void testImageDescriptionsPreferences_Enabled() {
+        // Enable accessibility services to display settings option.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+
+        mSettingsActivityTestRule.startSettingsActivity();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
+        Preference imageDescriptionsPref =
+                accessibilitySettings.findPreference(AccessibilitySettings.PREF_IMAGE_DESCRIPTIONS);
+
+        Assert.assertNotNull(imageDescriptionsPref);
+        Assert.assertTrue(
+                "Image Descriptions option should be visible", imageDescriptionsPref.isVisible());
+
+        Instrumentation.ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation().addMonitor(
+                        new IntentFilter(Intent.ACTION_MAIN), null, false);
+
+        // First scroll to bottom of the page, then click.
+        onView(ViewMatchers.isRoot()).perform(swipeUp());
+        onView(withText(org.chromium.chrome.R.string.image_descriptions_settings_title))
+                .perform(click());
+
+        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertEquals(
+                "Clicking image descriptions should open subpage", 1, monitor.getHits());
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
     }
 

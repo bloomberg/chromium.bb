@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/browser/browser_main_loop.h"
@@ -25,7 +24,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -206,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
       content::GpuBrowsertestCreateContext(GetGpuChannel());
   ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
 
-  sk_sp<GrContext> gr_context = sk_ref_sp(provider->GrContext());
+  sk_sp<GrDirectContext> gr_context = sk_ref_sp(provider->GrContext());
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
@@ -319,8 +318,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   // channel on the IO thread, which then notifies the main thread about the
   // error state.
   base::RunLoop wait_for_io_run_loop;
-  base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-      ->PostTask(FROM_HERE, wait_for_io_run_loop.QuitClosure());
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      wait_for_io_run_loop.QuitClosure());
   // Waits for the IO thread to run.
   wait_for_io_run_loop.Run();
 

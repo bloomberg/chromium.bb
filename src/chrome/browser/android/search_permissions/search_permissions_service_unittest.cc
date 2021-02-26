@@ -52,8 +52,8 @@ class TestSearchEngineDelegate
 
   url::Origin GetDSEOrigin() override { return dse_origin_; }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   void ChangeDSEOrigin(const std::string& dse_origin) {
@@ -67,7 +67,7 @@ class TestSearchEngineDelegate
 
  private:
   url::Origin dse_origin_;
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 
 }  // namespace
@@ -129,16 +129,16 @@ class SearchPermissionsServiceTest : public testing::Test {
     // should never be changed between ALLOW<->BLOCK on Android. Do not copy
     // this code. Check with the notifications team if you need to do something
     // like this.
-    hcsm->SetContentSettingDefaultScope(url, url, type, std::string(),
+    hcsm->SetContentSettingDefaultScope(url, url, type,
                                         CONTENT_SETTING_DEFAULT);
-    hcsm->SetContentSettingDefaultScope(url, url, type, std::string(), setting);
+    hcsm->SetContentSettingDefaultScope(url, url, type, setting);
   }
 
   ContentSetting GetContentSetting(const std::string& origin_string,
                                    ContentSettingsType type) {
     GURL url(origin_string);
     return HostContentSettingsMapFactory::GetForProfile(profile())
-        ->GetContentSetting(url, url, type, std::string());
+        ->GetContentSetting(url, url, type);
   }
 
   // Simulates the initialization that happens when recreating the service. If
@@ -247,9 +247,19 @@ TEST_F(SearchPermissionsServiceTest, InitializationInconsistent) {
       GetContentSetting(kGoogleAusURL, ContentSettingsType::NOTIFICATIONS));
 }
 
-TEST_F(SearchPermissionsServiceTest, OffTheRecord) {
-  // Service isn't constructed for an OTR profile.
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+TEST_F(SearchPermissionsServiceTest, Incognito) {
+  // Service isn't constructed for Incognito profile.
+  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+  SearchPermissionsService* service =
+      SearchPermissionsService::Factory::GetForBrowserContext(
+          incognito_profile);
+  EXPECT_EQ(nullptr, service);
+}
+
+TEST_F(SearchPermissionsServiceTest, NonPrimaryOffTheRecord) {
+  // Service isn't constructed for non-primary OTR profiles.
+  Profile* otr_profile = profile()->GetOffTheRecordProfile(
+      Profile::OTRProfileID("Test::SearchPermissions"));
   SearchPermissionsService* service =
       SearchPermissionsService::Factory::GetForBrowserContext(otr_profile);
   EXPECT_EQ(nullptr, service);

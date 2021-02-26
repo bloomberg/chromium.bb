@@ -34,7 +34,9 @@
 
 import * as Common from '../common/common.js';
 
+import * as ARIAUtils from './ARIAUtils.js';
 import {HistoryInput} from './HistoryInput.js';
+import {InspectorView} from './InspectorView.js';
 import {Toolbar, ToolbarButton, ToolbarToggle} from './Toolbar.js';
 import {createTextButton} from './UIUtils.js';
 import {VBox} from './Widget.js';
@@ -49,11 +51,10 @@ export class SearchableView extends VBox {
    */
   constructor(searchable, settingName) {
     super(true);
-    this.registerRequiredCSS('ui/searchableView.css');
+    this.registerRequiredCSS('ui/searchableView.css', {enableLegacyPatching: true});
     this.element[_symbol] = this;
 
     this._searchProvider = searchable;
-    // Note: go via self.Common for globally-namespaced singletons.
     this._setting = settingName ? Common.Settings.Settings.instance().createSetting(settingName, {}) : null;
     this._replaceable = false;
 
@@ -71,7 +72,8 @@ export class SearchableView extends VBox {
     const searchControlElement = searchInputElements.createChild('div', 'toolbar-search-control');
 
     this._searchInputElement = HistoryInput.create();
-    this._searchInputElement.classList.add('search-replace');
+    this._searchInputElement.type = 'search';
+    this._searchInputElement.classList.add('search-replace', 'custom-search-input');
     this._searchInputElement.id = 'search-input-field';
     this._searchInputElement.placeholder = Common.UIString.UIString('Find');
     searchControlElement.appendChild(this._searchInputElement);
@@ -85,11 +87,13 @@ export class SearchableView extends VBox {
         searchNavigationElement.createChild('div', 'toolbar-search-navigation toolbar-search-navigation-prev');
     this._searchNavigationPrevElement.addEventListener('click', this._onPrevButtonSearch.bind(this), false);
     this._searchNavigationPrevElement.title = Common.UIString.UIString('Search previous');
+    ARIAUtils.setAccessibleName(this._searchNavigationPrevElement, Common.UIString.UIString('Search previous'));
 
     this._searchNavigationNextElement =
         searchNavigationElement.createChild('div', 'toolbar-search-navigation toolbar-search-navigation-next');
     this._searchNavigationNextElement.addEventListener('click', this._onNextButtonSearch.bind(this), false);
     this._searchNavigationNextElement.title = Common.UIString.UIString('Search next');
+    ARIAUtils.setAccessibleName(this._searchNavigationNextElement, Common.UIString.UIString('Search next'));
 
     this._searchInputElement.addEventListener('keydown', this._onSearchKeyDown.bind(this), true);
     this._searchInputElement.addEventListener('input', this._onInput.bind(this), false);
@@ -197,9 +201,13 @@ export class SearchableView extends VBox {
 
   /**
    * @param {string} placeholder
+   * @param {string=} ariaLabel
    */
-  setPlaceholder(placeholder) {
+  setPlaceholder(placeholder, ariaLabel) {
     this._searchInputElement.placeholder = placeholder;
+    if (ariaLabel) {
+      ARIAUtils.setAccessibleName(this._searchInputElement, ariaLabel);
+    }
   }
 
   /**
@@ -346,7 +354,7 @@ export class SearchableView extends VBox {
 
     let queryCandidate;
     if (!this._searchInputElement.hasFocus()) {
-      const selection = self.UI.inspectorView.element.window().getSelection();
+      const selection = InspectorView.instance().element.window().getSelection();
       if (selection.rangeCount) {
         queryCandidate = selection.toString().replace(/\r?\n.*/, '');
       }

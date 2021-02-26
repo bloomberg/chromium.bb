@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -30,7 +29,7 @@ class ComputedAccessibleNodePromiseResolver final
   ScriptPromise Promise();
   void ComputeAccessibleNode();
   void EnsureUpToDate();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void UpdateTreeAndResolve();
@@ -50,7 +49,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ComputedAccessibleNode(AXID, WebComputedAXTree*, Document*);
   ~ComputedAccessibleNode() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // TODO(meredithl): add accessors for state properties.
   base::Optional<bool> atomic() const;

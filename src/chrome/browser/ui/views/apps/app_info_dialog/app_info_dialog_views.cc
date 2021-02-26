@@ -26,7 +26,6 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
@@ -61,7 +60,7 @@ constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
 }  // namespace
 
 bool CanPlatformShowAppInfoDialog() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return false;
 #else
   return true;
@@ -221,7 +220,7 @@ void AppInfoDialog::StartObservingExtensionRegistry() {
 void AppInfoDialog::StopObservingExtensionRegistry() {
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
-  extension_registry_ = NULL;
+  extension_registry_ = nullptr;
 }
 
 void AppInfoDialog::OnExtensionUninstalled(

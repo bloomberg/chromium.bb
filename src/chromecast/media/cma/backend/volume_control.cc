@@ -12,10 +12,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -30,7 +32,7 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/audio/mixer_service/control_connection.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
-#include "chromecast/media/cma/backend/cast_audio_json.h"
+#include "chromecast/media/cma/backend/saved_volumes.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
 #include "chromecast/media/cma/backend/volume_map.h"
 
@@ -43,10 +45,6 @@ namespace media {
 
 namespace {
 
-constexpr float kDefaultMediaDbFS = -25.0f;
-constexpr float kDefaultAlarmDbFS = -20.0f;
-constexpr float kDefaultCommunicationDbFS = -25.0f;
-
 #if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 constexpr float kMinDbFS = -120.0f;
 #endif
@@ -54,7 +52,6 @@ constexpr float kMinDbFS = -120.0f;
 constexpr char kKeyMediaDbFS[] = "dbfs.media";
 constexpr char kKeyAlarmDbFS[] = "dbfs.alarm";
 constexpr char kKeyCommunicationDbFS[] = "dbfs.communication";
-constexpr char kKeyDefaultVolume[] = "default_volume";
 
 #if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 float DbFsToScale(float db) {
@@ -86,43 +83,12 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     // Load volume map to check that the config file is correct.
     VolumeControl::VolumeToDbFS(0.0f);
 
-    stored_values_.SetDouble(kKeyMediaDbFS, kDefaultMediaDbFS);
-    stored_values_.SetDouble(kKeyAlarmDbFS, kDefaultAlarmDbFS);
-    stored_values_.SetDouble(kKeyCommunicationDbFS, kDefaultCommunicationDbFS);
-
-    auto types = {AudioContentType::kMedia, AudioContentType::kAlarm,
-                  AudioContentType::kCommunication};
-    double volume;
-
     storage_path_ = base::GetHomeDir().Append("saved_volumes");
-    auto old_stored_data = DeserializeJsonFromFile(storage_path_);
-    base::DictionaryValue* old_stored_dict;
-    if (old_stored_data && old_stored_data->GetAsDictionary(&old_stored_dict)) {
-      for (auto type : types) {
-        if (old_stored_dict->GetDouble(ContentTypeToDbFSKey(type), &volume)) {
-          stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
-        }
-      }
-    } else {
-      // If saved_volumes does not exist, use per device default if it exists.
-      auto cast_audio_config =
-          DeserializeJsonFromFile(CastAudioJson::GetFilePath());
-      const base::DictionaryValue* cast_audio_dict;
-      if (cast_audio_config &&
-          cast_audio_config->GetAsDictionary(&cast_audio_dict)) {
-        const base::DictionaryValue* default_volume_dict;
-        if (cast_audio_dict && cast_audio_dict->GetDictionary(
-                                   kKeyDefaultVolume, &default_volume_dict)) {
-          for (auto type : types) {
-            if (default_volume_dict->GetDouble(ContentTypeToDbFSKey(type),
-                                               &volume)) {
-              stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
-              LOG(INFO) << "Setting default volume for "
-                        << ContentTypeToDbFSKey(type) << " to " << volume;
-            }
-          }
-        }
-      }
+    base::flat_map<AudioContentType, double> saved_volumes =
+        LoadSavedVolumes(storage_path_);
+    for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
+                      AudioContentType::kCommunication}) {
+      stored_values_.SetDouble(ContentTypeToDbFSKey(type), saved_volumes[type]);
     }
 
     base::Thread::Options options;
@@ -229,6 +195,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     mixer_ = std::make_unique<mixer_service::ControlConnection>();
     mixer_->Connect();
 
+    saved_volumes_writer_ = std::make_unique<base::ImportantFileWriter>(
+        storage_path_, thread_.task_runner(), base::TimeDelta::FromSeconds(1));
+
     double dbfs;
     for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
                       AudioContentType::kCommunication}) {
@@ -246,6 +215,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
       // Note that mute state is not persisted across reboots.
       muted_[type] = false;
+      mixer_->SetMuted(type, false);
     }
 
 #if BUILDFLAG(SYSTEM_OWNS_VOLUME)
@@ -303,7 +273,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     }
 
     stored_values_.SetDouble(ContentTypeToDbFSKey(type), dbfs);
-    SerializeJsonToFile(storage_path_, stored_values_);
+    std::string output_js;
+    base::JSONWriter::Write(stored_values_, &output_js);
+    saved_volumes_writer_->WriteNow(std::make_unique<std::string>(output_js));
   }
 
   void SetVolumeMultiplierOnThread(AudioContentType type, float multiplier) {
@@ -399,6 +371,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
   std::unique_ptr<SystemVolumeControl> system_volume_control_;
   std::unique_ptr<mixer_service::ControlConnection> mixer_;
+  std::unique_ptr<base::ImportantFileWriter> saved_volumes_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeControlInternal);
 };

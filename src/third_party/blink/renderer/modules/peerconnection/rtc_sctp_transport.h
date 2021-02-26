@@ -27,7 +27,6 @@ class MODULES_EXPORT RTCSctpTransport final
       public ExecutionContextClient,
       public SctpTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCSctpTransport);
 
  public:
   RTCSctpTransport(
@@ -63,7 +62,7 @@ class MODULES_EXPORT RTCSctpTransport final
   // Called from owning RtcPeerConnection when it is closed.
   void Close();
   // For garbage collection.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   webrtc::SctpTransportInformation current_state_;

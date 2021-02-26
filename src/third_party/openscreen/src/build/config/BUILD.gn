@@ -16,9 +16,6 @@ declare_args() {
   # Enable thread sanitizer.
   is_tsan = false
 
-  # Must be enabled for fuzzing targets.
-  use_libfuzzer = false
-
   # Enables clang's source-based coverage (requires is_clang=true).
   # NOTE: This will slow down the build and increase binary size
   # significantly. For more details, see:
@@ -255,5 +252,14 @@ config("sysroot_runtime_libraries") {
       ld_path = rebase_path(ld_path, root_build_dir)
       ldflags += [ "-L" + ld_path ]
     }
+  }
+}
+
+config("operating_system_defines") {
+  defines = []
+  if (is_linux) {
+    defines += [ "OS_LINUX" ]
+  } else if (is_mac) {
+    defines += [ "MAC_OSX" ]
   }
 }

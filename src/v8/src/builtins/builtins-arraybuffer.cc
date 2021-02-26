@@ -105,35 +105,6 @@ BUILTIN(ArrayBufferConstructor_DoNotInitialize) {
                          InitializedFlag::kUninitialized);
 }
 
-// ES6 section 24.1.4.1 get ArrayBuffer.prototype.byteLength
-BUILTIN(ArrayBufferPrototypeGetByteLength) {
-  const char* const kMethodName = "get ArrayBuffer.prototype.byteLength";
-  HandleScope scope(isolate);
-  CHECK_RECEIVER(JSArrayBuffer, array_buffer, kMethodName);
-  CHECK_SHARED(false, array_buffer, kMethodName);
-  // TODO(franzih): According to the ES6 spec, we should throw a TypeError
-  // here if the JSArrayBuffer is detached.
-  return *isolate->factory()->NewNumberFromSize(array_buffer->byte_length());
-}
-
-// ES7 sharedmem 6.3.4.1 get SharedArrayBuffer.prototype.byteLength
-BUILTIN(SharedArrayBufferPrototypeGetByteLength) {
-  const char* const kMethodName = "get SharedArrayBuffer.prototype.byteLength";
-  HandleScope scope(isolate);
-  CHECK_RECEIVER(JSArrayBuffer, array_buffer,
-                 "get SharedArrayBuffer.prototype.byteLength");
-  CHECK_SHARED(true, array_buffer, kMethodName);
-  return *isolate->factory()->NewNumberFromSize(array_buffer->byte_length());
-}
-
-// ES6 section 24.1.3.1 ArrayBuffer.isView ( arg )
-BUILTIN(ArrayBufferIsView) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(2, args.length());
-  Object arg = args[1];
-  return isolate->heap()->ToBoolean(arg.IsJSArrayBufferView());
-}
-
 static Object SliceHelper(BuiltinArguments args, Isolate* isolate,
                           const char* kMethodName, bool is_shared) {
   HandleScope scope(isolate);
@@ -168,8 +139,8 @@ static Object SliceHelper(BuiltinArguments args, Isolate* isolate,
   // * If relativeStart < 0, let first be max((len + relativeStart), 0); else
   //   let first be min(relativeStart, len).
   double const first = (relative_start->Number() < 0)
-                           ? Max(len + relative_start->Number(), 0.0)
-                           : Min(relative_start->Number(), len);
+                           ? std::max(len + relative_start->Number(), 0.0)
+                           : std::min(relative_start->Number(), len);
   Handle<Object> first_obj = isolate->factory()->NewNumber(first);
 
   // * If end is undefined, let relativeEnd be len; else let relativeEnd be ?
@@ -186,11 +157,11 @@ static Object SliceHelper(BuiltinArguments args, Isolate* isolate,
 
   // * If relativeEnd < 0, let final be max((len + relativeEnd), 0); else let
   //   final be min(relativeEnd, len).
-  double const final_ = (relative_end < 0) ? Max(len + relative_end, 0.0)
-                                           : Min(relative_end, len);
+  double const final_ = (relative_end < 0) ? std::max(len + relative_end, 0.0)
+                                           : std::min(relative_end, len);
 
   // * Let newLen be max(final-first, 0).
-  double const new_len = Max(final_ - first, 0.0);
+  double const new_len = std::max(final_ - first, 0.0);
   Handle<Object> new_len_obj = isolate->factory()->NewNumber(new_len);
 
   // * [AB] Let ctor be ? SpeciesConstructor(O, %ArrayBuffer%).

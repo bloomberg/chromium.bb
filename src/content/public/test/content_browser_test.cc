@@ -6,10 +6,11 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -21,7 +22,7 @@
 #include "content/test/test_content_client.h"
 #include "ui/events/platform/platform_event_source.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -40,7 +41,7 @@
 namespace content {
 
 ContentBrowserTest::ContentBrowserTest() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::SetOverrideAmIBundled(true);
 
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
@@ -52,6 +53,10 @@ ContentBrowserTest::ContentBrowserTest() {
   CHECK(base::PathService::Override(base::FILE_EXE, content_shell_path));
 #endif
   CreateTestServer(GetTestDataFilePath());
+
+  // Fail as quickly as possible during tests, rather than attempting to reset
+  // accessibility and continue when unserialization fails.
+  RenderFrameHostImpl::max_accessibility_resets_ = 0;
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
@@ -61,7 +66,7 @@ void ContentBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   SetUpCommandLine(command_line);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // See InProcessBrowserTest::PrepareTestCommandLine().
   base::FilePath subprocess_path;
   base::PathService::Get(base::FILE_EXE, &subprocess_path);
@@ -110,7 +115,7 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
   shell_ = Shell::windows()[0];
   SetInitialWebContents(shell_->web_contents());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
@@ -122,10 +127,10 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
 #endif
 
   // Pump startup related events.
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   base::RunLoop().RunUntilIdle();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   pool_->Recycle();
 #endif
 
@@ -138,7 +143,7 @@ void ContentBrowserTest::PostRunTestOnMainThread() {
   // This is a common error causing a crash on MAC.
   DCHECK(pre_run_test_executed_);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   pool_->Recycle();
 #endif
 

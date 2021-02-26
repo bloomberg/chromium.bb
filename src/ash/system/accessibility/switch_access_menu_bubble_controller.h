@@ -35,12 +35,14 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
   void BubbleViewDestroyed() override;
 
  private:
+  friend class SwitchAccessBackButtonBubbleControllerTest;
   friend class SwitchAccessMenuBubbleControllerTest;
 
   void ShowBackButtonForMenu();
 
   std::unique_ptr<SwitchAccessBackButtonBubbleController>
       back_button_controller_;
+  bool menu_open_ = false;
 
   // Owned by views hierarchy.
   SwitchAccessMenuView* menu_view_ = nullptr;

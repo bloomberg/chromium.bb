@@ -9,15 +9,15 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace views {
-class StyledLabel;
 class Textfield;
 }  // namespace views
 
@@ -43,19 +43,15 @@ std::unique_ptr<views::Textfield> CreateCvcTextfield();
 // parsing and the links clicking events.
 class LegalMessageView : public views::View {
  public:
+  using LinkClickedCallback = base::RepeatingCallback<void(const GURL&)>;
+
   explicit LegalMessageView(const LegalMessageLines& legal_message_lines,
-                            views::StyledLabelListener* listener);
+                            LinkClickedCallback callback);
   ~LegalMessageView() override;
-
-  const GURL GetUrlForLink(views::StyledLabel* label, const gfx::Range& range);
-
- private:
-  std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
-      const LegalMessageLine& line,
-      views::StyledLabelListener* listener);
-
-  LegalMessageLines legal_message_lines_;
 };
+
+PaymentsBubbleClosedReason GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+    views::Widget::ClosedReason reason);
 
 }  // namespace autofill
 

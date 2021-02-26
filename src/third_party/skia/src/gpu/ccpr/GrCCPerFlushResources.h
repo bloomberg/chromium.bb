@@ -82,6 +82,9 @@ public:
     void upgradeEntryToLiteralCoverageAtlas(GrCCPathCache*, GrOnFlushResourceProvider*,
                                             GrCCPathCacheEntry*, GrFillRule);
 
+    // An expected copy-to-literal was canceled due to cache entry eviction within a flush cycle.
+    SkDEBUGCODE(void cancelEvictedDoCopies() { fEndCopyInstance--; })
+
     // These two methods render a path into a temporary coverage count atlas. See
     // GrCCPathProcessor::Instance for a description of the outputs.
     //
@@ -113,19 +116,19 @@ public:
     // Accessors used by draw calls, once the resources have been finalized.
     const GrCCFiller& filler() const { SkASSERT(!this->isMapped()); return fFiller; }
     const GrCCStroker& stroker() const { SkASSERT(!this->isMapped()); return fStroker; }
-    const GrGpuBuffer* indexBuffer() const {
+    sk_sp<const GrGpuBuffer> indexBuffer() const {
         SkASSERT(!this->isMapped());
-        return fIndexBuffer.get();
+        return fIndexBuffer;
     }
-    const GrGpuBuffer* instanceBuffer() const {
+    sk_sp<const GrGpuBuffer> instanceBuffer() const {
         SkASSERT(!this->isMapped());
         return fPathInstanceBuffer.gpuBuffer();
     }
-    const GrGpuBuffer* vertexBuffer() const {
+    sk_sp<const GrGpuBuffer> vertexBuffer() const {
         SkASSERT(!this->isMapped());
-        return fVertexBuffer.get();
+        return fVertexBuffer;
     }
-    const GrGpuBuffer* stencilResolveBuffer() const {
+    sk_sp<const GrGpuBuffer> stencilResolveBuffer() const {
         SkASSERT(!this->isMapped());
         return fStencilResolveBuffer.gpuBuffer();
     }

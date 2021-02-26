@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js'
-]);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 UnserializableSpan = function() {};
 
 StatelessSerializableSpan = function() {};
@@ -62,7 +55,7 @@ function assertSpanNotFound(spannable, annotation) {
 /**
  * Test fixture.
  */
-ChromeVoxSpannableUnitTest = class extends ChromeVoxUnitTestBase {
+ChromeVoxSpannableUnitTest = class extends testing.Test {
   /** @override */
   setUp() {
     Spannable.registerStatelessSerializableSpan(
@@ -77,8 +70,10 @@ ChromeVoxSpannableUnitTest = class extends ChromeVoxUnitTestBase {
 
 
 /** @override */
-ChromeVoxSpannableUnitTest.prototype.closureModuleDeps = [
-  'Spannable',
+ChromeVoxSpannableUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  'spannable.js',
 ];
 
 
@@ -195,11 +190,11 @@ TEST_F('ChromeVoxSpannableUnitTest', 'MultipleSpans', function() {
   spannable.setSpan(annotation1, 1, 4);
   spannable.setSpan(annotation2, 2, 7);
   assertSame(annotation1, spannable.getSpan(1));
-  assertThat([annotation1], eqJSON(spannable.getSpans(1)));
+  assertDeepEquals([annotation1], spannable.getSpans(1));
   assertSame(annotation1, spannable.getSpan(3));
-  assertThat([annotation1, annotation2], eqJSON(spannable.getSpans(3)));
+  assertDeepEquals([annotation1, annotation2], spannable.getSpans(3));
   assertSame(annotation2, spannable.getSpan(6));
-  assertThat([annotation2], eqJSON(spannable.getSpans(6)));
+  assertDeepEquals([annotation2], spannable.getSpans(6));
 });
 
 /** Tests that appending appends the strings. */
@@ -500,16 +495,16 @@ TEST_F('ChromeVoxSpannableUnitTest', 'Serialize', function() {
       thawn.getSpanInstanceOf(StatelessSerializableSpan);
   const thawnNonStatelessSerializable =
       thawn.getSpanInstanceOf(NonStatelessSerializableSpan);
-  assertThat('text', eqJSON(thawn.toString()));
+  assertEquals('text', thawn.toString());
   assertUndefined(thawn.getSpanInstanceOf(UnserializableSpan));
-  assertThat(
+  assertDeepEquals(
       fresh.getSpanStart(freshStatelessSerializable),
-      eqJSON(thawn.getSpanStart(thawnStatelessSerializable)));
-  assertThat(
+      thawn.getSpanStart(thawnStatelessSerializable));
+  assertDeepEquals(
       fresh.getSpanEnd(freshStatelessSerializable),
-      eqJSON(thawn.getSpanEnd(thawnStatelessSerializable)));
-  assertThat(
-      freshNonStatelessSerializable, eqJSON(thawnNonStatelessSerializable));
+      thawn.getSpanEnd(thawnStatelessSerializable));
+  assertDeepEquals(
+      freshNonStatelessSerializable, thawnNonStatelessSerializable);
 });
 
 TEST_F('ChromeVoxSpannableUnitTest', 'GetSpanIntervals', function() {

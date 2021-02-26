@@ -7,12 +7,12 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -27,10 +27,12 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -46,10 +48,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   ~PreviewsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
-
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -70,8 +68,8 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ(https_hint_setup_url_.host(), https_url_.host());
 
     // Set up http server with resource monitor and redirect handler.
-    http_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
+    http_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
     http_server_->RegisterRequestMonitor(base::BindRepeating(
         &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
@@ -92,10 +90,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
-    // Due to race conditions, it's possible that blacklist data is not loaded
+    // Due to race conditions, it's possible that blocklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -126,8 +124,8 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PreviewsBrowserTest::MonitorResourceRequestOnUIThread,
                        base::Unretained(this), request));
   }
@@ -207,11 +205,19 @@ class PreviewsNoScriptBrowserTest : public ::testing::WithParamInterface<bool>,
     PreviewsBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideTargetDecisionForTesting(
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::OptimizationGuideDecision::kTrue);
+    PreviewsBrowserTest::SetUpOnMainThread();
+  }
+
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitch("optimization-guide-disable-installer");
     cmd->AppendSwitch("purge_hint_cache_store");
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
   }
 
   // Creates hint data for the |hint_setup_url|'s host and then performs a
@@ -257,61 +263,8 @@ INSTANTIATE_TEST_SUITE_P(ShouldSkipPreview,
                          PreviewsNoScriptBrowserTest,
                          ::testing::Bool());
 
-// Loads a webpage that has both script and noscript tags and also requests
-// a script resource. Verifies that the noscript tag is evaluated and the
-// script resource is not loaded.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled)) {
-  GURL url = https_url();
 
-  // Whitelist NoScript for https_hint_setup_url()'s' host.
-  SetUpNoScriptWhitelist(https_hint_setup_url());
 
-  base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Verify loaded noscript tag triggered css resource but not js one.
-  EXPECT_TRUE(noscript_css_requested());
-  EXPECT_FALSE(noscript_js_requested());
-
-  // Verify info bar presented via histogram check.
-  RetryForHistogramUntilCountReached(&histogram_tester,
-                                     "Previews.PreviewShown.NoScript", 1);
-}
-
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled_Incognito)) {
-  GURL url = https_url();
-
-  // Whitelist NoScript for https_hint_setup_url()'s' host.
-  SetUpNoScriptWhitelist(https_hint_setup_url());
-
-  base::HistogramTester histogram_tester;
-  Browser* incognito = CreateIncognitoBrowser();
-  ASSERT_FALSE(PreviewsServiceFactory::GetForProfile(incognito->profile()));
-  ASSERT_TRUE(PreviewsServiceFactory::GetForProfile(browser()->profile()));
-
-  ui_test_utils::NavigateToURL(incognito, url);
-
-  // Verify JS was loaded indicating that NoScript preview was not triggered.
-  EXPECT_FALSE(noscript_css_requested());
-  EXPECT_TRUE(noscript_js_requested());
-}
-
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsForHttp)) {
-  GURL url = http_url();
-
-  // Whitelist NoScript for http_hint_setup_url() host.
-  SetUpNoScriptWhitelist(http_hint_setup_url());
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Verify loaded noscript tag triggered css resource but not js one.
-  EXPECT_TRUE(noscript_css_requested());
-  EXPECT_FALSE(noscript_js_requested());
-}
 
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(
@@ -332,67 +285,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
       "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
-  GURL url = redirect_url();
 
-  // Whitelist NoScript for http_hint_setup_url() host.
-  SetUpNoScriptWhitelist(http_hint_setup_url());
-
-  base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Verify loaded noscript tag triggered css resource but not js one.
-  EXPECT_TRUE(noscript_css_requested());
-  EXPECT_FALSE(noscript_js_requested());
-
-  // Verify info bar presented via histogram check.
-  RetryForHistogramUntilCountReached(&histogram_tester,
-                                     "Previews.PreviewShown.NoScript", 1);
-}
-
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsRecordsOptOut)) {
-  GURL url = redirect_url();
-
-  // Whitelist NoScript for http_hint_setup_url()'s' host.
-  SetUpNoScriptWhitelist(http_hint_setup_url());
-
-  base::HistogramTester histogram_tester;
-
-  // Navigate to a NoScript Preview page.
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Terminate the previous page (non-opt out) and pull up a new NoScript page.
-  ui_test_utils::NavigateToURL(browser(), url);
-  histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.NoScript",
-                                      0, 1);
-
-  // Opt out of the NoScript Preview page.
-  PreviewsUITabHelper::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())
-      ->ReloadWithoutPreviews();
-
-  histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.NoScript", 1,
-                                     1);
-}
-
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledByWhitelist)) {
-  GURL url = https_url();
-
-  // Whitelist NoScript for https_hint_setup_url()'s' host.
-  SetUpNoScriptWhitelist(https_hint_setup_url());
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Verify loaded noscript tag triggered css resource but not js one.
-  EXPECT_TRUE(noscript_css_requested());
-  EXPECT_FALSE(noscript_js_requested());
-}
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
@@ -412,10 +305,12 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(
                            NoScriptPreviewsEnabledShouldSkipPreviewCheck)) {
-  // Set ECT to 4G so that the Preview should not be shown in the regular case.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  // Override the decision to |kFalse| so that the Preview should not be shown
+  // in the regular case.
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->OverrideTargetDecisionForTesting(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          optimization_guide::OptimizationGuideDecision::kFalse);
 
   GURL url = https_url();
 

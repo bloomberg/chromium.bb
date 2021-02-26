@@ -52,7 +52,7 @@ export class ExtensionView extends UI.Widget.Widget {
 
     this._server = server;
     this._id = id;
-    this._iframe = createElement('iframe');
+    this._iframe = document.createElement('iframe');
     this._iframe.addEventListener('load', this._onLoad.bind(this), false);
     this._iframe.src = src;
     this._iframe.className = className;

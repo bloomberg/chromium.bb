@@ -113,11 +113,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     public_key_ = builder_.GetPublicSigningKeyAsString();
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>("disabled"), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>("maybe"), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value("maybe"), nullptr);
   }
 
   void SetUp() override {
@@ -305,8 +303,7 @@ TEST_F(ComponentCloudPolicyServiceTest, InitializeWithCachedPolicy) {
   EXPECT_TRUE(base::Contains(contents, kTestExtension));
   EXPECT_TRUE(base::Contains(contents, kTestExtension2));
 
-  // Only policy for extension 1 is now being served, as the registry contains
-  // only its schema.
+  // Policy for extension 1 is now being served.
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS).CopyFrom(expected_policy_);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
@@ -577,8 +574,14 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS)
       .Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("published"),
-           nullptr);
+           POLICY_SOURCE_CLOUD, base::Value("published"), nullptr);
+  // The second policy should be invalid.
+  expected_bundle.Get(kTestExtensionNS)
+      .Set("Undeclared Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, base::Value("not published"), nullptr);
+  expected_bundle.Get(kTestExtensionNS)
+      .GetMutable("Undeclared Name")
+      ->SetInvalid();
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 

@@ -60,7 +60,7 @@ namespace mach_o = google_breakpad::mach_o;
 
 string program_name;
 
-int check_syscall(int result, const char *operation, const char *filename) {
+int check_syscall(int result, const char* operation, const char* filename) {
   if (result < 0) {
     fprintf(stderr, "%s: %s '%s': %s\n",
             program_name.c_str(), operation,
@@ -73,7 +73,7 @@ int check_syscall(int result, const char *operation, const char *filename) {
 class DumpSection: public mach_o::Reader::SectionHandler {
  public:
   DumpSection() : index_(0) { }
-  bool HandleSection(const mach_o::Section &section) {
+  bool HandleSection(const mach_o::Section& section) {
     printf("        section %d '%s' in segment '%s'\n"
            "          address: 0x%llx\n"
            "          alignment: 1 << %d B\n"
@@ -92,13 +92,13 @@ class DumpSection: public mach_o::Reader::SectionHandler {
 
 class DumpCommand: public mach_o::Reader::LoadCommandHandler {
  public:
-  DumpCommand(mach_o::Reader *reader) : reader_(reader), index_(0) { }
+  DumpCommand(mach_o::Reader* reader) : reader_(reader), index_(0) { }
   bool UnknownCommand(mach_o::LoadCommandType type,
-                      const ByteBuffer &contents) {
+                      const ByteBuffer& contents) {
     printf("      load command %d: %d", index_++, type);
     return true;
   }
-  bool SegmentCommand(const mach_o::Segment &segment) {
+  bool SegmentCommand(const mach_o::Segment& segment) {
     printf("      load command %d: %s-bit segment '%s'\n"
            "        address: 0x%llx\n"
            "        memory size: 0x%llx\n"
@@ -115,24 +115,24 @@ class DumpCommand: public mach_o::Reader::LoadCommandHandler {
     return reader_->WalkSegmentSections(segment, &dump_section);
   }
  private:
-  mach_o::Reader *reader_;
+  mach_o::Reader* reader_;
   int index_;
 };
 
-void DumpFile(const char *filename) {
+void DumpFile(const char* filename) {
   int fd = check_syscall(open(filename, O_RDONLY), "opening", filename);
   struct stat attributes;
   check_syscall(fstat(fd, &attributes),
                 "getting file attributes for", filename);
-  void *mapping = mmap(NULL, attributes.st_size, PROT_READ,
+  void* mapping = mmap(NULL, attributes.st_size, PROT_READ,
                        MAP_PRIVATE, fd, 0);
   close(fd);
-  check_syscall(mapping == (void *)-1 ? -1 : 0,
+  check_syscall(mapping == (void*)-1 ? -1 : 0,
                 "mapping contents of", filename);
 
   mach_o::FatReader::Reporter fat_reporter(filename);
   mach_o::FatReader fat_reader(&fat_reporter);
-  if (!fat_reader.Read(reinterpret_cast<uint8_t *>(mapping),
+  if (!fat_reader.Read(reinterpret_cast<uint8_t*>(mapping),
                        attributes.st_size)) {
     exit(1);
   }
@@ -140,14 +140,14 @@ void DumpFile(const char *filename) {
   size_t object_files_size;
   const SuperFatArch* super_fat_object_files =
       fat_reader.object_files(&object_files_size);
-  struct fat_arch *object_files;
+  struct fat_arch* object_files;
   if (!super_fat_object_files->ConvertToFatArch(object_files)) {
     exit(1);
   }
   printf("  object file count: %ld\n", object_files_size);
   for (size_t i = 0; i < object_files_size; i++) {
-    const struct fat_arch &file = object_files[i];
-    const NXArchInfo *fat_arch_info =
+    const struct fat_arch& file = object_files[i];
+    const NXArchInfo* fat_arch_info =
         google_breakpad::BreakpadGetArchInfoFromCpuType(
             file.cputype, file.cpusubtype);
     printf("\n  object file %ld:\n"
@@ -162,7 +162,7 @@ void DumpFile(const char *filename) {
     name << filename;
     if (object_files_size > 1)
       name << ", object file #" << i;
-    ByteBuffer file_contents(reinterpret_cast<uint8_t *>(mapping)
+    ByteBuffer file_contents(reinterpret_cast<uint8_t*>(mapping)
                              + file.offset, file.size);
     mach_o::Reader::Reporter reporter(name.str());
     mach_o::Reader reader(&reporter);
@@ -170,7 +170,7 @@ void DumpFile(const char *filename) {
       exit(1);
     }
 
-    const NXArchInfo *macho_arch_info =
+    const NXArchInfo* macho_arch_info =
       NXGetArchInfoFromCpuType(reader.cpu_type(),
                                reader.cpu_subtype());
     printf("    Mach-O header:\n"
@@ -190,7 +190,7 @@ void DumpFile(const char *filename) {
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   program_name = google_breakpad::BaseName(argv[0]);
   if (argc == 1) {
     fprintf(stderr, "Usage: %s FILE ...\n"

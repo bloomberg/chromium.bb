@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.homepage;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -12,15 +13,16 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomeButtonPreferenceState;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
-import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 
 /**
  * Provides information regarding homepage enabled states and URI.
@@ -43,12 +45,14 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
 
     private final SharedPreferencesManager mSharedPreferencesManager;
     private final ObserverList<HomepageStateListener> mHomepageStateListeners;
+    private SettingsLauncher mSettingsLauncher;
 
     private HomepageManager() {
         mSharedPreferencesManager = SharedPreferencesManager.getInstance();
         mHomepageStateListeners = new ObserverList<>();
         HomepagePolicyManager.getInstance().addListener(this);
         PartnerBrowserCustomizations.getInstance().setPartnerHomepageListener(this);
+        mSettingsLauncher = new SettingsLauncherImpl();
     }
 
     /**
@@ -74,6 +78,19 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      */
     public void removeListener(HomepageStateListener listener) {
         mHomepageStateListeners.removeObserver(listener);
+    }
+
+    /**
+     * Menu click handler on home button.
+     * @param context {@link Context} used for launching a settings activity.
+     */
+    public void onMenuClick(Context context) {
+        assert ChromeFeatureList.isInitialized();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)) {
+            mSettingsLauncher.launchSettingsActivity(context, HomepageSettings.class);
+        } else {
+            setPrefHomepageEnabled(false);
+        }
     }
 
     /**
@@ -106,7 +123,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      */
     public static boolean shouldCloseAppWithZeroTabs() {
         return HomepageManager.isHomepageEnabled()
-                && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri());
+                && !UrlUtilities.isNTPUrl(HomepageManager.getHomepageUri());
     }
 
     /**
@@ -139,6 +156,18 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
             return PartnerBrowserCustomizations.getInstance().getHomePageUrl();
         }
         return UrlConstants.NTP_NON_NATIVE_URL;
+    }
+
+    /**
+     * Determines whether the homepage is set to something other than the NTP or empty/null.
+     * Normally, when loading the homepage the NTP is loaded as a fallback if the homepage is null
+     * or empty. So while other helper methods that check if a given string is the NTP
+     * will reject null and empty, this method does the opposite.
+     * @return Whether the current homepage is something other than the NTP.
+     */
+    public static boolean isHomepageNonNtp() {
+        String currentHomepage = getHomepageUri();
+        return !TextUtils.isEmpty(currentHomepage) && !UrlUtilities.isNTPUrl(currentHomepage);
     }
 
     /**
@@ -175,9 +204,6 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      */
     public void setPrefHomepageEnabled(boolean enabled) {
         mSharedPreferencesManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, enabled);
-        RecordHistogram.recordBooleanHistogram(
-                "Settings.ShowHomeButtonPreferenceStateChanged", enabled);
-        recordHomeButtonPreferenceState();
         notifyHomepageUpdated();
     }
 
@@ -238,7 +264,6 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
         }
 
         if (wasUseDefaultUri != useDefaultUri) {
-            recordHomepageIsCustomized(!useDefaultUri);
             mSharedPreferencesManager.writeBoolean(
                     ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
         }
@@ -250,31 +275,6 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
 
         RecordUserAction.record("Settings.Homepage.LocationChanged_V2");
         notifyHomepageUpdated();
-    }
-
-    /**
-     * Get the homepage button preference state.
-     */
-    public static void recordHomeButtonPreferenceState() {
-        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)) {
-            RecordHistogram.recordBooleanHistogram(
-                    "Settings.ShowHomeButtonPreferenceState", HomepageManager.isHomepageEnabled());
-            return;
-        }
-
-        int state = HomeButtonPreferenceState.USER_DISABLED;
-        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
-            state = HomeButtonPreferenceState.MANAGED_ENABLED;
-        } else if (isHomepageEnabled()) {
-            state = HomeButtonPreferenceState.USER_ENABLED;
-        }
-
-        RecordHistogram.recordEnumeratedHistogram("Settings.ShowHomeButtonPreferenceStateManaged",
-                state, HomeButtonPreferenceState.NUM_ENTRIES);
-    }
-
-    public static void recordHomepageIsCustomized(boolean isCustomized) {
-        RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", isCustomized);
     }
 
     /**
@@ -294,7 +294,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     @VisibleForTesting
     public @HomepageLocationType int getHomepageLocationType() {
         if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
-            return NewTabPage.isNTPUrl(HomepagePolicyManager.getHomepageUrl())
+            return UrlUtilities.isNTPUrl(HomepagePolicyManager.getHomepageUrl())
                     ? HomepageLocationType.POLICY_NTP
                     : HomepageLocationType.POLICY_OTHER;
         }
@@ -307,12 +307,13 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
                 return HomepageLocationType.DEFAULT_NTP;
             }
 
-            return NewTabPage.isNTPUrl(PartnerBrowserCustomizations.getInstance().getHomePageUrl())
+            return UrlUtilities.isNTPUrl(
+                           PartnerBrowserCustomizations.getInstance().getHomePageUrl())
                     ? HomepageLocationType.PARTNER_PROVIDED_NTP
                     : HomepageLocationType.PARTNER_PROVIDED_OTHER;
         }
         // If user type NTP URI as their customized homepage, we'll record user is using NTP
-        return NewTabPage.isNTPUrl(getPrefHomepageCustomUri())
+        return UrlUtilities.isNTPUrl(getPrefHomepageCustomUri())
                 ? HomepageLocationType.USER_CUSTOMIZED_NTP
                 : HomepageLocationType.USER_CUSTOMIZED_OTHER;
     }
@@ -320,15 +321,15 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     @Override
     public void onHomepagePolicyUpdate() {
         notifyHomepageUpdated();
-
-        boolean isPolicyEnabled = HomepagePolicyManager.isHomepageManagedByPolicy();
-        if (isPolicyEnabled) {
-            recordHomepageIsCustomized(false);
-        }
     }
 
     @Override
     public void onHomepageUpdate() {
         notifyHomepageUpdated();
+    }
+
+    @VisibleForTesting
+    public void setSettingsLauncherForTesting(SettingsLauncher launcher) {
+        mSettingsLauncher = launcher;
     }
 }

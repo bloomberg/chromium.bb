@@ -25,6 +25,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
@@ -244,11 +245,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool ShouldExposeViaManagementAPI() const;
 
   // Get the manifest data associated with the key, or NULL if there is none.
-  // Can only be called after InitValue is finished.
+  // Can only be called after InitFromValue is finished.
   ManifestData* GetManifestData(const std::string& key) const;
 
   // Sets |data| to be associated with the key.
-  // Can only be called before InitValue is finished. Not thread-safe;
+  // Can only be called before InitFromValue is finished. Not thread-safe;
   // all SetManifestData calls should be on only one thread.
   void SetManifestData(const std::string& key,
                        std::unique_ptr<ManifestData> data);
@@ -257,6 +258,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
+  url::Origin origin() const { return url::Origin::Create(extension_url_); }
   Manifest::Location location() const;
   const ExtensionId& id() const;
   const HashedExtensionId& hashed_id() const;
@@ -375,8 +377,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadManifestVersion(base::string16* error);
   bool LoadShortName(base::string16* error);
 
-  bool CheckMinimumChromeVersion(base::string16* error) const;
-
   // The extension's human-readable name. Name is used for display purpose. It
   // might be wrapped with unicode bidi control characters so that it is
   // displayed correctly in RTL context.
@@ -444,7 +444,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   using ManifestDataMap = std::map<std::string, std::unique_ptr<ManifestData>>;
   ManifestDataMap manifest_data_;
 
-  // Set to true at the end of InitValue when initialization is finished.
+  // Set to true at the end of InitFromValue when initialization is finished.
   bool finished_parsing_manifest_;
 
   // Ensures that any call to GetManifestData() prior to finishing

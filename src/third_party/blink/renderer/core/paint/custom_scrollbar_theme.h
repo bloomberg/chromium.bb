@@ -30,18 +30,16 @@
 
 namespace blink {
 
-class CustomScrollbar;
 class LayoutCustomScrollbarPart;
 class WebMouseEvent;
-struct PhysicalOffset;
 struct PhysicalRect;
 
 class CustomScrollbarTheme final : public ScrollbarTheme {
  public:
   ~CustomScrollbarTheme() override = default;
 
-  int ScrollbarThickness(ScrollbarControlSize control_size) override {
-    return GetTheme().ScrollbarThickness(control_size);
+  int ScrollbarThickness(float scale_from_dip) override {
+    return GetTheme().ScrollbarThickness(scale_from_dip);
   }
 
   bool NativeThemeHasButtons() override {
@@ -52,7 +50,7 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
                          const Scrollbar* vertical_scrollbar,
                          const DisplayItemClient&,
                          const IntRect& corner_rect,
-                         WebColorScheme color_scheme) override;
+                         mojom::blink::ColorScheme color_scheme) override;
 
   bool ShouldCenterOnThumb(const Scrollbar& scrollbar,
                            const WebMouseEvent& event) override {
@@ -84,9 +82,7 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
 
   static void PaintIntoRect(const LayoutCustomScrollbarPart&,
                             GraphicsContext&,
-                            const PhysicalOffset& paint_offset,
-                            const PhysicalRect&,
-                            const CustomScrollbar* = nullptr);
+                            const PhysicalRect&);
 
  protected:
   ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override;

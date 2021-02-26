@@ -68,7 +68,6 @@ class MODULES_EXPORT DOMWebSocket
       public ExecutionContextLifecycleStateObserver,
       public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 
  public:
   // These definitions are required by V8DOMWebSocket.
@@ -149,7 +148,7 @@ class MODULES_EXPORT DOMWebSocket
                 uint16_t code,
                 const String& reason) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // FIXME: This should inherit blink::EventQueue.
@@ -175,7 +174,7 @@ class MODULES_EXPORT DOMWebSocket
 
     bool IsPaused();
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     enum State {
@@ -199,13 +198,6 @@ class MODULES_EXPORT DOMWebSocket
     kString,
     kArrayBuffer,
     kArrayBufferView,
-    kBlob,
-    kMaxValue = kBlob,
-  };
-
-  enum class WebSocketReceiveType {
-    kString,
-    kArrayBuffer,
     kBlob,
     kMaxValue = kBlob,
   };
@@ -245,8 +237,6 @@ class MODULES_EXPORT DOMWebSocket
 
   void ReleaseChannel();
   void RecordSendTypeHistogram(WebSocketSendType);
-  void RecordSendMessageSizeHistogram(WebSocketSendType, size_t);
-  void RecordReceiveMessageSizeHistogram(WebSocketReceiveType, size_t);
 
   Member<WebSocketChannel> channel_;
 

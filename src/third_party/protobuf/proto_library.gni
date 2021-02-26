@@ -25,6 +25,9 @@
 #   generate_cc (optional, default true)
 #       Generate C++ protobuf stubs.
 #
+#   generate_javascript (optional, default false)
+#       Generate Javascript protobuf stubs.
+#
 #   cc_generator_options (optional)
 #       List of extra flags passed to the protocol compiler.  If you need to
 #       add an EXPORT macro to a protobuf's C++ header, set the
@@ -118,6 +121,16 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/kythe.gni")
 
+declare_args() {
+  # Allows subprojects to omit javascript dependencies (e.g.) closure_compiler
+  # and google-closure-library.
+  enable_js_protobuf = true
+}
+
+if (enable_js_protobuf) {
+  import("//third_party/closure_compiler/compile_js.gni")
+}
+
 if (host_os == "win") {
   _host_executable_suffix = ".exe"
 } else {
@@ -132,12 +145,6 @@ template("proto_library") {
   assert(defined(invoker.sources), "Need sources for proto_library")
   proto_sources = invoker.sources
 
-  # Don't apply OS-specific sources filtering to the assignments later on.
-  # Platform files should have gotten filtered out in the sources assignment
-  # when this template was invoked. If they weren't, it was on purpose and
-  # this template shouldn't re-apply the filter.
-  set_sources_assignment_filter([])
-
   if (defined(invoker.generate_cc)) {
     generate_cc = invoker.generate_cc
   } else {
@@ -148,6 +155,18 @@ template("proto_library") {
     generate_python = invoker.generate_python
   } else {
     generate_python = true
+  }
+
+  if (defined(invoker.generate_javascript)) {
+    generate_javascript = invoker.generate_javascript
+  } else {
+    generate_javascript = false
+  }
+
+  if (defined(invoker.generate_descriptor)) {
+    generate_descriptor = invoker.generate_descriptor
+  } else {
+    generate_descriptor = ""
   }
 
   if (defined(invoker.generator_plugin_label)) {
@@ -221,43 +240,83 @@ template("proto_library") {
     py_out_dir = "$root_out_dir/pyproto/" + proto_out_dir
     rel_py_out_dir = rebase_path(py_out_dir, root_build_dir)
   }
+  if (generate_javascript) {
+    js_out_dir = "$root_out_dir/jsproto/" + proto_out_dir
+    rel_js_out_dir = rebase_path(js_out_dir, root_build_dir)
+  }
+  if (generate_descriptor != "") {
+    descriptor_out =
+        "$root_gen_dir/" + proto_out_dir + "/" + generate_descriptor
+    rel_descriptor_out = rebase_path(descriptor_out, root_build_dir)
+  }
 
   protos = rebase_path(invoker.sources, proto_in_dir)
   protogens = []
   protogens_cc = []
+  protogens_js = []
+
+  # Whether library should be generated.
+  # Library is not needed when proto_library is used to generate binary descriptor, in which case
+  # corresponding library target should be omitted entirely.
+  generate_library = generate_cc || generate_python || generate_with_plugin ||
+                     generate_javascript
 
   # List output files.
-  foreach(proto, protos) {
-    proto_dir = get_path_info(proto, "dir")
-    proto_name = get_path_info(proto, "name")
-    proto_path = proto_dir + "/" + proto_name
+  if (generate_library) {
+    foreach(proto, protos) {
+      proto_dir = get_path_info(proto, "dir")
+      proto_name = get_path_info(proto, "name")
+      proto_path = proto_dir + "/" + proto_name
 
-    if (generate_cc) {
-      protogens_cc += [
-        "$cc_out_dir/$proto_path.pb.h",
-        "$cc_out_dir/$proto_path.pb.cc",
-      ]
-    }
-    if (generate_python) {
-      protogens += [ "$py_out_dir/${proto_path}_pb2.py" ]
-    }
-    if (generate_with_plugin) {
-      foreach(suffix, generator_plugin_suffixes) {
-        protogens_cc += [ "$cc_out_dir/${proto_path}${suffix}" ]
+      if (generate_cc) {
+        protogens_cc += [
+          "$cc_out_dir/$proto_path.pb.h",
+          "$cc_out_dir/$proto_path.pb.cc",
+        ]
+      }
+      if (generate_python) {
+        protogens += [ "$py_out_dir/${proto_path}_pb2.py" ]
+      }
+      if (generate_with_plugin) {
+        foreach(suffix, generator_plugin_suffixes) {
+          protogens_cc += [ "$cc_out_dir/${proto_path}${suffix}" ]
+        }
+      }
+      if (generate_javascript) {
+        protogens_js += [ "$js_out_dir/${proto_path}.js" ]
       }
     }
   }
 
+  # If descriptor needs to be generated, it should be added to list of outputs once.
+  if (generate_descriptor != "") {
+    protogens += [ descriptor_out ]
+  }
+
   action_name = "${target_name}_gen"
   source_set_name = target_name
+  javascript_name = "${target_name}_js"
 
   # Generate protobuf stubs.
   action(action_name) {
-    visibility = [ ":$source_set_name" ]
-    script = "//tools/protoc_wrapper/protoc_wrapper.py"
+    visibility = [
+      ":$javascript_name",
+      ":$source_set_name",
+    ]
+    if ((defined(invoker.run_under_python2) && invoker.run_under_python2) ||
+        true) {
+      # TODO(crbug.com/1112471) - get all users of this to run cleanly under
+      # Python 3 and then remove this option.
+      script = "//build/util/python2_action.py"
+      args = [ rebase_path("//tools/protoc_wrapper/protoc_wrapper.py",
+                           root_build_dir) ] + protos
+    } else {
+      script = "//tools/protoc_wrapper/protoc_wrapper.py"
+      args = protos
+    }
+
     sources = proto_sources
-    outputs = get_path_info(protogens + protogens_cc, "abspath")
-    args = protos
+    outputs = get_path_info(protogens + protogens_cc + protogens_js, "abspath")
 
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
@@ -302,6 +361,13 @@ template("proto_library") {
       ]
     }
 
+    if (generate_javascript) {
+      args += [
+        "--js-out-dir",
+        rel_js_out_dir,
+      ]
+    }
+
     if (generate_with_plugin) {
       args += [
         "--plugin",
@@ -315,6 +381,19 @@ template("proto_library") {
           invoker.generator_plugin_options,
         ]
       }
+    }
+
+    if (generate_descriptor != "") {
+      depfile =
+          "$root_gen_dir/" + proto_out_dir + "/" + generate_descriptor + ".d"
+      rel_depfile = rebase_path(depfile, root_build_dir)
+
+      args += [
+        "--descriptor-set-out",
+        rel_descriptor_out,
+        "--descriptor-set-dependency-file",
+        rel_depfile,
+      ]
     }
 
     if (defined(invoker.import_dirs)) {
@@ -348,9 +427,12 @@ template("proto_library") {
     }
   }
 
-  # Option to disable building a library in component build.
-  if (defined(invoker.component_build_force_source_set) &&
-      invoker.component_build_force_source_set && is_component_build) {
+  if (!generate_library) {
+    # If only descriptor is required, just generate a group wrapper for action output.
+    link_target_type = "group"
+  } else if (defined(invoker.component_build_force_source_set) &&
+             invoker.component_build_force_source_set && is_component_build) {
+    # Option to disable building a library in component build.
     link_target_type = "source_set"
   } else {
     link_target_type = "static_library"
@@ -363,13 +445,30 @@ template("proto_library") {
   config_name = "${target_name}_config"
   config(config_name) {
     include_dirs = []
-    if (has_nested_dirs) {
+    if (has_nested_dirs && generate_cc) {
       include_dirs += [ cc_out_dir ]
     }
     if (defined(invoker.import_dirs)) {
       foreach(path, invoker.import_dirs) {
         include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
       }
+    }
+  }
+
+  # Build generated javascript stubs.
+  if (generate_javascript) {
+    js_library(javascript_name) {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
+
+      sources = protogens_js
+
+      deps = [ "//third_party/protobuf:js_proto" ]
+
+      extra_deps = [ ":$action_name" ]
     }
   }
 
@@ -382,21 +481,23 @@ template("proto_library") {
                              "visibility",
                            ])
 
-    sources = get_path_info(protogens_cc, "abspath")
+    if (generate_library) {
+      sources = get_path_info(protogens_cc, "abspath")
 
-    if (defined(invoker.remove_configs)) {
-      configs -= invoker.remove_configs
+      if (defined(invoker.remove_configs)) {
+        configs -= invoker.remove_configs
+      }
+
+      if (defined(invoker.extra_configs)) {
+        configs += invoker.extra_configs
+      }
+
+      # Remove Sanitizer and coverage instrumentation for a performance boost when
+      # fuzzing, since the only fuzzers that use protobuf are libprotobuf-mutator
+      # based fuzzers, and they don't actually target protobuf code.
+      configs -= not_fuzzed_remove_configs
+      configs += [ "//build/config/sanitizers:not_fuzzed" ]
     }
-
-    if (defined(invoker.extra_configs)) {
-      configs += invoker.extra_configs
-    }
-
-    # Remove Sanitizer and coverage instrumentation for a performance boost when
-    # fuzzing, since the only fuzzers that use protobuf are libprotobuf-mutator
-    # based fuzzers, and they don't actually target protobuf code.
-    configs -= not_fuzzed_remove_configs
-    configs += [ "//build/config/sanitizers:not_fuzzed" ]
 
     public_configs = [ "//third_party/protobuf:using_proto" ]
     public_deps = []
@@ -507,6 +608,10 @@ template("protoc_convert") {
     deps = [ _protoc_label ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
     }
 
     outputs = [ invoker.output_pattern ]

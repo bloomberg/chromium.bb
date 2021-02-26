@@ -15,9 +15,8 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 
 class Profile;
 
@@ -26,7 +25,7 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 // Contains map of default pre-installed apps and packages.
-class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
+class ArcDefaultAppList : public arc::ArcSessionManagerObserver {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -58,6 +57,8 @@ class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
   using AppInfoMap = std::map<std::string, std::unique_ptr<AppInfo>>;
 
   ArcDefaultAppList(Profile* profile, base::OnceClosure ready_callback);
+  ArcDefaultAppList(const ArcDefaultAppList&) = delete;
+  ArcDefaultAppList& operator=(const ArcDefaultAppList&) = delete;
   ~ArcDefaultAppList() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -91,7 +92,7 @@ class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
   }
 
  private:
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnPropertyFilesExpanded(bool result) override;
 
   // Loads default apps from two sources:
@@ -123,8 +124,6 @@ class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
   base::RepeatingClosure barrier_closure_;
 
   base::WeakPtrFactory<ArcDefaultAppList> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppList);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_DEFAULT_APP_LIST_H_

@@ -36,9 +36,9 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-using content::InputEvent;
 using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::WebGestureEventBuilder;
@@ -678,6 +678,8 @@ void ExtractUnderlines(NSAttributedString* string,
     if (handled)
       return;
   }
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
+    return;
 
   // Set the pointer type when we are receiving a NSMouseEntered event and the
   // following NSMouseExited event should have the same pointer type.
@@ -783,8 +785,10 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   if (!send_touch) {
-    WebMouseEvent event =
-        WebMouseEventBuilder::Build(theEvent, self, _pointerType);
+    bool unaccelerated_movement =
+        _mouse_locked && _mouse_lock_unaccelerated_movement;
+    WebMouseEvent event = WebMouseEventBuilder::Build(
+        theEvent, self, _pointerType, unaccelerated_movement);
 
     if (_mouse_locked &&
         base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
@@ -862,6 +866,10 @@ void ExtractUnderlines(NSAttributedString* string,
     CGAssociateMouseAndMouseCursorPosition(YES);
     [NSCursor unhide];
   }
+}
+
+- (void)setCursorLockedUnacceleratedMovement:(BOOL)unaccelerated {
+  _mouse_lock_unaccelerated_movement = unaccelerated;
 }
 
 // CommandDispatcherTarget implementation:

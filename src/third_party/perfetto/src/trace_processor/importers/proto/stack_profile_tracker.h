@@ -25,6 +25,7 @@
 #include "protos/perfetto/trace/profiling/profile_common.pbzero.h"
 #include "protos/perfetto/trace/profiling/profile_packet.pbzero.h"
 #include "src/trace_processor/storage/trace_storage.h"
+#include "src/trace_processor/tables/profiler_tables.h"
 
 namespace std {
 
@@ -90,11 +91,73 @@ struct hash<std::vector<uint64_t>> {
 namespace perfetto {
 namespace trace_processor {
 
+struct NameInPackage {
+  StringId name;
+  StringId package;
+
+  bool operator<(const NameInPackage& b) const {
+    return std::tie(name, package) < std::tie(b.name, b.package);
+  }
+};
+
 class TraceProcessorContext;
+
+class GlobalStackProfileTracker {
+ public:
+  std::vector<MappingId> FindMappingRow(StringId name,
+                                        StringId build_id) const {
+    auto it = stack_profile_mapping_index_.find(std::make_pair(name, build_id));
+    if (it == stack_profile_mapping_index_.end())
+      return {};
+    return it->second;
+  }
+
+  void InsertMappingId(StringId name, StringId build_id, MappingId row) {
+    auto pair = std::make_pair(name, build_id);
+    stack_profile_mapping_index_[pair].emplace_back(row);
+  }
+
+  std::vector<FrameId> FindFrameIds(MappingId mapping_row,
+                                    uint64_t rel_pc) const {
+    auto it =
+        stack_profile_frame_index_.find(std::make_pair(mapping_row, rel_pc));
+    if (it == stack_profile_frame_index_.end())
+      return {};
+    return it->second;
+  }
+
+  void InsertFrameRow(MappingId mapping_row, uint64_t rel_pc, FrameId row) {
+    auto pair = std::make_pair(mapping_row, rel_pc);
+    stack_profile_frame_index_[pair].emplace_back(row);
+  }
+
+  const std::vector<tables::StackProfileFrameTable::Id>* JavaFramesForName(
+      NameInPackage name) {
+    auto it = java_frames_for_name_.find(name);
+    if (it == java_frames_for_name_.end())
+      return nullptr;
+    return &it->second;
+  }
+
+  void InsertJavaFrameForName(NameInPackage name,
+                              tables::StackProfileFrameTable::Id id) {
+    java_frames_for_name_[name].push_back(id);
+  }
+
+ private:
+  using MappingKey = std::pair<StringId /* name */, StringId /* build id */>;
+  std::map<MappingKey, std::vector<MappingId>> stack_profile_mapping_index_;
+
+  using FrameKey = std::pair<MappingId, uint64_t /* rel_pc */>;
+  std::map<FrameKey, std::vector<FrameId>> stack_profile_frame_index_;
+
+  std::map<NameInPackage, std::vector<tables::StackProfileFrameTable::Id>>
+      java_frames_for_name_;
+};
 
 // TODO(lalitm): Overhaul this class to make row vs id consistent and use
 // base::Optional instead of int64_t.
-class StackProfileTracker {
+class SequenceStackProfileTracker {
  public:
   using SourceStringId = uint64_t;
 
@@ -150,8 +213,8 @@ class StackProfileTracker {
         SourceCallstackId) const = 0;
   };
 
-  explicit StackProfileTracker(TraceProcessorContext* context);
-  ~StackProfileTracker();
+  explicit SequenceStackProfileTracker(TraceProcessorContext* context);
+  ~SequenceStackProfileTracker();
 
   void AddString(SourceStringId, base::StringView);
   base::Optional<MappingId> AddMapping(

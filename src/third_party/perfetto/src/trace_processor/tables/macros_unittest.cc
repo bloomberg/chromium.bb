@@ -22,6 +22,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace {
 
+// @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_TEST_EVENT_TABLE_DEF(NAME, PARENT, C) \
   NAME(TestEventTable, "event")                           \
   PARENT(PERFETTO_TP_ROOT_TABLE_PARENT_DEF, C)            \
@@ -325,7 +326,7 @@ TEST_F(TableMacrosUnittest, NullableDoubleCompareWithLong) {
   row.value = 99.9999;
   counter_.Insert(row);
 
-  row.value = std::numeric_limits<int64_t>::min();
+  row.value = static_cast<double>(std::numeric_limits<int64_t>::min());
   counter_.Insert(row);
 
   Table out = counter_.Filter({counter_.value().eq_value(SqlValue::Long(100))});

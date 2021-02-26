@@ -9,9 +9,10 @@
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_worker_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -35,20 +36,28 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     DedicatedWorker* worker_object)
     : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
-  worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
-      this, GetParentExecutionContextTaskRunners());
+  if (worker_object) {
+    // Worker object is only nullptr in tests, which subsequently manually
+    // injects a |worker_object_proxy_|.
+    worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
+        this, GetParentExecutionContextTaskRunners(),
+        worker_object->GetToken());
+  }
 }
 
 DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
 
 void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const WorkerOptions* options,
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
     const String& source_code,
-    RejectCoepUnsafeNone reject_coep_unsafe_none) {
+    RejectCoepUnsafeNone reject_coep_unsafe_none,
+    const blink::DedicatedWorkerToken& token) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was
@@ -58,7 +67,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 
   InitializeWorkerThread(
       std::move(creation_params),
-      CreateBackingThreadStartupData(GetExecutionContext()->GetIsolate()));
+      CreateBackingThreadStartupData(GetExecutionContext()->GetIsolate()),
+      token);
 
   // Step 13: "Obtain script by switching on the value of options's type
   // member:"
@@ -72,8 +82,9 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
           WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
               *GetExecutionContext());
       GetWorkerThread()->FetchAndRunClassicScript(
-          script_url, outside_settings_object.CopyData(),
-          resource_timing_notifier, stack_id);
+          script_url, std::move(worker_main_script_load_params),
+          outside_settings_object.CopyData(), resource_timing_notifier,
+          stack_id);
     } else {
       // Legacy code path (to be deprecated, see https://crbug.com/835717):
       GetWorkerThread()->EvaluateClassicScript(
@@ -93,8 +104,9 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
         WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
-        script_url, outside_settings_object.CopyData(),
-        resource_timing_notifier, *credentials_mode, reject_coep_unsafe_none);
+        script_url, std::move(worker_main_script_load_params),
+        outside_settings_object.CopyData(), resource_timing_notifier,
+        *credentials_mode, reject_coep_unsafe_none);
   } else {
     NOTREACHED();
   }
@@ -232,7 +244,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   GetExecutionContext()->DispatchErrorEvent(event, mute_script_errors);
 }
 
-void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) {
+void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) const {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
 }

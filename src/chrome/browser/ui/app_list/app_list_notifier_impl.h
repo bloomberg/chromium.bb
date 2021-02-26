@@ -9,14 +9,20 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 
 namespace base {
 class OneShotTimer;
+}
+
+namespace ash {
+class AppListController;
 }
 
 // Chrome implementation of the AppListNotifier. This is mainly responsible for
@@ -88,7 +94,8 @@ class OneShotTimer;
 //                     |
 //  kShown -> kShown   | Restart impression timer. Only possible for the app
 //                     | tiles or results list, when the search query is
-//                     | updated.
+//                     | updated. This should not be triggered unless the
+//                     | displayed results change.
 //                     |
 //                     |
 //  kSeen -> kLaunch   | Notify of a launch and immediately set state to kNone,
@@ -122,9 +129,10 @@ class OneShotTimer;
 // Warning: NotifyResultsUpdated cannot be used as a signal of user actions or
 // UI state. Results can be updated at any time for any UI view, regardless
 // of the state of the launcher or what the user is doing.
-class AppListNotifierImpl : public ash::AppListNotifier {
+class AppListNotifierImpl : public ash::AppListNotifier,
+                            public ash::AppListControllerObserver {
  public:
-  AppListNotifierImpl();
+  explicit AppListNotifierImpl(ash::AppListController* app_list_controller);
   ~AppListNotifierImpl() override;
 
   AppListNotifierImpl(const AppListNotifierImpl&) = delete;
@@ -133,11 +141,14 @@ class AppListNotifierImpl : public ash::AppListNotifier {
   // AppListNotifier:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void NotifyLaunched(Location location, const std::string& result) override;
+  void NotifyLaunched(Location location, const Result& result) override;
   void NotifyResultsUpdated(Location location,
-                            const std::vector<std::string>& results) override;
+                            const std::vector<Result>& results) override;
   void NotifySearchQueryChanged(const base::string16& query) override;
   void NotifyUIStateChanged(ash::AppListViewState view) override;
+
+  // AppListControllerObserver:
+  void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
 
  private:
   // Possible states of the state machine.
@@ -161,6 +172,8 @@ class AppListNotifierImpl : public ash::AppListNotifier {
   // Handles a finished impression timer for |location|.
   void OnTimerFinished(Location location);
 
+  ash::AppListController* const app_list_controller_;
+
   base::ObserverList<Observer> observers_;
 
   // The current state of each state machine.
@@ -168,14 +181,17 @@ class AppListNotifierImpl : public ash::AppListNotifier {
   // An impression timer for each state machine.
   base::flat_map<Location, std::unique_ptr<base::OneShotTimer>> timers_;
 
-  // The current UI view.
+  // Whether or not the app list is shown.
+  bool shown_ = false;
+  // The current UI view. Can have a non-kClosed value when the app list is not
+  // |shown_| due to tablet mode.
   ash::AppListViewState view_ = ash::AppListViewState::kClosed;
   // The currently shown results for each UI view.
-  base::flat_map<Location, std::vector<std::string>> results_;
+  base::flat_map<Location, std::vector<Result>> results_;
   // The current search query, may be empty.
   base::string16 query_;
-  // The ID of the most recently launched result.
-  std::string launched_result_;
+  // The most recently launched result.
+  base::Optional<Result> launched_result_;
 
   base::WeakPtrFactory<AppListNotifierImpl> weak_ptr_factory_{this};
 };

@@ -84,6 +84,30 @@ unsigned int aom_sad128x128_avx2(const uint8_t *src_ptr, int src_stride,
   return sum;
 }
 
+unsigned int aom_sad_skip_128x64_avx2(const uint8_t *src_ptr, int src_stride,
+                                      const uint8_t *ref_ptr, int ref_stride) {
+  const uint32_t half_width = 64;
+  uint32_t sum = sad64x32(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2);
+  src_ptr += half_width;
+  ref_ptr += half_width;
+  sum += sad64x32(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2);
+  return 2 * sum;
+}
+
+unsigned int aom_sad_skip_64x128_avx2(const uint8_t *src_ptr, int src_stride,
+                                      const uint8_t *ref_ptr, int ref_stride) {
+  const uint32_t sum =
+      sad64x64(src_ptr, 2 * src_stride, ref_ptr, 2 * ref_stride);
+  return 2 * sum;
+}
+
+unsigned int aom_sad_skip_128x128_avx2(const uint8_t *src_ptr, int src_stride,
+                                       const uint8_t *ref_ptr, int ref_stride) {
+  const uint32_t sum =
+      aom_sad128x64_avx2(src_ptr, 2 * src_stride, ref_ptr, 2 * ref_stride);
+  return 2 * sum;
+}
+
 static unsigned int sad_w64_avg_avx2(const uint8_t *src_ptr, int src_stride,
                                      const uint8_t *ref_ptr, int ref_stride,
                                      const int h, const uint8_t *second_pred,

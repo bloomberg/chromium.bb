@@ -5,7 +5,7 @@
 #include "ui/base/clipboard/test/clipboard_test_util.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -24,6 +24,7 @@ class ReadImageHelper {
     SkBitmap bitmap;
     clipboard->ReadImage(
         ClipboardBuffer::kCopyPaste,
+        /* data_dst = */ nullptr,
         base::BindLambdaForTesting([&](const SkBitmap& result) {
           bitmap = result;
           event.Signal();

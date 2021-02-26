@@ -69,6 +69,7 @@
 #include "absl/base/casts.h"
 #include "absl/base/macros.h"
 #include "absl/numeric/int128.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/time/time.h"
 
@@ -355,7 +356,7 @@ namespace time_internal {
 // the remainder.  If it does not saturate, the remainder remain accurate,
 // but the returned quotient will over/underflow int64_t and should not be used.
 int64_t IDivDuration(bool satq, const Duration num, const Duration den,
-                   Duration* rem) {
+                     Duration* rem) {
   int64_t q = 0;
   if (IDivFastPath(num, den, &q, rem)) {
     return q;
@@ -710,16 +711,17 @@ char* Format64(char* ep, int width, int64_t v) {
 // fractional digits, because it is in the noise of what a Duration can
 // represent.
 struct DisplayUnit {
-  const char* abbr;
+  absl::string_view abbr;
   int prec;
   double pow10;
 };
-const DisplayUnit kDisplayNano = {"ns", 2, 1e2};
-const DisplayUnit kDisplayMicro = {"us", 5, 1e5};
-const DisplayUnit kDisplayMilli = {"ms", 8, 1e8};
-const DisplayUnit kDisplaySec = {"s", 11, 1e11};
-const DisplayUnit kDisplayMin = {"m", -1, 0.0};   // prec ignored
-const DisplayUnit kDisplayHour = {"h", -1, 0.0};  // prec ignored
+ABSL_CONST_INIT const DisplayUnit kDisplayNano = {"ns", 2, 1e2};
+ABSL_CONST_INIT const DisplayUnit kDisplayMicro = {"us", 5, 1e5};
+ABSL_CONST_INIT const DisplayUnit kDisplayMilli = {"ms", 8, 1e8};
+ABSL_CONST_INIT const DisplayUnit kDisplaySec = {"s", 11, 1e11};
+ABSL_CONST_INIT const DisplayUnit kDisplayMin = {"m", -1, 0.0};  // prec ignored
+ABSL_CONST_INIT const DisplayUnit kDisplayHour = {"h", -1,
+                                                  0.0};  // prec ignored
 
 void AppendNumberUnit(std::string* out, int64_t n, DisplayUnit unit) {
   char buf[sizeof("2562047788015216")];  // hours in max duration
@@ -727,7 +729,7 @@ void AppendNumberUnit(std::string* out, int64_t n, DisplayUnit unit) {
   char* bp = Format64(ep, 0, n);
   if (*bp != '0' || bp + 1 != ep) {
     out->append(bp, ep - bp);
-    out->append(unit.abbr);
+    out->append(unit.abbr.data(), unit.abbr.size());
   }
 }
 
@@ -750,7 +752,7 @@ void AppendNumberUnit(std::string* out, double n, DisplayUnit unit) {
       while (ep[-1] == '0') --ep;
       out->append(bp, ep - bp);
     }
-    out->append(unit.abbr);
+    out->append(unit.abbr.data(), unit.abbr.size());
   }
 }
 
@@ -761,7 +763,8 @@ void AppendNumberUnit(std::string* out, double n, DisplayUnit unit) {
 //   form "72h3m0.5s". Leading zero units are omitted.  As a special
 //   case, durations less than one second format use a smaller unit
 //   (milli-, micro-, or nanoseconds) to ensure that the leading digit
-//   is non-zero.  The zero duration formats as 0, with no unit.
+//   is non-zero.
+// Unlike Go, we format the zero duration as 0, with no unit.
 std::string FormatDuration(Duration d) {
   const Duration min_duration = Seconds(kint64min);
   if (d == min_duration) {

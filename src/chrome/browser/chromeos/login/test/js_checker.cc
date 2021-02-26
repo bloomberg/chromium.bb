@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -23,6 +24,21 @@ std::string WrapSend(const std::string& expression) {
 bool CheckOobeCondition(content::WebContents* web_contents,
                         const std::string& js_condition) {
   return chromeos::test::JSChecker(web_contents).GetBool(js_condition);
+}
+
+bool IsFocused(content::WebContents* web_contents,
+               const std::initializer_list<base::StringPiece>& path) {
+  if (!web_contents->GetContentNativeView()->HasFocus())
+    return false;
+  auto js_checker = chromeos::test::JSChecker(web_contents);
+  std::string current_active = "document.activeElement";
+  for (const auto& it : path) {
+    if (js_checker.GetString(current_active + ".id") != it) {
+      return false;
+    }
+    current_active += ".shadowRoot.activeElement";
+  }
+  return true;
 }
 
 std::string ElementHasClassCondition(
@@ -102,6 +118,24 @@ std::string JSChecker::GetString(const std::string& expression) {
   return result;
 }
 
+bool JSChecker::GetAttributeBool(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetBool(GetAttributeExpression(attribute, element_ids));
+}
+
+int JSChecker::GetAttributeInt(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetInt(GetAttributeExpression(attribute, element_ids));
+}
+
+std::string JSChecker::GetAttributeString(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetString(GetAttributeExpression(attribute, element_ids));
+}
+
 void JSChecker::ExpectTrue(const std::string& expression) {
   EXPECT_TRUE(GetBool(expression)) << expression;
 }
@@ -134,6 +168,64 @@ void JSChecker::ExpectEQ(const std::string& expression, bool result) {
 
 void JSChecker::ExpectNE(const std::string& expression, bool result) {
   EXPECT_NE(GetBool(expression), result) << expression;
+}
+
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    int result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    int result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
+}
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    const std::string& result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    const std::string& result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    bool result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    bool result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectFocused(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ASSERT_TRUE(web_contents_->GetContentNativeView()->HasFocus());
+
+  std::string current_active = "document.activeElement";
+  for (const auto& it : element_ids) {
+    ExpectEQ(current_active + ".id", std::string(it));
+    current_active += ".shadowRoot.activeElement";
+  }
+}
+
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateFocusWaiter(
+    const std::initializer_list<base::StringPiece>& path) {
+  return std::make_unique<TestPredicateWaiter>(
+      base::BindRepeating(&IsFocused, base::Unretained(web_contents_), path));
 }
 
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
@@ -284,12 +376,22 @@ void JSChecker::ExpectPathDisplayed(
 
 void JSChecker::ExpectDisabledPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectTrue(GetOobeElementPath(element_ids) + ".disabled");
+  ExpectAttributeEQ("disabled", element_ids, true);
 }
 
 void JSChecker::ExpectEnabledPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectFalse(GetOobeElementPath(element_ids) + ".disabled");
+  ExpectAttributeEQ("disabled", element_ids, false);
+}
+
+void JSChecker::ExpectInvalidPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectAttributeEQ("invalid", element_ids, true);
+}
+
+void JSChecker::ExpectValidPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectAttributeEQ("invalid", element_ids, false);
 }
 
 void JSChecker::ExpectHasClass(
@@ -319,9 +421,21 @@ void JSChecker::ExpectHasNoAttribute(
 void JSChecker::ExpectElementText(
     const std::string& content,
     std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  const std::string expression = element_path + ".textContent.trim()";
-  ExpectEQ(expression, content);
+  ExpectAttributeEQ("textContent.trim()", element_ids, content);
+}
+
+void JSChecker::ExpectElementContainsText(
+    const std::string& content,
+    std::initializer_list<base::StringPiece> element_ids) {
+  const std::string message =
+      GetAttributeString("textContent.trim()", element_ids);
+  EXPECT_TRUE(std::string::npos != message.find(content));
+}
+
+void JSChecker::ExpectElementValue(
+    const std::string& value,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectAttributeEQ("value", element_ids, value);
 }
 
 void JSChecker::ClickOnPath(
@@ -337,13 +451,7 @@ void JSChecker::ClickOn(const std::string& element_id) {
 void JSChecker::TapOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);
-  // TODO(crbug.com/949377): Switch to always firing 'click' events when
-  // missing OOBE UI components are migrated to handle 'click' events.
-  if (polymer_ui_) {
-    Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
-  } else {
-    Evaluate(GetOobeElementPath(element_ids) + ".click()");
-  }
+  Evaluate(GetOobeElementPath(element_ids) + ".click()");
 }
 
 void JSChecker::TapOn(const std::string& element_id) {
@@ -354,7 +462,8 @@ void JSChecker::TapLinkOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);
   // Make sure this method is used only on <a> html elements.
-  ExpectEQ(GetOobeElementPath(element_ids) + ".tagName", std::string("A"));
+  ExpectAttributeEQ("tagName", element_ids, std::string("A"));
+
   Evaluate(GetOobeElementPath(element_ids) + ".click()");
 }
 
@@ -435,6 +544,15 @@ std::string GetOobeElementPath(
   for (it++; it < element_ids.end(); it++) {
     result.append(".$$('#").append(std::string(*it)).append("')");
   }
+  return result;
+}
+
+std::string GetAttributeExpression(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string result = GetOobeElementPath(element_ids);
+  result.append(".");
+  result.append(attribute);
   return result;
 }
 

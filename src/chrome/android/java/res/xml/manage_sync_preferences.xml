@@ -7,6 +7,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <org.chromium.chrome.browser.sync.settings.SyncErrorCardPreference
+        android:key="sync_error_card"
+        app:isPreferenceVisible="false"/>
     <!-- This category is only shown for advanced sync consent flow. -->
     <PreferenceCategory
         android:key="syncing_category"
@@ -52,6 +55,17 @@
         android:key="sync_settings"
         android:title="@string/sync_settings"
         android:persistent="false"/>
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="turn_off_sync"
+        android:title="@string/sign_out_and_turn_off_sync"
+        android:icon="@drawable/ic_signout_40dp"
+        app:isPreferenceVisible="false"/>
+
+    <PreferenceCategory
+        android:key="advanced_category"
+        android:title="@string/prefs_section_advanced"
+        app:isPreferenceVisible="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="google_activity_controls"

@@ -12,6 +12,8 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "content/browser/network_service_instance_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_host_resolver.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +24,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11.h"  // nogncheck
+#include "ui/base/ui_base_features.h"
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -54,6 +56,21 @@ class ResetNetworkServiceBetweenTests : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(ResetNetworkServiceBetweenTests);
 };
 
+// Similarly to the above, the global CertVerifierServiceFactory object needs
+// to be destructed in between tests.
+class ResetCertVerifierServiceFactoryBetweenTests
+    : public testing::EmptyTestEventListener {
+ public:
+  ResetCertVerifierServiceFactoryBetweenTests() = default;
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    SetCertVerifierServiceFactoryForTesting(nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResetCertVerifierServiceFactoryBetweenTests);
+};
+
 }  // namespace
 
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
@@ -65,10 +82,12 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
 
   ForceCreateNetworkServiceDirectlyForTesting();
+  StoragePartitionImpl::ForceInProcessStorageServiceForTesting();
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ResetNetworkServiceBetweenTests);
+  listeners.Append(new ResetCertVerifierServiceFactoryBetweenTests);
 
   // The ThreadPool created by the test launcher is never destroyed.
   // Similarly, the FeatureList created here is never destroyed so it
@@ -85,9 +104,6 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
 #endif
 
-#if defined(USE_X11)
-  XInitThreads();
-#endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
   test_host_resolver_ = std::make_unique<TestHostResolver>();

@@ -71,7 +71,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   // revalidate a FontFallbackList, but create a new FontFallbackList instead.
   void RevalidateDeprecated();
 
-  bool LoadingCustomFonts() const;
   bool ShouldSkipDrawing() const;
 
   FontSelector* GetFontSelector() const { return font_selector_.Get(); }
@@ -111,6 +110,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   bool HasLoadingFallback() const { return has_loading_fallback_; }
   bool HasCustomFont() const { return has_custom_font_; }
+  bool HasAdvanceOverride() const { return has_advance_override_; }
 
  private:
   explicit FontFallbackList(FontSelector* font_selector);
@@ -132,6 +132,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   uint16_t generation_;
   bool has_loading_fallback_ : 1;
   bool has_custom_font_ : 1;
+  bool has_advance_override_ : 1;
   bool can_shape_word_by_word_ : 1;
   bool can_shape_word_by_word_computed_ : 1;
   bool is_invalid_ : 1;

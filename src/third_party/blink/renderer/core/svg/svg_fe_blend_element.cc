@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_blend_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_blend.h"
@@ -94,7 +95,7 @@ SVGFEBlendElement::SVGFEBlendElement(Document& document)
   AddToPropertyMap(mode_);
 }
 
-void SVGFEBlendElement::Trace(Visitor* visitor) {
+void SVGFEBlendElement::Trace(Visitor* visitor) const {
   visitor->Trace(in1_);
   visitor->Trace(in2_);
   visitor->Trace(mode_);
@@ -106,7 +107,7 @@ bool SVGFEBlendElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEBlend* blend = static_cast<FEBlend*>(effect);
   if (attr_name == svg_names::kModeAttr)
-    return blend->SetBlendMode(ToBlendMode(mode_->CurrentValue()->EnumValue()));
+    return blend->SetBlendMode(ToBlendMode(mode_->CurrentEnumValue()));
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
       effect, attr_name);
@@ -138,7 +139,7 @@ FilterEffect* SVGFEBlendElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input2);
 
   auto* effect = MakeGarbageCollected<FEBlend>(
-      filter, ToBlendMode(mode_->CurrentValue()->EnumValue()));
+      filter, ToBlendMode(mode_->CurrentEnumValue()));
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);

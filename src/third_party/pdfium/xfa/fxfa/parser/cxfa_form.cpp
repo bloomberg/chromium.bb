@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_form.h"
 
 #include "fxjs/xfa/cjx_form.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -25,6 +25,8 @@ CXFA_Form::CXFA_Form(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Form,
                 {},
                 kFormAttributeData,
-                pdfium::MakeUnique<CJX_Form>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Form>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Form::~CXFA_Form() = default;

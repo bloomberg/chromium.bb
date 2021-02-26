@@ -46,7 +46,6 @@ LayoutRubyBase* LayoutRubyBase::CreateAnonymous(Document* document,
                                                 const LayoutRubyRun& ruby_run) {
   LayoutRubyBase* layout_object;
   if (ruby_run.IsLayoutNGObject()) {
-    DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
     layout_object = new LayoutNGRubyBase();
   } else {
     layout_object = new LayoutRubyBase(nullptr);
@@ -57,11 +56,13 @@ LayoutRubyBase* LayoutRubyBase::CreateAnonymous(Document* document,
 
 bool LayoutRubyBase::IsChildAllowed(LayoutObject* child,
                                     const ComputedStyle&) const {
+  NOT_DESTROYED();
   return child->IsInline();
 }
 
 void LayoutRubyBase::MoveChildren(LayoutRubyBase* to_base,
                                   LayoutObject* before_child) {
+  NOT_DESTROYED();
   // This function removes all children that are before (!) beforeChild
   // and appends them to toBase.
   DCHECK(to_base);
@@ -84,6 +85,7 @@ void LayoutRubyBase::MoveChildren(LayoutRubyBase* to_base,
 
 void LayoutRubyBase::MoveInlineChildren(LayoutRubyBase* to_base,
                                         LayoutObject* before_child) {
+  NOT_DESTROYED();
   DCHECK(ChildrenInline());
   DCHECK(to_base);
 
@@ -112,6 +114,7 @@ void LayoutRubyBase::MoveInlineChildren(LayoutRubyBase* to_base,
 
 void LayoutRubyBase::MoveBlockChildren(LayoutRubyBase* to_base,
                                        LayoutObject* before_child) {
+  NOT_DESTROYED();
   DCHECK(!ChildrenInline());
   DCHECK(to_base);
 
@@ -163,6 +166,7 @@ void LayoutRubyBase::AdjustInlineDirectionLineBounds(
     unsigned expansion_opportunity_count,
     LayoutUnit& logical_left,
     LayoutUnit& logical_width) const {
+  NOT_DESTROYED();
   int max_preferred_logical_width = PreferredLogicalWidths().max_size.ToInt();
   if (max_preferred_logical_width >= logical_width)
     return;

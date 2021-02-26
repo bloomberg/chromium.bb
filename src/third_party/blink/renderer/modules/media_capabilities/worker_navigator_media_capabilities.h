@@ -18,8 +18,6 @@ class WorkerNavigator;
 class WorkerNavigatorMediaCapabilities final
     : public GarbageCollected<WorkerNavigatorMediaCapabilities>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorMediaCapabilities);
-
  public:
   static const char kSupplementName[];
 
@@ -27,7 +25,7 @@ class WorkerNavigatorMediaCapabilities final
 
   explicit WorkerNavigatorMediaCapabilities(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static WorkerNavigatorMediaCapabilities& From(WorkerNavigator&);

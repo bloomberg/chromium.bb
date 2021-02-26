@@ -55,6 +55,18 @@
              name="speakTextUnderMouse" aria-labelledby="speakMouseTextLabel">
   </div>
 
+  <div class="option" id="usePitchChangesOption">
+    <label id="usePitchChangesLabel" class="i18n"
+          msgid="options_use_pitch_changes_checkbox_label" hidden>
+    </label>
+    <label>
+      Use pitch changes
+    </label>
+    <input id="usePitchChanges" type="checkbox"
+             class="checkbox pref" name="usePitchChanges"
+             aria-labelledby="usePitchChangesLabel">
+  </div>
+
   <div class="option" id="capitalStrategyOption">
     <label id="capitalStrategyLabel" class="i18n"
           msgid="options_capital_strategy_select_label">
@@ -86,6 +98,28 @@
       <option id="asDigits" class="i18n"
               msgid="options_number_reading_style_digits">
         Digits
+      </option>
+    </select>
+  </div>
+
+  <div class="option" id="punctuationEchoOption">
+    <label id="punctuationEchoLabel" class="i18n"
+          msgid="options_punctuation_echo_select_label">
+      Punctuation echo:
+    </label>
+    <select id="punctuationEcho" class="pref"
+          aria-labelledby="punctuationEchoLabel">
+      <option id="none" class="i18n"
+            msgid="options_punctuation_echo_none">
+        None
+      </option>
+      <option id="some" class="i18n"
+              msgid="options_punctuation_echo_some">
+        Some
+      </option>
+      <option id="all" class="i18n"
+              msgid="options_punctuation_echo_all">
+        All
       </option>
     </select>
   </div>
@@ -146,6 +180,17 @@
     <input id="languageSwitching" type="checkbox"
              class="checkbox pref" name="languageSwitching"
              aria-labelledby="voiceSwitchingLabel">
+  </div>
+
+  <div class="option">
+    <label>
+      <cr-link-row id="openTtsSettings"
+          using-slotted-label external embedded>
+        <span slot="label" class="i18n" msgid="show_tts_settings"></span>
+        <span slot="sub-label" class="i18n sub-description"
+            msgid="options_show_tts_settings"></span>
+      </cr-link-row>
+    </label>
   </div>
 
   <div id="richTextIndicationOption">
@@ -551,9 +596,9 @@
       <span>treeChanged</span>
     </div></label>
     <label><div class="option-eventstream">
-      <input name="valueChanged" type="checkbox"
+      <input name="checkedStateChanged" type="checkbox"
              class="checkbox pref eventstream">
-      <span>valueChanged</span>
+      <span>checkedStateChanged</span>
     </div></label>
   </div>
   </div>

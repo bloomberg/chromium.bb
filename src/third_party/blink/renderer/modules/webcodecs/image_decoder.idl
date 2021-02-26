@@ -6,11 +6,15 @@
 
 // An ImageDecoder decodes images.
 [
-    Exposed=(Window,Worker),
+    Exposed=(Window,DedicatedWorker),
     RuntimeEnabled=WebCodecs,
-    ImplementedAs=ImageDecoderExternal
+    ImplementedAs=ImageDecoderExternal,
+    ActiveScriptWrappable
 ] interface ImageDecoder {
-  [CallWith=ScriptState, RaisesException] constructor(ImageDecoderInit init);
+  [CallWith=ScriptState, RaisesException, MeasureAs=WebCodecsImageDecoder] constructor(ImageDecoderInit init);
+
+  // Returns true if ImageDecoder supports decoding of the given mime type.
+  static boolean canDecodeType(USVString type);
 
   // Decodes the frame at the given index. If we're still receiving data, this
   // method will wait to resolve the promise until the given |frameIndex| is
@@ -23,25 +27,45 @@
   Promise<ImageFrame> decode(optional unsigned long frameIndex = 0,
                              optional boolean completeFramesOnly = true);
 
+  // Decodes only the metadata for an image; resolves the promise when metadata
+  // can be decoded. Normally this is done automatically at construction time.
+  // However when using a ReadableStream, there may not be enough data to decode
+  // metadata at the time of construction.
+  Promise<void> decodeMetadata();
+
+  // Selects another track of the image. Destructively recreates the underlying
+  // decoder. Identical track selections will be ignored. Invalid track
+  // selections will raise an exception. Clears the |preferAnimation| flag if
+  // one was provided during construction.
+  //
+  // Changing tracks will resolve all outstanding decode requests as rejected
+  // and reset any partially decoded frame state. Outstanding ImageFrames and
+  // metadata decode promises will remain valid.
+  [RaisesException] void selectTrack(unsigned long trackId);
+
   // The number of frames in the image.
   //
   // When decoding a ReadableStream the value will be 0 until enough data to
-  // decode the frame count has been received. If the format has no fixed count,
-  // the value will increase as frames are received by the decoder.
+  // decode metadata has been received. If the format has no fixed count, the
+  // value will increase as frames are received by the decoder.
   readonly attribute unsigned long frameCount;
 
-  // The detected mime type for the decoded image.
-  //
-  // When decoding a ReadableStream the value will be an empty string until
-  // enough data to detect the mime type has been received.
+  // The mime type for the decoded image. This reflects the value provided
+  // during construction.
   readonly attribute USVString type;
 
   // The image's preferred repetition count.
   //
   // When decoding a ReadableStream the value will be 0 until enough data to
-  // decode the repetition count has been received.
+  // decode metadata has been received.
   readonly attribute unsigned long repetitionCount;
 
   // True if all available frames have been received by the decoder.
   readonly attribute boolean complete;
+
+  // List of tracks available in this image.
+  //
+  // When decoding a ReadableStream the array will be empty until enough data to
+  // decode metadata has been received.
+  readonly attribute FrozenArray<ImageTrack> tracks;
 };

@@ -134,7 +134,7 @@ PHDR_FIELDS = {
 
 
 def HexDump(value):
-  return ''.join('%02X' % (ord(x),) for x in value)
+  return ''.join('%02X' % (x,) for x in value)
 
 
 class Elf(object):
@@ -212,7 +212,7 @@ def RunMain(args):
   tmpfile = args.outfile + '.tmp'
   shutil.copy(args.infile, tmpfile)
   # Create the ELF map of the temporary file and edit the PHDR in place.
-  with open(tmpfile, 'rw+b') as fd:
+  with open(tmpfile, 'r+b') as fd:
     # Map the file.
     elf_map = mmap.mmap(fd.fileno(), 0)
     elf = Elf.LoadMap(elf_map)

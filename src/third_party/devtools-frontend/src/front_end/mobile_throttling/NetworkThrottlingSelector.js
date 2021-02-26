@@ -10,7 +10,7 @@ import {networkPresets, NetworkThrottlingConditionsGroup} from './ThrottlingPres
 export class NetworkThrottlingSelector {
   /**
    * @param {function(!Array<!NetworkThrottlingConditionsGroup>):!Array<?SDK.NetworkManager.Conditions>} populateCallback
-   * @param {function(number)} selectCallback
+   * @param {function(number):void} selectCallback
    * @param {!Common.Settings.Setting<!Array<!SDK.NetworkManager.Conditions>>} customNetworkConditionsSetting
    */
   constructor(populateCallback, selectCallback, customNetworkConditionsSetting) {

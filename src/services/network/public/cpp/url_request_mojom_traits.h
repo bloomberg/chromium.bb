@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -17,13 +18,14 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
-#include "net/url_request/url_request_job.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -42,12 +44,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    EnumTraits<network::mojom::URLRequestReferrerPolicy,
-               net::URLRequest::ReferrerPolicy> {
+    EnumTraits<network::mojom::URLRequestReferrerPolicy, net::ReferrerPolicy> {
   static network::mojom::URLRequestReferrerPolicy ToMojom(
-      net::URLRequest::ReferrerPolicy policy);
+      net::ReferrerPolicy policy);
   static bool FromMojom(network::mojom::URLRequestReferrerPolicy in,
-                        net::URLRequest::ReferrerPolicy* out);
+                        net::ReferrerPolicy* out);
 };
 
 template <>
@@ -74,6 +75,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return std::move(
         const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
             .cookie_observer);
+  }
+  static const network::mojom::ClientSecurityStatePtr& client_security_state(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.client_security_state;
   }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
@@ -112,7 +117,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const GURL& referrer(const network::ResourceRequest& request) {
     return request.referrer;
   }
-  static net::URLRequest::ReferrerPolicy referrer_policy(
+  static net::ReferrerPolicy referrer_policy(
       const network::ResourceRequest& request) {
     return request.referrer_policy;
   }
@@ -237,9 +242,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.devtools_request_id;
   }
+  static const base::Optional<std::string>& devtools_stack_id(
+      const network::ResourceRequest& request) {
+    return request.devtools_stack_id;
+  }
   static bool is_signed_exchange_prefetch_cache_enabled(
       const network::ResourceRequest& request) {
     return request.is_signed_exchange_prefetch_cache_enabled;
+  }
+  static bool is_fetch_like_api(const network::ResourceRequest& request) {
+    return request.is_fetch_like_api;
   }
   static bool obey_origin_policy(const network::ResourceRequest& request) {
     return request.obey_origin_policy;
@@ -288,6 +300,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return r->contains_sensitive_info_;
   }
 
+  static bool allow_http1_for_streaming_upload(
+      const scoped_refptr<network::ResourceRequestBody>& r) {
+    return r->allow_http1_for_streaming_upload_;
+  }
+
   static bool Read(network::mojom::URLRequestBodyDataView data,
                    scoped_refptr<network::ResourceRequestBody>* out);
 };
@@ -299,21 +316,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::DataElement& element) {
     return element.type_;
   }
-  static std::vector<uint8_t> buf(const network::DataElement& element) {
-    if (element.bytes_) {
-      return std::vector<uint8_t>(element.bytes_,
-                                  element.bytes_ + element.length_);
-    }
-    return std::move(element.buf_);
+  static mojo_base::BigBufferView buf(const network::DataElement& element) {
+    return mojo_base::BigBufferView(element.buf_);
   }
   static const base::FilePath& path(const network::DataElement& element) {
     return element.path_;
-  }
-  static base::File file(const network::DataElement& element) {
-    return std::move(const_cast<network::DataElement&>(element).file_);
-  }
-  static const std::string& blob_uuid(const network::DataElement& element) {
-    return element.blob_uuid_;
   }
   static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
       const network::DataElement& element) {
@@ -323,7 +330,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
   chunked_data_pipe_getter(const network::DataElement& element) {
-    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
+    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe &&
+        element.type_ != network::mojom::DataElementType::kReadOnceStream)
       return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();

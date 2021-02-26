@@ -22,8 +22,9 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   std::unique_ptr<Thread> CreateMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
+  std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
   std::unique_ptr<WebWidgetScheduler> CreateWidgetScheduler() override;
+  WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
   std::unique_ptr<WebRenderWidgetSchedulingState>
   NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const viz::BeginFrameArgs& args) override;

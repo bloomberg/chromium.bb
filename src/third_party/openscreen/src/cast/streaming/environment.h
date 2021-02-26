@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "absl/types/span.h"
 #include "platform/api/time.h"
@@ -34,10 +35,11 @@ class Environment : public UdpSocket::Client {
 
   // Construct with the given clock source and TaskRunner. Creates and
   // internally-owns a UdpSocket, and immediately binds it to the given
-  // |local_endpoint|.
+  // |local_endpoint|. If embedders do not care what interface/address the UDP
+  // socket is bound on, they may omit that argument.
   Environment(ClockNowFunctionPtr now_function,
               TaskRunner* task_runner,
-              const IPEndpoint& local_endpoint);
+              const IPEndpoint& local_endpoint = IPEndpoint::kAnyV6());
 
   ~Environment() override;
 
@@ -87,10 +89,11 @@ class Environment : public UdpSocket::Client {
   virtual void SendPacket(absl::Span<const uint8_t> packet);
 
  protected:
-  // Common constructor that just stores the injected dependencies and does not
-  // create a socket. Subclasses use this to provide an alternative packet
-  // receive/send mechanism (e.g., for testing).
-  Environment(ClockNowFunctionPtr now_function, TaskRunner* task_runner);
+  Environment() : now_function_(nullptr), task_runner_(nullptr) {}
+
+  // Protected so that they can be set by the MockEnvironment for testing.
+  ClockNowFunctionPtr now_function_;
+  TaskRunner* task_runner_;
 
  private:
   // UdpSocket::Client implementation.
@@ -98,8 +101,6 @@ class Environment : public UdpSocket::Client {
   void OnSendError(UdpSocket* socket, Error error) final;
   void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet_or_error) final;
 
-  const ClockNowFunctionPtr now_function_;
-  TaskRunner* const task_runner_;
 
   // The UDP socket bound to the local endpoint that was passed into the
   // constructor, or null if socket creation failed.

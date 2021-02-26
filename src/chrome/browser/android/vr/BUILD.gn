@@ -16,8 +16,6 @@ static_library("vr_android") {
   sources = [
     "android_ui_gesture_target.cc",
     "android_ui_gesture_target.h",
-    "android_vr_utils.cc",
-    "android_vr_utils.h",
     "android_vsync_helper.cc",
     "android_vsync_helper.h",
     "autocomplete_controller.cc",
@@ -27,8 +25,6 @@ static_library("vr_android") {
     "cardboard_input_delegate.cc",
     "cardboard_input_delegate.h",
     "gl_browser_interface.h",
-    "gvr_consent_helper.cc",
-    "gvr_consent_helper.h",
     "gvr_graphics_delegate.cc",
     "gvr_graphics_delegate.h",
     "gvr_input_delegate.cc",
@@ -42,8 +38,6 @@ static_library("vr_android") {
     "gvr_scheduler_delegate.h",
     "gvr_util.cc",
     "gvr_util.h",
-    "mailbox_to_surface_bridge.cc",
-    "mailbox_to_surface_bridge.h",
     "metrics_util_android.cc",
     "metrics_util_android.h",
     "register_gvr_jni.cc",
@@ -53,8 +47,6 @@ static_library("vr_android") {
     "scoped_gpu_trace.h",
     "vr_controller.cc",
     "vr_controller.h",
-    "vr_core_info.cc",
-    "vr_core_info.h",
     "vr_gl_thread.cc",
     "vr_gl_thread.h",
     "vr_input_connection.cc",
@@ -65,44 +57,15 @@ static_library("vr_android") {
     "vr_shell.h",
     "vr_shell_delegate.cc",
     "vr_shell_delegate.h",
-    "web_xr_presentation_state.cc",
-    "web_xr_presentation_state.h",
+    "vrcore_install_helper.cc",
+    "vrcore_install_helper.h",
   ]
 
   if (enable_arcore) {
     sources += [
-      "arcore_device/ar_image_transport.cc",
-      "arcore_device/ar_image_transport.h",
-      "arcore_device/ar_renderer.cc",
-      "arcore_device/ar_renderer.h",
-      "arcore_device/arcore.h",
-      "arcore_device/arcore_anchor_manager.cc",
-      "arcore_device/arcore_anchor_manager.h",
-      "arcore_device/arcore_consent_prompt.cc",
-      "arcore_device/arcore_consent_prompt.h",
-      "arcore_device/arcore_device.cc",
-      "arcore_device/arcore_device.h",
       "arcore_device/arcore_device_provider.cc",
       "arcore_device/arcore_device_provider.h",
-      "arcore_device/arcore_gl.cc",
-      "arcore_device/arcore_gl.h",
-      "arcore_device/arcore_gl_thread.cc",
-      "arcore_device/arcore_gl_thread.h",
-      "arcore_device/arcore_impl.cc",
-      "arcore_device/arcore_impl.h",
-      "arcore_device/arcore_install_helper.cc",
-      "arcore_device/arcore_install_helper.h",
-      "arcore_device/arcore_java_utils.cc",
-      "arcore_device/arcore_java_utils.h",
-      "arcore_device/arcore_plane_manager.cc",
-      "arcore_device/arcore_plane_manager.h",
-      "arcore_device/arcore_sdk.h",
-      "arcore_device/arcore_session_utils.h",
-      "arcore_device/arcore_shim.cc",
-      "arcore_device/arcore_shim.h",
-      "arcore_device/scoped_arcore_objects.h",
-      "arcore_device/type_converters.cc",
-      "arcore_device/type_converters.h",
+      "arcore_device/arcore_device_utils.cc",
     ]
   }
 
@@ -123,10 +86,14 @@ static_library("vr_android") {
     "//components/permissions",
     "//components/rappor",
     "//components/search_engines:search_engines",
+    "//components/webxr:webxr",
+    "//components/webxr/android",
+    "//components/webxr/android:android_utils",
     "//content/public/browser",
     "//content/public/common",
     "//device/vr",
     "//device/vr:vr_base",
+    "//device/vr/android:vr_android",
     "//device/vr/buildflags:buildflags",
     "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
@@ -140,10 +107,13 @@ static_library("vr_android") {
   ]
 
   if (enable_arcore) {
-    deps += [ ":ar_jni_headers" ]
+    deps += [
+      ":ar_jni_headers",
+      "//device/vr/android/arcore",
+    ]
   }
 
-  public_deps = [ "//device/vr/public/mojom" ]
+  public_deps = [ "//device/vr/public/mojom:isolated_xr_service" ]
 
   libs = [ "android" ]
 
@@ -151,10 +121,6 @@ static_library("vr_android") {
     "//third_party/gvr-android-keyboard:kb_config",
     "//third_party/gvr-android-sdk:libgvr_config",
   ]
-
-  if (enable_arcore) {
-    configs += [ "//third_party/arcore-android-sdk:libarcore_config" ]
-  }
 }
 
 # The VR UI module factory interface.
@@ -204,21 +170,11 @@ group("module_factory") {
   }
 }
 
-android_library("ar_java") {
-  deps = [
-    "//base:base_java",
-    "//chrome/android:chrome_java",
-    "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
-  ]
-
-  sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
-}
-
 if (enable_arcore) {
   generate_jni("ar_jni_headers") {
     sources = [
-      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreInstallUtils.java",
-      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
+      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCompositorDelegateProviderImpl.java",
+      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreDeviceUtils.java",
     ]
   }
 }
@@ -256,8 +212,10 @@ test("vr_android_unittests") {
     "//base/test:test_support",
     "//chrome/browser",
     "//components/translate/core/language_detection:language_detection",
+    "//components/webxr:webxr",
     "//device/vr:vr_fakes",
-    "//device/vr/public/mojom",
+    "//device/vr/android/arcore",
+    "//device/vr/public/mojom:isolated_xr_service",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/network:test_support",

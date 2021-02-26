@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -213,9 +213,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   data.vibration_pattern = vibration_pattern;
   data.silent = true;
   data.actions.resize(2);
-  data.actions[0].type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+  data.actions[0].type = blink::mojom::NotificationActionType::BUTTON;
   data.actions[0].title = base::ASCIIToUTF16("Button 1");
-  data.actions[1].type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+  data.actions[1].type = blink::mojom::NotificationActionType::TEXT;
   data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   NotificationResources notification_resources;
@@ -250,8 +250,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
 
 TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   // Set up UKM recording conditions.
-  ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
-                                            /* no_db= */ false));
+  ASSERT_TRUE(profile_.CreateHistoryService());
   auto* history_service = HistoryServiceFactory::GetForProfile(
       &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->AddPage(Origin(), base::Time::Now(),

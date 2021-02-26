@@ -60,8 +60,19 @@ macro(libgav1_set_build_definitions)
     set(libgav1_dependency libgav1_static)
   endif()
 
-  list(APPEND libgav1_clang_cxx_flags "-Wmissing-prototypes"
+  list(APPEND libgav1_clang_cxx_flags "-Wextra-semi" "-Wmissing-prototypes"
               "-Wshorten-64-to-32")
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6")
+      # Quiet warnings in copy-list-initialization where {} elision has always
+      # been allowed.
+      list(APPEND libgav1_clang_cxx_flags "-Wno-missing-braces")
+    endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
+      list(APPEND libgav1_clang_cxx_flags "-Wextra-semi-stmt")
+    endif()
+  endif()
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "7")

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 
 #import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
@@ -47,7 +47,7 @@ TEST_F(BreadcrumbManagerTest, EventCountLimited) {
   EXPECT_NE(std::string::npos, events.front().find("event4"));
 }
 
-// Tests that old events are dropped.
+// Tests that old event buckets are dropped.
 TEST_F(BreadcrumbManagerTest, OldEventsDropped) {
   // Log an event from one and two hours ago.
   breadcrumb_manager_.AddEvent("event1");

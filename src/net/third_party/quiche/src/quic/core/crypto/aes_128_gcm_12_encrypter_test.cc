@@ -7,11 +7,12 @@
 #include <memory>
 #include <string>
 
+#include "absl/base/macros.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
@@ -160,9 +161,9 @@ namespace test {
 // EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the ciphertext.
 QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
-                           quiche::QuicheStringPiece nonce,
-                           quiche::QuicheStringPiece associated_data,
-                           quiche::QuicheStringPiece plaintext) {
+                           absl::string_view nonce,
+                           absl::string_view associated_data,
+                           absl::string_view plaintext) {
   size_t ciphertext_size = encrypter->GetCiphertextSize(plaintext.length());
   std::unique_ptr<char[]> ciphertext(new char[ciphertext_size]);
 
@@ -177,18 +178,18 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
 class Aes128Gcm12EncrypterTest : public QuicTest {};
 
 TEST_F(Aes128Gcm12EncrypterTest, Encrypt) {
-  for (size_t i = 0; i < QUICHE_ARRAYSIZE(test_group_array); i++) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(test_group_array); i++) {
     SCOPED_TRACE(i);
     const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vectors[j].key != nullptr; j++) {
       // Decode the test vector.
-      std::string key = quiche::QuicheTextUtils::HexDecode(test_vectors[j].key);
-      std::string iv = quiche::QuicheTextUtils::HexDecode(test_vectors[j].iv);
-      std::string pt = quiche::QuicheTextUtils::HexDecode(test_vectors[j].pt);
-      std::string aad = quiche::QuicheTextUtils::HexDecode(test_vectors[j].aad);
-      std::string ct = quiche::QuicheTextUtils::HexDecode(test_vectors[j].ct);
-      std::string tag = quiche::QuicheTextUtils::HexDecode(test_vectors[j].tag);
+      std::string key = absl::HexStringToBytes(test_vectors[j].key);
+      std::string iv = absl::HexStringToBytes(test_vectors[j].iv);
+      std::string pt = absl::HexStringToBytes(test_vectors[j].pt);
+      std::string aad = absl::HexStringToBytes(test_vectors[j].aad);
+      std::string ct = absl::HexStringToBytes(test_vectors[j].ct);
+      std::string tag = absl::HexStringToBytes(test_vectors[j].tag);
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -201,12 +202,12 @@ TEST_F(Aes128Gcm12EncrypterTest, Encrypt) {
 
       Aes128Gcm12Encrypter encrypter;
       ASSERT_TRUE(encrypter.SetKey(key));
-      std::unique_ptr<QuicData> encrypted(EncryptWithNonce(
-          &encrypter, iv,
-          // This deliberately tests that the encrypter can
-          // handle an AAD that is set to nullptr, as opposed
-          // to a zero-length, non-nullptr pointer.
-          aad.length() ? aad : quiche::QuicheStringPiece(), pt));
+      std::unique_ptr<QuicData> encrypted(
+          EncryptWithNonce(&encrypter, iv,
+                           // This deliberately tests that the encrypter can
+                           // handle an AAD that is set to nullptr, as opposed
+                           // to a zero-length, non-nullptr pointer.
+                           aad.length() ? aad : absl::string_view(), pt));
       ASSERT_TRUE(encrypted.get());
 
       // The test vectors have 16 byte authenticators but this code only uses

@@ -13,9 +13,12 @@
 #include "base/macros.h"
 #include "components/arc/mojom/video_encode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -26,14 +29,14 @@ class GpuArcVideoEncodeAccelerator
       public media::VideoEncodeAccelerator::Client {
  public:
   explicit GpuArcVideoEncodeAccelerator(
-      const gpu::GpuPreferences& gpu_preferences);
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds);
   ~GpuArcVideoEncodeAccelerator() override;
 
  private:
   using VideoPixelFormat = media::VideoPixelFormat;
   using VideoCodecProfile = media::VideoCodecProfile;
   using Error = media::VideoEncodeAccelerator::Error;
-  using VideoEncodeClientPtr = ::arc::mojom::VideoEncodeClientPtr;
 
   // VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -48,14 +51,15 @@ class GpuArcVideoEncodeAccelerator
   void GetSupportedProfiles(GetSupportedProfilesCallback callback) override;
 
   void Initialize(const media::VideoEncodeAccelerator::Config& config,
-                  VideoEncodeClientPtr client,
+                  mojo::PendingRemote<mojom::VideoEncodeClient> client,
                   InitializeCallback callback) override;
-  void InitializeDeprecated(const media::VideoEncodeAccelerator::Config& config,
-                            VideoEncodeClientPtr client,
-                            InitializeDeprecatedCallback callback) override;
+  void InitializeDeprecated(
+      const media::VideoEncodeAccelerator::Config& config,
+      mojo::PendingRemote<mojom::VideoEncodeClient> client,
+      InitializeDeprecatedCallback callback) override;
   mojom::VideoEncodeAccelerator::Result InitializeTask(
       const media::VideoEncodeAccelerator::Config& config,
-      VideoEncodeClientPtr client);
+      mojo::PendingRemote<mojom::VideoEncodeClient> client);
 
   void Encode(media::VideoPixelFormat format,
               mojo::ScopedHandle fd,
@@ -85,8 +89,9 @@ class GpuArcVideoEncodeAccelerator
                           EncodeCallback callback);
 
   gpu::GpuPreferences gpu_preferences_;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   std::unique_ptr<media::VideoEncodeAccelerator> accelerator_;
-  ::arc::mojom::VideoEncodeClientPtr client_;
+  mojo::Remote<::arc::mojom::VideoEncodeClient> client_;
   gfx::Size coded_size_;
   gfx::Size visible_size_;
   VideoPixelFormat input_pixel_format_;

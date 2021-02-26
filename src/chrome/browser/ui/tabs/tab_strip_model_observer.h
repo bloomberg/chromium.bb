@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -141,6 +140,8 @@ class TabStripModelChange {
   explicit TabStripModelChange(Remove delta);
   explicit TabStripModelChange(Replace delta);
   explicit TabStripModelChange(Move delta);
+  TabStripModelChange(const TabStripModelChange&) = delete;
+  TabStripModelChange& operator=(const TabStripModelChange&) = delete;
   ~TabStripModelChange();
 
   Type type() const { return type_; }
@@ -154,8 +155,6 @@ class TabStripModelChange {
 
   const Type type_ = kSelectionOnly;
   std::unique_ptr<Delta> delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelChange);
 };
 
 // Struct to carry changes on selection/activation.
@@ -200,7 +199,14 @@ struct TabGroupChange {
   // a kContentsChange event is fired. Whenever the group's visual data changes,
   // such as its title or color, a kVisualsChange event is fired. Whenever the
   // group is moved by interacting with its header, a kMoved event is fired.
-  enum Type { kCreated, kContentsChanged, kVisualsChanged, kMoved, kClosed };
+  enum Type {
+    kCreated,
+    kEditorOpened,
+    kContentsChanged,
+    kVisualsChanged,
+    kMoved,
+    kClosed
+  };
 
   TabGroupChange(tab_groups::TabGroupId group, Type type);
   ~TabGroupChange();
@@ -243,6 +249,9 @@ class TabStripModelObserver {
     kCloseAllCompleted = 1,
   };
 
+  TabStripModelObserver(const TabStripModelObserver&) = delete;
+  TabStripModelObserver& operator=(const TabStripModelObserver&) = delete;
+
   // |change| is a series of changes in tabstrip model. |change| consists
   // of changes with same type and those changes may have caused selection or
   // activation changes. |selection| is determined by comparing the state of
@@ -281,6 +290,7 @@ class TabStripModelObserver {
   // Called when the tab at |index| is added to the group with id |group|.
   virtual void TabGroupedStateChanged(
       base::Optional<tab_groups::TabGroupId> group,
+      content::WebContents* contents,
       int index);
 
   // The TabStripModel now no longer has any tabs. The implementer may
@@ -337,8 +347,6 @@ class TabStripModelObserver {
 
  private:
   std::set<TabStripModel*> observed_models_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelObserver);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_

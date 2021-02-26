@@ -226,7 +226,7 @@ void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
   pending_loaders_.erase(loader);
 }
 
-void ImageBitmapFactories::Trace(Visitor* visitor) {
+void ImageBitmapFactories::Trace(Visitor* visitor) const {
   visitor->Trace(pending_loaders_);
   Supplement<ExecutionContext>::Trace(visitor);
 }
@@ -307,9 +307,9 @@ void DecodeImageOnDecoderThread(
       SegmentReader::CreateFromSkData(
           SkData::MakeWithoutCopy(contents.Data(), contents.DataLength())),
       data_complete, alpha_option, ImageDecoder::kDefaultBitDepth,
-      color_behavior, ImageDecoder::OverrideAllowDecodeToYuv::kDeny);
+      color_behavior);
   sk_sp<SkImage> frame;
-  ImageOrientationEnum orientation = kDefaultImageOrientation;
+  ImageOrientationEnum orientation = ImageOrientationEnum::kDefault;
   if (decoder) {
     orientation = decoder->Orientation().Orientation();
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
@@ -367,7 +367,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   factory_->DidFinishLoading(this);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::Trace(Visitor* visitor) {
+void ImageBitmapFactories::ImageBitmapLoader::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(factory_);
   visitor->Trace(resolver_);

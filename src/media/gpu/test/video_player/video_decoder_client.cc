@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/base/media_util.h"
 #include "media/base/waiting.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video.h"
@@ -190,7 +191,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
             std::make_unique<PlatformVideoFramePool>(
                 gpu_memory_buffer_factory_),
             std::make_unique<VideoFrameConverter>(),
-            gpu_memory_buffer_factory_);
+            std::make_unique<NullMediaLog>());
       } else {
         LOG(ERROR) << "VD-based video decoders only support import mode";
       }
@@ -315,7 +316,7 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
 
   VideoDecoder::DecodeCB decode_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::DecodeDoneTask),
-                    media::DecodeStatus>,
+                    media::Status>,
       weak_this_, decoder_client_thread_.task_runner(),
       &VideoDecoderClient::DecodeDoneTask);
   decoder_->Decode(std::move(bitstream_buffer), std::move(decode_cb));
@@ -336,7 +337,7 @@ void VideoDecoderClient::FlushTask() {
 
   VideoDecoder::DecodeCB flush_done_cb =
       base::BindOnce(CallbackThunk<decltype(&VideoDecoderClient::FlushDoneTask),
-                                   media::DecodeStatus>,
+                                   media::Status>,
                      weak_this_, decoder_client_thread_.task_runner(),
                      &VideoDecoderClient::FlushDoneTask);
   decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), std::move(flush_done_cb));
@@ -370,10 +371,10 @@ void VideoDecoderClient::DecoderInitializedTask(Status status) {
   FireEvent(VideoPlayerEvent::kInitialized);
 }
 
-void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
+void VideoDecoderClient::DecodeDoneTask(media::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
-  ASSERT_TRUE(status != media::DecodeStatus::ABORTED ||
+  ASSERT_TRUE(status.code() != media::StatusCode::kAborted ||
               decoder_client_state_ == VideoDecoderClientState::kResetting);
   DVLOGF(4);
 
@@ -387,7 +388,7 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
 
 void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  DCHECK(video_frame->metadata()->IsTrue(VideoFrameMetadata::POWER_EFFICIENT));
+  DCHECK(video_frame->metadata()->power_efficient);
 
   frame_renderer_->RenderFrame(video_frame);
 
@@ -402,7 +403,7 @@ void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   current_frame_index_++;
 }
 
-void VideoDecoderClient::FlushDoneTask(media::DecodeStatus status) {
+void VideoDecoderClient::FlushDoneTask(media::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
 

@@ -36,7 +36,7 @@ class CrashReporterClient {
   CrashReporterClient();
   virtual ~CrashReporterClient();
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_WIN) && !defined(OS_ANDROID)
   // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
@@ -88,7 +88,7 @@ class CrashReporterClient {
   virtual int GetResultCodeRespawnFailed();
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Returns a textual description of the product type and version to include
   // in the crash report. Neither out parameter should be set to NULL.
   // TODO(jperaza): Remove the 2-parameter overload of this method once all
@@ -130,11 +130,6 @@ class CrashReporterClient {
   virtual bool GetCrashMetricsLocation(base::FilePath* metrics_dir);
 #endif
 
-  virtual bool UseCrashKeysWhiteList();
-
-  // Returns a NULL-terminated array of crash keys to whitelist.
-  virtual const char* const* GetCrashKeyWhiteList();
-
   // Returns true if running in unattended mode (for automated testing).
   virtual bool IsRunningUnattended();
 
@@ -175,9 +170,9 @@ class CrashReporterClient {
   virtual bool ShouldWriteMinidumpToLog();
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Configures sanitization of crash dumps.
-  // |annotations_whitelist| is a nullptr terminated array of NUL-terminated
+  // |allowed_annotations| is a nullptr terminated array of NUL-terminated
   // strings of allowed annotation names or nullptr if all annotations are
   // allowed. |target_module| is a pointer to a location inside a module to
   // target or nullptr if there is no target module. Crash dumps are not
@@ -186,7 +181,7 @@ class CrashReporterClient {
   // sanitized for possible PII. If they are sanitized, only small integers and
   // pointers to modules and stacks will be preserved.
   virtual void GetSanitizationInformation(
-      const char* const** annotations_whitelist,
+      const char* const** allowed_annotations,
       void** target_module,
       bool* sanitize_stacks);
 #endif

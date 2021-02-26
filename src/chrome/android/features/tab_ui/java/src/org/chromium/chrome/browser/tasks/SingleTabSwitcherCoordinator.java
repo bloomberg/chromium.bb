@@ -13,9 +13,13 @@ import android.view.ViewGroup;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -42,6 +46,9 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
         mTabListFaviconProvider = new TabListFaviconProvider(activity, false);
         mMediator = new SingleTabSwitcherMediator(
                 propertyModel, activity.getTabModelSelector(), mTabListFaviconProvider);
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+            new TabAttributeCache(activity.getTabModelSelector());
+        }
 
         // Most of these interfaces should be unused. They are invalid implementations.
         mTabListDelegate = new TabSwitcher.TabListDelegate() {
@@ -124,6 +131,7 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
             SnackbarManager.SnackbarManageable snackbarManageable,
             ModalDialogManager modalDialogManager) {
         mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+        mMediator.initWithNative();
     }
 
     @Override
@@ -137,7 +145,7 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
     }
 
     @Override
-    public TabDialogDelegation getTabGridDialogDelegation() {
+    public Supplier<Boolean> getTabGridDialogVisibilitySupplier() {
         assert false : "should not reach here";
         return null;
     }

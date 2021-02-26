@@ -15,11 +15,12 @@ import androidx.annotation.NonNull;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * The coordinator for a status indicator that is positioned below the status bar and is persistent.
@@ -39,19 +40,31 @@ public class StatusIndicatorCoordinator {
          * @param newColor The new color as {@link ColorInt}.
          */
         default void onStatusIndicatorColorChanged(@ColorInt int newColor) {}
+
+        /**
+         * Called when the "show" animation of the status indicator completes.
+         */
+        default void onStatusIndicatorShowAnimationEnd() {}
     }
 
     private StatusIndicatorMediator mMediator;
     private StatusIndicatorSceneLayer mSceneLayer;
     private boolean mIsShowing;
     private Runnable mRemoveOnLayoutChangeListener;
+    private int mResourceId;
+    private ViewResourceAdapter mResourceAdapter;
+    private ResourceManager mResourceManager;
+    private boolean mResourceRegistered;
+    private Activity mActivity;
+    private Callback<Runnable> mRequestRender;
+    private boolean mInitialized;
 
     /**
      * Constructs the status indicator.
      * @param activity The {@link Activity} to find and inflate the status indicator view.
      * @param resourceManager The {@link ResourceManager} for the status indicator's cc layer.
-     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen to for the changes in
-     *                          controls offsets.
+     * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} to listen to
+     *                                     for the changes in controls offsets.
      * @param statusBarColorWithoutStatusIndicatorSupplier A supplier that will get the status bar
      *                                                     color without taking the status indicator
      *                                                     into account.
@@ -62,44 +75,22 @@ public class StatusIndicatorCoordinator {
      * @param requestRender Runnable to request a render when the cc-layer needs to be updated.
      */
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager,
+            BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
             Supplier<Boolean> canAnimateNativeBrowserControls, Callback<Runnable> requestRender) {
-        // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
-        // when we have the public API figured out. First, we should avoid inflating the view here
-        // in case it's never used.
-        final ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
-        ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
-        mSceneLayer = new StatusIndicatorSceneLayer(root, () -> fullscreenManager);
-        PropertyModel model =
-                new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                        .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
-                        .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
-                        .build();
-        PropertyModelChangeProcessor.create(model,
-                new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
-                StatusIndicatorViewBinder::bind);
-        Callback<Runnable> invalidateCompositorView = callback -> {
-            root.getResourceAdapter().invalidate(null);
-            requestRender.onResult(callback);
-        };
-        Runnable requestLayout = () -> root.requestLayout();
-
-        mMediator = new StatusIndicatorMediator(model, fullscreenManager,
-                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls,
-                invalidateCompositorView, requestLayout);
-        resourceManager.getDynamicResourceLoader().registerResource(
-                root.getId(), root.getResourceAdapter());
-        root.addOnLayoutChangeListener(mMediator);
-        mRemoveOnLayoutChangeListener = () -> root.removeOnLayoutChangeListener(mMediator);
+        mActivity = activity;
+        mResourceManager = resourceManager;
+        mRequestRender = requestRender;
+        mSceneLayer = new StatusIndicatorSceneLayer(browserControlsStateProvider);
+        mMediator = new StatusIndicatorMediator(browserControlsStateProvider,
+                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls);
     }
 
     public void destroy() {
-        mRemoveOnLayoutChangeListener.run();
+        if (mInitialized) mRemoveOnLayoutChangeListener.run();
+        if (mResourceRegistered) unregisterResource();
         mMediator.destroy();
     }
-
-    // TODO(sinansahin): Destroy the view when not needed.
 
     /**
      * Show the status indicator with the initial properties with animations.
@@ -117,6 +108,8 @@ public class StatusIndicatorCoordinator {
         // caller, e.g. returning a boolean.
         if (mIsShowing) return;
         mIsShowing = true;
+
+        if (!mInitialized) initialize();
 
         mMediator.animateShow(statusText, statusIcon, backgroundColor, textColor, iconTint);
     }
@@ -165,5 +158,51 @@ public class StatusIndicatorCoordinator {
      */
     public StatusIndicatorSceneLayer getSceneLayer() {
         return mSceneLayer;
+    }
+
+    /** @return The class of the {@link SceneOverlay} owned by this coordinator. */
+    public static Class getSceneOverlayClass() {
+        return StatusIndicatorSceneLayer.class;
+    }
+
+    private void initialize() {
+        final ViewStub stub = mActivity.findViewById(R.id.status_indicator_stub);
+        final ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
+        mResourceId = root.getId();
+        mSceneLayer.setResourceId(mResourceId);
+        mResourceAdapter = root.getResourceAdapter();
+        Callback<Runnable> invalidateCompositorView = callback -> {
+            mResourceAdapter.invalidate(null);
+            mRequestRender.onResult(callback);
+        };
+        PropertyModel model =
+                new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
+                        .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
+                        .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
+                        .build();
+        PropertyModelChangeProcessor.create(model,
+                new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
+                StatusIndicatorViewBinder::bind);
+        mMediator.initialize(model, this::registerResource, this::unregisterResource,
+                invalidateCompositorView, root::requestLayout);
+        root.addOnLayoutChangeListener(mMediator);
+        mRemoveOnLayoutChangeListener = () -> root.removeOnLayoutChangeListener(mMediator);
+
+        mInitialized = true;
+    }
+
+    private void registerResource() {
+        if (mResourceRegistered) return;
+
+        mResourceManager.getDynamicResourceLoader().registerResource(mResourceId, mResourceAdapter);
+        mResourceRegistered = true;
+    }
+
+    private void unregisterResource() {
+        if (!mResourceRegistered) return;
+
+        mResourceAdapter.dropCachedBitmap();
+        mResourceManager.getDynamicResourceLoader().unregisterResource(mResourceId);
+        mResourceRegistered = false;
     }
 }

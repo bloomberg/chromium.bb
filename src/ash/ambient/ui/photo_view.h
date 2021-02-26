@@ -8,19 +8,21 @@
 #include <memory>
 
 #include "ash/ambient/model/ambient_backend_model_observer.h"
+#include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 
-namespace ui {
-class AnimationMetricsReporter;
-}  // namespace ui
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
 
 namespace ash {
 
 class AmbientBackgroundImageView;
 class AmbientViewDelegate;
+struct PhotoWithDetails;
 
 // View to display photos in ambient mode.
 class ASH_EXPORT PhotoView : public views::View,
@@ -34,34 +36,36 @@ class ASH_EXPORT PhotoView : public views::View,
 
   // views::View:
   const char* GetClassName() const override;
-  void AddedToWidget() override;
 
   // AmbientBackendModelObserver:
   void OnImagesChanged() override;
-  void OnWeatherInfoUpdated() override {}
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
  private:
+  friend class AmbientAshTestBase;
+
   void Init();
-  void UpdateImages();
+
+  void UpdateImage(const PhotoWithDetails& image);
+
   void StartTransitionAnimation();
 
   // Return if can start transition animation.
   bool NeedToAnimateTransition() const;
 
-  // Note that we should be careful when using |delegate_|, as there is no
-  // strong guarantee on the life cycle, especially given that the widget |this|
-  // lived in is destroyed asynchronously.
-  AmbientViewDelegate* delegate_ = nullptr;
+  const gfx::ImageSkia& GetCurrentImagesForTesting();
 
-  std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
+  // Note that we should be careful when using |delegate_|, as there is no
+  // strong guarantee on the life cycle.
+  AmbientViewDelegate* const delegate_ = nullptr;
 
   // Image containers used for animation. Owned by view hierarchy.
-  AmbientBackgroundImageView* image_view_prev_ = nullptr;
-  AmbientBackgroundImageView* image_view_curr_ = nullptr;
-  AmbientBackgroundImageView* image_view_next_ = nullptr;
+  AmbientBackgroundImageView* image_views_[2]{nullptr, nullptr};
+
+  // The index of |image_views_| to update the next image.
+  int image_index_ = 0;
 };
 
 }  // namespace ash

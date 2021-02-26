@@ -20,13 +20,8 @@ enum class {{enum_name}} : int32_t;
 {{ kythe_annotation(full_enum_name) }}
 enum class {{enum_name}} : int32_t {
 {%-   for field in enum.fields %}
-{%-     if field.value %}
   {{ kythe_annotation("%s.%s"|format(full_enum_name, field.name)) }}
-  {{field.name}} = {{field.value|expression_to_text}},
-{%-     else %}
-  {{ kythe_annotation("%s.%s"|format(full_enum_name, field.name)) }}
-  {{field.name}},
-{%-     endif %}
+  {{field.name}} = {{field.numeric_value}},
 {%-   endfor %}
 {%-   if enum.min_value is not none %}
   kMinValue = {{enum.min_value}},
@@ -148,20 +143,6 @@ struct HashTraits<{{enum_name}}>
   static bool IsDeletedValue(const {{enum_name}}& value) {
     return value == static_cast<{{enum_name}}>({{deleted_value}});
   }
-};
-}  // namespace WTF
-{%- endmacro %}
-
-{%- macro enum_hash_blink_forward(enum) %}
-{%-   set enum_name = enum|get_qualified_name_for_kind(
-          flatten_nested_kind=True, include_variant=False) %}
-{%-   set hash_fn_name = enum|wtf_hash_fn_name_for_enum %}
-namespace WTF {
-struct {{hash_fn_name}};
-
-template <>
-struct DefaultHash<{{enum_name}}> {
-  using Hash = {{hash_fn_name}};
 };
 }  // namespace WTF
 {%- endmacro %}

@@ -18,11 +18,10 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "net/dns/dns_config.h"
-#include "net/dns/dns_config_overrides.h"
-#include "net/dns/dns_hosts.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/host_resolver.mojom-shared.h"
 
@@ -30,7 +29,7 @@ namespace mojo {
 
 // This is made visible for use by network::HostResolver. Not intended to be
 // used elsewhere.
-base::Optional<net::DnsConfig::SecureDnsMode> FromOptionalSecureDnsMode(
+base::Optional<net::SecureDnsMode> FromOptionalSecureDnsMode(
     network::mojom::OptionalSecureDnsMode mode);
 
 template <>
@@ -46,21 +45,16 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
     return overrides.search;
   }
 
-  static base::Optional<std::vector<network::mojom::DnsHostPtr>> hosts(
-      const net::DnsConfigOverrides& overrides);
-
   static network::mojom::DnsConfigOverrides_Tristate append_to_multi_label_name(
-      const net::DnsConfigOverrides& overrides);
-  static network::mojom::DnsConfigOverrides_Tristate randomize_ports(
       const net::DnsConfigOverrides& overrides);
 
   static int ndots(const net::DnsConfigOverrides& overrides) {
     return overrides.ndots.value_or(-1);
   }
 
-  static const base::Optional<base::TimeDelta>& timeout(
+  static const base::Optional<base::TimeDelta>& fallback_period(
       const net::DnsConfigOverrides& overrides) {
-    return overrides.timeout;
+    return overrides.fallback_period;
   }
 
   static int attempts(const net::DnsConfigOverrides& overrides) {
@@ -84,6 +78,10 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static const base::Optional<std::vector<std::string>>&
   disabled_upgrade_providers(const net::DnsConfigOverrides& overrides) {
     return overrides.disabled_upgrade_providers;
+  }
+
+  static bool clear_hosts(const net::DnsConfigOverrides& overrides) {
+    return overrides.clear_hosts;
   }
 
   static bool Read(network::mojom::DnsConfigOverridesDataView data,
@@ -117,12 +115,11 @@ struct EnumTraits<network::mojom::MdnsListenClient_UpdateType,
 };
 
 template <>
-struct EnumTraits<network::mojom::SecureDnsMode,
-                  net::DnsConfig::SecureDnsMode> {
+struct EnumTraits<network::mojom::SecureDnsMode, net::SecureDnsMode> {
   static network::mojom::SecureDnsMode ToMojom(
-      net::DnsConfig::SecureDnsMode secure_dns_mode);
+      net::SecureDnsMode secure_dns_mode);
   static bool FromMojom(network::mojom::SecureDnsMode in,
-                        net::DnsConfig::SecureDnsMode* out);
+                        net::SecureDnsMode* out);
 };
 
 template <>

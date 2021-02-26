@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/selection.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,8 +41,7 @@ class CC_EXPORT RenderFrameMetadata {
   // specified.
   SkColor root_background_color = SK_ColorWHITE;
 
-  // Scroll offset of the root layer. This optional parameter is only valid
-  // during tests.
+  // Scroll offset of the root layer.
   base::Optional<gfx::Vector2dF> root_scroll_offset;
 
   // Selection region relative to the current viewport. If the selection is
@@ -56,6 +55,11 @@ class CC_EXPORT RenderFrameMetadata {
   // are the same).
   bool is_mobile_optimized = false;
 
+  // Flag used to notify the browser process to start or stop forwarding points
+  // to viz for use in a delegated ink trail. True the entire time points should
+  // be forwarded, and forwarding stops as soon as it is false again.
+  bool has_delegated_ink_metadata = false;
+
   // The device scale factor used to generate a CompositorFrame.
   float device_scale_factor = 1.f;
 
@@ -63,8 +67,8 @@ class CC_EXPORT RenderFrameMetadata {
   // the size of the root render pass.
   gfx::Size viewport_size_in_pixels;
 
-  // The last viz::LocalSurfaceIdAllocation used to submit a CompositorFrame.
-  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
+  // The last viz::LocalSurfaceId used to submit a CompositorFrame.
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
 
   // Page scale factor (always 1.f for sub-frame renderers).
   float page_scale_factor = 1.f;

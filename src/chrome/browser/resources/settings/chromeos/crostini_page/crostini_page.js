@@ -12,7 +12,13 @@
 Polymer({
   is: 'settings-crostini-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    I18nBehavior,
+    PrefsBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -67,6 +73,15 @@ Polymer({
     disableCrostiniInstall_: {
       type: Boolean,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([chromeos.settings.mojom.Setting.kSetUpCrostini]),
+    },
   },
 
   attached() {
@@ -83,6 +98,19 @@ Polymer({
   },
 
   /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.CROSTINI) {
+      return;
+    }
+
+    this.attemptDeepLink();
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
@@ -95,7 +123,7 @@ Polymer({
   /** @private */
   onSubpageTap_(event) {
     // We do not open the subpage if the click was on a link.
-    if (event.target && event.target.tagName == 'A') {
+    if (event.target && event.target.tagName === 'A') {
       event.stopPropagation();
       return;
     }

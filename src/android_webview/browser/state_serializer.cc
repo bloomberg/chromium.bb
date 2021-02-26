@@ -15,8 +15,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
+#include "third_party/blink/public/common/page_state/page_state.h"
 
 // Reasons for not re-using TabNavigation under chrome/ as of 20121116:
 // * Android WebView has different requirements for fields to store since
@@ -92,9 +92,8 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
   entries.reserve(entry_count);
   for (int i = 0; i < entry_count; ++i) {
     entries.push_back(content::NavigationEntry::Create());
-    if (!internal::RestoreNavigationEntryFromPickle(
-            state_version, iterator, web_contents->GetBrowserContext(),
-            entries[i].get()))
+    if (!internal::RestoreNavigationEntryFromPickle(state_version, iterator,
+                                                    entries[i].get()))
       return false;
   }
 
@@ -183,19 +182,15 @@ void WriteNavigationEntryToPickle(uint32_t state_version,
 }
 
 bool RestoreNavigationEntryFromPickle(base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry) {
-  return RestoreNavigationEntryFromPickle(AW_STATE_VERSION, iterator,
-                                          browser_context, entry);
+  return RestoreNavigationEntryFromPickle(AW_STATE_VERSION, iterator, entry);
 }
 
 bool RestoreNavigationEntryFromPickle(uint32_t state_version,
                                       base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry) {
   DCHECK(IsSupportedVersion(state_version));
   DCHECK(iterator);
-  DCHECK(browser_context);
   DCHECK(entry);
 
   GURL deserialized_url;
@@ -257,7 +252,7 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
     if (content_state.empty()) {
       // Ensure that the deserialized/restored content::NavigationEntry (and
       // the content::FrameNavigationEntry underneath) has a valid PageState.
-      entry->SetPageState(content::PageState::CreateFromURL(deserialized_url));
+      entry->SetPageState(blink::PageState::CreateFromURL(deserialized_url));
 
       // The |deserialized_referrer| might be inconsistent with the referrer
       // embedded inside the PageState set above.  Nevertheless, to minimize
@@ -273,7 +268,7 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
       // Note that PageState covers and will clobber some of the values covered
       // by data within |iterator| (e.g. URL and referrer).
       entry->SetPageState(
-          content::PageState::CreateFromEncodedData(content_state));
+          blink::PageState::CreateFromEncodedData(content_state));
 
       // |deserialized_url| and |deserialized_referrer| are redundant wrt
       // PageState, but they should be consistent / in-sync.
@@ -337,7 +332,6 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
     entry->SetHttpStatusCode(http_status_code);
   }
 
-  entry->InitRestoredEntry(browser_context);
   return true;
 }
 

@@ -11,7 +11,7 @@
     <!-- Text color used on dark background on light theme, and light background on dark theme. -->
     <color name="default_text_color_inverse">@color/default_text_color_light</color>
     <color name="default_text_color_secondary">@color/default_text_color_secondary_dark</color>
-    <color name="default_text_color_tertiary">@color/default_text_color_tertiary_dark</color>
+    <color name="default_text_color_disabled">@color/default_text_color_disabled_dark</color>
     <!-- Text color for non-clickable blue text. -->
     <color name="default_text_color_blue" tools:ignore="UnusedResources">@color/default_text_color_link</color>
     <!-- Text color for clickable text. -->
@@ -74,6 +74,7 @@
     <color name="ripple_color_blue">@color/ripple_color_blue_dark</color>
 
     <!-- Colors used for Widgets (checkboxes, switches, buttons, etc)-->
+    <color name="default_control_color_normal" tools:ignore="UnusedResources">@color/default_control_color_normal_light</color>
     <color name="default_control_color_active" tools:ignore="UnusedResources">@color/default_control_color_active_light</color>
 
     <!-- Chip colors -->
@@ -101,6 +102,9 @@
         @color/circular_progress_icon_color_small_large_light
     </color>
 
+    <!-- Incognito icon colors -->
+    <color name="incognito_icon_filled_bg_color">@color/incognito_icon_filled_bg_color_dark</color>
+
     <!-- Other colors -->
     <color name="default_red" tools:ignore="UnusedResources">@color/default_red_dark</color>
     <color name="default_green" tools:ignore="UnusedResources">@color/default_green_dark</color>
@@ -110,4 +114,7 @@
     <color name="omnibox_bg_color" tools:ignore="UnusedResources">@color/omnibox_bg_color_light</color>
     <color name="image_loading_color" tools:ignore="UnusedResources">@color/image_loading_color_dark</color>
     <color name="promo_illustration_bg_color" tools:ignore="UnusedResources">@color/promo_illustration_bg_color_light</color>
+    <color name="preference_highlighted_bg_color">@color/preference_highlighted_bg_color_dark</color>
+    <color name="menu_chip_background_color">@color/menu_chip_background_color_dark</color>
+    <color name="menu_chip_background_color_disabled">@color/menu_chip_background_color_disabled_dark</color>
 </resources>

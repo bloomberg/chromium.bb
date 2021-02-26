@@ -178,6 +178,22 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         @Override
         public void onTextFocusLost() {}
+
+        @Override
+        public boolean isContactComplete(@Nullable AutofillContact contact) {
+            return contact != null && contact.isComplete();
+        }
+
+        @Override
+        public boolean isShippingAddressComplete(@Nullable AutofillAddress address) {
+            return address != null && address.isComplete();
+        }
+
+        @Override
+        public boolean isPaymentInstrumentComplete(
+                @Nullable AutofillPaymentInstrument paymentInstrument) {
+            return paymentInstrument != null && paymentInstrument.isComplete();
+        }
     }
 
     public AutofillAssistantCollectUserDataTestHelper() throws TimeoutException {
@@ -258,7 +274,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
     public PersonalDataManager.AutofillProfile createDummyProfile(
             String fullName, String email, String postcode) {
         return new PersonalDataManager.AutofillProfile(/* guid= */ "", "https://www.example.com",
-                fullName, "Acme Inc.", "123 Main", "California", "Los Angeles",
+                /* honorificPrefix= */ "", fullName, "Acme Inc.", "123 Main", "California",
+                "Los Angeles",
                 /* dependentLocality= */ "", postcode, /* sortingCode= */ "", "UZ", "555 123-4567",
                 email, /* languageCode= */ "");
     }

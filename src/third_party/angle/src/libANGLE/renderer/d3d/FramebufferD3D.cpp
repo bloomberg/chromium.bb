@@ -34,8 +34,6 @@ ClearParameters GetClearParameters(const gl::State &state, GLbitfield mask)
     ClearParameters clearParams;
     memset(&clearParams, 0, sizeof(ClearParameters));
 
-    const auto &blendStateArray = state.getBlendStateArray();
-
     clearParams.colorF           = state.getColorClearValue();
     clearParams.colorType        = GL_FLOAT;
     clearParams.clearDepth       = false;
@@ -63,15 +61,15 @@ ClearParameters GetClearParameters(const gl::State &state, GLbitfield mask)
 
     const bool clearColor =
         (mask & GL_COLOR_BUFFER_BIT) && framebufferObject->hasEnabledDrawBuffer();
-    ASSERT(blendStateArray.size() == gl::IMPLEMENTATION_MAX_DRAW_BUFFERS);
-    for (size_t i = 0; i < blendStateArray.size(); i++)
+    if (clearColor)
     {
-        clearParams.clearColor[i]     = clearColor;
-        clearParams.colorMaskRed[i]   = blendStateArray[i].colorMaskRed;
-        clearParams.colorMaskGreen[i] = blendStateArray[i].colorMaskGreen;
-        clearParams.colorMaskBlue[i]  = blendStateArray[i].colorMaskBlue;
-        clearParams.colorMaskAlpha[i] = blendStateArray[i].colorMaskAlpha;
+        clearParams.clearColor.set();
     }
+    else
+    {
+        clearParams.clearColor.reset();
+    }
+    clearParams.colorMask = state.getBlendStateExt().mColorMask;
 
     if (mask & GL_DEPTH_BUFFER_BIT)
     {
@@ -100,7 +98,7 @@ ClearParameters::ClearParameters() = default;
 ClearParameters::ClearParameters(const ClearParameters &other) = default;
 
 FramebufferD3D::FramebufferD3D(const gl::FramebufferState &data, RendererD3D *renderer)
-    : FramebufferImpl(data), mRenderer(renderer), mDummyAttachment()
+    : FramebufferImpl(data), mRenderer(renderer), mMockAttachment()
 {}
 
 FramebufferD3D::~FramebufferD3D() {}
@@ -202,6 +200,8 @@ angle::Result FramebufferD3D::readPixels(const gl::Context *context,
                                          const gl::Rectangle &area,
                                          GLenum format,
                                          GLenum type,
+                                         const gl::PixelPackState &pack,
+                                         gl::Buffer *packBuffer,
                                          void *pixels)
 {
     // Clip read area to framebuffer.
@@ -214,24 +214,22 @@ angle::Result FramebufferD3D::readPixels(const gl::Context *context,
         return angle::Result::Continue;
     }
 
-    const gl::PixelPackState &packState = context->getState().getPackState();
-
     const gl::InternalFormat &sizedFormatInfo = gl::GetInternalFormatInfo(format, type);
 
     ContextD3D *contextD3D = GetImplAs<ContextD3D>(context);
 
     GLuint outputPitch = 0;
     ANGLE_CHECK_GL_MATH(contextD3D,
-                        sizedFormatInfo.computeRowPitch(type, area.width, packState.alignment,
-                                                        packState.rowLength, &outputPitch));
+                        sizedFormatInfo.computeRowPitch(type, area.width, pack.alignment,
+                                                        pack.rowLength, &outputPitch));
 
     GLuint outputSkipBytes = 0;
-    ANGLE_CHECK_GL_MATH(contextD3D, sizedFormatInfo.computeSkipBytes(
-                                        type, outputPitch, 0, packState, false, &outputSkipBytes));
+    ANGLE_CHECK_GL_MATH(contextD3D, sizedFormatInfo.computeSkipBytes(type, outputPitch, 0, pack,
+                                                                     false, &outputSkipBytes));
     outputSkipBytes += (clippedArea.x - area.x) * sizedFormatInfo.pixelBytes +
                        (clippedArea.y - area.y) * outputPitch;
 
-    return readPixelsImpl(context, clippedArea, format, type, outputPitch, packState,
+    return readPixelsImpl(context, clippedArea, format, type, outputPitch, pack, packBuffer,
                           static_cast<uint8_t *>(pixels) + outputSkipBytes);
 }
 
@@ -283,7 +281,8 @@ bool FramebufferD3D::checkStatus(const gl::Context *context) const
 
 angle::Result FramebufferD3D::syncState(const gl::Context *context,
                                         GLenum binding,
-                                        const gl::Framebuffer::DirtyBits &dirtyBits)
+                                        const gl::Framebuffer::DirtyBits &dirtyBits,
+                                        gl::Command command)
 {
     if (!mColorAttachmentsForRender.valid())
     {
@@ -343,8 +342,8 @@ const gl::AttachmentList &FramebufferD3D::getColorAttachmentsForRender(const gl:
 
     // When rendering with no render target on D3D, two bugs lead to incorrect behavior on Intel
     // drivers < 4815. The rendering samples always pass neglecting discard statements in pixel
-    // shader. We add a dummy texture as render target in such case.
-    if (mRenderer->getFeatures().addDummyTextureNoRenderTarget.enabled &&
+    // shader. We add a mock texture as render target in such case.
+    if (mRenderer->getFeatures().addMockTextureNoRenderTarget.enabled &&
         colorAttachmentsForRender.empty() && activeProgramOutputs.any())
     {
         static_assert(static_cast<size_t>(activeProgramOutputs.size()) <= 32,
@@ -352,31 +351,30 @@ const gl::AttachmentList &FramebufferD3D::getColorAttachmentsForRender(const gl:
         const GLuint activeProgramLocation = static_cast<GLuint>(
             gl::ScanForward(static_cast<uint32_t>(activeProgramOutputs.bits())));
 
-        if (mDummyAttachment.isAttached() &&
-            (mDummyAttachment.getBinding() - GL_COLOR_ATTACHMENT0) == activeProgramLocation)
+        if (mMockAttachment.isAttached() &&
+            (mMockAttachment.getBinding() - GL_COLOR_ATTACHMENT0) == activeProgramLocation)
         {
-            colorAttachmentsForRender.push_back(&mDummyAttachment);
+            colorAttachmentsForRender.push_back(&mMockAttachment);
         }
         else
         {
-            // Remove dummy attachment to prevents us from leaking it, and the program may require
+            // Remove mock attachment to prevents us from leaking it, and the program may require
             // it to be attached to a new binding point.
-            if (mDummyAttachment.isAttached())
+            if (mMockAttachment.isAttached())
             {
-                mDummyAttachment.detach(context);
+                mMockAttachment.detach(context, Serial());
             }
 
-            gl::Texture *dummyTex = nullptr;
-            // TODO(Jamie): Handle error if dummy texture can't be created.
-            (void)mRenderer->getIncompleteTexture(context, gl::TextureType::_2D, &dummyTex);
-            if (dummyTex)
+            gl::Texture *mockTex = nullptr;
+            // TODO(jmadill): Handle error if mock texture can't be created.
+            (void)mRenderer->getIncompleteTexture(context, gl::TextureType::_2D, &mockTex);
+            if (mockTex)
             {
-
                 gl::ImageIndex index = gl::ImageIndex::Make2D(0);
-                mDummyAttachment     = gl::FramebufferAttachment(
+                mMockAttachment      = gl::FramebufferAttachment(
                     context, GL_TEXTURE, GL_COLOR_ATTACHMENT0_EXT + activeProgramLocation, index,
-                    dummyTex);
-                colorAttachmentsForRender.push_back(&mDummyAttachment);
+                    mockTex, Serial());
+                colorAttachmentsForRender.push_back(&mMockAttachment);
             }
         }
     }
@@ -389,9 +387,9 @@ const gl::AttachmentList &FramebufferD3D::getColorAttachmentsForRender(const gl:
 
 void FramebufferD3D::destroy(const gl::Context *context)
 {
-    if (mDummyAttachment.isAttached())
+    if (mMockAttachment.isAttached())
     {
-        mDummyAttachment.detach(context);
+        mMockAttachment.detach(context, Serial());
     }
 }
 

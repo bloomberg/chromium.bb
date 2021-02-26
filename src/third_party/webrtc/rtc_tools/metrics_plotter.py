@@ -24,6 +24,7 @@ Where json data has the following format:
 }
 """
 
+import argparse
 import fileinput
 import json
 import matplotlib.pyplot as plt
@@ -38,36 +39,59 @@ MICROSECONDS_IN_SECOND = 1e6
 
 
 def main():
-  metrics = []
-  for line in fileinput.input():
-    line = line.strip()
-    if line.startswith(LINE_PREFIX):
-      line = line.replace(LINE_PREFIX, '')
-      metrics.append(json.loads(line))
-    else:
-      print line
+    parser = argparse.ArgumentParser(
+        description='Plots metrics exported from WebRTC perf tests')
+    parser.add_argument(
+        '-m',
+        '--metrics',
+        type=str,
+        nargs='*',
+        help=
+        'Metrics to plot. If nothing specified then will plot all available')
+    args = parser.parse_args()
 
-  for metric in metrics:
-    figure = plt.figure()
-    figure.canvas.set_window_title(metric[TRACE_NAME])
+    metrics_to_plot = set()
+    if args.metrics:
+        for metric in args.metrics:
+            metrics_to_plot.add(metric)
 
-    x_values = []
-    y_values = []
-    start_x = None
-    for sample in metric['samples']:
-      if start_x is None:
-        start_x = sample['time']
-      # Time is us, we want to show it in seconds.
-      x_values.append((sample['time'] - start_x) / MICROSECONDS_IN_SECOND)
-      y_values.append(sample['value'])
+    metrics = []
+    for line in fileinput.input('-'):
+        line = line.strip()
+        if line.startswith(LINE_PREFIX):
+            line = line.replace(LINE_PREFIX, '')
+            metrics.append(json.loads(line))
+        else:
+            print line
 
-    plt.ylabel('%s (%s)' % (metric[GRAPH_NAME], metric[UNITS]))
-    plt.xlabel('time (s)')
-    plt.title(metric[GRAPH_NAME])
-    plt.plot(x_values, y_values)
+    for metric in metrics:
+        if len(metrics_to_plot
+               ) > 0 and metric[GRAPH_NAME] not in metrics_to_plot:
+            continue
 
-  plt.show()
+        figure = plt.figure()
+        figure.canvas.set_window_title(metric[TRACE_NAME])
+
+        x_values = []
+        y_values = []
+        start_x = None
+        samples = metric['samples']
+        samples.sort(key=lambda x: x['time'])
+        for sample in samples:
+            if start_x is None:
+                start_x = sample['time']
+            # Time is us, we want to show it in seconds.
+            x_values.append(
+                (sample['time'] - start_x) / MICROSECONDS_IN_SECOND)
+            y_values.append(sample['value'])
+
+        plt.ylabel('%s (%s)' % (metric[GRAPH_NAME], metric[UNITS]))
+        plt.xlabel('time (s)')
+        plt.title(metric[GRAPH_NAME])
+        plt.plot(x_values, y_values)
+
+    plt.show()
 
 
 if __name__ == '__main__':
-  main()
+    main()

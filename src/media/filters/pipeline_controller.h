@@ -13,9 +13,10 @@
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline.h"
-#include "media/base/renderer.h"
 
 namespace media {
+
+class CdmContext;
 class Demuxer;
 
 // PipelineController wraps a Pipeline to expose the one-at-a-time operations
@@ -46,6 +47,7 @@ class MEDIA_EXPORT PipelineController {
   using SuspendedCB = base::RepeatingClosure;
   using BeforeResumeCB = base::RepeatingClosure;
   using ResumedCB = base::RepeatingClosure;
+  using CdmAttachedCB = base::OnceCallback<void(bool)>;
 
   // Construct a PipelineController wrapping |pipeline_|.
   // The callbacks are:
@@ -130,6 +132,7 @@ class MEDIA_EXPORT PipelineController {
   float GetVolume() const;
   void SetVolume(float volume);
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
+  void SetPreservesPitch(bool preserves_pitch);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   base::TimeDelta GetMediaDuration() const;

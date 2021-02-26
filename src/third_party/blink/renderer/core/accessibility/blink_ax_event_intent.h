@@ -8,9 +8,11 @@
 #include <string>
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -28,6 +30,7 @@ namespace blink {
 // previous word, or it could have been moved to the end of the next line.
 class CORE_EXPORT BlinkAXEventIntent final {
  public:
+  static BlinkAXEventIntent FromEditCommand(const EditCommand& edit_command);
   static BlinkAXEventIntent FromClearedSelection(
       const SetSelectionBy set_selection_by);
   static BlinkAXEventIntent FromModifiedSelection(
@@ -35,13 +38,28 @@ class CORE_EXPORT BlinkAXEventIntent final {
       const SelectionModifyDirection direction,
       const TextGranularity granularity,
       const SetSelectionBy set_selection_by,
-      const TextDirection direction_of_selection);
+      const TextDirection direction_of_selection,
+      const PlatformWordBehavior platform_word_behavior);
   static BlinkAXEventIntent FromNewSelection(
       const TextGranularity granularity,
       bool is_base_first,
       const SetSelectionBy set_selection_by);
 
+  // Creates an empty (uninitialized) instance.
   BlinkAXEventIntent();
+
+  // Constructs an event intent which contains only a command without any other
+  // arguments. This is used e.g. by the selection changed event when the
+  // current selection is cleared.
+  explicit BlinkAXEventIntent(ax::mojom::blink::Command command);
+
+  // Constructs an editing event intent; which is primarily attached to a text
+  // changed or a text attributes changed event.
+  BlinkAXEventIntent(ax::mojom::blink::Command command,
+                     ax::mojom::blink::InputEventType input_event_type);
+
+  // Constructs a selection event intent; which is attached to a selection
+  // changed event.
   BlinkAXEventIntent(ax::mojom::blink::Command command,
                      ax::mojom::blink::TextBoundary text_boundary,
                      ax::mojom::blink::MoveDirection move_direction);

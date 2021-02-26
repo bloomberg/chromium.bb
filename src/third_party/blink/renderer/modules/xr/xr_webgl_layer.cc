@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -16,10 +17,13 @@
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+
+#include <algorithm>
 
 namespace blink {
 
@@ -35,11 +39,10 @@ const char kCleanFrameWarning[] =
 
 }  // namespace
 
-XRWebGLLayer* XRWebGLLayer::Create(
-    XRSession* session,
-    const WebGLRenderingContextOrWebGL2RenderingContext& context,
-    const XRWebGLLayerInit* initializer,
-    ExceptionState& exception_state) {
+XRWebGLLayer* XRWebGLLayer::Create(XRSession* session,
+                                   const XRWebGLRenderingContext& context,
+                                   const XRWebGLLayerInit* initializer,
+                                   ExceptionState& exception_state) {
   if (session->ended()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot create an XRWebGLLayer for an "
@@ -92,10 +95,11 @@ XRWebGLLayer* XRWebGLLayer::Create(
                                               ignore_depth_values);
   }
 
-  bool want_antialiasing = initializer->antialias();
-  bool want_depth_buffer = initializer->depth();
-  bool want_stencil_buffer = initializer->stencil();
-  bool want_alpha_channel = initializer->alpha();
+  const bool want_antialiasing =
+      initializer->antialias() && session->CanEnableAntiAliasing();
+  const bool want_depth_buffer = initializer->depth();
+  const bool want_stencil_buffer = initializer->stencil();
+  const bool want_alpha_channel = initializer->alpha();
 
   // Allocate a drawing buffer to back the framebuffer if needed.
   if (initializer->hasFramebufferScaleFactor()) {
@@ -195,6 +199,21 @@ XRViewport* XRWebGLLayer::getViewport(XRView* view) {
   if (!view || view->session() != session())
     return nullptr;
 
+  // Dynamic viewport scaling, see steps 6 and 7 in
+  // https://immersive-web.github.io/webxr/#dom-xrwebgllayer-getviewport
+  XRViewData* view_data = view->ViewData();
+  if (view_data->ViewportModifiable() &&
+      view_data->CurrentViewportScale() !=
+          view_data->RequestedViewportScale()) {
+    DVLOG(2) << __func__
+             << ": apply ViewportScale=" << view_data->RequestedViewportScale();
+    view_data->SetCurrentViewportScale(view_data->RequestedViewportScale());
+    viewports_dirty_ = true;
+  }
+  TRACE_COUNTER1("xr", "XR viewport scale (%)",
+                 view_data->CurrentViewportScale() * 100);
+  view_data->SetViewportModifiable(false);
+
   return GetViewportForEye(view->EyeValue());
 }
 
@@ -216,28 +235,49 @@ double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
 void XRWebGLLayer::UpdateViewports() {
   uint32_t framebuffer_width = framebufferWidth();
   uint32_t framebuffer_height = framebufferHeight();
+  // Framebuffer width and height are assumed to be nonzero.
+  DCHECK_NE(framebuffer_width, 0U);
+  DCHECK_NE(framebuffer_height, 0U);
 
   viewports_dirty_ = false;
 
+  // When calculating the scaled viewport size, round down to integer value, but
+  // ensure that the value is nonzero and doesn't overflow. See
+  // https://immersive-web.github.io/webxr/#xrview-obtain-a-scaled-viewport
+  auto rounded = [](double v) {
+    return std::max(1, base::saturated_cast<int>(v));
+  };
+
   if (session()->immersive()) {
+    // Calculate new sizes with optional viewport scale applied. This assumes
+    // that XRSession::views() returns views in matching order.
     if (session()->StereoscopicViews()) {
+      double left_scale = session()->views()[0]->CurrentViewportScale();
       left_viewport_ = MakeGarbageCollected<XRViewport>(
-          0, 0, framebuffer_width * 0.5, framebuffer_height);
+          0, 0, rounded(framebuffer_width * 0.5 * left_scale),
+          rounded(framebuffer_height * left_scale));
+      double right_scale = session()->views()[1]->CurrentViewportScale();
       right_viewport_ = MakeGarbageCollected<XRViewport>(
-          framebuffer_width * 0.5, 0, framebuffer_width * 0.5,
-          framebuffer_height);
+          framebuffer_width * 0.5, 0,
+          rounded(framebuffer_width * 0.5 * right_scale),
+          rounded(framebuffer_height * right_scale));
     } else {
       // Phone immersive AR only uses one viewport, but the second viewport is
       // needed for the UpdateLayerBounds mojo call which currently expects
       // exactly two views. This should be revisited as part of a refactor to
       // handle a more general list of viewports, cf. https://crbug.com/928433.
-      left_viewport_ = MakeGarbageCollected<XRViewport>(0, 0, framebuffer_width,
-                                                        framebuffer_height);
+      double mono_scale = session()->views()[0]->CurrentViewportScale();
+      left_viewport_ = MakeGarbageCollected<XRViewport>(
+          0, 0, rounded(framebuffer_width * mono_scale),
+          rounded(framebuffer_height * mono_scale));
       right_viewport_ = nullptr;
     }
 
     session()->xr()->frameProvider()->UpdateWebGLLayerViewports(this);
   } else {
+    // Currently, only immersive sessions implement dynamic viewport scaling.
+    // Ignore the setting for non-immersive sessions, effectively treating
+    // the minimum viewport scale as 1.0 which disables the feature.
     left_viewport_ = MakeGarbageCollected<XRViewport>(0, 0, framebuffer_width,
                                                       framebuffer_height);
   }
@@ -250,17 +290,61 @@ HTMLCanvasElement* XRWebGLLayer::output_canvas() const {
   return nullptr;
 }
 
+uint32_t XRWebGLLayer::CameraImageTextureId() const {
+  return camera_image_texture_id_;
+}
+
+base::Optional<gpu::MailboxHolder> XRWebGLLayer::CameraImageMailboxHolder()
+    const {
+  return camera_image_mailbox_holder_;
+}
+
 void XRWebGLLayer::OnFrameStart(
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder,
+    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   if (framebuffer_) {
     framebuffer_->MarkOpaqueBufferComplete(true);
     framebuffer_->SetContentsChanged(false);
     if (buffer_mailbox_holder) {
       drawing_buffer_->UseSharedBuffer(buffer_mailbox_holder.value());
+      DVLOG(3) << __func__ << ": buffer_mailbox_holder->mailbox="
+               << buffer_mailbox_holder->mailbox.ToDebugString();
       is_direct_draw_frame = true;
     } else {
       is_direct_draw_frame = false;
     }
+
+    if (camera_image_mailbox_holder) {
+      DVLOG(3) << __func__ << ":camera_image_mailbox_holder->mailbox="
+               << camera_image_mailbox_holder->mailbox.ToDebugString();
+      camera_image_mailbox_holder_ = camera_image_mailbox_holder;
+      camera_image_texture_id_ =
+          GetBufferTextureId(camera_image_mailbox_holder_);
+      BindBufferTexture(camera_image_mailbox_holder_);
+    }
+  }
+}
+
+uint32_t XRWebGLLayer::GetBufferTextureId(
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder->sync_token.GetConstData());
+  DVLOG(3) << __func__ << ": buffer_mailbox_holder->sync_token="
+           << buffer_mailbox_holder->sync_token.ToDebugString();
+  GLuint texture_id = gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+      buffer_mailbox_holder->mailbox.name);
+  return texture_id;
+}
+
+void XRWebGLLayer::BindBufferTexture(
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  if (buffer_mailbox_holder) {
+    uint32_t texture_target = buffer_mailbox_holder->texture_target;
+    gl->BindTexture(texture_target, camera_image_texture_id_);
+    gl->BeginSharedImageAccessDirectCHROMIUM(
+        camera_image_texture_id_, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   }
 }
 
@@ -283,8 +367,8 @@ void XRWebGLLayer::OnFrameEnd() {
       if (!framebuffer_dirty) {
         // If the session doesn't have a pose then the framebuffer being clean
         // may be expected, so we won't count those frames.
-        bool frame_had_pose =
-            !!session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer);
+        bool frame_had_pose = !!session()->GetMojoFrom(
+            device::mojom::blink::XRReferenceSpaceType::kViewer);
         if (frame_had_pose) {
           clean_frame_count++;
           if (clean_frame_count == kCleanFrameWarningLimit) {
@@ -300,6 +384,14 @@ void XRWebGLLayer::OnFrameEnd() {
       // Always call submit, but notify if the contents were changed or not.
       session()->xr()->frameProvider()->SubmitWebGLLayer(this,
                                                          framebuffer_dirty);
+      if (camera_image_mailbox_holder_ && camera_image_texture_id_) {
+        DVLOG(3) << __func__ << "Deleting camera image texture";
+        gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+        gl->EndSharedImageAccessDirectCHROMIUM(camera_image_texture_id_);
+        gl->DeleteTextures(1, &camera_image_texture_id_);
+        camera_image_texture_id_ = 0;
+        camera_image_mailbox_holder_ = base::nullopt;
+      }
     }
   }
 }
@@ -327,7 +419,7 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage() {
   return nullptr;
 }
 
-void XRWebGLLayer::Trace(Visitor* visitor) {
+void XRWebGLLayer::Trace(Visitor* visitor) const {
   visitor->Trace(left_viewport_);
   visitor->Trace(right_viewport_);
   visitor->Trace(webgl_context_);

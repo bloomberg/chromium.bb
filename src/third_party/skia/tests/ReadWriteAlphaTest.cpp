@@ -9,10 +9,10 @@
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkSurface.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/private/SkTo.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrSurfaceContext.h"
@@ -48,7 +48,7 @@ static void validate_alpha_data(skiatest::Reporter* reporter, int w, int h, cons
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
+    auto dContext = ctxInfo.directContext();
 
     unsigned char alphaData[X_SIZE * Y_SIZE];
 
@@ -67,17 +67,17 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
         SkBitmap bitmap;
         bitmap.installPixels(ii, alphaDataCopy, ii.minRowBytes());
         bitmap.setImmutable();
-        GrBitmapTextureMaker maker(context, bitmap, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-        auto view = maker.view(GrMipMapped::kNo);
+        GrBitmapTextureMaker maker(dContext, bitmap, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
+        auto view = maker.view(GrMipmapped::kNo);
         if (!view.proxy()) {
             ERRORF(reporter, "Could not create alpha texture.");
             return;
         }
 
-        auto sContext = GrSurfaceContext::Make(context, std::move(view), maker.colorType(),
+        auto sContext = GrSurfaceContext::Make(dContext, std::move(view), maker.colorType(),
                                                kPremul_SkAlphaType, nullptr);
 
-        sk_sp<SkSurface> surf(SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, ii));
+        sk_sp<SkSurface> surf(SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, ii));
 
         // create a distinctive texture
         for (int y = 0; y < Y_SIZE; ++y) {
@@ -89,7 +89,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
         for (auto rowBytes : kRowBytes) {
 
             // upload the texture (do per-rowbytes iteration because we may overwrite below).
-            bool result = sContext->writePixels(ii, alphaData, 0, {0, 0});
+            bool result = sContext->writePixels(dContext, ii, alphaData, 0, {0, 0});
             REPORTER_ASSERT(reporter, result, "Initial A8 writePixels failed");
 
             size_t nonZeroRowBytes = rowBytes ? rowBytes : X_SIZE;
@@ -99,7 +99,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
             memset(readback.get(), kClearValue, bufLen);
 
             // read the texture back
-            result = sContext->readPixels(ii, readback.get(), rowBytes, {0, 0});
+            result = sContext->readPixels(dContext, ii, readback.get(), rowBytes, {0, 0});
             // We don't require reading from kAlpha_8 to be supported. TODO: At least make this work
             // when kAlpha_8 is renderable.
             if (!result) {
@@ -186,17 +186,14 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
 
             auto origin = GrRenderable::kYes == renderable ? kBottomLeft_GrSurfaceOrigin
                                                            : kTopLeft_GrSurfaceOrigin;
-            auto proxy = sk_gpu_test::MakeTextureProxyFromData(
-                    context, renderable, origin,
+            auto view = sk_gpu_test::MakeTextureProxyViewFromData(
+                    dContext, renderable, origin,
                     {info.fColorType, info.fAlphaType, nullptr, X_SIZE, Y_SIZE}, rgbaData, 0);
-            if (!proxy) {
+            if (!view) {
                 continue;
             }
 
-            GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(proxy->backendFormat(),
-                                                                       info.fColorType);
-            GrSurfaceProxyView view(std::move(proxy), origin, swizzle);
-            auto sContext = GrSurfaceContext::Make(context, std::move(view), info.fColorType,
+            auto sContext = GrSurfaceContext::Make(dContext, std::move(view), info.fColorType,
                                                    kPremul_SkAlphaType, nullptr);
 
             for (auto rowBytes : kRowBytes) {
@@ -207,7 +204,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadWriteAlpha, reporter, ctxInfo) {
                 memset(readback.get(), kClearValue, nonZeroRowBytes * Y_SIZE);
 
                 // read the texture back
-                bool result = sContext->readPixels(dstInfo, readback.get(), rowBytes, {0, 0});
+                bool result = sContext->readPixels(dContext, dstInfo, readback.get(),
+                                                   rowBytes, {0, 0});
                 REPORTER_ASSERT(reporter, result, "8888 readPixels failed");
 
                 // make sure the original & read back versions match

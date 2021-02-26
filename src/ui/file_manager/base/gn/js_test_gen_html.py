@@ -22,8 +22,22 @@ window.addEventListener('error', function(e) {
 <body>
 """
 
-_SCRIPT = r'<script src="%s"></script>'
+_CLASSIC_SCRIPT = r'<script src="%s"></script>'
+_JS_MODULE = r'<script type="module" src="%s"></script>'
+_JS_MODULE_REGISTER_TESTS = r'''
+<script>
+// Push all entities to global namespace to be visible to the test harness:
+// ui/webui/resources/js/webui_resource_test.js
+import('%s').then(TestModule => {
+  for (const name in TestModule) {
+    window[name] = TestModule[name];
+  }
+});
+</script>
+'''
 _IMPORT = r'<link rel="import" href="%s">'
+_HTML_IMPORT_POLYFIL =  _CLASSIC_SCRIPT  % (
+    'chrome://resources/polymer/v1_0/html-imports/html-imports.min.js')
 
 _HTML_FOOTER = r"""
 </body>
@@ -31,13 +45,13 @@ _HTML_FOOTER = r"""
 """
 
 
-def _process_deps(unique_deps, html_import, target_name):
+def _process_deps(unique_deps, dep_type, target_name):
   """Processes all deps strings, yielding each HTML tag to include the dep.
 
   Args:
     unique_deps: Iterator of strings, for all deps to be processed.
-    html_import: Boolean: Enables the use of HTMLImport for the main Polymer
-      element being tested.
+    dep_type: String: 'classic_script' | 'js_module' |
+      'js_module_register_tests' | 'html_import'.
     target_name: Current test target name, used to infer the main Polymer
       element for HTMLImport. element_unitest => element.js/element.html.
 
@@ -45,6 +59,10 @@ def _process_deps(unique_deps, html_import, target_name):
     Iterator of strings, each string is a HTML tag <script> or <link>.
   """
   for dep in unique_deps:
+    # Scripts from cr_elements are included via HTML imports.
+    if '/cr_elements/' in dep:
+      continue
+
     # Special case for jstemplate which has multiple files but we server all of
     # them combined from chrome://resources/js/jstemplate_compiled.js
     if '/jstemplate/' in dep:
@@ -57,6 +75,11 @@ def _process_deps(unique_deps, html_import, target_name):
     # Map file_manager files:
     dep = dep.replace('ui/file_manager/',
                       'chrome://file_manager_test/ui/file_manager/', 1)
+
+    # Extern files from closure in //third_party/
+    closure = 'third_party/closure_compiler/externs/'
+    dep = dep.replace(closure, 'chrome://file_manager_test/%s' % closure, 1)
+
     # WebUI files (both Polymer and non-Polymer):
     dep = dep.replace('ui/webui/resources/', 'chrome://resources/', 1)
 
@@ -75,12 +98,39 @@ def _process_deps(unique_deps, html_import, target_name):
     # included, instead we <link rel=import> its HTML file which in turn
     # includes the JS file. Note that all other JS deps are included as
     # <script>.
-    if html_import and dep.endswith(implementation_file):
+    if dep_type == 'html_import'and dep.endswith(implementation_file):
       dep = dep.replace('.js', '.html')
       yield _IMPORT % (dep)
+    elif dep_type == 'js_module':
+      yield _JS_MODULE % (dep)
+    elif dep_type == 'js_module_register_tests':
+      yield _JS_MODULE_REGISTER_TESTS % (dep)
     else:
       # Normal dep, just return the <script src="dep.js">
-      yield _SCRIPT % (dep)
+      yield _CLASSIC_SCRIPT % (dep)
+
+
+def _process_js_module(input_file, output_filename, mocks, target_name):
+  """Generates the HTML for a unittest based on JS Modules.
+
+  Args:
+    input_file: The path for the unittest JS module.
+    output_filename: The path/filename for HTML to be generated.
+    mocks: List of strings, JS file names that will be included in the bottom to
+      overwrite JS implementation from deps.
+    target_name: Current test target name, used to infer the main Polymer
+      element for HTMLImport. element_unitest => element.js/element.html.
+  """
+
+  with open(output_filename, 'w') as out:
+    out.write(_HTML_FILE)
+    for dep in _process_deps(mocks, 'js_module', target_name):
+      out.write(dep + '\n')
+    for dep in _process_deps([input_file], 'js_module', target_name):
+      out.write(dep + '\n')
+    for dep in _process_deps([input_file], 'js_module_register_tests',
+                             target_name):
+      out.write(dep + '\n')
 
 
 def _process(deps, output_filename, mocks, html_import, target_name):
@@ -99,9 +149,14 @@ def _process(deps, output_filename, mocks, html_import, target_name):
 
   with open(output_filename, 'w') as out:
     out.write(_HTML_FILE)
-    for dep in _process_deps(mocks, html_import, target_name):
+
+    if html_import:
+      out.write(_HTML_IMPORT_POLYFIL + '\n')
+
+    dep_type = 'html_import' if html_import else 'classic_script'
+    for dep in _process_deps(mocks, dep_type, target_name):
       out.write(dep + '\n')
-    for dep in _process_deps(deps, html_import, target_name):
+    for dep in _process_deps(deps, dep_type, target_name):
       out.write(dep + '\n')
 
     out.write(_HTML_FOOTER)
@@ -132,7 +187,22 @@ def main():
       '--html_import',
       action='store_true',
       help='Enable HTMLImports, used for Polymer elements')
+  parser.add_argument(
+      '--js_module',
+      action='store_true',
+      help='Enable JS Modules for the unittest file.')
   args = parser.parse_args()
+
+  if args.js_module:
+    # Convert from:
+    # gen/ui/file_manager/file_manager/common/js/example_unittest.m.js_library
+    # To:
+    # ui/file_manager/file_manager/common/js/example_unittest.m.js
+    path_test_file = args.input.replace('gen/', '', 1)
+    path_test_file = path_test_file.replace('.js_library', '.js')
+    _process_js_module(path_test_file, args.output, args.mocks,
+                              args.target_name)
+    return
 
   # Append closure path to sys.path to be able to import js_unit_test.
   sys.path.append(os.path.join(args.src_path, 'third_party/closure_compiler'))

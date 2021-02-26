@@ -17,6 +17,7 @@
  *
  * Author: Tobin Ehlis <tobine@google.com>
  *         John Zulauf <jzulauf@lunarg.com>
+ *         Jeremy Kniager <jeremyk@lunarg.com>
  */
 
 #include "chassis.h"
@@ -576,8 +577,12 @@ bool cvdescriptorset::ValidateDescriptorSetLayoutCreateInfo(
     return skip;
 }
 
-cvdescriptorset::AllocateDescriptorSetsData::AllocateDescriptorSetsData(uint32_t count)
-    : required_descriptors_by_type{}, layout_nodes(count, nullptr) {}
+void cvdescriptorset::AllocateDescriptorSetsData::Init(uint32_t count) {
+    layout_nodes.resize(count);
+    for (auto node : layout_nodes) {
+        node = nullptr;
+    }
+}
 
 cvdescriptorset::DescriptorSet::DescriptorSet(const VkDescriptorSet set, DESCRIPTOR_POOL_STATE *pool_state,
                                               const std::shared_ptr<DescriptorSetLayout const> &layout, uint32_t variable_count,
@@ -692,16 +697,19 @@ unsigned DescriptorRequirementsBitsFromFormat(VkFormat fmt) {
 //  This includes validating that all descriptors in the given bindings are updated,
 //  that any update buffers are valid, and that any dynamic offsets are within the bounds of their buffers.
 // Return true if state is acceptable, or false and write an error message into error string
-bool CoreChecks::ValidateDrawState(const DescriptorSet *descriptor_set, const std::map<uint32_t, descriptor_req> &bindings,
-                                   const std::vector<uint32_t> &dynamic_offsets, const CMD_BUFFER_STATE *cb_node, uint32_t setIndex,
-                                   const char *caller) const {
+bool CoreChecks::ValidateDrawState(VkPipelineBindPoint bind_point, const DescriptorSet *descriptor_set,
+                                   const std::map<uint32_t, DescriptorReqirement> &bindings,
+                                   const std::vector<uint32_t> &dynamic_offsets, const CMD_BUFFER_STATE *cb_node,
+                                   const std::vector<VkImageView> &attachment_views, const char *caller,
+                                   const DrawDispatchVuid &vuids) const {
     bool result = false;
+    VkFramebuffer framebuffer = cb_node->activeFramebuffer ? cb_node->activeFramebuffer->framebuffer : VK_NULL_HANDLE;
     for (auto binding_pair : bindings) {
         auto binding = binding_pair.first;
         DescriptorSetLayout::ConstBindingIterator binding_it(descriptor_set->GetLayout().get(), binding);
         if (binding_it.AtEnd()) {  //  End at construction is the condition for an invalid binding.
             auto set = descriptor_set->GetSet();
-            result |= LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+            result |= LogError(set, vuids.descriptor_valid,
                                "%s encountered the following validation error at %s time: Attempting to "
                                "validate DrawState for binding #%u  which is an invalid binding for this descriptor set.",
                                report_data->FormatHandle(set).c_str(), caller, binding);
@@ -714,14 +722,62 @@ bool CoreChecks::ValidateDrawState(const DescriptorSet *descriptor_set, const st
             // or the view could have been destroyed
             continue;
         }
-        result |= ValidateDescriptorSetBindingData(cb_node, descriptor_set, dynamic_offsets, binding, binding_pair.second, caller);
+        result |= ValidateDescriptorSetBindingData(bind_point, cb_node, descriptor_set, dynamic_offsets, binding_pair, framebuffer,
+                                                   attachment_views, caller, vuids);
     }
     return result;
 }
 
-bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_node, const DescriptorSet *descriptor_set,
-                                                  const std::vector<uint32_t> &dynamic_offsets, uint32_t binding,
-                                                  descriptor_req reqs, const char *caller) const {
+std::vector<const SAMPLER_STATE *> GetUnnormalizedCoordinatesSamplerStatesFromDescriptorSet(
+    VkPipelineBindPoint bind_point, const cvdescriptorset::DescriptorClass descriptor_class,
+    const cvdescriptorset::Descriptor &descriptor, const CMD_BUFFER_STATE &cb_node,
+    std::pair<const uint32_t, DescriptorReqirement> &binding_info, uint32_t image_index) {
+    std::vector<const SAMPLER_STATE *> sampler_states;
+
+    if (descriptor_class == cvdescriptorset::DescriptorClass::ImageSampler) {
+        const cvdescriptorset::ImageSamplerDescriptor *image_descriptor =
+            static_cast<const cvdescriptorset::ImageSamplerDescriptor *>(&descriptor);
+        const auto *sampler_state = image_descriptor->GetSamplerState();
+
+        if (sampler_state->createInfo.unnormalizedCoordinates) sampler_states.emplace_back(sampler_state);
+
+    } else if (descriptor_class == cvdescriptorset::DescriptorClass::Image &&
+               binding_info.second.samplers_used_by_image.size() > image_index) {
+        for (auto &sampler : binding_info.second.samplers_used_by_image[image_index]) {
+            auto *descriptorset = cb_node.GetDescriptorSet(bind_point, sampler.first.sampler_slot.first);
+            if (!descriptorset) {
+                continue;
+            }
+            const auto key = descriptorset->GetSet();
+            auto it = sampler.second.find(key);
+            if (it != sampler.second.end()) {
+                const auto *sampler_state = static_cast<const cvdescriptorset::SamplerDescriptor *>(it->second)->GetSamplerState();
+                if (sampler_state->createInfo.unnormalizedCoordinates) {
+                    sampler_states.emplace_back(sampler_state);
+                }
+                continue;
+            }
+
+            const auto *descriptor2 =
+                descriptorset->GetDescriptorFromBinding(sampler.first.sampler_slot.second, sampler.first.sampler_index);
+            if (descriptor2->GetClass() == cvdescriptorset::DescriptorClass::PlainSampler) {
+                sampler.second.emplace(key, descriptor2);
+
+                const auto *sampler_state = static_cast<const cvdescriptorset::SamplerDescriptor *>(descriptor2)->GetSamplerState();
+                if (sampler_state->createInfo.unnormalizedCoordinates) {
+                    sampler_states.emplace_back(sampler_state);
+                }
+            }
+        }
+    }
+    return sampler_states;
+}
+
+bool CoreChecks::ValidateDescriptorSetBindingData(VkPipelineBindPoint bind_point, const CMD_BUFFER_STATE *cb_node,
+                                                  const DescriptorSet *descriptor_set, const std::vector<uint32_t> &dynamic_offsets,
+                                                  std::pair<const uint32_t, DescriptorReqirement> &binding_info,
+                                                  VkFramebuffer framebuffer, const std::vector<VkImageView> &attachment_views,
+                                                  const char *caller, const DrawDispatchVuid &vuids) const {
     using DescriptorClass = cvdescriptorset::DescriptorClass;
     using BufferDescriptor = cvdescriptorset::BufferDescriptor;
     using ImageDescriptor = cvdescriptorset::ImageDescriptor;
@@ -729,6 +785,8 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
     using SamplerDescriptor = cvdescriptorset::SamplerDescriptor;
     using TexelDescriptor = cvdescriptorset::TexelDescriptor;
     using AccelerationStructureDescriptor = cvdescriptorset::AccelerationStructureDescriptor;
+    const auto reqs = binding_info.second.reqs;
+    const auto binding = binding_info.first;
     DescriptorSetLayout::ConstBindingIterator binding_it(descriptor_set->GetLayout().get(), binding);
     {
         // Copy the range, the end range is subject to update based on variable length descriptor arrays.
@@ -749,7 +807,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                 continue;
             } else if (!descriptor->updated) {
                 auto set = descriptor_set->GetSet();
-                return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                return LogError(set, vuids.descriptor_valid,
                                 "%s encountered the following validation error at %s time: Descriptor in binding #%" PRIu32
                                 " index %" PRIu32
                                 " is being used in draw but has never been updated via vkUpdateDescriptorSets() or a similar call.",
@@ -763,7 +821,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     if (buffer) {
                         if (!buffer_node || buffer_node->destroyed) {
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32
                                             " is using buffer %s that is invalid or has been destroyed.",
@@ -773,7 +831,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             for (auto mem_binding : buffer_node->GetBoundMemory()) {
                                 if (mem_binding->destroyed) {
                                     auto set = descriptor_set->GetSet();
-                                    return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                    return LogError(set, vuids.descriptor_valid,
                                                     "%s encountered the following validation error at %s time: Descriptor in "
                                                     "binding #%" PRIu32 " index %" PRIu32
                                                     " is uses buffer %s that references invalid memory %s.",
@@ -792,7 +850,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             if (VK_WHOLE_SIZE == range) {
                                 if ((dyn_offset + desc_offset) > buffer_size) {
                                     auto set = descriptor_set->GetSet();
-                                    return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                    return LogError(set, vuids.descriptor_valid,
                                                     "%s encountered the following validation error at %s time: Descriptor in "
                                                     "binding #%" PRIu32 " index %" PRIu32
                                                     " is using buffer %s with update range of VK_WHOLE_SIZE has dynamic offset "
@@ -806,7 +864,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                                 if ((dyn_offset + desc_offset + range) > buffer_size) {
                                     auto set = descriptor_set->GetSet();
                                     return LogError(
-                                        set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                        set, vuids.descriptor_valid,
                                         "%s encountered the following validation error at %s time: "
                                         "Descriptor in binding #%" PRIu32 " index %" PRIu32
                                         " is uses buffer %s with dynamic offset %" PRIu32 " combined with offset %" PRIu64
@@ -821,14 +879,17 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     VkImageView image_view;
                     VkImageLayout image_layout;
                     const IMAGE_VIEW_STATE *image_view_state;
+
                     if (descriptor_class == DescriptorClass::ImageSampler) {
-                        image_view = static_cast<const ImageSamplerDescriptor *>(descriptor)->GetImageView();
-                        image_view_state = static_cast<const ImageSamplerDescriptor *>(descriptor)->GetImageViewState();
-                        image_layout = static_cast<const ImageSamplerDescriptor *>(descriptor)->GetImageLayout();
+                        const ImageSamplerDescriptor *image_descriptor = static_cast<const ImageSamplerDescriptor *>(descriptor);
+                        image_view = image_descriptor->GetImageView();
+                        image_view_state = image_descriptor->GetImageViewState();
+                        image_layout = image_descriptor->GetImageLayout();
                     } else {
-                        image_view = static_cast<const ImageDescriptor *>(descriptor)->GetImageView();
-                        image_view_state = static_cast<const ImageDescriptor *>(descriptor)->GetImageViewState();
-                        image_layout = static_cast<const ImageDescriptor *>(descriptor)->GetImageLayout();
+                        const ImageDescriptor *image_descriptor = static_cast<const ImageDescriptor *>(descriptor);
+                        image_view = image_descriptor->GetImageView();
+                        image_view_state = image_descriptor->GetImageViewState();
+                        image_layout = image_descriptor->GetImageLayout();
                     }
 
                     if (image_view) {
@@ -837,7 +898,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             //  as "invalid" (updated = false) at DestroyImageView() time and detect this error at bind time
 
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32
                                             " is using imageView %s that is invalid or has been destroyed.",
@@ -850,7 +911,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             if (~reqs & (1 << image_view_ci.viewType)) {
                                 auto set = descriptor_set->GetSet();
                                 return LogError(
-                                    set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                    set, vuids.descriptor_valid,
                                     "%s encountered the following validation error at %s time: Descriptor "
                                     "in binding #%" PRIu32 " index %" PRIu32 " requires an image view of type %s but got %s.",
                                     report_data->FormatHandle(set).c_str(), caller, binding, index,
@@ -860,7 +921,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             if (!(reqs & image_view_state->descriptor_format_bits)) {
                                 // bad component type
                                 auto set = descriptor_set->GetSet();
-                                return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                return LogError(set, vuids.descriptor_valid,
                                                 "%s encountered the following validation error at %s time: Descriptor in binding "
                                                 "#%" PRIu32 " index %" PRIu32
                                                 " requires %s component type, but bound descriptor format is %s.",
@@ -869,7 +930,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             }
                         }
 
-                        if (!disabled.image_layout_validation) {
+                        if (!disabled[image_layout_validation]) {
                             auto image_node = image_view_state->image_state.get();
                             assert(image_node);
                             // Verify Image Layout
@@ -881,7 +942,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                             if (hit_error) {
                                 auto set = descriptor_set->GetSet();
                                 return LogError(
-                                    set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                    set, vuids.descriptor_valid,
                                     "%s encountered the following validation error at %s time: Image layout specified "
                                     "at vkUpdateDescriptorSet* or vkCmdPushDescriptorSet* time "
                                     "doesn't match actual image layout at time descriptor is used. See previous error callback for "
@@ -893,7 +954,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                         // Verify Sample counts
                         if ((reqs & DESCRIPTOR_REQ_SINGLE_SAMPLE) && image_view_state->samples != VK_SAMPLE_COUNT_1_BIT) {
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32
                                             " requires bound image to have VK_SAMPLE_COUNT_1_BIT but got %s.",
@@ -903,10 +964,145 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                         if ((reqs & DESCRIPTOR_REQ_MULTI_SAMPLE) && image_view_state->samples == VK_SAMPLE_COUNT_1_BIT) {
                             auto set = descriptor_set->GetSet();
                             return LogError(
-                                set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                set, vuids.descriptor_valid,
                                 "%s encountered the following validation error at %s time: Descriptor in binding #%" PRIu32
                                 " index %" PRIu32 " requires bound image to have multiple samples, but got VK_SAMPLE_COUNT_1_BIT.",
                                 report_data->FormatHandle(set).c_str(), caller, binding, index);
+                        }
+
+                        const VkDescriptorType descriptor_type = descriptor_set->GetTypeFromBinding(binding);
+
+                        // Verify VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT
+                        if ((reqs & DESCRIPTOR_REQ_VIEW_ATOMIC_OPERATION) &&
+                            (descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) &&
+                            !(image_view_state->format_features & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
+                            auto set = descriptor_set->GetSet();
+                            LogObjectList objlist(set);
+                            objlist.add(image_view);
+                            return LogError(
+                                objlist, vuids.imageview_atomic,
+                                "%s encountered the following validation error at %s time: Descriptor in binding #%" PRIu32
+                                " index %" PRIu32
+                                ", %s, format %s, doesn't "
+                                "contain VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT.",
+                                report_data->FormatHandle(set).c_str(), caller, binding, index,
+                                report_data->FormatHandle(image_view).c_str(), string_VkFormat(image_view_ci.format));
+                        }
+
+                        // Verify if attachments are used in DescriptorSet
+                        if (attachment_views.size() > 0 && (descriptor_type != VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
+                            uint32_t view_index = 0;
+                            for (const auto &view : attachment_views) {
+                                if (view == image_view) {
+                                    auto set = descriptor_set->GetSet();
+                                    LogObjectList objlist(set);
+                                    objlist.add(image_view);
+                                    objlist.add(framebuffer);
+                                    return LogError(objlist, vuids.image_subresources,
+                                                    "%s encountered the following validation error at %s time: %s is used in "
+                                                    "Descriptor in binding #%" PRIu32 " index %" PRIu32
+                                                    " and %s attachment # %" PRIu32 ".",
+                                                    report_data->FormatHandle(set).c_str(), caller,
+                                                    report_data->FormatHandle(image_view).c_str(), binding, index,
+                                                    report_data->FormatHandle(framebuffer).c_str(), view_index);
+                                } else if (view != VK_NULL_HANDLE) {
+                                    const auto *view_state = Get<IMAGE_VIEW_STATE>(view);
+                                    if (image_view_state->OverlapSubresource(*view_state)) {
+                                        auto set = descriptor_set->GetSet();
+                                        LogObjectList objlist(set);
+                                        objlist.add(image_view);
+                                        objlist.add(framebuffer);
+                                        objlist.add(view);
+                                        return LogError(
+                                            objlist, vuids.image_subresources,
+                                            "%s encountered the following validation error at %s time: Image subresources of %s in "
+                                            "Descriptor in binding #%" PRIu32 " index %" PRIu32
+                                            " and %s in %s attachment # %" PRIu32 " overlap.",
+                                            report_data->FormatHandle(set).c_str(), caller,
+                                            report_data->FormatHandle(image_view).c_str(), binding, index,
+                                            report_data->FormatHandle(view).c_str(), report_data->FormatHandle(framebuffer).c_str(),
+                                            view_index);
+                                    }
+                                }
+                                ++view_index;
+                            }
+                        }
+
+                        // Here is some unnormalizedCoordinates sampler validations. But because it might take long time to find out
+                        // samplers, it will look for them when it needs.
+                        std::vector<const SAMPLER_STATE *> unnormalizedCoordinates_sampler_states;
+                        bool update_unnormalizedCoordinates_sampler_states = false;
+
+                        // If ImageView is used by a unnormalizedCoordinates sampler, it needs to check ImageView type
+                        if (image_view_ci.viewType == VK_IMAGE_VIEW_TYPE_3D || image_view_ci.viewType == VK_IMAGE_VIEW_TYPE_CUBE ||
+                            image_view_ci.viewType == VK_IMAGE_VIEW_TYPE_1D_ARRAY ||
+                            image_view_ci.viewType == VK_IMAGE_VIEW_TYPE_2D_ARRAY ||
+                            image_view_ci.viewType == VK_IMAGE_VIEW_TYPE_CUBE_ARRAY) {
+                            update_unnormalizedCoordinates_sampler_states = true;
+                            unnormalizedCoordinates_sampler_states = GetUnnormalizedCoordinatesSamplerStatesFromDescriptorSet(
+                                bind_point, descriptor_class, *descriptor, *cb_node, binding_info, index);
+
+                            for (const auto *sampler_state : unnormalizedCoordinates_sampler_states) {
+                                auto set = descriptor_set->GetSet();
+                                LogObjectList objlist(set);
+                                objlist.add(image_view);
+                                objlist.add(sampler_state->sampler);
+                                return LogError(objlist, vuids.sampler_imageview_type,
+                                                "%s encountered the following validation error at %s time: %s, type: %s in "
+                                                "Descriptor in binding #%" PRIu32 " index %" PRIu32 "is used by %s.",
+                                                report_data->FormatHandle(set).c_str(), caller,
+                                                report_data->FormatHandle(image_view).c_str(),
+                                                string_VkImageViewType(image_view_ci.viewType), binding, index,
+                                                report_data->FormatHandle(sampler_state->sampler).c_str());
+                            }
+                        }
+
+                        // sampler must not be used with any of the SPIR-V OpImageSample* or OpImageSparseSample* instructions
+                        // with ImplicitLod, Dref or Proj in their name
+                        if (reqs & DESCRIPTOR_REQ_SAMPLER_IMPLICITLOD_DREF_PROJ) {
+                            if (!update_unnormalizedCoordinates_sampler_states) {
+                                update_unnormalizedCoordinates_sampler_states = true;
+                                unnormalizedCoordinates_sampler_states = GetUnnormalizedCoordinatesSamplerStatesFromDescriptorSet(
+                                    bind_point, descriptor_class, *descriptor, *cb_node, binding_info, index);
+                            }
+
+                            for (const auto *sampler_state : unnormalizedCoordinates_sampler_states) {
+                                auto set = descriptor_set->GetSet();
+                                LogObjectList objlist(set);
+                                objlist.add(image_view);
+                                objlist.add(sampler_state->sampler);
+                                return LogError(objlist, vuids.sampler_implicitLod_dref_proj,
+                                                "%s encountered the following validation error at %s time: %s in "
+                                                "Descriptor in binding #%" PRIu32 " index %" PRIu32
+                                                " is used by %s that uses invalid operator.",
+                                                report_data->FormatHandle(set).c_str(), caller,
+                                                report_data->FormatHandle(image_view).c_str(), binding, index,
+                                                report_data->FormatHandle(sampler_state->sampler).c_str());
+                            }
+                        }
+
+                        // sampler must not be used with any of the SPIR-V OpImageSample* or OpImageSparseSample* instructions
+                        // that includes a LOD bias or any offset values
+                        if (reqs & DESCRIPTOR_REQ_SAMPLER_BIAS_OFFSET) {
+                            if (!update_unnormalizedCoordinates_sampler_states) {
+                                update_unnormalizedCoordinates_sampler_states = true;
+                                unnormalizedCoordinates_sampler_states = GetUnnormalizedCoordinatesSamplerStatesFromDescriptorSet(
+                                    bind_point, descriptor_class, *descriptor, *cb_node, binding_info, index);
+                            }
+
+                            for (const auto *sampler_state : unnormalizedCoordinates_sampler_states) {
+                                auto set = descriptor_set->GetSet();
+                                LogObjectList objlist(set);
+                                objlist.add(image_view);
+                                objlist.add(sampler_state->sampler);
+                                return LogError(objlist, vuids.sampler_bias_offset,
+                                                "%s encountered the following validation error at %s time: %s in "
+                                                "Descriptor in binding #%" PRIu32 " index %" PRIu32
+                                                " is used by %s that uses invalid bias or offset operator.",
+                                                report_data->FormatHandle(set).c_str(), caller,
+                                                report_data->FormatHandle(image_view).c_str(), binding, index,
+                                                report_data->FormatHandle(sampler_state->sampler).c_str());
+                            }
                         }
                     }
                 } else if (descriptor_class == DescriptorClass::TexelBuffer) {
@@ -917,7 +1113,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     if (buffer_view) {
                         if (!buffer_view_state || buffer_view_state->destroyed) {
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32
                                             " is using bufferView %s that is invalid or has been destroyed.",
@@ -928,7 +1124,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                         auto buffer_state = buffer_view_state->buffer_state.get();
                         if (buffer_state->destroyed) {
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32 " is using buffer %s that has been destroyed.",
                                             report_data->FormatHandle(set).c_str(), caller, binding, index,
@@ -939,13 +1135,31 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                         if (!(reqs & format_bits)) {
                             // bad component type
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: Descriptor in "
                                             "binding #%" PRIu32 " index %" PRIu32
                                             " requires %s component type, but bound descriptor format is %s.",
                                             report_data->FormatHandle(set).c_str(), caller, binding, index,
                                             StringDescriptorReqComponentType(reqs),
                                             string_VkFormat(buffer_view_state->create_info.format));
+                        }
+
+                        // Verify VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT
+                        if ((reqs & DESCRIPTOR_REQ_VIEW_ATOMIC_OPERATION) &&
+                            (descriptor_set->GetTypeFromBinding(binding) == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) &&
+                            !(buffer_view_state->format_features & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT)) {
+                            auto set = descriptor_set->GetSet();
+                            LogObjectList objlist(set);
+                            objlist.add(buffer_view);
+                            return LogError(
+                                objlist, "UNASSIGNED-None-MismatchAtomicBufferFeature",
+                                "%s encountered the following validation error at %s time: Descriptor in binding #%" PRIu32
+                                " index %" PRIu32
+                                ", %s, format %s, doesn't "
+                                "contain VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT.",
+                                report_data->FormatHandle(set).c_str(), caller, binding, index,
+                                report_data->FormatHandle(buffer_view).c_str(),
+                                string_VkFormat(buffer_view_state->create_info.format));
                         }
                     }
                 } else if (descriptor_class == DescriptorClass::AccelerationStructure) {
@@ -956,7 +1170,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     if (!acc_node || acc_node->destroyed) {
                         auto set = descriptor_set->GetSet();
                         return LogError(
-                            set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            set, vuids.descriptor_valid,
                             "%s encountered the following validation error at %s time: Descriptor in binding #%" PRIu32
                             " index %" PRIu32 " is using acceleration structure %s that is invalid or has been destroyed.",
                             report_data->FormatHandle(set).c_str(), caller, binding, index, report_data->FormatHandle(acc).c_str());
@@ -964,7 +1178,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                         for (auto mem_binding : acc_node->GetBoundMemory()) {
                             if (mem_binding->destroyed) {
                                 auto set = descriptor_set->GetSet();
-                                return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                                return LogError(set, vuids.descriptor_valid,
                                                 "%s encountered the following validation error at %s time: Descriptor in "
                                                 "binding #%" PRIu32 " index %" PRIu32
                                                 " is using acceleration structure %s that references invalid memory %s.",
@@ -988,7 +1202,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     }
                     if (!sampler_state || sampler_state->destroyed) {
                         auto set = descriptor_set->GetSet();
-                        return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                        return LogError(set, vuids.descriptor_valid,
                                         "%s encountered the following validation error at %s time: Descriptor in "
                                         "binding #%" PRIu32 " index %" PRIu32
                                         " is using sampler %s that is invalid or has been destroyed.",
@@ -997,7 +1211,7 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     } else {
                         if (sampler_state->samplerConversion && !descriptor->IsImmutableSampler()) {
                             auto set = descriptor_set->GetSet();
-                            return LogError(set, kVUID_Core_DrawState_DescriptorSetNotUpdated,
+                            return LogError(set, vuids.descriptor_valid,
                                             "%s encountered the following validation error at %s time: sampler (%s) "
                                             "in the descriptor set (%s) caontains a YCBCR conversion (%s), then the sampler MUST "
                                             "also exist as an immutable sampler.",
@@ -1009,24 +1223,97 @@ bool CoreChecks::ValidateDescriptorSetBindingData(const CMD_BUFFER_STATE *cb_nod
                     }
                     // TODO: Validate 04015 for DescriptorClass::PlainSampler
                     if (descriptor_class == DescriptorClass::ImageSampler) {
-                        auto custom_color_info =
-                            lvl_find_in_chain<VkSamplerCustomBorderColorCreateInfoEXT>(sampler_state->createInfo.pNext);
-                        if (custom_color_info && custom_color_info->format == VK_FORMAT_UNDEFINED) {
-                            const IMAGE_VIEW_STATE *image_view_state;
-                            image_view_state = static_cast<const ImageSamplerDescriptor *>(descriptor)->GetImageViewState();
-                            if (image_view_state->create_info.format == VK_FORMAT_B4G4R4A4_UNORM_PACK16) {
+                        const IMAGE_VIEW_STATE *image_view_state;
+                        image_view_state = static_cast<const ImageSamplerDescriptor *>(descriptor)->GetImageViewState();
+                        if (image_view_state) {
+                            if ((sampler_state->createInfo.borderColor == VK_BORDER_COLOR_INT_CUSTOM_EXT ||
+                                 sampler_state->createInfo.borderColor == VK_BORDER_COLOR_FLOAT_CUSTOM_EXT) &&
+                                (sampler_state->customCreateInfo.format == VK_FORMAT_UNDEFINED)) {
+                                if (image_view_state->create_info.format == VK_FORMAT_B4G4R4A4_UNORM_PACK16 ||
+                                    image_view_state->create_info.format == VK_FORMAT_B5G6R5_UNORM_PACK16 ||
+                                    image_view_state->create_info.format == VK_FORMAT_B5G5R5A1_UNORM_PACK16) {
+                                    auto set = descriptor_set->GetSet();
+                                    LogObjectList objlist(set);
+                                    objlist.add(sampler);
+                                    objlist.add(image_view_state->image_view);
+                                    return LogError(objlist, "VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04015",
+                                                    "%s encountered the following validation error at %s time: Sampler %s in "
+                                                    "binding #%" PRIu32 " index %" PRIu32
+                                                    " has a custom border color with format = VK_FORMAT_UNDEFINED and is used to "
+                                                    "sample an image view %s with format %s",
+                                                    report_data->FormatHandle(set).c_str(), caller,
+                                                    report_data->FormatHandle(sampler).c_str(), binding, index,
+                                                    report_data->FormatHandle(image_view_state->image_view).c_str(),
+                                                    string_VkFormat(image_view_state->create_info.format));
+                                }
+                            }
+                            VkFilter sampler_mag_filter = sampler_state->createInfo.magFilter;
+                            VkFilter sampler_min_filter = sampler_state->createInfo.minFilter;
+                            VkBool32 sampler_compare_enable = sampler_state->createInfo.compareEnable;
+                            if ((sampler_mag_filter == VK_FILTER_LINEAR || sampler_min_filter == VK_FILTER_LINEAR) &&
+                                (sampler_compare_enable == VK_FALSE) &&
+                                !(image_view_state->format_features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
                                 auto set = descriptor_set->GetSet();
                                 LogObjectList objlist(set);
                                 objlist.add(sampler);
                                 objlist.add(image_view_state->image_view);
-                                return LogError(objlist, "VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04015",
-                                                "%s encountered the following validation error at %s time: Sampler %s in "
-                                                "binding #%" PRIu32 " index %" PRIu32
-                                                " has a custom border color with format = VK_FORMAT_UNDEFINED and is used to "
-                                                "sample an image view %" PRIu64 " with format VK_FORMAT_B4G4R4A4_UNORM_PACK16",
-                                                report_data->FormatHandle(set).c_str(), caller,
-                                                report_data->FormatHandle(sampler).c_str(), binding, index,
-                                                report_data->FormatHandle(image_view_state->image_view).c_str());
+                                return LogError(objlist, vuids.linear_sampler,
+                                                "sampler (%s) in descriptor set (%s) "
+                                                "is set to use VK_FILTER_LINEAR, then image view's (%s"
+                                                ") format (%s) MUST "
+                                                "contain VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT in its format features.",
+                                                report_data->FormatHandle(sampler).c_str(), report_data->FormatHandle(set).c_str(),
+                                                report_data->FormatHandle(image_view_state->image_view).c_str(),
+                                                string_VkFormat(image_view_state->create_info.format));
+                            }
+                            if ((sampler_mag_filter == VK_FILTER_CUBIC_EXT || sampler_min_filter == VK_FILTER_CUBIC_EXT) &&
+                                !(image_view_state->format_features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT)) {
+                                auto set = descriptor_set->GetSet();
+                                LogObjectList objlist(set);
+                                objlist.add(sampler);
+                                objlist.add(image_view_state->image_view);
+                                return LogError(
+                                    objlist, vuids.cubic_sampler,
+                                    "sampler (%s) in descriptor set (%s) "
+                                    "is set to use VK_FILTER_CUBIC_EXT, then image view's (%s"
+                                    ") format (%s) MUST "
+                                    "contain VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT in its format features.",
+                                    report_data->FormatHandle(sampler).c_str(), report_data->FormatHandle(set).c_str(),
+                                    report_data->FormatHandle(image_view_state->image_view).c_str(),
+                                    string_VkFormat(image_view_state->create_info.format));
+                            }
+
+                            const IMAGE_STATE *image_state;
+                            image_state = GetImageState(image_view_state->create_info.image);
+                            if ((image_state->createInfo.flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV) &&
+                                (sampler_state->createInfo.addressModeU != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE ||
+                                 sampler_state->createInfo.addressModeV != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE ||
+                                 sampler_state->createInfo.addressModeW != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)) {
+                                std::string address_mode_letter =
+                                    (sampler_state->createInfo.addressModeU != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                                        ? "U"
+                                        : (sampler_state->createInfo.addressModeV != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) ? "V"
+                                                                                                                            : "W";
+                                VkSamplerAddressMode address_mode =
+                                    (sampler_state->createInfo.addressModeU != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                                        ? sampler_state->createInfo.addressModeU
+                                        : (sampler_state->createInfo.addressModeV != VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                                              ? sampler_state->createInfo.addressModeV
+                                              : sampler_state->createInfo.addressModeW;
+                                auto set = descriptor_set->GetSet();
+                                LogObjectList objlist(set);
+                                objlist.add(sampler);
+                                objlist.add(image_state->image);
+                                objlist.add(image_view_state->image_view);
+                                return LogError(
+                                    objlist, vuids.corner_sampled_address_mode,
+                                    "image (%s) in image view (%s) in descriptor set (%s) is created with flag "
+                                    "VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV and can only be sampled using "
+                                    "VK_SAMPLER_ADDRESS_MODE_CLAMP_EDGE, but sampler (%s) has createInfo.addressMode%s set to %s.",
+                                    report_data->FormatHandle(image_state->image).c_str(),
+                                    report_data->FormatHandle(image_view_state->image_view).c_str(),
+                                    report_data->FormatHandle(set).c_str(), report_data->FormatHandle(sampler).c_str(),
+                                    address_mode_letter.c_str(), string_VkSamplerAddressMode(address_mode));
                             }
                         }
                     }
@@ -1187,7 +1474,7 @@ bool CoreChecks::ValidateCopyUpdate(const VkCopyDescriptorSet *update, const Des
         return false;
     }
     // Check that types match
-    // TODO : Base default error case going from here is "VUID-VkAcquireNextImageInfoKHR-semaphore-parameter"2ba which covers all
+    // TODO : Base default error case going from here is "VUID-VkAcquireNextImageInfoKHR-semaphore-parameter" 2ba which covers all
     // consistency issues, need more fine-grained error codes
     *error_code = "VUID-VkCopyDescriptorSet-srcSet-00349";
     auto src_type = src_set->GetTypeFromBinding(update->srcBinding);
@@ -1339,9 +1626,10 @@ void cvdescriptorset::DescriptorSet::PerformCopyUpdate(ValidationStateTracker *d
 // Prereq: This should be called for a set that has been confirmed to be active for the given cb_node, meaning it's going
 //   to be used in a draw by the given cb_node
 void cvdescriptorset::DescriptorSet::UpdateDrawState(ValidationStateTracker *device_data, CMD_BUFFER_STATE *cb_node,
-                                                     const PIPELINE_STATE *pipe,
-                                                     const std::map<uint32_t, descriptor_req> &binding_req_map) {
-    if (!device_data->disabled.command_buffer_state) {
+                                                     CMD_TYPE cmd_type, const PIPELINE_STATE *pipe,
+                                                     const std::map<uint32_t, DescriptorReqirement> &binding_req_map,
+                                                     const char *function) {
+    if (!device_data->disabled[command_buffer_state] && !IsPushDescriptor()) {
         // bind cb to this descriptor set
         // Add bindings for descriptor set, the set's pool, and individual objects in the set
         if (device_data->AddCommandBufferBinding(cb_bindings, VulkanTypedHandle(set_, kVulkanObjectTypeDescriptorSet, this),
@@ -1354,21 +1642,30 @@ void cvdescriptorset::DescriptorSet::UpdateDrawState(ValidationStateTracker *dev
 
     // Descriptor UpdateDrawState functions do two things - associate resources to the command buffer,
     // and call image layout validation callbacks. If both are disabled, skip the entire loop.
-    if (device_data->disabled.command_buffer_state && device_data->disabled.image_layout_validation) {
+    if (device_data->disabled[command_buffer_state] && device_data->disabled[image_layout_validation]) {
         return;
     }
 
     // For the active slots, use set# to look up descriptorSet from boundDescriptorSets, and bind all of that descriptor set's
     // resources
+    CMD_BUFFER_STATE::CmdDrawDispatchInfo cmd_info = {};
+    if (pipe->graphicsPipelineCI.sType == VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO) {
+        cmd_info.bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    } else if (pipe->computePipelineCI.sType == VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO) {
+        cmd_info.bind_point = VK_PIPELINE_BIND_POINT_COMPUTE;
+    } else if (pipe->raytracingPipelineCI.sType == VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR ||
+               pipe->raytracingPipelineCI.sType == VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV) {
+        cmd_info.bind_point = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
+    }
+
     for (auto binding_req_pair : binding_req_map) {
-        auto binding = binding_req_pair.first;
         auto index = p_layout_->GetIndexFromBinding(binding_req_pair.first);
 
         // We aren't validating descriptors created with PARTIALLY_BOUND or UPDATE_AFTER_BIND, so don't record state
         auto flags = p_layout_->GetDescriptorBindingFlagsFromIndex(index);
         if (flags & (VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT)) {
             if (!(flags & VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT)) {
-                cb_node->validate_descriptorsets_in_queuesubmit[set_][pipe->pipeline][binding] = binding_req_pair.second;
+                cmd_info.binding_infos.emplace_back(binding_req_pair);
             }
             continue;
         }
@@ -1376,6 +1673,17 @@ void cvdescriptorset::DescriptorSet::UpdateDrawState(ValidationStateTracker *dev
         for (uint32_t i = range.start; i < range.end; ++i) {
             descriptors_[i]->UpdateDrawState(device_data, cb_node);
         }
+    }
+
+    if (cmd_info.binding_infos.size() > 0) {
+        cmd_info.cmd_type = cmd_type;
+        cmd_info.function = function;
+        if (cb_node->activeFramebuffer) {
+            cmd_info.framebuffer = cb_node->activeFramebuffer->framebuffer;
+            cmd_info.attachment_views = cb_node->activeFramebuffer->GetUsedAttachments(
+                *cb_node->activeRenderPass->createInfo.pSubpasses, cb_node->imagelessFramebufferAttachments);
+        }
+        cb_node->validate_descriptorsets_in_queuesubmit[set_].emplace_back(cmd_info);
     }
 }
 
@@ -1502,11 +1810,10 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
     if (stencil_usage_info) {
         usage |= stencil_usage_info->stencilUsage;
     }
+
     // Validate that memory is bound to image
-    // TODO: This should have its own valid usage id apart from 2524 which is from CreateImageView case. The only
-    //  the error here occurs is if memory bound to a created imageView has been freed.
-    if (ValidateMemoryIsBoundToImage(image_node, func_name, "VUID-VkImageViewCreateInfo-image-01020")) {
-        *error_code = "VUID-VkImageViewCreateInfo-image-01020";
+    if (ValidateMemoryIsBoundToImage(image_node, func_name, "UNASSIGNED-CoreValidation-BoundResourceFreedMemoryAccess")) {
+        *error_code = "UNASSIGNED-CoreValidation-BoundResourceFreedMemoryAccess";
         *error_msg = "No memory bound to image.";
         return false;
     }
@@ -1601,11 +1908,18 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
     //  As we're switching per-type, if any type has specific layout requirements, check those here as well
     // TODO : The various image usage bit requirements are in general spec language for VkImageUsageFlags bit block in 11.3 Images
     // under vkCreateImage()
-    // TODO : Need to also validate case "VUID-VkWriteDescriptorSet-descriptorType-00336" where STORAGE_IMAGE & INPUT_ATTACH types
-    // must have been created with identify swizzle
     const char *error_usage_bit = nullptr;
     switch (type) {
         case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+            if (iv_state->samplerConversion != VK_NULL_HANDLE) {
+                *error_code = "VUID-VkWriteDescriptorSet-descriptorType-01946";
+                std::stringstream error_str;
+                error_str << "ImageView (" << report_data->FormatHandle(image_view) << ")"
+                          << "used as a VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE can't be created with VkSamplerYcbcrConversion";
+                *error_msg = error_str.str();
+                return false;
+            }
+            // drop through
         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
             if (!(usage & VK_IMAGE_USAGE_SAMPLED_BIT)) {
                 error_usage_bit = "VK_IMAGE_USAGE_SAMPLED_BIT";
@@ -1617,30 +1931,19 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
             if (!(usage & VK_IMAGE_USAGE_STORAGE_BIT)) {
                 error_usage_bit = "VK_IMAGE_USAGE_STORAGE_BIT";
                 *error_code = "VUID-VkWriteDescriptorSet-descriptorType-00339";
-            } else if (VK_IMAGE_LAYOUT_GENERAL != image_layout) {
+            } else if ((VK_IMAGE_LAYOUT_GENERAL != image_layout) || ((VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR != image_layout) &&
+                                                                     (device_extensions.vk_khr_shared_presentable_image))) {
+                *error_code = "VUID-VkWriteDescriptorSet-descriptorType-04152";
                 std::stringstream error_str;
-                // TODO : Need to create custom enum error codes for these cases
-                if (image_node->shared_presentable) {
-                    if (VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR != image_layout) {
-                        error_str << "ImageView (" << report_data->FormatHandle(image_view)
-                                  << ") of VK_DESCRIPTOR_TYPE_STORAGE_IMAGE type with a front-buffered image is being updated with "
-                                     "layout "
-                                  << string_VkImageLayout(image_layout)
-                                  << " but according to spec section 13.1 Descriptor Types, 'Front-buffered images that report "
-                                     "support for VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT must be in the "
-                                     "VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout.'";
-                        *error_msg = error_str.str();
-                        return false;
-                    }
-                } else if (VK_IMAGE_LAYOUT_GENERAL != image_layout) {
-                    error_str << "ImageView (" << report_data->FormatHandle(image_view)
-                              << ") of VK_DESCRIPTOR_TYPE_STORAGE_IMAGE type is being updated with layout "
-                              << string_VkImageLayout(image_layout)
-                              << " but according to spec section 13.1 Descriptor Types, 'Load and store operations on storage "
-                                 "images can only be done on images in VK_IMAGE_LAYOUT_GENERAL layout.'";
-                    *error_msg = error_str.str();
-                    return false;
+                error_str << "Descriptor update with descriptorType VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
+                          << " is being updated with invalid imageLayout " << string_VkImageLayout(image_layout) << " for image "
+                          << report_data->FormatHandle(image) << " in imageView " << report_data->FormatHandle(image_view)
+                          << ". Allowed layouts are: VK_IMAGE_LAYOUT_GENERAL";
+                if (device_extensions.vk_khr_shared_presentable_image) {
+                    error_str << " or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR";
                 }
+                *error_msg = error_str.str();
+                return false;
             }
             break;
         }
@@ -1663,7 +1966,10 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
         return false;
     }
 
-    if ((type == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) || (type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)) {
+    // All the following types share the same image layouts
+    // checkf or Storage Images above
+    if ((type == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) || (type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) ||
+        (type == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
         // Test that the layout is compatible with the descriptorType for the two sampled image types
         const static std::array<VkImageLayout, 3> valid_layouts = {
             {VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL}};
@@ -1686,7 +1992,20 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
                             std::any_of(extended_layouts.cbegin(), extended_layouts.cend(), is_layout);
 
         if (!valid_layout) {
-            *error_code = "VUID-VkWriteDescriptorSet-descriptorType-01403";
+            // The following works as currently all 3 descriptor types share the same set of valid layouts
+            switch (type) {
+                case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                    *error_code = "VUID-VkWriteDescriptorSet-descriptorType-04149";
+                    break;
+                case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                    *error_code = "VUID-VkWriteDescriptorSet-descriptorType-04150";
+                    break;
+                case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+                    *error_code = "VUID-VkWriteDescriptorSet-descriptorType-04151";
+                    break;
+                default:
+                    break;
+            }
             std::stringstream error_str;
             error_str << "Descriptor update with descriptorType " << string_VkDescriptorType(type)
                       << " is being updated with invalid imageLayout " << string_VkImageLayout(image_layout) << " for image "
@@ -1698,6 +2017,21 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
                     error_str << ", " << string_VkImageLayout(ext_layout.layout);
                 }
             }
+            *error_msg = error_str.str();
+            return false;
+        }
+    }
+
+    if ((type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) || (type == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
+        const VkComponentMapping components = iv_state->create_info.components;
+        if (IsIdentitySwizzle(components) == false) {
+            *error_code = "VUID-VkWriteDescriptorSet-descriptorType-00336";
+            std::stringstream error_str;
+            error_str << "ImageView (" << report_data->FormatHandle(image_view) << ") has a non-identiy swizzle component, "
+                      << " r swizzle = " << string_VkComponentSwizzle(components.r) << ","
+                      << " g swizzle = " << string_VkComponentSwizzle(components.g) << ","
+                      << " b swizzle = " << string_VkComponentSwizzle(components.b) << ","
+                      << " a swizzle = " << string_VkComponentSwizzle(components.a) << ".";
             *error_msg = error_str.str();
             return false;
         }
@@ -1931,6 +2265,24 @@ bool CoreChecks::ValidateUpdateDescriptorSets(uint32_t write_count, const VkWrit
                                  report_data->FormatHandle(dest_set).c_str(), error_str.c_str());
             }
         }
+        if (p_wds[i].pNext) {
+            const auto *pnext_struct = lvl_find_in_chain<VkWriteDescriptorSetAccelerationStructureKHR>(p_wds[i].pNext);
+            if (pnext_struct) {
+                for (uint32_t j = 0; j < pnext_struct->accelerationStructureCount; ++j) {
+                    const ACCELERATION_STRUCTURE_STATE *as_state =
+                        GetAccelerationStructureState(pnext_struct->pAccelerationStructures[j]);
+                    if (as_state && as_state->is_khr &&
+                        (as_state->create_infoKHR.sType == VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR &&
+                         as_state->create_infoKHR.type != VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR)) {
+                        skip |=
+                            LogError(dest_set, "VUID-VkWriteDescriptorSetAccelerationStructureKHR-pAccelerationStructures-02764",
+                                     "%s: Each acceleration structure in pAccelerationStructures must have been"
+                                     "created with VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR.",
+                                     func_name);
+                    }
+                }
+            }
+        }
     }
     // Now validate copy updates
     for (uint32_t i = 0; i < copy_count; ++i) {
@@ -2077,11 +2429,11 @@ std::string cvdescriptorset::DescriptorSet::StringifySetAndLayout() const {
     auto layout_handle = p_layout_->GetDescriptorSetLayout();
     if (IsPushDescriptor()) {
         std::ostringstream str;
-        str << "Push Descriptors defined with VkDescriptorSetLayout " << state_data_->report_data->FormatHandle(layout_handle);
+        str << "Push Descriptors defined with " << state_data_->report_data->FormatHandle(layout_handle);
         out = str.str();
     } else {
         std::ostringstream str;
-        str << "VkDescriptorSet " << state_data_->report_data->FormatHandle(set_) << " allocated with VkDescriptorSetLayout "
+        str << state_data_->report_data->FormatHandle(set_) << " allocated with "
             << state_data_->report_data->FormatHandle(layout_handle);
         out = str.str();
     }
@@ -2498,7 +2850,7 @@ bool CoreChecks::ValidateAllocateDescriptorSets(const VkDescriptorSetAllocateInf
 const BindingReqMap &cvdescriptorset::PrefilterBindRequestMap::FilteredMap(const CMD_BUFFER_STATE &cb_state,
                                                                            const PIPELINE_STATE &pipeline) {
     if (IsManyDescriptors()) {
-        filtered_map_.reset(new std::map<uint32_t, descriptor_req>());
+        filtered_map_.reset(new std::map<uint32_t, DescriptorReqirement>());
         descriptor_set_.FilterBindingReqs(cb_state, pipeline, orig_map_, filtered_map_.get());
         return *filtered_map_;
     }
@@ -2724,6 +3076,18 @@ bool CoreChecks::ValidateWriteUpdate(const DescriptorSet *dest_set, const VkWrit
         *error_code = "VUID-VkWriteDescriptorSet-dstArrayElement-00321";
         return false;
     }
+    // Verify write to variable descriptor
+    if (dest_set->IsVariableDescriptorCount(update->dstBinding)) {
+        if ((update->dstArrayElement + update->descriptorCount) > dest_set->GetVariableDescriptorCount()) {
+            std::stringstream error_str;
+            *error_code = "VUID-VkWriteDescriptorSet-dstArrayElement-00321";
+            error_str << "Attempting write update to " << dest_set->StringifySetAndLayout() << " binding index #"
+                      << update->dstBinding << " array element " << update->dstArrayElement << " with " << update->descriptorCount
+                      << " writes but variable descriptor size is " << dest_set->GetVariableDescriptorCount();
+            *error_msg = error_str.str();
+            return false;
+        }
+    }
     // Update is within bounds and consistent so last step is to validate update contents
     if (!VerifyWriteUpdateContents(dest_set, update, start_idx, func_name, error_code, error_msg)) {
         std::stringstream error_str;
@@ -2789,6 +3153,7 @@ bool CoreChecks::VerifyWriteUpdateContents(const DescriptorSet *dest_set, const 
                             }
                         }
                     }
+                    // If there is an immutable sampler then |sampler| isn't used, so the following VU does not apply.
                     if (sampler && !desc->IsImmutableSampler() && FormatIsMultiplane(image_state->createInfo.format)) {
                         // multiplane formats must be created with mutable format bit
                         if (0 == (image_state->createInfo.flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT)) {

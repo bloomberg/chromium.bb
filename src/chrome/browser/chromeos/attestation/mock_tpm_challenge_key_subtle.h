@@ -24,17 +24,15 @@ class MockTpmChallengeKeySubtle : public TpmChallengeKeySubtle {
   MOCK_METHOD(void,
               StartPrepareKeyStep,
               (AttestationKeyType key_type,
+               bool will_register_key,
                const std::string& key_name,
                Profile* profile,
-               const std::string& key_name_for_spkac,
                TpmChallengeKeyCallback callback),
               (override));
 
   MOCK_METHOD(void,
               StartSignChallengeStep,
-              (const std::string& challenge,
-               bool include_signed_public_key,
-               TpmChallengeKeyCallback callback),
+              (const std::string& challenge, TpmChallengeKeyCallback callback),
               (override));
 
   MOCK_METHOD(void,
@@ -45,9 +43,10 @@ class MockTpmChallengeKeySubtle : public TpmChallengeKeySubtle {
   MOCK_METHOD(void,
               RestorePreparedKeyState,
               (AttestationKeyType key_type,
+               bool will_register_key,
                const std::string& key_name,
-               Profile* profile,
-               const std::string& key_name_for_spkac),
+               const std::string& public_key,
+               Profile* profile),
               (override));
 };
 

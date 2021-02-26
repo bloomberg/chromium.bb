@@ -6,8 +6,13 @@ const {assert} = chai;
 
 import {SourceMapEntry, TextSourceMap} from '../../../../front_end/sdk/SourceMap.js';
 
-// TODO(crbug.com/1061125): Requires common/ to be typechecked
-describe.skip('SourceMapEntry', () => {
+const fakeInitiator = {
+  target: null,
+  frameId: '123',
+  initiatorUrl: '',
+};
+
+describe('SourceMapEntry', () => {
   it('can be instantiated correctly', () => {
     const sourceMapEntry = new SourceMapEntry(1, 1, 'http://www.example.com/', 1, 1, 'example');
     assert.strictEqual(sourceMapEntry.lineNumber, 1, 'line number was not set correctly');
@@ -113,8 +118,9 @@ describe('TextSourceMap', () => {
       sections: undefined,
       sourceRoot: undefined,
       names: undefined,
+      sourcesContent: undefined,
     };
-    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload);
+    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload, fakeInitiator);
 
     assertMapping(sourceMap.findEntry(0, 9), 'example.js', 0, 9);
     assertMapping(sourceMap.findEntry(0, 13), 'example.js', 0, 13);
@@ -140,8 +146,9 @@ describe('TextSourceMap', () => {
       sections: undefined,
       sourceRoot: undefined,
       names: undefined,
+      sourcesContent: undefined,
     };
-    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload);
+    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload, fakeInitiator);
 
     assertMapping(sourceMap.findEntry(0, 0), 'example.js', 0, 0);
     assertMapping(sourceMap.findEntry(0, 2), 'example.js', 0, 2);
@@ -161,8 +168,9 @@ describe('TextSourceMap', () => {
       sections: undefined,
       sourceRoot: undefined,
       names: undefined,
+      sourcesContent: undefined,
     };
-    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload);
+    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload, fakeInitiator);
 
     assertMapping(sourceMap.findEntry(0, 0), 'example.js', 0, 0);
     assertReverseMapping(sourceMap.sourceLineMapping('example.js', 1, 0), 3, 1);
@@ -183,7 +191,9 @@ describe('TextSourceMap', () => {
             sections: undefined,
             sourceRoot: undefined,
             names: undefined,
+            sourcesContent: undefined,
           },
+          url: undefined,
         },
         {
           offset: {line: 2, 'column': 10},
@@ -195,15 +205,18 @@ describe('TextSourceMap', () => {
             sections: undefined,
             sourceRoot: undefined,
             names: undefined,
+            sourcesContent: undefined,
           },
+          url: undefined,
         },
       ],
       version: 1,
       file: undefined,
       sourceRoot: undefined,
       names: undefined,
+      sourcesContent: undefined,
     };
-    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload);
+    const sourceMap = new TextSourceMap('compiled.js', 'source-map.json', mappingPayload, fakeInitiator);
 
     assert.lengthOf(sourceMap.sourceURLs(), 2, 'unexpected number of original source URLs');
     assertMapping(sourceMap.findEntry(0, 0), 'source1.js', 0, 0);

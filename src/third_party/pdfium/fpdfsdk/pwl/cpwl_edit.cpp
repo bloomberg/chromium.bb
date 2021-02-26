@@ -10,12 +10,12 @@
 #include <memory>
 #include <sstream>
 #include <utility>
-#include <vector>
 
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfdoc/cpvt_word.h"
 #include "core/fpdfdoc/ipvt_fontmap.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -25,6 +25,7 @@
 #include "fpdfsdk/pwl/cpwl_edit_impl.h"
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "public/fpdf_fwlevent.h"
 
 CPWL_Edit::CPWL_Edit(
@@ -165,8 +166,8 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
   const CFX_FloatRect rcClient = GetClientRect();
   const BorderStyle border_style = GetBorderStyle();
   const int32_t nCharArray = m_pEdit->GetCharArray();
-  bool draw_border = nCharArray > 0 && (border_style == BorderStyle::SOLID ||
-                                        border_style == BorderStyle::DASH);
+  bool draw_border = nCharArray > 0 && (border_style == BorderStyle::kSolid ||
+                                        border_style == BorderStyle::kDash);
   if (draw_border) {
     FX_SAFE_INT32 nCharArraySafe = nCharArray;
     nCharArraySafe -= 1;
@@ -177,7 +178,7 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
   if (draw_border) {
     CFX_GraphStateData gsd;
     gsd.m_LineWidth = GetBorderWidth();
-    if (border_style == BorderStyle::DASH) {
+    if (border_style == BorderStyle::kDash) {
       gsd.m_DashArray = {static_cast<float>(GetBorderDash().nDash),
                          static_cast<float>(GetBorderDash().nGap)};
       gsd.m_DashPhase = GetBorderDash().nPhase;
@@ -195,7 +196,8 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     }
     if (!path.GetPoints().empty()) {
       pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0,
-                        GetBorderColor().ToFXColor(255), FXFILL_ALTERNATE);
+                        GetBorderColor().ToFXColor(255),
+                        CFX_FillRenderOptions::EvenOddOptions());
     }
   }
 

@@ -5,14 +5,31 @@ if (isset($_GET['corp'])) {
 }
 
 if (isset($_GET['coop'])) {
-  header("Cross-Origin-Opener-Policy: same-origin");
+  $coop = $_GET['coop'] ? $_GET['coop'] : "same-origin";
+  header("Cross-Origin-Opener-Policy: $coop");
 }
-
 
 if (isset($_GET['coep'])) {
-  header("Cross-Origin-Embedder-Policy: require-corp");
+  $coep = $_GET['coep'] ? $_GET['coep'] : "require-corp";
+  header("Cross-Origin-Embedder-Policy: $coep");
 }
 
-echo "This is some content";
+if (isset($_GET['coop-rpt'])) {
+  $coop = $_GET['coop-rpt'] ? $_GET['coop-rpt'] : "same-origin";
+  header("Cross-Origin-Opener-Policy-Report-Only: $coop");
+}
+
+if (isset($_GET['coep-rpt'])) {
+  $coep = $_GET['coep-rpt'] ? $_GET['coep-rpt'] : "require-corp";
+  header("Cross-Origin-Embedder-Policy-Report-Only: $coep");
+}
+
+if (isset($_GET['ctype'])) {
+  $ctype = $_GET['ctype'] ? $_GET['ctype'] : "text/html";
+  header("Content-Type: $ctype");
+}
+
+$content = isset($_GET['content']) ? $_GET['content'] : "This is some text";
+echo $content;
 
 ?>

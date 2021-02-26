@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
@@ -61,7 +62,6 @@ void ChallengeResponseKeyToPublicKeyInfo(
 
 void KeyDefPrivilegesToKeyPrivileges(int key_def_privileges,
                                      KeyPrivileges* privileges) {
-  privileges->set_mount(key_def_privileges & PRIV_MOUNT);
   privileges->set_add(key_def_privileges & PRIV_ADD);
   privileges->set_remove(key_def_privileges & PRIV_REMOVE);
   privileges->set_update(key_def_privileges & PRIV_MIGRATE);
@@ -168,8 +168,6 @@ std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
 
     // Extract |privileges|.
     const KeyPrivileges& privileges = it->privileges();
-    if (privileges.mount())
-      key_definition.privileges |= PRIV_MOUNT;
     if (privileges.add())
       key_definition.privileges |= PRIV_ADD;
     if (privileges.remove())
@@ -271,6 +269,8 @@ AuthorizationRequest CreateAuthorizationRequestFromKeyDef(
       auth_request.mutable_key_delegate()->set_dbus_object_path(
           cryptohome::kCryptohomeKeyDelegateServicePath);
       break;
+    case KeyDefinition::TYPE_FINGERPRINT:
+      break;
   }
 
   return auth_request;
@@ -295,6 +295,10 @@ void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
         ChallengeResponseKeyToPublicKeyInfo(challenge_response_key,
                                             data->add_challenge_response_key());
       }
+      break;
+
+    case KeyDefinition::TYPE_FINGERPRINT:
+      data->set_type(KeyData::KEY_TYPE_FINGERPRINT);
       break;
   }
 
@@ -383,6 +387,12 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
     case CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR:
     case CRYPTOHOME_ERROR_FAILED_TO_READ_PCR:
     case CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED:
+      NOTREACHED();
+      return MOUNT_ERROR_FATAL;
+    // TODO(dlunev): remove this temporary case after rolling up system api
+    // change and adding proper handling for the new enum value in
+    // https://chromium-review.googlesource.com/c/chromium/src/+/2518524
+    default:
       NOTREACHED();
       return MOUNT_ERROR_FATAL;
   }

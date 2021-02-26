@@ -5,7 +5,8 @@
 #ifndef PRINTING_PRINT_SETTINGS_CONVERSION_H_
 #define PRINTING_PRINT_SETTINGS_CONVERSION_H_
 
-#include "base/logging.h"
+#include <memory>
+
 #include "printing/page_range.h"
 #include "printing/printing_export.h"
 
@@ -21,9 +22,9 @@ class PrintSettings;
 PRINTING_EXPORT PageRanges
 GetPageRangesFromJobSettings(const base::Value& job_settings);
 
-PRINTING_EXPORT bool PrintSettingsFromJobSettings(
-    const base::Value& job_settings,
-    PrintSettings* print_settings);
+// Returns nullptr on failure.
+PRINTING_EXPORT std::unique_ptr<PrintSettings> PrintSettingsFromJobSettings(
+    const base::Value& job_settings);
 
 // Use for debug only, because output is not completely consistent with format
 // of |PrintSettingsFromJobSettings| input.

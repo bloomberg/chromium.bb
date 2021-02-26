@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,22 +25,27 @@ namespace autofill {
 
 class AddressFieldTest : public testing::Test {
  public:
-  AddressFieldTest() {}
+  AddressFieldTest() = default;
+  AddressFieldTest(const AddressFieldTest&) = delete;
+  AddressFieldTest& operator=(const AddressFieldTest&) = delete;
 
  protected:
-  std::vector<std::unique_ptr<AutofillField>> list_;
-  std::unique_ptr<AddressField> field_;
-  FieldCandidatesMap field_candidates_map_;
-
   // Downcast for tests.
   static std::unique_ptr<AddressField> Parse(AutofillScanner* scanner) {
-    std::unique_ptr<FormField> field = AddressField::Parse(scanner, nullptr);
+    // An empty page_language means the language is unknown and patterns of all
+    // languages are used.
+    std::unique_ptr<FormField> field =
+        AddressField::Parse(scanner, /*page_language=*/"", nullptr);
     return std::unique_ptr<AddressField>(
         static_cast<AddressField*>(field.release()));
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AddressFieldTest);
+  std::vector<std::unique_ptr<AutofillField>> list_;
+  std::unique_ptr<AddressField> field_;
+  FieldCandidatesMap field_candidates_map_;
+
+  // RAII object to mock the the PatternProvider.
+  TestPatternProvider test_pattern_provider_;
 };
 
 TEST_F(AddressFieldTest, Empty) {
@@ -155,6 +161,104 @@ TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
             field_candidates_map_[ASCIIToUTF16("addr")].BestHeuristicType());
+}
+
+// Tests that fields are classified as |ADDRESS_HOME_STREET_NAME| and
+// |ADDRESS_HOME_HOUSE_NUMBER| when they are labeled accordingly and
+// both are present.
+TEST_F(AddressFieldTest, ParseStreetNameAndHouseNumber) {
+  // TODO(crbug.com/1125978): Remove once launched.
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInAddresses);
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Street");
+  field.name = ASCIIToUTF16("street");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("street")));
+
+  field.label = ASCIIToUTF16("House number");
+  field.name = ASCIIToUTF16("house-number");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("house")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("street")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_STREET_NAME,
+            field_candidates_map_[ASCIIToUTF16("street")].BestHeuristicType());
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("house")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_HOUSE_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("house")].BestHeuristicType());
+}
+
+// Tests that the field is not classified as |ADDRESS_HOME_STREET_NAME| when
+// it is labeled accordingly but adjacent field classified as
+// |ADDRESS_HOME_HOUSE_NUMBER| is absent.
+TEST_F(AddressFieldTest, NotParseStreetNameWithoutHouseNumber) {
+  // TODO(crbug.com/1125978): Remove once launched.
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInAddresses);
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Street");
+  field.name = ASCIIToUTF16("street");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("street")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+
+  if (!field_.get())
+    return;
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+  if (field_candidates_map_.empty())
+    return;
+
+  EXPECT_NE(ADDRESS_HOME_STREET_NAME,
+            field_candidates_map_[ASCIIToUTF16("street")].BestHeuristicType());
+}
+
+// Tests that the field is not classified as |ADDRESS_HOME_HOUSE_NUMBER| when
+// it is labeled accordingly but adjacent field classified as
+// |ADDRESS_HOME_STREET_NAME| is absent.
+TEST_F(AddressFieldTest, NotParseHouseNumberWithoutStreetName) {
+  // TODO(crbug.com/1125978): Remove once launched.
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInAddresses);
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("House number");
+  field.name = ASCIIToUTF16("house-number");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("house")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+
+  if (!field_.get())
+    return;
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+  if (field_candidates_map_.empty())
+    return;
+
+  EXPECT_NE(ADDRESS_HOME_HOUSE_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("house")].BestHeuristicType());
 }
 
 TEST_F(AddressFieldTest, ParseCity) {
@@ -305,10 +409,6 @@ TEST_F(AddressFieldTest, ParseCityStateCountryZipcodeTogether) {
   field.name = ASCIIToUTF16("zip");
   list_.push_back(std::make_unique<AutofillField>(field, ASCIIToUTF16("zip1")));
 
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
-
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
@@ -347,10 +447,6 @@ TEST_F(AddressFieldTest, ParseCountryLabelRegion) {
   list_.push_back(
       std::make_unique<AutofillField>(field, ASCIIToUTF16("country1")));
 
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
-
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
@@ -373,10 +469,6 @@ TEST_F(AddressFieldTest, ParseCountryNameRegion) {
   field.name = ASCIIToUTF16("client_region");
   list_.push_back(
       std::make_unique<AutofillField>(field, ASCIIToUTF16("country1")));
-
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);

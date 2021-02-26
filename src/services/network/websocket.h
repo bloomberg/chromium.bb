@@ -15,13 +15,16 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_event_interface.h"
+#include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket_throttler.h"
@@ -34,9 +37,10 @@ class Location;
 }  // namespace base
 
 namespace net {
+class IOBuffer;
 class IsolationInfo;
-class SiteForCookies;
 class SSLInfo;
+class SiteForCookies;
 class WebSocketChannel;
 }  // namespace net
 
@@ -61,24 +65,22 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       int32_t render_frame_id,
       const url::Origin& origin,
       uint32_t options,
+      net::NetworkTrafficAnnotationTag traffic_annotation,
       HasRawHeadersAccess has_raw_cookie_access,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
-      WebSocketThrottler::PendingConnection pending_connection_tracker,
+      base::Optional<WebSocketThrottler::PendingConnection>
+          pending_connection_tracker,
+      DataPipeUseTracker,
       base::TimeDelta delay);
   ~WebSocket() override;
 
   // mojom::WebSocket methods:
-  void SendFrame(bool fin,
-                 mojom::WebSocketMessageType type,
-                 base::span<const uint8_t> data) override;
   void SendMessage(mojom::WebSocketMessageType type,
                    uint64_t data_length) override;
   void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
-
-  bool handshake_succeeded() const { return handshake_succeeded_; }
 
   // Whether to allow sending/setting cookies during WebSocket handshakes for
   // |url|. This decision is based on the |options_| and |origin_| this
@@ -102,6 +104,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
  private:
   class WebSocketEventHandler;
+  struct CloseInfo;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
   // is used instead of WebSocket directly because SetUserData requires a
@@ -120,10 +123,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   };
 
   struct DataFrame final {
-    DataFrame(mojom::WebSocketMessageType type, uint64_t data_length)
-        : type(type), data_length(data_length) {}
+    DataFrame(mojom::WebSocketMessageType type,
+              uint64_t data_length,
+              bool do_not_fragment)
+        : type(type),
+          data_length(data_length),
+          do_not_fragment(do_not_fragment) {}
     mojom::WebSocketMessageType type;
     uint64_t data_length;
+    const bool do_not_fragment;
   };
 
   void OnConnectionError(const base::Location& set_from);
@@ -165,6 +173,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   // ReadAndSendFromDataPipe() may indirectly delete |this|.
   void ReadAndSendFromDataPipe();
+  void ResumeDataPipeReading();
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;
@@ -175,7 +184,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::Remote<mojom::AuthenticationHandler> auth_handler_;
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
-  WebSocketThrottler::PendingConnection pending_connection_tracker_;
+  base::Optional<WebSocketThrottler::PendingConnection>
+      pending_connection_tracker_;
 
   // The channel we use to send events to the network.
   std::unique_ptr<net::WebSocketChannel> channel_;
@@ -184,6 +194,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   const base::TimeDelta delay_;
 
   const uint32_t options_;
+
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   const int32_t child_id_;
   const int32_t frame_id_;
@@ -194,8 +206,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // For 3rd-party cookie permission checking.
   net::SiteForCookies site_for_cookies_;
 
-  // handshake_succeeded_ is used by WebSocketManager to manage counters for
-  // per-renderer WebSocket throttling.
   bool handshake_succeeded_ = false;
   const HasRawHeadersAccess has_raw_headers_access_;
 
@@ -210,6 +220,30 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::SimpleWatcher readable_watcher_;
   base::queue<DataFrame> pending_send_data_frames_;
   bool wait_for_readable_ = false;
+  bool blocked_on_websocket_channel_ = false;
+
+  DataPipeUseTracker data_pipe_use_tracker_;
+
+  // True if we should preserve the old behaviour where <=64KB messages were
+  // never fragmented.
+  // TODO(ricea): Remove the flag once we know whether we really need this or
+  // not. See https://crbug.com/1086273.
+  const bool reassemble_short_messages_;
+
+  // Temporary buffer for storage of short messages that have been fragmented by
+  // the data pipe. Only messages that are actually fragmented are copied into
+  // here.
+  scoped_refptr<net::IOBuffer> message_under_reassembly_;
+
+  // Number of bytes that have been written to |message_under_reassembly_| so
+  // far.
+  size_t bytes_reassembled_ = 0;
+
+  // Set when StartClosingHandshake() is called while
+  // |pending_send_data_frames_| is non-empty. This can happen due to a race
+  // condition between the readable signal on the data pipe and the channel on
+  // which StartClosingHandshake() is called.
+  std::unique_ptr<CloseInfo> pending_start_closing_handshake_;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

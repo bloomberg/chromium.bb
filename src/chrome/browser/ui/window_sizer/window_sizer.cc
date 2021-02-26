@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +22,10 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#include "chrome/browser/ui/window_sizer/window_sizer_chromeos.h"
+#endif
 
 namespace {
 
@@ -109,7 +113,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     }
 
     if (window) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
       if (window->IsVisible())
         *bounds = window->GetRestoredBounds();
 #else
@@ -133,9 +137,6 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
 }  // namespace
 
-///////////////////////////////////////////////////////////////////////////////
-// WindowSizer, public:
-
 WindowSizer::WindowSizer(std::unique_ptr<StateProvider> state_provider,
                          const Browser* browser)
     : state_provider_(std::move(state_provider)), browser_(browser) {}
@@ -148,32 +149,35 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
     const Browser* browser,
     gfx::Rect* window_bounds,
     ui::WindowShowState* show_state) {
-  auto state_provider = std::make_unique<DefaultStateProvider>(browser);
-  const WindowSizer sizer(std::move(state_provider), browser);
-  sizer.DetermineWindowBoundsAndShowState(specified_bounds,
-                                          window_bounds,
-                                          show_state);
+  return GetBrowserWindowBoundsAndShowState(
+      std::make_unique<DefaultStateProvider>(browser), specified_bounds,
+      browser, window_bounds, show_state);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// WindowSizer, private:
+// static
+void WindowSizer::GetBrowserWindowBoundsAndShowState(
+    std::unique_ptr<StateProvider> state_provider,
+    const gfx::Rect& specified_bounds,
+    const Browser* browser,
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) {
+  DCHECK(bounds);
+  DCHECK(show_state);
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+  WindowSizerChromeOS sizer(std::move(state_provider), browser);
+#else
+  WindowSizer sizer(std::move(state_provider), browser);
+#endif
+  // Pre-populate the window state with our default.
+  *show_state = GetWindowDefaultShowState(browser);
+  *bounds = specified_bounds;
+  sizer.DetermineWindowBoundsAndShowState(specified_bounds, bounds, show_state);
+}
 
 void WindowSizer::DetermineWindowBoundsAndShowState(
     const gfx::Rect& specified_bounds,
     gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
-  DCHECK(bounds);
-  DCHECK(show_state);
-  // Pre-populate the window state with our default.
-  *show_state = GetWindowDefaultShowState();
-  *bounds = specified_bounds;
-
-#if defined(OS_CHROMEOS)
-  // See if ash should decide the window placement.
-  if (GetBrowserBoundsAsh(bounds, show_state))
-    return;
-#endif
-
+    ui::WindowShowState* show_state) {
   if (bounds->IsEmpty()) {
     // See if there's last active window's placement information.
     if (GetLastActiveWindowBounds(bounds, show_state))
@@ -184,7 +188,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
 
     // No saved placement, figure out some sensible default size based on
     // the user's screen size.
-    GetDefaultWindowBounds(GetDisplayForNewWindow(), bounds);
+    *bounds = GetDefaultWindowBounds(GetDisplayForNewWindow());
     return;
   }
 
@@ -230,12 +234,8 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
   return true;
 }
 
-void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
-                                         gfx::Rect* default_bounds) const {
-  DCHECK(default_bounds);
-#if defined(OS_CHROMEOS)
-  *default_bounds = GetDefaultWindowBoundsAsh(browser_, display);
-#else
+gfx::Rect WindowSizer::GetDefaultWindowBounds(
+    const display::Display& display) const {
   gfx::Rect work_area = display.work_area();
 
   // The default size is either some reasonably wide width, or if the work
@@ -244,7 +244,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                kWindowMaxDefaultWidth);
   int default_height = work_area.height() - 2 * kWindowTilePixels;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // For wider aspect ratio displays at higher resolutions, we might size the
   // window narrower to allow two windows to easily be placed side-by-side.
   gfx::Rect screen_size =
@@ -264,11 +264,10 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
     default_width = static_cast<int>(work_area.width() / 2. -
         1.5 * kWindowTilePixels);
   }
-#endif  // !defined(OS_MACOSX)
-  default_bounds->SetRect(kWindowTilePixels + work_area.x(),
-                          kWindowTilePixels + work_area.y(),
-                          default_width, default_height);
-#endif
+#endif  // !defined(OS_MAC)
+  return gfx::Rect(kWindowTilePixels + work_area.x(),
+                   kWindowTilePixels + work_area.y(), default_width,
+                   default_height);
 }
 
 void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
@@ -279,8 +278,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
 
   // If |bounds| is empty, reset to the default size.
   if (bounds->IsEmpty()) {
-    gfx::Rect default_bounds;
-    GetDefaultWindowBounds(display, &default_bounds);
+    gfx::Rect default_bounds = GetDefaultWindowBounds(display);
     if (bounds->height() <= 0)
       bounds->set_height(default_bounds.height());
     if (bounds->width() <= 0)
@@ -310,7 +308,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
                                      work_area.bottom() - bounds->height()));
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Limit the maximum height.  On the Mac the sizer is on the
   // bottom-right of the window, and a window cannot be moved "up"
   // past the menubar.  If the window is too tall you'll never be able
@@ -337,20 +335,22 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   const int max_x = work_area.right() - kMinVisibleWidth;
   bounds->set_y(base::ClampToRange(bounds->y(), min_y, max_y));
   bounds->set_x(base::ClampToRange(bounds->x(), min_x, max_x));
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
-ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
-  if (!browser_)
+// static
+ui::WindowShowState WindowSizer::GetWindowDefaultShowState(
+    const Browser* browser) {
+  if (!browser)
     return ui::SHOW_STATE_DEFAULT;
 
   // Only tabbed browsers and dev tools use the command line.
   bool use_command_line =
-      browser_->is_type_normal() || browser_->is_type_devtools();
+      browser->is_type_normal() || browser->is_type_devtools();
 
 #if defined(USE_AURA)
   // We use the apps save state as well on aura.
-  use_command_line = use_command_line || browser_->deprecated_is_app();
+  use_command_line = use_command_line || browser->deprecated_is_app();
 #endif
 
   if (use_command_line && base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -358,15 +358,15 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
     return ui::SHOW_STATE_MAXIMIZED;
   }
 
-  return browser_->initial_show_state();
+  return browser->initial_show_state();
 }
 
 // static
 display::Display WindowSizer::GetDisplayForNewWindow(const gfx::Rect& bounds) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   // Prefer the display where the user last activated a window.
   return display::Screen::GetScreen()->GetDisplayForNewWindows();
 #else
   return display::Screen::GetScreen()->GetDisplayMatching(bounds);
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 }

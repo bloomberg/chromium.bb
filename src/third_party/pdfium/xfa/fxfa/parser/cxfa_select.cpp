@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_select.h"
 
 #include "fxjs/xfa/cjx_textnode.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -28,6 +28,8 @@ CXFA_Select::CXFA_Select(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Select,
                 {},
                 kSelectAttributeData,
-                pdfium::MakeUnique<CJX_TextNode>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_TextNode>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Select::~CXFA_Select() = default;

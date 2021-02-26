@@ -236,8 +236,8 @@ class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
   Profile* const profile_;
   const GURL page_url_;
   const bool should_be_available_;
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
+  std::unique_ptr<
+      history::HistoryService::FaviconsChangedCallbackList::Subscription>
       callback_subscription_;
   bool exit_condition_satisfied_ = false;
   base::CancelableTaskTracker tracker_;
@@ -458,6 +458,21 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
           .Wait());
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       ShouldDeleteLastClosedTab) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
+
+  CloseTab(/*index=*/0, /*tab_index=*/0);
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
+  CloseTab(/*index=*/0, /*tab_index=*/0);
+  WaitForHierarchyOnServer(SessionsHierarchy());
+}
+
 class SingleClientSessionsWithDeferRecyclingSyncTest
     : public SingleClientSessionsSyncTest {
  public:
@@ -591,10 +606,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   ExpectNavigationChain({first_url, second_url});
 }
 
-// Flaky for reasons that likely have nothing to do with the test itself. See
-// crbug.com/1043899 and crbug.com/992207.
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       DISABLED_NavigationChainAlteredDestructively) {
+                       NavigationChainAlteredDestructively) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 
@@ -709,6 +722,54 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
 
   EXPECT_EQ(
       3, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.SESSION",
+                                         /*LOCAL_DELETION=*/0));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       GarbageCollectionOfForeignOrphanTabWithoutHeader) {
+  const std::string kForeignSessionTag = "ForeignSessionTag";
+  const SessionID kWindowId = SessionID::FromSerializedValue(5);
+  const SessionID kTabId1 = SessionID::FromSerializedValue(1);
+  const SessionID kTabId2 = SessionID::FromSerializedValue(2);
+  const base::Time kLastModifiedTime =
+      base::Time::Now() - base::TimeDelta::FromDays(100);
+
+  SessionSyncTestHelper helper;
+
+  // There are two orphan tab entities without a header entity.
+
+  sync_pb::EntitySpecifics tab1;
+  *tab1.mutable_session() =
+      helper.BuildTabSpecifics(kForeignSessionTag, kWindowId, kTabId1);
+
+  sync_pb::EntitySpecifics tab2;
+  *tab2.mutable_session() =
+      helper.BuildTabSpecifics(kForeignSessionTag, kWindowId, kTabId2);
+
+  for (const sync_pb::EntitySpecifics& specifics : {tab1, tab2}) {
+    GetFakeServer()->InjectEntity(
+        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+            /*non_unique_name=*/"",
+            sync_sessions::SessionStore::GetClientTag(specifics.session()),
+            specifics,
+            /*creation_time=*/syncer::TimeToProtoTime(kLastModifiedTime),
+            /*last_modified_time=*/syncer::TimeToProtoTime(kLastModifiedTime)));
+  }
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Verify that all entities have been deleted.
+  WaitForHierarchyOnServer(SessionsHierarchy());
+
+  std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
+  for (const sync_pb::SyncEntity& entity : entities) {
+    EXPECT_NE(kForeignSessionTag, entity.specifics().session().session_tag());
+  }
+
+  EXPECT_EQ(
+      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.SESSION",
                                          /*LOCAL_DELETION=*/0));
 }
 

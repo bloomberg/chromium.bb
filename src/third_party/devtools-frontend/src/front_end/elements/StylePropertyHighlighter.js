@@ -4,7 +4,8 @@
 
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
 
-import {StylesSidebarPane} from './StylesSidebarPane.js';  // eslint-disable-line no-unused-vars
+import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';  // eslint-disable-line no-unused-vars
+import {StylesSidebarPane} from './StylesSidebarPane.js';                // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -12,14 +13,16 @@ import {StylesSidebarPane} from './StylesSidebarPane.js';  // eslint-disable-lin
 export class StylePropertyHighlighter {
   /**
    * @param {!StylesSidebarPane} ssp
-   * @param {!SDK.CSSProperty.CSSProperty} cssProperty
    */
-  constructor(ssp, cssProperty) {
+  constructor(ssp) {
     this._styleSidebarPane = ssp;
-    this._cssProperty = cssProperty;
   }
 
-  perform() {
+  /**
+   * Expand all shorthands, find the given property, scroll to it and highlight it.
+   * @param {!SDK.CSSProperty.CSSProperty} cssProperty
+   */
+  highlightProperty(cssProperty) {
     // Expand all shorthands.
     for (const section of this._styleSidebarPane.allSections()) {
       for (let treeElement = section.propertiesTreeOutline.firstChild(); treeElement;
@@ -27,28 +30,55 @@ export class StylePropertyHighlighter {
         treeElement.onpopulate();
       }
     }
-    let highlightTreeElement = null;
+
+    const treeElement = this._findTreeElement(treeElement => treeElement.property === cssProperty);
+    if (treeElement) {
+      treeElement.parent.expand();
+      this._scrollAndHighlightTreeElement(treeElement);
+    }
+  }
+
+  /**
+   * Find the first property that matches the provided name, scroll to it and highlight it.
+   * @param {string} propertyName
+   */
+  findAndHighlightPropertyName(propertyName) {
+    const treeElement = this._findTreeElement(treeElement => treeElement.property.name === propertyName);
+    if (treeElement) {
+      this._scrollAndHighlightTreeElement(treeElement);
+    }
+  }
+
+  /**
+   * Traverse the styles pane tree, execute the provided callback for every tree element found, and
+   * return the first tree element for which the callback returns a truthy value.
+   * @param {function(!StylePropertyTreeElement):boolean} compareCb
+   * @return {?StylePropertyTreeElement}
+   */
+  _findTreeElement(compareCb) {
+    let result = null;
     for (const section of this._styleSidebarPane.allSections()) {
       let treeElement = section.propertiesTreeOutline.firstChild();
-      while (treeElement && !highlightTreeElement) {
-        if (treeElement.property === this._cssProperty) {
-          highlightTreeElement = treeElement;
+      while (treeElement && !result && (treeElement instanceof StylePropertyTreeElement)) {
+        if (compareCb(treeElement)) {
+          result = treeElement;
           break;
         }
         treeElement = treeElement.traverseNextTreeElement(false, null, true);
       }
-      if (highlightTreeElement) {
+      if (result) {
         break;
       }
     }
+    return result;
+  }
 
-    if (!highlightTreeElement) {
-      return;
-    }
-
-    highlightTreeElement.parent.expand();
-    highlightTreeElement.listItemElement.scrollIntoViewIfNeeded();
-    highlightTreeElement.listItemElement.animate(
+  /**
+   * @param {!StylePropertyTreeElement} treeElement
+   */
+  _scrollAndHighlightTreeElement(treeElement) {
+    treeElement.listItemElement.scrollIntoViewIfNeeded();
+    treeElement.listItemElement.animate(
         [
           {offset: 0, backgroundColor: 'rgba(255, 255, 0, 0.2)'},
           {offset: 0.1, backgroundColor: 'rgba(255, 255, 0, 0.7)'}, {offset: 1, backgroundColor: 'transparent'}

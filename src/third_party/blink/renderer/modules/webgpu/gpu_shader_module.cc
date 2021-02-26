@@ -18,23 +18,25 @@ GPUShaderModule* GPUShaderModule::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  WGPUShaderModuleDescriptor dawn_desc = {};
+  std::string wgsl_code;
   WGPUShaderModuleWGSLDescriptor wgsl_desc = {};
   WGPUShaderModuleSPIRVDescriptor spirv_desc = {};
+  std::string label;
+  WGPUShaderModuleDescriptor dawn_desc = {};
 
   auto wgsl_or_spirv = webgpu_desc->code();
-  if (wgsl_or_spirv.IsString()) {
-    std::string code = wgsl_or_spirv.GetAsString().Utf8();
+  if (wgsl_or_spirv.IsUSVString()) {
+    wgsl_code = wgsl_or_spirv.GetAsUSVString().Utf8();
 
     wgsl_desc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-    wgsl_desc.source = code.c_str();
+    wgsl_desc.source = wgsl_code.c_str();
     dawn_desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&wgsl_desc);
   } else {
     DCHECK(wgsl_or_spirv.IsUint32Array());
     NotShared<DOMUint32Array> code = wgsl_or_spirv.GetAsUint32Array();
 
     uint32_t length_words = 0;
-    if (!base::CheckedNumeric<uint32_t>(code.View()->lengthAsSizeT())
+    if (!base::CheckedNumeric<uint32_t>(code.View()->length())
              .AssignIfValid(&length_words)) {
       exception_state.ThrowRangeError(
           "The provided ArrayBuffer exceeds the maximum supported size "
@@ -49,7 +51,8 @@ GPUShaderModule* GPUShaderModule::Create(
   }
 
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUShaderModule>(

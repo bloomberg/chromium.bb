@@ -84,36 +84,35 @@ void FakeAssistantManagerServiceImpl::StartScreenContextInteraction(
 
 void FakeAssistantManagerServiceImpl::StartTextInteraction(
     const std::string& query,
-    mojom::AssistantQuerySource source,
+    AssistantQuerySource source,
     bool allow_tts) {}
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
-
-void FakeAssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
-    int num_warmer_welcome_triggered,
-    bool allow_tts) {}
 
 void FakeAssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
-    mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber) {}
+    AssistantInteractionSubscriber* subscriber) {}
+
+void FakeAssistantManagerServiceImpl::RemoveAssistantInteractionSubscriber(
+    AssistantInteractionSubscriber* subscriber) {}
 
 void FakeAssistantManagerServiceImpl::RetrieveNotification(
-    mojom::AssistantNotificationPtr notification,
+    const AssistantNotification& notification,
     int action_index) {}
 
 void FakeAssistantManagerServiceImpl::DismissNotification(
-    mojom::AssistantNotificationPtr notification) {}
+    const AssistantNotification& notification) {}
 
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}
 
 void FakeAssistantManagerServiceImpl::SendAssistantFeedback(
-    mojom::AssistantFeedbackPtr feedback) {}
+    const AssistantFeedback& feedback) {}
 
 void FakeAssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
-    mojom::AssistantEntryPoint entry_point) {}
+    AssistantEntryPoint entry_point) {}
 
 void FakeAssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
                                                      base::TimeDelta duration) {

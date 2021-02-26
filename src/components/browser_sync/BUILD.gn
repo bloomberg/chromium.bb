@@ -6,7 +6,8 @@ import("//build/config/features.gni")
 
 static_library("browser_sync") {
   sources = [
-    "browser_sync_client.cc",
+    "active_devices_provider_impl.cc",
+    "active_devices_provider_impl.h",
     "browser_sync_client.h",
     "browser_sync_switches.cc",
     "browser_sync_switches.h",
@@ -27,7 +28,9 @@ static_library("browser_sync") {
     "//components/prefs",
     "//components/reading_list/features:flags",
     "//components/send_tab_to_self",
+    "//components/sync/invalidations",
     "//components/sync_bookmarks",
+    "//components/sync_preferences",
     "//components/sync_sessions",
     "//components/sync_user_events",
     "//components/version_info",
@@ -42,11 +45,10 @@ static_library("browser_sync") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = []
+  sources = [ "active_devices_provider_impl_unittest.cc" ]
 
   deps = [
     ":browser_sync",
-    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
@@ -60,36 +62,12 @@ source_set("unit_tests") {
     "//components/sync:test_support",
     "//components/sync_bookmarks",
     "//components/sync_device_info",
-    "//components/sync_preferences",
-    "//components/sync_preferences:test_support",
-    "//components/sync_sessions",
-    "//components/sync_sessions:test_support",
+    "//components/sync_device_info:test_support",
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//components/webdata/common",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "test_http_bridge_factory.cc",
-    "test_http_bridge_factory.h",
-  ]
-
-  deps = [
-    ":browser_sync",
-    "//base",
-    "//base/test:test_support",
-    "//components/bookmarks/browser",
-    "//components/history/core/browser",
-    "//components/sync",
-    "//components/sync:test_support",
-    "//components/sync_preferences:test_support",
-    "//components/sync_sessions:test_support",
-    "//services/network:test_support",
   ]
 }

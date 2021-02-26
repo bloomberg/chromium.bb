@@ -24,7 +24,6 @@
 class GURL;
 class SkBitmap;
 class TabStripModel;
-
 namespace content {
 class WebContents;
 }
@@ -163,7 +162,6 @@ class TabsMoveFunction : public ExtensionFunction {
   ResponseAction Run() override;
   bool MoveTab(int tab_id,
                int* new_index,
-               int iteration,
                base::ListValue* tab_values,
                int* window_id,
                std::string* error);
@@ -175,10 +173,32 @@ class TabsReloadFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.reload", TABS_RELOAD)
 };
 class TabsRemoveFunction : public ExtensionFunction {
-  ~TabsRemoveFunction() override {}
+ public:
+  TabsRemoveFunction();
+  void TabDestroyed();
+
+ private:
+  class WebContentsDestroyedObserver;
+  ~TabsRemoveFunction() override;
   ResponseAction Run() override;
   bool RemoveTab(int tab_id, std::string* error);
+
+  int remaining_tabs_count_ = 0;
+  bool triggered_all_tab_removals_ = false;
+  std::vector<std::unique_ptr<WebContentsDestroyedObserver>>
+      web_contents_destroyed_observers_;
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
+};
+class TabsGroupFunction : public ExtensionFunction {
+  ~TabsGroupFunction() override = default;
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("tabs.group", TABS_GROUP)
+};
+class TabsUngroupFunction : public ExtensionFunction {
+  ~TabsUngroupFunction() override = default;
+  ResponseAction Run() override;
+  bool UngroupTab(int tab_id, std::string* error);
+  DECLARE_EXTENSION_FUNCTION("tabs.ungroup", TABS_UNGROUP)
 };
 class TabsDetectLanguageFunction
     : public ExtensionFunction,
@@ -226,7 +246,7 @@ class TabsCaptureVisibleTabFunction
   content::WebContents* GetWebContentsForID(int window_id, std::string* error);
 
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled() const override;
+  bool IsScreenshotEnabled(content::WebContents* web_contents) const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(CaptureResult result) override;
@@ -239,7 +259,7 @@ class TabsCaptureVisibleTabFunction
   DISALLOW_COPY_AND_ASSIGN(TabsCaptureVisibleTabFunction);
 };
 
-// Implement API call tabs.executeScript and tabs.insertCSS.
+// Implement API calls tabs.executeScript, tabs.insertCSS, and tabs.removeCSS.
 class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
  public:
   ExecuteCodeInTabFunction();
@@ -249,6 +269,8 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 
   // Initializes |execute_tab_id_| and |details_|.
   InitResult Init() override;
+  bool ShouldInsertCSS() const override;
+  bool ShouldRemoveCSS() const override;
   bool CanExecuteScriptOnPage(std::string* error) override;
   ScriptExecutor* GetScriptExecutor(std::string* error) override;
   bool IsWebView() const override;
@@ -262,9 +284,6 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
- protected:
-  bool ShouldInsertCSS() const override;
-
  private:
   ~TabsExecuteScriptFunction() override {}
 
@@ -278,6 +297,23 @@ class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
   bool ShouldInsertCSS() const override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.insertCSS", TABS_INSERTCSS)
+};
+
+// TODO(https://crrev.com/c/608854): When a file URL is passed, this will do
+// more work than needed: since the key is created based on the file URL in
+// that case, we don't actually need to
+//
+// a) load the file or
+// b) localize it
+//
+// ... hence, it could just go straight to the ScriptExecutor.
+class TabsRemoveCSSFunction : public ExecuteCodeInTabFunction {
+ private:
+  ~TabsRemoveCSSFunction() override {}
+
+  bool ShouldRemoveCSS() const override;
+
+  DECLARE_EXTENSION_FUNCTION("tabs.removeCSS", TABS_REMOVECSS)
 };
 
 class TabsSetZoomFunction : public ExtensionFunction {

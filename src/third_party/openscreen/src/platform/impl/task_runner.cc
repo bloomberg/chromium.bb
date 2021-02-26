@@ -1,6 +1,6 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file
+// found in the LICENSE file.
 
 #include "platform/impl/task_runner.h"
 
@@ -78,6 +78,7 @@ void TaskRunnerImpl::RunUntilStopped() {
   task_runner_thread_id_ = std::this_thread::get_id();
   is_running_ = true;
 
+  OSP_DVLOG << "Running tasks until stopped...";
   // Main loop: Run until the |is_running_| flag is set back to false by the
   // "quit task" posted by RequestStopSoon(), or the process received a
   // termination signal.
@@ -91,6 +92,7 @@ void TaskRunnerImpl::RunUntilStopped() {
     }
   }
 
+  OSP_DVLOG << "Finished running, entering flushing phase...";
   // Flushing phase: Ensure all immediately-runnable tasks are run before
   // returning. Since running some tasks might cause more immediately-runnable
   // tasks to be posted, loop until there is no more work.
@@ -103,7 +105,7 @@ void TaskRunnerImpl::RunUntilStopped() {
   while (GrabMoreRunnableTasks()) {
     RunRunnableTasks();
   }
-
+  OSP_DVLOG << "Finished flushing...";
   task_runner_thread_id_ = std::thread::id();
 }
 
@@ -118,6 +120,7 @@ void TaskRunnerImpl::RunUntilSignaled() {
 
   std::signal(SIGINT, old_sigint_handler);
   std::signal(SIGTERM, old_sigterm_handler);
+  OSP_DVLOG << "Received SIGNIT or SIGTERM, setting state to not running...";
   g_signal_state = kNotRunning;
 }
 

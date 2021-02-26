@@ -23,7 +23,6 @@
 #include "src/wasm/wasm-constants.h"
 #include "src/wasm/wasm-debug-evaluate.h"
 #include "src/wasm/wasm-debug.h"
-#include "src/wasm/wasm-interpreter.h"
 #include "src/wasm/wasm-module-builder.h"
 #include "src/wasm/wasm-module.h"
 #include "src/wasm/wasm-objects-inl.h"
@@ -39,6 +38,10 @@ namespace v8 {
 namespace internal {
 namespace wasm {
 
+static Handle<String> V8String(Isolate* isolate, const char* str) {
+  return isolate->factory()->NewStringFromAsciiChecked(str);
+}
+
 namespace {
 template <typename... FunctionArgsT>
 class TestCode {
@@ -47,16 +50,19 @@ class TestCode {
            std::initializer_list<ValueType::Kind> locals = {})
       : compiler_(&runner->NewFunction<FunctionArgsT...>()),
         code_(code),
-        locals_(static_cast<uint32_t>(locals.size())) {
+        locals_(static_cast<int32_t>(locals.size())) {
     for (ValueType::Kind T : locals) {
-      compiler_->AllocateLocal(ValueType(T));
+      compiler_->AllocateLocal(ValueType::Primitive(T));
     }
     compiler_->Build(code.begin(), code.end());
   }
 
   Handle<BreakPoint> BreakOnReturn(WasmRunnerBase* runner) {
     runner->TierDown();
-    uint32_t return_offset_in_function = locals_ + FindReturn();
+    uint32_t return_idx = FindReturn();
+    uint32_t return_offset_in_function =
+        static_cast<uint32_t>(LEBHelper::sizeof_i32v(locals_)) + 2 * locals_ +
+        return_idx;
 
     int function_index = compiler_->function_index();
     int function_offset =
@@ -70,8 +76,13 @@ class TestCode {
     Handle<BreakPoint> break_point =
         runner->main_isolate()->factory()->NewBreakPoint(
             break_index++, runner->main_isolate()->factory()->empty_string());
+
+    int expected_breakpoint_position = return_offset_in_module;
     CHECK(WasmScript::SetBreakPoint(script, &return_offset_in_module,
                                     break_point));
+    // Check that the breakpoint doesn't slide
+    DCHECK_EQ(expected_breakpoint_position, return_offset_in_module);
+    USE(expected_breakpoint_position);
     return break_point;
   }
 
@@ -96,12 +107,12 @@ class TestCode {
 
   WasmFunctionCompiler* compiler_;
   std::vector<byte> code_;
-  uint32_t locals_;
+  int32_t locals_;
 };
 
 class WasmEvaluatorBuilder {
  public:
-  explicit WasmEvaluatorBuilder(ExecutionTier execution_tier,
+  explicit WasmEvaluatorBuilder(TestExecutionTier execution_tier,
                                 uint32_t min_memory = 1,
                                 uint32_t max_memory = 1)
       : zone_(&allocator_, ZONE_NAME), builder_(&zone_) {
@@ -109,6 +120,10 @@ class WasmEvaluatorBuilder {
         CStrVector("__getMemory"));
     get_local_function_index =
         AddImport<void, uint32_t, uint32_t>(CStrVector("__getLocal"));
+    get_global_function_index =
+        AddImport<void, uint32_t, uint32_t>(CStrVector("__getGlobal"));
+    get_operand_function_index =
+        AddImport<void, uint32_t, uint32_t>(CStrVector("__getOperand"));
     sbrk_function_index = AddImport<uint32_t, uint32_t>(CStrVector("__sbrk"));
     wasm_format_function =
         builder_.AddFunction(WasmRunnerBase::CreateSig<uint32_t>(&zone_));
@@ -135,6 +150,16 @@ class WasmEvaluatorBuilder {
     push_back({WASM_CALL_FUNCTION0(sbrk_function_index)});
   }
 
+  void CallGetOperand(std::initializer_list<byte> args) {
+    push_back(args);
+    push_back({WASM_CALL_FUNCTION0(get_operand_function_index)});
+  }
+
+  void CallGetGlobal(std::initializer_list<byte> args) {
+    push_back(args);
+    push_back({WASM_CALL_FUNCTION0(get_global_function_index)});
+  }
+
   void CallGetLocal(std::initializer_list<byte> args) {
     push_back(args);
     push_back({WASM_CALL_FUNCTION0(get_local_function_index)});
@@ -157,6 +182,8 @@ class WasmEvaluatorBuilder {
   WasmModuleBuilder builder_;
   uint32_t get_memory_function_index = 0;
   uint32_t get_local_function_index = 0;
+  uint32_t get_global_function_index = 0;
+  uint32_t get_operand_function_index = 0;
   uint32_t sbrk_function_index = 0;
   WasmFunctionBuilder* wasm_format_function = nullptr;
 };
@@ -217,6 +244,71 @@ class WasmBreakHandler : public debug::DebugDelegate {
             ? Nothing<std::string>()
             : Just<std::string>(
                   result_handle.ToHandleChecked()->ToCString().get());
+
+    isolate_->clear_pending_exception();
+    result_ = Just<EvaluationResult>({result_message, error_message});
+  }
+};
+
+class WasmJSBreakHandler : public debug::DebugDelegate {
+ public:
+  struct EvaluationResult {
+    Maybe<std::string> result = Nothing<std::string>();
+    Maybe<std::string> error = Nothing<std::string>();
+  };
+
+  WasmJSBreakHandler(Isolate* isolate, Handle<String> snippet)
+      : isolate_(isolate),
+        snippet_(snippet),
+        result_(Nothing<EvaluationResult>()) {
+    v8::debug::SetDebugDelegate(reinterpret_cast<v8::Isolate*>(isolate_), this);
+  }
+
+  ~WasmJSBreakHandler() override {
+    v8::debug::SetDebugDelegate(reinterpret_cast<v8::Isolate*>(isolate_),
+                                nullptr);
+  }
+
+  const Maybe<EvaluationResult>& result() const { return result_; }
+
+ private:
+  Isolate* isolate_;
+  Handle<String> snippet_;
+  Maybe<EvaluationResult> result_;
+
+  Maybe<std::string> GetPendingExceptionAsString() const {
+    if (!isolate_->has_pending_exception()) return Nothing<std::string>();
+    Handle<Object> exception(isolate_->pending_exception(), isolate_);
+    isolate_->clear_pending_exception();
+
+    Handle<String> exception_string;
+    if (!Object::ToString(isolate_, exception).ToHandle(&exception_string)) {
+      return Just<std::string>("");
+    }
+    return Just<std::string>(exception_string->ToCString().get());
+  }
+
+  Maybe<std::string> GetResultAsString(MaybeHandle<Object> result) const {
+    Handle<Object> just_result;
+    if (!result.ToHandle(&just_result)) return Nothing<std::string>();
+    MaybeHandle<String> maybe_string = Object::ToString(isolate_, just_result);
+    Handle<String> just_string;
+    if (!maybe_string.ToHandle(&just_string)) return Nothing<std::string>();
+    return Just<std::string>(just_string->ToCString().get());
+  }
+
+  void BreakProgramRequested(v8::Local<v8::Context> paused_context,
+                             const std::vector<int>&) override {
+    StackTraceFrameIterator frame_it(isolate_);
+
+    WasmFrame* frame = WasmFrame::cast(frame_it.frame());
+    Handle<WasmInstanceObject> instance{frame->wasm_instance(), isolate_};
+
+    MaybeHandle<Object> result_handle = DebugEvaluate::WebAssembly(
+        instance, frame_it.frame()->id(), snippet_, false);
+
+    Maybe<std::string> error_message = GetPendingExceptionAsString();
+    Maybe<std::string> result_message = GetResultAsString(result_handle);
 
     isolate_->clear_pending_exception();
     result_ = Just<EvaluationResult>({result_message, error_message});
@@ -372,6 +464,109 @@ WASM_COMPILED_EXEC_TEST(WasmDebugEvaluate_Locals) {
       break_handler.result().ToChecked();
   CHECK(result.error.IsNothing());
   CHECK_EQ(result.result.ToChecked(), "A");
+}
+
+WASM_COMPILED_EXEC_TEST(WasmDebugEvaluate_Globals) {
+  WasmRunner<int> runner(execution_tier);
+  runner.builder().AddMemoryElems<int32_t>(64);
+  runner.builder().AddGlobal<int32_t>();
+  runner.builder().AddGlobal<int32_t>();
+
+  TestCode<void> code(&runner,
+                      {WASM_SET_GLOBAL(0, WASM_I32V_1('4')),
+                       WASM_SET_GLOBAL(1, WASM_I32V_1('5')), WASM_RETURN0},
+                      {});
+  code.BreakOnReturn(&runner);
+
+  WasmEvaluatorBuilder evaluator(execution_tier);
+  evaluator.CallGetGlobal({WASM_I32V_1(0), WASM_I32V_1(33)});
+  evaluator.CallGetGlobal({WASM_I32V_1(1), WASM_I32V_1(34)});
+  evaluator.push_back({WASM_RETURN1(WASM_I32V_1(33)), WASM_END});
+
+  Isolate* isolate = runner.main_isolate();
+  WasmBreakHandler break_handler(isolate, evaluator.bytes());
+  CHECK(!code.Run(&runner).is_null());
+
+  WasmBreakHandler::EvaluationResult result =
+      break_handler.result().ToChecked();
+  CHECK(result.error.IsNothing());
+  CHECK_EQ(result.result.ToChecked(), "45");
+}
+
+WASM_COMPILED_EXEC_TEST(WasmDebugEvaluate_Operands) {
+  WasmRunner<int> runner(execution_tier);
+  runner.builder().AddMemoryElems<int32_t>(64);
+
+  TestCode<int> code(&runner,
+                     {WASM_SET_LOCAL(0, WASM_I32V_1('4')), WASM_GET_LOCAL(0),
+                      WASM_RETURN1(WASM_I32V_1('5'))},
+                     {ValueType::kI32});
+  code.BreakOnReturn(&runner);
+
+  WasmEvaluatorBuilder evaluator(execution_tier);
+  evaluator.CallGetOperand({WASM_I32V_1(0), WASM_I32V_1(33)});
+  evaluator.CallGetOperand({WASM_I32V_1(1), WASM_I32V_1(34)});
+  evaluator.push_back({WASM_RETURN1(WASM_I32V_1(33)), WASM_END});
+
+  Isolate* isolate = runner.main_isolate();
+  WasmBreakHandler break_handler(isolate, evaluator.bytes());
+  CHECK(!code.Run(&runner).is_null());
+
+  WasmBreakHandler::EvaluationResult result =
+      break_handler.result().ToChecked();
+  CHECK(result.error.IsNothing());
+  CHECK_EQ(result.result.ToChecked(), "45");
+}
+
+WASM_COMPILED_EXEC_TEST(WasmDebugEvaluate_JavaScript) {
+  WasmRunner<int> runner(execution_tier);
+  runner.builder().AddGlobal<int32_t>();
+  runner.builder().AddMemoryElems<int32_t>(64);
+  uint16_t index = 0;
+  runner.builder().AddIndirectFunctionTable(&index, 1);
+
+  TestCode<int64_t> code(
+      &runner,
+      {WASM_SET_GLOBAL(0, WASM_I32V_2('B')),
+       WASM_SET_LOCAL(0, WASM_I64V_2('A')), WASM_RETURN1(WASM_GET_LOCAL(0))},
+      {ValueType::kI64});
+  code.BreakOnReturn(&runner);
+
+  Isolate* isolate = runner.main_isolate();
+  Handle<String> snippet =
+      V8String(isolate,
+               "JSON.stringify(["
+               "$global0, "
+               "$table0, "
+               "$var0, "
+               "$main, "
+               "$memory0, "
+               "globals[0], "
+               "tables[0], "
+               "locals[0], "
+               "functions[0], "
+               "memories[0], "
+               "memories, "
+               "tables, "
+               "stack, "
+               "imports, "
+               "exports, "
+               "globals, "
+               "locals, "
+               "functions, "
+               "], (k, v) => k === 'at' || typeof v === 'undefined' || typeof "
+               "v === 'object' ? v : v.toString())");
+
+  WasmJSBreakHandler break_handler(isolate, snippet);
+  CHECK(!code.Run(&runner).is_null());
+
+  WasmJSBreakHandler::EvaluationResult result =
+      break_handler.result().ToChecked();
+  CHECK_WITH_MSG(result.error.IsNothing(), result.error.ToChecked().c_str());
+  CHECK_EQ(result.result.ToChecked(),
+           "[\"66\",{},\"65\",\"function 0() { [native code] }\",{},"
+           "\"66\",{},\"65\",\"function 0() { [native code] }\",{},"
+           "{},{},{\"0\":\"65\"},{},{},{},{},{}]");
 }
 
 }  // namespace

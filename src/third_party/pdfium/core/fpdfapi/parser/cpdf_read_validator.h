@@ -7,6 +7,7 @@
 
 #include "core/fpdfapi/parser/cpdf_data_avail.h"
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/unowned_ptr.h"
 
 class CPDF_ReadValidator : public IFX_SeekableReadStream {
  public:
@@ -21,8 +22,7 @@ class CPDF_ReadValidator : public IFX_SeekableReadStream {
     bool saved_has_unavailable_data_;
   };
 
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   void SetDownloadHints(CPDF_DataAvail::DownloadHints* hints) {
     hints_ = hints;

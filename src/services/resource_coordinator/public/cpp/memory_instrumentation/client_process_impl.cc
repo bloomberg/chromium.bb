@@ -5,14 +5,13 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
@@ -141,7 +140,7 @@ void ClientProcessImpl::RequestOSMemoryDump(
   args.pids = pids;
   args.callback = std::move(callback);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If the most recent chrome memory dump hasn't finished, wait for that to
   // finish.
   if (most_recent_chrome_memory_dump_guid_.has_value()) {

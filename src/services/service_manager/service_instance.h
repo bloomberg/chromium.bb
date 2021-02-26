@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -25,13 +24,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_control.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace service_manager {
 
@@ -66,7 +65,7 @@ class ServiceInstance : public mojom::Connector,
 #if !defined(OS_IOS)
   // Starts this instance from a path to a service executable on disk.
   bool StartWithProcessHost(std::unique_ptr<ServiceProcessHost> host,
-                            SandboxType sandbox_type);
+                            sandbox::policy::SandboxType sandbox_type);
 #endif  // !defined(OS_IOS)
 
   // Binds an endpoint for this instance to receive metadata about its

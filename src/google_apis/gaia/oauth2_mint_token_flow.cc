@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -30,8 +31,8 @@
 
 namespace {
 
-const char kForceValueFalse[] = "false";
-const char kForceValueTrue[] = "true";
+const char kValueFalse[] = "false";
+const char kValueTrue[] = "true";
 const char kResponseTypeValueNone[] = "none";
 const char kResponseTypeValueToken[] = "token";
 
@@ -39,10 +40,13 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "force=%s"
     "&response_type=%s"
     "&scope=%s"
+    "&enable_granular_permissions=%s"
     "&client_id=%s"
     "&origin=%s"
     "&lib_ver=%s"
     "&release_channel=%s";
+const char kOAuth2IssueTokenBodyFormatSelectedUserIdAddendum[] =
+    "&selected_user_id=%s";
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
     "&device_id=%s&device_type=chrome";
 const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
@@ -54,6 +58,7 @@ const char kAccessTokenKey[] = "token";
 const char kConsentKey[] = "consent";
 const char kExpiresInKey[] = "expiresIn";
 const char kScopesKey[] = "scopes";
+const char kGrantedScopesKey[] = "grantedScopes";
 const char kDescriptionKey[] = "description";
 const char kDetailKey[] = "detail";
 const char kDetailSeparators[] = "\n";
@@ -145,7 +150,9 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::string& eid,
     const std::string& cid,
     const std::vector<std::string>& scopes_arg,
+    bool enable_granular_permissions,
     const std::string& device_id,
+    const std::string& selected_user_id,
     const std::string& consent_result,
     const std::string& version,
     const std::string& channel,
@@ -153,7 +160,9 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     : extension_id(eid),
       client_id(cid),
       scopes(scopes_arg),
+      enable_granular_permissions(enable_granular_permissions),
       device_id(device_id),
+      selected_user_id(selected_user_id),
       consent_result(consent_result),
       version(version),
       channel(channel),
@@ -169,10 +178,12 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(Delegate* delegate,
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 
-void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token,
-                                        int time_to_live) {
+void OAuth2MintTokenFlow::ReportSuccess(
+    const std::string& access_token,
+    const std::set<std::string>& granted_scopes,
+    int time_to_live) {
   if (delegate_)
-    delegate_->OnMintTokenSuccess(access_token, time_to_live);
+    delegate_->OnMintTokenSuccess(access_token, granted_scopes, time_to_live);
 
   // |this| may already be deleted.
 }
@@ -206,19 +217,23 @@ GURL OAuth2MintTokenFlow::CreateApiCallUrl() {
 }
 
 std::string OAuth2MintTokenFlow::CreateApiCallBody() {
-  const char* force_value =
-      (parameters_.mode == MODE_MINT_TOKEN_FORCE ||
-       parameters_.mode == MODE_RECORD_GRANT)
-          ? kForceValueTrue : kForceValueFalse;
+  const char* force_value = (parameters_.mode == MODE_MINT_TOKEN_FORCE ||
+                             parameters_.mode == MODE_RECORD_GRANT)
+                                ? kValueTrue
+                                : kValueFalse;
   const char* response_type_value =
       (parameters_.mode == MODE_MINT_TOKEN_NO_FORCE ||
        parameters_.mode == MODE_MINT_TOKEN_FORCE)
           ? kResponseTypeValueToken : kResponseTypeValueNone;
+  const char* enable_granular_permissions_value =
+      parameters_.enable_granular_permissions ? kValueTrue : kValueFalse;
   std::string body = base::StringPrintf(
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),
       net::EscapeUrlEncodedData(base::JoinString(parameters_.scopes, " "), true)
+          .c_str(),
+      net::EscapeUrlEncodedData(enable_granular_permissions_value, true)
           .c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
       net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str(),
@@ -228,6 +243,11 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,
         net::EscapeUrlEncodedData(parameters_.device_id, true).c_str()));
+  }
+  if (!parameters_.selected_user_id.empty()) {
+    body.append(base::StringPrintf(
+        kOAuth2IssueTokenBodyFormatSelectedUserIdAddendum,
+        net::EscapeUrlEncodedData(parameters_.selected_user_id, true).c_str()));
   }
   if (!parameters_.consent_result.empty()) {
     body.append(base::StringPrintf(
@@ -282,21 +302,29 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
       RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentSuccess);
       ReportRemoteConsentSuccess(resolution_data);
     } else {
-      // Fallback to the issue advice flow.
-      // TODO(https://crbug.com/1026237): Remove the fallback after making sure
-      // that the new flow works correctly.
-      RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentFallback);
-      IssueAdviceInfo empty_issue_advice;
-      ReportIssueAdviceSuccess(empty_issue_advice);
+      RecordApiCallResult(
+          OAuth2MintTokenApiCallResult::kParseRemoteConsentFailure);
+      ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
+          "Not able to parse the contents of remote consent from a service "
+          "response."));
     }
     return;
   }
 
   std::string access_token;
+  std::set<std::string> granted_scopes;
   int time_to_live;
-  if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live)) {
-    RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
-    ReportSuccess(access_token, time_to_live);
+  if (ParseMintTokenResponse(&(*value), &access_token, &granted_scopes,
+                             &time_to_live)) {
+    if (granted_scopes.empty()) {
+      granted_scopes.insert(parameters_.scopes.begin(),
+                            parameters_.scopes.end());
+      RecordApiCallResult(
+          OAuth2MintTokenApiCallResult::kMintTokenSuccessWithFallbackScopes);
+    } else {
+      RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
+    }
+    ReportSuccess(access_token, granted_scopes, time_to_live);
   } else {
     RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseMintTokenFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
@@ -316,12 +344,15 @@ void OAuth2MintTokenFlow::ProcessApiCallFailure(
 }
 
 // static
-bool OAuth2MintTokenFlow::ParseMintTokenResponse(const base::Value* dict,
-                                                 std::string* access_token,
-                                                 int* time_to_live) {
+bool OAuth2MintTokenFlow::ParseMintTokenResponse(
+    const base::Value* dict,
+    std::string* access_token,
+    std::set<std::string>* granted_scopes,
+    int* time_to_live) {
   CHECK(dict);
   CHECK(dict->is_dict());
   CHECK(access_token);
+  CHECK(granted_scopes);
   CHECK(time_to_live);
 
   const std::string* ttl_string = dict->FindStringKey(kExpiresInKey);
@@ -333,6 +364,27 @@ bool OAuth2MintTokenFlow::ParseMintTokenResponse(const base::Value* dict,
     return false;
 
   *access_token = *access_token_ptr;
+
+  const std::string* granted_scopes_string =
+      dict->FindStringKey(kGrantedScopesKey);
+
+  if (!granted_scopes_string) {
+    // TODO(https://crbug.com/1100535): Once unbundled consent has successfully
+    // launched, remove the fallback to the requested scopes when the
+    // grantedScopes parameter is missing from the response. After launch,
+    // ParseMintTokenResponse should return false in these situations.
+    return true;
+  }
+
+  const std::vector<std::string> granted_scopes_vector =
+      base::SplitString(*granted_scopes_string, " ", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (granted_scopes_vector.empty())
+    return false;
+
+  const std::set<std::string> granted_scopes_set(granted_scopes_vector.begin(),
+                                                 granted_scopes_vector.end());
+  *granted_scopes = std::move(granted_scopes_set);
   return true;
 }
 
@@ -455,7 +507,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
             time_now, expiration_time, time_now, is_secure ? *is_secure : false,
             is_http_only ? *is_http_only : false,
             net::StringToCookieSameSite(same_site ? *same_site : ""),
-            net::COOKIE_PRIORITY_DEFAULT);
+            net::COOKIE_PRIORITY_DEFAULT, /* same_party */ false);
     cookies.push_back(*cookie);
   }
 

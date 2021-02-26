@@ -60,7 +60,7 @@ export class ObjectPopoverHelper {
    * @return {!Promise<?ObjectPopoverHelper>}
    */
   static async buildObjectPopover(result, popover) {
-    const description = result.description.trimEndWithMaxLength(MaxPopoverTextLength);
+    const description = (result.description || '').trimEndWithMaxLength(MaxPopoverTextLength);
     let popoverContentElement = null;
     if (result.type === 'object') {
       let linkifier = null;
@@ -77,7 +77,7 @@ export class ObjectPopoverHelper {
       } else {
         popoverContentElement = document.createElement('div');
         popoverContentElement.classList.add('object-popover-content');
-        UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectPopover.css');
+        UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectPopover.css', {enableLegacyPatching: true});
         const titleElement = popoverContentElement.createChild('div', 'monospace object-popover-title');
         titleElement.createChild('span').textContent = description;
         linkifier = new Components.Linkifier.Linkifier();
@@ -87,20 +87,22 @@ export class ObjectPopoverHelper {
         section.titleLessMode();
         popoverContentElement.appendChild(section.element);
       }
+      popoverContentElement.dataset.stableNameForTest = 'object-popover-content';
       popover.setMaxContentSize(new UI.Geometry.Size(300, 250));
       popover.setSizeBehavior(UI.GlassPane.SizeBehavior.SetExactSize);
       popover.contentElement.appendChild(popoverContentElement);
       return new ObjectPopoverHelper(linkifier, resultHighlightedAsDOM);
     }
 
-    popoverContentElement = createElement('span');
-    UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectValue.css');
-    UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectPopover.css');
+    popoverContentElement = document.createElement('span');
+    popoverContentElement.dataset.stableNameForTest = 'object-popover-content';
+    UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectValue.css', {enableLegacyPatching: true});
+    UI.Utils.appendStyle(popoverContentElement, 'object_ui/objectPopover.css', {enableLegacyPatching: true});
     const valueElement = popoverContentElement.createChild('span', 'monospace object-value-' + result.type);
     valueElement.style.whiteSpace = 'pre';
 
     if (result.type === 'string') {
-      valueElement.createTextChildren(`"${description}"`);
+      UI.UIUtils.createTextChildren(valueElement, `"${description}"`);
     } else if (result.type !== 'function') {
       valueElement.textContent = description;
     }
@@ -124,10 +126,11 @@ export class ObjectPopoverHelper {
 
     const rawLocation = response.location;
     const linkContainer = title.createChild('div', 'function-title-link-container');
-    const sourceURL = rawLocation && rawLocation.script() && rawLocation.script().sourceURL;
+    const script = rawLocation && rawLocation.script();
+    const sourceURL = script && script.sourceURL;
     let linkifier = null;
     if (sourceURL) {
-      linkifier = new Components.Linkifier.Linkifier();
+      linkifier = new Components.Linkifier.Linkifier(undefined, undefined, popover.positionContent.bind(popover));
       linkContainer.appendChild(
           linkifier.linkifyRawLocation(/** @type {!SDK.DebuggerModel.Location} */ (rawLocation), sourceURL));
     }

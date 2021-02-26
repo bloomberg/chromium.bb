@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -39,43 +39,74 @@ const char kDefaultAttr[] = "default";
 const char kNameAttr[] = "name";
 const char kImportDefaultOrderAttr[] = "import_default_order";
 
+// Canonical ordering specified in: go/default-apps
 const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     arc::kPlayStoreAppId,
     extension_misc::kFilesManagerAppId,
-    extension_misc::kGmailAppId,
+
     arc::kGmailAppId,
+    extension_misc::kGmailAppId,
+    default_web_apps::kGmailAppId,
+
     extension_misc::kGoogleDocAppId,
+    default_web_apps::kGoogleDocsAppId,
+
     extension_misc::kGoogleSlidesAppId,
+    default_web_apps::kGoogleSlidesAppId,
+
     extension_misc::kGoogleSheetsAppId,
+    default_web_apps::kGoogleSheetsAppId,
+
     extension_misc::kDriveHostedAppId,
+    default_web_apps::kGoogleDriveAppId,
+
     extension_misc::kGoogleKeepAppId,
-    extension_misc::kCalendarAppId,
+
     arc::kGoogleCalendarAppId,
-    extension_misc::kYoutubeAppId,
+    extension_misc::kCalendarAppId,
+    default_web_apps::kGoogleCalendarAppId,
+
     arc::kYoutubeAppId,
-    arc::kPlayMoviesAppId,                   // Play Movies & TV ARC app
-    extension_misc::kGooglePlayMoviesAppId,  // Play Movies & TV Chrome app
-    arc::kPlayMusicAppId,                    // Play Music ARC app
-    extension_misc::kGooglePlayMusicAppId,   // Play Music Chrome app
+    extension_misc::kYoutubeAppId,
+    default_web_apps::kYoutubeAppId,
+
+    arc::kYoutubeMusicAppId,
+    default_web_apps::kYoutubeMusicAppId,
+
+    arc::kPlayMoviesAppId,
+    extension_misc::kGooglePlayMoviesAppId,
+
+    arc::kPlayMusicAppId,
+    extension_misc::kGooglePlayMusicAppId,
+
     arc::kPlayGamesAppId,
-    arc::kPlayBooksAppId,                   // Play Books ARC app
-    extension_misc::kGooglePlayBooksAppId,  // Play Books Chrome app
+
+    arc::kPlayBooksAppId,
+    extension_misc::kGooglePlayBooksAppId,
+    default_web_apps::kPlayBooksAppId,
+
     extension_misc::kCameraAppId,
-    extension_misc::kGooglePhotosAppId,
+    default_web_apps::kCameraAppId,
+
     arc::kGooglePhotosAppId,
+    extension_misc::kGooglePhotosAppId,
+
     arc::kGoogleDuoAppId,
-    app_list::kDefaultPageBreak1,  // First default page break
-    // TODO(crbug.com/976578): Remove after M78.
-    extension_misc::kGoogleMapsAppId,
-    default_web_apps::kGoogleMapsAppId,
+    default_web_apps::kStadiaAppId,
+
+    // First default page break
+    app_list::kDefaultPageBreak1,
+
     arc::kGoogleMapsAppId,
+    extension_misc::kGoogleMapsAppId,  // TODO(crbug.com/976578): Remove.
+    default_web_apps::kGoogleMapsAppId,
+
     ash::kInternalAppIdSettings,
     default_web_apps::kSettingsAppId,
     default_web_apps::kOsSettingsAppId,
-    ash::kInternalAppIdDiscover,
+
     default_web_apps::kHelpAppId,
-    extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,
     default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,

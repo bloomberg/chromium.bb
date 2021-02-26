@@ -39,15 +39,6 @@ class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
 
   static bool IsShowing();
 
-  // views::WidgetDelegateView:
-  bool ShouldShowCloseButton() const override;
-
-  // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
  private:
   MediaRemotingDialogView(views::View* anchor_view,
                           PrefService* pref_service,
@@ -70,9 +61,6 @@ class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
 
   PrefService* const pref_service_;
   MediaRouterActionController* const action_controller_;
-
-  // Title shown at the top of the dialog.
-  base::string16 dialog_title_;
 
   // Checkbox the user can use to indicate whether the preference should be
   // sticky. If this is checked, we record the preference and don't show the

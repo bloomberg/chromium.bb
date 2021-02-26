@@ -1,5 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
-#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Skip ]
 
@@ -74,7 +73,6 @@ external/wpt/css/CSS2/section-index.xht [ Skip ]
 external/wpt/css/CSS2/selector [ Skip ]
 external/wpt/css/CSS2/selectors [ Skip ]
 external/wpt/css/CSS2/syntax [ Skip ]
-external/wpt/css/CSS2/tables [ Skip ]
 external/wpt/css/CSS2/ui [ Skip ]
 external/wpt/css/CSS2/values [ Skip ]
 external/wpt/css/CSS2/visudet [ Skip ]
@@ -109,7 +107,6 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/transforms [ Sk
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ui3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/values3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/will-change [ Skip ]
-external/wpt/docs [ Skip ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
 external/wpt/html-longdesc [ Skip ]
@@ -129,11 +126,6 @@ external/wpt/webgl [ Skip ]
 # fixed. Please include an explanation, ideally with a crbug reference
 # (if it's a blink/test tooling issue) or an upstream bug reference
 # (if the test itself is buggy).
-
-# wpt.config.json overrides the following files with LayoutTests/resources
-# files. Having unused files would be confusing.
-external/wpt/resources/testdriver-vendor.js [ Skip ]
-external/wpt/resources/testharnessreport.js [ Skip ]
 
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
 # [ Slow ] didn't help the following svg-in-*.html tests.
@@ -288,30 +280,6 @@ external/wpt/css/css-writing-modes/vertical-alignment-srl-038.xht [ Skip ]
 external/wpt/css/css-writing-modes/vertical-alignment-srl-040.xht [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-lr-001.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-rl-001.html [ Skip ]
-
-# CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
-external/wpt/css/css-writing-modes/block-flow-direction-vlr-018.xht [ Skip ]
-external/wpt/css/css-writing-modes/block-flow-direction-vrl-017.xht [ Skip ]
-external/wpt/css/css-writing-modes/line-box-direction-vlr-016.xht [ Skip ]
-external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-cell-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-cell-002.html [ Skip ]
-
-# CSS Writing Modes Level 3: Following tests require bottom-to-top or mixed ordering of table cells, which we do not support today. crbug.com/409155
-external/wpt/css/css-writing-modes/table-column-order-002.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-003.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-004.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-column-order-005.xht [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-001-ref.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-002-ref.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-002.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-001.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-002.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Skip ]
-external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require new definition of ch unit, which we do not support today. crbug.com/409155
 external/wpt/css/css-writing-modes/ch-units-vrl-001.html [ Skip ]

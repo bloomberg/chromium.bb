@@ -13,13 +13,16 @@
 // limitations under the License.
 
 import * as m from 'mithril';
-import {TimestampedAreaSelection} from 'src/common/state';
 
 import {assertExists, assertTrue} from '../base/logging';
 
 import {TOPBAR_HEIGHT, TRACK_SHELL_WIDTH} from './css_constants';
+import {
+  FlowEventsRenderer,
+  FlowEventsRendererArgs
+} from './flow_events_renderer';
 import {globals} from './globals';
-import {isPanelVNode, Panel, PanelSize} from './panel';
+import {isPanelVNode, Panel, PanelSize, PanelVNode} from './panel';
 import {
   debugNow,
   perfDebug,
@@ -36,7 +39,7 @@ const SCROLLING_CANVAS_OVERDRAW_FACTOR = 1.2;
 
 // We need any here so we can accept vnodes with arbitrary attrs.
 // tslint:disable-next-line:no-any
-export type AnyAttrsVnode = m.Vnode<any, {}>;
+export type AnyAttrsVnode = m.Vnode<any, any>;
 
 export interface Attrs {
   panels: AnyAttrsVnode[];
@@ -60,7 +63,8 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
   private panelPositions: PanelPosition[] = [];
   private totalPanelHeight = 0;
   private canvasHeight = 0;
-  private prevAreaSelection?: TimestampedAreaSelection;
+
+  private flowEventsRenderer: FlowEventsRenderer;
 
   private panelPerfStats = new WeakMap<Panel, RunningStatistics>();
   private perfStats = {
@@ -103,12 +107,11 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     return panels;
   }
 
+  // This finds the tracks covered by the in-progress area selection. When
+  // editing areaY is not set, so this will not be used.
   handleAreaSelection() {
-    const selection = globals.frontendLocalState.selectedArea;
-    const area = selection.area;
-    if ((this.prevAreaSelection &&
-         this.prevAreaSelection.lastUpdate >= selection.lastUpdate) ||
-        area === undefined ||
+    const area = globals.frontendLocalState.selectedArea;
+    if (area === undefined ||
         globals.frontendLocalState.areaY.start === undefined ||
         globals.frontendLocalState.areaY.end === undefined ||
         this.panelPositions.length === 0) {
@@ -153,7 +156,6 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
       }
     }
     globals.frontendLocalState.selectArea(area.startSec, area.endSec, tracks);
-    this.prevAreaSelection = globals.frontendLocalState.selectedArea;
   }
 
   constructor(vnode: m.CVnode<Attrs>) {
@@ -161,6 +163,7 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     this.canvasRedrawer = () => this.redrawCanvas();
     globals.rafScheduler.addRedrawCallback(this.canvasRedrawer);
     perfDisplay.addContainer(this);
+    this.flowEventsRenderer = new FlowEventsRenderer();
   }
 
   oncreate(vnodeDom: m.CVnodeDOM<Attrs>) {
@@ -215,7 +218,9 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
   view({attrs}: m.CVnode<Attrs>) {
     this.attrs = attrs;
     const renderPanel = (panel: m.Vnode) => perfDebug() ?
-        m('.panel', panel, m('.debug-panel-border')) :
+        m('.panel',
+          {key: panel.key},
+          [panel, m('.debug-panel-border', {key: 'debug-panel-border'})]) :
         m('.panel', {key: panel.key}, panel);
 
     return [
@@ -236,7 +241,7 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
       this.updateCanvasDimensions();
       this.repositionCanvas();
       if (this.attrs.kind === 'TRACKS') {
-        globals.frontendLocalState.timeScale.setLimitsPx(
+        globals.frontendLocalState.updateLocalLimits(
             0, this.parentWidth - TRACK_SHELL_WIDTH);
       }
       this.redrawCanvas();
@@ -302,7 +307,7 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     const panels = dom.parentElement!.querySelectorAll('.panel');
     assertTrue(panels.length === this.attrs.panels.length);
     for (let i = 0; i < panels.length; i++) {
-      const rect = panels[i].getBoundingClientRect() as DOMRect;
+      const rect = panels[i].getBoundingClientRect();
       const id = this.attrs.panels[i].attrs.id ||
           this.attrs.panels[i].attrs.trackGroupId;
       this.panelPositions[i] =
@@ -330,10 +335,20 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     const panels = assertExists(this.attrs).panels;
     assertTrue(panels.length === this.panelPositions.length);
     let totalOnCanvas = 0;
+    const flowEventsRendererArgs =
+        new FlowEventsRendererArgs(this.parentWidth, this.canvasHeight);
     for (let i = 0; i < panels.length; i++) {
       const panel = panels[i];
       const panelHeight = this.panelPositions[i].height;
       const yStartOnCanvas = panelYStart - canvasYStart;
+
+      if (!isPanelVNode(panel)) {
+        throw new Error('Vnode passed to panel container is not a panel');
+      }
+
+      // TODO(hjd): This cast should be unnecessary given the type guard above.
+      const p = panel as PanelVNode<{}>;
+      flowEventsRendererArgs.registerPanel(p, yStartOnCanvas, panelHeight);
 
       if (!this.overlapsCanvas(yStartOnCanvas, yStartOnCanvas + panelHeight)) {
         panelYStart += panelHeight;
@@ -342,10 +357,6 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
 
       totalOnCanvas++;
 
-      if (!isPanelVNode(panel)) {
-        throw Error('Vnode passed to panel container is not a panel');
-      }
-
       this.ctx.save();
       this.ctx.translate(0, yStartOnCanvas);
       const clipRect = new Path2D();
@@ -353,14 +364,16 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
       clipRect.rect(0, 0, size.width, size.height);
       this.ctx.clip(clipRect);
       const beforeRender = debugNow();
-      panel.state.renderCanvas(this.ctx, size, panel);
+      p.state.renderCanvas(this.ctx, size, p);
       this.updatePanelStats(
-          i, panel.state, debugNow() - beforeRender, this.ctx, size);
+          i, p.state, debugNow() - beforeRender, this.ctx, size);
       this.ctx.restore();
       panelYStart += panelHeight;
     }
 
     this.drawTopLayerOnCanvas();
+    this.flowEventsRenderer.render(this.ctx, flowEventsRendererArgs);
+    // Collect performance as the last thing we do.
     const redrawDur = debugNow() - redrawStart;
     this.updatePerfStats(redrawDur, panels.length, totalOnCanvas);
   }
@@ -369,12 +382,10 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
   // the whole canvas rather than per panel.
   private drawTopLayerOnCanvas() {
     if (!this.ctx) return;
-    const selection = globals.frontendLocalState.selectedArea;
-    const area = selection.area;
+    const area = globals.frontendLocalState.selectedArea;
     if (area === undefined ||
         globals.frontendLocalState.areaY.start === undefined ||
-        globals.frontendLocalState.areaY.end === undefined ||
-        !globals.frontendLocalState.selectingArea) {
+        globals.frontendLocalState.areaY.end === undefined) {
       return;
     }
     if (this.panelPositions.length === 0 || area.tracks.length === 0) return;

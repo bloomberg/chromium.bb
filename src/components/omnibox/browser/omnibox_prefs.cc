@@ -6,7 +6,9 @@
 
 #include "base/check.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -23,9 +25,15 @@ const char kToggleSuggestionGroupIdOnHistogram[] =
 // Also gated by a feature and server-side Admin Panel controls.
 const char kDocumentSuggestEnabled[] = "documentsuggest.enabled";
 
-// A list of suggestion group IDs for zero suggest that are not allowed to
-// appear in the results.
-const char kOmniboxHiddenGroupIds[] = "omnibox.hiddenGroupIds";
+// Enum specifying the active behavior for the intranet redirect detector.
+// The browser pref kDNSInterceptionChecksEnabled also impacts the redirector.
+// Values are defined in omnibox::IntranetRedirectorBehavior.
+const char kIntranetRedirectBehavior[] = "browser.intranet_redirect_behavior";
+
+// A dictionary of visibility preferences for suggestion groups. The key is the
+// suggestion group ID serialized as a string, and the value is
+// SuggestionGroupVisibility serialized as an integer.
+const char kSuggestionGroupVisibility[] = "omnibox.suggestionGroupVisibility";
 
 // Boolean that specifies whether to always show full URLs in the omnibox.
 const char kPreventUrlElisionsInOmnibox[] = "omnibox.prevent_url_elisions";
@@ -34,31 +42,41 @@ const char kPreventUrlElisionsInOmnibox[] = "omnibox.prevent_url_elisions";
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(omnibox::kOmniboxHiddenGroupIds,
-                             base::Value(base::Value::Type::LIST));
+  registry->RegisterDictionaryPref(kSuggestionGroupVisibility);
 }
 
-bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id) {
+SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
+    PrefService* prefs,
+    int suggestion_group_id) {
   DCHECK(prefs);
-  const base::ListValue* group_id_values =
-      prefs->GetList(kOmniboxHiddenGroupIds);
-  return std::find(group_id_values->begin(), group_id_values->end(),
-                   base::Value(suggestion_group_id)) != group_id_values->end();
-}
 
-void ToggleSuggestionGroupIdVisibility(PrefService* prefs,
-                                       int suggestion_group_id) {
-  DCHECK(prefs);
-  ListPrefUpdate update(prefs, kOmniboxHiddenGroupIds);
-  const bool is_hidden = IsSuggestionGroupIdHidden(prefs, suggestion_group_id);
-  if (is_hidden) {
-    update->EraseListValue(base::Value(suggestion_group_id));
-  } else {
-    update->Append(suggestion_group_id);
+  const base::DictionaryValue* dictionary =
+      prefs->GetDictionary(kSuggestionGroupVisibility);
+  DCHECK(dictionary);
+
+  base::Optional<int> value =
+      dictionary->FindIntKey(base::NumberToString(suggestion_group_id));
+
+  if (value == SuggestionGroupVisibility::HIDDEN ||
+      value == SuggestionGroupVisibility::SHOWN) {
+    return static_cast<SuggestionGroupVisibility>(*value);
   }
+
+  return SuggestionGroupVisibility::DEFAULT;
+}
+
+void SetSuggestionGroupVisibility(PrefService* prefs,
+                                  int suggestion_group_id,
+                                  SuggestionGroupVisibility new_value) {
+  DCHECK(prefs);
+
+  DictionaryPrefUpdate update(prefs, kSuggestionGroupVisibility);
+  update->SetIntKey(base::NumberToString(suggestion_group_id), new_value);
+
   base::SparseHistogram::FactoryGet(
-      is_hidden ? kToggleSuggestionGroupIdOnHistogram
-                : kToggleSuggestionGroupIdOffHistogram,
+      new_value == SuggestionGroupVisibility::SHOWN
+          ? kToggleSuggestionGroupIdOnHistogram
+          : kToggleSuggestionGroupIdOffHistogram,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(suggestion_group_id);
 }

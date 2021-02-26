@@ -7,7 +7,7 @@ package org.chromium.android_webview.test.common.crash;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 import static org.chromium.android_webview.test.common.crash.CrashInfoEqualityMatcher.equalsTo;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -18,6 +18,7 @@ import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
+import org.chromium.base.test.util.Batch;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,8 @@ import java.util.Map;
  * Unit tests for CrashInfo.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@OnlyRunIn(SINGLE_PROCESS)
+@OnlyRunIn(SINGLE_PROCESS) // These are unit tests
+@Batch(Batch.UNIT_TESTS)
 public class CrashInfoTest {
     /**
      * Create a {@link CrashInfo} object for testing.
@@ -44,6 +46,20 @@ public class CrashInfoTest {
         crashInfo.uploadId = uploadId;
         crashInfo.uploadTime = uploadTime;
         crashInfo.uploadState = state;
+
+        return crashInfo;
+    }
+
+    /**
+     * Create a hidden {@link CrashInfo} object for testing.
+     *
+     * {@code appPackageName} is used as a representative of crash keys in tests.
+     */
+    public static CrashInfo createHiddenCrashInfo(String localId, long captureTime, String uploadId,
+            long uploadTime, String appPackageName, UploadState state) {
+        CrashInfo crashInfo =
+                createCrashInfo(localId, captureTime, uploadId, uploadTime, appPackageName, state);
+        crashInfo.isHidden = true;
 
         return crashInfo;
     }
@@ -103,6 +119,7 @@ public class CrashInfoTest {
     public void testSerializeToJson() throws Throwable {
         final String jsonObjectString =
                 "{'crash-local-id':'123456abc','crash-capture-time':1234567890,"
+                + "'crash-is-hidden':false,"
                 + "'crash-keys':{'app-package-name':'org.test.package'}}";
         JSONObject expectedJsonObject = new JSONObject(jsonObjectString);
 
@@ -121,22 +138,6 @@ public class CrashInfoTest {
                 + "'crash-keys':{'app-package-name':'org.test.package'}}";
 
         CrashInfo parsed = CrashInfo.readFromJsonString(jsonObjectString);
-        CrashInfo expected =
-                createCrashInfo("123456abc", 1234567890, null, -1, "org.test.package", null);
-        Assert.assertThat(parsed, equalsTo(expected));
-    }
-
-    /**
-     * Test compitability with old JSON format.
-     */
-    @Test
-    @SmallTest
-    public void testReadFromJsonString_oldJsonFormat() throws Throwable {
-        final String oldJsonObjectString =
-                "{'crash-local-id':'123456abc','crash-capture-time':1234567890,"
-                + "'app-package-name':'org.test.package'}";
-
-        CrashInfo parsed = CrashInfo.readFromJsonString(oldJsonObjectString);
         CrashInfo expected =
                 createCrashInfo("123456abc", 1234567890, null, -1, "org.test.package", null);
         Assert.assertThat(parsed, equalsTo(expected));

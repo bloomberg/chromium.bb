@@ -29,8 +29,8 @@ namespace {
 
     class D3D12ResourceTestBase : public DawnTest {
       public:
-        void TestSetUp() override {
-            DawnTest::TestSetUp();
+        void SetUp() override {
+            DawnTest::SetUp();
             if (UsesWire()) {
                 return;
             }
@@ -63,10 +63,9 @@ namespace {
             baseDawnDescriptor.format = wgpu::TextureFormat::RGBA8Unorm;
             baseDawnDescriptor.size = {kTestWidth, kTestHeight, 1};
             baseDawnDescriptor.sampleCount = 1;
-            baseDawnDescriptor.arrayLayerCount = 1;
             baseDawnDescriptor.mipLevelCount = 1;
             baseDawnDescriptor.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc |
-                                       wgpu::TextureUsage::OutputAttachment |
+                                       wgpu::TextureUsage::RenderAttachment |
                                        wgpu::TextureUsage::CopyDst;
 
             baseD3dDescriptor.Width = kTestWidth;
@@ -131,8 +130,7 @@ namespace {
 
 // A small fixture used to initialize default data for the D3D12Resource validation tests.
 // These tests are skipped if the harness is using the wire.
-class D3D12SharedHandleValidation : public D3D12ResourceTestBase {
-};
+class D3D12SharedHandleValidation : public D3D12ResourceTestBase {};
 
 // Test a successful wrapping of an D3D12Resource in a texture
 TEST_P(D3D12SharedHandleValidation, Success) {
@@ -173,10 +171,10 @@ TEST_P(D3D12SharedHandleValidation, InvalidMipLevelCount) {
     ASSERT_EQ(texture.Get(), nullptr);
 }
 
-// Test an error occurs if the descriptor array layer count isn't 1
-TEST_P(D3D12SharedHandleValidation, InvalidArrayLayerCount) {
+// Test an error occurs if the descriptor depth isn't 1
+TEST_P(D3D12SharedHandleValidation, InvalidDepth) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    baseDawnDescriptor.arrayLayerCount = 2;
+    baseDawnDescriptor.size.depth = 2;
 
     wgpu::Texture texture;
     ComPtr<ID3D11Texture2D> d3d11Texture;
@@ -268,17 +266,8 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
   protected:
     // Submits a 1x1x1 copy from source to destination
     void SimpleCopyTextureToTexture(wgpu::Texture source, wgpu::Texture destination) {
-        wgpu::TextureCopyView copySrc;
-        copySrc.texture = source;
-        copySrc.mipLevel = 0;
-        copySrc.arrayLayer = 0;
-        copySrc.origin = {0, 0, 0};
-
-        wgpu::TextureCopyView copyDst;
-        copyDst.texture = destination;
-        copyDst.mipLevel = 0;
-        copyDst.arrayLayer = 0;
-        copyDst.origin = {0, 0, 0};
+        wgpu::TextureCopyView copySrc = utils::CreateTextureCopyView(source, 0, {0, 0, 0});
+        wgpu::TextureCopyView copyDst = utils::CreateTextureCopyView(destination, 0, {0, 0, 0});
 
         wgpu::Extent3D copySize = {1, 1, 1};
 
@@ -311,7 +300,7 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
                                   const wgpu::Color& clearColor,
                                   ID3D11Texture2D** d3d11TextureOut,
                                   IDXGIKeyedMutex** dxgiKeyedMutexOut,
-                                  bool isCleared = true) const {
+                                  bool isInitialized = true) const {
         ComPtr<ID3D11Texture2D> d3d11Texture;
         HRESULT hr = mD3d11Device->CreateTexture2D(d3dDescriptor, nullptr, &d3d11Texture);
         ASSERT_EQ(hr, S_OK);
@@ -337,7 +326,9 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
         hr = dxgiKeyedMutex->AcquireSync(0, INFINITE);
         ASSERT_EQ(hr, S_OK);
 
-        const float colorRGBA[] = {clearColor.r, clearColor.g, clearColor.b, clearColor.a};
+        const float colorRGBA[] = {
+            static_cast<float>(clearColor.r), static_cast<float>(clearColor.g),
+            static_cast<float>(clearColor.b), static_cast<float>(clearColor.a)};
         mD3d11DeviceContext->ClearRenderTargetView(d3d11RTV.Get(), colorRGBA);
 
         hr = dxgiKeyedMutex->ReleaseSync(1);
@@ -348,7 +339,7 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
             reinterpret_cast<const WGPUTextureDescriptor*>(dawnDescriptor);
         externDesc.sharedHandle = sharedHandle;
         externDesc.acquireMutexKey = 1;
-        externDesc.isCleared = isCleared;
+        externDesc.isInitialized = isInitialized;
         WGPUTexture dawnTexture = dawn_native::d3d12::WrapSharedHandle(device.Get(), &externDesc);
 
         *dawnTextureOut = wgpu::Texture::Acquire(dawnTexture);
@@ -511,9 +502,9 @@ TEST_P(D3D12SharedHandleUsageTests, ClearTwiceInD3D12ReadbackInD3D11) {
 }
 
 // 1. Create and clear a D3D11 texture with clearColor
-// 2. Import the texture with isCleared = false
+// 2. Import the texture with isInitialized = false
 // 3. Verify clearColor is not visible in wrapped texture
-TEST_P(D3D12SharedHandleUsageTests, UnclearedTextureIsCleared) {
+TEST_P(D3D12SharedHandleUsageTests, UninitializedTextureIsCleared) {
     DAWN_SKIP_TEST_IF(UsesWire());
 
     const wgpu::Color clearColor{1.0f, 0.0f, 0.0f, 1.0f};

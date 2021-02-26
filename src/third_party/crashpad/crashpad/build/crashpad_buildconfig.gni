@@ -38,7 +38,7 @@ if (crashpad_is_in_chromium) {
   crashpad_is_mac = is_mac
   crashpad_is_ios = is_ios
   crashpad_is_win = is_win
-  crashpad_is_linux = is_linux
+  crashpad_is_linux = is_linux || is_chromeos
   crashpad_is_android = is_android
   crashpad_is_fuchsia = is_fuchsia
 
@@ -51,8 +51,8 @@ if (crashpad_is_in_chromium) {
     import("../../../mini_chromium/mini_chromium/build/compiler.gni")
     import("../../../mini_chromium/mini_chromium/build/platform.gni")
   } else {
-    # Both standalone and in Fuchsia tree use mini_chromium, and it's mapped into
-    # the same location in both cases.
+    # Both standalone and in Fuchsia tree use mini_chromium, and it's mapped
+    # into the same location in both cases.
     import("../third_party/mini_chromium/mini_chromium/build/compiler.gni")
     import("../third_party/mini_chromium/mini_chromium/build/platform.gni")
   }
@@ -85,9 +85,10 @@ template("crashpad_executable") {
     }
 
     if (crashpad_is_in_fuchsia) {
-      fdio_config = [ "//build/config/fuchsia:fdio_config" ]
-      if (configs + fdio_config - fdio_config == configs) {
-        configs += fdio_config
+      conversion_config = [ "//build/config:Wno-conversion" ]
+      if (configs + conversion_config - conversion_config == configs) {
+        # TODO(https://fxbug.dev/58162): Decide if these are worth enabling.
+        configs += conversion_config
       }
     }
   }
@@ -110,7 +111,37 @@ template("crashpad_loadable_module") {
     }
 
     if (crashpad_is_in_fuchsia) {
-      configs += [ "//build/config/fuchsia:fdio_config" ]
+      conversion_config = [ "//build/config:Wno-conversion" ]
+      if (configs + conversion_config - conversion_config == configs) {
+        # TODO(https://fxbug.dev/58162): Decide if these are worth enabling.
+        configs += conversion_config
+      }
+    }
+  }
+}
+
+template("crashpad_static_library") {
+  static_library(target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "configs",
+                             "remove_configs",
+                           ])
+    if (defined(invoker.remove_configs)) {
+      configs -= invoker.remove_configs
+    }
+
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+
+    if (crashpad_is_in_fuchsia) {
+      conversion_config = [ "//build/config:Wno-conversion" ]
+      if (configs + conversion_config - conversion_config == configs) {
+        # TODO(https://fxbug.dev/58162): Decide if these are worth enabling.
+        configs += conversion_config
+      }
     }
   }
 }

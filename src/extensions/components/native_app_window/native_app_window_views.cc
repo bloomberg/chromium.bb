@@ -38,6 +38,13 @@ void NativeAppWindowViews::Init(
       create_params.GetContentMaximumSize(gfx::Insets()));
   Observe(app_window_->web_contents());
 
+  web_view_ = AddChildView(std::make_unique<views::WebView>(nullptr));
+  web_view_->SetWebContents(app_window_->web_contents());
+
+  SetCanMinimize(!app_window_->show_on_lock_screen());
+  SetCanMaximize(CanMaximizeWindow());
+  SetCanResize(CanResizeWindow());
+
   widget_ = new views::Widget;
   widget_->AddObserver(this);
   InitializeWindow(app_window, create_params);
@@ -47,6 +54,7 @@ void NativeAppWindowViews::Init(
 
 NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(nullptr);
+  CHECK(!IsInObserverList());
 }
 
 void NativeAppWindowViews::OnCanHaveAlphaEnabledChanged() {
@@ -179,20 +187,6 @@ views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
   return web_view_;
 }
 
-bool NativeAppWindowViews::CanResize() const {
-  return resizable_ && !size_constraints_.HasFixedSize() &&
-         !WidgetHasHitTestMask();
-}
-
-bool NativeAppWindowViews::CanMaximize() const {
-  return resizable_ && !size_constraints_.HasMaximumSize() &&
-         !WidgetHasHitTestMask();
-}
-
-bool NativeAppWindowViews::CanMinimize() const {
-  return !app_window_->show_on_lock_screen();
-}
-
 base::string16 NativeAppWindowViews::GetWindowTitle() const {
   return app_window_->GetTitle();
 }
@@ -210,14 +204,6 @@ void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
 void NativeAppWindowViews::DeleteDelegate() {
   widget_->RemoveObserver(this);
   app_window_->OnNativeClose();
-}
-
-views::Widget* NativeAppWindowViews::GetWidget() {
-  return widget_;
-}
-
-const views::Widget* NativeAppWindowViews::GetWidget() const {
-  return widget_;
 }
 
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
@@ -281,15 +267,6 @@ void NativeAppWindowViews::RenderViewHostChanged(
 }
 
 // views::View implementation.
-
-void NativeAppWindowViews::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    DCHECK(!web_view_);
-    web_view_ = AddChildView(std::make_unique<views::WebView>(nullptr));
-    web_view_->SetWebContents(app_window_->web_contents());
-  }
-}
 
 gfx::Size NativeAppWindowViews::GetMinimumSize() const {
   return size_constraints_.GetMinimumSize();
@@ -397,6 +374,8 @@ void NativeAppWindowViews::SetContentSizeConstraints(
     const gfx::Size& max_size) {
   size_constraints_.set_minimum_size(min_size);
   size_constraints_.set_maximum_size(max_size);
+  SetCanMaximize(CanMaximizeWindow());
+  SetCanResize(CanResizeWindow());
   widget_->OnSizeConstraintsChanged();
 }
 
@@ -433,9 +412,24 @@ void NativeAppWindowViews::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+void NativeAppWindowViews::OnWidgetHasHitTestMaskChanged() {
+  SetCanMaximize(CanMaximizeWindow());
+  SetCanResize(CanResizeWindow());
+}
+
 void NativeAppWindowViews::OnViewWasResized() {
   for (auto& observer : observer_list_)
     observer.OnPositionRequiresUpdate();
+}
+
+bool NativeAppWindowViews::CanResizeWindow() const {
+  return resizable_ && !size_constraints_.HasFixedSize() &&
+         !WidgetHasHitTestMask();
+}
+
+bool NativeAppWindowViews::CanMaximizeWindow() const {
+  return resizable_ && !size_constraints_.HasMaximumSize() &&
+         !WidgetHasHitTestMask();
 }
 
 }  // namespace native_app_window

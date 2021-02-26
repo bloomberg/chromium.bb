@@ -18,13 +18,16 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    std::unique_ptr<Unwinder> native_unwinder,
+    UnwindersFactory core_unwinders_factory,
+    RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate) {
-  DCHECK(native_unwinder);
+  auto thread_delegate = ThreadDelegatePosix::Create(thread_token);
+  if (!thread_delegate)
+    return nullptr;
   return std::make_unique<StackSamplerImpl>(
-      std::make_unique<StackCopierSignal>(
-          std::make_unique<ThreadDelegatePosix>(thread_token)),
-      std::move(native_unwinder), module_cache, test_delegate);
+      std::make_unique<StackCopierSignal>(std::move(thread_delegate)),
+      std::move(core_unwinders_factory), module_cache,
+      std::move(record_sample_callback), test_delegate);
 }
 
 size_t StackSampler::GetStackBufferSize() {

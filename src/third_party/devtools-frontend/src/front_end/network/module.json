@@ -122,7 +122,7 @@
       "type": "view",
       "location": "drawer-view",
       "id": "network.blocked-urls",
-      "title": "Request blocking",
+      "title": "Network request blocking",
       "persistence": "closeable",
       "order": 60,
       "className": "Network.BlockedURLsPane"
@@ -164,18 +164,25 @@
         {
           "platform": "mac",
           "shortcut": "Meta+F",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+F",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     }
   ],
   "dependencies": [
     "browser_sdk",
+    "client_variations",
     "common",
     "components",
     "cookie_table",
@@ -191,7 +198,6 @@
     "source_frame",
     "ui"
   ],
-  "scripts": [],
   "modules": [
     "network.js",
     "network-legacy.js",

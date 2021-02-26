@@ -94,8 +94,14 @@ void QuicConfigPeer::SetReceivedStatelessResetToken(QuicConfig* config,
 
 // static
 void QuicConfigPeer::SetReceivedMaxPacketSize(QuicConfig* config,
-                                              uint32_t max_packet_size) {
-  config->max_packet_size_.SetReceivedValue(max_packet_size);
+                                              uint32_t max_udp_payload_size) {
+  config->max_udp_payload_size_.SetReceivedValue(max_udp_payload_size);
+}
+
+// static
+void QuicConfigPeer::SetReceivedMinAckDelayMs(QuicConfig* config,
+                                              uint32_t min_ack_delay_ms) {
+  config->min_ack_delay_ms_.SetReceivedValue(min_ack_delay_ms);
 }
 
 // static
@@ -106,8 +112,23 @@ void QuicConfigPeer::SetNegotiated(QuicConfig* config, bool negotiated) {
 // static
 void QuicConfigPeer::SetReceivedOriginalConnectionId(
     QuicConfig* config,
-    const QuicConnectionId& original_connection_id) {
-  config->received_original_connection_id_ = original_connection_id;
+    const QuicConnectionId& original_destination_connection_id) {
+  config->received_original_destination_connection_id_ =
+      original_destination_connection_id;
+}
+
+// static
+void QuicConfigPeer::SetReceivedInitialSourceConnectionId(
+    QuicConfig* config,
+    const QuicConnectionId& initial_source_connection_id) {
+  config->received_initial_source_connection_id_ = initial_source_connection_id;
+}
+
+// static
+void QuicConfigPeer::SetReceivedRetrySourceConnectionId(
+    QuicConfig* config,
+    const QuicConnectionId& retry_source_connection_id) {
+  config->received_retry_source_connection_id_ = retry_source_connection_id;
 }
 
 // static
@@ -115,6 +136,11 @@ void QuicConfigPeer::SetReceivedMaxDatagramFrameSize(
     QuicConfig* config,
     uint64_t max_datagram_frame_size) {
   config->max_datagram_frame_size_.SetReceivedValue(max_datagram_frame_size);
+}
+
+// static
+void QuicConfigPeer::DisableSupportHandshakeDone(QuicConfig* config) {
+  config->support_handshake_done_.SetSendValue(0);
 }
 
 }  // namespace test

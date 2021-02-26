@@ -1,7 +1,9 @@
-# TEAM: payments-dev@chromium.org
-# COMPONENT: UI>Browser>Payments
+# OS: Android
 
 file://components/payments/OWNERS
 
 per-file *TypeConverter*.*=set noparent
 per-file *TypeConverter*.*=file://ipc/SECURITY_OWNERS
+
+per-file *.aidl=set noparent
+per-file *.aidl=file://ipc/SECURITY_OWNERS

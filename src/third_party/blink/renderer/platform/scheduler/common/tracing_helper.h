@@ -12,9 +12,13 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/perfetto/include/perfetto/tracing/event_context.h"
+#include "third_party/perfetto/include/perfetto/tracing/track.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace blink {
 namespace scheduler {
@@ -93,14 +97,13 @@ class StateTracer {
   DISALLOW_NEW();
 
  public:
-  StateTracer(const char* name, const void* object)
-      : name_(name), object_(object), slice_is_open_(false) {
+  explicit StateTracer(const char* name) : name_(name), slice_is_open_(false) {
     internal::ValidateTracingCategory(category);
   }
 
   ~StateTracer() {
     if (slice_is_open_)
-      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(this));
   }
 
   // String will be copied before leaving this function.
@@ -122,25 +125,23 @@ class StateTracer {
  private:
   void TraceImpl(const char* state, bool need_copy) {
     if (slice_is_open_) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(this));
       slice_is_open_ = false;
     }
     if (!state || !is_enabled())
       return;
 
     if (need_copy) {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_,
-                                        TRACE_ID_LOCAL(object_), "state",
-                                        TRACE_STR_COPY(state));
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_, TRACE_ID_LOCAL(this),
+                                        "state", TRACE_STR_COPY(state));
     } else {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-          category, name_, TRACE_ID_LOCAL(object_), "state", state);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_, TRACE_ID_LOCAL(this),
+                                        "state", state);
     }
     slice_is_open_ = true;
   }
 
   const char* const name_;    // Not owned.
-  const void* const object_;  // Not owned.
 
   // We have to track whether slice is open to avoid confusion since assignment,
   // "absent" state and OnTraceLogEnabled can happen anytime.
@@ -160,11 +161,10 @@ class TraceableState : public TraceableVariable, private StateTracer<category> {
 
   TraceableState(T initial_state,
                  const char* name,
-                 const void* object,
                  TraceableVariableController* controller,
                  ConverterFuncPtr converter)
       : TraceableVariable(controller),
-        StateTracer<category>(name, object),
+        StateTracer<category>(name),
         converter_(converter),
         state_(initial_state) {
     Trace();
@@ -220,6 +220,126 @@ class TraceableState : public TraceableVariable, private StateTracer<category> {
   DISALLOW_COPY(TraceableState);
 };
 
+template <const char* category, typename TypedValue>
+class ProtoStateTracer {
+  DISALLOW_NEW();
+
+ public:
+  explicit ProtoStateTracer(const char* name)
+      : name_(name), slice_is_open_(false) {
+    internal::ValidateTracingCategory(category);
+  }
+
+  ProtoStateTracer(const ProtoStateTracer&) = delete;
+  ProtoStateTracer& operator=(const ProtoStateTracer&) = delete;
+
+  ~ProtoStateTracer() {
+    if (slice_is_open_) {
+      TRACE_EVENT_END(category, track());
+    }
+  }
+
+  void TraceProto(TypedValue* value) {
+    const auto trace_track = track();
+    if (slice_is_open_) {
+      TRACE_EVENT_END(category, trace_track);
+      slice_is_open_ = false;
+    }
+    if (!is_enabled())
+      return;
+
+    TRACE_EVENT_BEGIN(category, name_, trace_track,
+                      [value](perfetto::EventContext ctx) {
+                        value->AsProtozeroInto(ctx.event());
+                      });
+
+    slice_is_open_ = true;
+  }
+
+ protected:
+  bool is_enabled() const {
+    bool result = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(category, &result);  // Cached.
+    return result;
+  }
+
+ private:
+  perfetto::Track track() const {
+    return perfetto::Track(reinterpret_cast<uint64_t>(this));
+  }
+
+  const char* const name_;  // Not owned.
+
+  // We have to track whether slice is open to avoid confusion since assignment,
+  // "absent" state and OnTraceLogEnabled can happen anytime.
+  bool slice_is_open_;
+};
+
+template <typename T>
+using InitializeProtoFuncPtr =
+    void (*)(perfetto::protos::pbzero::TrackEvent* event, T e);
+
+template <typename T, const char* category>
+class TraceableObjectState
+    : public TraceableVariable,
+      public ProtoStateTracer<category, TraceableObjectState<T, category>> {
+ public:
+  TraceableObjectState(T initial_state,
+                       const char* name,
+                       TraceableVariableController* controller,
+                       InitializeProtoFuncPtr<T> proto_init_func)
+      : TraceableVariable(controller),
+        ProtoStateTracer<category, TraceableObjectState<T, category>>(name),
+        state_(initial_state),
+        proto_init_func_(proto_init_func) {
+    Trace();
+  }
+
+  TraceableObjectState(const TraceableObjectState&) = delete;
+
+  ~TraceableObjectState() override = default;
+
+  TraceableObjectState& operator=(const T& value) {
+    Assign(value);
+    return *this;
+  }
+  TraceableObjectState& operator=(const TraceableObjectState& another) {
+    Assign(another.state_);
+    return *this;
+  }
+
+  const T& get() const { return state_; }
+
+  void OnTraceLogEnabled() final { Trace(); }
+
+  void AsProtozeroInto(perfetto::protos::pbzero::TrackEvent* event) {
+    proto_init_func_(event, state_);
+  }
+
+ protected:
+  void Assign(T new_state) {
+    if (state_ != new_state) {
+      state_ = new_state;
+      Trace();
+    }
+  }
+
+ private:
+  void Trace() {
+    ProtoStateTracer<category, TraceableObjectState<T, category>>::TraceProto(
+        this);
+  }
+
+  bool is_enabled() const {
+    bool result = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(category, &result);  // Cached.
+    return result;
+  }
+
+  T state_;
+  InitializeProtoFuncPtr<T> proto_init_func_;
+};
+
 template <typename T, const char* category>
 class TraceableCounter : public TraceableVariable {
  public:
@@ -227,12 +347,10 @@ class TraceableCounter : public TraceableVariable {
 
   TraceableCounter(T initial_value,
                    const char* name,
-                   const void* object,
                    TraceableVariableController* controller,
                    ConverterFuncPtr converter)
       : TraceableVariable(controller),
         name_(name),
-        object_(object),
         converter_(converter),
         value_(initial_value) {
     internal::ValidateTracingCategory(category);
@@ -241,16 +359,10 @@ class TraceableCounter : public TraceableVariable {
 
   TraceableCounter(T initial_value,
                    const char* name,
-                   const void* object,
                    TraceableVariableController* controller)
-      : TraceableVariable(controller),
-        name_(name),
-        object_(object),
-        converter_([](const T& value) { return static_cast<double>(value); }),
-        value_(initial_value) {
-    internal::ValidateTracingCategory(category);
-    Trace();
-  }
+      : TraceableCounter(initial_value, name, controller, [](const T& value) {
+          return static_cast<double>(value);
+        }) {}
 
   TraceableCounter& operator=(const T& value) {
     value_ = value;
@@ -281,12 +393,11 @@ class TraceableCounter : public TraceableVariable {
   void OnTraceLogEnabled() final { Trace(); }
 
   void Trace() const {
-    TRACE_COUNTER_ID1(category, name_, object_, converter_(value_));
+    TRACE_COUNTER_ID1(category, name_, this, converter_(value_));
   }
 
  private:
   const char* const name_;    // Not owned.
-  const void* const object_;  // Not owned.
   const ConverterFuncPtr converter_;
 
   T value_;

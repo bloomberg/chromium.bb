@@ -11,6 +11,11 @@ let fileTransferController;
 /** @type {!DirectoryTree} */
 let directoryTree;
 
+/** @type {!FileSelectionHandler} */
+let selectionHandler;
+
+/** @type {!VolumeManager} */
+let volumeManager;
 /**
  * Mock chrome APIs.
  * @type {!Object}
@@ -52,6 +57,7 @@ function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.getString = id => id;
   window.loadTimeData.getBoolean = id => false;
+  window.loadTimeData.data = {};
 
   // Mock chome APIs.
   mockChrome = {
@@ -86,10 +92,10 @@ function setUp() {
   const directoryModel = createFakeDirectoryModel();
 
   // Fake VolumeManager.
-  const volumeManager = new MockVolumeManager();
+  volumeManager = new MockVolumeManager();
 
   // Fake FileSelectionHandler.
-  const selectionHandler = new FakeFileSelectionHandler();
+  selectionHandler = new FakeFileSelectionHandler();
 
   // Fake HistoryLoader.
   const historyLoader = /** @type {!importer.HistoryLoader} */ ({
@@ -121,8 +127,9 @@ function setUp() {
   FileGrid.decorate(grid, metadataModel, volumeManager, historyLoader, a11y);
 
   // Setup the ListContainer and its dependencies
-  listContainer =
-      new ListContainer(queryRequiredElement('#list-container'), table, grid);
+  listContainer = new ListContainer(
+      queryRequiredElement('#list-container'), table, grid,
+      DialogType.FULL_PAGE);
   listContainer.dataModel = dataModel;
   listContainer.selectionModel = new cr.ui.ListSelectionModel();
   listContainer.setCurrentListType(ListContainer.ListType.DETAIL);
@@ -187,4 +194,40 @@ function testIsDocumentWideEvent() {
   crInput.focus();
   assertEquals(crInput, document.activeElement);
   assertFalse(fileTransferController.isDocumentWideEvent_());
+}
+
+/**
+ * Tests canCutOrDrag() respects non-modifiable entries like Downloads.
+ */
+function testCanMoveDownloads() {
+  // Item 1 of the volume info list should be Downloads volume type.
+  assertEquals(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeManager.volumeInfoList.item(1).volumeType);
+
+  // Create a downloads folder inside the item.
+  const myFilesVolume = volumeManager.volumeInfoList.item(1);
+  const myFilesMockFs =
+      /** @type {!MockFileSystem} */ (myFilesVolume.fileSystem);
+
+  myFilesMockFs.populate([
+    '/Downloads/',
+    '/otherFolder/',
+  ]);
+  const downloadsEntry = myFilesMockFs.entries['/Downloads'];
+  const otherFolderEntry = myFilesMockFs.entries['/otherFolder'];
+
+  assertTrue(!!downloadsEntry);
+  assertTrue(!!otherFolderEntry);
+
+  selectionHandler =
+      /** @type {!FakeFileSelectionHandler} */ (selectionHandler);
+
+  // Downloads can't be cut.
+  selectionHandler.updateSelection([downloadsEntry], []);
+  assertFalse(fileTransferController.canCutOrDrag());
+
+  // otherFolder can be cut.
+  selectionHandler.updateSelection([otherFolderEntry], []);
+  assertTrue(fileTransferController.canCutOrDrag());
 }

@@ -15,5 +15,4 @@ const char kDriveFileStreamOpenIpcChannelMethod[] = "OpenIpcChannel";
 
 }  // namespace drivefs
 
-
 #endif  // SYSTEM_API_DBUS_DRIVEFS_DBUS_CONSTANTS_H_

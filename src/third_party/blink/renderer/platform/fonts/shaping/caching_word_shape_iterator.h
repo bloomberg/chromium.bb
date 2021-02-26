@@ -58,7 +58,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
 
     // SVG sets SpacingDisabled because it handles spacing by themselves.
     if (!run.SpacingDisabled())
-      spacing_.SetSpacingAndExpansion(font->GetFontDescription());
+      spacing_.SetSpacingAndExpansion(*font);
   }
 
   bool Next(scoped_refptr<const ShapeResult>* word_result) {
@@ -125,10 +125,10 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
     bool has_any_script = !Character::IsCommonOrInheritedScript(ch);
     for (unsigned next_end = end; end < length; end = next_end) {
       ch = text_run_.CodepointAtAndNext(next_end);
-      // ZWJ and modifier check in order not to split those Emoji sequences.
+      // Modifier check in order not to split Emoji sequences.
       if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK) ||
-          ch == kZeroWidthJoinerCharacter || Character::IsModifier(ch) ||
-          Character::IsEmojiTagSequence(ch) || ch == kCancelTag)
+          ch == kZeroWidthJoinerCharacter || Character::IsEmojiComponent(ch) ||
+          Character::IsExtendedPictographic(ch))
         continue;
       // Avoid delimiting COMMON/INHERITED alone, which makes harder to
       // identify the script.

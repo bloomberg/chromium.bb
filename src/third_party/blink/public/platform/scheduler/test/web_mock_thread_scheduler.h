@@ -27,12 +27,17 @@ class WebMockThreadScheduler : public WebThreadScheduler {
 
   MOCK_METHOD0(DefaultTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(DeprecatedDefaultTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(CompositorTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(InputTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(LoadingTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(IPCTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(CreateAgentGroupScheduler,
+               std::unique_ptr<WebAgentGroupScheduler>());
+  MOCK_METHOD0(GetCurrentAgentGroupScheduler, WebAgentGroupScheduler*());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
                std::unique_ptr<WebRenderWidgetSchedulingState>());
   MOCK_METHOD1(WillBeginFrame, void(const viz::BeginFrameArgs&));

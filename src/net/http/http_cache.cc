@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -56,8 +57,18 @@
 
 namespace net {
 
+namespace {
+// True if any HTTP cache has been initialized.
+bool g_init_cache = false;
+
+// True if split cache is enabled by default. Must be set before any HTTP cache
+// has been initialized.
+bool g_enable_split_cache = false;
+}  // namespace
+
 const char HttpCache::kDoubleKeyPrefix[] = "_dk_";
 const char HttpCache::kDoubleKeySeparator[] = " ";
+const char HttpCache::kSubframeDocumentResourcePrefix[] = "s_";
 
 HttpCache::DefaultBackend::DefaultBackend(CacheType type,
                                           BackendType backend_type,
@@ -245,7 +256,9 @@ HttpCache::HttpCache(HttpNetworkSession* session,
                      bool is_main_cache)
     : HttpCache(std::make_unique<HttpNetworkLayer>(session),
                 std::move(backend_factory),
-                is_main_cache) {}
+                is_main_cache) {
+  g_init_cache = true;
+}
 
 HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
                      std::unique_ptr<BackendFactory> backend_factory,
@@ -259,6 +272,7 @@ HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
       mode_(NORMAL),
       network_layer_(std::move(network_layer)),
       clock_(base::DefaultClock::GetInstance()) {
+  g_init_cache = true;
   HttpNetworkSession* session = network_layer_->GetSession();
   // Session may be NULL in unittests.
   // TODO(mmenke): Seems like tests could be changed to provide a session,
@@ -360,7 +374,8 @@ void HttpCache::CloseIdleConnections(const char* net_log_reason_utf8) {
 void HttpCache::OnExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
-    const NetworkIsolationKey& network_isolation_key) {
+    const NetworkIsolationKey& network_isolation_key,
+    bool is_subframe_document_resource) {
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
@@ -368,6 +383,8 @@ void HttpCache::OnExternalCacheHit(
   request_info.url = url;
   request_info.method = http_method;
   request_info.network_isolation_key = network_isolation_key;
+  request_info.is_subframe_document_resource = is_subframe_document_resource;
+
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }
@@ -419,7 +436,6 @@ void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
   size_t size = base::trace_event::EstimateMemoryUsage(active_entries_) +
                 base::trace_event::EstimateMemoryUsage(doomed_entries_) +
-                base::trace_event::EstimateMemoryUsage(playback_cache_map_) +
                 base::trace_event::EstimateMemoryUsage(pending_ops_);
   if (disk_cache_)
     size += disk_cache_->DumpMemoryStats(pmd, name);
@@ -454,6 +470,29 @@ std::string HttpCache::GetResourceURLFromHttpCacheKey(const std::string& key) {
 // static
 std::string HttpCache::GenerateCacheKeyForTest(const HttpRequestInfo* request) {
   return GenerateCacheKey(request);
+}
+
+// static
+void HttpCache::SplitCacheFeatureEnableByDefault() {
+  CHECK(!g_enable_split_cache && !g_init_cache);
+  if (!base::FeatureList::GetInstance()->IsFeatureOverridden(
+          "SplitCacheByNetworkIsolationKey")) {
+    g_enable_split_cache = true;
+  }
+}
+
+// static
+bool HttpCache::IsSplitCacheEnabled() {
+  return base::FeatureList::IsEnabled(
+             features::kSplitCacheByNetworkIsolationKey) ||
+         g_enable_split_cache;
+}
+
+// static
+void HttpCache::ClearGlobalsForTesting() {
+  // Reset these so that unit tests can work.
+  g_init_cache = false;
+  g_enable_split_cache = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -533,16 +572,18 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   std::string isolation_key;
 
-  if (base::FeatureList::IsEnabled(
-          features::kSplitCacheByNetworkIsolationKey)) {
+  if (IsSplitCacheEnabled()) {
     // Prepend the key with |kDoubleKeyPrefix| = "_dk_" to mark it as
     // double-keyed (and makes it an invalid url so that it doesn't get
     // confused with a single-keyed entry). Separate the origin and url
     // with invalid whitespace character |kDoubleKeySeparator|.
     DCHECK(request->network_isolation_key.IsFullyPopulated());
-    isolation_key = base::StrCat({kDoubleKeyPrefix,
-                                  request->network_isolation_key.ToString(),
-                                  kDoubleKeySeparator});
+    std::string subframe_document_resource_prefix =
+        request->is_subframe_document_resource ? kSubframeDocumentResourcePrefix
+                                               : "";
+    isolation_key = base::StrCat(
+        {kDoubleKeyPrefix, subframe_document_resource_prefix,
+         request->network_isolation_key.ToString(), kDoubleKeySeparator});
   }
 
   // Strip out the reference, username, and password sections of the URL and
@@ -623,7 +664,8 @@ int HttpCache::AsyncDoomEntry(const std::string& key,
 }
 
 void HttpCache::DoomMainEntryForUrl(const GURL& url,
-                                    const NetworkIsolationKey& isolation_key) {
+                                    const NetworkIsolationKey& isolation_key,
+                                    bool is_subframe_document_resource) {
   if (!disk_cache_)
     return;
 
@@ -631,6 +673,7 @@ void HttpCache::DoomMainEntryForUrl(const GURL& url,
   temp_info.url = url;
   temp_info.method = "GET";
   temp_info.network_isolation_key = isolation_key;
+  temp_info.is_subframe_document_resource = is_subframe_document_resource;
   std::string key = GenerateCacheKey(&temp_info);
 
   // Defer to DoomEntry if there is an active entry, otherwise call
@@ -1456,6 +1499,8 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     backend_factory_.reset();  // Reclaim memory.
     if (result == OK) {
       disk_cache_ = std::move(pending_op->backend);
+      UMA_HISTOGRAM_MEMORY_KB("HttpCache.MaxFileSizeOnInit",
+                              disk_cache_->MaxFileSize() / 1024);
     }
   }
 

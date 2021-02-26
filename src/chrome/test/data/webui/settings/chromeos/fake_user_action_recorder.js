@@ -46,7 +46,12 @@ cr.define('settings', function() {
     recordSettingChange() {
       ++this.settingChangeCount;
     }
+
+    recordSettingChangeWithDetails() {
+      ++this.settingChangeCount;
+    }
   }
 
+  // #cr_define_end
   return {FakeUserActionRecorder: FakeUserActionRecorder};
 });

@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "components/arc/mojom/file_system.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -64,13 +64,15 @@ class ArcBridgeService;
 class ArcFileSystemOperationRunner
     : public KeyedService,
       public ArcFileSystemBridge::Observer,
-      public ArcSessionManager::Observer,
+      public ArcSessionManagerObserver,
       public ConnectionObserver<mojom::FileSystemInstance> {
  public:
   using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
   using GetMimeTypeCallback = mojom::FileSystemInstance::GetMimeTypeCallback;
   using OpenFileToReadCallback =
       mojom::FileSystemInstance::OpenFileToReadCallback;
+  using OpenThumbnailCallback =
+      mojom::FileSystemInstance::OpenThumbnailCallback;
   using OpenFileToWriteCallback =
       mojom::FileSystemInstance::OpenFileToWriteCallback;
   using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
@@ -132,6 +134,9 @@ class ArcFileSystemOperationRunner
   void GetFileSize(const GURL& url, GetFileSizeCallback callback);
   void GetMimeType(const GURL& url, GetMimeTypeCallback callback);
   void OpenFileToRead(const GURL& url, OpenFileToReadCallback callback);
+  void OpenThumbnail(const GURL& url,
+                     const gfx::Size& size,
+                     OpenThumbnailCallback callback);
   void OpenFileToWrite(const GURL& url, OpenFileToWriteCallback callback);
   void GetDocument(const std::string& authority,
                    const std::string& document_id,
@@ -176,7 +181,7 @@ class ArcFileSystemOperationRunner
   // ArcFileSystemBridge::Observer overrides:
   void OnDocumentChanged(int64_t watcher_id, ChangeType type) override;
 
-  // ArcSessionManager::Observer overrides:
+  // ArcSessionManagerObserver overrides:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // ConnectionObserver<mojom::FileSystemInstance> overrides:

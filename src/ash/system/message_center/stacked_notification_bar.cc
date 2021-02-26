@@ -7,7 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
+#include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -35,22 +35,18 @@ namespace {
 // or "See all notifications" button.
 class StackingBarLabelButton : public views::LabelButton {
  public:
-  StackingBarLabelButton(views::ButtonListener* listener,
+  StackingBarLabelButton(PressedCallback callback,
                          const base::string16& text,
                          UnifiedMessageCenterView* message_center_view)
-      : views::LabelButton(listener, text),
+      : views::LabelButton(std::move(callback), text),
         message_center_view_(message_center_view) {
-    SetEnabledTextColors(kUnifiedMenuButtonColorActive);
+    SetEnabledTextColors(message_center_style::kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetBorder(views::CreateEmptyBorder(gfx::Insets()));
     label()->SetSubpixelRenderingEnabled(false);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
-
-    background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent90,
-        kNotificationBackgroundColor);
   }
 
   ~StackingBarLabelButton() override = default;
@@ -87,19 +83,21 @@ class StackingBarLabelButton : public views::LabelButton {
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return TrayPopupUtils::CreateInkDropRipple(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), background_color_);
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), GetInkDropCenterBasedOnLastEvent(),
+        message_center_style::kInkRippleColor,
+        message_center_style::kInkRippleOpacity);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, background_color_);
+    auto highlight = std::make_unique<views::InkDropHighlight>(
+        gfx::SizeF(size()), message_center_style::kInkRippleColor);
+    highlight->set_visible_opacity(message_center_style::kInkRippleOpacity);
+    return highlight;
   }
 
  private:
-  SkColor background_color_ = gfx::kPlaceholderColor;
   UnifiedMessageCenterView* message_center_view_;
   DISALLOW_COPY_AND_ASSIGN(StackingBarLabelButton);
 };
@@ -121,6 +119,25 @@ class StackedNotificationBar::StackedNotificationBarIcon
     StopObserving();
     if (is_animating_out())
       layer()->GetAnimator()->StopAnimating();
+  }
+
+  void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
+
+    auto* notification =
+        message_center::MessageCenter::Get()->FindVisibleNotificationById(id_);
+    SkColor accent_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_NotificationDefaultAccentColor);
+    gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
+        kStackedNotificationIconSize, accent_color);
+
+    if (masked_small_icon.IsEmpty()) {
+      SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
+                                     kStackedNotificationIconSize,
+                                     accent_color));
+    } else {
+      SetImage(masked_small_icon.AsImageSkia());
+    }
   }
 
   void AnimateIn() {
@@ -224,39 +241,33 @@ StackedNotificationBar::StackedNotificationBar(
     : message_center_view_(message_center_view),
       count_label_(new views::Label),
       clear_all_button_(new StackingBarLabelButton(
-          this,
+          base::BindRepeating(&UnifiedMessageCenterView::ClearAllNotifications,
+                              base::Unretained(message_center_view_)),
           l10n_util::GetStringUTF16(
               IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL),
           message_center_view)),
       expand_all_button_(new StackingBarLabelButton(
-          this,
+          base::BindRepeating(&UnifiedMessageCenterView::ExpandMessageCenter,
+                              base::Unretained(message_center_view_)),
           l10n_util::GetStringUTF16(
               IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL),
           message_center_view)) {
   SetVisible(false);
-  int left_padding = features::IsUnifiedMessageCenterRefactorEnabled()
-                         ? 0
-                         : kStackingNotificationClearAllButtonPadding.left();
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, left_padding, 0, 0)));
+      views::BoxLayout::Orientation::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    notification_icons_container_ = new views::View();
-    notification_icons_container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kHorizontal,
-            kStackedNotificationIconsContainerPadding,
-            kStackedNotificationBarIconSpacing));
-    AddChildView(notification_icons_container_);
-    message_center::MessageCenter::Get()->AddObserver(this);
-  }
+  notification_icons_container_ = new views::View();
+  notification_icons_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal,
+          kStackedNotificationIconsContainerPadding,
+          kStackedNotificationBarIconSpacing));
+  AddChildView(notification_icons_container_);
+  message_center::MessageCenter::Get()->AddObserver(this);
 
-  count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextSecondary,
-      AshColorProvider::AshColorMode::kLight));
+  count_label_->SetEnabledColor(message_center_style::kCountLabelColor);
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   AddChildView(count_label_);
@@ -271,6 +282,8 @@ StackedNotificationBar::StackedNotificationBar(
 
   expand_all_button_->SetVisible(false);
   AddChildView(expand_all_button_);
+
+  SetPaintToLayer();
 }
 
 StackedNotificationBar::~StackedNotificationBar() {
@@ -282,24 +295,28 @@ StackedNotificationBar::~StackedNotificationBar() {
 
 bool StackedNotificationBar::Update(
     int total_notification_count,
+    int pinned_notification_count,
     std::vector<message_center::Notification*> stacked_notifications) {
   int stacked_notification_count = stacked_notifications.size();
 
   if (total_notification_count == total_notification_count_ &&
+      pinned_notification_count == pinned_notification_count_ &&
       stacked_notification_count == stacked_notification_count_)
     return false;
 
   total_notification_count_ = total_notification_count;
+  pinned_notification_count_ = pinned_notification_count;
 
+  UpdateStackedNotifications(stacked_notifications);
   UpdateVisibility();
+
+  int unpinned_count = total_notification_count_ - pinned_notification_count_;
 
   auto tooltip = l10n_util::GetStringFUTF16Int(
       IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP,
-      total_notification_count_);
+      unpinned_count);
   clear_all_button_->SetTooltipText(tooltip);
   clear_all_button_->SetAccessibleName(tooltip);
-
-  UpdateStackedNotifications(stacked_notifications);
 
   return true;
 }
@@ -326,24 +343,12 @@ void StackedNotificationBar::SetExpanded() {
 void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
-  views::ImageView* icon_view_ =
+  views::ImageView* icon_view =
       new StackedNotificationBarIcon(this, notification->id());
   if (at_front)
-    notification_icons_container_->AddChildViewAt(icon_view_, 0);
+    notification_icons_container_->AddChildViewAt(icon_view, 0);
   else
-    notification_icons_container_->AddChildView(icon_view_);
-
-  gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
-      kStackedNotificationIconSize,
-      message_center::kNotificationDefaultAccentColor);
-
-  if (masked_small_icon.IsEmpty()) {
-    icon_view_->SetImage(gfx::CreateVectorIcon(
-        message_center::kProductIcon, kStackedNotificationIconSize,
-        message_center::kNotificationDefaultAccentColor));
-  } else {
-    icon_view_->SetImage(masked_small_icon.AsImageSkia());
-  }
+    notification_icons_container_->AddChildView(icon_view);
 }
 
 void StackedNotificationBar::OnIconAnimatedOut(views::View* icon) {
@@ -434,18 +439,13 @@ void StackedNotificationBar::UpdateStackedNotifications(
   int stacked_notification_count = stacked_notifications.size();
   int notification_overflow_count = 0;
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    if (stacked_notification_count_ > stacked_notification_count)
-      ShiftIconsLeft(stacked_notifications);
-    else if (stacked_notification_count_ < stacked_notification_count)
-      ShiftIconsRight(stacked_notifications);
+  if (stacked_notification_count_ > stacked_notification_count)
+    ShiftIconsLeft(stacked_notifications);
+  else if (stacked_notification_count_ < stacked_notification_count)
+    ShiftIconsRight(stacked_notifications);
 
-    notification_overflow_count = std::max(
-        stacked_notification_count_ - kStackedNotificationBarMaxIcons, 0);
-  } else {
-    stacked_notification_count_ = stacked_notification_count;
-    notification_overflow_count = stacked_notification_count;
-  }
+  notification_overflow_count = std::max(
+      stacked_notification_count_ - kStackedNotificationBarMaxIcons, 0);
 
   // Update overflow count label
   if (notification_overflow_count > 0) {
@@ -462,9 +462,7 @@ void StackedNotificationBar::UpdateStackedNotifications(
 
 void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
-  flags.setColor(AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent90,
-      kNotificationBackgroundColor));
+  flags.setColor(message_center_style::kNotificationBackgroundColor);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
@@ -477,9 +475,7 @@ void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawSharpLine(
         gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
         gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kSeparator,
-            AshColorProvider::AshColorMode::kLight));
+        message_center_style::kSeperatorColor);
   }
 }
 
@@ -488,27 +484,28 @@ const char* StackedNotificationBar::GetClassName() const {
 }
 
 void StackedNotificationBar::UpdateVisibility() {
+  int unpinned_count = total_notification_count_ - pinned_notification_count_;
+
+  // In expanded state, clear all button should be visible when (rule is subject
+  // to change):
+  //     1. There are more than one notification.
+  //     2. There is at least one unpinned notification
+  bool show_clear_all = total_notification_count_ > 1 && unpinned_count >= 1;
+  if (!expand_all_button_->GetVisible())
+    clear_all_button_->SetVisible(show_clear_all);
+
   switch (animation_state_) {
     case UnifiedMessageCenterAnimationState::IDLE:
-      SetVisible(total_notification_count_ > 1 ||
+      SetVisible(stacked_notification_count_ || show_clear_all ||
                  expand_all_button_->GetVisible());
       break;
     case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
       SetVisible(true);
       break;
     case UnifiedMessageCenterAnimationState::COLLAPSE:
-      SetVisible(total_notification_count_ > 1 ||
+      SetVisible(stacked_notification_count_ || show_clear_all ||
                  expand_all_button_->GetVisible());
       break;
-  }
-}
-
-void StackedNotificationBar::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  if (sender == clear_all_button_) {
-    message_center_view_->ClearAllNotifications();
-  } else if (sender == expand_all_button_) {
-    message_center_view_->ExpandMessageCenter();
   }
 }
 

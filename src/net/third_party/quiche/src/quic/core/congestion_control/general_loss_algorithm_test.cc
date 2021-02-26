@@ -27,7 +27,7 @@ class GeneralLossAlgorithmTest : public QuicTest {
     rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
                          QuicTime::Delta::Zero(), clock_.Now());
     EXPECT_LT(0, rtt_stats_.smoothed_rtt().ToMicroseconds());
-    loss_algorithm_.SetPacketNumberSpace(HANDSHAKE_DATA);
+    loss_algorithm_.Initialize(HANDSHAKE_DATA, nullptr);
   }
 
   ~GeneralLossAlgorithmTest() override {}
@@ -43,7 +43,7 @@ class GeneralLossAlgorithmTest : public QuicTest {
                             encrypted_length, false, false);
     packet.retransmittable_frames.push_back(QuicFrame(frame));
     unacked_packets_.AddSentPacket(&packet, NOT_RETRANSMISSION, clock_.Now(),
-                                   true);
+                                   true, true);
   }
 
   void SendDataPacket(uint64_t packet_number) {
@@ -55,21 +55,23 @@ class GeneralLossAlgorithmTest : public QuicTest {
                             PACKET_1BYTE_PACKET_NUMBER, nullptr, kDefaultLength,
                             true, false);
     unacked_packets_.AddSentPacket(&packet, NOT_RETRANSMISSION, clock_.Now(),
-                                   false);
+                                   false, true);
   }
 
   void VerifyLosses(uint64_t largest_newly_acked,
                     const AckedPacketVector& packets_acked,
                     const std::vector<uint64_t>& losses_expected) {
     return VerifyLosses(largest_newly_acked, packets_acked, losses_expected,
-                        quiche::QuicheOptional<QuicPacketCount>());
+                        absl::nullopt, absl::nullopt);
   }
 
-  void VerifyLosses(uint64_t largest_newly_acked,
-                    const AckedPacketVector& packets_acked,
-                    const std::vector<uint64_t>& losses_expected,
-                    quiche::QuicheOptional<QuicPacketCount>
-                        max_sequence_reordering_expected) {
+  void VerifyLosses(
+      uint64_t largest_newly_acked,
+      const AckedPacketVector& packets_acked,
+      const std::vector<uint64_t>& losses_expected,
+      absl::optional<QuicPacketCount> max_sequence_reordering_expected,
+      absl::optional<QuicPacketCount>
+          num_borderline_time_reorderings_expected) {
     unacked_packets_.MaybeUpdateLargestAckedOfPacketNumberSpace(
         APPLICATION_DATA, QuicPacketNumber(largest_newly_acked));
     LostPacketVector lost_packets;
@@ -79,6 +81,10 @@ class GeneralLossAlgorithmTest : public QuicTest {
     if (max_sequence_reordering_expected.has_value()) {
       EXPECT_EQ(stats.sent_packets_max_sequence_reordering,
                 max_sequence_reordering_expected.value());
+    }
+    if (num_borderline_time_reorderings_expected.has_value()) {
+      EXPECT_EQ(stats.sent_packets_num_borderline_time_reorderings,
+                num_borderline_time_reorderings_expected.value());
     }
     ASSERT_EQ(losses_expected.size(), lost_packets.size());
     for (size_t i = 0; i < losses_expected.size(); ++i) {
@@ -104,19 +110,19 @@ TEST_F(GeneralLossAlgorithmTest, NackRetransmit1Packet) {
   unacked_packets_.RemoveFromInFlight(QuicPacketNumber(2));
   packets_acked.push_back(AckedPacket(
       QuicPacketNumber(2), kMaxOutgoingPacketSize, QuicTime::Zero()));
-  VerifyLosses(2, packets_acked, std::vector<uint64_t>{}, 1);
+  VerifyLosses(2, packets_acked, std::vector<uint64_t>{}, 1, 0);
   packets_acked.clear();
   // No loss on two acks.
   unacked_packets_.RemoveFromInFlight(QuicPacketNumber(3));
   packets_acked.push_back(AckedPacket(
       QuicPacketNumber(3), kMaxOutgoingPacketSize, QuicTime::Zero()));
-  VerifyLosses(3, packets_acked, std::vector<uint64_t>{}, 2);
+  VerifyLosses(3, packets_acked, std::vector<uint64_t>{}, 2, 0);
   packets_acked.clear();
   // Loss on three acks.
   unacked_packets_.RemoveFromInFlight(QuicPacketNumber(4));
   packets_acked.push_back(AckedPacket(
       QuicPacketNumber(4), kMaxOutgoingPacketSize, QuicTime::Zero()));
-  VerifyLosses(4, packets_acked, {1}, 3);
+  VerifyLosses(4, packets_acked, {1}, 3, 0);
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
@@ -176,7 +182,12 @@ TEST_F(GeneralLossAlgorithmTest, EarlyRetransmit1Packet) {
   EXPECT_EQ(clock_.Now() + 1.25 * rtt_stats_.smoothed_rtt(),
             loss_algorithm_.GetLossTimeout());
 
-  clock_.AdvanceTime(1.25 * rtt_stats_.latest_rtt());
+  clock_.AdvanceTime(1.13 * rtt_stats_.latest_rtt());
+  // If reordering_shift increases by one we should have detected a loss.
+  VerifyLosses(2, packets_acked, {}, /*max_sequence_reordering_expected=*/1,
+               /*num_borderline_time_reorderings_expected=*/1);
+
+  clock_.AdvanceTime(0.13 * rtt_stats_.latest_rtt());
   VerifyLosses(2, packets_acked, {1});
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }

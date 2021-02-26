@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -96,7 +97,12 @@ class PLATFORM_EXPORT ResourceLoadObserver
                               int64_t encoded_data_length,
                               IsInternalRequest) = 0;
 
-  virtual void Trace(Visitor*) {}
+  // Evict the page from BackForwardCache. Should be called when handling an
+  // event which can't proceed if the page is in BackForwardCache and can't be
+  // easily deferred to handle later, for example network redirect handling.
+  virtual void EvictFromBackForwardCache(mojom::RendererEvictionReason) {}
+
+  virtual void Trace(Visitor*) const {}
 };
 
 }  // namespace blink

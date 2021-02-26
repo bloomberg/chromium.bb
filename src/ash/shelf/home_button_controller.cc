@@ -13,7 +13,6 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -51,7 +50,7 @@ HomeButtonController::HomeButtonController(HomeButton* button)
   Shell* shell = Shell::Get();
   shell->app_list_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
 
@@ -61,7 +60,7 @@ HomeButtonController::~HomeButtonController() {
   // AppListController and TabletModeController are destroyed early when Shell
   // is being destroyed, so they may not exist.
   if (AssistantUiController::Get())
-    AssistantUiController::Get()->RemoveModelObserver(this);
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
   if (shell->app_list_controller())
     shell->app_list_controller()->RemoveObserver(this);
   if (shell->tablet_mode_controller())
@@ -105,7 +104,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
           "VoiceInteraction.Started.HomeButtonLongPress"));
       assistant_overlay_->BurstAnimation();
       event->SetHandled();
-      Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+      Shell::SetRootWindowForNewWindows(
           button_->GetWidget()->GetNativeWindow()->GetRootWindow());
       AssistantUiController::Get()->ShowUi(
           AssistantEntryPoint::kLongPressLauncher);

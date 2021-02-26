@@ -31,44 +31,47 @@ namespace base {
 namespace {
 
 // Any number of bytes that can be allocated with no trouble.
-constexpr size_t kEasyAllocSize =
-    (1024 * 1024) & ~(kPageAllocationGranularity - 1);
+size_t EasyAllocSize() {
+  return (1024 * 1024) & ~(PageAllocationGranularity() - 1);
+}
 
 // A huge amount of memory, greater than or equal to the ASLR space.
-constexpr size_t kHugeMemoryAmount =
-    std::max(internal::kASLRMask, std::size_t{2} * internal::kASLRMask);
+size_t HugeMemoryAmount() {
+  return std::max(internal::ASLRMask(), std::size_t{2} * internal::ASLRMask());
+}
 
 }  // namespace
 
 TEST(PageAllocatorTest, Rounding) {
   EXPECT_EQ(0u, RoundUpToSystemPage(0u));
-  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(1));
-  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(kSystemPageSize - 1));
-  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(kSystemPageSize));
-  EXPECT_EQ(2 * kSystemPageSize, RoundUpToSystemPage(kSystemPageSize + 1));
+  EXPECT_EQ(SystemPageSize(), RoundUpToSystemPage(1));
+  EXPECT_EQ(SystemPageSize(), RoundUpToSystemPage(SystemPageSize() - 1));
+  EXPECT_EQ(SystemPageSize(), RoundUpToSystemPage(SystemPageSize()));
+  EXPECT_EQ(2 * SystemPageSize(), RoundUpToSystemPage(SystemPageSize() + 1));
   EXPECT_EQ(0u, RoundDownToSystemPage(0u));
-  EXPECT_EQ(0u, RoundDownToSystemPage(kSystemPageSize - 1));
-  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(kSystemPageSize));
-  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(kSystemPageSize + 1));
-  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(2 * kSystemPageSize - 1));
+  EXPECT_EQ(0u, RoundDownToSystemPage(SystemPageSize() - 1));
+  EXPECT_EQ(SystemPageSize(), RoundDownToSystemPage(SystemPageSize()));
+  EXPECT_EQ(SystemPageSize(), RoundDownToSystemPage(SystemPageSize() + 1));
+  EXPECT_EQ(SystemPageSize(), RoundDownToSystemPage(2 * SystemPageSize() - 1));
   EXPECT_EQ(0u, RoundUpToPageAllocationGranularity(0u));
-  EXPECT_EQ(kPageAllocationGranularity, RoundUpToPageAllocationGranularity(1));
-  EXPECT_EQ(kPageAllocationGranularity,
-            RoundUpToPageAllocationGranularity(kPageAllocationGranularity - 1));
-  EXPECT_EQ(kPageAllocationGranularity,
-            RoundUpToPageAllocationGranularity(kPageAllocationGranularity));
-  EXPECT_EQ(2 * kPageAllocationGranularity,
-            RoundUpToPageAllocationGranularity(kPageAllocationGranularity + 1));
+  EXPECT_EQ(PageAllocationGranularity(), RoundUpToPageAllocationGranularity(1));
+  EXPECT_EQ(PageAllocationGranularity(), RoundUpToPageAllocationGranularity(
+                                             PageAllocationGranularity() - 1));
+  EXPECT_EQ(PageAllocationGranularity(),
+            RoundUpToPageAllocationGranularity(PageAllocationGranularity()));
+  EXPECT_EQ(
+      2 * PageAllocationGranularity(),
+      RoundUpToPageAllocationGranularity(PageAllocationGranularity() + 1));
   EXPECT_EQ(0u, RoundDownToPageAllocationGranularity(0u));
-  EXPECT_EQ(
-      0u, RoundDownToPageAllocationGranularity(kPageAllocationGranularity - 1));
-  EXPECT_EQ(kPageAllocationGranularity,
-            RoundDownToPageAllocationGranularity(kPageAllocationGranularity));
-  EXPECT_EQ(kPageAllocationGranularity, RoundDownToPageAllocationGranularity(
-                                            kPageAllocationGranularity + 1));
-  EXPECT_EQ(
-      kPageAllocationGranularity,
-      RoundDownToPageAllocationGranularity(2 * kPageAllocationGranularity - 1));
+  EXPECT_EQ(0u, RoundDownToPageAllocationGranularity(
+                    PageAllocationGranularity() - 1));
+  EXPECT_EQ(PageAllocationGranularity(),
+            RoundDownToPageAllocationGranularity(PageAllocationGranularity()));
+  EXPECT_EQ(PageAllocationGranularity(), RoundDownToPageAllocationGranularity(
+                                             PageAllocationGranularity() + 1));
+  EXPECT_EQ(PageAllocationGranularity(),
+            RoundDownToPageAllocationGranularity(
+                2 * PageAllocationGranularity() - 1));
 }
 
 // Test that failed page allocations invoke base::ReleaseReservation().
@@ -79,27 +82,27 @@ TEST(PageAllocatorTest, AllocFailure) {
   ReleaseReservation();
 
   // We can make a reservation.
-  EXPECT_TRUE(ReserveAddressSpace(kEasyAllocSize));
+  EXPECT_TRUE(ReserveAddressSpace(EasyAllocSize()));
 
   // We can't make another reservation until we trigger an allocation failure.
-  EXPECT_FALSE(ReserveAddressSpace(kEasyAllocSize));
+  EXPECT_FALSE(ReserveAddressSpace(EasyAllocSize()));
 
-  size_t size = kHugeMemoryAmount;
+  size_t size = HugeMemoryAmount();
   // Skip the test for sanitizers and platforms with ASLR turned off.
   if (size == 0)
     return;
 
-  void* result = AllocPages(nullptr, size, kPageAllocationGranularity,
-                            PageInaccessible, PageTag::kChromium, false);
+  void* result = AllocPages(nullptr, size, PageAllocationGranularity(),
+                            PageInaccessible, PageTag::kChromium);
   if (result == nullptr) {
     // We triggered allocation failure. Our reservation should have been
     // released, and we should be able to make a new reservation.
-    EXPECT_TRUE(ReserveAddressSpace(kEasyAllocSize));
+    EXPECT_TRUE(ReserveAddressSpace(EasyAllocSize()));
     ReleaseReservation();
     return;
   }
   // We couldn't fail. Make sure reservation is still there.
-  EXPECT_FALSE(ReserveAddressSpace(kEasyAllocSize));
+  EXPECT_FALSE(ReserveAddressSpace(EasyAllocSize()));
 }
 
 // TODO(crbug.com/765801): Test failed on chromium.win/Win10 Tests x64.
@@ -114,29 +117,29 @@ TEST(PageAllocatorTest, MAYBE_ReserveAddressSpace) {
   // Release any reservation made by another test.
   ReleaseReservation();
 
-  size_t size = kHugeMemoryAmount;
+  size_t size = HugeMemoryAmount();
   // Skip the test for sanitizers and platforms with ASLR turned off.
   if (size == 0)
     return;
 
   bool success = ReserveAddressSpace(size);
   if (!success) {
-    EXPECT_TRUE(ReserveAddressSpace(kEasyAllocSize));
+    EXPECT_TRUE(ReserveAddressSpace(EasyAllocSize()));
     return;
   }
   // We couldn't fail. Make sure reservation is still there.
-  EXPECT_FALSE(ReserveAddressSpace(kEasyAllocSize));
+  EXPECT_FALSE(ReserveAddressSpace(EasyAllocSize()));
 }
 
 TEST(PageAllocatorTest, AllocAndFreePages) {
-  void* buffer = AllocPages(nullptr, kPageAllocationGranularity,
-                            kPageAllocationGranularity, PageReadWrite,
-                            PageTag::kChromium, true);
+  void* buffer = AllocPages(nullptr, PageAllocationGranularity(),
+                            PageAllocationGranularity(), PageReadWrite,
+                            PageTag::kChromium);
   EXPECT_TRUE(buffer);
   int* buffer0 = reinterpret_cast<int*>(buffer);
   *buffer0 = 42;
   EXPECT_EQ(42, *buffer0);
-  FreePages(buffer, kPageAllocationGranularity);
+  FreePages(buffer, PageAllocationGranularity());
 }
 
 // Test permission setting on POSIX, where we can set a trap handler.
@@ -151,7 +154,7 @@ void SignalHandler(int signal, siginfo_t* info, void*) {
 }  // namespace
 
 // On Mac, sometimes we get SIGBUS instead of SIGSEGV, so handle that too.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define EXTRA_FAULT_BEGIN_ACTION() \
   struct sigaction old_bus_action; \
   sigaction(SIGBUS, &action, &old_bus_action);
@@ -183,9 +186,9 @@ void SignalHandler(int signal, siginfo_t* info, void*) {
   }
 
 TEST(PageAllocatorTest, InaccessiblePages) {
-  void* buffer = AllocPages(nullptr, kPageAllocationGranularity,
-                            kPageAllocationGranularity, PageInaccessible,
-                            PageTag::kChromium, true);
+  void* buffer = AllocPages(nullptr, PageAllocationGranularity(),
+                            PageAllocationGranularity(), PageInaccessible,
+                            PageTag::kChromium);
   EXPECT_TRUE(buffer);
 
   FAULT_TEST_BEGIN()
@@ -198,13 +201,13 @@ TEST(PageAllocatorTest, InaccessiblePages) {
 
   FAULT_TEST_END()
 
-  FreePages(buffer, kPageAllocationGranularity);
+  FreePages(buffer, PageAllocationGranularity());
 }
 
 TEST(PageAllocatorTest, ReadExecutePages) {
-  void* buffer = AllocPages(nullptr, kPageAllocationGranularity,
-                            kPageAllocationGranularity, PageReadExecute,
-                            PageTag::kChromium, true);
+  void* buffer = AllocPages(nullptr, PageAllocationGranularity(),
+                            PageAllocationGranularity(), PageReadExecute,
+                            PageTag::kChromium);
   EXPECT_TRUE(buffer);
   int* buffer0 = reinterpret_cast<int*>(buffer);
   // Reading from buffer should succeed.
@@ -220,16 +223,16 @@ TEST(PageAllocatorTest, ReadExecutePages) {
 
   // Make sure no write occurred.
   EXPECT_EQ(buffer0_contents, *buffer0);
-  FreePages(buffer, kPageAllocationGranularity);
+  FreePages(buffer, PageAllocationGranularity());
 }
 
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_ANDROID)
 TEST(PageAllocatorTest, PageTagging) {
-  void* buffer = AllocPages(nullptr, kPageAllocationGranularity,
-                            kPageAllocationGranularity, PageInaccessible,
-                            PageTag::kChromium, true);
+  void* buffer = AllocPages(nullptr, PageAllocationGranularity(),
+                            PageAllocationGranularity(), PageInaccessible,
+                            PageTag::kChromium);
   EXPECT_TRUE(buffer);
 
   std::string proc_maps;
@@ -246,10 +249,53 @@ TEST(PageAllocatorTest, PageTagging) {
     }
   }
 
-  FreePages(buffer, kPageAllocationGranularity);
+  FreePages(buffer, PageAllocationGranularity());
   EXPECT_TRUE(found);
 }
 #endif  // defined(OS_ANDROID)
+
+TEST(PageAllocatorTest, DecommitErasesMemory) {
+  if (!kDecommittedPagesAreAlwaysZeroed)
+    return;
+
+  size_t size = PageAllocationGranularity();
+  void* buffer = AllocPages(nullptr, size, PageAllocationGranularity(),
+                            PageReadWrite, PageTag::kChromium);
+  ASSERT_TRUE(buffer);
+
+  memset(buffer, 42, size);
+
+  DecommitSystemPages(buffer, size);
+  EXPECT_TRUE(RecommitSystemPages(buffer, size, PageReadWrite));
+
+  uint8_t* recommitted_buffer = reinterpret_cast<uint8_t*>(buffer);
+  uint32_t sum = 0;
+  for (size_t i = 0; i < size; i++) {
+    sum += recommitted_buffer[i];
+  }
+  EXPECT_EQ(0u, sum) << "Data was not erased";
+
+  FreePages(buffer, size);
+}
+
+TEST(PageAllocatorTest, MappedPagesAccounting) {
+  size_t size = PageAllocationGranularity();
+  size_t mapped_size_before = GetTotalMappedSize();
+
+  // Ask for a large alignment to make sure that trimming doesn't change the
+  // accounting.
+  void* data = AllocPages(nullptr, size, 128 * PageAllocationGranularity(),
+                          PageInaccessible, PageTag::kChromium);
+  ASSERT_TRUE(data);
+
+  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+  DecommitSystemPages(data, size);
+  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+  FreePages(data, size);
+  EXPECT_EQ(mapped_size_before, GetTotalMappedSize());
+}
 
 }  // namespace base
 

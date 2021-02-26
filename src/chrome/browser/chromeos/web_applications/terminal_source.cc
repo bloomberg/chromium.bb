@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/webui/webui_allowlist.h"
 
@@ -48,16 +49,6 @@ void ReadFile(const std::string& relative_path,
   if (!result) {
     static const base::NoDestructor<base::flat_map<std::string, std::string>>
         kTestFiles({
-            {"html/pwa.html",
-             "<html><head><link rel='manifest' "
-             "href='/manifest.json'></head></html>"},
-            {"manifest.json", R"({
-               "name": "Test Terminal",
-               "icons": [{ "src": "/icon.svg", "sizes": "any" }],
-               "start_url": "/html/terminal.html"})"},
-            {"icon.svg",
-             "<svg xmlns='http://www.w3.org/2000/svg'><rect "
-             "fill='red'/></svg>"},
             {"html/terminal.html", "<script src='/js/terminal.js'></script>"},
             {"js/terminal.js",
              "chrome.terminalPrivate.openVmshellProcess([], () => {})"},
@@ -96,10 +87,12 @@ TerminalSource::TerminalSource(Profile* profile,
   auto* webui_allowlist = WebUIAllowlist::GetOrCreate(profile);
   const url::Origin terminal_origin = url::Origin::Create(GURL(source));
   CHECK(!terminal_origin.opaque());
-  webui_allowlist->RegisterAutoGrantedPermission(
-      terminal_origin, ContentSettingsType::NOTIFICATIONS);
-  webui_allowlist->RegisterAutoGrantedPermission(
-      terminal_origin, ContentSettingsType::CLIPBOARD_READ_WRITE);
+  for (auto permission :
+       {ContentSettingsType::JAVASCRIPT, ContentSettingsType::NOTIFICATIONS,
+        ContentSettingsType::CLIPBOARD_READ_WRITE, ContentSettingsType::COOKIES,
+        ContentSettingsType::IMAGES, ContentSettingsType::SOUND}) {
+    webui_allowlist->RegisterAutoGrantedPermission(terminal_origin, permission);
+  }
 }
 
 TerminalSource::~TerminalSource() = default;
@@ -149,4 +142,25 @@ bool TerminalSource::ShouldServeMimeTypeAsContentTypeHeader() {
 
 const ui::TemplateReplacements* TerminalSource::GetReplacements() {
   return &replacements_;
+}
+
+std::string TerminalSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  switch (directive) {
+    case network::mojom::CSPDirectiveName::ImgSrc:
+      return "img-src * data: blob:;";
+    case network::mojom::CSPDirectiveName::MediaSrc:
+      return "media-src data:;";
+    case network::mojom::CSPDirectiveName::StyleSrc:
+      return "style-src * 'unsafe-inline'; font-src *;";
+    case network::mojom::CSPDirectiveName::RequireTrustedTypesFor:
+      FALLTHROUGH;
+    case network::mojom::CSPDirectiveName::TrustedTypes:
+      // TODO(crbug.com/1098685): Trusted Type remaining WebUI
+      // This removes require-trusted-types-for and trusted-types directives
+      // from the CSP header.
+      return std::string();
+    default:
+      return content::URLDataSource::GetContentSecurityPolicy(directive);
+  }
 }

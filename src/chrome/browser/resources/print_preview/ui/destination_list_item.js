@@ -11,11 +11,16 @@ import './print_preview_vars_css.js';
 import '../strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination, DestinationOrigin} from '../data/destination.js';
+// <if expr="chromeos">
+import {ERROR_STRING_KEY_MAP, getPrinterStatusIcon, PrinterStatusReason} from '../data/printer_status_cros.js';
+// </if>
 
 import {updateHighlights} from './highlight_utils.js';
 
@@ -34,12 +39,23 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  // <if expr="chromeos">
+  behaviors: [I18nBehavior],
+  // </if>
+
   properties: {
     /** @type {!Destination} */
     destination: Object,
 
     /** @type {?RegExp} */
     searchQuery: Object,
+
+    /** @private */
+    destinationIcon_: {
+      type: String,
+      computed: 'computeDestinationIcon_(destination, ' +
+          'destination.printerStatusReason)',
+    },
 
     /** @private */
     stale_: {
@@ -50,7 +66,23 @@ Polymer({
     /** @private {string} */
     searchHint_: String,
 
+    /** @private */
+    statusText_: {
+      type: String,
+      computed:
+          'computeStatusText_(destination, destination.printerStatusReason,' +
+              'configurationStatus_)',
+    },
+
     // <if expr="chromeos">
+    /** @private */
+    isDestinationCrosLocal_: {
+      type: Boolean,
+      computed: 'computeIsDestinationCrosLocal_(destination)',
+      reflectToAttribute: true,
+    },
+
+
     /** @private {!DestinationConfigStatus} */
     configurationStatus_: {
       type: Number,
@@ -65,6 +97,15 @@ Polymer({
       type: Object,
       value: DestinationConfigStatus,
     },
+
+    /** @private */
+    printerStatusFlagEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showPrinterStatusInDialog');
+      },
+      readOnly: true,
+    },
     // </if>
   },
 
@@ -73,6 +114,9 @@ Polymer({
         'destination.displayName, destination.isOfflineOrInvalid, ' +
         'destination.isExtension)',
     'updateHighlightsAndHint_(destination, searchQuery)',
+    // <if expr="chromeos">
+    'requestPrinterStatus_(destination.key)',
+    // </if>
   ],
 
   /** @private {!Array<!Node>} */
@@ -153,4 +197,101 @@ Polymer({
     return loadTimeData.getStringF(
         'extensionDestinationIconTooltip', this.destination.extensionName);
   },
+
+  /**
+   * @return {string} If the destination is a local CrOS printer, this returns
+   *    the error text associated with the printer status. For all other
+   *    printers this returns the connection status text.
+   * @private
+   */
+  computeStatusText_: function() {
+    if (!this.destination) {
+      return '';
+    }
+
+    // <if expr="chromeos">
+    if (this.printerStatusFlagEnabled_ &&
+        this.destination.origin === DestinationOrigin.CROS) {
+      // Don't show status text when destination is configuring.
+      if (this.configurationStatus_ !== DestinationConfigStatus.IDLE) {
+        return '';
+      }
+
+      const printerStatusReason = this.destination.printerStatusReason;
+      if (!printerStatusReason ||
+          printerStatusReason === PrinterStatusReason.NO_ERROR ||
+          printerStatusReason === PrinterStatusReason.UNKNOWN_REASON) {
+        return '';
+      }
+
+      const errorStringKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
+      return errorStringKey ? this.i18n(errorStringKey) : '';
+    }
+    // </if>
+
+    return this.destination.isOfflineOrInvalid ?
+        this.destination.connectionStatusText :
+        '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeDestinationIcon_: function() {
+    if (!this.destination) {
+      return '';
+    }
+
+    // <if expr="chromeos">
+    if (this.printerStatusFlagEnabled_ &&
+        this.destination.origin === DestinationOrigin.CROS) {
+      return getPrinterStatusIcon(this.destination.printerStatusReason);
+    }
+    // </if>
+
+    return this.destination.icon;
+  },
+
+  // <if expr="chromeos">
+  /**
+   * True when the destination is a CrOS local printer.
+   * @return {boolean}
+   * @private
+   */
+  computeIsDestinationCrosLocal_: function() {
+    if (!this.printerStatusFlagEnabled_) {
+      return false;
+    }
+
+    return this.destination &&
+        this.destination.origin === DestinationOrigin.CROS;
+  },
+
+  /** @private */
+  requestPrinterStatus_() {
+    if (!this.printerStatusFlagEnabled_) {
+      return;
+    }
+
+    // Requesting printer status only allowed for local CrOS printers.
+    if (this.destination.origin !== DestinationOrigin.CROS) {
+      return;
+    }
+
+    this.destination.requestPrinterStatus().then(
+        destinationKey => this.onPrinterStatusReceived_(destinationKey));
+  },
+
+  /**
+   * @param {string} destinationKey
+   * @private
+   */
+  onPrinterStatusReceived_(destinationKey) {
+    if (this.destination.key === destinationKey) {
+      // Notify printerStatusReason to trigger icon and status text update.
+      this.notifyPath(`destination.printerStatusReason`);
+    }
+  },
+  // </if>
 });

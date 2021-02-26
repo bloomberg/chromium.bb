@@ -107,8 +107,8 @@ void SuppressDialogs() {
   if (dialogs_are_suppressed_)
     return;
 
-  assert_handler_ =
-      new ScopedLogAssertHandler(base::Bind(SilentRuntimeAssertHandler));
+  assert_handler_ = new ScopedLogAssertHandler(
+      base::BindRepeating(SilentRuntimeAssertHandler));
 
 #if defined(OS_WIN)
   UINT new_flags = SEM_FAILCRITICALERRORS |
@@ -176,7 +176,7 @@ base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
       // directories may not be accessed for a long time, so this code needs to
       // stay in forever :/
       if (extensionless_symlink_exists &&
-          !base::DeleteFile(extensionless_path, false)) {
+          !base::DeleteFile(extensionless_path)) {
         DPLOG(WARNING) << "Cannot delete " << extensionless_path.value();
       }
       // After cleaning up, create the symlink.
@@ -357,7 +357,7 @@ void InitChromeLogging(const base::CommandLine& command_line,
         command_line.GetSwitchValueASCII(switches::kLoggingLevel);
     int level = 0;
     if (base::StringToInt(log_level, &level) && level >= 0 &&
-        level < LOG_NUM_SEVERITIES) {
+        level < LOGGING_NUM_SEVERITIES) {
       SetMinLogLevel(level);
     } else {
       DLOG(WARNING) << "Bad log level: " << log_level;

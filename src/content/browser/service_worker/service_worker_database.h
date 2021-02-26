@@ -85,16 +85,19 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads origins that have one or more than one registration from the
   // database. Returns OK if they are successfully read or not found.
   // Otherwise, returns an error.
-  Status GetOriginsWithRegistrations(std::set<GURL>* origins);
+  Status GetOriginsWithRegistrations(std::set<url::Origin>* origins);
 
   // Reads registrations for |origin| from the database. Returns OK if they are
   // successfully read or not found. Otherwise, returns an error.
   Status GetRegistrationsForOrigin(
-      const GURL& origin,
+      const url::Origin& origin,
       std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>*
           registrations,
       std::vector<std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>*
           opt_resources_list);
+
+  // Reads the total resource size stored in the database for |origin|.
+  Status GetUsageForOrigin(const url::Origin& origin, int64_t& out_usage);
 
   // Reads all registrations from the database. Returns OK if successfully read
   // or not found. Otherwise, returns an error.
@@ -191,7 +194,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // registration specified by |registration_id| does not exist in the database.
   Status WriteUserData(
       int64_t registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<storage::mojom::ServiceWorkerUserDataPtr>& user_data);
 
   // Deletes user data for |registration_id| and |user_data_names| from the
@@ -214,14 +217,14 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // from the database. Returns OK if they are successfully read or not found.
   Status ReadUserDataForAllRegistrations(
       const std::string& user_data_name,
-      std::vector<std::pair<int64_t, std::string>>* user_data);
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data);
 
   // Reads user data for all registrations that have data with
   // |user_data_name_prefix| from the database. Returns OK if they are
   // successfully read or not found.
   Status ReadUserDataForAllRegistrationsByKeyPrefix(
       const std::string& user_data_name_prefix,
-      std::vector<std::pair<int64_t, std::string>>* user_data);
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data);
 
   // Deletes user data for all registrations that have data with
   // |user_data_name_prefix| from the database. Returns OK if all are
@@ -240,24 +243,24 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   // Reads resource ids from the uncommitted list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetUncommittedResourceIds(std::set<int64_t>* ids);
+  Status GetUncommittedResourceIds(std::vector<int64_t>* ids);
 
   // Writes resource ids into the uncommitted list. Returns OK on success.
   // Otherwise writes nothing and returns an error.
-  Status WriteUncommittedResourceIds(const std::set<int64_t>& ids);
+  Status WriteUncommittedResourceIds(const std::vector<int64_t>& ids);
 
   // Reads resource ids from the purgeable list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetPurgeableResourceIds(std::set<int64_t>* ids);
+  Status GetPurgeableResourceIds(std::vector<int64_t>* ids);
 
   // Deletes resource ids from the purgeable list. Returns OK on success.
   // Otherwise deletes nothing and returns an error.
-  Status ClearPurgeableResourceIds(const std::set<int64_t>& ids);
+  Status ClearPurgeableResourceIds(const std::vector<int64_t>& ids);
 
   // Writes resource ids into the purgeable list and removes them from the
   // uncommitted list. Returns OK on success. Otherwise writes nothing and
   // returns an error.
-  Status PurgeUncommittedResourceIds(const std::set<int64_t>& ids);
+  Status PurgeUncommittedResourceIds(const std::vector<int64_t>& ids);
 
   // Deletes all data for |origins|, namely, unique origin, registrations and
   // resource records. Resources are moved to the purgeable list. Returns OK if
@@ -292,7 +295,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // if successfully reads. Otherwise, returns an error.
   Status ReadRegistrationData(
       int64_t registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       storage::mojom::ServiceWorkerRegistrationDataPtr* registration);
 
   // Parses |serialized| as a RegistrationData object and pushes it into |out|.
@@ -333,19 +336,19 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
-  Status ReadResourceIds(const char* id_key_prefix, std::set<int64_t>* ids);
+  Status ReadResourceIds(const char* id_key_prefix, std::vector<int64_t>* ids);
 
   // Write resource ids for |id_key_prefix| into the database. Returns OK on
   // success. Otherwise, returns writes nothing and returns an error.
   Status WriteResourceIdsInBatch(const char* id_key_prefix,
-                                 const std::set<int64_t>& ids,
+                                 const std::vector<int64_t>& ids,
                                  leveldb::WriteBatch* batch);
 
   // Deletes resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully deleted or not found in the database. Otherwise, returns
   // an error.
   Status DeleteResourceIdsInBatch(const char* id_key_prefix,
-                                  const std::set<int64_t>& ids,
+                                  const std::vector<int64_t>& ids,
                                   leveldb::WriteBatch* batch);
 
   // Deletes all user data for |registration_id| from the database. Returns OK

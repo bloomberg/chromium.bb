@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
@@ -85,8 +86,6 @@ bool OnlyLoginRequested(
           collect_user_data_options.additional_appended_sections.end(),
           find_additional_input_sections) !=
           collect_user_data_options.additional_appended_sections.end();
-  LOG(ERROR) << "HAS_INPUT_SECTIONS: " << has_input_sections;
-
   return !has_input_sections && !collect_user_data_options.request_payer_name &&
          !collect_user_data_options.request_payer_email &&
          !collect_user_data_options.request_payer_phone &&
@@ -96,107 +95,6 @@ bool OnlyLoginRequested(
          collect_user_data_options.accept_terms_and_conditions_text.empty() &&
          !collect_user_data_options.additional_model_identifier_to_check
               .has_value();
-}
-
-bool IsCompleteContact(
-    const autofill::AutofillProfile* profile,
-    const CollectUserDataOptions& collect_user_data_options) {
-  if (!collect_user_data_options.request_payer_name &&
-      !collect_user_data_options.request_payer_email &&
-      !collect_user_data_options.request_payer_phone) {
-    return true;
-  }
-
-  if (!profile) {
-    return false;
-  }
-
-  if (collect_user_data_options.request_payer_name &&
-      !profile->HasInfo(autofill::NAME_FULL)) {
-    return false;
-  }
-
-  if (collect_user_data_options.request_payer_email &&
-      !profile->HasInfo(autofill::EMAIL_ADDRESS)) {
-    return false;
-  }
-
-  if (collect_user_data_options.request_payer_phone &&
-      !profile->HasInfo(autofill::PHONE_HOME_WHOLE_NUMBER)) {
-    return false;
-  }
-  return true;
-}
-
-bool IsCompleteAddress(const autofill::AutofillProfile* profile,
-                       bool require_postal_code) {
-  if (!profile) {
-    return false;
-  }
-  // We use a hard coded locale here since it's not used in the autofill:: code
-  // anyway. I.e. creating this profile ends up in FormGroup::GetInfoImpl, which
-  // simply ignores the app_locale.
-  auto address_data =
-      autofill::i18n::CreateAddressDataFromAutofillProfile(*profile, "en-US");
-  if (!autofill::addressinput::HasAllRequiredFields(*address_data)) {
-    return false;
-  }
-
-  if (require_postal_code && address_data->postal_code.empty()) {
-    return false;
-  }
-
-  return true;
-}
-
-bool IsCompleteShippingAddress(
-    const autofill::AutofillProfile* profile,
-    const CollectUserDataOptions& collect_user_data_options) {
-  return !collect_user_data_options.request_shipping ||
-         IsCompleteAddress(profile, /* require_postal_code = */ false);
-}
-
-bool IsCompleteCreditCard(
-    const autofill::CreditCard* credit_card,
-    const autofill::AutofillProfile* billing_profile,
-    const CollectUserDataOptions& collect_user_data_options) {
-  if (!collect_user_data_options.request_payment_method) {
-    return true;
-  }
-
-  if (!credit_card || !billing_profile) {
-    return false;
-  }
-
-  if (!IsCompleteAddress(
-          billing_profile,
-          collect_user_data_options.require_billing_postal_code)) {
-    return false;
-  }
-
-  if (credit_card->record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
-      !credit_card->HasValidCardNumber()) {
-    // Can't check validity of masked server card numbers because they are
-    // incomplete until decrypted.
-    return false;
-  }
-
-  if (!credit_card->HasValidExpirationDate() ||
-      credit_card->billing_address_id().empty()) {
-    return false;
-  }
-
-  std::string basic_card_network =
-      autofill::data_util::GetPaymentRequestData(credit_card->network())
-          .basic_card_issuer_network;
-  if (!collect_user_data_options.supported_basic_card_networks.empty() &&
-      std::find(collect_user_data_options.supported_basic_card_networks.begin(),
-                collect_user_data_options.supported_basic_card_networks.end(),
-                basic_card_network) ==
-          collect_user_data_options.supported_basic_card_networks.end()) {
-    return false;
-  }
-  return true;
 }
 
 bool IsValidLoginChoice(
@@ -488,6 +386,18 @@ void SetInitialUserDataForAdditionalSection(
       break;
   }
 }
+
+void AddNonEmptyFieldNames(
+    const autofill::AutofillProfile* profile,
+    google::protobuf::RepeatedPtrField<std::string>* dest) {
+  DCHECK(profile != nullptr);
+  const auto& map = autofill_assistant::field_formatter::CreateAutofillMappings(
+      *profile, /* locale= */ "en-US");
+  for (const auto& it : map) {
+    *dest->Add() = it.first;
+  }
+}
+
 }  // namespace
 
 namespace autofill_assistant {
@@ -535,7 +445,6 @@ void CollectUserDataAction::InternalProcessAction(
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
   if (!CreateOptionsFromProto()) {
-    LOG(ERROR) << "INVALID";
     EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -572,12 +481,17 @@ void CollectUserDataAction::InternalProcessAction(
   } else {
     ShowToUser();
   }
+  action_stopwatch_.StartWaitTime();
 }
 
 void CollectUserDataAction::EndAction(const ClientStatus& status) {
   delegate_->CleanUpAfterPrompt();
   action_successful_ = status.ok();
   UpdateProcessedAction(status);
+  if (action_successful_) {
+    delegate_->SetLastSuccessfulUserDataOptions(
+        std::move(collect_user_data_options_));
+  }
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
 
@@ -613,7 +527,6 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   // merge the new proto_ into the existing user_data. the proto_ always takes
   // precedence over the existing user_data.
   *field_change = UserData::FieldChange::ALL;
-  user_data->succeed_ = false;
   auto collect_user_data = proto_.collect_user_data();
   // the backend should explicitly set the terms and conditions state on every
   // new action.
@@ -665,7 +578,6 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
     // made implicitly, the entire UI will not be shown and the action will
     // complete immediately.
     if (OnlyLoginRequested(*collect_user_data_options_)) {
-      user_data->succeed_ = true;
       std::move(collect_user_data_options_->confirm_callback)
           .Run(user_data, nullptr);
       return;
@@ -717,16 +629,13 @@ void CollectUserDataAction::OnGetUserData(
     const UserModel* user_model) {
   if (!callback_)
     return;
+  action_stopwatch_.StartActiveTime();
+  delegate_->GetPersonalDataManager()->RemoveObserver(this);
 
-  bool succeed = user_data->succeed_;
-  if (succeed) {
-    succeed = IsUserDataComplete(*user_data, *user_model,
-                                 *collect_user_data_options_);
-    WriteProcessedAction(user_data, user_model);
-  }
-
-  EndAction(succeed ? ClientStatus(ACTION_APPLIED)
-                    : ClientStatus(COLLECT_USER_DATA_ERROR));
+  WriteProcessedAction(user_data, user_model);
+  DCHECK(
+      IsUserDataComplete(*user_data, *user_model, *collect_user_data_options_));
+  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
 void CollectUserDataAction::OnAdditionalActionTriggered(
@@ -735,6 +644,8 @@ void CollectUserDataAction::OnAdditionalActionTriggered(
     const UserModel* user_model) {
   if (!callback_)
     return;
+  action_stopwatch_.StartActiveTime();
+  delegate_->GetPersonalDataManager()->RemoveObserver(this);
 
   processed_action_proto_->mutable_collect_user_data_result()
       ->set_additional_action_index(index);
@@ -748,6 +659,8 @@ void CollectUserDataAction::OnTermsAndConditionsLinkClicked(
     const UserModel* user_model) {
   if (!callback_)
     return;
+  action_stopwatch_.StartActiveTime();
+  delegate_->GetPersonalDataManager()->RemoveObserver(this);
 
   processed_action_proto_->mutable_collect_user_data_result()->set_terms_link(
       link);
@@ -975,17 +888,16 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data.additional_model_identifier_to_check();
   }
 
-  // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
-  // chip and direct_action part of the additional_actions.
-  std::string confirm_text = collect_user_data.confirm_button_text();
-  if (confirm_text.empty()) {
-    confirm_text =
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  auto* confirm_chip =
+      collect_user_data_options_->confirm_action.mutable_chip();
+  if (collect_user_data.has_confirm_chip()) {
+    *confirm_chip = collect_user_data.confirm_chip();
+  } else {
+    confirm_chip->set_text(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM));
+    confirm_chip->set_type(HIGHLIGHTED_ACTION);
   }
-  collect_user_data_options_->confirm_action.mutable_chip()->set_text(
-      confirm_text);
-  collect_user_data_options_->confirm_action.mutable_chip()->set_type(
-      HIGHLIGHTED_ACTION);
+
   *collect_user_data_options_->confirm_action.mutable_direct_action() =
       collect_user_data.confirm_direct_action();
 
@@ -1212,17 +1124,42 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
     auto* selected_profile = user_data->selected_address(
         contact_details_proto.contact_details_name());
 
-    if (contact_details_proto.request_payer_name() &&
-        selected_profile != nullptr) {
-      Metrics::RecordPaymentRequestFirstNameOnly(
-          selected_profile->GetRawInfo(autofill::NAME_LAST).empty());
-    }
+    if (selected_profile != nullptr) {
+      AddNonEmptyFieldNames(
+          selected_profile,
+          processed_action_proto_->mutable_collect_user_data_result()
+              ->mutable_non_empty_contact_field());
 
-    if (contact_details_proto.request_payer_email() &&
-        selected_profile != nullptr) {
-      processed_action_proto_->mutable_collect_user_data_result()
-          ->set_payer_email(base::UTF16ToUTF8(
-              selected_profile->GetRawInfo(autofill::EMAIL_ADDRESS)));
+      if (contact_details_proto.request_payer_name()) {
+        Metrics::RecordPaymentRequestFirstNameOnly(
+            selected_profile->GetRawInfo(autofill::NAME_LAST).empty());
+      }
+
+      if (contact_details_proto.request_payer_email()) {
+        processed_action_proto_->mutable_collect_user_data_result()
+            ->set_payer_email(base::UTF16ToUTF8(
+                selected_profile->GetRawInfo(autofill::EMAIL_ADDRESS)));
+      }
+    }
+  }
+  if (!proto().collect_user_data().shipping_address_name().empty()) {
+    auto* selected_shipping_address = user_data->selected_address(
+        proto().collect_user_data().shipping_address_name());
+    if (selected_shipping_address != nullptr) {
+      AddNonEmptyFieldNames(
+          selected_shipping_address,
+          processed_action_proto_->mutable_collect_user_data_result()
+              ->mutable_non_empty_shipping_address_field());
+    }
+  }
+  if (!proto().collect_user_data().billing_address_name().empty()) {
+    auto* selected_billing_address = user_data->selected_address(
+        proto().collect_user_data().billing_address_name());
+    if (selected_billing_address != nullptr) {
+      AddNonEmptyFieldNames(
+          selected_billing_address,
+          processed_action_proto_->mutable_collect_user_data_result()
+              ->mutable_non_empty_billing_address_field());
     }
   }
 
@@ -1232,6 +1169,10 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
     if (login_details != login_details_map_.end()) {
       if (login_details->second->login.has_value()) {
         user_data->selected_login_ = *login_details->second->login;
+        if (login_details->second->login->username.empty()) {
+          processed_action_proto_->mutable_collect_user_data_result()
+              ->set_login_missing_username(true);
+        }
       }
 
       processed_action_proto_->mutable_collect_user_data_result()
@@ -1310,7 +1251,7 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
   for (const auto* profile :
        delegate_->GetPersonalDataManager()->GetProfilesToSuggest()) {
     user_data->available_profiles_.emplace_back(
-        std::make_unique<autofill::AutofillProfile>(*profile));
+        MakeUniqueFromProfile(*profile));
 
     if (selected_profile != nullptr &&
         CompareContactDetails(*collect_user_data_options_, profile,
@@ -1342,7 +1283,7 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
     if (default_selection != -1) {
       user_data->selected_addresses_.emplace(
           collect_user_data_options_->contact_details_name,
-          std::make_unique<autofill::AutofillProfile>(
+          MakeUniqueFromProfile(
               *(user_data->available_profiles_[default_selection])));
     }
   }
@@ -1362,7 +1303,7 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
     if (default_selection != -1) {
       user_data->selected_addresses_.emplace(
           collect_user_data_options_->shipping_address_name,
-          std::make_unique<autofill::AutofillProfile>(
+          MakeUniqueFromProfile(
               *(user_data->available_profiles_[default_selection])));
     }
   }
@@ -1397,7 +1338,7 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
                 card->billing_address_id());
         if (billing_address != nullptr) {
           payment_instrument->billing_address =
-              std::make_unique<autofill::AutofillProfile>(*billing_address);
+              MakeUniqueFromProfile(*billing_address);
         }
       }
 
@@ -1443,8 +1384,11 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
 }
 
 void CollectUserDataAction::OnPersonalDataChanged() {
-  personal_data_changed_ = true;
+  if (!callback_) {
+    return;
+  }
 
+  personal_data_changed_ = true;
   delegate_->WriteUserData(
       base::BindOnce(&CollectUserDataAction::UpdatePersonalDataManagerProfiles,
                      weak_ptr_factory_.GetWeakPtr()));

@@ -11,18 +11,15 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/services/sharing/public/mojom/nearby_connections.mojom-forward.h"
-#include "chrome/services/sharing/public/mojom/sharing.mojom.h"
-#include "chrome/services/sharing/public/mojom/webrtc.mojom-forward.h"
+#include "base/sequenced_task_runner.h"
+#include "chromeos/services/nearby/public/mojom/nearby_connections.mojom-forward.h"
+#include "chromeos/services/nearby/public/mojom/sharing.mojom.h"
+#include "chromeos/services/nearby/public/mojom/webrtc.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/mdns_responder.mojom-forward.h"
 #include "services/network/public/mojom/p2p.mojom-forward.h"
-
-namespace webrtc {
-class PeerConnectionFactoryInterface;
-}  // namespace webrtc
 
 namespace location {
 namespace nearby {
@@ -34,51 +31,41 @@ class NearbyConnections;
 
 namespace sharing {
 
-class SharingWebRtcConnection;
+class NearbySharingDecoder;
 
 class SharingImpl : public mojom::Sharing {
  public:
-  using NearbyConnectionsHostMojom =
-      location::nearby::connections::mojom::NearbyConnectionsHost;
   using NearbyConnectionsMojom =
       location::nearby::connections::mojom::NearbyConnections;
   using NearbyConnections = location::nearby::connections::NearbyConnections;
+  using NearbyConnectionsDependenciesPtr =
+      location::nearby::connections::mojom::NearbyConnectionsDependenciesPtr;
 
-  explicit SharingImpl(mojo::PendingReceiver<mojom::Sharing> receiver);
+  SharingImpl(mojo::PendingReceiver<mojom::Sharing> receiver,
+              scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   SharingImpl(const SharingImpl&) = delete;
   SharingImpl& operator=(const SharingImpl&) = delete;
   ~SharingImpl() override;
 
   // mojom::Sharing:
-  void CreateSharingWebRtcConnection(
-      mojo::PendingRemote<mojom::SignallingSender> signalling_sender,
-      mojo::PendingReceiver<mojom::SignallingReceiver> signalling_receiver,
-      mojo::PendingRemote<mojom::SharingWebRtcConnectionDelegate> delegate,
-      mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
-      mojo::PendingRemote<network::mojom::P2PSocketManager> socket_manager,
-      mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
-      std::vector<mojom::IceServerPtr> ice_servers) override;
-  void CreateNearbyConnections(
-      mojo::PendingRemote<NearbyConnectionsHostMojom> host,
-      CreateNearbyConnectionsCallback callback) override;
-
-  size_t GetWebRtcConnectionCountForTesting() const;
+  void Connect(
+      NearbyConnectionsDependenciesPtr deps,
+      mojo::PendingReceiver<NearbyConnectionsMojom> connections_receiver,
+      mojo::PendingReceiver<sharing::mojom::NearbySharingDecoder>
+          decoder_receiver) override;
+  void ShutDown(ShutDownCallback callback) override;
 
  private:
-  void InitializeWebRtcFactory();
-
-  void SharingWebRtcConnectionDisconnected(SharingWebRtcConnection* connection);
+  friend class SharingImplTest;
 
   void NearbyConnectionsDisconnected();
 
   mojo::Receiver<mojom::Sharing> receiver_;
-
-  std::map<SharingWebRtcConnection*, std::unique_ptr<SharingWebRtcConnection>>
-      sharing_webrtc_connections_;
-  scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-      webrtc_peer_connection_factory_;
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   std::unique_ptr<NearbyConnections> nearby_connections_;
+
+  std::unique_ptr<NearbySharingDecoder> nearby_decoder_;
 
   base::WeakPtrFactory<SharingImpl> weak_ptr_factory_{this};
 };

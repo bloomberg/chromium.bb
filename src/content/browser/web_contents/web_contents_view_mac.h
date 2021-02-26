@@ -14,11 +14,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "content/browser/frame_host/popup_menu_helper_mac.h"
+#include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
-#include "content/common/drag_event_source_info.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
 #include "content/public/browser/visibility.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -66,7 +65,7 @@ class WebContentsViewMac : public WebContentsView,
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetContentNativeView() const override;
   gfx::NativeWindow GetTopLevelNativeWindow() const override;
-  void GetContainerBounds(gfx::Rect* out) const override;
+  gfx::Rect GetContainerBounds() const override;
   void Focus() override;
   void SetInitialFocus() override;
   void StoreFocus() override;
@@ -88,12 +87,12 @@ class WebContentsViewMac : public WebContentsView,
 
   // RenderViewHostDelegateView:
   void StartDragging(const DropData& drop_data,
-                     blink::WebDragOperationsMask allowed_operations,
+                     blink::DragOperationsMask allowed_operations,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& image_offset,
-                     const DragEventSourceInfo& event_info,
+                     const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
-  void UpdateDragCursor(blink::WebDragOperation operation) override;
+  void UpdateDragCursor(blink::DragOperation operation) override;
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
@@ -121,6 +120,7 @@ class WebContentsViewMac : public WebContentsView,
   void ViewsHostableMakeFirstResponder() override;
   void ViewsHostableSetParentAccessible(
       gfx::NativeViewAccessible parent_accessibility_element) override;
+  gfx::NativeViewAccessible ViewsHostableGetParentAccessible() override;
   gfx::NativeViewAccessible ViewsHostableGetAccessibilityElement() override;
 
   // A helper method for closing the tab in the

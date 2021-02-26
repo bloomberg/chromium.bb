@@ -43,9 +43,15 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
                               ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
-    to_transfer =
-        DOMArrayBuffer::Create(Content()->Data(), ByteLengthAsSizeT());
+    to_transfer = DOMArrayBuffer::Create(Content()->Data(), ByteLength());
   }
+
+  return to_transfer->TransferDetachable(isolate, result);
+}
+
+bool DOMArrayBuffer::TransferDetachable(v8::Isolate* isolate,
+                                        ArrayBufferContents& result) {
+  DCHECK(IsDetachable(isolate));
 
   if (IsDetached()) {
     result.Detach();
@@ -62,7 +68,7 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
 
   Vector<v8::Local<v8::ArrayBuffer>, 4> buffer_handles;
   v8::HandleScope handle_scope(isolate);
-  AccumulateArrayBuffersForAllWorlds(isolate, to_transfer, buffer_handles);
+  AccumulateArrayBuffersForAllWorlds(isolate, this, buffer_handles);
 
   for (const auto& buffer_handle : buffer_handles)
     buffer_handle->Detach();
@@ -149,8 +155,8 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
 }
 
 DOMArrayBuffer* DOMArrayBuffer::Slice(size_t begin, size_t end) const {
-  begin = std::min(begin, ByteLengthAsSizeT());
-  end = std::min(end, ByteLengthAsSizeT());
+  begin = std::min(begin, ByteLength());
+  end = std::min(end, ByteLength());
   size_t size = begin <= end ? end - begin : 0;
   return Create(static_cast<const char*>(Data()) + begin, size);
 }

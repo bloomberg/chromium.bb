@@ -81,30 +81,69 @@ void PaintPreviewCompositorClientImpl::SetDisconnectHandler(
 // NOTE: This is only safe as no delayed tasks are posted and there are no
 // cases of base::Unretained(this) or other class members passed as pointers.
 
-void PaintPreviewCompositorClientImpl::BeginComposite(
+void PaintPreviewCompositorClientImpl::BeginSeparatedFrameComposite(
     mojom::PaintPreviewBeginCompositeRequestPtr request,
-    mojom::PaintPreviewCompositor::BeginCompositeCallback callback) {
+    mojom::PaintPreviewCompositor::BeginSeparatedFrameCompositeCallback
+        callback) {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &mojom::PaintPreviewCompositor::BeginComposite,
+          &mojom::PaintPreviewCompositor::BeginSeparatedFrameComposite,
           base::Unretained(compositor_.get()->get()), std::move(request),
           BindToTaskRunner(default_task_runner_, std::move(callback))));
 }
 
-void PaintPreviewCompositorClientImpl::BitmapForFrame(
+void PaintPreviewCompositorClientImpl::BitmapForSeparatedFrame(
     const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
-    mojom::PaintPreviewCompositor::BitmapForFrameCallback callback) {
+    mojom::PaintPreviewCompositor::BitmapForSeparatedFrameCallback callback) {
+  DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
+
+  auto validate_bitmap = base::BindOnce(
+      [](mojom::PaintPreviewCompositor::BitmapForSeparatedFrameCallback
+             callback,
+         mojom::PaintPreviewCompositor::BitmapStatus status,
+         const SkBitmap& bitmap) {
+        // The paint preview service should be sending us N32 32bpp bitmaps in
+        // reply, otherwise this can lead to out-of-bounds mistakes when
+        // transferring the pixels out of the bitmap into other buffers.
+        CHECK_EQ(bitmap.colorType(), kN32_SkColorType);
+        std::move(callback).Run(status, bitmap);
+      },
+      BindToTaskRunner(default_task_runner_, std::move(callback)));
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&mojom::PaintPreviewCompositor::BitmapForSeparatedFrame,
+                     base::Unretained(compositor_.get()->get()), frame_guid,
+                     clip_rect, scale_factor, std::move(validate_bitmap)));
+}
+
+void PaintPreviewCompositorClientImpl::BeginMainFrameComposite(
+    mojom::PaintPreviewBeginCompositeRequestPtr request,
+    mojom::PaintPreviewCompositor::BeginMainFrameCompositeCallback callback) {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
   compositor_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&mojom::PaintPreviewCompositor::BitmapForFrame,
-                                base::Unretained(compositor_.get()->get()),
-                                frame_guid, clip_rect, scale_factor,
-                                BindToTaskRunner(default_task_runner_,
-                                                 std::move(callback))));
+      FROM_HERE,
+      base::BindOnce(
+          &mojom::PaintPreviewCompositor::BeginMainFrameComposite,
+          base::Unretained(compositor_.get()->get()), std::move(request),
+          BindToTaskRunner(default_task_runner_, std::move(callback))));
+}
+
+void PaintPreviewCompositorClientImpl::BitmapForMainFrame(
+    const gfx::Rect& clip_rect,
+    float scale_factor,
+    mojom::PaintPreviewCompositor::BitmapForMainFrameCallback callback) {
+  DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &mojom::PaintPreviewCompositor::BitmapForMainFrame,
+          base::Unretained(compositor_.get()->get()), clip_rect, scale_factor,
+          BindToTaskRunner(default_task_runner_, std::move(callback))));
 }
 
 void PaintPreviewCompositorClientImpl::SetRootFrameUrl(const GURL& url) {

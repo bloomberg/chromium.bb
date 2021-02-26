@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
@@ -115,7 +115,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
   }
 
   // Wrapper for ServiceWorkerContextCore::DeleteForOrigin.
-  blink::ServiceWorkerStatusCode DeleteForOrigin(const GURL& origin) {
+  blink::ServiceWorkerStatusCode DeleteForOrigin(const url::Origin& origin) {
     blink::ServiceWorkerStatusCode status;
     base::RunLoop loop;
     context()->DeleteForOrigin(
@@ -152,7 +152,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
  private:
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
+  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
   GURL scope_for_wait_for_activated_;
   base::OnceClosure quit_closure_for_wait_for_activated_;
   bool is_observing_context_ = false;
@@ -191,7 +191,7 @@ TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
 TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin) {
   const GURL script("https://www.example.com/a/sw.js");
   const GURL scope("https://www.example.com/a");
-  const GURL origin("https://www.example.com");
+  const url::Origin origin = url::Origin::Create(scope);
 
   // Register a service worker.
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -210,7 +210,7 @@ TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin) {
 TEST_F(ServiceWorkerContextCoreTest, DeleteForOriginAbortsQueuedJobs) {
   const GURL script("https://www.example.com/a/sw.js");
   const GURL scope("https://www.example.com/a");
-  const GURL origin("https://www.example.com");
+  const url::Origin origin = url::Origin::Create(scope);
 
   // Register a service worker.
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -242,7 +242,7 @@ TEST_F(ServiceWorkerContextCoreTest,
        DeleteUninstallingForOriginAbortsQueuedJobs) {
   const GURL script("https://www.example.com/a/sw.js");
   const GURL scope("https://www.example.com/a");
-  const GURL origin("https://www.example.com");
+  const url::Origin origin = url::Origin::Create(scope);
 
   // Register a service worker.
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -253,7 +253,7 @@ TEST_F(ServiceWorkerContextCoreTest,
   // Add a controlled client.
   ServiceWorkerContainerHost* container_host = CreateControllee();
   container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
-                             url::Origin::Create(scope));
+                             origin);
   container_host->SetControllerRegistration(registration,
                                             /*notify_controllerchange=*/false);
 
@@ -289,7 +289,7 @@ TEST_F(ServiceWorkerContextCoreTest,
 TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin_UnregisterFail) {
   const GURL script("https://www.example.com/a/sw.js");
   const GURL scope("https://www.example.com/a");
-  const GURL origin("https://www.example.com");
+  const url::Origin origin = url::Origin::Create(scope);
 
   // Register a service worker.
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -308,7 +308,7 @@ TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin_UnregisterFail) {
                   }));
   // Disable storage before it finishes. This causes the Unregister job to
   // complete with an error.
-  context()->storage()->Disable();
+  context()->GetStorageControl()->Disable();
   loop.Run();
 
   // The operation should still complete.

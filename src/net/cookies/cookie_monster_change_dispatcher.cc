@@ -60,8 +60,8 @@ void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
   if (!url_.is_empty() &&
       !cookie
            .IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive(),
-                                 change.access_semantics)
-           .IsInclude()) {
+                                 change.access_result.access_semantics)
+           .status.IsInclude()) {
     return;
   }
 

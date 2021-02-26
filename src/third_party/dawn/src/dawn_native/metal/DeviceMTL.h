@@ -17,7 +17,7 @@
 
 #include "dawn_native/dawn_platform.h"
 
-#include "common/Serial.h"
+#include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/metal/CommandRecordingContext.h"
 #include "dawn_native/metal/Forward.h"
@@ -31,8 +31,6 @@
 #include <mutex>
 
 namespace dawn_native { namespace metal {
-
-    class MapRequestTracker;
 
     class Device : public DeviceBase {
       public:
@@ -54,8 +52,6 @@ namespace dawn_native { namespace metal {
         CommandRecordingContext* GetPendingCommandContext();
         void SubmitPendingCommandBuffer();
 
-        MapRequestTracker* GetMapTracker() const;
-
         TextureBase* CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
                                                     IOSurfaceRef ioSurface,
                                                     uint32_t plane);
@@ -67,6 +63,13 @@ namespace dawn_native { namespace metal {
                                            BufferBase* destination,
                                            uint64_t destinationOffset,
                                            uint64_t size) override;
+        MaybeError CopyFromStagingToTexture(const StagingBufferBase* source,
+                                            const TextureDataLayout& dataLayout,
+                                            TextureCopy* dst,
+                                            const Extent3D& copySizePixels) override;
+
+        uint32_t GetOptimalBytesPerRowAlignment() const override;
+        uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
 
       private:
         Device(AdapterBase* adapter, id<MTLDevice> mtlDevice, const DeviceDescriptor* descriptor);
@@ -75,11 +78,14 @@ namespace dawn_native { namespace metal {
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
-        ResultOrError<BufferBase*> CreateBufferImpl(const BufferDescriptor* descriptor) override;
+        ResultOrError<Ref<BufferBase>> CreateBufferImpl(
+            const BufferDescriptor* descriptor) override;
         ResultOrError<ComputePipelineBase*> CreateComputePipelineImpl(
             const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
+        ResultOrError<QuerySetBase*> CreateQuerySetImpl(
+            const QuerySetDescriptor* descriptor) override;
         ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
@@ -100,11 +106,10 @@ namespace dawn_native { namespace metal {
         void InitTogglesFromDriver();
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;
-        Serial CheckAndUpdateCompletedSerials() override;
+        ExecutionSerial CheckAndUpdateCompletedSerials() override;
 
         id<MTLDevice> mMtlDevice = nil;
         id<MTLCommandQueue> mCommandQueue = nil;
-        std::unique_ptr<MapRequestTracker> mMapTracker;
 
         CommandRecordingContext mCommandContext;
 

@@ -36,6 +36,7 @@ const char kDiscourseContextHeaderName[] = "X-Additional-Discourse-Context";
 
 }  // namespace
 
+// Unit tests for the native |ContextualSearchDelegate|.
 class ContextualSearchDelegateTest : public testing::Test {
  public:
   ContextualSearchDelegateTest() {}
@@ -49,10 +50,10 @@ class ContextualSearchDelegateTest : public testing::Test {
     template_url_service_.reset(CreateTemplateURLService());
     delegate_.reset(new ContextualSearchDelegate(
         test_shared_url_loader_factory_, template_url_service_.get(),
-        base::Bind(
+        base::BindRepeating(
             &ContextualSearchDelegateTest::recordSearchTermResolutionResponse,
             base::Unretained(this)),
-        base::Bind(
+        base::BindRepeating(
             &ContextualSearchDelegateTest::recordSampleSelectionAvailable,
             base::Unretained(this))));
   }
@@ -424,7 +425,7 @@ TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidRange) {
   base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
   std::string selected_text = "Ob";
   CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 7, 9);
-  SetResponseStringAndSimulateResponse(selected_text, "0", "200");
+  SetResponseStringAndSimulateResponse(selected_text, "0", "1001");
 
   EXPECT_EQ(0, start_adjust());
   EXPECT_EQ(0, end_adjust());

@@ -72,6 +72,11 @@ Polymer({
     'updateSelected_(menuOptions, pref.value.*, prefKey)',
   ],
 
+  /** @override */
+  focus() {
+    this.$.dropdownMenu.focus();
+  },
+
   /**
    * Pass the selection change to the pref value.
    * @private
@@ -79,7 +84,7 @@ Polymer({
   onChange_() {
     const selected = this.$.dropdownMenu.value;
 
-    if (selected == this.notFoundValue_) {
+    if (selected === this.notFoundValue_) {
       return;
     }
 
@@ -115,14 +120,14 @@ Polymer({
 
     const prefValue = this.prefStringValue_();
     const option = this.menuOptions.find(function(menuItem) {
-      return menuItem.value == prefValue;
+      return menuItem.value.toString() === prefValue;
     });
 
     // Wait for the dom-repeat to populate the <select> before setting
     // <select>#value so the correct option gets selected.
     this.async(() => {
       this.$.dropdownMenu.value =
-          option == undefined ? this.notFoundValue_ : prefValue;
+          option === undefined ? this.notFoundValue_ : prefValue;
     });
   },
 
@@ -152,12 +157,12 @@ Polymer({
     }
 
     // Don't show "Custom" before the options load.
-    if (menuOptions === null || menuOptions.length == 0) {
+    if (menuOptions === null || menuOptions.length === 0) {
       return false;
     }
 
     const option = menuOptions.find((menuItem) => {
-      return menuItem.value == this.prefStringValue_();
+      return menuItem.value.toString() === this.prefStringValue_();
     });
     return !option;
   },
@@ -168,6 +173,6 @@ Polymer({
    */
   shouldDisableMenu_() {
     return this.disabled || this.isPrefEnforced() ||
-        this.menuOptions === undefined || this.menuOptions.length == 0;
+        this.menuOptions === undefined || this.menuOptions.length === 0;
   },
 });

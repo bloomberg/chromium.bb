@@ -8,24 +8,23 @@
 
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
-#include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/extension_force_install_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/auth/challenge_response/known_user_pref_utils.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
+#include "extensions/common/extension_id.h"
+#include "extensions/common/features/simple_feature.h"
 
 namespace chromeos {
 
@@ -33,12 +32,12 @@ namespace {
 
 constexpr char kUserEmail[] = "testuser@example.com";
 
-content::BrowserContext* GetBrowserContext() {
+Profile* GetProfile() {
   return ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
 extensions::ProcessManager* GetProcessManager() {
-  return extensions::ProcessManager::Get(GetBrowserContext());
+  return extensions::ProcessManager::Get(GetProfile());
 }
 
 }  // namespace
@@ -46,7 +45,7 @@ extensions::ProcessManager* GetProcessManager() {
 class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
  public:
   ChallengeResponseAuthKeysLoaderBrowserTest() {
-    // Required for TestCertificateProviderExtensionLoginScreenMixin
+    // Allow the forced installation of extensions in the background.
     needs_background_networking_ = true;
   }
   ChallengeResponseAuthKeysLoaderBrowserTest(
@@ -62,12 +61,19 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     challenge_response_auth_keys_loader_->SetMaxWaitTimeForTesting(
         base::TimeDelta::Max());
 
+    certificate_provider_extension_ =
+        std::make_unique<TestCertificateProviderExtension>(GetProfile());
+    extension_force_install_mixin_.InitWithDeviceStateMixin(
+        GetProfile(), &device_state_mixin_);
+
     // Register the ChallengeResponseKey for the user.
     user_manager::known_user::SaveKnownUser(account_id_);
   }
 
   void TearDownOnMainThread() override {
-    challenge_response_auth_keys_loader_.reset();
+    certificate_provider_extension_.reset();
+    if (!should_delete_loader_after_shutdown_)
+      challenge_response_auth_keys_loader_.reset();
     OobeBaseTest::TearDownOnMainThread();
   }
 
@@ -76,8 +82,7 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     ChallengeResponseKey challenge_response_key;
     challenge_response_key.set_public_key_spki_der(GetSpki());
     if (with_extension_id)
-      challenge_response_key.set_extension_id(
-          cert_provider_extension_mixin_.GetExtensionId());
+      challenge_response_key.set_extension_id(extension_id());
 
     challenge_response_keys.push_back(challenge_response_key);
     base::Value challenge_response_keys_value =
@@ -104,41 +109,12 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
   }
 
   void InstallExtension(bool wait_on_extension_loaded) {
-    cert_provider_extension_mixin_.AddExtensionForForceInstallation();
-    if (wait_on_extension_loaded) {
-      cert_provider_extension_mixin_.WaitUntilExtensionLoaded();
-    } else {
-      // Even though we do not want to wait until the extension is fully ready,
-      // wait until the extension has been registered as a force-installed
-      // login-screen extension in profile preferences.
-      WaitUntilPrefUpdated();
-    }
-  }
-
-  void PrefChangedCallback() {
-    const PrefService* prefs = ProfileHelper::GetSigninProfile()->GetPrefs();
-    const PrefService::Preference* pref =
-        prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-    if (pref->IsManaged() && wait_for_pref_change_run_loop_) {
-      wait_for_pref_change_run_loop_->Quit();
-    }
-  }
-
-  void CheckExtensionInstallPolicyApplied() {
-    // Check that the extension is registered as a force-installed login-screen
-    // extension.
-    const PrefService* const prefs =
-        ProfileHelper::GetSigninProfile()->GetPrefs();
-    const PrefService::Preference* const pref =
-        prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-    EXPECT_TRUE(pref);
-    EXPECT_TRUE(pref->IsManaged());
-    EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
-    EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
-
-    for (const auto& item : pref->GetValue()->DictItems()) {
-      EXPECT_EQ(item.first, GetExtensionId());
-    }
+    EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
+        TestCertificateProviderExtension::GetExtensionSourcePath(),
+        TestCertificateProviderExtension::GetExtensionPemPath(),
+        wait_on_extension_loaded
+            ? ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad
+            : ExtensionForceInstallMixin::WaitMode::kPrefSet));
   }
 
   std::vector<ChallengeResponseKey> LoadChallengeResponseKeys() {
@@ -151,55 +127,75 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     return challenge_response_keys;
   }
 
-  std::string GetSpki() {
-    return cert_provider_extension_mixin_.test_certificate_provider_extension()
-        ->GetCertificateSpki();
+  static std::string GetSpki() {
+    return TestCertificateProviderExtension::GetCertificateSpki();
   }
 
-  std::string GetExtensionId() {
-    return cert_provider_extension_mixin_.GetExtensionId();
+  static extensions::ExtensionId extension_id() {
+    return TestCertificateProviderExtension::extension_id();
   }
 
-  AccountId account_id() { return account_id_; }
+  AccountId account_id() const { return account_id_; }
 
   ChallengeResponseAuthKeysLoader* challenge_response_auth_keys_loader() {
     return challenge_response_auth_keys_loader_.get();
   }
 
- private:
-  void WaitUntilPrefUpdated() {
-    PrefChangeRegistrar pref_change_registrar;
-    pref_change_registrar.Init(ProfileHelper::GetSigninProfile()->GetPrefs());
-    pref_change_registrar.Add(
-        extensions::pref_names::kLoginScreenExtensions,
-        base::BindRepeating(
-            &ChallengeResponseAuthKeysLoaderBrowserTest::PrefChangedCallback,
-            weak_ptr_factory_.GetWeakPtr()));
-    const PrefService* prefs = ProfileHelper::GetSigninProfile()->GetPrefs();
-    const PrefService::Preference* pref =
-        prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-    if (!pref->IsManaged()) {
-      base::RunLoop wait_for_pref_change_run_loop;
-      wait_for_pref_change_run_loop_ = &wait_for_pref_change_run_loop;
-      wait_for_pref_change_run_loop.Run();
-    }
+  void DeleteChallengeResponseAuthKeysLoader() {
+    challenge_response_auth_keys_loader_.reset();
   }
 
-  AccountId account_id_{AccountId::FromUserEmail(kUserEmail)};
+  void set_should_delete_loader_after_shutdown() {
+    should_delete_loader_after_shutdown_ = true;
+  }
+
+ private:
+  const AccountId account_id_{AccountId::FromUserEmail(kUserEmail)};
+
+  // Bypass "signin_screen" feature only enabled for allowlisted extensions.
+  extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest
+      feature_allowlist_{extension_id()};
 
   DeviceStateMixin device_state_mixin_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-  TestCertificateProviderExtensionLoginScreenMixin
-      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_,
-                                     /*load_extension_immediately=*/false};
-  base::RunLoop* wait_for_pref_change_run_loop_ = nullptr;
+  std::unique_ptr<TestCertificateProviderExtension>
+      certificate_provider_extension_;
+  ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
 
   std::unique_ptr<ChallengeResponseAuthKeysLoader>
       challenge_response_auth_keys_loader_;
 
+  // Whether `challenge_response_auth_keys_loader_` should be destroyed after
+  // the browser shutdown, not before it.
+  bool should_delete_loader_after_shutdown_ = false;
+
   base::WeakPtrFactory<ChallengeResponseAuthKeysLoaderBrowserTest>
       weak_ptr_factory_{this};
 };
+
+// Tests the error case when no key is registered for the current user.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       NoKeyRegistered) {
+  InstallExtension(/*wait_on_extension_loaded=*/true);
+
+  // Challenge Response Auth Keys cannot be loaded.
+  EXPECT_FALSE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+  EXPECT_EQ(LoadChallengeResponseKeys().size(), static_cast<size_t>(0));
+}
+
+// Tests the error case when no extension providing keys is installed.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       NoExtensions) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // LoadAvailableKeys returns no keys, since there's no extension available.
+  EXPECT_EQ(LoadChallengeResponseKeys().size(), static_cast<size_t>(0));
+}
 
 // Tests that auth keys can be loaded with an extension providing them already
 // in place.
@@ -207,7 +203,6 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysAfterExtensionIsInstalled) {
   RegisterChallengeResponseKey(/*with_extension_id=*/true);
   InstallExtension(/*wait_on_extension_loaded=*/true);
-  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -216,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
-  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
+  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), extension_id());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
 }
 
@@ -229,7 +224,6 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysWhileExtensionIsBeingInstalled) {
   RegisterChallengeResponseKey(/*with_extension_id=*/true);
   InstallExtension(/*wait_on_extension_loaded=*/false);
-  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -238,8 +232,8 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
-  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
+  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), extension_id());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
 }
 
@@ -258,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns before any keys are available.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{0});
+  EXPECT_EQ(challenge_response_keys.size(), static_cast<size_t>(0));
 }
 
 // Tests flow when there is no stored extension_id, for backward compatibility.
@@ -266,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysWithoutExtensionId) {
   RegisterChallengeResponseKey(/*with_extension_id=*/false);
   InstallExtension(/*wait_on_extension_loaded=*/true);
-  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -275,9 +268,51 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
-  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
+  EXPECT_EQ(challenge_response_keys.at(0).extension_id(), extension_id());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
+}
+
+// Tests the case when the loader is destroyed before the operation completes.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       DestroyedBeforeCompletion) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+  InstallExtension(/*wait_on_extension_loaded=*/false);
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // Start the LoadAvailableKeys operation. The operation is expected to never
+  // complete.
+  challenge_response_auth_keys_loader()->LoadAvailableKeys(
+      account_id(),
+      base::BindOnce(
+          [](std::vector<ChallengeResponseKey> challenge_response_keys) {
+            ADD_FAILURE();
+          }));
+  // Destroy the loader immediately.
+  DeleteChallengeResponseAuthKeysLoader();
+}
+
+// Tests the case when the load operation isn't completed by the time the
+// browser shuts down.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       AfterShutdown) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+  InstallExtension(/*wait_on_extension_loaded=*/false);
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // Start the key loading operation. Intentionally do not wait for its
+  // completion.
+  challenge_response_auth_keys_loader()->LoadAvailableKeys(account_id(),
+                                                           base::DoNothing());
+  // Postpone destroying the loader until after the browser shutdown. No crash
+  // should occur.
+  set_should_delete_loader_after_shutdown();
 }
 
 class ChallengeResponseExtensionLoadObserverTest
@@ -328,7 +363,7 @@ class ChallengeResponseExtensionLoadObserverTest
 
   void OnBackgroundHostCreated(
       extensions::ExtensionHost* extension_host) override {
-    if (extension_host->extension_id() == GetExtensionId()) {
+    if (extension_host->extension_id() == extension_id()) {
       extension_host_ = extension_host;
       extension_host_created_loop_->Quit();
     }
@@ -354,7 +389,6 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseExtensionLoadObserverTest,
 
   RegisterChallengeResponseKey(/*with_extension_id=*/true);
   InstallExtension(/*wait_on_extension_loaded=*/false);
-  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(

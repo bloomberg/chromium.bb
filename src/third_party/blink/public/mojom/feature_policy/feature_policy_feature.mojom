@@ -7,10 +7,10 @@ module blink.mojom;
 // These values map to the features which can be controlled by Feature Policy.
 //
 // Features are listed in
-// https://github.com/WICG/feature-policy/blob/master/features.md. Not all
-// listed features are supported in Blink, and many are gated by runtime flags.
-// See renderer/platform/feature_policy/feature_policy.cc for the feature names
-// which will be recognized in policy declarations.
+// https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md.
+// Not all listed features are supported in Blink, and many are gated by runtime
+// flags. See renderer/core/feature_policy/feature_policy_features.json5 for the
+// feature names which will be recognized in policy declarations.
 enum FeaturePolicyFeature {
   kNotFound = 0,
   // Controls access to media autoplay.
@@ -29,20 +29,12 @@ enum FeaturePolicyFeature {
   kMidiFeature = 7,
   // Controls access to PaymentRequest interface.
   kPayment = 8,
-  // Controls access to document.cookie attribute.
-  kDocumentCookie = 10,
   // Controls access to document.domain attribute.
   kDocumentDomain = 11,
-  // Controls whether synchronous script elements will run.
-  kSyncScript = 12,
   // Controls use of synchronous XMLHTTPRequest API.
   kSyncXHR = 13,
   // Controls access to the WebUSB API.
   kUsb = 14,
-  // Controls access to AOM event listeners.
-  kAccessibilityEvents = 15,
-  // Controls use of WebVR API.
-  kWebVr = 16,
   // The following features control access to the corresponding sensor classes.
   // Fusion sensor APIs (e.g. LinearAcceleration, OrientationSensor-based
   // classes)require all of the features that are inputs into that API to be
@@ -55,13 +47,6 @@ enum FeaturePolicyFeature {
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.
   kVerticalScroll = 27,
-  // Controls the ability of the document to use several dynamic markup API
-  // which interfere with document's input stream (document.write(),
-  // document.close(), etc.).
-  kDocumentWrite = 28,
-  // TODO(ekaramad): kLazyLoad is deprecated; remove.
-  // Used to enforce lazyloading for a frame and any nested <iframe> or image.
-  kLazyLoad = 29,
   // Controls access to Screen Wake Lock
   kScreenWakeLock = 31,
   // These are the defined sandbox features implemented as policy-controlled
@@ -84,9 +69,6 @@ enum FeaturePolicyFeature {
   kHid = 43,
   // Controls access to Idle Detection
   kIdleDetection = 44,
-
-  // Loading policies.
-  kLoadingFrameDefaultEager = 48,
 
   // Implements sandbox flag: allow-downloads.
   kDownloads = 49,
@@ -119,9 +101,6 @@ enum FeaturePolicyFeature {
   // Web Authentication (https://w3c.github.io/webauthn/#sctn-iframe-guidance)
   kPublicKeyCredentialsGet = 67,
 
-  // Controls use of Clipboard API.
-  kClipboard = 68,
-
   //Additional Client Hint
   kClientHintUAMobile = 69,
 
@@ -139,6 +118,21 @@ enum FeaturePolicyFeature {
 
   // Client Hint for UA platform version.
   kClientHintUAPlatformVersion = 74,
+
+  // cross-origin isolated permission
+  kCrossOriginIsolated = 75,
+
+  // Controls use of Clipboard API Read.
+  kClipboardRead = 76,
+
+  // Controls use of Clipboard API Write.
+  kClipboardWrite = 77,
+
+  // Controls use of Web Share API.
+  kWebShare = 78,
+
+  // Controls access to gamepads interface
+  kGamepad = 79,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

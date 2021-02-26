@@ -33,8 +33,8 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/back_forward_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
@@ -44,7 +44,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/window_open_disposition.h"
@@ -74,6 +73,10 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace {
 
@@ -115,13 +118,115 @@ class WebAppToolbarActionsBar : public ToolbarActionsBar {
   DISALLOW_COPY_AND_ASSIGN(WebAppToolbarActionsBar);
 };
 
+template <class BaseClass>
+class WebAppToolbarButton : public BaseClass {
+ public:
+  using BaseClass::BaseClass;
+  WebAppToolbarButton(const WebAppToolbarButton&) = delete;
+  WebAppToolbarButton& operator=(const WebAppToolbarButton&) = delete;
+  ~WebAppToolbarButton() override = default;
+
+#if defined(OS_WIN)
+  bool ShouldUseWindowsIconsForMinimalUI() const {
+    return base::win::GetVersion() >= base::win::Version::WIN10;
+  }
+#endif
+
+  void SetIconColor(SkColor icon_color) {
+    if (icon_color_ == icon_color)
+      return;
+
+    icon_color_ = icon_color;
+    UpdateIcon();
+  }
+
+  virtual const gfx::VectorIcon* GetAlternativeIcon() const { return nullptr; }
+
+  // ToolbarButton:
+  void UpdateIcon() override {
+    if (const auto* icon = GetAlternativeIcon()) {
+      BaseClass::UpdateIconsWithStandardColors(*icon);
+      return;
+    }
+
+    BaseClass::UpdateIcon();
+  }
+
+ protected:
+  // ToolbarButton:
+  SkColor GetForegroundColor(views::Button::ButtonState state) const override {
+    if (state == views::Button::STATE_DISABLED)
+      return SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
+
+    return icon_color_;
+  }
+
+ private:
+  SkColor icon_color_ = gfx::kPlaceholderColor;
+};
+
+class WebAppToolbarBackButton : public WebAppToolbarButton<BackForwardButton> {
+ public:
+  WebAppToolbarBackButton(PressedCallback callback, Browser* browser);
+  WebAppToolbarBackButton(const WebAppToolbarBackButton&) = delete;
+  WebAppToolbarBackButton& operator=(const WebAppToolbarBackButton&) = delete;
+  ~WebAppToolbarBackButton() override = default;
+
+  // WebAppToolbarButton:
+  const gfx::VectorIcon* GetAlternativeIcon() const override;
+};
+
+WebAppToolbarBackButton::WebAppToolbarBackButton(PressedCallback callback,
+                                                 Browser* browser)
+    : WebAppToolbarButton<BackForwardButton>(
+          BackForwardButton::Direction::kBack,
+          std::move(callback),
+          browser) {}
+
+const gfx::VectorIcon* WebAppToolbarBackButton::GetAlternativeIcon() const {
+#if defined(OS_WIN)
+  if (ShouldUseWindowsIconsForMinimalUI()) {
+    return ui::TouchUiController::Get()->touch_ui()
+               ? &kBackArrowWindowsTouchIcon
+               : &kBackArrowWindowsIcon;
+  }
+#endif
+  return nullptr;
+}
+
+class WebAppToolbarReloadButton : public WebAppToolbarButton<ReloadButton> {
+ public:
+  using WebAppToolbarButton<ReloadButton>::WebAppToolbarButton;
+  WebAppToolbarReloadButton(const WebAppToolbarReloadButton&) = delete;
+  WebAppToolbarReloadButton& operator=(const WebAppToolbarReloadButton&) =
+      delete;
+  ~WebAppToolbarReloadButton() override = default;
+
+  // WebAppToolbarButton:
+  const gfx::VectorIcon* GetAlternativeIcon() const override;
+};
+
+const gfx::VectorIcon* WebAppToolbarReloadButton::GetAlternativeIcon() const {
+#if defined(OS_WIN)
+  if (ShouldUseWindowsIconsForMinimalUI()) {
+    const bool is_reload = visible_mode() == ReloadButton::Mode::kReload;
+    if (ui::TouchUiController::Get()->touch_ui()) {
+      return is_reload ? &kReloadWindowsTouchIcon
+                       : &kNavigateStopWindowsTouchIcon;
+    }
+    return is_reload ? &kReloadWindowsIcon : &kNavigateStopWindowsIcon;
+  }
+#endif
+  return nullptr;
+}
+
 int HorizontalPaddingBetweenPageActionsAndAppMenuButtons() {
   return views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
 }
 
 int WebAppFrameRightMargin() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return kWebAppMenuMargin;
 #else
   return HorizontalPaddingBetweenPageActionsAndAppMenuButtons();
@@ -134,15 +239,6 @@ void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
                                      bool is_browser_focus_mode) {
   if (!is_browser_focus_mode)
     toolbar_button->SetLayoutInsets(gfx::Insets(2));
-}
-
-const gfx::VectorIcon& GetBackImage(bool touch_ui) {
-#if defined(OS_WIN)
-  if (UseWindowsIconsForMinimalUI())
-    return touch_ui ? kBackArrowWindowsTouchIcon : kBackArrowWindowsIcon;
-#endif
-
-  return touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
 }
 
 }  // namespace
@@ -252,33 +348,17 @@ WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
 // Holds controls in the far left of the toolbar.
 class WebAppFrameToolbarView::NavigationButtonContainer
     : public views::View,
-      public CommandObserver,
-      public views::ButtonListener {
+      public CommandObserver {
  public:
   explicit NavigationButtonContainer(BrowserView* browser_view);
   ~NavigationButtonContainer() override;
 
-  ToolbarButton* back_button() { return back_button_; }
-
-  ReloadButton* reload_button() { return reload_button_; }
+  WebAppToolbarBackButton* back_button() { return back_button_; }
+  WebAppToolbarReloadButton* reload_button() { return reload_button_; }
 
   void SetIconColor(SkColor icon_color) {
-    icon_color_ = icon_color;
-    GenerateMinimalUIButtonImages();
-  }
-
-  void GenerateMinimalUIButtonImages() {
-    const SkColor disabled_color =
-        SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
-
-    const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-    const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
-    back_button_->SetImage(views::Button::STATE_NORMAL,
-                           gfx::CreateVectorIcon(back_image, icon_color_));
-    back_button_->SetImage(views::Button::STATE_DISABLED,
-                           gfx::CreateVectorIcon(back_image, disabled_color));
-
-    reload_button_->SetColors(icon_color_, disabled_color);
+    back_button_->SetIconColor(icon_color);
+    reload_button_->SetIconColor(icon_color);
   }
 
  protected:
@@ -296,37 +376,23 @@ class WebAppFrameToolbarView::NavigationButtonContainer
     }
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    chrome::ExecuteCommandWithDisposition(
-        browser_view_->browser(), sender->tag(),
-        ui::DispositionFromEventFlags(event.flags()));
-  }
-
  private:
   // views::View:
   const char* GetClassName() const override {
     return "WebAppFrameToolbarView::NavigationButtonContainer";
   }
 
-  // The containing browser view.
-  BrowserView* const browser_view_;
-
-  SkColor icon_color_ = gfx::kPlaceholderColor;
-
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
-      ui::TouchUiController::Get()->RegisterCallback(base::BindRepeating(
-          &NavigationButtonContainer::GenerateMinimalUIButtonImages,
-          base::Unretained(this)));
+  // The containing browser.
+  Browser* const browser_;
 
   // These members are owned by the views hierarchy.
-  ToolbarButton* back_button_ = nullptr;
-  ReloadButton* reload_button_ = nullptr;
+  WebAppToolbarBackButton* back_button_ = nullptr;
+  WebAppToolbarReloadButton* reload_button_ = nullptr;
 };
 
 WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
     BrowserView* browser_view)
-    : browser_view_(browser_view) {
+    : browser_(browser_view->browser()) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
@@ -337,25 +403,35 @@ WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  back_button_ = AddChildView(CreateBackButton(this, browser_view_->browser()));
-  reload_button_ = AddChildView(CreateReloadButton(
-      browser_view_->browser(), ReloadButton::IconStyle::kMinimalUi));
+  back_button_ = AddChildView(std::make_unique<WebAppToolbarBackButton>(
+      base::BindRepeating(
+          [](Browser* browser, const ui::Event& event) {
+            chrome::ExecuteCommandWithDisposition(
+                browser, IDC_BACK,
+                ui::DispositionFromEventFlags(event.flags()));
+          },
+          browser_),
+      browser_));
+  back_button_->set_tag(IDC_BACK);
+  reload_button_ = AddChildView(std::make_unique<WebAppToolbarReloadButton>(
+      browser_->command_controller()));
+  reload_button_->set_tag(IDC_RELOAD);
 
-  const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
+  const bool is_browser_focus_mode = browser_->is_focus_mode();
   SetInsetsForWebAppToolbarButton(back_button_, is_browser_focus_mode);
   SetInsetsForWebAppToolbarButton(reload_button_, is_browser_focus_mode);
 
   views::SetHitTestComponent(back_button_, static_cast<int>(HTCLIENT));
   views::SetHitTestComponent(reload_button_, static_cast<int>(HTCLIENT));
 
-  chrome::AddCommandObserver(browser_view_->browser(), IDC_BACK, this);
-  chrome::AddCommandObserver(browser_view_->browser(), IDC_RELOAD, this);
+  chrome::AddCommandObserver(browser_, IDC_BACK, this);
+  chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
 }
 
 WebAppFrameToolbarView::NavigationButtonContainer::
     ~NavigationButtonContainer() {
-  chrome::RemoveCommandObserver(browser_view_->browser(), IDC_BACK, this);
-  chrome::RemoveCommandObserver(browser_view_->browser(), IDC_RELOAD, this);
+  chrome::RemoveCommandObserver(browser_, IDC_BACK, this);
+  chrome::RemoveCommandObserver(browser_, IDC_RELOAD, this);
 }
 
 // Holds controls in the far right of the toolbar.
@@ -625,15 +701,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
 
   // Insert the default page action icons.
   PageActionIconParams params;
-  params.types_enabled.push_back(PageActionIconType::kFind);
-  params.types_enabled.push_back(PageActionIconType::kManagePasswords);
-  params.types_enabled.push_back(PageActionIconType::kTranslate);
-  params.types_enabled.push_back(PageActionIconType::kZoom);
-  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
-    params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
-  params.types_enabled.push_back(PageActionIconType::kCookieControls);
-  params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
-  params.types_enabled.push_back(PageActionIconType::kSaveCard);
+  params.types_enabled = app_controller->GetTitleBarPageActions();
   params.icon_color = gfx::kPlaceholderColor;
   params.between_icon_spacing =
       HorizontalPaddingBetweenPageActionsAndAppMenuButtons();
@@ -727,6 +795,8 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   SetID(VIEW_ID_WEB_APP_FRAME_TOOLBAR);
 
   {
+    // TODO(tluk) fix the need for both LayoutInContainer() and a layout
+    // manager for frame layout.
     views::FlexLayout* layout =
         SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kHorizontal);
@@ -806,6 +876,8 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
     int trailing_x,
     int y,
     int available_height) {
+  SetVisible(available_height > 0);
+
   if (available_height == 0) {
     SetSize(gfx::Size());
     return std::pair<int, int>(0, 0);

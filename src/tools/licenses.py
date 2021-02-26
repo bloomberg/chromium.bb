@@ -104,19 +104,25 @@ PRUNE_PATHS = set([
 
 # Directories we don't scan through.
 VCS_METADATA_DIRS = ('.svn', '.git')
-PRUNE_DIRS = (VCS_METADATA_DIRS +
-              ('out', 'Debug', 'Release',  # build files
-               'layout_tests'))            # lots of subdirs
+PRUNE_DIRS = VCS_METADATA_DIRS + ('layout_tests', )  # lots of subdirs
 
 # A third_party directory can define this file, containing a list of
 # subdirectories to process in addition to itself. Intended for directories
 # that contain multiple others as transitive dependencies.
 ADDITIONAL_PATHS_FILENAME = 'additional_readme_paths.json'
 
+# A list of paths that contain license information but that would otherwise
+# not be included.  Possible reasons include:
+#   - Third party directories in //clank which are considered to be Google-owned
+#   - Directories that are directly checked out from upstream, and thus
+#     don't have a README.chromium
+#   - Directories that contain example code, or build tooling.
+#   - Nested third_party code inside other third_party libraries.
 ADDITIONAL_PATHS = (
     os.path.join('chrome', 'common', 'extensions', 'docs', 'examples'),
     os.path.join('chrome', 'test', 'chromeos', 'autotest'),
     os.path.join('chrome', 'test', 'data'),
+    os.path.join('clank', 'third_party', 'elements'),
     os.path.join('native_client'),
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
@@ -170,11 +176,46 @@ SPECIAL_CASES = {
         # Absolute path here is resolved as relative to the source root.
         "License File": "/LICENSE.chromium_os",
     },
+    os.path.join('third_party', 'devtools-frontend'): {
+        # TODO(crbug.com/1151057): Remove this special case when issue is fixed.
+        "Name": "Devtools-Frontend",
+        "URL": "https://chromium.googlesource.com/devtools/devtools-frontend",
+        "License": "BSD",
+        "License File": "src/LICENSE",
+    },
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
         "URL": "http://code.google.com/p/linux-syscall-support/",
         "License": "BSD",
         "License File": "/LICENSE",
+    },
+    os.path.join('third_party', 'openscreen', 'src', 'third_party', 'abseil'): {
+        "Name": "abseil",
+        "URL": "https://github.com/abseil/abseil-cpp/",
+        "License": "Apache 2.0",
+        "License File": "/third_party/abseil-cpp/LICENSE",
+    },
+    os.path.join('third_party', 'openscreen', 'src', 'third_party',
+                 'boringssl'):
+    {
+        "Name": "BoringSSL",
+        "URL": "https://boringssl.googlesource.com/boringssl/",
+        "License": "BSDish",
+        "License File": "/third_party/boringssl/src/LICENSE",
+    },
+    os.path.join('third_party', 'openscreen', 'src', 'third_party', 'jsoncpp'):
+    {
+        "Name": "jsoncpp",
+        "URL": "https://github.com/open-source-parsers/jsoncpp",
+        "License": "MIT",
+        "License File": "/third_party/jsoncpp/LICENSE",
+    },
+    os.path.join('third_party', 'openscreen', 'src', 'third_party', 'mozilla'):
+    {
+        "Name": "mozilla",
+        "URL": "https://github.com/mozilla",
+        "License": "MPL 1.1/GPL 2.0/LGPL 2.1",
+        "License File": "LICENSE.txt",
     },
     os.path.join('third_party', 'pdfium'): {
         "Name": "PDFium",
@@ -197,15 +238,15 @@ SPECIAL_CASES = {
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
-    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
-                 'lss'): {
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party', 'lss'): {
         "Name": "linux-syscall-support",
         "URL": "https://chromium.googlesource.com/linux-syscall-support/",
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
-                 'mini_chromium'): {
+                 'mini_chromium'):
+    {
         "Name": "mini_chromium",
         "URL": "https://chromium.googlesource.com/chromium/mini_chromium/",
         "License": "BSD",
@@ -217,8 +258,8 @@ SPECIAL_CASES = {
         "License": "Apple Public Source License 2.0",
         "License File": "APPLE_LICENSE",
     },
-    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
-                 'zlib'): {
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party', 'zlib'):
+    {
         "Name": "zlib",
         "URL": "https://zlib.net/",
         "License": "zlib",
@@ -269,8 +310,8 @@ SPECIAL_CASES = {
         "URL": "http://www.netlib.org/fdlibm/",
         "License": "Freely Distributable",
         # Absolute path here is resolved as relative to the source root.
-        "License File" : "/v8/LICENSE.fdlibm",
-        "License Android Compatible" : "yes",
+        "License File": "/v8/LICENSE.fdlibm",
+        "License Android Compatible": "yes",
     },
     os.path.join('third_party', 'khronos_glcts'): {
         # These sources are not shipped, are not public, and it isn't
@@ -322,7 +363,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'ashmem'),
     os.path.join('third_party', 'blink'),
     os.path.join('third_party', 'bspatch'),
-    os.path.join('third_party', 'cacheinvalidation'),
     os.path.join('third_party', 'cld'),
     os.path.join('third_party', 'flot'),
     os.path.join('third_party', 'gtk+'),
@@ -334,7 +374,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'libXNVCtrl'),
     os.path.join('third_party', 'libevent'),
     os.path.join('third_party', 'libjpeg'),
-    os.path.join('third_party', 'libovr'),
     os.path.join('third_party', 'libusb'),
     os.path.join('third_party', 'libxslt'),
     os.path.join('third_party', 'lss'),
@@ -464,13 +503,24 @@ def FilterDirsWithFiles(dirs_list, root):
   return [x for x in dirs_list if ContainsFiles(x, root)]
 
 
+def ProcessAdditionalReadmePathsJson(root, dirname, third_party_dirs):
+  """For a given directory, process the additional readme paths, and add to
+    third_party_dirs."""
+  additional_paths_file = os.path.join(root, dirname, ADDITIONAL_PATHS_FILENAME)
+  if os.path.exists(additional_paths_file):
+    with open(additional_paths_file) as paths_file:
+      extra_paths = json.load(paths_file)
+      third_party_dirs.update([os.path.join(dirname, p) for p in extra_paths])
+
+
 def FindThirdPartyDirs(prune_paths, root):
   """Find all third_party directories underneath the source root."""
   third_party_dirs = set()
   for path, dirs, files in os.walk(root):
     path = path[len(root) + 1:]  # Pretty up the path.
 
-    if path in prune_paths:
+    # .gitignore ignores /out*/, so do the same here.
+    if path in prune_paths or path.startswith('out'):
       dirs[:] = []
       continue
 
@@ -485,15 +535,10 @@ def FindThirdPartyDirs(prune_paths, root):
       # Add all subdirectories that are not marked for skipping.
       for dir in dirs:
         dirpath = os.path.join(path, dir)
-        additional_paths_file = os.path.join(root, dirpath,
-                                             ADDITIONAL_PATHS_FILENAME)
         if dirpath not in prune_paths:
           third_party_dirs.add(dirpath)
-        if os.path.exists(additional_paths_file):
-          with open(additional_paths_file) as paths_file:
-            extra_paths = json.load(paths_file)
-            third_party_dirs.update(
-                [os.path.join(dirpath, p) for p in extra_paths])
+
+        ProcessAdditionalReadmePathsJson(root, dirpath, third_party_dirs)
 
       # Don't recurse into any subdirs from here.
       dirs[:] = []
@@ -507,6 +552,7 @@ def FindThirdPartyDirs(prune_paths, root):
   for dir in ADDITIONAL_PATHS:
     if dir not in prune_paths:
       third_party_dirs.add(dir)
+      ProcessAdditionalReadmePathsJson(root, dir, third_party_dirs)
 
   return third_party_dirs
 
@@ -664,6 +710,7 @@ def GenerateCredits(
   entries.append(
       MetadataToTemplateEntry(chromium_license_metadata, entry_template))
 
+  entries_by_name = {}
   for path in third_party_dirs:
     try:
       metadata = ParseDir(path, _REPOSITORY_ROOT)
@@ -680,7 +727,15 @@ def GenerateCredits(
       # updated to provide --gn-target to this script.
       if path in KNOWN_NON_IOS_LIBRARIES:
         continue
-    entries.append(MetadataToTemplateEntry(metadata, entry_template))
+
+    new_entry = MetadataToTemplateEntry(metadata, entry_template)
+    # Skip entries that we've already seen (it exists in multiple directories).
+    prev_entry = entries_by_name.setdefault(new_entry['name'], new_entry)
+    if prev_entry is not new_entry and (
+        prev_entry['content'] == new_entry['content']):
+      continue
+
+    entries.append(new_entry)
 
   entries.sort(key=lambda entry: (entry['name'].lower(), entry['content']))
   for entry_id, entry in enumerate(entries):
@@ -750,11 +805,11 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
   # Add necessary third_party.
   for directory in sorted(third_party_dirs):
     metadata = ParseDir(directory, _REPOSITORY_ROOT, require_license_file=True)
-    content.append('-' * 20)
-    content.append(directory.split(os.sep)[-1])
-    content.append('-' * 20)
     license_file = metadata['License File']
     if license_file and license_file != NOT_SHIPPED:
+      content.append('-' * 20)
+      content.append(directory.split(os.sep)[-1])
+      content.append('-' * 20)
       content.append(_ReadFile(license_file))
 
   content_text = '\n'.join(content)

@@ -4,13 +4,18 @@
 
 package org.chromium.weblayer_private;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.browser_ui.styles.R;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
@@ -24,6 +29,9 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
  * Implementation of RemoteFragmentImpl which forwards logic to BrowserImpl.
  */
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
+    private static int sResumedCount;
+    private static long sSessionStartTimeMs;
+
     private final ProfileImpl mProfile;
     private final String mPersistenceId;
 
@@ -42,8 +50,15 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
             ProfileManager profileManager, IRemoteFragmentClient client, Bundle fragmentArgs) {
         super(client);
         mPersistenceId = fragmentArgs.getString(BrowserFragmentArgs.PERSISTENCE_ID);
-        mProfile =
-                profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME));
+        String name = fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME);
+
+        boolean isIncognito;
+        if (fragmentArgs.containsKey(BrowserFragmentArgs.IS_INCOGNITO)) {
+            isIncognito = fragmentArgs.getBoolean(BrowserFragmentArgs.IS_INCOGNITO, false);
+        } else {
+            isIncognito = "".equals(name);
+        }
+        mProfile = profileManager.getProfile(name, isIncognito);
     }
 
     @Override
@@ -127,19 +142,32 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onStop() {
         super.onStop();
-        mBrowser.onFragmentStop();
+        Activity activity = getActivity();
+        mBrowser.onFragmentStop(activity != null && activity.getChangingConfigurations() != 0);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        sResumedCount++;
+        if (sResumedCount == 1) sSessionStartTimeMs = SystemClock.uptimeMillis();
         mBrowser.onFragmentResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        sResumedCount--;
+        if (sResumedCount == 0) {
+            long deltaMs = SystemClock.uptimeMillis() - sSessionStartTimeMs;
+            RecordHistogram.recordLongTimesHistogram("Session.TotalDuration", deltaMs);
+        }
         mBrowser.onFragmentPause();
+    }
+
+    @Nullable
+    public BrowserImpl getBrowser() {
+        return mBrowser;
     }
 
     public IBrowserFragment asIBrowserFragment() {

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -90,14 +91,18 @@ void SetKeyframeValue(Element* element,
   StyleSheetContents* style_sheet_contents = document.ElementSheet().Contents();
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
+  SecureContextMode secure_context_mode =
+      document.GetExecutionContext()
+          ? document.GetExecutionContext()->GetSecureContextMode()
+          : SecureContextMode::kInsecureContext;
   if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyID::kVariable
             ? keyframe.SetCSSPropertyValue(AtomicString(property), value,
-                                           document.GetSecureContextMode(),
+                                           secure_context_mode,
                                            style_sheet_contents)
             : keyframe.SetCSSPropertyValue(css_property, value,
-                                           document.GetSecureContextMode(),
+                                           secure_context_mode,
                                            style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
@@ -115,9 +120,9 @@ void SetKeyframeValue(Element* element,
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
   if (css_property != CSSPropertyID::kInvalid) {
-    keyframe.SetPresentationAttributeValue(
-        CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
-        style_sheet_contents);
+    keyframe.SetPresentationAttributeValue(CSSProperty::Get(css_property),
+                                           value, secure_context_mode,
+                                           style_sheet_contents);
     return;
   }
   const QualifiedName* svg_attribute =
@@ -315,10 +320,10 @@ StringKeyframeVector ConvertArrayForm(Element* element,
   double previous_offset = -std::numeric_limits<double>::infinity();
   const wtf_size_t num_processed_keyframes = processed_base_keyframes.size();
   for (wtf_size_t i = 0; i < num_processed_keyframes; ++i) {
-    if (!processed_base_keyframes[i]->hasOffset())
+    if (!processed_base_keyframes[i]->hasOffsetNonNull())
       continue;
 
-    double offset = processed_base_keyframes[i]->offset();
+    double offset = processed_base_keyframes[i]->offsetNonNull();
     if (offset < previous_offset) {
       exception_state.ThrowTypeError(
           "Offsets must be montonically non-decreasing.");
@@ -331,10 +336,10 @@ StringKeyframeVector ConvertArrayForm(Element* element,
   // offset is non-null and less than zero or greater than one, throw a
   // TypeError and abort these steps.
   for (wtf_size_t i = 0; i < num_processed_keyframes; ++i) {
-    if (!processed_base_keyframes[i]->hasOffset())
+    if (!processed_base_keyframes[i]->hasOffsetNonNull())
       continue;
 
-    double offset = processed_base_keyframes[i]->offset();
+    double offset = processed_base_keyframes[i]->offsetNonNull();
     if (offset < 0 || offset > 1) {
       exception_state.ThrowTypeError(
           "Offsets must be null or in the range [0,1].");
@@ -703,6 +708,13 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
                            ? element->GetDocument()
                            : *LocalDOMWindow::From(script_state)->document();
 
+  // Map logical to physical properties.
+  const ComputedStyle* style = element ? element->GetComputedStyle() : nullptr;
+  TextDirection text_direction =
+      style ? style->Direction() : TextDirection::kLtr;
+  WritingMode writing_mode =
+      style ? style->GetWritingMode() : WritingMode::kHorizontalTb;
+
   StringKeyframeVector parsed_keyframes;
   if (script_iterator.IsNull()) {
     parsed_keyframes = ConvertObjectForm(element, document, keyframes_obj,
@@ -711,6 +723,11 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
     parsed_keyframes =
         ConvertArrayForm(element, document, std::move(script_iterator),
                          script_state, exception_state);
+  }
+
+  for (wtf_size_t i = 0; i < parsed_keyframes.size(); i++) {
+    StringKeyframe* keyframe = parsed_keyframes[i];
+    keyframe->SetLogicalPropertyResolutionContext(text_direction, writing_mode);
   }
 
   if (!ValidatePartialKeyframes(parsed_keyframes)) {

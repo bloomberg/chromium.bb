@@ -21,21 +21,42 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   ~FakeSystemProxyClient() override;
 
   // SystemProxyClient implementation.
-  void SetSystemTrafficCredentials(
-      const system_proxy::SetSystemTrafficCredentialsRequest& request,
-      SetSystemTrafficCredentialsCallback callback) override;
-  void ShutDownDaemon(ShutDownDaemonCallback callback) override;
-  void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) override;
+  void SetAuthenticationDetails(
+      const system_proxy::SetAuthenticationDetailsRequest& request,
+      SetAuthenticationDetailsCallback callback) override;
+  void SetWorkerActiveSignalCallback(WorkerActiveCallback callback) override;
+  void SetAuthenticationRequiredSignalCallback(
+      AuthenticationRequiredCallback callback) override;
+  void ClearUserCredentials(
+      const system_proxy::ClearUserCredentialsRequest& request,
+      ClearUserCredentialsCallback callback) override;
+  void ShutDownProcess(const system_proxy::ShutDownRequest& request,
+                       ShutDownProcessCallback callback) override;
+
+  void ConnectToWorkerSignals() override;
 
   SystemProxyClient::TestInterface* GetTestInterface() override;
 
   // SystemProxyClient::TestInterface implementation.
-  int GetSetSystemTrafficCredentialsCallCount() const override;
+  int GetSetAuthenticationDetailsCallCount() const override;
   int GetShutDownCallCount() const override;
+  int GetClearUserCredentialsCount() const override;
+  system_proxy::SetAuthenticationDetailsRequest
+  GetLastAuthenticationDetailsRequest() const override;
+  void SendAuthenticationRequiredSignal(
+      const system_proxy::AuthenticationRequiredDetails& details) override;
+  void SendWorkerActiveSignal(
+      const system_proxy::WorkerActiveSignalDetails& details) override;
 
  private:
+  system_proxy::SetAuthenticationDetailsRequest last_set_auth_details_request_;
   int set_credentials_call_count_ = 0;
   int shut_down_call_count_ = 0;
+  int clear_user_credentials_call_count_ = 0;
+  bool connect_to_worker_signals_called_ = false;
+  // Signal callbacks.
+  SystemProxyClient::WorkerActiveCallback worker_active_callback_;
+  SystemProxyClient::AuthenticationRequiredCallback auth_required_callback_;
 };
 
 }  // namespace chromeos

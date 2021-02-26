@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/update_client/network.h"
 #include "url/gurl.h"
 
@@ -26,6 +26,7 @@ class SingleThreadTaskRunner;
 namespace updater {
 
 class NetworkFetcherWinHTTP;
+class ProxyConfiguration;
 
 class NetworkFetcher : public update_client::NetworkFetcher {
  public:
@@ -37,7 +38,8 @@ class NetworkFetcher : public update_client::NetworkFetcher {
   using DownloadToFileCompleteCallback =
       update_client::NetworkFetcher::DownloadToFileCompleteCallback;
 
-  explicit NetworkFetcher(const HINTERNET& session_handle_);
+  NetworkFetcher(const HINTERNET& session_handle,
+                 scoped_refptr<ProxyConfiguration> proxy_config);
   ~NetworkFetcher() override;
   NetworkFetcher(const NetworkFetcher&) = delete;
   NetworkFetcher& operator=(const NetworkFetcher&) = delete;
@@ -46,6 +48,7 @@ class NetworkFetcher : public update_client::NetworkFetcher {
   void PostRequest(
       const GURL& url,
       const std::string& post_data,
+      const std::string& content_type,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       ResponseStartedCallback response_started_callback,
       ProgressCallback progress_callback,
@@ -58,7 +61,7 @@ class NetworkFetcher : public update_client::NetworkFetcher {
                           download_to_file_complete_callback) override;
 
  private:
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   void PostRequestComplete();
   void DownloadToFileComplete();

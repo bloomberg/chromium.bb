@@ -57,7 +57,7 @@ class TestExtensionSystem : public ExtensionSystem {
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
   ServiceWorkerManager* service_worker_manager() override;
-  SharedUserScriptMaster* shared_user_script_master() override;
+  SharedUserScriptManager* shared_user_script_manager() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
   scoped_refptr<ValueStoreFactory> store_factory() override;
@@ -66,6 +66,7 @@ class TestExtensionSystem : public ExtensionSystem {
   QuotaService* quota_service() override;
   AppSorting* app_sorting() override;
   const base::OneShotEvent& ready() const override;
+  bool is_ready() const override;
   ContentVerifier* content_verifier() override;
   std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;

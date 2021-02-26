@@ -2,7 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {Router, PageStatus, pageVisibility, routes, AccountManagerBrowserProxyImpl, SyncBrowserProxyImpl, ProfileInfoBrowserProxyImpl, ProfileInfoBrowserProxy} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestProfileInfoBrowserProxy} from 'chrome://test/settings/test_profile_info_browser_proxy.m.js';
+// #import {TestSyncBrowserProxy} from './test_os_sync_browser_proxy.m.js';
+// #import {FakeQuickUnlockPrivate} from './fake_quick_unlock_private.m.js';
+// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+
+// clang-format on
+
 cr.define('settings_people_page', function() {
+  let quickUnlockPrivateApi = null;
+
   /** @implements {settings.AccountManagerBrowserProxy} */
   class TestAccountManagerBrowserProxy extends TestBrowserProxy {
     constructor() {
@@ -100,6 +119,7 @@ cr.define('settings_people_page', function() {
 
     teardown(function() {
       peoplePage.remove();
+      settings.Router.getInstance().resetRouteForTesting();
     });
 
     test('Profile name and picture, account manager disabled', async () => {
@@ -156,6 +176,98 @@ cr.define('settings_people_page', function() {
 
       // Setup button is shown and enabled.
       assert(peoplePage.$$('settings-parental-controls-page'));
+    });
+
+    test('Deep link to parental controls page', async () => {
+      loadTimeData.overrideValues({
+        // Simulate parental controls.
+        showParentalControls: true,
+        isDeepLinkingEnabled: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '315');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.OS_PEOPLE, params);
+
+      const deepLinkElement =
+          peoplePage.$$('settings-parental-controls-page').$$('#setupButton');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Setup button should be focused for settingId=315.');
+    });
+
+    test('Deep link to guest browing on users page', async () => {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '305');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.ACCOUNTS, params);
+
+      Polymer.dom.flush();
+
+      await test_util.waitAfterNextRender(peoplePage);
+      assertEquals(
+          peoplePage.$$('settings-users-page')
+              .$$('#allowGuestBrowsing')
+              .$$('cr-toggle'),
+          getDeepActiveElement(),
+          'Allow guest browsing should be focused for settingId=305.');
+    });
+
+    test('Deep link to encryption options on old sync page', async () => {
+      loadTimeData.overrideValues({
+        isDeepLinkingEnabled: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      // Load the sync page.
+      settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+      Polymer.dom.flush();
+      await test_util.waitAfterNextRender(peoplePage);
+
+      // Make the sync page configurable.
+      const syncPage = peoplePage.$$('settings-sync-page');
+      assert(syncPage);
+      syncPage.syncPrefs = {
+        encryptAllDataAllowed: true,
+        passphraseRequired: false,
+      };
+      cr.webUIListenerCallback(
+          'page-status-changed', settings.PageStatus.CONFIGURE);
+      assertFalse(syncPage.$$('#' + settings.PageStatus.CONFIGURE).hidden);
+      assertTrue(syncPage.$$('#' + settings.PageStatus.SPINNER).hidden);
+
+      // Try the deep link.
+      const params = new URLSearchParams;
+      params.append('settingId', '316');
+      settings.Router.getInstance().navigateTo(settings.routes.SYNC, params);
+
+      // Flush to make sure the dropdown expands.
+      Polymer.dom.flush();
+      const deepLinkElement = syncPage.$$('settings-sync-encryption-options')
+                                  .$$('#encryptionRadioGroup')
+                                  .buttons_[0]
+                                  .$$('#button');
+      assert(deepLinkElement);
+
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Encryption option should be focused for settingId=316.');
     });
 
     test('GAIA name and picture, account manager enabled', async () => {
@@ -231,7 +343,7 @@ cr.define('settings_people_page', function() {
       const lockScreenPage = assert(peoplePage.$$('#lock-screen'));
 
       // Password dialog should not open because the authToken_ is set.
-      assertFalse(lockScreenPage.showPasswordPromptDialog_);
+      assertFalse(peoplePage.showPasswordPromptDialog_);
 
       const editFingerprintsTrigger = lockScreenPage.$$('#editFingerprints');
       editFingerprintsTrigger.click();
@@ -240,16 +352,25 @@ cr.define('settings_people_page', function() {
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),
           settings.routes.FINGERPRINT);
+      assertFalse(peoplePage.showPasswordPromptDialog_);
 
       const fingerprintTrigger =
           peoplePage.$$('#fingerprint-list').$$('#addFingerprint');
       fingerprintTrigger.click();
-      peoplePage.authToken_ = undefined;
+
+      // Invalidate the auth token by firing an event.
+      assertFalse(peoplePage.authToken_ === undefined);
+      const event = new CustomEvent('invalidate-auth-token-requested');
+      lockScreenPage.dispatchEvent(event);
+      assertTrue(peoplePage.authToken_ === undefined);
 
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),
-          settings.routes.LOCK_SCREEN);
-      assertTrue(lockScreenPage.showPasswordPromptDialog_);
+          settings.routes.FINGERPRINT);
+      assertTrue(peoplePage.showPasswordPromptDialog_);
     });
   });
+
+  // #cr_define_end
+  return {};
 });

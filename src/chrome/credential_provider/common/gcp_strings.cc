@@ -47,6 +47,8 @@ const wchar_t kDesktopFullName[] = L"WinSta0\\Winlogon";
 // Google Update related registry paths.
 #define GCPW_UPDATE_CLIENT_GUID L"{32987697-A14E-4B89-84D6-630D5431E831}"
 
+const wchar_t kGcpwUpdateClientGuid[] = GCPW_UPDATE_CLIENT_GUID;
+
 const wchar_t kRegUpdaterClientStateAppPath[] =
     L"SOFTWARE\\Google\\Update\\ClientState\\" GCPW_UPDATE_CLIENT_GUID;
 const wchar_t kRegUpdaterClientsAppPath[] =
@@ -54,6 +56,25 @@ const wchar_t kRegUpdaterClientsAppPath[] =
 const wchar_t kRegUninstallStringField[] = L"UninstallString";
 const wchar_t kRegUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kRegUsageStatsName[] = L"usagestats";
+const wchar_t kRegUpdateTracksName[] = L"ap";
+const wchar_t kRegVersionName[] = L"pv";
+
+const wchar_t kRegUninstall[] =
+    L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+const wchar_t kRegUninstallProduct[] = L"GCPW";
+const wchar_t kRegUninstallString[] = L"UninstallString";
+const wchar_t kRegUninstallDisplayName[] = L"DisplayName";
+const wchar_t kRegInstallLocation[] = L"InstallLocation";
+const wchar_t kRegDisplayIcon[] = L"DisplayIcon";
+const wchar_t kRegNoModify[] = L"NoModify";
+const wchar_t kRegNoRepair[] = L"NoRepair";
+const wchar_t kRegPublisherName[] = L"Publisher";
+const wchar_t kRegVersion[] = L"Version";
+const wchar_t kRegDisplayVersion[] = L"DisplayVersion";
+const wchar_t kRegInstallDate[] = L"InstallDate";
+const wchar_t kRegVersionMajor[] = L"VersionMajor";
+const wchar_t kRegVersionMinor[] = L"VersionMinor";
+const wchar_t kRegPublisher[] = L"Google LLC";
 
 // Chrome is being opened to show the credential provider logon page.  This
 // page is always shown in incognito mode.

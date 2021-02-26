@@ -96,8 +96,7 @@ class MostVisitedElement extends PolymerElement {
       /** @private */
       columnCount_: {
         type: Number,
-        computed: `computeColumnCount_(tiles_, screenWidth_, maxTiles_,
-            visible_)`,
+        computed: `computeColumnCount_(tiles_, screenWidth_, maxTiles_)`,
       },
 
       /** @private */
@@ -113,7 +112,10 @@ class MostVisitedElement extends PolymerElement {
       dialogTileTitle_: String,
 
       /** @private */
-      dialogTileUrl_: String,
+      dialogTileUrl_: {
+        type: String,
+        observer: 'onDialogTileUrlChange_',
+      },
 
       /** @private */
       dialogTileUrlInvalid_: {
@@ -138,14 +140,21 @@ class MostVisitedElement extends PolymerElement {
       /** @private */
       maxTiles_: {
         type: Number,
-        computed: 'computeMaxTiles_(visible_, customLinksEnabled_)',
+        computed: 'computeMaxTiles_(customLinksEnabled_)',
+      },
+
+      /** @private */
+      maxVisibleTiles_: {
+        type: Number,
+        computed: 'computeMaxVisibleTiles_(columnCount_, rowCount_)',
       },
 
       /** @private */
       showAdd_: {
         type: Boolean,
         value: false,
-        computed: 'computeShowAdd_(tiles_, columnCount_, customLinksEnabled_)',
+        computed:
+            'computeShowAdd_(tiles_, maxVisibleTiles_, customLinksEnabled_)',
       },
 
       /** @private */
@@ -212,7 +221,7 @@ class MostVisitedElement extends PolymerElement {
           performance.measure('most-visited-mojo', 'most-visited-mojo-start');
           this.visible_ = info.visible;
           this.customLinksEnabled_ = info.customLinksEnabled;
-          this.tiles_ = info.tiles.slice(0, 10);
+          this.tiles_ = info.tiles.slice(0, assert(this.maxTiles_));
         });
     performance.mark('most-visited-mojo-start');
     this.eventTracker_.add(document, 'visibilitychange', () => {
@@ -276,10 +285,6 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   computeColumnCount_() {
-    if (!this.visible_) {
-      return 0;
-    }
-
     let maxColumns = 3;
     if (this.screenWidth_ === ScreenWidth.WIDE) {
       maxColumns = 5;
@@ -315,7 +320,15 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   computeMaxTiles_() {
-    return !this.visible_ ? 0 : (this.customLinksEnabled_ ? 10 : 8);
+    return this.customLinksEnabled_ ? 10 : 8;
+  }
+
+  /**
+   * @return {number}
+   * @private
+   */
+  computeMaxVisibleTiles_() {
+    return this.columnCount_ * this.rowCount_;
   }
 
   /**
@@ -324,7 +337,7 @@ class MostVisitedElement extends PolymerElement {
    */
   computeShowAdd_() {
     return this.customLinksEnabled_ && this.tiles_ &&
-        this.tiles_.length < this.columnCount_ * 2;
+        this.tiles_.length < this.maxVisibleTiles_;
   }
 
   /**
@@ -343,6 +356,10 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   dragEnd_(x, y) {
+    if (!this.customLinksEnabled_) {
+      this.reordering_ = false;
+      return;
+    }
     this.dragOffset_ = null;
     const dragElement = this.shadowRoot.querySelector('.tile.dragging');
     if (!dragElement) {
@@ -495,7 +512,7 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   isHidden_(index) {
-    return index >= this.columnCount_ * 2;
+    return index >= this.maxVisibleTiles_;
   }
 
   /** @private */
@@ -540,6 +557,11 @@ class MostVisitedElement extends PolymerElement {
     this.adding_ = false;
   }
 
+  /** @private */
+  onDialogTileUrlChange_() {
+    this.dialogTileUrlInvalid_ = false;
+  }
+
   /**
    * @param {!KeyboardEvent} e
    * @private
@@ -552,8 +574,7 @@ class MostVisitedElement extends PolymerElement {
     const modifier = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
     if (modifier && e.key === 'z') {
       e.preventDefault();
-      this.pageHandler_.undoMostVisitedTileAction();
-      this.$.toast.hide();
+      this.onUndoClick_();
     }
   }
 
@@ -605,6 +626,9 @@ class MostVisitedElement extends PolymerElement {
 
   /** @private */
   onRestoreDefaultsClick_() {
+    if (!this.$.toast.open || !this.showToastButtons_) {
+      return;
+    }
     this.$.toast.hide();
     this.pageHandler_.restoreMostVisitedDefaults();
   }
@@ -680,9 +704,19 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   onTileClick_(e) {
+    if (e.defaultPrevented) {
+      // Ignore previousely handled events.
+      return;
+    }
+
+    if (loadTimeData.getBoolean('handleMostVisitedNavigationExplicitly')) {
+      e.preventDefault();  // Prevents default browser action (navigation).
+    }
+
     this.pageHandler_.onMostVisitedTileNavigation(
         this.$.tiles.itemForElement(e.target),
-        this.$.tiles.indexForElement(e.target));
+        this.$.tiles.indexForElement(e.target), e.button || 0, e.altKey,
+        e.ctrlKey, e.metaKey, e.shiftKey);
   }
 
   /**
@@ -712,6 +746,9 @@ class MostVisitedElement extends PolymerElement {
 
   /** @private */
   onUndoClick_() {
+    if (!this.$.toast.open || !this.showToastButtons_) {
+      return;
+    }
     this.$.toast.hide();
     this.pageHandler_.undoMostVisitedTileAction();
   }
@@ -781,9 +818,13 @@ class MostVisitedElement extends PolymerElement {
    * @private
    */
   async tileRemove_(index) {
-    const {title, url} = this.tiles_[index];
+    const {url, isQueryTile} = this.tiles_[index];
     this.pageHandler_.deleteMostVisitedTile(url);
-    this.toast_('linkRemovedMsg', /* showButtons= */ true);
+    // Do not show the toast buttons when a query tile is removed unless it is a
+    // custom link. Removal is not reversible for non custom link query tiles.
+    this.toast_(
+        'linkRemovedMsg',
+        /* showButtons= */ this.customLinksEnabled_ || !isQueryTile);
     this.tileFocus_(index);
   }
 
@@ -802,7 +843,17 @@ class MostVisitedElement extends PolymerElement {
   onTilesRendered_() {
     performance.measure('most-visited-rendered');
     this.pageHandler_.onMostVisitedTilesRendered(
-        this.tiles_, BrowserProxy.getInstance().now());
+        this.tiles_.slice(0, assert(this.maxVisibleTiles_)),
+        BrowserProxy.getInstance().now());
+  }
+
+  /**
+   * @param {boolean} value
+   * @return {string} String representing the given boolean.
+   * @private
+   */
+  booleanToString_(value) {
+    return Boolean(value).toString();
   }
 }
 

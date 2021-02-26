@@ -24,6 +24,10 @@ namespace media {
 
 namespace {
 
+// Audio packets are normally smaller than 128kB (more than enough for 2 seconds
+// at 320kb/s).
+const size_t kAudioStreamBufferSize = 128 * 1024;
+
 std::string GetInitDataTypeName(EmeInitDataType type) {
   switch (type) {
     case EmeInitDataType::WEBM:
@@ -240,17 +244,28 @@ FuchsiaCdm::SessionCallbacks& FuchsiaCdm::SessionCallbacks::operator=(
     SessionCallbacks&&) = default;
 
 FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
+                       ReadyCB ready_cb,
                        SessionCallbacks callbacks)
     : cdm_(std::move(cdm)),
+      ready_cb_(std::move(ready_cb)),
       session_callbacks_(std::move(callbacks)),
-      decryptor_(cdm_.get()) {
+      decryptor_(this) {
   DCHECK(cdm_);
+  cdm_.events().OnProvisioned =
+      fit::bind_member(this, &FuchsiaCdm::OnProvisioned);
   cdm_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "The fuchsia.media.drm.ContentDecryptionModule"
                           << " channel was terminated.";
 
     // Reject all the pending promises.
     promises_.Clear();
+
+    // If the channel closed prior to invoking the ready_cb_, we should invoke
+    // it here with failure.
+    if (ready_cb_) {
+      std::move(ready_cb_).Run(
+          false, "ContentDecryptionModule closed prior to being ready");
+    }
   });
 }
 
@@ -281,6 +296,18 @@ std::unique_ptr<FuchsiaSecureStreamDecryptor> FuchsiaCdm::CreateVideoDecryptor(
   return decryptor;
 }
 
+std::unique_ptr<FuchsiaClearStreamDecryptor>
+FuchsiaCdm::CreateAudioDecryptor() {
+  fuchsia::media::drm::DecryptorParams params;
+  params.set_require_secure_mode(false);
+  params.mutable_input_details()->set_format_details_version_ordinal(0);
+  fuchsia::media::StreamProcessorPtr stream_processor;
+  cdm_->CreateDecryptor(std::move(params), stream_processor.NewRequest());
+
+  return std::make_unique<FuchsiaClearStreamDecryptor>(
+      std::move(stream_processor), kAudioStreamBufferSize);
+}
+
 void FuchsiaCdm::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
@@ -308,7 +335,7 @@ void FuchsiaCdm::CreateSessionAndGenerateRequest(
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
-  // TODO(yucliu): Support persistent license.
+  // TODO(crbug.com/1131114): Support persistent license.
   if (session_type != CdmSessionType::kTemporary) {
     promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                     "session type is not supported.");
@@ -344,6 +371,12 @@ void FuchsiaCdm::CreateSessionAndGenerateRequest(
       init_data_type, init_data,
       base::BindOnce(&FuchsiaCdm::OnGenerateLicenseRequestStatus,
                      base::Unretained(this), session_ptr, promise_id));
+}
+
+void FuchsiaCdm::OnProvisioned() {
+  if (ready_cb_) {
+    std::move(ready_cb_).Run(true, "");
+  }
 }
 
 void FuchsiaCdm::OnCreateSession(std::unique_ptr<CdmSession> session,
@@ -448,16 +481,11 @@ CdmContext* FuchsiaCdm::GetCdmContext() {
 
 std::unique_ptr<CallbackRegistration> FuchsiaCdm::RegisterEventCB(
     EventCB event_cb) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return event_callbacks_.Register(std::move(event_cb));
 }
 
 Decryptor* FuchsiaCdm::GetDecryptor() {
   return &decryptor_;
-}
-
-int FuchsiaCdm::GetCdmId() const {
-  return kInvalidCdmId;
 }
 
 FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
@@ -465,7 +493,7 @@ FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
 }
 
 void FuchsiaCdm::OnNewKey() {
-  decryptor_.OnNewKey();
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
   {
     base::AutoLock auto_lock(new_key_cb_for_video_lock_);
     if (new_key_cb_for_video_)

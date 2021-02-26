@@ -24,8 +24,6 @@ class ResizeObserver;
 class CORE_EXPORT ResizeObserverController final
     : public GarbageCollected<ResizeObserverController>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserverController);
-
  public:
   static const size_t kDepthBottom = 4096;
 
@@ -55,7 +53,7 @@ class CORE_EXPORT ResizeObserverController final
     loop_limit_error_dispatched = is_dispatched;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // For testing only.
   const HeapLinkedHashSet<WeakMember<ResizeObserver>>& Observers() {

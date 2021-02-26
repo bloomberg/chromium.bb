@@ -11,11 +11,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_login_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -82,13 +78,15 @@ void ChromeLoginPerformer::DidRunTrustedCheck(base::OnceClosure* callback) {
   }
 }
 
-bool ChromeLoginPerformer::IsUserWhitelisted(const AccountId& account_id,
-                                             bool* wildcard_match) {
-  return CrosSettings::Get()->IsUserWhitelisted(account_id.GetUserEmail(),
-                                                wildcard_match);
+bool ChromeLoginPerformer::IsUserAllowlisted(
+    const AccountId& account_id,
+    bool* wildcard_match,
+    const base::Optional<user_manager::UserType>& user_type) {
+  return CrosSettings::Get()->IsUserAllowlisted(account_id.GetUserEmail(),
+                                                wildcard_match, user_type);
 }
 
-void ChromeLoginPerformer::RunOnlineWhitelistCheck(
+void ChromeLoginPerformer::RunOnlineAllowlistCheck(
     const AccountId& account_id,
     bool wildcard_match,
     const std::string& refresh_token,
@@ -120,33 +118,6 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
 
 scoped_refptr<Authenticator> ChromeLoginPerformer::CreateAuthenticator() {
   return UserSessionManager::GetInstance()->CreateAuthenticator(this);
-}
-
-bool ChromeLoginPerformer::AreSupervisedUsersAllowed() {
-  return user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
-}
-
-bool ChromeLoginPerformer::UseExtendedAuthenticatorForSupervisedUser(
-    const UserContext& user_context) {
-  SupervisedUserAuthentication* authentication =
-      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  return authentication->GetPasswordSchema(
-             user_context.GetAccountId().GetUserEmail()) ==
-         SupervisedUserAuthentication::SCHEMA_SALT_HASHED;
-}
-
-UserContext ChromeLoginPerformer::TransformSupervisedKey(
-    const UserContext& context) {
-  SupervisedUserAuthentication* authentication =
-      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  return authentication->TransformKey(context);
-}
-
-void ChromeLoginPerformer::SetupSupervisedUserFlow(
-    const AccountId& account_id) {
-  SupervisedUserLoginFlow* new_flow = new SupervisedUserLoginFlow(account_id);
-  new_flow->SetHost(ChromeUserManager::Get()->GetUserFlow(account_id)->host());
-  ChromeUserManager::Get()->SetUserFlow(account_id, new_flow);
 }
 
 void ChromeLoginPerformer::SetupEasyUnlockUserFlow(

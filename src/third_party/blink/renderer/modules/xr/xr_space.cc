@@ -54,13 +54,13 @@ base::Optional<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
   return maybe_mojo_from_native;
 }
 
-base::Optional<TransformationMatrix> XRSpace::TryInvert(
-    const base::Optional<TransformationMatrix>& matrix) {
-  if (!matrix)
+base::Optional<TransformationMatrix> XRSpace::NativeFromMojo() {
+  base::Optional<TransformationMatrix> mojo_from_native = MojoFromNative();
+  if (!mojo_from_native)
     return base::nullopt;
 
-  DCHECK(matrix->IsInvertible());
-  return matrix->Inverse();
+  DCHECK(mojo_from_native->IsInvertible());
+  return mojo_from_native->Inverse();
 }
 
 bool XRSpace::EmulatedPosition() const {
@@ -68,10 +68,13 @@ bool XRSpace::EmulatedPosition() const {
 }
 
 XRPose* XRSpace::getPose(XRSpace* other_space) {
+  DVLOG(2) << __func__;
+
   // Named mojo_from_offset because that is what we will leave it as, though it
   // starts mojo_from_native.
   base::Optional<TransformationMatrix> mojo_from_offset = MojoFromNative();
   if (!mojo_from_offset) {
+    DVLOG(2) << __func__ << ": MojoFromNative() is not set";
     return nullptr;
   }
 
@@ -80,8 +83,10 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
 
   base::Optional<TransformationMatrix> other_from_mojo =
       other_space->NativeFromMojo();
-  if (!other_from_mojo)
+  if (!other_from_mojo) {
+    DVLOG(2) << __func__ << ": other_space->NativeFromMojo() is not set";
     return nullptr;
+  }
 
   // Add any origin offset from the other space now.
   TransformationMatrix other_offset_from_mojo =
@@ -98,8 +103,9 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
 }
 
 base::Optional<TransformationMatrix> XRSpace::OffsetFromViewer() {
-  base::Optional<TransformationMatrix> native_from_viewer = NativeFromViewer(
-      session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer));
+  base::Optional<TransformationMatrix> native_from_viewer =
+      NativeFromViewer(session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceType::kViewer));
 
   if (!native_from_viewer) {
     return base::nullopt;
@@ -116,11 +122,7 @@ const AtomicString& XRSpace::InterfaceName() const {
   return event_target_names::kXRSpace;
 }
 
-base::Optional<XRNativeOriginInformation> XRSpace::NativeOrigin() const {
-  return base::nullopt;
-}
-
-void XRSpace::Trace(Visitor* visitor) {
+void XRSpace::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

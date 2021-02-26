@@ -4,150 +4,63 @@
  * found in the LICENSE file.
  */
 
-.computed-style-property {
-    overflow: hidden;
-    flex: auto;
-    text-overflow: ellipsis;
-}
-
-.computed-style-property .property-name {
-    width: 16em;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    max-width: 52%;
-    display: inline-block;
-    vertical-align: text-top;
-}
-
-.computed-style-property .property-value {
-    margin-left: 2em;
-    position: relative;
-}
-
-.computed-style-property .property-value-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tree-outline li:hover .goto-source-icon {
-    display: block;
-    margin-top: -2px;
-}
-
-.goto-source-icon {
-    background-color: #5a5a5a;
-    display: none;
-    position: absolute;
-    left: -16px;
-    top: 0;
-}
-
-.goto-source-icon:hover {
-    background-color: #333;
-}
-
-.computed-style-property-inherited {
-    opacity: 0.5;
-}
-
-.trace-link {
-    user-select: none;
-    float: right;
-    padding-left: 1em;
-    position: relative;
-    z-index: 1;
-}
-
-.property-trace {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    flex-grow: 1;
-}
-
-.property-trace-selector {
-    color: gray;
-    padding-left: 2em;
-}
-
-.property-trace-value {
-    position: relative;
-    display: inline-block;
-    margin-left: 16px;
-}
-
-.property-trace-inactive .property-trace-value::before {
-    position: absolute;
-    content: ".";
-    border-bottom: 1px solid rgba(0, 0, 0, 0.35);
-    top: 0;
-    bottom: 5px;
-    left: 0;
-    right: 0;
-}
-
-.tree-outline li.odd-row {
-    position: relative;
-    background-color: #F5F5F5;
-}
-
-.tree-outline, .tree-outline ol {
-    padding-left: 0;
+.tree-outline,
+.tree-outline ol {
+  padding-left: 0;
 }
 
 .tree-outline li:hover {
-    background-color: rgb(235, 242, 252);
-    cursor: pointer;
+  background-color: var(--focus-bg-color);
+  cursor: pointer;
 }
 
 .tree-outline li::before {
-    margin-left: 4px;
+  margin: 0 -1px 0 4px;
 }
 
-.delimeter {
-    color: transparent;
+.group-title {
+  /* tree-outline li::before is set to be 16px wide */
+  padding-right: 16px;
 }
 
-.delimeter::selection {
-    color: transparent;
+.tree-outline li.group-title:hover {
+  background-color: transparent;
 }
 
-.computed-narrow .computed-style-property .property-name,
-.computed-narrow .computed-style-property .property-value {
-    display: inline-block;
-    width: 100%;
-    max-width: 100%;
-    margin-left: 0;
-    white-space: nowrap;
+.group-title > h1 {
+  margin: 1px 0 0 0;
+  padding: 1em 0;
+  width: 100%;
+  cursor: pointer;
+  color: #5f6368;
+  font-size: 11px;
+  font-weight: 400;
 }
 
-.computed-narrow .computed-style-property {
-    padding: 2px 0;
-    display: block;
-    white-space: normal;
+.group-title:not(.first-group) > h1 {
+  border-top: 1px solid var(--divider-color);
 }
 
-.computed-narrow.tree-outline li::before {
-    margin-top: -14px;
+:host-context(.-theme-with-dark-background) .group-title > h1 {
+  color: #e8eaed;
+}
+
+.group-title + ol.children {
+  margin-bottom: 1em;
 }
 
 @media (forced-colors: active) {
-    .computed-style-property-inherited {
-        opacity: 1;
-    }
-    :host-context(.monospace.computed-properties) .tree-outline li:hover {
-        forced-color-adjust: none;
-        background-color: Highlight;
-    }
-    :host-context(.monospace.computed-properties) .tree-outline:not(.hide-selection-when-blurred) li.parent:hover.selected::before,
-    :host-context(.monospace.computed-properties) .tree-outline-disclosure li.parent:hover::before,
-    :host-context(.monospace.computed-properties) .tree-outline li:hover .goto-source-icon {
-        background-color: HighlightText;
-    }
-    :host-context(.monospace.computed-properties) .tree-outline li:hover * {
-        color: HighlightText;
-    }
-    .property-trace-inactive .property-trace-value::before {
-        content: "";
-        border-bottom-color: HighlightText !important;
-    }
+  :host-context(.monospace.computed-properties) .tree-outline li:hover {
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+
+  :host-context(.monospace.computed-properties) .tree-outline:not(.hide-selection-when-blurred) li.parent:hover.selected::before,
+  :host-context(.monospace.computed-properties) .tree-outline-disclosure li.parent:hover::before {
+    background-color: HighlightText;
+  }
+
+  :host-context(.monospace.computed-properties) .tree-outline li:hover * {
+    color: HighlightText;
+  }
 }

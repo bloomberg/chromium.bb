@@ -24,6 +24,9 @@ class DisplayColorSpacesDataView;
 
 // The values are set so std::max() can be used to find the widest.
 enum class ContentColorUsage : uint8_t {
+  // These values are histogrammed over time; do not change their ordinal
+  // values.  When deleting a color usage replace it with a dummy value; when
+  // adding a color usage, do so at the bottom (and update kMaxValue).
   kSRGB = 0,
   kWideColorGamut = 1,
   kHDR = 2,
@@ -35,6 +38,8 @@ enum class ContentColorUsage : uint8_t {
 // opposed to in ui/display because it is used directly by components/viz.
 class COLOR_SPACE_EXPORT DisplayColorSpaces {
  public:
+  static constexpr size_t kConfigCount = 6;
+
   // Initialize as sRGB-only.
   DisplayColorSpaces();
 
@@ -74,6 +79,11 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   }
   float GetSDRWhiteLevel() const { return sdr_white_level_; }
 
+  // TODO(https://crbug.com/1116870): These helper functions exist temporarily
+  // to handle the transition of blink::ScreenInfo off of ColorSpace. All calls
+  // to these functions are to be eliminated.
+  ColorSpace GetScreenInfoColorSpace() const;
+
   // Return the color space that should be used for rasterization.
   // TODO: This will eventually need to take a ContentColorUsage.
   gfx::ColorSpace GetRasterColorSpace() const;
@@ -99,11 +109,10 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
  private:
   // Serialization of DisplayColorSpaces directly accesses members.
-
+  friend struct IPC::ParamTraits<gfx::DisplayColorSpaces>;
   friend struct mojo::StructTraits<gfx::mojom::DisplayColorSpacesDataView,
                                    gfx::DisplayColorSpaces>;
 
-  static constexpr size_t kConfigCount = 6;
   gfx::ColorSpace color_spaces_[kConfigCount];
   gfx::BufferFormat buffer_formats_[kConfigCount];
   float sdr_white_level_ = ColorSpace::kDefaultSDRWhiteLevel;

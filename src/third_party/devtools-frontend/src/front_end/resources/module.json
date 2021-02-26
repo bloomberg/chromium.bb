@@ -77,9 +77,9 @@
     "mobile_throttling",
     "network",
     "sources",
-    "browser_sdk"
+    "browser_sdk",
+    "i18n"
   ],
-  "scripts": [],
   "modules": [
     "resources.js",
     "resources-legacy.js",
@@ -96,6 +96,7 @@
     "DOMStorageItemsView.js",
     "DatabaseQueryView.js",
     "DatabaseTableView.js",
+    "FrameDetailsView.js",
     "IndexedDBModel.js",
     "IndexedDBViews.js",
     "ResourcesPanel.js",
@@ -112,6 +113,7 @@
     "resourcesSidebar.css",
     "serviceWorkerCacheViews.css",
     "serviceWorkersView.css",
-    "cookieItemsView.css"
+    "cookieItemsView.css",
+    "frameDetailsReportView.css"
   ]
 }

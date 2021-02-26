@@ -70,11 +70,6 @@ CreditCardAccessManager::CreditCardAccessManager(
           base::WaitableEvent::InitialState::NOT_SIGNALED),
       can_fetch_unmask_details_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                 base::WaitableEvent::InitialState::SIGNALED) {
-#if !defined(OS_IOS)
-  // This is to initialize StrikeDatabase is if it hasn't been already, so that
-  // its cache would be loaded and ready to use when the first CCAM is created.
-  client_->GetStrikeDatabase();
-#endif
 }
 
 CreditCardAccessManager::~CreditCardAccessManager() {}
@@ -84,21 +79,12 @@ void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
 
   size_t server_record_type_count = 0;
   size_t local_record_type_count = 0;
-  bool has_server_nickname = false;
   for (CreditCard* credit_card : credit_cards) {
-    // If any masked server card has valid nickname, we will set to true no
-    // matter the flag is enabled or not.
-    if (credit_card->record_type() == CreditCard::MASKED_SERVER_CARD &&
-        credit_card->HasValidNickname()) {
-      has_server_nickname = true;
-    }
-
     if (credit_card->record_type() == CreditCard::LOCAL_CARD)
       local_record_type_count++;
     else
       server_record_type_count++;
   }
-  form_event_logger_->set_has_server_nickname(has_server_nickname);
   form_event_logger_->set_server_record_type_count(server_record_type_count);
   form_event_logger_->set_local_record_type_count(local_record_type_count);
   form_event_logger_->set_is_context_secure(client_->IsContextSecure());
@@ -154,7 +140,7 @@ bool CreditCardAccessManager::GetDeletionConfirmationText(
     return false;
 
   if (title)
-    title->assign(card->NetworkAndLastFourDigits());
+    title->assign(card->CardIdentifierStringForAutofillDisplay());
   if (body) {
     body->assign(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));
@@ -380,6 +366,10 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
   // TODO(crbug/949269): Add a rate limiter to counter spam clicking.
   FIDOAuthOptChange(opt_in);
 #endif
+}
+
+void CreditCardAccessManager::SignalCanFetchUnmaskDetails() {
+  can_fetch_unmask_details_.Signal();
 }
 
 void CreditCardAccessManager::CacheUnmaskedCardInfo(const CreditCard& card,
@@ -726,10 +716,6 @@ void CreditCardAccessManager::HandleDialogUserResponse(
   }
 }
 #endif
-
-void CreditCardAccessManager::SignalCanFetchUnmaskDetails() {
-  can_fetch_unmask_details_.Signal();
-}
 
 void CreditCardAccessManager::AdditionallyPerformFidoAuth(
     const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response,

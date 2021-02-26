@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void WindowProxyManager::Trace(Visitor* visitor) {
+void WindowProxyManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_);
   visitor->Trace(isolated_worlds_);
@@ -57,6 +57,15 @@ void WindowProxyManager::SetGlobalProxies(
     const GlobalProxyVector& global_proxies) {
   for (const auto& entry : global_proxies)
     WindowProxyMaybeUninitialized(*entry.first)->SetGlobalProxy(entry.second);
+
+  // Initialize the window proxies now, to re-establish the connection between
+  // the global object and the v8::Context. This is really only needed for a
+  // RemoteDOMWindow, since it has no scripting environment of its own.
+  // Without this, existing script references to a swapped in RemoteDOMWindow
+  // would be broken until that RemoteDOMWindow was vended again through an
+  // interface like window.frames.
+  for (const auto& entry : global_proxies)
+    WindowProxyMaybeUninitialized(*entry.first)->InitializeIfNeeded();
 }
 
 WindowProxyManager::WindowProxyManager(Frame& frame, FrameType frame_type)
@@ -113,9 +122,24 @@ void LocalWindowProxyManager::UpdateSecurityOrigin(
   for (auto& entry : isolated_worlds_) {
     auto* isolated_window_proxy =
         static_cast<LocalWindowProxy*>(entry.value.Get());
-    const SecurityOrigin* isolated_security_origin =
-        isolated_window_proxy->World().IsolatedWorldSecurityOrigin();
-    isolated_window_proxy->UpdateSecurityOrigin(isolated_security_origin);
+    scoped_refptr<SecurityOrigin> isolated_security_origin =
+        isolated_window_proxy->World().IsolatedWorldSecurityOrigin(
+            security_origin->AgentClusterId());
+    isolated_window_proxy->UpdateSecurityOrigin(isolated_security_origin.get());
+  }
+}
+
+void LocalWindowProxyManager::SetAbortScriptExecution(
+    v8::Context::AbortScriptExecutionCallback callback) {
+  v8::HandleScope handle_scope(GetIsolate());
+
+  static_cast<LocalWindowProxy*>(window_proxy_.Get())
+      ->SetAbortScriptExecution(callback);
+
+  for (auto& entry : isolated_worlds_) {
+    auto* isolated_window_proxy =
+        static_cast<LocalWindowProxy*>(entry.value.Get());
+    isolated_window_proxy->SetAbortScriptExecution(callback);
   }
 }
 

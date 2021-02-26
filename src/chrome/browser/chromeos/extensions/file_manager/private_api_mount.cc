@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -42,7 +42,7 @@ FileManagerPrivateAddMountFunction::FileManagerPrivateAddMountFunction()
 
 ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
   using file_manager_private::AddMount::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params = Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::EventLogger* logger =
@@ -62,23 +62,19 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/996549) Remove this once the old avfsd-based RAR mounter is
-  // removed.
-  std::string format = base::ToLowerASCII(path.Extension());
-  if (format == ".rar" &&
-      base::FeatureList::IsEnabled(chromeos::features::kRar2Fs)) {
-    format = ".rar2fs";
-  }
+  std::vector<std::string> options;
+  if (params->password)
+    options.push_back("password=" + *params->password);
 
   // MountPath() takes a std::string.
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   disk_mount_manager->MountPath(
-      path.AsUTF8Unsafe(), format, path.BaseName().AsUTF8Unsafe(), {},
-      chromeos::MOUNT_TYPE_ARCHIVE, chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+      path.AsUTF8Unsafe(), base::ToLowerASCII(path.Extension()),
+      path.BaseName().AsUTF8Unsafe(), options, chromeos::MOUNT_TYPE_ARCHIVE,
+      chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
   // Pass back the actual source path of the mount point.
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(path.AsUTF8Unsafe())));
+  return RespondNow(OneArgument(base::Value(path.AsUTF8Unsafe())));
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {

@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_tracing_backend.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 
 namespace base {
@@ -19,7 +20,11 @@ class TraceConfig;
 }  // namespace base
 
 namespace tracing {
+namespace mojom {
+class TracingService;
+}  // namespace mojom
 
+class PerfettoPlatform;
 class PerfettoProducer;
 class ProducerClient;
 class SystemProducer;
@@ -35,7 +40,8 @@ class SystemProducer;
 // * Register the data source with Perfetto in ProducerHost::OnConnect.
 // * Construct the new implementation when requested to
 //   in PerfettoProducer::StartDataSource.
-class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
+class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
+    : public PerfettoTracingBackend::Delegate {
  public:
   // If not noted otherwise, a DataSourceBase's methods are only called on
   // PerfettoTracedProcess::GetTaskRunner()'s sequence.
@@ -94,10 +100,21 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // Returns the process-wide instance of the PerfettoTracedProcess.
   static PerfettoTracedProcess* Get();
 
-  ProducerClient* producer_client() const;
-  SystemProducer* system_producer() const;
+  // Provide a factory for lazily creating mojo consumer connections to the
+  // tracing service. Allows using Perfetto's Client API for recording traces.
+  using ConsumerConnectionFactory = mojom::TracingService& (*)();
+  void SetConsumerConnectionFactory(ConsumerConnectionFactory,
+                                    scoped_refptr<base::SequencedTaskRunner>);
 
-  ~PerfettoTracedProcess();
+  // Connect the current process to the mojo trace producer API. Depending on
+  // the configuration, this will either set up the Perfetto Client API or the
+  // legacy TraceLog to become the trace producer for this process.
+  void ConnectProducer(mojo::PendingRemote<mojom::PerfettoService>);
+
+  ProducerClient* producer_client() const;
+  SystemProducer* system_producer() const;  // May be null.
+
+  ~PerfettoTracedProcess() override;
 
   // Returns the task runner used by any Perfetto service. Can be called on any
   // thread.
@@ -119,8 +136,18 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
                            const base::trace_event::TraceConfig&,
                            bool privacy_filtering_enabled);
 
+  // Initialize the Perfetto client library (i.e., perfetto::Tracing) for this
+  // process. Should be called early during startup.
+  void SetupClientLibrary();
+
   // Called on the process's main thread once the thread pool is ready.
   void OnThreadPoolAvailable();
+
+  // Called to initialize system tracing, i.e., connecting to a system Perfetto
+  // daemon as a producer. If |system_socket| isn't provided, Perfetto's default
+  // socket name is used.
+  void SetupSystemTracing(base::Optional<const char*> system_socket =
+                              base::Optional<const char*>());
 
   // If the provided |producer| can begin tracing then |start_tracing| will be
   // invoked (unless cancelled by the Perfetto service) at some point later
@@ -150,12 +177,22 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
   void ClearDataSourcesForTesting();
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
-  static void ReconstructForTesting(const char* system_socket);
+
+  PerfettoPlatform* perfetto_platform_for_testing() const {
+    return platform_.get();
+  }
+
+  // PerfettoTracingBackend::Delegate implementation.
+  void CreateProducerConnection(
+      base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>)
+      override;
+  void CreateConsumerConnection(
+      base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>)
+      override;
 
  protected:
   // protected for testing.
   PerfettoTracedProcess();
-  explicit PerfettoTracedProcess(const char* system_socket);
 
  private:
   friend class base::NoDestructor<PerfettoTracedProcess>;
@@ -172,6 +209,16 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // is no system Perfetto service this pointer will be valid, but all function
   // calls will be noops.
   std::unique_ptr<SystemProducer> system_producer_;
+
+  // Platform implementation for the Perfetto client library.
+  std::unique_ptr<PerfettoPlatform> platform_;
+  std::unique_ptr<PerfettoTracingBackend> tracing_backend_;
+
+  scoped_refptr<base::SequencedTaskRunner> consumer_connection_task_runner_;
+  ConsumerConnectionFactory consumer_connection_factory_;
+
+  base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>
+      pending_producer_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracedProcess);

@@ -7,31 +7,33 @@
 
 #include "src/gpu/GrDynamicAtlas.h"
 
+#include "src/core/SkIPoint16.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRectanizerPow2.h"
 #include "src/gpu/GrRectanizerSkyline.h"
 #include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
 
 // Each Node covers a sub-rectangle of the final atlas. When a GrDynamicAtlas runs out of room, we
 // create a new Node the same size as all combined nodes in the atlas as-is, and then place the new
 // Node immediately below or beside the others (thereby doubling the size of the GyDynamicAtlas).
 class GrDynamicAtlas::Node {
 public:
-    Node(std::unique_ptr<Node> previous, int l, int t, int r, int b)
-            : fPrevious(std::move(previous)), fX(l), fY(t), fRectanizer(r - l, b - t) {}
+    Node(Node* previous, GrRectanizer* rectanizer, int x, int y)
+            : fPrevious(previous), fRectanizer(rectanizer), fX(x), fY(y) {}
 
-    Node* previous() const { return fPrevious.get(); }
+    Node* previous() const { return fPrevious; }
 
     bool addRect(int w, int h, SkIPoint16* loc) {
         // Pad all paths except those that are expected to take up an entire physical texture.
-        if (w < fRectanizer.width()) {
-            w = std::min(w + kPadding, fRectanizer.width());
+        if (w < fRectanizer->width()) {
+            w = std::min(w + kPadding, fRectanizer->width());
         }
-        if (h < fRectanizer.height()) {
-            h = std::min(h + kPadding, fRectanizer.height());
+        if (h < fRectanizer->height()) {
+            h = std::min(h + kPadding, fRectanizer->height());
         }
-        if (!fRectanizer.addRect(w, h, loc)) {
+        if (!fRectanizer->addRect(w, h, loc)) {
             return false;
         }
         loc->fX += fX;
@@ -40,9 +42,9 @@ public:
     }
 
 private:
-    const std::unique_ptr<Node> fPrevious;
+    Node* const fPrevious;
+    GrRectanizer* const fRectanizer;
     const int fX, fY;
-    GrRectanizerSkyline fRectanizer;
 };
 
 sk_sp<GrTextureProxy> GrDynamicAtlas::MakeLazyAtlasProxy(
@@ -66,10 +68,12 @@ sk_sp<GrTextureProxy> GrDynamicAtlas::MakeLazyAtlasProxy(
 }
 
 GrDynamicAtlas::GrDynamicAtlas(GrColorType colorType, InternalMultisample internalMultisample,
-                               SkISize initialSize, int maxAtlasSize, const GrCaps& caps)
+                               SkISize initialSize, int maxAtlasSize, const GrCaps& caps,
+                               RectanizerAlgorithm algorithm)
         : fColorType(colorType)
         , fInternalMultisample(internalMultisample)
-        , fMaxAtlasSize(maxAtlasSize) {
+        , fMaxAtlasSize(maxAtlasSize)
+        , fRectanizerAlgorithm(algorithm) {
     SkASSERT(fMaxAtlasSize <= caps.maxTextureSize());
     this->reset(initialSize, caps);
 }
@@ -78,6 +82,7 @@ GrDynamicAtlas::~GrDynamicAtlas() {
 }
 
 void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
+    fNodeAllocator.reset();
     fWidth = std::min(SkNextPow2(initialSize.width()), fMaxAtlasSize);
     fHeight = std::min(SkNextPow2(initialSize.height()), fMaxAtlasSize);
     fTopNode = nullptr;
@@ -87,7 +92,7 @@ void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
                 if (!fBackingTexture) {
                     fBackingTexture = resourceProvider->createTexture(
                             {fWidth, fHeight}, desc.fFormat, desc.fRenderable, desc.fSampleCnt,
-                            desc.fMipMapped, desc.fBudgeted, desc.fProtected);
+                            desc.fMipmapped, desc.fBudgeted, desc.fProtected);
                 }
                 return GrSurfaceProxy::LazyCallbackResult(fBackingTexture);
             },
@@ -95,18 +100,25 @@ void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
     fBackingTexture = nullptr;
 }
 
-bool GrDynamicAtlas::addRect(const SkIRect& devIBounds, SkIVector* offset) {
+GrDynamicAtlas::Node* GrDynamicAtlas::makeNode(Node* previous, int l, int t, int r, int b) {
+    int width = r - l;
+    int height = b - t;
+    GrRectanizer* rectanizer = (fRectanizerAlgorithm == RectanizerAlgorithm::kSkyline)
+            ? (GrRectanizer*)fNodeAllocator.make<GrRectanizerSkyline>(width, height)
+            : fNodeAllocator.make<GrRectanizerPow2>(width, height);
+    return fNodeAllocator.make<Node>(previous, rectanizer, l, t);
+}
+
+bool GrDynamicAtlas::addRect(int width, int height, SkIPoint16* location) {
     // This can't be called anymore once instantiate() has been called.
     SkASSERT(!this->isInstantiated());
 
-    SkIPoint16 location;
-    if (!this->internalPlaceRect(devIBounds.width(), devIBounds.height(), &location)) {
+    if (!this->internalPlaceRect(width, height, location)) {
         return false;
     }
-    offset->set(location.x() - devIBounds.left(), location.y() - devIBounds.top());
 
-    fDrawBounds.fWidth = std::max(fDrawBounds.width(), location.x() + devIBounds.width());
-    fDrawBounds.fHeight = std::max(fDrawBounds.height(), location.y() + devIBounds.height());
+    fDrawBounds.fWidth = std::max(fDrawBounds.width(), location->x() + width);
+    fDrawBounds.fHeight = std::max(fDrawBounds.height(), location->y() + height);
     return true;
 }
 
@@ -126,10 +138,10 @@ bool GrDynamicAtlas::internalPlaceRect(int w, int h, SkIPoint16* loc) {
         if (h > fHeight) {
             fHeight = std::min(SkNextPow2(h), fMaxAtlasSize);
         }
-        fTopNode = std::make_unique<Node>(nullptr, 0, 0, fWidth, fHeight);
+        fTopNode = this->makeNode(nullptr, 0, 0, fWidth, fHeight);
     }
 
-    for (Node* node = fTopNode.get(); node; node = node->previous()) {
+    for (Node* node = fTopNode; node; node = node->previous()) {
         if (node->addRect(w, h, loc)) {
             return true;
         }
@@ -143,11 +155,11 @@ bool GrDynamicAtlas::internalPlaceRect(int w, int h, SkIPoint16* loc) {
         if (fHeight <= fWidth) {
             int top = fHeight;
             fHeight = std::min(fHeight * 2, fMaxAtlasSize);
-            fTopNode = std::make_unique<Node>(std::move(fTopNode), 0, top, fWidth, fHeight);
+            fTopNode = this->makeNode(fTopNode, 0, top, fWidth, fHeight);
         } else {
             int left = fWidth;
             fWidth = std::min(fWidth * 2, fMaxAtlasSize);
-            fTopNode = std::make_unique<Node>(std::move(fTopNode), left, 0, fWidth, fHeight);
+            fTopNode = this->makeNode(fTopNode, left, 0, fWidth, fHeight);
         }
     } while (!fTopNode->addRect(w, h, loc));
 
@@ -187,7 +199,6 @@ std::unique_ptr<GrRenderTargetContext> GrDynamicAtlas::instantiate(
     }
 
     SkIRect clearRect = SkIRect::MakeSize(fDrawBounds);
-    rtc->clear(&clearRect, SK_PMColor4fTRANSPARENT,
-               GrRenderTargetContext::CanClearFullscreen::kYes);
+    rtc->priv().clearAtLeast(clearRect, SK_PMColor4fTRANSPARENT);
     return rtc;
 }

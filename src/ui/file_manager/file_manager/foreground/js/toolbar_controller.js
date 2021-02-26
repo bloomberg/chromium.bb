@@ -64,6 +64,19 @@ class ToolbarController {
         queryRequiredElement('#read-only-indicator', this.toolbar_);
 
     /**
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.pinnedToggleWrapper_ =
+        queryRequiredElement('#pinned-toggle-wrapper', this.toolbar_);
+
+    /**
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.pinnedToggle_ = queryRequiredElement('#pinned-toggle', this.toolbar_);
+
+    /**
      * @private {!cr.ui.Command}
      * @const
      */
@@ -88,6 +101,24 @@ class ToolbarController {
     this.newFolderCommand_ = assertInstanceof(
         queryRequiredElement(
             '#new-folder', assert(this.toolbar_.ownerDocument.body)),
+        cr.ui.Command);
+
+    /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.invokeSharesheetCommand_ = assertInstanceof(
+        queryRequiredElement(
+            '#invoke-sharesheet', assert(this.toolbar_.ownerDocument.body)),
+        cr.ui.Command);
+
+    /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.togglePinnedCommand_ = assertInstanceof(
+        queryRequiredElement(
+            '#toggle-pinned', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -136,11 +167,35 @@ class ToolbarController {
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
 
+    // Using CHANGE_THROTTLED because updateSharesheetCommand_() uses async
+    // API and can update the state out-of-order specially when updating to
+    // an empty selection.
+    this.selectionHandler_.addEventListener(
+        FileSelectionHandler.EventType.CHANGE_THROTTLED,
+        this.updateSharesheetCommand_.bind(this));
+
+    chrome.fileManagerPrivate.onAppsUpdated.addListener(
+        this.updateSharesheetCommand_.bind(this));
+
     this.cancelSelectionButton_.addEventListener(
         'click', this.onCancelSelectionButtonClicked_.bind(this));
 
     this.deleteButton_.addEventListener(
         'click', this.onDeleteButtonClicked_.bind(this));
+
+    if (util.isFilesNg()) {
+      this.togglePinnedCommand_.addEventListener(
+          'checkedChange', this.updatePinnedToggle_.bind(this));
+
+      this.togglePinnedCommand_.addEventListener(
+          'disabledChange', this.updatePinnedToggle_.bind(this));
+
+      this.togglePinnedCommand_.addEventListener(
+          'hiddenChange', this.updatePinnedToggle_.bind(this));
+
+      this.pinnedToggle_.addEventListener(
+          'change', this.onPinnedToggleChanged_.bind(this));
+    }
 
     // The old layout needed the cancel selection button to resize every
     // time the splitter was moved. Not needed for files-ng.
@@ -230,6 +285,11 @@ class ToolbarController {
          selection.entries.some(
              entry => util.isNonModifiable(this.volumeManager_, entry)));
 
+    if (util.isFilesNg()) {
+      this.togglePinnedCommand_.canExecuteChange(
+          this.listContainer_.currentList);
+    }
+
     // Set .selecting class to containing element to change the view
     // accordingly.
     // TODO(fukino): This code changes the state of body, not the toolbar, to
@@ -291,5 +351,27 @@ class ToolbarController {
    */
   onToolbarButtonsMutated_() {
     this.locationLine_.truncate();
+  }
+
+  /** @private */
+  updateSharesheetCommand_() {
+    this.invokeSharesheetCommand_.canExecuteChange(
+        this.listContainer_.currentList);
+  }
+
+  /** @private */
+  updatePinnedToggle_() {
+    this.pinnedToggleWrapper_.hidden = this.togglePinnedCommand_.hidden;
+    this.pinnedToggle_.checked = this.togglePinnedCommand_.checked;
+    this.pinnedToggle_.disabled = this.togglePinnedCommand_.disabled;
+  }
+
+  /** @private */
+  onPinnedToggleChanged_() {
+    this.togglePinnedCommand_.execute(this.listContainer_.currentList);
+
+    // Optimistally update the command's properties so we get notified if they
+    // change back.
+    this.togglePinnedCommand_.checked = this.pinnedToggle_.checked;
   }
 }

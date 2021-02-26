@@ -81,7 +81,7 @@ class AX_EXPORT AXPlatformNode {
   // this object.
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Fire a platform-specific notification to announce |text|.
   virtual void AnnounceText(const base::string16& text) = 0;
 #endif
@@ -92,7 +92,11 @@ class AX_EXPORT AXPlatformNode {
   // Return true if this object is equal to or a descendant of |ancestor|.
   virtual bool IsDescendantOf(AXPlatformNode* ancestor) const = 0;
 
-  // Return the unique ID
+  // Set |this| as the primary web contents for the window.
+  void SetIsPrimaryWebContentsForWindow(bool is_primary);
+  bool IsPrimaryWebContentsForWindow() const;
+
+  // Return the unique ID.
   int32_t GetUniqueId() const;
 
   // Creates a string representation of this node's data.
@@ -109,6 +113,8 @@ class AX_EXPORT AXPlatformNode {
   virtual ~AXPlatformNode();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AtkUtilAuraLinuxTest, KeySnooping);
+
   // Global ObserverList for AXMode changes.
   static base::LazyInstance<
       base::ObserverList<AXModeObserver>::Unchecked>::Leaky ax_mode_observers_;
@@ -122,6 +128,8 @@ class AX_EXPORT AXPlatformNode {
   // exposed platform accessibility API, even though actual focus remains in
   // underlying content.
   static gfx::NativeViewAccessible popup_focus_override_;
+
+  bool is_primary_web_contents_for_window_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNode);
 };

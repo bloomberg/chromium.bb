@@ -26,6 +26,7 @@ class SkString;
 class SkTraceMemoryDump;
 class GrSingleOwner;
 class GrTexture;
+class GrThreadSafeCache;
 
 struct GrTextureFreedMessage {
     GrTexture* fTexture;
@@ -61,7 +62,7 @@ public:
     ~GrResourceCache();
 
     // Default maximum number of bytes of gpu memory of budgeted resources in the cache.
-    static const size_t kDefaultMaxSize             = 96 * (1 << 20);
+    static const size_t kDefaultMaxSize             = 256 * (1 << 20);
 
     /** Used to access functionality needed by GrGpuResource for lifetime management. */
     class ResourceAccess;
@@ -91,7 +92,7 @@ public:
     size_t getResourceBytes() const { return fBytes; }
 
     /**
-     * Returns the number of bytes held by unlocked reosources which are available for purging.
+     * Returns the number of bytes held by unlocked resources which are available for purging.
      */
     size_t getPurgeableBytes() const { return fPurgeableBytes; }
 
@@ -238,6 +239,9 @@ public:
     void dumpMemoryStatistics(SkTraceMemoryDump* traceMemoryDump) const;
 
     void setProxyProvider(GrProxyProvider* proxyProvider) { fProxyProvider = proxyProvider; }
+    void setThreadSafeCache(GrThreadSafeCache* threadSafeCache) {
+        fThreadSafeCache = threadSafeCache;
+    }
 
 private:
     ///////////////////////////////////////////////////////////////////////////
@@ -323,6 +327,8 @@ private:
     typedef SkTDArray<GrGpuResource*> ResourceArray;
 
     GrProxyProvider*                    fProxyProvider = nullptr;
+    GrThreadSafeCache*                  fThreadSafeCache = nullptr;
+
     // Whenever a resource is added to the cache or the result of a cache lookup, fTimestamp is
     // assigned as the resource's timestamp and then incremented. fPurgeableQueue orders the
     // purgeable resources by this value, and thus is used to purge resources in LRU order.
@@ -373,7 +379,7 @@ class GrResourceCache::ResourceAccess {
 private:
     ResourceAccess(GrResourceCache* cache) : fCache(cache) { }
     ResourceAccess(const ResourceAccess& that) : fCache(that.fCache) { }
-    ResourceAccess& operator=(const ResourceAccess&); // unimpl
+    ResourceAccess& operator=(const ResourceAccess&) = delete;
 
     /**
      * Insert a resource into the cache.

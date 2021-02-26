@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/single_task_sequence.h"
 
 namespace gpu {
@@ -63,7 +64,8 @@ SequenceId GpuTaskSchedulerHelper::GetSequenceId() {
 }
 
 gpu::SingleTaskSequence* GpuTaskSchedulerHelper::GetTaskSequence() const {
-  DCHECK(using_command_buffer_);
+  // The are two places this function is called: inside command buffer or during
+  // start up or tear down.
   return task_sequence_.get();
 }
 

@@ -4,19 +4,21 @@
 
 #include "components/translate/core/common/translate_util.h"
 
-#include <stddef.h>
-#include <algorithm>
-#include <set>
-#include <vector>
+#include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/stl_util.h"
-#include "components/language/core/common/locale_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "url/gurl.h"
 
 namespace translate {
+
+namespace {
+
+// Parameter for TranslateSubFrames feature to determine whether language
+// detection should include the sub frames (or just the main frame).
+const char kDetectLanguageInSubFrames[] = "detect_language_in_sub_frames";
+
+}  // namespace
 
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
 
@@ -35,6 +37,12 @@ GURL GetTranslateSecurityOrigin() {
 
 bool IsSubFrameTranslationEnabled() {
   return base::FeatureList::IsEnabled(kTranslateSubFrames);
+}
+
+bool IsSubFrameLanguageDetectionEnabled() {
+  return base::FeatureList::IsEnabled(kTranslateSubFrames) &&
+         base::GetFieldTrialParamByFeatureAsBool(
+             kTranslateSubFrames, kDetectLanguageInSubFrames, true);
 }
 
 }  // namespace translate

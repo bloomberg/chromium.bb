@@ -121,14 +121,12 @@ void CriticalNotificationBubbleView::Init() {
 
   auto message = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_TEXT),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-      views::style::STYLE_SECONDARY);
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SizeToFit(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-      margins().width());
+  message->SizeToFit(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                         views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                     margins().width());
   AddChildView(std::move(message));
 
   refresh_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,

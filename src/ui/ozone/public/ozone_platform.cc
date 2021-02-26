@@ -13,12 +13,13 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/ozone/platform_object.h"
 #include "ui/ozone/platform_selection.h"
+#include "ui/ozone/public/platform_menu_utils.h"
 #include "ui/ozone/public/platform_screen.h"
+#include "ui/ozone/public/platform_user_input_monitor.h"
 
 namespace ui {
 
 namespace {
-
 OzonePlatform* g_instance = nullptr;
 
 void EnsureInstance() {
@@ -37,12 +38,24 @@ void EnsureInstance() {
 
 }  // namespace
 
+OzonePlatform::PlatformProperties::PlatformProperties() = default;
+OzonePlatform::PlatformProperties::~PlatformProperties() = default;
+
 OzonePlatform::OzonePlatform() {
   DCHECK(!g_instance) << "There should only be a single OzonePlatform.";
   g_instance = this;
 }
 
 OzonePlatform::~OzonePlatform() = default;
+
+// static
+void OzonePlatform::PreEarlyInitialization() {
+  EnsureInstance();
+  if (g_instance->prearly_initialized_)
+    return;
+  g_instance->prearly_initialized_ = true;
+  g_instance->PreEarlyInitialize();
+}
 
 // static
 void OzonePlatform::InitializeForUI(const InitParams& args) {
@@ -87,6 +100,10 @@ PlatformGLEGLUtility* OzonePlatform::GetPlatformGLEGLUtility() {
   return nullptr;
 }
 
+PlatformMenuUtils* OzonePlatform::GetPlatformMenuUtils() {
+  return nullptr;
+}
+
 bool OzonePlatform::IsNativePixmapConfigSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {
@@ -114,5 +131,18 @@ void OzonePlatform::AfterSandboxEntry() {
   // This should not be called in single-process mode.
   DCHECK(!single_process_);
 }
+
+std::unique_ptr<PlatformUserInputMonitor>
+OzonePlatform::GetPlatformUserInputMonitor(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+  return {};
+}
+
+void OzonePlatform::PostMainMessageLoopStart(
+    base::OnceCallback<void()> shutdown_cb) {}
+
+void OzonePlatform::PostMainMessageLoopRun() {}
+
+void OzonePlatform::PreEarlyInitialize() {}
 
 }  // namespace ui

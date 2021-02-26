@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/controls/button/button.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -22,15 +23,13 @@ class AutofillProfile;
 namespace views {
 class Background;
 class Border;
-class ButtonListener;
 class ImageView;
 class Label;
 class View;
-}
+}  // namespace views
 
 namespace payments {
 
-class PaymentOptionsProvider;
 class PaymentsProfileComparator;
 enum class PaymentShippingType;
 
@@ -54,36 +53,27 @@ constexpr int kPreferredPaymentHandlerDialogHeight = 600;
 // sheet, in pixels.
 constexpr int kAmountSectionWidth = 96;
 
-enum class PaymentRequestCommonTags {
-  BACK_BUTTON_TAG = 0,
-  CLOSE_BUTTON_TAG,
-  PAY_BUTTON_TAG,
-  // This is the max value of tags for controls common to multiple
-  // PaymentRequest contexts. Individual screens that handle both common and
-  // specific events with tags can start their specific tags at this value.
-  PAYMENT_REQUEST_COMMON_TAG_MAX
-};
-
 // Creates and returns a header for all the sheets in the PaymentRequest dialog.
 // The header contains an optional back arrow button (if |show_back_arrow| is
-// true), a |title| label. |delegate| becomes the delegate for the back and
-// close buttons. |background| is applied to |container| and its color is used
-// to decide which color to use to paint the arrow.
+// true) and a |header_content_view|. |back_arrow_callback| is called when
+// pressing the back button. |background| is applied to |container| and its
+// color is used to decide which color to use to paint the arrow.
 // +---------------------------+
 // | <- | header_content_view  |
 // +---------------------------+
 void PopulateSheetHeaderView(bool show_back_arrow,
                              std::unique_ptr<views::View> header_content_view,
-                             views::ButtonListener* delegate,
+                             views::Button::PressedCallback back_arrow_callback,
                              views::View* container,
                              std::unique_ptr<views::Background> background);
 
-// Returns an instrument image view for the given |img| or |icon_resource_id|
-// and wanted |opacity|. Includes a rounded rect border. Callers need to set the
-// size of the resulting ImageView. Callers should set a |tooltip_text|.
+// Returns an instrument image view for the given |icon_bitmap| or
+// |icon_resource_id| and wanted |opacity|. Includes a rounded rect border.
+// Callers need to set the size of the resulting ImageView. Callers should set a
+// |tooltip_text|.
 std::unique_ptr<views::ImageView> CreateAppIconView(
     int icon_resource_id,
-    gfx::ImageSkia img,
+    const SkBitmap* icon_bitmap,
     const base::string16& tooltip_text,
     float opacity = 1.0f);
 
@@ -116,7 +106,9 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    const PaymentOptionsProvider& options,
+    bool request_payer_name,
+    bool request_payer_email,
+    bool request_payer_phone,
     const PaymentsProfileComparator& comp,
     base::string16* accessible_content);
 

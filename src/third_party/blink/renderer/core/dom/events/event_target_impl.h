@@ -22,15 +22,13 @@ namespace blink {
 // decrease.
 class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
                                           public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
-
  public:
   explicit EventTargetImpl(ScriptState*);
   ~EventTargetImpl() override = default;
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

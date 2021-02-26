@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -85,25 +85,11 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 
 class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
  public:
-  explicit PowerMonitor(EasyUnlockService* service)
-      : service_(service), waking_up_(false) {
+  explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
     PowerManagerClient::Get()->AddObserver(this);
   }
 
   ~PowerMonitor() override { PowerManagerClient::Get()->RemoveObserver(this); }
-
-  // Called when the remote device has been authenticated to record the time
-  // delta from waking up. No time will be recorded if the start-up time has
-  // already been recorded or if the system never went to sleep previously.
-  void RecordStartUpTime() {
-    if (wake_up_time_.is_null())
-      return;
-    UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.StartupTimeFromSuspend",
-                               base::Time::Now() - wake_up_time_);
-    wake_up_time_ = base::Time();
-  }
-
-  bool waking_up() const { return waking_up_; }
 
  private:
   // PowerManagerClient::Observer:
@@ -112,8 +98,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   }
 
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
-    waking_up_ = true;
-    wake_up_time_ = base::Time::Now();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&PowerMonitor::ResetWakingUp,
@@ -121,17 +105,14 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
         base::TimeDelta::FromSeconds(5));
     service_->OnSuspendDone();
     service_->UpdateAppState();
-    // Note that |this| may get deleted after |UpdateAppState| is called.
+    // Note that `this` may get deleted after `UpdateAppState` is called.
   }
 
   void ResetWakingUp() {
-    waking_up_ = false;
     service_->UpdateAppState();
   }
 
   EasyUnlockService* service_;
-  bool waking_up_;
-  base::Time wake_up_time_;
   base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
@@ -171,7 +152,7 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
     return;
 
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->RemoveWithoutPathExpansion(account_id.GetUserEmail(), NULL);
+  update->RemoveKey(account_id.GetUserEmail());
 
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 }
@@ -268,10 +249,7 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
 
   handler->ChangeState(state);
 
-  if (state == ScreenlockState::AUTHENTICATED) {
-    if (power_monitor_)
-      power_monitor_->RecordStartUpTime();
-  } else if (auth_attempt_) {
+  if (state != ScreenlockState::AUTHENTICATED && auth_attempt_) {
     // Clean up existing auth attempt if we can no longer authenticate the
     // remote device.
     auth_attempt_.reset();

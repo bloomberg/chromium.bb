@@ -13,11 +13,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/appcache/appcache_quota_client.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
@@ -89,9 +91,10 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     virtual ~Observer() = default;
   };
 
-  // If not using quota management, the proxy may be NULL.
-  AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy,
-                      base::WeakPtr<StoragePartitionImpl> partition);
+  // If not using quota management, the proxy may be null.
+  AppCacheServiceImpl(
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<StoragePartitionImpl> partition);
   ~AppCacheServiceImpl() override;
 
   void Initialize(const base::FilePath& cache_directory);
@@ -107,6 +110,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // For use in catastrophic failure modes to reboot the appcache system
   // without relaunching the browser.
   void ScheduleReinitialize();
+
+  // Called by AppCacheStorageImpl when it is fully initialized.
+  void NotifyStorageReady();
 
   // AppCacheService
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
@@ -145,9 +151,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return quota_manager_proxy_.get();
   }
 
-  // This QuotaClient should only be used on the IO thread.
-  AppCacheQuotaClient* quota_client() const { return quota_client_.get(); }
-
   AppCacheStorage* storage() const { return storage_.get(); }
 
   base::WeakPtr<AppCacheServiceImpl> AsWeakPtr() {
@@ -169,6 +172,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
       mojo::ReportBadMessageCallback bad_message_callback);
 
  protected:
@@ -188,7 +192,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::FilePath cache_directory_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   AppCachePolicy* appcache_policy_;
-  scoped_refptr<AppCacheQuotaClient> quota_client_;
   std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
@@ -203,10 +206,16 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::WeakPtr<StoragePartitionImpl> partition_;
 
  private:
+  class QuotaClientHolder;
+
   // The (process id, host id) pair that identifies one AppCacheHost.
   using AppCacheHostProcessMap =
       std::map<base::UnguessableToken, std::unique_ptr<AppCacheHost>>;
   AppCacheHostProcessMap hosts_;
+
+  // The QuotaClientHolder is constructed and accessed on the UI thread, and
+  // destroyed on the IO thread.
+  const scoped_refptr<QuotaClientHolder> quota_client_holder_;
 
   base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_{this};
 

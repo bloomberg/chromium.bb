@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.subresource_filter;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -16,24 +17,22 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.infobar.AdsBlockedInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.components.subresource_filter.AdsBlockedInfoBar;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -46,8 +45,7 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class SubresourceFilterTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     private EmbeddedTestServer mTestServer;
 
     private static final String PAGE_WITH_JPG =
@@ -64,12 +62,7 @@ public final class SubresourceFilterTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> publisher.createAndPublishRulesetDisallowingSuffixForTesting(suffix));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return publisher.isPublished();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> publisher.isPublished());
     }
 
     @Before
@@ -208,7 +201,7 @@ public final class SubresourceFilterTest {
 
         CriteriaHelper.pollUiThread(() -> !InfoBarContainer.get(tab).hasInfoBars());
 
-        // Reloading should whitelist the site, so resources should no longer be filtered.
+        // Reloading should allowlist the site, so resources should no longer be filtered.
         loaded = mActivityTestRule.runJavaScriptCodeInCurrentTab("imgLoaded");
         Assert.assertEquals("true", loaded);
     }

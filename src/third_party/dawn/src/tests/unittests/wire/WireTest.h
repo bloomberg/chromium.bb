@@ -68,9 +68,11 @@ inline testing::Matcher<MatcherLambdaArgument<Lambda>> MatchesLambda(Lambda lamb
 
 class StringMessageMatcher : public testing::MatcherInterface<const char*> {
   public:
-    explicit StringMessageMatcher() {}
+    explicit StringMessageMatcher() {
+    }
 
-    bool MatchAndExplain(const char* message, testing::MatchResultListener* listener) const override {
+    bool MatchAndExplain(const char* message,
+                         testing::MatchResultListener* listener) const override {
         if (message == nullptr) {
             *listener << "missing error message";
             return false;
@@ -83,11 +85,11 @@ class StringMessageMatcher : public testing::MatcherInterface<const char*> {
     }
 
     void DescribeTo(std::ostream* os) const override {
-      *os << "valid error message";
+        *os << "valid error message";
     }
 
     void DescribeNegationTo(std::ostream* os) const override {
-      *os << "invalid error message";
+        *os << "invalid error message";
     }
 };
 
@@ -131,6 +133,7 @@ class WireTest : public testing::Test {
     dawn_wire::WireClient* GetWireClient();
 
     void DeleteServer();
+    void DeleteClient();
 
   private:
     void SetupIgnoredCallExpectations();

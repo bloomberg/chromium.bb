@@ -6,6 +6,7 @@
  * @fileoverview 'settings-captions' is a component for showing captions
  * settings subpage (chrome://settings/captions).
  */
+
 (function() {
 
 Polymer({
@@ -167,6 +168,25 @@ Polymer({
         ];
       },
     },
+
+    /** @private */
+    enableLiveCaption_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableLiveCaption');
+      },
+    },
+
+    /**
+     * The subtitle to display under the Live Caption heading. Generally, this
+     * is a generic subtitle describing the feature. While the SODA model is
+     * being downloading, this displays the download progress.
+     * @private
+     */
+    enableLiveCaptionSubtitle_: {
+      type: String,
+      value: loadTimeData.getString('captionsEnableLiveCaptionSubtitle'),
+    },
   },
 
   /** @private {?settings.FontsBrowserProxy} */
@@ -180,6 +200,11 @@ Polymer({
   /** @override */
   ready() {
     this.browserProxy_.fetchFontsData().then(this.setFontsData_.bind(this));
+
+    this.addWebUIListener(
+        'enable-live-caption-subtitle-changed',
+        this.onEnableLiveCaptionSubtitleChanged_.bind(this));
+    chrome.send('captionsSubpageReady');
   },
 
   /**
@@ -264,11 +289,30 @@ Polymer({
    * @private
    */
   computePadding_(size) {
-    if (size == '') {
+    if (size === '') {
       return '1%';
     }
 
     return `${+ size.slice(0, -1) / 100}%`;
-  }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onA11yLiveCaptionChange_(event) {
+    const a11yLiveCaptionOn = event.target.checked;
+    chrome.metricsPrivate.recordBoolean(
+        'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+  },
+
+  /**
+   * @private
+   * @param {!string} enableLiveCaptionSubtitle The message sent from the webui
+   *     to be displayed as a subtitle to Live Captions.
+   */
+  onEnableLiveCaptionSubtitleChanged_(enableLiveCaptionSubtitle) {
+    this.enableLiveCaptionSubtitle_ = enableLiveCaptionSubtitle;
+  },
 });
 })();

@@ -13,7 +13,7 @@ declare_args() {
   use_custom_libcxx =
       is_fuchsia || is_android || is_mac || (is_ios && !use_xcode_clang) ||
       (is_win && is_clang) ||
-      (is_linux &&
+      ((is_linux || is_chromeos) &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 
   # Use libc++ instead of stdlibc++ when using the host_cpu toolchain, even if
@@ -58,7 +58,7 @@ declare_args() {
 # libc++abi needs to be exported from executables to be picked up by shared
 # libraries on certain instrumented builds.
 export_libcxxabi_from_executables =
-    use_custom_libcxx && !is_win && !is_component_build &&
+    use_custom_libcxx && !is_ios && !is_win && !is_component_build &&
     (is_asan || is_ubsan_vptr)
 
 # On Android, many shared libraries get loaded from the context of a JRE.  In

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
@@ -15,7 +16,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 using testing::StartsWith;
 
@@ -81,46 +81,6 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_SetProofVerifyDetails) {
   EXPECT_EQ(details, state.proof_verify_details());
 }
 
-TEST_F(QuicCryptoClientConfigTest, CachedState_ServerDesignatedConnectionId) {
-  QuicCryptoClientConfig::CachedState state;
-  EXPECT_FALSE(state.has_server_designated_connection_id());
-
-  uint64_t conn_id = 1234;
-  QuicConnectionId connection_id = TestConnectionId(conn_id);
-  state.add_server_designated_connection_id(connection_id);
-  EXPECT_TRUE(state.has_server_designated_connection_id());
-  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
-  EXPECT_FALSE(state.has_server_designated_connection_id());
-
-  // Allow the ID to be set multiple times.  It's unusual that this would
-  // happen, but not impossible.
-  connection_id = TestConnectionId(++conn_id);
-  state.add_server_designated_connection_id(connection_id);
-  EXPECT_TRUE(state.has_server_designated_connection_id());
-  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
-  connection_id = TestConnectionId(++conn_id);
-  state.add_server_designated_connection_id(connection_id);
-  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
-  EXPECT_FALSE(state.has_server_designated_connection_id());
-
-  // Test FIFO behavior.
-  const QuicConnectionId first_cid = TestConnectionId(0xdeadbeef);
-  const QuicConnectionId second_cid = TestConnectionId(0xfeedbead);
-  state.add_server_designated_connection_id(first_cid);
-  state.add_server_designated_connection_id(second_cid);
-  EXPECT_TRUE(state.has_server_designated_connection_id());
-  EXPECT_EQ(first_cid, state.GetNextServerDesignatedConnectionId());
-  EXPECT_EQ(second_cid, state.GetNextServerDesignatedConnectionId());
-}
-
-TEST_F(QuicCryptoClientConfigTest, CachedState_ServerIdConsumedBeforeSet) {
-  QuicCryptoClientConfig::CachedState state;
-  EXPECT_FALSE(state.has_server_designated_connection_id());
-  EXPECT_QUIC_BUG(state.GetNextServerDesignatedConnectionId(),
-                  "Attempting to consume a connection id "
-                  "that was never designated.");
-}
-
 TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonce) {
   QuicCryptoClientConfig::CachedState state;
   EXPECT_FALSE(state.has_server_nonce());
@@ -170,7 +130,6 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
   EXPECT_EQ(state.source_address_token(), other.source_address_token());
   EXPECT_EQ(state.certs(), other.certs());
   EXPECT_EQ(1u, other.generation_counter());
-  EXPECT_FALSE(state.has_server_designated_connection_id());
   EXPECT_FALSE(state.has_server_nonce());
 }
 
@@ -190,17 +149,16 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicVersionLabel cver;
   EXPECT_THAT(msg.GetVersionLabel(kVER, &cver), IsQuicNoError());
   EXPECT_EQ(CreateQuicVersionLabel(QuicVersionMax()), cver);
-  quiche::QuicheStringPiece proof_nonce;
+  absl::string_view proof_nonce;
   EXPECT_TRUE(msg.GetStringPiece(kNONP, &proof_nonce));
   EXPECT_EQ(std::string(32, 'r'), proof_nonce);
-  quiche::QuicheStringPiece user_agent_id;
+  absl::string_view user_agent_id;
   EXPECT_TRUE(msg.GetStringPiece(kUAID, &user_agent_id));
   EXPECT_EQ("quic-tester", user_agent_id);
-  quiche::QuicheStringPiece alpn;
+  absl::string_view alpn;
   EXPECT_TRUE(msg.GetStringPiece(kALPN, &alpn));
   EXPECT_EQ("hq", alpn);
-
-  EXPECT_EQ(msg.minimum_size(), 1024u);
+  EXPECT_EQ(msg.minimum_size(), 1u);
 }
 
 TEST_F(QuicCryptoClientConfigTest, InchoateChloIsNotPadded) {
@@ -245,7 +203,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicTag pdmd;
   EXPECT_THAT(msg.GetUint32(kPDMD, &pdmd), IsQuicNoError());
   EXPECT_EQ(kX509, pdmd);
-  quiche::QuicheStringPiece scid;
+  absl::string_view scid;
   EXPECT_FALSE(msg.GetStringPiece(kSCID, &scid));
 }
 
@@ -271,7 +229,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
-  quiche::QuicheStringPiece scid;
+  absl::string_view scid;
   EXPECT_TRUE(msg.GetStringPiece(kSCID, &scid));
   EXPECT_EQ("12345678", scid);
 }
@@ -297,7 +255,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
-  quiche::QuicheStringPiece scid;
+  absl::string_view scid;
   EXPECT_TRUE(msg.GetStringPiece(kSCID, &scid));
   EXPECT_EQ("12345678", scid);
 }
@@ -532,7 +490,6 @@ TEST_F(QuicCryptoClientConfigTest, ProcessReject) {
                                       AllSupportedTransportVersions().front(),
                                       "", &cached, out_params, &error),
               IsQuicNoError());
-  EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_FALSE(cached.has_server_nonce());
 }
 

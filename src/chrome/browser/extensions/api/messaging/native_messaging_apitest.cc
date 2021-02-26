@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -23,10 +24,13 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/result_catcher.h"
 
 namespace extensions {
 namespace {
+
+using ContextType = ExtensionApiTest::ContextType;
 
 class NativeMessagingApiTest : public ExtensionApiTest {
  protected:
@@ -41,6 +45,49 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingApiTest, NativeMessagingBasic) {
 IN_PROC_BROWSER_TEST_F(NativeMessagingApiTest, UserLevelNativeMessaging) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
   ASSERT_TRUE(RunExtensionTest("native_messaging")) << message_;
+}
+
+// TODO(crbug.com/1094027): Clean up duplicate test coverage.
+class NativeMessagingLazyApiTest
+    : public NativeMessagingApiTest,
+      public testing::WithParamInterface<ContextType> {
+ public:
+  NativeMessagingLazyApiTest() {
+    // Service Workers are currently only available on certain channels, so set
+    // the channel for those tests.
+    if (GetParam() == ContextType::kServiceWorker)
+      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
+  }
+
+ protected:
+  bool RunLazyTest(const std::string& extension_name) {
+    if (GetParam() == ContextType::kEventPage) {
+      return RunExtensionTest(extension_name);
+    }
+    return RunExtensionTestWithFlags(
+        extension_name, kFlagRunAsServiceWorkerBasedExtension, kFlagNone);
+  }
+
+  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
+};
+
+INSTANTIATE_TEST_SUITE_P(EventPage,
+                         NativeMessagingLazyApiTest,
+                         ::testing::Values(ContextType::kEventPage));
+// Service Worker versions of these tests are flaky.
+// See http://crbug.com/1111536 and http://crbug.com/1111337.
+// INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+//                          NativeMessagingLazyApiTest,
+//                         ::testing::Values(ContextType::kServiceWorker));
+
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, NativeMessagingBasic) {
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
+  ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, UserLevelNativeMessaging) {
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
+  ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }
 
 #if !defined(OS_CHROMEOS)
@@ -193,7 +240,7 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
     // On Mac, the browser remains alive when no windows are open, so observing
     // the KeepAliveRegistry cannot detect when the native messaging keep-alive
     // has been released; poll for changes instead.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     polling_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(100),
         base::BindRepeating(&TestKeepAliveStateObserver::PollKeepAlive,
@@ -214,7 +261,7 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
 
   void OnKeepAliveRestartStateChanged(bool can_restart) override {}
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PollKeepAlive() {
     OnKeepAliveStateChanged(
         KeepAliveRegistry::GetInstance()->IsOriginRegistered(
@@ -341,9 +388,9 @@ class NativeMessagingLaunchBackgroundModeApiTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     NativeMessagingLaunchApiTest::SetUpCommandLine(command_line);
 
-    if (base::StringPiece(
-            ::testing::UnitTest::GetInstance()->current_test_info()->name())
-            .starts_with("PRE")) {
+    if (base::StartsWith(
+            ::testing::UnitTest::GetInstance()->current_test_info()->name(),
+            "PRE")) {
       return;
     }
     set_exit_when_last_browser_closes(false);

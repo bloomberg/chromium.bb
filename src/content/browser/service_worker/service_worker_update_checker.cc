@@ -25,6 +25,7 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 
 namespace content {
 
@@ -55,7 +56,7 @@ void SetUpOnUI(
                     network::kDefaultAcceptHeaderValue);
 
   BrowserContext* browser_context = process_manager->browser_context();
-  blink::mojom::RendererPreferences renderer_preferences;
+  blink::RendererPreferences renderer_preferences;
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       browser_context, &renderer_preferences);
   UpdateAdditionalHeadersForBrowserInitiatedRequest(
@@ -250,9 +251,10 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
-  version_to_update_->context()->storage()->GetNewResourceId(base::BindOnce(
-      &ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck,
-      weak_factory_.GetWeakPtr(), url, resource_id));
+  version_to_update_->context()->GetStorageControl()->GetNewResourceId(
+      base::BindOnce(
+          &ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck,
+          weak_factory_.GetWeakPtr(), url, resource_id));
 }
 
 void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
@@ -265,20 +267,27 @@ void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
   // cache map and it doesn't issue network request.
   const bool is_main_script = url == main_script_url_;
 
-  ServiceWorkerStorage* storage = version_to_update_->context()->storage();
+  ServiceWorkerRegistry* registry = version_to_update_->context()->registry();
 
   // We need two identical readers for comparing and reading the resource for
   // |resource_id| from the storage.
-  auto compare_reader = storage->CreateResponseReader(resource_id);
-  auto copy_reader = storage->CreateResponseReader(resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader;
+  registry->GetRemoteStorageControl()->CreateResourceReader(
+      resource_id, compare_reader.BindNewPipeAndPassReceiver());
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader;
+  registry->GetRemoteStorageControl()->CreateResourceReader(
+      resource_id, copy_reader.BindNewPipeAndPassReceiver());
 
-  auto writer = storage->CreateResponseWriter(new_resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  registry->GetRemoteStorageControl()->CreateResourceWriter(
+      new_resource_id, writer.BindNewPipeAndPassReceiver());
+
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
       force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,
       time_since_last_check_, default_headers_, browser_context_getter_,
       loader_factory_, std::move(compare_reader), std::move(copy_reader),
-      std::move(writer),
+      std::move(writer), new_resource_id,
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

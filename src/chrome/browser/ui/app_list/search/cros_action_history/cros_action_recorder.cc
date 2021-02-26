@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
-#include "chrome/common/chrome_features.h"
 #include "components/metrics/structured/structured_events.h"
 
 namespace app_list {
@@ -116,7 +116,7 @@ void DeleteExistingLog(const base::FilePath model_dir) {
       CrOSActionRecorder::kActionHistoryDir)
     return;
 
-  base::DeleteFileRecursively(model_dir);
+  base::DeletePathRecursively(model_dir);
 }
 
 void CopyToDownloadDir(const base::FilePath model_dir,
@@ -274,8 +274,8 @@ void CrOSActionRecorder::Init(Profile* profile) {
   model_dir_ =
       profile->GetPath().AppendASCII(CrOSActionRecorder::kActionHistoryDir);
 
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Delete all cros action log if it's disabled.

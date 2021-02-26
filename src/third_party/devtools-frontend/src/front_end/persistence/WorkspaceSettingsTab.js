@@ -9,15 +9,16 @@ import {EditFileSystemView} from './EditFileSystemView.js';
 import {FileSystem} from './FileSystemWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 import {IsolatedFileSystem} from './IsolatedFileSystem.js';
 import {Events, IsolatedFileSystemManager} from './IsolatedFileSystemManager.js';
+import {NetworkPersistenceManager} from './NetworkPersistenceManager.js';
 import {PlatformFileSystem} from './PlatformFileSystem.js';  // eslint-disable-line no-unused-vars
 
 export class WorkspaceSettingsTab extends UI.Widget.VBox {
   constructor() {
     super();
-    this.registerRequiredCSS('persistence/workspaceSettingsTab.css');
+    this.registerRequiredCSS('persistence/workspaceSettingsTab.css', {enableLegacyPatching: true});
 
     const header = this.element.createChild('header');
-    header.createChild('h1').createTextChild(Common.UIString.UIString('Workspace'));
+    UI.UIUtils.createTextChild(header.createChild('h1'), Common.UIString.UIString('Workspace'));
 
     this.containerElement = this.element.createChild('div', 'settings-container-wrapper')
                                 .createChild('div', 'settings-tab settings-content settings-container');
@@ -33,7 +34,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     this.containerElement.appendChild(folderExcludePatternInput);
 
     const div = this.containerElement.createChild('div', 'settings-info-message');
-    div.createTextChild(Common.UIString.UIString('Mappings are inferred automatically.'));
+    UI.UIUtils.createTextChild(div, Common.UIString.UIString('Mappings are inferred automatically.'));
 
     this._fileSystemsListContainer = this.containerElement.createChild('div', '');
 
@@ -57,7 +58,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
    * @return {!Element}
    */
   _createFolderExcludePatternInput() {
-    const p = createElement('p');
+    const p = document.createElement('p');
     const labelElement = p.createChild('label');
     labelElement.textContent = ls`Folder exclude pattern`;
     const inputElement = UI.UIUtils.createInput('', 'text');
@@ -82,7 +83,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
       } catch (e) {
       }
       const valid = !!regex;
-      return {valid};
+      return {valid, errorMessage: undefined};
     }
   }
 
@@ -94,7 +95,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     if (!(fileSystem instanceof IsolatedFileSystem)) {
       return;
     }
-    const networkPersistenceProject = self.Persistence.networkPersistenceManager.project();
+    const networkPersistenceProject = NetworkPersistenceManager.instance().project();
     if (networkPersistenceProject &&
         IsolatedFileSystemManager.instance().fileSystem(
             /** @type {!FileSystem} */ (networkPersistenceProject).fileSystemPath()) === fileSystem) {

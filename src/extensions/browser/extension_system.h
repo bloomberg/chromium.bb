@@ -40,7 +40,7 @@ class ManagementPolicy;
 class QuotaService;
 class RuntimeData;
 class ServiceWorkerManager;
-class SharedUserScriptMaster;
+class SharedUserScriptManager;
 class StateStore;
 class ValueStoreFactory;
 enum class UnloadedExtensionReason;
@@ -85,8 +85,8 @@ class ExtensionSystem : public KeyedService {
   // The ServiceWorkerManager is created at startup.
   virtual ServiceWorkerManager* service_worker_manager() = 0;
 
-  // The SharedUserScriptMaster is created at startup.
-  virtual SharedUserScriptMaster* shared_user_script_master() = 0;
+  // The SharedUserScriptManager is created at startup.
+  virtual SharedUserScriptManager* shared_user_script_manager() = 0;
 
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;
@@ -126,6 +126,9 @@ class ExtensionSystem : public KeyedService {
 
   // Signaled when the extension system has completed its startup tasks.
   virtual const base::OneShotEvent& ready() const = 0;
+
+  // Whether the extension system is ready.
+  virtual bool is_ready() const = 0;
 
   // Returns the content verifier, if any.
   virtual ContentVerifier* content_verifier() = 0;

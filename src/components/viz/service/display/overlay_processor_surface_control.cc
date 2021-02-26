@@ -4,10 +4,12 @@
 
 #include "components/viz/service/display/overlay_processor_surface_control.h"
 
+#include <memory>
+
 #include "components/viz/service/display/overlay_strategy_underlay.h"
+#include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
-#include "ui/gl/android/android_surface_control_compat.h"
 
 namespace viz {
 namespace {
@@ -28,22 +30,19 @@ gfx::RectF ClipFromOrigin(gfx::RectF input) {
 
 }  // namespace
 
-OverlayProcessorSurfaceControl::OverlayProcessorSurfaceControl(
-    bool enable_overlay)
-    : OverlayProcessorUsingStrategy(), overlay_enabled_(enable_overlay) {
-  if (overlay_enabled_) {
-    strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
-        this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
-  }
+OverlayProcessorSurfaceControl::OverlayProcessorSurfaceControl()
+    : OverlayProcessorUsingStrategy() {
+  strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
+      this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
 OverlayProcessorSurfaceControl::~OverlayProcessorSurfaceControl() {}
 
 bool OverlayProcessorSurfaceControl::IsOverlaySupported() const {
-  return overlay_enabled_;
+  return true;
 }
 
-bool OverlayProcessorSurfaceControl::NeedsSurfaceOccludingDamageRect() const {
+bool OverlayProcessorSurfaceControl::NeedsSurfaceDamageRectList() const {
   return true;
 }
 
@@ -53,7 +52,7 @@ void OverlayProcessorSurfaceControl::CheckOverlaySupport(
   DCHECK(!candidates->empty());
 
   for (auto& candidate : *candidates) {
-    if (!gl::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
+    if (!gfx::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
       candidate.overlay_handled = false;
       return;
     }
@@ -99,7 +98,7 @@ void OverlayProcessorSurfaceControl::AdjustOutputSurfaceOverlay(
   DCHECK(output_surface_plane && output_surface_plane->has_value());
 
   OutputSurfaceOverlayPlane& plane = output_surface_plane->value();
-  DCHECK(gl::SurfaceControl::SupportsColorSpace(plane.color_space))
+  DCHECK(gfx::SurfaceControl::SupportsColorSpace(plane.color_space))
       << "The main overlay must only use color space supported by the "
          "device";
 

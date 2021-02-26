@@ -50,7 +50,8 @@
 //         service.InitWithNewPipeAndPassReceiver();
 //     base::PostTask(
 //         FROM_HERE, {content::BrowserThread::IO},
-//         base::Bind(&Foo::ConnectToService, this, base::Passed(&receiver)));
+//         base::BindOnce(&Foo::ConnectToService, this,
+//         base::Passed(&receiver)));
 //     resource_usage_.reset(new ProcessResourceUsage(std::move(service)));
 //   ...
 //
@@ -65,7 +66,7 @@ class ProcessResourceUsage {
 
   // Refresh the resource usage information. |callback| is invoked when the
   // usage data is updated, or when the IPC connection is lost.
-  void Refresh(const base::Closure& callback);
+  void Refresh(base::OnceClosure callback);
 
   // Get V8 memory usage information.
   bool ReportsV8MemoryStats() const;
@@ -83,7 +84,7 @@ class ProcessResourceUsage {
 
   mojo::Remote<content::mojom::ResourceUsageReporter> service_;
   bool update_in_progress_;
-  base::circular_deque<base::Closure> refresh_callbacks_;
+  base::circular_deque<base::OnceClosure> refresh_callbacks_;
 
   content::mojom::ResourceUsageDataPtr stats_;
 

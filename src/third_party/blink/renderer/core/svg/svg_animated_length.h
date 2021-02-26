@@ -41,7 +41,6 @@ namespace blink {
 class SVGAnimatedLength : public ScriptWrappable,
                           public SVGAnimatedProperty<SVGLength> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedLength);
 
  public:
   SVGAnimatedLength(SVGElement* context_element,
@@ -62,7 +61,7 @@ class SVGAnimatedLength : public ScriptWrappable,
     return CurrentValue()->AsCSSPrimitiveValue();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

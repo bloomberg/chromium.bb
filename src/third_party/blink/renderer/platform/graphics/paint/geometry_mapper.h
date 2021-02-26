@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
-#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -108,7 +108,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
     SkMatrix ToSkMatrix() const {
       if (LIKELY(IsIdentityOr2DTranslation())) {
-        return SkMatrix::MakeTrans(Translation2D().Width(),
+        return SkMatrix::Translate(Translation2D().Width(),
                                    Translation2D().Height());
       }
       return SkMatrix(TransformationMatrix::ToSkMatrix44(Matrix()));
@@ -139,6 +139,12 @@ class PLATFORM_EXPORT GeometryMapper {
   // Not every cases outlined above are supported!
   // Read implementation comments for specific restrictions.
   static Translation2DOrMatrix SourceToDestinationProjection(
+      const TransformPaintPropertyNodeOrAlias& source,
+      const TransformPaintPropertyNodeOrAlias& destination) {
+    return SourceToDestinationProjection(source.Unalias(),
+                                         destination.Unalias());
+  }
+  static Translation2DOrMatrix SourceToDestinationProjection(
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination);
 
@@ -147,7 +153,15 @@ class PLATFORM_EXPORT GeometryMapper {
   // |mapping_rect| is both input and output. Its type can be FloatRect,
   // LayoutRect or IntRect.
   template <typename Rect>
-  ALWAYS_INLINE static void SourceToDestinationRect(
+  static void SourceToDestinationRect(
+      const TransformPaintPropertyNodeOrAlias& source,
+      const TransformPaintPropertyNodeOrAlias& destination,
+      Rect& mapping_rect) {
+    SourceToDestinationRect(source.Unalias(), destination.Unalias(),
+                            mapping_rect);
+  }
+  template <typename Rect>
+  static void SourceToDestinationRect(
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination,
       Rect& mapping_rect) {
@@ -195,9 +209,16 @@ class PLATFORM_EXPORT GeometryMapper {
   // in the presences of transforms.
 
   static FloatClipRect LocalToAncestorClipRect(
+      const PropertyTreeStateOrAlias& local_state,
+      const PropertyTreeStateOrAlias& ancestor_state,
+      OverlayScrollbarClipBehavior behavior = kIgnoreOverlayScrollbarSize) {
+    return LocalToAncestorClipRect(local_state.Unalias(),
+                                   ancestor_state.Unalias(), behavior);
+  }
+  static FloatClipRect LocalToAncestorClipRect(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
-      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize);
+      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize);
 
   // Maps from a rect in |local_state| to its visual rect in |ancestor_state|.
   // If there is no effect node between |local_state| (included) and
@@ -235,10 +256,22 @@ class PLATFORM_EXPORT GeometryMapper {
   // See the documentation for FloatRect::InclusiveIntersect for more
   // information.
   static bool LocalToAncestorVisualRect(
+      const PropertyTreeStateOrAlias& local_state,
+      const PropertyTreeStateOrAlias& ancestor_state,
+      FloatClipRect& mapping_rect,
+      OverlayScrollbarClipBehavior clip = kIgnoreOverlayScrollbarSize,
+      InclusiveIntersectOrNot intersect = kNonInclusiveIntersect,
+      ExpandVisualRectForAnimationOrNot animation =
+          kDontExpandVisualRectForAnimation) {
+    return LocalToAncestorVisualRect(local_state.Unalias(),
+                                     ancestor_state.Unalias(), mapping_rect,
+                                     clip, intersect, animation);
+  }
+  static bool LocalToAncestorVisualRect(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
-      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
+      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
       InclusiveIntersectOrNot = kNonInclusiveIntersect,
       ExpandVisualRectForAnimationOrNot = kDontExpandVisualRectForAnimation);
 

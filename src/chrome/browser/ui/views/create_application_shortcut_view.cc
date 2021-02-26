@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/create_application_shortcut_view.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
@@ -72,7 +72,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const base::Callback<void(bool)>& close_callback)
     : CreateChromeApplicationShortcutView(profile, close_callback) {
   web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
-  provider->shortcut_manager().GetShortcutInfoForApp(
+  provider->os_integration_manager().GetShortcutInfoForApp(
       web_app_id,
       base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -111,7 +111,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
 
   std::unique_ptr<views::Checkbox> desktop_check_box = AddCheckbox(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
-      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
+      prefs::kWebAppCreateOnDesktop);
 
   std::unique_ptr<views::Checkbox> menu_check_box;
   std::unique_ptr<views::Checkbox> quick_launch_check_box;
@@ -123,23 +123,23 @@ void CreateChromeApplicationShortcutView::InitControls() {
       version != base::win::Version::WIN8_1) {
     menu_check_box = AddCheckbox(
         l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
-        profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+        prefs::kWebAppCreateInAppsMenu);
   }
 
   // Win10 actively prevents creating shortcuts on the taskbar so we eliminate
   // that option from the dialog.
   if (base::win::CanPinShortcutToTaskbar()) {
-    quick_launch_check_box = AddCheckbox(
-        (version >= base::win::Version::WIN7)
-            ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
-            : l10n_util::GetStringUTF16(
-                  IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
-        profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
+    quick_launch_check_box =
+        AddCheckbox((version >= base::win::Version::WIN7)
+                        ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
+                        : l10n_util::GetStringUTF16(
+                              IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
+                    prefs::kWebAppCreateInQuickLaunchBar);
   }
 #elif defined(OS_POSIX)
-  menu_check_box = AddCheckbox(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
-      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+  menu_check_box =
+      AddCheckbox(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
+                  prefs::kWebAppCreateInAppsMenu);
 #endif
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
@@ -196,24 +196,15 @@ gfx::Size CreateChromeApplicationShortcutView::CalculatePreferredSize() const {
 bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button != ui::DIALOG_BUTTON_OK)
-    // It's always possible to cancel out of creating a shortcut.
-    return true;
+    return true;  // It's always possible to cancel out of creating a shortcut.
 
   if (!shortcut_info_)
-    // Dialog's not ready because app info hasn't been loaded.
-    return false;
+    return false;  // Dialog's not ready because app info hasn't been loaded.
 
   // One of the three location checkboxes must be checked:
-  if (desktop_check_box_->GetChecked())
-    return true;
-
-  if (menu_check_box_ && menu_check_box_->GetChecked())
-    return true;
-
-  if (quick_launch_check_box_ && quick_launch_check_box_->GetChecked())
-    return true;
-
-  return false;
+  return desktop_check_box_->GetChecked() ||
+         (menu_check_box_ && menu_check_box_->GetChecked()) ||
+         (quick_launch_check_box_ && quick_launch_check_box_->GetChecked());
 }
 
 ui::ModalType CreateChromeApplicationShortcutView::GetModalType() const {
@@ -236,7 +227,7 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
 
   web_app::ShortcutLocations creation_locations;
   creation_locations.on_desktop = desktop_check_box_->GetChecked();
-  if (menu_check_box_ != nullptr && menu_check_box_->GetChecked()) {
+  if (menu_check_box_ && menu_check_box_->GetChecked()) {
     creation_locations.applications_menu_location =
         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   }
@@ -255,30 +246,23 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
                                    std::move(shortcut_info_));
 }
 
-void CreateChromeApplicationShortcutView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  if (sender == desktop_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
-                                     desktop_check_box_->GetChecked());
-  } else if (sender == menu_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInAppsMenu,
-                                     menu_check_box_->GetChecked());
-  } else if (sender == quick_launch_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInQuickLaunchBar,
-                                     quick_launch_check_box_->GetChecked());
-  }
-
-  // When no checkbox is checked we should not have the action button enabled.
-  DialogModelChanged();
-}
-
 std::unique_ptr<views::Checkbox>
 CreateChromeApplicationShortcutView::AddCheckbox(const base::string16& text,
-                                                 bool checked) {
-  auto checkbox = std::make_unique<views::Checkbox>(text, this);
-  checkbox->SetChecked(checked);
+                                                 const std::string& pref_path) {
+  auto checkbox =
+      std::make_unique<views::Checkbox>(text, views::Button::PressedCallback());
+  checkbox->SetCallback(base::BindRepeating(
+      &CreateChromeApplicationShortcutView::CheckboxPressed,
+      base::Unretained(this), pref_path, base::Unretained(checkbox.get())));
+  checkbox->SetChecked(profile_->GetPrefs()->GetBoolean(pref_path));
   return checkbox;
+}
+
+void CreateChromeApplicationShortcutView::CheckboxPressed(
+    std::string pref_path,
+    views::Checkbox* checkbox) {
+  profile_->GetPrefs()->SetBoolean(pref_path, checkbox->GetChecked());
+  DialogModelChanged();
 }
 
 void CreateChromeApplicationShortcutView::OnAppInfoLoaded(

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -24,6 +25,7 @@
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_service_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "third_party/cros_system_api/dbus/bluetooth/dbus-constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
@@ -173,8 +175,38 @@ void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
+  DVLOG(1) << "Sending GATT characteristic write request to characteristic: "
+           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
+           << ", with value: " << value << ", with response: "
+           << ((write_type == WriteType::kWithoutResponse) ? "no" : "yes")
+           << ".";
+
+  const char* type_option;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      type_option = bluetooth_gatt_characteristic::kTypeRequest;
+      break;
+    case WriteType::kWithoutResponse:
+      type_option = bluetooth_gatt_characteristic::kTypeCommand;
+      break;
+  }
+
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattCharacteristicClient()
+      ->WriteValue(
+          object_path(), value, type_option, std::move(callback),
+          base::BindOnce(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
+}
+
+void BluetoothRemoteGattCharacteristicBlueZ::
+    DeprecatedWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback) {
   DVLOG(1) << "Sending GATT characteristic write request to characteristic: "
            << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
            << ", with value: " << value << ".";
@@ -182,13 +214,13 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->WriteValue(
-          object_path(), value, std::move(callback),
+          object_path(), value, "", std::move(callback),
           base::BindOnce(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(error_callback)));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
@@ -210,7 +242,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     NotificationType notification_type,
 #endif
     base::OnceClosure callback,
@@ -219,7 +251,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
       ->GetBluetoothGattCharacteristicClient()
       ->StartNotify(
           object_path(),
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
           notification_type,
 #endif
           base::BindOnce(

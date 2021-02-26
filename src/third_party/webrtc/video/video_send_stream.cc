@@ -29,8 +29,6 @@ namespace webrtc {
 
 namespace {
 
-constexpr char kTargetBitrateRtcpFieldTrial[] = "WebRTC-Target-Bitrate-Rtcp";
-
 size_t CalculateMaxHeaderSize(const RtpConfig& config) {
   size_t header_size = kRtpHeaderSize;
   size_t extensions_size = 0;
@@ -113,13 +111,6 @@ VideoSendStream::VideoSendStream(
   // it was created on.
   thread_sync_event_.Wait(rtc::Event::kForever);
   send_stream_->RegisterProcessThread(module_process_thread);
-  // TODO(sprang): Enable this also for regular video calls by default, if it
-  // works well.
-  if (encoder_config.content_type == VideoEncoderConfig::ContentType::kScreen ||
-      field_trial::IsEnabled(kTargetBitrateRtcpFieldTrial)) {
-    video_stream_encoder_->SetBitrateAllocationObserver(send_stream_.get());
-  }
-
   ReconfigureVideoEncoder(std::move(encoder_config));
 }
 
@@ -177,6 +168,18 @@ void VideoSendStream::Stop() {
   RTC_LOG(LS_INFO) << "VideoSendStream::Stop";
   VideoSendStreamImpl* send_stream = send_stream_.get();
   worker_queue_->PostTask([send_stream] { send_stream->Stop(); });
+}
+
+void VideoSendStream::AddAdaptationResource(
+    rtc::scoped_refptr<Resource> resource) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  video_stream_encoder_->AddAdaptationResource(resource);
+}
+
+std::vector<rtc::scoped_refptr<Resource>>
+VideoSendStream::GetAdaptationResources() {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  return video_stream_encoder_->GetAdaptationResources();
 }
 
 void VideoSendStream::SetSource(

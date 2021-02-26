@@ -24,7 +24,6 @@
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
         testRunner.setCanOpenWindows();
-        testRunner.setCloseRemainingWindowsWhenComplete(true);
         testRunner.setDumpJavaScriptDialogs(false);
 
         // Some tests intentionally load mixed content in order to test the
@@ -113,9 +112,12 @@
         if (pathAndBase.startsWith('/fullscreen/')) {
             // Fullscreen tests all use the same automation script.
             src = automationPath + '/fullscreen/auto-click.js';
-        } else if (pathAndBase.startsWith('/native-file-system/')) {
-            // Native File System tests all use the same automation script.
+        } else if (pathAndBase.startsWith('/native-file-system/native_')) {
+            // native_ Native File System tests all use the same automation script.
             src = automationPath + '/native-file-system/auto-pick-folder.js';
+        } else if (pathAndBase.startsWith('/native-file-system/')) {
+            // Per-test automation scripts.
+            src = automationPath + pathAndBase + '-automation.sub.js';
         } else if (
             pathAndBase.startsWith('/css/') ||
             pathAndBase.startsWith('/pointerevents/') ||
@@ -126,7 +128,8 @@
             pathAndBase.startsWith('/css/cssom-view/') ||
             pathAndBase.startsWith('/css/css-scroll-snap/') ||
             pathAndBase.startsWith('/dom/events/') ||
-            pathAndBase.startsWith('/feature-policy/experimental-features/')) {
+            pathAndBase.startsWith('/feature-policy/experimental-features/') ||
+            pathAndBase.startsWith('/permissions-policy/experimental-features/')) {
             // Per-test automation scripts.
             src = automationPath + pathAndBase + '-automation.js';
         } else {
@@ -172,7 +175,7 @@
         }
 
         // Output failure metrics if there are many.
-        resultCounts = countResultTypes(tests);
+        const resultCounts = countResultTypes(tests);
         if (outputDocument.URL.indexOf('://web-platform.test') >= 0 &&
             tests.length >= 50 &&
             (resultCounts[1] || resultCounts[2] || resultCounts[3])) {

@@ -18,14 +18,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/DownloadController_jni.h"
+#include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/android/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/android/download_utils.h"
-#include "chrome/browser/download/android/mixed_content_download_infobar_delegate.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_stats.h"
@@ -33,25 +32,19 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/download/content/public/context_menu_download.h"
 #include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_features.h"
-#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/referrer.h"
 #include "net/base/filename_util.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
@@ -70,11 +63,11 @@ namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
 
-void CreateContextMenuDownload(const content::WebContents::Getter& wc_getter,
-                               const content::ContextMenuParams& params,
-                               bool is_link,
-                               const std::string& extra_headers,
-                               bool granted) {
+void CreateContextMenuDownloadInternal(
+    const content::WebContents::Getter& wc_getter,
+    const content::ContextMenuParams& params,
+    bool is_link,
+    bool granted) {
   content::WebContents* web_contents = wc_getter.Run();
   if (!granted)
     return;
@@ -86,38 +79,10 @@ void CreateContextMenuDownload(const content::WebContents::Getter& wc_getter,
     return;
   }
 
-  const GURL& url = is_link ? params.link_url : params.src_url;
-  const GURL& referring_url =
-      params.frame_url.is_empty() ? params.page_url : params.frame_url;
-  content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
-      web_contents->GetBrowserContext());
-  std::unique_ptr<download::DownloadUrlParameters> dl_params(
-      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-          web_contents, url,
-          TRAFFIC_ANNOTATION_WITHOUT_PROTO("Download via context menu")));
-  content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url,
-      content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
-  dl_params->set_referrer(referrer.url);
-  dl_params->set_referrer_policy(
-      content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
-
-  if (is_link)
-    dl_params->set_referrer_encoding(params.frame_charset);
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(extra_headers);
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
-    dl_params->add_request_header(it.name(), it.value());
-  if (!is_link && extra_headers.empty())
-    dl_params->set_prefer_cache(true);
-  dl_params->set_prompt(false);
-  dl_params->set_request_origin(
-      offline_pages::android::OfflinePageBridge::GetEncodedOriginApp(
-          web_contents));
-  dl_params->set_suggested_name(params.suggested_filename);
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-  dl_params->set_download_source(download::DownloadSource::CONTEXT_MENU);
-  dlm->DownloadUrl(std::move(dl_params));
+  auto origin = offline_pages::android::OfflinePageBridge::GetEncodedOriginApp(
+      web_contents);
+  download::CreateContextMenuDownload(web_contents, params, origin, is_link);
 }
 
 // Helper class for retrieving a DownloadManager.
@@ -265,14 +230,14 @@ void DownloadController::AcquireFileAccessPermission(
         StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
     RecordStoragePermission(
         StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(cb), true));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), true));
     return;
   } else if (vr::VrTabHelper::IsUiSuppressedInVr(
                  web_contents,
                  vr::UiSuppressedElement::kFileAccessPermission)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(cb), false));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), false));
     return;
   }
 
@@ -290,8 +255,8 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DownloadController::StartAndroidDownload,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DownloadController::StartAndroidDownload,
                                 base::Unretained(this), wc_getter, info));
 }
 
@@ -368,10 +333,10 @@ bool DownloadController::HasFileAccessPermission() {
 }
 
 void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
-  // For dangerous or mixed-content downloads, we need to show the dangerous
-  // infobar before the download can start.
+  // For dangerous downloads, we need to show the dangerous infobar before the
+  // download can start.
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!download_item->IsDangerous() && !download_item->IsMixedContent())
+  if (!download_item->IsDangerous())
     Java_DownloadController_onDownloadStarted(env);
 
   // Register for updates to the DownloadItem.
@@ -381,10 +346,9 @@ void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
   if (download::AutoResumptionHandler::Get())
     download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
 
-  Profile* profile = Profile::FromBrowserContext(
-      content::DownloadItemUtils::GetBrowserContext(download_item));
-  ProfileKey* profile_key =
-      profile ? profile->GetProfileKey() : ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = GetProfileKey(download_item);
+  if (!profile_key)
+    return;
 
   DownloadOfflineContentProviderFactory::GetForKey(profile_key)
       ->OnDownloadStarted(download_item);
@@ -400,14 +364,6 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
     OnDangerousDownload(item);
-    return;
-  }
-
-  if (item->IsMixedContent() && (item->GetState() != DownloadItem::CANCELLED)) {
-    // Don't show a notification for a mixed content download, either.
-    // Note: Mixed content is less scary than a Dangerous download, so check for
-    // danger first.
-    OnMixedContentDownload(item);
     return;
   }
 
@@ -452,8 +408,8 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(
             content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
                        item->GetGuid()));
     item->RemoveObserver(this);
@@ -464,29 +420,10 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
       InfoBarService::FromWebContents(web_contents), item);
 }
 
-void DownloadController::OnMixedContentDownload(DownloadItem* item) {
-  WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
-  if (!web_contents) {
-    auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
-        BrowserContext::GetDownloadManager(
-            content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
-                       item->GetGuid()));
-    item->RemoveObserver(this);
-    return;
-  }
-
-  MixedContentDownloadInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), item);
-}
-
 void DownloadController::StartContextMenuDownload(
     const ContextMenuParams& params,
     WebContents* web_contents,
-    bool is_link,
-    const std::string& extra_headers) {
+    bool is_link) {
   int process_id = web_contents->GetRenderViewHost()->GetProcess()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
@@ -494,8 +431,8 @@ void DownloadController::StartContextMenuDownload(
       base::Bind(&GetWebContents, process_id, routing_id));
 
   AcquireFileAccessPermission(
-      wc_getter, base::BindOnce(&CreateContextMenuDownload, wc_getter, params,
-                                is_link, extra_headers));
+      wc_getter, base::BindOnce(&CreateContextMenuDownloadInternal, wc_getter,
+                                params, is_link));
 }
 
 bool DownloadController::IsInterruptedDownloadAutoResumable(
@@ -534,4 +471,17 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
              download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
          interrupt_reason ==
              download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
+}
+
+ProfileKey* DownloadController::GetProfileKey(DownloadItem* download_item) {
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_item));
+
+  ProfileKey* profile_key;
+  if (profile)
+    profile_key = profile->GetProfileKey();
+  else
+    profile_key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
+
+  return profile_key;
 }

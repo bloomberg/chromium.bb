@@ -27,14 +27,9 @@
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV",
+      "name": "Scrolling Contents Layer",
       "bounds": [285, 1000],
-      "drawsContent": false,
-      "transform": 2
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV)",
-      "bounds": [285, 1000],
+      "backgroundColor": "#ADD8E6",
       "transform": 2
     }
   ],

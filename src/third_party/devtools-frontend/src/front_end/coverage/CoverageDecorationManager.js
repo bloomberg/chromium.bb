@@ -4,6 +4,7 @@
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -55,7 +56,7 @@ export class CoverageDecorationManager {
 
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
-   * @return {!Promise<!Array<boolean>>}
+   * @return {!Promise<!Array<boolean|undefined>>}
    */
   async usageByLine(uiSourceCode) {
     const result = [];
@@ -114,7 +115,7 @@ export class CoverageDecorationManager {
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {!TextUtils.Text.Text} text
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async _updateTexts(uiSourceCode, text) {
     const promises = [];
@@ -128,12 +129,12 @@ export class CoverageDecorationManager {
         promises.push(this._updateTextForProvider(entry.contentProvider));
       }
     }
-    return Promise.all(promises);
+    await Promise.all(promises);
   }
 
   /**
    * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async _updateTextForProvider(contentProvider) {
     const {content} = await contentProvider.requestContent();
@@ -147,6 +148,7 @@ export class CoverageDecorationManager {
    * @return {!Promise<!Array<!RawLocation>>}
    */
   async _rawLocationsForSourceLocation(uiSourceCode, line, column) {
+    /** @type {!Array<!RawLocation>} */
     const result = [];
     const contentType = uiSourceCode.contentType();
     if (contentType.hasScripts()) {
@@ -156,6 +158,9 @@ export class CoverageDecorationManager {
       locations = locations.filter(location => !!location.script());
       for (const location of locations) {
         const script = location.script();
+        if (!script) {
+          continue;
+        }
         if (script.isInlineScript() && contentType.isDocument()) {
           location.lineNumber -= script.lineOffset;
           if (!location.lineNumber) {
@@ -164,7 +169,7 @@ export class CoverageDecorationManager {
         }
         result.push({
           id: `js:${location.scriptId}`,
-          contentProvider: location.script(),
+          contentProvider: script,
           line: location.lineNumber,
           column: location.columnNumber
         });
@@ -186,7 +191,7 @@ export class CoverageDecorationManager {
         }
         result.push({
           id: `css:${location.styleSheetId}`,
-          contentProvider: location.header(),
+          contentProvider: header,
           line: location.lineNumber,
           column: location.columnNumber
         });
@@ -207,7 +212,7 @@ export class CoverageDecorationManager {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onUISourceCodeAdded(event) {
-    const uiSourceCode = /** @type !Workspace.UISourceCode.UISourceCode */ (event.data);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
     uiSourceCode.addLineDecoration(0, decoratorType, this);
   }
 }
@@ -220,4 +225,5 @@ export class CoverageDecorationManager {
  *    column: number
  * }}
  */
+// @ts-ignore typedef
 export let RawLocation;

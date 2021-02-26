@@ -20,6 +20,9 @@ class KURL;
 
 class CORE_EXPORT CSPSource final : public GarbageCollected<CSPSource> {
  public:
+  // Represents the absence of a port.
+  const static int kPortUnspecified;
+
   enum WildcardDisposition { kNoWildcard, kHasWildcard };
 
   // NotMatching is the only negative member, the rest are different types of
@@ -67,7 +70,7 @@ class CORE_EXPORT CSPSource final : public GarbageCollected<CSPSource> {
 
   network::mojom::blink::CSPSourcePtr ExposeForNavigationalChecks() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);

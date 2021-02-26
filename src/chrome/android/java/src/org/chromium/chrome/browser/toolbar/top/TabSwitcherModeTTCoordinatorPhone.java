@@ -4,24 +4,20 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.view.View;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 
 /**
  * The coordinator for the tab switcher mode top toolbar shown on phones, responsible for
@@ -34,22 +30,23 @@ class TabSwitcherModeTTCoordinatorPhone {
     // TODO(twellington): Create a model to hold all of these properties. Consider using
     // LazyConstructionPropertyMcp to collect all of the properties since it is designed to
     // aggregate properties and bind them to a view the first time it's shown.
-    private AppMenuButtonHelper mAppMenuButtonHelper;
     private View.OnClickListener mTabSwitcherListener;
     private View.OnClickListener mNewTabListener;
     private TabCountProvider mTabCountProvider;
     private TabModelSelector mTabModelSelector;
     private IncognitoStateProvider mIncognitoStateProvider;
+    private MenuButtonCoordinator mMenuButtonCoordinator;
     private boolean mAccessibilityEnabled;
-    private boolean mIsBottomToolbarVisible;
 
     private TabSwitcherModeTTPhone mTabSwitcherModeToolbar;
 
     @Nullable
-    private TabModelObserver mTabModelObserver;
+    private IncognitoTabModelObserver mIncognitoTabModelObserver;
 
-    TabSwitcherModeTTCoordinatorPhone(ViewStub tabSwitcherToolbarStub) {
+    TabSwitcherModeTTCoordinatorPhone(
+            ViewStub tabSwitcherToolbarStub, MenuButtonCoordinator menuButtonCoordinator) {
         mTabSwitcherToolbarStub = tabSwitcherToolbarStub;
+        mMenuButtonCoordinator = menuButtonCoordinator;
     }
 
     /**
@@ -60,8 +57,12 @@ class TabSwitcherModeTTCoordinatorPhone {
             mTabSwitcherModeToolbar.destroy();
             mTabSwitcherModeToolbar = null;
         }
-        if (mTabModelSelector != null && mTabModelObserver != null) {
-            mTabModelSelector.getModel(true).removeObserver(mTabModelObserver);
+        if (mTabModelSelector != null && mIncognitoTabModelObserver != null) {
+            mTabModelSelector.removeIncognitoTabModelObserver(mIncognitoTabModelObserver);
+        }
+        if (mMenuButtonCoordinator != null) {
+            mMenuButtonCoordinator.destroy();
+            mMenuButtonCoordinator = null;
         }
     }
 
@@ -78,16 +79,6 @@ class TabSwitcherModeTTCoordinatorPhone {
             mTabSwitcherModeToolbar.setTabSwitcherMode(inTabSwitcherMode);
         } else if (mTabSwitcherModeToolbar != null) {
             mTabSwitcherModeToolbar.setTabSwitcherMode(inTabSwitcherMode);
-        }
-    }
-
-    /**
-     * @param appMenuButtonHelper The helper for managing menu button interactions.
-     */
-    void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
-        mAppMenuButtonHelper = appMenuButtonHelper;
-        if (mTabSwitcherModeToolbar != null) {
-            mTabSwitcherModeToolbar.setAppMenuButtonHelper(appMenuButtonHelper);
         }
     }
 
@@ -133,6 +124,9 @@ class TabSwitcherModeTTCoordinatorPhone {
         if (mTabSwitcherModeToolbar != null) {
             mTabSwitcherModeToolbar.setTabModelSelector(selector);
         }
+
+        maybeInitializeIncognitoTabModelObserver();
+        maybeNotifyOnIncognitoTabsExistenceChanged();
     }
 
     /**
@@ -153,49 +147,10 @@ class TabSwitcherModeTTCoordinatorPhone {
         }
     }
 
-    void setTabSwitcherToolbarVisibility(boolean shouldShowTabSwitcherToolbar) {
-        if (mTabSwitcherModeToolbar == null
-                || (mTabSwitcherModeToolbar.getVisibility() == View.VISIBLE)
-                        == shouldShowTabSwitcherToolbar) {
-            return;
-        }
-
-        final float targetAlpha = shouldShowTabSwitcherToolbar ? 1.0f : 0.0f;
-        mTabSwitcherModeToolbar.animate()
-                .alpha(targetAlpha)
-                .setDuration(TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        if (shouldShowTabSwitcherToolbar) {
-                            mTabSwitcherModeToolbar.setVisibility(View.VISIBLE);
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        if (!shouldShowTabSwitcherToolbar) {
-                            mTabSwitcherModeToolbar.setVisibility(View.GONE);
-                        }
-                    }
-                });
-    }
-
-    /**
-     * @param isVisible Whether the bottom toolbar is visible.
-     */
-    void onBottomToolbarVisibilityChanged(boolean isVisible) {
-        if (mIsBottomToolbarVisible == isVisible) {
-            return;
-        }
-        mIsBottomToolbarVisible = isVisible;
-        if (mTabSwitcherModeToolbar != null) {
-            mTabSwitcherModeToolbar.onBottomToolbarVisibilityChanged(isVisible);
-        }
-    }
-
     private void initializeTabSwitcherToolbar() {
         mTabSwitcherModeToolbar = (TabSwitcherModeTTPhone) mTabSwitcherToolbarStub.inflate();
+        mMenuButtonCoordinator.setMenuButton(
+                mTabSwitcherModeToolbar.findViewById(R.id.menu_button_wrapper));
 
         // It's expected that these properties are set by the time the tab switcher is entered.
         assert mTabSwitcherListener != null;
@@ -204,51 +159,21 @@ class TabSwitcherModeTTCoordinatorPhone {
         assert mNewTabListener != null;
         mTabSwitcherModeToolbar.setOnNewTabClickHandler(mNewTabListener);
 
-        assert mAppMenuButtonHelper != null;
-        mTabSwitcherModeToolbar.setAppMenuButtonHelper(mAppMenuButtonHelper);
-
         assert mTabCountProvider != null;
         mTabSwitcherModeToolbar.setTabCountProvider(mTabCountProvider);
 
         assert mTabModelSelector != null;
         mTabSwitcherModeToolbar.setTabModelSelector(mTabModelSelector);
-        if (isNewTabVariationEnabled()) {
-            mTabModelObserver = new TabModelObserver() {
-                @Override
-                public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
-                    assert tab.isIncognito();
-                    updateIncognitoTabsCount();
-                }
-
-                @Override
-                public void didCloseTab(int tabId, boolean incognito) {
-                    assert incognito;
-                    updateIncognitoTabsCount();
-                }
-
-                @Override
-                public void tabRemoved(Tab tab) {
-                    assert tab.isIncognito();
-                    updateIncognitoTabsCount();
-                }
-
-                private void updateIncognitoTabsCount() {
-                    int incognitoTabsCount = mTabModelSelector.getModel(true).getCount();
-                    mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabsCount);
-                }
-            };
-            TabModel incognitoTabModel = mTabModelSelector.getModel(true);
-            incognitoTabModel.addObserver(mTabModelObserver);
-            mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabModel.getCount());
-        }
 
         assert mIncognitoStateProvider != null;
         mTabSwitcherModeToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
 
+        maybeInitializeIncognitoTabModelObserver();
+        maybeNotifyOnIncognitoTabsExistenceChanged();
+
         if (mAccessibilityEnabled) {
             mTabSwitcherModeToolbar.onAccessibilityStatusChanged(mAccessibilityEnabled);
         }
-        mTabSwitcherModeToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
     }
 
     private boolean isNewTabVariationEnabled() {
@@ -258,5 +183,54 @@ class TabSwitcherModeTTCoordinatorPhone {
                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                    "tab_grid_layout_android_new_tab")
                            .equals("NewTabVariation");
+    }
+
+    /**
+     * @param highlight If the new tab button should be highlighted.
+     */
+    void setNewTabButtonHighlight(boolean highlight) {
+        assert mTabSwitcherModeToolbar != null;
+        mTabSwitcherModeToolbar.setNewTabButtonHighlight(highlight);
+    }
+
+    /**
+     * Initialize {@link IncognitoTabModelObserver}, if the new tab variation is enabled. This
+     * function will initialize observer, if it is not initialized before.
+     */
+    private void maybeInitializeIncognitoTabModelObserver() {
+        if (mTabModelSelector == null || mTabSwitcherModeToolbar == null
+                || !isNewTabVariationEnabled() || mIncognitoTabModelObserver != null) {
+            return;
+        }
+
+        mIncognitoTabModelObserver = new IncognitoTabModelObserver() {
+            @Override
+            public void wasFirstTabCreated() {
+                if (mTabSwitcherModeToolbar != null) {
+                    mTabSwitcherModeToolbar.onIncognitoTabsExistenceChanged(true);
+                }
+            }
+
+            @Override
+            public void didBecomeEmpty() {
+                if (mTabSwitcherModeToolbar != null) {
+                    mTabSwitcherModeToolbar.onIncognitoTabsExistenceChanged(false);
+                }
+            }
+        };
+        mTabModelSelector.addIncognitoTabModelObserver(mIncognitoTabModelObserver);
+    }
+
+    /**
+     * Update incognito logo visibility on toolbar, if the new tab variation is enabled.
+     */
+    private void maybeNotifyOnIncognitoTabsExistenceChanged() {
+        if (mTabModelSelector == null || mTabSwitcherModeToolbar == null
+                || !isNewTabVariationEnabled()) {
+            return;
+        }
+
+        boolean doesExist = mTabModelSelector.getModel(true).getCount() != 0;
+        mTabSwitcherModeToolbar.onIncognitoTabsExistenceChanged(doesExist);
     }
 }

@@ -188,7 +188,6 @@ void RtpPacket::ZeroMutableExtensions() {
       case RTPExtensionType::kRtpExtensionAudioLevel:
       case RTPExtensionType::kRtpExtensionAbsoluteCaptureTime:
       case RTPExtensionType::kRtpExtensionColorSpace:
-      case RTPExtensionType::kRtpExtensionFrameMarking:
       case RTPExtensionType::kRtpExtensionGenericFrameDescriptor00:
       case RTPExtensionType::kRtpExtensionGenericFrameDescriptor02:
       case RTPExtensionType::kRtpExtensionMid:
@@ -197,6 +196,7 @@ void RtpPacket::ZeroMutableExtensions() {
       case RTPExtensionType::kRtpExtensionRepairedRtpStreamId:
       case RTPExtensionType::kRtpExtensionRtpStreamId:
       case RTPExtensionType::kRtpExtensionVideoContentType:
+      case RTPExtensionType::kRtpExtensionVideoLayersAllocation:
       case RTPExtensionType::kRtpExtensionVideoRotation:
       case RTPExtensionType::kRtpExtensionInbandComfortNoise: {
         // Non-mutable extension. Don't change it.

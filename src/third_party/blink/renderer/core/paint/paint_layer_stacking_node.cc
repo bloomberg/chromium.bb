@@ -61,8 +61,8 @@ namespace blink {
 // in order to determine if we isStacked() we have to ask the paint
 // layer about some of its state.
 PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer& layer)
-    : layer_(layer), z_order_lists_dirty_(true) {
-  DCHECK(layer.GetLayoutObject().StyleRef().IsStackingContext());
+    : layer_(layer) {
+  DCHECK(layer.GetLayoutObject().IsStackingContext());
 }
 
 PaintLayerStackingNode::~PaintLayerStackingNode() {
@@ -103,16 +103,16 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
 }
 
 static bool ZIndexLessThan(const PaintLayer* first, const PaintLayer* second) {
-  DCHECK(first->GetLayoutObject().StyleRef().IsStacked());
-  DCHECK(second->GetLayoutObject().StyleRef().IsStacked());
-  return first->GetLayoutObject().StyleRef().ZIndex() <
-         second->GetLayoutObject().StyleRef().ZIndex();
+  DCHECK(first->GetLayoutObject().IsStacked());
+  DCHECK(second->GetLayoutObject().IsStacked());
+  return first->GetLayoutObject().StyleRef().EffectiveZIndex() <
+         second->GetLayoutObject().StyleRef().EffectiveZIndex();
 }
 
 static bool SetIfHigher(const PaintLayer*& first, const PaintLayer* second) {
   if (!second)
     return false;
-  DCHECK_GE(second->GetLayoutObject().StyleRef().ZIndex(), 0);
+  DCHECK_GE(second->GetLayoutObject().StyleRef().EffectiveZIndex(), 0);
   // |second| appears later in the tree, so it's higher than |first| if its
   // z-index >= |first|'s z-index.
   if (!first || !ZIndexLessThan(second, first)) {
@@ -158,7 +158,7 @@ struct PaintLayerStackingNode::HighestLayers {
     // A negative z-index child will not cause reparent of overlay scrollbars
     // because the ancestor scroller either has auto z-index which is above
     // the child or has negative z-index which is a stacking context.
-    if (!style.IsStacked() || style.ZIndex() < 0)
+    if (!layer.GetLayoutObject().IsStacked() || style.EffectiveZIndex() < 0)
       return;
 
     if (style.GetPosition() == EPosition::kAbsolute)
@@ -210,8 +210,8 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
          child = child->NextSibling()) {
       auto* child_element = DynamicTo<Element>(child->GetNode());
       if (child_element && child_element->IsInTopLayer() &&
-          child->StyleRef().IsStacked()) {
-        pos_z_order_list_.push_back(ToLayoutBoxModelObject(child)->Layer());
+          child->IsStacked()) {
+        pos_z_order_list_.push_back(To<LayoutBoxModelObject>(child)->Layer());
       }
     }
   }
@@ -236,12 +236,13 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
   const auto& object = paint_layer.GetLayoutObject();
   const auto& style = object.StyleRef();
 
-  if (style.IsStacked()) {
-    auto& list = style.ZIndex() >= 0 ? pos_z_order_list_ : neg_z_order_list_;
+  if (object.IsStacked()) {
+    auto& list =
+        style.EffectiveZIndex() >= 0 ? pos_z_order_list_ : neg_z_order_list_;
     list.push_back(&paint_layer);
   }
 
-  if (style.IsStackingContext())
+  if (object.IsStackingContext())
     return;
 
   base::Optional<HighestLayers> subtree_highest_layers;
@@ -301,17 +302,20 @@ bool PaintLayerStackingNode::StyleDidChange(PaintLayer& paint_layer,
   bool was_stacked = false;
   int old_z_index = 0;
   if (old_style) {
-    was_stacking_context = old_style->IsStackingContext();
-    old_z_index = old_style->ZIndex();
-    was_stacked = old_style->IsStacked();
+    was_stacking_context =
+        paint_layer.GetLayoutObject().IsStackingContext(*old_style);
+    old_z_index = old_style->EffectiveZIndex();
+    was_stacked = paint_layer.GetLayoutObject().IsStacked(*old_style);
   }
 
   const ComputedStyle& new_style = paint_layer.GetLayoutObject().StyleRef();
 
-  bool should_be_stacking_context = new_style.IsStackingContext();
-  bool should_be_stacked = new_style.IsStacked();
+  bool should_be_stacking_context =
+      paint_layer.GetLayoutObject().IsStackingContext();
+  bool should_be_stacked = paint_layer.GetLayoutObject().IsStacked();
   if (should_be_stacking_context == was_stacking_context &&
-      was_stacked == should_be_stacked && old_z_index == new_style.ZIndex())
+      was_stacked == should_be_stacked &&
+      old_z_index == new_style.EffectiveZIndex())
     return false;
 
   // Need to force requirements update, due to change of stacking order.

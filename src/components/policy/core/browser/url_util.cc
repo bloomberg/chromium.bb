@@ -69,11 +69,11 @@ void ProcessQueryToConditions(
   url::Component query_left = url::MakeRange(0, query.length());
   url::Component key;
   url::Component value;
-  // Depending on the filter type being black-list or white-list, the matcher
-  // choose any or every match. The idea is a URL should be black-listed if
-  // there is any occurrence of the key value pair. It should be white-listed
+  // Depending on the filter type being block-list or allow-list, the matcher
+  // choose any or every match. The idea is a URL should be blocked if
+  // there is any occurrence of the key value pair. It should be allowed
   // only if every occurrence of the key is followed by the value. This avoids
-  // situations such as a user appending a white-listed video parameter in the
+  // situations such as a user appending an allowed video parameter in the
   // end of the query and watching a video of their choice (the last parameter
   // is ignored by some web servers like youtube's).
   URLQueryElementMatcherCondition::Type match_type =
@@ -145,7 +145,7 @@ class EmbeddedURLExtractor {
     // ("webcache.googleusercontent.com/search?q=cache:...").
     std::string query;
     if (url.host_piece() == kGoogleWebCacheHost &&
-        url.path_piece().starts_with(kGoogleWebCachePathPrefix) &&
+        base::StartsWith(url.path_piece(), kGoogleWebCachePathPrefix) &&
         net::GetValueForKeyInQuery(url, "q", &query)) {
       std::string fingerprint;
       std::string scheme;
@@ -159,8 +159,7 @@ class EmbeddedURLExtractor {
     // Check for Google translate URLs ("translate.google.TLD/...?...&u=URL" or
     // "translate.googleusercontent.com/...?...&u=URL").
     bool is_translate = false;
-    if (base::StartsWith(url.host_piece(), kGoogleTranslateSubdomain,
-                         base::CompareCase::SENSITIVE)) {
+    if (base::StartsWith(url.host_piece(), kGoogleTranslateSubdomain)) {
       // Remove the "translate." prefix.
       GURL::Replacements replace;
       replace.SetHostStr(
@@ -174,8 +173,7 @@ class EmbeddedURLExtractor {
       is_translate = google_util::IsGoogleDomainUrl(
                          trimmed, google_util::DISALLOW_SUBDOMAIN,
                          google_util::DISALLOW_NON_STANDARD_PORTS) &&
-                     !base::StartsWith(trimmed.host_piece(), "www.",
-                                       base::CompareCase::SENSITIVE);
+                     !base::StartsWith(trimmed.host_piece(), "www.");
     }
     bool is_alternate_translate =
         url.host_piece() == kAlternateGoogleTranslateHost;
@@ -234,7 +232,7 @@ FilterComponents::FilterComponents()
 FilterComponents::~FilterComponents() = default;
 FilterComponents::FilterComponents(FilterComponents&&) = default;
 
-bool FilterComponents::IsBlacklistWildcard() const {
+bool FilterComponents::IsBlocklistWildcard() const {
   return !allow && host.empty() && scheme.empty() && path.empty() &&
          query.empty() && port == 0 && number_of_key_value_pairs == 0 &&
          match_subdomains;

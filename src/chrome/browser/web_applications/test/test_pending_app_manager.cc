@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
@@ -51,7 +51,7 @@ void TestPendingAppManager::Install(ExternalInstallOptions install_options,
       FROM_HERE,
       base::BindLambdaForTesting([this, weak_ptr, install_options, result_code,
                                   callback = std::move(callback)]() mutable {
-        const GURL& url = install_options.url;
+        const GURL& url = install_options.install_url;
         // Use a WeakPtr to be able to simulate the Install callback running
         // after PendingAppManager gets deleted.
         if (weak_ptr) {

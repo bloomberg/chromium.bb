@@ -76,8 +76,8 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
    */
 
   // The gain for both CWND and PacingRate at startup.
+  float startup_cwnd_gain = 2.0;
   // TODO(wub): Maybe change to the newly derived value of 2.773 (4 * ln(2)).
-  float startup_cwnd_gain = 2.885;
   float startup_pacing_gain = 2.885;
 
   // Full bandwidth is declared if the total bandwidth growth is less than
@@ -91,10 +91,14 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   int64_t startup_full_loss_count =
       GetQuicFlag(FLAGS_quic_bbr2_default_startup_full_loss_count);
 
+  // If true, always exit STARTUP on loss, even if bandwidth exceeds threshold.
+  // If false, exit STARTUP on loss only if bandwidth is below threshold.
+  bool always_exit_startup_on_excess_loss = true;
+
   /*
    * DRAIN parameters.
    */
-  float drain_cwnd_gain = 2.885;
+  float drain_cwnd_gain = 2.0;
   float drain_pacing_gain = 1.0 / 2.885;
 
   /*
@@ -167,13 +171,8 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
    * Experimental flags from QuicConfig.
    */
 
-  // Indicates app-limited calls should be ignored as long as there's
-  // enough data inflight to see more bandwidth when necessary.
-  bool flexible_app_limited = false;
-
   // Can be disabled by connection option 'B2NA'.
-  bool add_ack_height_to_queueing_threshold =
-      GetQuicReloadableFlag(quic_bbr2_add_ack_height_to_queueing_threshold);
+  bool add_ack_height_to_queueing_threshold = true;
 
   // Can be disabled by connection option 'B2RP'.
   bool avoid_unnecessary_probe_rtt = true;
@@ -184,6 +183,12 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
 
   // Can be enabled by connection option 'B2LO'.
   bool ignore_inflight_lo = false;
+
+  // Can be enabled by connection option 'B2H2'.
+  bool limit_inflight_hi_by_max_delivered = false;
+
+  // Can be enabled by connection option 'B2SL'.
+  bool startup_loss_exit_use_max_delivered_for_inflight_hi = false;
 };
 
 class QUIC_EXPORT_PRIVATE RoundTripCounter {
@@ -324,10 +329,8 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
                                const Bbr2CongestionEvent& congestion_event);
 
   // Update the model without a congestion event.
-  // Max bandwidth is updated if |bandwidth| is larger than existing max
-  // bandwidth. Min rtt is updated if |rtt| is non-zero and smaller than
-  // existing min rtt.
-  void UpdateNetworkParameters(QuicBandwidth bandwidth, QuicTime::Delta rtt);
+  // Min rtt is updated if |rtt| is non-zero and smaller than existing min rtt.
+  void UpdateNetworkParameters(QuicTime::Delta rtt);
 
   // Update inflight/bandwidth short-term lower bounds.
   void AdaptLowerBounds(const Bbr2CongestionEvent& congestion_event);
@@ -367,6 +370,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     bandwidth_sampler_.EnableOverestimateAvoidance();
   }
 
+  bool IsBandwidthOverestimateAvoidanceEnabled() const {
+    return bandwidth_sampler_.IsOverestimateAvoidanceEnabled();
+  }
+
   void OnPacketNeutered(QuicPacketNumber packet_number) {
     bandwidth_sampler_.OnPacketNeutered(packet_number);
   }
@@ -388,9 +395,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   bool IsCongestionWindowLimited(
       const Bbr2CongestionEvent& congestion_event) const;
 
-  // TODO(wub): Replace this by a new version which takes two thresholds, one
-  // is the number of loss events, the other is the percentage of bytes lost.
-  bool IsInflightTooHigh(const Bbr2CongestionEvent& congestion_event) const;
+  // Return true if the number of loss events exceeds max_loss_events and
+  // fraction of bytes lost exceed the loss threshold.
+  bool IsInflightTooHigh(const Bbr2CongestionEvent& congestion_event,
+                         int64_t max_loss_events) const;
 
   QuicPacketNumber last_sent_packet() const {
     return round_trip_counter_.last_sent_packet();
@@ -409,6 +417,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   }
 
   int64_t loss_events_in_round() const { return loss_events_in_round_; }
+
+  QuicByteCount max_bytes_delivered_in_round() const {
+    return max_bytes_delivered_in_round_;
+  }
 
   QuicPacketNumber end_of_app_limited_phase() const {
     return bandwidth_sampler_.end_of_app_limited_phase();
@@ -461,6 +473,12 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   QuicByteCount bytes_lost_in_round_ = 0;
   // Number of loss marking events in the current round.
   int64_t loss_events_in_round_ = 0;
+
+  // A max of bytes delivered among all congestion events in the current round.
+  // A congestions event's bytes delivered is the total bytes acked between time
+  // Ts and Ta, which is the time when the largest acked packet(within the
+  // congestion event) was sent and acked, respectively.
+  QuicByteCount max_bytes_delivered_in_round_ = 0;
 
   // Max bandwidth in the current round. Updated once per congestion event.
   QuicBandwidth bandwidth_latest_ = QuicBandwidth::Zero();

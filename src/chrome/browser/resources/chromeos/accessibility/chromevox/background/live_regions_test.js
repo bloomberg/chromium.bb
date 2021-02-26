@@ -5,11 +5,6 @@
 // Include test fixture.
 GEN_INCLUDE([
   '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js',
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js'
-]);
-
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/mock_feedback.js'
 ]);
 
 /**
@@ -20,27 +15,6 @@ ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
   setUp() {
     window.RoleType = chrome.automation.RoleType;
     window.TreeChangeType = chrome.automation.TreeChangeType;
-  }
-
-  /**
-   * @return {!MockFeedback}
-   */
-  createMockFeedback() {
-    const mockFeedback =
-        new MockFeedback(this.newCallback(), this.newCallback.bind(this));
-    mockFeedback.install();
-    return mockFeedback;
-  }
-
-  /**
-   * Create a function which performs the command |cmd|.
-   * @param {string} cmd
-   * @return {function() : void}
-   */
-  doCmd(cmd) {
-    return function() {
-      CommandHandler.onCommand(cmd);
-    };
   }
 
   /**
@@ -195,12 +169,12 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
         let sawFocus = false;
         let sawLive = false;
         const focusOrLive = function(candidate) {
-          sawFocus = candidate.text == 'Focus' || sawFocus;
-          sawLive = candidate.text == 'Live' || sawLive;
+          sawFocus = candidate.text === 'Focus' || sawFocus;
+          sawLive = candidate.text === 'Live' || sawLive;
           if (sawFocus && sawLive) {
-            return candidate.queueMode != QueueMode.FLUSH;
+            return candidate.queueMode !== QueueMode.FLUSH;
           } else if (sawFocus || sawLive) {
-            return candidate.queueMode == QueueMode.FLUSH;
+            return candidate.queueMode === QueueMode.FLUSH;
           }
         };
         const go = rootNode.find({role: RoleType.BUTTON});
@@ -371,4 +345,48 @@ TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
             .expectSpeech('a')
             .replay();
       });
+});
+
+TEST_F('ChromeVoxLiveRegionsTest', 'TreeChangeOnIgnoredNode', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <button></button>
+    <script>
+      const button = document.body.children[0];
+      button.addEventListener('click', () => {
+        const ignored = document.createElement('div');
+        ignored.setAttribute('role', 'presentation');
+        const alert = document.createElement('div');
+        alert.setAttribute('role', 'alert');
+        alert.textContent = 'hi';
+        ignored.appendChild(alert);
+        document.body.appendChild(ignored);
+      });
+    </script>
+  `,
+      function(root) {
+        const button = root.find({role: chrome.automation.RoleType.BUTTON});
+        mockFeedback.call(button.doDefault.bind(button))
+            .expectSpeech('Alert', 'hi')
+            .replay();
+      });
+});
+SYNC_TEST_F('ChromeVoxLiveRegionsTest', 'ShouldIgnoreLiveRegion', function() {
+  const liveRegions = new LiveRegions(ChromeVoxState.instance);
+
+  const mockParentNode = {};
+  mockParentNode.root = {role: chrome.automation.RoleType.DESKTOP};
+  mockParentNode.state = {};
+
+  const mockNode = {};
+  mockNode.role = chrome.automation.RoleType.ROOT_WEB_AREA;
+  mockNode.root = mockNode;
+  mockNode.parent = mockParentNode;
+  mockNode.state = {};
+
+  mockParentNode.role = chrome.automation.RoleType.WINDOW;
+  assertFalse(liveRegions.shouldIgnoreLiveRegion_(mockNode));
+  mockParentNode.state[chrome.automation.StateType.INVISIBLE] = true;
+  assertTrue(liveRegions.shouldIgnoreLiveRegion_(mockNode));
 });

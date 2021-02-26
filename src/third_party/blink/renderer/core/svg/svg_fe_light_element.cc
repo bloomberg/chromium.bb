@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_diffuse_lighting_element.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_specular_lighting_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -81,7 +82,7 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tag_name,
   AddToPropertyMap(limiting_cone_angle_);
 }
 
-void SVGFELightElement::Trace(Visitor* visitor) {
+void SVGFELightElement::Trace(Visitor* visitor) const {
   visitor->Trace(azimuth_);
   visitor->Trace(elevation_);
   visitor->Trace(x_);

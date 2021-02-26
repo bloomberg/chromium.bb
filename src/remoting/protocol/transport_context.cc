@@ -14,10 +14,10 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/url_request.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/remoting_ice_config_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
@@ -66,11 +66,11 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
 
 TransportContext::TransportContext(
     std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
-    std::unique_ptr<UrlRequestFactory> url_request_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const NetworkSettings& network_settings,
     TransportRole role)
     : port_allocator_factory_(std::move(port_allocator_factory)),
-      url_request_factory_(std::move(url_request_factory)),
+      url_loader_factory_(url_loader_factory),
       network_settings_(network_settings),
       role_(role) {}
 
@@ -80,17 +80,17 @@ void TransportContext::Prepare() {
   EnsureFreshIceConfig();
 }
 
-void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
+void TransportContext::GetIceConfig(GetIceConfigCallback callback) {
   EnsureFreshIceConfig();
 
   // If there is a pending |ice_config_request_| then delay the callback until
   // the request is finished.
   if (ice_config_request_) {
-    pending_ice_config_callbacks_.push_back(callback);
+    pending_ice_config_callbacks_.push_back(std::move(callback));
   } else {
     HOST_LOG << "Using cached ICE Config.";
     PrintIceConfig(ice_config_);
-    callback.Run(ice_config_);
+    std::move(callback).Run(ice_config_);
   }
 }
 
@@ -115,7 +115,8 @@ void TransportContext::EnsureFreshIceConfig() {
 
   if (base::Time::Now() >
       (last_request_completion_time_ + kIceConfigRequestCooldown)) {
-    ice_config_request_ = std::make_unique<RemotingIceConfigRequest>();
+    ice_config_request_ =
+        std::make_unique<RemotingIceConfigRequest>(url_loader_factory_);
     ice_config_request_->Send(
         base::BindOnce(&TransportContext::OnIceConfig, base::Unretained(this)));
   } else {
@@ -133,7 +134,7 @@ void TransportContext::OnIceConfig(const IceConfig& ice_config) {
 
   auto& callback_list = pending_ice_config_callbacks_;
   while (!callback_list.empty()) {
-    callback_list.begin()->Run(ice_config);
+    std::move(callback_list.front()).Run(ice_config);
     callback_list.pop_front();
   }
 }

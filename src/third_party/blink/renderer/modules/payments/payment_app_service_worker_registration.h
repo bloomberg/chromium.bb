@@ -19,8 +19,6 @@ class ServiceWorkerRegistration;
 class PaymentAppServiceWorkerRegistration final
     : public GarbageCollected<PaymentAppServiceWorkerRegistration>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentAppServiceWorkerRegistration);
-
  public:
   static const char kSupplementName[];
 
@@ -33,7 +31,7 @@ class PaymentAppServiceWorkerRegistration final
                                         ServiceWorkerRegistration&);
   PaymentManager* paymentManager(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

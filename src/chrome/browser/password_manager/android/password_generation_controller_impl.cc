@@ -15,10 +15,10 @@
 #include "chrome/browser/password_manager/android/password_generation_dialog_view_interface.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -95,9 +95,9 @@ void PasswordGenerationControllerImpl::OnAutomaticGenerationAvailable(
   DCHECK(!dialog_view_);
 
   active_frame_driver_->GetPasswordManager()
-      ->SetGenerationElementAndReasonForForm(
+      ->SetGenerationElementAndTypeForForm(
           active_frame_driver_.get(), ui_data.form_data,
-          ui_data.generation_element, false /* is_manually_triggered */);
+          ui_data.generation_element_id, PasswordGenerationType::kAutomatic);
 
   if (!base::FeatureList::IsEnabled(
           autofill::features::kAutofillKeyboardAccessory)) {
@@ -139,7 +139,7 @@ void PasswordGenerationControllerImpl::OnGenerationRequested(
     PasswordGenerationType type) {
   if (type == PasswordGenerationType::kManual) {
     manual_generation_requested_ = true;
-    client_->GeneratePassword();
+    client_->GeneratePassword(type);
   } else {
     ShowDialog(PasswordGenerationType::kAutomatic);
   }

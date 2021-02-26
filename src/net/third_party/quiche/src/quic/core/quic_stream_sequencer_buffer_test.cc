@@ -11,20 +11,20 @@
 #include <string>
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_sequencer_buffer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 namespace test {
 
-quiche::QuicheStringPiece IovecToStringPiece(iovec iov) {
-  return quiche::QuicheStringPiece(reinterpret_cast<const char*>(iov.iov_base),
-                                   iov.iov_len);
+absl::string_view IovecToStringPiece(iovec iov) {
+  return absl::string_view(reinterpret_cast<const char*>(iov.iov_base),
+                           iov.iov_len);
 }
 
 char GetCharFromIOVecs(size_t offset, iovec iov[], size_t count) {
@@ -52,7 +52,7 @@ const size_t kMaxNumGapsAllowed = 2 * kMaxPacketGap;
 
 static const size_t kBlockSizeBytes =
     QuicStreamSequencerBuffer::kBlockSizeBytes;
-typedef QuicStreamSequencerBuffer::BufferBlock BufferBlock;
+using BufferBlock = QuicStreamSequencerBuffer::BufferBlock;
 
 namespace {
 
@@ -72,10 +72,10 @@ class QuicStreamSequencerBufferTest : public QuicTest {
     helper_ = std::make_unique<QuicStreamSequencerBufferPeer>((buffer_.get()));
   }
 
-  // Use 2.5 here to make sure the buffer has more than one block and its end
-  // doesn't align with the end of a block in order to test all the offset
-  // calculation.
-  size_t max_capacity_bytes_ = 2.5 * kBlockSizeBytes;
+  // Use 8.5 here to make sure that the buffer has more than
+  // QuicStreamSequencerBuffer::kInitialBlockCount block and its end doesn't
+  // align with the end of a block in order to test all the offset calculation.
+  size_t max_capacity_bytes_ = 8.5 * kBlockSizeBytes;
 
   std::unique_ptr<QuicStreamSequencerBuffer> buffer_;
   std::unique_ptr<QuicStreamSequencerBufferPeer> helper_;
@@ -86,18 +86,18 @@ class QuicStreamSequencerBufferTest : public QuicTest {
 TEST_F(QuicStreamSequencerBufferTest, InitializeWithMaxRecvWindowSize) {
   ResetMaxCapacityBytes(16 * 1024 * 1024);  // 16MB
   EXPECT_EQ(2 * 1024u,                      // 16MB / 8KB = 2K
-            helper_->block_count());
+            helper_->max_blocks_count());
   EXPECT_EQ(max_capacity_bytes_, helper_->max_buffer_capacity());
   EXPECT_TRUE(helper_->CheckInitialState());
 }
 
 TEST_F(QuicStreamSequencerBufferTest, InitializationWithDifferentSizes) {
-  const size_t kCapacity = 2 * QuicStreamSequencerBuffer::kBlockSizeBytes;
+  const size_t kCapacity = 16 * QuicStreamSequencerBuffer::kBlockSizeBytes;
   ResetMaxCapacityBytes(kCapacity);
   EXPECT_EQ(max_capacity_bytes_, helper_->max_buffer_capacity());
   EXPECT_TRUE(helper_->CheckInitialState());
 
-  const size_t kCapacity1 = 8 * QuicStreamSequencerBuffer::kBlockSizeBytes;
+  const size_t kCapacity1 = 32 * QuicStreamSequencerBuffer::kBlockSizeBytes;
   ResetMaxCapacityBytes(kCapacity1);
   EXPECT_EQ(kCapacity1, helper_->max_buffer_capacity());
   EXPECT_TRUE(helper_->CheckInitialState());
@@ -159,8 +159,8 @@ TEST_F(QuicStreamSequencerBufferTest, Move) {
 
 TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInvalidSource) {
   // Pass in an invalid source, expects to return error.
-  quiche::QuicheStringPiece source;
-  source = quiche::QuicheStringPiece(nullptr, 1024);
+  absl::string_view source;
+  source = absl::string_view(nullptr, 1024);
   EXPECT_THAT(buffer_->OnStreamData(800, source, &written_, &error_details_),
               IsError(QUIC_STREAM_SEQUENCER_INVALID_STATE));
   EXPECT_EQ(0u, error_details_.find(quiche::QuicheStrCat(
@@ -320,7 +320,7 @@ TEST_F(QuicStreamSequencerBufferTest, Readv100Bytes) {
   QUIC_LOG(ERROR) << error_details_;
   EXPECT_EQ(100u, read);
   EXPECT_EQ(100u, buffer_->BytesConsumed());
-  EXPECT_EQ(source, quiche::QuicheStringPiece(dest, read));
+  EXPECT_EQ(source, absl::string_view(dest, read));
   // The first block should be released as its data has been read out.
   EXPECT_EQ(nullptr, helper_->GetBlock(0));
   EXPECT_TRUE(helper_->CheckBufferInvariants());
@@ -399,7 +399,7 @@ TEST_F(QuicStreamSequencerBufferTest,
   // Try to write from [max_capacity_bytes_ - 0.5 * kBlockSizeBytes,
   // max_capacity_bytes_ +  512 + 1). But last bytes exceeds current capacity.
   source = std::string(0.5 * kBlockSizeBytes + 512 + 1, 'b');
-  EXPECT_THAT(buffer_->OnStreamData(2 * kBlockSizeBytes, source, &written_,
+  EXPECT_THAT(buffer_->OnStreamData(8 * kBlockSizeBytes, source, &written_,
                                     &error_details_),
               IsError(QUIC_INTERNAL_ERROR));
   EXPECT_TRUE(helper_->CheckBufferInvariants());
@@ -523,15 +523,15 @@ TEST_F(QuicStreamSequencerBufferTest,
 
 TEST_F(QuicStreamSequencerBufferTest,
        GetReadableRegionsWithMultipleIOVsAcrossEnd) {
-  // Write into [0, 2 * kBlockSizeBytes + 1024) and then read out [0, 1024)
+  // Write into [0, 8.5 * kBlockSizeBytes - 1024) and then read out [0, 1024)
   // and then append 1024 + 512 bytes.
-  std::string source(2.5 * kBlockSizeBytes - 1024, 'a');
+  std::string source(8.5 * kBlockSizeBytes - 1024, 'a');
   buffer_->OnStreamData(0, source, &written_, &error_details_);
   char dest[1024];
   helper_->Read(dest, 1024);
   // Write across the end.
   source = std::string(1024 + 512, 'b');
-  buffer_->OnStreamData(2.5 * kBlockSizeBytes - 1024, source, &written_,
+  buffer_->OnStreamData(8.5 * kBlockSizeBytes - 1024, source, &written_,
                         &error_details_);
   // Use short iovec's.
   iovec iovs[2];
@@ -540,11 +540,11 @@ TEST_F(QuicStreamSequencerBufferTest,
   EXPECT_EQ(kBlockSizeBytes - 1024, iovs[0].iov_len);
   EXPECT_EQ(kBlockSizeBytes, iovs[1].iov_len);
   // Use long iovec's and wrap the end of buffer.
-  iovec iovs1[5];
-  EXPECT_EQ(4, buffer_->GetReadableRegions(iovs1, 5));
-  EXPECT_EQ(0.5 * kBlockSizeBytes, iovs1[2].iov_len);
-  EXPECT_EQ(512u, iovs1[3].iov_len);
-  EXPECT_EQ(std::string(512, 'b'), IovecToStringPiece(iovs1[3]));
+  iovec iovs1[11];
+  EXPECT_EQ(10, buffer_->GetReadableRegions(iovs1, 11));
+  EXPECT_EQ(0.5 * kBlockSizeBytes, iovs1[8].iov_len);
+  EXPECT_EQ(512u, iovs1[9].iov_len);
+  EXPECT_EQ(std::string(512, 'b'), IovecToStringPiece(iovs1[9]));
 }
 
 TEST_F(QuicStreamSequencerBufferTest, GetReadableRegionEmpty) {
@@ -610,8 +610,7 @@ TEST_F(QuicStreamSequencerBufferTest, PeekSingleBlock) {
 
   // Peek at a different offset.
   EXPECT_TRUE(buffer_->PeekRegion(100, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source).substr(100),
-            IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source).substr(100), IovecToStringPiece(iov));
 
   // Peeking at or after FirstMissingByte() returns false.
   EXPECT_FALSE(buffer_->PeekRegion(kBlockSizeBytes, &iov));
@@ -638,15 +637,15 @@ TEST_F(QuicStreamSequencerBufferTest, PeekTwoWritesInSingleBlock) {
   // Peek with an offset inside the first write.
   const QuicStreamOffset offset1 = 500;
   EXPECT_TRUE(buffer_->PeekRegion(offset1, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source1).substr(offset1),
+  EXPECT_EQ(absl::string_view(source1).substr(offset1),
             IovecToStringPiece(iov).substr(0, length1 - offset1));
-  EXPECT_EQ(quiche::QuicheStringPiece(source2),
+  EXPECT_EQ(absl::string_view(source2),
             IovecToStringPiece(iov).substr(length1 - offset1));
 
   // Peek with an offset inside the second write.
   const QuicStreamOffset offset2 = 1500;
   EXPECT_TRUE(buffer_->PeekRegion(offset2, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source2).substr(offset2 - length1),
+  EXPECT_EQ(absl::string_view(source2).substr(offset2 - length1),
             IovecToStringPiece(iov));
 
   // Peeking at or after FirstMissingByte() returns false.
@@ -671,19 +670,16 @@ TEST_F(QuicStreamSequencerBufferTest, PeekBufferWithMultipleBlocks) {
   EXPECT_TRUE(buffer_->PeekRegion(0, &iov));
   EXPECT_EQ(kBlockSizeBytes, iov.iov_len);
   EXPECT_EQ(source1, IovecToStringPiece(iov).substr(0, length1));
-  EXPECT_EQ(
-      quiche::QuicheStringPiece(source2).substr(0, kBlockSizeBytes - length1),
-      IovecToStringPiece(iov).substr(length1));
+  EXPECT_EQ(absl::string_view(source2).substr(0, kBlockSizeBytes - length1),
+            IovecToStringPiece(iov).substr(length1));
 
   EXPECT_TRUE(buffer_->PeekRegion(length1, &iov));
-  EXPECT_EQ(
-      quiche::QuicheStringPiece(source2).substr(0, kBlockSizeBytes - length1),
-      IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source2).substr(0, kBlockSizeBytes - length1),
+            IovecToStringPiece(iov));
 
   EXPECT_TRUE(buffer_->PeekRegion(kBlockSizeBytes, &iov));
-  EXPECT_EQ(
-      quiche::QuicheStringPiece(source2).substr(kBlockSizeBytes - length1),
-      IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source2).substr(kBlockSizeBytes - length1),
+            IovecToStringPiece(iov));
 
   // Peeking at or after FirstMissingByte() returns false.
   EXPECT_FALSE(buffer_->PeekRegion(length1 + length2, &iov));
@@ -706,12 +702,10 @@ TEST_F(QuicStreamSequencerBufferTest, PeekAfterConsumed) {
   EXPECT_FALSE(buffer_->PeekRegion(512, &iov));
 
   EXPECT_TRUE(buffer_->PeekRegion(1024, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source1).substr(1024),
-            IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source1).substr(1024), IovecToStringPiece(iov));
 
   EXPECT_TRUE(buffer_->PeekRegion(1500, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source1).substr(1500),
-            IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source1).substr(1500), IovecToStringPiece(iov));
 
   // Consume rest of block.
   EXPECT_TRUE(buffer_->MarkConsumed(kBlockSizeBytes - 1024));
@@ -725,8 +719,7 @@ TEST_F(QuicStreamSequencerBufferTest, PeekAfterConsumed) {
   EXPECT_EQ(source2, IovecToStringPiece(iov));
 
   EXPECT_TRUE(buffer_->PeekRegion(kBlockSizeBytes + 128, &iov));
-  EXPECT_EQ(quiche::QuicheStringPiece(source2).substr(128),
-            IovecToStringPiece(iov));
+  EXPECT_EQ(absl::string_view(source2).substr(128), IovecToStringPiece(iov));
 
   // Peeking into consumed data still fails.
   EXPECT_FALSE(buffer_->PeekRegion(0, &iov));
@@ -802,20 +795,20 @@ TEST_F(QuicStreamSequencerBufferTest, MarkConsumedAcrossBlock) {
 }
 
 TEST_F(QuicStreamSequencerBufferTest, MarkConsumedAcrossEnd) {
-  // Write into [0, 2.5 * kBlockSizeBytes - 1024) and then read out [0, 1024)
+  // Write into [0, 8.5 * kBlockSizeBytes - 1024) and then read out [0, 1024)
   // and then append 1024 + 512 bytes.
-  std::string source(2.5 * kBlockSizeBytes - 1024, 'a');
+  std::string source(8.5 * kBlockSizeBytes - 1024, 'a');
   buffer_->OnStreamData(0, source, &written_, &error_details_);
   char dest[1024];
   helper_->Read(dest, 1024);
   source = std::string(1024 + 512, 'b');
-  buffer_->OnStreamData(2.5 * kBlockSizeBytes - 1024, source, &written_,
+  buffer_->OnStreamData(8.5 * kBlockSizeBytes - 1024, source, &written_,
                         &error_details_);
   EXPECT_EQ(1024u, buffer_->BytesConsumed());
 
-  // Consume to the end of 2nd block.
-  buffer_->MarkConsumed(2 * kBlockSizeBytes - 1024);
-  EXPECT_EQ(2 * kBlockSizeBytes, buffer_->BytesConsumed());
+  // Consume to the end of 8th block.
+  buffer_->MarkConsumed(8 * kBlockSizeBytes - 1024);
+  EXPECT_EQ(8 * kBlockSizeBytes, buffer_->BytesConsumed());
   // Consume across the physical end of buffer
   buffer_->MarkConsumed(0.5 * kBlockSizeBytes + 500);
   EXPECT_EQ(max_capacity_bytes_ + 500, buffer_->BytesConsumed());
@@ -828,7 +821,7 @@ TEST_F(QuicStreamSequencerBufferTest, MarkConsumedAcrossEnd) {
 }
 
 TEST_F(QuicStreamSequencerBufferTest, FlushBufferedFrames) {
-  // Write into [0, 2.5 * kBlockSizeBytes - 1024) and then read out [0, 1024).
+  // Write into [0, 8.5 * kBlockSizeBytes - 1024) and then read out [0, 1024).
   std::string source(max_capacity_bytes_ - 1024, 'a');
   buffer_->OnStreamData(0, source, &written_, &error_details_);
   char dest[1024];
@@ -871,12 +864,12 @@ TEST_F(QuicStreamSequencerBufferTest, TooManyGaps) {
 class QuicStreamSequencerBufferRandomIOTest
     : public QuicStreamSequencerBufferTest {
  public:
-  typedef std::pair<QuicStreamOffset, size_t> OffsetSizePair;
+  using OffsetSizePair = std::pair<QuicStreamOffset, size_t>;
 
   void SetUp() override {
     // Test against a larger capacity then above tests. Also make sure the last
     // block is partially available to use.
-    max_capacity_bytes_ = 6.25 * kBlockSizeBytes;
+    max_capacity_bytes_ = 8.25 * kBlockSizeBytes;
     // Stream to be buffered should be larger than the capacity to test wrap
     // around.
     bytes_to_buffer_ = 2 * max_capacity_bytes_;
@@ -933,7 +926,7 @@ class QuicStreamSequencerBufferRandomIOTest
     for (size_t i = 0; i < num_to_write; ++i) {
       write_buf[i] = (offset + i) % 256;
     }
-    quiche::QuicheStringPiece string_piece_w(write_buf.get(), num_to_write);
+    absl::string_view string_piece_w(write_buf.get(), num_to_write);
     auto result = buffer_->OnStreamData(offset, string_piece_w, &written_,
                                         &error_details_);
     if (result == QUIC_NO_ERROR) {
@@ -1095,6 +1088,50 @@ TEST_F(QuicStreamSequencerBufferRandomIOTest, RandomWriteAndConsumeInPlace) {
   EXPECT_LE(bytes_to_buffer_, total_bytes_read_)
       << "iterations: " << iterations;
   EXPECT_LE(bytes_to_buffer_, total_bytes_written_);
+}
+
+TEST_F(QuicStreamSequencerBufferTest, GrowBlockSizeOnDemand) {
+  SetQuicReloadableFlag(quic_allocate_stream_sequencer_buffer_blocks_on_demand,
+                        true);
+  max_capacity_bytes_ = 1024 * kBlockSizeBytes;
+  std::string source_of_one_block(kBlockSizeBytes, 'a');
+  Initialize();
+
+  ASSERT_EQ(helper_->current_blocks_count(), 0u);
+
+  // A minimum of 8 blocks are allocated
+  buffer_->OnStreamData(0, source_of_one_block, &written_, &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 8u);
+
+  // Number of blocks doesn't grow if the data is within the capacity.
+  buffer_->OnStreamData(kBlockSizeBytes * 7, source_of_one_block, &written_,
+                        &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 8u);
+
+  // Number of blocks grows by a factor of 4 normally.
+  buffer_->OnStreamData(kBlockSizeBytes * 8, "a", &written_, &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 32u);
+
+  // Number of blocks grow to the demanded size of 140 instead of 128 since
+  // that's not enough.
+  buffer_->OnStreamData(kBlockSizeBytes * 139, source_of_one_block, &written_,
+                        &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 140u);
+
+  // Number of blocks grows by a factor of 4 normally.
+  buffer_->OnStreamData(kBlockSizeBytes * 140, source_of_one_block, &written_,
+                        &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 560u);
+
+  // max_capacity_bytes is reached and number of blocks is capped.
+  buffer_->OnStreamData(kBlockSizeBytes * 560, source_of_one_block, &written_,
+                        &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 1024u);
+
+  // max_capacity_bytes is reached and number of blocks is capped.
+  buffer_->OnStreamData(kBlockSizeBytes * 1025, source_of_one_block, &written_,
+                        &error_details_);
+  ASSERT_EQ(helper_->current_blocks_count(), 1024u);
 }
 
 }  // anonymous namespace

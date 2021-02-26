@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "base/strings/pattern.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -59,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(
       base::MatchPattern(new_contents->GetVisibleURL().spec(), "blob:null/*"));
@@ -90,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlob) {
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(base::MatchPattern(new_contents->GetVisibleURL().spec(),
                                  "blob:" + origin.Serialize() + "/*"));
@@ -118,13 +117,13 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
       "link.innerText = 'Click Me!';"
       "link.href = 'blob:http://spoof.com@' + "
       "    URL.createObjectURL(new Blob(['potato'])).split('://')[1];"
-      "link.target = '_blank';"
+      "link.rel = 'opener'; link.target = '_blank';"
       "link.click()"));
 
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // The spoofy URL should not be shown to the user.
   EXPECT_FALSE(
@@ -163,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
 
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // The spoofy URL should not be shown to the user.
   EXPECT_FALSE(

@@ -34,10 +34,11 @@ import {DataGridNode} from './DataGrid.js';
 
 /**
  * @unrestricted
+ * @extends {DataGridNode<!ShowMoreDataGridNode>}
  */
 export class ShowMoreDataGridNode extends DataGridNode {
   /**
-   * @param {function(number, number)} callback
+   * @param {function(number, number):Promise<*>} callback
    * @param {number} startPosition
    * @param {number} endPosition
    * @param {number} chunkSize
@@ -49,17 +50,20 @@ export class ShowMoreDataGridNode extends DataGridNode {
     this._endPosition = endPosition;
     this._chunkSize = chunkSize;
 
-    this.showNext = createElement('button');
-    this.showNext.setAttribute('type', 'button');
+    this.showNext = document.createElement('button');
+    this.showNext.classList.add('text-button');
+    this.showNext.type = 'button';
     this.showNext.addEventListener('click', this._showNextChunk.bind(this), false);
     this.showNext.textContent = Common.UIString.UIString('Show %d before', this._chunkSize);
 
-    this.showAll = createElement('button');
-    this.showAll.setAttribute('type', 'button');
+    this.showAll = document.createElement('button');
+    this.showAll.classList.add('text-button');
+    this.showAll.type = 'button';
     this.showAll.addEventListener('click', this._showAll.bind(this), false);
 
-    this.showLast = createElement('button');
-    this.showLast.setAttribute('type', 'button');
+    this.showLast = document.createElement('button');
+    this.showLast.classList.add('text-button');
+    this.showLast.type = 'button';
     this.showLast.addEventListener('click', this._showLastChunk.bind(this), false);
     this.showLast.textContent = Common.UIString.UIString('Show %d after', this._chunkSize);
 
@@ -103,14 +107,14 @@ export class ShowMoreDataGridNode extends DataGridNode {
   /**
    * @override
    * @param {string} columnIdentifier
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnIdentifier) {
     const cell = this.createTD(columnIdentifier);
     cell.classList.add('show-more');
     if (!this._hasCells) {
       this._hasCells = true;
-      if (this.depth) {
+      if (this.depth && this.dataGrid) {
         cell.style.setProperty('padding-left', (this.depth * this.dataGrid.indentWidth) + 'px');
       }
       cell.appendChild(this.showNext);

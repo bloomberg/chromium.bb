@@ -6,15 +6,15 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.text.TextUtils;
 
 import androidx.annotation.DrawableRes;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -23,6 +23,8 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.ui.widget.Toast;
+import org.chromium.url.GURL;
 
 /**
  * Mediator class for preview tab, responsible for communicating with other objects.
@@ -89,7 +91,7 @@ public class EphemeralTabMediator {
             /** Whether the currently loaded page is an error (interstitial) page. */
             private boolean mIsOnErrorPage;
 
-            private String mCurrentUrl;
+            private GURL mCurrentUrl;
 
             @Override
             public void loadProgressChanged(float progress) {
@@ -100,13 +102,13 @@ public class EphemeralTabMediator {
             public void didStartNavigation(NavigationHandle navigation) {
                 mMetrics.recordNavigateLink();
                 if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
-                    String url = navigation.getUrl();
-                    if (TextUtils.equals(mCurrentUrl, url)) return;
+                    GURL url = navigation.getUrl();
+                    if (url.equals(mCurrentUrl)) return;
 
                     // The link Back to Safety on the interstitial page will go to the previous
                     // page. If there is no previous page, i.e. previous page is NTP, the preview
                     // tab will be closed.
-                    if (mIsOnErrorPage && NewTabPage.isNTPUrl(url)) {
+                    if (mIsOnErrorPage && UrlUtilities.isNTPUrl(url)) {
                         mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
                         mCurrentUrl = null;
                         return;
@@ -125,9 +127,17 @@ public class EphemeralTabMediator {
 
             @Override
             public void didFinishNavigation(NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInMainFrame()) {
-                    mIsOnErrorPage = navigation.isErrorPage();
-                    mSheetContent.updateURL(mWebContents.get().getVisibleUrl());
+                if (navigation.isInMainFrame()) {
+                    if (navigation.hasCommitted()) {
+                        mIsOnErrorPage = navigation.isErrorPage();
+                        mSheetContent.updateURL(mWebContents.get().getVisibleUrl());
+                    } else {
+                        // Not viewable contents such as download. Show a toast and close the tab.
+                        Toast.makeText(ContextUtils.getApplicationContext(),
+                                     R.string.ephemeral_tab_sheet_not_viewable, Toast.LENGTH_SHORT)
+                                .show();
+                        mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
+                    }
                 }
             }
         };
@@ -194,7 +204,6 @@ public class EphemeralTabMediator {
                 return R.drawable.omnibox_not_secure_warning;
             case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
             case ConnectionSecurityLevel.SECURE:
-            case ConnectionSecurityLevel.EV_SECURE:
                 return R.drawable.omnibox_https_valid;
             default:
                 assert false;

@@ -246,7 +246,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     // <spec step="4.B.1">Assert: The script element's node document's
     // currentScript attribute is null.</spec>
     ScriptElementBase* current_script = nullptr;
-    if (script->GetScriptType() == mojom::ScriptType::kClassic)
+    if (script->GetScriptType() == mojom::blink::ScriptType::kClassic)
       current_script = element;
     context_document->PushCurrentScript(current_script);
 
@@ -261,8 +261,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     //
     // <spec step="4.B.2">Run the module script given by the script's
     // script.</spec>
-    script->RunScript(context_document->GetFrame(),
-                      element_document.GetSecurityOrigin());
+    script->RunScript(context_document->domWindow());
 
     // <spec step="4.A.4">Set the script element's node document's currentScript
     // attribute to old script element.</spec>
@@ -291,7 +290,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     element->DispatchLoadEvent();
 }
 
-void PendingScript::Trace(Visitor* visitor) {
+void PendingScript::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(client_);
   visitor->Trace(original_execution_context_);

@@ -7,18 +7,19 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/render_frame_host_proxy.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/performance_manager/test_support/performance_manager_browsertest_harness.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -57,8 +58,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceManagerBrowserTest,
 
   auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(frame_node.get());
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(check_rfh_on_main_thread),
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(check_rfh_on_main_thread),
                                   frame_node->GetRenderFrameHostProxy()));
   });
 
@@ -82,6 +83,36 @@ IN_PROC_BROWSER_TEST_F(PerformanceManagerBrowserTest,
 
   PerformanceManager::CallOnGraph(FROM_HERE, call_on_graph_cb_2);
   run_loop_after_contents_reset.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceManagerBrowserTest,
+                       PopupOpenerTrackingWorks) {
+  // Load a page that will load a popup.
+  GURL url(embedded_test_server()->GetURL("a.com", "/a_popup_a.html"));
+  content::ShellAddedObserver shell_added_observer;
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  // Wait for the popup window to appear, and then wait for it to load.
+  auto* popup = shell_added_observer.GetShell();
+  ASSERT_TRUE(popup);
+  WaitForLoad(popup->web_contents());
+
+  auto* contents = shell()->web_contents();
+  auto page = PerformanceManager::GetPageNodeForWebContents(contents);
+
+  // Jump into the graph and make sure everything is connected as expected.
+  base::RunLoop run_loop;
+  PerformanceManager::CallOnGraph(
+      FROM_HERE, base::BindLambdaForTesting([&page, &run_loop]() {
+        EXPECT_TRUE(page);
+        auto* frame = page->GetMainFrameNode();
+        EXPECT_EQ(1u, frame->GetOpenedPageNodes().size());
+        auto* opened_page = *(frame->GetOpenedPageNodes().begin());
+        EXPECT_EQ(PageNode::OpenedType::kPopup, opened_page->GetOpenedType());
+        EXPECT_EQ(frame, opened_page->GetOpenerFrameNode());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace performance_manager

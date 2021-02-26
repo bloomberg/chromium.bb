@@ -1,5 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
-#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -23,6 +22,7 @@ crbug.com/993384 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
 # Windows only rebaselines needed.
 crbug.com/993384 [ Win ] compositing/geometry/clipping-foreground.html [ Skip ]
 crbug.com/993384 [ Win ] compositing/iframes/composited-iframe-alignment.html [ Skip ]
+crbug.com/993384 [ Win ] compositing/masks/mask-with-added-filters.html [ Skip ]
 crbug.com/993384 [ Win ] css2.1/t090501-c414-flt-02-d-g.html [ Skip ]
 crbug.com/993384 [ Win ] css2.1/t090501-c414-flt-03-b-g.html [ Skip ]
 crbug.com/993384 [ Win ] css2.1/t100304-c43-rpl-bbx-01-d-g.html [ Skip ]
@@ -39,3 +39,6 @@ crbug.com/1009718 images/huge-image-viewport-scale.html [ Skip ]
 
 # Input or Playback flaky
 crbug.com/1060773 [ Win ] media/video-controls-visibility-multimodal-mouse-after-touch.html [ Skip ]
+
+# Alpha Blending Video Failures
+crbug.com/1094635 media/alpha-video-playback.html [ Skip ]

@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
@@ -26,6 +27,7 @@ class PolicyMerger;
 
 class PolicyMapTest;
 FORWARD_DECLARE_TEST(PolicyMapTest, BlockedEntry);
+FORWARD_DECLARE_TEST(PolicyMapTest, InvalidEntry);
 FORWARD_DECLARE_TEST(PolicyMapTest, MergeFrom);
 
 // A mapping of policy names to policy values for a given policy namespace.
@@ -39,7 +41,6 @@ class POLICY_EXPORT PolicyMap {
     PolicyScope scope = POLICY_SCOPE_USER;
     // For debugging and displaying only. Set by provider delivering the policy.
     PolicySource source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
-    std::unique_ptr<base::Value> value;
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
     std::vector<Entry> conflicts;
 
@@ -47,7 +48,7 @@ class POLICY_EXPORT PolicyMap {
     Entry(PolicyLevel level,
           PolicyScope scope,
           PolicySource source,
-          std::unique_ptr<base::Value> value,
+          base::Optional<base::Value> value,
           std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
     ~Entry();
 
@@ -56,6 +57,11 @@ class POLICY_EXPORT PolicyMap {
 
     // Returns a copy of |this|.
     Entry DeepCopy() const;
+
+    base::Value* value() { return base::OptionalOrNullptr(value_); }
+    const base::Value* value() const { return base::OptionalOrNullptr(value_); }
+
+    void set_value(base::Optional<base::Value> val);
 
     // Returns true if |this| has higher priority than |other|. The priority of
     // the fields are |level| > |scope| > |source|.
@@ -78,17 +84,28 @@ class POLICY_EXPORT PolicyMap {
     // Removes all the conflicts.
     void ClearConflicts();
 
-    // Returns true if the policy is either blocked or ignored.
-    bool IsBlockedOrIgnored() const;
+    // Getter for |ignored_|.
+    bool ignored() const;
+    // Sets |ignored_| to true.
+    void SetIgnored();
 
     // Marks the policy as blocked because it is not supported in the current
     // environment.
     void SetBlocked();
 
+    // Marks the policy as invalid because it failed to validate against the
+    // current schema.
+    void SetInvalid();
+
     // Marks the policy as ignored because it does not share the priority of
     // its policy atomic group.
     void SetIgnoredByPolicyAtomicGroup();
     bool IsIgnoredByAtomicGroup() const;
+
+    // Sets that the policy's value is a default value set by the policy
+    // provider.
+    void SetIsDefaultValue();
+    bool IsDefaultValue() const;
 
     // Callback used to look up a localized string given its l10n message ID. It
     // should return a UTF-16 string.
@@ -104,6 +121,9 @@ class POLICY_EXPORT PolicyMap {
     base::string16 GetLocalizedWarnings(L10nLookupFunction lookup) const;
 
    private:
+    base::Optional<base::Value> value_;
+    bool ignored_ = false;
+    bool is_default_value_ = false;
     std::string error_strings_;
     std::set<int> error_message_ids_;
     std::set<int> warning_message_ids_;
@@ -111,6 +131,7 @@ class POLICY_EXPORT PolicyMap {
 
   typedef std::map<std::string, Entry> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
+  typedef PolicyMapType::iterator iterator;
 
   PolicyMap();
   virtual ~PolicyMap();
@@ -132,7 +153,7 @@ class POLICY_EXPORT PolicyMap {
            PolicyLevel level,
            PolicyScope scope,
            PolicySource source,
-           std::unique_ptr<base::Value> value,
+           base::Optional<base::Value> value,
            std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
 
   void Set(const std::string& policy, Entry entry);
@@ -154,6 +175,10 @@ class POLICY_EXPORT PolicyMap {
 
   // For all policies, overwrite the PolicySource with |source|.
   void SetSourceForAll(PolicySource source);
+
+  // For all policies, mark them as invalid, e.g. when a required schema failed
+  // to load.
+  void SetAllInvalid();
 
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
@@ -205,10 +230,13 @@ class POLICY_EXPORT PolicyMap {
 
   const_iterator begin() const;
   const_iterator end() const;
+  iterator begin();
+  iterator end();
   void Clear();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, BlockedEntry);
+  FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, InvalidEntry);
   FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, MergeFrom);
 
   // Returns a weak reference to the entry currently stored for key |policy|,

@@ -24,17 +24,24 @@ android_library("java") {
     "//base:jni_java",
     "//components/embedder_support/android:util_java",
     "//components/navigation_interception/android:navigation_interception_java",
+    "//components/webapk/android/libs/client:java",
     "//content/public/android:content_java",
+    "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
+    "//url:origin_java",
   ]
+  resources_package = "org.chromium.components.external_intents"
 }
 
 android_resources("java_resources") {
   sources = []
-  custom_package = "org.chromium.components.external_intents"
-  deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+  deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/browser_ui/styles/android:java_resources",
+  ]
 }
 
 generate_jni("jni_headers") {
@@ -70,9 +77,15 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
     "//ui/android:ui_java",
+    "//url:origin_java",
   ]
 }

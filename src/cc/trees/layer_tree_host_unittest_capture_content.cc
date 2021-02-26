@@ -32,8 +32,7 @@ class FakeCaptureContentLayerClient : public FakeContentLayerClient {
     holders_.push_back(holder);
   }
 
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting painting_control) override {
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList() override {
     auto display_list = base::MakeRefCounted<DisplayItemList>();
     for (auto& holder : holders_) {
       display_list->StartPaint();
@@ -81,7 +80,7 @@ class LayerTreeHostCaptureContentTest : public LayerTreeTest {
     for (auto& c : captured_content_) {
       for (auto it = expected_result->begin(); it != expected_result->end();
            ++it) {
-        if (it->node_id() == c) {
+        if (it->node_id() == c.node_id) {
           expected_result->erase(it);
           break;
         }
@@ -107,7 +106,7 @@ class LayerTreeHostCaptureContentTest : public LayerTreeTest {
   }
 
   scoped_refptr<FakePictureLayer> root_picture_layer_;
-  std::vector<NodeId> captured_content_;
+  std::vector<NodeInfo> captured_content_;
   const gfx::Size device_bounds_;
   base::WeakPtrFactory<LayerTreeHostCaptureContentTest> weak_factory_{this};
 };

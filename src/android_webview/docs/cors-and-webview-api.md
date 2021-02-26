@@ -58,7 +58,18 @@ Pages loaded with any scheme other than `content://` can't load `content://`
 page in iframes and they can not specify `content://` URLs for sub-resources.
 
 ### file:///android\_{asset,res}/ URLs
-TODO
+Android assets and resources are accessible using `file:///android_asset/` and
+`file:///android_res/` URLs. WebView handles these special `file://` URLs as it
+does other `file://` URLs. Only difference is these special paths are accessible
+even if `setAllowFileAccess` is called with `false`. Even so, still CORS-enabled
+requests are not permitted until these are explicitly permitted by
+`setAllowFileAccessFromFileURLs`.
+
+*** note
+**Note:** `file:///android_asset,res}/` URLs are discouraged. Apps are
+encouraged to use [WebViewAssetLoader](https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader)
+instead, for better compatibility with the Same-Origin policy.
+***
 
 ## WebView APIs
 
@@ -82,6 +93,10 @@ does not allow to access `content://` and `file://` URLs.
 
 The requests from service workers also don't care for this setting.
 
+*** note
+**Note:** `setAllowFileAccessFromFileURLs` is deprecated in API level 30.
+***
+
 ### setAllowUniversalAccessFromFileURLs
 When this API is called with `true`, URLs starting with file:// will have a
 scheme based origin, and can access other scheme based URLs over XMLHttpRequest.
@@ -94,6 +109,10 @@ Regardless of this API call, [Fetch API](https://fetch.spec.whatwg.org/#fetch-ap
 does not allow to access `content://` and `file://` URLs.
 
 The requests from service workers also don't care for this setting.
+
+*** note
+**Note:** `setAllowUniversalAccessFromFileURLs` is deprecated in API level 30.
+***
 
 ### shouldInterceptRequest
 Custom scheme should not be permitted for CORS-enabled requests usually.

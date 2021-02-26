@@ -11,16 +11,20 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/printing/print_server.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
 #include "chrome/browser/chromeos/printing/server_printers_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/device_event_log/device_event_log.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace chromeos {
 
@@ -36,21 +40,13 @@ struct PrintServerWithPrinters {
 
 class ServerPrintersProviderImpl
     : public ServerPrintersProvider,
-      public PrintServersProvider::Observer,
       public base::SupportsWeakPtr<ServerPrintersProviderImpl> {
  public:
-  explicit ServerPrintersProviderImpl(Profile* profile)
-      : servers_provider_(
-            PrintServersProviderFactory::Get()->GetForProfile(profile)) {
+  ServerPrintersProviderImpl() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    servers_provider_->SetProfile(profile);
-    servers_provider_->AddObserver(this);
   }
 
-  ~ServerPrintersProviderImpl() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    servers_provider_->RemoveObserver(this);
-  }
+  ~ServerPrintersProviderImpl() override = default;
 
   void RegisterPrintersFoundCallback(OnPrintersUpdateCallback cb) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -67,9 +63,8 @@ class ServerPrintersProviderImpl
     return printers;
   }
 
-  // PrintServersProvider::Observer implementation.
   void OnServersChanged(bool servers_are_complete,
-                        const std::vector<PrintServer>& servers) override {
+                        const std::map<GURL, PrintServer>& servers) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Create an entry in the device log.
     if (servers_are_complete) {
@@ -86,7 +81,8 @@ class ServerPrintersProviderImpl
     servers_are_complete_ = servers_are_complete;
     // Fill new map with new servers and compare with the old map.
     std::map<GURL, PrintServerWithPrinters> new_servers;
-    for (const auto& server : servers) {
+    for (const auto& server_pair : servers) {
+      const PrintServer& server = server_pair.second;
       const GURL& url = server.GetUrl();
       const std::string& name = server.GetName();
       auto it_new = new_servers.emplace(url, server).first;
@@ -174,7 +170,6 @@ class ServerPrintersProviderImpl
   // URLs that are being queried now with corresponding fetcher objects.
   std::map<GURL, std::unique_ptr<ServerPrintersFetcher>> fetchers_;
 
-  base::WeakPtr<PrintServersProvider> servers_provider_;
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ServerPrintersProviderImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ServerPrintersProviderImpl);
@@ -183,9 +178,8 @@ class ServerPrintersProviderImpl
 }  // namespace
 
 // static
-std::unique_ptr<ServerPrintersProvider> ServerPrintersProvider::Create(
-    Profile* profile) {
-  return std::make_unique<ServerPrintersProviderImpl>(profile);
+std::unique_ptr<ServerPrintersProvider> ServerPrintersProvider::Create() {
+  return std::make_unique<ServerPrintersProviderImpl>();
 }
 
 }  // namespace chromeos

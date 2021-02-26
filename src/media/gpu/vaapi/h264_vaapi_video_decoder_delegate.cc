@@ -7,6 +7,7 @@
 #include <va/va.h>
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/macros.h"
@@ -67,6 +68,8 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb1,
     scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu",
+               "H264VaapiVideoDecoderDelegate::SubmitFrameMetadata");
   VAPictureParameterBufferH264 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
 
@@ -136,9 +139,6 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
 
   pic_param.num_ref_frames = sps->max_num_ref_frames;
 
-  if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param))
-    return DecodeStatus::kFail;
-
   VAIQMatrixBufferH264 iq_matrix_buf;
   memset(&iq_matrix_buf, 0, sizeof(iq_matrix_buf));
 
@@ -168,9 +168,10 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
     }
   }
 
-  return vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix_buf)
-             ? DecodeStatus::kOk
-             : DecodeStatus::kFail;
+  const bool success = vaapi_wrapper_->SubmitBuffers(
+      {{VAPictureParameterBufferType, sizeof(pic_param), &pic_param},
+       {VAIQMatrixBufferType, sizeof(iq_matrix_buf), &iq_matrix_buf}});
+  return success ? DecodeStatus::kOk : DecodeStatus::kFail;
 }
 
 DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
@@ -183,6 +184,7 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
     size_t size,
     const std::vector<SubsampleEntry>& subsamples) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu", "H264VaapiVideoDecoderDelegate::SubmitSlice");
   VASliceParameterBufferH264 slice_param;
   memset(&slice_param, 0, sizeof(slice_param));
 
@@ -271,17 +273,16 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
       FillVAPicture(&slice_param.RefPicList1[i], ref_pic_list1[i]);
   }
 
-  if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param))
-    return DecodeStatus::kFail;
-
-  return vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType, size, data)
-             ? DecodeStatus::kOk
-             : DecodeStatus::kFail;
+  const bool success = vaapi_wrapper_->SubmitBuffers(
+      {{VASliceParameterBufferType, sizeof(slice_param), &slice_param},
+       {VASliceDataBufferType, size, data}});
+  return success ? DecodeStatus::kOk : DecodeStatus::kFail;
 }
 
 DecodeStatus H264VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("media,gpu", "H264VaapiVideoDecoderDelegate::SubmitDecode");
 
   const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
       pic->AsVaapiH264Picture()->va_surface()->id());

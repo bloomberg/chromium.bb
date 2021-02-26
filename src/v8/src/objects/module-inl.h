@@ -6,12 +6,12 @@
 #define V8_OBJECTS_MODULE_INL_H_
 
 #include "src/objects/module.h"
-#include "src/objects/source-text-module.h"
-#include "src/objects/synthetic-module.h"
-
 #include "src/objects/objects-inl.h"  // Needed for write barriers
 #include "src/objects/scope-info.h"
+#include "src/objects/source-text-module-inl.h"
+#include "src/objects/source-text-module.h"
 #include "src/objects/string-inl.h"
+#include "src/objects/synthetic-module.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -19,13 +19,13 @@
 namespace v8 {
 namespace internal {
 
+#include "torque-generated/src/objects/module-tq-inl.inc"
+
 OBJECT_CONSTRUCTORS_IMPL(Module, HeapObject)
-TQ_OBJECT_CONSTRUCTORS_IMPL(SourceTextModule)
-TQ_OBJECT_CONSTRUCTORS_IMPL(SourceTextModuleInfoEntry)
-TQ_OBJECT_CONSTRUCTORS_IMPL(SyntheticModule)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSModuleNamespace)
 
 NEVER_READ_ONLY_SPACE_IMPL(Module)
+NEVER_READ_ONLY_SPACE_IMPL(ModuleRequest)
 NEVER_READ_ONLY_SPACE_IMPL(SourceTextModule)
 NEVER_READ_ONLY_SPACE_IMPL(SyntheticModule)
 
@@ -36,12 +36,19 @@ ACCESSORS(Module, exception, Object, kExceptionOffset)
 SMI_ACCESSORS(Module, status, kStatusOffset)
 SMI_ACCESSORS(Module, hash, kHashOffset)
 
-BOOL_ACCESSORS(SourceTextModule, flags, async, kAsyncBit)
-BOOL_ACCESSORS(SourceTextModule, flags, async_evaluating, kAsyncEvaluatingBit)
+BOOL_ACCESSORS(SourceTextModule, flags, async, AsyncBit::kShift)
+BOOL_ACCESSORS(SourceTextModule, flags, async_evaluating,
+               AsyncEvaluatingBit::kShift)
 ACCESSORS(SourceTextModule, async_parent_modules, ArrayList,
           kAsyncParentModulesOffset)
 ACCESSORS(SourceTextModule, top_level_capability, HeapObject,
           kTopLevelCapabilityOffset)
+
+struct Module::Hash {
+  V8_INLINE size_t operator()(Module const& module) const {
+    return module.hash();
+  }
+};
 
 SourceTextModuleInfo SourceTextModule::info() const {
   return status() == kErrored

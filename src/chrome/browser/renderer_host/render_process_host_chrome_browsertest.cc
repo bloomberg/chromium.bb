@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -42,9 +42,9 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/public/browser/browser_child_process_host.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -373,7 +373,7 @@ class ChromeRenderProcessHostBackgroundingTest
     if (base::Process::CanBackgroundProcesses()) {
       base::Process p = ProcessFromHandle(process->GetProcess().Handle());
       ASSERT_TRUE(p.IsValid());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::PortProvider* port_provider =
           content::BrowserChildProcessHost::GetPortProvider();
       EXPECT_EQ(expected_is_backgrounded,
@@ -400,7 +400,7 @@ class ChromeRenderProcessHostBackgroundingTest
   } while (0);
 
 // Flaky on Mac: https://crbug.com/888308
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_MultipleTabs DISABLED_MultipleTabs
 #else
 #define MAYBE_MultipleTabs MultipleTabs
@@ -501,7 +501,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect());
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect(),
+                               DevToolsOpenedByAction::kUnknown);
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -520,7 +521,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<WebContents>(devtools));
 
-  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle(),
+                               DevToolsOpenedByAction::kUnknown);
   close_observer.Wait();
 }
 
@@ -541,7 +543,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect());
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect(),
+                               DevToolsOpenedByAction::kUnknown);
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -559,7 +562,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(devtools));
-  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle(),
+                               DevToolsOpenedByAction::kUnknown);
   close_observer.Wait();
 }
 
@@ -588,7 +592,7 @@ class WindowDestroyer : public content::WebContentsObserver {
 // RenderProcessHost and invalidating them, we remove them properly and don't
 // access already freed objects. See http://crbug.com/255524.
 // Crashes on Win/Linux only.  http://crbug.com/606485.
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_CloseAllTabsDuringProcessDied \
   DISABLED_CloseAllTabsDuringProcessDied
 #else
@@ -676,9 +680,9 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
     ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
     ASSERT_TRUE(no_audio_process_.IsValid());
     ASSERT_TRUE(audio_process_.IsValid());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     port_provider_ = content::BrowserChildProcessHost::GetPortProvider();
-#endif  //  defined(OS_MACOSX)
+#endif  //  defined(OS_MAC)
   }
 
  protected:
@@ -703,14 +707,14 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
 
  private:
   bool IsProcessBackgrounded(const base::Process& process) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     return process.IsProcessBackgrounded(port_provider_);
 #else
     return process.IsProcessBackgrounded();
 #endif
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::PortProvider* port_provider_;
 #endif
 

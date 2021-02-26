@@ -20,7 +20,18 @@ import org.chromium.ui.test.util.RenderTestRule;
  * public class MyTest {
  *     // Provide RenderTestRule with the path from src/ to the golden directory.
  *     @Rule
- *     public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+ *     public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule.Builder()
+ *             // Required. If using ANDROID_RENDER_TESTS_PUBLIC, the Builder can be created with
+ *             // the shorthand ChromeRenderTestRule.Builder.withPublicCorpus().
+ *             .setCorpus(ChromeRenderTestRule.Corpus.ANDROID_RENDER_TESTS_PUBLIC)
+ *             // Optional, only necessary once a CL lands that should invalidate previous golden
+ *             // images, e.g. a UI rework.
+ *             .setRevision(2)
+ *             // Optional, only necessary if you want a message to be associated with these
+ *             // golden images and shown in the Gold web UI, e.g. the reason why the revision was
+ *             // incremented.
+ *             .setDescription("Material design rework")
+ *             .build();
  *
  *     @Test
  *     // The test must have the feature "RenderTest" for the bots to display renders.
@@ -39,11 +50,9 @@ import org.chromium.ui.test.util.RenderTestRule;
  * </pre>
  */
 public class ChromeRenderTestRule extends RenderTestRule {
-    /**
-     * Constructor using {@code "chrome/test/data/android/render_tests"} as default golden folder.
-     */
-    public ChromeRenderTestRule() {
-        super("chrome/test/data/android/render_tests");
+    protected ChromeRenderTestRule(int revision, @RenderTestRule.Corpus String corpus,
+            String description, boolean failOnUnsupportedConfigs) {
+        super(revision, corpus, description, failOnUnsupportedConfigs);
     }
 
     /**
@@ -52,5 +61,23 @@ public class ChromeRenderTestRule extends RenderTestRule {
      */
     public static void sanitize(View view) {
         TestThreadUtils.runOnUiThreadBlocking(() -> RenderTestRule.sanitize(view));
+    }
+
+    /**
+     * Builder to create a ChromeRenderTestRule.
+     */
+    public static class Builder extends RenderTestRule.BaseBuilder<Builder> {
+        @Override
+        public ChromeRenderTestRule build() {
+            return new ChromeRenderTestRule(
+                    mRevision, mCorpus, mDescription, mFailOnUnsupportedConfigs);
+        }
+
+        /**
+         * Creates a Builder with the default public corpus.
+         */
+        public static Builder withPublicCorpus() {
+            return new Builder().setCorpus(Corpus.ANDROID_RENDER_TESTS_PUBLIC);
+        }
     }
 }

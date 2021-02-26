@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/web/public/web_state.h"
 
@@ -13,14 +14,22 @@
 #error "This file requires ARC support."
 #endif
 
+@interface PrintController () <UIPrintInteractionControllerDelegate>
+@end
+
 @implementation PrintController
 
 #pragma mark - Public Methods
 
 - (void)printView:(UIView*)view withTitle:(NSString*)title {
+  DCHECK(self.baseViewController)
+      << "Set the print controller's base view controller before calling "
+      << "-printView:withTitle:";
   base::RecordAction(base::UserMetricsAction("MobilePrintMenuAirPrint"));
   UIPrintInteractionController* printInteractionController =
       [UIPrintInteractionController sharedPrintController];
+  printInteractionController.delegate = self;
+
   UIPrintInfo* printInfo = [UIPrintInfo printInfo];
   printInfo.outputType = UIPrintInfoOutputGeneral;
   printInfo.jobName = title;
@@ -37,7 +46,8 @@
           UIPrintInteractionController* printInteractionController,
           BOOL completed, NSError* error) {
         if (error)
-          DLOG(ERROR) << "Air printing error: " << error.description;
+          DLOG(ERROR) << "Air printing error: "
+                      << base::SysNSStringToUTF8(error.description);
       }];
 }
 
@@ -51,6 +61,12 @@
 - (void)printWebState:(web::WebState*)webState {
   [self printView:webState->GetView()
         withTitle:tab_util::GetTabTitle(webState)];
+}
+
+#pragma mark - UIPrintInteractionControllerDelegate
+- (UIViewController*)printInteractionControllerParentViewController:
+    (UIPrintInteractionController*)printInteractionController {
+  return self.baseViewController;
 }
 
 @end

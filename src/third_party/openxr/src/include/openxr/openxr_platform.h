@@ -2,7 +2,9 @@
 #define OPENXR_PLATFORM_H_ 1
 
 /*
-** Copyright (c) 2017-2019 The Khronos Group Inc.
+** Copyright (c) 2017-2020 The Khronos Group Inc.
+**
+** SPDX-License-Identifier: Apache-2.0
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -99,7 +101,7 @@ typedef struct XrVulkanSwapchainFormatListCreateInfoKHR {
 #ifdef XR_USE_GRAPHICS_API_OPENGL
 
 #define XR_KHR_opengl_enable 1
-#define XR_KHR_opengl_enable_SPEC_VERSION 7
+#define XR_KHR_opengl_enable_SPEC_VERSION 8
 #define XR_KHR_OPENGL_ENABLE_EXTENSION_NAME "XR_KHR_opengl_enable"
 #ifdef XR_USE_PLATFORM_WIN32
 typedef struct XrGraphicsBindingOpenGLWin32KHR {
@@ -302,7 +304,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
 #ifdef XR_USE_GRAPHICS_API_D3D12
 
 #define XR_KHR_D3D12_enable 1
-#define XR_KHR_D3D12_enable_SPEC_VERSION  5
+#define XR_KHR_D3D12_enable_SPEC_VERSION  6
 #define XR_KHR_D3D12_ENABLE_EXTENSION_NAME "XR_KHR_D3D12_enable"
 typedef struct XrGraphicsBindingD3D12KHR {
     XrStructureType             type;
@@ -375,6 +377,22 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToTimespecTimeKHR(
     struct timespec*                            timespecTime);
 #endif
 #endif /* XR_USE_TIMESPEC */
+
+#ifdef XR_USE_PLATFORM_EGL
+
+#define XR_MNDX_egl_enable 1
+#define XR_MNDX_egl_enable_SPEC_VERSION   1
+#define XR_MNDX_EGL_ENABLE_EXTENSION_NAME "XR_MNDX_egl_enable"
+typedef struct XrGraphicsBindingEGLMNDX {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    PFNEGLGETPROCADDRESSPROC    getProcAddress;
+    EGLDisplay                  display;
+    EGLConfig                   config;
+    EGLContext                  context;
+} XrGraphicsBindingEGLMNDX;
+
+#endif /* XR_USE_PLATFORM_EGL */
 
 #ifdef __cplusplus
 }

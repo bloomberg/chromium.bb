@@ -37,6 +37,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <memory>
 
 #define DUMMY_TEXT "DCT compessed stream."
 
@@ -199,7 +200,7 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
     dict->insertInt("n1", SkToSizeT(42));
     assert_emit_eq(reporter, *dict, "<</n1 42>>");
 
-    dict.reset(new SkPDFDict);
+    dict = std::make_unique<SkPDFDict>();
     assert_emit_eq(reporter, *dict, "<<>>");
 
     dict->insertInt("n1", 42);
@@ -213,7 +214,7 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
     dict->insertObject(n3, std::move(innerArray));
     assert_emit_eq(reporter, *dict, "<</n1 42\n/n2 .5\n/n3 [-100]>>");
 
-    dict.reset(new SkPDFDict);
+    dict = std::make_unique<SkPDFDict>();
     assert_emit_eq(reporter, *dict, "<<>>");
 
     dict->insertInt("n1", 24);
@@ -240,7 +241,7 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
     assert_emit_eq(reporter, *dict, "<</n1 24\n/n2 99\n/n3 .5\n/n4 /AName\n"
                    "/n5 /AnotherName\n/n6 (A String)\n/n7 (Another String)>>");
 
-    dict.reset(new SkPDFDict("DType"));
+    dict = std::make_unique<SkPDFDict>("DType");
     assert_emit_eq(reporter, *dict, "<</Type /DType>>");
 }
 
@@ -274,7 +275,7 @@ private:
 
     mutable bool fVisited;
 
-    typedef SkImageFilter_Base INHERITED;
+    using INHERITED = SkImageFilter_Base;
 };
 
 sk_sp<SkFlattenable> DummyImageFilter::CreateProc(SkReadBuffer& buffer) {
@@ -283,7 +284,7 @@ sk_sp<SkFlattenable> DummyImageFilter::CreateProc(SkReadBuffer& buffer) {
     return DummyImageFilter::Make(visited);
 }
 
-};
+}  // namespace
 
 // Check that PDF rendering of image filters successfully falls back to
 // CPU rasterization.

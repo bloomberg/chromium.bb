@@ -132,14 +132,17 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   Document& document = element.GetDocument();
 
   const ContentSecurityPolicy* csp =
-      document.GetContentSecurityPolicyForWorld();
+      element.GetExecutionContext()
+          ? element.GetExecutionContext()
+                ->GetContentSecurityPolicyForCurrentWorld()
+          : nullptr;
 
   // CSP is bypassed for style elements in user agent shadow DOM.
   bool passes_content_security_policy_checks =
       IsInUserAgentShadowDOM(element) ||
-      csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle, &element,
-                       text, element.nonce(), document.Url(),
-                       start_position_.line_);
+      (csp && csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
+                               &element, text, element.nonce(), document.Url(),
+                               start_position_.line_));
 
   // Clearing the current sheet may remove the cache entry so create the new
   // sheet first
@@ -195,7 +198,7 @@ void StyleElement::StartLoadingDynamicSheet(Document& document) {
   document.GetStyleEngine().AddPendingSheet(style_engine_context_);
 }
 
-void StyleElement::Trace(Visitor* visitor) {
+void StyleElement::Trace(Visitor* visitor) const {
   visitor->Trace(sheet_);
 }
 

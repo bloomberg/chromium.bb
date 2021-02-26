@@ -95,10 +95,13 @@ Polymer({
     this.refreshNetworks();
 
     const INTERVAL_MS = 10 * 1000;
-    const kAll = chromeos.networkConfig.mojom.NetworkType.kAll;
-    this.networkConfig_.requestNetworkScan(kAll);
+    // Request only WiFi network scans. Tether and Cellular scans are not useful
+    // here. Cellular scans are disruptive and should only be triggered by
+    // explicit user action.
+    const kWiFi = chromeos.networkConfig.mojom.NetworkType.kWiFi;
+    this.networkConfig_.requestNetworkScan(kWiFi);
     this.scanIntervalId_ = window.setInterval(function() {
-      this.networkConfig_.requestNetworkScan(kAll);
+      this.networkConfig_.requestNetworkScan(kWiFi);
     }.bind(this), INTERVAL_MS);
   },
 
@@ -125,7 +128,7 @@ Polymer({
     for (const network of networkList.children) {
       if (network.is === 'network-list-item' &&
           network.$$('#divText').children[0].innerText === name) {
-        return network;
+        return network.shadowRoot.getElementById('divOuter');
       }
     }
     return null;

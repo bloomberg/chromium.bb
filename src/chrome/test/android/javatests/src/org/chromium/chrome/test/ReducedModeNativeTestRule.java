@@ -10,13 +10,12 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -71,12 +70,7 @@ public class ReducedModeNativeTestRule implements TestRule {
 
     private void waitForNativeLoaded() {
         CriteriaHelper.pollUiThread(
-                new Criteria("Failed while waiting for starting Service Manager.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mNativeLoaded.get();
-                    }
-                });
+                mNativeLoaded::get, "Failed while waiting for starting Service Manager.");
     }
 
     public void assertOnlyServiceManagerStarted() {

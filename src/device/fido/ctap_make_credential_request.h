@@ -72,9 +72,12 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   AuthenticatorAttachment authenticator_attachment =
       AuthenticatorAttachment::kAny;
   bool resident_key_required = false;
-  // hmac_secret_ indicates whether the "hmac-secret" extension should be
+  // hmac_secret indicates whether the "hmac-secret" extension should be
   // asserted to CTAP2 authenticators.
   bool hmac_secret = false;
+  // large_blob_key indicates whether a large blob key should be associated to
+  // the new credential through the "largeBlobKey" extension.
+  bool large_blob_key = false;
 
   // If true, instruct the request handler only to dispatch this request via
   // U2F.
@@ -83,7 +86,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
 
   std::vector<PublicKeyCredentialDescriptor> exclude_list;
   base::Optional<std::vector<uint8_t>> pin_auth;
-  base::Optional<uint8_t> pin_protocol;
+  base::Optional<PINUVAuthProtocol> pin_protocol;
   AttestationConveyancePreference attestation_preference =
       AttestationConveyancePreference::kNone;
   // U2F AppID for excluding credentials.

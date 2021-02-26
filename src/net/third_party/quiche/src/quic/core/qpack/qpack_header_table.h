@@ -10,8 +10,8 @@
 #include <queue>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 
@@ -70,16 +70,16 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // Returns the absolute index of an entry with matching name and value if such
   // exists, otherwise one with matching name is such exists.  |index| is zero
   // based for both the static and the dynamic table.
-  MatchType FindHeaderField(quiche::QuicheStringPiece name,
-                            quiche::QuicheStringPiece value,
+  MatchType FindHeaderField(absl::string_view name,
+                            absl::string_view value,
                             bool* is_static,
                             uint64_t* index) const;
 
   // Insert (name, value) into the dynamic table.  May evict entries.  Returns a
   // pointer to the inserted owned entry on success.  Returns nullptr if entry
   // is larger than the capacity of the dynamic table.
-  const QpackEntry* InsertEntry(quiche::QuicheStringPiece name,
-                                quiche::QuicheStringPiece value);
+  const QpackEntry* InsertEntry(absl::string_view name,
+                                absl::string_view value);
 
   // Returns the size of the largest entry that could be inserted into the
   // dynamic table without evicting entry |index|.  |index| might be larger than
@@ -97,7 +97,10 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // value can be set upon connection establishment, whereas in the encoding
   // context it can be set when the SETTINGS frame is received.
   // This method must only be called at most once.
-  void SetMaximumDynamicTableCapacity(uint64_t maximum_dynamic_table_capacity);
+  // Returns true if |maximum_dynamic_table_capacity| is set for the first time
+  // or if it doesn't change current value. The setting is not changed when
+  // returning false.
+  bool SetMaximumDynamicTableCapacity(uint64_t maximum_dynamic_table_capacity);
 
   // Get |maximum_dynamic_table_capacity_|.
   uint64_t maximum_dynamic_table_capacity() const {

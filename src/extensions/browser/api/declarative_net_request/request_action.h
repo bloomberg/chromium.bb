@@ -29,12 +29,20 @@ struct RequestAction {
   // This is used instead of ModifyHeaderInfo so it can be copied in Clone().
   struct HeaderInfo {
     HeaderInfo(std::string header,
-               api::declarative_net_request::HeaderOperation operation);
+               api::declarative_net_request::HeaderOperation operation,
+               base::Optional<std::string> value);
     explicit HeaderInfo(const flat::ModifyHeaderInfo& info);
+    ~HeaderInfo();
+    HeaderInfo(const HeaderInfo& other);
+    HeaderInfo& operator=(const HeaderInfo& other);
+    HeaderInfo(HeaderInfo&&);
+    HeaderInfo& operator=(HeaderInfo&&);
 
     // The name of the header to be modified, specified in lowercase.
     std::string header;
     api::declarative_net_request::HeaderOperation operation;
+    // The value for |header| to be appended or set.
+    base::Optional<std::string> value;
   };
 
   enum class Type {
@@ -111,6 +119,11 @@ struct RequestAction {
  private:
   RequestAction(const RequestAction&);
 };
+
+// Compares RequestAction by |index_priority|, breaking ties by |ruleset_id|
+// then |rule_id|.
+bool operator<(const RequestAction& lhs, const RequestAction& rhs);
+bool operator>(const RequestAction& lhs, const RequestAction& rhs);
 
 base::Optional<RequestAction> GetMaxPriorityAction(
     base::Optional<RequestAction> lhs,

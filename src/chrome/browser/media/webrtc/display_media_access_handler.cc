@@ -17,6 +17,7 @@
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
@@ -29,7 +30,11 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MAC)
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
@@ -68,7 +73,9 @@ bool DisplayMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
     const blink::mojom::MediaStreamType stream_type,
     const extensions::Extension* extension) {
-  return stream_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+  return stream_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+         stream_type ==
+             blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB;
   // This class handles MEDIA_DISPLAY_AUDIO_CAPTURE as well, but only if it is
   // accompanied by MEDIA_DISPLAY_VIDEO_CAPTURE request as per spec.
   // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
@@ -100,7 +107,22 @@ void DisplayMediaAccessHandler::HandleRequest(
     return;
   }
 
-#if defined(OS_MACOSX)
+  // SafeBrowsing Delayed Warnings experiment can delay some SafeBrowsing
+  // warnings until user interaction. If the current page has a delayed warning,
+  // it'll have a user interaction observer attached. Show the warning
+  // immediately in that case.
+  safe_browsing::SafeBrowsingUserInteractionObserver* observer =
+      safe_browsing::SafeBrowsingUserInteractionObserver::FromWebContents(
+          web_contents);
+  if (observer) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, nullptr);
+    observer->OnDesktopCaptureRequest();
+    return;
+  }
+
+#if defined(OS_MAC)
   // Do not allow picker UI to be shown on a page that isn't in the foreground
   // in Mac, because the UI implementation in Mac pops a window over any content
   // which might be confusing for the users. See https://crbug.com/1407733 for
@@ -113,7 +135,17 @@ void DisplayMediaAccessHandler::HandleRequest(
         blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
+
+  if (request.video_type ==
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB) {
+    // TODO(crbug.com/1136942): Add support for capture-this-tab instead of
+    // returning an error
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+    return;
+  }
 
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
@@ -178,8 +210,8 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
   picker_params.context = parent_window;
   picker_params.parent = parent_window;
-  picker_params.app_name = url_formatter::FormatUrlForSecurityDisplay(
-      web_contents->GetLastCommittedURL(),
+  picker_params.app_name = url_formatter::FormatOriginForSecurityDisplay(
+      url::Origin::Create(web_contents->GetLastCommittedURL()),
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio =
@@ -215,7 +247,7 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
     request_result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   } else {
     request_result = blink::mojom::MediaStreamRequestResult::OK;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Check screen capture permissions on Mac if necessary.
     if ((media_id.type == content::DesktopMediaID::TYPE_SCREEN ||
          media_id.type == content::DesktopMediaID::TYPE_WINDOW) &&
@@ -225,13 +257,29 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
           blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
     }
 #endif
+    if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
+        !content::WebContents::FromRenderFrameHost(
+            content::RenderFrameHost::FromID(
+                media_id.web_contents_id.render_process_id,
+                media_id.web_contents_id.main_render_frame_id))) {
+      request_result =
+          blink::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE;
+    }
+#if defined(OS_CHROMEOS)
+    if (request_result == blink::mojom::MediaStreamRequestResult::OK) {
+      if (policy::DlpContentManager::Get()->IsScreenCaptureRestricted(
+              media_id)) {
+        request_result =
+            blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+      }
+    }
+#endif
     if (request_result == blink::mojom::MediaStreamRequestResult::OK) {
       const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
           web_contents->GetLastCommittedURL(),
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
       ui = GetDevicesForDesktopCapture(
-          web_contents, &devices, media_id,
-          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+          web_contents, &devices, media_id, pending_request.request.video_type,
           blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE,
           media_id.audio_share, false /* disable_local_echo */,
           display_notification_, visible_url, visible_url);

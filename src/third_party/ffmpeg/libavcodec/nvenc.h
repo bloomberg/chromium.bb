@@ -62,6 +62,14 @@ typedef void ID3D11Device;
 #define NVENC_HAVE_GETLASTERRORSTRING
 #endif
 
+// SDK 10.0 compile time feature checks
+#if NVENCAPI_CHECK_VERSION(10, 0)
+#define NVENC_HAVE_NEW_PRESETS
+#define NVENC_HAVE_MULTIPASS
+#define NVENC_HAVE_LDKFS
+#define NVENC_HAVE_H264_LVL6
+#endif
+
 typedef struct NvencSurface
 {
     NV_ENC_INPUT_PTR input_surface;
@@ -98,6 +106,15 @@ enum {
     PRESET_LOW_LATENCY_HP,
     PRESET_LOSSLESS_DEFAULT, // lossless presets must be the last ones
     PRESET_LOSSLESS_HP,
+#ifdef NVENC_HAVE_NEW_PRESETS
+    PRESET_P1,
+    PRESET_P2,
+    PRESET_P3,
+    PRESET_P4,
+    PRESET_P5,
+    PRESET_P6,
+    PRESET_P7,
+#endif
 };
 
 enum {
@@ -138,6 +155,8 @@ typedef struct NvencContext
     CUstream cu_stream;
     ID3D11Device *d3d11_device;
 
+    AVFrame *frame;
+
     int nb_surfaces;
     NvencSurface *surfaces;
 
@@ -145,8 +164,6 @@ typedef struct NvencContext
     AVFifoBuffer *output_surface_queue;
     AVFifoBuffer *output_surface_ready_queue;
     AVFifoBuffer *timestamp_list;
-
-    int encoder_flushing;
 
     struct {
         void *ptr;
@@ -160,11 +177,6 @@ typedef struct NvencContext
     /* the actual data pixel format, different from
      * AVCodecContext.pix_fmt when using hwaccel frames on input */
     enum AVPixelFormat data_pix_fmt;
-
-    /* timestamps of the first two frames, for computing the first dts
-     * when B-frames are present */
-    int64_t initial_pts[2];
-    int first_packet_output;
 
     int support_dyn_bitrate;
 
@@ -201,19 +213,18 @@ typedef struct NvencContext
     int coder;
     int b_ref_mode;
     int a53_cc;
+    int s12m_tc;
     int dpb_size;
+    int tuning_info;
+    int multipass;
+    int ldkfs;
 } NvencContext;
 
 int ff_nvenc_encode_init(AVCodecContext *avctx);
 
 int ff_nvenc_encode_close(AVCodecContext *avctx);
 
-int ff_nvenc_send_frame(AVCodecContext *avctx, const AVFrame *frame);
-
 int ff_nvenc_receive_packet(AVCodecContext *avctx, AVPacket *pkt);
-
-int ff_nvenc_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
-                          const AVFrame *frame, int *got_packet);
 
 void ff_nvenc_encode_flush(AVCodecContext *avctx);
 

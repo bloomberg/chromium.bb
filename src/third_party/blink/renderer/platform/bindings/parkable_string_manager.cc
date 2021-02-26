@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
@@ -25,12 +27,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
-
-// Disabling this will cause parkable strings to never be compressed.
-// This is useful for headless mode + virtual time. Since virtual time advances
-// quickly, strings may be parked too eagerly in that mode.
-const base::Feature kCompressParkableStrings{"CompressParkableStrings",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 struct ParkableStringManager::Statistics {
   size_t original_size;
@@ -47,13 +43,11 @@ struct ParkableStringManager::Statistics {
 namespace {
 
 bool CompressionEnabled() {
-  return base::FeatureList::IsEnabled(kCompressParkableStrings);
+  return base::FeatureList::IsEnabled(features::kCompressParkableStrings);
 }
 
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryPressureListener {
-  USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
-
   void OnPurgeMemory() override {
     if (!CompressionEnabled()) {
       return;
@@ -163,6 +157,8 @@ bool ParkableStringManager::OnMemoryDump(
   dump->AddScalar("on_disk_size", "bytes", stats.on_disk_size);
   dump->AddScalar("on_disk_footprint", "bytes",
                   data_allocator().disk_footprint());
+  dump->AddScalar("on_disk_free_chunks", "bytes",
+                  data_allocator().free_chunks_size());
 
   pmd->AddSuballocation(dump->guid(),
                         WTF::Partitions::kAllocatedObjectPoolName);
@@ -283,11 +279,6 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string) {
   ScheduleAgingTaskIfNeeded();
 }
 
-void ParkableStringManager::RecordUnparkingTime(
-    base::TimeDelta unparking_time) {
-  total_unparking_time_ += unparking_time;
-}
-
 void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
   DCHECK(CompressionEnabled());
@@ -334,12 +325,33 @@ void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
   size_t savings = stats.compressed_original_size - stats.compressed_size;
   base::UmaHistogramCounts100000("Memory.ParkableString.SavingsKb.5min",
                                  savings / 1000);
-
   if (stats.compressed_original_size != 0) {
     size_t ratio_percentage =
         (100 * stats.compressed_size) / stats.compressed_original_size;
-    base::UmaHistogramPercentage("Memory.ParkableString.CompressionRatio.5min",
-                                 ratio_percentage);
+    base::UmaHistogramPercentageObsoleteDoNotUse(
+        "Memory.ParkableString.CompressionRatio.5min", ratio_percentage);
+  }
+
+  // May not be usable, e.g. Incognito, permission or write failure.
+  if (features::IsParkableStringsToDiskEnabled()) {
+    base::UmaHistogramBoolean("Memory.ParkableString.DiskIsUsable.5min",
+                              data_allocator().may_write());
+  }
+  // These metrics only make sense if the disk allocator is used.
+  if (data_allocator().may_write()) {
+    base::UmaHistogramTimes("Memory.ParkableString.DiskWriteTime.5min",
+                            total_disk_write_time_);
+    base::UmaHistogramTimes("Memory.ParkableString.DiskReadTime.5min",
+                            total_disk_read_time_);
+
+    base::UmaHistogramCounts100000(
+        "Memory.ParkableString.MemorySavingsKb.5min",
+        std::max(0, static_cast<int>(stats.savings_size)) / 1000);
+    base::UmaHistogramCounts100000("Memory.ParkableString.OnDiskSizeKb.5min",
+                                   stats.on_disk_size / 1000);
+    base::UmaHistogramCounts100000(
+        "Memory.ParkableString.OnDiskFootprintKb.5min",
+        static_cast<int>(data_allocator().disk_footprint()) / 1000);
   }
 }
 
@@ -480,6 +492,8 @@ void ParkableStringManager::ResetForTesting() {
   did_register_memory_pressure_listener_ = false;
   total_unparking_time_ = base::TimeDelta();
   total_parking_thread_time_ = base::TimeDelta();
+  total_disk_read_time_ = base::TimeDelta();
+  total_disk_write_time_ = base::TimeDelta();
   unparked_strings_.clear();
   parked_strings_.clear();
   on_disk_strings_.clear();

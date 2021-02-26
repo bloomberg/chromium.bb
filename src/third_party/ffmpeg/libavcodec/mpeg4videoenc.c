@@ -27,6 +27,7 @@
 #include "mpegvideo.h"
 #include "h263.h"
 #include "mpeg4video.h"
+#include "profiles.h"
 
 /* The uni_DCtab_* tables below contain unified bits+length tables to encode DC
  * differences in MPEG-4. Unified in the sense that the specification specifies
@@ -1376,6 +1377,7 @@ static const AVOption options[] = {
     { "data_partitioning", "Use data partitioning.",      OFFSET(data_partitioning), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     { "alternate_scan",    "Enable alternate scantable.", OFFSET(alternate_scan),    AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     FF_MPV_COMMON_OPTS
+    FF_MPEG4_PROFILE_OPTS
     { NULL },
 };
 
@@ -1397,5 +1399,6 @@ AVCodec ff_mpeg4_encoder = {
     .close          = ff_mpv_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_SLICE_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .priv_class     = &mpeg4enc_class,
 };

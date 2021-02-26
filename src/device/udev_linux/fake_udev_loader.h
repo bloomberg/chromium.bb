@@ -22,6 +22,7 @@ class FakeUdevLoader : public device::UdevLoader {
 
   udev_device* AddFakeDevice(std::string name,
                              std::string syspath,
+                             std::string subsystem,
                              std::map<std::string, std::string> sysattrs,
                              std::map<std::string, std::string> properties);
 
@@ -31,6 +32,7 @@ class FakeUdevLoader : public device::UdevLoader {
   bool Init() override;
   const char* udev_device_get_action(udev_device* udev_device) override;
   const char* udev_device_get_devnode(udev_device* udev_device) override;
+  const char* udev_device_get_devtype(udev_device* udev_device) override;
   udev_device* udev_device_get_parent(udev_device* udev_device) override;
   udev_device* udev_device_get_parent_with_subsystem_devtype(
       udev_device* udev_device,

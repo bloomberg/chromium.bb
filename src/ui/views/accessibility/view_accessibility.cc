@@ -59,7 +59,16 @@ ViewAccessibility::~ViewAccessibility() = default;
 
 void ViewAccessibility::AddVirtualChildView(
     std::unique_ptr<AXVirtualView> virtual_view) {
+  AddVirtualChildViewAt(std::move(virtual_view), int{virtual_children_.size()});
+}
+
+void ViewAccessibility::AddVirtualChildViewAt(
+    std::unique_ptr<AXVirtualView> virtual_view,
+    int index) {
   DCHECK(virtual_view);
+  DCHECK_GE(index, 0);
+  DCHECK_LE(size_t{index}, virtual_children_.size());
+
   if (virtual_view->parent_view() == this)
     return;
   DCHECK(!virtual_view->parent_view()) << "This |view| already has a View "
@@ -69,7 +78,8 @@ void ViewAccessibility::AddVirtualChildView(
                                                   "AXVirtualView parent. Call "
                                                   "RemoveChildView first.";
   virtual_view->set_parent_view(this);
-  virtual_children_.push_back(std::move(virtual_view));
+  auto insert_iterator = virtual_children_.begin() + index;
+  virtual_children_.insert(insert_iterator, std::move(virtual_view));
 }
 
 std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
@@ -119,6 +129,10 @@ int ViewAccessibility::GetIndexOf(const AXVirtualView* virtual_view) const {
 
 const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
   return unique_id_;
+}
+
+bool ViewAccessibility::IsLeaf() const {
+  return is_leaf_;
 }
 
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
@@ -206,7 +220,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     return;
   }
 
-  if (view_->IsAccessibilityFocusable())
+  if (view_->IsAccessibilityFocusable() && !focused_virtual_child_)
     data->AddState(ax::mojom::State::kFocusable);
 
   if (!view_->GetEnabled())
@@ -224,11 +238,22 @@ void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
       << "|virtual_view| must be nullptr or a descendant of this view.";
   focused_virtual_child_ = virtual_view;
 
-  if (focused_virtual_child_) {
-    focused_virtual_child_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
-  } else {
-    view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  if (view_->HasFocus()) {
+    if (focused_virtual_child_) {
+      focused_virtual_child_->NotifyAccessibilityEvent(
+          ax::mojom::Event::kFocus);
+    } else {
+      view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+    }
   }
+}
+
+void ViewAccessibility::SetPopupFocusOverride() {}
+
+void ViewAccessibility::EndPopupFocusOverride() {}
+
+bool ViewAccessibility::IsFocusedForTesting() {
+  return view_->HasFocus() && !focused_virtual_child_;
 }
 
 void ViewAccessibility::OverrideRole(const ax::mojom::Role role) {

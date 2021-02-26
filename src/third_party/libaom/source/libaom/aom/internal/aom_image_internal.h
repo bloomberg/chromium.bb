@@ -32,8 +32,8 @@ struct aom_metadata_array {
 /*!\brief Alloc memory for aom_metadata_array struct.
  *
  * Allocate memory for aom_metadata_array struct.
- * If sz is 0 the aom_metadata_array structs internal buffer list will be NULL,
- * but the aom_metadata_array struct itself will still be allocated.
+ * If sz is 0 the aom_metadata_array struct's internal buffer list will be
+ * NULL, but the aom_metadata_array struct itself will still be allocated.
  * Returns a pointer to the allocated struct or NULL on failure.
  *
  * \param[in]    sz       Size of internal metadata list buffer

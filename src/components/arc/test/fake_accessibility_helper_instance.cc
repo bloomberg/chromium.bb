@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 
 namespace arc {
 
@@ -15,7 +15,7 @@ FakeAccessibilityHelperInstance::FakeAccessibilityHelperInstance() = default;
 FakeAccessibilityHelperInstance::~FakeAccessibilityHelperInstance() = default;
 
 void FakeAccessibilityHelperInstance::Init(
-    mojom::AccessibilityHelperHostPtr host_ptr,
+    mojo::PendingRemote<mojom::AccessibilityHelperHost> host_remote,
     InitCallback callback) {
   std::move(callback).Run();
 }
@@ -48,5 +48,8 @@ void FakeAccessibilityHelperInstance::SetCaptionStyle(
     mojom::CaptionStylePtr style_ptr) {}
 
 void FakeAccessibilityHelperInstance::RequestSendAccessibilityTree(
-    mojom::AccessibilityWindowKeyPtr window_ptr) {}
+    mojom::AccessibilityWindowKeyPtr window_ptr) {
+  last_requested_tree_window_key_ = std::move(window_ptr);
+}
+
 }  // namespace arc

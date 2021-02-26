@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -47,8 +47,7 @@ TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest, FeatureDisabled) {
   auto service =
       std::make_unique<component_updater::MockComponentUpdateService>();
   EXPECT_CALL(*service, RegisterComponent(_)).Times(0);
-  RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(
-      service.get(), component_install_dir_.GetPath());
+  RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(service.get());
 
   env_.RunUntilIdle();
 }

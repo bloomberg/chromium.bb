@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
 
   // As the extension is executed with incognito permission, the settings
   // should propagate to incognito mode.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);
 }
@@ -151,10 +151,10 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnUninstall) {
 }
 
 // Tests that proxy settings corresponding to an extension are removed when
-// the extension is blacklisted by management policy. Regression test for
+// the extension is blocklisted by management policy. Regression test for
 // crbug.com/709264.
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-                       PRE_SettingsRemovedOnPolicyBlacklist) {
+                       PRE_SettingsRemovedOnPolicyBlocklist) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   extension_service()->CheckManagementPolicy();
   ExpectNoSettings(pref_service);
 
-  // Remove the extension from policy blacklist. It should get enabled again.
+  // Remove the extension from policy blocklist. It should get enabled again.
   GetManagementPolicy()->UnregisterAllProviders();
   extension_service()->CheckManagementPolicy();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests that proxy settings corresponding to an extension take effect again
-// on browser restart, when the extension is removed from the policy blacklist.
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnPolicyBlacklist) {
+// on browser restart, when the extension is removed from the policy blocklist.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnPolicyBlocklist) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyPacScript) {
 
   // As the extension is not executed with incognito permission, the settings
   // should not propagate to incognito mode.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ExpectNoSettings(pref_service);
 
   // Now we enable the extension in incognito mode and verify that settings
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
                    pref_service);
 
   // Now check the incognito preferences.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                    "http=quic://1.1.1.1:443;"
                        "https=2.2.2.2:80;"
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   ExpectNoSettings(pref_service);
 
   // Now check the incognito preferences.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                    "http=1.1.1.1:80;"
                        "https=socks5://2.2.2.2:1080;"
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                    pref_service);
 
   // Now check the incognito preferences.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                    "http=5.5.5.5:80;"
                        "https=socks5://6.6.6.6:1080;"
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                    pref_service);
 
   // Now check the incognito preferences.
-  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  pref_service = browser()->profile()->GetPrimaryOTRProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                    "http=1.1.1.1:80",
                    "localhost,::1,foo.bar,<local>",

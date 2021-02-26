@@ -6,6 +6,12 @@
 
 namespace switches {
 
+// Overrides the default server used for profile sync.
+const char kSyncServiceURL[] = "sync-url";
+
+// Specifies the vault server used for trusted vault passphrase.
+const char kTrustedVaultServiceURL[] = "trusted-vault-service-url";
+
 const base::Feature kSyncNigoriRemoveMetadataOnCacheGuidMismatch{
     "SyncNigoriRemoveMetadataOnCacheGuidMismatch",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -26,5 +32,11 @@ const base::Feature kSyncCustomSharingMessageNudgeDelay = {
 const base::FeatureParam<int> kSyncSharingMessageNudgeDelayMilliseconds{
     &kSyncCustomSharingMessageNudgeDelay,
     "SyncSharingMessageNudgeDelayMilliseconds", 50};
+
+// Enable resend of entities after failed commit. This feature toggle enables
+// state resetting of all entities in transient state.
+// TODO(crbug.com/1137817): Remove the feature toggle when it hits Stable.
+const base::Feature kSyncResetEntitiesStateOnCommitFailure = {
+    "SyncResetEntitiesStateOnCommitFailure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace switches

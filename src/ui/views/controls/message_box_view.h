@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/insets.h"
@@ -30,53 +31,41 @@ class VIEWS_EXPORT MessageBoxView : public View {
  public:
   METADATA_HEADER(MessageBoxView);
 
-  enum Options {
-    NO_OPTIONS = 0,
-    // For a message from a web page (not from Chrome's UI), such as script
-    // dialog text, each paragraph's directionality is auto-detected using the
-    // directionality of the paragraph's first strong character's. Please refer
-    // to HTML5 spec for details.
-    // http://dev.w3.org/html5/spec/Overview.html#text-rendered-in-native-user-interfaces:
-    // The spec does not say anything about alignment. And we choose to
-    // align all paragraphs according to the direction of the first paragraph.
-    DETECT_DIRECTIONALITY = 1 << 0,
-    HAS_PROMPT_FIELD = 1 << 1,
-  };
-
-  struct VIEWS_EXPORT InitParams {
-    explicit InitParams(const base::string16& message);
-    ~InitParams();
-
-    uint16_t options;
-    base::string16 message;
-    base::string16 default_prompt;
-    int message_width;
-    int inter_row_vertical_spacing;
-  };
-
-  explicit MessageBoxView(const InitParams& params);
+  // |detect_directionality| indicates whether |message|'s directionality is
+  // auto-detected.
+  // For a message from a web page (not from Chrome's UI), such as script
+  // dialog text, each paragraph's directionality is auto-detected using the
+  // directionality of the paragraph's first strong character's. Please refer
+  // to HTML5 spec for details.
+  // http://dev.w3.org/html5/spec/Overview.html#text-rendered-in-native-user-interfaces:
+  // The spec does not say anything about alignment. And we choose to
+  // align all paragraphs according to the direction of the first paragraph.
+  explicit MessageBoxView(const base::string16& message = base::string16(),
+                          bool detect_directionality = false);
 
   ~MessageBoxView() override;
 
-  // Returns the text box.
-  views::Textfield* text_box() { return prompt_field_; }
+  // Returns the visible prompt field, returns nullptr otherwise.
+  views::Textfield* GetVisiblePromptField();
 
-  // Returns user entered data in the prompt field.
+  // Returns user entered data in the prompt field, returns an empty string if
+  // no visible prompt field.
   base::string16 GetInputText();
 
   // Returns true if this message box has a visible checkbox, false otherwise.
-  bool HasCheckBox() const { return !!checkbox_; }
+  bool HasVisibleCheckBox() const;
 
   // Returns true if a checkbox is selected, false otherwise. (And false if
   // the message box has no checkbox.)
   bool IsCheckBoxSelected();
 
-  // Adds a checkbox with the specified label to the message box if this is the
+  // Shows a checkbox with the specified label to the message box if this is the
   // first call. Otherwise, it changes the label of the current checkbox. To
-  // start, the message box has no checkbox until this function is called.
+  // start, the message box has no visible checkbox until this function is
+  // called.
   void SetCheckBoxLabel(const base::string16& label);
 
-  // Sets the state of the check-box.
+  // Sets the state of the check-box if it is visible.
   void SetCheckBoxSelected(bool selected);
 
   // Sets the text and the callback of the link. |text| must be non-empty.
@@ -84,6 +73,12 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  void SetInterRowVerticalSpacing(int spacing);
+  void SetMessageWidth(int width);
+
+  // Adds a prompt field with |default_prompt| as the displayed text.
+  void SetPromptField(const base::string16& default_prompt);
 
  protected:
   // View:
@@ -93,12 +88,12 @@ class VIEWS_EXPORT MessageBoxView : public View {
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  private:
-  // Sets up the layout manager and initializes the message labels and prompt
-  // field. This should only be called once, from the constructor.
-  void Init(const InitParams& params);
+  FRIEND_TEST_ALL_PREFIXES(MessageBoxViewTest, CheckMessageOnlySize);
+  FRIEND_TEST_ALL_PREFIXES(MessageBoxViewTest, CheckWithOptionalViewsSize);
+  FRIEND_TEST_ALL_PREFIXES(MessageBoxViewTest, CheckInterRowHeightChange);
 
-  // Sets up the layout manager based on currently initialized views. Should be
-  // called when a view is initialized or changed.
+  // Sets up the layout manager based on currently initialized views and layout
+  // parameters. Should be called when a view is initialized or changed.
   void ResetLayoutManager();
 
   // Return the proper horizontal insets based on the given layout provider.
@@ -120,7 +115,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
   Link* link_ = nullptr;
 
   // Spacing between rows in the grid layout.
-  const int inter_row_vertical_spacing_ = 0;
+  int inter_row_vertical_spacing_ = 0;
 
   // Maximum width of the message label.
   int message_width_ = 0;

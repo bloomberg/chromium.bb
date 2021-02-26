@@ -17,9 +17,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ShellEarlGreyAppInterface)
-#endif
 
 @implementation ShellEarlGreyImpl
 
@@ -43,7 +41,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ShellEarlGreyAppInterface)
 
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
   // EarlGrey steps.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  GREYWaitForAppToIdle(@"App failed to idle");
 }
 
 - (void)waitForWebStateContainingText:(NSString*)text {

@@ -148,7 +148,7 @@ TEST_P(TestVectorTest, MD5Match) {
 }
 
 #if CONFIG_AV1_DECODER
-AV1_INSTANTIATE_TEST_CASE(
+AV1_INSTANTIATE_TEST_SUITE(
     TestVectorTest,
     ::testing::Combine(::testing::Values(1),  // Single thread.
                        ::testing::ValuesIn(libaom_test::kAV1TestVectors,

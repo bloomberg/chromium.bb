@@ -117,6 +117,89 @@
     },
     {
       "type": "setting",
+      "category": "Grid",
+      "title": "Show area names",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridAreas",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid named areas"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid named areas"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Show track sizes",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridTrackSizes",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Show grid track sizes"
+        },
+        {
+          "value": false,
+          "title": "Do not show grid track sizes"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Extend grid lines",
+      "experiment": "cssGridFeatures",
+      "settingName": "extendGridLines",
+      "settingType": "boolean",
+      "options": [
+        {
+          "value": true,
+          "title": "Extend grid lines"
+        },
+        {
+          "value": false,
+          "title": "Do not extend grid lines"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Grid",
+      "title": "Show line labels",
+      "experiment": "cssGridFeatures",
+      "settingName": "showGridLineLabels",
+      "settingType": "enum",
+      "options": [
+        {
+          "title": "Hide line labels",
+          "text": "Hide line labels",
+          "value": "none"
+        },
+        {
+          "title": "Show line numbers",
+          "text": "Show line numbers",
+          "value": "lineNumbers"
+        },
+        {
+          "title": "Show line names",
+          "text": "Show line names",
+          "value": "lineNames"
+        }
+      ],
+      "defaultValue": "lineNumbers"
+    },
+    {
+      "type": "setting",
       "category": "Rendering",
       "settingName": "showPaintRects",
       "settingType": "boolean",
@@ -244,6 +327,25 @@
     {
       "type": "setting",
       "category": "Rendering",
+      "title": "Emulate a focused page",
+      "settingName": "emulatePageFocus",
+      "settingType": "boolean",
+      "storageType": "session",
+      "defaultValue": false,
+      "options": [
+        {
+          "value": true,
+          "title": "Emulate a focused page"
+        },
+        {
+          "value": false,
+          "title": "Do not emulate a focused page"
+        }
+      ]
+    },
+    {
+      "type": "setting",
+      "category": "Rendering",
       "settingName": "emulatedCSSMedia",
       "settingType": "enum",
       "storageType": "session",
@@ -319,6 +421,26 @@
     },
     {
       "type": "setting",
+      "settingName": "emulatedCSSMediaFeaturePrefersReducedData",
+      "settingType": "enum",
+      "storageType": "session",
+      "defaultValue": "",
+      "options": [
+        {
+          "title": "Do not emulate CSS prefers-reduced-data",
+          "text": "No emulation",
+          "value": ""
+        },
+        {
+          "title": "Emulate CSS prefers-reduced-data: reduce",
+          "text": "prefers-reduced-data: reduce",
+          "value": "reduce"
+        }
+      ],
+      "title": "Emulate CSS media feature prefers-reduced-data"
+    },
+    {
+      "type": "setting",
       "category": "Rendering",
       "settingName": "emulatedVisionDeficiency",
       "settingType": "enum",
@@ -361,6 +483,60 @@
     },
     {
       "type": "setting",
+      "category": "Rendering",
+      "settingName": "localFontsDisabled",
+      "settingType": "boolean",
+      "storageType": "session",
+      "options": [
+        {
+          "value": true,
+          "title": "Disable local fonts"
+        },
+        {
+          "value": false,
+          "title": "Enable local fonts"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Rendering",
+      "settingName": "avifFormatDisabled",
+      "settingType": "boolean",
+      "storageType": "session",
+      "options": [
+        {
+          "value": true,
+          "title": "Disable AVIF format"
+        },
+        {
+          "value": false,
+          "title": "Enable AVIF format"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
+      "category": "Rendering",
+      "settingName": "webpFormatDisabled",
+      "settingType": "boolean",
+      "storageType": "session",
+      "options": [
+        {
+          "value": true,
+          "title": "Disable WebP format"
+        },
+        {
+          "value": false,
+          "title": "Enable WebP format"
+        }
+      ],
+      "defaultValue": false
+    },
+    {
+      "type": "setting",
       "category": "Console",
       "title": "Enable custom formatters",
       "settingName": "customFormatters",
@@ -370,7 +546,7 @@
     {
       "type": "setting",
       "category": "Network",
-      "title": "Enable request blocking",
+      "title": "Enable network request blocking",
       "settingName": "requestBlockingEnabled",
       "settingType": "boolean",
       "storageType": "session",
@@ -378,11 +554,11 @@
       "options": [
         {
           "value": true,
-          "title": "Enable request blocking"
+          "title": "Enable network request blocking"
         },
         {
           "value": false,
-          "title": "Disable request blocking"
+          "title": "Disable network request blocking"
         }
       ]
     },
@@ -406,13 +582,12 @@
         }
       ]
     }
-  ],
-  "scripts": [],
-  "modules": [
+  ],  "modules": [
     "../generated/SupportedCSSProperties.js",
     "sdk.js",
     "sdk-legacy.js",
     "SDKModel.js",
+    "FrameAssociated.js",
     "Connections.js",
     "CompilerSourceMappingContentProvider.js",
     "Cookie.js",
@@ -421,17 +596,21 @@
     "ProfileTreeModel.js",
     "Issue.js",
     "IssuesModel.js",
+    "WebAuthnModel.js",
     "SameSiteCookieIssue.js",
     "MixedContentIssue.js",
+    "ContentSecurityPolicyIssue.js",
     "CrossOriginEmbedderPolicyIssue.js",
     "ServerTiming.js",
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
+    "CSSFontFace.js",
     "CSSMatchedStyles.js",
     "CSSMedia.js",
     "CSSMetadata.js",
     "CSSModel.js",
     "CSSProperty.js",
+    "CSSPropertyParser.js",
     "CSSRule.js",
     "CSSStyleDeclaration.js",
     "CSSStyleSheetHeader.js",
@@ -440,7 +619,9 @@
     "DOMModel.js",
     "DebuggerModel.js",
     "EmulationModel.js",
+    "FrameManager.js",
     "HARLog.js",
+    "HeavyAdIssue.js",
     "LayerTreeBase.js",
     "LogModel.js",
     "ServiceWorkerManager.js",
@@ -466,7 +647,9 @@
     "PerformanceMetricsModel.js",
     "FilmStripModel.js",
     "ConsoleModel.js",
-    "wasm_source_map/pkg/wasm_source_map.js"
+    "wasm_source_map/pkg/wasm_source_map.js",
+    "PageResourceLoader.js",
+    "IOModel.js"
   ],
   "skip_compilation": [
     "wasm_source_map/pkg/wasm_source_map.js"

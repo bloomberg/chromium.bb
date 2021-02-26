@@ -27,6 +27,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
@@ -52,6 +53,8 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
       username_(username),
       delegate_(std::move(delegate)),
       prompt_for_new_profile_(prompt_for_new_profile) {
+  SetShowCloseButton(false);
+  SetTitle(IDS_ENTERPRISE_SIGNIN_TITLE);
   SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -62,8 +65,11 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
                  l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL));
 
   if (prompt_for_new_profile) {
-    SetExtraView(views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
+    SetExtraView(std::make_unique<views::MdTextButton>(
+        base::BindRepeating(
+            &ProfileSigninConfirmationDialogViews::ContinueSigninButtonPressed,
+            base::Unretained(this)),
+        l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
   }
 
   using Delegate = ui::ProfileSigninConfirmationDelegate;
@@ -107,26 +113,12 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
     Profile* profile,
     const std::string& username,
     std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) {
-  // Hides the new avatar bubble if it is currently shown. The new avatar bubble
-  // should be automatically closed when it loses focus. However on windows the
-  // profile signin confirmation dialog is not modal yet thus it does not take
-  // away focus, thus as a temporary workaround we need to manually close the
-  // bubble.
-  // TODO(guohui): removes the workaround once the profile confirmation dialog
-  // is fixed.
-  ProfileMenuView::Hide();
-
   // Checking whether to show the prompt is sometimes asynchronous. Defer
   // constructing the dialog (in ::Show) until that check completes.
   ui::CheckShouldPromptForNewProfile(
       profile,
       base::BindOnce(&ProfileSigninConfirmationDialogViews::Show,
                      base::Unretained(browser), username, std::move(delegate)));
-}
-
-base::string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_ENTERPRISE_SIGNIN_TITLE);
 }
 
 ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {
@@ -157,7 +149,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT,
           domain, &offset);
-  auto prompt_label = std::make_unique<views::StyledLabel>(prompt_text, this);
+  auto prompt_label = std::make_unique<views::StyledLabel>();
+  prompt_label->SetText(prompt_text);
   prompt_label->SetDisplayedOnBackgroundColor(kPromptBarBackgroundColor);
 
   views::StyledLabel::RangeStyleInfo bold_style;
@@ -182,11 +175,13 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION :
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION,
           username, learn_more_text, &offsets);
-  auto explanation_label =
-      std::make_unique<views::StyledLabel>(signin_explanation_text, this);
+  auto explanation_label = std::make_unique<views::StyledLabel>();
+  explanation_label->SetText(signin_explanation_text);
   explanation_label->AddStyleRange(
       gfx::Range(offsets[1], offsets[1] + learn_more_text.size()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+      views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+          &ProfileSigninConfirmationDialogViews::LearnMoreClicked,
+          base::Unretained(this))));
 
   // Layout the components.
   const gfx::Insets content_insets =
@@ -254,29 +249,22 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
                          kPreferredWidth, explanation_label_height);
 }
 
-void ProfileSigninConfirmationDialogViews::WindowClosing() {
-  Cancel();
-}
-
-void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  NavigateParams params(
-      browser_, GURL("https://support.google.com/chromebook/answer/1331549"),
-      ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_action = NavigateParams::SHOW_WINDOW;
-  Navigate(&params);
-}
-
-void ProfileSigninConfirmationDialogViews::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
+void ProfileSigninConfirmationDialogViews::ContinueSigninButtonPressed() {
   DCHECK(prompt_for_new_profile_);
   if (delegate_) {
     delegate_->OnContinueSignin();
     delegate_ = nullptr;
   }
   GetWidget()->Close();
+}
+
+void ProfileSigninConfirmationDialogViews::LearnMoreClicked(
+    const ui::Event& event) {
+  NavigateParams params(
+      browser_, GURL("https://support.google.com/chromebook/answer/1331549"),
+      ui::PAGE_TRANSITION_LINK);
+  params.disposition = ui::DispositionFromEventFlags(
+      event.flags(), WindowOpenDisposition::NEW_POPUP);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 }

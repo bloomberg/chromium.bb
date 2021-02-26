@@ -16,6 +16,11 @@ const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
 const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
 
+// A RGBA hex string for the default background shading color, which is black at
+// 40% opacity (hex 66). This should be equivalent to using
+// AshColorProvider::ShieldLayerType kShield40.
+const DEFAULT_BACKGROUND_SHADING_COLOR = '#0006';
+
 /**
  * Determines if a node is in one of the known Google GSuite apps that needs
  * special case treatment for speaking selected text. Not all Google GSuite
@@ -149,11 +154,11 @@ class SelectToSpeak {
     // roles here.
     var root = evt.target;
     // TODO: Use AutomationPredicate.root instead?
-    while (root.parent && root.role != RoleType.WINDOW &&
-           root.role != RoleType.ROOT_WEB_AREA &&
-           root.role != RoleType.DESKTOP && root.role != RoleType.DIALOG &&
-           root.role != RoleType.ALERT_DIALOG &&
-           root.role != RoleType.TOOLBAR) {
+    while (root.parent && root.role !== RoleType.WINDOW &&
+           root.role !== RoleType.ROOT_WEB_AREA &&
+           root.role !== RoleType.DESKTOP && root.role !== RoleType.DIALOG &&
+           root.role !== RoleType.ALERT_DIALOG &&
+           root.role !== RoleType.TOOLBAR) {
       root = root.parent;
     }
 
@@ -168,12 +173,12 @@ class SelectToSpeak {
       // so, look for classname exoshell on the root or root parent to confirm
       // that a node is in ARC++.
       if (!NodeUtils.findAllMatching(root, rect, nodes) && focusedNode &&
-          focusedNode.root.role != RoleType.DESKTOP) {
+          focusedNode.root.role !== RoleType.DESKTOP) {
         NodeUtils.findAllMatching(focusedNode.root, rect, nodes);
       }
-      if (nodes.length == 1 &&
+      if (nodes.length === 1 &&
           AutomationUtil.getAncestors(nodes[0]).find(
-              (n) => n.className == SELECT_TO_SPEAK_TRAY_CLASS_NAME)) {
+              (n) => n.className === SELECT_TO_SPEAK_TRAY_CLASS_NAME)) {
         // Don't read only the Select-to-Speak toggle button in the tray unless
         // more items are being read.
         return;
@@ -202,7 +207,7 @@ class SelectToSpeak {
     const startOffset = focusedNode.root.selectionStartOffset || 0;
     const endObject = focusedNode.root.selectionEndObject;
     const endOffset = focusedNode.root.selectionEndOffset || 0;
-    if (startObject === endObject && startOffset == endOffset) {
+    if (startObject === endObject && startOffset === endOffset) {
       this.onNullSelection_();
       return;
     }
@@ -240,7 +245,7 @@ class SelectToSpeak {
           AutomationUtil.getDirection(startPosition.node, endPosition.node);
       // Highlighting may be forwards or backwards. Make sure we start at the
       // first node.
-      if (dir == constants.Dir.FORWARD) {
+      if (dir === constants.Dir.FORWARD) {
         firstPosition = startPosition;
         lastPosition = endPosition;
       } else {
@@ -266,7 +271,8 @@ class SelectToSpeak {
     let selectedNode = firstPosition.node;
     if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
         !NodeUtils.shouldIgnoreNode(
-            selectedNode, /* include offscreen */ true)) {
+            selectedNode, /* include offscreen */ true) &&
+        !NodeUtils.isNotSelectable(selectedNode)) {
       // Initialize to the first node in the list if it's valid and inside
       // of the offset bounds.
       nodes.push(selectedNode);
@@ -277,7 +283,7 @@ class SelectToSpeak {
       // a first line to highlight text in a second line.
       firstPosition.offset = 0;
     }
-    while (selectedNode && selectedNode != lastPosition.node &&
+    while (selectedNode && selectedNode !== lastPosition.node &&
            AutomationUtil.getDirection(selectedNode, lastPosition.node) ===
                constants.Dir.FORWARD) {
       // TODO: Is there a way to optimize the directionality checking of
@@ -299,7 +305,8 @@ class SelectToSpeak {
         }
       }
       if (!NodeUtils.shouldIgnoreNode(
-              selectedNode, /* include offscreen */ true)) {
+              selectedNode, /* include offscreen */ true) &&
+          !NodeUtils.isNotSelectable(selectedNode)) {
         nodes.push(selectedNode);
       }
     }
@@ -324,7 +331,7 @@ class SelectToSpeak {
       chrome.tabs.query({active: true}, (tabs) => {
         // Closure doesn't realize that we did a !gsuiteAppRootNode earlier
         // so we check again here.
-        if (tabs.length == 0 || !gsuiteAppRootNode) {
+        if (tabs.length === 0 || !gsuiteAppRootNode) {
           return;
         }
         const tab = tabs[0];
@@ -354,17 +361,27 @@ class SelectToSpeak {
     }
     this.scrollToSpokenNode_ = true;
     const listener = (event) => {
-      if (event.eventFrom != 'action') {
+      if (event.eventFrom !== 'action') {
         // User initiated event. Cancel all future scrolling to spoken nodes.
         // If the user wants a certain scroll position we will respect that.
         this.scrollToSpokenNode_ = false;
 
-        // Now remove this event listener, we no longer need it.
+        // Now remove these event listeners, we no longer need them.
         root.removeEventListener(
             EventType.SCROLL_POSITION_CHANGED, listener, false);
+        root.removeEventListener(
+            EventType.SCROLL_HORIZONTAL_POSITION_CHANGED, listener, false);
+        root.removeEventListener(
+            EventType.SCROLL_VERTICAL_POSITION_CHANGED, listener, false);
       }
     };
+    // ARC++ fires the first event, Views/Web fire the horizontal/vertical
+    // scroll position changed events via AXEventGenerator.
     root.addEventListener(EventType.SCROLL_POSITION_CHANGED, listener, false);
+    root.addEventListener(
+        EventType.SCROLL_HORIZONTAL_POSITION_CHANGED, listener, false);
+    root.addEventListener(
+        EventType.SCROLL_VERTICAL_POSITION_CHANGED, listener, false);
   }
 
   /**
@@ -426,13 +443,15 @@ class SelectToSpeak {
    * @private
    */
   setFocusRings_(rects, drawBackground) {
+    let color = '#0000';  // Fully transparent.
+    if (drawBackground && this.prefsManager_.backgroundShadingEnabled()) {
+      color = DEFAULT_BACKGROUND_SHADING_COLOR;
+    }
     chrome.accessibilityPrivate.setFocusRings([{
       rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
       color: this.prefsManager_.focusRingColor(),
-      backgroundColor: drawBackground ?
-          this.prefsManager_.focusRingBackgroundColor() :
-          '#0000'
+      backgroundColor: color,
     }]);
   }
 
@@ -469,7 +488,7 @@ class SelectToSpeak {
     this.inputHandler_ = new InputHandler({
       // canStartSelecting: Whether mouse selection can begin.
       canStartSelecting: () => {
-        return this.state_ != SelectToSpeakState.SELECTING;
+        return this.state_ !== SelectToSpeakState.SELECTING;
       },
       // onSelectingStateChanged: Started or stopped mouse selection.
       onSelectingStateChanged: (isSelecting, x, y) => {
@@ -509,7 +528,7 @@ class SelectToSpeak {
     chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested.addListener(
         this.onStateChangeRequested_.bind(this));
     // Initialize the state to SelectToSpeakState.INACTIVE.
-    chrome.accessibilityPrivate.onSelectToSpeakStateChanged(this.state_);
+    chrome.accessibilityPrivate.setSelectToSpeakState(this.state_);
   }
 
   /**
@@ -519,7 +538,7 @@ class SelectToSpeak {
     // Switch Select-to-Speak states on request.
     // We will need to track the current state and toggle from one state to
     // the next when this function is called, and then call
-    // accessibilityPrivate.onSelectToSpeakStateChanged with the new state.
+    // accessibilityPrivate.setSelectToSpeakState with the new state.
     switch (this.state_) {
       case SelectToSpeakState.INACTIVE:
         // Start selection.
@@ -556,12 +575,12 @@ class SelectToSpeak {
     this.prepareForSpeech_();
     const options = this.prefsManager_.speechOptions();
     options.onEvent = (event) => {
-      if (event.type == 'start') {
+      if (event.type === 'start') {
         this.onStateChanged_(SelectToSpeakState.SPEAKING);
         this.testCurrentNode_();
       } else if (
-          event.type == 'end' || event.type == 'interrupted' ||
-          event.type == 'cancelled') {
+          event.type === 'end' || event.type === 'interrupted' ||
+          event.type === 'cancelled') {
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
       }
     };
@@ -579,33 +598,52 @@ class SelectToSpeak {
    */
   startSpeechQueue_(nodes, opt_startIndex, opt_endIndex) {
     this.prepareForSpeech_();
+
+    if (nodes.length === 0) {
+      return;
+    }
+
+    // Remember the original first and last node in the given list, as
+    // opt_startIndex and opt_endIndex pertain to them. If, after SVG
+    // resorting, the first or last nodes are re-ordered, do not clip them.
+    const originalFirstNode = nodes[0];
+    const originalLastNode = nodes[nodes.length - 1];
+
+    // Sort any SVG child nodes, if present, by visual reading order.
+    NodeUtils.sortSvgNodesByReadingOrder(nodes);
+
+    // Override start or end index if original nodes were sorted.
+    if (originalFirstNode !== nodes[0]) {
+      opt_startIndex = undefined;
+    }
+    if (originalLastNode !== nodes[nodes.length - 1]) {
+      opt_endIndex = undefined;
+    }
+
     for (var i = 0; i < nodes.length; i++) {
       const nodeGroup = ParagraphUtils.buildNodeGroup(
           nodes, i, this.enableLanguageDetectionIntegration_);
 
-      if (i == 0) {
+      if (i === 0) {
         // We need to start in the middle of a node. Remove all text before
         // the start index so that it is not spoken.
         // Backfill with spaces so that index counting functions don't get
         // confused.
-        // Must check opt_startIndex in its own if statement to make the
-        // Closure compiler happy.
-        if (opt_startIndex !== undefined) {
-          if (nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText) {
-            // The first node is inlineText type. Find the start index in
-            // its staticText parent.
-            const startIndexInParent =
-                ParagraphUtils.getStartCharIndexInParent(nodes[0]);
-            opt_startIndex += startIndexInParent;
-            nodeGroup.text = ' '.repeat(opt_startIndex) +
-                nodeGroup.text.substr(opt_startIndex);
-          }
+        if (opt_startIndex !== undefined && nodeGroup.nodes.length > 0 &&
+            nodeGroup.nodes[0].hasInlineText) {
+          // The first node is inlineText type. Find the start index in
+          // its staticText parent.
+          const startIndexInParent =
+              ParagraphUtils.getStartCharIndexInParent(nodes[0]);
+          opt_startIndex += startIndexInParent;
+          nodeGroup.text = ' '.repeat(opt_startIndex) +
+              nodeGroup.text.substr(opt_startIndex);
         }
       }
-      const isFirst = i == 0;
+      const isFirst = i === 0;
       // Advance i to the end of this group, to skip all nodes it contains.
       i = nodeGroup.endIndex;
-      const isLast = (i == nodes.length - 1);
+      const isLast = (i === nodes.length - 1);
       if (isLast && opt_endIndex !== undefined && nodeGroup.nodes.length > 0) {
         // We need to stop in the middle of a node. Remove all text after
         // the end index so it is not spoken. Backfill with spaces so that
@@ -621,7 +659,7 @@ class SelectToSpeak {
                   opt_endIndex);
         }
       }
-      if (nodeGroup.nodes.length == 0 && !isLast) {
+      if (nodeGroup.nodes.length === 0 && !isLast) {
         continue;
       }
 
@@ -634,7 +672,7 @@ class SelectToSpeak {
       }
 
       options.onEvent = (event) => {
-        if (event.type == 'start' && nodeGroup.nodes.length > 0) {
+        if (event.type === 'start' && nodeGroup.nodes.length > 0) {
           this.onStateChanged_(SelectToSpeakState.SPEAKING);
           this.currentBlockParent_ = nodeGroup.blockParent;
           this.currentNodeGroupIndex_ = 0;
@@ -652,13 +690,13 @@ class SelectToSpeak {
           } else {
             this.testCurrentNode_();
           }
-        } else if (event.type == 'interrupted' || event.type == 'cancelled') {
+        } else if (event.type === 'interrupted' || event.type === 'cancelled') {
           this.onStateChanged_(SelectToSpeakState.INACTIVE);
-        } else if (event.type == 'end') {
+        } else if (event.type === 'end') {
           if (isLast) {
             this.onStateChanged_(SelectToSpeakState.INACTIVE);
           }
-        } else if (event.type == 'word') {
+        } else if (event.type === 'word') {
           this.onTtsWordEvent_(
               event, nodeGroup, isLast ? opt_endIndex : undefined);
         }
@@ -793,12 +831,12 @@ class SelectToSpeak {
    * @private
    */
   onStateChanged_(state) {
-    if (this.state_ != state) {
-      if (state == SelectToSpeakState.INACTIVE) {
+    if (this.state_ !== state) {
+      if (state === SelectToSpeakState.INACTIVE) {
         this.clearFocusRingAndNode_();
       }
       // Send state change event to Chrome.
-      chrome.accessibilityPrivate.onSelectToSpeakStateChanged(state);
+      chrome.accessibilityPrivate.setSelectToSpeakState(state);
       this.state_ = state;
     }
   }
@@ -887,7 +925,7 @@ class SelectToSpeak {
       var charIndexInParent = 0;
       // getStartCharIndexInParent is only defined for nodes with role
       // INLINE_TEXT_BOX.
-      if (node.role == RoleType.INLINE_TEXT_BOX) {
+      if (node.role === RoleType.INLINE_TEXT_BOX) {
         charIndexInParent = ParagraphUtils.getStartCharIndexInParent(node);
       }
       node.boundsForRange(
@@ -909,7 +947,7 @@ class SelectToSpeak {
     // TODO: Better test: has no siblings in the group, highlight just
     // the one node. if it has siblings, highlight the parent.
     if (this.currentBlockParent_ != null &&
-        node.role == RoleType.INLINE_TEXT_BOX) {
+        node.role === RoleType.INLINE_TEXT_BOX) {
       this.setFocusRings_(
           [this.currentBlockParent_.location], true /* draw background */);
     } else {
@@ -955,7 +993,7 @@ class SelectToSpeak {
       var currentWindow =
           NodeUtils.getNearestContainingWindow(this.currentNode_.node);
       var inForeground =
-          currentWindow != null && window != null && currentWindow == window;
+          currentWindow != null && window != null && currentWindow === window;
       if (!inForeground && focusedNode && currentWindow) {
         // See if the focused node window matches the currentWindow.
         // This may happen in some cases, for example, ARC++, when the window
@@ -964,7 +1002,7 @@ class SelectToSpeak {
         // appropriate root.
         var focusedWindow =
             NodeUtils.getNearestContainingWindow(focusedNode.root);
-        inForeground = focusedWindow != null && currentWindow == focusedWindow;
+        inForeground = focusedWindow != null && currentWindow === focusedWindow;
       }
       this.updateFromNodeState_(this.currentNode_, inForeground);
     }.bind(this));
@@ -1056,13 +1094,13 @@ class SelectToSpeak {
 }
 
 /** @const {number} */
-SelectToSpeak.SEARCH_KEY_CODE = 91;
+SelectToSpeak.SEARCH_KEY_CODE = KeyCode.SEARCH;
 
 /** @const {number} */
-SelectToSpeak.CONTROL_KEY_CODE = 17;
+SelectToSpeak.CONTROL_KEY_CODE = KeyCode.CONTROL;
 
 /** @const {number} */
-SelectToSpeak.READ_SELECTION_KEY_CODE = 83;
+SelectToSpeak.READ_SELECTION_KEY_CODE = KeyCode.S;
 
 /**
  * How often (in ms) to check that the currently spoken node is

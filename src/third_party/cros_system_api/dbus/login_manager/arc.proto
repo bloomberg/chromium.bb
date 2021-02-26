@@ -44,7 +44,8 @@ message StartArcMiniContainerRequest {
   optional bool arc_custom_tabs_experiment = 5 [default = false];
 
   // Experiment flag for ARC Print Spooler.
-  optional bool arc_print_spooler_experiment = 6 [default = false];
+  optional bool arc_print_spooler_experiment = 6
+      [default = false, deprecated = true];
 
   // Next ID to use: 9
 }
@@ -81,6 +82,10 @@ message UpgradeArcContainerRequest {
   // Whether the account is managed.
   optional bool is_account_managed = 14;
 
+  // Whether adb sideloading is allowed when the account and/or the device is
+  // managed.
+  optional bool is_managed_adb_sideloading_allowed = 16;
+
   // See description in StartArcMiniContainerRequest.
   optional bool disable_ureadahead = 15 [default = false];
 
@@ -116,5 +121,5 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 11;
 
-  // Next ID to use: 16
+  // Next ID to use: 17
 }

@@ -11,6 +11,7 @@
 #include "include/core/SkPictureRecorder.h"
 #include "include/core/SkShader.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/Adapter.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGRenderNode.h"
@@ -95,7 +96,7 @@ protected:
             const auto phase_shift = SkVector::Make(phase_vec.fX / layerShaderMatrix.getScaleX(),
                                                     phase_vec.fY / layerShaderMatrix.getScaleY())
                                      * std::fmod(fPhase * (1/360.0f), 1);
-            const auto phase_shader_matrix = SkMatrix::MakeTrans(phase_shift.x(), phase_shift.y());
+            const auto phase_shader_matrix = SkMatrix::Translate(phase_shift.x(), phase_shift.y());
 
             // The mask is generated using a step gradient shader, spanning 2 x tile width/height,
             // and perpendicular to the phase vector.
@@ -223,7 +224,7 @@ private:
     using INHERITED = DiscardableAdapterBase<MotionTileAdapter, TileRenderNode>;
 };
 
-} // anonymous ns
+}  // namespace
 
 sk_sp<sksg::RenderNode> EffectBuilder::attachMotionTileEffect(const skjson::ArrayValue& jprops,
                                                               sk_sp<sksg::RenderNode> layer) const {

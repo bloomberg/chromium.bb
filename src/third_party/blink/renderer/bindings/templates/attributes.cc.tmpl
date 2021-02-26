@@ -15,10 +15,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
-  // [LenientThis]
-  // Make sure that info.Holder() really points to an instance if [LenientThis].
+  // [LegacyLenientThis]
+  // Make sure that info.Holder() really points to an instance if [LegacyLenientThis].
   if (!{{v8_class}}::HasInstance(info.Holder(), info.GetIsolate()))
-    return; // Return silently because of [LenientThis].
+    return; // Return silently because of [LegacyLenientThis].
   {% elif attribute.has_promise_type %}
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
@@ -69,6 +69,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}{# local_dom_window_only #}
   {% endif %}{# not attribute.is_static #}
 
+  {% if interface_name == "Window" and attribute.has_cross_origin_getter %}
+  impl->ReportCoopAccess("{{attribute.name}}");
+  {% endif %}
+
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   {% if not attribute.private_property_is_shared_between_getter_and_setter %}
@@ -114,7 +118,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   }
   {% endif %}
 
-  {% if attribute.is_call_with_execution_context %}
+  {% if attribute.is_call_with_execution_context or
+        attribute.high_entropy == 'Direct' %}
   {% if attribute.is_static %}
   ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
   {% else %}
@@ -122,7 +127,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
   {% endif %}
 
-  {% if attribute.is_call_with_script_state %}
+  {% if attribute.is_call_with_script_state or
+        attribute.is_getter_call_with_script_state %}
   {% if attribute.is_static %}
   ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
@@ -136,6 +142,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cpp_value_original %}
   {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
+  {% endif %}
+
+  {% if attribute.high_entropy == 'Direct' %}
+  Dactyloscoper::RecordDirectSurface(execution_context, WebFeature::k{{attribute.measure_as('AttributeGetter')}}, {{attribute.cpp_value}});
   {% endif %}
 
   {% if attribute.use_output_parameter_for_result %}
@@ -335,10 +345,10 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
-  // [LenientThis]
-  // Make sure that info.Holder() really points to an instance if [LenientThis].
+  // [LegacyLenientThis]
+  // Make sure that info.Holder() really points to an instance if [LegacyLenientThis].
   if (!{{v8_class}}::HasInstance(holder, isolate))
-    return; // Return silently because of [LenientThis].
+    return; // Return silently because of [LegacyLenientThis].
   {% endif %}
 
   {% if not attribute.is_static and not attribute.is_replaceable and not attribute.is_put_forwards %}
@@ -455,7 +465,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   {% endif %}
 
   {% if attribute.is_call_with_script_state or
-  	attribute.is_setter_call_with_script_state %}
+        attribute.is_setter_call_with_script_state %}
   {% if attribute.is_static %}
   ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
@@ -492,7 +502,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
     const v8::FunctionCallbackInfo<v8::Value>& info
     {%- endif %}) {
   {% if attribute.is_lenient_setter %}
-  // Setter for {{attribute.name}} is no-op because [LenientSetter] is specified.
+  // Setter for {{attribute.name}} is no-op because [LegacyLenientSetter] is specified.
   {% else %}
   {% if attribute.runtime_call_stats.extended_attribute_defined %}
   {{ runtime_timer_scope(attribute.runtime_call_stats.setter_counter) | trim | indent(2) }}
@@ -573,7 +583,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
   {% set setter_callback_for_main_world =
       '%sForMainWorld' % setter_callback if attribute.has_setter else 'nullptr' %}
 {% endif %}
-{% set config_pre = {
+{% set world_dependent_config = {
     'main' : [
         '"%s"' % attribute.name,
         getter_callback_for_main_world,
@@ -585,26 +595,37 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
         setter_callback,
     ],
 } %}
-{% set accessor_only_fields = [] if config_type == 'attribute' else [cached_property_key] %}
-{% set config_post = [
+{% if config_type == 'attribute' %}
+{% set world_common_config = [
     property_attribute,
     property_location(attribute),
     holder_check,
     getter_side_effect_type,
     getter_behavior,
 ] %}
+{% else %}{# config_type == 'accessor' #}
+{% set world_common_config = [
+    cached_property_key,
+    property_attribute,
+    property_location(attribute),
+    holder_check,
+    'V8DOMConfiguration::kCheckAccess',
+    'V8DOMConfiguration::kCheckAccess',
+    getter_side_effect_type,
+] %}
+{% endif %}
 
 {% if attribute.is_per_world_bindings %}
-  {% set main_config_list = config_pre["main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kMainWorld'] %}
-  {% set non_main_config_list = config_pre["non_main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kNonMainWorlds'] %}
+  {% set main_config_list = world_dependent_config["main"] +
+      world_common_config + ['V8DOMConfiguration::kMainWorld'] %}
+  {% set non_main_config_list = world_dependent_config["non_main"] +
+      world_common_config + ['V8DOMConfiguration::kNonMainWorlds'] %}
   {# Emit for main world then non-main.#}
 { {{main_config_list | join(', ')}} },
 { {{non_main_config_list | join(', ')}} }
 {%- else -%}
-  {% set all_worlds_config_list = config_pre["non_main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kAllWorlds'] %}
+  {% set all_worlds_config_list = world_dependent_config["non_main"] +
+      world_common_config + ['V8DOMConfiguration::kAllWorlds'] %}
   {# Emit only for all worlds #}
 { {{all_worlds_config_list | join(', ')}} }
 {%- endif -%}

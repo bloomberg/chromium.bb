@@ -28,7 +28,8 @@ namespace dawn_native {
                                         mDevice->GetPendingCommandSerial());
     }
 
-    ResultOrError<UploadHandle> DynamicUploader::Allocate(uint64_t allocationSize, Serial serial) {
+    ResultOrError<UploadHandle> DynamicUploader::AllocateInternal(uint64_t allocationSize,
+                                                                  ExecutionSerial serial) {
         // Disable further sub-allocation should the request be too large.
         if (allocationSize > kRingBufferSize) {
             std::unique_ptr<StagingBufferBase> stagingBuffer;
@@ -94,7 +95,7 @@ namespace dawn_native {
         return uploadHandle;
     }
 
-    void DynamicUploader::Deallocate(Serial lastCompletedSerial) {
+    void DynamicUploader::Deallocate(ExecutionSerial lastCompletedSerial) {
         // Reclaim memory within the ring buffers by ticking (or removing requests no longer
         // in-flight).
         for (size_t i = 0; i < mRingBuffers.size(); ++i) {
@@ -107,5 +108,22 @@ namespace dawn_native {
             }
         }
         mReleasedStagingBuffers.ClearUpTo(lastCompletedSerial);
+    }
+
+    // TODO(dawn:512): Optimize this function so that it doesn't allocate additional memory
+    // when it's not necessary.
+    ResultOrError<UploadHandle> DynamicUploader::Allocate(uint64_t allocationSize,
+                                                          ExecutionSerial serial,
+                                                          uint64_t offsetAlignment) {
+        ASSERT(offsetAlignment > 0);
+        UploadHandle uploadHandle;
+        DAWN_TRY_ASSIGN(uploadHandle,
+                        AllocateInternal(allocationSize + offsetAlignment - 1, serial));
+        uint64_t additionalOffset =
+            Align(uploadHandle.startOffset, offsetAlignment) - uploadHandle.startOffset;
+        uploadHandle.mappedBuffer =
+            static_cast<uint8_t*>(uploadHandle.mappedBuffer) + additionalOffset;
+        uploadHandle.startOffset += additionalOffset;
+        return uploadHandle;
     }
 }  // namespace dawn_native

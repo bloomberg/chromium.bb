@@ -243,19 +243,6 @@ Status ExecuteSendKeysToActiveElement(Session* session,
                                       std::unique_ptr<base::Value>* value,
                                       Timeout* timeout);
 
-// Gets the status of the application cache (window.applicationCache.status).
-Status ExecuteGetAppCacheStatus(Session* session,
-                                WebView* web_view,
-                                const base::DictionaryValue& params,
-                                std::unique_ptr<base::Value>* value,
-                                Timeout* timeout);
-
-Status ExecuteIsBrowserOnline(Session* session,
-                              WebView* web_view,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value,
-                              Timeout* timeout);
-
 Status ExecuteGetStorageItem(const char* storage,
                              Session* session,
                              WebView* web_view,
@@ -303,6 +290,18 @@ Status ExecuteScreenshot(Session* session,
                          const base::DictionaryValue& params,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout);
+
+Status ExecuteFullPageScreenshot(Session* session,
+                                 WebView* web_view,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value,
+                                 Timeout* timeout);
+
+Status ExecutePrint(Session* session,
+                    WebView* web_view,
+                    const base::DictionaryValue& params,
+                    std::unique_ptr<base::Value>* value,
+                    Timeout* timeout);
 
 // Retrieve all cookies visible to the current page.
 Status ExecuteGetCookies(Session* session,

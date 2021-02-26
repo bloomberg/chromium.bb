@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 
 #include "build/build_config.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 #if defined(OS_WIN)
 #include <Windows.h>  // For GetComputerNameW()
@@ -16,18 +17,18 @@
 #include <wincred.h>
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_APPLE)
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <stddef.h>
 #include <sys/sysctl.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #endif
 
@@ -41,9 +42,13 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#if defined(OS_WIN)
+#include "base/win/wmi.h"
+#endif
 #include "components/version_info/version_info.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -54,7 +59,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -75,10 +80,17 @@ std::string GetMachineName() {
   if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.
     return hostname;
   return std::string();
-#elif defined(OS_MACOSX)
-// TODO(crbug.com/1024115): Find a different replacement for -[NSHost
-// currentHost] on iOS.
-#if !defined(OS_IOS)
+#elif defined(OS_APPLE)
+
+#if defined(OS_IOS)
+  // The user-entered device name (e.g. "Foo's iPhone") should not be used, as
+  // there are privacy considerations (crbug.com/1123949). The Apple internal
+  // device name (e.g. "iPad6,11") is used instead.
+  std::string ios_model_name = base::SysInfo::HardwareModelName();
+  if (!ios_model_name.empty()) {
+    return ios_model_name;
+  }
+#else
   // Do not use NSHost currentHost, as it's very slow. http://crbug.com/138570
   SCDynamicStoreContext context = {0, NULL, NULL, NULL};
   base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
@@ -93,7 +105,7 @@ std::string GetMachineName() {
       SCDynamicStoreCopyComputerName(store.get(), NULL));
   if (computer_name.get())
     return base::SysCFStringRefToUTF8(computer_name.get());
-#endif  // !OS_IOS
+#endif  // defined(OS_IOS)
 
   // If all else fails, return to using a slightly nicer version of the
   // hardware model.
@@ -124,7 +136,7 @@ std::string GetMachineName() {
 }
 
 std::string GetOSVersion() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE)
   return base::SysInfo::OperatingSystemVersion();
 #elif defined(OS_WIN)
   base::win::OSInfo::VersionNumber version_number =
@@ -147,7 +159,7 @@ std::string GetOSArchitecture() {
 }
 
 std::string GetOSUsername() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_APPLE)
   struct passwd* creds = getpwuid(getuid());
   if (!creds || !creds->pw_name)
     return std::string();
@@ -192,6 +204,40 @@ em::Channel ConvertToProtoChannel(version_info::Channel channel) {
     case version_info::Channel::STABLE:
       return em::CHANNEL_STABLE;
   }
+}
+
+std::string GetDeviceName() {
+#if defined(OS_CHROMEOS)
+  return chromeos::system::StatisticsProvider::GetInstance()
+      ->GetEnterpriseMachineID();
+#else
+  return GetMachineName();
+#endif
+}
+
+std::unique_ptr<em::BrowserDeviceIdentifier> GetBrowserDeviceIdentifier() {
+  std::unique_ptr<em::BrowserDeviceIdentifier> device_identifier =
+      std::make_unique<em::BrowserDeviceIdentifier>();
+  device_identifier->set_computer_name(GetMachineName());
+#if defined(OS_WIN)
+  device_identifier->set_serial_number(base::UTF16ToUTF8(
+      base::win::WmiComputerSystemInfo::Get().serial_number()));
+#else
+  device_identifier->set_serial_number("");
+#endif
+  return device_identifier;
+}
+
+bool IsMachineLevelUserCloudPolicyType(const std::string& type) {
+  return type == GetMachineLevelUserCloudPolicyTypeForCurrentOS();
+}
+
+std::string GetMachineLevelUserCloudPolicyTypeForCurrentOS() {
+#if defined(OS_IOS)
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType;
+#else
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyType;
+#endif
 }
 
 }  // namespace policy

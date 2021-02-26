@@ -18,7 +18,7 @@ namespace gpu {
 const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
     {
         1,  // id
-        "GpuDataManagerImplPrivateTest.GpuSideBlacklisting.0",
+        "GpuDataManagerImplPrivateTest.GpuSideBlocklisting.0",
         base::size(kFeatureListForGpuManagerTestingEntry1),  // features size
         kFeatureListForGpuManagerTestingEntry1,              // features
         0,        // DisabledExtensions size
@@ -33,8 +33,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -52,7 +52,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
     },
     {
         2,  // id
-        "GpuDataManagerImplPrivateTest.GpuSideBlacklisting.1",
+        "GpuDataManagerImplPrivateTest.GpuSideBlocklisting.1",
         base::size(kFeatureListForGpuManagerTestingEntry2),  // features size
         kFeatureListForGpuManagerTestingEntry2,              // features
         0,        // DisabledExtensions size
@@ -67,8 +67,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -86,7 +86,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
     },
     {
         3,  // id
-        "GpuDataManagerImplPrivateTest.GpuSideBlacklistingWebGL.0",
+        "GpuDataManagerImplPrivateTest.GpuSideBlocklistingWebGL.0",
         base::size(kFeatureListForGpuManagerTestingEntry3),  // features size
         kFeatureListForGpuManagerTestingEntry3,              // features
         0,        // DisabledExtensions size
@@ -101,8 +101,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -120,7 +120,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
     },
     {
         4,  // id
-        "GpuDataManagerImplPrivateTest.GpuSideBlacklistingWebGL.1",
+        "GpuDataManagerImplPrivateTest.GpuSideBlocklistingWebGL.1",
         base::size(kFeatureListForGpuManagerTestingEntry4),  // features size
         kFeatureListForGpuManagerTestingEntry4,              // features
         0,        // DisabledExtensions size
@@ -135,8 +135,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -169,8 +169,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -188,7 +188,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
     },
     {
         6,  // id
-        "GpuDataManagerImplPrivateTest.BlacklistAllFeatures",
+        "GpuDataManagerImplPrivateTest.BlocklistAllFeatures",
         base::size(kFeatureListForGpuManagerTestingEntry6),  // features size
         kFeatureListForGpuManagerTestingEntry6,              // features
         0,        // DisabledExtensions size
@@ -203,8 +203,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -237,8 +237,8 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             nullptr,                                  // driver info

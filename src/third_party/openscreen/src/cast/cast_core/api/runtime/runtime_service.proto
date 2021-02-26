@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package cast.runtime;
+
+import "cast/cast_core/api/common/service_info.proto";
+
+option optimize_for = LITE_RUNTIME;
+
+// Runtime service is hosted in Runtime.
+//
+// This service is called by CastCore after Runtime starts up.
+service RuntimeService {
+  // Launch a Cast application. The application must connect to the
+  // CoreApplicationService based on cast_protocol and
+  // core_application_endpoint, and provide its endpoint.
+  rpc LaunchApplication(LaunchApplicationRequest)
+      returns (LaunchApplicationResponse);
+
+  // Stops a Cast application identified by the app_id, cast_session_id.
+  // If both app_id and cast_session_id are omitted, the current, "foreground"
+  // application is stopped.
+  rpc StopApplication(StopApplicationRequest) returns (StopApplicationResponse);
+}
+
+message LaunchApplicationRequest {
+  // CoreApplication service info.
+  cast.common.ServiceInfo core_application_service_info = 1;
+  // Cast session id used to setup a connection and pull the config from core
+  // application service.
+  string cast_session_id = 2;
+}
+
+// Returned by the runtime in response to a launch application request.
+message LaunchApplicationResponse {}
+
+message StopApplicationRequest {
+  // Application id.
+  string app_id = 1;
+  // Application session id.
+  string cast_session_id = 2;
+}
+
+message StopApplicationResponse {
+  // If stop application was successful, the application ID that was stopped.
+  string app_id = 1;
+  // If stop application was successful, the Cast session ID that was stopped.
+  string cast_session_id = 2;
+}

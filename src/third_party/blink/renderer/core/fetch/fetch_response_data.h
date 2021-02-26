@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "net/http/http_response_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
@@ -67,6 +68,7 @@ class CORE_EXPORT FetchResponseData final
   }
   const KURL* Url() const;
   uint16_t Status() const { return status_; }
+  uint16_t InternalStatus() const;
   AtomicString StatusMessage() const { return status_message_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
   FetchHeaderList* InternalHeaderList() const;
@@ -81,6 +83,7 @@ class CORE_EXPORT FetchResponseData final
   const HTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
   }
+  bool HasRangeRequested() const { return has_range_requested_; }
 
   void SetResponseSource(network::mojom::FetchResponseSource response_source) {
     response_source_ = response_source;
@@ -94,6 +97,9 @@ class CORE_EXPORT FetchResponseData final
     status_message_ = status_message;
   }
   void SetMimeType(const String& type) { mime_type_ = type; }
+  void SetRequestMethod(const AtomicString& method) {
+    request_method_ = method;
+  }
   void SetResponseTime(base::Time response_time) {
     response_time_ = response_time;
   }
@@ -103,9 +109,21 @@ class CORE_EXPORT FetchResponseData final
   void SetCorsExposedHeaderNames(const HTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
-  bool LoadedWithCredentials() const { return loaded_with_credentials_; }
+  void SetConnectionInfo(
+      net::HttpResponseInfo::ConnectionInfo connection_info) {
+    connection_info_ = connection_info;
+  }
+  void SetAlpnNegotiatedProtocol(AtomicString alpn_negotiated_protocol) {
+    alpn_negotiated_protocol_ = alpn_negotiated_protocol;
+  }
   void SetLoadedWithCredentials(bool loaded_with_credentials) {
     loaded_with_credentials_ = loaded_with_credentials;
+  }
+  void SetWasFetchedViaSpdy(bool was_fetched_via_spdy) {
+    was_fetched_via_spdy_ = was_fetched_via_spdy;
+  }
+  void SetHasRangeRequested(bool has_range_requested) {
+    has_range_requested_ = has_range_requested;
   }
 
   // If the type is Default, replaces |buffer_|.
@@ -121,11 +139,12 @@ class CORE_EXPORT FetchResponseData final
   // Initialize non-body data from the given |response|.
   void InitFromResourceResponse(
       const Vector<KURL>& request_url_list,
+      const AtomicString& request_method,
       network::mojom::CredentialsMode request_credentials,
       FetchRequestData::Tainting tainting,
       const ResourceResponse& response);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   network::mojom::FetchResponseType type_;
@@ -138,10 +157,15 @@ class CORE_EXPORT FetchResponseData final
   Member<FetchResponseData> internal_response_;
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
+  AtomicString request_method_;
   base::Time response_time_;
   String cache_storage_cache_name_;
   HTTPHeaderSet cors_exposed_header_names_;
+  net::HttpResponseInfo::ConnectionInfo connection_info_;
+  AtomicString alpn_negotiated_protocol_;
   bool loaded_with_credentials_;
+  bool was_fetched_via_spdy_;
+  bool has_range_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

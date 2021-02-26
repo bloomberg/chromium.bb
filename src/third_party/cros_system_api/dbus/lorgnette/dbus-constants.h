@@ -13,12 +13,14 @@ const char kManagerServiceError[] = "org.chromium.lorgnette.Error";
 
 // Methods.
 const char kListScannersMethod[] = "ListScanners";
+const char kGetScannerCapabilitiesMethod[] = "GetScannerCapabilities";
 const char kScanImageMethod[] = "ScanImage";
+const char kStartScanMethod[] = "StartScan";
+const char kCancelScanMethod[] = "CancelScan";
+const char kGetNextImageMethod[] = "GetNextImage";
 
-// Attributes of scanners returned from "ListScanners".
-const char kScannerPropertyManufacturer[] = "Manufacturer";
-const char kScannerPropertyModel[] = "Model";
-const char kScannerPropertyType[] = "Type";
+// Signals.
+const char kScanStatusChangedSignal[] = "ScanStatusChanged";
 
 // Parameters supplied to a "ScanImage" request.
 const char kScanPropertyMode[] = "Mode";
@@ -26,6 +28,11 @@ const char kScanPropertyModeColor[] = "Color";
 const char kScanPropertyModeGray[] = "Gray";
 const char kScanPropertyModeLineart[] = "Lineart";
 const char kScanPropertyResolution[] = "Resolution";
+
+// The name used as a source name for the only DocumentSource in
+// ScannerCapabilities' source field if the SANE backend does not export a
+// source option.
+const char kUnspecifiedDefaultSourceName[] = "DefaultSource";
 }  // namespace lorgnette
 
 #endif  // SYSTEM_API_DBUS_LORGNETTE_DBUS_CONSTANTS_H_

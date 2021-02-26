@@ -15,7 +15,7 @@
 import {Message, Method, rpc, RPCImplCallback} from 'protobufjs';
 
 import {
-  uint8ArrayToBase64,
+  base64Encode,
 } from '../base/string_utils';
 import {Actions} from '../common/actions';
 import {
@@ -39,7 +39,9 @@ import {MeminfoCounters, VmstatCounters} from '../common/protos';
 import {
   AdbRecordingTarget,
   isAdbTarget,
+  isAndroidP,
   isChromeTarget,
+  isCrOSTarget,
   MAX_TIME,
   RecordConfig,
   RecordingTarget
@@ -52,7 +54,9 @@ import {ChromeExtensionConsumerPort} from './chrome_proxy_record_controller';
 import {
   ConsumerPortResponse,
   GetTraceStatsResponse,
+  isDisableTracingResponse,
   isEnableTracingResponse,
+  isFreeBuffersResponse,
   isGetTraceStatsResponse,
   isReadBuffersResponse,
 } from './consumer_port_types';
@@ -62,11 +66,13 @@ import {Consumer, RpcConsumerPort} from './record_controller_interfaces';
 
 type RPCImplMethod = (Method|rpc.ServiceMethod<Message<{}>, Message<{}>>);
 
-export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
-  return TraceConfig.encode(genConfig(uiCfg)).finish();
+export function genConfigProto(
+    uiCfg: RecordConfig, target: RecordingTarget): Uint8Array {
+  return TraceConfig.encode(genConfig(uiCfg, target)).finish();
 }
 
-export function genConfig(uiCfg: RecordConfig): TraceConfig {
+export function genConfig(
+    uiCfg: RecordConfig, target: RecordingTarget): TraceConfig {
   const protoCfg = new TraceConfig();
   protoCfg.durationMs = uiCfg.durationMs;
 
@@ -114,17 +120,15 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
   let procThreadAssociationFtrace = false;
   let trackInitialOomScore = false;
 
-  if (uiCfg.cpuSched || uiCfg.cpuLatency) {
+  if (uiCfg.cpuSched) {
     procThreadAssociationPolling = true;
     procThreadAssociationFtrace = true;
     ftraceEvents.add('sched/sched_switch');
     ftraceEvents.add('power/suspend_resume');
-    if (uiCfg.cpuLatency) {
-      ftraceEvents.add('sched/sched_wakeup');
-      ftraceEvents.add('sched/sched_wakeup_new');
-      ftraceEvents.add('sched/sched_waking');
-      ftraceEvents.add('power/suspend_resume');
-    }
+    ftraceEvents.add('sched/sched_wakeup');
+    ftraceEvents.add('sched/sched_wakeup_new');
+    ftraceEvents.add('sched/sched_waking');
+    ftraceEvents.add('power/suspend_resume');
   }
 
   if (uiCfg.cpuFreq) {
@@ -135,6 +139,17 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
 
   if (uiCfg.gpuFreq) {
     ftraceEvents.add('power/gpu_frequency');
+  }
+
+  if (uiCfg.gpuMemTotal) {
+    ftraceEvents.add('gpu_mem/gpu_mem_total');
+
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      const ds = new TraceConfig.DataSource();
+      ds.config = new DataSourceConfig();
+      ds.config.name = 'android.gpu.memory';
+      protoCfg.dataSources.push(ds);
+    }
   }
 
   if (uiCfg.cpuSyscall) {
@@ -161,7 +176,9 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
       AndroidPowerConfig.BatteryCounters.BATTERY_COUNTER_CURRENT,
     ];
     ds.config.androidPowerConfig.collectPowerRails = true;
-    protoCfg.dataSources.push(ds);
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
   }
 
   if (uiCfg.boardSensors) {
@@ -252,6 +269,8 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
         cdc.dumpPhaseMs = uiCfg.hpContinuousDumpsPhase;
       }
     }
+    // TODO(fmayer): Add a toggle for this to the UI?
+    cfg.blockClient = true;
     heapprofd = cfg;
   }
 
@@ -289,7 +308,9 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
     if (procThreadAssociationPolling || trackInitialOomScore) {
       ds.config.processStatsConfig.scanAllProcessesOnStart = true;
     }
-    protoCfg.dataSources.push(ds);
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
   }
 
   if (uiCfg.androidLogs) {
@@ -302,7 +323,9 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
       return AndroidLogId[name as any as number] as any as number;
     });
 
-    protoCfg.dataSources.push(ds);
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
   }
 
   if (uiCfg.chromeLogs) {
@@ -365,10 +388,17 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
     } else {
       chromeRecordMode = 'record-continuously';
     }
-    const traceConfigJson = JSON.stringify({
+    const configStruct = {
       record_mode: chromeRecordMode,
       included_categories: [...chromeCategories.values()],
-    });
+      memory_dump_config: {},
+    };
+    if (chromeCategories.has('disabled-by-default-memory-infra')) {
+      configStruct.memory_dump_config = {
+        triggers: [{mode: 'detailed', periodic_interval_ms: 10000}]
+      };
+    }
+    const traceConfigJson = JSON.stringify(configStruct);
 
     const traceDs = new TraceConfig.DataSource();
     traceDs.config = new DataSourceConfig();
@@ -392,7 +422,8 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
 
   // Keep these last. The stages above can enrich them.
 
-  if (sysStatsCfg !== undefined) {
+  if (sysStatsCfg !== undefined &&
+      (!isChromeTarget(target) || isCrOSTarget(target))) {
     const ds = new TraceConfig.DataSource();
     ds.config = new DataSourceConfig();
     ds.config.name = 'linux.sys_stats';
@@ -400,7 +431,8 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
     protoCfg.dataSources.push(ds);
   }
 
-  if (heapprofd !== undefined) {
+  if (heapprofd !== undefined &&
+      (!isChromeTarget(target) || isCrOSTarget(target))) {
     const ds = new TraceConfig.DataSource();
     ds.config = new DataSourceConfig();
     ds.config.targetBuffer = 0;
@@ -409,7 +441,8 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
     protoCfg.dataSources.push(ds);
   }
 
-  if (javaHprof !== undefined) {
+  if (javaHprof !== undefined &&
+      (!isChromeTarget(target) || isCrOSTarget(target))) {
     const ds = new TraceConfig.DataSource();
     ds.config = new DataSourceConfig();
     ds.config.targetBuffer = 0;
@@ -441,10 +474,33 @@ export function genConfig(uiCfg: RecordConfig): TraceConfig {
       ftraceEvents.add('ftrace/print');
     }
 
-    ds.config.ftraceConfig.ftraceEvents = Array.from(ftraceEvents);
+    let ftraceEventsArray: string[] = [];
+    if (isAndroidP(target)) {
+      for (const ftraceEvent of ftraceEvents) {
+        // On P, we don't support groups so strip all group names from ftrace
+        // events.
+        const groupAndName = ftraceEvent.split('/');
+        if (groupAndName.length !== 2) {
+          ftraceEventsArray.push(ftraceEvent);
+          continue;
+        }
+        // Filter out any wildcard event groups which was not supported
+        // before Q.
+        if (groupAndName[1] === '*') {
+          continue;
+        }
+        ftraceEventsArray.push(groupAndName[1]);
+      }
+    } else {
+      ftraceEventsArray = Array.from(ftraceEvents);
+    }
+
+    ds.config.ftraceConfig.ftraceEvents = ftraceEventsArray;
     ds.config.ftraceConfig.atraceCategories = Array.from(atraceCats);
     ds.config.ftraceConfig.atraceApps = Array.from(atraceApps);
-    protoCfg.dataSources.push(ds);
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
   }
 
   return protoCfg;
@@ -494,10 +550,13 @@ export function toPbtxt(configBuffer: Uint8Array): string {
           yield entry.toString();
         } else if (typeof entry === 'boolean') {
           yield entry.toString();
-        } else {
+        } else if (typeof entry === 'object' && entry !== null) {
           yield '{\n';
           yield* message(entry, indent + 4);
           yield ' '.repeat(indent) + '}';
+        } else {
+          throw new Error(`Record proto entry "${entry}" with unexpected type ${
+              typeof entry}`);
         }
         yield '\n';
       }
@@ -530,25 +589,40 @@ export class RecordController extends Controller<'main'> implements Consumer {
   }
 
   run() {
+    // TODO(eseckler): Use ConsumerPort's QueryServiceState instead
+    // of posting a custom extension message to retrieve the category list.
+    if (this.app.state.updateChromeCategories === true) {
+      if (this.app.state.extensionInstalled) {
+        this.extensionPort.postMessage({method: 'GetCategories'});
+      }
+      globals.dispatch(Actions.setUpdateChromeCategories({update: false}));
+    }
     if (this.app.state.recordConfig === this.config &&
         this.app.state.recordingInProgress === this.recordingInProgress) {
       return;
     }
     this.config = this.app.state.recordConfig;
 
-    const configProto = genConfigProto(this.config);
+    const configProto =
+        genConfigProto(this.config, this.app.state.recordingTarget);
     const configProtoText = toPbtxt(configProto);
+    const configProtoBase64 = base64Encode(configProto);
     const commandline = `
-      echo '${uint8ArrayToBase64(configProto)}' |
+      echo '${configProtoBase64}' |
       base64 --decode |
       adb shell "perfetto -c - -o /data/misc/perfetto-traces/trace" &&
       adb pull /data/misc/perfetto-traces/trace /tmp/trace
     `;
-    const traceConfig = genConfig(this.config);
+    const traceConfig = genConfig(this.config, this.app.state.recordingTarget);
     // TODO(hjd): This should not be TrackData after we unify the stores.
     this.app.publish('TrackData', {
       id: 'config',
-      data: {commandline, pbtxt: configProtoText, traceConfig}
+      data: {
+        commandline,
+        pbBase64: configProtoBase64,
+        pbtxt: configProtoText,
+        traceConfig
+      }
     });
 
     // If the recordingInProgress boolean state is different, it means that we
@@ -600,6 +674,10 @@ export class RecordController extends Controller<'main'> implements Consumer {
       if (percentage) {
         globals.publish('BufferUsage', {percentage});
       }
+    } else if (isFreeBuffersResponse(data)) {
+      // No action required.
+    } else if (isDisableTracingResponse(data)) {
+      // No action required.
     } else {
       console.error('Unrecognized consumer port response:', data);
     }
@@ -615,7 +693,8 @@ export class RecordController extends Controller<'main'> implements Consumer {
       return;
     }
     const trace = this.generateTrace();
-    globals.dispatch(Actions.openTraceFromBuffer({buffer: trace.buffer}));
+    globals.dispatch(Actions.openTraceFromBuffer(
+        {title: 'Recorded trace', buffer: trace.buffer}));
     this.traceBuffer = [];
   }
 

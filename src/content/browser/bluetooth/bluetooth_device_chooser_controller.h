@@ -20,6 +20,7 @@ namespace device {
 class BluetoothAdapter;
 class BluetoothDevice;
 class BluetoothDiscoverySession;
+class BluetoothDiscoveryFilter;
 }
 
 namespace content {
@@ -94,6 +95,10 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
       TestScanDurationSetting setting =
           TestScanDurationSetting::IMMEDIATE_TIMEOUT);
 
+  static std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
+      const base::Optional<
+          std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters);
+
  private:
   // Populates the chooser with the GATT connected devices.
   void PopulateConnectedDevices();
@@ -114,7 +119,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // Runs |error_callback_| if the chooser was cancelled or if we weren't able
   // to show the chooser. Otherwise runs |success_callback_| with
   // |device_address|.
-  void OnBluetoothChooserEvent(BluetoothChooser::Event event,
+  void OnBluetoothChooserEvent(BluetoothChooserEvent event,
                                const std::string& device_address);
 
   // Helper function to asynchronously run success_callback_.

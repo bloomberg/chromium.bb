@@ -10,12 +10,13 @@
 #include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,17 +37,6 @@ constexpr char kRoutineEnumFieldName[] = "routineEnum";
 // String constant identifying the parameter dictionary field in the command
 // payload.
 constexpr char kParamsFieldName[] = "params";
-
-// String constants identifying the parameter fields for the battery capacity
-// routine.
-constexpr char kLowMahFieldName[] = "lowMah";
-constexpr char kHighMahFieldName[] = "highMah";
-
-// String constants identifying the parameter fields for the battery health
-// routine.
-constexpr char kMaximumCycleCountFieldName[] = "maximumCycleCount";
-constexpr char kPercentBatteryWearAllowedFieldName[] =
-    "percentBatteryWearAllowed";
 
 // String constants identifying the parameter fields for the routine.
 constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
@@ -75,6 +65,11 @@ constexpr char kMaxNumFieldName[] = "maxNum";
 // routine.
 constexpr char kMaximumDischargePercentAllowedFieldName[] =
     "maximumDischargePercentAllowed";
+
+// String constants identifying the parameter field for the battery charge
+// routine.
+constexpr char kMinimumChargePercentRequiredFieldName[] =
+    "minimumChargePercentRequired";
 
 // Dummy values to populate cros_healthd's RunRoutineResponse.
 constexpr uint32_t kId = 11;
@@ -179,9 +174,8 @@ DeviceCommandRunRoutineJobTest::DeviceCommandRunRoutineJobTest() {
 DeviceCommandRunRoutineJobTest::~DeviceCommandRunRoutineJobTest() {
   chromeos::CrosHealthdClient::Shutdown();
 
-  // Wait for DeviceCommandRunRoutineJobTest to observe the
-  // destruction of the client.
-  base::RunLoop().RunUntilIdle();
+  // Wait for ServiceConnection to observe the destruction of the client.
+  chromeos::cros_healthd::ServiceConnection::GetInstance()->FlushForTesting();
 }
 
 void DeviceCommandRunRoutineJobTest::InitializeJob(
@@ -274,14 +268,14 @@ TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingParamDict) {
   EXPECT_EQ(RemoteCommandJob::INVALID, job->status());
 }
 
+// Note that the battery capacity routine has no parameters, so it's enough to
+// ensure the routine can be run.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
-  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       std::move(params_dict),
@@ -293,82 +287,14 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
       })));
 }
 
-// Test that leaving out the lowMah parameter causes the battery capacity
-// routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that leaving out the highMah parameter causes the battery capacity
-// routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryCapacityRoutineMissingHighMah) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that a negative lowMah parameter causes the battery capacity routine to
-// fail.
-TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, kNegativeInt);
-  params_dict.SetIntKey(kHighMahFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that a negative highMah parameter causes the battery capacity routine to
-// fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryCapacityRoutineInvalidHighMah) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kLowMahFieldName, kPositiveInt);
-  params_dict.SetIntKey(kHighMahFieldName, kNegativeInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
+// Note that the battery health routine has no parameters, so it's enough to
+// ensure the routine can be run.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetRunRoutineResponseForTesting(run_routine_response);
   base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
   EXPECT_TRUE(RunJob(
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       std::move(params_dict),
@@ -377,76 +303,6 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
         EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
-      })));
-}
-
-// Test that leaving out the maximumCycleCount parameter causes the battery
-// health routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryHealthRoutineMissingMaximumCycleCount) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that leaving out the percentBatteryWearAllowed parameter causes the
-// battery health routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryHealthRoutineMissingPercentBatteryWearAllowed) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that a negative maximumCycleCount parameter causes the battery health
-// routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryHealthRoutineInvalidMaximumCycleCount) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName, kNegativeInt);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kPositiveInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
-      })));
-}
-
-// Test that a negative percentBatteryWearAllowed parameter causes the battery
-// health routine to fail.
-TEST_F(DeviceCommandRunRoutineJobTest,
-       RunBatteryHealthRoutineInvalidPercentBatteryWearAllowed) {
-  base::Value params_dict(base::Value::Type::DICTIONARY);
-  params_dict.SetIntKey(kMaximumCycleCountFieldName, kPositiveInt);
-  params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName, kNegativeInt);
-  EXPECT_TRUE(RunJob(
-      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
-      std::move(params_dict),
-      base::BindLambdaForTesting([](RemoteCommandJob* job) {
-        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
-        std::unique_ptr<std::string> payload = job->GetResultPayload();
-        EXPECT_TRUE(payload);
-        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
       })));
 }
 
@@ -1176,6 +1032,288 @@ TEST_F(DeviceCommandRunRoutineJobTest,
         std::unique_ptr<std::string> payload = job->GetResultPayload();
         EXPECT_TRUE(payload);
         EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+      })));
+}
+
+// Test that the battery charge routine can be run.
+TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryChargeRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMinimumChargePercentRequiredFieldName, kPositiveInt);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        ASSERT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Test that leaving out the lengthSeconds parameter causes the battery charge
+// routine to fail.
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunBatteryChargeRoutineMissingLengthSeconds) {
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kMinimumChargePercentRequiredFieldName, kPositiveInt);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+      })));
+}
+
+// Test that leaving out the minimumChargePercentRequired parameter causes the
+// battery charge routine to fail.
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunBatteryChargeRoutineMissingMinimumChargePercentRequired) {
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+      })));
+}
+
+// Test that a negative lengthSeconds parameter causes the battery charge
+// routine to fail.
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunBatteryChargeRoutineInvalidLengthSeconds) {
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kNegativeInt);
+  params_dict.SetIntKey(kMinimumChargePercentRequiredFieldName, kPositiveInt);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+      })));
+}
+
+// Test that a negative minimumChargePercentRequired parameter causes the
+// battery charge routine to fail.
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunBatteryChargeRoutineInvalidMinimumChargePercentRequired) {
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName, kPositiveInt);
+  params_dict.SetIntKey(kMinimumChargePercentRequiredFieldName, kNegativeInt);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+      })));
+}
+
+// Note that the memory routine has no parameters, so we only need to test that
+// it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunMemoryRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kMemory,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+             })));
+}
+
+// Note that the LAN connectivity routine has no parameters, so we only need to
+// test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunLanConnectivityRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kLanConnectivity,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the signal strength routine has no parameters, so we only need to
+// test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunSignalStrengthRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kSignalStrength,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the gateway can be pinged routine has no parameters, so we only
+// need to test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunGatewayCanBePingedRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kGatewayCanBePinged,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the has secure WiFi connection routine has no parameters, so we
+// only need to test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunHasSecureWiFiConnectionRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+                         kHasSecureWiFiConnection,
+                     std::move(params_dict),
+                     base::BindLambdaForTesting([](RemoteCommandJob* job) {
+                       EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+                       std::unique_ptr<std::string> payload =
+                           job->GetResultPayload();
+                       EXPECT_TRUE(payload);
+                       EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+                     })));
+}
+
+// Note that the DNS resolver present routine has no parameters, so we only need
+// to test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunDnsResolverPresentRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDnsResolverPresent,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the DNS latency routine has no parameters, so we only need
+// to test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunDnsLatencyRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(
+      RunJob(chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDnsLatency,
+             std::move(params_dict),
+             base::BindLambdaForTesting([](RemoteCommandJob* job) {
+               EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+               std::unique_ptr<std::string> payload = job->GetResultPayload();
+               EXPECT_TRUE(payload);
+               EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+             })));
+}
+
+// Note that the DNS resolution routine has no parameters, so we only need
+// to test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunDnsResolutionRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDnsResolution,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the captive portal routine has no parameters, so we only need to
+// test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunCaptivePortalRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCaptivePortal,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+      })));
+}
+
+// Note that the HTTP firewall routine has no parameters, so we only need to
+// test that it can be run successfully.
+TEST_F(DeviceCommandRunRoutineJobTest, RunHttpFirewallRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(RunJob(
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kHttpFirewall,
+      std::move(params_dict),
+      base::BindLambdaForTesting([](RemoteCommandJob* job) {
+        EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+        std::unique_ptr<std::string> payload = job->GetResultPayload();
+        EXPECT_TRUE(payload);
+        EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
       })));
 }
 

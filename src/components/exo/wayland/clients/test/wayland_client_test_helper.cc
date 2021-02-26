@@ -14,10 +14,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
+#include "components/exo/input_method_surface_manager.h"
+#include "components/exo/notification_surface_manager.h"
+#include "components/exo/toast_surface_manager.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/window_tree_host.h"
@@ -35,7 +38,7 @@ class WaylandClientTestHelper::WaylandWatcher
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
-    base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+    base::CurrentUIThread::Get()->WatchFileDescriptor(
         server_->GetFileDescriptor(),
         /*persistent=*/true, base::MessagePumpLibevent::WATCH_READ,
         &controller_, this);
@@ -108,8 +111,7 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   ash_test_helper_->SetUp();
 
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
-  WMHelper::SetInstance(wm_helper_.get());
-  display_ = std::make_unique<Display>(nullptr, nullptr, nullptr);
+  display_ = std::make_unique<Display>(nullptr, nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   DCHECK(wayland_server_);
   wayland_watcher_ = std::make_unique<WaylandWatcher>(wayland_server_.get());
@@ -120,7 +122,6 @@ void WaylandClientTestHelper::TearDownOnUIThread(base::WaitableEvent* event) {
   wayland_watcher_.reset();
   wayland_server_.reset();
   display_.reset();
-  WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
 
   ash::Shell::Get()->session_controller()->NotifyChromeTerminating();

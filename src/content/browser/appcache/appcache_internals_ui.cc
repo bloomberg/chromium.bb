@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "content/browser/appcache/appcache.h"
@@ -32,8 +31,10 @@
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/view_cache_helper.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace content {
 
@@ -62,101 +63,93 @@ bool SortByResourceUrl(const blink::mojom::AppCacheResourceInfo& lhs,
   return lhs.url.spec() < rhs.url.spec();
 }
 
-std::unique_ptr<base::DictionaryValue> GetDictionaryValueForResponseEnquiry(
+base::Value GetDictionaryValueForResponseEnquiry(
     const content::AppCacheInternalsUI::ProxyResponseEnquiry&
         response_enquiry) {
-  auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->SetString("manifestURL", response_enquiry.manifest_url);
-  dict_value->SetString("groupId",
-                        base::NumberToString(response_enquiry.group_id));
-  dict_value->SetString("responseId",
-                        base::NumberToString(response_enquiry.response_id));
-  return dict_value;
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("manifestURL", response_enquiry.manifest_url);
+  dict.SetStringKey("groupId", base::NumberToString(response_enquiry.group_id));
+  dict.SetStringKey("responseId",
+                    base::NumberToString(response_enquiry.response_id));
+  return dict;
 }
 
-std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
+base::Value GetDictionaryValueForAppCacheInfo(
     const blink::mojom::AppCacheInfo& appcache_info) {
-  auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->SetString("manifestURL", appcache_info.manifest_url.spec());
-  dict_value->SetDouble("creationTime", appcache_info.creation_time.ToJsTime());
-  dict_value->SetDouble("lastUpdateTime",
-                        appcache_info.last_update_time.ToJsTime());
-  dict_value->SetDouble("lastAccessTime",
-                        appcache_info.last_access_time.ToJsTime());
-  dict_value->SetDouble("tokenExpires", appcache_info.token_expires.ToJsTime());
-  dict_value->SetString("responseSizes",
-                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-                            appcache_info.response_sizes)));
-  dict_value->SetString("paddingSizes",
-                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-                            appcache_info.padding_sizes)));
-  dict_value->SetString(
-      "totalSize",
-      base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-          appcache_info.response_sizes + appcache_info.padding_sizes)));
-  dict_value->SetString("groupId",
-                        base::NumberToString(appcache_info.group_id));
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("manifestURL", appcache_info.manifest_url.spec());
+  dict.SetDoubleKey("creationTime", appcache_info.creation_time.ToJsTime());
+  dict.SetDoubleKey("lastUpdateTime",
+                    appcache_info.last_update_time.ToJsTime());
+  dict.SetDoubleKey("lastAccessTime",
+                    appcache_info.last_access_time.ToJsTime());
+  dict.SetDoubleKey("tokenExpires", appcache_info.token_expires.ToJsTime());
+  dict.SetStringKey("responseSizes",
+                    ui::FormatBytes(appcache_info.response_sizes));
+  dict.SetStringKey("paddingSizes",
+                    ui::FormatBytes(appcache_info.padding_sizes));
+  dict.SetStringKey("totalSize", ui::FormatBytes(appcache_info.response_sizes +
+                                                 appcache_info.padding_sizes));
+  dict.SetStringKey("groupId", base::NumberToString(appcache_info.group_id));
 
-  dict_value->SetString(
+  dict.SetStringKey(
       "manifestParserVersion",
       base::NumberToString(appcache_info.manifest_parser_version));
-  dict_value->SetString("manifestScope", appcache_info.manifest_scope);
-
-  return dict_value;
-}
-
-std::unique_ptr<base::ListValue> GetListValueForAppCacheInfoVector(
-    const std::vector<blink::mojom::AppCacheInfo> appcache_info_vector) {
-  auto list = std::make_unique<base::ListValue>();
-  for (const blink::mojom::AppCacheInfo& info : appcache_info_vector)
-    list->Append(GetDictionaryValueForAppCacheInfo(info));
-  return list;
-}
-
-std::unique_ptr<base::ListValue> GetListValueFromAppCacheInfoCollection(
-    AppCacheInfoCollection* appcache_collection) {
-  auto list = std::make_unique<base::ListValue>();
-  for (const auto& key_value : appcache_collection->infos_by_origin) {
-    auto dict = std::make_unique<base::DictionaryValue>();
-    // Use GURL::spec() to keep consistency with previous version
-    dict->SetString("originURL", key_value.first.GetURL().spec());
-    dict->Set("manifests", GetListValueForAppCacheInfoVector(key_value.second));
-    list->Append(std::move(dict));
-  }
-  return list;
-}
-
-std::unique_ptr<base::DictionaryValue>
-GetDictionaryValueForAppCacheResourceInfo(
-    const blink::mojom::AppCacheResourceInfo& resource_info) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("url", resource_info.url.spec());
-  dict->SetString("responseSize",
-                  base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-                      resource_info.response_size)));
-  dict->SetString("paddingSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-                                     resource_info.padding_size)));
-  dict->SetString("totalSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
-                                   resource_info.response_size +
-                                   resource_info.padding_size)));
-  dict->SetString("responseId",
-                  base::NumberToString(resource_info.response_id));
-  dict->SetBoolean("isExplicit", resource_info.is_explicit);
-  dict->SetBoolean("isManifest", resource_info.is_manifest);
-  dict->SetBoolean("isMaster", resource_info.is_master);
-  dict->SetBoolean("isFallback", resource_info.is_fallback);
-  dict->SetBoolean("isIntercept", resource_info.is_intercept);
-  dict->SetBoolean("isForeign", resource_info.is_foreign);
+  dict.SetStringKey("manifestScope", appcache_info.manifest_scope);
 
   return dict;
 }
 
-std::unique_ptr<base::ListValue> GetListValueForAppCacheResourceInfoVector(
+base::Value GetListValueForAppCacheInfoVector(
+    const std::vector<blink::mojom::AppCacheInfo> appcache_info_vector) {
+  base::Value list(base::Value::Type::LIST);
+  for (const blink::mojom::AppCacheInfo& info : appcache_info_vector)
+    list.Append(GetDictionaryValueForAppCacheInfo(info));
+  return list;
+}
+
+base::Value GetListValueFromAppCacheInfoCollection(
+    AppCacheInfoCollection* appcache_collection) {
+  base::Value list(base::Value::Type::LIST);
+  for (const auto& key_value : appcache_collection->infos_by_origin) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    // Use GURL::spec() to keep consistency with previous version
+    dict.SetStringKey("originURL", key_value.first.GetURL().spec());
+    dict.SetKey("manifests",
+                GetListValueForAppCacheInfoVector(key_value.second));
+    list.Append(std::move(dict));
+  }
+  return list;
+}
+
+base::Value GetDictionaryValueForAppCacheResourceInfo(
+    const blink::mojom::AppCacheResourceInfo& resource_info) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", resource_info.url.spec());
+  dict.SetStringKey("responseSize",
+                    ui::FormatBytes(resource_info.response_size));
+  dict.SetStringKey("paddingSize", ui::FormatBytes(resource_info.padding_size));
+  dict.SetStringKey("totalSize", ui::FormatBytes(resource_info.response_size +
+                                                 resource_info.padding_size));
+  dict.SetStringKey("responseId",
+                    base::NumberToString(resource_info.response_id));
+  dict.SetBoolKey("isExplicit", resource_info.is_explicit);
+  dict.SetBoolKey("isManifest", resource_info.is_manifest);
+  dict.SetBoolKey("isMaster", resource_info.is_master);
+  dict.SetBoolKey("isFallback", resource_info.is_fallback);
+  dict.SetBoolKey("isIntercept", resource_info.is_intercept);
+  dict.SetBoolKey("isForeign", resource_info.is_foreign);
+
+  return dict;
+}
+
+base::Value GetListValueForAppCacheResourceInfoVector(
     std::vector<blink::mojom::AppCacheResourceInfo>* resource_info_vector) {
-  auto list = std::make_unique<base::ListValue>();
+  base::Value list(base::Value::Type::LIST);
   for (const blink::mojom::AppCacheResourceInfo& res_info :
-       *resource_info_vector)
-    list->Append(GetDictionaryValueForAppCacheResourceInfo(res_info));
+       *resource_info_vector) {
+    list.Append(GetDictionaryValueForAppCacheResourceInfo(res_info));
+  }
   return list;
 }
 
@@ -171,8 +164,8 @@ AppCacheInternalsUI::Proxy::Proxy(
 void AppCacheInternalsUI::Proxy::Initialize(
     const scoped_refptr<ChromeAppCacheService>& chrome_appcache_service) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::Initialize, this, chrome_appcache_service));
     return;
   }
@@ -187,8 +180,8 @@ AppCacheInternalsUI::Proxy::~Proxy() {
 
 void AppCacheInternalsUI::Proxy::Shutdown() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::Shutdown, this));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        base::BindOnce(&Proxy::Shutdown, this));
     return;
   }
   shutdown_called_ = true;
@@ -201,8 +194,8 @@ void AppCacheInternalsUI::Proxy::Shutdown() {
 
 void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
     return;
   }
   if (appcache_service_) {
@@ -223,8 +216,8 @@ void AppCacheInternalsUI::Proxy::OnAllAppCacheInfoReady(
 void AppCacheInternalsUI::Proxy::DeleteAppCache(
     const std::string& manifest_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
     return;
   }
   if (appcache_service_) {
@@ -244,8 +237,8 @@ void AppCacheInternalsUI::Proxy::OnAppCacheInfoDeleted(
 void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
     const std::string& manifest_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::RequestAppCacheDetails, this, manifest_url));
     return;
   }
@@ -273,8 +266,8 @@ void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
 void AppCacheInternalsUI::Proxy::RequestFileDetails(
     const ProxyResponseEnquiry& response_enquiry) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::RequestFileDetails, this, response_enquiry));
     return;
   }
@@ -312,11 +305,12 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
     std::unique_ptr<AppCacheResponseReader> reader =
         appcache_service_->storage()->CreateResponseReader(
             GURL(response_enquiry.manifest_url), response_enquiry.response_id);
+    AppCacheResponseReader* const reader_ptr = reader.get();
 
-    reader->ReadData(response_data.get(), amount_to_read,
-                     base::BindOnce(&Proxy::OnResponseDataReadComplete, this,
-                                    response_enquiry, response_info,
-                                    std::move(reader), response_data));
+    reader_ptr->ReadData(response_data.get(), amount_to_read,
+                         base::BindOnce(&Proxy::OnResponseDataReadComplete,
+                                        this, response_enquiry, response_info,
+                                        std::move(reader), response_data));
   } else {
     OnResponseDataReadComplete(response_enquiry, nullptr, nullptr, nullptr, -1);
   }
@@ -362,8 +356,10 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
 
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIAppCacheInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->DisableTrustedTypesCSP();
 
   source->UseStringsJs();
   source->AddResourcePath("appcache_internals.js", IDR_APPCACHE_INTERNALS_JS);
@@ -387,8 +383,10 @@ void AppCacheInternalsUI::CreateProxyForPartition(
     StoragePartition* storage_partition) {
   auto proxy = base::MakeRefCounted<Proxy>(weak_ptr_factory_.GetWeakPtr(),
                                            storage_partition->GetPath());
-  proxy->Initialize(static_cast<StoragePartitionImpl*>(storage_partition)
-                        ->GetAppCacheService());
+  auto* appcache_service = static_cast<StoragePartitionImpl*>(storage_partition)
+                               ->GetAppCacheService();
+  if (appcache_service)
+    proxy->Initialize(appcache_service);
   appcache_proxies_.emplace_back(std::move(proxy));
 }
 
@@ -442,7 +440,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
       kFunctionOnAllAppCacheInfoReady,
       base::Value(partition_path.AsUTF8Unsafe()),
       base::Value(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
-      *GetListValueFromAppCacheInfoCollection(collection.get()));
+      GetListValueFromAppCacheInfoCollection(collection.get()));
 }
 
 void AppCacheInternalsUI::OnAppCacheInfoDeleted(
@@ -464,7 +462,7 @@ void AppCacheInternalsUI::OnAppCacheDetailsReady(
     web_ui()->CallJavascriptFunctionUnsafe(
         kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),
         base::Value(partition_path.AsUTF8Unsafe()),
-        *GetListValueForAppCacheResourceInfoVector(resource_info_vector.get()));
+        GetListValueForAppCacheResourceInfoVector(resource_info_vector.get()));
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
         kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),
@@ -503,7 +501,7 @@ void AppCacheInternalsUI::OnFileDetailsReady(
   hex_dump.append("</pre>");
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnFileDetailsReady,
-      *GetDictionaryValueForResponseEnquiry(response_enquiry),
+      GetDictionaryValueForResponseEnquiry(response_enquiry),
       base::Value(headers), base::Value(hex_dump));
 }
 
@@ -512,7 +510,7 @@ void AppCacheInternalsUI::OnFileDetailsFailed(
     int net_result_code) {
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnFileDetailsFailed,
-      *GetDictionaryValueForResponseEnquiry(response_enquiry),
+      GetDictionaryValueForResponseEnquiry(response_enquiry),
       base::Value(net_result_code));
 }
 

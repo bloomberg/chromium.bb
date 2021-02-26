@@ -16,6 +16,8 @@
 
 #include "src/trace_processor/importers/proto/heap_graph_tracker.h"
 
+#include "src/trace_processor/importers/proto/profiler_util.h"
+
 #include "perfetto/base/logging.h"
 #include "test/gtest_and_gmock.h"
 
@@ -26,12 +28,22 @@ namespace {
 using ::testing::UnorderedElementsAre;
 
 TEST(HeapGraphTrackerTest, PackageFromLocationApp) {
-  TraceProcessorContext context;
-  HeapGraphTracker tracker(&context);
-  EXPECT_EQ(tracker.PackageFromLocation(
-                "/data/app/~~ASDFGH1234QWerT==/"
-                "com.twitter.android-MNBVCX7890SDTst6==/test.apk"),
-            "com.twitter.android");
+  TraceStorage storage;
+  EXPECT_EQ(
+      PackageFromLocation(&storage,
+                          "/data/app/~~ASDFGH1234QWerT==/"
+                          "com.twitter.android-MNBVCX7890SDTst6==/test.apk"),
+      "com.twitter.android");
+  EXPECT_EQ(PackageFromLocation(
+                &storage,
+                "/data/app/com.google.android.webview-6XfQhnaSkFwGK0sYL9is0G==/"
+                "base.apk"),
+            "com.google.android.webview");
+  EXPECT_EQ(PackageFromLocation(&storage,
+                                "/data/app/"
+                                "com.google.android.apps.wellbeing-"
+                                "qfQCaB4uJ7P0OPpZQqOu0Q==/oat/arm64/base.odex"),
+            "com.google.android.apps.wellbeing");
 }
 
 TEST(HeapGraphTrackerTest, BuildFlamegraph) {
@@ -51,6 +63,7 @@ TEST(HeapGraphTrackerTest, BuildFlamegraph) {
   HeapGraphTracker tracker(&context);
 
   constexpr uint64_t kField = 1;
+  constexpr uint64_t kLocation = 0;
 
   constexpr uint64_t kX = 1;
   constexpr uint64_t kY = 2;
@@ -65,24 +78,28 @@ TEST(HeapGraphTrackerTest, BuildFlamegraph) {
 
   tracker.AddInternedFieldName(kSeqId, kField, field);
 
-  tracker.AddInternedTypeName(kSeqId, kX, x);
-  tracker.AddInternedTypeName(kSeqId, kY, y);
-  tracker.AddInternedTypeName(kSeqId, kA, a);
-  tracker.AddInternedTypeName(kSeqId, kB, b);
+  tracker.AddInternedLocationName(kSeqId, kLocation,
+                                  context.storage->InternString("location"));
+  tracker.AddInternedType(kSeqId, kX, x, kLocation, /*object_size=*/0,
+                          /*field_name_ids=*/{}, /*superclass_id=*/0,
+                          /*classloader_id=*/0, /*no_fields=*/false);
+  tracker.AddInternedType(kSeqId, kY, y, kLocation, /*object_size=*/0,
+                          /*field_name_ids=*/{}, /*superclass_id=*/0,
+                          /*classloader_id=*/0, /*no_fields=*/false);
+  tracker.AddInternedType(kSeqId, kA, a, kLocation, /*object_size=*/0,
+                          /*field_name_ids=*/{}, /*superclass_id=*/0,
+                          /*classloader_id=*/0, /*no_fields=*/false);
+  tracker.AddInternedType(kSeqId, kB, b, kLocation, /*object_size=*/0,
+                          /*field_name_ids=*/{}, /*superclass_id=*/0,
+                          /*classloader_id=*/0, /*no_fields=*/false);
 
   {
     HeapGraphTracker::SourceObject obj;
     obj.object_id = 1;
     obj.self_size = 1;
     obj.type_id = kX;
-    HeapGraphTracker::SourceObject::Reference ref;
-    ref.field_name_id = kField;
-    ref.owned_object_id = 2;
-    obj.references.emplace_back(std::move(ref));
-
-    ref.field_name_id = kField;
-    ref.owned_object_id = 3;
-    obj.references.emplace_back(std::move(ref));
+    obj.field_name_ids = {kField, kField};
+    obj.referred_objects = {2, 3};
 
     tracker.AddObject(kSeqId, kPid, kTimestamp, std::move(obj));
   }
@@ -100,14 +117,8 @@ TEST(HeapGraphTrackerTest, BuildFlamegraph) {
     obj.object_id = 3;
     obj.self_size = 3;
     obj.type_id = kY;
-    HeapGraphTracker::SourceObject::Reference ref;
-    ref.field_name_id = kField;
-    ref.owned_object_id = 4;
-    obj.references.emplace_back(std::move(ref));
-
-    ref.field_name_id = kField;
-    ref.owned_object_id = 5;
-    obj.references.emplace_back(std::move(ref));
+    obj.field_name_ids = {kField, kField};
+    obj.referred_objects = {4, 5};
 
     tracker.AddObject(kSeqId, kPid, kTimestamp, std::move(obj));
   }

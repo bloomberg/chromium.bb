@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
+#include "third_party/blink/renderer/platform/disk_data_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -28,11 +30,11 @@ void DiskDataAllocator::set_may_write_for_testing(bool may_write) {
   may_write_ = may_write;
 }
 
-DiskDataAllocator::Metadata DiskDataAllocator::FindChunk(size_t size) {
+DiskDataMetadata DiskDataAllocator::FindChunk(size_t size) {
   // Try to reuse some space. Policy:
   // 1. Exact fit
   // 2. Worst fit
-  Metadata chosen_chunk{-1, 0};
+  DiskDataMetadata chosen_chunk{-1, 0};
 
   size_t worst_fit_size = 0;
   for (const auto& chunk : free_chunks_) {
@@ -64,8 +66,8 @@ DiskDataAllocator::Metadata DiskDataAllocator::FindChunk(size_t size) {
   return chosen_chunk;
 }
 
-void DiskDataAllocator::ReleaseChunk(const Metadata& metadata) {
-  Metadata chunk = metadata;
+void DiskDataAllocator::ReleaseChunk(const DiskDataMetadata& metadata) {
+  DiskDataMetadata chunk = metadata;
   DCHECK(free_chunks_.find(chunk.start_offset()) == free_chunks_.end());
 
   auto lower_bound = free_chunks_.lower_bound(chunk.start_offset());
@@ -101,10 +103,9 @@ void DiskDataAllocator::ReleaseChunk(const Metadata& metadata) {
   free_chunks_size_ += chunk.size();
 }
 
-std::unique_ptr<DiskDataAllocator::Metadata> DiskDataAllocator::Write(
-    const void* data,
-    size_t size) {
-  Metadata chosen_chunk = {0, 0};
+std::unique_ptr<DiskDataMetadata> DiskDataAllocator::Write(const void* data,
+                                                           size_t size) {
+  DiskDataMetadata chosen_chunk = {0, 0};
 
   {
     MutexLocker locker(mutex_);
@@ -131,11 +132,11 @@ std::unique_ptr<DiskDataAllocator::Metadata> DiskDataAllocator::Write(
   allocated_chunks_.insert({chosen_chunk.start_offset(), chosen_chunk.size()});
 #endif
 
-  return std::unique_ptr<Metadata>(
-      new Metadata(chosen_chunk.start_offset(), chosen_chunk.size()));
+  return std::unique_ptr<DiskDataMetadata>(
+      new DiskDataMetadata(chosen_chunk.start_offset(), chosen_chunk.size()));
 }
 
-void DiskDataAllocator::Read(const Metadata& metadata, void* data) {
+void DiskDataAllocator::Read(const DiskDataMetadata& metadata, void* data) {
   DCHECK(IsMainThread());
 
   // Doesn't need locking as files support concurrent access, and we don't
@@ -153,7 +154,7 @@ void DiskDataAllocator::Read(const Metadata& metadata, void* data) {
 #endif
 }
 
-void DiskDataAllocator::Discard(std::unique_ptr<Metadata> metadata) {
+void DiskDataAllocator::Discard(std::unique_ptr<DiskDataMetadata> metadata) {
   MutexLocker locker(mutex_);
   DCHECK(may_write_ || file_.IsValid());
 
@@ -179,6 +180,11 @@ int DiskDataAllocator::DoWrite(int64_t offset, const char* data, int size) {
 }
 
 void DiskDataAllocator::DoRead(int64_t offset, char* data, int size) {
+  // This happens on the main thread, which is typically not allowed. This is
+  // fine as this is expected to happen rarely, and only be slow with memory
+  // pressure, in which case writing to/reading from disk is better than
+  // swapping out random parts of the memory. See crbug.com/1029320 for details.
+  base::ScopedAllowBlocking allow_blocking;
   int rv = file_.Read(offset, data, size);
   // Can only crash, since we cannot continue without the data.
   PCHECK(rv == size) << "Likely file corruption.";

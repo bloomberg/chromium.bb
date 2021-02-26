@@ -24,6 +24,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -117,6 +118,7 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
     }
 
     std::vector<EGLDeviceEXT> devices(DRM_MAX_MINOR, EGL_NO_DEVICE_EXT);
+    EGLDeviceEXT virgl_device = EGL_NO_DEVICE_EXT;
     EGLDeviceEXT amdgpu_device = EGL_NO_DEVICE_EXT;
     EGLDeviceEXT i915_device = EGL_NO_DEVICE_EXT;
     EGLint num_devices = 0;
@@ -128,10 +130,18 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
           eglQueryDeviceStringEXT(device, EGL_DRM_DEVICE_FILE_EXT);
       if (!filename)  // Not a DRM device.
         continue;
+      if (IsDriverName(filename, "virtio_gpu"))
+        virgl_device = device;
       if (IsDriverName(filename, "amdgpu"))
         amdgpu_device = device;
       if (IsDriverName(filename, "i915"))
         i915_device = device;
+    }
+
+    if (virgl_device != EGL_NO_DEVICE_EXT) {
+      native_display_ = gl::EGLDisplayPlatform(
+          reinterpret_cast<EGLNativeDisplayType>(virgl_device),
+          EGL_PLATFORM_DEVICE_EXT);
     }
 
     if (amdgpu_device != EGL_NO_DEVICE_EXT) {
@@ -176,16 +186,16 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
     if (!dev_path_file.IsValid())
       break;
 
+    // Skip the virtual graphics memory manager device.
+    ScopedDrmVersionPtr version(drmGetVersion(dev_path_file.GetPlatformFile()));
+    if (!version || base::LowerCaseEqualsASCII(version->name, "vgem")) {
+      continue;
+    }
+
     ScopedGbmDevice device(gbm_create_device(dev_path_file.GetPlatformFile()));
     if (!device) {
       LOG(ERROR) << "Couldn't create Gbm Device at " << dev_path.MaybeAsASCII();
       return supported_buffer_formats;
-    }
-
-    // Skip the virtual graphics memory manager device.
-    if (base::LowerCaseEqualsASCII(gbm_device_get_backend_name(device.get()),
-                                   "vgem")) {
-      continue;
     }
 
     for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
@@ -341,8 +351,7 @@ std::unique_ptr<OverlaySurface> GbmSurfaceFactory::CreateOverlaySurface(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;

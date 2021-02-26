@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -45,7 +44,10 @@ namespace blink {
 
 class Element;
 class FullscreenOptions;
+class LocalFrame;
 class WebViewImpl;
+
+enum class FullscreenRequestType;
 
 // FullscreenController is a per-WebView class that manages the transition into
 // and out of fullscreen, including restoring scroll offset and scale after
@@ -60,7 +62,7 @@ class CORE_EXPORT FullscreenController {
   // fullscreen.
   void EnterFullscreen(LocalFrame&,
                        const FullscreenOptions*,
-                       bool for_cross_process_descendant);
+                       FullscreenRequestType request_type);
   void ExitFullscreen(LocalFrame&);
 
   // Called by content::RenderWidget (via WebWidget) to notify that we've

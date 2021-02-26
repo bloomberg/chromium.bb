@@ -9,7 +9,6 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_boolean.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
-#include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
@@ -18,7 +17,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_stream.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/notreached.h"
 
 // Indexed by 8-bit character code, contains either:
 //   'W' - for whitespace: NUL, TAB, CR, LF, FF, SPACE, 0x80, 0xff
@@ -92,9 +91,6 @@ int32_t GetDirectInteger(const CPDF_Dictionary* pDict, const ByteString& key) {
 }
 
 ByteString PDF_NameDecode(ByteStringView orig) {
-  if (!orig.Contains('#'))
-    return ByteString(orig);
-
   size_t src_size = orig.GetLength();
   size_t out_index = 0;
   ByteString result;
@@ -164,10 +160,8 @@ std::vector<float> ReadArrayElementsToVector(const CPDF_Array* pArray,
 }
 
 bool ValidateDictType(const CPDF_Dictionary* dict, const ByteString& type) {
-  ASSERT(dict);
   ASSERT(!type.IsEmpty());
-  const CPDF_Name* name_obj = ToName(dict->GetObjectFor("Type"));
-  return name_obj && name_obj->GetString() == type;
+  return dict->GetNameFor("Type") == type;
 }
 
 bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,

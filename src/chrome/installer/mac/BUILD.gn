@@ -9,6 +9,10 @@ import("//build/util/version.gni")
 import("//chrome/process_version_rc_template.gni")
 import("mac_signing_sources.gni")
 
+if (is_chrome_branded) {
+  import("//third_party/widevine/scripts/widevine_signing_sources.gni")
+}
+
 group("mac") {
   public_deps = [ ":copies" ]
 }
@@ -54,6 +58,18 @@ copy("copy_signing") {
   outputs = [ "$_packaging_dir/signing/{{source_file_part}}" ]
 }
 
+if (is_chrome_branded) {
+  copy("copy_widevine_signing") {
+    visibility = [ ":copies" ]
+
+    sources = rebase_path(widevine_signing_sources,
+                          "",
+                          "//third_party/widevine/scripts")
+
+    outputs = [ "$_packaging_dir/widevine/{{source_file_part}}" ]
+  }
+}
+
 copy("copies") {
   visibility = [ ":mac" ]
 
@@ -84,23 +100,32 @@ copy("copies") {
     "pkg-dmg",
     "pkg_postinstall.in",
     "sign_chrome.py",
+    "universalizer.py",
   ]
 
   if (is_chrome_branded) {
-    sources += [ "keystone_install.sh" ]
-  }
-
-  if (is_chrome_branded) {
+    deps += [ ":copy_widevine_signing" ]
     sources += [
+      "//chrome/app/theme/google_chrome/mac/app_beta.icns",
       "//chrome/app/theme/google_chrome/mac/app_canary.icns",
+      "//chrome/app/theme/google_chrome/mac/app_dev.icns",
+      "//chrome/app/theme/google_chrome/mac/document_beta.icns",
       "//chrome/app/theme/google_chrome/mac/document_canary.icns",
+      "//chrome/app/theme/google_chrome/mac/document_dev.icns",
       "internal/Google_Chrome.provisionprofile",
+      "internal/Google_Chrome_Beta.provisionprofile",
       "internal/Google_Chrome_Canary.provisionprofile",
+      "internal/Google_Chrome_Dev.provisionprofile",
+      "internal/chrome_beta_dmg_dsstore",
+      "internal/chrome_beta_dmg_icon.icns",
       "internal/chrome_canary_dmg_dsstore",
       "internal/chrome_canary_dmg_icon.icns",
+      "internal/chrome_dev_dmg_dsstore",
+      "internal/chrome_dev_dmg_icon.icns",
       "internal/chrome_dmg_background.png",
       "internal/chrome_dmg_dsstore",
       "internal/chrome_dmg_icon.icns",
+      "keystone_install.sh",
     ]
   }
 
@@ -127,4 +152,26 @@ group("mac_signing_tests") {
            "//testing/test_env.py",
            "//third_party/catapult/third_party/typ/",
          ]
+}
+
+config("fat_binary_config") {
+  visibility = [ "./*" ]
+
+  # Always build arm64 targets as universal (fat) binaries, since these need to
+  # run on both the install machine and the machine where the diff installers
+  # are created, and the latter is probably not arm64.
+  if (current_cpu == "arm64") {
+    fat_binary_flags = [
+      # Help the compiler find lipo for creating fat binaries.
+      "-B",
+      mac_bin_path,
+
+      "-arch",
+      "x86_64",
+      "-arch",
+      "arm64",
+    ]
+    cflags = fat_binary_flags
+    ldflags = fat_binary_flags
+  }
 }

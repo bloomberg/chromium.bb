@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/sessions/ios/ios_live_tab.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -64,7 +65,8 @@ IOSChromeTabRestoreServiceClient::CreateLiveTabContext(
     const std::string& /* app_name */,
     const gfx::Rect& /* bounds */,
     ui::WindowShowState /* show_state */,
-    const std::string& /* workspace */) {
+    const std::string& /* workspace */,
+    const std::string& /* user_title */) {
   NOTREACHED() << "Tab restore service attempting to create a new window.";
   return nullptr;
 }
@@ -78,7 +80,7 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
   if (!web_state) {
     return nullptr;
   }
-  return FindLiveTabContextWithCondition(base::Bind(
+  return FindLiveTabContextWithCondition(base::BindRepeating(
       [](const web::WebState* web_state, Browser* browser) {
         WebStateList* web_state_list = browser->GetWebStateList();
         const int index = web_state_list->GetIndexOfWebState(web_state);
@@ -90,13 +92,19 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
     SessionID desired_id) {
-  return FindLiveTabContextWithCondition(base::Bind(
+  return FindLiveTabContextWithCondition(base::BindRepeating(
       [](SessionID desired_id, Browser* browser) {
         SyncedWindowDelegateBrowserAgent* syncedWindowDelegate =
             SyncedWindowDelegateBrowserAgent::FromBrowser(browser);
         return syncedWindowDelegate->GetSessionId() == desired_id;
       },
       desired_id));
+}
+
+sessions::LiveTabContext*
+IOSChromeTabRestoreServiceClient::FindLiveTabContextWithGroup(
+    tab_groups::TabGroupId group) {
+  return nullptr;
 }
 
 bool IOSChromeTabRestoreServiceClient::ShouldTrackURLForRestore(
@@ -129,7 +137,6 @@ bool IOSChromeTabRestoreServiceClient::HasLastSession() {
 }
 
 void IOSChromeTabRestoreServiceClient::GetLastSession(
-    sessions::GetLastSessionCallback callback,
-    base::CancelableTaskTracker* tracker) {
+    sessions::GetLastSessionCallback callback) {
   NOTREACHED();
 }

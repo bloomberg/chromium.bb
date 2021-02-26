@@ -12,7 +12,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
@@ -29,12 +29,15 @@ import java.util.regex.Pattern;
 
 /**
  * Controls selection gesture interaction for Contextual Search.
+ * Receives low-level events and feeds them to the {@link ContextualSearchManager}
+ * while tracking the selection state.
  */
 public class ContextualSearchSelectionController {
     /**
      * The type of selection made by the user.
      */
-    @IntDef({SelectionType.UNDETERMINED, SelectionType.TAP, SelectionType.LONG_PRESS})
+    @IntDef({SelectionType.UNDETERMINED, SelectionType.TAP, SelectionType.LONG_PRESS,
+            SelectionType.RESOLVING_LONG_PRESS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SelectionType {
         int UNDETERMINED = 0;
@@ -55,7 +58,7 @@ public class ContextualSearchSelectionController {
             + "([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
-    private static final int MAX_SELECTION_LENGTH = 100;
+    private static final int MAX_SELECTION_LENGTH = 1000;
 
     private static final int INVALID_DURATION = -1;
     // A default tap duration value when we can't compute it.
@@ -217,6 +220,11 @@ public class ContextualSearchSelectionController {
         return mSelectedText;
     }
 
+    /** @return whether the selection was established with a Tap gesture. */
+    boolean isTapSelection() {
+        return mSelectionType == SelectionType.TAP;
+    }
+
     /**
      * Overrides the current internal setting that tracks the selection.
      *
@@ -324,6 +332,7 @@ public class ContextualSearchSelectionController {
                 SelectionPopupController controller = getSelectionPopupController();
                 if (controller != null) mSelectedText = controller.getSelectedText();
                 mIsAdjustedSelection = false;
+                ContextualSearchUma.logSelectionEstablished();
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 // Selection handles have been hidden, but there may still be a selection.
@@ -334,6 +343,7 @@ public class ContextualSearchSelectionController {
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 shouldHandleSelection = true;
                 mIsAdjustedSelection = true;
+                ContextualSearchUma.logSelectionAdjusted(mSelectedText);
                 break;
             default:
         }
@@ -413,7 +423,7 @@ public class ContextualSearchSelectionController {
             mY = y;
             mFontSizeDips = fontSizeDips;
             mTextRunLength = textRunLength;
-            mHandler.handleValidTap();
+            mHandler.handleValidTap(x, y);
         } else {
             // Long press, or long-press selection handles shown; reset last tap state.
             mLastTapState = null;
@@ -513,6 +523,7 @@ public class ContextualSearchSelectionController {
             mDidExpandSelection = true;
             basePageWebContents.adjustSelectionByCharacterOffset(
                     selectionStartAdjust, selectionEndAdjust, /* showSelectionMenu= */ false);
+            ContextualSearchUma.logSelectionExpanded(isTapSelection());
         }
     }
 
@@ -560,6 +571,13 @@ public class ContextualSearchSelectionController {
         return isValidSelection(selection, getSelectionPopupController());
     }
 
+    /**
+     * Determines if the given selection is text and some other conditions needed to trigger the
+     * feature.
+     * @param selection The selection string to evaluate.
+     * @param controller The popup controller so we can look at the focused node.
+     * @return If the selection is OK for this feature.
+     */
     @VisibleForTesting
     boolean isValidSelection(String selection, SelectionPopupController controller) {
         if (selection.length() > MAX_SELECTION_LENGTH) return false;

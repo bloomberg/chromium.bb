@@ -31,17 +31,16 @@
 
 namespace blink {
 
-class LocalFrame;
+class LocalDOMWindow;
 class PluginData;
 
 class DOMPluginArray final : public ScriptWrappable,
                              public ExecutionContextLifecycleObserver,
                              public PluginsChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 
  public:
-  explicit DOMPluginArray(LocalFrame*);
+  explicit DOMPluginArray(LocalDOMWindow*);
 
   void UpdatePluginData();
 
@@ -56,7 +55,7 @@ class DOMPluginArray final : public ScriptWrappable,
   // PluginsChangedObserver implementation.
   void PluginsChanged() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PluginData* GetPluginData() const;

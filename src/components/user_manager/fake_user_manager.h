@@ -39,7 +39,15 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   virtual const user_manager::User* AddPublicAccountUser(
       const AccountId& account_id);
 
+  void LogoutAllUsers();
+
   void set_local_state(PrefService* local_state) { local_state_ = local_state; }
+  void set_is_current_user_new(bool is_current_user_new) {
+    is_current_user_new_ = is_current_user_new;
+  }
+  void set_is_current_user_owner(bool is_current_user_owner) {
+    is_current_user_owner_ = is_current_user_owner;
+  }
 
   // UserManager overrides.
   const UserList& GetUsers() const override;
@@ -93,7 +101,6 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   bool IsLoggedInAsUserWithGaiaAccount() const override;
   bool IsLoggedInAsPublicAccount() const override;
   bool IsLoggedInAsGuest() const override;
-  bool IsLoggedInAsSupervisedUser() const override;
   bool IsLoggedInAsKioskApp() const override;
   bool IsLoggedInAsArcKioskApp() const override;
   bool IsLoggedInAsWebKioskApp() const override;
@@ -106,7 +113,6 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void AddSessionStateObserver(UserSessionStateObserver* obs) override {}
   void RemoveSessionStateObserver(UserSessionStateObserver* obs) override {}
   void NotifyLocalStateChanged() override {}
-  bool AreSupervisedUsersAllowed() const override;
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const User& user) const override;
   bool IsUserAllowed(const User& user) const override;
@@ -130,13 +136,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void SetEphemeralUsersEnabled(bool enabled) override;
   const std::string& GetApplicationLocale() const override;
   PrefService* GetLocalState() const override;
-  void HandleUserOAuthTokenStatusChange(
-      const AccountId& account_id,
-      User::OAuthTokenStatus status) const override {}
   bool IsEnterpriseManaged() const override;
   void LoadDeviceLocalAccounts(
       std::set<AccountId>* device_local_accounts_set) override {}
-  void PerformPreUserListLoadingActions() override {}
   void PerformPostUserListLoadingActions() override {}
   void PerformPostUserLoggedInActions(bool browser_restart) override {}
   bool IsDemoApp(const AccountId& account_id) const override;
@@ -144,10 +146,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
       const AccountId& account_id) const override;
   void DemoAccountLoggedIn() override {}
   void KioskAppLoggedIn(User* user) override {}
-  void ArcKioskAppLoggedIn(User* user) override {}
-  void WebKioskAppLoggedIn(User* user) override {}
   void PublicAccountUserLoggedIn(User* user) override {}
-  void SupervisedUserLoggedIn(const AccountId& account_id) override {}
   void OnUserRemoved(const AccountId& account_id) override {}
 
  protected:
@@ -169,6 +168,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
 
   // stub. Always empty.
   gfx::ImageSkia empty_image_;
+
+  bool is_current_user_owner_ = false;
+  bool is_current_user_new_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };

@@ -22,6 +22,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
@@ -35,22 +36,24 @@ class HttpResponseInfo;
 class HttpTransaction;
 class HttpUserAgentSettings;
 class SSLPrivateKey;
+struct TransportInfo;
 class UploadDataStream;
 
 // A URLRequestJob subclass that is built on top of HttpTransaction. It
 // provides an implementation for both HTTP and HTTPS.
 class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
  public:
-  static URLRequestJob* Factory(URLRequest* request,
-                                NetworkDelegate* network_delegate,
-                                const std::string& scheme);
+  // Creates URLRequestJob for the specified HTTP, HTTPS, WS, or WSS URL.
+  // Returns a job that returns a redirect in the case of HSTS, and returns a
+  // job that fails for unencrypted requests if current settings dont allow
+  // them. Never returns nullptr.
+  static std::unique_ptr<URLRequestJob> Create(URLRequest* request);
 
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(ResponseHeadersCallback callback) override;
 
  protected:
   URLRequestHttpJob(URLRequest* request,
-                    NetworkDelegate* network_delegate,
                     const HttpUserAgentSettings* http_user_agent_settings);
 
   ~URLRequestHttpJob() override;
@@ -118,6 +121,10 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
   void NotifyBeforeStartTransactionCallback(int result);
+  // This just forwards the call to URLRequestJob::NotifyConnected().
+  // We need it because that method is protected and cannot be bound in a
+  // callback in this class.
+  int NotifyConnectedCallback(const TransportInfo& info);
 
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 
@@ -167,16 +174,16 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   // Callback functions for Cookie Monster
   void SetCookieHeaderAndStart(const CookieOptions& options,
-                               const CookieStatusList& cookie_list,
-                               const CookieStatusList& excluded_list);
+                               const CookieAccessResultList& cookie_list,
+                               const CookieAccessResultList& excluded_list);
 
   // Another Cookie Monster callback
   void OnSetCookieResult(const CookieOptions& options,
                          base::Optional<CanonicalCookie> cookie,
                          std::string cookie_string,
-                         CanonicalCookie::CookieInclusionStatus status);
+                         CookieAccessResult access_result);
   int num_cookie_lines_left_;
-  CookieAndLineStatusList set_cookie_status_list_;
+  CookieAndLineAccessResultList set_cookie_access_result_list_;
 
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. If this is the case, we return true in order

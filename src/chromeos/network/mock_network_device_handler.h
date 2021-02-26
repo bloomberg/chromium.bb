@@ -25,51 +25,49 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
   MockNetworkDeviceHandler();
   virtual ~MockNetworkDeviceHandler();
 
-  MOCK_CONST_METHOD3(
-      GetDeviceProperties,
-      void(const std::string& device_path,
-           network_handler::DictionaryResultCallback callback,
-           const network_handler::ErrorCallback& error_callback));
+  MOCK_CONST_METHOD2(GetDeviceProperties,
+                     void(const std::string& device_path,
+                          network_handler::ResultCallback callback));
 
   MOCK_METHOD5(SetDeviceProperty,
                void(const std::string& device_path,
                     const std::string& property_name,
                     const base::Value& value,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD4(RegisterCellularNetwork,
                void(const std::string& device_path,
                     const std::string& network_id,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD5(RequirePin,
                void(const std::string& device_path,
                     bool require_pin,
                     const std::string& pin,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD4(EnterPin,
                void(const std::string& device_path,
                     const std::string& pin,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD5(UnblockPin,
                void(const std::string& device_path,
                     const std::string& puk,
                     const std::string& new_pin,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD5(ChangePin,
                void(const std::string& device_path,
                     const std::string& old_pin,
                     const std::string& new_pin,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD1(SetCellularAllowRoaming, void(bool allow_roaming));
 
@@ -78,40 +76,29 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
   MOCK_METHOD1(SetUsbEthernetMacAddressSource,
                void(const std::string& enabled));
 
-  MOCK_METHOD4(SetWifiTDLSEnabled,
-               void(const std::string& ip_or_mac_address,
-                    bool enabled,
-                    const network_handler::StringResultCallback& callback,
-                    const network_handler::ErrorCallback& error_callback));
-
-  MOCK_METHOD3(GetWifiTDLSStatus,
-               void(const std::string& ip_or_mac_address,
-                    const network_handler::StringResultCallback& callback,
-                    const network_handler::ErrorCallback& error_callback));
-
   MOCK_METHOD3(AddWifiWakeOnPacketConnection,
                void(const net::IPEndPoint& ip_endpoint,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD3(AddWifiWakeOnPacketOfTypes,
                void(const std::vector<std::string>& types,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD3(RemoveWifiWakeOnPacketOfTypes,
                void(const std::vector<std::string>& types,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD3(RemoveWifiWakeOnPacketConnection,
                void(const net::IPEndPoint& ip_endpoint,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
   MOCK_METHOD2(RemoveAllWifiWakeOnPacketConnections,
-               void(const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
+               void(base::OnceClosure callback,
+                    network_handler::ErrorCallback error_callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkDeviceHandler);

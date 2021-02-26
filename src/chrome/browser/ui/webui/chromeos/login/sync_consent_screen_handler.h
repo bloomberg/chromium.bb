@@ -42,6 +42,10 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
  public:
   using TView = SyncConsentScreenView;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Public for testing.
+  enum class UserChoice { kDeclined = 0, kAccepted = 1, kMaxValue = kAccepted };
+
   explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
   ~SyncConsentScreenHandler() override;
 
@@ -59,7 +63,6 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void Initialize() override;
   void RegisterMessages() override;
-  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
   // WebUI message handlers
   void HandleContinueAndReview(const ::login::StringList& consent_description,
@@ -67,12 +70,19 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void HandleContinueWithDefaults(
       const ::login::StringList& consent_description,
       const std::string& consent_confirmation);
-  void HandleAcceptAndContinue(const ::login::StringList& consent_description,
-                               const std::string& consent_confirmation,
-                               bool enable_os_sync,
-                               bool enable_browser_sync);
 
-  // Adds resource |resource_id| both to |builder| and to |known_string_ids_|.
+  // WebUI message handlers for SplitSettingsSync.
+  void HandleAcceptAndContinue(const ::login::StringList& consent_description,
+                               const std::string& consent_confirmation);
+  void HandleDeclineAndContinue(const ::login::StringList& consent_description,
+                                const std::string& consent_confirmation);
+
+  // Helper for the accept and decline cases.
+  void Continue(const ::login::StringList& consent_description,
+                const std::string& consent_confirmation,
+                UserChoice choice);
+
+  // Adds resource `resource_id` both to `builder` and to `known_string_ids_`.
   void RememberLocalizedValue(const std::string& name,
                               const int resource_id,
                               ::login::LocalizedValuesBuilder* builder);

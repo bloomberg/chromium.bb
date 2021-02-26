@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 
 namespace extensions {
 
@@ -22,7 +22,7 @@ class InputImeEventRouterBase {
   virtual ~InputImeEventRouterBase();
 
   // Gets the input method engine if the extension is active.
-  virtual input_method::InputMethodEngineBase* GetEngineIfActive(
+  virtual chromeos::InputMethodEngineBase* GetEngineIfActive(
       const std::string& extension_id,
       std::string* error) = 0;
 

@@ -67,16 +67,59 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
     android_client_data_ext_ = data;
   }
 
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key()
+      const {
+    return large_blob_key_;
+  }
+  void set_large_blob_key(
+      const base::span<const uint8_t, kLargeBlobKeyLength> large_blob_key);
+  base::Optional<std::vector<uint8_t>> large_blob() const {
+    return large_blob_;
+  }
+  void set_large_blob(base::Optional<std::vector<uint8_t>> large_blob) {
+    large_blob_ = std::move(large_blob);
+  }
+  bool large_blob_written() const { return large_blob_written_; }
+  void set_large_blob_written(bool large_blob_written) {
+    large_blob_written_ = large_blob_written;
+  }
+
+  // hmac_secret contains the output of the hmac_secret extension.
+  base::Optional<base::span<const uint8_t>> hmac_secret() const;
+  void set_hmac_secret(std::vector<uint8_t>);
+
+  // hmac_secret_not_evaluated will be true in cases where the
+  // |FidoAuthenticator| was unable to process the extension, even though it
+  // supports hmac_secret in general. This is intended for a case of Windows,
+  // where some versions of webauthn.dll can only express the extension for
+  // makeCredential, not getAssertion.
+  bool hmac_secret_not_evaluated() const;
+  void set_hmac_secret_not_evaluated(bool);
+
  private:
   base::Optional<PublicKeyCredentialDescriptor> credential_;
   AuthenticatorData authenticator_data_;
   std::vector<uint8_t> signature_;
   base::Optional<PublicKeyCredentialUserEntity> user_entity_;
   base::Optional<uint8_t> num_credentials_;
+  base::Optional<std::vector<uint8_t>> hmac_secret_;
+  bool hmac_secret_not_evaluated_ = false;
 
   // If not base::nullopt, the content of the googleAndroidClientData extension
   // authenticator output.
   base::Optional<std::vector<uint8_t>> android_client_data_ext_;
+
+  // The large blob key associated to the credential. This value is only
+  // returned if the assertion request contains the largeBlobKey extension on a
+  // capable authenticator and the credential has an associated large blob key.
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key_;
+
+  // The large blob associated with the credential.
+  base::Optional<std::vector<uint8_t>> large_blob_;
+
+  // Whether a large blob was successfully written as part of this GetAssertion
+  // request.
+  bool large_blob_written_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorGetAssertionResponse);
 };

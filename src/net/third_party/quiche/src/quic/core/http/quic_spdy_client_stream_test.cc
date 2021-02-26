@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -46,7 +47,12 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
       delete;
   ~MockQuicSpdyClientSession() override = default;
 
-  MOCK_METHOD(void, CloseStream, (QuicStreamId stream_id), (override));
+  MOCK_METHOD(bool,
+              WriteControlFrame,
+              (const QuicFrame& frame, TransmissionType type),
+              (override));
+
+  using QuicSession::ActivateStream;
 
  private:
   QuicCryptoClientConfig crypto_config_;
@@ -67,14 +73,20 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
                  &push_promise_index_),
         body_("hello world") {
     session_.Initialize();
-
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+    connection_->SetEncrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        std::make_unique<NullEncrypter>(connection_->perspective()));
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_ = std::make_unique<QuicSpdyClientStream>(
+    auto stream = std::make_unique<QuicSpdyClientStream>(
         GetNthClientInitiatedBidirectionalStreamId(
             connection_->transport_version(), 0),
         &session_, BIDIRECTIONAL);
+    stream_ = stream.get();
+    session_.ActivateStream(std::move(stream));
+
     stream_visitor_ = std::make_unique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
   }
@@ -91,7 +103,7 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicClientPushPromiseIndex push_promise_index_;
 
   MockQuicSpdyClientSession session_;
-  std::unique_ptr<QuicSpdyClientStream> stream_;
+  QuicSpdyClientStream* stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
   SpdyHeaderBlock headers_;
   std::string body_;
@@ -105,7 +117,7 @@ INSTANTIATE_TEST_SUITE_P(Tests,
 TEST_P(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
   headers_[":status"] = "200 ok";
 
-  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(session_, WriteControlFrame(_, _));
   EXPECT_CALL(*connection_,
               OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
   auto headers = AsHeaderList(headers_);
@@ -133,17 +145,77 @@ TEST_P(QuicSpdyClientStreamTest, TestFraming) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_P(QuicSpdyClientStreamTest, TestFraming100Continue) {
+TEST_P(QuicSpdyClientStreamTest, Test100ContinueBeforeSuccessful) {
+  // First send 100 Continue.
   headers_[":status"] = "100";
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  stream_->OnStreamFrame(
-      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   EXPECT_EQ("100", stream_->preliminary_headers().find(":status")->second);
   EXPECT_EQ(0u, stream_->response_headers().size());
   EXPECT_EQ(100, stream_->response_code());
   EXPECT_EQ("", stream_->data());
+  // Then send 200 OK.
+  headers_[":status"] = "200";
+  headers = AsHeaderList(headers_);
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
+  std::string header = std::string(buffer.get(), header_length);
+  std::string data =
+      connection_->version().UsesHttp3() ? header + body_ : body_;
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
+  // Make sure the 200 response got parsed correctly.
+  EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
+  EXPECT_EQ(200, stream_->response_code());
+  EXPECT_EQ(body_, stream_->data());
+  // Make sure the 100 response is still available.
+  EXPECT_EQ("100", stream_->preliminary_headers().find(":status")->second);
+}
+
+TEST_P(QuicSpdyClientStreamTest, TestUnknownInformationalBeforeSuccessful) {
+  // First send 199, an unknown Informational (1XX).
+  headers_[":status"] = "199";
+  auto headers = AsHeaderList(headers_);
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  EXPECT_EQ(0u, stream_->response_headers().size());
+  EXPECT_EQ(199, stream_->response_code());
+  EXPECT_EQ("", stream_->data());
+  // Then send 200 OK.
+  headers_[":status"] = "200";
+  headers = AsHeaderList(headers_);
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
+  std::string header = std::string(buffer.get(), header_length);
+  std::string data =
+      connection_->version().UsesHttp3() ? header + body_ : body_;
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
+  // Make sure the 200 response got parsed correctly.
+  EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
+  EXPECT_EQ(200, stream_->response_code());
+  EXPECT_EQ(body_, stream_->data());
+}
+
+TEST_P(QuicSpdyClientStreamTest, TestReceiving101) {
+  // 101 "Switching Protocols" is forbidden in HTTP/3 as per the
+  // "HTTP Upgrade" section of draft-ietf-quic-http.
+  headers_[":status"] = "101";
+  EXPECT_CALL(session_, WriteControlFrame(_, _));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
+  auto headers = AsHeaderList(headers_);
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  EXPECT_THAT(stream_->stream_error(),
+              IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
 }
 
 TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
@@ -182,7 +254,7 @@ TEST_P(QuicSpdyClientStreamTest,
   std::string data = VersionUsesHttp3(connection_->transport_version())
                          ? header + large_body
                          : large_body;
-  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(session_, WriteControlFrame(_, _));
   EXPECT_CALL(*connection_,
               OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
 

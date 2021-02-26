@@ -14,7 +14,6 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -235,12 +234,15 @@ TEST_F(TimeZoneTest, InvalidResponse) {
                            base::BindOnce(&TimeZoneReceiver::OnRequestDone,
                                           base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
-  EXPECT_EQ(
-      "dstOffset=0.000000, rawOffset=0.000000, timeZoneId='', timeZoneName='', "
-      "error_message='TimeZone provider at 'https://localhost/' : JSONReader "
-      "failed: Line: 1, column: 1, Unexpected token..', status=6 "
-      "(REQUEST_ERROR)",
-      receiver.timezone()->ToStringForDebug());
+  std::string receiver_timezone = receiver.timezone()->ToStringForDebug();
+  EXPECT_NE(std::string::npos,
+            receiver_timezone.find("dstOffset=0.000000, rawOffset=0.000000, "
+                                   "timeZoneId='', timeZoneName='', "
+                                   "error_message='TimeZone provider at "
+                                   "'https://localhost/' : JSONReader "
+                                   "failed:"));
+  EXPECT_NE(std::string::npos,
+            receiver_timezone.find("status=6 (REQUEST_ERROR)"));
   EXPECT_FALSE(receiver.server_error());
   EXPECT_GE(url_factory.attempts(), 2U);
   if (url_factory.attempts() > expected_retries + 1) {

@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -123,19 +125,13 @@ class TabDesktopMediaListTest : public testing::Test {
     WebContentsTester::For(contents.get())
         ->SetLastActiveTime(base::TimeTicks::Now());
 
-    // Get or create the transient NavigationEntry and add a title and a
-    // favicon to it.
+    // Get or create a NavigationEntry and add a title and a favicon to it.
     content::NavigationEntry* entry =
-        contents->GetController().GetTransientEntry();
+        contents->GetController().GetLastCommittedEntry();
     if (!entry) {
-      std::unique_ptr<content::NavigationEntry> entry_new =
-          content::NavigationController::CreateNavigationEntry(
-              GURL("chrome://blank"), content::Referrer(), base::nullopt,
-              ui::PAGE_TRANSITION_LINK, false, std::string(), profile_,
-              nullptr /* blob_url_loader_factory */);
-
-      contents->GetController().SetTransientEntry(std::move(entry_new));
-      entry = contents->GetController().GetTransientEntry();
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          contents.get(), GURL("chrome://blank"));
+      entry = contents->GetController().GetLastCommittedEntry();
     }
 
     contents->UpdateTitleForEntry(entry, base::ASCIIToUTF16("Test tab"));
@@ -150,7 +146,6 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void SetUp() override {
-    manually_added_web_contents_.clear();
     rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -171,7 +166,7 @@ class TabDesktopMediaListTest : public testing::Test {
 
     // Create browser.
     Browser::CreateParams profile_params(profile_, true);
-    browser_ = CreateBrowserWithTestWindowForParams(&profile_params);
+    browser_ = CreateBrowserWithTestWindowForParams(profile_params);
     ASSERT_TRUE(browser_);
     for (int i = 0; i < kDefaultSourceCount; i++) {
       AddWebcontents(i + 1);
@@ -282,13 +277,7 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
   ASSERT_TRUE(tab_strip_model);
   std::unique_ptr<WebContents> released_web_contents =
       tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1);
-  for (auto it = manually_added_web_contents_.begin();
-       it != manually_added_web_contents_.end(); ++it) {
-    if (*it == released_web_contents.get()) {
-      manually_added_web_contents_.erase(it);
-      break;
-    }
-  }
+  base::Erase(manually_added_web_contents_, released_web_contents.get());
 
   EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))
       .WillOnce(
@@ -336,7 +325,7 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
       tab_strip_model->GetWebContentsAt(kDefaultSourceCount - 1);
   ASSERT_TRUE(contents);
   content::NavigationController& controller = contents->GetController();
-  contents->UpdateTitleForEntry(controller.GetTransientEntry(),
+  contents->UpdateTitleForEntry(controller.GetLastCommittedEntry(),
                                 base::ASCIIToUTF16("New test tab"));
 
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
@@ -361,7 +350,8 @@ TEST_F(TabDesktopMediaListTest, UpdateThumbnail) {
 
   content::FaviconStatus favicon_info;
   favicon_info.image = CreateGrayscaleImage(gfx::Size(10, 10), 100);
-  contents->GetController().GetTransientEntry()->GetFavicon() = favicon_info;
+  contents->GetController().GetLastCommittedEntry()->GetFavicon() =
+      favicon_info;
 
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());

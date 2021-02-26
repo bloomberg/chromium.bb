@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <intrin.h>
+#include <limits>
 #include <new.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <windows.h>
 
@@ -28,7 +30,7 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     DisableThreadLibraryCalls(instance);
     // Remove allocation limit from ffmpeg, so calls go down to shim layer.
-    av_max_alloc(0);
+    av_max_alloc(std::numeric_limits<size_t>::max());
     // Enable OOM crashes in the shim for all malloc calls that fail.
     _set_new_mode(1);
     _set_new_handler(&OnNoMemory);

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -17,10 +17,12 @@ class BrowserContext;
 
 namespace arc {
 
+class ArcBridgeService;
+
 // Watches for ARC provisioning status and displays a notification during
 // provision when ARC opt-in flow happens silently due to configured policies.
 class ArcProvisionNotificationService : public KeyedService,
-                                        public ArcSessionManager::Observer {
+                                        public ArcSessionManagerObserver {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -36,13 +38,14 @@ class ArcProvisionNotificationService : public KeyedService,
   void ShowNotification();
   void HideNotification();
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcStarted() override;
   void OnArcOptInManagementCheckStarted() override;
   void OnArcInitialStart() override;
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
-  void OnArcErrorShowRequested(ArcSupportHost::Error error) override;
+  void OnArcErrorShowRequested(ArcSupportHost::Error error,
+                               int error_code) override;
 
   content::BrowserContext* const context_;
 

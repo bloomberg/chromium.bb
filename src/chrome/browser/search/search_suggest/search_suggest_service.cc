@@ -12,13 +12,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -105,13 +105,9 @@ bool SearchSuggestService::IsEnabled() {
   if (base::FeatureList::IsEnabled(ntp_features::kSearchSuggestChips))
     return true;
 
-  return OmniboxFieldTrial::GetZeroSuggestVariants(
-             metrics::OmniboxEventProto::NTP_REALBOX)
-             .empty() &&
-         OmniboxFieldTrial::GetZeroSuggestVariants(
-             metrics::OmniboxEventProto::
-                 INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
-             .empty();
+  // NTP ZeroSuggest is enabled by default, so therefore this is disabled by
+  // default.
+  return false;
 }
 
 SearchSuggestService::SearchSuggestService(

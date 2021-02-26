@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-jumbo_component("aura") {
+component("aura") {
   public = [
     "client/aura_constants.h",
     "client/capture_client.h",
@@ -33,7 +32,6 @@ jumbo_component("aura") {
     "env_observer.h",
     "event_injector.h",
     "input_state_lookup.h",
-    "input_state_lookup_win.h",
     "layout_manager.h",
     "null_window_targeter.h",
     "scoped_enable_unadjusted_mouse_events.h",
@@ -75,12 +73,9 @@ jumbo_component("aura") {
     "env_input_state_controller.cc",
     "event_injector.cc",
     "input_state_lookup.cc",
-    "input_state_lookup_win.cc",
     "layout_manager.cc",
     "native_window_occlusion_tracker.cc",
     "native_window_occlusion_tracker.h",
-    "native_window_occlusion_tracker_win.cc",
-    "native_window_occlusion_tracker_win.h",
     "null_window_targeter.cc",
     "scoped_keyboard_hook.cc",
     "scoped_simple_keyboard_hook.cc",
@@ -127,6 +122,7 @@ jumbo_component("aura") {
     "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
+    "//ui/gfx:gfx_switches",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/platform_window",
@@ -134,12 +130,23 @@ jumbo_component("aura") {
   ]
 
   public_deps = [
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
+    "//ui/base/dragdrop/mojom:mojom_headers",
     "//ui/base/ime",
     "//ui/compositor",
   ]
 
+  if (is_win) {
+    public += [ "input_state_lookup_win.h" ]
+    sources += [
+      "input_state_lookup_win.cc",
+      "native_window_occlusion_tracker_win.cc",
+      "native_window_occlusion_tracker_win.h",
+    ]
+  }
+
   if (use_x11) {
+    public_deps += [ "//ui/base/x" ]
     deps += [
       "//ui/events/platform/x11",
       "//ui/platform_window/x11",
@@ -151,6 +158,7 @@ jumbo_component("aura") {
 
     deps += [
       "//ipc",
+      "//ui/base/cursor",
       "//ui/platform_window/win",
     ]
   }
@@ -171,7 +179,7 @@ jumbo_component("aura") {
   configs += [ "//build/config/compiler:noshadowing" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/aura_test_base.cc",
@@ -225,7 +233,7 @@ jumbo_static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime/init",
     "//ui/compositor:test_support",
@@ -244,10 +252,14 @@ jumbo_static_library("test_support") {
     sources += [ "test/ui_controls_factory_aurawin.cc" ]
   }
 
+  if (is_linux || is_chromeos) {
+    sources += [ "test/ui_controls_factory_aura_linux.cc" ]
+  }
+
   if (use_x11) {
     sources += [
-      "test/ui_controls_factory_aurax11.cc",
-      "test/x11_event_sender.cc",
+      "test/ui_controls_aurax11.cc",
+      "test/ui_controls_aurax11.h",
       "test/x11_event_sender.h",
     ]
 
@@ -261,10 +273,13 @@ jumbo_static_library("test_support") {
     if (is_fuchsia) {
       deps += [ "//ui/ozone" ]
     }
-    sources += [ "test/ui_controls_factory_ozone.cc" ]
+    sources += [
+      "test/ui_controls_ozone.cc",
+      "test/ui_controls_ozone.h",
+    ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//ui/platform_window/common" ]
   }
 }
@@ -303,8 +318,11 @@ executable("aura_demo") {
 }
 
 test("aura_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "../compositor_extra/shadow_unittest.cc",
+    "client/screen_position_client_unittest.cc",
     "gestures/gesture_recognizer_unittest.cc",
     "test/aura_test_suite.h",
     "test/run_all_unittests.cc",
@@ -346,6 +364,10 @@ test("aura_unittests") {
     "//ui/platform_window/stub",
     "//ui/wm",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 
   data_deps = [ "//third_party/mesa_headers" ]
 }

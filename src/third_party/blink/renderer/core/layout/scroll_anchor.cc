@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -82,13 +84,15 @@ static LayoutPoint CornerPointOfRect(LayoutRect rect, Corner which_corner) {
 static LayoutRect RelativeBounds(const LayoutObject* layout_object,
                                  const ScrollableArea* scroller) {
   PhysicalRect local_bounds;
-  if (layout_object->IsBox()) {
-    local_bounds = ToLayoutBox(layout_object)->PhysicalBorderBoxRect();
-    if (!layout_object->HasOverflowClip()) {
+  if (const auto* box = DynamicTo<LayoutBox>(layout_object)) {
+    local_bounds = box->PhysicalBorderBoxRect();
+    // If we clip overflow then we can use the `PhysicalBorderBoxRect()`
+    // as our bounds. If not, we expand the bounds by the layout overflow and
+    // lowest floating object.
+    if (!layout_object->ShouldClipOverflowAlongEitherAxis()) {
       // BorderBoxRect doesn't include overflow content and floats.
       LayoutUnit max_y =
-          std::max(local_bounds.Bottom(),
-                   ToLayoutBox(layout_object)->LayoutOverflowRect().MaxY());
+          std::max(local_bounds.Bottom(), box->LayoutOverflowRect().MaxY());
       auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
       if (layout_block_flow && layout_block_flow->ContainsFloats()) {
         // Note that lowestFloatLogicalBottom doesn't include floating
@@ -98,7 +102,7 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
       local_bounds.ShiftBottomEdgeTo(max_y);
     }
   } else if (layout_object->IsText()) {
-    const auto* text = ToLayoutText(layout_object);
+    const auto* text = To<LayoutText>(layout_object);
     // TODO(kojii): |PhysicalLinesBoundingBox()| cannot compute, and thus
     // returns (0, 0) when changes are made that |DeleteLineBoxes()| or clear
     // |SetPaintFragment()|, e.g., |SplitFlow()|. crbug.com/965352
@@ -119,7 +123,10 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
 static LayoutPoint ComputeRelativeOffset(const LayoutObject* layout_object,
                                          const ScrollableArea* scroller,
                                          Corner corner) {
-  return CornerPointOfRect(RelativeBounds(layout_object, scroller), corner);
+  LayoutPoint offset =
+      CornerPointOfRect(RelativeBounds(layout_object, scroller), corner);
+  const LayoutBox* scroller_box = ScrollerLayoutBox(scroller);
+  return scroller_box->FlipForWritingMode(PhysicalOffset(offset));
 }
 
 static bool CandidateMayMoveWithScroller(const LayoutObject* candidate,
@@ -266,6 +273,21 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
   return builder.ToString();
 }
 
+static LayoutRect GetVisibleRect(ScrollableArea* scroller) {
+  auto visible_rect =
+      ScrollerLayoutBox(scroller)->OverflowClipRect(LayoutPoint());
+
+  const ComputedStyle* style = ScrollerLayoutBox(scroller)->Style();
+  LayoutRectOutsets scroll_padding(
+      MinimumValueForLength(style->ScrollPaddingTop(), visible_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingRight(), visible_rect.Width()),
+      MinimumValueForLength(style->ScrollPaddingBottom(),
+                            visible_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingLeft(), visible_rect.Width()));
+  visible_rect.Contract(scroll_padding);
+  return visible_rect;
+}
+
 ScrollAnchor::ExamineResult ScrollAnchor::Examine(
     const LayoutObject* candidate) const {
   if (candidate == ScrollerLayoutBox(scroller_))
@@ -289,17 +311,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
     return ExamineResult(kSkip);
 
   LayoutRect candidate_rect = RelativeBounds(candidate, scroller_);
-  LayoutRect visible_rect =
-      ScrollerLayoutBox(scroller_)->OverflowClipRect(LayoutPoint());
-
-  const ComputedStyle* style = ScrollerLayoutBox(scroller_)->Style();
-  LayoutRectOutsets scroll_padding(
-      MinimumValueForLength(style->ScrollPaddingTop(), visible_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingRight(), visible_rect.Width()),
-      MinimumValueForLength(style->ScrollPaddingBottom(),
-                            visible_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingLeft(), visible_rect.Width()));
-  visible_rect.Contract(scroll_padding);
+  LayoutRect visible_rect = GetVisibleRect(scroller_);
 
   bool occupies_space =
       candidate_rect.Width() > 0 && candidate_rect.Height() > 0;
@@ -324,6 +336,8 @@ void ScrollAnchor::FindAnchor() {
     anchor_object_->SetIsScrollAnchorObject();
     saved_relative_offset_ =
         ComputeRelativeOffset(anchor_object_, scroller_, corner_);
+    anchor_is_cv_auto_without_layout_ =
+        DisplayLockUtilities::IsAutoWithoutLayout(*anchor_object_);
   }
 }
 
@@ -335,13 +349,19 @@ bool ScrollAnchor::FindAnchorInPriorityCandidates() {
   auto& document = scroller_box->GetDocument();
 
   // Focused area.
-  LayoutObject* candidate =
-      PriorityCandidateFromNode(document.FocusedElement());
-  auto result = ExaminePriorityCandidate(candidate);
-  if (result.viable) {
-    anchor_object_ = candidate;
-    corner_ = result.corner;
-    return true;
+  LayoutObject* candidate = nullptr;
+  ExamineResult result{kSkip};
+  auto* focused_element = document.FocusedElement();
+  if (focused_element && HasEditableStyle(*focused_element)) {
+    candidate = PriorityCandidateFromNode(focused_element);
+    if (candidate) {
+      result = ExaminePriorityCandidate(candidate);
+      if (result.viable) {
+        anchor_object_ = candidate;
+        corner_ = result.corner;
+        return true;
+      }
+    }
   }
 
   // Active find-in-page match.
@@ -493,11 +513,44 @@ IntSize ScrollAnchor::ComputeAdjustment() const {
                                                        scroller_, corner_)) -
                   RoundedIntSize(saved_relative_offset_);
 
+  LayoutRect anchor_rect = RelativeBounds(anchor_object_, scroller_);
+
   // Only adjust on the block layout axis.
-  if (ScrollerLayoutBox(scroller_)->IsHorizontalWritingMode())
+  const LayoutBox* scroller_box = ScrollerLayoutBox(scroller_);
+  if (scroller_box->IsHorizontalWritingMode())
     delta.SetWidth(0);
   else
     delta.SetHeight(0);
+
+  if (anchor_is_cv_auto_without_layout_) {
+    // See the effect delta would have on the anchor rect.
+    // If the anchor is now off-screen (in block direction) then make sure it's
+    // just at the edge.
+    anchor_rect.Move(-delta);
+    if (scroller_box->IsHorizontalWritingMode()) {
+      if (anchor_rect.MaxY() < 0)
+        delta.SetHeight(delta.Height() + anchor_rect.MaxY().ToInt());
+    } else {
+      // For the flipped blocks writing mode, we need to adjust the offset to
+      // align the opposite edge of the block (MaxX edge instead of X edge).
+      if (scroller_box->HasFlippedBlocksWritingMode()) {
+        auto visible_rect = GetVisibleRect(scroller_);
+        if (anchor_rect.X() > visible_rect.MaxX()) {
+          delta.SetWidth(delta.Width() - (anchor_rect.X().ToInt() -
+                                          visible_rect.MaxX().ToInt()));
+        }
+      } else if (anchor_rect.MaxX() < 0) {
+        delta.SetWidth(delta.Width() + anchor_rect.MaxX().ToInt());
+      }
+    }
+  }
+
+  // If block direction is flipped, delta is a logical value, so flip it to
+  // make it physical.
+  if (!scroller_box->IsHorizontalWritingMode() &&
+      scroller_box->HasFlippedBlocksWritingMode()) {
+    delta.SetWidth(-delta.Width());
+  }
   return delta;
 }
 
@@ -509,6 +562,13 @@ void ScrollAnchor::Adjust() {
   if (!anchor_object_)
     return;
   IntSize adjustment = ComputeAdjustment();
+
+  // We should pick a new anchor if we had an unlaid-out content-visibility
+  // auto. It should have been laid out, so if it is still the best candidate,
+  // we will select it without this boolean set.
+  if (anchor_is_cv_auto_without_layout_)
+    ClearSelf();
+
   if (adjustment.IsZero())
     return;
 
@@ -594,9 +654,13 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
     // and attempt to re-find the anchor. The user-visible effect should end up
     // roughly the same.
     ScrollOffset current_offset = scroller_->GetScrollOffset();
-    FloatPoint desired_point =
-        anchor_object->AbsoluteBoundingBoxFloatRect().Location() +
-        current_offset;
+    FloatRect bounding_box = anchor_object->AbsoluteBoundingBoxFloatRect();
+    FloatPoint location_point =
+        anchor_object->Style()->IsFlippedBlocksWritingMode()
+            ? bounding_box.MaxXMinYCorner()
+            : bounding_box.Location();
+    FloatPoint desired_point = location_point + current_offset;
+
     ScrollOffset desired_offset =
         ScrollOffset(desired_point.X(), desired_point.Y());
     ScrollOffset delta =
@@ -644,6 +708,7 @@ const SerializedAnchor ScrollAnchor::GetSerializedAnchor() {
   SerializedAnchor new_anchor(
       ComputeUniqueSelector(anchor_object_->GetNode()),
       ComputeRelativeOffset(anchor_object_, scroller_, corner_));
+
   if (new_anchor.IsValid()) {
     saved_selector_ = new_anchor.selector;
   }

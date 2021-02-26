@@ -21,9 +21,6 @@ sys.path.append(scripts_path)
 import devtools_paths
 import test_helpers
 
-CONDUCTOR_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test', 'conductor')
-E2E_MOCHA_CONFIGURATION_LOCATION = os.path.join(ROOT_DIRECTORY, 'test', 'e2e', '.mocharc.js')
-
 
 def parse_options(cli_args):
     parser = argparse.ArgumentParser(description='Run tests')
@@ -31,27 +28,28 @@ def parse_options(cli_args):
     parser.add_argument('--test-suite', dest='test_suite', help='path to test suite')
     parser.add_argument('--test-file', dest='test_file', help='an absolute path for the file to test')
     parser.add_argument(
+        '--target',
+        '-t',
+        default='Default',
+        dest='target',
+        help='The name of the Ninja output directory. Defaults to "Default"')
+    parser.add_argument(
         '--chrome-features',
         dest='chrome_features',
         help='comma separated list of strings passed to --enable-features on the chromium commandline')
     return parser.parse_args(cli_args)
 
 
-def compile_typescript(typescript_targets):
-    for target in typescript_targets:
-        print("Compiling %s TypeScript" % (target['name']))
-        exec_command = [devtools_paths.node_path(), devtools_paths.typescript_compiler_path(), '-p', target['path']]
-        exit_code = test_helpers.popen(exec_command)
-        if exit_code != 0:
-            return True
-
-    return False
-
-
-def run_tests(chrome_binary, chrome_features, test_suite, test_suite_list_path, test_file=None):
+def run_tests(chrome_binary,
+              chrome_features,
+              test_suite_path,
+              test_suite,
+              test_file=None):
+    # Silence CI step in old branch
+    if test_suite == "interactions":
+        return False
     env = os.environ.copy()
     env['CHROME_BIN'] = chrome_binary
-    env['TEST_LIST'] = test_suite_list_path
     if chrome_features:
         env['CHROME_FEATURES'] = chrome_features
 
@@ -59,16 +57,12 @@ def run_tests(chrome_binary, chrome_features, test_suite, test_suite_list_path, 
         env['TEST_FILE'] = test_file
 
     cwd = devtools_paths.devtools_root_path()
-    if test_suite == 'e2e':
-        exec_command = [
-            devtools_paths.node_path(),
-            devtools_paths.mocha_path(),
-            '--config',
-            E2E_MOCHA_CONFIGURATION_LOCATION,
-        ]
-    else:
-        runner_path = os.path.join(cwd, 'test', 'shared', 'runner.js')
-        exec_command = [devtools_paths.node_path(), runner_path]
+    exec_command = [
+        devtools_paths.node_path(),
+        devtools_paths.mocha_path(),
+        '--config',
+        os.path.join(test_suite_path, '.mocharc.js'),
+    ]
 
     exit_code = test_helpers.popen(exec_command, cwd=cwd, env=env)
     if exit_code != 0:
@@ -112,31 +106,22 @@ def run_test():
 
     print('Using Chromium binary ({}{})\n'.format(chrome_binary, ' ' + chrome_features if chrome_features else ''))
     print('Using Test Suite (%s)\n' % test_suite)
+    print('Using target (%s)\n' % OPTIONS.target)
 
     if test_file is not None:
         print('Testing file (%s)' % test_file)
 
     cwd = devtools_paths.devtools_root_path()
-    shared_path = os.path.join(cwd, 'test', 'shared')
-    test_suite_path = os.path.join(cwd, 'test', test_suite)
-    typescript_paths = [{
-        'name': 'conductor',
-        'path': CONDUCTOR_DIRECTORY
-    }, {
-        'name': 'shared',
-        'path': shared_path
-    }, {
-        'name': 'suite',
-        'path': test_suite_path
-    }]
+    test_suite_path = os.path.join(cwd, 'out', OPTIONS.target, 'gen', 'test',
+                                   test_suite)
 
     errors_found = False
     try:
-        errors_found = compile_typescript(typescript_paths)
-        if (errors_found):
-            raise Exception('Typescript failed to compile')
-        test_suite_list_path = os.path.join(test_suite_path, 'test-list.js')
-        errors_found = run_tests(chrome_binary, chrome_features, test_suite, test_suite_list_path, test_file=test_file)
+        errors_found = run_tests(chrome_binary,
+                                 chrome_features,
+                                 test_suite_path,
+                                 test_suite,
+                                 test_file=test_file)
     except Exception as err:
         print(err)
 

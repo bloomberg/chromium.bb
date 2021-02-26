@@ -8,21 +8,19 @@
 #include <string.h>
 #include <vpx/vp8cx.h>
 
+#include <chrono>
 #include <cmath>
 #include <utility>
 
 #include "cast/streaming/encoded_frame.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/sender.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/saturate_cast.h"
 
 namespace openscreen {
 namespace cast {
-
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 
 // TODO(https://crbug.com/openscreen/123): Fix the declarations and then remove
 // this:
@@ -371,7 +369,7 @@ void StreamingVp8Encoder::ComputeFrameEncodeStats(
 
   constexpr double kBytesPerBit = 1.0 / CHAR_BIT;
   constexpr double kSecondsPerClockTick =
-      1.0 / duration_cast<Clock::duration>(seconds(1)).count();
+      1.0 / Clock::to_duration(seconds(1)).count();
   const double target_bytes_per_clock_tick =
       target_bitrate * (kBytesPerBit * kSecondsPerClockTick);
   stats.target_size = target_bytes_per_clock_tick * work_unit->duration.count();

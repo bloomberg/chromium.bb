@@ -41,6 +41,7 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void NewTabWithUrl(const GURL& url, bool from_user_interaction) override;
   void NewWindow(bool incognito) override;
   void OpenFileManager() override;
+  void OpenDownloadsFolder() override;
   void OpenCrosh() override;
   void OpenGetHelp() override;
   void RestoreTab() override;
@@ -54,8 +55,6 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void OpenArcCustomTab(
       const GURL& url,
       int32_t task_id,
-      int32_t surface_id,
-      int32_t top_margin,
       arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override;
   void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
 

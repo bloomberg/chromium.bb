@@ -1,5 +1,9 @@
 #include "jpeg_nbits_table.h"
 
+/* NOTE: Both GCC and Clang define __GNUC__ */
+#if defined __GNUC__
+__attribute__((visibility("hidden")))
+#endif
 const unsigned char jpeg_nbits_table[65536] = {
    0,  1,  2,  2,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,
    5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,

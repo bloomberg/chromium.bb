@@ -22,26 +22,43 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/string_view.h"
 #include "src/trace_processor/forwarding_trace_parser.h"
+#include "src/trace_processor/util/status_macros.h"
 
 namespace perfetto {
 namespace trace_processor {
 
+namespace {
+
+using ResultCode = GzipDecompressor::ResultCode;
+
+}  // namespace
+
 GzipTraceParser::GzipTraceParser(TraceProcessorContext* context)
     : context_(context) {}
+
+GzipTraceParser::GzipTraceParser(std::unique_ptr<ChunkedTraceReader> reader)
+    : context_(nullptr), inner_(std::move(reader)) {}
 
 GzipTraceParser::~GzipTraceParser() = default;
 
 util::Status GzipTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
                                     size_t size) {
-  uint8_t* start = data.get();
+  return ParseUnowned(data.get(), size);
+}
+
+util::Status GzipTraceParser::ParseUnowned(const uint8_t* data, size_t size) {
+  const uint8_t* start = data;
   size_t len = size;
 
   if (!inner_) {
+    PERFETTO_CHECK(context_);
     inner_.reset(new ForwardingTraceParser(context_));
+  }
 
+  if (!first_chunk_parsed_) {
     // .ctrace files begin with: "TRACE:\n" or "done. TRACE:\n" strip this if
     // present.
-    base::StringView beginning(reinterpret_cast<char*>(start), size);
+    base::StringView beginning(reinterpret_cast<const char*>(start), size);
 
     static const char* kSystraceFileHeader = "TRACE:\n";
     size_t offset = Find(kSystraceFileHeader, beginning);
@@ -49,33 +66,49 @@ util::Status GzipTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
       start += strlen(kSystraceFileHeader) + offset;
       len -= strlen(kSystraceFileHeader) + offset;
     }
+    first_chunk_parsed_ = true;
   }
-  decompressor_.SetInput(start, len);
 
   // Our default uncompressed buffer size is 32MB as it allows for good
   // throughput.
-  using ResultCode = GzipDecompressor::ResultCode;
   constexpr size_t kUncompressedBufferSize = 32 * 1024 * 1024;
 
+  needs_more_input_ = false;
+  decompressor_.SetInput(start, len);
+
   for (auto ret = ResultCode::kOk; ret != ResultCode::kEof;) {
-    std::unique_ptr<uint8_t[]> buffer(new uint8_t[kUncompressedBufferSize]);
+    if (!buffer_) {
+      buffer_.reset(new uint8_t[kUncompressedBufferSize]);
+      bytes_written_ = 0;
+    }
+
     auto result =
-        decompressor_.Decompress(buffer.get(), kUncompressedBufferSize);
+        decompressor_.Decompress(buffer_.get() + bytes_written_,
+                                 kUncompressedBufferSize - bytes_written_);
     ret = result.ret;
     if (ret == ResultCode::kError || ret == ResultCode::kNoProgress)
-      return util::ErrStatus("Unable to decompress gzip/ctrace trace");
-    if (ret == ResultCode::kNeedsMoreInput)
-      break;
+      return util::ErrStatus("Failed to decompress trace chunk");
 
-    util::Status status =
-        inner_->Parse(std::move(buffer), result.bytes_written);
-    if (!status.ok())
-      return status;
+    if (ret == ResultCode::kNeedsMoreInput) {
+      PERFETTO_DCHECK(result.bytes_written == 0);
+      needs_more_input_ = true;
+      return util::OkStatus();
+    }
+    bytes_written_ += result.bytes_written;
+
+    if (bytes_written_ == kUncompressedBufferSize || ret == ResultCode::kEof)
+      RETURN_IF_ERROR(inner_->Parse(std::move(buffer_), bytes_written_));
   }
   return util::OkStatus();
 }
 
-void GzipTraceParser::NotifyEndOfFile() {}
+void GzipTraceParser::NotifyEndOfFile() {
+  // TODO(lalitm): this should really be an error returned to the caller but
+  // due to historical implementation, NotifyEndOfFile does not return a
+  // util::Status.
+  PERFETTO_DCHECK(!needs_more_input_);
+  PERFETTO_DCHECK(!buffer_);
+}
 
 }  // namespace trace_processor
 }  // namespace perfetto

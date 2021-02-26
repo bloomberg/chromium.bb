@@ -6,18 +6,15 @@
 
 #include "xfa/fwl/cfwl_barcode.h"
 
-#include <utility>
-
 #include "fxbarcode/cfx_barcode.h"
-#include "third_party/base/ptr_util.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fwl/cfwl_notedriver.h"
 #include "xfa/fwl/cfwl_themepart.h"
 #include "xfa/fwl/ifwl_themeprovider.h"
 #include "xfa/fwl/theme/cfwl_utils.h"
 
-CFWL_Barcode::CFWL_Barcode(const CFWL_App* app)
-    : CFWL_Edit(app, pdfium::MakeUnique<CFWL_WidgetProperties>(), nullptr) {}
+CFWL_Barcode::CFWL_Barcode(CFWL_App* app)
+    : CFWL_Edit(app, Properties(), nullptr) {}
 
 CFWL_Barcode::~CFWL_Barcode() = default;
 
@@ -33,13 +30,12 @@ void CFWL_Barcode::Update() {
   GenerateBarcodeImageCache();
 }
 
-void CFWL_Barcode::DrawWidget(CXFA_Graphics* pGraphics,
+void CFWL_Barcode::DrawWidget(CFGAS_GEGraphics* pGraphics,
                               const CFX_Matrix& matrix) {
   if (!pGraphics)
     return;
-  if (!m_pProperties->m_pThemeProvider)
-    return;
-  if ((m_pProperties->m_dwStates & FWL_WGTSTATE_Focused) == 0) {
+
+  if ((m_Properties.m_dwStates & FWL_WGTSTATE_Focused) == 0) {
     GenerateBarcodeImageCache();
     if (!m_pBarcodeEngine || m_eStatus != Status::kEncodeSuccess)
       return;
@@ -158,20 +154,15 @@ void CFWL_Barcode::GenerateBarcodeImageCache() {
   if (!m_pBarcodeEngine)
     return;
 
-  IFWL_ThemeProvider* pTheme = GetAvailableTheme();
-  if (pTheme) {
-    CFWL_ThemePart part;
-    part.m_pWidget = this;
-    if (RetainPtr<CFGAS_GEFont> pFont = pTheme->GetFont(part)) {
-      if (CFX_Font* pCXFont = pFont->GetDevFont())
-        m_pBarcodeEngine->SetFont(pCXFont);
-    }
-    m_pBarcodeEngine->SetFontSize(pTheme->GetFontSize(part));
-    m_pBarcodeEngine->SetFontColor(pTheme->GetTextColor(part));
-  } else {
-    m_pBarcodeEngine->SetFontSize(FWLTHEME_CAPACITY_FontSize);
+  IFWL_ThemeProvider* pTheme = GetThemeProvider();
+  CFWL_ThemePart part;
+  part.m_pWidget = this;
+  if (RetainPtr<CFGAS_GEFont> pFont = pTheme->GetFont(part)) {
+    if (CFX_Font* pCXFont = pFont->GetDevFont())
+      m_pBarcodeEngine->SetFont(pCXFont);
   }
-
+  m_pBarcodeEngine->SetFontSize(pTheme->GetFontSize(part));
+  m_pBarcodeEngine->SetFontColor(pTheme->GetTextColor(part));
   m_pBarcodeEngine->SetHeight(int32_t(GetRTClient().height));
   m_pBarcodeEngine->SetWidth(int32_t(GetRTClient().width));
   if (m_dwAttributeMask & FWL_BCDATTRIBUTE_CHARENCODING)

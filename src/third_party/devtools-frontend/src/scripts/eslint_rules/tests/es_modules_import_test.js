@@ -35,10 +35,6 @@ ruleTester.run('es_modules_import', rule, {
       filename: 'front_end/accessibility/ARIAMetadata.js',
     },
     {
-      code: 'import { DebuggerLanguagePlugin } from \'../DebuggerLanguagePlugins.js\';',
-      filename: 'front_end/bindings/language_plugins/CXXDWARFLanguagePlugin.js',
-    },
-    {
       code: 'import \'../../common/common.js\';',
       filename: 'front_end/formatter_worker/formatter_worker.js',
     },
@@ -65,12 +61,24 @@ ruleTester.run('es_modules_import', rule, {
       filename: 'front_end/elements/ElementsBreadcrumbs.ts',
     },
     {
+      code: 'import {classMap} from \'../third_party/lit-html/package/directives/class-map.js\';',
+      filename: 'front_end/elements/LayoutPane.ts',
+    },
+    {
       code: 'import * as WasmDis from \'../third_party/wasmparser/WasmDis.js\';',
       filename: 'front_end/wasmparser_worker/WasmParserWorker.js',
     },
     {
+      code: 'import * as Acorn from \'../third_party/acorn/package/dist/acorn.mjs\';',
+      filename: 'front_end/formatter_worker/JavascriptOutline.js',
+    },
+    {
       code: 'import * as fs from \'fs\';',
       filename: 'test/unittests/front_end/Unit_test.ts',
+    },
+    {
+      code: 'import {terser} from \'rollup-plugin-terser\';',
+      filename: 'front_end/rollup.config.js',
     },
     {
       code: 'export {UIString} from \'../platform/platform.js\';',
@@ -79,6 +87,10 @@ ruleTester.run('es_modules_import', rule, {
     {
       code: 'export async function foo() {};',
       filename: 'front_end/common/common.js',
+    },
+    {
+      code: 'import Marked from \'../third_party/marked/package/lib/marked.esm.js\';',
+      filename: 'front_end/marked/marked.js',
     }
   ],
 

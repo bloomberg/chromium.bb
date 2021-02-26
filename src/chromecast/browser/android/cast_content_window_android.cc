@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/browser/jni_headers/CastContentWindowAndroid_jni.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/events/keycodes/keyboard_code_conversion_android.h"
@@ -37,6 +36,9 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
 
 constexpr char kContextInteractionId[] = "interactionId";
 constexpr char kContextConversationId[] = "conversationId";
+constexpr char kGestureConsumedCallbackClassName[] =
+    "org/chromium/chromecast/shell/"
+    "CastWebContentsComponent$GestureHandledCallback";
 
 // Wraps the JNI gesture consumption handled callback for invocation from C++.
 class GestureConsumedCallbackWrapper {
@@ -45,26 +47,30 @@ class GestureConsumedCallbackWrapper {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& callback)
       : env_(env), callback_(callback) {
-    class_ = base::android::ScopedJavaLocalRef<jclass>(
-        base::android::GetClass(env_,
-                                "org.chromium.chromecast.shell."
-                                "CastWebComponent.GestureHandledCallback"));
+    class_ = base::android::ScopedJavaGlobalRef<jclass>(
+        base::android::GetClass(env_, kGestureConsumedCallbackClassName));
     callback_method_id_ =
         base::android::MethodID::Get<base::android::MethodID::TYPE_INSTANCE>(
-            env_, class_.obj(), "invoke", "(Z;)V");
+            env_, class_.obj(), "invoke",
+            "(Z"  // boolean handled
+            ")V");
   }
 
+  GestureConsumedCallbackWrapper& operator=(
+      const GestureConsumedCallbackWrapper&) = delete;
+  GestureConsumedCallbackWrapper(const GestureConsumedCallbackWrapper&) =
+      delete;
+
   void Invoke(bool handled) {
-    env_->CallObjectMethod(callback_.obj(), callback_method_id_, &handled);
+    jboolean handled_value(handled);
+    env_->CallVoidMethod(callback_.obj(), callback_method_id_, handled_value);
   }
 
  private:
   JNIEnv* env_;
-  const base::android::JavaParamRef<jobject>& callback_;
-  base::android::ScopedJavaLocalRef<jclass> class_;
+  const base::android::ScopedJavaGlobalRef<jobject> callback_;
+  base::android::ScopedJavaGlobalRef<jclass> class_;
   jmethodID callback_method_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureConsumedCallbackWrapper);
 };
 
 }  // namespace
@@ -73,6 +79,7 @@ CastContentWindowAndroid::CastContentWindowAndroid(
     const CastContentWindow::CreateParams& params)
     : CastContentWindow(params),
       activity_id_(delegate_->GetId()),
+      web_contents_attached_(false),
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
                                     params.is_headless,
                                     params.enable_touch_input,
@@ -90,6 +97,10 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
     mojom::ZOrder /* z_order */,
     VisibilityPriority visibility_priority) {
   DCHECK(cast_web_contents);
+  if (web_contents_attached_) {
+    RequestVisibility(visibility_priority);
+    return;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
       cast_web_contents->web_contents()->GetJavaWebContents();
@@ -97,6 +108,7 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
   Java_CastContentWindowAndroid_createWindowForWebContents(
       env, java_window_, java_web_contents,
       static_cast<int>(visibility_priority));
+  web_contents_attached_ = true;
 }
 
 void CastContentWindowAndroid::GrantScreenAccess() {
@@ -168,15 +180,16 @@ void CastContentWindowAndroid::ConsumeGesture(
     const base::android::JavaParamRef<jobject>& jcaller,
     int gesture_type,
     const base::android::JavaParamRef<jobject>& callback) {
-  GestureConsumedCallbackWrapper wrapper(env, callback);
+  auto wrapper =
+      std::make_unique<GestureConsumedCallbackWrapper>(env, callback);
   if (delegate_) {
     delegate_->ConsumeGesture(
         static_cast<GestureType>(gesture_type),
         base::BindOnce(&GestureConsumedCallbackWrapper::Invoke,
-                       base::Unretained(&wrapper)));
+                       std::move(wrapper)));
     return;
   }
-  wrapper.Invoke(false);
+  wrapper->Invoke(false);
 }
 
 void CastContentWindowAndroid::OnVisibilityChange(

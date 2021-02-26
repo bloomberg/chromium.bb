@@ -30,7 +30,7 @@ enum Http3AndQpackSettingsIdentifiers : uint64_t {
   // Same value as spdy::SETTINGS_HEADER_TABLE_SIZE.
   SETTINGS_QPACK_MAX_TABLE_CAPACITY = 0x01,
   // Same value as spdy::SETTINGS_MAX_HEADER_LIST_SIZE.
-  SETTINGS_MAX_HEADER_LIST_SIZE = 0x06,
+  SETTINGS_MAX_FIELD_SECTION_SIZE = 0x06,
   SETTINGS_QPACK_BLOCKED_STREAMS = 0x07,
 };
 
@@ -38,10 +38,15 @@ enum Http3AndQpackSettingsIdentifiers : uint64_t {
 // SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 const QuicByteCount kDefaultQpackMaxDynamicTableCapacity = 64 * 1024;  // 64 KB
 
+// Default limit on the size of uncompressed headers,
+// communicated via SETTINGS_MAX_HEADER_LIST_SIZE.
+const QuicByteCount kDefaultMaxUncompressedHeaderSize = 16 * 1024;  // 16 KB
+
 // Default limit on number of blocked streams, communicated via
 // SETTINGS_QPACK_BLOCKED_STREAMS.
 const uint64_t kDefaultMaximumBlockedStreams = 100;
 
+const char kUserAgentHeaderName[] = "user-agent";
 }  // namespace quic
 
 #endif  // QUICHE_QUIC_CORE_HTTP_HTTP_CONSTANTS_H_

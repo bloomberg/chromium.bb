@@ -8,12 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/vr_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -96,19 +94,6 @@ void AssetsLoader::Load(OnAssetsLoadedCallback on_loaded) {
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::ThreadTaskRunnerHandle::Get(),
                                 std::move(on_loaded)));
-}
-
-MetricsHelper* AssetsLoader::GetMetricsHelper() {
-  // If we instantiate metrics_helper_ in the constructor all functions of
-  // MetricsHelper must be called in a valid sequence from the thread the
-  // constructor ran on. However, the assets class can be instantiated from any
-  // thread. To avoid the aforementioned restriction, create metrics_helper_ the
-  // first time it is used and, thus, give the caller control over when the
-  // sequence starts.
-  if (!metrics_helper_) {
-    metrics_helper_ = std::make_unique<MetricsHelper>();
-  }
-  return metrics_helper_.get();
 }
 
 bool AssetsLoader::ComponentReady() {
@@ -245,8 +230,7 @@ void AssetsLoader::LoadAssetsTask(
 }
 
 AssetsLoader::AssetsLoader()
-    : main_thread_task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
+    : main_thread_task_runner_(content::GetUIThreadTaskRunner({})) {
   DCHECK(main_thread_task_runner_.get());
 }
 
@@ -261,7 +245,6 @@ void AssetsLoader::OnComponentReadyInternal(const base::Version& version,
   if (on_component_ready_callback_) {
     on_component_ready_callback_.Run();
   }
-  GetMetricsHelper()->OnComponentReady(version);
 }
 
 void AssetsLoader::LoadInternal(

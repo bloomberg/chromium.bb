@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -24,7 +24,7 @@
 #include "base/task/simple_task_executor.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
@@ -780,6 +780,7 @@ void TaskEnvironment::TestTaskTracker::RunTask(internal::Task task,
     // watching for tests that have actually long running tasks which cause our
     // test suites to run slowly.
     base::TimeTicks before = base::subtle::TimeTicksNowIgnoringOverride();
+    const Location posted_from = task.posted_from;
     internal::ThreadPoolImpl::TaskTrackerImpl::RunTask(std::move(task),
                                                        sequence, traits);
     base::TimeTicks after = base::subtle::TimeTicksNowIgnoringOverride();
@@ -787,8 +788,7 @@ void TaskEnvironment::TestTaskTracker::RunTask(internal::Task task,
     if ((after - before) > TestTimeouts::action_max_timeout()) {
       ADD_FAILURE() << "TaskEnvironment: RunTask took more than "
                     << TestTimeouts::action_max_timeout().InSeconds()
-                    << " seconds. "
-                    << "Posted from " << task.posted_from.ToString();
+                    << " seconds. Posted from " << posted_from.ToString();
     }
   }
 

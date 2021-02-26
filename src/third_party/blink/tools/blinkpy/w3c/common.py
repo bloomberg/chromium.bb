@@ -67,6 +67,37 @@ def is_testharness_baseline(filename):
     return filename.endswith('-expected.txt')
 
 
+def is_disallowed_ini(filename):
+    """Checks whether the file is a disallowed (.ini) file.
+
+    This is primarily intended to skip WPT metadata .ini files, which are used
+    in WPT to set expected statuses for tests. Chromium maintains its own list
+    of such files and we don't want those to be shared with upstream.
+
+    There are a few .ini files that we do allow, which are mostly configuration
+    files for wptrunner.
+
+    Args:
+        filename: the basename of the file to check
+    """
+    if not filename.endswith('.ini'):
+        return False
+    allowed_inis = [
+        # Configuration for mypy support
+        'mypy.ini',
+        # Configuration of wpt lint
+        'py27-flake8.ini',
+        'py3-flake8.ini',
+        # Configuration of wpt framework unit tests
+        'pytest.ini',
+        'tox.ini',
+        # Contains default locations of tests and manifest for wptrunner.
+        # Required for wptrunner to work.
+        'wptrunner.default.ini',
+    ]
+    return filename not in allowed_inis
+
+
 def is_basename_skipped(basename):
     """Checks whether to skip (not sync) a file based on its basename.
 
@@ -74,13 +105,14 @@ def is_basename_skipped(basename):
     skipped basenames are never imported or exported.
     """
     assert '/' not in basename
-    blacklist = [
+    skipped_basenames = [
         'MANIFEST.json',  # MANIFEST.json is automatically regenerated.
         'OWNERS',  # https://crbug.com/584660 https://crbug.com/702283
         'reftest.list',  # https://crbug.com/582838
+        'DIR_METADATA',  # https://crbug.com/1103374
     ]
-    return (basename in blacklist or is_testharness_baseline(basename)
-            or basename.startswith('.'))
+    return (basename in skipped_basenames or is_testharness_baseline(basename)
+            or basename.startswith('.') or is_disallowed_ini(basename))
 
 
 def is_file_exportable(path):

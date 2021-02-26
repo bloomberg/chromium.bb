@@ -4,7 +4,7 @@
 
 #include "net/url_request/url_request_context_builder.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -29,10 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "base/files/scoped_temp_dir.h"
@@ -58,6 +58,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,
                         const SSLInfo& ssl_info,
+                        const NetworkIsolationKey& network_isolation_key,
                         const GURL& origin,
                         CreateReason reason,
                         int nonce_count,
@@ -82,10 +83,10 @@ class URLRequestContextBuilderTest : public PlatformTest,
   URLRequestContextBuilderTest() {
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
     builder_.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
         ProxyConfigWithAnnotation::CreateDirect()));
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   }
 
   std::unique_ptr<HostResolver> host_resolver_ =
@@ -131,10 +132,11 @@ TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
   SSLInfo null_ssl_info;
 
   // Verify that the default basic handler is present
-  EXPECT_EQ(OK,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      OK,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "basic", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
@@ -149,20 +151,23 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   // Verify that a handler is returned for a custom scheme.
   EXPECT_EQ(kBasicReturnCode,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+                "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info,
+                NetworkIsolationKey(), gurl, NetLogWithSource(),
+                host_resolver_.get(), &handler));
 
   // Verify that the default basic handler isn't present
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      ERR_UNSUPPORTED_AUTH_SCHEME,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "basic", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 
   // Verify that a handler isn't returned for a bogus scheme.
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      ERR_UNSUPPORTED_AUTH_SCHEME,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -226,7 +231,8 @@ TEST_F(URLRequestContextBuilderTest, ShutdownHostResolverWithPendingRequest) {
 
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       context->host_resolver()->CreateRequest(
-          HostPortPair("example.com", 1234), NetLogWithSource(), base::nullopt);
+          HostPortPair("example.com", 1234), NetworkIsolationKey(),
+          NetLogWithSource(), base::nullopt);
   TestCompletionCallback callback;
   int rv = request->Start(callback.callback());
   ASSERT_TRUE(mock_host_resolver->has_pending_requests());

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 
 import {Attributes, Cookie} from './Cookie.js';  // eslint-disable-line no-unused-vars
@@ -47,47 +44,61 @@ export class CookieModel extends SDKModel {
    * @return {!Promise<!Array<!Cookie>>}
    */
   async getCookies(urls) {
-    const normalCookies = await this.target().networkAgent().getCookies(urls).then(
-        cookies => (cookies || []).map(cookie => Cookie.fromProtocolCookie(cookie)));
-
+    const response = await this.target().networkAgent().invoke_getCookies({urls});
+    if (response.getError()) {
+      return [];
+    }
+    const normalCookies = response.cookies.map(Cookie.fromProtocolCookie);
     return normalCookies.concat(Array.from(this._blockedCookies.values()));
   }
 
   /**
    * @param {!Cookie} cookie
-   * @param {function():void=} callback
+   * @return {!Promise<void>}
    */
-  deleteCookie(cookie, callback) {
-    this._deleteAll([cookie], callback);
+  async deleteCookie(cookie) {
+    await this._deleteAll([cookie]);
   }
 
   /**
    * @param {string=} domain
-   * @param {function():void=} callback
+   * @return {!Promise<void>}
    */
-  clear(domain, callback) {
-    this.getCookiesForDomain(domain || null).then(cookies => this._deleteAll(cookies, callback));
+  async clear(domain) {
+    const cookies = await this.getCookiesForDomain(domain || null);
+    await this._deleteAll(cookies);
   }
 
   /**
    * @param {!Cookie} cookie
    * @return {!Promise<boolean>}
    */
-  saveCookie(cookie) {
+  async saveCookie(cookie) {
     let domain = cookie.domain();
     if (!domain.startsWith('.')) {
       domain = '';
     }
     let expires = undefined;
     if (cookie.expires()) {
-      expires = Math.floor(Date.parse(cookie.expires()) / 1000);
+      expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1000);
     }
-    return this.target()
-        .networkAgent()
-        .setCookie(
-            cookie.name(), cookie.value(), cookie.url() || undefined, domain, cookie.path(), cookie.secure(),
-            cookie.httpOnly(), cookie.sameSite(), expires, cookie.priority())
-        .then(success => !!success);
+    const protocolCookie = {
+      name: cookie.name(),
+      value: cookie.value(),
+      url: cookie.url() || undefined,
+      domain,
+      path: cookie.path(),
+      secure: cookie.secure(),
+      httpOnly: cookie.httpOnly(),
+      sameSite: cookie.sameSite(),
+      expires,
+      priority: cookie.priority()
+    };
+    const response = await this.target().networkAgent().invoke_setCookie(protocolCookie);
+    if (response.getError()) {
+      return false;
+    }
+    return response.success;
   }
 
   /**
@@ -99,18 +110,20 @@ export class CookieModel extends SDKModel {
     const resourceURLs = [];
     /**
      * @param {!Resource} resource
+     * @return {boolean}
      */
     function populateResourceURLs(resource) {
       const documentURL = Common.ParsedURL.ParsedURL.fromString(resource.documentURL);
       if (documentURL && (!domain || documentURL.securityOrigin() === domain)) {
         resourceURLs.push(resource.url);
       }
+      return false;
     }
     const resourceTreeModel = this.target().model(ResourceTreeModel);
     if (resourceTreeModel) {
       // In case the current frame was unreachable, add it's cookies
       // because they might help to debug why the frame was unreachable.
-      if (resourceTreeModel.mainFrame.unreachableUrl()) {
+      if (resourceTreeModel.mainFrame && resourceTreeModel.mainFrame.unreachableUrl()) {
         resourceURLs.push(resourceTreeModel.mainFrame.unreachableUrl());
       }
 
@@ -121,20 +134,20 @@ export class CookieModel extends SDKModel {
 
   /**
    * @param {!Array<!Cookie>} cookies
-   * @param {function():void=} callback
+   * @return {!Promise<void>}
    */
-  _deleteAll(cookies, callback) {
+  async _deleteAll(cookies) {
     const networkAgent = this.target().networkAgent();
     this._blockedCookies.clear();
     this._cookieToBlockedReasons.clear();
-    Promise
-        .all(
-            cookies.map(cookie => networkAgent.deleteCookies(cookie.name(), undefined, cookie.domain(), cookie.path())))
-        .then(callback || function() {});
+    await Promise.all(cookies.map(
+        cookie => networkAgent.invoke_deleteCookies(
+            {name: cookie.name(), url: undefined, domain: cookie.domain(), path: cookie.path()})));
   }
 }
 
 SDKModel.register(CookieModel, Capability.Network, false);
 
 /** @typedef {!{uiString: string, attribute: ?Attributes}} */
+// @ts-ignore typedef
 export let BlockedReason;

@@ -26,7 +26,6 @@ class WorkletOptions;
 class CORE_EXPORT Worklet : public ScriptWrappable,
                             public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Worklet);
   USING_PRE_FINALIZER(Worklet, Dispose);
 
  public:
@@ -51,7 +50,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // Called by WorkletPendingTasks to notify the Worklet.
   void FinishPendingTasks(WorkletPendingTasks*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit Worklet(LocalDOMWindow&);

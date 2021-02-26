@@ -14,6 +14,7 @@
 #include "fxjs/cjs_eventrecorder.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/cjs_runtime.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/js_define.h"
 
 const JSPropertySpec CJS_Color::PropertySpecs[] = {
@@ -33,11 +34,11 @@ const JSPropertySpec CJS_Color::PropertySpecs[] = {
 const JSMethodSpec CJS_Color::MethodSpecs[] = {{"convert", convert_static},
                                                {"equal", equal_static}};
 
-int CJS_Color::ObjDefnID = -1;
+uint32_t CJS_Color::ObjDefnID = 0;
 const char CJS_Color::kName[] = "color";
 
 // static
-int CJS_Color::GetObjDefnID() {
+uint32_t CJS_Color::GetObjDefnID() {
   return ObjDefnID;
 }
 
@@ -273,7 +274,7 @@ CJS_Result CJS_Color::convert(CJS_Runtime* pRuntime,
   if (params.size() < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  if (params[0].IsEmpty() || !params[0]->IsArray())
+  if (!fxv8::IsArray(params[0]))
     return CJS_Result::Failure(JSMessage::kTypeError);
 
   WideString sDestSpace = pRuntime->ToWideString(params[1]);
@@ -302,10 +303,8 @@ CJS_Result CJS_Color::equal(CJS_Runtime* pRuntime,
   if (params.size() < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  if (params[0].IsEmpty() || !params[0]->IsArray() || params[1].IsEmpty() ||
-      !params[1]->IsArray()) {
+  if (!fxv8::IsArray(params[0]) || !fxv8::IsArray(params[1]))
     return CJS_Result::Failure(JSMessage::kTypeError);
-  }
 
   CFX_Color color1 =
       ConvertArrayToPWLColor(pRuntime, pRuntime->ToArray(params[0]));

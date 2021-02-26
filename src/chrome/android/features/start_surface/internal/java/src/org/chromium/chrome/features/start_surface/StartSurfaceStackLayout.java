@@ -6,10 +6,12 @@ package org.chromium.chrome.features.start_surface;
 
 import android.content.Context;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
+import org.chromium.chrome.browser.layouts.EventFilter;
 
 /** Layout wraps {@link StackLayout} to display the single start surface on top. */
 public class StartSurfaceStackLayout extends StackLayout {
@@ -18,8 +20,9 @@ public class StartSurfaceStackLayout extends StackLayout {
     private boolean mIsInitialized;
 
     public StartSurfaceStackLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface) {
-        super(context, updateHost, renderHost);
+            LayoutRenderHost renderHost, StartSurface startSurface,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
+        super(context, updateHost, renderHost, browserControlsStateProviderSupplier);
 
         mCoordinator = (StartSurfaceCoordinator) startSurface;
         mCoordinator.setOnTabSelectingListener(this::onTabSelecting);
@@ -32,6 +35,7 @@ public class StartSurfaceStackLayout extends StackLayout {
         mIsInitialized = true;
 
         super.onFinishNativeInitialization();
+        super.initWithNative();
         mCoordinator.initWithNative();
     }
 
@@ -41,6 +45,9 @@ public class StartSurfaceStackLayout extends StackLayout {
         mCoordinator.initialize();
 
         mController.showOverview(false);
+        if (!mIsInitialized) {
+            return;
+        }
         super.show(time, animate);
     }
 

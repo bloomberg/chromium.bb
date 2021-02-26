@@ -213,6 +213,16 @@ class BASE_EXPORT HistogramBase {
   virtual uint32_t FindCorruption(const HistogramSamples& samples) const;
 
   // Snapshot the current complete set of sample data.
+  // Note that histogram data is stored per-process. The browser process
+  // periodically injests data from subprocesses. As such, the browser
+  // process can see histogram data from any process but other processes
+  // can only see histogram data recorded in the subprocess.
+  // Moreover, the data returned here may not be up to date:
+  // - this function does not use a lock so data might not be synced
+  //   (e.g., across cpu caches)
+  // - in the browser process, the data from subprocesses may not have
+  //   synced data from subprocesses via MergeHistogramDeltas() recently.
+  //
   // Override with atomic/locked snapshot if needed.
   // NOTE: this data can overflow for long-running sessions. It should be
   // handled with care and this method is recommended to be used only
@@ -222,6 +232,8 @@ class BASE_EXPORT HistogramBase {
   // Calculate the change (delta) in histogram counts since the previous call
   // to this method. Each successive call will return only those counts
   // changed since the last call.
+  //
+  // See additional caveats by SnapshotSamples().
   virtual std::unique_ptr<HistogramSamples> SnapshotDelta() = 0;
 
   // Calculate the change (delta) in histogram counts since the previous call
@@ -231,12 +243,15 @@ class BASE_EXPORT HistogramBase {
   // data previously returned. Because no internal data is changed, this call
   // can be made on "const" histograms such as those with data held in
   // read-only memory.
+  //
+  // See additional caveats by SnapshotSamples().
   virtual std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const = 0;
 
   // The following method provides graphical histogram displays.
   virtual void WriteAscii(std::string* output) const = 0;
 
-  // Returns histogram data as a Dict with the following format:
+  // Returns histograms data as a Dict (or an empty dict if not available),
+  // with the following format:
   // {"header": "Name of the histogram with samples, mean, and/or flags",
   // "body": "ASCII histogram representation"}
   virtual base::DictionaryValue ToGraphDict() const = 0;
@@ -262,9 +277,9 @@ class BASE_EXPORT HistogramBase {
   // Writes information about the current (non-empty) buckets and their sample
   // counts to |buckets|, the total sample count to |count| and the total sum
   // to |sum|.
-  virtual void GetCountAndBucketData(Count* count,
-                                     int64_t* sum,
-                                     ListValue* buckets) const = 0;
+  void GetCountAndBucketData(Count* count,
+                             int64_t* sum,
+                             ListValue* buckets) const;
 
   //// Produce actual graph (set of blank vs non blank char's) for a bucket.
   void WriteAsciiBucketGraph(double current_size,

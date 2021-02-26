@@ -8,12 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -23,6 +24,7 @@
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patcher.h"
 #include "components/update_client/persisted_data.h"
@@ -85,7 +87,7 @@ void InstallComplete(scoped_refptr<base::SequencedTaskRunner> main_task_runner,
              InstallOnBlockingTaskRunnerCompleteCallback callback,
              const base::FilePath& unpack_path,
              const CrxInstaller::Result& result) {
-            base::DeleteFileRecursively(unpack_path);
+            base::DeletePathRecursively(unpack_path);
             const ErrorCategory error_category =
                 result.error ? ErrorCategory::kInstall : ErrorCategory::kNone;
             main_task_runner->PostTask(
@@ -359,6 +361,19 @@ void Component::Uninstall(const base::Version& version, int reason) {
   state_ = std::make_unique<StateUninstalled>(this);
 }
 
+void Component::Registration(const base::Version& version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK_EQ(ComponentState::kNew, state());
+
+  crx_component_ = CrxComponent();
+  crx_component_->version = version;
+
+  next_version_ = version;
+
+  state_ = std::make_unique<StateRegistration>(this);
+}
+
 void Component::SetUpdateCheckResult(
     const base::Optional<ProtocolParser::Result>& result,
     ErrorCategory error_category,
@@ -371,9 +386,6 @@ void Component::SetUpdateCheckResult(
 
   if (result)
     SetParseResult(result.value());
-
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, std::move(update_check_complete_));
 }
 
 void Component::NotifyWait() {
@@ -496,6 +508,20 @@ base::Value Component::MakeEventUninstalled() const {
   return event;
 }
 
+base::Value Component::MakeEventRegistration() const {
+  DCHECK(state() == ComponentState::kRegistration);
+  base::Value event(base::Value::Type::DICTIONARY);
+  event.SetKey("eventtype", base::Value(2));
+  event.SetKey("eventresult", base::Value(1));
+  if (error_code())
+    event.SetKey("errorcode", base::Value(error_code()));
+  if (extra_code1())
+    event.SetKey("extracode1", base::Value(extra_code1()));
+  DCHECK(next_version().IsValid());
+  event.SetKey("nextversion", base::Value(next_version().GetString()));
+  return event;
+}
+
 base::Value Component::MakeEventActionRun(bool succeeded,
                                           int error_code,
                                           int extra_code1) const {
@@ -564,6 +590,23 @@ void Component::StateNew::DoHandle() {
   auto& component = State::component();
   if (component.crx_component()) {
     TransitionState(std::make_unique<StateChecking>(&component));
+
+    // Notify that the component is being checked for updates after the
+    // transition to `StateChecking` occurs. This event indicates the start
+    // of the update check. The component receives the update check results when
+    // the update checks completes, and after that, `UpdateEngine` invokes the
+    // function `StateChecking::DoHandle` to transition the component out of
+    // the `StateChecking`. The current design allows for notifying observers
+    // on state transitions but it does not allow such notifications when a
+    // new state is entered. Hence, posting the task below is a workaround for
+    // this design oversight.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](Component& component) {
+              component.NotifyObservers(Events::COMPONENT_CHECKING_FOR_UPDATES);
+            },
+            std::ref(component)));
   } else {
     component.error_code_ = static_cast<int>(Error::CRX_NOT_FOUND);
     component.error_category_ = ErrorCategory::kService;
@@ -572,47 +615,37 @@ void Component::StateNew::DoHandle() {
 }
 
 Component::StateChecking::StateChecking(Component* component)
-    : State(component, ComponentState::kChecking) {}
+    : State(component, ComponentState::kChecking) {
+  component->last_check_ = base::TimeTicks::Now();
+}
 
 Component::StateChecking::~StateChecking() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-// Unlike how other states are handled, this function does not change the
-// state right away. The state transition happens when the UpdateChecker
-// calls Component::UpdateCheckComplete and |update_check_complete_| is invoked.
-// This is an artifact of how multiple components must be checked for updates
-// together but the state machine defines the transitions for one component
-// at a time.
 void Component::StateChecking::DoHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = State::component();
   DCHECK(component.crx_component());
 
-  component.last_check_ = base::TimeTicks::Now();
-  component.update_check_complete_ = base::BindOnce(
-      &Component::StateChecking::UpdateCheckComplete, base::Unretained(this));
+  if (component.error_code_) {
+    TransitionState(std::make_unique<StateUpdateError>(&component));
+    return;
+  }
 
-  component.NotifyObservers(Events::COMPONENT_CHECKING_FOR_UPDATES);
-}
+  if (component.status_ == "ok") {
+    TransitionState(std::make_unique<StateCanUpdate>(&component));
+    return;
+  }
 
-void Component::StateChecking::UpdateCheckComplete() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto& component = State::component();
-  if (!component.error_code_) {
-    if (component.status_ == "ok") {
-      TransitionState(std::make_unique<StateCanUpdate>(&component));
-      return;
+  if (component.status_ == "noupdate") {
+    if (component.action_run_.empty()) {
+      TransitionState(std::make_unique<StateUpToDate>(&component));
+    } else {
+      TransitionState(std::make_unique<StateRun>(&component));
     }
-
-    if (component.status_ == "noupdate") {
-      if (component.action_run_.empty())
-        TransitionState(std::make_unique<StateUpToDate>(&component));
-      else
-        TransitionState(std::make_unique<StateRun>(&component));
-      return;
-    }
+    return;
   }
 
   TransitionState(std::make_unique<StateUpdateError>(&component));
@@ -712,17 +745,14 @@ void Component::StateDownloadingDiff::DoHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
-  const auto& update_context = component.update_context_;
-
   DCHECK(component.crx_component());
 
   component.downloaded_bytes_ = -1;
   component.total_bytes_ = -1;
 
-  crx_downloader_ = update_context.crx_downloader_factory(
-      component.CanDoBackgroundDownload(),
-      update_context.config->GetNetworkFetcherFactory());
-
+  crx_downloader_ =
+      component.config()->GetCrxDownloaderFactory()->MakeCrxDownloader(
+          component.CanDoBackgroundDownload());
   crx_downloader_->set_progress_callback(
       base::BindRepeating(&Component::StateDownloadingDiff::DownloadProgress,
                           base::Unretained(this)));
@@ -758,7 +788,7 @@ void Component::StateDownloadingDiff::DownloadComplete(
   for (const auto& download_metrics : crx_downloader_->download_metrics())
     component.AppendEvent(component.MakeEventDownloadMetrics(download_metrics));
 
-  crx_downloader_.reset();
+  crx_downloader_ = nullptr;
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());
@@ -785,17 +815,14 @@ void Component::StateDownloading::DoHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
-  const auto& update_context = component.update_context_;
-
   DCHECK(component.crx_component());
 
   component.downloaded_bytes_ = -1;
   component.total_bytes_ = -1;
 
-  crx_downloader_ = update_context.crx_downloader_factory(
-      component.CanDoBackgroundDownload(),
-      update_context.config->GetNetworkFetcherFactory());
-
+  crx_downloader_ =
+      component.config()->GetCrxDownloaderFactory()->MakeCrxDownloader(
+          component.CanDoBackgroundDownload());
   crx_downloader_->set_progress_callback(base::BindRepeating(
       &Component::StateDownloading::DownloadProgress, base::Unretained(this)));
   crx_downloader_->StartDownload(
@@ -831,7 +858,7 @@ void Component::StateDownloading::DownloadComplete(
   for (const auto& download_metrics : crx_downloader_->download_metrics())
     component.AppendEvent(component.MakeEventDownloadMetrics(download_metrics));
 
-  crx_downloader_.reset();
+  crx_downloader_ = nullptr;
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());
@@ -1046,6 +1073,25 @@ void Component::StateUninstalled::DoHandle() {
   DCHECK(component.crx_component());
 
   component.AppendEvent(component.MakeEventUninstalled());
+
+  EndState();
+}
+
+Component::StateRegistration::StateRegistration(Component* component)
+    : State(component, ComponentState::kRegistration) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+Component::StateRegistration::~StateRegistration() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+void Component::StateRegistration::DoHandle() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto& component = State::component();
+  DCHECK(component.crx_component());
+
+  component.AppendEvent(component.MakeEventRegistration());
 
   EndState();
 }

@@ -94,7 +94,6 @@ class MODULES_EXPORT BaseAudioContext
       public ActiveScriptWrappable<BaseAudioContext>,
       public ExecutionContextLifecycleStateObserver,
       public InspectorHelperMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(BaseAudioContext, Dispose);
 
@@ -108,7 +107,7 @@ class MODULES_EXPORT BaseAudioContext
 
   ~BaseAudioContext() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Is the destination node initialized and ready to handle audio?
   bool IsDestinationInitialized() const {

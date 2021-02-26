@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
@@ -59,7 +59,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
 #endif
 
@@ -124,12 +124,12 @@ bool SessionService::ShouldNewWindowStartSession() {
   if (!has_open_trackable_browsers_ &&
       !StartupBrowserCreator::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // On OSX, a new window should not start a new session if it was opened
       // from the dock or the menubar.
       && !app_controller_mac::IsOpeningNewWindow()
-#endif  // OS_MACOSX
-      ) {
+#endif  // OS_MAC
+  ) {
     return true;
   }
   return false;
@@ -410,6 +410,15 @@ void SessionService::SetWindowAppName(
   ScheduleCommand(sessions::CreateSetWindowAppNameCommand(window_id, app_name));
 }
 
+void SessionService::SetWindowUserTitle(const SessionID& window_id,
+                                        const std::string& user_title) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateSetWindowUserTitleCommand(window_id, user_title));
+}
+
 void SessionService::TabRestored(WebContents* tab, bool pinned) {
   sessions::SessionTabHelper* session_tab_helper =
       sessions::SessionTabHelper::FromWebContents(tab);
@@ -456,15 +465,12 @@ void SessionService::SetLastActiveTime(const SessionID& window_id,
       sessions::CreateLastActiveTimeCommand(tab_id, last_active_time));
 }
 
-base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
-    sessions::GetLastSessionCallback callback,
-    base::CancelableTaskTracker* tracker) {
+void SessionService::GetLastSession(sessions::GetLastSessionCallback callback) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
-  return command_storage_manager_->ScheduleGetLastSessionCommands(
+  return command_storage_manager_->GetLastSessionCommands(
       base::BindOnce(&SessionService::OnGotSessionCommands,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
-      tracker);
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool SessionService::ShouldUseDelayedSave() {
@@ -763,8 +769,15 @@ void SessionService::BuildCommandsForBrowser(
                                                 browser->app_name()));
   }
 
-  sessions::CreateSetWindowWorkspaceCommand(
-      browser->session_id(), browser->window()->GetWorkspace());
+  if (!browser->user_title().empty()) {
+    command_storage_manager_->AppendRebuildCommand(
+        sessions::CreateSetWindowUserTitleCommand(browser->session_id(),
+                                                  browser->user_title()));
+  }
+
+  command_storage_manager_->AppendRebuildCommand(
+      sessions::CreateSetWindowWorkspaceCommand(
+          browser->session_id(), browser->window()->GetWorkspace()));
 
   windows_to_track->insert(browser->session_id());
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -910,7 +923,7 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   // restarted on restore, and we don't want terminal to force the VM to start.
   if (crostini::CrostiniAppIdFromAppName(browser->app_name()) ||
       web_app::GetAppIdFromApplicationName(browser->app_name()) ==
-          crostini::GetTerminalId()) {
+          crostini::kCrostiniTerminalSystemAppId) {
     return false;
   }
 

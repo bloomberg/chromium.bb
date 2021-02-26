@@ -9,8 +9,6 @@ assert(!is_chromeos)
 
 static_library("service") {
   sources = [
-    "cloud_print/cdd_conversion_win.cc",
-    "cloud_print/cdd_conversion_win.h",
     "cloud_print/cloud_print_auth.cc",
     "cloud_print/cloud_print_auth.h",
     "cloud_print/cloud_print_connector.cc",
@@ -35,7 +33,6 @@ static_library("service") {
     "cloud_print/job_status_updater.h",
     "cloud_print/print_system.cc",
     "cloud_print/print_system.h",
-    "cloud_print/print_system_win.cc",
     "cloud_print/printer_job_handler.cc",
     "cloud_print/printer_job_handler.h",
     "cloud_print/printer_job_queue_handler.cc",
@@ -53,6 +50,14 @@ static_library("service") {
     "service_process_prefs.h",
   ]
 
+  if (is_win) {
+    sources += [
+      "cloud_print/cdd_conversion_win.cc",
+      "cloud_print/cdd_conversion_win.h",
+      "cloud_print/print_system_win.cc",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
@@ -61,11 +66,13 @@ static_library("service") {
     "//chrome/common",
     "//chrome/services/printing/public/mojom",
     "//components/cloud_devices/common",
+    "//components/language/core/browser",
+    "//components/language/core/common",
     "//components/network_session_configurator/browser",
     "//components/printing/common",
-    "//content/public/app:service_manifests",
     "//google_apis",
     "//jingle:notifier",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//net",
@@ -86,5 +93,6 @@ static_library("service") {
       "service_utility_process_host.h",
       "service_utility_process_host_receiver_bindings.cc",
     ]
+    deps += [ "//sandbox/win:sandbox" ]
   }
 }

@@ -30,12 +30,12 @@ namespace {
 enum {
   FILTERING_BEHAVIOR_ALLOW = 1,
   FILTERING_BEHAVIOR_ALLOW_UNCERTAIN,
-  FILTERING_BEHAVIOR_BLOCK_BLACKLIST,
+  FILTERING_BEHAVIOR_BLOCK_DENYLIST,
   FILTERING_BEHAVIOR_BLOCK_SAFESITES,
   FILTERING_BEHAVIOR_BLOCK_MANUAL,
   FILTERING_BEHAVIOR_BLOCK_DEFAULT,
-  FILTERING_BEHAVIOR_ALLOW_WHITELIST,
-  FILTERING_BEHAVIOR_MAX = FILTERING_BEHAVIOR_ALLOW_WHITELIST
+  FILTERING_BEHAVIOR_ALLOW_ALLOWLIST,
+  FILTERING_BEHAVIOR_MAX = FILTERING_BEHAVIOR_ALLOW_ALLOWLIST
 };
 const int kHistogramFilteringBehaviorSpacing = 100;
 const int kHistogramPageTransitionMaxKnownValue =
@@ -59,17 +59,17 @@ int GetHistogramValueForFilteringBehavior(
   switch (behavior) {
     case SupervisedUserURLFilter::ALLOW:
     case SupervisedUserURLFilter::WARN:
-      if (reason == supervised_user_error_page::WHITELIST)
-        return FILTERING_BEHAVIOR_ALLOW_WHITELIST;
+      if (reason == supervised_user_error_page::ALLOWLIST)
+        return FILTERING_BEHAVIOR_ALLOW_ALLOWLIST;
       return uncertain ? FILTERING_BEHAVIOR_ALLOW_UNCERTAIN
                        : FILTERING_BEHAVIOR_ALLOW;
     case SupervisedUserURLFilter::BLOCK:
       switch (reason) {
-        case supervised_user_error_page::BLACKLIST:
-          return FILTERING_BEHAVIOR_BLOCK_BLACKLIST;
+        case supervised_user_error_page::DENYLIST:
+          return FILTERING_BEHAVIOR_BLOCK_DENYLIST;
         case supervised_user_error_page::ASYNC_CHECKER:
           return FILTERING_BEHAVIOR_BLOCK_SAFESITES;
-        case supervised_user_error_page::WHITELIST:
+        case supervised_user_error_page::ALLOWLIST:
           NOTREACHED();
           break;
         case supervised_user_error_page::MANUAL:
@@ -158,9 +158,25 @@ SupervisedUserNavigationThrottle::CheckURL() {
   deferred_ = false;
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
   GURL url = navigation_handle()->GetURL();
-  bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      url, base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
-                          weak_ptr_factory_.GetWeakPtr(), url));
+
+  bool skip_manual_parent_filter =
+      url_filter_->ShouldSkipParentManualAllowlistFiltering(
+          navigation_handle()->GetWebContents()->GetOutermostWebContents());
+  bool got_result = false;
+
+  if (navigation_handle()->IsInMainFrame()) {
+    got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
+        url,
+        base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
+                       weak_ptr_factory_.GetWeakPtr(), url),
+        skip_manual_parent_filter);
+  } else {
+    got_result = url_filter_->GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
+        url, navigation_handle()->GetWebContents()->GetURL(),
+        base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
+                       weak_ptr_factory_.GetWeakPtr(), url));
+  }
+
   DCHECK_EQ(got_result, behavior_ != SupervisedUserURLFilter::INVALID);
   // If we got a "not blocked" result synchronously, don't defer.
   deferred_ = !got_result || (behavior_ == SupervisedUserURLFilter::BLOCK);
@@ -218,6 +234,7 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
+
   // If we got a result synchronously, pass it back to ShowInterstitialIfNeeded.
   if (!deferred_)
     behavior_ = behavior;
@@ -228,11 +245,11 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
 
   RecordFilterResultEvent(false, behavior, reason, uncertain, transition);
 
-  // If both the static blacklist and the async checker are enabled, also record
+  // If both the static denylist and the async checker are enabled, also record
   // SafeSites-only UMA events.
-  if (url_filter_->HasBlacklist() && url_filter_->HasAsyncURLChecker() &&
+  if (url_filter_->HasDenylist() && url_filter_->HasAsyncURLChecker() &&
       (reason == supervised_user_error_page::ASYNC_CHECKER ||
-       reason == supervised_user_error_page::BLACKLIST)) {
+       reason == supervised_user_error_page::DENYLIST)) {
     RecordFilterResultEvent(true, behavior, reason, uncertain, transition);
   }
 

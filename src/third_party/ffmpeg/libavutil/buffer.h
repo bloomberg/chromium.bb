@@ -198,6 +198,22 @@ int av_buffer_make_writable(AVBufferRef **buf);
 int av_buffer_realloc(AVBufferRef **buf, int size);
 
 /**
+ * Ensure dst refers to the same data as src.
+ *
+ * When *dst is already equivalent to src, do nothing. Otherwise unreference dst
+ * and replace it with a new reference to src.
+ *
+ * @param dst Pointer to either a valid buffer reference or NULL. On success,
+ *            this will point to a buffer reference equivalent to src. On
+ *            failure, dst will be left untouched.
+ * @param src A buffer reference to replace dst with. May be NULL, then this
+ *            function is equivalent to av_buffer_unref(dst).
+ * @return 0 on success
+ *         AVERROR(ENOMEM) on memory allocation failure.
+ */
+int av_buffer_replace(AVBufferRef **dst, AVBufferRef *src);
+
+/**
  * @}
  */
 
@@ -254,12 +270,13 @@ AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size));
  * @param size size of each buffer in this pool
  * @param opaque arbitrary user data used by the allocator
  * @param alloc a function that will be used to allocate new buffers when the
- *              pool is empty.
+ *              pool is empty. May be NULL, then the default allocator will be
+ *              used (av_buffer_alloc()).
  * @param pool_free a function that will be called immediately before the pool
  *                  is freed. I.e. after av_buffer_pool_uninit() is called
  *                  by the caller and all the frames are returned to the pool
  *                  and freed. It is intended to uninitialize the user opaque
- *                  data.
+ *                  data. May be NULL.
  * @return newly created buffer pool on success, NULL on error.
  */
 AVBufferPool *av_buffer_pool_init2(int size, void *opaque,

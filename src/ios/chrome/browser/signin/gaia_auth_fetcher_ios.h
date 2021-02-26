@@ -34,17 +34,6 @@ class GaiaAuthFetcherIOS
     : public GaiaAuthFetcher,
       public GaiaAuthFetcherIOSBridge::GaiaAuthFetcherIOSBridgeDelegate {
  public:
-  // Sets whether the iOS specialization of the GaiaAuthFetcher should be used.
-  // Mainly used for testing.
-  // Note that if |should_use| is true, it might still not be used if it is
-  // unnecessary or WKWebView isn't enabled.
-  static void SetShouldUseGaiaAuthFetcherIOSForTesting(
-      bool use_gaia_fetcher_ios);
-
-  // Returns whether the iOS specialization of the GaiaAuthFetcher should be
-  // used.
-  static bool ShouldUseGaiaAuthFetcherIOS();
-
   GaiaAuthFetcherIOS(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source,
@@ -72,8 +61,8 @@ class GaiaAuthFetcherIOS
                        net::Error net_error,
                        int response_code) override;
 
-  std::unique_ptr<GaiaAuthFetcherIOSBridge> bridge_;
   web::BrowserState* browser_state_;
+  std::unique_ptr<GaiaAuthFetcherIOSBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOS);
 };

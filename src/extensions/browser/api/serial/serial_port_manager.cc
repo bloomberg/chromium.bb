@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -79,14 +80,16 @@ void SerialPortManager::GetDevices(
   port_manager_->GetDevices(std::move(callback));
 }
 
-void SerialPortManager::GetPort(
+void SerialPortManager::OpenPort(
     const std::string& path,
-    mojo::PendingReceiver<device::mojom::SerialPort> receiver) {
+    device::mojom::SerialConnectionOptionsPtr options,
+    mojo::PendingRemote<device::mojom::SerialPortClient> client,
+    OpenPortCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   EnsureConnection();
-  port_manager_->GetDevices(
-      base::BindOnce(&SerialPortManager::OnGotDevicesToGetPort,
-                     weak_factory_.GetWeakPtr(), path, std::move(receiver)));
+  port_manager_->GetDevices(base::BindOnce(
+      &SerialPortManager::OnGotDevicesToGetPort, weak_factory_.GetWeakPtr(),
+      path, std::move(options), std::move(client), std::move(callback)));
 }
 
 void SerialPortManager::StartConnectionPolling(const std::string& extension_id,
@@ -182,16 +185,31 @@ void SerialPortManager::EnsureConnection() {
 
 void SerialPortManager::OnGotDevicesToGetPort(
     const std::string& path,
-    mojo::PendingReceiver<device::mojom::SerialPort> receiver,
+    device::mojom::SerialConnectionOptionsPtr options,
+    mojo::PendingRemote<device::mojom::SerialPortClient> client,
+    OpenPortCallback callback,
     std::vector<device::mojom::SerialPortInfoPtr> devices) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   for (auto& device : devices) {
     if (device->path.AsUTF8Unsafe() == path) {
-      port_manager_->GetPort(device->token, std::move(receiver),
-                             /*watcher=*/mojo::NullRemote());
+      port_manager_->OpenPort(device->token, /*use_alternate_path=*/false,
+                              std::move(options), std::move(client),
+                              /*watcher=*/mojo::NullRemote(),
+                              std::move(callback));
       return;
     }
+
+#if defined(OS_MAC)
+    if (device->alternate_path &&
+        device->alternate_path->AsUTF8Unsafe() == path) {
+      port_manager_->OpenPort(device->token, /*use_alternate_path=*/true,
+                              std::move(options), std::move(client),
+                              /*watcher=*/mojo::NullRemote(),
+                              std::move(callback));
+      return;
+    }
+#endif  // defined(OS_MAC)
   }
 }
 

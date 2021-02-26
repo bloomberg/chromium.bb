@@ -18,6 +18,8 @@
 #include "common/Constants.h"
 #include "common/Math.h"
 #include "common/SlabAllocator.h"
+#include "common/ityp_span.h"
+#include "common/ityp_vector.h"
 #include "dawn_native/BindingInfo.h"
 #include "dawn_native/CachedObject.h"
 #include "dawn_native/Error.h"
@@ -25,22 +27,13 @@
 
 #include "dawn_native/dawn_platform.h"
 
-#include <array>
 #include <bitset>
 #include <map>
 
 namespace dawn_native {
 
-    MaybeError ValidateBindGroupLayoutDescriptor(DeviceBase*,
+    MaybeError ValidateBindGroupLayoutDescriptor(DeviceBase* device,
                                                  const BindGroupLayoutDescriptor* descriptor);
-
-    MaybeError ValidateBindingTypeWithShaderStageVisibility(
-        wgpu::BindingType bindingType,
-        wgpu::ShaderStage shaderStageVisibility);
-
-    MaybeError ValidateStorageTextureFormat(DeviceBase* device,
-                                            wgpu::BindingType bindingType,
-                                            wgpu::TextureFormat storageTextureFormat);
 
     // Bindings are specified as a |BindingNumber| in the BindGroupLayoutDescriptor.
     // These numbers may be arbitrary and sparse. Internally, Dawn packs these numbers
@@ -57,7 +50,7 @@ namespace dawn_native {
 
         const BindingInfo& GetBindingInfo(BindingIndex bindingIndex) const {
             ASSERT(!IsError());
-            ASSERT(bindingIndex < kMaxBindingsPerGroup);
+            ASSERT(bindingIndex < mBindingInfo.size());
             return mBindingInfo[bindingIndex];
         }
         const BindingMap& GetBindingMap() const;
@@ -72,10 +65,15 @@ namespace dawn_native {
         };
 
         BindingIndex GetBindingCount() const;
+        // Returns |BindingIndex| because buffers are packed at the front.
+        BindingIndex GetBufferCount() const;
         // Returns |BindingIndex| because dynamic buffers are packed at the front.
         BindingIndex GetDynamicBufferCount() const;
-        uint32_t GetDynamicUniformBufferCount() const;
-        uint32_t GetDynamicStorageBufferCount() const;
+        uint32_t GetUnverifiedBufferCount() const;
+
+        // Used to get counts and validate them in pipeline layout creation. Other getters
+        // should be used to get typed integer counts.
+        const BindingCounts& GetBindingCountInfo() const;
 
         struct BufferBindingData {
             uint64_t offset;
@@ -83,8 +81,9 @@ namespace dawn_native {
         };
 
         struct BindingDataPointers {
-            BufferBindingData* const bufferData = nullptr;
-            Ref<ObjectBase>* const bindings = nullptr;
+            ityp::span<BindingIndex, BufferBindingData> const bufferData = {};
+            ityp::span<BindingIndex, Ref<ObjectBase>> const bindings = {};
+            ityp::span<uint32_t, uint64_t> const unverifiedBufferSizes = {};
         };
 
         // Compute the amount of space / alignment required to store bindings for a bind group of
@@ -110,12 +109,8 @@ namespace dawn_native {
       private:
         BindGroupLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
-        BindingIndex mBindingCount;
-        BindingIndex mBufferCount = 0;  // |BindingIndex| because buffers are packed at the front.
-        uint32_t mDynamicUniformBufferCount = 0;
-        uint32_t mDynamicStorageBufferCount = 0;
-
-        std::array<BindingInfo, kMaxBindingsPerGroup> mBindingInfo;
+        BindingCounts mBindingCounts = {};
+        ityp::vector<BindingIndex, BindingInfo> mBindingInfo;
 
         // Map from BindGroupLayoutEntry.binding to packed indices.
         BindingMap mBindingMap;

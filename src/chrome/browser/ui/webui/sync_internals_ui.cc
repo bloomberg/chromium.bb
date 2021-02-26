@@ -11,17 +11,22 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/sync_driver_resources.h"
-#include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_internals_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 
 content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate cr-ui-tree-js-static;");
 
   source->UseStringsJs();
 
@@ -30,7 +35,6 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
        IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_JS},
       {syncer::sync_ui_util::kChromeSyncJS,
        IDR_SYNC_DRIVER_SYNC_INTERNALS_CHROME_SYNC_JS},
-      {syncer::sync_ui_util::kTypesJS, IDR_SYNC_DRIVER_SYNC_INTERNALS_TYPES_JS},
       {syncer::sync_ui_util::kSyncLogJS,
        IDR_SYNC_DRIVER_SYNC_INTERNALS_SYNC_LOG_JS},
       {syncer::sync_ui_util::kSyncNodeBrowserJS,
@@ -47,6 +51,8 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
        IDR_SYNC_DRIVER_SYNC_INTERNALS_USER_EVENTS_JS},
       {syncer::sync_ui_util::kTrafficLogJS,
        IDR_SYNC_DRIVER_SYNC_INTERNALS_TRAFFIC_LOG_JS},
+      {syncer::sync_ui_util::kInvalidationsJS,
+       IDR_SYNC_DRIVER_SYNC_INTERNALS_INVALIDATIONS_JS},
   };
   webui::AddResourcePathsBulk(source, kResources);
 
@@ -65,4 +71,3 @@ SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
 }
 
 SyncInternalsUI::~SyncInternalsUI() {}
-

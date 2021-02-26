@@ -21,7 +21,7 @@ namespace cricket {
 
 extern const int kVideoCodecClockrate;
 extern const int kDataCodecClockrate;
-extern const int kDataMaxBandwidth;  // bps
+extern const int kRtpDataMaxBandwidth;  // bps
 
 // Default CPU thresholds.
 extern const float kHighSystemCpuThreshold;
@@ -124,12 +124,6 @@ extern const char kCodecParamMaxMessageSize[];
 extern const int kGoogleRtpDataCodecPlType;
 extern const char kGoogleRtpDataCodecName[];
 
-// TODO(pthatcher): Find an id that won't conflict with anything.  On
-// the other hand, it really shouldn't matter since the id won't be
-// used on the wire.
-extern const int kGoogleSctpDataCodecPlType;
-extern const char kGoogleSctpDataCodecName[];
-
 extern const char kComfortNoiseCodecName[];
 
 RTC_EXPORT extern const char kVp8CodecName[];
@@ -142,13 +136,18 @@ RTC_EXPORT extern const char kH264FmtpProfileLevelId[];
 RTC_EXPORT extern const char kH264FmtpLevelAsymmetryAllowed[];
 RTC_EXPORT extern const char kH264FmtpPacketizationMode[];
 extern const char kH264FmtpSpropParameterSets[];
+extern const char kH264FmtpSpsPpsIdrInKeyframe[];
 extern const char kH264ProfileLevelConstrainedBaseline[];
+extern const char kH264ProfileLevelConstrainedHigh[];
 
 extern const int kDefaultVideoMaxFramerate;
 
 extern const size_t kConferenceMaxNumSpatialLayers;
 extern const size_t kConferenceMaxNumTemporalLayers;
 extern const size_t kConferenceDefaultNumTemporalLayers;
+
+extern const char kApplicationSpecificBandwidth[];
+extern const char kTransportSpecificBandwidth[];
 }  // namespace cricket
 
 #endif  // MEDIA_BASE_MEDIA_CONSTANTS_H_

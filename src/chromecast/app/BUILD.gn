@@ -37,14 +37,7 @@ cast_source_set("app") {
 }
 
 cast_source_set("cast_crash_client") {
-  sources = [
-    "android/cast_crash_reporter_client_android.cc",
-    "android/cast_crash_reporter_client_android.h",
-    "android/crash_handler.cc",
-    "android/crash_handler.h",
-    "linux/cast_crash_reporter_client.cc",
-    "linux/cast_crash_reporter_client.h",
-  ]
+  sources = []
 
   deps = [
     "//base",
@@ -60,7 +53,20 @@ cast_source_set("cast_crash_client") {
     ]
   }
 
+  if (is_linux || is_chromeos) {
+    sources += [
+      "linux/cast_crash_reporter_client.cc",
+      "linux/cast_crash_reporter_client.h",
+    ]
+  }
+
   if (is_android) {
+    sources += [
+      "android/cast_crash_reporter_client_android.cc",
+      "android/cast_crash_reporter_client_android.h",
+      "android/crash_handler.cc",
+      "android/crash_handler.h",
+    ]
     deps += [
       "//chromecast/base:android_create_sys_info",
       "//chromecast/base:cast_version",
@@ -86,7 +92,11 @@ cast_source_set("test_support") {
 
 cast_source_set("unittests") {
   testonly = true
-  sources = [ "linux/cast_crash_reporter_client_unittest.cc" ]
+  sources = []
+
+  if (is_linux || is_chromeos) {
+    sources += [ "linux/cast_crash_reporter_client_unittest.cc" ]
+  }
 
   deps = [
     "//base",

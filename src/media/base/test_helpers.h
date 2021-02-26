@@ -106,9 +106,19 @@ class TestVideoConfig {
   static VideoDecoderConfig Large(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig LargeEncrypted(VideoCodec codec = kCodecVP8);
 
+  // Returns a configuration that is larger in dimensions that Large().
+  static VideoDecoderConfig ExtraLarge(VideoCodec codec = kCodecVP8);
+  static VideoDecoderConfig ExtraLargeEncrypted(VideoCodec codec = kCodecVP8);
+
+  static VideoDecoderConfig Custom(gfx::Size size,
+                                   VideoCodec codec = kCodecVP8);
+  static VideoDecoderConfig CustomEncrypted(gfx::Size size,
+                                            VideoCodec codec = kCodecVP8);
+
   // Returns coded size for Normal and Large config.
   static gfx::Size NormalCodedSize();
   static gfx::Size LargeCodedSize();
+  static gfx::Size ExtraLargeCodedSize();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestVideoConfig);
@@ -120,6 +130,14 @@ class TestAudioConfig {
  public:
   static AudioDecoderConfig Normal();
   static AudioDecoderConfig NormalEncrypted();
+
+  // Returns configurations that have a higher sample rate than Normal()
+  static AudioDecoderConfig HighSampleRate();
+  static AudioDecoderConfig HighSampleRateEncrypted();
+
+  // Returns coded sample rate for Normal and HighSampleRate config.
+  static int NormalSampleRateValue();
+  static int HighSampleRateValue();
 };
 
 // Provides pre-canned AudioParameters objects.
@@ -158,6 +176,18 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
                                            T increment,
                                            size_t frames,
                                            base::TimeDelta timestamp);
+
+// Similar to above, but for float types where the maximum range is limited to
+// [-1.0f, 1.0f]. Here the stored values will be divided by 65536.
+template <>
+scoped_refptr<AudioBuffer> MakeAudioBuffer<float>(SampleFormat format,
+                                                  ChannelLayout channel_layout,
+                                                  size_t channel_count,
+                                                  int sample_rate,
+                                                  float start,
+                                                  float increment,
+                                                  size_t frames,
+                                                  base::TimeDelta timestamp);
 
 // Create an AudioBuffer containing bitstream data. |start| and |increment| are
 // used to specify the values for the data. The value is determined by:
@@ -206,13 +236,19 @@ MATCHER_P(SameStatusCode, status, "") {
   return arg.code() == status.code();
 }
 
-// Compares two an |arg| Status to a StatusCode provided
+// Compares an `arg` Status.code() to a test-supplied StatusCode.
 MATCHER_P(HasStatusCode, status_code, "") {
   return arg.code() == status_code;
 }
 
 MATCHER(IsOkStatus, "") {
   return arg.is_ok();
+}
+
+// True if and only if the Status would be interpreted as an error from a decode
+// callback (not okay, not aborted).
+MATCHER(IsDecodeErrorStatus, "") {
+  return !arg.is_ok() && arg.code() != StatusCode::kAborted;
 }
 
 // Compares two {Audio|Video}DecoderConfigs
@@ -328,7 +364,14 @@ MATCHER_P2(AudioNonKeyframe, pts_microseconds, dts_microseconds, "") {
                base::NumberToString(pts_microseconds) + "us and DTS " +
                base::NumberToString(dts_microseconds) +
                "us indicated the frame is not a random access point (key "
-               "frame). All audio frames are expected to be key frames.");
+               "frame). All audio frames are expected to be key frames for "
+               "the current audio codec.");
+}
+
+MATCHER(AudioNonKeyframeOutOfOrder, "") {
+  return CONTAINS_STRING(arg,
+                         "Dependent audio frame with invalid decreasing "
+                         "presentation timestamp detected.");
 }
 
 MATCHER_P2(SkippingSpliceAtOrBefore,
@@ -449,6 +492,20 @@ MATCHER_P3(DroppedFrameCheckAppendWindow,
              arg, "outside append window [" +
                       base::NumberToString(append_window_start_us) + "us," +
                       base::NumberToString(append_window_end_us) + "us");
+}
+
+MATCHER_P3(DroppedAppendWindowUnusedPreroll,
+           pts_us,
+           delta_us,
+           next_pts_us,
+           "") {
+  return CONTAINS_STRING(
+      arg,
+      "Partial append window trimming dropping unused audio preroll buffer "
+      "with PTS " +
+          base::NumberToString(pts_us) + "us that ends too far (" +
+          base::NumberToString(delta_us) + "us) from next buffer with PTS " +
+          base::NumberToString(next_pts_us) + "us");
 }
 
 }  // namespace media

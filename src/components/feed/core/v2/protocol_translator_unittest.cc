@@ -6,12 +6,14 @@
 
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/feed_response.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -64,7 +66,12 @@ feedwire::DataOperation MakeDataOperationWithContent(
   result.mutable_feature()
       ->mutable_content_extension()
       ->mutable_xsurface_content()
-      ->set_xsurface_output(std::move(xsurface_content));
+      ->set_xsurface_output(xsurface_content);
+
+  result.mutable_feature()
+      ->mutable_content_extension()
+      ->add_prefetch_metadata()
+      ->set_uri("http://uri-for-" + xsurface_content);
   return result;
 }
 
@@ -80,11 +87,16 @@ feedwire::DataOperation MakeDataOperationWithRenderData(
 }
 
 // Helpers to add some common params.
-RefreshResponseData TranslateWireResponse(feedwire::Response response) {
-  return TranslateWireResponse(
-      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
+RefreshResponseData TranslateWireResponse(feedwire::Response response,
+                                          bool was_signed_in_request) {
+  return TranslateWireResponse(response,
+                               StreamModelUpdateRequest::Source::kNetworkUpdate,
+                               was_signed_in_request, kCurrentTime);
 }
 
+RefreshResponseData TranslateWireResponse(feedwire::Response response) {
+  return TranslateWireResponse(response, true);
+}
 base::Optional<feedstore::DataOperation> TranslateDataOperation(
     feedwire::DataOperation operation) {
   return ::feed::TranslateDataOperation(base::Time(), std::move(operation));
@@ -114,6 +126,57 @@ TEST(ProtocolTranslatorTest, EmptyResponse) {
   EXPECT_TRUE(TranslateWireResponse(response).model_update_request);
 }
 
+TEST(ProtocolTranslatorTest, WasSignedInRequest) {
+  feedwire::Response response = EmptyWireResponse();
+  for (bool was_signed_in_request_state : {true, false}) {
+    RefreshResponseData refresh =
+        TranslateWireResponse(response, was_signed_in_request_state);
+    ASSERT_TRUE(refresh.model_update_request);
+    EXPECT_EQ(refresh.model_update_request->stream_data.signed_in(),
+              was_signed_in_request_state);
+  }
+}
+
+TEST(ProtocolTranslatorTest, ActivityLoggingEnabled) {
+  feedwire::Response response = EmptyWireResponse();
+  for (bool logging_enabled_state : {true, false}) {
+    response.mutable_feed_response()
+        ->mutable_feed_response_metadata()
+        ->mutable_chrome_feed_response_metadata()
+        ->set_logging_enabled(logging_enabled_state);
+    base::HistogramTester histograms;
+    RefreshResponseData refresh = TranslateWireResponse(response);
+    ASSERT_TRUE(refresh.model_update_request);
+    EXPECT_EQ(refresh.model_update_request->stream_data.logging_enabled(),
+              logging_enabled_state);
+
+    // The histogram was updated.
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ActivityLoggingEnabled", logging_enabled_state,
+        1);
+  }
+}
+
+TEST(ProtocolTranslatorTest, PrivacyNoticeFulfilled) {
+  feedwire::Response response = EmptyWireResponse();
+  for (bool privacy_notice_fulfilled_state : {true, false}) {
+    response.mutable_feed_response()
+        ->mutable_feed_response_metadata()
+        ->mutable_chrome_feed_response_metadata()
+        ->set_privacy_notice_fulfilled(privacy_notice_fulfilled_state);
+    base::HistogramTester histograms;
+    RefreshResponseData refresh = TranslateWireResponse(response);
+    ASSERT_TRUE(refresh.model_update_request);
+    EXPECT_EQ(
+        refresh.model_update_request->stream_data.privacy_notice_fulfilled(),
+        privacy_notice_fulfilled_state);
+
+    // The histogram was updated.
+    histograms.ExpectUniqueSample("ContentSuggestions.Feed.NoticeCardFulfilled",
+                                  privacy_notice_fulfilled_state, 1);
+  }
+}
+
 TEST(ProtocolTranslatorTest, MissingResponseVersion) {
   feedwire::Response response = EmptyWireResponse();
   response.set_response_version(feedwire::Response::UNKNOWN_RESPONSE_VERSION);
@@ -127,6 +190,9 @@ TEST(ProtocolTranslatorTest, TranslateContent) {
       TranslateDataOperation(wire_operation);
   EXPECT_TRUE(translated);
   EXPECT_EQ("content", translated->content().frame());
+  ASSERT_EQ(1, translated->content().prefetch_metadata_size());
+  EXPECT_EQ("http://uri-for-content",
+            translated->content().prefetch_metadata(0).uri());
 }
 
 TEST(ProtocolTranslatorTest, TranslateContentFailsWhenMissingContent) {
@@ -213,7 +279,8 @@ TEST(ProtocolTranslatorTest, TranslateRealResponse) {
   EXPECT_EQ(kCurrentTime, translated.request_schedule->anchor_time);
   EXPECT_EQ(std::vector<base::TimeDelta>(
                 {base::TimeDelta::FromSeconds(86308) +
-                 base::TimeDelta::FromNanoseconds(822963644)}),
+                     base::TimeDelta::FromNanoseconds(822963644),
+                 base::TimeDelta::FromSeconds(120000)}),
             translated.request_schedule->refresh_offsets);
 
   std::stringstream ss;
@@ -598,6 +665,42 @@ stream_structure: {
 max_structure_sequence_number: 0
 )";
   EXPECT_EQ(want, ss.str());
+}
+
+TEST(TranslateDismissData, Success) {
+  feedpacking::DismissData input;
+  *input.add_data_operations() =
+      MakeDataOperation(feedwire::DataOperation::CLEAR_ALL);
+  *input.add_data_operations() =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  std::vector<feedstore::DataOperation> result =
+      TranslateDismissData(kCurrentTime, input);
+
+  ASSERT_EQ(2UL, result.size());
+  EXPECT_EQ(R"({
+  structure {
+    operation: 1
+  }
+}
+)",
+            ToTextProto(result[0]));
+  EXPECT_EQ(R"({
+  structure {
+    operation: 2
+    content_id {
+      id: 42
+    }
+    type: 3
+  }
+  content {
+    content_id {
+      id: 42
+    }
+    frame: "content"
+  }
+}
+)",
+            ToTextProto(result[1]));
 }
 
 }  // namespace feed

@@ -6,8 +6,9 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
@@ -55,7 +56,7 @@ class ServiceProcessControlBrowserTest
 
  protected:
   void LaunchServiceProcessControl(base::RepeatingClosure on_launched) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::ScopedAllowBlockingForTesting allow_blocking;
     // browser_tests and the child processes run as standalone executables,
     // rather than bundled apps. For this test, set up the CHILD_PROCESS_EXE to
@@ -99,7 +100,7 @@ class ServiceProcessControlBrowserTest
   void SetUp() override {
     InProcessBrowserTest::SetUp();
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
     // on Mac, and on Linux asan builds (https://crbug.com/1059446).
@@ -113,10 +114,10 @@ class ServiceProcessControlBrowserTest
     if (ServiceProcessControl::GetInstance()->IsConnected())
       EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
     if (service_process_.IsValid()) {
       int exit_code;
@@ -162,7 +163,7 @@ class RealServiceProcessControlBrowserTest
     ServiceProcessControlBrowserTest::SetUpCommandLine(command_line);
     base::FilePath exe;
     base::PathService::Get(base::DIR_EXE, &exe);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     exe = exe.DirName().DirName().DirName();
 #endif
     exe = exe.Append(chrome::kHelperProcessExecutablePath);
@@ -213,7 +214,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 }
 
 // Flaky on macOS, linux and windows: https://crbug.com/978948
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
 #else
 #define MAYBE_LaunchAndReconnect LaunchAndReconnect
@@ -271,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 // This tests the case when a service process is launched when the browser
 // starts but we try to launch it again while setting up Cloud Print.
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_LaunchTwice DISABLED_LaunchTwice
 #else
 #define MAYBE_LaunchTwice LaunchTwice
@@ -311,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
 }
 
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
 #else
 #define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
@@ -341,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 }
 
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_SameLaunchTask DISABLED_SameLaunchTask
 #else
 #define MAYBE_SameLaunchTask SameLaunchTask
@@ -363,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
 #else
 #define MAYBE_DieOnDisconnect DieOnDisconnect
@@ -378,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 }
 
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ForceShutdown DISABLED_ForceShutdown
 #else
 #define MAYBE_ForceShutdown ForceShutdown
@@ -397,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
 }
 
 // Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_CheckPid DISABLED_CheckPid
 #else
 #define MAYBE_CheckPid CheckPid

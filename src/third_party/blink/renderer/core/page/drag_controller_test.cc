@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
@@ -30,7 +31,7 @@ class DragMockChromeClient : public RenderingTestChromeClient {
 
   void StartDragging(LocalFrame*,
                      const WebDragData&,
-                     WebDragOperationsMask,
+                     DragOperationsMask,
                      const SkBitmap& drag_image,
                      const gfx::Point& drag_image_offset) override {
     last_drag_image_size = WebSize(drag_image.width(), drag_image.height());
@@ -84,7 +85,7 @@ class DragControllerSimTest : public SimTest {};
 // https://crbug.com/733996.
 TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");
@@ -124,7 +125,7 @@ TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 // Regression test for https://crbug.com/685030
 TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");

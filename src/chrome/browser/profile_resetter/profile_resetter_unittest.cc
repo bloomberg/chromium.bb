@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -217,7 +217,7 @@ std::unique_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
       }));
   std::unique_ptr<BrandcodeConfigFetcher> fetcher(new BrandcodeConfigFetcher(
       &test_url_loader_factory_,
-      base::Bind(&ConfigParserTest::Callback, base::Unretained(this)), url,
+      base::BindOnce(&ConfigParserTest::Callback, base::Unretained(this)), url,
       "ABCD"));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fetcher->IsActive());
@@ -237,6 +237,8 @@ class ShortcutHandler {
                                       const base::string16& args);
   void CheckShortcutHasArguments(const base::string16& desired_args) const;
   void Delete();
+  void HideFile();
+  bool IsFileHidden() const;
 
  private:
 #if defined(OS_WIN)
@@ -290,9 +292,23 @@ void ShortcutHandler::CheckShortcutHasArguments(
 
 void ShortcutHandler::Delete() {
   EXPECT_FALSE(shortcut_path_.empty());
-  EXPECT_TRUE(base::DeleteFile(shortcut_path_, false));
+  EXPECT_TRUE(base::DeleteFile(shortcut_path_));
   shortcut_path_.clear();
 }
+
+void ShortcutHandler::HideFile() {
+  DWORD attributes = ::GetFileAttributes(shortcut_path_.value().c_str());
+  ASSERT_NE(attributes, INVALID_FILE_ATTRIBUTES);
+  ASSERT_TRUE(::SetFileAttributes(shortcut_path_.value().c_str(),
+                                  attributes | FILE_ATTRIBUTE_HIDDEN));
+}
+
+bool ShortcutHandler::IsFileHidden() const {
+  DWORD attributes = ::GetFileAttributes(shortcut_path_.value().c_str());
+  EXPECT_NE(attributes, INVALID_FILE_ATTRIBUTES);
+  return attributes & FILE_ATTRIBUTE_HIDDEN;
+}
+
 #else
 ShortcutHandler::ShortcutHandler() {}
 
@@ -314,6 +330,12 @@ void ShortcutHandler::CheckShortcutHasArguments(
 }
 
 void ShortcutHandler::Delete() {
+}
+
+void ShortcutHandler::HideFile() {}
+
+bool ShortcutHandler::IsFileHidden() const {
+  return false;
 }
 #endif  // defined(OS_WIN)
 
@@ -473,10 +495,10 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
     }
     if (info->IsSettingValid(site_setting)) {
       host_content_settings_map->SetContentSettingDefaultScope(
-          url, url, content_type, std::string(), site_setting);
+          url, url, content_type, site_setting);
       ContentSettingsForOneType host_settings;
-      host_content_settings_map->GetSettingsForOneType(
-          content_type, std::string(), &host_settings);
+      host_content_settings_map->GetSettingsForOneType(content_type,
+                                                       &host_settings);
       EXPECT_EQ(2U, host_settings.size());
     }
   }
@@ -494,12 +516,12 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
     EXPECT_TRUE(default_settings.count(content_type));
     EXPECT_EQ(default_settings[content_type], default_setting);
     ContentSetting site_setting = host_content_settings_map->GetContentSetting(
-        GURL("example.org"), GURL(), content_type, std::string());
+        GURL("example.org"), GURL(), content_type);
     EXPECT_EQ(default_setting, site_setting);
 
     ContentSettingsForOneType host_settings;
-    host_content_settings_map->GetSettingsForOneType(
-        content_type, std::string(), &host_settings);
+    host_content_settings_map->GetSettingsForOneType(content_type,
+                                                     &host_settings);
     EXPECT_EQ(1U, host_settings.size());
   }
 }
@@ -729,13 +751,18 @@ TEST_F(ProfileResetterTest, ResetShortcuts) {
   ShortcutCommand command_line = shortcut.CreateWithArguments(
       base::ASCIIToUTF16("chrome.lnk"),
       base::ASCIIToUTF16("--profile-directory=Default foo.com"));
+  shortcut.HideFile();
   shortcut.CheckShortcutHasArguments(base::ASCIIToUTF16(
       "--profile-directory=Default foo.com"));
+#if defined(OS_WIN)
+  ASSERT_TRUE(shortcut.IsFileHidden());
+#endif
 
   ResetAndWait(ProfileResetter::SHORTCUTS);
 
   shortcut.CheckShortcutHasArguments(base::ASCIIToUTF16(
       "--profile-directory=Default"));
+  EXPECT_FALSE(shortcut.IsFileHidden());
 }
 
 TEST_F(ProfileResetterTest, ResetFewFlags) {
@@ -833,7 +860,7 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
       base::ASCIIToUTF16("--profile-directory=Default1"));
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
+  nonorganic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   int diff_fields = ResettableSettingsSnapshot::ALL_FIELDS;
@@ -861,7 +888,7 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
                ProfileResetter::SHORTCUTS);
 
   ResettableSettingsSnapshot organic_snap(profile());
-  organic_snap.RequestShortcuts(base::Closure());
+  organic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(diff_fields, nonorganic_snap.FindDifferentFields(organic_snap));
@@ -905,7 +932,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializationAsProtoTest) {
       base::ASCIIToUTF16("--profile-directory=Default foo.com"));
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
+  nonorganic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
 
@@ -981,9 +1008,9 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   FeedbackCapture capture;
   EXPECT_CALL(capture, OnUpdatedList());
   ResettableSettingsSnapshot snapshot(profile());
-  snapshot.RequestShortcuts(base::Bind(&FeedbackCapture::SetFeedback,
-                                       base::Unretained(&capture), profile(),
-                                       std::cref(snapshot)));
+  snapshot.RequestShortcuts(base::BindOnce(&FeedbackCapture::SetFeedback,
+                                           base::Unretained(&capture),
+                                           profile(), std::cref(snapshot)));
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(snapshot.shortcuts_determined());
@@ -1020,8 +1047,8 @@ TEST_F(ProfileResetterTest, DestroySnapshotFast) {
   FeedbackCapture capture;
   std::unique_ptr<ResettableSettingsSnapshot> deleted_snapshot(
       new ResettableSettingsSnapshot(profile()));
-  deleted_snapshot->RequestShortcuts(base::Bind(&FeedbackCapture::Fail,
-                                                base::Unretained(&capture)));
+  deleted_snapshot->RequestShortcuts(
+      base::BindOnce(&FeedbackCapture::Fail, base::Unretained(&capture)));
   deleted_snapshot.reset();
   // Running remaining tasks shouldn't trigger the callback to be called as
   // |deleted_snapshot| was deleted before it could run.

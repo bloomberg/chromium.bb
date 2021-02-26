@@ -29,6 +29,7 @@ import metrics
 metrics.DISABLE_METRICS_COLLECTION = True
 
 import gclient
+import gclient_eval
 import gclient_utils
 import gclient_scm
 from testing_support import trial_dir
@@ -388,7 +389,7 @@ class GclientTest(trial_dir.TestCase):
 
   def testRecurseDepsAndHooksCwd(self):
     """Verifies that hooks run in the correct directory with our without
-    use_relative_hooks"""
+    use_relative_paths"""
     write(
         '.gclient',
         'solutions = [\n'
@@ -416,7 +417,6 @@ class GclientTest(trial_dir.TestCase):
     write(
         os.path.join('foo', 'baz', 'DEPS'),
         'use_relative_paths=True\n'
-        'use_relative_hooks=True\n'
         'hooks = [{\n'
         '  "name": "lazors",\n'
         '  "pattern": ".",\n'
@@ -665,6 +665,42 @@ class GclientTest(trial_dir.TestCase):
         ('foo/rel', 'svn://example.com/rel'),
         ('foo/skip', None),
         ('foo/skip2', None),
+    ], [(dep.name, dep.url) for dep in sol.dependencies])
+
+  def testVarOverrides(self):
+    """Verifies expected behavior of variable overrides."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '    "custom_vars": {\n'
+        '      "path": "c-d",\n'
+        '    },\n'
+        '  },]\n')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'vars = {\n'
+        '  "path": Str("a-b"),\n'
+        '}\n'
+        'deps = {\n'
+        '  "foo/bar": "svn://example.com/foo/" + Var("path"),\n'
+        '}')
+    parser = gclient.OptionParser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+
+    sol = obj.dependencies[0]
+    self.assertEqual([
+        ('foo', 'svn://example.com/foo'),
+        ('foo/bar', 'svn://example.com/foo/c-d'),
+    ], self._get_processed())
+
+    self.assertEqual(1, len(sol.dependencies))
+    self.assertEqual([
+        ('foo/bar', 'svn://example.com/foo/c-d'),
     ], [(dep.name, dep.url) for dep in sol.dependencies])
 
   def testDepsOsOverrideDepsInDepsFile(self):
@@ -1356,6 +1392,34 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     foo_sol = obj.dependencies[0]
     self.assertEqual('foo', foo_sol.FuzzyMatchUrl(['foo']))
+
+
+class MergeVarsTest(unittest.TestCase):
+
+  def test_merge_vars(self):
+    merge_vars = gclient.merge_vars
+    Str = gclient_eval.ConstantString
+
+    l = {'foo': 'bar', 'baz': True}
+    merge_vars(l, {'foo': Str('quux')})
+    self.assertEqual(l, {'foo': 'quux', 'baz': True})
+
+    l = {'foo': 'bar', 'baz': True}
+    merge_vars(l, {'foo': 'quux'})
+    self.assertEqual(l, {'foo': 'quux', 'baz': True})
+
+    l = {'foo': Str('bar'), 'baz': True}
+    merge_vars(l, {'foo': Str('quux')})
+    self.assertEqual(l, {'foo': Str('quux'), 'baz': True})
+
+    l = {'foo': Str('bar'), 'baz': True}
+    merge_vars(l, {'foo': Str('quux')})
+    self.assertEqual(l, {'foo': Str('quux'), 'baz': True})
+
+    l = {'foo': 'bar'}
+    merge_vars(l, {'baz': True})
+    self.assertEqual(l, {'foo': 'bar', 'baz': True})
+
 
 
 if __name__ == '__main__':

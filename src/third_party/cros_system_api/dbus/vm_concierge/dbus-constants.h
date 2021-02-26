@@ -38,12 +38,16 @@ const char kStartPluginVmMethod[] = "StartPluginVm";
 const char kGetDnsSettingsMethod[] = "GetDnsSettings";
 const char kStartArcVmMethod[] = "StartArcVm";
 const char kSetVmCpuRestrictionMethod[] = "SetVmCpuRestriction";
+const char kAdjustVmMethod[] = "AdjustVm";
+const char kSetVmIdMethod[] = "SetVmId";
 
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 const char kDiskImageProgressSignal[] = "DiskImageProgress";
 const char kDnsSettingsChangedSignal[] = "DnsSettingsChanged";
 const char kVmStartedSignal[] = "VmStartedSignal";
+const char kVmStartingUpSignal[] = "VmStartingUpSignal";
 const char kVmStoppedSignal[] = "VmStoppedSignal";
+const char kVmIdChangedSignal[] = "VmIdChangedSignal";
 
 }  // namespace concierge
 }  // namespace vm_tools

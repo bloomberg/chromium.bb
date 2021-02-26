@@ -143,7 +143,7 @@ static void setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
                                    int mi_col_offset, MB_MODE_INFO *ref_mbmi,
                                    struct build_prediction_ctxt *ctxt,
                                    const int num_planes) {
-  const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->sb_type);
+  const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->bsize);
   const int ref_mi_row = xd->mi_row + mi_row_offset;
   const int ref_mi_col = xd->mi_col + mi_col_offset;
 
@@ -181,7 +181,7 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
   const int mi_x = (xd->mi_col + rel_mi_col) << MI_SIZE_LOG2;
   const int mi_y = (xd->mi_row + rel_mi_row) << MI_SIZE_LOG2;
 
-  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->bsize;
 
   InterPredParams inter_pred_params;
 
@@ -227,7 +227,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   struct build_prediction_ctxt ctxt = {
     cm, tmp_buf, tmp_width, tmp_height, tmp_stride, xd->mb_to_right_edge, NULL
   };
-  BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  BLOCK_SIZE bsize = xd->mi[0]->bsize;
   foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_obmc_prediction, &ctxt);
@@ -242,7 +242,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   struct build_prediction_ctxt ctxt = {
     cm, tmp_buf, tmp_width, tmp_height, tmp_stride, xd->mb_to_bottom_edge, NULL
   };
-  BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  BLOCK_SIZE bsize = xd->mi[0]->bsize;
   foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_prediction, &ctxt);
@@ -266,8 +266,8 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd) {
                                       dst_stride1);
   av1_build_prediction_by_left_preds(cm, xd, dst_buf2, dst_width2, dst_height2,
                                      dst_stride2);
-  av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, &cm->cur_frame->buf,
-                       mi_row, mi_col, 0, num_planes);
+  av1_setup_dst_planes(xd->plane, xd->mi[0]->bsize, &cm->cur_frame->buf, mi_row,
+                       mi_col, 0, num_planes);
   av1_build_obmc_inter_prediction(cm, xd, dst_buf1, dst_stride1, dst_buf2,
                                   dst_stride2);
 }
@@ -373,17 +373,17 @@ static void build_wedge_inter_predictor_from_buf(
     if (is_hbd) {
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
-          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
-          mbmi->sb_type, h, w, xd->bd);
+          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data, mbmi->bsize,
+          h, w, xd->bd);
     } else {
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
-                            ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
+                            ext_dst1, ext_dst_stride1, comp_data, mbmi->bsize,
                             h, w);
     }
 #else
     build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
-                          ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
-                          h, w);
+                          ext_dst1, ext_dst_stride1, comp_data, mbmi->bsize, h,
+                          w);
 #endif
   } else {
 #if CONFIG_AV1_HIGHBITDEPTH

@@ -43,13 +43,11 @@ namespace blink {
 class MockExecutionContextLifecycleStateObserver final
     : public GarbageCollected<MockExecutionContextLifecycleStateObserver>,
       public ExecutionContextLifecycleStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockExecutionContextLifecycleStateObserver);
-
  public:
   explicit MockExecutionContextLifecycleStateObserver(ExecutionContext* context)
       : ExecutionContextLifecycleStateObserver(context) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ExecutionContextLifecycleStateObserver::Trace(visitor);
   }
 

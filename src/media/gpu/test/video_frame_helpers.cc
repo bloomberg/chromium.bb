@@ -7,7 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -39,6 +40,47 @@ namespace {
       return (return_value);                           \
     }                                                  \
   } while (0)
+
+// Split 16-bit UV plane to 16bit U plane and 16 bit V plane.
+void SplitUVRow_16(const uint16_t* src_uv,
+                   uint16_t* dst_u,
+                   uint16_t* dst_v,
+                   int width_in_samples) {
+  for (int i = 0; i < width_in_samples; i++) {
+    dst_u[i] = src_uv[0];
+    dst_v[i] = src_uv[1];
+    src_uv += 2;
+  }
+}
+
+// Convert 16 bit NV12 to 16 bit I420. The strides in these arguments are in
+// bytes.
+void P016LEToI420P016(const uint8_t* src_y,
+                      int src_stride_y,
+                      const uint8_t* src_uv,
+                      int src_stride_uv,
+                      uint8_t* dst_y,
+                      int dst_stride_y,
+                      uint8_t* dst_u,
+                      int dst_stride_u,
+                      uint8_t* dst_v,
+                      int dst_stride_v,
+                      int width,
+                      int height) {
+  libyuv::CopyPlane_16(reinterpret_cast<const uint16_t*>(src_y),
+                       src_stride_y / 2, reinterpret_cast<uint16_t*>(dst_y),
+                       dst_stride_y / 2, width, height);
+  const int half_width = (width + 1) / 2;
+  const int half_height = (height + 1) / 2;
+  for (int i = 0; i < half_height; i++) {
+    SplitUVRow_16(reinterpret_cast<const uint16_t*>(src_uv),
+                  reinterpret_cast<uint16_t*>(dst_u),
+                  reinterpret_cast<uint16_t*>(dst_v), half_width);
+    dst_u += dst_stride_u;
+    dst_v += dst_stride_v;
+    src_uv += src_stride_uv;
+  }
+}
 
 bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
@@ -87,6 +129,31 @@ bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
       LOG(ERROR) << "Unsupported input format: " << src_frame->format();
       return false;
   }
+}
+
+bool ConvertVideoFrameToYUV420P10(const VideoFrame* src_frame,
+                                  VideoFrame* dst_frame) {
+  if (src_frame->format() != PIXEL_FORMAT_P016LE) {
+    LOG(ERROR) << "Unsupported input format: "
+               << VideoPixelFormatToString(src_frame->format());
+    return false;
+  }
+
+  const auto& visible_rect = src_frame->visible_rect();
+  const int width = visible_rect.width();
+  const int height = visible_rect.height();
+  uint8_t* const dst_y = dst_frame->data(VideoFrame::kYPlane);
+  uint8_t* const dst_u = dst_frame->data(VideoFrame::kUPlane);
+  uint8_t* const dst_v = dst_frame->data(VideoFrame::kVPlane);
+  const int dst_stride_y = dst_frame->stride(VideoFrame::kYPlane);
+  const int dst_stride_u = dst_frame->stride(VideoFrame::kUPlane);
+  const int dst_stride_v = dst_frame->stride(VideoFrame::kVPlane);
+  P016LEToI420P016(src_frame->data(VideoFrame::kYPlane),
+                   src_frame->stride(VideoFrame::kYPlane),
+                   src_frame->data(VideoFrame::kUVPlane),
+                   src_frame->stride(VideoFrame::kUVPlane), dst_y, dst_stride_y,
+                   dst_u, dst_stride_u, dst_v, dst_stride_v, width, height);
+  return true;
 }
 
 bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
@@ -186,10 +253,12 @@ bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame) {
   if (dst_frame->storage_type() != VideoFrame::STORAGE_OWNED_MEMORY)
     LOG(WARNING) << "writing into non-owned memory";
 
-  // Only I420 and ARGB are currently supported as output formats.
+  // Only I420, YUV420P10 and ARGB are currently supported as output formats.
   switch (dst_frame->format()) {
     case PIXEL_FORMAT_I420:
       return ConvertVideoFrameToI420(src_frame, dst_frame);
+    case PIXEL_FORMAT_YUV420P10:
+      return ConvertVideoFrameToYUV420P10(src_frame, dst_frame);
     case PIXEL_FORMAT_ARGB:
       return ConvertVideoFrameToARGB(src_frame, dst_frame);
     default:
@@ -241,8 +310,7 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
       dst_frame = CreatePlatformVideoFrame(
           gpu_memory_buffer_factory, dst_layout.format(),
           dst_layout.coded_size(), src_frame->visible_rect(),
-          src_frame->visible_rect().size(), src_frame->timestamp(),
-          *dst_buffer_usage);
+          src_frame->natural_size(), src_frame->timestamp(), *dst_buffer_usage);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
@@ -275,6 +343,28 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
   }
 
   return dst_frame;
+}
+
+scoped_refptr<VideoFrame> CreateDmabufVideoFrame(
+    const VideoFrame* const frame) {
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  if (!frame || frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER)
+    return nullptr;
+  gfx::GpuMemoryBuffer* gmb = frame->GetGpuMemoryBuffer();
+  gfx::GpuMemoryBufferHandle gmb_handle = gmb->CloneHandle();
+  DCHECK_EQ(gmb_handle.type, gfx::GpuMemoryBufferType::NATIVE_PIXMAP);
+  std::vector<ColorPlaneLayout> planes;
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (auto& plane : gmb_handle.native_pixmap_handle.planes) {
+    planes.emplace_back(plane.stride, plane.offset, plane.size);
+    dmabuf_fds.emplace_back(plane.fd.release());
+  }
+  return VideoFrame::WrapExternalDmabufs(
+      frame->layout(), frame->visible_rect(), frame->natural_size(),
+      std::move(dmabuf_fds), frame->timestamp());
+#else
+  return nullptr;
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)}
 }
 
 scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
@@ -343,20 +433,32 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   return video_frame;
 }
 
-base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
-                                                        const gfx::Size& size) {
-  const size_t num_planes = VideoFrame::NumPlanes(format);
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& dimension,
+    const uint32_t alignment,
+    std::vector<size_t>* plane_rows) {
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
 
   std::vector<ColorPlaneLayout> planes(num_planes);
-  const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
+  if (plane_rows)
+    plane_rows->resize(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = strides[i];
+    const int32_t stride =
+        VideoFrame::RowBytes(i, pixel_format, dimension.width());
+    const size_t rows = VideoFrame::Rows(i, pixel_format, dimension.height());
+    const size_t plane_size = stride * rows;
+    const size_t aligned_size = base::bits::Align(plane_size, alignment);
+    planes[i].stride = stride;
     planes[i].offset = offset;
-    planes[i].size = VideoFrame::PlaneSize(format, i, size).GetArea();
+    planes[i].size = aligned_size;
     offset += planes[i].size;
+    if (plane_rows)
+      (*plane_rows)[i] = rows;
   }
-  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes));
+  return VideoFrameLayout::CreateWithPlanes(pixel_format, dimension,
+                                            std::move(planes));
 }
 
 }  // namespace test

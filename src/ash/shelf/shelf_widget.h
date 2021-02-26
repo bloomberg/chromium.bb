@@ -9,8 +9,8 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/session/session_observer.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -114,6 +114,9 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
+
+  // Called when shelf layout manager detects a locale change.
+  void HandleLocaleChange();
 
   // TODO(manucornet): Remove this method when all this widget's layout
   // logic is part of this class.

@@ -6,9 +6,7 @@ import("//build_overrides/build.gni")
 
 source_set("unittests") {
   testonly = true
-  sources = [
-    "device_auth_test.cc",
-  ]
+  sources = [ "device_auth_test.cc" ]
 
   deps = [
     "../../platform:test",
@@ -27,30 +25,27 @@ source_set("unittests") {
 if (is_posix && !build_with_chromium) {
   source_set("e2e_tests") {
     testonly = true
-    sources = [
-      "cast_socket_e2e_test.cc",
-    ]
+    sources = [ "cast_socket_e2e_test.cc" ]
 
     deps = [
       "../../platform",
+      "../../testing/util",
       "../../third_party/abseil",
       "../../third_party/boringssl",
+      "../../third_party/googletest:gmock",
       "../../third_party/googletest:gtest",
       "../../util",
       "../common:certificate",
       "../common:channel",
       "../common:test_helpers",
       "../receiver:channel",
-      "../receiver:test_helpers",
       "../sender:channel",
     ]
   }
 
   executable("make_crl_tests") {
     testonly = true
-    sources = [
-      "make_crl_tests.cc",
-    ]
+    sources = [ "make_crl_tests.cc" ]
 
     deps = [
       "../../platform:test",

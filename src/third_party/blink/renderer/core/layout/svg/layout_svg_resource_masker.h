@@ -36,27 +36,30 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   explicit LayoutSVGResourceMasker(SVGMaskElement*);
   ~LayoutSVGResourceMasker() override;
 
-  const char* GetName() const override { return "LayoutSVGResourceMasker"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutSVGResourceMasker";
+  }
 
   void RemoveAllClientsFromCache() override;
 
-  FloatRect ResourceBoundingBox(const FloatRect& reference_box);
+  FloatRect ResourceBoundingBox(const FloatRect& reference_box,
+                                float reference_box_zoom);
 
   SVGUnitTypes::SVGUnitType MaskUnits() const;
   SVGUnitTypes::SVGUnitType MaskContentUnits() const;
 
   static const LayoutSVGResourceType kResourceType = kMaskerResourceType;
-  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
+  LayoutSVGResourceType ResourceType() const override {
+    NOT_DESTROYED();
+    return kResourceType;
+  }
 
-  sk_sp<const PaintRecord> CreatePaintRecord(AffineTransform&,
-                                             const FloatRect&,
+  sk_sp<const PaintRecord> CreatePaintRecord(const AffineTransform&,
                                              GraphicsContext&);
 
  private:
-  void CalculateMaskContentVisualRect();
-
   sk_sp<const PaintRecord> cached_paint_record_;
-  FloatRect mask_content_boundaries_;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMasker,

@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
@@ -17,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -56,11 +58,11 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShouldShowWelcomePage) {
   EXPECT_FALSE(ShouldShowWelcomePage());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
 namespace {
 
 // A generic test class to be subclassed by test classes testing specific
-// master_preferences. All subclasses must call SetMasterPreferencesForTest()
+// master_preferences. All subclasses must call SetInitialPreferencesForTest()
 // from their SetUp() method before deferring the remainder of Setup() to this
 // class.
 class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
@@ -69,20 +71,20 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
 
  protected:
   void SetUp() override {
-    // All users of this test class need to call SetMasterPreferencesForTest()
+    // All users of this test class need to call SetInitialPreferencesForTest()
     // before this class' SetUp() is invoked.
     ASSERT_TRUE(text_.get());
 
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
     EXPECT_TRUE(base::WriteFile(prefs_file_, *text_));
-    SetMasterPrefsPathForTesting(prefs_file_);
+    SetInitialPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.
     InProcessBrowserTest::SetUp();
   }
 
   void TearDown() override {
-    EXPECT_TRUE(base::DeleteFile(prefs_file_, false));
+    EXPECT_TRUE(base::DeleteFile(prefs_file_));
     InProcessBrowserTest::TearDown();
   }
 
@@ -93,7 +95,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
   }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     // Suppress first run dialog since it blocks test progress.
@@ -101,7 +103,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
   }
 #endif
 
-  void SetMasterPreferencesForTest(const char text[]) {
+  void SetInitialPreferencesForTest(const char text[]) {
     text_.reset(new std::string(text));
   }
 
@@ -120,7 +122,7 @@ class FirstRunMasterPrefsBrowserTestT
 
  protected:
   void SetUp() override {
-    SetMasterPreferencesForTest(Text);
+    SetInitialPreferencesForTest(Text);
     FirstRunMasterPrefsBrowserTestBase::SetUp();
   }
 
@@ -418,6 +420,6 @@ INSTANTIATE_TEST_SUITE_P(FirstRunMasterPrefsVariationsSeedTests,
                          FirstRunMasterPrefsVariationsSeedTest,
                          testing::Bool());
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
 
 }  // namespace first_run

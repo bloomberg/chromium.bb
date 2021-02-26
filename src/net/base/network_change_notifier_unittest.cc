@@ -54,6 +54,11 @@ TEST(NetworkChangeNotifierTest, NetMaxBandwidthRange) {
       EXPECT_GE(100.0, max_bandwidth);
       EXPECT_LE(100.0, max_bandwidth);
       break;
+    case NetworkChangeNotifier::CONNECTION_5G:
+      // TODO(crbug.com/1127134): Expect proper bounds once we have introduced
+      // subtypes for 5G connections.
+      EXPECT_EQ(std::numeric_limits<double>::infinity(), max_bandwidth);
+      break;
     case NetworkChangeNotifier::CONNECTION_NONE:
       EXPECT_EQ(0.0, max_bandwidth);
       break;
@@ -120,7 +125,7 @@ TEST(NetworkChangeNotifierTest, IgnoreAirdropOnMac) {
       IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4});
   list.push_back(interface_airdrop);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
             NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
 #else
@@ -140,7 +145,7 @@ TEST(NetworkChangeNotifierTest, IgnoreTunnelsOnMac) {
       IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1});
   list.push_back(interface_tunnel);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
             NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
 #else
@@ -160,7 +165,7 @@ TEST(NetworkChangeNotifierTest, IgnoreDisconnectedEthernetOnMac) {
       IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3});
   list.push_back(interface_ethernet);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
             NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
 #else

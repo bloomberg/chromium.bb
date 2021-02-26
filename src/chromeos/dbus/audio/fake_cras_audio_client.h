@@ -35,6 +35,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void GetNodes(DBusMethodCallback<AudioNodeList> callback) override;
   void GetNumberOfActiveOutputStreams(
       DBusMethodCallback<int> callback) override;
+  void GetDeprioritizeBtWbsMic(DBusMethodCallback<bool> callback) override;
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override;
   void SetOutputUserMute(bool mute_on) override;
   void SetInputNodeGain(uint64_t node_id, int32_t gain) override;
@@ -45,7 +46,6 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
                        const std::string& hotword_model,
                        VoidDBusMethodCallback callback) override;
   void SetFixA2dpPacketSize(bool enabled) override;
-  void SetNextHandsfreeProfile(bool enabled) override;
   void AddActiveInputNode(uint64_t node_id) override;
   void RemoveActiveInputNode(uint64_t node_id) override;
   void AddActiveOutputNode(uint64_t node_id) override;
@@ -59,6 +59,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SetPlayerDuration(const int64_t& duration) override;
   void SetPlayerMetadata(
       const std::map<std::string, std::string>& metadata) override;
+  void ResendBluetoothBattery() override;
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
 
@@ -83,6 +84,9 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   // Generates fake hotword signal for HotwordTriggered.
   void NotifyHotwordTriggeredForTesting(uint64_t tv_sec, uint64_t tv_nsec);
 
+  // Set a mock battery level for ResendBatteryLevel.
+  void SetBluetoothBattteryLevelForTesting(uint32_t level);
+
   const AudioNodeList& node_list() const { return node_list_; }
   const uint64_t& active_input_node_id() const { return active_input_node_id_; }
   const uint64_t& active_output_node_id() const {
@@ -103,6 +107,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   // By default, immediately sends OutputNodeVolumeChange signal following the
   // SetOutputNodeVolume fake dbus call.
   bool notify_volume_change_with_delay_ = false;
+  uint32_t battery_level_ = 0;
   base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrasAudioClient);

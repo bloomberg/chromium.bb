@@ -2,21 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/nacl/config.gni")
 
 config("proxy_implementation") {
   defines = [ "PPAPI_PROXY_IMPLEMENTATION" ]
 }
 
-jumbo_component("proxy") {
+component("proxy") {
   output_name = "ppapi_proxy"
-
-  if (is_nacl) {
-    # The nacl toolchain has template related bugs that are triggered
-    # in jumbo builds. https://crbug.com/912152
-    never_build_jumbo = true
-  }
 
   sources = [
     # Take some standalone files from the C++ wrapper allowing us to more
@@ -28,10 +21,6 @@ jumbo_component("proxy") {
     "../utility/completion_callback_factory.h",
     "audio_buffer_resource.cc",
     "audio_buffer_resource.h",
-    "audio_encoder_resource.cc",
-    "audio_encoder_resource.h",
-    "broker_resource.cc",
-    "broker_resource.h",
     "camera_capabilities_resource.cc",
     "camera_capabilities_resource.h",
     "camera_device_resource.cc",
@@ -147,8 +136,6 @@ jumbo_component("proxy") {
     "proxy_channel.cc",
     "proxy_channel.h",
     "proxy_completion_callback_factory.h",
-    "proxy_module.cc",
-    "proxy_module.h",
     "proxy_object_var.cc",
     "proxy_object_var.h",
     "resource_creation_proxy.cc",
@@ -163,10 +150,6 @@ jumbo_component("proxy") {
     "tcp_socket_resource.h",
     "tcp_socket_resource_base.cc",
     "tcp_socket_resource_base.h",
-    "truetype_font_resource.cc",
-    "truetype_font_resource.h",
-    "truetype_font_singleton_resource.cc",
-    "truetype_font_singleton_resource.h",
     "udp_socket_filter.cc",
     "udp_socket_filter.h",
     "udp_socket_private_resource.cc",
@@ -218,38 +201,22 @@ jumbo_component("proxy") {
       "audio_input_resource.h",
       "audio_output_resource.cc",
       "audio_output_resource.h",
-      "broker_dispatcher.cc",
-      "broker_dispatcher.h",
       "browser_font_singleton_resource.cc",
       "browser_font_singleton_resource.h",
       "device_enumeration_resource_helper.cc",
       "device_enumeration_resource_helper.h",
-      "flash_clipboard_resource.cc",
-      "flash_clipboard_resource.h",
-      "flash_drm_resource.cc",
-      "flash_drm_resource.h",
-      "flash_file_resource.cc",
-      "flash_file_resource.h",
       "flash_font_file_resource.cc",
       "flash_font_file_resource.h",
       "flash_fullscreen_resource.cc",
       "flash_fullscreen_resource.h",
-      "flash_menu_resource.cc",
-      "flash_menu_resource.h",
-      "flash_resource.cc",
-      "flash_resource.h",
       "host_dispatcher.cc",
       "host_dispatcher.h",
       "host_var_serialization_rules.cc",
       "host_var_serialization_rules.h",
       "pdf_resource.cc",
       "pdf_resource.h",
-      "ppb_broker_proxy.cc",
-      "ppb_broker_proxy.h",
       "ppb_buffer_proxy.cc",
       "ppb_buffer_proxy.h",
-      "ppb_flash_message_loop_proxy.cc",
-      "ppb_flash_message_loop_proxy.h",
       "ppb_var_deprecated_proxy.cc",
       "ppb_var_deprecated_proxy.h",
       "ppb_video_decoder_proxy.cc",
@@ -332,8 +299,6 @@ source_set("ipc_sources") {
     "raw_var_data.h",
     "resource_message_params.cc",
     "resource_message_params.h",
-    "serialized_flash_menu.cc",
-    "serialized_flash_menu.h",
     "serialized_handle.cc",
     "serialized_handle.h",
     "serialized_structs.cc",
@@ -342,9 +307,6 @@ source_set("ipc_sources") {
     "serialized_var.h",
     "var_serialization_rules.h",
   ]
-  if (is_nacl) {
-    sources -= [ "serialized_flash_menu.cc" ]
-  }
 
   configs += [ ":proxy_implementation" ]
 
@@ -362,7 +324,7 @@ source_set("ipc_sources") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

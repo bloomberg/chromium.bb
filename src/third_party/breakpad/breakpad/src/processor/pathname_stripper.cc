@@ -38,7 +38,7 @@
 namespace google_breakpad {
 
 // static
-string PathnameStripper::File(const string &path) {
+string PathnameStripper::File(const string& path) {
   string::size_type slash = path.rfind('/');
   string::size_type backslash = path.rfind('\\');
 

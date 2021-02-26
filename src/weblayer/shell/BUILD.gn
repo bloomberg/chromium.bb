@@ -21,10 +21,13 @@ static_library("weblayer_shell_lib") {
     "app/shell_main_params.h",
     "browser/shell.cc",
     "browser/shell.h",
-    "browser/shell_android.cc",
     "common/shell_switches.cc",
     "common/shell_switches.h",
   ]
+
+  if (is_android) {
+    sources += [ "browser/shell_android.cc" ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -61,7 +64,7 @@ static_library("weblayer_shell_lib") {
     "//weblayer:resources",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//third_party/fontconfig",
       "//ui/gfx:test_support",
@@ -103,7 +106,7 @@ static_library("weblayer_shell_lib") {
     }
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//build/config/freetype" ]
   }
 }
@@ -163,6 +166,7 @@ repack("support_pak") {
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -259,7 +263,7 @@ if (is_android) {
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
     }
 
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }

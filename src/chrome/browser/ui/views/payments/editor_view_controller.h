@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
@@ -77,8 +76,7 @@ struct EditorField {
 // The PaymentRequestSheetController subtype for the editor screens of the
 // Payment Request flow.
 class EditorViewController : public PaymentRequestSheetController,
-                             public views::TextfieldController,
-                             public views::ComboboxListener {
+                             public views::TextfieldController {
  public:
   using TextFieldsMap =
       std::unordered_map<ValidatingTextfield*, const EditorField>;
@@ -90,9 +88,9 @@ class EditorViewController : public PaymentRequestSheetController,
   // |back_navigation_type| identifies what sort of back navigation should be
   // done when editing is successful. This is independent of the back arrow
   // which always goes back one step.
-  EditorViewController(PaymentRequestSpec* spec,
-                       PaymentRequestState* state,
-                       PaymentRequestDialogView* dialog,
+  EditorViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                       base::WeakPtr<PaymentRequestState> state,
+                       base::WeakPtr<PaymentRequestDialogView> dialog,
                        BackNavigationType back_navigation_type,
                        bool is_incognito);
   ~EditorViewController() override;
@@ -147,13 +145,16 @@ class EditorViewController : public PaymentRequestSheetController,
   // Returns true if all fields are valid.
   bool ValidateInputFields();
 
-  // PaymentRequestSheetController;
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  // PaymentRequestSheetController:
+  base::string16 GetPrimaryButtonLabel() override;
+  views::Button::PressedCallback GetPrimaryButtonCallback() override;
+  int GetPrimaryButtonId() override;
+  bool GetPrimaryButtonEnabled() override;
   bool ShouldShowSecondaryButton() override;
   void FillContentView(views::View* content_view) override;
 
-  // views::ComboboxListener:
-  void OnPerformAction(views::Combobox* combobox) override;
+  // Combobox callback.
+  virtual void OnPerformAction(ValidatingCombobox* combobox);
 
   // Update the editor view by removing all it's child views and recreating
   // the input fields returned by GetFieldDefinitions. Note that
@@ -162,7 +163,6 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual void UpdateEditorView();
 
   // PaymentRequestSheetController:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   views::View* GetFirstFocusedView() override;
 
   // Will create a combobox according to the |field| definition. Will also keep
@@ -200,6 +200,8 @@ class EditorViewController : public PaymentRequestSheetController,
 
   void AddOrUpdateErrorMessageForField(autofill::ServerFieldType type,
                                        const base::string16& error_message);
+
+  void SaveButtonPressed();
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*

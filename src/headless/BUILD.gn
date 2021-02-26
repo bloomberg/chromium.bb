@@ -4,6 +4,7 @@
 
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/python.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//headless/headless.gni")
@@ -30,7 +31,6 @@ repack("pak") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
-    "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
@@ -41,6 +41,7 @@ repack("pak") {
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -59,7 +60,6 @@ repack("pak") {
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",
-    "//content/browser/devtools:resources",
     "//content/browser/tracing:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
@@ -70,10 +70,17 @@ repack("pak") {
     "//ui/strings",
   ]
 
+  if (!is_fuchsia) {
+    sources +=
+        [ "$root_gen_dir/content/browser/devtools/devtools_resources.pak" ]
+    deps += [ "//content/browser/devtools:devtools_resources" ]
+  }
+
   output = "$root_out_dir/headless_lib.pak"
 }
 
-action("embed_resources") {
+# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+python2_action("embed_resources") {
   # TODO(altimin): Consider zipping file here, it can reduce size up to 80%.
   script = "lib/embed_data.py"
 
@@ -240,8 +247,8 @@ inspector_protocol_generate("protocol_sources") {
 # |headless_non_renderer| components.
 source_set("headless_shared_sources") {
   visibility = [
-    "//headless:headless_non_renderer",
     "//headless:headless",
+    "//headless:headless_non_renderer",
   ]
 
   sources = [
@@ -308,10 +315,8 @@ component("headless_non_renderer") {
     "lib/browser/headless_browser_context_options.h",
     "lib/browser/headless_browser_impl.cc",
     "lib/browser/headless_browser_impl.h",
-    "lib/browser/headless_browser_impl_mac.mm",
     "lib/browser/headless_browser_main_parts.cc",
     "lib/browser/headless_browser_main_parts.h",
-    "lib/browser/headless_browser_main_parts_mac.mm",
     "lib/browser/headless_devtools.cc",
     "lib/browser/headless_devtools.h",
     "lib/browser/headless_devtools_agent_host_client.cc",
@@ -327,8 +332,6 @@ component("headless_non_renderer") {
     "lib/browser/headless_quota_permission_context.h",
     "lib/browser/headless_request_context_manager.cc",
     "lib/browser/headless_request_context_manager.h",
-    "lib/browser/headless_shell_application_mac.h",
-    "lib/browser/headless_shell_application_mac.mm",
     "lib/browser/headless_window_tree_host.h",
     "lib/browser/protocol/browser_handler.cc",
     "lib/browser/protocol/browser_handler.h",
@@ -347,6 +350,19 @@ component("headless_non_renderer") {
     "public/headless_devtools_target.h",
     "public/headless_web_contents.h",
   ]
+
+  if (is_mac) {
+    sources += [
+      "lib/browser/headless_browser_impl_mac.mm",
+      "lib/browser/headless_browser_main_parts_mac.mm",
+      "lib/browser/headless_shell_application_mac.h",
+      "lib/browser/headless_shell_application_mac.mm",
+    ]
+  }
+
+  if (is_linux || is_chromeos) {
+    sources += [ "lib/browser/headless_browser_main_parts_linux.cc" ]
+  }
 
   if (use_aura) {
     sources += [
@@ -377,6 +393,7 @@ component("headless_non_renderer") {
 
   data_deps = []
   data = []
+  defines = []
 
   if (enable_basic_printing) {
     public_deps += [ "//skia" ]
@@ -411,12 +428,15 @@ component("headless_non_renderer") {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
-      "lib/headless_content_main_delegate_mac.mm",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
+
+    if (is_mac) {
+      sources += [ "lib/headless_content_main_delegate_mac.mm" ]
+    }
 
     if (enable_basic_printing) {
       sources += [
@@ -458,7 +478,7 @@ component("headless_non_renderer") {
     if (v8_use_external_startup_data) {
       public_deps += [ "//v8" ]
       if (use_v8_context_snapshot) {
-        data += [ "$root_out_dir/v8_context_snapshot.bin" ]
+        data += [ "$root_out_dir/$v8_context_snapshot_filename" ]
         data_deps += [ "//tools/v8_context_snapshot" ]
       } else {
         data += [ "$root_out_dir/snapshot_blob.bin" ]
@@ -468,7 +488,7 @@ component("headless_non_renderer") {
 
   if (is_mac) {
     deps += [ ":mac_helpers" ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
     ]
@@ -491,6 +511,11 @@ component("headless_non_renderer") {
     deps += [ "//ui/ozone" ]
   }
 
+  if (use_dbus) {
+    defines += [ "USE_DBUS" ]
+    deps += [ "//device/bluetooth" ]
+  }
+
   if (headless_fontconfig_utils && !is_fuchsia) {
     deps += [ ":headless_fontconfig_utils" ]
   }
@@ -507,12 +532,15 @@ if (!is_component_build) {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
-      "lib/headless_content_main_delegate_mac.mm",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
+
+    if (is_mac) {
+      sources += [ "lib/headless_content_main_delegate_mac.mm" ]
+    }
 
     if (headless_use_embedded_resources) {
       defines = [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
@@ -598,29 +626,37 @@ if (is_mac) {
 test("headless_browsertests") {
   configs += [ "//net:net_test_config" ]
   sources = [
-    "lib/headless_browser_browsertest.cc",
-    "lib/headless_browser_context_browsertest.cc",
-    "lib/headless_devtools_client_browsertest.cc",
-    "lib/headless_origin_trials_browsertest.cc",
-    "lib/headless_web_contents_browsertest.cc",
+    "test/headless_browser_browsertest.cc",
+    "test/headless_browser_context_browsertest.cc",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_client_browsertest.cc",
-    "test/headless_protocol_browsertest.cc",
+    "test/headless_devtools_client_browsertest.cc",
+    "test/headless_origin_trials_browsertest.cc",
     "test/headless_test_launcher.cc",
+    "test/headless_web_contents_browsertest.cc",
     "test/test_network_interceptor.cc",
     "test/test_network_interceptor.h",
   ]
 
+  # TODO(https://crbug.com/1107396): These tests flakily timeout on fuchsia.
+  if (!is_fuchsia) {
+    sources += [
+      "test/headless_compositor_browsertest.cc",
+      "test/headless_protocol_browsertest.cc",
+      "test/headless_protocol_browsertest.h",
+    ]
+  }
+
   data = [
-    "lib/dom_tree_extraction_expected_nodes.txt",
-    "lib/dom_tree_extraction_expected_styles.txt",
+    "test/data/",
+    "test/dom_tree_extraction_expected_nodes.txt",
+    "test/dom_tree_extraction_expected_styles.txt",
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
     "//third_party/blink/web_tests/http/tests/inspector-protocol/",
     "//third_party/pywebsocket3/",
     "//third_party/tlslite/",
-    "test/data/",
   ]
 
   if (is_mac) {

@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "weblayer/browser/profile_disk_operations.h"
@@ -19,31 +19,21 @@
 namespace weblayer {
 
 class ProfileDiskOperationsTest : public testing::Test {
- public:
-  void SetUp() override {
-    CHECK(data_temp_dir_.CreateUniqueTempDir());
-    base::PathService::Override(DIR_USER_DATA, data_temp_dir_.GetPath());
-#if defined(OS_POSIX)
-    CHECK(cache_temp_dir_.CreateUniqueTempDir());
-    base::PathService::Override(base::DIR_CACHE, cache_temp_dir_.GetPath());
-#endif
-  }
-
  protected:
-  base::ScopedTempDir data_temp_dir_;
+  base::ScopedPathOverride data_dir_override_{DIR_USER_DATA};
 #if defined(OS_POSIX)
-  base::ScopedTempDir cache_temp_dir_;
+  base::ScopedPathOverride cache_dir_override_{base::DIR_CACHE};
 #endif
 };
 
-TEST_F(ProfileDiskOperationsTest, IsProfileNameValid) {
-  EXPECT_TRUE(internal::IsProfileNameValid("foo"));
-  EXPECT_TRUE(internal::IsProfileNameValid("123"));
-  EXPECT_TRUE(internal::IsProfileNameValid(std::string()));
+TEST_F(ProfileDiskOperationsTest, IsValidNameForNonIncognitoProfile) {
+  EXPECT_TRUE(internal::IsValidNameForNonIncognitoProfile("foo"));
+  EXPECT_TRUE(internal::IsValidNameForNonIncognitoProfile("123"));
+  EXPECT_FALSE(internal::IsValidNameForNonIncognitoProfile(std::string()));
 
-  EXPECT_FALSE(internal::IsProfileNameValid("foo.bar"));
-  EXPECT_FALSE(internal::IsProfileNameValid("foo~"));
-  EXPECT_FALSE(internal::IsProfileNameValid("foo-"));
+  EXPECT_FALSE(internal::IsValidNameForNonIncognitoProfile("foo.bar"));
+  EXPECT_FALSE(internal::IsValidNameForNonIncognitoProfile("foo~"));
+  EXPECT_FALSE(internal::IsValidNameForNonIncognitoProfile("foo-"));
 }
 
 TEST_F(ProfileDiskOperationsTest, CheckDirnameAndExtractName) {
@@ -66,7 +56,7 @@ TEST_F(ProfileDiskOperationsTest, CheckDirnameAndExtractName) {
 TEST_F(ProfileDiskOperationsTest, BasicListProfileNames) {
   std::vector<std::string> names{"foo", "bar", "baz"};
   for (const auto& name : names) {
-    ProfileInfo info = CreateProfileInfo(name);
+    ProfileInfo info = CreateProfileInfo(name, false);
     EXPECT_FALSE(info.data_path.empty());
     EXPECT_FALSE(info.cache_path.empty());
   }
@@ -82,7 +72,7 @@ TEST_F(ProfileDiskOperationsTest, MarkProfileAsDeleted) {
   std::vector<std::string> names{"foo", "bar", "baz"};
   std::vector<ProfileInfo> infos;
   for (const auto& name : names) {
-    ProfileInfo info = CreateProfileInfo(name);
+    ProfileInfo info = CreateProfileInfo(name, false);
     infos.push_back(info);
     EXPECT_FALSE(info.data_path.empty());
     EXPECT_FALSE(info.cache_path.empty());
@@ -99,7 +89,7 @@ TEST_F(ProfileDiskOperationsTest, MarkProfileAsDeleted) {
 TEST_F(ProfileDiskOperationsTest, ReuseProfileName) {
   constexpr int kRepeat = 3;
   for (int i = 0; i < kRepeat; ++i) {
-    ProfileInfo info = CreateProfileInfo("foo");
+    ProfileInfo info = CreateProfileInfo("foo", false);
     MarkProfileAsDeleted(info);
     EXPECT_TRUE(internal::IsProfileMarkedForDeletion(
         info.data_path.BaseName().MaybeAsASCII()));
@@ -121,24 +111,24 @@ TEST_F(ProfileDiskOperationsTest, NukeProfile) {
   std::vector<ProfileInfo> deleted_infos;
   constexpr int kRepeat = 3;
   for (int i = 0; i < kRepeat; ++i) {
-    ProfileInfo info = CreateProfileInfo("foo");
+    ProfileInfo info = CreateProfileInfo("foo", false);
     MarkProfileAsDeleted(info);
     deleted_infos.push_back(info);
   }
 
   {
-    ProfileInfo info = CreateProfileInfo("bar");
+    ProfileInfo info = CreateProfileInfo("bar", false);
     MarkProfileAsDeleted(info);
     deleted_infos.push_back(info);
   }
 
   {
-    ProfileInfo info = CreateProfileInfo("baz");
+    ProfileInfo info = CreateProfileInfo("baz", false);
     MarkProfileAsDeleted(info);
     deleted_infos.push_back(info);
   }
 
-  ProfileInfo kept_info = CreateProfileInfo("kept");
+  ProfileInfo kept_info = CreateProfileInfo("kept", false);
 
   for (auto& info : deleted_infos) {
     EXPECT_TRUE(base::PathExists(info.data_path));
@@ -156,7 +146,7 @@ TEST_F(ProfileDiskOperationsTest, NukeProfile) {
   EXPECT_TRUE(base::PathExists(kept_info.data_path));
   EXPECT_TRUE(base::PathExists(kept_info.cache_path));
 
-  ProfileInfo info = CreateProfileInfo("bar");
+  ProfileInfo info = CreateProfileInfo("bar", false);
   EXPECT_EQ(std::string("bar"), info.data_path.BaseName().MaybeAsASCII());
   EXPECT_EQ(std::string("bar"), info.cache_path.BaseName().MaybeAsASCII());
 }

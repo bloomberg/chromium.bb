@@ -8,7 +8,6 @@
 #include "base/component_export.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/x/x11.h"
 
 namespace ui {
 
@@ -19,7 +18,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XTopmostWindowFinder {
   virtual ~XTopmostWindowFinder();
 
   // Returns the topmost window at |screen_loc_px|.
-  virtual XID FindWindowAt(const gfx::Point& screen_loc_px) = 0;
+  virtual x11::Window FindWindowAt(const gfx::Point& screen_loc_px) = 0;
 };
 
 }  // namespace ui

@@ -88,10 +88,21 @@ Polymer({
     },
 
     /** @private */
+    dataEncrypted_: {
+      type: Boolean,
+      computed: 'computeDataEncrypted_(syncPrefs.encryptAllData)'
+    },
+
+    /** @private */
     encryptionExpanded_: {
       type: Boolean,
       value: false,
-      computed: 'computeEncryptionExpanded_(syncPrefs.encryptAllData)',
+    },
+
+    /** If true, override |encryptionExpanded_| to be true. */
+    forceEncryptionExpanded: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -132,18 +143,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /**
-     * If sync page friendly settings is enabled.
-     * @private
-     */
-    syncSetupFriendlySettings_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('syncSetupFriendlySettings');
-      }
-    },
   },
+
+  observers: [
+    'expandEncryptionIfNeeded_(dataEncrypted_, forceEncryptionExpanded)',
+  ],
 
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
@@ -203,7 +207,7 @@ Polymer({
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
     const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
+    if (router.getCurrentRoute() === getSyncRoutes().SYNC) {
       this.onNavigateToPage_();
     }
   },
@@ -223,6 +227,24 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
+  },
+
+  /**
+   * Returns the encryption options SettingsSyncEncryptionOptionsElement.
+   * @return {?SettingsSyncEncryptionOptionsElement}
+   */
+  getEncryptionOptions() {
+    return /** @type {?SettingsSyncEncryptionOptionsElement} */ (
+        this.$$('settings-sync-encryption-options'));
+  },
+
+  /**
+   * Returns the encryption options SettingsPersonalizationOptionsElement.
+   * @return {?SettingsPersonalizationOptionsElement}
+   */
+  getPersonalizationOptions() {
+    return /** @type {?SettingsPersonalizationOptionsElement} */ (
+        this.$$('settings-personalization-options'));
   },
 
   /**
@@ -252,7 +274,7 @@ Polymer({
    * @private
    */
   computeSyncDisabledByAdmin_() {
-    return this.syncStatus != undefined && !!this.syncStatus.managed;
+    return this.syncStatus !== undefined && !!this.syncStatus.managed;
   },
 
   /** @private */
@@ -288,7 +310,7 @@ Polymer({
   /** @protected */
   currentRouteChanged() {
     const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
+    if (router.getCurrentRoute() === getSyncRoutes().SYNC) {
       this.onNavigateToPage_();
       return;
     }
@@ -338,13 +360,13 @@ Polymer({
    * @private
    */
   isStatus_(expectedPageStatus) {
-    return expectedPageStatus == this.pageStatus_;
+    return expectedPageStatus === this.pageStatus_;
   },
 
   /** @private */
   onNavigateToPage_() {
     const router = settings.Router.getInstance();
-    assert(router.getCurrentRoute() == getSyncRoutes().SYNC);
+    assert(router.getCurrentRoute() === getSyncRoutes().SYNC);
     if (this.beforeunloadCallback_) {
       return;
     }
@@ -425,12 +447,26 @@ Polymer({
   },
 
   /**
-   * Whether the encryption dropdown should be expanded by default.
    * @return {boolean}
    * @private
    */
-  computeEncryptionExpanded_() {
+  computeDataEncrypted_() {
     return !!this.syncPrefs && this.syncPrefs.encryptAllData;
+  },
+
+  /**
+   * Whether the encryption dropdown should be expanded by default.
+   * @private
+   */
+  expandEncryptionIfNeeded_() {
+    // Force the dropdown to expand.
+    if (this.forceEncryptionExpanded) {
+      this.forceEncryptionExpanded = false;
+      this.encryptionExpanded_ = true;
+      return;
+    }
+
+    this.encryptionExpanded_ = this.dataEncrypted_;
   },
 
   /**
@@ -438,7 +474,7 @@ Polymer({
    * @private
    */
   onResetSyncClick_(event) {
-    if (event.target.tagName == 'A') {
+    if (event.target.tagName === 'A') {
       // Stop the propagation of events as the |cr-expand-button|
       // prevents the default which will prevent the navigation to the link.
       event.stopPropagation();
@@ -451,7 +487,7 @@ Polymer({
    * @param {!Event} e
    */
   onSubmitExistingPassphraseTap_(e) {
-    if (e.type == 'keypress' && e.key != 'Enter') {
+    if (e.type === 'keypress' && e.key !== 'Enter') {
       return;
     }
 
@@ -486,12 +522,12 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
+        if (router.getCurrentRoute() === getSyncRoutes().SYNC) {
           router.navigateTo(getSyncRoutes().PEOPLE);
         }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
-        if (this.pageStatus_ == this.pages_.CONFIGURE && this.syncPrefs &&
+        if (this.pageStatus_ === this.pages_.CONFIGURE && this.syncPrefs &&
             this.syncPrefs.passphraseRequired) {
           const passphraseInput = /** @type {!CrInputElement} */ (
               this.$$('#existingPassphraseInput'));
@@ -509,21 +545,11 @@ Polymer({
    * @private
    */
   onLearnMoreTap_(event) {
-    if (event.target.tagName == 'A') {
+    if (event.target.tagName === 'A') {
       // Stop the propagation of events, so that clicking on links inside
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();
     }
-  },
-
-  /**
-   * When there is a sync passphrase, some items have an additional line for the
-   * passphrase reset hint, making them three lines rather than two.
-   * @return {string}
-   * @private
-   */
-  getPassphraseHintLines_() {
-    return this.syncPrefs.encryptAllData ? 'three-line' : 'two-line';
   },
 
   /**
@@ -532,7 +558,7 @@ Polymer({
    */
   shouldShowSyncAccountControl_() {
     // <if expr="chromeos">
-    if (!loadTimeData.getBoolean('splitSyncConsent')) {
+    if (!loadTimeData.getBoolean('useBrowserSyncConsent')) {
       return false;
     }
     // </if>

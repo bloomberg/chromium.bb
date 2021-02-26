@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -106,9 +105,10 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
         browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
-    std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
-    std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer,
+    int64_t writer_resource_id,
     ResultCallback callback)
     : script_url_(script_url),
       is_main_script_(is_main_script),
@@ -157,7 +157,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   // shared network resources like the http cache.
   resource_request.trusted_params = network::ResourceRequest::TrustedParams();
   resource_request.trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+      net::IsolationInfo::RequestType::kOther, origin, origin,
       net::SiteForCookies::FromOrigin(origin));
 
   if (is_main_script_) {
@@ -180,7 +180,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
         static_cast<int>(blink::mojom::ResourceType::kServiceWorker);
 
     // Request SSLInfo. It will be persisted in service worker storage and
-    // may be used by ServiceWorkerNavigationLoader for navigations handled
+    // may be used by ServiceWorkerMainResourceLoader for navigations handled
     // by this service worker.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
   } else {
@@ -214,16 +214,14 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
+      writer_resource_id,
       /*pause_when_not_identical=*/true);
 
-  // Get a unique request id across browser-initiated navigations and navigation
-  // preloads.
-  const int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
       ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
-          request_id, options, resource_request,
-          network_client_receiver_.BindNewPipeAndPassRemote(),
+          GlobalRequestID::MakeBrowserInitiated().request_id, options,
+          resource_request, network_client_receiver_.BindNewPipeAndPassRemote(),
           kUpdateCheckTrafficAnnotation);
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);

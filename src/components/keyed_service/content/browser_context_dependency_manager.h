@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
@@ -32,6 +33,10 @@ class PrefRegistrySyncable;
 class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
     : public DependencyManager {
  public:
+  using CreateServicesCallbackList =
+      base::RepeatingCallbackList<void(content::BrowserContext*)>;
+  using CreateServicesCallback = CreateServicesCallbackList::CallbackType;
+
   // Registers profile-specific preferences for all services via |registry|.
   // |context| should be the BrowserContext containing |registry| and is used as
   // a key to prevent multiple registrations on the same BrowserContext in
@@ -61,10 +66,9 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
   // This can be useful in browser tests which wish to substitute test or mock
   // builders for the keyed services.
-  std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-  RegisterWillCreateBrowserContextServicesCallbackForTesting(
-      const base::RepeatingCallback<void(content::BrowserContext*)>& callback);
+  std::unique_ptr<CreateServicesCallbackList::Subscription>
+  RegisterCreateServicesCallbackForTesting(
+      const CreateServicesCallback& callback) WARN_UNUSED_RESULT;
 
   // Runtime assertion called as a part of GetServiceForBrowserContext() to
   // check if |context| is considered stale. This will NOTREACHED() or
@@ -99,8 +103,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
 
   // A list of callbacks to call just before executing
   // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
-  base::CallbackList<void(content::BrowserContext*)>
-      will_create_browser_context_services_callbacks_;
+  CreateServicesCallbackList create_services_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextDependencyManager);
 };

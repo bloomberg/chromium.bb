@@ -14,7 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import re
-import subprocess
+import subprocess2
 import sys
 
 NEED_SHELL = sys.platform.startswith('win')
@@ -52,21 +52,42 @@ class AlreadyRolledError(Error):
 def check_output(*args, **kwargs):
   """subprocess.check_output() passing shell=True on Windows for git."""
   kwargs.setdefault('shell', NEED_SHELL)
-  return subprocess.check_output(*args, **kwargs).decode('utf-8')
+  return subprocess2.check_output(*args, **kwargs).decode('utf-8')
 
 
 def check_call(*args, **kwargs):
   """subprocess.check_call() passing shell=True on Windows for git."""
   kwargs.setdefault('shell', NEED_SHELL)
-  subprocess.check_call(*args, **kwargs)
+  subprocess2.check_call(*args, **kwargs)
 
 
-def is_pristine(root, merge_base='origin/master'):
+def return_code(*args, **kwargs):
+  """subprocess.call() passing shell=True on Windows for git and
+  subprocess2.VOID for stdout and stderr."""
+  kwargs.setdefault('shell', NEED_SHELL)
+  kwargs.setdefault('stdout', subprocess2.VOID)
+  kwargs.setdefault('stderr', subprocess2.VOID)
+  return subprocess2.call(*args, **kwargs)
+
+
+def is_pristine(root):
   """Returns True if a git checkout is pristine."""
-  cmd = ['git', 'diff', '--ignore-submodules', merge_base]
-  return not (check_output(cmd, cwd=root).strip() or
-              check_output(cmd + ['--cached'], cwd=root).strip())
+  # Check both origin/master and origin/main since many projects are
+  # transitioning to origin/main.
+  for branch in ('origin/main', 'origin/master'):
+    # `git rev-parse --verify` has a non-zero return code if the revision
+    # doesn't exist.
+    rev_cmd = ['git', 'rev-parse', '--verify', '--quiet',
+               'refs/remotes/' + branch]
+    if return_code(rev_cmd, cwd=root) != 0:
+      continue
 
+    diff_cmd = ['git', 'diff', '--ignore-submodules', branch]
+    return (not check_output(diff_cmd, cwd=root).strip() and
+            not check_output(diff_cmd + ['--cached'], cwd=root).strip())
+
+
+  raise Error('Couldn\'t find any of origin/main or origin/master')
 
 def get_log_url(upstream_url, head, master):
   """Returns an URL to read logs via a Web UI if applicable."""
@@ -221,7 +242,7 @@ def main():
 
   gclient_root = gclient(['root'])
   current_dir = os.getcwd()
-  dependencies = sorted(d.rstrip('/').rstrip('\\') for d in args.dep_path)
+  dependencies = sorted(d.replace('\\', '/').rstrip('/') for d in args.dep_path)
   cmdline = 'roll-dep ' + ' '.join(dependencies) + ''.join(
       ' --key ' + k for k in args.key)
   try:

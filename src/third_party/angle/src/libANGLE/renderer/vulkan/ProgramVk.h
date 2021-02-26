@@ -46,7 +46,8 @@ class ProgramVk : public ProgramImpl
 
     std::unique_ptr<LinkEvent> link(const gl::Context *context,
                                     const gl::ProgramLinkedResources &resources,
-                                    gl::InfoLog &infoLog) override;
+                                    gl::InfoLog &infoLog,
+                                    const gl::ProgramMergedVaryings &mergedVaryings) override;
     GLboolean validate(const gl::Caps &caps, gl::InfoLog *infoLog) override;
 
     void setUniform1fv(GLint location, GLsizei count, const GLfloat *v) override;
@@ -102,16 +103,25 @@ class ProgramVk : public ProgramImpl
     void getUniformiv(const gl::Context *context, GLint location, GLint *params) const override;
     void getUniformuiv(const gl::Context *context, GLint location, GLuint *params) const override;
 
-    angle::Result updateShaderUniforms(ContextVk *contextVk,
-                                       gl::ShaderType shaderType,
-                                       uint32_t *outOffset,
-                                       bool *anyNewBufferAllocated);
     angle::Result updateUniforms(ContextVk *contextVk);
 
-    // For testing only.
-    void setDefaultUniformBlocksMinSizeForTesting(size_t minSize);
-
     bool dirtyUniforms() const { return mDefaultUniformBlocksDirty.any(); }
+    bool isShaderUniformDirty(gl::ShaderType shaderType) const
+    {
+        return mDefaultUniformBlocksDirty[shaderType];
+    }
+    void setShaderUniformDirtyBit(gl::ShaderType shaderType)
+    {
+        if (!mDefaultUniformBlocks[shaderType].uniformData.empty())
+        {
+            mDefaultUniformBlocksDirty.set(shaderType);
+        }
+    }
+    void clearShaderUniformDirtyBit(gl::ShaderType shaderType)
+    {
+        mDefaultUniformBlocksDirty.reset(shaderType);
+    }
+    void onProgramBind();
 
     // Used in testing only.
     vk::DynamicDescriptorPool *getDynamicDescriptorPool(uint32_t poolIndex)
@@ -123,22 +133,35 @@ class ProgramVk : public ProgramImpl
     ProgramExecutableVk &getExecutable() { return mExecutable; }
 
     gl::ShaderMap<DefaultUniformBlock> &getDefaultUniformBlocks() { return mDefaultUniformBlocks; }
+    size_t getDefaultUniformAlignedSize(ContextVk *contextVk, const gl::ShaderType shaderType) const
+    {
+        RendererVk *renderer = contextVk->getRenderer();
+        size_t alignment     = static_cast<size_t>(
+            renderer->getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment);
+        return roundUp(mDefaultUniformBlocks[shaderType].uniformData.size(), alignment);
+    }
+
+    size_t calcUniformUpdateRequiredSpace(ContextVk *contextVk,
+                                          const gl::ProgramExecutable &glExecutable,
+                                          gl::ShaderMap<VkDeviceSize> &uniformOffsets) const;
 
     ANGLE_INLINE angle::Result initGraphicsShaderProgram(ContextVk *contextVk,
                                                          const gl::ShaderType shaderType,
-                                                         ProgramTransformOptionBits optionBits,
-                                                         ProgramInfo &programInfo)
+                                                         ProgramTransformOptions optionBits,
+                                                         ProgramInfo *programInfo,
+                                                         ProgramExecutableVk *executableVk)
     {
-        return initProgram(contextVk, shaderType, optionBits, &programInfo);
+        return initProgram(contextVk, shaderType, optionBits, programInfo, executableVk);
     }
 
-    ANGLE_INLINE angle::Result initComputeProgram(ContextVk *contextVk, ProgramInfo &programInfo)
+    ANGLE_INLINE angle::Result initComputeProgram(ContextVk *contextVk,
+                                                  ProgramInfo *programInfo,
+                                                  ProgramExecutableVk *executableVk)
     {
-        ProgramTransformOptionBits optionBits;
-        return initProgram(contextVk, gl::ShaderType::Compute, optionBits, &programInfo);
+        ProgramTransformOptions optionBits = {};
+        return initProgram(contextVk, gl::ShaderType::Compute, optionBits, programInfo,
+                           executableVk);
     }
-
-    ShaderInfo &getShaderInfo() { return mShaderInfo; }
 
     GlslangProgramInterfaceInfo &getGlslangProgramInterfaceInfo()
     {
@@ -165,33 +188,35 @@ class ProgramVk : public ProgramImpl
 
     template <typename T>
     void setUniformImpl(GLint location, GLsizei count, const T *v, GLenum entryPointType);
-    angle::Result linkImpl(const gl::Context *glContext, gl::InfoLog &infoLog);
     void linkResources(const gl::ProgramLinkedResources &resources);
 
     ANGLE_INLINE angle::Result initProgram(ContextVk *contextVk,
                                            const gl::ShaderType shaderType,
-                                           ProgramTransformOptionBits optionBits,
-                                           ProgramInfo *programInfo)
+                                           ProgramTransformOptions optionBits,
+                                           ProgramInfo *programInfo,
+                                           ProgramExecutableVk *executableVk)
     {
-        ASSERT(mShaderInfo.valid());
+        ASSERT(mOriginalShaderInfo.valid());
 
         // Create the program pipeline.  This is done lazily and once per combination of
         // specialization constants.
         if (!programInfo->valid(shaderType))
         {
-            ANGLE_TRY(programInfo->initProgram(contextVk, shaderType, mShaderInfo,
-                                               mExecutable.mVariableInfoMap, optionBits));
+            ANGLE_TRY(programInfo->initProgram(contextVk, shaderType, mOriginalShaderInfo,
+                                               optionBits, executableVk));
         }
         ASSERT(programInfo->valid(shaderType));
 
         return angle::Result::Continue;
     }
 
+    void setAllDefaultUniformsDirty();
+
     gl::ShaderMap<DefaultUniformBlock> mDefaultUniformBlocks;
     gl::ShaderBitSet mDefaultUniformBlocksDirty;
 
     // We keep the SPIR-V code to use for draw call pipeline creation.
-    ShaderInfo mShaderInfo;
+    ShaderInfo mOriginalShaderInfo;
 
     GlslangProgramInterfaceInfo mGlslangProgramInterfaceInfo;
 

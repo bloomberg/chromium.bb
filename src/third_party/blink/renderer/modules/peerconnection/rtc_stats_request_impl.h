@@ -40,8 +40,6 @@ class RTCPeerConnection;
 
 class RTCStatsRequestImpl final : public RTCStatsRequest,
                                   public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
-
  public:
   RTCStatsRequestImpl(ExecutionContext*,
                       RTCPeerConnection*,
@@ -58,7 +56,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Clear();

@@ -12,8 +12,9 @@ import subprocess
 import sys
 import tempfile
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 
 
 # URL to point people to. *Chromium specific*
@@ -28,7 +29,11 @@ print('')
 print('Bot id: ' + os.environ['SWARMING_BOT_ID'])
 print('Bot leased for: %(duration)d seconds')
 print('How to access this bot: %(help_url)s')
-print('When done, reboot the host')
+print('When done, reboot the host.')
+print('')
+print('Some tests may fail without the following env vars set:')
+print('PATH=' + os.environ['PATH'])
+print('LUCI_CONTEXT=' + os.environ['LUCI_CONTEXT'])
 sys.stdout.flush()
 time.sleep(%(duration)d)
 """
@@ -41,7 +46,11 @@ class Failed(Exception):
 def retrieve_task_props(swarming, taskid):
   """Retrieves the task request metadata."""
   cmd = [
-      sys.executable, 'swarming.py', 'query', '-S', swarming,
+      sys.executable,
+      'swarming.py',
+      'query',
+      '-S',
+      swarming,
       'task/%s/request' % taskid,
   ]
   try:
@@ -53,7 +62,11 @@ def retrieve_task_props(swarming, taskid):
 def retrieve_task_results(swarming, taskid):
   """Retrieves the task request metadata."""
   cmd = [
-      sys.executable, 'swarming.py', 'query', '-S', swarming,
+      sys.executable,
+      'swarming.py',
+      'query',
+      '-S',
+      swarming,
       'task/%s/result' % taskid,
   ]
   try:
@@ -66,13 +79,14 @@ def generate_command(swarming, taskid, task, duration):
   """Generats a command that sleep and prints the original command."""
   original = get_swarming_args_from_task(task)
   return [
-    'python', '-c',
-    COMMAND.replace('\n', ';') % {
-      'duration': duration,
-      'original_cmd': ' '.join(original),
-      'task_url': 'https://%s/task?id=%s' % (swarming, taskid),
-      'help_url': URL,
-    },
+      'python',
+      '-c',
+      COMMAND.replace('\n', ';') % {
+          'duration': duration,
+          'original_cmd': ' '.join(original),
+          'task_url': 'https://%s/task?id=%s' % (swarming, taskid),
+          'help_url': URL,
+      },
   ]
 
 
@@ -109,13 +123,23 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
   'task'.
   """
   cmd = [
-    sys.executable, 'swarming.py', 'trigger', '-S', swarming,
-    '-S', swarming,
-    '--hard-timeout', str(duration),
-    '--io-timeout', str(duration),
-    '--task-name', 'Debug Task for %s' % taskid,
-    '--raw-cmd',
-    '--tags', 'debug_task:1',
+      sys.executable,
+      'swarming.py',
+      'trigger',
+      '-S',
+      swarming,
+      '--hard-timeout',
+      str(duration),
+      '--io-timeout',
+      str(duration),
+      '--task-name',
+      'Debug Task for %s' % taskid,
+      '--raw-cmd',
+      '--tags',
+      'debug_task:1',
+      # We'll automatically get whatever packages and env vars the template
+      # applied on the original task.
+      '--pool-task-template=SKIP',
   ]
   if reuse_bot:
     pool = [
@@ -130,12 +154,14 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
       cmd.extend(('-d', i['key'], i['value']))
 
   if task['properties'].get('inputs_ref'):
-    cmd.extend(
-        [
-          '-s', task['properties']['inputs_ref']['isolated'],
-          '-I', task['properties']['inputs_ref']['isolatedserver'],
-          '--namespace', task['properties']['inputs_ref']['namespace'],
-        ])
+    cmd.extend([
+        '-s',
+        task['properties']['inputs_ref']['isolated'],
+        '-I',
+        task['properties']['inputs_ref']['isolatedserver'],
+        '--namespace',
+        task['properties']['inputs_ref']['namespace'],
+    ])
 
   for i in task['properties'].get('env', []):
     cmd.extend(('--env', i['key'], i['value']))
@@ -143,7 +169,8 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
   cipd = task['properties'].get('cipd_input', {})
   if cipd:
     for p in cipd['packages']:
-      cmd.extend(('--cipd-package', p['package_name'], p['version'], p['path']))
+      cmd.extend(('--cipd-package',
+                  '%s:%s:%s' % (p['path'], p['package_name'], p['version'])))
 
   for i in task['properties'].get('caches', []):
     cmd.extend(('--named-cache', i['name'], i['path']))
@@ -160,8 +187,10 @@ def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('taskid', help='Task\'s input files to map onto the bot')
   parser.add_argument(
-      '-S', '--swarming',
-      metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
+      '-S',
+      '--swarming',
+      metavar='URL',
+      default=os.environ.get('SWARMING_SERVER', ''),
       help='Swarming server to use')
   parser.add_argument(
       '-r', '--reuse-bot', action='store_true',

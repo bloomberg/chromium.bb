@@ -12,8 +12,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
@@ -80,9 +81,22 @@ const char kOfflineSigninLimit[] = "offline_signin_limit";
 // Key of the boolean flag telling if user is enterprise managed.
 const char kIsEnterpriseManaged[] = "is_enterprise_managed";
 
+// Key of the name of the entity (either a domain or email address) that manages
+// the policies for this account.
+const char kAccountManager[] = "enterprise_account_manager";
+
 // Key of the last input method user used which is suitable for login/lock
 // screen.
 const char kLastInputMethod[] = "last_input_method";
+
+// Key of the PIN auto submit length.
+const char kPinAutosubmitLength[] = "pin_autosubmit_length";
+
+// Key for the PIN auto submit backfill needed indicator.
+const char kPinAutosubmitBackfillNeeded[] = "pin_autosubmit_backfill_needed";
+
+// Sync token for SAML password multi-device sync
+const char kPasswordSyncToken[] = "password_sync_token";
 
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
@@ -102,7 +116,11 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kLastOnlineSignin,
                                kOfflineSigninLimit,
                                kIsEnterpriseManaged,
-                               kLastInputMethod};
+                               kAccountManager,
+                               kLastInputMethod,
+                               kPinAutosubmitLength,
+                               kPinAutosubmitBackfillNeeded,
+                               kPasswordSyncToken};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -625,33 +643,32 @@ base::Value GetChallengeResponseKeys(const AccountId& account_id) {
 }
 
 void SetLastOnlineSignin(const AccountId& account_id, base::Time time) {
-  SetPref(account_id, kLastOnlineSignin, base::CreateTimeValue(time));
+  SetPref(account_id, kLastOnlineSignin, util::TimeToValue(time));
 }
 
 base::Time GetLastOnlineSignin(const AccountId& account_id) {
   const base::Value* value = nullptr;
-  base::Time time = base::Time();
   if (!GetPref(account_id, kLastOnlineSignin, &value))
     return base::Time();
-  if (!base::GetValueAsTime(*value, &time))
+  base::Optional<base::Time> time = util::ValueToTime(value);
+  if (!time)
     return base::Time();
-  return time;
+  return *time;
 }
 
 void SetOfflineSigninLimit(const AccountId& account_id,
                            base::TimeDelta time_delta) {
-  SetPref(account_id, kOfflineSigninLimit,
-          base::CreateTimeDeltaValue(time_delta));
+  SetPref(account_id, kOfflineSigninLimit, util::TimeDeltaToValue(time_delta));
 }
 
 base::TimeDelta GetOfflineSigninLimit(const AccountId& account_id) {
   const base::Value* value = nullptr;
-  base::TimeDelta time_delta = base::TimeDelta();
   if (!GetPref(account_id, kOfflineSigninLimit, &value))
     return base::TimeDelta();
-  if (!GetValueAsTimeDelta(*value, &time_delta))
+  base::Optional<base::TimeDelta> time_delta = util::ValueToTimeDelta(value);
+  if (!time_delta)
     return base::TimeDelta();
-  return time_delta;
+  return *time_delta;
 }
 
 void SetIsEnterpriseManaged(const AccountId& account_id,
@@ -666,14 +683,64 @@ bool GetIsEnterpriseManaged(const AccountId& account_id) {
   return false;
 }
 
-void SetUserLastInputMethod(const AccountId& account_id,
-                            const std::string& input_method) {
+void SetAccountManager(const AccountId& account_id,
+                       const std::string& manager) {
+  SetStringPref(account_id, kAccountManager, manager);
+}
+
+bool GetAccountManager(const AccountId& account_id, std::string* manager) {
+  return GetStringPref(account_id, kAccountManager, manager);
+}
+
+void SetUserLastLoginInputMethod(const AccountId& account_id,
+                                 const std::string& input_method) {
   SetStringPref(account_id, kLastInputMethod, input_method);
 }
 
 bool GetUserLastInputMethod(const AccountId& account_id,
                             std::string* input_method) {
   return GetStringPref(account_id, kLastInputMethod, input_method);
+}
+
+void SetUserPinLength(const AccountId& account_id, int pin_length) {
+  SetIntegerPref(account_id, kPinAutosubmitLength, pin_length);
+}
+
+int GetUserPinLength(const AccountId& account_id) {
+  int pin_length = 0;
+  if (GetIntegerPref(account_id, kPinAutosubmitLength, &pin_length))
+    return pin_length;
+  return 0;
+}
+
+bool PinAutosubmitIsBackfillNeeded(const AccountId& account_id) {
+  bool backfill_needed;
+  if (GetBooleanPref(account_id, kPinAutosubmitBackfillNeeded,
+                     &backfill_needed))
+    return backfill_needed;
+  // If the pref is not set, the pref needs to be backfilled.
+  return true;
+}
+
+void PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id) {
+  SetBooleanPref(account_id, kPinAutosubmitBackfillNeeded, false);
+}
+
+void PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id) {
+  SetBooleanPref(account_id, kPinAutosubmitBackfillNeeded, true);
+}
+
+void SetPasswordSyncToken(const AccountId& account_id,
+                          const std::string& token) {
+  SetStringPref(account_id, kPasswordSyncToken, token);
+}
+
+std::string GetPasswordSyncToken(const AccountId& account_id) {
+  std::string token;
+  if (GetStringPref(account_id, kPasswordSyncToken, &token))
+    return token;
+  // Return empty string if sync token was not set for the account yet.
+  return std::string();
 }
 
 void RemovePrefs(const AccountId& account_id) {

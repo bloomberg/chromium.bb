@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/location.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
@@ -31,14 +31,14 @@ bool IsMultiTaskingSupported();
 class CriticalClosure {
  public:
   explicit CriticalClosure(StringPiece task_name, OnceClosure closure);
+  CriticalClosure(const CriticalClosure&) = delete;
+  CriticalClosure& operator=(const CriticalClosure&) = delete;
   ~CriticalClosure();
   void Run();
 
  private:
   ios::ScopedCriticalAction critical_action_;
   OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(CriticalClosure);
 };
 #endif  // defined(OS_IOS)
 
@@ -67,6 +67,12 @@ inline OnceClosure MakeCriticalClosure(StringPiece task_name,
       &internal::CriticalClosure::Run,
       Owned(new internal::CriticalClosure(task_name, std::move(closure))));
 }
+
+inline OnceClosure MakeCriticalClosure(const Location& posted_from,
+                                       OnceClosure closure) {
+  return MakeCriticalClosure(posted_from.ToString(), std::move(closure));
+}
+
 #else  // defined(OS_IOS)
 inline OnceClosure MakeCriticalClosure(StringPiece task_name,
                                        OnceClosure closure) {
@@ -74,6 +80,12 @@ inline OnceClosure MakeCriticalClosure(StringPiece task_name,
   // background time for closures to finish when it goes into the background.
   return closure;
 }
+
+inline OnceClosure MakeCriticalClosure(const Location& posted_from,
+                                       OnceClosure closure) {
+  return closure;
+}
+
 #endif  // defined(OS_IOS)
 
 }  // namespace base

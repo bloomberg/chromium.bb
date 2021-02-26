@@ -2008,7 +2008,7 @@ static int configure_audio_filters(VideoState *is, const char *afilters, int for
 
     if (force_output_format) {
         channel_layouts[0] = is->audio_tgt.channel_layout;
-        channels       [0] = is->audio_tgt.channels;
+        channels       [0] = is->audio_tgt.channel_layout ? -1 : is->audio_tgt.channels;
         sample_rates   [0] = is->audio_tgt.freq;
         if ((ret = av_opt_set_int(filt_asink, "all_channel_counts", 0, AV_OPT_SEARCH_CHILDREN)) < 0)
             goto end;
@@ -3028,8 +3028,12 @@ static int read_thread(void *arg)
                     packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream);
                 is->eof = 1;
             }
-            if (ic->pb && ic->pb->error)
-                break;
+            if (ic->pb && ic->pb->error) {
+                if (autoexit)
+                    goto fail;
+                else
+                    break;
+            }
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);

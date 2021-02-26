@@ -23,20 +23,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+
+class PrefRegistrySimple;
 
 namespace ash {
 
 class AssistantControllerImpl;
-class AssistantInteractionModelObserver;
-class ProactiveSuggestions;
 enum class AssistantButtonId;
-enum class AssistantQuerySource;
 
 class AssistantInteractionControllerImpl
     : public AssistantInteractionController,
-      public chromeos::assistant::mojom::AssistantInteractionSubscriber,
+      public chromeos::assistant::AssistantInteractionSubscriber,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
@@ -45,34 +44,33 @@ class AssistantInteractionControllerImpl
       public HighlighterController::Observer {
  public:
   using AssistantInteractionMetadata =
-      chromeos::assistant::mojom::AssistantInteractionMetadata;
-  using AssistantInteractionMetadataPtr =
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
+      chromeos::assistant::AssistantInteractionMetadata;
   using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
+      chromeos::assistant::AssistantInteractionResolution;
   using AssistantInteractionType =
-      chromeos::assistant::mojom::AssistantInteractionType;
-  using AssistantQuerySource = chromeos::assistant::mojom::AssistantQuerySource;
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using AssistantSuggestionType =
-      chromeos::assistant::mojom::AssistantSuggestionType;
+      chromeos::assistant::AssistantInteractionType;
+  using AssistantQuerySource = chromeos::assistant::AssistantQuerySource;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
+  using AssistantSuggestionType = chromeos::assistant::AssistantSuggestionType;
 
   explicit AssistantInteractionControllerImpl(
       AssistantControllerImpl* assistant_controller);
   ~AssistantInteractionControllerImpl() override;
 
-  // Provides a pointer to the |assistant| owned by AssistantController.
-  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Provides a pointer to the |assistant| owned by AssistantService.
+  void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // AssistantInteractionController:
   const AssistantInteractionModel* GetModel() const override;
-  void AddModelObserver(AssistantInteractionModelObserver*) override;
-  void RemoveModelObserver(AssistantInteractionModelObserver*) override;
+  base::TimeDelta GetTimeDeltaSinceLastInteraction() const override;
+  bool HasHadInteraction() const override;
   void StartTextInteraction(const std::string& text,
                             bool allow_tts,
                             AssistantQuerySource query_source) override;
+  void StartBloomInteraction() override;
+  void ShowBloomResult(const std::string& html) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
@@ -97,18 +95,19 @@ class AssistantInteractionControllerImpl
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
-  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override;
+  // chromeos::assistant::AssistantInteractionSubscriber:
+  void OnInteractionStarted(
+      const AssistantInteractionMetadata& metadata) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response,
                       const std::string& fallback) override;
   void OnSuggestionsResponse(
-      std::vector<AssistantSuggestionPtr> response) override;
+      const std::vector<AssistantSuggestion>& response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override;
+  bool OnOpenAppResponse(
+      const chromeos::assistant::AndroidAppInfo& app_info) override;
   void OnSpeechRecognitionStarted() override;
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,
@@ -122,7 +121,8 @@ class AssistantInteractionControllerImpl
   // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
-  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
+  void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -138,15 +138,10 @@ class AssistantInteractionControllerImpl
   void OnPendingResponseProcessed(bool is_completed);
 
   void OnUiVisible(AssistantEntryPoint entry_point);
-  bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) const;
-  void AttemptWarmerWelcome();
 
-  void StartProactiveSuggestionsInteraction(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
   void StartScreenContextInteraction(bool include_assistant_structure,
                                      const gfx::Rect& region,
                                      AssistantQuerySource query_source);
-
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 
@@ -156,19 +151,11 @@ class AssistantInteractionControllerImpl
   bool IsVisible() const;
 
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
-
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_receiver_{this};
-
   AssistantInteractionModel model_;
+  bool has_had_interaction_ = false;
 
-  // The number of times the Assistant UI has been shown (since the device
-  // booted).
-  // Might overflow so do not use for super critical things.
-  int number_of_times_shown_ = 0;
+  // Owned by AssistantService.
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};

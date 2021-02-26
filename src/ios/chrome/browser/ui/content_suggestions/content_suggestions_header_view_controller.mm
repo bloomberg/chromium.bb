@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -40,11 +41,23 @@
 
 using base::UserMetricsAction;
 
+namespace {
+
+const NSString* kScribbleFakeboxElementId = @"fakebox";
+
+}  // namespace
+
 #if defined(__IPHONE_13_4)
 @interface ContentSuggestionsHeaderViewController (Pointer) <
     UIPointerInteractionDelegate>
 @end
 #endif  // defined(__IPHONE_13_4)
+
+#if defined(__IPHONE_14_0)
+@interface ContentSuggestionsHeaderViewController (Scribble) <
+    UIIndirectScribbleInteractionDelegate>
+@end
+#endif  // defined(__IPHONE14_0)
 
 @interface ContentSuggestionsHeaderViewController () <
     UserAccountImageUpdateDelegate>
@@ -105,6 +118,14 @@ using base::UserMetricsAction;
   return self.headerView.toolBarView;
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (self.traitCollection.horizontalSizeClass !=
+      previousTraitCollection.horizontalSizeClass) {
+    [self updateFakeboxDisplay];
+  }
+}
+
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
               withTransitionCoordinator:
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -113,13 +134,13 @@ using base::UserMetricsAction;
   void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
         // Ensure omnibox is reset when not a regular tablet.
-        if (IsSplitToolbarMode()) {
+        if (IsSplitToolbarMode(newCollection)) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
         // Fake Tap button only needs to work in portrait. Disable the button
         // in landscape because in landscape the button covers logoView (which
         // need to handle taps).
-        self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode();
+        self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode(self);
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
@@ -136,12 +157,12 @@ using base::UserMetricsAction;
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   if (self.isShowing) {
     CGFloat progress =
-        self.logoIsShowing || !IsRegularXRegularSizeClass()
+        self.logoIsShowing || !IsRegularXRegularSizeClass(self)
             ? [self.headerView searchFieldProgressForOffset:offset
                                              safeAreaInsets:safeAreaInsets]
             // RxR with no logo hides the fakebox, so always show the omnibox.
             : 1;
-    if (!IsSplitToolbarMode()) {
+    if (!IsSplitToolbarMode(self)) {
       [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
     } else {
       // Ensure omnibox is reset when not a regular tablet.
@@ -162,7 +183,7 @@ using base::UserMetricsAction;
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
   self.fakeOmniboxWidthConstraint.constant =
-      content_suggestions::searchFieldWidth(width);
+      content_suggestions::searchFieldWidth(width, self.traitCollection);
 }
 
 - (void)unfocusOmnibox {
@@ -180,13 +201,15 @@ using base::UserMetricsAction;
 // Update the doodle top margin to the new -doodleTopMargin value.
 - (void)updateConstraints {
   self.doodleTopMarginConstraint.constant =
-      content_suggestions::doodleTopMargin(YES, [self topInset]);
+      content_suggestions::doodleTopMargin(YES, [self topInset],
+                                           self.traitCollection);
   [self.headerView updateForTopSafeAreaInset:[self topInset]];
 }
 
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
+      self.logoIsShowing, self.promoCanShow, YES, [self topInset],
+      self.traitCollection);
 
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
@@ -211,7 +234,8 @@ using base::UserMetricsAction;
 
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
-      self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
+      self.logoIsShowing, self.promoCanShow, YES, [self topInset],
+      self.traitCollection);
 }
 
 #pragma mark - ContentSuggestionsHeaderProvider
@@ -251,7 +275,8 @@ using base::UserMetricsAction;
         0, width - safeAreaInsets.left - safeAreaInsets.right);
 
     self.fakeOmniboxWidthConstraint = [self.fakeOmnibox.widthAnchor
-        constraintEqualToConstant:content_suggestions::searchFieldWidth(width)];
+        constraintEqualToConstant:content_suggestions::searchFieldWidth(
+                                      width, self.traitCollection)];
     [self addConstraintsForLogoView:self.logoVendor.view
                         fakeOmnibox:self.fakeOmnibox
                       andHeaderView:self.headerView];
@@ -306,13 +331,21 @@ using base::UserMetricsAction;
 
   [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    UIIndirectScribbleInteraction* scribbleInteraction =
+        [[UIIndirectScribbleInteraction alloc] initWithDelegate:self];
+    [self.fakeOmnibox addInteraction:scribbleInteraction];
+  }
+#endif  // defined(__IPHONE_14_0)
+
   [self.headerView.voiceSearchButton addTarget:self
                                         action:@selector(loadVoiceSearch:)
                               forControlEvents:UIControlEventTouchUpInside];
   [self.headerView.voiceSearchButton addTarget:self
                                         action:@selector(preloadVoiceSearch:)
                               forControlEvents:UIControlEventTouchDown];
-  self.headerView.voiceSearchButton.enabled = self.voiceSearchIsEnabled;
+  [self updateVoiceSearchDisplay];
 }
 
 // On NTP in split toolbar mode the omnibox has different location (in the
@@ -325,7 +358,7 @@ using base::UserMetricsAction;
   UIView* toolbar = [[UIView alloc] init];
   toolbar.translatesAutoresizingMaskIntoConstraints = NO;
   self.fakeTapButton = [[UIButton alloc] init];
-  self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode();
+  self.fakeTapButton.userInteractionEnabled = IsSplitToolbarMode(self);
   self.fakeTapButton.isAccessibilityElement = NO;
   self.fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
   [toolbar addSubview:self.fakeTapButton];
@@ -414,7 +447,11 @@ using base::UserMetricsAction;
 
 - (void)identityDiscTapped {
   base::RecordAction(base::UserMetricsAction("MobileNTPIdentityDiscTapped"));
-  [self.dispatcher showGoogleServicesSettingsFromViewController:nil];
+  if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    [self.dispatcher showSettingsFromViewController:self];
+  } else {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:nil];
+  }
 }
 
 // TODO(crbug.com/807330) The fakebox is currently a collection of views spread
@@ -429,17 +466,33 @@ using base::UserMetricsAction;
     [self.headerView setFakeboxHighlighted:[object isHighlighted]];
 }
 
-// If Google is not the default search engine, hide the logo, doodle and
-// fakebox. Make them appear if Google is set as default.
+// If display is compact size, shows fakebox. If display is regular size,
+// shows fakebox if the logo is visible and hides otherwise
+- (void)updateFakeboxDisplay {
+  [self.doodleHeightConstraint
+      setConstant:content_suggestions::doodleHeight(self.logoIsShowing,
+                                                    self.traitCollection)];
+  self.fakeOmnibox.hidden =
+      IsRegularXRegularSizeClass(self) && !self.logoIsShowing;
+  [self.collectionSynchronizer invalidateLayout];
+}
+
+// If Google is not the default search engine, hides the logo, doodle and
+// fakebox. Makes them appear if Google is set as default.
 - (void)updateLogoAndFakeboxDisplay {
   if (self.logoVendor.showingLogo != self.logoIsShowing) {
     self.logoVendor.showingLogo = self.logoIsShowing;
-    [self.doodleHeightConstraint
-        setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
-    if (IsRegularXRegularSizeClass(self))
-      [self.fakeOmnibox setHidden:!self.logoIsShowing];
-    [self.collectionSynchronizer invalidateLayout];
+    [self updateFakeboxDisplay];
   }
+}
+
+// Ensures the state of the Voice Search button matches whether or not it's
+// enabled. If it's not, disables the button and removes it from the a11y loop
+// for VoiceOver.
+- (void)updateVoiceSearchDisplay {
+  self.headerView.voiceSearchButton.enabled = self.voiceSearchIsEnabled;
+  self.headerView.voiceSearchButton.isAccessibilityElement =
+      self.voiceSearchIsEnabled;
 }
 
 // Adds the constraints for the |logoView|, the |fakeomnibox| related to the
@@ -450,10 +503,10 @@ using base::UserMetricsAction;
   self.doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
                      constant:content_suggestions::doodleTopMargin(
-                                  YES, [self topInset])];
+                                  YES, [self topInset], self.traitCollection)];
   self.doodleHeightConstraint = [logoView.heightAnchor
       constraintEqualToConstant:content_suggestions::doodleHeight(
-                                    self.logoIsShowing)];
+                                    self.logoIsShowing, self.traitCollection)];
   self.fakeOmniboxHeightConstraint = [fakeOmnibox.heightAnchor
       constraintEqualToConstant:ToolbarExpandedHeight(
                                     self.traitCollection
@@ -475,7 +528,7 @@ using base::UserMetricsAction;
 }
 
 - (void)shiftTilesDown {
-  if (IsSplitToolbarMode()) {
+  if (IsSplitToolbarMode(self)) {
     [self.dispatcher onFakeboxBlur];
   }
   [self.collectionSynchronizer shiftTilesDown];
@@ -533,17 +586,24 @@ using base::UserMetricsAction;
     };
   }
 
-  void (^completionBlock)() = ^{
-    self.headerView.omnibox.hidden = YES;
-    self.headerView.cancelButton.hidden = YES;
-    self.headerView.searchHintLabel.alpha = 1;
-    self.headerView.voiceSearchButton.alpha = 1;
-    self.disableScrollAnimation = NO;
-    [self.dispatcher fakeboxFocused];
-    if (IsSplitToolbarMode()) {
-      [self.dispatcher onFakeboxAnimationComplete];
-    }
-  };
+  void (^completionBlock)(UIViewAnimatingPosition) =
+      ^(UIViewAnimatingPosition finalPosition) {
+        self.headerView.omnibox.hidden = YES;
+        self.headerView.cancelButton.hidden = YES;
+        self.headerView.searchHintLabel.alpha = 1;
+        self.headerView.voiceSearchButton.alpha = 1;
+        self.disableScrollAnimation = NO;
+        if (finalPosition == UIViewAnimatingPositionEnd &&
+            [self.delegate isScrolledToTop]) {
+          // Check to see if the collection are still scrolled to the top --
+          // it's possible (and difficult) to unfocus the omnibox and initiate a
+          // -shiftTilesDown before the animation here completes.
+          [self.dispatcher fakeboxFocused];
+          if (IsSplitToolbarMode(self)) {
+            [self.dispatcher onFakeboxAnimationComplete];
+          }
+        }
+      };
 
   [self.collectionSynchronizer shiftTilesUpWithAnimations:animations
                                                completion:completionBlock];
@@ -552,6 +612,61 @@ using base::UserMetricsAction;
 - (CGFloat)topInset {
   return self.parentViewController.view.safeAreaInsets.top;
 }
+
+#pragma mark - UIIndirectScribbleInteractionDelegate
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+              requestElementsInRect:(CGRect)rect
+                         completion:
+                             (void (^)(NSArray<UIScribbleElementIdentifier>*
+                                           elements))completion
+    API_AVAILABLE(ios(14.0)) {
+  completion(@[ kScribbleFakeboxElementId ]);
+}
+
+- (BOOL)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                   isElementFocused:
+                       (UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+  return self.toolbarDelegate.fakeboxScribbleForwardingTarget.isFirstResponder;
+}
+
+- (CGRect)
+    indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+                frameForElement:(UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+
+  // Imitate the entire location bar being scribblable.
+  return interaction.view.bounds;
+}
+
+- (void)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+               focusElementIfNeeded:
+                   (UIScribbleElementIdentifier)elementIdentifier
+                     referencePoint:(CGPoint)focusReferencePoint
+                         completion:
+                             (void (^)(UIResponder<UITextInput>* focusedInput))
+                                 completion API_AVAILABLE(ios(14.0)) {
+  if (!self.toolbarDelegate.fakeboxScribbleForwardingTarget.isFirstResponder) {
+    [self.toolbarDelegate.fakeboxScribbleForwardingTarget becomeFirstResponder];
+  }
+
+  completion(self.toolbarDelegate.fakeboxScribbleForwardingTarget);
+}
+
+- (BOOL)indirectScribbleInteraction:(UIIndirectScribbleInteraction*)interaction
+         shouldDelayFocusForElement:
+             (UIScribbleElementIdentifier)elementIdentifier
+    API_AVAILABLE(ios(14.0)) {
+  DCHECK(elementIdentifier == kScribbleFakeboxElementId);
+  return YES;
+}
+
+#endif  // defined(__IPHONE_14_0)
 
 #pragma mark - LogoAnimationControllerOwnerOwner
 
@@ -604,12 +719,13 @@ using base::UserMetricsAction;
   if (_voiceSearchIsEnabled == voiceSearchIsEnabled)
     return;
   _voiceSearchIsEnabled = voiceSearchIsEnabled;
-  self.headerView.voiceSearchButton.enabled = _voiceSearchIsEnabled;
+  [self updateVoiceSearchDisplay];
 }
 
 #pragma mark - UserAccountImageUpdateDelegate
 
 - (void)updateAccountImage:(UIImage*)image {
+  self.identityDiscButton.hidden = !image;
   [self.identityDiscButton setImage:image forState:UIControlStateNormal];
   self.identityDiscButton.imageView.layer.cornerRadius = image.size.width / 2;
   self.identityDiscButton.imageView.layer.masksToBounds = YES;
@@ -628,9 +744,11 @@ using base::UserMetricsAction;
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region
     API_AVAILABLE(ios(13.4)) {
-  UIBezierPath* path = [UIBezierPath
-      bezierPathWithRoundedRect:interaction.view.bounds
-                   cornerRadius:interaction.view.bounds.size.height];
+  // Without this, the hover effect looks slightly oversized.
+  CGRect rect = CGRectInset(interaction.view.bounds, 1, 1);
+  UIBezierPath* path =
+      [UIBezierPath bezierPathWithRoundedRect:rect
+                                 cornerRadius:rect.size.height];
   UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
   parameters.visiblePath = path;
   UITargetedPreview* preview =

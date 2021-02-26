@@ -18,7 +18,7 @@ static_library("imc") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "linux/nacl_imc.cc",
       "posix/nacl_imc_posix.cc",

@@ -6,15 +6,15 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/common/web_preferences.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
                     extensions::ViewType render_view_type,
-                    content::WebPreferences* webkit_prefs) {
+                    blink::web_pref::WebPreferences* webkit_prefs) {
   if (!extension)
     return;
 
@@ -34,6 +34,8 @@ void SetPreferences(const extensions::Extension* extension,
     webkit_prefs->local_storage_enabled = false;
     webkit_prefs->sync_xhr_in_documents_enabled = false;
     webkit_prefs->cookie_enabled = false;
+    webkit_prefs->target_blank_implies_no_opener_enabled_will_be_removed =
+        false;
   }
 
   // Enable WebGL features that regular pages can't access, since they add

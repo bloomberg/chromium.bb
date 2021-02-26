@@ -31,20 +31,16 @@ void SVGInlineFlowBoxPainter::PaintSelectionBackground(
 }
 
 void SVGInlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
-                                    const LayoutPoint& paint_offset) {
+                                    const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelectionDragImage);
 
   ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
                                       svg_inline_flow_box_.GetLineLayoutItem()),
                                   paint_info, svg_inline_flow_box_);
-  if (!paint_state.ApplyEffects())
-    return;
   for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
-       child = child->NextOnLine()) {
-    child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),
-                 LayoutUnit());
-  }
+       child = child->NextOnLine())
+    child->Paint(paint_info, paint_offset, LayoutUnit(), LayoutUnit());
 }
 
 }  // namespace blink

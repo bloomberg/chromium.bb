@@ -36,6 +36,7 @@
 #include "libavutil/timestamp.h"
 #include "libavutil/timecode.h"
 #include "libavutil/mastering_display_metadata.h"
+#include "libavutil/video_enc_params.h"
 
 #include "avfilter.h"
 #include "internal.h"
@@ -56,14 +57,14 @@ static const AVOption showinfo_options[] = {
 
 AVFILTER_DEFINE_CLASS(showinfo);
 
-static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, AVFrameSideData *sd)
+static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, const AVFrameSideData *sd)
 {
-    AVSphericalMapping *spherical = (AVSphericalMapping *)sd->data;
+    const AVSphericalMapping *spherical = (const AVSphericalMapping *)sd->data;
     double yaw, pitch, roll;
 
     av_log(ctx, AV_LOG_INFO, "spherical information: ");
     if (sd->size < sizeof(*spherical)) {
-        av_log(ctx, AV_LOG_ERROR, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
         return;
     }
 
@@ -74,7 +75,7 @@ static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, AVFrameSideData
     else if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR_TILE)
         av_log(ctx, AV_LOG_INFO, "tiled equirectangular ");
     else {
-        av_log(ctx, AV_LOG_WARNING, "unknown");
+        av_log(ctx, AV_LOG_WARNING, "unknown\n");
         return;
     }
 
@@ -95,17 +96,17 @@ static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, AVFrameSideData
     }
 }
 
-static void dump_stereo3d(AVFilterContext *ctx, AVFrameSideData *sd)
+static void dump_stereo3d(AVFilterContext *ctx, const AVFrameSideData *sd)
 {
-    AVStereo3D *stereo;
+    const AVStereo3D *stereo;
 
     av_log(ctx, AV_LOG_INFO, "stereoscopic information: ");
     if (sd->size < sizeof(*stereo)) {
-        av_log(ctx, AV_LOG_ERROR, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
         return;
     }
 
-    stereo = (AVStereo3D *)sd->data;
+    stereo = (const AVStereo3D *)sd->data;
 
     av_log(ctx, AV_LOG_INFO, "type - %s", av_stereo3d_type_name(stereo->type));
 
@@ -113,7 +114,23 @@ static void dump_stereo3d(AVFilterContext *ctx, AVFrameSideData *sd)
         av_log(ctx, AV_LOG_INFO, " (inverted)");
 }
 
-static void dump_roi(AVFilterContext *ctx, AVFrameSideData *sd)
+static void dump_s12m_timecode(AVFilterContext *ctx, AVRational frame_rate, const AVFrameSideData *sd)
+{
+    const uint32_t *tc = (const uint32_t *)sd->data;
+
+    if ((sd->size != sizeof(uint32_t) * 4) || (tc[0] > 3)) {
+        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
+        return;
+    }
+
+    for (int j = 1; j <= tc[0]; j++) {
+        char tcbuf[AV_TIMECODE_STR_SIZE];
+        av_timecode_make_smpte_tc_string2(tcbuf, frame_rate, tc[j], 0, 0);
+        av_log(ctx, AV_LOG_INFO, "timecode - %s%s", tcbuf, j != tc[0]  ? ", " : "");
+    }
+}
+
+static void dump_roi(AVFilterContext *ctx, const AVFrameSideData *sd)
 {
     int nb_rois;
     const AVRegionOfInterest *roi;
@@ -122,7 +139,7 @@ static void dump_roi(AVFilterContext *ctx, AVFrameSideData *sd)
     roi = (const AVRegionOfInterest *)sd->data;
     roi_size = roi->self_size;
     if (!roi_size || sd->size % roi_size != 0) {
-        av_log(ctx, AV_LOG_ERROR, "Invalid AVRegionOfInterest.self_size.");
+        av_log(ctx, AV_LOG_ERROR, "Invalid AVRegionOfInterest.self_size.\n");
         return;
     }
     nb_rois = sd->size / roi_size;
@@ -135,17 +152,17 @@ static void dump_roi(AVFilterContext *ctx, AVFrameSideData *sd)
     }
 }
 
-static void dump_mastering_display(AVFilterContext *ctx, AVFrameSideData *sd)
+static void dump_mastering_display(AVFilterContext *ctx, const AVFrameSideData *sd)
 {
-    AVMasteringDisplayMetadata *mastering_display;
+    const AVMasteringDisplayMetadata *mastering_display;
 
     av_log(ctx, AV_LOG_INFO, "mastering display: ");
     if (sd->size < sizeof(*mastering_display)) {
-        av_log(ctx, AV_LOG_ERROR, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
         return;
     }
 
-    mastering_display = (AVMasteringDisplayMetadata *)sd->data;
+    mastering_display = (const AVMasteringDisplayMetadata *)sd->data;
 
     av_log(ctx, AV_LOG_INFO, "has_primaries:%d has_luminance:%d "
            "r(%5.4f,%5.4f) g(%5.4f,%5.4f) b(%5.4f %5.4f) wp(%5.4f, %5.4f) "
@@ -161,13 +178,59 @@ static void dump_mastering_display(AVFilterContext *ctx, AVFrameSideData *sd)
            av_q2d(mastering_display->min_luminance), av_q2d(mastering_display->max_luminance));
 }
 
-static void dump_content_light_metadata(AVFilterContext *ctx, AVFrameSideData *sd)
+static void dump_content_light_metadata(AVFilterContext *ctx, const AVFrameSideData *sd)
 {
-    AVContentLightMetadata* metadata = (AVContentLightMetadata*)sd->data;
+    const AVContentLightMetadata *metadata = (const AVContentLightMetadata *)sd->data;
 
     av_log(ctx, AV_LOG_INFO, "Content Light Level information: "
            "MaxCLL=%d, MaxFALL=%d",
            metadata->MaxCLL, metadata->MaxFALL);
+}
+
+static void dump_video_enc_params(AVFilterContext *ctx, const AVFrameSideData *sd)
+{
+    const AVVideoEncParams *par = (const AVVideoEncParams *)sd->data;
+    int plane, acdc;
+
+    av_log(ctx, AV_LOG_INFO, "video encoding parameters: type %d; ", par->type);
+    if (par->qp)
+        av_log(ctx, AV_LOG_INFO, "qp=%d; ", par->qp);
+    for (plane = 0; plane < FF_ARRAY_ELEMS(par->delta_qp); plane++)
+        for (acdc = 0; acdc < FF_ARRAY_ELEMS(par->delta_qp[plane]); acdc++) {
+            int delta_qp = par->delta_qp[plane][acdc];
+            if (delta_qp)
+                av_log(ctx, AV_LOG_INFO, "delta_qp[%d][%d]=%d; ",
+                       plane, acdc, delta_qp);
+        }
+    if (par->nb_blocks)
+        av_log(ctx, AV_LOG_INFO, "%u blocks; ", par->nb_blocks);
+}
+
+static void dump_sei_unregistered_metadata(AVFilterContext *ctx, const AVFrameSideData *sd)
+{
+    const int uuid_size = 16;
+    const uint8_t *user_data = sd->data;
+    int i;
+
+    if (sd->size < uuid_size) {
+        av_log(ctx, AV_LOG_ERROR, "invalid data(%d < UUID(%d-bytes))\n", sd->size, uuid_size);
+        return;
+    }
+
+    av_log(ctx, AV_LOG_INFO, "User Data Unregistered:\n");
+    av_log(ctx, AV_LOG_INFO, "UUID=");
+    for (i = 0; i < uuid_size; i++) {
+        av_log(ctx, AV_LOG_INFO, "%02x", user_data[i]);
+        if (i == 3 || i == 5 || i == 7 || i == 9)
+            av_log(ctx, AV_LOG_INFO, "-");
+    }
+    av_log(ctx, AV_LOG_INFO, "\n");
+
+    av_log(ctx, AV_LOG_INFO, "User Data=");
+    for (; i < sd->size; i++) {
+        av_log(ctx, AV_LOG_INFO, "%02x", user_data[i]);
+    }
+    av_log(ctx, AV_LOG_INFO, "\n");
 }
 
 static void dump_color_property(AVFilterContext *ctx, AVFrame *frame)
@@ -317,17 +380,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             dump_stereo3d(ctx, sd);
             break;
         case AV_FRAME_DATA_S12M_TIMECODE: {
-            uint32_t *tc = (uint32_t*)sd->data;
-            int m = FFMIN(tc[0],3);
-            if (sd->size != 16) {
-                av_log(ctx, AV_LOG_ERROR, "invalid data");
-                break;
-            }
-            for (int j = 1; j <= m; j++) {
-                char tcbuf[AV_TIMECODE_STR_SIZE];
-                av_timecode_make_smpte_tc_string(tcbuf, tc[j], 0);
-                av_log(ctx, AV_LOG_INFO, "timecode - %s%s", tcbuf, j != m ? ", " : "");
-            }
+            dump_s12m_timecode(ctx, inlink->frame_rate, sd);
             break;
         }
         case AV_FRAME_DATA_DISPLAYMATRIX:
@@ -352,8 +405,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             av_log(ctx, AV_LOG_INFO, "GOP timecode - %s", tcbuf);
             break;
         }
+        case AV_FRAME_DATA_VIDEO_ENC_PARAMS:
+            dump_video_enc_params(ctx, sd);
+            break;
+        case AV_FRAME_DATA_SEI_UNREGISTERED:
+            dump_sei_unregistered_metadata(ctx, sd);
+            break;
         default:
-            av_log(ctx, AV_LOG_WARNING, "unknown side data type %d (%d bytes)",
+            av_log(ctx, AV_LOG_WARNING, "unknown side data type %d (%d bytes)\n",
                    sd->type, sd->size);
             break;
         }

@@ -23,22 +23,12 @@ namespace openscreen {
 // Generates a new RSA key pair with bit width |key_bits|.
 bssl::UniquePtr<EVP_PKEY> GenerateRsaKeyPair(int key_bits = 2048);
 
-// Creates a new self-signed X509 certificate having the given |name| and
-// |duration| until expiration, and based on the given |key_pair|, which is
-// expected to contain a valid private key.
-// |time_since_unix_epoch| is the current time.
-ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509Certificate(
-    absl::string_view name,
-    std::chrono::seconds duration,
-    const EVP_PKEY& key_pair,
-    std::chrono::seconds time_since_unix_epoch = GetWallTimeSinceUnixEpoch());
-
 // Creates a new X509 certificate having the given |name| and |duration| until
 // expiration, and based on the given |key_pair|.  If |issuer| and |issuer_key|
 // are provided, they are used to set the issuer information, otherwise it will
 // be self-signed.  |make_ca| determines whether additional extensions are added
 // to make it a valid certificate authority cert.
-ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509CertificateForTest(
+ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509Certificate(
     absl::string_view name,
     std::chrono::seconds duration,
     const EVP_PKEY& key_pair,

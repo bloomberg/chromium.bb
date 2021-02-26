@@ -25,9 +25,6 @@ class SingleClientStatusChangeChecker
   explicit SingleClientStatusChangeChecker(syncer::ProfileSyncService* service);
   ~SingleClientStatusChangeChecker() override;
 
-  // StatusChangeChecker implementations and stubs.
-  bool IsExitConditionSatisfied(std::ostream* os) override = 0;
-
   syncer::ProfileSyncService* service();
 };
 

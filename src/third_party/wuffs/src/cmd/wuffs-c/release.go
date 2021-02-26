@@ -20,17 +20,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/google/wuffs/internal/cgen/data"
 
 	cf "github.com/google/wuffs/cmd/commonflags"
 )
 
 func doGenrelease(args []string) error {
 	flags := flag.FlagSet{}
-	cformatterFlag := flags.String("cformatter", cf.CformatterDefault, cf.CformatterUsage)
 	commitDateFlag := flags.String("commitdate", "", "git commit date the release was built from")
 	gitRevListCountFlag := flags.Int("gitrevlistcount", 0, `git "rev-list --count" that the release was built from`)
 	revisionFlag := flags.String("revision", "", "git revision the release was built from")
@@ -38,9 +38,6 @@ func doGenrelease(args []string) error {
 
 	if err := flags.Parse(args); err != nil {
 		return err
-	}
-	if !cf.IsAlphaNumericIsh(*cformatterFlag) {
-		return fmt.Errorf("bad -cformatter flag value %q", *cformatterFlag)
 	}
 	if (*gitRevListCountFlag < 0) || (0x7FFFFFFF < *gitRevListCountFlag) {
 		return fmt.Errorf("bad -gitrevlistcount flag value %d", *gitRevListCountFlag)
@@ -97,37 +94,53 @@ func doGenrelease(args []string) error {
 	}
 	sort.Strings(h.filesList)
 
-	unformatted := bytes.NewBuffer(nil)
-	unformatted.WriteString("#ifndef WUFFS_INCLUDE_GUARD\n")
-	unformatted.WriteString("#define WUFFS_INCLUDE_GUARD\n\n")
-	unformatted.WriteString(grSingleFileGuidance)
+	out := bytes.NewBuffer(nil)
+	out.WriteString("#ifndef WUFFS_INCLUDE_GUARD\n")
+	out.WriteString("#define WUFFS_INCLUDE_GUARD\n\n")
+	out.WriteString(grSingleFileGuidance[1:]) // [1:] skips the initial '\n'.
+	out.WriteString(grPragmaPush[1:])         // [1:] skips the initial '\n'.
 
 	h.seen = map[string]bool{}
 	for _, f := range h.filesList {
-		if err := h.gen(unformatted, f, 0, 0); err != nil {
+		if err := h.gen(out, f, 0, 0); err != nil {
 			return err
 		}
 	}
 
-	unformatted.Write(grImplStartsHere)
-	unformatted.WriteString("\n")
+	out.WriteString("#if defined(__cplusplus) && (__cplusplus >= 201103L)\n\n")
+	out.WriteString(data.AuxBaseHh)
+	out.WriteString("\n")
+	for _, f := range data.AuxNonBaseHhFiles {
+		out.WriteString(f)
+		out.WriteString("\n")
+	}
+	out.WriteString("#endif  // defined(__cplusplus) && (__cplusplus >= 201103L)\n")
+
+	out.Write(grImplStartsHere)
+	out.WriteString("\n")
 
 	h.seen = map[string]bool{}
 	for _, f := range h.filesList {
-		if err := h.gen(unformatted, f, 1, 0); err != nil {
+		if err := h.gen(out, f, 1, 0); err != nil {
 			return err
 		}
 	}
 
-	unformatted.WriteString("\n")
-	unformatted.Write(grImplEndsHere)
-	unformatted.WriteString("\n\n#endif  // WUFFS_INCLUDE_GUARD\n\n")
+	out.WriteString("#if defined(__cplusplus) && (__cplusplus >= 201103L)\n\n")
+	out.WriteString(data.AuxBaseCc)
+	out.WriteString("\n")
+	for _, f := range data.AuxNonBaseCcFiles {
+		out.WriteString(f)
+		out.WriteString("\n")
+	}
+	out.WriteString("#endif  // defined(__cplusplus) && (__cplusplus >= 201103L)\n\n")
 
-	cmd := exec.Command(*cformatterFlag, "-style=Chromium")
-	cmd.Stdin = unformatted
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	out.Write(grImplEndsHere)
+	out.WriteString(grPragmaPop)
+	out.WriteString("#endif  // WUFFS_INCLUDE_GUARD\n")
+
+	os.Stdout.Write(out.Bytes())
+	return nil
 }
 
 var (
@@ -148,6 +161,24 @@ const grSingleFileGuidance = `
 // To use that single file as a "foo.c"-like implementation, instead of a
 // "foo.h"-like header, #define WUFFS_IMPLEMENTATION before #include'ing or
 // compiling it.
+
+`
+
+const grPragmaPush = `
+// Wuffs' C code is generated automatically, not hand-written. These warnings'
+// costs outweigh the benefits.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
+`
+
+const grPragmaPop = `
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 `
 
@@ -190,20 +221,20 @@ func (h *genReleaseHelper) parse(relFilename string, s []byte) error {
 	if i := bytes.Index(s, grImplStartsHere); i < 0 {
 		return fmt.Errorf("could not find %q in %s", grImplStartsHere, relFilename)
 	} else {
-		f.fragments[0], s = s[:i], s[i+len(grImplStartsHere):]
+		f.fragments[0], s = bytes.TrimSpace(s[:i]), s[i+len(grImplStartsHere):]
 	}
 
 	if i := bytes.LastIndex(s, grImplEndsHere); i < 0 {
 		return fmt.Errorf("could not find %q in %s", grImplEndsHere, relFilename)
 	} else {
-		f.fragments[1] = s[:i]
+		f.fragments[1] = bytes.TrimSpace(s[:i])
 	}
 
 	if relFilename == "wuffs-base.c" && (h.version != cf.Version{}) {
 		if subs, err := h.substituteWuffsVersion(f.fragments[0]); err != nil {
 			return err
 		} else {
-			f.fragments[0] = subs
+			f.fragments[0] = bytes.TrimSpace(subs)
 		}
 	}
 
@@ -258,6 +289,7 @@ func (h *genReleaseHelper) gen(w *bytes.Buffer, relFilename string, which int, d
 	}
 
 	w.Write(f.fragments[which])
+	w.WriteString("\n\n")
 	h.seen[relFilename] = true
 	return nil
 }
@@ -299,16 +331,16 @@ func (h *genReleaseHelper) substituteWuffsVersion(s []byte) ([]byte, error) {
 	}
 
 	fmt.Fprintf(w, `.
-		#define WUFFS_VERSION ((uint64_t)0x%016X)
-		#define WUFFS_VERSION_MAJOR ((uint64_t)0x%08X)
-		#define WUFFS_VERSION_MINOR ((uint64_t)0x%04X)
-		#define WUFFS_VERSION_PATCH ((uint64_t)0x%04X)
-		#define WUFFS_VERSION_PRE_RELEASE_LABEL %q
-		#define WUFFS_VERSION_BUILD_METADATA_COMMIT_COUNT %d
-		#define WUFFS_VERSION_BUILD_METADATA_COMMIT_DATE %s
-		#define WUFFS_VERSION_STRING %q
+#define WUFFS_VERSION 0x%09X
+#define WUFFS_VERSION_MAJOR %d
+#define WUFFS_VERSION_MINOR %d
+#define WUFFS_VERSION_PATCH %d
+#define WUFFS_VERSION_PRE_RELEASE_LABEL %q
+#define WUFFS_VERSION_BUILD_METADATA_COMMIT_COUNT %d
+#define WUFFS_VERSION_BUILD_METADATA_COMMIT_DATE %s
+#define WUFFS_VERSION_STRING %q
 
-	`, h.version.Uint64(), h.version.Major, h.version.Minor, h.version.Patch,
+`, h.version.Uint64(), h.version.Major, h.version.Minor, h.version.Patch,
 		h.version.Extension, h.gitRevListCount, commitDate,
 		h.version.String()+buildMetadata)
 

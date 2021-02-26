@@ -5,11 +5,15 @@
 #include "ui/base/x/x11_drag_drop_client.h"
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 
 // Reading recommended for understanding the implementation in this file:
 //
@@ -112,12 +116,12 @@ const char kXdndPosition[] = "XdndPosition";
 // action will be taken if the drop is accepted.
 const char kXdndStatus[] = "XdndStatus";
 
-static base::LazyInstance<std::map<XID, XDragDropClient*>>::Leaky
+static base::LazyInstance<std::map<x11::Window, XDragDropClient*>>::Leaky
     g_live_client_map = LAZY_INSTANCE_INITIALIZER;
 
 // Converts a bitfield of actions into an Atom that represents what action
 // we're most likely to take on drop.
-Atom XDragOperationToAtom(int drag_operation) {
+x11::Atom XDragOperationToAtom(int drag_operation) {
   if (drag_operation & DragDropTypes::DRAG_COPY)
     return gfx::GetAtom(kXdndActionCopy);
   if (drag_operation & DragDropTypes::DRAG_MOVE)
@@ -125,11 +129,11 @@ Atom XDragOperationToAtom(int drag_operation) {
   if (drag_operation & DragDropTypes::DRAG_LINK)
     return gfx::GetAtom(kXdndActionLink);
 
-  return x11::None;
+  return x11::Atom::None;
 }
 
 // Converts a single action atom to a drag operation.
-DragDropTypes::DragOperation XAtomToDragOperation(Atom atom) {
+DragDropTypes::DragOperation AtomToDragOperation(x11::Atom atom) {
   if (atom == gfx::GetAtom(kXdndActionCopy))
     return DragDropTypes::DRAG_COPY;
   if (atom == gfx::GetAtom(kXdndActionMove))
@@ -143,34 +147,34 @@ DragDropTypes::DragOperation XAtomToDragOperation(Atom atom) {
 }  // namespace
 
 int XGetMaskAsEventFlags() {
-  XDisplay* display = gfx::GetXDisplay();
+  x11::KeyButMask mask{};
+  auto* connection = x11::Connection::Get();
+  if (auto reply =
+          connection->QueryPointer({connection->default_root()}).Sync()) {
+    mask = reply->mask;
+  }
 
-  XID root, child;
-  int root_x, root_y, win_x, win_y;
-  unsigned int mask;
-  XQueryPointer(display, DefaultRootWindow(display), &root, &child, &root_x,
-                &root_y, &win_x, &win_y, &mask);
   int modifiers = ui::EF_NONE;
-  if (mask & ShiftMask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Shift))
     modifiers |= ui::EF_SHIFT_DOWN;
-  if (mask & ControlMask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Control))
     modifiers |= ui::EF_CONTROL_DOWN;
-  if (mask & Mod1Mask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Mod1))
     modifiers |= ui::EF_ALT_DOWN;
-  if (mask & Mod4Mask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Mod4))
     modifiers |= ui::EF_COMMAND_DOWN;
-  if (mask & Button1Mask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Button1))
     modifiers |= ui::EF_LEFT_MOUSE_BUTTON;
-  if (mask & Button2Mask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Button2))
     modifiers |= ui::EF_MIDDLE_MOUSE_BUTTON;
-  if (mask & Button3Mask)
+  if (static_cast<bool>(mask & x11::KeyButMask::Button3))
     modifiers |= ui::EF_RIGHT_MOUSE_BUTTON;
   return modifiers;
 }
 
 // static
-XDragDropClient* XDragDropClient::GetForWindow(XID window) {
-  std::map<XID, XDragDropClient*>::const_iterator it =
+XDragDropClient* XDragDropClient::GetForWindow(x11::Window window) {
+  std::map<x11::Window, XDragDropClient*>::const_iterator it =
       g_live_client_map.Get().find(window);
   if (it == g_live_client_map.Get().end())
     return nullptr;
@@ -178,16 +182,14 @@ XDragDropClient* XDragDropClient::GetForWindow(XID window) {
 }
 
 XDragDropClient::XDragDropClient(XDragDropClient::Delegate* delegate,
-                                 Display* xdisplay,
-                                 XID xwindow)
-    : delegate_(delegate), xdisplay_(xdisplay), xwindow_(xwindow) {
+                                 x11::Window xwindow)
+    : delegate_(delegate), xwindow_(xwindow) {
   DCHECK(delegate_);
 
   // Mark that we are aware of drag and drop concepts.
-  unsigned long xdnd_version = kMaxXdndVersion;
-  XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom(kXdndAware), XA_ATOM, 32,
-                  PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&xdnd_version), 1);
+  uint32_t xdnd_version = kMaxXdndVersion;
+  ui::SetProperty(xwindow_, gfx::GetAtom(kXdndAware), x11::Atom::ATOM,
+                  xdnd_version);
 
   // Some tests change the DesktopDragDropClientAuraX11 associated with an
   // |xwindow|.
@@ -198,8 +200,8 @@ XDragDropClient::~XDragDropClient() {
   g_live_client_map.Get().erase(xwindow());
 }
 
-std::vector<Atom> XDragDropClient::GetOfferedDragOperations() const {
-  std::vector<Atom> operations;
+std::vector<x11::Atom> XDragDropClient::GetOfferedDragOperations() const {
+  std::vector<x11::Atom> operations;
   if (drag_operation_ & DragDropTypes::DRAG_COPY)
     operations.push_back(gfx::GetAtom(kXdndActionCopy));
   if (drag_operation_ & DragDropTypes::DRAG_MOVE)
@@ -209,7 +211,7 @@ std::vector<Atom> XDragDropClient::GetOfferedDragOperations() const {
   return operations;
 }
 
-void XDragDropClient::CompleteXdndPosition(XID source_window,
+void XDragDropClient::CompleteXdndPosition(x11::Window source_window,
                                            const gfx::Point& screen_point) {
   int drag_operation = delegate_->UpdateDrag(screen_point);
 
@@ -219,11 +221,12 @@ void XDragDropClient::CompleteXdndPosition(XID source_window,
   // actually making use of this. A client can return (0, 0) and/or set the
   // first bit of l[1] to disable the feature, and it appears that gtk neither
   // sets this nor respects it if set.
-  XEvent xev = PrepareXdndClientMessage(kXdndStatus, source_window);
-  xev.xclient.data.l[1] =
+  auto xev = PrepareXdndClientMessage(kXdndStatus, source_window);
+  xev.data.data32[1] =
       (drag_operation != 0) ? (kWantFurtherPosEvents | kWillAcceptDrop) : 0;
-  xev.xclient.data.l[4] = XDragOperationToAtom(drag_operation);
-  SendXClientEvent(source_window, &xev);
+  xev.data.data32[4] =
+      static_cast<uint32_t>(XDragOperationToAtom(drag_operation));
+  SendXClientEvent(source_window, xev);
 }
 
 void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
@@ -232,26 +235,26 @@ void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
     return;
 
   // Find the current window the cursor is over.
-  XID dest_window = FindWindowFor(screen_point);
+  x11::Window dest_window = FindWindowFor(screen_point);
 
-  if (source_current_window_ != dest_window) {
-    if (source_current_window_ != x11::None)
-      SendXdndLeave(source_current_window_);
+  if (target_current_window_ != dest_window) {
+    if (target_current_window_ != x11::Window::None)
+      SendXdndLeave(target_current_window_);
 
-    source_current_window_ = dest_window;
+    target_current_window_ = dest_window;
     waiting_on_status_ = false;
     next_position_message_.reset();
     status_received_since_enter_ = false;
     negotiated_operation_ = DragDropTypes::DRAG_NONE;
 
-    if (source_current_window_ != x11::None) {
-      std::vector<Atom> targets;
+    if (target_current_window_ != x11::Window::None) {
+      std::vector<x11::Atom> targets;
       source_provider_->RetrieveTargets(&targets);
-      SendXdndEnter(source_current_window_, targets);
+      SendXdndEnter(target_current_window_, targets);
     }
   }
 
-  if (source_current_window_ != x11::None) {
+  if (target_current_window_ != x11::Window::None) {
     if (waiting_on_status_) {
       next_position_message_ =
           std::make_unique<std::pair<gfx::Point, unsigned long>>(screen_point,
@@ -262,30 +265,30 @@ void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
   }
 }
 
-bool XDragDropClient::HandleXdndEvent(const XClientMessageEvent& event) {
-  Atom message_type = event.message_type;
-  if (message_type == gfx::GetAtom("XdndEnter")) {
+bool XDragDropClient::HandleXdndEvent(const x11::ClientMessageEvent& event) {
+  x11::Atom message_type = event.type;
+  if (message_type == gfx::GetAtom("XdndEnter"))
     OnXdndEnter(event);
-  } else if (message_type == gfx::GetAtom("XdndLeave")) {
+  else if (message_type == gfx::GetAtom("XdndLeave"))
     OnXdndLeave(event);
-  } else if (message_type == gfx::GetAtom("XdndPosition")) {
+  else if (message_type == gfx::GetAtom("XdndPosition"))
     OnXdndPosition(event);
-  } else if (message_type == gfx::GetAtom("XdndStatus")) {
+  else if (message_type == gfx::GetAtom("XdndStatus"))
     OnXdndStatus(event);
-  } else if (message_type == gfx::GetAtom("XdndFinished")) {
+  else if (message_type == gfx::GetAtom("XdndFinished"))
     OnXdndFinished(event);
-  } else if (message_type == gfx::GetAtom("XdndDrop")) {
+  else if (message_type == gfx::GetAtom("XdndDrop"))
     OnXdndDrop(event);
-  } else {
+  else
     return false;
-  }
   return true;
 }
 
-void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
-  DVLOG(1) << "OnXdndEnter, version " << ((event.data.l[1] & 0xff000000) >> 24);
+void XDragDropClient::OnXdndEnter(const x11::ClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndEnter, version "
+           << ((event.data.data32[1] & 0xff000000) >> 24);
 
-  int version = (event.data.l[1] & 0xff000000) >> 24;
+  int version = (event.data.data32[1] & 0xff000000) >> 24;
   if (version < kMinXdndVersion) {
     // This protocol version is not documented in the XDND standard (last
     // revised in 1999), so we don't support it. Since don't understand the
@@ -303,17 +306,19 @@ void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
 
   // Make sure that we've run ~X11DragContext() before creating another one.
   ResetDragContext();
-  auto* source_client = GetForWindow(event.data.l[0]);
+  auto* source_client =
+      GetForWindow(static_cast<x11::Window>(event.data.data32[0]));
   DCHECK(!source_client || source_client->source_provider_);
   target_current_context_ = std::make_unique<XDragContext>(
-      xwindow_, event, source_client,
+      xwindow_, event,
       (source_client ? source_client->source_provider_->GetFormatMap()
                      : SelectionFormatMap()));
 
-  if (!target_current_context()->source_client()) {
+  if (!source_client) {
     // The window doesn't have a DesktopDragDropClientAuraX11, which means it's
     // created by some other process.  Listen for messages on it.
-    delegate_->OnBeginForeignDrag(event.data.l[0]);
+    delegate_->OnBeginForeignDrag(
+        static_cast<x11::Window>(event.data.data32[0]));
   }
 
   // In the Windows implementation, we immediately call DesktopDropTargetWin::
@@ -322,14 +327,14 @@ void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
   // XdndStatus message.
 }
 
-void XDragDropClient::OnXdndPosition(const XClientMessageEvent& event) {
+void XDragDropClient::OnXdndPosition(const x11::ClientMessageEvent& event) {
   DVLOG(1) << "OnXdndPosition";
 
-  XID source_window = event.data.l[0];
-  int x_root_window = event.data.l[2] >> 16;
-  int y_root_window = event.data.l[2] & 0xffff;
-  Time time_stamp = event.data.l[3];
-  Atom suggested_action = event.data.l[4];
+  auto source_window = static_cast<x11::Window>(event.data.data32[0]);
+  int x_root_window = event.data.data32[2] >> 16;
+  int y_root_window = event.data.data32[2] & 0xffff;
+  x11::Time time_stamp = static_cast<x11::Time>(event.data.data32[3]);
+  x11::Atom suggested_action = static_cast<x11::Atom>(event.data.data32[4]);
 
   if (!target_current_context()) {
     NOTREACHED();
@@ -341,12 +346,12 @@ void XDragDropClient::OnXdndPosition(const XClientMessageEvent& event) {
       gfx::Point(x_root_window, y_root_window));
 }
 
-void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
+void XDragDropClient::OnXdndStatus(const x11::ClientMessageEvent& event) {
   DVLOG(1) << "OnXdndStatus";
 
-  XID source_window = event.data.l[0];
+  auto source_window = static_cast<x11::Window>(event.data.data32[0]);
 
-  if (source_window != source_current_window_)
+  if (source_window != target_current_window_)
     return;
 
   if (source_state_ != SourceState::kPendingDrop &&
@@ -357,9 +362,9 @@ void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
   waiting_on_status_ = false;
   status_received_since_enter_ = true;
 
-  if (event.data.l[1] & 1) {
-    Atom atom_operation = event.data.l[4];
-    negotiated_operation_ = XAtomToDragOperation(atom_operation);
+  if (event.data.data32[1] & 1) {
+    x11::Atom atom_operation = static_cast<x11::Atom>(event.data.data32[4]);
+    negotiated_operation_ = AtomToDragOperation(atom_operation);
   } else {
     negotiated_operation_ = DragDropTypes::DRAG_NONE;
   }
@@ -394,53 +399,55 @@ void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
   }
 }
 
-void XDragDropClient::OnXdndLeave(const XClientMessageEvent& event) {
+void XDragDropClient::OnXdndLeave(const x11::ClientMessageEvent& event) {
   DVLOG(1) << "OnXdndLeave";
   delegate_->OnBeforeDragLeave();
   ResetDragContext();
 }
 
-void XDragDropClient::OnXdndDrop(const XClientMessageEvent& event) {
+void XDragDropClient::OnXdndDrop(const x11::ClientMessageEvent& event) {
   DVLOG(1) << "OnXdndDrop";
 
-  XID source_window = event.data.l[0];
+  auto source_window = static_cast<x11::Window>(event.data.data32[0]);
 
   int drag_operation = delegate_->PerformDrop();
 
-  XEvent xev = PrepareXdndClientMessage(kXdndFinished, source_window);
-  xev.xclient.data.l[1] = (drag_operation != 0) ? 1 : 0;
-  xev.xclient.data.l[2] = XDragOperationToAtom(drag_operation);
-  SendXClientEvent(source_window, &xev);
+  auto xev = PrepareXdndClientMessage(kXdndFinished, source_window);
+  xev.data.data32[1] = (drag_operation != 0) ? 1 : 0;
+  xev.data.data32[2] =
+      static_cast<uint32_t>(XDragOperationToAtom(drag_operation));
+  SendXClientEvent(source_window, xev);
 }
 
-void XDragDropClient::OnXdndFinished(const XClientMessageEvent& event) {
+void XDragDropClient::OnXdndFinished(const x11::ClientMessageEvent& event) {
   DVLOG(1) << "OnXdndFinished";
-  XID source_window = event.data.l[0];
-  if (source_current_window_ != source_window)
+  auto source_window = static_cast<x11::Window>(event.data.data32[0]);
+  if (target_current_window_ != source_window)
     return;
 
   // Clear |negotiated_operation_| if the drag was rejected.
-  if ((event.data.l[1] & 1) == 0)
+  if ((event.data.data32[1] & 1) == 0)
     negotiated_operation_ = DragDropTypes::DRAG_NONE;
 
-  // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
+  // Clear |target_current_window_| to avoid sending XdndLeave upon ending the
   // move loop.
-  source_current_window_ = x11::None;
+  target_current_window_ = x11::Window::None;
   EndMoveLoop();
 }
 
-void XDragDropClient::OnSelectionNotify(const XSelectionEvent& xselection) {
+void XDragDropClient::OnSelectionNotify(
+    const x11::SelectionNotifyEvent& xselection) {
   DVLOG(1) << "OnSelectionNotify";
   if (target_current_context_)
     target_current_context_->OnSelectionNotify(xselection);
 
   // ICCCM requires us to delete the property passed into SelectionNotify.
-  if (xselection.property != x11::None)
-    XDeleteProperty(xdisplay_, xwindow_, xselection.property);
+  if (xselection.property != x11::Atom::None)
+    ui::DeleteProperty(xwindow_, xselection.property);
 }
 
 void XDragDropClient::InitDrag(int operation, const OSExchangeData* data) {
-  source_current_window_ = x11::None;
+  target_current_window_ = x11::Window::None;
   source_state_ = SourceState::kOther;
   waiting_on_status_ = false;
   next_position_message_.reset();
@@ -452,7 +459,7 @@ void XDragDropClient::InitDrag(int operation, const OSExchangeData* data) {
       static_cast<const XOSExchangeDataProvider*>(&data->provider());
   source_provider_->TakeOwnershipOfSelection();
 
-  std::vector<Atom> actions = GetOfferedDragOperations();
+  std::vector<x11::Atom> actions = GetOfferedDragOperations();
   if (!source_provider_->file_contents_name().empty()) {
     actions.push_back(gfx::GetAtom(kXdndActionDirectSave));
     SetStringProperty(xwindow_, gfx::GetAtom(kXdndDirectSave0),
@@ -464,8 +471,8 @@ void XDragDropClient::InitDrag(int operation, const OSExchangeData* data) {
 
 void XDragDropClient::CleanupDrag() {
   source_provider_ = nullptr;
-  XDeleteProperty(xdisplay_, xwindow_, gfx::GetAtom(kXdndActionList));
-  XDeleteProperty(xdisplay_, xwindow_, gfx::GetAtom(kXdndDirectSave0));
+  ui::DeleteProperty(xwindow_, gfx::GetAtom(kXdndActionList));
+  ui::DeleteProperty(xwindow_, gfx::GetAtom(kXdndDirectSave0));
 }
 
 void XDragDropClient::UpdateModifierState(int flags) {
@@ -478,7 +485,9 @@ void XDragDropClient::UpdateModifierState(int flags) {
 void XDragDropClient::ResetDragContext() {
   if (!target_current_context())
     return;
-  if (!target_current_context()->source_client())
+  XDragDropClient* source_client =
+      GetForWindow(target_current_context()->source_window());
+  if (!source_client)
     delegate_->OnEndForeignDrag();
 
   target_current_context_.reset();
@@ -516,7 +525,7 @@ void XDragDropClient::HandleMouseReleased() {
     return;
   }
 
-  if (source_current_window_ != x11::None) {
+  if (target_current_window_ != x11::Window::None) {
     if (waiting_on_status_) {
       if (status_received_since_enter_) {
         // If we are waiting for an XdndStatus message, we need to wait for it
@@ -543,8 +552,12 @@ void XDragDropClient::HandleMouseReleased() {
 
       // We have negotiated an action with the other end.
       source_state_ = SourceState::kDropped;
-      SendXdndDrop(source_current_window_);
+      SendXdndDrop(target_current_window_);
       return;
+    } else {
+      // No transfer is negotiated.  We need to tell the target window that we
+      // are leaving.
+      SendXdndLeave(target_current_window_);
     }
   }
 
@@ -552,36 +565,33 @@ void XDragDropClient::HandleMouseReleased() {
 }
 
 void XDragDropClient::HandleMoveLoopEnded() {
-  if (source_current_window_ != x11::None) {
-    SendXdndLeave(source_current_window_);
-    source_current_window_ = x11::None;
+  if (target_current_window_ != x11::Window::None) {
+    SendXdndLeave(target_current_window_);
+    target_current_window_ = x11::Window::None;
   }
   ResetDragContext();
   StopRepeatMouseMoveTimer();
   StopEndMoveLoopTimer();
 }
 
-XEvent XDragDropClient::PrepareXdndClientMessage(const char* message,
-                                                 XID recipient) const {
-  XEvent xev;
-  xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = gfx::GetAtom(message);
-  xev.xclient.format = 32;
-  xev.xclient.window = recipient;
-  xev.xclient.data.l[0] = xwindow_;
-  xev.xclient.data.l[1] = 0;
-  xev.xclient.data.l[2] = 0;
-  xev.xclient.data.l[3] = 0;
-  xev.xclient.data.l[4] = 0;
+x11::ClientMessageEvent XDragDropClient::PrepareXdndClientMessage(
+    const char* message,
+    x11::Window recipient) const {
+  x11::ClientMessageEvent xev;
+  xev.type = gfx::GetAtom(message);
+  xev.window = recipient;
+  xev.format = 32;
+  xev.data.data32.fill(0);
+  xev.data.data32[0] = static_cast<uint32_t>(xwindow_);
   return xev;
 }
 
-XID XDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
+x11::Window XDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
   auto finder = delegate_->CreateWindowFinder();
-  XID target = finder->FindWindowAt(screen_point);
+  x11::Window target = finder->FindWindowAt(screen_point);
 
-  if (target == x11::None)
-    return x11::None;
+  if (target == x11::Window::None)
+    return x11::Window::None;
 
   // TODO(crbug/651775): The proxy window should be reported separately from the
   //     target window. XDND messages should be sent to the proxy, and their
@@ -590,22 +600,21 @@ XID XDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
   // Figure out which window we should test as XdndAware. If |target| has
   // XdndProxy, it will set that proxy on target, and if not, |target|'s
   // original value will remain.
-  GetXIDProperty(target, kXdndProxy, &target);
+  GetProperty(target, gfx::GetAtom(kXdndProxy), &target);
 
   int version;
   if (GetIntProperty(target, kXdndAware, &version) &&
       version >= kMaxXdndVersion) {
     return target;
   }
-  return x11::None;
+  return x11::Window::None;
 }
 
-void XDragDropClient::SendXClientEvent(XID xid, XEvent* xev) {
-  DCHECK_EQ(ClientMessage, xev->type);
-
+void XDragDropClient::SendXClientEvent(x11::Window window,
+                                       const x11::ClientMessageEvent& xev) {
   // Don't send messages to the X11 message queue if we can help it.
-  XDragDropClient* short_circuit = GetForWindow(xid);
-  if (short_circuit && short_circuit->HandleXdndEvent(xev->xclient))
+  XDragDropClient* short_circuit = GetForWindow(window);
+  if (short_circuit && short_circuit->HandleXdndEvent(xev))
     return;
 
   // I don't understand why the GTK+ code is doing what it's doing here. It
@@ -617,36 +626,37 @@ void XDragDropClient::SendXClientEvent(XID xid, XEvent* xev) {
   //
   // I'm unsure if I have to jump through those hoops, or if XSendEvent is
   // sufficient.
-  XSendEvent(xdisplay_, xid, x11::False, 0, xev);
+  x11::SendEvent(xev, window, x11::EventMask::NoEvent);
 }
 
-void XDragDropClient::SendXdndEnter(XID dest_window,
-                                    const std::vector<Atom>& targets) {
-  XEvent xev = PrepareXdndClientMessage(kXdndEnter, dest_window);
-  xev.xclient.data.l[1] = (kMaxXdndVersion << 24);  // The version number.
+void XDragDropClient::SendXdndEnter(x11::Window dest_window,
+                                    const std::vector<x11::Atom>& targets) {
+  auto xev = PrepareXdndClientMessage(kXdndEnter, dest_window);
+  xev.data.data32[1] = (kMaxXdndVersion << 24);  // The version number.
 
   if (targets.size() > 3) {
-    xev.xclient.data.l[1] |= 1;
+    xev.data.data32[1] |= 1;
     SetAtomArrayProperty(xwindow(), kXdndTypeList, "ATOM", targets);
   } else {
     // Pack the targets into the enter message.
     for (size_t i = 0; i < targets.size(); ++i)
-      xev.xclient.data.l[2 + i] = targets[i];
+      xev.data.data32[2 + i] = static_cast<uint32_t>(targets[i]);
   }
 
-  SendXClientEvent(dest_window, &xev);
+  SendXClientEvent(dest_window, xev);
 }
 
-void XDragDropClient::SendXdndPosition(XID dest_window,
+void XDragDropClient::SendXdndPosition(x11::Window dest_window,
                                        const gfx::Point& screen_point,
                                        unsigned long event_time) {
   waiting_on_status_ = true;
 
-  XEvent xev = PrepareXdndClientMessage(kXdndPosition, dest_window);
-  xev.xclient.data.l[2] = (screen_point.x() << 16) | screen_point.y();
-  xev.xclient.data.l[3] = event_time;
-  xev.xclient.data.l[4] = XDragOperationToAtom(drag_operation_);
-  SendXClientEvent(dest_window, &xev);
+  auto xev = PrepareXdndClientMessage(kXdndPosition, dest_window);
+  xev.data.data32[2] = (screen_point.x() << 16) | screen_point.y();
+  xev.data.data32[3] = event_time;
+  xev.data.data32[4] =
+      static_cast<uint32_t>(XDragOperationToAtom(drag_operation_));
+  SendXClientEvent(dest_window, xev);
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html and
   // the Xdnd protocol both recommend that drag events should be sent
@@ -657,20 +667,20 @@ void XDragDropClient::SendXdndPosition(XID dest_window,
                      screen_point, event_time));
 }
 
-void XDragDropClient::SendXdndLeave(XID dest_window) {
-  XEvent xev = PrepareXdndClientMessage(kXdndLeave, dest_window);
-  SendXClientEvent(dest_window, &xev);
+void XDragDropClient::SendXdndLeave(x11::Window dest_window) {
+  auto xev = PrepareXdndClientMessage(kXdndLeave, dest_window);
+  SendXClientEvent(dest_window, xev);
 }
 
-void XDragDropClient::SendXdndDrop(XID dest_window) {
-  XEvent xev = PrepareXdndClientMessage(kXdndDrop, dest_window);
-  xev.xclient.data.l[2] = x11::CurrentTime;
-  SendXClientEvent(dest_window, &xev);
+void XDragDropClient::SendXdndDrop(x11::Window dest_window) {
+  auto xev = PrepareXdndClientMessage(kXdndDrop, dest_window);
+  xev.data.data32[2] = static_cast<uint32_t>(x11::Time::CurrentTime);
+  SendXClientEvent(dest_window, xev);
 }
 
 void XDragDropClient::EndMoveLoop() {
   StopEndMoveLoopTimer();
-  delegate_->EndMoveLoop();
+  delegate_->EndDragLoop();
 }
 
 }  // namespace ui

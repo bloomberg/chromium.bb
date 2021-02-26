@@ -45,6 +45,7 @@ def main():
                       help=('Use --Wl,-Map to generate a map file. Will be '
                             'gzipped if extension ends with .gz'),
                       metavar='FILE')
+  parser.add_argument('--dwp', help=('The dwp binary to run'), metavar='FILE')
   parser.add_argument('--output',
                       required=True,
                       help='Final output executable file',
@@ -61,11 +62,30 @@ def main():
   if result != 0:
     return result
 
+  # If dwp is set, then package debug info for this exe.
+  dwp_proc = None
+  if args.dwp:
+    exe_file = args.output
+    if args.unstripped_file:
+      exe_file = args.unstripped_file
+    # Suppress output here because it doesn't seem to be useful. The most
+    # common error is a segfault, which will happen if files are missing.
+    with open(os.devnull, "w") as devnull:
+      dwp_proc = subprocess.Popen(wrapper_utils.CommandToRun(
+          [args.dwp, '-e', exe_file, '-o', exe_file + '.dwp']),
+                                  stdout=devnull,
+                                  stderr=subprocess.STDOUT)
+
   # Finally, strip the linked executable (if desired).
   if args.strip:
-    result = subprocess.call(CommandToRun([
-        args.strip, '-o', args.output, args.unstripped_file
-        ]))
+    result = subprocess.call(
+        CommandToRun([args.strip, '-o', args.output, args.unstripped_file]))
+
+  if dwp_proc:
+    dwp_result = dwp_proc.wait()
+    if dwp_result != 0:
+      sys.stderr.write('dwp failed with error code {}\n'.format(dwp_result))
+      return dwp_result
 
   return result
 

@@ -14,8 +14,10 @@ namespace internal {
 
 class EntryFrameConstants : public AllStatic {
  public:
-  static constexpr int kCallerFPOffset =
-      -(StandardFrameConstants::kFixedFrameSizeFromFp + kSystemPointerSize);
+  // Need to take constant pool into account.
+  static constexpr int kCallerFPOffset = FLAG_enable_embedded_constant_pool
+                                             ? -4 * kSystemPointerSize
+                                             : -3 * kSystemPointerSize;
 };
 
 class WasmCompileLazyFrameConstants : public TypedFrameConstants {

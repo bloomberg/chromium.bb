@@ -42,8 +42,7 @@ SCRIPT_TEMPLATES = {
 }
 
 
-PY_TEMPLATE = textwrap.dedent(
-    """\
+PY_TEMPLATE = textwrap.dedent("""\
     import os
     import re
     import subprocess
@@ -59,7 +58,27 @@ PY_TEMPLATE = textwrap.dedent(
       if m:
         relpath = os.path.join(
             os.path.relpath(_SCRIPT_DIR), _PATH_TO_OUTPUT_DIR, m.group(1))
-        return os.path.normpath(relpath)
+        npath = os.path.normpath(relpath)
+        if os.path.sep not in npath:
+          # If the original path points to something in the current directory,
+          # returning the normalized version of it can be a problem.
+          # normpath() strips off the './' part of the path
+          # ('./foo' becomes 'foo'), which can be a problem if the result
+          # is passed to something like os.execvp(); in that case
+          # osexecvp() will search $PATH for the executable, rather than
+          # just execing the arg directly, and if '.' isn't in $PATH, this
+          # results in an error.
+          #
+          # So, we need to explicitly return './foo' (or '.\\foo' on windows)
+          # instead of 'foo'.
+          #
+          # Hopefully there are no cases where this causes a problem; if
+          # there are, we will either need to change the interface to
+          # WrappedPath() somehow to distinguish between the two, or
+          # somehow ensure that the wrapped executable doesn't hit cases
+          # like this.
+          return '.' + os.path.sep + npath
+        return npath
       return arg
 
 
@@ -69,10 +88,65 @@ PY_TEMPLATE = textwrap.dedent(
       return args
 
 
+    def FindIsolatedOutdir(raw_args):
+      outdir = None
+      i = 0
+      remaining_args = []
+      while i < len(raw_args):
+        if raw_args[i] == '--isolated-outdir' and i < len(raw_args)-1:
+          outdir = raw_args[i+1]
+          i += 2
+        elif raw_args[i].startswith('--isolated-outdir='):
+          outdir = raw_args[i][len('--isolated-outdir='):]
+          i += 1
+        else:
+          remaining_args.append(raw_args[i])
+          i += 1
+      if not outdir and 'ISOLATED_OUTDIR' in os.environ:
+        outdir = os.environ['ISOLATED_OUTDIR']
+      return outdir, remaining_args
+
+
+    def FilterIsolatedOutdirBasedArgs(outdir, args):
+      rargs = []
+      i = 0
+      while i < len(args):
+        if 'ISOLATED_OUTDIR' in args[i]:
+          if outdir:
+            # Rewrite the arg.
+            rargs.append(args[i].replace('${{ISOLATED_OUTDIR}}',
+                                         outdir).replace(
+              '$ISOLATED_OUTDIR', outdir))
+            i += 1
+          else:
+            # Simply drop the arg.
+            i += 1
+        elif (not outdir and
+              args[i].startswith('-') and
+              '=' not in args[i] and
+              i < len(args) - 1 and
+              'ISOLATED_OUTDIR' in args[i+1]):
+          # Parsing this case is ambiguous; if we're given
+          # `--foo $ISOLATED_OUTDIR` we can't tell if $ISOLATED_OUTDIR
+          # is meant to be the value of foo, or if foo takes no argument
+          # and $ISOLATED_OUTDIR is the first positional arg.
+          #
+          # We assume the former will be much more common, and so we
+          # need to drop --foo and $ISOLATED_OUTDIR.
+          i += 2
+        else:
+          rargs.append(args[i])
+          i += 1
+      return rargs
+
+
     def main(raw_args):
       executable_path = ExpandWrappedPath('{executable_path}')
-      executable_args = ExpandWrappedPaths({executable_args})
-      cmd = [executable_path] + executable_args + raw_args
+      outdir, remaining_args = FindIsolatedOutdir(raw_args)
+      args = {executable_args}
+      args = FilterIsolatedOutdirBasedArgs(outdir, args)
+      executable_args = ExpandWrappedPaths(args)
+      cmd = [executable_path] + args + remaining_args
       if executable_path.endswith('.py'):
         cmd = [sys.executable] + cmd
       return subprocess.call(cmd)

@@ -5,6 +5,7 @@
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
@@ -20,8 +21,9 @@ void FakeDlcserviceClient::Install(const std::string& dlc_id,
   InstallResult install_result{
       .error = install_err_,
       .dlc_id = dlc_id,
-      .root_path = "",
+      .root_path = install_root_path_,
   };
+  dlcs_with_content_.add_dlc_infos()->set_id(dlc_id);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), std::move(install_result)));
@@ -30,6 +32,15 @@ void FakeDlcserviceClient::Install(const std::string& dlc_id,
 void FakeDlcserviceClient::Uninstall(const std::string& dlc_id,
                                      UninstallCallback callback) {
   VLOG(1) << "Requesting to uninstall DLC=" << dlc_id;
+  for (auto iter = dlcs_with_content_.dlc_infos().begin();
+       iter != dlcs_with_content_.dlc_infos().end();) {
+    if (iter->id() != dlc_id) {
+      iter++;
+      continue;
+    }
+    iter = dlcs_with_content_.mutable_dlc_infos()->erase(iter);
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), uninstall_err_));
 }
@@ -48,8 +59,24 @@ void FakeDlcserviceClient::GetExistingDlcs(GetExistingDlcsCallback callback) {
                                 dlcs_with_content_));
 }
 
-void FakeDlcserviceClient::OnInstallStatusForTest(dbus::Signal* signal) {
+void FakeDlcserviceClient::DlcStateChangedForTest(dbus::Signal* signal) {
   NOTREACHED();
+}
+
+void FakeDlcserviceClient::NotifyObserversForTest(
+    const dlcservice::DlcState& dlc_state) {
+  // Notify all observers with the state change |dlc_state|.
+  for (Observer& observer : observers_) {
+    observer.OnDlcStateChanged(dlc_state);
+  }
+}
+
+void FakeDlcserviceClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeDlcserviceClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace chromeos

@@ -5,13 +5,14 @@
 #include "components/sync/engine_impl/syncer.h"
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
-#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/sync_engine_switches.h"
-#include "components/sync/engine_impl/apply_control_data_updates.h"
+#include "components/sync/engine_impl/cancelation_signal.h"
 #include "components/sync/engine_impl/commit.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
@@ -19,7 +20,6 @@
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/get_updates_processor.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
-#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
@@ -119,9 +119,6 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
   {
     TRACE_EVENT0("sync", "ApplyUpdates");
 
-    // Nigori updates always get applied first.
-    ApplyNigoriUpdate(cycle->context()->directory());
-
     // Apply updates to the other types. May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's
     // delegate.
@@ -148,14 +145,13 @@ SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
   // errors from the ServerConnectionManager if an exist has been requested.
   // However, it doesn't hurt to check it anyway.
   while (!ExitRequested()) {
-    std::unique_ptr<Commit> commit(
-        Commit::Init(cycle->context()->GetEnabledTypes(),
-                     cycle->context()->max_commit_batch_size(),
-                     cycle->context()->account_name(),
-                     cycle->context()->directory()->cache_guid(),
-                     cycle->context()->cookie_jar_mismatch(),
-                     cycle->context()->cookie_jar_empty(), &commit_processor,
-                     cycle->context()->extensions_activity()));
+    std::unique_ptr<Commit> commit(Commit::Init(
+        cycle->context()->GetEnabledTypes(),
+        cycle->context()->max_commit_batch_size(),
+        cycle->context()->account_name(), cycle->context()->cache_guid(),
+        cycle->context()->cookie_jar_mismatch(),
+        cycle->context()->cookie_jar_empty(), cycle->context()->single_client(),
+        &commit_processor, cycle->context()->extensions_activity()));
     if (!commit) {
       break;
     }
@@ -163,7 +159,12 @@ SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
     SyncerError error = commit->PostAndProcessResponse(
         nudge_tracker, cycle, cycle->mutable_status_controller(),
         cycle->context()->extensions_activity());
-    commit->CleanUp();
+    base::UmaHistogramEnumeration("Sync.CommitResponse", error.value());
+    for (ModelType type : commit->GetContributingDataTypes()) {
+      const std::string kPrefix = "Sync.CommitResponse.";
+      base::UmaHistogramEnumeration(kPrefix + ModelTypeToHistogramSuffix(type),
+                                    error.value());
+    }
     if (error.value() != SyncerError::SYNCER_OK) {
       return error;
     }

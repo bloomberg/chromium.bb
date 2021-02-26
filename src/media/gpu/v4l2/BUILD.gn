@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 import("//testing/test.gni")
 import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
-import("//ui/ozone/ozone.gni")
 
 assert(use_v4l2_codec)
 
@@ -24,6 +24,8 @@ if (use_v4lplugin) {
 source_set("v4l2") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
+    "buffer_affinity_tracker.cc",
+    "buffer_affinity_tracker.h",
     "generic_v4l2_device.cc",
     "generic_v4l2_device.h",
     "v4l2_decode_surface.cc",
@@ -41,16 +43,18 @@ source_set("v4l2") {
     "v4l2_image_processor_backend.h",
     "v4l2_slice_video_decode_accelerator.cc",
     "v4l2_slice_video_decode_accelerator.h",
-    "v4l2_slice_video_decoder.cc",
-    "v4l2_slice_video_decoder.h",
     "v4l2_stateful_workaround.cc",
     "v4l2_stateful_workaround.h",
     "v4l2_vda_helpers.cc",
     "v4l2_vda_helpers.h",
     "v4l2_video_decode_accelerator.cc",
     "v4l2_video_decode_accelerator.h",
+    "v4l2_video_decoder.cc",
+    "v4l2_video_decoder.h",
     "v4l2_video_decoder_backend.cc",
     "v4l2_video_decoder_backend.h",
+    "v4l2_video_decoder_backend_stateful.cc",
+    "v4l2_video_decoder_backend_stateful.h",
     "v4l2_video_decoder_backend_stateless.cc",
     "v4l2_video_decoder_backend_stateless.h",
     "v4l2_video_encode_accelerator.cc",
@@ -59,8 +63,8 @@ source_set("v4l2") {
     "v4l2_vp8_accelerator.h",
     "v4l2_vp8_accelerator_legacy.cc",
     "v4l2_vp8_accelerator_legacy.h",
-    "v4l2_vp9_accelerator.cc",
-    "v4l2_vp9_accelerator.h",
+    "v4l2_vp9_accelerator_legacy.cc",
+    "v4l2_vp9_accelerator_legacy.h",
   ]
 
   libs = [
@@ -105,7 +109,7 @@ source_set("v4l2") {
     deps += [ ":libv4l2_stubs" ]
   }
 
-  if (is_chromeos) {
+  if (is_ash) {
     sources += [
       "v4l2_jpeg_encode_accelerator.cc",
       "v4l2_jpeg_encode_accelerator.h",

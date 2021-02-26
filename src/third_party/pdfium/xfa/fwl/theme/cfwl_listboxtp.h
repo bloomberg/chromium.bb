@@ -7,18 +7,21 @@
 #ifndef XFA_FWL_THEME_CFWL_LISTBOXTP_H_
 #define XFA_FWL_THEME_CFWL_LISTBOXTP_H_
 
+#include "fxjs/gc/heap.h"
 #include "xfa/fwl/theme/cfwl_widgettp.h"
 
 class CFWL_ListBoxTP final : public CFWL_WidgetTP {
  public:
-  CFWL_ListBoxTP();
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_ListBoxTP() override;
 
-  // CFWL_WidgetTP
+  // CFWL_WidgetTP:
   void DrawBackground(const CFWL_ThemeBackground& pParams) override;
 
  private:
-  void DrawListBoxItem(CXFA_Graphics* pGraphics,
+  CFWL_ListBoxTP();
+
+  void DrawListBoxItem(CFGAS_GEGraphics* pGraphics,
                        uint32_t dwStates,
                        const CFX_RectF& rtItem,
                        const CFX_RectF* pData,

@@ -204,7 +204,8 @@ def _GetPossibleBrowser(finder_options):
   return possible_browser
 
 
-def RunStorySet(test, story_set, finder_options, results, max_failures=None):
+def RunStorySet(test, story_set, finder_options, results,
+                max_failures=None, found_possible_browser=None):
   """Runs a test against a story_set with the given options.
 
   Stop execution for unexpected exceptions such as KeyboardInterrupt. Some
@@ -219,16 +220,19 @@ def RunStorySet(test, story_set, finder_options, results, max_failures=None):
     max_failures: Max number of story run failures allowed before aborting
       the entire story run. It's overriden by finder_options.max_failures
       if given.
+    found_possible_broswer: The possible version of browser to use. We don't
+      need to find again if this is given.
     expectations: Benchmark expectations used to determine disabled stories.
   """
   stories = story_set.stories
   for s in stories:
     ValidateStory(s)
 
-  # TODO(crbug.com/1013630): A possible_browser object was already created in
-  # Run() method, so instead of creating a new one here we should be
-  # using that one.
-  possible_browser = _GetPossibleBrowser(finder_options)
+  if found_possible_browser:
+    possible_browser = found_possible_browser
+    finder_options.browser_options.browser_type = possible_browser.browser_type
+  else:
+    possible_browser = _GetPossibleBrowser(finder_options)
   platform_tags = possible_browser.GetTypExpectationsTags()
   logging.info('The following expectations condition tags were generated %s',
                str(platform_tags))
@@ -270,7 +274,7 @@ def RunStorySet(test, story_set, finder_options, results, max_failures=None):
         cloud_storage.GetFilesInDirectoryIfChanged(directory,
                                                    story_set.bucket)
     if story_set.archive_data_file and not _UpdateAndCheckArchives(
-        story_set.archive_data_file, wpr_archive_info, stories):
+        story_set.archive_data_file, wpr_archive_info, stories, story_filter):
       return
 
   if not stories:
@@ -422,11 +426,13 @@ def RunBenchmark(benchmark, finder_options):
         owners=benchmark.GetOwners(),
         bug_components=benchmark.GetBugComponents(),
         documentation_urls=benchmark.GetDocumentationLinks(),
+        info_blurb=benchmark.GetInfoBlurb(),
     )
 
     try:
       RunStorySet(
-          test, story_set, finder_options, results, benchmark.max_failures)
+          test, story_set, finder_options, results, benchmark.max_failures,
+          possible_browser)
       if results.benchmark_interrupted:
         return_code = exit_codes.FATAL_ERROR
       elif results.had_failures:
@@ -443,13 +449,14 @@ def RunBenchmark(benchmark, finder_options):
   return return_code
 
 def _UpdateAndCheckArchives(archive_data_file, wpr_archive_info,
-                            filtered_stories):
+                            filtered_stories, story_filter):
   """Verifies that all stories are local or have WPR archives.
 
   Logs warnings and returns False if any are missing.
   """
   # Report any problems with the entire story set.
-  story_names = [s.name for s in filtered_stories if not s.is_local]
+  story_names = [s.name for s in filtered_stories
+                 if not s.is_local and not story_filter.ShouldSkip(s)]
   if story_names:
     if not archive_data_file:
       logging.error('The story set is missing an "archive_data_file" '
@@ -470,7 +477,7 @@ def _UpdateAndCheckArchives(archive_data_file, wpr_archive_info,
   stories_missing_archive_path = []
   stories_missing_archive_data = []
   for story in filtered_stories:
-    if not story.is_local:
+    if not story.is_local and not story_filter.ShouldSkip(story):
       archive_path = wpr_archive_info.WprFilePathForStory(story)
       if not archive_path:
         stories_missing_archive_path.append(story)

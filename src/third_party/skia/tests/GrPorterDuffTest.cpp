@@ -9,15 +9,16 @@
 
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContextOptions.h"
-#include "src/gpu/GrContextPriv.h"
+#include "include/gpu/GrDirectContext.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/gl/GrGLCaps.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
-#include "tests/TestUtils.h"
 #include "tools/gpu/GrContextFactory.h"
+#include "tools/gpu/ManagedBackendTexture.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +32,7 @@ static void test_lcd_coverage_fallback_case(skiatest::Reporter* reporter, const 
 DEF_GPUTEST(GrPorterDuff, reporter, /*ctxInfo*/) {
     GrMockOptions mockOptions;
     mockOptions.fDualSourceBlendingSupport = true;
-    auto context = GrContext::MakeMock(&mockOptions, GrContextOptions());
+    sk_sp<GrDirectContext> context = GrDirectContext::MakeMock(&mockOptions, GrContextOptions());
     const GrCaps& caps = *context->priv().getGpu()->caps();
 
     if (!caps.shaderCaps()->dualSourceBlendingSupport()) {
@@ -987,7 +988,7 @@ DEF_GPUTEST(PorterDuffNoDualSourceBlending, reporter, options) {
     GrContextOptions opts = options;
     opts.fSuppressDualSourceBlending = true;
     sk_gpu_test::GrContextFactory mockFactory(opts);
-    GrContext* ctx = mockFactory.get(sk_gpu_test::GrContextFactory::kMock_ContextType);
+    auto ctx = mockFactory.get(sk_gpu_test::GrContextFactory::kMock_ContextType);
     if (!ctx) {
         SK_ABORT("Failed to create mock context without ARB_blend_func_extended.");
     }
@@ -998,16 +999,19 @@ DEF_GPUTEST(PorterDuffNoDualSourceBlending, reporter, options) {
         SK_ABORT("Mock context failed to honor request for no ARB_blend_func_extended.");
     }
 
-    GrBackendTexture backendTex;
-    CreateBackendTexture(ctx, &backendTex, 100, 100, kRGBA_8888_SkColorType,
-                         SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kNo);
-
+    auto mbet = sk_gpu_test::ManagedBackendTexture::MakeWithoutData(
+            ctx, 100, 100, kRGBA_8888_SkColorType, GrMipmapped::kNo, GrRenderable::kNo);
+    if (!mbet) {
+        ERRORF(reporter, "Could not make texture.");
+        return;
+    }
     GrXferProcessor::DstProxyView fakeDstProxyView;
     {
         sk_sp<GrTextureProxy> proxy = proxyProvider->wrapBackendTexture(
-                backendTex, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRead_GrIOType);
-        GrSwizzle swizzle = caps.getReadSwizzle(backendTex.getBackendFormat(),
-                                                   GrColorType::kRGBA_8888);
+                mbet->texture(), kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRead_GrIOType,
+                mbet->refCountedCallback());
+        GrSwizzle swizzle =
+                caps.getReadSwizzle(mbet->texture().getBackendFormat(), GrColorType::kRGBA_8888);
         fakeDstProxyView.setProxyView({std::move(proxy), kTopLeft_GrSurfaceOrigin, swizzle});
     }
 
@@ -1033,5 +1037,4 @@ DEF_GPUTEST(PorterDuffNoDualSourceBlending, reporter, options) {
             }
         }
     }
-    ctx->deleteBackendTexture(backendTex);
 }

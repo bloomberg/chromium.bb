@@ -44,9 +44,11 @@ namespace dawn_native {
         static BindGroupBase* MakeError(DeviceBase* device);
 
         BindGroupLayoutBase* GetLayout();
+        const BindGroupLayoutBase* GetLayout() const;
         BufferBinding GetBindingAsBufferBinding(BindingIndex bindingIndex);
-        SamplerBase* GetBindingAsSampler(BindingIndex bindingIndex);
+        SamplerBase* GetBindingAsSampler(BindingIndex bindingIndex) const;
         TextureViewBase* GetBindingAsTextureView(BindingIndex bindingIndex);
+        const ityp::span<uint32_t, uint64_t>& GetUnverifiedBufferSizes() const;
 
       protected:
         // To save memory, the size of a bind group is dynamically determined and the bind group is

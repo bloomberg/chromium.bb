@@ -144,21 +144,11 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Adds to |matches| all TemplateURLs whose keywords begin with |prefix|,
   // sorted shortest-keyword-first. If |supports_replacement_only| is true, only
-  // TemplateURLs that support replacement are returned.
+  // TemplateURLs that support replacement are returned. This method must be
+  // efficient, since it's run roughly once per omnibox keystroke.
   void AddMatchingKeywords(const base::string16& prefix,
                            bool supports_replacement_only,
                            TURLsAndMeaningfulLengths* matches);
-
-  // Adds to |matches| all TemplateURLs for search engines with the domain
-  // name part of the keyword starts with |prefix|, sorted
-  // shortest-domain-name-first. If |supports_replacement_only| is true, only
-  // TemplateURLs that support replacement are returned.  Does not bother
-  // searching/returning keywords that would've been found with an identical
-  // call to FindMatchingKeywords(); i.e., doesn't search keywords for which
-  // the domain name is the keyword.
-  void AddMatchingDomainKeywords(const base::string16& prefix,
-                                 bool supports_replacement_only,
-                                 TURLsAndMeaningfulLengths* matches);
 
   // Looks up |keyword| and returns the element it maps to.  Returns NULL if
   // the keyword was not found.
@@ -400,6 +390,13 @@ class TemplateURLService : public WebDataServiceConsumer,
     return *search_terms_data_;
   }
 
+  // Obtains a session token, regenerating if necessary.
+  std::string GetSessionToken();
+
+  // Clears the session token. Should be called when the user clears browsing
+  // data.
+  void ClearSessionToken();
+
   // Returns a SyncData with a sync representation of the search engine data
   // from |turl|.
   static syncer::SyncData CreateSyncDataFromTemplateURL(
@@ -455,6 +452,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, PreSyncDeletes);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(LocationBarModelTest, GoogleBaseURL);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceUnitTest, SessionToken);
 
   friend class InstantUnitTestBase;
   friend class Scoper;
@@ -464,20 +462,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   using GUIDToTURL = std::map<std::string, TemplateURL*>;
 
   // A mapping from keywords to the corresponding TemplateURLs and their
-  // meaningful keyword lengths.  A keyword can appear only once here because
-  // there can be only one active TemplateURL associated with a given keyword.
+  // meaningful keyword lengths.  This is a multimap, so the system can
+  // efficiently tolerate multiple engines with the same keyword, like from
+  // extensions.  The values are not sorted from best to worst for each keyword,
+  // since multimaps don't sort on value. Users that want the best value for
+  // each key must traverse through all matching items, but we expect there to
+  // be below three values per key.
   using KeywordToTURLAndMeaningfulLength =
-      std::map<base::string16, TURLAndMeaningfulLength>;
-
-  // A mapping from domain names to corresponding TemplateURLs and their
-  // meaningful keyword lengths.  Specifically, for a keyword that is a
-  // hostname containing more than just a domain name, e.g., 'abc.def.com',
-  // the keyword is added to this map under the domain key 'def.com'.  This
-  // means multiple keywords from the same domain share the same key, so this
-  // must be a multimap.
-  using KeywordDomainToTURLAndMeaningfulLength =
       std::multimap<base::string16, TURLAndMeaningfulLength>;
-
   // Declaration of values to be used in an enumerated histogram to tally
   // changes to the default search provider from various entry points. In
   // particular, we use this to see what proportion of changes are from Sync
@@ -517,35 +509,16 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   void Init(const Initializer* initializers, int num_initializers);
 
-  // Given two engines with the same keyword, returns which should take
-  // precedence.  While normal engines must all have distinct keywords,
-  // extension-controlled and omnibox API engines may have the same keywords as
-  // each other or as normal engines.  In these cases, omnibox API engines
-  // override extension-controlled engines, which override normal engines; if
-  // there is still a conflict after this, the most recently-added extension
-  // wins.
-  TemplateURL* BestEngineForKeyword(TemplateURL* engine1, TemplateURL* engine2);
-
   // Removes |template_url| from various internal maps
-  // (|keyword_to_turl_and_length_|, |keyword_domain_to_turl_and_length_|,
-  // |guid_to_turl_|, |provider_map_|).
+  // (|keyword_to_turl_and_length_|, |guid_to_turl_|, |provider_map_|).
   void RemoveFromMaps(const TemplateURL* template_url);
 
   // Adds |template_url| to various internal maps
-  // (|keyword_to_turl_and_length_|, |keyword_domain_to_turl_and_length_|,
-  // |guid_to_turl_|, |provider_map_|) if appropriate.  (It might not be
-  // appropriate if, for instance, |template_url|'s keyword conflicts with
-  // the keyword of a custom search engine already existing in the maps that
-  // is not allowed to be replaced.)
+  // (|keyword_to_turl_and_length_|, |guid_to_turl_|, |provider_map_|) if
+  // appropriate.  (It might not be appropriate if, for instance,
+  // |template_url|'s keyword conflicts with the keyword of a custom search
+  // engine already existing in the maps that is not allowed to be replaced.)
   void AddToMaps(TemplateURL* template_url);
-
-  // Helper function for removing an element from
-  // |keyword_domain_to_turl_and_length_|.
-  void RemoveFromDomainMap(const TemplateURL* template_url);
-
-  // Helper fuction for adding an element to
-  // |keyword_domain_to_turl_and_length_| if appropriate.
-  void AddToDomainMap(TemplateURL* template_url);
 
   // Helper function for adding an element to |keyword_to_turl_and_length_|.
   void AddToMap(TemplateURL* template_url);
@@ -560,7 +533,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Applies a DSE change and reports metrics if appropriate.
   void ApplyDefaultSearchChange(const TemplateURLData* new_dse_data,
                                 DefaultSearchManager::Source source);
-
 
   // Applies a DSE change. May be called at startup or after transitioning to
   // the loaded state. Returns true if a change actually occurred.
@@ -658,6 +630,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   //  * |local_turl| is created by policy.
   //  * |prefer_local_default| is true and |local_turl| is the local default
   //    search provider
+  //
+  // TODO(tommycli): Consolidate into using
+  // TemplateURL::IsBetterThanEngineWithConflictingKeyword. Likely we will
+  // eliminate the |prefer_local_default| mechanism.
   bool IsLocalTemplateURLBetter(const TemplateURL* local_turl,
                                 const TemplateURL* sync_turl,
                                 bool prefer_local_default = true) const;
@@ -723,11 +699,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* FindMatchingDefaultExtensionTemplateURL(
       const TemplateURLData& data);
 
-  // Returns whether |template_urls_| contains more than one normal engine with
-  // same keyword. Used to validate state after search engines are
-  // added/updated.
-  bool HasDuplicateKeywords() const;
-
   // ---------- Browser state related members ---------------------------------
   PrefService* prefs_ = nullptr;
 
@@ -747,17 +718,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Mapping from keyword to the TemplateURL.
   KeywordToTURLAndMeaningfulLength keyword_to_turl_and_length_;
-
-  // Mapping from keyword domain to the TemplateURL.
-  // Entries are only allowed here if there is a corresponding entry in
-  // |keyword_to_turl_and_length_|, i.e., if a template URL doesn't have an
-  // entry in |keyword_to_turl_and_length_| because it's subsumed by another
-  // template URL with an identical keyword, the template URL will not have an
-  // entry in this map either.  This map will also not bother including entries
-  // for keywords in which the keyword is the domain name, with no subdomain
-  // before the domain name.  (The ordinary |keyword_to_turl_and_length|
-  // suffices for that.)
-  KeywordDomainToTURLAndMeaningfulLength keyword_domain_to_turl_and_length_;
 
   // Mapping from Sync GUIDs to the TemplateURL.
   GUIDToTURL guid_to_turl_;
@@ -856,6 +816,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // mutated. The outermost Scoper handles, can be used to defer notifications,
   // but if no model mutation occurs, the deferred notification can be skipped.
   bool model_mutated_notification_pending_ = false;
+
+  // Session token management.
+  std::string current_token_;
+  base::TimeTicks token_expiration_time_;
 
 #if defined(OS_ANDROID)
   // Manage and fetch the java object that wraps this TemplateURLService on

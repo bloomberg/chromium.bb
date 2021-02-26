@@ -18,10 +18,11 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.net.connectivitydetector.ConnectivityDetector;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -241,7 +242,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         // If this is the first time to show offline indicator, show it. Otherwise, it will only
         // be shown if the user has been continuously online for the required duration, then goes
         // back to being offline.
-        // TODO(jianli): keep these values in shared prefernces. (http://crbug.com/879725)
+        // TODO(jianli): keep these values in shared preferences. (http://crbug.com/879725)
         if (mHasOfflineIndicatorShownSinceActivityResumed && !mWasOnlineForRequiredDuration) {
             return;
         }

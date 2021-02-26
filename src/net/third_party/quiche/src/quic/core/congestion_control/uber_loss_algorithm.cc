@@ -13,8 +13,8 @@ namespace quic {
 
 UberLossAlgorithm::UberLossAlgorithm() {
   for (int8_t i = INITIAL_DATA; i < NUM_PACKET_NUMBER_SPACES; ++i) {
-    general_loss_algorithms_[i].SetPacketNumberSpace(
-        static_cast<PacketNumberSpace>(i));
+    general_loss_algorithms_[i].Initialize(static_cast<PacketNumberSpace>(i),
+                                           this);
   }
 }
 
@@ -22,7 +22,7 @@ void UberLossAlgorithm::SetFromConfig(const QuicConfig& config,
                                       Perspective perspective) {
   if (config.HasClientRequestedIndependentOption(kELDT, perspective) &&
       tuner_ != nullptr) {
-    tuning_enabled_ = true;
+    tuning_configured_ = true;
     MaybeStartTuning();
   }
 }
@@ -54,6 +54,10 @@ LossDetectionInterface::DetectionStats UberLossAlgorithm::DetectLosses(
     overall_stats.sent_packets_max_sequence_reordering =
         std::max(overall_stats.sent_packets_max_sequence_reordering,
                  stats.sent_packets_max_sequence_reordering);
+    overall_stats.sent_packets_num_borderline_time_reorderings +=
+        stats.sent_packets_num_borderline_time_reorderings;
+    overall_stats.total_loss_detection_response_time +=
+        stats.total_loss_detection_response_time;
   }
 
   return overall_stats;
@@ -96,11 +100,27 @@ void UberLossAlgorithm::SetLossDetectionTuner(
 }
 
 void UberLossAlgorithm::MaybeStartTuning() {
-  if (tuner_started_ || !tuning_enabled_ || !min_rtt_available_) {
+  if (tuner_started_ || !tuning_configured_ || !min_rtt_available_ ||
+      !user_agent_known_ || !reorder_happened_) {
     return;
   }
 
   tuner_started_ = tuner_->Start(&tuned_parameters_);
+  if (!tuner_started_) {
+    return;
+  }
+
+  if (tuned_parameters_.reordering_shift.has_value() &&
+      tuned_parameters_.reordering_threshold.has_value()) {
+    QUIC_DLOG(INFO) << "Setting reordering shift to "
+                    << *tuned_parameters_.reordering_shift
+                    << ", and reordering threshold to "
+                    << *tuned_parameters_.reordering_threshold;
+    SetReorderingShift(*tuned_parameters_.reordering_shift);
+    SetReorderingThreshold(*tuned_parameters_.reordering_threshold);
+  } else {
+    QUIC_BUG << "Tuner started but some parameters are missing";
+  }
 }
 
 void UberLossAlgorithm::OnConfigNegotiated() {}
@@ -110,9 +130,30 @@ void UberLossAlgorithm::OnMinRttAvailable() {
   MaybeStartTuning();
 }
 
+void UberLossAlgorithm::OnUserAgentIdKnown() {
+  user_agent_known_ = true;
+  MaybeStartTuning();
+}
+
 void UberLossAlgorithm::OnConnectionClosed() {
   if (tuner_ != nullptr && tuner_started_) {
     tuner_->Finish(tuned_parameters_);
+  }
+}
+
+void UberLossAlgorithm::OnReorderingDetected() {
+  const bool tuner_started_before = tuner_started_;
+  const bool reorder_happened_before = reorder_happened_;
+
+  reorder_happened_ = true;
+  MaybeStartTuning();
+
+  if (!tuner_started_before && tuner_started_) {
+    if (reorder_happened_before) {
+      QUIC_CODE_COUNT(quic_loss_tuner_started_after_first_reorder);
+    } else {
+      QUIC_CODE_COUNT(quic_loss_tuner_started_on_first_reorder);
+    }
   }
 }
 
@@ -149,6 +190,10 @@ void UberLossAlgorithm::EnableAdaptiveTimeThreshold() {
 
 QuicPacketCount UberLossAlgorithm::GetPacketReorderingThreshold() const {
   return general_loss_algorithms_[APPLICATION_DATA].reordering_threshold();
+}
+
+int UberLossAlgorithm::GetPacketReorderingShift() const {
+  return general_loss_algorithms_[APPLICATION_DATA].reordering_shift();
 }
 
 void UberLossAlgorithm::DisablePacketThresholdForRuntPackets() {

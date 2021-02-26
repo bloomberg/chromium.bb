@@ -115,6 +115,10 @@ class PreconnectManager {
    public:
     virtual ~Delegate() {}
 
+    // Called when a preconnect to |preconnect_url| is initiated for |url|.
+    virtual void PreconnectInitiated(const GURL& url,
+                                     const GURL& preconnect_url) = 0;
+
     // Called when all preresolve jobs for the |stats->url| are finished. Note
     // that some preconnect jobs can be still in progress, because they are
     // fire-and-forget.
@@ -140,8 +144,6 @@ class PreconnectManager {
         const net::NetworkIsolationKey& network_isolation_key,
         bool success) {}
   };
-
-  static const size_t kMaxInflightPreresolves = 3;
 
   PreconnectManager(base::WeakPtr<Delegate> delegate, Profile* profile);
   virtual ~PreconnectManager();

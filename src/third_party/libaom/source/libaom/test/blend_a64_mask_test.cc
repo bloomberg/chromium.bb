@@ -190,6 +190,7 @@ class BlendA64MaskTest8B : public BlendA64MaskTest<F8B, uint8_t, uint8_t> {
     }
   }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BlendA64MaskTest8B);
 
 TEST_P(BlendA64MaskTest8B, RandomValues) {
   for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {
@@ -304,6 +305,7 @@ class BlendA64MaskTest8B_d16
     }
   }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BlendA64MaskTest8B_d16);
 
 TEST_P(BlendA64MaskTest8B_d16, RandomValues) {
   for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {
@@ -404,6 +406,7 @@ class BlendA64MaskTestHBD : public BlendA64MaskTest<FHBD, uint16_t, uint16_t> {
 
   int bit_depth_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BlendA64MaskTestHBD);
 
 TEST_P(BlendA64MaskTestHBD, RandomValues) {
   for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {

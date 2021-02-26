@@ -9,6 +9,7 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/wm/lock_state_observer.h"
@@ -40,9 +41,10 @@ class ASH_EXPORT PowerButtonController
     : public display::DisplayConfigurator::Observer,
       public chromeos::PowerManagerClient::Observer,
       public AccelerometerReader::Observer,
-      public BacklightsForcedOffSetter::Observer,
+      public ScreenBacklightObserver,
       public TabletModeObserver,
-      public LockStateObserver {
+      public LockStateObserver,
+      public SessionObserver {
  public:
   enum class ButtonType {
     // Indicates normal power button type.
@@ -126,6 +128,9 @@ class ASH_EXPORT PowerButtonController
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
+  // SessionObserver:
+  void OnLoginStatusChanged(LoginStatus status) override;
+
   // Initializes |screenshot_controller_| according to the tablet mode switch in
   // |result|.
   void OnGetSwitchStates(
@@ -139,8 +144,7 @@ class ASH_EXPORT PowerButtonController
 
   // BacklightsForcedOffSetter::Observer:
   void OnBacklightsForcedOffChanged(bool forced_off) override;
-  void OnScreenStateChanged(
-      BacklightsForcedOffSetter::ScreenState screen_state) override;
+  void OnScreenStateChanged(ScreenState screen_state) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -224,6 +228,12 @@ class ASH_EXPORT PowerButtonController
   // True if the device has tablet mode switch.
   bool has_tablet_mode_switch_ = false;
 
+  // When ChromeOS EC lid angle driver is supported, there's always tablet mode
+  // switch in device, so PowerButtonController doesn't need to listens to
+  // accelerometer events.
+  ECLidAngleDriverStatus ec_lid_angle_driver_status_ =
+      ECLidAngleDriverStatus::UNKNOWN;
+
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
 
@@ -276,7 +286,7 @@ class ASH_EXPORT PowerButtonController
   // display's height or width, respectively.
   double power_button_offset_percentage_ = 0.f;
 
-  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+  ScopedObserver<BacklightsForcedOffSetter, ScreenBacklightObserver>
       backlights_forced_off_observer_;
 
   // Used to maintain active state of the active window that exists before

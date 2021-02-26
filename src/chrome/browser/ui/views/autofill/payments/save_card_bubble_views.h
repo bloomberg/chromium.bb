@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "components/signin/public/base/signin_metrics.h"
 
 namespace content {
@@ -38,18 +39,17 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // SaveCardBubbleView:
   void Hide() override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  // LocationBarBubbleDelegateView:
   void AddedToWidget() override;
-
-  // views::WidgetDelegate:
-  bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // Returns the footnote view, so it can be searched for clickable views.
   // Exists for testing (specifically, browsertests).
   views::View* GetFootnoteViewForTesting();
+
+  const base::string16 GetCardIdentifierString() const;
 
  protected:
   // Delegate for the personalized sync promo view used when desktop identity
@@ -60,8 +60,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
                       signin_metrics::AccessPoint access_point);
 
     // BubbleSyncPromoDelegate:
-    void OnEnableSync(const AccountInfo& account,
-                      bool is_default_promo_account) override;
+    void OnEnableSync(const AccountInfo& account) override;
 
    private:
     SaveCardBubbleController* controller_;
@@ -83,7 +82,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // Attributes IDs to the dialog's DialogDelegate-supplied buttons.
   void AssignIdsToDialogButtons();
 
-  // views::BubbleDialogDelegateView:
+  // LocationBarBubbleDelegateView:
   void Init() override;
 
   void OnDialogAccepted();
@@ -99,6 +98,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* footnote_view_ = nullptr;
 
   SaveCardBubbleController* controller_;  // Weak reference.
+
+  PaymentsBubbleClosedReason closed_reason_ =
+      PaymentsBubbleClosedReason::kUnknown;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

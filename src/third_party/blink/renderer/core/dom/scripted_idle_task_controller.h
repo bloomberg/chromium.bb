@@ -23,12 +23,42 @@ class ExecutionContext;
 class IdleRequestOptions;
 class ThreadScheduler;
 
+// |IdleTask| is an interface type which generalizes tasks which are invoked
+// on idle. The tasks need to define what to do on idle in |invoke|.
+class IdleTask : public GarbageCollected<IdleTask>, public NameClient {
+ public:
+  virtual void Trace(Visitor* visitor) const {}
+  const char* NameInHeapSnapshot() const override { return "IdleTask"; }
+  virtual ~IdleTask() = default;
+  virtual void invoke(IdleDeadline*) = 0;
+  probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
+
+ private:
+  probe::AsyncTaskId async_task_id_;
+};
+
+// |V8IdleTask| is the adapter class for the conversion from
+// |V8IdleRequestCallback| to |IdleTask|.
+class V8IdleTask : public IdleTask {
+ public:
+  static V8IdleTask* Create(V8IdleRequestCallback* callback) {
+    return MakeGarbageCollected<V8IdleTask>(callback);
+  }
+
+  explicit V8IdleTask(V8IdleRequestCallback*);
+  ~V8IdleTask() override = default;
+
+  void invoke(IdleDeadline*) override;
+  void Trace(Visitor*) const override;
+
+ private:
+  Member<V8IdleRequestCallback> callback_;
+};
+
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollected<ScriptedIdleTaskController>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
-
  public:
   static ScriptedIdleTaskController* Create(ExecutionContext* context) {
     ScriptedIdleTaskController* controller =
@@ -40,44 +70,12 @@ class CORE_EXPORT ScriptedIdleTaskController
   explicit ScriptedIdleTaskController(ExecutionContext*);
   ~ScriptedIdleTaskController() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedIdleTaskController";
   }
 
   using CallbackId = int;
-
-  // |IdleTask| is an interface type which generalizes tasks which are invoked
-  // on idle. The tasks need to define what to do on idle in |invoke|.
-  class IdleTask : public GarbageCollected<IdleTask>, public NameClient {
-   public:
-    virtual void Trace(Visitor* visitor) {}
-    const char* NameInHeapSnapshot() const override { return "IdleTask"; }
-    virtual ~IdleTask() = default;
-    virtual void invoke(IdleDeadline*) = 0;
-    probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
-
-   private:
-    probe::AsyncTaskId async_task_id_;
-  };
-
-  // |V8IdleTask| is the adapter class for the conversion from
-  // |V8IdleRequestCallback| to |IdleTask|.
-  class V8IdleTask : public IdleTask {
-   public:
-    static V8IdleTask* Create(V8IdleRequestCallback* callback) {
-      return MakeGarbageCollected<V8IdleTask>(callback);
-    }
-
-    explicit V8IdleTask(V8IdleRequestCallback*);
-    ~V8IdleTask() override = default;
-
-    void invoke(IdleDeadline*) override;
-    void Trace(Visitor*) override;
-
-   private:
-    Member<V8IdleRequestCallback> callback_;
-  };
 
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);

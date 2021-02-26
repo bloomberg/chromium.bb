@@ -6,20 +6,50 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
 namespace password_manager {
+
+namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ClearedOnStartup {
+  kOptedInSoNoNeedToClear = 0,
+  kNotOptedInAndWasAlreadyEmpty = 1,
+  kNotOptedInAndHadToClear = 2,
+  kMaxValue = kNotOptedInAndHadToClear
+};
+
+void RecordClearedOnStartup(ClearedOnStartup state) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.ClearedOnStartup", state);
+}
+
+void PasswordStoreClearDone(bool cleared) {
+  RecordClearedOnStartup(cleared
+                             ? ClearedOnStartup::kNotOptedInAndHadToClear
+                             : ClearedOnStartup::kNotOptedInAndWasAlreadyEmpty);
+}
+
+}  // namespace
 
 PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_full_sync_mode,
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_transport_mode,
+    scoped_refptr<PasswordStore> account_password_store_for_cleanup,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
@@ -38,6 +68,24 @@ PasswordModelTypeController::PasswordModelTypeController(
               &PasswordModelTypeController::OnOptInStateMaybeChanged,
               base::Unretained(this))) {
   identity_manager_->AddObserver(this);
+
+  DCHECK_EQ(
+      !!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage),
+      !!account_password_store_for_cleanup);
+  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
+    // Note: Right now, we're still in the middle of SyncService initialization,
+    // so we can't check IsOptedInForAccountStorage() yet (SyncService might not
+    // have determined the syncing account yet). Post a task do to it after the
+    // initialization is complete.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&PasswordModelTypeController::MaybeClearStore,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  account_password_store_for_cleanup));
+  } else {
+    // If the feature flag is disabled, clear any related prefs that might still
+    // be around.
+    features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
+  }
 }
 
 PasswordModelTypeController::~PasswordModelTypeController() {
@@ -81,13 +129,25 @@ syncer::DataTypeController::PreconditionState
 PasswordModelTypeController::GetPreconditionState() const {
   // If Sync-the-feature is enabled, then the user has opted in to that, and no
   // additional opt-in is required here.
-  if (sync_service_->IsSyncFeatureEnabled())
+  if (sync_service_->IsSyncFeatureEnabled() ||
+      sync_service_->IsLocalSyncEnabled()) {
     return PreconditionState::kPreconditionsMet;
+  }
   // If Sync-the-feature is *not* enabled, then password sync should only be
   // turned on if the user has opted in to the account-scoped storage.
   return features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
+}
+
+bool PasswordModelTypeController::ShouldRunInTransportOnlyMode() const {
+  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
+    return false;
+  }
+  if (sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    return false;
+  }
+  return true;
 }
 
 void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
@@ -96,8 +156,42 @@ void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   state_changed_callback_.Run();
 }
 
+void PasswordModelTypeController::OnAccountsInCookieUpdated(
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  // If the account information is stale, do nothing for now - wait until there
+  // is fresh information.
+  if (!accounts_in_cookie_jar_info.accounts_are_fresh) {
+    return;
+  }
+  // Collect all the known accounts (signed-in or signed-out).
+  std::vector<std::string> gaia_ids;
+  for (const gaia::ListedAccount& account :
+       accounts_in_cookie_jar_info.signed_in_accounts) {
+    gaia_ids.push_back(account.gaia_id);
+  }
+  for (const gaia::ListedAccount& account :
+       accounts_in_cookie_jar_info.signed_out_accounts) {
+    gaia_ids.push_back(account.gaia_id);
+  }
+  // Keep any account-storage settings only for known accounts.
+  features_util::KeepAccountStorageSettingsOnlyForUsers(pref_service_,
+                                                        gaia_ids);
+}
+
 void PasswordModelTypeController::OnAccountsCookieDeletedByUserAction() {
   features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
+}
+
+void PasswordModelTypeController::OnPrimaryAccountCleared(
+    const CoreAccountInfo& previous_primary_account_info) {
+  // Note: OnPrimaryAccountCleared() basically means that the consent for
+  // Sync-the-feature was revoked. In this case, also clear any possible
+  // matching opt-in for the account-scoped storage, since it'd probably be
+  // surprising to the user if their account passwords still remained after
+  // disabling Sync.
+  features_util::OptOutOfAccountStorageAndClearSettingsForAccount(
+      pref_service_, previous_primary_account_info.gaia);
 }
 
 void PasswordModelTypeController::OnOptInStateMaybeChanged() {
@@ -105,6 +199,17 @@ void PasswordModelTypeController::OnOptInStateMaybeChanged() {
   // when the opt-in state changes, but DataTypePreconditionChanged() is cheap
   // if nothing actually changed, so some spurious calls don't hurt.
   sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
+}
+
+void PasswordModelTypeController::MaybeClearStore(
+    scoped_refptr<PasswordStore> account_password_store_for_cleanup) {
+  DCHECK(account_password_store_for_cleanup);
+  if (features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)) {
+    RecordClearedOnStartup(ClearedOnStartup::kOptedInSoNoNeedToClear);
+  } else {
+    account_password_store_for_cleanup->ClearStore(
+        base::BindOnce(&PasswordStoreClearDone));
+  }
 }
 
 }  // namespace password_manager

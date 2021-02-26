@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,14 +30,14 @@ class CastDialogSinkButtonTest : public ChromeViewsTestBase {
 TEST_F(CastDialogSinkButtonTest, SetTitleLabel) {
   UIMediaSink sink;
   sink.friendly_name = base::UTF8ToUTF16("sink name");
-  CastDialogSinkButton button(nullptr, sink, 0);
+  CastDialogSinkButton button(views::Button::PressedCallback(), sink);
   EXPECT_EQ(sink.friendly_name, button.title()->GetText());
 }
 
 TEST_F(CastDialogSinkButtonTest, SetStatusLabelForAvailableSink) {
   UIMediaSink sink;
   sink.state = UIMediaSinkState::AVAILABLE;
-  CastDialogSinkButton button(nullptr, sink, 0);
+  CastDialogSinkButton button(views::Button::PressedCallback(), sink);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_AVAILABLE),
             button.subtitle()->GetText());
   // Disabling an AVAILABLE sink button should change its label to "Source not
@@ -53,18 +54,18 @@ TEST_F(CastDialogSinkButtonTest, SetStatusLabelForAvailableSink) {
 TEST_F(CastDialogSinkButtonTest, SetStatusLabelForActiveSink) {
   UIMediaSink sink;
   sink.state = UIMediaSinkState::CONNECTING;
-  CastDialogSinkButton button1(nullptr, sink, 0);
+  CastDialogSinkButton button1(views::Button::PressedCallback(), sink);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_CONNECTING),
             button1.subtitle()->GetText());
 
   sink.state = UIMediaSinkState::CONNECTED;
   sink.status_text = base::UTF8ToUTF16("status text");
-  CastDialogSinkButton button2(nullptr, sink, 1);
+  CastDialogSinkButton button2(views::Button::PressedCallback(), sink);
   EXPECT_EQ(sink.status_text, button2.subtitle()->GetText());
 
   // The status label should be "Disconnecting..." even if |status_text| is set.
   sink.state = UIMediaSinkState::DISCONNECTING;
-  CastDialogSinkButton button3(nullptr, sink, 2);
+  CastDialogSinkButton button3(views::Button::PressedCallback(), sink);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_DISCONNECTING),
             button3.subtitle()->GetText());
 }
@@ -75,18 +76,45 @@ TEST_F(CastDialogSinkButtonTest, SetStatusLabelForSinkWithIssue) {
                                IssueInfo::Severity::WARNING));
   // Issue info should be the status text regardless of the sink state.
   sink.state = UIMediaSinkState::AVAILABLE;
-  CastDialogSinkButton button1(nullptr, sink, 0);
+  CastDialogSinkButton button1(views::Button::PressedCallback(), sink);
   EXPECT_EQ(base::UTF8ToUTF16(sink.issue->info().title),
             button1.subtitle()->GetText());
   sink.state = UIMediaSinkState::CONNECTED;
-  CastDialogSinkButton button2(nullptr, sink, 1);
+  CastDialogSinkButton button2(views::Button::PressedCallback(), sink);
   EXPECT_EQ(base::UTF8ToUTF16(sink.issue->info().title),
             button2.subtitle()->GetText());
 }
 
+TEST_F(CastDialogSinkButtonTest, SetStatusLabelForDialSinks) {
+  UIMediaSink sink;
+  sink.provider = MediaRouteProviderId::DIAL;
+  sink.state = UIMediaSinkState::AVAILABLE;
+  sink.cast_modes = {MediaCastMode::PRESENTATION};
+  CastDialogSinkButton button1(views::Button::PressedCallback(), sink);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_AVAILABLE),
+            button1.subtitle()->GetText());
+
+  // If the sink is available (has no active session) and is incompatible with
+  // the current sender page, the status text should say that the device is only
+  // available on certain sites.
+  sink.cast_modes = {};
+  CastDialogSinkButton button2(views::Button::PressedCallback(), sink);
+  button2.SetEnabled(false);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_AVAILABLE_SPECIFIC_SITES),
+      button2.subtitle()->GetText());
+
+  // If the sink is connected, we should show the session info, even if the
+  // device is incompatible with the current sender page.
+  sink.state = UIMediaSinkState::CONNECTED;
+  sink.status_text = base::ASCIIToUTF16("YouTube");
+  CastDialogSinkButton button3(views::Button::PressedCallback(), sink);
+  EXPECT_EQ(sink.status_text, button3.subtitle()->GetText());
+}
+
 TEST_F(CastDialogSinkButtonTest, OverrideStatusText) {
   UIMediaSink sink;
-  CastDialogSinkButton button(nullptr, sink, 0);
+  CastDialogSinkButton button(views::Button::PressedCallback(), sink);
   base::string16 status0 = base::ASCIIToUTF16("status0");
   base::string16 status1 = base::ASCIIToUTF16("status1");
   base::string16 status2 = base::ASCIIToUTF16("status2");

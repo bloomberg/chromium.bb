@@ -15,7 +15,9 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-forward.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill_assistant/browser/public/runtime_observer.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
@@ -28,10 +30,8 @@
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
-#include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/render_widget_host.h"
@@ -42,12 +42,19 @@
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/password_manager/android/save_password_message_delegate.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 
 class PasswordAccessoryController;
 class TouchToFillController;
 #else
 #include "chrome/browser/ui/passwords/account_storage_auth_helper.h"
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#include "components/password_manager/core/browser/sync_credentials_filter.h"
+#else
+#include "chrome/browser/password_manager/multi_profile_credentials_filter.h"
 #endif
 
 class ChromeBiometricAuthenticator;
@@ -71,7 +78,8 @@ class ChromePasswordManagerClient
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient>,
       public autofill::mojom::PasswordGenerationDriver,
-      public content::RenderWidgetHost::InputEventObserver {
+      public content::RenderWidgetHost::InputEventObserver,
+      public autofill_assistant::RuntimeObserver {
  public:
   static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
@@ -83,17 +91,11 @@ class ChromePasswordManagerClient
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
   bool IsFillingFallbackEnabled(const GURL& url) const override;
-  void PostHSTSQueryForHost(
-      const GURL& origin,
-      password_manager::HSTSCallback callback) const override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_update) override;
   void PromptUserToMovePasswordToAccount(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
-      override;
-  bool ShowOnboarding(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save)
       override;
   void ShowManualFallbackForSaving(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
@@ -104,46 +106,57 @@ class ChromePasswordManagerClient
       password_manager::PasswordManagerDriver* driver,
       autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
-      const CredentialsCallback& callback) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
+      const url::Origin& origin,
+      CredentialsCallback callback) override;
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver) override;
+
+#if defined(OS_ANDROID)
+  // Notifies `PasswordReuseDetectionManager` about passwords selected from
+  // AllPasswordsBottomSheet.
+  void OnPasswordSelected(const base::string16& text) override;
+#endif
+
+  bool IsAutofillAssistantUIVisible() const override;
   // Returns a pointer to the BiometricAuthenticator which is created on demand.
   // This is currently only implemented for Android, on all other platforms this
   // will always be null.
   password_manager::BiometricAuthenticator* GetBiometricAuthenticator()
       override;
-  void GeneratePassword() override;
+  void GeneratePassword(
+      autofill::password_generation::PasswordGenerationType type) override;
   void NotifyUserAutoSignin(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
+      const url::Origin& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
-      std::unique_ptr<autofill::PasswordForm> form) override;
+      std::unique_ptr<password_manager::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           submitted_manager) override;
   void NotifyStorePasswordCalled() override;
   void UpdateCredentialCache(
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>& best_matches,
+      const url::Origin& origin,
+      const std::vector<const password_manager::PasswordForm*>& best_matches,
       bool is_blacklisted) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;
   void PasswordWasAutofilled(
-      const std::vector<const autofill::PasswordForm*>& best_matches,
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches)
-      override;
+      const std::vector<const password_manager::PasswordForm*>& best_matches,
+      const url::Origin& origin,
+      const std::vector<const password_manager::PasswordForm*>*
+          federated_matches) override;
   void AutofillHttpAuth(
-      const autofill::PasswordForm& preferred_match,
+      const password_manager::PasswordForm& preferred_match,
       const password_manager::PasswordFormManagerForUI* form_manager) override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
+      password_manager::CompromisedSitesCount saved_sites,
       const GURL& origin,
       const base::string16& username) override;
   void TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
   void TriggerSignIn(signin_metrics::AccessPoint access_point) override;
   PrefService* GetPrefs() const override;
@@ -165,17 +178,16 @@ class ChromePasswordManagerClient
       const override;
   password_manager::HttpAuthManager* GetHttpAuthManager() override;
   autofill::AutofillDownloadManager* GetAutofillDownloadManager() override;
-  const GURL& GetMainFrameURL() const override;
-  bool IsMainFrameSecure() const override;
-  const GURL& GetLastCommittedEntryURL() const override;
+  bool IsCommittedMainFrameSecure() const override;
+  const GURL& GetLastCommittedURL() const override;
+  url::Origin GetLastCommittedOrigin() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const autofill::LogManager* GetLogManager() const override;
   void AnnotateNavigationEntry(bool has_password_field) override;
   std::string GetPageLanguage() const override;
 
-#if defined(ON_FOCUS_PING_ENABLED) || \
-    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(ON_FOCUS_PING_ENABLED) || defined(PASSWORD_REUSE_DETECTION_ENABLED)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
 #endif
@@ -185,7 +197,7 @@ class ChromePasswordManagerClient
                                    const GURL& frame_url) override;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   void CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType reused_password_type,
       const std::string& username,
@@ -194,7 +206,7 @@ class ChromePasswordManagerClient
       bool password_field_exists) override;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   void LogPasswordReuseDetectedEvent() override;
 #endif
 
@@ -206,6 +218,7 @@ class ChromePasswordManagerClient
   favicon::FaviconService* GetFaviconService() override;
   signin::IdentityManager* GetIdentityManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  network::mojom::NetworkContext* GetNetworkContext() const override;
   bool IsUnderAdvancedProtection() const override;
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(
@@ -230,11 +243,6 @@ class ChromePasswordManagerClient
   void GenerationElementLostFocus() override;
 
 #if defined(OS_ANDROID)
-  // This is called when the onboarding experience was shown successfully,
-  // which means that the user should now be prompted to save their password.
-  void OnOnboardingSuccessful(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
-
   void OnImeTextCommittedEvent(const base::string16& text_str) override;
   void OnImeSetComposingTextEvent(const base::string16& text_str) override;
   void OnImeFinishComposingTextEvent() override;
@@ -273,6 +281,9 @@ class ChromePasswordManagerClient
   }
 #endif
 
+  // AutofillAssistantRuntimeObserver:
+  void OnStateChanged(autofill_assistant::UIState state) override;
+
  protected:
   // Callable for tests.
   ChromePasswordManagerClient(content::WebContents* web_contents,
@@ -286,12 +297,13 @@ class ChromePasswordManagerClient
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
 // TODO(crbug.com/1006430): Paste event is not captured on Android.
 #if !defined(OS_ANDROID)
   void OnPaste() override;
 #endif
-
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
@@ -311,18 +323,19 @@ class ChromePasswordManagerClient
   // without custom sync passphrase.
   static bool ShouldAnnotateNavigationEntries(Profile* profile);
 
-  // Called back by the PasswordGenerationAgent when the manual generation flow
-  // is completed. If |ui_data| is non-empty, will create a UI to display the
+  // Called back by the PasswordGenerationAgent when the generation flow is
+  // completed. If |ui_data| is non-empty, will create a UI to display the
   // generated password. Otherwise, nothing will happen.
-  void ManualGenerationResultAvailable(
+  void GenerationResultAvailable(
+      autofill::password_generation::PasswordGenerationType type,
       base::WeakPtr<password_manager::ContentPasswordManagerDriver> driver,
       const base::Optional<
           autofill::password_generation::PasswordGenerationUIData>& ui_data);
 
   void ShowPasswordGenerationPopup(
+      autofill::password_generation::PasswordGenerationType type,
       password_manager::ContentPasswordManagerDriver* driver,
-      const autofill::password_generation::PasswordGenerationUIData& ui_data,
-      bool is_manually_triggered);
+      const autofill::password_generation::PasswordGenerationUIData& ui_data);
 
   gfx::RectF TransformToRootCoordinates(
       content::RenderFrameHost* frame_host,
@@ -334,7 +347,7 @@ class ChromePasswordManagerClient
   password_manager::PasswordFeatureManagerImpl password_feature_manager_;
   password_manager::HttpAuthManagerImpl httpauth_manager_;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   password_manager::PasswordReuseDetectionManager
       password_reuse_detection_manager_;
 #endif
@@ -353,9 +366,11 @@ class ChromePasswordManagerClient
   base::string16 last_composing_text_;
 
   // Whether a leak warning was shown. Used only for tests or when
-  // ENABLE_PASSWORD_CHANGE is defined.
+  // kPasswordChange feature is enabled.
   bool was_leak_dialog_shown_ = false;
-#endif
+
+  SavePasswordMessageDelegate save_password_message_delegate_;
+#endif  // defined(OS_ANDROID)
 
   std::unique_ptr<ChromeBiometricAuthenticator> biometric_authenticator_;
 
@@ -381,7 +396,12 @@ class ChromePasswordManagerClient
   // point.
   BooleanPrefMember saving_passwords_enabled_;
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // ChromeOS and Android don't support multiple profiles
   const password_manager::SyncCredentialsFilter credentials_filter_;
+#else
+  const MultiProfileCredentialsFilter credentials_filter_;
+#endif
 
   std::unique_ptr<autofill::LogManager> log_manager_;
 

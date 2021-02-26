@@ -127,8 +127,7 @@ class ResourceSizesDiff(BaseDiff):
   _AGGREGATE_SECTIONS = (
       'InstallBreakdown', 'Breakdown', 'MainLibInfo', 'Uncompressed')
 
-  def __init__(self, apk_name, filename='results-chart.json'):
-    self._apk_name = apk_name
+  def __init__(self, filename='results-chart.json'):
     self._diff = None  # Set by |ProduceDiff()|
     self._filename = filename
     super(ResourceSizesDiff, self).__init__('Resource Sizes Diff')
@@ -422,15 +421,17 @@ class _BuildArchive(object):
       logging.info('Found existing .size file')
       shutil.copy(existing_size_file, self.archived_size_path)
     else:
-      supersize_cmd = [
-          supersize_path, 'archive', self.archived_size_path, '--elf-file',
-          self.build.abs_main_lib_path, '--output-directory',
-          self.build.output_directory
-      ]
+      supersize_cmd = [supersize_path, 'archive', self.archived_size_path]
+      if self.build.IsAndroid():
+        supersize_cmd += [
+            '-f', self.build.abs_apk_path, '--aux-elf-file',
+            self.build.abs_main_lib_path
+        ]
+      else:
+        supersize_cmd += ['--elf-file', self.build.abs_main_lib_path]
+      supersize_cmd += ['--output-directory', self.build.output_directory]
       if tool_prefix:
         supersize_cmd += ['--tool-prefix', tool_prefix]
-      if self.build.IsAndroid():
-        supersize_cmd += ['-f', self.build.abs_apk_path]
       logging.info('Creating .size file')
       _RunCmd(supersize_cmd)
 
@@ -500,9 +501,21 @@ class _DiffArchiveManager(object):
     logging.info('Creating .sizediff')
     _RunCmd(supersize_cmd)
 
-    logging.info('View using a local server via: %s start_server %s',
-      os.path.relpath(supersize_path),
-      os.path.relpath(report_path))
+    unique_name = '{}_{}.sizediff'.format(before.rev, after.rev)
+    msg = (
+        '\n=====================\n'
+        'Saved locally to {local}. To view, upload to '
+        'https://chrome-supersize.firebaseapp.com/viewer.html.\n'
+        'To share, run:\n'
+        '> gsutil.py cp -a public-read {local} '
+        'gs://chrome-supersize/oneoffs/{unique_name}\n\n'
+        'Then view it at https://chrome-supersize.firebaseapp.com/viewer.html'
+        '?load_url=https://storage.googleapis.com/chrome-supersize/oneoffs/'
+        '{unique_name}'
+        '\n=====================\n')
+    msg = msg.format(local=os.path.relpath(report_path),
+                     unique_name=unique_name)
+    logging.info(msg)
 
   def Summarize(self):
     path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
@@ -884,9 +897,7 @@ def main():
     supersize_path, tool_prefix = paths
     diffs = [NativeDiff(build.size_name, supersize_path)]
     if build.IsAndroid():
-      diffs +=  [
-          ResourceSizesDiff(build.apk_name)
-      ]
+      diffs += [ResourceSizesDiff()]
     diff_mngr = _DiffArchiveManager(revs, args.archive_directory, diffs, build,
                                     subrepo, args.unstripped)
     consecutive_failures = 0

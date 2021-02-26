@@ -40,17 +40,20 @@ message ProfilePacket {
     optional uint64 self_allocated = 2;
     // bytes allocated at this callstack that have been freed.
     optional uint64 self_freed = 3;
-    // bytes allocated at this callstack but not used since the last
-    // dump.
-    // See documentation of idle_allocations in HeapprofdConfig for more
-    // details.
-    optional uint64 self_idle = 7;
+    // deprecated self_idle.
+    reserved 7;
     // Bytes allocated by this callstack but not freed at the time the malloc
     // heap usage of this process was maximal. This is only set if dump_at_max
     // is true in HeapprofdConfig. In that case, self_allocated, self_freed and
     // self_idle will not be set.
     optional uint64 self_max = 8;
-    optional uint64 timestamp = 4;  // timestamp [opt]
+    // Number of allocations that were sampled at this callstack but not freed
+    // at the time the malloc heap usage of this process was maximal. This is
+    // only set if dump_at_max is true in HeapprofdConfig. In that case,
+    // self_allocated, self_freed and self_idle will not be set.
+    optional uint64 self_max_count = 9;
+    // timestamp [opt]
+    optional uint64 timestamp = 4;
     // Number of allocations that were sampled at this callstack.
     optional uint64 alloc_count = 5;
     // Number of allocations that were sampled at this callstack that have been
@@ -80,6 +83,7 @@ message ProfilePacket {
     optional uint64 map_reparses = 3;
     optional Histogram unwinding_time_us = 4;
     optional uint64 total_unwinding_time_us = 5;
+    optional uint64 client_spinlock_blocked_us = 6;
   }
 
   repeated ProcessHeapSamples process_dumps = 5;
@@ -111,6 +115,8 @@ message ProfilePacket {
     // guardrails during this profiling session.
     optional bool hit_guardrail = 10;
 
+    optional string heap_name = 11;
+
     // Timestamp of the state of the target process that this dump represents.
     // This can be different to the timestamp of the TracePackets for various
     // reasons:
@@ -141,10 +147,28 @@ message ProfilePacket {
   optional uint64 index = 7;
 }
 
+message StreamingAllocation {
+  // TODO(fmayer): Add callstack.
+  repeated uint64 address = 1;
+  repeated uint64 size = 2;
+  repeated uint64 sample_size = 3;
+  repeated uint64 clock_monotonic_coarse_timestamp = 4;
+  repeated uint32 heap_id = 5;
+  repeated uint64 sequence_number = 6;
+};
+
+message StreamingFree {
+  // TODO(fmayer): Add callstack.
+  repeated uint64 address = 1;
+  repeated uint32 heap_id = 2;
+  repeated uint64 sequence_number = 3;
+};
+
 // Message used to represent individual stack samples sampled at discrete
 // points in time, rather than aggregated over an interval.
 message StreamingProfilePacket {
-  repeated uint64 callstack_iid = 1;  // Index into InternedData.callstacks
+  // Index into InternedData.callstacks
+  repeated uint64 callstack_iid = 1;
   // TODO(eseckler): ThreadDescriptor-based timestamps are deprecated. Replace
   // this with ClockSnapshot-based delta encoding instead.
   repeated int64 timestamp_delta_us = 2;

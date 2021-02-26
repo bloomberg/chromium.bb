@@ -96,6 +96,73 @@ var invalidSHA2_256 = []byte(`{
   }]
 }`)
 
+var validKDFJSON = []byte(`{
+  "vsId": 1564,
+  "algorithm": "counterMode",
+  "revision": "1.0",
+  "testGroups": [{
+    "tgId": 1,
+    "kdfMode": "counter",
+    "macMode": "CMAC-AES128",
+    "counterLocation": "after fixed data",
+    "keyOutLength": 1024,
+    "counterLength": 8,
+    "tests": [{
+        "tcId": 1,
+        "keyIn": "5DA38931E8D9174BC3279C8942D2DB82",
+        "deferred": false
+      },
+      {
+        "tcId": 2,
+        "keyIn": "58F5426A40E3D5D2C94F0F97EB30C739",
+        "deferred": false
+      }
+    ]
+  }]
+}`)
+
+var callsKDF = []fakeTransactCall{
+	fakeTransactCall{cmd: "KDF-counter", expectedNumResults: 3, args: [][]byte{
+		uint32le(128),                               // outputBytes
+		[]byte("CMAC-AES128"),                       // macMode
+		[]byte("after fixed data"),                  // counterLocation
+		fromHex("5DA38931E8D9174BC3279C8942D2DB82"), // keyIn
+		uint32le(8),                                 // counterLength
+	}},
+	fakeTransactCall{cmd: "KDF-counter", expectedNumResults: 3, args: [][]byte{
+		uint32le(128),                               // outputBytes
+		[]byte("CMAC-AES128"),                       // macMode
+		[]byte("after fixed data"),                  // counterLocation
+		fromHex("58F5426A40E3D5D2C94F0F97EB30C739"), // keyIn
+		uint32le(8),                                 // counterLength
+	}},
+}
+
+var invalidKDFJSON = []byte(`{
+  "vsId": 1564,
+  "algorithm": "counterMode",
+  "revision": "1.0",
+  "testGroups": [{
+    "tgId": 1,
+    "kdfMode": "counter",
+    "macMode": "CMAC-AES128",
+    "counterLocation": "after fixed data",
+    "keyOutLength": 1024,
+    "counterLength": 8,
+    "tests": [{
+        "tcId": 1,
+        "keyIn": "5DA38931E8D9174BC3279C8942D2DB82",
+        "deferred": false
+      },
+      {
+        "tcId": abc,
+        "keyIn": "58F5426A40E3D5D2C94F0F97EB30C739",
+        "deferred": false
+      }
+    ]
+  }]
+}`)
+
 var validACVPAESECB = []byte(`{
   "vsId" : 181726,
   "algorithm" : "ACVP-AES-ECB",
@@ -232,6 +299,52 @@ var invalidCTRDRBG = []byte(`{
   }]
 }`)
 
+var validCMACAESJSON = []byte(`{
+	"vsId": 1,
+	"algorithm": "CMAC-AES",
+	"revision": "1.0",
+	"testGroups": [{
+			"tgId": 4,
+			"testType": "AFT",
+			"direction": "gen",
+			"keyLen": 128,
+			"msgLen": 2752,
+			"macLen": 64,
+			"tests": [{
+					"tcId": 25,
+					"key": "E2547E38B28B2C24892C133FF4770688",
+					"message": "89DE09D747FB4B2669B59759A15BAAF068CAF31FD938DFCFFB38ECED53BA91DD659FD91E6CCCFEC5F972B1AD66BF78FE7FE319E58F514362FC75A346C144981B63FD18195A2AD482AF83711C9ADC449F7EAD32EBD5F4DB7EB93348404EAD496B8F4C89AB5FF7ACB2CFEFD96BD0FC9645B6F1F30AB02767ECA8771106DCA47188EE42183121FB9172B8E2133DE084F6CA3924E4BF3638ADA77DAAA6F06A6494E32CBAEFC6C6D0699BB12A425DCFE5974F687B6A71879D42DE08DF018A96429CFA40E32378D35E46A4956C5D7916B6877F353D33075FD4C64F32C3250D74FF070EA358135664CD8C9B82C9454EED75A12EEC758A9E514053533A884560FAC96DDBBA4AEEB8E473F4BFDB8447B22800D7782320D6E2DAC2599111F8CA598D6720CA7C6E4FC5EDC54FC3576460AAD1644B04E1D2C81B93EA49090FDB7E33374C243B2F19177405B94BEC3C69CC24CC686D8F2B01A6B2A350E394"
+				}]
+	}]
+}`)
+
+var callsCMACAES = []fakeTransactCall{
+	fakeTransactCall{cmd: "CMAC-AES", expectedNumResults: 1, args: [][]byte{
+		uint32le(64 / 8), // outputBytes
+		fromHex("E2547E38B28B2C24892C133FF4770688"), // key
+		fromHex("89DE09D747FB4B2669B59759A15BAAF068CAF31FD938DFCFFB38ECED53BA91DD659FD91E6CCCFEC5F972B1AD66BF78FE7FE319E58F514362FC75A346C144981B63FD18195A2AD482AF83711C9ADC449F7EAD32EBD5F4DB7EB93348404EAD496B8F4C89AB5FF7ACB2CFEFD96BD0FC9645B6F1F30AB02767ECA8771106DCA47188EE42183121FB9172B8E2133DE084F6CA3924E4BF3638ADA77DAAA6F06A6494E32CBAEFC6C6D0699BB12A425DCFE5974F687B6A71879D42DE08DF018A96429CFA40E32378D35E46A4956C5D7916B6877F353D33075FD4C64F32C3250D74FF070EA358135664CD8C9B82C9454EED75A12EEC758A9E514053533A884560FAC96DDBBA4AEEB8E473F4BFDB8447B22800D7782320D6E2DAC2599111F8CA598D6720CA7C6E4FC5EDC54FC3576460AAD1644B04E1D2C81B93EA49090FDB7E33374C243B2F19177405B94BEC3C69CC24CC686D8F2B01A6B2A350E394"), // msg
+	}},
+}
+
+var invalidCMACAESJSON = []byte(`{
+	"vsId": 1,
+	"algorithm": "CMAC-AES",
+	"revision": "1.0",
+	"testGroups": [{
+			"tgId": 4,
+			"testType": "AFT",
+			"direction": "gen",
+			"keyLen": 128,
+			"msgLen": 2752,
+			"macLen": 64,
+			"tests": [{
+					"tcId": abc,
+					"key": "E2547E38B28B2C24892C133FF4770688",
+					"message": "89DE09D747FB4B2669B59759A15BAAF068CAF31FD938DFCFFB38ECED53BA91DD659FD91E6CCCFEC5F972B1AD66BF78FE7FE319E58F514362FC75A346C144981B63FD18195A2AD482AF83711C9ADC449F7EAD32EBD5F4DB7EB93348404EAD496B8F4C89AB5FF7ACB2CFEFD96BD0FC9645B6F1F30AB02767ECA8771106DCA47188EE42183121FB9172B8E2133DE084F6CA3924E4BF3638ADA77DAAA6F06A6494E32CBAEFC6C6D0699BB12A425DCFE5974F687B6A71879D42DE08DF018A96429CFA40E32378D35E46A4956C5D7916B6877F353D33075FD4C64F32C3250D74FF070EA358135664CD8C9B82C9454EED75A12EEC758A9E514053533A884560FAC96DDBBA4AEEB8E473F4BFDB8447B22800D7782320D6E2DAC2599111F8CA598D6720CA7C6E4FC5EDC54FC3576460AAD1644B04E1D2C81B93EA49090FDB7E33374C243B2F19177405B94BEC3C69CC24CC686D8F2B01A6B2A350E394"
+				}]
+	}]
+}`)
+
 // fakeTransactable provides a fake to return results that don't go to the ACVP
 // server.
 type fakeTransactable struct {
@@ -262,7 +375,7 @@ func (f *fakeTransactable) Transact(cmd string, expectedNumResults int, args ...
 	return ret.bytes, ret.err
 }
 
-func newFakeTransactable(name string, numResponses int) *fakeTransactable {
+func newFakeTransactable(numResponses int) *fakeTransactable {
 	ret := new(fakeTransactable)
 
 	// Add results requested by caller.
@@ -293,8 +406,39 @@ func TestPrimitives(t *testing.T) {
 			expectedCalls: callsSHA2_256,
 		},
 		{
+			algo:          "kdf",
+			p:             &kdfPrimitive{},
+			validJSON:     validKDFJSON,
+			invalidJSON:   invalidKDFJSON,
+			expectedCalls: callsKDF,
+			results: []fakeTransactResult{
+				{bytes: [][]byte{
+					fromHex("5DA38931E8D9174BC3279C8942D2DB82"),
+					[]byte("data1"),
+					[]byte("keyOut1"),
+				}},
+				{bytes: [][]byte{
+					fromHex("58F5426A40E3D5D2C94F0F97EB30C739"),
+					[]byte("data2"),
+					[]byte("keyOut2"),
+				}},
+			},
+		},
+		{
+			algo:          "CMAC-AES",
+			p:             &keyedMACPrimitive{"CMAC-AES"},
+			validJSON:     validCMACAESJSON,
+			invalidJSON:   invalidCMACAESJSON,
+			expectedCalls: callsCMACAES,
+			results: []fakeTransactResult{
+				{bytes: [][]byte{
+					fromHex("0102030405060708"),
+				}},
+			},
+		},
+		{
 			algo:          "ACVP-AES-ECB",
-			p:             &blockCipher{"AES", 16, false},
+			p:             &blockCipher{"AES", 16, true, false, iterateAES},
 			validJSON:     validACVPAESECB,
 			invalidJSON:   invalidACVPAESECB,
 			expectedCalls: callsACVPAESECB,
@@ -312,7 +456,7 @@ func TestPrimitives(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		transactable := newFakeTransactable(test.algo, len(test.expectedCalls))
+		transactable := newFakeTransactable(len(test.expectedCalls))
 		if len(test.results) > 0 {
 			transactable.results = test.results
 		}

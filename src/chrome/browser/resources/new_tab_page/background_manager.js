@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {skColorToRgba} from './utils.js';
 
 /**
  * @fileoverview The background manager brokers access to background related
@@ -61,6 +61,8 @@ export class BackgroundManager {
     this.backgroundImage_ = document.body.querySelector('#backgroundImage');
     /** @private {LoadTimeResolver} */
     this.loadTimeResolver_ = null;
+    /** @private {string} */
+    this.url_ = this.backgroundImage_.src;
   }
 
   /**
@@ -105,14 +107,19 @@ export class BackgroundManager {
     if (image.positionY) {
       url.searchParams.append('positionY', image.positionY);
     }
-    if (url.href === this.backgroundImage_.src) {
+    if (url.href === this.url_) {
       return;
     }
     if (this.loadTimeResolver_) {
       this.loadTimeResolver_.reject();
       this.loadTimeResolver_ = null;
     }
-    this.backgroundImage_.src = url.href;
+    // We use |contentWindow.location.replace| because reloading the iframe by
+    // setting its |src| adds a history entry.
+    this.backgroundImage_.contentWindow.location.replace(url.href);
+    // We track the URL separately because |contentWindow.location.replace| does
+    // not update the iframe's src attribute.
+    this.url_ = url.href;
   }
 
   /**

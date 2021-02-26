@@ -14,21 +14,20 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 import java.lang.annotation.Retention;
@@ -73,18 +72,14 @@ public class AnnouncementNotificationManager {
                         case IntentType.UNKNOWN:
                             break;
                         case IntentType.CLICK:
-                            recordHistogram(AnnouncementNotificationEvent.CLICK);
                             openUrl(context, url);
                             break;
                         case IntentType.CLOSE:
-                            recordHistogram(AnnouncementNotificationEvent.CLOSE);
                             break;
                         case IntentType.ACK:
-                            recordHistogram(AnnouncementNotificationEvent.ACK);
                             close();
                             break;
                         case IntentType.OPEN:
-                            recordHistogram(AnnouncementNotificationEvent.OPEN);
                             openUrl(context, url);
                             close();
                             break;
@@ -118,17 +113,12 @@ public class AnnouncementNotificationManager {
                 .cancel(ANNOUNCEMENT_NOTIFICATION_TAG, ANNOUNCEMENT_NOTIFICATION_ID);
     }
 
-    private static void recordHistogram(@AnnouncementNotificationEvent int event) {
-        RecordHistogram.recordEnumeratedHistogram("Notifications.Announcement.Events", event,
-                AnnouncementNotificationEvent.MAX_VALUE + 1);
-    }
-
     @CalledByNative
     private static void showNotification(String url) {
         Context context = ContextUtils.getApplicationContext();
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.ANNOUNCEMENT,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(
@@ -151,14 +141,12 @@ public class AnnouncementNotificationManager {
                 NotificationUmaTracker.ActionType.ANNOUNCEMENT_OPEN);
 
         NotificationManagerProxy nm = new NotificationManagerProxyImpl(context);
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         nm.notify(notification);
 
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.ANNOUNCEMENT,
                 notification.getNotification());
-
-        recordHistogram(AnnouncementNotificationEvent.SHOWN);
     }
 
     @CalledByNative

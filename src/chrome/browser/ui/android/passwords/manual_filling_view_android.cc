@@ -24,15 +24,14 @@
 #include "chrome/browser/password_manager/android/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
-using autofill::PasswordForm;
 using autofill::UserInfo;
 using autofill::password_generation::PasswordGenerationUIData;
 using base::android::ConvertJavaStringToUTF16;
@@ -41,61 +40,65 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using password_manager::PasswordForm;
 
 ManualFillingViewAndroid::ManualFillingViewAndroid(
     ManualFillingController* controller)
-    : controller_(controller) {
-  ui::ViewAndroid* view_android = controller_->container_view();
-  DCHECK(view_android);
-  java_object_.Reset(Java_ManualFillingComponentBridge_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject()));
-}
+    : controller_(controller) {}
 
 ManualFillingViewAndroid::~ManualFillingViewAndroid() {
-  DCHECK(!java_object_.is_null());
+  if (!java_object_internal_)
+    return;  // No work to do.
   Java_ManualFillingComponentBridge_destroy(
-      base::android::AttachCurrentThread(), java_object_);
-  java_object_.Reset(nullptr);
+      base::android::AttachCurrentThread(), java_object_internal_);
+  java_object_internal_.Reset(nullptr);
 }
 
 void ManualFillingViewAndroid::OnItemsAvailable(
     const AccessorySheetData& data) {
-  DCHECK(!java_object_.is_null());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ManualFillingComponentBridge_onItemsAvailable(
-      env, java_object_, ConvertAccessorySheetDataToJavaObject(env, data));
+  if (auto obj = GetOrCreateJavaObject()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_ManualFillingComponentBridge_onItemsAvailable(
+        env, obj, ConvertAccessorySheetDataToJavaObject(env, data));
+  }
 }
 
 void ManualFillingViewAndroid::CloseAccessorySheet() {
-  Java_ManualFillingComponentBridge_closeAccessorySheet(
-      base::android::AttachCurrentThread(), java_object_);
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_closeAccessorySheet(
+        base::android::AttachCurrentThread(), obj);
+  }
 }
 
 void ManualFillingViewAndroid::SwapSheetWithKeyboard() {
-  Java_ManualFillingComponentBridge_swapSheetWithKeyboard(
-      base::android::AttachCurrentThread(), java_object_);
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_swapSheetWithKeyboard(
+        base::android::AttachCurrentThread(), obj);
+  }
 }
 
 void ManualFillingViewAndroid::ShowWhenKeyboardIsVisible() {
-  Java_ManualFillingComponentBridge_showWhenKeyboardIsVisible(
-      base::android::AttachCurrentThread(), java_object_);
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_showWhenKeyboardIsVisible(
+        base::android::AttachCurrentThread(), obj);
+  }
 }
 
 void ManualFillingViewAndroid::Hide() {
-  Java_ManualFillingComponentBridge_hide(base::android::AttachCurrentThread(),
-                                         java_object_);
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_hide(base::android::AttachCurrentThread(),
+                                           obj);
+  }
 }
 
 void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
     bool available) {
-  if (!available && java_object_.is_null())
+  if (!available && java_object_internal_.is_null())
     return;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ManualFillingComponentBridge_onAutomaticGenerationStatusChanged(
-      env, java_object_, available);
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_onAutomaticGenerationStatusChanged(
+        base::android::AttachCurrentThread(), obj, available);
+  }
 }
 
 void ManualFillingViewAndroid::OnFillingTriggered(
@@ -125,10 +128,17 @@ void ManualFillingViewAndroid::OnToggleChanged(
       static_cast<autofill::AccessoryAction>(selected_action), enabled);
 }
 
+void ManualFillingViewAndroid::OnViewDestroyed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  java_object_internal_.Reset(nullptr);
+}
+
 ScopedJavaLocalRef<jobject>
 ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     JNIEnv* env,
     const AccessorySheetData& tab_data) {
+  DCHECK(java_object_internal_);
   ScopedJavaLocalRef<jobject> j_tab_data =
       Java_ManualFillingComponentBridge_createAccessorySheetData(
           env, static_cast<int>(tab_data.get_sheet_type()),
@@ -138,7 +148,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   if (tab_data.option_toggle().has_value()) {
     autofill::OptionToggle toggle = tab_data.option_toggle().value();
     Java_ManualFillingComponentBridge_addOptionToggleToAccessorySheetData(
-        env, java_object_, j_tab_data,
+        env, java_object_internal_, j_tab_data,
         ConvertUTF16ToJavaString(env, toggle.display_text()),
         toggle.is_enabled(), static_cast<int>(toggle.accessory_action()));
   }
@@ -146,12 +156,12 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
-            env, java_object_, j_tab_data,
+            env, java_object_internal_, j_tab_data,
             ConvertUTF8ToJavaString(env, user_info.origin()),
             user_info.is_psl_match().value());
     for (const UserInfo::Field& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
-          env, java_object_, j_user_info,
+          env, java_object_internal_, j_user_info,
           static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
@@ -162,7 +172,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
 
   for (const FooterCommand& footer_command : tab_data.footer_commands()) {
     Java_ManualFillingComponentBridge_addFooterCommandToAccessorySheetData(
-        env, java_object_, j_tab_data,
+        env, java_object_internal_, j_tab_data,
         ConvertUTF16ToJavaString(env, footer_command.display_text()),
         static_cast<int>(footer_command.accessory_action()));
   }
@@ -184,6 +194,20 @@ UserInfo::Field ManualFillingViewAndroid::ConvertJavaUserInfoField(
                          selectable);
 }
 
+base::android::ScopedJavaGlobalRef<jobject>
+ManualFillingViewAndroid::GetOrCreateJavaObject() {
+  if (java_object_internal_)
+    return java_object_internal_;
+  if (controller_->container_view() == nullptr ||
+      controller_->container_view()->GetWindowAndroid() == nullptr) {
+    return nullptr;  // No window attached (yet or anymore).
+  }
+  java_object_internal_.Reset(Java_ManualFillingComponentBridge_create(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      controller_->container_view()->GetWindowAndroid()->GetJavaObject()));
+  return java_object_internal_;
+}
+
 // static
 void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     JNIEnv* env,
@@ -201,10 +225,10 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
                                                      &usernames);
   base::android::AppendJavaStringArrayToStringVector(env, j_passwords,
                                                      &passwords);
-  std::vector<autofill::PasswordForm> password_forms(usernames.size());
-  std::vector<const autofill::PasswordForm*> credentials;
+  std::vector<password_manager::PasswordForm> password_forms(usernames.size());
+  std::vector<const password_manager::PasswordForm*> credentials;
   for (unsigned int i = 0; i < usernames.size(); ++i) {
-    password_forms[i].origin = origin.GetURL();
+    password_forms[i].url = origin.GetURL();
     password_forms[i].username_value = base::ASCIIToUTF16(usernames[i]);
     password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
     credentials.push_back(&password_forms[i]);

@@ -21,7 +21,6 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -180,23 +179,23 @@ bool ParseServerResponse(const GURL& server_url,
           << response_body;
 
   // Parse the response, ignoring comments.
-  std::string error_msg;
-  std::unique_ptr<base::Value> response_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
-  if (response_value == NULL) {
-    PrintTimeZoneError(server_url, "JSONReader failed: " + error_msg, timezone);
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(response_body);
+  if (!parsed_json.value) {
+    PrintTimeZoneError(server_url,
+                       "JSONReader failed: " + parsed_json.error_message,
+                       timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
   const base::DictionaryValue* response_object = NULL;
-  if (!response_value->GetAsDictionary(&response_object)) {
+  if (!parsed_json.value->GetAsDictionary(&response_object)) {
     PrintTimeZoneError(
         server_url,
         "Unexpected response type : " +
             base::StringPrintf(
-                "%u", static_cast<unsigned int>(response_value->type())),
+                "%u", static_cast<unsigned int>(parsed_json.value->type())),
         timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;

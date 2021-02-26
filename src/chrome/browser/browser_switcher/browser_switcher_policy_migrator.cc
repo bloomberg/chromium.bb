@@ -56,13 +56,13 @@ void BrowserSwitcherPolicyMigrator::Migrate(policy::PolicyBundle* bundle) {
       bundle->Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, ""));
 
   const auto* entry = chrome_map.Get("BrowserSwitcherEnabled");
-  if (!entry || !entry->value || !entry->value->GetBool()) {
+  if (!entry || !entry->value() || !entry->value()->GetBool()) {
     VLOG(3) << "BrowserSwitcherEnabled is false, aborting policy migration.";
     return;
   }
   extension_map.Set("browser_switcher_enabled", entry->DeepCopy());
 
-  using Migration = policy::ExtensionPolicyMigrator::Migration;
+  using Migration = policy::PolicyMigrator::Migration;
   const Migration migrations[] = {
       Migration("alternative_browser_path",
                 policy::key::kAlternativeBrowserPath),

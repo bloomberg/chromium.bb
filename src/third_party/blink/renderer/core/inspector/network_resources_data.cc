@@ -75,7 +75,7 @@ NetworkResourcesData::ResourceData::ResourceData(
       pending_encoded_data_length_(0),
       cached_resource_(nullptr) {}
 
-void NetworkResourcesData::ResourceData::Trace(Visitor* visitor) {
+void NetworkResourcesData::ResourceData::Trace(Visitor* visitor) const {
   visitor->Trace(network_resources_data_);
   visitor->Trace(xhr_replay_data_);
   visitor->template RegisterWeakCallbackMethod<
@@ -121,6 +121,8 @@ size_t NetworkResourcesData::ResourceData::EvictContent() {
 void NetworkResourcesData::ResourceData::SetResource(
     const Resource* cached_resource) {
   cached_resource_ = cached_resource;
+  if (cached_resource && cached_resource->GetType() == ResourceType::kFont)
+    ToFontResource(cached_resource)->AddClearDataObserver(this);
 }
 
 void NetworkResourcesData::ResourceData::ProcessCustomWeakness(
@@ -146,6 +148,17 @@ void NetworkResourcesData::ResourceData::ProcessCustomWeakness(
         RequestId(), cached_resource_->ResourceBuffer());
   }
   cached_resource_ = nullptr;
+}
+
+void NetworkResourcesData::ResourceData::FontResourceDataWillBeCleared() {
+  if (cached_resource_->ResourceBuffer()) {
+    // Save the cached resource before its data becomes unavailable.
+    network_resources_data_->MaybeAddResourceData(
+        RequestId(), cached_resource_->ResourceBuffer());
+  }
+  // There is no point tracking the resource anymore.
+  cached_resource_ = nullptr;
+  network_resources_data_->MaybeDecodeDataToContent(RequestId());
 }
 
 uint64_t NetworkResourcesData::ResourceData::DataLength() const {
@@ -189,7 +202,7 @@ NetworkResourcesData::NetworkResourcesData(size_t total_buffer_size,
 
 NetworkResourcesData::~NetworkResourcesData() = default;
 
-void NetworkResourcesData::Trace(Visitor* visitor) {
+void NetworkResourcesData::Trace(Visitor* visitor) const {
   visitor->Trace(request_id_to_resource_data_map_);
 }
 

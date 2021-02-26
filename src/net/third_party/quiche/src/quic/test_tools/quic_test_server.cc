@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -95,18 +95,20 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
 
   std::unique_ptr<QuicSession> CreateQuicSession(
       QuicConnectionId id,
-      const QuicSocketAddress& client,
-      quiche::QuicheStringPiece alpn,
+      const QuicSocketAddress& self_address,
+      const QuicSocketAddress& peer_address,
+      absl::string_view alpn,
       const ParsedQuicVersion& version) override {
     QuicReaderMutexLock lock(&factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {
-      return QuicSimpleDispatcher::CreateQuicSession(id, client, alpn, version);
+      return QuicSimpleDispatcher::CreateQuicSession(
+          id, self_address, peer_address, alpn, version);
     }
-    QuicConnection* connection =
-        new QuicConnection(id, client, helper(), alarm_factory(), writer(),
-                           /* owns_writer= */ false, Perspective::IS_SERVER,
-                           ParsedQuicVersionVector{version});
+    QuicConnection* connection = new QuicConnection(
+        id, self_address, peer_address, helper(), alarm_factory(), writer(),
+        /* owns_writer= */ false, Perspective::IS_SERVER,
+        ParsedQuicVersionVector{version});
 
     std::unique_ptr<QuicServerSessionBase> session;
     if (stream_factory_ != nullptr || crypto_stream_factory_ != nullptr) {
@@ -250,7 +252,7 @@ void ImmediateGoAwaySession::OnNewEncryptionKeyAvailable(
   QuicSimpleServerSession::OnNewEncryptionKeyAvailable(level,
                                                        std::move(encrypter));
   if (VersionUsesHttp3(transport_version())) {
-    if (IsEncryptionEstablished() && !http3_goaway_sent()) {
+    if (IsEncryptionEstablished() && !goaway_sent()) {
       SendHttp3GoAway();
     }
   }

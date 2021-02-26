@@ -17,7 +17,6 @@
 #include "base/pickle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -41,16 +40,6 @@ const base::FilePath::CharType kValidationCacheFileName[] =
     FILE_PATH_LITERAL("nacl_validation_cache.bin");
 
 const bool kValidationCacheEnabledByDefault = true;
-
-// Keep the cache bounded to an arbitrary size.  If it's too small, useful
-// entries could be evicted when multiple .nexes are loaded at once.  On the
-// other hand, entries are not always claimed (and hence removed), so the size
-// of the cache will likely saturate at its maximum size.
-// Entries may not be claimed for two main reasons. 1) the NaCl process could
-// be killed while it is loading.  2) the trusted NaCl plugin opens files using
-// the code path but doesn't resolve them.
-// TODO(ncbray) don't cache files that the plugin will not resolve.
-const int kFilePathCacheSize = 100;
 
 const base::FilePath::StringType NaClIrtName() {
   base::FilePath::StringType irt_name(FILE_PATH_LITERAL("nacl_irt_"));
@@ -104,8 +93,8 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
 }
 
 void RemoveCache(const base::FilePath& filename, base::OnceClosure callback) {
-  base::DeleteFile(filename, false);
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO}, std::move(callback));
+  base::DeleteFile(filename);
+  content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
 }
 
 void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
@@ -153,15 +142,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
   return file;
 }
 
-NaClBrowser::NaClBrowser()
-    : irt_filepath_(),
-      irt_state_(NaClResourceUninitialized),
-      validation_cache_file_path_(),
-      validation_cache_is_enabled_(false),
-      validation_cache_is_modified_(false),
-      validation_cache_state_(NaClResourceUninitialized),
-      path_cache_(kFilePathCacheSize),
-      has_failed_(false) {
+NaClBrowser::NaClBrowser() {
 #if !defined(OS_ANDROID)
       validation_cache_is_enabled_ =
           CheckEnvVar("NACL_VALIDATION_CACHE",
@@ -320,14 +301,14 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
   gdb_debug_stub_port_map_[process_id] = port;
   if (port != kGdbDebugStubPortUnknown &&
       !debug_stub_port_listener_.is_null()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(debug_stub_port_listener_, port));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(debug_stub_port_listener_, port));
   }
 }
 
 // static
 void NaClBrowser::SetGdbDebugStubPortListenerForTest(
-    base::Callback<void(int)> listener) {
+    base::RepeatingCallback<void(int)> listener) {
   GetInstanceInternal()->debug_stub_port_listener_ = listener;
 }
 
@@ -529,8 +510,8 @@ void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
 
   if (validation_cache_file_path_.empty()) {
     // Can't figure out what file to remove, but don't drop the callback.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   std::move(callback));
+    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
   } else {
     // Delegate the removal of the cache from the filesystem to another thread
     // to avoid blocking the IO thread.

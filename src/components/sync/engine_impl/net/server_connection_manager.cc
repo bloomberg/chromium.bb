@@ -10,18 +10,15 @@
 
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
-#include "components/sync/base/cancelation_signal.h"
+#include "components/sync/engine_impl/cancelation_signal.h"
 #include "components/sync/engine_impl/net/url_translator.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
 namespace syncer {
 namespace {
-
-const char kSyncServerSyncPath[] = "/command/";
 
 #define ENUM_CASE(x)    \
   case HttpResponse::x: \
@@ -74,11 +71,22 @@ HttpResponse HttpResponse::ForIoError() {
 }
 
 // static
-HttpResponse HttpResponse::ForHttpError(int http_status_code) {
+HttpResponse HttpResponse::ForUnspecifiedError() {
   HttpResponse response;
-  response.server_status = http_status_code == net::HTTP_UNAUTHORIZED
-                               ? SYNC_AUTH_ERROR
-                               : SYNC_SERVER_ERROR;
+  response.server_status = CONNECTION_UNAVAILABLE;
+  return response;
+}
+
+// static
+HttpResponse HttpResponse::ForHttpStatusCode(int http_status_code) {
+  HttpResponse response;
+  if (http_status_code == net::HTTP_OK) {
+    response.server_status = SERVER_CONNECTION_OK;
+  } else if (http_status_code == net::HTTP_UNAUTHORIZED) {
+    response.server_status = SYNC_AUTH_ERROR;
+  } else {
+    response.server_status = SYNC_SERVER_ERROR;
+  }
   response.http_status_code = http_status_code;
   return response;
 }
@@ -91,8 +99,7 @@ HttpResponse HttpResponse::ForSuccess() {
 }
 
 ServerConnectionManager::ServerConnectionManager()
-    : proto_sync_path_(kSyncServerSyncPath),
-      server_response_(HttpResponse::Uninitialized()) {}
+    : server_response_(HttpResponse::Uninitialized()) {}
 
 ServerConnectionManager::~ServerConnectionManager() = default;
 
@@ -112,7 +119,7 @@ bool ServerConnectionManager::SetAccessToken(const std::string& access_token) {
   // second request. Need to notify sync frontend again to request new token,
   // otherwise backend will stay in SYNC_AUTH_ERROR state while frontend thinks
   // everything is fine and takes no actions.
-  SetServerResponse(HttpResponse::ForHttpError(net::HTTP_UNAUTHORIZED));
+  SetServerResponse(HttpResponse::ForHttpStatusCode(net::HTTP_UNAUTHORIZED));
   return false;
 }
 
@@ -136,22 +143,19 @@ void ServerConnectionManager::SetServerResponse(
 
 void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : listeners_)
+  for (auto& observer : listeners_) {
     observer.OnServerConnectionEvent(
         ServerConnectionEvent(server_response_.server_status));
+  }
 }
 
-bool ServerConnectionManager::PostBufferWithCachedAuth(
+HttpResponse ServerConnectionManager::PostBufferWithCachedAuth(
     const std::string& buffer_in,
-    std::string* buffer_out,
-    HttpResponse* http_response) {
+    std::string* buffer_out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string path =
-      MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
-  bool result = PostBufferToPath(buffer_in, path, access_token_, buffer_out,
-                                 http_response);
-  SetServerResponse(*http_response);
-  return result;
+  HttpResponse http_response = PostBuffer(buffer_in, access_token_, buffer_out);
+  SetServerResponse(http_response);
+  return http_response;
 }
 
 void ServerConnectionManager::AddListener(

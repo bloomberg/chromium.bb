@@ -6,6 +6,7 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 
@@ -30,6 +31,13 @@ CompositorAnimationTimeline::~CompositorAnimationTimeline() {
 cc::AnimationTimeline* CompositorAnimationTimeline::GetAnimationTimeline()
     const {
   return animation_timeline_.get();
+}
+
+void CompositorAnimationTimeline::UpdateCompositorTimeline(
+    base::Optional<CompositorElementId> pending_id,
+    const std::vector<double> scroll_offsets) {
+  ToScrollTimeline(animation_timeline_.get())
+      ->UpdateScrollerIdAndScrollOffsets(pending_id, scroll_offsets);
 }
 
 void CompositorAnimationTimeline::AnimationAttached(

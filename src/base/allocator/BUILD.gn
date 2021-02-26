@@ -4,7 +4,6 @@
 
 import("//base/allocator/allocator.gni")
 import("//build/buildflag_header.gni")
-import("//build/config/allocator.gni")
 import("//build/config/compiler/compiler.gni")
 
 declare_args() {
@@ -64,7 +63,7 @@ config("tcmalloc_flags") {
     cflags = []
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     # We enable all warnings by default, but upstream disables a few.
     # Keep "-Wno-*" flags in sync with upstream by comparing against:
     # http://code.google.com/p/google-perftools/source/browse/trunk/Makefile.am
@@ -89,9 +88,6 @@ if (use_allocator == "tcmalloc") {
       # Generated for our configuration from tcmalloc's build
       # and checked in.
       "$tcmalloc_dir/src/config.h",
-      "$tcmalloc_dir/src/config_android.h",
-      "$tcmalloc_dir/src/config_linux.h",
-      "$tcmalloc_dir/src/config_win.h",
 
       # tcmalloc native and forked files.
       "$tcmalloc_dir/src/base/abort.cc",
@@ -180,6 +176,18 @@ if (use_allocator == "tcmalloc") {
       #"win_allocator.cc",
     ]
 
+    if (is_android) {
+      sources += [ "$tcmalloc_dir/src/config_android.h" ]
+    }
+
+    if (is_linux || is_chromeos) {
+      sources += [ "$tcmalloc_dir/src/config_linux.h" ]
+    }
+
+    if (is_win) {
+      sources += [ "$tcmalloc_dir/src/config_win.h" ]
+    }
+
     # Not included on mips64el.
     if (current_cpu == "mips64el") {
       sources -= [
@@ -233,7 +241,7 @@ if (use_allocator == "tcmalloc") {
       defines += [ "ENABLE_PROFILING=1" ]
     }
 
-    if (is_linux || is_android) {
+    if (is_linux || is_chromeos || is_android) {
       sources -= [
         "$tcmalloc_dir/src/system-alloc.h",
         "$tcmalloc_dir/src/windows/port.cc",
@@ -276,12 +284,14 @@ if (use_allocator == "tcmalloc") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "USE_ALLOCATOR_SHIM=$use_allocator_shim" ]
-  if (use_allocator == "tcmalloc") {
-    flags += [ "USE_TCMALLOC=1" ]
-  } else {
-    flags += [ "USE_TCMALLOC=0" ]
-  }
+  _use_partition_alloc = use_allocator == "partition"
+  _use_tcmalloc = use_allocator == "tcmalloc"
+
+  flags = [
+    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_TCMALLOC=$_use_tcmalloc",
+    "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc",
+  ]
 }
 
 # Used to shim malloc symbols on Android. see //base/allocator/README.md.
@@ -295,5 +305,15 @@ config("wrap_malloc_symbols") {
     "-Wl,-wrap,pvalloc",
     "-Wl,-wrap,realloc",
     "-Wl,-wrap,valloc",
+
+    # <stdlib.h> functions
+    "-Wl,-wrap,realpath",
+
+    # <string.h> functions
+    "-Wl,-wrap,strdup",
+    "-Wl,-wrap,strndup",
+
+    # <unistd.h> functions
+    "-Wl,-wrap,getcwd",
   ]
 }

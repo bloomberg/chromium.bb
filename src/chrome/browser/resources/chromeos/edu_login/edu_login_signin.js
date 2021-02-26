@@ -6,6 +6,7 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './edu_login_css.js';
 import './edu_login_template.js';
 import './edu_login_button.js';
+import './gaia_action_buttons.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -38,16 +39,19 @@ Polymer({
       type: Boolean,
       value: true,
     },
-  },
 
-  /**
-   * The auth extension host instance.
-   * @private {?Authenticator}
-   */
-  authExtHost_: null,
+    /**
+     * The auth extension host instance.
+     * @private {?Authenticator}
+     */
+    authExtHost_: Object,
+  },
 
   /** @private {?EduAccountLoginBrowserProxy} */
   browserProxy_: null,
+
+  /** @private {boolean} */
+  enableGaiaActionButtons_: false,
 
   /** @override */
   created() {
@@ -66,8 +70,6 @@ Polymer({
   attached() {
     this.addWebUIListener(
         'load-auth-extension', data => this.loadAuthExtension_(data));
-    this.addWebUIListener(
-        'navigate-back-in-webview', () => this.navigateBackInWebview_());
     this.addWebUIListener('close-dialog', () => this.closeDialog_());
   },
 
@@ -83,6 +85,8 @@ Polymer({
     this.authExtHost_.addEventListener(
         'authCompleted', e => this.onAuthCompleted_(
             /** @type {!CustomEvent<!AuthCompletedCredentials>} */(e)));
+    this.authExtHost_.addEventListener(
+        'getAccounts', () => this.onGetAccounts_());
   },
 
   /**
@@ -127,6 +131,13 @@ Polymer({
     this.loading_ = true;
   },
 
+  /** @private */
+  onGetAccounts_() {
+    this.browserProxy_.getAccounts().then(result => {
+      this.authExtHost_.getAccountsResponse(result);
+    });
+  },
+
   /**
    * Loads auth extension.
    * @param {!AuthParams} data Parameters for auth extension.
@@ -135,6 +146,7 @@ Polymer({
   loadAuthExtension_(data) {
     this.authExtHost_.load(data.authMode, data);
     this.loading_ = true;
+    this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
   },
 
   /**
@@ -153,6 +165,7 @@ Polymer({
   navigateBackInWebview_() {
     if (this.$.signinFrame.canGoBack()) {
       this.$.signinFrame.back();
+      this.$.signinFrame.focus();
     } else {
       // Reload the webview. It allows users to go back and try to add another
       // account if something goes wrong in the webview (e.g. SAML server

@@ -77,7 +77,10 @@ class LayoutRubyRun : public LayoutBlockFlow {
 
   bool CanBreakBefore(const LazyLineBreakIterator&) const;
 
-  const char* GetName() const override { return "LayoutRubyRun"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutRubyRun";
+  }
 
  protected:
   LayoutRubyBase* CreateRubyBase() const;
@@ -87,15 +90,24 @@ class LayoutRubyRun : public LayoutBlockFlow {
   explicit LayoutRubyRun(Element*);
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectRubyRun || LayoutBlockFlow::IsOfType(type);
   }
-  bool CreatesAnonymousWrapper() const override { return true; }
-  void RemoveLeftoverAnonymousBlock(LayoutBlock*) override {}
+  bool CreatesAnonymousWrapper() const override {
+    NOT_DESTROYED();
+    return true;
+  }
+  void RemoveLeftoverAnonymousBlock(LayoutBlock*) override { NOT_DESTROYED(); }
 
   friend class LayoutNGMixin<LayoutRubyRun>;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, IsRubyRun());
+template <>
+struct DowncastTraits<LayoutRubyRun> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsRubyRun();
+  }
+};
 
 }  // namespace blink
 

@@ -46,7 +46,7 @@ static_assert(
 
 CodeAssemblerState::CodeAssemblerState(
     Isolate* isolate, Zone* zone, const CallInterfaceDescriptor& descriptor,
-    Code::Kind kind, const char* name, PoisoningMitigationLevel poisoning_level,
+    CodeKind kind, const char* name, PoisoningMitigationLevel poisoning_level,
     int32_t builtin_index)
     // TODO(rmcilroy): Should we use Linkage::GetBytecodeDispatchDescriptor for
     // bytecode handlers?
@@ -58,26 +58,23 @@ CodeAssemblerState::CodeAssemblerState(
           kind, name, poisoning_level, builtin_index) {}
 
 CodeAssemblerState::CodeAssemblerState(Isolate* isolate, Zone* zone,
-                                       int parameter_count, Code::Kind kind,
+                                       int parameter_count, CodeKind kind,
                                        const char* name,
                                        PoisoningMitigationLevel poisoning_level,
                                        int32_t builtin_index)
     : CodeAssemblerState(
           isolate, zone,
-          Linkage::GetJSCallDescriptor(
-              zone, false, parameter_count,
-              (kind == Code::BUILTIN ? CallDescriptor::kPushArgumentCount
-                                     : CallDescriptor::kNoFlags) |
-                  CallDescriptor::kCanUseRoots),
+          Linkage::GetJSCallDescriptor(zone, false, parameter_count,
+                                       CallDescriptor::kCanUseRoots),
           kind, name, poisoning_level, builtin_index) {}
 
 CodeAssemblerState::CodeAssemblerState(Isolate* isolate, Zone* zone,
                                        CallDescriptor* call_descriptor,
-                                       Code::Kind kind, const char* name,
+                                       CodeKind kind, const char* name,
                                        PoisoningMitigationLevel poisoning_level,
                                        int32_t builtin_index)
     : raw_assembler_(new RawMachineAssembler(
-          isolate, new (zone) Graph(zone), call_descriptor,
+          isolate, zone->New<Graph>(zone), call_descriptor,
           MachineType::PointerRepresentation(),
           InstructionSelector::SupportedMachineOperatorFlags(),
           InstructionSelector::AlignmentRequirements(), poisoning_level)),
@@ -86,9 +83,9 @@ CodeAssemblerState::CodeAssemblerState(Isolate* isolate, Zone* zone,
       builtin_index_(builtin_index),
       code_generated_(false),
       variables_(zone),
-      jsgraph_(new (zone) JSGraph(
+      jsgraph_(zone->New<JSGraph>(
           isolate, raw_assembler_->graph(), raw_assembler_->common(),
-          new (zone) JSOperatorBuilder(zone), raw_assembler_->simplified(),
+          zone->New<JSOperatorBuilder>(zone), raw_assembler_->simplified(),
           raw_assembler_->machine())) {}
 
 CodeAssemblerState::~CodeAssemblerState() = default;
@@ -112,7 +109,7 @@ void CodeAssemblerState::SetInitialDebugInformation(const char* msg,
                                                     int line) {
 #if DEBUG
   AssemblerDebugInfo debug_info = {msg, file, line};
-  raw_assembler_->SetSourcePosition(file, line);
+  raw_assembler_->SetCurrentExternalSourcePosition({file, line});
   raw_assembler_->SetInitialDebugInformation(debug_info);
 #endif  // DEBUG
 }
@@ -135,7 +132,7 @@ void CodeAssembler::BreakOnNode(int node_id) {
   Graph* graph = raw_assembler()->graph();
   Zone* zone = graph->zone();
   GraphDecorator* decorator =
-      new (zone) BreakOnNodeDecorator(static_cast<NodeId>(node_id));
+      zone->New<BreakOnNodeDecorator>(static_cast<NodeId>(node_id));
   graph->AddDecorator(decorator);
 }
 
@@ -175,8 +172,9 @@ PoisoningMitigationLevel CodeAssembler::poisoning_level() const {
 }
 
 // static
-Handle<Code> CodeAssembler::GenerateCode(CodeAssemblerState* state,
-                                         const AssemblerOptions& options) {
+Handle<Code> CodeAssembler::GenerateCode(
+    CodeAssemblerState* state, const AssemblerOptions& options,
+    const ProfileDataFromFile* profile_data) {
   DCHECK(!state->code_generated_);
 
   RawMachineAssembler* rasm = state->raw_assembler_.get();
@@ -184,11 +182,12 @@ Handle<Code> CodeAssembler::GenerateCode(CodeAssemblerState* state,
   Handle<Code> code;
   Graph* graph = rasm->ExportForOptimization();
 
-  code = Pipeline::GenerateCodeForCodeStub(
-             rasm->isolate(), rasm->call_descriptor(), graph, state->jsgraph_,
-             rasm->source_positions(), state->kind_, state->name_,
-             state->builtin_index_, rasm->poisoning_level(), options)
-             .ToHandleChecked();
+  code =
+      Pipeline::GenerateCodeForCodeStub(
+          rasm->isolate(), rasm->call_descriptor(), graph, state->jsgraph_,
+          rasm->source_positions(), state->kind_, state->name_,
+          state->builtin_index_, rasm->poisoning_level(), options, profile_data)
+          .ToHandleChecked();
 
   state->code_generated_ = true;
   return code;
@@ -319,17 +318,18 @@ TNode<Float64T> CodeAssembler::Float64Constant(double value) {
 bool CodeAssembler::ToInt32Constant(Node* node, int32_t* out_value) {
   {
     Int64Matcher m(node);
-    if (m.HasValue() && m.IsInRange(std::numeric_limits<int32_t>::min(),
-                                    std::numeric_limits<int32_t>::max())) {
-      *out_value = static_cast<int32_t>(m.Value());
+    if (m.HasResolvedValue() &&
+        m.IsInRange(std::numeric_limits<int32_t>::min(),
+                    std::numeric_limits<int32_t>::max())) {
+      *out_value = static_cast<int32_t>(m.ResolvedValue());
       return true;
     }
   }
 
   {
     Int32Matcher m(node);
-    if (m.HasValue()) {
-      *out_value = m.Value();
+    if (m.HasResolvedValue()) {
+      *out_value = m.ResolvedValue();
       return true;
     }
   }
@@ -339,8 +339,8 @@ bool CodeAssembler::ToInt32Constant(Node* node, int32_t* out_value) {
 
 bool CodeAssembler::ToInt64Constant(Node* node, int64_t* out_value) {
   Int64Matcher m(node);
-  if (m.HasValue()) *out_value = m.Value();
-  return m.HasValue();
+  if (m.HasResolvedValue()) *out_value = m.ResolvedValue();
+  return m.HasResolvedValue();
 }
 
 bool CodeAssembler::ToSmiConstant(Node* node, Smi* out_value) {
@@ -348,8 +348,8 @@ bool CodeAssembler::ToSmiConstant(Node* node, Smi* out_value) {
     node = node->InputAt(0);
   }
   IntPtrMatcher m(node);
-  if (m.HasValue()) {
-    intptr_t value = m.Value();
+  if (m.HasResolvedValue()) {
+    intptr_t value = m.ResolvedValue();
     // Make sure that the value is actually a smi
     CHECK_EQ(0, value & ((static_cast<intptr_t>(1) << kSmiShiftSize) - 1));
     *out_value = Smi(static_cast<Address>(value));
@@ -364,8 +364,8 @@ bool CodeAssembler::ToIntPtrConstant(Node* node, intptr_t* out_value) {
     node = node->InputAt(0);
   }
   IntPtrMatcher m(node);
-  if (m.HasValue()) *out_value = m.Value();
-  return m.HasValue();
+  if (m.HasResolvedValue()) *out_value = m.ResolvedValue();
+  return m.HasResolvedValue();
 }
 
 bool CodeAssembler::IsUndefinedConstant(TNode<Object> node) {
@@ -378,7 +378,7 @@ bool CodeAssembler::IsNullConstant(TNode<Object> node) {
   return m.Is(isolate()->factory()->null_value());
 }
 
-Node* CodeAssembler::Parameter(int index) {
+Node* CodeAssembler::UntypedParameter(int index) {
   if (index == kTargetParameterIndex) return raw_assembler()->TargetParameter();
   return raw_assembler()->Parameter(index);
 }
@@ -391,8 +391,8 @@ bool CodeAssembler::IsJSFunctionCall() const {
 TNode<Context> CodeAssembler::GetJSContextParameter() {
   auto call_descriptor = raw_assembler()->call_descriptor();
   DCHECK(call_descriptor->IsJSFunctionCall());
-  return CAST(Parameter(Linkage::GetJSCallContextParamIndex(
-      static_cast<int>(call_descriptor->JSParameterCount()))));
+  return Parameter<Context>(Linkage::GetJSCallContextParamIndex(
+      static_cast<int>(call_descriptor->JSParameterCount())));
 }
 
 void CodeAssembler::Return(TNode<Object> value) {
@@ -493,12 +493,26 @@ void CodeAssembler::Comment(std::string str) {
   raw_assembler()->Comment(str);
 }
 
-void CodeAssembler::StaticAssert(TNode<BoolT> value) {
-  raw_assembler()->StaticAssert(value);
+void CodeAssembler::StaticAssert(TNode<BoolT> value, const char* source) {
+  raw_assembler()->StaticAssert(value, source);
 }
 
 void CodeAssembler::SetSourcePosition(const char* file, int line) {
-  raw_assembler()->SetSourcePosition(file, line);
+  raw_assembler()->SetCurrentExternalSourcePosition({file, line});
+}
+
+void CodeAssembler::PushSourcePosition() {
+  auto position = raw_assembler()->GetCurrentExternalSourcePosition();
+  state_->macro_call_stack_.push_back(position);
+}
+
+void CodeAssembler::PopSourcePosition() {
+  state_->macro_call_stack_.pop_back();
+}
+
+const std::vector<FileAndLine>& CodeAssembler::GetMacroSourcePositionStack()
+    const {
+  return state_->macro_call_stack_;
 }
 
 void CodeAssembler::Bind(Label* label) { return label->Bind(); }
@@ -619,6 +633,11 @@ TNode<Float64T> CodeAssembler::RoundIntPtrToFloat64(Node* value) {
   return UncheckedCast<Float64T>(raw_assembler()->ChangeInt32ToFloat64(value));
 }
 
+TNode<Int32T> CodeAssembler::TruncateFloat32ToInt32(
+    SloppyTNode<Float32T> value) {
+  return UncheckedCast<Int32T>(raw_assembler()->TruncateFloat32ToInt32(
+      value, TruncateKind::kSetOverflowToMin));
+}
 #define DEFINE_CODE_ASSEMBLER_UNARY_OP(name, ResType, ArgType) \
   TNode<ResType> CodeAssembler::name(SloppyTNode<ArgType> a) { \
     return UncheckedCast<ResType>(raw_assembler()->name(a));   \
@@ -784,19 +803,21 @@ Node* CodeAssembler::AtomicStore(MachineRepresentation rep, Node* base,
   return raw_assembler()->AtomicStore(rep, base, offset, value, value_high);
 }
 
-#define ATOMIC_FUNCTION(name)                                       \
-  Node* CodeAssembler::Atomic##name(MachineType type, Node* base,   \
-                                    Node* offset, Node* value,      \
-                                    Node* value_high) {             \
-    return raw_assembler()->Atomic##name(type, base, offset, value, \
-                                         value_high);               \
+#define ATOMIC_FUNCTION(name)                                        \
+  Node* CodeAssembler::Atomic##name(                                 \
+      MachineType type, TNode<RawPtrT> base, TNode<UintPtrT> offset, \
+      Node* value, base::Optional<TNode<UintPtrT>> value_high) {     \
+    Node* value_high_node = nullptr;                                 \
+    if (value_high) value_high_node = *value_high;                   \
+    return raw_assembler()->Atomic##name(type, base, offset, value,  \
+                                         value_high_node);           \
   }
-ATOMIC_FUNCTION(Exchange)
 ATOMIC_FUNCTION(Add)
 ATOMIC_FUNCTION(Sub)
 ATOMIC_FUNCTION(And)
 ATOMIC_FUNCTION(Or)
 ATOMIC_FUNCTION(Xor)
+ATOMIC_FUNCTION(Exchange)
 #undef ATOMIC_FUNCTION
 
 Node* CodeAssembler::AtomicCompareExchange(MachineType type, Node* base,
@@ -815,10 +836,6 @@ Node* CodeAssembler::StoreRoot(RootIndex root_index, Node* value) {
   int offset = IsolateData::root_slot_offset(root_index);
   return StoreFullTaggedNoWriteBarrier(isolate_root, IntPtrConstant(offset),
                                        value);
-}
-
-Node* CodeAssembler::Retain(Node* value) {
-  return raw_assembler()->Retain(value);
 }
 
 Node* CodeAssembler::Projection(int index, Node* value) {
@@ -876,7 +893,7 @@ class NodeArray {
 };
 }  // namespace
 
-TNode<Object> CodeAssembler::CallRuntimeImpl(
+Node* CodeAssembler::CallRuntimeImpl(
     Runtime::FunctionId function, TNode<Object> context,
     std::initializer_list<TNode<Object>> args) {
   int result_size = Runtime::FunctionForId(function)->result_size;
@@ -906,7 +923,7 @@ TNode<Object> CodeAssembler::CallRuntimeImpl(
       raw_assembler()->CallN(call_descriptor, inputs.size(), inputs.data());
   HandleException(return_value);
   CallEpilogue();
-  return UncheckedCast<Object>(return_value);
+  return return_value;
 }
 
 void CodeAssembler::TailCallRuntimeImpl(
@@ -937,8 +954,7 @@ void CodeAssembler::TailCallRuntimeImpl(
 
 Node* CodeAssembler::CallStubN(StubCallMode call_mode,
                                const CallInterfaceDescriptor& descriptor,
-                               size_t result_size, int input_count,
-                               Node* const* inputs) {
+                               int input_count, Node* const* inputs) {
   DCHECK(call_mode == StubCallMode::kCallCodeObject ||
          call_mode == StubCallMode::kCallBuiltinPointer);
 
@@ -956,7 +972,6 @@ Node* CodeAssembler::CallStubN(StubCallMode call_mode,
   // Extra arguments not mentioned in the descriptor are passed on the stack.
   int stack_parameter_count = argc - descriptor.GetRegisterParameterCount();
   DCHECK_LE(descriptor.GetStackParameterCount(), stack_parameter_count);
-  DCHECK_EQ(result_size, descriptor.GetReturnCount());
 
   auto call_descriptor = Linkage::GetStubCallDescriptor(
       zone(), descriptor, stack_parameter_count, CallDescriptor::kNoFlags,
@@ -992,8 +1007,7 @@ void CodeAssembler::TailCallStubImpl(const CallInterfaceDescriptor& descriptor,
 
 Node* CodeAssembler::CallStubRImpl(StubCallMode call_mode,
                                    const CallInterfaceDescriptor& descriptor,
-                                   size_t result_size, TNode<Object> target,
-                                   TNode<Object> context,
+                                   TNode<Object> target, TNode<Object> context,
                                    std::initializer_list<Node*> args) {
   DCHECK(call_mode == StubCallMode::kCallCodeObject ||
          call_mode == StubCallMode::kCallBuiltinPointer);
@@ -1008,8 +1022,7 @@ Node* CodeAssembler::CallStubRImpl(StubCallMode call_mode,
     inputs.Add(context);
   }
 
-  return CallStubN(call_mode, descriptor, result_size, inputs.size(),
-                   inputs.data());
+  return CallStubN(call_mode, descriptor, inputs.size(), inputs.data());
 }
 
 Node* CodeAssembler::CallJSStubImpl(const CallInterfaceDescriptor& descriptor,
@@ -1027,15 +1040,11 @@ Node* CodeAssembler::CallJSStubImpl(const CallInterfaceDescriptor& descriptor,
     inputs.Add(new_target);
   }
   inputs.Add(arity);
-#ifdef V8_REVERSE_JSARGS
-  for (auto arg : base::Reversed(args)) inputs.Add(arg);
-#else
   for (auto arg : args) inputs.Add(arg);
-#endif
   if (descriptor.HasContextParameter()) {
     inputs.Add(context);
   }
-  return CallStubN(StubCallMode::kCallCodeObject, descriptor, 1, inputs.size(),
+  return CallStubN(StubCallMode::kCallCodeObject, descriptor, inputs.size(),
                    inputs.data());
 }
 
@@ -1203,9 +1212,7 @@ void CodeAssembler::Branch(TNode<BoolT> condition,
 void CodeAssembler::Switch(Node* index, Label* default_label,
                            const int32_t* case_values, Label** case_labels,
                            size_t case_count) {
-  RawMachineLabel** labels =
-      new (zone()->New(sizeof(RawMachineLabel*) * case_count))
-          RawMachineLabel*[case_count];
+  RawMachineLabel** labels = zone()->NewArray<RawMachineLabel*>(case_count);
   for (size_t i = 0; i < case_count; ++i) {
     labels[i] = case_labels[i]->label_;
     case_labels[i]->MergeVariables();
@@ -1279,8 +1286,8 @@ bool CodeAssemblerVariable::ImplComparator::operator()(
 
 CodeAssemblerVariable::CodeAssemblerVariable(CodeAssembler* assembler,
                                              MachineRepresentation rep)
-    : impl_(new (assembler->zone())
-                Impl(rep, assembler->state()->NextVariableId())),
+    : impl_(assembler->zone()->New<Impl>(rep,
+                                         assembler->state()->NextVariableId())),
       state_(assembler->state()) {
   state_->variables_.insert(impl_);
 }
@@ -1296,8 +1303,8 @@ CodeAssemblerVariable::CodeAssemblerVariable(CodeAssembler* assembler,
 CodeAssemblerVariable::CodeAssemblerVariable(CodeAssembler* assembler,
                                              AssemblerDebugInfo debug_info,
                                              MachineRepresentation rep)
-    : impl_(new (assembler->zone())
-                Impl(rep, assembler->state()->NextVariableId())),
+    : impl_(assembler->zone()->New<Impl>(rep,
+                                         assembler->state()->NextVariableId())),
       state_(assembler->state()) {
   impl_->set_debug_info(debug_info);
   state_->variables_.insert(impl_);
@@ -1365,10 +1372,9 @@ CodeAssemblerLabel::CodeAssemblerLabel(CodeAssembler* assembler,
       merge_count_(0),
       state_(assembler->state()),
       label_(nullptr) {
-  void* buffer = assembler->zone()->New(sizeof(RawMachineLabel));
-  label_ = new (buffer)
-      RawMachineLabel(type == kDeferred ? RawMachineLabel::kDeferred
-                                        : RawMachineLabel::kNonDeferred);
+  label_ = assembler->zone()->New<RawMachineLabel>(
+      type == kDeferred ? RawMachineLabel::kDeferred
+                        : RawMachineLabel::kNonDeferred);
   for (size_t i = 0; i < vars_count; ++i) {
     variable_phis_[vars[i]->impl_] = nullptr;
   }
@@ -1393,6 +1399,7 @@ void CodeAssemblerLabel::MergeVariables() {
     }
     // If the following asserts, then you've jumped to a label without a bound
     // variable along that path that expects to merge its value into a phi.
+    // This can also occur if a label is bound that is never jumped to.
     DCHECK(variable_phis_.find(var) == variable_phis_.end() ||
            count == merge_count_);
     USE(count);
@@ -1444,7 +1451,8 @@ void CodeAssemblerLabel::Bind(AssemblerDebugInfo debug_info) {
     FATAL("%s", str.str().c_str());
   }
   if (FLAG_enable_source_at_csa_bind) {
-    state_->raw_assembler_->SetSourcePosition(debug_info.file, debug_info.line);
+    state_->raw_assembler_->SetCurrentExternalSourcePosition(
+        {debug_info.file, debug_info.line});
   }
   state_->raw_assembler_->Bind(label_, debug_info);
   UpdateVariablesAfterBind();

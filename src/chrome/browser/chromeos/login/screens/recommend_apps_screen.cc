@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 
-#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,12 +24,6 @@ std::string RecommendAppsScreen::GetResultString(Result result) {
     case Result::NOT_APPLICABLE:
       return BaseScreen::kNotApplicable;
   }
-}
-
-// static
-RecommendAppsScreen* RecommendAppsScreen::Get(ScreenManager* manager) {
-  return static_cast<RecommendAppsScreen*>(
-      manager->GetScreen(RecommendAppsScreenView::kScreenId));
 }
 
 RecommendAppsScreen::RecommendAppsScreen(
@@ -68,7 +61,7 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   view_ = nullptr;
 }
 
-bool RecommendAppsScreen::MaybeSkip() {
+bool RecommendAppsScreen::MaybeSkip(WizardContext* context) {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());

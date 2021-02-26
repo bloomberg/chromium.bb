@@ -7,10 +7,11 @@ import("//third_party/protobuf/proto_library.gni")
 static_library("test_support") {
   testonly = true
   sources = [
+    "mock_node_channel_delegate.cc",
+    "mock_node_channel_delegate.h",
     "mojo_test_base.cc",
     "mojo_test_base.h",
     "test_utils.h",
-    "test_utils_win.cc",
   ]
 
   if (!is_ios) {
@@ -20,6 +21,10 @@ static_library("test_support") {
     ]
   }
 
+  if (is_win) {
+    sources += [ "test_utils_win.cc" ]
+  }
+
   if (is_fuchsia || is_posix) {
     sources += [ "test_utils.cc" ]
   }
@@ -27,8 +32,10 @@ static_library("test_support") {
   public_deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/core:embedder_internal",
     "//mojo/core/embedder",
     "//mojo/public/cpp/system",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
@@ -47,7 +54,7 @@ source_set("run_all_unittests") {
     "//testing/gtest",
   ]
 
-  if (is_linux && !is_component_build) {
+  if ((is_linux || is_chromeos) && !is_component_build) {
     public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
   }
 }
@@ -65,7 +72,7 @@ source_set("run_all_perftests") {
 
   sources = [ "run_all_perftests.cc" ]
 
-  if (is_linux && !is_component_build) {
+  if ((is_linux || is_chromeos) && !is_component_build) {
     public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
   }
 }

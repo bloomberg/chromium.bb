@@ -23,6 +23,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> 항목과 <ph name="SECOND_ITEM_TITLE" /> 항목의 위치를 서로 바꿈</translation>
 <translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
+<translation id="1510238584712386396">런처</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
 <translation id="1643823602425662293">알림</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">선택</translation>
 <translation id="1859234291848436338">쓰기 방향</translation>
 <translation id="1860796786778352021">알림 닫기</translation>
+<translation id="186476001994626254">웹 스마트 붙여넣기 콘텐츠</translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
+<translation id="19085484004813472">새로운 기능입니다.</translation>
 <translation id="2006524834898217237">기기가 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="208586643495776849">다시 시도해 주세요.</translation>
-<translation id="2090963878406559571"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 설정에서 두 기기 모두의 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2161656808144014275">텍스트</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">보정이 완료되었습니다.</translation>
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
 <translation id="2545651323591713692">알림 일시 중지</translation>
+<translation id="2570734079541893434">설정 관리하기</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1시간 후}other{#시간 후}}</translation>
 <translation id="2583543531130364912">터치스크린 보정</translation>
+<translation id="2586657967955657006">클립보드</translation>
 <translation id="2666092431469916601">맨 위</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" />에서 공유함</translation>
+<translation id="271033894570825754">새 파일</translation>
 <translation id="2743387203779672305">클립보드로 복사</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">폴더 열기</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1년 전}other{#년 전}}</translation>
+<translation id="2878511608894704031">모두 삭제</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1일 후}other{#일 후}}</translation>
 <translation id="2931838996092594335">클릭</translation>
 <translation id="2981684127883932071">추천 표시 중</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> 파일</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> 이상</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' 찾기</translation>
+<translation id="3622035490309591977">클립보드 기록</translation>
 <translation id="364720409959344976">업로드할 폴더 선택</translation>
 <translation id="3660179305079774227">위쪽 화살표</translation>
 <translation id="3670030362669914947">번호</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">말하기 시작</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> 앱이 <ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
 <translation id="4316910396681052118">모든 앱</translation>
+<translation id="4491109536499578614">이미지</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, 별표 평점 <ph name="RATING_SCORE" />점</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, 앱 추천</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5266161281976477809">펼치기/접기 삼각형</translation>
 <translation id="5278860589123563674">전송 실패</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> 알림이 있습니다.</translation>
 <translation id="528468243742722775">종료</translation>
-<translation id="5327567770033251652">동기화를 사용 설정</translation>
 <translation id="5329858601952122676">삭제(&amp;D)</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />을(를) <ph name="IN_PLACE_APP" /> 위로 드래그해서 놓으면 폴더가 만들어집니다.</translation>
 <translation id="5463830097259460683">그림 이모티콘 &amp;&amp; 기호</translation>
 <translation id="5476505524087279545">선택 해제</translation>
 <translation id="547979256943495781">오른쪽에 실행기 표시</translation>
+<translation id="5528053674512161860">개발자 UI 모듈(dev_ui)이 설치되지 않아 페이지를 로드할 수 없습니다</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> 시스템</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">왼쪽 화살표</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> 알림이 있습니다.</translation>
 <translation id="5675363643668471212">실행기 항목</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{오늘 사용}=1{1일 전에 사용}other{#일 전에 사용}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">이미지입니다.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1년 후}other{#년 후}}</translation>
+<translation id="588258955323874662">전체화면</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>
 <translation id="5941711191222866238">최소화</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1시간}other{#시간}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6119846243427417423">활성화</translation>
 <translation id="6129953537138746214">Space</translation>
+<translation id="6134259848159370930">기기, 앱, 설정, 웹에서 검색합니다.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" />B/s</translation>
 <translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6166852626429024716">기기, 앱, 설정, 웹에서 검색...</translation>
 <translation id="6264365405983206840">모두 선택(&amp;A)</translation>
 <translation id="6351032674660237738">앱 추천</translation>
 <translation id="6364916375976753737">왼쪽으로 스크롤</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google 어시스턴트</translation>
 <translation id="6430678249303439055">이 앱의 모든 알림 차단</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1초 전}other{#초 전}}</translation>
+<translation id="6503257047630241175">RTF 콘텐츠</translation>
 <translation id="6539092367496845964">문제가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
 <translation id="654149438358937226">모든 알림 차단</translation>
 <translation id="6567071839949112727">상위 개체 클릭</translation>
 <translation id="6578407462441924264">이름 없음</translation>
 <translation id="6612467943526193239">보정을 종료하려면 Esc를 누르세요.</translation>
 <translation id="6620110761915583480">파일 저장</translation>
-<translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" />에서 Chrome 동기화가 사용 설정되어 있는지 확인한 다음 다시 보내 보세요.</translation>
 <translation id="6699343763173986273">미디어 다음 트랙</translation>
 <translation id="6710213216561001401">이전</translation>
-<translation id="6779314412797872738">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두 설정에서 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="6786750046913594791">폴더 닫기</translation>
 <translation id="6808150112686056157">미디어 중지</translation>
 <translation id="6845383723252244143">폴더 선택</translation>
 <translation id="6845533974506654842">누르기</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1시간 남음}other{#시간 남음}}</translation>
 <translation id="688711909580084195">제목 없는 웹페이지</translation>
+<translation id="6902419395050653510">HTML 콘텐츠입니다.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" />PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1년 남음}other{#년 남음}}</translation>
 <translation id="6945221475159498467">선택</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
 <translation id="7319740667687257810">런처, 부분 뷰</translation>
-<translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1분 전}other{#분 전}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537"><ph name="PAGE_NUMBER" />페이지, <ph name="ROW_NUMBER" />행, <ph name="COLUMN_NUMBER" />열로 이동합니다.</translation>
 <translation id="7879499977785298635">차단하지 않음</translation>
 <translation id="7907591526440419938">파일 열기</translation>
+<translation id="7952747673138230804">Chrome OS에서 탐색할 새 추천 콘텐츠를 표시합니다. 사용 데이터를 공유하기로 선택한 경우에만 추천 기능 개선을 위해 통계를 전송합니다. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{읽지 않은 알림이 1개 이상 있음}other{읽지 않은 알림이 #개 이상 있음}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1분 후}other{#분 후}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 파일(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">실행기 항상 표시</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" />KB/초</translation>
+<translation id="8685326675965865247">기기, 앱, 설정, 웹에서 검색합니다. 앱에서 탐색하려면 화살표 키를 사용하세요.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" />개</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1시간}other{#시간}}</translation>

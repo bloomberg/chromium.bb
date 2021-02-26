@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/base/video_types.h"
@@ -188,7 +189,8 @@ enum class VideoCaptureError {
   kFuchsiaSysmemInvalidBufferSize = 120,
   kFuchsiaUnsupportedPixelFormat = 121,
   kFuchsiaFailedToMapSysmemBuffer = 122,
-  kMaxValue = 122
+  kCrosHalV3DeviceContextDuplicatedClient = 123,
+  kMaxValue = 123
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for

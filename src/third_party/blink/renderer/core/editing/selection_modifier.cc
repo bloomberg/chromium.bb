@@ -26,12 +26,12 @@
 
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
 
+#include "third_party/blink/renderer/core/editing/bidi_adjustment.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
-#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -271,7 +271,8 @@ VisibleSelection SelectionModifier::PrepareToModifySelection(
 VisiblePosition SelectionModifier::PositionForPlatform(
     bool is_get_start) const {
   Settings* settings = GetFrame().GetSettings();
-  if (settings && settings->GetEditingBehaviorType() == kEditingMacBehavior)
+  if (settings && settings->GetEditingBehaviorType() ==
+                      mojom::blink::EditingBehavior::kEditingMacBehavior)
     return is_get_start ? selection_.VisibleStart() : selection_.VisibleEnd();
   // Linux and Windows always extend selections from the extent endpoint.
   // FIXME: VisibleSelection should be fixed to ensure as an invariant that

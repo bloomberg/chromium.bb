@@ -35,6 +35,13 @@ OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy()
 
 OverlayProcessorUsingStrategy::~OverlayProcessorUsingStrategy() = default;
 
+gfx::Rect OverlayProcessorUsingStrategy::GetPreviousFrameOverlaysBoundingRect()
+    const {
+  gfx::Rect result = overlay_damage_rect_;
+  result.Union(previous_frame_underlay_rect_);
+  return result;
+}
+
 gfx::Rect OverlayProcessorUsingStrategy::GetAndResetOverlayDamage() {
   gfx::Rect result = overlay_damage_rect_;
   overlay_damage_rect_ = gfx::Rect();
@@ -48,11 +55,12 @@ void OverlayProcessorUsingStrategy::NotifyOverlayPromotion(
 
 void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    AggregatedRenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
+    SurfaceDamageRectList* surface_damage_rect_list,
     OutputSurfaceOverlayPlane* output_surface_plane,
     CandidateList* candidates,
     gfx::Rect* damage_rect,
@@ -60,7 +68,7 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   TRACE_EVENT0("viz", "OverlayProcessorUsingStrategy::ProcessForOverlays");
   DCHECK(candidates->empty());
 
-  RenderPass* render_pass = render_passes->back().get();
+  auto* render_pass = render_passes->back().get();
 
   // If we have any copy requests, we can't remove any quads for overlays or
   // CALayers because the framebuffer would be missing the removed quads'
@@ -78,7 +86,8 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   // Only if that fails, attempt hardware overlay strategies.
   bool success = AttemptWithStrategies(
       output_color_matrix, render_pass_backdrop_filters, resource_provider,
-      render_passes, output_surface_plane, candidates, content_bounds);
+      render_passes, surface_damage_rect_list, output_surface_plane, candidates,
+      content_bounds);
 
   if (success) {
     UpdateDamageRect(candidates, previous_frame_underlay_rect_,
@@ -150,6 +159,15 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
       bool always_unoccluded =
           overlay.is_unoccluded && previous_frame_underlay_was_unoccluded;
 
+      // We need to make sure that when we change the overlay we damage the
+      // region where the underlay will be positioned. This is because a
+      // black transparent hole is made for the underlay to show through
+      // but its possible that the damage for this quad is less than the
+      // complete size of the underlay.  https://crbug.com/1130733
+      if (!same_underlay_rect) {
+        damage_rect->Union(this_frame_underlay_rect);
+      }
+
       if (same_underlay_rect && !transition_from_occluded_to_unoccluded &&
           (always_unoccluded || overlay.no_occluding_damage)) {
         damage_rect->Subtract(this_frame_underlay_rect);
@@ -158,10 +176,9 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
     }
 
     if (overlay.plane_z_order) {
-      RecordOverlayDamageRectHistograms(
-          (overlay.plane_z_order > 0), !overlay.no_occluding_damage,
-          damage_rect->IsEmpty(),
-          false /* occluding_damage_equal_to_damage_rect */);
+      RecordOverlayDamageRectHistograms((overlay.plane_z_order > 0),
+                                        !overlay.no_occluding_damage,
+                                        damage_rect->IsEmpty());
     }
   }
 
@@ -188,15 +205,17 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_pass_list,
+    AggregatedRenderPassList* render_pass_list,
+    SurfaceDamageRectList* surface_damage_rect_list,
     OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
     OverlayCandidateList* candidates,
     std::vector<gfx::Rect>* content_bounds) {
   last_successful_strategy_ = nullptr;
   for (const auto& strategy : strategies_) {
     if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                          resource_provider, render_pass_list, primary_plane,
-                          candidates, content_bounds)) {
+                          resource_provider, render_pass_list,
+                          surface_damage_rect_list, primary_plane, candidates,
+                          content_bounds)) {
       // This function is used by underlay strategy to mark the primary plane as
       // enable_blending.
       strategy->AdjustOutputSurfaceOverlay(primary_plane);

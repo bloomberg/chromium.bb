@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
@@ -14,22 +17,30 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/zwp_text_input_wrapper_v1.h"
 #include "ui/ozone/public/ozone_switches.h"
 
-namespace ui {
+#if BUILDFLAG(USE_XKBCOMMON)
+#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+#endif
 
+namespace ui {
 namespace {
 
-constexpr int kXkbKeycodeOffset = 8;
+base::Optional<size_t> OffsetFromUTF8Offset(const base::StringPiece& text,
+                                            uint32_t offset) {
+  if (offset > text.length())
+    return base::nullopt;
+
+  base::string16 converted;
+  if (!base::UTF8ToUTF16(text.data(), offset, &converted))
+    return base::nullopt;
+
+  return converted.size();
+}
 
 }  // namespace
 
@@ -58,7 +69,6 @@ void WaylandInputMethodContext::Init(bool initialize_for_testing) {
       initialize_for_testing ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWaylandIme);
-
   // If text input instance is not created then all ime context operations
   // are noop. This option is because in some environments someone might not
   // want to enable ime/virtual keyboard even if it's available.
@@ -132,23 +142,67 @@ void WaylandInputMethodContext::SetSurroundingText(
     text_input_->SetSurroundingText(text, selection_range);
 }
 
-void WaylandInputMethodContext::OnPreeditString(const std::string& text,
-                                                int preedit_cursor) {
-  gfx::Range selection_range = gfx::Range::InvalidRange();
-
-  if (!selection_range.IsValid()) {
-    int cursor_pos = (preedit_cursor) ? text.length() : preedit_cursor;
-    selection_range.set_start(cursor_pos);
-    selection_range.set_end(cursor_pos);
-  }
-
+void WaylandInputMethodContext::OnPreeditString(
+    base::StringPiece text,
+    const std::vector<SpanStyle>& spans,
+    int32_t preedit_cursor) {
   ui::CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16(text);
-  composition_text.selection = selection_range;
+  for (const auto& span : spans) {
+    ImeTextSpan text_span;
+    auto start_offset = OffsetFromUTF8Offset(text, span.index);
+    if (!start_offset)
+      continue;
+    text_span.start_offset = *start_offset;
+    auto end_offset = OffsetFromUTF8Offset(text, span.index + span.length);
+    if (!end_offset)
+      continue;
+    text_span.end_offset = *end_offset;
+    bool supported = true;
+    switch (span.style) {
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_DEFAULT:
+        break;
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_HIGHLIGHT:
+        text_span.thickness = ImeTextSpan::Thickness::kThick;
+        break;
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_UNDERLINE:
+        text_span.thickness = ImeTextSpan::Thickness::kThin;
+        break;
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_SELECTION:
+        text_span.type = ImeTextSpan::Type::kSuggestion;
+        break;
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT:
+        text_span.type = ImeTextSpan::Type::kMisspellingSuggestion;
+        break;
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_NONE:
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_ACTIVE:
+      case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INACTIVE:
+      default:
+        VLOG(1) << "Unsupported style. Skipped: " << span.style;
+        supported = false;
+        break;
+    }
+    if (!supported)
+      continue;
+    composition_text.ime_text_spans.push_back(std::move(text_span));
+  }
+
+  if (preedit_cursor < 0) {
+    composition_text.selection = gfx::Range::InvalidRange();
+  } else {
+    auto cursor =
+        OffsetFromUTF8Offset(text, static_cast<uint32_t>(preedit_cursor));
+    if (!cursor) {
+      // Invalid cursor position. Do nothing.
+      return;
+    }
+    composition_text.selection = gfx::Range(*cursor);
+  }
+
   ime_delegate_->OnPreeditChanged(composition_text);
 }
 
-void WaylandInputMethodContext::OnCommitString(const std::string& text) {
+void WaylandInputMethodContext::OnCommitString(base::StringPiece text) {
   ime_delegate_->OnCommit(base::UTF8ToUTF16(text));
 }
 
@@ -157,21 +211,23 @@ void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
   ime_delegate_->OnDeleteSurroundingText(index, length);
 }
 
-void WaylandInputMethodContext::OnKeysym(uint32_t key,
+void WaylandInputMethodContext::OnKeysym(uint32_t keysym,
                                          uint32_t state,
                                          uint32_t modifiers) {
-  DomKey dom_key = NonPrintableXKeySymToDomKey(key);
-  KeyboardCode key_code = NonPrintableDomKeyToKeyboardCode(dom_key);
+#if BUILDFLAG(USE_XKBCOMMON)
+  // TODO(crbug.com/1079353): Handle modifiers.
   DomCode dom_code =
-      KeycodeConverter::NativeKeycodeToDomCode(key_code + kXkbKeycodeOffset);
-  if (dom_code == ui::DomCode::NONE)
+      connection_->keyboard()->layout_engine()->GetDomCodeByKeysym(keysym);
+  if (dom_code == DomCode::NONE)
     return;
 
-  // TODO(crbug.com/1079353): Handle modifiers.
   EventType type =
       state == WL_KEYBOARD_KEY_STATE_PRESSED ? ET_KEY_PRESSED : ET_KEY_RELEASED;
-  key_delegate_->OnKeyboardKeyEvent(type, dom_code, dom_key, key_code,
-                                    /*repeat=*/false, EventTimeForNow());
+  key_delegate_->OnKeyboardKeyEvent(type, dom_code, /*repeat=*/false,
+                                    EventTimeForNow());
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 }  // namespace ui

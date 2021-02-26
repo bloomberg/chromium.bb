@@ -9,8 +9,8 @@ DESCRIPTION
 -----------
 
 The Chromium depot_tools suite contains many tools to assist/augment the
-Chromium development environment. The tools may be downloaded from
-link:{sys3:git config remote.origin.url}[here].
+Chromium development environment. The tools may be downloaded by checking
+out the link:{sys3:git config remote.origin.url}[git repository].
 
 There are two primary categories of tools. Some of these tools are 'essential'
 to the development flow, in the sense that you cannot successfully develop

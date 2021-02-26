@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,8 +18,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/stack_frame.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
 
@@ -81,8 +85,7 @@ StackTrace GetStackTraceFromMessage(base::string16* message,
 ExtensionsRenderFrameObserver::ExtensionsRenderFrameObserver(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
-    : content::RenderFrameObserver(render_frame),
-      webview_visually_deemphasized_(false) {
+    : content::RenderFrameObserver(render_frame) {
   registry->AddInterface(
       base::Bind(&ExtensionsRenderFrameObserver::BindAppWindowReceiver,
                  base::Unretained(this)));
@@ -108,7 +111,7 @@ void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
 
   SkColor color =
       deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
-  render_frame()->GetWebFrame()->SetMainFrameOverlayColor(color);
+  render_frame()->GetWebFrame()->FrameWidget()->SetMainFrameOverlayColor(color);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

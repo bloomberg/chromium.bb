@@ -2,6 +2,8 @@
 // Copyright (c) 2017 Valve Corporation
 // Copyright (c) 2017 LunarG, Inc.
 //
+// SPDX-License-Identifier: Apache-2.0
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -31,7 +33,7 @@ bool FileSysUtilsIsDirectory(const std::string& path);
 // Determine if the provided path exists on the filesystem
 bool FileSysUtilsPathExists(const std::string& path);
 
-// Get the current directory of the executable
+// Get the current directory
 bool FileSysUtilsGetCurrentPath(std::string& path);
 
 // Get the parent path of a file

@@ -40,14 +40,14 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_TRUETYPE_IDS_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_LIST_H
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/tttags.h>
+#include <freetype/ttnameid.h>
+#include <freetype/ftmm.h>
+#include <freetype/ftlist.h>
 
 #include "ttpload.h"
 #include "ttgxvar.h"
@@ -489,6 +489,15 @@
                   " number of axes in item variation store\n"
                   "                                 "
                   " and `fvar' table are different\n" ));
+      error = FT_THROW( Invalid_Table );
+      goto Exit;
+    }
+
+    /* new constraint in OpenType 1.8.4 */
+    if ( itemStore->regionCount >= 32768U )
+    {
+      FT_TRACE2(( "ft_var_load_item_variation_store:"
+                  " too many variation region tables\n" ));
       error = FT_THROW( Invalid_Table );
       goto Exit;
     }
@@ -1729,7 +1738,7 @@
 
       if ( tuple_coords[i] == 0 )
       {
-        FT_TRACE6(( "      tuple coordinate is zero, ignore\n", i ));
+        FT_TRACE6(( "      tuple coordinate is zero, ignore\n" ));
         continue;
       }
 

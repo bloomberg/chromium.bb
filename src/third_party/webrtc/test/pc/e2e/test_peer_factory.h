@@ -19,6 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/test/peerconnection_quality_test_fixture.h"
+#include "api/test/time_controller.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "rtc_base/task_queue.h"
 #include "test/pc/e2e/analyzer/video/video_quality_analyzer_injection_helper.h"
@@ -44,42 +45,40 @@ struct RemotePeerAudioConfig {
 
 class TestPeerFactory {
  public:
+  // Creates a test peer factory.
+  // |signaling_thread| will be used as a signaling thread for all peers created
+  // by this factory.
+  // |time_controller| will be used to create required threads, task queue
+  // factories and call factory.
+  // |video_analyzer_helper| will be used to setup video quality analysis for
+  // created peers.
+  // |task_queue| will be used for AEC dump if it is requested.
+  TestPeerFactory(rtc::Thread* signaling_thread,
+                  TimeController& time_controller,
+                  VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
+                  rtc::TaskQueue* task_queue)
+      : signaling_thread_(signaling_thread),
+        time_controller_(time_controller),
+        video_analyzer_helper_(video_analyzer_helper),
+        task_queue_(task_queue) {}
+
   // Setups all components, that should be provided to WebRTC
   // PeerConnectionFactory and PeerConnection creation methods,
   // also will setup dependencies, that are required for media analyzers
   // injection.
-  //
-  // |signaling_thread| will be provided by test fixture implementation.
-  // |params| - describes current peer parameters, like current peer video
-  // streams and audio streams
-  static std::unique_ptr<TestPeer> CreateTestPeer(
-      std::unique_ptr<InjectableComponents> components,
-      std::unique_ptr<Params> params,
-      std::vector<PeerConfigurerImpl::VideoSource> video_sources,
-      std::unique_ptr<MockPeerConnectionObserver> observer,
-      VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
-      rtc::Thread* signaling_thread,
-      absl::optional<RemotePeerAudioConfig> remote_audio_config,
-      double bitrate_multiplier,
-      absl::optional<PeerConnectionE2EQualityTestFixture::EchoEmulationConfig>
-          echo_emulation_config,
-      rtc::TaskQueue* task_queue);
-  // Setups all components, that should be provided to WebRTC
-  // PeerConnectionFactory and PeerConnection creation methods,
-  // also will setup dependencies, that are required for media analyzers
-  // injection.
-  //
-  // |signaling_thread| will be provided by test fixture implementation.
-  static std::unique_ptr<TestPeer> CreateTestPeer(
+  std::unique_ptr<TestPeer> CreateTestPeer(
       std::unique_ptr<PeerConfigurerImpl> configurer,
       std::unique_ptr<MockPeerConnectionObserver> observer,
-      VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
-      rtc::Thread* signaling_thread,
       absl::optional<RemotePeerAudioConfig> remote_audio_config,
       double bitrate_multiplier,
       absl::optional<PeerConnectionE2EQualityTestFixture::EchoEmulationConfig>
-          echo_emulation_config,
-      rtc::TaskQueue* task_queue);
+          echo_emulation_config);
+
+ private:
+  rtc::Thread* signaling_thread_;
+  TimeController& time_controller_;
+  VideoQualityAnalyzerInjectionHelper* video_analyzer_helper_;
+  rtc::TaskQueue* task_queue_;
 };
 
 }  // namespace webrtc_pc_e2e

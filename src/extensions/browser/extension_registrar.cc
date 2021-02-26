@@ -5,7 +5,7 @@
 #include "extensions/browser/extension_registrar.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -96,6 +96,7 @@ void ExtensionRegistrar::AddExtension(
   delegate_->PreAddExtension(extension.get(), old);
 
   if (was_reloading) {
+    failed_to_reload_unpacked_extensions_.erase(extension->path());
     ReplaceReloadedExtension(extension);
   } else {
     if (is_extension_loaded) {
@@ -112,14 +113,14 @@ void ExtensionRegistrar::AddExtension(
 
 void ExtensionRegistrar::AddNewExtension(
     scoped_refptr<const Extension> extension) {
-  if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
+  if (extension_prefs_->IsExtensionBlocklisted(extension->id())) {
     DCHECK(!Manifest::IsComponentLocation(extension->location()));
-    // Only prefs is checked for the blacklist. We rely on callers to check the
-    // blacklist before calling into here, e.g. CrxInstaller checks before
+    // Only prefs is checked for the blocklist. We rely on callers to check the
+    // blocklist before calling into here, e.g. CrxInstaller checks before
     // installation then threads through the install and pending install flow
     // of this class, and ExtensionService checks when loading installed
     // extensions.
-    registry_->AddBlacklisted(extension);
+    registry_->AddBlocklisted(extension);
   } else if (delegate_->ShouldBlockExtension(extension.get())) {
     DCHECK(!Manifest::IsComponentLocation(extension->location()));
     registry_->AddBlocked(extension);
@@ -176,7 +177,7 @@ void ExtensionRegistrar::RemoveExtension(const ExtensionId& extension_id,
     extension_system_->UnregisterExtensionWithRequestContexts(extension_id,
                                                               reason);
   } else {
-    // TODO(michaelpg): The extension may be blocked or blacklisted, in which
+    // TODO(michaelpg): The extension may be blocked or blocklisted, in which
     // case it shouldn't need to be "deactivated". Determine whether the removal
     // notifications are necessary (crbug.com/708230).
     registry_->RemoveEnabled(extension_id);
@@ -199,7 +200,7 @@ void ExtensionRegistrar::EnableExtension(const ExtensionId& extension_id) {
 
   // First, check that the extension can be enabled.
   if (IsExtensionEnabled(extension_id) ||
-      extension_prefs_->IsExtensionBlacklisted(extension_id) ||
+      extension_prefs_->IsExtensionBlocklisted(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return;
   }
@@ -227,7 +228,7 @@ void ExtensionRegistrar::DisableExtension(const ExtensionId& extension_id,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(disable_reason::DISABLE_NONE, disable_reasons);
 
-  if (extension_prefs_->IsExtensionBlacklisted(extension_id))
+  if (extension_prefs_->IsExtensionBlocklisted(extension_id))
     return;
 
   // The extension may have been disabled already. Just add the disable reasons.
@@ -253,7 +254,8 @@ void ExtensionRegistrar::DisableExtension(const ExtensionId& extension_id,
         extensions::disable_reason::DISABLE_CORRUPTED |
         extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY |
         extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY |
-        extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+        extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED |
+        extensions::disable_reason::DISABLE_REINSTALL;
     disable_reasons &= internal_disable_reason_mask;
 
     if (disable_reasons == disable_reason::DISABLE_NONE)
@@ -291,22 +293,34 @@ void ExtensionRegistrar::ReloadExtension(
     LoadErrorBehavior load_error_behavior) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  base::FilePath path;
+
+  const Extension* disabled_extension =
+      registry_->disabled_extensions().GetByID(extension_id);
+
+  if (disabled_extension) {
+    path = disabled_extension->path();
+  }
+
   // If the extension is already reloading, don't reload again.
   if (extension_prefs_->HasDisableReason(extension_id,
                                          disable_reason::DISABLE_RELOAD)) {
-    return;
+    DCHECK(disabled_extension);
+    // If an unpacked extension previously failed to reload, it will still be
+    // marked as disabled, but we can try to reload it again - the developer
+    // may have fixed the issue.
+    if (failed_to_reload_unpacked_extensions_.count(path) == 0)
+      return;
+    failed_to_reload_unpacked_extensions_.erase(path);
   }
-
-  // Ignore attempts to reload a blacklisted or blocked extension. Sometimes
+  // Ignore attempts to reload a blocklisted or blocked extension. Sometimes
   // this can happen in a convoluted reload sequence triggered by the
-  // termination of a blacklisted or blocked extension and a naive attempt to
+  // termination of a blocklisted or blocked extension and a naive attempt to
   // reload it. For an example see http://crbug.com/373842.
-  if (registry_->blacklisted_extensions().Contains(extension_id) ||
+  if (registry_->blocklisted_extensions().Contains(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return;
   }
-
-  base::FilePath path;
 
   const Extension* enabled_extension =
       registry_->enabled_extensions().GetByID(extension_id);
@@ -334,7 +348,7 @@ void ExtensionRegistrar::ReloadExtension(
     DisableExtension(extension_id, disable_reason::DISABLE_RELOAD);
     DCHECK(registry_->disabled_extensions().Contains(extension_id));
     reloading_extensions_.insert(extension_id);
-  } else {
+  } else if (!disabled_extension) {
     std::map<ExtensionId, base::FilePath>::const_iterator iter =
         unloaded_extension_paths_.find(extension_id);
     if (iter == unloaded_extension_paths_.end()) {
@@ -344,6 +358,11 @@ void ExtensionRegistrar::ReloadExtension(
   }
 
   delegate_->LoadExtensionForReload(extension_id, path, load_error_behavior);
+}
+
+void ExtensionRegistrar::OnUnpackedExtensionReloadFailed(
+    const base::FilePath& path) {
+  failed_to_reload_unpacked_extensions_.insert(path);
 }
 
 void ExtensionRegistrar::TerminateExtension(const ExtensionId& extension_id) {
@@ -394,7 +413,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
   }
 
   if (registry_->disabled_extensions().Contains(extension_id) ||
-      registry_->blacklisted_extensions().Contains(extension_id) ||
+      registry_->blocklisted_extensions().Contains(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return false;
   }
@@ -405,7 +424,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
   // enabled unless otherwise noted.
   return !extension_prefs_->IsExtensionDisabled(extension_id) &&
-         !extension_prefs_->IsExtensionBlacklisted(extension_id) &&
+         !extension_prefs_->IsExtensionBlocklisted(extension_id) &&
          !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 

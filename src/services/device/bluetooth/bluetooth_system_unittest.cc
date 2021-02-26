@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -377,18 +377,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     std::move(callback).Run(base::nullopt);
   }
 
-  void PauseDiscovery(const dbus::ObjectPath& object_path,
-                      base::OnceClosure callback,
-                      ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                        base::OnceClosure callback,
-                        ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,
                     base::OnceClosure callback,
@@ -414,6 +402,14 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
                            uint32_t handle,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ConnectDevice(const dbus::ObjectPath& object_path,
+                     const std::string& address,
+                     const base::Optional<AddressType>& address_type,
+                     ConnectDeviceCallback callback,
+                     ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 

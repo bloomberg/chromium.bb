@@ -67,7 +67,6 @@ class CORE_EXPORT MutationObserver final
       public ActiveScriptWrappable<MutationObserver>,
       public ExecutionContextLifecycleStateObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);
   // Using CancelInspectorAsyncTasks as pre-finalizer to cancel async tasks.
   USING_PRE_FINALIZER(MutationObserver, CancelInspectorAsyncTasks);
 
@@ -86,7 +85,7 @@ class CORE_EXPORT MutationObserver final
     virtual ExecutionContext* GetExecutionContext() const = 0;
     virtual void Deliver(const MutationRecordVector& records,
                          MutationObserver&) = 0;
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
     const char* NameInHeapSnapshot() const override {
       return "MutationObserver::Delegate";
     }
@@ -118,7 +117,7 @@ class CORE_EXPORT MutationObserver final
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   struct ObserverLessThan;

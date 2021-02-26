@@ -4,8 +4,9 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 
-#include <stdint.h>
+#import <UIKit/UIKit.h>
 
+#include <stdint.h>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
@@ -30,8 +32,9 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
-#include "components/metrics/demographic_metrics_provider.h"
+#include "components/metrics/demographics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/entropy_state_provider.h"
 #include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -62,7 +65,11 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/metrics/chrome_browser_state_client.h"
+#import "ios/chrome/browser/metrics/ios_chrome_default_browser_metrics_provider.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
@@ -70,6 +77,8 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/tabs/tab_parenting_global_observer.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -117,9 +126,8 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
           FROM_HERE,
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         std::move(browser_metrics_upload_dir),
-                         /*recursive=*/true));
+          base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                         std::move(browser_metrics_upload_dir)));
     }
   }
   return file_metrics_provider;
@@ -161,7 +169,8 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
     PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
-  metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
+  metrics::FileMetricsProvider::RegisterSourcePrefs(registry,
+                                                    kBrowserMetricsName);
   metrics::RegisterMetricsReportingStatePrefs(registry);
   ukm::UkmService::RegisterPrefs(registry);
 }
@@ -246,10 +255,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
-    // Only restrict to allow-listed entries if metrics reporting is not forced.
-    bool restrict_to_allowed_entries = !IsMetricsReportingForceEnabled();
     ukm_service_ = std::make_unique<ukm::UkmService>(
-        local_state, this, restrict_to_allowed_entries,
+        local_state, this,
         std::make_unique<metrics::DemographicMetricsProvider>(
             std::make_unique<metrics::ChromeBrowserStateClient>(),
             metrics::MetricsLogUploader::MetricServiceType::UKM));
@@ -258,6 +265,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
 }
 
 void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
           base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
@@ -266,17 +275,22 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<OmniboxMetricsProvider>());
 
   auto stability_metrics_provider =
-      std::make_unique<IOSChromeStabilityMetricsProvider>(
-          GetApplicationContext()->GetLocalState());
+      std::make_unique<IOSChromeStabilityMetricsProvider>(local_state);
   stability_metrics_provider_ = stability_metrics_provider.get();
   metrics_service_->RegisterMetricsProvider(
       std::move(stability_metrics_provider));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSChromeDefaultBrowserMetricsProvider>());
 
   // NOTE: metrics_state_manager_->IsMetricsReportingEnabled() returns false
   // during local testing. To test locally, modify
   // MetricsServiceAccessor::IsMetricsReportingEnabled() to return true.
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
       metrics_state_manager_->IsMetricsReportingEnabled()));
+
+  metrics_service_->RegisterMetricsProvider(
+        std::make_unique<metrics::EntropyStateProvider>(local_state));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
@@ -324,23 +338,67 @@ void IOSChromeMetricsServiceClient::RegisterUKMProviders() {
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(ios): Try to extract the flow below into a utility function that is
-  // shared between the iOS port's usage and
-  // ChromeMetricsServiceClient::CollectFinalHistograms()'s usage of
-  // MetricsMemoryDetails.
   task_vm_info task_info_data;
   mach_msg_type_number_t count = sizeof(task_vm_info) / sizeof(natural_t);
   kern_return_t kr =
       task_info(mach_task_self(), TASK_VM_INFO,
                 reinterpret_cast<task_info_t>(&task_info_data), &count);
   if (kr == KERN_SUCCESS) {
-    UMA_HISTOGRAM_MEMORY_KB(
+    base::UmaHistogramMemoryKB(
         "Memory.Browser",
         (task_info_data.resident_size - task_info_data.reusable) / 1024);
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(
-        "Memory.Browser.MemoryFootprint",
-        (task_info_data.phys_footprint) / 1024 / 1024);
+    mach_vm_size_t footprint_mb = task_info_data.phys_footprint / 1024 / 1024;
+    base::UmaHistogramMemoryLargeMB("Memory.Browser.MemoryFootprint",
+                                    footprint_mb);
+
+    switch (UIApplication.sharedApplication.applicationState) {
+      case UIApplicationStateActive:
+        base::UmaHistogramMemoryLargeMB("Memory.Browser.MemoryFootprint.Active",
+                                        footprint_mb);
+        // According to Apple, apps on iPhone 6 and older devices get terminated
+        // by the OS if memory usage crosses 200MB watermark. Obviously this
+        // metric will not be recorded with true on iPhone 6 and older devices.
+        UMA_HISTOGRAM_BOOLEAN(
+            "Memory.Browser.MemoryFootprint.Active.Over200MBWatermark",
+            footprint_mb >= 200);
+        break;
+      case UIApplicationStateInactive:
+        base::UmaHistogramMemoryLargeMB(
+            "Memory.Browser.MemoryFootprint.Inactive", footprint_mb);
+        break;
+      case UIApplicationStateBackground:
+        base::UmaHistogramMemoryLargeMB(
+            "Memory.Browser.MemoryFootprint.Background", footprint_mb);
+        break;
+    }
   }
+
+  std::vector<ChromeBrowserState*> loaded_browser_states =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+
+  int open_tabs_count = 0;
+  for (ChromeBrowserState* browser_state : loaded_browser_states) {
+    // Iterate through regular Browser and OTR Browser to find the corresponding
+    // tab.
+    BrowserList* browser_list =
+        BrowserListFactory::GetForBrowserState(browser_state);
+    std::set<Browser*> regular_browsers = browser_list->AllRegularBrowsers();
+    std::set<Browser*> otr_browsers = browser_list->AllIncognitoBrowsers();
+
+    for (Browser* browser : regular_browsers) {
+      open_tabs_count += browser->GetWebStateList()->count();
+    }
+    for (Browser* browser : otr_browsers) {
+      open_tabs_count += browser->GetWebStateList()->count();
+    }
+  }
+  base::UmaHistogramCounts10000("Memory.Browser.MemoryFootprint.NumOpenTabs",
+                                open_tabs_count);
+  base::UmaHistogramCounts10000(
+      "Memory.Browser.MemoryFootprint.NumLiveOverscroll",
+      [OverscrollActionsController instanceCount]);
 
   std::move(collect_final_metrics_done_callback_).Run();
 }
@@ -348,12 +406,13 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
 bool IOSChromeMetricsServiceClient::RegisterForNotifications() {
   tab_parented_subscription_ =
       TabParentingGlobalObserver::GetInstance()->RegisterCallback(
-          base::Bind(&IOSChromeMetricsServiceClient::OnTabParented,
-                     base::Unretained(this)));
+          base::BindRepeating(&IOSChromeMetricsServiceClient::OnTabParented,
+                              base::Unretained(this)));
   omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
-          base::Bind(&IOSChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
-                     base::Unretained(this)));
+          base::BindRepeating(
+              &IOSChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
+              base::Unretained(this)));
 
   std::vector<ChromeBrowserState*> loaded_browser_states =
       GetApplicationContext()

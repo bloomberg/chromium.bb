@@ -89,7 +89,7 @@ GLboolean glIsSyncEmulateEGL(GLsync sync) {
   return true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 std::map<GLuint, base::TimeTicks>& GetProgramCreateTimesMap() {
   static base::NoDestructor<std::map<GLuint, base::TimeTicks>> instance;
   return *instance.get();
@@ -136,7 +136,7 @@ template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
     R(GL_BINDING_CALL* func)(Args...),
     gl::ProgressReporter* progress_reporter) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (!progress_reporter) {
     return maybe_drop_call<droppable_call>(func);
   }
@@ -154,7 +154,7 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
 template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     R(GL_BINDING_CALL* func)(Args...)) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return [func](Args... args) {
     // Conditional may be optimized out because droppable_call is set at compile
     // time.
@@ -203,7 +203,7 @@ const GLubyte* GetStringHook(const char* gl_version_string,
   }
 }
 
-const char* kBlacklistExtensions[] = {
+const char* kBlocklistExtensions[] = {
     "GL_APPLE_framebuffer_multisample",
     "GL_ARB_ES3_1_compatibility",
     "GL_ARB_draw_indirect",
@@ -237,7 +237,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // Depending on the advertised version and extensions, skia checks for
   // existence of entrypoints. However some of those we don't yet handle in
   // gl_bindings, so we need to fake the version to the maximum fully supported
-  // by the bindings (GL 4.1 or ES 3.0), and blacklist extensions that skia
+  // by the bindings (GL 4.1 or ES 3.0), and blocklist extensions that skia
   // handles but bindings don't.
   // TODO(piman): add bindings for missing entrypoints.
   GrGLFunction<GrGLGetStringFn> get_string;
@@ -274,7 +274,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
     LOG(ERROR) << "Failed to initialize extensions";
     return nullptr;
   }
-  for (const char* extension : kBlacklistExtensions)
+  for (const char* extension : kBlocklistExtensions)
     extensions.remove(extension);
 
   GrGLInterface* interface = new GrGLInterface();
@@ -312,7 +312,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       bind_slow(gl->glCompressedTexSubImage2DFn, progress_reporter);
   functions->fCopyTexSubImage2D =
       bind_slow(gl->glCopyTexSubImage2DFn, progress_reporter);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fCreateProgram = [func = gl->glCreateProgramFn]() {
     auto& program_create_times = GetProgramCreateTimesMap();
     GLuint program = func();
@@ -326,7 +326,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fCullFace = gl->glCullFaceFn;
   functions->fDeleteBuffers =
       bind_slow(gl->glDeleteBuffersARBFn, progress_reporter);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fDeleteProgram = [func = gl->glDeleteProgramFn](GLuint program) {
     auto& program_create_times = GetProgramCreateTimesMap();
     program_create_times.erase(program);
@@ -356,11 +356,17 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glDrawArraysInstancedANGLEFn, progress_reporter);
   functions->fDrawArraysInstancedBaseInstance = bind_slow_on_mac<true>(
       gl->glDrawArraysInstancedBaseInstanceANGLEFn, progress_reporter);
+  functions->fMultiDrawArraysInstancedBaseInstance = bind_slow_on_mac<true>(
+      gl->glMultiDrawArraysInstancedBaseInstanceANGLEFn, progress_reporter);
   functions->fDrawElementsInstanced = bind_slow_on_mac<true>(
       gl->glDrawElementsInstancedANGLEFn, progress_reporter);
   functions->fDrawElementsInstancedBaseVertexBaseInstance =
       bind_slow_on_mac<true>(
           gl->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn,
+          progress_reporter);
+  functions->fMultiDrawElementsInstancedBaseVertexBaseInstance =
+      bind_slow_on_mac<true>(
+          gl->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn,
           progress_reporter);
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1
@@ -390,7 +396,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fGetQueryiv = gl->glGetQueryivFn;
   functions->fGetProgramBinary = gl->glGetProgramBinaryFn;
   functions->fGetProgramInfoLog = gl->glGetProgramInfoLogFn;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fGetProgramiv = [func = gl->glGetProgramivFn](
                                  GLuint program, GLenum pname, GLint* params) {
     func(program, pname, params);
@@ -426,6 +432,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // functions->fMultiDrawArraysIndirect = gl->glMultiDrawArraysIndirectFn;
   // functions->fMultiDrawElementsIndirect = gl->glMultiDrawElementsIndirectFn;
 
+  functions->fPatchParameteri = gl->glPatchParameteriFn;
   functions->fPixelStorei = gl->glPixelStoreiFn;
   functions->fPolygonMode = gl->glPolygonModeFn;
   functions->fProgramBinary = gl->glProgramBinaryFn;

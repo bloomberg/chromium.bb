@@ -9,7 +9,7 @@ import android.view.View;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
@@ -36,6 +36,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
     private final WebContents mWebContents;
     private final ChromeActivity mActivity;
     private final boolean mIsSmallDevice;
+    private final PropertyModel mModel;
 
     /**
      * Observer for the error of the payment handler toolbar.
@@ -60,26 +61,30 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
         assert url != null;
         mWebContents = webContents;
         mActivity = context;
-        PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
-                                      .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
-                                      .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
-                                              PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
-                                      .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
-                                              ConnectionSecurityLevel.NONE)
-                                      .with(PaymentHandlerToolbarProperties.URL, url)
-                                      .build();
+        int defaultSecurityLevel = ConnectionSecurityLevel.NONE;
+        mModel = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
+                         .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
+                         .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
+                                 PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
+                         .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
+                                 getSecurityIconResource(defaultSecurityLevel))
+                         .with(PaymentHandlerToolbarProperties.SECURITY_ICON_CONTENT_DESCRIPTION,
+                                 getSecurityIconContentDescription(defaultSecurityLevel))
+                         .with(PaymentHandlerToolbarProperties.URL, url)
+                         .with(PaymentHandlerToolbarProperties.SECURITY_ICON_ON_CLICK_CALLBACK,
+                                 this::showPageInfoDialog)
+                         .build();
         mIsSmallDevice = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
-        mMediator = new PaymentHandlerToolbarMediator(model, webContents, /*delegate=*/this);
-        mToolbarView =
-                new PaymentHandlerToolbarView(context, /*securityIconOnClickListener=*/mMediator);
+        mMediator = new PaymentHandlerToolbarMediator(mModel, webContents, /*delegate=*/this);
+        mToolbarView = new PaymentHandlerToolbarView(context);
         webContents.addObserver(mMediator);
         PropertyModelChangeProcessor.create(
-                model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);
+                mModel, mToolbarView, PaymentHandlerToolbarViewBinder::bind);
     }
 
-    /** Set an observer for PaymentHandlerToolbar. */
-    public void setObserver(PaymentHandlerToolbarObserver observer) {
-        mToolbarView.setObserver(observer);
+    /** Set a callback for the close button's onclick event. */
+    public void setCloseButtonOnClickCallback(Runnable callback) {
+        mModel.set(PaymentHandlerToolbarProperties.CLOSE_BUTTON_ON_CLICK_CALLBACK, callback);
     }
 
     /** @return The height of the toolbar in px. */
@@ -97,10 +102,16 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
         return mToolbarView.getView();
     }
 
-    /** @return The security icon of the PaymentHandlerToolbar. */
+    /** Simulates a click on the security icon of the payment handler toolbar. */
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     public void clickSecurityIconForTest() {
         mToolbarView.mSecurityIconView.performClick();
+    }
+
+    /** Simulates a click on the close button of the payment handler toolbar. */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public void clickCloseButtonForTest() {
+        mToolbarView.mCloseButton.performClick();
     }
 
     // Implement PaymentHandlerToolbarMediatorDelegate.
@@ -116,7 +127,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
     public int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
         return SecurityStatusIcon.getSecurityIconResource(securityLevel,
                 SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), mIsSmallDevice,
-                /*skipIconForNeutralState=*/true);
+                /*skipIconForNeutralState=*/false);
     }
 
     // Implement PaymentHandlerToolbarMediatorDelegate.
@@ -127,9 +138,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
         return mActivity.getResources().getString(contentDescriptionRes);
     }
 
-    // Implement PaymentHandlerToolbarMediatorDelegate.
-    @Override
-    public void showPageInfoDialog() {
+    private void showPageInfoDialog() {
         PageInfoController.show(mActivity, mWebContents, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
                 new ChromePageInfoControllerDelegate(mActivity, mWebContents,

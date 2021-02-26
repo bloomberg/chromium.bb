@@ -66,6 +66,8 @@ class WebviewController : public CastWebContents::Delegate,
 
  private:
   void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
+  void HandleSetAutoMediaPlaybackPolicy(
+      const webview::SetAutoMediaPlaybackPolicyRequest& request);
 
   webview::AsyncPageEvent_State current_state();
 

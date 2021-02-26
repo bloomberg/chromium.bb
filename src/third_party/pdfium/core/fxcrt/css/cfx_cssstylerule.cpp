@@ -6,9 +6,9 @@
 
 #include "core/fxcrt/css/cfx_cssstylerule.h"
 
-CFX_CSSStyleRule::CFX_CSSStyleRule() {}
+CFX_CSSStyleRule::CFX_CSSStyleRule() = default;
 
-CFX_CSSStyleRule::~CFX_CSSStyleRule() {}
+CFX_CSSStyleRule::~CFX_CSSStyleRule() = default;
 
 size_t CFX_CSSStyleRule::CountSelectorLists() const {
   return m_ppSelector.size();

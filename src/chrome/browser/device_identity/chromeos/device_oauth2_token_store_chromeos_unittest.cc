@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -217,8 +217,9 @@ TEST_F(DeviceOAuth2TokenStoreChromeOSTest, DoNotAnnounceTokenWithoutAccountID) {
 
   class StoreObserver : public DeviceOAuth2TokenStore::Observer {
    public:
-    using Callback = base::Callback<void()>;
-    explicit StoreObserver(Callback callback) : callback_(callback) {}
+    using Callback = base::RepeatingClosure;
+    explicit StoreObserver(Callback callback)
+        : callback_(std::move(callback)) {}
 
     void OnRefreshTokenAvailable() override { callback_.Run(); }
 

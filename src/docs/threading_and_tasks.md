@@ -655,7 +655,13 @@ void WorkerTask(base::JobDelegate* job_delegate) {
 }
 
 // Returns the latest thread-safe number of incomplete work items.
-void NumIncompleteWorkItems();
+void NumIncompleteWorkItems(size_t worker_count) {
+  // NumIncompleteWorkItems() may use |worker_count| if it needs to account for
+  // local work lists, which is easier than doing its own accounting, keeping in
+  // mind that the actual number of items may be racily overestimated and thus
+  // WorkerTask() may be called when there's no available work.
+  return GlobalQueueSize() + worker_count;
+}
 
 base::PostJob(FROM_HERE, {},
               base::BindRepeating(&WorkerTask),
@@ -826,3 +832,98 @@ that component since unit tests will use the leaf layer directly.
 See [Threading and Tasks FAQ](threading_and_tasks_faq.md) for more examples.
 
 [task APIs v3]: https://docs.google.com/document/d/1tssusPykvx3g0gvbvU4HxGyn3MjJlIylnsH13-Tv6s4/edit?ts=5de99a52#heading=h.ss4tw38hvh3s
+
+## Internals
+
+### SequenceManager
+
+[SequenceManager](https://cs.chromium.org/chromium/src/base/task/sequence_manager/sequence_manager.h)
+manages TaskQueues which have different properties (e.g. priority, common task
+type) multiplexing all posted tasks into a single backing sequence. This will
+usually be a MessagePump. Depending on the type of message pump used other
+events such as UI messages may be processed as well. On Windows APC calls (as
+time permits) and signals sent to a registered set of HANDLEs may also be
+processed.
+
+### MessagePump
+
+[MessagePumps](https://cs.chromium.org/chromium/src/base/message_loop/message_pump.h)
+are responsible for processing native messages as well as for giving cycles to
+their delegate (SequenceManager) periodically. MessagePumps take care to mixing
+delegate callbacks with native message processing so neither type of event
+starves the other of cycles.
+
+There are different [MessagePumpTypes](https://cs.chromium.org/chromium/src/base/message_loop/message_pump_type.h),
+most common are:
+
+* DEFAULT: Supports tasks and timers only
+
+* UI: Supports native UI events (e.g. Windows messages)
+
+* IO: Supports asynchronous IO (not file I/O!)
+
+* CUSTOM: User provided implementation of MessagePump interface
+
+### RunLoop
+
+RunLoop is s helper class to run the RunLoop::Delegate associated with the
+current thread (usually a SequenceManager). Create a RunLoop on the stack and
+call Run/Quit to run a nested RunLoop but please avoid nested loops in
+production code!
+
+### Task Reentrancy
+
+SequenceManager has task reentrancy protection. This means that if a
+task is being processed, a second task cannot start until the first task is
+finished. Reentrancy can happen when processing a task, and an inner
+message pump is created. That inner pump then processes native messages
+which could implicitly start an inner task. Inner message pumps are created
+with dialogs (DialogBox), common dialogs (GetOpenFileName), OLE functions
+(DoDragDrop), printer functions (StartDoc) and *many* others.
+
+```cpp
+Sample workaround when inner task processing is needed:
+  HRESULT hr;
+  {
+    CurrentThread::ScopedNestableTaskAllower allow;
+    hr = DoDragDrop(...); // Implicitly runs a modal message loop.
+  }
+  // Process |hr| (the result returned by DoDragDrop()).
+```
+
+Please be SURE your task is reentrant (nestable) and all global variables
+are stable and accessible before before using
+CurrentThread::ScopedNestableTaskAllower.
+
+## APIs for general use
+
+User code should hardly ever need to access SequenceManager APIs directly as
+these are meant for code that deals with scheduling. Instead you should use the
+following:
+
+* base::RunLoop: Drive the SequenceManager from the thread it's bound to.
+
+* base::Thread/SequencedTaskRunnerHandle: Post back to the SequenceManager TaskQueues from a task running on it.
+
+* SequenceLocalStorageSlot : Bind external state to a sequence.
+
+* base::CurrentThread : Proxy to a subset of Task related APIs bound to the current thread
+
+* Embedders may provide their own static accessors to post tasks on specific loops (e.g. content::BrowserThreads).
+
+### SingleThreadTaskExecutor and TaskEnvironment
+
+Instead of having to deal with SequenceManager and TaskQueues code that needs a
+simple task posting environment (one default task queue) can use a
+[SingleThreadTaskExecutor](https://cs.chromium.org/chromium/src/base/task/single_thread_task_executor.h).
+
+Unit tests can use [TaskEnvironment](https://cs.chromium.org/chromium/src/base/test/task_environment.h)
+which is highly configurable.
+
+## MessageLoop and CurrentThread
+
+You might come across references to MessageLoop or CurrentThread in the
+code or documentation. These classes no longer exist and we are in the process
+or getting rid of all references to them. base::CurrentThread was replaced
+by base::CurrentThread and the drop in replacements for base::MessageLoop are
+base::SingleThreadTaskExecutor and base::Test::TaskEnvironment.

@@ -86,7 +86,7 @@ def pretty_print(variables, stdout):
   Similar to pprint.print() but with NIH syndrome.
   """
   # Order the dictionary keys by these keys in priority.
-  ORDER = ('variables', 'condition', 'command', 'files', 'read_only')
+  ORDER = ('variables', 'condition', 'command', 'files')
 
   def sorting_key(x):
     """Gives priority to 'most important' keys before the others."""
@@ -232,18 +232,14 @@ def match_configs(expr, config_variables, all_configs):
 def verify_variables(variables):
   """Verifies the |variables| dictionary is in the expected format."""
   VALID_VARIABLES = [
-    'command',
-    'files',
-    'read_only',
+      'command',
+      'files',
   ]
   assert isinstance(variables, dict), variables
   assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
-  for name, value in variables.items():
-    if name == 'read_only':
-      assert value in (0, 1, 2, None), value
-    else:
-      assert isinstance(value, list), value
-      assert all(isinstance(i, six.string_types) for i in value), value
+  for _, value in variables.items():
+    assert isinstance(value, list), value
+    assert all(isinstance(i, six.string_types) for i in value), value
 
 
 def verify_ast(expr, variables_and_values):
@@ -327,7 +323,6 @@ class ConfigSettings(object):
       the OS' native path separator. It must be an absolute path, it's the path
       where to start the command from.
   .files is the list of dependencies. The items use '/' as a path separator.
-  .read_only describe how to map the files.
   """
   def __init__(self, values, isolate_dir):
     verify_variables(values)
@@ -341,7 +336,6 @@ class ConfigSettings(object):
     self.files = sorted(values.get('files', []))
     self.command = values.get('command', [])[:]
     self.isolate_dir = isolate_dir
-    self.read_only = values.get('read_only')
 
   def union(self, rhs):
     """Merges two config settings together into a new instance.
@@ -391,9 +385,10 @@ class ConfigSettings(object):
       return sorted(l + list(map(rebase_item, r)))
 
     var = {
-      'command': self.command or rhs.command,
-      'files': map_both(self.files, rhs.files),
-      'read_only': rhs.read_only if self.read_only is None else self.read_only,
+        'command':
+            self.command or rhs.command,
+        'files':
+            map_both(self.files, rhs.files),
     }
     return ConfigSettings(var, l_rel_cwd)
 
@@ -404,8 +399,6 @@ class ConfigSettings(object):
       out['command'] = self.command
     if self.files:
       out['files'] = self.files
-    if self.read_only is not None:
-      out['read_only'] = self.read_only
     # TODO(maruel): Probably better to not output it if command is None?
     if self.isolate_dir is not None:
       out['isolate_dir'] = self.isolate_dir
@@ -414,8 +407,8 @@ class ConfigSettings(object):
   def __str__(self):
     """Returns a short representation useful for debugging."""
     files = ''.join('\n    ' + f for f in self.files)
-    return 'ConfigSettings(%s, %s, %s, %s)' % (self.command, self.isolate_dir,
-                                               self.read_only, files or '[]')
+    return 'ConfigSettings(%s, %s, %s)' % (self.command, self.isolate_dir,
+                                           files or '[]')
 
 
 def _safe_index(l, k):
@@ -455,6 +448,7 @@ class Configs(object):
   configuration selected. It is implicitly dependent on which .isolate defines
   the 'command' that will take effect.
   """
+
   def __init__(self, file_comment, config_variables):
     self.file_comment = file_comment
     # Contains the names of the config variables seen while processing
@@ -534,9 +528,8 @@ class Configs(object):
     return dict((k, v.flatten()) for k, v in self._by_config.items())
 
   def __str__(self):
-    return 'Configs(%s,%s)' % (
-      self._config_variables,
-      ''.join('\n  %s' % str(f) for f in self._by_config))
+    return 'Configs(%s,%s)' % (self._config_variables, ''.join(
+        '\n  %s' % str(f) for f in self._by_config))
 
 
 def load_included_isolate(isolate_dir, isolate_path):
@@ -577,7 +570,6 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
           'files': [
             ...
           ],
-          'read_only': 0,
         },
       }],
       ...
@@ -635,7 +627,7 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   filtered for the specific OS.
 
   Returns:
-    tuple of command, dependencies, read_only flag, isolate_dir.
+    tuple of command, dependencies, isolate_dir.
     The dependencies are fixed to use os.path.sep.
   """
   # Load the .isolate file, process its conditions, retrieve the command and
@@ -654,4 +646,4 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   # variables.
   config = isolate.get_config(config_name)
   dependencies = [f.replace('/', os.path.sep) for f in config.files]
-  return config.command, dependencies, config.read_only, config.isolate_dir
+  return config.command, dependencies, config.isolate_dir

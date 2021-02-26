@@ -75,7 +75,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
 
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   crash_reporter::SetUploadConsent(consented);
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (crash_reporter::IsCrashpadEnabled()) {
@@ -93,7 +93,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
   if (!consented) {
     g_posix_client_id.Get().clear();
-    return base::DeleteFile(consent_file, false);
+    return base::DeleteFile(consent_file);
   }
 
   const std::string& client_id = g_posix_client_id.Get();

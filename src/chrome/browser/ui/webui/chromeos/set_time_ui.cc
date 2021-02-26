@@ -8,11 +8,11 @@
 
 #include <memory>
 
+#include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/build_time.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -33,7 +33,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 
 namespace chromeos {
@@ -124,8 +126,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 
   void DoneClicked(const base::ListValue* args) {
     if (!parent_access::ParentAccessService::IsApprovalRequired(
-            parent_access::ParentAccessService::SupervisedAction::
-                kUpdateClock)) {
+            ash::SupervisedAction::kUpdateClock)) {
       OnParentAccessValidation(true);
       return;
     }
@@ -142,11 +143,11 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
       account_id =
           user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
     }
-    ash::LoginScreen::Get()->ShowParentAccessWidget(
+    ash::ParentAccessController::Get()->ShowWidget(
         account_id,
         base::BindOnce(&SetTimeMessageHandler::OnParentAccessValidation,
                        weak_factory_.GetWeakPtr()),
-        ash::ParentAccessRequestReason::kChangeTime,
+        ash::SupervisedAction::kUpdateClock,
         !is_user_logged_in /* extra_dimmer */,
         base::Time::FromDoubleT(seconds));
   }
@@ -173,8 +174,10 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   // Set up the chrome://set-time source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISetTimeHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"setTimeTitle", IDS_SET_TIME_TITLE},
@@ -206,8 +209,8 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddResourcePath("set_time_dialog.js", IDR_SET_TIME_DIALOG_JS);
   source->SetDefaultResource(IDR_SET_TIME_HTML);
 
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

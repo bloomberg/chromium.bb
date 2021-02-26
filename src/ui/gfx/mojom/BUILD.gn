@@ -13,7 +13,10 @@ mojom("mojom") {
     "color_space.mojom",
     "display_color_spaces.mojom",
     "font_render_params.mojom",
+    "gpu_extra_info.mojom",
     "gpu_fence_handle.mojom",
+    "hdr_metadata.mojom",
+    "mask_filter_info.mojom",
     "overlay_transform.mojom",
     "presentation_feedback.mojom",
     "rrect_f.mojom",
@@ -28,6 +31,11 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
   ]
+
+  enabled_features = []
+  if (use_x11 || use_ozone) {
+    enabled_features += [ "enable_x11_params" ]
+  }
 
   shared_cpp_typemaps = [
     {
@@ -77,12 +85,58 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "gfx.mojom.GpuExtraInfo"
+          cpp = "::gfx::GpuExtraInfo"
+        },
+        {
+          mojom = "gfx.mojom.ANGLEFeature"
+          cpp = "::gfx::ANGLEFeature"
+        },
+      ]
+      traits_headers = [ "gpu_extra_info_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
           mojom = "gfx.mojom.GpuFenceHandle"
           cpp = "::gfx::GpuFenceHandle"
+          move_only = true
+          nullable_is_same_type = true
         },
       ]
       traits_headers = [ "gpu_fence_handle_mojom_traits.h" ]
       traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.PresentationFeedback"
+          cpp = "::gfx::PresentationFeedback"
+        },
+      ]
+      traits_headers = [ "presentation_feedback_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.SelectionBound"
+          cpp = "::gfx::SelectionBound"
+        },
+      ]
+      traits_headers = [ "selection_bound_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx/geometry/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.SwapTimings"
+          cpp = "::gfx::SwapTimings"
+        },
+      ]
+      traits_headers = [ "swap_timings_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
     },
     {
       types = [
@@ -133,6 +187,21 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "gfx.mojom.MasteringMetadata"
+          cpp = "::gfx::MasteringMetadata"
+        },
+        {
+          mojom = "gfx.mojom.HDRMetadata"
+          cpp = "::gfx::HDRMetadata"
+        },
+      ]
+      traits_headers = [ "hdr_metadata_mojom_traits.h" ]
+      traits_sources = [ "hdr_metadata_mojom_traits.cc" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+    {
+      types = [
+        {
           mojom = "gfx.mojom.Hinting"
           cpp = "::gfx::FontRenderParams::Hinting"
         },
@@ -157,31 +226,11 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "gfx.mojom.PresentationFeedback"
-          cpp = "::gfx::PresentationFeedback"
-        },
-      ]
-      traits_headers = [ "presentation_feedback_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx" ]
-    },
-    {
-      types = [
-        {
           mojom = "gfx.mojom.RRectF"
           cpp = "::gfx::RRectF"
         },
       ]
       traits_headers = [ "rrect_f_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx/geometry/mojom:mojom_traits" ]
-    },
-    {
-      types = [
-        {
-          mojom = "gfx.mojom.SelectionBound"
-          cpp = "::gfx::SelectionBound"
-        },
-      ]
-      traits_headers = [ "selection_bound_mojom_traits.h" ]
       traits_public_deps = [ "//ui/gfx/geometry/mojom:mojom_traits" ]
     },
     {
@@ -197,11 +246,12 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "gfx.mojom.SwapTimings"
-          cpp = "::gfx::SwapTimings"
+          mojom = "gfx.mojom.MaskFilterInfo"
+          cpp = "::gfx::MaskFilterInfo"
         },
       ]
-      traits_headers = [ "swap_timings_mojom_traits.h" ]
+      traits_sources = [ "mask_filter_info_mojom_traits.cc" ]
+      traits_headers = [ "mask_filter_info_mojom_traits.h" ]
       traits_public_deps = [ "//ui/gfx" ]
     },
   ]
@@ -212,7 +262,7 @@ mojom("mojom") {
 
 mojom("native_handle_types") {
   sources = [ "native_handle_types.mojom" ]
-  if (is_linux || use_ozone) {
+  if (is_linux || is_chromeos || use_ozone) {
     enabled_features = [ "supports_native_pixmap" ]
   }
   public_deps = [ "//mojo/public/mojom/base" ]
@@ -278,6 +328,8 @@ component("shared_mojom_traits") {
   sources = [
     "buffer_types_mojom_traits.cc",
     "buffer_types_mojom_traits.h",
+    "gpu_extra_info_mojom_traits.cc",
+    "gpu_extra_info_mojom_traits.h",
     "gpu_fence_handle_mojom_traits.cc",
     "gpu_fence_handle_mojom_traits.h",
   ]
@@ -285,5 +337,9 @@ component("shared_mojom_traits") {
     ":mojom_shared",
     ":native_handle_types",
     "//ui/gfx",
+  ]
+  frameworks = [
+    "CoreFoundation.framework",
+    "IOSurface.framework",
   ]
 }

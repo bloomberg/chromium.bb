@@ -65,7 +65,7 @@ RTCSctpTransport::RTCSctpTransport(
                        native_transport,
                        context->GetTaskRunner(TaskType::kNetworking),
                        PeerConnectionDependencyFactory::GetInstance()
-                           ->GetWebRtcWorkerTaskRunner()) {}
+                           ->GetWebRtcNetworkTaskRunner()) {}
 
 RTCSctpTransport::RTCSctpTransport(
     ExecutionContext* context,
@@ -157,7 +157,7 @@ ExecutionContext* RTCSctpTransport::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void RTCSctpTransport::Trace(Visitor* visitor) {
+void RTCSctpTransport::Trace(Visitor* visitor) const {
   visitor->Trace(dtls_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

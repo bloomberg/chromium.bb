@@ -11,8 +11,10 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
+class BoxLayout;
 class ImageView;
 class Label;
+class Link;
 class ProgressBar;
 }  // namespace views
 
@@ -34,41 +36,34 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
+  void OnStateUpdated(
+      plugin_vm::PluginVmInstaller::InstallingState new_state) override;
   void OnProgressUpdated(double fraction_complete) override;
-  void OnLicenseChecked() override;
-  void OnCheckedDiskSpace(bool low_disk_space) override;
-  void OnDlcDownloadCompleted() override;
-  void OnExistingVmCheckCompleted(bool has_vm) override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length) override;
-  void OnDownloadCompleted() override;
+  void OnVmExists() override;
   void OnCreated() override;
   void OnImported() override;
   void OnError(plugin_vm::PluginVmInstaller::FailureReason reason) override;
   void OnCancelFinished() override;
 
   // Public for testing purposes.
-  base::string16 GetBigMessage() const;
+  base::string16 GetTitle() const;
   base::string16 GetMessage() const;
 
   void SetFinishedCallbackForTesting(
       base::OnceCallback<void(bool success)> callback);
 
  private:
-  // TODO(crbug.com/1063748): Re-use PluginVmInstaller::InstallingState.
   enum class State {
-    CONFIRM_INSTALL,      // Waiting for user to start installation.
-    CHECKING_LICENSE,     // Ensuring the user license is valid.
-    CHECKING_DISK_SPACE,  // Checking there is available free disk space.
-    LOW_DISK_SPACE,   // Prompt user to continue or abort due to low disk space.
-    DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.
-    CHECKING_VMS,     // Checking for existing VMs.
-    DOWNLOADING,      // Image download (ISO or VM) is in progress.
-    IMPORTING,        // Downloaded image is being imported.
-    CREATED,          // A brand new VM has been created using ISO image.
-    IMPORTED,         // Downloaded VM image has been imported successfully.
-    ERROR,            // Something unexpected happened.
+    kConfirmInstall,  // Waiting for user to start installation.
+    kInstalling,      // Installation in progress.
+    kCreated,         // A brand new VM has been created using ISO image.
+    kImported,        // Downloaded VM image has been imported successfully.
+    kError,           // Something unexpected happened.
   };
+
+  using InstallingState = plugin_vm::PluginVmInstaller::InstallingState;
 
   ~PluginVmInstallerView() override;
 
@@ -76,12 +71,13 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   base::string16 GetCurrentDialogButtonLabel(ui::DialogButton button) const;
 
   void OnStateUpdated();
+  void OnLinkClicked();
   // views::BubbleDialogDelegateView implementation.
   void AddedToWidget() override;
 
-  base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
+  base::string16 GetDownloadProgressMessage(uint64_t bytes_downloaded,
                                             int64_t content_length) const;
-  void SetBigMessageLabel();
+  void SetTitleLabel();
   void SetMessageLabel();
   void SetBigImage();
 
@@ -90,14 +86,16 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   Profile* profile_ = nullptr;
   base::string16 app_name_;
   plugin_vm::PluginVmInstaller* plugin_vm_installer_ = nullptr;
-  views::Label* big_message_label_ = nullptr;
+  views::Label* title_label_ = nullptr;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
   views::Label* download_progress_message_label_ = nullptr;
+  views::BoxLayout* lower_container_layout_ = nullptr;
   views::ImageView* big_image_ = nullptr;
-  base::TimeTicks setup_start_tick_;
+  views::Link* learn_more_link_ = nullptr;
 
-  State state_ = State::CONFIRM_INSTALL;
+  State state_ = State::kConfirmInstall;
+  InstallingState installing_state_ = InstallingState::kInactive;
   base::Optional<plugin_vm::PluginVmInstaller::FailureReason> reason_;
 
   base::OnceCallback<void(bool success)> finished_callback_for_testing_;

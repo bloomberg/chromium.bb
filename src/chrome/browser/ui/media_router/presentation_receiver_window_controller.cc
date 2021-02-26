@@ -10,10 +10,10 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/media_router/presentation_receiver_window.h"
+#include "components/media_router/browser/presentation/receiver_presentation_service_delegate_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/presentation_receiver_flags.h"
@@ -113,9 +113,8 @@ PresentationReceiverWindowController::PresentationReceiverWindowController(
     const gfx::Rect& bounds,
     base::OnceClosure termination_callback,
     TitleChangeCallback title_change_callback)
-    : otr_profile_(
-          profile->GetOffTheRecordProfile(Profile::OTRProfileID::CreateUnique(
-              "MediaRouter::PresentationReciever"))),
+    : otr_profile_(profile->GetOffTheRecordProfile(
+          Profile::OTRProfileID::CreateUniqueForMediaRouter())),
       web_contents_(WebContents::Create(CreateWebContentsParams(otr_profile_))),
       window_(PresentationReceiverWindow::Create(this, bounds)),
       termination_callback_(std::move(termination_callback)),

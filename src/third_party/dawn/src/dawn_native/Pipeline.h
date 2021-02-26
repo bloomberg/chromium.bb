@@ -28,27 +28,47 @@
 
 namespace dawn_native {
 
-    MaybeError ValidateProgrammableStageDescriptor(const DeviceBase* device,
+    MaybeError ValidateProgrammableStageDescriptor(DeviceBase* device,
                                                    const ProgrammableStageDescriptor* descriptor,
                                                    const PipelineLayoutBase* layout,
                                                    SingleShaderStage stage);
 
+    struct ProgrammableStage {
+        Ref<ShaderModuleBase> module;
+        std::string entryPoint;
+
+        // The metadata lives as long as module, that's ref-ed in the same structure.
+        const EntryPointMetadata* metadata = nullptr;
+    };
+
     class PipelineBase : public CachedObject {
       public:
-        wgpu::ShaderStage GetStageMask() const;
         PipelineLayoutBase* GetLayout();
         const PipelineLayoutBase* GetLayout() const;
+        const RequiredBufferSizes& GetMinBufferSizes() const;
+        const ProgrammableStage& GetStage(SingleShaderStage stage) const;
+        const PerStage<ProgrammableStage>& GetAllStages() const;
+
         BindGroupLayoutBase* GetBindGroupLayout(uint32_t groupIndex);
 
+        // Helper function for the functors for std::unordered_map-based pipeline caches.
+        static size_t HashForCache(const PipelineBase* pipeline);
+        static bool EqualForCache(const PipelineBase* a, const PipelineBase* b);
+
       protected:
-        PipelineBase(DeviceBase* device, PipelineLayoutBase* layout, wgpu::ShaderStage stages);
+        PipelineBase(DeviceBase* device,
+                     PipelineLayoutBase* layout,
+                     std::vector<StageAndDescriptor> stages);
         PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
       private:
         MaybeError ValidateGetBindGroupLayout(uint32_t group);
 
-        wgpu::ShaderStage mStageMask;
+        wgpu::ShaderStage mStageMask = wgpu::ShaderStage::None;
+        PerStage<ProgrammableStage> mStages;
+
         Ref<PipelineLayoutBase> mLayout;
+        RequiredBufferSizes mMinBufferSizes;
     };
 
 }  // namespace dawn_native

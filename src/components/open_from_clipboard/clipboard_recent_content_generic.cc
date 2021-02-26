@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
 namespace {
 // Schemes appropriate for suggestion by ClipboardRecentContent.
@@ -45,7 +46,10 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &gurl_string);
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
+  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &data_dst,
+                           &gurl_string);
   base::TrimWhitespaceASCII(gurl_string, base::TrimPositions::TRIM_ALL,
                             &gurl_string);
 
@@ -63,7 +67,8 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
     // Fall back to unicode / UTF16, as some URLs may use international domain
     // names, not punycode.
     base::string16 gurl_string16;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &gurl_string16);
+    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &data_dst,
+                        &gurl_string16);
     base::TrimWhitespace(gurl_string16, base::TrimPositions::TRIM_ALL,
                          &gurl_string16);
     if (gurl_string16.find_first_of(base::kWhitespaceUTF16) !=
@@ -84,8 +89,10 @@ ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
     return base::nullopt;
 
   base::string16 text_from_clipboard;
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &text_from_clipboard);
+      ui::ClipboardBuffer::kCopyPaste, &data_dst, &text_from_clipboard);
   base::TrimWhitespace(text_from_clipboard, base::TrimPositions::TRIM_ALL,
                        &text_from_clipboard);
   if (text_from_clipboard.empty()) {
@@ -100,8 +107,10 @@ void ClipboardRecentContentGeneric::GetRecentImageFromClipboard(
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
     return;
 
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   ui::Clipboard::GetForCurrentThread()->ReadImage(
-      ui::ClipboardBuffer::kCopyPaste,
+      ui::ClipboardBuffer::kCopyPaste, &data_dst,
       base::BindOnce(&OnGetRecentImageFromClipboard, std::move(callback)));
 }
 
@@ -109,9 +118,47 @@ bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
     return false;
 
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::ClipboardFormatType::GetBitmapType(),
-      ui::ClipboardBuffer::kCopyPaste);
+      ui::ClipboardFormatType::GetBitmapType(), ui::ClipboardBuffer::kCopyPaste,
+      &data_dst);
+}
+
+void ClipboardRecentContentGeneric::HasRecentContentFromClipboard(
+    std::set<ClipboardContentType> types,
+    HasDataCallback callback) {
+  std::set<ClipboardContentType> matching_types;
+  for (ClipboardContentType type : types) {
+    switch (type) {
+      case ClipboardContentType::URL:
+        if (GetRecentURLFromClipboard()) {
+          matching_types.insert(ClipboardContentType::URL);
+        }
+        break;
+      case ClipboardContentType::Text:
+        if (GetRecentTextFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Text);
+        }
+        break;
+      case ClipboardContentType::Image:
+        if (HasRecentImageFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Image);
+        }
+        break;
+    }
+  }
+  std::move(callback).Run(matching_types);
+}
+
+void ClipboardRecentContentGeneric::GetRecentURLFromClipboard(
+    GetRecentURLCallback callback) {
+  std::move(callback).Run(GetRecentURLFromClipboard());
+}
+
+void ClipboardRecentContentGeneric::GetRecentTextFromClipboard(
+    GetRecentTextCallback callback) {
+  std::move(callback).Run(GetRecentTextFromClipboard());
 }
 
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {

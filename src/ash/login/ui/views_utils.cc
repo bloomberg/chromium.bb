@@ -99,20 +99,18 @@ bool HasFocusInAnyChildView(views::View* view) {
 }
 
 views::Label* CreateBubbleLabel(const base::string16& message,
-                                SkColor color,
                                 views::View* view_defining_max_width,
-                                int font_size_delta,
-                                gfx::Font::Weight font_weight) {
+                                SkColor color,
+                                const gfx::FontList& font_list,
+                                int line_height) {
   views::Label* label =
-      new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-                       views::style::STYLE_PRIMARY);
+      new views::Label(message, views::style::CONTEXT_DIALOG_BODY_TEXT);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(color);
   label->SetSubpixelRenderingEnabled(false);
-  const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-  label->SetFontList(base_font_list.Derive(
-      font_size_delta, gfx::Font::FontStyle::NORMAL, font_weight));
+  label->SetFontList(font_list);
+  label->SetLineHeight(line_height);
   if (view_defining_max_width != nullptr) {
     label->SetMultiLine(true);
     label->SetAllowCharacterBreak(true);
@@ -148,13 +146,13 @@ views::View* GetBubbleContainer(views::View* view) {
   return container;
 }
 
-gfx::Point CalculateBubblePositionLeftRightStrategy(gfx::Rect anchor,
-                                                    gfx::Size bubble,
-                                                    gfx::Rect bounds) {
+gfx::Point CalculateBubblePositionBeforeAfterStrategy(gfx::Rect anchor,
+                                                      gfx::Size bubble,
+                                                      gfx::Rect bounds) {
   gfx::Rect result(anchor.x() - bubble.width(), anchor.y(), bubble.width(),
                    bubble.height());
-  // Trying to show on the left side.
-  // If there is not enough space show on the right side.
+  // Trying to show before (on the left side in LTR).
+  // If there is not enough space show after (on the right side in LTR).
   if (result.x() < bounds.x()) {
     result.Offset(anchor.width() + result.width(), 0);
   }
@@ -162,13 +160,13 @@ gfx::Point CalculateBubblePositionLeftRightStrategy(gfx::Rect anchor,
   return result.origin();
 }
 
-gfx::Point CalculateBubblePositionRightLeftStrategy(gfx::Rect anchor,
-                                                    gfx::Size bubble,
-                                                    gfx::Rect bounds) {
+gfx::Point CalculateBubblePositionAfterBeforeStrategy(gfx::Rect anchor,
+                                                      gfx::Size bubble,
+                                                      gfx::Rect bounds) {
   gfx::Rect result(anchor.x() + anchor.width(), anchor.y(), bubble.width(),
                    bubble.height());
-  // Trying to show on the right side.
-  // If there is not enough space show on the left side.
+  // Trying to show after (on the right side in LTR).
+  // If there is not enough space show before (on the left side in LTR).
   if (result.right() > bounds.right()) {
     result.Offset(-anchor.width() - result.width(), 0);
   }

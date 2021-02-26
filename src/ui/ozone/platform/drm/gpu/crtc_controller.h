@@ -34,24 +34,15 @@ class CrtcController {
                  uint32_t connector);
   ~CrtcController();
 
-  drmModeModeInfo mode() const { return mode_; }
+  drmModeModeInfo mode() const { return state_.mode; }
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const { return connector_; }
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
-  bool is_disabled() const { return is_disabled_; }
-
-  // Calls the appropriate Plane Manager to perform the initial modesetting
-  // operation using |plane| as the buffer for the primary plane. The CRTC
-  // configuration is specified by |mode|.
-  bool Modeset(const DrmOverlayPlane& plane,
-               const drmModeModeInfo& mode,
-               const ui::HardwareDisplayPlaneList& plane_list);
-
-  // Disables the controller.
-  bool Disable();
+  bool is_enabled() const { return state_.properties.active.value; }
 
   bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
-                           const DrmOverlayPlaneList& planes);
+                           const DrmOverlayPlaneList& planes,
+                           bool is_modesetting);
 
   // Returns a vector of format modifiers for the given fourcc format
   // on this CRTCs primary plane. A format modifier describes the
@@ -66,11 +57,7 @@ class CrtcController {
   void SetCursor(uint32_t handle, const gfx::Size& size);
   void MoveCursor(const gfx::Point& location);
 
-  void OnPageFlipComplete();
-
  private:
-  void DisableCursor();
-
   const scoped_refptr<DrmDevice> drm_;
 
   const uint32_t crtc_;
@@ -78,13 +65,7 @@ class CrtcController {
   // TODO(dnicoara) Add support for hardware mirroring (multiple connectors).
   const uint32_t connector_;
 
-  drmModeModeInfo mode_ = {};
-
-  scoped_refptr<DrmFramebuffer> modeset_framebuffer_;
-
-  // Keeps track of the CRTC state. If a surface has been bound, then the value
-  // is set to false. Otherwise it is true.
-  bool is_disabled_ = true;
+  const HardwareDisplayPlaneManager::CrtcState& state_;
 
   DISALLOW_COPY_AND_ASSIGN(CrtcController);
 };

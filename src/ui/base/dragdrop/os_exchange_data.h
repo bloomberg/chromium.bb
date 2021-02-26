@@ -18,10 +18,10 @@
 #endif
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
-#include "ui/base/ui_base_export.h"
 
 class GURL;
 
@@ -32,6 +32,7 @@ class Pickle;
 namespace ui {
 
 class ClipboardFormatType;
+class DataTransferEndpoint;
 struct FileInfo;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ struct FileInfo;
 // TabContentsViewGtk uses a different class to handle drag support that does
 // not use OSExchangeData. As such, file contents and html support is only
 // compiled on windows.
-class UI_BASE_EXPORT OSExchangeData {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeData {
  public:
   // Enumeration of the known formats.
   enum Format {
@@ -176,9 +177,6 @@ class UI_BASE_EXPORT OSExchangeData {
                                   base::FilePath,
                                   /*display name*/ base::FilePath>>&)> callback)
       const;
-
-  // Adds a download file with full path (CF_HDROP).
-  void SetDownloadFileInfo(DownloadFileInfo* download);
 #endif
 
 #if defined(USE_AURA)
@@ -188,6 +186,12 @@ class UI_BASE_EXPORT OSExchangeData {
   bool GetHtml(base::string16* html, GURL* base_url) const;
   bool HasHtml() const;
 #endif
+
+  // Adds a DataTransferEndpoint to represent the source of the data.
+  // TODO(crbug.com/1142406): Update all drag-and-drop references to set the
+  // source of the data.
+  void SetSource(std::unique_ptr<DataTransferEndpoint> data_source);
+  DataTransferEndpoint* GetSource() const;
 
  private:
   // Provides the actual data.

@@ -4,13 +4,16 @@
 
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
@@ -33,13 +36,16 @@ RootCompositorFrameSinkImpl::Create(
     FrameSinkManagerImpl* frame_sink_manager,
     OutputSurfaceProvider* output_surface_provider,
     uint32_t restart_id,
-    bool run_all_compositor_stages_before_draw) {
+    bool run_all_compositor_stages_before_draw,
+    const DebugRendererSettings* debug_settings) {
   // First create an output surface.
   mojo::Remote<mojom::DisplayClient> display_client(
       std::move(params->display_client));
+  auto display_controller = output_surface_provider->CreateGpuDependency(
+      params->gpu_compositing, params->widget, params->renderer_settings);
   auto output_surface = output_surface_provider->CreateOutputSurface(
       params->widget, params->gpu_compositing, display_client.get(),
-      params->renderer_settings);
+      display_controller.get(), params->renderer_settings, debug_settings);
 
   // Creating output surface failed. The host can send a new request, possibly
   // with a different compositing mode.
@@ -64,7 +70,7 @@ RootCompositorFrameSinkImpl::Create(
   bool hw_support_for_multiple_refresh_rates = false;
   bool wants_vsync_updates = false;
 
-  if (params->external_begin_frame_controller.is_pending()) {
+  if (params->external_begin_frame_controller) {
     auto owned_external_begin_frame_source_mojo =
         std::make_unique<ExternalBeginFrameSourceMojo>(
             frame_sink_manager,
@@ -86,6 +92,11 @@ RootCompositorFrameSinkImpl::Create(
               std::make_unique<DelayBasedTimeSource>(
                   base::ThreadTaskRunnerHandle::Get().get()));
     } else if (output_surface->capabilities().supports_gpu_vsync) {
+#if defined(OS_WIN)
+      hw_support_for_multiple_refresh_rates =
+          output_surface->capabilities().supports_dc_layers &&
+          params->set_present_duration_allowed;
+#endif
       // Vsync updates are required to update the FrameRateDecider with
       // supported refresh rates.
       wants_vsync_updates = params->use_preferred_interval_for_video;
@@ -115,26 +126,25 @@ RootCompositorFrameSinkImpl::Create(
       begin_frame_source, task_runner.get(), max_frames_pending,
       run_all_compositor_stages_before_draw);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   auto* output_surface_ptr = output_surface.get();
 #endif
-
   gpu::SharedImageInterface* sii = nullptr;
   if (output_surface->context_provider())
     sii = output_surface->context_provider()->SharedImageInterface();
+  else if (display_controller)
+    sii = display_controller->shared_image_interface();
 
   auto overlay_processor = OverlayProcessorInterface::CreateOverlayProcessor(
-      output_surface->GetSurfaceHandle(), output_surface->capabilities(),
-      params->renderer_settings,
-      output_surface_provider->GetSharedImageManager(),
-      output_surface->GetMemoryTracker(),
-      output_surface->GetGpuTaskSchedulerHelper(), sii);
+      output_surface.get(), output_surface->GetSurfaceHandle(),
+      output_surface->capabilities(),
+      display_controller.get(), sii, params->renderer_settings, debug_settings);
 
   auto display = std::make_unique<Display>(
       frame_sink_manager->shared_bitmap_manager(), params->renderer_settings,
-      params->frame_sink_id, std::move(output_surface),
-      std::move(overlay_processor), std::move(scheduler),
-      std::move(task_runner));
+      debug_settings, params->frame_sink_id, std::move(display_controller),
+      std::move(output_surface), std::move(overlay_processor),
+      std::move(scheduler), std::move(task_runner));
 
   if (external_begin_frame_source_mojo)
     external_begin_frame_source_mojo->SetDisplay(display.get());
@@ -151,7 +161,7 @@ RootCompositorFrameSinkImpl::Create(
       hw_support_for_multiple_refresh_rates,
       params->num_of_frames_to_toggle_interval));
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // On Mac vsync parameter updates come from the browser process. We don't need
   // to provide a callback to the OutputSurface since it should never use it.
   if (wants_vsync_updates || impl->synthetic_begin_frame_source_) {
@@ -302,6 +312,12 @@ void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
       std::make_unique<VSyncParameterListener>(std::move(observer));
 }
 
+void RootCompositorFrameSinkImpl::SetDelegatedInkPointRenderer(
+    mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver) {
+  if (auto* ink_renderer = display_->GetDelegatedInkPointRenderer())
+    ink_renderer->InitMessagePipeline(std::move(receiver));
+}
+
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
@@ -419,7 +435,7 @@ void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
 
 void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    RenderPassList* render_passes) {
+    AggregatedRenderPassList* render_passes) {
   DCHECK(support_->GetHitTestAggregator());
   support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId(),
                                               render_passes);
@@ -431,7 +447,7 @@ base::ScopedClosureRunner RootCompositorFrameSinkImpl::GetCacheBackBufferCb() {
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);

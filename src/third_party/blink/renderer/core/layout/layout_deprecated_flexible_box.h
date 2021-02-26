@@ -27,8 +27,6 @@
 
 namespace blink {
 
-class FlexBoxIterator;
-
 // Handles layout for 'webkit-box' and 'webkit-inline-box'. This class will
 // eventually be replaced by LayoutFlexibleBox.
 class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
@@ -36,26 +34,27 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   LayoutDeprecatedFlexibleBox(Element* element);
   ~LayoutDeprecatedFlexibleBox() override;
 
-  const char* GetName() const override { return "LayoutDeprecatedFlexibleBox"; }
-
-  void StyleWillChange(StyleDifference,
-                       const ComputedStyle& new_style) override;
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutDeprecatedFlexibleBox";
+  }
 
   void UpdateBlockLayout(bool relayout_children) override;
   void LayoutVerticalBox(bool relayout_children);
 
-  bool IsDeprecatedFlexibleBox() const override { return true; }
-  bool IsFlexibleBoxIncludingDeprecatedAndNG() const override { return true; }
-
-  void PlaceChild(LayoutBox* child, const LayoutPoint& location);
+  bool IsDeprecatedFlexibleBox() const override {
+    NOT_DESTROYED();
+    return true;
+  }
+  bool IsFlexibleBoxIncludingDeprecatedAndNG() const override {
+    NOT_DESTROYED();
+    return true;
+  }
 
  private:
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
-  LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding);
-
-  void ApplyLineClamp(FlexBoxIterator&, bool relayout_children);
-  void ClearLineClamp();
+  void ApplyLineClamp(bool relayout_children);
 };
 
 }  // namespace blink

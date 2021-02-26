@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -14,15 +15,16 @@
 namespace storage {
 
 LegacyDomStorageDatabase::LegacyDomStorageDatabase(
-    const base::FilePath& file_path)
-    : file_path_(file_path) {
-  // Note: in normal use we should never get an empty backing path here.
-  // However, the unit test for this class can contruct an instance
-  // with an empty path.
+    const base::FilePath& file_path,
+    std::unique_ptr<FilesystemProxy> filesystem_proxy)
+    : file_path_(file_path), filesystem_proxy_(std::move(filesystem_proxy)) {
+  DCHECK(!file_path_.empty());
   Init();
 }
 
-LegacyDomStorageDatabase::LegacyDomStorageDatabase() {
+LegacyDomStorageDatabase::LegacyDomStorageDatabase(
+    std::unique_ptr<FilesystemProxy> filesystem_proxy)
+    : filesystem_proxy_(std::move(filesystem_proxy)) {
   Init();
 }
 
@@ -67,7 +69,8 @@ bool LegacyDomStorageDatabase::CommitChanges(
   if (!LazyOpen(!changes.empty())) {
     // If we're being asked to commit changes that will result in an
     // empty database, we return true if the database file doesn't exist.
-    return clear_all_first && changes.empty() && !base::PathExists(file_path_);
+    return clear_all_first && changes.empty() &&
+           !filesystem_proxy_->PathExists(file_path_);
   }
 
   bool old_known_to_be_empty = known_to_be_empty_;
@@ -140,7 +143,7 @@ bool LegacyDomStorageDatabase::LazyOpen(bool create_if_needed) {
   if (IsOpen())
     return true;
 
-  bool database_exists = base::PathExists(file_path_);
+  bool database_exists = filesystem_proxy_->PathExists(file_path_);
 
   if (!database_exists && !create_if_needed) {
     // If the file doesn't exist already and we haven't been asked to create
@@ -150,28 +153,25 @@ bool LegacyDomStorageDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  db_.reset(new sql::Database());
+  db_ = std::make_unique<sql::Database>();
   db_->set_histogram_tag("DOMStorageDatabase");
 
-  // This db does not use [meta] table, store mmap status data elsewhere.
-  db_->set_mmap_alt_status();
+  // This database should only be accessed from the process hosting the storage
+  // service, so exclusive locking is appropriate.
+  db_->set_exclusive_locking();
 
-  if (file_path_.empty()) {
-    // This code path should only be triggered by unit tests.
-    if (!db_->OpenInMemory()) {
-      NOTREACHED() << "Unable to open DOM storage database in memory.";
-      failed_to_open_ = true;
-      return false;
-    }
-  } else {
-    if (!db_->Open(file_path_)) {
-      LOG(ERROR) << "Unable to open DOM storage database at "
-                 << file_path_.value() << " error: " << db_->GetErrorMessage();
-      if (database_exists && !tried_to_recreate_)
-        return DeleteFileAndRecreate();
-      failed_to_open_ = true;
-      return false;
-    }
+  // This database is only opened to migrate DOMStorage data to a new backend.
+  // Given the use case, mmap()'s performance improvements are not worth the
+  // (tiny amount of) problems that mmap() may cause.
+  db_->set_mmap_disabled();
+
+  if (!db_->Open(file_path_)) {
+    LOG(ERROR) << "Unable to open DOM storage database at "
+               << file_path_.value() << " error: " << db_->GetErrorMessage();
+    if (database_exists && !tried_to_recreate_)
+      return DeleteFileAndRecreate();
+    failed_to_open_ = true;
+    return false;
   }
 
   // sql::Database uses UTF-8 encoding, but WebCore style databases use
@@ -230,7 +230,7 @@ bool LegacyDomStorageDatabase::CreateTableV2() {
 
 bool LegacyDomStorageDatabase::DeleteFileAndRecreate() {
   DCHECK(!IsOpen());
-  DCHECK(base::PathExists(file_path_));
+  DCHECK(filesystem_proxy_->PathExists(file_path_));
 
   // We should only try and do this once.
   if (tried_to_recreate_)
@@ -238,8 +238,10 @@ bool LegacyDomStorageDatabase::DeleteFileAndRecreate() {
 
   tried_to_recreate_ = true;
 
+  base::Optional<base::File::Info> info =
+      filesystem_proxy_->GetFileInfo(file_path_);
   // If it's not a directory and we can delete the file, try and open it again.
-  if (!base::DirectoryExists(file_path_) && sql::Database::Delete(file_path_)) {
+  if (info && !info->is_directory && sql::Database::Delete(file_path_)) {
     return LazyOpen(true);
   }
 

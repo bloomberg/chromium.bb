@@ -4,13 +4,14 @@
 
 #include "extensions/browser/api/extensions_api_client.h"
 
+#include "build/chromeos_buildflags.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
-#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
+#include "extensions/browser/supervised_user_extensions_delegate.h"
 
 namespace extensions {
 class AppViewGuestDelegate;
@@ -120,8 +121,8 @@ ManagementAPIDelegate* ExtensionsAPIClient::CreateManagementAPIDelegate()
   return nullptr;
 }
 
-std::unique_ptr<SupervisedUserServiceDelegate>
-ExtensionsAPIClient::CreateSupervisedUserServiceDelegate() const {
+std::unique_ptr<SupervisedUserExtensionsDelegate>
+ExtensionsAPIClient::CreateSupervisedUserExtensionsDelegate() const {
   return nullptr;
 }
 
@@ -151,7 +152,7 @@ FeedbackPrivateDelegate* ExtensionsAPIClient::GetFeedbackPrivateDelegate() {
   return nullptr;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 NonNativeFileSystemDelegate*
 ExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
   return nullptr;
@@ -166,8 +167,8 @@ void ExtensionsAPIClient::SaveImageDataToClipboard(
     const std::vector<char>& image_data,
     api::clipboard::ImageType type,
     AdditionalDataItemList additional_items,
-    const base::Closure& success_callback,
-    const base::Callback<void(const std::string&)>& error_callback) {}
+    base::OnceClosure success_callback,
+    base::OnceCallback<void(const std::string&)> error_callback) {}
 #endif
 
 AutomationInternalApiDelegate*

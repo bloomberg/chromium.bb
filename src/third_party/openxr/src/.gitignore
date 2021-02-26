@@ -8,7 +8,6 @@ CMakeLists.txt.user
 *.tar.gz
 *.log
 pregen/
-doc/
 
 # Cached python scripts in bytecode form
 *.pyc
@@ -29,6 +28,8 @@ out/build/
 # VS misc
 *.sln
 *.pyproj
+CMakeSettings.json
+CppProperties.json
 
 # Don't ignore pipeline stuff
 !.azure-pipelines/

@@ -6,8 +6,11 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -130,6 +133,9 @@ void GetAnimatedCursorBitmaps(int resource_id,
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale);
   SkBitmap bitmap = image_rep.GetBitmap();
+
+  // The image is assumed to be a concatenation of animation frames from left to
+  // right. Also, each frame is assumed to be square (width == height).
   int frame_width = bitmap.height();
   int frame_height = frame_width;
   int total_width = bitmap.width();

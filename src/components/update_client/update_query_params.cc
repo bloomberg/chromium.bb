@@ -25,7 +25,7 @@ const char kUnknown[] = "unknown";
 // The request extra information is the OS and architecture, this helps
 // the server select the right package to be delivered.
 const char kOs[] =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     "mac";
 #elif defined(OS_WIN)
     "win";
@@ -62,11 +62,11 @@ const char kArch[] =
 #error "unknown arch"
 #endif
 
-const char kChrome[] = "chrome";
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kChrome[] = "chrome";
 const char kCrx[] = "chromecrx";
 #else
+const char kChrome[] = "chromium";
 const char kCrx[] = "chromiumcrx";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

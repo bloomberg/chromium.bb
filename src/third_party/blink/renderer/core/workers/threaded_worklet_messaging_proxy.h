@@ -19,8 +19,6 @@ class WorkletModuleResponsesMap;
 class CORE_EXPORT ThreadedWorkletMessagingProxy
     : public ThreadedMessagingProxyBase,
       public WorkletGlobalScopeProxy {
-  USING_GARBAGE_COLLECTED_MIXIN(ThreadedWorkletMessagingProxy);
-
  public:
   // WorkletGlobalScopeProxy implementation.
   void FetchAndInvokeScript(
@@ -38,7 +36,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
       WorkletModuleResponsesMap*,
       const base::Optional<WorkerBackingThreadStartupData>& = base::nullopt);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit ThreadedWorkletMessagingProxy(ExecutionContext*);

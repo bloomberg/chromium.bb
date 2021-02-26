@@ -98,6 +98,14 @@ TEST_F('EduLoginParentsTest', 'SelectedParent', function() {
   this.runMochaTest(edu_login_parents_tests.TestNames.SelectedParent);
 });
 
+TEST_F('EduLoginParentsTest', 'NoInternetError', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.NoInternetError);
+});
+
+TEST_F('EduLoginParentsTest', 'CannotAddAccountError', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.CannotAddAccountError);
+});
+
 var EduLoginParentSigninTest = class extends EduLoginTest {
   /** @override */
   get browsePreload() {
@@ -153,4 +161,8 @@ TEST_F('EduLoginSigninTest', 'WebUICallbacks', function() {
 
 TEST_F('EduLoginSigninTest', 'AuthExtHostCallbacks', function() {
   this.runMochaTest(edu_login_signin_tests.TestNames.AuthExtHostCallbacks);
+});
+
+TEST_F('EduLoginSigninTest', 'GoBackInWebview', function() {
+  this.runMochaTest(edu_login_signin_tests.TestNames.GoBackInWebview);
 });

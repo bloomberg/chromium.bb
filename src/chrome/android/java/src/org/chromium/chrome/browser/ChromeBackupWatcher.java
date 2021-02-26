@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -49,7 +50,7 @@ public class ChromeBackupWatcher {
         }
         sharedPrefs.addObserver((key) -> {
             // Update the backup if any of the backed up Android preferences change.
-            for (String pref : ChromeBackupAgent.BACKUP_ANDROID_BOOL_PREFS) {
+            for (String pref : ChromeBackupAgentImpl.BACKUP_ANDROID_BOOL_PREFS) {
                 if (key.equals(pref)) {
                     onBackupPrefsChanged();
                     return;
@@ -57,7 +58,9 @@ public class ChromeBackupWatcher {
             }
         });
         // Update the backup if the sign-in status changes.
-        IdentityServicesProvider.get().getIdentityManager().addObserver(
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        identityManager.addObserver(
                 new IdentityManager.Observer() {
                     @Override
                     public void onPrimaryAccountSet(CoreAccountInfo account) {

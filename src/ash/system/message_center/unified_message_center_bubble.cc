@@ -10,8 +10,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
+#include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
@@ -50,9 +49,7 @@ class UnifiedMessageCenterBubble::Border : public ui::LayerDelegate {
 
     // Draw a solid rounded rect as the inner border.
     cc::PaintFlags flags;
-    flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kSeparator,
-        AshColorProvider::AshColorMode::kLight));
+    flags.setColor(message_center_style::kSeperatorColor);
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(canvas->image_scale());
     flags.setAntiAlias(true);
@@ -83,6 +80,9 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   message_center_view_ =
       bubble_view_->AddChildView(std::make_unique<UnifiedMessageCenterView>(
           nullptr /* parent */, tray->model(), this));
+
+  time_to_click_recorder_ =
+      std::make_unique<TimeToClickRecorder>(this, message_center_view_);
 
   message_center_view_->AddObserver(this);
 }
@@ -129,6 +129,7 @@ UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->CloseNow();
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 int UnifiedMessageCenterBubble::CalculateAvailableHeight() {
@@ -224,7 +225,7 @@ base::string16 UnifiedMessageCenterBubble::GetAccessibleNameForBubble() {
 }
 
 bool UnifiedMessageCenterBubble::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
 }
 
 void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(
@@ -252,6 +253,15 @@ void UnifiedMessageCenterBubble::OnWidgetActivationChanged(
     bool active) {
   if (active)
     tray_->bubble()->OnMessageCenterActivated();
+}
+
+void UnifiedMessageCenterBubble::RecordTimeToClick() {
+  // TODO(tengs): We are currently only using this handler to record the first
+  // interaction (i.e. whether the message center or quick settings was clicked
+  // first). Maybe log the time to click if it is useful in the future.
+
+  tray_->MaybeRecordFirstInteraction(
+      UnifiedSystemTray::FirstInteractionType::kMessageCenter);
 }
 
 }  // namespace ash

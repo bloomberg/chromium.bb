@@ -27,12 +27,6 @@ using gfx::Vector3dF;
 namespace {
 static constexpr int kDefaultPumpFrequencyHz = 60;
 
-mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id) {
-  mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-  display_info->id = id;
-  return display_info;
-}
-
 display::Display::Rotation GetRotation() {
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen) {
@@ -54,7 +48,7 @@ VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
                              base::BindOnce(&VROrientationDevice::SensorReady,
                                             base::Unretained(this)));
 
-  SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));
+  SetVRDisplayInfo(mojom::VRDisplayInfo::New());
 }
 
 VROrientationDevice::~VROrientationDevice() {
@@ -145,6 +139,10 @@ void VROrientationDevice::RequestSession(
   if (display_info_) {
     session->display_info = display_info_.Clone();
   }
+  session->device_config = device::mojom::XRSessionDeviceConfig::New();
+  session->enviroment_blend_mode =
+      device::mojom::XREnvironmentBlendMode::kOpaque;
+  session->interaction_mode = device::mojom::XRInteractionMode::kScreenSpace;
 
   std::move(callback).Run(std::move(session), std::move(controller));
 
@@ -170,10 +168,6 @@ void VROrientationDevice::GetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   // Orientation sessions should never be exclusive or presenting.
   DCHECK(!HasExclusiveSession());
-  if (!inline_poses_enabled_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
 
   mojom::VRPosePtr pose = mojom::VRPose::New();
 

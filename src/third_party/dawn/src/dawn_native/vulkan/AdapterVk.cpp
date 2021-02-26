@@ -39,10 +39,20 @@ namespace dawn_native { namespace vulkan {
 
     MaybeError Adapter::Initialize() {
         DAWN_TRY_ASSIGN(mDeviceInfo, GatherDeviceInfo(*this));
-        if (!mDeviceInfo.maintenance1) {
+        if (!mDeviceInfo.HasExt(DeviceExt::Maintenance1)) {
             return DAWN_INTERNAL_ERROR(
                 "Dawn requires Vulkan 1.1 or Vulkan 1.0 with KHR_Maintenance1 in order to support "
                 "viewport flipY");
+        }
+
+        if (mDeviceInfo.HasExt(DeviceExt::DriverProperties)) {
+            mDriverDescription = mDeviceInfo.driverProperties.driverName;
+            if (mDeviceInfo.driverProperties.driverInfo[0] != '\0') {
+                mDriverDescription += std::string(": ") + mDeviceInfo.driverProperties.driverInfo;
+            }
+        } else {
+            mDriverDescription =
+                "Vulkan driver version: " + std::to_string(mDeviceInfo.properties.driverVersion);
         }
 
         InitializeSupportedExtensions();
@@ -72,6 +82,21 @@ namespace dawn_native { namespace vulkan {
     void Adapter::InitializeSupportedExtensions() {
         if (mDeviceInfo.features.textureCompressionBC == VK_TRUE) {
             mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
+        }
+
+        if (mDeviceInfo.HasExt(DeviceExt::ShaderFloat16Int8) &&
+            mDeviceInfo.shaderFloat16Int8Features.shaderFloat16 == VK_TRUE &&
+            mDeviceInfo.HasExt(DeviceExt::_16BitStorage) &&
+            mDeviceInfo._16BitStorageFeatures.uniformAndStorageBuffer16BitAccess == VK_TRUE) {
+            mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
+        }
+
+        if (mDeviceInfo.features.pipelineStatisticsQuery == VK_TRUE) {
+            mSupportedExtensions.EnableExtension(Extension::PipelineStatisticsQuery);
+        }
+
+        if (mDeviceInfo.properties.limits.timestampComputeAndGraphics == VK_TRUE) {
+            mSupportedExtensions.EnableExtension(Extension::TimestampQuery);
         }
     }
 

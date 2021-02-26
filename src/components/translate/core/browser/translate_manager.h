@@ -32,9 +32,12 @@ namespace translate {
 
 class TranslateClient;
 class TranslateDriver;
+class TranslateMetricsLogger;
 class TranslatePrefs;
 class TranslateRanker;
 struct TranslateTriggerDecision;
+
+class NullTranslateMetricsLogger;
 
 namespace testing {
 class TranslateManagerTest;
@@ -42,6 +45,10 @@ class TranslateManagerTest;
 
 struct TranslateErrorDetails;
 struct TranslateInitDetails;
+
+extern const base::Feature kOverrideLanguagePrefsForHrefTranslate;
+extern const base::Feature kOverrideSitePrefsForHrefTranslate;
+extern const char kForceAutoTranslateKey[];
 
 // The TranslateManager class is responsible for showing an info-bar when a page
 // in a language different than the user language is loaded.  It triggers the
@@ -117,13 +124,19 @@ class TranslateManager {
   // Starts the translation process for the page in the |page_lang| language.
   void InitiateTranslation(const std::string& page_lang);
 
+  // Maybe initiates translation when Autofill Assistant has finished.
+  void OnAutofillAssistantFinished();
+
   // Initiate a manually triggered translation process for the current page.
   // Collect source and target languages, and show translation UI. If
   // |auto_translate| is true the page gets translated to the target language.
-  void InitiateManualTranslation(bool auto_translate = false);
+  void InitiateManualTranslation(bool auto_translate = false,
+                                 bool triggered_from_menu = false);
 
   // Returns true iff the current page could be manually translated.
-  bool CanManuallyTranslate();
+  // Logging should only be performed when this method is called to show the
+  // translate menu item.
+  bool CanManuallyTranslate(bool menuLogging = false);
 
   // Shows the after translate or error infobar depending on the details.
   void PageTranslated(const std::string& source_lang,
@@ -139,16 +152,14 @@ class TranslateManager {
   void ReportLanguageDetectionError();
 
   // Callback types for translate errors.
-  typedef base::RepeatingCallback<void(const TranslateErrorDetails&)>
-      TranslateErrorCallback;
-  typedef base::CallbackList<void(const TranslateErrorDetails&)>
-      TranslateErrorCallbackList;
+  using TranslateErrorCallbackList =
+      base::RepeatingCallbackList<void(const TranslateErrorDetails&)>;
+  using TranslateErrorCallback = TranslateErrorCallbackList::CallbackType;
 
   // Callback types for translate initialization.
-  typedef base::RepeatingCallback<void(const TranslateInitDetails&)>
-      TranslateInitCallback;
-  typedef base::CallbackList<void(const TranslateInitDetails&)>
-      TranslateInitCallbackList;
+  using TranslateInitCallbackList =
+      base::RepeatingCallbackList<void(const TranslateInitDetails&)>;
+  using TranslateInitCallback = TranslateInitCallbackList::CallbackType;
 
   // Registers a callback for translate errors.
   static std::unique_ptr<TranslateErrorCallbackList::Subscription>
@@ -159,7 +170,7 @@ class TranslateManager {
   RegisterTranslateInitCallback(const TranslateInitCallback& callback);
 
   // Gets the LanguageState associated with the TranslateManager
-  LanguageState& GetLanguageState();
+  LanguageState* GetLanguageState();
 
   // Record an event of the given |event_type| using the currently saved
   // |translate_event_| as context. |event_type| must be one of the values
@@ -176,6 +187,12 @@ class TranslateManager {
   // See https://github.com/dtapuska/html-translate
   static bool IsAvailable(const TranslatePrefs* prefs);
 
+  // Check whether there is specified target, the source and the target are both
+  // supported, and the source and target don't match.
+  static bool IsTranslatableLanguagePair(
+      const std::string& page_language_code,
+      const std::string& target_language_code);
+
   // Returns true if the decision should be overridden and logs the event
   // appropriately. |event_type| must be one of the
   // values defined by metrics::TranslateEventProto::EventType.
@@ -187,6 +204,17 @@ class TranslateManager {
 
   // Sets target language.
   void SetPredefinedTargetLanguage(const std::string& language_code);
+
+  // Returns a reference to |active_translate_metrics_logger_|. In the event
+  // that this value is null, a |NullTranslateMetricsLogger| (a null
+  // implementation) will be returned. This guarantees that the returned value
+  // is always non-null.
+  TranslateMetricsLogger* GetActiveTranslateMetricsLogger();
+
+  // Sets |active_translate_metrics_logger_| to the given
+  // |translate_metrics_logger|.
+  void RegisterTranslateMetricsLogger(
+      base::WeakPtr<TranslateMetricsLogger> translate_metrics_logger);
 
  private:
   friend class translate::testing::TranslateManagerTest;
@@ -263,11 +291,6 @@ class TranslateManager {
                                  TranslatePrefs* translate_prefs,
                                  const std::string& page_language_code);
 
-  // Check whether there is specified target, the source and
-  // the target are both supported, and the source and target don't match.
-  bool IsTranslatableLanguagePair(const std::string& page_language_code,
-                                  const std::string& target_language_code);
-
   // Enables or disables the translate omnibox icon depending on |decision|. The
   // icon is always shown if translate UI is shown, auto-translation happens, or
   // the UI is suppressed by ranker.
@@ -302,9 +325,17 @@ class TranslateManager {
   TranslateRanker* translate_ranker_;        // Weak.
   language::LanguageModel* language_model_;  // Weak.
 
+  base::WeakPtr<TranslateMetricsLogger> active_translate_metrics_logger_;
+  std::unique_ptr<NullTranslateMetricsLogger> null_translate_metrics_logger_;
+
   LanguageState language_state_;
 
   std::unique_ptr<metrics::TranslateEventProto> translate_event_;
+
+  // Language code of current page. Code is stored when translation is disabled
+  // by Autofill Assistant. This code is later used to translate page when
+  // Autofill Assistant finishes run.
+  std::string page_language_code_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_{this};
 

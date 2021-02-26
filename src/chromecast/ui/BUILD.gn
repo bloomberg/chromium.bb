@@ -57,6 +57,10 @@ cast_source_set("aura_components") {
   } else {
     sources += [ "aura_components_dummy.cc" ]
   }
+
+  if (enable_media_overlay) {
+    defines = [ "ENABLE_MEDIA_OVERLAY" ]
+  }
 }
 
 if (use_aura) {
@@ -104,7 +108,7 @@ if (use_aura) {
 aggregate_vector_icons("media_controls_vector_icons") {
   icon_directory = "vector_icons"
 
-  icons = [
+  sources = [
     "back30.icon",
     "forward30.icon",
     "next.icon",

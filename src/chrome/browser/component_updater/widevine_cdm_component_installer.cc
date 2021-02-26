@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,13 +15,15 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
+#include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -31,13 +35,19 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
+#include "content/public/common/content_paths.h"
 #include "crypto/sha2.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "chrome/common/media/component_widevine_cdm_hint_file_linux.h"
 #endif
+
+#if defined(OS_MAC)
+#include "base/mac/mach_o.h"
+#include "base/mac/rosetta.h"
+#endif  // OS_MAC
 
 #if !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #error This file should only be compiled when Widevine CDM component is enabled
@@ -50,6 +60,8 @@ namespace component_updater {
 
 namespace {
 
+static bool g_was_widevine_cdm_component_rejected_due_to_no_rosetta;
+
 // CRX hash. The extension id is: oimompecagnajdejgnnjijobebaeigek.
 const uint8_t kWidevineSha2Hash[] = {
     0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49, 0x6d, 0xd9, 0x89,
@@ -60,12 +72,16 @@ static_assert(base::size(kWidevineSha2Hash) == crypto::kSHA256Length,
 
 // Name of the Widevine CDM OS in the component manifest.
 const char kWidevineCdmPlatform[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     "mac";
 #elif defined(OS_WIN)
     "win";
-#else  // OS_LINUX, etc. TODO(viettrungluu): Separate out Chrome OS and Android?
+#elif defined(OS_CHROMEOS)
+    "cros";
+#elif defined(OS_LINUX)
     "linux";
+#else
+#error This file should only be included for supported platforms.
 #endif
 
 // Name of the Widevine CDM architecture in the component manifest.
@@ -74,8 +90,12 @@ const char kWidevineCdmArch[] =
     "x86";
 #elif defined(ARCH_CPU_X86_64)
     "x64";
-#else  // TODO(viettrungluu): Support an ARM check?
-    "???";
+#elif defined(ARCH_CPU_ARMEL)
+    "arm";
+#elif defined(ARCH_CPU_ARM64)
+    "arm64";
+#else
+#error This file should only be included for supported architecture.
 #endif
 
 // Widevine CDM is packaged as a multi-CRX. Widevine CDM binaries are located in
@@ -88,14 +108,17 @@ base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
   return base_path.AppendASCII("_platform_specific").AppendASCII(platform_arch);
 }
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // On Linux the Widevine CDM is loaded at startup before the zygote is locked
 // down. As a result there is no need to register the CDM with Chrome as it
 // can't be used until Chrome is restarted. Instead we simply update the hint
 // file so that startup can load this new version next time.
 void RegisterWidevineCdmWithChrome(
     const base::Version& cdm_version,
-    const base::FilePath& cdm_install_dir,
+    const base::FilePath& cdm_path,
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+    bool launch_x86_64,
+#endif
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -109,15 +132,45 @@ void RegisterWidevineCdmWithChrome(
   }
 
   VLOG(1) << "Register Widevine CDM with Chrome";
-  const base::FilePath cdm_path =
-      GetPlatformDirectory(cdm_install_dir)
-          .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
-  CdmRegistry::GetInstance()->RegisterCdm(
-      content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version,
-                       cdm_path, kWidevineCdmFileSystemId,
-                       std::move(capability), kWidevineKeySystem, false));
+  content::CdmInfo cdm_info(kWidevineCdmDisplayName, kWidevineCdmGuid,
+                            cdm_version, cdm_path, kWidevineCdmFileSystemId,
+                            std::move(capability), kWidevineKeySystem, false);
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  cdm_info.launch_x86_64 = launch_x86_64;
+#endif  // OS_MAC && ARCH_CPU_ARM64
+  CdmRegistry::GetInstance()->RegisterCdm(cdm_info);
 }
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+base::FilePath GetCdmPathFromInstallDir(const base::FilePath& install_dir) {
+  base::FilePath cdm_platform_dir = GetPlatformDirectory(install_dir);
+  std::string cdm_lib_name =
+      base::GetNativeLibraryName(kWidevineCdmLibraryName);
+  base::FilePath cdm_path = cdm_platform_dir.AppendASCII(cdm_lib_name);
+
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  // If no Widevine CDM is present in the normal native arm64 location, look for
+  // one in the x86_64 location. Beware that the architecture embedded in the
+  // pathname does not necessarily indicate what architecture the Mach-O file at
+  // that path supports: an x86_64 library may be found in an arm64 location. A
+  // separate base::GetMachOArchitectures call must be made to determine the
+  // actual architecture.
+  //
+  // If there is no file at all in the native arm64 location, fall back to the
+  // x86_64 location. VerifyInstallation() and UpdateCdmPath() will do Rosetta
+  // checks before actually using it.
+  if (!base::PathExists(cdm_path) &&
+      base::EndsWith(cdm_platform_dir.value(), kWidevineCdmArch)) {
+    cdm_platform_dir = base::FilePath(
+        cdm_platform_dir.value().substr(
+            0, cdm_platform_dir.value().size() - strlen(kWidevineCdmArch)) +
+        "x64");
+    cdm_path = cdm_platform_dir.AppendASCII(cdm_lib_name);
+  }
+#endif  // OS_MAC && ARCH_CPU_ARM64
+
+  return cdm_path;
+}
 
 }  // namespace
 
@@ -196,9 +249,24 @@ void WidevineCdmComponentInstallerPolicy::ComponentReady(
 bool WidevineCdmComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
-  const base::FilePath cdm_path =
-      GetPlatformDirectory(install_dir)
-          .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
+  base::FilePath cdm_path = GetCdmPathFromInstallDir(install_dir);
+
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  // Before committing to run an x86_64 version of Widevine under Rosetta, make
+  // sure that Rosetta is actually available. It’s not installed by default.
+  const base::MachOArchitectures architectures =
+      base::GetMachOArchitectures(cdm_path);
+  const bool launch_x86_64 =
+      (architectures & (base::MachOArchitectures::kX86_64 |
+                        base::MachOArchitectures::kARM64)) ==
+      base::MachOArchitectures::kX86_64;
+  if (launch_x86_64 && !base::mac::IsRosettaInstalled()) {
+    g_was_widevine_cdm_component_rejected_due_to_no_rosetta = true;
+    return false;
+  }
+  g_was_widevine_cdm_component_rejected_due_to_no_rosetta = false;
+#endif  // OS_MAC && ARCH_CPU_ARM64
+
   content::CdmCapability capability;
   return IsCdmManifestCompatibleWithChrome(manifest) &&
          base::PathExists(cdm_path) && ParseCdmManifest(manifest, &capability);
@@ -245,18 +313,74 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
     return;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   VLOG(1) << "Updating hint file with Widevine CDM " << cdm_version;
 
   // This is running on a thread that allows IO, so simply update the hint file.
   if (!UpdateWidevineCdmHintFile(cdm_install_dir))
     PLOG(WARNING) << "Failed to update Widevine CDM hint path.";
 #else
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,
-                         absolute_cdm_install_dir, base::Passed(&manifest)));
+  base::FilePath cdm_path = GetCdmPathFromInstallDir(absolute_cdm_install_dir);
+
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  // Detect the architecture of the chosen Widevine CDM. If it contains x86_64
+  // code and no arm64 code, arrange to run it via Rosetta translation.
+  // Detection is necessary because the library may contain only x86_64 code
+  // even if loaded from an arm64 path. This isn’t likely for the bundled
+  // Widevine CDM, but can happen with a component-updated version.
+  const base::MachOArchitectures architectures =
+      base::GetMachOArchitectures(cdm_path);
+  const bool launch_x86_64 =
+      (architectures & (base::MachOArchitectures::kX86_64 |
+                        base::MachOArchitectures::kARM64)) ==
+      base::MachOArchitectures::kX86_64;
+
+  // In order for this strategy to work, Rosetta must be installed. That should
+  // be guaranteed by VerifyInstallation succeeding.
+  if (launch_x86_64) {
+    DCHECK(base::mac::IsRosettaInstalled());
+
+    // To avoid a long delay (15 seconds observed is typical) when first loading
+    // the Widevine CDM under Rosetta, submit required modules for ahead-of-time
+    // translation. The necessary modules are:
+    //  - the helper executable to launch,
+    //  - the framework that contains the vast majority of the code, and
+    //  - the Widevine CDM library itself.
+    // If Rosetta’s translation cache for these modules is already current, they
+    // will not be re-translated. If anything requires translation, it will
+    // still be time-consuming, but it’ll happen on a background thread without
+    // bothering the user, hopefully before the user needs to use them. If these
+    // modules are needed before the translation is complete, translation will
+    // at least have had a head start.
+
+    std::vector<base::FilePath> rosetta_translate_paths;
+    base::FilePath helper_path;
+    if (base::PathService::Get(content::CHILD_PROCESS_EXE, &helper_path)) {
+      rosetta_translate_paths.push_back(helper_path);
+    }
+
+    base::FilePath framework_path;
+    if (base::PathService::Get(base::FILE_MODULE, &framework_path)) {
+      rosetta_translate_paths.push_back(framework_path);
+    }
+
+    rosetta_translate_paths.push_back(cdm_path);
+
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(base::IgnoreResult(
+                           &base::mac::RequestRosettaAheadOfTimeTranslation),
+                       std::move(rosetta_translate_paths)));
+  }
+#endif  // OS_MAC && ARCH_CPU_ARM64
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version, cdm_path,
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+                     launch_x86_64,
+#endif  // OS_MAC && ARCH_CPU_ARM64
+                     base::Passed(&manifest)));
 #endif
 }
 
@@ -264,6 +388,10 @@ void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<WidevineCdmComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
+}
+
+bool WasWidevineCdmComponentRejectedDueToNoRosetta() {
+  return g_was_widevine_cdm_component_rejected_due_to_no_rosetta;
 }
 
 }  // namespace component_updater

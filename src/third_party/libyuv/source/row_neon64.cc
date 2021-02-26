@@ -68,13 +68,13 @@ extern "C" {
   "uzp2       v3.8b, v2.8b, v2.8b            \n" \
   "ins        v1.s[1], v3.s[0]               \n"
 
-#define YUVTORGB_SETUP                           \
-  "ld1r       {v24.8h}, [%[kUVBiasBGR]], #2  \n" \
-  "ld1r       {v25.8h}, [%[kUVBiasBGR]], #2  \n" \
-  "ld1r       {v26.8h}, [%[kUVBiasBGR]]      \n" \
-  "ld1r       {v31.4s}, [%[kYToRgb]]         \n" \
-  "ld2        {v27.8h, v28.8h}, [%[kUVToRB]] \n" \
-  "ld2        {v29.8h, v30.8h}, [%[kUVToG]]  \n"
+#define YUVTORGB_SETUP                                      \
+  "ld3r       {v24.8h, v25.8h, v26.8h}, [%[kUVBiasBGR]] \n" \
+  "ld1r       {v31.4s}, [%[kYToRgb]]                    \n" \
+  "ld2        {v27.8h, v28.8h}, [%[kUVToRB]]            \n" \
+  "ld2        {v29.8h, v30.8h}, [%[kUVToG]]             \n"
+
+// clang-format off
 
 #define YUVTORGB(vR, vG, vB)                                        \
   "uxtl       v0.8h, v0.8b                   \n" /* Extract Y    */ \
@@ -89,28 +89,22 @@ extern "C" {
   "mov        v2.d[0], v1.d[1]               \n" /* Extract V */    \
   "uxtl       v2.8h, v2.8b                   \n"                    \
   "uxtl       v1.8h, v1.8b                   \n" /* Extract U */    \
-  "mul        v3.8h, v1.8h, v27.8h           \n"                    \
-  "mul        v5.8h, v1.8h, v29.8h           \n"                    \
-  "mul        v6.8h, v2.8h, v30.8h           \n"                    \
-  "mul        v7.8h, v2.8h, v28.8h           \n"                    \
+  "mul        v3.8h, v27.8h, v1.8h           \n"                    \
+  "mul        v5.8h, v29.8h, v1.8h           \n"                    \
+  "mul        v6.8h, v30.8h, v2.8h           \n"                    \
+  "mul        v7.8h, v28.8h, v2.8h           \n"                    \
   "sqadd      v6.8h, v6.8h, v5.8h            \n"                    \
-  "sqadd      " #vB                                                 \
-  ".8h, v24.8h, v0.8h      \n" /* B */                              \
-  "sqadd      " #vG                                                 \
-  ".8h, v25.8h, v0.8h      \n" /* G */                              \
-  "sqadd      " #vR                                                 \
-  ".8h, v26.8h, v0.8h      \n" /* R */                              \
-  "sqadd      " #vB ".8h, " #vB                                     \
-  ".8h, v3.8h  \n" /* B */                                          \
-  "sqsub      " #vG ".8h, " #vG                                     \
-  ".8h, v6.8h  \n" /* G */                                          \
-  "sqadd      " #vR ".8h, " #vR                                     \
-  ".8h, v7.8h  \n" /* R */                                          \
-  "sqshrun    " #vB ".8b, " #vB                                     \
-  ".8h, #6     \n" /* B */                                          \
-  "sqshrun    " #vG ".8b, " #vG                                     \
-  ".8h, #6     \n"                               /* G */            \
+  "sqadd      " #vB ".8h, v24.8h, v0.8h      \n" /* B */            \
+  "sqadd      " #vG ".8h, v25.8h, v0.8h      \n" /* G */            \
+  "sqadd      " #vR ".8h, v26.8h, v0.8h      \n" /* R */            \
+  "sqadd      " #vB ".8h, " #vB ".8h, v3.8h  \n" /* B */            \
+  "sqsub      " #vG ".8h, " #vG ".8h, v6.8h  \n" /* G */            \
+  "sqadd      " #vR ".8h, " #vR ".8h, v7.8h  \n" /* R */            \
+  "sqshrun    " #vB ".8b, " #vB ".8h, #6     \n" /* B */            \
+  "sqshrun    " #vG ".8b, " #vG ".8h, #6     \n" /* G */            \
   "sqshrun    " #vR ".8b, " #vR ".8h, #6     \n" /* R */
+
+// clang-format on
 
 void I444ToARGBRow_NEON(const uint8_t* src_y,
                         const uint8_t* src_u,
@@ -123,7 +117,10 @@ void I444ToARGBRow_NEON(const uint8_t* src_y,
     "movi       v23.8b, #255                   \n" /* A */
   "1:                                          \n"
     READYUV444
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 448]           \n"
+    "prfm       pldl1keep, [%2, 448]           \n"
     "subs       %w4, %w4, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%3], #32 \n"
     "b.gt       1b                             \n"
@@ -150,9 +147,13 @@ void I422ToARGBRow_NEON(const uint8_t* src_y,
   asm volatile (
     YUVTORGB_SETUP
     "movi       v23.8b, #255                   \n" /* A */
+
   "1:                                          \n"
     READYUV422
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
     "subs       %w4, %w4, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%3], #32     \n"
     "b.gt       1b                             \n"
@@ -181,8 +182,12 @@ void I422AlphaToARGBRow_NEON(const uint8_t* src_y,
     YUVTORGB_SETUP
   "1:                                          \n"
     READYUV422
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
     "ld1        {v23.8b}, [%3], #8             \n"
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
+    "prfm       pldl1keep, [%3, 448]           \n"
     "subs       %w5, %w5, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%4], #32     \n"
     "b.gt       1b                             \n"
@@ -212,7 +217,10 @@ void I422ToRGBARow_NEON(const uint8_t* src_y,
     "movi       v20.8b, #255                   \n" /* A */
   "1:                                          \n"
     READYUV422
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v23, v22, v21)
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
     "subs       %w4, %w4, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%3], #32     \n"
     "b.gt       1b                             \n"
@@ -240,7 +248,10 @@ void I422ToRGB24Row_NEON(const uint8_t* src_y,
     YUVTORGB_SETUP
   "1:                                          \n"
     READYUV422
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
     "subs       %w4, %w4, #8                   \n"
     "st3        {v20.8b,v21.8b,v22.8b}, [%3], #24     \n"
     "b.gt       1b                             \n"
@@ -265,6 +276,8 @@ void I422ToRGB24Row_NEON(const uint8_t* src_y,
   "sri        v0.8h,  v21.8h, #5             \n" /* RG                   */ \
   "sri        v0.8h,  v20.8h, #11            \n" /* RGB                  */
 
+// clang-format off
+
 void I422ToRGB565Row_NEON(const uint8_t* src_y,
                           const uint8_t* src_u,
                           const uint8_t* src_v,
@@ -272,13 +285,17 @@ void I422ToRGB565Row_NEON(const uint8_t* src_y,
                           const struct YuvConstants* yuvconstants,
                           int width) {
   asm volatile(
-      YUVTORGB_SETUP
-      "1:                                        \n" READYUV422 YUVTORGB(
-          v22, v21,
-          v20) "subs       %w4, %w4, #8                   \n" ARGBTORGB565
-               "st1        {v0.8h}, [%3], #16             \n"  // store 8 pixels
-                                                               // RGB565.
-               "b.gt       1b                             \n"
+    YUVTORGB_SETUP
+    "1:                                        \n"
+    READYUV422
+    YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%0, 448]           \n"
+    "subs       %w4, %w4, #8                   \n"
+    ARGBTORGB565
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
+    "st1        {v0.8h}, [%3], #16             \n"  // store 8 pixels RGB565.
+    "b.gt       1b                             \n"
       : "+r"(src_y),       // %0
         "+r"(src_u),       // %1
         "+r"(src_v),       // %2
@@ -308,14 +325,18 @@ void I422ToARGB1555Row_NEON(const uint8_t* src_y,
                             const struct YuvConstants* yuvconstants,
                             int width) {
   asm volatile(
-      YUVTORGB_SETUP
-      "movi       v23.8b, #255                   \n"
-      "1:                                        \n" READYUV422 YUVTORGB(
-          v22, v21,
-          v20) "subs       %w4, %w4, #8                   \n" ARGBTOARGB1555
-               "st1        {v0.8h}, [%3], #16             \n"  // store 8 pixels
-                                                               // RGB565.
-               "b.gt       1b                             \n"
+    YUVTORGB_SETUP
+    "movi       v23.8b, #255                   \n"
+    "1:                                        \n"
+    READYUV422
+    YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%0, 448]           \n"
+    "subs       %w4, %w4, #8                   \n"
+    ARGBTOARGB1555
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
+    "st1        {v0.8h}, [%3], #16             \n"  // store 8 pixels RGB565.
+    "b.gt       1b                             \n"
       : "+r"(src_y),         // %0
         "+r"(src_u),         // %1
         "+r"(src_v),         // %2
@@ -328,6 +349,7 @@ void I422ToARGB1555Row_NEON(const uint8_t* src_y,
       : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v20",
         "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30");
 }
+// clang-format on
 
 #define ARGBTOARGB4444                                                       \
   /* Input v20.8b<=B, v21.8b<=G, v22.8b<=R, v23.8b<=A, v4.8b<=0x0f        */ \
@@ -351,9 +373,12 @@ void I422ToARGB4444Row_NEON(const uint8_t* src_y,
   "1:                                          \n"
     READYUV422
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%0, 448]           \n"
     "subs       %w4, %w4, #8                   \n"
     "movi       v23.8b, #255                   \n"
     ARGBTOARGB4444
+    "prfm       pldl1keep, [%1, 128]           \n"
+    "prfm       pldl1keep, [%2, 128]           \n"
     "st1        {v0.8h}, [%3], #16             \n"  // store 8 pixels ARGB4444.
     "b.gt       1b                             \n"
     : "+r"(src_y),    // %0
@@ -370,23 +395,27 @@ void I422ToARGB4444Row_NEON(const uint8_t* src_y,
   );
 }
 
-void I400ToARGBRow_NEON(const uint8_t* src_y, uint8_t* dst_argb, int width) {
+void I400ToARGBRow_NEON(const uint8_t* src_y,
+                        uint8_t* dst_argb,
+                        const struct YuvConstants* yuvconstants,
+                        int width) {
   asm volatile (
     YUVTORGB_SETUP
     "movi       v23.8b, #255                   \n"
   "1:                                          \n"
     READYUV400
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%0, 448]           \n"
     "subs       %w2, %w2, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%1], #32     \n"
     "b.gt       1b                             \n"
     : "+r"(src_y),     // %0
       "+r"(dst_argb),  // %1
       "+r"(width)      // %2
-    : [kUVToRB]"r"(&kYuvI601Constants.kUVToRB),
-      [kUVToG]"r"(&kYuvI601Constants.kUVToG),
-      [kUVBiasBGR]"r"(&kYuvI601Constants.kUVBiasBGR),
-      [kYToRgb]"r"(&kYuvI601Constants.kYToRgb)
+    : [kUVToRB]"r"(&yuvconstants->kUVToRB),
+      [kUVToG]"r"(&yuvconstants->kUVToG),
+      [kUVBiasBGR]"r"(&yuvconstants->kUVBiasBGR),
+      [kYToRgb]"r"(&yuvconstants->kYToRgb)
     : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v20",
       "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30"
   );
@@ -397,6 +426,7 @@ void J400ToARGBRow_NEON(const uint8_t* src_y, uint8_t* dst_argb, int width) {
       "movi       v23.8b, #255                   \n"
       "1:                                        \n"
       "ld1        {v20.8b}, [%0], #8             \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
       "orr        v21.8b, v20.8b, v20.8b         \n"
       "orr        v22.8b, v20.8b, v20.8b         \n"
       "subs       %w2, %w2, #8                   \n"
@@ -419,7 +449,9 @@ void NV12ToARGBRow_NEON(const uint8_t* src_y,
     "movi       v23.8b, #255                   \n"
   "1:                                          \n"
     READNV12
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 256]           \n"
     "subs       %w3, %w3, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%2], #32     \n"
     "b.gt       1b                             \n"
@@ -446,7 +478,9 @@ void NV21ToARGBRow_NEON(const uint8_t* src_y,
     "movi       v23.8b, #255                   \n"
   "1:                                          \n"
     READNV21
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 256]           \n"
     "subs       %w3, %w3, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%2], #32     \n"
     "b.gt       1b                             \n"
@@ -472,7 +506,9 @@ void NV12ToRGB24Row_NEON(const uint8_t* src_y,
     YUVTORGB_SETUP
   "1:                                          \n"
     READNV12
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 256]           \n"
     "subs       %w3, %w3, #8                   \n"
     "st3        {v20.8b,v21.8b,v22.8b}, [%2], #24     \n"
     "b.gt       1b                             \n"
@@ -498,7 +534,9 @@ void NV21ToRGB24Row_NEON(const uint8_t* src_y,
     YUVTORGB_SETUP
   "1:                                          \n"
     READNV21
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%1, 256]           \n"
     "subs       %w3, %w3, #8                   \n"
     "st3        {v20.8b,v21.8b,v22.8b}, [%2], #24     \n"
     "b.gt       1b                             \n"
@@ -521,13 +559,13 @@ void NV12ToRGB565Row_NEON(const uint8_t* src_y,
                           const struct YuvConstants* yuvconstants,
                           int width) {
   asm volatile(
-      YUVTORGB_SETUP
-      "1:                                        \n" READNV12 YUVTORGB(
-          v22, v21,
-          v20) "subs       %w3, %w3, #8                   \n" ARGBTORGB565
-               "st1        {v0.8h}, [%2], 16              \n"  // store 8 pixels
-                                                               // RGB565.
-               "b.gt       1b                             \n"
+      YUVTORGB_SETUP "1:                                        \n" READNV12
+                     "prfm       pldl1keep, [%0, 448]           \n" YUVTORGB(
+                         v22, v21, v20) ARGBTORGB565
+      "prfm       pldl1keep, [%1, 256]           \n"
+      "subs       %w3, %w3, #8                   \n"
+      "st1        {v0.8h}, [%2], 16              \n"  // store 8 pixels
+      "b.gt       1b                             \n"
       : "+r"(src_y),       // %0
         "+r"(src_uv),      // %1
         "+r"(dst_rgb565),  // %2
@@ -549,6 +587,7 @@ void YUY2ToARGBRow_NEON(const uint8_t* src_yuy2,
     "movi       v23.8b, #255                   \n"
   "1:                                          \n"
     READYUY2
+    "prfm       pldl1keep, [%0, 448]           \n"
     YUVTORGB(v22, v21, v20)
     "subs       %w2, %w2, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%1], #32      \n"
@@ -575,6 +614,7 @@ void UYVYToARGBRow_NEON(const uint8_t* src_uyvy,
   "1:                                          \n"
     READUYVY
     YUVTORGB(v22, v21, v20)
+    "prfm       pldl1keep, [%0, 448]           \n"
     "subs       %w2, %w2, #8                   \n"
     "st4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%1], 32      \n"
     "b.gt       1b                             \n"
@@ -598,6 +638,7 @@ void SplitUVRow_NEON(const uint8_t* src_uv,
   asm volatile(
       "1:                                        \n"
       "ld2        {v0.16b,v1.16b}, [%0], #32     \n"  // load 16 pairs of UV
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w3, %w3, #16                  \n"  // 16 processed per loop
       "st1        {v0.16b}, [%1], #16            \n"  // store U
       "st1        {v1.16b}, [%2], #16            \n"  // store V
@@ -620,6 +661,8 @@ void MergeUVRow_NEON(const uint8_t* src_u,
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load U
       "ld1        {v1.16b}, [%1], #16            \n"  // load V
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #16                  \n"  // 16 processed per loop
       "st2        {v0.16b,v1.16b}, [%2], #32     \n"  // store 16 pairs of UV
       "b.gt       1b                             \n"
@@ -641,6 +684,7 @@ void SplitRGBRow_NEON(const uint8_t* src_rgb,
   asm volatile(
       "1:                                        \n"
       "ld3        {v0.16b,v1.16b,v2.16b}, [%0], #48 \n"  // load 16 RGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w4, %w4, #16                  \n"  // 16 processed per loop
       "st1        {v0.16b}, [%1], #16            \n"  // store R
       "st1        {v1.16b}, [%2], #16            \n"  // store G
@@ -667,8 +711,12 @@ void MergeRGBRow_NEON(const uint8_t* src_r,
       "ld1        {v0.16b}, [%0], #16            \n"  // load R
       "ld1        {v1.16b}, [%1], #16            \n"  // load G
       "ld1        {v2.16b}, [%2], #16            \n"  // load B
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
       "subs       %w4, %w4, #16                  \n"  // 16 processed per loop
       "st3        {v0.16b,v1.16b,v2.16b}, [%3], #48 \n"  // store 16 RGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "b.gt       1b                             \n"
       : "+r"(src_r),                      // %0
         "+r"(src_g),                      // %1
@@ -685,6 +733,7 @@ void CopyRow_NEON(const uint8_t* src, uint8_t* dst, int width) {
   asm volatile(
       "1:                                        \n"
       "ldp        q0, q1, [%0], #32              \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #32                  \n"  // 32 processed per loop
       "stp        q0, q1, [%1], #32              \n"
       "b.gt       1b                             \n"
@@ -723,66 +772,132 @@ void ARGBSetRow_NEON(uint8_t* dst, uint32_t v32, int width) {
       : "cc", "memory", "v0");
 }
 
+// Shuffle table for reversing the bytes.
+static const uvec8 kShuffleMirror = {15u, 14u, 13u, 12u, 11u, 10u, 9u, 8u,
+                                     7u,  6u,  5u,  4u,  3u,  2u,  1u, 0u};
+
 void MirrorRow_NEON(const uint8_t* src, uint8_t* dst, int width) {
   asm volatile(
       // Start at end of source row.
+      "ld1        {v3.16b}, [%3]                 \n"  // shuffler
       "add        %0, %0, %w2, sxtw              \n"
-      "sub        %0, %0, #16                    \n"
+      "sub        %0, %0, #32                    \n"
       "1:                                        \n"
-      "ld1        {v0.16b}, [%0], %3             \n"  // src -= 16
+      "ldr        q2, [%0, 16]                   \n"
+      "ldr        q1, [%0], -32                  \n"  // src -= 32
+      "subs       %w2, %w2, #32                  \n"  // 32 pixels per loop.
+      "tbl        v0.16b, {v2.16b}, v3.16b       \n"
+      "tbl        v1.16b, {v1.16b}, v3.16b       \n"
+      "st1        {v0.16b, v1.16b}, [%1], #32    \n"  // store 32 pixels
+      "b.gt       1b                             \n"
+      : "+r"(src),            // %0
+        "+r"(dst),            // %1
+        "+r"(width)           // %2
+      : "r"(&kShuffleMirror)  // %3
+      : "cc", "memory", "v0", "v1", "v2", "v3");
+}
+
+// Shuffle table for reversing the UV.
+static const uvec8 kShuffleMirrorUV = {14u, 15u, 12u, 13u, 10u, 11u, 8u, 9u,
+                                       6u,  7u,  4u,  5u,  2u,  3u,  0u, 1u};
+
+void MirrorUVRow_NEON(const uint8_t* src_uv, uint8_t* dst_uv, int width) {
+  asm volatile(
+      // Start at end of source row.
+      "ld1        {v4.16b}, [%3]                 \n"  // shuffler
+      "add        %0, %0, %w2, sxtw #1           \n"
+      "sub        %0, %0, #32                    \n"
+      "1:                                        \n"
+      "ldr        q1, [%0, 16]                   \n"
+      "ldr        q0, [%0], -32                  \n"  // src -= 32
       "subs       %w2, %w2, #16                  \n"  // 16 pixels per loop.
-      "rev64      v0.16b, v0.16b                 \n"
-      "st1        {v0.D}[1], [%1], #8            \n"  // dst += 16
-      "st1        {v0.D}[0], [%1], #8            \n"
+      "tbl        v2.16b, {v1.16b}, v4.16b       \n"
+      "tbl        v3.16b, {v0.16b}, v4.16b       \n"
+      "st1        {v2.16b, v3.16b}, [%1], #32    \n"  // dst += 32
       "b.gt       1b                             \n"
-      : "+r"(src),           // %0
-        "+r"(dst),           // %1
-        "+r"(width)          // %2
-      : "r"((ptrdiff_t)-16)  // %3
-      : "cc", "memory", "v0");
+      : "+r"(src_uv),           // %0
+        "+r"(dst_uv),           // %1
+        "+r"(width)             // %2
+      : "r"(&kShuffleMirrorUV)  // %3
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4");
 }
 
-void MirrorUVRow_NEON(const uint8_t* src_uv,
-                      uint8_t* dst_u,
-                      uint8_t* dst_v,
-                      int width) {
+void MirrorSplitUVRow_NEON(const uint8_t* src_uv,
+                           uint8_t* dst_u,
+                           uint8_t* dst_v,
+                           int width) {
   asm volatile(
       // Start at end of source row.
+      "ld1        {v4.16b}, [%4]                 \n"  // shuffler
       "add        %0, %0, %w3, sxtw #1           \n"
-      "sub        %0, %0, #16                    \n"
+      "sub        %0, %0, #32                    \n"
       "1:                                        \n"
-      "ld2        {v0.8b, v1.8b}, [%0], %4       \n"  // src -= 16
-      "subs       %w3, %w3, #8                   \n"  // 8 pixels per loop.
-      "rev64      v0.8b, v0.8b                   \n"
-      "rev64      v1.8b, v1.8b                   \n"
-      "st1        {v0.8b}, [%1], #8              \n"  // dst += 8
-      "st1        {v1.8b}, [%2], #8              \n"
+      "ldr        q1, [%0, 16]                   \n"
+      "ldr        q0, [%0], -32                  \n"  // src -= 32
+      "subs       %w3, %w3, #16                  \n"  // 16 pixels per loop.
+      "tbl        v2.16b, {v1.16b}, v4.16b       \n"
+      "tbl        v3.16b, {v0.16b}, v4.16b       \n"
+      "uzp1       v0.16b, v2.16b, v3.16b         \n"  // U
+      "uzp2       v1.16b, v2.16b, v3.16b         \n"  // V
+      "st1        {v0.16b}, [%1], #16            \n"  // dst += 16
+      "st1        {v1.16b}, [%2], #16            \n"
       "b.gt       1b                             \n"
-      : "+r"(src_uv),        // %0
-        "+r"(dst_u),         // %1
-        "+r"(dst_v),         // %2
-        "+r"(width)          // %3
-      : "r"((ptrdiff_t)-16)  // %4
-      : "cc", "memory", "v0", "v1");
+      : "+r"(src_uv),           // %0
+        "+r"(dst_u),            // %1
+        "+r"(dst_v),            // %2
+        "+r"(width)             // %3
+      : "r"(&kShuffleMirrorUV)  // %4
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4");
 }
 
-void ARGBMirrorRow_NEON(const uint8_t* src, uint8_t* dst, int width) {
+// Shuffle table for reversing the ARGB.
+static const uvec8 kShuffleMirrorARGB = {12u, 13u, 14u, 15u, 8u, 9u, 10u, 11u,
+                                         4u,  5u,  6u,  7u,  0u, 1u, 2u,  3u};
+
+void ARGBMirrorRow_NEON(const uint8_t* src_argb, uint8_t* dst_argb, int width) {
   asm volatile(
       // Start at end of source row.
+      "ld1        {v4.16b}, [%3]                 \n"  // shuffler
       "add        %0, %0, %w2, sxtw #2           \n"
-      "sub        %0, %0, #16                    \n"
+      "sub        %0, %0, #32                    \n"
       "1:                                        \n"
-      "ld1        {v0.16b}, [%0], %3             \n"  // src -= 16
-      "subs       %w2, %w2, #4                   \n"  // 4 pixels per loop.
-      "rev64      v0.4s, v0.4s                   \n"
-      "st1        {v0.D}[1], [%1], #8            \n"  // dst += 16
-      "st1        {v0.D}[0], [%1], #8            \n"
+      "ldr        q1, [%0, 16]                   \n"
+      "ldr        q0, [%0], -32                  \n"  // src -= 32
+      "subs       %w2, %w2, #8                   \n"  // 8 pixels per loop.
+      "tbl        v2.16b, {v1.16b}, v4.16b       \n"
+      "tbl        v3.16b, {v0.16b}, v4.16b       \n"
+      "st1        {v2.16b, v3.16b}, [%1], #32    \n"  // dst += 32
       "b.gt       1b                             \n"
-      : "+r"(src),           // %0
-        "+r"(dst),           // %1
-        "+r"(width)          // %2
-      : "r"((ptrdiff_t)-16)  // %3
-      : "cc", "memory", "v0");
+      : "+r"(src_argb),           // %0
+        "+r"(dst_argb),           // %1
+        "+r"(width)               // %2
+      : "r"(&kShuffleMirrorARGB)  // %3
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4");
+}
+
+void RGB24MirrorRow_NEON(const uint8_t* src_rgb24,
+                         uint8_t* dst_rgb24,
+                         int width) {
+  asm volatile(
+      "ld1        {v3.16b}, [%4]                 \n"  // shuffler
+      "add        %0, %0, %w2, sxtw #1           \n"  // Start at end of row.
+      "add        %0, %0, %w2, sxtw              \n"
+      "sub        %0, %0, #48                    \n"
+
+      "1:                                        \n"
+      "ld3        {v0.16b, v1.16b, v2.16b}, [%0], %3\n"  // src -= 48
+      "subs       %w2, %w2, #16                  \n"     // 16 pixels per loop.
+      "tbl        v0.16b, {v0.16b}, v3.16b       \n"
+      "tbl        v1.16b, {v1.16b}, v3.16b       \n"
+      "tbl        v2.16b, {v2.16b}, v3.16b       \n"
+      "st3        {v0.16b, v1.16b, v2.16b}, [%1], #48 \n"  // dst += 48
+      "b.gt       1b                             \n"
+      : "+r"(src_rgb24),      // %0
+        "+r"(dst_rgb24),      // %1
+        "+r"(width)           // %2
+      : "r"((ptrdiff_t)-48),  // %3
+        "r"(&kShuffleMirror)  // %4
+      : "cc", "memory", "v0", "v1", "v2", "v3");
 }
 
 void RGB24ToARGBRow_NEON(const uint8_t* src_rgb24,
@@ -792,6 +907,7 @@ void RGB24ToARGBRow_NEON(const uint8_t* src_rgb24,
       "movi       v4.8b, #255                    \n"  // Alpha
       "1:                                        \n"
       "ld3        {v1.8b,v2.8b,v3.8b}, [%0], #24 \n"  // load 8 pixels of RGB24.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "st4        {v1.8b,v2.8b,v3.8b,v4.8b}, [%1], #32 \n"  // store 8 ARGB
       "b.gt       1b                             \n"
@@ -808,6 +924,7 @@ void RAWToARGBRow_NEON(const uint8_t* src_raw, uint8_t* dst_argb, int width) {
       "movi       v5.8b, #255                    \n"  // Alpha
       "1:                                        \n"
       "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // read r g b
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "orr        v3.8b, v1.8b, v1.8b            \n"  // move g
       "orr        v4.8b, v0.8b, v0.8b            \n"  // move r
@@ -826,6 +943,7 @@ void RAWToRGBARow_NEON(const uint8_t* src_raw, uint8_t* dst_rgba, int width) {
       "movi       v0.8b, #255                    \n"  // Alpha
       "1:                                        \n"
       "ld3        {v3.8b,v4.8b,v5.8b}, [%0], #24 \n"  // read r g b
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "orr        v2.8b, v4.8b, v4.8b            \n"  // move g
       "orr        v1.8b, v5.8b, v5.8b            \n"  // move r
@@ -843,6 +961,7 @@ void RAWToRGB24Row_NEON(const uint8_t* src_raw, uint8_t* dst_rgb24, int width) {
   asm volatile(
       "1:                                        \n"
       "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // read r g b
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "orr        v3.8b, v1.8b, v1.8b            \n"  // move g
       "orr        v4.8b, v0.8b, v0.8b            \n"  // move r
@@ -876,6 +995,7 @@ void RGB565ToARGBRow_NEON(const uint8_t* src_rgb565,
       "movi       v3.8b, #255                    \n"  // Alpha
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 RGB565 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       RGB565TOARGB
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%1], #32 \n"  // store 8 ARGB
@@ -932,10 +1052,10 @@ void ARGB1555ToARGBRow_NEON(const uint8_t* src_argb1555,
       "movi       v3.8b, #255                    \n"  // Alpha
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB1555 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGB1555TOARGB
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%1], #32 \n"  // store 8 ARGB
-                                                            // pixels
       "b.gt       1b                             \n"
       : "+r"(src_argb1555),  // %0
         "+r"(dst_argb),      // %1
@@ -945,6 +1065,8 @@ void ARGB1555ToARGBRow_NEON(const uint8_t* src_argb1555,
   );
 }
 
+// Convert v0.8h to b = v0.8b g = v1.8b r = v2.8b
+// clobbers v3
 #define ARGB4444TOARGB                                                      \
   "shrn       v1.8b,  v0.8h, #8              \n" /* v1(l) AR             */ \
   "xtn2       v1.16b, v0.8h                  \n" /* v1(h) GB             */ \
@@ -963,10 +1085,10 @@ void ARGB4444ToARGBRow_NEON(const uint8_t* src_argb4444,
   asm volatile(
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB4444 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGB4444TOARGB
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%1], #32 \n"  // store 8 ARGB
-                                                            // pixels
       "b.gt       1b                             \n"
       : "+r"(src_argb4444),  // %0
         "+r"(dst_argb),      // %1
@@ -982,9 +1104,9 @@ void ARGBToRGB24Row_NEON(const uint8_t* src_argb,
   asm volatile(
       "1:                                        \n"
       "ld4        {v1.8b,v2.8b,v3.8b,v4.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
-      "st3        {v1.8b,v2.8b,v3.8b}, [%1], #24 \n"  // store 8 pixels of
-                                                      // RGB24.
+      "st3        {v1.8b,v2.8b,v3.8b}, [%1], #24 \n"  // store 8 pixels of RGB24
       "b.gt       1b                             \n"
       : "+r"(src_argb),   // %0
         "+r"(dst_rgb24),  // %1
@@ -998,6 +1120,7 @@ void ARGBToRAWRow_NEON(const uint8_t* src_argb, uint8_t* dst_raw, int width) {
   asm volatile(
       "1:                                        \n"
       "ld4        {v1.8b,v2.8b,v3.8b,v4.8b}, [%0], #32 \n"  // load b g r a
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "orr        v4.8b, v2.8b, v2.8b            \n"  // mov g
       "orr        v5.8b, v1.8b, v1.8b            \n"  // mov b
@@ -1015,6 +1138,7 @@ void YUY2ToYRow_NEON(const uint8_t* src_yuy2, uint8_t* dst_y, int width) {
   asm volatile(
       "1:                                        \n"
       "ld2        {v0.16b,v1.16b}, [%0], #32     \n"  // load 16 pixels of YUY2.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #16                  \n"  // 16 processed per loop.
       "st1        {v0.16b}, [%1], #16            \n"  // store 16 pixels of Y.
       "b.gt       1b                             \n"
@@ -1030,6 +1154,7 @@ void UYVYToYRow_NEON(const uint8_t* src_uyvy, uint8_t* dst_y, int width) {
   asm volatile(
       "1:                                        \n"
       "ld2        {v0.16b,v1.16b}, [%0], #32     \n"  // load 16 pixels of UYVY.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #16                  \n"  // 16 processed per loop.
       "st1        {v1.16b}, [%1], #16            \n"  // store 16 pixels of Y.
       "b.gt       1b                             \n"
@@ -1048,6 +1173,7 @@ void YUY2ToUV422Row_NEON(const uint8_t* src_yuy2,
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 16 YUY2
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w3, %w3, #16                  \n"  // 16 pixels = 8 UVs.
       "st1        {v1.8b}, [%1], #8              \n"  // store 8 U.
       "st1        {v3.8b}, [%2], #8              \n"  // store 8 V.
@@ -1068,6 +1194,7 @@ void UYVYToUV422Row_NEON(const uint8_t* src_uyvy,
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 16 UYVY
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w3, %w3, #16                  \n"  // 16 pixels = 8 UVs.
       "st1        {v0.8b}, [%1], #8              \n"  // store 8 U.
       "st1        {v2.8b}, [%2], #8              \n"  // store 8 V.
@@ -1090,6 +1217,7 @@ void YUY2ToUVRow_NEON(const uint8_t* src_yuy2,
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 16 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w4, %w4, #16                  \n"  // 16 pixels = 8 UVs.
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load next row
       "urhadd     v1.8b, v1.8b, v5.8b            \n"        // average rows of U
@@ -1117,6 +1245,7 @@ void UYVYToUVRow_NEON(const uint8_t* src_uyvy,
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 16 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w4, %w4, #16                  \n"  // 16 pixels = 8 UVs.
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load next row
       "urhadd     v0.8b, v0.8b, v4.8b            \n"        // average rows of U
@@ -1144,6 +1273,7 @@ void ARGBShuffleRow_NEON(const uint8_t* src_argb,
       "ld1        {v2.16b}, [%3]                 \n"  // shuffler
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 4 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #4                   \n"  // 4 processed per loop
       "tbl        v1.16b, {v0.16b}, v2.16b       \n"  // look up 4 pixels
       "st1        {v1.16b}, [%1], #16            \n"  // store 4.
@@ -1164,6 +1294,7 @@ void I422ToYUY2Row_NEON(const uint8_t* src_y,
   asm volatile(
       "1:                                        \n"
       "ld2        {v0.8b, v1.8b}, [%0], #16      \n"  // load 16 Ys
+      "prfm       pldl1keep, [%0, 448]           \n"
       "orr        v2.8b, v1.8b, v1.8b            \n"
       "ld1        {v1.8b}, [%1], #8              \n"        // load 8 Us
       "ld1        {v3.8b}, [%2], #8              \n"        // load 8 Vs
@@ -1187,6 +1318,7 @@ void I422ToUYVYRow_NEON(const uint8_t* src_y,
   asm volatile(
       "1:                                        \n"
       "ld2        {v1.8b,v2.8b}, [%0], #16       \n"  // load 16 Ys
+      "prfm       pldl1keep, [%0, 448]           \n"
       "orr        v3.8b, v2.8b, v2.8b            \n"
       "ld1        {v0.8b}, [%1], #8              \n"        // load 8 Us
       "ld1        {v2.8b}, [%2], #8              \n"        // load 8 Vs
@@ -1208,6 +1340,7 @@ void ARGBToRGB565Row_NEON(const uint8_t* src_argb,
   asm volatile(
       "1:                                        \n"
       "ld4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%0], #32 \n"  // load 8 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGBTORGB565
       "st1        {v0.16b}, [%1], #16            \n"  // store 8 pixels RGB565.
@@ -1227,6 +1360,7 @@ void ARGBToRGB565DitherRow_NEON(const uint8_t* src_argb,
       "dup        v1.4s, %w2                     \n"  // dither4
       "1:                                        \n"
       "ld4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%1], #32 \n"  // load 8 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "uqadd      v20.8b, v20.8b, v1.8b          \n"
       "uqadd      v21.8b, v21.8b, v1.8b          \n"
@@ -1246,10 +1380,10 @@ void ARGBToARGB1555Row_NEON(const uint8_t* src_argb,
   asm volatile(
       "1:                                        \n"
       "ld4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%0], #32 \n"  // load 8 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGBTOARGB1555
       "st1        {v0.16b}, [%1], #16            \n"  // store 8 pixels
-                                                      // ARGB1555.
       "b.gt       1b                             \n"
       : "+r"(src_argb),      // %0
         "+r"(dst_argb1555),  // %1
@@ -1266,10 +1400,10 @@ void ARGBToARGB4444Row_NEON(const uint8_t* src_argb,
                                                       // vbic.
       "1:                                        \n"
       "ld4        {v20.8b,v21.8b,v22.8b,v23.8b}, [%0], #32 \n"  // load 8 pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGBTOARGB4444
       "st1        {v0.16b}, [%1], #16            \n"  // store 8 pixels
-                                                      // ARGB4444.
       "b.gt       1b                             \n"
       : "+r"(src_argb),      // %0
         "+r"(dst_argb4444),  // %1
@@ -1286,6 +1420,7 @@ void ARGBToYRow_NEON(const uint8_t* src_argb, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v3.8h, v0.8b, v4.8b            \n"  // B
       "umlal      v3.8h, v1.8b, v5.8b            \n"  // G
@@ -1307,7 +1442,7 @@ void ARGBExtractAlphaRow_NEON(const uint8_t* src_argb,
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16
-                                                                // pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #16                  \n"  // 16 processed per loop
       "st1        {v3.16b}, [%1], #16            \n"  // store 16 A's.
       "b.gt       1b                             \n"
@@ -1326,6 +1461,7 @@ void ARGBToYJRow_NEON(const uint8_t* src_argb, uint8_t* dst_y, int width) {
       "movi       v6.8b, #77                     \n"  // R * 0.2990 coefficient
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v3.8h, v0.8b, v4.8b            \n"  // B
       "umlal      v3.8h, v1.8b, v5.8b            \n"  // G
@@ -1347,6 +1483,7 @@ void RGBAToYJRow_NEON(const uint8_t* src_argb, uint8_t* dst_y, int width) {
       "movi       v6.8b, #77                     \n"  // R * 0.2990 coefficient
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 RGBA
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v0.8h, v1.8b, v4.8b            \n"  // B
       "umlal      v0.8h, v2.8b, v5.8b            \n"  // G
@@ -1376,7 +1513,7 @@ void ARGBToUV444Row_NEON(const uint8_t* src_argb,
       "movi       v29.16b,#0x80                  \n"  // 128.5
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
-                                                            // pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "umull      v4.8h, v0.8b, v24.8b           \n"  // B
       "umlsl      v4.8h, v1.8b, v25.8b           \n"  // G
@@ -1439,11 +1576,13 @@ void ARGBToUVRow_NEON(const uint8_t* src_argb,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v0.8h, v0.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v1.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v2.16b                  \n"  // R 16 bytes -> 8 shorts.
 
     "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load next 16
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v0.8h, v4.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v5.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v6.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1452,7 +1591,7 @@ void ARGBToUVRow_NEON(const uint8_t* src_argb,
     "urshr      v1.8h, v1.8h, #1               \n"
     "urshr      v2.8h, v2.8h, #1               \n"
 
-    "subs       %w4, %w4, #16                  \n"  // 32 processed per loop.
+    "subs       %w4, %w4, #16                  \n"  // 16 processed per loop.
     RGBTOUV(v0.8h, v1.8h, v2.8h)
     "st1        {v0.8b}, [%2], #8              \n"  // store 8 pixels U.
     "st1        {v1.8b}, [%3], #8              \n"  // store 8 pixels V.
@@ -1468,7 +1607,6 @@ void ARGBToUVRow_NEON(const uint8_t* src_argb,
   );
 }
 
-// TODO(fbarchard): Subsample match C code.
 void ARGBToUVJRow_NEON(const uint8_t* src_argb,
                        int src_stride_argb,
                        uint8_t* dst_u,
@@ -1484,10 +1622,12 @@ void ARGBToUVJRow_NEON(const uint8_t* src_argb,
     "movi       v25.16b, #0x80                 \n"  // 128.5 (0x8080 in 16-bit)
   "1:                                          \n"
     "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v0.8h, v0.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v1.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v2.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64  \n"  // load next 16
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v0.8h, v4.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v5.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v6.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1522,10 +1662,12 @@ void BGRAToUVRow_NEON(const uint8_t* src_bgra,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v0.8h, v3.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v3.8h, v2.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v1.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load 16 more
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v0.8h, v7.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v3.8h, v6.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v5.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1560,10 +1702,12 @@ void ABGRToUVRow_NEON(const uint8_t* src_abgr,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v3.8h, v2.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v1.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v0.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load 16 more.
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v3.8h, v6.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v5.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v4.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1598,10 +1742,12 @@ void RGBAToUVRow_NEON(const uint8_t* src_rgba,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v0.8h, v1.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v2.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v3.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load 16 more.
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v0.8h, v5.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v6.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v7.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1636,10 +1782,12 @@ void RGB24ToUVRow_NEON(const uint8_t* src_rgb24,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld3        {v0.16b,v1.16b,v2.16b}, [%0], #48 \n"  // load 16 pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v0.8h, v0.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v1.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v2.8h, v2.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld3        {v4.16b,v5.16b,v6.16b}, [%1], #48 \n"  // load 16 more.
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v0.8h, v4.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v5.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v2.8h, v6.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1674,10 +1822,12 @@ void RAWToUVRow_NEON(const uint8_t* src_raw,
     RGBTOUV_SETUP_REG
   "1:                                          \n"
     "ld3        {v0.16b,v1.16b,v2.16b}, [%0], #48 \n"  // load 8 RAW pixels.
+    "prfm       pldl1keep, [%0, 448]           \n"
     "uaddlp     v2.8h, v2.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uaddlp     v1.8h, v1.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uaddlp     v0.8h, v0.16b                  \n"  // R 16 bytes -> 8 shorts.
     "ld3        {v4.16b,v5.16b,v6.16b}, [%1], #48 \n"  // load 8 more RAW pixels
+    "prfm       pldl1keep, [%1, 448]           \n"
     "uadalp     v2.8h, v6.16b                  \n"  // B 16 bytes -> 8 shorts.
     "uadalp     v1.8h, v5.16b                  \n"  // G 16 bytes -> 8 shorts.
     "uadalp     v0.8h, v4.16b                  \n"  // R 16 bytes -> 8 shorts.
@@ -1702,7 +1852,7 @@ void RAWToUVRow_NEON(const uint8_t* src_raw,
   );
 }
 
-// 16x2 pixels -> 8x1.  width is number of argb pixels. e.g. 16.
+// 16x2 pixels -> 8x1.  width is number of rgb pixels. e.g. 16.
 void RGB565ToUVRow_NEON(const uint8_t* src_rgb565,
                         int src_stride_rgb565,
                         uint8_t* dst_u,
@@ -1710,67 +1860,54 @@ void RGB565ToUVRow_NEON(const uint8_t* src_rgb565,
                         int width) {
   const uint8_t* src_rgb565_1 = src_rgb565 + src_stride_rgb565;
   asm volatile(
-      "movi       v22.8h, #56, lsl #0            \n"  // UB / VR coeff (0.875) /
-                                                      // 2
-      "movi       v23.8h, #37, lsl #0            \n"  // UG coeff (-0.5781) / 2
-      "movi       v24.8h, #19, lsl #0            \n"  // UR coeff (-0.2969) / 2
-      "movi       v25.8h, #9 , lsl #0            \n"  // VB coeff (-0.1406) / 2
-      "movi       v26.8h, #47, lsl #0            \n"  // VG coeff (-0.7344) / 2
-      "movi       v27.16b, #0x80                 \n"  // 128.5 0x8080 in 16bit
+      RGBTOUV_SETUP_REG
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 RGB565 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       RGB565TOARGB
       "uaddlp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
-      "uaddlp     v18.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
-      "uaddlp     v20.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
+      "uaddlp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
+      "uaddlp     v18.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
       "ld1        {v0.16b}, [%0], #16            \n"  // next 8 RGB565 pixels.
       RGB565TOARGB
-      "uaddlp     v17.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
-      "uaddlp     v19.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
-      "uaddlp     v21.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
+      "uaddlp     v26.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
+      "uaddlp     v27.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
+      "uaddlp     v28.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
 
       "ld1        {v0.16b}, [%1], #16            \n"  // load 8 RGB565 pixels.
+      "prfm       pldl1keep, [%1, 448]           \n"
       RGB565TOARGB
       "uadalp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
-      "uadalp     v18.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
-      "uadalp     v20.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
+      "uadalp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
+      "uadalp     v18.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
       "ld1        {v0.16b}, [%1], #16            \n"  // next 8 RGB565 pixels.
       RGB565TOARGB
-      "uadalp     v17.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
-      "uadalp     v19.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
-      "uadalp     v21.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
+      "uadalp     v26.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
+      "uadalp     v27.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
+      "uadalp     v28.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
 
-      "ins        v16.D[1], v17.D[0]             \n"
-      "ins        v18.D[1], v19.D[0]             \n"
-      "ins        v20.D[1], v21.D[0]             \n"
+      "ins        v16.D[1], v26.D[0]             \n"
+      "ins        v17.D[1], v27.D[0]             \n"
+      "ins        v18.D[1], v28.D[0]             \n"
 
-      "urshr      v4.8h, v16.8h, #1              \n"  // 2x average
-      "urshr      v5.8h, v18.8h, #1              \n"
-      "urshr      v6.8h, v20.8h, #1              \n"
+      "urshr      v0.8h, v16.8h, #1              \n"  // 2x average
+      "urshr      v1.8h, v17.8h, #1              \n"
+      "urshr      v2.8h, v18.8h, #1              \n"
 
       "subs       %w4, %w4, #16                  \n"  // 16 processed per loop.
-      "mul        v16.8h, v4.8h, v22.8h          \n"  // B
-      "mls        v16.8h, v5.8h, v23.8h          \n"  // G
-      "mls        v16.8h, v6.8h, v24.8h          \n"  // R
-      "add        v16.8h, v16.8h, v27.8h         \n"  // +128 -> unsigned
-      "mul        v17.8h, v6.8h, v22.8h          \n"  // R
-      "mls        v17.8h, v5.8h, v26.8h          \n"  // G
-      "mls        v17.8h, v4.8h, v25.8h          \n"  // B
-      "add        v17.8h, v17.8h, v27.8h         \n"  // +128 -> unsigned
-      "uqshrn     v0.8b, v16.8h, #8              \n"  // 16 bit to 8 bit U
-      "uqshrn     v1.8b, v17.8h, #8              \n"  // 16 bit to 8 bit V
+      RGBTOUV(v0.8h, v1.8h, v2.8h)
       "st1        {v0.8b}, [%2], #8              \n"  // store 8 pixels U.
       "st1        {v1.8b}, [%3], #8              \n"  // store 8 pixels V.
       "b.gt       1b                             \n"
       : "+r"(src_rgb565),    // %0
         "+r"(src_rgb565_1),  // %1
-        "+r"(dst_u),         // %2
-        "+r"(dst_v),         // %3
-        "+r"(width)          // %4
+        "+r"(dst_u),           // %2
+        "+r"(dst_v),           // %3
+        "+r"(width)            // %4
       :
-      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16",
-        "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26",
-        "v27");
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v16", "v17",
+        "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27",
+        "v28");
 }
 
 // 16x2 pixels -> 8x1.  width is number of argb pixels. e.g. 16.
@@ -1784,6 +1921,7 @@ void ARGB1555ToUVRow_NEON(const uint8_t* src_argb1555,
       RGBTOUV_SETUP_REG
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB1555 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       RGB555TOARGB
       "uaddlp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
       "uaddlp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
@@ -1795,6 +1933,7 @@ void ARGB1555ToUVRow_NEON(const uint8_t* src_argb1555,
       "uaddlp     v28.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
 
       "ld1        {v0.16b}, [%1], #16            \n"  // load 8 ARGB1555 pixels.
+      "prfm       pldl1keep, [%1, 448]           \n"
       RGB555TOARGB
       "uadalp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
       "uadalp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
@@ -1809,21 +1948,12 @@ void ARGB1555ToUVRow_NEON(const uint8_t* src_argb1555,
       "ins        v17.D[1], v27.D[0]             \n"
       "ins        v18.D[1], v28.D[0]             \n"
 
-      "urshr      v4.8h, v16.8h, #1              \n"  // 2x average
-      "urshr      v5.8h, v17.8h, #1              \n"
-      "urshr      v6.8h, v18.8h, #1              \n"
+      "urshr      v0.8h, v16.8h, #1              \n"  // 2x average
+      "urshr      v1.8h, v17.8h, #1              \n"
+      "urshr      v2.8h, v18.8h, #1              \n"
 
       "subs       %w4, %w4, #16                  \n"  // 16 processed per loop.
-      "mul        v2.8h, v4.8h, v20.8h           \n"  // B
-      "mls        v2.8h, v5.8h, v21.8h           \n"  // G
-      "mls        v2.8h, v6.8h, v22.8h           \n"  // R
-      "add        v2.8h, v2.8h, v25.8h           \n"  // +128 -> unsigned
-      "mul        v3.8h, v6.8h, v20.8h           \n"  // R
-      "mls        v3.8h, v5.8h, v24.8h           \n"  // G
-      "mls        v3.8h, v4.8h, v23.8h           \n"  // B
-      "add        v3.8h, v3.8h, v25.8h           \n"  // +128 -> unsigned
-      "uqshrn     v0.8b, v2.8h, #8               \n"  // 16 bit to 8 bit U
-      "uqshrn     v1.8b, v3.8h, #8               \n"  // 16 bit to 8 bit V
+      RGBTOUV(v0.8h, v1.8h, v2.8h)
       "st1        {v0.8b}, [%2], #8              \n"  // store 8 pixels U.
       "st1        {v1.8b}, [%3], #8              \n"  // store 8 pixels V.
       "b.gt       1b                             \n"
@@ -1846,9 +1976,10 @@ void ARGB4444ToUVRow_NEON(const uint8_t* src_argb4444,
                           int width) {
   const uint8_t* src_argb4444_1 = src_argb4444 + src_stride_argb4444;
   asm volatile(
-      RGBTOUV_SETUP_REG
+      RGBTOUV_SETUP_REG  // sets v20-v25
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB4444 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       ARGB4444TOARGB
       "uaddlp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
       "uaddlp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
@@ -1860,6 +1991,7 @@ void ARGB4444ToUVRow_NEON(const uint8_t* src_argb4444,
       "uaddlp     v28.4h, v2.8b                  \n"  // R 8 bytes -> 4 shorts.
 
       "ld1        {v0.16b}, [%1], #16            \n"  // load 8 ARGB4444 pixels.
+      "prfm       pldl1keep, [%1, 448]           \n"
       ARGB4444TOARGB
       "uadalp     v16.4h, v0.8b                  \n"  // B 8 bytes -> 4 shorts.
       "uadalp     v17.4h, v1.8b                  \n"  // G 8 bytes -> 4 shorts.
@@ -1874,21 +2006,12 @@ void ARGB4444ToUVRow_NEON(const uint8_t* src_argb4444,
       "ins        v17.D[1], v27.D[0]             \n"
       "ins        v18.D[1], v28.D[0]             \n"
 
-      "urshr      v4.8h, v16.8h, #1              \n"  // 2x average
-      "urshr      v5.8h, v17.8h, #1              \n"
-      "urshr      v6.8h, v18.8h, #1              \n"
+      "urshr      v0.8h, v16.8h, #1              \n"  // 2x average
+      "urshr      v1.8h, v17.8h, #1              \n"
+      "urshr      v2.8h, v18.8h, #1              \n"
 
       "subs       %w4, %w4, #16                  \n"  // 16 processed per loop.
-      "mul        v2.8h, v4.8h, v20.8h           \n"  // B
-      "mls        v2.8h, v5.8h, v21.8h           \n"  // G
-      "mls        v2.8h, v6.8h, v22.8h           \n"  // R
-      "add        v2.8h, v2.8h, v25.8h           \n"  // +128 -> unsigned
-      "mul        v3.8h, v6.8h, v20.8h           \n"  // R
-      "mls        v3.8h, v5.8h, v24.8h           \n"  // G
-      "mls        v3.8h, v4.8h, v23.8h           \n"  // B
-      "add        v3.8h, v3.8h, v25.8h           \n"  // +128 -> unsigned
-      "uqshrn     v0.8b, v2.8h, #8               \n"  // 16 bit to 8 bit U
-      "uqshrn     v1.8b, v3.8h, #8               \n"  // 16 bit to 8 bit V
+      RGBTOUV(v0.8h, v1.8h, v2.8h)
       "st1        {v0.8b}, [%2], #8              \n"  // store 8 pixels U.
       "st1        {v1.8b}, [%3], #8              \n"  // store 8 pixels V.
       "b.gt       1b                             \n"
@@ -1913,6 +2036,7 @@ void RGB565ToYRow_NEON(const uint8_t* src_rgb565, uint8_t* dst_y, int width) {
       "movi       v27.8b, #16                    \n"  // Add 16 constant
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 RGB565 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       RGB565TOARGB
       "umull      v3.8h, v0.8b, v24.8b           \n"  // B
@@ -1940,6 +2064,7 @@ void ARGB1555ToYRow_NEON(const uint8_t* src_argb1555,
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB1555 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGB1555TOARGB
       "umull      v3.8h, v0.8b, v4.8b            \n"  // B
@@ -1966,6 +2091,7 @@ void ARGB4444ToYRow_NEON(const uint8_t* src_argb4444,
       "movi       v27.8b, #16                    \n"  // Add 16 constant
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 8 ARGB4444 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       ARGB4444TOARGB
       "umull      v3.8h, v0.8b, v24.8b           \n"  // B
@@ -1990,6 +2116,7 @@ void BGRAToYRow_NEON(const uint8_t* src_bgra, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v1.8b, v4.8b           \n"  // R
       "umlal      v16.8h, v2.8b, v5.8b           \n"  // G
@@ -2013,6 +2140,7 @@ void ABGRToYRow_NEON(const uint8_t* src_abgr, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v0.8b, v4.8b           \n"  // R
       "umlal      v16.8h, v1.8b, v5.8b           \n"  // G
@@ -2036,6 +2164,7 @@ void RGBAToYRow_NEON(const uint8_t* src_rgba, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v1.8b, v4.8b           \n"  // B
       "umlal      v16.8h, v2.8b, v5.8b           \n"  // G
@@ -2059,6 +2188,7 @@ void RGB24ToYRow_NEON(const uint8_t* src_rgb24, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v0.8b, v4.8b           \n"  // B
       "umlal      v16.8h, v1.8b, v5.8b           \n"  // G
@@ -2082,6 +2212,7 @@ void RAWToYRow_NEON(const uint8_t* src_raw, uint8_t* dst_y, int width) {
       "movi       v7.8b, #16                     \n"  // Add 16 constant
       "1:                                        \n"
       "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v0.8b, v4.8b           \n"  // B
       "umlal      v16.8h, v1.8b, v5.8b           \n"  // G
@@ -2095,6 +2226,50 @@ void RAWToYRow_NEON(const uint8_t* src_raw, uint8_t* dst_y, int width) {
         "+r"(width)     // %2
       :
       : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16");
+}
+
+void RGB24ToYJRow_NEON(const uint8_t* src_rgb24, uint8_t* dst_yj, int width) {
+  asm volatile(
+      "movi       v4.8b, #29                     \n"  // B * 0.1140 coefficient
+      "movi       v5.8b, #150                    \n"  // G * 0.5870 coefficient
+      "movi       v6.8b, #77                     \n"  // R * 0.2990 coefficient
+      "1:                                        \n"
+      "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
+      "umull      v0.8h, v0.8b, v4.8b            \n"  // B
+      "umlal      v0.8h, v1.8b, v5.8b            \n"  // G
+      "umlal      v0.8h, v2.8b, v6.8b            \n"  // R
+      "uqrshrn    v0.8b, v0.8h, #8               \n"  // 16 bit to 8 bit Y
+      "st1        {v0.8b}, [%1], #8              \n"  // store 8 pixels Y.
+      "b.gt       1b                             \n"
+      : "+r"(src_rgb24),  // %0
+        "+r"(dst_yj),     // %1
+        "+r"(width)       // %2
+      :
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6");
+}
+
+void RAWToYJRow_NEON(const uint8_t* src_raw, uint8_t* dst_yj, int width) {
+  asm volatile(
+      "movi       v6.8b, #29                     \n"  // B * 0.1140 coefficient
+      "movi       v5.8b, #150                    \n"  // G * 0.5870 coefficient
+      "movi       v4.8b, #77                     \n"  // R * 0.2990 coefficient
+      "1:                                        \n"
+      "ld3        {v0.8b,v1.8b,v2.8b}, [%0], #24 \n"  // load 8 pixels.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
+      "umull      v0.8h, v0.8b, v4.8b            \n"  // B
+      "umlal      v0.8h, v1.8b, v5.8b            \n"  // G
+      "umlal      v0.8h, v2.8b, v6.8b            \n"  // R
+      "uqrshrn    v0.8b, v0.8h, #8               \n"  // 16 bit to 8 bit Y
+      "st1        {v0.8b}, [%1], #8              \n"  // store 8 pixels Y.
+      "b.gt       1b                             \n"
+      : "+r"(src_raw),  // %0
+        "+r"(dst_yj),   // %1
+        "+r"(width)     // %2
+      :
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6");
 }
 
 // Bilinear filter 16x2 -> 16x1
@@ -2118,6 +2293,8 @@ void InterpolateRow_NEON(uint8_t* dst_ptr,
       "1:                                        \n"
       "ld1        {v0.16b}, [%1], #16            \n"
       "ld1        {v1.16b}, [%2], #16            \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
       "subs       %w3, %w3, #16                  \n"
       "umull      v2.8h, v0.8b,  v4.8b           \n"
       "umull2     v3.8h, v0.16b, v4.16b          \n"
@@ -2133,6 +2310,8 @@ void InterpolateRow_NEON(uint8_t* dst_ptr,
       "50:                                       \n"
       "ld1        {v0.16b}, [%1], #16            \n"
       "ld1        {v1.16b}, [%2], #16            \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
       "subs       %w3, %w3, #16                  \n"
       "urhadd     v0.16b, v0.16b, v1.16b         \n"
       "st1        {v0.16b}, [%0], #16            \n"
@@ -2142,6 +2321,7 @@ void InterpolateRow_NEON(uint8_t* dst_ptr,
       // Blend 100 / 0 - Copy row unchanged.
       "100:                                      \n"
       "ld1        {v0.16b}, [%1], #16            \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #16                  \n"
       "st1        {v0.16b}, [%0], #16            \n"
       "b.gt       100b                           \n"
@@ -2168,9 +2348,9 @@ void ARGBBlendRow_NEON(const uint8_t* src_argb0,
       // Blend 8 pixels.
       "8:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB0
-                                                            // pixels
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load 8 ARGB1
-                                                            // pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "umull      v16.8h, v4.8b, v3.8b           \n"  // db * a
       "umull      v17.8h, v5.8b, v3.8b           \n"  // dg * a
@@ -2197,6 +2377,8 @@ void ARGBBlendRow_NEON(const uint8_t* src_argb0,
       "1:                                        \n"
       "ld4        {v0.b,v1.b,v2.b,v3.b}[0], [%0], #4 \n"  // load 1 pixel ARGB0.
       "ld4        {v4.b,v5.b,v6.b,v7.b}[0], [%1], #4 \n"  // load 1 pixel ARGB1.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #1                   \n"  // 1 processed per loop.
       "umull      v16.8h, v4.8b, v3.8b           \n"  // db * a
       "umull      v17.8h, v5.8b, v3.8b           \n"  // dg * a
@@ -2233,6 +2415,7 @@ void ARGBAttenuateRow_NEON(const uint8_t* src_argb,
       // Attenuate 8 pixels.
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v4.8h, v0.8b, v3.8b            \n"  // b * a
       "umull      v5.8h, v1.8b, v3.8b            \n"  // g * a
@@ -2241,7 +2424,6 @@ void ARGBAttenuateRow_NEON(const uint8_t* src_argb,
       "uqrshrn    v1.8b, v5.8h, #8               \n"  // g >>= 8
       "uqrshrn    v2.8b, v6.8h, #8               \n"  // r >>= 8
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%1], #32 \n"  // store 8 ARGB
-                                                            // pixels
       "b.gt       1b                             \n"
       : "+r"(src_argb),  // %0
         "+r"(dst_argb),  // %1
@@ -2266,8 +2448,9 @@ void ARGBQuantizeRow_NEON(uint8_t* dst_argb,
       // 8 pixel loop.
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0]  \n"  // load 8  ARGB.
-      "subs       %w1, %w1, #8                   \n"    // 8 processed per loop.
-      "uxtl       v0.8h, v0.8b                   \n"    // b (0 .. 255)
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "subs       %w1, %w1, #8                   \n"  // 8 processed per loop.
+      "uxtl       v0.8h, v0.8b                   \n"  // b (0 .. 255)
       "uxtl       v1.8h, v1.8b                   \n"
       "uxtl       v2.8h, v2.8b                   \n"
       "sqdmulh    v0.8h, v0.8h, v4.8h            \n"  // b * scale
@@ -2307,6 +2490,7 @@ void ARGBShadeRow_NEON(const uint8_t* src_argb,
       // 8 pixel loop.
       "1:                                        \n"
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "uxtl       v4.8h, v4.8b                   \n"  // b (0 .. 255)
       "uxtl       v5.8h, v5.8b                   \n"
@@ -2339,6 +2523,7 @@ void ARGBGrayRow_NEON(const uint8_t* src_argb, uint8_t* dst_argb, int width) {
       "movi       v26.8b, #77                    \n"  // R * 0.2990 coefficient
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "umull      v4.8h, v0.8b, v24.8b           \n"  // B
       "umlal      v4.8h, v1.8b, v25.8b           \n"  // G
@@ -2373,19 +2558,20 @@ void ARGBSepiaRow_NEON(uint8_t* dst_argb, int width) {
       "movi       v30.8b, #50                    \n"  // BR coefficient
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0] \n"  // load 8 ARGB pixels.
-      "subs       %w1, %w1, #8                   \n"   // 8 processed per loop.
-      "umull      v4.8h, v0.8b, v20.8b           \n"   // B to Sepia B
-      "umlal      v4.8h, v1.8b, v21.8b           \n"   // G
-      "umlal      v4.8h, v2.8b, v22.8b           \n"   // R
-      "umull      v5.8h, v0.8b, v24.8b           \n"   // B to Sepia G
-      "umlal      v5.8h, v1.8b, v25.8b           \n"   // G
-      "umlal      v5.8h, v2.8b, v26.8b           \n"   // R
-      "umull      v6.8h, v0.8b, v28.8b           \n"   // B to Sepia R
-      "umlal      v6.8h, v1.8b, v29.8b           \n"   // G
-      "umlal      v6.8h, v2.8b, v30.8b           \n"   // R
-      "uqshrn     v0.8b, v4.8h, #7               \n"   // 16 bit to 8 bit B
-      "uqshrn     v1.8b, v5.8h, #7               \n"   // 16 bit to 8 bit G
-      "uqshrn     v2.8b, v6.8h, #7               \n"   // 16 bit to 8 bit R
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "subs       %w1, %w1, #8                   \n"  // 8 processed per loop.
+      "umull      v4.8h, v0.8b, v20.8b           \n"  // B to Sepia B
+      "umlal      v4.8h, v1.8b, v21.8b           \n"  // G
+      "umlal      v4.8h, v2.8b, v22.8b           \n"  // R
+      "umull      v5.8h, v0.8b, v24.8b           \n"  // B to Sepia G
+      "umlal      v5.8h, v1.8b, v25.8b           \n"  // G
+      "umlal      v5.8h, v2.8b, v26.8b           \n"  // R
+      "umull      v6.8h, v0.8b, v28.8b           \n"  // B to Sepia R
+      "umlal      v6.8h, v1.8b, v29.8b           \n"  // G
+      "umlal      v6.8h, v2.8b, v30.8b           \n"  // R
+      "uqshrn     v0.8b, v4.8h, #7               \n"  // 16 bit to 8 bit B
+      "uqshrn     v1.8b, v5.8h, #7               \n"  // 16 bit to 8 bit G
+      "uqshrn     v2.8b, v6.8h, #7               \n"  // 16 bit to 8 bit R
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // store 8 pixels.
       "b.gt       1b                             \n"
       : "+r"(dst_argb),  // %0
@@ -2409,6 +2595,7 @@ void ARGBColorMatrixRow_NEON(const uint8_t* src_argb,
 
       "1:                                        \n"
       "ld4        {v16.8b,v17.8b,v18.8b,v19.8b}, [%0], #32 \n"  // load 8 ARGB
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop.
       "uxtl       v16.8h, v16.8b                 \n"  // b (0 .. 255) 16 bit
       "uxtl       v17.8h, v17.8b                 \n"  // g
@@ -2467,6 +2654,8 @@ void ARGBMultiplyRow_NEON(const uint8_t* src_argb0,
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load 8 more
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "umull      v0.8h, v0.8b, v4.8b            \n"  // multiply B
       "umull      v1.8h, v1.8b, v5.8b            \n"  // multiply G
@@ -2496,6 +2685,8 @@ void ARGBAddRow_NEON(const uint8_t* src_argb0,
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load 8 more
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "uqadd      v0.8b, v0.8b, v4.8b            \n"
       "uqadd      v1.8b, v1.8b, v5.8b            \n"
@@ -2521,6 +2712,8 @@ void ARGBSubtractRow_NEON(const uint8_t* src_argb0,
       "1:                                        \n"
       "ld4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%0], #32 \n"  // load 8 ARGB
       "ld4        {v4.8b,v5.8b,v6.8b,v7.8b}, [%1], #32 \n"  // load 8 more
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "uqsub      v0.8b, v0.8b, v4.8b            \n"
       "uqsub      v1.8b, v1.8b, v5.8b            \n"
@@ -2551,6 +2744,8 @@ void SobelRow_NEON(const uint8_t* src_sobelx,
       "1:                                        \n"
       "ld1        {v0.8b}, [%0], #8              \n"  // load 8 sobelx.
       "ld1        {v1.8b}, [%1], #8              \n"  // load 8 sobely.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "uqadd      v0.8b, v0.8b, v1.8b            \n"  // add
       "orr        v1.8b, v0.8b, v0.8b            \n"
@@ -2575,6 +2770,8 @@ void SobelToPlaneRow_NEON(const uint8_t* src_sobelx,
       "1:                                        \n"
       "ld1        {v0.16b}, [%0], #16            \n"  // load 16 sobelx.
       "ld1        {v1.16b}, [%1], #16            \n"  // load 16 sobely.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #16                  \n"  // 16 processed per loop.
       "uqadd      v0.16b, v0.16b, v1.16b         \n"  // add
       "st1        {v0.16b}, [%2], #16            \n"  // store 16 pixels.
@@ -2602,6 +2799,8 @@ void SobelXYRow_NEON(const uint8_t* src_sobelx,
       "1:                                        \n"
       "ld1        {v2.8b}, [%0], #8              \n"  // load 8 sobelx.
       "ld1        {v0.8b}, [%1], #8              \n"  // load 8 sobely.
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 processed per loop.
       "uqadd      v1.8b, v0.8b, v2.8b            \n"  // add
       "st4        {v0.8b,v1.8b,v2.8b,v3.8b}, [%2], #32 \n"  // store 8 ARGB
@@ -2627,14 +2826,17 @@ void SobelXRow_NEON(const uint8_t* src_y0,
       "1:                                        \n"
       "ld1        {v0.8b}, [%0],%5               \n"  // top
       "ld1        {v1.8b}, [%0],%6               \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
       "usubl      v0.8h, v0.8b, v1.8b            \n"
       "ld1        {v2.8b}, [%1],%5               \n"  // center * 2
       "ld1        {v3.8b}, [%1],%6               \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "usubl      v1.8h, v2.8b, v3.8b            \n"
       "add        v0.8h, v0.8h, v1.8h            \n"
       "add        v0.8h, v0.8h, v1.8h            \n"
       "ld1        {v2.8b}, [%2],%5               \n"  // bottom
       "ld1        {v3.8b}, [%2],%6               \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
       "subs       %w4, %w4, #8                   \n"  // 8 pixels
       "usubl      v1.8h, v2.8b, v3.8b            \n"
       "add        v0.8h, v0.8h, v1.8h            \n"
@@ -2673,6 +2875,8 @@ void SobelYRow_NEON(const uint8_t* src_y0,
       "add        v0.8h, v0.8h, v1.8h            \n"
       "ld1        {v2.8b}, [%0],%5               \n"  // right
       "ld1        {v3.8b}, [%1],%5               \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "subs       %w3, %w3, #8                   \n"  // 8 pixels
       "usubl      v1.8h, v2.8b, v3.8b            \n"
       "add        v0.8h, v0.8h, v1.8h            \n"
@@ -2698,6 +2902,7 @@ void HalfFloat1Row_NEON(const uint16_t* src,
   asm volatile(
       "1:                                        \n"
       "ld1        {v1.16b}, [%0], #16            \n"  // load 8 shorts
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 pixels per loop
       "uxtl       v2.4s, v1.4h                   \n"  // 8 int's
       "uxtl2      v3.4s, v1.8h                   \n"
@@ -2721,6 +2926,7 @@ void HalfFloatRow_NEON(const uint16_t* src,
   asm volatile(
       "1:                                        \n"
       "ld1        {v1.16b}, [%0], #16            \n"  // load 8 shorts
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 pixels per loop
       "uxtl       v2.4s, v1.4h                   \n"  // 8 int's
       "uxtl2      v3.4s, v1.8h                   \n"
@@ -2746,6 +2952,7 @@ void ByteToFloatRow_NEON(const uint8_t* src,
   asm volatile(
       "1:                                        \n"
       "ld1        {v1.8b}, [%0], #8              \n"  // load 8 bytes
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 pixels per loop
       "uxtl       v1.8h, v1.8b                   \n"  // 8 shorts
       "uxtl       v2.4s, v1.4h                   \n"  // 8 ints
@@ -2774,6 +2981,7 @@ float ScaleMaxSamples_NEON(const float* src,
 
       "1:                                        \n"
       "ld1        {v1.4s, v2.4s}, [%0], #32      \n"  // load 8 samples
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop
       "fmul       v3.4s, v1.4s, %4.s[0]          \n"  // scale
       "fmul       v4.4s, v2.4s, %4.s[0]          \n"  // scale
@@ -2803,6 +3011,7 @@ float ScaleSumSamples_NEON(const float* src,
 
       "1:                                        \n"
       "ld1        {v1.4s, v2.4s}, [%0], #32      \n"  // load 8 samples
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop
       "fmul       v3.4s, v1.4s, %4.s[0]          \n"  // scale
       "fmul       v4.4s, v2.4s, %4.s[0]          \n"
@@ -2826,6 +3035,7 @@ void ScaleSamples_NEON(const float* src, float* dst, float scale, int width) {
   asm volatile(
       "1:                                        \n"
       "ld1        {v1.4s, v2.4s}, [%0], #32      \n"  // load 8 samples
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #8                   \n"  // 8 processed per loop
       "fmul       v1.4s, v1.4s, %3.s[0]          \n"  // scale
       "fmul       v2.4s, v2.4s, %3.s[0]          \n"  // scale
@@ -2854,18 +3064,23 @@ void GaussCol_NEON(const uint16_t* src0,
       "ld1        {v1.8h}, [%0], #16             \n"  // load 8 samples, 5 rows
       "ld1        {v2.8h}, [%4], #16             \n"
       "uaddl      v0.4s, v1.4h, v2.4h            \n"  // * 1
+      "prfm       pldl1keep, [%0, 448]           \n"
       "uaddl2     v1.4s, v1.8h, v2.8h            \n"  // * 1
       "ld1        {v2.8h}, [%1], #16             \n"
       "umlal      v0.4s, v2.4h, v6.4h            \n"  // * 4
+      "prfm       pldl1keep, [%1, 448]           \n"
       "umlal2     v1.4s, v2.8h, v6.8h            \n"  // * 4
       "ld1        {v2.8h}, [%2], #16             \n"
       "umlal      v0.4s, v2.4h, v7.4h            \n"  // * 6
+      "prfm       pldl1keep, [%2, 448]           \n"
       "umlal2     v1.4s, v2.8h, v7.8h            \n"  // * 6
       "ld1        {v2.8h}, [%3], #16             \n"
       "umlal      v0.4s, v2.4h, v6.4h            \n"  // * 4
+      "prfm       pldl1keep, [%3, 448]           \n"
       "umlal2     v1.4s, v2.8h, v6.8h            \n"  // * 4
       "subs       %w6, %w6, #8                   \n"  // 8 processed per loop
       "st1        {v0.4s,v1.4s}, [%5], #32       \n"  // store 8 samples
+      "prfm       pldl1keep, [%4, 448]           \n"
       "b.gt       1b                             \n"
       : "+r"(src0),  // %0
         "+r"(src1),  // %1
@@ -2898,6 +3113,7 @@ void GaussRow_NEON(const uint32_t* src, uint16_t* dst, int width) {
       "ld1        {v4.4s,v5.4s}, [%3], #32       \n"
       "add        v2.4s, v2.4s, v4.4s            \n"  // add rows for * 4
       "add        v3.4s, v3.4s, v5.4s            \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
       "mla        v0.4s, v2.4s, v6.4s            \n"  // * 4
       "mla        v1.4s, v3.4s, v6.4s            \n"  // * 4
       "subs       %w5, %w5, #8                   \n"  // 8 processed per loop
@@ -2915,6 +3131,86 @@ void GaussRow_NEON(const uint32_t* src, uint16_t* dst, int width) {
       : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7");
 }
 
+static const vecf32 kGaussCoefficients = {4.0f, 6.0f, 1.0f / 256.0f, 0.0f};
+
+// filter 5 rows with 1, 4, 6, 4, 1 coefficients to produce 1 row.
+void GaussCol_F32_NEON(const float* src0,
+                       const float* src1,
+                       const float* src2,
+                       const float* src3,
+                       const float* src4,
+                       float* dst,
+                       int width) {
+  asm volatile(
+      "ld2r       {v6.4s, v7.4s}, [%7]           \n"  // constants 4 and 6
+
+      "1:                                        \n"
+      "ld1        {v0.4s, v1.4s}, [%0], #32      \n"  // load 8 samples, 5 rows
+      "ld1        {v2.4s, v3.4s}, [%1], #32      \n"
+      "fmla       v0.4s, v2.4s, v6.4s            \n"  // * 4
+      "ld1        {v4.4s, v5.4s}, [%2], #32      \n"
+      "fmla       v1.4s, v3.4s, v6.4s            \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "fmla       v0.4s, v4.4s, v7.4s            \n"  // * 6
+      "ld1        {v2.4s, v3.4s}, [%3], #32      \n"
+      "fmla       v1.4s, v5.4s, v7.4s            \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
+      "fmla       v0.4s, v2.4s, v6.4s            \n"  // * 4
+      "ld1        {v4.4s, v5.4s}, [%4], #32      \n"
+      "fmla       v1.4s, v3.4s, v6.4s            \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
+      "fadd       v0.4s, v0.4s, v4.4s            \n"  // * 1
+      "prfm       pldl1keep, [%3, 448]           \n"
+      "fadd       v1.4s, v1.4s, v5.4s            \n"
+      "prfm       pldl1keep, [%4, 448]           \n"
+      "subs       %w6, %w6, #8                   \n"  // 8 processed per loop
+      "st1        {v0.4s, v1.4s}, [%5], #32      \n"  // store 8 samples
+      "b.gt       1b                             \n"
+      : "+r"(src0),               // %0
+        "+r"(src1),               // %1
+        "+r"(src2),               // %2
+        "+r"(src3),               // %3
+        "+r"(src4),               // %4
+        "+r"(dst),                // %5
+        "+r"(width)               // %6
+      : "r"(&kGaussCoefficients)  // %7
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7");
+}
+
+// filter 5 rows with 1, 4, 6, 4, 1 coefficients to produce 1 row.
+void GaussRow_F32_NEON(const float* src, float* dst, int width) {
+  asm volatile(
+      "ld3r       {v6.4s, v7.4s, v8.4s}, [%3]    \n"  // constants 4, 6, 1/256
+
+      "1:                                        \n"
+      "ld1        {v0.4s, v1.4s, v2.4s}, [%0], %4\n"  // load 12 samples, 5 rows
+      "fadd       v0.4s, v0.4s, v1.4s            \n"  // * 1
+      "ld1        {v4.4s, v5.4s}, [%0], %5       \n"
+      "fadd       v1.4s, v1.4s, v2.4s            \n"
+      "fmla       v0.4s, v4.4s, v7.4s            \n"  // * 6
+      "ld1        {v2.4s, v3.4s}, [%0], %4       \n"
+      "fmla       v1.4s, v5.4s, v7.4s            \n"
+      "ld1        {v4.4s, v5.4s}, [%0], %6       \n"
+      "fadd       v2.4s, v2.4s, v4.4s            \n"
+      "fadd       v3.4s, v3.4s, v5.4s            \n"
+      "fmla       v0.4s, v2.4s, v6.4s            \n"  // * 4
+      "fmla       v1.4s, v3.4s, v6.4s            \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "fmul       v0.4s, v0.4s, v8.4s            \n"  // / 256
+      "fmul       v1.4s, v1.4s, v8.4s            \n"
+      "subs       %w2, %w2, #8                   \n"  // 8 processed per loop
+      "st1        {v0.4s, v1.4s}, [%1], #32      \n"  // store 8 samples
+      "b.gt       1b                             \n"
+      : "+r"(src),                 // %0
+        "+r"(dst),                 // %1
+        "+r"(width)                // %2
+      : "r"(&kGaussCoefficients),  // %3
+        "r"(8LL),                  // %4
+        "r"(-4LL),                 // %5
+        "r"(20LL)                  // %6
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8");
+}
+
 // Convert biplanar NV21 to packed YUV24
 void NV21ToYUV24Row_NEON(const uint8_t* src_y,
                          const uint8_t* src_vu,
@@ -2922,8 +3218,10 @@ void NV21ToYUV24Row_NEON(const uint8_t* src_y,
                          int width) {
   asm volatile(
       "1:                                        \n"
-      "ld1        {v2.16b}, [%0], #16            \n"     // load 16 Y values
-      "ld2        {v0.8b, v1.8b}, [%1], #16      \n"     // load 8 VU values
+      "ld1        {v2.16b}, [%0], #16            \n"  // load 16 Y values
+      "ld2        {v0.8b, v1.8b}, [%1], #16      \n"  // load 8 VU values
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
       "zip1       v0.16b, v0.16b, v0.16b         \n"     // replicate V values
       "zip1       v1.16b, v1.16b, v1.16b         \n"     // replicate U values
       "subs       %w3, %w3, #16                  \n"     // 16 pixels per loop
@@ -2946,9 +3244,11 @@ void AYUVToUVRow_NEON(const uint8_t* src_ayuv,
 
       "1:                                        \n"
       "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 ayuv
+      "prfm       pldl1keep, [%0, 448]           \n"
       "uaddlp     v0.8h, v0.16b                  \n"  // V 16 bytes -> 8 shorts.
       "uaddlp     v1.8h, v1.16b                  \n"  // U 16 bytes -> 8 shorts.
       "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load next 16
+      "prfm       pldl1keep, [%1, 448]           \n"
       "uadalp     v0.8h, v4.16b                  \n"  // V 16 bytes -> 8 shorts.
       "uadalp     v1.8h, v5.16b                  \n"  // U 16 bytes -> 8 shorts.
       "uqrshrn    v3.8b, v0.8h, #2               \n"  // 2x2 average
@@ -2972,11 +3272,12 @@ void AYUVToVURow_NEON(const uint8_t* src_ayuv,
   asm volatile(
 
       "1:                                        \n"
-      "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16
-                                                                // pixels.
+      "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16 ayuv
+      "prfm       pldl1keep, [%0, 448]           \n"
       "uaddlp     v0.8h, v0.16b                  \n"  // V 16 bytes -> 8 shorts.
       "uaddlp     v1.8h, v1.16b                  \n"  // U 16 bytes -> 8 shorts.
       "ld4        {v4.16b,v5.16b,v6.16b,v7.16b}, [%1], #64 \n"  // load next 16
+      "prfm       pldl1keep, [%1, 448]           \n"
       "uadalp     v0.8h, v4.16b                  \n"  // V 16 bytes -> 8 shorts.
       "uadalp     v1.8h, v5.16b                  \n"  // U 16 bytes -> 8 shorts.
       "uqrshrn    v0.8b, v0.8h, #2               \n"  // 2x2 average
@@ -2997,7 +3298,7 @@ void AYUVToYRow_NEON(const uint8_t* src_ayuv, uint8_t* dst_y, int width) {
   asm volatile(
       "1:                                        \n"
       "ld4        {v0.16b,v1.16b,v2.16b,v3.16b}, [%0], #64 \n"  // load 16
-                                                                // pixels
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #16                  \n"  // 16 pixels per loop
       "st1        {v2.16b}, [%1], #16            \n"  // store 16 Y pixels
       "b.gt       1b                             \n"
@@ -3008,20 +3309,65 @@ void AYUVToYRow_NEON(const uint8_t* src_ayuv, uint8_t* dst_y, int width) {
       : "cc", "memory", "v0", "v1", "v2", "v3");
 }
 
+// Shuffle table for swapping UV bytes.
+static const uvec8 kShuffleSwapUV = {1u, 0u, 3u,  2u,  5u,  4u,  7u,  6u,
+                                     9u, 8u, 11u, 10u, 13u, 12u, 15u, 14u};
+
 // Convert UV plane of NV12 to VU of NV21.
 void SwapUVRow_NEON(const uint8_t* src_uv, uint8_t* dst_vu, int width) {
   asm volatile(
+      "ld1        {v2.16b}, [%3]                 \n"  // shuffler
       "1:                                        \n"
-      "ld2        {v0.16b, v1.16b}, [%0], #32    \n"  // load 16 UV values
-      "orr        v2.16b, v0.16b, v0.16b         \n"  // move U after V
+      "ld1        {v0.16b}, [%0], 16             \n"  // load 16 UV values
+      "ld1        {v1.16b}, [%0], 16             \n"
+      "prfm       pldl1keep, [%0, 448]           \n"
       "subs       %w2, %w2, #16                  \n"  // 16 pixels per loop
-      "st2        {v1.16b, v2.16b}, [%1], #32    \n"  // store 16 VU pixels
+      "tbl        v0.16b, {v0.16b}, v2.16b       \n"
+      "tbl        v1.16b, {v1.16b}, v2.16b       \n"
+      "stp        q0, q1, [%1], 32               \n"  // store 16 VU pixels
       "b.gt       1b                             \n"
-      : "+r"(src_uv),  // %0
-        "+r"(dst_vu),  // %1
-        "+r"(width)    // %2
-      :
+      : "+r"(src_uv),         // %0
+        "+r"(dst_vu),         // %1
+        "+r"(width)           // %2
+      : "r"(&kShuffleSwapUV)  // %3
       : "cc", "memory", "v0", "v1", "v2");
+}
+
+void HalfMergeUVRow_NEON(const uint8_t* src_u,
+                         int src_stride_u,
+                         const uint8_t* src_v,
+                         int src_stride_v,
+                         uint8_t* dst_uv,
+                         int width) {
+  const uint8_t* src_u_1 = src_u + src_stride_u;
+  const uint8_t* src_v_1 = src_v + src_stride_v;
+  asm volatile(
+      "1:                                        \n"
+      "ld1        {v0.16b}, [%0], #16            \n"  // load 16 U values
+      "ld1        {v1.16b}, [%2], #16            \n"  // load 16 V values
+      "ld1        {v2.16b}, [%1], #16            \n"
+      "ld1        {v3.16b}, [%3], #16            \n"
+      "uaddlp     v0.8h, v0.16b                  \n"  // half size
+      "prfm       pldl1keep, [%0, 448]           \n"
+      "uaddlp     v1.8h, v1.16b                  \n"
+      "prfm       pldl1keep, [%2, 448]           \n"
+      "uadalp     v0.8h, v2.16b                  \n"
+      "prfm       pldl1keep, [%1, 448]           \n"
+      "uadalp     v1.8h, v3.16b                  \n"
+      "prfm       pldl1keep, [%3, 448]           \n"
+      "uqrshrn    v0.8b, v0.8h, #2               \n"
+      "uqrshrn    v1.8b, v1.8h, #2               \n"
+      "subs       %w5, %w5, #16                  \n"  // 16 src pixels per loop
+      "st2        {v0.8b, v1.8b}, [%4], #16      \n"  // store 8 UV pixels
+      "b.gt       1b                             \n"
+      : "+r"(src_u),    // %0
+        "+r"(src_u_1),  // %1
+        "+r"(src_v),    // %2
+        "+r"(src_v_1),  // %3
+        "+r"(dst_uv),   // %4
+        "+r"(width)     // %5
+      :
+      : "cc", "memory", "v0", "v1", "v2", "v3");
 }
 
 #endif  // !defined(LIBYUV_DISABLE_NEON) && defined(__aarch64__)

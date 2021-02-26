@@ -30,6 +30,7 @@ struct MediaDeviceInfo {
 struct VideoInputDeviceCapabilities {
   string device_id;
   string group_id;
+  media.mojom.VideoCaptureControlSupport control_support;
   array<media.mojom.VideoCaptureFormat> formats;
   FacingMode facing_mode;
 };

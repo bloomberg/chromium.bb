@@ -11,6 +11,10 @@
 namespace blink {
 
 class CompositedLayerAssignerTest : public RenderingTest {
+ public:
+  CompositedLayerAssignerTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+
  private:
   void SetUp() override {
     EnableCompositing();
@@ -27,9 +31,13 @@ TEST_F(CompositedLayerAssignerTest, SquashingSimple) {
         height: 100px; background: green"></div>
     )HTML");
 
-  PaintLayer* squashed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  PaintLayer* squashed = GetPaintLayerByElementId("squashed");
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+  CompositedLayerMapping* mapping = squashed->GroupedMapping();
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            mapping->SquashingLayer(*squashed));
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            squashed->GraphicsLayerBacking());
 }
 
 TEST_F(CompositedLayerAssignerTest, SquashingAcrossClipPathDisallowed) {
@@ -42,8 +50,7 @@ TEST_F(CompositedLayerAssignerTest, SquashingAcrossClipPathDisallowed) {
     )HTML");
   // #squashed should not be squashed after all, because of the clip path above
   // #squashing.
-  PaintLayer* squashed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  PaintLayer* squashed = GetPaintLayerByElementId("squashed");
   EXPECT_EQ(kPaintsIntoOwnBacking, squashed->GetCompositingState());
 }
 
@@ -57,8 +64,7 @@ TEST_F(CompositedLayerAssignerTest, SquashingAcrossMaskDisallowed) {
     )HTML");
   // #squashed should not be squashed after all, because of the mask above
   // #squashing.
-  PaintLayer* squashed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  PaintLayer* squashed = GetPaintLayerByElementId("squashed");
   EXPECT_EQ(kPaintsIntoOwnBacking, squashed->GetCompositingState());
 }
 
@@ -73,8 +79,7 @@ TEST_F(CompositedLayerAssignerTest,
     )HTML");
   // #squashed should not be squashed after all, because of 'contain: layout' on
   // #squashing.
-  PaintLayer* squashed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  PaintLayer* squashed = GetPaintLayerByElementId("squashed");
   EXPECT_EQ(kPaintsIntoOwnBacking, squashed->GetCompositingState());
 }
 
@@ -87,9 +92,26 @@ TEST_F(CompositedLayerAssignerTest,
     )HTML");
   // #squashed should not be squashed after all, because of 'contain: layout' on
   // #squahed.
-  PaintLayer* squashed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  PaintLayer* squashed = GetPaintLayerByElementId("squashed");
   EXPECT_EQ(kPaintsIntoOwnBacking, squashed->GetCompositingState());
+}
+
+TEST_F(CompositedLayerAssignerTest,
+       SquashingAcrossCompositedInnerDocumentDisallowed) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="bottom" style="position: absolute; will-change: transform">Bottom</div>
+    <div id="middle" style="position: absolute">
+      <iframe style="border: 10px solid magenta"></iframe>
+    </div>
+    <div id="top" style="position: absolute; width: 200px; height: 200px; background: green;">Top</div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body {will-change: transform; background: blue}</style>
+  )HTML");
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->UpdateAllLifecyclePhasesForTest();
+  PaintLayer* top = GetPaintLayerByElementId("top");
+  EXPECT_EQ(kPaintsIntoOwnBacking, top->GetCompositingState());
 }
 
 }  // namespace blink

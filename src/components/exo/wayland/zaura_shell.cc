@@ -7,18 +7,23 @@
 #include <aura-shell-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/window_properties.h"
+#include "ash/wm/window_state.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/screen.h"
@@ -27,8 +32,10 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "components/exo/wm_helper_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace exo {
@@ -113,10 +120,13 @@ void aura_surface_set_application_id(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetApplicationId(application_id);
 }
 
-void aura_surface_set_client_surface_id(wl_client* client,
-                                        wl_resource* resource,
-                                        int client_surface_id) {
-  GetUserDataAs<AuraSurface>(resource)->SetClientSurfaceId(client_surface_id);
+void aura_surface_set_client_surface_id_DEPRECATED(wl_client* client,
+                                                   wl_resource* resource,
+                                                   int client_surface_id) {
+  // DEPRECATED. Use aura_surface_set_client_surface_str_id
+  std::string client_surface_str_id = base::NumberToString(client_surface_id);
+  GetUserDataAs<AuraSurface>(resource)->SetClientSurfaceId(
+      client_surface_str_id.c_str());
 }
 
 void aura_surface_set_occlusion_tracking(wl_client* client,
@@ -137,17 +147,31 @@ void aura_surface_draw_attention(wl_client* client, wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->DrawAttention();
 }
 
+void aura_surface_set_fullscreen_mode(wl_client* client,
+                                      wl_resource* resource,
+                                      uint32_t mode) {
+  GetUserDataAs<AuraSurface>(resource)->SetFullscreenMode(mode);
+}
+
+void aura_surface_set_client_surface_str_id(wl_client* client,
+                                            wl_resource* resource,
+                                            const char* client_surface_id) {
+  GetUserDataAs<AuraSurface>(resource)->SetClientSurfaceId(client_surface_id);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
     aura_surface_set_frame_colors,
     aura_surface_set_startup_id,
     aura_surface_set_application_id,
-    aura_surface_set_client_surface_id,
+    aura_surface_set_client_surface_id_DEPRECATED,
     aura_surface_set_occlusion_tracking,
     aura_surface_unset_occlusion_tracking,
     aura_surface_activate,
-    aura_surface_draw_attention};
+    aura_surface_draw_attention,
+    aura_surface_set_fullscreen_mode,
+    aura_surface_set_client_surface_str_id};
 
 }  // namespace
 
@@ -195,7 +219,7 @@ void AuraSurface::SetApplicationId(const char* application_id) {
     surface_->SetApplicationId(application_id);
 }
 
-void AuraSurface::SetClientSurfaceId(int client_surface_id) {
+void AuraSurface::SetClientSurfaceId(const char* client_surface_id) {
   if (surface_)
     surface_->SetClientSurfaceId(client_surface_id);
 }
@@ -217,6 +241,24 @@ void AuraSurface::DrawAttention() {
   LOG(WARNING) << "Surface requested attention, but that is not implemented";
 }
 
+void AuraSurface::SetFullscreenMode(uint32_t mode) {
+  if (!surface_)
+    return;
+
+  switch (mode) {
+    case ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN:
+      surface_->SetUseImmersiveForFullscreen(false);
+      break;
+    case ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE:
+      surface_->SetUseImmersiveForFullscreen(true);
+      break;
+    default:
+      VLOG(2) << "aura_surface_set_fullscreen_mode(): unknown fullscreen_mode: "
+              << mode;
+      break;
+  }
+}
+
 // Overridden from SurfaceObserver:
 void AuraSurface::OnSurfaceDestroying(Surface* surface) {
   surface->RemoveSurfaceObserver(this);
@@ -224,11 +266,11 @@ void AuraSurface::OnSurfaceDestroying(Surface* surface) {
 }
 
 void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
-  if (!surface_ || !surface_->is_tracking_occlusion())
+  if (!surface_ || !surface_->IsTrackingOcclusion())
     return;
   auto* window = surface_->window();
   ComputeAndSendOcclusionFraction(window->occlusion_state(),
-                                  window->occluded_region());
+                                  window->occluded_region_in_root());
 }
 
 void AuraSurface::OnWindowActivating(ActivationReason reason,
@@ -241,7 +283,7 @@ void AuraSurface::OnWindowActivating(ActivationReason reason,
   // Check if this surface is a child of a window that is losing focus.
   auto* widget = views::Widget::GetTopLevelWidgetForNativeView(window);
   if (!widget || losing_active != widget->GetNativeWindow() ||
-      !surface_->is_tracking_occlusion())
+      !surface_->IsTrackingOcclusion())
     return;
 
   // Result may be changed by animated windows, so compute it explicitly.
@@ -345,12 +387,20 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
 
-class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
+class AuraOutput : public WaylandDisplayObserver {
  public:
   explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
 
-  // Overridden from WaylandDisplayObserver::ScaleObserver:
-  void OnDisplayScalesChanged(const display::Display& display) override {
+  // Overridden from WaylandDisplayObserver:
+  bool SendDisplayMetrics(const display::Display& display,
+                          uint32_t changed_metrics) override {
+    if (!(changed_metrics &
+          (display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+           display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+           display::DisplayObserver::DISPLAY_METRIC_ROTATION))) {
+      return false;
+    }
+
     const WMHelper* wm_helper = WMHelper::GetInstance();
     const display::ManagedDisplayInfo& display_info =
         wm_helper->GetDisplayInfo(display.id());
@@ -406,6 +456,8 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
       zaura_output_send_device_scale_factor(
           resource_, display_info.device_scale_factor() * 1000);
     }
+
+    return true;
   }
 
  private:
@@ -416,6 +468,51 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_shell_interface:
+
+#if defined(OS_CHROMEOS)
+// Implements aura shell interface and monitors workspace state needed
+// for the aura shell interface.
+class WaylandAuraShell : public ash::TabletModeObserver {
+ public:
+  explicit WaylandAuraShell(wl_resource* aura_shell_resource)
+      : aura_shell_resource_(aura_shell_resource) {
+    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
+    helper->AddTabletModeObserver(this);
+    if (wl_resource_get_version(aura_shell_resource_) >=
+        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
+      auto layout_mode = helper->InTabletMode()
+                             ? ZAURA_SHELL_LAYOUT_MODE_TABLET
+                             : ZAURA_SHELL_LAYOUT_MODE_WINDOWED;
+      zaura_shell_send_layout_mode(aura_shell_resource_, layout_mode);
+    }
+  }
+  WaylandAuraShell(const WaylandAuraShell&) = delete;
+  WaylandAuraShell& operator=(const WaylandAuraShell&) = delete;
+  ~WaylandAuraShell() override {
+    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
+    helper->RemoveTabletModeObserver(this);
+  }
+
+  // Overridden from ash::TabletModeObserver:
+  void OnTabletModeStarted() override {
+    if (wl_resource_get_version(aura_shell_resource_) >=
+        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION)
+      zaura_shell_send_layout_mode(aura_shell_resource_,
+                                   ZAURA_SHELL_LAYOUT_MODE_TABLET);
+  }
+  void OnTabletModeEnding() override {
+    if (wl_resource_get_version(aura_shell_resource_) >=
+        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION)
+      zaura_shell_send_layout_mode(aura_shell_resource_,
+                                   ZAURA_SHELL_LAYOUT_MODE_WINDOWED);
+  }
+  void OnTabletModeEnded() override {}
+
+ private:
+  // The aura shell resource associated with observer.
+  wl_resource* const aura_shell_resource_;
+};
+#endif  // OS_CHROMEOS)
 
 void aura_shell_get_aura_surface(wl_client* client,
                                  wl_resource* resource,
@@ -441,20 +538,14 @@ void aura_shell_get_aura_output(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t id,
                                 wl_resource* output_resource) {
-  WaylandDisplayObserver* display_observer =
-      GetUserDataAs<WaylandDisplayObserver>(output_resource);
-  if (display_observer->HasScaleObserver()) {
-    wl_resource_post_error(
-        resource, ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS,
-        "an aura output object for that output already exists");
-    return;
-  }
+  WaylandDisplayHandler* display_handler =
+      GetUserDataAs<WaylandDisplayHandler>(output_resource);
 
   wl_resource* aura_output_resource = wl_resource_create(
       client, &zaura_output_interface, wl_resource_get_version(resource), id);
 
   auto aura_output = std::make_unique<AuraOutput>(aura_output_resource);
-  display_observer->SetScaleObserver(aura_output->AsWeakPtr());
+  display_handler->AddObserver(aura_output.get());
 
   SetImplementation(aura_output_resource, nullptr, std::move(aura_output));
 }
@@ -472,8 +563,13 @@ void bind_aura_shell(wl_client* client,
       wl_resource_create(client, &zaura_shell_interface,
                          std::min(version, kZAuraShellVersion), id);
 
+#if defined(OS_CHROMEOS)
+  SetImplementation(resource, &aura_shell_implementation,
+                    std::make_unique<WaylandAuraShell>(resource));
+#else
   wl_resource_set_implementation(resource, &aura_shell_implementation, nullptr,
                                  nullptr);
+#endif
 }
 
 }  // namespace wayland

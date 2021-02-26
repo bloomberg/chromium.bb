@@ -12,6 +12,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
@@ -76,6 +77,14 @@ const base::FilePath::CharType* kNV12Image180P =
 const base::FilePath::CharType* kNV12Image360PIn480P =
     FILE_PATH_LITERAL("puppets-640x360_in_640x480.nv12.yuv");
 
+// Files for rotation test.
+const base::FilePath::CharType* kNV12Image90 =
+    FILE_PATH_LITERAL("bear_192x320_90.nv12.yuv");
+const base::FilePath::CharType* kNV12Image180 =
+    FILE_PATH_LITERAL("bear_320x192_180.nv12.yuv");
+const base::FilePath::CharType* kNV12Image270 =
+    FILE_PATH_LITERAL("bear_192x320_270.nv12.yuv");
+
 class ImageProcessorParamTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<
@@ -115,6 +124,26 @@ class ImageProcessorParamTest
     ImageProcessor::PortConfig output_config(
         output_fourcc, output_image->Size(), output_layout->planes(),
         output_image->VisibleRect(), output_storage_types);
+    int rotation =
+        ((output_image->Rotation() - input_image.Rotation() + 4) % 4) * 90;
+    VideoRotation relative_rotation = VIDEO_ROTATION_0;
+    switch (rotation) {
+      case 0:
+        relative_rotation = VIDEO_ROTATION_0;
+        break;
+      case 90:
+        relative_rotation = VIDEO_ROTATION_90;
+        break;
+      case 180:
+        relative_rotation = VIDEO_ROTATION_180;
+        break;
+      case 270:
+        relative_rotation = VIDEO_ROTATION_270;
+        break;
+      default:
+        NOTREACHED() << "Invalid rotation: " << rotation;
+        return nullptr;
+    }
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image->IsMetadataLoaded());
@@ -156,7 +185,8 @@ class ImageProcessorParamTest
     }
 
     auto ip_client = test::ImageProcessorClient::Create(
-        input_config, output_config, kNumBuffers, std::move(frame_processors));
+        input_config, output_config, kNumBuffers, relative_rotation,
+        std::move(frame_processors));
     return ip_client;
   }
 
@@ -193,7 +223,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 // We don't yet have the function to create Dmabuf-backed VideoFrame on
 // platforms except ChromeOS. So MemToDmabuf test is limited on ChromeOS.
 TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
@@ -257,7 +287,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_GmbToGmb) {
   EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 // BGRA -> NV12
 // I420 -> NV12
@@ -294,7 +324,18 @@ INSTANTIATE_TEST_SUITE_P(NV12CroppingAndScaling,
                          ::testing::Values(std::make_tuple(kNV12Image360PIn480P,
                                                            kNV12Image270P)));
 
-#if defined(OS_CHROMEOS)
+// Rotate frame to specified rotation.
+// Now only VaapiIP maybe support rotaion.
+INSTANTIATE_TEST_SUITE_P(
+    NV12Rotation,
+    ImageProcessorParamTest,
+    ::testing::Values(std::make_tuple(kNV12Image, kNV12Image90),
+                      std::make_tuple(kNV12Image, kNV12Image180),
+                      std::make_tuple(kNV12Image, kNV12Image270),
+                      std::make_tuple(kNV12Image180, kNV12Image90),
+                      std::make_tuple(kNV12Image180, kNV12Image)));
+
+#if BUILDFLAG(IS_ASH)
 // TODO(hiroh): Add more tests.
 // MEM->DMABUF (V4L2VideoEncodeAccelerator),
 #endif

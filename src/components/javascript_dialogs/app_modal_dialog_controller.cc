@@ -18,7 +18,7 @@ namespace {
 AppModalDialogObserver* app_modal_dialog_observer = nullptr;
 
 // Control maximum sizes of various texts passed to us from javascript.
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
 // Two-dimensional eliding.  Reformat the text of the message dialog
 // inserting line breaks because otherwise a single long line can overflow
 // the message dialog (and crash/hang the GTK, depending on the version).
@@ -78,7 +78,6 @@ AppModalDialogController::AppModalDialogController(
     bool is_reload,
     content::JavaScriptDialogManager::DialogClosedCallback callback)
     : title_(title),
-      completed_(false),
       valid_(true),
       view_(nullptr),
       web_contents_(web_contents),
@@ -114,9 +113,13 @@ void AppModalDialogController::CloseModalDialog() {
 }
 
 void AppModalDialogController::CompleteDialog() {
-  if (!completed_) {
-    completed_ = true;
+  // If |view_| is non-null, then |this| is the active dialog and the next one
+  // should be shown. Otherwise, |this| was never shown.
+  if (view_) {
+    view_ = nullptr;
     AppModalDialogQueue::GetInstance()->ShowNextDialog();
+  } else {
+    DCHECK(!valid_);
   }
 }
 

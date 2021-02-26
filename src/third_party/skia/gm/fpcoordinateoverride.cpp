@@ -17,11 +17,9 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTileMode.h"
 #include "include/core/SkTypes.h"
-#include "include/gpu/GrContext.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/GrContextPriv.h"
-#include "src/gpu/GrCoordTransform.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
@@ -38,8 +36,7 @@ public:
 
     SampleCoordEffect(std::unique_ptr<GrFragmentProcessor> child)
         : INHERITED(CLASS_ID, kNone_OptimizationFlags) {
-        child->setSampledWithExplicitCoords();
-        this->registerChildProcessor(std::move(child));
+        this->registerChild(std::move(child), SkSL::SampleUsage::Explicit());
     }
 
     const char* name() const override { return "SampleCoordEffect"; }
@@ -59,7 +56,7 @@ public:
 
 private:
     GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
-    typedef GrFragmentProcessor INHERITED;
+    using INHERITED = GrFragmentProcessor;
 };
 
 class GLSLSampleCoordEffect : public GrGLSLFragmentProcessor {
@@ -83,7 +80,7 @@ DEF_SIMPLE_GPU_GM_BG(fpcoordinateoverride, ctx, rtCtx, canvas, 512, 512,
     SkBitmap bmp;
     GetResourceAsBitmap("images/mandrill_512_q075.jpg", &bmp);
     GrBitmapTextureMaker maker(ctx, bmp, GrImageTexGenPolicy::kDraw);
-    auto view = maker.view(GrMipMapped::kNo);
+    auto view = maker.view(GrMipmapped::kNo);
     if (!view) {
         return;
     }
@@ -92,7 +89,7 @@ DEF_SIMPLE_GPU_GM_BG(fpcoordinateoverride, ctx, rtCtx, canvas, 512, 512,
     auto fp = std::unique_ptr<GrFragmentProcessor>(new SampleCoordEffect(std::move(imgFP)));
 
     GrPaint grPaint;
-    grPaint.addCoverageFragmentProcessor(std::move(fp));
+    grPaint.setCoverageFragmentProcessor(std::move(fp));
 
     rtCtx->priv().testingOnly_addDrawOp(GrFillRectOp::MakeNonAARect(ctx,
                                                                     std::move(grPaint),

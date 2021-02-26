@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/speech/tts_utterance_impl.h"
+
 #include "base/values.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
@@ -37,11 +38,14 @@ int TtsUtteranceImpl::next_utterance_id_ = 0;
 
 std::unique_ptr<TtsUtterance> TtsUtterance::Create(
     BrowserContext* browser_context) {
-  return std::make_unique<TtsUtteranceImpl>(browser_context);
+  return std::make_unique<TtsUtteranceImpl>(browser_context, nullptr);
 }
 
-TtsUtteranceImpl::TtsUtteranceImpl(BrowserContext* browser_context)
-    : browser_context_(browser_context),
+TtsUtteranceImpl::TtsUtteranceImpl(BrowserContext* browser_context,
+                                   WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      browser_context_(browser_context),
+      was_created_with_web_contents_(web_contents != nullptr),
       id_(next_utterance_id_++),
       src_id_(-1),
       can_enqueue_(false),

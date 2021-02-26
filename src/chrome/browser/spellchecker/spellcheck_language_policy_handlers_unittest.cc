@@ -7,7 +7,7 @@
 // language policy. If a language is both blocked and forced, forced wins. It is
 // only practical to test this interaction in a single unit test covering both
 // header files.
-#include "chrome/browser/spellchecker/spellcheck_language_blacklist_policy_handler.h"
+#include "chrome/browser/spellchecker/spellcheck_language_blocklist_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
 
 #include <ostream>
@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -102,22 +103,19 @@ class SpellcheckLanguagePolicyHandlersTest
 };
 
 TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   base::test::ScopedFeatureList feature_list;
   if (GetParam().windows_spellchecker_enabled) {
     if (!spellcheck::WindowsVersionSupportsSpellchecker())
       return;
 
-    // Force hybrid spellchecking to be enabled.
-    feature_list.InitWithFeatures(
-        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                              spellcheck::kWinUseHybridSpellChecker},
-        /*disabled_features=*/{});
+    // Force Windows native spellchecking to be enabled.
+    feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
   } else {
     // Hunspell-only spellcheck languages will be used.
     feature_list.InitAndDisableFeature(spellcheck::kWinUseBrowserSpellChecker);
   }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   PrefValueMap prefs;
   policy::PolicyMap policy;
@@ -132,28 +130,28 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
     forced_languages_list.Append(std::move(forced_language));
   }
 
-  policy.Set(policy::key::kSpellcheckLanguageBlacklist,
+  policy.Set(policy::key::kSpellcheckLanguageBlocklist,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             base::Value::ToUniquePtrValue(std::move(blocked_languages_list)),
-             nullptr);
+             std::move(blocked_languages_list), nullptr);
 
-  policy.Set(
-      policy::key::kSpellcheckLanguage, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-      base::Value::ToUniquePtrValue(std::move(forced_languages_list)), nullptr);
+  policy.Set(policy::key::kSpellcheckLanguage, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::move(forced_languages_list), nullptr);
 
-  policy.Set(
-      policy::key::kSpellcheckEnabled, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-      std::make_unique<base::Value>(GetParam().spellcheck_enabled), nullptr);
+  policy.Set(policy::key::kSpellcheckEnabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             base::Value(GetParam().spellcheck_enabled), nullptr);
 
   // Apply policy to the forced languages handler.
   SpellcheckLanguagePolicyHandler forced_languages_handler;
   forced_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Apply policy to the blocked languages handler.
-  SpellcheckLanguageBlacklistPolicyHandler blocked_languages_handler;
+  SpellcheckLanguageBlocklistPolicyHandler blocked_languages_handler(
+      policy::key::kSpellcheckLanguageBlocklist);
   blocked_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Check if forced languages preferences are as expected.
@@ -161,7 +159,7 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
              GetParam().expected_forced_languages);
 
   // Check if blocked languages preferences are as expected.
-  CheckPrefs(prefs, spellcheck::prefs::kSpellCheckBlacklistedDictionaries,
+  CheckPrefs(prefs, spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
              GetParam().expected_blocked_languages);
 }
 
@@ -169,7 +167,7 @@ INSTANTIATE_TEST_SUITE_P(
     TestCases,
     SpellcheckLanguagePolicyHandlersTest,
     testing::Values(
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         // Test cases for Windows spellchecker (policy languages not restricted
         // to Hunspell).
         TestCase({"ar-SA", "es-MX", "fi", "fr",
@@ -185,7 +183,7 @@ INSTANTIATE_TEST_SUITE_P(
                  {""} /* expected forced languages */,
                  false /* spellcheck enabled */,
                  true /* windows spellchecker enabled */),
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         // Test cases for Hunspell only spellchecker. ar-SA and fi are
         // non-Hunspell languages so are ignored for policy enforcement. If they
         // ever obtain Hunspell support, the first test case below will fail.

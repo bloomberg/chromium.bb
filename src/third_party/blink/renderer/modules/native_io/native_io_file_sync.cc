@@ -23,7 +23,7 @@ namespace blink {
 // Extracts the read/write operation size from the buffer size.
 int OperationSize(const DOMArrayBufferView& buffer) {
   // On 32-bit platforms, clamp operation sizes to 2^31-1.
-  return base::saturated_cast<int>(buffer.byteLengthAsSizeT());
+  return base::saturated_cast<int>(buffer.byteLength());
 }
 
 NativeIOFileSync::NativeIOFileSync(
@@ -49,44 +49,107 @@ void NativeIOFileSync::close() {
   backend_file_->Close();
 }
 
-int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
-                           uint64_t file_offset,
-                           ExceptionState& exception_state) {
+uint64_t NativeIOFileSync::getLength(ExceptionState& exception_state) {
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return 0;
+  }
+  int64_t length = backing_file_.GetLength();
+  if (length < 0) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "getLength() failed");
+    return 0;
+  }
+  // getLength returns an unsigned integer, which is different from e.g.,
+  // base::File and POSIX. The uses for negative integers are error handling,
+  // which is done through exceptions, and seeking from an offset without type
+  // conversions, which is not supported by NativeIO.
+  return base::as_unsigned(length);
+}
+
+void NativeIOFileSync::setLength(uint64_t length,
+                                 ExceptionState& exception_state) {
+  if (!base::IsValueInRangeForNumericType<int64_t>(length)) {
+    exception_state.ThrowTypeError("Length out of bounds");
+    return;
+  }
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return;
+  }
+  bool backend_success = false;
+
+  // Calls to setLength are routed through the browser process, see
+  // crbug.com/1084565.
+  //
+  // We keep a single handle per file, so this handle is passed to the backend
+  // and is then given back to the renderer afterwards.
+  backend_file_->SetLength(base::as_signed(length), std::move(backing_file_),
+                           &backend_success, &backing_file_);
+  DCHECK(backing_file_.IsValid()) << "browser returned closed file";
+  if (!backend_success) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      "setLength() failed");
+  }
+  return;
+}
+
+uint64_t NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
+                                uint64_t file_offset,
+                                ExceptionState& exception_state) {
   int read_size = OperationSize(*buffer.View());
   char* read_data = static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
   if (!backing_file_.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "File already closed");
+                                      "The file was already closed");
     return 0;
   }
   int read_bytes = backing_file_.Read(file_offset, read_data, read_size);
   if (read_bytes < 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "read() failed");
   }
-  return read_bytes;
+  return base::as_unsigned(read_bytes);
 }
 
-int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
-                            uint64_t file_offset,
-                            ExceptionState& exception_state) {
+uint64_t NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
+                                 uint64_t file_offset,
+                                 ExceptionState& exception_state) {
   int write_size = OperationSize(*buffer.View());
   char* write_data =
       static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
   if (!backing_file_.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "File already closed");
+                                      "The file was already closed");
     return 0;
   }
   int written_bytes = backing_file_.Write(file_offset, write_data, write_size);
   if (written_bytes < 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "write() failed");
   }
-  return written_bytes;
+  return base::as_unsigned(written_bytes);
 }
 
-void NativeIOFileSync::Trace(Visitor* visitor) {
+void NativeIOFileSync::flush(ExceptionState& exception_state) {
+  // This implementation of flush attempts to physically store the data it has
+  // written on disk. This behaviour might change in the future.
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return;
+  }
+  bool success = backing_file_.Flush();
+  if (!success) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "flush() failed");
+  }
+  return;
+}
+
+void NativeIOFileSync::Trace(Visitor* visitor) const {
   visitor->Trace(backend_file_);
   ScriptWrappable::Trace(visitor);
 }

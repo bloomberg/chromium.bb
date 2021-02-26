@@ -71,9 +71,21 @@ class AwGLSurfaceExternalStencil::BlitContext {
   ~BlitContext() { glDeleteProgram(program_); }
 
   void Bind() {
+    // If vertex array objects are supported we need to reset it to default one,
+    // so we won't break someones else VAS by changing attributes.
+    if (gl::g_current_gl_driver->fn.glBindVertexArrayOESFn) {
+      glBindVertexArrayOES(0);
+    }
+
     glUseProgram(program_);
     for (GLint i = 2; i < gl_max_vertex_attribs_; ++i) {
       glDisableVertexAttribArray(i);
+    }
+
+    // Note that function is not ANGLE only.
+    if (gl::g_current_gl_driver->fn.glVertexAttribDivisorANGLEFn) {
+      glVertexAttribDivisorANGLE(0, 0);
+      glVertexAttribDivisorANGLE(1, 0);
     }
 
     glEnableVertexAttribArray(0);
@@ -214,6 +226,8 @@ gfx::SwapResult AwGLSurfaceExternalStencil::SwapBuffers(
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, framebuffer_->texture_id());
+    if (gl::g_current_gl_driver->fn.glBindSamplerFn)
+      glBindSampler(0, 0);
 
     // We need to restore viewport as it might have changed by renderer
     glViewport(0, 0, viewport_.width(), viewport_.height());
@@ -223,6 +237,17 @@ gfx::SwapResult AwGLSurfaceExternalStencil::SwapBuffers(
 
     // Restore color mask in case.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    // Restore blending.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glFrontFace(GL_CCW);
+
+    if (gl::g_current_gl_driver->fn.glWindowRectanglesEXTFn)
+      glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }
@@ -257,7 +282,7 @@ void AwGLSurfaceExternalStencil::RecalculateClipAndTransform(
     // Adjust transform, clip rect and viewport to be in original clip rect
     // space as we will draw to FBO of clip_rect size and blit it to screen at
     // original location.
-    transform->Translate(-clip_rect->x(), -clip_rect->y());
+    transform->PostTranslate(-clip_rect->x(), -clip_rect->y());
     clip_rect->set_origin(gfx::Point(0, 0));
     *viewport = clip_rect_.size();
   } else {

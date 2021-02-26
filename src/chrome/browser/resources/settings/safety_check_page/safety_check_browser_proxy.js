@@ -23,6 +23,7 @@ export const SafetyCheckCallbackConstants = {
   PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
   SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
   EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
+  CHROME_CLEANER_CHANGED: 'safety-check-chrome-cleaner-status-changed',
 };
 
 /**
@@ -69,6 +70,7 @@ export const SafetyCheckPasswordsStatus = {
   SIGNED_OUT: 5,
   QUOTA_LIMIT: 6,
   ERROR: 7,
+  FEATURE_UNAVAILABLE: 8,
 };
 
 /**
@@ -86,6 +88,7 @@ export const SafetyCheckSafeBrowsingStatus = {
   DISABLED_BY_EXTENSION: 4,
   ENABLED_STANDARD: 5,
   ENABLED_ENHANCED: 6,
+  ENABLED_STANDARD_AVAILABLE_ENHANCED: 7,
 };
 
 /**
@@ -104,6 +107,25 @@ export const SafetyCheckExtensionsStatus = {
   BLOCKLISTED_REENABLED_ALL_BY_ADMIN: 6,
 };
 
+/**
+ * States of the safety check Chrome cleaner element.
+ * Needs to be kept in sync with ChromeCleanerStatus in
+ * chrome/browser/ui/webui/settings/safety_check_handler.h
+ * @enum {number}
+ */
+export const SafetyCheckChromeCleanerStatus = {
+  HIDDEN: 0,
+  CHECKING: 1,
+  INFECTED: 2,
+  REBOOT_REQUIRED: 3,
+  SCANNING_FOR_UWS: 4,
+  REMOVING_UWS: 5,
+  DISABLED_BY_ADMIN: 6,
+  ERROR: 7,
+  NO_UWS_FOUND_WITH_TIMESTAMP: 8,
+  NO_UWS_FOUND_WITHOUT_TIMESTAMP: 9,
+};
+
 /** @interface */
 export class SafetyCheckBrowserProxy {
   /** Run the safety check. */
@@ -111,7 +133,8 @@ export class SafetyCheckBrowserProxy {
 
   /**
    * Get the display string for the safety check parent, showing how long ago
-   * safety check last ran.`
+   * safety check last ran. Also triggers string updates to be sent to all SC
+   * children that have timestamp-based display strings.
    * @return {!Promise<string>}
    */
   getParentRanDisplayString() {}

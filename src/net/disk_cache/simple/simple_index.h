@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -297,11 +296,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // enforces this.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Timestamp of the last time we wrote the index to disk.
-  // PostponeWritingToDisk() may give up postponing and allow the write if it
-  // has been a while since last time we wrote.
-  base::TimeTicks last_write_to_disk_;
-
   base::OneShotTimer write_to_disk_timer_;
   base::RepeatingClosure write_to_disk_cb_;
 
@@ -312,9 +306,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // background we can write the index much more frequently, to insure fresh
   // index on next startup.
   bool app_on_background_ = false;
-
-  static const base::Feature
-      kSimpleCacheDisableEvictionSizeHeuristicForCodeCache;
 };
 
 }  // namespace disk_cache

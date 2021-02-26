@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +19,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/cc_test_suite.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -1377,30 +1380,45 @@ void ReceiveCopyOutputResult(int* result_count,
   ++(*result_count);
 }
 
+void ReceiveCopyOutputResultAtomic(
+    std::atomic<int>* result_count,
+    std::unique_ptr<viz::CopyOutputResult> result) {
+  ++(*result_count);
+}
+
 TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   scoped_refptr<Layer> layer = Layer::Create();
-  int result_count = 0;
+  std::atomic<int> result_count{0};
 
   // Create identical requests without the source being set, and expect the
   // layer does not abort either one.
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(&ReceiveCopyOutputResult, &result_count));
+          base::BindOnce(&ReceiveCopyOutputResultAtomic,
+                         base::Unretained(&result_count)));
   layer->RequestCopyOfOutput(std::move(request));
-  EXPECT_EQ(0, result_count);
+  // Because RequestCopyOfOutput could run as a PostTask to return results
+  // RunUntilIdle() to ensure that the result is not returned yet.
+  CCTestSuite::RunUntilIdle();
+  EXPECT_EQ(0, result_count.load());
   request = std::make_unique<viz::CopyOutputRequest>(
       viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&ReceiveCopyOutputResult, &result_count));
+      base::BindOnce(&ReceiveCopyOutputResultAtomic,
+                     base::Unretained(&result_count)));
   layer->RequestCopyOfOutput(std::move(request));
-  EXPECT_EQ(0, result_count);
+  // Because RequestCopyOfOutput could run as a PostTask to return results
+  // RunUntilIdle() to ensure that the result is not returned yet.
+  CCTestSuite::RunUntilIdle();
+  EXPECT_EQ(0, result_count.load());
 
   // When the layer is destroyed, expect both requests to be aborted.
   layer = nullptr;
-  EXPECT_EQ(2, result_count);
+  // Wait for any posted tasks to run so the results will be returned.
+  CCTestSuite::RunUntilIdle();
+  EXPECT_EQ(2, result_count.load());
 
   layer = Layer::Create();
-  result_count = 0;
 
   // Create identical requests, but this time the source is being set.  Expect
   // the first request using |kArbitrarySourceId1| aborts immediately when
@@ -1412,6 +1430,9 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
                      &did_receive_first_result_from_this_source));
   request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(std::move(request));
+  // Because RequestCopyOfOutput could run as a PostTask to return results
+  // RunUntilIdle() to ensure that the result is not returned yet.
+  CCTestSuite::RunUntilIdle();
   EXPECT_EQ(0, did_receive_first_result_from_this_source);
   // Make a request from a different source.
   int did_receive_result_from_different_source = 0;
@@ -1421,6 +1442,9 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
                      &did_receive_result_from_different_source));
   request->set_source(kArbitrarySourceId2);
   layer->RequestCopyOfOutput(std::move(request));
+  // Because RequestCopyOfOutput could run as a PostTask to return results
+  // RunUntilIdle() to ensure that the result is not returned yet.
+  CCTestSuite::RunUntilIdle();
   EXPECT_EQ(0, did_receive_result_from_different_source);
   // Make a request without specifying the source.
   int did_receive_result_from_anonymous_source = 0;
@@ -1429,6 +1453,9 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
       base::BindOnce(&ReceiveCopyOutputResult,
                      &did_receive_result_from_anonymous_source));
   layer->RequestCopyOfOutput(std::move(request));
+  // Because RequestCopyOfOutput could run as a PostTask to return results
+  // RunUntilIdle() to ensure that the result is not returned yet.
+  CCTestSuite::RunUntilIdle();
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);
   // Make the second request from |kArbitrarySourceId1|.
   int did_receive_second_result_from_this_source = 0;
@@ -1439,6 +1466,8 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(
       std::move(request));  // First request to be aborted.
+  // Wait for any posted tasks to run so the results will be returned.
+  CCTestSuite::RunUntilIdle();
   EXPECT_EQ(1, did_receive_first_result_from_this_source);
   EXPECT_EQ(0, did_receive_result_from_different_source);
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);
@@ -1446,6 +1475,8 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
 
   // When the layer is destroyed, the other three requests should be aborted.
   layer = nullptr;
+  // Wait for any posted tasks to run so the results will be returned.
+  CCTestSuite::RunUntilIdle();
   EXPECT_EQ(1, did_receive_first_result_from_this_source);
   EXPECT_EQ(1, did_receive_result_from_different_source);
   EXPECT_EQ(1, did_receive_result_from_anonymous_source);
@@ -1507,7 +1538,7 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
 
   // Expect additional calls due to has-animation check and initialization
   // of keyframes.
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(7);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(3);
   scoped_refptr<AnimationTimeline> timeline =
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(timeline);
@@ -1524,6 +1555,19 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
   test_layer->SetLayerTreeHost(nullptr);
   // Layer should have been un-registered.
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+}
+
+// Triggering a commit to push animation counts and raf presence to the
+// compositor is expensive and updated counts can wait until the next
+// commit to be pushed. See https://crbug.com/1083244.
+TEST_F(LayerTest, PushAnimationCountsLazily) {
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
+  animation_host_->SetAnimationCounts(0, /* current_frame_had_raf = */ true,
+                                      /* next_frame_has_pending_raf = */ true);
+  EXPECT_FALSE(host_impl_.animation_host()->CurrentFrameHadRAF());
+  EXPECT_FALSE(animation_host_->needs_push_properties());
+  animation_host_->PushPropertiesTo(host_impl_.animation_host());
+  EXPECT_TRUE(host_impl_.animation_host()->CurrentFrameHadRAF());
 }
 
 TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
@@ -1767,15 +1811,15 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
       layer_5->effect_tree_index());
 
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
-            node_1->rounded_corner_bounds);
+            node_1->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
-            node_2->rounded_corner_bounds);
+            node_2->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
-            node_3->rounded_corner_bounds);
+            node_3->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
-            node_4->rounded_corner_bounds);
+            node_4->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kRoundedCorners),
-            node_5->rounded_corner_bounds);
+            node_5->mask_filter_info.rounded_corner_bounds());
 
   // Setting clip to layer bounds.
   layer_1->SetMasksToBounds(true);
@@ -1806,18 +1850,18 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::IntersectRects(gfx::Rect(kLayerSize),
                                                        kClipRect)),
                         kUpdatedRoundedCorners),
-            node_1->rounded_corner_bounds);
+            node_1->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::IntersectRects(gfx::Rect(kLayerSize),
                                                        kClipRect)),
                         kUpdatedRoundedCorners),
-            node_2->rounded_corner_bounds);
+            node_2->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kUpdatedRoundedCorners),
-            node_3->rounded_corner_bounds);
+            node_3->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kUpdatedClipRect), kRoundedCorners),
-            node_4->rounded_corner_bounds);
+            node_4->mask_filter_info.rounded_corner_bounds());
   EXPECT_EQ(
       gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kUpdatedRoundedCorners),
-      node_5->rounded_corner_bounds);
+      node_5->mask_filter_info.rounded_corner_bounds());
 }
 
 }  // namespace

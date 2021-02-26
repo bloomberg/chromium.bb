@@ -8,6 +8,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
 
 #include "tests/Test.h"
@@ -49,29 +50,27 @@ struct TestCase {
     SkAlphaType        fAlphaType;
     SkColorChannelFlag fChannels;
     bool               fGpuCanMakeSurfaces;
-    bool               fCpuCanMakeSurfaces;
 };
 
 static const TestCase gTests[] = {
-    { kAlpha_8_SkColorType,     kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, true,  true },
-    { kA16_unorm_SkColorType,   kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, false, false},
-    { kA16_float_SkColorType,   kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, false, false},
-    { kRGB_565_SkColorType,     kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true,  true },
-    { kARGB_4444_SkColorType,   kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGBA_8888_SkColorType,   kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGB_888x_SkColorType,    kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true,  true },
-    { kBGRA_8888_SkColorType,   kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGBA_1010102_SkColorType,kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGB_101010x_SkColorType, kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true,  true },
-    { kGray_8_SkColorType,      kOpaque_SkAlphaType, kGray_SkColorChannelFlag,  true,  true },
-    { kRGBA_F16Norm_SkColorType,kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGBA_F16_SkColorType,    kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kRGBA_F32_SkColorType,    kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true,  true },
-    { kR8G8_unorm_SkColorType,  kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   true,  false},
-    { kR16G16_unorm_SkColorType,kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   false, false},
-    { kR16G16_float_SkColorType,kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   false, false},
-    { kR16G16B16A16_unorm_SkColorType,
-                                kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, false, false},
+    { kAlpha_8_SkColorType,            kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, true },
+    { kA16_unorm_SkColorType,          kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, false},
+    { kA16_float_SkColorType,          kPremul_SkAlphaType, kAlpha_SkColorChannelFlag, false},
+    { kRGB_565_SkColorType,            kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true },
+    { kARGB_4444_SkColorType,          kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGBA_8888_SkColorType,          kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGB_888x_SkColorType,           kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true },
+    { kBGRA_8888_SkColorType,          kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGBA_1010102_SkColorType,       kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGB_101010x_SkColorType,        kOpaque_SkAlphaType, kRGB_SkColorChannelFlags,  true },
+    { kGray_8_SkColorType,             kOpaque_SkAlphaType, kGray_SkColorChannelFlag,  true },
+    { kRGBA_F16Norm_SkColorType,       kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGBA_F16_SkColorType,           kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kRGBA_F32_SkColorType,           kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, true },
+    { kR8G8_unorm_SkColorType,         kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   true },
+    { kR16G16_unorm_SkColorType,       kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   false},
+    { kR16G16_float_SkColorType,       kOpaque_SkAlphaType, kRG_SkColorChannelFlags,   false},
+    { kR16G16B16A16_unorm_SkColorType, kPremul_SkAlphaType, kRGBA_SkColorChannelFlags, false},
 };
 
 static void raster_tests(skiatest::Reporter* reporter, const TestCase& test) {
@@ -83,10 +82,10 @@ static void raster_tests(skiatest::Reporter* reporter, const TestCase& test) {
     uint32_t actualChannels = SkColorTypeChannelFlags(test.fColorType);
     REPORTER_ASSERT(reporter, test.fChannels == actualChannels);
 
-    // Not all colorTypes can be drawn to
+    // all colorTypes can be drawn to
     {
         auto s = SkSurface::MakeRaster(nativeII);
-        REPORTER_ASSERT(reporter, SkToBool(s) == test.fCpuCanMakeSurfaces);
+        REPORTER_ASSERT(reporter, SkToBool(s));
     }
 
     // opaque formats should make transparent black become opaque
@@ -121,7 +120,7 @@ static void raster_tests(skiatest::Reporter* reporter, const TestCase& test) {
         readbackPM.alloc(nativeII);
         readbackPM.erase(SkColors::kTransparent);
 
-        REPORTER_ASSERT(reporter, i->readPixels(readbackPM, 0, 0));
+        REPORTER_ASSERT(reporter, i->readPixels(nullptr, readbackPM, 0, 0));
 
         SkColor expected = srcPM.getColor(0, 0);
         SkColor actual = readbackPM.getColor(0, 0);
@@ -148,7 +147,7 @@ static void raster_tests(skiatest::Reporter* reporter, const TestCase& test) {
         readbackPM.alloc(f32Unpremul);
         readbackPM.erase(SkColors::kTransparent);
 
-        REPORTER_ASSERT(reporter, i->readPixels(readbackPM, 0, 0));
+        REPORTER_ASSERT(reporter, i->readPixels(nullptr, readbackPM, 0, 0));
 
         SkColor expected = srcPM.getColor(0, 0);
         SkColor actual = readbackPM.getColor(0, 0);
@@ -172,7 +171,9 @@ static void compare_pixmaps(skiatest::Reporter* reporter,
     ComparePixels(expected, actual, tols, error);
 }
 
-static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const TestCase& test) {
+static void gpu_tests(GrDirectContext* dContext,
+                      skiatest::Reporter* reporter,
+                      const TestCase& test) {
 
     const SkImageInfo nativeII = SkImageInfo::Make(kSize, kSize, test.fColorType, test.fAlphaType);
     const SkImageInfo f32Unpremul = SkImageInfo::Make(kSize, kSize, kRGBA_F32_SkColorType,
@@ -180,11 +181,11 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
 
     // We had better not be able to render to prohibited colorTypes
     if (!test.fGpuCanMakeSurfaces) {
-        auto s = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, nativeII);
+        auto s = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, nativeII);
         REPORTER_ASSERT(reporter, !SkToBool(s));
     }
 
-    if (!context->colorTypeSupportedAsImage(test.fColorType)) {
+    if (!dContext->colorTypeSupportedAsImage(test.fColorType)) {
         return;
     }
 
@@ -200,21 +201,22 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
             *(bool*)context = true;
         };
         if (fullInit) {
-            backendTex = context->createBackendTexture(&nativeExpected, 1,
-                                                       GrRenderable::kNo, GrProtected::kNo,
-                                                       markFinished, &finishedBECreate);
+            backendTex = dContext->createBackendTexture(&nativeExpected, 1,
+                                                        GrRenderable::kNo, GrProtected::kNo,
+                                                        markFinished, &finishedBECreate);
         } else {
-            backendTex = context->createBackendTexture(kSize, kSize, test.fColorType,
-                                                       SkColors::kWhite, GrMipMapped::kNo,
-                                                       GrRenderable::kNo, GrProtected::kNo,
-                                                       markFinished, &finishedBECreate);
+            backendTex = dContext->createBackendTexture(kSize, kSize, test.fColorType,
+                                                        SkColors::kWhite, GrMipmapped::kNo,
+                                                        GrRenderable::kNo, GrProtected::kNo,
+                                                        markFinished, &finishedBECreate);
         }
         REPORTER_ASSERT(reporter, backendTex.isValid());
+        dContext->submit();
         while (backendTex.isValid() && !finishedBECreate) {
-            context->checkAsyncWorkCompletion();
+            dContext->checkAsyncWorkCompletion();
         }
 
-        auto img = SkImage::MakeFromTexture(context, backendTex, kTopLeft_GrSurfaceOrigin,
+        auto img = SkImage::MakeFromTexture(dContext, backendTex, kTopLeft_GrSurfaceOrigin,
                                             test.fColorType, test.fAlphaType, nullptr);
         REPORTER_ASSERT(reporter, SkToBool(img));
 
@@ -223,15 +225,15 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
             nativeActual.alloc(nativeII);
             nativeActual.erase(SkColors::kTransparent);
 
-            if (img->readPixels(nativeActual, 0, 0)) {
+            if (img->readPixels(dContext, nativeActual, 0, 0)) {
                 compare_pixmaps(reporter, nativeExpected, nativeActual,
                                 test.fColorType, "SkImage::readPixels to native CT");
             }
 
             // SkSurface::readPixels with the same colorType as the source pixels round trips
             // (when allowed)
-            if (context->colorTypeSupportedAsSurface(test.fColorType)) {
-                auto s = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, nativeII);
+            if (dContext->colorTypeSupportedAsSurface(test.fColorType)) {
+                auto s = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, nativeII);
                 REPORTER_ASSERT(reporter, SkToBool(s));
 
                 {
@@ -257,7 +259,7 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
                 SkAutoPixmapStorage f32Actual;
                 f32Actual.alloc(f32Unpremul);
                 f32Actual.erase(SkColors::kTransparent);
-                if (img->readPixels(f32Actual, 0, 0)) {
+                if (img->readPixels(dContext, f32Actual, 0, 0)) {
                     compare_pixmaps(reporter, f32Expected, f32Actual,
                                     test.fColorType, "SkImage::readPixels to F32");
                 }
@@ -270,7 +272,7 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
                                                                      kRGBA_8888_SkColorType,
                                                                      kPremul_SkAlphaType);
 
-                auto s = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, rgba8888Premul);
+                auto s = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, rgba8888Premul);
                 REPORTER_ASSERT(reporter, SkToBool(s));
 
                 {
@@ -289,8 +291,8 @@ static void gpu_tests(GrContext* context, skiatest::Reporter* reporter, const Te
         }
 
         img.reset();
-        context->flush();
-        context->deleteBackendTexture(backendTex);
+        dContext->flushAndSubmit();
+        dContext->deleteBackendTexture(backendTex);
     }
 }
 
@@ -301,7 +303,7 @@ DEF_TEST(ExtendedSkColorTypeTests_raster, reporter) {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ExtendedSkColorTypeTests_gpu, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
+    auto context = ctxInfo.directContext();
 
     for (size_t i = 0; i < SK_ARRAY_COUNT(gTests); ++i) {
         gpu_tests(context, reporter, gTests[i]);

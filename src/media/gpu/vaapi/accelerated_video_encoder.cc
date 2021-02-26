@@ -28,16 +28,16 @@ VaapiEncodeJob* AcceleratedVideoEncoder::EncodeJob::AsVaapiEncodeJob() {
   return nullptr;
 }
 
-BitstreamBufferMetadata AcceleratedVideoEncoder::EncodeJob::Metadata(
-    size_t payload_size) const {
-  return BitstreamBufferMetadata(payload_size, IsKeyframeRequested(),
-                                 timestamp());
-}
-
 void AcceleratedVideoEncoder::EncodeJob::AddSetupCallback(
     base::OnceClosure cb) {
   DCHECK(!cb.is_null());
   setup_callbacks_.push(std::move(cb));
+}
+
+void AcceleratedVideoEncoder::EncodeJob::AddPostExecuteCallback(
+    base::OnceClosure cb) {
+  DCHECK(!cb.is_null());
+  post_execute_callbacks_.push(std::move(cb));
 }
 
 void AcceleratedVideoEncoder::EncodeJob::AddReferencePicture(
@@ -53,10 +53,28 @@ void AcceleratedVideoEncoder::EncodeJob::Execute() {
   }
 
   std::move(execute_callback_).Run();
+
+  while (!post_execute_callbacks_.empty()) {
+    std::move(post_execute_callbacks_.front()).Run();
+    post_execute_callbacks_.pop();
+  }
 }
 
 size_t AcceleratedVideoEncoder::GetBitstreamBufferSize() const {
   return GetEncodeBitstreamBufferSize(GetCodedSize());
 }
 
+void AcceleratedVideoEncoder::BitrateControlUpdate(
+    uint64_t encoded_chunk_size_bytes) {
+  NOTREACHED() << __func__ << "() is called to on an"
+               << "AcceleratedVideoEncoder that doesn't support BitrateControl"
+               << "::kConstantQuantizationParameter";
+}
+
+BitstreamBufferMetadata AcceleratedVideoEncoder::GetMetadata(
+    EncodeJob* encode_job,
+    size_t payload_size) {
+  return BitstreamBufferMetadata(
+      payload_size, encode_job->IsKeyframeRequested(), encode_job->timestamp());
+}
 }  // namespace media

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -16,10 +15,12 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
-#include "components/omnibox/common/omnibox_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -47,7 +48,11 @@ bool OmniboxPopupModel::Selection::operator<(const Selection& b) const {
 }
 
 bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
-  return state == KEYWORD && from.state != KEYWORD;
+  return state == KEYWORD_MODE && from.state != KEYWORD_MODE;
+}
+
+bool OmniboxPopupModel::Selection::IsButtonFocused() const {
+  return state != NORMAL && state != KEYWORD_MODE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,8 +66,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
     : view_(popup_view),
       edit_model_(edit_model),
       pref_service_(pref_service),
-      selection_(kNoMatch, NORMAL),
-      has_selected_match_(false) {
+      selection_(kNoMatch, NORMAL) {
   edit_model->set_popup_model(this);
 }
 
@@ -132,79 +136,74 @@ bool OmniboxPopupModel::IsOpen() const {
   return view_->IsOpen();
 }
 
-void OmniboxPopupModel::SetSelectedLine(size_t line,
-                                        bool reset_to_default,
-                                        bool force) {
-  const AutocompleteResult& result = this->result();
-  if (result.empty())
+void OmniboxPopupModel::SetSelection(Selection new_selection,
+                                     bool reset_to_default,
+                                     bool force_update_ui) {
+  if (result().empty())
     return;
 
   // Cancel the query so the matches don't change on the user.
   autocomplete_controller()->Stop(false);
 
-  if (line != kNoMatch)
-    line = std::min(line, result.size() - 1);
-  has_selected_match_ = !reset_to_default;
-
-  if (line == selected_line() && !force)
+  if (new_selection == selection_ && !force_update_ui)
     return;  // Nothing else to do.
 
-  // We need to update selection before calling InvalidateLine(), since it will
-  // use selection to determine how to draw.  We also need to update
-  // |selection_.line| before calling OnPopupDataChanged(), so that when the
-  // edit notifies its controller that something has changed, the controller
-  // can get the correct updated data.
+  // We need to update selection before notifying any views, as they will query
+  // selection_ to update themselves.
   const Selection old_selection = selection_;
-  selection_ = Selection(line, NORMAL);
+  selection_ = new_selection;
   view_->OnSelectionChanged(old_selection, selection_);
 
-  if (line == kNoMatch)
+  if (selection_.line == kNoMatch)
     return;
 
-  // Update the edit with the new data for this match.
-  // TODO(pkasting): If |selection_.line| moves to the controller, this can be
-  // eliminated and just become a call to the observer on the edit.
+  const AutocompleteMatch& match = result().match_at(selection_.line);
+  DCHECK((selection_.state != KEYWORD_MODE) || match.associated_keyword.get());
+  if (selection_.IsButtonFocused()) {
+    old_focused_url_ = match.destination_url;
+    edit_model_->SetAccessibilityLabel(match);
+    // TODO(tommycli): Fold the focus hint into view_->OnSelectionChanged().
+    // Caveat: We must update the accessibility label before notifying the View.
+    view_->ProvideButtonFocusHint(selected_line());
+  }
+
   base::string16 keyword;
   bool is_keyword_hint;
   TemplateURLService* service = edit_model_->client()->GetTemplateURLService();
-  const AutocompleteMatch& match = result.match_at(line);
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
-  if (reset_to_default) {
-    edit_model_->OnPopupDataChanged(match.inline_autocompletion,
-                                    /*is_temporary_text=*/false, keyword,
-                                    is_keyword_hint);
-  } else {
-    edit_model_->OnPopupDataChanged(match.fill_into_edit,
-                                    /*is_temporary_text=*/true, keyword,
-                                    is_keyword_hint);
+  if (selection_.state == FOCUSED_BUTTON_HEADER) {
+    // If the new selection is a Header, the temporary text is an empty string.
+    edit_model_->OnPopupDataChanged(base::string16(),
+                                    /*is_temporary_text=*/true,
+                                    base::string16(), base::string16(), {},
+                                    keyword, is_keyword_hint, base::string16());
+  } else if (old_selection.line != selection_.line ||
+             (old_selection.IsButtonFocused() &&
+              !new_selection.IsButtonFocused() &&
+              new_selection.state != KEYWORD_MODE)) {
+    // Otherwise, only update the edit model for line number changes, or
+    // when the old selection was a button and we're not entering keyword mode.
+    // Updating the edit model for every state change breaks keyword mode.
+    if (reset_to_default) {
+      edit_model_->OnPopupDataChanged(
+          base::string16(),
+          /*is_temporary_text=*/false, match.inline_autocompletion,
+          match.prefix_autocompletion, match.split_autocompletion, keyword,
+          is_keyword_hint, match.fill_into_edit_additional_text);
+    } else {
+      edit_model_->OnPopupDataChanged(
+          match.fill_into_edit,
+          /*is_temporary_text=*/true, base::string16(), base::string16(), {},
+          keyword, is_keyword_hint, match.fill_into_edit_additional_text);
+    }
   }
 }
 
 void OmniboxPopupModel::ResetToInitialState() {
   size_t new_line = result().default_match() ? 0 : kNoMatch;
-  SetSelectedLine(new_line, true, false);
+  SetSelection(Selection(new_line, NORMAL), /*reset_to_default=*/true);
   view_->OnDragCanceled();
-}
-
-void OmniboxPopupModel::SetSelectedLineState(LineState state) {
-  DCHECK(!result().empty());
-  DCHECK_NE(kNoMatch, selected_line());
-
-  const AutocompleteMatch& match = result().match_at(selected_line());
-  GURL current_destination(match.destination_url);
-  DCHECK((state != KEYWORD) || match.associated_keyword.get());
-
-  if (state == BUTTON_FOCUSED)
-    old_focused_url_ = current_destination;
-
-  selection_ = Selection(selected_line(), state);
-  view_->InvalidateLine(selected_line());
-
-  if (state == BUTTON_FOCUSED) {
-    edit_model_->SetAccessibilityLabel(match);
-    view_->ProvideButtonFocusHint(selected_line());
-  }
 }
 
 void OmniboxPopupModel::TryDeletingLine(size_t line) {
@@ -220,23 +219,24 @@ void OmniboxPopupModel::TryDeletingLine(size_t line) {
   const AutocompleteMatch& match = result().match_at(line);
   if (match.SupportsDeletion()) {
     // Try to preserve the selection even after match deletion.
-    const size_t old_selected_line = selected_line();
-    const bool was_temporary_text = has_selected_match_;
+    size_t old_selected_line = selected_line();
 
     // This will synchronously notify both the edit and us that the results
     // have changed, causing both to revert to the default match.
     autocomplete_controller()->DeleteMatch(match);
-    const AutocompleteResult& result = this->result();
-    if (!result.empty() &&
-        (was_temporary_text || old_selected_line != selected_line())) {
-      // Move the selection to the next choice after the deleted one.
-      // SetSelectedLine() will clamp to take care of the case where we deleted
-      // the last item.
-      // TODO(pkasting): Eventually the controller should take care of this
-      // before notifying us, reducing flicker.  At that point the check for
-      // deletability can move there too.
-      SetSelectedLine(old_selected_line, false, true);
-    }
+
+    // Clamp the old selection to the new size of result(), since there may be
+    // fewer results now.
+    if (old_selected_line != kNoMatch)
+      old_selected_line = std::min(line, result().size() - 1);
+
+    // Move the selection to the next choice after the deleted one.
+    // SetSelectedLine() will clamp to take care of the case where we deleted
+    // the last item.
+    // TODO(pkasting): Eventually the controller should take care of this
+    // before notifying us, reducing flicker.  At that point the check for
+    // deletability can move there too.
+    SetSelection(Selection(old_selected_line, NORMAL), false, true);
   }
 }
 
@@ -245,23 +245,28 @@ bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
   return bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 }
 
+bool OmniboxPopupModel::SelectionOnInitialLine() const {
+  size_t initial_line = result().default_match() ? 0 : kNoMatch;
+  return selected_line() == initial_line;
+}
+
 void OmniboxPopupModel::OnResultChanged() {
   rich_suggestion_bitmaps_.clear();
   const AutocompleteResult& result = this->result();
   size_t old_selected_line = selected_line();
-  has_selected_match_ = false;
 
   if (result.default_match()) {
     Selection selection(0, selected_line_state());
 
-    // If selected line state was |BUTTON_FOCUSED| and nothing has changed,
-    // leave it.
+    // If selected line state was |BUTTON_FOCUSED_TAB_SWITCH| and nothing has
+    // changed leave it.
     const bool has_focused_match =
-        selection.state == BUTTON_FOCUSED &&
+        selection.state == FOCUSED_BUTTON_TAB_SWITCH &&
         result.match_at(selection.line).has_tab_match;
     const bool has_changed =
         selection.line != old_selected_line ||
         result.match_at(selection.line).destination_url != old_focused_url_;
+
     if (!has_focused_match || has_changed) {
       selection.state = NORMAL;
     }
@@ -321,17 +326,15 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
       return edit_model_->client()->GetSizedIcon(favicon);
   }
 
-  const auto& vector_icon_type = match.GetVectorIcon(IsStarredMatch(match));
+  // The below lines are deliberately separate to try to debug
+  // https://crbug.com/1024114.
+  bool is_starred_match = IsStarredMatch(match);
+  const auto& vector_icon_type = match.GetVectorIcon(is_starred_match);
 
   return edit_model_->client()->GetSizedIcon(vector_icon_type,
                                              vector_icon_color);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
-
-bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
-  return selected_line() != kNoMatch &&
-         result().match_at(selected_line()).IsTabSwitchSuggestion();
-}
 
 std::vector<OmniboxPopupModel::Selection>
 OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
@@ -346,29 +349,21 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
   } else {
     // Arrow keys should never reach the header controls.
     if (step == kStateOrLine)
-      all_states.push_back(HEADER_BUTTON_FOCUSED);
+      all_states.push_back(FOCUSED_BUTTON_HEADER);
 
     all_states.push_back(NORMAL);
 
-    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-      // The button row experiment makes things simple. We no longer access
-      // keyword mode by arrow or tab button in this case.
-      all_states.push_back(FOCUSED_BUTTON_KEYWORD);
-      all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
-      all_states.push_back(FOCUSED_BUTTON_PEDAL);
-    } else {
-      // Keyword mode is only accessible by Tabbing forward. If experimental
-      // keyword mode is enabled, Right arrow also works.
-      if (direction == kForward) {
-        if (step == kStateOrLine ||
-            (step == kStateOrNothing &&
-             OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())) {
-          all_states.push_back(KEYWORD);
-        }
-      }
-
-      all_states.push_back(BUTTON_FOCUSED);
+    // Keyword mode is accessible if the keyword search button is enabled. If
+    // not, then keyword mode is only accessible by tabbing forward.
+    if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled() ||
+        (direction == kForward && step == kStateOrLine)) {
+      all_states.push_back(KEYWORD_MODE);
     }
+
+    all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
+    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+      all_states.push_back(FOCUSED_BUTTON_PEDAL);
+    all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
   }
   DCHECK(std::is_sorted(all_states.begin(), all_states.end()))
       << "This algorithm depends on a sorted list of line states.";
@@ -379,19 +374,13 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
     auto add_available_line_states_for_line = [&](size_t line) {
       for (LineState state : all_states) {
         Selection selection(line, state);
-        if (IsSelectionAvailable(selection))
+        if (IsControlPresentOnMatch(selection))
           available_selections.push_back(selection);
       }
     };
 
-    if (step == kStateOrNothing) {
-      // Confine kStateOrNothing (right / left arrow) to the current line.
-      add_available_line_states_for_line(selection_.line);
-    } else {
-      // Allow other steps to go to any line.
-      for (size_t line = 0; line < result().size(); ++line) {
-        add_available_line_states_for_line(line);
-      }
+    for (size_t line = 0; line < result().size(); ++line) {
+      add_available_line_states_for_line(line);
     }
   }
   DCHECK(
@@ -428,8 +417,6 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
                                  : all_available_selections.front();
   }
 
-  // We don't allow wrapping for kStateOrNothing, it's just a UI choice.
-  bool wrap_allowed = step != kStateOrNothing;
   if (direction == kForward) {
     // To go forward, we want to change to the first selection that's larger
     // than the current |selection_|, and std::upper_bound() does just that.
@@ -437,10 +424,10 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
         std::upper_bound(all_available_selections.begin(),
                          all_available_selections.end(), selection_);
 
-    // If we can't find any selections larger than the current |selection_|,
-    // wrap if allowed, otherwise return the current selection.
+    // If we can't find any selections larger than the current |selection_|
+    // wrap.
     if (next == all_available_selections.end())
-      return wrap_allowed ? all_available_selections.front() : selection_;
+      return all_available_selections.front();
 
     // Normal case where we found the next selection.
     return *next;
@@ -453,9 +440,9 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
         std::lower_bound(all_available_selections.begin(),
                          all_available_selections.end(), selection_);
 
-    // If the current selection is the first one, wrap if allowed.
+    // If the current selection is the first one, wrap.
     if (current == all_available_selections.begin())
-      return wrap_allowed ? all_available_selections.back() : selection_;
+      return all_available_selections.back();
 
     // Decrement one from the current selection.
     return *(current - 1);
@@ -469,45 +456,38 @@ OmniboxPopupModel::Selection OmniboxPopupModel::StepSelection(
     Direction direction,
     Step step) {
   // This block steps the popup model, with special consideration
-  // for existing keyword logic in the edit model, where AcceptKeyword and
-  // ClearKeyword must be called before changing the selected line.
+  // for existing keyword logic in the edit model, where ClearKeyword must be
+  // called before changing the selected line.
+  // AcceptKeyword should be called after changing the selected line so we don't
+  // accept keyword on the wrong suggestion when stepping backwards.
   const auto old_selection = selection();
   const auto new_selection = GetNextSelection(direction, step);
-  if (new_selection.IsChangeToKeyword(old_selection)) {
-    edit_model()->AcceptKeyword(metrics::OmniboxEventProto::TAB);
-  } else if (old_selection.IsChangeToKeyword(new_selection)) {
+  if (old_selection.IsChangeToKeyword(new_selection)) {
     edit_model()->ClearKeyword();
   }
   SetSelection(new_selection);
-  return selection_;
-}
-
-OmniboxPopupModel::Selection OmniboxPopupModel::ClearSelectionState() {
-  // This is subtle. DCHECK in SetSelectedLineState will fail if there are no
-  // results, which can happen when the popup gets closed. In that case, though,
-  // the state is left as NORMAL.
-  if (selection_.state != NORMAL) {
-    SetSelectedLineState(NORMAL);
+  if (new_selection.IsChangeToKeyword(old_selection)) {
+    edit_model()->AcceptKeyword(metrics::OmniboxEventProto::TAB);
   }
   return selection_;
 }
 
-bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
+bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   if (selection.line >= result().size()) {
     return false;
   }
   const auto& match = result().match_at(selection.line);
   // Skip rows that are hidden because their header is collapsed, unless the
   // user is trying to focus the header itself (which is still shown).
-  if (selection.state != HEADER_BUTTON_FOCUSED &&
+  if (selection.state != FOCUSED_BUTTON_HEADER &&
       match.suggestion_group_id.has_value() && pref_service_ &&
-      omnibox::IsSuggestionGroupIdHidden(pref_service_,
+      result().IsSuggestionGroupIdHidden(pref_service_,
                                          match.suggestion_group_id.value())) {
     return false;
   }
 
   switch (selection.state) {
-    case HEADER_BUTTON_FOCUSED: {
+    case FOCUSED_BUTTON_HEADER: {
       // For the first match, if it a suggestion_group_id, then it has a header.
       if (selection.line == 0)
         return match.suggestion_group_id.has_value();
@@ -520,32 +500,28 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
     }
     case NORMAL:
       return true;
-    case KEYWORD:
-      return match.associated_keyword != nullptr;
-    case BUTTON_FOCUSED:
-      // TODO(orinj): Here is an opportunity to clean up the presentational
-      //  logic that pkasting wanted to take out of AutocompleteMatch. The view
-      //  should be driven by the model, so this is really the place to decide.
-      //  In other words, this duplicates logic within OmniboxResultView.
-      //  This is the proper place. OmniboxResultView should refer to here.
-
-      // Buttons are suppressed for matches with an associated keyword.
-      if (match.associated_keyword != nullptr)
-        return false;
-      if (match.ShouldShowTabMatchButton())
-        return true;
-      if (base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions) &&
-          match.SupportsDeletion()) {
-        return true;
-      }
-      return false;
-    case FOCUSED_BUTTON_KEYWORD:
+    case KEYWORD_MODE:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:
-      return match.has_tab_match;
+      // Buttons are suppressed for matches with an associated keyword, unless
+      // dedicated button row is enabled.
+      if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
+        return match.has_tab_match;
+      else
+        return match.has_tab_match && !match.associated_keyword;
     case FOCUSED_BUTTON_PEDAL:
       return match.pedal != nullptr;
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      // Remove suggestion buttons are suppressed for matches with an associated
+      // keyword or tab match, unless the features that move those to the
+      // button row are enabled.
+      if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
+        return match.SupportsDeletion();
+      else if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+        return !match.associated_keyword && match.SupportsDeletion();
+      else
+        return !match.associated_keyword && !match.has_tab_match &&
+               match.SupportsDeletion();
     default:
       break;
   }
@@ -553,13 +529,126 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
   return false;
 }
 
-void OmniboxPopupModel::SetSelection(Selection selection) {
-  if (selection.line != selection_.line) {
-    SetSelectedLine(selection.line, false, false);
+bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
+                                               base::TimeTicks timestamp) {
+  // Early exit for the kNoMatch case. Also exits if the calling UI passes in
+  // an invalid |selection|.
+  if (selection.line >= result().size())
+    return false;
+
+  auto& match = result().match_at(selection.line);
+  switch (selection.state) {
+    case FOCUSED_BUTTON_HEADER: {
+      DCHECK(match.suggestion_group_id.has_value());
+
+      omnibox::SuggestionGroupVisibility new_value =
+          result().IsSuggestionGroupIdHidden(pref_service_,
+                                             match.suggestion_group_id.value())
+              ? omnibox::SuggestionGroupVisibility::SHOWN
+              : omnibox::SuggestionGroupVisibility::HIDDEN;
+      omnibox::SetSuggestionGroupVisibility(
+          pref_service_, match.suggestion_group_id.value(), new_value);
+      break;
+    }
+    case FOCUSED_BUTTON_TAB_SWITCH:
+      DCHECK(timestamp != base::TimeTicks());
+      edit_model()->OpenMatch(match, WindowOpenDisposition::SWITCH_TO_TAB,
+                              GURL(), base::string16(), selected_line(),
+                              timestamp);
+      break;
+
+    case FOCUSED_BUTTON_PEDAL:
+      DCHECK(timestamp != base::TimeTicks());
+      DCHECK(match.pedal);
+      edit_model()->ExecutePedal(match, timestamp);
+      break;
+
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      TryDeletingLine(selection.line);
+      break;
+
+    default:
+      // Behavior is not yet supported, return false.
+      return false;
   }
-  if (selection.state != selection_.state) {
-    SetSelectedLineState(selection.state);
+
+  return true;
+}
+
+base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
+    const base::string16& match_text,
+    bool include_positional_info,
+    int* label_prefix_length) {
+  size_t line = selection_.line;
+  DCHECK_NE(line, kNoMatch)
+      << "GetAccessibilityLabelForCurrentSelection should never be called if "
+         "the current selection is kNoMatch.";
+
+  const AutocompleteMatch& match = result().match_at(line);
+
+  int additional_message_id = 0;
+  switch (selection_.state) {
+    case FOCUSED_BUTTON_HEADER: {
+      bool group_hidden = result().IsSuggestionGroupIdHidden(
+          pref_service_, match.suggestion_group_id.value());
+      int message_id = group_hidden ? IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON
+                                    : IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON;
+      return l10n_util::GetStringFUTF16(
+          message_id,
+          result().GetHeaderForGroupId(match.suggestion_group_id.value()));
+    }
+    case NORMAL: {
+      int available_actions_count = 0;
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_TAB_SWITCH))) {
+        additional_message_id = IDS_ACC_TAB_SWITCH_SUFFIX;
+        available_actions_count++;
+      }
+      if (IsControlPresentOnMatch(Selection(line, KEYWORD_MODE))) {
+        additional_message_id = IDS_ACC_KEYWORD_SUFFIX;
+        available_actions_count++;
+      }
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_PEDAL))) {
+        additional_message_id =
+            match.pedal->GetLabelStrings().id_accessibility_suffix;
+        available_actions_count++;
+      }
+      if (IsControlPresentOnMatch(
+              Selection(line, FOCUSED_BUTTON_REMOVE_SUGGESTION))) {
+        additional_message_id = IDS_ACC_REMOVE_SUGGESTION_SUFFIX;
+        available_actions_count++;
+      }
+      DCHECK_EQ(LINE_STATE_MAX_VALUE, 6);
+      if (available_actions_count > 1)
+        additional_message_id = IDS_ACC_MULTIPLE_ACTIONS_SUFFIX;
+
+      break;
+    }
+    case KEYWORD_MODE:
+      additional_message_id = IDS_ACC_KEYWORD_MODE;
+      break;
+    case FOCUSED_BUTTON_TAB_SWITCH:
+      additional_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
+      break;
+    case FOCUSED_BUTTON_PEDAL:
+      // When pedal button is focused, the autocomplete suggestion isn't
+      // read because it's not relevant to the button's action.
+      return match.pedal->GetLabelStrings().accessibility_hint;
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
+      break;
+    default:
+      break;
   }
+
+  if (selection_.IsButtonFocused())
+    include_positional_info = false;
+
+  size_t total_matches = include_positional_info ? result().size() : 0;
+
+  // If there's a button focused, we don't want the "n of m" message announced.
+  return AutocompleteMatchType::ToAccessibilityLabel(
+      match, match_text, line, total_matches, additional_message_id,
+      label_prefix_length);
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,

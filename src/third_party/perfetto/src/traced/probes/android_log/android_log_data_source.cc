@@ -41,7 +41,7 @@ namespace {
 using protos::pbzero::AndroidLogConfig;
 using protos::pbzero::AndroidLogId;
 
-constexpr size_t kBufSize = base::kPageSize;
+constexpr size_t kBufSize = 4096;
 const char kLogTagsPath[] = "/system/etc/event-log-tags";
 const char kLogdrSocket[] = "/dev/socket/logdr";
 
@@ -208,7 +208,7 @@ void AndroidLogDataSource::OnSocketDataAvailable() {
   // modulo is to increase the chance that the wakeup is packed together with
   // some other wakeup task of traced_probes.
   const uint32_t kBatchMs = 100;
-  uint32_t delay_ms = kBatchMs - (now_ms % kBatchMs);
+  uint32_t delay_ms = kBatchMs - static_cast<uint32_t>(now_ms % kBatchMs);
   auto weak_this = weak_factory_.GetWeakPtr();
   task_runner_->PostDelayedTask(
       [weak_this] {

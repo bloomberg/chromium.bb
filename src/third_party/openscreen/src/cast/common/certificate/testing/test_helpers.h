@@ -18,10 +18,6 @@ namespace openscreen {
 namespace cast {
 namespace testing {
 
-std::vector<std::string> ReadCertificatesFromPemFile(
-    absl::string_view filename);
-bssl::UniquePtr<EVP_PKEY> ReadKeyFromPemFile(absl::string_view filename);
-
 class SignatureTestData {
  public:
   SignatureTestData();
@@ -33,9 +29,6 @@ class SignatureTestData {
 };
 
 SignatureTestData ReadSignatureTestData(absl::string_view filename);
-
-std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
-    absl::string_view filename);
 
 }  // namespace testing
 }  // namespace cast

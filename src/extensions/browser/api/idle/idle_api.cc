@@ -42,7 +42,8 @@ ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
       IdleManagerFactory::GetForBrowserContext(browser_context())
           ->QueryState(threshold);
 
-  return RespondNow(OneArgument(IdleManager::CreateIdleValue(state)));
+  return RespondNow(OneArgument(
+      base::Value::FromUniquePtrValue(IdleManager::CreateIdleValue(state))));
 }
 
 void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
@@ -67,6 +68,6 @@ ExtensionFunction::ResponseAction IdleGetAutoLockDelayFunction::Run() {
   const int delay = IdleManagerFactory::GetForBrowserContext(browser_context())
                         ->GetAutoLockDelay()
                         .InSeconds();
-  return RespondNow(OneArgument(std::make_unique<base::Value>(delay)));
+  return RespondNow(OneArgument(base::Value(delay)));
 }
 }  // namespace extensions

@@ -11,13 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -90,10 +90,16 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     signin_ui_web_contents_ = content::WebContentsTester::CreateTestWebContents(
         GetSigninProfile(), content::SiteInstance::Create(GetSigninProfile()));
 
+    auto system_network_context_params =
+        network::mojom::NetworkContextParams::New();
+    system_network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
+
     system_network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
         system_network_context_remote_.BindNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
+        std::move(system_network_context_params));
 
     GURL url(kEmbedderUrl);
     content::WebContentsTester::For(signin_ui_web_contents())
@@ -126,7 +132,7 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   Profile* GetSigninProfile() {
-    return signin_browser_context_->GetOffTheRecordProfile();
+    return signin_browser_context_->GetPrimaryOTRProfile();
   }
 
   SigninPartitionManager* GetSigninPartitionManager() {
@@ -187,10 +193,17 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     // Bind the NetworkContext for the new StoragePartition.
     mojo::PendingRemote<network::mojom::NetworkContext>
         signin_network_context_remote;
+
+    auto signin_network_context_params =
+        network::mojom::NetworkContextParams::New();
+    signin_network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
+
     signin_network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
         signin_network_context_remote.InitWithNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
+        std::move(signin_network_context_params));
     storage_partition->SetNetworkContextForTesting(
         std::move(signin_network_context_remote));
   }
@@ -256,8 +269,8 @@ TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
 
 TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
   base::RunLoop loop_prepare;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(AddEntryToHttpAuthCache,
                      base::Unretained(GetSystemNetworkContextImpl())),
       loop_prepare.QuitClosure());
@@ -267,8 +280,8 @@ TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
 
   bool entry_found = false;
   base::RunLoop loop_check;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(IsEntryInHttpAuthCache,
                      base::Unretained(GetSigninNetworkContextImpl()),
                      &entry_found),

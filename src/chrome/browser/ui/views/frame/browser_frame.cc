@@ -111,11 +111,11 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
+    const gfx::Size& tabstrip_minimum_size) const {
   // This can be invoked before |browser_frame_view_| has been set.
-  return browser_frame_view_
-             ? browser_frame_view_->GetBoundsForTabStripRegion(tabstrip)
-             : gfx::Rect();
+  return browser_frame_view_ ? browser_frame_view_->GetBoundsForTabStripRegion(
+                                   tabstrip_minimum_size)
+                             : gfx::Rect();
 }
 
 int BrowserFrame::GetTopInset() const {
@@ -165,22 +165,6 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
   browser_frame_view_->OnBrowserViewInitViewsComplete();
 }
 
-bool BrowserFrame::ShouldUseTheme() const {
-  // Browser windows are always themed (including popups).
-  if (!web_app::AppBrowserController::IsForWebAppBrowser(
-          browser_view_->browser())) {
-    return true;
-  }
-
-  // The system GTK theme should always be respected if the user has opted to
-  // use it.
-  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
-    return true;
-
-  // Hosted apps on non-GTK use default colors.
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 
@@ -189,10 +173,12 @@ views::internal::RootView* BrowserFrame::CreateRootView() {
   return root_view_;
 }
 
-views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
-  browser_frame_view_ =
+std::unique_ptr<views::NonClientFrameView>
+BrowserFrame::CreateNonClientFrameView() {
+  auto browser_frame_view =
       chrome::CreateBrowserNonClientFrameView(this, browser_view_);
-  return browser_frame_view_;
+  browser_frame_view_ = browser_frame_view.get();
+  return browser_frame_view;
 }
 
 bool BrowserFrame::GetAccelerator(int command_id,
@@ -286,10 +272,8 @@ void BrowserFrame::SetTabDragKind(TabDragKind tab_drag_kind) {
   if (tab_drag_kind_ == tab_drag_kind)
     return;
 
-  bool was_dragging_window = tab_drag_kind_ == TabDragKind::kAllTabs;
-  bool is_dragging_window = tab_drag_kind == TabDragKind::kAllTabs;
-  if (was_dragging_window != is_dragging_window && native_browser_frame_)
-    native_browser_frame_->TabDraggingStatusChanged(is_dragging_window);
+  if (native_browser_frame_)
+    native_browser_frame_->TabDraggingKindChanged(tab_drag_kind);
 
   bool was_dragging_any = tab_drag_kind_ != TabDragKind::kNone;
   bool is_dragging_any = tab_drag_kind != TabDragKind::kNone;

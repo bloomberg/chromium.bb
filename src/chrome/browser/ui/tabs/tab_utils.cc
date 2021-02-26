@@ -37,8 +37,10 @@ std::vector<TabAlertState> GetTabAlertStatesForContents(
     // alert on a tab.
     // TODO(crbug.com/861961): To show the icon of the highest-priority alert
     // with tooltip that notes all the states in play.
-    if (indicator->IsCapturingDesktop(contents))
+    if (indicator->IsCapturingWindow(contents) ||
+        indicator->IsCapturingDisplay(contents)) {
       states.push_back(TabAlertState::DESKTOP_CAPTURING);
+    }
     if (indicator->IsBeingMirrored(contents))
       states.push_back(TabAlertState::TAB_CAPTURING);
     if (indicator->IsCapturingUserMedia(contents))
@@ -47,6 +49,9 @@ std::vector<TabAlertState> GetTabAlertStatesForContents(
 
   if (contents->IsConnectedToBluetoothDevice())
     states.push_back(TabAlertState::BLUETOOTH_CONNECTED);
+
+  if (contents->IsScanningForBluetoothDevices())
+    states.push_back(TabAlertState::BLUETOOTH_SCAN_ACTIVE);
 
   UsbTabHelper* usb_tab_helper = UsbTabHelper::FromWebContents(contents);
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
@@ -101,6 +106,9 @@ base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
     case TabAlertState::BLUETOOTH_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED);
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_SCAN_ACTIVE);
     case TabAlertState::USB_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED);
@@ -174,8 +182,8 @@ bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  return settings->GetContentSetting(url, url, ContentSettingsType::SOUND,
-                                     std::string()) == CONTENT_SETTING_BLOCK;
+  return settings->GetContentSetting(url, url, ContentSettingsType::SOUND) ==
+         CONTENT_SETTING_BLOCK;
 }
 
 bool AreAllSitesMuted(const TabStripModel& tab_strip,

@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_resource.h"
@@ -70,7 +71,7 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   icon_callback_ = std::move(icon_callback);
 
   ResourceRequest resource_request(best_icon_url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetRequestContext(mojom::blink::RequestContextType::IMAGE);
   resource_request.SetRequestDestination(
       network::mojom::RequestDestination::kImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
@@ -102,14 +103,14 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
       candidate_icon.sizes.emplace_back(gfx::Size(0, 0));
     if (candidate_icon.purpose.empty()) {
       candidate_icon.purpose.emplace_back(
-          Manifest::ImageResource::Purpose::ANY);
+          mojom::ManifestImageResource_Purpose::ANY);
     }
     icons.emplace_back(candidate_icon);
   }
 
   return KURL(ManifestIconSelector::FindBestMatchingSquareIcon(
       icons.ReleaseVector(), ideal_size_pixels, kMinimumIconSizeInPx,
-      Manifest::ImageResource::Purpose::ANY));
+      mojom::ManifestImageResource_Purpose::ANY));
 }
 
 void BackgroundFetchIconLoader::Stop() {
@@ -126,7 +127,7 @@ void BackgroundFetchIconLoader::DidGetIcon(SkBitmap icon, double resize_scale) {
   std::move(icon_callback_).Run(icon, ideal_to_chosen_icon_size_times_hundred);
 }
 
-void BackgroundFetchIconLoader::Trace(Visitor* visitor) {
+void BackgroundFetchIconLoader::Trace(Visitor* visitor) const {
   visitor->Trace(icons_);
   visitor->Trace(threaded_icon_loader_);
 }

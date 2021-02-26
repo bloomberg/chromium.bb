@@ -78,27 +78,6 @@ typedef struct aom_fixed_buf {
   size_t sz;       /**< Length of the buffer, in chars */
 } aom_fixed_buf_t; /**< alias for struct aom_fixed_buf */
 
-/*!\brief Compressed Frame Flags
- *
- * This type represents a bitfield containing information about a compressed
- * frame that may be useful to an application. The most significant 16 bits
- * can be used by an algorithm to provide additional detail, for example to
- * support frame types that are codec specific (MPEG-1 D-frames for example)
- */
-typedef uint32_t aom_codec_frame_flags_t;
-#define AOM_FRAME_IS_KEY 0x1 /**< frame is the start of a GOP */
-/*!\brief frame can be dropped without affecting the stream (no future frame
- * depends on this one) */
-#define AOM_FRAME_IS_DROPPABLE 0x2
-/*!\brief this is an INTRA_ONLY frame */
-#define AOM_FRAME_IS_INTRAONLY 0x10
-/*!\brief this is an S-frame */
-#define AOM_FRAME_IS_SWITCH 0x20
-/*!\brief this is an error-resilient frame */
-#define AOM_FRAME_IS_ERROR_RESILIENT 0x40
-/*!\brief this is a key-frame dependent recovery-point frame */
-#define AOM_FRAME_IS_DELAYED_RANDOM_ACCESS_POINT 0x80
-
 /*!\brief Error Resilient flags
  *
  * These flags define which error resilient features to enable in the
@@ -152,8 +131,17 @@ typedef struct aom_codec_cx_pkt {
       unsigned int samples[4]; /**< Number of samples, total/y/u/v */
       uint64_t sse[4];         /**< sum squared error, total/y/u/v */
       double psnr[4];          /**< PSNR, total/y/u/v */
-    } psnr;                    /**< data for PSNR packet */
-    aom_fixed_buf_t raw;       /**< data for arbitrary packets */
+      /*!\brief Number of samples, total/y/u/v when
+       * input bit-depth < stream bit-depth.*/
+      unsigned int samples_hbd[4];
+      /*!\brief sum squared error, total/y/u/v when
+       * input bit-depth < stream bit-depth.*/
+      uint64_t sse_hbd[4];
+      /*!\brief PSNR, total/y/u/v when
+       * input bit-depth < stream bit-depth.*/
+      double psnr_hbd[4];
+    } psnr;              /**< data for PSNR packet */
+    aom_fixed_buf_t raw; /**< data for arbitrary packets */
 
     /* This packet size is fixed to allow codecs to extend this
      * interface without having to manage storage for raw packets,
@@ -374,7 +362,8 @@ typedef struct cfg_options {
  * /algo/_eflag_*. The lower order 16 bits are reserved for common use.
  */
 typedef long aom_enc_frame_flags_t;
-#define AOM_EFLAG_FORCE_KF (1 << 0) /**< Force this frame to be a keyframe */
+/*!\brief Force this frame to be a keyframe */
+#define AOM_EFLAG_FORCE_KF (1 << 0)
 
 /*!\brief Encoder configuration structure
  *
@@ -665,23 +654,17 @@ typedef struct aom_codec_enc_cfg {
 
   /*!\brief Rate control adaptation undershoot control
    *
-   * This value, expressed as a percentage of the target bitrate,
-   * controls the maximum allowed adaptation speed of the codec.
-   * This factor controls the maximum amount of bits that can
-   * be subtracted from the target bitrate in order to compensate
-   * for prior overshoot.
+   * This value, controls the tolerance of the VBR algorithm to undershoot
+   * and is used as a trigger threshold for more agressive adaptation of Q.
    *
-   * Valid values in the range 0-1000.
+   * Valid values in the range 0-100.
    */
   unsigned int rc_undershoot_pct;
 
   /*!\brief Rate control adaptation overshoot control
    *
-   * This value, expressed as a percentage of the target bitrate,
-   * controls the maximum allowed adaptation speed of the codec.
-   * This factor controls the maximum amount of bits that can
-   * be added to the target bitrate in order to compensate for
-   * prior undershoot.
+   * This value, controls the tolerance of the VBR algorithm to overshoot
+   * and is used as a trigger threshold for more agressive adaptation of Q.
    *
    * Valid values in the range 0-1000.
    */
@@ -1033,15 +1016,18 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * time stamp (PTS) \ref MUST be strictly increasing.
  *
  * When the last frame has been passed to the encoder, this function should
- * continue to be called, with the img parameter set to NULL. This will
- * signal the end-of-stream condition to the encoder and allow it to encode
- * any held buffers. Encoding is complete when aom_codec_encode() is called
- * and aom_codec_get_cx_data() returns no data.
+ * continue to be called in a loop, with the img parameter set to NULL. This
+ * will signal the end-of-stream condition to the encoder and allow it to
+ * encode any held buffers. Encoding is complete when aom_codec_encode() is
+ * called with img set to NULL and aom_codec_get_cx_data() returns no data.
  *
  * \param[in]    ctx       Pointer to this instance's context
  * \param[in]    img       Image data to encode, NULL to flush.
- * \param[in]    pts       Presentation time stamp, in timebase units.
- * \param[in]    duration  Duration to show frame, in timebase units.
+ * \param[in]    pts       Presentation time stamp, in timebase units. If img
+ *                         is NULL, pts is ignored.
+ * \param[in]    duration  Duration to show frame, in timebase units. If img
+ *                         is not NULL, duration must be nonzero. If img is
+ *                         NULL, duration is ignored.
  * \param[in]    flags     Flags to use for encoding this frame.
  *
  * \retval #AOM_CODEC_OK

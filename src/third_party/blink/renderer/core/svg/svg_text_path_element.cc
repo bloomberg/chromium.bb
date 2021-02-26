@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text_path.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -71,7 +72,7 @@ SVGTextPathElement::SVGTextPathElement(Document& document)
 
 SVGTextPathElement::~SVGTextPathElement() = default;
 
-void SVGTextPathElement::Trace(Visitor* visitor) {
+void SVGTextPathElement::Trace(Visitor* visitor) const {
   visitor->Trace(start_offset_);
   visitor->Trace(method_);
   visitor->Trace(spacing_);

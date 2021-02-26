@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_break.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -43,6 +43,8 @@ CXFA_Break::CXFA_Break(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Break,
                 kBreakPropertyData,
                 kBreakAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Break::~CXFA_Break() = default;

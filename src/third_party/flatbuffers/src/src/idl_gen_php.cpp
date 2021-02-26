@@ -31,7 +31,7 @@ class PhpGenerator : public BaseGenerator {
  public:
   PhpGenerator(const Parser &parser, const std::string &path,
                const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "\\", "\\") {}
+      : BaseGenerator(parser, path, file_name, "\\", "\\", "php") {}
   bool generate() {
     if (!GenerateEnums()) return false;
     if (!GenerateStructs()) return false;
@@ -860,15 +860,15 @@ class PhpGenerator : public BaseGenerator {
   }
 
   static std::string GenTypeBasic(const Type &type) {
-    static const char *ctypename[] = {
     // clang-format off
-        #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-            CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
-            #NTYPE,
-                FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
-        #undef FLATBUFFERS_TD
-      // clang-format on
+    static const char *ctypename[] = {
+      #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
+              CTYPE, JTYPE, GTYPE, NTYPE, ...) \
+        #NTYPE,
+        FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
+      #undef FLATBUFFERS_TD
     };
+    // clang-format on
     return ctypename[type.base_type];
   }
 

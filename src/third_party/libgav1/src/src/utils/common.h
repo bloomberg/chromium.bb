@@ -36,6 +36,7 @@
 
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/constants.h"
+#include "src/utils/memory.h"
 #include "src/utils/types.h"
 
 namespace libgav1 {
@@ -56,6 +57,17 @@ inline uint8_t* AlignAddr(uint8_t* const addr, const uintptr_t alignment) {
 
 inline int32_t Clip3(int32_t value, int32_t low, int32_t high) {
   return value < low ? low : (value > high ? high : value);
+}
+
+template <typename Pixel>
+void ExtendLine(void* const line_start, const int width, const int left,
+                const int right) {
+  auto* const start = static_cast<Pixel*>(line_start);
+  const Pixel* src = start;
+  Pixel* dst = start - left;
+  // Copy to left and right borders.
+  Memset(dst, src[0], left);
+  Memset(dst + left + width, src[width - 1], right);
 }
 
 // The following 2 templates set a block of data with uncontiguous memory to
@@ -110,7 +122,7 @@ inline int CountLeadingZeros(uint32_t n) {
   const unsigned char bit_set = _BitScanReverse(&first_set_bit, n);
   assert(bit_set != 0);
   static_cast<void>(bit_set);
-  return 31 - static_cast<int>(first_set_bit);
+  return 31 ^ static_cast<int>(first_set_bit);
 }
 
 inline int CountLeadingZeros(uint64_t n) {
@@ -119,20 +131,20 @@ inline int CountLeadingZeros(uint64_t n) {
 #if defined(HAVE_BITSCANREVERSE64)
   const unsigned char bit_set =
       _BitScanReverse64(&first_set_bit, static_cast<unsigned __int64>(n));
-#else   // !defined(HAVE_BITSCANREVERSE64)
+#else  // !defined(HAVE_BITSCANREVERSE64)
   const auto n_hi = static_cast<unsigned long>(n >> 32);  // NOLINT(runtime/int)
   if (n_hi != 0) {
     const unsigned char bit_set = _BitScanReverse(&first_set_bit, n_hi);
     assert(bit_set != 0);
     static_cast<void>(bit_set);
-    return 31 - static_cast<int>(first_set_bit);
+    return 31 ^ static_cast<int>(first_set_bit);
   }
   const unsigned char bit_set = _BitScanReverse(
       &first_set_bit, static_cast<unsigned long>(n));  // NOLINT(runtime/int)
 #endif  // defined(HAVE_BITSCANREVERSE64)
   assert(bit_set != 0);
   static_cast<void>(bit_set);
-  return 63 - static_cast<int>(first_set_bit);
+  return 63 ^ static_cast<int>(first_set_bit);
 }
 
 #undef HAVE_BITSCANREVERSE64
@@ -185,22 +197,22 @@ inline int CountTrailingZeros(uint32_t n) {
 
 inline int FloorLog2(int32_t n) {
   assert(n > 0);
-  return 31 - CountLeadingZeros(static_cast<uint32_t>(n));
+  return 31 ^ CountLeadingZeros(static_cast<uint32_t>(n));
 }
 
 inline int FloorLog2(uint32_t n) {
   assert(n > 0);
-  return 31 - CountLeadingZeros(n);
+  return 31 ^ CountLeadingZeros(n);
 }
 
 inline int FloorLog2(int64_t n) {
   assert(n > 0);
-  return 63 - CountLeadingZeros(static_cast<uint64_t>(n));
+  return 63 ^ CountLeadingZeros(static_cast<uint64_t>(n));
 }
 
 inline int FloorLog2(uint64_t n) {
   assert(n > 0);
-  return 63 - CountLeadingZeros(n);
+  return 63 ^ CountLeadingZeros(n);
 }
 
 inline int CeilLog2(unsigned int n) {
@@ -211,8 +223,9 @@ inline int CeilLog2(unsigned int n) {
   return (n < 2) ? 0 : FloorLog2(n - 1) + 1;
 }
 
-constexpr int Ceil(int dividend, int divisor) {
-  return dividend / divisor + static_cast<int>(dividend % divisor != 0);
+inline int RightShiftWithCeiling(int value, int bits) {
+  assert(bits > 0);
+  return (value + (1 << bits) - 1) >> bits;
 }
 
 inline int32_t RightShiftWithRounding(int32_t value, int bits) {
@@ -400,19 +413,17 @@ constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
 
 // 7.9.3. (without the clamp for numerator and denominator).
 inline void GetMvProjection(const MotionVector& mv, int numerator,
-                            int denominator, MotionVector* projection_mv) {
-  // Allow numerator and denominator to be 0 so that this function can be called
-  // unconditionally. When either numerator or denominator is 0, |projection_mv|
-  // will be 0, and this is what we want.
+                            int division_multiplier,
+                            MotionVector* projection_mv) {
+  // Allow numerator and to be 0 so that this function can be called
+  // unconditionally. When numerator is 0, |projection_mv| will be 0, and this
+  // is what we want.
   assert(std::abs(numerator) <= kMaxFrameDistance);
-  assert(denominator >= 0);
-  assert(denominator <= kMaxFrameDistance);
   for (int i = 0; i < 2; ++i) {
-    projection_mv->mv[i] = Clip3(
-        RightShiftWithRoundingSigned(
-            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
-            14),
-        -kProjectionMvClamp, kProjectionMvClamp);
+    projection_mv->mv[i] =
+        Clip3(RightShiftWithRoundingSigned(
+                  mv.mv[i] * numerator * division_multiplier, 14),
+              -kProjectionMvClamp, kProjectionMvClamp);
   }
 }
 
@@ -512,6 +523,8 @@ inline int GetFilterIndex(const int filter_index, const int length) {
   return filter_index;
 }
 
+// This has identical results as RightShiftWithRounding since |subsampling| can
+// only be 0 or 1.
 constexpr int SubsampledValue(int value, int subsampling) {
   return (value + subsampling) >> subsampling;
 }

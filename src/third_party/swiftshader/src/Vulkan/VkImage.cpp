@@ -749,6 +749,11 @@ VkExtent3D Image::getMipLevelExtent(VkImageAspectFlagBits aspect, uint32_t mipLe
 
 int Image::rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const
 {
+	if(deviceMemory && deviceMemory->hasExternalImageProperties())
+	{
+		return deviceMemory->externalImageRowPitchBytes();
+	}
+
 	// Depth and Stencil pitch should be computed separately
 	ASSERT((aspect & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) !=
 	       (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
@@ -942,22 +947,7 @@ void Image::copyTo(uint8_t *dst, unsigned int dstPitch) const
 
 void Image::resolveTo(Image *dstImage, const VkImageResolve &region) const
 {
-	VkImageBlit blitRegion;
-
-	blitRegion.srcOffsets[0] = blitRegion.srcOffsets[1] = region.srcOffset;
-	blitRegion.srcOffsets[1].x += region.extent.width;
-	blitRegion.srcOffsets[1].y += region.extent.height;
-	blitRegion.srcOffsets[1].z += region.extent.depth;
-
-	blitRegion.dstOffsets[0] = blitRegion.dstOffsets[1] = region.dstOffset;
-	blitRegion.dstOffsets[1].x += region.extent.width;
-	blitRegion.dstOffsets[1].y += region.extent.height;
-	blitRegion.dstOffsets[1].z += region.extent.depth;
-
-	blitRegion.srcSubresource = region.srcSubresource;
-	blitRegion.dstSubresource = region.dstSubresource;
-
-	device->getBlitter()->blit(this, dstImage, blitRegion, VK_FILTER_NEAREST);
+	device->getBlitter()->resolve(this, dstImage, region);
 }
 
 VkFormat Image::getClearFormat() const

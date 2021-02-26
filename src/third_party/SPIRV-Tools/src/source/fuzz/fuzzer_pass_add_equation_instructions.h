@@ -41,9 +41,22 @@ class FuzzerPassAddEquationInstructions : public FuzzerPass {
   std::vector<opt::Instruction*> GetIntegerInstructions(
       const std::vector<opt::Instruction*>& instructions) const;
 
+  // Returns only instructions, that have either a scalar floating-point or a
+  // vector type.
+  std::vector<opt::Instruction*> GetFloatInstructions(
+      const std::vector<opt::Instruction*>& instructions) const;
+
   // Yields those instructions in |instructions| that have boolean scalar or
   // vector result type.
   std::vector<opt::Instruction*> GetBooleanInstructions(
+      const std::vector<opt::Instruction*>& instructions) const;
+
+  // Yields those instructions in |instructions| that have a scalar numerical or
+  // a vector of numerical components type. Only 16, 32 and 64-bit numericals
+  // are supported if both OpTypeInt and OpTypeFloat instructions can be created
+  // with the specified width (e.g. for 16-bit types both Float16 and Int16
+  // capabilities must be present).
+  std::vector<opt::Instruction*> GetNumericalInstructions(
       const std::vector<opt::Instruction*>& instructions) const;
 
   // Requires that |instructions| are scalars or vectors of some type.  Returns
@@ -53,9 +66,9 @@ class FuzzerPassAddEquationInstructions : public FuzzerPass {
       const std::vector<opt::Instruction*>& instructions,
       uint32_t vector_width) const;
 
-  // Requires that |instructions| are integer scalars or vectors.  Returns only
-  // those instructions for which the bit-width of the underlying integer type
-  // is |bit_width|.
+  // Requires that |instructions| are integer or float scalars or vectors.
+  // Returns only those instructions for which the bit-width of the underlying
+  // integer or floating-point type is |bit_width|.
   std::vector<opt::Instruction*> RestrictToElementBitWidth(
       const std::vector<opt::Instruction*>& instructions,
       uint32_t bit_width) const;

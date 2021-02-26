@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -25,10 +26,7 @@
 #include "components/captive_portal/core/captive_portal_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
-
-class NetworkingConfigTest;
 
 namespace base {
 class Value;
@@ -53,26 +51,13 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
                                   public content::NotificationObserver,
                                   public PortalDetectorStrategy::Delegate {
  public:
-  // The delay since the default network shill reports a portal network, used to
-  // record UMA. Public for tests.
-  static constexpr base::TimeDelta kDelaySinceShillPortalForUMA =
-      base::TimeDelta::FromSeconds(60);
-
   explicit NetworkPortalDetectorImpl(
       network::mojom::URLLoaderFactory* loader_factory_for_testing = nullptr);
   ~NetworkPortalDetectorImpl() override;
 
-  // Set the URL to be tested for portal state.
-  void set_portal_test_url(const GURL& portal_test_url) {
-    portal_test_url_ = portal_test_url;
-  }
-
  private:
-  friend class ::NetworkingConfigTest;
   friend class NetworkPortalDetectorImplTest;
   friend class NetworkPortalDetectorImplBrowserTest;
-
-  using CaptivePortalStateMap = std::map<std::string, CaptivePortalState>;
 
   enum State {
     // No portal check is running.
@@ -81,22 +66,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
     STATE_PORTAL_CHECK_PENDING,
     // Portal check is in progress.
     STATE_CHECKING_FOR_PORTAL,
-  };
-
-  struct DetectionAttemptCompletedReport {
-    DetectionAttemptCompletedReport();
-
-    DetectionAttemptCompletedReport(const std::string network_id,
-                                    captive_portal::CaptivePortalResult result,
-                                    int response_code);
-
-    void Report() const;
-
-    bool Equals(const DetectionAttemptCompletedReport& o) const;
-
-    std::string network_id;
-    captive_portal::CaptivePortalResult result = captive_portal::RESULT_COUNT;
-    int response_code = -1;
   };
 
   // Starts detection process.
@@ -126,10 +95,10 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   void AddObserver(Observer* observer) override;
   void AddAndFireObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  CaptivePortalState GetCaptivePortalState(const std::string& guid) override;
+  CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
   void Enable(bool start_detection) override;
-  bool StartPortalDetection(bool force) override;
+  void StartPortalDetection() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 
   // NetworkStateHandlerObserver implementation:
@@ -146,19 +115,14 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
                const content::NotificationDetails& details) override;
 
   // Called synchronously from OnAttemptCompleted with the current default
-  // network. Stores the captive portal state and notifies observers.
+  // network. Stores the captive portal status and notifies observers.
   void DetectionCompleted(const NetworkState* network,
-                          const CaptivePortalState& results);
-
-  // Notifies observers that portal detection is completed for a |network|.
-  void NotifyDetectionCompleted(const NetworkState* network,
-                                const CaptivePortalState& state);
+                          const CaptivePortalStatus& results,
+                          int response_code);
 
   State state() const { return state_; }
 
-  bool is_idle() const {
-    return state_ == STATE_IDLE;
-  }
+  bool is_idle() const { return state_ == STATE_IDLE; }
   bool is_portal_check_pending() const {
     return state_ == STATE_PORTAL_CHECK_PENDING;
   }
@@ -187,11 +151,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   // cancelled.
   bool AttemptTimeoutIsCancelledForTesting() const;
 
-  // Record detection stats such as detection duration and detection
-  // result in UMA.
-  void RecordDetectionStats(const NetworkState* network,
-                            CaptivePortalStatus status);
-
   // Resets strategy and all counters used in computations of
   // timeouts.
   void ResetStrategyAndCounters();
@@ -206,6 +165,11 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
     time_ticks_for_testing_ += delta;
   }
 
+  const std::string& default_network_id_for_testing() const {
+    return default_network_id_;
+  }
+  int response_code_for_testing() const { return response_code_for_testing_; }
+
   // Unique identifier of the default network.
   std::string default_network_id_;
 
@@ -213,10 +177,12 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   std::string default_connection_state_;
 
   // Proxy configuration of the default network.
-  std::unique_ptr<base::Value> default_proxy_config_;
+  base::Value default_proxy_config_;
+
+  CaptivePortalStatus default_portal_status_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  int response_code_for_testing_ = -1;
 
   State state_ = STATE_IDLE;
-  CaptivePortalStateMap portal_state_map_;
   base::ObserverList<Observer>::Unchecked observers_;
 
   base::CancelableClosure attempt_task_;
@@ -224,10 +190,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   // Reference to a SharedURLLoaderFactory used to detect portals.
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-
-  // URL that returns a 204 response code when connected to the Internet. Used
-  // by tests.
-  GURL portal_test_url_;
 
   // Detector for checking default network for a portal state.
   std::unique_ptr<captive_portal::CaptivePortalDetector>
@@ -244,10 +206,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   // Delay before next portal detection.
   base::TimeDelta next_attempt_delay_;
-
-  // Saves the most recent timestamp that shill reports |default_network_id_|
-  // network is portal network.
-  base::TimeTicks last_shill_reports_portal_time_;
 
   // Current detection strategy.
   std::unique_ptr<PortalDetectorStrategy> strategy_;
@@ -267,9 +225,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   // Test time ticks used by unit tests.
   base::TimeTicks time_ticks_for_testing_;
-
-  // Contents of a last log message about completed detection attempt.
-  DetectionAttemptCompletedReport attempt_completed_report_;
 
   base::WeakPtrFactory<NetworkPortalDetectorImpl> weak_factory_{this};
 

@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
 
 import {DataGridImpl, DataGridNode, Parameters} from './DataGrid.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
- * @extends {DataGridImpl<!NODE_TYPE>}
+ * @extends {DataGridImpl<!ViewportDataGridNode<!NODE_TYPE>>}
  * @template NODE_TYPE
  */
 export class ViewportDataGrid extends DataGridImpl {
@@ -21,7 +22,7 @@ export class ViewportDataGrid extends DataGridImpl {
     this._onScrollBound = this._onScroll.bind(this);
     this.scrollContainer.addEventListener('scroll', this._onScrollBound, true);
 
-    /** @type {!Array.<!ViewportDataGridNode>} */
+    /** @type {!Array.<!ViewportDataGridNode<!NODE_TYPE>>} */
     this._visibleNodes = [];
     /**
      * @type {boolean}
@@ -38,6 +39,14 @@ export class ViewportDataGrid extends DataGridImpl {
   }
 
   /**
+   * @return {!ViewportDataGridNode<!NODE_TYPE>}
+   * @override
+   */
+  rootNode() {
+    return /** @type {!ViewportDataGridNode<!NODE_TYPE>} */ (super.rootNode());
+  }
+
+  /**
    * @param {boolean} striped
    * @override
    */
@@ -45,7 +54,7 @@ export class ViewportDataGrid extends DataGridImpl {
     this._isStriped = striped;
     let startsWithOdd = true;
     if (this._visibleNodes.length) {
-      const allChildren = this.rootNode().flatChildren();
+      const allChildren = (/** @type {!ViewportDataGridNode<!NODE_TYPE>}*/ (this.rootNode())).flatChildren();
       startsWithOdd = !!(allChildren.indexOf(this._visibleNodes[0]));
     }
     this._updateStripesClass(startsWithOdd);
@@ -60,7 +69,7 @@ export class ViewportDataGrid extends DataGridImpl {
   }
 
   /**
-   * @param {!Element} scrollContainer
+   * @param {!HTMLElement} scrollContainer
    */
   setScrollContainer(scrollContainer) {
     this.scrollContainer.removeEventListener('scroll', this._onScrollBound, true);
@@ -93,15 +102,12 @@ export class ViewportDataGrid extends DataGridImpl {
    * @param {?Event} event
    */
   _onScroll(event) {
-    this._stickToBottom = this.scrollContainer.isScrolledToBottom();
+    this._stickToBottom = UI.UIUtils.isScrolledToBottom(this.scrollContainer);
     if (this._lastScrollTop !== this.scrollContainer.scrollTop) {
       this.scheduleUpdate(true);
     }
   }
 
-  /**
-   * @protected
-   */
   scheduleUpdateStructure() {
     this.scheduleUpdate();
   }
@@ -111,9 +117,9 @@ export class ViewportDataGrid extends DataGridImpl {
    */
   scheduleUpdate(isFromUser) {
     if (this._stickToBottom && isFromUser) {
-      this._stickToBottom = this.scrollContainer.isScrolledToBottom();
+      this._stickToBottom = UI.UIUtils.isScrolledToBottom(this.scrollContainer);
     }
-    this._updateIsFromUser = this._updateIsFromUser || isFromUser;
+    this._updateIsFromUser = this._updateIsFromUser || !!isFromUser;
     if (this._updateAnimationFrameId) {
       return;
     }
@@ -139,7 +145,7 @@ export class ViewportDataGrid extends DataGridImpl {
   /**
    * @param {number} clientHeight
    * @param {number} scrollTop
-   * @return {{topPadding: number, bottomPadding: number, contentHeight: number, visibleNodes: !Array.<!ViewportDataGridNode>, offset: number}}
+   * @return {{topPadding: number, bottomPadding: number, contentHeight: number, visibleNodes: !Array.<!ViewportDataGridNode<!NODE_TYPE>>, offset: number}}
    */
   _calculateVisibleNodes(clientHeight, scrollTop) {
     const nodes = this.rootNode().flatChildren();
@@ -212,7 +218,9 @@ export class ViewportDataGrid extends DataGridImpl {
       const oldNode = this._visibleNodes[i];
       if (!visibleNodesSet.has(oldNode) && oldNode.attached()) {
         const element = oldNode.existingElement();
-        element.remove();
+        if (element) {
+          element.remove();
+        }
       }
     }
 
@@ -233,7 +241,7 @@ export class ViewportDataGrid extends DataGridImpl {
 
     for (let i = 0; i < visibleNodes.length; ++i) {
       const node = visibleNodes[i];
-      const element = node.element();
+      const element = /** @type {!HTMLElement} */ (node.element());
       node.setStriped((offset + i) % 2 === 0);
       if (element !== previousElement.nextSibling) {
         tBody.insertBefore(element, previousElement.nextSibling);
@@ -258,7 +266,7 @@ export class ViewportDataGrid extends DataGridImpl {
   }
 
   /**
-   * @param {!ViewportDataGridNode} node
+   * @param {!ViewportDataGridNode<!NODE_TYPE>} node
    */
   _revealViewportNode(node) {
     const nodes = this.rootNode().flatChildren();
@@ -271,13 +279,12 @@ export class ViewportDataGrid extends DataGridImpl {
       fromY += nodes[i].nodeSelfHeight();
     }
     const toY = fromY + node.nodeSelfHeight();
-
     let scrollTop = this.scrollContainer.scrollTop;
     if (scrollTop > fromY) {
       scrollTop = fromY;
       this._stickToBottom = false;
-    } else if (scrollTop + this.scrollContainer.offsetHeight < toY) {
-      scrollTop = toY - this.scrollContainer.offsetHeight;
+    } else if (scrollTop + (/** @type {!HTMLElement} */ (this.scrollContainer)).offsetHeight < toY) {
+      scrollTop = toY - (/** @type {!HTMLElement} */ (this.scrollContainer)).offsetHeight;
     }
     this.scrollContainer.scrollTop = scrollTop;
   }
@@ -292,7 +299,7 @@ export const Events = {
 
 /**
  * @unrestricted
- * @extends {DataGridNode<!NODE_TYPE>}
+ * @extends {DataGridNode<!ViewportDataGridNode<!NODE_TYPE>>}
  * @template NODE_TYPE
  */
 export class ViewportDataGridNode extends DataGridNode {
@@ -304,7 +311,7 @@ export class ViewportDataGridNode extends DataGridNode {
     super(data, hasChildren);
     /** @type {boolean} */
     this._stale = false;
-    /** @type {?Array<!ViewportDataGridNode>} */
+    /** @type {?Array<!ViewportDataGridNode<!NODE_TYPE>>} */
     this._flatNodes = null;
     this._isStriped = false;
   }
@@ -343,23 +350,22 @@ export class ViewportDataGridNode extends DataGridNode {
    */
   clearFlatNodes() {
     this._flatNodes = null;
-    const parent = /** @type {!ViewportDataGridNode} */ (this.parent);
+    const parent = /** @type {!ViewportDataGridNode<!NODE_TYPE>} */ (this.parent);
     if (parent) {
       parent.clearFlatNodes();
     }
   }
 
   /**
-   * @return {!Array<!ViewportDataGridNode>}
+   * @return {!Array<!ViewportDataGridNode<!NODE_TYPE>>}
    */
   flatChildren() {
     if (this._flatNodes) {
       return this._flatNodes;
     }
-    /** @type {!Array<!ViewportDataGridNode>} */
+    /** @type {!Array<!ViewportDataGridNode<!NODE_TYPE>>} */
     const flatNodes = [];
-    /** @type {!Array<!Array<!ViewportDataGridNode>>} */
-    const children = [this.children];
+    const children = /** @type {!Array<!Array<!ViewportDataGridNode<!NODE_TYPE>>>} */ ([this.children]);
     /** @type {!Array<number>} */
     const counters = [0];
     let depth = 0;
@@ -372,7 +378,7 @@ export class ViewportDataGridNode extends DataGridNode {
       flatNodes.push(node);
       if (node.expanded && node.children.length) {
         depth++;
-        children[depth] = node.children;
+        children[depth] = /** @type {!Array<!ViewportDataGridNode<!NODE_TYPE>>} */ (node.children);
         counters[depth] = 0;
       }
     }
@@ -383,7 +389,7 @@ export class ViewportDataGridNode extends DataGridNode {
 
   /**
    * @override
-   * @param {!NODE_TYPE} child
+   * @param {!DataGridNode<!ViewportDataGridNode<!NODE_TYPE>>} child
    * @param {number} index
    */
   insertChild(child, index) {
@@ -408,14 +414,14 @@ export class ViewportDataGridNode extends DataGridNode {
     }
     this.children.splice(index, 0, child);
     child.recalculateSiblings(index);
-    if (this.expanded) {
-      this.dataGrid.scheduleUpdateStructure();
+    if (this.expanded && this.dataGrid) {
+      (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdateStructure();
     }
   }
 
   /**
    * @override
-   * @param {!NODE_TYPE} child
+   * @param {!DataGridNode<!ViewportDataGridNode<!NODE_TYPE>>} child
    */
   removeChild(child) {
     this.clearFlatNodes();
@@ -433,13 +439,13 @@ export class ViewportDataGridNode extends DataGridNode {
     }
 
     Platform.ArrayUtilities.removeElement(this.children, child, true);
-    child._unlink();
+    (/** @type {!ViewportDataGridNode<!NODE_TYPE>} */ (child))._unlink();
 
     if (!this.children.length) {
       this.setHasChildren(false);
     }
-    if (this.expanded) {
-      this.dataGrid.scheduleUpdateStructure();
+    if (this.expanded && this.dataGrid) {
+      (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdateStructure();
     }
   }
 
@@ -452,18 +458,20 @@ export class ViewportDataGridNode extends DataGridNode {
       this.dataGrid.updateSelectionBeforeRemoval(this, true);
     }
     for (let i = 0; i < this.children.length; ++i) {
-      this.children[i]._unlink();
+      /** @type {!ViewportDataGridNode<!NODE_TYPE>} */ (this.children[i])._unlink();
     }
-    this.children = [];
 
-    if (this.expanded) {
-      this.dataGrid.scheduleUpdateStructure();
+    this.children = /** @type {!Array<!ViewportDataGridNode<!NODE_TYPE>>} */ ([]);
+
+    if (this.expanded && this.dataGrid) {
+      (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdateStructure();
     }
   }
 
   _unlink() {
-    if (this.attached()) {
-      this.existingElement().remove();
+    const existingElement = this.existingElement();
+    if (this.attached() && existingElement) {
+      existingElement.remove();
     }
     this.resetNode();
   }
@@ -480,13 +488,14 @@ export class ViewportDataGridNode extends DataGridNode {
      * @suppress {accessControls}
      */
     this._expanded = false;
-    if (this.existingElement()) {
-      this.existingElement().classList.remove('expanded');
+    const existingElement = this.existingElement();
+    if (existingElement) {
+      existingElement.classList.remove('expanded');
     }
     if (this.selected) {
-      this.dataGrid.updateGridAccessibleName(/* text */ ls`collapsed`);
+      (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).updateGridAccessibleName(/* text */ ls`collapsed`);
     }
-    this.dataGrid.scheduleUpdateStructure();
+    (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdateStructure();
   }
 
   /**
@@ -496,18 +505,18 @@ export class ViewportDataGridNode extends DataGridNode {
     if (this.expanded) {
       return;
     }
-    this.dataGrid._stickToBottom = false;
+    (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid))._stickToBottom = false;
     this.clearFlatNodes();
     super.expand();
-    this.dataGrid.scheduleUpdateStructure();
+    (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdateStructure();
   }
 
   /**
-   * @protected
    * @return {boolean}
    */
   attached() {
-    return !!(this.dataGrid && this.existingElement() && this.existingElement().parentElement);
+    const existingElement = this.existingElement();
+    return !!(this.dataGrid && existingElement && existingElement.parentElement);
   }
 
   /**
@@ -516,7 +525,7 @@ export class ViewportDataGridNode extends DataGridNode {
   refresh() {
     if (this.attached()) {
       this._stale = true;
-      this.dataGrid.scheduleUpdate();
+      (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid)).scheduleUpdate();
     } else {
       this.resetElement();
     }
@@ -526,7 +535,7 @@ export class ViewportDataGridNode extends DataGridNode {
    * @override
    */
   reveal() {
-    this.dataGrid._revealViewportNode(this);
+    (/** @type {!ViewportDataGrid<!NODE_TYPE>} */ (this.dataGrid))._revealViewportNode(this);
   }
 
   /**

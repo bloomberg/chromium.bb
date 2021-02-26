@@ -2,17 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../third_party/typescript/typescript.gni")
+import("../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../scripts/build/ninja/devtools_module.gni")
 
-ts_library("sdk") {
+devtools_module("sdk") {
   sources = [
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
+    "CSSFontFace.js",
     "CSSMatchedStyles.js",
     "CSSMedia.js",
     "CSSMetadata.js",
     "CSSModel.js",
     "CSSProperty.js",
+    "CSSPropertyParser.js",
     "CSSRule.js",
     "CSSStyleDeclaration.js",
     "CSSStyleSheetHeader.js",
@@ -20,6 +23,7 @@ ts_library("sdk") {
     "CompilerSourceMappingContentProvider.js",
     "Connections.js",
     "ConsoleModel.js",
+    "ContentSecurityPolicyIssue.js",
     "Cookie.js",
     "CookieModel.js",
     "CookieParser.js",
@@ -29,8 +33,12 @@ ts_library("sdk") {
     "DebuggerModel.js",
     "EmulationModel.js",
     "FilmStripModel.js",
+    "FrameAssociated.js",
+    "FrameManager.js",
     "HARLog.js",
     "HeapProfilerModel.js",
+    "HeavyAdIssue.js",
+    "IOModel.js",
     "IsolateManager.js",
     "Issue.js",
     "IssuesModel.js",
@@ -41,6 +49,7 @@ ts_library("sdk") {
     "NetworkManager.js",
     "NetworkRequest.js",
     "OverlayModel.js",
+    "PageResourceLoader.js",
     "PaintProfiler.js",
     "PerformanceMetricsModel.js",
     "ProfileTreeModel.js",
@@ -60,16 +69,28 @@ ts_library("sdk") {
     "SourceMapManager.js",
     "TracingManager.js",
     "TracingModel.js",
-    "sdk.js",
-    "wasm_source_map/pkg/wasm_source_map.js",
+    "WebAuthnModel.js",
   ]
 
   deps = [
-    "../common",
+    "../common:bundle",
     "../generated",
-    "../host",
-    "../platform",
-    "../protocol_client",
-    "../text_utils",
+    "../host:bundle",
+    "../platform:bundle",
+    "../protocol_client:bundle",
+    "../text_utils:bundle",
+    "wasm_source_map",
   ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "sdk.js"
+
+  deps = [ ":sdk" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "sdk-legacy.js"
+
+  deps = [ ":bundle" ]
 }

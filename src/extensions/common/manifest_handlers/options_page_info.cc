@@ -125,16 +125,10 @@ std::unique_ptr<OptionsPageInfo> OptionsPageInfo::Create(
 
     std::unique_ptr<OptionsUI> options_ui =
         OptionsUI::FromValue(*options_ui_value, &options_ui_error);
-    if (!options_ui_error.empty()) {
-      // OptionsUI::FromValue populates |error| both when there are
-      // errors (in which case |options_ui| will be NULL) and warnings
-      // (in which case |options_ui| will be valid). Either way, show it
-      // as an install warning.
+    if (!options_ui) {
       install_warnings->push_back(
           InstallWarning(base::UTF16ToASCII(options_ui_error)));
-    }
-
-    if (options_ui) {
+    } else {
       base::string16 options_parse_error;
       if (!ParseOptionsUrl(extension,
                            options_ui->page,
@@ -144,8 +138,14 @@ std::unique_ptr<OptionsPageInfo> OptionsPageInfo::Create(
         install_warnings->push_back(
             InstallWarning(base::UTF16ToASCII(options_parse_error)));
       }
-      if (options_ui->chrome_style.get())
-        chrome_style = *options_ui->chrome_style;
+      if (options_ui->chrome_style.get()) {
+        if (extension->manifest_version() < 3)
+          chrome_style = *options_ui->chrome_style;
+        else {
+          *error = base::ASCIIToUTF16(errors::kChromeStyleInvalidForManifestV3);
+          return nullptr;
+        }
+      }
       open_in_tab = false;
       if (options_ui->open_in_tab.get())
         open_in_tab = *options_ui->open_in_tab;

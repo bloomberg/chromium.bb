@@ -221,7 +221,7 @@ class RemoteCall {
    * Waits for a remote test function to return a specific result.
    *
    * @param {string} funcName Name of remote test function to be executed.
-   * @param {string} appId App window Id.
+   * @param {?string} appId App window Id.
    * @param {function(Object):boolean|boolean|Object} expectedResult An value to
    *     be checked against the return value of |funcName| or a callback that
    *     receives the return value of |funcName| and returns true if the result
@@ -351,8 +351,7 @@ class RemoteCall {
    *     If query is an array, |query[0]| specifies the first
    *     element(s), |query[1]| specifies elements inside the shadow DOM of
    *     the first element, and so on.
-   * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
-   *     Object
+   * @param {KeyModifiers=} opt_keyModifiers Object
    * @return {Promise} Promise to be fulfilled with the clicked element.
    */
   async waitAndClickElement(appId, query, opt_keyModifiers) {
@@ -370,8 +369,7 @@ class RemoteCall {
    *     If query is an array, |query[0]| specifies the first
    *     element(s), |query[1]| specifies elements inside the shadow DOM of
    *     the first element, and so on.
-   * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
-   *     Object
+   * @param {KeyModifiers=} opt_keyModifiers Object
    * @return {Promise} Promise to be fulfilled with the clicked element.
    */
   async waitAndRightClick(appId, query, opt_keyModifiers) {
@@ -496,16 +494,21 @@ class RemoteCallFilesApp extends RemoteCall {
    * Waits until the given taskId appears in the executed task list.
    * @param {string} appId App window Id.
    * @param {string} taskId Task ID to watch.
+   * @param {Array<Object>=} opt_replyArgs arguments to reply to executed task.
    * @return {Promise} Promise to be fulfilled when the task appears in the
    *     executed task list.
    */
-  waitUntilTaskExecutes(appId, taskId) {
+  waitUntilTaskExecutes(appId, taskId, opt_replyArgs) {
     const caller = getCaller();
     return repeatUntil(async () => {
       const executedTasks =
           await this.callRemoteTestUtil('getExecutedTasks', appId, []);
       if (executedTasks.indexOf(taskId) === -1) {
         return pending(caller, 'Executed task is %j', executedTasks);
+      }
+      if (opt_replyArgs) {
+        await this.callRemoteTestUtil(
+            'replyExecutedTask', appId, [taskId, opt_replyArgs]);
       }
     });
   }

@@ -35,7 +35,7 @@
 namespace blink {
 
 void SVGRootInlineBox::Paint(const PaintInfo& paint_info,
-                             const LayoutPoint& paint_offset,
+                             const PhysicalOffset& paint_offset,
                              LayoutUnit,
                              LayoutUnit) const {
   SVGRootInlineBoxPainter(*this).Paint(paint_info, paint_offset);
@@ -48,8 +48,8 @@ void SVGRootInlineBox::MarkDirty() {
 }
 
 void SVGRootInlineBox::ComputePerCharacterLayoutInformation() {
-  LayoutSVGText& text_root =
-      ToLayoutSVGText(*LineLayoutAPIShim::LayoutObjectFrom(Block()));
+  auto& text_root =
+      To<LayoutSVGText>(*LineLayoutAPIShim::LayoutObjectFrom(Block()));
 
   const Vector<LayoutSVGInlineText*>& descendant_text_nodes =
       text_root.DescendantTextNodes();
@@ -89,7 +89,7 @@ FloatRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
   if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(box)) {
     rect = svg_inline_text_box->CalculateBoundaries();
   } else {
-    for (InlineBox* child = ToInlineFlowBox(box).FirstChild(); child;
+    for (InlineBox* child = To<InlineFlowBox>(box).FirstChild(); child;
          child = child->NextOnLine())
       rect.Unite(LayoutInlineBoxes(*child));
   }

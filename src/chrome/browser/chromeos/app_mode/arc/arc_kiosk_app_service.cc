@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service_factory.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -41,13 +42,11 @@ ArcKioskAppService* ArcKioskAppService::Get(content::BrowserContext* context) {
   return ArcKioskAppServiceFactory::GetForBrowserContext(context);
 }
 
-void ArcKioskAppService::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-}
-
 void ArcKioskAppService::Shutdown() {
   ArcAppListPrefs::Get(profile_)->RemoveObserver(this);
-  arc::ArcSessionManager::Get()->RemoveObserver(this);
+  // It can be null unittests.
+  if (arc::ArcSessionManager::Get())
+    arc::ArcSessionManager::Get()->RemoveObserver(this);
   app_manager_->RemoveObserver(this);
   arc::ArcPolicyBridge::GetForBrowserContext(profile_)->RemoveObserver(this);
 }
@@ -86,7 +85,7 @@ void ArcKioskAppService::OnTaskCreated(int32_t task_id,
       activity == app_info_->activity) {
     task_id_ = task_id;
     if (delegate_)
-      delegate_->OnAppStarted();
+      delegate_->OnAppLaunched();
   }
 }
 
@@ -119,7 +118,7 @@ void ArcKioskAppService::OnMaintenanceSessionFinished() {
 
 void ArcKioskAppService::OnAppWindowLaunched() {
   if (delegate_)
-    delegate_->OnAppWindowLaunched();
+    delegate_->OnAppWindowCreated();
 }
 
 void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
@@ -131,7 +130,8 @@ void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
   AccountId account_id = multi_user_util::GetAccountIdFromProfile(profile_);
   app_manager_->UpdateNameAndIcon(account_id, app_info_->name,
                                   app_icon_->image_skia());
-  delegate_->OnAppDataUpdated();
+  if (delegate_)
+    delegate_->OnAppDataUpdated();
 }
 
 void ArcKioskAppService::OnArcSessionRestarting() {
@@ -227,6 +227,8 @@ void ArcKioskAppService::PreconditionsChanged() {
       VLOG(2) << "Starting kiosk app";
       app_launcher_ = std::make_unique<ArcKioskAppLauncher>(
           profile_, ArcAppListPrefs::Get(profile_), app_id_, this);
+      if (delegate_)
+        delegate_->OnAppPrepared();
     }
   } else if (task_id_ != -1) {
     VLOG(2) << "Kiosk app should be closed";
@@ -255,5 +257,11 @@ void ArcKioskAppService::ResetAppLauncher() {
   app_launcher_.reset();
   task_id_ = -1;
 }
+
+// ArcKioskAppService manages his own state by itself.
+void ArcKioskAppService::Initialize() {}
+void ArcKioskAppService::ContinueWithNetworkReady() {}
+void ArcKioskAppService::RestartLauncher() {}
+void ArcKioskAppService::LaunchApp() {}
 
 }  // namespace chromeos

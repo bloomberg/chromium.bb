@@ -9,7 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
@@ -25,7 +25,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 }  // namespace
 
 // Tests for the popup menus.
-@interface PopupMenuTestCase : ChromeTestCase
+@interface PopupMenuTestCase : WebHttpServerChromeTestCase
 @end
 
 @implementation PopupMenuTestCase
@@ -33,12 +33,10 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 // Rotate the device back to portrait if needed, since some tests attempt to run
 // in landscape.
 - (void)tearDown {
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-#if defined(CHROME_EARL_GREY_1)
-                           errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                error:nil];
-#endif
+  // No-op if only one window presents.
+  [ChromeEarlGrey closeAllExtraWindowsAndForceRelaunchWithAppConfig:
+                      [self appConfigurationForTestCase]];
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   [super tearDown];
 }
 
@@ -131,11 +129,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
-#if defined(CHROME_EARL_GREY_1)
-                           errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
                                 error:nil];
-#endif
 
   // Expect that the tools menu has disappeared.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuView()]
@@ -156,16 +150,23 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
       assertWithMatcher:grey_notVisible()];
 }
 
+- (void)testNewWindowFromToolsMenu {
+  if (![ChromeEarlGrey areMultipleWindowsSupported])
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI
+      tapToolsMenuButton:chrome_test_util::OpenNewWindowMenuButton()];
+
+  // Verify the second window.
+  [ChromeEarlGrey waitForForegroundWindowCount:2];
+  [ChromeEarlGrey closeAllExtraWindowsAndForceRelaunchWithAppConfig:
+                      [self appConfigurationForTestCase]];
+}
+
 // Navigates to a pdf page and verifies that the "Find in Page..." tool
 // is not enabled
 - (void)testNoSearchForPDF {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036078): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
-#endif
-  web::test::SetUpFileBasedHttpServer();
   const GURL URL = web::test::HttpServer::MakeUrl(kPDFURL);
 
   // Navigate to a mock pdf and verify that the find button is disabled.

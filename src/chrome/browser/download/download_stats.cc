@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_stats.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 
 void RecordDownloadCount(ChromeDownloadCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -29,6 +30,7 @@ void RecordOpenedDangerousConfirmDialog(
 }
 
 void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method) {
+  base::RecordAction(base::UserMetricsAction("Download.Open"));
   UMA_HISTOGRAM_ENUMERATION("Download.OpenMethod",
                             open_method,
                             DOWNLOAD_OPEN_METHOD_LAST_ENTRY);
@@ -60,6 +62,10 @@ void RecordDownloadPathValidation(download::PathValidationResult result,
   }
 }
 
+void RecordDownloadCancelReason(DownloadCancelReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Download.CancelReason", reason);
+}
+
 void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event) {
   UMA_HISTOGRAM_ENUMERATION("Download.Shelf.DragEvent", drag_event,
                             DownloadShelfDragEvent::COUNT);
@@ -71,4 +77,9 @@ void RecordDownloadPromptStatus(DownloadPromptStatus status) {
   UMA_HISTOGRAM_ENUMERATION("MobileDownload.DownloadPromptStatus", status,
                             DownloadPromptStatus::MAX_VALUE);
 }
+
+void RecordDownloadLaterPromptStatus(DownloadLaterPromptStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("MobileDownload.DownloadLaterPromptStatus", status);
+}
+
 #endif  // OS_ANDROID

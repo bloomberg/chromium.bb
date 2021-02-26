@@ -4,6 +4,10 @@
 #define DartTypes_DEFINED
 
 #include "include/core/SkRect.h"
+#include "include/core/SkTypes.h"
+
+#include <iterator>
+#include <limits>
 
 namespace skia {
 namespace textlayout {
@@ -138,6 +142,12 @@ enum class LineMetricStyle : uint8_t {
     Typographic,
     // Use ascent, descent, etc like css with the leading split and with height adjustments
     CSS
+};
+
+enum class DrawOptions {
+    kRecord,
+    kReplay,
+    kDirect
 };
 
 }  // namespace textlayout

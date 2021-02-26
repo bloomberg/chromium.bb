@@ -48,16 +48,16 @@
 
 namespace google_breakpad {
 
-MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
-                                     SourceLineResolverInterface *resolver)
+MinidumpProcessor::MinidumpProcessor(SymbolSupplier* supplier,
+                                     SourceLineResolverInterface* resolver)
     : frame_symbolizer_(new StackFrameSymbolizer(supplier, resolver)),
       own_frame_symbolizer_(true),
       enable_exploitability_(false),
       enable_objdump_(false) {
 }
 
-MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
-                                     SourceLineResolverInterface *resolver,
+MinidumpProcessor::MinidumpProcessor(SymbolSupplier* supplier,
+                                     SourceLineResolverInterface* resolver,
                                      bool enable_exploitability)
     : frame_symbolizer_(new StackFrameSymbolizer(supplier, resolver)),
       own_frame_symbolizer_(true),
@@ -65,7 +65,7 @@ MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
       enable_objdump_(false) {
 }
 
-MinidumpProcessor::MinidumpProcessor(StackFrameSymbolizer *frame_symbolizer,
+MinidumpProcessor::MinidumpProcessor(StackFrameSymbolizer* frame_symbolizer,
                                      bool enable_exploitability)
     : frame_symbolizer_(frame_symbolizer),
       own_frame_symbolizer_(false),
@@ -79,13 +79,13 @@ MinidumpProcessor::~MinidumpProcessor() {
 }
 
 ProcessResult MinidumpProcessor::Process(
-    Minidump *dump, ProcessState *process_state) {
+    Minidump* dump, ProcessState* process_state) {
   assert(dump);
   assert(process_state);
 
   process_state->Clear();
 
-  const MDRawHeader *header = dump->header();
+  const MDRawHeader* header = dump->header();
   if (!header) {
     BPLOG(ERROR) << "Minidump " << dump->path() << " has no header";
     return PROCESS_ERROR_NO_MINIDUMP_HEADER;
@@ -103,14 +103,14 @@ ProcessResult MinidumpProcessor::Process(
   uint32_t requesting_thread_id = 0;
   bool has_requesting_thread = false;
 
-  MinidumpBreakpadInfo *breakpad_info = dump->GetBreakpadInfo();
+  MinidumpBreakpadInfo* breakpad_info = dump->GetBreakpadInfo();
   if (breakpad_info) {
     has_dump_thread = breakpad_info->GetDumpThreadID(&dump_thread_id);
     has_requesting_thread =
         breakpad_info->GetRequestingThreadID(&requesting_thread_id);
   }
 
-  MinidumpException *exception = dump->GetException();
+  MinidumpException* exception = dump->GetException();
   if (exception) {
     process_state->crashed_ = true;
     has_requesting_thread = exception->GetThreadID(&requesting_thread_id);
@@ -143,7 +143,7 @@ ProcessResult MinidumpProcessor::Process(
   // This will just return an empty string if it doesn't exist.
   process_state->assertion_ = GetAssertion(dump);
 
-  MinidumpModuleList *module_list = dump->GetModuleList();
+  MinidumpModuleList* module_list = dump->GetModuleList();
 
   // Put a copy of the module list into ProcessState object.  This is not
   // necessarily a MinidumpModuleList, but it adheres to the CodeModules
@@ -163,19 +163,19 @@ ProcessResult MinidumpProcessor::Process(
     }
   }
 
-  MinidumpUnloadedModuleList *unloaded_module_list =
+  MinidumpUnloadedModuleList* unloaded_module_list =
       dump->GetUnloadedModuleList();
   if (unloaded_module_list) {
     process_state->unloaded_modules_ = unloaded_module_list->Copy();
   }
 
-  MinidumpMemoryList *memory_list = dump->GetMemoryList();
+  MinidumpMemoryList* memory_list = dump->GetMemoryList();
   if (memory_list) {
     BPLOG(INFO) << "Found " << memory_list->region_count()
                 << " memory regions.";
   }
 
-  MinidumpThreadList *threads = dump->GetThreadList();
+  MinidumpThreadList* threads = dump->GetThreadList();
   if (!threads) {
     BPLOG(ERROR) << "Minidump " << dump->path() << " has no thread list";
     return PROCESS_ERROR_NO_THREAD_LIST;
@@ -207,7 +207,7 @@ ProcessResult MinidumpProcessor::Process(
              thread_index, thread_count);
     string thread_string = dump->path() + ":" + thread_string_buffer;
 
-    MinidumpThread *thread = threads->GetThreadAtIndex(thread_index);
+    MinidumpThread* thread = threads->GetThreadAtIndex(thread_index);
     if (!thread) {
       BPLOG(ERROR) << "Could not get thread for " << thread_string;
       return PROCESS_ERROR_GETTING_THREAD;
@@ -230,7 +230,7 @@ ProcessResult MinidumpProcessor::Process(
       continue;
     }
 
-    MinidumpContext *context = thread->GetContext();
+    MinidumpContext* context = thread->GetContext();
 
     if (has_requesting_thread && thread_id == requesting_thread_id) {
       if (found_requesting_thread) {
@@ -257,7 +257,7 @@ ProcessResult MinidumpProcessor::Process(
         // would not result in the expected stack trace from the time of the
         // crash. If the exception context is invalid, however, we fall back
         // on the thread context.
-        MinidumpContext *ctx = exception->GetContext();
+        MinidumpContext* ctx = exception->GetContext();
         context = ctx ? ctx : thread->GetContext();
       }
     }
@@ -265,7 +265,7 @@ ProcessResult MinidumpProcessor::Process(
     // If the memory region for the stack cannot be read using the RVA stored
     // in the memory descriptor inside MINIDUMP_THREAD, try to locate and use
     // a memory region (containing the stack) from the minidump memory list.
-    MinidumpMemoryRegion *thread_memory = thread->GetMemory();
+    MinidumpMemoryRegion* thread_memory = thread->GetMemory();
     if (!thread_memory && memory_list) {
       uint64_t start_stack_memory_range = thread->GetStartOfStackMemoryRange();
       if (start_stack_memory_range) {
@@ -350,7 +350,7 @@ ProcessResult MinidumpProcessor::Process(
 }
 
 ProcessResult MinidumpProcessor::Process(
-    const string &minidump_file, ProcessState *process_state) {
+    const string& minidump_file, ProcessState* process_state) {
   BPLOG(INFO) << "Processing minidump in file " << minidump_file;
 
   Minidump dump(minidump_file);
@@ -365,9 +365,9 @@ ProcessResult MinidumpProcessor::Process(
 // Returns the MDRawSystemInfo from a minidump, or NULL if system info is
 // not available from the minidump.  If system_info is non-NULL, it is used
 // to pass back the MinidumpSystemInfo object.
-static const MDRawSystemInfo* GetSystemInfo(Minidump *dump,
-                                            MinidumpSystemInfo **system_info) {
-  MinidumpSystemInfo *minidump_system_info = dump->GetSystemInfo();
+static const MDRawSystemInfo* GetSystemInfo(Minidump* dump,
+                                            MinidumpSystemInfo** system_info) {
+  MinidumpSystemInfo* minidump_system_info = dump->GetSystemInfo();
   if (!minidump_system_info)
     return NULL;
 
@@ -520,15 +520,15 @@ static void GetARMCpuInfo(const MDRawSystemInfo* raw_info,
 }
 
 // static
-bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
+bool MinidumpProcessor::GetCPUInfo(Minidump* dump, SystemInfo* info) {
   assert(dump);
   assert(info);
 
   info->cpu.clear();
   info->cpu_info.clear();
 
-  MinidumpSystemInfo *system_info;
-  const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, &system_info);
+  MinidumpSystemInfo* system_info;
+  const MDRawSystemInfo* raw_system_info = GetSystemInfo(dump, &system_info);
   if (!raw_system_info)
     return false;
 
@@ -541,7 +541,7 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
       else
         info->cpu = "amd64";
 
-      const string *cpu_vendor = system_info->GetCPUVendor();
+      const string* cpu_vendor = system_info->GetCPUVendor();
       if (cpu_vendor) {
         info->cpu_info = *cpu_vendor;
         info->cpu_info.append(" ");
@@ -608,7 +608,7 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
 }
 
 // static
-bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
+bool MinidumpProcessor::GetOSInfo(Minidump* dump, SystemInfo* info) {
   assert(dump);
   assert(info);
 
@@ -616,8 +616,8 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
   info->os_short.clear();
   info->os_version.clear();
 
-  MinidumpSystemInfo *system_info;
-  const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, &system_info);
+  MinidumpSystemInfo* system_info;
+  const MDRawSystemInfo* raw_system_info = GetSystemInfo(dump, &system_info);
   if (!raw_system_info)
     return false;
 
@@ -691,7 +691,7 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
            raw_system_info->build_number);
   info->os_version = os_version_string;
 
-  const string *csd_version = system_info->GetCSDVersion();
+  const string* csd_version = system_info->GetCSDVersion();
   if (csd_version) {
     info->os_version.append(" ");
     info->os_version.append(*csd_version);
@@ -727,12 +727,12 @@ bool MinidumpProcessor::GetProcessCreateTime(Minidump* dump,
 }
 
 // static
-string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
-  MinidumpException *exception = dump->GetException();
+string MinidumpProcessor::GetCrashReason(Minidump* dump, uint64_t* address) {
+  MinidumpException* exception = dump->GetException();
   if (!exception)
     return "";
 
-  const MDRawExceptionStream *raw_exception = exception->exception();
+  const MDRawExceptionStream* raw_exception = exception->exception();
   if (!raw_exception)
     return "";
 
@@ -752,7 +752,7 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
            flags_string);
   string reason = reason_string;
 
-  const MDRawSystemInfo *raw_system_info = GetSystemInfo(dump, NULL);
+  const MDRawSystemInfo* raw_system_info = GetSystemInfo(dump, NULL);
   if (!raw_system_info)
     return reason;
 
@@ -1743,12 +1743,12 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
 }
 
 // static
-string MinidumpProcessor::GetAssertion(Minidump *dump) {
-  MinidumpAssertion *assertion = dump->GetAssertion();
+string MinidumpProcessor::GetAssertion(Minidump* dump) {
+  MinidumpAssertion* assertion = dump->GetAssertion();
   if (!assertion)
     return "";
 
-  const MDRawAssertionInfo *raw_assertion = assertion->assertion();
+  const MDRawAssertionInfo* raw_assertion = assertion->assertion();
   if (!raw_assertion)
     return "";
 

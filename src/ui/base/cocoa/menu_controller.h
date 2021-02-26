@@ -7,13 +7,20 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 class MenuModel;
 }
+
+COMPONENT_EXPORT(UI_BASE)
+@protocol MenuControllerCocoaDelegate
+- (void)controllerWillAddItem:(NSMenuItem*)menuItem
+                    fromModel:(ui::MenuModel*)model
+                      atIndex:(NSInteger)index;
+@end
 
 // A controller for the cross-platform menu model. The menu that's created
 // has the tag and represented object set for each menu item. The object is a
@@ -21,7 +28,7 @@ class MenuModel;
 // allow for hierarchical menus). The tag is the index into that model for
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
-UI_BASE_EXPORT
+COMPONENT_EXPORT(UI_BASE)
 @interface MenuControllerCocoa
     : NSObject<NSMenuDelegate, NSUserInterfaceValidations>
 
@@ -40,6 +47,7 @@ UI_BASE_EXPORT
 // slightly different form (0th item is empty). Note this attribute of the menu
 // cannot be changed after it has been created.
 - (instancetype)initWithModel:(ui::MenuModel*)model
+                     delegate:(id<MenuControllerCocoaDelegate>)delegate
        useWithPopUpButtonCell:(BOOL)useWithCell;
 
 // Programmatically close the constructed menu.

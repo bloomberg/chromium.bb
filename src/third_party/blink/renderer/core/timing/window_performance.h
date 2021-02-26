@@ -32,10 +32,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 
+#include "base/rand_util.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/timing/event_counts.h"
 #include "third_party/blink/renderer/core/timing/memory_info.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
@@ -45,10 +47,12 @@
 
 namespace blink {
 
+class IntSize;
+
 class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
-                                            public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WindowPerformance);
+                                            public ExecutionContextClient,
+                                            public PageVisibilityObserver {
   friend class WindowPerformanceTest;
 
  public:
@@ -76,6 +80,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            bool cancelable,
                            Node*);
 
+  void OnPaintFinished();
+
   void AddElementTiming(const AtomicString& name,
                         const String& url,
                         const FloatRect& rect,
@@ -87,6 +93,10 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                         Element*);
 
   void AddLayoutShiftEntry(LayoutShift*);
+  void AddVisibilityStateEntry(bool is_visible, base::TimeTicks start_time);
+
+  // PageVisibilityObserver
+  void PageVisibilityChanged() override;
 
   void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
                                        uint64_t paint_size,
@@ -95,7 +105,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                                        const String& url,
                                        Element*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
@@ -115,14 +125,32 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   // Method called once swap promise is resolved. It will add all event timings
   // that have not been added since the last swap promise.
-  void ReportEventTimings(WebSwapResult result, base::TimeTicks timestamp);
+  void ReportEventTimings(uint64_t frame_index,
+                          WebSwapResult result,
+                          base::TimeTicks timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
 
-  // PerformanceEventTiming entries that have not been added yet: the event
-  // dispatch has been completed but the swap promise used to determine
-  // |duration| has not been resolved.
-  HeapVector<Member<PerformanceEventTiming>> event_timings_;
+  // Counter of the current frame index, based on calls to OnPaintFinished().
+  uint64_t frame_index_ = 1;
+  // Monotonically increasing value with the last frame index on which a swap
+  // promise was queued;
+  uint64_t last_registered_frame_index_ = 0;
+  // Number of pending swap promises.
+  uint16_t pending_swap_promise_count_ = 0;
+  // PerformanceEventTiming entries that have not been sent to observers yet:
+  // the event dispatch has been completed but the swap promise used to
+  // determine |duration| has not yet been resolved. It is handled as a queue:
+  // FIFO.
+  HeapDeque<Member<PerformanceEventTiming>> event_timings_;
+  // Entries corresponding to frame indices in which the entries in
+  // |event_timings_| were added. This could be combined with |event_timings_|
+  // into a single deque, but PerformanceEventTiming is GarbageCollected so it
+  // would need to be a HeapDeque. HeapDeque does not allow std::pair as its
+  // type, so we would have to add a new wrapper GarbageCollected class that
+  // contains the PerformanceEventTiming object as well as the frame index. This
+  // is more work than having two separate deques.
+  Deque<uint64_t> event_frames_;
   Member<PerformanceEventTiming> first_pointer_down_event_timing_;
   Member<EventCounts> event_counts_;
   mutable Member<PerformanceNavigation> navigation_;

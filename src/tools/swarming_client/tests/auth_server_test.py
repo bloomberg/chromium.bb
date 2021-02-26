@@ -338,7 +338,8 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
         with self.assertRaises(http_client.ResponseNotReady):
           self.assertRaises(service.request(request_url, data={}).read())
       else:
-        with self.assertRaises(ConnectionRefusedError):
+        # pylint: disable=line-too-long
+        with self.assertRaises(ConnectionRefusedError):  # pylint: disable=undefined-variable
           self.assertRaises(service.request(request_url, data={}).read())
 
   def test_expired_token(self):

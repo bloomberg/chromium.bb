@@ -25,8 +25,6 @@ import urlparse
 SERVER_TYPES = {
     'http': '',
     'ftp': '-f',
-    'tcpecho': '--tcp-echo',
-    'udpecho': '--udp-echo',
     'ws': '--websocket',
 }
 
@@ -61,9 +59,6 @@ def _GetServerTypeCommandLine(server_type):
   """
   if server_type not in SERVER_TYPES:
     raise NotImplementedError('Unknown server type: %s' % server_type)
-  if server_type == 'udpecho':
-    raise Exception('Please do not run UDP echo tests because we do not have '
-                    'a UDP forwarder tool.')
   return SERVER_TYPES[server_type]
 
 
@@ -270,6 +265,10 @@ class TestServerThread(threading.Thread):
     self.stop_event.wait()
     if self.process.poll() is None:
       self.process.kill()
+      # Wait for process to actually terminate.
+      # (crbug.com/946475)
+      self.process.wait()
+
     self.port_forwarder.Unmap(self.forwarder_device_port)
     self.process = None
     self.is_ready = False
@@ -387,8 +386,11 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self._SendResponse(200, 'OK', {}, 'killed')
       _logger.info('Test server on port %d is killed', port)
     else:
-      self._SendResponse(500, 'Test Server Error.', {}, '')
-      _logger.info('Encounter problem during killing a test server.')
+      # We expect the port to be free, but nothing stops the system from
+      # binding something else to that port, so don't throw error.
+      # (crbug.com/946475)
+      self._SendResponse(200, 'OK', {}, '')
+      _logger.warn('Port %s is not free after killing test server.' % port)
 
   def log_message(self, format, *args):
     # Suppress the default HTTP logging behavior if the logging level is higher

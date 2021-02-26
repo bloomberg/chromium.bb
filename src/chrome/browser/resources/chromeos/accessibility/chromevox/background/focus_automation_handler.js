@@ -36,12 +36,22 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
    */
   onFocus(evt) {
     this.removeAllListeners();
+
+    // Events on roots and web views can be very noisy due to bubling. Ignore
+    // these.
+    if (evt.target.root === evt.target ||
+        evt.target.role === RoleType.WEB_VIEW) {
+      return;
+    }
+
     this.previousActiveDescendant_ = evt.target.activeDescendant;
     this.node_ = evt.target;
     this.addListener_(
-        EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
+        EventType.ACTIVE_DESCENDANT_CHANGED, this.onActiveDescendantChanged);
     this.addListener_(
         EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
+    this.addListener_(
+        EventType.SELECTED_VALUE_CHANGED, this.onSelectedValueChanged_);
   }
 
   /**
@@ -49,7 +59,18 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
    * @param {!AutomationEvent} evt
    */
   onActiveDescendantChanged(evt) {
-    if (!evt.target.activeDescendant || !evt.target.state.focused) {
+    if (!evt.target.activeDescendant) {
+      return;
+    }
+
+    let skipFocusCheck = false;
+    chrome.automation.getFocus(focus => {
+      if (focus.role === RoleType.POP_UP_BUTTON) {
+        skipFocusCheck = true;
+      }
+    });
+
+    if (!skipFocusCheck && !evt.target.state.focused) {
       return;
     }
 
@@ -74,6 +95,33 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
   onEventIfSelected(evt) {
     if (evt.target.selected) {
       this.onEventDefault(evt);
+    }
+  }
+
+  /**
+   * @param {!ChromeVoxEvent} evt
+   */
+  onSelectedValueChanged_(evt) {
+    if (evt.target.role !== RoleType.POP_UP_BUTTON ||
+        evt.target.state.editable) {
+      return;
+    }
+
+    // Focus might be on a container above the popup button.
+    if (this.node_ !== evt.target) {
+      return;
+    }
+
+    // If it has children, that means a menu is showing.
+    if (evt.target.firstChild) {
+      return;
+    }
+
+    if (evt.target.value) {
+      const output = new Output();
+      output.format('$value @describe_index($posInSet, $setSize)', evt.target);
+      output.go();
+      return;
     }
   }
 };

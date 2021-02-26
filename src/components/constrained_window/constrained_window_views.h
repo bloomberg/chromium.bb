@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -58,20 +57,6 @@ views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents);
 
-#if defined(OS_MACOSX)
-// Like ShowWebModalDialogViews, but used to show a native dialog "sheet" on
-// Mac. Sheets are always modal to their parent window. To make them tab-modal,
-// this provides an invisible tab-modal overlay window managed by
-// WebContentsModalDialogManager, which can host a dialog sheet. The caller
-// should not create the sheet until |show_sheet| is called, which may be
-// synchronous or in a separate event loop iteration. |show_sheet| is passed the
-// overlay window the attach the sheet to.
-views::Widget* ShowWebModalDialogWithOverlayViews(
-    views::WidgetDelegate* dialog,
-    content::WebContents* initiator_web_contents,
-    base::OnceCallback<void(views::Widget*)> show_sheet);
-#endif
-
 // Create a widget for |dialog| that is modal to |web_contents|.
 // The modal type of |dialog->GetModalType()| must be ui::MODAL_TYPE_CHILD.
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
@@ -82,7 +67,9 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 // ui::MODAL_TYPE_SYSTEM or ui::MODAL_TYPE_WINDOW.  This places the dialog
 // appropriately if |parent| is a valid browser window. Currently, |parent| may
 // be null for MODAL_TYPE_WINDOW, but that's a bug and callers shouldn't rely on
-// that working. See http://crbug.com/657293.
+// that working. See http://crbug.com/657293. Instead of calling this function
+// with null |parent| and MODAL_TYPE_WINDOW, consider calling views::
+// DialogDelegate::CreateDialogWidget(dialog, nullptr, nullptr) instead.
 // For dialogs that may appear without direct user interaction (i.e., that may
 // appear while a user is busily accomplishing some other task in the browser),
 // consider providing an override of GetDefaultDialogButton on |dialog| to

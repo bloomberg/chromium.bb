@@ -10,11 +10,15 @@
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,7 +26,6 @@
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -43,6 +46,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -83,7 +87,7 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
                            UnloadedExtensionReason reason) override {
     original_complete_.reset(new LazyBackgroundObserver(profile_));
     incognito_complete_.reset(
-        new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
+        new LazyBackgroundObserver(profile_->GetPrimaryOTRProfile()));
   }
 
   Profile* profile_;
@@ -139,6 +143,19 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
     return pm->GetBackgroundHostForExtension(extension_id);
   }
 
+  void OpenDevToolsWindowForAnInactiveEventPage(
+      scoped_refptr<const Extension> extension) {
+    auto dev_tools_function =
+        base::MakeRefCounted<api::DeveloperPrivateOpenDevToolsFunction>();
+    extension_function_test_utils::RunFunction(dev_tools_function.get(),
+                                               base::StringPrintf(
+                                                   R"([{"renderViewId": -1,
+                                                        "renderProcessId": -1,
+                                                        "extensionId": "%s"}])",
+                                                   extension->id().c_str()),
+                                               browser(), api_test_utils::NONE);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LazyBackgroundPageApiTest);
 };
@@ -159,9 +176,11 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   // Background page created a new tab before it closed.
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(std::string(chrome::kChromeUIExtensionsURL),
-            browser()->tab_strip_model()->GetActiveWebContents()->
-                GetURL().spec());
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(active_tab));
+  EXPECT_EQ(GURL(chrome::kChromeUIExtensionsURL),
+            active_tab->GetLastCommittedURL());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
@@ -273,6 +292,39 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   EXPECT_FALSE(IsBackgroundPageAlive(extension->id()));
 }
 
+// Tests that DevToolsWindowCreationObserver observes creation of the lazy
+// background page.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
+                       DevToolsWindowCreationObserver) {
+  scoped_refptr<const Extension> extension =
+      LoadExtensionAndWait("browser_action_create_tab");
+  // Lazy Background Page doesn't exist yet.
+  EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
+
+  DevToolsWindowCreationObserver devtools_observer;
+  // base::Unretained is safe because of
+  // DevToolsWindowCreationObserver::WaitForLoad()
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &LazyBackgroundPageApiTest::OpenDevToolsWindowForAnInactiveEventPage,
+          base::Unretained(this), extension));
+  devtools_observer.WaitForLoad();
+
+  // Verify that dev tools opened.
+  content::DevToolsAgentHost::List targets =
+      content::DevToolsAgentHost::GetOrCreateAll();
+  scoped_refptr<content::DevToolsAgentHost> service_worker_host;
+  for (const scoped_refptr<content::DevToolsAgentHost>& host : targets) {
+    if (host->GetURL() == BackgroundInfo::GetBackgroundURL(extension.get())) {
+      EXPECT_FALSE(service_worker_host);
+      service_worker_host = host;
+    }
+  }
+  ASSERT_TRUE(service_worker_host);
+  EXPECT_TRUE(DevToolsWindow::FindDevToolsWindow(service_worker_host.get()));
+}
+
 // Tests that the lazy background page stays alive until all visible views are
 // closed.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
@@ -284,10 +336,12 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
   ASSERT_TRUE(extension);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(active_tab));
   // The extension should've opened a new tab to an extension page.
-  EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
-            browser()->tab_strip_model()->GetActiveWebContents()->
-                GetURL().spec());
+  EXPECT_EQ(extension->GetResourceURL("extension_page.html"),
+            active_tab->GetLastCommittedURL());
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.
@@ -384,9 +438,11 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInView) {
     const Extension* extension = LoadExtension(extdir);
     ASSERT_TRUE(extension);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-    EXPECT_EQ(
-        extension->GetResourceURL("popup.html").spec(),
-        browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec());
+    EXPECT_EQ(extension->GetResourceURL("popup.html"),
+              browser()
+                  ->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetLastCommittedURL());
     EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
   }
 
@@ -407,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInView) {
 // Tests that the lazy background page stays alive until all visible views are
 // closed.
 // http://crbug.com/175778; test fails frequently on OS X
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WaitForNTP DISABLED_WaitForNTP
 #else
 #define MAYBE_WaitForNTP WaitForNTP
@@ -421,9 +477,12 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_WaitForNTP) {
   ASSERT_TRUE(extension);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(active_tab));
   // The extension should've opened a new tab to an extension page.
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+            active_tab->GetLastCommittedURL());
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.

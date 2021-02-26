@@ -7,13 +7,13 @@
 
 #include <algorithm>
 
+#include "absl/types/optional.h"
 #include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/core/quic_interval.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
 
 namespace quic {
 
@@ -186,6 +186,7 @@ class QUIC_NO_EXPORT QuicIntervalDeque {
       return copy;
     }
     reference operator*() { return deque_->container_[index_]; }
+    reference operator*() const { return deque_->container_[index_]; }
     pointer operator->() { return &deque_->container_[index_]; }
     bool operator==(const Iterator& rhs) const {
       return index_ == rhs.index_ && deque_ == rhs.deque_;
@@ -259,7 +260,7 @@ class QUIC_NO_EXPORT QuicIntervalDeque {
   friend class test::QuicIntervalDequePeer;
 
   C container_;
-  quiche::QuicheOptional<std::size_t> cached_index_;
+  absl::optional<std::size_t> cached_index_;
 };
 
 template <class T, class C>

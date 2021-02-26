@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -59,7 +58,8 @@ public class TabContentManager {
     // These are used for UMA logging, so append only. Please update the
     // GridTabSwitcherThumbnailFetchingResult enum in enums.xml if these change.
     @IntDef({ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.GOT_ETC1,
-            ThumbnailFetchingResult.GOT_NOTHING})
+            ThumbnailFetchingResult.GOT_NOTHING,
+            ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ThumbnailFetchingResult {
         int GOT_JPEG = 0;
@@ -474,8 +474,7 @@ public class TabContentManager {
 
                             mRefectchedTabIds.add(tabId);
                             TabContentManagerJni.get().getEtc1TabThumbnail(mNativeTabContentManager,
-                                    TabContentManager.this, tabId,
-                                    (etc1) -> callback.onResult(etc1));
+                                    TabContentManager.this, tabId, callback);
                             return;
                         }
                     }
@@ -645,7 +644,7 @@ public class TabContentManager {
     }
 
     private boolean isNativeViewShowing(Tab tab) {
-        return tab != null && TabViewManager.get(tab).getCurrentTabViewProvider() != null;
+        return tab != null && tab.isShowingCustomView();
     }
 
     @NativeMethods

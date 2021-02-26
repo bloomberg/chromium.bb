@@ -26,6 +26,9 @@ enum class InstallErrors {
 
   // Failed to find a path to the install executable.
   kExecutableFilePathDoesNotExist = -4,
+
+  // Executable path does not contain an executable file.
+  kExecutablePathNotExecutable = -5
 };
 
 // Mounts the DMG specified by |dmg_file_path|. The install executable located
@@ -33,6 +36,7 @@ enum class InstallErrors {
 // un-mounted. Returns an error code if mounting the DMG or executing the
 // executable failed.
 int InstallFromDMG(const base::FilePath& dmg_file_path,
+                   const base::FilePath& existence_checker_path,
                    const std::string& arguments);
 
 }  // namespace updater

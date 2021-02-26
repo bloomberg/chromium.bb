@@ -8,18 +8,15 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
+#include "chrome/renderer/lite_video/lite_video_hint_agent.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
@@ -31,26 +28,15 @@ namespace previews {
 class ResourceLoadingHintsAgent
     : public content::RenderFrameObserver,
       public blink::mojom::PreviewsResourceLoadingHintsReceiver,
-      public base::SupportsWeakPtr<ResourceLoadingHintsAgent>,
-      public content::RenderFrameObserverTracker<ResourceLoadingHintsAgent> {
+      public base::SupportsWeakPtr<ResourceLoadingHintsAgent> {
  public:
   ResourceLoadingHintsAgent(
       blink::AssociatedInterfaceRegistry* associated_interfaces,
       content::RenderFrame* render_frame);
   ~ResourceLoadingHintsAgent() override;
 
-  subresource_redirect::SubresourceRedirectHintsAgent&
-  subresource_redirect_hints_agent() {
-    return subresource_redirect_hints_agent_;
-  }
-
  private:
   // content::RenderFrameObserver:
-  void DidStartNavigation(
-      const GURL& url,
-      base::Optional<blink::WebNavigationType> navigation_type) override;
-  void ReadyToCommitNavigation(
-      blink::WebDocumentLoader* document_loader) override;
   void DidCreateNewDocument() override;
   void OnDestruct() override;
 
@@ -61,6 +47,11 @@ class ResourceLoadingHintsAgent
                                    resource_loading_hints) override;
   void SetCompressPublicImagesHints(
       blink::mojom::CompressPublicImagesHintsPtr images_hints) override;
+  void SetLiteVideoHint(
+      blink::mojom::LiteVideoHintPtr lite_video_hint) override;
+  void SetBlinkOptimizationGuideHints(
+      blink::mojom::BlinkOptimizationGuideHintsPtr hints) override;
+  void StopThrottlingMediaRequests() override;
 
   void SetReceiver(
       mojo::PendingAssociatedReceiver<
@@ -74,8 +65,7 @@ class ResourceLoadingHintsAgent
   mojo::AssociatedReceiver<blink::mojom::PreviewsResourceLoadingHintsReceiver>
       receiver_{this};
 
-  subresource_redirect::SubresourceRedirectHintsAgent
-      subresource_redirect_hints_agent_;
+  blink::mojom::BlinkOptimizationGuideHintsPtr blink_optimization_guide_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsAgent);
 };

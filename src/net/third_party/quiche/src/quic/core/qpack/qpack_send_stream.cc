@@ -4,9 +4,9 @@
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_send_stream.h"
 
+#include "absl/base/macros.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 QpackSendStream::QpackSendStream(QuicStreamId id,
@@ -20,14 +20,14 @@ void QpackSendStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
   QUIC_BUG << "OnStreamReset() called for write unidirectional stream.";
 }
 
-bool QpackSendStream::OnStopSending(uint16_t /* code */) {
+bool QpackSendStream::OnStopSending(QuicRstStreamErrorCode /* code */) {
   stream_delegate()->OnStreamError(
       QUIC_HTTP_CLOSED_CRITICAL_STREAM,
       "STOP_SENDING received for QPACK send stream");
   return false;
 }
 
-void QpackSendStream::WriteStreamData(quiche::QuicheStringPiece data) {
+void QpackSendStream::WriteStreamData(absl::string_view data) {
   QuicConnection::ScopedPacketFlusher flusher(session()->connection());
   MaybeSendStreamType();
   WriteOrBufferData(data, false, nullptr);
@@ -36,10 +36,10 @@ void QpackSendStream::WriteStreamData(quiche::QuicheStringPiece data) {
 void QpackSendStream::MaybeSendStreamType() {
   if (!stream_type_sent_) {
     char type[sizeof(http3_stream_type_)];
-    QuicDataWriter writer(QUICHE_ARRAYSIZE(type), type);
+    QuicDataWriter writer(ABSL_ARRAYSIZE(type), type);
     writer.WriteVarInt62(http3_stream_type_);
-    WriteOrBufferData(quiche::QuicheStringPiece(writer.data(), writer.length()),
-                      false, nullptr);
+    WriteOrBufferData(absl::string_view(writer.data(), writer.length()), false,
+                      nullptr);
     stream_type_sent_ = true;
   }
 }

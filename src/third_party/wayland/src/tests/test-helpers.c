@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
@@ -67,11 +68,19 @@ count_open_fds(void)
 void
 exec_fd_leak_check(int nr_expected_fds)
 {
-	const char *exe = "./exec-fd-leak-checker";
+	const char *exe = "exec-fd-leak-checker";
 	char number[16] = { 0 };
+	const char *test_build_dir = getenv("TEST_BUILD_DIR");
+	char exe_path[256] = { 0 };
+
+	if (test_build_dir == NULL || test_build_dir[0] == 0) {
+	        test_build_dir = ".";
+	}
+
+	snprintf(exe_path, sizeof exe_path - 1, "%s/%s", test_build_dir, exe);
 
 	snprintf(number, sizeof number - 1, "%d", nr_expected_fds);
-	execl(exe, exe, number, (char *)NULL);
+	execl(exe_path, exe, number, (char *)NULL);
 	assert(0 && "execing fd leak checker failed");
 }
 

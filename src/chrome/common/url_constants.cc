@@ -16,7 +16,7 @@ const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
 const char kAdvancedProtectionDownloadLearnMoreURL[] =
-    "https://support.google.com/accounts/?p=ap_faq";
+    "https://support.google.com/accounts/accounts?p=safe-browsing";
 
 const char kBluetoothAdapterOffHelpURL[] =
     "https://support.google.com/chrome?p=bluetooth";
@@ -98,17 +98,10 @@ const char kChromeUIUntrustedNewTabPageUrl[] =
 
 const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
-const char kCloudPrintLearnMoreURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromebook/?p=settings_cloud_print";
-#else
-    "https://support.google.com/chrome/?p=settings_cloud_print";
-#endif
-
 const char kCloudPrintCertificateErrorLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook?p=cloudprint_error_troubleshoot";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     "https://support.google.com/cloudprint?p=cloudprint_error_offline_mac";
 #elif defined(OS_WIN)
         "https://support.google.com/"
@@ -123,6 +116,9 @@ const char kContentSettingsExceptionsLearnMoreURL[] =
 
 const char kCookiesSettingsHelpCenterURL[] =
     "https://support.google.com/chrome?p=cpn_cookies";
+
+const char kCpuX86Sse2ObsoleteURL[] =
+    "https://support.google.com/chrome/?p=chrome_update_sse3";
 
 const char kCrashReasonURL[] =
 #if defined(OS_CHROMEOS)
@@ -169,6 +165,8 @@ const char kGoogleAccountChooserURL[] =
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
+const char kGooglePhotosURL[] = "https://photos.google.com";
+
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
 
@@ -211,6 +209,9 @@ const char kPasswordCheckLearnMoreURL[] =
     "?p=settings_password#leak_detection_privacy";
 #endif
 
+const char kPasswordGenerationLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/7570435";
+
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_password";
@@ -251,6 +252,9 @@ const char kSafeBrowsingHelpCenterURL[] =
 const char kSafetyTipHelpCenterURL[] =
     "https://support.google.com/chrome/?p=safety_tip";
 
+const char kSeeMoreSecurityTipsURL[] =
+    "https://support.google.com/accounts/answer/32040";
+
 const char kSettingsSearchHelpURL[] =
     "https://support.google.com/chrome/?p=settings_search_help";
 
@@ -279,6 +283,8 @@ const char kUpgradeHelpCenterBaseURL[] =
 
 const char kWhoIsMyAdministratorHelpURL[] =
     "https://support.google.com/chrome?p=your_administrator";
+
+const char kChromeFlashRoadmapURL[] = "https://www.chromium.org/flash-roadmap/";
 
 #if defined(OS_ANDROID)
 const char kAndroidAppScheme[] = "android-app";
@@ -323,14 +329,14 @@ const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
 const char kChromeOSCreditsPath[] =
     "/opt/google/chrome/resources/about_os_credits.html";
 
+// TODO(carpenterr): Have a solution for plink mapping in Help App.
+// The magic numbers in this url are the topic and article ids currently
+// required to navigate directly to a help article in the Help App.
 const char kChromeOSGestureEducationHelpURL[] =
-    "https://support.google.com/chromebook?p=tablet_mode_gestures";
+    "chrome://help-app/help/sub/3399710/id/9739838";
 
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
-
-const char kClassroomSigninLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=familylink_accounts";
 
 const char kCrosScheme[] = "cros";
 
@@ -343,11 +349,17 @@ const char kCupsPrintPPDLearnMoreURL[] =
 const char kEasyUnlockLearnMoreUrl[] =
     "https://support.google.com/chromebook/?p=smart_lock";
 
+const char kEchoLearnMoreURL[] =
+    "chrome://help-app/help/sub/3399709/id/2703646";
+
 const char kArcTermsPathFormat[] = "arc_tos/%s/terms.html";
 
 const char kArcPrivacyPolicyPathFormat[] = "arc_tos/%s/privacy_policy.pdf";
 
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
+
+const char kAutoUpdatePolicyURL[] =
+    "http://support.google.com/chrome/a?p=auto-update-policy";
 
 const char kGoogleNameserversLearnMoreURL[] =
     "https://developers.google.com/speed/public-dns";
@@ -379,9 +391,6 @@ const char kLinuxAppsLearnMoreURL[] =
 const char kLinuxExportImportHelpURL[] =
     "https://support.google.com/chromebook?p=linux_backup_restore";
 
-const char kLinuxCreditsPath[] =
-    "/opt/google/chrome/resources/linux_credits.html";
-
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
@@ -405,6 +414,9 @@ const char kTimeZoneSettingsLearnMoreURL[] =
 const char kSmbSharesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=network_file_shares";
 
+const char kSuggestedContentLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=explorecontent";
+
 const char kTabletModeGesturesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=tablet_mode_gestures";
 
@@ -412,11 +424,11 @@ const char kWifiSyncLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=wifisync";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kChromeEnterpriseSignInLearnMoreURL[] =
     "https://support.google.com/chromebook/answer/1331549";
 
-const char kMac10_9_ObsoleteURL[] =
+const char kMac10_10_ObsoleteURL[] =
     "https://support.google.com/chrome/?p=unsupported_mac";
 #endif
 

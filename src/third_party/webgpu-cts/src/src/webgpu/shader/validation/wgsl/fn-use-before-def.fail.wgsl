@@ -12,8 +12,7 @@ fn c() -> i32 {
   return a();
 }
 
+[[stage(vertex)]]
 fn main() -> void {
   return;
 }
-entry_point vertex = main;
-

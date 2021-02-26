@@ -68,36 +68,33 @@ const CGFloat kHeaderHeight = 70;
       NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
                         @"AutoFill Chrome Password");
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
 
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController.searchResultsUpdater = self;
   self.searchController.obscuresBackgroundDuringPresentation = NO;
-  self.searchController.searchBar.translucent = YES;
   self.searchController.searchBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
+  // Add en empty space at the bottom of the list, the size of the search bar,
+  // to allow scrolling up enough to see last result, otherwise it remains
+  // hidden under the accessories.
+  self.tableView.tableFooterView =
+      [[UIView alloc] initWithFrame:self.searchController.searchBar.frame];
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-  self.tableView.tableHeaderView = self.searchController.searchBar;
-  self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
-
-  self.navigationController.navigationBar.translucent = NO;
   self.navigationController.navigationBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
   self.navigationController.navigationBar.tintColor =
       [UIColor colorNamed:kBlueColor];
   self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
-  [self.navigationController.navigationBar
-      setBackgroundImage:[[UIImage alloc] init]
-           forBarMetrics:UIBarMetricsDefault];
 
   // Presentation of searchController will walk up the view controller hierarchy
   // until it finds the root view controller or one that defines a presentation
   // context. Make this class the presentation context so that the search
   // controller does not present on top of the navigation controller.
   self.definesPresentationContext = YES;
-
   [self.tableView registerClass:[UITableViewHeaderFooterView class]
       forHeaderFooterViewReuseIdentifier:kHeaderIdentifier];
 }
@@ -109,6 +106,7 @@ const CGFloat kHeaderHeight = 70;
   self.suggestedPasswords = suggested;
   self.allPasswords = all;
   [self.tableView reloadData];
+  [self.tableView layoutIfNeeded];
 }
 
 #pragma mark - UITableViewDataSource
@@ -158,26 +156,14 @@ const CGFloat kHeaderHeight = 70;
     cell.accessoryView = [self infoIconButton];
   }
 
-  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-
   id<Credential> credential = [self credentialForIndexPath:indexPath];
-  if (credential.favicon.length) {
-    // TODO(crbug.com/1045454): draw actual icon.
-    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  } else {
-    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    cell.imageView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
-  }
-  cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
-  cell.accessoryView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  cell.textLabel.text = credential.user;
+  cell.textLabel.text = credential.serviceName;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  cell.detailTextLabel.text = credential.serviceName;
+  cell.detailTextLabel.text = credential.user;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  cell.accessibilityTraits |= UIAccessibilityTraitButton;
 
   return cell;
 }
@@ -240,6 +226,9 @@ const CGFloat kHeaderHeight = 70;
   [button addTarget:self
                 action:@selector(infoIconButtonTapped:event:)
       forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityLabel = NSLocalizedString(
+      @"IDS_IOS_CREDENTIAL_PROVIDER_SHOW_DETAILS_ACCESSIBILITY_LABEL",
+      @"Show Details.");
 
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {

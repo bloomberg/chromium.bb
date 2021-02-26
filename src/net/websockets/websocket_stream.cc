@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
@@ -34,35 +35,6 @@
 #include "net/websockets/websocket_http2_handshake_stream.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace {
-
-// Please refer to the comment in class header if the usage changes.
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("websocket_stream", R"(
-        semantics {
-          sender: "WebSocket Handshake"
-          description:
-            "Renderer process initiated WebSocket handshake. The WebSocket "
-            "handshake is used to establish a connection between a web page "
-            "and a consenting server for bi-directional communication."
-          trigger:
-            "A handshake is performed every time a new connection is "
-            "established via the Javascript or PPAPI WebSocket API. Any web "
-            "page or extension can create a WebSocket connection."
-          data: "The path and sub-protocols requested when the WebSocket was "
-                "created, plus the origin of the creating page."
-          destination: OTHER
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user or per-app cookie store"
-          setting: "These requests cannot be disabled."
-          policy_exception_justification:
-            "Not implemented. WebSocket is a core web platform API."
-        })");
-
-}  // namespace
 
 namespace net {
 namespace {
@@ -117,17 +89,18 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       std::unique_ptr<WebSocketStreamRequestAPI> api_delegate)
       : delegate_(this),
         url_request_(context->CreateRequest(url,
                                             DEFAULT_PRIORITY,
                                             &delegate_,
-                                            kTrafficAnnotation)),
+                                            traffic_annotation)),
         connect_delegate_(std::move(connect_delegate)),
         api_delegate_(std::move(api_delegate)) {
-    DCHECK_EQ(IsolationInfo::RedirectMode::kUpdateNothing,
-              isolation_info.redirect_mode());
+    DCHECK_EQ(IsolationInfo::RequestType::kOther,
+              isolation_info.request_type());
 
     HttpRequestHeaders headers = additional_headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
@@ -175,10 +148,14 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     OnHandshakeStreamCreated(handshake_stream);
   }
 
-  void OnFailure(const std::string& message) override {
+  void OnFailure(const std::string& message,
+                 int net_error,
+                 base::Optional<int> response_code) override {
     if (api_delegate_)
-      api_delegate_->OnFailure(message);
+      api_delegate_->OnFailure(message, net_error, response_code);
     failure_message_ = message;
+    failure_net_error_ = net_error;
+    failure_response_code_ = response_code;
   }
 
   void Start(std::unique_ptr<base::OneShotTimer> timer) {
@@ -200,8 +177,9 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 
     if (!handshake_stream_) {
       ReportFailureWithMessage(
-          "No handshake stream has been created "
-          "or handshake stream is already destroyed.");
+          "No handshake stream has been created or handshake stream is already "
+          "destroyed.",
+          ERR_FAILED, base::nullopt);
       return;
     }
 
@@ -233,7 +211,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     }
   }
 
-  void ReportFailure(int net_error) {
+  void ReportFailure(int net_error, base::Optional<int> response_code) {
     DCHECK(timer_);
     timer_->Stop();
     if (failure_message_.empty()) {
@@ -252,11 +230,16 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
           break;
       }
     }
-    ReportFailureWithMessage(failure_message_);
+
+    ReportFailureWithMessage(
+        failure_message_, failure_net_error_.value_or(net_error),
+        failure_response_code_ ? failure_response_code_ : response_code);
   }
 
-  void ReportFailureWithMessage(const std::string& failure_message) {
-    connect_delegate_->OnFailure(failure_message);
+  void ReportFailureWithMessage(const std::string& failure_message,
+                                int net_error,
+                                base::Optional<int> response_code) {
+    connect_delegate_->OnFailure(failure_message, net_error, response_code);
   }
 
   WebSocketStream::ConnectDelegate* connect_delegate() const {
@@ -293,8 +276,10 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   // succeeded.
   base::WeakPtr<WebSocketHandshakeStreamBase> handshake_stream_;
 
-  // The failure message supplied by WebSocketBasicHandshakeStream, if any.
+  // The failure information supplied by WebSocketBasicHandshakeStream, if any.
   std::string failure_message_;
+  base::Optional<int> failure_net_error_;
+  base::Optional<int> failure_response_code_;
 
   // A timer for handshake timeout.
   std::unique_ptr<base::OneShotTimer> timer_;
@@ -367,7 +352,7 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
 
   if (net_error != OK) {
     DVLOG(3) << "OnResponseStarted (request failed)";
-    owner_->ReportFailure(net_error);
+    owner_->ReportFailure(net_error, base::nullopt);
     return;
   }
   const int response_code = request->GetResponseCode();
@@ -380,7 +365,7 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
       return;
     }
 
-    owner_->ReportFailure(net_error);
+    owner_->ReportFailure(net_error, base::nullopt);
     return;
   }
 
@@ -391,15 +376,17 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
 
     case HTTP_UNAUTHORIZED:
       owner_->ReportFailureWithMessage(
-          "HTTP Authentication failed; no valid credentials available");
+          "HTTP Authentication failed; no valid credentials available",
+          net_error, response_code);
       return;
 
     case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      owner_->ReportFailureWithMessage("Proxy authentication failed");
+      owner_->ReportFailureWithMessage("Proxy authentication failed", net_error,
+                                       response_code);
       return;
 
     default:
-      owner_->ReportFailure(net_error);
+      owner_->ReportFailure(net_error, response_code);
   }
 }
 
@@ -419,7 +406,7 @@ void Delegate::OnAuthRequired(URLRequest* request,
     return;
   if (rv != OK) {
     request->LogUnblocked();
-    owner_->ReportFailure(rv);
+    owner_->ReportFailure(rv, base::nullopt);
     return;
   }
   OnAuthRequiredComplete(request, nullptr);
@@ -476,10 +463,11 @@ std::unique_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
+    NetworkTrafficAnnotationTag traffic_annotation,
     std::unique_ptr<ConnectDelegate> connect_delegate) {
   auto request = std::make_unique<WebSocketStreamRequestImpl>(
       socket_url, requested_subprotocols, url_request_context, origin,
-      site_for_cookies, isolation_info, additional_headers,
+      site_for_cookies, isolation_info, additional_headers, traffic_annotation,
       std::move(connect_delegate), nullptr);
   request->Start(std::make_unique<base::OneShotTimer>());
   return std::move(request);
@@ -495,12 +483,13 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
+    NetworkTrafficAnnotationTag traffic_annotation,
     std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
     std::unique_ptr<base::OneShotTimer> timer,
     std::unique_ptr<WebSocketStreamRequestAPI> api_delegate) {
   auto request = std::make_unique<WebSocketStreamRequestImpl>(
       socket_url, requested_subprotocols, url_request_context, origin,
-      site_for_cookies, isolation_info, additional_headers,
+      site_for_cookies, isolation_info, additional_headers, traffic_annotation,
       std::move(connect_delegate), std::move(api_delegate));
   request->Start(std::move(timer));
   return std::move(request);

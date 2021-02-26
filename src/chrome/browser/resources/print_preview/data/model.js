@@ -10,8 +10,8 @@ import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.m
 
 import {BackgroundGraphicsModeRestriction, Policies} from '../native_layer.js';
 
-import {Cdd, CddCapabilities, Destination, DestinationOrigin, DestinationType, RecentDestination} from './destination.js';
-import {getPrinterTypeForDestination} from './destination_match.js';
+import {Cdd, CddCapabilities, Destination, DestinationOrigin, DestinationType, RecentDestination, VendorCapability} from './destination.js';
+import {getPrinterTypeForDestination, PrinterType} from './destination_match.js';
 // <if expr="chromeos">
 import {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
 // </if>
@@ -44,6 +44,7 @@ export let Setting;
  *   collate: !Setting,
  *   layout: !Setting,
  *   color: !Setting,
+ *   customMargins: !Setting,
  *   mediaSize: !Setting,
  *   margins: !Setting,
  *   dpi: !Setting,
@@ -474,7 +475,7 @@ Polymer({
       value: false,
     },
 
-    /** @type {Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
     /** @type {!DocumentSettings} */
@@ -707,8 +708,8 @@ Polymer({
 
   /** @private */
   updateSettingsAvailabilityFromDestinationAndDocumentSettings_() {
-    const isSaveAsPDF =
-        this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF;
+    const isSaveAsPDF = getPrinterTypeForDestination(this.destination) ===
+        PrinterType.PDF_PRINTER;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
@@ -950,7 +951,8 @@ Polymer({
 
     if (this.settings.vendorItems.available) {
       const vendorSettings = {};
-      for (const item of caps.vendor_capability) {
+      for (const item of /** @type {!Array<!VendorCapability>} */ (
+               caps.vendor_capability)) {
         let defaultValue = null;
         if (item.type === 'SELECT' && item.select_cap &&
             item.select_cap.option) {
@@ -1355,6 +1357,10 @@ Polymer({
       pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,
     };
+    // <if expr="chromeos">
+    ticket.printToGoogleDrive = ticket.printToGoogleDrive ||
+        destination.id === Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS;
+    // </if>
 
     // Set 'cloudPrintID' only if the destination is not local.
     if (!destination.isLocal) {

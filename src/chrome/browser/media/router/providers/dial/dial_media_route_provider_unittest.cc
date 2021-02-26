@@ -5,15 +5,15 @@
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
-#include "chrome/browser/media/router/route_message_util.h"
-#include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
+#include "components/media_router/browser/route_message_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -98,8 +98,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
         &mock_sink_service_, "hash-token",
         base::SequencedTaskRunnerHandle::Get());
 
-    auto activity_manager =
-        std::make_unique<TestDialActivityManager>(&loader_factory_);
+    auto activity_manager = std::make_unique<TestDialActivityManager>(
+        mock_sink_service_.app_discovery_service(), &loader_factory_);
     activity_manager_ = activity_manager.get();
     provider_->SetActivityManagerForTest(std::move(activity_manager));
 
@@ -152,14 +152,14 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, OnRoutesUpdated(_, _, _, _)).Times(0);
     provider_->CreateRoute(
         source_id, sink_id, presentation_id, origin, 1, base::TimeDelta(),
-        /* incognito */ false,
+        /* off_the_record */ false,
         base::BindOnce(&DialMediaRouteProviderTest::ExpectCreateRouteResult,
                        base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(route_);
     EXPECT_EQ(presentation_id, route_->presentation_id());
-    EXPECT_FALSE(route_->is_incognito());
+    EXPECT_FALSE(route_->is_off_the_record());
 
     const MediaRoute::Id& route_id = route_->media_route_id();
     std::vector<RouteMessagePtr> received_messages;
@@ -244,8 +244,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     // the app if |doLaunch| is |true|.
     auto* activity = activity_manager_->GetActivity(route_id);
     ASSERT_TRUE(activity);
-    const GURL& app_launch_url = activity->launch_info.app_launch_url;
-    activity_manager_->SetExpectedRequest(app_launch_url, "POST",
+    app_launch_url_ = activity->launch_info.app_launch_url;
+    activity_manager_->SetExpectedRequest(app_launch_url_, "POST",
                                           "pairingCode=foo");
     provider_->SendRouteMessage(
         route_id, base::StringPrintf(kCustomDialLaunchMessage,
@@ -253,11 +253,11 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Simulate a successful launch response.
-    app_instance_url_ = GURL(app_launch_url.spec() + "/run");
+    app_instance_url_ = GURL(app_launch_url_.spec() + "/run");
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
     response_head->headers->AddHeader("LOCATION", app_instance_url_.spec());
-    loader_factory_.AddResponse(app_launch_url, std::move(response_head), "",
+    loader_factory_.AddResponse(app_launch_url_, std::move(response_head), "",
                                 network::URLLoaderCompletionStatus());
     std::vector<MediaRoute> routes;
     EXPECT_CALL(mock_router_, OnRoutesUpdated(_, Not(IsEmpty()), _, IsEmpty()))
@@ -335,8 +335,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(
         mock_router_,
         OnPresentationConnectionStateChanged(
-            route_id,
-            mojom::MediaRouter::PresentationConnectionState::TERMINATED));
+            route_id, blink::mojom::PresentationConnectionState::TERMINATED));
     EXPECT_CALL(mock_router_, OnRoutesUpdated(_, IsEmpty(), _, IsEmpty()));
     base::RunLoop().RunUntilIdle();
 
@@ -354,15 +353,27 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     loader_factory_.AddResponse(
         app_instance_url_, network::mojom::URLResponseHead::New(), "",
         network::URLLoaderCompletionStatus(net::HTTP_SERVICE_UNAVAILABLE));
+    loader_factory_.AddResponse(
+        app_launch_url_, network::mojom::URLResponseHead::New(), "",
+        network::URLLoaderCompletionStatus(net::HTTP_SERVICE_UNAVAILABLE));
     EXPECT_CALL(*this,
                 OnTerminateRoute(_, testing::Ne(RouteRequestResult::OK)));
     EXPECT_CALL(mock_router_, OnRouteMessagesReceived(_, _));
-    EXPECT_CALL(mock_router_, OnPresentationConnectionStateChanged(_, _))
-        .Times(0);
-    EXPECT_CALL(mock_router_, OnRoutesUpdated(_, _, _, _)).Times(0);
+    EXPECT_CALL(mock_router_, OnRoutesUpdated(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mock_sink_service_.app_discovery_service(),
+                DoFetchDialAppInfo(_, _));
     provider_->TerminateRoute(
         route_id, base::BindOnce(&DialMediaRouteProviderTest::OnTerminateRoute,
                                  base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+
+    // The DialActivityManager requests to confirm the state of the app, so we
+    // tell it that the app is still running.
+    mock_sink_service_.app_discovery_service()->PassCallback().Run(
+        sink_.sink().id(), "YouTube",
+        DialAppInfoResult(
+            CreateParsedDialAppInfoPtr("YouTube", DialAppState::kRunning),
+            DialAppInfoResultCode::kOk));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -388,6 +399,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   RouteRequestResult::ResultCode expected_result_code_ = RouteRequestResult::OK;
   std::unique_ptr<MediaRoute> route_;
   int custom_dial_launch_seq_number_ = -1;
+  GURL app_launch_url_;
   GURL app_instance_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DialMediaRouteProviderTest);

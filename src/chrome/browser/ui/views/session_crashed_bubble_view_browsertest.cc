@@ -16,6 +16,7 @@
 #include "content/public/test/browser_test.h"
 #include "ui/base/buildflags.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/view.h"
 
 class SessionCrashedBubbleViewTest : public DialogBrowserTest {
@@ -24,16 +25,13 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
   ~SessionCrashedBubbleViewTest() override {}
 
   void ShowUi(const std::string& name) override {
-    views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser())
-                                   ->toolbar_button_provider()
-                                   ->GetAppMenuButton();
-    crash_bubble_ = new SessionCrashedBubbleView(
-        anchor_view, browser(), name == "SessionCrashedBubbleOfferUma");
-    views::BubbleDialogDelegateView::CreateBubble(crash_bubble_)->Show();
+    // TODO(pbos): Set up UMA opt-in conditions instead of providing this bool.
+    crash_bubble_ = SessionCrashedBubbleView::ShowBubble(
+        browser(), false, name == "SessionCrashedBubbleOfferUma");
   }
 
  protected:
-  SessionCrashedBubbleView* crash_bubble_;
+  views::BubbleDialogDelegateView* crash_bubble_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedBubbleViewTest);
@@ -83,4 +81,17 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
   // deals with it, so a second call should have no effect.
   browser_view->RotatePaneFocus(true);
   EXPECT_TRUE(bubble_focused_view->HasFocus());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest, AlertAccessibleEvent) {
+  views::test::AXEventCounter counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kAlert));
+  ShowUi("SessionCrashedBubble");
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kAlert));
+}
+
+// Regression test for https://crbug.com/1081393.
+IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest, HasCloseButton) {
+  ShowUi("SessionCrashedBubble");
+  EXPECT_TRUE(crash_bubble_->ShouldShowCloseButton());
 }

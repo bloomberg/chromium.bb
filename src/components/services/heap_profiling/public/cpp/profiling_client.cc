@@ -8,13 +8,13 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/allocator/allocator_interception_mac.h"
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -23,6 +23,10 @@
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
 #include "base/trace_event/cfi_backtrace_android.h"
+#endif
+
+#if defined(OS_APPLE)
+#include "base/allocator/allocator_interception_mac.h"
 #endif
 
 namespace heap_profiling {
@@ -42,7 +46,7 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
   started_profiling_ = true;
   base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On macOS, this call is necessary to shim malloc zones that were created
   // after startup. This cannot be done during shim initialization because the
   // task scheduler has not yet been initialized.

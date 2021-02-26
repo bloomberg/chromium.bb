@@ -9,8 +9,8 @@ import android.graphics.Bitmap;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.ConfirmInfoBar;
+import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * An infobar to disclose known monitoring to the user. This is a thin veneer over

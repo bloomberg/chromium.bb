@@ -13,6 +13,14 @@
 
 namespace chrome_test_util {
 
+// Matcher for a window with a given number.
+// Window numbers are assigned at scene creation. Normally, each EGTest will
+// start with exactly one window with number 0. Each time a window is created,
+// it is assigned an accessibility identifier equal to the number of connected
+// scenes (stored as NSString). This means typically any windows created in a
+// test will have consecutive numbers.
+id<GREYMatcher> WindowWithNumber(int window_number);
+
 // Matcher for element with accessibility label corresponding to |message_id|
 // and accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
@@ -39,6 +47,11 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 // accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
+// Matcher for a text element (label, field, etc) whose text contains |text| as
+// a substring. (contrast with grey_text() which tests for a complete string
+// match).
+id<GREYMatcher> ContainsPartialText(NSString* text);
+
 // Matcher for element with accessibility label corresponding to |message_id|
 // and accessibility trait UIAccessibilityTraitHeader.
 id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id);
@@ -46,6 +59,10 @@ id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id);
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitHeader.
 id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label);
+
+// Matcher for navigation bar title element with accessibility label
+// corresponding to |label_id|.
+id<GREYMatcher> NavigationBarTitleWithAccessibilityLabelId(int label_id);
 
 // Matcher for text field of a cell with |message_id|.
 id<GREYMatcher> TextFieldForCellWithLabelId(int message_id);
@@ -105,8 +122,8 @@ id<GREYMatcher> ToolsMenuButton();
 // Matcher for the Share menu button.
 id<GREYMatcher> ShareButton();
 
-// Returns the GREYMatcher for the button that opens the tab switcher.
-id<GREYMatcher> TabletTabSwitcherOpenButton();
+// Matcher for the tab Share button (either in the omnibox or toolbar).
+id<GREYMatcher> TabShareButton();
 
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
@@ -128,6 +145,14 @@ id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
 // a link.
 id<GREYMatcher> OpenLinkInNewTabButton();
 
+// Matcher for the Open in Incognito option in the context menu when long
+// pressing a link. |use_new_string| determines which string to use.
+id<GREYMatcher> OpenLinkInIncognitoButton(BOOL use_new_string);
+
+// Matcher for the Open in New Window option in the context menu when long
+// pressing a link.
+id<GREYMatcher> OpenLinkInNewWindowButton();
+
 // Matcher for the done button on the navigation bar.
 id<GREYMatcher> NavigationBarDoneButton();
 
@@ -136,12 +161,6 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton();
 
 // Matcher for the back button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarBackButton();
-
-// Returns matcher for the account consistency confirmation button.
-id<GREYMatcher> AccountConsistencyConfirmationOkButton();
-
-// Returns matcher for "ADD ACCOUNT" button in unified consent dialog.
-id<GREYMatcher> UnifiedConsentAddAccountButton();
 
 // Returns matcher for the add account accounts button.
 id<GREYMatcher> AddAccountButton();
@@ -176,8 +195,14 @@ id<GREYMatcher> SyncSettingsConfirmButton();
 // settings menu.
 id<GREYMatcher> AutofillCreditCardTableView();
 
+// Returns matcher for the "Addresses and More" button in the settings menu.
+id<GREYMatcher> AddressesAndMoreButton();
+
 // Returns matcher for the "Payment Methods" button in the settings menu.
 id<GREYMatcher> PaymentMethodsButton();
+
+// Returns matcher for the "Languages" button in the settings menu.
+id<GREYMatcher> LanguagesButton();
 
 // Returns matcher for the "Add Credit Card" view in the Settings menu.
 id<GREYMatcher> AddCreditCardView();
@@ -298,6 +323,9 @@ id<GREYMatcher> PaymentRequestPickerRow();
 // Returns matcher for the payment request search bar.
 id<GREYMatcher> PaymentRequestPickerSearchBar();
 
+// Returns matcher for the New Window button on the Tools menu.
+id<GREYMatcher> OpenNewWindowMenuButton();
+
 // Returns matcher for the reading list on the Tools menu.
 id<GREYMatcher> ReadingListMenuButton();
 
@@ -313,7 +341,27 @@ id<GREYMatcher> SystemSelectionCallout();
 // Returns matcher for the copy button on the system selection callout.
 id<GREYMatcher> SystemSelectionCalloutCopyButton();
 
-// Returns matcher for the Copy item on the context menu.
+// Matcher for the Copy Link option in the updated context menus when long
+// pressing on a link. |use_new_string| determines which string to use.
+id<GREYMatcher> CopyLinkButton(BOOL use_new_string);
+
+// Matcher for the Edit option on the updated context menus. |use_new_string|
+// determines which string to use.
+id<GREYMatcher> EditButton(BOOL use_new_string);
+
+// Matcher for the Move option on the updated context menus.
+id<GREYMatcher> MoveButton();
+
+// Matcher for the Mark as Read option on the Reading List's context menus.
+id<GREYMatcher> ReadingListMarkAsReadButton();
+
+// Matcher for the Mark as Unread option on the Reading List's context menus.
+id<GREYMatcher> ReadingListMarkAsUnreadButton();
+
+// Matcher for the Delete option on the updated context menus.
+id<GREYMatcher> DeleteButton();
+
+// Returns matcher for the Copy item on the old-style context menu.
 id<GREYMatcher> ContextMenuCopyButton();
 
 // Returns matcher for defoucesed omnibox on a new tab.
@@ -333,9 +381,6 @@ id<GREYMatcher> HistoryClearBrowsingDataButton();
 
 // Returns a matcher for "Open In..." button.
 id<GREYMatcher> OpenInButton();
-
-// Returns the GREYMatcher for the button that opens the tab grid.
-id<GREYMatcher> TabGridOpenButton();
 
 // Returns the GREYMatcher for the cell at |index| in the tab grid.
 id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
@@ -480,6 +525,9 @@ id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
 
 // Returns a matcher for the CreditCardTableView window.
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();
+
+// Returns the matcher for the iOS 13+ Activity View header.
+id<GREYMatcher> ActivityViewHeader(NSString* page_title);
 
 }  // namespace chrome_test_util
 

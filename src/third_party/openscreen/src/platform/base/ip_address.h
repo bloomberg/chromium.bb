@@ -22,13 +22,14 @@ class IPAddress {
     kV6,
   };
 
-  static const IPAddress kV4LoopbackAddress;
-  static const IPAddress kV6LoopbackAddress;
-
+  static const IPAddress kAnyV4();
+  static const IPAddress kAnyV6();
+  static const IPAddress kV4LoopbackAddress();
+  static const IPAddress kV6LoopbackAddress();
   static constexpr size_t kV4Size = 4;
   static constexpr size_t kV6Size = 16;
 
-  IPAddress();
+  constexpr IPAddress() : version_(Version::kV4), bytes_({}) {}
 
   // |bytes| contains 4 octets for IPv4, or 8 hextets (16 bytes of big-endian
   // shorts) for IPv6.
@@ -61,6 +62,9 @@ class IPAddress {
   bool operator==(const IPAddress& o) const;
   bool operator!=(const IPAddress& o) const;
 
+  // IP address comparison rules are based on the following two principles:
+  // 1. newer versions are greater, e.g. IPv6 > IPv4
+  // 2. higher numerical values are greater, e.g. 192.168.0.1 > 10.0.0.1
   bool operator<(const IPAddress& other) const;
   bool operator>(const IPAddress& other) const { return other < *this; }
   bool operator<=(const IPAddress& other) const { return !(other < *this); }
@@ -95,6 +99,9 @@ struct IPEndpoint {
   IPAddress address;
   uint16_t port = 0;
 
+  // Used with various socket types to indicate "any" address.
+  static const IPEndpoint kAnyV4();
+  static const IPEndpoint kAnyV6();
   explicit operator bool() const;
 
   // Parses a text representation of an IPv4/IPv6 address and port (e.g.
@@ -112,10 +119,10 @@ inline bool operator>(const IPEndpoint& a, const IPEndpoint& b) {
   return b < a;
 }
 inline bool operator<=(const IPEndpoint& a, const IPEndpoint& b) {
-  return !(b > a);
+  return !(a > b);
 }
 inline bool operator>=(const IPEndpoint& a, const IPEndpoint& b) {
-  return !(a > b);
+  return !(a < b);
 }
 
 // Outputs a string of the form:

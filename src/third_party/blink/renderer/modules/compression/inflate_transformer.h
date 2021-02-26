@@ -30,7 +30,7 @@ class InflateTransformer final : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   using IsFinished = util::StrongAlias<class IsFinishedTag, bool>;
@@ -40,6 +40,10 @@ class InflateTransformer final : public TransformStreamTransformer {
                IsFinished,
                TransformStreamDefaultController*,
                ExceptionState&);
+
+  void EnqueueBuffers(TransformStreamDefaultController*,
+                      HeapVector<Member<DOMUint8Array>, 1u> buffers,
+                      ExceptionState&);
 
   Member<ScriptState> script_state_;
 

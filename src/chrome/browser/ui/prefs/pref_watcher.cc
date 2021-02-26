@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
@@ -57,6 +57,8 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebKitWebSecurityEnabled,
 #if defined(OS_CHROMEOS)
     ash::prefs::kAccessibilityFocusHighlightEnabled,
+#else
+    prefs::kAccessibilityFocusHighlightEnabled,
 #endif
 };
 
@@ -80,16 +82,17 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
                                      renderer_callback);
   profile_pref_change_registrar_.Add(prefs::kEnableEncryptedMedia,
                                      renderer_callback);
-  profile_pref_change_registrar_.Add(prefs::kWebRTCMultipleRoutesEnabled,
-                                     renderer_callback);
-  profile_pref_change_registrar_.Add(prefs::kWebRTCNonProxiedUdpEnabled,
-                                     renderer_callback);
   profile_pref_change_registrar_.Add(prefs::kWebRTCIPHandlingPolicy,
                                      renderer_callback);
   profile_pref_change_registrar_.Add(prefs::kWebRTCUDPPortRange,
                                      renderer_callback);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
+  profile_pref_change_registrar_.Add(prefs::kCaretBrowsingEnabled,
+                                     renderer_callback);
+#endif
+
+#if !defined(OS_MAC)
   profile_pref_change_registrar_.Add(prefs::kFullscreenAllowed,
                                      renderer_callback);
 #endif
@@ -133,10 +136,10 @@ void PrefWatcher::UpdateRendererPreferences() {
   for (auto* helper : tab_helpers_)
     helper->UpdateRendererPreferences();
 
-  blink::mojom::RendererPreferences prefs;
+  blink::RendererPreferences prefs;
   renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile_);
   for (auto& watcher : renderer_preference_watchers_)
-    watcher->NotifyUpdate(prefs.Clone());
+    watcher->NotifyUpdate(prefs);
 }
 
 void PrefWatcher::OnWebPrefChanged(const std::string& pref_name) {

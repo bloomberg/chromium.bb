@@ -9,15 +9,15 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -54,20 +54,20 @@ void ApplyConstraintsProcessor::ProcessRequest(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!request_completed_cb_);
   DCHECK(!current_request_);
-  DCHECK(!request->Track().IsNull());
-  if (request->Track().Source().IsNull()) {
+  DCHECK(request->Track());
+  if (!request->Track()->Source()) {
     CannotApplyConstraints(
         "Track has no source. ApplyConstraints not possible.");
     return;
   }
   request_completed_cb_ = std::move(callback);
   current_request_ = request;
-  if (current_request_->Track().Source().GetType() ==
-      blink::WebMediaStreamSource::kTypeVideo) {
+  if (current_request_->Track()->Source()->GetType() ==
+      MediaStreamSource::kTypeVideo) {
     ProcessVideoRequest();
   } else {
-    DCHECK_EQ(current_request_->Track().Source().GetType(),
-              blink::WebMediaStreamSource::kTypeAudio);
+    DCHECK_EQ(current_request_->Track()->Source()->GetType(),
+              MediaStreamSource::kTypeAudio);
     ProcessAudioRequest();
   }
 }
@@ -75,8 +75,8 @@ void ApplyConstraintsProcessor::ProcessRequest(
 void ApplyConstraintsProcessor::ProcessAudioRequest() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
-  DCHECK_EQ(current_request_->Track().Source().GetType(),
-            blink::WebMediaStreamSource::kTypeAudio);
+  DCHECK_EQ(current_request_->Track()->Source()->GetType(),
+            MediaStreamSource::kTypeAudio);
   DCHECK(request_completed_cb_);
   blink::MediaStreamAudioSource* audio_source = GetCurrentAudioSource();
   if (!audio_source) {
@@ -96,8 +96,8 @@ void ApplyConstraintsProcessor::ProcessAudioRequest() {
 void ApplyConstraintsProcessor::ProcessVideoRequest() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
-  DCHECK_EQ(current_request_->Track().Source().GetType(),
-            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK_EQ(current_request_->Track()->Source()->GetType(),
+            MediaStreamSource::kTypeVideo);
   DCHECK(request_completed_cb_);
   video_source_ = GetCurrentVideoSource();
   if (!video_source_) {
@@ -224,6 +224,10 @@ void ApplyConstraintsProcessor::FinalizeVideoRequest() {
   blink::VideoCaptureSettings settings = SelectVideoSettings({format});
 
   if (settings.HasValue()) {
+    if (settings.min_frame_rate().has_value()) {
+      GetCurrentVideoTrack()->SetMinimumFrameRate(
+          settings.min_frame_rate().value());
+    }
     video_source_->ReconfigureTrack(GetCurrentVideoTrack(),
                                     settings.track_adapter_settings());
     ApplyConstraintsSucceeded();
@@ -236,14 +240,14 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
     Vector<media::VideoCaptureFormat> formats) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
-  DCHECK_EQ(current_request_->Track().Source().GetType(),
-            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK_EQ(current_request_->Track()->Source()->GetType(),
+            MediaStreamSource::kTypeVideo);
   DCHECK(request_completed_cb_);
   DCHECK_GT(formats.size(), 0U);
 
   blink::VideoInputDeviceCapabilities device_capabilities;
-  device_capabilities.device_id = current_request_->Track().Source().Id();
-  device_capabilities.group_id = current_request_->Track().Source().GroupId();
+  device_capabilities.device_id = current_request_->Track()->Source()->Id();
+  device_capabilities.group_id = current_request_->Track()->Source()->GroupId();
   device_capabilities.facing_mode =
       GetCurrentVideoSource() ? GetCurrentVideoSource()->device().video_facing
                               : media::MEDIA_VIDEO_FACING_NONE;
@@ -259,7 +263,7 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   // values. However, initialize |settings| with the default values as a
   // fallback in case GetSettings returns nothing and leaves |settings|
   // unmodified.
-  blink::WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   settings.width = blink::MediaStreamVideoSource::kDefaultWidth;
   settings.height = blink::MediaStreamVideoSource::kDefaultHeight;
   settings.frame_rate = blink::MediaStreamVideoSource::kDefaultFrameRate;
@@ -274,16 +278,16 @@ blink::MediaStreamAudioSource*
 ApplyConstraintsProcessor::GetCurrentAudioSource() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
-  DCHECK(!current_request_->Track().IsNull());
+  DCHECK(current_request_->Track());
   return blink::MediaStreamAudioSource::From(
-      current_request_->Track().Source());
+      current_request_->Track()->Source());
 }
 
 blink::MediaStreamVideoTrack*
 ApplyConstraintsProcessor::GetCurrentVideoTrack() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  blink::MediaStreamVideoTrack* track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(current_request_->Track());
+  MediaStreamVideoTrack* track =
+      MediaStreamVideoTrack::From(current_request_->Track());
   DCHECK(track);
   return track;
 }
@@ -297,8 +301,8 @@ ApplyConstraintsProcessor::GetCurrentVideoSource() {
 bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
-  DCHECK_EQ(current_request_->Track().Source().GetType(),
-            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK_EQ(current_request_->Track()->Source()->GetType(),
+            MediaStreamSource::kTypeVideo);
   DCHECK(request_completed_cb_);
   if (GetCurrentVideoSource() != video_source_) {
     CannotApplyConstraints(

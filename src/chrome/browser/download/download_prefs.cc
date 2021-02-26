@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -36,8 +36,9 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/file_type_policies.h"
@@ -66,7 +67,7 @@ namespace {
 // Consider downloads 'dangerous' if they go to the home directory on Linux and
 // to the desktop on any platform.
 bool DownloadPathIsDangerous(const base::FilePath& download_path) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::FilePath home_dir = base::GetHomeDir();
   if (download_path == home_dir) {
     return true;
@@ -171,7 +172,8 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
                                 GetDefaultDownloadDirectoryForProfile()));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   should_open_pdf_in_system_reader_ =
       prefs->GetBoolean(prefs::kOpenPdfDownloadInSystemReader);
 #endif
@@ -197,6 +199,13 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
 #if defined(OS_ANDROID)
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
+  RecordDownloadPromptStatus(
+      static_cast<DownloadPromptStatus>(*prompt_for_download_android_));
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    prompt_for_download_later_.Init(prefs::kDownloadLaterPromptStatus, prefs);
+    RecordDownloadLaterPromptStatus(
+        static_cast<DownloadLaterPromptStatus>(*prompt_for_download_later_));
+  }
 
   // If |kDownloadsLocationChange| is not enabled, always uses the default
   // download location, in case that the feature is enabled and then disabled
@@ -291,7 +300,8 @@ void DownloadPrefs::RegisterProfilePrefs(
                                  default_download_path);
   registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
                                  default_download_path);
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   registry->RegisterBooleanPref(prefs::kOpenPdfDownloadInSystemReader, false);
 #endif
 #if defined(OS_ANDROID)
@@ -303,10 +313,17 @@ void DownloadPrefs::RegisterProfilePrefs(
       prefs::kPromptForDownloadAndroid,
       static_cast<int>(download_prompt_status),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    registry->RegisterIntegerPref(
+        prefs::kDownloadLaterPromptStatus,
+        static_cast<int>(DownloadLaterPromptStatus::kShowInitial),
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  }
+
   registry->RegisterBooleanPref(
       prefs::kShowMissingSdCardErrorAndroid,
       base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
-  RecordDownloadPromptStatus(download_prompt_status);
 #endif
 }
 
@@ -386,12 +403,35 @@ bool DownloadPrefs::PromptForDownload() const {
   return *prompt_for_download_;
 }
 
+bool DownloadPrefs::PromptDownloadLater() const {
+#ifdef OS_ANDROID
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    return *prompt_for_download_later_ !=
+           static_cast<int>(DownloadLaterPromptStatus::kDontShow);
+  }
+#endif
+
+  return false;
+}
+
+bool DownloadPrefs::HasDownloadLaterPromptShown() const {
+#ifdef OS_ANDROID
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    return *prompt_for_download_later_ !=
+           static_cast<int>(DownloadLaterPromptStatus::kShowInitial);
+  }
+#endif
+
+  return false;
+}
+
 bool DownloadPrefs::IsDownloadPathManaged() const {
   return download_path_.IsManaged();
 }
 
 bool DownloadPrefs::IsAutoOpenByUserUsed() const {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   if (ShouldOpenPdfInSystemReader())
     return true;
 #endif
@@ -405,7 +445,8 @@ bool DownloadPrefs::IsAutoOpenEnabled(const GURL& url,
     return false;
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   if (base::FilePath::CompareEqualIgnoreCase(extension,
                                              FILE_PATH_LITERAL("pdf")) &&
       ShouldOpenPdfInSystemReader())
@@ -455,7 +496,8 @@ void DownloadPrefs::DisableAutoOpenByUserBasedOnExtension(
   SaveAutoOpenState();
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
 void DownloadPrefs::SetShouldOpenPdfInSystemReader(bool should_open) {
   if (should_open_pdf_in_system_reader_ == should_open)
     return;
@@ -476,7 +518,8 @@ bool DownloadPrefs::ShouldOpenPdfInSystemReader() const {
 #endif
 
 void DownloadPrefs::ResetAutoOpenByUser() {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   SetShouldOpenPdfInSystemReader(false);
 #endif
   auto_open_by_user_.clear();
@@ -582,8 +625,8 @@ void DownloadPrefs::UpdateAutoOpenByPolicy() {
 }
 
 void DownloadPrefs::UpdateAllowedURLsForOpenByPolicy() {
-  std::unique_ptr<policy::URLBlacklist> allowed_urls =
-      std::make_unique<policy::URLBlacklist>();
+  std::unique_ptr<policy::URLBlocklist> allowed_urls =
+      std::make_unique<policy::URLBlocklist>();
 
   PrefService* prefs = profile_->GetPrefs();
   const auto* list = prefs->GetList(prefs::kDownloadAllowedURLsForOpenByPolicy);

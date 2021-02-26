@@ -41,8 +41,8 @@ struct EncodedFrame {
   EncodedFrame();
   ~EncodedFrame();
 
-  EncodedFrame(EncodedFrame&&) MAYBE_NOEXCEPT;
-  EncodedFrame& operator=(EncodedFrame&&) MAYBE_NOEXCEPT;
+  EncodedFrame(EncodedFrame&&) noexcept;
+  EncodedFrame& operator=(EncodedFrame&&);
 
   // Copies all members except |data| to |dest|. Does not modify |dest->data|.
   void CopyMetadataTo(EncodedFrame* dest) const;

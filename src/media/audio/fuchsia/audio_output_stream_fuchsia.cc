@@ -8,7 +8,8 @@
 #include <zircon/syscalls.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
+#include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"
@@ -16,10 +17,22 @@
 
 namespace media {
 
+namespace {
+
 // Current AudioRenderer implementation allows only one buffer with id=0.
-// TODO(sergeyu): Replace with an incrementing buffer id once AddPayloadBuffer()
-// and RemovePayloadBuffer() are implemented properly in AudioRenderer.
+// TODO(crbug.com/1131179): Replace with an incrementing buffer id now that
+// AddPayloadBuffer() and RemovePayloadBuffer() are implemented properly in
+// AudioRenderer.
 const uint32_t kBufferId = 0;
+
+fuchsia::media::AudioRenderUsage GetStreamUsage(
+    const AudioParameters& parameters) {
+  if (parameters.latency_tag() == AudioLatency::LATENCY_RTC)
+    return fuchsia::media::AudioRenderUsage::COMMUNICATION;
+  return fuchsia::media::AudioRenderUsage::MEDIA;
+}
+
+}  // namespace
 
 AudioOutputStreamFuchsia::AudioOutputStreamFuchsia(
     AudioManagerFuchsia* manager,
@@ -38,12 +51,14 @@ bool AudioOutputStreamFuchsia::Open() {
 
   // Connect |audio_renderer_| to the audio service.
   fuchsia::media::AudioPtr audio_server =
-      base::fuchsia::ComponentContextForCurrentProcess()
+      base::ComponentContextForProcess()
           ->svc()
           ->Connect<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(
       fit::bind_member(this, &AudioOutputStreamFuchsia::OnRendererError));
+
+  audio_renderer_->SetUsage(GetStreamUsage(parameters_));
 
   // Inform the |audio_renderer_| of the format required by the caller.
   fuchsia::media::AudioStreamType format;

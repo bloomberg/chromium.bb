@@ -40,7 +40,6 @@
 #include "content/public/common/user_agent.h"
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::android::JavaParamRef;
 using content::DevToolsAgentHost;
@@ -145,9 +144,9 @@ void DevToolsServer::Start(bool allow_debug_permission) {
     return;
 
   net::UnixDomainServerSocket::AuthCallback auth_callback =
-      allow_debug_permission ?
-          base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
-          base::Bind(&content::CanUserConnectToDevTools);
+      allow_debug_permission
+          ? base::BindRepeating(&AuthorizeSocketAccessWithDebugPermission)
+          : base::BindRepeating(&content::CanUserConnectToDevTools);
   std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   DevToolsAgentHost::StartRemoteDebuggingServer(

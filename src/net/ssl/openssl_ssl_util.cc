@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "crypto/openssl_util.h"
@@ -90,8 +91,8 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
     case SSL_R_SSLV3_ALERT_CERTIFICATE_EXPIRED:
     case SSL_R_SSLV3_ALERT_CERTIFICATE_UNKNOWN:
     case SSL_R_TLSV1_ALERT_ACCESS_DENIED:
+    case SSL_R_TLSV1_ALERT_CERTIFICATE_REQUIRED:
     case SSL_R_TLSV1_ALERT_UNKNOWN_CA:
-    case SSL_R_TLSV1_CERTIFICATE_REQUIRED:
       return ERR_BAD_SSL_CLIENT_AUTH_CERT;
     case SSL_R_SSLV3_ALERT_DECOMPRESSION_FAILURE:
       return ERR_SSL_DECOMPRESSION_FAILURE_ALERT;

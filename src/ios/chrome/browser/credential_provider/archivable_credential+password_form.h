@@ -7,16 +7,17 @@
 
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 
-namespace autofill {
+namespace password_manager {
 struct PasswordForm;
-}
+}  // namespace password_manager
 
 // Category for adding convenience logic related to PasswordForms.
 @interface ArchivableCredential (PasswordForm)
 
 // Convenience initializer from a PasswordForm. Will return nil for forms
 // blacklisted by the user, with an empty origin or Android forms.
-- (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
+- (instancetype)initWithPasswordForm:
+                    (const password_manager::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
                 validationIdentifier:(NSString*)validationIdentifier;
 

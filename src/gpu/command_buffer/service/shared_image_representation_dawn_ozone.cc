@@ -7,6 +7,7 @@
 #include <dawn_native/VulkanBackend.h>
 
 #include <vulkan/vulkan.h>
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -64,13 +65,12 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   texture_descriptor.usage = usage;
   texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {pixmap_size.width(), pixmap_size.height(), 1};
-  texture_descriptor.arrayLayerCount = 1;
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
 
   dawn_native::vulkan::ExternalImageDescriptorDmaBuf descriptor = {};
   descriptor.cTextureDescriptor = &texture_descriptor;
-  descriptor.isCleared = IsCleared();
+  descriptor.isInitialized = IsCleared();
   // Import the dma-buf into Dawn via the Vulkan backend. As per the Vulkan
   // documentation, importing memory from a file descriptor transfers
   // ownership of the fd from the application to the Vulkan implementation.
@@ -83,11 +83,7 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   descriptor.waitFDs = {};
 
   texture_ = dawn_native::vulkan::WrapVulkanImage(device_, &descriptor);
-  if (texture_) {
-    // Keep a reference to the texture so that it stays valid (its content
-    // might be destroyed).
-    dawn_procs_->data.textureReference(texture_);
-  } else {
+  if (!texture_) {
     close(fd);
   }
 
@@ -99,12 +95,19 @@ void SharedImageRepresentationDawnOzone::EndAccess() {
     return;
   }
 
-  if (dawn_native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
-    SetCleared();
-  }
+  // Grab the signal semaphore from dawn
+  dawn_native::vulkan::ExternalImageExportInfoOpaqueFD export_info;
+  if (!dawn_native::vulkan::ExportVulkanImage(
+          texture_, VK_IMAGE_LAYOUT_UNDEFINED, &export_info)) {
+    DLOG(ERROR) << "Failed to export Dawn Vulkan image.";
+  } else {
+    if (export_info.isInitialized) {
+      SetCleared();
+    }
 
-  // TODO(hob): Synchronize access to the dma-buf by exporting the VkSemaphore
-  // from the WebGPU texture.
+    // TODO(hob): Synchronize access to the dma-buf by waiting on
+    // |export_info.semaphoreHandles|
+  }
   dawn_procs_->data.textureDestroy(texture_);
   dawn_procs_->data.textureRelease(texture_);
   texture_ = nullptr;

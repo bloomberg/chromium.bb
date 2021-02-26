@@ -34,10 +34,13 @@ class PaintPreviewCompositorServiceImpl : public PaintPreviewCompositorService {
   ~PaintPreviewCompositorServiceImpl() override;
 
   // PaintPreviewCompositorService Implementation.
-  std::unique_ptr<PaintPreviewCompositorClient> CreateCompositor(
-      base::OnceClosure connected_closure) override;
+  std::unique_ptr<PaintPreviewCompositorClient, base::OnTaskRunnerDeleter>
+  CreateCompositor(base::OnceClosure connected_closure) override;
 
   bool HasActiveClients() const override;
+  // NOTE: this is set by the constructor. However, in some cases it may need to
+  // be changed.
+  void SetDisconnectHandler(base::OnceClosure disconnect_handler) override;
 
   // Marks the compositor associated with |token| as deleted in the
   // |active_clients_| set.

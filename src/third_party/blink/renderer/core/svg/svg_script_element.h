@@ -37,7 +37,6 @@ class SVGScriptElement final : public SVGElement,
                                public SVGURIReference,
                                public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 
  public:
   SVGScriptElement(Document&, const CreateElementFlags);
@@ -52,7 +51,7 @@ class SVGScriptElement final : public SVGElement,
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;

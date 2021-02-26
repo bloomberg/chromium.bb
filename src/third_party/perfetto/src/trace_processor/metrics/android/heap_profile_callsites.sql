@@ -15,6 +15,7 @@
 --
 
 SELECT RUN_METRIC('android/process_metadata.sql');
+SELECT RUN_METRIC('android/process_mem.sql');
 
 CREATE VIEW memory_delta AS
 SELECT upid, SUM(size) AS delta
@@ -41,10 +42,11 @@ SELECT
 FROM (
   SELECT
     spf.id AS frame_id,
-    IFNULL(
+    COALESCE(
       (SELECT name FROM stack_profile_symbol symbol
         WHERE symbol.symbol_set_id = spf.symbol_set_id
         LIMIT 1),
+      spf.deobfuscated_name,
       spf.name
     ) AS symbol_name,
     spm.name AS mapping_name
@@ -221,7 +223,11 @@ SELECT HeapProfileCallsites_InstanceStats(
     'process', process_metadata.metadata,
     'callsites', repeated_callsite_proto,
     'profile_delta_bytes', memory_delta.delta,
-    'profile_total_bytes', memory_total.total
+    'profile_total_bytes', memory_total.total,
+    'max_anon_rss_and_swap_bytes', (
+      SELECT CAST(MAX(anon_and_swap_val) AS INT)
+      FROM anon_and_swap_span s WHERE s.upid = process.upid
+    )
 ) AS instance_stats_proto
 FROM process_callsite_proto
 JOIN memory_total USING (upid)

@@ -11,20 +11,22 @@
 
 CJX_TextNode::CJX_TextNode(CXFA_Node* node) : CJX_Node(node) {}
 
-CJX_TextNode::~CJX_TextNode() {}
+CJX_TextNode::~CJX_TextNode() = default;
 
 bool CJX_TextNode::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
 }
 
-void CJX_TextNode::defaultValue(CFXJSE_Value* pValue,
+void CJX_TextNode::defaultValue(v8::Isolate* pIsolate,
+                                CFXJSE_Value* pValue,
                                 bool bSetting,
                                 XFA_Attribute attr) {
-  ScriptSomDefaultValue(pValue, bSetting, attr);
+  ScriptSomDefaultValue(pIsolate, pValue, bSetting, attr);
 }
 
-void CJX_TextNode::value(CFXJSE_Value* pValue,
+void CJX_TextNode::value(v8::Isolate* pIsolate,
+                         CFXJSE_Value* pValue,
                          bool bSetting,
                          XFA_Attribute attr) {
-  ScriptSomDefaultValue(pValue, bSetting, attr);
+  ScriptSomDefaultValue(pIsolate, pValue, bSetting, attr);
 }

@@ -36,7 +36,7 @@ import {EventDescriptor, EventTargetEvent} from './EventTarget.js';  // eslint-d
 import {ObjectWrapper} from './Object.js';
 
 /**
- * @type {!Settings}
+ * @type {!Settings|undefined}
  */
 let settingsInstance;
 
@@ -59,8 +59,7 @@ export class Settings {
     this._registry = new Map();
     /** @type {!Map<string, !Setting<*>>} */
     this._moduleSettings = new Map();
-    // @ts-ignore Needs runtime exported
-    self.runtime.extensions('setting').forEach(this._registerModuleSetting.bind(this));
+    Root.Runtime.Runtime.instance().extensions('setting').forEach(this._registerModuleSetting.bind(this));
   }
 
   static hasInstance() {
@@ -81,6 +80,10 @@ export class Settings {
     }
 
     return settingsInstance;
+  }
+
+  static removeInstance() {
+    settingsInstance = undefined;
   }
 
   /**
@@ -463,7 +466,7 @@ export class RegExpSetting extends Setting {
   }
 
   /**
-   * @return {!Array.<{pattern: string, disabled: (boolean|undefined)}>}
+   * @return {!Array.<!RegExpSettingItem>}
    */
   getAsArray() {
     return super.get();
@@ -479,7 +482,7 @@ export class RegExpSetting extends Setting {
   }
 
   /**
-   * @param {!Array.<{pattern: string, disabled: (boolean|undefined)}>} value
+   * @param {!Array.<!RegExpSettingItem>} value
    */
   setAsArray(value) {
     delete this._regex;
@@ -514,7 +517,7 @@ export class VersionController {
   }
 
   static get currentVersion() {
-    return 29;
+    return 30;
   }
 
   updateVersion() {
@@ -973,6 +976,25 @@ export class VersionController {
     renameInStringSetting('panel-selectedTab', 'audits', 'lighthouse');
   }
 
+  _updateVersionFrom29To30() {
+    // Create new location agnostic setting
+    const closeableTabSetting = Settings.instance().createSetting('closeableTabs', {});
+
+    // Read current settings
+    const panelCloseableTabSetting = Settings.instance().createSetting('panel-closeableTabs', {});
+    const drawerCloseableTabSetting = Settings.instance().createSetting('drawer-view-closeableTabs', {});
+    const openTabsInPanel = panelCloseableTabSetting.get();
+    const openTabsInDrawer = panelCloseableTabSetting.get();
+
+    // Set value of new setting
+    const newValue = Object.assign(openTabsInDrawer, openTabsInPanel);
+    closeableTabSetting.set(newValue);
+
+    // Remove old settings
+    panelCloseableTabSetting.remove();
+    drawerCloseableTabSetting.remove();
+  }
+
   _migrateSettingsFromLocalStorage() {
     // This step migrates all the settings except for the ones below into the browser profile.
     const localSettings = new Set([
@@ -1054,3 +1076,7 @@ export function detectColorFormat(color) {
 
   return format;
 }
+
+/** @typedef {{pattern: string, disabled: (boolean|undefined)}} */
+// @ts-ignore typedef
+export let RegExpSettingItem;

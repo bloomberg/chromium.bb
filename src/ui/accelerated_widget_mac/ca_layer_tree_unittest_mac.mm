@@ -11,6 +11,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -456,11 +458,12 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
 
       // Validate the clip and sorting context layer.
       EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-      EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
-                                      gfx::Rect(properties.clip_rect.size())),
-                gfx::Rect([clip_and_sorting_layer bounds]));
-      EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
-                                       properties.clip_rect.origin()),
+      EXPECT_EQ(
+          gfx::ToFlooredRectDeprecated(gfx::ConvertRectToDips(
+              gfx::Rect(properties.clip_rect.size()), properties.scale_factor)),
+          gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(gfx::ToFlooredPoint(gfx::ConvertPointToDips(
+                    properties.clip_rect.origin(), properties.scale_factor)),
                 gfx::Point([clip_and_sorting_layer position]));
       EXPECT_EQ(-properties.clip_rect.origin().x() / properties.scale_factor,
                 [clip_and_sorting_layer sublayerTransform].m41);
@@ -480,12 +483,13 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
                 [content_layer contents]);
       EXPECT_EQ(properties.contents_rect,
                 gfx::RectF([content_layer contentsRect]));
-      EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
-                                       properties.rect.origin()),
+      EXPECT_EQ(gfx::ToFlooredPoint(gfx::ConvertPointToDips(
+                    properties.rect.origin(), properties.scale_factor)),
                 gfx::Point([content_layer position]));
-      EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
-                                      gfx::Rect(properties.rect.size())),
-                gfx::Rect([content_layer bounds]));
+      EXPECT_EQ(
+          gfx::ToFlooredRectDeprecated(gfx::ConvertRectToDips(
+              gfx::Rect(properties.rect.size()), properties.scale_factor)),
+          gfx::Rect([content_layer bounds]));
       EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
       EXPECT_EQ(properties.opacity, [content_layer opacity]);
       if ([content_layer respondsToSelector:(@selector(contentsScale))])
@@ -769,84 +773,103 @@ TEST_F(CALayerTreeTest, AVLayer) {
       CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
-  CALayer* content_layer1 = nil;
-  CALayer* content_layer2 = nil;
-  CALayer* content_layer3 = nil;
-  CALayer* content_layer4 = nil;
+  CALayer* content_layer_old = nil;
+  CALayer* content_layer_new = nil;
 
   // Validate the initial values.
   {
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-    content_layer1 = GetOnlyContentLayer();
-
-    // Validate the content layer.
-    EXPECT_FALSE([content_layer1
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_FALSE([content_layer_new
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
   }
+  content_layer_old = content_layer_new;
 
+  // Pass a YUV 420 frame. This will become an AVSampleBufferDisplayLayer
+  // because it is in fullscreen low power mode.
   properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
-
-  // Pass another frame. This will automatically create a CVPixelBuffer
-  // behind the scenes, because the underlying buffer is YUV 420.
   {
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-    content_layer2 = GetOnlyContentLayer();
-
-    // Validate the content layer.
-    EXPECT_TRUE([content_layer2
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_TRUE([content_layer_new
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
-    EXPECT_NE(content_layer2, content_layer1);
+    EXPECT_NE(content_layer_new, content_layer_old);
   }
+  content_layer_old = content_layer_new;
 
+  // Pass a similar frame. Nothing should change.
   properties.gl_image = CreateGLImage(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, true);
-
-  // Pass a frame with a CVPixelBuffer.
+      gfx::Size(256, 128), gfx::BufferFormat::YUV_420_BIPLANAR, false);
   {
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-    content_layer3 = GetOnlyContentLayer();
-
-    // Validate the content layer.
-    EXPECT_TRUE([content_layer3
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_TRUE([content_layer_new
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
-    EXPECT_EQ(content_layer3, content_layer2);
+    EXPECT_EQ(content_layer_new, content_layer_old);
   }
+  content_layer_old = content_layer_new;
 
-  properties.gl_image = CreateGLImage(
-      gfx::Size(513, 512), gfx::BufferFormat::YUV_420_BIPLANAR, true);
+  // Break fullscreen low power mode by changing opacity. This should cause
+  // us to drop out of using AVSampleBufferDisplayLayer.
+  properties.opacity = 0.9;
+  {
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_FALSE([content_layer_new
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_NE(content_layer_new, content_layer_old);
+  }
+  content_layer_old = content_layer_new;
+
+  // Now try a P010 frame. Because this may be HDR, we should jump back to
+  // having an AVSampleBufferDisplayLayer.
+  properties.gl_image =
+      CreateGLImage(gfx::Size(128, 256), gfx::BufferFormat::P010, false);
+  {
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_TRUE([content_layer_new
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_NE(content_layer_new, content_layer_old);
+  }
+  content_layer_old = content_layer_new;
+
+  // Go back to testing AVSampleBufferLayer and fullscreen low power.
+  properties.opacity = 1.0;
 
   // Pass a frame with a CVPixelBuffer which, when scaled down, will have a
   // fractional dimension.
+  properties.gl_image = CreateGLImage(
+      gfx::Size(513, 512), gfx::BufferFormat::YUV_420_BIPLANAR, true);
   {
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-    content_layer3 = GetOnlyContentLayer();
+    content_layer_new = GetOnlyContentLayer();
 
     // Validate that the layer's size is adjusted to include the fractional
     // width, which works around a macOS bug (https://crbug.com/792632).
-    CGSize layer_size = content_layer3.bounds.size;
+    CGSize layer_size = content_layer_new.bounds.size;
     EXPECT_EQ(256.5, layer_size.width);
     EXPECT_EQ(256, layer_size.height);
   }
-
-  properties.gl_image = CreateGLImage(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
+  content_layer_old = content_layer_new;
 
   // Pass a frame that is clipped.
   properties.contents_rect = gfx::RectF(0, 0, 1, 0.9);
+  properties.gl_image = CreateGLImage(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
   {
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-    content_layer4 = GetOnlyContentLayer();
-
-    // Validate the content layer.
-    EXPECT_FALSE([content_layer4
+    content_layer_new = GetOnlyContentLayer();
+    EXPECT_FALSE([content_layer_new
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
-    EXPECT_NE(content_layer4, content_layer3);
+    EXPECT_NE(content_layer_new, content_layer_old);
   }
+  content_layer_old = content_layer_new;
 }
 
-// Ensure that blacklisting AVSampleBufferDisplayLayer works.
-TEST_F(CALayerTreeTest, AVLayerBlacklist) {
+// Ensure that blocklisting AVSampleBufferDisplayLayer works.
+TEST_F(CALayerTreeTest, AVLayerBlocklist) {
   CALayerProperties properties;
   properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);

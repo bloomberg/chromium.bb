@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
@@ -259,6 +260,18 @@
   // the requesting page's URL.
   GURL requestURL = net::GURLWithNSURL(frame.request.URL);
   if (!requestURL.is_valid()) {
+    completionHandler(NO, nil);
+    return;
+  }
+
+  if (self.webStateImpl->GetVisibleURL().GetOrigin() !=
+          requestURL.GetOrigin() &&
+      frame.mainFrame) {
+    // Dialog was requested by web page's main frame, but visible URL has
+    // different origin. This could happen if the user has started a new
+    // browser initiated navigation. There is no value in showing dialogs
+    // requested by page, which this WebState is about to leave. But presenting
+    // the dialog can lead to phishing and other abusive behaviors.
     completionHandler(NO, nil);
     return;
   }

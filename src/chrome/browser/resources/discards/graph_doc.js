@@ -2,25 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file is loaded into a <webview> and cannot reference any chrome:
+// resources. The only communication to and from this implementation and the
+// WebUI is through postMessage.
+
+// Note that these imports are stripped by a build step before being packaged.
+// They're only present to help Closure compiler do type checks and must be
+// referenced only within Closure annotations.
+import {FavIconInfo, FrameInfo, GraphChangeStreamInterface, PageInfo, ProcessInfo, WorkerInfo} from './chrome/browser/ui/webui/discards/discards.mojom-webui.js';
+
+// Radius of a node circle.
+const /** number */ kNodeRadius = 6;
+
 // Target y position for page nodes.
-const kPageNodesTargetY = 20;
+const /** number */ kPageNodesTargetY = 20;
 
 // Range occupied by page nodes at the top of the graph view.
-const kPageNodesYRange = 100;
+const /** number */ kPageNodesYRange = 100;
 
 // Range occupied by process nodes at the bottom of the graph view.
-const kProcessNodesYRange = 100;
+const /** number */ kProcessNodesYRange = 100;
 
 // Range occupied by worker nodes at the bottom of the graph view, above
 // process nodes.
-const kWorkerNodesYRange = 200;
+const /** number */ kWorkerNodesYRange = 200;
 
 // Target y position for frame nodes.
-const kFrameNodesTargetY = kPageNodesYRange + 50;
+const /** number */ kFrameNodesTargetY = kPageNodesYRange + 50;
 
 // Range that frame nodes cannot enter at the top/bottom of the graph view.
-const kFrameNodesTopMargin = kPageNodesYRange;
-const kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
+const /** number */ kFrameNodesTopMargin = kPageNodesYRange;
+const /** number */ kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
+
+// The maximum strength of a boundary force.
+// According to https://github.com/d3/d3-force#positioning, strength values
+// outside the range [0,1] are "not recommended".
+const /** number */ kMaxBoundaryStrength = 1;
+
+// The strength of a high Y-force. This is appropriate for forces that
+// strongly pull towards an attractor, but can still be overridden by the
+// strongest force.
+const /** number */ kHighYStrength = 0.9;
+
+// The strength of a weak Y-force. This is appropriate for forces that exert
+// some influence but can be easily overridden.
+const /** number */ kWeakYStrength = 0.1;
 
 class ToolTip {
   /**
@@ -214,7 +240,7 @@ class ToolTip {
 /** @implements {d3.ForceNode} */
 class GraphNode {
   constructor(id) {
-    /** @type {number} */
+    /** @type {bigint} */
     this.id = id;
     /** @type {string} */
     this.color = 'black';
@@ -271,10 +297,18 @@ class GraphNode {
 
   /**
    * @return {number} The strength of the force that pulls the node towards
-   *                    its target y position.
+   *     its target y position.
    */
-  targetYPositionStrength() {
-    return 0.1;
+  get targetYPositionStrength() {
+    return kWeakYStrength;
+  }
+
+  /**
+   * @return {number} A scaling factor applied to the strength of links to this
+   *     node.
+   */
+  get linkStrengthScalingFactor() {
+    return 1;
   }
 
   /**
@@ -287,30 +321,44 @@ class GraphNode {
   }
 
   /** @return {number} The strength of the repulsion force with other nodes. */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -200;
   }
 
-  /** @return {!Array<number>} */
-  linkTargets() {
+  /** @return {!Array<bigint>} an array of node ids. */
+  get linkTargets() {
+    return [];
+  }
+
+  /**
+   * Dashed links express ownership relationships. An object can own multiple
+   * things, but be owned by exactly one (per relationship type). As such, the
+   * relationship is expressed on the *owned* object. These links are drawn with
+   * an arrow at the beginning of the link, pointing to the owned object.
+   * @return {!Array<bigint>} an array of node ids.
+   */
+  get dashedLinkTargets() {
     return [];
   }
 
   /**
    * Selects a color string from an id.
-   * @param {number} id The id the returned color is selected from.
+   * @param {bigint} id The id the returned color is selected from.
    * @return {string}
    */
   selectColor(id) {
-    return d3.schemeSet3[Math.abs(id) % 12];
+    if (id < 0) {
+      id = -id;
+    }
+    return d3.schemeSet3[Number(id % BigInt(12))];
   }
 }
 
 class PageNode extends GraphNode {
-  /** @param {!discards.mojom.PageInfo} page */
+  /** @param {!PageInfo} page */
   constructor(page) {
     super(page.id);
-    /** @type {!discards.mojom.PageInfo} */
+    /** @type {!PageInfo} */
     this.page = page;
     this.y = kPageNodesTargetY;
   }
@@ -322,8 +370,18 @@ class PageNode extends GraphNode {
   }
 
   /** @override */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the top of the graph. Can be overridden by
+    // the bounding force which uses kMaxBoundaryStrength.
+    return kHighYStrength;
+  }
+
+  /** @override */
+  get linkStrengthScalingFactor() {
+    // Give links from frame nodes to page nodes less weight than links between
+    // frame nodes, so the that Y forces pulling page nodes into their area can
+    // dominate over link forces pulling them towards frame nodes.
+    return 0.5;
   }
 
   /** override */
@@ -332,16 +390,24 @@ class PageNode extends GraphNode {
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
+  }
+
+  /** override */
+  get dashedLinkTargets() {
+    if (this.page.openerFrameId) {
+      return [this.page.openerFrameId];
+    }
+    return [];
   }
 }
 
 class FrameNode extends GraphNode {
-  /** @param {!discards.mojom.FrameInfo} frame */
+  /** @param {!FrameInfo} frame */
   constructor(frame) {
     super(frame.id);
-    /** @type {!discards.mojom.FrameInfo} frame */
+    /** @type {!FrameInfo} frame */
     this.frame = frame;
     this.color = this.selectColor(frame.processId);
   }
@@ -362,7 +428,7 @@ class FrameNode extends GraphNode {
   }
 
   /** override */
-  linkTargets() {
+  get linkTargets() {
     // Only link to the page if there isn't a parent frame.
     return [
       this.frame.parentFrameId || this.frame.pageId, this.frame.processId
@@ -371,10 +437,10 @@ class FrameNode extends GraphNode {
 }
 
 class ProcessNode extends GraphNode {
-  /** @param {!discards.mojom.ProcessInfo} process */
+  /** @param {!ProcessInfo} process */
   constructor(process) {
     super(process.id);
-    /** @type {!discards.mojom.ProcessInfo} */
+    /** @type {!ProcessInfo} */
     this.process = process;
 
     this.color = this.selectColor(process.id);
@@ -386,8 +452,18 @@ class ProcessNode extends GraphNode {
   }
 
   /** @return {number} */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the bottom of the graph. Can be overridden by
+    // the bounding force which uses kMaxBoundaryStrength.
+    return kHighYStrength;
+  }
+
+  /** @override */
+  get linkStrengthScalingFactor() {
+    // Give links to process nodes less weight than links between frame nodes,
+    // so the that Y forces pulling process nodes into their area can dominate
+    // over link forces pulling them towards frame nodes.
+    return 0.5;
   }
 
   /** override */
@@ -396,16 +472,16 @@ class ProcessNode extends GraphNode {
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
   }
 }
 
 class WorkerNode extends GraphNode {
-  /** @param {!discards.mojom.WorkerInfo} worker */
+  /** @param {!WorkerInfo} worker */
   constructor(worker) {
     super(worker.id);
-    /** @type {!discards.mojom.WorkerInfo} */
+    /** @type {!WorkerInfo} */
     this.worker = worker;
 
     this.color = this.selectColor(worker.processId);
@@ -417,8 +493,10 @@ class WorkerNode extends GraphNode {
   }
 
   /** @return {number} */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the worker area of the graph. Can be
+    // overridden by the bounding force which uses kMaxBoundaryStrength.
+    return kHighYStrength;
   }
 
   /** override */
@@ -429,12 +507,12 @@ class WorkerNode extends GraphNode {
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
   }
 
   /** override */
-  linkTargets() {
+  get linkTargets() {
     // Link the process, in addition to all the client and child workers.
     return [
       this.worker.processId, ...this.worker.clientFrameIds,
@@ -444,14 +522,19 @@ class WorkerNode extends GraphNode {
 }
 
 /**
- * A force that bounds GraphNodes |allowedYRange| in Y.
+ * A force that bounds GraphNodes |allowedYRange| in Y,
+ * as well as bounding them to stay in page bounds in X.
  * @param {number} graphHeight
+ * @param {number} graphWidth
  */
-function boundingForce(graphHeight) {
+function boundingForce(graphHeight, graphWidth) {
   /** @type {!Array<!GraphNode>} */
   let nodes = [];
   /** @type {!Array<!Array>} */
   let bounds = [];
+  const xBounds = [2 * kNodeRadius, graphWidth - 2 * kNodeRadius];
+  const boundPosition = (pos, bound) =>
+      Math.max(bound[0], Math.min(pos, bound[1]));
 
   /** @param {number} alpha */
   function force(alpha) {
@@ -459,12 +542,23 @@ function boundingForce(graphHeight) {
     for (let i = 0; i < n; ++i) {
       const bound = bounds[i];
       const node = nodes[i];
-      const yOld = node.y;
-      const yNew = Math.max(bound[0], Math.min(yOld, bound[1]));
-      if (yOld !== yNew) {
-        node.y = yNew;
-        // Zero the velocity of clamped nodes.
-        node.vy = 0;
+
+      // Calculate where the node will end up after movement. If it will be out
+      // of bounds apply a counter-force to bring it back in.
+      const yNextPosition = node.y + node.vy;
+      const yBoundedPosition = boundPosition(yNextPosition, bound);
+      if (yNextPosition !== yBoundedPosition) {
+        // Do not include alpha because we want to be strongly repelled from
+        // the boundary even if alpha has decayed.
+        node.vy += (yBoundedPosition - yNextPosition) * kMaxBoundaryStrength;
+      }
+
+      const xNextPosition = node.x + node.vx;
+      const xBoundedPosition = boundPosition(xNextPosition, xBounds);
+      if (xNextPosition !== xBoundedPosition) {
+        // Do not include alpha because we want to be strongly repelled from
+        // the boundary even if alpha has decayed.
+        node.vx += (xBoundedPosition - xNextPosition) * kMaxBoundaryStrength;
       }
     }
   }
@@ -472,14 +566,20 @@ function boundingForce(graphHeight) {
   /** @param {!Array<!GraphNode>} n */
   force.initialize = function(n) {
     nodes = n;
-    bounds = nodes.map(node => node.allowedYRange(graphHeight));
+    bounds = nodes.map(node => {
+      const nodeBounds = node.allowedYRange(graphHeight);
+      // Leave space for the node circle plus a small border.
+      nodeBounds[0] += kNodeRadius * 2;
+      nodeBounds[1] -= kNodeRadius * 2;
+      return nodeBounds;
+    });
   };
 
   return force;
 }
 
 /**
- * @implements {discards.mojom.GraphChangeStreamInterface}
+ * @implements {GraphChangeStreamInterface}
  */
 class Graph {
   /**
@@ -533,7 +633,13 @@ class Graph {
      */
     this.linkGroup_ = null;
 
-    /** @private {!Map<number, !GraphNode>} */
+    /**
+     * A selection for the top-level <g> node that contains all dashed edges.
+     * @private {d3.selection}
+     */
+    this.dashedLinkGroup_ = null;
+
+    /** @private {!Map<bigint, !GraphNode>} */
     this.nodes_ = new Map();
 
     /**
@@ -541,6 +647,12 @@ class Graph {
      * @private {!Array<!d3.ForceLink>}
      */
     this.links_ = [];
+
+    /**
+     * The dashed links.
+     * @private {!Array<!d3.ForceLink>}
+     */
+    this.dashedLinks_ = [];
 
     /**
      * The host window.
@@ -575,7 +687,17 @@ class Graph {
     simulation.on('tick', this.onTick_.bind(this));
 
     const linkForce = d3.forceLink().id(d => d.id);
-    simulation.force('link', linkForce);
+    const defaultStrength = linkForce.strength();
+
+    // Override the default link strength function to apply scaling factors
+    // from the source and target nodes to the link strength. This lets
+    // different node types balance link forces with other forces that act on
+    // them.
+    simulation.force(
+        'link',
+        linkForce.strength(
+            l => defaultStrength(l) * l.source.linkStrengthScalingFactor *
+                l.target.linkStrengthScalingFactor));
 
     // Sets the repulsion force between nodes (positive number is attraction,
     // negative number is repulsion).
@@ -588,8 +710,9 @@ class Graph {
     // Create the <g> elements that host nodes and links.
     // The link groups are created first so that all links end up behind nodes.
     const svg = d3.select(this.svg_);
-    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'toolTipLinks');
+    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'tool-tip-links');
     this.linkGroup_ = svg.append('g').attr('class', 'links');
+    this.dashedLinkGroup_ = svg.append('g').attr('class', 'dashed-links');
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
     this.separatorGroup_ = svg.append('g').attr('class', 'separators');
 
@@ -630,7 +753,11 @@ class Graph {
   /** @override */
   pageChanged(page) {
     const pageNode = /** @type {!PageNode} */ (this.nodes_.get(page.id));
+
+    // Page node dashed links may change dynamically, so account for that here.
+    this.removeDashedNodeLinks_(pageNode);
     pageNode.page = page;
+    this.addDashedNodeLinks_(pageNode);
   }
 
   /** @override */
@@ -665,6 +792,7 @@ class Graph {
 
     // Remove any links, and then the node itself.
     this.removeNodeLinks_(node);
+    this.removeDashedNodeLinks_(node);
     this.nodes_.delete(nodeId);
   }
 
@@ -709,8 +837,18 @@ class Graph {
    * @private
    */
   removeNodeLinks_(node) {
-    // Filter away any links to or from the deleted node.
+    // Filter away any links to or from the provided node.
     this.links_ = this.links_.filter(
+        link => link.source !== node && link.target !== node);
+  }
+
+  /**
+   * @param {!GraphNode} node
+   * @private
+   */
+  removeDashedNodeLinks_(node) {
+    // Filter away any dashed links to or from the provided node.
+    this.dashedLinks_ = this.dashedLinks_.filter(
         link => link.source !== node && link.target !== node);
   }
 
@@ -720,7 +858,7 @@ class Graph {
    */
   nodeDescriptions_(nodeDescriptions) {
     for (const nodeId in nodeDescriptions) {
-      const node = this.nodes_.get(Number.parseInt(nodeId, 10));
+      const node = this.nodes_.get(BigInt(nodeId));
       if (node && node.tooltip) {
         node.tooltip.onDescription(nodeDescriptions[nodeId]);
       }
@@ -763,46 +901,46 @@ class Graph {
     }
 
     const type = /** @type {string} */ (event.data[0]);
-    const data = /** @type {Object|number} */ (event.data[1]);
+    const data = /** @type {Object|number|bigint} */ (event.data[1]);
     switch (type) {
       case 'frameCreated':
         this.frameCreated(
-            /** @type {!discards.mojom.FrameInfo} */ (data));
+            /** @type {!FrameInfo} */ (data));
         break;
       case 'pageCreated':
         this.pageCreated(
-            /** @type {!discards.mojom.PageInfo} */ (data));
+            /** @type {!PageInfo} */ (data));
         break;
       case 'processCreated':
         this.processCreated(
-            /** @type {!discards.mojom.ProcessInfo} */ (data));
+            /** @type {!ProcessInfo} */ (data));
         break;
       case 'workerCreated':
         this.workerCreated(
-            /** @type {!discards.mojom.WorkerInfo} */ (data));
+            /** @type {!WorkerInfo} */ (data));
         break;
       case 'frameChanged':
         this.frameChanged(
-            /** @type {!discards.mojom.FrameInfo} */ (data));
+            /** @type {!FrameInfo} */ (data));
         break;
       case 'pageChanged':
         this.pageChanged(
-            /** @type {!discards.mojom.PageInfo} */ (data));
+            /** @type {!PageInfo} */ (data));
         break;
       case 'processChanged':
         this.processChanged(
-            /** @type {!discards.mojom.ProcessInfo} */ (data));
+            /** @type {!ProcessInfo} */ (data));
         break;
       case 'favIconDataAvailable':
         this.favIconDataAvailable(
-            /** @type {!discards.mojom.FavIconInfo} */ (data));
+            /** @type {!FavIconInfo} */ (data));
         break;
       case 'workerChanged':
         this.workerChanged(
-            /** @type {!discards.mojom.WorkerInfo} */ (data));
+            /** @type {!WorkerInfo} */ (data));
         break;
       case 'nodeDeleted':
-        this.nodeDeleted(/** @type {number} */ (data));
+        this.nodeDeleted(/** @type {bigint} */ (data));
         break;
       case 'nodeDescriptions':
         this.nodeDescriptions_(/** @type {!Object<string>} */ (data));
@@ -848,9 +986,17 @@ class Graph {
     // Select the links.
     const link = this.linkGroup_.selectAll('line').data(this.links_);
     // Add new links.
-    link.enter().append('line').attr('stroke-width', 1);
+    link.enter().append('line');
     // Remove dead links.
     link.exit().remove();
+
+    // Select the dashed links.
+    const dashedLink =
+        this.dashedLinkGroup_.selectAll('line').data(this.dashedLinks_);
+    // Add new dashed links.
+    dashedLink.enter().append('line');
+    // Remove dead dashed links.
+    dashedLink.exit().remove();
 
     // Select the nodes, except for any dead ones that are still transitioning.
     const nodes = Array.from(this.nodes_.values());
@@ -863,8 +1009,10 @@ class Graph {
                            .append('g')
                            .call(this.drag_)
                            .on('click', this.onGraphNodeClick_.bind(this));
-      const circles = newNodes.append('circle').attr('r', 9).attr(
-          'fill', 'green');  // New nodes appear green.
+      const circles = newNodes.append('circle')
+                          .attr('id', d => `circle-${d.id}`)
+                          .attr('r', kNodeRadius * 1.5)
+                          .attr('fill', 'green');  // New nodes appear green.
 
       newNodes.append('image')
           .attr('x', -8)
@@ -877,7 +1025,7 @@ class Graph {
       circles.transition()
           .duration(2000)
           .attr('fill', d => d.color)
-          .attr('r', 6);
+          .attr('r', kNodeRadius);
     }
 
     if (!node.exit().empty()) {
@@ -913,9 +1061,11 @@ class Graph {
 
     // Update and restart the simulation if the graph changed.
     if (!node.enter().empty() || !node.exit().empty() ||
-        !link.enter().empty() || !link.exit().empty()) {
+        !link.enter().empty() || !link.exit().empty() ||
+        !dashedLink.enter().empty() || !dashedLink.exit().empty()) {
       this.simulation_.nodes(nodes);
-      this.simulation_.force('link').links(this.links_);
+      const links = this.links_.concat(this.dashedLinks_);
+      this.simulation_.force('link').links(links);
 
       this.restartSimulation_();
     }
@@ -928,6 +1078,12 @@ class Graph {
 
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+    const dashedLines = this.dashedLinkGroup_.selectAll('line');
+    dashedLines.attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
@@ -945,6 +1101,7 @@ class Graph {
   addNode_(node) {
     this.nodes_.set(node.id, node);
     this.addNodeLinks_(node);
+    this.addDashedNodeLinks_(node);
     node.setInitialPosition(this.width_, this.height_);
   }
 
@@ -955,11 +1112,25 @@ class Graph {
    * @private
    */
   addNodeLinks_(node) {
-    const linkTargets = node.linkTargets();
-    for (const linkTarget of linkTargets) {
+    for (const linkTarget of node.linkTargets) {
       const target = this.nodes_.get(linkTarget);
       if (target) {
         this.links_.push({source: node, target: target});
+      }
+    }
+  }
+
+  /**
+   * Adds all the dashed links for a node to the graph.
+   *
+   * @param {!GraphNode} node
+   * @private
+   */
+  addDashedNodeLinks_(node) {
+    for (const dashedLinkTarget of node.dashedLinkTargets) {
+      const target = this.nodes_.get(dashedLinkTarget);
+      if (target) {
+        this.dashedLinks_.push({source: node, target: target});
       }
     }
   }
@@ -993,8 +1164,16 @@ class Graph {
     if (!d3.event.active) {
       this.simulation_.alphaTarget(0);
     }
-    d.fx = null;
-    d.fy = null;
+    // Leave the node pinned where it was dropped. Return it to free
+    // positioning if it's dropped outside its designated area.
+    const bounds = d.allowedYRange(this.height_);
+    if (d3.event.y < bounds[0] || d3.event.y > bounds[1]) {
+      d.fx = null;
+      d.fy = null;
+    }
+
+    // Toggle the pinned class as appropriate for the circle backing this node.
+    d3.select(`#circle-${d.id}`).classed('pinned', d.fx != null);
   }
 
   /**
@@ -1010,7 +1189,7 @@ class Graph {
    * @private
    */
   getTargetYPositionStrength_(d) {
-    return d.targetYPositionStrength();
+    return d.targetYPositionStrength;
   }
 
   /**
@@ -1018,7 +1197,7 @@ class Graph {
    * @private
    */
   getManyBodyStrength_(d) {
-    return d.manyBodyStrength();
+    return d.manyBodyStrength;
   }
 
   /**
@@ -1093,7 +1272,7 @@ class Graph {
                        .strength(this.getTargetYPositionStrength_.bind(this));
     this.simulation_.force('x_pos', xForce);
     this.simulation_.force('y_pos', yForce);
-    this.simulation_.force('y_bound', boundingForce(this.height_));
+    this.simulation_.force('y_bound', boundingForce(this.height_, this.width_));
 
     if (!this.wasResized_) {
       this.wasResized_ = true;

@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/origin_util.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 
 namespace client_hints {
 
@@ -38,22 +38,6 @@ ClientHints::ClientHints(
   DCHECK(settings_map_);
 }
 
-// static
-void ClientHints::CreateForWebContents(
-    content::WebContents* web_contents,
-    network::NetworkQualityTracker* network_quality_tracker,
-    HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata,
-    PrefService* pref_service) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(), base::WrapUnique(new ClientHints(
-                           web_contents, network_quality_tracker, settings_map,
-                           user_agent_metadata, pref_service)));
-  }
-}
-
 ClientHints::~ClientHints() = default;
 
 network::NetworkQualityTracker* ClientHints::GetNetworkQualityTracker() {
@@ -65,14 +49,14 @@ void ClientHints::GetAllowedClientHintsFromSource(
     blink::WebEnabledClientHints* client_hints) {
   ContentSettingsForOneType client_hints_rules;
   settings_map_->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
-                                       std::string(), &client_hints_rules);
+                                       &client_hints_rules);
   client_hints::GetAllowedClientHintsFromSource(url, client_hints_rules,
                                                 client_hints);
 }
 
 bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
-  return settings_map_->GetContentSetting(
-             url, url, ContentSettingsType::JAVASCRIPT, std::string()) !=
+  return settings_map_->GetContentSetting(url, url,
+                                          ContentSettingsType::JAVASCRIPT) !=
          CONTENT_SETTING_BLOCK;
 }
 
@@ -93,22 +77,6 @@ blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
   return user_agent_metadata_;
 }
 
-ClientHints::ClientHints(
-    content::WebContents* web_contents,
-    network::NetworkQualityTracker* network_quality_tracker,
-    HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata,
-    PrefService* pref_service)
-    : ClientHints(web_contents->GetBrowserContext(),
-                  network_quality_tracker,
-                  settings_map,
-                  user_agent_metadata,
-                  pref_service) {
-  receiver_ = std::make_unique<
-      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
-      web_contents, this);
-}
-
 void ClientHints::PersistClientHints(
     const url::Origin& primary_origin,
     const std::vector<network::mojom::WebClientHintsType>& client_hints,
@@ -119,7 +87,8 @@ void ClientHints::PersistClientHints(
 
   // TODO(tbansal): crbug.com/735518. Consider killing the renderer that sent
   // the malformed IPC.
-  if (!primary_url.is_valid() || !content::IsOriginSecure(primary_url))
+  if (!primary_url.is_valid() ||
+      !blink::network_utils::IsOriginSecure(primary_url))
     return;
 
   if (!IsJavaScriptAllowed(primary_url))
@@ -141,9 +110,8 @@ void ClientHints::PersistClientHints(
   if (expiration_duration <= base::TimeDelta::FromSeconds(0))
     return;
 
-  std::unique_ptr<base::ListValue> expiration_times_list =
-      std::make_unique<base::ListValue>();
-  expiration_times_list->Reserve(client_hints.size());
+  base::Value::ListStorage expiration_times_list;
+  expiration_times_list.reserve(client_hints.size());
 
   // Use wall clock since the expiration time would be persisted across embedder
   // restarts.
@@ -151,23 +119,34 @@ void ClientHints::PersistClientHints(
       (base::Time::Now() + expiration_duration).ToDoubleT();
 
   for (const auto& entry : client_hints)
-    expiration_times_list->AppendInteger(static_cast<int>(entry));
+    expiration_times_list.push_back(base::Value(static_cast<int>(entry)));
 
   auto expiration_times_dictionary = std::make_unique<base::DictionaryValue>();
-  expiration_times_dictionary->SetList("client_hints",
-                                       std::move(expiration_times_list));
-  expiration_times_dictionary->SetDouble("expiration_time", expiration_time);
+  expiration_times_dictionary->SetKey(
+      "client_hints", base::Value(std::move(expiration_times_list)));
+  expiration_times_dictionary->SetDoubleKey("expiration_time", expiration_time);
 
   // TODO(tbansal): crbug.com/735518. Disable updates to client hints settings
   // when cookies are disabled for |primary_origin|.
   settings_map_->SetWebsiteSettingDefaultScope(
-      primary_url, GURL(), ContentSettingsType::CLIENT_HINTS, std::string(),
+      primary_url, GURL(), ContentSettingsType::CLIENT_HINTS,
       std::move(expiration_times_dictionary),
       {base::Time(), content_settings::SessionModel::UserSession});
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);
-}
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "ClientHints.PersistDuration", expiration_duration,
+      base::TimeDelta::FromSeconds(1),
+      // TODO(crbug.com/949034): Rename and fix this histogram to have some
+      // intended max value. We throw away the 32 most-significant bits of the
+      // 64-bit time delta in milliseconds. Before it happened silently in
+      // histogram.cc, now it is explicit here. The previous value of 365 days
+      // effectively turns into roughly 17 days when getting cast to int.
+      base::TimeDelta::FromMilliseconds(
+          static_cast<int>(base::TimeDelta::FromDays(365).InMilliseconds())),
+      100);
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientHints)
+  UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", client_hints.size());
+}
 
 }  // namespace client_hints

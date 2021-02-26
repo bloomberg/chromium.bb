@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/values.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
@@ -76,6 +77,7 @@ class FindInPageManagerImplTest : public WebTest {
   std::unique_ptr<TestWebState> test_web_state_;
   FakeWebFramesManager* fake_web_frames_manager_;
   FakeFindInPageManagerDelegate fake_delegate_;
+  base::UserActionTester user_action_tester_;
 };
 
 // Tests that Find In Page responds with a total match count of three when a
@@ -668,6 +670,21 @@ TEST_F(FindInPageManagerImplTest, FindInPageNextUpdatesMatchCount) {
     return fake_delegate_.state() && fake_delegate_.state()->match_count == 3;
   }));
   EXPECT_EQ(1, fake_delegate_.state()->index);
+}
+
+// Tests that Find in Page logs correct UserActions for given API calls.
+TEST_F(FindInPageManagerImplTest, FindUserActions) {
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindActionName));
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindActionName));
+
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindNextActionName));
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageNext);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindNextActionName));
+
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindPreviousActionName));
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPagePrevious);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindPreviousActionName));
 }
 
 }  // namespace web

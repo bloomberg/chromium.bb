@@ -35,14 +35,22 @@ public class TileProviderBridge implements TileProvider {
     }
 
     @Override
-    public void getQueryTiles(Callback<List<QueryTile>> callback) {
+    public void getQueryTiles(String tileId, Callback<List<QueryTile>> callback) {
         if (mNativeTileProviderBridge == 0) return;
-        TileProviderBridgeJni.get().getQueryTiles(mNativeTileProviderBridge, this, callback);
+        TileProviderBridgeJni.get().getQueryTiles(
+                mNativeTileProviderBridge, this, tileId, callback);
+    }
+
+    @Override
+    public void onTileClicked(String tildId) {
+        if (mNativeTileProviderBridge == 0) return;
+        TileProviderBridgeJni.get().onTileClicked(mNativeTileProviderBridge, tildId);
     }
 
     @NativeMethods
     interface Natives {
-        void getQueryTiles(long nativeTileProviderBridge, TileProviderBridge caller,
+        void getQueryTiles(long nativeTileProviderBridge, TileProviderBridge caller, String tileId,
                 Callback<List<QueryTile>> callback);
+        void onTileClicked(long nativeTileProviderBridge, String tileId);
     }
 }

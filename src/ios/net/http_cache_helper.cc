@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -71,7 +70,8 @@ void ClearHttpCacheOnIOThread(
   // Clear QUIC server information from memory and the disk cache.
   http_cache->GetSession()
       ->quic_stream_factory()
-      ->ClearCachedStatesInCryptoConfig(base::Callback<bool(const GURL&)>());
+      ->ClearCachedStatesInCryptoConfig(
+          base::RepeatingCallback<bool(const GURL&)>());
 
   std::unique_ptr<disk_cache::Backend*> backend(
       new disk_cache::Backend*(nullptr));

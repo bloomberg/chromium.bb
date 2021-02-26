@@ -90,7 +90,7 @@ class ExtensionRegistrar {
   virtual ~ExtensionRegistrar();
 
   // Adds the extension to the ExtensionRegistry. The extension will be added to
-  // the enabled, disabled, blacklisted or blocked set. If the extension is
+  // the enabled, disabled, blocklisted or blocked set. If the extension is
   // added as enabled, it will be activated.
   void AddExtension(scoped_refptr<const Extension> extension);
 
@@ -98,14 +98,14 @@ class ExtensionRegistrar {
   // enabled and removing references to it from the ExtensionRegistry's
   // enabled or disabled sets.
   // Note: Extensions will not be removed from other sets (terminated,
-  // blacklisted or blocked). ExtensionService handles that, since it also adds
+  // blocklisted or blocked). ExtensionService handles that, since it also adds
   // it to those sets. TODO(michaelpg): Make ExtensionRegistrar the sole mutator
   // of ExtensionRegsitry to simplify this usage.
   void RemoveExtension(const ExtensionId& extension_id,
                        UnloadedExtensionReason reason);
 
   // If the extension is disabled, marks it as enabled and activates it for use.
-  // Otherwise, simply updates the ExtensionPrefs. (Blacklisted or blocked
+  // Otherwise, simply updates the ExtensionPrefs. (Blocklisted or blocked
   // extensions cannot be enabled.)
   void EnableExtension(const ExtensionId& extension_id);
 
@@ -121,7 +121,7 @@ class ExtensionRegistrar {
   void ReloadExtension(const ExtensionId extension_id,
                        LoadErrorBehavior load_error_behavior);
 
-  // TODO(michaelpg): Add methods for blacklisting and blocking extensions.
+  // TODO(michaelpg): Add methods for blocklisting and blocking extensions.
 
   // Deactivates the extension, adding its id to the list of terminated
   // extensions.
@@ -138,6 +138,8 @@ class ExtensionRegistrar {
   // Called after the render view for the background page with the associated
   // host is created.
   void DidCreateRenderViewForBackgroundPage(ExtensionHost* host);
+
+  void OnUnpackedExtensionReloadFailed(const base::FilePath& path);
 
  private:
   // Adds the extension to the appropriate registry set, based on ExtensionPrefs
@@ -193,6 +195,10 @@ class ExtensionRegistrar {
   // Store the ids of reloading extensions. We use this to re-enable extensions
   // which were disabled for a reload.
   ExtensionIdSet reloading_extensions_;
+
+  // Store the paths of extensions that failed to reload. We use this to retry
+  // reload.
+  std::set<base::FilePath> failed_to_reload_unpacked_extensions_;
 
   base::WeakPtrFactory<ExtensionRegistrar> weak_factory_{this};
 

@@ -8,7 +8,9 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/fuchsia/process_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/provision_fetcher_factory.h"
@@ -17,6 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/switches.h"
+#include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
 #include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -79,7 +82,15 @@ void MediaResourceProviderImpl::CreateCdm(
 
 void MediaResourceProviderImpl::CreateAudioConsumer(
     fidl::InterfaceRequest<fuchsia::media::AudioConsumer> request) {
-  auto factory = base::fuchsia::ComponentContextForCurrentProcess()
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioOutput)) {
+    LOG(WARNING)
+        << "Could not create AudioConsumer because audio output feature flag "
+           "was not enabled.";
+    return;
+  }
+
+  auto factory = base::ComponentContextForProcess()
                      ->svc()
                      ->Connect<fuchsia::media::SessionAudioConsumerFactory>();
   factory->CreateAudioConsumer(
@@ -89,6 +100,14 @@ void MediaResourceProviderImpl::CreateAudioConsumer(
 
 void MediaResourceProviderImpl::CreateAudioCapturer(
     fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioInput)) {
+    LOG(WARNING)
+        << "Could not create AudioCapturer because audio input feature flag "
+           "was not enabled.";
+    return;
+  }
+
   if (FrameImpl::FromRenderFrameHost(render_frame_host())
           ->permission_controller()
           ->GetPermissionState(content::PermissionType::AUDIO_CAPTURE,
@@ -100,75 +119,65 @@ void MediaResourceProviderImpl::CreateAudioCapturer(
     return;
   }
 
-  auto factory = base::fuchsia::ComponentContextForCurrentProcess()
+  auto factory = base::ComponentContextForProcess()
                      ->svc()
                      ->Connect<fuchsia::media::Audio>();
   factory->CreateAudioCapturer(std::move(request), /*loopback=*/false);
 }
 
-class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
- public:
-  WidevineHandler() = default;
-  ~WidevineHandler() override = default;
+template <typename KeySystemInterface>
+fidl::InterfaceHandle<fuchsia::media::drm::KeySystem> ConnectToKeySystem() {
+  static_assert(
+      (std::is_same<KeySystemInterface, fuchsia::media::drm::Widevine>::value ||
+       std::is_same<KeySystemInterface, fuchsia::media::drm::PlayReady>::value),
+      "KeySystemInterface must be either fuchsia::media::drm::Widevine or "
+      "fuchsia::media::drm::PlayReady");
 
-  void CreateCdm(
-      fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
-          request) override {
-    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
-                        ->svc()
-                        ->Connect<fuchsia::media::drm::Widevine>();
-    widevine->CreateContentDecryptionModule(std::move(request));
-  }
-
-  fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
-    fuchsia::media::drm::ProvisionerPtr provisioner;
-
-    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
-                        ->svc()
-                        ->Connect<fuchsia::media::drm::Widevine>();
-    widevine->CreateProvisioner(provisioner.NewRequest());
-
-    return provisioner;
-  }
-};
-
-class PlayreadyHandler : public media::FuchsiaCdmManager::KeySystemHandler {
- public:
-  PlayreadyHandler() = default;
-  ~PlayreadyHandler() override = default;
-
-  void CreateCdm(
-      fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
-          request) override {
-    auto playready = base::fuchsia::ComponentContextForCurrentProcess()
-                         ->svc()
-                         ->Connect<fuchsia::media::drm::PlayReady>();
-    playready->CreateContentDecryptionModule(std::move(request));
-  }
-
-  fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
-    // Provisioning is not required for PlayReady.
-    return fuchsia::media::drm::ProvisionerPtr();
-  }
-};
+  // TODO(fxbug.dev/13674): Once the key system specific protocols are turned
+  // into services, we should not need to manually force the key system specific
+  // interface into the KeySystem interface.
+  fidl::InterfaceHandle<fuchsia::media::drm::KeySystem> key_system;
+  base::ComponentContextForProcess()->svc()->Connect(key_system.NewRequest(),
+                                                     KeySystemInterface::Name_);
+  return key_system;
+}
 
 std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
-  media::FuchsiaCdmManager::KeySystemHandlerMap handlers;
+  media::FuchsiaCdmManager::CreateKeySystemCallbackMap
+      create_key_system_callbacks;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWidevine)) {
-    handlers.emplace(kWidevineKeySystem, std::make_unique<WidevineHandler>());
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableWidevine)) {
+    create_key_system_callbacks.emplace(
+        kWidevineKeySystem,
+        base::BindRepeating(
+            &ConnectToKeySystem<fuchsia::media::drm::Widevine>));
   }
 
   std::string playready_key_system =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kPlayreadyKeySystem);
+      command_line->GetSwitchValueASCII(switches::kPlayreadyKeySystem);
   if (!playready_key_system.empty()) {
-    handlers.emplace(playready_key_system,
-                     std::make_unique<PlayreadyHandler>());
+    create_key_system_callbacks.emplace(
+        playready_key_system,
+        base::BindRepeating(
+            &ConnectToKeySystem<fuchsia::media::drm::PlayReady>));
   }
 
-  return std::make_unique<media::FuchsiaCdmManager>(std::move(handlers));
+  std::string cdm_data_directory =
+      command_line->GetSwitchValueASCII(switches::kCdmDataDirectory);
+
+  base::Optional<uint64_t> cdm_data_quota_bytes;
+  if (command_line->HasSwitch(switches::kCdmDataQuotaBytes)) {
+    uint64_t value = 0;
+    CHECK(base::StringToUint64(
+        command_line->GetSwitchValueASCII(switches::kCdmDataQuotaBytes),
+        &value));
+    cdm_data_quota_bytes = value;
+  }
+
+  return std::make_unique<media::FuchsiaCdmManager>(
+      std::move(create_key_system_callbacks),
+      base::FilePath(cdm_data_directory), cdm_data_quota_bytes);
 }
 
 }  // namespace

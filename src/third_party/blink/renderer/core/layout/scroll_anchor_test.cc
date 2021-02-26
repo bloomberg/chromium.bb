@@ -54,7 +54,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   }
 
   ScrollableArea* ScrollerForElement(Element* element) {
-    return ToLayoutBox(element->GetLayoutObject())->GetScrollableArea();
+    return To<LayoutBox>(element->GetLayoutObject())->GetScrollableArea();
   }
 
   ScrollAnchor& GetScrollAnchor(ScrollableArea* scroller) {
@@ -92,9 +92,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   }
 
   Scrollbar* VerticalScrollbarForElement(Element* element) {
-    return ToLayoutBox(element->GetLayoutObject())
-        ->GetScrollableArea()
-        ->VerticalScrollbar();
+    return ScrollerForElement(element)->VerticalScrollbar();
   }
 
   void MouseDownOnVerticalScrollbar(Scrollbar* scrollbar) {
@@ -536,64 +534,6 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
   EXPECT_EQ(100, ScrollerForElement(scroller)->ScrollOffsetInt().Height());
 }
 
-// TODO(skobes): Convert this to web-platform-tests when document.rootScroller
-// is launched (http://crbug.com/505516).
-TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-        ::-webkit-scrollbar {
-          width: 0px; height: 0px;
-        }
-        body, html {
-          margin: 0px; width: 100%; height: 100%;
-        }
-        #rootscroller {
-          overflow: scroll; width: 100%; height: 100%;
-        }
-        .spacer {
-          height: 600px; width: 100px;
-        }
-        #target {
-          height: 100px; width: 100px; background-color: red;
-        }
-    </style>
-    <div id='rootscroller'>
-        <div id='firstChild' class='spacer'></div>
-        <div id='target'></div>
-        <div class='spacer'></div>
-    </div>
-    <div class='spacer'></div>
-  )HTML");
-
-  Element* root_scroller_element = GetDocument().getElementById("rootscroller");
-
-  NonThrowableExceptionState non_throw;
-  GetDocument().setRootScroller(root_scroller_element, non_throw);
-  UpdateAllLifecyclePhasesForTest();
-
-  ScrollableArea* scroller = ScrollerForElement(root_scroller_element);
-
-  // By making the #rootScroller DIV the rootScroller, it should become the
-  // layout viewport on the RootFrameViewport.
-  ASSERT_EQ(scroller,
-            &GetDocument().View()->GetRootFrameViewport()->LayoutViewport());
-
-  // The #rootScroller DIV's anchor should have the RootFrameViewport set as
-  // the scroller, rather than the FrameView's anchor.
-
-  root_scroller_element->setScrollTop(600);
-
-  SetHeight(GetDocument().getElementById("firstChild"), 1000);
-
-  // Scroll anchoring should be applied to #rootScroller.
-  EXPECT_EQ(1000, scroller->GetScrollOffset().Height());
-  EXPECT_EQ(GetDocument().getElementById("target")->GetLayoutObject(),
-            GetScrollAnchor(scroller).AnchorObject());
-  // Scroll anchoring should not apply within main frame.
-  EXPECT_EQ(0, LayoutViewport()->GetScrollOffset().Height());
-  EXPECT_EQ(nullptr, GetScrollAnchor(LayoutViewport()).AnchorObject());
-}
-
 // This test verifies that scroll anchoring is disabled when the document is in
 // printing mode.
 TEST_P(ScrollAnchorTest, AnchoringDisabledForPrinting) {
@@ -807,6 +747,30 @@ TEST_P(ScrollAnchorTest, SerializeAnchorVerticalWritingMode) {
 
   ScrollLayoutViewport(ScrollOffset(75, 0));
   ValidateSerializedAnchor("html>body>.barbaz", LayoutPoint(-50, 0));
+}
+
+TEST_P(ScrollAnchorTest, RestoreAnchorVerticalRlWritingMode) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+      body {
+          height: 100px;
+          margin: 0;
+          writing-mode:
+          vertical-rl;
+        }
+        div.big { width: 800px; }
+        div { width: 100px; height: 100px; }
+      </style>
+      <div class='big'></div>
+      <div id='last'></div>
+      )HTML");
+
+  SerializedAnchor serialized_anchor("#last", LayoutPoint(0, 0));
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Width(), 0);
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 0);
 }
 
 TEST_P(ScrollAnchorTest, SerializeAnchorQualifiedTagName) {
@@ -1057,7 +1021,7 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
   GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
                                                        "display:block");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_EQ(IntSize(0, 200), LayoutViewport()
                                  ->GetScrollAnimator()
                                  .ImplOnlyAnimationAdjustmentForTesting());
@@ -1117,7 +1081,7 @@ class ScrollAnchorFindInPageTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   }
 
   void SetHtmlInnerHTML(const char* content) {
@@ -1126,24 +1090,24 @@ class ScrollAnchorFindInPageTest : public testing::Test {
   }
 
   void ResizeAndFocus() {
-    web_view_helper_.Resize(WebSize(640, 480));
+    web_view_helper_.Resize(gfx::Size(640, 480));
     web_view_helper_.GetWebView()->MainFrameWidget()->SetFocus(true);
     test::RunPendingTasks();
   }
 
-  mojom::blink::FindOptionsPtr FindOptions(bool find_next = false) {
+  mojom::blink::FindOptionsPtr FindOptions(bool new_session = true) {
     auto find_options = mojom::blink::FindOptions::New();
     find_options->run_synchronously_for_testing = true;
-    find_options->find_next = find_next;
+    find_options->new_session = new_session;
     find_options->forward = true;
     return find_options;
   }
 
   void Find(String search_text,
             ScrollAnchorTestFindInPageClient& client,
-            bool find_next = false) {
+            bool new_session = true) {
     client.Reset();
-    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(find_next));
+    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(new_session));
     test::RunPendingTasks();
   }
 
@@ -1215,7 +1179,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusPrioritizedOverFindInPage) {
     <div class=spacer></div>
     <div class=spacer></div>
     <div class=spacer></div>
-    <div id=focus_target tabindex=0></div>
+    <div id=focus_target contenteditable></div>
     <div id=growing></div>
     <div id=find_target>findme</div>
     <div class=spacer></div>
@@ -1273,7 +1237,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusedUnderStickyIsSkipped) {
     <div class=spacer></div>
     <div id=check></div>
     <div class=sticky>
-      <div id=target tabindex=0></div>
+      <div id=target contenteditable></div>
     </div>
     <div class=spacer></div>
     <div class=spacer></div>

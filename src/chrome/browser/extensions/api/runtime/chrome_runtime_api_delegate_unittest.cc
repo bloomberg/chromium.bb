@@ -94,7 +94,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
       no_updates_.erase(id);
     DownloadFinishedArgs args;
     args.path = path;
-    args.version = version;
+    args.version = base::Version(version);
     updates_[id] = std::move(args);
   }
 
@@ -107,7 +107,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
     // expecting a synchronous reply (the real code has to go do at least one
     // network request before getting a response, so this is is a reasonable
     // expectation by delegates).
-    for (const std::string& id : fetch_data->extension_ids()) {
+    for (const std::string& id : fetch_data->GetExtensionIds()) {
       auto no_update = no_updates_.find(id);
       if (no_update != no_updates_.end()) {
         no_updates_.erase(no_update);
@@ -147,7 +147,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
   // Simple holder for the data passed in AddUpdateResponse calls.
   struct DownloadFinishedArgs {
     base::FilePath path;
-    std::string version;
+    base::Version version;
   };
 
   // These keep track of what response we should give for update checks, keyed
@@ -206,7 +206,8 @@ class ChromeRuntimeAPIDelegateTest : public ExtensionServiceTestWithInstall {
 
     // Setup the ExtensionService so that extension updates won't complete
     // installation until the extension is idle.
-    update_install_gate_ = std::make_unique<UpdateInstallGate>(service());
+    update_install_gate_ =
+        std::make_unique<UpdateInstallGate>(service()->profile());
     service()->RegisterInstallGate(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    update_install_gate_.get());
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(browser_context()))

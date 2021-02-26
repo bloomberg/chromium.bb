@@ -33,8 +33,6 @@ class ServiceWorkerRegistrationNotifications final
     : public GarbageCollected<ServiceWorkerRegistrationNotifications>,
       public Supplement<ServiceWorkerRegistration>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationNotifications);
-
  public:
   static const char kSupplementName[];
 
@@ -53,7 +51,7 @@ class ServiceWorkerRegistrationNotifications final
   // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   static ServiceWorkerRegistrationNotifications& From(

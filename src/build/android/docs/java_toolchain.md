@@ -20,6 +20,12 @@ also have a default `jar_excluded_patterns` set (more on that later):
 All target names must end with "_java" so that the build system can distinguish
 them from non-java targets (or [other variations](https://cs.chromium.org/chromium/src/build/config/android/internal_rules.gni?rcl=ec2c17d7b4e424e060c3c7972842af87343526a1&l=20)).
 
+Most targets produce two separate `.jar` files:
+* Device `.jar`: Used to produce `.dex.jar`, which is used on-device.
+* Host `.jar`: For use on the host machine (`junit_binary` / `java_binary`).
+  * Host `.jar` files live in `lib.java/` so that they are archived in
+    builder/tester bots (which do not archive `obj/`).
+
 ## From Source to Final Dex
 
 ### Step 1: Create interface .jar with turbine or ijar
@@ -37,11 +43,6 @@ What are interface jars?:
   removed.
 * Dependant targets use interface `.jar` files to skip having to be rebuilt
   when only private implementation details change.
-  * To accomplish this behavior, library targets list only their
-    interface `.jar` files as outputs. Ninja's `restat=1` feature then causes
-    dependent targets to be rebuilt only when the interface `.jar` changes.
-    Final dex targets are always rebuilt because they depend on the
-    non-interface `.jar` through a `depfile`.
 
 [//third_party/ijar]: /third_party/ijar/README.chromium
 [//third_party/turbine]: /third_party/turbine/README.chromium
@@ -77,19 +78,22 @@ This step can be disabled via GN arg: `use_errorprone_java_compiler = false`
 [ErrorProne]: https://errorprone.info/
 [ep_plugins]: /tools/android/errorprone_plugin/
 
-### Step 3: Bytecode Processing
+### Step 3: Desugaring (Device .jar Only)
 
-* `//build/android/bytecode` runs on the compiled `.jar` in order to:
-  * Enable Java assertions (when dcheck is enabled).
-  * Assert that libraries have properly declared `deps`.
-
-### Step 4: Desugaring
-
-This step happens only when targets have `supports_android = true`.
+This step happens only when targets have `supports_android = true`. It is not
+applied to `.jar` files used by `junit_binary`.
 
 * `//third_party/bazel/desugar` converts certain Java 8 constructs, such as
   lambdas and default interface methods, into constructs that are compatible
   with Java 7.
+
+### Step 4: Instrumenting (Device .jar Only)
+
+This step happens only when this GN arg is set: `use_jacoco_coverage = true`
+
+* [Jacoco] adds instrumentation hooks to methods.
+
+[Jacoco]: https://www.eclemma.org/jacoco/
 
 ### Step 5: Filtering
 
@@ -108,27 +112,12 @@ This step happens only when targets that have `jar_excluded_patterns` or
 [Android Resources]: life_of_a_resource.md
 [apphooks]: /chrome/android/java/src/org/chromium/chrome/browser/AppHooksImpl.java
 
-### Step 6: Instrumentation
-
-This step happens only when this GN arg is set: `use_jacoco_coverage = true`
-
-* [Jacoco] adds instrumentation hooks to methods.
-
-[Jacoco]: https://www.eclemma.org/jacoco/
-
-### Step 7: Copy to lib.java
-
-* The `.jar` is copied into `$root_build_dir/lib.java` (under target-specific
-  subdirectories) so that it will be included by bot archive steps.
-  * These `.jar` files are the ones used when running `java_binary` and
-    `junit_binary` targets.
-
-### Step 8: Per-Library Dexing
+### Step 6: Per-Library Dexing
 
 This step happens only when targets have `supports_android = true`.
 
 * [d8] converts `.jar` files containing `.class` files into `.dex.jar` files
-  containing `.dex` files.
+  containing `classes.dex` files.
 * Dexing is incremental - it will reuse dex'ed classes from a previous build if
   the corresponding `.class` file is unchanged.
 * These per-library `.dex.jar` files are used directly by [incremental install],
@@ -139,7 +128,7 @@ This step happens only when targets have `supports_android = true`.
 [d8]: https://developer.android.com/studio/command-line/d8
 [incremental install]: /build/android/incremental_install/README.md
 
-### Step 9: Apk / Bundle Module Compile
+### Step 7: Apk / Bundle Module Compile
 
 * Each `android_apk` and `android_bundle_module` template has a nested
   `java_library` target. The nested library includes final copies of files
@@ -150,7 +139,7 @@ This step happens only when targets have `supports_android = true`.
 
 [JNI glue]: /base/android/jni_generator/README.md
 
-### Step 10: Final Dexing
+### Step 8: Final Dexing
 
 This step is skipped when building using [Incremental Install].
 
@@ -160,18 +149,10 @@ When `is_java_debug = true`:
 When `is_java_debug = false`:
 * [R8] performs whole-program optimization on all library `lib.java` `.jar`
   files and outputs a final `.r8dex.jar`.
-  * For App Bundles, R8 creates a single `.r8dex.jar` with the code from all
-    modules.
+  * For App Bundles, R8 creates a `.r8dex.jar` for each module.
 
 [Incremental Install]: /build/android/incremental_install/README.md
 [R8]: https://r8.googlesource.com/r8
-
-### Step 11: Bundle Module Dex Splitting
-
-This step happens only when `is_java_debug = false`.
-
-* [dexsplitter.py] splits the single `*dex.jar` into per-module `*dex.jar`
-  files.
 
 ## Test APKs with apk_under_test
 
@@ -266,8 +247,7 @@ We use several tools for static analysis.
 
 [lint_plugins]: http://tools.android.com/tips/lint-custom-rules
 
-### [Bytecode Rewriter](/build/android/bytecode/)
-* Runs as part of normal compilation.
+### [Bytecode Processor](/build/android/bytecode/)
 * Performs a single check:
   * That target `deps` are not missing any entries.
   * In other words: Enforces that targets do not rely on indirect dependencies
@@ -277,7 +257,7 @@ We use several tools for static analysis.
 ### [PRESUBMIT.py](/PRESUBMIT.py):
 * Checks for banned patterns via `_BANNED_JAVA_FUNCTIONS`.
   * (These should likely be moved to checkstyle).
-* Checks for a random set of things in `_AndroidSpecificOnUploadChecks()`.
+* Checks for a random set of things in `ChecksAndroidSpecificOnUpload()`.
   * Including running Checkstyle.
   * (Some of these other checks should likely also be moved to checkstyle).
 * Checks run only on changed lines.

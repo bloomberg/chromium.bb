@@ -73,6 +73,7 @@
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/test_internal_authenticator.h"
+#include "content/public/test/mock_navigation_handle.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -132,18 +133,6 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
   base::WeakPtrFactory<TestAccessor> weak_ptr_factory_{this};
 };
 
-std::string NextYear() {
-  base::Time::Exploded now;
-  AutofillClock::Now().LocalExplode(&now);
-  return base::NumberToString(now.year + 1);
-}
-
-std::string NextMonth() {
-  base::Time::Exploded now;
-  AutofillClock::Now().LocalExplode(&now);
-  return base::NumberToString(now.month % 12 + 1);
-}
-
 }  // namespace
 
 class CreditCardAccessManagerTest : public testing::Test {
@@ -166,9 +155,8 @@ class CreditCardAccessManagerTest : public testing::Test {
     autocomplete_history_manager_ =
         std::make_unique<MockAutocompleteHistoryManager>();
 
-    accessor_.reset(new TestAccessor());
-    autofill_driver_ =
-        std::make_unique<testing::NiceMock<TestAutofillDriver>>();
+    accessor_ = std::make_unique<TestAccessor>();
+    autofill_driver_ = std::make_unique<TestAutofillDriver>();
 
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(),
@@ -184,6 +172,7 @@ class CreditCardAccessManagerTest : public testing::Test {
         autofill_manager_->credit_card_access_manager();
 
 #if !defined(OS_IOS)
+    autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
     credit_card_access_manager_->set_fido_authenticator_for_testing(
         std::make_unique<TestCreditCardFIDOAuthenticator>(
@@ -216,7 +205,8 @@ class CreditCardAccessManagerTest : public testing::Test {
   void CreateLocalCard(std::string guid, std::string number = std::string()) {
     CreditCard local_card = CreditCard();
     test::SetCreditCardInfo(&local_card, "Elvis Presley", number.c_str(),
-                            NextMonth().c_str(), NextYear().c_str(), "1");
+                            test::NextMonth().c_str(), test::NextYear().c_str(),
+                            "1");
     local_card.set_guid(guid);
     local_card.set_record_type(CreditCard::LOCAL_CARD);
 
@@ -228,7 +218,8 @@ class CreditCardAccessManagerTest : public testing::Test {
                         bool masked = true) {
     CreditCard server_card = CreditCard();
     test::SetCreditCardInfo(&server_card, "Elvis Presley", number.c_str(),
-                            NextMonth().c_str(), NextYear().c_str(), "1");
+                            test::NextMonth().c_str(), test::NextYear().c_str(),
+                            "1");
     server_card.set_guid(guid);
     server_card.set_record_type(masked ? CreditCard::MASKED_SERVER_CARD
                                        : CreditCard::FULL_SERVER_CARD);
@@ -460,7 +451,7 @@ TEST_F(CreditCardAccessManagerTest, LocalCardGetDeletionConfirmationText) {
       card, &title, &body));
 
   // |title| and |body| should be updated appropriately.
-  EXPECT_EQ(title, card->NetworkAndLastFourDigits());
+  EXPECT_EQ(title, card->CardIdentifierStringForAutofillDisplay());
   EXPECT_EQ(body,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));
@@ -1789,6 +1780,46 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutFailure) {
   OptChange(AutofillClient::PERMANENT_FAILURE, false);
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
 }
+
+// TODO(crbug.com/1109296) Debug issues and re-enable this test on MacOS.
+#if !defined(OS_APPLE)
+// Ensures that PrepareToFetchCreditCard() is properly rate limited.
+TEST_F(CreditCardAccessManagerTest, PreflightCallRateLimited) {
+  // Create server card and set user as eligible for FIDO auth.
+  base::HistogramTester histogram_tester;
+  std::string preflight_call_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+
+  ClearCards();
+  CreateServerCard(kTestGUID, kTestNumber);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  ResetFetchCreditCard();
+
+  // First call to PrepareToFetchCreditCard() should make RPC.
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+
+  // The above call should automatically reset the flag.
+  EXPECT_FALSE(
+      credit_card_access_manager_->can_fetch_unmask_details_.IsSignaled());
+
+  // Any subsequent calls should not make a RPC.
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+
+  // Mock a page refresh, and make a third request.
+  std::unique_ptr<content::MockNavigationHandle> mock_navigation_handle =
+      std::make_unique<content::MockNavigationHandle>();
+  mock_navigation_handle->set_is_same_document(true);
+  autofill_driver_->DidNavigateFrame(mock_navigation_handle.get());
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+
+  // Since the page was refreshed, rate limiter is reset and new RPC should be
+  // logged.
+  histogram_tester.ExpectTotalCount(preflight_call_metric, 2);
+}
+#endif  // !defined(OS_APPLE)
 #endif  // !defined(OS_IOS)
 
 // Ensures that |is_authentication_in_progress_| is set correctly.
@@ -1828,8 +1859,5 @@ TEST_F(CreditCardAccessManagerTest, FetchCreditCardUsesUnmaskedCardCache) {
                                                accessor_->GetWeakPtr());
   histogram_tester.ExpectBucketCount("Autofill.UsedCachedServerCard", 2, 1);
 }
-
-// TODO(crbug/949269): Once metrics are added, create test to ensure that
-// PrepareToFetchCreditCard() is properly rate limited.
 
 }  // namespace autofill

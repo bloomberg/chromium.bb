@@ -184,33 +184,27 @@ depending on the version of Android running on a device. Chrome uses this
 feature to target 4 different versions using 4 different ninja targets:
 
 1. `chrome_public_apk` (ChromePublic.apk)
-   * `minSdkVersion=19` (KitKat).
-   * Stores libchrome.so compressed within the APK.
-   * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
-   * Shipped only for Android < 21, but still works fine on Android >= 21.
-2. `chrome_modern_public_apk` (ChromeModernPublic.apk)
+   * Used for local development and tests (simpler than using bundle targets).
+   * Same configuration as chrome_modern_public_bundle.
+2. `chrome_modern_public_bundle` (MonochromePublic.aab)
    * `minSdkVersion=21` (Lollipop).
    * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
-   * Stores libchrome.so uncompressed within the APK.
-     * This APK is bigger, but the installation size is smaller since there is
-       no need to extract the .so file.
-3. `monochrome_public_apk` (MonochromePublic.apk)
+   * Stores native library with "crazy." prefix to prevent extraction.
+3. `monochrome_public_bundle` (MonochromePublic.aab)
    * `minSdkVersion=24` (Nougat).
    * Contains both WebView and Chrome within the same APK.
-     * This APK is even bigger, but much smaller than SystemWebView.apk + ChromePublic.apk.
-   * Stores libmonochrome.so uncompressed within the APK.
+     * This bundle is larger than ChromeModern, but much smaller than SUM(SystemWebView, ChromeModern)
    * Does not use Crazy Linker (WebView requires system linker).
      * But system linker supports crazy linker features now anyways.
 4. `trichrome_chrome_bundle` and `trichrome_library_apk` (TrichromeChrome.aab and TrichromeLibrary.apk)
    * `minSdkVersion=Q` (Q).
    * TrichromeChrome contains only the Chrome code that is not shared with WebView.
-   * TrichromeLibrary contains the shared code and is a "static shared library APK", which must be installed prior to TrichromeChrome.
+   * TrichromeLibrary contains the shared code and is a "static shared library APK".
    * Stores libmonochrome.so uncompressed within TrichromeLibrary.apk.
-   * Does not use Crazy Linker (WebView requires system linker).
-     * But system linker supports crazy linker features now anyways.
+   * Uses `android_dlopen_ext` to load native libraries with shared RELRO's
 
-**Note**: These instructions use `chrome_public_apk`, but either of the other
-two targets can be substituted.
+**Note**: These instructions use `chrome_public_apk`, but any of the other
+targets can be substituted.
 
 **Note**: These targets are actually the open-source equivalents to the
 closed-source targets that get shipped to the Play Store.
@@ -361,6 +355,17 @@ Args that affect build speed:
    * What it does: Uses multiple `.so` files instead of just one (faster links)
  * `is_java_debug = true` *(default=`is_debug`)*
    * What it does: Disables ProGuard (slow build step)
+ * `treat_warnings_as_errors = false` *(default=`true`)*
+   * Causes any compiler warnings or lint checks to not fail the build.
+   * Allows you to iterate without needing to satisfy static analysis checks.
+ * `use_errorprone_java_compiler = false` *(default=`true`)*
+   * Don't run Errorprone checks when compiling Java files.
+   * Speeds up Java compiles by ~30% at the cost of not seeing ErrorProne
+     warnings.
+ * `disable_android_lint = true` *(default=`false`)*
+   * Don't run Android Lint when building APK / App Bundle targets.
+   * Lint usually takes > 60 seconds to run, so disabling it dramatically
+     reduces incremental build times.
 
 #### Incremental Install
 [Incremental Install](/build/android/incremental_install/README.md) uses

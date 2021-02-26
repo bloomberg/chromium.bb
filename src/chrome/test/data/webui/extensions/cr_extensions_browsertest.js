@@ -10,7 +10,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Basic test fixture for the MD chrome://extensions page. Installs no
@@ -38,11 +37,6 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
   // The name of the mocha suite. Should be overriden by subclasses.
   get suiteName() {
     return null;
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -117,7 +111,7 @@ TEST_F('CrExtensionsToolbarTest', 'FailedUpdateFiresLoadError', function() {
 });
 
 // TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
-GEN('#if !defined(OS_MACOSX)');
+GEN('#if !defined(OS_MAC)');
 GEN('#define MAYBE_ClickHandlers DISABLED_ClickHandlers');
 GEN('#else');
 GEN('#define MAYBE_ClickHandlers ClickHandlers');
@@ -184,6 +178,10 @@ TEST_F('CrExtensionsItemsTest', 'RemoveButton', function() {
 
 TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
   this.runMochaTest(extension_item_tests.TestNames.HtmlInName);
+});
+
+TEST_F('CrExtensionsItemsTest', 'RepairButton', function() {
+  this.runMochaTest(extension_item_tests.TestNames.RepairButton);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -521,9 +519,10 @@ TEST_F(
           extension_manager_tests.TestNames.UrlNavigationToDetails);
     });
 
+// Disabled as flaky. TODO(crbug.com/1127741): Enable this test.
 TEST_F(
-    'CrExtensionsManagerTestWithIdQueryParam', 'UrlNavigationToActivityLogFail',
-    function() {
+    'CrExtensionsManagerTestWithIdQueryParam',
+    'DISABLED_UrlNavigationToActivityLogFail', function() {
       this.runMochaTest(
           extension_manager_tests.TestNames.UrlNavigationToActivityLogFail);
     });
@@ -582,23 +581,6 @@ TEST_F('CrExtensionsShortcutTest', 'ScopeChange', function() {
   this.runMochaTest(extension_shortcut_tests.TestNames.ScopeChange);
 });
 
-// eslint-disable-next-line no-var
-var CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/test_loader.html?module=extensions/shortcut_input_test.js';
-  }
-
-  /** @override */
-  get suiteName() {
-    return extension_shortcut_input_tests.suiteName;
-  }
-};
-
-TEST_F('CrExtensionsShortcutInputTest', 'Basic', function() {
-  this.runMochaTest(extension_shortcut_input_tests.TestNames.Basic);
-});
-
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Pack Dialog Tests
 
@@ -636,7 +618,7 @@ TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
 
 // Temporarily disabling on Mac due to flakiness.
 // http://crbug.com/877109
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_PackWarning DISABLED_PackWarning');
 GEN('#else');
 GEN('#define MAYBE_PackWarning PackWarning');

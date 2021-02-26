@@ -10,14 +10,17 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "ui/base/resource/scale_factor.h"
 
 class Profile;
@@ -70,11 +73,12 @@ class GuestOsRegistryService : public KeyedService {
 
   class Registration {
    public:
-    Registration(const base::Value* pref, bool is_terminal_app);
+    Registration(const std::string app_id, const base::Value pref);
     Registration(Registration&& registration) = default;
     Registration& operator=(Registration&& registration) = default;
     ~Registration();
 
+    std::string app_id() const { return app_id_; }
     std::string DesktopFileId() const;
     VmType VmType() const;
     std::string VmName() const;
@@ -97,18 +101,12 @@ class GuestOsRegistryService : public KeyedService {
     bool IsScaled() const;
     bool CanUninstall() const;
 
-    // Whether this app is the default terminal app.
-    bool is_terminal_app() const { return is_terminal_app_; }
-
    private:
     std::string LocalizedString(base::StringPiece key) const;
     std::set<std::string> LocalizedList(base::StringPiece key) const;
 
-    // The pref can only be null when the registration is for the Terminal app.
-    // If we do have a pref for the Terminal app, it contains only the last
-    // launch time.
+    std::string app_id_;
     base::Value pref_;
-    bool is_terminal_app_;
 
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
@@ -120,14 +118,10 @@ class GuestOsRegistryService : public KeyedService {
     // last_launch_time field is updated.
     virtual void OnRegistryUpdated(
         guest_os::GuestOsRegistryService* registry_service,
+        VmType vm_type,
         const std::vector<std::string>& updated_apps,
         const std::vector<std::string>& removed_apps,
         const std::vector<std::string>& inserted_apps) {}
-
-    // Called when an icon has been installed for the specified app so loading
-    // of that icon should be requested again.
-    virtual void OnAppIconUpdated(const std::string& app_id,
-                                  ui::ScaleFactor scale_factor) {}
 
    protected:
     virtual ~Observer() = default;
@@ -142,6 +136,10 @@ class GuestOsRegistryService : public KeyedService {
   std::map<std::string, GuestOsRegistryService::Registration>
   GetAllRegisteredApps() const;
 
+  // Return all installed apps where the VM is enabled.
+  std::map<std::string, GuestOsRegistryService::Registration> GetEnabledApps()
+      const;
+
   // Return all installed apps for a given vm.
   // If |vm_type == TERMINA_VM| then this includes the Terminal app.
   std::map<std::string, GuestOsRegistryService::Registration> GetRegisteredApps(
@@ -155,19 +153,52 @@ class GuestOsRegistryService : public KeyedService {
   base::FilePath GetIconPath(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
 
-  // Calls RequestIcon if no request is recorded.
-  void MaybeRequestIcon(const std::string& app_id,
-                        ui::ScaleFactor scale_factor);
+  // Attempts to load icon in the following order:
+  // 1/ Loads from resource if |icon_key->resource_id| is valid (non-zero).
+  // 2/ Looks up file cache.
+  // 3/ Fetches from VM.
+  // 4/ Uses |fallback_icon_resource_id| if it is valid (non-zero).
+  // 5/ Returns empty.
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconType icon_type,
+                int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
+                int fallback_icon_resource_id,
+                apps::mojom::Publisher::LoadIconCallback callback);
+
+  void LoadIconFromVM(const std::string& app_id,
+                      apps::mojom::IconType icon_type,
+                      int32_t size_hint_in_dip,
+                      ui::ScaleFactor scale_factor,
+                      apps::IconEffects icon_effects,
+                      int fallback_icon_resource_id,
+                      apps::mojom::Publisher::LoadIconCallback callback);
+
+  void OnLoadIconFromVM(const std::string& app_id,
+                        apps::mojom::IconType icon_type,
+                        int32_t size_hint_in_dip,
+                        apps::IconEffects icon_effects,
+                        int fallback_icon_resource_id,
+                        apps::mojom::Publisher::LoadIconCallback callback,
+                        std::string compressed_icon_data);
+
+  // Fetches icons from container.
+  void RequestIcon(const std::string& app_id,
+                   ui::ScaleFactor scale_factor,
+                   base::OnceCallback<void(std::string)> callback);
 
   // Remove all apps from the named VM and container. If |container_name| is an
   // empty string, this function removes all apps associated with the VM,
   // regardless of container. Used in the uninstall process.
-  void ClearApplicationList(const std::string& vm_name,
+  void ClearApplicationList(VmType vm_type,
+                            const std::string& vm_name,
                             const std::string& container_name);
 
   // Remove all apps from the named container. Used when deleting a container
   // without deleting the whole VM.
-  void ClearApplicationListForContainer(const std::string& vm_name,
+  void ClearApplicationListForContainer(VmType vm_type,
+                                        const std::string& vm_name,
                                         const std::string& container_name);
 
   // The existing list of apps is replaced by |application_list|.
@@ -187,6 +218,12 @@ class GuestOsRegistryService : public KeyedService {
 
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
+  // Returns the AppId that will be used to refer to the given GuestOs
+  // application.
+  static std::string GenerateAppId(const std::string& desktop_file_id,
+                                   const std::string& vm_name,
+                                   const std::string& container_name);
+
  private:
   // Run start up tasks for the registry (e.g. recording metrics).
   void RecordStartupMetrics();
@@ -194,16 +231,13 @@ class GuestOsRegistryService : public KeyedService {
   // Construct path to app local data.
   base::FilePath GetAppPath(const std::string& app_id) const;
   // Called to request an icon from the container.
-  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+  void RequestContainerAppIcon(const std::string& app_id,
+                               ui::ScaleFactor scale_factor);
   // Callback for when we request an icon from the container.
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
                           bool success,
                           const std::vector<crostini::Icon>& icons);
-  // Callback for our internal call for saving out icon data.
-  void OnIconInstalled(const std::string& app_id,
-                       ui::ScaleFactor scale_factor,
-                       bool success);
   // Removes all the icons installed for an application.
   void RemoveAppData(const std::string& app_id);
 
@@ -228,14 +262,15 @@ class GuestOsRegistryService : public KeyedService {
   const base::Clock* clock_;
 
   // Keeps record for icon request to avoid duplication. Each app may contain
-  // several requests for different scale factor. Scale factor is defined by
+  // several requests for different scale factors. Scale factor is defined by
   // specific bit position. The |active_icon_requests_| holds icon request that
-  // are either in flight or have been completed successfully so they should not
-  // be requested again. |retry_icon_requests| holds failed requests which we
+  // are in flight. |retry_icon_requests| holds failed requests which we
   // should attempt again when we get an app list refresh from the container
   // which means there's a good chance the container is online and the request
   // will then succeed.
-  std::map<std::string, uint32_t> active_icon_requests_;
+  std::map<std::pair<std::string, ui::ScaleFactor>,
+           std::vector<base::OnceCallback<void(std::string)>>>
+      active_icon_requests_;
   std::map<std::string, uint32_t> retry_icon_requests_;
 
   base::WeakPtrFactory<GuestOsRegistryService> weak_ptr_factory_{this};

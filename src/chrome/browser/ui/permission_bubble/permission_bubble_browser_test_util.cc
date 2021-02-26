@@ -29,11 +29,21 @@ TestPermissionBubbleViewDelegate::Requests() {
   return requests_;
 }
 
-PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
+GURL TestPermissionBubbleViewDelegate::GetRequestingOrigin() const {
+  return requests_.front()->GetOrigin();
 }
 
-PermissionBubbleBrowserTest::~PermissionBubbleBrowserTest() {
+GURL TestPermissionBubbleViewDelegate::GetEmbeddingOrigin() const {
+  return GURL("https://embedder.example.com");
 }
+
+bool TestPermissionBubbleViewDelegate::WasCurrentRequestAlreadyDisplayed() {
+  return false;
+}
+
+PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() = default;
+
+PermissionBubbleBrowserTest::~PermissionBubbleBrowserTest() = default;
 
 void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
@@ -62,7 +72,7 @@ content::WebContents* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
   content::WebContents* app_contents =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
           ->BrowserAppLauncher()
-          .LaunchAppWithParams(params);
+          ->LaunchAppWithParams(std::move(params));
   CHECK(app_contents);
   return app_contents;
 }

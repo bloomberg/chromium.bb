@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
@@ -115,14 +116,20 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
         FakeVideoCaptureDeviceFactory::CreateDevice(device_descriptor), this);
   }
 
-  void GetDeviceDescriptors(
-      media::VideoCaptureDeviceDescriptors* device_descriptors) override {
-    media::FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
-        device_descriptors);
-    for (auto& descriptor : *device_descriptors) {
-      if (descriptor.facing == media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE)
-        descriptor.facing = DEFAULT_FACING;
-    }
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override {
+    media::FakeVideoCaptureDeviceFactory::GetDevicesInfo(
+        base::BindLambdaForTesting(
+            [callback =
+                 std::move(callback)](std::vector<media::VideoCaptureDeviceInfo>
+                                          devices_info) mutable {
+              for (auto& device : devices_info) {
+                if (device.descriptor.facing ==
+                    media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {
+                  device.descriptor.facing = DEFAULT_FACING;
+                }
+              }
+              std::move(callback).Run(std::move(devices_info));
+            }));
   }
 
   MOCK_METHOD0(WillSuspendDevice, void());
@@ -273,7 +280,7 @@ class VideoCaptureManagerTest : public testing::Test {
     ASSERT_GE(devices_.size(), 2u);
   }
 
-  void TearDown() override {}
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   void OnGotControllerCallback(
       VideoCaptureControllerID id,
@@ -341,12 +348,12 @@ class VideoCaptureManagerTest : public testing::Test {
   }
 #endif
 
+  BrowserTaskEnvironment task_environment_;
   ScreenlockMonitorTestSource* screenlock_monitor_source_;
   std::unique_ptr<ScreenlockMonitor> screenlock_monitor_;
   std::map<VideoCaptureControllerID, VideoCaptureController*> controllers_;
   scoped_refptr<VideoCaptureManager> vcm_;
   std::unique_ptr<MockMediaStreamProviderListener> listener_;
-  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockFrameObserver> frame_observer_;
   WrappedDeviceFactory* video_capture_device_factory_;
   blink::MediaStreamDevices devices_;

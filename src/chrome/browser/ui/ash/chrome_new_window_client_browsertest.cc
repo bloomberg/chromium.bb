@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -110,13 +108,13 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
   EXPECT_EQ(GetLastActiveBrowser()->profile(), profile1);
 
   // Test for incognito windows.
-  // The newly created incoginito window should be created against the current
+  // The newly created incognito window should be created against the current
   // active |browser1|'s profile.
   browser1->window()->Show();
   ChromeNewWindowClient::Get()->NewWindow(/*incognito=*/true);
   EXPECT_EQ(GetLastActiveBrowser()->profile()->GetOriginalProfile(), profile1);
 
-  // The newly created incoginito window should be created against the current
+  // The newly created incognito window should be created against the current
   // active |browser2|'s profile.
   browser2->window()->Show();
   ChromeNewWindowClient::Get()->NewWindow(/*incognito=*/true);
@@ -280,10 +278,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::CHANGEPICTURE,
       base_url.Resolve(chromeos::settings::mojom::kChangePictureSubpagePath));
   TestOpenChromePage(
-      ChromePage::CROSTINIDISKRESIZE,
-      base_url.Resolve(
-          chromeos::settings::mojom::kCrostiniDiskResizeSubpagePath));
-  TestOpenChromePage(
       ChromePage::CUPSPRINTERS,
       base_url.Resolve(chromeos::settings::mojom::kPrintingDetailsSubpagePath));
   TestOpenChromePage(
@@ -298,12 +292,21 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(
           chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath));
   TestOpenChromePage(
+      ChromePage::OSLANGUAGESEDITDICTIONARY,
+      base_url.Resolve(chromeos::settings::mojom::kEditDictionarySubpagePath));
+  TestOpenChromePage(
+      ChromePage::OSLANGUAGESINPUT,
+      base_url.Resolve(chromeos::settings::mojom::kInputSubpagePath));
+  TestOpenChromePage(
       ChromePage::OSLANGUAGESINPUTMETHODS,
       base_url.Resolve(
           chromeos::settings::mojom::kManageInputMethodsSubpagePath));
   TestOpenChromePage(
+      ChromePage::OSLANGUAGESLANGUAGES,
+      base_url.Resolve(chromeos::settings::mojom::kLanguagesSubpagePath));
+  TestOpenChromePage(
       ChromePage::OSLANGUAGESSMARTINPUTS,
-      base_url.Resolve(chromeos::settings::mojom::kSmartInputsSubagePath));
+      base_url.Resolve(chromeos::settings::mojom::kSmartInputsSubpagePath));
   TestOpenChromePage(
       ChromePage::LOCKSCREEN,
       base_url.Resolve(
@@ -371,9 +374,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(
           chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath));
   TestOpenChromePage(
-      ChromePage::DOWNLOADEDCONTENT,
-      base_url.Resolve(chromeos::settings::mojom::kDlcSubpagePath));
-  TestOpenChromePage(
       ChromePage::EXTERNALSTORAGE,
       base_url.Resolve(chromeos::settings::mojom::kExternalStorageSubpagePath));
   TestOpenChromePage(
@@ -381,7 +381,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(chromeos::settings::mojom::kNetworkSectionPath));
   TestOpenChromePage(
       ChromePage::KERBEROSACCOUNTS,
-      base_url.Resolve(chromeos::settings::mojom::kKerberosSubpagePath));
+      base_url.Resolve(
+          chromeos::settings::mojom::kKerberosAccountsSubpagePath));
   TestOpenChromePage(
       ChromePage::KNOWNNETWORKS,
       base_url.Resolve(chromeos::settings::mojom::kKnownNetworksSubpagePath));
@@ -421,6 +422,13 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::CELLULAR,
       base_url.Resolve(
           chromeos::settings::mojom::kMobileDataNetworksSubpagePath));
+  TestOpenChromePage(
+      ChromePage::KERBEROS,
+      base_url.Resolve(chromeos::settings::mojom::kKerberosSectionPath));
+  TestOpenChromePage(
+      ChromePage::KERBEROSACCOUNTSV2,
+      base_url.Resolve(
+          chromeos::settings::mojom::kKerberosAccountsV2SubpagePath));
 }
 
 void TestAllBrowserSettingPages(const GURL& base_url) {

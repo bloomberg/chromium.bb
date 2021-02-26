@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/extension_id.h"
@@ -57,13 +58,13 @@ class RulesetInfo {
     return reindexing_successful_;
   }
 
-  // Must be called after CreateVerifiedMatcher.
-  RulesetMatcher::LoadRulesetResult load_ruleset_result() const;
+  // Returns the result of loading the ruleset. The return value is valid (not
+  // equal to base::nullopt) iff CreateVerifiedMatcher() has been called.
+  const base::Optional<LoadRulesetResult>& load_ruleset_result() const;
 
   // Whether the ruleset loaded successfully.
   bool did_load_successfully() const {
-    return load_ruleset_result_ &&
-           *load_ruleset_result_ == RulesetMatcher::kLoadSuccess;
+    return load_ruleset_result() == LoadRulesetResult::kSuccess;
   }
 
   // Must be invoked on the extension file task runner. Must only be called
@@ -78,7 +79,7 @@ class RulesetInfo {
 
   // Stores the result of creating a verified matcher from the |source_|.
   std::unique_ptr<RulesetMatcher> matcher_;
-  base::Optional<RulesetMatcher::LoadRulesetResult> load_ruleset_result_;
+  base::Optional<LoadRulesetResult> load_ruleset_result_;
 
   // The new checksum to be persisted to prefs. A new checksum should only be
   // set in case of flatbuffer version mismatch.
@@ -114,7 +115,7 @@ class FileSequenceHelper {
 
   // Loads rulesets for |load_data|. Invokes |ui_callback| on the UI thread once
   // loading is done. Also tries to reindex the rulesets on failure.
-  // |load_data.rulesets| must not be empty.
+  // This is a no-op if |load_data.rulesets| is empty.
   using LoadRulesetsUICallback = base::OnceCallback<void(LoadRequestData)>;
   void LoadRulesets(LoadRequestData load_data,
                     LoadRulesetsUICallback ui_callback) const;

@@ -1,26 +1,26 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 67.1
+Version: 68.1
+CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:68.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 67.1 for C/C++.
+This directory contains the source code of ICU 68.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 67-1).
+1. Run "scripts/update.sh <version>" (e.g. 68-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
 
-   BUILD.gn and icu.gyp* files are automatically updated, too.
+   source.gni and icu.gyp* files are automatically updated, too.
 
 2. Review and apply patches/changes in "D. Local Modifications" if
    necessary/applicable. Update patch files in patches/.
 
 3. Follow the instructions in section B on building ICU data files
-
 
 B. How to build ICU data files
 
@@ -80,7 +80,7 @@ Pre-built data files are generated and checked in with the following steps
      non-Android and Android platforms.
 
   c. Whenever data is updated (e.g timezone update), take step b as long
-  as the ICU build directory used in a is kept.
+     as the ICU build directory used in a. is kept.
 
 2. Note on the locale data customization
 
@@ -193,7 +193,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of April 27, 2020, the latest version is 2020a and the above files
+  As of Octber 23, 2020, the latest version is 2020c and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -210,20 +210,55 @@ D. Local Modifications
       Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
       the icu data file or icudt.dll
 
-  - patches/formatted_string_builder.patch
-    upstream bugs: https://unicode-org.atlassian.net/browse/ICU-21081
-    * #if 0 out constexpr hacks which does not work with C++-14
-
 5. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
   - patches/iso2022jp.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20251
 
-6. Allow ICUPKG to generating dat with missing dependencies.
-  - patches/icupkg.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20774
-
-7. Enable tracing of file but not resource, only for Chromium
+6. Enable tracing of file but not resource, only for Chromium
     to reduce performance impact/risk.
   - patches/restrace.patch
+
+7. Patch Arabic date time pattern back to 67 value to avoid test
+   breakage in
+   third_party/blink/web_tests/fast/forms/datetimelocal/datetimelocal-appearance-l10n.html
+  - patches/ardatepattern.patch
+  - https://bugs.chromium.org/p/chromium/issues/detail?id=1139186
+
+8. Patch fix for CFI due to unnecessary cast
+  - patches/fixCFI.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1440
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21373
+
+9. Patch fix for > 8 items in ListFormatter Memory READ
+  - patches/listformatmemread.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1450
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21383
+
+10. Patch fix for Locale::setKeywordValue
+    patches/setkeywordvalue.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1461
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21385
+
+11. Patch Windows to fix Host timezone detection
+    patches/wintz.patch
+    patches/wintz2.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1465
+    https://github.com/unicode-org/icu/pull/1539
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21392
+    https://unicode-org.atlassian.net/browse/ICU-21465
+
+12. Patch fixing crash in list format
+    patches/formatted_string_builder.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1479
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21410

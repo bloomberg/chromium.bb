@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
@@ -19,19 +18,17 @@ password_on_focus_ping_support = !is_ios
 config("password_reuse_detection_config") {
   defines = []
   if (password_reuse_detection_support) {
-    # TODO(crbug.com/1036042): Rename it to PASSWORD_REUSE_DETECTION_ENABLED.
-    defines += [ "SYNC_PASSWORD_REUSE_DETECTION_ENABLED" ]
+    defines += [ "PASSWORD_REUSE_DETECTION_ENABLED" ]
   }
   if (password_reuse_warning_support) {
-    # TODO(crbug.com/1036042): Rename it to PASSWORD_REUSE_WARNING_ENABLED.
-    defines += [ "SYNC_PASSWORD_REUSE_WARNING_ENABLED" ]
+    defines += [ "PASSWORD_REUSE_WARNING_ENABLED" ]
   }
   if (password_on_focus_ping_support) {
     defines += [ "ON_FOCUS_PING_ENABLED" ]
   }
 }
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "android_affiliation/affiliated_match_helper.cc",
     "android_affiliation/affiliated_match_helper.h",
@@ -44,20 +41,26 @@ jumbo_static_library("browser") {
     "android_affiliation/affiliation_fetch_throttler_delegate.h",
     "android_affiliation/affiliation_fetcher.cc",
     "android_affiliation/affiliation_fetcher.h",
+    "android_affiliation/affiliation_fetcher_delegate.cc",
     "android_affiliation/affiliation_fetcher_delegate.h",
-    "android_affiliation/affiliation_service.cc",
-    "android_affiliation/affiliation_service.h",
+    "android_affiliation/affiliation_fetcher_interface.h",
+    "android_affiliation/android_affiliation_service.cc",
+    "android_affiliation/android_affiliation_service.h",
     "android_affiliation/facet_manager.cc",
     "android_affiliation/facet_manager.h",
     "android_affiliation/facet_manager_host.h",
     "android_affiliation/lookup_affiliation_response_parser.cc",
     "android_affiliation/lookup_affiliation_response_parser.h",
-    "android_affiliation/test_affiliation_fetcher_factory.h",
     "biometric_authenticator.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
     "bulk_leak_check_service.cc",
     "bulk_leak_check_service.h",
+    "bulk_leak_check_service_interface.cc",
+    "bulk_leak_check_service_interface.h",
+    "change_password_url_service.h",
+    "change_password_url_service_impl.cc",
+    "change_password_url_service_impl.h",
     "compromised_credentials_consumer.cc",
     "compromised_credentials_consumer.h",
     "compromised_credentials_observer.cc",
@@ -76,6 +79,8 @@ jumbo_static_library("browser") {
     "credential_manager_pending_prevent_silent_access_task.h",
     "credential_manager_pending_request_task.cc",
     "credential_manager_pending_request_task.h",
+    "credential_manager_utils.cc",
+    "credential_manager_utils.h",
     "credentials_cleaner.cc",
     "credentials_cleaner.h",
     "credentials_cleaner_runner.cc",
@@ -103,6 +108,8 @@ jumbo_static_library("browser") {
     "generation/password_requirements_spec_fetcher_impl.h",
     "generation/password_requirements_spec_printer.cc",
     "generation/password_requirements_spec_printer.h",
+    "hsts_query.cc",
+    "hsts_query.h",
     "http_auth_manager.h",
     "http_auth_manager_impl.cc",
     "http_auth_manager_impl.h",
@@ -119,9 +126,6 @@ jumbo_static_library("browser") {
     "leak_detection_dialog_utils.h",
     "login_database.cc",
     "login_database.h",
-    "login_database_ios.cc",
-    "login_database_mac.cc",
-    "login_database_win.cc",
     "manage_passwords_referrer.h",
     "multi_store_form_fetcher.cc",
     "multi_store_form_fetcher.h",
@@ -164,16 +168,21 @@ jumbo_static_library("browser") {
     "password_manager_driver.h",
     "password_manager_features_util.cc",
     "password_manager_features_util.h",
+    "password_manager_interface.h",
     "password_manager_metrics_recorder.cc",
     "password_manager_metrics_recorder.h",
     "password_manager_metrics_util.cc",
     "password_manager_metrics_util.h",
-    "password_manager_onboarding.cc",
-    "password_manager_onboarding.h",
     "password_manager_util.cc",
     "password_manager_util.h",
     "password_requirements_service.cc",
     "password_requirements_service.h",
+    "password_reuse_detection_manager.cc",
+    "password_reuse_detection_manager.h",
+    "password_reuse_detector.cc",
+    "password_reuse_detector.h",
+    "password_reuse_detector_consumer.cc",
+    "password_reuse_detector_consumer.h",
     "password_save_manager.h",
     "password_save_manager_impl.cc",
     "password_save_manager_impl.h",
@@ -181,7 +190,6 @@ jumbo_static_library("browser") {
     "password_session_durations_metrics_recorder.h",
     "password_store.cc",
     "password_store.h",
-    "password_store_change.cc",
     "password_store_change.h",
     "password_store_consumer.cc",
     "password_store_consumer.h",
@@ -189,6 +197,8 @@ jumbo_static_library("browser") {
     "password_store_default.h",
     "password_store_factory_util.cc",
     "password_store_factory_util.h",
+    "password_store_signin_notifier.cc",
+    "password_store_signin_notifier.h",
     "password_store_sync.cc",
     "password_store_sync.h",
     "password_sync_util.cc",
@@ -200,8 +210,18 @@ jumbo_static_library("browser") {
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
     "reauth_purpose.h",
+    "site_affiliation/affiliation_fetcher_base.cc",
+    "site_affiliation/affiliation_fetcher_base.h",
+    "site_affiliation/affiliation_fetcher_factory.h",
+    "site_affiliation/affiliation_fetcher_factory_impl.cc",
+    "site_affiliation/affiliation_fetcher_factory_impl.h",
+    "site_affiliation/affiliation_service.h",
+    "site_affiliation/affiliation_service_impl.cc",
+    "site_affiliation/affiliation_service_impl.h",
     "site_affiliation/asset_link_data.cc",
     "site_affiliation/asset_link_data.h",
+    "site_affiliation/hash_affiliation_fetcher.cc",
+    "site_affiliation/hash_affiliation_fetcher.h",
     "sql_table_builder.cc",
     "sql_table_builder.h",
     "statistics_table.cc",
@@ -216,38 +236,36 @@ jumbo_static_library("browser") {
     "sync_credentials_filter.h",
     "ui/bulk_leak_check_service_adapter.cc",
     "ui/bulk_leak_check_service_adapter.h",
-    "ui/compromised_credentials_provider.cc",
-    "ui/compromised_credentials_provider.h",
+    "ui/compromised_credentials_reader.cc",
+    "ui/compromised_credentials_reader.h",
     "ui/credential_provider_interface.h",
     "ui/credential_utils.h",
     "ui/export_flow.h",
     "ui/export_progress_status.h",
     "ui/import_flow.h",
+    "ui/insecure_credentials_manager.cc",
+    "ui/insecure_credentials_manager.h",
     "ui/password_check_referrer.cc",
     "ui/password_check_referrer.h",
     "ui/plaintext_reason.h",
+    "ui/post_save_compromised_helper.cc",
+    "ui/post_save_compromised_helper.h",
     "ui/saved_passwords_presenter.cc",
     "ui/saved_passwords_presenter.h",
+    "ui/weak_check_utility.cc",
+    "ui/weak_check_utility.h",
     "votes_uploader.cc",
     "votes_uploader.h",
+    "well_known_change_password_state.cc",
+    "well_known_change_password_state.h",
+    "well_known_change_password_util.cc",
+    "well_known_change_password_util.h",
   ]
 
   all_dependent_configs = [ ":password_reuse_detection_config" ]
 
-  if (password_reuse_detection_support) {
-    sources += [
-      "password_reuse_detection_manager.cc",
-      "password_reuse_detection_manager.h",
-      "password_reuse_detector.cc",
-      "password_reuse_detector.h",
-      "password_reuse_detector_consumer.cc",
-      "password_reuse_detector_consumer.h",
-      "password_store_signin_notifier.cc",
-      "password_store_signin_notifier.h",
-    ]
-  }
-
   public_deps = [
+    ":password_form",
     "//base",
     "//components/safe_browsing:buildflags",
     "//components/sync",
@@ -290,32 +308,49 @@ jumbo_static_library("browser") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
     "//sql",
+    "//third_party/abseil-cpp:absl",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
+    "//third_party/zxcvbn-cpp",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/range",
     "//url",
   ]
 
+  if (is_android) {
+    sources += [
+      "password_scripts_fetcher.h",
+      "password_scripts_fetcher_impl.cc",
+      "password_scripts_fetcher_impl.h",
+    ]
+  }
+
   if (!is_ios) {
     sources += [
-      "hsts_query.cc",
-      "hsts_query.h",
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
     ]
   }
 
-  if ((is_posix && !is_mac && !is_ios) || is_fuchsia) {
+  if ((is_posix && !is_apple) || is_fuchsia) {
     sources += [ "login_database_posix.cc" ]
   }
 
-  if (is_mac && !is_ios) {
+  if (is_mac) {
     sources += [
+      "login_database_mac.cc",
       "password_recovery_util_mac.cc",
       "password_recovery_util_mac.h",
     ]
+  }
+
+  if (is_ios) {
+    sources += [ "login_database_ios.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "login_database_win.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -338,10 +373,13 @@ static_library("csv") {
     "import/csv_password_sequence.cc",
     "import/csv_password_sequence.h",
   ]
+  public_deps = [
+    ":password_form",
+    "//base",
+  ]
+
   deps = [
     ":affiliation",
-    "//base",
-    "//components/autofill/core/common",
     "//url",
   ]
 }
@@ -356,11 +394,25 @@ source_set("csv_unittests") {
   ]
   deps = [
     ":csv",
-    "//base",
     "//base/test:test_support",
-    "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
+  ]
+}
+
+# PasswordForm is an extremely common struct used by many sub-components and
+# sub-directories. Having its own target makes it possible to break up several
+# cyclic dependencies.
+source_set("password_form") {
+  sources = [
+    "password_form.cc",
+    "password_form.h",
+  ]
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//components/autofill/core/common/mojom:mojo_types_shared",
     "//url",
   ]
 }
@@ -375,11 +427,17 @@ static_library("password_generator") {
 }
 
 if (is_android) {
+  # Wrap the java_cpp_enum in android_library so it can be used by both
+  # chrome_java and modules.
+  android_library("password_manager_java_enums") {
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+    srcjar_deps = [ ":password_manager_java_enums_srcjar" ]
+  }
+
   java_cpp_enum("password_manager_java_enums_srcjar") {
     sources = [
       "biometric_authenticator.h",
       "manage_passwords_referrer.h",
-      "password_manager_onboarding.h",
     ]
   }
 }
@@ -388,7 +446,7 @@ fuzzable_proto_library("proto") {
   sources = [ "android_affiliation/affiliation_api.proto" ]
 }
 
-jumbo_static_library("password_hash_data") {
+static_library("password_hash_data") {
   sources = [
     "password_hash_data.cc",
     "password_hash_data.h",
@@ -414,7 +472,7 @@ static_library("hash_password_manager") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "android_affiliation/fake_affiliation_api.cc",
@@ -425,16 +483,26 @@ jumbo_static_library("test_support") {
     "android_affiliation/mock_affiliated_match_helper.h",
     "android_affiliation/mock_affiliation_consumer.cc",
     "android_affiliation/mock_affiliation_consumer.h",
+    "android_affiliation/mock_affiliation_fetcher.cc",
+    "android_affiliation/mock_affiliation_fetcher.h",
+    "android_affiliation/mock_affiliation_fetcher_delegate.cc",
+    "android_affiliation/mock_affiliation_fetcher_delegate.h",
     "fake_form_fetcher.cc",
     "fake_form_fetcher.h",
+    "mock_bulk_leak_check_service.cc",
+    "mock_bulk_leak_check_service.h",
     "mock_password_feature_manager.cc",
     "mock_password_feature_manager.h",
     "mock_password_form_manager_for_ui.cc",
     "mock_password_form_manager_for_ui.h",
     "mock_password_store.cc",
     "mock_password_store.h",
+    "mock_password_sync_metadata_store.cc",
+    "mock_password_sync_metadata_store.h",
     "password_manager_test_utils.cc",
     "password_manager_test_utils.h",
+    "site_affiliation/mock_affiliation_fetcher_factory.cc",
+    "site_affiliation/mock_affiliation_fetcher_factory.h",
     "stub_credentials_filter.cc",
     "stub_credentials_filter.h",
     "stub_form_saver.cc",
@@ -443,6 +511,8 @@ jumbo_static_library("test_support") {
     "stub_password_manager_client.h",
     "stub_password_manager_driver.cc",
     "stub_password_manager_driver.h",
+    "sync_username_test_base.cc",
+    "sync_username_test_base.h",
     "test_password_store.cc",
     "test_password_store.h",
   ]
@@ -450,19 +520,25 @@ jumbo_static_library("test_support") {
   public_deps = [
     ":browser",
     ":hash_password_manager",
+    ":password_hash_data",
+    "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
+    "//components/keyed_service/core",
+    "//components/password_manager/core/browser/leak_detection",
     "//components/safe_browsing:buildflags",
+    "//components/signin/public/identity_manager:test_support",
+    "//components/sync:test_support",
     "//components/ukm",
     "//services/network/public/cpp",
     "//testing/gmock",
-    "//url:url",
+    "//testing/gtest",
+    "//url",
   ]
   deps = [
     ":affiliation",
     "//base",
     "//components/autofill/core/common",
     "//net:net",
-    "//testing/gtest",
   ]
 }
 
@@ -494,6 +570,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/password_manager/login_db_v25.sql",
     "//components/test/data/password_manager/login_db_v26.sql",
     "//components/test/data/password_manager/login_db_v27.sql",
+    "//components/test/data/password_manager/login_db_v28.sql",
     "//components/test/data/password_manager/login_db_v2_broken.sql",
     "//components/test/data/password_manager/login_db_v3.sql",
     "//components/test/data/password_manager/login_db_v3_broken.sql",
@@ -517,16 +594,20 @@ source_set("unit_tests") {
     "android_affiliation/affiliation_database_unittest.cc",
     "android_affiliation/affiliation_fetch_throttler_unittest.cc",
     "android_affiliation/affiliation_fetcher_unittest.cc",
-    "android_affiliation/affiliation_service_unittest.cc",
+    "android_affiliation/android_affiliation_service_unittest.cc",
     "android_affiliation/facet_manager_unittest.cc",
     "browser_save_password_progress_logger_unittest.cc",
     "bulk_leak_check_service_unittest.cc",
+    "change_password_url_service_impl_unittest.cc",
     "compromised_credentials_observer_unittest.cc",
     "compromised_credentials_table_unittest.cc",
     "credential_cache_unittest.cc",
     "credential_manager_impl_unittest.cc",
     "credential_manager_logger_unittest.cc",
     "credential_manager_password_form_manager_unittest.cc",
+    "credential_manager_pending_prevent_silent_access_task_unittest.cc",
+    "credential_manager_pending_request_task_unittest.cc",
+    "credential_manager_utils_unittest.cc",
     "credentials_cleaner_runner_unittest.cc",
     "credentials_cleaner_unittest.cc",
     "export/csv_writer_unittest.cc",
@@ -538,6 +619,7 @@ source_set("unit_tests") {
     "form_saver_impl_unittest.cc",
     "generation/password_generator_unittest.cc",
     "generation/password_requirements_spec_fetcher_unittest.cc",
+    "hsts_query_unittest.cc",
     "http_auth_manager_unittest.cc",
     "http_password_store_migrator_unittest.cc",
     "import/password_importer_unittest.cc",
@@ -563,10 +645,11 @@ source_set("unit_tests") {
     "password_manager_client_helper_unittest.cc",
     "password_manager_features_util_unittest.cc",
     "password_manager_metrics_recorder_unittest.cc",
-    "password_manager_onboarding_unittest.cc",
     "password_manager_unittest.cc",
     "password_manager_util_unittest.cc",
     "password_requirements_service_unittest.cc",
+    "password_reuse_detection_manager_unittest.cc",
+    "password_reuse_detector_unittest.cc",
     "password_save_manager_impl_unittest.cc",
     "password_store_default_unittest.cc",
     "password_store_origin_unittest.h",
@@ -575,36 +658,36 @@ source_set("unit_tests") {
     "password_ui_utils_unittest.cc",
     "possible_username_data_unittest.cc",
     "psl_matching_helper_unittest.cc",
+    "site_affiliation/affiliation_fetcher_factory_impl_unittest.cc",
+    "site_affiliation/affiliation_service_impl_unittest.cc",
     "site_affiliation/asset_link_data_unittest.cc",
+    "site_affiliation/hash_affiliation_fetcher_unittest.cc",
     "sql_table_builder_unittest.cc",
     "statistics_table_unittest.cc",
     "store_metrics_reporter_unittest.cc",
     "sync/password_sync_bridge_unittest.cc",
     "sync_credentials_filter_unittest.cc",
-    "sync_username_test_base.cc",
-    "sync_username_test_base.h",
     "ui/bulk_leak_check_service_adapter_unittest.cc",
-    "ui/compromised_credentials_provider_unittest.cc",
+    "ui/compromised_credentials_reader_unittest.cc",
+    "ui/insecure_credentials_manager_unittest.cc",
+    "ui/post_save_compromised_helper_unittest.cc",
     "ui/saved_passwords_presenter_unittest.cc",
+    "ui/weak_check_utility_unittest.cc",
     "vote_uploads_test_matchers.h",
     "votes_uploader_unittest.cc",
+    "well_known_change_password_state_unittest.cc",
+    "well_known_change_password_util_unittest.cc",
   ]
+  if (is_android) {
+    sources += [ "password_scripts_fetcher_impl_unittests.cc" ]
+  }
   if (is_mac) {
     sources -= [ "password_store_default_unittest.cc" ]
   }
   if (is_ios) {
     sources += [ "login_database_ios_unittest.cc" ]
   } else {
-    sources += [
-      "hsts_query_unittest.cc",
-      "http_credentials_cleaner_unittest.cc",
-    ]
-  }
-  if (password_reuse_detection_support) {
-    sources += [
-      "password_reuse_detection_manager_unittest.cc",
-      "password_reuse_detector_unittest.cc",
-    ]
+    sources += [ "http_credentials_cleaner_unittest.cc" ]
   }
 
   if (is_win || is_mac || is_linux || is_chromeos) {
@@ -722,8 +805,8 @@ source_set("affiliation_unittests") {
   sources = [ "android_affiliation/affiliation_utils_unittest.cc" ]
   deps = [
     ":affiliation",
+    ":password_form",
     "//base",
-    "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

@@ -162,10 +162,17 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
 
   for (const dnr_api::ModifyHeaderInfo& header_info : modify_header_list) {
     flat::HeaderOperation operation = flat::HeaderOperation_remove;
+    FlatStringOffset header_value;
 
     switch (header_info.operation) {
       case dnr_api::HeaderOperation::HEADER_OPERATION_NONE:
-        NOTREACHED();
+      case dnr_api::HEADER_OPERATION_APPEND:
+        operation = flat::HeaderOperation_append;
+        header_value = builder->CreateSharedString(*header_info.value);
+        break;
+      case dnr_api::HEADER_OPERATION_SET:
+        operation = flat::HeaderOperation_set;
+        header_value = builder->CreateSharedString(*header_info.value);
         break;
       case dnr_api::HEADER_OPERATION_REMOVE:
         operation = flat::HeaderOperation_remove;
@@ -174,8 +181,8 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
 
     FlatStringOffset header_name =
         builder->CreateSharedString(base::ToLowerASCII(header_info.header));
-    flat_modify_header_list.push_back(
-        flat::CreateModifyHeaderInfo(*builder, operation, header_name));
+    flat_modify_header_list.push_back(flat::CreateModifyHeaderInfo(
+        *builder, operation, header_name, header_value));
   }
 
   return builder->CreateVector(flat_modify_header_list);
@@ -248,7 +255,7 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       transform_offset, request_headers_offset, response_headers_offset));
 }
 
-void FlatRulesetIndexer::Finish() {
+flatbuffers::DetachedBuffer FlatRulesetIndexer::FinishAndReleaseBuffer() {
   DCHECK(!finished_);
   finished_ = true;
 
@@ -273,11 +280,8 @@ void FlatRulesetIndexer::Finish() {
                                           regex_rules_offset,
                                           extension_metadata_offset);
   flat::FinishExtensionIndexedRulesetBuffer(builder_, root_offset);
-}
 
-base::span<const uint8_t> FlatRulesetIndexer::GetData() {
-  DCHECK(finished_);
-  return base::make_span(builder_.GetBufferPointer(), builder_.GetSize());
+  return builder_.Release();
 }
 
 std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>

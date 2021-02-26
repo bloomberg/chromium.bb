@@ -82,19 +82,13 @@ class ExtensionDialog : public views::DialogDelegate,
   // Focus to the render view if possible.
   void MaybeFocusRenderView();
 
-  // Sets the window title.
-  void set_title(const base::string16& title) { window_title_ = title; }
-
   // Sets minimum contents size in pixels and makes the window resizable.
   void SetMinimumContentsSize(int width, int height);
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
   // views::DialogDelegate:
-  bool CanResize() const override;
   ui::ModalType GetModalType() const override;
-  bool ShouldShowWindowTitle() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
   views::Widget* GetWidget() override;
@@ -114,20 +108,17 @@ class ExtensionDialog : public views::DialogDelegate,
 
   // Use Show() to create instances.
   ExtensionDialog(std::unique_ptr<extensions::ExtensionViewHost> host,
-                  ExtensionDialogObserver* observer);
-
-  void InitWindow(gfx::NativeWindow parent_window,
+                  ExtensionDialogObserver* observer,
+                  gfx::NativeWindow parent_window,
                   const InitParams& init_params);
-
-  ExtensionViewViews* GetExtensionView() const;
-  static ExtensionViewViews* GetExtensionView(
-      extensions::ExtensionViewHost* host);
 
   // Window Title
   base::string16 window_title_;
 
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
+
+  ExtensionViewViews* extension_view_ = nullptr;
 
   content::NotificationRegistrar registrar_;
 

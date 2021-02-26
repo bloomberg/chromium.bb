@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ByRef;
+using ::testing::Eq;
 using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
@@ -49,8 +50,9 @@ class MockOptimizationGuideHintsManager : public OptimizationGuideHintsManager {
                                       /*top_host_provider=*/nullptr,
                                       /*url_loader_factory=*/nullptr) {}
   ~MockOptimizationGuideHintsManager() override = default;
-  MOCK_METHOD3(CanApplyOptimizationAsync,
+  MOCK_METHOD4(CanApplyOptimizationAsync,
                void(const GURL&,
+                    const base::Optional<int64_t>&,
                     optimization_guide::proto::OptimizationType,
                     optimization_guide::OptimizationGuideDecisionCallback));
 };
@@ -63,10 +65,9 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
   ~MockOptimizationGuideKeyedService() override = default;
 
   MOCK_METHOD0(GetHintsManager, OptimizationGuideHintsManager*());
-  MOCK_METHOD2(
-      RegisterOptimizationTypesAndTargets,
-      void(const std::vector<optimization_guide::proto::OptimizationType>&,
-           const std::vector<optimization_guide::proto::OptimizationTarget>&));
+  MOCK_METHOD1(
+      RegisterOptimizationTypes,
+      void(const std::vector<optimization_guide::proto::OptimizationType>&));
 };
 
 class OptimizationGuideBridgeTest : public testing::Test {
@@ -112,11 +113,10 @@ class OptimizationGuideBridgeTest : public testing::Test {
     optimization_guide_service_.reset();
   }
 
-  void RegisterOptimizationTypesAndTargets() {
-    optimization_guide_keyed_service_->RegisterOptimizationTypesAndTargets(
+  void RegisterOptimizationTypes() {
+    optimization_guide_keyed_service_->RegisterOptimizationTypes(
         {optimization_guide::proto::DEFER_ALL_SCRIPT,
-         optimization_guide::proto::PERFORMANCE_HINTS},
-        {});
+         optimization_guide::proto::PERFORMANCE_HINTS});
   }
 
  protected:
@@ -138,16 +138,13 @@ class OptimizationGuideBridgeTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
-TEST_F(OptimizationGuideBridgeTest, RegisterOptimizationTypesAndTargets) {
-  EXPECT_CALL(
-      *optimization_guide_keyed_service_,
-      RegisterOptimizationTypesAndTargets(
-          UnorderedElementsAre(optimization_guide::proto::PERFORMANCE_HINTS,
-                               optimization_guide::proto::DEFER_ALL_SCRIPT),
-          UnorderedElementsAre(optimization_guide::proto::
-                                   OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)));
+TEST_F(OptimizationGuideBridgeTest, RegisterOptimizationTypes) {
+  EXPECT_CALL(*optimization_guide_keyed_service_,
+              RegisterOptimizationTypes(UnorderedElementsAre(
+                  optimization_guide::proto::PERFORMANCE_HINTS,
+                  optimization_guide::proto::DEFER_ALL_SCRIPT)));
 
-  Java_OptimizationGuideBridgeNativeUnitTest_testRegisterOptimizationTypesAndTargets(
+  Java_OptimizationGuideBridgeNativeUnitTest_testRegisterOptimizationTypes(
       env_, j_test_);
 }
 
@@ -155,13 +152,13 @@ TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationPreInit) {
   EXPECT_CALL(*optimization_guide_keyed_service_, GetHintsManager())
       .WillOnce(Return(nullptr));
 
-  RegisterOptimizationTypesAndTargets();
+  RegisterOptimizationTypes();
   Java_OptimizationGuideBridgeNativeUnitTest_testCanApplyOptimizationPreInit(
       env_, j_test_);
 }
 
 TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationHasHint) {
-  RegisterOptimizationTypesAndTargets();
+  RegisterOptimizationTypes();
   EXPECT_CALL(*optimization_guide_keyed_service_, GetHintsManager())
       .Times(2)
       .WillRepeatedly(Return(optimization_guide_hints_manager_.get()));
@@ -173,10 +170,10 @@ TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationHasHint) {
   metadata.set_performance_hints_metadata(hints_metadata);
   EXPECT_CALL(
       *optimization_guide_hints_manager_,
-      CanApplyOptimizationAsync(GURL("https://example.com/"),
+      CanApplyOptimizationAsync(GURL("https://example.com/"), Eq(base::nullopt),
                                 optimization_guide::proto::PERFORMANCE_HINTS,
                                 base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<2>(
+      .WillOnce(base::test::RunOnceCallback<3>(
           optimization_guide::OptimizationGuideDecision::kTrue,
           ByRef(metadata)));
 

@@ -4,6 +4,11 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "base/numerics/safe_conversions.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/nine_patch_layer_impl.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -18,17 +23,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
 
 gfx::Rect ToRoundedIntRect(const gfx::RectF& rect_f) {
-  return gfx::Rect(gfx::ToRoundedInt(rect_f.x()),
-                   gfx::ToRoundedInt(rect_f.y()),
-                   gfx::ToRoundedInt(rect_f.width()),
-                   gfx::ToRoundedInt(rect_f.height()));
+  return gfx::Rect(base::ClampRound(rect_f.x()), base::ClampRound(rect_f.y()),
+                   base::ClampRound(rect_f.width()),
+                   base::ClampRound(rect_f.height()));
 }
 
 void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
@@ -37,7 +40,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                               const gfx::Rect& border,
                               bool fill_center,
                               size_t expected_quad_size) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   gfx::Rect visible_layer_rect(layer_size);
   gfx::Rect expected_remaining(border.x(), border.y(),
                                layer_size.width() - border.width(),
@@ -125,7 +128,7 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
                                            const gfx::Rect& occlusion,
                                            bool fill_center,
                                            size_t expected_quad_size) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   gfx::Rect visible_layer_rect(layer_size);
   int border_left = std::min(border.x(), occlusion.x()),
       border_top = std::min(border.y(), occlusion.y()),

@@ -32,8 +32,10 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -66,7 +68,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
@@ -185,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   // minimize/maximize programmatically?
 
   // Popup.
-  Browser* popup_browser = new Browser(
+  Browser* popup_browser = Browser::Create(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
   function = new WindowsGetFunction();
   function->set_extension(extension.get());
@@ -344,13 +346,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   CloseAppWindow(app_window);
 }
 
-// Flaky on Windows. https://crbug.com/1035620
-#if defined(OS_WIN)
-#define MAYBE_GetAllWindowsAllTypes DISABLED_GetAllWindowsAllTypes
-#else
-#define MAYBE_GetAllWindowsAllTypes GetAllWindowsAllTypes
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetAllWindowsAllTypes) {
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
   const size_t NUM_WINDOWS = 5;
   std::set<int> window_ids;
   std::set<int> result_ids;
@@ -683,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   // Test creates new popup window, closes it right away and then tries to open
   // a new tab in it. Tab should not be opened in the popup window, but in a
   // tabbed browser window.
-  Browser* popup_browser = new Browser(
+  Browser* popup_browser = Browser::Create(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
   int window_id = ExtensionTabUtil::GetWindowId(popup_browser);
   chrome::CloseWindow(popup_browser);
@@ -792,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateDevToolsWindow) {
 // MacOSX. Deactivate for now.
 // TODO(warx): Move ExtensionWindowLastFocusedTest to interactive
 // uitest as it triggers native widget activation.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
  public:
   void SetUpOnMainThread() override;
@@ -861,11 +857,11 @@ Browser* ExtensionWindowLastFocusedTest::CreateBrowserWithEmptyTab(
     bool as_popup) {
   Browser* new_browser;
   if (as_popup)
-    new_browser = new Browser(
+    new_browser = Browser::Create(
         Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
   else
     new_browser =
-        new Browser(Browser::CreateParams(browser()->profile(), true));
+        Browser::Create(Browser::CreateParams(browser()->profile(), true));
   AddBlankTabAndShow(new_browser);
   return new_browser;
 }
@@ -1036,16 +1032,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
   CloseAppWindow(app_window);
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/836327
 #define MAYBE_AcceptState DISABLED_AcceptState
 #else
 #define MAYBE_AcceptState AcceptState
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
@@ -1226,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsAppWindow) {
 }
 
 // Crashes on Mac/Win only.  http://crbug.com/708996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_FilteredEvents DISABLED_FilteredEvents
 #else
 #define MAYBE_FilteredEvents FilteredEvents
@@ -1246,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
       " \"maxWidth\": 400, \"maxHeight\": 400}}");
 
   Browser* browser_window =
-      new Browser(Browser::CreateParams(browser()->profile(), true));
+      Browser::Create(Browser::CreateParams(browser()->profile(), true));
   AddBlankTabAndShow(browser_window);
 
   DevToolsWindow* devtools_window =
@@ -1261,11 +1257,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
   // TODO(llandwerlin): It seems creating an app window on MacOSX
   // won't create an activation event whereas it does on all other
   // platform. Disable focus event tests for now.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   listener.Reply("");
 #else
   listener.Reply("focus");
 #endif
+
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, OnBoundsChanged) {
+  extensions::ResultCatcher catcher;
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("api_test/windows/bounds")));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  gfx::Rect rect = browser()->window()->GetBounds();
+  rect.Inset(10, 10);
+  browser()->window()->SetBounds(rect);
+
+  listener.Reply(base::StringPrintf(
+      R"({"top": %u, "left": %u, "width": %u, "height": %u})", rect.y(),
+      rect.x(), rect.width(), rect.height()));
 
   ASSERT_TRUE(catcher.GetNextResult());
 }
@@ -1296,6 +1310,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   ASSERT_TRUE(g_browser_process && g_browser_process->GetTabManager());
   resource_coordinator::TabManager* tab_manager =
       g_browser_process->GetTabManager();
+
+  // To avoid flakes when focus changes, set the active tab strip model
+  // explicitly.
+  resource_coordinator::GetTabLifecycleUnitSource()
+      ->SetFocusedTabStripModelForTesting(browser()->tab_strip_model());
 
   // Create two aditional tabs.
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
@@ -2095,12 +2114,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   // the guest WebContents as there is no longer a BrowserPlugin involved.
   web_contents_for_click = inner_web_contents[0];
 
-  // The actual PDF page coordinates that this click goes to is (346, 333),
-  // after several space transformations, not (400, 400). This clicks on a link
-  // to "http://www.facebook.com:83".
+  // (400, 300) in `web_contents_for_click` translates to a different coordinate
+  // in the PDF Viewer. The exact coordinate depends on the PDF Viewer's UI
+  // layout. In the test PDF embedded in pdf_extension_test.html, the entire PDF
+  // content area is a giant link to http://www.facebook.com:83. As long as this
+  // click hits that link target, it triggers the navigation required for test.
   content::SimulateMouseClickAt(web_contents_for_click, 0,
                                 blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(400, 400));
+                                gfx::Point(400, 300));
 
   ASSERT_TRUE(navigation_manager.WaitForRequestStart());
 
@@ -2349,16 +2370,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutBlank) {
   content::WebContents* test_contents = nullptr;
   {
     content::WebContentsAddedObserver test_contents_observer;
-    content::TestNavigationObserver nav_observer(nullptr);
-    nav_observer.StartWatchingNewWebContents();
-    content::ExecuteScriptAsync(
-        extension_contents,
-        content::JsReplace("window.open($1, '_blank')", web_url));
-
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), web_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     test_contents = test_contents_observer.GetWebContents();
-    nav_observer.WaitForNavigationFinished();
-    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
-    EXPECT_EQ(web_url, nav_observer.last_navigation_url());
   }
   EXPECT_EQ(web_origin,
             test_contents->GetMainFrame()->GetLastCommittedOrigin());
@@ -2396,6 +2411,66 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutBlank) {
       test_frame->GetLastCommittedOrigin().GetTupleOrPrecursorTupleIfOpaque());
 }
 
+// Tests updating a URL of a web tab to an about:newtab.  Verify that the new
+// frame is placed in the correct process, has the correct origin and that no
+// DCHECKs are hit anywhere.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutNewTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+  GURL extension_url = extension->GetResourceURL("file.html");
+  url::Origin extension_origin = url::Origin::Create(extension_url);
+  GURL web_url = embedded_test_server()->GetURL("/title1.html");
+  url::Origin web_origin = url::Origin::Create(web_url);
+
+  // https://crbug.com/1145381: about:version is rewritten to chrome://version
+  // when entered in the omnibox or used in a bookmark.  Such rewriting is
+  // definitely undesirable for http-initiated navigations (see r818969), but
+  // it is less clear what should happen in extension-initiated navigations.
+  GURL about_newtab_url = GURL("about:newtab");
+  GURL chrome_newtab_url = GURL("chrome://new-tab-page/");
+
+  // Navigate a tab to an extension page.
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* extension_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(extension_origin,
+            extension_contents->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Create another tab and navigate it to a web page.
+  content::WebContents* test_contents = nullptr;
+  {
+    content::WebContentsAddedObserver test_contents_observer;
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), web_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+    test_contents = test_contents_observer.GetWebContents();
+  }
+
+  // Use |chrome.tabs.update| API to navigate |test_contents| to an about:newtab
+  // URL.
+  {
+    content::TestNavigationObserver nav_observer(test_contents, 1);
+    int test_tab_id = ExtensionTabUtil::GetTabId(test_contents);
+    content::ExecuteScriptAsync(
+        extension_contents,
+        content::JsReplace("chrome.tabs.update($1, { url: $2 })", test_tab_id,
+                           about_newtab_url));
+    nav_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(chrome_newtab_url, nav_observer.last_navigation_url());
+  }
+
+  // Verify the origin and process of the about:newtab tab.
+  content::RenderFrameHost* test_frame = test_contents->GetMainFrame();
+  EXPECT_EQ(chrome_newtab_url, test_frame->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(chrome_newtab_url),
+            test_frame->GetLastCommittedOrigin());
+  EXPECT_NE(extension_contents->GetMainFrame()->GetProcess(),
+            test_contents->GetMainFrame()->GetProcess());
+}
+
 // Tests updating a URL of a web tab to a non-web-accessible-resource of an
 // extension - such navigation should be allowed.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToNonWAR) {
@@ -2420,16 +2495,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToNonWAR) {
   content::WebContents* test_contents = nullptr;
   {
     content::WebContentsAddedObserver test_contents_observer;
-    content::TestNavigationObserver nav_observer(nullptr);
-    nav_observer.StartWatchingNewWebContents();
-    content::ExecuteScriptAsync(
-        extension_contents,
-        content::JsReplace("window.open($1, '_blank')", web_url));
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), web_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     test_contents = test_contents_observer.GetWebContents();
-    nav_observer.WaitForNavigationFinished();
-
-    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
-    EXPECT_EQ(web_url, nav_observer.last_navigation_url());
   }
   EXPECT_EQ(web_origin,
             test_contents->GetMainFrame()->GetLastCommittedOrigin());

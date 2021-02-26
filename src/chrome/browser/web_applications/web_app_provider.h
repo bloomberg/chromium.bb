@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -31,9 +30,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class AppRegistryController;
 class AppIconManager;
-class AppShortcutManager;
 class ExternalWebAppManager;
-class FileHandlerManager;
 class InstallFinalizer;
 class ManifestUpdateManager;
 class SystemWebAppManager;
@@ -41,10 +38,12 @@ class WebAppAudioFocusIdMap;
 class WebAppInstallManager;
 class WebAppPolicyManager;
 class WebAppUiManager;
+class OsIntegrationManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
 class WebAppMigrationManager;
+class WebAppMigrationUserDisplayModeCleanUp;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -62,6 +61,8 @@ class WebAppProvider : public WebAppProviderBase {
   static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
 
   explicit WebAppProvider(Profile* profile);
+  WebAppProvider(const WebAppProvider&) = delete;
+  WebAppProvider& operator=(const WebAppProvider&) = delete;
   ~WebAppProvider() override;
 
   // Start the Web App system. This will run subsystem startup tasks.
@@ -77,10 +78,9 @@ class WebAppProvider : public WebAppProviderBase {
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
   WebAppAudioFocusIdMap& audio_focus_id_map() override;
-  FileHandlerManager& file_handler_manager() override;
   AppIconManager& icon_manager() override;
-  AppShortcutManager& shortcut_manager() override;
   SystemWebAppManager& system_web_app_manager() override;
+  OsIntegrationManager& os_integration_manager() override;
 
   // KeyedService:
   void Shutdown() override;
@@ -92,6 +92,10 @@ class WebAppProvider : public WebAppProviderBase {
     return on_registry_ready_;
   }
 
+  ExternalWebAppManager& external_web_app_manager_for_testing() {
+    return *external_web_app_manager_;
+  }
+
  protected:
   virtual void StartImpl();
   void OnDatabaseMigrationCompleted(bool success);
@@ -100,8 +104,11 @@ class WebAppProvider : public WebAppProviderBase {
   void CreateCommonSubsystems(Profile* profile);
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
-  // ... or create legacy extension-based subsystems.
+
+  // Create legacy extension-based subsystems.
   void CreateBookmarkAppsSubsystems(Profile* profile);
+  std::unique_ptr<InstallFinalizer> CreateBookmarkAppInstallFinalizer(
+      Profile* profile);
 
   // Wire together subsystems but do not start them (yet).
   void ConnectSubsystems();
@@ -116,22 +123,24 @@ class WebAppProvider : public WebAppProviderBase {
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   // migration_manager_ can be nullptr if no migration needed.
   std::unique_ptr<WebAppMigrationManager> migration_manager_;
+  // user_display_mode_migration_issue_ can be nullptr if no clean up needed.
+  std::unique_ptr<WebAppMigrationUserDisplayModeCleanUp>
+      migration_user_display_mode_clean_up_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
   std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
-  std::unique_ptr<FileHandlerManager> file_handler_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
-  std::unique_ptr<AppShortcutManager> shortcut_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
   std::unique_ptr<WebAppUiManager> ui_manager_;
+  std::unique_ptr<OsIntegrationManager> os_integration_manager_;
 
   base::OneShotEvent on_registry_ready_;
 
@@ -143,7 +152,6 @@ class WebAppProvider : public WebAppProviderBase {
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppProvider);
 };
 
 }  // namespace web_app

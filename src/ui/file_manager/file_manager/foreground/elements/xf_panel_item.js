@@ -66,7 +66,8 @@ class PanelItem extends HTMLElement {
                   border-radius: 4px;
                   display: flex;
                   flex-direction: row;
-                  max-width: 400px;
+                  height: 68px;
+                  width: 400px;
               }
 
               .xf-button {
@@ -75,9 +76,9 @@ class PanelItem extends HTMLElement {
               }
 
               .xf-panel-text {
+                  flex: 1;
                   font: 13px Roboto;
                   line-height: 20px;
-                  max-width: 216px;
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
@@ -93,7 +94,6 @@ class PanelItem extends HTMLElement {
                   -webkit-box-orient: vertical;
                   overflow: hidden;
                   white-space: normal;
-                  width: 216px;
               }
 
               :host([panel-type='3']) .xf-linebreaker {
@@ -101,23 +101,25 @@ class PanelItem extends HTMLElement {
               }
 
               .xf-panel-label-text {
-                  color: rgb(32, 33, 36);
+                  color: var(--google-grey-900);
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                  white-space: nowrap;
               }
 
               .xf-panel-secondary-text {
-                  color: rgb(95, 99, 104);
+                  color: var(--google-grey-700);
               }
 
-              .xf-padder-4 {
+              :host(:not([detailed-panel])) .xf-padder-4 {
                   width: 4px;
               }
 
-              .xf-padder-16 {
+              :host(:not([detailed-panel])) .xf-padder-16 {
                   width: 16px;
               }
 
-              .xf-padder-24 {
-                  flex-grow: 16;
+              :host(:not([detailed-panel])) .xf-grow-padder {
                   width: 24px;
               }
 
@@ -125,7 +127,7 @@ class PanelItem extends HTMLElement {
                   padding: 16px;
               }
 
-              iron-icon {
+              :host(:not([detailed-summary])) iron-icon {
                   height: 36px;
                   padding: 16px;
                   width: 36px;
@@ -141,24 +143,87 @@ class PanelItem extends HTMLElement {
               }
 
               :host([panel-type='0']) .xf-panel-item {
-                height: var(--progress-height);
-                padding-top: var(--progress-padding-top);
-                padding-bottom: var(--progress-padding-bottom);
+                  height: var(--progress-height);
+                  padding-top: var(--progress-padding-top);
+                  padding-bottom: var(--progress-padding-bottom);
               }
 
-              :not(:host([panel-type='0'])) .xf-panel-item {
-                height: 68px;
+              :host([detailed-panel]:not([detailed-summary])) .xf-panel-text {
+                  margin-inline-end: 24px;
+                  margin-inline-start: 24px;
+              }
+
+              :host([detailed-panel][panel-type='2']) .xf-panel-secondary-text {
+                  color: var(--google-green-600);
+              }
+
+              :host([detailed-panel]:not([detailed-summary])) xf-button {
+                  margin-inline-end: 12px;
+              }
+
+              :host([detailed-panel]:not([detailed-summary])) #indicator {
+                  display: none;
+              }
+
+              :host([detailed-summary][data-category='collapsed'])
+              .xf-panel-item {
+                  width: 236px;
+              }
+
+              :host([detailed-summary]) .xf-panel-text {
+                  align-items: center;
+                  display: flex;
+                  height: 48px;
+                  max-width: unset;
+                  width: 100%;
+              }
+
+              :host([detailed-summary]) #indicator {
+                  margin-inline-start: 22px;
+                  padding: 0;
+              }
+
+              :host([detailed-summary][data-category='collapsed']) #indicator {
+                  margin-inline-end: 20px;
+                  min-width: 28px;
+              }
+
+              :host([detailed-summary][data-category='expanded']) #indicator {
+                  margin-inline-end: 18px;
+                  min-width: 32px;
+              }
+
+              :host([detailed-summary]) #primary-action {
+                  align-items: center;
+                  display: flex;
+                  height: 48px;
+                  justify-content: center;
+                  margin-inline-end: 10px;
+                  margin-inline-start: auto;
+                  width: 48px;
+              }
+
+              :host([detailed-panel]) .xf-padder-4 {
+                  display: none;
+              }
+
+              :host([detailed-panel]) .xf-padder-16 {
+                  display: none;
+              }
+
+              :host([detailed-panel]) .xf-grow-padder {
+                  display: none;
               }
             </style>
             <div class='xf-panel-item'>
                 <xf-circular-progress id='indicator'>
                 </xf-circular-progress>
-                <div class='xf-panel-text' role='alert'>
-                    <span class='xf-panel-label-text' tabindex='0'>
+                <div class='xf-panel-text' role='alert' tabindex='0'>
+                    <span class='xf-panel-label-text'>
                     </span>
                     <br class='xf-linebreaker'/>
                 </div>
-                <div class='xf-padder-24'></div>
+                <div class='xf-grow-padder'></div>
                 <xf-button id='secondary-action' tabindex='-1'>
                 </xf-button>
                 <div id='button-gap' class='xf-padder-4'></div>
@@ -188,6 +253,10 @@ class PanelItem extends HTMLElement {
    * @private
    */
   setPanelType(type) {
+    if (util.isTransferDetailsEnabled()) {
+      this.setAttribute('detailed-panel', 'detailed-panel');
+    }
+
     if (this.panelType_ === type) {
       return;
     }
@@ -590,6 +659,13 @@ class PanelItem extends HTMLElement {
   }
 
   /**
+   * Getter for the panel text div.
+   */
+  get textDiv() {
+    return this.shadowRoot.querySelector('.xf-panel-text');
+  }
+
+  /**
    * Setter to replace the default aria-label on any close button.
    * @param {string} text Text to set for the 'aria-label'.
    */
@@ -602,3 +678,5 @@ class PanelItem extends HTMLElement {
 }
 
 window.customElements.define('xf-panel-item', PanelItem);
+
+//# sourceURL=//ui/file_manager/file_manager/foreground/elements/xf_panel_item.js

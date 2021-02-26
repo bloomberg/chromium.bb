@@ -11,23 +11,26 @@
 #include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
+#include "ash/assistant/ui/main_stage/assistant_onboarding_suggestion_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantInteractionMetadata;
-using chromeos::assistant::mojom::AssistantInteractionType;
+using chromeos::assistant::AssistantInteractionMetadata;
+using chromeos::assistant::AssistantInteractionType;
 
 gfx::Point GetPointInside(const views::View* view) {
   return view->GetBoundsInScreen().CenterPoint();
@@ -36,7 +39,7 @@ gfx::Point GetPointInside(const views::View* view) {
 bool CanProcessEvents(const views::View* view) {
   const views::View* ancestor = view;
   while (ancestor != nullptr) {
-    if (!ancestor->CanProcessEventsWithinSubtree())
+    if (!ancestor->GetCanProcessEventsWithinSubtree())
       return false;
     ancestor = ancestor->parent();
   }
@@ -63,8 +66,7 @@ void PressHomeButton() {
 // This includes direct and indirect children.
 // For this class to work, _ChildView must:
 //      * Inherit from |views::View|.
-//      * Have a static variable called |kClassName|.
-//      * Return |_ChildView::kClassName| from its GetClassName() method.
+//      * Implement view metadata (see comments on views::View).
 template <class _ChildView>
 class ChildViewCollector {
  public:
@@ -81,7 +83,7 @@ class ChildViewCollector {
 
  private:
   void Get(views::View* view, Views* result) {
-    if (view->GetClassName() == _ChildView::kClassName)
+    if (views::IsViewClass<_ChildView>(view))
       result->push_back(static_cast<_ChildView*>(view));
     for (views::View* child : view->children())
       Get(child, result);
@@ -112,27 +114,10 @@ void AssistantAshTestBase::SetUp() {
   // Make the display big enough to hold the app list.
   UpdateDisplay("1024x768");
 
-  // Enable Assistant in settings.
-  test_api_->SetAssistantEnabled(true);
-
-  // Enable screen context in settings.
-  test_api_->SetScreenContextEnabled(true);
-
-  // Set AssistantAllowedState to ALLOWED.
-  test_api_->GetAssistantState()->NotifyFeatureAllowed(
-      chromeos::assistant::AssistantAllowedState::ALLOWED);
-
-  // Set user consent so the suggestion chips are displayed.
-  SetConsentStatus(ConsentStatus::kActivityControlAccepted);
-
-  // At this point our Assistant service is ready for use.
-  // Indicate this by changing status from NOT_READY to READY.
-  test_api_->GetAssistantState()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::READY);
-
   test_api_->DisableAnimations();
-
   EnableKeyboard();
+
+  SetUpActiveUser();
 }
 
 void AssistantAshTestBase::TearDown() {
@@ -140,6 +125,30 @@ void AssistantAshTestBase::TearDown() {
   widgets_.clear();
   DisableKeyboard();
   AshTestBase::TearDown();
+}
+
+void AssistantAshTestBase::CreateAndSwitchActiveUser(
+    const std::string& display_email,
+    const std::string& given_name) {
+  TestSessionControllerClient* session_controller_client =
+      ash_test_helper()->test_session_controller_client();
+
+  session_controller_client->Reset();
+
+  session_controller_client->AddUserSession(
+      display_email, user_manager::USER_TYPE_REGULAR,
+      /*provide_pref_service=*/true,
+      /*is_new_profile=*/false, given_name);
+
+  session_controller_client->SwitchActiveUser(Shell::Get()
+                                                  ->session_controller()
+                                                  ->GetUserSession(0)
+                                                  ->user_info.account_id);
+
+  session_controller_client->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  SetUpActiveUser();
 }
 
 void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
@@ -175,8 +184,22 @@ void AssistantAshTestBase::SetConsentStatus(ConsentStatus consent_status) {
   test_api_->SetConsentStatus(consent_status);
 }
 
+void AssistantAshTestBase::SetNumberOfSessionsWhereOnboardingShown(
+    int number_of_sessions) {
+  test_api_->SetNumberOfSessionsWhereOnboardingShown(number_of_sessions);
+}
+
+void AssistantAshTestBase::SetOnboardingMode(
+    AssistantOnboardingMode onboarding_mode) {
+  test_api_->SetOnboardingMode(onboarding_mode);
+}
+
 void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
+}
+
+void AssistantAshTestBase::SetTimeOfLastInteraction(const base::Time& time) {
+  test_api_->SetTimeOfLastInteraction(time);
 }
 
 void AssistantAshTestBase::StartOverview() {
@@ -195,7 +218,7 @@ views::View* AssistantAshTestBase::page_view() {
   return test_api_->page_view();
 }
 
-views::View* AssistantAshTestBase::app_list_view() {
+AppListView* AssistantAshTestBase::app_list_view() {
   return test_api_->app_list_view();
 }
 
@@ -236,7 +259,7 @@ void AssistantAshTestBase::ClickOnAndWait(
   base::RunLoop().RunUntilIdle();
 }
 
-base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+base::Optional<chromeos::assistant::AssistantInteractionMetadata>
 AssistantAshTestBase::current_interaction() {
   return assistant_service()->current_interaction();
 }
@@ -283,6 +306,10 @@ views::View* AssistantAshTestBase::keyboard_input_toggle() {
   return test_api_->keyboard_input_toggle();
 }
 
+views::View* AssistantAshTestBase::onboarding_view() {
+  return test_api_->onboarding_view();
+}
+
 views::View* AssistantAshTestBase::opt_in_view() {
   return test_api_->opt_in_view();
 }
@@ -291,10 +318,15 @@ views::View* AssistantAshTestBase::suggestion_chip_container() {
   return test_api_->suggestion_chip_container();
 }
 
-std::vector<ash::SuggestionChipView*>
-AssistantAshTestBase::GetSuggestionChips() {
+std::vector<AssistantOnboardingSuggestionView*>
+AssistantAshTestBase::GetOnboardingSuggestionViews() {
+  const views::View* container = onboarding_view();
+  return ChildViewCollector<AssistantOnboardingSuggestionView>{container}.Get();
+}
+
+std::vector<SuggestionChipView*> AssistantAshTestBase::GetSuggestionChips() {
   const views::View* container = suggestion_chip_container();
-  return ChildViewCollector<ash::SuggestionChipView>{container}.Get();
+  return ChildViewCollector<SuggestionChipView>{container}.Get();
 }
 
 void AssistantAshTestBase::ShowKeyboard() {
@@ -315,6 +347,26 @@ bool AssistantAshTestBase::IsKeyboardShowing() const {
 
 TestAssistantService* AssistantAshTestBase::assistant_service() {
   return ash_test_helper()->test_assistant_service();
+}
+
+void AssistantAshTestBase::SetUpActiveUser() {
+  // Enable Assistant in settings.
+  test_api_->SetAssistantEnabled(true);
+
+  // Enable screen context in settings.
+  test_api_->SetScreenContextEnabled(true);
+
+  // Set AssistantAllowedState to ALLOWED.
+  test_api_->GetAssistantState()->NotifyFeatureAllowed(
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
+
+  // Set user consent so the suggestion chips are displayed.
+  SetConsentStatus(ConsentStatus::kActivityControlAccepted);
+
+  // At this point our Assistant service is ready for use.
+  // Indicate this by changing status from NOT_READY to READY.
+  test_api_->GetAssistantState()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
 }
 
 }  // namespace ash

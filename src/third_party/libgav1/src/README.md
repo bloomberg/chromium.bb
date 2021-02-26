@@ -56,6 +56,14 @@ Configuration options:
     absl::Mutex in ThreadPool. Defining this to 1 will remove any Abseil
     dependency from the core library. Automatically defined in
     `src/utils/threadpool.h` if unset.
+*   `LIBGAV1_MAX_THREADS`: sets the number of threads that the library is
+    allowed to create. Has to be an integer > 0. Otherwise this is ignored.
+    The default value is 128.
+*   `LIBGAV1_FRAME_PARALLEL_THRESHOLD_MULTIPLIER`: the threshold multiplier that
+    is used to determine when to use frame parallel decoding. Frame parallel
+    decoding will be used if |threads| > |tile_count| * this multiplier. Has to
+    be an integer > 0. The default value is 4. This is an advanced setting
+    intended for testing purposes.
 
 For additional options see:
 

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
@@ -38,8 +38,7 @@ const double kMaxOriginTrialExpiryTime = 9007199254740;
 bool FileHandlerManager::disable_automatic_file_handler_cleanup_for_testing_ =
     false;
 
-FileHandlerManager::FileHandlerManager(Profile* profile)
-    : profile_(profile), registrar_observer_(this) {}
+FileHandlerManager::FileHandlerManager(Profile* profile) : profile_(profile) {}
 
 FileHandlerManager::~FileHandlerManager() = default;
 
@@ -50,16 +49,14 @@ void FileHandlerManager::SetSubsystems(AppRegistrar* registrar) {
 void FileHandlerManager::Start() {
   DCHECK(registrar_);
 
-  registrar_observer_.Add(registrar_);
-
   if (!FileHandlerManager::
           disable_automatic_file_handler_cleanup_for_testing_) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            base::IgnoreResult(&FileHandlerManager::CleanupAfterOriginTrials),
-            weak_ptr_factory_.GetWeakPtr()));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(base::IgnoreResult(
+                               &FileHandlerManager::CleanupAfterOriginTrials),
+                           weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -89,10 +86,17 @@ void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
     return;
   }
 
+// File handler registration is done via shortcuts creation on MacOS,
+// WebAppShortcutManager::BuildShortcutInfoForWebApp collects file handler
+// information to shortcut_info->file_handler_extensions, then used by MacOS
+// implementation of |internals::CreatePlatformShortcuts|. So we avoid creating
+// shortcuts twice here.
+#if !defined(OS_MAC)
   std::string app_name = registrar_->GetAppShortName(app_id);
   const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
   if (file_handlers)
     RegisterFileHandlersWithOs(app_id, app_name, profile(), *file_handlers);
+#endif
 }
 
 void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
@@ -100,12 +104,23 @@ void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
   UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
                        /*value=*/false);
 
-  if (!ShouldRegisterFileHandlersWithOs() ||
-      disable_os_integration_for_testing_) {
+  // Temporarily allow file handlers unregistration only if an app has them.
+  // TODO(crbug.com/1088434, crbug.com/1076688): Do not start async
+  // CreateShortcuts process in OnWebAppUninstalled / Unregistration.
+  const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
+
+  if (!ShouldRegisterFileHandlersWithOs() || !file_handlers ||
+      file_handlers->empty() || disable_os_integration_for_testing_) {
     return;
   }
 
+  // File handler information is embedded in the shortcut, when
+  // |DeleteSharedAppShims| is called in
+  // |OsIntegrationManager::UninstallOsHooks|, file handlers are also
+  // unregistered./
+#if !defined(OS_MAC)
   UnregisterFileHandlersWithOs(app_id, profile());
+#endif
 }
 
 void FileHandlerManager::MaybeUpdateFileHandlingOriginTrialExpiry(
@@ -226,18 +241,6 @@ int FileHandlerManager::CleanupAfterOriginTrials() {
   }
 
   return cleaned_up_count;
-}
-
-void FileHandlerManager::OnWebAppUninstalled(const AppId& app_id) {
-  DisableAndUnregisterOsFileHandlers(app_id);
-}
-
-void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
-  DisableAndUnregisterOsFileHandlers(app_id);
-}
-
-void FileHandlerManager::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
 }
 
 const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(

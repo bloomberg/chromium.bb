@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_boolean.h"
 
 #include "fxjs/xfa/cjx_boolean.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -29,6 +29,8 @@ CXFA_Boolean::CXFA_Boolean(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Boolean,
                 {},
                 kBooleanAttributeData,
-                pdfium::MakeUnique<CJX_Boolean>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Boolean>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
-CXFA_Boolean::~CXFA_Boolean() {}
+CXFA_Boolean::~CXFA_Boolean() = default;

@@ -12,27 +12,16 @@
 
 #include "build/build_config.h"
 #include "core/fpdfapi/page/cpdf_pagemodule.h"
-#include "core/fxcrt/fx_memory.h"
 #include "testing/fx_string_testhelpers.h"
+#include "testing/fxgc_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
+#include "v8/include/cppgc/persistent.h"
 #include "xfa/fxfa/parser/cxfa_localemgr.h"
 
-class CFGAS_StringFormatterTest : public testing::Test {
- public:
-  CFGAS_StringFormatterTest() {
-    SetTZ("UTC");
-    CPDF_PageModule::Create();
-  }
+namespace {
 
-  ~CFGAS_StringFormatterTest() override { CPDF_PageModule::Destroy(); }
-
-  void TearDown() override {
-    fmt_.reset();
-    mgr_.reset();
-  }
-
-  void SetTZ(const char* tz) {
+void SetTZ(const char* tz) {
 #if defined(OS_WIN)
     _putenv_s("TZ", tz);
     _tzset();
@@ -40,21 +29,26 @@ class CFGAS_StringFormatterTest : public testing::Test {
     setenv("TZ", tz, 1);
     tzset();
 #endif
+}
+
+}  // namespace
+
+class CFGAS_StringFormatterTest : public FXGCUnitTest {
+ public:
+  CFGAS_StringFormatterTest() {
+    SetTZ("UTC");
+    CPDF_PageModule::Create();
   }
 
-  // Note, this re-creates the fmt on each call. If you need to multiple
-  // times store it locally.
-  CFGAS_StringFormatter* fmt(const WideString& locale,
-                             const WideString& pattern) {
-    fmt_.reset();  // Can't outlive |mgr_|.
-    mgr_ = pdfium::MakeUnique<CXFA_LocaleMgr>(nullptr, locale);
-    fmt_ = pdfium::MakeUnique<CFGAS_StringFormatter>(mgr_.get(), pattern);
-    return fmt_.get();
+  ~CFGAS_StringFormatterTest() override {
+    CPDF_PageModule::Destroy();
+    SetTZ("UTC");
   }
 
- protected:
-  std::unique_ptr<CXFA_LocaleMgr> mgr_;
-  std::unique_ptr<CFGAS_StringFormatter> fmt_;
+  CXFA_LocaleMgr* Mgr(const WideString& locale) {
+    return cppgc::MakeGarbageCollected<CXFA_LocaleMgr>(
+        heap()->GetAllocationHandle(), heap(), nullptr, locale);
+  }
 };
 
 // TODO(dsinclair): Looks like the formatter/parser does not handle the various
@@ -114,11 +108,12 @@ TEST_F(CFGAS_StringFormatterTest, DateFormat) {
   // as they are not supported. In theory there are the full width versions
   // of DDD, DDDD, MMM, MMMM, E, e, gg, YYY, YYYYY.
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(
-        fmt(tests[i].locale, tests[i].pattern)
-            ->FormatDateTime(tests[i].input, FX_DATETIMETYPE_Date, &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatDateTime(Mgr(tests[i].locale), tests[i].input,
+                                   CFGAS_StringFormatter::DateTimeType::kDate,
+                                   &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
@@ -163,11 +158,12 @@ TEST_F(CFGAS_StringFormatterTest, TimeFormat) {
   // The z modifier only appends if the TZ is outside of +0
   SetTZ("UTC+2");
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(
-        fmt(tests[i].locale, tests[i].pattern)
-            ->FormatDateTime(tests[i].input, FX_DATETIMETYPE_Time, &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatDateTime(Mgr(tests[i].locale), tests[i].input,
+                                   CFGAS_StringFormatter::DateTimeType::kTime,
+                                   &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 
@@ -195,11 +191,12 @@ TEST_F(CFGAS_StringFormatterTest, DateTimeFormat) {
       {L"en", L"9111T1111:", L"MMM D, YYYYTh:MM:SS A",
        L"Jan 1, 9111 11:11:00 AM"}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)
-                    ->FormatDateTime(tests[i].input, FX_DATETIMETYPE_DateTime,
-                                     &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatDateTime(
+        Mgr(tests[i].locale), tests[i].input,
+        CFGAS_StringFormatter::DateTimeType::kDateTime, &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
@@ -223,11 +220,12 @@ TEST_F(CFGAS_StringFormatterTest, TimeDateFormat) {
        L"time{'At 'HH:MM Z}date{' on 'MMM DD, YYYY}",
        L"At 10:30 GMT on Jul 16, 1999"}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)
-                    ->FormatDateTime(tests[i].input, FX_DATETIMETYPE_TimeDate,
-                                     &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatDateTime(
+        Mgr(tests[i].locale), tests[i].input,
+        CFGAS_StringFormatter::DateTimeType::kTimeDate, &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
@@ -284,11 +282,12 @@ TEST_F(CFGAS_StringFormatterTest, DateParse) {
   // not supported. In theory there are the full width versions of DDD,
   // DDDD, MMM, MMMM, E, e, gg, YYY, YYYYY.
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     CFX_DateTime result;
-    EXPECT_TRUE(
-        fmt(tests[i].locale, tests[i].pattern)
-            ->ParseDateTime(tests[i].input, FX_DATETIMETYPE_Date, &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.ParseDateTime(Mgr(tests[i].locale), tests[i].input,
+                                  CFGAS_StringFormatter::DateTimeType::kDate,
+                                  &result));
     EXPECT_EQ(tests[i].output, result) << " TEST: " << i;
   }
 }
@@ -311,11 +310,12 @@ TEST_F(CFGAS_StringFormatterTest, DateParse) {
 //   // kkkk, HHH, HHHH, KKK, KKKK, MMM, MMMM, SSS, SSSS plus 2 more that the
 //   // spec apparently forgot to list the symbol.
 
-//   for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+//   for (size_t i = 0; i < pdfium::size(tests); ++i) {
 //     CFX_DateTime result;
 //     EXPECT_TRUE(fmt(tests[i].locale)
-//                     ->ParseDateTime(tests[i].input, tests[i].pattern,
-//                                     FX_DATETIMETYPE_Time, &result));
+//                   ->ParseDateTime(tests[i].input, tests[i].pattern,
+//                                   CFGAS_StringFormatter::DateTimeType::kTime,
+//                                   &result));
 //     EXPECT_EQ(tests[i].output, result) << " TEST: " << i;
 //   }
 // }
@@ -474,7 +474,8 @@ TEST_F(CFGAS_StringFormatterTest, NumParse) {
 
   for (const auto& test : tests) {
     WideString result;
-    EXPECT_TRUE(fmt(test.locale, test.pattern)->ParseNum(test.input, &result))
+    CFGAS_StringFormatter fmt(test.pattern);
+    EXPECT_TRUE(fmt.ParseNum(Mgr(test.locale), test.input, &result))
         << " TEST: " << test.input << ", " << test.pattern;
     EXPECT_STREQ(test.output, result.c_str())
         << " TEST: " << test.input << ", " << test.pattern;
@@ -482,7 +483,8 @@ TEST_F(CFGAS_StringFormatterTest, NumParse) {
 
   for (const auto& test : failures) {
     WideString result;
-    EXPECT_FALSE(fmt(test.locale, test.pattern)->ParseNum(test.input, &result))
+    CFGAS_StringFormatter fmt(test.pattern);
+    EXPECT_FALSE(fmt.ParseNum(Mgr(test.locale), test.input, &result))
         << " TEST: " << test.input << ", " << test.pattern;
   }
 }
@@ -603,7 +605,8 @@ TEST_F(CFGAS_StringFormatterTest, NumFormat) {
 
   for (const auto& test : tests) {
     WideString result;
-    EXPECT_TRUE(fmt(test.locale, test.pattern)->FormatNum(test.input, &result))
+    CFGAS_StringFormatter fmt(test.pattern);
+    EXPECT_TRUE(fmt.FormatNum(Mgr(test.locale), test.input, &result))
         << " TEST: " << test.input << ", " << test.pattern;
     EXPECT_STREQ(test.output, result.c_str())
         << " TEST: " << test.input << ", " << test.pattern;
@@ -611,14 +614,14 @@ TEST_F(CFGAS_StringFormatterTest, NumFormat) {
 
   for (const auto& test : failures) {
     WideString result;
-    EXPECT_FALSE(fmt(test.locale, test.pattern)->FormatNum(test.input, &result))
+    CFGAS_StringFormatter fmt(test.pattern);
+    EXPECT_FALSE(fmt.FormatNum(Mgr(test.locale), test.input, &result))
         << " TEST: " << test.input << ", " << test.pattern;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, TextParse) {
   struct {
-    const wchar_t* locale;
     const wchar_t* input;
     const wchar_t* pattern;
     const wchar_t* output;
@@ -627,16 +630,16 @@ TEST_F(CFGAS_StringFormatterTest, TextParse) {
                //  * - zero or more whitespace
                //  + - one or more whitespace
                // {L"en", L"555-1212", L"text(th_TH){999*9999}", L"5551212"},
-               {L"en", L"ABC-1234-5", L"AAA-9999-X", L"ABC12345"},
-               {L"en", L"ABC-1234-D", L"AAA-9999-X", L"ABC1234D"},
-               {L"en", L"A1C-1234-D", L"OOO-9999-X", L"A1C1234D"},
-               {L"en", L"A1C-1234-D", L"000-9999-X", L"A1C1234D"},
-               {L"en", L"A1C-1234-D text", L"000-9999-X 'text'", L"A1C1234D"}};
+               {L"ABC-1234-5", L"AAA-9999-X", L"ABC12345"},
+               {L"ABC-1234-D", L"AAA-9999-X", L"ABC1234D"},
+               {L"A1C-1234-D", L"OOO-9999-X", L"A1C1234D"},
+               {L"A1C-1234-D", L"000-9999-X", L"A1C1234D"},
+               {L"A1C-1234-D text", L"000-9999-X 'text'", L"A1C1234D"}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)
-                    ->ParseText(tests[i].input, &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.ParseText(tests[i].input, &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
@@ -644,7 +647,8 @@ TEST_F(CFGAS_StringFormatterTest, TextParse) {
 TEST_F(CFGAS_StringFormatterTest, InvalidTextParse) {
   // Input does not match mask.
   WideString result;
-  EXPECT_FALSE(fmt(L"en", L"AAA-9999-X")->ParseText(L"123-4567-8", &result));
+  CFGAS_StringFormatter fmt(L"AAA-9999-X");
+  EXPECT_FALSE(fmt.ParseText(L"123-4567-8", &result));
 }
 
 TEST_F(CFGAS_StringFormatterTest, TextFormat) {
@@ -663,96 +667,98 @@ TEST_F(CFGAS_StringFormatterTest, TextFormat) {
       {L"en", L"K1#5K2", L"00X OO9", L"K1# 5K2"},
   };
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)
-                    ->FormatText(tests[i].input, &result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatText(tests[i].input, &result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, NullParse) {
   struct {
-    const wchar_t* locale;
     const wchar_t* input;
     const wchar_t* pattern;
   } tests[] = {
-      {L"en", L"", L"null{}"},
-      {L"en", L"No data", L"null{'No data'}"},
+      {L"", L"null{}"},
+      {L"No data", L"null{'No data'}"},
   };
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
-    EXPECT_TRUE(
-        fmt(tests[i].locale, tests[i].pattern)->ParseNull(tests[i].input))
-        << " TEST: " << i;
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.ParseNull(tests[i].input)) << " TEST: " << i;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, NullFormat) {
   struct {
-    const wchar_t* locale;
     const wchar_t* pattern;
     const wchar_t* output;
-  } tests[] = {{L"en", L"null{'n/a'}", L"n/a"}, {L"en", L"null{}", L""}};
+  } tests[] = {{L"null{'n/a'}", L"n/a"}, {L"null{}", L""}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)->FormatNull(&result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatNull(&result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, ZeroParse) {
   struct {
-    const wchar_t* locale;
     const wchar_t* input;
     const wchar_t* pattern;
-  } tests[] = {{L"en", L"", L"zero{}"},
-               {L"en", L"9", L"zero{9}"},
-               {L"en", L"a", L"zero{'a'}"}};
+  } tests[] = {{L"", L"zero{}"}, {L"9", L"zero{9}"}, {L"a", L"zero{'a'}"}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
-    EXPECT_TRUE(
-        fmt(tests[i].locale, tests[i].pattern)->ParseZero(tests[i].input))
-        << " TEST: " << i;
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.ParseZero(tests[i].input)) << " TEST: " << i;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, ZeroFormat) {
   struct {
-    const wchar_t* locale;
     const wchar_t* input;
     const wchar_t* pattern;
     const wchar_t* output;
   } tests[] = {// TODO(dsinclair): The zero format can take a number specifier
                // which we don't take into account.
-               // {L"en", L"", L"zero {9}", L""},
-               // {L"en", L"0", L"zero {9}", L"0"},
-               // {L"en", L"0.0", L"zero{9}", L"0"},
-               {L"en", L"0", L"zero{}", L""}};
+               // {L"", L"zero {9}", L""},
+               // {L"0", L"zero {9}", L"0"},
+               // {L"0.0", L"zero{9}", L"0"},
+               {L"0", L"zero{}", L""}};
 
-  for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
+  for (size_t i = 0; i < pdfium::size(tests); ++i) {
     WideString result;
-    EXPECT_TRUE(fmt(tests[i].locale, tests[i].pattern)->FormatZero(&result));
+    CFGAS_StringFormatter fmt(tests[i].pattern);
+    EXPECT_TRUE(fmt.FormatZero(&result));
     EXPECT_STREQ(tests[i].output, result.c_str()) << " TEST: " << i;
   }
 }
 
 TEST_F(CFGAS_StringFormatterTest, GetCategory) {
-  EXPECT_EQ(FX_LOCALECATEGORY_Unknown,
-            fmt(L"en", L"'just text'")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Null, fmt(L"en", L"null{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Zero, fmt(L"en", L"zero{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Num, fmt(L"en", L"num{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Text, fmt(L"en", L"text{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_DateTime,
-            fmt(L"en", L"datetime{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Time, fmt(L"en", L"time{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Date, fmt(L"en", L"date{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_DateTime,
-            fmt(L"en", L"time{} date{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_DateTime,
-            fmt(L"en", L"date{} time{}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Num, fmt(L"en", L"num(en_GB){}")->GetCategory());
-  EXPECT_EQ(FX_LOCALECATEGORY_Date, fmt(L"en", L"date.long{}")->GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kUnknown,
+            CFGAS_StringFormatter(L"'just text'").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kNull,
+            CFGAS_StringFormatter(L"null{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kZero,
+            CFGAS_StringFormatter(L"zero{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kNum,
+            CFGAS_StringFormatter(L"num{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kText,
+            CFGAS_StringFormatter(L"text{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kDateTime,
+            CFGAS_StringFormatter(L"datetime{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kTime,
+            CFGAS_StringFormatter(L"time{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kDate,
+            CFGAS_StringFormatter(L"date{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kDateTime,
+            CFGAS_StringFormatter(L"time{} date{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kDateTime,
+            CFGAS_StringFormatter(L"date{} time{}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kNum,
+            CFGAS_StringFormatter(L"num(en_GB){}").GetCategory());
+  EXPECT_EQ(CFGAS_StringFormatter::Category::kDate,
+            CFGAS_StringFormatter(L"date.long{}").GetCategory());
 }

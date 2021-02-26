@@ -7,21 +7,17 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/command_line.h"
-#include "base/task/post_task.h"
+#include "base/callback_helpers.h"
 #include "base/unguessable_token.h"
-#include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_controller.h"
-#include "content/public/browser/web_contents.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
@@ -103,8 +99,8 @@ void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
               base::BindOnce(&ImageCaptureImpl::OnGetPhotoState,
                              weak_factory_.GetWeakPtr(), std::move(callback))),
           mojo::CreateEmptyPhotoState());
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetPhotoStateOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),
                      std::move(scoped_callback)));
@@ -118,9 +114,7 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
                        "ImageCaptureImpl::SetOptions",
                        TRACE_EVENT_SCOPE_PROCESS);
 
-  // TODO(crbug.com/934063): Check "has_zoom" as well if upcoming metrics show
-  // that zoom may be moved under this permission.
-  if ((settings->has_pan || settings->has_tilt) &&
+  if ((settings->has_pan || settings->has_tilt || settings->has_zoom) &&
       !HasPanTiltZoomPermissionGranted()) {
     std::move(callback).Run(false);
     return;
@@ -129,8 +123,8 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
   SetOptionsCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)), false);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&SetOptionsOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),
                      std::move(settings), std::move(scoped_callback)));
@@ -147,8 +141,8 @@ void ImageCaptureImpl::TakePhoto(const std::string& source_id,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)),
           media::mojom::Blob::New());
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TakePhotoOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),
                      std::move(scoped_callback)));
@@ -164,38 +158,20 @@ ImageCaptureImpl::~ImageCaptureImpl() = default;
 void ImageCaptureImpl::OnGetPhotoState(GetPhotoStateCallback callback,
                                        media::mojom::PhotoStatePtr state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(crbug.com/934063): Reset "zoom" as well if upcoming metrics show
-  // that zoom may be moved under this permission.
   if (!HasPanTiltZoomPermissionGranted()) {
     state->pan = media::mojom::Range::New();
     state->tilt = media::mojom::Range::New();
+    state->zoom = media::mojom::Range::New();
   }
   std::move(callback).Run(std::move(state));
 }
 
 bool ImageCaptureImpl::HasPanTiltZoomPermissionGranted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
-  // Camera PTZ is desktop only at the moment.
-  return true;
-#else
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return false;
-  }
 
-  auto* web_contents = WebContents::FromRenderFrameHost(render_frame_host());
-  auto* permission_controller = BrowserContext::GetPermissionController(
-      web_contents->GetBrowserContext());
-  DCHECK(permission_controller);
-
-  blink::mojom::PermissionStatus status =
-      permission_controller->GetPermissionStatusForFrame(
-          PermissionType::CAMERA_PAN_TILT_ZOOM, render_frame_host(),
-          origin().GetURL());
-
-  return status == blink::mojom::PermissionStatus::GRANTED;
-#endif
+  return MediaDevicesPermissionChecker::
+      HasPanTiltZoomPermissionGrantedOnUIThread(
+          render_frame_host()->GetProcess()->GetID(),
+          render_frame_host()->GetRoutingID());
 }
 }  // namespace content

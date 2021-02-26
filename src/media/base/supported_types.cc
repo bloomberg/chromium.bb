@@ -7,7 +7,9 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/media.h"
 #include "media/base/media_client.h"
 #include "media/base/media_switches.h"
@@ -34,14 +36,14 @@ namespace media {
 
 namespace {
 
-bool IsSupportedHdrMetadata(const HdrMetadataType& hdr_metadata_type) {
+bool IsSupportedHdrMetadata(const gfx::HdrMetadataType& hdr_metadata_type) {
   switch (hdr_metadata_type) {
-    case HdrMetadataType::kNone:
+    case gfx::HdrMetadataType::kNone:
       return true;
 
-    case HdrMetadataType::kSmpteSt2086:
-    case HdrMetadataType::kSmpteSt2094_10:
-    case HdrMetadataType::kSmpteSt2094_40:
+    case gfx::HdrMetadataType::kSmpteSt2086:
+    case gfx::HdrMetadataType::kSmpteSt2094_10:
+    case gfx::HdrMetadataType::kSmpteSt2094_40:
       return false;
   }
 
@@ -241,7 +243,7 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
     case kCodecAMR_NB:
     case kCodecAMR_WB:
     case kCodecGSM_MS:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
       return true;
 #else
       return false;
@@ -323,7 +325,7 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       return false;
 
     case kCodecMPEG4:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
       return true;
 #else
       return false;

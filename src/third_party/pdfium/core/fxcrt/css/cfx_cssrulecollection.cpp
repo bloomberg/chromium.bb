@@ -14,7 +14,6 @@
 #include "core/fxcrt/css/cfx_cssstylerule.h"
 #include "core/fxcrt/css/cfx_cssstylesheet.h"
 #include "core/fxcrt/css/cfx_csssyntaxparser.h"
-#include "third_party/base/ptr_util.h"
 
 CFX_CSSRuleCollection::CFX_CSSRuleCollection() : m_iSelectors(0) {}
 
@@ -44,8 +43,8 @@ void CFX_CSSRuleCollection::AddRulesFrom(const CFX_CSSStyleSheet* pStyleSheet,
   int32_t iSelectors = pStyleRule->CountSelectorLists();
   for (int32_t i = 0; i < iSelectors; ++i) {
     CFX_CSSSelector* pSelector = pStyleRule->GetSelectorList(i);
-    m_TagRules[pSelector->GetNameHash()].push_back(
-        pdfium::MakeUnique<Data>(pSelector, pDeclaration));
+    m_TagRules[pSelector->name_hash()].push_back(
+        std::make_unique<Data>(pSelector, pDeclaration));
     m_iSelectors++;
   }
 }

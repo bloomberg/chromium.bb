@@ -86,12 +86,25 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // authenticator.
   ClientPinAvailability client_pin_availability =
       ClientPinAvailability::kNotSupported;
-  // Indicates whether the authenticator is capable of handling built in user
-  // verification based tokens.
-  bool supports_uv_token = false;
+  // Indicates whether the authenticator supports CTAP 2.1 pinUvAuthToken for
+  // establishing user verification via client PIN or a built-in sensor.
+  bool supports_pin_uv_auth_token = false;
   // Indicates whether the authenticator supports an extension for passing
   // information from the collectedClientData structure with a CTAP request.
   bool supports_android_client_data_ext = false;
+  // True iff enterprise attestation is supported and enabled. (In CTAP2 this is
+  // a tri-state, but the state that represents "administratively disabled" is
+  // uninteresting to Chromium because we do not support the administrative
+  // operation to configure it. Thus this member reduces to a boolean.)
+  bool enterprise_attestation = false;
+  // Indicates whether the authenticator supports the authenticatorLargeBlobs
+  // command.
+  bool supports_large_blobs = false;
+  // Indicates whether user verification must be used for make credential, final
+  // (i.e. not pre-flight) get assertion requests, and writing large blobs. An
+  // |always_uv| value of true will make uv=0 get assertion requests return
+  // invalid signatures, which is okay for pre-flighting.
+  bool always_uv = false;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

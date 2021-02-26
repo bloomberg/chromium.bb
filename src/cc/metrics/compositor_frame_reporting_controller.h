@@ -20,6 +20,7 @@ struct FrameTimingDetails;
 }
 
 namespace cc {
+class DroppedFrameCounter;
 class UkmManager;
 struct BeginMainFrameMetrics;
 
@@ -40,7 +41,8 @@ class CC_EXPORT CompositorFrameReportingController {
     kNumPipelineStages
   };
 
-  explicit CompositorFrameReportingController(bool should_report_metrics);
+  CompositorFrameReportingController(bool should_report_metrics,
+                                     int layer_tree_host_id);
   virtual ~CompositorFrameReportingController();
 
   CompositorFrameReportingController(
@@ -75,8 +77,11 @@ class CC_EXPORT CompositorFrameReportingController {
 
   void SetUkmManager(UkmManager* manager);
 
-  virtual void AddActiveTracker(FrameSequenceTrackerType type);
-  virtual void RemoveActiveTracker(FrameSequenceTrackerType type);
+  void AddActiveTracker(FrameSequenceTrackerType type);
+  void RemoveActiveTracker(FrameSequenceTrackerType type);
+
+  void SetThreadAffectsSmoothness(FrameSequenceMetrics::ThreadType thread_type,
+                                  bool affects_smoothness);
 
   void set_tick_clock(const base::TickClock* tick_clock) {
     DCHECK(tick_clock);
@@ -84,6 +89,10 @@ class CC_EXPORT CompositorFrameReportingController {
   }
 
   std::unique_ptr<CompositorFrameReporter>* reporters() { return reporters_; }
+
+  void SetDroppedFrameCounter(DroppedFrameCounter* counter) {
+    dropped_frame_counter_ = counter;
+  }
 
  protected:
   struct SubmittedCompositorFrame {
@@ -98,6 +107,9 @@ class CC_EXPORT CompositorFrameReportingController {
   base::TimeTicks Now() const;
 
   bool HasReporterAt(PipelineStage stage) const;
+  bool next_activate_has_invalidation() const {
+    return next_activate_has_invalidation_;
+  }
 
  private:
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);
@@ -105,12 +117,28 @@ class CC_EXPORT CompositorFrameReportingController {
   bool CanSubmitMainFrame(const viz::BeginFrameId& id) const;
   std::unique_ptr<CompositorFrameReporter> RestoreReporterAtBeginImpl(
       const viz::BeginFrameId& id);
+  CompositorFrameReporter::SmoothThread GetSmoothThread() const;
+
+  // If the display-compositor skips over some frames (e.g. when the gpu is
+  // busy, or the client is non-responsive), then it will not issue any
+  // |BeginFrameArgs| for those frames. However, |CompositorFrameReporter|
+  // instances should still be created for these frames. The following
+  // functions accomplish this.
+  void ProcessSkippedFramesIfNecessary(const viz::BeginFrameArgs& args);
+  void CreateReportersForDroppedFrames(
+      const viz::BeginFrameArgs& old_args,
+      const viz::BeginFrameArgs& new_args) const;
 
   const bool should_report_metrics_;
+  const int layer_tree_host_id_;
+
   viz::BeginFrameId last_submitted_frame_id_;
 
   bool next_activate_has_invalidation_ = false;
   CompositorFrameReporter::ActiveTrackers active_trackers_;
+
+  bool is_compositor_thread_driving_smoothness_ = false;
+  bool is_main_thread_driving_smoothness_ = false;
 
   // The latency reporter passed to each CompositorFrameReporter. Owned here
   // because it must be common among all reporters.
@@ -127,7 +155,12 @@ class CC_EXPORT CompositorFrameReportingController {
   // outlive the objects in |submitted_compositor_frames_|.
   base::circular_deque<SubmittedCompositorFrame> submitted_compositor_frames_;
 
+  // The latest frame that was started.
+  viz::BeginFrameArgs previous_frame_;
+
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
+
+  DroppedFrameCounter* dropped_frame_counter_ = nullptr;
 };
 }  // namespace cc
 

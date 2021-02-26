@@ -156,11 +156,28 @@ static IsolatedWorldSecurityOriginMap& IsolatedWorldSecurityOrigins() {
   return map;
 }
 
-SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
-  DCHECK(this->IsIsolatedWorld());
+static scoped_refptr<SecurityOrigin> GetIsolatedWorldSecurityOrigin(
+    int32_t world_id,
+    const base::UnguessableToken& cluster_id) {
   IsolatedWorldSecurityOriginMap& origins = IsolatedWorldSecurityOrigins();
-  IsolatedWorldSecurityOriginMap::iterator it = origins.find(GetWorldId());
-  return it == origins.end() ? nullptr : it->value.get();
+  auto it = origins.find(world_id);
+  if (it == origins.end())
+    return nullptr;
+
+  return it->value->GetOriginForAgentCluster(cluster_id);
+}
+
+scoped_refptr<SecurityOrigin> DOMWrapperWorld::IsolatedWorldSecurityOrigin(
+    const base::UnguessableToken& cluster_id) {
+  DCHECK(this->IsIsolatedWorld());
+  return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
+}
+
+scoped_refptr<const SecurityOrigin>
+DOMWrapperWorld::IsolatedWorldSecurityOrigin(
+    const base::UnguessableToken& cluster_id) const {
+  DCHECK(this->IsIsolatedWorld());
+  return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
 }
 
 void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
@@ -175,6 +192,26 @@ void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
     IsolatedWorldSecurityOrigins().erase(world_id);
 }
 
+typedef HashMap<int, String> IsolatedWorldStableIdMap;
+static IsolatedWorldStableIdMap& IsolatedWorldStableIds() {
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(IsolatedWorldStableIdMap, map, ());
+  return map;
+}
+
+String DOMWrapperWorld::NonMainWorldStableId() const {
+  DCHECK(!this->IsMainWorld());
+  return IsolatedWorldStableIds().at(GetWorldId());
+}
+
+void DOMWrapperWorld::SetNonMainWorldStableId(int32_t world_id,
+                                              const String& stable_id) {
+#if DCHECK_IS_ON()
+  DCHECK(!IsMainWorldId(world_id));
+#endif
+  IsolatedWorldStableIds().Set(world_id, stable_id);
+}
+
 typedef HashMap<int, String> IsolatedWorldHumanReadableNameMap;
 static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
   DCHECK(IsMainThread());
@@ -182,7 +219,7 @@ static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
   return map;
 }
 
-String DOMWrapperWorld::NonMainWorldHumanReadableName() {
+String DOMWrapperWorld::NonMainWorldHumanReadableName() const {
   DCHECK(!this->IsMainWorld());
   return IsolatedWorldHumanReadableNames().at(GetWorldId());
 }

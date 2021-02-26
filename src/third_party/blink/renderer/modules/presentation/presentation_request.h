@@ -26,7 +26,6 @@ class MODULES_EXPORT PresentationRequest final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PresentationRequest>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -55,7 +54,7 @@ class MODULES_EXPORT PresentationRequest final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget implementation.

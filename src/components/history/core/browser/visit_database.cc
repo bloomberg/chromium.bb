@@ -14,10 +14,12 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/google/core/common/google_util.h"
+#include "components/history/core/browser/features.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/statement.h"
@@ -26,6 +28,19 @@
 #include "url/url_constants.h"
 
 namespace history {
+
+namespace {
+
+// This is called from functions that are testing for the absence of
+// PAGE_TRANSITION_FROM_API_3 in transitions. It is expected this is used
+// with a database query of '& FromApi3QualifierForQuery() == 0'.
+int32_t FromApi3QualifierForQuery() {
+  return base::FeatureList::IsEnabled(kHideFromApi3Transitions)
+             ? ui::PAGE_TRANSITION_FROM_API_3
+             : 0;
+}
+
+}  // namespace
 
 VisitDatabase::VisitDatabase() {}
 
@@ -44,7 +59,8 @@ bool VisitDatabase::InitVisitTable() {
             // Some old DBs may have an "is_indexed" field here, but this is no
             // longer used and should NOT be read or written from any longer.
             "visit_duration INTEGER DEFAULT 0 NOT NULL,"
-            "incremented_omnibox_typed_score BOOLEAN DEFAULT FALSE NOT NULL)"))
+            "incremented_omnibox_typed_score BOOLEAN DEFAULT FALSE NOT NULL,"
+            "publicly_routable BOOLEAN DEFAULT FALSE NOT NULL)"))
       return false;
   }
 
@@ -98,6 +114,7 @@ void VisitDatabase::FillVisitRow(const sql::Statement& statement,
   visit->visit_duration =
       base::TimeDelta::FromInternalValue(statement.ColumnInt64(6));
   visit->incremented_omnibox_typed_score = statement.ColumnBool(7);
+  visit->publicly_routable = statement.ColumnBool(8);
 }
 
 // static
@@ -153,8 +170,8 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
       SQL_FROM_HERE,
       "INSERT INTO visits "
       "(url, visit_time, from_visit, transition, segment_id, "
-      "visit_duration, incremented_omnibox_typed_score) "
-      "VALUES (?,?,?,?,?,?,?)"));
+      "visit_duration, incremented_omnibox_typed_score, publicly_routable) "
+      "VALUES (?,?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
   statement.BindInt64(2, visit->referring_visit);
@@ -162,6 +179,7 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   statement.BindInt64(4, visit->segment_id);
   statement.BindInt64(5, visit->visit_duration.ToInternalValue());
   statement.BindBool(6, visit->incremented_omnibox_typed_score);
+  statement.BindBool(7, visit->publicly_routable);
 
   if (!statement.Run()) {
     DVLOG(0) << "Failed to execute visit insert statement:  "
@@ -243,7 +261,8 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
       SQL_FROM_HERE,
       "UPDATE visits SET "
       "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,"
-      "visit_duration=?,incremented_omnibox_typed_score=? WHERE id=?"));
+      "visit_duration=?,incremented_omnibox_typed_score=?,publicly_routable=? "
+      "WHERE id=?"));
   statement.BindInt64(0, visit.url_id);
   statement.BindInt64(1, visit.visit_time.ToInternalValue());
   statement.BindInt64(2, visit.referring_visit);
@@ -251,7 +270,8 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
   statement.BindInt64(4, visit.segment_id);
   statement.BindInt64(5, visit.visit_duration.ToInternalValue());
   statement.BindBool(6, visit.incremented_omnibox_typed_score);
-  statement.BindInt64(7, visit.visit_id);
+  statement.BindBool(7, visit.publicly_routable);
+  statement.BindInt64(8, visit.visit_id);
 
   return statement.Run();
 }
@@ -278,6 +298,7 @@ bool VisitDatabase::GetVisibleVisitsForURL(URLID url_id,
       "FROM visits "
       "WHERE url=? AND visit_time >= ? AND visit_time < ? "
       "AND (transition & ?) != 0 "              // CHAIN_END
+      "AND (transition & ?) == 0 "              // FROM_API_3
       "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
                                                 // KEYWORD_GENERATED
       "ORDER BY visit_time DESC"));
@@ -285,10 +306,11 @@ bool VisitDatabase::GetVisibleVisitsForURL(URLID url_id,
   statement.BindInt64(1, options.EffectiveBeginTime());
   statement.BindInt64(2, options.EffectiveEndTime());
   statement.BindInt64(3, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt64(4, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt64(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt64(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt64(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(4, FromApi3QualifierForQuery());
+  statement.BindInt64(5, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(7, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(8, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   return FillVisitVectorWithOptions(statement, options, visits);
 }
@@ -384,6 +406,7 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
       "FROM visits "
       "WHERE visit_time >= ? AND visit_time < ? "
       "AND (transition & ?) != 0 "              // CHAIN_END
+      "AND (transition & ?) == 0 "              // FROM_API_3
       "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
                                                 // KEYWORD_GENERATED
       "ORDER BY visit_time DESC, id DESC"));
@@ -391,10 +414,11 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
   statement.BindInt64(0, options.EffectiveBeginTime());
   statement.BindInt64(1, options.EffectiveEndTime());
   statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(3, FromApi3QualifierForQuery());
+  statement.BindInt64(4, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   return FillVisitVectorWithOptions(statement, options, visits);
 }
@@ -511,15 +535,17 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
       "FROM visits v INNER JOIN urls u ON v.url = u.id "
       "WHERE u.url >= ? AND u.url < ? "
       "AND (transition & ?) != 0 "
+      "AND (transition & ?) == 0 "
       "AND (transition & ?) NOT IN (?, ?, ?)"));
   statement.BindString(0, host_query_min);
   statement.BindString(
       1, host_query_min.substr(0, host_query_min.size() - 1) + '0');
   statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(3, FromApi3QualifierForQuery());
+  statement.BindInt64(4, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   if (!statement.Step()) {
     // We've never been to this page before.
@@ -549,6 +575,7 @@ bool VisitDatabase::GetHistoryCount(const base::Time& begin_time,
       "DATE((visit_time - ?) / ?, 'unixepoch', 'localtime')"
       "FROM visits "
       "WHERE (transition & ?) != 0 "            // CHAIN_END
+      "AND (transition & ?) == 0 "              // FROM_API_3
       "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
                                                 // KEYWORD_GENERATED
       "AND visit_time >= ? AND visit_time < ?"
@@ -557,12 +584,13 @@ bool VisitDatabase::GetHistoryCount(const base::Time& begin_time,
   statement.BindInt64(0, base::Time::kTimeTToMicrosecondsOffset);
   statement.BindInt64(1, base::Time::kMicrosecondsPerSecond);
   statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
-  statement.BindInt64(7, begin_time.ToInternalValue());
-  statement.BindInt64(8, end_time.ToInternalValue());
+  statement.BindInt64(3, FromApi3QualifierForQuery());
+  statement.BindInt64(4, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(8, begin_time.ToInternalValue());
+  statement.BindInt64(9, end_time.ToInternalValue());
 
   if (!statement.Step())
     return false;
@@ -753,7 +781,9 @@ bool VisitDatabase::MigrateVisitsWithoutIncrementedOmniboxTypedScore() {
     // appropriate increment_omnibox_typed_score value. Because this column was
     // newly added, the existing (default) value is not valid/correct.
     sql::Statement read(GetDB().GetUniqueStatement(
-        "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits"));
+        "SELECT "
+        "id,url,visit_time,from_visit,transition,segment_id,visit_duration,"
+        "incremented_omnibox_typed_score FROM visits"));
     while (read.is_valid() && read.Step()) {
       VisitRow row;
       FillVisitRow(read, &row);
@@ -763,13 +793,46 @@ bool VisitDatabase::MigrateVisitsWithoutIncrementedOmniboxTypedScore() {
         continue;
       row.incremented_omnibox_typed_score =
           HistoryBackend::IsTypedIncrement(row.transition);
-      if (!UpdateVisitRow(row))
+
+      sql::Statement statement(GetDB().GetCachedStatement(
+          SQL_FROM_HERE,
+          "UPDATE visits SET "
+          "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,"
+          "visit_duration=?,incremented_omnibox_typed_score=? "
+          "WHERE id=?"));
+      statement.BindInt64(0, row.url_id);
+      statement.BindInt64(1, row.visit_time.ToInternalValue());
+      statement.BindInt64(2, row.referring_visit);
+      statement.BindInt64(3, row.transition);
+      statement.BindInt64(4, row.segment_id);
+      statement.BindInt64(5, row.visit_duration.ToInternalValue());
+      statement.BindBool(6, row.incremented_omnibox_typed_score);
+      statement.BindInt64(7, row.visit_id);
+
+      if (!statement.Run())
         return false;
     }
     if (!read.Succeeded() || !committer.Commit())
       return false;
   }
   return true;
+}
+
+bool VisitDatabase::MigrateVisitsWithoutPubliclyRoutableColumn() {
+  if (!GetDB().DoesTableExist("visits")) {
+    NOTREACHED() << " Visits table should exist before migration";
+    return false;
+  }
+
+  if (GetDB().DoesColumnExist("visits", "publicly_routable"))
+    return true;
+
+  // Old versions don't have the publicly_routable column, we modify the table
+  // to add that field.
+  return GetDB().Execute(
+      "ALTER TABLE visits "
+      "ADD COLUMN publicly_routable BOOLEAN "
+      "DEFAULT FALSE NOT NULL");
 }
 
 bool VisitDatabase::GetAllVisitedURLRowidsForMigrationToVersion40(

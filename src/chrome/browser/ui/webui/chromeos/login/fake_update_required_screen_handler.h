@@ -39,6 +39,8 @@ class FakeUpdateRequiredScreenHandler : public UpdateRequiredView {
   void SetUIState(UpdateRequiredView::UIState ui_state) override;
   void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
                                   const base::string16& deviceName) override {}
+  void SetEolMessage(const std::string& eolMessage) override {}
+  void SetIsUserDataPresent(bool data_present) override {}
 
   UpdateRequiredView::UIState ui_state_;
 

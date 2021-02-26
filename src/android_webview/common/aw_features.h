@@ -15,10 +15,14 @@ namespace features {
 
 // Alphabetical:
 extern const base::Feature kWebViewBrotliSupport;
-extern const base::Feature kWebViewCollectNonembeddedMetrics;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
-extern const base::Feature kWebViewOriginCheckForStreamReader;
-extern const base::Feature kWebViewSniffMimeType;
+extern const base::Feature kWebViewCpuAffinityRestrictToLittleCores;
+extern const base::Feature kWebViewDisplayCutout;
+extern const base::Feature kWebViewExtraHeadersSameDomainOnly;
+extern const base::Feature kWebViewExtraHeadersSameOriginOnly;
+extern const base::Feature kWebViewMeasureScreenCoverage;
+extern const base::Feature kWebViewMixedContentAutoupgrades;
+extern const base::Feature kWebViewTestFeature;
 extern const base::Feature kWebViewWideColorGamutSupport;
 
 }  // namespace features

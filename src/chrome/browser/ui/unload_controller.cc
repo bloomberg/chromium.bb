@@ -85,11 +85,11 @@ bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
   // handler we can fire even if the WebContents has an unload listener.
   // One case where we hit this is in a tab that has an infinite loop
   // before load.
-  if (contents->NeedToFireBeforeUnloadOrUnload()) {
+  if (contents->NeedToFireBeforeUnloadOrUnloadEvents()) {
     // If the page has unload listeners, then we tell the renderer to fire
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
-    // with the NeedToFireBeforeUnloadOrUnload bit cleared.
+    // with the NeedToFireBeforeUnloadOrUnloadEvents bit cleared.
     contents->DispatchBeforeUnload(false /* auto_cancel */);
     return true;
   }
@@ -193,7 +193,7 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
       content::WebContents* contents =
           browser_->tab_strip_model()->GetWebContentsAt(i);
       bool should_fire_beforeunload =
-          contents->NeedToFireBeforeUnloadOrUnload() ||
+          contents->NeedToFireBeforeUnloadOrUnloadEvents() ||
           DevToolsWindow::NeedsToInterceptBeforeUnload(contents);
       if (!base::Contains(tabs_needing_unload_fired_, contents) &&
           should_fire_beforeunload) {
@@ -323,7 +323,7 @@ void UnloadController::ProcessPendingTabs(bool skip_beforeunload) {
         *(tabs_needing_before_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (web_contents->GetRenderViewHost()) {
+    if (web_contents->GetMainFrame()->GetRenderViewHost()) {
       // If there's a devtools window attached to |web_contents|,
       // we would like devtools to call its own beforeunload handlers first,
       // and then call beforeunload handlers for |web_contents|.
@@ -354,7 +354,7 @@ void UnloadController::ProcessPendingTabs(bool skip_beforeunload) {
     content::WebContents* web_contents = *(tabs_needing_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (web_contents->GetRenderViewHost()) {
+    if (web_contents->GetMainFrame()->GetRenderViewHost()) {
       web_contents->ClosePage();
     } else {
       ClearUnloadState(web_contents, true);

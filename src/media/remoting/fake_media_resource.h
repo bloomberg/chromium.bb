@@ -5,6 +5,8 @@
 #ifndef MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
 #define MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
 
+#include <memory>
+
 #include "base/containers/circular_deque.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
@@ -23,7 +25,6 @@ class FakeDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   MOCK_METHOD1(Read, void(ReadCB read_cb));
   void FakeRead(ReadCB read_cb);
-  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -54,7 +55,8 @@ class FakeMediaResource : public MediaResource {
   std::vector<DemuxerStream*> GetAllStreams() override;
 
  private:
-  std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
+  std::unique_ptr<FakeDemuxerStream> audio_stream_;
+  std::unique_ptr<FakeDemuxerStream> video_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMediaResource);
 };

@@ -15,6 +15,8 @@ import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.base.SplitCompatUtils;
+import org.chromium.chrome.browser.language.GlobalAppLocaleController;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -38,14 +40,21 @@ public class ChromeBaseAppCompatActivity
         // that applyOverrideConfiguration() does not interpret it as an overridden value.
         // https://crbug.com/834191
         config.fontScale = 0;
+        // NightMode and other applyOverrides must be done before onCreate in attachBaseContext.
+        // https://crbug.com/1139760
         if (applyOverrides(newBase, config)) applyOverrideConfiguration(config);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        getSupportFragmentManager().setFragmentFactory(SplitCompatUtils.createFragmentFactory());
+
         initializeNightModeStateProvider();
         mNightModeStateProvider.addObserver(this);
         super.onCreate(savedInstanceState);
+
+        // Activity level locale overrides must be done in onCreate.
+        GlobalAppLocaleController.getInstance().maybeOverrideContextConfig(this);
     }
 
     @Override

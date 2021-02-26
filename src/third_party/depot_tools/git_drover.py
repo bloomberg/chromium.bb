@@ -461,7 +461,7 @@ def main():
                          options.parent_checkout, options.dry_run,
                          options.verbose)
   except Error as e:
-    print('Error:', e.message)
+    print('Error:', e)
     sys.exit(128)
 
 

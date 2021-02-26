@@ -18,8 +18,6 @@ namespace blink {
 class CORE_EXPORT DocumentModuleScriptFetcher final
     : public GarbageCollected<DocumentModuleScriptFetcher>,
       public ModuleScriptFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
-
  public:
   explicit DocumentModuleScriptFetcher(util::PassKey<ModuleScriptLoader>);
 
@@ -33,7 +31,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "DocumentModuleScriptFetcher"; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Client> client_;

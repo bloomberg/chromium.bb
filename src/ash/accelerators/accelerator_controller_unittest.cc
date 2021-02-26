@@ -85,6 +85,7 @@
 
 namespace ash {
 
+using ::chromeos::WindowStateType;
 using media_session::mojom::MediaSessionAction;
 
 namespace {
@@ -1015,6 +1016,23 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   EXPECT_FALSE(window_state->IsFullscreen());
 }
 
+TEST_F(AcceleratorControllerTest, DontToggleFullscreenWhenOverviewStarts) {
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(400, 400)));
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Toggle overview and fullscreen immediately after.
+  generator->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE);
+  EXPECT_FALSE(WindowState::Get(widget->GetNativeWindow())->IsFullscreen());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()
+                  ->overview_controller()
+                  ->overview_session()
+                  ->IsWindowInOverview(widget->GetNativeWindow()));
+}
+
 // TODO(oshima): Fix this test to use EventGenerator.
 TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The IME event filter interferes with the basic key event propagation we
@@ -1209,14 +1227,14 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   // When spoken feedback is on, the AppList should not toggle.
   accessibility_controller->SetSpokenFeedbackEnabled(true,
                                                      A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(accessibility_controller->spoken_feedback_enabled());
+  EXPECT_TRUE(accessibility_controller->spoken_feedback().enabled());
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   accessibility_controller->SetSpokenFeedbackEnabled(false,
                                                      A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(accessibility_controller->spoken_feedback_enabled());
+  EXPECT_FALSE(accessibility_controller->spoken_feedback().enabled());
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 
@@ -1426,7 +1444,7 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
             test_api_->side_volume_button_location().region);
   EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonSideLeft,
             test_api_->side_volume_button_location().side);
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
 }
 
 // Tests the histogram of volume adjustment in tablet mode.
@@ -1882,7 +1900,9 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   //  when a modal window is open
   //
   // Screenshot
-  {
+  // TODO(sammiequon): Add some basic tests once capture mode is more fleshed
+  // out.
+  if (!features::IsCaptureModeEnabled()) {
     TestScreenshotDelegate* delegate = GetScreenshotDelegate();
     delegate->set_can_take_screenshot(false);
     EXPECT_TRUE(ProcessInController(
@@ -2006,15 +2026,13 @@ TEST_F(AcceleratorControllerTest, TestDialogCancel) {
   AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Pressing cancel on the dialog should have no effect.
-  EXPECT_FALSE(
-      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(accessibility_controller->high_contrast().WasDialogAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(ProcessInController(accelerator));
   EXPECT_TRUE(IsConfirmationDialogOpen());
   CancelConfirmationDialog();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(
-      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(accessibility_controller->high_contrast().WasDialogAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 }
 
@@ -2025,23 +2043,20 @@ TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
   EXPECT_FALSE(IsConfirmationDialogOpen());
   AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(
-      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(accessibility_controller->high_contrast().WasDialogAccepted());
   EXPECT_TRUE(ProcessInController(accelerator));
   EXPECT_TRUE(IsConfirmationDialogOpen());
   AcceptConfirmationDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ContainsHighContrastNotification());
-  EXPECT_TRUE(
-      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_TRUE(accessibility_controller->high_contrast().WasDialogAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 
   // High Contrast Mode Enabled dialog and notification should be hidden as the
   // feature is disabled.
   EXPECT_TRUE(ProcessInController(accelerator));
   EXPECT_FALSE(ContainsHighContrastNotification());
-  EXPECT_TRUE(
-      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_TRUE(accessibility_controller->high_contrast().WasDialogAccepted());
 
   // Notification should be shown again when toggled, but dialog will not be
   // shown.
@@ -2236,8 +2251,8 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   // of accelerator.
   const ui::Accelerator fullscreen_magnifier_accelerator(
       ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
-  EXPECT_FALSE(accessibility_controller
-                   ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(
+      accessibility_controller->fullscreen_magnifier().WasDialogAccepted());
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
   EXPECT_TRUE(IsConfirmationDialogOpen());
   AcceptConfirmationDialog();
@@ -2250,16 +2265,16 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
-  EXPECT_TRUE(accessibility_controller
-                  ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_TRUE(
+      accessibility_controller->fullscreen_magnifier().WasDialogAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_FALSE(ContainsFullscreenMagnifierNotification());
 
   // Dialog will not be shown the second time the accelerator is used.
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
   EXPECT_FALSE(IsConfirmationDialogOpen());
-  EXPECT_TRUE(accessibility_controller
-                  ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_TRUE(
+      accessibility_controller->fullscreen_magnifier().WasDialogAccepted());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_TRUE(ContainsFullscreenMagnifierNotification());
@@ -2290,8 +2305,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
-  EXPECT_TRUE(accessibility_controller
-                  ->HasDockedMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_TRUE(accessibility_controller->docked_magnifier().WasDialogAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_FALSE(ContainsDockedMagnifierNotification());
 

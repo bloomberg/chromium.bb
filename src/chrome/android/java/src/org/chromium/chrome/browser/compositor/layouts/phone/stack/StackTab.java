@@ -8,9 +8,9 @@ import android.content.Context;
 import android.content.res.Resources;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.layouts.animation.FloatProperty;
 
 /**
  * StackTab is used to keep track of a thumbnail's bitmap and position and to
@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
  * @VisibleForTesting
  */
 public class StackTab {
+    private static final float ALPHA_THRESHOLD = 1.0f / 255.0f;
     // Cached values from values/dimens.xml
     public static float sStackedTabVisibleSize; // stacked_tab_visible_size
     public static float sStackBufferWidth; // stack_buffer_width
@@ -455,11 +456,22 @@ public class StackTab {
      * @param referenceIndex The index that has the highest priority.
      */
     public void updateVisiblityValue(int referenceIndex) {
-        mCachedVisibleArea = mLayoutTab.computeVisibleArea();
+        mCachedVisibleArea = computeVisibleArea();
         mCachedIndexDistance = Math.abs(mIndex - referenceIndex);
         mOrderSortingValue = computeOrderSortingValue(mCachedIndexDistance, mCacheStackVisibility);
         mVisiblitySortingValue = computeVisibilitySortingValue(
                 mCachedVisibleArea, mOrderSortingValue, mCacheStackVisibility);
+    }
+
+    /**
+     * @return The theoretical number of visible pixels. 0 if invisible.
+     */
+    private float computeVisibleArea() {
+        return (mLayoutTab.get(LayoutTab.IS_VISIBLE)
+                                       && mLayoutTab.get(LayoutTab.ALPHA) > ALPHA_THRESHOLD
+                               ? 1.0f
+                               : 0.0f)
+                * mLayoutTab.getFinalContentWidth() * mLayoutTab.getFinalContentHeight();
     }
 
     /**

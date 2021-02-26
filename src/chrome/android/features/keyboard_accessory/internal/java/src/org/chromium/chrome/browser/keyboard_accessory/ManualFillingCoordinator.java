@@ -9,6 +9,7 @@ import android.view.ViewStub;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -29,11 +31,13 @@ import org.chromium.ui.base.WindowAndroid;
  */
 class ManualFillingCoordinator implements ManualFillingComponent {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
+    private ObserverList<Observer> mObserverList = new ObserverList<>();
 
     public ManualFillingCoordinator() {}
 
     @Override
-    public void initialize(WindowAndroid windowAndroid, ViewStub barStub, ViewStub sheetStub) {
+    public void initialize(WindowAndroid windowAndroid, BottomSheetController sheetController,
+            ViewStub barStub, ViewStub sheetStub) {
         if (barStub == null || sheetStub == null) return; // The manual filling isn't needed.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             barStub.setLayoutResource(R.layout.keyboard_accessory_modern);
@@ -42,17 +46,18 @@ class ManualFillingCoordinator implements ManualFillingComponent {
         }
         sheetStub.setLayoutResource(R.layout.keyboard_accessory_sheet);
         initialize(windowAndroid, new KeyboardAccessoryCoordinator(mMediator, barStub),
-                new AccessorySheetCoordinator(sheetStub));
+                new AccessorySheetCoordinator(sheetStub), sheetController);
     }
 
     @VisibleForTesting
     void initialize(WindowAndroid windowAndroid, KeyboardAccessoryCoordinator accessoryBar,
-            AccessorySheetCoordinator accessorySheet) {
-        mMediator.initialize(accessoryBar, accessorySheet, windowAndroid);
+            AccessorySheetCoordinator accessorySheet, BottomSheetController sheetController) {
+        mMediator.initialize(accessoryBar, accessorySheet, windowAndroid, sheetController);
     }
 
     @Override
     public void destroy() {
+        for (Observer observer : mObserverList) observer.onDestroy();
         mMediator.destroy();
     }
 
@@ -122,6 +127,16 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     @Override
     public boolean isFillingViewShown(View view) {
         return mMediator.isFillingViewShown(view);
+    }
+
+    @Override
+    public boolean addObserver(Observer observer) {
+        return mObserverList.addObserver(observer);
+    }
+
+    @Override
+    public boolean removeObserver(Observer observer) {
+        return mObserverList.addObserver(observer);
     }
 
     @VisibleForTesting

@@ -8,25 +8,34 @@ from __future__ import absolute_import
 
 import copy
 import json
+import mock
 import sys
+import uuid
 import webapp2
 import webtest
 
 from google.appengine.ext import ndb
 
 from dashboard import add_histograms_queue
+from dashboard import find_anomalies
 from dashboard.common import testing_common
 from dashboard.common import utils
 from dashboard.models import anomaly
 from dashboard.models import graph_data
 from dashboard.models import histogram
+from dashboard.models import upload_completion_token
+from dashboard.sheriff_config_client import SheriffConfigClient
 from tracing.value import histogram as histogram_module
 from tracing.value import histogram_set
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 
 TEST_HISTOGRAM = {
-    'allBins': {'1': [1], '3': [1], '4': [1]},
+    'allBins': {
+        '1': [1],
+        '3': [1],
+        '4': [1]
+    },
     'binBoundaries': [1, [1, 1000, 20]],
     'diagnostics': {
         reserved_infos.LOG_URLS.name: {
@@ -54,13 +63,11 @@ TEST_HISTOGRAM = {
     'unit': 'count_biggerIsBetter'
 }
 
-
 TEST_BENCHMARKS = {
     'guid': 'ec2c0cdc-cd9f-4736-82b4-6ffc3d76e3eb',
     'values': ['myBenchmark'],
     'type': 'GenericSet',
 }
-
 
 TEST_OWNERS = {
     'guid': '68e5b3bd-829c-4f4f-be3a-98a94279ccf0',
@@ -70,17 +77,20 @@ TEST_OWNERS = {
 
 
 class AddHistogramsQueueTest(testing_common.TestCase):
+
   def setUp(self):
     super(AddHistogramsQueueTest, self).setUp()
     app = webapp2.WSGIApplication([
         ('/add_histograms_queue',
-         add_histograms_queue.AddHistogramsQueueHandler)])
+         add_histograms_queue.AddHistogramsQueueHandler)
+    ])
     self.testapp = webtest.TestApp(app)
     self.SetCurrentUser('foo@bar.com', is_admin=True)
 
   def testPostHistogram(self):
-    graph_data.Bot(key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
-                   internal_only=False).put()
+    graph_data.Bot(
+        key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
+        internal_only=False).put()
     test_path = 'Chromium/win7/suite/metric'
     params = [{
         'data': TEST_HISTOGRAM,
@@ -145,8 +155,9 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     self.assertEqual(7, len(rows))
 
   def testPostHistogram_WithFreshDiagnostics(self):
-    graph_data.Bot(key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
-                   internal_only=False).put()
+    graph_data.Bot(
+        key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
+        internal_only=False).put()
     test_path = 'Chromium/win7/suite/metric'
     histogram.HistogramRevisionRecord.GetOrCreate(
         utils.TestKey('Chromium/win7/suite'), 1).put()
@@ -163,16 +174,13 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     self.testapp.post('/add_histograms_queue', json.dumps(params))
     histogram_entity = histogram.Histogram.query().fetch()[0]
     hist = histogram_module.Histogram.FromDict(histogram_entity.data)
-    self.assertEqual(
-        'ec2c0cdc-cd9f-4736-82b4-6ffc3d76e3eb',
-        hist.diagnostics[reserved_infos.BENCHMARKS.name].guid)
-    self.assertEqual(
-        '68e5b3bd-829c-4f4f-be3a-98a94279ccf0',
-        hist.diagnostics['owners'].guid)
-    telemetry_info_entity = ndb.Key(
-        'SparseDiagnostic', TEST_BENCHMARKS['guid']).get()
-    ownership_entity = ndb.Key(
-        'SparseDiagnostic', TEST_OWNERS['guid']).get()
+    self.assertEqual('ec2c0cdc-cd9f-4736-82b4-6ffc3d76e3eb',
+                     hist.diagnostics[reserved_infos.BENCHMARKS.name].guid)
+    self.assertEqual('68e5b3bd-829c-4f4f-be3a-98a94279ccf0',
+                     hist.diagnostics['owners'].guid)
+    telemetry_info_entity = ndb.Key('SparseDiagnostic',
+                                    TEST_BENCHMARKS['guid']).get()
+    ownership_entity = ndb.Key('SparseDiagnostic', TEST_OWNERS['guid']).get()
     self.assertFalse(telemetry_info_entity.internal_only)
     self.assertEqual('benchmarks', telemetry_info_entity.name)
     self.assertFalse(ownership_entity.internal_only)
@@ -185,7 +193,9 @@ class AddHistogramsQueueTest(testing_common.TestCase):
         'type': 'GenericSet',
     }
     diag = histogram.SparseDiagnostic(
-        data=diag_dict, start_revision=1, end_revision=sys.maxsize,
+        data=diag_dict,
+        start_revision=1,
+        end_revision=sys.maxsize,
         test=utils.TestKey('Chromium/win7/suite/metric'))
     diag.put()
     histogram.HistogramRevisionRecord.GetOrCreate(
@@ -204,9 +214,8 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     self.testapp.post('/add_histograms_queue', json.dumps(params))
     histogram_entity = histogram.Histogram.query().fetch()[0]
     hist = histogram_module.Histogram.FromDict(histogram_entity.data)
-    self.assertEqual(
-        TEST_BENCHMARKS['guid'],
-        hist.diagnostics[reserved_infos.BENCHMARKS.name].guid)
+    self.assertEqual(TEST_BENCHMARKS['guid'],
+                     hist.diagnostics[reserved_infos.BENCHMARKS.name].guid)
     diagnostics = histogram.SparseDiagnostic.query().fetch()
     self.assertEqual(len(diagnostics), 3)
 
@@ -217,8 +226,10 @@ class AddHistogramsQueueTest(testing_common.TestCase):
         'type': 'GenericSet'
     }
     diag = histogram.SparseDiagnostic(
-        data=diag_dict, name='owners',
-        start_revision=1, end_revision=sys.maxsize,
+        data=diag_dict,
+        name='owners',
+        start_revision=1,
+        end_revision=sys.maxsize,
         test=utils.TestKey('Chromium/win7/suite/metric'))
     diag.put()
     histogram.HistogramRevisionRecord.GetOrCreate(
@@ -237,9 +248,8 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     self.testapp.post('/add_histograms_queue', json.dumps(params))
     histogram_entity = histogram.Histogram.query().fetch()[0]
     hist = histogram_module.Histogram.FromDict(histogram_entity.data)
-    self.assertEqual(
-        '68e5b3bd-829c-4f4f-be3a-98a94279ccf0',
-        hist.diagnostics['owners'].guid)
+    self.assertEqual('68e5b3bd-829c-4f4f-be3a-98a94279ccf0',
+                     hist.diagnostics['owners'].guid)
     diagnostics = histogram.SparseDiagnostic.query().fetch()
     self.assertEqual(len(diagnostics), 3)
 
@@ -298,12 +308,16 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     self.assertTrue(parts[3].endswith('_avg'))
     self.assertFalse(parts[4].endswith('_avg'))
 
+    # Ensure we can retrive the row using container_key
+    avg_test_key = utils.TestKey(rows[1].key.parent().id())
+    container_key = utils.GetTestContainerKey(avg_test_key)
+    row_get_by_id = graph_data.Row.get_by_id(123, parent=container_key)
+    self.assertEqual(rows[1], row_get_by_id)
+
   def testPostHistogram_KeepsWeirdStatistics(self):
     test_path = 'Chromium/win7/memory_desktop/memory:chrome'
     hist = histogram_module.Histogram.FromDict(TEST_HISTOGRAM)
-    hist.CustomizeSummaryOptions({
-        'percentile': [0.9]
-    })
+    hist.CustomizeSummaryOptions({'percentile': [0.9]})
 
     params = [{
         'data': hist.AsDict(),
@@ -331,9 +345,8 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     rows = graph_data.Row.query().fetch()
     # We now create all the stats as described in the histogram.
     self.assertEqual(len(rows), 7)
-    self.assertEqual(
-        rows[0].key.parent().id(),
-        'Chromium/win7/v8.browsing_desktop/v8-gc-blah')
+    self.assertEqual(rows[0].key.parent().id(),
+                     'Chromium/win7/v8.browsing_desktop/v8-gc-blah')
 
   def testPostHistogram_FiltersBenchmarkTotalDuration(self):
     test_path = 'Chromium/win7/benchmark/benchmark_total_duration'
@@ -348,9 +361,8 @@ class AddHistogramsQueueTest(testing_common.TestCase):
 
     rows = graph_data.Row.query().fetch()
     self.assertEqual(len(rows), 1)
-    self.assertEqual(
-        rows[0].key.parent().id(),
-        'Chromium/win7/benchmark/benchmark_total_duration')
+    self.assertEqual(rows[0].key.parent().id(),
+                     'Chromium/win7/benchmark/benchmark_total_duration')
 
   def testPostHistogram_CreatesNoLegacyRowsForLegacyTest(self):
     test_path = 'Chromium/win7/blink_perf.dom/foo'
@@ -475,15 +487,15 @@ class AddHistogramsQueueTest(testing_common.TestCase):
         'max': False,
         'min': False,
         'sum': False
-        })
+    })
 
     stat_names_to_test_keys = {
         'avg': utils.TestKey('Chromium/win7/suite/metric_avg'),
         'std': utils.TestKey('Chromium/win7/suite/metric_std'),
         'count': utils.TestKey('Chromium/win7/suite/metric_count')
     }
-    rows = add_histograms_queue.CreateRowEntities(
-        hist.AsDict(), test_key, stat_names_to_test_keys, 123)
+    rows = add_histograms_queue.CreateRowEntities(hist.AsDict(), test_key,
+                                                  stat_names_to_test_keys, 123)
 
     self.assertEqual(4, len(rows))
 
@@ -507,13 +519,13 @@ class AddHistogramsQueueTest(testing_common.TestCase):
         'max': False,
         'min': False,
         'sum': False
-        })
+    })
 
     stat_names_to_test_keys = {
         'avg': utils.TestKey('Chromium/win7/suite/metric_avg')
     }
-    rows = add_histograms_queue.CreateRowEntities(
-        hist.AsDict(), test_key, stat_names_to_test_keys, 123)
+    rows = add_histograms_queue.CreateRowEntities(hist.AsDict(), test_key,
+                                                  stat_names_to_test_keys, 123)
 
     self.assertEqual(2, len(rows))
 
@@ -551,19 +563,19 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     test_key = utils.TestKey(test_path)
     hist = copy.deepcopy(TEST_HISTOGRAM)
     hist['diagnostics'][reserved_infos.CATAPULT_REVISIONS.name] = {
-        'type': 'GenericSet', 'values': [123, 456]}
+        'type': 'GenericSet',
+        'values': [123, 456]
+    }
 
     with self.assertRaises(add_histograms_queue.BadRequestError):
-      add_histograms_queue.CreateRowEntities(
-          hist, test_key, {}, 123).put()
+      add_histograms_queue.CreateRowEntities(hist, test_key, {}, 123).put()
 
   def testCreateRowEntities_AddsTraceUri(self):
     test_path = 'Chromium/win7/suite/metric/story'
     test_key = utils.TestKey(test_path)
     hist = copy.deepcopy(TEST_HISTOGRAM)
 
-    row = add_histograms_queue.CreateRowEntities(
-        hist, test_key, {}, 123)[0]
+    row = add_histograms_queue.CreateRowEntities(hist, test_key, {}, 123)[0]
     row_dict = row.to_dict()
 
     self.assertIn('a_tracing_uri', row_dict)
@@ -574,10 +586,11 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     test_key = utils.TestKey(test_path)
     hist = copy.deepcopy(TEST_HISTOGRAM)
     hist['diagnostics'][reserved_infos.SUMMARY_KEYS.name] = {
-        'type': 'GenericSet', 'values': ['stories']}
+        'type': 'GenericSet',
+        'values': ['stories']
+    }
 
-    row = add_histograms_queue.CreateRowEntities(
-        hist, test_key, {}, 123)[0]
+    row = add_histograms_queue.CreateRowEntities(hist, test_key, {}, 123)[0]
     row_dict = row.to_dict()
 
     self.assertNotIn('a_tracing_uri', row_dict)
@@ -587,11 +600,207 @@ class AddHistogramsQueueTest(testing_common.TestCase):
     test_key = utils.TestKey(test_path)
     hist = copy.deepcopy(TEST_HISTOGRAM)
     hist['diagnostics'][reserved_infos.STORIES.name] = {
-        'type': 'GenericSet', 'values': ['story']}
+        'type': 'GenericSet',
+        'values': ['story']
+    }
     hist['diagnostics'][reserved_infos.TRACE_URLS.name]['values'] = []
 
-    row = add_histograms_queue.CreateRowEntities(
-        hist, test_key, {}, 123)[0]
+    row = add_histograms_queue.CreateRowEntities(hist, test_key, {}, 123)[0]
     row_dict = row.to_dict()
 
     self.assertNotIn('a_tracing_uri', row_dict)
+
+
+@mock.patch.object(SheriffConfigClient, '__init__',
+                   mock.MagicMock(return_value=None))
+@mock.patch.object(SheriffConfigClient, 'Match',
+                   mock.MagicMock(return_value=([], None)))
+class AddHistogramsQueueTestWithUploadCompletionToken(testing_common.TestCase):
+
+  def setUp(self):
+    super(AddHistogramsQueueTestWithUploadCompletionToken, self).setUp()
+    app = webapp2.WSGIApplication([
+        ('/add_histograms_queue',
+         add_histograms_queue.AddHistogramsQueueHandler)
+    ])
+    self.testapp = webtest.TestApp(app)
+    testing_common.SetIsInternalUser('foo@bar.com', True)
+    self.SetCurrentUser('foo@bar.com')
+
+  def _CreateHistogramWithMeasurementAndAdd(self, status=200):
+    token_id = str(uuid.uuid4())
+    test_path = 'Chromium/win7/suite/metric'
+    token = upload_completion_token.Token(id=token_id).put().get()
+    token.AddMeasurement(test_path, False).wait()
+    token.UpdateState(upload_completion_token.State.COMPLETED)
+
+    graph_data.Bot(
+        key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
+        internal_only=False).put()
+    params = [{
+        'data': TEST_HISTOGRAM,
+        'test_path': test_path,
+        'benchmark_description': None,
+        'revision': 123,
+        'token': token_id
+    }]
+    upload_data = json.dumps(params)
+    self.testapp.post('/add_histograms_queue', upload_data, status=status)
+    return upload_completion_token.Token.get_by_id(token_id)
+
+  def testPostHistogram_Success(self):
+    token = self._CreateHistogramWithMeasurementAndAdd()
+    self.assertEqual(token.state, upload_completion_token.State.COMPLETED)
+    self.assertEqual(len(token.GetMeasurements()), 1)
+    self.assertEqual(token.GetMeasurements()[0].error_message, None)
+
+  @mock.patch.object(find_anomalies, 'ProcessTestsAsync',
+                     mock.MagicMock(side_effect=Exception('Test exception')))
+  def testPostHistogram_Fail(self):
+    token = self._CreateHistogramWithMeasurementAndAdd()
+    self.assertEqual(token.state, upload_completion_token.State.FAILED)
+    self.assertEqual(len(token.GetMeasurements()), 1)
+    self.assertEqual(token.GetMeasurements()[0].error_message, 'Test exception')
+
+  @mock.patch.object(
+      find_anomalies, 'ProcessTestsAsync',
+      mock.MagicMock(
+          side_effect=IOError(('Connection aborted.',
+                               Exception(104, 'Connection reset by peer')))))
+  def testPostHistogram_FailWithNonStringMessage(self):
+    token = self._CreateHistogramWithMeasurementAndAdd()
+    self.assertEqual(token.state, upload_completion_token.State.FAILED)
+    self.assertEqual(len(token.GetMeasurements()), 1)
+    self.assertEqual(
+        token.GetMeasurements()[0].error_message,
+        str(
+            IOError(('Connection aborted.',
+                     Exception(104, 'Connection reset by peer')))))
+
+  @mock.patch.object(add_histograms_queue, '_ProcessRowAndHistogram',
+                     mock.MagicMock(side_effect=Exception('Test exception')))
+  def testPostHistogram_FailToCreateFixture(self):
+    token = self._CreateHistogramWithMeasurementAndAdd(status=500)
+    self.assertEqual(token.state, upload_completion_token.State.FAILED)
+    self.assertEqual(len(token.GetMeasurements()), 1)
+    self.assertEqual(token.GetMeasurements()[0].error_message, 'Test exception')
+
+  def _CreateHistogramWithMultipleMeasurementAndAdd(self, status=200):
+    test_path1 = 'Chromium/win7/suite/metric1'
+    test_path2 = 'Chromium/win7/suite/metric2'
+    test_path3 = 'Chromium/win7/suite/metric3'
+
+    token_id = str(uuid.uuid4())
+    token = upload_completion_token.Token(id=token_id).put().get()
+    token.AddMeasurement(test_path1, False).wait()
+    token.AddMeasurement(test_path2, False).wait()
+    token.AddMeasurement(test_path3, False).wait()
+    token.UpdateState(upload_completion_token.State.COMPLETED)
+
+    graph_data.Bot(
+        key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
+        internal_only=False).put()
+    params = [
+        {
+            'data': TEST_HISTOGRAM,
+            'test_path': test_path1,
+            'benchmark_description': None,
+            'revision': 123,
+            'token': token_id
+        },
+        {
+            'data': TEST_HISTOGRAM,
+            'test_path': test_path2,
+            'benchmark_description': None,
+            'revision': 5,
+            'token': token_id
+        },
+        {
+            'data': TEST_HISTOGRAM,
+            'test_path': test_path3,
+            'benchmark_description': None,
+            'revision': 42,
+            'token': token_id
+        },
+    ]
+    upload_data = json.dumps(params)
+    self.testapp.post('/add_histograms_queue', upload_data, status=status)
+    return upload_completion_token.Token.get_by_id(token_id)
+
+  def testPostMultipleHistograms_Success(self):
+    token = self._CreateHistogramWithMultipleMeasurementAndAdd()
+    self.assertEqual(token.state, upload_completion_token.State.COMPLETED)
+    self.assertTrue(
+        all(measurement.state == upload_completion_token.State.COMPLETED
+            for measurement in token.GetMeasurements()))
+    self.assertTrue(
+        all(measurement.error_message is None
+            for measurement in token.GetMeasurements()))
+
+  @mock.patch.object(find_anomalies, 'ProcessTestsAsync',
+                     mock.MagicMock(side_effect=Exception('Test exception')))
+  def testPostMultipleHistogram_Fail(self):
+    token = self._CreateHistogramWithMultipleMeasurementAndAdd()
+    self.assertEqual(token.state, upload_completion_token.State.FAILED)
+    self.assertTrue(
+        all(measurement.state == upload_completion_token.State.FAILED
+            for measurement in token.GetMeasurements()))
+    self.assertTrue(
+        all(measurement.error_message == 'Test exception'
+            for measurement in token.GetMeasurements()))
+
+  @mock.patch.object(add_histograms_queue, '_ProcessRowAndHistogram',
+                     mock.MagicMock(side_effect=Exception('Test exception')))
+  def testPostMultipleHistogram_FailToCreateFixture(self):
+    token = self._CreateHistogramWithMultipleMeasurementAndAdd(status=500)
+    self.assertEqual(token.state, upload_completion_token.State.FAILED)
+    self.assertTrue(
+        all(measurement.state == upload_completion_token.State.FAILED
+            for measurement in token.GetMeasurements()))
+    self.assertTrue(
+        all(measurement.error_message == 'Test exception'
+            for measurement in token.GetMeasurements()))
+
+  @mock.patch('logging.warning')
+  def testPostMultipleHistogram_MeasurementExpired(self, mock_log):
+    test_path1 = 'Chromium/win7/suite/metric1'
+    test_path2 = 'Chromium/win7/suite/metric2'
+
+    token_id = str(uuid.uuid4())
+    token = upload_completion_token.Token(id=token_id).put().get()
+    token.AddMeasurement(test_path1, False).wait()
+    measurement2 = token.AddMeasurement(test_path2, False).get_result()
+    token.UpdateState(upload_completion_token.State.COMPLETED)
+
+    measurement2.key.delete()
+    measurement2 = upload_completion_token.Measurement.GetByPath(
+        test_path2, token_id)
+    self.assertEqual(measurement2, None)
+
+    graph_data.Bot(
+        key=ndb.Key('Master', 'Chromium', 'Bot', 'win7'),
+        internal_only=False).put()
+    params = [
+        {
+            'data': TEST_HISTOGRAM,
+            'test_path': test_path1,
+            'benchmark_description': None,
+            'revision': 123,
+            'token': token_id
+        },
+        {
+            'data': TEST_HISTOGRAM,
+            'test_path': test_path2,
+            'benchmark_description': None,
+            'revision': 5,
+            'token': token_id
+        },
+    ]
+    upload_data = json.dumps(params)
+    self.testapp.post('/add_histograms_queue', upload_data)
+
+    token = upload_completion_token.Token.get_by_id(token_id)
+    self.assertEqual(token.state, upload_completion_token.State.COMPLETED)
+    mock_log.assert_called_once_with(
+        'Upload completion token measurement could not be found. '
+        'Token id: %s, measurement test path: %s', token_id, test_path2)

@@ -83,15 +83,15 @@ class TestCodeModule : public CodeModule {
 class MockMemoryRegion: public MemoryRegion {
   uint64_t GetBase() const { return 0x10000; }
   uint32_t GetSize() const { return 0x01000; }
-  bool GetMemoryAtAddress(uint64_t address, uint8_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint8_t* value) const {
     *value = address & 0xff;
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint16_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint16_t* value) const {
     *value = address & 0xffff;
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint32_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint32_t* value) const {
     switch (address) {
       case 0x10008: *value = 0x98ecadc3; break; // saved %ebx
       case 0x1000c: *value = 0x878f7524; break; // saved %esi
@@ -102,7 +102,7 @@ class MockMemoryRegion: public MemoryRegion {
     }
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint64_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint64_t* value) const {
     *value = address;
     return true;
   }
@@ -116,9 +116,9 @@ class MockMemoryRegion: public MemoryRegion {
 // EXPECTED's.) Also verify that ACTUAL has associations for ".ra" and
 // ".cfa".
 static bool VerifyRegisters(
-    const char *file, int line,
-    const CFIFrameInfo::RegisterValueMap<uint32_t> &expected,
-    const CFIFrameInfo::RegisterValueMap<uint32_t> &actual) {
+    const char* file, int line,
+    const CFIFrameInfo::RegisterValueMap<uint32_t>& expected,
+    const CFIFrameInfo::RegisterValueMap<uint32_t>& actual) {
   CFIFrameInfo::RegisterValueMap<uint32_t>::const_iterator a;
   a = actual.find(".cfa");
   if (a == actual.end())
@@ -148,7 +148,7 @@ static bool VerifyRegisters(
 }
 
 
-static bool VerifyEmpty(const StackFrame &frame) {
+static bool VerifyEmpty(const StackFrame& frame) {
   if (frame.function_name.empty() &&
       frame.source_file_name.empty() &&
       frame.source_line == 0)
@@ -156,7 +156,7 @@ static bool VerifyEmpty(const StackFrame &frame) {
   return false;
 }
 
-static void ClearSourceLineInfo(StackFrame *frame) {
+static void ClearSourceLineInfo(StackFrame* frame) {
   frame->function_name.clear();
   frame->module = NULL;
   frame->source_file_name.clear();
@@ -417,7 +417,7 @@ TEST_F(TestBasicSourceLineResolver, TestUnload)
 // FILE <id> <filename>
 TEST(SymbolParseHelper, ParseFileValid) {
   long index;
-  char *filename;
+  char* filename;
 
   char kTestLine[] = "FILE 1 file name";
   ASSERT_TRUE(SymbolParseHelper::ParseFile(kTestLine, &index, &filename));
@@ -435,7 +435,7 @@ TEST(SymbolParseHelper, ParseFileValid) {
 // FILE <id> <filename>
 TEST(SymbolParseHelper, ParseFileInvalid) {
   long index;
-  char *filename;
+  char* filename;
 
   // Test missing file name.
   char kTestLine[] = "FILE 1 ";
@@ -461,7 +461,7 @@ TEST(SymbolParseHelper, ParseFunctionValid) {
   uint64_t address;
   uint64_t size;
   long stack_param_size;
-  char *name;
+  char* name;
 
   char kTestLine[] = "FUNC 1 2 3 function name";
   ASSERT_TRUE(SymbolParseHelper::ParseFunction(kTestLine, &multiple, &address,
@@ -513,7 +513,7 @@ TEST(SymbolParseHelper, ParseFunctionInvalid) {
   uint64_t address;
   uint64_t size;
   long stack_param_size;
-  char *name;
+  char* name;
 
   // Test missing function name.
   char kTestLine[] = "FUNC 1 2 3 ";
@@ -649,7 +649,7 @@ TEST(SymbolParseHelper, ParsePublicSymbolValid) {
   bool multiple;
   uint64_t address;
   long stack_param_size;
-  char *name;
+  char* name;
 
   char kTestLine[] = "PUBLIC 1 2 3";
   ASSERT_TRUE(SymbolParseHelper::ParsePublicSymbol(kTestLine, &multiple,
@@ -697,7 +697,7 @@ TEST(SymbolParseHelper, ParsePublicSymbolInvalid) {
   bool multiple;
   uint64_t address;
   long stack_param_size;
-  char *name;
+  char* name;
 
   // Test missing source function name.
   char kTestLine[] = "PUBLIC 1 2 ";
@@ -738,7 +738,7 @@ TEST(SymbolParseHelper, ParsePublicSymbolInvalid) {
 
 }  // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

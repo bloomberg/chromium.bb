@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,7 +19,9 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,11 +35,13 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -55,8 +58,6 @@ import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.NetworkChangeNotifier;
@@ -303,10 +304,10 @@ public class TrustedCdnPublisherUrlTest {
         String testUrl = mWebServer.getResponseUrl("/test.html");
         String expectedUrl = UrlFormatter.formatUrlForDisplayOmitScheme(testUrl);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, () -> {
+        CriteriaHelper.pollUiThread(() -> {
             UrlBar urlBar = newActivity.findViewById(R.id.url_bar);
-            return urlBar.getText().toString();
-        }));
+            Criteria.checkThat(urlBar.getText().toString(), Matchers.is(expectedUrl));
+        });
 
         verifySecurityIcon(getDefaultSecurityIcon());
     }

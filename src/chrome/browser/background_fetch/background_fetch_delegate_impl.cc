@@ -287,8 +287,7 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
   // content setting.
   ContentSetting content_setting = host_content_settings_map->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
-      ContentSettingsType::AUTOMATIC_DOWNLOADS,
-      std::string() /* resource_identifier */);
+      ContentSettingsType::AUTOMATIC_DOWNLOADS);
 
   // The set of valid settings for automatic downloads is set to
   // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
@@ -427,9 +426,6 @@ void BackgroundFetchDelegateImpl::DidGetBackgroundSourceId(
   ukm::builders::BackgroundFetchDeletingRegistration(*source_id)
       .SetUserInitiatedAbort(user_initiated_abort)
       .Record(ukm::UkmRecorder::Get());
-
-  if (ukm_event_recorded_for_testing_)
-    std::move(ukm_event_recorded_for_testing_).Run();
 }
 
 void BackgroundFetchDelegateImpl::MarkJobComplete(
@@ -819,6 +815,12 @@ void BackgroundFetchDelegateImpl::RenameItem(
   NOTIMPLEMENTED();
 }
 
+void BackgroundFetchDelegateImpl::ChangeSchedule(
+    const offline_items_collection::ContentId& id,
+    base::Optional<offline_items_collection::OfflineItemSchedule> schedule) {
+  NOTIMPLEMENTED();
+}
+
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
   DCHECK(!observers_.count(observer));
 
@@ -883,7 +885,14 @@ void BackgroundFetchDelegateImpl::GetUploadData(
     const std::string& download_guid,
     download::GetUploadDataCallback callback) {
   auto job_it = download_job_unique_id_map_.find(download_guid);
-  DCHECK(job_it != download_job_unique_id_map_.end());
+  // TODO(crbug.com/779012): When DownloadService fixes cancelled jobs calling
+  // client methods, then this can be a DCHECK.
+  if (job_it == download_job_unique_id_map_.end()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /* request_body= */ nullptr));
+    return;
+  }
 
   JobDetails& job_details = job_details_map_.find(job_it->second)->second;
   if (job_details.current_fetch_guids.at(download_guid).status ==

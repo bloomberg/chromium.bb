@@ -44,7 +44,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--jar-args')
 parser.add_argument('--jvm-args')
 parser.add_argument('--classpath')
+# Test_runner parses the classpath for sharding junit tests.
+parser.add_argument('--print-classpath', action='store_true',
+                    help='Prints the classpass. Used by test_runner.')
 known_args, unknown_args = parser.parse_known_args(sys.argv[1:])
+
+if known_args.print_classpath:
+  sys.stdout.write(':'.join(classpath))
+  sys.exit(0)
 
 if known_args.jvm_args:
   jvm_arguments = known_args.jvm_args.strip('"').split()
@@ -91,16 +98,16 @@ def main(argv):
 
   run_dir = os.path.dirname(options.output)
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
-  java_path = os.path.relpath(build_utils.JAVA_PATH, run_dir)
+  java_path = os.path.relpath(
+      os.path.join(build_utils.JAVA_HOME, 'bin', 'java'), run_dir)
 
   with build_utils.AtomicOutput(options.output) as script:
     script.write(
-        script_template.format(
-            classpath=('"%s"' % '", "'.join(classpath)),
-            java_path=repr(java_path),
-            main_class=options.main_class,
-            extra_program_args=repr(extra_program_args),
-            noverify_flag=noverify_flag))
+        script_template.format(classpath=('"%s"' % '", "'.join(classpath)),
+                               java_path=repr(java_path),
+                               main_class=options.main_class,
+                               extra_program_args=repr(extra_program_args),
+                               noverify_flag=noverify_flag))
 
   os.chmod(options.output, 0750)
 

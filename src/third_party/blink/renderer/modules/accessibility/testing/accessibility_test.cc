@@ -14,22 +14,30 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace test {
 
 AccessibilityTest::AccessibilityTest(LocalFrameClient* local_frame_client)
     : RenderingTest(local_frame_client) {}
 
 void AccessibilityTest::SetUp() {
   RenderingTest::SetUp();
-  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(false);
-  ax_context_.reset(new AXContext(GetDocument()));
+  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(true);
+  RuntimeEnabledFeatures::
+      SetAccessibilityUseAXPositionForDocumentMarkersEnabled(true);
+  ax_context_ = std::make_unique<AXContext>(GetDocument());
 }
 
 AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
+  DCHECK(GetDocument().View());
+  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kAccessibility);
   auto* ax_object_cache =
       To<AXObjectCacheImpl>(GetDocument().ExistingAXObjectCache());
   DCHECK(ax_object_cache);
   return *ax_object_cache;
+}
+
+AXObject* AccessibilityTest::GetAXObject(LayoutObject* layout_object) const {
+  return GetAXObjectCache().GetOrCreate(layout_object);
 }
 
 AXObject* AccessibilityTest::GetAXObject(const Node& node) const {
@@ -38,6 +46,10 @@ AXObject* AccessibilityTest::GetAXObject(const Node& node) const {
 
 AXObject* AccessibilityTest::GetAXRootObject() const {
   return GetAXObjectCache().GetOrCreate(&GetLayoutView());
+}
+
+AXObject* AccessibilityTest::GetAXBodyObject() const {
+  return GetAXObjectCache().GetOrCreate(GetDocument().body());
 }
 
 AXObject* AccessibilityTest::GetAXFocusedObject() const {
@@ -64,12 +76,11 @@ std::ostringstream& AccessibilityTest::PrintAXTreeHelper(
 
   stream << std::string(level * 2, '+');
   stream << *root << std::endl;
-  for (const AXObject* child : root->Children()) {
+  for (const AXObject* child : root->ChildrenIncludingIgnored()) {
     DCHECK(child);
     PrintAXTreeHelper(stream, child, level + 1);
   }
   return stream;
 }
 
-}  // namespace test
 }  // namespace blink

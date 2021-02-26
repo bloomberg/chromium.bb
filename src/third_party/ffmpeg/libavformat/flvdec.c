@@ -514,8 +514,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
         if (key &&
             (ioc->seekable & AVIO_SEEKABLE_NORMAL) &&
             !strcmp(KEYFRAMES_TAG, key) && depth == 1)
-            if (parse_keyframes_index(s, ioc,
-                                      max_pos) < 0)
+            if (parse_keyframes_index(s, ioc, max_pos) < 0)
                 av_log(s, AV_LOG_ERROR, "Keyframe index parsing failed\n");
             else
                 add_keyframes_index(s);
@@ -716,7 +715,7 @@ static int flv_read_metabody(AVFormatContext *s, int64_t next_pos)
     if (!strcmp(buffer, "onCaptionInfo"))
         return TYPE_ONCAPTIONINFO;
 
-    if (strcmp(buffer, "onMetaData") && strcmp(buffer, "onCuePoint")) {
+    if (strcmp(buffer, "onMetaData") && strcmp(buffer, "onCuePoint") && strcmp(buffer, "|RtmpSampleAccess")) {
         av_log(s, AV_LOG_DEBUG, "Unknown type %s\n", buffer);
         return TYPE_UNKNOWN;
     }
@@ -732,8 +731,7 @@ static int flv_read_metabody(AVFormatContext *s, int64_t next_pos)
             astream = stream;
             if (flv->last_keyframe_stream_index == -1)
                 flv->last_keyframe_stream_index = i;
-        }
-        else if (stream->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE)
+        } else if (stream->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE)
             dstream = stream;
     }
 
@@ -1058,8 +1056,7 @@ retry:
             if (type == 0 && dts == 0 || type < 0) {
                 if (type < 0 && flv->validate_count &&
                     flv->validate_index[0].pos     > next &&
-                    flv->validate_index[0].pos - 4 < next
-                ) {
+                    flv->validate_index[0].pos - 4 < next) {
                     av_log(s, AV_LOG_WARNING, "Adjusting next position due to index mismatch\n");
                     next = flv->validate_index[0].pos - 4;
                 }
@@ -1120,7 +1117,6 @@ skip:
         st = create_stream(s, stream_types[stream_type]);
         if (!st)
             return AVERROR(ENOMEM);
-
     }
     av_log(s, AV_LOG_TRACE, "%d %X %d \n", stream_type, flags, st->discard);
 
@@ -1133,10 +1129,9 @@ skip:
          stream_type == FLV_STREAM_TYPE_AUDIO))
         av_add_index_entry(st, pos, dts, size, 0, AVINDEX_KEYFRAME);
 
-    if (  (st->discard >= AVDISCARD_NONKEY && !((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY || (stream_type == FLV_STREAM_TYPE_AUDIO)))
-          ||(st->discard >= AVDISCARD_BIDIR  &&  ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_DISP_INTER && (stream_type == FLV_STREAM_TYPE_VIDEO)))
-          || st->discard >= AVDISCARD_ALL
-    ) {
+    if ((st->discard >= AVDISCARD_NONKEY && !((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY || stream_type == FLV_STREAM_TYPE_AUDIO)) ||
+        (st->discard >= AVDISCARD_BIDIR && ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_DISP_INTER && stream_type == FLV_STREAM_TYPE_VIDEO)) ||
+         st->discard >= AVDISCARD_ALL) {
         avio_seek(s->pb, next, SEEK_SET);
         ret = FFERROR_REDO;
         goto leave;
@@ -1283,12 +1278,11 @@ retry_duration:
     pkt->stream_index = st->index;
     pkt->pos          = pos;
     if (flv->new_extradata[stream_type]) {
-        uint8_t *side = av_packet_new_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
-                                                flv->new_extradata_size[stream_type]);
-        if (side) {
-            memcpy(side, flv->new_extradata[stream_type],
-                   flv->new_extradata_size[stream_type]);
-            av_freep(&flv->new_extradata[stream_type]);
+        int ret = av_packet_add_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+                                          flv->new_extradata[stream_type],
+                                          flv->new_extradata_size[stream_type]);
+        if (ret >= 0) {
+            flv->new_extradata[stream_type]      = NULL;
             flv->new_extradata_size[stream_type] = 0;
         }
     }
@@ -1300,10 +1294,10 @@ retry_duration:
         ff_add_param_change(pkt, channels, 0, sample_rate, 0, 0);
     }
 
-    if (    stream_type == FLV_STREAM_TYPE_AUDIO ||
-            ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY) ||
-            stream_type == FLV_STREAM_TYPE_SUBTITLE ||
-            stream_type == FLV_STREAM_TYPE_DATA)
+    if (stream_type == FLV_STREAM_TYPE_AUDIO ||
+        (flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY ||
+        stream_type == FLV_STREAM_TYPE_SUBTITLE ||
+        stream_type == FLV_STREAM_TYPE_DATA)
         pkt->flags |= AV_PKT_FLAG_KEY;
 
 leave:

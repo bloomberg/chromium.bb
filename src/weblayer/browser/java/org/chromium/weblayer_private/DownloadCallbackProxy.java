@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -23,14 +24,14 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
  */
 @JNINamespace("weblayer")
 public final class DownloadCallbackProxy {
+    private final ProfileImpl mProfile;
     private long mNativeDownloadCallbackProxy;
-    private String mProfileName;
     private IDownloadCallbackClient mClient;
 
-    DownloadCallbackProxy(String profileName, long profile) {
-        mProfileName = profileName;
-        mNativeDownloadCallbackProxy =
-                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, profile);
+    DownloadCallbackProxy(ProfileImpl profile) {
+        mProfile = profile;
+        mNativeDownloadCallbackProxy = DownloadCallbackProxyJni.get().createDownloadCallbackProxy(
+                this, profile.getNativeProfile());
     }
 
     public void setClient(IDownloadCallbackClient client) {
@@ -64,7 +65,7 @@ public final class DownloadCallbackProxy {
 
         String[] requestPermissions = new String[] {permission.WRITE_EXTERNAL_STORAGE};
         window.requestPermissions(requestPermissions, (permissions, grantResults) -> {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            if (grantResults.length == 0 || grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 DownloadCallbackProxyJni.get().allowDownload(callbackId, false);
                 return;
             }
@@ -91,6 +92,7 @@ public final class DownloadCallbackProxy {
         ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
             @Override
             public void onReceiveValue(Boolean result) {
+                ThreadUtils.assertOnUiThread();
                 if (mNativeDownloadCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }
@@ -103,7 +105,8 @@ public final class DownloadCallbackProxy {
 
     @CalledByNative
     private DownloadImpl createDownload(long nativeDownloadImpl, int id) {
-        return new DownloadImpl(mProfileName, mClient, nativeDownloadImpl, id);
+        return new DownloadImpl(
+                mProfile.getName(), mProfile.isIncognito(), mClient, nativeDownloadImpl, id);
     }
 
     @CalledByNative

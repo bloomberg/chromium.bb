@@ -22,5 +22,5 @@ void AppDistributionProvider::ScheduleDistributionNotifications(
 
 void AppDistributionProvider::CancelDistributionNotifications() {}
 
-void AppDistributionProvider::InitializeFirebase(int64_t install_date,
+void AppDistributionProvider::InitializeFirebase(base::Time install_date,
                                                  bool is_first_run) {}

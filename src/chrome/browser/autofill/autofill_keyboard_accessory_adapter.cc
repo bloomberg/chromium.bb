@@ -63,8 +63,7 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
   front_element_ = base::nullopt;
   for (int i = 0; i < GetLineCount(); ++i) {
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
-    if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM &&
-        suggestion.frontend_id != POPUP_ITEM_ID_CREATE_HINT) {
+    if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM) {
       labels_.push_back(CreateLabel(suggestion));
       continue;
     }
@@ -186,6 +185,10 @@ void AutofillKeyboardAccessoryAdapter::SelectionCleared() {
 gfx::NativeView AutofillKeyboardAccessoryAdapter::container_view() const {
   DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
   return controller_->container_view();
+}
+
+content::WebContents* AutofillKeyboardAccessoryAdapter::GetWebContents() const {
+  return controller_->GetWebContents();
 }
 
 const gfx::RectF& AutofillKeyboardAccessoryAdapter::element_bounds() const {

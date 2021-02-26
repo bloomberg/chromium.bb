@@ -67,6 +67,9 @@ cr.define('cr.ui.login.debug', function() {
       border-color: #faa !important;
       color: #faa`;
 
+  const RECOMMENDED_APPS_CONTENT = `
+// <include src="../../arc_support/recommend_app_list_view.html">
+  `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
    * state or is shown in some other cases. See KNOWN_SCREENS for more details.
@@ -78,6 +81,10 @@ cr.define('cr.ui.login.debug', function() {
     OTHER: 'other',
     UNKNOWN: 'unknown',
   };
+
+  const BUTTON_COMMAND_DELAY = 100;
+  const SCREEN_LOADING_DELAY = 500;
+  const SCREENSHOT_CAPTURE_DELAY = 200;
 
   /**
    * List of possible screens.
@@ -95,6 +102,39 @@ cr.define('cr.ui.login.debug', function() {
       // Device without mouse/keyboard.
       id: 'hid-detection',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'searching',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('searching');
+            screen.setMouseState('usb');
+            screen.setPinDialogVisible(false);
+          },
+        },
+        {
+          id: 'connected',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('connected');
+            screen.setMouseState('paired');
+            screen.setPinDialogVisible(false);
+          },
+        },
+        {
+          id: 'pairing-pin',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('pairing');
+            screen.setMouseState('pairing');
+            screen.setPinDialogVisible(true);
+            screen.setNumKeysEnteredPinCode(1);
+          },
+        },
+      ],
     },
     {
       // Welcome screen.
@@ -102,7 +142,41 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.NORMAL,
       data: {
         isDeveloperMode: true,
-      }
+      },
+      states: [
+        {
+          id: 'default',
+          trigger: (screen) => {
+            screen.closeTimezoneSection_();
+          },
+        },
+        {
+          id: 'acessibility',
+          trigger: (screen) => {
+            screen.onWelcomeAccessibilityButtonClicked_();
+          },
+        },
+        {
+          id: 'languages',
+          trigger: (screen) => {
+            screen.onWelcomeSelectLanguageButtonClicked_();
+          },
+        },
+        {
+          // Available on Chromebox for meetings.
+          id: 'timezone',
+          trigger: (screen) => {
+            screen.onWelcomeTimezoneButtonClicked_();
+          },
+        },
+        {
+          // Advanced options, shown by long press on "Welcome!" title.
+          id: 'adv-options',
+          trigger: (screen) => {
+            screen.onWelcomeLaunchAdvancedOptions_();
+          },
+        },
+      ],
     },
     {
       id: 'debugging',
@@ -118,17 +192,62 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.NORMAL,
     },
     {
-      id: 'eula',
+      id: 'oobe-eula-md',
       kind: ScreenKind.NORMAL,
+      // TODO: Current logic triggers switching screens in focus(), making
+      // it impossible to trigger  installation settings dialog.
+      skipScreenshots: true,
     },
     {
       id: 'demo-setup',
       kind: ScreenKind.OTHER,
       suffix: 'demo',
+      handledSteps: 'progress,error',
+      states: [
+        {
+          id: 'download-resources',
+          trigger: (screen) => {
+            screen.setCurrentSetupStep('downloadResources');
+          },
+        },
+        {
+          id: 'enrollment',
+          trigger: (screen) => {
+            screen.setCurrentSetupStep('enrollment');
+          },
+        },
+        {
+          id: 'done',
+          trigger: (screen) => {
+            screen.setCurrentSetupStep('complete');
+            screen.onSetupSucceeded();
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.onSetupFailed('Some error message', true);
+          },
+        },
+      ],
     },
     {
-      id: 'update',
+      id: 'oobe-update',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          // Checking for update
+          id: 'check-update',
+        },
+        {
+          // Ask for permission to update over celluar
+          id: 'require-permission-celluar',
+          trigger: (screen) => {
+            screen.onBeforeShow();
+            screen.setRequiresPermissionForCellular(true);
+          },
+        },
+      ],
     },
     {
       id: 'auto-enrollment-check',
@@ -138,11 +257,75 @@ cr.define('cr.ui.login.debug', function() {
       id: 'device-disabled',
       kind: ScreenKind.ERROR,
       suffix: 'E',
+      // TODO: remove this once all screen switching logic is
+      // moved to C++ side.
+      skipScreenshots: true,
+      states: [
+        {
+          // No enrollment domain specified
+          id: 'no-domain',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              serial: '1234567890',
+              domain: '',
+              message: 'Some custom message provided by org admin.',
+            });
+          },
+        },
+        {
+          // Enrollment domain was specified
+          id: 'has-domain',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              serial: '1234567890',
+              domain: 'example.com',
+              message: 'Please return this device to the techstop.',
+            });
+          },
+        },
+      ],
     },
     {
-      id: 'oauth-enrollment',
+      id: 'user-creation',
+      kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'offline-ad-login',
       kind: ScreenKind.NORMAL,
       suffix: 'E',
+    },
+    {
+      id: 'enterprise-enrollment',
+      kind: ScreenKind.NORMAL,
+      defaultState: 'step-signin',
+      handledSteps: 'error,ad-join',
+      suffix: 'E',
+      states: [
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.showError('Some error message', true);
+          },
+        },
+        {
+          id: 'ad-join-encrypted',
+          trigger: (screen) => {
+            screen.setAdJoinParams('machineName', 'userName', 0, true);
+            screen.showStep('ad-join');
+          },
+        },
+        {
+          id: 'ad-join',
+          trigger: (screen) => {
+            screen.setAdJoinParams('machineName', 'userName', 0, false);
+            screen.showStep('ad-join');
+          },
+        },
+      ],
+    },
+    {
+      id: 'family-link-notice',
+      kind: ScreenKind.NORMAL,
     },
     {
       id: 'packaged-license',
@@ -153,11 +336,62 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'error-message',
       kind: ScreenKind.ERROR,
+      states: [
+        {
+          // Show offline error during signin
+          id: 'signin-offline-error',
+          trigger: (screen) => {
+            screen.setUIState(2);     // signin
+            screen.setErrorState(2);  // offline
+            screen.allowGuestSignin(true);
+            screen.allowOfflineLogin(true);
+          }
+        },
+      ],
     },
     {
       id: 'update-required',
       kind: ScreenKind.OTHER,
       suffix: 'E',
+      handledSteps: 'update-required-message,update-process,eol',
+      states: [
+        {
+          id: 'initial',
+          trigger: (screen) => {
+            screen.setUIState(0);
+            screen.setEnterpriseAndDeviceName('example.com', 'Chromebook');
+          },
+        },
+        {
+          id: 'checking-for-update',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setUpdateProgressUnavailable(true);
+            screen.setEstimatedTimeLeftVisible(false);
+            screen.setUpdateProgressValue(0);
+            screen.setUpdateProgressMessage('Checking for update');
+          },
+        },
+        {
+          id: 'in-progress',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setUpdateProgressUnavailable(false);
+            screen.setEstimatedTimeLeftVisible(true);
+            screen.setEstimatedTimeLeft(114);
+            screen.setUpdateProgressValue(33);
+            screen.setUpdateProgressMessage('33 percent done');
+          },
+        },
+        {
+          id: 'eol',
+          trigger: (screen) => {
+            screen.setUIState(5);
+            screen.setEolMessage(
+                'Message from admin: please return device somewhere.');
+          },
+        },
+      ],
     },
     {
       id: 'autolaunch',
@@ -175,17 +409,78 @@ cr.define('cr.ui.login.debug', function() {
           iconURL: 'chrome://theme/IDR_LOGO_GOOGLE_COLOR_90',
         },
         shortcutEnabled: true,
-      }
+      },
     },
     {
       id: 'wrong-hwid',
       kind: ScreenKind.ERROR,
     },
     {
+      id: 'tpm-error-message',
+      kind: ScreenKind.ERROR,
+    },
+    {
+      id: 'signin-fatal-error',
+      kind: ScreenKind.ERROR,
+      states: [
+        {
+          id: 'SCRAPED_PASSWORD_VERIFICATION_FAILURE',
+          data: {
+            errorState: 1,
+          },
+        },
+        {
+          id: 'INSECURE_CONTENT_BLOCKED',
+          data: {
+            errorState: 2,
+            url: 'http://example.url/',
+          },
+        },
+        {
+          id: 'MISSING_GAIA_INFO',
+          data: {
+            errorState: 3,
+          },
+        },
+      ]
+    },
+    {
       id: 'reset',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'restart-required',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(0);
+          },
+        },
+        {
+          id: 'revert-promise',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(1);
+          },
+        },
+        {
+          id: 'powerwash-proposal',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(2);
+          },
+        },
+        {
+          id: 'powerwash-rollback',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(2);
+            screen.setIsRollbackAvailable(true);
+            screen.setIsRollbackRequested(true);
+            screen.setIsTpmFirmwareUpdateAvailable(true);
+          },
+        },
+      ],
     },
-
     {
       // Shown instead of sign-in screen, triggered from Crostini.
       id: 'adb-sideloading',
@@ -212,7 +507,7 @@ cr.define('cr.ui.login.debug', function() {
             screen.loadAuthExtension({
               screenMode: 1,  // Offline
             });
-          }
+          },
         },
         {
           // kAccountsPrefLoginScreenDomainAutoComplete value is set
@@ -222,7 +517,7 @@ cr.define('cr.ui.login.debug', function() {
               screenMode: 1,  // Offline
               emailDomain: 'somedomain.com',
             });
-          }
+          },
         },
         {
           // Device is enterprise-managed.
@@ -230,9 +525,9 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.loadAuthExtension({
               screenMode: 1,  // Offline
-              enterpriseDisplayDomain: 'example.com',
+              enterpriseDomainManager: 'example.com',
             });
-          }
+          },
         },
         {
           // Retry after incorrect password attempt, user name is already known.
@@ -242,9 +537,17 @@ cr.define('cr.ui.login.debug', function() {
               screenMode: 1,  // Offline
               email: 'someone@example.com',
             });
-          }
+          },
         },
-      ]
+        {
+          id: 'allowlist-customer',
+          trigger: (screen) => {
+            screen.showAllowlistCheckFailedError(true, {
+              enterpriseManaged: false,
+            });
+          },
+        },
+      ],
     },
     {
       id: 'tpm-error-message',
@@ -255,37 +558,25 @@ cr.define('cr.ui.login.debug', function() {
       id: 'fatal-error',
       kind: ScreenKind.ERROR,
       suffix: 'SAML',
-    },
-    {
-      // GAIA password changed.
-      id: 'password-changed',
-      kind: ScreenKind.OTHER,
       states: [
         {
-          // No error
-          id: 'no-error',
+          id: 'default',
           trigger: (screen) => {
             screen.show(
-                false,  // showError
-                'someone@example.com');
-          }
-        },
-        {
-          // Has error
-          id: 'has-error',
-          trigger: (screen) => {
-            screen.show(
-                true,  // showError
-                'someone@example.com');
-          }
+                'Sign-in failed because your password could not be ' +
+                    'verified. Please contact your administrator or try again.',
+                'Try again');
+          },
         },
       ],
     },
     {
-      id: 'ad-password-change',
+      // GAIA password changed.
+      id: 'gaia-password-changed',
       kind: ScreenKind.OTHER,
+      handledSteps: 'password',
       data: {
-        username: 'username',
+        email: 'someone@example.com',
       },
       states: [
         {
@@ -293,29 +584,48 @@ cr.define('cr.ui.login.debug', function() {
           id: 'no-error',
           trigger: (screen) => {
             screen.onBeforeShow({
-              username: 'username',
+              email: 'someone@example.com',
             });
-          }
+          },
+        },
+        {
+          // Has error
+          id: 'has-error',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+              showError: true,
+            });
+          },
+        },
+      ],
+    },
+    {
+      id: 'ad-password-change',
+      kind: ScreenKind.OTHER,
+      states: [
+        {
+          // No error
+          id: 'no-error',
+          data: {
+            username: 'username',
+          },
         },
         {
           // First error
           id: 'error-0',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              username: 'username',
-              error: 0,
-            });
-          }
+          data: {
+            username: 'username',
+            error: 0,
+          },
         },
         {
           // Second error
           id: 'error-1',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              username: 'username',
-              error: 1,
-            });
-          }
+          data: {
+            username: 'username',
+            error: 1,
+          },
         },
         {
           // Error bubble
@@ -326,18 +636,54 @@ cr.define('cr.ui.login.debug', function() {
             screen.showErrorBubble(
                 1,  // Login attempts
                 errorElement);
-          }
+          },
         },
       ],
     },
     {
       id: 'encryption-migration',
       kind: ScreenKind.OTHER,
+      handledSteps: 'ready,migrating,not-enough-space',
+      states: [
+        {
+          id: 'ready',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setBatteryState(100, true, true);
+            screen.setNecessaryBatteryPercent(40);
+          },
+        },
+        {
+          id: 'ready-low-battery',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setBatteryState(11, false, false);
+            screen.setNecessaryBatteryPercent(40);
+          },
+        },
+        {
+          id: 'migrating',
+          trigger: (screen) => {
+            screen.setUIState(2);
+            screen.setMigrationProgress(0.37);
+          },
+        },
+        {
+          id: 'not-enough-space',
+          trigger: (screen) => {
+            screen.setUIState(4);
+            screen.setSpaceInfoInString(
+                '1 GB' /* availableSpaceSize */,
+                '2 GB' /* necessarySpaceSize */);
+          },
+        },
+      ],
     },
     {
-      id: 'confirm-password',
+      id: 'saml-confirm-password',
       kind: ScreenKind.OTHER,
       suffix: 'SAML',
+      handledSteps: 'password',
       states: [
         {
           // Password was scraped
@@ -348,7 +694,18 @@ cr.define('cr.ui.login.debug', function() {
                 false,  // manualPasswordInput
                 0,      // attempt count
                 () => {});
-          }
+          },
+        },
+        {
+          // Password was scraped
+          id: 'scraped-retry',
+          trigger: (screen) => {
+            screen.show(
+                'someone@example.com',
+                false,  // manualPasswordInput
+                1,      // attempt count
+                () => {});
+          },
         },
         {
           // No password was scraped
@@ -357,15 +714,29 @@ cr.define('cr.ui.login.debug', function() {
             screen.show(
                 'someone@example.com',
                 true,  // manualPasswordInput
-                1,     // attempt count
+                0,     // attempt count
                 () => {});
-          }
+          },
         },
       ],
     },
     {
       id: 'supervision-transition',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'adding',
+          data: {
+            isRemovingSupervision: false,
+          },
+        },
+        {
+          id: 'removing',
+          data: {
+            isRemovingSupervision: true,
+          },
+        },
+      ],
     },
     {
       id: 'terms-of-service',
@@ -374,30 +745,143 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'sync-consent',
       kind: ScreenKind.NORMAL,
+      defaultState: 'step-no-split',
     },
     {
       id: 'fingerprint-setup',
       kind: ScreenKind.NORMAL,
+      defaultState: 'default',
+      handledSteps: 'progress',
+      states: [
+        {
+          id: 'progress-0',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+          },
+        },
+        {
+          id: 'error-immobile',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(6, false, 30);
+          },
+        },
+        {
+          id: 'progress-60',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(0 /* success */, false, 60);
+          },
+        },
+        {
+          id: 'progress-100',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, true, 100);
+          },
+        },
+      ],
     },
     {
       id: 'discover',
+      // TODO: remove once screen stops crashing
+      skipScreenshots: true,
       kind: ScreenKind.NORMAL,
     },
     {
       id: 'arc-tos',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            screen.showLoadingScreenForTesting();
+          },
+        },
+        {
+          id: 'us-terms-loaded',
+          trigger: (screen) => {
+            screen.reloadPlayStoreToS();
+          },
+        },
+      ],
     },
     {
       id: 'recommend-apps',
       kind: ScreenKind.NORMAL,
+      handledSteps: 'list',
+      // Known issue: reset() does not clear list of apps, so loadAppList
+      // will append apps instead of replacing.
+      states: [
+        {
+          id: '2-apps',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.loadAppList([
+              {
+                name: 'Test app 1',
+                package_name: 'test1.app',
+              },
+              {
+                name: 'Test app 2 with some really long name',
+                package_name: 'test2.app',
+              },
+            ]);
+          },
+        },
+        {
+          id: '21-apps',
+          trigger: (screen) => {
+            // There can be up to 21 apps: see recommend_apps_fetcher_impl
+            screen.reset();
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            let apps = [];
+            for (i = 1; i <= 21; i++) {
+              apps.push({
+                name: 'Test app ' + i,
+                package_name: 'app.test' + i,
+              });
+            }
+            screen.loadAppList(apps);
+          },
+        },
+      ],
     },
     {
       id: 'app-downloading',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'single-app',
+          data: {
+            numOfApps: 1,
+          },
+        },
+        {
+          id: 'multiple-apps',
+          data: {
+            numOfApps: 2,
+          },
+        },
+      ],
     },
     {
       id: 'assistant-optin-flow',
       kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'parental-handoff',
+      kind: ScreenKind.NORMAL,
+      states: [{
+        id: 'parental-handoff',
+        data: {
+          title: 'Now it\'s Child 1\'s turn',
+          subtitle:
+              'You can hand this Chromebook to Child 1. Setup is almost done,' +
+              ' then it\'s time to explore.'
+        },
+      }],
     },
     {
       id: 'multidevice-setup',
@@ -410,6 +894,20 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'marketing-opt-in',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'WithOptionToSubscribe',
+          trigger: (screen) => {
+            screen.setOptInVisibility(true);
+          },
+        },
+        {
+          id: 'NoOptionToSubscribe',
+          trigger: (screen) => {
+            screen.setOptInVisibility(false);
+          },
+        },
+      ],
     },
   ];
 
@@ -444,13 +942,14 @@ cr.define('cr.ui.login.debug', function() {
   }
 
   class ToolPanel {
-    constructor(parent, title) {
+    constructor(parent, title, id) {
       this.titleDiv =
           /** @type {!HTMLElement} */ (document.createElement('h2'));
       this.titleDiv.textContent = title;
 
       let panel = /** @type {!HTMLElement} */ (document.createElement('div'));
       panel.className = 'debug-tool-panel';
+      panel.id = id;
 
       parent.appendChild(this.titleDiv);
       parent.appendChild(panel);
@@ -477,6 +976,23 @@ cr.define('cr.ui.login.debug', function() {
   class DebuggerUI {
     constructor() {
       this.debuggerVisible_ = false;
+      /** Element with Debugger UI */
+      this.debuggerOverlay_ = undefined;
+      /**
+       * ID of screen OOBE is currently in. Note that it is only updated upon
+       * opening overlay and during screenshot series.
+       */
+      this.currentScreenId_ = undefined;
+      /** ID of last screen on which Debugger UI was displayed */
+      this.stateCachedFor_ = undefined;
+      /** ID of assumed current screen state */
+      this.lastScreenState_ = undefined;
+      /** screen ID to screen definition mapping */
+      this.screenMap = {};
+      /** Ordered screen definitions, created on first show */
+      this.knownScreens = undefined;
+      /** Iterator for making a series of screenshots */
+      this.commandIterator_ = undefined;
     }
 
     showDebugUI() {
@@ -500,30 +1016,169 @@ cr.define('cr.ui.login.debug', function() {
       }
     }
 
-    getCurrentUIStateId() {
+    getScreenshotId() {
       var result = 'unknown';
-      if (this.lastScreenId_)
-        result = this.lastScreenId_;
-      if (this.lastScreenState_)
+      if (this.currentScreenId_)
+        result = this.currentScreenId_;
+      if (this.lastScreenState_ && this.lastScreenState_ !== 'default')
         result = result + '_' + this.lastScreenState_;
       return result;
     }
 
+    /**
+     * Function that, given a sequence of (function, delay) pairs, invokes
+     * function with a delay before executing next one.
+     */
+    runIterator_() {
+      if (!this.commandIterator_)
+        return;
+      let command = this.commandIterator_.next();
+      if (command.done) {
+        this.commandIterator_ = undefined;
+        return;
+      }
+      let [func, timeout] = command.value;
+      try {
+        func();
+      } finally {
+        setTimeout(() => {
+          this.runIterator_();
+        }, timeout);
+      }
+    }
+
+    hideButtonCommand() {
+      return [
+        () => {
+          this.debuggerButton_.setAttribute('hidden', true);
+        },
+        BUTTON_COMMAND_DELAY
+      ];
+    }
+
+    showButtonCommand() {
+      return [
+        () => {
+          this.debuggerButton_.removeAttribute('hidden');
+        },
+        BUTTON_COMMAND_DELAY
+      ];
+    }
+
+    showStateCommand(screenAndState) {
+      let [screenId, stateId] = screenAndState;
+      // Switch to screen.
+      return [
+        () => {
+          this.triggerScreenState(screenId, stateId);
+        },
+        SCREEN_LOADING_DELAY
+      ];
+    }
+
+    makeScreenshotCommand() {
+      // Make a screenshot.
+      let id = this.getScreenshotId();
+      return [
+        () => {
+          console.info('Making screenshot for ' + id);
+          chrome.send('debug.captureScreenshot', [id]);
+        },
+        SCREENSHOT_CAPTURE_DELAY
+      ];
+    }
+
+    /**
+     * Generator that returns commands to take screenshots for each
+     * (screen, state) pair provided.
+     */
+    * screenshotSeries_(statesList) {
+      yield this.hideButtonCommand();
+      // Make all screenshots
+      for (let screenAndState of statesList) {
+        yield this.showStateCommand(screenAndState);
+        yield this.makeScreenshotCommand();
+      }
+      yield this.showButtonCommand();
+    }
+
+    /**
+     * Generator that returns commands to take screenshot of current state
+     */
+    * screenshotCurrent() {
+      yield this.hideButtonCommand();
+      yield this.makeScreenshotCommand();
+      yield this.showButtonCommand();
+    }
+
+    /**
+     * Generator that returns all (screen, state) pairs for current screen.
+     */
+    * iterateStates(screenId) {
+      for (let state of this.screenMap[screenId].states) {
+        yield [screenId, state.id];
+      }
+    }
+
+    /**
+     * Generator that returns (screen, state) pairs for all known screens.
+     */
+    * iterateScreens() {
+      for (let screen of this.knownScreens) {
+        if (screen.skipScreenshots)
+          continue;
+        yield* this.iterateStates(screen.id);
+      }
+    }
+
     makeScreenshot() {
-      var name = this.getCurrentUIStateId();
       this.hideDebugUI();
-      this.debuggerButton_.setAttribute('hidden', true);
-      let delay = 100;
-      setTimeout(() => {
-        chrome.send('debug.captureScreenshot', [name]);
-      }, delay);
-      setTimeout(() => {
-        this.debuggerButton_.removeAttribute('hidden');
-      }, 2 * delay);
+      this.commandIterator_ = this.screenshotCurrent();
+      this.runIterator_();
+    }
+
+    makeScreenshotsForCurrentScreen() {
+      this.hideDebugUI();
+      this.commandIterator_ =
+          this.screenshotSeries_(this.iterateStates(this.currentScreenId_));
+      this.runIterator_();
+    }
+
+    makeScreenshotDeck() {
+      this.hideDebugUI();
+      this.commandIterator_ = this.screenshotSeries_(this.iterateScreens());
+      this.runIterator_();
+    }
+
+    preProcessScreens() {
+      KNOWN_SCREENS.forEach((screen, index) => {
+        // Screen ordering
+        screen.index = index;
+        // Create a default state
+        if (!screen.states) {
+          let state = {
+            id: 'default',
+          };
+          screen.states = [state];
+        }
+        // Assign "default" state for each screen
+        if (!screen.defaultState) {
+          screen.defaultState = screen.states[0].id;
+        }
+        screen.stateMap_ = {};
+        // For each state fall back to screen data if state data is not defined.
+        for (let state of screen.states) {
+          if (!state.data) {
+            state.data = screen.data;
+          }
+          screen.stateMap_[state.id] = state;
+        }
+      });
     }
 
     createLanguagePanel(parent) {
-      let langPanel = new ToolPanel(this.debuggerOverlay_, 'Language');
+      let langPanel = new ToolPanel(
+          this.debuggerOverlay_, 'Language', 'DebuggerPanelLanguage');
       const LANGUAGES = [
         ['English', 'en-US'],
         ['German', 'de'],
@@ -541,54 +1196,95 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createToolsPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Tools');
+      let panel =
+          new ToolPanel(this.debuggerOverlay_, 'Tools', 'DebuggerPanelTools');
       new DebugButton(
-          panel.content, 'Screenshot', this.makeScreenshot.bind(this));
+          panel.content, 'Capture screenshot', this.makeScreenshot.bind(this));
+      new DebugButton(
+          panel.content, 'Capture all states of screen',
+          this.makeScreenshotsForCurrentScreen.bind(this));
+      new DebugButton(
+          panel.content, 'Capture deck of all screens',
+          this.makeScreenshotDeck.bind(this));
     }
 
     createScreensPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Screens');
+      let panel = new ToolPanel(
+          this.debuggerOverlay_, 'Screens', 'DebuggerPanelScreens');
       // List of screens will be created later, as not all screens
       // might be registered at this point.
       this.screensPanel = panel;
     }
 
     createStatesPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Screen States');
+      let panel = new ToolPanel(
+          this.debuggerOverlay_, 'Screen States', 'DebuggerPanelStates');
       // List of states is rebuilt every time to reflect current screen.
       this.statesPanel = panel;
     }
 
     switchToScreen(screen) {
-      var data = {};
-      if (screen.data) {
-        data = screen.data;
-      }
-      /** @suppress {visibility} */
-      cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
-      this.lastScreenState_ = undefined;
+      this.triggerScreenState(screen.id, screen.defaultState);
     }
 
-    triggerScreenState(stateId, toggleFn) {
+    triggerScreenState(screenId, stateId) {
+      let screen = this.screenMap[screenId];
+      let state = screen.stateMap_[stateId];
+      var data = {};
+      if (state.data) {
+        data = state.data;
+      }
+      this.currentScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
-      toggleFn(displayManager.currentScreen);
+      cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
+      if (state.trigger) {
+        state.trigger(displayManager.currentScreen);
+      }
+      this.lastScreen = displayManager.currentScreen;
     }
 
     createScreensList() {
-      this.screenMap = {};
-      // Ordering of the screens.
-      KNOWN_SCREENS.forEach((screen, index) => {
-        screen.index = index;
+      for (let screen of KNOWN_SCREENS) {
         this.screenMap[screen.id] = screen;
-      });
+      }
       this.knownScreens = [];
       this.screenButtons = {};
       /** @suppress {visibility} */
       for (var id of cr.ui.Oobe.instance_.screens_) {
         if (id in this.screenMap) {
-          this.knownScreens.push(this.screenMap[id]);
+          let screenDef = this.screenMap[id];
+          let screenElement = $(id);
+          if (screenElement.listSteps &&
+              typeof screenElement.listSteps === 'function') {
+            if (screenDef.stateMap_['default']) {
+              screenDef.states = [];
+              screenDef.stateMap_ = {};
+            }
+            let handledSteps = new Set();
+            if (screenDef.handledSteps) {
+              for (let step of screenDef.handledSteps.split(','))
+                handledSteps.add(step);
+            }
+            for (let step of screenElement.listSteps()) {
+              if (handledSteps.has(step))
+                continue;
+              let state = {
+                id: 'step-' + step,
+                data: screenDef.data,
+                trigger: (screen) => {
+                  screen.setUIStep(step);
+                },
+              };
+              screenDef.states.push(state);
+              screenDef.stateMap_[state.id] = state;
+            }
+            if (screenDef.defaultState === 'default')
+              screenDef.defaultState = 'step-' + screenElement.defaultUIStep();
+          }
+          this.knownScreens.push(screenDef);
+          this.screenMap[id] = screenDef;
         } else {
           console.error('### Screen not registered in debug overlay ' + id);
           let unknownScreen = {
@@ -596,6 +1292,10 @@ cr.define('cr.ui.login.debug', function() {
             kind: ScreenKind.UNKNOWN,
             suffix: '???',
             index: this.knownScreens.length + 1000,
+            defaultState: 'unknown',
+            states: [{
+              id: 'unknown',
+            }],
           };
           this.knownScreens.push(unknownScreen);
           this.screenMap[id] = unknownScreen;
@@ -621,36 +1321,35 @@ cr.define('cr.ui.login.debug', function() {
       }
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
-      if (this.lastScreenId_) {
-        this.screenButtons[this.lastScreenId_].element.classList.remove(
+      if (this.stateCachedFor_) {
+        this.screenButtons[this.stateCachedFor_].element.classList.remove(
             'debug-button-selected');
       }
       if (displayManager.currentScreen) {
-        if (this.lastScreenId_ !== displayManager.currentScreen.id) {
+        if (this.currentScreenId_ !== displayManager.currentScreen.id) {
+          this.currentScreenId_ = displayManager.currentScreen.id;
           this.lastScreenState_ = undefined;
         }
-        this.lastScreenId_ = displayManager.currentScreen.id;
-        this.screenButtons[this.lastScreenId_].element.classList.add(
+
+        this.stateCachedFor_ = displayManager.currentScreen.id;
+        this.screenButtons[this.stateCachedFor_].element.classList.add(
             'debug-button-selected');
       }
 
-      var states = [];
-
-      if (this.screenMap[this.lastScreenId_].states) {
-        states = states.concat(this.screenMap[this.lastScreenId_].states);
-      }
+      let screen = this.screenMap[this.currentScreenId_];
 
       this.statesPanel.clearContent();
-      states.forEach(state => {
-        var button = new DebugButton(
+      for (let state of screen.states) {
+        let button = new DebugButton(
             this.statesPanel.content, state.id,
-            this.triggerScreenState.bind(this, state.id, state.trigger));
-      });
+            this.triggerScreenState.bind(
+                this, this.currentScreenId_, state.id));
+        if (state.id == this.lastScreenState_) {
+          button.element.classList.add('debug-button-selected');
+        }
+      }
 
-      if (states.length > 0)
-        this.statesPanel.show();
-      else
-        this.statesPanel.hide();
+      this.statesPanel.show();
     }
 
     createCssStyle(name, styleSpec) {
@@ -661,6 +1360,8 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     register(element) {
+      // Pre-process Screens data
+      this.preProcessScreens();
       // Create CSS styles
       {
         this.createCssStyle('debugger-button', DEBUG_BUTTON_STYLE);
@@ -679,6 +1380,7 @@ cr.define('cr.ui.login.debug', function() {
         // Create UI Debugger button
         let button =
             /** @type {!HTMLElement} */ (document.createElement('div'));
+        button.id = 'invokeDebuggerButton';
         button.className = 'debugger-button';
         button.textContent = 'Debug';
         button.addEventListener('click', this.toggleDebugUI.bind(this));
@@ -689,6 +1391,7 @@ cr.define('cr.ui.login.debug', function() {
         // Create base debugger panel.
         let overlay =
             /** @type {!HTMLElement} */ (document.createElement('div'));
+        overlay.id = 'debuggerOverlay';
         overlay.className = 'debugger-overlay';
         overlay.setAttribute('hidden', true);
         this.debuggerOverlay_ = overlay;

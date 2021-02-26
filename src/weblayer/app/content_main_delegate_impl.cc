@@ -20,6 +20,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "weblayer/browser/content_browser_client_impl.h"
@@ -31,11 +33,14 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
+#include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
 #include "base/android/java_exception_reporter.h"
 #include "base/android/locale_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_switches.h"
@@ -69,9 +74,11 @@ void InitLogging(MainParams* params) {
                        true /* Timestamp */, false /* Tick count */);
 }
 
-// Disables each feature in |features_to_disable| unless it is already set in
-// the command line.
-void DisableFeaturesIfNotSet(
+// Enables each feature in |features_to_enable| unless it is already set in the
+// command line, and similarly disables each feature in |features_to_disable|
+// unless it is already set in the command line.
+void ConfigureFeaturesIfNotSet(
+    const std::vector<base::Feature>& features_to_enable,
     const std::vector<base::Feature>& features_to_disable) {
   auto* cl = base::CommandLine::ForCurrentProcess();
   std::vector<std::string> enabled_features;
@@ -90,13 +97,21 @@ void DisableFeaturesIfNotSet(
     disabled_features.emplace_back(f);
   }
 
+  for (const auto& feature : features_to_enable) {
+    if (!base::Contains(disabled_features, feature.name) &&
+        !base::Contains(enabled_features, feature.name)) {
+      enabled_features.push_back(feature.name);
+    }
+  }
+  cl->AppendSwitchASCII(::switches::kEnableFeatures,
+                        base::JoinString(enabled_features, ","));
+
   for (const auto& feature : features_to_disable) {
     if (!base::Contains(disabled_features, feature.name) &&
         !base::Contains(enabled_features, feature.name)) {
       disabled_features.push_back(feature.name);
     }
   }
-
   cl->AppendSwitchASCII(::switches::kDisableFeatures,
                         base::JoinString(disabled_features, ","));
 }
@@ -127,29 +142,61 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // implemented features.
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   // TODO(crbug.com/1025610): make notifications work with WebLayer.
+  // This also turns off Push messaging.
   cl->AppendSwitch(::switches::kDisableNotifications);
-  // TODO(crbug.com/1025626): and crbug.com/1051752, make speech work with
-  // WebLayer.
-  cl->AppendSwitch(::switches::kDisableSpeechSynthesisAPI);
-  // TODO(crbug.com/1057099): make presentation-api work with WebLayer.
-  cl->AppendSwitch(::switches::kDisablePresentationAPI);
-  // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.
-  cl->AppendSwitch(::switches::kDisableRemotePlaybackAPI);
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/1066263): make MediaSession work with WebLayer.
-  cl->AppendSwitch(::switches::kDisableMediaSessionAPI);
-#endif
-  DisableFeaturesIfNotSet({
+
+  std::vector<base::Feature> enabled_features = {};
+  std::vector<base::Feature> disabled_features = {
     // TODO(crbug.com/1025619): make web-payments work with WebLayer.
     ::features::kWebPayments,
-        // TODO(crbug.com/1025627): make webauth work with WebLayer.
-        ::features::kWebAuth, ::features::kSmsReceiver,
-        // TODO(crbug.com/1057106): make web-xr work with WebLayer.
-        ::features::kWebXr,
+    // TODO(crbug.com/1025627): make webauth work with WebLayer.
+    ::features::kWebAuth,
+    // TODO(crbug.com/1057106): make web-xr work with WebLayer.
+    ::features::kWebXr,
+    ::features::kWebXrArModule,
+    ::features::kWebXrHitTest,
+    // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
+    ::features::kBackgroundFetch,
+    // TODO(crbug.com/1130989): Support GetInstalledRelatedApps on WebLayer.
+    ::features::kInstalledApp,
+    // TODO(crbug.com/1091212): make Notification triggers work with
+    // WebLayer.
+    ::features::kNotificationTriggers,
+    // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
+    ::features::kPeriodicBackgroundSync,
+    // TODO(crbug.com/1131017): Support SurfaceViews on WebLayer.
+    media::kOverlayFullscreenVideo,
 #if defined(OS_ANDROID)
-        media::kPictureInPictureAPI,
+    // TODO(crbug.com/1131016): Support Picture in Picture API on WebLayer.
+    media::kPictureInPictureAPI,
+
+    ::features::kDisableDeJelly,
+    ::features::kDynamicColorGamut,
+#else
+    // TODO(crbug.com/1131021): Support WebOTP Service on WebLayer.
+    ::features::kWebOTP,
 #endif
-  });
+  };
+
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_OREO) {
+    enabled_features.push_back(
+        autofill::features::kAutofillExtractAllDatalists);
+    enabled_features.push_back(
+        autofill::features::kAutofillSkipComparingInferredLabels);
+    disabled_features.push_back(
+        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  }
+#endif
+
+  ConfigureFeaturesIfNotSet(enabled_features, disabled_features);
+
+  // TODO(crbug.com/1097105): Support Web GPU on WebLayer.
+  blink::WebRuntimeFeatures::EnableWebGPU(false);
+
+  // TODO(crbug.com/1097107): Add support for Content Indexing on WebLayer.
+  blink::WebRuntimeFeatures::EnableContentIndex(false);
 
 #if defined(OS_ANDROID)
   content::Compositor::Initialize();
@@ -173,7 +220,8 @@ bool ContentMainDelegateImpl::ShouldCreateFeatureList() {
 }
 
 void ContentMainDelegateImpl::PreSandboxStartup() {
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
   base::CPU cpu_info;

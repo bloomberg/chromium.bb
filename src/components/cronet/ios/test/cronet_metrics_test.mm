@@ -119,7 +119,9 @@ TEST_F(CronetEnabledMetricsTest, ProtocolIsQuic) {
 
     EXPECT_FALSE(metrics.proxyConnection);
 
-    EXPECT_TRUE([metrics.networkProtocolName containsString:@"quic"]);
+    EXPECT_TRUE([metrics.networkProtocolName containsString:@"quic"] ||
+                [metrics.networkProtocolName containsString:@"h3"])
+        << base::SysNSStringToUTF8(metrics.networkProtocolName);
   }
 }
 

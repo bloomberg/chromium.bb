@@ -3310,6 +3310,7 @@ deUint32 getFormatComponentWidth (const VkFormat format, const deUint32 componen
 			case tcu::TextureFormat::SNORM_INT32:
 			case tcu::TextureFormat::UNSIGNED_INT32:
 			case tcu::TextureFormat::SIGNED_INT32:
+			case tcu::TextureFormat::FLOAT:
 				return 32;
 
 			case tcu::TextureFormat::FLOAT64:
@@ -3392,16 +3393,19 @@ deUint32 getBlockHeight (const VkFormat compressedFormat)
 
 VkFilter mapFilterMode (tcu::Sampler::FilterMode filterMode)
 {
-	DE_STATIC_ASSERT(tcu::Sampler::FILTERMODE_LAST == 6);
+	DE_STATIC_ASSERT(tcu::Sampler::FILTERMODE_LAST == 9);
 
 	switch (filterMode)
 	{
 		case tcu::Sampler::NEAREST:					return VK_FILTER_NEAREST;
 		case tcu::Sampler::LINEAR:					return VK_FILTER_LINEAR;
+		case tcu::Sampler::CUBIC:					return VK_FILTER_CUBIC_EXT;
 		case tcu::Sampler::NEAREST_MIPMAP_NEAREST:	return VK_FILTER_NEAREST;
 		case tcu::Sampler::NEAREST_MIPMAP_LINEAR:	return VK_FILTER_NEAREST;
 		case tcu::Sampler::LINEAR_MIPMAP_NEAREST:	return VK_FILTER_LINEAR;
 		case tcu::Sampler::LINEAR_MIPMAP_LINEAR:	return VK_FILTER_LINEAR;
+		case tcu::Sampler::CUBIC_MIPMAP_NEAREST:	return VK_FILTER_CUBIC_EXT;
+		case tcu::Sampler::CUBIC_MIPMAP_LINEAR:		return VK_FILTER_CUBIC_EXT;
 		default:
 			DE_FATAL("Illegal filter mode");
 			return (VkFilter)0;
@@ -3410,7 +3414,7 @@ VkFilter mapFilterMode (tcu::Sampler::FilterMode filterMode)
 
 VkSamplerMipmapMode mapMipmapMode (tcu::Sampler::FilterMode filterMode)
 {
-	DE_STATIC_ASSERT(tcu::Sampler::FILTERMODE_LAST == 6);
+	DE_STATIC_ASSERT(tcu::Sampler::FILTERMODE_LAST == 9);
 
 	// \note VkSamplerCreateInfo doesn't have a flag for disabling mipmapping. Instead
 	//		 minLod = 0 and maxLod = 0.25 should be used to match OpenGL NEAREST and LINEAR
@@ -3420,10 +3424,13 @@ VkSamplerMipmapMode mapMipmapMode (tcu::Sampler::FilterMode filterMode)
 	{
 		case tcu::Sampler::NEAREST:					return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		case tcu::Sampler::LINEAR:					return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		case tcu::Sampler::CUBIC:					return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		case tcu::Sampler::NEAREST_MIPMAP_NEAREST:	return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		case tcu::Sampler::NEAREST_MIPMAP_LINEAR:	return VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		case tcu::Sampler::LINEAR_MIPMAP_NEAREST:	return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		case tcu::Sampler::LINEAR_MIPMAP_LINEAR:	return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		case tcu::Sampler::CUBIC_MIPMAP_NEAREST:	return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		case tcu::Sampler::CUBIC_MIPMAP_LINEAR:		return VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		default:
 			DE_FATAL("Illegal filter mode");
 			return (VkSamplerMipmapMode)0;
@@ -3473,6 +3480,7 @@ static VkBorderColor mapBorderColor (tcu::TextureChannelClass channelClass, cons
 		if (uColor		== tcu::UVec4(0, 0, 0, 0)) return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
 		else if (uColor	== tcu::UVec4(0, 0, 0, 1)) return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		else if (uColor == tcu::UVec4(1, 1, 1, 1)) return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+		else									   return VK_BORDER_COLOR_INT_CUSTOM_EXT;
 	}
 	else if (channelClass == tcu::TEXTURECHANNELCLASS_SIGNED_INTEGER)
 	{
@@ -3481,6 +3489,7 @@ static VkBorderColor mapBorderColor (tcu::TextureChannelClass channelClass, cons
 		if (sColor		== tcu::IVec4(0, 0, 0, 0)) return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
 		else if (sColor	== tcu::IVec4(0, 0, 0, 1)) return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		else if (sColor == tcu::IVec4(1, 1, 1, 1)) return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+		else									   return	VK_BORDER_COLOR_INT_CUSTOM_EXT;
 	}
 	else
 	{
@@ -3489,6 +3498,7 @@ static VkBorderColor mapBorderColor (tcu::TextureChannelClass channelClass, cons
 		if (fColor		== tcu::Vec4(0.0f, 0.0f, 0.0f, 0.0f)) return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 		else if (fColor == tcu::Vec4(0.0f, 0.0f, 0.0f, 1.0f)) return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		else if (fColor == tcu::Vec4(1.0f, 1.0f, 1.0f, 1.0f)) return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		else												  return VK_BORDER_COLOR_FLOAT_CUSTOM_EXT;
 	}
 
 	DE_FATAL("Unsupported border color");
@@ -3527,12 +3537,31 @@ VkSamplerCreateInfo mapSampler (const tcu::Sampler& sampler, const tcu::TextureF
 	return createInfo;
 }
 
+rr::GenericVec4 mapVkColor (const VkClearColorValue& color)
+{
+	rr::GenericVec4 value;
+
+	static_assert(sizeof(rr::GenericVec4) == sizeof(VkClearColorValue), "GenericVec4 and VkClearColorValue size mismatch");
+	deMemcpy(&value, &color, sizeof(rr::GenericVec4));
+	return value;
+}
+
+VkClearColorValue mapVkColor(const rr::GenericVec4& color)
+{
+	VkClearColorValue value;
+
+	static_assert(sizeof(rr::GenericVec4) == sizeof(VkClearColorValue), "GenericVec4 and VkClearColorValue size mismatch");
+	deMemcpy(&value, &color, sizeof(VkClearColorValue));
+	return value;
+}
+
 tcu::Sampler mapVkSampler (const VkSamplerCreateInfo& samplerCreateInfo)
 {
 	// \note minLod & maxLod are not supported by tcu::Sampler. LOD must be clamped
 	//       before passing it to tcu::Texture*::sample*()
 
 	tcu::Sampler::ReductionMode reductionMode = tcu::Sampler::WEIGHTED_AVERAGE;
+	rr::GenericVec4 borderColorValue;
 
 	void const *pNext = samplerCreateInfo.pNext;
 	while (pNext != DE_NULL)
@@ -3550,6 +3579,13 @@ tcu::Sampler mapVkSampler (const VkSamplerCreateInfo& samplerCreateInfo)
 			case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO:
 				pNext = reinterpret_cast<const VkSamplerYcbcrConversionInfo*>(pNext)->pNext;
 				break;
+			case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT:
+			{
+				const VkSamplerCustomBorderColorCreateInfoEXT customBorderColorCreateInfo = *reinterpret_cast<const VkSamplerCustomBorderColorCreateInfoEXT*>(pNext);
+				borderColorValue = mapVkColor(customBorderColorCreateInfo.customBorderColor);
+				pNext = reinterpret_cast<const VkSamplerCustomBorderColorCreateInfoEXT*>(pNext)->pNext;
+				break;
+			}
 			default:
 				TCU_FAIL("Unrecognized sType in chained sampler create info");
 		}
@@ -3594,6 +3630,10 @@ tcu::Sampler mapVkSampler (const VkSamplerCreateInfo& samplerCreateInfo)
 			break;
 		case VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK:
 			sampler.borderColor = tcu::Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+			break;
+		case VK_BORDER_COLOR_FLOAT_CUSTOM_EXT:
+		case VK_BORDER_COLOR_INT_CUSTOM_EXT:
+			sampler.borderColor = borderColorValue;
 			break;
 
 		default:
@@ -3679,6 +3719,15 @@ tcu::Sampler::FilterMode mapVkMinTexFilter (VkFilter filter, VkSamplerMipmapMode
 					break;
 			}
 			break;
+		case VK_FILTER_CUBIC_EXT:
+			switch (mipMode)
+			{
+			case VK_SAMPLER_MIPMAP_MODE_LINEAR:		return tcu::Sampler::CUBIC_MIPMAP_LINEAR;
+			case VK_SAMPLER_MIPMAP_MODE_NEAREST:	return tcu::Sampler::CUBIC_MIPMAP_NEAREST;
+			default:
+				break;
+			}
+			break;
 
 		default:
 			break;
@@ -3694,6 +3743,7 @@ tcu::Sampler::FilterMode mapVkMagTexFilter (VkFilter filter)
 	{
 		case VK_FILTER_LINEAR:		return tcu::Sampler::LINEAR;
 		case VK_FILTER_NEAREST:		return tcu::Sampler::NEAREST;
+		case VK_FILTER_CUBIC_EXT:	return tcu::Sampler::CUBIC;
 		default:
 			break;
 	}
@@ -3702,7 +3752,7 @@ tcu::Sampler::FilterMode mapVkMagTexFilter (VkFilter filter)
 	return tcu::Sampler::FILTERMODE_LAST;
 }
 
-//! Get a format the matches the layout in buffer memory used for a
+//! Get a format that matches the layout in buffer memory used for a
 //! buffer<->image copy on a depth/stencil format.
 tcu::TextureFormat getDepthCopyFormat (VkFormat combinedFormat)
 {
@@ -3727,7 +3777,7 @@ tcu::TextureFormat getDepthCopyFormat (VkFormat combinedFormat)
 	}
 }
 
-//! Get a format the matches the layout in buffer memory used for a
+//! Get a format that matches the layout in buffer memory used for a
 //! buffer<->image copy on a depth/stencil format.
 tcu::TextureFormat getStencilCopyFormat (VkFormat combinedFormat)
 {

@@ -16,7 +16,7 @@
 #include "tools/skui/Key.h"
 #include "tools/skui/ModifierKey.h"
 
-class GrContext;
+class GrDirectContext;
 class SkCanvas;
 class SkSurface;
 class SkSurfaceProps;
@@ -38,7 +38,11 @@ public:
     // JSON-formatted UI state for Android. Do nothing by default
     virtual void setUIState(const char*) {}
 
-    // Shedules an invalidation event for window if one is not currently pending.
+    // Interface to the system clipboard. Only implemented on UNIX.
+    virtual const char* getClipboardText() { return nullptr; }
+    virtual void        setClipboardText(const char*) {}
+
+    // Schedules an invalidation event for window if one is not currently pending.
     // Make sure that either onPaint or markInvalReceived is called when the client window consumes
     // the the inval event. They unset fIsContentInvalided which allow future onInval.
     void inval();
@@ -60,6 +64,9 @@ public:
 #endif
 #ifdef SK_METAL
         kMetal_BackendType,
+#endif
+#ifdef SK_DIRECT3D
+        kDirect3D_BackendType,
 #endif
         kRaster_BackendType,
 
@@ -132,7 +139,7 @@ public:
     int stencilBits() const;
 
     // Returns null if there is not a GPU backend or if the backend is not yet created.
-    GrContext* getGrContext() const;
+    GrDirectContext* directContext() const;
 
 protected:
     Window();

@@ -179,33 +179,64 @@ class TestWaitForResults(unittest.TestCase):
     @mock.patch('signing.commands.run_command_output')
     def test_bad_notarization_info(self, run_command_output, **kwargs):
         run_command_output.side_effect = subprocess.CalledProcessError(
-            239, 'altool', _make_plist({
-                'product-errors': [{
-                    'code': 9595
-                }]
-            }))
+            239, 'altool', _make_plist({'product-errors': [{
+                'code': 9595
+            }]}))
 
         with self.assertRaises(subprocess.CalledProcessError):
             uuids = ['77c0ad17-479e-4b82-946a-73739cf6ca16']
             list(notarize.wait_for_results(uuids, test_config.TestConfig()))
 
     @mock.patch.multiple('time', **{'sleep': mock.DEFAULT})
+    @mock.patch('signing.commands.run_command_output')
+    def test_lost_connection_notarization_info(self, run_command_output,
+                                               **kwargs):
+        run_command_output.side_effect = [
+            subprocess.CalledProcessError(
+                13, 'altool', '*** Error: Connection failed! Error Message'
+                '- The network connection was lost.'),
+            _make_plist({
+                'notarization-info': {
+                    'Date': '2019-05-20T13:18:35Z',
+                    'LogFileURL': 'https://example.com/log.json',
+                    'RequestUUID': 'cca0aec2-7c64-4ea4-b895-051ea3a17311',
+                    'Status': 'success',
+                    'Status Code': 0
+                }
+            })
+        ]
+        uuid = 'cca0aec2-7c64-4ea4-b895-051ea3a17311'
+        uuids = [uuid]
+        self.assertEqual(
+            [uuid],
+            list(notarize.wait_for_results(uuids, test_config.TestConfig())))
+        run_command_output.assert_has_calls(2 * [
+            mock.call([
+                'xcrun', 'altool', '--notarization-info', uuid, '--username',
+                '[NOTARY-USER]', '--password', '[NOTARY-PASSWORD]',
+                '--output-format', 'xml'
+            ])
+        ])
+
+    @mock.patch.multiple('time', **{'sleep': mock.DEFAULT})
     @mock.patch.multiple('signing.commands',
                          **{'run_command_output': mock.DEFAULT})
     def test_timeout(self, **kwargs):
-        kwargs['run_command_output'].return_value = _make_plist({
-            'notarization-info': {
+        kwargs['run_command_output'].return_value = _make_plist(
+            {'notarization-info': {
                 'Status': 'in progress'
-            }
-        })
+            }})
         uuid = '0c652bb4-7d44-4904-8c59-1ee86a376ece'
         uuids = [uuid]
         with self.assertRaises(notarize.NotarizationError) as cm:
             list(notarize.wait_for_results(uuids, test_config.TestConfig()))
 
-        self.assertEqual(
-            "Timed out waiting for notarization requests: set(['0c652bb4-7d44-4904-8c59-1ee86a376ece'])",
-            str(cm.exception))
+        # Python 2 and 3 stringify set() differently.
+        self.assertIn(
+            str(cm.exception), [
+                "Timed out waiting for notarization requests: set(['0c652bb4-7d44-4904-8c59-1ee86a376ece'])",
+                "Timed out waiting for notarization requests: {'0c652bb4-7d44-4904-8c59-1ee86a376ece'}"
+            ])
 
         for call in kwargs['run_command_output'].mock_calls:
             self.assertEqual(
@@ -241,10 +272,10 @@ class TestStaple(unittest.TestCase):
                 'Foo.app/Contents/Helpers/Helper.app/Contents/XPCServices/'
                 'Service2.xpc', ''),
             CodeSignedProduct('Foo.app', '')
-        ], Paths('in', 'out', 'work'))
+        ], Paths('/in', '/out', '/work'))
         staple.assert_has_calls([
-            mock.call('work/Foo.app/Contents/Helpers/Helper.app/Contents'
+            mock.call('/work/Foo.app/Contents/Helpers/Helper.app/Contents'
                       '/Helpers/Bar.app'),
-            mock.call('work/Foo.app/Contents/Helpers/Helper.app'),
-            mock.call('work/Foo.app')
+            mock.call('/work/Foo.app/Contents/Helpers/Helper.app'),
+            mock.call('/work/Foo.app')
         ])

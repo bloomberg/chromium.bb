@@ -38,7 +38,7 @@ std::vector<uint32_t> preprocessSpirv(
     VkSpecializationInfo const *specializationInfo,
     bool optimize)
 {
-	spvtools::Optimizer opt{ SPV_ENV_VULKAN_1_1 };
+	spvtools::Optimizer opt{ vk::SPIRV_VERSION };
 
 	opt.SetMessageConsumer([](spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
 		switch(level)
@@ -79,7 +79,7 @@ std::vector<uint32_t> preprocessSpirv(
 
 	if(false)
 	{
-		spvtools::SpirvTools core(SPV_ENV_VULKAN_1_1);
+		spvtools::SpirvTools core(vk::SPIRV_VERSION);
 		std::string preOpt;
 		core.Disassemble(code, &preOpt, SPV_BINARY_TO_TEXT_OPTION_NONE);
 		std::string postOpt;
@@ -102,15 +102,7 @@ std::shared_ptr<sw::SpirvShader> createShader(
 	// instructions.
 	const bool optimize = !dbgctx;
 
-	// TODO(b/147726513): Do not preprocess the shader if we have a debugger
-	// context.
-	// This is a work-around for the SPIR-V tools incorrectly reporting errors
-	// when debug information is provided. This can be removed once the
-	// following SPIR-V tools bugs are fixed:
-	// https://github.com/KhronosGroup/SPIRV-Tools/issues/3102
-	// https://github.com/KhronosGroup/SPIRV-Tools/issues/3103
-	// https://github.com/KhronosGroup/SPIRV-Tools/issues/3118
-	auto code = dbgctx ? key.getInsns() : preprocessSpirv(key.getInsns(), key.getSpecializationInfo(), optimize);
+	auto code = preprocessSpirv(key.getInsns(), key.getSpecializationInfo(), optimize);
 	ASSERT(code.size() > 0);
 
 	// If the pipeline has specialization constants, assume they're unique and
@@ -258,7 +250,7 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo *pCreateIn
 	context.cullMode = rasterizationState->cullMode;
 	context.frontFace = rasterizationState->frontFace;
 	context.polygonMode = rasterizationState->polygonMode;
-	context.depthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasConstantFactor : 0.0f;
+	context.constantDepthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasConstantFactor : 0.0f;
 	context.slopeDepthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasSlopeFactor : 0.0f;
 	context.depthBiasClamp = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasClamp : 0.0f;
 	context.depthRangeUnrestricted = device->hasExtension(VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME);

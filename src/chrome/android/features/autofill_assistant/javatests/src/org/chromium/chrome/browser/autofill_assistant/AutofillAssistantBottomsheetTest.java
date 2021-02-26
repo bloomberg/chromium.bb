@@ -4,20 +4,20 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.actionWithAssertions;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.actionWithAssertions;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -37,21 +37,24 @@ import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBott
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing.RESIZE_VISUAL_VIEWPORT;
 
 import android.graphics.Rect;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
-import android.support.test.espresso.ViewAction;
-import android.support.test.espresso.action.GeneralLocation;
-import android.support.test.espresso.action.GeneralSwipeAction;
-import android.support.test.espresso.action.Press;
-import android.support.test.espresso.action.Swipe;
-import android.support.test.filters.MediumTest;
 
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.GeneralSwipeAction;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Swipe;
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -64,10 +67,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheet
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode;
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing;
 import org.chromium.chrome.browser.autofill_assistant.proto.DetailsProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowCastProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -76,11 +79,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.Input
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,10 +101,14 @@ public class AutofillAssistantBottomsheetTest {
     @Before
     public void setUp() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
+        mTestRule.startCustomTabActivityWithIntent(
+                AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
+                        mTestRule.getTestServer().getURL(TEST_PAGE),
+                        /* startImmediately = */ true));
+        mTestRule.getActivity()
+                .getRootUiCoordinatorForTesting()
+                .getScrimCoordinator()
+                .disableAnimationForTesting(true);
     }
 
     private AutofillAssistantTestScript makeScriptWithActionArray(
@@ -138,8 +142,10 @@ public class AutofillAssistantBottomsheetTest {
                          .build());
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
+                         .setShowCast(ShowCastProto.newBuilder().setElementToPresent(
+                                 SelectorProto.newBuilder().addFilters(
+                                         SelectorProto.Filter.newBuilder().setCssSelector(
+                                                 "p.bottom"))))
                          .build());
         if (withDetails) {
             // ShowDetails.
@@ -402,6 +408,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky test.  crbug.com/1114818")
     public void testBottomSheetAutoCollapseAndExpand() {
         ArrayList<ActionProto> list = new ArrayList<>();
         // Prompt.
@@ -415,8 +422,10 @@ public class AutofillAssistantBottomsheetTest {
                          .build());
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
+                         .setShowCast(ShowCastProto.newBuilder().setElementToPresent(
+                                 SelectorProto.newBuilder().addFilters(
+                                         SelectorProto.Filter.newBuilder().setCssSelector(
+                                                 "p.bottom"))))
                          .build());
         // Set handle and header peek mode and auto collapse to that state.
         list.add((ActionProto) ActionProto.newBuilder()
@@ -547,20 +556,22 @@ public class AutofillAssistantBottomsheetTest {
     }
 
     private void checkElementIsCoveredByBottomsheet(String elementId, boolean shouldBeCovered) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Timeout while waiting for element '"
-                + elementId + "' to become " + (shouldBeCovered ? "covered" : "not covered")
-                + " by the bottomsheet") {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
-                            mTestRule.getActivity().findViewById(
-                                    R.id.autofill_assistant_bottom_sheet_toolbar))[1];
-                    Rect el = getAbsoluteBoundingRect(mTestRule, elementId);
-                    return el.bottom > y == shouldBeCovered;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
+                    mTestRule.getActivity().findViewById(
+                            R.id.autofill_assistant_bottom_sheet_toolbar))[1];
+            Rect el = null;
+            try {
+                el = getAbsoluteBoundingRect(mTestRule, elementId);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+            String errorMsg = "Timeout while waiting for element '" + elementId + "' to become "
+                    + (shouldBeCovered ? "covered" : "not covered") + " by the bottomsheet";
+            if (shouldBeCovered) {
+                Criteria.checkThat(errorMsg, (float) el.bottom, Matchers.greaterThan(y));
+            } else {
+                Criteria.checkThat(errorMsg, (float) el.bottom, Matchers.lessThanOrEqualTo(y));
             }
         });
     }

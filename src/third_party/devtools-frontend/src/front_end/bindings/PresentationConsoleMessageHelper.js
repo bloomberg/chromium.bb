@@ -35,6 +35,9 @@ import * as Workspace from '../workspace/workspace.js';
 import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';
 import {LiveLocation, LiveLocationPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!WeakMap<!SDK.DebuggerModel.DebuggerModel, !PresentationConsoleMessageHelper>} */
+const debuggerModelToMessageHelperMap = new WeakMap();
+
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DebuggerModel.DebuggerModel>}
  */
@@ -55,7 +58,7 @@ export class PresentationConsoleMessageManager {
    * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelAdded(debuggerModel) {
-    debuggerModel[PresentationConsoleMessageManager._symbol] = new PresentationConsoleMessageHelper(debuggerModel);
+    debuggerModelToMessageHelperMap.set(debuggerModel, new PresentationConsoleMessageHelper(debuggerModel));
   }
 
   /**
@@ -63,29 +66,36 @@ export class PresentationConsoleMessageManager {
    * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelRemoved(debuggerModel) {
-    debuggerModel[PresentationConsoleMessageManager._symbol]._consoleCleared();
+    const helper = debuggerModelToMessageHelperMap.get(debuggerModel);
+    if (helper) {
+      helper._consoleCleared();
+    }
   }
 
   /**
    * @param {!SDK.ConsoleModel.ConsoleMessage} message
    */
   _consoleMessageAdded(message) {
+    const runtimeModel = message.runtimeModel();
     if (!message.isErrorOrWarning() || !message.runtimeModel() ||
-        message.source === SDK.ConsoleModel.MessageSource.Violation) {
+        message.source === SDK.ConsoleModel.MessageSource.Violation || !runtimeModel) {
       return;
     }
-    const debuggerModel = message.runtimeModel().debuggerModel();
-    debuggerModel[PresentationConsoleMessageManager._symbol]._consoleMessageAdded(message);
+    const helper = debuggerModelToMessageHelperMap.get(runtimeModel.debuggerModel());
+    if (helper) {
+      helper._consoleMessageAdded(message);
+    }
   }
 
   _consoleCleared() {
     for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
-      debuggerModel[PresentationConsoleMessageManager._symbol]._consoleCleared();
+      const helper = debuggerModelToMessageHelperMap.get(debuggerModel);
+      if (helper) {
+        helper._consoleCleared();
+      }
     }
   }
 }
-
-PresentationConsoleMessageManager._symbol = Symbol('PresentationConsoleMessageHelper');
 
 export class PresentationConsoleMessageHelper {
   /**

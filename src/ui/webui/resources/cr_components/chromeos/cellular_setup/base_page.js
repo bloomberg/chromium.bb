@@ -6,6 +6,8 @@
 Polymer({
   is: 'base-page',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * Main title for the page.
@@ -21,4 +23,20 @@ Polymer({
      */
     message: String,
   },
+
+  /**
+   * @returns {string}
+   * @private
+   */
+  getTitle_() {
+    return this.title;
+  },
+
+  /**
+   * @returns {boolean}
+   * @private
+   */
+  isTitleShown_() {
+    return !!this.title;
+  }
 });

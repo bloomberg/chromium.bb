@@ -5,11 +5,10 @@
 #include "ui/base/ime/input_method_base.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_keyboard_controller_stub.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -17,11 +16,6 @@
 #include "ui/events/event.h"
 
 namespace ui {
-
-ui::IMEEngineHandlerInterface* InputMethodBase::GetEngine() {
-  auto* bridge = ui::IMEBridge::Get();
-  return bridge ? bridge->GetCurrentEngineHandler() : nullptr;
-}
 
 InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
     : InputMethodBase(delegate, nullptr) {}
@@ -35,9 +29,6 @@ InputMethodBase::InputMethodBase(
 InputMethodBase::~InputMethodBase() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnInputMethodDestroyed(this);
-  if (ui::IMEBridge::Get() &&
-      ui::IMEBridge::Get()->GetInputContextHandler() == this)
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
@@ -45,17 +36,9 @@ void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void InputMethodBase::OnFocus() {
-  ui::IMEBridge* bridge = ui::IMEBridge::Get();
-  if (bridge) {
-    bridge->SetInputContextHandler(this);
-    bridge->MaybeSwitchEngine();
-  }
 }
 
 void InputMethodBase::OnBlur() {
-  if (ui::IMEBridge::Get() &&
-      ui::IMEBridge::Get()->GetInputContextHandler() == this)
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 #if defined(OS_WIN)
@@ -160,6 +143,11 @@ void InputMethodBase::OnInputMethodChanged() const {
 
 ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
     ui::KeyEvent* event) const {
+  if (text_input_client_) {
+    text_input_client_->OnDispatchingKeyEventPostIME(event);
+    if (event->handled())
+      return EventDispatchDetails();
+  }
   return delegate_ ? delegate_->DispatchKeyEventPostIME(event)
                    : ui::EventDispatchDetails();
 }
@@ -213,94 +201,6 @@ bool InputMethodBase::SendFakeProcessKeyEvent(bool pressed) const {
                pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN, EF_IME_FABRICATED_KEY);
   ignore_result(DispatchKeyEventPostIME(&evt));
   return evt.stopped_propagation();
-}
-
-void InputMethodBase::CommitText(const std::string& text) {
-  if (text.empty() || !GetTextInputClient() || IsTextInputTypeNone())
-    return;
-
-  const base::string16 utf16_text = base::UTF8ToUTF16(text);
-  if (utf16_text.empty())
-    return;
-
-  if (!SendFakeProcessKeyEvent(true))
-    GetTextInputClient()->InsertText(utf16_text);
-  SendFakeProcessKeyEvent(false);
-}
-
-void InputMethodBase::UpdateCompositionText(const CompositionText& composition_,
-                                            uint32_t cursor_pos,
-                                            bool visible) {
-  if (IsTextInputTypeNone())
-    return;
-
-  if (!SendFakeProcessKeyEvent(true)) {
-    if (visible && !composition_.text.empty())
-      GetTextInputClient()->SetCompositionText(composition_);
-    else
-      GetTextInputClient()->ClearCompositionText();
-  }
-  SendFakeProcessKeyEvent(false);
-}
-
-#if defined(OS_CHROMEOS)
-bool InputMethodBase::SetCompositionRange(
-    uint32_t before,
-    uint32_t after,
-    const std::vector<ui::ImeTextSpan>& text_spans) {
-  return false;
-}
-
-bool InputMethodBase::SetSelectionRange(uint32_t start, uint32_t end) {
-  return false;
-}
-#endif
-
-void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}
-
-SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
-  gfx::Range text_range;
-  SurroundingTextInfo info;
-  TextInputClient* client = GetTextInputClient();
-  if (!client->GetTextRange(&text_range) ||
-      !client->GetTextFromRange(text_range, &info.surrounding_text) ||
-      !client->GetEditableSelectionRange(&info.selection_range)) {
-    return SurroundingTextInfo();
-  }
-  // Makes the |selection_range| be relative to the |surrounding_text|.
-  info.selection_range.set_start(info.selection_range.start() -
-                                 text_range.start());
-  info.selection_range.set_end(info.selection_range.end() - text_range.start());
-  return info;
-}
-
-void InputMethodBase::SendKeyEvent(KeyEvent* event) {
-  if (track_key_events_for_testing_) {
-    key_events_for_testing_.push_back(std::make_unique<KeyEvent>(*event));
-  }
-  ui::EventDispatchDetails details = DispatchKeyEvent(event);
-  DCHECK(!details.dispatcher_destroyed);
-}
-
-InputMethod* InputMethodBase::GetInputMethod() {
-  return this;
-}
-
-void InputMethodBase::ConfirmCompositionText(bool reset_engine,
-                                             bool keep_selection) {
-  TextInputClient* client = GetTextInputClient();
-  if (client && client->HasCompositionText())
-    client->ConfirmCompositionText(keep_selection);
-}
-
-bool InputMethodBase::HasCompositionText() {
-  TextInputClient* client = GetTextInputClient();
-  return client && client->HasCompositionText();
-}
-
-const std::vector<std::unique_ptr<ui::KeyEvent>>&
-InputMethodBase::GetKeyEventsForTesting() {
-  return key_events_for_testing_;
 }
 
 }  // namespace ui

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -293,7 +294,7 @@ void FrameSender::SendEncodedFrame(
                               encoded_frame->rtp_timestamp);
 
   if (!is_audio_) {
-    // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+    // Used by chrome/browser/media/cast_mirroring_performance_browsertest.cc
     TRACE_EVENT_INSTANT1(
         "cast_perf_test", "VideoFrameEncoded",
         TRACE_EVENT_SCOPE_THREAD,
@@ -462,7 +463,8 @@ bool FrameSender::ShouldDropNextFrame(base::TimeDelta frame_duration) const {
   if (VLOG_IS_ON(1)) {
     const int64_t percent =
         allowed_in_flight > base::TimeDelta()
-            ? 100 * duration_would_be_in_flight / allowed_in_flight
+            ? base::ClampRound<int64_t>(duration_would_be_in_flight /
+                                        allowed_in_flight * 100)
             : std::numeric_limits<int64_t>::max();
     VLOG_IF(1, percent > 50)
         << SENDER_SSRC

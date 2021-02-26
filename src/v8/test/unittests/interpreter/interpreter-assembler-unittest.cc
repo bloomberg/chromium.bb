@@ -28,7 +28,7 @@ InterpreterAssemblerTestState::InterpreterAssemblerTestState(
     InterpreterAssemblerTest* test, Bytecode bytecode)
     : compiler::CodeAssemblerState(
           test->isolate(), test->zone(), InterpreterDispatchDescriptor{},
-          Code::BYTECODE_HANDLER, Bytecodes::ToString(bytecode),
+          CodeKind::BYTECODE_HANDLER, Bytecodes::ToString(bytecode),
           PoisoningMitigationLevel::kPoisonCriticalOnly) {}
 
 const interpreter::Bytecode kBytecodes[] = {
@@ -419,7 +419,7 @@ TARGET_TEST_F(InterpreterAssemblerTest, LoadConstantPoolEntry) {
                      LoadSensitivity::kCritical));
     }
     {
-      Node* index = m.Parameter(2);
+      Node* index = m.UntypedParameter(2);
       TNode<Object> load_constant =
           m.LoadConstantPoolEntry(m.ReinterpretCast<IntPtrT>(index));
         Matcher<Node*> constant_pool_matcher = m.IsLoadFromObject(

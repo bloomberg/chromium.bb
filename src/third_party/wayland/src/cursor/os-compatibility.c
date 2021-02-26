@@ -25,6 +25,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,7 +34,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "config.h"
+#ifdef HAVE_MEMFD_CREATE
+#include <sys/mman.h>
+#endif
+
 #include "os-compatibility.h"
 
 #ifndef HAVE_MKOSTEMP
@@ -99,6 +104,13 @@ create_tmpfile_cloexec(char *tmpname)
  * given size. If disk space is insufficent, errno is set to ENOSPC.
  * If posix_fallocate() is not supported, program may receive
  * SIGBUS on accessing mmap()'ed file contents instead.
+ *
+ * If the C library implements memfd_create(), it is used to create the
+ * file purely in memory, without any backing file name on the file
+ * system, and then sealing off the possibility of shrinking it.  This
+ * can then be checked before accessing mmap()'ed file contents, to
+ * make sure SIGBUS can't happen.  It also avoids requiring
+ * XDG_RUNTIME_DIR.
  */
 int
 os_create_anonymous_file(off_t size)
@@ -109,40 +121,59 @@ os_create_anonymous_file(off_t size)
 	int fd;
 	int ret;
 
-	path = getenv("XDG_RUNTIME_DIR");
-	if (!path) {
-		errno = ENOENT;
-		return -1;
+#ifdef HAVE_MEMFD_CREATE
+	fd = memfd_create("wayland-cursor", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+	if (fd >= 0) {
+		/* We can add this seal before calling posix_fallocate(), as
+		 * the file is currently zero-sized anyway.
+		 *
+		 * There is also no need to check for the return value, we
+		 * couldn't do anything with it anyway.
+		 */
+		fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_SEAL);
+	} else
+#endif
+	{
+		path = getenv("XDG_RUNTIME_DIR");
+		if (!path) {
+			errno = ENOENT;
+			return -1;
+		}
+
+		name = malloc(strlen(path) + sizeof(template));
+		if (!name)
+			return -1;
+
+		strcpy(name, path);
+		strcat(name, template);
+
+		fd = create_tmpfile_cloexec(name);
+
+		free(name);
+
+		if (fd < 0)
+			return -1;
 	}
 
-	name = malloc(strlen(path) + sizeof(template));
-	if (!name)
-		return -1;
-
-	strcpy(name, path);
-	strcat(name, template);
-
-	fd = create_tmpfile_cloexec(name);
-
-	free(name);
-
-	if (fd < 0)
-		return -1;
-
 #ifdef HAVE_POSIX_FALLOCATE
+	/* 
+	 * Filesystems that do support fallocate will return EOPNOTSUPP.
+	 * In this case we need to fall back to ftruncate
+	 */
 	ret = posix_fallocate(fd, 0, size);
-	if (ret != 0) {
+	if (ret == 0) {
+		return fd;
+	} else if (ret != EOPNOTSUPP) {
 		close(fd);
 		errno = ret;
 		return -1;
 	}
-#else
+#endif
 	ret = ftruncate(fd, size);
 	if (ret < 0) {
 		close(fd);
 		return -1;
 	}
-#endif
 
 	return fd;
 }

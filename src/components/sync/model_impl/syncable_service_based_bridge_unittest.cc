@@ -7,15 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/sync/base/client_tag_hash.h"
-#include "components/sync/model/mock_model_type_change_processor.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_error.h"
-#include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/syncable_service.h"
@@ -23,6 +22,8 @@
 #include "components/sync/protocol/persisted_entity_data.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
+#include "components/sync/test/model/mock_model_type_change_processor.h"
+#include "components/sync/test/model/model_type_store_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,7 @@ namespace {
 
 using testing::_;
 using testing::ElementsAre;
+using testing::Eq;
 using testing::Invoke;
 using testing::IsEmpty;
 using testing::NotNull;
@@ -63,18 +65,21 @@ MATCHER_P(HasName, name, "") {
 
 class MockSyncableService : public SyncableService {
  public:
-  MOCK_METHOD1(WaitUntilReadyToSync, void(base::OnceClosure done));
-  MOCK_METHOD4(MergeDataAndStartSyncing,
-               base::Optional<syncer::ModelError>(
-                   ModelType type,
-                   const SyncDataList& initial_sync_data,
-                   std::unique_ptr<SyncChangeProcessor> sync_processor,
-                   std::unique_ptr<SyncErrorFactory> sync_error_factory));
-  MOCK_METHOD1(StopSyncing, void(ModelType type));
-  MOCK_METHOD2(ProcessSyncChanges,
-               base::Optional<ModelError>(const base::Location& from_here,
-                                          const SyncChangeList& change_list));
-  MOCK_CONST_METHOD1(GetAllSyncData, SyncDataList(ModelType type));
+  MOCK_METHOD(void, WaitUntilReadyToSync, (base::OnceClosure done), (override));
+  MOCK_METHOD(base::Optional<syncer::ModelError>,
+              MergeDataAndStartSyncing,
+              (ModelType type,
+               const SyncDataList& initial_sync_data,
+               std::unique_ptr<SyncChangeProcessor> sync_processor,
+               std::unique_ptr<SyncErrorFactory> sync_error_factory),
+              (override));
+  MOCK_METHOD(void, StopSyncing, (ModelType type), (override));
+  MOCK_METHOD(base::Optional<ModelError>,
+              ProcessSyncChanges,
+              (const base::Location& from_here,
+               const SyncChangeList& change_list),
+              (override));
+  MOCK_METHOD(SyncDataList, GetAllSyncData, (ModelType type), (const override));
 };
 
 class SyncableServiceBasedBridgeTest : public ::testing::Test {
@@ -96,14 +101,14 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
 
   ~SyncableServiceBasedBridgeTest() override {}
 
-  void InitializeBridge() {
+  void InitializeBridge(ModelType model_type = kModelType) {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            kModelType, /*dump_stack=*/base::DoNothing(),
+            model_type, /*dump_stack=*/base::DoNothing(),
             /*commit_only=*/false);
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     bridge_ = std::make_unique<SyncableServiceBasedBridge>(
-        kModelType,
+        model_type,
         ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_processor_.CreateForwardingProcessor(), &syncable_service_);
   }
@@ -546,7 +551,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
   SyncChangeList change_list;
   change_list.push_back(SyncChange(
       FROM_HERE, SyncChange::ACTION_DELETE,
-      SyncData::CreateRemoteData(/*id=*/1, specifics,
+      SyncData::CreateRemoteData(specifics,
                                  /*client_tag_hash=*/kClientTagHash)));
 
   sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
@@ -581,12 +586,63 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
   SyncChangeList change_list;
   change_list.push_back(SyncChange(
       FROM_HERE, SyncChange::ACTION_DELETE,
-      SyncData::CreateRemoteData(/*id=*/1, specifics,
+      SyncData::CreateRemoteData(specifics,
                                  /*client_tag_hash=*/kClientTagHash)));
 
   sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
 
   EXPECT_EQ(1U, in_memory_store.count(kClientTagHash));
+}
+
+TEST_F(SyncableServiceBasedBridgeTest, ConflictShouldUseRemote) {
+  InitializeBridge();
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  remote_data.specifics = GetTestSpecifics();
+  ASSERT_FALSE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
+}
+
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteDeletionShouldUseLocal) {
+  InitializeBridge();
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseLocal));
+}
+
+// This ensures that for extensions, the conflict is resolved in favor of the
+// server, to prevent extensions from being reinstalled after uninstall.
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteExtensionUninstallShouldUseRemote) {
+  InitializeBridge(EXTENSIONS);
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
+}
+
+// Same as above but for APPS.
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteAppUninstallShouldUseRemote) {
+  InitializeBridge(APPS);
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
 }
 
 }  // namespace

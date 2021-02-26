@@ -421,10 +421,11 @@ def interface_context(interface, interfaces, component_info):
     # https://html.spec.whatwg.org/C/#html-element-constructors
     if has_html_constructor:
         if ('Constructor' in extended_attributes
-                or 'NoInterfaceObject' in extended_attributes):
-            raise Exception('[HTMLConstructor] cannot be specified with '
-                            '[Constructor] or [NoInterfaceObject], or on '
-                            'a mixin : %s' % interface.name)
+                or 'LegacyNoInterfaceObject' in extended_attributes):
+            raise Exception(
+                '[HTMLConstructor] cannot be specified with '
+                '[Constructor] or [LegacyNoInterfaceObject], or on '
+                'a mixin : %s' % interface.name)
         includes.add('bindings/core/v8/v8_html_constructor.h')
 
     # [NamedConstructor]
@@ -592,7 +593,7 @@ def interface_context(interface, interfaces, component_info):
         'indexed_property_deleter':
         property_deleter(interface.indexed_property_deleter),
         'is_override_builtins':
-        'OverrideBuiltins' in extended_attributes,
+        'LegacyOverrideBuiltIns' in extended_attributes,
         'named_property_getter':
         property_getter(interface.named_property_getter, ['name']),
         'named_property_setter':
@@ -1095,8 +1096,6 @@ def overloads_context(interface, overloads):
         method['overload_index'] = index
 
     # [RuntimeEnabled]
-    # TODO(iclelland): Allow origin trials on method overloads
-    # (crbug.com/621641)
     if any(method.get('origin_trial_feature_name') for method in overloads):
         raise Exception(
             '[RuntimeEnabled] for origin trial cannot be specified on '

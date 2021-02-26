@@ -23,19 +23,17 @@ import java.lang.annotation.RetentionPolicy;
 public class SuggestionViewProperties {
     @IntDef({SuggestionIcon.UNSET, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
             SuggestionIcon.GLOBE, SuggestionIcon.MAGNIFIER, SuggestionIcon.VOICE,
-            SuggestionIcon.CALCULATOR, SuggestionIcon.FAVICON, SuggestionIcon.TOTAL_COUNT})
+            SuggestionIcon.FAVICON, SuggestionIcon.TRENDS, SuggestionIcon.TOTAL_COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SuggestionIcon {
-        // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-        // See http://cs.chromium.org/SuggestionIconOrFaviconType
         int UNSET = 0;
         int BOOKMARK = 1;
         int HISTORY = 2;
         int GLOBE = 3;
         int MAGNIFIER = 4;
         int VOICE = 5;
-        int CALCULATOR = 6;
-        int FAVICON = 7;
+        int FAVICON = 6;
+        int TRENDS = 7;
         int TOTAL_COUNT = 8;
     }
 
@@ -54,8 +52,12 @@ public class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionSpannable> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {
-            IS_SEARCH_SUGGESTION, SUGGESTION_ICON_TYPE, TEXT_LINE_1_TEXT, TEXT_LINE_2_TEXT};
+    /** Whether suggestions can wrap-around long search query to second line. */
+    public static final WritableBooleanPropertyKey ALLOW_WRAP_AROUND =
+            new WritableBooleanPropertyKey();
+
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {IS_SEARCH_SUGGESTION,
+            SUGGESTION_ICON_TYPE, TEXT_LINE_1_TEXT, TEXT_LINE_2_TEXT, ALLOW_WRAP_AROUND};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, BaseSuggestionViewProperties.ALL_KEYS);

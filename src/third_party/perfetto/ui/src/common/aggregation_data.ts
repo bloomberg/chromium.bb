@@ -35,10 +35,12 @@ export interface StateColumn {
   data: Uint16Array;
 }
 
-type TypedArrayConstructor = Uint16ArrayConstructor|Float64ArrayConstructor;
+type TypedArrayConstructor =
+    Uint16ArrayConstructor|Float64ArrayConstructor|Uint32ArrayConstructor;
 export interface ColumnDef {
   title: string;
   kind: string;
+  sum?: boolean;
   columnConstructor: TypedArrayConstructor;
   columnId: string;
 }
@@ -46,6 +48,16 @@ export interface ColumnDef {
 export interface AggregateData {
   tabName: string;
   columns: Column[];
+  columnSums: string[];
   // For string interning.
   strings: string[];
+  // Some aggregations will have extra info to display;
+  extra?: ThreadStateExtra;
+}
+
+export interface ThreadStateExtra {
+  kind: 'THREAD_STATE';
+  states: string[];
+  values: Float64Array;
+  totalMs: number;
 }

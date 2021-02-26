@@ -4,10 +4,9 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 
-#include <algorithm>
-#include <utility>
-
+#include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 
@@ -15,23 +14,28 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kMinTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(1000);
-constexpr base::TimeDelta kMaxTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(60 * 1000);
+constexpr int kMaxRetries = 3;
 
-// The buffer time to use the access token.
-constexpr base::TimeDelta kTokenExpirationTimeBuffer =
-    base::TimeDelta::FromMinutes(10);
+constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
+    0,          // Number of initial errors to ignore.
+    1000,       // Initial delay in ms.
+    2.0,        // Factor by which the waiting time will be multiplied.
+    0.2,        // Fuzzing percentage.
+    60 * 1000,  // Maximum delay in ms.
+    -1,         // Never discard the entry.
+    true,       // Use initial delay.
+};
 
 }  // namespace
 
-AmbientAccessTokenController::AmbientAccessTokenController() = default;
+AmbientAccessTokenController::AmbientAccessTokenController()
+    : refresh_token_retry_backoff_(&kRetryBackoffPolicy) {}
 
 AmbientAccessTokenController::~AmbientAccessTokenController() = default;
 
 void AmbientAccessTokenController::RequestAccessToken(
-    AccessTokenCallback callback) {
+    AccessTokenCallback callback,
+    bool may_refresh_token_on_lock) {
   // |token_refresh_timer_| may become stale during sleeping.
   if (token_refresh_timer_.IsRunning())
     token_refresh_timer_.AbandonAndStop();
@@ -41,13 +45,18 @@ void AmbientAccessTokenController::RequestAccessToken(
 
     // Return the token if there is enough time to use the access token when
     // requested.
-    if (expiration_time_ - base::Time::Now() > kTokenExpirationTimeBuffer) {
+    if (expiration_time_ - base::Time::Now() > token_usage_time_buffer_) {
       RunCallback(std::move(callback));
       return;
     }
 
     access_token_ = std::string();
     expiration_time_ = base::Time::Now();
+  }
+
+  if (!may_refresh_token_on_lock && LockScreen::HasInstance()) {
+    RunCallback(std::move(callback));
+    return;
   }
 
   callbacks_.emplace_back(std::move(callback));
@@ -74,11 +83,18 @@ void AmbientAccessTokenController::AccessTokenRefreshed(
   has_pending_request_ = false;
 
   if (gaia_id.empty() || access_token.empty()) {
-    RetryRefreshAccessToken();
+    refresh_token_retry_backoff_.InformOfRequest(/*succeeded=*/false);
+    if (refresh_token_retry_backoff_.failure_count() <= kMaxRetries)
+      RetryRefreshAccessToken();
+    else
+      NotifyAccessTokenRefreshed();
+
     return;
   }
 
-  VLOG(1) << "Access token fetched.";
+  DVLOG(1) << "Access token fetched.";
+  DCHECK(gaia_id_.empty() || gaia_id_ == gaia_id);
+  refresh_token_retry_backoff_.Reset();
   gaia_id_ = gaia_id;
   access_token_ = access_token;
   expiration_time_ = expiration_time;
@@ -87,14 +103,7 @@ void AmbientAccessTokenController::AccessTokenRefreshed(
 
 void AmbientAccessTokenController::RetryRefreshAccessToken() {
   base::TimeDelta backoff_delay =
-      std::min(kMinTokenRefreshDelay *
-                   (1 << (token_refresh_error_backoff_factor - 1)),
-               kMaxTokenRefreshDelay) +
-      base::RandDouble() * kMinTokenRefreshDelay;
-
-  if (backoff_delay < kMaxTokenRefreshDelay)
-    ++token_refresh_error_backoff_factor;
-
+      refresh_token_retry_backoff_.GetTimeUntilRelease();
   token_refresh_timer_.Start(
       FROM_HERE, backoff_delay,
       base::BindOnce(&AmbientAccessTokenController::RefreshAccessToken,
@@ -109,9 +118,16 @@ void AmbientAccessTokenController::NotifyAccessTokenRefreshed() {
 }
 
 void AmbientAccessTokenController::RunCallback(AccessTokenCallback callback) {
-  DCHECK(!gaia_id_.empty());
-  DCHECK(!access_token_.empty());
   std::move(callback).Run(gaia_id_, access_token_);
+}
+
+void AmbientAccessTokenController::SetTokenUsageBufferForTesting(
+    base::TimeDelta time) {
+  token_usage_time_buffer_ = time;
+}
+
+base::TimeDelta AmbientAccessTokenController::GetTimeUntilReleaseForTesting() {
+  return refresh_token_retry_backoff_.GetTimeUntilRelease();
 }
 
 }  // namespace ash

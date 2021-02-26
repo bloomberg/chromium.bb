@@ -543,13 +543,17 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                    LPARAM l_param,
                                    bool track_mouse);
 
-  LRESULT HandlePointerEventTypeTouch(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param);
+  // We handle 2 kinds of WM_POINTER events: PT_TOUCH and PT_PEN. This helper
+  // handles client area events of PT_TOUCH, and non-client area events of both
+  // kinds.
+  LRESULT HandlePointerEventTypeTouchOrNonClient(UINT message,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param);
 
-  LRESULT HandlePointerEventTypePen(UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param);
+  // Helper to handle client area events of PT_PEN.
+  LRESULT HandlePointerEventTypePenClient(UINT message,
+                                          WPARAM w_param,
+                                          LPARAM l_param);
 
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.
@@ -711,6 +715,14 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // IsMouseEventFromTouch function.
   static LONG last_touch_or_pen_message_time_;
 
+  // When true, this flag makes us discard window management mouse messages.
+  // Windows sends window management mouse messages at the mouse location when
+  // window states change (e.g. tooltips or status bubbles opening/closing).
+  // Those system generated messages should be ignored while the pen is active
+  // over the client area, where it is not in sync with the mouse position.
+  // Reset to false when we get user mouse input again.
+  static bool is_pen_active_in_client_area_;
+
   // Time the last WM_MOUSEHWHEEL message is received. Please refer to the
   // HandleMouseEventInternal function as to why this is needed.
   LONG last_mouse_hwheel_time_;
@@ -742,8 +754,14 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
 
-  // Implements IRawElementProviderFragmentRoot when UIA is enabled
+  // Implements IRawElementProviderFragmentRoot when UIA is enabled.
   std::unique_ptr<ui::AXFragmentRootWin> ax_fragment_root_;
+
+  // Set to true when we return a UIA object. Determines whether we need to
+  // call UIA to clean up object references on window destruction.
+  // This is important to avoid triggering a cross-thread COM call which could
+  // cause re-entrancy during teardown. https://crbug.com/1087553
+  bool did_return_uia_object_;
 
   // The location where the user clicked on the caption. We cache this when we
   // receive the WM_NCLBUTTONDOWN message. We use this in the subsequent

@@ -33,15 +33,19 @@ enum XInputType {
 enum class GamepadId : uint32_t {
   // ID value representing an unknown gamepad or non-gamepad.
   kUnknownGamepad = 0,
-
+  // Fake IDs for devices which report as 0x0000 0x0000
+  kPowerALicPro = 0x0000ff00,
   // ID values for supported devices.
   kAsusTekProduct4500 = 0x0b054500,
   kBroadcomProduct8502 = 0x0a5c8502,
   kDragonRiseProduct0006 = 0x00790006,
   kDragonRiseProduct0011 = 0x00790011,
+  kElecomProduct200f = 0x056e200f,
+  kElecomProduct2010 = 0x056e2010,
   kGoogleProduct2c40 = 0x18d12c40,
   kGoogleProduct9400 = 0x18d19400,
   kGreenAsiaProduct0003 = 0x0e8f0003,
+  kHoriProduct00c1 = 0x0f0d00c1,
   kLakeviewResearchProduct0005 = 0x09250005,
   kLakeviewResearchProduct8866 = 0x09258866,
   kLogitechProductc216 = 0x046dc216,
@@ -84,6 +88,7 @@ enum class GamepadId : uint32_t {
   kSonyProduct05c4 = 0x054c05c4,
   kSonyProduct09cc = 0x054c09cc,
   kSonyProduct0ba0 = 0x054c0ba0,
+  kSonyProduct0ce6 = 0x054c0ce6,
   kSteelSeriesBtProduct1419 = 0x01111419,
   kSteelSeriesProduct1412 = 0x10381412,
   kSteelSeriesProduct1418 = 0x10381418,

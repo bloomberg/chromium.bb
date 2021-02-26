@@ -14,20 +14,23 @@
 #include "chrome/browser/android/feed/v2/refresh_task_scheduler_impl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_version.h"
 #include "components/background_task_scheduler/background_task_scheduler_factory.h"
+#include "components/feed/buildflags.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace feed {
 namespace {
@@ -42,6 +45,10 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   DisplayMetrics GetDisplayMetrics() override {
     return FeedServiceBridge::GetDisplayMetrics();
   }
+  void ClearAll() override { FeedServiceBridge::ClearAll(); }
+  void PrefetchImage(const GURL& url) override {
+    FeedServiceBridge::PrefetchImage(url);
+  }
 };
 
 }  // namespace
@@ -49,8 +56,17 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
 // static
 FeedService* FeedServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<FeedService*>(
-      GetInstance()->GetServiceForBrowserContext(context, /*create=*/true));
+// Note that if both v1 and v2 are disabled in the build, feed::IsV2Enabled()
+// returns true. In that case, this function will return null. This prevents
+// creation of the Feed surface from triggering any other Feed behavior.
+#if BUILDFLAG(ENABLE_FEED_V2)
+  if (context)
+    return static_cast<FeedService*>(
+        GetInstance()->GetServiceForBrowserContext(context, /*create=*/true));
+  return nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 // static
@@ -65,6 +81,8 @@ FeedServiceFactory::FeedServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(background_task::BackgroundTaskSchedulerFactory::GetInstance());
+  DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
+  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
 }
 
 FeedServiceFactory::~FeedServiceFactory() = default;
@@ -96,6 +114,12 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   chrome_info.version = base::Version({CHROME_VERSION});
   chrome_info.channel = chrome::GetChannel();
 
+  offline_pages::PrefetchService* prefetch_service = nullptr;
+  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
+    prefetch_service = offline_pages::PrefetchServiceFactory::GetForKey(
+        profile->GetProfileKey());
+  }
+
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),
       std::make_unique<RefreshTaskSchedulerImpl>(
@@ -108,7 +132,9 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
       identity_manager,
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-
+      prefetch_service,
+      offline_pages::OfflinePageModelFactory::GetForKey(
+          profile->GetProfileKey()),
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

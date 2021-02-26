@@ -105,7 +105,7 @@ jlong JNI_ChromeBrowserProvider_ConvertJLongObjectToPrimitive(
   ScopedJavaLocalRef<jclass> jlong_clazz = GetClass(env, "java/lang/Long");
   jmethodID long_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jlong_clazz.obj(), "longValue", "()J");
-  return env->CallLongMethod(long_obj.obj(), long_value, NULL);
+  return env->CallLongMethod(long_obj.obj(), long_value, nullptr);
 }
 
 jboolean JNI_ChromeBrowserProvider_ConvertJBooleanObjectToPrimitive(
@@ -115,7 +115,7 @@ jboolean JNI_ChromeBrowserProvider_ConvertJBooleanObjectToPrimitive(
       GetClass(env, "java/lang/Boolean");
   jmethodID boolean_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jboolean_clazz.obj(), "booleanValue", "()Z");
-  return env->CallBooleanMethod(boolean_object.obj(), boolean_value, NULL);
+  return env->CallBooleanMethod(boolean_object.obj(), boolean_value, nullptr);
 }
 
 base::Time ConvertJlongToTime(jlong value) {
@@ -130,7 +130,7 @@ jint JNI_ChromeBrowserProvider_ConvertJIntegerToJint(
       GetClass(env, "java/lang/Integer");
   jmethodID int_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jinteger_clazz.obj(), "intValue", "()I");
-  return env->CallIntMethod(integer_obj.obj(), int_value, NULL);
+  return env->CallIntMethod(integer_obj.obj(), int_value, nullptr);
 }
 
 // ------------- Utility methods used by tasks ------------- //
@@ -162,9 +162,9 @@ class AddBookmarkTask : public BookmarkModelTask {
               const bool is_folder,
               const int64_t parent_id) {
     int64_t result = kInvalidBookmarkId;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&AddBookmarkTask::RunOnUIThread,
-                   model(), title, url, is_folder, parent_id, &result));
+    RunOnUIThreadBlocking::Run(base::BindOnce(&AddBookmarkTask::RunOnUIThread,
+                                              model(), title, url, is_folder,
+                                              parent_id, &result));
     return result;
   }
 
@@ -185,7 +185,7 @@ class AddBookmarkTask : public BookmarkModelTask {
     // Check if the bookmark already exists.
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(gurl);
     if (!node) {
-      const BookmarkNode* parent_node = NULL;
+      const BookmarkNode* parent_node = nullptr;
       if (parent_id >= 0)
         parent_node = bookmarks::GetBookmarkNodeByID(model.get(), parent_id);
       if (!parent_node)
@@ -212,8 +212,8 @@ class RemoveBookmarkTask : public BookmarkModelTask {
 
   int Run(const int64_t id) {
     bool did_delete = false;
-    RunOnUIThreadBlocking::Run(base::Bind(&RemoveBookmarkTask::RunOnUIThread,
-                                          model(), id, &did_delete));
+    RunOnUIThreadBlocking::Run(base::BindOnce(
+        &RemoveBookmarkTask::RunOnUIThread, model(), id, &did_delete));
     return did_delete ? 1 : 0;
   }
 
@@ -248,9 +248,9 @@ class UpdateBookmarkTask : public BookmarkModelTask {
           const base::string16& url,
           const int64_t parent_id) {
     bool did_update = false;
-    RunOnUIThreadBlocking::Run(base::Bind(&UpdateBookmarkTask::RunOnUIThread,
-                                          model(), id, title, url, parent_id,
-                                          &did_update));
+    RunOnUIThreadBlocking::Run(
+        base::BindOnce(&UpdateBookmarkTask::RunOnUIThread, model(), id, title,
+                       url, parent_id, &did_update));
     return did_update ? 1 : 0;
   }
 
@@ -307,9 +307,8 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
 
   bool Run(const int64_t id) {
     bool result = false;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&IsInMobileBookmarksBranchTask::RunOnUIThread,
-                   model(), id, &result));
+    RunOnUIThreadBlocking::Run(base::BindOnce(
+        &IsInMobileBookmarksBranchTask::RunOnUIThread, model(), id, &result));
     return result;
   }
 
@@ -382,13 +381,12 @@ class AddBookmarkFromAPITask : public HistoryProviderTask {
       : HistoryProviderTask(service, cancelable_tracker) {}
 
   history::URLID Run(const history::HistoryAndBookmarkRow& row) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::InsertHistoryAndBookmark,
-                   base::Unretained(service()),
-                   row,
-                   base::Bind(&AddBookmarkFromAPITask::OnBookmarkInserted,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::InsertHistoryAndBookmark,
+        base::Unretained(service()), row,
+        base::BindOnce(&AddBookmarkFromAPITask::OnBookmarkInserted,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -410,23 +408,20 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
  public:
   QueryBookmarksFromAPITask(AndroidHistoryProviderService* service,
                             base::CancelableTaskTracker* cancelable_tracker)
-      : HistoryProviderTask(service, cancelable_tracker), result_(NULL) {}
+      : HistoryProviderTask(service, cancelable_tracker), result_(nullptr) {}
 
   history::AndroidStatement* Run(
       const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::QueryHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   projections,
-                   selection,
-                   selection_args,
-                   sort_order,
-                   base::Bind(&QueryBookmarksFromAPITask::OnBookmarksQueried,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::QueryHistoryAndBookmarks,
+        base::Unretained(service()), projections, selection, selection_args,
+        sort_order,
+        base::BindOnce(&QueryBookmarksFromAPITask::OnBookmarksQueried,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -451,15 +446,12 @@ class UpdateBookmarksFromAPITask : public HistoryProviderTask {
   int Run(const history::HistoryAndBookmarkRow& row,
           const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   row,
-                   selection,
-                   selection_args,
-                   base::Bind(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
+        base::Unretained(service()), row, selection, selection_args,
+        base::BindOnce(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -483,14 +475,12 @@ class RemoveBookmarksFromAPITask : public HistoryProviderTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   selection,
-                   selection_args,
-                   base::Bind(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
+        base::Unretained(service()), selection, selection_args,
+        base::BindOnce(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -514,14 +504,12 @@ class RemoveHistoryFromAPITask : public HistoryProviderTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::DeleteHistory,
-                   base::Unretained(service()),
-                   selection,
-                   selection_args,
-                   base::Bind(&RemoveHistoryFromAPITask::OnHistoryRemoved,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::DeleteHistory,
+        base::Unretained(service()), selection, selection_args,
+        base::BindOnce(&RemoveHistoryFromAPITask::OnHistoryRemoved,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -584,8 +572,8 @@ class AddSearchTermFromAPITask : public SearchTermTask {
 
   history::URLID Run(const history::SearchRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AddSearchTermFromAPITask::MakeRequestOnUIThread,
-                   base::Unretained(this), row));
+        base::BindOnce(&AddSearchTermFromAPITask::MakeRequestOnUIThread,
+                       base::Unretained(this), row));
     return result_;
   }
 
@@ -596,8 +584,8 @@ class AddSearchTermFromAPITask : public SearchTermTask {
     BuildSearchRow(&internal_row);
     service()->InsertSearchTerm(
         internal_row,
-        base::Bind(&AddSearchTermFromAPITask::OnSearchTermInserted,
-                   base::Unretained(this)),
+        base::BindOnce(&AddSearchTermFromAPITask::OnSearchTermInserted,
+                       base::Unretained(this)),
         cancelable_tracker());
   }
 
@@ -619,22 +607,20 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
   QuerySearchTermsFromAPITask(AndroidHistoryProviderService* service,
                               base::CancelableTaskTracker* cancelable_tracker,
                               Profile* profile)
-      : SearchTermTask(service, cancelable_tracker, profile), result_(NULL) {}
+      : SearchTermTask(service, cancelable_tracker, profile),
+        result_(nullptr) {}
 
   history::AndroidStatement* Run(
       const std::vector<history::SearchRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order) {
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::QuerySearchTerms,
-        base::Unretained(service()),
-        projections,
-        selection,
-        selection_args,
+        base::Unretained(service()), projections, selection, selection_args,
         sort_order,
-        base::Bind(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
-                   base::Unretained(this)),
+        base::BindOnce(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -663,8 +649,8 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
           const std::string& selection,
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&UpdateSearchTermsFromAPITask::MakeRequestOnUIThread,
-                   base::Unretained(this), row, selection, selection_args));
+        base::BindOnce(&UpdateSearchTermsFromAPITask::MakeRequestOnUIThread,
+                       base::Unretained(this), row, selection, selection_args));
     return result_;
   }
 
@@ -677,11 +663,9 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
     history::SearchRow internal_row = row;
     BuildSearchRow(&internal_row);
     service()->UpdateSearchTerms(
-        internal_row,
-        selection,
-        selection_args,
-        base::Bind(&UpdateSearchTermsFromAPITask::OnSearchTermsUpdated,
-                   base::Unretained(this)),
+        internal_row, selection, selection_args,
+        base::BindOnce(&UpdateSearchTermsFromAPITask::OnSearchTermsUpdated,
+                       base::Unretained(this)),
         cancelable_tracker());
   }
 
@@ -705,13 +689,11 @@ class RemoveSearchTermsFromAPITask : public SearchTermTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::DeleteSearchTerms,
-        base::Unretained(service()),
-        selection,
-        selection_args,
-        base::Bind(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
-                   base::Unretained(this)),
+        base::Unretained(service()), selection, selection_args,
+        base::BindOnce(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -962,7 +944,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
 }
 
 // Updates the bookmarks with the given column values. The value is not given if
-// it is NULL.
+// it is nullptr.
 jint ChromeBrowserProvider::UpdateBookmarkFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1025,7 +1007,7 @@ jint ChromeBrowserProvider::RemoveHistoryFromAPI(
 }
 
 // Add the search term with the given column values. The value is not given if
-// it is NULL.
+// it is nullptr.
 jlong ChromeBrowserProvider::AddSearchTermFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1101,7 +1083,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
 }
 
 // Updates the search terms with the given column values. The value is not
-// given if it is NULL.
+// given if it is nullptr.
 jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

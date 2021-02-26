@@ -4,8 +4,7 @@
 
 #include "content/browser/android/dialog_overlay_impl.h"
 
-#include "base/task/post_task.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/android/content_jni_headers/DialogOverlayImpl_jni.h"
@@ -136,7 +135,7 @@ void DialogOverlayImpl::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UnregisterCallbacksIfNeeded();
   // We delete soon since this might be part of an onDismissed callback.
-  base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+  GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
 }
 
 void DialogOverlayImpl::GetCompositorOffset(
@@ -259,7 +258,7 @@ static jint JNI_DialogOverlayImpl_RegisterSurface(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
       gpu::GpuSurfaceTracker::SurfaceRecord(
-          gfx::kNullAcceleratedWidget, surface.obj(),
+          gfx::kNullAcceleratedWidget, surface,
           false /* can_be_used_with_surface_control */));
 }
 

@@ -11,7 +11,7 @@
 
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_item.h"
-#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
+#include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -23,20 +23,20 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 117;
+constexpr int kAshAcceleratorsTotalNum = 118;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "d373edc491b25723d45223b590b288bd";
+constexpr char kAshAcceleratorsHash[] = "8c10cc51d4e84e4b94310bc91d15a0a8";
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 95;
+constexpr int kChromeAcceleratorsTotalNum = 97;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "ef0b7eb1a1dabd26e964c6593e4698a4";
+constexpr char kChromeAcceleratorsHash[] = "ae0381db45f4d0fde37ff78948963369";
 #else
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 94;
+constexpr int kChromeAcceleratorsTotalNum = 96;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "f22167989af00d94f8de75cbc89b977e";
+constexpr char kChromeAcceleratorsHash[] = "a4be06225eea30653044ea033b8b702d";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const char* BooleanToString(bool value) {
@@ -162,11 +162,13 @@ TEST_F(KeyboardShortcutViewerMetadataTest, CheckAcceleratorIdHasAccelerator) {
     if (shortcut_item.description_message_id ==
             IDS_KSV_DESCRIPTION_DESKS_NEW_DESK ||
         shortcut_item.description_message_id ==
-            IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK) {
+            IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK ||
+        shortcut_item.description_message_id ==
+            IDS_KSV_DESCRIPTION_CARET_BROWSING_TOGGLE) {
       // Ignore these for now until https://crbug.com/976487 is fixed.
       // These two accelerators have to be listed differently in the keyboard
       // shortcut viewer than how they are actually defined in the accelerator
-      // table due to the SEARCH + "=" and "-" remapping to F11 and F12
+      // table due to the SEARCH + "1","2"..."0","=","-" remapping to F1...F12
       // respectively.
       continue;
     }
@@ -232,6 +234,9 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
   std::vector<AcceleratorMapping> chrome_accelerators;
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i)
     ash_accelerators.emplace_back(ash::kAcceleratorData[i]);
+  for (size_t i = 0; i < ash::kDisableWithNewMappingAcceleratorDataLength; ++i)
+    ash_accelerators.emplace_back(
+        ash::kDisableWithNewMappingAcceleratorData[i]);
   for (const auto& accel_mapping : GetAcceleratorList())
     chrome_accelerators.emplace_back(accel_mapping);
 

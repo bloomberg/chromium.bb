@@ -83,6 +83,20 @@ class PlatformInfo(object):
                 return True
         return False
 
+    def is_running_rosetta(self):
+        if self.is_mac():
+            # If we are running under Rosetta, platform.machine() is
+            # 'x86_64'; we need to use a sysctl to see if we're being
+            # translated.
+            import ctypes
+            libSystem = ctypes.CDLL("libSystem.dylib")
+            ret = ctypes.c_int(0)
+            size = ctypes.c_size_t(4)
+            e = libSystem.sysctlbyname(ctypes.c_char_p(b'sysctl.proc_translated'),
+                                       ctypes.byref(ret), ctypes.byref(size), None, 0)
+            return e == 0 and ret.value == 1
+        return False
+
     def display_name(self):
         # platform.platform() returns Darwin information for Mac, which is just confusing.
         if self.is_mac():
@@ -157,9 +171,20 @@ class PlatformInfo(object):
             'unrecognized platform string "%s"' % sys_platform)
 
     def _determine_mac_version(self, mac_version_string):
+        major_release = int(mac_version_string.split('.')[0])
         minor_release = int(mac_version_string.split('.')[1])
-        assert 10 <= minor_release <= 15, 'Unsupported mac OS version: %s' % mac_version_string
-        return 'mac10.%d' % minor_release
+        if major_release == 10:
+            assert 10 <= minor_release <= 16, 'Unsupported mac OS version: %s' % mac_version_string
+        elif major_release == 11:
+            assert minor_release == 0, 'Unsupported mac OS version: %s' % mac_version_string
+        else:
+            raise AssertionError('Unsupported mac OS version: %s' %
+                                 mac_version_string)
+
+        return 'mac{major_release}.{minor_release}'.format(
+            major_release=major_release,
+            minor_release=minor_release,
+        )
 
     def _determine_linux_version(self, _):
         return 'trusty'

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -18,7 +18,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -33,6 +32,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTest, AccessToAnotherFileUrl) {
 
 // TODO(lukasza, nasko): https://crbug.com/981018: Enable this test on Macs
 // after understanding what makes it flakily fail on the mac-rel trybot.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_UniversalAccessFromFileUrls DISABLED_UniversalAccessFromFileUrls
 #else
 #define MAYBE_UniversalAccessFromFileUrls UniversalAccessFromFileUrls
@@ -261,10 +261,10 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTest,
       JsReplace(kScript, embedded_test_server()->GetURL("/title2.html"));
 
   // Activate the preference to allow universal access from file URLs.
-  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-  WebPreferences prefs = rvh->GetWebkitPreferences();
+  blink::web_pref::WebPreferences prefs =
+      shell()->web_contents()->GetOrCreateWebPreferences();
   prefs.allow_universal_access_from_file_urls = true;
-  rvh->UpdateWebkitPreferences(prefs);
+  shell()->web_contents()->SetWebPreferences(prefs);
 
   // Navigate to a file: test page.
   GURL page_url = GetTestUrl(nullptr, "title1.html");

@@ -61,8 +61,8 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
 
 void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;
-  DocumentInit init =
-      DocumentInit::Create().WithContextDocument(&GetDocument());
+  DocumentInit init = DocumentInit::Create().WithExecutionContext(
+      GetDocument().GetExecutionContext());
   if (IsA<HTMLDocument>(GetDocument()))
     new_document = MakeGarbageCollected<HTMLDocument>(init);
   else if (GetDocument().IsSVGDocument())
@@ -533,7 +533,7 @@ void DOMPatchSupport::MarkNodeAsUsed(Digest* digest) {
   }
 }
 
-void DOMPatchSupport::Digest::Trace(Visitor* visitor) {
+void DOMPatchSupport::Digest::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   visitor->Trace(children_);
 }

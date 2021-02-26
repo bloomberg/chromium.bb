@@ -65,12 +65,17 @@
       type: "int",
     },
 
+    // Sets the minimum font-size in CSS px. That means the minimum font-size is
+    // applied before applying the device scale factor or page zoom.
     {
       name: "minimumFontSize",
       initial: 0,
       invalidate: "Style",
       type: "int",
     },
+
+    // Sets the minimum font-size in CSS px, but only applies to relative font
+    // units like 'small', em, and percentage sizes.
     {
       name: "minimumLogicalFontSize",
       initial: 0,
@@ -93,7 +98,7 @@
     {
       name: "editingBehaviorType",
       initial: "EditingBehaviorTypeForPlatform()",
-      type: "EditingBehaviorType",
+      type: "mojom::EditingBehavior",
     },
 
     {
@@ -251,11 +256,6 @@
       initial: false,
     },
 
-    {
-      name: "shouldRespectImageOrientation",
-      initial: false,
-    },
-
     // This value indicates the number of simultaneous multi-touch points supported
     // by the currently connected screen/digitizer that supports the most points.
     // From Pointer Events spec:
@@ -264,15 +264,6 @@
       name: "maxTouchPoints",
       initial: 0,
       type: "int",
-    },
-
-    // Whether touch gestures should be "fuzzed" to nearest touch targets.
-    // It's expected that this is enabled everywhere by default, but it may be
-    // disabled for testing purposes as the algorithm is not yet perfect.
-    // crbug.com/304895 tracks removal once we're satisfied with the algorithm.
-    {
-      name: "touchAdjustmentEnabled",
-      initial: true,
     },
 
     // Determines whether WebViewClient::didTapMultipleTargets will be used for
@@ -291,6 +282,10 @@
 
     {
       name: "syncXHRInDocumentsEnabled",
+      initial: true,
+    },
+    {
+      name: "targetBlankImpliesNoOpenerEnabledWillBeRemoved",
       initial: true,
     },
     {
@@ -328,6 +323,14 @@
     // crbug.com/304894 tracks removal once it's been enabled on all platforms.
     {
       name: "touchDragDropEnabled",
+      initial: false,
+    },
+
+    // Fires a contextmenu event when a touch-drag ends, which by default shows
+    // a context-menu.  When implementation issues have been resolved, this
+    // should be merged to touchDragDropEnabled.  See crbug.com/1126473.
+    {
+      name: "touchDragEndContextMenu",
       initial: false,
     },
 
@@ -414,6 +417,7 @@
     {
       name: "mainFrameClipsContent",
       initial: true,
+      invalidate: "ViewportPaintProperties",
     },
 
     // For android.webkit.WebSettings.setUseWideViewport()
@@ -463,6 +467,7 @@
     {
       name: "caretBrowsingEnabled",
       initial: false,
+      invalidate: "Style",
     },
 
     // Font scale factor for accessibility, applied as part of text autosizing.
@@ -501,8 +506,8 @@
     },
     {
       name: "imageAnimationPolicy",
-      initial: "kImageAnimationPolicyAllowed",
-      type: "ImageAnimationPolicy",
+      initial: "mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAllowed",
+      type: "mojom::blink::ImageAnimationPolicy",
     },
 
     // Html preload scanning is a fast, early scan of HTML documents to find loadable
@@ -612,8 +617,8 @@
     // V8 supports different types of caching. Used by V8 bindings.
     {
       name: "v8CacheOptions",
-      initial: "kV8CacheOptionsDefault",
-      type: "V8CacheOptions",
+      initial: "mojom::blink::V8CacheOptions::kDefault",
+      type: "mojom::blink::V8CacheOptions",
     },
 
     // These values are bit fields for the properties of available pointing devices
@@ -621,13 +626,13 @@
     // has pointerType coarse *and* fine).
     {
       name: "availablePointerTypes",
-      initial: "kPointerTypeNone",
+      initial: "ui::POINTER_TYPE_NONE",
       invalidate: "MediaQuery",
       type: "int",
     },
     {
       name: "availableHoverTypes",
-      initial: "kHoverTypeNone",
+      initial: "ui::HOVER_TYPE_NONE",
       invalidate: "MediaQuery",
       type: "int",
     },
@@ -635,15 +640,15 @@
     // These values specify properties of the user's primary pointing device only.
     {
       name: "primaryPointerType",
-      initial: "kPointerTypeNone",
+      initial: "ui::POINTER_TYPE_NONE",
       invalidate: "MediaQuery",
-      type: "PointerType",
+      type: "ui::PointerType",
     },
     {
       name: "primaryHoverType",
-      initial: "kHoverTypeNone",
+      initial: "ui::HOVER_TYPE_NONE",
       invalidate: "MediaQuery",
-      type: "HoverType",
+      type: "ui::HoverType",
     },
 
     // If true, the value in password fields is exposed to assistive technologies.
@@ -715,9 +720,9 @@
     // used by content embedders to specify custom style on certain platforms.
     {
       name: "viewportStyle",
-      initial: "WebViewportStyle::kDefault",
+      initial: "mojom::blink::ViewportStyle::kDefault",
       invalidate: "ViewportRule",
-      type: "WebViewportStyle",
+      type: "mojom::blink::ViewportStyle",
     },
 
     // Automatic track selection is performed based on user preference for track kind specified
@@ -835,7 +840,7 @@
     {
       name: "hideScrollbars",
       initial: false,
-      invalidate: "ViewportScrollbar",
+      invalidate: "ViewportPaintProperties",
     },
 
     // Spellchecking is enabled by default for elements that do not specify it explicitly
@@ -887,59 +892,7 @@
       initial: false,
       invalidate: "ForceDark",
     },
-    {
-      name: "forceDarkModeInversionAlgorithm",
-      initial: "DarkModeInversionAlgorithm::kInvertLightnessLAB",
-      type: "DarkModeInversionAlgorithm",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeGrayscale",
-      initial: false,
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeContrast",
-      initial: 0,
-      type: "double",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeClassifierType",
-      initial: "DarkModeClassifierType::kGeneric",
-      type: "DarkModeClassifierType",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeImagePolicy",
-      initial: "DarkModeImagePolicy::kFilterNone",
-      type: "DarkModeImagePolicy",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModePagePolicy",
-      initial: "DarkModePagePolicy::kFilterByBackground",
-      type: "DarkModePagePolicy",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeTextBrightnessThreshold",
-      initial: "150",
-      type: "int",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeBackgroundBrightnessThreshold",
-      initial: "205",
-      type: "int",
-      invalidate: "ForceDark",
-    },
-    {
-      name: "forceDarkModeImageGrayscale",
-      initial: "0.0",
-      type: "float",
-      invalidate: "ForceDark",
-    },
+
     {
       name: "navigatorPlatformOverride",
       type: "String",
@@ -983,12 +936,12 @@
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx3G",
-      initial: 5000,
+      initial: 3500,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx4G",
-      initial: 4000,
+      initial: 2500,
       type: "int",
     },
 
@@ -1017,12 +970,12 @@
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx3G",
-      initial: 4000,
+      initial: 2500,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx4G",
-      initial: 3000,
+      initial: 1250,
       type: "int",
     },
     //
@@ -1058,9 +1011,18 @@
     // evaluating the prefers-color-scheme media query.
     {
       name: "preferredColorScheme",
-      initial: "PreferredColorScheme::kNoPreference",
+      initial: "mojom::blink::PreferredColorScheme::kLight",
       invalidate: "ColorScheme",
-      type: "PreferredColorScheme",
+      type: "mojom::blink::PreferredColorScheme",
+    },
+
+    // Preferred contrast from the OS/application passed to the renderer for
+    // evaluating the prefers-contrast media query.
+    {
+      name: "preferredContrast",
+      initial: "mojom::blink::PreferredContrast::kNoPreference",
+      invalidate: "MediaQuery",
+      type: "mojom::blink::PreferredContrast",
     },
 
     // Preferred motion-reduction setting from the OS/application passed to the
@@ -1082,12 +1044,39 @@
       invalidate: "MediaQuery",
       type: "NavigationControls",
     },
-
     {
       name: "accessibilityAlwaysShowFocus",
       initial: false,
       invalidate: "Style",
       type: "bool"
-    }
+    },
+    // aria-modal="true" on some platforms requires the accessibility tree to
+    // be pruned so no other background content is exposed to assistive
+    // technology.
+    // https://www.w3.org/TR/core-aam-1.1/#ariaModalTrue
+    {
+      name: "ariaModalPrunesAXTree",
+      initial: false,
+      type: "bool",
+    },
+    // The AXMenuList class provides a fake implementation of the
+    // select element pop-up menu, which is required on platforms like
+    // Mac and Android that use a native pop-up. On other platforms you
+    // can set this flag to false and expose the actual pop-up menu
+    // instead of letting AXMenuList handle it.
+    {
+      name: "useAXMenuList",
+      initial: true,
+    },
+    {
+      name: "selectionClipboardBufferAvailable",
+      initial: false,
+      type: "bool",
+    },
+    {
+      name: "accessibilityIncludeSvgGElement",
+      initial: false,
+      type: "bool",
+    },
   ],
 }

@@ -209,9 +209,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium OS
         </message>
       </if>
-      <message name="IDS_SHORT_PRODUCT_LOGO_ALT_TEXT" desc="Alt text for the Chromium logo image.">
-        Chromium logo
-      </message>
       <!-- Chrome enterprise logo won't be used in Chromium -->
       <message name="IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT" desc="Alt text for the Chromium Enterprise logo image."/>
       <if expr="is_win">
@@ -219,9 +216,16 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           New window
         </message>
       </if>
-      <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
-        Task Manager - Chromium
-      </message>
+      <if expr="is_macosx or chromeos">
+        <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
+          Task Manager
+        </message>
+      </if>
+      <if expr="not is_macosx and not chromeos">
+        <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
+          Task Manager - Chromium
+        </message>
+      </if>
       <message name="IDS_SESSION_CRASHED_VIEW_UMA_OPTIN" desc="Text besides the checkbox to let users optin to UMA in the restore from previous crash bubble.">
         Help make Chromium better by sending crash reports and <ph name="UMA_LINK">$1<ex>usage statistics</ex></ph> to Google
       </message>
@@ -289,9 +293,12 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box." translateable="false">
         Not used in Chromium. Placeholder to keep resource maps in sync.
       </message>
+      <message name="IDS_CPU_X86_SSE2_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the computer they are using will soon be or is already unsupported.">
+        This computer will soon stop receiving Chromium updates because its hardware is no longer supported.
+      </message>
       <if expr="is_macosx">
-        <message name="IDS_MAC_10_9_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using is no longer supported.">
-          Chromium may not function correctly because it is no longer supported on Mac OS X 10.9.
+        <message name="IDS_MAC_10_10_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using will soon be or is already unsupported.">
+          To get future Chromium updates, you'll need OS X 10.11 or later. This computer is using OS X 10.10.
         </message>
       </if>
       <if expr="is_win">
@@ -308,6 +315,16 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium is unresponsive. Relaunch now?
         </message>
       </if>
+      <!-- Sharing messages -->
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from here to your Android phone, sign in to Chromium on both devices.
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES_ORIGIN" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from <ph name="ORIGIN">$1<ex>www.google.com</ex></ph> to your Android phone, sign in to Chromium on both devices.
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND" desc="The text to be shown on the dialog when an error occurred because the device is not synced.">
+        Make sure you are signed in to Chromium on your <ph name="TARGET_DEVICE_NAME">$1<ex>Pixel XL</ex></ph> and then try sending again.
+      </message>
       <!-- Uninstall messages -->
       <if expr="is_win">
         <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
@@ -324,7 +341,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         Make Chromium the default browser
       </message>
       <if expr="chromeos">
-        <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
+        <message name="IDS_EXTERNAL_PROTOCOL_NO_HANDLER_TITLE" desc="External Protocol Dialog Title">
           Chromium OS can't open this page.
         </message>
       </if>
@@ -697,6 +714,16 @@ Chromium is unable to recover your settings.
         </message>
       </if>
 
+      <!-- Dice Web Signin Interception Bubble-->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
+          Create your own profile in Chromium?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is managed and the existing account is personal">
+          To separate personal and <ph name="NEW_USER">$1<ex>example.com</ex></ph> browsing, create a new profile in Chromium
+        </message>
+      </if>
+
       <!-- Chrome Cleanup prompt.
            Note: these strings should only be used by Google Chrome, but
                  omitting them brings up a hash collision error. -->
@@ -950,9 +977,6 @@ Chromium is unable to recover your settings.
       </message>
 
       <!-- User menu errors -->
-      <message name="IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE" desc="Message of the out-of-date Chrome client error in the header of desktop user menu.">
-        Chromium is out of date
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON" desc="Button in the header of desktop user menu that prompts the user to update Chrome to fix the out-of-date Chrome client error.">
         Update Chromium
       </message>
@@ -1137,6 +1161,40 @@ Chromium is unable to recover your settings.
 
       </if>
 
+      <!-- Profile Picker -->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_TITLE" desc="Profile picker main view title">
+          Who's using Chromium?
+        </message>
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE" desc="Profile picker main view subtitle">
+          Use different profiles in Chromium to separate work and personal browsing, or for different people who use this device
+        </message>
+        <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_SIGNED_IN_PROFILE" desc="Remove warning message shown for signed in profiles shown when the user selects remove from the 3 dotted menu">
+          This will permanently delete your browsing data from this device. To recover the data, sign in to Chromium as
+        </message>
+        <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_TITLE" desc="Profile picker profile type choice title">
+          Set up your new Chromium profile
+        </message>
+        <message name="IDS_PROFILE_PICKER_ASK_ON_STARTUP" desc="Text for the checkbox on the profile picker main view">
+          Ask when Chromium opens
+        </message>
+      </if>
+
+      <!-- Rosetta installation for protected media -->
+      <if expr="is_macosx">
+        <message name="IDS_ROSETTA_INSTALL_TITLE"
+                   desc="Title of the 'do you want to install Rosetta' dialog. Used when there is a page title.">
+          To enable Chromium to play protected media, you need to install Rosetta. Do you want to install it now?
+        </message>
+        <message name="IDS_ROSETTA_INSTALL_BODY"
+                   desc="Body text of the 'do you want to install Rosetta' dialog.">
+          Rosetta enables Chromium to play the protected media on this page.
+        </message>
+        <message name="IDS_ROSETTA_INSTALL_RESTART_DIALOG"
+                   desc="Title text of the dialog once Rosetta is installed.">
+          To use Rosetta to play protected media, you must restart Chromium.
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

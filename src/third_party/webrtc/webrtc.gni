@@ -85,9 +85,6 @@ declare_args() {
   # library that comes with WebRTC (i.e. rtc_build_ssl == 0).
   rtc_ssl_root = ""
 
-  # Selects fixed-point code where possible.
-  rtc_prefer_fixed_point = false
-
   # Enable when an external authentication mechanism is used for performing
   # packet authentication for RTP packets instead of libsrtp.
   rtc_enable_external_auth = build_with_chromium
@@ -115,7 +112,7 @@ declare_args() {
   # By default it's only enabled on desktop Linux (excludes ChromeOS) and
   # only when using the sysroot as PipeWire is not available in older and
   # supported Ubuntu and Debian distributions.
-  rtc_use_pipewire = is_desktop_linux && use_sysroot
+  rtc_use_pipewire = is_linux && use_sysroot
 
   # Set this to link PipeWire directly instead of using the dlopen.
   rtc_link_pipewire = false
@@ -123,8 +120,8 @@ declare_args() {
   # Enable to use the Mozilla internal settings.
   build_with_mozilla = false
 
-  # Enable use of Android AAudio which requires Android SDK 26 or above and
-  # NDK r16 or above.
+  # Experimental: enable use of Android AAudio which requires Android SDK 26 or above
+  # and NDK r16 or above.
   rtc_enable_android_aaudio = false
 
   # Set to "func", "block", "edge" for coverage generation.
@@ -134,6 +131,8 @@ declare_args() {
   # See http://clang.llvm.org/docs/SanitizerCoverage.html .
   rtc_sanitize_coverage = ""
 
+  # Selects fixed-point code where possible.
+  rtc_prefer_fixed_point = false
   if (current_cpu == "arm" || current_cpu == "arm64") {
     rtc_prefer_fixed_point = true
   }
@@ -154,6 +153,9 @@ declare_args() {
   # bugs.webrtc.org/9213#c13 for more info.
   rtc_use_h264 =
       proprietary_codecs && !is_android && !is_ios && !(is_win && !is_clang)
+
+  # Enable this flag to make webrtc::Mutex be implemented by absl::Mutex.
+  rtc_use_absl_mutex = false
 
   # By default, use normal platform audio support or dummy audio, but don't
   # use file-based audio playout and record.
@@ -193,6 +195,11 @@ declare_args() {
   # doesn't assume /DUNICODE and /D_UNICODE but that it explicitly uses
   # wide character functions.
   rtc_win_undef_unicode = false
+
+  # When set to true, a capturer implementation that uses the
+  # Windows.Graphics.Capture APIs will be available for use. These APIs are
+  # available in the Win 10 SDK v10.0.19041.
+  rtc_enable_win_wgc = false
 }
 
 if (!build_with_mozilla) {
@@ -239,6 +246,14 @@ declare_args() {
   # standalone WebRTC.
   rtc_include_internal_audio_device = !build_with_chromium
 
+  # Set this to true to enable the avx2 support in webrtc.
+  # TODO: Make sure that AVX2 works also for non-clang compilers.
+  if (is_clang == true) {
+    rtc_enable_avx2 = true
+  } else {
+    rtc_enable_avx2 = false
+  }
+
   # Include tests in standalone checkout.
   rtc_include_tests = !build_with_chromium && !build_with_mozilla
 
@@ -272,7 +287,7 @@ rtc_opus_dir = "//third_party/opus"
 # Desktop capturer is supported only on Windows, OSX and Linux.
 rtc_desktop_capture_supported =
     (is_win && current_os != "winuwp") || is_mac ||
-    (is_linux && (rtc_use_x11_extensions || rtc_use_pipewire))
+    ((is_linux || is_chromeos) && (rtc_use_x11_extensions || rtc_use_pipewire))
 
 ###############################################################################
 # Templates
@@ -323,16 +338,19 @@ set_defaults("rtc_test") {
 set_defaults("rtc_library") {
   configs = rtc_add_configs
   suppressed_configs = []
+  absl_deps = []
 }
 
 set_defaults("rtc_source_set") {
   configs = rtc_add_configs
   suppressed_configs = []
+  absl_deps = []
 }
 
 set_defaults("rtc_static_library") {
   configs = rtc_add_configs
   suppressed_configs = []
+  absl_deps = []
 }
 
 set_defaults("rtc_executable") {
@@ -432,7 +450,8 @@ template("rtc_test") {
     }
     if (!build_with_chromium && is_android) {
       android_manifest = webrtc_root + "test/android/AndroidManifest.xml"
-      min_sdk_version = 16
+      min_sdk_version = 21
+      target_sdk_version = 23
       deps += [ webrtc_root + "test:native_test_java" ]
     }
   }
@@ -525,6 +544,20 @@ template("rtc_source_set") {
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
     }
+
+    # If absl_deps is [], no action is needed. If not [], then it needs to be
+    # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
+    # otherwise it just needs to be added to deps.
+    if (absl_deps != []) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (build_with_chromium) {
+        deps += [ "//third_party/abseil-cpp:absl" ]
+      } else {
+        deps += absl_deps
+      }
+    }
   }
 }
 
@@ -599,6 +632,20 @@ template("rtc_static_library") {
     }
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
+    }
+
+    # If absl_deps is [], no action is needed. If not [], then it needs to be
+    # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
+    # otherwise it just needs to be added to deps.
+    if (absl_deps != []) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (build_with_chromium) {
+        deps += [ "//third_party/abseil-cpp:absl" ]
+      } else {
+        deps += absl_deps
+      }
     }
   }
 }
@@ -711,6 +758,20 @@ template("rtc_library") {
     }
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
+    }
+
+    # If absl_deps is [], no action is needed. If not [], then it needs to be
+    # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
+    # otherwise it just needs to be added to deps.
+    if (absl_deps != []) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (build_with_chromium) {
+        deps += [ "//third_party/abseil-cpp:absl" ]
+      } else {
+        deps += absl_deps
+      }
     }
   }
 }
@@ -826,50 +887,43 @@ template("rtc_shared_library") {
 }
 
 if (is_ios) {
-  set_defaults("rtc_ios_xctest_test") {
-    configs = rtc_add_configs
-    suppressed_configs = []
-  }
-
-  template("rtc_ios_xctest_test") {
-    ios_xctest_test(target_name) {
-      forward_variables_from(invoker,
-                             "*",
-                             [
-                               "configs",
-                               "public_configs",
-                               "suppressed_configs",
-                               "visibility",
-                             ])
-      forward_variables_from(invoker, [ "visibility" ])
-      if (!defined(visibility)) {
-        visibility = webrtc_default_visibility
-      }
-      configs += invoker.configs
-      configs -= rtc_remove_configs
-      configs -= invoker.suppressed_configs
-      public_configs = [ rtc_common_inherited_config ]
-      if (defined(invoker.public_configs)) {
-        public_configs += invoker.public_configs
-      }
-    }
-  }
-
   # TODO: Generate module.modulemap file to enable use in Swift
   # projects. See "mac_framework_bundle_with_umbrella_header".
   template("ios_framework_bundle_with_umbrella_header") {
     forward_variables_from(invoker, [ "output_name" ])
+    this_target_name = target_name
     umbrella_header_path =
-        "$target_gen_dir/$output_name.framework/Headers/$output_name.h"
+        "$target_gen_dir/$output_name.framework/WebRTC/$output_name.h"
+
+    action_foreach("create_bracket_include_headers_$target_name") {
+      script = "//tools_webrtc/apple/copy_framework_header.py"
+      sources = invoker.sources
+      output_name = invoker.output_name
+      outputs = [
+        "$target_gen_dir/$output_name.framework/WebRTC/{{source_file_part}}",
+      ]
+      args = [
+        "--input",
+        "{{source}}",
+        "--output",
+        rebase_path(target_gen_dir, root_build_dir) +
+            "/$output_name.framework/WebRTC/{{source_file_part}}",
+      ]
+    }
 
     ios_framework_bundle(target_name) {
-      forward_variables_from(invoker, "*", [])
-
-      deps += [ ":copy_umbrella_header_$target_name" ]
+      forward_variables_from(invoker, "*", [ "public_headers" ])
+      public_headers = get_target_outputs(
+              ":create_bracket_include_headers_$this_target_name")
+      deps += [
+        ":copy_umbrella_header_$target_name",
+        ":create_bracket_include_headers_$target_name",
+      ]
     }
 
     action("umbrella_header_$target_name") {
-      forward_variables_from(invoker, [ "public_headers" ])
+      public_headers = get_target_outputs(
+              ":create_bracket_include_headers_$this_target_name")
 
       script = "//tools_webrtc/ios/generate_umbrella_header.py"
 
@@ -879,6 +933,7 @@ if (is_ios) {
                rebase_path(umbrella_header_path, root_build_dir),
                "--sources",
              ] + public_headers
+      deps = [ ":create_bracket_include_headers_$this_target_name" ]
     }
 
     copy("copy_umbrella_header_$target_name") {
@@ -925,15 +980,34 @@ if (is_mac) {
         ":copy_framework_headers_$this_target_name",
         ":copy_modulemap_$this_target_name",
         ":copy_umbrella_header_$this_target_name",
+        ":create_bracket_include_headers_$this_target_name",
         ":modulemap_$this_target_name",
         ":umbrella_header_$this_target_name",
       ]
     }
 
+    action_foreach("create_bracket_include_headers_$this_target_name") {
+      script = "//tools_webrtc/apple/copy_framework_header.py"
+      sources = invoker.sources
+      output_name = invoker.output_name
+      outputs = [
+        "$target_gen_dir/$output_name.framework/WebRTC/{{source_file_part}}",
+      ]
+      args = [
+        "--input",
+        "{{source}}",
+        "--output",
+        rebase_path(target_gen_dir, root_build_dir) +
+            "/$output_name.framework/WebRTC/{{source_file_part}}",
+      ]
+    }
+
     bundle_data("copy_framework_headers_$this_target_name") {
-      forward_variables_from(invoker, [ "sources" ])
+      sources = get_target_outputs(
+              ":create_bracket_include_headers_$this_target_name")
 
       outputs = [ "{{bundle_contents_dir}}/Headers/{{source_file_part}}" ]
+      deps = [ ":create_bracket_include_headers_$this_target_name" ]
     }
 
     action("modulemap_$this_target_name") {
@@ -954,7 +1028,8 @@ if (is_mac) {
     }
 
     action("umbrella_header_$this_target_name") {
-      forward_variables_from(invoker, [ "sources" ])
+      sources = get_target_outputs(
+              ":create_bracket_include_headers_$this_target_name")
 
       script = "//tools_webrtc/ios/generate_umbrella_header.py"
 
@@ -964,6 +1039,7 @@ if (is_mac) {
                rebase_path(umbrella_header_path, root_build_dir),
                "--sources",
              ] + sources
+      deps = [ ":create_bracket_include_headers_$this_target_name" ]
     }
 
     bundle_data("copy_umbrella_header_$this_target_name") {
@@ -1002,6 +1078,7 @@ if (is_android) {
       }
 
       no_build_hooks = true
+      not_needed([ "android_manifest" ])
     }
   }
 

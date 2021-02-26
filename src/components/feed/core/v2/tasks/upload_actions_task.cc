@@ -6,15 +6,15 @@
 
 #include <memory>
 #include <vector>
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/v2/wire/action_request.pb.h"
-#include "components/feed/core/proto/v2/wire/feed_action_request.pb.h"
-#include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
+#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/request_throttler.h"
 
 namespace feed {
@@ -36,17 +36,19 @@ bool ShouldUpload(const StoredAction& action) {
          age < GetFeedConfig().max_action_age;
 }
 
-void ReportBatchStatus(UploadActionsBatchStatus status) {
-  // TODO(iwells): Get rid of the DVLOG and record status to a histogram.
-  DVLOG(1) << "UploadActionsBatchStatus: " << status;
-}
-
 }  // namespace
+
+UploadActionsTask::Result::Result() = default;
+UploadActionsTask::Result::~Result() = default;
+UploadActionsTask::Result::Result(UploadActionsTask::Result&&) = default;
+UploadActionsTask::Result& UploadActionsTask::Result::operator=(Result&&) =
+    default;
 
 class UploadActionsTask::Batch {
  public:
   Batch()
-      : feed_action_request_(std::make_unique<feedwire::FeedActionRequest>()) {}
+      : feed_action_request_(
+            std::make_unique<feedwire::UploadActionsRequest>()) {}
   Batch(const Batch&) = delete;
   Batch& operator=(const Batch&) = delete;
   ~Batch() = default;
@@ -67,8 +69,7 @@ class UploadActionsTask::Batch {
         if (upload_size > 0ul && message_size + upload_size >
                                      GetFeedConfig().max_action_upload_bytes)
           break;
-
-        *feed_action_request_->add_feed_action() = action.action();
+        *feed_action_request_->add_feed_actions() = action.action();
         action.set_upload_attempt_count(action.upload_attempt_count() + 1);
         uploaded_ids_.push_back(LocalActionId(action.id()));
         to_update->push_back(std::move(action));
@@ -88,7 +89,7 @@ class UploadActionsTask::Batch {
   size_t UploadCount() const { return uploaded_ids_.size(); }
   size_t StaleCount() const { return stale_count_; }
 
-  std::unique_ptr<feedwire::FeedActionRequest> disown_feed_action_request() {
+  std::unique_ptr<feedwire::UploadActionsRequest> disown_feed_action_request() {
     return std::move(feed_action_request_);
   }
   std::vector<LocalActionId> disown_uploaded_ids() {
@@ -96,7 +97,7 @@ class UploadActionsTask::Batch {
   }
 
  private:
-  std::unique_ptr<feedwire::FeedActionRequest> feed_action_request_;
+  std::unique_ptr<feedwire::UploadActionsRequest> feed_action_request_;
   std::vector<LocalActionId> uploaded_ids_;
   size_t stale_count_ = 0;
 };
@@ -110,8 +111,11 @@ UploadActionsTask::UploadActionsTask(
       upload_now_(upload_now),
       wire_action_(std::move(action)),
       callback_(std::move(callback)) {
-  wire_action_->mutable_client_data()->set_timestamp_seconds(
+  auto* client_data = wire_action_->mutable_client_data();
+  client_data->set_timestamp_seconds(
       (base::Time::Now() - base::Time::UnixEpoch()).InSeconds());
+  client_data->set_action_surface(
+      feedwire::FeedAction::ClientData::ANDROID_CHROME_NEW_TAB);
 }
 
 UploadActionsTask::UploadActionsTask(
@@ -138,7 +142,10 @@ void UploadActionsTask::Run() {
   // to upload all pending actions.
   if (wire_action_) {
     StoredAction action;
-    action.set_id(stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
+    int32_t action_id =
+        stream_->GetMetadata()->GetNextActionId().GetUnsafeValue();
+    action.set_id(action_id);
+    wire_action_->mutable_client_data()->set_sequence_number(action_id);
     *action.mutable_action() = std::move(*wire_action_);
     // No need to set upload_attempt_count as it defaults to 0.
     // WriteActions() sets the ID.
@@ -170,6 +177,11 @@ void UploadActionsTask::OnStorePendingActionFinished(bool write_ok) {
     return;
   }
 
+  if (!stream_->CanUploadActions()) {
+    Done(UploadActionsStatus::kAbortUploadBecauseDisabled);
+    return;
+  }
+
   // If the new action was stored and upload_now was set, load all pending
   // actions and try to upload.
   ReadActions();
@@ -192,23 +204,23 @@ void UploadActionsTask::UploadPendingActions() {
     Done(UploadActionsStatus::kNoPendingActions);
     return;
   }
+  // Can't upload actions for signed-out users, so abort.
+  if (!stream_->IsSignedIn()) {
+    Done(UploadActionsStatus::kAbortUploadForSignedOutUser);
+    return;
+  }
+  if (!stream_->CanUploadActions()) {
+    Done(UploadActionsStatus::kAbortUploadBecauseDisabled);
+    return;
+  }
   UpdateAndUploadNextBatch();
 }
 
 void UploadActionsTask::UpdateAndUploadNextBatch() {
-  // Finish if all pending actions have been visited.
-  if (pending_actions_.empty()) {
-    ReportBatchStatus(UploadActionsBatchStatus::kSuccessfullyUploadedBatch);
-    UpdateTokenAndFinish();
-    return;
-  }
-
   // Finish if there's no quota remaining for actions uploads.
   if (!stream_->GetRequestThrottler()->RequestQuota(
           NetworkRequestType::kUploadActions)) {
-    ReportBatchStatus(UploadActionsBatchStatus::kExhaustedUploadQuota);
-    UpdateTokenAndFinish();
-    return;
+    return BatchComplete(UploadActionsBatchStatus::kExhaustedUploadQuota);
   }
 
   // Grab a few actions to be processed and erase them from pending_actions_.
@@ -228,35 +240,25 @@ void UploadActionsTask::OnUpdateActionsFinished(
     std::unique_ptr<UploadActionsTask::Batch> batch,
     bool update_ok) {
   // Stop if there are no actions to upload.
-  if (batch->UploadCount() == 0ul) {
-    ReportBatchStatus(UploadActionsBatchStatus::kAllActionsWereStale);
-    UpdateTokenAndFinish();
-    return;
-  }
+  if (batch->UploadCount() == 0ul)
+    return BatchComplete(UploadActionsBatchStatus::kAllActionsWereStale);
 
-  // Skip uploading if these actions couldn't be updated in the store.
-  if (!update_ok) {
-    ReportBatchStatus(UploadActionsBatchStatus::kFailedToUpdateStore);
-    UpdateAndUploadNextBatch();
-    return;
-  }
+  // Skip uploading batch if these actions couldn't be updated in the store.
+  if (!update_ok)
+    return BatchComplete(UploadActionsBatchStatus::kFailedToUpdateStore);
+
   upload_attempt_count_ += batch->UploadCount();
   stale_count_ += batch->StaleCount();
 
-  std::unique_ptr<feedwire::FeedActionRequest> request =
+  std::unique_ptr<feedwire::UploadActionsRequest> request =
       batch->disown_feed_action_request();
   request->mutable_consistency_token()->set_token(consistency_token_);
-
-  feedwire::ActionRequest action_request;
-  action_request.set_request_version(
-      feedwire::ActionRequest::FEED_UPLOAD_ACTION);
-  action_request.set_allocated_feed_action_request(request.release());
 
   FeedNetwork* network = stream_->GetNetwork();
   DCHECK(network);
 
   network->SendActionRequest(
-      action_request,
+      *request,
       base::BindOnce(&UploadActionsTask::OnUploadFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(batch)));
 }
@@ -264,16 +266,13 @@ void UploadActionsTask::OnUpdateActionsFinished(
 void UploadActionsTask::OnUploadFinished(
     std::unique_ptr<UploadActionsTask::Batch> batch,
     FeedNetwork::ActionRequestResult result) {
-  if (!result.response_body) {
-    ReportBatchStatus(UploadActionsBatchStatus::kFailedToUpload);
-    UpdateAndUploadNextBatch();
-    return;
-  }
+  last_network_response_info_ = result.response_info;
 
-  consistency_token_ = std::move(result.response_body->feed_response()
-                                     .feed_response()
-                                     .consistency_token()
-                                     .token());
+  if (!result.response_body)
+    return BatchComplete(UploadActionsBatchStatus::kFailedToUpload);
+
+  consistency_token_ =
+      std::move(result.response_body->consistency_token().token());
 
   stream_->GetStore()->RemoveActions(
       batch->disown_uploaded_ids(),
@@ -282,23 +281,39 @@ void UploadActionsTask::OnUploadFinished(
 }
 
 void UploadActionsTask::OnUploadedActionsRemoved(bool remove_ok) {
-  ReportBatchStatus(UploadActionsBatchStatus::kFailedToRemoveUploadedActions);
+  if (remove_ok)
+    BatchComplete(UploadActionsBatchStatus::kSuccessfullyUploadedBatch);
+  else
+    BatchComplete(UploadActionsBatchStatus::kFailedToRemoveUploadedActions);
+}
+
+void UploadActionsTask::BatchComplete(UploadActionsBatchStatus status) {
+  MetricsReporter::OnUploadActionsBatch(status);
+
+  if (pending_actions_.empty() ||
+      status == UploadActionsBatchStatus::kExhaustedUploadQuota ||
+      status == UploadActionsBatchStatus::kAllActionsWereStale) {
+    return UpdateTokenAndFinish();
+  }
   UpdateAndUploadNextBatch();
 }
 
 void UploadActionsTask::UpdateTokenAndFinish() {
-  if (consistency_token_.empty()) {
-    Done(UploadActionsStatus::kFinishedWithoutUpdatingConsistencyToken);
-    return;
-  }
+  if (consistency_token_.empty())
+    return Done(UploadActionsStatus::kFinishedWithoutUpdatingConsistencyToken);
 
   stream_->GetMetadata()->SetConsistencyToken(consistency_token_);
   Done(UploadActionsStatus::kUpdatedConsistencyToken);
 }
 
 void UploadActionsTask::Done(UploadActionsStatus status) {
-  DVLOG(1) << "UploadActionsTask finished with status " << status;
-  std::move(callback_).Run({status, upload_attempt_count_, stale_count_});
+  stream_->GetMetricsReporter()->OnUploadActions(status);
+  Result result;
+  result.status = status;
+  result.upload_attempt_count = upload_attempt_count_;
+  result.stale_count = stale_count_;
+  result.last_network_response_info = std::move(last_network_response_info_);
+  std::move(callback_).Run(std::move(result));
   TaskComplete();
 }
 

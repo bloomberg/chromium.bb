@@ -49,9 +49,6 @@ BookmarkTabHelper::~BookmarkTabHelper() {
 }
 
 bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
-  if (web_contents()->ShowingInterstitialPage())
-    return false;
-
   if (SadTab::ShouldShow(web_contents()->GetCrashedStatus()))
     return false;
 
@@ -62,7 +59,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
 #if !defined(OS_CHROMEOS)
-  if (profile->IsGuestSession())
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
     return false;
 #endif
 
@@ -92,8 +89,8 @@ bool BookmarkTabHelper::HasObserver(BookmarkTabHelperObserver* observer) const {
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_starred_(false),
-      bookmark_model_(NULL),
-      bookmark_drag_(NULL) {
+      bookmark_model_(nullptr),
+      bookmark_drag_(nullptr) {
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(
       web_contents->GetBrowserContext());
   if (bookmark_model_)
@@ -158,17 +155,6 @@ void BookmarkTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
-  UpdateStarredStateForCurrentURL();
-}
-
-void BookmarkTabHelper::DidAttachInterstitialPage() {
-  // Interstitials are not necessarily starred just because the page that
-  // created them is, so star state has to track interstitial attach/detach if
-  // necessary.
-  UpdateStarredStateForCurrentURL();
-}
-
-void BookmarkTabHelper::DidDetachInterstitialPage() {
   UpdateStarredStateForCurrentURL();
 }
 

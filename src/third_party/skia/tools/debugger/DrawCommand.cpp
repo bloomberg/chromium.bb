@@ -28,8 +28,15 @@
 #include "src/core/SkRectPriv.h"
 #include "src/core/SkTextBlobPriv.h"
 #include "src/core/SkWriteBuffer.h"
+#include "src/image/SkImage_Base.h"
 #include "tools/debugger/DebugLayerManager.h"
 #include "tools/debugger/JsonWriteBuffer.h"
+
+#ifdef SK_SUPPORT_GPU
+#include "include/gpu/GrDirectContext.h"
+#else
+class GrDirectContext;
+#endif
 
 #define DEBUGCANVAS_ATTRIBUTE_COMMAND "command"
 #define DEBUGCANVAS_ATTRIBUTE_VISIBLE "visible"
@@ -217,6 +224,7 @@ const char* DrawCommand::GetCommandString(OpType type) {
         case kClipRect_OpType: return "ClipRect";
         case kClipRRect_OpType: return "ClipRRect";
         case kConcat_OpType: return "Concat";
+        case kConcat44_OpType: return "Concat44";
         case kDrawAnnotation_OpType: return "DrawAnnotation";
         case kDrawBitmap_OpType: return "DrawBitmap";
         case kDrawBitmapRect_OpType: return "DrawBitmapRect";
@@ -471,6 +479,18 @@ void DrawCommand::MakeJsonMatrix(SkJSONWriter& writer, const SkMatrix& matrix) {
     writer.endArray();
 }
 
+void DrawCommand::MakeJsonMatrix44(SkJSONWriter& writer, const SkM44& matrix) {
+    writer.beginArray();
+    for (int r = 0; r < 4; ++r) {
+        writer.beginArray(nullptr, false);
+        for (int c = 0; c < 4; ++c) {
+            writer.appendFloat(matrix.rc(r, c));
+        }
+        writer.endArray();
+    }
+    writer.endArray();
+}
+
 void DrawCommand::MakeJsonPath(SkJSONWriter& writer, const SkPath& path) {
     writer.beginObject();
     switch (path.getFillType()) {
@@ -632,8 +652,13 @@ bool DrawCommand::flatten(const SkImage&  image,
     SkAutoMalloc buffer(rowBytes * image.height());
     SkImageInfo  dstInfo =
             SkImageInfo::Make(image.dimensions(), kN32_SkColorType, kPremul_SkAlphaType);
-    if (!image.readPixels(dstInfo, buffer.get(), rowBytes, 0, 0)) {
-        SkDebugf("readPixels failed\n");
+    // "cheat" for this debug tool and use image's context
+    GrDirectContext* dContext = nullptr;
+#ifdef SK_SUPPORT_GPU
+    dContext = GrAsDirectContext(as_IB(&image)->context());
+#endif
+    if (!image.readPixels(dContext, dstInfo, buffer.get(), rowBytes, 0, 0)) {
+        SkDebugf("DrawCommand::flatten SkImage: readPixels failed\n");
         return false;
     }
 
@@ -643,6 +668,10 @@ bool DrawCommand::flatten(const SkImage&  image,
     SkDynamicMemoryWStream out;
     DrawCommand::WritePNG(bm, out);
     sk_sp<SkData> encoded = out.detachAsData();
+    if (encoded == nullptr) {
+        SkDebugf("DrawCommand::flatten SkImage: could not encode image as PNG\n");
+        return false;
+    }
     SkString      url = encode_data(encoded->data(), encoded->size(), "image/png", urlDataManager);
     writer.appendString(DEBUGCANVAS_ATTRIBUTE_DATA, url.c_str());
     return true;
@@ -1075,10 +1104,44 @@ ConcatCommand::ConcatCommand(const SkMatrix& matrix) : INHERITED(kConcat_OpType)
 
 void ConcatCommand::execute(SkCanvas* canvas) const { canvas->concat(fMatrix); }
 
+namespace {
+    void writeMatrixType(SkJSONWriter& writer, const SkMatrix& m) {
+        switch (m.getType()) {
+            case SkMatrix::kTranslate_Mask:
+                writer.appendString(DEBUGCANVAS_ATTRIBUTE_SHORTDESC, " (translate)");
+                break;
+            case SkMatrix::kScale_Mask:
+                writer.appendString(DEBUGCANVAS_ATTRIBUTE_SHORTDESC, " (scale)");
+                break;
+            case SkMatrix::kAffine_Mask:
+                writer.appendString(DEBUGCANVAS_ATTRIBUTE_SHORTDESC, " (rotation or skew)");
+                break;
+            case SkMatrix::kPerspective_Mask:
+                writer.appendString(DEBUGCANVAS_ATTRIBUTE_SHORTDESC, " (perspective)");
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 void ConcatCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_MATRIX);
     MakeJsonMatrix(writer, fMatrix);
+    writeMatrixType(writer, fMatrix);
+}
+
+Concat44Command::Concat44Command(const SkM44& matrix) : INHERITED(kConcat44_OpType) {
+    fMatrix = matrix;
+}
+
+void Concat44Command::execute(SkCanvas* canvas) const { canvas->concat(fMatrix); }
+
+void Concat44Command::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
+    INHERITED::toJSON(writer, urlDataManager);
+    writer.appendName(DEBUGCANVAS_ATTRIBUTE_MATRIX);
+    MakeJsonMatrix44(writer, fMatrix);
 }
 
 ////
@@ -1098,7 +1161,7 @@ void DrawAnnotationCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlData
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_COORDS);
     MakeJsonRect(writer, fRect);
     writer.appendString("key", fKey.c_str());
-    if (fValue.get()) {
+    if (fValue) {
         // TODO: dump out the "value"
     }
 
@@ -1135,13 +1198,15 @@ bool DrawImageCommand::render(SkCanvas* canvas) const {
     return true;
 }
 
+uint64_t DrawImageCommand::imageId(UrlDataManager& udm) const {
+    return udm.lookupImage(fImage.get());
+}
+
 void DrawImageCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
-
-
     if (urlDataManager.hasImageIndex()) {
         writer.appendName(DEBUGCANVAS_ATTRIBUTE_IMAGE_INDEX);
-        writer.appendU64((uint64_t)urlDataManager.lookupImage(fImage.get()));
+        writer.appendU64(imageId(urlDataManager));
     } else {
         writer.beginObject(DEBUGCANVAS_ATTRIBUTE_IMAGE);
         flatten(*fImage, writer, urlDataManager);
@@ -1198,11 +1263,15 @@ bool DrawImageLatticeCommand::render(SkCanvas* canvas) const {
     return true;
 }
 
+uint64_t DrawImageLatticeCommand::imageId(UrlDataManager& udm) const {
+    return udm.lookupImage(fImage.get());
+}
+
 void DrawImageLatticeCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
     if (urlDataManager.hasImageIndex()) {
         writer.appendName(DEBUGCANVAS_ATTRIBUTE_IMAGE_INDEX);
-        writer.appendU64((uint64_t)urlDataManager.lookupImage(fImage.get()));
+        writer.appendU64(imageId(urlDataManager));
     } else {
         writer.beginObject(DEBUGCANVAS_ATTRIBUTE_IMAGE);
         flatten(*fImage, writer, urlDataManager);
@@ -1249,11 +1318,15 @@ bool DrawImageRectCommand::render(SkCanvas* canvas) const {
     return true;
 }
 
+uint64_t DrawImageRectCommand::imageId(UrlDataManager& udm) const {
+    return udm.lookupImage(fImage.get());
+}
+
 void DrawImageRectCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
     if (urlDataManager.hasImageIndex()) {
         writer.appendName(DEBUGCANVAS_ATTRIBUTE_IMAGE_INDEX);
-        writer.appendU64((uint64_t)urlDataManager.lookupImage(fImage.get()));
+        writer.appendU64(imageId(urlDataManager));
     } else {
         writer.beginObject(DEBUGCANVAS_ATTRIBUTE_IMAGE);
         flatten(*fImage, writer, urlDataManager);
@@ -1361,11 +1434,15 @@ bool DrawImageNineCommand::render(SkCanvas* canvas) const {
     return true;
 }
 
+uint64_t DrawImageNineCommand::imageId(UrlDataManager& udm) const {
+    return udm.lookupImage(fImage.get());
+}
+
 void DrawImageNineCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const {
     INHERITED::toJSON(writer, urlDataManager);
     if (urlDataManager.hasImageIndex()) {
         writer.appendName(DEBUGCANVAS_ATTRIBUTE_IMAGE_INDEX);
-        writer.appendU64((uint64_t)urlDataManager.lookupImage(fImage.get()));
+        writer.appendU64(imageId(urlDataManager));
     } else {
         writer.beginObject(DEBUGCANVAS_ATTRIBUTE_IMAGE);
         flatten(*fImage, writer, urlDataManager);
@@ -2026,4 +2103,5 @@ void SetMatrixCommand::toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManag
     INHERITED::toJSON(writer, urlDataManager);
     writer.appendName(DEBUGCANVAS_ATTRIBUTE_MATRIX);
     MakeJsonMatrix(writer, fMatrix);
+    writeMatrixType(writer, fMatrix);
 }

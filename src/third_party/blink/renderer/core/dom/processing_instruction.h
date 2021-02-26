@@ -36,12 +36,11 @@ class EventListener;
 class CORE_EXPORT ProcessingInstruction final : public CharacterData,
                                                 private ResourceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ProcessingInstruction);
 
  public:
   ProcessingInstruction(Document&, const String& target, const String& data);
   ~ProcessingInstruction() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const String& target() const { return target_; }
   const String& LocalHref() const { return local_href_; }
@@ -61,7 +60,7 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
     // Detach event listener from its processing instruction.
     virtual void Detach() = 0;
 
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
 
   void SetEventListenerForXSLT(DetachableEventListener* listener) {

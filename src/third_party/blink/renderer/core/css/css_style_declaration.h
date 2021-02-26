@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -42,12 +41,13 @@ enum class SecureContextMode;
 class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
                                         public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CSSStyleDeclaration);
 
  public:
+  CSSStyleDeclaration(const CSSStyleDeclaration&) = delete;
+  CSSStyleDeclaration& operator=(const CSSStyleDeclaration&) = delete;
   ~CSSStyleDeclaration() override = default;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   virtual CSSRule* parentRule() const = 0;
   String cssFloat() { return GetPropertyValueInternal(CSSPropertyID::kFloat); }
@@ -102,15 +102,13 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
   NamedPropertySetterResult AnonymousNamedSetter(ScriptState*,
                                                  const AtomicString& name,
                                                  const String& value);
+  NamedPropertyDeleterResult AnonymousNamedDeleter(const AtomicString& name);
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&);
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
  protected:
   CSSStyleDeclaration(ExecutionContext* context)
       : ExecutionContextClient(context) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);
 };
 
 }  // namespace blink

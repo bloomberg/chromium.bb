@@ -69,7 +69,7 @@ static INLINE int av1_filter_intra_allowed(const AV1_COMMON *const cm,
                                            const MB_MODE_INFO *mbmi) {
   return mbmi->mode == DC_PRED &&
          mbmi->palette_mode_info.palette_size[0] == 0 &&
-         av1_filter_intra_allowed_bsize(cm, mbmi->sb_type);
+         av1_filter_intra_allowed_bsize(cm, mbmi->bsize);
 }
 
 extern const int8_t av1_filter_intra_taps[FILTER_INTRA_MODES][8][8];

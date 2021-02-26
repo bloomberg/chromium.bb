@@ -40,8 +40,8 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   // |error_callback| with a system error message.
   void Connect(const BluetoothDeviceWin* device,
                const BluetoothUUID& uuid,
-               const base::Closure& success_callback,
-               const ErrorCompletionCallback& error_callback);
+               base::OnceClosure success_callback,
+               ErrorCompletionCallback error_callback);
 
   // Listens using this socket using an RFCOMM service published as UUID |uuid|
   // with Channel |options.channel|, or an automatically allocated Channel if
@@ -51,15 +51,15 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   void Listen(scoped_refptr<BluetoothAdapter> adapter,
               const BluetoothUUID& uuid,
               const BluetoothAdapter::ServiceOptions& options,
-              const base::Closure& success_callback,
-              const ErrorCompletionCallback& error_callback);
+              base::OnceClosure success_callback,
+              ErrorCompletionCallback error_callback);
 
   // BluetoothSocketNet:
   void ResetData() override;
 
   // BluetoothSocket:
-  void Accept(const AcceptCompletionCallback& success_callback,
-              const ErrorCompletionCallback& error_callback) override;
+  void Accept(AcceptCompletionCallback success_callback,
+              ErrorCompletionCallback error_callback) override;
 
  protected:
   ~BluetoothSocketWin() override;
@@ -70,21 +70,21 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   BluetoothSocketWin(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
                      scoped_refptr<BluetoothSocketThread> socket_thread);
 
-  void DoConnect(const base::Closure& success_callback,
-                 const ErrorCompletionCallback& error_callback);
+  void DoConnect(base::OnceClosure success_callback,
+                 ErrorCompletionCallback error_callback);
   void DoListen(const BluetoothUUID& uuid,
-      int rfcomm_channel,
-      const base::Closure& success_callback,
-      const ErrorCompletionCallback& error_callback);
-  void DoAccept(const AcceptCompletionCallback& success_callback,
-                const ErrorCompletionCallback& error_callback);
-  void OnAcceptOnSocketThread(const AcceptCompletionCallback& success_callback,
-                              const ErrorCompletionCallback& error_callback,
+                int rfcomm_channel,
+                base::OnceClosure success_callback,
+                ErrorCompletionCallback error_callback);
+  void DoAccept(AcceptCompletionCallback success_callback,
+                ErrorCompletionCallback error_callback);
+  void OnAcceptOnSocketThread(AcceptCompletionCallback success_callback,
+                              ErrorCompletionCallback error_callback,
                               int accept_result);
   void OnAcceptOnUI(std::unique_ptr<net::TCPSocket> accept_socket,
                     const net::IPEndPoint& peer_address,
-                    const AcceptCompletionCallback& success_callback,
-                    const ErrorCompletionCallback& error_callback);
+                    AcceptCompletionCallback success_callback,
+                    ErrorCompletionCallback error_callback);
 
   std::string device_address_;
   bool supports_rfcomm_;

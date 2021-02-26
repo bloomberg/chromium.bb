@@ -13,32 +13,33 @@ setlocal
 IF "%~nx0"=="update_depot_tools.bat" (
   COPY /Y "%~dp0update_depot_tools.bat" "%TEMP%\update_depot_tools_tmp.bat" >nul
   if errorlevel 1 goto :EOF
-  "%TEMP%\update_depot_tools_tmp.bat" "%~dp0" %*
+  REM Use call/exit to avoid leaving an orphaned window title.
+  call "%TEMP%\update_depot_tools_tmp.bat" "%~dp0" %*
+  exit /b
 )
 
 set DEPOT_TOOLS_DIR=%~1
 SHIFT
 
+:: Shall skip automatic update?
 IF EXIST "%DEPOT_TOOLS_DIR%.disable_auto_update" GOTO :EOF
+IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
 
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-:: Will download git and python.
+:: Download git for the first time if it's not present.
+call git --version > nul 2>&1
+if %errorlevel% == 0 goto :GIT_UPDATE
 call "%DEPOT_TOOLS_DIR%bootstrap\win_tools.bat"
-if errorlevel 1 goto :EOF
+if errorlevel 1 (
+  echo Error updating depot_tools, no revision tool found.
+  goto :EOF
+)
+
+:GIT_UPDATE
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=
 
-:: Shall skip automatic update?
-IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
-
-:: We need .\.git\. to be able to sync.
-IF EXIST "%DEPOT_TOOLS_DIR%.git\." GOTO :GIT_UPDATE
-echo Error updating depot_tools, no revision tool found.
-goto :EOF
-
-
-:GIT_UPDATE
 cd /d "%DEPOT_TOOLS_DIR%."
 call git config remote.origin.fetch > NUL
 for /F %%x in ('git config --get remote.origin.url') DO (
@@ -59,3 +60,6 @@ if errorlevel 1 (
 
 :: Sync CIPD and CIPD client tools.
 call "%~dp0\cipd_bin_setup.bat"
+
+:: Update git and python
+call "%DEPOT_TOOLS_DIR%bootstrap\win_tools.bat"

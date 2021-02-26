@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace ui {
 class IMEEngineHandlerInterface;
@@ -40,6 +40,8 @@ class MockInputMethodEngine : public ui::IMEEngineHandlerInterface {
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
+  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
+      const override;
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;

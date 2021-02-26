@@ -20,7 +20,6 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
@@ -49,15 +48,15 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   // SetProfileByPath() is called.
   void set_next_profile_app_count(int apps) { next_profile_app_count_ = apps; }
 
-  content::FakeNavigableContentsFactory& fake_navigable_contents_factory() {
-    return fake_navigable_contents_factory_;
-  }
-
   // Sets whether the search engine is Google or not.
   void SetSearchEngineIsGoogle(bool is_google);
 
   // Set whether tablet mode is enabled.
   void SetIsTabletModeEnabled(bool is_tablet_mode);
+
+  // Set whether the privacy notices should be shown.
+  void SetShouldShowAssistantPrivacyInfo(bool should_show);
+  void SetShouldShowSuggestedContentInfo(bool should_show);
 
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
@@ -75,8 +74,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                 int suggestion_index) override {}
   void LogSearchAbandonHistogram() override {}
   void InvokeSearchResultAction(const std::string& result_id,
-                                int action_index,
-                                int event_flags) override {}
+                                int action_index) override {}
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
@@ -94,12 +92,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
-  bool ProcessHomeLauncherGesture(ui::GestureEvent* event) override;
   bool CanProcessEventsOnApplistViews() override;
   bool ShouldDismissImmediately() override;
-  void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
   int GetTargetYForAppListHide(aura::Window* root_window) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
@@ -108,10 +102,12 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       const base::string16& raw_query,
       const ash::SearchResultIdWithPositionIndices& results,
       int position_index) override;
+  void MaybeIncreasePrivacyInfoShownCounts() override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
-  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
+  bool ShouldShowSuggestedContentInfo() const override;
+  void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;
   void OnViewStateChanged(AppListViewState state) override;
@@ -119,6 +115,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfSize() override;
+  bool AppListTargetVisibility() const override;
   bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
 
@@ -127,6 +124,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
 
   AppListTestModel* ReleaseTestModel() { return model_.release(); }
   AppListTestModel* GetTestModel() { return model_.get(); }
+
+  SearchModel* ReleaseTestSearchModel() { return search_model_.release(); }
 
  private:
   void RecordAppLaunched(ash::AppListLaunchedFrom launched_from);
@@ -142,11 +141,12 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int next_profile_app_count_ = 0;
   int show_wallpaper_context_menu_count_ = 0;
   bool is_tablet_mode_ = false;
+  bool should_show_assistant_privacy_info_ = false;
+  bool should_show_suggested_content_info_ = false;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
-  content::FakeNavigableContentsFactory fake_navigable_contents_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };

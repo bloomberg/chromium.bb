@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -33,10 +37,9 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
-import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
@@ -90,7 +93,7 @@ public class WebApkIntentDataProviderFactory {
         ShareData shareData = null;
 
         String shareDataActivityClassName = IntentUtils.safeGetStringExtra(
-                intent, WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                intent, EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
 
         // Presence of {@link shareDataActivityClassName} indicates that this is a share.
         if (!TextUtils.isEmpty(shareDataActivityClassName)) {
@@ -110,10 +113,10 @@ public class WebApkIntentDataProviderFactory {
         String url = WebappIntentUtils.getUrl(intent);
         int source = computeSource(intent, shareData);
 
-        boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(
-                intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
+        boolean canUseSplashFromContentProvider =
+                IntentUtils.safeGetBooleanExtra(intent, EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
 
-        return create(webApkPackageName, url, source, forceNavigation,
+        return create(intent, webApkPackageName, url, source, forceNavigation,
                 canUseSplashFromContentProvider, shareData, shareDataActivityClassName);
     }
 
@@ -140,9 +143,8 @@ public class WebApkIntentDataProviderFactory {
             }
             return WebApkDistributor.OTHER;
         }
-        return packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)
-                ? WebApkDistributor.BROWSER
-                : WebApkDistributor.OTHER;
+        return packageName.startsWith(WEBAPK_PACKAGE_PREFIX) ? WebApkDistributor.BROWSER
+                                                             : WebApkDistributor.OTHER;
     }
 
     /**
@@ -200,6 +202,7 @@ public class WebApkIntentDataProviderFactory {
      * Constructs a BrowserServicesIntentDataProvider from the passed in parameters and <meta-data>
      * in the WebAPK's Android manifest.
      *
+     * @param intent Intent used to launch activity.
      * @param webApkPackageName The package name of the WebAPK.
      * @param url Url that the WebAPK should navigate to when launched.
      * @param source Source that the WebAPK was launched from.
@@ -210,9 +213,10 @@ public class WebApkIntentDataProviderFactory {
      * @param shareData Shared information from the share intent.
      * @param shareDataActivityClassName Name of WebAPK activity which received share intent.
      */
-    public static BrowserServicesIntentDataProvider create(String webApkPackageName, String url,
-            int source, boolean forceNavigation, boolean canUseSplashFromContentProvider,
-            ShareData shareData, String shareDataActivityClassName) {
+    public static BrowserServicesIntentDataProvider create(Intent intent, String webApkPackageName,
+            String url, int source, boolean forceNavigation,
+            boolean canUseSplashFromContentProvider, ShareData shareData,
+            String shareDataActivityClassName) {
         // Unlike non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an
         // intent with a valid start URL and arbitrary other data. Only use the start URL, the
         // package name and the ShortcutSource from the launch intent and extract the remaining data
@@ -322,7 +326,7 @@ public class WebApkIntentDataProviderFactory {
                 (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                         && hasContentProviderForSplash(webApkPackageName));
 
-        return create(url, scope,
+        return create(intent, url, scope,
                 new WebappIcon(webApkPackageName,
                         isPrimaryIconMaskable ? primaryMaskableIconId : primaryIconId),
                 new WebappIcon(webApkPackageName, splashIconId), name, shortName, displayMode,
@@ -335,6 +339,7 @@ public class WebApkIntentDataProviderFactory {
 
     /**
      * Construct a {@link BrowserServicesIntentDataProvider} instance.
+     * @param intent                   Intent used to launch activity.
      * @param url                      URL that the WebAPK should navigate to when launched.
      * @param scope                    Scope for the WebAPK.
      * @param primaryIcon              Primary icon to show for the WebAPK.
@@ -369,7 +374,7 @@ public class WebApkIntentDataProviderFactory {
      * @param shortcutItems            A list of shortcut items.
      * @param webApkVersionCode        WebAPK's version code.
      */
-    public static BrowserServicesIntentDataProvider create(String url, String scope,
+    public static BrowserServicesIntentDataProvider create(Intent intent, String url, String scope,
             WebappIcon primaryIcon, WebappIcon splashIcon, String name, String shortName,
             @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
             long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
@@ -403,8 +408,8 @@ public class WebApkIntentDataProviderFactory {
         }
 
         WebappExtras webappExtras = new WebappExtras(
-                WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
-                shortName, displayMode, orientation, source,
+                WebappIntentUtils.getIdForWebApkPackage(webApkPackageName), url, scope, primaryIcon,
+                name, shortName, displayMode, orientation, source,
                 WebappIntentUtils.colorFromLongColor(backgroundColor), defaultBackgroundColor,
                 false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, splashIcon,
@@ -416,7 +421,7 @@ public class WebApkIntentDataProviderFactory {
                 ? (int) themeColor
                 : WebappIntentDataProvider.getDefaultToolbarColor();
         return new WebappIntentDataProvider(
-                toolbarColor, hasCustomToolbarColor, shareData, webappExtras, webApkExtras);
+                intent, toolbarColor, hasCustomToolbarColor, shareData, webappExtras, webApkExtras);
     }
 
     private static int computeSource(Intent intent, ShareData shareData) {
@@ -505,34 +510,35 @@ public class WebApkIntentDataProviderFactory {
     }
 
     /**
-     * Returns the ScreenOrientationValue which matches {@link orientation}.
+     * Returns the ScreenOrientationLockType which matches {@link orientation}.
      * @param orientation One of https://w3c.github.io/screen-orientation/#orientationlocktype-enum
-     * @return The matching ScreenOrientationValue. {@link ScreenOrientationValues#DEFAULT} if there
+     * @return The matching ScreenOrientationLockType. {@link ScreenOrientationLockType#DEFAULT} if
+     *         there
      * is no match.
      */
     private static int orientationFromString(String orientation) {
         if (orientation == null) {
-            return ScreenOrientationValues.DEFAULT;
+            return ScreenOrientationLockType.DEFAULT;
         }
 
         if (orientation.equals("any")) {
-            return ScreenOrientationValues.ANY;
+            return ScreenOrientationLockType.ANY;
         } else if (orientation.equals("natural")) {
-            return ScreenOrientationValues.NATURAL;
+            return ScreenOrientationLockType.NATURAL;
         } else if (orientation.equals("landscape")) {
-            return ScreenOrientationValues.LANDSCAPE;
+            return ScreenOrientationLockType.LANDSCAPE;
         } else if (orientation.equals("landscape-primary")) {
-            return ScreenOrientationValues.LANDSCAPE_PRIMARY;
+            return ScreenOrientationLockType.LANDSCAPE_PRIMARY;
         } else if (orientation.equals("landscape-secondary")) {
-            return ScreenOrientationValues.LANDSCAPE_SECONDARY;
+            return ScreenOrientationLockType.LANDSCAPE_SECONDARY;
         } else if (orientation.equals("portrait")) {
-            return ScreenOrientationValues.PORTRAIT;
+            return ScreenOrientationLockType.PORTRAIT;
         } else if (orientation.equals("portrait-primary")) {
-            return ScreenOrientationValues.PORTRAIT_PRIMARY;
+            return ScreenOrientationLockType.PORTRAIT_PRIMARY;
         } else if (orientation.equals("portrait-secondary")) {
-            return ScreenOrientationValues.PORTRAIT_SECONDARY;
+            return ScreenOrientationLockType.PORTRAIT_SECONDARY;
         } else {
-            return ScreenOrientationValues.DEFAULT;
+            return ScreenOrientationLockType.DEFAULT;
         }
     }
 

@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -71,6 +72,11 @@ component("gles2") {
 
 component("raster") {
   public_deps = [ "//gpu/command_buffer/client:raster_sources" ]
+}
+
+component("mailbox") {
+  defines = [ "IS_GPU_MAILBOX_IMPL" ]
+  public_deps = [ "//gpu/command_buffer/common:mailbox_sources" ]
 }
 
 component("webgpu") {
@@ -152,13 +158,17 @@ if (!use_static_angle) {
       libs += [ "android" ]
       deps += [ "//ui/android:ui_java" ]
     }
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+
+    if (use_ozone) {
+      deps += [ "//ui/base:features" ]
     }
   }
 }  # if (!use_static_angle)
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "command_buffer/client/client_test_helper.cc",
@@ -215,7 +225,7 @@ jumbo_static_library("test_support") {
   ]
 }
 
-if (!is_android && !is_fuchsia && !is_chromeos) {
+if (!is_android && !is_fuchsia && !is_ash) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
@@ -258,7 +268,7 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
     defines = [ "GL_GLEXT_PROTOTYPES" ]
 
     if (is_mac) {
-      libs = [ "IOSurface.framework" ]
+      frameworks = [ "IOSurface.framework" ]
     }
 
     deps = [
@@ -281,6 +291,8 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
 }
 
 test("gl_tests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "command_buffer/service/shared_image_backing_factory_gl_texture_unittest.cc",
     "command_buffer/service/shared_image_factory_unittest.cc",
@@ -333,7 +345,6 @@ test("gl_tests") {
     "command_buffer/tests/gl_texture_storage_unittest.cc",
     "command_buffer/tests/gl_unallocated_texture_unittest.cc",
     "command_buffer/tests/gl_unittest.cc",
-    "command_buffer/tests/gl_unittests_android.cc",
     "command_buffer/tests/gl_virtual_contexts_ext_window_rectangles_unittest.cc",
     "command_buffer/tests/gl_virtual_contexts_unittest.cc",
     "command_buffer/tests/gl_webgl_multi_draw_test.cc",
@@ -345,7 +356,12 @@ test("gl_tests") {
     "ipc/client/raster_in_process_context_tests.cc",
   ]
 
-  if (use_dawn) {
+  if (is_android) {
+    sources += [ "command_buffer/tests/gl_unittests_android.cc" ]
+  }
+
+  # Simply loading the Vulkan driver leaks crbug.com/1134681
+  if (use_dawn && !is_lsan) {
     sources += [
       "command_buffer/service/webgpu_decoder_unittest.cc",
       "command_buffer/tests/shared_image_gl_backing_produce_dawn_unittest.cc",
@@ -401,7 +417,7 @@ test("gl_tests") {
     deps += [ "//ui/android:ui_java" ]
     sources += [ "command_buffer/service/shared_image_backing_factory_ahardwarebuffer_unittest.cc" ]
   } else if (is_mac) {
-    libs += [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
     sources += [ "command_buffer/service/shared_image_backing_factory_iosurface_unittest.cc" ]
   } else if (is_win) {
     deps += [
@@ -411,6 +427,14 @@ test("gl_tests") {
     sources += [
       "command_buffer/service/shared_image_backing_factory_d3d_unittest.cc",
     ]
+  } else if (is_linux || is_chromeos) {
+    # Simply loading the Vulkan driver leaks crbug.com/1134681
+    # CFI error in third_party/vulkan_memory_allocator crbug.com/1139916
+    if (enable_vulkan && !is_lsan && !is_cfi) {
+      deps += [ "//gpu/vulkan/init:init" ]
+      sources +=
+          [ "command_buffer/service/external_vk_image_factory_unittest.cc" ]
+    }
   }
 
   if (use_dawn) {
@@ -425,6 +449,8 @@ test("gl_tests") {
 }
 
 test("gpu_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "command_buffer/client/buffer_tracker_unittest.cc",
     "command_buffer/client/client_discardable_manager_unittest.cc",
@@ -477,8 +503,6 @@ test("gpu_unittests") {
     "command_buffer/service/gl_context_mock.cc",
     "command_buffer/service/gl_context_mock.h",
     "command_buffer/service/gl_context_virtual_unittest.cc",
-    "command_buffer/service/gl_stream_texture_image_stub.cc",
-    "command_buffer/service/gl_stream_texture_image_stub.h",
     "command_buffer/service/gl_surface_mock.cc",
     "command_buffer/service/gl_surface_mock.h",
     "command_buffer/service/gles2_cmd_decoder_unittest.cc",
@@ -565,7 +589,7 @@ test("gpu_unittests") {
     "ipc/service/gpu_watchdog_thread_unittest.cc",
   ]
 
-  if (is_chromeos) {
+  if (is_ash) {
     # Image decode acceleration with hardware is only supported in Chrome OS.
     # The intention is to run this test in the linux-chromeos build.
     sources += [ "ipc/service/image_decode_accelerator_stub_unittest.cc" ]
@@ -578,7 +602,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux || use_ozone) {
+  if (is_linux || is_chromeos || use_ozone) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_native_pixmap_unittest.cc",
@@ -598,13 +622,13 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux || is_android || is_chromeos) {
+  if (is_linux || is_chromeos || is_android || is_chromeos) {
     sources += [ "command_buffer/service/gpu_fence_manager_unittest.cc" ]
   }
 
   # TODO(geofflang): Run passthrough command decoder unittests on more platforms
   # once initialization of ANGLE's NULL context is supported
-  if ((is_win || (is_linux && !use_ozone)) && !is_asan) {
+  if ((is_win || ((is_linux || is_chromeos) && !use_ozone)) && !is_asan) {
     sources += [
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_buffers.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_commands.cc",
@@ -624,6 +648,7 @@ test("gpu_unittests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//cc/paint",
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -693,7 +718,10 @@ test("gpu_perftests") {
   ]
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
 
   data_deps = [
@@ -727,7 +755,10 @@ test("command_buffer_perftests") {
   ]
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
 
   data_deps = [
@@ -756,7 +787,7 @@ fuzzer_test("gpu_fuzzer") {
   libfuzzer_options = [ "max_len=16384" ]
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   fuzzer_test("gpu_angle_fuzzer") {
     sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 

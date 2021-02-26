@@ -291,21 +291,18 @@ base::TimeTicks ReportingTestBase::tomorrow() {
 
 TestReportingService::Report::Report() = default;
 
-TestReportingService::Report::Report(Report&& other)
-    : url(other.url),
-      user_agent(other.user_agent),
-      group(other.group),
-      type(other.type),
-      body(std::move(other.body)),
-      depth(other.depth) {}
+TestReportingService::Report::Report(Report&& other) = default;
 
-TestReportingService::Report::Report(const GURL& url,
-                                     const std::string& user_agent,
-                                     const std::string& group,
-                                     const std::string& type,
-                                     std::unique_ptr<const base::Value> body,
-                                     int depth)
+TestReportingService::Report::Report(
+    const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& user_agent,
+    const std::string& group,
+    const std::string& type,
+    std::unique_ptr<const base::Value> body,
+    int depth)
     : url(url),
+      network_isolation_key(network_isolation_key),
       user_agent(user_agent),
       group(group),
       type(type),
@@ -318,28 +315,32 @@ TestReportingService::TestReportingService() = default;
 
 TestReportingService::~TestReportingService() = default;
 
-void TestReportingService::QueueReport(const GURL& url,
-                                       const std::string& user_agent,
-                                       const std::string& group,
-                                       const std::string& type,
-                                       std::unique_ptr<const base::Value> body,
-                                       int depth) {
-  reports_.push_back(
-      Report(url, user_agent, group, type, std::move(body), depth));
+void TestReportingService::QueueReport(
+    const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& user_agent,
+    const std::string& group,
+    const std::string& type,
+    std::unique_ptr<const base::Value> body,
+    int depth) {
+  reports_.emplace_back(Report(url, network_isolation_key, user_agent, group,
+                               type, std::move(body), depth));
 }
 
-void TestReportingService::ProcessHeader(const GURL& url,
-                                         const std::string& header_value) {
+void TestReportingService::ProcessHeader(
+    const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& header_value) {
   NOTREACHED();
 }
 
 void TestReportingService::RemoveBrowsingData(
-    int data_type_mask,
+    uint64_t data_type_mask,
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   NOTREACHED();
 }
 
-void TestReportingService::RemoveAllBrowsingData(int data_type_mask) {
+void TestReportingService::RemoveAllBrowsingData(uint64_t data_type_mask) {
   NOTREACHED();
 }
 

@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
+// #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// clang-format on
+
 suite('InternetDetailPage', function() {
   /** @type {InternetDetailPageElement} */
   let internetDetailPage = null;
@@ -218,6 +230,38 @@ suite('InternetDetailPage', function() {
         assertFalse(allowShared.disabled);
       });
     });
+
+    // Tests that when the route changes to one containing a deep link to
+    // the shared proxy toggle, toggle is foxused.
+    test('Deep link to shared proxy toggle', async () => {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi_device', mojom.OncSource.kDevice);
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      const params = new URLSearchParams;
+      params.append('guid', 'wifi_device_guid');
+      params.append('type', 'WiFi');
+      params.append('name', 'wifi_device');
+      params.append('settingId', '11');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
+
+      await flushAsync();
+
+      const deepLinkElement = internetDetailPage.$$('network-proxy-section')
+                                  .$$('#allowShared')
+                                  .$$('#control');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Allow shared proxy toggle should be focused for settingId=11.');
+    });
   });
 
   suite('DetailsPageVPN', function() {
@@ -232,7 +276,7 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = true;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
-        const disconnectButton = getButton('disconnect');
+        const disconnectButton = getButton('connectDisconnect');
         assertFalse(disconnectButton.hasAttribute('enforced_'));
         assertFalse(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
@@ -249,7 +293,7 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = false;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
-        const disconnectButton = getButton('disconnect');
+        const disconnectButton = getButton('connectDisconnect');
         assertTrue(disconnectButton.hasAttribute('enforced_'));
         assertTrue(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
@@ -267,7 +311,7 @@ suite('InternetDetailPage', function() {
 
       internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
       return flushAsync().then(() => {
-        const connectButton = getButton('connect');
+        const connectButton = getButton('connectDisconnect');
         assertFalse(connectButton.hasAttribute('hidden'));
         assertTrue(connectButton.hasAttribute('disabled'));
       });
@@ -293,10 +337,188 @@ suite('InternetDetailPage', function() {
         assertFalse(spinner.hasAttribute('hidden'));
       });
     });
+
+    test('Cellular roaming subtext', async function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      mojoApi_.setManagedPropertiesForTest(
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular'));
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+      await flushAsync();
+      const roamingToggle = internetDetailPage.$$('#allowDataRoaming');
+      assertTrue(!!roamingToggle);
+      assertEquals(
+          internetDetailPage.i18n('networkAllowDataRoamingDisabled'),
+          roamingToggle.subLabel);
+
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.typeProperties.cellular.allowRoaming = true;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+      // Notify device state list change since allow roaming is
+      // device level property in shill.
+      internetDetailPage.onDeviceStateListChanged();
+      await flushAsync();
+      assertEquals(
+          internetDetailPage.i18n('networkAllowDataRoamingEnabledHome'),
+          roamingToggle.subLabel);
+    });
+
+    test('Deep link to disconnect button', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = false;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      const params = new URLSearchParams;
+      params.append('guid', 'cellular_guid');
+      params.append('type', 'Cellular');
+      params.append('name', 'cellular');
+      params.append('settingId', '17');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
+
+      await flushAsync();
+
+      const deepLinkElement = getButton('connectDisconnect').$$('cr-button');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Disconnect network button should be focused for settingId=17.');
+    });
+
+    test('Deep link to sim lock toggle', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        simLockStatus: {
+          lockEnabled: false,
+        },
+      });
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = false;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      const params = new URLSearchParams;
+      params.append('guid', 'cellular_guid');
+      params.append('type', 'Cellular');
+      params.append('name', 'cellular');
+      params.append('settingId', '14');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
+
+      Polymer.dom.flush();
+
+      const deepLinkElement =
+          internetDetailPage.$$('network-siminfo').$$('#simLockButton');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Sim lock toggle should be focused for settingId=14.');
+    });
+  });
+
+  suite('DetailsPageEthernet', function() {
+    test('LoadPage', function() {});
+
+    test('Eth1', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kEthernet, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kEthernet, 'eth1'),
+      ]);
+
+      internetDetailPage.init('eth1_guid', 'Ethernet', 'eth1');
+      assertEquals('eth1_guid', internetDetailPage.guid);
+      return flushAsync().then(() => {
+        return mojoApi_.whenCalled('getManagedProperties');
+      });
+    });
+
+    test('Deep link to configure ethernet button', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kEthernet, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kEthernet, 'eth1'),
+      ]);
+
+      const params = new URLSearchParams;
+      params.append('guid', 'eth1_guid');
+      params.append('type', 'Ethernet');
+      params.append('name', 'eth1');
+      params.append('settingId', '0');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
+
+      await flushAsync();
+
+      const deepLinkElement = getButton('configureButton');
+      await test_util.waitAfterNextRender(deepLinkElement);
+
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Configure ethernet button should be focused for settingId=0.');
+    });
+  });
+
+  suite('DetailsPageTether', function() {
+    test('LoadPage', function() {});
+
+    test('Tether1', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+      ]);
+
+      internetDetailPage.init('tether1_guid', 'Tether', 'tether1');
+      assertEquals('tether1_guid', internetDetailPage.guid);
+      return flushAsync().then(() => {
+        return mojoApi_.whenCalled('getManagedProperties');
+      });
+    });
+
+    test('Deep link to disconnect tether network', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether, true);
+      setNetworksForTest([
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+      ]);
+      const tetherNetwork =
+          getManagedProperties(mojom.NetworkType.kTether, 'tether1');
+      tetherNetwork.connectable = true;
+      mojoApi_.setManagedPropertiesForTest(tetherNetwork);
+
+      await flushAsync();
+
+      const params = new URLSearchParams;
+      params.append('guid', 'tether1_guid');
+      params.append('type', 'Tether');
+      params.append('name', 'tether1');
+      params.append('settingId', '23');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
+
+      await flushAsync();
+
+      const deepLinkElement = getButton('connectDisconnect').$$('cr-button');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Disconnect tether button should be focused for settingId=23.');
+    });
   });
 
   suite('DetailsPageAutoConnect', function() {
-    test.only('Auto Connect toggle updates after GUID change', function() {
+    test('Auto Connect toggle updates after GUID change', function() {
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       const wifi1 = getManagedProperties(
@@ -316,6 +538,39 @@ suite('InternetDetailPage', function() {
             assertTrue(!!toggle);
             assertTrue(toggle.checked);
             internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi2');
+            return flushAsync();
+          })
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertFalse(toggle.checked);
+          });
+    });
+
+    test('Auto Connect updates don\'t trigger a re-save', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      let wifi1 = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
+      wifi1.typeProperties.wifi.autoConnect = OncMojo.createManagedBool(true);
+      mojoApi_.setManagedPropertiesForTest(wifi1);
+
+      mojoApi_.whenCalled('setProperties').then(() => assert(false));
+      internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi1');
+      internetDetailPage.onNetworkStateChanged({guid: 'wifi1_guid'});
+      return flushAsync()
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertTrue(toggle.checked);
+
+            // Rebuild the object to force polymer to recognize a change.
+            wifi1 = getManagedProperties(
+                mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
+            wifi1.typeProperties.wifi.autoConnect =
+                OncMojo.createManagedBool(false);
+            mojoApi_.setManagedPropertiesForTest(wifi1);
+            internetDetailPage.onNetworkStateChanged({guid: 'wifi1_guid'});
             return flushAsync();
           })
           .then(() => {

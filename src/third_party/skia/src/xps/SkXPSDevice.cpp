@@ -116,7 +116,7 @@ HRESULT SkXPSDevice::createId(wchar_t* buffer, size_t bufferSize, wchar_t sep) {
 SkXPSDevice::SkXPSDevice(SkISize s)
     : INHERITED(SkImageInfo::MakeUnknown(s.width(), s.height()),
                 SkSurfaceProps(0, kUnknown_SkPixelGeometry))
-    , fCurrentPage(0) {}
+    , fCurrentPage(0), fTopTypefaces(&fTypefaces) {}
 
 SkXPSDevice::~SkXPSDevice() {}
 
@@ -414,7 +414,7 @@ static HRESULT subset_typeface(const SkXPSDevice::TypefaceUse& current) {
 
 bool SkXPSDevice::endPortfolio() {
     //Subset fonts
-    for (const TypefaceUse& current : this->fTypefaces) {
+    for (const TypefaceUse& current : *this->fTopTypefaces) {
         //Ignore return for now, if it didn't subset, let it be.
         subset_typeface(current);
     }
@@ -1632,7 +1632,7 @@ void SkXPSDevice::drawPath(const SkPath& platonicPath,
                 return;
             }
         }
-        // The xpsCompatiblePath is now inverse even odd, so fall through.
+        [[fallthrough]];  // The xpsCompatiblePath is now inverse even odd, so fall through.
         case SkPathFillType::kInverseEvenOdd: {
             const SkRect universe = SkRect::MakeLTRB(
                 0, 0,
@@ -1726,7 +1726,7 @@ HRESULT SkXPSDevice::CreateTypefaceUse(const SkFont& font,
 
     //Check cache.
     const SkFontID typefaceID = typeface->uniqueID();
-    for (TypefaceUse& current : this->fTypefaces) {
+    for (TypefaceUse& current : *this->fTopTypefaces) {
         if (current.typefaceId == typefaceID) {
             *typefaceUse = &current;
             return S_OK;
@@ -1774,7 +1774,7 @@ HRESULT SkXPSDevice::CreateTypefaceUse(const SkFont& font,
 
     int glyphCount = typeface->countGlyphs();
 
-    TypefaceUse& newTypefaceUse = this->fTypefaces.emplace_back(
+    TypefaceUse& newTypefaceUse = this->fTopTypefaces->emplace_back(
         typefaceID,
         isTTC ? ttcIndex : -1,
         std::move(fontData),
@@ -1954,15 +1954,12 @@ void SkXPSDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
     }
 }
 
-void SkXPSDevice::drawDevice( SkBaseDevice* dev,
-                             int x, int y,
-                             const SkPaint&) {
+void SkXPSDevice::drawDevice(SkBaseDevice* dev,  const SkPaint&) {
     SkXPSDevice* that = static_cast<SkXPSDevice*>(dev);
+    SkASSERT(that->fTopTypefaces == this->fTopTypefaces);
 
     SkTScopedComPtr<IXpsOMMatrixTransform> xpsTransform;
-    // TODO(halcanary): assert that current transform is identity rather than calling setter.
-    XPS_MATRIX rawTransform = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-    HRVM(this->fXpsFactory->CreateMatrixTransform(&rawTransform, &xpsTransform),
+    HRVM(this->createXpsTransform(dev->getRelativeTransform(*this), &xpsTransform),
          "Could not create layer transform.");
     HRVM(that->fCurrentXpsCanvas->SetTransformLocal(xpsTransform.get()),
          "Could not set layer transform.");
@@ -1988,8 +1985,11 @@ SkBaseDevice* SkXPSDevice::onCreateDevice(const CreateInfo& info, const SkPaint*
     }
 #endif
     SkXPSDevice* dev = new SkXPSDevice(info.fInfo.dimensions());
-    // TODO(halcanary) implement copy constructor on SkTScopedCOmPtr
     dev->fXpsFactory.reset(SkRefComPtr(fXpsFactory.get()));
+    dev->fCurrentCanvasSize = this->fCurrentCanvasSize;
+    dev->fCurrentUnitsPerMeter = this->fCurrentUnitsPerMeter;
+    dev->fCurrentPixelsPerMeter = this->fCurrentPixelsPerMeter;
+    dev->fTopTypefaces = this->fTopTypefaces;
     SkAssertResult(dev->createCanvasForLayer());
     return dev;
 }
@@ -2005,8 +2005,9 @@ void SkXPSDevice::drawImageRect(const SkImage* image,
                                 const SkRect& dst,
                                 const SkPaint& paint,
                                 SkCanvas::SrcRectConstraint constraint) {
+    // TODO: support gpu images
     SkBitmap bitmap;
-    if (!as_IB(image)->getROPixels(&bitmap)) {
+    if (!as_IB(image)->getROPixels(nullptr, &bitmap)) {
         return;
     }
 

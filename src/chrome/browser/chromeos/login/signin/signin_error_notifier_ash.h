@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -15,10 +16,12 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/account_manager_core/account.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 
 class Profile;
+class PrefRegistrySimple;
 
 namespace signin {
 class IdentityManager;
@@ -30,6 +33,10 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
  public:
   SigninErrorNotifier(SigninErrorController* controller, Profile* profile);
   ~SigninErrorNotifier() override;
+
+  static std::unique_ptr<base::AutoReset<bool>> IgnoreSyncErrorsForTesting();
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // KeyedService:
   void Shutdown() override;
@@ -44,19 +51,21 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
 
   // Handles errors for Secondary Accounts.
   // Displays a notification that allows users to open crOS Account Manager UI.
-  // |account_id| is the account identifier (used by the Token Service chain)
+  // `account_id` is the account identifier (used by the Token Service chain)
   // for the Secondary Account which received an error.
   void HandleSecondaryAccountError(const CoreAccountId& account_id);
 
-  // |chromeos::AccountManager::GetAccounts| callback handler.
-  void OnGetAccounts(
-      const std::vector<chromeos::AccountManager::Account>& accounts);
+  // `chromeos::AccountManager::CheckDummyGaiaTokenForAllAccounts` callback
+  // handler.
+  void OnCheckDummyGaiaTokenForAllAccounts(
+      const std::vector<std::pair<account_manager::Account, bool>>&
+          account_dummy_token_list);
 
   void OnTokenHandleCheck(const AccountId& account_id,
                           TokenHandleUtil::TokenHandleStatus status);
 
   // Handles clicks on the Secondary Account reauth notification. See
-  // |message_center::HandleNotificationClickDelegate|.
+  // `message_center::HandleNotificationClickDelegate`.
   void HandleSecondaryAccountReauthNotificationClick(
       base::Optional<int> button_index);
 

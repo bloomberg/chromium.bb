@@ -26,12 +26,13 @@ message InteractionsProto {
   repeated InteractionProto interactions = 1;
 }
 
-// An interaction consists of a trigger event and a series of actions.
+// An interaction consists of a set of trigger events and a series of actions.
 message InteractionProto {
-  // Functions to call each time the event happens, in the specified order.
+  // Functions to call each time one of the events happens, in the specified
+  // order.
   repeated CallbackProto callbacks = 1;
-  // The trigger event for |callbacks|.
-  optional EventProto trigger_event = 2;
+  // The trigger events for |callbacks|.
+  repeated EventProto trigger_event = 2;
 }
 
 // UI Actions to invoke.
@@ -49,6 +50,9 @@ message CallbackProto {
     SetViewVisibilityProto set_view_visibility = 11;
     SetViewEnabledProto set_view_enabled = 12;
     ShowGenericUiPopupProto show_generic_popup = 13;
+    CreateNestedGenericUiProto create_nested_ui = 14;
+    ClearViewContainerProto clear_view_container = 15;
+    ForEachProto for_each = 16;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
@@ -62,6 +66,7 @@ message EventProto {
     OnUserActionCalled on_user_action_called = 3;
     OnTextLinkClickedProto on_text_link_clicked = 4;
     OnPopupDismissedProto on_popup_dismissed = 5;
+    OnViewContainerClearedProto on_view_container_cleared = 6;
   }
 }
 
@@ -94,6 +99,13 @@ message OnTextLinkClickedProto {
 message OnPopupDismissedProto {
   // The identifier of the popup to observe.
   optional string popup_identifier = 1;
+}
+
+// Event which is called whenever |view_identifier| was cleared with a
+// |ClearViewContainer| interaction.
+message OnViewContainerClearedProto {
+  // The view container that was cleared.
+  optional string view_identifier = 1;
 }
 
 // Callback that writes the specified value to |model_identifier|.
@@ -158,7 +170,10 @@ message ToStringProto {
   optional ValueReferenceProto value = 3;
 
   // Optional format options.
-  oneof format_options { DateFormatProto date_format = 2; }
+  oneof format_options {
+    DateFormatProto date_format = 2;
+    AutofillFormatProto autofill_format = 4;
+  }
   reserved 1;
 }
 
@@ -168,9 +183,36 @@ message DateFormatProto {
   optional string date_format = 1;
 }
 
-// A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL is
-// supported for all values. All other comparison modes are only supported for
-// single integers, strings, and dates.
+// Format options for autofill profiles and credit cards.
+message AutofillFormatProto {
+  // Fields we add that are not mapped to field_types.h. The values must be
+  // negative to avoid overlap with field_types.h.
+  // Note: CREDIT_CARD_VERIFICATION_CODE and CREDIT_CARD_RAW_NUMBER are only
+  // available in UseCreditCardAction, as they require the CVC dialog to be
+  // shown.
+  enum AutofillAssistantCustomField {
+    UNDEFINED = 0;
+    CREDIT_CARD_VERIFICATION_CODE = -1;
+    CREDIT_CARD_NETWORK = -2;
+    CREDIT_CARD_RAW_NUMBER = -3;
+    CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS = -4;
+    CREDIT_CARD_NETWORK_FOR_DISPLAY = -5;
+    // Currently only US states are supported. The state name is in lower case.
+    ADDRESS_HOME_STATE_NAME = -6;
+    CREDIT_CARD_NON_PADDED_EXP_MONTH = -7;
+  }
+  // The format string to use. May contain one or multiple "${key}"
+  // placeholders, where the key is an integer corresponding to
+  // entries from field_types.h or AutofillAssistantCustomField.
+  optional string pattern = 1;
+  // The locale to use when stringifying data. Invalid locales will
+  // automatically default to "en-US".
+  optional string locale = 2;
+}
+
+// A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL and
+// NOT_EQUAL are supported for all values. All other comparison modes are only
+// supported for single integers, strings, and dates.
 message ValueComparisonProto {
   enum Mode {
     UNDEFINED = 0;
@@ -179,6 +221,7 @@ message ValueComparisonProto {
     EQUAL = 3;
     GREATER_OR_EQUAL = 4;
     GREATER = 5;
+    NOT_EQUAL = 6;
   }
 
   // The first value to compare.
@@ -330,4 +373,43 @@ message SetViewEnabledProto {
 
   // Whether the view should be enabled or not. Must point to a single boolean.
   optional ValueReferenceProto enabled = 2;
+}
+
+// Creates new UI and interactions, i.e., a nested instance and attaches it to
+// |parent_view_identifier|. Nested UI instances have their own view layout and
+// interactions, but share the same model with their parent. All interactions
+// between ancestor and descendant UIs must pass through the user model, as
+// neither can directly reference views or interactions of the other.
+//
+// Use |ClearViewContainerProto| on a nested UI's view parent to detach and
+// destroy the nested UI.
+message CreateNestedGenericUiProto {
+  // Identifier for the newly created instance.
+  optional string generic_ui_identifier = 1;
+  // The UI to create.
+  optional GenericUserInterfaceProto generic_ui = 2;
+  // The view identifier of the parent to attach (=append) this UI to.
+  optional string parent_view_identifier = 3;
+}
+
+// Removes all views from the target view container. Nested UI instances
+// attached to |view_identifier| will be destroyed.
+message ClearViewContainerProto {
+  // The view container to clear.
+  optional string view_identifier = 1;
+}
+
+// Invokes |callbacks| for each item in the loop value. Automatically replaces
+// instances of "${i}" in model and view identifiers with the loop counter.
+message ForEachProto {
+  // The loop counter, usually "i", "j", etc. Callbacks may use this counter
+  // in view and model identifiers by using "${i}"" placeholders, e.g.,
+  // "profiles[${i}]" or "my_view_${i}".
+  optional string loop_counter = 1;
+
+  // The value list to loop over.
+  optional string loop_value_model_identifier = 2;
+
+  // The callbacks to invoke for every iteration of the loop.
+  repeated CallbackProto callbacks = 3;
 }

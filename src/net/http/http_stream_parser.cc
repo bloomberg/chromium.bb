@@ -71,11 +71,11 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
 base::Value NetLogSendRequestBodyParams(uint64_t length,
                                         bool is_chunked,
                                         bool did_merge) {
-  base::DictionaryValue dict;
-  dict.SetInteger("length", static_cast<int>(length));
-  dict.SetBoolean("is_chunked", is_chunked);
-  dict.SetBoolean("did_merge", did_merge);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("length", static_cast<int>(length));
+  dict.SetBoolKey("is_chunked", is_chunked);
+  dict.SetBoolKey("did_merge", did_merge);
+  return dict;
 }
 
 void NetLogSendRequestBody(const NetLogWithSource& net_log,
@@ -922,6 +922,12 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
         // tunnel.
         response_header_start_offset_ = std::string::npos;
         response_body_length_ = -1;
+        // Record the timing of the 103 Early Hints response for the experiment
+        // (https://crbug.com/1093693).
+        if (response_->headers->response_code() == 103 &&
+            first_early_hints_time_.is_null()) {
+          first_early_hints_time_ = response_start_time_;
+        }
         // Now waiting for the second set of headers to be read.
       } else {
         // Only set keep-alive based on final set of headers.

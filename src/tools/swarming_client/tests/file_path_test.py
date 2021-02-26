@@ -11,6 +11,9 @@ import subprocess
 import sys
 import tempfile
 import time
+import unittest
+
+import six
 
 # Mutates sys.path.
 import test_env
@@ -193,6 +196,7 @@ class FilePathTest(auto_stub.TestCase):
     file_path.rmtree(str(subdir))
 
   if sys.platform == 'darwin':
+
     def test_native_case_symlink_wrong_case(self):
       base_dir = file_path.get_native_path_case(test_env.TESTS_DIR)
       trace_inputs_dir = os.path.join(base_dir, 'trace_inputs')
@@ -217,6 +221,7 @@ class FilePathTest(auto_stub.TestCase):
           os.path.join(trace_inputs_dir, 'files2', 'Child1.py'), actual)
 
   if sys.platform in ('darwin', 'win32'):
+
     def test_native_case_not_sensitive(self):
       # The home directory is almost guaranteed to have mixed upper/lower case
       # letters on both Windows and OSX.

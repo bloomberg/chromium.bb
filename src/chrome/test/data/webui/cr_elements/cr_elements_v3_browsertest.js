@@ -9,7 +9,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
@@ -80,7 +79,7 @@ var CrElementsDrawerV3Test = class extends CrElementsV3BrowserTest {
 };
 
 // https://crbug.com/1008122 - Flaky on Mac 10.10.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Drawer DISABLED_Drawer');
 GEN('#else');
 GEN('#define MAYBE_Drawer Drawer');
@@ -103,6 +102,19 @@ TEST_F('CrElementsExpandButtonV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsFindShortcutBehaviorV3Test =
+    class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/find_shortcut_behavior_test.m.js';
+  }
+};
+
+TEST_F('CrElementsFindShortcutBehaviorV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsFingerprintProgressArcV3Test =
     class extends CrElementsV3BrowserTest {
   /** @override */
@@ -117,7 +129,7 @@ var CrElementsFingerprintProgressArcV3Test =
 };
 
 // https://crbug.com/1044390 - maybe flaky on Mac?
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
 GEN('#else');
 GEN('#define MAYBE_Fingerprint Fingerprint');
@@ -263,14 +275,14 @@ TEST_F('CrElementsToastV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrElementsToolbarSearchFieldV3Test = class extends CrElementsV3BrowserTest {
+var CrElementsToolbarV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test?module=cr_elements/cr_toolbar_search_field_tests.m.js';
+    return 'chrome://test?module=cr_elements/cr_toolbar_tests.m.js';
   }
 };
 
-TEST_F('CrElementsToolbarSearchFieldV3Test', 'All', function() {
+TEST_F('CrElementsToolbarV3Test', 'All', function() {
   mocha.run();
 });
 
@@ -317,14 +329,6 @@ var CrElementsPolicyPrefIndicatorV3Test =
   get browsePreload() {
     // Preload a settings URL, so that the test can access settingsPrivate.
     return 'chrome://settings/test_loader.html?module=cr_elements/cr_policy_pref_indicator_tests.m.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: ['network::features::kOutOfBlinkCors'],
-      disabled: [],
-    };
   }
 };
 

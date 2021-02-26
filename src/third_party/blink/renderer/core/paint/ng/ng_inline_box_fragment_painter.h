@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_INLINE_BOX_FRAGMENT_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_INLINE_BOX_FRAGMENT_PAINTER_H_
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/inline_box_painter_base.h"
@@ -99,10 +98,10 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
     if (inline_box_paint_fragment_)
       return *inline_box_paint_fragment_;
     DCHECK(inline_box_item_);
-    return *inline_box_item_;
+    return *inline_box_item_->GetDisplayItemClient();
   }
 
-  const virtual NGBorderEdges BorderEdges() const = 0;
+  virtual PhysicalBoxSides SidesToInclude() const = 0;
 
   PhysicalRect PaintRectForImageStrip(const PhysicalRect&,
                                       TextDirection direction) const override;
@@ -120,6 +119,8 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
 
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const PhysicalOffset& paint_offset);
+
+  IntRect VisualRect(const PhysicalOffset& paint_offset);
 
   const NGPhysicalFragment& inline_box_fragment_;
   const NGPaintFragment* inline_box_paint_fragment_ = nullptr;
@@ -176,15 +177,13 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
     return static_cast<const NGPhysicalBoxFragment&>(inline_box_fragment_);
   }
 
-  const NGBorderEdges BorderEdges() const final;
+  PhysicalBoxSides SidesToInclude() const final;
 
 #if DCHECK_IS_ON()
   void CheckValid() const;
 #else
   void CheckValid() const {}
 #endif
-
-  mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
 // Painter for LayoutNG line box fragments. Line boxes don't paint anything,
@@ -248,7 +247,7 @@ class NGLineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
     return static_cast<const NGPhysicalLineBoxFragment&>(inline_box_fragment_);
   }
 
-  const NGBorderEdges BorderEdges() const final { return NGBorderEdges(); }
+  PhysicalBoxSides SidesToInclude() const final { return PhysicalBoxSides(); }
 
   const NGPhysicalBoxFragment& block_fragment_;
   const NGPaintFragment* block_paint_fragment_;

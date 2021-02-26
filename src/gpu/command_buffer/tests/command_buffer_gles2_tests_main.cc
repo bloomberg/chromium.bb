@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 #include "base/test/launcher/unit_test_launcher.h"
@@ -13,17 +13,22 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "gpu/gles2_conform_support/egl/test_support.h"  // NOLINT
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"  // nogncheck
+#endif
+
 // This file implements the main entry point for tests for command_buffer_gles2,
 // the mode of command buffer where the code is compiled as a standalone dynamic
 // library and exposed through EGL API.
 namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
+  base::MessagePumpType pump_type = base::MessagePumpType::IO;
 #if defined(USE_OZONE)
-  base::SingleThreadTaskExecutor executor(base::MessagePumpType::UI);
-#else
-  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
+  if (features::IsUsingOzonePlatform())
+    pump_type = base::MessagePumpType::UI;
 #endif
+  base::SingleThreadTaskExecutor executor(pump_type);
   return testSuite->Run();
 }
 
@@ -59,7 +64,7 @@ int main(int argc, char** argv) {
 #endif
 
   base::TestSuite test_suite(argc, argv);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   testing::InitGoogleMock(&argc, argv);

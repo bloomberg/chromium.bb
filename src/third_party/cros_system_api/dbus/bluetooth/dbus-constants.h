@@ -51,6 +51,7 @@ constexpr char kHandleSuspendImminent[] = "HandleSuspendImminent";
 constexpr char kHandleSuspendDone[] = "HandleSuspendDone";
 constexpr char kGetSupportedCapabilities[] = "GetSupportedCapabilities";
 constexpr char kSetLongTermKeys[] = "SetLongTermKeys";
+constexpr char kConnectDevice[] = "ConnectDevice";
 
 // Bluetooth Adapter properties.
 constexpr char kAddressProperty[] = "Address";
@@ -130,6 +131,16 @@ constexpr char kErrorRejected[] = "org.bluez.Error.Rejected";
 constexpr char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_agent
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/battery-api.txt
+namespace bluetooth_battery {
+// Bluetooth Battery service identifiers.
+constexpr char kBluetoothBatteryServiceName[] = "org.bluez";
+constexpr char kBluetoothBatteryInterface[] = "org.bluez.Battery1";
+
+// Bluetooth Battery properties.
+constexpr char kPercentageProperty[] = "Percentage";
+}  // namespace bluetooth_battery
+
 // https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/device-api.txt
 namespace bluetooth_device {
 // Bluetooth Device service identifiers.
@@ -148,6 +159,7 @@ constexpr char kExecuteWrite[] = "ExecuteWrite";
 
 // Bluetooth Device properties.
 constexpr char kAddressProperty[] = "Address";
+constexpr char kAddressTypeProperty[] = "AddressType";
 constexpr char kNameProperty[] = "Name";
 constexpr char kIconProperty[] = "Icon";
 constexpr char kClassProperty[] = "Class";
@@ -193,6 +205,10 @@ constexpr char kErrorAuthenticationTimeout[] =
     "org.bluez.Error.AuthenticationTimeout";
 constexpr char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
+
+// Possible values for the "AddressType" property.
+constexpr char kAddressTypePublic[] = "public";
+constexpr char kAddressTypeRandom[] = "random";
 }  // namespace bluetooth_device
 
 // https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/gatt-api.txt
@@ -522,6 +538,7 @@ constexpr char kServiceDataProperty[] = "ServiceData";
 constexpr char kSolicitUUIDsProperty[] = "SolicitUUIDs";
 constexpr char kTypeProperty[] = "Type";
 constexpr char kIncludeTxPowerProperty[] = "IncludeTxPower";
+constexpr char kScanResponseDataProperty[] = "ScanResponseData";
 
 // Possible values for the "Type" property.
 constexpr char kTypeBroadcast[] = "broadcast";

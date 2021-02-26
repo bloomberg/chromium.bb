@@ -6,12 +6,6 @@ template("proto_library") {
   assert(defined(invoker.sources), "Need sources for proto_library")
   proto_sources = invoker.sources
 
-  # Don't apply OS-specific sources filtering to the assignments later on.
-  # Platform files should have gotten filtered out in the sources assignment
-  # when this template was invoked. If they weren't, it was on purpose and
-  # this template shouldn't re-apply the filter.
-  set_sources_assignment_filter([])
-
   proto_in_dir = rebase_path(get_path_info(proto_sources[0], "dir"), ".")
 
   if (defined(invoker.proto_out_dir)) {
@@ -64,12 +58,8 @@ template("proto_library") {
       rel_cc_out_dir,
     ]
 
-    inputs = [
-      protoc_path,
-    ]
-    deps = [
-      protoc_label,
-    ]
+    inputs = [ protoc_path ]
+    deps = [ protoc_label ]
   }
 
   config_name = "${target_name}_config"
@@ -90,9 +80,7 @@ template("proto_library") {
       "//third_party/protobuf:using_proto",
       ":$config_name",
     ]
-    public_deps = [
-      ":$action_name",
-    ]
+    public_deps = [ ":$action_name" ]
     if (defined(invoker.use_protobuf_full) &&
         invoker.use_protobuf_full == true) {
       public_deps += [ "//third_party/protobuf:protobuf_full" ]

@@ -12,10 +12,10 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 
 namespace policy {
 
@@ -37,24 +37,24 @@ class ForceLegacyDefaultReferrerPolicy : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ForceLegacyDefaultReferrerPolicy, UpdatesDynamically) {
   // When the policy's unset, we shouldn't be forcing the legacy default
   // referrer policy.
-  EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  EXPECT_FALSE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 
   policy::PolicyMap values;
   values.Set(key::kForceLegacyDefaultReferrerPolicy, POLICY_LEVEL_RECOMMENDED,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(true), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(true),
+             nullptr);
   policy_provider_.UpdateChromePolicy(values);
   base::RunLoop().RunUntilIdle();
   // When the policy's true, we should have flipped the global to true.
-  EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  EXPECT_TRUE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 
   values.Set(key::kForceLegacyDefaultReferrerPolicy, POLICY_LEVEL_RECOMMENDED,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(false), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(false),
+             nullptr);
   policy_provider_.UpdateChromePolicy(values);
   base::RunLoop().RunUntilIdle();
   // When the policy's false, we should have flipped the global back to false.
-  EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  EXPECT_FALSE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 }
 
 }  // namespace policy

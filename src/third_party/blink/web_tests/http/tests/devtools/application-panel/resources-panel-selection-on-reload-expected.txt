@@ -4,7 +4,7 @@ Initial state:
 Application
   Manifest
   Service Workers
-  Clear storage
+  Storage
 Storage
   Local Storage
     http://127.0.0.1:8000
@@ -28,6 +28,7 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Selection: ["cookies://http://127.0.0.1:8000","category://Cookies"]
 Visible view is a cookie view: true
 Page reloaded.
@@ -35,7 +36,7 @@ After navigation:
 Application
   Manifest
   Service Workers
-  Clear storage
+  Storage
 Storage
   Local Storage
     http://127.0.0.1:8000
@@ -58,6 +59,7 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Selection: ["cookies://http://127.0.0.1:8000","category://Cookies"]
 Visible view is a cookie view: true
 

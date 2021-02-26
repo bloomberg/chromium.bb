@@ -6,12 +6,13 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "content/public/common/referrer.h"
-#include "content/renderer/loader/code_cache_loader_impl.h"
-#include "content/renderer/loader/resource_load_stats.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
+#include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
@@ -28,24 +29,32 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int render_frame_id,
+    RenderFrameImpl* render_frame_impl,
     bool is_main_frame,
     blink::WebNavigationParams* navigation_params) {
-  // Use the original navigation url to start with. We'll replay the redirects
-  // afterwards and will eventually arrive to the final url.
-  GURL url = !commit_params->original_url.is_empty()
-                 ? commit_params->original_url
-                 : common_params->url;
-  auto resource_load_info = NotifyResourceLoadInitiated(
-      render_frame_id, request_id, url,
+  std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+      resource_load_info_notifier_wrapper =
+          render_frame_impl
+              ? render_frame_impl->CreateResourceLoadInfoNotifierWrapper()
+              : std::make_unique<blink::ResourceLoadInfoNotifierWrapper>(
+                    /*resource_load_info_notifier=*/nullptr);
+
+  // Use the original navigation url to start with. We'll replay the
+  // redirects afterwards and will eventually arrive to the final url.
+  const GURL original_url = !commit_params->original_url.is_empty()
+                                ? commit_params->original_url
+                                : common_params->url;
+  GURL url = original_url;
+  resource_load_info_notifier_wrapper->NotifyResourceLoadInitiated(
+      request_id, url,
       !commit_params->original_method.empty() ? commit_params->original_method
                                               : common_params->method,
       common_params->referrer->url,
       // TODO(kinuko): This should use the same value as in the request that
       // was used in browser process, i.e. what CreateResourceRequest in
       // content/browser/loader/navigation_url_loader_impl.cc gives.
-      // (Currently we don't propagate the value from the browser on navigation
-      // commit.)
+      // (Currently we don't propagate the value from the browser on
+      // navigation commit.)
       is_main_frame ? network::mojom::RequestDestination::kDocument
                     : network::mojom::RequestDestination::kIframe,
       is_main_frame ? net::HIGHEST : net::LOWEST);
@@ -60,15 +69,15 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     WebURLLoaderImpl::PopulateURLResponse(
         url, *redirect_response, &redirect.redirect_response,
         response_head->ssl_info.has_value(), request_id);
-    NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
-                                   redirect_info, std::move(redirect_response));
+    resource_load_info_notifier_wrapper->NotifyResourceRedirectReceived(
+        redirect_info, std::move(redirect_response));
     if (url.SchemeIs(url::kDataScheme))
       redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
     redirect.new_referrer =
         blink::WebString::FromUTF8(redirect_info.new_referrer);
     redirect.new_referrer_policy =
-        Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+        blink::ReferrerUtils::NetToMojoReferrerPolicy(
             redirect_info.new_referrer_policy);
     redirect.new_http_method =
         blink::WebString::FromLatin1(redirect_info.new_method);
@@ -83,33 +92,35 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
 
   if (url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(
-        std::move(response_head), std::move(response_body),
-        std::move(url_loader_client_endpoints), task_runner, render_frame_id,
-        std::move(resource_load_info)));
+        original_url, std::move(response_head), std::move(response_body),
+        std::move(url_loader_client_endpoints), task_runner,
+        std::move(resource_load_info_notifier_wrapper)));
   }
 }
 
 NavigationBodyLoader::NavigationBodyLoader(
+    const GURL& original_url,
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int render_frame_id,
-    blink::mojom::ResourceLoadInfoPtr resource_load_info)
-    : render_frame_id_(render_frame_id),
-      response_head_(std::move(response_head)),
+    std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+        resource_load_info_notifier_wrapper)
+    : response_head_(std::move(response_head)),
       response_body_(std::move(response_body)),
       endpoints_(std::move(endpoints)),
       task_runner_(std::move(task_runner)),
-      resource_load_info_(std::move(resource_load_info)),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      task_runner_) {}
+                      task_runner_),
+      resource_load_info_notifier_wrapper_(
+          std::move(resource_load_info_notifier_wrapper)),
+      original_url_(original_url) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {
-    NotifyResourceLoadCanceled(render_frame_id_, std::move(resource_load_info_),
-                               net::ERR_ABORTED);
+    resource_load_info_notifier_wrapper_->NotifyResourceLoadCanceled(
+        net::ERR_ABORTED);
   }
 }
 
@@ -143,15 +154,14 @@ void NavigationBodyLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
 }
 
 void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  NotifyResourceTransferSizeUpdated(render_frame_id_, resource_load_info_.get(),
-                                    transfer_size_diff);
+  resource_load_info_notifier_wrapper_->NotifyResourceTransferSizeUpdated(
+      transfer_size_diff);
 }
 
 void NavigationBodyLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle handle) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::OnStartLoadingResponseBody",
-               "url",
-               resource_load_info_->original_url.possibly_invalid_spec());
+               "url", original_url_.possibly_invalid_spec());
   DCHECK(!has_received_body_handle_);
   DCHECK(!has_received_completion_);
   has_received_body_handle_ = true;
@@ -173,10 +183,11 @@ void NavigationBodyLoader::OnComplete(
   NotifyCompletionIfAppropriate();
 }
 
-void NavigationBodyLoader::SetDefersLoading(bool defers) {
-  if (is_deferred_ == defers)
+void NavigationBodyLoader::SetDefersLoading(
+    blink::WebURLLoader::DeferType defers) {
+  if (defer_type_ == defers)
     return;
-  is_deferred_ = defers;
+  defer_type_ = defers;
   if (handle_.is_valid())
     OnReadable(MOJO_RESULT_OK);
 }
@@ -185,19 +196,17 @@ void NavigationBodyLoader::StartLoadingBody(
     WebNavigationBodyLoader::Client* client,
     bool use_isolated_code_cache) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::StartLoadingBody", "url",
-               resource_load_info_->original_url.possibly_invalid_spec());
+               original_url_.possibly_invalid_spec());
   client_ = client;
 
   base::Time response_head_response_time = response_head_->response_time;
-  NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
-                                 std::move(response_head_),
-                                 content::PREVIEWS_OFF);
+  resource_load_info_notifier_wrapper_->NotifyResourceResponseReceived(
+      std::move(response_head_), blink::PreviewsTypes::PREVIEWS_OFF);
 
   if (use_isolated_code_cache) {
-    code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
+    code_cache_loader_ = blink::WebCodeCacheLoader::Create();
     code_cache_loader_->FetchFromCodeCache(
-        blink::mojom::CodeCacheType::kJavascript,
-        resource_load_info_->original_url,
+        blink::mojom::CodeCacheType::kJavascript, original_url_,
         base::BindOnce(&NavigationBodyLoader::CodeCacheReceived,
                        weak_factory_.GetWeakPtr(),
                        response_head_response_time));
@@ -211,6 +220,8 @@ void NavigationBodyLoader::CodeCacheReceived(
     base::Time response_head_response_time,
     base::Time response_time,
     mojo_base::BigBuffer data) {
+  // Check that the times match to ensure that the code cache data is for this
+  // response. See https://crbug.com/1099587.
   if (response_head_response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
     client_->BodyCodeCacheReceived(std::move(data));
@@ -240,8 +251,10 @@ void NavigationBodyLoader::OnConnectionClosed() {
 
 void NavigationBodyLoader::OnReadable(MojoResult unused) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::OnReadable", "url",
-               resource_load_info_->original_url.possibly_invalid_spec());
-  if (has_seen_end_of_data_ || is_deferred_ || is_in_on_readable_)
+               original_url_.possibly_invalid_spec());
+  if (has_seen_end_of_data_ ||
+      defer_type_ != blink::WebURLLoader::DeferType::kNotDeferred ||
+      is_in_on_readable_)
     return;
   // Protect against reentrancy:
   // - when the client calls SetDefersLoading;
@@ -259,9 +272,9 @@ void NavigationBodyLoader::OnReadable(MojoResult unused) {
 
 void NavigationBodyLoader::ReadFromDataPipe() {
   TRACE_EVENT1("loading", "NavigationBodyLoader::ReadFromDataPipe", "url",
-               resource_load_info_->original_url.possibly_invalid_spec());
+               original_url_.possibly_invalid_spec());
   uint32_t num_bytes_consumed = 0;
-  while (!is_deferred_) {
+  while (defer_type_ == blink::WebURLLoader::DeferType::kNotDeferred) {
     const void* buffer = nullptr;
     uint32_t available = 0;
     MojoResult result =
@@ -312,12 +325,10 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
   base::Optional<blink::WebURLError> error;
   if (status_.error_code != net::OK) {
-    error = WebURLLoaderImpl::PopulateURLError(
-        status_, resource_load_info_->original_url);
+    error = WebURLLoaderImpl::PopulateURLError(status_, original_url_);
   }
 
-  NotifyResourceLoadCompleted(render_frame_id_, std::move(resource_load_info_),
-                              status_);
+  resource_load_info_notifier_wrapper_->NotifyResourceLoadCompleted(status_);
 
   if (!client_)
     return;

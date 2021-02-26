@@ -9,7 +9,6 @@
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -30,6 +29,8 @@ class V8Compile;
 class DOMWindow;
 class Document;
 class ExecutionContext;
+class Frame;
+class LocalFrame;
 class WindowPerformance;
 class SourceLocation;
 
@@ -63,7 +64,7 @@ class CORE_EXPORT PerformanceMonitor final
                                         const String& text,
                                         base::TimeDelta time,
                                         SourceLocation*) {}
-    void Trace(Visitor* visitor) override {}
+    void Trace(Visitor* visitor) const override {}
   };
 
   static void ReportGenericViolation(ExecutionContext*,
@@ -104,7 +105,7 @@ class CORE_EXPORT PerformanceMonitor final
   explicit PerformanceMonitor(LocalFrame*);
   ~PerformanceMonitor() override;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  private:
   friend class PerformanceMonitorTest;

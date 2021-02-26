@@ -24,7 +24,7 @@ Normalizer::~Normalizer() = default;
 
 std::unique_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
     const OncValueSignature* object_signature,
-    const base::DictionaryValue& onc_object) {
+    const base::Value& onc_object) {
   CHECK(object_signature != nullptr);
   bool error = false;
   std::unique_ptr<base::DictionaryValue> result =
@@ -35,7 +35,7 @@ std::unique_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
 
 std::unique_ptr<base::DictionaryValue> Normalizer::MapObject(
     const OncValueSignature& signature,
-    const base::DictionaryValue& onc_object,
+    const base::Value& onc_object,
     bool* error) {
   std::unique_ptr<base::DictionaryValue> normalized =
       Mapper::MapObject(signature, onc_object, error);
@@ -44,7 +44,7 @@ std::unique_ptr<base::DictionaryValue> Normalizer::MapObject(
     return std::unique_ptr<base::DictionaryValue>();
 
   if (remove_recommended_fields_)
-    normalized->RemoveWithoutPathExpansion(::onc::kRecommended, nullptr);
+    normalized->RemoveKey(::onc::kRecommended);
 
   if (&signature == &kCertificateSignature)
     NormalizeCertificate(normalized.get());
@@ -169,12 +169,10 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
   bool remove = false;
   network->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (remove) {
-    network->RemoveWithoutPathExpansion(::onc::network_config::kStaticIPConfig,
-                                        nullptr);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kName, nullptr);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kProxySettings,
-                                        nullptr);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kType, nullptr);
+    network->RemoveKey(::onc::network_config::kStaticIPConfig);
+    network->RemoveKey(::onc::network_config::kName);
+    network->RemoveKey(::onc::network_config::kProxySettings);
+    network->RemoveKey(::onc::network_config::kType);
     // Fields dependent on kType are removed afterwards, too.
   }
 

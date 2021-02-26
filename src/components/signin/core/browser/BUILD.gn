@@ -103,6 +103,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_investigator_unittest.cc",
+    "account_reconcilor_delegate_unittest.cc",
     "account_reconcilor_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "signin_error_controller_unittest.cc",
@@ -147,10 +148,16 @@ source_set("unit_tests") {
 }
 
 if (is_android) {
+  android_library("signin_enums_java") {
+    srcjar_deps = [ ":signin_enums_javagen" ]
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+  }
+
   java_cpp_enum("signin_enums_javagen") {
     sources = [
       "signin_header_helper.h",
       "signin_investigator.h",
     ]
+    visibility = [ ":*" ]  # Depend on through :signin_enums_java
   }
 }

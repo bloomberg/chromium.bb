@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -142,6 +143,7 @@ bool PresentationTimeRecorder::PresentationTimeRecorderInternal::RequestNext() {
   if (report_immediately_for_test) {
     state_ = COMMITTED;
     gfx::PresentationFeedback feedback;
+    feedback.timestamp = now;
     OnPresented(request_count_++, now, feedback);
     return true;
   }
@@ -169,7 +171,20 @@ void PresentationTimeRecorder::PresentationTimeRecorderInternal::OnPresented(
                  << ", flags=" << ToFlagString(feedback.flags);
     return;
   }
+  if (feedback.timestamp.is_null()) {
+    // TODO(b/165951963): ideally feedback.timestamp should not be null.
+    // Consider replacing this by DCHECK or CHECK.
+    LOG(ERROR) << "Invalid feedback timestamp (" << count << "):"
+               << " timestamp is not set";
+    return;
+  }
   const base::TimeDelta delta = feedback.timestamp - requested_time;
+  if (delta.InMilliseconds() < 0) {
+    LOG(ERROR) << "Invalid timestamp for presentation feedback (" << count
+               << "): requested_time=" << requested_time
+               << " feedback.timestamp=" << feedback.timestamp;
+    return;
+  }
   if (delta.InMilliseconds() > max_latency_ms_)
     max_latency_ms_ = delta.InMilliseconds();
 

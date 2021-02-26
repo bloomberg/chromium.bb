@@ -45,10 +45,6 @@
 
 namespace blink {
 
-namespace {
-const char kShadowRootAttributeName[] = "shadowroot";
-}
-
 class MarkupAccumulator::NamespaceContext final {
   USING_FAST_MALLOC(MarkupAccumulator::NamespaceContext);
 
@@ -141,9 +137,11 @@ class MarkupAccumulator::ElementSerializationData final {
 
 MarkupAccumulator::MarkupAccumulator(AbsoluteURLs resolve_urls_method,
                                      SerializationType serialization_type,
-                                     IncludeShadowRoots include_shadow_roots)
+                                     IncludeShadowRoots include_shadow_roots,
+                                     ClosedRootsSet include_closed_roots)
     : formatter_(resolve_urls_method, serialization_type),
-      include_shadow_roots_(include_shadow_roots) {}
+      include_shadow_roots_(include_shadow_roots),
+      include_closed_roots_(include_closed_roots) {}
 
 MarkupAccumulator::~MarkupAccumulator() = default;
 
@@ -302,7 +300,8 @@ MarkupAccumulator::AppendStartTagOpen(const Element& element) {
     // 12.5.1. If the local prefixes map contains a key matching prefix, then
     // let prefix be the result of generating a prefix providing as input map,
     // ns, and prefix index
-    if (element.hasAttribute(WTF::g_xmlns_with_colon + prefix)) {
+    if (element.hasAttribute(
+            AtomicString(String(WTF::g_xmlns_with_colon + prefix)))) {
       prefix = GeneratePrefix(ns);
     } else {
       // 12.5.2. Add prefix to map given namespace ns.
@@ -545,11 +544,10 @@ bool MarkupAccumulator::SerializeAsHTML() const {
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
     const Element& element) const {
   ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots ||
-      shadow_root->GetType() != ShadowRootType::kOpen) {
+  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots)
     return std::pair<Node*, Element*>();
-  }
-  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
+  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+      element.GetExecutionContext()));
   AtomicString shadowroot_type;
   switch (shadow_root->GetType()) {
     case ShadowRootType::V0:
@@ -563,13 +561,20 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
       shadowroot_type = "closed";
       break;
   }
+  if (shadow_root->GetType() == ShadowRootType::kClosed &&
+      !include_closed_roots_.Contains(shadow_root)) {
+    return std::pair<Node*, Element*>();
+  }
+
   // Wrap the shadowroot into a declarative Shadow DOM <template shadowroot>
   // element.
   auto* template_element = MakeGarbageCollected<Element>(
       html_names::kTemplateTag, &(element.GetDocument()));
-  template_element->setAttribute(
-      QualifiedName(g_null_atom, kShadowRootAttributeName, g_null_atom),
-      shadowroot_type);
+  template_element->setAttribute(html_names::kShadowrootAttr, shadowroot_type);
+  if (shadow_root->delegatesFocus()) {
+    template_element->SetBooleanAttribute(
+        html_names::kShadowrootdelegatesfocusAttr, true);
+  }
   return std::pair<Node*, Element*>(shadow_root, template_element);
 }
 

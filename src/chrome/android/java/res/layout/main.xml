@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer
+    <org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer
         android:id="@+id/coordinator"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -91,6 +91,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <org.chromium.components.messages.MessageContainer
+            android:id="@+id/message_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="start|top" />
+
         <ViewStub
             android:id="@+id/status_indicator_stub"
             android:layout_width="match_parent"
@@ -104,7 +111,7 @@
             android:layout="@layout/empty_background_view_tablet"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer>
+    </org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer>
 
     <!-- This empty view is used as the anchor for custom menu -->
     <View

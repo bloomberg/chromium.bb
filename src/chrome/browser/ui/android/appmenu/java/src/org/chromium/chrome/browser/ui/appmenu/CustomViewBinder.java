@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ui.appmenu;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +16,10 @@ import androidx.annotation.Nullable;
 /**
  * An interface for providing a custom view binder for a menu item displayed in the app menu.
  * The binder may be used to custom layout/presentation of individual menu items. Clicks on the menu
- * item will still be handled by the app menu.
+ * item need to be handled by {@link AppMenuClickHandler}, which is received in {{@link
+ * #getView(MenuItem, View, ViewGroup, LayoutInflater, AppMenuClickHandler, highlightedItemId)}}.
+ * Any in-product help highlighting for custom items and its sub-view needs to be handled by the
+ * binder.
  */
 public interface CustomViewBinder {
     /**
@@ -26,9 +30,10 @@ public interface CustomViewBinder {
 
     /**
      * @return The number of types of Views that will be created by
-     * {{@link #getView(MenuItem, View, ViewGroup, LayoutInflater)}}. The value returned by this
-     * method should be effectively treated as final. Once the CustomViewBinder has been
-     * retrieved by the app menu, it is expected that the item view type count remains stable.
+     * {{@link #getView(MenuItem, View, ViewGroup, LayoutInflater, AppMenuClickHandler,
+     * highlightedItemId)}}. The value returned by this method should be effectively treated as
+     * final. Once the CustomViewBinder has been retrieved by the app menu, it is expected that the
+     * item view type count remains stable.
      */
     int getViewTypeCount();
 
@@ -46,10 +51,16 @@ public interface CustomViewBinder {
      * @param convertView The old view to re-use if possible.
      * @param parent The parent that this view will eventually be attached to.
      * @param inflater A {@link LayoutInflater} to use when inflating new views.
+     * @param appMenuClickHandler A {@link AppMenuClickHandler} to handle click events in the view.
+     * @param highlightedItemId     The resource id of the menu item that should be highlighted.
+     *                              Can be {@code null} if no item should be highlighted. Note that
+     *                              the custom view binder is responsible for highlighting the
+     *                              custom view and the appropriate sub-view based on this id.
      * @return A View corresponding to the provided menu item.
      */
-    View getView(
-            MenuItem item, @Nullable View convertView, ViewGroup parent, LayoutInflater inflater);
+    View getView(MenuItem item, @Nullable View convertView, ViewGroup parent,
+            LayoutInflater inflater, AppMenuClickHandler appMenuClickHandler,
+            @Nullable Integer highlightedItemId);
 
     /**
      * Determines whether the enter animation should be applied to the menu item matching the
@@ -58,4 +69,14 @@ public interface CustomViewBinder {
      * @return True if the standard animation should be applied.
      */
     boolean supportsEnterAnimation(int id);
+
+    /**
+     * Retrieve the pixel height for the custom view. We cannot use View#getHeight() in {{@link
+     * #getView(MenuItem, View, ViewGroup, LayoutInflater)}} because View#getHeight() will return 0
+     * before the view is laid out. This method is for calculating popup window size, and the height
+     * should bese on the layout xml file related to the custom view.
+     * @param context The context of the custom view.
+     * @return The pixel size of the height.
+     */
+    int getPixelHeight(Context context);
 }

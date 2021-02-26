@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "skia/ext/image_operations.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -52,21 +52,12 @@ constexpr int kOverlayIconSize = 16;
 // valid.
 void SetOverlayIcon(HWND hwnd,
                     std::unique_ptr<SkBitmap> bitmap,
-                    const std::string& alt_text,
-                    const char* uma_metric_name) {
+                    const std::string& alt_text) {
   Microsoft::WRL::ComPtr<ITaskbarList3> taskbar;
   HRESULT result = ::CoCreateInstance(
       CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
-  if (FAILED(result)) {
-    base::UmaHistogramSparse(uma_metric_name, result);
+  if (FAILED(result) || FAILED(taskbar->HrInit()))
     return;
-  }
-
-  result = taskbar->HrInit();
-  if (FAILED(result)) {
-    base::UmaHistogramSparse(uma_metric_name, result);
-    return;
-  }
 
   base::win::ScopedGDIObject<HICON> icon;
   if (bitmap) {
@@ -89,7 +80,7 @@ void SetOverlayIcon(HWND hwnd,
     // way profile icons are rendered in the profile switcher.
     SkBitmap offscreen_bitmap;
     offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
-    SkCanvas offscreen_canvas(offscreen_bitmap);
+    SkCanvas offscreen_canvas(offscreen_bitmap, SkSurfaceProps{});
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
 
     static const SkRRect overlay_icon_clip =
@@ -104,35 +95,26 @@ void SetOverlayIcon(HWND hwnd,
     offscreen_canvas.drawBitmap(sk_icon, 0, y_offset);
 
     icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap);
-    if (!icon.is_valid()) {
-      base::UmaHistogramSparse(uma_metric_name,
-                               MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF,
-                                            CustomHresultCodes::kInvalidIcon));
+    if (!icon.is_valid())
       return;
-    }
   }
-  result = taskbar->SetOverlayIcon(hwnd, icon.get(),
-                                   base::UTF8ToWide(alt_text).c_str());
-  base::UmaHistogramSparse(uma_metric_name, result);
+  taskbar->SetOverlayIcon(hwnd, icon.get(), base::UTF8ToWide(alt_text).c_str());
 }
 
 void PostSetOverlayIcon(HWND hwnd,
                         std::unique_ptr<SkBitmap> bitmap,
-                        const std::string& alt_text,
-                        const char* uma_metric_name) {
+                        const std::string& alt_text) {
   base::ThreadPool::CreateCOMSTATaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&SetOverlayIcon, hwnd, std::move(bitmap),
-                                alt_text, uma_metric_name));
+      ->PostTask(FROM_HERE, base::BindOnce(&SetOverlayIcon, hwnd,
+                                           std::move(bitmap), alt_text));
 }
 
 }  // namespace
 
 void DrawTaskbarDecorationString(gfx::NativeWindow window,
                                  const std::string& content,
-                                 const std::string& alt_text,
-                                 const char* uma_metric_name) {
+                                 const std::string& alt_text) {
   HWND hwnd = views::HWNDForNativeWindow(window);
 
   // This is the color used by the Windows 10 Badge API, for platform
@@ -150,7 +132,8 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
   auto badge = std::make_unique<SkBitmap>();
   badge->allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
 
-  SkCanvas canvas(*badge.get());
+  SkCanvas canvas(*badge.get(),
+                  skia::LegacyDisplayGlobals::GetSkSurfaceProps());
 
   SkPaint paint;
   paint.setAntiAlias(true);
@@ -180,44 +163,38 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
                         kRadius - bounds.height() / 2 - bounds.y(), font,
                         paint);
 
-  PostSetOverlayIcon(hwnd, std::move(badge), alt_text, uma_metric_name);
+  PostSetOverlayIcon(hwnd, std::move(badge), alt_text);
 }
 
-void DrawTaskbarDecoration(gfx::NativeWindow window,
-                           const gfx::Image* image,
-                           const char* uma_metric_name) {
+void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
   HWND hwnd = views::HWNDForNativeWindow(window);
 
   // SetOverlayIcon() does nothing if the window is not visible so testing here
   // avoids all the wasted effort of the image resizing.
-  if (!::IsWindowVisible(hwnd)) {
-    base::UmaHistogramSparse(
-        uma_metric_name, MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF,
-                                      CustomHresultCodes::kWindowInvisible));
+  if (!::IsWindowVisible(hwnd))
     return;
-  }
 
   // Copy the image since we're going to use it on a separate thread and
   // gfx::Image isn't thread safe.
   std::unique_ptr<SkBitmap> bitmap;
   if (image) {
-    bitmap.reset(
-        new SkBitmap(profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
+    // If `image` is an old avatar, then it's guaranteed to by 2x by code in
+    // ProfileAttributesEntry::GetAvatarIcon().
+    bitmap.reset(new SkBitmap(
+        profiles::GetWin2xAvatarIconAsSquare(*image->ToSkBitmap())));
   }
 
-  PostSetOverlayIcon(hwnd, std::move(bitmap), "", uma_metric_name);
+  PostSetOverlayIcon(hwnd, std::move(bitmap), "");
 }
 
-void UpdateTaskbarDecoration(Profile* profile,
-                             gfx::NativeWindow window,
-                             const char* uma_metric_name) {
-  if (profile->IsGuestSession() ||
+void UpdateTaskbarDecoration(Profile* profile, gfx::NativeWindow window) {
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
       // Browser process and profile manager may be null in tests.
       (g_browser_process && g_browser_process->profile_manager() &&
        g_browser_process->profile_manager()
                ->GetProfileAttributesStorage()
                .GetNumberOfProfiles() <= 1)) {
-    taskbar::DrawTaskbarDecoration(window, nullptr, uma_metric_name);
+    taskbar::DrawTaskbarDecoration(window, nullptr);
     return;
   }
 
@@ -229,25 +206,19 @@ void UpdateTaskbarDecoration(Profile* profile,
   // with the default shortcut being pinned, we add the runtime badge for
   // safety. See crbug.com/313800.
   gfx::Image decoration;
-  AvatarMenu::ImageLoadStatus status =
-      AvatarMenu::GetImageForMenuButton(profile->GetPath(), &decoration);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Profile.AvatarLoadStatus", status,
-      static_cast<int>(AvatarMenu::ImageLoadStatus::MAX) + 1);
+  AvatarMenu::ImageLoadStatus status = AvatarMenu::GetImageForMenuButton(
+      profile->GetPath(), &decoration, kOverlayIconSize);
 
   // If the user is using a Gaia picture and the picture is still being loaded,
   // wait until the load finishes. This taskbar decoration will be triggered
   // again upon the finish of the picture load.
   if (status == AvatarMenu::ImageLoadStatus::LOADING ||
-      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
-    base::UmaHistogramSparse(uma_metric_name,
-                             MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF,
-                                          CustomHresultCodes::kImageLoading));
+      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED ||
+      status == AvatarMenu::ImageLoadStatus::BROWSER_SHUTTING_DOWN) {
     return;
   }
 
-  taskbar::DrawTaskbarDecoration(window, &decoration, uma_metric_name);
+  taskbar::DrawTaskbarDecoration(window, &decoration);
 }
 
 }  // namespace taskbar

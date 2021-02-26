@@ -7,11 +7,9 @@
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
-#include "ash/public/cpp/assistant/assistant_settings.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -29,6 +27,10 @@ class AssistantWebContainerViewTest : public AssistantAshTestBase {
         ->assistant_controller()
         ->web_ui_controller()
         ->GetViewForTest();
+  }
+
+  void OpenAssistantSettings() {
+    Shell::Get()->assistant_controller()->OpenAssistantSettings();
   }
 
  private:

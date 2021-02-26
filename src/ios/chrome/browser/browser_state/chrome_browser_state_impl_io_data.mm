@@ -39,7 +39,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
-#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_job_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -104,7 +104,7 @@ ChromeBrowserStateIOData* ChromeBrowserStateImplIOData::Handle::io_data()
 
 void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
     base::Time time,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
 
@@ -112,7 +112,7 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(
           &ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread,
-          base::Unretained(io_data_), time, completion));
+          base::Unretained(io_data_), time, std::move(completion)));
 }
 
 void ChromeBrowserStateImplIOData::Handle::LazyInitialize() const {
@@ -224,7 +224,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
                                              std::move(main_backend));
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
-  main_job_factory_ = std::make_unique<net::URLRequestJobFactoryImpl>();
+  main_job_factory_ = std::make_unique<net::URLRequestJobFactory>();
   InstallProtocolHandlers(main_job_factory_.get(), protocol_handlers);
 
   main_context->set_job_factory(main_job_factory_.get());
@@ -234,18 +234,19 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
 void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
     base::Time time,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(initialized());
   DCHECK(transport_security_state());
   auto barrier = base::BarrierClosure(
       2, base::BindOnce(
-             [](base::Closure completion) {
+             [](base::OnceClosure callback) {
                base::PostTask(FROM_HERE, base::TaskTraits(web::WebThread::UI),
-                              std::move(completion));
+                              std::move(callback));
              },
              std::move(completion)));
 
-  transport_security_state()->DeleteAllDynamicDataSince(time, barrier);
+  transport_security_state()->DeleteAllDynamicDataBetween(
+      time, base::Time::Max(), barrier);
   http_server_properties()->Clear(barrier);
 }

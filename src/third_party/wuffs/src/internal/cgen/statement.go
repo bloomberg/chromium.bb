@@ -162,7 +162,7 @@ func (g *gen) writeStatementAssign0(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr
 		}
 
 		if op != t.IDEqQuestion && rhs.Effect().Coroutine() {
-			b.writes("if (status) { goto suspend; }\n")
+			b.writes("if (status.repr) {\ngoto suspend;\n}\n")
 		}
 	}
 
@@ -192,7 +192,7 @@ func (g *gen) writeStatementAssign1(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr
 				uOp = "sub"
 			}
 			b.printf("wuffs_base__u%d__sat_%s_indirect(&", uBits, uOp)
-			opName, closer = ",", ")"
+			opName, closer = ", ", ")"
 
 		case t.IDPlusEq, t.IDMinusEq:
 			if lTyp.IsNumType() {
@@ -262,9 +262,9 @@ func (g *gen) writeStatementIOBind(b *buffer, n *a.IOBind, depth uint32) error {
 		if e.Operator() != 0 {
 			prefix = aPrefix
 		}
-		cTyp := "reader"
+		cTyp, qualifier := "reader", "const "
 		if e.MType().QID()[1] == t.IDIOWriter {
-			cTyp = "writer"
+			cTyp, qualifier = "writer", ""
 		}
 		name := e.Ident().Str(g.tm)
 		b.printf("wuffs_base__io_buffer* %s%d_%s%s = %s%s;\n",
@@ -274,18 +274,18 @@ func (g *gen) writeStatementIOBind(b *buffer, n *a.IOBind, depth uint32) error {
 		// does this work if the io_bind body advances these pointers, either
 		// directly or by calling other funcs?
 		if e.Operator() == 0 {
-			b.printf("uint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				oPrefix, ioBindNum, iopPrefix, prefix, name, iopPrefix, prefix, name)
-			b.printf("uint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				oPrefix, ioBindNum, io0Prefix, prefix, name, io0Prefix, prefix, name)
-			b.printf("uint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				oPrefix, ioBindNum, io1Prefix, prefix, name, io1Prefix, prefix, name)
-			b.printf("uint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				oPrefix, ioBindNum, io2Prefix, prefix, name, io2Prefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, iopPrefix, prefix, name, iopPrefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io0Prefix, prefix, name, io0Prefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io1Prefix, prefix, name, io1Prefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io2Prefix, prefix, name, io2Prefix, prefix, name)
 		}
 
 		if n.Keyword() == t.IDIOBind {
-			b.printf("%s%s = wuffs_base__io_%s__set(&%s%s, &%s%s%s, &%s%s%s, &%s%s%s, &%s%s%s,",
+			b.printf("%s%s = wuffs_base__io_%s__set(\n&%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n",
 				prefix, name, cTyp, uPrefix, name, iopPrefix, prefix, name,
 				io0Prefix, prefix, name, io1Prefix, prefix, name, io2Prefix, prefix, name)
 			if err := g.writeExpr(b, n.Arg1(), 0); err != nil {
@@ -387,7 +387,7 @@ func (g *gen) writeStatementIterate(b *buffer, n *a.Iterate, depth uint32) error
 	// TODO: don't assume that the slice is a slice of base.u8. In
 	// particular, the code gen can be subtle if the slice element type has
 	// zero size, such as the empty struct.
-	b.printf("wuffs_base__slice_u8 %sslice_%s =", iPrefix, name)
+	b.printf("wuffs_base__slice_u8 %sslice_%s = ", iPrefix, name)
 	if err := g.writeExpr(b, o.RHS(), 0); err != nil {
 		return err
 	}
@@ -417,7 +417,7 @@ func (g *gen) writeStatementIterate(b *buffer, n *a.Iterate, depth uint32) error
 }
 
 func (g *gen) writeStatementJump(b *buffer, n *a.Jump, depth uint32) error {
-	jt, err := g.currFunk.jumpTarget(n.JumpTarget())
+	jt, err := g.currFunk.jumpTarget(g.tm, n.JumpTarget())
 	if err != nil {
 		return err
 	}
@@ -425,7 +425,7 @@ func (g *gen) writeStatementJump(b *buffer, n *a.Jump, depth uint32) error {
 	if n.Keyword() == t.IDBreak {
 		keyword = "break"
 	}
-	b.printf("goto label_%d_%s;\n", jt, keyword)
+	b.printf("goto label__%s__%s;\n", jt, keyword)
 	return nil
 }
 
@@ -435,59 +435,87 @@ func (g *gen) writeStatementRet(b *buffer, n *a.Ret, depth uint32) error {
 	if g.currFunk.astFunc.Effect().Coroutine() ||
 		(g.currFunk.returnsStatus && (len(g.currFunk.derivedVars) > 0)) {
 
-		isOK := false
+		isComplete := false
 		b.writes("status = ")
 		if retExpr.Operator() == 0 && retExpr.Ident() == t.IDOk {
-			b.writes("NULL")
-			isOK = true
+			b.writes("wuffs_base__make_status(NULL)")
+			isComplete = true
 		} else {
-			if retExpr.Ident().IsStrLiteral(g.tm) {
+			if retExpr.Ident().IsDQStrLiteral(g.tm) {
 				msg, _ := t.Unescape(retExpr.Ident().Str(g.tm))
-				isOK = statusMsgIsWarning(msg)
+				isComplete = statusMsgIsNote(msg)
 			}
 			if err := g.writeExpr(
 				b, retExpr, depth); err != nil {
 				return err
 			}
 		}
-		b.writes(";")
+		b.writes(";\n")
 
 		if n.Keyword() == t.IDYield {
 			return g.writeCoroSuspPoint(b, true)
 		}
 
 		if n.RetsError() {
-			b.writes("goto exit;")
-		} else if isOK {
+			b.writes("goto exit;\n")
+		} else if isComplete {
 			g.currFunk.hasGotoOK = true
-			b.writes("goto ok;")
+			b.writes("goto ok;\n")
 		} else {
 			g.currFunk.hasGotoOK = true
 			// TODO: the "goto exit"s can be "goto ok".
-			b.writes("if (wuffs_base__status__is_error(status)) { goto exit; }" +
-				"else if (wuffs_base__status__is_suspension(status)) { " +
-				"status = wuffs_base__error__cannot_return_a_suspension; goto exit; } goto ok;")
+			b.writes("if (wuffs_base__status__is_error(&status)) {\ngoto exit;\n} " +
+				"else if (wuffs_base__status__is_suspension(&status)) {\n" +
+				"status = wuffs_base__make_status(wuffs_base__error__cannot_return_a_suspension);\ngoto exit;\n}\ngoto ok;\n")
 		}
 		return nil
+	}
+
+	if g.currFunk.derivedVars != nil {
+		for _, o := range g.currFunk.astFunc.In().Fields() {
+			o := o.AsField()
+			if err := g.writeSaveDerivedVar(b, "", aPrefix, o.Name(), o.XType()); err != nil {
+				return err
+			}
+		}
 	}
 
 	b.writes("return ")
 	if g.currFunk.astFunc.Out() == nil {
 		b.writes("wuffs_base__make_empty_struct()")
-	} else if err := g.writeExpr(b, retExpr, depth); err != nil {
-		return err
+	} else {
+		couldBeSuspension := false
+		if retExpr.MType().IsStatus() && !n.RetsError() {
+			couldBeSuspension = true
+			if s := g.tm.ByID(retExpr.Ident()); (len(s) > 1) && (s[0] == '"') {
+				couldBeSuspension = s[1] == '$'
+			} else if (retExpr.Operator() == 0) && (retExpr.Ident() == t.IDOk) {
+				couldBeSuspension = false
+			}
+		}
+
+		if couldBeSuspension {
+			b.writes("wuffs_base__status__ensure_not_a_suspension(")
+		}
+		if err := g.writeExpr(b, retExpr, depth); err != nil {
+			return err
+		}
+		if couldBeSuspension {
+			b.writeb(')')
+		}
 	}
-	b.writeb(';')
+
+	b.writes(";\n")
 	return nil
 }
 
 func (g *gen) writeStatementWhile(b *buffer, n *a.While, depth uint32) error {
 	if n.HasContinue() {
-		jt, err := g.currFunk.jumpTarget(n)
+		jt, err := g.currFunk.jumpTarget(g.tm, n)
 		if err != nil {
 			return err
 		}
-		b.printf("label_%d_continue:;\n", jt)
+		b.printf("label__%s__continue:;\n", jt)
 	}
 	condition := buffer(nil)
 	if err := g.writeExpr(&condition, n.Condition(), 0); err != nil {
@@ -502,11 +530,11 @@ func (g *gen) writeStatementWhile(b *buffer, n *a.While, depth uint32) error {
 	}
 	b.writes("}\n")
 	if n.HasBreak() {
-		jt, err := g.currFunk.jumpTarget(n)
+		jt, err := g.currFunk.jumpTarget(g.tm, n)
 		if err != nil {
 			return err
 		}
-		b.printf("label_%d_break:;\n", jt)
+		b.printf("label__%s__break:;\n", jt)
 	}
 	return nil
 }

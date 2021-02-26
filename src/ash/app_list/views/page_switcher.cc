@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -41,40 +43,23 @@ constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 // Constants for the button strip that grows vertically.
 // The padding on top/bottom side of each button.
 constexpr int kVerticalButtonPadding = 0;
-// The selected button color.
-constexpr SkColor kDarkSelectedButtonColor = SkColorSetARGB(255, 232, 234, 237);
-// The normal button color for the page switcher shown in the app grid (54%
-// white).
-constexpr SkColor kDarkNormalColor = SkColorSetARGB(255, 232, 234, 237);
-constexpr SkColor kDarkInkDropBaseColor = SkColorSetRGB(241, 243, 244);
-constexpr SkColor kDarkInkDropRippleColor =
-    SkColorSetA(kDarkInkDropBaseColor, 15);
-constexpr SkColor kDarkInkDropHighlightColor =
-    SkColorSetA(kDarkInkDropBaseColor, 20);
 
 // Constants for the button strip that grows horizontally.
 // The padding on left/right side of each button.
 constexpr int kHorizontalButtonPadding = 0;
 
-// The normal button color for the page switcher shown in folders (54% black).
-constexpr SkColor kLightNormalColor = SkColorSetA(SK_ColorBLACK, 138);
-constexpr SkColor kLightInkDropBaseColor = SkColorSetARGB(255, 95, 99, 104);
-constexpr SkColor kLightInkDropRippleColor =
-    SkColorSetA(kLightInkDropBaseColor, 8);
-constexpr SkColor kLightInkDropHighlightColor =
-    SkColorSetA(kLightInkDropBaseColor, 24);
-
 class PageSwitcherButton : public views::Button {
  public:
-  PageSwitcherButton(views::ButtonListener* listener,
-                     bool is_root_app_grid_page_switcher)
-      : views::Button(listener),
-        is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher) {
+  explicit PageSwitcherButton(bool is_root_app_grid_page_switcher)
+      : is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher) {
+    SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
     SetInkDropMode(InkDropMode::ON);
     views::InstallFixedSizeCircleHighlightPathGenerator(
         this, is_root_app_grid_page_switcher ? kInkDropRadiusForRootGrid
                                              : kInkDropRadiusForFolderGrid);
   }
+  PageSwitcherButton(const PageSwitcherButton&) = delete;
+  PageSwitcherButton& operator=(const PageSwitcherButton&) = delete;
 
   ~PageSwitcherButton() override {}
 
@@ -119,17 +104,17 @@ class PageSwitcherButton : public views::Button {
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(),
-        is_root_app_grid_page_switcher_ ? kDarkInkDropRippleColor
-                                        : kLightInkDropRippleColor,
+        AppListColorProvider::Get()->GetPageSwitcherInkDropBaseColor(
+            is_root_app_grid_page_switcher_),
         1.0f);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(size()), is_root_app_grid_page_switcher_
-                                ? kDarkInkDropHighlightColor
-                                : kLightInkDropHighlightColor);
+        gfx::SizeF(size()),
+        AppListColorProvider::Get()->GetPageSwitcherInkDropHighlightColor(
+            is_root_app_grid_page_switcher_));
     highlight->set_visible_opacity(1.f);
     return highlight;
   }
@@ -151,15 +136,13 @@ class PageSwitcherButton : public views::Button {
   // Returns the information of how to paint selected/normal button.
   PaintButtonInfo BuildPaintButtonInfo() {
     PaintButtonInfo info;
+    info.color = AppListColorProvider::Get()->GetPageSwitcherButtonColor(
+        is_root_app_grid_page_switcher_);
     if (selected_) {
-      info.color = is_root_app_grid_page_switcher_ ? kDarkSelectedButtonColor
-                                                   : kLightNormalColor;
       info.style = cc::PaintFlags::kFill_Style;
       info.radius = SkIntToScalar(kSelectedButtonRadius);
       info.stroke_width = SkIntToScalar(0);
     } else {
-      info.color = is_root_app_grid_page_switcher_ ? kDarkNormalColor
-                                                   : kLightNormalColor;
       info.style = cc::PaintFlags::kStroke_Style;
       info.radius = SkIntToScalar(kNormalButtonRadius);
       info.stroke_width = kStrokeWidth;
@@ -186,8 +169,6 @@ class PageSwitcherButton : public views::Button {
 
   // True if the page switcher root is the app grid.
   const bool is_root_app_grid_page_switcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageSwitcherButton);
 };
 
 // Gets PageSwitcherButton at |index| in |buttons|.
@@ -253,8 +234,8 @@ const char* PageSwitcher::GetClassName() const {
   return "PageSwitcher";
 }
 
-void PageSwitcher::ButtonPressed(views::Button* sender,
-                                 const ui::Event& event) {
+void PageSwitcher::OnButtonPressed(views::Button* sender,
+                                   const ui::Event& event) {
   if (!model_ || ignore_button_press_)
     return;
 
@@ -279,13 +260,15 @@ void PageSwitcher::TotalPagesChanged(int previous_page_count,
 
   buttons_->RemoveAllChildViews(true);
   for (int i = 0; i < model_->total_pages(); ++i) {
-    PageSwitcherButton* button =
-        new PageSwitcherButton(this, is_root_app_grid_page_switcher_);
+    PageSwitcherButton* button = buttons_->AddChildView(
+        std::make_unique<PageSwitcherButton>(is_root_app_grid_page_switcher_));
+    button->SetCallback(base::BindRepeating(&PageSwitcher::OnButtonPressed,
+                                            base::Unretained(this),
+                                            base::Unretained(button)));
     button->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_APP_LIST_PAGE_SWITCHER, base::FormatNumber(i + 1),
         base::FormatNumber(model_->total_pages())));
     button->SetSelected(i == model_->selected_page() ? true : false);
-    buttons_->AddChildView(button);
   }
   buttons_->SetVisible(model_->total_pages() > 1);
   Layout();

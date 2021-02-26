@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
-import * as ProtocolClient from '../protocol_client/protocol_client.js';
 
 import {NameValue} from './NetworkRequest.js';               // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {Events as SecurityOriginManagerEvents, SecurityOriginManager} from './SecurityOriginManager.js';
 
 /**
- * @implements {Protocol.StorageDispatcher}
- * @unrestricted
+ * @implements {ProtocolProxyApi.StorageDispatcher}
  */
 export class ServiceWorkerCacheModel extends SDKModel {
   /**
@@ -30,8 +25,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
 
     this._cacheAgent = target.cacheStorageAgent();
     this._storageAgent = target.storageAgent();
-
-    this._securityOriginManager = target.model(SecurityOriginManager);
+    this._securityOriginManager = /** @type {!SecurityOriginManager} */ (target.model(SecurityOriginManager));
 
     this._originsUpdated = new Set();
     this._throttler = new Common.Throttler.Throttler(2000);
@@ -80,9 +74,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
    */
   async deleteCache(cache) {
     const response = await this._cacheAgent.invoke_deleteCache({cacheId: cache.cacheId});
-    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
-      console.error(`ServiceWorkerCacheAgent error deleting cache ${cache.toString()}: ${
-          response[ProtocolClient.InspectorBackend.ProtocolError]}`);
+    if (response.getError()) {
+      console.error(`ServiceWorkerCacheAgent error deleting cache ${cache.toString()}: ${response.getError()}`);
       return;
     }
     this._caches.delete(cache.cacheId);
@@ -96,12 +89,11 @@ export class ServiceWorkerCacheModel extends SDKModel {
    */
   async deleteCacheEntry(cache, request) {
     const response = await this._cacheAgent.invoke_deleteEntry({cacheId: cache.cacheId, request});
-    if (!response[ProtocolClient.InspectorBackend.ProtocolError]) {
+    if (response.getError()) {
+      Common.Console.Console.instance().error(Common.UIString.UIString(
+          'ServiceWorkerCacheAgent error deleting cache entry %s in cache: %s', cache.toString(), response.getError()));
       return;
     }
-    Common.Console.Console.instance().error(Common.UIString.UIString(
-        'ServiceWorkerCacheAgent error deleting cache entry %s in cache: %s', cache.toString(),
-        response[ProtocolClient.InspectorBackend.ProtocolError]));
   }
 
   /**
@@ -151,10 +143,13 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
   }
 
+  /**
+   * @param {string} securityOrigin
+   */
   _addOrigin(securityOrigin) {
     this._loadCacheNames(securityOrigin);
     if (this._isValidSecurityOrigin(securityOrigin)) {
-      this._storageAgent.trackCacheStorageForOrigin(securityOrigin);
+      this._storageAgent.invoke_trackCacheStorageForOrigin({origin: securityOrigin});
     }
   }
 
@@ -162,15 +157,15 @@ export class ServiceWorkerCacheModel extends SDKModel {
    * @param {string} securityOrigin
    */
   _removeOrigin(securityOrigin) {
-    for (const opaqueId of this._caches.keys()) {
-      const cache = this._caches.get(opaqueId);
+    for (const [opaqueId, cache] of this._caches.entries()) {
       if (cache.securityOrigin === securityOrigin) {
-        this._caches.delete(opaqueId);
-        this._cacheRemoved(cache);
+        // TODO: Remove the closure-style casts once we are typescript-only.
+        this._caches.delete(/** @type {string} */ (opaqueId));
+        this._cacheRemoved(/** @type {!Cache} */ (cache));
       }
     }
     if (this._isValidSecurityOrigin(securityOrigin)) {
-      this._storageAgent.untrackCacheStorageForOrigin(securityOrigin);
+      this._storageAgent.invoke_untrackCacheStorageForOrigin({origin: securityOrigin});
     }
   }
 
@@ -187,16 +182,16 @@ export class ServiceWorkerCacheModel extends SDKModel {
    * @param {string} securityOrigin
    */
   async _loadCacheNames(securityOrigin) {
-    const caches = await this._cacheAgent.requestCacheNames(securityOrigin);
-    if (!caches) {
+    const response = await this._cacheAgent.invoke_requestCacheNames({securityOrigin: securityOrigin});
+    if (response.getError()) {
       return;
     }
-    this._updateCacheNames(securityOrigin, caches);
+    this._updateCacheNames(securityOrigin, response.caches);
   }
 
   /**
    * @param {string} securityOrigin
-   * @param {!Array<*>} cachesJson
+   * @param {!Array<!Protocol.CacheStorage.Cache>} cachesJson
    */
   _updateCacheNames(securityOrigin, cachesJson) {
     /**
@@ -271,10 +266,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
   async _requestEntries(cache, skipCount, pageSize, pathFilter, callback) {
     const response =
         await this._cacheAgent.invoke_requestEntries({cacheId: cache.cacheId, skipCount, pageSize, pathFilter});
-    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
-      console.error(
-          'ServiceWorkerCacheAgent error while requesting entries: ',
-          response[ProtocolClient.InspectorBackend.ProtocolError]);
+    if (response.getError()) {
+      console.error('ServiceWorkerCacheAgent error while requesting entries: ', response.getError());
       return;
     }
     callback(response.cacheDataEntries, response.returnCount);
@@ -287,20 +280,18 @@ export class ServiceWorkerCacheModel extends SDKModel {
    */
   async _requestAllEntries(cache, pathFilter, callback) {
     const response = await this._cacheAgent.invoke_requestEntries({cacheId: cache.cacheId, pathFilter});
-    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
-      console.error(
-          'ServiceWorkerCacheAgent error while requesting entries: ',
-          response[ProtocolClient.InspectorBackend.ProtocolError]);
+    if (response.getError()) {
+      console.error('ServiceWorkerCacheAgent error while requesting entries: ', response.getError());
       return;
     }
     callback(response.cacheDataEntries, response.returnCount);
   }
 
   /**
-   * @param {string} origin
+   * @param {!Protocol.Storage.CacheStorageListUpdatedEvent} event
    * @override
    */
-  cacheStorageListUpdated(origin) {
+  cacheStorageListUpdated({origin}) {
     this._originsUpdated.add(origin);
 
     this._throttler.schedule(() => {
@@ -311,28 +302,25 @@ export class ServiceWorkerCacheModel extends SDKModel {
   }
 
   /**
-   * @param {string} origin
-   * @param {string} cacheName
+   * @param {!Protocol.Storage.CacheStorageContentUpdatedEvent} event
    * @override
    */
-  cacheStorageContentUpdated(origin, cacheName) {
-    this.dispatchEventToListeners(Events.CacheStorageContentUpdated, {origin: origin, cacheName: cacheName});
+  cacheStorageContentUpdated({origin, cacheName}) {
+    this.dispatchEventToListeners(Events.CacheStorageContentUpdated, {origin, cacheName});
   }
 
   /**
-   * @param {string} origin
+   * @param {!Protocol.Storage.IndexedDBListUpdatedEvent} event
    * @override
    */
-  indexedDBListUpdated(origin) {
+  indexedDBListUpdated(event) {
   }
 
   /**
-   * @param {string} origin
-   * @param {string} databaseName
-   * @param {string} objectStoreName
+   * @param {!Protocol.Storage.IndexedDBContentUpdatedEvent} event
    * @override
    */
-  indexedDBContentUpdated(origin, databaseName, objectStoreName) {
+  indexedDBContentUpdated(event) {
   }
 }
 
@@ -343,9 +331,7 @@ export const Events = {
   CacheStorageContentUpdated: Symbol('CacheStorageContentUpdated')
 };
 
-/**
- * @unrestricted
- */
+
 export class Cache {
   /**
    * @param {!ServiceWorkerCacheModel} model
@@ -381,8 +367,13 @@ export class Cache {
    * @param {!Array.<!NameValue>} requestHeaders
    * @return {!Promise<?Protocol.CacheStorage.CachedResponse>}
    */
-  requestCachedResponse(url, requestHeaders) {
-    return this._model._cacheAgent.requestCachedResponse(this.cacheId, url, requestHeaders);
+  async requestCachedResponse(url, requestHeaders) {
+    const response = await this._model._cacheAgent.invoke_requestCachedResponse(
+        {cacheId: this.cacheId, requestURL: url, requestHeaders});
+    if (response.getError()) {
+      return null;
+    }
+    return response.response;
   }
 }
 

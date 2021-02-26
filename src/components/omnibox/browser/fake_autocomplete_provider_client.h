@@ -22,7 +22,9 @@ class HistoryService;
 }  // namespace history
 
 class InMemoryURLIndex;
+class PrefService;
 class ShortcutsBackend;
+class TestingPrefServiceSimple;
 
 // Fully operational AutocompleteProviderClient for usage in tests.
 // Note: The history index rebuild task is created from main thread, usually
@@ -35,7 +37,17 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   explicit FakeAutocompleteProviderClient(bool create_history_db = true);
   ~FakeAutocompleteProviderClient() override;
+  FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
+      delete;
+  FakeAutocompleteProviderClient& operator=(
+      const FakeAutocompleteProviderClient&) = delete;
 
+  PrefService* GetPrefs() override;
+  // Note: this will not be shared with other test fakes that may create their
+  // own local_state testing PrefService.
+  // In this case, AutocompleteProviderClient could be modified to accept the
+  // local pref store in its constructor.
+  PrefService* GetLocalState() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   history::HistoryService* GetHistoryService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
@@ -64,13 +76,13 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   TestSchemeClassifier scheme_classifier_;
   std::unique_ptr<InMemoryURLIndex> in_memory_url_index_;
   std::unique_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<TestingPrefServiceSimple> local_state_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;
   std::unique_ptr<query_tiles::TileService> tile_service_;
 
   // Substring used to match URLs for IsTabOpenWithURL().
   std::string substring_to_match_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_FAKE_AUTOCOMPLETE_PROVIDER_CLIENT_H_

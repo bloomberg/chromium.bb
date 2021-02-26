@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -27,7 +29,6 @@ namespace views {
 
 class Label;
 class Link;
-class StyledLabelListener;
 
 // A class which can apply mixed styles to a block of text. Currently, text is
 // always multiline. Trailing whitespace in the styled label text is not
@@ -38,22 +39,6 @@ class VIEWS_EXPORT StyledLabel : public View {
  public:
   METADATA_HEADER(StyledLabel);
 
-  using LinkTargets = std::map<Link*, gfx::Range>;
-
-  // TestApi is used for tests to get internal implementation details.
-  class VIEWS_EXPORT TestApi {
-   public:
-    explicit TestApi(StyledLabel* view);
-    ~TestApi();
-
-    const LinkTargets& link_targets();
-
-   private:
-    StyledLabel* const view_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
@@ -62,9 +47,8 @@ class VIEWS_EXPORT StyledLabel : public View {
     ~RangeStyleInfo();
 
     // Creates a range style info with default values for link.
-    static RangeStyleInfo CreateForLink();
-
-    bool IsLink() const;
+    static RangeStyleInfo CreateForLink(Link::ClickedCallback callback);
+    static RangeStyleInfo CreateForLink(base::RepeatingClosure callback);
 
     // Allows full customization of the font used in the range. Ignores the
     // StyledLabel's default text context and |text_style|.
@@ -76,6 +60,10 @@ class VIEWS_EXPORT StyledLabel : public View {
     // Overrides the text color given by |text_style| for this range.
     // DEPRECATED: Use TextStyle.
     base::Optional<SkColor> override_color;
+
+    // A callback to be called when this link is clicked. Only used if
+    // |text_style| is style::STYLE_LINK.
+    Link::ClickedCallback callback;
 
     // Tooltip for the range.
     base::string16 tooltip;
@@ -105,22 +93,23 @@ class VIEWS_EXPORT StyledLabel : public View {
     // smaller width than this will force a recomputation.
     gfx::Size total_size;
 
-    // The sizes of each line of child views.  |size| can be computed directly
-    // from these values and is kept separately just for convenience.
+    // The sizes of each line of child views.  |total_size| can be computed
+    // directly from these values and is kept separately just for convenience.
     std::vector<gfx::Size> line_sizes;
   };
 
-  // Note that any trailing whitespace in |text| will be trimmed.
-  StyledLabel(const base::string16& text, StyledLabelListener* listener);
+  StyledLabel();
   ~StyledLabel() override;
 
-  // Sets the text to be displayed, and clears any previous styling.
+  // Sets the text to be displayed, and clears any previous styling.  Trailing
+  // whitespace is trimmed from the text.
   const base::string16& GetText() const;
-  void SetText(const base::string16& text);
+  void SetText(base::string16 text);
 
-  // Returns the font list that results from the default text context and style
-  // for ranges. This can be used as the basis for a range |custom_font|.
-  gfx::FontList GetDefaultFontList() const;
+  // Returns the FontList that should be used. |style_info| is an optional
+  // argument that takes precedence over the default values.
+  gfx::FontList GetFontList(
+      const RangeStyleInfo& style_info = RangeStyleInfo()) const;
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
@@ -176,14 +165,15 @@ class VIEWS_EXPORT StyledLabel : public View {
   void PreferredSizeChanged() override;
   void OnThemeChanged() override;
 
-  // Called when any of the child links are clicked.
-  void LinkClicked(Link* source, int event_flags);
-
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
   // Clears all the styles applied to the label.
   void ClearStyleRanges();
+
+  // Sends a space keypress to the first child that is a link.  Assumes at least
+  // one such child exists.
+  void ClickLinkForTesting();
 
  private:
   struct StyleRange {
@@ -205,13 +195,6 @@ class VIEWS_EXPORT StyledLabel : public View {
   // current |horizontal_alignment_| and insets and given the amount of excess
   // space available on that line.
   int StartX(int excess_space) const;
-
-  // Returns the default line height, based on the default style.
-  int GetDefaultLineHeight() const;
-
-  // Returns the FontList that should be used for |range|.
-  gfx::FontList GetFontListForRange(
-      const StyleRanges::const_iterator& range) const;
 
   // Sets |layout_size_info_| and |layout_views_| for the given |width|.  No-op
   // if current_width <= width <= max_width, where:
@@ -239,18 +222,10 @@ class VIEWS_EXPORT StyledLabel : public View {
   int text_context_ = style::CONTEXT_LABEL;
   int default_text_style_ = style::STYLE_PRIMARY;
 
-  // Line height. If zero, style::GetLineHeight() is used.
-  int specified_line_height_ = 0;
-
-  // The listener that will be informed of link clicks.
-  StyledLabelListener* listener_;
+  base::Optional<int> line_height_;
 
   // The ranges that should be linkified, sorted by start position.
   StyleRanges style_ranges_;
-
-  // A mapping from a view to the range it corresponds to in |text_|. Only views
-  // that correspond to ranges with is_link style set will be added to the map.
-  LinkTargets link_targets_;
 
   // Temporarily owns the custom views until they've been been placed into the
   // StyledLabel's child list. This list also holds the custom views during

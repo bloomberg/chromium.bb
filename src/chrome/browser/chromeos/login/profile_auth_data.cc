@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -32,21 +33,21 @@ void OnTargetHttpAuthCacheProxyEntriesSaved(
       cache_key, completion_callback);
 }
 
-// Starts tranferring |from_partition|'s http auth cache's proxy entries into
-// |to_partition|.
+// Starts tranferring `from_partition`'s http auth cache's proxy entries into
+// `to_partition`.
 void TransferHttpAuthCacheProxyEntries(
     base::RepeatingClosure completion_callback,
     content::StoragePartition* from_partition,
     content::StoragePartition* to_partition) {
-  // |to_partition| will outlive the call to |completion_callback|.
+  // `to_partition` will outlive the call to `completion_callback`.
   // See ProfileAuthData::Transfer.
   from_partition->GetNetworkContext()->SaveHttpAuthCacheProxyEntries(
       base::BindOnce(&OnTargetHttpAuthCacheProxyEntriesSaved,
                      completion_callback, base::Unretained(to_partition)));
 }
 
-// Given a |cookie| set during login, returns true if the cookie may have been
-// set by GAIA. The main criterion is the |cookie|'s domain. If the domain
+// Given a `cookie` set during login, returns true if the cookie may have been
+// set by GAIA. The main criterion is the `cookie`'s domain. If the domain
 // is *google.<TLD> or *youtube.<TLD>, the cookie is considered to have been set
 // by GAIA as well.
 bool IsGAIACookie(const net::CanonicalCookie& cookie) {
@@ -62,12 +63,12 @@ bool IsGAIACookie(const net::CanonicalCookie& cookie) {
 }
 
 void OnCookieSet(base::RepeatingClosure completion_callback,
-                 net::CanonicalCookie::CookieInclusionStatus status) {
+                 net::CookieAccessResult result) {
   completion_callback.Run();
 }
 
-// Imports |cookies| into |to_partition|'s cookie jar. |cookie.IsCanonical()|
-// must be true for all cookies in |cookies|.
+// Imports `cookies` into `to_partition`'s cookie jar. `cookie.IsCanonical()`
+// must be true for all cookies in `cookies`.
 void ImportCookies(base::RepeatingClosure completion_callback,
                    content::StoragePartition* to_partition,
                    const net::CookieList& cookies) {
@@ -96,8 +97,8 @@ void ImportCookies(base::RepeatingClosure completion_callback,
   }
 }
 
-// Callback that receives the contents of |from_partition|'s cookie jar.
-// Transfers the necessary cookies to |to_partition|'s cookie jar.
+// Callback that receives the contents of `from_partition`'s cookie jar.
+// Transfers the necessary cookies to `to_partition`'s cookie jar.
 void OnCookiesToTransferRetrieved(base::RepeatingClosure completion_callback,
                                   content::StoragePartition* to_partition,
                                   bool first_login,
@@ -116,7 +117,7 @@ void OnCookiesToTransferRetrieved(base::RepeatingClosure completion_callback,
   }
 }
 
-// Callback that receives the content of |to_partition|'s cookie jar. Checks
+// Callback that receives the content of `to_partition`'s cookie jar. Checks
 // whether this is the user's first login, based on the state of the cookie
 // jar, and starts retrieval of the data that should be transfered.
 void OnTargetCookieJarContentsRetrieved(
@@ -132,11 +133,11 @@ void OnTargetCookieJarContentsRetrieved(
   bool first_login = target_cookies.empty();
   if (first_login) {
     // On first login, transfer all auth cookies if
-    // |transfer_auth_cookies_on_first_login| is true.
+    // `transfer_auth_cookies_on_first_login` is true.
     transfer_auth_cookies = transfer_auth_cookies_on_first_login;
   } else {
     // On subsequent login, transfer auth cookies set by the SAML IdP if
-    // |transfer_saml_auth_cookies_on_subsequent_login| is true.
+    // `transfer_saml_auth_cookies_on_subsequent_login` is true.
     transfer_auth_cookies = transfer_saml_auth_cookies_on_subsequent_login;
   }
 
@@ -145,7 +146,7 @@ void OnTargetCookieJarContentsRetrieved(
     return;
   }
 
-  // Retrieve the contents of |from_partition|'s cookie jar. When the retrieval
+  // Retrieve the contents of `from_partition`'s cookie jar. When the retrieval
   // finishes, OnCookiesToTransferRetrieved will be called with the result.
   network::mojom::CookieManager* from_manager =
       from_partition->GetCookieManagerForBrowserProcess();
@@ -154,8 +155,8 @@ void OnTargetCookieJarContentsRetrieved(
                      base::Unretained(to_partition), first_login));
 }
 
-// Starts the process of transferring cookies from |from_partition| to
-// |to_partition|.
+// Starts the process of transferring cookies from `from_partition` to
+// `to_partition`.
 void TransferCookies(base::RepeatingClosure completion_callback,
                      content::StoragePartition* from_partition,
                      content::StoragePartition* to_partition,
@@ -163,7 +164,7 @@ void TransferCookies(base::RepeatingClosure completion_callback,
                      bool transfer_saml_auth_cookies_on_subsequent_login) {
   if (transfer_auth_cookies_on_first_login ||
       transfer_saml_auth_cookies_on_subsequent_login) {
-    // Retrieve the contents of |to_partition_|'s cookie jar.
+    // Retrieve the contents of `to_partition_`'s cookie jar.
     network::mojom::CookieManager* to_manager =
         to_partition->GetCookieManagerForBrowserProcess();
     to_manager->GetAllCookies(base::BindOnce(
@@ -186,12 +187,12 @@ void ProfileAuthData::Transfer(
     base::OnceClosure completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // The BarrierClosure will call |completion_callback| after the 2 async
+  // The BarrierClosure will call `completion_callback` after the 2 async
   // transfers have finished.
   base::RepeatingClosure task_completion_callback =
       base::BarrierClosure(2, std::move(completion_callback));
 
-  // Transfer the proxy auth cache entries from |from_context| to |to_context|.
+  // Transfer the proxy auth cache entries from `from_context` to `to_context`.
   // If the user was required to authenticate with a proxy during login, this
   // authentication information will be transferred into the user's session.
   TransferHttpAuthCacheProxyEntries(task_completion_callback, from_partition,

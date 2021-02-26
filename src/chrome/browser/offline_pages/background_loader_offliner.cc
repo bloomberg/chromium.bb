@@ -42,9 +42,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/previews_state.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace offline_pages {
 
@@ -73,10 +73,10 @@ void RecordErrorCauseUMA(const ClientId& client_id, int error_code) {
 }
 
 void RecordOffliningPreviewsUMA(const ClientId& client_id,
-                                content::PreviewsState previews_state) {
+                                blink::PreviewsState previews_state) {
   bool is_previews_enabled =
-      (previews_state != content::PreviewsTypes::PREVIEWS_OFF &&
-       previews_state != content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+      (previews_state != blink::PreviewsTypes::PREVIEWS_OFF &&
+       previews_state != blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 
   base::UmaHistogramBoolean(
       AddHistogramSuffix(client_id,
@@ -353,7 +353,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
 
   PreviewsUITabHelper* previews_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  content::PreviewsState previews_state = content::PREVIEWS_OFF;
+  blink::PreviewsState previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   if (previews_tab_helper) {
     previews::PreviewsUserData* previews_user_data =
         previews_tab_helper->GetPreviewsUserData(navigation_handle);
@@ -491,15 +491,15 @@ void BackgroundLoaderOffliner::StartSnapshot() {
 
   offline_page_model_->SavePage(
       params, std::move(archiver), web_contents,
-      base::Bind(&BackgroundLoaderOffliner::OnPageSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundLoaderOffliner::OnPageSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundLoaderOffliner::RunRenovations() {
   if (page_renovator_) {
     page_renovator_->RunRenovations(
-        base::Bind(&BackgroundLoaderOffliner::RenovationsCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BackgroundLoaderOffliner::RenovationsCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -518,8 +518,8 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
     criteria.offline_ids = std::vector<int64_t>{offline_id};
     offline_page_model_->DeletePagesWithCriteria(
         criteria,
-        base::Bind(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
-                   weak_ptr_factory_.GetWeakPtr(), request));
+        base::BindOnce(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
+                       weak_ptr_factory_.GetWeakPtr(), request));
     save_state_ = NONE;
     return;
   }
@@ -589,8 +589,7 @@ void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
   // Given the choice between int and double, we choose to implicitly convert to
   // a double since it maintains more precision (we can get a longer time in
   // milliseconds than we can with a 2 bit int, 53 bits vs 32).
-  double delay = delay_so_far.InMilliseconds();
-  signal_data_.SetDouble(signal_name, delay);
+  signal_data_.SetDouble(signal_name, delay_so_far.InMillisecondsF());
 }
 
 void BackgroundLoaderOffliner::RenovationsCompleted() {

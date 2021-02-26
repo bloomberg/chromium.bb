@@ -16,39 +16,69 @@ buildflag_header("buildflags") {
 }
 
 if (enable_pdf) {
-  pdf_engine = 0  # 0 PDFium
-
   config("pdf_common_config") {
     configs = [ "//build/config/compiler:noshadowing" ]
 
-    if (pdf_engine == 0) {
-      include_dirs = [ "//third_party/pdfium" ]
-    }
+    include_dirs = [ "//third_party/pdfium" ]
   }
 
   static_library("pdf") {
+    sources = [ "pdf.cc" ]
+
     configs += [ ":pdf_common_config" ]
+
+    public = [ "pdf.h" ]
+
     deps = [
-      ":features",
+      ":internal",
       "//base",
-      "//net",
+      "//build:chromeos_buildflags",
+      "//ui/gfx/geometry",
+    ]
+  }
+
+  static_library("pdf_ppapi") {
+    sources = [ "pdf_ppapi.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    public = [ "pdf_ppapi.h" ]
+
+    deps = [
+      ":internal",
+      ":out_of_process_instance",
+      ":pdf",
+      ":pdf_view_web_plugin",
+      "//base",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
-      "//ui/base",
-      "//ui/gfx/range",
+      "//skia",
+      "//v8",
     ]
+  }
 
-    public_deps = [ "//gin" ]
+  source_set("features") {
+    sources = [ "pdf_features.cc" ]
 
-    public = [
-      "pdf.h",
-      "pdf_ppapi.h",
+    configs += [ ":pdf_common_config" ]
+
+    public = [ "pdf_features.h" ]
+
+    deps = [
+      "//base",
+      "//build:chromeos_buildflags",
     ]
+  }
+
+  source_set("internal") {
+    visibility = [ ":*" ]
 
     sources = [
       "accessibility.cc",
       "accessibility.h",
       "chunk_stream.h",
+      "document_attachment_info.cc",
+      "document_attachment_info.h",
       "document_layout.cc",
       "document_layout.h",
       "document_loader.h",
@@ -60,109 +90,210 @@ if (enable_pdf) {
       "draw_utils/coordinates.h",
       "draw_utils/shadow.cc",
       "draw_utils/shadow.h",
-      "geometry_conversions.cc",
-      "geometry_conversions.h",
-      "out_of_process_instance.cc",
-      "out_of_process_instance.h",
       "page_orientation.cc",
       "page_orientation.h",
       "paint_aggregator.cc",
       "paint_aggregator.h",
       "paint_manager.cc",
       "paint_manager.h",
-      "pdf.cc",
+      "paint_ready_rect.cc",
+      "paint_ready_rect.h",
       "pdf_engine.h",
-      "pdf_ppapi.cc",
+      "pdf_init.cc",
+      "pdf_init.h",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "pdf_view_plugin_base.cc",
+      "pdf_view_plugin_base.h",
+      "pdfium/pdfium_api_string_buffer_adapter.cc",
+      "pdfium/pdfium_api_string_buffer_adapter.h",
+      "pdfium/pdfium_document.cc",
+      "pdfium/pdfium_document.h",
+      "pdfium/pdfium_engine.cc",
+      "pdfium/pdfium_engine.h",
+      "pdfium/pdfium_engine_exports.cc",
+      "pdfium/pdfium_engine_exports.h",
+      "pdfium/pdfium_form_filler.cc",
+      "pdfium/pdfium_form_filler.h",
+      "pdfium/pdfium_mem_buffer_file_read.cc",
+      "pdfium/pdfium_mem_buffer_file_read.h",
+      "pdfium/pdfium_mem_buffer_file_write.cc",
+      "pdfium/pdfium_mem_buffer_file_write.h",
+      "pdfium/pdfium_page.cc",
+      "pdfium/pdfium_page.h",
+      "pdfium/pdfium_permissions.cc",
+      "pdfium/pdfium_permissions.h",
+      "pdfium/pdfium_print.cc",
+      "pdfium/pdfium_print.h",
+      "pdfium/pdfium_range.cc",
+      "pdfium/pdfium_range.h",
+      "pdfium/pdfium_unsupported_features.cc",
+      "pdfium/pdfium_unsupported_features.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
       "range_set.cc",
       "range_set.h",
+      "thumbnail.cc",
+      "thumbnail.h",
       "url_loader_wrapper.h",
       "url_loader_wrapper_impl.cc",
       "url_loader_wrapper_impl.h",
     ]
 
-    if (pdf_engine == 0) {
-      deps += [
-        "//pdf/pdfium/fuzzers",
-        "//printing",
-        "//third_party/pdfium",
-      ]
+    configs += [ ":pdf_common_config" ]
 
+    deps = [
+      ":features",
+      ":ppapi_migration",
+      "//base",
+      "//base:i18n",
+      "//build:chromeos_buildflags",
+      "//gin",
+      "//net",
+      "//pdf/pdfium/fuzzers",
+      "//ppapi/cpp:objects",
+      "//ppapi/cpp/private:internal_module",
+      "//printing",
+      "//skia",
+      "//third_party/pdfium",
+      "//ui/base",
+      "//ui/gfx/range",
+    ]
+
+    if (is_linux || is_chromeos) {
       sources += [
-        "pdfium/pdfium_api_string_buffer_adapter.cc",
-        "pdfium/pdfium_api_string_buffer_adapter.h",
-        "pdfium/pdfium_assert_matching_enums.cc",
-        "pdfium/pdfium_document.cc",
-        "pdfium/pdfium_document.h",
-        "pdfium/pdfium_engine.cc",
-        "pdfium/pdfium_engine.h",
-        "pdfium/pdfium_engine_exports.cc",
-        "pdfium/pdfium_engine_exports.h",
-        "pdfium/pdfium_form_filler.cc",
-        "pdfium/pdfium_form_filler.h",
-        "pdfium/pdfium_mem_buffer_file_read.cc",
-        "pdfium/pdfium_mem_buffer_file_read.h",
-        "pdfium/pdfium_mem_buffer_file_write.cc",
-        "pdfium/pdfium_mem_buffer_file_write.h",
-        "pdfium/pdfium_page.cc",
-        "pdfium/pdfium_page.h",
-        "pdfium/pdfium_permissions.cc",
-        "pdfium/pdfium_permissions.h",
-        "pdfium/pdfium_print.cc",
-        "pdfium/pdfium_print.h",
-        "pdfium/pdfium_range.cc",
-        "pdfium/pdfium_range.h",
-        "pdfium/pdfium_unsupported_features.cc",
-        "pdfium/pdfium_unsupported_features.h",
+        "pdfium/pdfium_font_linux.cc",
+        "pdfium/pdfium_font_linux.h",
       ]
-
-      if (is_linux) {
-        sources += [
-          "pdfium/pdfium_font_linux.cc",
-          "pdfium/pdfium_font_linux.h",
-        ]
-      }
     }
   }
 
-  source_set("features") {
-    configs += [ ":pdf_common_config" ]
-    deps = [ "//base" ]
+  source_set("assert_enums") {
+    visibility = [ ":*" ]
 
-    public = [ "pdf_features.h" ]
+    sources = [ "pdfium/pdfium_assert_matching_enums.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      ":internal",
+      ":pdf",
+      ":ppapi_migration",
+      "//ppapi/c",
+      "//third_party/pdfium",
+      "//ui/base",
+    ]
+  }
+
+  source_set("ppapi_migration") {
+    visibility = [ ":*" ]
 
     sources = [
-      "pdf_features.cc",
-      "pdf_features.h",
+      "ppapi_migration/bitmap.cc",
+      "ppapi_migration/bitmap.h",
+      "ppapi_migration/callback.cc",
+      "ppapi_migration/callback.h",
+      "ppapi_migration/geometry_conversions.cc",
+      "ppapi_migration/geometry_conversions.h",
+      "ppapi_migration/graphics.cc",
+      "ppapi_migration/graphics.h",
+      "ppapi_migration/image.cc",
+      "ppapi_migration/image.h",
+      "ppapi_migration/input_event_conversions.cc",
+      "ppapi_migration/input_event_conversions.h",
+      "ppapi_migration/url_loader.cc",
+      "ppapi_migration/url_loader.h",
+      "ppapi_migration/value_conversions.cc",
+      "ppapi_migration/value_conversions.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    public_deps = [ "//third_party/abseil-cpp:absl" ]
+
+    deps = [
+      "//base",
+      "//ppapi/cpp:objects",
+      "//skia",
+      "//third_party/blink/public:blink",
+      "//ui/base",
+    ]
+  }
+
+  source_set("out_of_process_instance") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "out_of_process_instance.cc",
+      "out_of_process_instance.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    public_deps = [ "//third_party/abseil-cpp:absl" ]
+
+    deps = [
+      ":features",
+      ":internal",
+      ":ppapi_migration",
+      "//base",
+      "//build:chromeos_buildflags",
+      "//net",
+      "//ppapi/cpp:objects",
+      "//ppapi/cpp/private:internal_module",
+      "//ui/base",
+    ]
+  }
+
+  # Eventual replacement for out_of_process_instance.
+  source_set("pdf_view_web_plugin") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "pdf_view_web_plugin.cc",
+      "pdf_view_web_plugin.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      ":internal",
+      ":ppapi_migration",
+      "//base",
+      "//cc/paint",
+      "//ppapi/cpp:objects",  # TODO(crbug.com/1114263): PDFEngine::Client only.
+      "//third_party/blink/public:blink_headers",
+      "//ui/base/cursor:cursor_base",
     ]
   }
 
   source_set("pdf_test_utils") {
+    visibility = [ ":*" ]
+
     testonly = true
+
     sources = [
       "test/test_client.cc",
       "test/test_client.h",
       "test/test_document_loader.cc",
       "test/test_document_loader.h",
-      "test/test_utils.cc",
-      "test/test_utils.h",
     ]
 
     configs += [ "//build/config/compiler:noshadowing" ]
 
     deps = [
-      ":pdf",
+      ":internal",
+      ":ppapi_migration",
       "//base",
+      "//ppapi/cpp:objects",
       "//testing/gtest",
+      "//ui/gfx/range",
     ]
   }
 
   test("pdf_unittests") {
     testonly = true
-    configs += [ ":pdf_common_config" ]
+
     sources = [
       "chunk_stream_unittest.cc",
       "document_layout_unittest.cc",
@@ -171,51 +302,66 @@ if (enable_pdf) {
       "out_of_process_instance_unittest.cc",
       "page_orientation_unittest.cc",
       "pdf_transform_unittest.cc",
+      "pdfium/accessibility_unittest.cc",
+      "pdfium/findtext_unittest.cc",
+      "pdfium/pdfium_engine_exports_unittest.cc",
+      "pdfium/pdfium_engine_unittest.cc",
+      "pdfium/pdfium_form_filler_unittest.cc",
+      "pdfium/pdfium_page_unittest.cc",
+      "pdfium/pdfium_permissions_unittest.cc",
+      "pdfium/pdfium_print_unittest.cc",
+      "pdfium/pdfium_test_base.cc",
+      "pdfium/pdfium_test_base.h",
+      "ppapi_migration/geometry_conversions_unittest.cc",
+      "ppapi_migration/url_loader_unittest.cc",
       "range_set_unittest.cc",
+      "test/run_all_unittests.cc",
+      "thumbnail_unittest.cc",
     ]
 
-    deps = [
-      ":pdf",
-      ":pdf_test_utils",
-      "//base",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//ppapi/c",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gfx/range",
+    configs += [
+      ":pdf_common_config",
+      "//v8:external_startup_data",
     ]
 
     data = [ "test/data/" ]
 
-    if (pdf_engine == 0) {
-      configs += [ "//v8:external_startup_data" ]
-      deps += [
-        # Explicitly depend on PDFium to pick up its public configs, which are
-        # not transitive, possibly because the "pdf" target is a static_library.
-        "//third_party/pdfium",
-      ]
-      sources += [
-        "pdfium/accessibility_unittest.cc",
-        "pdfium/findtext_unittest.cc",
-        "pdfium/pdfium_engine_exports_unittest.cc",
-        "pdfium/pdfium_engine_unittest.cc",
-        "pdfium/pdfium_form_filler_unittest.cc",
-        "pdfium/pdfium_page_unittest.cc",
-        "pdfium/pdfium_permissions_unittest.cc",
-        "pdfium/pdfium_print_unittest.cc",
-        "pdfium/pdfium_test_base.cc",
-        "pdfium/pdfium_test_base.h",
-      ]
+    deps = [
+      ":assert_enums",
+      ":features",
+      ":internal",
+      ":out_of_process_instance",
+      ":pdf",
+      ":pdf_test_utils",
+      ":ppapi_migration",
+      "//base",
+      "//base/test:test_support",
+      "//cc:test_support",
+      "//gin",
+      "//ppapi/c",
+      "//ppapi/cpp:objects",
+      "//printing",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/blink/public:blink",
+      "//third_party/pdfium",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gfx/range",
+    ]
 
-      if (v8_use_external_startup_data) {
-        data += [ "$root_out_dir/snapshot_blob.bin" ]
-      }
+    if (v8_use_external_startup_data) {
+      data += [ "$root_out_dir/snapshot_blob.bin" ]
     }
   }
 } else {
-  # Dummy group when PDF support is disabled so targets can unconditionally
+  # Dummy groups when PDF support is disabled so targets can unconditionally
   # depend on it.
+  group("features") {
+  }
   group("pdf") {
+  }
+  group("pdf_ppapi") {
   }
 }

@@ -3,7 +3,7 @@
 Wuffs is an industrial project, not an academic project, and this Related Work
 section is not as extensive or as rigorous as would be found in an academic
 thesis or journal article. The underlying goal is usefulness, not novelty. For
-Wuffs' users, it'd perfectly fine to have multiple implementations of a good
+Wuffs' users, it'd be perfectly fine to have multiple implementations of a good
 idea, even if the later ones wouldn't earn a Ph. D.
 
 A number of other projects are listed below. Wuffs is not exactly like any of
@@ -47,7 +47,7 @@ domain-specific programming language.
 
 Extended Static Checker for Java (ESC/Java) and its successor
 [OpenJML](http://www.openjml.org/), which obviously target the Java programming
-language, similarly has to analyze a language that is more complicated that
+language, similarly has to analyze a language that is more complicated than
 Wuffs. Java is also not commonly used for writing e.g. low level image codecs,
 as the language lacks unsigned integer types, it is garbage collected and
 idiomatic code often allocates.
@@ -96,7 +96,7 @@ not useful, just different, with different trade-offs.
 Simpler languages are easier to prove things about. Macros, inheritance,
 closures, generics, operator overloading, goto's and built-in container types
 are all useful features, but as mentioned in the top-level
-[README](../README.md), Wuffs is not a general purpose programming language.
+[README](/README.md), Wuffs is not a general purpose programming language.
 Instead, its focus is on compile-time provable memory safety, with C-like
 performance, for CPU-intensive file format decoders.
 
@@ -211,7 +211,7 @@ limited to that part of a file format that is easily expressible as a formal
 grammar. In particular, it also handles entropy encodings such as LZW (for
 GIF), ZLIB (for PNG) and Huffman (for JPEG, TODO). Wuffs differs from nom
 combined with other Rust code (e.g. a Rust LZW implementation) in that bounds
-and overflow checks not just ubiquitous but also completely eliminated at
+and overflow checks are not just ubiquitous but also completely eliminated at
 compile time.
 
 [Kaitai Struct](http://kaitai.io/) is in a similar space, generating safe

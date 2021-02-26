@@ -124,7 +124,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         data_reduction_proxy::switches::kEnableDataReductionProxy);
-    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
   }
 };
 
@@ -361,8 +361,9 @@ INSTANTIATE_TEST_SUITE_P(SaveDataSavingsEstimateBrowserTest,
                          SaveDataSavingsEstimateBrowserTest,
                          ::testing::ValuesIn(kSaveDataTestCases));
 
+// Flaky on LINUX.  http://crbug.com/1091573
 IN_PROC_BROWSER_TEST_P(SaveDataSavingsEstimateBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(NavigateToSimplePage)) {
+                       DISABLED_NavigateToSimplePage) {
   WaitForDBToInitialize();
 
   for (const auto& test : GetParam().tests) {

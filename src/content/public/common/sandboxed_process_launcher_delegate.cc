@@ -5,7 +5,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
 #include "build/build_config.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 
 namespace content {
 
@@ -33,10 +33,10 @@ bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-service_manager::ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
+ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
   // Default to the sandboxed zygote. If a more lax sandbox is needed, then the
   // child class should override this method and use the unsandboxed zygote.
-  return service_manager::GetGenericZygote();
+  return GetGenericZygote();
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
@@ -46,10 +46,18 @@ base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
 }
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
+
 bool SandboxedProcessLauncherDelegate::DisclaimResponsibility() {
   return false;
 }
-#endif
+
+#if defined(ARCH_CPU_ARM64)
+bool SandboxedProcessLauncherDelegate::LaunchX86_64() {
+  return false;
+}
+#endif  // ARCH_CPU_ARM64
+
+#endif  // OS_MAC
 
 }  // namespace content

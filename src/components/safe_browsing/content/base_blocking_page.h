@@ -17,6 +17,10 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "url/gurl.h"
 
+namespace security_interstitials {
+class SettingsPageHelper;
+}
+
 namespace safe_browsing {
 
 // Base class for managing the SafeBrowsing interstitial pages.
@@ -58,10 +62,9 @@ class BaseBlockingPage
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
 
   // SecurityInterstitialPage methods:
-  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
-  void OnInterstitialClosing() override;
+  void OnInterstitialClosing() override {}
 
   // Called when the interstitial is going away. Intentionally do nothing in
   // this base class.
@@ -111,10 +114,13 @@ class BaseBlockingPage
 
   static std::unique_ptr<
       security_interstitials::SecurityInterstitialControllerClient>
-  CreateControllerClient(content::WebContents* web_contents,
-                         const UnsafeResourceList& unsafe_resources,
-                         BaseUIManager* ui_manager,
-                         PrefService* pref_service);
+  CreateControllerClient(
+      content::WebContents* web_contents,
+      const UnsafeResourceList& unsafe_resources,
+      BaseUIManager* ui_manager,
+      PrefService* pref_service,
+      std::unique_ptr<security_interstitials::SettingsPageHelper>
+          settings_page_helper);
 
   int GetHTMLTemplateId() override;
 

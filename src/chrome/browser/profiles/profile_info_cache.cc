@@ -55,7 +55,7 @@ bool migration_enabled_for_testing = false;
 void DeleteBitmap(const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  base::DeleteFile(image_path, false);
+  base::DeleteFile(image_path);
 }
 
 }  // namespace
@@ -68,7 +68,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   base::DictionaryValue* cache = update.Get();
   for (base::DictionaryValue::Iterator it(*cache);
        !it.IsAtEnd(); it.Advance()) {
-    base::DictionaryValue* info = NULL;
+    base::DictionaryValue* info = nullptr;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
@@ -223,6 +223,12 @@ void ProfileInfoCache::NotifyProfileIsOmittedChanged(
     observer.OnProfileIsOmittedChanged(profile_path);
 }
 
+void ProfileInfoCache::NotifyProfileThemeColorsChanged(
+    const base::FilePath& profile_path) {
+  for (auto& observer : observer_list_)
+    observer.OnProfileThemeColorsChanged(profile_path);
+}
+
 void ProfileInfoCache::DeleteProfileFromCache(
     const base::FilePath& profile_path) {
   ProfileAttributesEntry* entry;
@@ -239,7 +245,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
   std::string key = CacheKeyFromProfilePath(profile_path);
-  cache->Remove(key, NULL);
+  cache->Remove(key, nullptr);
   keys_.erase(std::find(keys_.begin(), keys_.end(), key));
   profile_attributes_entries_.erase(profile_path.value());
 
@@ -280,7 +286,7 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
 
   // If the picture is not on disk then return NULL.
   if (file_name.empty())
-    return NULL;
+    return nullptr;
 
   base::FilePath image_path = path.AppendASCII(file_name);
   return LoadAvatarPictureFromPath(path, key, image_path);
@@ -497,7 +503,7 @@ const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
   DCHECK_LT(index, GetNumberOfProfiles());
   const base::DictionaryValue* cache =
       prefs_->GetDictionary(prefs::kProfileInfoCache);
-  const base::DictionaryValue* info = NULL;
+  const base::DictionaryValue* info = nullptr;
   cache->GetDictionaryWithoutPathExpansion(keys_[index], &info);
   return info;
 }

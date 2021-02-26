@@ -15,8 +15,11 @@ export class DebuggerPausedMessage {
     this._element = document.createElement('div');
     this._element.classList.add('paused-message');
     this._element.classList.add('flex-none');
-    const root = UI.Utils.createShadowRootWithCoreStyles(this._element, 'sources/debuggerPausedMessage.css');
-    this._contentElement = root.createChild('div');
+    const root = UI.Utils.createShadowRootWithCoreStyles(
+        this._element,
+        {cssFile: 'sources/debuggerPausedMessage.css', enableLegacyPatching: true, delegatesFocus: undefined});
+    /** @type {!HTMLElement} */
+    this._contentElement = /** @type {!HTMLElement} */ (root.createChild('div'));
     UI.ARIAUtils.markAsPoliteLiveRegion(this._element, false);
   }
 
@@ -41,12 +44,14 @@ export class DebuggerPausedMessage {
    * @return {!Promise<!Element>}
    */
   static async _createDOMBreakpointHitMessage(details) {
-    const messageWrapper = createElement('span');
+    const messageWrapper = document.createElement('span');
     const domDebuggerModel = details.debuggerModel.target().model(SDK.DOMDebuggerModel.DOMDebuggerModel);
     if (!details.auxData || !domDebuggerModel) {
       return messageWrapper;
     }
-    const data = domDebuggerModel.resolveDOMBreakpointData(/** @type {!Object} */ (details.auxData));
+    const data = domDebuggerModel.resolveDOMBreakpointData(
+        /** @type {!{type: !Protocol.DOMDebugger.DOMBreakpointType, nodeId: !Protocol.DOM.NodeId, targetNodeId: !Protocol.DOM.NodeId, insertion: boolean}} */
+        (details.auxData));
     if (!data) {
       return messageWrapper;
     }
@@ -54,7 +59,7 @@ export class DebuggerPausedMessage {
     const mainElement = messageWrapper.createChild('div', 'status-main');
     mainElement.appendChild(UI.Icon.Icon.create('smallicon-info', 'status-icon'));
     const breakpointType = BreakpointTypeNouns.get(data.type);
-    mainElement.appendChild(createTextNode(ls`Paused on ${breakpointType}`));
+    mainElement.appendChild(document.createTextNode(ls`Paused on ${breakpointType}`));
 
     const subElement = messageWrapper.createChild('div', 'status-sub monospace');
     const linkifiedNode = await Common.Linkifier.Linkifier.linkify(data.node);
@@ -72,7 +77,7 @@ export class DebuggerPausedMessage {
       } else {
         messageElement = UI.UIUtils.formatLocalized('Descendant %s removed', [targetNodeLink]);
       }
-      subElement.appendChild(createElement('br'));
+      subElement.appendChild(document.createElement('br'));
       subElement.appendChild(messageElement);
     }
     return messageWrapper;
@@ -82,7 +87,7 @@ export class DebuggerPausedMessage {
    * @param {?SDK.DebuggerModel.DebuggerPausedDetails} details
    * @param {!Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
    * @param {!Bindings.BreakpointManager.BreakpointManager} breakpointManager
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async render(details, debuggerWorkspaceBinding, breakpointManager) {
     this._contentElement.removeChildren();
@@ -102,19 +107,23 @@ export class DebuggerPausedMessage {
     } else if (details.reason === SDK.DebuggerModel.BreakReason.EventListener) {
       let eventNameForUI = '';
       if (details.auxData) {
-        eventNameForUI =
-            self.SDK.domDebuggerManager.resolveEventListenerBreakpointTitle(/** @type {!Object} */ (details.auxData));
+        eventNameForUI = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpointTitle(
+            /** @type {!{directiveText: string, eventName: string, targetName: string, webglErrorName: string}} */ (
+                details.auxData));
       }
       messageWrapper = buildWrapper(Common.UIString.UIString('Paused on event listener'), eventNameForUI);
     } else if (details.reason === SDK.DebuggerModel.BreakReason.XHR) {
-      messageWrapper = buildWrapper(Common.UIString.UIString('Paused on XHR or fetch'), details.auxData['url'] || '');
+      const auxData = /** @type {!PausedDetailsAuxData} */ (details.auxData);
+      messageWrapper = buildWrapper(Common.UIString.UIString('Paused on XHR or fetch'), auxData.url || '');
     } else if (details.reason === SDK.DebuggerModel.BreakReason.Exception) {
-      const description = details.auxData['description'] || details.auxData['value'] || '';
+      const auxData = /** @type {!PausedDetailsAuxData} */ (details.auxData);
+      const description = auxData.description || auxData.value || '';
       const descriptionWithoutStack = DebuggerPausedMessage._descriptionWithoutStack(description);
       messageWrapper =
           buildWrapper(Common.UIString.UIString('Paused on exception'), descriptionWithoutStack, description);
     } else if (details.reason === SDK.DebuggerModel.BreakReason.PromiseRejection) {
-      const description = details.auxData['description'] || details.auxData['value'] || '';
+      const auxData = /** @type {!PausedDetailsAuxData} */ (details.auxData);
+      const description = auxData.description || auxData.value || '';
       const descriptionWithoutStack = DebuggerPausedMessage._descriptionWithoutStack(description);
       messageWrapper =
           buildWrapper(Common.UIString.UIString('Paused on promise rejection'), descriptionWithoutStack, description);
@@ -147,11 +156,11 @@ export class DebuggerPausedMessage {
      * @return {!Element}
      */
     function buildWrapper(mainText, subText, title) {
-      const messageWrapper = createElement('span');
+      const messageWrapper = document.createElement('span');
       const mainElement = messageWrapper.createChild('div', 'status-main');
       const icon = UI.Icon.Icon.create(errorLike ? 'smallicon-error' : 'smallicon-info', 'status-icon');
       mainElement.appendChild(icon);
-      mainElement.appendChild(createTextNode(mainText));
+      mainElement.appendChild(document.createTextNode(mainText));
       if (subText) {
         const subElement = messageWrapper.createChild('div', 'status-sub monospace');
         subElement.textContent = subText;
@@ -167,3 +176,12 @@ export const BreakpointTypeNouns = new Map([
   [Protocol.DOMDebugger.DOMBreakpointType.AttributeModified, Common.UIString.UIString('attribute modifications')],
   [Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved, Common.UIString.UIString('node removal')],
 ]);
+
+/**
+ * @typedef {{
+ *   description: (string|undefined),
+ *   url: (string|undefined),
+ *   value: (string|undefined),
+ * }}
+ */
+let PausedDetailsAuxData;  // eslint-disable-line no-unused-vars

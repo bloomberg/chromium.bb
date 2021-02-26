@@ -19,18 +19,21 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/window_factory.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
@@ -43,6 +46,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
@@ -130,32 +134,14 @@ void ExpectAllContainers() {
   EXPECT_FALSE(Shell::GetContainer(root_window, kShellWindowId_PhantomWindow));
 }
 
-class ModalWindow : public views::WidgetDelegateView {
- public:
-  ModalWindow() { SetTitle(base::ASCIIToUTF16("Modal Window")); }
-  ~ModalWindow() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  bool CanResize() const override { return true; }
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModalWindow);
-};
-
-class WindowWithPreferredSize : public views::WidgetDelegateView {
- public:
-  WindowWithPreferredSize() = default;
-  ~WindowWithPreferredSize() override = default;
-
-  // views::WidgetDelegate:
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(400, 300);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowWithPreferredSize);
-};
+std::unique_ptr<views::WidgetDelegateView> CreateModalWidgetDelegate() {
+  auto delegate = std::make_unique<views::WidgetDelegateView>();
+  delegate->SetCanResize(true);
+  delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+  delegate->SetOwnedByWidget(true);
+  delegate->SetTitle(base::ASCIIToUTF16("Modal Window"));
+  return delegate;
+}
 
 class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
@@ -259,12 +245,16 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   UpdateDisplay("1024x768,800x600");
 
   aura::Window* secondary_root = Shell::GetAllRootWindows()[1];
-  ScopedRootWindowForNewWindows scoped_root(secondary_root);
+  display::ScopedDisplayForNewWindows scoped_display(secondary_root);
 
   views::Widget::InitParams params;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Don't specify bounds, parent or context.
-  params.delegate = new WindowWithPreferredSize;
+  {
+    auto delegate = std::make_unique<views::WidgetDelegateView>();
+    delegate->SetPreferredSize(gfx::Size(400, 300));
+    params.delegate = delegate.release();
+  }
   views::Widget widget;
   params.context = GetContext();
   widget.Init(std::move(params));
@@ -321,7 +311,7 @@ TEST_F(ShellTest, CreateModalWindow) {
 
   // Create a modal window.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), widget->GetNativeView());
+      CreateModalWidgetDelegate(), widget->GetNativeView());
   modal_widget->Show();
 
   // It should be in modal container.
@@ -332,14 +322,6 @@ TEST_F(ShellTest, CreateModalWindow) {
   modal_widget->Close();
   widget->Close();
 }
-
-class TestModalDialogDelegate : public views::DialogDelegateView {
- public:
-  TestModalDialogDelegate() = default;
-
-  // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-};
 
 TEST_F(ShellTest, CreateLockScreenModalWindow) {
   views::Widget::InitParams widget_params(
@@ -370,7 +352,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a modal window with a lock window as parent.
   views::Widget* lock_modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), lock_widget->GetNativeView());
+      CreateModalWidgetDelegate(), lock_widget->GetNativeView());
   lock_modal_widget->Show();
   EXPECT_TRUE(lock_modal_widget->GetNativeView()->HasFocus());
 
@@ -383,7 +365,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a modal window with a normal window as parent.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), widget->GetNativeView());
+      CreateModalWidgetDelegate(), widget->GetNativeView());
   modal_widget->Show();
   // Window on lock screen shouldn't lost focus.
   EXPECT_FALSE(modal_widget->GetNativeView()->HasFocus());
@@ -394,9 +376,9 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
       Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
-  // Modal dialog without parent, caused crash see crbug.com/226141
+  // Modal widget without parent, caused crash see crbug.com/226141
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-      new TestModalDialogDelegate(), GetContext(), nullptr);
+      CreateModalWidgetDelegate(), GetContext(), nullptr);
 
   modal_dialog->Show();
   EXPECT_FALSE(modal_dialog->GetNativeView()->HasFocus());
@@ -552,6 +534,57 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
   generator.MoveMouseBy(1, 1);
   EXPECT_NE(0, event_handler.num_mouse_events());
   aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
+}
+
+// Verifies that pressing tab on an empty shell (one with no windows visible)
+// will put focus on the shelf. This enables keyboard only users to get to the
+// shelf without knowing the more obscure accelerators. Tab should move focus to
+// the home button, shift + tab to the status widget. From there, normal shelf
+// tab behaviour takes over, and the shell no longer catches that event.
+TEST_F(ShellTest, NoWindowTabFocus) {
+  ExpectAllContainers();
+
+  auto* generator = GetEventGenerator();
+
+  StatusAreaWidget* status_area_widget =
+      GetPrimaryShelf()->status_area_widget();
+  ShelfNavigationWidget* home_button = GetPrimaryShelf()->navigation_widget();
+
+  // Create a normal window.  It is not maximized.
+  auto widget = CreateTestWidget();
+
+  // Hit tab with window open, and expect that focus is not on the navigation
+  // widget or status widget.
+  generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  EXPECT_FALSE(home_button->GetNativeView()->HasFocus());
+  EXPECT_FALSE(status_area_widget->GetNativeView()->HasFocus());
+
+  // Minimize the window, hit tab and expect that focus is on the launcher.
+  widget->Minimize();
+  generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(home_button->GetNativeView()->HasFocus());
+
+  // Show (to steal focus back before continuing testing) and close the window.
+  widget->Show();
+  widget->Close();
+  EXPECT_FALSE(home_button->GetNativeView()->HasFocus());
+
+  // Confirm that pressing tab when overview mode is open does not go to home
+  // button. Tab should be handled by overview mode and not hit the shell event
+  // handler.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+  EXPECT_FALSE(home_button->GetNativeView()->HasFocus());
+  overview_controller->EndOverview();
+
+  // Hit shift tab and expect that focus is on status widget.
+  generator->PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(status_area_widget->GetNativeView()->HasFocus());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after

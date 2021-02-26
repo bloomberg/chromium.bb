@@ -10,12 +10,13 @@ running the WPT test suite.
 """
 
 import argparse
+import fnmatch
 import logging
 import os
 import re
 
+from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models.typ_types import ResultType
 from collections import defaultdict
 
@@ -50,8 +51,13 @@ class WPTMetadataBuilder(object):
         """
         self.expectations = expectations
         self.port = port
+        # TODO(lpz): Use self.fs everywhere in this class and add tests
+        self.fs = FileSystem()
         self.wpt_manifest = self.port.wpt_manifest("external/wpt")
         self.metadata_output_dir = ""
+        self.checked_in_metadata_dir = ""
+        self.process_baselines = True
+        self.handle_annotations = True
 
     def run(self, args=None):
         """Main entry point to parse flags and execute the script."""
@@ -60,16 +66,46 @@ class WPTMetadataBuilder(object):
             "--metadata-output-dir",
             help="The directory to output the metadata files into.")
         parser.add_argument(
+            "--checked-in-metadata-dir",
+            help="Root directory of any checked-in WPT metadata files to use. "
+            "If set, these files will take precedence over legacy expectations "
+            "and baselines when both exist for a test.")
+        parser.add_argument(
             '-v',
             '--verbose',
             action='store_true',
             help='More verbose logging.')
+        parser.add_argument(
+            "--process-baselines",
+            action="store_true",
+            default=True,
+            dest="process_baselines",
+            help="Whether to translate baseline (-expected.txt) files into WPT "
+            "metadata files. This translation is lossy and results in any "
+            "subtest being accepted by wptrunner.")
+        parser.add_argument("--no-process-baselines",
+                            action="store_false",
+                            dest="process_baselines")
+        parser.add_argument(
+            "--handle-annotations",
+            action="store_true",
+            default=True,
+            dest="handle_annotations",
+            help="Whether to handle annotations in expectations files. These "
+            "are trailing comments that give additional details for how "
+            "to translate an expectation into WPT metadata.")
+        parser.add_argument("--no-handle-annotations",
+                            action="store_false",
+                            dest="handle_annotations")
         args = parser.parse_args(args)
 
         log_level = logging.DEBUG if args.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
 
         self.metadata_output_dir = args.metadata_output_dir
+        self.checked_in_metadata_dir = args.checked_in_metadata_dir
+        self.process_baselines = args.process_baselines
+        self.handle_annotations = args.handle_annotations
         self._build_metadata_and_write()
 
         return 0
@@ -121,11 +157,39 @@ class WPTMetadataBuilder(object):
                 continue
             self._write_to_file(filename, file_contents)
 
+        if self.checked_in_metadata_dir and os.path.exists(
+                self.checked_in_metadata_dir):
+            _log.info("Copying checked-in WPT metadata on top of translated "
+                      "files.")
+            self._copy_checked_in_metadata()
+        else:
+            _log.warning("Not using checked-in WPT metadata, path is empty or "
+                         "does not exist: %s" % self.checked_in_metadata_dir)
+
         # Finally, output a stamp file with the same name as the output
         # directory. The stamp file is empty, it's only used for its mtime.
         # This makes the GN build system happy (see crbug.com/995112).
         with open(self.metadata_output_dir + ".stamp", "w"):
             pass
+
+    def _copy_checked_in_metadata(self):
+        """Copies checked-in metadata files to the metadata output directory."""
+        for filename in self.fs.files_under(self.checked_in_metadata_dir):
+            # We match any .ini files in the path. This will find .ini files
+            # other than just metadata (such as tox.ini), but that is ok
+            # since wptrunner will just ignore those.
+            if not fnmatch.fnmatch(filename, "*.ini"):
+                continue
+
+            # Found a checked-in .ini file. Copy it to the metadata output
+            # directory in the same sub-path as where it is checked in.
+            # So /checked/in/a/b/c.ini goes to /metadata/out/a/b/c.ini
+            output_path = filename.replace(self.checked_in_metadata_dir,
+                                           self.metadata_output_dir)
+            if not self.fs.exists(self.fs.dirname(output_path)):
+                self.fs.maybe_make_directory(self.fs.dirname(output_path))
+            _log.debug("Copying %s to %s" % (filename, output_path))
+            self.fs.copyfile(filename, output_path)
 
     def _write_to_file(self, filename, file_contents):
         # Write the contents to the file name
@@ -160,11 +224,12 @@ class WPTMetadataBuilder(object):
                 continue
 
             # Check if the test has a baseline
-            test_baseline = self.port.expected_text(test_name)
-            if not test_baseline:
-                continue
-            self._handle_test_with_baseline(test_name, test_baseline,
-                                            tests_needing_metadata)
+            if self.process_baselines:
+                test_baseline = self.port.expected_text(test_name)
+                if not test_baseline:
+                    continue
+                self._handle_test_with_baseline(test_name, test_baseline,
+                                                tests_needing_metadata)
         return tests_needing_metadata
 
     def _handle_test_with_expectation(self, test_name, expectation_line,
@@ -192,7 +257,7 @@ class WPTMetadataBuilder(object):
             status_bitmap |= TEST_TIMEOUT
         if ResultType.Crash in test_statuses:
             status_bitmap |= TEST_CRASH
-        if annotations:
+        if self.handle_annotations and annotations:
             if "wpt_subtest_failure" in annotations:
                 status_bitmap |= SUBTEST_FAIL
             if "wpt_precondition_failed" in annotations:

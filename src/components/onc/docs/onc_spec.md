@@ -183,19 +183,28 @@ warns admins of the implications of mis-using this policy for Chrome OS.
       will automatically switch to the managed network.
 
 * **BlacklistedHexSSIDs**
+    * DEPRECATED, use **BlockedHexSSIDs** instead.<br/>
     * (optional) - **array of string**
-    * List of strings containing blacklisted hex SSIDs. Networks included in
+    * List of strings containing blocked hex SSIDs. Networks included in
+      this list will not be connectable. Existing connections to networks
+      contained in this list will be disconnected on policy fetch.
+
+* **BlockedHexSSIDs**
+    * (optional) - **array of string**
+    * List of strings containing blocked hex SSIDs. Networks included in
       this list will not be connectable. Existing connections to networks
       contained in this list will be disconnected on policy fetch.
 
 * **DisableNetworkTypes**
     * (optional) - **array of string**
     * Allowed values are:
-        * Cellular
-        * Ethernet
-        * WiFi
-        * Tether
+        * *Cellular*
+        * *Ethernet*
+        * *WiFi*
+        * *Tether*
+        * *VPN*
     * List of strings containing disabled network interfaces.
+    * Adding *VPN* to the list will only disable Chrome OS built-in VPN.
 
 ## Network Configuration
 
@@ -222,8 +231,14 @@ Field **NetworkConfigurations** is an array of
         * *DHCP*
         * *Static*
     * Determines whether the IP Address configuration is statically configured,
-      see **StaticIPConfig**, or automatically configured
-      using DHCP.
+      see **StaticIPConfig**, or automatically configured using DHCP.
+
+* **Metered**
+    * (optional, defaults to "false") - **boolean**
+    * Whether the network should be considered metered. This may affect auto
+      update frequency, and may be used as a hint for apps to conserve data.
+      When not specified, the system will set this to the detected value.
+      See also **WiFi.TetheringState**.
 
 * **NameServersConfigType**
     * (optional if **Remove** is *false*, otherwise ignored. Defaults to *DHCP*
@@ -232,8 +247,7 @@ Field **NetworkConfigurations** is an array of
         * *DHCP*
         * *Static*
     * Determines whether the NameServers configuration is statically configured,
-      see **StaticIPConfig**, or automatically configured
-      using DHCP.
+      see **StaticIPConfig**, or automatically configured using DHCP.
 
 * **IPConfigs**
     * (optional for connected networks, read-only) -
@@ -466,11 +480,6 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
         *WEP-8021X* or *WPA-EAP*, otherwise ignored) - [EAP](#EAP-type)
     * EAP settings.
 
-* **FTEnabled**
-    * (optional, defaults to *false*) - **boolean**
-    * Indicating if the client should attempt to use Fast Transition with the
-    * network.
-
 * **HexSSID**
     * (optional if **SSID** is set, if so defaults to a hex representation of
       **SSID**) - **string**
@@ -520,8 +529,7 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
     * (optional, read-only, defaults to "NotDetected") - **string**
     * The tethering state of the WiFi connection. If the connection is
       tethered the value is "Confirmed". If the connection is suspected to be
-      tethered the value is "Suspected". In all other cases it's
-      "NotDetected".
+      tethered the value is "Suspected". In all other cases it's "NotDetected".
 
 ---
   * At least one of the fields **HexSSID** or **SSID** must be present.
@@ -1910,7 +1918,7 @@ particular PKCS#11 token, and tying to one OS's connection manager.
 ### GlobalNetworkConfiguration Example
 
 In this example, we only allow managed networks to auto connect and
-disallow any other networks if a managed network is available. We also blacklist
+disallow any other networks if a managed network is available. We also block
 the "Guest" network (hex("Guest")=4775657374) and disable Cellular services.
 ```
 {
@@ -1919,7 +1927,7 @@ the "Guest" network (hex("Guest")=4775657374) and disable Cellular services.
     "AllowOnlyPolicyNetworksToAutoconnect": true,
     “AllowOnlyPolicyNetworksToConnect”: false,
     “AllowOnlyPolicyNetworksToConnectIfAvailable”: true,
-    “BlacklistedHexSSIDs”: [“4775657374”],
+    “BlockedHexSSIDs”: [“4775657374”],
     "DisableNetworkTypes": ["Cellular"]
   }
 }

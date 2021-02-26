@@ -10,13 +10,7 @@
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 
-RenderDeviceDriverIface::~RenderDeviceDriverIface() {}
-
-bool RenderDeviceDriverIface::StartRendering() {
-  return true;
-}
-
-void RenderDeviceDriverIface::EndRendering() {}
+RenderDeviceDriverIface::~RenderDeviceDriverIface() = default;
 
 bool RenderDeviceDriverIface::SetClip_PathStroke(
     const CFX_PathData* pPathData,
@@ -26,10 +20,6 @@ bool RenderDeviceDriverIface::SetClip_PathStroke(
 }
 
 void RenderDeviceDriverIface::SetBaseClip(const FX_RECT& rect) {}
-
-bool RenderDeviceDriverIface::SetPixel(int x, int y, uint32_t color) {
-  return false;
-}
 
 bool RenderDeviceDriverIface::FillRectWithBlend(const FX_RECT& rect,
                                                 uint32_t fill_color,
@@ -59,20 +49,20 @@ bool RenderDeviceDriverIface::ContinueDIBits(CFX_ImageRenderer* handle,
   return false;
 }
 
-bool RenderDeviceDriverIface::DrawDeviceText(int nChars,
-                                             const TextCharPos* pCharPos,
-                                             CFX_Font* pFont,
-                                             const CFX_Matrix& mtObject2Device,
-                                             float font_size,
-                                             uint32_t color) {
+bool RenderDeviceDriverIface::DrawDeviceText(
+    int nChars,
+    const TextCharPos* pCharPos,
+    CFX_Font* pFont,
+    const CFX_Matrix& mtObject2Device,
+    float font_size,
+    uint32_t color,
+    const CFX_TextRenderOptions& options) {
   return false;
 }
 
 int RenderDeviceDriverIface::GetDriverType() const {
   return 0;
 }
-
-void RenderDeviceDriverIface::ClearDriver() {}
 
 bool RenderDeviceDriverIface::DrawShading(const CPDF_ShadingPattern* pPattern,
                                           const CFX_Matrix* pMatrix,
@@ -82,6 +72,7 @@ bool RenderDeviceDriverIface::DrawShading(const CPDF_ShadingPattern* pPattern,
   return false;
 }
 
+#if defined(_SKIA_SUPPORT_)
 bool RenderDeviceDriverIface::SetBitsWithMask(
     const RetainPtr<CFX_DIBBase>& pBitmap,
     const RetainPtr<CFX_DIBBase>& pMask,
@@ -91,7 +82,8 @@ bool RenderDeviceDriverIface::SetBitsWithMask(
     BlendMode blend_type) {
   return false;
 }
+#endif
 
-#if defined _SKIA_SUPPORT_ || _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 void RenderDeviceDriverIface::Flush() {}
 #endif

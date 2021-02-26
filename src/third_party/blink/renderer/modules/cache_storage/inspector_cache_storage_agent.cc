@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -258,15 +259,15 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     for (auto& request : requests) {
       // All FetchAPIRequests in cache_storage code are supposed to not contain
       // a body.
-      DCHECK(!request->blob && !request->body);
+      DCHECK(!request->blob && request->body.IsEmpty());
       auto request_clone_without_body = mojom::blink::FetchAPIRequest::New(
           request->mode, request->is_main_resource_load, request->destination,
           request->frame_type, request->url, request->method, request->headers,
-          nullptr /* blob */, nullptr /* body */, request->referrer.Clone(),
+          nullptr /* blob */, ResourceRequestBody(), request->referrer.Clone(),
           request->credentials_mode, request->cache_mode,
           request->redirect_mode, request->integrity, request->priority,
           request->fetch_window_id, request->keepalive, request->is_reload,
-          request->is_history_navigation);
+          request->is_history_navigation, request->devtools_stack_id);
       cache_remote_->Match(
           std::move(request), mojom::blink::CacheQueryOptions::New(),
           false /* in_related_fetch_event */, trace_id,
@@ -499,7 +500,7 @@ InspectorCacheStorageAgent::InspectorCacheStorageAgent(InspectedFrames* frames)
 
 InspectorCacheStorageAgent::~InspectorCacheStorageAgent() = default;
 
-void InspectorCacheStorageAgent::Trace(Visitor* visitor) {
+void InspectorCacheStorageAgent::Trace(Visitor* visitor) const {
   visitor->Trace(frames_);
   InspectorBaseAgent::Trace(visitor);
 }

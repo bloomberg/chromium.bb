@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
 
 namespace blink {
 
@@ -29,8 +30,14 @@ void AXVirtualObject::AddChildren() {
   if (!accessible_node_)
     return;
 
-  for (const auto& child : accessible_node_->GetChildren())
-    children_.push_back(AXObjectCache().GetOrCreate(child));
+  for (const auto& child : accessible_node_->GetChildren()) {
+    AXObject* ax_child = AXObjectCache().GetOrCreate(child);
+    if (!ax_child)
+      continue;
+
+    children_.push_back(ax_child);
+    ax_child->SetParent(this);
+  }
 }
 
 void AXVirtualObject::ChildrenChanged() {
@@ -75,9 +82,8 @@ String AXVirtualObject::TextAlternative(bool recursive,
                              &found_text_alternative);
 }
 
-void AXVirtualObject::Trace(Visitor* visitor) {
+void AXVirtualObject::Trace(Visitor* visitor) const {
   visitor->Trace(accessible_node_);
   AXObject::Trace(visitor);
 }
-
 }  // namespace blink

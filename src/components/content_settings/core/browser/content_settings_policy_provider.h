@@ -33,14 +33,16 @@ class PolicyProvider : public ObservableProvider {
   // ProviderInterface implementations.
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
+      bool incognito) const override;
+
+  std::unique_ptr<RuleIterator> GetDiscardedRuleIterator(
+      ContentSettingsType content_type,
       bool incognito) const override;
 
   bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
       std::unique_ptr<base::Value>&& value,
       const ContentSettingConstraints& constraint = {}) override;
 
@@ -72,6 +74,8 @@ class PolicyProvider : public ObservableProvider {
   void ReadManagedContentSettingsTypes(ContentSettingsType content_type);
 
   OriginIdentifierValueMap value_map_;
+
+  std::map<ContentSettingsType, std::vector<Rule>> discarded_rules_value_map_;
 
   PrefService* prefs_;
 

@@ -36,7 +36,7 @@ export class IsolateSelector extends UI.Widget.VBox {
     this._totalTrendDiv.title = ls`Total page JS heap size change trend over the last ${trendIntervalMinutes} minutes.`;
     this._totalValueDiv.title = ls`Total page JS heap size across all VM instances.`;
 
-    self.SDK.isolateManager.observeIsolates(this);
+    SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
     SDK.SDKModel.TargetManager.instance().addEventListener(SDK.SDKModel.Events.NameChanged, this._targetChanged, this);
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.InspectedURLChanged, this._targetChanged, this);
@@ -46,14 +46,16 @@ export class IsolateSelector extends UI.Widget.VBox {
    * @override
    */
   wasShown() {
-    self.SDK.isolateManager.addEventListener(SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
+    SDK.IsolateManager.IsolateManager.instance().addEventListener(
+        SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
   }
 
   /**
    * @override
    */
   willHide() {
-    self.SDK.isolateManager.removeEventListener(SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
+    SDK.IsolateManager.IsolateManager.instance().removeEventListener(
+        SDK.IsolateManager.Events.MemoryChanged, this._heapStatsChanged, this);
   }
 
   /**
@@ -63,7 +65,10 @@ export class IsolateSelector extends UI.Widget.VBox {
   isolateAdded(isolate) {
     this._list.element.tabIndex = 0;
     const item = new ListItem(isolate);
-    const index = item.model().target() === SDK.SDKModel.TargetManager.instance().mainTarget() ? 0 : this._items.length;
+    const index = /** @type {!SDK.RuntimeModel.RuntimeModel} */ (item.model()).target() ===
+            SDK.SDKModel.TargetManager.instance().mainTarget() ?
+        0 :
+        this._items.length;
     this._items.insert(index, item);
     this._itemByIsolate.set(isolate, item);
     if (this._items.length === 1 || isolate.isMainThread()) {
@@ -78,7 +83,9 @@ export class IsolateSelector extends UI.Widget.VBox {
    */
   isolateChanged(isolate) {
     const item = this._itemByIsolate.get(isolate);
-    item.updateTitle();
+    if (item) {
+      item.updateTitle();
+    }
     this._update();
   }
 
@@ -88,7 +95,9 @@ export class IsolateSelector extends UI.Widget.VBox {
    */
   isolateRemoved(isolate) {
     const item = this._itemByIsolate.get(isolate);
-    this._items.remove(this._items.indexOf(item));
+    if (item) {
+      this._items.remove(this._items.indexOf(item));
+    }
     this._itemByIsolate.delete(isolate);
     if (this._items.length === 0) {
       this._list.element.tabIndex = -1;
@@ -105,7 +114,7 @@ export class IsolateSelector extends UI.Widget.VBox {
     if (!model) {
       return;
     }
-    const isolate = self.SDK.isolateManager.isolateByModel(model);
+    const isolate = SDK.IsolateManager.IsolateManager.instance().isolateByModel(model);
     const item = isolate && this._itemByIsolate.get(isolate);
     if (item) {
       item.updateTitle();
@@ -127,7 +136,7 @@ export class IsolateSelector extends UI.Widget.VBox {
   _updateTotal() {
     let total = 0;
     let trend = 0;
-    for (const isolate of self.SDK.isolateManager.isolates()) {
+    for (const isolate of SDK.IsolateManager.IsolateManager.instance().isolates()) {
       total += isolate.usedHeapSize();
       trend += isolate.usedHeapSizeGrowRate();
     }
@@ -141,7 +150,7 @@ export class IsolateSelector extends UI.Widget.VBox {
    */
   static _formatTrendElement(trendValueMs, element) {
     const changeRateBytesPerSecond = trendValueMs * 1e3;
-    const changeRateThresholdBytesPerSecond = 1024;
+    const changeRateThresholdBytesPerSecond = 1000;
     if (Math.abs(changeRateBytesPerSecond) < changeRateThresholdBytesPerSecond) {
       return;
     }
@@ -182,6 +191,8 @@ export class IsolateSelector extends UI.Widget.VBox {
    * @return {number}
    */
   heightForItem(item) {
+    console.assert(false, 'should not be called');
+    return 0;
   }
 
   /**
@@ -218,8 +229,9 @@ export class IsolateSelector extends UI.Widget.VBox {
       toElement.classList.add('selected');
     }
     const model = to && to.model();
-    self.UI.context.setFlavor(SDK.HeapProfilerModel.HeapProfilerModel, model && model.heapProfilerModel());
-    self.UI.context.setFlavor(
+    UI.Context.Context.instance().setFlavor(
+        SDK.HeapProfilerModel.HeapProfilerModel, model && model.heapProfilerModel());
+    UI.Context.Context.instance().setFlavor(
         SDK.CPUProfilerModel.CPUProfilerModel, model && model.target().model(SDK.CPUProfilerModel.CPUProfilerModel));
   }
 

@@ -20,7 +20,9 @@
 
 #include "third_party/blink/renderer/core/svg/svg_path_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_path.h"
 #include "third_party/blink/renderer/core/svg/svg_mpath_element.h"
 #include "third_party/blink/renderer/core/svg/svg_path_query.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
@@ -37,7 +39,7 @@ SVGPathElement::SVGPathElement(Document& document)
   AddToPropertyMap(path_);
 }
 
-void SVGPathElement::Trace(Visitor* visitor) {
+void SVGPathElement::Trace(Visitor* visitor) const {
   visitor->Trace(path_);
   SVGGeometryElement::Trace(visitor);
 }
@@ -47,8 +49,8 @@ Path SVGPathElement::AttributePath() const {
 }
 
 const StylePath* SVGPathElement::GetStylePath() const {
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    const StylePath* style_path = layout_object->StyleRef().SvgStyle().D();
+  if (const ComputedStyle* style = GetComputedStyle()) {
+    const StylePath* style_path = style->SvgStyle().D();
     if (style_path)
       return style_path;
     return StylePath::EmptyPath();
@@ -58,6 +60,10 @@ const StylePath* SVGPathElement::GetStylePath() const {
 
 float SVGPathElement::ComputePathLength() const {
   return GetStylePath()->length();
+}
+
+const SVGPathByteStream& SVGPathElement::PathByteStream() const {
+  return GetStylePath()->ByteStream();
 }
 
 Path SVGPathElement::AsPath() const {
@@ -70,10 +76,20 @@ float SVGPathElement::getTotalLength(ExceptionState& exception_state) {
   return SVGPathQuery(PathByteStream()).GetTotalLength();
 }
 
-SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
+SVGPointTearOff* SVGPathElement::getPointAtLength(
+    float length,
+    ExceptionState& exception_state) {
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
-  SVGPathQuery path_query(PathByteStream());
+
+  const SVGPathByteStream& byte_stream = PathByteStream();
+  if (byte_stream.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The element's path is empty.");
+    return nullptr;
+  }
+
+  SVGPathQuery path_query(byte_stream);
   if (length < 0) {
     length = 0;
   } else {

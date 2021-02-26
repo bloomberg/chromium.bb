@@ -47,6 +47,8 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
       const WebAppUninstallDialogDelegateView&) = delete;
   ~WebAppUninstallDialogDelegateView() override;
 
+  void ProcessAutoConfirmValue();
+
  private:
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -54,12 +56,10 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
   gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
 
   // Uninstalls the web app. Returns true on success.
   bool Uninstall();
   void ClearWebAppSiteData();
-  void ProcessAutoConfirmValue();
 
   void OnDialogAccepted();
   void OnDialogCanceled();
@@ -71,8 +71,8 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
 
   // The web app we are showing the dialog for.
   const web_app::AppId app_id_;
-  // The dialog needs launch_url copy even if app gets uninstalled.
-  GURL app_launch_url_;
+  // The dialog needs start_url copy even if app gets uninstalled.
+  GURL app_start_url_;
 
   Profile* const profile_;
 };
@@ -104,7 +104,7 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
-  void OnAllIconsRead(std::map<SquareSizePx, SkBitmap> icon_bitmaps);
+  void OnIconsRead(std::map<SquareSizePx, SkBitmap> icon_bitmaps);
 
   // The dialog's parent window.
   const gfx::NativeWindow parent_;

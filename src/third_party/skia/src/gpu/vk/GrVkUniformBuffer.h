@@ -33,7 +33,7 @@ public:
                     bool* createdNewBuffer) {
         return this->vkUpdateData(gpu, src, srcSizeInBytes, createdNewBuffer);
     }
-    void release() { this->vkRelease(); }
+    void release(GrVkGpu* gpu) { this->vkRelease(gpu); }
 
     const VkDescriptorSet* descriptorSet() const {
         const Resource* resource = static_cast<const Resource*>(this->resource());
@@ -53,7 +53,7 @@ private:
 
         const VkDescriptorSet* descriptorSet() const;
 
-        typedef GrVkBuffer::Resource INHERITED;
+        using INHERITED = GrVkBuffer::Resource;
 
     private:
         const GrVkDescriptorSet* fDescriptorSet;
@@ -66,7 +66,7 @@ private:
                       const GrVkUniformBuffer::Resource* resource)
         : INHERITED(desc, resource) {}
 
-    typedef GrVkBuffer INHERITED;
+    using INHERITED = GrVkBuffer;
 };
 
 #endif

@@ -37,6 +37,8 @@ blink_modules_sources("webgl") {
     "gl_string_query.h",
     "khr_parallel_shader_compile.cc",
     "khr_parallel_shader_compile.h",
+    "oes_draw_buffers_indexed.cc",
+    "oes_draw_buffers_indexed.h",
     "oes_element_index_uint.cc",
     "oes_element_index_uint.h",
     "oes_fbo_render_mipmap.cc",
@@ -97,6 +99,8 @@ blink_modules_sources("webgl") {
     "webgl_extension.cc",
     "webgl_extension.h",
     "webgl_extension_name.h",
+    "webgl_fast_call.cc",
+    "webgl_fast_call.h",
     "webgl_fence_sync.cc",
     "webgl_fence_sync.h",
     "webgl_framebuffer.cc",
@@ -141,6 +145,8 @@ blink_modules_sources("webgl") {
     "webgl_transform_feedback.h",
     "webgl_uniform_location.cc",
     "webgl_uniform_location.h",
+    "webgl_unowned_texture.cc",
+    "webgl_unowned_texture.h",
     "webgl_vertex_array_object.cc",
     "webgl_vertex_array_object.h",
     "webgl_vertex_array_object_base.cc",
@@ -152,17 +158,12 @@ blink_modules_sources("webgl") {
     "webgl_video_texture_enum.h",
   ]
 
-  if (support_webgl2_compute_context) {
-    sources += [
-      "webgl2_compute_rendering_context.cc",
-      "webgl2_compute_rendering_context.h",
-      "webgl2_compute_rendering_context_base.cc",
-      "webgl2_compute_rendering_context_base.h",
-    ]
-  }
-
   # The modules/webgl/ directly is a larger module, and
   # the implementation depends on a fair chunk of core/ --
   # include the core pch for faster Windows compilation times.
   configs += [ "//third_party/blink/renderer/core:blink_core_pch" ]
+
+  public_deps = [ "//device/vr/public/mojom:vr_service_blink" ]
+  deps = [ "//third_party/blink/renderer/modules/xr:xr" ]
+  allow_circular_includes_from = deps
 }

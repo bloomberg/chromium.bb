@@ -49,11 +49,6 @@ interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
     method constructor
     method updateUI
-interface BarcodeDetector
-    static method getSupportedFormats
-    attribute @@toStringTag
-    method constructor
-    method detect
 interface Blob
     attribute @@toStringTag
     getter size
@@ -148,6 +143,19 @@ interface CompressionStream
     getter readable
     getter writable
     method constructor
+interface CookieStore : EventTarget
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method get
+    method getAll
+    method set
+interface CookieStoreManager
+    attribute @@toStringTag
+    method constructor
+    method getSubscriptions
+    method subscribe
+    method unsubscribe
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -431,6 +439,11 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface ExtendableCookieChangeEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter changed
+    getter deleted
+    method constructor
 interface ExtendableEvent : Event
     attribute @@toStringTag
     method constructor
@@ -446,6 +459,7 @@ interface ExtendableMessageEvent : ExtendableEvent
 interface FetchEvent : ExtendableEvent
     attribute @@toStringTag
     getter clientId
+    getter handled
     getter isReload
     getter preloadResponse
     getter request
@@ -491,11 +505,45 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemHandle
+    attribute @@toStringTag
+    method @@asyncIterator
+    method constructor
+    method entries
+    method getDirectoryHandle
+    method getFileHandle
+    method keys
+    method removeEntry
+    method resolve
+    method values
+interface FileSystemFileHandle : FileSystemHandle
+    attribute @@toStringTag
+    method constructor
+    method createWritable
+    method getFile
+interface FileSystemHandle
+    attribute @@toStringTag
+    getter kind
+    getter name
+    method constructor
+    method isSameEntry
+    method queryPermission
+    method requestPermission
+interface FileSystemWritableFileStream : WritableStream
+    attribute @@toStringTag
+    method close
+    method constructor
+    method seek
+    method truncate
+    method write
 interface FontFace
     attribute @@toStringTag
+    getter ascentOverride
+    getter descentOverride
     getter display
     getter family
     getter featureSettings
+    getter lineGapOverride
     getter loaded
     getter status
     getter stretch
@@ -505,9 +553,12 @@ interface FontFace
     getter weight
     method constructor
     method load
+    setter ascentOverride
+    setter descentOverride
     setter display
     setter family
     setter featureSettings
+    setter lineGapOverride
     setter stretch
     setter style
     setter unicodeRange
@@ -1147,6 +1198,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter cookies
     getter installing
     getter navigationPreload
     getter onupdatefound
@@ -1163,10 +1215,11 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
-interface StorageManager
+interface StorageManager : EventTarget
     attribute @@toStringTag
     method constructor
     method estimate
+    method getDirectory
     method persisted
 interface SubtleCrypto
     attribute @@toStringTag
@@ -1226,6 +1279,8 @@ interface TextMetrics
     getter actualBoundingBoxDescent
     getter actualBoundingBoxLeft
     getter actualBoundingBoxRight
+    getter fontBoundingBoxAscent
+    getter fontBoundingBoxDescent
     getter width
     method constructor
 interface TransformStream
@@ -1233,7 +1288,7 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedTypePolicyFactory
+interface TrustedTypePolicyFactory : EventTarget
     attribute @@toStringTag
     getter defaultPolicy
     getter emptyHTML
@@ -2605,6 +2660,7 @@ interface WindowClient : Client
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
     getter caches
+    getter crossOriginIsolated
     getter crypto
     getter fonts
     getter indexedDB
@@ -2688,11 +2744,13 @@ interface WritableStreamDefaultWriter
     method constructor
     method releaseLock
     method write
+[NAMESPACES]
 [GLOBAL OBJECT]
     attribute console
     attribute globalThis
     attribute internals
     getter clients
+    getter cookieStore
     getter onabortpayment
     getter onactivate
     getter onbackgroundfetchabort
@@ -2700,6 +2758,7 @@ interface WritableStreamDefaultWriter
     getter onbackgroundfetchfail
     getter onbackgroundfetchsuccess
     getter oncanmakepayment
+    getter oncookiechange
     getter onfetch
     getter oninstall
     getter onmessage
@@ -2721,6 +2780,7 @@ interface WritableStreamDefaultWriter
     setter onbackgroundfetchfail
     setter onbackgroundfetchsuccess
     setter oncanmakepayment
+    setter oncookiechange
     setter onfetch
     setter oninstall
     setter onmessage

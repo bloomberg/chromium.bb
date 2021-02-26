@@ -127,7 +127,7 @@ class DownloadRequestLimiter
         content::NavigationHandle* navigation_handle) override;
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
-    void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+    void DidGetUserInteraction(const blink::WebInputEvent& event) override;
     void WebContentsDestroyed() override;
 
     // Asks the user if they really want to allow the download.
@@ -161,8 +161,7 @@ class DownloadRequestLimiter
     void OnContentSettingChanged(
         const ContentSettingsPattern& primary_pattern,
         const ContentSettingsPattern& secondary_pattern,
-        ContentSettingsType content_type,
-        const std::string& resource_identifier) override;
+        ContentSettingsType content_type) override;
 
     // Remember to either block or allow automatic downloads from
     // |request_origin|.

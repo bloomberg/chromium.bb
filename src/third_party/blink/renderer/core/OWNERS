@@ -2,8 +2,6 @@
 # For example, core/rendering/OWNERS for rendering changes.
 
 # Reviewers (comments indicate areas of expertise):
-# alancutter reviews changes in core/animation, core/css and core/style.
-alancutter@chromium.org
 alexis.menard@intel.com
 # bokan reviews changes around viewport behavior, scrolling, cc/blink interaction, co-ordinate spaces and input events
 bokan@chromium.org
@@ -18,7 +16,6 @@ dgozman@chromium.org
 drott@chromium.org
 dsinclair@chromium.org
 dstockwell@chromium.org
-eae@chromium.org
 enne@chromium.org
 # flackr reviews animation- and scrolling-related changes.
 flackr@chromium.org
@@ -51,6 +48,7 @@ mstensho@chromium.org
 # and related code in core/dom and core/layout.
 nainar@chromium.org
 nhiroki@chromium.org
+obrufau@igalia.com
 # pdr reviews many svg and text autosizing patches.
 pdr@chromium.org
 pfeldman@chromium.org
@@ -68,7 +66,7 @@ thakis@chromium.org
 timloh@chromium.org
 tkent@chromium.org
 tonyg@chromium.org
-# vollick reviews compositor integration, accelerated transitions, animations and scrolling, scrolling coordinator, CSS transforms
+vmpstr@chromium.org
 vollick@chromium.org
 wangxianzhu@chromium.org
 yhirano@chromium.org

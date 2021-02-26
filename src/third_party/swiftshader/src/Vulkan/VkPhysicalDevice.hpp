@@ -35,17 +35,7 @@ public:
 	static size_t ComputeRequiredAllocationSize(const void *) { return 0; }
 
 	const VkPhysicalDeviceFeatures &getFeatures() const;
-	void getFeatures(VkPhysicalDeviceSamplerYcbcrConversionFeatures *features) const;
-	void getFeatures(VkPhysicalDevice16BitStorageFeatures *features) const;
-	void getFeatures(VkPhysicalDeviceVariablePointerFeatures *features) const;
-	void getFeatures(VkPhysicalDevice8BitStorageFeaturesKHR *features) const;
-	void getFeatures(VkPhysicalDeviceMultiviewFeatures *features) const;
-	void getFeatures(VkPhysicalDeviceProtectedMemoryFeatures *features) const;
-	void getFeatures(VkPhysicalDeviceShaderDrawParameterFeatures *features) const;
-	void getFeatures(VkPhysicalDeviceLineRasterizationFeaturesEXT *features) const;
-	void getFeatures(VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR *features) const;
-	void getFeatures(VkPhysicalDeviceProvokingVertexFeaturesEXT *features) const;
-	void getFeatures(VkPhysicalDeviceImageRobustnessFeaturesEXT *features) const;
+	void getFeatures2(VkPhysicalDeviceFeatures2 *features) const;
 	bool hasFeatures(const VkPhysicalDeviceFeatures &requestedFeatures) const;
 
 	const VkPhysicalDeviceProperties &getProperties() const;
@@ -56,9 +46,11 @@ public:
 	void getProperties(VkPhysicalDeviceProtectedMemoryProperties *properties) const;
 	void getProperties(VkPhysicalDeviceSubgroupProperties *properties) const;
 	void getProperties(const VkExternalMemoryHandleTypeFlagBits *handleType, VkExternalImageFormatProperties *properties) const;
+	void getProperties(const VkExternalMemoryHandleTypeFlagBits *handleType, VkExternalBufferProperties *properties) const;
 	void getProperties(VkSamplerYcbcrConversionImageFormatProperties *properties) const;
 #ifdef __ANDROID__
 	void getProperties(VkPhysicalDevicePresentationPropertiesANDROID *properties) const;
+	void getProperties(VkAndroidHardwareBufferUsageANDROID *properties) const;
 #endif
 	void getProperties(const VkPhysicalDeviceExternalBufferInfo *pExternalBufferInfo, VkExternalBufferProperties *pExternalBufferProperties) const;
 	void getProperties(const VkPhysicalDeviceExternalFenceInfo *pExternalFenceInfo, VkExternalFenceProperties *pExternalFenceProperties) const;
@@ -67,8 +59,9 @@ public:
 	void getProperties(VkPhysicalDeviceDriverPropertiesKHR *properties) const;
 	void getProperties(VkPhysicalDeviceLineRasterizationPropertiesEXT *properties) const;
 	void getProperties(VkPhysicalDeviceProvokingVertexPropertiesEXT *properties) const;
+	void getProperties(VkPhysicalDeviceFloatControlsProperties *) const;
 
-	void getFormatProperties(Format format, VkFormatProperties *pFormatProperties) const;
+	static void GetFormatProperties(Format format, VkFormatProperties *pFormatProperties);
 	void getImageFormatProperties(Format format, VkImageType type, VkImageTiling tiling,
 	                              VkImageUsageFlags usage, VkImageCreateFlags flags,
 	                              VkImageFormatProperties *pImageFormatProperties) const;
@@ -77,7 +70,7 @@ public:
 	                              VkQueueFamilyProperties *pQueueFamilyProperties) const;
 	void getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
 	                              VkQueueFamilyProperties2 *pQueueFamilyProperties) const;
-	const VkPhysicalDeviceMemoryProperties &getMemoryProperties() const;
+	static const VkPhysicalDeviceMemoryProperties &GetMemoryProperties();
 
 private:
 	const VkPhysicalDeviceLimits &getLimits() const;

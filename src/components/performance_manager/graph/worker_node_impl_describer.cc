@@ -6,10 +6,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/performance_manager/public/graph/node_data_describer_registry.h"
+#include "components/performance_manager/public/graph/node_data_describer_util.h"
 
 namespace performance_manager {
 
 namespace {
+
 const char kDescriberName[] = "WorkerNode";
 
 const char* WorkerTypeToString(WorkerNode::WorkerType state) {
@@ -42,11 +44,12 @@ base::Value WorkerNodeImplDescriber::DescribeWorkerNodeData(
 
   base::Value ret(base::Value::Type::DICTIONARY);
   ret.SetKey("browser_context_id", base::Value(impl->browser_context_id()));
-  ret.SetKey("dev_tools_token",
-             base::Value(impl->dev_tools_token().ToString()));
+  ret.SetKey("worker_token", base::Value(impl->worker_token().ToString()));
   ret.SetKey("url", base::Value(impl->url().spec()));
   ret.SetKey("worker_type",
              base::Value(WorkerTypeToString(impl->worker_type())));
+  ret.SetKey("priority",
+             PriorityAndReasonToValue(impl->priority_and_reason_.value()));
 
   return ret;
 }

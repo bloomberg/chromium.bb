@@ -11,25 +11,19 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/renderdevicedriver_iface.h"
-#include "third_party/agg23/agg_clip_liang_barsky.h"
-#include "third_party/agg23/agg_path_storage.h"
-#include "third_party/agg23/agg_rasterizer_scanline_aa.h"
 
 class CFX_ClipRgn;
 class CFX_GraphStateData;
 class CFX_Matrix;
 class CFX_PathData;
 
-class CAgg_PathData {
- public:
-  CAgg_PathData() {}
-  ~CAgg_PathData() {}
-  void BuildPath(const CFX_PathData* pPathData,
-                 const CFX_Matrix* pObject2Device);
+namespace pdfium {
 
-  agg::path_storage m_PathData;
-};
+namespace agg {
+class rasterizer_scanline_aa;
+}  // namespace agg
 
 class CFX_AggDeviceDriver final : public RenderDeviceDriverIface {
  public:
@@ -49,7 +43,7 @@ class CFX_AggDeviceDriver final : public RenderDeviceDriverIface {
   void RestoreState(bool bKeepSaved) override;
   bool SetClip_PathFill(const CFX_PathData* pPathData,
                         const CFX_Matrix* pObject2Device,
-                        int fill_mode) override;
+                        const CFX_FillRenderOptions& fill_options) override;
   bool SetClip_PathStroke(const CFX_PathData* pPathData,
                           const CFX_Matrix* pObject2Device,
                           const CFX_GraphStateData* pGraphState) override;
@@ -58,9 +52,8 @@ class CFX_AggDeviceDriver final : public RenderDeviceDriverIface {
                 const CFX_GraphStateData* pGraphState,
                 uint32_t fill_color,
                 uint32_t stroke_color,
-                int fill_mode,
+                const CFX_FillRenderOptions& fill_options,
                 BlendMode blend_type) override;
-  bool SetPixel(int x, int y, uint32_t color) override;
   bool FillRectWithBlend(const FX_RECT& rect,
                          uint32_t fill_color,
                          BlendMode blend_type) override;
@@ -98,29 +91,30 @@ class CFX_AggDeviceDriver final : public RenderDeviceDriverIface {
                       CFX_Font* pFont,
                       const CFX_Matrix& mtObject2Device,
                       float font_size,
-                      uint32_t color) override;
+                      uint32_t color,
+                      const CFX_TextRenderOptions& options) override;
   int GetDriverType() const override;
 
-  bool RenderRasterizer(agg::rasterizer_scanline_aa& rasterizer,
+ private:
+  void RenderRasterizer(pdfium::agg::rasterizer_scanline_aa& rasterizer,
                         uint32_t color,
                         bool bFullCover,
                         bool bGroupKnockout);
 
-  void SetClipMask(agg::rasterizer_scanline_aa& rasterizer);
+  void SetClipMask(pdfium::agg::rasterizer_scanline_aa& rasterizer);
 
-  virtual uint8_t* GetBuffer() const;
-
- private:
   RetainPtr<CFX_DIBitmap> const m_pBitmap;
   std::unique_ptr<CFX_ClipRgn> m_pClipRgn;
   std::vector<std::unique_ptr<CFX_ClipRgn>> m_StateStack;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void* m_pPlatformGraphics = nullptr;
 #endif
-  int m_FillFlags = 0;
+  CFX_FillRenderOptions m_FillOptions;
   const bool m_bRgbByteOrder;
   const bool m_bGroupKnockout;
   RetainPtr<CFX_DIBitmap> m_pBackdropBitmap;
 };
+
+}  // namespace pdfium
 
 #endif  // CORE_FXGE_AGG_FX_AGG_DRIVER_H_

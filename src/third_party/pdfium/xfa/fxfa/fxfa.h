@@ -7,20 +7,23 @@
 #ifndef XFA_FXFA_FXFA_H_
 #define XFA_FXFA_FXFA_H_
 
-#include <memory>
-
 #include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
+class CFX_XMLDocument;
 class CXFA_FFDoc;
 class CXFA_FFPageView;
 class CXFA_FFWidget;
 class CXFA_Submit;
 class IFX_SeekableReadStream;
 class IJS_Runtime;
+
+namespace cppgc {
+class Heap;
+}  // namespace cppgc
 
 // Note, values must match fpdf_formfill.h JSPLATFORM_ALERT_BUTTON_* flags.
 enum class AlertButton {
@@ -89,7 +92,7 @@ enum XFA_WidgetStatus {
   XFA_WidgetStatus_Visible = 1 << 8
 };
 
-// Probably should be called IXFA_AppDelegate.
+// Probably should be CXFA_FFApp::CallbackIface in cxfa_ffapp.h
 class IXFA_AppProvider {
  public:
   virtual ~IXFA_AppProvider() = default;
@@ -190,9 +193,11 @@ class IXFA_AppProvider {
                              const WideString& wsData,
                              const WideString& wsEncode) = 0;
 
-  virtual TimerHandlerIface* GetTimerHandler() const = 0;
+  virtual CFX_Timer::HandlerIface* GetTimerHandler() const = 0;
+  virtual cppgc::Heap* GetGCHeap() const = 0;
 };
 
+// Probably should be called CFXA_FFDoc::CallbackIface in cxfa_ffdoc.h
 class IXFA_DocEnvironment {
  public:
   virtual ~IXFA_DocEnvironment() = default;
@@ -217,26 +222,27 @@ class IXFA_DocEnvironment {
 
   virtual void WidgetPostAdd(CXFA_FFWidget* hWidget) = 0;
   virtual void WidgetPreRemove(CXFA_FFWidget* hWidget) = 0;
-  virtual int32_t CountPages(CXFA_FFDoc* hDoc) = 0;
-  virtual int32_t GetCurrentPage(CXFA_FFDoc* hDoc) = 0;
+  virtual int32_t CountPages(const CXFA_FFDoc* hDoc) const = 0;
+  virtual int32_t GetCurrentPage(const CXFA_FFDoc* hDoc) const = 0;
   virtual void SetCurrentPage(CXFA_FFDoc* hDoc, int32_t iCurPage) = 0;
-  virtual bool IsCalculationsEnabled(CXFA_FFDoc* hDoc) = 0;
+  virtual bool IsCalculationsEnabled(const CXFA_FFDoc* hDoc) const = 0;
   virtual void SetCalculationsEnabled(CXFA_FFDoc* hDoc, bool bEnabled) = 0;
-  virtual void GetTitle(CXFA_FFDoc* hDoc, WideString& wsTitle) = 0;
+  virtual WideString GetTitle(const CXFA_FFDoc* hDoc) const = 0;
   virtual void SetTitle(CXFA_FFDoc* hDoc, const WideString& wsTitle) = 0;
   virtual void ExportData(CXFA_FFDoc* hDoc,
                           const WideString& wsFilePath,
                           bool bXDP) = 0;
   virtual void GotoURL(CXFA_FFDoc* hDoc, const WideString& bsURL) = 0;
-  virtual bool IsValidationsEnabled(CXFA_FFDoc* hDoc) = 0;
+  virtual bool IsValidationsEnabled(const CXFA_FFDoc* hDoc) const = 0;
   virtual void SetValidationsEnabled(CXFA_FFDoc* hDoc, bool bEnabled) = 0;
   virtual void SetFocusWidget(CXFA_FFDoc* hDoc, CXFA_FFWidget* hWidget) = 0;
   virtual void Print(CXFA_FFDoc* hDoc,
                      int32_t nStartPage,
                      int32_t nEndPage,
                      uint32_t dwOptions) = 0;
-  virtual FX_ARGB GetHighlightColor(CXFA_FFDoc* hDoc) = 0;
-  virtual IJS_Runtime* GetIJSRuntime(CXFA_FFDoc* hDoc) const = 0;
+  virtual FX_ARGB GetHighlightColor(const CXFA_FFDoc* hDoc) const = 0;
+  virtual IJS_Runtime* GetIJSRuntime(const CXFA_FFDoc* hDoc) const = 0;
+  virtual CFX_XMLDocument* GetXMLDoc() const = 0;
   virtual RetainPtr<IFX_SeekableReadStream> OpenLinkedFile(
       CXFA_FFDoc* hDoc,
       const WideString& wsLink) = 0;

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -150,6 +149,13 @@ TEST_F(LanguagePrefsTest, ResetEmptyFluentLanguagesToDefaultTest) {
   ExpectFluentLanguageListContent({});
   language_prefs_->ResetEmptyFluentLanguagesToDefault();
   ExpectFluentLanguageListContent({"en"});
+}
+
+TEST_F(LanguagePrefsTest, GetFirstLanguageTest) {
+  EXPECT_EQ("a", language::GetFirstLanguage("a,b,c"));
+  EXPECT_EQ("en-US", language::GetFirstLanguage("en-US,en,en-GB"));
+  EXPECT_EQ("en-US", language::GetFirstLanguage("en-US"));
+  EXPECT_EQ("", language::GetFirstLanguage(""));
 }
 
 }  // namespace language

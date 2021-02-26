@@ -4,15 +4,22 @@
 
 #include "xfa/fxfa/parser/cxfa_node.h"
 
+#include "fxjs/gc/heap.h"
 #include "fxjs/xfa/cjx_node.h"
+#include "testing/fxgc_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
+#include "v8/include/cppgc/allocation.h"
+#include "v8/include/cppgc/persistent.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
 class TestNode final : public CXFA_Node {
  public:
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
+  ~TestNode() override = default;
+
+ private:
   explicit TestNode(CXFA_Document* doc)
       : CXFA_Node(doc,
                   XFA_PacketType::Form,
@@ -21,31 +28,35 @@ class TestNode final : public CXFA_Node {
                   XFA_Element::Node,
                   {},
                   {},
-                  pdfium::MakeUnique<CJX_Node>(this)) {}
-
-  ~TestNode() override = default;
+                  cppgc::MakeGarbageCollected<CJX_Node>(
+                      doc->GetHeap()->GetAllocationHandle(),
+                      this)) {}
 };
 
 }  // namespace
 
-class CXFANodeTest : public testing::Test {
+class CXFANodeTest : public FXGCUnitTest {
  public:
   void SetUp() override {
-    doc_ = pdfium::MakeUnique<CXFA_Document>(nullptr, nullptr);
-    node_ = pdfium::MakeUnique<TestNode>(doc_.get());
+    FXGCUnitTest::SetUp();
+    doc_ = cppgc::MakeGarbageCollected<CXFA_Document>(
+        heap()->GetAllocationHandle(), nullptr, heap(), nullptr);
+    node_ = cppgc::MakeGarbageCollected<TestNode>(heap()->GetAllocationHandle(),
+                                                  doc_);
   }
 
   void TearDown() override {
-    node_ = nullptr;
-    doc_ = nullptr;
+    node_.Clear();
+    doc_.Clear();
+    FXGCUnitTest::TearDown();
   }
 
-  CXFA_Document* GetDoc() const { return doc_.get(); }
-  CXFA_Node* GetNode() const { return node_.get(); }
+  CXFA_Document* GetDoc() const { return doc_; }
+  CXFA_Node* GetNode() const { return node_; }
 
  private:
-  std::unique_ptr<CXFA_Document> doc_;
-  std::unique_ptr<TestNode> node_;
+  cppgc::Persistent<CXFA_Document> doc_;
+  cppgc::Persistent<TestNode> node_;
 };
 
 TEST_F(CXFANodeTest, InsertFirstChild) {

@@ -4,7 +4,12 @@
 
 #include "cc/trees/ukm_manager.h"
 
+#include <algorithm>
+#include <utility>
+
+#include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/throughput_ukm_reporter.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -107,10 +112,12 @@ void UkmManager::RecordThroughputUKM(
         CASE_FOR_MAIN_THREAD_TRACKER(MainThreadAnimation);
         CASE_FOR_MAIN_THREAD_TRACKER(PinchZoom);
         CASE_FOR_MAIN_THREAD_TRACKER(RAF);
+        CASE_FOR_MAIN_THREAD_TRACKER(ScrollbarScroll);
         CASE_FOR_MAIN_THREAD_TRACKER(TouchScroll);
-        CASE_FOR_MAIN_THREAD_TRACKER(Universal);
         CASE_FOR_MAIN_THREAD_TRACKER(Video);
         CASE_FOR_MAIN_THREAD_TRACKER(WheelScroll);
+        CASE_FOR_MAIN_THREAD_TRACKER(CanvasAnimation);
+        CASE_FOR_MAIN_THREAD_TRACKER(JSAnimation);
 #undef CASE_FOR_MAIN_THREAD_TRACKER
         default:
           NOTREACHED();
@@ -130,8 +137,8 @@ void UkmManager::RecordThroughputUKM(
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(MainThreadAnimation);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(PinchZoom);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(RAF);
+        CASE_FOR_COMPOSITOR_THREAD_TRACKER(ScrollbarScroll);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(TouchScroll);
-        CASE_FOR_COMPOSITOR_THREAD_TRACKER(Universal);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(Video);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(WheelScroll);
 #undef CASE_FOR_COMPOSITOR_THREAD_TRACKER
@@ -142,28 +149,7 @@ void UkmManager::RecordThroughputUKM(
       break;
     }
 
-    case FrameSequenceMetrics::ThreadType::kSlower: {
-      switch (tracker_type) {
-#define CASE_FOR_SLOWER_THREAD_TRACKER(name)    \
-  case FrameSequenceTrackerType::k##name:       \
-    builder.SetSlowerThread_##name(throughput); \
-    break;
-        CASE_FOR_SLOWER_THREAD_TRACKER(CompositorAnimation);
-        CASE_FOR_SLOWER_THREAD_TRACKER(MainThreadAnimation);
-        CASE_FOR_SLOWER_THREAD_TRACKER(PinchZoom);
-        CASE_FOR_SLOWER_THREAD_TRACKER(RAF);
-        CASE_FOR_SLOWER_THREAD_TRACKER(TouchScroll);
-        CASE_FOR_SLOWER_THREAD_TRACKER(Universal);
-        CASE_FOR_SLOWER_THREAD_TRACKER(Video);
-        CASE_FOR_SLOWER_THREAD_TRACKER(WheelScroll);
-#undef CASE_FOR_SLOWER_THREAD_TRACKER
-        default:
-          NOTREACHED();
-          break;
-      }
-      break;
-    }
-    default:
+    case FrameSequenceMetrics::ThreadType::kUnknown:
       NOTREACHED();
       break;
   }
@@ -187,11 +173,13 @@ void UkmManager::RecordAggregateThroughput(AggregationType aggregation_type,
   builder.Record(recorder_.get());
 }
 
-void UkmManager::RecordLatencyUKM(
+void UkmManager::RecordCompositorLatencyUKM(
     CompositorFrameReporter::FrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const CompositorFrameReporter::ActiveTrackers& active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) const {
+  using StageType = CompositorFrameReporter::StageType;
+
   ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
 
   if (report_type == CompositorFrameReporter::FrameReportType::kDroppedFrame) {
@@ -202,7 +190,7 @@ void UkmManager::RecordLatencyUKM(
   for (const CompositorFrameReporter::StageData& stage : stage_history) {
     switch (stage.stage_type) {
 #define CASE_FOR_STAGE(name)                                                 \
-  case CompositorFrameReporter::StageType::k##name:                          \
+  case StageType::k##name:                                                   \
     builder.Set##name((stage.end_time - stage.start_time).InMicroseconds()); \
     break;
       CASE_FOR_STAGE(BeginImplFrameToSendBeginMainFrame);
@@ -215,8 +203,7 @@ void UkmManager::RecordLatencyUKM(
 #undef CASE_FOR_STAGE
       // Break out kSubmitCompositorFrameToPresentationCompositorFrame to report
       // the viz breakdown.
-      case CompositorFrameReporter::StageType::
-          kSubmitCompositorFrameToPresentationCompositorFrame:
+      case StageType::kSubmitCompositorFrameToPresentationCompositorFrame:
         builder.SetSubmitCompositorFrameToPresentationCompositorFrame(
             (stage.end_time - stage.start_time).InMicroseconds());
         if (viz_breakdown.received_compositor_frame_timestamp.is_null())
@@ -263,8 +250,6 @@ void UkmManager::RecordLatencyUKM(
       continue;
     const auto frame_sequence_tracker_type =
         static_cast<FrameSequenceTrackerType>(type);
-    if (frame_sequence_tracker_type == FrameSequenceTrackerType::kUniversal)
-      continue;
     switch (frame_sequence_tracker_type) {
 #define CASE_FOR_TRACKER(name)            \
   case FrameSequenceTrackerType::k##name: \
@@ -274,9 +259,12 @@ void UkmManager::RecordLatencyUKM(
       CASE_FOR_TRACKER(MainThreadAnimation);
       CASE_FOR_TRACKER(PinchZoom);
       CASE_FOR_TRACKER(RAF);
+      CASE_FOR_TRACKER(ScrollbarScroll);
       CASE_FOR_TRACKER(TouchScroll);
       CASE_FOR_TRACKER(Video);
       CASE_FOR_TRACKER(WheelScroll);
+      CASE_FOR_TRACKER(CanvasAnimation);
+      CASE_FOR_TRACKER(JSAnimation);
 #undef CASE_FOR_TRACKER
       default:
         NOTREACHED();
@@ -285,6 +273,83 @@ void UkmManager::RecordLatencyUKM(
   }
 
   builder.Record(recorder_.get());
+}
+
+void UkmManager::RecordEventLatencyUKM(
+    const EventMetrics::List& events_metrics,
+    const std::vector<CompositorFrameReporter::StageData>& stage_history,
+    const viz::FrameTimingDetails& viz_breakdown) const {
+  using StageType = CompositorFrameReporter::StageType;
+
+  for (const auto& event_metrics : events_metrics) {
+    ukm::builders::Graphics_Smoothness_EventLatency builder(source_id_);
+
+    builder.SetEventType(static_cast<int64_t>(event_metrics->type()));
+
+    if (event_metrics->scroll_type()) {
+      builder.SetScrollInputType(
+          static_cast<int64_t>(*event_metrics->scroll_type()));
+
+      if (!viz_breakdown.swap_timings.is_null()) {
+        builder.SetTotalLatencyToSwapBegin(
+            (viz_breakdown.swap_timings.swap_start -
+             event_metrics->time_stamp())
+                .InMicroseconds());
+      }
+    }
+
+    // It is possible for an event to arrive in the compositor in the middle of
+    // a frame (e.g. the browser received the event *after* renderer received a
+    // begin-impl, and the event reached the compositor before that frame
+    // ended). To handle such cases, find the first stage that happens after the
+    // event's arrival in the browser.
+    auto stage_it = std::find_if(
+        stage_history.begin(), stage_history.end(),
+        [&event_metrics](const CompositorFrameReporter::StageData& stage) {
+          return stage.start_time > event_metrics->time_stamp();
+        });
+    // TODO(crbug.com/1079116): Ideally, at least the start time of
+    // SubmitCompositorFrameToPresentationCompositorFrame stage should be
+    // greater than the event time stamp, but apparently, this is not always the
+    // case (see crbug.com/1093698). For now, skip to the next event in such
+    // cases. Hopefully, the work to reduce discrepancies between the new
+    // EventLatency and the old Event.Latency metrics would fix this issue. If
+    // not, we need to reconsider investigating this issue.
+    if (stage_it == stage_history.end())
+      continue;
+
+    builder.SetBrowserToRendererCompositor(
+        (stage_it->start_time - event_metrics->time_stamp()).InMicroseconds());
+
+    for (; stage_it != stage_history.end(); ++stage_it) {
+      // Total latency is calculated since the event timestamp.
+      const base::TimeTicks start_time =
+          stage_it->stage_type == StageType::kTotalLatency
+              ? event_metrics->time_stamp()
+              : stage_it->start_time;
+
+      switch (stage_it->stage_type) {
+#define CASE_FOR_STAGE(name)                                               \
+  case StageType::k##name:                                                 \
+    builder.Set##name((stage_it->end_time - start_time).InMicroseconds()); \
+    break;
+        CASE_FOR_STAGE(BeginImplFrameToSendBeginMainFrame);
+        CASE_FOR_STAGE(SendBeginMainFrameToCommit);
+        CASE_FOR_STAGE(Commit);
+        CASE_FOR_STAGE(EndCommitToActivation);
+        CASE_FOR_STAGE(Activation);
+        CASE_FOR_STAGE(EndActivateToSubmitCompositorFrame);
+        CASE_FOR_STAGE(SubmitCompositorFrameToPresentationCompositorFrame);
+        CASE_FOR_STAGE(TotalLatency);
+#undef CASE_FOR_STAGE
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+
+    builder.Record(recorder_.get());
+  }
 }
 
 }  // namespace cc

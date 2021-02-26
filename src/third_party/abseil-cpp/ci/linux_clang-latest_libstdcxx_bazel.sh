@@ -42,7 +42,7 @@ readonly DOCKER_CONTAINER=${LINUX_CLANG_LATEST_CONTAINER}
 # USE_BAZEL_CACHE=1 only works on Kokoro.
 # Without access to the credentials this won't work.
 if [[ ${USE_BAZEL_CACHE:-0} -ne 0 ]]; then
-  DOCKER_EXTRA_ARGS="--volume=${KOKORO_KEYSTORE_DIR}:/keystore:ro ${DOCKER_EXTRA_ARGS:-}"
+  DOCKER_EXTRA_ARGS="--mount type=bind,source=${KOKORO_KEYSTORE_DIR},target=/keystore,readonly ${DOCKER_EXTRA_ARGS:-}"
   # Bazel doesn't track changes to tools outside of the workspace
   # (e.g. /usr/bin/gcc), so by appending the docker container to the
   # remote_http_cache url, we make changes to the container part of
@@ -55,7 +55,7 @@ fi
 # external dependencies first.
 # https://docs.bazel.build/versions/master/guide.html#distdir
 if [[ ${KOKORO_GFILE_DIR:-} ]] && [[ -d "${KOKORO_GFILE_DIR}/distdir" ]]; then
-  DOCKER_EXTRA_ARGS="--volume=${KOKORO_GFILE_DIR}/distdir:/distdir:ro ${DOCKER_EXTRA_ARGS:-}"
+  DOCKER_EXTRA_ARGS="--mount type=bind,source=${KOKORO_GFILE_DIR}/distdir,target=/distdir,readonly ${DOCKER_EXTRA_ARGS:-}"
   BAZEL_EXTRA_ARGS="--distdir=/distdir ${BAZEL_EXTRA_ARGS:-}"
 fi
 
@@ -64,22 +64,22 @@ for std in ${STD}; do
     for exceptions_mode in ${EXCEPTIONS_MODE}; do
       echo "--------------------------------------------------------------------"
       time docker run \
-        --volume="${ABSEIL_ROOT}:/abseil-cpp:ro" \
+        --mount type=bind,source="${ABSEIL_ROOT}",target=/abseil-cpp,readonly \
         --workdir=/abseil-cpp \
         --cap-add=SYS_PTRACE \
         --rm \
         -e CC="/opt/llvm/clang/bin/clang" \
-        -e BAZEL_COMPILER="llvm" \
         -e BAZEL_CXXOPTS="-std=${std}" \
-        -e CPLUS_INCLUDE_PATH="/usr/include/c++/8" \
         ${DOCKER_EXTRA_ARGS:-} \
         ${DOCKER_CONTAINER} \
         /usr/local/bin/bazel test ... \
           --compilation_mode="${compilation_mode}" \
+          --copt="--gcc-toolchain=/usr/local" \
           --copt="${exceptions_mode}" \
           --copt=-Werror \
           --define="absl=1" \
           --keep_going \
+          --linkopt="--gcc-toolchain=/usr/local" \
           --show_timestamps \
           --test_env="GTEST_INSTALL_FAILURE_SIGNAL_HANDLER=1" \
           --test_env="TZDIR=/abseil-cpp/absl/time/internal/cctz/testdata/zoneinfo" \

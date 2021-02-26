@@ -13,17 +13,6 @@
 
 enum class SharingDeviceRegistrationResult;
 
-// Result of VAPID key creation during Sharing registration.
-// These values are logged to UMA. Entries should not be renumbered and numeric
-// values should never be reused. Please keep in sync with
-// "SharingVapidKeyCreationResult" in src/tools/metrics/histograms/enums.xml.
-enum class SharingVapidKeyCreationResult {
-  kSuccess = 0,
-  kGenerateECKeyFailed = 1,
-  kExportPrivateKeyFailed = 2,
-  kMaxValue = kExportPrivateKeyFailed,
-};
-
 // The types of dialogs that can be shown for sharing features.
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
@@ -71,10 +60,6 @@ void LogSharingRegistrationResult(SharingDeviceRegistrationResult result);
 // Sharing.
 void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
 
-// Logs the |result| to UMA. This should be called after attempting to create
-// VAPID keys.
-void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
-
 // Logs the number of available devices that are about to be shown in a UI for
 // picking a device to start a sharing functionality. The |histogram_suffix|
 // indicates in which UI this event happened and must match one from
@@ -94,21 +79,20 @@ void LogSharingAppsToShow(SharingFeatureName feature,
                           const char* histogram_suffix,
                           int count);
 
-// Logs the |index| of the device selected by the user for sharing feature. The
-// |histogram_suffix| indicates in which UI this event happened and must match
-// one from Sharing{feature}Ui defined in histograms.xml - use the
-// constants defined in this file for that.
-void LogSharingSelectedDeviceIndex(SharingFeatureName feature,
-                                   const char* histogram_suffix,
-                                   int index);
-
-// Logs the |index| of the app selected by the user for sharing feature. The
-// |histogram_suffix| indicates in which UI this event happened and must match
-// one from Sharing{feature}Ui defined in histograms.xml - use the
-// constants defined in this file for that.
-void LogSharingSelectedAppIndex(SharingFeatureName feature,
-                                const char* histogram_suffix,
-                                int index);
+// Logs the |index| of the user selection for sharing feature. |index_type| is
+// the type of selection made, either "Device" or "App". The |histogram_suffix|
+// indicates in which UI this event happened and must match one from
+// Sharing{feature}Ui defined in histograms.xml - use the constants defined in
+// this file for that.
+enum class SharingIndexType {
+  kDevice,
+  kApp,
+};
+void LogSharingSelectedIndex(
+    SharingFeatureName feature,
+    const char* histogram_suffix,
+    int index,
+    SharingIndexType index_type = SharingIndexType::kDevice);
 
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.

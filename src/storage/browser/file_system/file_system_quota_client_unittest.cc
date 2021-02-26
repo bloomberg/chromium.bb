@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -21,6 +22,7 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
@@ -43,9 +45,8 @@ const StorageType kPersistent = StorageType::kPersistent;
 
 class FileSystemQuotaClientTest : public testing::Test {
  public:
-  FileSystemQuotaClientTest()
-      : additional_callback_count_(0),
-        deletion_status_(blink::mojom::QuotaStatusCode::kUnknown) {}
+  FileSystemQuotaClientTest() = default;
+  ~FileSystemQuotaClientTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -84,7 +85,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<url::Origin>& GetOriginsForType(
+  const std::vector<url::Origin>& GetOriginsForType(
       FileSystemQuotaClient* quota_client,
       StorageType type) {
     origins_.clear();
@@ -95,7 +96,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<url::Origin>& GetOriginsForHost(
+  const std::vector<url::Origin>& GetOriginsForHost(
       FileSystemQuotaClient* quota_client,
       StorageType type,
       const std::string& host) {
@@ -215,7 +216,7 @@ class FileSystemQuotaClientTest : public testing::Test {
  private:
   void OnGetUsage(int64_t usage) { usage_ = usage; }
 
-  void OnGetOrigins(const std::set<url::Origin>& origins) {
+  void OnGetOrigins(const std::vector<url::Origin>& origins) {
     origins_ = origins;
   }
 
@@ -230,13 +231,12 @@ class FileSystemQuotaClientTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  int64_t usage_;
-  int additional_callback_count_;
-  std::set<url::Origin> origins_;
-  blink::mojom::QuotaStatusCode deletion_status_;
+  int64_t usage_ = 0;
+  int additional_callback_count_ = 0;
+  std::vector<url::Origin> origins_;
+  blink::mojom::QuotaStatusCode deletion_status_ =
+      blink::mojom::QuotaStatusCode::kUnknown;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
 };
 
 TEST_F(FileSystemQuotaClientTest, NoFileSystemTest) {
@@ -248,7 +248,7 @@ TEST_F(FileSystemQuotaClientTest, NoFileSystemTest) {
 TEST_F(FileSystemQuotaClientTest, NoFileTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
   };
   InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));
 
@@ -260,7 +260,7 @@ TEST_F(FileSystemQuotaClientTest, NoFileTest) {
 TEST_F(FileSystemQuotaClientTest, OneFileTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {false, "foo", 4921, kDummyURL1, kTemporary},
   };
   InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));
@@ -276,7 +276,7 @@ TEST_F(FileSystemQuotaClientTest, OneFileTest) {
 TEST_F(FileSystemQuotaClientTest, TwoFilesTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {false, "foo", 10310, kDummyURL1, kTemporary},
       {false, "bar", 41, kDummyURL1, kTemporary},
   };
@@ -293,7 +293,7 @@ TEST_F(FileSystemQuotaClientTest, TwoFilesTest) {
 TEST_F(FileSystemQuotaClientTest, EmptyFilesTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {false, "foo", 0, kDummyURL1, kTemporary},
       {false, "bar", 0, kDummyURL1, kTemporary},
       {false, "baz", 0, kDummyURL1, kTemporary},
@@ -311,7 +311,7 @@ TEST_F(FileSystemQuotaClientTest, EmptyFilesTest) {
 TEST_F(FileSystemQuotaClientTest, SubDirectoryTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {true, "dirtest", 0, kDummyURL1, kTemporary},
       {false, "dirtest/foo", 11921, kDummyURL1, kTemporary},
       {false, "bar", 4814, kDummyURL1, kTemporary},
@@ -329,11 +329,11 @@ TEST_F(FileSystemQuotaClientTest, SubDirectoryTest) {
 TEST_F(FileSystemQuotaClientTest, MultiTypeTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {true, "dirtest", 0, kDummyURL1, kTemporary},
       {false, "dirtest/foo", 133, kDummyURL1, kTemporary},
       {false, "bar", 14, kDummyURL1, kTemporary},
-      {true, nullptr, 0, kDummyURL1, kPersistent},
+      {true, "", 0, kDummyURL1, kPersistent},
       {true, "dirtest", 0, kDummyURL1, kPersistent},
       {false, "dirtest/foo", 193, kDummyURL1, kPersistent},
       {false, "bar", 9, kDummyURL1, kPersistent},
@@ -357,19 +357,19 @@ TEST_F(FileSystemQuotaClientTest, MultiTypeTest) {
 TEST_F(FileSystemQuotaClientTest, MultiDomainTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {true, "dir1", 0, kDummyURL1, kTemporary},
       {false, "dir1/foo", 1331, kDummyURL1, kTemporary},
       {false, "bar", 134, kDummyURL1, kTemporary},
-      {true, nullptr, 0, kDummyURL1, kPersistent},
+      {true, "", 0, kDummyURL1, kPersistent},
       {true, "dir2", 0, kDummyURL1, kPersistent},
       {false, "dir2/foo", 1903, kDummyURL1, kPersistent},
       {false, "bar", 19, kDummyURL1, kPersistent},
-      {true, nullptr, 0, kDummyURL2, kTemporary},
+      {true, "", 0, kDummyURL2, kTemporary},
       {true, "dom", 0, kDummyURL2, kTemporary},
       {false, "dom/fan", 1319, kDummyURL2, kTemporary},
       {false, "bar", 113, kDummyURL2, kTemporary},
-      {true, nullptr, 0, kDummyURL2, kPersistent},
+      {true, "", 0, kDummyURL2, kPersistent},
       {true, "dom", 0, kDummyURL2, kPersistent},
       {false, "dom/fan", 2013, kDummyURL2, kPersistent},
       {false, "baz", 18, kDummyURL2, kPersistent},
@@ -403,7 +403,7 @@ TEST_F(FileSystemQuotaClientTest, MultiDomainTest) {
 TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL1, kTemporary},
       {false, "foo", 11, kDummyURL1, kTemporary},
       {false, "bar", 22, kDummyURL1, kTemporary},
   };
@@ -433,21 +433,22 @@ TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
 TEST_F(FileSystemQuotaClientTest, GetOriginsForType) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
-      {true, nullptr, 0, kDummyURL2, kTemporary},
-      {true, nullptr, 0, kDummyURL3, kPersistent},
+      {true, "", 0, kDummyURL1, kTemporary},
+      {true, "", 0, kDummyURL2, kTemporary},
+      {true, "", 0, kDummyURL3, kPersistent},
   };
   InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));
 
-  std::set<url::Origin> origins =
+  std::vector<url::Origin> origins =
       GetOriginsForType(quota_client.get(), kTemporary);
   EXPECT_EQ(2U, origins.size());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kDummyURL1))) !=
-              origins.end());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kDummyURL2))) !=
-              origins.end());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kDummyURL3))) ==
-              origins.end());
+  EXPECT_THAT(origins,
+              testing::Contains(url::Origin::Create(GURL(kDummyURL1))));
+  EXPECT_THAT(origins,
+              testing::Contains(url::Origin::Create(GURL(kDummyURL2))));
+  EXPECT_THAT(
+      origins,
+      testing::Not(testing::Contains(url::Origin::Create(GURL(kDummyURL3)))));
 }
 
 TEST_F(FileSystemQuotaClientTest, GetOriginsForHost) {
@@ -458,42 +459,40 @@ TEST_F(FileSystemQuotaClientTest, GetOriginsForHost) {
   const char* kURL4 = "http://foo2.com/";
   const char* kURL5 = "http://foo.com:2/";
   const TestFile kFiles[] = {
-      {true, nullptr, 0, kURL1, kTemporary},
-      {true, nullptr, 0, kURL2, kTemporary},
-      {true, nullptr, 0, kURL3, kTemporary},
-      {true, nullptr, 0, kURL4, kTemporary},
-      {true, nullptr, 0, kURL5, kPersistent},
+      {true, "", 0, kURL1, kTemporary},  {true, "", 0, kURL2, kTemporary},
+      {true, "", 0, kURL3, kTemporary},  {true, "", 0, kURL4, kTemporary},
+      {true, "", 0, kURL5, kPersistent},
   };
   InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));
 
-  std::set<url::Origin> origins =
+  std::vector<url::Origin> origins =
       GetOriginsForHost(quota_client.get(), kTemporary, "foo.com");
   EXPECT_EQ(3U, origins.size());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kURL1))) != origins.end());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kURL2))) != origins.end());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kURL3))) != origins.end());
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kURL4))) ==
-              origins.end());  // Different host.
-  EXPECT_TRUE(origins.find(url::Origin::Create(GURL(kURL5))) ==
-              origins.end());  // Different type.
+  EXPECT_THAT(origins, testing::Contains(url::Origin::Create(GURL(kURL1))));
+  EXPECT_THAT(origins, testing::Contains(url::Origin::Create(GURL(kURL2))));
+  EXPECT_THAT(origins, testing::Contains(url::Origin::Create(GURL(kURL3))));
+  EXPECT_THAT(origins, testing::Not(testing::Contains(url::Origin::Create(
+                           GURL(kURL4)))));  // Different host.
+  EXPECT_THAT(origins, testing::Not(testing::Contains(url::Origin::Create(
+                           GURL(kURL5)))));  // Different type.
 }
 
 TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
   auto quota_client = NewQuotaClient();
   const TestFile kFiles[] = {
-      {true, nullptr, 0, "http://foo.com/", kTemporary},
+      {true, "", 0, "http://foo.com/", kTemporary},
       {false, "a", 1, "http://foo.com/", kTemporary},
-      {true, nullptr, 0, "https://foo.com/", kTemporary},
+      {true, "", 0, "https://foo.com/", kTemporary},
       {false, "b", 2, "https://foo.com/", kTemporary},
-      {true, nullptr, 0, "http://foo.com/", kPersistent},
+      {true, "", 0, "http://foo.com/", kPersistent},
       {false, "c", 4, "http://foo.com/", kPersistent},
-      {true, nullptr, 0, "http://bar.com/", kTemporary},
+      {true, "", 0, "http://bar.com/", kTemporary},
       {false, "d", 8, "http://bar.com/", kTemporary},
-      {true, nullptr, 0, "http://bar.com/", kPersistent},
+      {true, "", 0, "http://bar.com/", kPersistent},
       {false, "e", 16, "http://bar.com/", kPersistent},
-      {true, nullptr, 0, "https://bar.com/", kPersistent},
+      {true, "", 0, "https://bar.com/", kPersistent},
       {false, "f", 32, "https://bar.com/", kPersistent},
-      {true, nullptr, 0, "https://bar.com/", kTemporary},
+      {true, "", 0, "https://bar.com/", kTemporary},
       {false, "g", 64, "https://bar.com/", kTemporary},
   };
   InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));

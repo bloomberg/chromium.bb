@@ -37,12 +37,24 @@ Status MobileEmulationOverrideManager::OnEvent(
   return Status(kOk);
 }
 
-bool MobileEmulationOverrideManager::IsEmulatingTouch() {
+bool MobileEmulationOverrideManager::IsEmulatingTouch() const {
   return overridden_device_metrics_ && overridden_device_metrics_->touch;
 }
 
+bool MobileEmulationOverrideManager::HasOverrideMetrics() const {
+  return overridden_device_metrics_;
+}
+
+Status MobileEmulationOverrideManager::RestoreOverrideMetrics() {
+  return ApplyOverrideIfNeeded();
+}
+
+const DeviceMetrics* MobileEmulationOverrideManager::GetDeviceMetrics() const {
+  return overridden_device_metrics_;
+}
+
 Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
-  if (overridden_device_metrics_ == NULL)
+  if (!overridden_device_metrics_)
     return Status(kOk);
 
   base::DictionaryValue params;

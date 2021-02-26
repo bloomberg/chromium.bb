@@ -2243,7 +2243,7 @@ def SetUpClang(env):
   env.Append(LIBPATH=['${CLANG_DIR}/../lib'])
 
 def GenerateOptimizationLevels(env):
-  if env.Bit('clang'):
+  if env.Bit('clang') and not env.Bit('built_elsewhere'):
     SetUpClang(env)
 
   # Generate debug variant.

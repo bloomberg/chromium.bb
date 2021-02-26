@@ -62,7 +62,7 @@ ByteStringOrNodeList::ByteStringOrNodeList(const ByteStringOrNodeList&) = defaul
 ByteStringOrNodeList::~ByteStringOrNodeList() = default;
 ByteStringOrNodeList& ByteStringOrNodeList::operator=(const ByteStringOrNodeList&) = default;
 
-void ByteStringOrNodeList::Trace(Visitor* visitor) {
+void ByteStringOrNodeList::Trace(Visitor* visitor) const {
   visitor->Trace(node_list_);
 }
 
@@ -85,7 +85,7 @@ void V8ByteStringOrNodeList::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8_value, exception_state);
+    V8StringResource<> cpp_value{ NativeValueTraits<IDLByteString>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetByteString(cpp_value);

@@ -5,64 +5,131 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/preprocess_grit.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//ui/webui/resources/tools/generate_grd.gni")
 import("../optimize_webui.gni")
 
+preprocess_folder = "preprocessed"
+preprocess_manifest = "preprocessed_manifest.json"
+preprocess_web_components_manifest = "preprocessed_gen_manifest.json"
+preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"
+
 if (optimize_webui) {
-  downloads_pak_file = "downloads_resources.pak"
-  unpak_folder = "downloads_resources.unpak"
+  build_manifest = "build_manifest.json"
 
   optimize_webui("build") {
     host = "downloads"
-    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    input = rebase_path("$target_gen_dir/$preprocess_folder", root_build_dir)
     js_out_files = [ "downloads.rollup.js" ]
     js_module_in_files = [ "downloads.js" ]
+    out_manifest = "$target_gen_dir/$build_manifest"
     excludes = [
       "chrome://resources/js/cr.m.js",
-      "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
-      "downloads.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/js/bindings.js",
     ]
 
     deps = [
-      ":unpak",
-      "../../../../ui/webui/resources:modulize",
+      ":preprocess",
+      ":preprocess_mojo",
+      ":preprocess_web_components",
+      "../../../../ui/webui/resources:preprocess",
     ]
   }
+}
 
-  unpak("unpak") {
-    pak_file = downloads_pak_file
-    out_folder = unpak_folder
-
-    deps = [ ":flattened_resources" ]
-  }
-
-  grit("flattened_resources") {
-    source = "downloads_resources.grd"
-
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/downloads_resources.h",
-      "grit/downloads_resources_map.cc",
-      "grit/downloads_resources_map.h",
-      downloads_pak_file,
-    ]
+generate_grd("build_grd") {
+  input_files = [
+    "downloads.html",
+    "images/incognito_marker.svg",
+    "images/no_downloads.svg",
+  ]
+  input_files_base_dir = rebase_path(".", "//")
+  if (optimize_webui) {
+    deps = [ ":build" ]
+    manifest_files = [ "$target_gen_dir/$build_manifest" ]
+    resource_path_rewrites = [ "downloads.rollup.js|downloads.js" ]
+  } else {
     deps = [
-      ":web_components",
-      "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
+      ":preprocess",
+      ":preprocess_mojo",
+      ":preprocess_web_components",
     ]
-    grit_flags = [
-      "-E",
-      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    manifest_files = [
+      "$target_gen_dir/$preprocess_manifest",
+      "$target_gen_dir/$preprocess_web_components_manifest",
+      "$target_gen_dir/$preprocess_mojo_manifest",
     ]
-    output_dir = "$root_gen_dir/chrome/browser/resources/downloads"
   }
+  grd_prefix = "downloads"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
+}
+
+preprocess_grit("preprocess") {
+  in_folder = "./"
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_manifest"
+  in_files = [
+    "browser_proxy.js",
+    "constants.js",
+    "data.js",
+    "downloads.js",
+    "icon_loader.js",
+    "search_service.js",
+  ]
+}
+
+preprocess_grit("preprocess_web_components") {
+  deps = [ ":web_components" ]
+  in_folder = target_gen_dir
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_web_components_manifest"
+  in_files = [
+    "icons.js",
+    "item.js",
+    "manager.js",
+    "toolbar.js",
+  ]
+}
+
+preprocess_grit("preprocess_mojo") {
+  deps = [ "//chrome/browser/ui/webui/downloads:mojo_bindings_webui_js" ]
+  in_folder = "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/downloads/"
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_mojo_manifest"
+  in_files = [ "downloads.mojom-webui.js" ]
+}
+
+grit("downloads_resources") {
+  defines = chrome_grit_defines
+
+  # These arguments are needed since the grd is generated at build time.
+  enable_input_discovery_for_gn_analyze = false
+  source = "$target_gen_dir/downloads_resources.grd"
+  deps = [ ":build_grd" ]
+
+  outputs = [
+    "grit/downloads_resources.h",
+    "grit/downloads_resources_map.cc",
+    "grit/downloads_resources_map.h",
+    "downloads_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 js_type_check("closure_compile") {
   is_polymer3 = true
+  closure_flags =
+      default_closure_args + mojom_js_args + [
+        "js_module_root=" + rebase_path(".", root_build_dir),
+        "js_module_root=" + rebase_path(
+                "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/downloads",
+                root_build_dir),
+      ]
   deps = [
     ":browser_proxy",
     ":constants",
+    ":data",
     ":item",
     ":manager",
     ":search_service",
@@ -72,13 +139,16 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
-    "//chrome/browser/ui/webui/downloads:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/downloads:mojo_bindings_webui_js",
     "//ui/webui/resources/js:cr.m",
   ]
-  externs_list = [ "externs.js" ]
 }
 
 js_library("constants") {
+}
+
+js_library("data") {
+  deps = [ "//chrome/browser/ui/webui/downloads:mojo_bindings_webui_js" ]
 }
 
 js_library("icon_loader") {
@@ -94,6 +164,7 @@ js_library("item") {
   deps = [
     ":browser_proxy",
     ":constants",
+    ":data",
     ":icon_loader",
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
     "//ui/webui/resources/js:assert.m",
@@ -107,14 +178,14 @@ js_library("item") {
 js_library("manager") {
   deps = [
     ":browser_proxy",
+    ":data",
     ":item",
     ":search_service",
     ":toolbar",
-    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer",
     "//third_party/polymer/v3_0/components-chromium/iron-list",
+    "//ui/webui/resources/cr_elements:find_shortcut_behavior.m",
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:find_shortcut_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:promise_resolver.m",
     "//ui/webui/resources/js:util.m",

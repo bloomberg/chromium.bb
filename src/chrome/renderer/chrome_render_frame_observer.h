@@ -12,7 +12,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "chrome/common/prerender_types.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -68,20 +67,14 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   bool OnAssociatedInterfaceRequestForFrame(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFinishLoad() override;
   void DidCreateNewDocument() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void DidClearWindowObject() override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void OnDestruct() override;
-
-  // IPC handlers
-  void OnSetIsPrerendering(prerender::PrerenderMode mode,
-                           const std::string& histogram_prefix);
 
   // chrome::mojom::ChromeRenderFrame:
   void SetWindowFeatures(
@@ -93,12 +86,15 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
       chrome::mojom::ImageFormat image_format,
       RequestImageForContextNodeCallback callback) override;
   void RequestReloadImageForContextNode() override;
-  void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
-  void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override;
+  void GetWebPageMetadata(GetWebPageMetadataCallback callback) override;
 #if defined(OS_ANDROID)
   void SetCCTClientHeader(const std::string& header) override;
 #endif
   void GetMediaFeedURL(GetMediaFeedURLCallback callback) override;
+  void LoadBlockedPlugins(const std::string& identifier) override;
+
+  // Initialize a |phishing_classifier_delegate_|.
+  void SetClientSidePhishingDetection();
 
   void OnRenderFrameObserverRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>
@@ -130,7 +126,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
 
   // Have the same lifetime as us.
   translate::TranslateAgent* translate_agent_;
-#if BUILDFLAG(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_ = nullptr;
 #endif
 

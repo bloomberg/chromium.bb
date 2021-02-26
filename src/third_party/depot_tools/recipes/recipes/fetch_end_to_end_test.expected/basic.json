@@ -22,6 +22,9 @@
       "GIT_HTTP_LOW_SPEED_TIME": "300"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
         "RECIPE_REPO[depot_tools]"
       ]
@@ -132,7 +135,7 @@
       "[START_DIR]/depot_tools/fetch.py",
       "infra"
     ],
-    "cwd": "[CLEANUP]/fetch_end_to_end_test_infra_tmp_2",
+    "cwd": "[CLEANUP]/fetch_end_to_end_test_infra_tmp_1",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_UPDATE": "0"
@@ -152,7 +155,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CLEANUP]/fetch_end_to_end_test_infra_tmp_2"
+      "[CLEANUP]/fetch_end_to_end_test_infra_tmp_1"
     ],
     "env": {
       "CHROME_HEADLESS": "1",

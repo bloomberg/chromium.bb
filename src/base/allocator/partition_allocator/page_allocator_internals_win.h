@@ -7,7 +7,8 @@
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
-#include "base/logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/notreached.h"
 
 namespace base {
 
@@ -36,10 +37,11 @@ int GetAccessFlags(PageAccessibilityConfiguration accessibility) {
 void* SystemAllocPagesInternal(void* hint,
                                size_t length,
                                PageAccessibilityConfiguration accessibility,
-                               PageTag page_tag,
-                               bool commit) {
+                               PageTag page_tag) {
   DWORD access_flag = GetAccessFlags(accessibility);
-  const DWORD type_flags = commit ? (MEM_RESERVE | MEM_COMMIT) : MEM_RESERVE;
+  const DWORD type_flags = (accessibility != PageInaccessible)
+                               ? (MEM_RESERVE | MEM_COMMIT)
+                               : MEM_RESERVE;
   void* ret = VirtualAlloc(hint, length, type_flags, access_flag);
   if (ret == nullptr) {
     s_allocPageErrorCode = GetLastError();
@@ -51,7 +53,6 @@ void* TrimMappingInternal(void* base,
                           size_t base_length,
                           size_t trim_length,
                           PageAccessibilityConfiguration accessibility,
-                          bool commit,
                           size_t pre_slack,
                           size_t post_slack) {
   void* ret = base;
@@ -60,8 +61,7 @@ void* TrimMappingInternal(void* base,
     // address within the freed range.
     ret = reinterpret_cast<char*>(base) + pre_slack;
     FreePages(base, base_length);
-    ret = SystemAllocPages(ret, trim_length, accessibility, PageTag::kChromium,
-                           commit);
+    ret = SystemAllocPages(ret, trim_length, accessibility, PageTag::kChromium);
   }
   return ret;
 }
@@ -84,7 +84,7 @@ void SetSystemPagesAccessInternal(
     if (!VirtualFree(address, length, MEM_DECOMMIT)) {
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
       // report we get the error number.
-      CHECK_EQ(static_cast<uint32_t>(ERROR_SUCCESS), GetLastError());
+      PA_CHECK(static_cast<uint32_t>(ERROR_SUCCESS) == GetLastError());
     }
   } else {
     if (!VirtualAlloc(address, length, MEM_COMMIT,
@@ -94,13 +94,13 @@ void SetSystemPagesAccessInternal(
         OOM_CRASH(length);
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
       // report we get the error number.
-      CHECK_EQ(ERROR_SUCCESS, error);
+      PA_CHECK(ERROR_SUCCESS == error);
     }
   }
 }
 
 void FreePagesInternal(void* address, size_t length) {
-  CHECK(VirtualFree(address, 0, MEM_RELEASE));
+  PA_CHECK(VirtualFree(address, 0, MEM_RELEASE));
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {
@@ -135,7 +135,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   // failure.
   if (ret) {
     void* ptr = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
-    CHECK(ptr);
+    PA_CHECK(ptr);
   }
 }
 

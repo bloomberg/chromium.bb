@@ -9,10 +9,10 @@
 #include <cstdint>
 #include <limits>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace quiche {
 
@@ -30,7 +30,7 @@ class QUICHE_EXPORT_PRIVATE QuicheDataReader {
  public:
   // Constructs a reader using NETWORK_BYTE_ORDER endianness.
   // Caller must provide an underlying buffer to work on.
-  explicit QuicheDataReader(quiche::QuicheStringPiece data);
+  explicit QuicheDataReader(absl::string_view data);
   // Constructs a reader using NETWORK_BYTE_ORDER endianness.
   // Caller must provide an underlying buffer to work on.
   QuicheDataReader(const char* data, const size_t len);
@@ -64,7 +64,7 @@ class QUICHE_EXPORT_PRIVATE QuicheDataReader {
   //
   // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
-  bool ReadStringPiece16(quiche::QuicheStringPiece* result);
+  bool ReadStringPiece16(absl::string_view* result);
 
   // Reads a string prefixed with 8-bit length into the given output parameter.
   //
@@ -73,13 +73,13 @@ class QUICHE_EXPORT_PRIVATE QuicheDataReader {
   //
   // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
-  bool ReadStringPiece8(quiche::QuicheStringPiece* result);
+  bool ReadStringPiece8(absl::string_view* result);
 
   // Reads a given number of bytes into the given buffer. The buffer
   // must be of adequate size.
   // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
-  bool ReadStringPiece(quiche::QuicheStringPiece* result, size_t size);
+  bool ReadStringPiece(absl::string_view* result, size_t size);
 
   // Reads tag represented as 32-bit unsigned integer into given output
   // parameter. Tags are in big endian on the wire (e.g., CHLO is
@@ -87,38 +87,43 @@ class QUICHE_EXPORT_PRIVATE QuicheDataReader {
   // endian.
   bool ReadTag(uint32_t* tag);
 
-  // Returns the remaining payload as a quiche::QuicheStringPiece.
+  // Reads a sequence of a fixed number of decimal digits, parses them as an
+  // unsigned integer and returns them as a uint64_t.  Forwards internal
+  // iterator on success, may forward it even in case of failure.
+  bool ReadDecimal64(size_t num_digits, uint64_t* result);
+
+  // Returns the remaining payload as a absl::string_view.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
   // Forwards the internal iterator.
-  quiche::QuicheStringPiece ReadRemainingPayload();
+  absl::string_view ReadRemainingPayload();
 
-  // Returns the remaining payload as a quiche::QuicheStringPiece.
+  // Returns the remaining payload as a absl::string_view.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
   // DOES NOT forward the internal iterator.
-  quiche::QuicheStringPiece PeekRemainingPayload() const;
+  absl::string_view PeekRemainingPayload() const;
 
-  // Returns the entire payload as a quiche::QuicheStringPiece.
+  // Returns the entire payload as a absl::string_view.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
   // DOES NOT forward the internal iterator.
-  quiche::QuicheStringPiece FullPayload() const;
+  absl::string_view FullPayload() const;
 
   // Returns the part of the payload that has been already read as a
-  // quiche::QuicheStringPiece.
+  // absl::string_view.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.
   // This should be kept in mind when handling memory management!
   //
   // DOES NOT forward the internal iterator.
-  quiche::QuicheStringPiece PreviouslyReadPayload() const;
+  absl::string_view PreviouslyReadPayload() const;
 
   // Reads a given number of bytes into the given buffer. The buffer
   // must be of adequate size.

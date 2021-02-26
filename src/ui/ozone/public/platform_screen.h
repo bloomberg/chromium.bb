@@ -7,10 +7,17 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/values.h"
+#include "ui/gfx/gpu_extra_info.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace base {
+class TimeDelta;
+}  // namespace base
 
 namespace display {
 class Display;
@@ -76,6 +83,15 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const = 0;
 
+  // Suspends the platform-specific screensaver, if applicable.
+  virtual void SetScreenSaverSuspended(bool suspend);
+
+  // Returns whether the screensaver is currently running.
+  virtual bool IsScreenSaverActive() const;
+
+  // Calculates idle time.
+  virtual base::TimeDelta CalculateIdleTime() const;
+
   // Adds/Removes display observers.
   virtual void AddObserver(display::DisplayObserver* observer) = 0;
   virtual void RemoveObserver(display::DisplayObserver* observer) = 0;
@@ -83,6 +99,11 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   // Returns currently used workspace. If a platform does not support this, the
   // empty string is returned.
   virtual std::string GetCurrentWorkspace();
+
+  // Returns human readable description of the window manager, desktop, and
+  // other system properties related to the compositing.
+  virtual base::Value GetGpuExtraInfoAsListValue(
+      const gfx::GpuExtraInfo& gpu_extra_info);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformScreen);

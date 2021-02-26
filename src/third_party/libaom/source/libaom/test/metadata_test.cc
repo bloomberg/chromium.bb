@@ -193,8 +193,8 @@ TEST_P(MetadataEncodeTest, TestMetadataEncoding) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-AV1_INSTANTIATE_TEST_CASE(MetadataEncodeTest,
-                          ::testing::Values(::libaom_test::kOnePassGood));
+AV1_INSTANTIATE_TEST_SUITE(MetadataEncodeTest,
+                           ::testing::Values(::libaom_test::kOnePassGood));
 
 #endif  // CONFIG_AV1_ENCODER
 }  // namespace

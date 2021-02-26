@@ -1,39 +1,15 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
-
-goog.provide('mojo.internal');
-
-// "self" is always defined as opposed to "this", which isn't defined in
-// modules, or "window", which isn't defined in workers.
-/** @const {!Object} */
-mojo.internal.globalScope = self;
-
-/**
- * This is effectively the same as goog.provide, but it's made available under
- * the mojo.internal namespace to avoid potential collisions in certain
- * compilation environments.
- *
- * @param {string} namespace
- * @export
- */
-mojo.internal.exportModule = function(namespace) {
-  let current = mojo.internal.globalScope;
-  const parts = namespace.split('.');
-
-  for (let part; parts.length && (part = parts.shift());) {
-    if (!current[part])
-      current[part] = {};
-    current = current[part];
-  }
-};
 
 /** @const {number} */
 mojo.internal.kArrayHeaderSize = 8;
 
 /** @const {number} */
 mojo.internal.kStructHeaderSize = 8;
+
+/** @const {number} */
+mojo.internal.kUnionHeaderSize = 8;
 
 /** @const {number} */
 mojo.internal.kUnionDataSize = 16;
@@ -82,7 +58,7 @@ mojo.internal.align = function(size, alignment) {
 /**
  * @param {!DataView} dataView
  * @param {number} byteOffset
- * @param {number} value
+ * @param {number|bigint} value
  */
 mojo.internal.setInt64 = function(dataView, byteOffset, value) {
   if (mojo.internal.kHostLittleEndian) {
@@ -90,11 +66,12 @@ mojo.internal.setInt64 = function(dataView, byteOffset, value) {
         byteOffset, Number(BigInt(value) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
     dataView.setInt32(
-        byteOffset + 4, Number(BigInt(value) >> BigInt(32)),
+        byteOffset + 4,
+        Number((BigInt(value) >> BigInt(32)) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
   } else {
     dataView.setInt32(
-        byteOffset, Number(BigInt(value) >> BigInt(32)),
+        byteOffset, Number((BigInt(value) >> BigInt(32)) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
     dataView.setUint32(
         byteOffset + 4, Number(BigInt(value) & BigInt(0xffffffff)),
@@ -105,7 +82,7 @@ mojo.internal.setInt64 = function(dataView, byteOffset, value) {
 /**
  * @param {!DataView} dataView
  * @param {number} byteOffset
- * @param {number} value
+ * @param {number|bigint} value
  */
 mojo.internal.setUint64 = function(dataView, byteOffset, value) {
   if (mojo.internal.kHostLittleEndian) {
@@ -113,11 +90,12 @@ mojo.internal.setUint64 = function(dataView, byteOffset, value) {
         byteOffset, Number(BigInt(value) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
     dataView.setUint32(
-        byteOffset + 4, Number(BigInt(value) >> BigInt(32)),
+        byteOffset + 4,
+        Number((BigInt(value) >> BigInt(32)) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
   } else {
     dataView.setUint32(
-        byteOffset, Number(BigInt(value) >> BigInt(32)),
+        byteOffset, Number((BigInt(value) >> BigInt(32)) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
     dataView.setUint32(
         byteOffset + 4, Number(BigInt(value) & BigInt(0xffffffff)),
@@ -128,7 +106,7 @@ mojo.internal.setUint64 = function(dataView, byteOffset, value) {
 /**
  * @param {!DataView} dataView
  * @param {number} byteOffset
- * @return {number}
+ * @return {bigint}
  */
 mojo.internal.getInt64 = function(dataView, byteOffset) {
   let low, high;
@@ -139,12 +117,24 @@ mojo.internal.getInt64 = function(dataView, byteOffset) {
     low = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
     high = dataView.getInt32(byteOffset, mojo.internal.kHostLittleEndian);
   }
-  const value = (BigInt(high) << BigInt(32)) | BigInt(low);
-  if (value <= BigInt(Number.MAX_SAFE_INTEGER) &&
-      value >= BigInt(Number.MIN_SAFE_INTEGER)) {
-    return Number(value);
+  return (BigInt(high) << BigInt(32)) | BigInt(low);
+};
+
+/**
+ * @param {!DataView} dataView
+ * @param {number} byteOffset
+ * @return {bigint}
+ */
+mojo.internal.getUint64 = function(dataView, byteOffset) {
+  let low, high;
+  if (mojo.internal.kHostLittleEndian) {
+    low = dataView.getUint32(byteOffset, mojo.internal.kHostLittleEndian);
+    high = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
+  } else {
+    low = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
+    high = dataView.getUint32(byteOffset, mojo.internal.kHostLittleEndian);
   }
-  return value;
+  return (BigInt(high) << BigInt(32)) | BigInt(low);
 };
 
 /**
@@ -244,26 +234,6 @@ mojo.internal.computeTotalArraySize = function(arraySpec, value) {
   }
 
   return totalSize;
-};
-
-/**
- * @param {!DataView} dataView
- * @param {number} byteOffset
- * @return {number}
- */
-mojo.internal.getUint64 = function(dataView, byteOffset) {
-  let low, high;
-  if (mojo.internal.kHostLittleEndian) {
-    low = dataView.getUint32(byteOffset, mojo.internal.kHostLittleEndian);
-    high = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
-  } else {
-    low = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
-    high = dataView.getUint32(byteOffset, mojo.internal.kHostLittleEndian);
-  }
-  const value = (BigInt(high) << BigInt(32)) | BigInt(low);
-  if (value <= BigInt(Number.MAX_SAFE_INTEGER))
-    return Number(value);
-  return value;
 };
 
 /** Owns an outgoing message buffer and facilitates serialization. */
@@ -540,18 +510,21 @@ mojo.internal.Encoder = class {
   /**
    * @param {!mojo.internal.UnionSpec} unionSpec
    * @param {number} offset
-   * @param {boolean} nullable
    * @param {!Object} value
    */
-  encodeUnion(unionSpec, offset, nullable, value) {
-    let unionEncoder = this;
-    if (nullable) {
-      const unionData = this.message_.allocate(mojo.internal.kUnionDataSize);
-      this.encodeOffset(offset, unionData.byteOffset);
-      offset = 0;
-      unionEncoder = new mojo.internal.Encoder(this.message_, unionData);
-    }
+  encodeUnionAsPointer(unionSpec, offset, value) {
+    const unionData = this.message_.allocate(mojo.internal.kUnionDataSize);
+    const unionEncoder = new mojo.internal.Encoder(this.message_, unionData);
+    this.encodeOffset(offset, unionData.byteOffset);
+    unionEncoder.encodeUnion(unionSpec, /*offset=*/0, value);
+  }
 
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   * @param {!Object} value
+   */
+  encodeUnion(unionSpec, offset, value) {
     const keys = Object.keys(value);
     if (keys.length !== 1) {
       throw new Error(
@@ -562,10 +535,18 @@ mojo.internal.Encoder = class {
 
     const tag = keys[0];
     const field = unionSpec.fields[tag];
-    unionEncoder.encodeUint32(offset, mojo.internal.kUnionDataSize);
-    unionEncoder.encodeUint32(offset + 4, field['ordinal']);
+    this.encodeUint32(offset, mojo.internal.kUnionDataSize);
+    this.encodeUint32(offset + 4, field['ordinal']);
+    const fieldByteOffset = offset + mojo.internal.kUnionHeaderSize;
+    if (typeof field['type'].$.unionSpec !== 'undefined') {
+      // Unions are encoded as pointers when inside unions.
+      this.encodeUnionAsPointer(field['type'].$.unionSpec,
+                                fieldByteOffset,
+                                value[tag]);
+      return;
+    }
     field['type'].$.encode(
-        value[tag], unionEncoder, offset + 8, 0, field['nullable']);
+        value[tag], this, fieldByteOffset, 0, field['nullable']);
   }
 
   /**
@@ -669,7 +650,9 @@ mojo.internal.Decoder = class {
     const relativeOffset = this.decodeUint64(offset);
     if (relativeOffset == 0)
       return 0;
-    return this.data_.byteOffset + offset + relativeOffset;
+    if (relativeOffset > BigInt(Number.MAX_SAFE_INTEGER))
+      throw new Error('Mesage offset too large');
+    return this.data_.byteOffset + offset + Number(relativeOffset);
   }
 
   /**
@@ -786,25 +769,42 @@ mojo.internal.Decoder = class {
   /**
    * @param {!mojo.internal.UnionSpec} unionSpec
    * @param {number} offset
-   * @param {boolean} nullable
    */
-  decodeUnion(unionSpec, offset, nullable) {
-    let unionDecoder = this;
-    if (nullable) {
-      const unionOffset = this.decodeOffset(offset);
-      if (!unionOffset)
-        return null;
-      unionDecoder = new mojo.internal.Decoder(
-          new DataView(this.data_.buffer, unionOffset), this.handles_);
-      offset = 0;
-    }
+  decodeUnionFromPointer(unionSpec, offset) {
+    const unionOffset = this.decodeOffset(offset);
+    if (!unionOffset)
+      return null;
 
-    const ordinal = unionDecoder.decodeUint32(offset + 4);
+    const decoder = new mojo.internal.Decoder(
+      new DataView(this.data_.buffer, unionOffset), this.handles_);
+    return decoder.decodeUnion(unionSpec, 0);
+  }
+
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   */
+  decodeUnion(unionSpec, offset) {
+    const size = this.decodeUint32(offset);
+    if (size === 0)
+      return null;
+
+    const ordinal = this.decodeUint32(offset + 4);
     for (const fieldName in unionSpec.fields) {
       const field = unionSpec.fields[fieldName];
       if (field['ordinal'] === ordinal) {
-        const fieldValue = field['type'].$.decode(
-            unionDecoder, offset + 8, 0, field['nullable']);
+        const fieldValue = (() => {
+          const fieldByteOffset = offset + mojo.internal.kUnionHeaderSize;
+          // Unions are encoded as pointers when inside other
+          // unions.
+          if (typeof field['type'].$.unionSpec !== 'undefined') {
+            return this.decodeUnionFromPointer(
+              field['type'].$.unionSpec, fieldByteOffset);
+          }
+          return field['type'].$.decode(
+            this, fieldByteOffset, 0, field['nullable'])
+        })();
+
         if (fieldValue === null && !field['nullable']) {
           throw new Error(
               `Received ${unionSpec.name} with invalid null ` +
@@ -1372,11 +1372,11 @@ mojo.internal.Union = function(objectToBlessAsUnion, name, fields) {
   objectToBlessAsUnion.$ = {
     unionSpec: unionSpec,
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
-      encoder.encodeUnion(unionSpec, byteOffset, nullable, value);
+      encoder.encodeUnion(unionSpec, byteOffset, value);
     },
     encodeNull: function(encoder, byteOffset) {},
     decode: function(decoder, byteOffset, bitOffset, nullable) {
-      return decoder.decodeUnion(unionSpec, byteOffset, nullable);
+      return decoder.decodeUnion(unionSpec, byteOffset);
     },
     computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalUnionSize(unionSpec, nullable, value);

@@ -41,30 +41,6 @@ enum SVGMarkerOrientType {
 };
 DECLARE_SVG_ENUM_MAP(SVGMarkerOrientType);
 
-class SVGMarkerOrientEnumeration final
-    : public SVGEnumeration<SVGMarkerOrientType> {
- public:
-  SVGMarkerOrientEnumeration(SVGAngle*);
-  ~SVGMarkerOrientEnumeration() override;
-
-  void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimateElement&,
-                              float,
-                              unsigned,
-                              SVGPropertyBase*,
-                              SVGPropertyBase*,
-                              SVGPropertyBase*,
-                              SVGElement*) override;
-  float CalculateDistance(SVGPropertyBase*, SVGElement*) override;
-
-  void Trace(Visitor*) override;
-
- private:
-  void NotifyChange() override;
-
-  Member<SVGAngle> angle_;
-};
-
 class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
  public:
   typedef SVGAngleTearOff TearOffType;
@@ -103,12 +79,9 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
                               float value_in_specified_units);
   void ConvertToSpecifiedUnits(SVGAngleType unit_type);
 
-  SVGEnumeration<SVGMarkerOrientType>* OrientType() {
-    return orient_type_.Get();
-  }
-  const SVGEnumeration<SVGMarkerOrientType>* OrientType() const {
-    return orient_type_.Get();
-  }
+  SVGEnumeration* OrientType() { return orient_type_.Get(); }
+  SVGMarkerOrientType OrientTypeValue() const;
+  bool IsNumeric() const;
   void OrientTypeChanged();
 
   // SVGPropertyBase:
@@ -118,27 +91,28 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
   String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);
 
-  void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimateElement&,
-                              float percentage,
-                              unsigned repeat_count,
-                              SVGPropertyBase* from,
-                              SVGPropertyBase* to,
-                              SVGPropertyBase* to_at_end_of_duration_value,
-                              SVGElement* context_element) override;
-  float CalculateDistance(SVGPropertyBase* to,
-                          SVGElement* context_element) override;
+  void Add(const SVGPropertyBase*, const SVGElement*) override;
+  void CalculateAnimatedValue(
+      const SMILAnimationEffectParameters&,
+      float percentage,
+      unsigned repeat_count,
+      const SVGPropertyBase* from,
+      const SVGPropertyBase* to,
+      const SVGPropertyBase* to_at_end_of_duration_value,
+      const SVGElement* context_element) override;
+  float CalculateDistance(const SVGPropertyBase* to,
+                          const SVGElement* context_element) const override;
 
   static AnimatedPropertyType ClassType() { return kAnimatedAngle; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Assign(const SVGAngle&);
 
   SVGAngleType unit_type_;
   float value_in_specified_units_;
-  Member<SVGMarkerOrientEnumeration> orient_type_;
+  Member<SVGEnumeration> orient_type_;
 };
 
 template <>

@@ -5,9 +5,9 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -197,17 +197,21 @@ IN_PROC_BROWSER_TEST_P(
   base::RunLoop loop;
   GURL scope = embedded_test_server()->GetURL("/service_worker/");
   int worker_process_id;
-  wrapper()->StartWorkerForScope(
-      scope,
-      base::BindLambdaForTesting(
-          [&](int64_t version_id, int process_id, int thread_id) {
-            worker_process_id = process_id;
+  scoped_refptr<ServiceWorkerContextWrapper> wrapper_ref = wrapper();
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::StartWorkerForScope,
+          std::move(wrapper_ref), scope,
+          base::BindLambdaForTesting(
+              [&](int64_t version_id, int process_id, int thread_id) {
+                worker_process_id = process_id;
+                loop.Quit();
+              }),
+          base::BindLambdaForTesting([&loop]() {
+            ASSERT_FALSE(true) << "start worker failed";
             loop.Quit();
-          }),
-      base::BindLambdaForTesting([&loop]() {
-        ASSERT_FALSE(true) << "start worker failed";
-        loop.Quit();
-      }));
+          })));
   loop.Run();
 
   // The page and service worker should be in the same process.

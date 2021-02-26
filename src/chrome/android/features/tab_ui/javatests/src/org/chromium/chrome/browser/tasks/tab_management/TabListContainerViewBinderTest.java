@@ -12,12 +12,13 @@ import static org.junit.Assert.assertEquals;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 
 import android.graphics.drawable.ColorDrawable;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,14 +27,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.MathUtils;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -135,7 +138,8 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1.0f, mRecyclerView::getAlpha));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mRecyclerView.getAlpha(), Matchers.is(1.0f)));
     }
 
     @Test
@@ -183,7 +187,9 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
         // Invisibility signals the end of the animation, not alpha being zero.
-        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, mRecyclerView::getVisibility));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRecyclerView.getVisibility(), Matchers.is(View.INVISIBLE));
+        });
         assertThat(mRecyclerView.getAlpha(), equalTo(0.0f));
     }
 
@@ -230,12 +236,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTopContainerHeightSetsTopMargin() {
+    public void testTopMarginSetsTopMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(
                 ((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin, equalTo(0));
 
-        mContainerModel.set(TabListContainerProperties.TOP_CONTROLS_HEIGHT, CONTAINER_HEIGHT);
+        mContainerModel.set(TabListContainerProperties.TOP_MARGIN, CONTAINER_HEIGHT);
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin,
                 equalTo(CONTAINER_HEIGHT));
     }
@@ -256,7 +262,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testSetShadowTopMarginUpdatesMargin() {
+    public void testSetShadowTopOffsetUpdatesTranslation() {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -265,13 +271,22 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
 
         ImageView shadowImageView = mRecyclerView.getShadowImageViewForTesting();
 
-        assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
-        assertEquals(0, ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
+        assertEquals(0, shadowImageView.getTranslationY(), MathUtils.EPSILON);
 
         mContainerModel.set(
-                TabListContainerProperties.SHADOW_TOP_MARGIN, INCREASED_CONTAINER_HEIGHT);
-        assertEquals(INCREASED_CONTAINER_HEIGHT,
-                ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
+                TabListContainerProperties.SHADOW_TOP_OFFSET, INCREASED_CONTAINER_HEIGHT);
+        assertEquals(
+                INCREASED_CONTAINER_HEIGHT, shadowImageView.getTranslationY(), MathUtils.EPSILON);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testBottomPaddingSetsBottomPadding() {
+        assertThat(mRecyclerView.getPaddingBottom(), equalTo(0));
+
+        mContainerModel.set(TabListContainerProperties.BOTTOM_PADDING, CONTAINER_HEIGHT);
+        assertThat(mRecyclerView.getPaddingBottom(), equalTo(CONTAINER_HEIGHT));
     }
 
     @Override

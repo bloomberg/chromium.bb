@@ -31,11 +31,35 @@ uint32_t Log2(uint64_t value);
 bool IsPowerOfTwo(uint64_t n);
 uint64_t RoundUp(uint64_t n, uint64_t m);
 
+constexpr uint32_t ConstexprLog2(uint64_t v) {
+    return v <= 1 ? 0 : 1 + ConstexprLog2(v / 2);
+}
+
+constexpr uint32_t ConstexprLog2Ceil(uint64_t v) {
+    return v <= 1 ? 0 : ConstexprLog2(v - 1) + 1;
+}
+
+inline uint32_t Log2Ceil(uint32_t v) {
+    return v <= 1 ? 0 : Log2(v - 1) + 1;
+}
+
+inline uint32_t Log2Ceil(uint64_t v) {
+    return v <= 1 ? 0 : Log2(v - 1) + 1;
+}
+
 uint64_t NextPowerOfTwo(uint64_t n);
 bool IsPtrAligned(const void* ptr, size_t alignment);
 void* AlignVoidPtr(void* ptr, size_t alignment);
 bool IsAligned(uint32_t value, size_t alignment);
-uint32_t Align(uint32_t value, size_t alignment);
+
+template <typename T>
+T Align(T value, size_t alignment) {
+    ASSERT(value <= std::numeric_limits<T>::max() - (alignment - 1));
+    ASSERT(IsPowerOfTwo(alignment));
+    ASSERT(alignment != 0);
+    T alignmentT = static_cast<T>(alignment);
+    return (value + (alignmentT - 1)) & ~(alignmentT - 1);
+}
 
 template <typename T>
 DAWN_FORCE_INLINE T* AlignPtr(T* ptr, size_t alignment) {
@@ -65,5 +89,13 @@ uint16_t Float32ToFloat16(float fp32);
 bool IsFloat16NaN(uint16_t fp16);
 
 float SRGBToLinear(float srgb);
+
+template <typename T1,
+          typename T2,
+          typename Enable = typename std::enable_if<sizeof(T1) == sizeof(T2)>::type>
+constexpr bool IsSubset(T1 subset, T2 set) {
+    T2 bitsAlsoInSet = subset & set;
+    return bitsAlsoInSet == subset;
+}
 
 #endif  // COMMON_MATH_H_

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {MultiDevicePageContentData, MultiDeviceFeature} from './multidevice_constants.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * An object containing messages for web permissisions origin
@@ -10,10 +15,10 @@ cr.define('settings', function() {
    * @typedef {{origin: string,
    *            enabled: boolean}}
    */
-  let AndroidSmsInfo;
+  /* #export */ let AndroidSmsInfo;
 
   /** @interface */
-  class MultiDeviceBrowserProxy {
+  /* #export */ class MultiDeviceBrowserProxy {
     showMultiDeviceSetupDialog() {}
 
     /** @return {!Promise<!settings.MultiDevicePageContentData>} */
@@ -69,12 +74,22 @@ cr.define('settings', function() {
      * @return {!Promise<!settings.AndroidSmsInfo>} Android SMS Info
      */
     getAndroidSmsInfo() {}
+
+    /**
+     * Attempts the phone hub notification access setup flow.
+     */
+    attemptNotificationSetup() {}
+
+    /**
+     * Cancels the phone hub notification access setup flow.
+     */
+    cancelNotificationSetup() {}
   }
 
   /**
    * @implements {settings.MultiDeviceBrowserProxy}
    */
-  class MultiDeviceBrowserProxyImpl {
+  /* #export */ class MultiDeviceBrowserProxyImpl {
     /** @override */
     showMultiDeviceSetupDialog() {
       chrome.send('showMultiDeviceSetupDialog');
@@ -124,6 +139,16 @@ cr.define('settings', function() {
     /** @override */
     getAndroidSmsInfo() {
       return cr.sendWithPromise('getAndroidSmsInfo');
+    }
+
+    /** @override */
+    attemptNotificationSetup() {
+      chrome.send('attemptNotificationSetup');
+    }
+
+    /** @override */
+    cancelNotificationSetup() {
+      chrome.send('cancelNotificationSetup');
     }
   }
 

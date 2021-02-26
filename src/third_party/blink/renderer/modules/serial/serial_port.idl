@@ -14,12 +14,13 @@
     [CallWith=ScriptState, RaisesException]
     readonly attribute WritableStream writable;
 
+    [MeasureAs=SerialPortGetInfo] SerialPortInfo getInfo();
     [CallWith=ScriptState, RaisesException, MeasureAs=SerialPortOpen]
     Promise<void> open(SerialOptions options);
     [CallWith=ScriptState, RaisesException]
     Promise<SerialInputSignals> getSignals();
     [CallWith=ScriptState, RaisesException]
-    Promise<void> setSignals(SerialOutputSignals signals);
+    Promise<void> setSignals(optional SerialOutputSignals signals = {});
     [RaisesException, CallWith=ScriptState, MeasureAs=SerialPortClose]
     Promise<void> close();
 };

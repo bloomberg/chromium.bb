@@ -8,9 +8,9 @@
 
 #include "src/base/bits.h"
 #include "src/base/overflowing-math.h"
+#include "src/base/safe_conversions.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/objects/objects-inl.h"
-
 #include "test/cctest/cctest.h"
 #include "test/cctest/compiler/value-helper.h"
 #include "test/cctest/wasm/wasm-run-utils.h"
@@ -250,6 +250,8 @@ WASM_EXEC_TEST(I64RemS) {
     FOR_INT64_INPUTS(j) {
       if (j == 0) {
         CHECK_TRAP64(r.Call(i, j));
+      } else if (j == -1) {
+        CHECK_EQ(0, r.Call(i, j));
       } else {
         CHECK_EQ(i % j, r.Call(i, j));
       }
@@ -725,8 +727,7 @@ WASM_EXEC_TEST(I64SConvertF32) {
   BUILD(r, WASM_I64_SCONVERT_F32(WASM_GET_LOCAL(0)));
 
   FOR_FLOAT32_INPUTS(i) {
-    if (i < static_cast<float>(std::numeric_limits<int64_t>::max()) &&
-        i >= static_cast<float>(std::numeric_limits<int64_t>::min())) {
+    if (base::IsValueInRangeForNumericType<int64_t>(i)) {
       CHECK_EQ(static_cast<int64_t>(i), r.Call(i));
     } else {
       CHECK_TRAP64(r.Call(i));
@@ -739,8 +740,7 @@ WASM_EXEC_TEST(I64SConvertSatF32) {
   BUILD(r, WASM_I64_SCONVERT_SAT_F32(WASM_GET_LOCAL(0)));
   FOR_FLOAT32_INPUTS(i) {
     int64_t expected;
-    if (i < static_cast<float>(std::numeric_limits<int64_t>::max()) &&
-        i >= static_cast<float>(std::numeric_limits<int64_t>::min())) {
+    if (base::IsValueInRangeForNumericType<int64_t>(i)) {
       expected = static_cast<int64_t>(i);
     } else if (std::isnan(i)) {
       expected = static_cast<int64_t>(0);
@@ -759,8 +759,7 @@ WASM_EXEC_TEST(I64SConvertF64) {
   BUILD(r, WASM_I64_SCONVERT_F64(WASM_GET_LOCAL(0)));
 
   FOR_FLOAT64_INPUTS(i) {
-    if (i < static_cast<double>(std::numeric_limits<int64_t>::max()) &&
-        i >= static_cast<double>(std::numeric_limits<int64_t>::min())) {
+    if (base::IsValueInRangeForNumericType<int64_t>(i)) {
       CHECK_EQ(static_cast<int64_t>(i), r.Call(i));
     } else {
       CHECK_TRAP64(r.Call(i));
@@ -773,8 +772,7 @@ WASM_EXEC_TEST(I64SConvertSatF64) {
   BUILD(r, WASM_I64_SCONVERT_SAT_F64(WASM_GET_LOCAL(0)));
   FOR_FLOAT64_INPUTS(i) {
     int64_t expected;
-    if (i < static_cast<double>(std::numeric_limits<int64_t>::max()) &&
-        i >= static_cast<double>(std::numeric_limits<int64_t>::min())) {
+    if (base::IsValueInRangeForNumericType<int64_t>(i)) {
       expected = static_cast<int64_t>(i);
     } else if (std::isnan(i)) {
       expected = static_cast<int64_t>(0);
@@ -907,7 +905,7 @@ WASM_EXEC_TEST(CallI64Return) {
   CHECK_EQ(0xBCD12340000000B, r.Call());
 }
 
-void TestI64Binop(ExecutionTier execution_tier, WasmOpcode opcode,
+void TestI64Binop(TestExecutionTier execution_tier, WasmOpcode opcode,
                   int64_t expected, int64_t a, int64_t b) {
   {
     WasmRunner<int64_t> r(execution_tier);
@@ -923,7 +921,7 @@ void TestI64Binop(ExecutionTier execution_tier, WasmOpcode opcode,
   }
 }
 
-void TestI64Cmp(ExecutionTier execution_tier, WasmOpcode opcode,
+void TestI64Cmp(TestExecutionTier execution_tier, WasmOpcode opcode,
                 int64_t expected, int64_t a, int64_t b) {
   {
     WasmRunner<int32_t> r(execution_tier);
@@ -1482,7 +1480,7 @@ WASM_EXEC_TEST(UnalignedInt64Store) {
     for (size_t i = 0; i < sizeof(__buf); i++) vec.push_back(__buf[i]); \
   } while (false)
 
-static void CompileCallIndirectMany(ExecutionTier tier, ValueType param) {
+static void CompileCallIndirectMany(TestExecutionTier tier, ValueType param) {
   // Make sure we don't run out of registers when compiling indirect calls
   // with many many parameters.
   TestSignatures sigs;
@@ -1511,7 +1509,7 @@ WASM_EXEC_TEST(Compile_Wasm_CallIndirect_Many_i64) {
   CompileCallIndirectMany(execution_tier, kWasmI64);
 }
 
-static void Run_WasmMixedCall_N(ExecutionTier execution_tier, int start) {
+static void Run_WasmMixedCall_N(TestExecutionTier execution_tier, int start) {
   const int kExpected = 6333;
   const int kElemSize = 8;
   TestSignatures sigs;

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/components/web_applications/system_apps.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
@@ -32,6 +33,7 @@ static_library("media_app_ui") {
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
+    "//ui/file_manager:resources",
     "//ui/webui",
   ]
 }
@@ -76,7 +78,8 @@ source_set("browser_test_support") {
 group("closure_compile") {
   testonly = true
   deps = [
-    ":closure_compile_tests",
+    ":closure_compile_browsertests",
+    ":closure_compile_test_lib",
     "resources/js:closure_compile",
     "resources/mock/js:closure_compile",
   ]
@@ -85,21 +88,15 @@ group("closure_compile") {
 mojom("mojo_bindings") {
   sources = [ "media_app_ui.mojom" ]
 }
+media_test_lib_closure_flags = system_app_closure_flags_strict + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ] + ignore_load_time_data_errors_closure_flags
 
-# Note we compile with reportUnknownTypes while it works, but if dependencies
-# get more complex, we should remove it and only enable in developer builds.
-js_type_check("closure_compile_tests") {
+# Use relaxed flags for the browsertest files themselves. This removes null
+# checks and "could not determine type" errors which don't add a lot of value.
+media_browsertest_closure_flags = system_app_closure_flags + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ] + ignore_load_time_data_errors_closure_flags
+
+js_type_check("closure_compile_test_lib") {
   testonly = true
-  closure_flags = default_closure_args + [
-                    "jscomp_error=strictCheckTypes",
-                    "jscomp_error=reportUnknownTypes",
-                    "language_in=ECMASCRIPT_2018",
-
-                    # TODO(crbug/1048973): Remove these when the mojo bindings
-                    # js is updated to pass a closure compile check.
-                    "hide_warnings_for=mojo/public/js/",
-                    "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js",
-                  ]
+  closure_flags = media_test_lib_closure_flags
   deps = [
     ":test_driver_api_js",
     ":test_driver_js",
@@ -107,9 +104,20 @@ js_type_check("closure_compile_tests") {
   ]
 }
 
+js_type_check("closure_compile_browsertests") {
+  testonly = true
+  closure_flags = media_browsertest_closure_flags
+  deps = [
+    ":test_media_app_guest_ui_browsertest_js",
+    ":test_media_app_ui_browsertest_js",
+  ]
+}
+
 js_library("test_driver_api_js") {
   testonly = true
-  externs_list = [ "resources/js/web_app_file_handling.externs.js" ]
+  externs_list = [
+    "//chromeos/components/web_applications/externs/file_handling.externs.js",
+  ]
   sources = [ "test/driver_api.js" ]
 }
 
@@ -124,8 +132,8 @@ js_library("test_guest_query_receiver_js") {
   deps = [
     ":test_dom_testing_helpers_js",
     ":test_driver_api_js",
-    "//chromeos/components/media_app_ui/resources/js:message_pipe",
     "//chromeos/components/media_app_ui/resources/js:receiver",
+    "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }
 
@@ -136,6 +144,30 @@ js_library("test_driver_js") {
   deps = [
     ":test_driver_api_js",
     "//chromeos/components/media_app_ui/resources/js:launch",
-    "//chromeos/components/media_app_ui/resources/js:message_pipe",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
+}
+
+js_library("test_media_app_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/media_app_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
+    "//chromeos/components/media_app_ui/resources/js:launch",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
+}
+
+js_library("test_media_app_guest_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/media_app_guest_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
+    "//chromeos/components/media_app_ui/resources/js:receiver",
+    "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }

@@ -24,7 +24,9 @@ To make sure the inclusion of a new third_party project makes sense for the
 Chromium project, you should first obtain Chrome Eng Review approval.
 Googlers should see go/chrome-eng-review and review existing topics in
 g/chrome-eng-review. Please include information about the additional checkout
-size, build times, and binary sizes. Please also make sure that the motivation
+size, build times, and binary size increase of
+[official](https://www.chromium.org/developers/gn-build-configuration) builds
+on Android and one desktop platform. Please also make sure that the motivation
 for your project is clear, e.g., a design doc has been circulated.
 
 ## Get the code
@@ -64,8 +66,9 @@ you have a wrong path in DEPS and want to change the path of the existing
 library in DEPS, please ask the infrastructure team before committing the
 change.
 
-Lastly, add the new directory to Chromium's `//.gitignore`, so that it won't
-show up as untracked files when you run `git status` on the main repository.
+Lastly, add the new directory to Chromium's `//third_party/.gitignore`, so that
+it won't show up as untracked files when you run `git status` on the main
+repository.
 
 ### Checking in the code directly
 
@@ -79,7 +82,7 @@ README.chromium and Change List. The SHA-512 hash can be computed via
 repository, please list the revision that the code was pulled from.
 
 If you are checking the files in directly, you do not need an entry in DEPS
-and do not need to modify `//.gitignore`.
+and do not need to modify `//third_party/.gitignore`.
 
 ### Checking in large files
 
@@ -92,7 +95,9 @@ See [Moving large files to Google Storage](https://goto.google.com/checking-in-l
 
 ### Add OWNERS
 
-Your OWNERS file must include 2 Chromium developer accounts. This will ensure
+Your OWNERS file must either list two Chromium developer accounts as the first
+two lines or include a `file:` directive to an OWNERS file within the
+`third_party` directory that itself conforms to this criterion. This will ensure
 accountability for maintenance of the code over time. While there isn't always
 an ideal or obvious set of people that should go in OWNERS, this is critical for
 first-line triage of any issues that crop up in the code.
@@ -175,7 +180,9 @@ Non-Googlers can email one of the people in
   licensing matters. These reviewers may not be able to +1 a change so look for
   verbal approval in the comments. (This list does not receive or deliver
   email, so only use it as a reviewer, not for other communication. Internally,
-  see cl/221704656 for details about how this is configured.)
+  see [cl/221704656](https://cl/221704656) for details about how
+  this is configured.). If you have questions about the third-party process,
+  ask one of the [//third_party/OWNERS](../third_party/OWNERS) instead.
 * Lastly, if all other steps are complete, get a positive code review from a
   member of [//third_party/OWNERS](../third_party/OWNERS) to land the change.
 

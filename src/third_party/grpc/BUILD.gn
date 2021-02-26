@@ -25,7 +25,7 @@ config("grpc_internal_config") {
 config("nanopb_config") {
   include_dirs = [ "src/third_party/nanopb" ]
   defines = [ "PB_FIELD_32BIT=1" ]
-  if (is_mac || is_ios) {
+  if (is_apple) {
     defines += [ "PB_NO_PACKED_STRUCTS=1" ]
   }
 }
@@ -33,15 +33,14 @@ config("nanopb_config") {
 # The gRPC library. Note that server side code will not be built. You probably
 # want to use cc_grpc_library() from grpc_library.gni directly.
 static_library("grpcpp") {
-  # This is currently only used by remoting and chromecast.
-  # NOTE: Using gRPC outside remoting may have security concerns and other
+  # This is currently only used by chromecast and libassistant.
+  # NOTE: Using gRPC in Chrome may have security concerns and other
   # complications when building the binary. Please contact
   # chrome-security-reviews@ first before you decide to use gRPC.
   visibility = [
     "//chromecast/*",
     "//chromeos/assistant/internal/*",
     "//chromeos/services/assistant/*",
-    "//remoting/*",
   ]
   sources = [
     "src/src/cpp/client/channel_cc.cc",
@@ -123,10 +122,6 @@ if (current_toolchain == host_toolchain) {
 static_library("grpc_core") {
   visibility = [ ":*" ]
 
-  # gRPC has some _linux.cc files that provide no-op implementations when the
-  # platform is not Linux. We need to disable source filter so that they can be
-  # built, otherwise linker will complain for undefined symbols.
-  set_sources_assignment_filter([])
   sources = [
     "src/src/core/ext/filters/census/grpc_context.cc",
     "src/src/core/ext/filters/client_channel/backup_poller.cc",
@@ -498,7 +493,7 @@ static_library("grpc_core") {
     "src/src/core/tsi/transport_security.cc",
     "src/src/core/tsi/transport_security_grpc.cc",
   ]
-  set_sources_assignment_filter(sources_assignment_filter)
+
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":grpc_config",

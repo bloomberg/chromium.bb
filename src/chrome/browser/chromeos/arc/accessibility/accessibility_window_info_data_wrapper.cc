@@ -48,6 +48,14 @@ bool AccessibilityWindowInfoDataWrapper::IsVirtualNode() const {
   return false;
 }
 
+bool AccessibilityWindowInfoDataWrapper::IsIgnored() const {
+  return false;
+}
+
+bool AccessibilityWindowInfoDataWrapper::IsImportantInAndroid() const {
+  return true;
+}
+
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   // Windows are too generic to be Accessibility focused in Chrome, although
   // they can be Accessibility focused in Android by virtue of having
@@ -55,8 +63,19 @@ bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   return false;
 }
 
+bool AccessibilityWindowInfoDataWrapper::IsAccessibilityFocusableContainer()
+    const {
+  return tree_source_->GetRoot()->GetId() == GetId();
+}
+
 void AccessibilityWindowInfoDataWrapper::PopulateAXRole(
     ui::AXNodeData* out_data) const {
+  if (tree_source_->is_notification()) {
+    // Notification window doesn't have window type. As the notification window
+    // is a part of notification center UI, use generic container role.
+    out_data->role = ax::mojom::Role::kGenericContainer;
+    return;
+  }
   switch (window_ptr_->window_type) {
     case mojom::AccessibilityWindowType::TYPE_ACCESSIBILITY_OVERLAY:
       out_data->role = ax::mojom::Role::kWindow;
@@ -93,15 +112,16 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   AccessibilityInfoDataWrapper::Serialize(out_data);
 
   // String properties.
-  std::string title;
-  if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {
-    out_data->SetName(title);
+  const std::string name = ComputeAXName(true);
+  if (!name.empty()) {
+    out_data->SetName(name);
     out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
   }
 
   if (root->GetId() == GetId()) {
-    // Make the root window of each ARC task modal
-    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+    // Make the root window of each ARC task modal unless it's notification.
+    if (!tree_source_->is_notification())
+      out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
 
     // Focusable in Android simply means a node within the window is focusable.
     // The window itself is not focusable in Android, but ChromeVox sets the
@@ -120,6 +140,13 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   // Integer properties:
   // We could reflect ARC++ window properties like ANCHOR_NODE_ID,
   // and LAYER_ORDER in ax::mojom::IntAttributes.
+}
+
+std::string AccessibilityWindowInfoDataWrapper::ComputeAXName(
+    bool do_recursive) const {
+  std::string title;
+  GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title);
+  return title;
 }
 
 void AccessibilityWindowInfoDataWrapper::GetChildren(

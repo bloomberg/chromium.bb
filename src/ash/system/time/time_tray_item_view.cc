@@ -4,11 +4,13 @@
 
 #include "ash/system/time/time_tray_item_view.h"
 
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/time_view.h"
+#include "ash/system/tray/tray_utils.h"
 
 namespace ash {
 
@@ -33,13 +35,23 @@ void TimeTrayItemView::UpdateAlignmentForShelf(Shelf* shelf) {
   time_view_->UpdateClockLayout(clock_layout);
 }
 
+void TimeTrayItemView::HandleLocaleChange() {
+  time_view_->Refresh();
+}
+
 void TimeTrayItemView::OnSessionStateChanged(
     session_manager::SessionState state) {
-  time_view_->SetTextColorBasedOnSession(state);
+  time_view_->SetTextColor(TrayIconColor(state));
 }
 
 const char* TimeTrayItemView::GetClassName() const {
   return "TimeTrayItemView";
+}
+
+void TimeTrayItemView::OnThemeChanged() {
+  TrayItemView::OnThemeChanged();
+  time_view_->SetTextColor(
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
 }
 
 }  // namespace tray

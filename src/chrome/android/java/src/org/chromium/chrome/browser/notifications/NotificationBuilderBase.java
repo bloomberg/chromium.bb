@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -25,9 +24,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
@@ -166,7 +165,7 @@ public abstract class NotificationBuilderBase {
     /**
      * Combines all of the options that have been set and returns a new Notification object.
      */
-    public abstract ChromeNotification build(NotificationMetadata metadata);
+    public abstract NotificationWrapper build(NotificationMetadata metadata);
 
     /**
      * Sets the title text of the notification.
@@ -470,12 +469,11 @@ public abstract class NotificationBuilderBase {
      * Creates a public version of the notification to be displayed in sensitive contexts, such as
      * on the lockscreen, displaying just the site origin and badge or generated icon.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     protected Notification createPublicNotification(Context context) {
         // Use a non-compat builder because we want the default small icon behaviour.
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(false /* preferCompat */, mChannelId)
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(false /* preferCompat */, mChannelId)
                         .setContentText(context.getString(
                                 org.chromium.chrome.R.string.notification_hidden_text))
                         .setSmallIcon(org.chromium.chrome.R.drawable.ic_chrome);
@@ -523,7 +521,7 @@ public abstract class NotificationBuilderBase {
      */
     @TargetApi(Build.VERSION_CODES.M) // For the Icon class.
     protected static void setStatusBarIcon(
-            ChromeNotificationBuilder builder, int iconId, @Nullable Bitmap iconBitmap) {
+            NotificationWrapperBuilder builder, int iconId, @Nullable Bitmap iconBitmap) {
         if (iconBitmap != null) {
             assert deviceSupportsBitmapStatusBarIcons();
             builder.setSmallIcon(Icon.createWithBitmap(iconBitmap));
@@ -562,26 +560,21 @@ public abstract class NotificationBuilderBase {
      * level is high enough, otherwise a resource id is used.
      */
     @SuppressWarnings("deprecation") // For addAction(int, CharSequence, PendingIntent)
-    protected static void addActionToBuilder(ChromeNotificationBuilder builder, Action action) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            // Notification.Action.Builder and RemoteInput were added in KITKAT_WATCH.
-            Notification.Action.Builder actionBuilder = getActionBuilder(action);
-            if (action.type == Action.Type.TEXT) {
-                assert action.placeholder != null;
-                actionBuilder.addRemoteInput(
-                        new RemoteInput.Builder(NotificationConstants.KEY_TEXT_REPLY)
-                                .setLabel(action.placeholder)
-                                .build());
-            }
+    protected static void addActionToBuilder(NotificationWrapperBuilder builder, Action action) {
+        Notification.Action.Builder actionBuilder = getActionBuilder(action);
+        if (action.type == Action.Type.TEXT) {
+            assert action.placeholder != null;
+            actionBuilder.addRemoteInput(
+                    new RemoteInput.Builder(NotificationConstants.KEY_TEXT_REPLY)
+                            .setLabel(action.placeholder)
+                            .build());
+        }
 
-            if (action.umaActionType == NotificationUmaTracker.ActionType.UNKNOWN) {
-                builder.addAction(actionBuilder.build());
-            } else {
-                builder.addAction(actionBuilder.build(), PendingIntent.FLAG_UPDATE_CURRENT,
-                        action.umaActionType);
-            }
+        if (action.umaActionType == NotificationUmaTracker.ActionType.UNKNOWN) {
+            builder.addAction(actionBuilder.build());
         } else {
-            builder.addAction(action.iconId, action.title, action.intent);
+            builder.addAction(
+                    actionBuilder.build(), PendingIntent.FLAG_UPDATE_CURRENT, action.umaActionType);
         }
     }
 
@@ -590,9 +583,8 @@ public abstract class NotificationBuilderBase {
      * Note, after this notification is built and posted, a further summary notification must be
      * posted for notifications in the group to appear grouped in the notification shade.
      */
-    @SuppressLint("NewApi") // For setGroup
-    static void setGroupOnBuilder(ChromeNotificationBuilder builder, CharSequence origin) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH || origin == null) return;
+    static void setGroupOnBuilder(NotificationWrapperBuilder builder, CharSequence origin) {
+        if (origin == null) return;
         builder.setGroup(NotificationConstants.GROUP_WEB_PREFIX + origin);
         // TODO(crbug.com/674927) Post a group summary notification.
         // Notifications with the same group will only actually be stacked if we post a group
@@ -600,7 +592,6 @@ public abstract class NotificationBuilderBase {
         // all Chrome notifications on N though (see crbug.com/674015).
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // For Notification.Action.Builder
     @SuppressWarnings("deprecation") // For Builder(int, CharSequence, PendingIntent)
     private static Notification.Action.Builder getActionBuilder(Action action) {
         Notification.Action.Builder actionBuilder;

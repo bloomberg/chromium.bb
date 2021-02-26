@@ -28,7 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 
 import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
@@ -38,6 +42,7 @@ import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
  */
 export class TimelineModelImpl {
   constructor() {
+    this._estimatedTotalBlockingTime = 0;
     this._reset();
   }
 
@@ -107,8 +112,6 @@ export class TimelineModelImpl {
         return true;
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
-      case recordTypes.MarkFMP:
-        // TODO(alph): There are duplicate FMP events coming from the backend. Keep the one having 'data' property.
         return this._mainFrame && event.args.frame === this._mainFrame.frameId && !!event.args.data;
       case recordTypes.MarkDOMContent:
       case recordTypes.MarkLoad:
@@ -140,6 +143,21 @@ export class TimelineModelImpl {
    * @param {!SDK.TracingModel.Event} event
    * @return {boolean}
    */
+  isUserTimingEvent(event) {
+    return event.categoriesString === TimelineModelImpl.Category.UserTiming;
+  }
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isParseHTMLEvent(event) {
+    return event.name === RecordType.ParseHTML;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
   isLCPCandidateEvent(event) {
     return event.name === RecordType.MarkLCPCandidate && !!event.args['data']['isMainFrame'];
   }
@@ -150,6 +168,40 @@ export class TimelineModelImpl {
    */
   isLCPInvalidateEvent(event) {
     return event.name === RecordType.MarkLCPInvalidate && !!event.args['data']['isMainFrame'];
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isFCPEvent(event) {
+    return event.name === RecordType.MarkFCP && event.args['frame'] === this._mainFrame.frameId;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isLongRunningTask(event) {
+    return event.name === RecordType.Task &&
+        TimelineData.forEvent(event).warning === TimelineModelImpl.WarningType.LongTask;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isNavigationStartEvent(event) {
+    return event.name === RecordType.NavigationStart;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
+   * @return {boolean}
+   */
+  isMainFrameNavigationStartEvent(event) {
+    return this.isNavigationStartEvent(event) && event.args['data']['isLoadingMainFrame'] &&
+        event.args['data']['documentLoaderURL'];
   }
 
   /**
@@ -183,10 +235,14 @@ export class TimelineModelImpl {
   }
 
   /**
-   * @return {number}
+   * @return {{time: number, estimated: boolean}}
    */
   totalBlockingTime() {
-    return this._totalBlockingTime;
+    if (this._totalBlockingTime === -1) {
+      return {time: this._estimatedTotalBlockingTime, estimated: true};
+    }
+
+    return {time: this._totalBlockingTime, estimated: false};
   }
 
   /**
@@ -198,6 +254,17 @@ export class TimelineModelImpl {
     const workerId = this._workerIdByThread.get(event.thread);
     const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
     return workerId ? SDK.SDKModel.TargetManager.instance().targetById(workerId) : mainTarget;
+  }
+
+  /**
+   * @return {!Map<string, !SDK.TracingModel.Event>}
+   */
+  navStartTimes() {
+    if (!this._tracingModel) {
+      return new Map();
+    }
+
+    return this._tracingModel.navStartTimes();
   }
 
   /**
@@ -213,8 +280,17 @@ export class TimelineModelImpl {
 
     // Remove LayoutShift events from the main thread list of events because they are
     // represented in the experience track. This is done prior to the main thread being processed for its own events.
-    const layoutShiftEvents =
-        tracingModel.extractEventsFromThreadByName('Renderer', 'CrRendererMain', RecordType.LayoutShift);
+    const layoutShiftEvents = [];
+    for (const process of tracingModel.sortedProcesses()) {
+      if (process.name() !== 'Renderer') {
+        continue;
+      }
+
+      for (const thread of process.sortedThreads()) {
+        const shifts = thread.removeEventsByName(RecordType.LayoutShift);
+        layoutShiftEvents.push(...shifts);
+      }
+    }
 
     this._processSyncBrowserEvents(tracingModel);
     if (this._browserFrameTracking) {
@@ -494,6 +570,13 @@ export class TimelineModelImpl {
     // rename its category.
     for (const trackEvent of track.events) {
       trackEvent.categoriesString = experienceCategory;
+      if (trackEvent.name === RecordType.LayoutShift) {
+        const eventData = trackEvent.args['data'] || trackEvent.args['beginData'] || {};
+        const timelineData = TimelineData.forEvent(trackEvent);
+        timelineData.backendNodeId = eventData['impacted_nodes'] && eventData['impacted_nodes'].length > 0 ?
+            eventData['impacted_nodes'][0]['node_id'] :
+            0;
+      }
     }
   }
 
@@ -621,7 +704,11 @@ export class TimelineModelImpl {
       events = events.mergeOrdered(jsSamples, SDK.TracingModel.Event.orderedCompareStartTime);
     }
     if (jsSamples || events.some(e => e.name === RecordType.JSSample)) {
-      const jsFrameEvents = TimelineJSProfileProcessor.generateJSFrameEvents(events);
+      const jsFrameEvents = TimelineJSProfileProcessor.generateJSFrameEvents(events, {
+        showAllEvents: Root.Runtime.experiments.isEnabled('timelineShowAllEvents'),
+        showRuntimeCallStats: Root.Runtime.experiments.isEnabled('timelineV8RuntimeCallStats'),
+        showNativeFunctions: Common.Settings.Settings.instance().moduleSetting('showNativeFunctionsInJSProfile').get(),
+      });
       if (jsFrameEvents && jsFrameEvents.length) {
         events = jsFrameEvents.mergeOrdered(events, SDK.TracingModel.Event.orderedCompareStartTime);
       }
@@ -682,6 +769,14 @@ export class TimelineModelImpl {
         // There may be several TTI events, only take the first one.
         if (this.isInteractiveTimeEvent(event) && this._totalBlockingTime === -1) {
           this._totalBlockingTime = event.args['args']['total_blocking_time_ms'];
+        }
+
+        const isLongRunningTask = event.name === RecordType.Task && event.duration && event.duration > 50;
+        if (isMainThread && isLongRunningTask && event.duration) {
+          // We only track main thread events that are over 50ms, and the amount of time in the
+          // event (over 50ms) is what constitutes the blocking time. An event of 70ms, therefore,
+          // contributes 20ms to TBT.
+          this._estimatedTotalBlockingTime += event.duration - 50;
         }
 
         while (eventStack.length && eventStack.peekLast().endTime <= event.startTime) {
@@ -1278,6 +1373,7 @@ export class TimelineModelImpl {
     this._maximumRecordTime = 0;
 
     this._totalBlockingTime = -1;
+    this._estimatedTotalBlockingTime = 0;
   }
 
   /**
@@ -1471,9 +1567,9 @@ export const RecordType = {
   MarkDOMContent: 'MarkDOMContent',
   MarkFirstPaint: 'firstPaint',
   MarkFCP: 'firstContentfulPaint',
-  MarkFMP: 'firstMeaningfulPaint',
   MarkLCPCandidate: 'largestContentfulPaint::Candidate',
   MarkLCPInvalidate: 'largestContentfulPaint::Invalidate',
+  NavigationStart: 'navigationStart',
 
   TimeStamp: 'TimeStamp',
   ConsoleTime: 'ConsoleTime',

@@ -1,45 +1,53 @@
 <style include="cr-hidden-style">
   :host {
-    --ntp-logo-height: 230px;
-    display: inline-block;
+    --ntp-logo-height: 200px;
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
+    justify-content: flex-end;
     min-height: var(--ntp-logo-height);
   }
 
-  #singleColoredLogo,
-  #multiColoredLogo {
+  :host([doodle-boxed_]) {
+    justify-content: flex-end;
+  }
+
+  #logo {
     height: 92px;
-    margin-top: 108px;
     width: 272px;
   }
 
-  #singleColoredLogo {
-    -webkit-mask-image: url(chrome://resources/images/google_logo.svg);
+  :host([single-colored]) #logo {
+    -webkit-mask-image: url(./icons/google_logo.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
     background-color: var(--ntp-logo-color);
   }
 
-  #multiColoredLogo {
-    background-image: url(chrome://resources/images/google_logo.svg);
+  :host(:not([single-colored])) #logo {
+    background-image: url(./icons/google_logo.svg);
   }
 
-  #imageContainer {
+  #imageDoodle {
     cursor: pointer;
-    display: grid;
-    height: fit-content;
     outline: none;
-    position: relative;
-    width: fit-content;
   }
 
-  :host-context(.focus-outline-visible) #imageContainer:focus {
+  :host([doodle-boxed_]) #imageDoodle {
+    background-color: var(--ntp-logo-box-color);
+    border-radius: 20px;
+    padding: 16px 24px;
+  }
+
+  :host-context(.focus-outline-visible) #imageDoodle:focus {
     box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
   }
 
-  #imageContainer > * {
-    grid-column-start: 1;
-    grid-row-start: 1;
+  #imageContainer {
+    display: flex;
+    height: fit-content;
+    position: relative;
+    width: fit-content;
   }
 
   #image {
@@ -47,79 +55,86 @@
     max-width: 100%;
   }
 
+  :host([doodle-boxed_]) #image {
+    max-height: 160px;
+  }
+
   #animation {
     height: 100%;
     pointer-events: none;
+    position: absolute;
     width: 100%;
   }
 
   #shareButton {
+    background-color: var(--ntp-logo-share-button-background-color, none);
     border: none;
-    height: 26px;
-    min-width: 26px;
+    height: var(--ntp-logo-share-button-height, 0);
+    left: var(--ntp-logo-share-button-x, 0);
+    min-width: var(--ntp-logo-share-button-width, 0);
     opacity: 0.8;
     outline: initial;
     padding: 2px;
     position: absolute;
-    width: 26px;
+    top: var(--ntp-logo-share-button-y, 0);
+    width: var(--ntp-logo-share-button-width, 0);
   }
 
   #shareButton:hover {
     opacity: 1;
   }
 
+  #shareButton img {
+    height: 100%;
+    width: 100%;
+  }
+
   #iframe {
-    height: var(--height);
+    border: none;
+    height: var(--height, var(--ntp-logo-height));
     transition-duration: var(--duration, 100ms);
     transition-property: height, width;
-    width: var(--width);
+    width: var(--width, 100%);
+  }
+
+  #iframe:not([expanded]) {
+    max-height: var(--ntp-logo-height);
   }
 </style>
-<dom-if if="[[showLogo_]]" restamp>
-  <template>
-    <div id="logo">
-      <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
-      <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
-    </div>
-  </template>
-</dom-if>
-<dom-if if="[[showDoodle_]]" restamp>
-  <template>
-    <div id="doodle" title="[[doodle_.description]]">
-      <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
-          tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
+
+<template is="dom-if" if="[[showLogo_]]" restamp>
+  <div id="logo"></div>
+</template>
+<template is="dom-if" if="[[showDoodle_]]" restamp>
+  <div id="doodle" title="[[doodle_.description]]">
+    <div id="imageDoodle" hidden="[[!imageDoodle_]]"
+        tabindex="0" on-click="onImageClick_" on-keydown="onImageKeydown_">
+      <div id="imageContainer">
         <!-- The static image is always visible and the animated image is
-             stacked on top of the static image so that there is no flicker when
-             starting the animation. -->
-        <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_">
-        </img>
-        <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
+             stacked on top of the static image so that there is no flicker
+             when starting the animation. -->
+        <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_"></img>
+        <ntp-iframe id="animation" src="[[animationUrl_]]"
             hidden="[[!showAnimation_]]">
-        </ntp-untrusted-iframe>
+        </ntp-iframe>
         <cr-button id="shareButton" title="$i18n{shareDoodle}"
             on-click="onShareButtonClick_"
-            style="background-color: [[rgbaOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
-                   left: [[doodle_.content.imageDoodle.shareButton.x]]px;
-                   top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
+            hidden="[[!imageDoodle_.shareButton]]">
           <img id="shareButtonImage"
-              src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
+              src="[[imageDoodle_.shareButton.iconUrl.url]]">
           </img>
         </cr-button>
       </div>
-      <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
-          hidden="[[!iframeUrl_]]"
-          style="--duration: [[valueOrUnset_(duration_)]];
-                 --height: [[valueOrUnset_(height_)]];
-                 --width: [[valueOrUnset_(width_)]];">
-      </ntp-untrusted-iframe>
     </div>
-  </template>
-</dom-if>
-<dom-if if="[[showShareDialog_]]" restamp>
-  <template>
-    <ntp-doodle-share-dialog title="[[doodle_.description]]"
-        url="[[doodle_.content.imageDoodle.shareUrl]]"
-        on-close="onShareDialogClose_" on-share="onShare_">
-    </ntp-doodle-share-dialog>
-  </template>
-</dom-if>
+    <template is="dom-if" if="[[iframeUrl_]]" restamp>
+      <ntp-iframe id="iframe" src="[[iframeUrl_]]" expanded$="[[expanded_]]">
+      </ntp-iframe>
+    </template>
+  </div>
+</template>
+<template is="dom-if" if="[[showShareDialog_]]" restamp>
+  <ntp-doodle-share-dialog title="[[doodle_.description]]"
+      url="[[doodle_.image.shareUrl]]"
+      on-close="onShareDialogClose_" on-share="onShare_">
+  </ntp-doodle-share-dialog>
+</template>

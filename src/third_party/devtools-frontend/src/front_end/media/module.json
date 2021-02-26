@@ -8,8 +8,7 @@
       "persistence": "closeable",
       "order": 100,
       "className": "Media.MainView",
-      "tags": "media, video",
-      "experiment": "mediaInspector"
+      "tags": "media, video"
     }
   ],
   "dependencies": [
@@ -17,25 +16,20 @@
     "sdk",
     "ui",
     "data_grid",
-    "source_frame"
+    "source_frame",
+    "perf_ui"
   ],
   "modules": [
-    "media.js",
-    "media-legacy.js",
-    "EventDisplayTable.js",
-    "MainView.js",
-    "PlayerDetailView.js",
-    "PlayerListView.js",
-    "PlayerPropertiesView.js",
-    "MediaModel.js",
-    "ChevronTabbedPanel.js"
+    "media-legacy.js"
   ],
-  "scripts": [],
+  "skip_compilation": [
+    "media-legacy.js"
+  ],
   "resources": [
     "eventDisplayTable.css",
     "mediaView.css",
     "playerListView.css",
     "playerPropertiesView.css",
-    "chevronTabbedPanel.css"
+    "playerMessagesView.css"
   ]
 }

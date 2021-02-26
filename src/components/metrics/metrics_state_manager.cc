@@ -142,12 +142,12 @@ MetricsStateManager::MetricsStateManager(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
     const base::string16& backup_registry_key,
-    const StoreClientInfoCallback& store_client_info,
-    const LoadClientInfoCallback& retrieve_client_info)
+    StoreClientInfoCallback store_client_info,
+    LoadClientInfoCallback retrieve_client_info)
     : local_state_(local_state),
       enabled_state_provider_(enabled_state_provider),
-      store_client_info_(store_client_info),
-      load_client_info_(retrieve_client_info),
+      store_client_info_(std::move(store_client_info)),
+      load_client_info_(std::move(retrieve_client_info)),
       clean_exit_beacon_(backup_registry_key, local_state),
       entropy_state_(local_state),
       entropy_source_returned_(ENTROPY_SOURCE_NONE),
@@ -214,6 +214,10 @@ bool MetricsStateManager::IsMetricsReportingEnabled() {
 
 int64_t MetricsStateManager::GetInstallDate() const {
   return ReadInstallDate(local_state_);
+}
+
+int MetricsStateManager::GetLowEntropySource() {
+  return entropy_state_.GetLowEntropySource();
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
@@ -325,14 +329,14 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
     const base::string16& backup_registry_key,
-    const StoreClientInfoCallback& store_client_info,
-    const LoadClientInfoCallback& retrieve_client_info) {
+    StoreClientInfoCallback store_client_info,
+    LoadClientInfoCallback retrieve_client_info) {
   std::unique_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
-    result.reset(new MetricsStateManager(local_state, enabled_state_provider,
-                                         backup_registry_key, store_client_info,
-                                         retrieve_client_info));
+    result.reset(new MetricsStateManager(
+        local_state, enabled_state_provider, backup_registry_key,
+        std::move(store_client_info), std::move(retrieve_client_info)));
   }
   return result;
 }
@@ -375,10 +379,6 @@ std::string MetricsStateManager::GetHighEntropySource() {
   return entropy_state_.GetHighEntropySource(initial_client_id_);
 }
 
-int MetricsStateManager::GetLowEntropySource() {
-  return entropy_state_.GetLowEntropySource();
-}
-
 int MetricsStateManager::GetOldLowEntropySource() {
   return entropy_state_.GetOldLowEntropySource();
 }
@@ -404,7 +404,7 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
   DCHECK(client_id_.empty());
 
   local_state_->ClearPref(prefs::kMetricsClientID);
-  entropy_state_.ClearPrefs();
+  EntropyState::ClearPrefs(local_state_);
 
   // Also clear the backed up client info.
   store_client_info_.Run(ClientInfo());

@@ -17,6 +17,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/mojom/file_system.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/file_system/watcher_manager.h"
 
 namespace arc {
@@ -63,6 +65,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   static constexpr base::FilePath::CharType kFakeAndroidPath[] =
       FILE_PATH_LITERAL("/android/path");
 
+  // Expected size in OpenThumbnail calls.
+  static constexpr gfx::Size kDefaultThumbnailSize = gfx::Size(360, 360);
+
   struct File {
     enum class Seekable {
       NO,
@@ -83,6 +88,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
     // Whether this file is seekable or not.
     Seekable seekable;
+
+    // The thumbnail of a file, which can be read by OpenThumbnail().
+    std::string thumbnail_content;
 
     File(const std::string& url,
          const std::string& content,
@@ -128,6 +136,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     // new files within it.
     bool dir_supports_create;
 
+    // Flag indicating that a document supports openDocumentThumbnail() call.
+    bool supports_thumbnail;
+
     Document(const std::string& authority,
              const std::string& document_id,
              const std::string& parent_document_id,
@@ -144,7 +155,8 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
              uint64_t last_modified,
              bool supports_delete,
              bool supports_rename,
-             bool dir_supports_create);
+             bool dir_supports_create,
+             bool supports_thumbnail);
     Document(const Document& that);
     ~Document();
   };
@@ -292,12 +304,16 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                     const std::string& source_parent_document_id,
                     const std::string& target_parent_document_id,
                     MoveDocumentCallback callback) override;
-  void InitDeprecated(mojom::FileSystemHostPtr host) override;
-  void Init(mojom::FileSystemHostPtr host, InitCallback callback) override;
+  void InitDeprecated(mojo::PendingRemote<mojom::FileSystemHost> host) override;
+  void Init(mojo::PendingRemote<mojom::FileSystemHost> host,
+            InitCallback callback) override;
   void OpenFileToRead(const std::string& url,
                       OpenFileToReadCallback callback) override;
   void OpenFileToWrite(const std::string& url,
                        OpenFileToWriteCallback callback) override;
+  void OpenThumbnail(const std::string& url,
+                     const gfx::Size& size_hint,
+                     OpenThumbnailCallback callback) override;
   void RemoveWatcher(int64_t watcher_id,
                      RemoveWatcherCallback callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
@@ -340,7 +356,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   base::ScopedTempDir temp_dir_;
 
-  mojom::FileSystemHostPtr host_;
+  mojo::Remote<mojom::FileSystemHost> host_remote_;
 
   // Mapping from a content URL to a file.
   std::map<std::string, File> files_;

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 
@@ -22,7 +21,7 @@ source_set("color_headers") {
   ]
 }
 
-jumbo_component("color") {
+component("color") {
   sources = [
     "color_mixer.cc",
     "color_provider.cc",
@@ -65,7 +64,7 @@ test("color_unittests") {
   ]
 }
 
-jumbo_component("mixers") {
+component("mixers") {
   sources = [
     "color_mixers.h",
     "core_default_color_mixer.cc",
@@ -87,10 +86,10 @@ jumbo_component("mixers") {
     sources += [ "cros/native_color_mixers.cc" ]
   } else if (is_fuchsia) {
     sources += [ "fuchsia/native_color_mixers.cc" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources += [ "linux/native_color_mixers.cc" ]
   } else if (is_mac) {
-    libs = [ "AppKit.framework" ]
+    frameworks = [ "AppKit.framework" ]
     sources += [
       "mac/native_color_mixers.mm",
       "mac/scoped_current_nsappearance.h",

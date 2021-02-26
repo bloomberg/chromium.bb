@@ -19,6 +19,8 @@
 
 namespace blink {
 
+constexpr float kMinBackgroundColorCoverageRatio = 0.5;
+
 // A contiguous sequence of drawings with common paint properties.
 //
 // This is expected to be owned by the paint artifact which also owns the
@@ -31,24 +33,30 @@ struct PLATFORM_EXPORT PaintChunk {
   PaintChunk(wtf_size_t begin,
              wtf_size_t end,
              const Id& id,
-             const PropertyTreeState& props)
+             const PropertyTreeStateOrAlias& props)
       : begin_index(begin),
         end_index(end),
+        background_color(Color::kTransparent),
+        background_color_area(0u),
         id(id),
         properties(props),
+        known_to_be_opaque(false),
         is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()) {}
+        client_is_just_created(id.client.IsJustCreated()),
+        is_moved_from_cached_subsequence(false) {}
 
   // Move a paint chunk from a cached subsequence.
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
       : begin_index(begin),
         end_index(begin + other.size()),
+        background_color(other.background_color),
+        background_color_area(other.background_color_area),
         id(other.id),
         properties(other.properties),
         hit_test_data(std::move(other.hit_test_data)),
         bounds(other.bounds),
         drawable_bounds(other.drawable_bounds),
-        outset_for_raster_effects(other.outset_for_raster_effects),
+        raster_effect_outset(other.raster_effect_outset),
         known_to_be_opaque(other.known_to_be_opaque),
         is_cacheable(other.is_cacheable),
         client_is_just_created(false),
@@ -102,6 +110,13 @@ struct PLATFORM_EXPORT PaintChunk {
   // |endIndex - beginIndex| drawings in the chunk.
   wtf_size_t end_index;
 
+  // Color to use for checkerboarding, derived from display item's in this
+  // chunk; or Color::kTransparent if no such display item exists.
+  Color background_color;
+
+  // The area that is painted by the paint op that defines background_color.
+  float background_color_area;
+
   // Identifier of this chunk. It should be unique if |is_cacheable| is true.
   // This is used to match a new chunk to a cached old chunk to track changes
   // of chunk contents, so the id should be stable across document cycles.
@@ -129,16 +144,16 @@ struct PLATFORM_EXPORT PaintChunk {
   // Some raster effects can exceed |bounds| in the rasterization space. This
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of
   // all clients of items in this chunk.
-  float outset_for_raster_effects = 0;
+  RasterEffectOutset raster_effect_outset = RasterEffectOutset::kNone;
 
   // True if the bounds are filled entirely with opaque contents.
-  bool known_to_be_opaque = false;
+  bool known_to_be_opaque : 1;
 
   // End of derived data.
   // The following fields are put here to avoid memory gap.
-  bool is_cacheable;
-  bool client_is_just_created;
-  bool is_moved_from_cached_subsequence = false;
+  bool is_cacheable : 1;
+  bool client_is_just_created : 1;
+  bool is_moved_from_cached_subsequence : 1;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);

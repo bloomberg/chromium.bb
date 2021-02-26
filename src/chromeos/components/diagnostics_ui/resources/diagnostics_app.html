@@ -1,0 +1,50 @@
+<style include="cr-shared-style diagnostics-shared diagnostics-fonts">
+  .diagonstics-cards-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #diagnosticsContainer {
+    --cr-centered-card-max-width: 820px;
+  }
+
+  #header {
+   @apply --diagnostics-header-font;
+    margin-bottom: 10px;
+  }
+
+  .overview-container {
+    margin-bottom: 10px;
+  }
+  .session-log-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .session-log-button {
+    background-color: rgba(var(--google-blue-600), .06);
+    border-radius: 20px;
+    width: 144px;
+    height: 40px;
+    font-size: 14px;
+    padding: 5px;
+  }
+</style>
+<div id="diagnosticsContainer"class="cr-centered-card-container">
+  <div id="header">[[i18n('diagnosticsTitle')]]</div>
+  <div class="overview-container">
+    <overview-card id="overviewCard"></overview-card>
+  </div>
+  <div class="diagonstics-cards-container">
+    <template is="dom-if" if="[[showBatteryStatusCard_]]" restamp>
+      <battery-status-card id="batteryStatusCard"></battery-status-card>
+    </template>
+    <cpu-card id="cpuCard"></cpu-card>
+    <memory-card id="memoryCard"></memory-card>
+  </div>
+  <div class="session-log-container">
+    <cr-button class="session-log-button">
+      [[i18n('sessionLog')]]
+    </cr-button>
+  </div>
+</div>

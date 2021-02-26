@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "osp/msgs/osp_messages.h"
 #include "osp/public/message_demuxer.h"
@@ -124,7 +125,7 @@ class UrlAvailabilityRequester {
     uint64_t next_watch_id = 1;
 
     const std::string service_id;
-    uint64_t endpoint_id;
+    uint64_t endpoint_id{0};
 
     ProtocolConnectionClient::ConnectRequest connect_request;
     // TODO(btolsch): Observe connection and restart all the things on close.

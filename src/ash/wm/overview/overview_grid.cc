@@ -6,11 +6,13 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <utility>
 
+#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -39,7 +41,6 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -49,12 +50,14 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/view.h"
@@ -123,74 +126,75 @@ template <const char* clamshell_single_name,
           const char* tablet_name,
           const char* splitview_name,
           const char* tablet_minimized_name>
-class OverviewFpsCounter : public FpsCounter {
+class OverviewMetricsTracker : public OverviewGrid::MetricsTracker {
  public:
-  OverviewFpsCounter(ui::Compositor* compositor,
-                     bool in_split_view,
-                     bool single_animation_in_clamshell,
-                     bool minimized_in_tablet)
-      : FpsCounter(compositor),
-        in_split_view_(in_split_view),
-        single_animation_in_clamshell_(single_animation_in_clamshell),
-        minimized_in_tablet_(minimized_in_tablet) {}
-  ~OverviewFpsCounter() override {
-    int smoothness = ComputeSmoothness();
-    if (smoothness < 0)
-      return;
-    if (single_animation_in_clamshell_)
+  OverviewMetricsTracker(ui::Compositor* compositor,
+                         bool in_split_view,
+                         bool single_animation_in_clamshell,
+                         bool minimized_in_tablet)
+      : tracker_(compositor->RequestNewThroughputTracker()) {
+    tracker_.Start(metrics_util::ForSmoothness(base::BindRepeating(
+        &OverviewMetricsTracker::ReportOverviewSmoothness, in_split_view,
+        single_animation_in_clamshell, minimized_in_tablet)));
+  }
+  OverviewMetricsTracker(const OverviewMetricsTracker&) = delete;
+  OverviewMetricsTracker& operator=(const OverviewMetricsTracker&) = delete;
+  ~OverviewMetricsTracker() override { tracker_.Stop(); }
+
+  static void ReportOverviewSmoothness(bool in_split_view,
+                                       bool single_animation_in_clamshell,
+                                       bool minimized_in_tablet,
+                                       int smoothness) {
+    if (single_animation_in_clamshell)
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_single_name, smoothness);
     else
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_multi_name, smoothness);
 
-    if (minimized_in_tablet_) {
+    if (minimized_in_tablet) {
       UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(
-          in_split_view_, tablet_minimized_name, smoothness);
+          in_split_view, tablet_minimized_name, smoothness);
     } else {
-      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view_,
+      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view,
                                                        tablet_name, smoothness);
     }
-    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view_, splitview_name,
+    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view, splitview_name,
                                           smoothness);
   }
 
  private:
-  bool in_split_view_;
-
-  // True if only top window animates upon enter/exit overview in clamshell.
-  bool single_animation_in_clamshell_;
-
-  // True if all windows are minimized in tablet.
-  bool minimized_in_tablet_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewFpsCounter);
+  ui::ThroughputTracker tracker_;
 };
 
-using OverviewEnterFpsCounter =
-    OverviewFpsCounter<kOverviewEnterSingleClamshellHistogram,
-                       kOverviewEnterClamshellHistogram,
-                       kOverviewEnterTabletHistogram,
-                       kOverviewEnterSplitViewHistogram,
-                       kOverviewEnterMinimizedTabletHistogram>;
-using OverviewExitFpsCounter =
-    OverviewFpsCounter<kOverviewExitSingleClamshellHistogram,
-                       kOverviewExitClamshellHistogram,
-                       kOverviewExitTabletHistogram,
-                       kOverviewExitSplitViewHistogram,
-                       kOverviewExitMinimizedTabletHistogram>;
+using OverviewEnterMetricsTracker =
+    OverviewMetricsTracker<kOverviewEnterSingleClamshellHistogram,
+                           kOverviewEnterClamshellHistogram,
+                           kOverviewEnterTabletHistogram,
+                           kOverviewEnterSplitViewHistogram,
+                           kOverviewEnterMinimizedTabletHistogram>;
+using OverviewExitMetricsTracker =
+    OverviewMetricsTracker<kOverviewExitSingleClamshellHistogram,
+                           kOverviewExitClamshellHistogram,
+                           kOverviewExitTabletHistogram,
+                           kOverviewExitSplitViewHistogram,
+                           kOverviewExitMinimizedTabletHistogram>;
 
-class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
+class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver {
  public:
-  ShutdownAnimationFpsCounterObserver(ui::Compositor* compositor,
-                                      bool in_split_view,
-                                      bool single_animation,
-                                      bool minimized_in_tablet)
-      : fps_counter_(compositor,
-                     in_split_view,
-                     single_animation,
-                     minimized_in_tablet) {
+  ShutdownAnimationMetricsTrackerObserver(ui::Compositor* compositor,
+                                          bool in_split_view,
+                                          bool single_animation,
+                                          bool minimized_in_tablet)
+      : metrics_tracker_(compositor,
+                         in_split_view,
+                         single_animation,
+                         minimized_in_tablet) {
     Shell::Get()->overview_controller()->AddObserver(this);
   }
-  ~ShutdownAnimationFpsCounterObserver() override {
+  ShutdownAnimationMetricsTrackerObserver(
+      const ShutdownAnimationMetricsTrackerObserver&) = delete;
+  ShutdownAnimationMetricsTrackerObserver& operator=(
+      const ShutdownAnimationMetricsTrackerObserver&) = delete;
+  ~ShutdownAnimationMetricsTrackerObserver() override {
     Shell::Get()->overview_controller()->RemoveObserver(this);
   }
 
@@ -200,9 +204,7 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
   }
 
  private:
-  OverviewExitFpsCounter fps_counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownAnimationFpsCounterObserver);
+  OverviewExitMetricsTracker metrics_tracker_;
 };
 
 // Creates |drop_target_widget_|. It's created when a window or overview item is
@@ -225,7 +227,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 
   // Show plus icon if drag a tab from a multi-tab window.
-  widget->SetContentsView(new DropTargetView(
+  widget->SetContentsView(std::make_unique<DropTargetView>(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
   aura::Window* drop_target_window = widget->GetNativeWindow();
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
@@ -250,8 +252,8 @@ float GetWantedDropTargetOpacity(
 
 gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
   const int horizontal_inset =
-      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * grid_bounds.width(),
-                                 kOverviewInsetRatio * grid_bounds.height()));
+      base::ClampFloor(std::min(kOverviewInsetRatio * grid_bounds.width(),
+                                kOverviewInsetRatio * grid_bounds.height()));
   const int vertical_inset =
       horizontal_inset +
       kOverviewVerticalInset * (grid_bounds.height() - 2 * horizontal_inset);
@@ -349,9 +351,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
     if (window->GetRootWindow() != root_window)
       continue;
 
-    // Hide the drag shadow if it is visible.
-    Shell::Get()->resize_shadow_controller()->HideShadow(window);
-
     // Stop ongoing animations before entering overview mode. Because we are
     // deferring SetTransform of the windows beneath the window covering the
     // available workspace, we need to set the correct transforms of these
@@ -369,6 +368,8 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
+  EndNudge();
+
   SplitViewController::Get(root_window_)->RemoveObserver(this);
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
@@ -396,17 +397,12 @@ void OverviewGrid::Shutdown() {
     bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
                                OverviewEnterExitType::kFadeOutExit;
     // The following instance self-destructs when shutdown animation ends.
-    new ShutdownAnimationFpsCounterObserver(
+    new ShutdownAnimationMetricsTrackerObserver(
         root_window_->layer()->GetCompositor(), in_split_view,
         single_animation_in_clamshell, minimized_in_tablet);
   }
 
-  while (!window_list_.empty()) {
-    RemoveItem(window_list_.back().get(), /*item_destroying=*/false,
-               /*reposition=*/false);
-  }
-
-  // RemoveItem() uses `overview_session_`, so clear it at the end.
+  window_list_.clear();
   overview_session_ = nullptr;
 }
 
@@ -509,13 +505,13 @@ void OverviewGrid::PositionWindows(
         !Shell::Get()->tablet_mode_controller()->InTabletMode();
     bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
                                OverviewEnterExitType::kFadeInEnter;
-    fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
+    metrics_tracker_ = std::make_unique<OverviewEnterMetricsTracker>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         SplitViewController::Get(root_window_)->InSplitViewMode(),
         single_animation_in_clamshell, minimized_in_tablet);
   }
 
-  // Apply the animation after creating fps_counter_ so that unit test
+  // Apply the animation after creating metrics_tracker_ so that unit test
   // can correctly count the measure requests.
   for (size_t i = 0; i < window_list_.size(); ++i) {
     if (rects[i].IsEmpty())
@@ -547,6 +543,8 @@ void OverviewGrid::AddItem(aura::Window* window,
   window_list_.insert(
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
+
+  UpdateFrameThrottling();
   auto* item = window_list_[index].get();
   item->PrepareForOverview();
 
@@ -590,13 +588,17 @@ void OverviewGrid::AddItemInMruOrder(aura::Window* window,
 void OverviewGrid::RemoveItem(OverviewItem* overview_item,
                               bool item_destroying,
                               bool reposition) {
+  EndNudge();
+
   // Use reverse iterator to be efficient when removing all.
   auto iter = std::find_if(window_list_.rbegin(), window_list_.rend(),
                            base::MatchesUniquePtr(overview_item));
   DCHECK(iter != window_list_.rend());
 
   // This can also be called when shutting down |this|, at which the item will
-  // be cleaning up and its associated view may be nullptr.
+  // be cleaning up and its associated view may be nullptr. |overview_item|
+  // needs to still be in |window_list_| so we can compute what the deleted
+  // index is.
   if (overview_session_ && (*iter)->overview_item_view()) {
     overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
         (*iter)->overview_item_view());
@@ -607,6 +609,8 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
   window_list_.erase(std::next(iter).base());
   tmp.reset();
+
+  UpdateFrameThrottling();
 
   if (!item_destroying)
     return;
@@ -999,7 +1003,7 @@ void OverviewGrid::OnWallpaperChanged() {
 }
 
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
-  fps_counter_.reset();
+  metrics_tracker_.reset();
   if (canceled)
     return;
 
@@ -1007,6 +1011,7 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
 
   for (auto& window : window_list())
     window->OnStartingAnimationComplete();
+
 }
 
 void OverviewGrid::CalculateWindowListAnimationStates(
@@ -1300,40 +1305,6 @@ void OverviewGrid::EndNudge() {
   nudge_data_.clear();
 }
 
-void OverviewGrid::SlideWindowsIn() {
-  for (const auto& window_item : window_list_)
-    window_item->SlideWindowIn();
-}
-
-std::unique_ptr<ui::ScopedLayerAnimationSettings>
-OverviewGrid::UpdateYPositionAndOpacity(
-    float new_y,
-    float opacity,
-    OverviewSession::UpdateAnimationSettingsCallback callback) {
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
-  if (desks_widget_) {
-    aura::Window* window = desks_widget_->GetNativeWindow();
-    ui::Layer* layer = window->layer();
-    if (!callback.is_null()) {
-      settings_to_observe = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          layer->GetAnimator());
-      callback.Run(settings_to_observe.get());
-    }
-    window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, -new_y));
-    layer->SetOpacity(opacity);
-  }
-
-  // Translate the window items to |new_y| with the opacity. Observe the
-  // animation of the last item, if any.
-  for (const auto& window_item : window_list_) {
-    auto new_settings =
-        window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
-    if (new_settings)
-      settings_to_observe = std::move(new_settings);
-  }
-  return settings_to_observe;
-}
-
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
     const gfx::PointF& location_in_screen,
     OverviewItem* ignored_item) {
@@ -1395,7 +1366,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   }
 
   auto* desks_controller = DesksController::Get();
-  for (auto& mini_view : desks_bar_view_->mini_views()) {
+  for (auto* mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
 
@@ -1526,7 +1497,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
         target_size = ::ash::GetTargetBoundsInScreen(dragged_window).size();
         target_size.SetToMin(gfx::SizeF(work_area_size));
       }
-      const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
+      const gfx::SizeF inset_size(0, height);
       scale = ScopedOverviewTransformWindow::GetItemScale(
           target_size, inset_size,
           dragged_window->GetProperty(aura::client::kTopViewInset),
@@ -1534,8 +1505,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     }
   }
 
-  int width = std::max(
-      1, gfx::ToFlooredInt(target_size.width() * scale) + 2 * kWindowMargin);
+  int width = std::max(1, base::ClampFloor(target_size.width() * scale));
   switch (grid_fill_mode) {
     case OverviewGridWindowFillMode::kLetterBoxed:
       width = kExtremeWindowRatioThreshold * height;
@@ -1565,15 +1535,14 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   const float target_aspect_ratio =
       split_view_bounds->width() / split_view_bounds->height();
   const bool clip_horizontally = aspect_ratio > target_aspect_ratio;
-  const int window_height = height - 2 * kWindowMargin - kHeaderHeightDp;
+  const int window_height = height - kHeaderHeightDp;
   gfx::Size unclipped_size;
   if (clip_horizontally) {
-    unclipped_size.set_width(width - 2 * kWindowMargin);
-    unclipped_size.set_height(height - 2 * kWindowMargin);
+    unclipped_size.set_width(width);
+    unclipped_size.set_height(height);
     // For horizontal clipping, shrink |width| so that the aspect ratio matches
     // that of |split_view_bounds|.
-    width = std::max(1, gfx::ToFlooredInt(target_aspect_ratio * window_height) +
-                            2 * kWindowMargin);
+    width = std::max(1, base::ClampFloor(target_aspect_ratio * window_height));
   } else {
     // For vertical clipping, we want |height| to stay the same, so calculate
     // what the unclipped height would be based on |split_view_bounds|.
@@ -1589,9 +1558,6 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
         width * target_size.height() / target_size.width();
     unclipped_size.set_width(width);
     unclipped_size.set_height(unclipped_height + kHeaderHeightDp);
-
-    // Add some space between this item and the next one (if it exists).
-    width += (2 * kWindowMargin);
   }
 
   DCHECK(!unclipped_size.IsEmpty());
@@ -1623,13 +1589,13 @@ void OverviewGrid::MaybeInitDesksWidget() {
 
   desks_widget_ =
       DesksBarView::CreateDesksWidget(root_window_, GetDesksWidgetBounds());
-  desks_bar_view_ = new DesksBarView(this);
 
   // The following order of function calls is significant: SetContentsView()
   // must be called before DesksBarView:: Init(). This is needed because the
   // desks mini views need to access the widget to get the root window in order
   // to know how to layout themselves.
-  desks_widget_->SetContentsView(desks_bar_view_);
+  desks_bar_view_ =
+      desks_widget_->SetContentsView(std::make_unique<DesksBarView>(this));
   desks_bar_view_->Init();
 
   desks_widget_->Show();
@@ -1688,8 +1654,8 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     gfx::Rect overview_mode_bounds(total_bounds);
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
     bool windows_fit = FitWindowRectsInBounds(
-        overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_items, &rects, &max_bottom, &min_right, &max_right);
+        overview_mode_bounds, std::min(kMaxHeight, height), ignored_items,
+        &rects, &max_bottom, &min_right, &max_right);
 
     if (height_fixed) {
       if (!windows_fit) {
@@ -1734,9 +1700,9 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   if (make_last_adjustment) {
     gfx::Rect overview_mode_bounds(total_bounds);
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
-    FitWindowRectsInBounds(
-        overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_items, &rects, &max_bottom, &min_right, &max_right);
+    FitWindowRectsInBounds(overview_mode_bounds, std::min(kMaxHeight, height),
+                           ignored_items, &rects, &max_bottom, &min_right,
+                           &max_right);
   }
 
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
@@ -1842,8 +1808,10 @@ bool OverviewGrid::FitWindowRectsInBounds(
     if (ShouldExcludeItemFromGridLayout(window_list_[i].get(), ignored_items))
       continue;
 
-    int width =
-        CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(), height);
+    int width = CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(),
+                                                         height) +
+                2 * kWindowMargin;
+    int height_with_margin = height + 2 * kWindowMargin;
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
@@ -1851,11 +1819,11 @@ bool OverviewGrid::FitWindowRectsInBounds(
         *out_min_right = left;
       if (*out_max_right < left)
         *out_max_right = left;
-      top += height;
+      top += height_with_margin;
 
       // Check if the new row reaches the bottom or if the first item in the new
       // row does not fit within the available width.
-      if (top + height > bounds.bottom() ||
+      if (top + height_with_margin > bounds.bottom() ||
           bounds.x() + width > bounds.right()) {
         return false;
       }
@@ -1863,12 +1831,12 @@ bool OverviewGrid::FitWindowRectsInBounds(
     }
 
     // Position the current rect.
-    (*out_rects)[i] = gfx::RectF(left, top, width, height);
+    (*out_rects)[i] = gfx::RectF(left, top, width, height_with_margin);
 
     // Increment horizontal position using sanitized positive |width|.
     left += width;
 
-    *out_max_bottom = top + height;
+    *out_max_bottom = top + height_with_margin;
   }
 
   // Update the narrowest and widest row width for the last row.
@@ -1964,4 +1932,12 @@ void OverviewGrid::UpdateCannotSnapWarningVisibility() {
     overview_mode_item->UpdateCannotSnapWarningVisibility();
 }
 
+void OverviewGrid::UpdateFrameThrottling() {
+  std::vector<aura::Window*> windows_to_throttle(window_list_.size(), nullptr);
+  std::transform(
+      window_list_.begin(), window_list_.end(), windows_to_throttle.begin(),
+      [](std::unique_ptr<OverviewItem>& item) { return item->GetWindow(); });
+  Shell::Get()->frame_throttling_controller()->StartThrottling(
+      windows_to_throttle);
+}
 }  // namespace ash

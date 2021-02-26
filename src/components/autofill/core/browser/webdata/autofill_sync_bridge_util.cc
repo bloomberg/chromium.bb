@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
@@ -102,6 +103,7 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
       static_cast<CreditCard::Issuer>(card.card_issuer().issuer()));
   if (!card.nickname().empty())
     result.SetNickname(base::UTF8ToUTF16(card.nickname()));
+  result.set_instrument_id(card.instrument_id());
   return result;
 }
 
@@ -246,6 +248,7 @@ void SetAutofillWalletSpecificsFromServerCard(
     wallet_card->set_nickname(base::UTF16ToUTF8(card.nickname()));
   wallet_card->mutable_card_issuer()->set_issuer(
       static_cast<sync_pb::CardIssuer::Issuer>(card.card_issuer()));
+  wallet_card->set_instrument_id(card.instrument_id());
 }
 
 void SetAutofillWalletSpecificsFromPaymentsCustomerData(
@@ -283,6 +286,56 @@ void SetAutofillWalletSpecificsFromCreditCardCloudTokenData(
   mutable_cloud_token_data->set_art_fife_url(cloud_token_data.card_art_url);
   mutable_cloud_token_data->set_instrument_token(
       cloud_token_data.instrument_token);
+}
+
+void SetAutofillOfferSpecificsFromOfferData(
+    const AutofillOfferData& offer_data,
+    sync_pb::AutofillOfferSpecifics* offer_specifics) {
+  offer_specifics->set_id(offer_data.offer_id);
+  offer_specifics->set_offer_details_url(offer_data.offer_details_url.spec());
+  for (const GURL& domain : offer_data.merchant_domain) {
+    offer_specifics->add_merchant_domain(domain.GetOrigin().spec());
+  }
+  offer_specifics->set_offer_expiry_date(
+      (offer_data.expiry - base::Time::UnixEpoch()).InSeconds());
+  for (int64_t instrument_id : offer_data.eligible_instrument_id) {
+    offer_specifics->mutable_card_linked_offer_data()->add_instrument_id(
+        instrument_id);
+  }
+  if (offer_data.offer_reward_amount.find("%") != std::string::npos) {
+    offer_specifics->mutable_percentage_reward()->set_percentage(
+        offer_data.offer_reward_amount);
+  } else {
+    offer_specifics->mutable_fixed_amount_reward()->set_amount(
+        offer_data.offer_reward_amount);
+  }
+}
+
+AutofillOfferData AutofillOfferDataFromOfferSpecifics(
+    const sync_pb::AutofillOfferSpecifics& offer_specifics) {
+  DCHECK(IsOfferSpecificsValid(offer_specifics));
+  AutofillOfferData offer_data;
+  offer_data.offer_id = offer_specifics.id();
+  if (offer_specifics.has_percentage_reward()) {
+    offer_data.offer_reward_amount =
+        offer_specifics.percentage_reward().percentage();
+  } else {
+    offer_data.offer_reward_amount =
+        offer_specifics.fixed_amount_reward().amount();
+  }
+  offer_data.expiry =
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(offer_specifics.offer_expiry_date());
+  offer_data.offer_details_url = GURL(offer_specifics.offer_details_url());
+  for (const std::string& domain : offer_specifics.merchant_domain()) {
+    if (GURL(domain).is_valid())
+      offer_data.merchant_domain.emplace_back(domain);
+  }
+  for (int64_t instrument_id :
+       offer_specifics.card_linked_offer_data().instrument_id()) {
+    offer_data.eligible_instrument_id.push_back(instrument_id);
+  }
+  return offer_data;
 }
 
 AutofillProfile ProfileFromSpecifics(
@@ -403,6 +456,83 @@ void PopulateWalletTypesFromSyncData(
     if (it != ids.end())
       card.set_billing_address_id(it->second);
   }
+}
+
+template <class Item>
+bool AreAnyItemsDifferent(const std::vector<std::unique_ptr<Item>>& old_data,
+                          const std::vector<Item>& new_data) {
+  if (old_data.size() != new_data.size())
+    return true;
+
+  std::vector<const Item*> old_ptrs;
+  old_ptrs.reserve(old_data.size());
+  for (const std::unique_ptr<Item>& old_item : old_data)
+    old_ptrs.push_back(old_item.get());
+  std::vector<const Item*> new_ptrs;
+  new_ptrs.reserve(new_data.size());
+  for (const Item& new_item : new_data)
+    new_ptrs.push_back(&new_item);
+
+  // Sort our vectors.
+  auto compare_less = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) < 0;
+  };
+  std::sort(old_ptrs.begin(), old_ptrs.end(), compare_less);
+  std::sort(new_ptrs.begin(), new_ptrs.end(), compare_less);
+
+  auto compare_equal = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) == 0;
+  };
+  return !std::equal(old_ptrs.begin(), old_ptrs.end(), new_ptrs.begin(),
+                     compare_equal);
+}
+
+template bool AreAnyItemsDifferent<>(
+    const std::vector<std::unique_ptr<AutofillOfferData>>&,
+    const std::vector<AutofillOfferData>&);
+
+template bool AreAnyItemsDifferent<>(
+    const std::vector<std::unique_ptr<CreditCardCloudTokenData>>&,
+    const std::vector<CreditCardCloudTokenData>&);
+
+bool IsOfferSpecificsValid(const sync_pb::AutofillOfferSpecifics specifics) {
+  // A valid offer has a non-empty id.
+  if (!specifics.has_id())
+    return false;
+
+  // A valid offer must have at least one valid merchant domain URL.
+  if (specifics.merchant_domain().size() == 0) {
+    return false;
+  }
+  bool has_valid_domain = false;
+  for (const std::string& domain : specifics.merchant_domain()) {
+    if (GURL(domain).is_valid()) {
+      has_valid_domain = true;
+      break;
+    }
+  }
+  if (!has_valid_domain) {
+    return false;
+  }
+
+  // A valid offer has at least one linked card instrument id.
+  if (!specifics.has_card_linked_offer_data() ||
+      specifics.card_linked_offer_data().instrument_id().size() == 0) {
+    return false;
+  }
+
+  // A valid offer must have either a percentage reward or a fixed amount
+  // reward.
+  if (!specifics.has_percentage_reward() ||
+      !specifics.percentage_reward().has_percentage()) {
+    return specifics.has_fixed_amount_reward() &&
+           specifics.fixed_amount_reward().has_amount();
+  } else if (specifics.percentage_reward().percentage().find('%') ==
+             std::string::npos) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace autofill

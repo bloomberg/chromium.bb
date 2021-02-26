@@ -10,11 +10,14 @@ import static org.chromium.chrome.browser.tasks.SingleTabViewProperties.IS_VISIB
 import static org.chromium.chrome.browser.tasks.SingleTabViewProperties.TITLE;
 
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
@@ -28,10 +31,15 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Mediator of the single tab tab switcher. */
-class SingleTabSwitcherMediator implements TabSwitcher.Controller {
+public class SingleTabSwitcherMediator implements TabSwitcher.Controller {
+    @VisibleForTesting
+    public static final String SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA = "SingleTabTitleAvailableTime";
+
     private final ObserverList<TabSwitcher.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabModelSelector mTabModelSelector;
     private final PropertyModel mPropertyModel;
@@ -41,6 +49,9 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     private TabSwitcher.OnTabSelectingListener mTabSelectingListener;
     private boolean mShouldIgnoreNextSelect;
     private boolean mSelectedTabDidNotChangedAfterShown;
+    private boolean mAddNormalTabModelObserverPending;
+    private Long mTabTitleAvailableTime;
+    private boolean mFaviconInitialized;
 
     SingleTabSwitcherMediator(PropertyModel propertyModel, TabModelSelector tabModelSelector,
             TabListFaviconProvider tabListFaviconProvider) {
@@ -67,7 +78,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
                     mShouldIgnoreNextSelect = false;
                     return;
                 }
-                mTabSelectingListener.onTabSelecting(LayoutManager.time(), tab.getId());
+                mTabSelectingListener.onTabSelecting(LayoutManagerImpl.time(), tab.getId());
             }
         };
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -79,17 +90,49 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             @Override
             public void onTabStateInitialized() {
                 TabModel normalTabModel = mTabModelSelector.getModel(false);
+                if (mAddNormalTabModelObserverPending) {
+                    mAddNormalTabModelObserverPending = false;
+                    normalTabModel.addObserver(mNormalTabModelObserver);
+                }
+
                 int selectedTabIndex = normalTabModel.index();
                 if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
                     assert normalTabModel.getCount() > 0;
 
                     Tab tab = normalTabModel.getTabAt(selectedTabIndex);
                     mPropertyModel.set(TITLE, tab.getTitle());
-                    mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
-                            (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+                    if (mTabTitleAvailableTime == null) {
+                        mTabTitleAvailableTime = SystemClock.elapsedRealtime();
+                    }
+                    // Favicon should be updated here unless mTabListFaviconProvider hasn't been
+                    // initialized yet.
+                    assert !mFaviconInitialized;
+                    if (mTabListFaviconProvider.isInitialized()) {
+                        mFaviconInitialized = true;
+                        updateFavicon(tab);
+                    }
                 }
             }
         };
+    }
+
+    void initWithNative() {
+        if (mFaviconInitialized || !mTabModelSelector.isTabStateInitialized()) return;
+
+        TabModel normalTabModel = mTabModelSelector.getModel(false);
+        int selectedTabIndex = normalTabModel.index();
+        if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
+            assert normalTabModel.getCount() > 0;
+            Tab tab = normalTabModel.getTabAt(selectedTabIndex);
+            updateFavicon(tab);
+            mFaviconInitialized = true;
+        }
+    }
+
+    private void updateFavicon(Tab tab) {
+        assert mTabListFaviconProvider.isInitialized();
+        mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
+                (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
     }
 
     void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
@@ -133,29 +176,33 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     @Override
     public void showOverview(boolean animate) {
         mSelectedTabDidNotChangedAfterShown = true;
-        TabModel normalTabModel = mTabModelSelector.getModel(false);
-        if (normalTabModel != null) {
-            normalTabModel.addObserver(mNormalTabModelObserver);
-        } else {
-            assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
-                : "Normal tab model should exist except for instant start";
-        }
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
         if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
                 && !mTabModelSelector.isTabStateInitialized()) {
+            mAddNormalTabModelObserverPending = true;
+
             PseudoTab activeTab;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 activeTab = PseudoTab.getActiveTabFromStateFile();
             }
             if (activeTab != null) {
                 mPropertyModel.set(TITLE, activeTab.getTitle());
+                if (mTabTitleAvailableTime == null) {
+                    mTabTitleAvailableTime = SystemClock.elapsedRealtime();
+                }
             }
         } else {
+            TabModel normalTabModel = mTabModelSelector.getModel(false);
+            normalTabModel.addObserver(mNormalTabModelObserver);
+
             int selectedTabIndex = normalTabModel.index();
             if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
                 assert normalTabModel.getCount() > 0;
                 updateSelectedTab(normalTabModel.getTabAt(selectedTabIndex));
+                if (mTabTitleAvailableTime == null) {
+                    mTabTitleAvailableTime = SystemClock.elapsedRealtime();
+                }
             }
         }
         mPropertyModel.set(IS_VISIBLE, true);
@@ -181,6 +228,15 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     @Override
     public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {}
 
+    @Override
+    public void onOverviewShownAtLaunch(long activityCreationTimeMs) {
+        if (mTabTitleAvailableTime == null) return;
+
+        StartSurfaceConfiguration.recordHistogram(SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA,
+                mTabTitleAvailableTime - activityCreationTimeMs,
+                TabUiFeatureUtilities.supportInstantStart(false));
+    }
+
     private void updateSelectedTab(Tab tab) {
         mPropertyModel.set(TITLE, tab.getTitle());
         mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
@@ -193,6 +249,6 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             RecordUserAction.record("MobileTabReturnedToCurrentTab.SingleTabCard");
         }
         mTabSelectingListener.onTabSelecting(
-                LayoutManager.time(), mTabModelSelector.getCurrentTabId());
+                LayoutManagerImpl.time(), mTabModelSelector.getCurrentTabId());
     }
 }

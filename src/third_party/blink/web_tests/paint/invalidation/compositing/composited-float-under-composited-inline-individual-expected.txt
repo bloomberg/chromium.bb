@@ -8,7 +8,7 @@
     },
     {
       "name": "LayoutInline (relative positioned) SPAN",
-      "position": [108, 108],
+      "position": [8, 8],
       "drawsContent": false
     },
     {

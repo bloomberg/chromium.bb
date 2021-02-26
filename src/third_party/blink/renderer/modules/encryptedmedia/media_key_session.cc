@@ -210,7 +210,7 @@ class MediaKeySession::PendingAction final
         string_data_(string_data) {}
   ~PendingAction() = default;
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(result_);
     visitor->Trace(data_);
   }
@@ -248,7 +248,7 @@ class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
     Resolve();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -286,7 +286,7 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
     Resolve(true);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -317,7 +317,7 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
     Resolve();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(session_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -355,7 +355,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
   // initializeNewSession() is called in response to the user calling
   // generateRequest().
   WebContentDecryptionModule* cdm = media_keys->ContentDecryptionModule();
-  session_ = cdm->CreateSession();
+  session_ = cdm->CreateSession(session_type);
   session_->SetClientInterface(this);
 
   // From https://w3c.github.io/encrypted-media/#createSession:
@@ -447,7 +447,7 @@ ScriptPromise MediaKeySession::generateRequest(
 
   // 5. If initData is an empty array, return a promise rejected with a
   //    newly created TypeError.
-  if (!init_data.ByteLengthAsSizeT()) {
+  if (!init_data.ByteLength()) {
     exception_state.ThrowTypeError("The initData parameter is empty.");
     return ScriptPromise();
   }
@@ -472,7 +472,7 @@ ScriptPromise MediaKeySession::generateRequest(
 
   // 7. Let init data be a copy of the contents of the initData parameter.
   DOMArrayBuffer* init_data_buffer =
-      DOMArrayBuffer::Create(init_data.Data(), init_data.ByteLengthAsSizeT());
+      DOMArrayBuffer::Create(init_data.Data(), init_data.ByteLength());
 
   // 8. Let session type be this object's session type.
   //    (Done in constructor.)
@@ -501,7 +501,7 @@ void MediaKeySession::GenerateRequestTask(ContentDecryptionModuleResult* result,
   // initializeNewSession() in Chromium will execute steps 10.1 to 10.9.
   session_->InitializeNewSession(
       init_data_type, static_cast<unsigned char*>(init_data_buffer->Data()),
-      init_data_buffer->ByteLengthAsSizeT(), session_type_, result->Result());
+      init_data_buffer->ByteLength(), result->Result());
 
   // Remaining steps (10.10) executed in finishGenerateRequest(),
   // called when |result| is resolved.
@@ -681,14 +681,14 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
 
   // 3. If response is an empty array, return a promise rejected with a
   //    newly created TypeError.
-  if (!response.ByteLengthAsSizeT()) {
+  if (!response.ByteLength()) {
     exception_state.ThrowTypeError("The response parameter is empty.");
     return ScriptPromise();
   }
 
   // 4. Let response copy be a copy of the contents of the response parameter.
   DOMArrayBuffer* response_copy =
-      DOMArrayBuffer::Create(response.Data(), response.ByteLengthAsSizeT());
+      DOMArrayBuffer::Create(response.Data(), response.ByteLength());
 
   // 5. Let promise be a new promise.
   SimpleResultPromise* result = MakeGarbageCollected<SimpleResultPromise>(
@@ -712,7 +712,7 @@ void MediaKeySession::UpdateTask(ContentDecryptionModuleResult* result,
 
   // update() in Chromium will execute steps 6.1 through 6.8.
   session_->Update(static_cast<unsigned char*>(sanitized_response->Data()),
-                   sanitized_response->ByteLengthAsSizeT(), result->Result());
+                   sanitized_response->ByteLength(), result->Result());
 
   // Last step (6.8.2 Resolve promise) will be done when |result| is resolved.
 }
@@ -847,9 +847,9 @@ void MediaKeySession::ActionTimerFired(TimerBase*) {
 }
 
 // Queue a task to fire a simple event named keymessage at the new object.
-void MediaKeySession::Message(MessageType message_type,
-                              const unsigned char* message,
-                              size_t message_length) {
+void MediaKeySession::OnSessionMessage(MessageType message_type,
+                                       const unsigned char* message,
+                                       size_t message_length) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
   // Verify that 'message' not fired before session initialization is complete.
@@ -891,7 +891,7 @@ void MediaKeySession::Message(MessageType message_type,
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
-void MediaKeySession::Close() {
+void MediaKeySession::OnSessionClosed() {
   // Note that this is the event from the CDM when this session is actually
   // closed. The CDM can close a session at any time. Normally it would happen
   // as the result of a close() call, but also happens when update() has been
@@ -911,10 +911,10 @@ void MediaKeySession::Close() {
 
   // 5. Run the Update Key Statuses algorithm on the session, providing
   //    an empty sequence.
-  KeysStatusesChange(WebVector<WebEncryptedMediaKeyInformation>(), false);
+  OnSessionKeysChange(WebVector<WebEncryptedMediaKeyInformation>(), false);
 
   // 6. Run the Update Expiration algorithm on the session, providing NaN.
-  ExpirationChanged(std::numeric_limits<double>::quiet_NaN());
+  OnSessionExpirationUpdate(std::numeric_limits<double>::quiet_NaN());
 
   // 7. Resolve promise.
   closed_promise_->ResolveWithUndefined();
@@ -936,7 +936,8 @@ void MediaKeySession::Close() {
   }
 }
 
-void MediaKeySession::ExpirationChanged(double updated_expiry_time_in_ms) {
+void MediaKeySession::OnSessionExpirationUpdate(
+    double updated_expiry_time_in_ms) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)
       << __func__ << "(" << this << ") " << updated_expiry_time_in_ms;
 
@@ -955,7 +956,7 @@ void MediaKeySession::ExpirationChanged(double updated_expiry_time_in_ms) {
   expiration_ = expiration_time;
 }
 
-void MediaKeySession::KeysStatusesChange(
+void MediaKeySession::OnSessionKeysChange(
     const WebVector<WebEncryptedMediaKeyInformation>& keys,
     bool has_additional_usable_key) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)
@@ -1032,7 +1033,7 @@ void MediaKeySession::ContextDestroyed() {
   pending_actions_.clear();
 }
 
-void MediaKeySession::Trace(Visitor* visitor) {
+void MediaKeySession::Trace(Visitor* visitor) const {
   visitor->Trace(async_event_queue_);
   visitor->Trace(pending_actions_);
   visitor->Trace(media_keys_);

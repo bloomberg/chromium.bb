@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -36,7 +37,7 @@ class V4StoreTest : public PlatformTest {
   }
 
   void TearDown() override {
-    base::DeleteFile(store_path_, false);
+    base::DeleteFile(store_path_);
     PlatformTest::TearDown();
   }
 

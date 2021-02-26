@@ -9,7 +9,6 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -94,7 +93,7 @@ class ArrayIterator final : public CPDF_ObjectWalker::SubobjectIterator {
 
 }  // namespace
 
-CPDF_ObjectWalker::SubobjectIterator::~SubobjectIterator() {}
+CPDF_ObjectWalker::SubobjectIterator::~SubobjectIterator() = default;
 
 const CPDF_Object* CPDF_ObjectWalker::SubobjectIterator::Increment() {
   if (!IsStarted()) {
@@ -119,11 +118,11 @@ CPDF_ObjectWalker::SubobjectIterator::SubobjectIterator(
 std::unique_ptr<CPDF_ObjectWalker::SubobjectIterator>
 CPDF_ObjectWalker::MakeIterator(const CPDF_Object* object) {
   if (object->IsStream())
-    return pdfium::MakeUnique<StreamIterator>(object->AsStream());
+    return std::make_unique<StreamIterator>(object->AsStream());
   if (object->IsDictionary())
-    return pdfium::MakeUnique<DictionaryIterator>(object->AsDictionary());
+    return std::make_unique<DictionaryIterator>(object->AsDictionary());
   if (object->IsArray())
-    return pdfium::MakeUnique<ArrayIterator>(object->AsArray());
+    return std::make_unique<ArrayIterator>(object->AsArray());
   return nullptr;
 }
 

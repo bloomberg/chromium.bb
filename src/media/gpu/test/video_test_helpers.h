@@ -5,11 +5,14 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_TEST_HELPERS_H_
 #define MEDIA_GPU_TEST_VIDEO_TEST_HELPERS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bits.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
+#include "base/files/file.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -19,12 +22,19 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/filters/ivf_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
 namespace test {
+class Video;
 
 // Helper class allowing one thread to wait on a notification from another.
 // If notifications come in faster than they are Wait()'d for, they are
@@ -70,6 +80,30 @@ StateEnum ClientStateNotification<StateEnum>::Wait() {
   return ret;
 }
 
+struct IvfFrame {
+  IvfFrameHeader header;
+  uint8_t* data = nullptr;
+};
+
+// Read functions to fill IVF file header and IVF frame header from |data|.
+// |data| must have sufficient length.
+IvfFileHeader GetIvfFileHeader(const base::span<const uint8_t>& data);
+IvfFrameHeader GetIvfFrameHeader(const base::span<const uint8_t>& data);
+
+// The helper class to save data as ivf format.
+class IvfWriter {
+ public:
+  IvfWriter(base::FilePath output_filepath);
+  bool WriteFileHeader(VideoCodec codec,
+                       const gfx::Size& resolution,
+                       uint32_t frame_rate,
+                       uint32_t num_frames);
+  bool WriteFrame(uint32_t data_size, uint64_t timestamp, const uint8_t* data);
+
+ private:
+  base::File output_file_;
+};
+
 // Helper to extract fragments from encoded video stream.
 class EncodedDataHelper {
  public:
@@ -92,15 +126,13 @@ class EncodedDataHelper {
   size_t num_skipped_fragments() { return num_skipped_fragments_; }
 
  private:
-  struct IVFHeader;
-  struct IVFFrame;
 
   // For h.264.
   scoped_refptr<DecoderBuffer> GetNextFragment();
   // For VP8/9.
   scoped_refptr<DecoderBuffer> GetNextFrame();
-  base::Optional<IVFHeader> GetNextIVFFrameHeader() const;
-  base::Optional<IVFFrame> ReadNextIVFFrame();
+  base::Optional<IvfFrameHeader> GetNextIvfFrameHeader() const;
+  base::Optional<IvfFrame> ReadNextIvfFrame();
 
   // Helpers for GetBytesForNextFragment above.
   size_t GetBytesForNextNALU(size_t pos);
@@ -161,14 +193,20 @@ class AlignedAllocator : public std::allocator<T> {
 };
 
 // Helper to align data and extract frames from raw video streams.
-// TODO(crbug.com/1045825): Reduces number of data copies performed.
+// GetNextFrame() returns VideoFrames with a specified |storage_type|. The
+// VideoFrames are aligned by the specified |alignment| in the case of
+// MojoSharedBuffer VideoFrame. On the other hand, GpuMemoryBuffer based
+// VideoFrame is determined by the GpuMemoryBuffer allocation backend.
 class AlignedDataHelper {
  public:
-  AlignedDataHelper(const std::vector<uint8_t>& stream,
-                    uint32_t num_frames,
-                    VideoPixelFormat pixel_format,
-                    const gfx::Rect& visible_area,
-                    const gfx::Size& coded_size);
+  AlignedDataHelper(
+      const std::vector<uint8_t>& stream,
+      uint32_t num_frames,
+      VideoPixelFormat pixel_format,
+      const gfx::Rect& visible_area,
+      const gfx::Size& coded_size,
+      VideoFrame::StorageType storage_type,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory);
   ~AlignedDataHelper();
 
   // Compute and return the next frame to be sent to the encoder.
@@ -182,30 +220,68 @@ class AlignedDataHelper {
   bool AtEndOfStream() const;
 
  private:
-  // Align the video stream to platform requirements.
-  void CreateAlignedInputStream(const std::vector<uint8_t>& stream);
+  struct VideoFrameData;
 
-  // Current position in the video stream.
-  size_t data_pos_ = 0;
+  static VideoFrameLayout GetAlignedVideoFrameLayout(
+      VideoPixelFormat pixel_format,
+      const gfx::Size& dimension,
+      const uint32_t alignment,
+      std::vector<size_t>* plane_rows,
+      size_t* video_frame_size);
+
+  // Create MojoSharedMemory VideoFrames whose memory are aligned by
+  // kPlatformBufferAlignment.
+  void InitializeAlignedMemoryFrames(const std::vector<uint8_t>& stream,
+                                     const VideoPixelFormat pixel_format,
+                                     const gfx::Size& coded_size);
+  // Create GpuMemoryBuffer VideoFrame whose alignments is determined by
+  // a GpuMemoryBuffer allocation backend (e.g. minigbm).
+  void InitializeGpuMemoryBufferFrames(const std::vector<uint8_t>& stream,
+                                       const VideoPixelFormat pixel_format,
+                                       const gfx::Size& coded_size);
+
+  // The index of VideoFrame to be read next.
+  uint32_t frame_index_ = 0;
   // The number of frames in the video stream.
-  uint32_t num_frames_ = 0;
-  // The video stream's pixel format.
-  VideoPixelFormat pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
-  // The video stream's visible area.
-  gfx::Rect visible_area_;
-  // The video's coded size, as requested by the encoder.
-  gfx::Size coded_size_;
+  const uint32_t num_frames_;
 
-  // Aligned data, each plane is aligned to the specified platform alignment
-  // requirements.
-  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
-      aligned_data_;
-  // Byte size of each frame in |aligned_data_|.
-  size_t aligned_frame_size_ = 0;
-  // Byte size for each aligned plane in a frame.
-  std::vector<size_t> aligned_plane_size_;
+  const VideoFrame::StorageType storage_type_;
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+
+  // The layout of VideoFrames returned by GetNextFrame().
+  base::Optional<VideoFrameLayout> layout_;
+  const gfx::Rect visible_area_;
+
+  // The frame data returned by GetNextFrame().
+  std::vector<VideoFrameData> video_frame_data_;
 };
 
+// Small helper class to extract video frames from raw data streams.
+// However, the data wrapped by VideoFrame is not guaranteed to be aligned.
+// This class doesn't change |video|, but cannot be mark it as constant because
+// GetFrame() returns non const |data_| wrapped by the returned VideoFrame.
+class RawDataHelper {
+ public:
+  static std::unique_ptr<RawDataHelper> Create(Video* video);
+  ~RawDataHelper();
+
+  // Returns i-th VideoFrame in |video|. The returned frame doesn't own the
+  // underlying video data.
+  scoped_refptr<const VideoFrame> GetFrame(size_t index);
+
+ private:
+  RawDataHelper(Video* video,
+                size_t frame_size,
+                const VideoFrameLayout& layout);
+  // |video| and its associated data must outlive this class and VideoFrames
+  // returned by GetFrame().
+  Video* const video_;
+
+  // The size of one video frame.
+  const size_t frame_size_;
+  // The layout of VideoFrames returned by GetFrame().
+  const base::Optional<VideoFrameLayout> layout_;
+};
 }  // namespace test
 }  // namespace media
 

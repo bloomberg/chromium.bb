@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -52,11 +51,21 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     kOpenGL = 1,
     kVulkan = 2,
   };
+
+  enum class OrientationMode {
+    kLogic,     // The orientation same to logical screen orientation as seen by
+                // the user.
+    kHardware,  // The orientation same to the hardware.
+  };
   struct Capabilities {
     Capabilities();
     Capabilities(const Capabilities& capabilities);
 
     int max_frames_pending = 1;
+    // The number of buffers for the SkiaOutputDevice. If the
+    // |supports_post_sub_buffer| true, SkiaOutputSurfaceImpl will track target
+    // damaged area based on this number.
+    int number_of_buffers = 2;
     // Whether this output surface renders to the default OpenGL zero
     // framebuffer or to an offscreen framebuffer.
     bool uses_default_gl_framebuffer = true;
@@ -72,14 +81,15 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_commit_overlay_planes = false;
     // Whether this OutputSurface supports gpu vsync callbacks.
     bool supports_gpu_vsync = false;
-    // Whether this OutputSurface supports pre transform. If it is supported,
-    // the chrome will set the output surface size in hardware natural
-    // orientation, and will render transformed content on back buffers based
-    // on the current system transform. So the OS presentation engine can
-    // present buffers onto the screen directly.
-    bool supports_pre_transform = false;
+    // OutputSurface's orientation mode.
+    OrientationMode orientation_mode = OrientationMode::kLogic;
     // Whether this OutputSurface supports direct composition layers.
     bool supports_dc_layers = false;
+    // Set RGB10A2 overlay support flags true by force, which is used for
+    // playing hdr video.
+    // TODO(richard.li@intel.com): Remove this when Intel fixs its overlay caps.
+    // checking bug in their driver.
+    bool forces_rgb10a2_overlay_support_flags = false;
     // Whether this OutputSurface should skip DrawAndSwap(). This is true for
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.
@@ -88,6 +98,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // When this is false contents outside the damaged area might need to be
     // recomposited to the surface.
     bool only_invalidates_damage_rect = true;
+    // Whether OutputSurface::GetTargetDamageBoundingRect is implemented and
+    // will return a bounding rectangle of the target buffer invalidated area.
+    bool supports_target_damage = false;
     // Whether the gpu supports surfaceless surface (equivalent of using buffer
     // queue).
     bool supports_surfaceless = false;
@@ -96,13 +109,19 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool android_surface_control_feature_enabled = false;
     // True if the buffer content will be preserved after presenting.
     bool preserve_buffer_content = false;
-    // The SkColorType and GrBackendFormat for non-HDR and HDR.
-    // TODO(penghuang): remove SkColorType and GrBackendFormat when
-    // OutputSurface uses the |format| passed to Reshape().
-    SkColorType sk_color_type = kUnknown_SkColorType;
-    GrBackendFormat gr_backend_format;
-    SkColorType sk_color_type_for_hdr = kUnknown_SkColorType;
-    GrBackendFormat gr_backend_format_for_hdr;
+    // True if the SkiaOutputDevice will set
+    // SwapBuffersCompleteParams::frame_buffer_damage_area for every
+    // SwapBuffers complete callback.
+    bool damage_area_from_skia_output_device = false;
+    // This is the maximum size for RenderPass textures. No maximum size is
+    // enforced if zero.
+    int max_render_target_size = 0;
+    // The root surface is rendered using vulkan secondary command buffer.
+    bool root_is_vulkan_secondary_command_buffer = false;
+
+    // SkColorType for all supported buffer formats.
+    SkColorType sk_color_types[static_cast<int>(gfx::BufferFormat::LAST) + 1] =
+        {};
   };
 
   // Constructor for skia-based compositing.
@@ -147,8 +166,12 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void BindFramebuffer() = 0;
 
   // Marks that the given rectangle will be drawn to on the default, bound
-  // framebuffer.
-  virtual void SetDrawRectangle(const gfx::Rect& rect) = 0;
+  // framebuffer. Only valid if |capabilities().supports_dc_layers| is true.
+  virtual void SetDrawRectangle(const gfx::Rect& rect);
+
+  // Enable or disable DC layers. Must be called before DC layers are scheduled.
+  // Only valid if |capabilities().supports_dc_layers| is true.
+  virtual void SetEnableDCLayers(bool enabled);
 
   // Returns true if a main image overlay plane should be scheduled.
   virtual bool IsDisplayedAsOverlayPlane() const = 0;
@@ -234,18 +257,13 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications);
 
+  // Notifies surface that we want to measure viz-gpu latency for next draw.
+  virtual void SetNeedsMeasureNextDrawLatency() {}
+
   // Updates timing info on the provided LatencyInfo when swap completes.
   static void UpdateLatencyInfoOnSwap(
       const gfx::SwapResponse& response,
       std::vector<ui::LatencyInfo>* latency_info);
-
-  // This is used to share the same method to schedule task on the gpu thread
-  // between the output surface and the overlay processor.
-  // TODO(weiliangc): Consider making this outside of output surface and pass in
-  // instead of passing it out here.
-  virtual scoped_refptr<gpu::GpuTaskSchedulerHelper>
-  GetGpuTaskSchedulerHelper() = 0;
-  virtual gpu::MemoryTracker* GetMemoryTracker() = 0;
 
   // Notifies the OutputSurface of rate of content updates in frames per second.
   virtual void SetFrameRate(float frame_rate) {}

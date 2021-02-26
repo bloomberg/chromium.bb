@@ -5,10 +5,10 @@
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
+#include "chrome/browser/chromeos/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -66,6 +67,7 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
   ~NetworkErrorScreenTest() override = default;
 
   void SetUpOnMainThread() override {
+    wizard_context_ = std::make_unique<WizardContext>();
     network_helper_ = std::make_unique<NetworkStateTestHelper>(
         /*use_default_devices_and_services=*/false);
     InProcessBrowserTest::SetUpOnMainThread();
@@ -80,7 +82,7 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
     // the network list, picked one arbitrarily.
     GetScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
 
-    GetScreen()->Show();
+    GetScreen()->Show(wizard_context_.get());
 
     // Wait until network list adds the wifi test network.
     test::OobeJS()
@@ -125,6 +127,8 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  std::unique_ptr<WizardContext> wizard_context_;
+
  private:
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
 
@@ -143,7 +147,13 @@ IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, ShowsNetwork) {
 
 // Test that error screen hides when a network is connected and that showing and
 //  hiding the error screen does not modify WizardController's current_screen.
-IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, SelectNetwork) {
+#if !defined(NDEBUG)
+// Flaky timeout in debug build crbug.com/1132417.
+#define MAYBE_SelectNetwork DISABLED_SelectNetwork
+#else
+#define MAYBE_SelectNetwork SelectNetwork
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, MAYBE_SelectNetwork) {
   SetUpDisconnectedWifiNetwork();
   EXPECT_EQ(
       WizardController::default_controller()->current_screen()->screen_id(),
@@ -187,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, HideCallback) {
   GetScreen()->SetHideCallback(
       base::BindLambdaForTesting([&]() { callback_called = true; }));
 
-  GetScreen()->Show();
+  GetScreen()->Show(wizard_context_.get());
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
   GetScreen()->Hide();
 
@@ -203,9 +213,11 @@ class GuestErrorScreenTest : public MixinBasedInProcessBrowserTest {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     SessionManagerClient::InitializeFakeInMemory();
     FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
+    wizard_context_ = std::make_unique<WizardContext>();
   }
 
  protected:
+  std::unique_ptr<WizardContext> wizard_context_;
   LoginManagerMixin login_manager_{&mixin_host_};
 
  private:
@@ -217,7 +229,7 @@ class GuestErrorScreenTest : public MixinBasedInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, PRE_GuestLogin) {
   GetScreen()->AllowGuestSignin(true);
   GetScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
-  GetScreen()->Show();
+  GetScreen()->Show(wizard_context_.get());
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
   test::OobeJS().ExpectVisiblePath({"error-guest-signin-link"});
@@ -244,8 +256,10 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    AppLaunchController::SkipSplashWaitForTesting();
-    AppLaunchController::SetNetworkWaitForTesting(0);
+    skip_splash_wait_override_ =
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
+        base::TimeDelta::FromSeconds(0));
 
     fake_cws_.Init(embedded_test_server());
     fake_cws_.SetUpdateCrx(kTestKioskAppId,
@@ -308,6 +322,9 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 
   std::unique_ptr<content::WindowedNotificationObserver> apps_loaded_waiter_;
 
+  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
+  std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
+
   FakeCWS fake_cws_;
 
   DeviceStateMixin device_state_{
@@ -322,7 +339,8 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 };
 
 // Verify that certificate manager dialog opens.
-IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
+// Disabled for being flaky. See crbug.com/1116058.
+IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, DISABLED_OpenCertificateConfig) {
   apps_loaded_waiter()->Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::LaunchApp(kTestKioskAppId));
 

@@ -235,6 +235,11 @@ public:
     */
     void setStyle(Style style);
 
+    /**
+     *  Set paint's style to kStroke if true, or kFill if false.
+     */
+    void setStroke(bool);
+
     /** Retrieves alpha and RGB, unpremultiplied, packed into 32 bits.
         Use helpers SkColorGetA(), SkColorGetR(), SkColorGetG(), and SkColorGetB() to extract
         a color component.
@@ -244,7 +249,7 @@ public:
     SkColor getColor() const { return fColor4f.toSkColor(); }
 
     /** Retrieves alpha and RGB, unpremultiplied, as four floating point values. RGB are
-        are extended sRGB values (sRGB gamut, and encoded with the sRGB transfer function).
+        extended sRGB values (sRGB gamut, and encoded with the sRGB transfer function).
 
         @return  unpremultiplied RGBA
     */
@@ -316,9 +321,10 @@ public:
     */
     SkScalar getStrokeWidth() const { return fWidth; }
 
-    /** Sets the thickness of the pen used by the paint to
-        outline the shape.
-        Has no effect if width is less than zero.
+    /** Sets the thickness of the pen used by the paint to outline the shape.
+        A stroke-width of zero is treated as "hairline" width. Hairlines are always exactly one
+        pixel wide in device space (their thickness does not change as the canvas is scaled).
+        Negative stroke-widths are invalid; setting a negative width will have no effect.
 
         @param width  zero thickness for hairline; greater than zero for pen thickness
 
@@ -589,7 +595,6 @@ public:
 
         @param imageFilter  how SkImage is sampled when transformed
 
-        example: https://fiddle.skia.org/c/@Draw_Looper_Methods
         example: https://fiddle.skia.org/c/@Paint_setImageFilter
     */
     void setImageFilter(sk_sp<SkImageFilter> imageFilter);

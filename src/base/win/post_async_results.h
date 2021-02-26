@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace base {
@@ -64,6 +65,7 @@ AsyncResultsT<T> GetAsyncResults(
   if (FAILED(hr)) {
     VLOG(2) << "GetAsyncResults failed: "
             << logging::SystemErrorCodeToString(hr);
+    return AsyncResultsT<T>{};
   }
 
   return results;

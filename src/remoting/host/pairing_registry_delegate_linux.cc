@@ -14,6 +14,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "remoting/host/branding.h"
@@ -74,7 +75,7 @@ bool PairingRegistryDelegateLinux::DeleteAll() {
   bool success = true;
   for (base::FilePath pairing_file = enumerator.Next(); !pairing_file.empty();
        pairing_file = enumerator.Next()) {
-    success = success && base::DeleteFile(pairing_file, false);
+    success = success && base::DeleteFile(pairing_file);
   }
 
   return success;
@@ -139,7 +140,7 @@ bool PairingRegistryDelegateLinux::Delete(const std::string& client_id) {
   base::FilePath pairing_file = registry_path.Append(
       base::StringPrintf(kPairingFilenameFormat, client_id.c_str()));
 
-  return base::DeleteFile(pairing_file, false);
+  return base::DeleteFile(pairing_file);
 }
 
 base::FilePath PairingRegistryDelegateLinux::GetRegistryPath() {

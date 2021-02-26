@@ -20,6 +20,7 @@
 #include "api/test/network_emulation_manager.h"
 #include "api/test/peerconnection_quality_test_fixture.h"
 #include "api/test/simulated_network.h"
+#include "api/test/time_controller.h"
 #include "call/simulated_network.h"
 #include "media/base/vp9_profile.h"
 #include "modules/video_coding/codecs/vp9/include/vp9.h"
@@ -48,8 +49,6 @@ using VideoCodecConfig =
 namespace {
 
 constexpr int kTestDurationSec = 45;
-constexpr char kVp8TrustedRateControllerFieldTrial[] =
-    "WebRTC-LibvpxVp8TrustedRateController/Enabled/";
 
 EmulatedNetworkNode* CreateEmulatedNodeWithConfig(
     NetworkEmulationManager* emulation,
@@ -78,12 +77,13 @@ CreateTwoNetworkLinks(NetworkEmulationManager* emulation,
 
 std::unique_ptr<webrtc_pc_e2e::PeerConnectionE2EQualityTestFixture>
 CreateTestFixture(const std::string& test_case_name,
+                  TimeController& time_controller,
                   std::pair<EmulatedNetworkManagerInterface*,
                             EmulatedNetworkManagerInterface*> network_links,
                   rtc::FunctionView<void(PeerConfigurer*)> alice_configurer,
                   rtc::FunctionView<void(PeerConfigurer*)> bob_configurer) {
   auto fixture = webrtc_pc_e2e::CreatePeerConnectionE2EQualityTestFixture(
-      test_case_name, /*audio_quality_analyzer=*/nullptr,
+      test_case_name, time_controller, /*audio_quality_analyzer=*/nullptr,
       /*video_quality_analyzer=*/nullptr);
   fixture->AddPeer(network_links.first->network_thread(),
                    network_links.first->network_manager(), alice_configurer);
@@ -106,30 +106,13 @@ std::string ClipNameToClipPath(const char* clip_name) {
 
 }  // namespace
 
-class PCGenericDescriptorTest : public ::testing::TestWithParam<std::string> {
- public:
-  PCGenericDescriptorTest()
-      : field_trial_(AppendFieldTrials(GetParam())),
-        generic_descriptor_enabled_(
-            field_trial::IsEnabled("WebRTC-GenericDescriptor")) {}
-
-  std::string GetTestName(std::string base) {
-    if (generic_descriptor_enabled_)
-      base += "_generic_descriptor";
-    return base;
-  }
-
- private:
-  test::ScopedFieldTrials field_trial_;
-  bool generic_descriptor_enabled_;
-};
-
 #if defined(RTC_ENABLE_VP9)
-TEST(PCFullStackTest, ForemanCifWithoutPacketLossVp9) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Net_Delay_0_0_Plr_0_VP9) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_net_delay_0_0_plr_0_VP9",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -149,14 +132,16 @@ TEST(PCFullStackTest, ForemanCifWithoutPacketLossVp9) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCifPlr5Vp9) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_Delay_50_0_Plr_5_VP9_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.loss_percent = 5;
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_delay_50_0_plr_5_VP9"),
+      "pc_foreman_cif_delay_50_0_plr_5_VP9_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -179,17 +164,18 @@ TEST_P(PCGenericDescriptorTest, ForemanCifPlr5Vp9) {
 #if (defined(WEBRTC_ANDROID) &&                                   \
      (defined(WEBRTC_ARCH_ARM64) || defined(WEBRTC_ARCH_ARM))) || \
     (defined(WEBRTC_IOS) && defined(WEBRTC_ARCH_ARM64))
-#define MAYBE_GeneratorWithoutPacketLossVp9Profile2 \
-  DISABLED_GeneratorWithoutPacketLossVp9Profile2
+#define MAYBE_Pc_Generator_Net_Delay_0_0_Plr_0_VP9Profile2 \
+  DISABLED_Pc_Generator_Net_Delay_0_0_Plr_0_VP9Profile2
 #else
-#define MAYBE_GeneratorWithoutPacketLossVp9Profile2 \
-  GeneratorWithoutPacketLossVp9Profile2
+#define MAYBE_Pc_Generator_Net_Delay_0_0_Plr_0_VP9Profile2 \
+  Pc_Generator_Net_Delay_0_0_Plr_0_VP9Profile2
 #endif
-TEST(PCFullStackTest, MAYBE_GeneratorWithoutPacketLossVp9Profile2) {
+TEST(PCFullStackTest, MAYBE_Pc_Generator_Net_Delay_0_0_Plr_0_VP9Profile2) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_generator_net_delay_0_0_plr_0_VP9Profile2",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -241,11 +227,11 @@ TEST(PCFullStackTest, GeneratorWithoutPacketLossMultiplexI420AFrame) {
 */
 #endif  // defined(RTC_ENABLE_VP9)
 
-TEST(PCFullStackTest, ParisQcifWithoutPacketLoss) {
+TEST(PCFullStackTest, Pc_Net_Delay_0_0_Plr_0) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
-      "pc_net_delay_0_0_plr_0",
+      "pc_net_delay_0_0_plr_0", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -263,11 +249,13 @@ TEST(PCFullStackTest, ParisQcifWithoutPacketLoss) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCifWithoutPacketLoss) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_Net_Delay_0_0_Plr_0_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_net_delay_0_0_plr_0"),
+      "pc_foreman_cif_net_delay_0_0_plr_0_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -285,12 +273,14 @@ TEST_P(PCGenericDescriptorTest, ForemanCifWithoutPacketLoss) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCif30kbpsWithoutPacketLoss) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_30kbps_Net_Delay_0_0_Plr_0_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_30kbps_net_delay_0_0_plr_0"),
+      "pc_foreman_cif_30kbps_net_delay_0_0_plr_0_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 10);
@@ -299,44 +289,11 @@ TEST_P(PCGenericDescriptorTest, ForemanCif30kbpsWithoutPacketLoss) {
             video, ClipNameToClipPath("foreman_cif"));
         alice->AddVideoConfig(std::move(video), std::move(frame_generator));
 
-        PeerConnectionInterface::BitrateParameters bitrate_params;
-        bitrate_params.min_bitrate_bps = 30000;
-        bitrate_params.current_bitrate_bps = 30000;
-        bitrate_params.max_bitrate_bps = 30000;
-        alice->SetBitrateParameters(bitrate_params);
-      },
-      [](PeerConfigurer* bob) {});
-  RunParams run_params(TimeDelta::Seconds(kTestDurationSec));
-  run_params.video_codecs = {VideoCodecConfig(cricket::kVp8CodecName)};
-  run_params.use_flex_fec = false;
-  run_params.use_ulp_fec = false;
-  fixture->Run(std::move(run_params));
-}
-
-// TODO(webrtc:9722): Remove when experiment is cleaned up.
-TEST_P(PCGenericDescriptorTest,
-       ForemanCif30kbpsWithoutPacketLossTrustedRateControl) {
-  test::ScopedFieldTrials override_field_trials(
-      AppendFieldTrials(kVp8TrustedRateControllerFieldTrial));
-  std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
-      CreateNetworkEmulationManager();
-  BuiltInNetworkBehaviorConfig config;
-  auto fixture = CreateTestFixture(
-      GetTestName(
-          "pc_foreman_cif_30kbps_net_delay_0_0_plr_0_trusted_rate_ctrl"),
-      CreateTwoNetworkLinks(network_emulation_manager.get(), config),
-      [](PeerConfigurer* alice) {
-        VideoConfig video(352, 288, 10);
-        video.stream_label = "alice-video";
-        auto frame_generator = CreateFromYuvFileFrameGenerator(
-            video, ClipNameToClipPath("foreman_cif"));
-        alice->AddVideoConfig(std::move(video), std::move(frame_generator));
-
-        PeerConnectionInterface::BitrateParameters bitrate_params;
-        bitrate_params.min_bitrate_bps = 30000;
-        bitrate_params.current_bitrate_bps = 30000;
-        bitrate_params.max_bitrate_bps = 30000;
-        alice->SetBitrateParameters(bitrate_params);
+        BitrateSettings bitrate_settings;
+        bitrate_settings.min_bitrate_bps = 30000;
+        bitrate_settings.start_bitrate_bps = 30000;
+        bitrate_settings.max_bitrate_bps = 30000;
+        alice->SetBitrateSettings(bitrate_settings);
       },
       [](PeerConfigurer* bob) {});
   RunParams run_params(TimeDelta::Seconds(kTestDurationSec));
@@ -347,13 +304,14 @@ TEST_P(PCGenericDescriptorTest,
 }
 
 // Link capacity below default start rate.
-TEST(PCFullStackTest, ForemanCifLink150kbpsWithoutPacketLoss) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Link_150kbps_Net_Delay_0_0_Plr_0) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.link_capacity_kbps = 150;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_link_150kbps_net_delay_0_0_plr_0",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -370,7 +328,7 @@ TEST(PCFullStackTest, ForemanCifLink150kbpsWithoutPacketLoss) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCifLink130kbps100msDelay1PercentPacketLossUlpfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Link_130kbps_Delay100ms_Loss1_Ulpfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -379,6 +337,7 @@ TEST(PCFullStackTest, ForemanCifLink130kbps100msDelay1PercentPacketLossUlpfec) {
   config.loss_percent = 1;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_link_130kbps_delay100ms_loss1_ulpfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -395,7 +354,7 @@ TEST(PCFullStackTest, ForemanCifLink130kbps100msDelay1PercentPacketLossUlpfec) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCifLink50kbps100msDelay1PercentPacketLossUlpfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Link_50kbps_Delay100ms_Loss1_Ulpfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -404,6 +363,7 @@ TEST(PCFullStackTest, ForemanCifLink50kbps100msDelay1PercentPacketLossUlpfec) {
   config.loss_percent = 1;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_link_50kbps_delay100ms_loss1_ulpfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -421,7 +381,8 @@ TEST(PCFullStackTest, ForemanCifLink50kbps100msDelay1PercentPacketLossUlpfec) {
 }
 
 // Restricted network and encoder overproducing by 30%.
-TEST(PCFullStackTest, ForemanCifLink150kbpsBadRateController) {
+TEST(PCFullStackTest,
+     Pc_Foreman_Cif_Link_150kbps_Delay100ms_30pkts_Queue_Overshoot30) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -430,6 +391,7 @@ TEST(PCFullStackTest, ForemanCifLink150kbpsBadRateController) {
   config.queue_delay_ms = 100;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_link_150kbps_delay100ms_30pkts_queue_overshoot30",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -451,7 +413,7 @@ TEST(PCFullStackTest, ForemanCifLink150kbpsBadRateController) {
 // Packet rate and loss are low enough that loss will happen with ~3s interval.
 // This triggers protection overhead to toggle between zero and non-zero.
 // Link queue is restrictive enough to trigger loss on probes.
-TEST(PCFullStackTest, ForemanCifMediaCapacitySmallLossAndQueue) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Link_250kbps_Delay100ms_10pkts_Loss1) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -461,6 +423,7 @@ TEST(PCFullStackTest, ForemanCifMediaCapacitySmallLossAndQueue) {
   config.loss_percent = 1;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_link_250kbps_delay100ms_10pkts_loss1",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -478,14 +441,16 @@ TEST(PCFullStackTest, ForemanCifMediaCapacitySmallLossAndQueue) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCifPlr5) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_Delay_50_0_Plr_5_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.loss_percent = 5;
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_delay_50_0_plr_5"),
+      "pc_foreman_cif_delay_50_0_plr_5_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -502,14 +467,16 @@ TEST_P(PCGenericDescriptorTest, ForemanCifPlr5) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCifPlr5Ulpfec) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_Delay_50_0_Plr_5_Ulpfec_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.loss_percent = 5;
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_delay_50_0_plr_5_ulpfec"),
+      "pc_foreman_cif_delay_50_0_plr_5_ulpfec_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -526,7 +493,7 @@ TEST_P(PCGenericDescriptorTest, ForemanCifPlr5Ulpfec) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCifPlr5Flexfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Delay_50_0_Plr_5_Flexfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -534,6 +501,7 @@ TEST(PCFullStackTest, ForemanCifPlr5Flexfec) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_delay_50_0_plr_5_flexfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -550,7 +518,7 @@ TEST(PCFullStackTest, ForemanCifPlr5Flexfec) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCif500kbpsPlr3Flexfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_500kbps_Delay_50_0_Plr_3_Flexfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -559,6 +527,7 @@ TEST(PCFullStackTest, ForemanCif500kbpsPlr3Flexfec) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_500kbps_delay_50_0_plr_3_flexfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -575,7 +544,7 @@ TEST(PCFullStackTest, ForemanCif500kbpsPlr3Flexfec) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCif500kbpsPlr3Ulpfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_500kbps_Delay_50_0_Plr_3_Ulpfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -584,6 +553,7 @@ TEST(PCFullStackTest, ForemanCif500kbpsPlr3Ulpfec) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_500kbps_delay_50_0_plr_3_ulpfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -601,11 +571,12 @@ TEST(PCFullStackTest, ForemanCif500kbpsPlr3Ulpfec) {
 }
 
 #if defined(WEBRTC_USE_H264)
-TEST(PCFullStackTest, ForemanCifWithoutPacketlossH264) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Net_Delay_0_0_Plr_0_H264) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_net_delay_0_0_plr_0_H264",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -623,12 +594,13 @@ TEST(PCFullStackTest, ForemanCifWithoutPacketlossH264) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCif30kbpsWithoutPacketlossH264) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_30kbps_Net_Delay_0_0_Plr_0_H264) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_30kbps_net_delay_0_0_plr_0_H264",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 10);
@@ -637,11 +609,11 @@ TEST(PCFullStackTest, ForemanCif30kbpsWithoutPacketlossH264) {
             video, ClipNameToClipPath("foreman_cif"));
         alice->AddVideoConfig(std::move(video), std::move(frame_generator));
 
-        PeerConnectionInterface::BitrateParameters bitrate_params;
-        bitrate_params.min_bitrate_bps = 30000;
-        bitrate_params.current_bitrate_bps = 30000;
-        bitrate_params.max_bitrate_bps = 30000;
-        alice->SetBitrateParameters(bitrate_params);
+        BitrateSettings bitrate_settings;
+        bitrate_settings.min_bitrate_bps = 30000;
+        bitrate_settings.start_bitrate_bps = 30000;
+        bitrate_settings.max_bitrate_bps = 30000;
+        alice->SetBitrateSettings(bitrate_settings);
       },
       [](PeerConfigurer* bob) {});
   RunParams run_params(TimeDelta::Seconds(kTestDurationSec));
@@ -651,14 +623,16 @@ TEST(PCFullStackTest, ForemanCif30kbpsWithoutPacketlossH264) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCifPlr5H264) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_Delay_50_0_Plr_5_H264_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.loss_percent = 5;
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_delay_50_0_plr_5_H264"),
+      "pc_foreman_cif_delay_50_0_plr_5_H264_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -675,7 +649,7 @@ TEST_P(PCGenericDescriptorTest, ForemanCifPlr5H264) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCifPlr5H264SpsPpsIdrIsKeyframe) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Delay_50_0_Plr_5_H264_Sps_Pps_Idr) {
   test::ScopedFieldTrials override_field_trials(
       AppendFieldTrials("WebRTC-SpsPpsIdrIsH264Keyframe/Enabled/"));
 
@@ -686,6 +660,7 @@ TEST(PCFullStackTest, ForemanCifPlr5H264SpsPpsIdrIsKeyframe) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_delay_50_0_plr_5_H264_sps_pps_idr",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -702,7 +677,7 @@ TEST(PCFullStackTest, ForemanCifPlr5H264SpsPpsIdrIsKeyframe) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCifPlr5H264Flexfec) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_Delay_50_0_Plr_5_H264_Flexfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -710,6 +685,7 @@ TEST(PCFullStackTest, ForemanCifPlr5H264Flexfec) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_delay_50_0_plr_5_H264_flexfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -728,7 +704,7 @@ TEST(PCFullStackTest, ForemanCifPlr5H264Flexfec) {
 
 // Ulpfec with H264 is an unsupported combination, so this test is only useful
 // for debugging. It is therefore disabled by default.
-TEST(PCFullStackTest, DISABLED_ForemanCifPlr5H264Ulpfec) {
+TEST(PCFullStackTest, DISABLED_Pc_Foreman_Cif_Delay_50_0_Plr_5_H264_Ulpfec) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -736,6 +712,7 @@ TEST(PCFullStackTest, DISABLED_ForemanCifPlr5H264Ulpfec) {
   config.queue_delay_ms = 50;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_delay_50_0_plr_5_H264_ulpfec",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -753,7 +730,7 @@ TEST(PCFullStackTest, DISABLED_ForemanCifPlr5H264Ulpfec) {
 }
 #endif  // defined(WEBRTC_USE_H264)
 
-TEST(PCFullStackTest, ForemanCif500kbps) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_500kbps) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -761,7 +738,7 @@ TEST(PCFullStackTest, ForemanCif500kbps) {
   config.queue_delay_ms = 0;
   config.link_capacity_kbps = 500;
   auto fixture = CreateTestFixture(
-      "pc_foreman_cif_500kbps",
+      "pc_foreman_cif_500kbps", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -778,7 +755,7 @@ TEST(PCFullStackTest, ForemanCif500kbps) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCif500kbpsLimitedQueue) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_500kbps_32pkts_Queue) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -787,6 +764,7 @@ TEST(PCFullStackTest, ForemanCif500kbpsLimitedQueue) {
   config.link_capacity_kbps = 500;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_500kbps_32pkts_queue",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -803,7 +781,7 @@ TEST(PCFullStackTest, ForemanCif500kbpsLimitedQueue) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ForemanCif500kbps100ms) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_500kbps_100ms) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -812,6 +790,7 @@ TEST(PCFullStackTest, ForemanCif500kbps100ms) {
   config.link_capacity_kbps = 500;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_500kbps_100ms",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -828,7 +807,8 @@ TEST(PCFullStackTest, ForemanCif500kbps100ms) {
   fixture->Run(std::move(run_params));
 }
 
-TEST_P(PCGenericDescriptorTest, ForemanCif500kbps100msLimitedQueue) {
+TEST(PCGenericDescriptorTest,
+     Pc_Foreman_Cif_500kbps_100ms_32pkts_Queue_Generic_Descriptor) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -836,7 +816,8 @@ TEST_P(PCGenericDescriptorTest, ForemanCif500kbps100msLimitedQueue) {
   config.queue_delay_ms = 100;
   config.link_capacity_kbps = 500;
   auto fixture = CreateTestFixture(
-      GetTestName("pc_foreman_cif_500kbps_100ms_32pkts_queue"),
+      "pc_foreman_cif_500kbps_100ms_32pkts_queue_generic_descriptor",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -874,7 +855,7 @@ TEST(PCFullStackTest, ForemanCif500kbps100msLimitedQueueRecvBwe) {
 }
 */
 
-TEST(PCFullStackTest, ForemanCif1000kbps100msLimitedQueue) {
+TEST(PCFullStackTest, Pc_Foreman_Cif_1000kbps_100ms_32pkts_Queue) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -883,6 +864,7 @@ TEST(PCFullStackTest, ForemanCif1000kbps100msLimitedQueue) {
   config.link_capacity_kbps = 1000;
   auto fixture = CreateTestFixture(
       "pc_foreman_cif_1000kbps_100ms_32pkts_queue",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(352, 288, 30);
@@ -900,7 +882,7 @@ TEST(PCFullStackTest, ForemanCif1000kbps100msLimitedQueue) {
 }
 
 // TODO(sprang): Remove this if we have the similar ModerateLimits below?
-TEST(PCFullStackTest, ConferenceMotionHd2000kbps100msLimitedQueue) {
+TEST(PCFullStackTest, Pc_Conference_Motion_Hd_2000kbps_100ms_32pkts_Queue) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -909,35 +891,7 @@ TEST(PCFullStackTest, ConferenceMotionHd2000kbps100msLimitedQueue) {
   config.link_capacity_kbps = 2000;
   auto fixture = CreateTestFixture(
       "pc_conference_motion_hd_2000kbps_100ms_32pkts_queue",
-      CreateTwoNetworkLinks(network_emulation_manager.get(), config),
-      [](PeerConfigurer* alice) {
-        VideoConfig video(1280, 720, 50);
-        video.stream_label = "alice-video";
-        auto frame_generator = CreateFromYuvFileFrameGenerator(
-            video, ClipNameToClipPath("ConferenceMotion_1280_720_50"));
-        alice->AddVideoConfig(std::move(video), std::move(frame_generator));
-      },
-      [](PeerConfigurer* bob) {});
-  RunParams run_params(TimeDelta::Seconds(kTestDurationSec));
-  run_params.video_codecs = {VideoCodecConfig(cricket::kVp8CodecName)};
-  run_params.use_flex_fec = false;
-  run_params.use_ulp_fec = false;
-  fixture->Run(std::move(run_params));
-}
-
-// TODO(webrtc:9722): Remove when experiment is cleaned up.
-TEST(PCFullStackTest, ConferenceMotionHd1TLModerateLimitsWhitelistVp8) {
-  test::ScopedFieldTrials override_field_trials(
-      AppendFieldTrials(kVp8TrustedRateControllerFieldTrial));
-  std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
-      CreateNetworkEmulationManager();
-  BuiltInNetworkBehaviorConfig config;
-  config.queue_length_packets = 50;
-  config.loss_percent = 3;
-  config.queue_delay_ms = 100;
-  config.link_capacity_kbps = 2000;
-  auto fixture = CreateTestFixture(
-      "pc_conference_motion_hd_1tl_moderate_limits_trusted_rate_ctrl",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(1280, 720, 50);
@@ -956,7 +910,7 @@ TEST(PCFullStackTest, ConferenceMotionHd1TLModerateLimitsWhitelistVp8) {
 
 /*
 // TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST_P(PCGenericDescriptorTest, ConferenceMotionHd2TLModerateLimits) {
+TEST(PCGenericDescriptorTest, ConferenceMotionHd2TLModerateLimits) {
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging conf_motion_hd;
   conf_motion_hd.call.send_side_bwe = true;
@@ -970,7 +924,7 @@ TEST_P(PCGenericDescriptorTest, ConferenceMotionHd2TLModerateLimits) {
       false,   false,
       false,   ClipNameToClipPath("ConferenceMotion_1280_720_50")};
   conf_motion_hd.analyzer = {
-      GetTestName("conference_motion_hd_2tl_moderate_limits"), 0.0, 0.0,
+      "conference_motion_hd_2tl_moderate_limits_generic_descriptor", 0.0, 0.0,
       kTestDurationSec};
   conf_motion_hd.config->queue_length_packets = 50;
   conf_motion_hd.config->loss_percent = 3;
@@ -1081,7 +1035,7 @@ TEST(PCFullStackTest,
 */
 
 #if defined(RTC_ENABLE_VP9)
-TEST(PCFullStackTest, ConferenceMotionHd2000kbps100msLimitedQueueVP9) {
+TEST(PCFullStackTest, Pc_Conference_Motion_Hd_2000kbps_100ms_32pkts_Queue_Vp9) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -1090,6 +1044,7 @@ TEST(PCFullStackTest, ConferenceMotionHd2000kbps100msLimitedQueueVP9) {
   config.link_capacity_kbps = 2000;
   auto fixture = CreateTestFixture(
       "pc_conference_motion_hd_2000kbps_100ms_32pkts_queue_vp9",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(1280, 720, 50);
@@ -1109,11 +1064,12 @@ TEST(PCFullStackTest, ConferenceMotionHd2000kbps100msLimitedQueueVP9) {
 }
 #endif
 
-TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_NoConferenceMode) {
+TEST(PCFullStackTest, Pc_Screenshare_Slides_No_Conference_Mode) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_screenshare_slides_no_conference_mode",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1132,11 +1088,11 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_NoConferenceMode) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL) {
+TEST(PCFullStackTest, Pc_Screenshare_Slides) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
-      "pc_screenshare_slides",
+      "pc_screenshare_slides", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1158,11 +1114,12 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL) {
 
 // TODO(bugs.webrtc.org/9840): Investigate why is this test flaky on Win/Mac.
 #if !defined(WEBRTC_MAC) && !defined(WEBRTC_WIN)
-TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_NoConferenceMode) {
+TEST(PCFullStackTest, Pc_Screenshare_Slides_Simulcast_No_Conference_Mode) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_screenshare_slides_simulcast_no_conference_mode",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1183,11 +1140,12 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_NoConferenceMode) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast) {
+TEST(PCFullStackTest, Pc_Screenshare_Slides_Simulcast) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_screenshare_slides_simulcast",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1214,40 +1172,6 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast) {
 #if !defined(WEBRTC_MAC)
 // TODO(bugs.webrtc.org/9840): Investigate why is this test flaky on Win/Mac.
 #if !defined(WEBRTC_WIN)
-const char kScreenshareSimulcastVariableFramerateExperiment[] =
-    "WebRTC-VP8VariableFramerateScreenshare/"
-    "Enabled,min_fps:5.0,min_qp:15,undershoot:30/";
-// TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_Variable_Framerate) {
-  test::ScopedFieldTrials field_trial(
-      AppendFieldTrials(kScreenshareSimulcastVariableFramerateExperiment));
-  auto fixture = CreateVideoQualityTestFixture();
-  ParamsWithLogging screenshare;
-  screenshare.call.send_side_bwe = true;
-  screenshare.screenshare[0] = {true, false, 10};
-  screenshare.video[0] = {true,    1850,  1110,  30, 800000, 2500000,
-                          2500000, false, "VP8", 2,  1,      400000,
-                          false,   false, false, ""};
-  screenshare.analyzer = {"screenshare_slides_simulcast_variable_framerate",
-                          0.0, 0.0, kTestDurationSec};
-  ParamsWithLogging screenshare_params_high;
-  screenshare_params_high.video[0] = {
-      true,  1850, 1110, 60,     600000, 1250000, 1250000, false,
-      "VP8", 2,    0,    400000, false,  false,   false,   ""};
-  VideoQualityTest::Params screenshare_params_low;
-  screenshare_params_low.video[0] = {true,    1850,  1110,  5, 30000, 200000,
-                                     1000000, false, "VP8", 2, 0,     400000,
-                                     false,   false, false, ""};
-
-  std::vector<VideoStream> streams = {
-      VideoQualityTest::DefaultVideoStream(screenshare_params_low, 0),
-      VideoQualityTest::DefaultVideoStream(screenshare_params_high, 0)};
-  screenshare.ss[0] = {
-      streams, 1, 1, 0, InterLayerPredMode::kOn, std::vector<SpatialLayer>(),
-      false};
-  fixture->RunWithAnalyzer(screenshare);
-}
-
 // TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
 TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_low) {
   auto fixture = CreateVideoQualityTestFixture();
@@ -1295,7 +1219,7 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Scroll) {
 }
 
 // TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST_P(PCGenericDescriptorTest, ScreenshareSlidesVP8_2TL_LossyNet) {
+TEST(PCGenericDescriptorTest, Screenshare_Slides_Lossy_Net_Generic_Descriptor) {
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging screenshare;
   screenshare.call.send_side_bwe = true;
@@ -1303,12 +1227,12 @@ TEST_P(PCGenericDescriptorTest, ScreenshareSlidesVP8_2TL_LossyNet) {
                           1000000, false, "VP8", 2, 1,     400000,
                           false,   false, false, ""};
   screenshare.screenshare[0] = {true, false, 10};
-  screenshare.analyzer = {GetTestName("screenshare_slides_lossy_net"), 0.0, 0.0,
-                          kTestDurationSec};
+  screenshare.analyzer = {"screenshare_slides_lossy_net_generic_descriptor",
+                          0.0, 0.0, kTestDurationSec};
   screenshare.config->loss_percent = 5;
   screenshare.config->queue_delay_ms = 200;
   screenshare.config->link_capacity_kbps = 500;
-  screenshare.call.generic_descriptor = GenericDescriptorEnabled();
+  screenshare.call.generic_descriptor = true;
   fixture->RunWithAnalyzer(screenshare);
 }
 
@@ -1421,7 +1345,7 @@ ParamsWithLogging::Video SimulcastVp8VideoLow() {
 
 #if defined(RTC_ENABLE_VP9)
 
-TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_High_Fps) {
+TEST(PCFullStackTest, Pc_Screenshare_Slides_Vp9_3sl_High_Fps) {
   webrtc::test::ScopedFieldTrials override_trials(
       AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
                         "Enabled,inter_layer_pred_mode:on/"));
@@ -1429,6 +1353,7 @@ TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_High_Fps) {
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
       "pc_screenshare_slides_vp9_3sl_high_fps",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1450,14 +1375,14 @@ TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_High_Fps) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, VP9SVC_3SL_High) {
+TEST(PCFullStackTest, Pc_Vp9svc_3sl_High) {
   webrtc::test::ScopedFieldTrials override_trials(
       AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
                         "Enabled,inter_layer_pred_mode:on/"));
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
-      "pc_vp9svc_3sl_high",
+      "pc_vp9svc_3sl_high", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1479,14 +1404,14 @@ TEST(PCFullStackTest, VP9SVC_3SL_High) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, VP9SVC_3SL_Low) {
+TEST(PCFullStackTest, Pc_Vp9svc_3sl_Low) {
   webrtc::test::ScopedFieldTrials override_trials(
       AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
                         "Enabled,inter_layer_pred_mode:on/"));
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
-      "pc_vp9svc_3sl_low",
+      "pc_vp9svc_3sl_low", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
@@ -1581,8 +1506,7 @@ TEST(PCFullStackTest, VP9KSVC_3SL_Medium_Network_Restricted) {
 // TODO(webrtc:9722): Remove when experiment is cleaned up.
 TEST(PCFullStackTest, VP9KSVC_3SL_Medium_Network_Restricted_Trusted_Rate) {
   webrtc::test::ScopedFieldTrials override_trials(
-      AppendFieldTrials("WebRTC-Vp9IssueKeyFrameOnLayerDeactivation/Enabled/"
-                        "WebRTC-LibvpxVp9TrustedRateController/Enabled/"));
+      AppendFieldTrials("WebRTC-Vp9IssueKeyFrameOnLayerDeactivation/Enabled/"));
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging simulcast;
   simulcast.call.send_side_bwe = true;
@@ -1604,11 +1528,11 @@ TEST(PCFullStackTest, VP9KSVC_3SL_Medium_Network_Restricted_Trusted_Rate) {
 // Android bots can't handle FullHD, so disable the test.
 // TODO(bugs.webrtc.org/9220): Investigate source of flakiness on Mac.
 #if defined(WEBRTC_ANDROID) || defined(WEBRTC_MAC)
-#define MAYBE_SimulcastFullHdOveruse DISABLED_SimulcastFullHdOveruse
+#define MAYBE_Pc_Simulcast_HD_High DISABLED_Pc_Simulcast_HD_High
 #else
-#define MAYBE_SimulcastFullHdOveruse SimulcastFullHdOveruse
+#define MAYBE_Pc_Simulcast_HD_High Pc_Simulcast_HD_High
 #endif
-TEST(PCFullStackTest, MAYBE_SimulcastFullHdOveruse) {
+TEST(PCFullStackTest, MAYBE_Pc_Simulcast_HD_High) {
   webrtc::test::ScopedFieldTrials override_trials(AppendFieldTrials(
       "WebRTC-ForceSimulatedOveruseIntervalMs/1000-50000-300/"));
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
@@ -1617,7 +1541,7 @@ TEST(PCFullStackTest, MAYBE_SimulcastFullHdOveruse) {
   config.loss_percent = 0;
   config.queue_delay_ms = 100;
   auto fixture = CreateTestFixture(
-      "pc_simulcast_HD_high",
+      "pc_simulcast_HD_high", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(1920, 1080, 30);
@@ -1634,7 +1558,7 @@ TEST(PCFullStackTest, MAYBE_SimulcastFullHdOveruse) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, SimulcastVP8_3SL_High) {
+TEST(PCFullStackTest, Pc_Simulcast_Vp8_3sl_High) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
@@ -1642,6 +1566,7 @@ TEST(PCFullStackTest, SimulcastVP8_3SL_High) {
   config.queue_delay_ms = 100;
   auto fixture = CreateTestFixture(
       "pc_simulcast_vp8_3sl_high",
+      *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(1280, 720, 30);
@@ -1659,14 +1584,14 @@ TEST(PCFullStackTest, SimulcastVP8_3SL_High) {
   fixture->Run(std::move(run_params));
 }
 
-TEST(PCFullStackTest, SimulcastVP8_3SL_Low) {
+TEST(PCFullStackTest, Pc_Simulcast_Vp8_3sl_Low) {
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   BuiltInNetworkBehaviorConfig config;
   config.loss_percent = 0;
   config.queue_delay_ms = 100;
   auto fixture = CreateTestFixture(
-      "pc_simulcast_vp8_3sl_low",
+      "pc_simulcast_vp8_3sl_low", *network_emulation_manager->time_controller(),
       CreateTwoNetworkLinks(network_emulation_manager.get(), config),
       [](PeerConfigurer* alice) {
         VideoConfig video(1280, 720, 30);
@@ -1812,12 +1737,6 @@ TEST(PCFullStackTest, MAYBE_LargeRoomVP8_50thumb) {
   fixture->RunWithAnalyzer(large_room);
 }
 */
-
-INSTANTIATE_TEST_SUITE_P(
-    PCFullStackTest,
-    PCGenericDescriptorTest,
-    ::testing::Values("WebRTC-GenericDescriptor/Disabled/",
-                      "WebRTC-GenericDescriptor/Enabled/"));
 
 class PCDualStreamsTest : public ::testing::TestWithParam<int> {};
 

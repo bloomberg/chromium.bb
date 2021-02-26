@@ -14,7 +14,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "ui/events/devices/gamepad_device.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
@@ -74,8 +74,13 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
   // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
 
-  // Returns true if the converter is used for a mouse device;
+  // Returns true if the converter is used for a mouse device (that isn't a
+  // pointing stick);
   virtual bool HasMouse() const;
+
+  // Returns true if the converter is used for a pointing stick device (such as
+  // a TrackPoint);
+  virtual bool HasPointingStick() const;
 
   // Returns true if the converter is used for a touchpad device.
   virtual bool HasTouchpad() const;
@@ -102,7 +107,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   // Returns information for all axes if the converter is used for a gamepad
   // device.
-  virtual std::vector<ui::GamepadDevice::Axis> GetGamepadAxes() const;
+  virtual std::vector<GamepadDevice::Axis> GetGamepadAxes() const;
+
+  // Returns whether the gamepad device supports rumble type force feedback.
+  virtual bool GetGamepadRumbleCapability() const;
 
   // Sets which keyboard keys should be processed. If |enable_filter| is
   // false, all keys are allowed and |allowed_keys| is ignored.
@@ -121,6 +129,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   // Helper to generate a base::TimeTicks from an input_event's time
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);
+
+  // Handle gamepad force feedback effects.
+  virtual void PlayVibrationEffect(uint8_t amplitude, uint16_t duration_millis);
+  virtual void StopVibration();
 
  protected:
   // base::MessagePumpForUI::FdWatcher:

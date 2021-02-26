@@ -25,7 +25,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
-#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/isolation_opt_in_hints.h"
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "services/network/public/cpp/origin_policy.h"
@@ -34,6 +33,7 @@
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
@@ -49,8 +49,8 @@
 
 namespace IPC {
 
-// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
-// disappears.
+// TODO(Richard): Remove this traits after usage of
+// content::mojom::OpenURLParams disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   typedef network::DataElement param_type;
@@ -61,7 +61,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
+// TODO(Richard): Remove this traits after usage of OpenURLParams struct
 // disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
@@ -96,9 +96,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::BlockedByResponseReason,
                           network::mojom::BlockedByResponseReason::kMaxValue)
 
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::IPAddressSpace,
+                          network::mojom::IPAddressSpace::kMaxValue)
+
 IPC_STRUCT_TRAITS_BEGIN(network::CorsErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)
   IPC_STRUCT_TRAITS_MEMBER(failed_parameter)
+  IPC_STRUCT_TRAITS_MEMBER(resource_address_space)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)

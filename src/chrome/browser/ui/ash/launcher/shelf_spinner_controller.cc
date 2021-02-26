@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
+#include "base/numerics/ranges.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -41,8 +42,7 @@ constexpr double kInactiveTransparency = 0.5;
 double TimeProportionSince(const base::Time& t1,
                            const base::Time& t2,
                            const base::TimeDelta& d) {
-  return std::max(
-      0.0, std::min(1.0, (t2 - t1).InMillisecondsF() / d.InMillisecondsF()));
+  return base::ClampToRange((t2 - t1) / d, 0.0, 1.0);
 }
 
 }  // namespace
@@ -224,7 +224,9 @@ bool ShelfSpinnerController::RemoveSpinnerFromControllerMap(
 
   const ash::ShelfID shelf_id(app_id);
   DCHECK_EQ(it->second.controller(),
-            owner_->shelf_model()->GetShelfItemDelegate(shelf_id));
+            it->second.IsKilled()
+                ? nullptr
+                : owner_->shelf_model()->GetShelfItemDelegate(shelf_id));
   app_controller_map_.erase(it);
 
   return true;

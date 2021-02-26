@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
@@ -110,8 +110,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
+        temp_dir_.GetPath(), quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -121,8 +120,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupInMemoryContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        base::FilePath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
+        base::FilePath(), quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -132,8 +130,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupContextWithFactories(LevelDBFactory* factory, base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        temp_dir_.GetPath(), quota_manager_proxy_.get(), clock,
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
@@ -696,8 +693,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
       : IndexedDBCallbacks(nullptr,
                            url::Origin(),
                            mojo::NullAssociatedRemote(),
-                           base::SequencedTaskRunnerHandle::Get()),
-        error_called_(false) {}
+                           base::SequencedTaskRunnerHandle::Get()) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
     EXPECT_EQ(blink::mojom::IDBException::kQuotaError, error.code());
@@ -706,7 +702,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
 
  private:
   ~LookingForQuotaErrorMockCallbacks() override = default;
-  bool error_called_;
+  bool error_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LookingForQuotaErrorMockCallbacks);
 };
@@ -760,7 +756,7 @@ TEST_F(IndexedDBFactoryTest, NotifyQuotaOnDatabaseError) {
 
 class ErrorCallbacks : public MockIndexedDBCallbacks {
  public:
-  ErrorCallbacks() : MockIndexedDBCallbacks(false), saw_error_(false) {}
+  ErrorCallbacks() : MockIndexedDBCallbacks(false) {}
 
   void OnError(const IndexedDBDatabaseError& error) override {
     saw_error_ = true;
@@ -769,7 +765,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
 
  private:
   ~ErrorCallbacks() override = default;
-  bool saw_error_;
+  bool saw_error_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorCallbacks);
 };

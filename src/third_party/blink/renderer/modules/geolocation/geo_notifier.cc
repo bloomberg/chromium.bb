@@ -23,7 +23,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       error_callback_(error_callback),
       options_(options),
       timer_(MakeGarbageCollected<Timer>(
-          geolocation->GetWindow()->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          geolocation->DomWindow()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &GeoNotifier::TimerFired)),
       use_cached_position_(false) {
@@ -37,7 +37,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       /* buckets = */ 20);
 }
 
-void GeoNotifier::Trace(Visitor* visitor) {
+void GeoNotifier::Trace(Visitor* visitor) const {
   visitor->Trace(geolocation_);
   visitor->Trace(options_);
   visitor->Trace(success_callback_);
@@ -86,7 +86,7 @@ bool GeoNotifier::IsTimerActive() const {
   return timer_->IsActive();
 }
 
-void GeoNotifier::Timer::Trace(Visitor* visitor) {
+void GeoNotifier::Timer::Trace(Visitor* visitor) const {
   visitor->Trace(notifier_);
 }
 

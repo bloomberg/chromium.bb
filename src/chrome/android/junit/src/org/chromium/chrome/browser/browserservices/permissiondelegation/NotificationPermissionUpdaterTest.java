@@ -9,9 +9,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
@@ -33,9 +33,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
@@ -44,7 +42,6 @@ import org.chromium.components.embedder_support.util.Origin;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)
 public class NotificationPermissionUpdaterTest {
     private static final Origin ORIGIN = Origin.create("https://www.website.com");
     private static final String PACKAGE_NAME = "com.package.name";
@@ -182,16 +179,14 @@ public class NotificationPermissionUpdaterTest {
     /** "Installs" a Trusted Web Activity Service for the origin. */
     @SuppressWarnings("unchecked")
     private void installTrustedWebActivityService(Origin origin, String packageName) {
-        when(mTrustedWebActivityClient.checkNotificationPermission(eq(origin), any()))
-                .thenAnswer(invocation -> {
-                    TrustedWebActivityClient.NotificationPermissionCheckCallback callback =
-                            ((TrustedWebActivityClient.NotificationPermissionCheckCallback)
-                                            invocation.getArgument(1));
-                    callback.onPermissionCheck(
-                            new ComponentName(packageName, "FakeClass"),
-                            mNotificationsEnabled);
-                    return true;
-                });
+        doAnswer(invocation -> {
+            TrustedWebActivityClient.PermissionCheckCallback callback =
+                    invocation.getArgument(1);
+            callback.onPermissionCheck(
+                    new ComponentName(packageName, "FakeClass"),
+                    mNotificationsEnabled);
+            return true;
+        }).when(mTrustedWebActivityClient).checkNotificationPermission(eq(origin), any());
     }
 
     private void setNotificationsEnabledForClient(boolean enabled) {
@@ -199,8 +194,12 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void uninstallTrustedWebActivityService(Origin origin) {
-        when(mTrustedWebActivityClient.checkNotificationPermission(eq(origin), any()))
-                .thenReturn(false);
+        doAnswer(invocation -> {
+            TrustedWebActivityClient.PermissionCheckCallback callback =
+                    invocation.getArgument(1);
+            callback.onNoTwaFound();
+            return true;
+        }).when(mTrustedWebActivityClient).checkNotificationPermission(eq(origin), any());
     }
 
     private void verifyPermissionNotUpdated() {

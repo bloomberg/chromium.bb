@@ -20,24 +20,15 @@
 namespace gpu {
 namespace {
 
-class MockBufferMapReadCallback {
+class MockBufferMapCallback {
  public:
-  MOCK_METHOD4(Call,
-               void(WGPUBufferMapAsyncStatus status,
-                    const uint32_t* ptr,
-                    uint64_t data_length,
-                    void* userdata));
+  MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
 };
+std::unique_ptr<testing::StrictMock<MockBufferMapCallback>>
+    mock_buffer_map_callback;
 
-std::unique_ptr<testing::StrictMock<MockBufferMapReadCallback>>
-    mock_buffer_map_read_callback;
-void ToMockBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
-                                 const void* ptr,
-                                 uint64_t data_length,
-                                 void* userdata) {
-  // Assume the data is uint32_t
-  mock_buffer_map_read_callback->Call(status, static_cast<const uint32_t*>(ptr),
-                                      data_length, userdata);
+void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
+  mock_buffer_map_callback->Call(status, userdata);
 }
 
 }  // namespace
@@ -48,6 +39,10 @@ class SharedImageGLBackingProduceDawnTest : public WebGPUTest {
     WebGPUTest::SetUp();
     WebGPUTest::Options option;
     Initialize(option);
+
+    if (ShouldSkipTest()) {
+      return;
+    }
 
     gpu::ContextCreationAttribs attributes;
     attributes.alpha_size = 8;
@@ -64,22 +59,25 @@ class SharedImageGLBackingProduceDawnTest : public WebGPUTest {
     ContextResult result = gl_context_->Initialize(
         GetGpuServiceHolder()->task_executor(), nullptr, true,
         gpu::kNullSurfaceHandle, attributes, option.shared_memory_limits,
-        nullptr, nullptr, base::ThreadTaskRunnerHandle::Get());
+        nullptr, nullptr, nullptr, nullptr,
+        base::ThreadTaskRunnerHandle::Get());
     ASSERT_EQ(result, ContextResult::kSuccess);
-    mock_buffer_map_read_callback =
-        std::make_unique<testing::StrictMock<MockBufferMapReadCallback>>();
+    mock_buffer_map_callback =
+        std::make_unique<testing::StrictMock<MockBufferMapCallback>>();
   }
 
   void TearDown() override {
     WebGPUTest::TearDown();
     gl_context_.reset();
-    mock_buffer_map_read_callback = nullptr;
+    mock_buffer_map_callback = nullptr;
   }
 
   bool ShouldSkipTest() {
 // Windows is the only platform enabled passthrough in this test.
 #if defined(OS_WIN)
-    return false;
+    // Skip the test if there is no GPU service holder. It is not created if
+    // Dawn is not supported on the platform (Win7).
+    return GetGpuServiceHolder() == nullptr;
 #else
     return true;
 #endif  // defined(OS_WIN)
@@ -110,7 +108,8 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
   SharedImageInterface* sii = gl_context_->GetSharedImageInterface();
   Mailbox gl_mailbox = sii->CreateSharedImage(
       viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
-      SHARED_IMAGE_USAGE_GLES2);
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2,
+      kNullSurfaceHandle);
   SyncToken mailbox_produced_token = sii->GenVerifiedSyncToken();
   gl()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
   GLuint texture =
@@ -156,17 +155,16 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
     buffer_desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
 
-    wgpu::TextureCopyView copy_src;
+    wgpu::TextureCopyView copy_src = {};
     copy_src.texture = texture;
     copy_src.mipLevel = 0;
-    copy_src.arrayLayer = 0;
     copy_src.origin = {0, 0, 0};
 
-    wgpu::BufferCopyView copy_dst;
+    wgpu::BufferCopyView copy_dst = {};
     copy_dst.buffer = readback_buffer;
-    copy_dst.offset = 0;
-    copy_dst.bytesPerRow = 256;
-    copy_dst.rowsPerImage = 0;
+    copy_dst.layout.offset = 0;
+    copy_dst.layout.bytesPerRow = 256;
+    copy_dst.layout.rowsPerImage = 0;
 
     wgpu::Extent3D copy_size = {1, 1, 1};
 
@@ -181,15 +179,16 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
                                 reservation.generation);
 
     // Map the buffer and assert the pixel is the correct value.
-    readback_buffer.MapReadAsync(ToMockBufferMapReadCallback, this);
-    uint32_t buffer_contents = 0xFF00FF00;
-    EXPECT_CALL(*mock_buffer_map_read_callback,
-                Call(WGPUBufferMapAsyncStatus_Success,
-                     testing::Pointee(testing::Eq(buffer_contents)),
-                     sizeof(uint32_t), this))
+    readback_buffer.MapAsync(wgpu::MapMode::Read, 0, 4, ToMockBufferMapCallback,
+                             nullptr);
+    EXPECT_CALL(*mock_buffer_map_callback,
+                Call(WGPUBufferMapAsyncStatus_Success, nullptr))
         .Times(1);
 
     WaitForCompletion(device);
+
+    const void* data = readback_buffer.GetConstMappedRange(0, 4);
+    EXPECT_EQ(0xFF00FF00, *static_cast<const uint32_t*>(data));
   }
 }
 

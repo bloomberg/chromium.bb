@@ -8,7 +8,7 @@ import * as UI from '../ui/ui.js';
 
 export class LayerPaintProfilerView extends UI.SplitWidget.SplitWidget {
   /**
-   * @param {function(string=)} showImageCallback
+   * @param {function(string=):void} showImageCallback
    */
   constructor(showImageCallback) {
     super(true, false);

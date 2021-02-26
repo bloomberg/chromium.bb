@@ -12,10 +12,10 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/assistant/assistant_alarm_timer_controller.h"
+#include "ash/assistant/assistant_alarm_timer_controller_impl.h"
 #include "ash/assistant/assistant_interaction_controller_impl.h"
-#include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_screen_context_controller.h"
+#include "ash/assistant/assistant_notification_controller_impl.h"
+#include "ash/assistant/assistant_screen_context_controller_impl.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_state_controller.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
@@ -32,7 +32,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -71,11 +71,10 @@ class ASH_EXPORT AssistantControllerImpl
   // AssistantController:
   void AddObserver(AssistantControllerObserver* observer) override;
   void RemoveObserver(AssistantControllerObserver* observer) override;
+  void OpenAssistantSettings() override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
-  // TODO(updowndota): Refactor Set() calls to use a factory pattern.
-  void SetAssistant(mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
-                        assistant) override;
+  void SetAssistant(chromeos::assistant::Assistant* assistant) override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
@@ -99,15 +98,15 @@ class ASH_EXPORT AssistantControllerImpl
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
-  AssistantAlarmTimerController* alarm_timer_controller() {
+  AssistantAlarmTimerControllerImpl* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
   }
 
-  AssistantNotificationController* notification_controller() {
+  AssistantNotificationControllerImpl* notification_controller() {
     return &assistant_notification_controller_;
   }
 
-  AssistantScreenContextController* screen_context_controller() {
+  AssistantScreenContextControllerImpl* screen_context_controller() {
     return &assistant_screen_context_controller_;
   }
 
@@ -136,15 +135,6 @@ class ASH_EXPORT AssistantControllerImpl
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
-  void BindAlarmTimerController(
-      mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver)
-      override;
-  void BindNotificationController(
-      mojo::PendingReceiver<mojom::AssistantNotificationController> receiver)
-      override;
-  void BindScreenContextController(
-      mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver)
-      override;
   void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) override;
 
@@ -156,17 +146,18 @@ class ASH_EXPORT AssistantControllerImpl
       assistant_volume_control_receiver_{this};
   mojo::RemoteSet<mojom::VolumeObserver> volume_observers_;
 
-  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   // Assistant sub-controllers.
-  AssistantAlarmTimerController assistant_alarm_timer_controller_{this};
+  AssistantAlarmTimerControllerImpl assistant_alarm_timer_controller_{this};
   AssistantInteractionControllerImpl assistant_interaction_controller_{this};
-  AssistantNotificationController assistant_notification_controller_;
+  AssistantNotificationControllerImpl assistant_notification_controller_;
   AssistantStateController assistant_state_controller_;
-  AssistantScreenContextController assistant_screen_context_controller_{this};
+  AssistantScreenContextControllerImpl assistant_screen_context_controller_{
+      this};
   AssistantSetupController assistant_setup_controller_{this};
-  AssistantSuggestionsControllerImpl assistant_suggestions_controller_{this};
-  AssistantUiControllerImpl assistant_ui_controller_;
+  AssistantSuggestionsControllerImpl assistant_suggestions_controller_;
+  AssistantUiControllerImpl assistant_ui_controller_{this};
   AssistantWebUiController assistant_web_ui_controller_;
 
   AssistantViewDelegateImpl view_delegate_{this};

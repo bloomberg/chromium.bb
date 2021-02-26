@@ -42,11 +42,6 @@ inline MdnsRecord CreateGoodbyeRecord(const MdnsRecord& record) {
                     record.record_type(), kGoodbyeTtl, record.rdata());
 }
 
-inline void ValidateRecord(const MdnsRecord& record) {
-  OSP_DCHECK(record.dns_type() != DnsType::kANY);
-  OSP_DCHECK(record.dns_class() != DnsClass::kANY);
-}
-
 }  // namespace
 
 MdnsPublisher::MdnsPublisher(MdnsSender* sender,
@@ -74,11 +69,11 @@ MdnsPublisher::~MdnsPublisher() {
 
 Error MdnsPublisher::RegisterRecord(const MdnsRecord& record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+  OSP_DCHECK(record.dns_class() != DnsClass::kANY);
 
-  if (record.dns_type() == DnsType::kNSEC) {
+  if (!CanBePublished(record.dns_type())) {
     return Error::Code::kParameterInvalid;
   }
-  ValidateRecord(record);
 
   if (!IsRecordNameClaimed(record)) {
     return Error::Code::kParameterInvalid;
@@ -101,11 +96,11 @@ Error MdnsPublisher::RegisterRecord(const MdnsRecord& record) {
 
 Error MdnsPublisher::UnregisterRecord(const MdnsRecord& record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+  OSP_DCHECK(record.dns_class() != DnsClass::kANY);
 
-  if (record.dns_type() == DnsType::kNSEC) {
+  if (!CanBePublished(record.dns_type())) {
     return Error::Code::kParameterInvalid;
   }
-  ValidateRecord(record);
 
   OSP_DVLOG << "Unregistering record of type '" << record.dns_type() << "'";
 
@@ -116,7 +111,7 @@ Error MdnsPublisher::UpdateRegisteredRecord(const MdnsRecord& old_record,
                                             const MdnsRecord& new_record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  if (old_record.dns_type() == DnsType::kNSEC) {
+  if (!CanBePublished(new_record.dns_type())) {
     return Error::Code::kParameterInvalid;
   }
 
@@ -353,8 +348,9 @@ void MdnsPublisher::ProcessRecordQueue() {
     } else if (message.answers().empty()) {
       // This case should never happen, because it means a record is too large
       // to fit into its own message.
-      OSP_LOG << "Encountered unreasonably large message in cache. Skipping "
-              << "known answer in suppressions...";
+      OSP_LOG_INFO
+          << "Encountered unreasonably large message in cache. Skipping "
+          << "known answer in suppressions...";
       it++;
     } else {
       sender_->SendMulticast(message);
@@ -371,8 +367,8 @@ void MdnsPublisher::ProcessRecordQueue() {
 }
 
 Clock::duration MdnsPublisher::RecordAnnouncer::GetNextAnnounceDelay() {
-  return std::chrono::duration_cast<Clock::duration>(
-      kMinAnnounceDelay * pow(kIntervalIncreaseFactor, attempts_));
+  return Clock::to_duration(kMinAnnounceDelay *
+                            pow(kIntervalIncreaseFactor, attempts_));
 }
 
 }  // namespace discovery

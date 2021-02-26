@@ -12,6 +12,11 @@ enum ActivationLevel {
   kEnabled
 };
 
+// Enumerates which ads violations are recorded for a page.
+enum AdsViolation {
+    kMobileAdDensityByHeightAbove30,
+};
+
 struct ActivationState {
   // The degree to which subresource filtering is activated for the page load.
   ActivationLevel activation_level = kDisabled;
@@ -23,10 +28,10 @@ struct ActivationState {
   // frames). See proto::ActivationType for details.
   //
   // |filtering_disabled_for_document| indicates whether the document in this
-  // frame is subject to a whitelist rule with DOCUMENT activation type.
+  // frame is subject to an allowlist rule with DOCUMENT activation type.
   //
   // |generic_blocking_rules_disabled| indicates whether the document in this
-  // frame is subject to a whitelist rule with GENERICBLOCK activation type, and
+  // frame is subject to an allowlist rule with GENERICBLOCK activation type, and
   // is only defined if |filtering_disabled_for_document| is false.
   bool filtering_disabled_for_document = false;
   bool generic_blocking_rules_disabled = false;

@@ -10,6 +10,7 @@
 #include <cmath>
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
@@ -231,9 +232,8 @@ class V8ValueConverterImplTest : public testing::Test {
   template <typename T>
   v8::Local<T> CompileRun(v8::Local<v8::Context> context, const char* source) {
     return v8::Script::Compile(
-               context, v8::String::NewFromUtf8(isolate_, source,
-                                                v8::NewStringType::kNormal)
-                            .ToLocalChecked())
+               context,
+               v8::String::NewFromUtf8(isolate_, source).ToLocalChecked())
         .ToLocalChecked()
         ->Run(context)
         .ToLocalChecked()
@@ -496,11 +496,8 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::RegExp> regex(
-      v8::RegExp::New(
-          context,
-          v8::String::NewFromUtf8(isolate_, ".", v8::NewStringType::kNormal)
-              .ToLocalChecked(),
-          v8::RegExp::kNone)
+      v8::RegExp::New(context, v8::String::NewFromUtf8Literal(isolate_, "."),
+                      v8::RegExp::kNone)
           .ToLocalChecked());
 
   V8ValueConverterImpl converter;
@@ -719,8 +716,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
             v8::String::NewFromUtf8(isolate_, "foo",
                                     v8::NewStringType::kInternalized)
                 .ToLocalChecked(),
-            v8::String::NewFromUtf8(isolate_, "bar", v8::NewStringType::kNormal)
-                .ToLocalChecked())
+            v8::String::NewFromUtf8Literal(isolate_, "bar"))
       .Check();
   object
       ->Set(context,
@@ -738,11 +734,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
 
   v8::Local<v8::Array> array = v8::Array::New(isolate_).As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
-  array
-      ->Set(context, 0,
-            v8::String::NewFromUtf8(isolate_, "1", v8::NewStringType::kNormal)
-                .ToLocalChecked())
-      .Check();
+  array->Set(context, 0, v8::String::NewFromUtf8Literal(isolate_, "1")).Check();
   array->Set(context, 1, array).Check();
 
   std::unique_ptr<base::ListValue> list_result(
@@ -1229,18 +1221,18 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   std::unique_ptr<base::Value> binary_value(
       converter.FromV8Value(array_buffer, context));
   ASSERT_TRUE(binary_value);
-  std::unique_ptr<base::Value> reference_binary_value(
-      base::Value::CreateWithCopiedBuffer(kExampleData, sizeof(kExampleData)));
-  EXPECT_EQ(*reference_binary_value, *binary_value);
+  base::Value reference_binary_value(
+      base::as_bytes(base::make_span(kExampleData)));
+  EXPECT_EQ(reference_binary_value, *binary_value);
 
   v8::Local<v8::ArrayBufferView> array_buffer_view(
       v8::Uint8Array::New(array_buffer, 1, 3));
   std::unique_ptr<base::Value> binary_view_value(
       converter.FromV8Value(array_buffer_view, context));
   ASSERT_TRUE(binary_view_value);
-  std::unique_ptr<base::Value> reference_binary_view_value(
-      base::Value::CreateWithCopiedBuffer(&kExampleData[1], 3));
-  EXPECT_EQ(*reference_binary_view_value, *binary_view_value);
+  base::Value reference_binary_view_value(
+      base::as_bytes(base::make_span(kExampleData).subspan(1, 3)));
+  EXPECT_EQ(reference_binary_view_value, *binary_view_value);
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
   std::unique_ptr<base::Value> number_value(

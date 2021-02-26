@@ -7,8 +7,9 @@
 #include "base/android/jni_string.h"
 #include "base/optional.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewInteractions_jni.h"
-#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
+#include "chrome/browser/android/autofill_assistant/view_handler_android.h"
+#include "components/autofill_assistant/browser/radio_button_controller.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
@@ -39,12 +40,11 @@ void SetUserActions(base::WeakPtr<BasicInteractions> basic_interactions,
 }
 
 void EndAction(base::WeakPtr<BasicInteractions> basic_interactions,
-               bool view_inflation_successful,
                const EndActionProto& proto) {
   if (!basic_interactions) {
     return;
   }
-  basic_interactions->EndAction(view_inflation_successful, proto);
+  basic_interactions->EndAction(ClientStatus(proto.status()));
 }
 
 void ToggleUserAction(base::WeakPtr<BasicInteractions> basic_interactions,
@@ -218,11 +218,10 @@ void ShowGenericPopup(const ShowGenericUiPopupProto& proto,
       base::android::ConvertUTF8ToJavaString(env, proto.popup_identifier()));
 }
 
-void SetViewText(
-    base::WeakPtr<UserModel> user_model,
-    const SetTextProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
-    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
+void SetViewText(base::WeakPtr<UserModel> user_model,
+                 const SetTextProto& proto,
+                 ViewHandlerAndroid* view_handler,
+                 base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   if (!user_model) {
     return;
   }
@@ -240,8 +239,8 @@ void SetViewText(
     return;
   }
 
-  auto jview = views->find(proto.view_identifier());
-  if (jview == views->end()) {
+  auto jview = view_handler->GetView(proto.view_identifier());
+  if (!jview.has_value()) {
     DVLOG(2) << "Failed to set text for " << proto.view_identifier() << ": "
              << " view not found";
     return;
@@ -249,21 +248,20 @@ void SetViewText(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AssistantViewInteractions_setViewText(
-      env, jview->second,
+      env, *jview,
       base::android::ConvertUTF8ToJavaString(env, text->strings().values(0)),
       jdelegate);
 }
 
-void SetViewVisibility(
-    base::WeakPtr<UserModel> user_model,
-    const SetViewVisibilityProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+void SetViewVisibility(base::WeakPtr<UserModel> user_model,
+                       const SetViewVisibilityProto& proto,
+                       ViewHandlerAndroid* view_handler) {
   if (!user_model) {
     return;
   }
 
-  auto jview = views->find(proto.view_identifier());
-  if (jview == views->end()) {
+  auto jview = view_handler->GetView(proto.view_identifier());
+  if (!jview.has_value()) {
     DVLOG(2) << "Failed to set view visibility for " << proto.view_identifier()
              << ": view not found";
     return;
@@ -279,20 +277,19 @@ void SetViewVisibility(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AssistantViewInteractions_setViewVisibility(
-      env, jview->second,
+      env, *jview,
       ui_controller_android_utils::ToJavaValue(env, *visible_value));
 }
 
-void SetViewEnabled(
-    base::WeakPtr<UserModel> user_model,
-    const SetViewEnabledProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+void SetViewEnabled(base::WeakPtr<UserModel> user_model,
+                    const SetViewEnabledProto& proto,
+                    ViewHandlerAndroid* view_handler) {
   if (!user_model) {
     return;
   }
 
-  auto jview = views->find(proto.view_identifier());
-  if (jview == views->end()) {
+  auto jview = view_handler->GetView(proto.view_identifier());
+  if (!jview.has_value()) {
     DVLOG(2) << "Failed to enable/disable view " << proto.view_identifier()
              << ": view not found";
     return;
@@ -308,7 +305,7 @@ void SetViewEnabled(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AssistantViewInteractions_setViewEnabled(
-      env, jview->second,
+      env, *jview,
       ui_controller_android_utils::ToJavaValue(env, *enabled_value));
 }
 
@@ -322,17 +319,16 @@ void RunConditionalCallback(
   basic_interactions->RunConditionalCallback(condition_identifier, callback);
 }
 
-void SetToggleButtonChecked(
-    base::WeakPtr<UserModel> user_model,
-    const std::string& view_identifier,
-    const std::string& model_identifier,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+void SetToggleButtonChecked(base::WeakPtr<UserModel> user_model,
+                            const std::string& view_identifier,
+                            const std::string& model_identifier,
+                            ViewHandlerAndroid* view_handler) {
   if (!user_model) {
     return;
   }
 
-  auto jview = views->find(view_identifier);
-  if (jview == views->end()) {
+  auto jview = view_handler->GetView(view_identifier);
+  if (!jview.has_value()) {
     DVLOG(2) << "Failed to set toggle state for " << view_identifier
              << ": view not found";
     return;
@@ -348,11 +344,63 @@ void SetToggleButtonChecked(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!Java_AssistantViewInteractions_setToggleButtonChecked(
-          env, jview->second,
+          env, *jview,
           ui_controller_android_utils::ToJavaValue(env, *checked_value))) {
     DVLOG(2) << "Failed to set toggle state for " << view_identifier
              << ": JNI call failed";
   }
+}
+
+void ClearViewContainer(const std::string& view_identifier,
+                        ViewHandlerAndroid* view_handler,
+                        base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
+  auto jview = view_handler->GetView(view_identifier);
+  if (!jview.has_value()) {
+    DVLOG(2) << "Failed to clear view container " << view_identifier
+             << ": view not found";
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AssistantViewInteractions_clearViewContainer(
+          env, *jview,
+          base::android::ConvertUTF8ToJavaString(env, view_identifier),
+          jdelegate)) {
+    DVLOG(2) << "Failed to clear view container " << view_identifier
+             << ": JNI call failed";
+    return;
+  }
+}
+
+bool AttachViewToParent(base::android::ScopedJavaGlobalRef<jobject> jview,
+                        const std::string& parent_view_identifier,
+                        ViewHandlerAndroid* view_handler) {
+  auto jparent_view = view_handler->GetView(parent_view_identifier);
+  if (!jparent_view.has_value()) {
+    DVLOG(2) << "Failed to attach view to " << parent_view_identifier
+             << ": parent not found";
+    return false;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AssistantViewInteractions_attachViewToParent(env, *jparent_view,
+                                                         jview)) {
+    DVLOG(2) << "Failed to attach view to " << parent_view_identifier
+             << ": JNI call failed";
+    return false;
+  }
+  return true;
+}
+
+void UpdateRadioButtonGroup(
+    base::WeakPtr<RadioButtonController> radio_button_controller,
+    const std::string& radio_group,
+    const std::string& model_identifier) {
+  if (radio_button_controller == nullptr) {
+    return;
+  }
+  radio_button_controller->UpdateRadioButtonGroup(radio_group,
+                                                  model_identifier);
 }
 
 }  // namespace android_interactions

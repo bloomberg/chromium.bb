@@ -840,3 +840,100 @@ void aom_highbd_dist_wtd_comp_avg_upsampled_pred_sse2(
     pred += 8;
   }
 }
+
+uint64_t aom_mse_4xh_16bit_highbd_sse2(uint16_t *dst, int dstride,
+                                       uint16_t *src, int sstride, int h) {
+  uint64_t sum = 0;
+  __m128i reg0_4x16, reg1_4x16;
+  __m128i src_8x16;
+  __m128i dst_8x16;
+  __m128i res0_4x32, res1_4x32, res0_4x64, res1_4x64, res2_4x64, res3_4x64;
+  __m128i sub_result_8x16;
+  const __m128i zeros = _mm_setzero_si128();
+  __m128i square_result = _mm_setzero_si128();
+  for (int i = 0; i < h; i += 2) {
+    reg0_4x16 = _mm_loadl_epi64((__m128i const *)(&dst[(i + 0) * dstride]));
+    reg1_4x16 = _mm_loadl_epi64((__m128i const *)(&dst[(i + 1) * dstride]));
+    dst_8x16 = _mm_unpacklo_epi64(reg0_4x16, reg1_4x16);
+
+    reg0_4x16 = _mm_loadl_epi64((__m128i const *)(&src[(i + 0) * sstride]));
+    reg1_4x16 = _mm_loadl_epi64((__m128i const *)(&src[(i + 1) * sstride]));
+    src_8x16 = _mm_unpacklo_epi64(reg0_4x16, reg1_4x16);
+
+    sub_result_8x16 = _mm_sub_epi16(src_8x16, dst_8x16);
+
+    res0_4x32 = _mm_unpacklo_epi16(sub_result_8x16, zeros);
+    res1_4x32 = _mm_unpackhi_epi16(sub_result_8x16, zeros);
+
+    res0_4x32 = _mm_madd_epi16(res0_4x32, res0_4x32);
+    res1_4x32 = _mm_madd_epi16(res1_4x32, res1_4x32);
+
+    res0_4x64 = _mm_unpacklo_epi32(res0_4x32, zeros);
+    res1_4x64 = _mm_unpackhi_epi32(res0_4x32, zeros);
+    res2_4x64 = _mm_unpacklo_epi32(res1_4x32, zeros);
+    res3_4x64 = _mm_unpackhi_epi32(res1_4x32, zeros);
+
+    square_result = _mm_add_epi64(
+        square_result,
+        _mm_add_epi64(
+            _mm_add_epi64(_mm_add_epi64(res0_4x64, res1_4x64), res2_4x64),
+            res3_4x64));
+  }
+
+  const __m128i sum_1x64 =
+      _mm_add_epi64(square_result, _mm_srli_si128(square_result, 8));
+  xx_storel_64(&sum, sum_1x64);
+  return sum;
+}
+
+uint64_t aom_mse_8xh_16bit_highbd_sse2(uint16_t *dst, int dstride,
+                                       uint16_t *src, int sstride, int h) {
+  uint64_t sum = 0;
+  __m128i src_8x16;
+  __m128i dst_8x16;
+  __m128i res0_4x32, res1_4x32, res0_4x64, res1_4x64, res2_4x64, res3_4x64;
+  __m128i sub_result_8x16;
+  const __m128i zeros = _mm_setzero_si128();
+  __m128i square_result = _mm_setzero_si128();
+
+  for (int i = 0; i < h; i++) {
+    dst_8x16 = _mm_loadu_si128((__m128i *)&dst[i * dstride]);
+    src_8x16 = _mm_loadu_si128((__m128i *)&src[i * sstride]);
+
+    sub_result_8x16 = _mm_sub_epi16(src_8x16, dst_8x16);
+
+    res0_4x32 = _mm_unpacklo_epi16(sub_result_8x16, zeros);
+    res1_4x32 = _mm_unpackhi_epi16(sub_result_8x16, zeros);
+
+    res0_4x32 = _mm_madd_epi16(res0_4x32, res0_4x32);
+    res1_4x32 = _mm_madd_epi16(res1_4x32, res1_4x32);
+
+    res0_4x64 = _mm_unpacklo_epi32(res0_4x32, zeros);
+    res1_4x64 = _mm_unpackhi_epi32(res0_4x32, zeros);
+    res2_4x64 = _mm_unpacklo_epi32(res1_4x32, zeros);
+    res3_4x64 = _mm_unpackhi_epi32(res1_4x32, zeros);
+
+    square_result = _mm_add_epi64(
+        square_result,
+        _mm_add_epi64(
+            _mm_add_epi64(_mm_add_epi64(res0_4x64, res1_4x64), res2_4x64),
+            res3_4x64));
+  }
+
+  const __m128i sum_1x64 =
+      _mm_add_epi64(square_result, _mm_srli_si128(square_result, 8));
+  xx_storel_64(&sum, sum_1x64);
+  return sum;
+}
+
+uint64_t aom_mse_wxh_16bit_highbd_sse2(uint16_t *dst, int dstride,
+                                       uint16_t *src, int sstride, int w,
+                                       int h) {
+  assert((w == 8 || w == 4) && (h == 8 || h == 4) &&
+         "w=8/4 and h=8/4 must satisfy");
+  switch (w) {
+    case 4: return aom_mse_4xh_16bit_highbd_sse2(dst, dstride, src, sstride, h);
+    case 8: return aom_mse_8xh_16bit_highbd_sse2(dst, dstride, src, sstride, h);
+    default: assert(0 && "unsupported width"); return -1;
+  }
+}

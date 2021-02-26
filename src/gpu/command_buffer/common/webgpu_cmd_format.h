@@ -45,7 +45,7 @@ struct DawnReturnAdapterInfoHeader {
   DawnReturnDataHeader return_data_header = {
       DawnReturnDataType::kRequestedDawnAdapterProperties};
   DawnRequestAdapterSerial request_adapter_serial;
-  uint32_t adapter_service_id;
+  int32_t adapter_service_id;
 };
 
 static_assert(offsetof(DawnReturnAdapterInfoHeader, return_data_header) == 0,
@@ -53,6 +53,11 @@ static_assert(offsetof(DawnReturnAdapterInfoHeader, return_data_header) == 0,
 
 struct DawnReturnAdapterInfo {
   DawnReturnAdapterInfoHeader header;
+  uint32_t adapter_properties_size;
+
+  // |deserialized_buffer| contains the serialized adapter properties if
+  // |adapter_properties_size > 0|. Following it is an optional null-terminated
+  // error message.
   alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) char deserialized_buffer[];
 };
 

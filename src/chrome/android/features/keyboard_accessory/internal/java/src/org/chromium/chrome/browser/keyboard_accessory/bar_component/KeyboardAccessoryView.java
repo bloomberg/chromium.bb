@@ -15,6 +15,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.LinearLayout;
 
+import androidx.annotation.CallSuper;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +30,9 @@ import org.chromium.chrome.browser.keyboard_accessory.R;
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryView extends LinearLayout {
+    protected static final int FADE_ANIMATION_DURATION_MS = 150; // Total duration of show/hide.
+    protected static final int HIDING_ANIMATION_DELAY_MS = 50; // Shortens animation duration.
+
     protected RecyclerView mBarItemsView;
     protected TabLayout mTabLayout;
     private ViewPropertyAnimator mRunningAnimation;
@@ -118,22 +122,28 @@ class KeyboardAccessoryView extends LinearLayout {
                 super.onItemRangeChanged(positionStart, itemCount);
                 mBarItemsView.scrollToPosition(0);
                 mBarItemsView.invalidateItemDecorations();
+                onItemsChanged();
             }
         });
         mBarItemsView.setAdapter(adapter);
     }
 
+    /** Template method. Override to be notified if the bar items change. */
+    @CallSuper
+    protected void onItemsChanged() {}
+
     private void show() {
         bringToFront(); // Needs to overlay every component and the bottom sheet - like a keyboard.
         if (mRunningAnimation != null) mRunningAnimation.cancel();
-        if (mDisableAnimations) {
+        if (areAnimationsDisabled()) {
             mRunningAnimation = null;
             setVisibility(View.VISIBLE);
             return;
         }
+        if (getVisibility() != View.VISIBLE) setAlpha(0f);
         mRunningAnimation = animate()
-                                    .alpha(1.0f)
-                                    .setDuration(150)
+                                    .alpha(1f)
+                                    .setDuration(FADE_ANIMATION_DURATION_MS)
                                     .setInterpolator(new AccelerateInterpolator())
                                     .withStartAction(() -> setVisibility(View.VISIBLE));
         announceForAccessibility(getContentDescription());
@@ -141,17 +151,18 @@ class KeyboardAccessoryView extends LinearLayout {
 
     private void hide() {
         if (mRunningAnimation != null) mRunningAnimation.cancel();
-        if (mShouldSkipClosingAnimation || mDisableAnimations) {
+        if (mShouldSkipClosingAnimation || areAnimationsDisabled()) {
             mRunningAnimation = null;
             setVisibility(View.GONE);
             return;
         }
-        mRunningAnimation = animate()
-                                    .alpha(0.0f)
-                                    .setInterpolator(new AccelerateInterpolator())
-                                    .setStartDelay(150)
-                                    .setDuration(150)
-                                    .withEndAction(() -> setVisibility(View.GONE));
+        mRunningAnimation =
+                animate()
+                        .alpha(0.0f)
+                        .setInterpolator(new AccelerateInterpolator())
+                        .setStartDelay(HIDING_ANIMATION_DELAY_MS)
+                        .setDuration(FADE_ANIMATION_DURATION_MS - HIDING_ANIMATION_DELAY_MS)
+                        .withEndAction(() -> setVisibility(View.GONE));
     }
 
     void setSkipClosingAnimation(boolean shouldSkipClosingAnimation) {
@@ -160,6 +171,10 @@ class KeyboardAccessoryView extends LinearLayout {
 
     void disableAnimationsForTesting() {
         mDisableAnimations = true;
+    }
+
+    boolean areAnimationsDisabled() {
+        return mDisableAnimations;
     }
 
     private void initializeHorizontalRecyclerView(RecyclerView recyclerView) {

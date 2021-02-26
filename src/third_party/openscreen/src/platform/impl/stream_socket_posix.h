@@ -21,8 +21,8 @@ namespace openscreen {
 
 class StreamSocketPosix : public StreamSocket {
  public:
-  StreamSocketPosix(IPAddress::Version version);
-  StreamSocketPosix(const IPEndpoint& local_endpoint);
+  explicit StreamSocketPosix(IPAddress::Version version);
+  explicit StreamSocketPosix(const IPEndpoint& local_endpoint);
   StreamSocketPosix(SocketAddressPosix local_address,
                     IPEndpoint remote_address,
                     int file_descriptor);
@@ -56,7 +56,7 @@ class StreamSocketPosix : public StreamSocket {
   // StreamSocketPosix is lazy initialized on first usage. For simplicitly,
   // the ensure method returns a boolean of whether or not the socket was
   // initialized successfully.
-  bool EnsureInitialized();
+  bool EnsureInitializedAndOpen();
   Error Initialize();
 
   Error CloseOnError(Error error);
@@ -76,7 +76,6 @@ class StreamSocketPosix : public StreamSocket {
   absl::optional<IPEndpoint> remote_address_;
 
   bool is_bound_ = false;
-  bool is_initialized_ = false;
   SocketState state_ = SocketState::kNotConnected;
 
   WeakPtrFactory<StreamSocketPosix> weak_factory_{this};

@@ -79,6 +79,7 @@ extern AVFilter ff_af_asplit;
 extern AVFilter ff_af_asr;
 extern AVFilter ff_af_astats;
 extern AVFilter ff_af_astreamselect;
+extern AVFilter ff_af_asubboost;
 extern AVFilter ff_af_atempo;
 extern AVFilter ff_af_atrim;
 extern AVFilter ff_af_axcorrelate;
@@ -171,6 +172,7 @@ extern AVFilter ff_vf_bwdif;
 extern AVFilter ff_vf_cas;
 extern AVFilter ff_vf_chromahold;
 extern AVFilter ff_vf_chromakey;
+extern AVFilter ff_vf_chromanr;
 extern AVFilter ff_vf_chromashift;
 extern AVFilter ff_vf_ciescope;
 extern AVFilter ff_vf_codecview;
@@ -193,6 +195,7 @@ extern AVFilter ff_vf_cropdetect;
 extern AVFilter ff_vf_cue;
 extern AVFilter ff_vf_curves;
 extern AVFilter ff_vf_datascope;
+extern AVFilter ff_vf_dblur;
 extern AVFilter ff_vf_dctdnoiz;
 extern AVFilter ff_vf_deband;
 extern AVFilter ff_vf_deblock;
@@ -357,6 +360,7 @@ extern AVFilter ff_vf_scale_qsv;
 extern AVFilter ff_vf_scale_vaapi;
 extern AVFilter ff_vf_scale_vulkan;
 extern AVFilter ff_vf_scale2ref;
+extern AVFilter ff_vf_scdet;
 extern AVFilter ff_vf_scroll;
 extern AVFilter ff_vf_select;
 extern AVFilter ff_vf_selectivecolor;
@@ -413,6 +417,7 @@ extern AVFilter ff_vf_trim;
 extern AVFilter ff_vf_unpremultiply;
 extern AVFilter ff_vf_unsharp;
 extern AVFilter ff_vf_unsharp_opencl;
+extern AVFilter ff_vf_untile;
 extern AVFilter ff_vf_uspp;
 extern AVFilter ff_vf_v360;
 extern AVFilter ff_vf_vaguedenoiser;
@@ -447,6 +452,7 @@ extern AVFilter ff_vsrc_cellauto;
 extern AVFilter ff_vsrc_color;
 extern AVFilter ff_vsrc_coreimagesrc;
 extern AVFilter ff_vsrc_frei0r_src;
+extern AVFilter ff_vsrc_gradients;
 extern AVFilter ff_vsrc_haldclutsrc;
 extern AVFilter ff_vsrc_life;
 extern AVFilter ff_vsrc_mandelbrot;
@@ -522,7 +528,7 @@ const AVFilter *avfilter_get_by_name(const char *name)
 
     while ((f = av_filter_iterate(&opaque)))
         if (!strcmp(f->name, name))
-            return (AVFilter *)f;
+            return f;
 
     return NULL;
 }

@@ -32,6 +32,7 @@
 #include "media/base/android/media_drm_bridge_delegate.h"
 #include "media/base/android/media_jni_headers/MediaDrmBridge_jni.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_drm_key_type.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
@@ -289,7 +290,7 @@ int GetFirstApiLevel() {
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
-// APIs and MediaCodec APIs must be enabled and not blacklisted.
+// APIs and MediaCodec APIs must be enabled and not blocked.
 // static
 bool MediaDrmBridge::IsAvailable() {
   return AreMediaDrmApisAvailable() && MediaCodecUtil::IsMediaCodecAvailable();
@@ -574,21 +575,14 @@ void MediaDrmBridge::DeleteOnCorrectThread() const {
   }
 }
 
+std::unique_ptr<CallbackRegistration> MediaDrmBridge::RegisterEventCB(
+    EventCB event_cb) {
+  return event_callbacks_.Register(std::move(event_cb));
+}
+
 MediaCryptoContext* MediaDrmBridge::GetMediaCryptoContext() {
   DVLOG(2) << __func__;
   return &media_crypto_context_;
-}
-
-int MediaDrmBridge::RegisterPlayer(base::RepeatingClosure new_key_cb,
-                                   base::RepeatingClosure cdm_unset_cb) {
-  // |player_tracker_| can be accessed from any thread.
-  return player_tracker_.RegisterPlayer(std::move(new_key_cb),
-                                        std::move(cdm_unset_cb));
-}
-
-void MediaDrmBridge::UnregisterPlayer(int registration_id) {
-  // |player_tracker_| can be accessed from any thread.
-  player_tracker_.UnregisterPlayer(registration_id);
 }
 
 bool MediaDrmBridge::IsSecureCodecRequired() {
@@ -695,10 +689,11 @@ void MediaDrmBridge::OnProvisionRequest(
 
   std::string request_data;
   JavaByteArrayToString(env, j_request_data, &request_data);
+  std::string default_url;
+  ConvertJavaStringToUTF8(env, j_default_url, &default_url);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaDrmBridge::SendProvisioningRequest,
-                                weak_factory_.GetWeakPtr(),
-                                ConvertJavaStringToUTF8(env, j_default_url),
+                                weak_factory_.GetWeakPtr(), GURL(default_url),
                                 std::move(request_data)));
 }
 
@@ -914,8 +909,6 @@ MediaDrmBridge::~MediaDrmBridge() {
   if (j_media_drm_)
     Java_MediaDrmBridge_destroy(env, j_media_drm_);
 
-  player_tracker_.NotifyCdmUnset();
-
   if (media_crypto_ready_cb_) {
     std::move(media_crypto_ready_cb_).Run(CreateJavaObjectPtr(nullptr), false);
   }
@@ -952,7 +945,7 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
            IsSecureCodecRequired());
 }
 
-void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
+void MediaDrmBridge::SendProvisioningRequest(const GURL& default_url,
                                              const std::string& request_data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
@@ -990,7 +983,7 @@ void MediaDrmBridge::OnHasAdditionalUsableKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
-  player_tracker_.NotifyNewKey();
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
 }
 
 }  // namespace media

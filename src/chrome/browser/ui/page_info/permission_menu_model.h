@@ -18,20 +18,19 @@ class Profile;
 class PermissionMenuModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  typedef base::Callback<void(const PageInfoUI::PermissionInfo&)>
-      ChangeCallback;
+  typedef base::Callback<void(const PageInfo::PermissionInfo&)> ChangeCallback;
 
   // Create a new menu model for permission settings.
   PermissionMenuModel(Profile* profile,
                       const GURL& url,
-                      const PageInfoUI::PermissionInfo& info,
+                      const PageInfo::PermissionInfo& info,
                       const ChangeCallback& callback);
   ~PermissionMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int encoded_command_id) const override;
+  bool IsCommandIdEnabled(int encoded_command_id) const override;
+  void ExecuteCommand(int encoded_command_id, int event_flags) override;
 
  private:
   bool ShouldShowAllow(const GURL& url);
@@ -40,7 +39,7 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
   HostContentSettingsMap* host_content_settings_map_;
 
   // The permission info represented by the menu model.
-  PageInfoUI::PermissionInfo permission_;
+  PageInfo::PermissionInfo permission_;
 
   // Callback to be called when the permission's setting is changed.
   ChangeCallback callback_;

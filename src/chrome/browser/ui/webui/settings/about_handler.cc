@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -20,14 +20,14 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/time/time.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -54,7 +54,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -63,7 +62,7 @@
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -101,15 +100,12 @@ struct RegulatoryLabel {
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
 base::string16 GetAllowedConnectionTypesMessage() {
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->DefaultNetwork();
-  const bool mobile_data =
-      network && network->IsConnectedState() && network->IsUsingMobileData();
-
   if (help_utils_chromeos::IsUpdateOverCellularAllowed(
-          true /* interactive */)) {
-    return mobile_data
+          /*interactive=*/true)) {
+    const bool metered = chromeos::NetworkHandler::Get()
+                             ->network_state_handler()
+                             ->default_network_is_metered();
+    return metered
                ? l10n_util::GetStringUTF16(
                      IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC)
                : l10n_util::GetStringUTF16(
@@ -120,16 +116,9 @@ base::string16 GetAllowedConnectionTypesMessage() {
   }
 }
 
-// Returns true if the device is enterprise managed, false otherwise.
-bool IsEnterpriseManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
-}
-
 // Returns true if current user can change channel, false otherwise.
 bool CanChangeChannel(Profile* profile) {
-  if (IsEnterpriseManaged()) {
+  if (webui::IsEnterpriseManaged()) {
     bool value = false;
     // On a managed machine we delegate this setting to the affiliated users
     // only if the policy value is true.
@@ -262,7 +251,10 @@ std::string UpdateStatusToString(VersionUpdater::Status status) {
 
 namespace settings {
 
-AboutHandler::AboutHandler() : apply_changes_from_upgrade_observer_(false) {
+AboutHandler::AboutHandler(Profile* profile)
+    : profile_(profile),
+      apply_changes_from_upgrade_observer_(false),
+      clock_(base::DefaultClock::GetInstance()) {
   UpgradeDetector::GetInstance()->AddObserver(this);
 }
 
@@ -322,10 +314,6 @@ void AboutHandler::RegisterMessages() {
       base::BindRepeating(&AboutHandler::HandleGetEndOfLifeInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getEnabledReleaseNotes",
-      base::BindRepeating(&AboutHandler::HandleGetEnabledReleaseNotes,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "launchReleaseNotes",
       base::BindRepeating(&AboutHandler::HandleLaunchReleaseNotes,
                           base::Unretained(this)));
@@ -334,7 +322,7 @@ void AboutHandler::RegisterMessages() {
       base::BindRepeating(&AboutHandler::HandleCheckInternetConnection,
                           base::Unretained(this)));
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   web_ui()->RegisterMessageCallback(
       "promoteUpdater", base::BindRepeating(&AboutHandler::PromoteUpdater,
                                             base::Unretained(this)));
@@ -342,7 +330,7 @@ void AboutHandler::RegisterMessages() {
 
 #if defined(OS_CHROMEOS)
   // Handler for the product label image, which will be shown if available.
-  content::URLDataSource::Add(Profile::FromWebUI(web_ui()),
+  content::URLDataSource::Add(profile_,
                               std::make_unique<chromeos::ImageSource>());
 #endif
 }
@@ -409,7 +397,7 @@ void AboutHandler::RefreshUpdateStatus() {
 #endif
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void AboutHandler::PromoteUpdater(const base::ListValue* args) {
   version_updater_->PromoteUpdater();
 }
@@ -431,15 +419,6 @@ void AboutHandler::HandleOpenHelpPage(const base::ListValue* args) {
 }
 
 #if defined(OS_CHROMEOS)
-void AboutHandler::HandleGetEnabledReleaseNotes(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(base::FeatureList::IsEnabled(
-                                chromeos::features::kReleaseNotes)));
-}
-
 void AboutHandler::HandleCheckInternetConnection(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
@@ -455,15 +434,11 @@ void AboutHandler::HandleCheckInternetConnection(const base::ListValue* args) {
 
 void AboutHandler::HandleLaunchReleaseNotes(const base::ListValue* args) {
   DCHECK(args->empty());
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* network =
-      network_state_handler->DefaultNetwork();
-  if (network && network->IsOnline()) {
-    base::RecordAction(
-        base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
-    chrome::LaunchReleaseNotes(Profile::FromWebUI(web_ui()));
-  }
+  // We can always show the release notes since the Help app caches it, or can
+  // show an appropriate error state (e.g. No internet connection).
+  base::RecordAction(base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
+  chrome::LaunchReleaseNotes(profile_,
+                             apps::mojom::LaunchSource::kFromOtherApp);
 }
 
 void AboutHandler::HandleOpenOsHelpPage(const base::ListValue* args) {
@@ -476,7 +451,7 @@ void AboutHandler::HandleOpenOsHelpPage(const base::ListValue* args) {
 void AboutHandler::HandleSetChannel(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
-  if (!CanChangeChannel(Profile::FromWebUI(web_ui()))) {
+  if (!CanChangeChannel(profile_)) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
@@ -542,9 +517,8 @@ void AboutHandler::HandleCanChangeChannel(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      base::Value(CanChangeChannel(Profile::FromWebUI(web_ui()))));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(CanChangeChannel(profile_)));
 }
 
 void AboutHandler::OnGetCurrentChannel(std::string callback_id,
@@ -562,6 +536,13 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
       new base::DictionaryValue);
   channel_info->SetString("currentChannel", current_channel);
   channel_info->SetString("targetChannel", target_channel);
+
+  // For the LTS pilot simply check whether the device policy is set and ignore
+  // its value.
+  std::string value;
+  bool is_lts = chromeos::CrosSettings::Get()->GetString(
+      chromeos::kReleaseLtsTag, &value);
+  channel_info->SetBoolean("isLts", is_lts);
 
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
 }
@@ -621,15 +602,17 @@ void AboutHandler::OnGetEndOfLifeInfo(
     chromeos::UpdateEngineClient::EolInfo eol_info) {
   base::Value response(base::Value::Type::DICTIONARY);
   if (!eol_info.eol_date.is_null()) {
-    response.SetBoolKey("hasEndOfLife", eol_info.eol_date <= base::Time::Now());
-    int eol_string_id = eol_info.eol_date <= base::Time::Now()
-                          ? IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_PAST
-                          : IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_FUTURE;
+    bool has_eol_passed = eol_info.eol_date <= clock_->Now();
+    response.SetBoolKey("hasEndOfLife", has_eol_passed);
+    int eol_string_id =
+        has_eol_passed ? IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_PAST
+                       : IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE_FUTURE;
     response.SetStringKey(
-          "aboutPageEndOfLifeMessage",
-          l10n_util::GetStringFUTF16(
-              eol_string_id, base::TimeFormatMonthAndYear(eol_info.eol_date),
-              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+        "aboutPageEndOfLifeMessage",
+        l10n_util::GetStringFUTF16(
+            eol_string_id, base::TimeFormatMonthAndYear(eol_info.eol_date),
+            base::ASCIIToUTF16(has_eol_passed ? chrome::kEolNotificationURL
+                                              : chrome::kAutoUpdatePolicyURL)));
   } else {
     response.SetBoolKey("hasEndOfLife", false);
     response.SetStringKey("aboutPageEndOfLifeMessage", "");
@@ -642,16 +625,17 @@ void AboutHandler::OnGetEndOfLifeInfo(
 void AboutHandler::RequestUpdate() {
   version_updater_->CheckForUpdate(
       base::Bind(&AboutHandler::SetUpdateStatus, base::Unretained(this)),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::Bind(&AboutHandler::SetPromotionState, base::Unretained(this)));
 #else
       VersionUpdater::PromoteCallback());
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
                                    int progress,
                                    bool rollback,
+                                   bool powerwash,
                                    const std::string& version,
                                    int64_t size,
                                    const base::string16& message) {
@@ -663,6 +647,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   event->SetString("message", message);
   event->SetInteger("progress", progress);
   event->SetBoolean("rollback", rollback);
+  event->SetBoolean("powerwash", powerwash);
   event->SetString("version", version);
   // DictionaryValue does not support int64_t, so convert to string.
   event->SetString("size", base::NumberToString(size));
@@ -682,7 +667,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   FireWebUIListener("update-status-changed", *event);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
   // Worth noting: PROMOTE_DISABLED indicates that promotion is possible,
   // there's just something else going on right now (e.g. checking for update).
@@ -708,7 +693,7 @@ void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 
   FireWebUIListener("promotion-state-changed", promo_state);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_CHROMEOS)
 void AboutHandler::OnRegulatoryLabelDirFound(

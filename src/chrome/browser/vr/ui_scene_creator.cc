@@ -11,9 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -965,7 +966,7 @@ void BindIndicatorTranscienceForWin(
   e->RefreshVisible();
 
   SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled);
+                     model->gvr_input_support);
 
   for (const auto& spec : GetIndicatorSpecs()) {
     SetVisibleInLayout(
@@ -1043,7 +1044,7 @@ void BindIndicatorTranscience(
   e->SetVisible(true);
   e->RefreshVisible();
   SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled && !in_long_press);
+                     model->gvr_input_support && !in_long_press);
 
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {

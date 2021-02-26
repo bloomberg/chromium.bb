@@ -18,8 +18,6 @@ class ScriptState;
 class NavigatorMediaSession final
     : public GarbageCollected<NavigatorMediaSession>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorMediaSession);
-
  public:
   static const char kSupplementName[];
 
@@ -28,7 +26,7 @@ class NavigatorMediaSession final
 
   explicit NavigatorMediaSession(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // The MediaSession instance of this Navigator.

@@ -47,11 +47,11 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
    *     extra whitespace, after this selection is triggered.
    */
   testSimpleTextAtKeystroke(text, anchorOffset, focusOffset, expected) {
-    this.testReadTextAtKeystroke('<p>' + text + '</p>', function(desktop) {
+    this.testReadTextAtKeystroke('<p>' + text + '</p>', function(root) {
       // Set the document selection. This will fire the changed event
       // above, allowing us to do the keystroke and test that speech
       // occurred properly.
-      const textNode = this.findTextNode(desktop, 'This is some text');
+      const textNode = this.findTextNode(root, 'This is some text');
       chrome.automation.setDocumentSelection({
         anchorObject: textNode,
         anchorOffset,
@@ -66,8 +66,7 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
    * selection on that page, and then trigger select-to-speak to read
    * the selected text. Tests that the tts output matches the expected
    * output.
-   * @param {string} contents The web contents to load as part of a
-   *     data:text/html link.
+   * @param {string} contents The web contents to load
    * @param {function(AutomationNode)} setSelectionCallback Callback
    *     to take the root node and set the selection appropriately. Once
    *     selection is set, the test will listen for the focus set event and
@@ -79,26 +78,24 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
    */
   testReadTextAtKeystroke(contents, setFocusCallback, expected) {
     setFocusCallback = this.newCallback(setFocusCallback);
-    this.runWithLoadedTree(
-        'data:text/html;charset=utf-8,' + contents, function(desktop) {
-          // Add an event listener that will start the user interaction
-          // of the test once the selection is completed.
-          desktop.addEventListener(
-              'documentSelectionChanged', this.newCallback(function(event) {
-                this.triggerReadSelectedText();
-                assertTrue(this.mockTts.currentlySpeaking());
-                assertEquals(this.mockTts.pendingUtterances().length, 1);
-                this.assertEqualsCollapseWhitespace(
-                    this.mockTts.pendingUtterances()[0], expected);
-              }),
-              false);
-          setFocusCallback(desktop);
-        });
+    this.runWithLoadedTree(contents, function(root) {
+      // Add an event listener that will start the user interaction
+      // of the test once the selection is completed.
+      root.addEventListener(
+          'documentSelectionChanged', this.newCallback(function(event) {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], expected);
+          }),
+          false);
+      setFocusCallback(root);
+    });
   }
 
   generateHtmlWithSelection(selectionCode, bodyHtml) {
-    return 'data:text/html;charset=utf-8,' +
-        '<script type="text/javascript">' +
+    return '<script type="text/javascript">' +
         'function doSelection() {' +
         'let selection = window.getSelection();' +
         'let range = document.createRange();' +
@@ -140,9 +137,9 @@ TEST_F(
     function() {
       this.testReadTextAtKeystroke(
           '<p>This is some <b>bold</b> text</p><p>Second paragraph</p>',
-          function(desktop) {
-            const firstNode = this.findTextNode(desktop, 'This is some ');
-            const lastNode = this.findTextNode(desktop, ' text');
+          function(root) {
+            const firstNode = this.findTextNode(root, 'This is some ');
+            const lastNode = this.findTextNode(root, ' text');
             chrome.automation.setDocumentSelection({
               anchorObject: firstNode,
               anchorOffset: 0,
@@ -158,10 +155,10 @@ TEST_F(
     'SpeaksAcrossNodesSelectedBackwardsAtKeystroke', function() {
       this.testReadTextAtKeystroke(
           '<p>This is some <b>bold</b> text</p><p>Second paragraph</p>',
-          function(desktop) {
+          function(root) {
             // Set the document selection backwards in page order.
-            const lastNode = this.findTextNode(desktop, 'This is some ');
-            const firstNode = this.findTextNode(desktop, ' text');
+            const lastNode = this.findTextNode(root, 'This is some ');
+            const firstNode = this.findTextNode(root, ' text');
             chrome.automation.setDocumentSelection({
               anchorObject: firstNode,
               anchorOffset: 5,
@@ -178,9 +175,9 @@ TEST_F(
       // If you load this html and double-click on "Selected text", this is the
       // document selection that occurs -- into the second <br/> element.
 
-      let setFocusCallback = function(desktop) {
-        const firstNode = this.findTextNode(desktop, 'Selected text');
-        const lastNode = desktop.findAll({role: 'lineBreak'})[1];
+      let setFocusCallback = function(root) {
+        const firstNode = this.findTextNode(root, 'Selected text');
+        const lastNode = root.findAll({role: 'lineBreak'})[1];
         chrome.automation.setDocumentSelection({
           anchorObject: firstNode,
           anchorOffset: 0,
@@ -190,24 +187,22 @@ TEST_F(
       };
       setFocusCallback = this.newCallback(setFocusCallback);
       this.runWithLoadedTree(
-          'data:text/html;charset=utf-8,' +
-              '<br/><p>Selected text</p><br/>',
-          function(desktop) {
+          '<br/><p>Selected text</p><br/>', function(root) {
             // Add an event listener that will start the user interaction
             // of the test once the selection is completed.
-            desktop.addEventListener(
+            root.addEventListener(
                 'documentSelectionChanged', this.newCallback(function(event) {
                   this.triggerReadSelectedText();
                   assertTrue(this.mockTts.currentlySpeaking());
                   this.assertEqualsCollapseWhitespace(
                       this.mockTts.pendingUtterances()[0], 'Selected text');
-                  if (this.mockTts.pendingUtterances().length == 2) {
+                  if (this.mockTts.pendingUtterances().length === 2) {
                     this.assertEqualsCollapseWhitespace(
                         this.mockTts.pendingUtterances()[1], '');
                   }
                 }),
                 false);
-            setFocusCallback(desktop);
+            setFocusCallback(root);
           });
     });
 
@@ -216,10 +211,10 @@ TEST_F(
     function() {
       this.testReadTextAtKeystroke(
           '<div id="empty"></div><div><p>This is some <b>bold</b> text</p></div>',
-          function(desktop) {
+          function(root) {
             const firstNode =
-                this.findTextNode(desktop, 'This is some ').root.children[0];
-            const lastNode = this.findTextNode(desktop, ' text');
+                this.findTextNode(root, 'This is some ').root.children[0];
+            const lastNode = this.findTextNode(root, ' text');
             chrome.automation.setDocumentSelection({
               anchorObject: firstNode,
               anchorOffset: 0,
@@ -231,11 +226,30 @@ TEST_F(
     });
 
 TEST_F(
+    'SelectToSpeakKeystrokeSelectionTest', 'IgnoresTextMarkedNotUserSelectable',
+    function() {
+      this.testReadTextAtKeystroke(
+          '<div><p>This is some <span style="user-select:none">unselectable</span> text</p></div>',
+          function(root) {
+            const firstNode =
+                this.findTextNode(root, 'This is some ').root.children[0];
+            const lastNode = this.findTextNode(root, ' text');
+            chrome.automation.setDocumentSelection({
+              anchorObject: firstNode,
+              anchorOffset: 0,
+              focusObject: lastNode,
+              focusOffset: 5
+            });
+          },
+          'This is some text');
+    });
+
+TEST_F(
     'SelectToSpeakKeystrokeSelectionTest',
     'HandlesSingleImageCorrectlyWithAutomation', function() {
       this.testReadTextAtKeystroke(
-          '<img src="pipe.jpg" alt="one"/>', function(desktop) {
-            const container = desktop.findAll({role: 'genericContainer'})[0];
+          '<img src="pipe.jpg" alt="one"/>', function(root) {
+            const container = root.findAll({role: 'genericContainer'})[0];
             chrome.automation.setDocumentSelection({
               anchorObject: container,
               anchorOffset: 0,
@@ -251,8 +265,8 @@ TEST_F(
       this.testReadTextAtKeystroke(
           '<img src="pipe.jpg" alt="one"/>' +
               '<img src="pipe.jpg" alt="two"/><img src="pipe.jpg" alt="three"/>',
-          function(desktop) {
-            const container = desktop.findAll({role: 'genericContainer'})[0];
+          function(root) {
+            const container = root.findAll({role: 'genericContainer'})[0];
             chrome.automation.setDocumentSelection({
               anchorObject: container,
               anchorOffset: 1,
@@ -357,8 +371,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'TextInputPartiallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +
@@ -380,8 +393,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'TextAreaPartiallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +
@@ -527,8 +539,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'contentEditableInternallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +
@@ -575,5 +586,104 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], 'a b c');
             this.assertEqualsCollapseWhitespace(
                 this.mockTts.pendingUtterances()[1], 'd e f');
+          });
+    });
+
+TEST_F(
+    'SelectToSpeakKeystrokeSelectionTest', 'ReordersSvgSingleLine', function() {
+      const selectionCode =
+          'let body = document.getElementsByTagName("body")[0];' +
+          'range.setStart(body, 0);' +
+          'range.setEnd(body, 1);';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelection(
+              selectionCode,
+              '<svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">' +
+                  '  <text x="65" y="55">Grumpy!</text>' +
+                  '  <text x="20" y="35">My</text>' +
+                  '  <text x="40" y="35">cat</text>' +
+                  '  <text x="55" y="55">is</text>' +
+                  '</svg>'),
+          function() {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], 'My cat is Grumpy!');
+          });
+    });
+
+TEST_F(
+    'SelectToSpeakKeystrokeSelectionTest', 'ReordersSvgWithGroups', function() {
+      const selectionCode =
+          'let body = document.getElementsByTagName("body")[0];' +
+          'range.setStart(body, 0);' +
+          'range.setEnd(body, 1);';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelection(
+              selectionCode,
+              '<svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">' +
+                  '  <g>' +
+                  '    <text x="65" y="0">Column 2, Text 1</text>' +
+                  '    <text x="65" y="50">Column 2, Text 2</text>' +
+                  '  </g>' +
+                  '  <g>' +
+                  '    <text x="0" y="50">Column 1, Text 2</text>' +
+                  '    <text x="0" y="0">Column 1, Text 1</text>' +
+                  '  </g>' +
+                  '</svg>'),
+          function() {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], 'Column 1, Text 1');
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[1], 'Column 1, Text 2');
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[2], 'Column 2, Text 1');
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[3], 'Column 2, Text 2');
+          });
+    });
+TEST_F(
+    'SelectToSpeakKeystrokeSelectionTest',
+    'NonReorderedSvgPreservesSelectionStartEnd', function() {
+      const selectionCode = 'const t1 = document.getElementById("t1");' +
+          'const t2 = document.getElementById("t2");' +
+          'range.setStart(t1.childNodes[0], 3);' +
+          'range.setEnd(t2.childNodes[0], 2);';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelection(
+              selectionCode,
+              '<svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">' +
+                  '  <text id="t1" x="0" y="55">My cat</text>' +
+                  '  <text id="t2" x="100" y="55">is Grumpy!</text>' +
+                  '</svg>'),
+          function() {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], 'cat is');
+          });
+    });
+
+TEST_F(
+    'SelectToSpeakKeystrokeSelectionTest',
+    'ReorderedSvgIgnoresSelectionStartEnd', function() {
+      const selectionCode = 'const t1 = document.getElementById("t1");' +
+          'const t2 = document.getElementById("t2");' +
+          'range.setStart(t1.childNodes[0], 3);' +
+          'range.setEnd(t2.childNodes[0], 2);';
+      this.runWithLoadedTree(
+          this.generateHtmlWithSelection(
+              selectionCode,
+              '<svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">' +
+                  '  <text id="t1" x="100" y="55">is Grumpy!</text>' +
+                  '  <text id="t2" x="0" y="55">My cat</text>' +
+                  '</svg>'),
+          function() {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], 'My cat is Grumpy!');
           });
     });

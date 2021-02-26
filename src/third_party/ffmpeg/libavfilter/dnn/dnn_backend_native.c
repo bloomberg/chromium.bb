@@ -27,16 +27,39 @@
 #include "libavutil/avassert.h"
 #include "dnn_backend_native_layer_conv2d.h"
 #include "dnn_backend_native_layers.h"
+#include "dnn_io_proc.h"
+
+#define OFFSET(x) offsetof(NativeContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption dnn_native_options[] = {
+    { "conv2d_threads", "threads num for conv2d layer", OFFSET(options.conv2d_threads), AV_OPT_TYPE_INT,  { .i64 = 0 }, INT_MIN, INT_MAX, FLAGS },
+    { NULL },
+};
+
+const AVClass dnn_native_class = {
+    .class_name = "dnn_native",
+    .item_name  = av_default_item_name,
+    .option     = dnn_native_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+    .category   = AV_CLASS_CATEGORY_FILTER,
+};
+
+static DNNReturnType execute_model_native(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                          const char **output_names, uint32_t nb_output, AVFrame *out_frame,
+                                          int do_ioproc);
 
 static DNNReturnType get_input_native(void *model, DNNData *input, const char *input_name)
 {
-    ConvolutionalNetwork *network = (ConvolutionalNetwork *)model;
+    NativeModel *native_model = (NativeModel *)model;
+    NativeContext *ctx = &native_model->ctx;
 
-    for (int i = 0; i < network->operands_num; ++i) {
-        DnnOperand *oprd = &network->operands[i];
+    for (int i = 0; i < native_model->operands_num; ++i) {
+        DnnOperand *oprd = &native_model->operands[i];
         if (strcmp(oprd->name, input_name) == 0) {
-            if (oprd->type != DOT_INPUT)
+            if (oprd->type != DOT_INPUT) {
+                av_log(ctx, AV_LOG_ERROR, "Found \"%s\" in model, but it is not input node\n", input_name);
                 return DNN_ERROR;
+            }
             input->dt = oprd->data_type;
             av_assert0(oprd->dims[0] == 1);
             input->height = oprd->dims[1];
@@ -47,95 +70,55 @@ static DNNReturnType get_input_native(void *model, DNNData *input, const char *i
     }
 
     // do not find the input operand
+    av_log(ctx, AV_LOG_ERROR, "Could not find \"%s\" in model\n", input_name);
     return DNN_ERROR;
 }
 
-static DNNReturnType set_input_output_native(void *model, DNNData *input, const char *input_name, const char **output_names, uint32_t nb_output)
+static DNNReturnType get_output_native(void *model, const char *input_name, int input_width, int input_height,
+                                       const char *output_name, int *output_width, int *output_height)
 {
-    ConvolutionalNetwork *network = (ConvolutionalNetwork *)model;
-    DnnOperand *oprd = NULL;
+    DNNReturnType ret;
+    NativeModel *native_model = (NativeModel *)model;
+    AVFrame *in_frame = av_frame_alloc();
+    AVFrame *out_frame = av_frame_alloc();
+    in_frame->width = input_width;
+    in_frame->height = input_height;
 
-    if (network->layers_num <= 0 || network->operands_num <= 0)
-        return DNN_ERROR;
+    ret = execute_model_native(native_model->model, input_name, in_frame, &output_name, 1, out_frame, 0);
+    *output_width = out_frame->width;
+    *output_height = out_frame->height;
 
-    /* inputs */
-    for (int i = 0; i < network->operands_num; ++i) {
-        oprd = &network->operands[i];
-        if (strcmp(oprd->name, input_name) == 0) {
-            if (oprd->type != DOT_INPUT)
-                return DNN_ERROR;
-            break;
-        }
-        oprd = NULL;
-    }
-
-    if (!oprd)
-        return DNN_ERROR;
-
-    oprd->dims[0] = 1;
-    oprd->dims[1] = input->height;
-    oprd->dims[2] = input->width;
-    oprd->dims[3] = input->channels;
-
-    av_freep(&oprd->data);
-    oprd->length = calculate_operand_data_length(oprd);
-    oprd->data = av_malloc(oprd->length);
-    if (!oprd->data)
-        return DNN_ERROR;
-
-    input->data = oprd->data;
-
-    /* outputs */
-    network->nb_output = 0;
-    av_freep(&network->output_indexes);
-    network->output_indexes = av_mallocz_array(nb_output, sizeof(*network->output_indexes));
-    if (!network->output_indexes)
-        return DNN_ERROR;
-
-    for (uint32_t i = 0; i < nb_output; ++i) {
-        const char *output_name = output_names[i];
-        for (int j = 0; j < network->operands_num; ++j) {
-            oprd = &network->operands[j];
-            if (strcmp(oprd->name, output_name) == 0) {
-                network->output_indexes[network->nb_output++] = j;
-                break;
-            }
-        }
-    }
-
-    if (network->nb_output != nb_output)
-        return DNN_ERROR;
-
-    return DNN_SUCCESS;
+    av_frame_free(&out_frame);
+    av_frame_free(&in_frame);
+    return ret;
 }
 
 // Loads model and its parameters that are stored in a binary file with following structure:
 // layers_num,layer_type,layer_parameterss,layer_type,layer_parameters...
 // For CONV layer: activation_function, input_num, output_num, kernel_size, kernel, biases
 // For DEPTH_TO_SPACE layer: block_size
-DNNModel *ff_dnn_load_model_native(const char *model_filename)
+DNNModel *ff_dnn_load_model_native(const char *model_filename, const char *options, void *userdata)
 {
     DNNModel *model = NULL;
     char header_expected[] = "FFMPEGDNNNATIVE";
     char *buf;
     size_t size;
     int version, header_size, major_version_expected = 1;
-    ConvolutionalNetwork *network = NULL;
+    NativeModel *native_model = NULL;
     AVIOContext *model_file_context;
     int file_size, dnn_size, parsed_size;
     int32_t layer;
     DNNLayerType layer_type;
 
-    model = av_malloc(sizeof(DNNModel));
-    if (!model){
-        return NULL;
-    }
-
     if (avio_open(&model_file_context, model_filename, AVIO_FLAG_READ) < 0){
-        av_freep(&model);
         return NULL;
     }
     file_size = avio_size(model_file_context);
+
+    model = av_mallocz(sizeof(DNNModel));
+    if (!model){
+        goto fail;
+    }
 
     /**
      * check file header with string and version
@@ -143,9 +126,7 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename)
     size = sizeof(header_expected);
     buf = av_malloc(size);
     if (!buf) {
-        avio_closep(&model_file_context);
-        av_freep(&model);
-        return NULL;
+        goto fail;
     }
 
     // size - 1 to skip the ending '\0' which is not saved in file
@@ -153,18 +134,14 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename)
     dnn_size = size - 1;
     if (strncmp(buf, header_expected, size) != 0) {
         av_freep(&buf);
-        avio_closep(&model_file_context);
-        av_freep(&model);
-        return NULL;
+        goto fail;
     }
     av_freep(&buf);
 
     version = (int32_t)avio_rl32(model_file_context);
     dnn_size += 4;
     if (version != major_version_expected) {
-        avio_closep(&model_file_context);
-        av_freep(&model);
-        return NULL;
+        goto fail;
     }
 
     // currently no need to check minor version
@@ -172,61 +149,68 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename)
     dnn_size += 4;
     header_size = dnn_size;
 
-    network = av_mallocz(sizeof(ConvolutionalNetwork));
-    if (!network){
-        avio_closep(&model_file_context);
-        av_freep(&model);
-        return NULL;
+    native_model = av_mallocz(sizeof(NativeModel));
+    if (!native_model){
+        goto fail;
     }
-    model->model = (void *)network;
+
+    native_model->ctx.class = &dnn_native_class;
+    model->options = options;
+    if (av_opt_set_from_string(&native_model->ctx, model->options, NULL, "=", "&") < 0)
+        goto fail;
+    model->model = (void *)native_model;
+    native_model->model = model;
+
+#if !HAVE_PTHREAD_CANCEL
+    if (native_model->ctx.options.conv2d_threads > 1){
+        av_log(&native_model->ctx, AV_LOG_WARNING, "'conv2d_threads' option was set but it is not supported "
+                       "on this build (pthread support is required)\n");
+    }
+#endif
 
     avio_seek(model_file_context, file_size - 8, SEEK_SET);
-    network->layers_num = (int32_t)avio_rl32(model_file_context);
-    network->operands_num = (int32_t)avio_rl32(model_file_context);
+    native_model->layers_num = (int32_t)avio_rl32(model_file_context);
+    native_model->operands_num = (int32_t)avio_rl32(model_file_context);
     dnn_size += 8;
     avio_seek(model_file_context, header_size, SEEK_SET);
 
-    network->layers = av_mallocz(network->layers_num * sizeof(Layer));
-    if (!network->layers){
-        avio_closep(&model_file_context);
-        ff_dnn_free_model_native(&model);
-        return NULL;
+    native_model->layers = av_mallocz(native_model->layers_num * sizeof(Layer));
+    if (!native_model->layers){
+        goto fail;
     }
 
-    network->operands = av_mallocz(network->operands_num * sizeof(DnnOperand));
-    if (!network->operands){
-        avio_closep(&model_file_context);
-        ff_dnn_free_model_native(&model);
-        return NULL;
+    native_model->operands = av_mallocz(native_model->operands_num * sizeof(DnnOperand));
+    if (!native_model->operands){
+        goto fail;
     }
 
-    for (layer = 0; layer < network->layers_num; ++layer){
+    for (layer = 0; layer < native_model->layers_num; ++layer){
         layer_type = (int32_t)avio_rl32(model_file_context);
         dnn_size += 4;
 
         if (layer_type >= DLT_COUNT) {
-            avio_closep(&model_file_context);
-            ff_dnn_free_model_native(&model);
-            return NULL;
+            goto fail;
         }
 
-        network->layers[layer].type = layer_type;
-        parsed_size = layer_funcs[layer_type].pf_load(&network->layers[layer], model_file_context, file_size);
+        native_model->layers[layer].type = layer_type;
+        parsed_size = layer_funcs[layer_type].pf_load(&native_model->layers[layer], model_file_context, file_size, native_model->operands_num);
         if (!parsed_size) {
-            avio_closep(&model_file_context);
-            ff_dnn_free_model_native(&model);
-            return NULL;
+            goto fail;
         }
         dnn_size += parsed_size;
     }
 
-    for (int32_t i = 0; i < network->operands_num; ++i){
+    for (int32_t i = 0; i < native_model->operands_num; ++i){
         DnnOperand *oprd;
         int32_t name_len;
         int32_t operand_index = (int32_t)avio_rl32(model_file_context);
         dnn_size += 4;
 
-        oprd = &network->operands[operand_index];
+        if (operand_index >= native_model->operands_num) {
+            goto fail;
+        }
+
+        oprd = &native_model->operands[operand_index];
         name_len = (int32_t)avio_rl32(model_file_context);
         dnn_size += 4;
 
@@ -254,41 +238,149 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename)
         return NULL;
     }
 
-    model->set_input_output = &set_input_output_native;
     model->get_input = &get_input_native;
+    model->get_output = &get_output_native;
+    model->userdata = userdata;
 
     return model;
+
+fail:
+    ff_dnn_free_model_native(&model);
+    avio_closep(&model_file_context);
+    return NULL;
 }
 
-DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, DNNData *outputs, uint32_t nb_output)
+static DNNReturnType execute_model_native(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                          const char **output_names, uint32_t nb_output, AVFrame *out_frame,
+                                          int do_ioproc)
 {
-    ConvolutionalNetwork *network = (ConvolutionalNetwork *)model->model;
+    NativeModel *native_model = (NativeModel *)model->model;
+    NativeContext *ctx = &native_model->ctx;
     int32_t layer;
-    uint32_t nb = FFMIN(nb_output, network->nb_output);
+    DNNData input, output;
+    DnnOperand *oprd = NULL;
 
-    if (network->layers_num <= 0 || network->operands_num <= 0)
+    if (native_model->layers_num <= 0 || native_model->operands_num <= 0) {
+        av_log(ctx, AV_LOG_ERROR, "No operands or layers in model\n");
         return DNN_ERROR;
-    if (!network->operands[0].data)
-        return DNN_ERROR;
-
-    for (layer = 0; layer < network->layers_num; ++layer){
-        DNNLayerType layer_type = network->layers[layer].type;
-        layer_funcs[layer_type].pf_exec(network->operands,
-                                  network->layers[layer].input_operand_indexes,
-                                  network->layers[layer].output_operand_index,
-                                  network->layers[layer].params);
     }
 
-    for (uint32_t i = 0; i < nb; ++i) {
-        DnnOperand *oprd = &network->operands[network->output_indexes[i]];
-        outputs[i].data = oprd->data;
-        outputs[i].height = oprd->dims[1];
-        outputs[i].width = oprd->dims[2];
-        outputs[i].channels = oprd->dims[3];
-        outputs[i].dt = oprd->data_type;
+    for (int i = 0; i < native_model->operands_num; ++i) {
+        oprd = &native_model->operands[i];
+        if (strcmp(oprd->name, input_name) == 0) {
+            if (oprd->type != DOT_INPUT) {
+                av_log(ctx, AV_LOG_ERROR, "Found \"%s\" in model, but it is not input node\n", input_name);
+                return DNN_ERROR;
+            }
+            break;
+        }
+        oprd = NULL;
+    }
+    if (!oprd) {
+        av_log(ctx, AV_LOG_ERROR, "Could not find \"%s\" in model\n", input_name);
+        return DNN_ERROR;
+    }
+
+    oprd->dims[1] = in_frame->height;
+    oprd->dims[2] = in_frame->width;
+
+    av_freep(&oprd->data);
+    oprd->length = calculate_operand_data_length(oprd);
+    if (oprd->length <= 0) {
+        av_log(ctx, AV_LOG_ERROR, "The input data length overflow\n");
+        return DNN_ERROR;
+    }
+    oprd->data = av_malloc(oprd->length);
+    if (!oprd->data) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to malloc memory for input data\n");
+        return DNN_ERROR;
+    }
+
+    input.height = oprd->dims[1];
+    input.width = oprd->dims[2];
+    input.channels = oprd->dims[3];
+    input.data = oprd->data;
+    input.dt = oprd->data_type;
+    if (do_ioproc) {
+        if (native_model->model->pre_proc != NULL) {
+            native_model->model->pre_proc(in_frame, &input, native_model->model->userdata);
+        } else {
+            proc_from_frame_to_dnn(in_frame, &input, ctx);
+        }
+    }
+
+    if (nb_output != 1) {
+        // currently, the filter does not need multiple outputs,
+        // so we just pending the support until we really need it.
+        av_log(ctx, AV_LOG_ERROR, "do not support multiple outputs\n");
+        return DNN_ERROR;
+    }
+
+    for (layer = 0; layer < native_model->layers_num; ++layer){
+        DNNLayerType layer_type = native_model->layers[layer].type;
+        if (layer_funcs[layer_type].pf_exec(native_model->operands,
+                                            native_model->layers[layer].input_operand_indexes,
+                                            native_model->layers[layer].output_operand_index,
+                                            native_model->layers[layer].params,
+                                            &native_model->ctx) == DNN_ERROR) {
+            av_log(ctx, AV_LOG_ERROR, "Failed to execuet model\n");
+            return DNN_ERROR;
+        }
+    }
+
+    for (uint32_t i = 0; i < nb_output; ++i) {
+        DnnOperand *oprd = NULL;
+        const char *output_name = output_names[i];
+        for (int j = 0; j < native_model->operands_num; ++j) {
+            if (strcmp(native_model->operands[j].name, output_name) == 0) {
+                oprd = &native_model->operands[j];
+                break;
+            }
+        }
+
+        if (oprd == NULL) {
+            av_log(ctx, AV_LOG_ERROR, "Could not find output in model\n");
+            return DNN_ERROR;
+        }
+
+        output.data = oprd->data;
+        output.height = oprd->dims[1];
+        output.width = oprd->dims[2];
+        output.channels = oprd->dims[3];
+        output.dt = oprd->data_type;
+
+        if (do_ioproc) {
+            if (native_model->model->post_proc != NULL) {
+                native_model->model->post_proc(out_frame, &output, native_model->model->userdata);
+            } else {
+                proc_from_dnn_to_frame(out_frame, &output, ctx);
+            }
+        } else {
+            out_frame->width = output.width;
+            out_frame->height = output.height;
+        }
     }
 
     return DNN_SUCCESS;
+}
+
+DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                          const char **output_names, uint32_t nb_output, AVFrame *out_frame)
+{
+    NativeModel *native_model = (NativeModel *)model->model;
+    NativeContext *ctx = &native_model->ctx;
+
+    if (!in_frame) {
+        av_log(ctx, AV_LOG_ERROR, "in frame is NULL when execute model.\n");
+        return DNN_ERROR;
+    }
+
+    if (!out_frame) {
+        av_log(ctx, AV_LOG_ERROR, "out frame is NULL when execute model.\n");
+        return DNN_ERROR;
+    }
+
+    return execute_model_native(model, input_name, in_frame, output_names, nb_output, out_frame, 1);
 }
 
 int32_t calculate_operand_dims_count(const DnnOperand *oprd)
@@ -303,34 +395,45 @@ int32_t calculate_operand_dims_count(const DnnOperand *oprd)
 int32_t calculate_operand_data_length(const DnnOperand* oprd)
 {
     // currently, we just support DNN_FLOAT
-    return oprd->dims[0] * oprd->dims[1] * oprd->dims[2] * oprd->dims[3] * sizeof(float);
+    uint64_t len = sizeof(float);
+    for (int i = 0; i < 4; i++) {
+        len *= oprd->dims[i];
+        if (len > INT32_MAX)
+            return 0;
+    }
+    return len;
 }
 
 void ff_dnn_free_model_native(DNNModel **model)
 {
-    ConvolutionalNetwork *network;
+    NativeModel *native_model;
     ConvolutionalParams *conv_params;
     int32_t layer;
 
     if (*model)
     {
-        network = (ConvolutionalNetwork *)(*model)->model;
-        for (layer = 0; layer < network->layers_num; ++layer){
-            if (network->layers[layer].type == DLT_CONV2D){
-                conv_params = (ConvolutionalParams *)network->layers[layer].params;
-                av_freep(&conv_params->kernel);
-                av_freep(&conv_params->biases);
+        if ((*model)->model) {
+            native_model = (NativeModel *)(*model)->model;
+            if (native_model->layers) {
+                for (layer = 0; layer < native_model->layers_num; ++layer){
+                    if (native_model->layers[layer].type == DLT_CONV2D){
+                        conv_params = (ConvolutionalParams *)native_model->layers[layer].params;
+                        av_freep(&conv_params->kernel);
+                        av_freep(&conv_params->biases);
+                    }
+                    av_freep(&native_model->layers[layer].params);
+                }
+                av_freep(&native_model->layers);
             }
-            av_freep(&network->layers[layer].params);
+
+            if (native_model->operands) {
+                for (uint32_t operand = 0; operand < native_model->operands_num; ++operand)
+                    av_freep(&native_model->operands[operand].data);
+                av_freep(&native_model->operands);
+            }
+
+            av_freep(&native_model);
         }
-        av_freep(&network->layers);
-
-        for (uint32_t operand = 0; operand < network->operands_num; ++operand)
-            av_freep(&network->operands[operand].data);
-        av_freep(&network->operands);
-
-        av_freep(&network->output_indexes);
-        av_freep(&network);
         av_freep(model);
     }
 }

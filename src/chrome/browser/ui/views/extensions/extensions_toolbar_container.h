@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/optional.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
+#include "ui/views/widget/widget_observer.h"
 
 class Browser;
 class ExtensionsToolbarButton;
@@ -35,8 +38,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ToolbarActionView::Delegate,
                                    public views::WidgetObserver {
  public:
-  using ToolbarIconMap = std::map<ToolbarActionsModel::ActionId,
-                                  std::unique_ptr<ToolbarActionView>>;
+  using ToolbarIcons =
+      std::map<ToolbarActionsModel::ActionId, ToolbarActionView*>;
 
   // Determines how the container displays - specifically whether the menu and
   // popped out action can be hidden.
@@ -54,12 +57,15 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   explicit ExtensionsToolbarContainer(
       Browser* browser,
       DisplayMode display_mode = DisplayMode::kNormal);
+  ExtensionsToolbarContainer(const ExtensionsToolbarContainer&) = delete;
+  ExtensionsToolbarContainer& operator=(const ExtensionsToolbarContainer&) =
+      delete;
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
     return extensions_button_;
   }
-  const ToolbarIconMap& icons_for_testing() const { return icons_; }
+  const ToolbarIcons& icons_for_testing() const { return icons_; }
   ToolbarActionViewController* popup_owner_for_testing() {
     return popup_owner_;
   }
@@ -120,6 +126,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
   bool ShownInsideMenu() const override;
+  bool CanShowIconInToolbar() const override;
   void OnToolbarActionViewDragDone() override;
   views::LabelButton* GetOverflowReferenceView() const override;
   gfx::Size GetToolbarActionSize() override;
@@ -221,7 +228,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Actions for all extensions.
   std::vector<std::unique_ptr<ToolbarActionViewController>> actions_;
   // View for every action, does not imply pinned or currently shown.
-  ToolbarIconMap icons_;
+  ToolbarIcons icons_;
   // Popped-out extension, if any.
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.
@@ -238,8 +245,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   std::unique_ptr<DropInfo> drop_info_;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarContainer);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_CONTAINER_H_

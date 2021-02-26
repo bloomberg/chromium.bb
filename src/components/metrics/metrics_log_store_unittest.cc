@@ -42,14 +42,15 @@ class MetricsLogStoreTest : public testing::Test {
 }  // namespace
 
 TEST_F(MetricsLogStoreTest, StandardFlow) {
-  MetricsLogStore log_store(&pref_service_, 0, std::string());
+  MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                            std::string());
   log_store.LoadPersistedUnsentLogs();
 
   // Make sure a new manager has a clean slate.
   EXPECT_FALSE(log_store.has_staged_log());
   EXPECT_FALSE(log_store.has_unsent_logs());
 
-  log_store.StoreLog("a", MetricsLog::ONGOING_LOG);
+  log_store.StoreLog("a", MetricsLog::ONGOING_LOG, base::nullopt);
   EXPECT_TRUE(log_store.has_unsent_logs());
   EXPECT_FALSE(log_store.has_staged_log());
 
@@ -66,39 +67,42 @@ TEST_F(MetricsLogStoreTest, StoreAndLoad) {
   // Set up some in-progress logging in a scoped log manager simulating the
   // leadup to quitting, then persist as would be done on quit.
   {
-    MetricsLogStore log_store(&pref_service_, 0, std::string());
+    MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                              std::string());
     log_store.LoadPersistedUnsentLogs();
     EXPECT_FALSE(log_store.has_unsent_logs());
-    log_store.StoreLog("a", MetricsLog::ONGOING_LOG);
-    log_store.PersistUnsentLogs();
+    log_store.StoreLog("a", MetricsLog::ONGOING_LOG, base::nullopt);
+    log_store.TrimAndPersistUnsentLogs();
     EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(1U, TypeCount(MetricsLog::ONGOING_LOG));
   }
 
   // Relaunch load and store more logs.
   {
-    MetricsLogStore log_store(&pref_service_, 0, std::string());
+    MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                              std::string());
     log_store.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_store.has_unsent_logs());
     EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(1U, TypeCount(MetricsLog::ONGOING_LOG));
-    log_store.StoreLog("x", MetricsLog::INITIAL_STABILITY_LOG);
+    log_store.StoreLog("x", MetricsLog::INITIAL_STABILITY_LOG, base::nullopt);
     log_store.StageNextLog();
-    log_store.StoreLog("b", MetricsLog::ONGOING_LOG);
+    log_store.StoreLog("b", MetricsLog::ONGOING_LOG, base::nullopt);
 
     EXPECT_TRUE(log_store.has_unsent_logs());
     EXPECT_TRUE(log_store.has_staged_log());
     EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(1U, TypeCount(MetricsLog::ONGOING_LOG));
 
-    log_store.PersistUnsentLogs();
+    log_store.TrimAndPersistUnsentLogs();
     EXPECT_EQ(1U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(2U, TypeCount(MetricsLog::ONGOING_LOG));
   }
 
   // Relaunch and verify that once logs are handled they are not re-persisted.
   {
-    MetricsLogStore log_store(&pref_service_, 0, std::string());
+    MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                              std::string());
     log_store.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_store.has_unsent_logs());
 
@@ -106,7 +110,7 @@ TEST_F(MetricsLogStoreTest, StoreAndLoad) {
     log_store.DiscardStagedLog();
     // The initial log should be sent first; update the persisted storage to
     // verify.
-    log_store.PersistUnsentLogs();
+    log_store.TrimAndPersistUnsentLogs();
     EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(2U, TypeCount(MetricsLog::ONGOING_LOG));
 
@@ -120,11 +124,11 @@ TEST_F(MetricsLogStoreTest, StoreAndLoad) {
     log_store.DiscardStagedLog();
     EXPECT_FALSE(log_store.has_unsent_logs());
 
-    // Nothing should have changed "on disk" since PersistUnsentLogs hasn't been
-    // called again.
+    // Nothing should have changed "on disk" since TrimAndPersistUnsentLogs
+    // hasn't been called again.
     EXPECT_EQ(2U, TypeCount(MetricsLog::ONGOING_LOG));
     // Persist, and make sure nothing is left.
-    log_store.PersistUnsentLogs();
+    log_store.TrimAndPersistUnsentLogs();
     EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
     EXPECT_EQ(0U, TypeCount(MetricsLog::ONGOING_LOG));
   }
@@ -132,11 +136,12 @@ TEST_F(MetricsLogStoreTest, StoreAndLoad) {
 
 TEST_F(MetricsLogStoreTest, StoreStagedOngoingLog) {
   // Ensure that types are preserved when storing staged logs.
-  MetricsLogStore log_store(&pref_service_, 0, std::string());
+  MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                            std::string());
   log_store.LoadPersistedUnsentLogs();
-  log_store.StoreLog("a", MetricsLog::ONGOING_LOG);
+  log_store.StoreLog("a", MetricsLog::ONGOING_LOG, base::nullopt);
   log_store.StageNextLog();
-  log_store.PersistUnsentLogs();
+  log_store.TrimAndPersistUnsentLogs();
 
   EXPECT_EQ(0U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
   EXPECT_EQ(1U, TypeCount(MetricsLog::ONGOING_LOG));
@@ -144,11 +149,12 @@ TEST_F(MetricsLogStoreTest, StoreStagedOngoingLog) {
 
 TEST_F(MetricsLogStoreTest, StoreStagedInitialLog) {
   // Ensure that types are preserved when storing staged logs.
-  MetricsLogStore log_store(&pref_service_, 0, std::string());
+  MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                            std::string());
   log_store.LoadPersistedUnsentLogs();
-  log_store.StoreLog("b", MetricsLog::INITIAL_STABILITY_LOG);
+  log_store.StoreLog("b", MetricsLog::INITIAL_STABILITY_LOG, base::nullopt);
   log_store.StageNextLog();
-  log_store.PersistUnsentLogs();
+  log_store.TrimAndPersistUnsentLogs();
 
   EXPECT_EQ(1U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
   EXPECT_EQ(0U, TypeCount(MetricsLog::ONGOING_LOG));
@@ -156,14 +162,17 @@ TEST_F(MetricsLogStoreTest, StoreStagedInitialLog) {
 
 TEST_F(MetricsLogStoreTest, LargeLogDiscarding) {
   // Set the size threshold very low, to verify that it's honored.
-  MetricsLogStore log_store(&pref_service_, 1, std::string());
+  client_.set_max_ongoing_log_size(1);
+  MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                            std::string());
   log_store.LoadPersistedUnsentLogs();
 
-  log_store.StoreLog("persisted", MetricsLog::INITIAL_STABILITY_LOG);
-  log_store.StoreLog("not_persisted", MetricsLog::ONGOING_LOG);
+  log_store.StoreLog("persisted", MetricsLog::INITIAL_STABILITY_LOG,
+                     base::nullopt);
+  log_store.StoreLog("not_persisted", MetricsLog::ONGOING_LOG, base::nullopt);
 
   // Only the stability log should be written out, due to the threshold.
-  log_store.PersistUnsentLogs();
+  log_store.TrimAndPersistUnsentLogs();
   EXPECT_EQ(1U, TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
   EXPECT_EQ(0U, TypeCount(MetricsLog::ONGOING_LOG));
 }
@@ -171,13 +180,14 @@ TEST_F(MetricsLogStoreTest, LargeLogDiscarding) {
 TEST_F(MetricsLogStoreTest, DiscardOrder) {
   // Ensure that the correct log is discarded if new logs are pushed while
   // a log is staged.
-  MetricsLogStore log_store(&pref_service_, 0, std::string());
+  MetricsLogStore log_store(&pref_service_, client_.GetStorageLimits(),
+                            std::string());
   log_store.LoadPersistedUnsentLogs();
 
-  log_store.StoreLog("a", MetricsLog::ONGOING_LOG);
-  log_store.StoreLog("b", MetricsLog::ONGOING_LOG);
+  log_store.StoreLog("a", MetricsLog::ONGOING_LOG, base::nullopt);
+  log_store.StoreLog("b", MetricsLog::ONGOING_LOG, base::nullopt);
   log_store.StageNextLog();
-  log_store.StoreLog("c", MetricsLog::INITIAL_STABILITY_LOG);
+  log_store.StoreLog("c", MetricsLog::INITIAL_STABILITY_LOG, base::nullopt);
   EXPECT_EQ(2U, log_store.ongoing_log_count());
   EXPECT_EQ(1U, log_store.initial_log_count());
   // Should discard the ongoing log staged earlier.

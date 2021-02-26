@@ -34,7 +34,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
@@ -80,13 +79,14 @@ class CORE_EXPORT EventTargetData final
     : public GarbageCollected<EventTargetData> {
  public:
   EventTargetData();
+  EventTargetData(const EventTargetData&) = delete;
+  EventTargetData& operator=(const EventTargetData&) = delete;
   ~EventTargetData();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
-  DISALLOW_COPY_AND_ASSIGN(EventTargetData);
 };
 
 // All DOM event targets extend EventTarget. The spec is defined here:
@@ -172,9 +172,13 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   bool HasEventListeners() const override;
   bool HasEventListeners(const AtomicString& event_type) const;
+  bool HasAnyEventListeners(const Vector<AtomicString>& event_types) const;
   bool HasCapturingEventListeners(const AtomicString& event_type);
   bool HasJSBasedEventListeners(const AtomicString& event_type) const;
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
+  // Number of event listeners for |event_type| registered at this event target.
+  int NumberOfEventListeners(const AtomicString& event_type) const;
+
   Vector<AtomicString> EventTypes();
 
   DispatchEventResult FireEventListeners(Event&);
@@ -238,7 +242,7 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
  public:
   ~EventTargetWithInlineData() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(event_target_data_);
     EventTarget::Trace(visitor);
   }
@@ -328,6 +332,16 @@ inline bool EventTarget::HasEventListeners(
   if (const EventTargetData* d =
           const_cast<EventTarget*>(this)->GetEventTargetData())
     return d->event_listener_map.Contains(event_type);
+  return false;
+}
+
+DISABLE_CFI_PERF
+inline bool EventTarget::HasAnyEventListeners(
+    const Vector<AtomicString>& event_types) const {
+  for (const AtomicString& event_type : event_types) {
+    if (HasEventListeners(event_type))
+      return true;
+  }
   return false;
 }
 

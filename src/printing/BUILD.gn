@@ -18,12 +18,6 @@ if (use_cups && is_chromeos) {
   import("//printing/backend/tools/code_generator.gni")
 }
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
 if ((enable_basic_printing && is_win) || enable_print_preview) {
   # Windows basic printing or print preview requires pdf enabled.
   assert(enable_pdf,
@@ -34,7 +28,7 @@ if ((enable_basic_printing && is_win) || enable_print_preview) {
 # Enable the CUPS IPP printing backend.
 # TODO(crbug.com/226176): Remove this after CUPS PPD API calls are removed.
 declare_args() {
-  use_cups_ipp = use_cups && !is_desktop_linux
+  use_cups_ipp = use_cups && !is_linux
 }
 
 # Several targets want to include this header file. We separate it out
@@ -75,7 +69,6 @@ component("printing") {
     "page_range.h",
     "page_setup.cc",
     "page_setup.h",
-    "page_size_margins.h",
     "pdf_render_settings.h",
     "print_dialog_gtk_interface.h",
     "print_job_constants.cc",
@@ -107,6 +100,7 @@ component("printing") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//cc/paint",
     "//printing/common",
     "//printing/mojom",
@@ -142,7 +136,7 @@ component("printing") {
     ]
   }
 
-  if (is_desktop_linux) {
+  if (is_linux) {
     sources += [
       "printed_document_linux.cc",
       "printing_context_linux.cc",
@@ -167,7 +161,7 @@ component("printing") {
       ]
     }
 
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "QuartzCore.framework",
       "ApplicationServices.framework",
@@ -207,7 +201,7 @@ component("printing") {
   if (use_cups) {
     configs += [ ":cups" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       # CUPS 1.6 deprecated the PPD APIs, but we will stay with this API
       # for now as the suitability of the replacement is unclear.
       # More info: crbug.com/226176
@@ -303,6 +297,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//skia",
     "//ui/gfx",
   ]
@@ -313,7 +308,7 @@ static_library("test_support") {
   if (is_fuchsia) {
     sources += [ "image_fuchsia.cc" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "image_linux.cc" ]
   }
   if (is_mac) {
@@ -326,6 +321,7 @@ static_library("test_support") {
 
 test("printing_unittests") {
   sources = [
+    "backend/mojom/print_backend_mojom_traits_unittest.cc",
     "metafile_skia_unittest.cc",
     "nup_parameters_unittest.cc",
     "page_number_unittest.cc",
@@ -341,8 +337,11 @@ test("printing_unittests") {
   configs += [ "//build/config/compiler:noshadowing" ]
   deps = [
     ":printing",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
+    "//mojo/core/test:run_all_unittests",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//printing/backend/mojom",
     "//printing/common",
     "//printing/mojom",
     "//testing/gmock",
@@ -380,7 +379,9 @@ test("printing_unittests") {
       sources += [ "backend/cups_ipp_helper_unittest.cc" ]
     }
 
-    if (!is_chromeos) {
+    if (is_chromeos) {
+      sources += [ "printing_context_chromeos_unittest.cc" ]
+    } else {
       sources += [
         "backend/cups_helper_unittest.cc",
         "backend/print_backend_cups_unittest.cc",
@@ -422,6 +423,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//ui/android:ui_java",
     ]
     sources = [

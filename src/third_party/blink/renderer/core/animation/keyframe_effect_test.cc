@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
-#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
@@ -28,6 +28,9 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
+using animation_test_helpers::SetV8ObjectPropertyAsNumber;
+using animation_test_helpers::SetV8ObjectPropertyAsString;
 
 class KeyframeEffectTest : public PageTestBase {
  protected:
@@ -497,25 +500,27 @@ TEST_F(KeyframeEffectTest, TranslationTransformsPreserveAxisAlignment) {
   auto* effect =
       GetTwoFrameEffect(CSSPropertyID::kTransform, "translate(10px, 10px)",
                         "translate(20px, 20px)");
-  EXPECT_TRUE(effect->AnimationsPreserveAxisAlignment());
+  EXPECT_TRUE(effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
 }
 
 TEST_F(KeyframeEffectTest, ScaleTransformsPreserveAxisAlignment) {
   auto* effect =
       GetTwoFrameEffect(CSSPropertyID::kTransform, "scale(2)", "scale(3)");
-  EXPECT_TRUE(effect->AnimationsPreserveAxisAlignment());
+  EXPECT_TRUE(effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
 }
 
 TEST_F(KeyframeEffectTest, RotationTransformsDoNotPreserveAxisAlignment) {
   auto* effect = GetTwoFrameEffect(CSSPropertyID::kTransform, "rotate(10deg)",
                                    "rotate(20deg)");
 
-  EXPECT_FALSE(effect->AnimationsPreserveAxisAlignment());
+  EXPECT_FALSE(
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
 }
 
 TEST_F(KeyframeEffectTest, RotationsDoNotPreserveAxisAlignment) {
   auto* effect = GetTwoFrameEffect(CSSPropertyID::kRotate, "10deg", "20deg");
-  EXPECT_FALSE(effect->AnimationsPreserveAxisAlignment());
+  EXPECT_FALSE(
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
 }
 
 }  // namespace blink

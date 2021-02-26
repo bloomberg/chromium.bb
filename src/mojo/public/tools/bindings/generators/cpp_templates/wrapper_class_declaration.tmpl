@@ -59,6 +59,9 @@ class {{export_attribute}} {{struct.name}} {
   template <typename T, {{struct.name}}::EnableIfSame<T>* = nullptr>
   bool Equals(const T& other) const;
 
+  template <typename T, {{struct.name}}::EnableIfSame<T>* = nullptr>
+  bool operator==(const T& rhs) const { return Equals(rhs); }
+
 {%- if struct|is_hashable %}
   size_t Hash(size_t seed) const;
 {%- endif %}
@@ -86,7 +89,8 @@ class {{export_attribute}} {{struct.name}} {
   static mojo::Message WrapAsMessage(UserType input) {
     return mojo::Message(std::make_unique<
         internal::{{struct.name}}_UnserializedMessageContext<
-            UserType, {{struct.name}}::DataView>>(0, 0, std::move(input)));
+            UserType, {{struct.name}}::DataView>>(0, 0, std::move(input)),
+        MOJO_CREATE_MESSAGE_FLAG_NONE);
   }
 
   template <typename UserType>
@@ -127,6 +131,55 @@ class {{export_attribute}} {{struct.name}} {
   {{ kythe_annotation("%s.%s"|format(struct_prefix, name)) }}
   {{type}} {{name}};
 {%- endfor %}
+
+  // Write this structure into |value|. The members are represented as a
+  // dictionary |member name|: |member value|. This method does not deal with
+  // the dictionary name. The caller is responsible for not calling
+  // |AsValueInto| when |value| expects array items (see Array/Dictionary
+  // methods of |base::trace_event::TracedValue|).
+  //
+  // |value| The TracedValue to be written into.
+  //
+  // Example uses:
+  //
+  //   // |my_var1, my_var2| are variables with defined |AsValueInto| method.
+  //   auto value = std::make_unique<base::trace_event::TracedValue>();
+  //   value->BeginDictionary("my_var1");
+  //   my_var1.AsValueInto(value.get());
+  //   value->EndDictionary();
+  //   value->BeginDictionary("my_var2");
+  //   my_var2.AsValueInto(value.get());
+  //   value->EndDictionary();
+  //
+  //   // |my_var| is a variable with defined |AsValueInto| method.
+  //   auto value = std::make_unique<base::trace_event::TracedValue>();
+  //   my_var.AsValueInto(value.get());
+  //   TRACE_EVENT1("test", "test", "my_var", std::move(value));
+  //
+  // Calling |AsValueInto| on two objects without opening and closing a
+  // dictionary for each object is theoretically possible, but strongly
+  // discouraged due to potential name collisions:
+  //
+  //   struct A {
+  //     int foo;
+  //   };
+  //   struct B {
+  //     int bar;
+  //   };
+  //   struct C {
+  //     int foo;
+  //     int bar;
+  //   };
+  //   auto value1 = std::make_unique<base::trace_event::TracedValue>();
+  //   auto value2 = std::make_unique<base::trace_event::TracedValue>();
+  //   A a;
+  //   B b;
+  //   C c;
+  //   // value1 and value2 will be filled with the same information:
+  //   a.AsValueInto(value1);
+  //   b.AsValueInto(value1);
+  //   c.AsValueInto(value2);
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
   static bool Validate(const void* data,

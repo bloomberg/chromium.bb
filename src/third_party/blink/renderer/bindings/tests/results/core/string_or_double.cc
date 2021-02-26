@@ -57,7 +57,7 @@ StringOrDouble::StringOrDouble(const StringOrDouble&) = default;
 StringOrDouble::~StringOrDouble() = default;
 StringOrDouble& StringOrDouble::operator=(const StringOrDouble&) = default;
 
-void StringOrDouble::Trace(Visitor* visitor) {
+void StringOrDouble::Trace(Visitor* visitor) const {
 }
 
 void V8StringOrDouble::ToImpl(
@@ -73,7 +73,7 @@ void V8StringOrDouble::ToImpl(
     return;
 
   if (v8_value->IsNumber()) {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);
@@ -81,7 +81,7 @@ void V8StringOrDouble::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

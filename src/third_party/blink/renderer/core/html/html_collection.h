@@ -69,7 +69,6 @@ class HTMLCollectionIterator {
 class CORE_EXPORT HTMLCollection : public ScriptWrappable,
                                    public LiveNodeListBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 
  public:
   enum ItemAfterOverrideType {
@@ -114,7 +113,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   Iterator begin() const { return Iterator(this); }
   Iterator end() const { return Iterator::CreateEnd(this); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   class NamedItemCache final : public GarbageCollected<NamedItemCache> {
@@ -126,14 +125,14 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
       auto it = id_cache_.find(id.Impl());
       if (it == id_cache_.end())
         return nullptr;
-      return &it->value;
+      return it->value;
     }
     const HeapVector<Member<Element>>* GetElementsByName(
         const AtomicString& name) const {
       auto it = name_cache_.find(name.Impl());
       if (it == name_cache_.end())
         return nullptr;
-      return &it->value;
+      return it->value;
     }
     void AddElementWithId(const AtomicString& id, Element* element) {
       AddElementToMap(id_cache_, id, element);
@@ -142,21 +141,22 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
       AddElementToMap(name_cache_, name, element);
     }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(id_cache_);
       visitor->Trace(name_cache_);
     }
 
    private:
-    typedef HeapHashMap<StringImpl*, HeapVector<Member<Element>>>
+    typedef HeapHashMap<StringImpl*, Member<HeapVector<Member<Element>>>>
         StringToElementsMap;
     static void AddElementToMap(StringToElementsMap& map,
                                 const AtomicString& key,
                                 Element* element) {
-      HeapVector<Member<Element>>& vector =
-          map.insert(key.Impl(), HeapVector<Member<Element>>())
+      HeapVector<Member<Element>>* vector =
+          map.insert(key.Impl(),
+                     MakeGarbageCollected<HeapVector<Member<Element>>>())
               .stored_value->value;
-      vector.push_back(element);
+      vector->push_back(element);
     }
 
     StringToElementsMap id_cache_;

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -133,11 +133,11 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
 
   // ResourceType::kImage
   const char* expected_image_accept_header =
-      "image/webp,image/apng,image/*,*/*;q=0.8";
+      "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
     expected_image_accept_header =
-        "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
   }
 #endif
   EXPECT_EQ(expected_image_accept_header, GetFor("/image.gif"));

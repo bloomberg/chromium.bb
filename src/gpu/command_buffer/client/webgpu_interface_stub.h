@@ -25,12 +25,17 @@ class WebGPUInterfaceStub : public WebGPUInterface {
   // WebGPUInterface implementation
   const DawnProcTable& GetProcs() const override;
   void FlushCommands() override;
+  void FlushCommands(DawnDeviceClientID device_client_id) override;
+  void EnsureAwaitingFlush(DawnDeviceClientID device_client_id,
+                           bool* needs_flush) override;
+  void FlushAwaitingCommands(DawnDeviceClientID device_client_id) override;
   WGPUDevice GetDevice(DawnDeviceClientID device_client_id) override;
   ReservedTexture ReserveTexture(DawnDeviceClientID device_client_id) override;
   bool RequestAdapterAsync(
       PowerPreference power_preference,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
-          request_adapter_callback) override;
+      base::OnceCallback<void(int32_t,
+                              const WGPUDeviceProperties&,
+                              const char*)> request_adapter_callback) override;
   bool RequestDeviceAsync(
       uint32_t adapter_service_id,
       const WGPUDeviceProperties& requested_device_properties,

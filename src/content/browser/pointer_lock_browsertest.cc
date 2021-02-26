@@ -8,7 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -212,8 +212,7 @@ const std::string PointerLockHelper::wait_for_pointer_lock_promise_ =
     "()=>false);})()";
 }  // namespace
 
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, DISABLED_PointerLockBasic) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -241,9 +240,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, DISABLED_PointerLockBasic) {
   EXPECT_EQ(true, PointerLockHelper::IsPointerLockOnBody(child));
 }
 
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockAndUserActivation) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockAndUserActivation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -282,9 +279,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
                        grand_child, EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
-// Flaky test crbug.com/1077306
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockEventRouting) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -395,10 +390,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
 }
 
 // Tests that the browser will not unlock the pointer if a RenderWidgetHostView
-// that doesn't hold the pointer lock is destroyed.
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockChildFrameDetached) {
+// that doesn't hold the pointer lock is destroyed
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockChildFrameDetached) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -722,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
   // Release pointer lock.
   EXPECT_EQ(true, PointerLockHelper::ExitPointerLock(root));
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MAC)
   // Request a pointer lock with unadjustedMovement.
   EXPECT_EQ(
       true,
@@ -755,14 +748,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 }
 
 #if defined(USE_AURA)
-#if defined(OS_WIN) || defined(OS_LINUX)
-// https://crbug.com/1043985#c9: Flaky on Windows and Linux.
-#define MAYBE_UnadjustedMovement DISABLED_UnadjustedMovement
-#else
-#define MAYBE_UnadjustedMovement UnadjustedMovement
-#endif
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
-                       MAYBE_UnadjustedMovement) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions, UnadjustedMovement) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -834,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 
 #if defined(USE_AURA)
 // TODO(https://crbug.com/982379): Remove failure test when fully implemented
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_ChangeUnadjustedMovementFailure \
   DISABLED_ChangeUnadjustedMovementFailure
 #else

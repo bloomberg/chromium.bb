@@ -163,7 +163,7 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
     case ModuleBlockingDecision::kAllowedSameCertificate:
     case ModuleBlockingDecision::kAllowedSameDirectory:
     case ModuleBlockingDecision::kAllowedMicrosoft:
-    case ModuleBlockingDecision::kAllowedWhitelisted:
+    case ModuleBlockingDecision::kAllowedAllowlisted:
     case ModuleBlockingDecision::kTolerated:
     case ModuleBlockingDecision::kNotAnalyzed:
       return false;
@@ -224,8 +224,7 @@ base::FilePath ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath() {
 
 // static
 void ModuleBlacklistCacheUpdater::DeleteModuleBlacklistCache() {
-  bool delete_result =
-      base::DeleteFile(GetModuleBlacklistCachePath(), false /* recursive */);
+  bool delete_result = base::DeleteFile(GetModuleBlacklistCachePath());
   UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.DeleteResult", delete_result);
 }
 
@@ -378,7 +377,7 @@ ModuleBlacklistCacheUpdater::DetermineModuleBlockingDecision(
     case ModuleListState::kUnlisted:
       break;
     case ModuleListState::kWhitelisted:
-      return ModuleBlockingDecision::kAllowedWhitelisted;
+      return ModuleBlockingDecision::kAllowedAllowlisted;
     case ModuleListState::kTolerated:
       return ModuleBlockingDecision::kTolerated;
     case ModuleListState::kBlacklisted:

@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
   aom_codec_ctx_t codec;
   if (aom_codec_dec_init(&codec, decoder, NULL, 0))
-    die_codec(&codec, "Failed to initialize decoder");
+    die("Failed to initialize decoder");
 
   while (aom_video_reader_read_frame(reader)) {
     aom_codec_iter_t iter = NULL;

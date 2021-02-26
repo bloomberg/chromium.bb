@@ -32,11 +32,14 @@
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/trace_processor/basic_types.h"
+#include "perfetto/trace_processor/status.h"
 #include "src/trace_processor/containers/string_pool.h"
 #include "src/trace_processor/storage/metadata.h"
 #include "src/trace_processor/storage/stats.h"
 #include "src/trace_processor/tables/android_tables.h"
 #include "src/trace_processor/tables/counter_tables.h"
+#include "src/trace_processor/tables/flow_tables.h"
+#include "src/trace_processor/tables/memory_tables.h"
 #include "src/trace_processor/tables/metadata_tables.h"
 #include "src/trace_processor/tables/profiler_tables.h"
 #include "src/trace_processor/tables/slice_tables.h"
@@ -87,6 +90,8 @@ using RawId = tables::RawTable::Id;
 using FlamegraphId = tables::ExperimentalFlamegraphNodesTable::Id;
 
 using VulkanAllocId = tables::VulkanMemoryAllocationsTable::Id;
+
+using SnapshotNodeId = tables::MemorySnapshotNodeTable::Id;
 
 // TODO(lalitm): this is a temporary hack while migrating the counters table and
 // will be removed when the migration is complete.
@@ -161,7 +166,10 @@ class TraceStorage {
     void UpdateThreadDeltasForSliceId(uint32_t slice_id,
                                       int64_t end_thread_timestamp_ns,
                                       int64_t end_thread_instruction_count) {
-      uint32_t row = *FindRowForSliceId(slice_id);
+      auto opt_row = FindRowForSliceId(slice_id);
+      if (!opt_row)
+        return;
+      uint32_t row = *opt_row;
       int64_t begin_ns = thread_timestamp_ns_[row];
       thread_duration_ns_[row] = end_thread_timestamp_ns - begin_ns;
       int64_t begin_ticount = thread_instruction_counts_[row];
@@ -222,7 +230,10 @@ class TraceStorage {
     void UpdateThreadDeltasForSliceId(uint32_t slice_id,
                                       int64_t end_thread_timestamp_ns,
                                       int64_t end_thread_instruction_count) {
-      uint32_t row = *FindRowForSliceId(slice_id);
+      auto opt_row = FindRowForSliceId(slice_id);
+      if (!opt_row)
+        return;
+      uint32_t row = *opt_row;
       int64_t begin_ns = thread_timestamp_ns_[row];
       thread_duration_ns_[row] = end_thread_timestamp_ns - begin_ns;
       int64_t begin_ticount = thread_instruction_counts_[row];
@@ -424,6 +435,13 @@ class TraceStorage {
     return &gpu_counter_track_table_;
   }
 
+  const tables::GpuCounterGroupTable& gpu_counter_group_table() const {
+    return gpu_counter_group_table_;
+  }
+  tables::GpuCounterGroupTable* mutable_gpu_counter_group_table() {
+    return &gpu_counter_group_table_;
+  }
+
   const tables::SchedSliceTable& sched_slice_table() const {
     return sched_slice_table_;
   }
@@ -433,6 +451,9 @@ class TraceStorage {
 
   const tables::SliceTable& slice_table() const { return slice_table_; }
   tables::SliceTable* mutable_slice_table() { return &slice_table_; }
+
+  const tables::FlowTable& flow_table() const { return flow_table_; }
+  tables::FlowTable* mutable_flow_table() { return &flow_table_; }
 
   const ThreadSlices& thread_slices() const { return thread_slices_; }
   ThreadSlices* mutable_thread_slices() { return &thread_slices_; }
@@ -478,6 +499,12 @@ class TraceStorage {
   const tables::RawTable& raw_table() const { return raw_table_; }
   tables::RawTable* mutable_raw_table() { return &raw_table_; }
 
+  const tables::CpuTable& cpu_table() const { return cpu_table_; }
+  tables::CpuTable* mutable_cpu_table() { return &cpu_table_; }
+
+  const tables::CpuFreqTable& cpu_freq_table() const { return cpu_freq_table_; }
+  tables::CpuFreqTable* mutable_cpu_freq_table() { return &cpu_freq_table_; }
+
   const tables::StackProfileMappingTable& stack_profile_mapping_table() const {
     return stack_profile_mapping_table_;
   }
@@ -522,12 +549,26 @@ class TraceStorage {
     return &profiler_smaps_table_;
   }
 
+  const tables::StackSampleTable& stack_sample_table() const {
+    return stack_sample_table_;
+  }
+  tables::StackSampleTable* mutable_stack_sample_table() {
+    return &stack_sample_table_;
+  }
+
   const tables::CpuProfileStackSampleTable& cpu_profile_stack_sample_table()
       const {
     return cpu_profile_stack_sample_table_;
   }
   tables::CpuProfileStackSampleTable* mutable_cpu_profile_stack_sample_table() {
     return &cpu_profile_stack_sample_table_;
+  }
+
+  const tables::PerfSampleTable& perf_sample_table() const {
+    return perf_sample_table_;
+  }
+  tables::PerfSampleTable* mutable_perf_sample_table() {
+    return &perf_sample_table_;
   }
 
   const tables::SymbolTable& symbol_table() const { return symbol_table_; }
@@ -580,12 +621,33 @@ class TraceStorage {
     return &graphics_frame_slice_table_;
   }
 
-  const tables::GraphicsFrameStatsTable& graphics_frame_stats_table() const {
-    return graphics_frame_stats_table_;
+  const tables::MemorySnapshotTable& memory_snapshot_table() const {
+    return memory_snapshot_table_;
+  }
+  tables::MemorySnapshotTable* mutable_memory_snapshot_table() {
+    return &memory_snapshot_table_;
   }
 
-  tables::GraphicsFrameStatsTable* mutable_graphics_frame_stats_table() {
-    return &graphics_frame_stats_table_;
+  const tables::ProcessMemorySnapshotTable& process_memory_snapshot_table()
+      const {
+    return process_memory_snapshot_table_;
+  }
+  tables::ProcessMemorySnapshotTable* mutable_process_memory_snapshot_table() {
+    return &process_memory_snapshot_table_;
+  }
+
+  const tables::MemorySnapshotNodeTable& memory_snapshot_node_table() const {
+    return memory_snapshot_node_table_;
+  }
+  tables::MemorySnapshotNodeTable* mutable_memory_snapshot_node_table() {
+    return &memory_snapshot_node_table_;
+  }
+
+  const tables::MemorySnapshotEdgeTable& memory_snapshot_edge_table() const {
+    return memory_snapshot_edge_table_;
+  }
+  tables::MemorySnapshotEdgeTable* mutable_memory_snapshot_edge_table() {
+    return &memory_snapshot_edge_table_;
   }
 
   const StringPool& string_pool() const { return string_pool_; }
@@ -598,35 +660,23 @@ class TraceStorage {
   // Returns (0, 0) if the trace is empty.
   std::pair<int64_t, int64_t> GetTraceTimestampBoundsNs() const;
 
-  // TODO(lalitm): remove this when we have a better home.
-  std::vector<MappingId> FindMappingRow(StringId name,
-                                        StringId build_id) const {
-    auto it = stack_profile_mapping_index_.find(std::make_pair(name, build_id));
-    if (it == stack_profile_mapping_index_.end())
-      return {};
-    return it->second;
-  }
-
-  // TODO(lalitm): remove this when we have a better home.
-  void InsertMappingId(StringId name, StringId build_id, MappingId row) {
-    auto pair = std::make_pair(name, build_id);
-    stack_profile_mapping_index_[pair].emplace_back(row);
-  }
-
-  // TODO(lalitm): remove this when we have a better home.
-  std::vector<FrameId> FindFrameIds(MappingId mapping_row,
-                                    uint64_t rel_pc) const {
-    auto it =
-        stack_profile_frame_index_.find(std::make_pair(mapping_row, rel_pc));
-    if (it == stack_profile_frame_index_.end())
-      return {};
-    return it->second;
-  }
-
-  // TODO(lalitm): remove this when we have a better home.
-  void InsertFrameRow(MappingId mapping_row, uint64_t rel_pc, FrameId row) {
-    auto pair = std::make_pair(mapping_row, rel_pc);
-    stack_profile_frame_index_[pair].emplace_back(row);
+  util::Status ExtractArg(uint32_t arg_set_id,
+                          const char* key,
+                          base::Optional<Variadic>* result) {
+    const auto& args = arg_table();
+    RowMap filtered = args.FilterToRowMap(
+        {args.arg_set_id().eq(arg_set_id), args.key().eq(key)});
+    if (filtered.empty()) {
+      *result = base::nullopt;
+      return util::OkStatus();
+    }
+    if (filtered.size() > 1) {
+      return util::ErrStatus(
+          "EXTRACT_ARG: received multiple args matching arg set id and key");
+    }
+    uint32_t idx = filtered.Get(0);
+    *result = GetArgValue(idx);
+    return util::OkStatus();
   }
 
   Variadic GetArgValue(uint32_t row) const {
@@ -689,14 +739,6 @@ class TraceStorage {
   TraceStorage(TraceStorage&&) = delete;
   TraceStorage& operator=(TraceStorage&&) = delete;
 
-  // TODO(lalitm): remove this when we find a better home for this.
-  using MappingKey = std::pair<StringId /* name */, StringId /* build id */>;
-  std::map<MappingKey, std::vector<MappingId>> stack_profile_mapping_index_;
-
-  // TODO(lalitm): remove this when we find a better home for this.
-  using FrameKey = std::pair<MappingId, uint64_t /* rel_pc */>;
-  std::map<FrameKey, std::vector<FrameId>> stack_profile_frame_index_;
-
   // One entry for each unique string in the trace.
   StringPool string_pool_;
 
@@ -728,6 +770,7 @@ class TraceStorage {
       &string_pool_, &counter_track_table_};
   tables::GpuCounterTrackTable gpu_counter_track_table_{&string_pool_,
                                                         &counter_track_table_};
+  tables::GpuCounterGroupTable gpu_counter_group_table_{&string_pool_, nullptr};
 
   // Args for all other tables.
   tables::ArgTable arg_table_{&string_pool_, nullptr};
@@ -738,6 +781,9 @@ class TraceStorage {
 
   // Slices coming from userspace events (e.g. Chromium TRACE_EVENT macros).
   tables::SliceTable slice_table_{&string_pool_, nullptr};
+
+  // Flow events from userspace events (e.g. Chromium TRACE_EVENT macros).
+  tables::FlowTable flow_table_{&string_pool_, nullptr};
 
   // Slices from CPU scheduling data.
   tables::SchedSliceTable sched_slice_table_{&string_pool_, nullptr};
@@ -769,6 +815,11 @@ class TraceStorage {
   // args table. This table can be used to generate a text version of the
   // trace.
   tables::RawTable raw_table_{&string_pool_, nullptr};
+
+  tables::CpuTable cpu_table_{&string_pool_, nullptr};
+
+  tables::CpuFreqTable cpu_freq_table_{&string_pool_, nullptr};
+
   tables::AndroidLogTable android_log_table_{&string_pool_, nullptr};
 
   tables::StackProfileMappingTable stack_profile_mapping_table_{&string_pool_,
@@ -777,10 +828,13 @@ class TraceStorage {
                                                             nullptr};
   tables::StackProfileCallsiteTable stack_profile_callsite_table_{&string_pool_,
                                                                   nullptr};
+  tables::StackSampleTable stack_sample_table_{&string_pool_, nullptr};
   tables::HeapProfileAllocationTable heap_profile_allocation_table_{
       &string_pool_, nullptr};
   tables::CpuProfileStackSampleTable cpu_profile_stack_sample_table_{
-      &string_pool_, nullptr};
+      &string_pool_, &stack_sample_table_};
+  tables::PerfSampleTable perf_sample_table_{&string_pool_,
+                                             &stack_sample_table_};
   tables::PackageListTable package_list_table_{&string_pool_, nullptr};
   tables::ProfilerSmapsTable profiler_smaps_table_{&string_pool_, nullptr};
 
@@ -796,7 +850,14 @@ class TraceStorage {
 
   tables::GraphicsFrameSliceTable graphics_frame_slice_table_{&string_pool_,
                                                               &slice_table_};
-  tables::GraphicsFrameStatsTable graphics_frame_stats_table_{&string_pool_,
+
+  // Metadata for memory snapshot.
+  tables::MemorySnapshotTable memory_snapshot_table_{&string_pool_, nullptr};
+  tables::ProcessMemorySnapshotTable process_memory_snapshot_table_{
+      &string_pool_, nullptr};
+  tables::MemorySnapshotNodeTable memory_snapshot_node_table_{&string_pool_,
+                                                              nullptr};
+  tables::MemorySnapshotEdgeTable memory_snapshot_edge_table_{&string_pool_,
                                                               nullptr};
 
   // The below array allow us to map between enums and their string

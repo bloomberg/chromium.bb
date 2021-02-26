@@ -27,37 +27,34 @@
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
-ApplicationCache::ApplicationCache(LocalFrame* frame)
-    : ExecutionContextClient(frame) {
-  DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(frame->DomWindow()));
+ApplicationCache::ApplicationCache(LocalDOMWindow* window)
+    : ExecutionContextClient(window) {
+  DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(window));
   ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (cache_host)
     cache_host->SetApplicationCache(this);
 }
 
-void ApplicationCache::Trace(Visitor* visitor) {
+void ApplicationCache::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }
 
 ApplicationCacheHostForFrame* ApplicationCache::GetApplicationCacheHost()
     const {
-  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
+  if (!DomWindow())
     return nullptr;
-  return GetFrame()->Loader().GetDocumentLoader()->GetApplicationCacheHost();
+  return DomWindow()->document()->Loader()->GetApplicationCacheHost();
 }
 
 uint16_t ApplicationCache::status() const {
@@ -121,7 +118,7 @@ const AtomicString& ApplicationCache::InterfaceName() const {
 }
 
 ExecutionContext* ApplicationCache::GetExecutionContext() const {
-  return GetFrame() ? GetFrame()->DomWindow() : nullptr;
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 const AtomicString& ApplicationCache::ToEventType(mojom::AppCacheEventID id) {
@@ -148,16 +145,10 @@ const AtomicString& ApplicationCache::ToEventType(mojom::AppCacheEventID id) {
 }
 
 void ApplicationCache::RecordAPIUseType() const {
-  if (!GetFrame())
+  if (!DomWindow())
     return;
-
-  Document* document = GetFrame()->GetDocument();
-
-  if (!document)
-    return;
-
-  CHECK(document->IsSecureContext());
-  Deprecation::CountDeprecation(document,
+  CHECK(DomWindow()->IsSecureContext());
+  Deprecation::CountDeprecation(DomWindow(),
                                 WebFeature::kApplicationCacheAPISecureOrigin);
 }
 

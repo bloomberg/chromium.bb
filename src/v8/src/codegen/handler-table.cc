@@ -11,13 +11,18 @@
 #include "src/codegen/assembler-inl.h"
 #include "src/objects/code-inl.h"
 #include "src/objects/objects-inl.h"
+#include "src/wasm/wasm-code-manager.h"
 
 namespace v8 {
 namespace internal {
 
 HandlerTable::HandlerTable(Code code)
-    : HandlerTable(code.InstructionStart() + code.handler_table_offset(),
-                   code.handler_table_size(), kReturnAddressBasedEncoding) {}
+    : HandlerTable(code.HandlerTableAddress(), code.handler_table_size(),
+                   kReturnAddressBasedEncoding) {}
+
+HandlerTable::HandlerTable(const wasm::WasmCode* code)
+    : HandlerTable(code->handler_table(), code->handler_table_size(),
+                   kReturnAddressBasedEncoding) {}
 
 HandlerTable::HandlerTable(BytecodeArray bytecode_array)
     : HandlerTable(bytecode_array.handler_table()) {}
@@ -137,7 +142,7 @@ int HandlerTable::LengthForRange(int entries) {
 
 // static
 int HandlerTable::EmitReturnTableStart(Assembler* masm) {
-  masm->DataAlign(sizeof(int32_t));  // Make sure entries are aligned.
+  masm->DataAlign(Code::kMetadataAlignment);
   masm->RecordComment(";;; Exception handler table.");
   int table_start = masm->pc_offset();
   return table_start;

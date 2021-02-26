@@ -142,7 +142,7 @@ private:
     unsigned int fSaveBehindCount;
     unsigned int fRestoreCount;
 
-    typedef SkCanvas INHERITED;
+    using INHERITED = SkCanvas;
 };
 
 void check_save_state(skiatest::Reporter* reporter, SkPicture* picture,
@@ -239,7 +239,7 @@ DEF_TEST(PictureRecorder_replay, reporter) {
     {
         SkPictureRecorder recorder;
 
-        SkCanvas* canvas = recorder.beginRecording(4, 3, nullptr, 0);
+        SkCanvas* canvas = recorder.beginRecording(4, 3);
         create_imbalance(canvas);
 
         int expectedSaveCount = canvas->getSaveCount();
@@ -505,7 +505,7 @@ public:
 private:
     unsigned fClipCount;
 
-    typedef SkCanvas INHERITED;
+    using INHERITED = SkCanvas;
 };
 
 static void test_clip_expansion(skiatest::Reporter* reporter) {
@@ -661,7 +661,7 @@ struct CountingBBH : public SkBBoxHierarchy {
     }
 
     void insert(const SkRect[], int) override {}
-    virtual size_t bytesUsed() const override { return 0; }
+    size_t bytesUsed() const override { return 0; }
 };
 
 class SpoonFedBBHFactory : public SkBBHFactory {
@@ -848,6 +848,11 @@ DEF_TEST(Placeholder, r) {
         canvas->drawPicture(p2);
     sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
     REPORTER_ASSERT(r, pic->approximateOpCount() == 2);
+
+    // Any upper limit when recursing into nested placeholders is fine as long
+    // as it doesn't overflow an int.
+    REPORTER_ASSERT(r, pic->approximateOpCount(/*nested?*/true) >=  2);
+    REPORTER_ASSERT(r, pic->approximateOpCount(/*nested?*/true) <= 10);
 }
 
 DEF_TEST(Picture_empty_serial, reporter) {
@@ -960,4 +965,37 @@ DEF_TEST(Picture_fillsBBH, r) {
         REPORTER_ASSERT(r, (int)results.size() == n,
                         "results.size() == %d, want %d\n", (int)results.size(), n);
     }
+}
+
+DEF_TEST(Picture_nested_op_count, r) {
+    auto make_pic = [](int n, sk_sp<SkPicture> pic) {
+        SkPictureRecorder rec;
+        SkCanvas* c = rec.beginRecording({0,0, 100,100});
+        for (int i = 0; i < n; i++) {
+            if (pic) {
+                c->drawPicture(pic);
+            } else {
+                c->drawRect({0,0, 100,100}, SkPaint{});
+            }
+        }
+        return rec.finishRecordingAsPicture();
+    };
+
+    auto check = [r](sk_sp<SkPicture> pic, int shallow, int nested) {
+        int s = pic->approximateOpCount(false);
+        int n = pic->approximateOpCount(true);
+        REPORTER_ASSERT(r, s == shallow);
+        REPORTER_ASSERT(r, n == nested);
+    };
+
+    sk_sp<SkPicture> leaf1 = make_pic(1, nullptr);
+    check(leaf1, 1, 1);
+
+    sk_sp<SkPicture> leaf10 = make_pic(10, nullptr);
+    check(leaf10, 10, 10);
+
+    check(make_pic( 1, leaf1),   1,   1);
+    check(make_pic( 1, leaf10),  1,  10);
+    check(make_pic(10, leaf1),  10,  10);
+    check(make_pic(10, leaf10), 10, 100);
 }

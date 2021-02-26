@@ -9,7 +9,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 
@@ -23,9 +22,6 @@ bool IsGuestModeActive() {
 }
 
 bool ShouldShowParentalControlSettings(const Profile* profile) {
-  if (!chromeos::features::IsParentalControlsSettingsEnabled())
-    return false;
-
   // Not shown for secondary users.
   if (profile != ProfileManager::GetPrimaryUserProfile())
     return false;
@@ -45,11 +41,6 @@ bool ShouldShowParentalControlSettings(const Profile* profile) {
 bool ShouldShowExternalStorageSettings(const Profile* profile) {
   return base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature) &&
          arc::IsArcPlayStoreEnabledForProfile(profile);
-}
-
-bool ShouldShowDlcSettings() {
-  return !IsGuestModeActive() &&
-         base::FeatureList::IsEnabled(chromeos::features::kDlcSettingsUi);
 }
 
 }  // namespace features

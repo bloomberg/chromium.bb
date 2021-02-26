@@ -23,6 +23,9 @@ class ConfirmBannerRequestConfig
  public:
   ~ConfirmBannerRequestConfig() override;
 
+  // The title text.
+  base::string16 title_text() const { return title_text_; }
+
   // The message text.
   base::string16 message_text() const { return message_text_; }
 
@@ -31,6 +34,12 @@ class ConfirmBannerRequestConfig
 
   // The infobar's icon image.
   gfx::Image icon_image() const { return icon_image_; }
+
+  // Whether to present the Infobar's banner for a longer amount of time.
+  bool is_high_priority() const { return is_high_priority_; }
+
+  // Whether to use a background tint for the icon image.
+  bool use_icon_background_tint() const { return use_icon_background_tint_; }
 
  private:
   OVERLAY_USER_DATA_SETUP(ConfirmBannerRequestConfig);
@@ -42,9 +51,14 @@ class ConfirmBannerRequestConfig
   // The InfoBar causing this banner.
   infobars::InfoBar* infobar_ = nullptr;
   // Configuration data extracted from |infobar_|'s confirm delegate.
+  base::string16 title_text_;
   base::string16 message_text_;
   base::string16 button_label_text_;
   gfx::Image icon_image_;
+  // True if the icon image should apply a background tint.
+  bool use_icon_background_tint_ = true;
+  // True if the infobar's banner should be presented for a longer time.
+  bool is_high_priority_ = false;
 };
 
 }  // namespace confirm_infobar_overlays

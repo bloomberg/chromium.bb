@@ -57,9 +57,9 @@ class TouchExplorationControllerDelegate {
   // played.
   virtual void PlayPassthroughEarcon() = 0;
 
-  // This function should be called when the exit screen earcon should be
-  // played.
-  virtual void PlayExitScreenEarcon() = 0;
+  // This function should be called when the long press right click earcon
+  // should be played.
+  virtual void PlayLongPressRightClickEarcon() = 0;
 
   // This function should be called when the enter screen earcon should be
   // played.
@@ -71,7 +71,9 @@ class TouchExplorationControllerDelegate {
 
   // Called when the user performed an accessibility gesture while in touch
   // accessibility mode, that should be forwarded to ChromeVox.
-  virtual void HandleAccessibilityGesture(ax::mojom::Gesture gesture) = 0;
+  virtual void HandleAccessibilityGesture(
+      ax::mojom::Gesture gesture,
+      gfx::PointF location = gfx::PointF()) = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
@@ -82,15 +84,15 @@ class TouchExplorationControllerDelegate {
 // ** Short version **
 //
 // At a high-level, single-finger events are used for accessibility -
-// exploring the screen gets turned into mouse moves (which can then be
-// spoken by an accessibility service running), a single tap while the user
-// is in touch exploration or a double-tap simulates a click, and gestures
-// can be used to send high-level accessibility commands. For example, a swipe
-// right would correspond to the keyboard short cut shift+search+right.
-// Swipes with up to four fingers are also mapped to commands. Slide
-// gestures performed on the edge of the screen can change settings
-// continuously. For example, sliding a finger along the right side of the
-// screen will change the volume. When a user double taps and holds with one
+// exploring the screen gets turned into touch explore gestures (which can then
+// be hit tested by an accessibility service running, result then to be spoken),
+// a single tap while the user is in touch exploration or a double-tap simulates
+// a click, and gestures can be used to send high-level accessibility commands.
+// For example, a swipe right would correspond to the keyboard short cut
+// shift+search+right. Swipes with up to four fingers are also mapped to
+// commands. Slide gestures performed on the edge of the screen can change
+// settings continuously. For example, sliding a finger along the right side of
+// the screen will change the volume. When a user double taps and holds with one
 // finger, the finger is passed through as if accessibility was turned off. If
 // the user taps the screen with two fingers, the user can silence spoken
 // feedback if it is playing.
@@ -103,22 +105,15 @@ class TouchExplorationControllerDelegate {
 //
 // If the user keeps their finger down for more than 300 ms and doesn't
 // perform a supported accessibility gesture in that time (e.g. swipe right),
-// they enter touch exploration mode, and all movements are translated into
-// synthesized mouse move events.
+// they enter touch exploration mode, and all movements are routed
+// to ChromeVox with the touch location.
 //
 // Also, if the user moves their single finger outside a certain slop region
 // (without performing a gesture), they enter touch exploration mode earlier
 // than 300 ms.
 //
 // If the user taps and releases their finger, after 300 ms from the initial
-// touch, a single mouse move is fired.
-//
-// While in touch exploration mode, the user can perform a single tap
-// if the user releases their finger and taps before 300 ms passes.
-// This will result in a click on the last successful touch exploration
-// location. This allows the user to perform a single tap
-// anywhere to activate it. (See more information on simulated clicks
-// below.)
+// touch, a single touch explore gesture is fired.
 //
 // The user can perform swipe gestures in one of the four cardinal directions
 // which will be interpreted and used to control the UI. All gestures will only
@@ -241,6 +236,9 @@ class ASH_EXPORT TouchExplorationController
   ui::EventDispatchDetails InTouchExploreSecondPress(
       const ui::TouchEvent& event,
       const Continuation continuation);
+  ui::EventDispatchDetails InTouchExploreLongPress(
+      const ui::TouchEvent& event,
+      const Continuation continuation);
   ui::EventDispatchDetails InWaitForNoFingers(const ui::TouchEvent& event,
                                               const Continuation continuation);
   ui::EventDispatchDetails InSlideGesture(const ui::TouchEvent& event,
@@ -254,9 +252,14 @@ class ASH_EXPORT TouchExplorationController
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).
   // If the user taps and releases within 300 ms and doesn't press again,
-  // we treat that as a single mouse move (touch exploration) event.
+  // we treat that as a single touch explore gesture event.
   void StartTapTimer();
   void OnTapTimerFired();
+
+  // This timer is reset every time the anchor point changes. It only triggers a
+  // long press if the user is touch exploring in lift activated bounds.
+  void ResetLiftActivationLongPressTimer();
+  void OnLiftActivationLongPressTimerFired();
 
   // Dispatch a new event outside of the event rewriting flow.
   void DispatchEvent(ui::Event* event, const Continuation continuation);
@@ -290,9 +293,8 @@ class ASH_EXPORT TouchExplorationController
 
   void PlaySoundForTimer();
 
-  // Sends a simulated click, if an anchor point was set explicitly. Otherwise,
-  // sends a simulated tap at anchor point.
-  void SendSimulatedClickOrTap(const Continuation continuation);
+  // Sends a simulated click.
+  void SendSimulatedClick();
 
   // Sends a simulated tap at anchor point.
   void SendSimulatedTap(const Continuation continuation);
@@ -338,14 +340,14 @@ class ASH_EXPORT TouchExplorationController
     // The user pressed and released a single finger - a tap - but we have
     // to wait until the end of the grace period to allow the user to tap the
     // second time. If the second tap doesn't occurs within the grace period,
-    // we dispatch a mouse move at the location of the first tap.
+    // we dispatch a touch explore gesture at the location of the first tap.
     SINGLE_TAP_RELEASED,
 
     // The user was in touch explore mode and released the finger.
     // If another touch press occurs within the grace period, a single
     // tap click occurs. This state differs from SINGLE_TAP_RELEASED
     // in that if a second tap doesn't occur within the grace period,
-    // there is no mouse move dispatched.
+    // there is no touch explore gesture dispatched.
     TOUCH_EXPLORE_RELEASED,
 
     // The user tapped once, and before the grace period expired, pressed
@@ -359,8 +361,8 @@ class ASH_EXPORT TouchExplorationController
     TOUCH_RELEASE_PENDING,
 
     // We're in touch exploration mode. Anything other than the first finger
-    // is ignored, and movements of the first finger are rewritten as mouse
-    // move events. This mode is entered if a single finger is pressed and
+    // is ignored, and movements of the first finger are sent as touch explore
+    // gesture events. This mode is entered if a single finger is pressed and
     // after the grace period the user hasn't added a second finger or
     // moved the finger outside of the slop region. We'll stay in this
     // mode until all fingers are lifted.
@@ -383,6 +385,12 @@ class ASH_EXPORT TouchExplorationController
     // fingers pressed past the first two, the touch press is cancelled and
     // the user enters the wait state for the fingers to be removed.
     TOUCH_EXPLORE_SECOND_PRESS,
+
+    // The user was in touch exploration, but has remained in the same anchor
+    // point for a long period of time. The first event to handled in this state
+    // will be rewritten as a right mouse click and then re-enters touch
+    // exploration state.
+    TOUCH_EXPLORE_LONG_PRESS,
 
     // After the user double taps and holds with a single finger, all events
     // for that finger are passed through, displaced by an offset. Adding
@@ -442,6 +450,8 @@ class ASH_EXPORT TouchExplorationController
   // Gets enum name from integer value.
   const char* EnumStateToString(State state);
 
+  void SetAnchorPointInternal(const gfx::PointF& anchor_point);
+
   aura::Window* root_window_;
 
   // Handles volume control. Not owned.
@@ -495,6 +505,10 @@ class ASH_EXPORT TouchExplorationController
 
   // A timer that fires after the double-tap delay.
   base::OneShotTimer tap_timer_;
+
+  // A timer that fires after holding the anchor point in place.
+  // Only works within lift activation bounds.
+  base::OneShotTimer long_press_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
   base::RepeatingTimer sound_timer_;

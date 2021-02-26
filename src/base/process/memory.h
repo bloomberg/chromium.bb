@@ -24,7 +24,8 @@ BASE_EXPORT void EnableTerminationOnOutOfMemory();
 // Crash reporting classifies such crashes as OOM.
 BASE_EXPORT void TerminateBecauseOutOfMemory(size_t size);
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_AIX)
 BASE_EXPORT extern size_t g_oom_size;
 
 // The maximum allowed value for the OOM score.
@@ -64,6 +65,8 @@ namespace internal {
 
 // Handles out of memory, with the failed allocation |size|, or 0 when it is not
 // known.
+//
+// Must be allocation-safe.
 BASE_EXPORT NOINLINE void OnNoMemoryInternal(size_t size);
 
 }  // namespace internal

@@ -29,6 +29,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 
 class AccountTrackerService;
 class PrefRegistrySimple;
@@ -62,12 +63,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   enum class RemoveAccountsOption {
     // Do not remove accounts.
     kKeepAllAccounts = 0,
-#if !defined(OS_CHROMEOS)
     // Remove all the accounts.
     kRemoveAllAccounts,
     // Removes the authenticated account if it is in authentication error.
     kRemoveAuthenticatedAccountIfInError
-#endif
   };
 
   PrimaryAccountManager(
@@ -104,8 +103,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // "Signed in as XXX" in the hotdog menu.
   CoreAccountId GetAuthenticatedAccountId() const;
 
-  // Returns true if there is an authenticated user.
-  bool IsAuthenticated() const;
+  // Returns whether the user's primary account is available. If consent is
+  // |ConsentLevel::kSync| then true implies that the user has blessed this
+  // account for sync.
+  bool HasPrimaryAccount(signin::ConsentLevel consent_level) const;
 
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
@@ -156,9 +157,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // Provides access to the core information of the user's unconsented primary
   // account. Returns an empty info, if there is no such account.
   CoreAccountInfo GetUnconsentedPrimaryAccountInfo() const;
-
-  // Returns whether the user's unconsented primary account is available.
-  bool HasUnconsentedPrimaryAccount() const;
 
   // Sets the unconsented primary account. The unconsented primary account can
   // only be changed if the user is not authenticated. If the user is

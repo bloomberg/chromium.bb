@@ -12,6 +12,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "ui/base/page_transition_types.h"
 
@@ -22,14 +23,9 @@ namespace gfx {
 class Size;
 }
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace content {
 
 class BrowserContext;
-class NavigationHandle;
 class RenderFrameHost;
 
 // This interface allows embedders of content/ to write tests that depend on a
@@ -91,11 +87,8 @@ class WebContentsTester {
       ui::PageTransition transition = ui::PAGE_TRANSITION_LINK) = 0;
 
   // Creates a pending navigation to the given URL with the default parameters
-  // and then aborts it with the given |error_code| and |response_headers|.
-  virtual void NavigateAndFail(
-      const GURL& url,
-      int error_code,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) = 0;
+  // and then aborts it with the given |error_code|.
+  virtual void NavigateAndFail(const GURL& url, int error_code) = 0;
 
   // Sets the loading state to the given value.
   virtual void TestSetIsLoading(bool value) = 0;
@@ -114,11 +107,6 @@ class WebContentsTester {
                                bool did_create_new_entry,
                                const GURL& url,
                                ui::PageTransition transition) = 0;
-
-  // Sets HttpResponseData on |navigation_handle|.
-  virtual void SetHttpResponseHeaders(
-      NavigationHandle* navigation_handle,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) = 0;
 
   // Simulate this WebContents' main frame having an opener that points to the
   // main frame of |opener|.
@@ -158,7 +146,7 @@ class WebContentsTester {
   virtual void SetIsCurrentlyAudible(bool audible) = 0;
 
   // Simulates an input event from the user.
-  virtual void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) = 0;
+  virtual void TestDidReceiveMouseDownEvent() = 0;
 
   // Simulates successfully finishing a load.
   virtual void TestDidFinishLoad(const GURL& url) = 0;
@@ -178,6 +166,12 @@ class WebContentsTester {
   // Increments/decrements the number of connected Bluetooth devices.
   virtual void TestIncrementBluetoothConnectedDeviceCount() = 0;
   virtual void TestDecrementBluetoothConnectedDeviceCount() = 0;
+
+  // Used to create portals and retrieve their WebContents.
+  virtual const blink::PortalToken& CreatePortal(
+      std::unique_ptr<WebContents> portal_web_contents) = 0;
+  virtual WebContents* GetPortalContents(
+      const blink::PortalToken& portal_token) = 0;
 };
 
 }  // namespace content

@@ -4,40 +4,49 @@
 
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_fuchsia.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_mac.h"
 #elif defined(OS_WIN)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
+#include "base/win/windows_version.h"
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_linux.h"
 #endif
 
 namespace util {
+
+#if defined(OS_WIN)
+constexpr base::Feature kUseWinOSMemoryPressureSignals{
+    "UseWinOSMemoryPressureSignals", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // static
 std::unique_ptr<SystemMemoryPressureEvaluator>
 SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     MultiSourceMemoryPressureMonitor* monitor) {
-#if defined(OS_CHROMEOS)
-  if (util::chromeos::SystemMemoryPressureEvaluator::
-          SupportsKernelNotifications()) {
-    return std::make_unique<util::chromeos::SystemMemoryPressureEvaluator>(
-        monitor->CreateVoter());
-  }
-  LOG(ERROR) << "No MemoryPressureMonitor created because the kernel does "
-                "not support notifications.";
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
   return std::make_unique<util::SystemMemoryPressureEvaluatorFuchsia>(
       monitor->CreateVoter());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   return std::make_unique<util::mac::SystemMemoryPressureEvaluator>(
       monitor->CreateVoter());
 #elif defined(OS_WIN)
-  return std::make_unique<util::win::SystemMemoryPressureEvaluator>(
+  auto evaluator = std::make_unique<util::win::SystemMemoryPressureEvaluator>(
+      monitor->CreateVoter());
+  // Also subscribe to the OS signals if they're available and the feature is
+  // enabled.
+  if (base::FeatureList::IsEnabled(kUseWinOSMemoryPressureSignals) &&
+      base::win::GetVersion() >= base::win::Version::WIN8_1) {
+    evaluator->CreateOSSignalPressureEvaluator(monitor->CreateVoter());
+  }
+  return evaluator;
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return std::make_unique<util::os_linux::SystemMemoryPressureEvaluator>(
       monitor->CreateVoter());
 #endif
   return nullptr;

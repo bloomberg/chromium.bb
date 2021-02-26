@@ -17,7 +17,7 @@ namespace blink {
 
 class IntRect;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TextRecord;
 
 // TextElementTiming is responsible for tracking the paint timings for groups of
@@ -25,12 +25,12 @@ class TextRecord;
 class CORE_EXPORT TextElementTiming final
     : public GarbageCollected<TextElementTiming>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(TextElementTiming);
-
  public:
   static const char kSupplementName[];
 
   explicit TextElementTiming(LocalDOMWindow&);
+  TextElementTiming(const TextElementTiming&) = delete;
+  TextElementTiming& operator=(const TextElementTiming&) = delete;
 
   static TextElementTiming& From(LocalDOMWindow&);
 
@@ -43,7 +43,7 @@ class CORE_EXPORT TextElementTiming final
   static FloatRect ComputeIntersectionRect(
       const LayoutObject&,
       const IntRect& aggregated_visual_rect,
-      const PropertyTreeState&,
+      const PropertyTreeStateOrAlias&,
       const LocalFrameView*);
 
   bool CanReportElements() const;
@@ -52,11 +52,9 @@ class CORE_EXPORT TextElementTiming final
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.
   void OnTextObjectPainted(const TextRecord&);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   Member<WindowPerformance> performance_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextElementTiming);
 };
 
 }  // namespace blink

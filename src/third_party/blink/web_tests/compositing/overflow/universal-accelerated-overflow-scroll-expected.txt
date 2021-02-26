@@ -12,12 +12,6 @@
       "transform": 1
     },
     {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [85, 144],
-      "transform": 2
-    },
-    {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
       "position": [2, 87],
       "bounds": [85, 15],
@@ -36,9 +30,16 @@
       "transform": 1
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [85, 144],
+      "transform": 2
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-grandchildren-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 1
     },
     {
@@ -53,18 +54,13 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container-absolute-grandchildren' class='positionAbsolute overflow'",
       "bounds": [104, 104],
       "transform": 3
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [105, 144],
-      "transform": 4
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -85,17 +81,9 @@
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-grandchildren' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 4
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
       "transform": 4
     },
     {
@@ -125,6 +113,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 5
     },
     {
@@ -139,18 +128,13 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 6
     },
     {
       "name": "LayoutNGBlockFlow DIV id='container-absolute-sibling-grandchildren-not-contained' class='overflow'",
       "bounds": [104, 104],
       "transform": 7
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [85, 144],
-      "transform": 8
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -171,9 +155,16 @@
       "transform": 7
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [85, 144],
+      "transform": 8
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 7
     },
     {
@@ -188,18 +179,13 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 8
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container-absolute-sibling-grandchildren' class='positionAbsolute overflow'",
       "bounds": [104, 104],
       "transform": 9
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [105, 144],
-      "transform": 10
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -220,17 +206,9 @@
       "transform": 9
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 10
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
       "transform": 10
     },
     {
@@ -260,6 +238,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 11
     },
     {
@@ -274,6 +253,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 12
     },
     {
@@ -300,17 +280,9 @@
       "transform": 13
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 14
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
       "transform": 14
     },
     {
@@ -337,29 +309,15 @@
       "transform": 15
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute' class='positionAbsolute positioned'",
-      "position": [27, 67],
-      "bounds": [80, 40],
-      "contentsOpaque": true,
-      "backgroundColor": "#800080",
-      "transform": 16
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute' class='scrolled')",
-      "position": [6, 34],
-      "bounds": [75, 80],
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [105, 144],
       "transform": 16
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container-fixed-sibling-grandchildren' class='positionAbsolute overflow'",
       "bounds": [104, 104],
       "transform": 17
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [85, 144],
-      "transform": 18
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -380,6 +338,12 @@
       "transform": 17
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [85, 144],
+      "transform": 18
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-fixed-sibling-grandchildren' class='positionFixed positioned'",
       "bounds": [80, 40],
       "contentsOpaque": true,
@@ -398,6 +362,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling-grandchildren' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 18
     },
     {
@@ -442,18 +407,13 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 22
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container-fixed-grandchildren' class='positionAbsolute overflow'",
       "bounds": [104, 104],
       "transform": 23
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "position": [2, 2],
-      "bounds": [85, 144],
-      "transform": 24
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -474,6 +434,12 @@
       "transform": 23
     },
     {
+      "name": "Scrolling Contents Layer",
+      "position": [2, 2],
+      "bounds": [85, 144],
+      "transform": 24
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-fixed-grandchildren' class='positionFixed positioned'",
       "bounds": [80, 40],
       "contentsOpaque": true,
@@ -492,6 +458,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-grandchildren' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 24
     },
     {
@@ -536,6 +503,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 28
     },
     {

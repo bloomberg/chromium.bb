@@ -1,6 +1,8 @@
 // Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -49,7 +51,8 @@ export class TextEditorAutocompleteController {
     this._tooltipElement = document.createElement('div');
     this._tooltipElement.classList.add('autocomplete-tooltip');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        this._tooltipGlassPane.contentElement, 'text_editor/autocompleteTooltip.css');
+        this._tooltipGlassPane.contentElement,
+        {cssFile: 'text_editor/autocompleteTooltip.css', enableLegacyPatching: true, delegatesFocus: undefined});
     shadowRoot.appendChild(this._tooltipElement);
   }
 

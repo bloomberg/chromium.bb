@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import android.graphics.Bitmap;
-import android.view.ContextMenu;
 
 import androidx.annotation.Nullable;
 
@@ -76,10 +75,13 @@ public class EmptyTabObserver implements TabObserver {
     public void onCrash(Tab tab) {}
 
     @Override
+    public void webContentsWillSwap(Tab tab) {}
+
+    @Override
     public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {}
 
     @Override
-    public void onContextMenuShown(Tab tab, ContextMenu menu) {}
+    public void onContextMenuShown(Tab tab) {}
 
     @Override
     public void onCloseContents(Tab tab) {}
@@ -115,12 +117,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onDidChangeThemeColor(Tab tab, int color) {}
 
     @Override
-    public void onDidAttachInterstitialPage(Tab tab) {}
-
-    @Override
-    public void onDidDetachInterstitialPage(Tab tab) {}
-
-    @Override
     public void onBackgroundColorChanged(Tab tab, int color) {}
 
     @Override
@@ -147,10 +143,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {}
 
     @Override
-    public void onRootIdChanged(Tab tab, int newRootId) {}
-
-    @Override
     public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
             int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffsetY,
             int bottomControlsMinHeightOffsetY) {}
+
+    @Override
+    public void onContentViewScrollingStateChanged(boolean scrolling) {}
 }

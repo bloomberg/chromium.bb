@@ -62,14 +62,14 @@ using google_breakpad::MissingSymbolInfo;
 using google_breakpad::MSSymbolServerConverter;
 using google_breakpad::WindowsStringUtils;
 
-const char *kMissingStringDelimiters = "|";
-const char *kLocalCachePath = "c:\\symbols";
-const char *kNoExeMSSSServer = "http://msdl.microsoft.com/download/symbols/";
+const char* kMissingStringDelimiters = "|";
+const char* kLocalCachePath = "c:\\symbols";
+const char* kNoExeMSSSServer = "http://msdl.microsoft.com/download/symbols/";
 
 // Windows stdio doesn't do line buffering.  Use this function to flush after
 // writing to stdout and stderr so that a log will be available if the
 // converter crashes.
-static int FprintfFlush(FILE *file, const char *format, ...) {
+static int FprintfFlush(FILE* file, const char* format, ...) {
   va_list arguments;
   va_start(arguments, format);
   int retval = vfprintf(file, format, arguments);
@@ -86,11 +86,11 @@ static string CurrentDateAndTime() {
 
   // localtime_s is safer but is only available in MSVC8.  Use localtime
   // in earlier environments.
-  struct tm *time_pointer;
+  struct tm* time_pointer;
 #if _MSC_VER >= 1400  // MSVC 2005/8
   struct tm time_struct;
-  time_pointer = &time_struct;
-  if (localtime_s(time_pointer, &current_time) != 0) {
+  time_pointer =& time_struct;
+  if (localtime_s(time_pointer,& current_time) != 0) {
     return kUnknownDateAndTime;
   }
 #else  // _MSC_VER >= 1400
@@ -111,12 +111,12 @@ static string CurrentDateAndTime() {
 // ParseMissingString turns |missing_string| into a MissingSymbolInfo
 // structure.  It returns true on success, and false if no such conversion
 // is possible.
-static bool ParseMissingString(const string &missing_string,
-                               MissingSymbolInfo *missing_info) {
+static bool ParseMissingString(const string& missing_string,
+                               MissingSymbolInfo* missing_info) {
   assert(missing_info);
 
   vector<string> tokens;
-  Tokenizer::Tokenize(kMissingStringDelimiters, missing_string, &tokens);
+  Tokenizer::Tokenize(kMissingStringDelimiters, missing_string,& tokens);
   if (tokens.size() != 5) {
     return false;
   }
@@ -133,8 +133,8 @@ static bool ParseMissingString(const string &missing_string,
 // StringMapToWStringMap takes each element in a map that associates
 // (narrow) strings to strings and converts the keys and values to wstrings.
 // Returns true on success and false on failure, printing an error message.
-static bool StringMapToWStringMap(const map<string, string> &smap,
-                                  map<wstring, wstring> *wsmap) {
+static bool StringMapToWStringMap(const map<string, string>& smap,
+                                  map<wstring, wstring>* wsmap) {
   assert(wsmap);
   wsmap->clear();
 
@@ -142,7 +142,7 @@ static bool StringMapToWStringMap(const map<string, string> &smap,
        iterator != smap.end();
        ++iterator) {
     wstring key;
-    if (!WindowsStringUtils::safe_mbstowcs(iterator->first, &key)) {
+    if (!WindowsStringUtils::safe_mbstowcs(iterator->first,& key)) {
       FprintfFlush(stderr,
                    "StringMapToWStringMap: safe_mbstowcs failed for key %s\n",
                    iterator->first.c_str());
@@ -150,7 +150,7 @@ static bool StringMapToWStringMap(const map<string, string> &smap,
     }
 
     wstring value;
-    if (!WindowsStringUtils::safe_mbstowcs(iterator->second, &value)) {
+    if (!WindowsStringUtils::safe_mbstowcs(iterator->second,& value)) {
       FprintfFlush(stderr, "StringMapToWStringMap: safe_mbstowcs failed "
                            "for value %s\n",
                    iterator->second.c_str());
@@ -166,8 +166,8 @@ static bool StringMapToWStringMap(const map<string, string> &smap,
 // MissingSymbolInfoToParameters turns a MissingSymbolInfo structure into a
 // map of parameters suitable for passing to HTTPDownload or HTTPUpload.
 // Returns true on success and false on failure, printing an error message.
-static bool MissingSymbolInfoToParameters(const MissingSymbolInfo &missing_info,
-                                          map<wstring, wstring> *wparameters) {
+static bool MissingSymbolInfoToParameters(const MissingSymbolInfo& missing_info,
+                                          map<wstring, wstring>* wparameters) {
   assert(wparameters);
 
   map<string, string> parameters;
@@ -175,25 +175,25 @@ static bool MissingSymbolInfoToParameters(const MissingSymbolInfo &missing_info,
   // Indicate the params are encoded.
   parameters["encoded"] = "true";  // The string value here does not matter.
 
-  WebSafeBase64Escape(missing_info.code_file, &encoded_param);
+  WebSafeBase64Escape(missing_info.code_file,& encoded_param);
   parameters["code_file"] = encoded_param;
 
-  WebSafeBase64Escape(missing_info.code_identifier, &encoded_param);
+  WebSafeBase64Escape(missing_info.code_identifier,& encoded_param);
   parameters["code_identifier"] = encoded_param;
 
-  WebSafeBase64Escape(missing_info.debug_file, &encoded_param);
+  WebSafeBase64Escape(missing_info.debug_file,& encoded_param);
   parameters["debug_file"] = encoded_param;
 
-  WebSafeBase64Escape(missing_info.debug_identifier, &encoded_param);
+  WebSafeBase64Escape(missing_info.debug_identifier,& encoded_param);
   parameters["debug_identifier"] = encoded_param;
 
   if (!missing_info.version.empty()) {
     // The version is optional.
-    WebSafeBase64Escape(missing_info.version, &encoded_param);
+    WebSafeBase64Escape(missing_info.version,& encoded_param);
     parameters["version"] = encoded_param;
   }
 
-  WebSafeBase64Escape("WinSymConv", &encoded_param);
+  WebSafeBase64Escape("WinSymConv",& encoded_param);
   parameters["product"] = encoded_param;
 
   if (!StringMapToWStringMap(parameters, wparameters)) {
@@ -207,18 +207,18 @@ static bool MissingSymbolInfoToParameters(const MissingSymbolInfo &missing_info,
 // UploadSymbolFile sends |converted_file| as identified by |missing_info|
 // to the symbol server rooted at |upload_symbol_url|.  Returns true on
 // success and false on failure, printing an error message.
-static bool UploadSymbolFile(const wstring &upload_symbol_url,
-                             const MissingSymbolInfo &missing_info,
-                             const string &converted_file) {
+static bool UploadSymbolFile(const wstring& upload_symbol_url,
+                             const MissingSymbolInfo& missing_info,
+                             const string& converted_file) {
   map<wstring, wstring> parameters;
-  if (!MissingSymbolInfoToParameters(missing_info, &parameters)) {
+  if (!MissingSymbolInfoToParameters(missing_info,& parameters)) {
     // MissingSymbolInfoToParameters or a callee will have printed an error.
     return false;
   }
 
   wstring converted_file_w;
 
-  if (!WindowsStringUtils::safe_mbstowcs(converted_file, &converted_file_w)) {
+  if (!WindowsStringUtils::safe_mbstowcs(converted_file,& converted_file_w)) {
     FprintfFlush(stderr, "UploadSymbolFile: safe_mbstowcs failed for %s\n",
                  converted_file.c_str());
     return false;
@@ -245,18 +245,18 @@ static bool UploadSymbolFile(const wstring &upload_symbol_url,
 // |fetch_symbol_failure_url| that the symbol file identified by
 // |missing_info| could authoritatively not be located.  Returns
 // true on success and false on failure.
-static bool SendFetchFailedPing(const wstring &fetch_symbol_failure_url,
-                                const MissingSymbolInfo &missing_info) {
+static bool SendFetchFailedPing(const wstring& fetch_symbol_failure_url,
+                                const MissingSymbolInfo& missing_info) {
   map<wstring, wstring> parameters;
-  if (!MissingSymbolInfoToParameters(missing_info, &parameters)) {
+  if (!MissingSymbolInfoToParameters(missing_info,& parameters)) {
     // MissingSymbolInfoToParameters or a callee will have printed an error.
     return false;
   }
 
   string content;
   if (!HTTPDownload::Download(fetch_symbol_failure_url,
-                              &parameters,
-                              &content,
+                             & parameters,
+                             & content,
                               NULL)) {
     FprintfFlush(stderr, "SendFetchFailedPing: HTTPDownload::Download failed "
                          "for %s %s %s\n",
@@ -275,7 +275,7 @@ static bool SendFetchFailedPing(const wstring &fetch_symbol_failure_url,
 // the given blacklist regular expression.
 // The debug_file name is used from the MissingSymbolInfo struct,
 // matched against the blacklist_regex.
-static bool SafeToMakeExternalRequest(const MissingSymbolInfo &missing_info,
+static bool SafeToMakeExternalRequest(const MissingSymbolInfo& missing_info,
                                       std::regex blacklist_regex) {
   string file_name = missing_info.debug_file;
   // Use regex_search because we want to match substrings.
@@ -352,8 +352,8 @@ struct ConverterOptions {
 // stored at |options.local_cache_path|.  Because nothing can be done even in
 // the event of a failure, this function returns no value, although it
 // may result in error messages being printed.
-static void ConvertMissingSymbolFile(const MissingSymbolInfo &missing_info,
-                                     const ConverterOptions &options) {
+static void ConvertMissingSymbolFile(const MissingSymbolInfo& missing_info,
+                                     const ConverterOptions& options) {
   string time_string = CurrentDateAndTime();
   FprintfFlush(stdout, "converter: %s: attempting %s %s %s\n",
                time_string.c_str(),
@@ -402,7 +402,7 @@ static void ConvertMissingSymbolFile(const MissingSymbolInfo &missing_info,
     located = converter.LocateAndConvertSymbolFile(missing_info,
                                                    false,  // keep_symbol_file
                                                    false,  // keep_pe_file
-                                                   &converted_file,
+                                                  & converted_file,
                                                    NULL,   // symbol_file
                                                    NULL);  // pe_file
     switch (located) {
@@ -476,7 +476,7 @@ static void ConvertMissingSymbolFile(const MissingSymbolInfo &missing_info,
           missing_info,
           false,  // keep_symbol_file
           false,  // keep_pe_file
-          &converted_file,
+         & converted_file,
           NULL,   // symbol_file
           NULL);  // pe_file
     } else {
@@ -561,9 +561,9 @@ static void ConvertMissingSymbolFile(const MissingSymbolInfo &missing_info,
 
 // Reads the contents of file |file_name| and populates |contents|.
 // Returns true on success.
-static bool ReadFile(string file_name, string *contents) {
+static bool ReadFile(string file_name, string* contents) {
   char buffer[1024 * 8];
-  FILE *fp = fopen(file_name.c_str(), "rt");
+  FILE* fp = fopen(file_name.c_str(), "rt");
   if (!fp) {
     return false;
   }
@@ -578,7 +578,7 @@ static bool ReadFile(string file_name, string *contents) {
 // ConvertMissingSymbolsList obtains a missing symbol list from
 // |options.missing_symbols_url| or |options.missing_symbols_file| and calls
 // ConvertMissingSymbolFile for each missing symbol file in the list.
-static bool ConvertMissingSymbolsList(const ConverterOptions &options) {
+static bool ConvertMissingSymbolsList(const ConverterOptions& options) {
   // Set param to indicate requesting for encoded response.
   map<wstring, wstring> parameters;
   parameters[L"product"] = L"WinSymConv";
@@ -586,17 +586,17 @@ static bool ConvertMissingSymbolsList(const ConverterOptions &options) {
   // Get the missing symbol list.
   string missing_symbol_list;
   if (!options.missing_symbols_file.empty()) {
-    if (!ReadFile(options.missing_symbols_file, &missing_symbol_list)) {
+    if (!ReadFile(options.missing_symbols_file,& missing_symbol_list)) {
       return false;
     }
-  } else if (!HTTPDownload::Download(options.missing_symbols_url, &parameters,
-                                     &missing_symbol_list, NULL)) {
+  } else if (!HTTPDownload::Download(options.missing_symbols_url,& parameters,
+                                    & missing_symbol_list, NULL)) {
     return false;
   }
 
   // Tokenize the content into a vector.
   vector<string> missing_symbol_lines;
-  Tokenizer::Tokenize("\n", missing_symbol_list, &missing_symbol_lines);
+  Tokenizer::Tokenize("\n", missing_symbol_list,& missing_symbol_lines);
 
   FprintfFlush(stderr, "Found %d missing symbol files in list.\n",
                missing_symbol_lines.size() - 1);  // last line is empty.
@@ -605,14 +605,14 @@ static bool ConvertMissingSymbolsList(const ConverterOptions &options) {
        iterator != missing_symbol_lines.end();
        ++iterator) {
     // Decode symbol line.
-    const string &encoded_line = *iterator;
+    const string& encoded_line = *iterator;
     // Skip lines that are blank.
     if (encoded_line.empty()) {
       continue;
     }
 
     string line;
-    if (!WebSafeBase64Unescape(encoded_line, &line)) {
+    if (!WebSafeBase64Unescape(encoded_line,& line)) {
       // If decoding fails, assume the line is not encoded.
       // This is helpful when the program connects to a debug server without
       // encoding.
@@ -623,7 +623,7 @@ static bool ConvertMissingSymbolsList(const ConverterOptions &options) {
 
     // Turn each element into a MissingSymbolInfo structure.
     MissingSymbolInfo missing_info;
-    if (!ParseMissingString(line, &missing_info)) {
+    if (!ParseMissingString(line,& missing_info)) {
       FprintfFlush(stderr, "ConvertMissingSymbols: ParseMissingString failed "
                            "for %s from %ws\n",
                    line.c_str(), options.missing_symbols_url.c_str());
@@ -647,7 +647,7 @@ static bool ConvertMissingSymbolsList(const ConverterOptions &options) {
 
 // usage prints the usage message.  It returns 1 as a convenience, to be used
 // as a return value from main.
-static int usage(const char *program_name) {
+static int usage(const char* program_name) {
   FprintfFlush(stderr,
       "usage: %s [options]\n"
       "    -f  <full_msss_server>     MS servers to ask for all symbols\n"
@@ -670,7 +670,7 @@ static int usage(const char *program_name) {
 
 // "Internal" servers consist only of those whose names start with
 // the literal string "\\filer\".
-static bool IsInternalServer(const string &server_name) {
+static bool IsInternalServer(const string& server_name) {
   if (server_name.find("\\\\filer\\") == 0) {
     return true;
   }
@@ -679,9 +679,9 @@ static bool IsInternalServer(const string &server_name) {
 
 // Adds a server with the given name to the list of internal or external
 // servers, as appropriate.
-static void AddServer(const string &server_name,
-                      vector<string> *internal_servers,
-                      vector<string> *external_servers) {
+static void AddServer(const string& server_name,
+                      vector<string>* internal_servers,
+                      vector<string>* external_servers) {
   if (IsInternalServer(server_name)) {
     internal_servers->push_back(server_name);
   } else {
@@ -691,7 +691,7 @@ static void AddServer(const string &server_name,
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   string time_string = CurrentDateAndTime();
   FprintfFlush(stdout, "converter: %s: starting\n", time_string.c_str());
 
@@ -710,12 +710,12 @@ int main(int argc, char **argv) {
     string value = argv[argi + 1];
 
     if (option == "-f") {
-      AddServer(value, &options.full_internal_msss_servers,
-                &options.full_external_msss_servers);
+      AddServer(value,& options.full_internal_msss_servers,
+               & options.full_external_msss_servers);
       have_any_msss_servers = true;
     } else if (option == "-n") {
-      AddServer(value, &options.no_exe_internal_msss_servers,
-                &options.no_exe_external_msss_servers);
+      AddServer(value,& options.no_exe_internal_msss_servers,
+               & options.no_exe_external_msss_servers);
       have_any_msss_servers = true;
     } else if (option == "-l") {
       if (!options.local_cache_path.empty()) {
@@ -724,14 +724,14 @@ int main(int argc, char **argv) {
       options.local_cache_path = value;
     } else if (option == "-s") {
       if (!WindowsStringUtils::safe_mbstowcs(value,
-                                             &options.upload_symbols_url)) {
+                                            & options.upload_symbols_url)) {
         FprintfFlush(stderr, "main: safe_mbstowcs failed for %s\n",
                      value.c_str());
         return 1;
       }
     } else if (option == "-m") {
       if (!WindowsStringUtils::safe_mbstowcs(value,
-                                             &options.missing_symbols_url)) {
+                                            & options.missing_symbols_url)) {
         FprintfFlush(stderr, "main: safe_mbstowcs failed for %s\n",
                      value.c_str());
         return 1;
@@ -744,7 +744,7 @@ int main(int argc, char **argv) {
     } else if (option == "-t") {
       if (!WindowsStringUtils::safe_mbstowcs(
           value,
-          &options.fetch_symbol_failure_url)) {
+         & options.fetch_symbol_failure_url)) {
         FprintfFlush(stderr, "main: safe_mbstowcs failed for %s\n",
                      value.c_str());
         return 1;
@@ -768,8 +768,8 @@ int main(int argc, char **argv) {
   // Set the defaults.  If the user specified any MSSS servers, don't use
   // any default.
   if (!have_any_msss_servers) {
-    AddServer(kNoExeMSSSServer, &options.no_exe_internal_msss_servers,
-        &options.no_exe_external_msss_servers);
+    AddServer(kNoExeMSSSServer,& options.no_exe_internal_msss_servers,
+       & options.no_exe_external_msss_servers);
   }
 
   if (options.local_cache_path.empty()) {

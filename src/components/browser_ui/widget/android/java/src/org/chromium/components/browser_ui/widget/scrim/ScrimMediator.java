@@ -7,28 +7,25 @@ package org.chromium.components.browser_ui.widget.scrim;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.view.MotionEvent;
-import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.StatusBarScrimDelegate;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** This class holds the animation and related business logic for the scrim. */
-class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEventDelegate {
+class ScrimMediator implements ScrimCoordinator.TouchEventDelegate {
     /** The duration for the fading animation. */
     private static final int FADE_DURATION_MS = 300;
 
-    /** A means of changing the statusbar color. */
-    private final StatusBarScrimDelegate mStatusBarScrimDelegate;
-
     /** A callback that is run when the scrim has completely hidden. */
     private final Runnable mScrimHiddenRunnable;
+
+    /** A means of changing the system UI color. */
+    private ScrimCoordinator.SystemUiScrimDelegate mSystemUiScrimDelegate;
 
     /** The animator for fading the view in. */
     private ValueAnimator mOverlayFadeInAnimator;
@@ -56,13 +53,13 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
 
     /**
      * @param scrimHiddenRunnable A mechanism for hiding the scrim.
-     * @param statusBarDelegate A means of changing the scrim over the status bar.
+     * @param systemUiScrimDelegate A means of changing the scrim over the system UI.
      */
     ScrimMediator(@NonNull Runnable scrimHiddenRunnable,
-            @Nullable StatusBarScrimDelegate statusBarDelegate) {
+            ScrimCoordinator.SystemUiScrimDelegate systemUiScrimDelegate) {
         mScrimHiddenRunnable = scrimHiddenRunnable;
+        mSystemUiScrimDelegate = systemUiScrimDelegate;
         mFadeDurationMs = FADE_DURATION_MS;
-        mStatusBarScrimDelegate = statusBarDelegate;
     }
 
     /** Triggers a fade in of the scrim creating a new animation if necessary. */
@@ -110,6 +107,10 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
      */
     void hideScrim(boolean animate) {
         assert mModel != null : "#hideScrim(...) was called on an inactive scrim!";
+        if (mIsHidingOrHidden) {
+            if (mOverlayAnimator != null && !animate) mOverlayAnimator.end();
+            return;
+        }
 
         if (mOverlayFadeOutAnimator == null) {
             mOverlayFadeOutAnimator = ValueAnimator.ofFloat(1, 0);
@@ -154,8 +155,13 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
         if (mModel == null) return;
         if (MathUtils.areFloatsEqual(alpha, mModel.get(ScrimProperties.ALPHA))) return;
         mModel.set(ScrimProperties.ALPHA, alpha);
-        if (mModel.get(ScrimProperties.AFFECTS_STATUS_BAR) && mStatusBarScrimDelegate != null) {
-            mStatusBarScrimDelegate.setStatusBarScrimFraction(alpha);
+        if (mModel.get(ScrimProperties.AFFECTS_STATUS_BAR) && mSystemUiScrimDelegate != null) {
+            mSystemUiScrimDelegate.setStatusBarScrimFraction(alpha);
+        }
+        if (mModel.getAllSetProperties().contains(ScrimProperties.AFFECTS_NAVIGATION_BAR)
+                && mModel.get(ScrimProperties.AFFECTS_NAVIGATION_BAR)
+                && mSystemUiScrimDelegate != null) {
+            mSystemUiScrimDelegate.setNavigationBarScrimFraction(alpha);
         }
 
         boolean isVisible = alpha > 0;
@@ -196,13 +202,6 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
         if (mOverlayAnimator != null) mOverlayAnimator.end();
     }
 
-    @Override
-    public void onClick(View view) {
-        if (mModel.get(ScrimProperties.CLICK_DELEGATE) != null) {
-            mModel.get(ScrimProperties.CLICK_DELEGATE).run();
-        }
-    }
-
     @VisibleForTesting
     void disableAnimationForTesting(boolean disable) {
         mFadeDurationMs = disable ? 0 : FADE_DURATION_MS;
@@ -215,6 +214,7 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if (mIsHidingOrHidden) return false;
         if (!mModel.getAllSetProperties().contains(ScrimProperties.GESTURE_DETECTOR)) return false;
 
         // Make sure the first event that goes through the filter is an ACTION_DOWN, even in the

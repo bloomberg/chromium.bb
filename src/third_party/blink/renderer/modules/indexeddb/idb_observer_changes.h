@@ -25,7 +25,7 @@ class IDBObserverChanges final : public ScriptWrappable {
                      const Vector<Persistent<IDBObservation>>& observations,
                      const Vector<int32_t>& observation_indices);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Implement IDL
   IDBTransaction* transaction() const { return transaction_.Get(); }
@@ -39,7 +39,7 @@ class IDBObserverChanges final : public ScriptWrappable {
   Member<IDBDatabase> database_;
   Member<IDBTransaction> transaction_;
   // Map object_store_id to IDBObservation list.
-  HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> records_;
+  HeapHashMap<int64_t, Member<HeapVector<Member<IDBObservation>>>> records_;
 };
 
 }  // namespace blink

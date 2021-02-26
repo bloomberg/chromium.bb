@@ -60,7 +60,8 @@ struct TraceCategory {
     kSsl = 0x01 << 2,
     kPresentation = 0x01 << 3,
     kStandaloneReceiver = 0x01 << 4,
-    kDiscovery = 0x01 << 5
+    kDiscovery = 0x01 << 5,
+    kStandaloneSender = 0x01 << 6,
   };
 };
 

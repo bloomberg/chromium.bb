@@ -8,7 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
@@ -153,7 +153,7 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
   if (!IconUtil::CreateIconFileFromImageFamily(image_family, path,
                                                IconUtil::NORMAL_WRITE)) {
     // Delete the file created by CreateTemporaryFileInDir as it won't be used.
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
     return false;
   }
 
@@ -254,7 +254,7 @@ JumpList::JumpList(Profile* profile)
     return;
 
   app_id_ =
-      shell_integration::win::GetChromiumModelIdForProfile(profile_->GetPath());
+      shell_integration::win::GetAppUserModelIdForBrowser(profile_->GetPath());
 
   // Register as TopSitesObserver so that we can update ourselves when the
   // TopSites changes. TopSites updates itself after a delay. This is especially

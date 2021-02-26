@@ -12,17 +12,16 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/task_features.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/thread_group.h"
@@ -85,6 +84,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
              bool synchronous_thread_start_for_testing = false,
              Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>());
 
+  ThreadGroupImpl(const ThreadGroupImpl&) = delete;
+  ThreadGroupImpl& operator=(const ThreadGroupImpl&) = delete;
   // Destroying a ThreadGroupImpl returned by Create() is not allowed in
   // production; it is always leaked. In tests, it can only be destroyed after
   // JoinForTesting() has returned.
@@ -93,7 +94,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // ThreadGroup:
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
-  void ReportHeartbeatMetrics() const override;
   void DidUpdateCanRunPolicy() override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
@@ -123,8 +123,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Returns the number of workers in this thread group.
   size_t NumberOfWorkersForTesting() const;
 
-  // Returns |max_tasks_|.
+  // Returns |max_tasks_|/|max_best_effort_tasks_|.
   size_t GetMaxTasksForTesting() const;
+  size_t GetMaxBestEffortTasksForTesting() const;
 
   // Returns the number of workers that are idle (i.e. not running tasks).
   size_t NumberOfIdleWorkersForTesting() const;
@@ -139,6 +140,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   friend class ThreadGroupImplMayBlockTest;
   FRIEND_TEST_ALL_PREFIXES(ThreadGroupImplBlockingTest,
                            ThreadBlockUnblockPremature);
+  FRIEND_TEST_ALL_PREFIXES(ThreadGroupImplBlockingTest,
+                           ThreadBlockUnblockPrematureBestEffort);
 
   // ThreadGroup:
   void UpdateSortKey(TaskSource::Transaction transaction) override;
@@ -212,12 +215,13 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void IncrementTasksRunningLockRequired(TaskPriority priority)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Increments/decrements the number of tasks that can run in this thread
-  // group.  May only be called in a scope where a task is running with
-  // |priority|.
-  void DecrementMaxTasksLockRequired(TaskPriority priority)
+  // Increments/decrements the number of [best effort] tasks that can run in
+  // this thread group.
+  void DecrementMaxTasksLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void IncrementMaxTasksLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void DecrementMaxBestEffortTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void IncrementMaxTasksLockRequired(TaskPriority priority)
+  void IncrementMaxBestEffortTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Values set at Start() and never modified afterwards.
@@ -244,8 +248,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     // Optional observer notified when a worker enters and exits its main.
     WorkerThreadObserver* worker_thread_observer = nullptr;
 
+    WakeUpStrategy wakeup_strategy;
+    bool wakeup_after_getwork;
     bool may_block_without_delay;
-    bool fixed_max_best_effort_tasks;
 
     // Threshold after which the max tasks is increased to compensate for a
     // worker that is within a MAY_BLOCK ScopedBlockingCall.
@@ -302,11 +307,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   std::unique_ptr<ConditionVariable> idle_workers_stack_cv_for_testing_
       GUARDED_BY(lock_);
 
-  // Stack that contains the timestamps of when workers get cleaned up.
-  // Timestamps get popped off the stack as new workers are added.
-  base::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_
-      GUARDED_BY(lock_);
-
   // Whether an AdjustMaxTasks() task was posted to the service thread.
   bool adjust_max_tasks_posted_ GUARDED_BY(lock_) = false;
 
@@ -344,21 +344,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // |scheduled_histogram_samples_| size as needed) to defer until after |lock_|
   // release, due to metrics system callbacks which may schedule tasks.
 
-  // ThreadPool.DetachDuration.[thread group name] histogram. Intentionally
-  // leaked.
-  HistogramBase* const detach_duration_histogram_;
-
   // ThreadPool.NumTasksBeforeDetach.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_before_detach_histogram_;
-
-  // ThreadPool.NumWorkers.[thread group name] histogram.
-  // Intentionally leaked.
-  HistogramBase* const num_workers_histogram_;
-
-  // ThreadPool.NumActiveWorkers.[thread group name] histogram.
-  // Intentionally leaked.
-  HistogramBase* const num_active_workers_histogram_;
 
   // Ensures recently cleaned up workers (ref.
   // WorkerThreadDelegateImpl::CleanupLockRequired()) had time to exit as
@@ -368,8 +356,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // https://crbug.com/810464. Uses AtomicRefCount to make its only public
   // method thread-safe.
   TrackedRefFactory<ThreadGroupImpl> tracked_ref_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadGroupImpl);
 };
 
 }  // namespace internal

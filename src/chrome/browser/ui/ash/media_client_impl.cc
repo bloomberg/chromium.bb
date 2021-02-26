@@ -10,9 +10,10 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -139,6 +140,11 @@ MediaClientImpl::MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   BrowserList::AddObserver(this);
 
+  auto* vm_camera_mic_manager = chromeos::VmCameraMicManager::GetForProfile(
+      ProfileManager::GetPrimaryUserProfile());
+  if (vm_camera_mic_manager)
+    vm_camera_mic_manager->AddObserver(this);
+
   DCHECK(!g_media_client);
   g_media_client = this;
 }
@@ -151,6 +157,11 @@ MediaClientImpl::~MediaClientImpl() {
 
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
   BrowserList::RemoveObserver(this);
+
+  auto* vm_camera_mic_manager = chromeos::VmCameraMicManager::GetForProfile(
+      ProfileManager::GetPrimaryUserProfile());
+  if (vm_camera_mic_manager)
+    vm_camera_mic_manager->RemoveObserver(this);
 }
 
 // static
@@ -206,11 +217,15 @@ void MediaClientImpl::HandleMediaSeekForward() {
 
 void MediaClientImpl::RequestCaptureState() {
   base::flat_map<AccountId, MediaCaptureState> capture_states;
-  for (user_manager::User* user :
-       user_manager::UserManager::Get()->GetLRULoggedInUsers()) {
+  auto* manager = user_manager::UserManager::Get();
+  for (user_manager::User* user : manager->GetLRULoggedInUsers()) {
     capture_states[user->GetAccountId()] = GetMediaCaptureStateOfAllWebContents(
         chromeos::ProfileHelper::Get()->GetProfileByUser(user));
   }
+
+  const user_manager::User* primary_user = manager->GetPrimaryUser();
+  if (primary_user)
+    capture_states[primary_user->GetAccountId()] |= vm_media_capture_state_;
 
   media_controller_->NotifyCaptureState(std::move(capture_states));
 }
@@ -226,7 +241,7 @@ void MediaClientImpl::OnRequestUpdate(int render_process_id,
                                       int render_frame_id,
                                       blink::mojom::MediaStreamType stream_type,
                                       const content::MediaRequestState state) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   // The PostTask is necessary because the state of MediaStreamCaptureIndicator
   // gets updated after this.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -238,6 +253,17 @@ void MediaClientImpl::OnBrowserSetLastActive(Browser* browser) {
   active_context_ = browser ? browser->profile() : nullptr;
 
   UpdateForceMediaClientKeyHandling();
+}
+
+void MediaClientImpl::OnVmCameraMicActiveChanged(
+    chromeos::VmCameraMicManager* manager) {
+  using DeviceType = chromeos::VmCameraMicManager::DeviceType;
+  vm_media_capture_state_ = MediaCaptureState::kNone;
+  if (manager->GetDeviceActive(DeviceType::kCamera))
+    vm_media_capture_state_ |= MediaCaptureState::kVideo;
+  if (manager->GetDeviceActive(DeviceType::kMic))
+    vm_media_capture_state_ |= MediaCaptureState::kAudio;
+  media_controller_->NotifyVmCaptureState(vm_media_capture_state_);
 }
 
 void MediaClientImpl::EnableCustomMediaKeyHandler(

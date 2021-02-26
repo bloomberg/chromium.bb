@@ -4,28 +4,31 @@
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 
-#include "services/metrics/public/cpp/ukm_builders.h"
+#include <iterator>
+
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
 
 namespace blink {
 
 IdentifiabilityMetricBuilder::IdentifiabilityMetricBuilder(
-    base::UkmSourceId source_id)
-    : ukm::internal::UkmEntryBuilderBase(
-          source_id,
-          ukm::builders::Identifiability::kEntryNameHash) {}
+    ukm::SourceIdObj source_id)
+    : source_id_(source_id) {}
 
 IdentifiabilityMetricBuilder::~IdentifiabilityMetricBuilder() = default;
 
 IdentifiabilityMetricBuilder& IdentifiabilityMetricBuilder::Set(
     IdentifiableSurface surface,
-    int64_t value) {
-  SetMetricInternal(surface.ToUkmMetricHash(), value);
+    IdentifiableToken value) {
+  metrics_.emplace_back(surface, value);
   return *this;
 }
 
 void IdentifiabilityMetricBuilder::Record(ukm::UkmRecorder* recorder) {
-  // Consume the entry, but don't pass it downstream.
-  (void)TakeEntry();
+  auto* collector = IdentifiabilitySampleCollector::Get();
+  if (collector && !metrics_.empty())
+    collector->Record(recorder, source_id_.ToInt64(), std::move(metrics_));
 }
 
 }  // namespace blink

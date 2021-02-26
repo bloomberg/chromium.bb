@@ -18,8 +18,6 @@ class ContentIndex;
 class ServiceWorkerRegistrationContentIndex final
     : public GarbageCollected<ServiceWorkerRegistrationContentIndex>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationContentIndex);
-
  public:
   static const char kSupplementName[];
 
@@ -32,7 +30,7 @@ class ServiceWorkerRegistrationContentIndex final
   static ContentIndex* index(ServiceWorkerRegistration& registration);
   ContentIndex* index();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

@@ -5,10 +5,10 @@
 
 """
 This script (intended to be invoked by autoninja or autoninja.bat) detects
-whether a build is using goma. If so it runs with a large -j value, and
-otherwise it chooses a small one. This auto-adjustment makes using goma simpler
-and safer, and avoids errors that can cause slow goma builds or swap-storms
-on non-goma builds.
+whether a build is accelerated using a service like goma. If so, it runs with a
+large -j value, and otherwise it chooses a small one. This auto-adjustment
+makes using remote build acceleration simpler and safer, and avoids errors that
+can cause slow goma builds or swap-storms on unaccelerated builds.
 """
 
 # [VPYTHON:BEGIN]
@@ -30,6 +30,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 # The -t tools are incompatible with -j
 t_specified = False
 j_specified = False
+offline = False
 output_dir = '.'
 input_args = sys.argv
 # On Windows the autoninja.bat script passes along the arguments enclosed in
@@ -56,30 +57,41 @@ for index, arg in enumerate(input_args[1:]):
   elif arg.startswith('-C'):
     # Support -Cout/Default
     output_dir = arg[2:]
+  elif arg == '-o' or arg == '--offline':
+    offline = True
+  elif arg == '-h':
+    print('autoninja: Use -o/--offline to temporary disable goma.',
+          file=sys.stderr)
+    print(file=sys.stderr)
 
-use_goma = False
-use_jumbo_build = False
+# Strip -o/--offline so ninja doesn't see them.
+input_args = [ arg for arg in input_args if arg != '-o' and arg != '--offline']
 
-# Attempt to auto-detect goma usage.  We support gn-based builds, where we
-# look for args.gn in the build tree, and cmake-based builds where we look for
-# rules.ninja.
+use_remote_build = False
+
+# Attempt to auto-detect remote build acceleration. We support gn-based
+# builds, where we look for args.gn in the build tree, and cmake-based builds
+# where we look for rules.ninja.
 if os.path.exists(os.path.join(output_dir, 'args.gn')):
   with open(os.path.join(output_dir, 'args.gn')) as file_handle:
     for line in file_handle:
-      # This regex pattern copied from create_installer_archive.py
-      if re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line):
-        use_goma = True
-        continue
-      match_use_jumbo_build = re.match(
-          r'^\s*use_jumbo_build\s*=\s*true(\s*$|\s*#.*$)', line)
-      if match_use_jumbo_build:
-        use_jumbo_build = True
+      # Either use_goma or use_rbe activate build acceleration.
+      #
+      # This test can match multi-argument lines. Examples of this are:
+      # is_debug=false use_goma=true is_official_build=false
+      # use_goma=false# use_goma=true This comment is ignored
+      #
+      # Anything after a comment is not consider a valid argument.
+      line_without_comment = line.split('#')[0]
+      if re.search(r'(^|\s)(use_goma|use_rbe)\s*=\s*true($|\s)',
+                   line_without_comment):
+        use_remote_build = True
         continue
 elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
   with open(os.path.join(output_dir, 'rules.ninja')) as file_handle:
     for line in file_handle:
       if re.match(r'^\s*command\s*=\s*\S+gomacc', line):
-        use_goma = True
+        use_remote_build = True
         break
 
 # If GOMA_DISABLED is set to "true", "t", "yes", "y", or "1" (case-insensitive)
@@ -90,21 +102,31 @@ elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
 # for each compile step. Checking this environment variable ensures that
 # autoninja uses an appropriate -j value in this situation.
 goma_disabled_env = os.environ.get('GOMA_DISABLED', '0').lower()
-if goma_disabled_env in ['true', 't', 'yes', 'y', '1']:
-  use_goma = False
+if offline or goma_disabled_env in ['true', 't', 'yes', 'y', '1']:
+  use_remote_build = False
 
 # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
 # be called back.
 ninja_exe = 'ninja.exe' if sys.platform.startswith('win') else 'ninja'
 ninja_exe_path = os.path.join(SCRIPT_DIR, ninja_exe)
 
+# A large build (with or without goma) tends to hog all system resources.
+# Launching the ninja process with 'nice' priorities improves this situation.
+prefix_args = []
+if (sys.platform.startswith('linux')
+    and os.environ.get('NINJA_BUILD_IN_BACKGROUND', '0') == '1'):
+  # nice -10 is process priority 10 lower than default 0
+  # ionice -c 3 is IO priority IDLE
+  prefix_args = ['nice'] + ['-10']
+
+
 # Use absolute path for ninja path,
 # or fail to execute ninja if depot_tools is not in PATH.
-args = [ninja_exe_path] + input_args[1:]
+args = prefix_args + [ninja_exe_path] + input_args[1:]
 
 num_cores = psutil.cpu_count()
 if not j_specified and not t_specified:
-  if use_goma:
+  if use_remote_build:
     args.append('-j')
     core_multiplier = int(os.environ.get('NINJA_CORE_MULTIPLIER', '40'))
     j_value = num_cores * core_multiplier
@@ -122,13 +144,6 @@ if not j_specified and not t_specified:
     j_value = num_cores
     # Ninja defaults to |num_cores + 2|
     j_value += int(os.environ.get('NINJA_CORE_ADDITION', '2'))
-    if use_jumbo_build:
-      # Compiling a jumbo .o can easily use 1-2GB of memory. Leaving 2GB per
-      # process avoids memory swap/compression storms when also considering
-      # already in-use memory.
-      physical_ram = psutil.virtual_memory().total
-      GB = 1024 * 1024 * 1024
-      j_value = min(j_value, physical_ram / (2 * GB))
     args.append('-j')
     args.append('%d' % j_value)
 
@@ -145,4 +160,10 @@ for i in range(len(args)):
 if os.environ.get('NINJA_SUMMARIZE_BUILD', '0') == '1':
   args += ['-d', 'stats']
 
-print(' '.join(args))
+if offline and not sys.platform.startswith('win'):
+  # Tell goma to do local compiles. On Windows this environment variable is set
+  # by the wrapper batch file.
+  print('GOMA_DISABLED=1 ' + ' '.join(args))
+else:
+  print(' '.join(args))
+

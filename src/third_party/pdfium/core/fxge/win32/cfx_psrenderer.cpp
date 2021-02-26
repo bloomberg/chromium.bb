@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "core/fxcrt/maybe_owned.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_fontcache.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_glyphcache.h"
@@ -20,10 +21,9 @@
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibextractor.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "core/fxge/text_char_pos.h"
 #include "core/fxge/win32/cpsoutput.h"
-#include "third_party/base/ptr_util.h"
 
 struct PSGlyph {
   UnownedPtr<CFX_Font> m_pFont;
@@ -46,15 +46,13 @@ CFX_PSRenderer::~CFX_PSRenderer() = default;
 void CFX_PSRenderer::Init(const RetainPtr<IFX_RetainableWriteStream>& pStream,
                           int pslevel,
                           int width,
-                          int height,
-                          bool bCmykOutput) {
+                          int height) {
   m_PSLevel = pslevel;
   m_pStream = pStream;
   m_ClipBox.left = 0;
   m_ClipBox.top = 0;
   m_ClipBox.right = width;
   m_ClipBox.bottom = height;
-  m_bCmykOutput = bCmykOutput;
 }
 
 bool CFX_PSRenderer::StartRendering() {
@@ -152,9 +150,10 @@ void CFX_PSRenderer::OutputPath(const CFX_PathData* pPathData,
   WriteToStream(&buf);
 }
 
-void CFX_PSRenderer::SetClip_PathFill(const CFX_PathData* pPathData,
-                                      const CFX_Matrix* pObject2Device,
-                                      int fill_mode) {
+void CFX_PSRenderer::SetClip_PathFill(
+    const CFX_PathData* pPathData,
+    const CFX_Matrix* pObject2Device,
+    const CFX_FillRenderOptions& fill_options) {
   StartRendering();
   OutputPath(pPathData, pObject2Device);
   CFX_FloatRect rect = pPathData->GetBoundingBox();
@@ -167,7 +166,7 @@ void CFX_PSRenderer::SetClip_PathFill(const CFX_PathData* pPathData,
   m_ClipBox.bottom = static_cast<int>(rect.bottom);
 
   m_pStream->WriteString("W");
-  if ((fill_mode & 3) != FXFILL_WINDING)
+  if (fill_options.fill_type != CFX_FillRenderOptions::FillType::kWinding)
     m_pStream->WriteString("*");
   m_pStream->WriteString(" n\n");
 }
@@ -197,7 +196,7 @@ bool CFX_PSRenderer::DrawPath(const CFX_PathData* pPathData,
                               const CFX_GraphStateData* pGraphState,
                               uint32_t fill_color,
                               uint32_t stroke_color,
-                              int fill_mode) {
+                              const CFX_FillRenderOptions& fill_options) {
   StartRendering();
   int fill_alpha = FXARGB_A(fill_color);
   int stroke_alpha = FXARGB_A(stroke_color);
@@ -220,14 +219,16 @@ bool CFX_PSRenderer::DrawPath(const CFX_PathData* pPathData,
   }
 
   OutputPath(pPathData, stroke_alpha ? nullptr : pObject2Device);
-  if (fill_mode && fill_alpha) {
+  if (fill_options.fill_type != CFX_FillRenderOptions::FillType::kNoFill &&
+      fill_alpha) {
     SetColor(fill_color);
-    if ((fill_mode & 3) == FXFILL_WINDING) {
+    if (fill_options.fill_type == CFX_FillRenderOptions::FillType::kWinding) {
       if (stroke_alpha)
         m_pStream->WriteString("q f Q ");
       else
         m_pStream->WriteString("f");
-    } else if ((fill_mode & 3) == FXFILL_ALTERNATE) {
+    } else if (fill_options.fill_type ==
+               CFX_FillRenderOptions::FillType::kEvenOdd) {
       if (stroke_alpha)
         m_pStream->WriteString("q F Q ");
       else
@@ -311,7 +312,7 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     return false;
 
   int alpha = FXARGB_A(color);
-  if (pSource->IsAlphaMask() && (alpha < 255 || pSource->GetBPP() != 1))
+  if (pSource->IsMask() && (alpha < 255 || pSource->GetBPP() != 1))
     return false;
 
   m_pStream->WriteString("q\n");
@@ -324,7 +325,7 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
   int height = pSource->GetHeight();
   buf << width << " " << height;
 
-  if (pSource->GetBPP() == 1 && !pSource->GetPalette()) {
+  if (pSource->GetBPP() == 1 && !pSource->HasPalette()) {
     int pitch = (width + 7) / 8;
     uint32_t src_size = height * pitch;
     std::unique_ptr<uint8_t, FxFreeDeleter> src_buf(
@@ -338,7 +339,7 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     uint32_t output_size;
     bool compressed = FaxCompressData(std::move(src_buf), width, height,
                                       &output_buf, &output_size);
-    if (pSource->IsAlphaMask()) {
+    if (pSource->IsMask()) {
       SetColor(color);
       m_bColorSet = false;
       buf << " true[";
@@ -352,7 +353,7 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
       buf << "<</K -1/EndOfBlock false/Columns " << width << "/Rows " << height
           << ">>/CCITTFaxDecode filter ";
     }
-    if (pSource->IsAlphaMask())
+    if (pSource->IsMask())
       buf << "iM\n";
     else
       buf << "false 1 colorimage\n";
@@ -365,22 +366,13 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     if (!pConverted)
       return false;
     switch (pSource->GetFormat()) {
-      case FXDIB_1bppRgb:
-      case FXDIB_Rgb32:
-        pConverted = pConverted->CloneConvert(FXDIB_Rgb);
+      case FXDIB_Format::k1bppRgb:
+      case FXDIB_Format::kRgb32:
+        pConverted = pConverted->CloneConvert(FXDIB_Format::kRgb);
         break;
-      case FXDIB_8bppRgb:
-        if (pSource->GetPalette()) {
-          pConverted = pConverted->CloneConvert(FXDIB_Rgb);
-        }
-        break;
-      case FXDIB_1bppCmyk:
-        pConverted = pConverted->CloneConvert(FXDIB_Cmyk);
-        break;
-      case FXDIB_8bppCmyk:
-        if (pSource->GetPalette()) {
-          pConverted = pConverted->CloneConvert(FXDIB_Cmyk);
-        }
+      case FXDIB_Format::k8bppRgb:
+        if (pSource->HasPalette())
+          pConverted = pConverted->CloneConvert(FXDIB_Format::kRgb);
         break;
       default:
         break;
@@ -445,24 +437,15 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
 }
 
 void CFX_PSRenderer::SetColor(uint32_t color) {
-  bool bCMYK = false;
-  if (bCMYK != m_bCmykOutput || !m_bColorSet || m_LastColor != color) {
-    std::ostringstream buf;
-    if (bCMYK) {
-      buf << FXSYS_GetCValue(color) / 255.0 << " "
-          << FXSYS_GetMValue(color) / 255.0 << " "
-          << FXSYS_GetYValue(color) / 255.0 << " "
-          << FXSYS_GetKValue(color) / 255.0 << " k\n";
-    } else {
-      buf << FXARGB_R(color) / 255.0 << " " << FXARGB_G(color) / 255.0 << " "
-          << FXARGB_B(color) / 255.0 << " rg\n";
-    }
-    if (bCMYK == m_bCmykOutput) {
-      m_bColorSet = true;
-      m_LastColor = color;
-    }
-    WriteToStream(&buf);
-  }
+  if (m_bColorSet && m_LastColor == color)
+    return;
+
+  std::ostringstream buf;
+  buf << FXARGB_R(color) / 255.0 << " " << FXARGB_G(color) / 255.0 << " "
+      << FXARGB_B(color) / 255.0 << " rg\n";
+  m_bColorSet = true;
+  m_LastColor = color;
+  WriteToStream(&buf);
 }
 
 void CFX_PSRenderer::FindPSFontGlyph(CFX_GlyphCache* pGlyphCache,
@@ -494,7 +477,7 @@ void CFX_PSRenderer::FindPSFontGlyph(CFX_GlyphCache* pGlyphCache,
   }
 
   if (m_PSFontList.empty() || m_PSFontList.back()->m_nGlyphs == 256) {
-    m_PSFontList.push_back(pdfium::MakeUnique<CPSFont>());
+    m_PSFontList.push_back(std::make_unique<CPSFont>());
     m_PSFontList.back()->m_nGlyphs = 0;
     std::ostringstream buf;
     buf << "8 dict begin/FontType 3 def/FontMatrix[1 0 0 1 0 0]def\n"

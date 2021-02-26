@@ -78,7 +78,7 @@ tr.exportTo('tr.metrics', function() {
     }
   }
 
-  function subtractBins_(x, y) {
+  function subtractBins_(x, y, name) {
     x.sum -= y.sum;
     let p1 = 0;
     let p2 = 0;
@@ -86,12 +86,12 @@ tr.exportTo('tr.metrics', function() {
       while (p1 < x.bins.length && x.bins[p1].min !== y.bins[p2].min) {
         p1++;
       }
-      if (p1 === x.bins.length) throw new Error('Cannot subtract');
+      if (p1 === x.bins.length) throw new Error(`Cannot subtract (${name}).`);
       if (x.bins[p1].max !== y.bins[p2].max) {
-        throw new Error('Incompatible bins');
+        throw new Error(`Incompatible bins (${name}).`);
       }
       if (x.bins[p1].count < y.bins[p2].count) {
-        throw new Error('Cannot subtract');
+        throw new Error(`Cannot subtract (${name}).`);
       }
       x.bins[p1].count -= y.bins[p2].count;
       for (const event of y.bins[p2].events) {
@@ -106,6 +106,11 @@ tr.exportTo('tr.metrics', function() {
   function getHistogramUnit_(name) {
     // Customize histogram units here.
     return tr.b.Unit.byName.unitlessNumber_smallerIsBetter;
+  }
+
+  function getIsHistogramBinsLinear_(histogramName) {
+    return histogramName.startsWith('Graphics.Smoothness.Throughput') ||
+           histogramName.startsWith('Memory.Memory.GPU.PeakMemoryUsage');
   }
 
   function getHistogramBoundaries_(name) {
@@ -150,13 +155,13 @@ tr.exportTo('tr.metrics', function() {
         if (!histogramValues.has(name)) histogramValues.set(name, values);
         const endValues = parseBuckets_(events[events.length - 1], processName);
         if (events.length === 1) {
-          mergeBins_(values, endValues);
+          mergeBins_(values, endValues, name);
         } else if (events.length === 2) {
-          subtractBins_(endValues, parseBuckets_(events[0], processName));
+          subtractBins_(endValues, parseBuckets_(events[0], processName, name));
           mergeBins_(values, endValues);
         } else {
-          throw new Error('There should be at most two snapshots of an UMA ' +
-                          'histogram in each process');
+          throw new Error('There should be at most two snapshots of UMA ' +
+                          `histogram for ${name} in each process.`);
         }
       }
     }
@@ -164,6 +169,7 @@ tr.exportTo('tr.metrics', function() {
     for (const [name, values] of histogramValues) {
       const histogram = new tr.v.Histogram(
           name, getHistogramUnit_(name), getHistogramBoundaries_(name));
+      const isLinear = getIsHistogramBinsLinear_(name);
       // If we just put samples at the middle of the bins, their sum may not
       // match the sum we read from traces. Compute how much samples should be
       // shifted so that their sum matches what we expect.
@@ -174,15 +180,18 @@ tr.exportTo('tr.metrics', function() {
         sumOfBinLengths += bin.count * (bin.max - bin.min);
       }
       const shift = (values.sum - sumOfMiddles) / sumOfBinLengths;
-      // Note: if shift is less than -0.5, it means that even if we put all
-      // samples at the lowest value of their bins their sum will be less than
-      // the sum we read from traces. So, there is an inconsistency: either the
-      // bins are reported incorrectly, or the sum is reported incorrectly.
+      // Note: for linear bins, if shift is less than -0.5, it means that even
+      // if we put all samples at the lowest value of their bins their sum will
+      // be less than the sum we read from traces. So, there is an
+      // inconsistency: either the bins are reported incorrectly, or the sum is
+      // reported incorrectly.
       //
       // Similarly, if shift is greater than 0.5, the sum of samples cannot add
       // up to the sum we read from traces, even if we put all samples at the
       // highest value of their bins.
-      if (Math.abs(shift) > 0.5) throw new Error('Samples sum is wrong');
+      if (isLinear && Math.abs(shift) > 0.5) {
+        throw new Error(`Samples sum is wrong for ${name}.`);
+      }
 
       for (const bin of values.bins) {
         if (bin.count === 0) continue;

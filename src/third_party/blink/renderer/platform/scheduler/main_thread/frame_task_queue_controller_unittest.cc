@@ -32,7 +32,7 @@ namespace blink {
 namespace scheduler {
 
 class FrameTaskQueueControllerTest : public testing::Test,
-                                     FrameTaskQueueController::Delegate {
+                                     public FrameTaskQueueController::Delegate {
  public:
   FrameTaskQueueControllerTest()
       : task_environment_(
@@ -43,23 +43,27 @@ class FrameTaskQueueControllerTest : public testing::Test,
   ~FrameTaskQueueControllerTest() override = default;
 
   void SetUp() override {
-    scheduler_.reset(new MainThreadSchedulerImpl(
+    scheduler_ = std::make_unique<MainThreadSchedulerImpl>(
         base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, task_environment_.GetMainThreadTaskRunner(),
             task_environment_.GetMockTickClock()),
-        base::nullopt));
-    page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ =
-        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
-                                   FrameScheduler::FrameType::kSubframe);
-    frame_task_queue_controller_.reset(new FrameTaskQueueController(
-        scheduler_.get(), frame_scheduler_.get(), this));
+        base::nullopt);
+    agent_group_scheduler_ = scheduler_->CreateAgentGroupScheduler();
+    page_scheduler_ =
+        agent_group_scheduler_->AsAgentGroupScheduler().CreatePageScheduler(
+            nullptr);
+    frame_scheduler_ = page_scheduler_->CreateFrameScheduler(
+        nullptr, nullptr, FrameScheduler::FrameType::kSubframe);
+    frame_task_queue_controller_ = std::make_unique<FrameTaskQueueController>(
+        scheduler_.get(),
+        static_cast<FrameSchedulerImpl*>(frame_scheduler_.get()), this);
   }
 
   void TearDown() override {
     frame_task_queue_controller_.reset();
     frame_scheduler_.reset();
     page_scheduler_.reset();
+    agent_group_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
   }
@@ -113,8 +117,9 @@ class FrameTaskQueueControllerTest : public testing::Test,
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
-  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
+  std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler_;
+  std::unique_ptr<PageScheduler> page_scheduler_;
+  std::unique_ptr<FrameScheduler> frame_scheduler_;
   std::unique_ptr<FrameTaskQueueController> frame_task_queue_controller_;
 
  private:
@@ -323,13 +328,17 @@ class TaskQueueCreationFromQueueTraitsTest :
 INSTANTIATE_TEST_SUITE_P(
     All,
     TaskQueueCreationFromQueueTraitsTest,
-    ::testing::Values(QueueTraits::PrioritisationType::kVeryHigh,
-                      QueueTraits::PrioritisationType::kBestEffort,
-                      QueueTraits::PrioritisationType::kRegular,
-                      QueueTraits::PrioritisationType::kLoading,
-                      QueueTraits::PrioritisationType::kLoadingControl,
-                      QueueTraits::PrioritisationType::kFindInPage,
-                      QueueTraits::PrioritisationType::kExperimentalDatabase));
+    ::testing::Values(
+        QueueTraits::PrioritisationType::kInternalScriptContinuation,
+        QueueTraits::PrioritisationType::kBestEffort,
+        QueueTraits::PrioritisationType::kRegular,
+        QueueTraits::PrioritisationType::kLoading,
+        QueueTraits::PrioritisationType::kLoadingControl,
+        QueueTraits::PrioritisationType::kFindInPage,
+        QueueTraits::PrioritisationType::kExperimentalDatabase,
+        QueueTraits::PrioritisationType::kJavaScriptTimer,
+        QueueTraits::PrioritisationType::kHighPriorityLocalFrame,
+        QueueTraits::PrioritisationType::kInput));
 
 TEST_P(TaskQueueCreationFromQueueTraitsTest,
         AddAndRetrieveAllTaskQueues) {

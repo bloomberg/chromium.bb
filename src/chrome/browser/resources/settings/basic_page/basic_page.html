@@ -25,7 +25,7 @@
       }
 
       :host-context(.focus-outline-visible) #advancedToggle:focus {
-        font-weight: 600;
+        outline: auto 5px -webkit-focus-ring-color;
       }
 
       #osSettingsBanner {
@@ -91,8 +91,8 @@
             <settings-autofill-page prefs="{{prefs}}"></settings-autofill-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showSafetyCheckPage_(
-            pageVisibility.safetyCheck)]]" restamp>
+        <template is="dom-if" if="[[showPage_(pageVisibility.safetyCheck)]]"
+            restamp>
           <settings-section page-title="$i18n{safetyCheckSectionTitle}"
               section="safetyCheck"
               id="safetyCheckSettingsSection">
@@ -174,14 +174,6 @@
                   section="downloads">
                 <settings-downloads-page prefs="{{prefs}}">
                 </settings-downloads-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.printing)]]"
-                restamp>
-              <settings-section page-title="$i18n{printingPageTitle}"
-                  section="printing">
-                <settings-printing-page prefs="{{prefs}}">
-                </settings-printing-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.a11y)]]"

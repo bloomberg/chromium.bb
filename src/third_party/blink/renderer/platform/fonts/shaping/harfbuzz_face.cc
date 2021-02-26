@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/resolution_units.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -64,7 +63,7 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void DetermineTrakSbix(SkTypeface* typeface, bool* has_trak, bool* has_sbix) {
   int num_tags = typeface->countTables();
 
@@ -357,7 +356,7 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                         WTF::Partitions::FastFree);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 static void DeleteTypefaceStream(void* stream_asset_ptr) {
   SkStreamAsset* stream_asset =
       reinterpret_cast<SkStreamAsset*>(stream_asset_ptr);
@@ -368,15 +367,13 @@ static void DeleteTypefaceStream(void* stream_asset_ptr) {
 hb_face_t* HarfBuzzFace::CreateFace() {
   hb_face_t* face = nullptr;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, zero_copy_success_histogram,
-                                  ("Blink.Fonts.HarfBuzzFaceZeroCopyAccess"));
   SkTypeface* typeface = platform_data_->Typeface();
   CHECK(typeface);
   // The attempt of doing zero copy-mmaped memory access to the font blobs does
   // not work efficiently on Mac, since what is returned from
   // typeface->openStream is a synthesized font assembled from copying all font
   // tables on Mac. See the implementation of SkTypeface_Mac::onOpenStream.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   int ttc_index = 0;
   std::unique_ptr<SkStreamAsset> tf_stream(typeface->openStream(&ttc_index));
   if (tf_stream && tf_stream->getMemoryBase()) {
@@ -394,9 +391,6 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   if (!face) {
     face = hb_face_create_for_tables(HarfBuzzSkiaGetTable,
                                      platform_data_->Typeface(), nullptr);
-    zero_copy_success_histogram.Count(false);
-  } else {
-    zero_copy_success_histogram.Count(true);
   }
 
   DCHECK(face);
@@ -428,7 +422,7 @@ scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face,
 
   FontGlobalContext::HorizontalAdvanceSource advance_source =
       FontGlobalContext::kSkiaHorizontalAdvances;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool has_trak = false;
   bool has_sbix = false;
   DetermineTrakSbix(typeface, &has_trak, &has_sbix);

@@ -12,22 +12,18 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
-#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
-#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
-namespace views {
-class Label;
-}  // namespace views
-
 namespace ash {
+
 class AssistantFooterView;
 class AssistantProgressIndicator;
 class AssistantQueryView;
 class AssistantViewDelegate;
+class AssistantZeroStateView;
 class UiElementContainerView;
 
 // AppListAssistantMainStage is the child of AssistantMainView responsible for
@@ -70,15 +66,14 @@ class APP_LIST_EXPORT AppListAssistantMainStage
  private:
   void InitLayout();
   std::unique_ptr<views::View> CreateContentLayoutContainer();
-  std::unique_ptr<views::Label> InitGreetingLabel();
   std::unique_ptr<views::View> CreateMainContentLayoutContainer();
   std::unique_ptr<views::View> CreateDividerLayoutContainer();
   std::unique_ptr<views::View> CreateFooterLayoutContainer();
 
-  void AnimateInGreetingLabel();
+  void AnimateInZeroState();
   void AnimateInFooter();
 
-  void MaybeHideGreetingLabel();
+  void MaybeHideZeroState();
 
   AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
@@ -87,23 +82,11 @@ class APP_LIST_EXPORT AppListAssistantMainStage
   views::View* horizontal_separator_;
   AssistantQueryView* query_view_;
   UiElementContainerView* ui_element_container_;
-  views::Label* greeting_label_;
+  AssistantZeroStateView* zero_state_view_;
   AssistantFooterView* footer_;
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};
-
-  ScopedObserver<AssistantInteractionController,
-                 AssistantInteractionModelObserver,
-                 &AssistantInteractionController::AddModelObserver,
-                 &AssistantInteractionController::RemoveModelObserver>
-      assistant_interaction_model_observer_{this};
-
-  ScopedObserver<AssistantUiController,
-                 AssistantUiModelObserver,
-                 &AssistantUiController::AddModelObserver,
-                 &AssistantUiController::RemoveModelObserver>
-      assistant_ui_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListAssistantMainStage);
 };

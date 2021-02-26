@@ -4,11 +4,15 @@
 
 #include "ui/aura/native_window_occlusion_tracker_win.h"
 
+#include <dwmapi.h>
+#include <powersetting.h>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -18,8 +22,58 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/gfx/win/hwnd_util.h"
 
-#include "dwmapi.h"
+const CLSID CLSID_ImmersiveShell = {
+    0xC2F03A33,
+    0x21F5,
+    0x47FA,
+    {0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39}};
+
+const CLSID CLSID_VirtualDesktopAPI_Unknown = {
+    0xC5E0CDCA,
+    0x7B6E,
+    0x41B2,
+    {0x9F, 0xC4, 0xD9, 0x39, 0x75, 0xCC, 0x46, 0x7B}};
+
+struct IApplicationView : public IUnknown {
+ public:
+};
+
+MIDL_INTERFACE("FF72FFDD-BE7E-43FC-9C03-AD81681E88E4")
+IVirtualDesktop : public IUnknown {
+ public:
+  virtual HRESULT STDMETHODCALLTYPE IsViewVisible(IApplicationView * pView,
+                                                  int* pfVisible) = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetID(GUID * pGuid) = 0;
+};
+
+enum AdjacentDesktop { LeftDirection = 3, RightDirection = 4 };
+
+MIDL_INTERFACE("F31574D6-B682-4cdc-BD56-1827860ABEC6")
+IVirtualDesktopManagerInternal : public IUnknown {
+ public:
+  virtual HRESULT STDMETHODCALLTYPE GetCount(UINT * pCount) = 0;
+  virtual HRESULT STDMETHODCALLTYPE MoveViewToDesktop(
+      IApplicationView * pView, IVirtualDesktop * pDesktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE CanViewMoveDesktops(
+      IApplicationView * pView, int* pfCanViewMoveDesktops) = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetCurrentDesktop(IVirtualDesktop *
+                                                      *desktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetDesktops(IObjectArray * *ppDesktops) = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetAdjacentDesktop(
+      IVirtualDesktop * pDesktopReference, AdjacentDesktop uDirection,
+      IVirtualDesktop * *ppAdjacentDesktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE SwitchDesktop(IVirtualDesktop *
+                                                  pDesktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE CreateDesktopW(IVirtualDesktop *
+                                                   *ppNewDesktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE RemoveDesktop(
+      IVirtualDesktop * pRemove, IVirtualDesktop * pFallbackDesktop) = 0;
+  virtual HRESULT STDMETHODCALLTYPE FindDesktop(
+      GUID * desktopId, IVirtualDesktop * *ppDesktop) = 0;
+};
 
 namespace aura {
 
@@ -28,6 +82,9 @@ namespace {
 // ~16 ms = time between frames when frame rate is 60 FPS.
 const base::TimeDelta kUpdateOcclusionDelay =
     base::TimeDelta::FromMilliseconds(16);
+
+const base::TimeDelta kUpdateVirtualDesktopDelay =
+    base::TimeDelta::FromMilliseconds(1000);
 
 // This global variable can be accessed only on main thread.
 NativeWindowOcclusionTrackerWin* g_tracker = nullptr;
@@ -121,7 +178,8 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       session_change_observer_(
           base::BindRepeating(&NativeWindowOcclusionTrackerWin::OnSessionChange,
-                              base::Unretained(this))) {
+                              base::Unretained(this))),
+      power_setting_change_listener_(this) {
   WindowOcclusionCalculator::CreateInstance(
       update_occlusion_task_runner_, base::SequencedTaskRunnerHandle::Get(),
       base::BindRepeating(
@@ -226,7 +284,8 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
 
 void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
     const base::flat_map<HWND, Window::OcclusionState>&
-        root_window_hwnds_occlusion_state) {
+        root_window_hwnds_occlusion_state,
+    bool show_all_windows) {
   num_visible_root_windows_ = 0;
   for (const auto& root_window_pair : root_window_hwnds_occlusion_state) {
     auto it = hwnd_root_window_map_.find(root_window_pair.first);
@@ -235,17 +294,22 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
       continue;
     // Check Window::IsVisible here, on the UI thread, because it can't be
     // checked on the occlusion calculation thread. Do this first before
-    // checking screen_locked_ so that hidden windows remain hidden.
+    // checking screen_locked_ or display_on_ so that hidden windows remain
+    // hidden.
     if (!it->second->IsVisible()) {
       it->second->GetHost()->SetNativeWindowOcclusionState(
           Window::OcclusionState::HIDDEN);
       continue;
     }
-    // If the screen is locked, ignore occlusion state results and
+    Window::OcclusionState occl_state = root_window_pair.second;
+    // If the screen is locked or off, ignore occlusion state results and
     // mark the window as occluded.
-    it->second->GetHost()->SetNativeWindowOcclusionState(
-        screen_locked_ ? Window::OcclusionState::OCCLUDED
-                       : root_window_pair.second);
+    if (screen_locked_ || !display_on_)
+      occl_state = Window::OcclusionState::OCCLUDED;
+    else if (show_all_windows)
+      occl_state = Window::OcclusionState::VISIBLE;
+
+    it->second->GetHost()->SetNativeWindowOcclusionState(occl_state);
     num_visible_root_windows_++;
   }
 }
@@ -261,14 +325,29 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(
     screen_locked_ = false;
   } else if (status_code == WTS_SESSION_LOCK && is_current_session) {
     screen_locked_ = true;
-    // Set all visible root windows as occluded. If not visible,
-    // set them as hidden.
-    for (const auto& root_window_hwnd_pair : hwnd_root_window_map_) {
-      root_window_hwnd_pair.second->GetHost()->SetNativeWindowOcclusionState(
-          IsIconic(root_window_hwnd_pair.first)
-              ? Window::OcclusionState::HIDDEN
-              : Window::OcclusionState::OCCLUDED);
-    }
+    MarkNonIconicWindowsOccluded();
+  }
+}
+
+void NativeWindowOcclusionTrackerWin::OnDisplayStateChanged(bool display_on) {
+  if (display_on == display_on_)
+    return;
+
+  display_on_ = display_on;
+  // Display changing to on will cause a foreground window change,
+  // which will trigger an occlusion calculation on its own.
+  if (!display_on_)
+    MarkNonIconicWindowsOccluded();
+}
+
+void NativeWindowOcclusionTrackerWin::MarkNonIconicWindowsOccluded() {
+  // Set all visible root windows as occluded. If not visible,
+  // set them as hidden.
+  for (const auto& root_window_hwnd_pair : hwnd_root_window_map_) {
+    root_window_hwnd_pair.second->GetHost()->SetNativeWindowOcclusionState(
+        IsIconic(root_window_hwnd_pair.first)
+            ? Window::OcclusionState::HIDDEN
+            : Window::OcclusionState::OCCLUDED);
   }
 }
 
@@ -283,6 +362,19 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
     ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
                        IID_PPV_ARGS(&virtual_desktop_manager_));
+
+    Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
+    if (base::FeatureList::IsEnabled(
+            features::kCalculateNativeWinOcclusionCheckVirtualDesktopUsed) &&
+        SUCCEEDED(::CoCreateInstance(CLSID_ImmersiveShell, NULL,
+                                     CLSCTX_LOCAL_SERVER,
+                                     IID_PPV_ARGS(&service_provider)))) {
+      service_provider->QueryService(
+          CLSID_VirtualDesktopAPI_Unknown,
+          IID_PPV_ARGS(&virtual_desktop_manager_internal_));
+      if (virtual_desktop_manager_internal_)
+        ComputeVirtualDesktopUsed();
+    }
   }
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -330,6 +422,8 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     UnregisterEventHooks();
     if (occlusion_update_timer_.IsRunning())
       occlusion_update_timer_.Stop();
+    if (virtual_desktop_update_timer_.IsRunning())
+      virtual_desktop_update_timer_.Stop();
   }
 }
 
@@ -470,17 +564,31 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // Post a task to the browser ui thread to update the window occlusion state
   // on the root windows.
   ui_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(update_occlusion_state_callback_,
-                                root_window_hwnds_occlusion_state_));
+      FROM_HERE,
+      base::BindOnce(update_occlusion_state_callback_,
+                     root_window_hwnds_occlusion_state_, showing_thumbnails_));
+}
+
+void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
+    ComputeVirtualDesktopUsed() {
+  UINT count = 0;
+  if (SUCCEEDED(virtual_desktop_manager_internal_->GetCount(&count)))
+    virtual_desktops_used_ = count > 1;
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     ScheduleOcclusionCalculationIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!occlusion_update_timer_.IsRunning())
+  if (!occlusion_update_timer_.IsRunning()) {
     occlusion_update_timer_.Start(
         FROM_HERE, kUpdateOcclusionDelay, this,
         &WindowOcclusionCalculator::ComputeNativeWindowOcclusionStatus);
+    if (virtual_desktop_manager_internal_) {
+      virtual_desktop_update_timer_.Start(
+          FROM_HERE, kUpdateVirtualDesktopDelay, this,
+          &WindowOcclusionCalculator::ComputeVirtualDesktopUsed);
+    }
+  }
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -516,9 +624,17 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // Detects foreground window changing.
   RegisterGlobalEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND);
 
+  // Detects objects getting shown and hidden. Used to know when the task bar
+  // and alt tab are showing preview windows so we can unocclude Chrome windows.
+  RegisterGlobalEventHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE);
+
   // Detects object state changes, e.g., enable/disable state, native window
   // maximize and native window restore events.
   RegisterGlobalEventHook(EVENT_OBJECT_STATECHANGE, EVENT_OBJECT_STATECHANGE);
+
+  // Cloaking and uncloaking of windows should trigger an occlusion calculation.
+  // In particular, switching virtual desktops seems to generate these events.
+  RegisterGlobalEventHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED);
 
   // Determine which subset of processes to set EVENT_OBJECT_LOCATIONCHANGE on
   // because otherwise event throughput is very high, as it generates events
@@ -623,6 +739,38 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   if (id_object != OBJID_WINDOW)
     return;
 
+  // Detect if either the alt tab view or the task list thumbnail is being
+  // shown. If so, mark all non-hidden windows as occluded, and remember that
+  // we're in the showing_thumbnails state. This lasts until we get told that
+  // either the alt tab view or task list thumbnail are hidden.
+  if (event == EVENT_OBJECT_SHOW) {
+    // Avoid getting the hwnd's class name, and recomputing occlusion, if not
+    // needed.
+    if (showing_thumbnails_)
+      return;
+    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
+    if ((hwnd_class_name == "MultitaskingViewFrame" ||
+         hwnd_class_name == "TaskListThumbnailWnd")) {
+      showing_thumbnails_ = true;
+      ui_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(update_occlusion_state_callback_,
+                                    root_window_hwnds_occlusion_state_,
+                                    showing_thumbnails_));
+      return;
+    }
+  } else if (event == EVENT_OBJECT_HIDE) {
+    // Avoid getting the hwnd's class name, and recomputing occlusion, if not
+    // needed.
+    if (!showing_thumbnails_)
+      return;
+    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
+    if (hwnd_class_name == "MultitaskingViewFrame" ||
+        hwnd_class_name == "TaskListThumbnailWnd") {
+      showing_thumbnails_ = false;
+      // Let occlusion calculation fix occlusion state.
+    }
+  }
+
   // Don't continually calculate occlusion while a window is moving, but rather
   // once at the beginning and once at the end.
   if (event == EVENT_SYSTEM_MOVESIZESTART) {
@@ -669,18 +817,18 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
         HWND hwnd,
         gfx::Rect* window_rect) {
   return IsWindowVisibleAndFullyOpaque(hwnd, window_rect) &&
-         (IsWindowOnCurrentVirtualDesktop(hwnd) != false);
+         (IsWindowOnCurrentVirtualDesktop(hwnd) == true);
 }
 
 base::Optional<bool> NativeWindowOcclusionTrackerWin::
     WindowOcclusionCalculator::IsWindowOnCurrentVirtualDesktop(HWND hwnd) {
-  if (virtual_desktop_manager_) {
-    BOOL on_current_desktop;
+  if (!virtual_desktop_manager_ || !virtual_desktops_used_)
+    return true;
 
-    if (SUCCEEDED(virtual_desktop_manager_->IsWindowOnCurrentVirtualDesktop(
-            hwnd, &on_current_desktop))) {
-      return on_current_desktop;
-    }
+  BOOL on_current_desktop;
+  if (SUCCEEDED(virtual_desktop_manager_->IsWindowOnCurrentVirtualDesktop(
+          hwnd, &on_current_desktop))) {
+    return on_current_desktop;
   }
   return base::nullopt;
 }

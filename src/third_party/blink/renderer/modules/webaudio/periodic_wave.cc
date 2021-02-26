@@ -29,13 +29,19 @@
 #include <algorithm>
 #include <memory>
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_periodic_wave_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
 #include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+
+#if defined(CPU_ARM_NEON)
+#include <arm_neon.h>
+#endif
 
 namespace blink {
 
@@ -62,6 +68,22 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
         "length of real array (" + String::Number(real.size()) +
             ") and length of imaginary array (" + String::Number(imag.size()) +
             ") must match.");
+    return nullptr;
+  }
+
+  if (real.size() < 2) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("length of the real array",
+                                                    real.size(), 2u));
+    return nullptr;
+  }
+
+  if (imag.size() < 2) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("length of the imag array",
+                                                    imag.size(), 2u));
     return nullptr;
   }
 
@@ -197,6 +219,149 @@ void PeriodicWave::WaveDataForFundamentalFrequency(
   // Ranges from 0 -> 1 to interpolate between lower -> higher.
   table_interpolation_factor = pitch_range - range_index1;
 }
+
+#if defined(ARCH_CPU_X86_FAMILY)
+void PeriodicWave::WaveDataForFundamentalFrequency(
+    const float fundamental_frequency[4],
+    float* lower_wave_data[4],
+    float* higher_wave_data[4],
+    float table_interpolation_factor[4]) {
+  // Negative frequencies are allowed, in which case we alias to the positive
+  // frequency.  SSE2 doesn't have an fabs instruction, so just remove the sign
+  // bit of the float numbers, effecitvely taking the absolute value.
+  const __m128 frequency =
+      _mm_and_ps(_mm_loadu_ps(fundamental_frequency),
+                 reinterpret_cast<__m128>(_mm_set1_epi32(0x7fffffff)));
+
+  // pos = 0xffffffff if freq > 0; otherwise 0
+  const __m128 pos = _mm_cmpgt_ps(frequency, _mm_set1_ps(0));
+
+  // Calculate the pitch range.
+  __m128 v_ratio =
+      _mm_div_ps(frequency, _mm_set1_ps(lowest_fundamental_frequency_));
+
+  // Set v_ratio to 0 if freq <= 0; otherwise keep the ratio.
+  v_ratio = _mm_and_ps(v_ratio, pos);
+
+  // If pos = 0, set value to 0.5 and 0 otherwise.  Or this into v_ratio so that
+  // v_ratio is 0.5 if freq <= 0.  Otherwise preserve v_ratio.
+  v_ratio = _mm_or_ps(v_ratio, _mm_andnot_ps(pos, _mm_set1_ps(0.5)));
+
+  const float* ratio = reinterpret_cast<float*>(&v_ratio);
+
+  float cents_above_lowest_frequency[4] __attribute__((aligned(16)));
+
+  for (int k = 0; k < 4; ++k) {
+    cents_above_lowest_frequency[k] = log2f(ratio[k]) * 1200;
+  }
+
+  __m128 v_pitch_range = _mm_add_ps(
+      _mm_set1_ps(1.0), _mm_div_ps(_mm_load_ps(cents_above_lowest_frequency),
+                                   _mm_set1_ps((cents_per_range_))));
+  v_pitch_range = _mm_max_ps(v_pitch_range, _mm_set1_ps(0.0));
+  v_pitch_range = _mm_min_ps(v_pitch_range, _mm_set1_ps(NumberOfRanges() - 1));
+
+  const __m128i v_index1 = _mm_cvttps_epi32(v_pitch_range);
+  __m128i v_index2 = _mm_add_epi32(v_index1, _mm_set1_epi32(1));
+
+  // SSE2 deosn't have _mm_min_epi32 (but SSE4.2 does).
+  //
+  // The following ought to work because the small integers for the index and
+  // number of ranges should look like tiny denormals that should compare in the
+  // same order as integers.  This doesn't work because we have flush-to-zero
+  // enabled.
+  //
+  //   __m128i v_range = _mm_set1_epi32(NumberOfRanges() - 1);
+  //  v_index2 = _mm_min_ps(v_index2, v_range);
+  //
+  // Instead we convert to float, take the min and convert back. No round off
+  // because the integers are small.
+  v_index2 = _mm_cvttps_epi32(
+      _mm_min_ps(_mm_cvtepi32_ps(v_index2), _mm_set1_ps(NumberOfRanges() - 1)));
+
+  const __m128 table_factor =
+      _mm_sub_ps(v_pitch_range, _mm_cvtepi32_ps(v_index1));
+  _mm_storeu_ps(table_interpolation_factor, table_factor);
+
+  const unsigned* range_index1 = reinterpret_cast<const unsigned*>(&v_index1);
+  const unsigned* range_index2 = reinterpret_cast<const unsigned*>(&v_index2);
+
+  for (int k = 0; k < 4; ++k) {
+    lower_wave_data[k] = band_limited_tables_[range_index2[k]]->Data();
+    higher_wave_data[k] = band_limited_tables_[range_index1[k]]->Data();
+  }
+}
+#elif defined(CPU_ARM_NEON)
+void PeriodicWave::WaveDataForFundamentalFrequency(
+    const float fundamental_frequency[4],
+    float* lower_wave_data[4],
+    float* higher_wave_data[4],
+    float table_interpolation_factor[4]) {
+  // Negative frequencies are allowed, in which case we alias to the positive
+  // frequency.
+  float32x4_t frequency = vabsq_f32(vld1q_f32(fundamental_frequency));
+
+  // pos = 0xffffffff if frequency > 0; otherwise 0.
+  uint32x4_t pos = vcgtq_f32(frequency, vdupq_n_f32(0));
+
+  // v_ratio = frequency / lowest_fundamental_frequency_.  But NEON
+  // doesn't have a division instruction, so multiply by reciprocal.
+  // (Aarch64 does, though).
+  float32x4_t v_ratio =
+      vmulq_f32(frequency, vdupq_n_f32(1 / lowest_fundamental_frequency_));
+
+  // Select v_ratio or 0.5 depending on whether pos is all ones or all
+  // zeroes.
+  v_ratio = vbslq_f32(pos, v_ratio, vdupq_n_f32(0.5));
+
+  float ratio[4] __attribute__((aligned(16)));
+  vst1q_f32(ratio, v_ratio);
+
+  float cents_above_lowest_frequency[4] __attribute__((aligned(16)));
+
+  for (int k = 0; k < 4; ++k) {
+    cents_above_lowest_frequency[k] = log2f(ratio[k]) * 1200;
+  }
+
+  float32x4_t v_pitch_range = vaddq_f32(
+      vdupq_n_f32(1.0), vmulq_f32(vld1q_f32(cents_above_lowest_frequency),
+                                  vdupq_n_f32(1 / cents_per_range_)));
+
+  v_pitch_range = vmaxq_f32(v_pitch_range, vdupq_n_f32(0));
+  v_pitch_range = vminq_f32(v_pitch_range, vdupq_n_f32(NumberOfRanges() - 1));
+
+  const uint32x4_t v_index1 = vcvtq_u32_f32(v_pitch_range);
+  uint32x4_t v_index2 = vaddq_u32(v_index1, vdupq_n_u32(1));
+  v_index2 = vminq_u32(v_index2, vdupq_n_u32(NumberOfRanges() - 1));
+
+  uint32_t range_index1[4] __attribute__((aligned(16)));
+  uint32_t range_index2[4] __attribute__((aligned(16)));
+
+  vst1q_u32(range_index1, v_index1);
+  vst1q_u32(range_index2, v_index2);
+
+  const float32x4_t table_factor =
+      vsubq_f32(v_pitch_range, vcvtq_f32_u32(v_index1));
+  vst1q_f32(table_interpolation_factor, table_factor);
+
+  for (int k = 0; k < 4; ++k) {
+    lower_wave_data[k] = band_limited_tables_[range_index2[k]]->Data();
+    higher_wave_data[k] = band_limited_tables_[range_index1[k]]->Data();
+  }
+}
+#else
+void PeriodicWave::WaveDataForFundamentalFrequency(
+    const float fundamental_frequency[4],
+    float* lower_wave_data[4],
+    float* higher_wave_data[4],
+    float table_interpolation_factor[4]) {
+  for (int k = 0; k < 4; ++k) {
+    WaveDataForFundamentalFrequency(fundamental_frequency[k],
+                                    lower_wave_data[k], higher_wave_data[k],
+                                    table_interpolation_factor[k]);
+  }
+}
+#endif
 
 unsigned PeriodicWave::NumberOfPartialsForRange(unsigned range_index) const {
   // Number of cents below nyquist where we cull partials.

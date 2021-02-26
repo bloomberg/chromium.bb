@@ -7,16 +7,11 @@
 #include <stddef.h>
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/bit_cast.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -67,17 +62,12 @@ HttpBridgeFactory::HttpBridgeFactory(
 
 HttpBridgeFactory::~HttpBridgeFactory() = default;
 
-HttpPostProviderInterface* HttpBridgeFactory::Create() {
+scoped_refptr<HttpPostProviderInterface> HttpBridgeFactory::Create() {
   DCHECK(url_loader_factory_);
 
-  scoped_refptr<HttpBridge> http = new HttpBridge(
+  scoped_refptr<HttpPostProviderInterface> http = new HttpBridge(
       user_agent_, url_loader_factory_->Clone(), network_time_update_callback_);
-  http->AddRef();
-  return http.get();
-}
-
-void HttpBridgeFactory::Destroy(HttpPostProviderInterface* http) {
-  static_cast<HttpBridge*>(http)->Release();
+  return http;
 }
 
 HttpBridge::URLFetchState::URLFetchState()
@@ -103,7 +93,7 @@ HttpBridge::HttpBridge(
                                      {base::MayBlock()})),
       network_time_update_callback_(network_time_update_callback) {}
 
-HttpBridge::~HttpBridge() {}
+HttpBridge::~HttpBridge() = default;
 
 void HttpBridge::SetExtraRequestHeaders(const char* headers) {
   DCHECK(extra_headers_.empty())
@@ -111,7 +101,7 @@ void HttpBridge::SetExtraRequestHeaders(const char* headers) {
   extra_headers_.assign(headers);
 }
 
-void HttpBridge::SetURL(const char* url, int port) {
+void HttpBridge::SetURL(const GURL& url) {
 #if DCHECK_IS_ON()
   DCHECK(thread_checker_.CalledOnValidThread());
   {
@@ -121,11 +111,7 @@ void HttpBridge::SetURL(const char* url, int port) {
   DCHECK(url_for_request_.is_empty())
       << "HttpBridge::SetURL called more than once?!";
 #endif
-  GURL temp(url);
-  GURL::Replacements replacements;
-  std::string port_str = base::NumberToString(port);
-  replacements.SetPort(port_str.c_str(), url::Component(0, port_str.length()));
-  url_for_request_ = temp.ReplaceComponents(replacements);
+  url_for_request_ = url;
 }
 
 void HttpBridge::SetPostPayload(const char* content_type,

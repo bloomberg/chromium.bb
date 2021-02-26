@@ -6,10 +6,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/render_frame_host.h"
@@ -112,8 +113,6 @@ class ServiceWorkerObjectHostTest : public testing::Test {
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    helper_->context()->storage()->LazyInitializeForTest();
-
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
     registration_ = CreateNewServiceWorkerRegistration(
@@ -213,6 +212,24 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     object_host->OnConnectionError();
   }
 
+  void CallOnConnectionErrorForRegistrationObjectHost(
+      ServiceWorkerContainerHost* container_host,
+      int64_t version_id,
+      int64_t registration_id) {
+    ServiceWorkerObjectHost* object_host =
+        GetServiceWorkerObjectHost(container_host, version_id);
+    ServiceWorkerRegistrationObjectHost* registration_object_host =
+        container_host->registration_object_hosts_[registration_id].get();
+    EXPECT_FALSE(object_host->version_->HasOneRef());
+
+    object_host->receivers_.Clear();
+    object_host->OnConnectionError();
+
+    EXPECT_TRUE(registration_object_host->registration_->HasOneRef());
+    registration_object_host->receivers_.Clear();
+    registration_object_host->OnConnectionError();
+  }
+
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -229,7 +246,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   SetUpRegistration(scope, script_url);
   registration_->SetInstallingVersion(version_);
 
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
@@ -282,7 +299,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // execution context (e.g., self.registration.active inside the active
   // worker and self.serviceWorker).
   ServiceWorkerContainerHost* container_host =
-      version_->provider_host()->container_host();
+      version_->worker_host()->container_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
@@ -379,7 +396,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(
           frame_host->GetProcess()->GetID(), true /* is_parent_frame_secure */,
@@ -436,7 +453,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnConnectionError) {
   // Set up the case where the last reference to the version is owned by the
   // service worker object host.
   ServiceWorkerContainerHost* container_host =
-      version_->provider_host()->container_host();
+      version_->worker_host()->container_host();
   ServiceWorkerVersion* version_rawptr = version_.get();
   version_ = nullptr;
   ASSERT_TRUE(version_rawptr->HasOneRef());
@@ -444,6 +461,40 @@ TEST_F(ServiceWorkerObjectHostTest, OnConnectionError) {
   // Simulate the connection error that induces the object host destruction.
   // This shouldn't crash.
   CallOnConnectionError(container_host, version_rawptr->version_id());
+  base::RunLoop().RunUntilIdle();
+}
+
+// This is a regression test for https://crbug.com/1135070
+TEST_F(ServiceWorkerObjectHostTest,
+       OnConnectionErrorForRegistrationObjectHost) {
+  const GURL scope("https://www.example.com/");
+  const GURL script_url("https://www.example.com/service_worker.js");
+  Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  SetUpRegistration(scope, script_url);
+
+  // Make sure ServiceWorkerRegistration holds a reference to
+  // ServiceWorkerVersion.
+  registration_->SetActiveVersion(version_);
+
+  // Create the provider host.
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StartServiceWorker(version_.get()));
+
+  // Set up the case where ServiceWorkerObjectHost and
+  // ServiceWorkerRegistration owned by ServiceWorkerRegistrationObjectHost
+  // hold the last two references to ServiceWorkerVersion.
+  ServiceWorkerContainerHost* container_host =
+      version_->worker_host()->container_host();
+  auto registration_id = registration_->id();
+  auto version_id = version_->version_id();
+  version_ = nullptr;
+  registration_ = nullptr;
+
+  // Simulate the connection error that induces the container host destruction
+  // from ServiceWorkerContainerHost::RemoveServiceWorkerRegistrationObjectHost.
+  // This shouldn't crash.
+  CallOnConnectionErrorForRegistrationObjectHost(container_host, version_id,
+                                                 registration_id);
   base::RunLoop().RunUntilIdle();
 }
 

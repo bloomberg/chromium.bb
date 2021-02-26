@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
 #include "content/public/test/browser_test.h"
@@ -38,6 +37,11 @@ class IgnorePaymentMethodTest : public PaymentRequestPlatformBrowserTestBase {
                               content::JsReplace(function_name, method_name_)));
   }
 
+  ServiceWorkerPaymentAppFinder* GetFinder() {
+    return ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
+        GetActiveWebContents()->GetMainFrame());
+  }
+
   std::string method_name_;
 };
 
@@ -46,8 +50,7 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest, InstalledPHCannotMakePayments) {
   NavigateTo("b.com", "/can_make_payment_checker.html");
   VerifyFunctionOutput("true", "canMakePayment($1)");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput("false", "canMakePayment($1)");
 }
@@ -58,8 +61,7 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest,
   NavigateTo("b.com", "/has_enrolled_instrument_checker.html");
   VerifyFunctionOutput("true", "hasEnrolledInstrument($1)");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput("false", "hasEnrolledInstrument($1)");
 }
@@ -69,8 +71,7 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest, InstalledPHCannotBeLaunched) {
   NavigateTo("b.com", "/payment_handler_status.html");
   VerifyFunctionOutput("success", "getStatus($1)");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput(
       "The payment method \"" + method_name_ + "\" is not supported.",
@@ -82,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest,
   NavigateTo("b.com", "/can_make_payment_checker.html");
   VerifyFunctionOutput("true", "canMakePayment($1)");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput("false", "canMakePayment($1)");
 }
@@ -91,19 +91,9 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest,
 IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest,
                        JITInstallablePHHasNoEnrolledInstruments) {
   NavigateTo("b.com", "/has_enrolled_instrument_checker.html");
-  VerifyFunctionOutput(
-#if defined(OS_ANDROID)
-      // TODO(crbug.com/994799#c2): Android should return "false" for
-      // hasEnrolledInstrument() of a JIT installable service worker payment
-      // handler.
-      "true",
-#else
-      "false",
-#endif
-      "hasEnrolledInstrument($1)");
+  VerifyFunctionOutput("false", "hasEnrolledInstrument($1)");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput("false", "hasEnrolledInstrument($1)");
 }
@@ -119,8 +109,7 @@ IN_PROC_BROWSER_TEST_F(
     JITInstallablePHCannotBeInstalledAndLaunchedWhenIgnored) {
   NavigateTo("b.com", "/payment_handler_status.html");
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(
-      method_name_);
+  GetFinder()->IgnorePaymentMethodForTest(method_name_);
 
   VerifyFunctionOutput(
       "The payment method \"" + method_name_ + "\" is not supported.",

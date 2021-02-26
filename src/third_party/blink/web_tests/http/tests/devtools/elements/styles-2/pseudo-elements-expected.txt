@@ -44,6 +44,20 @@ element.style { ()
 [$#inspected::marker$] { (<style>)
     content: "MARKER";
 
+[expanded] 
+[$::marker$] { (user agent stylesheet)
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    text-indent: 0px !important;
+    text-align: start !important;
+    text-align-last: start !important;
+
+======== Pseudo ::target-text element ========
+[expanded] 
+#inspected::target-text { (<style>)
+    color: green;
+
 
 Running: dumpBeforeStyles
 [expanded] 
@@ -61,6 +75,15 @@ Running: dumpMarkerStyles
 [expanded] 
 [$#inspected::marker$] { (<style>)
     content: "MARKER";
+
+[expanded] 
+[$::marker$] { (user agent stylesheet)
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    text-indent: 0px !important;
+    text-align: start !important;
+    text-align-last: start !important;
 
 
 Running: removeAfter

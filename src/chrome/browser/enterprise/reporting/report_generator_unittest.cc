@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/report_generator.h"
+#include "components/enterprise/browser/reporting/report_generator.h"
 
 #include <set>
 
@@ -10,15 +10,17 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise/reporting/report_request_definition.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/enterprise/browser/reporting/report_request_definition.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_task_environment.h"
@@ -137,7 +139,8 @@ class ReportGeneratorTest : public ::testing::Test {
   using ReportRequest = definition::ReportRequest;
 
   ReportGeneratorTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : generator_(&delegate_factory_),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -196,12 +199,12 @@ class ReportGeneratorTest : public ::testing::Test {
   }
 
   std::vector<std::unique_ptr<ReportRequest>> GenerateRequests(
-      bool with_profiles) {
+      ReportType report_type) {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     base::RunLoop run_loop;
     std::vector<std::unique_ptr<ReportRequest>> rets;
     generator_.Generate(
-        with_profiles,
+        report_type,
         base::BindLambdaForTesting(
             [&run_loop, &rets](ReportGenerator::ReportRequests requests) {
               while (!requests.empty()) {
@@ -211,7 +214,7 @@ class ReportGeneratorTest : public ::testing::Test {
               run_loop.Quit();
             }));
     run_loop.Run();
-    if (with_profiles)
+    if (report_type == kFull)
       VerifyMetrics(rets);  // Only generated for reports with profiles.
     return rets;
   }
@@ -277,6 +280,7 @@ class ReportGeneratorTest : public ::testing::Test {
         .AsUTF8Unsafe();
   }
 
+  ReportingDelegateFactoryDesktop delegate_factory_;
   ReportGenerator generator_;
 
   content::BrowserTaskEnvironment task_environment_;
@@ -290,7 +294,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   auto profile_names = CreateProfiles(/*number*/ 2, kIdle);
   CreatePlugin();
 
-  auto requests = GenerateRequests(/*with_profiles=*/true);
+  auto requests = GenerateRequests(ReportType::kFull);
   EXPECT_EQ(1u, requests.size());
 
   auto* basic_request = requests[0].get();
@@ -301,6 +305,9 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
+  EXPECT_EQ(
+      policy::GetBrowserDeviceIdentifier()->SerializePartialAsString(),
+      basic_request->browser_device_identifier().SerializePartialAsString());
 
   EXPECT_TRUE(basic_request->has_os_report());
   auto& os_report = basic_request->os_report();
@@ -308,6 +315,8 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), os_report.arch());
   EXPECT_NE(std::string(), os_report.version());
 #endif
+
+  EXPECT_EQ(0, basic_request->partial_report_types_size());
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
@@ -340,7 +349,7 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
   auto profile_names = CreateProfiles(/*number*/ 2, kActive);
   CreatePlugin();
 
-  auto requests = GenerateRequests(/*with_profiles=*/false);
+  auto requests = GenerateRequests(ReportType::kBrowserVersion);
   EXPECT_EQ(1u, requests.size());
 
   auto* basic_request = requests[0].get();
@@ -386,6 +395,30 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
                       profile_names, browser_report);
 }
 
+TEST_F(ReportGeneratorTest, ExtensionRequestOnly) {
+  auto profile_names = CreateProfiles(/*number*/ 2, kActive);
+  CreatePlugin();
+
+  auto requests = GenerateRequests(ReportType::kExtensionRequest);
+  EXPECT_EQ(1u, requests.size());
+
+  auto* basic_request = requests[0].get();
+
+#if !defined(OS_CHROMEOS)
+  EXPECT_FALSE(basic_request->has_computer_name());
+  EXPECT_FALSE(basic_request->has_os_user_name());
+  EXPECT_FALSE(basic_request->has_os_report());
+  EXPECT_FALSE(basic_request->has_serial_number());
+#else
+  EXPECT_EQ(0, basic_request->android_app_infos_size());
+#endif
+  EXPECT_TRUE(basic_request->has_browser_report());
+
+  EXPECT_EQ(1, basic_request->partial_report_types_size());
+  EXPECT_EQ(em::PartialReportType::EXTENSION_REQUEST,
+            basic_request->partial_report_types(0));
+}
+
 #if defined(OS_CHROMEOS)
 
 TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
@@ -403,7 +436,7 @@ TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
 
   // Verify the Arc application information in the report is same as the test
   // data.
-  auto requests = GenerateRequests(/*with_profiles=*/true);
+  auto requests = GenerateRequests(ReportType::kFull);
   EXPECT_EQ(1u, requests.size());
 
   ReportRequest* request = requests.front().get();
@@ -415,7 +448,7 @@ TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
 
   // Generate the Arc application information again and make sure the report
   // remains the same.
-  requests = GenerateRequests(/*with_profiles=*/true);
+  requests = GenerateRequests(ReportType::kFull);
   EXPECT_EQ(1u, requests.size());
 
   request = requests.front().get();
@@ -444,7 +477,7 @@ TEST_F(ReportGeneratorTest, ArcPlayStoreDisabled) {
   // No Arc application information is reported after the Arc Play Store
   // support for given profile is disabled.
   primary_profile.GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
-  auto requests = GenerateRequests(/*with_profiles=*/true);
+  auto requests = GenerateRequests(ReportType::kFull);
   EXPECT_EQ(1u, requests.size());
 
   ReportRequest* request = requests.front().get();

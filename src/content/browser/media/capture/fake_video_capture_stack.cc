@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "content/browser/media/capture/frame_test_util.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"
@@ -66,7 +66,7 @@ class FakeVideoCaptureStack::Receiver : public media::VideoFrameReceiver {
         const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
         mapping.size(), frame_info->timestamp);
     CHECK(frame);
-    frame->metadata()->MergeInternalValuesFrom(frame_info->metadata);
+    frame->set_metadata(frame_info->metadata);
     if (frame_info->color_space.has_value())
       frame->set_color_space(frame_info->color_space.value());
     // This destruction observer will unmap the shared memory when the

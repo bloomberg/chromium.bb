@@ -8,12 +8,11 @@
 #include <vector>
 
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 
 namespace base {
 class FilePath;
 }
-
-struct WebApplicationShortcutInfo;
 
 namespace web_app {
 
@@ -24,14 +23,16 @@ bool ShouldRegisterShortcutsMenuWithOs();
 
 // Does an OS specific registration of a Shortcuts Menu for the web app's icon.
 void RegisterShortcutsMenuWithOs(
-    const base::FilePath& shortcut_data_dir,
     const AppId& app_id,
     const base::FilePath& profile_path,
-    const std::vector<WebApplicationShortcutInfo>& shortcuts);
+    const base::FilePath& shortcut_data_dir,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>&
+        shortcuts_menu_item_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps);
 
 // Deletes the ShortcutsMenu from the OS. This should be called during the
-// uninstallation process.
-void UnregisterShortcutsMenuWithOs(const AppId& app_id,
+// uninstallation process. Returns true on successful deletion.
+bool UnregisterShortcutsMenuWithOs(const AppId& app_id,
                                    const base::FilePath& profile_path);
 
 }  // namespace web_app

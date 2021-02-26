@@ -55,7 +55,8 @@ public class AccountPickerDialogFragment extends DialogFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mCoordinator = new AccountPickerCoordinator(recyclerView,
                 (AccountPickerCoordinator.Listener) getTargetFragment(),
-                getArguments().getString(ARGUMENT_SELECTED_ACCOUNT_NAME));
+                getArguments().getString(ARGUMENT_SELECTED_ACCOUNT_NAME),
+                /* showIncognitoRow= */ false);
         return builder.setTitle(R.string.signin_account_picker_dialog_title)
                 .setView(recyclerView)
                 .create();

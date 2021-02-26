@@ -20,17 +20,6 @@ class Cryptographer;
 class KeystoreKeysHandler;
 enum class PassphraseType;
 
-// Reasons due to which Cryptographer might require a passphrase.
-enum PassphraseRequiredReason {
-  REASON_ENCRYPTION = 1,               // The cryptographer requires a
-                                       // passphrase for its first attempt at
-                                       // encryption. Happens only during
-                                       // migration or upgrade.
-  REASON_DECRYPTION = 2,               // The cryptographer requires a
-                                       // passphrase for its first attempt at
-                                       // decryption.
-};
-
 // Enum used to distinguish which bootstrap encryption token is being updated.
 enum BootstrapTokenType {
   PASSPHRASE_BOOTSTRAP_TOKEN,
@@ -55,20 +44,13 @@ class SyncEncryptionHandler {
     Observer() = default;
     virtual ~Observer() = default;
 
-    // Called when user interaction is required to obtain a valid passphrase.
-    // - If the passphrase is required for encryption, |reason| will be
-    //   REASON_ENCRYPTION.
-    // - If the passphrase is required for the decryption of data that has
-    //   already been encrypted, |reason| will be REASON_DECRYPTION.
-    // - If the passphrase is required because decryption failed, and a new
-    //   passphrase is required, |reason| will be REASON_SET_PASSPHRASE_FAILED.
-    //
+    // Called when user interaction is required to obtain a valid passphrase for
+    // decryption.
     // |key_derivation_params| are the parameters that should be used to obtain
     // the key from the passphrase.
     // |pending_keys| is a copy of the cryptographer's pending keys, that may be
     // cached by the frontend for subsequent use by the UI.
     virtual void OnPassphraseRequired(
-        PassphraseRequiredReason reason,
         const KeyDerivationParams& key_derivation_params,
         const sync_pb::EncryptedData& pending_keys) = 0;
 
@@ -98,9 +80,8 @@ class SyncEncryptionHandler {
                                          BootstrapTokenType type) = 0;
 
     // Called when the set of encrypted types or the encrypt
-    // everything flag has been changed.  Note that encryption isn't
-    // complete until the OnEncryptionComplete() notification has been
-    // sent (see below).
+    // everything flag has been changed. Note that this doesn't imply the
+    // encryption is complete.
     //
     // |encrypted_types| will always be a superset of
     // AlwaysEncryptedUserTypes().  If |encrypt_everything| is
@@ -111,10 +92,6 @@ class SyncEncryptionHandler {
     // encrypt everything flag is false.
     virtual void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                          bool encrypt_everything) = 0;
-
-    // Called after we finish encrypting the current set of encrypted
-    // types.
-    virtual void OnEncryptionComplete() = 0;
 
     // The cryptographer has been updated and/or the presence of pending keys
     // changed.
@@ -127,12 +104,6 @@ class SyncEncryptionHandler {
     // recording the time).
     virtual void OnPassphraseTypeChanged(PassphraseType type,
                                          base::Time passphrase_time) = 0;
-
-    // The user has set a passphrase using this device.
-    // TODO(treib): This method is only overridden in tests which use it to
-    // capture the Nigori state; we should find a better way to do that.
-    virtual void OnLocalSetPassphraseEncryption(
-        const sync_pb::NigoriSpecifics& specifics) {}
   };
 
   SyncEncryptionHandler() = default;
@@ -174,13 +145,6 @@ class SyncEncryptionHandler {
   // successfully decrypted pending keys.
   virtual void AddTrustedVaultDecryptionKeys(
       const std::vector<std::vector<uint8_t>>& keys) = 0;
-
-  // Enables encryption of all datatypes.
-  virtual void EnableEncryptEverything() = 0;
-
-  // Whether encryption of all datatypes is enabled. If false, only sensitive
-  // types are encrypted.
-  virtual bool IsEncryptEverythingEnabled() const = 0;
 
   // Returns the time when Nigori was migrated to keystore or when it was
   // initialized in case it happens after migration was introduced. Returns

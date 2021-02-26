@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/phonehub/notification_access_manager.h"
+#include "chromeos/components/phonehub/notification_access_setup_operation.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -24,6 +26,10 @@ class DictionaryValue;
 
 namespace chromeos {
 
+namespace phonehub {
+class NotificationAccessManager;
+}  // namespace phonehub
+
 namespace settings {
 
 // Chrome "Multidevice" (a.k.a. "Connected Devices") settings page UI handler.
@@ -31,11 +37,14 @@ class MultideviceHandler
     : public ::settings::SettingsPageUIHandler,
       public multidevice_setup::MultiDeviceSetupClient::Observer,
       public multidevice_setup::AndroidSmsPairingStateTracker::Observer,
-      public android_sms::AndroidSmsAppManager::Observer {
+      public android_sms::AndroidSmsAppManager::Observer,
+      public phonehub::NotificationAccessManager::Observer,
+      public phonehub::NotificationAccessSetupOperation::Delegate {
  public:
   MultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      phonehub::NotificationAccessManager* notification_access_manager,
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
       android_sms::AndroidSmsAppManager* android_sms_app_manager);
@@ -58,6 +67,13 @@ class MultideviceHandler
       const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
           feature_states_map) override;
 
+  // NotificationAccessSetupOperation::Delegate:
+  void OnStatusChange(
+      phonehub::NotificationAccessSetupOperation::Status new_status) override;
+
+  // phonehub::NotificationAccessManager::Observer:
+  void OnNotificationAccessChanged() override;
+
   // multidevice_setup::AndroidSmsPairingStateTracker::Observer:
   void OnPairingStateChanged() override;
 
@@ -78,6 +94,8 @@ class MultideviceHandler
   void HandleSetSmartLockSignInEnabled(const base::ListValue* args);
   void HandleGetSmartLockSignInAllowed(const base::ListValue* args);
   void HandleGetAndroidSmsInfo(const base::ListValue* args);
+  void HandleAttemptNotificationSetup(const base::ListValue* args);
+  void HandleCancelNotificationSetup(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
@@ -110,6 +128,11 @@ class MultideviceHandler
   GetFeatureStatesMap();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+
+  phonehub::NotificationAccessManager* notification_access_manager_;
+  std::unique_ptr<phonehub::NotificationAccessSetupOperation>
+      notification_access_operation_;
+
   multidevice_setup::AndroidSmsPairingStateTracker*
       android_sms_pairing_state_tracker_;
   android_sms::AndroidSmsAppManager* android_sms_app_manager_;
@@ -123,6 +146,9 @@ class MultideviceHandler
   ScopedObserver<android_sms::AndroidSmsAppManager,
                  android_sms::AndroidSmsAppManager::Observer>
       android_sms_app_manager_observer_;
+  ScopedObserver<phonehub::NotificationAccessManager,
+                 phonehub::NotificationAccessManager::Observer>
+      notification_access_manager_observer_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_{this};

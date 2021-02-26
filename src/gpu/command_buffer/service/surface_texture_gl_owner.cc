@@ -72,16 +72,6 @@ void SurfaceTextureGLOwner::EnsureTexImageBound() {
   NOTREACHED();
 }
 
-void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // If we don't have a SurfaceTexture, then the matrix doesn't matter.  We
-  // still initialize it for good measure.
-  if (surface_texture_)
-    surface_texture_->GetTransformMatrix(mtx);
-  else
-    memset(mtx, 0, sizeof(mtx[0]) * 16);
-}
-
 void SurfaceTextureGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (surface_texture_)
@@ -104,12 +94,7 @@ SurfaceTextureGLOwner::GetAHardwareBuffer() {
   return nullptr;
 }
 
-gfx::Rect SurfaceTextureGLOwner::GetCropRect() {
-  NOTREACHED() << "Don't use GetCropRect with SurfaceTextureGLOwner";
-  return gfx::Rect();
-}
-
-void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
+bool SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
     gfx::Size rotated_visible_size,
     gfx::Size* coded_size,
     gfx::Rect* visible_rect) {
@@ -119,7 +104,7 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
   if (!surface_texture_) {
     *visible_rect = gfx::Rect();
     *coded_size = gfx::Size();
-    return;
+    return false;
   }
 
   float mtx[16];
@@ -154,6 +139,8 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
 
     base::debug::DumpWithoutCrashing();
   }
+
+  return true;
 }
 
 // static

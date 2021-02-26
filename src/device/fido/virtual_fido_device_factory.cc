@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -80,13 +80,17 @@ VirtualFidoDevice::State* VirtualFidoDeviceFactory::mutable_state() {
   return state_.get();
 }
 
-std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::Create(
-    FidoTransportProtocol transport) {
+std::vector<std::unique_ptr<FidoDiscoveryBase>>
+VirtualFidoDeviceFactory::Create(FidoTransportProtocol transport) {
   if (transport != transport_) {
-    return nullptr;
+    return {};
   }
-  return std::make_unique<VirtualFidoDeviceDiscovery>(
-      transport_, state_, supported_protocol_, ctap2_config_);
+  return SingleDiscovery(std::make_unique<VirtualFidoDeviceDiscovery>(
+      transport_, state_, supported_protocol_, ctap2_config_));
+}
+
+bool VirtualFidoDeviceFactory::IsTestOverride() {
+  return true;
 }
 
 }  // namespace test

@@ -15,23 +15,21 @@
 @implementation ChromeIdentityInteractionManager
 @synthesize delegate = _delegate;
 
-- (BOOL)isCanceling {
-  return NO;
-}
-
-- (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                    completion:
+                                        (SigninCompletionCallback)completion {
   NOTREACHED() << "Subclasses must override this";
-  completion(nil, nil);
 }
 
-- (void)reauthenticateUserWithID:(NSString*)userID
-                           email:(NSString*)userEmail
-                      completion:(SigninCompletionCallback)completion {
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                     userEmail:(NSString*)userEmail
+                                    completion:
+                                        (SigninCompletionCallback)completion {
   NOTREACHED() << "Subclasses must override this";
-  completion(nil, nil);
 }
 
-- (void)cancelAndDismissAnimated:(BOOL)animated {
+- (void)cancelAddAccountWithAnimation:(BOOL)animated
+                           completion:(void (^)(void))completion {
   NOTREACHED() << "Subclasses must override this";
 }
 

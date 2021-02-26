@@ -4,10 +4,18 @@
 
 assert(!is_ios)
 
+import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/jumbo.gni")
 import("//testing/test.gni")
+import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/config.gni")
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  header_dir = "third_party/blink/renderer/platform/wtf"
+
+  flags = [ "USE_V8_OILPAN=$enable_blink_heap_use_v8_oilpan" ]
+}
 
 visibility = [
   ":*",
@@ -33,7 +41,9 @@ config("wtf_config") {
   }
 }
 
-jumbo_component("wtf") {
+component("wtf") {
+  configs += [ "//build/config/compiler:noshadowing" ]
+
   sources = [
     "allocator/allocator.cc",
     "allocator/allocator.h",
@@ -109,6 +119,7 @@ jumbo_component("wtf") {
     "text/case_map.cc",
     "text/case_map.h",
     "text/character_names.h",
+    "text/character_visitor.h",
     "text/integer_to_string_conversion.h",
     "text/line_ending.cc",
     "text/line_ending.h",
@@ -125,8 +136,6 @@ jumbo_component("wtf") {
     "text/string_hasher.h",
     "text/string_impl.cc",
     "text/string_impl.h",
-    "text/string_impl_mac.mm",
-    "text/string_mac.mm",
     "text/string_operators.h",
     "text/string_statics.cc",
     "text/string_statics.h",
@@ -172,8 +181,6 @@ jumbo_component("wtf") {
     "threading.cc",
     "threading.h",
     "threading_primitives.h",
-    "threading_pthreads.cc",
-    "threading_win.cc",
     "tree_node.h",
     "type_traits.h",
     "uuid.cc",
@@ -203,29 +210,50 @@ jumbo_component("wtf") {
     "//third_party/blink/renderer:features",
   ]
 
+  deps = [
+    ":buildflags",
+
+    # TODO(tkent): WTF should not depend on it.
+    "//third_party/blink/public/common:headers",
+  ]
+
   public_deps = [
     "//base",
     "//base/third_party/double_conversion",
+    "//components/crash/core/common:crash_key",
     "//third_party/icu",
   ]
+
+  if (enable_blink_heap_use_v8_oilpan) {
+    public_deps += [ "//v8:cppgc_headers" ]
+  }
 
   # Rules changing the |sources| list are temporarily commented out, until
   # those files are actually moved to here.
 
+  if (is_mac) {
+    sources += [
+      "text/string_impl_mac.mm",
+      "text/string_mac.mm",
+    ]
+  }
+
   if (is_win) {
-    sources -= [ "threading_pthreads.cc" ]
+    sources += [ "threading_win.cc" ]
 
     cflags = [ "/wd4068" ]  # Unknown pragma.
 
     # Inject Visual Studio debug visualizers for our types into all targets
     # that reference this.
-    all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
+    all_dependent_configs = [ "//tools/win/DebugVisualizers:blink" ]
     inputs = [
-      # webkit.natvis listed as an input here instead of in
-      # //tools/win/DebugVisualizers:webkit to prevent unnecessary size increase
+      # blink.natvis listed as an input here instead of in
+      # //tools/win/DebugVisualizers:blink to prevent unnecessary size increase
       # in generated build files.
-      "//tools/win/DebugVisualizers/webkit.natvis",
+      "//tools/win/DebugVisualizers/blink.natvis",
     ]
+  } else {
+    sources += [ "threading_pthreads.cc" ]
   }
 
   if (is_android) {
@@ -233,7 +261,7 @@ jumbo_component("wtf") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "Foundation.framework",
     ]
@@ -241,9 +269,8 @@ jumbo_component("wtf") {
     sources -= [ "text/atomic_string_cf.cc" ]
   }
 
-  if (!is_debug && !optimize_for_size) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
+  if (using_mismatched_sample_profile) {
+    configs -= [ "//build/config/compiler:afdo_optimize_size" ]
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]
@@ -254,7 +281,7 @@ test("wtf_unittests") {
   deps = [ ":wtf_unittests_sources" ]
 }
 
-jumbo_source_set("wtf_unittests_sources") {
+source_set("wtf_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true
@@ -287,6 +314,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "scoped_logger_test.cc",
     "shared_buffer_test.cc",
     "testing/run_all_tests.cc",
+    "text/atomic_string_table_test.cc",
     "text/atomic_string_test.cc",
     "text/case_map_test.cc",
     "text/integer_to_string_conversion_test.cc",

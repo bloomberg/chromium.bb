@@ -5,10 +5,10 @@
 #include "cast/standalone_sender/simulated_capturer.h"
 
 #include <algorithm>
-#include <chrono>  // NOLINT
-#include <ratio>   // NOLINT
+#include <chrono>
+#include <ratio>
 #include <sstream>
-#include <thread>  // NOLINT
+#include <thread>
 
 #include "cast/streaming/environment.h"
 #include "util/osp_logging.h"

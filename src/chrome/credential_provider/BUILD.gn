@@ -17,6 +17,7 @@ action("gcp_installer") {
 
   deps = [
     "//chrome/credential_provider/eventlog:gcp_eventlog_provider",
+    "//chrome/credential_provider/extension:gcpw_extension",
     "//chrome/credential_provider/gaiacp:gaia1_0",
     "//chrome/credential_provider/setup:gcp_setup",
     "//chrome/credential_provider/setup:gcp_sfx",

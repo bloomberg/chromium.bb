@@ -26,7 +26,6 @@ class MODULES_EXPORT WakeLockSentinel final
       public ActiveScriptWrappable<WakeLockSentinel>,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WakeLockSentinel);
 
  public:
   WakeLockSentinel(ScriptState* script_state,
@@ -37,12 +36,13 @@ class MODULES_EXPORT WakeLockSentinel final
   // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(release, kRelease)
   ScriptPromise release(ScriptState*);
+  bool released() const;
   String type() const;
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
@@ -61,7 +61,10 @@ class MODULES_EXPORT WakeLockSentinel final
   // where |script_state_|'s context is no longer valid.
   void DoRelease();
 
+  void DispatchReleaseEvent();
+
   Member<WakeLockManager> manager_;
+  bool released_ = false;
   const WakeLockType type_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockSentinelTest, MultipleReleaseCalls);

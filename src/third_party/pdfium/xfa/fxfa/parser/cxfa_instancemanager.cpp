@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_instancemanager.h"
 
 #include "fxjs/xfa/cjx_instancemanager.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -30,6 +30,8 @@ CXFA_InstanceManager::CXFA_InstanceManager(CXFA_Document* doc,
                 XFA_Element::InstanceManager,
                 kInstanceManagerPropertyData,
                 kInstanceManagerAttributeData,
-                pdfium::MakeUnique<CJX_InstanceManager>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_InstanceManager>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_InstanceManager::~CXFA_InstanceManager() = default;

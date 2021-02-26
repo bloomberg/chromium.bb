@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <utility>
 
 #include "cast/sender/public/cast_media_source.h"
 #include "util/osp_logging.h"
@@ -47,7 +48,7 @@ CastAppDiscoveryServiceImpl::StartObservingAvailability(
   }
 
   auto& callbacks = avail_queries_[source_id];
-  uint32_t query_id = GetNextAvailabilityQueryId();
+  uint32_t query_id = next_avail_query_id_++;
   callbacks.push_back({query_id, std::move(callback)});
   if (callbacks.size() == 1) {
     // NOTE: Even though we retain availability results for an app unregistered
@@ -62,7 +63,7 @@ CastAppDiscoveryServiceImpl::StartObservingAvailability(
     }
   }
 
-  return MakeSubscription(this, query_id);
+  return Subscription(this, query_id);
 }
 
 void CastAppDiscoveryServiceImpl::Refresh() {
@@ -174,16 +175,6 @@ bool CastAppDiscoveryServiceImpl::ShouldRefreshAppAvailability(
 
   OSP_NOTREACHED();
   return false;
-}
-
-uint32_t CastAppDiscoveryServiceImpl::GetNextAvailabilityQueryId() {
-  if (free_query_ids_.empty()) {
-    return next_avail_query_id_++;
-  } else {
-    uint32_t id = free_query_ids_.back();
-    free_query_ids_.pop_back();
-    return id;
-  }
 }
 
 void CastAppDiscoveryServiceImpl::RemoveAvailabilityCallback(uint32_t id) {

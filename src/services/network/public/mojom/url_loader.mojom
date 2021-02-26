@@ -5,10 +5,10 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
-import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/client_security_state.mojom";
 import "services/network/public/mojom/cors.mojom";
 import "services/network/public/mojom/cookie_access_observer.mojom";
 import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
@@ -42,7 +42,7 @@ enum RequestPriority {
   kHighest
 };
 
-// This enum corresponds to net::URLRequest::ReferrerPolicy. See its comments.
+// This enum corresponds to net::ReferrerPolicy. See its comments.
 enum URLRequestReferrerPolicy {
   kClearReferrerOnTransitionFromSecureToInsecure,
   kReduceReferrerGranularityOnTransitionCrossOrigin,
@@ -59,17 +59,13 @@ enum URLRequestReferrerPolicy {
 enum DataElementType {
   kUnknown = -1,
 
-  // Only used for Upload with Network Service as of now:
   kDataPipe,
   kChunkedDataPipe,
-  kRawFile,
-
-  // Used for Upload when Network Service is disabled:
-  kBlob,
-  kFile,
-
-  // Commonly used in every case:
+  kReadOnceStream,
   kBytes,
+
+  // TODO(https://crbug.com/1132362):  Remove this.
+  kFile,
 };
 
 // Options that may only be set on URLRequests passed to a URLLoaderFactory
@@ -90,7 +86,15 @@ struct TrustedUrlRequestParams {
   // Observer which should be notified when this URLRequest reads or writes
   // a cookie. If this is set to non-null, the observer passed to
   // URLLoaderFactory will be ignored.
-  CookieAccessObserver? cookie_observer;
+  pending_remote<CookieAccessObserver>? cookie_observer;
+
+  // Specifies the security state of the client, for cases when the
+  // URLLoaderFactory is shared among multiple clients.
+  //
+  // This field is only used if no ClientSecurityState was specified in the
+  // URLLoaderFactoryParams passed to the factory. Otherwise, the value from
+  // the factory params is used unconditionally.
+  ClientSecurityState? client_security_state;
 };
 
 // Typemapped to network::ResourceRequest.
@@ -130,27 +134,35 @@ struct URLRequest {
 
   // |request_initiator| indicates the origin initiating the resource request.
   //
-  // |request_initiator| is null for browser-initiated requests (e.g.
-  // navigations initiated via omnibox or bookmarks, internal subresource
-  // requests like fetching the SafeBrowsing data, etc.).
-  //
   // For all requests initiated via web (both subresource requests and
-  // navigations), |request_initiator| is always set to the origin of the frame
-  // that has initiated the request.  This is true even if the request might
-  // have been initiated by an isolated world (e.g. from a content script of an
-  // extension, with its own, separate origin).  This needs to be true even if
-  // the request might be "proxied" in the browser process on behalf of a web
-  // origin (e.g. as is the case for PaymentRequest API).
+  // navigations), |request_initiator| should always be set to the origin of
+  // the frame (or worker) that has initiated the request.  This is true even
+  // if the request might have been initiated by an isolated world (e.g. from a
+  // content script of an extension, with its own, separate origin).  This
+  // needs to be true even if the request might be "proxied" in the browser
+  // process on behalf of a web origin (e.g. as is the case for PaymentRequest
+  // API).
   //
-  // |request_initiator| is consulted in a variety of security features,
-  // including: calculating Sec-Fetch-Site request header, determining if the
-  // request should be subject to CORS, determining if CORB and/or CORP should
-  // block the response, determining if SameSite=strict cookies should be sent,
-  // etc.
+  // |request_initiator| should be omitted (i.e. set to base::nullopt) for
+  // browser-initiated requests (e.g. navigations initiated via omnibox or
+  // bookmarks, internal subresource requests like fetching the SafeBrowsing
+  // data, etc.).  Various security features may treat browser-initiated
+  // requests in a special way - for example in such requests 1) the special
+  // `Sec-Fetch-Site: none` request header is sent, 2) http responses are not
+  // blocked based on their Cross-Origin-Resource-Policy header, etc.
+  //
+  // SECURITY NOTE: Factories with |process_id| set to |kBrowserProcessId| do
+  // not enforce |request_initiator_origin_lock| and instead rely on the
+  // factory user to ensure that a valid, non-nullopt |request_initiator| is
+  // provided.  Failure to provide a correct, verified |request_initiator| may
+  // lead to bypasses of CORS, CORB, SameSite cookies and other HTTP security
+  // features.  An untrustworthy process (e.g. a renderer or a utility process)
+  // should not be able to trigger or influence requests with a base::nullopt
+  // |request_initiator|).
   //
   // See also:
   // - |isolated_world_origin|
-  // - URLLoaderFactoryParams::request_initiator_site_lock
+  // - URLLoaderFactoryParams::request_initiator_origin_lock
   url.mojom.Origin? request_initiator;
 
   // If this is a subresource request initiated from an isolated world (e.g.
@@ -355,7 +367,7 @@ struct URLRequest {
   // practical terms, it's empty for requests that didn't go through a service
   // worker, or if the original requestor is not a window. When the request
   // goes through a service worker, the id is
-  // ServiceWorkerProviderHost::fetch_request_window_id.
+  // ServiceWorkerContainerHost::fetch_request_window_id.
   mojo_base.mojom.UnguessableToken? fetch_window_id;
 
   // The ID that DevTools uses to track network requests. It is generated in the
@@ -363,11 +375,20 @@ struct URLRequest {
   // renderer.
   string? devtools_request_id;
 
+  // A V8 stack id string describing where the request was initiated. DevTools
+  // can use this to display the initiator call stack when debugging a process
+  // that later intercepts the request, e.g., in a service worker fetch event
+  // handler.
+  string? devtools_stack_id;
+
   // True for prefetch requests when SignedExchangePrefetchCacheForNavigations
   // feature is enabled by flags or SignedExchangeSubresourcePrefetch feature is
   // enabled by flags, or OriginTrial. TODO(horo): Remove this when these
   // features are enabled by default.
   bool is_signed_exchange_prefetch_cache_enabled;
+
+  // True for XHR, Fetch, and EventSource.
+  bool is_fetch_like_api;
 
   // If set, the network service will attempt to retrieve the appropriate origin
   // policy, if necessary, and attach it to the ResourceResponseHead.
@@ -402,6 +423,10 @@ struct URLRequestBody {
   // Indicates whether the post data contains sensitive information like
   // passwords.
   bool contains_sensitive_info;
+
+  // Indicates whether fetch upload streaming is allowed/rejected over H/1.
+  // Even if this is false but there is a QUIC/H2 stream, the upload is allowed.
+  bool allow_http1_for_streaming_upload;
 };
 
 // Represents part of an upload body. This could be either one of bytes, file or
@@ -411,14 +436,9 @@ struct DataElement {
   DataElementType type;
 
   // For kBytes.
-  array<uint8> buf;
-  // For kFile and kRawFile
+  mojo_base.mojom.BigBuffer buf;
+  // For kFile
   mojo_base.mojom.FilePath path;
-  // For kRawFile
-  mojo_base.mojom.File? file;
-  // For kBlob
-  // TODO(richard.li): Deprecate this once NetworkService is fully shipped.
-  string? blob_uuid;
   // For kDataPipe
   pending_remote<network.mojom.DataPipeGetter>? data_pipe_getter;
   // For kChunkedDataPipe
@@ -429,7 +449,13 @@ struct DataElement {
   mojo_base.mojom.Time expected_modification_time;
 };
 
+// URLLoader is an interface for performing a single request to a URL.
+//
 // Destroying a URLLoader will cancel the associated request.
+//
+// A URLLoader is normally created and started using
+// URLLoaderFactory::CreateLoaderAndStart(). The result of the load is
+// communicated to the URLLoaderClient provided to that function.
 interface URLLoader {
   // If a disconnection is initiated by the client side, it may send the
   // following disconnection reason, along with an application-defined string
@@ -480,6 +506,7 @@ interface URLLoader {
   ResumeReadingBodyFromNet();
 };
 
+// Receives messages from a single URLLoader.
 interface URLLoaderClient {
   // Called when the response head is received.
   OnReceiveResponse(URLResponseHead head);

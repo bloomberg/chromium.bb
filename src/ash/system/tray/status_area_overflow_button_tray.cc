@@ -35,7 +35,9 @@ StatusAreaOverflowButtonTray::IconView::IconView()
   layer()->SetFillsBoundsOpaquely(false);
 
   gfx::ImageSkia image = gfx::CreateVectorIcon(
-      kOverflowShelfRightIcon, ShelfConfig::Get()->shelf_icon_color());
+      kOverflowShelfRightIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary));
   SetImage(image);
 
   const int vertical_padding = (kTrayHeight - image.height()) / 2;
@@ -106,6 +108,8 @@ base::string16 StatusAreaOverflowButtonTray::GetAccessibleNameForTray() {
       state_ == CLICK_TO_COLLAPSE ? IDS_ASH_STATUS_AREA_OVERFLOW_BUTTON_COLLAPSE
                                   : IDS_ASH_STATUS_AREA_OVERFLOW_BUTTON_EXPAND);
 }
+
+void StatusAreaOverflowButtonTray::HandleLocaleChange() {}
 
 void StatusAreaOverflowButtonTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {}

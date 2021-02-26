@@ -7,7 +7,8 @@ package org.chromium.android_webview.test;
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.os.Looper;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -41,6 +42,13 @@ public class AwUncaughtExceptionTest {
         }
         @Override
         public boolean needsBrowserProcessStarted() {
+            return false;
+        }
+        @Override
+        public boolean needsAwContentsCleanup() {
+            // State of VM might be hosed after throwing and not catching exceptions.
+            // Do not assume it is safe to destroy AwContents by posting to the UI thread.
+            // Instead explicitly destroy any AwContents created in this test.
             return false;
         }
     };
@@ -178,6 +186,7 @@ public class AwUncaughtExceptionTest {
             mContentsClient = new TestAwContentsClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+                    mAwContents.destroyNatives();
                     throw new RuntimeException(msg);
                 }
             };

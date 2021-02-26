@@ -57,7 +57,9 @@ void PrivacyScreenToastController::ShowToast() {
   init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
-  toast_view_ = new PrivacyScreenToastView(this);
+  toast_view_ = new PrivacyScreenToastView(
+      this, base::BindRepeating(&PrivacyScreenToastController::ButtonPressed,
+                                base::Unretained(this)));
   bubble_view_->AddChildView(toast_view_);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
@@ -72,7 +74,7 @@ void PrivacyScreenToastController::ShowToast() {
       bubble_widget_->GetWindowBoundsInScreen().height());
 
   // Activate the bubble so ChromeVox can announce the toast.
-  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
+  if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
     bubble_widget_->widget_delegate()->SetCanActivate(true);
     bubble_widget_->Activate();
   }
@@ -123,7 +125,7 @@ void PrivacyScreenToastController::StartAutoCloseTimer() {
     return;
 
   int autoclose_delay = kTrayPopupAutoCloseDelayInSeconds;
-  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+  if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
     autoclose_delay = kTrayPopupAutoCloseDelayInSecondsWithSpokenFeedback;
 
   close_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(autoclose_delay),
@@ -143,11 +145,11 @@ void PrivacyScreenToastController::UpdateToastView() {
   }
 }
 
-void PrivacyScreenToastController::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
+void PrivacyScreenToastController::ButtonPressed() {
   auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
   privacy_screen_controller->SetEnabled(
-      !privacy_screen_controller->GetEnabled());
+      !privacy_screen_controller->GetEnabled(),
+      PrivacyScreenController::kToggleUISurfaceToastButton);
 }
 
 void PrivacyScreenToastController::StopAutocloseTimer() {

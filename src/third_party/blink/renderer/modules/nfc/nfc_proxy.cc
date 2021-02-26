@@ -41,7 +41,7 @@ NFCProxy::NFCProxy(LocalDOMWindow& window)
 
 NFCProxy::~NFCProxy() = default;
 
-void NFCProxy::Trace(Visitor* visitor) {
+void NFCProxy::Trace(Visitor* visitor) const {
   visitor->Trace(client_receiver_);
   visitor->Trace(writers_);
   visitor->Trace(readers_);
@@ -49,14 +49,13 @@ void NFCProxy::Trace(Visitor* visitor) {
 }
 
 void NFCProxy::StartReading(NDEFReader* reader,
-                            const NDEFScanOptions* options,
                             device::mojom::blink::NFC::WatchCallback callback) {
   DCHECK(reader);
   DCHECK(!readers_.Contains(reader));
 
   EnsureMojoConnection();
   nfc_remote_->Watch(
-      device::mojom::blink::NDEFScanOptions::From(options), next_watch_id_,
+      next_watch_id_,
       WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
                 WrapPersistent(reader), next_watch_id_, std::move(callback)));
   readers_.insert(reader, next_watch_id_);

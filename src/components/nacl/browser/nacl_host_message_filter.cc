@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/bad_message.h"
@@ -150,8 +149,8 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   // of the whitelisting parameters anyway.
   if (launch_params.process_type == kPNaClTranslatorProcessType) {
     uint32_t perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                        this, launch_params, reply_msg,
                        std::vector<NaClResourcePrefetchResult>(),
@@ -245,8 +244,8 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       break;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                      this, launch_params, reply_msg, prefetched_resource_files,
                      permissions, nonsfi_mode_allowed, map_url_callback));
@@ -312,10 +311,8 @@ void NaClHostMessageFilter::SyncReturnTemporaryFile(
 
 void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
-  pnacl::PnaclHost::GetInstance()->CreateTemporaryFile(
-      base::Bind(&NaClHostMessageFilter::SyncReturnTemporaryFile,
-                 this,
-                 reply_msg));
+  pnacl::PnaclHost::GetInstance()->CreateTemporaryFile(base::BindRepeating(
+      &NaClHostMessageFilter::SyncReturnTemporaryFile, this, reply_msg));
 }
 
 void NaClHostMessageFilter::AsyncReturnTemporaryFile(
@@ -348,14 +345,10 @@ void NaClHostMessageFilter::OnGetNexeFd(
   }
 
   pnacl::PnaclHost::GetInstance()->GetNexeFd(
-      render_process_id_,
-      render_view_id,
-      pp_instance,
-      off_the_record_,
+      render_process_id_, render_view_id, pp_instance, off_the_record_,
       cache_info,
-      base::Bind(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
-                 this,
-                 pp_instance));
+      base::BindRepeating(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
+                          this, pp_instance));
 }
 
 void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {

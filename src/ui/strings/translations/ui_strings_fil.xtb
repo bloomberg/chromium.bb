@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
 <translation id="1487931858675166540">Ipinagpalit ang <ph name="FIRST_ITEM_TITLE" /> sa <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Hinanap mo ito dati. Kapag na-delete ang "<ph name="QUERY" />" sa iyong history, permanente itong aalisin sa account mo sa lahat ng iyong device.</translation>
+<translation id="1510238584712386396">Launcher</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto at }one{# minuto at }other{# na minuto at }}</translation>
 <translation id="1643823602425662293">Notification</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">piliin</translation>
 <translation id="1859234291848436338">Pagsulat ng Direksyon</translation>
 <translation id="1860796786778352021">Isara ang notification</translation>
+<translation id="186476001994626254">Content mula sa Web Smart Paste</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Piliin ang &amp;lahat</translation>
+<translation id="19085484004813472">Isa itong bagong feature</translation>
 <translation id="2006524834898217237">Siguraduhing nakakonekta ang device na ito sa Internet.</translation>
 <translation id="208586643495776849">Pakisubukang muli</translation>
-<translation id="2090963878406559571">Para magpadala ng numero sa iyong Android phone mula sa <ph name="ORIGIN" />, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 araw}one{# araw}other{# na araw}}</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2161656808144014275">Text</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Nakumpleto na ang pag-calibrate</translation>
 <translation id="252373100621549798">Hindi Kilalang Display</translation>
 <translation id="2545651323591713692">I-snooze</translation>
+<translation id="2570734079541893434">Pamahalaan ang mga setting</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{sa loob ng 1 oras}one{sa loob ng # oras}other{sa loob ng # na oras}}</translation>
 <translation id="2583543531130364912">I-calibrate ang iyong touchscreen</translation>
+<translation id="2586657967955657006">Clipboard</translation>
 <translation id="2666092431469916601">Tuktok</translation>
 <translation id="2701330563083355633">Ibinahagi mula kay <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Bago</translation>
 <translation id="2743387203779672305">Kopyahin sa clipboard</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Buksan ang folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 taon ang nakalipas}one{# taon ang nakalipas}other{# na taon ang nakalipas}}</translation>
+<translation id="2878511608894704031">I-delete Lahat</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{sa loob ng 1 araw}one{sa loob ng # araw}other{sa loob ng # na araw}}</translation>
 <translation id="2931838996092594335">i-click</translation>
 <translation id="2981684127883932071">Ipinapakita ang mga suhestyon</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> File</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
+<translation id="3622035490309591977">History ng clipboard</translation>
 <translation id="364720409959344976">Pumili ng Folder na I-a-upload</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
 <translation id="3670030362669914947">Numero</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Simulan ang Pagsasalita</translation>
 <translation id="430191667033048642">Inilipat ang <ph name="MOVED_APP_NAME" /> sa folder na <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">LAHAT NG APP</translation>
+<translation id="4491109536499578614">Larawan</translation>
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Star na rating <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Rekomendasyon sa app</translation>
@@ -128,34 +136,40 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> (na) PB</translation>
 <translation id="5266161281976477809">Disclosure triangle</translation>
 <translation id="5278860589123563674">Hindi naipadala</translation>
+<translation id="5283099933536931082">Hinihiling ng <ph name="APP_ITEM_TITLE" /> ang iyong atensyon.</translation>
 <translation id="528468243742722775">Tapusin</translation>
-<translation id="5327567770033251652">i-on ang pag-sync</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sa ibabaw ng <ph name="IN_PLACE_APP" />, bitawan para gumawa ng folder.</translation>
 <translation id="5463830097259460683">Emoji at Mga Simbolo</translation>
 <translation id="5476505524087279545">i-uncheck</translation>
 <translation id="547979256943495781">Nasa kanan ang shelf</translation>
+<translation id="5528053674512161860">Hindi na-load ang page dahil hindi naka-install ang developer UI module (dev_ui)</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> system</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">KAliwang  Arrow</translation>
+<translation id="5652575806481723716">Hinihiling ng <ph name="FOCUSED_APP_NAME" /> ang iyong atensyon.</translation>
 <translation id="5675363643668471212">Item sa shelf</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktibo ngayong araw}=1{Aktibo 1 araw ang nakalipas}one{Aktibo # araw ang nakalipas}other{Aktibo # na araw ang nakalipas}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 araw at }one{# araw at }other{# na araw at }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">Larawan.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{sa loob ng 1 taon}one{sa loob ng # taon}other{sa loob ng # na taon}}</translation>
+<translation id="588258955323874662">Fullscreen</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
-<translation id="5941711191222866238">Minimize</translation>
+<translation id="5941711191222866238">I-minimize</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> ng <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">I-clear ang text sa searchbox</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6119846243427417423">isaaktibo</translation>
 <translation id="6129953537138746214">Puwang</translation>
+<translation id="6134259848159370930">Maghanap sa iyong device, mga app, mga setting, at web.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> (na) B/s</translation>
 <translation id="6156262341071374681">Palawakin sa lahat ng app</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
+<translation id="6166852626429024716">Maghanap sa iyong device, mga app, mga setting, web...</translation>
 <translation id="6264365405983206840">Piliin &amp;Lahat</translation>
 <translation id="6351032674660237738">MGA IMINUMUNGKAHING APP</translation>
 <translation id="6364916375976753737">Mag-scroll Pakaliwa</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">I-block ang lahat ng notification mula sa app na ito</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
+<translation id="6503257047630241175">Content na RTF</translation>
 <translation id="6539092367496845964">Nagkaproblema. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="654149438358937226">I-block ang lahat ng notification</translation>
 <translation id="6567071839949112727">i-click ang ancestor</translation>
 <translation id="6578407462441924264">Walang Pangalan</translation>
 <translation id="6612467943526193239">Upang lumabas sa pag-calibrate pindutin ang Esc.</translation>
 <translation id="6620110761915583480">I-save ang File</translation>
-<translation id="6656912866303152668">Tiyaking naka-on sa <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala ulit.</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
-<translation id="6710213216561001401">Nakaraan</translation>
-<translation id="6779314412797872738">Para magpadala ng numero sa iyong Android phone mula rito, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
+<translation id="6710213216561001401">Nauna</translation>
 <translation id="6786750046913594791">Isara ang folder</translation>
 <translation id="6808150112686056157">Media Ihinto</translation>
 <translation id="6845383723252244143">Piliin ang Folder</translation>
 <translation id="6845533974506654842">pindutin</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 oras na lang ang natitira}one{# oras na lang ang natitira}other{# na oras na lang ang natitira}}</translation>
 <translation id="688711909580084195">Walang Pamagat na Webpage</translation>
+<translation id="6902419395050653510">Content ng HTML.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> (na) PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 taon ang natitira}one{# taon ang natitira}other{# na taon ang natitira}}</translation>
 <translation id="6945221475159498467">Pumili</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
 <translation id="7319740667687257810">Launcher, hindi kumpletong view</translation>
-<translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Inilipat sa Page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Huwag i-block</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
+<translation id="7952747673138230804">Nagpapakita ang Chrome OS ng mga suhestyon para sa bagong content na ie-explore. Magpapadala lang ng mga istatistika para mapahusay ang kalidad kung pinili mong ibahagi ang data ng paggamit. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mahigit sa 1 hindi pa nababasang notification}one{Mahigit sa # hindi pa nababasang notification}other{Mahigit sa # na hindi pa nababasang notification}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{sa loob ng 1 minuto}one{sa loob ng # minuto}other{sa loob ng # na minuto}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> File (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Palaging ipinapakita ang shelf</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Maghanap sa iyong device, mga app, mga setting, at web. Gamitin ang mga arrow key para i-navigate ang iyong mga app.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> pa</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>

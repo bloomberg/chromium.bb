@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 
 if (is_android) {
@@ -14,12 +15,6 @@ source_set("time_zone_monitor") {
   sources = [
     "time_zone_monitor.cc",
     "time_zone_monitor.h",
-    "time_zone_monitor_android.cc",
-    "time_zone_monitor_android.h",
-    "time_zone_monitor_chromeos.cc",
-    "time_zone_monitor_linux.cc",
-    "time_zone_monitor_mac.mm",
-    "time_zone_monitor_win.cc",
   ]
 
   deps = [
@@ -32,19 +27,30 @@ source_set("time_zone_monitor") {
   public_deps = [ "//services/device/public/mojom" ]
 
   if (is_android) {
+    sources += [
+      "time_zone_monitor_android.cc",
+      "time_zone_monitor_android.h",
+    ]
     deps += [ ":time_zone_monitor_jni_headers" ]
   }
 
   if (is_win) {
+    sources += [ "time_zone_monitor_win.cc" ]
     deps += [ "//ui/gfx" ]
   }
 
-  if (is_chromeos) {
+  if (is_linux) {
+    sources += [ "time_zone_monitor_linux.cc" ]
+  }
+
+  if (is_ash) {
+    sources += [ "time_zone_monitor_chromeos.cc" ]
     deps += [ "//chromeos/settings" ]
   }
 
   if (is_mac) {
-    libs = [ "Foundation.framework" ]
+    sources += [ "time_zone_monitor_mac.mm" ]
+    frameworks = [ "Foundation.framework" ]
   }
 
   if (is_fuchsia) {

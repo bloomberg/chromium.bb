@@ -19,7 +19,6 @@
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/secure_channel.h"
-#include "chromeos/services/secure_channel/secure_channel_disconnector.h"
 
 namespace device {
 class BluetoothAdapter;
@@ -29,7 +28,7 @@ namespace chromeos {
 
 namespace secure_channel {
 
-class BleServiceDataHelper;
+class BluetoothHelper;
 class BleSynchronizerBase;
 class SecureChannelDisconnector;
 class TimerFactory;
@@ -41,14 +40,17 @@ class TimerFactory;
 // this process is complete, an AuthenticatedChannel is returned to the client.
 class BleConnectionManagerImpl : public BleConnectionManager,
                                  public BleAdvertiser::Delegate,
-                                 public BleScanner::Delegate,
+                                 public BleScanner::Observer,
                                  public SecureChannel::Observer {
  public:
   class Factory {
    public:
     static std::unique_ptr<BleConnectionManager> Create(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-        BleServiceDataHelper* ble_service_data_helper,
+        BluetoothHelper* bluetooth_helper,
+        BleSynchronizerBase* ble_synchronizer,
+        BleScanner* ble_scanner,
+        SecureChannelDisconnector* secure_channel_disconnector,
         TimerFactory* timer_factory,
         base::Clock* clock = base::DefaultClock::GetInstance());
     static void SetFactoryForTesting(Factory* test_factory);
@@ -57,7 +59,10 @@ class BleConnectionManagerImpl : public BleConnectionManager,
     virtual ~Factory();
     virtual std::unique_ptr<BleConnectionManager> CreateInstance(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-        BleServiceDataHelper* ble_service_data_helper,
+        BluetoothHelper* bluetooth_helper,
+        BleSynchronizerBase* ble_synchronizer,
+        BleScanner* ble_scanner,
+        SecureChannelDisconnector* secure_channel_disconnector,
         TimerFactory* timer_factory,
         base::Clock* clock = base::DefaultClock::GetInstance()) = 0;
 
@@ -102,7 +107,10 @@ class BleConnectionManagerImpl : public BleConnectionManager,
 
   BleConnectionManagerImpl(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-      BleServiceDataHelper* ble_service_data_helper,
+      BluetoothHelper* bluetooth_helper,
+      BleSynchronizerBase* ble_synchronizer,
+      BleScanner* ble_scanner,
+      SecureChannelDisconnector* secure_channel_disconnector,
       TimerFactory* timer_factory,
       base::Clock* clock);
 
@@ -131,9 +139,10 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   void OnFailureToGenerateAdvertisement(
       const DeviceIdPair& device_id_pair) override;
 
-  // BleScanner::Delegate:
+  // BleScanner::Observer:
   void OnReceivedAdvertisement(multidevice::RemoteDeviceRef remote_device,
                                device::BluetoothDevice* bluetooth_device,
+                               ConnectionMedium connection_medium,
                                ConnectionRole connection_role) override;
 
   // SecureChannel::Observer:
@@ -196,13 +205,11 @@ class BleConnectionManagerImpl : public BleConnectionManager,
       const std::string& remote_device_id);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  BleServiceDataHelper* ble_service_data_helper_;
   base::Clock* clock_;
+  BleScanner* ble_scanner_;
+  SecureChannelDisconnector* secure_channel_disconnector_;
 
-  std::unique_ptr<BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;
-  std::unique_ptr<BleScanner> ble_scanner_;
-  std::unique_ptr<SecureChannelDisconnector> secure_channel_disconnector_;
 
   using SecureChannelWithRole =
       std::pair<std::unique_ptr<SecureChannel>, ConnectionRole>;

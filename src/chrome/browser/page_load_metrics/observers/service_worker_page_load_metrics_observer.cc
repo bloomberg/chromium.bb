@@ -357,7 +357,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstInputInPage(
     return;
   }
 
-  // Copied from the CorePageLoadMetricsObserver implementation.
+  // Copied from the UmaPageLoadMetricsObserver implementation.
   UMA_HISTOGRAM_CUSTOM_TIMES(
       internal::kHistogramServiceWorkerFirstInputDelay,
       timing.interactive_timing->first_input_delay.value(),
@@ -414,7 +414,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     int behavior_flags) {
   if (!IsServiceWorkerControlled() || logged_ukm_event_)
     return;
-  ukm::builders::PageLoad_ServiceWorkerControlled(GetDelegate().GetSourceId())
+  ukm::builders::PageLoad_ServiceWorkerControlled(
+      GetDelegate().GetPageUkmSourceId())
       .Record(ukm::UkmRecorder::Get());
   logged_ukm_event_ = true;
 }

@@ -44,7 +44,7 @@ class ImageElementTimingTest : public testing::Test,
   // the LayoutImage.
   LayoutImage* SetImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    if (auto* layout_image = ToLayoutImageOrNull(GetLayoutObjectById(id))) {
+    if (auto* layout_image = DynamicTo<LayoutImage>(GetLayoutObjectById(id))) {
       layout_image->ImageResource()->SetImageResource(content);
       return layout_image;
     }
@@ -54,7 +54,8 @@ class ImageElementTimingTest : public testing::Test,
   // Similar to above but for a LayoutSVGImage.
   LayoutSVGImage* SetSVGImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    if (auto* layout_image = ToLayoutSVGImageOrNull(GetLayoutObjectById(id))) {
+    if (auto* layout_image =
+            DynamicTo<LayoutSVGImage>(GetLayoutObjectById(id))) {
       layout_image->ImageResource()->SetImageResource(content);
       return layout_image;
     }
@@ -89,7 +90,7 @@ class ImageElementTimingTest : public testing::Test,
         ->MainFrameImpl()
         ->GetFrame()
         ->View()
-        ->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+        ->UpdateAllLifecyclePhasesForTest();
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;
@@ -102,10 +103,10 @@ class ImageElementTimingTest : public testing::Test,
         SkImageInfo::MakeN32Premul(width, height, src_rgb_color_space);
     sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
     sk_sp<SkImage> image = surface->makeImageSnapshot();
-    ImageResourceContent* original_image_resource =
+    ImageResourceContent* original_image_content =
         ImageResourceContent::CreateLoaded(
             UnacceleratedStaticBitmapImage::Create(image).get());
-    return original_image_resource;
+    return original_image_content;
   }
 };
 

@@ -36,13 +36,13 @@ using ::testing::StrictMock;
 // Callback for CreateProfile() that assigns |profile| to |*out_profile|
 // if the profile creation is successful.
 void CreateProfileCallback(Profile** out_profile,
-                           const base::Closure& closure,
+                           base::OnceClosure closure,
                            Profile* profile,
                            Profile::CreateStatus status) {
   DCHECK(out_profile);
   if (status == Profile::CREATE_STATUS_INITIALIZED)
     *out_profile = profile;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 // Creates a new profile from the UI thread.
@@ -52,7 +52,8 @@ Profile* CreateProfile() {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       profile_manager->GenerateNextProfileDirectoryPath(),
-      base::Bind(&CreateProfileCallback, &profile, run_loop.QuitClosure()),
+      base::BindRepeating(&CreateProfileCallback, &profile,
+                          run_loop.QuitClosure()),
       base::string16(), std::string());
   run_loop.Run();
   return profile;
@@ -99,7 +100,7 @@ class SettingsResetterTestDelegate
 
   void FetchDefaultSettings(
       DefaultSettingsFetcher::SettingsCallback callback) override {
-    callback.Run(std::make_unique<BrandcodedDefaultSettings>());
+    std::move(callback).Run(std::make_unique<BrandcodedDefaultSettings>());
   }
 
   // Returns a MockProfileResetter that requires Reset() be called.

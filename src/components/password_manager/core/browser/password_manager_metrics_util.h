@@ -17,46 +17,55 @@ namespace password_manager {
 
 namespace metrics_util {
 
+using IsUsernameChanged = util::StrongAlias<class IsUsernameChangedTag, bool>;
+using IsPasswordChanged = util::StrongAlias<class IsPasswordChangedTag, bool>;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordBubble.DisplayDisposition"
 enum UIDisplayDisposition {
   AUTOMATIC_WITH_PASSWORD_PENDING = 0,
-  MANUAL_WITH_PASSWORD_PENDING,
-  MANUAL_MANAGE_PASSWORDS,
-  MANUAL_BLACKLISTED_OBSOLETE,  // obsolete.
-  AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION,
-  AUTOMATIC_CREDENTIAL_REQUEST_OBSOLETE,  // obsolete
-  AUTOMATIC_SIGNIN_TOAST,
-  MANUAL_WITH_PASSWORD_PENDING_UPDATE,
-  AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE,
-  MANUAL_GENERATED_PASSWORD_CONFIRMATION,
-  AUTOMATIC_SAVE_UNSYNCED_CREDENTIALS_LOCALLY,
-  AUTOMATIC_COMPROMISED_CREDENTIALS_REMINDER,
-  AUTOMATIC_MOVE_TO_ACCOUNT_STORE,
+  MANUAL_WITH_PASSWORD_PENDING = 1,
+  MANUAL_MANAGE_PASSWORDS = 2,
+  MANUAL_BLACKLISTED_OBSOLETE = 3,  // obsolete.
+  AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION = 4,
+  AUTOMATIC_CREDENTIAL_REQUEST_OBSOLETE = 5,  // obsolete
+  AUTOMATIC_SIGNIN_TOAST = 6,
+  MANUAL_WITH_PASSWORD_PENDING_UPDATE = 7,
+  AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE = 8,
+  MANUAL_GENERATED_PASSWORD_CONFIRMATION = 9,
+  AUTOMATIC_SAVE_UNSYNCED_CREDENTIALS_LOCALLY = 10,
+  AUTOMATIC_COMPROMISED_CREDENTIALS_REMINDER = 11,
+  AUTOMATIC_MOVE_TO_ACCOUNT_STORE = 12,
   NUM_DISPLAY_DISPOSITIONS,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordManager.UIDismissalReason"
 enum UIDismissalReason {
   // We use this to mean both "Bubble lost focus" and "No interaction with the
   // infobar".
   NO_DIRECT_INTERACTION = 0,
-  CLICKED_SAVE,
-  CLICKED_CANCEL,
-  CLICKED_NEVER,
-  CLICKED_MANAGE,
-  CLICKED_DONE_OBSOLETE,         // obsolete
-  CLICKED_UNBLACKLIST_OBSOLETE,  // obsolete.
-  CLICKED_OK_OBSOLETE,           // obsolete
-  CLICKED_CREDENTIAL_OBSOLETE,   // obsolete.
-  AUTO_SIGNIN_TOAST_TIMEOUT,
-  AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE,  // obsolete.
-  CLICKED_BRAND_NAME_OBSOLETE,         // obsolete.
-  CLICKED_PASSWORDS_DASHBOARD,
+  CLICKED_ACCEPT = 1,
+  CLICKED_CANCEL = 2,
+  CLICKED_NEVER = 3,
+  CLICKED_MANAGE = 4,
+  CLICKED_DONE_OBSOLETE = 5,         // obsolete
+  CLICKED_UNBLACKLIST_OBSOLETE = 6,  // obsolete.
+  CLICKED_OK_OBSOLETE = 7,           // obsolete
+  CLICKED_CREDENTIAL_OBSOLETE = 8,   // obsolete.
+  AUTO_SIGNIN_TOAST_TIMEOUT = 9,
+  AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE = 10,  // obsolete.
+  CLICKED_BRAND_NAME_OBSOLETE = 11,         // obsolete.
+  CLICKED_PASSWORDS_DASHBOARD = 12,
   NUM_UI_RESPONSES,
 };
 
 // Enum representing the different leak detection dialogs shown to the user.
 // Corresponds to LeakDetectionDialogType suffix in histograms.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class LeakDialogType {
   // The user is asked to visit the Password Checkup.
   kCheckup = 0,
@@ -82,30 +91,36 @@ enum class LeakDialogDismissalReason {
   kMaxValue = kClickedOk,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum FormDeserializationStatus {
-  LOGIN_DATABASE_SUCCESS,
-  LOGIN_DATABASE_FAILURE,
-  LIBSECRET_SUCCESS,
-  LIBSECRET_FAILURE,
-  GNOME_SUCCESS,
-  GNOME_FAILURE,
+  LOGIN_DATABASE_SUCCESS = 0,
+  LOGIN_DATABASE_FAILURE = 1,
+  LIBSECRET_SUCCESS = 2,
+  LIBSECRET_FAILURE = 3,
+  GNOME_SUCCESS = 4,
+  GNOME_FAILURE = 5,
   NUM_DESERIALIZATION_STATUSES
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordManager.PasswordSyncState"
 enum PasswordSyncState {
-  SYNCING_OK,
-  NOT_SYNCING_FAILED_READ,
-  NOT_SYNCING_DUPLICATE_TAGS,
-  NOT_SYNCING_SERVER_ERROR,
-  NOT_SYNCING_FAILED_CLEANUP,
-  NOT_SYNCING_FAILED_DECRYPTION,
-  NOT_SYNCING_FAILED_ADD,
-  NOT_SYNCING_FAILED_UPDATE,
-  NOT_SYNCING_FAILED_METADATA_PERSISTENCE,
+  SYNCING_OK = 0,
+  NOT_SYNCING_FAILED_READ = 1,
+  NOT_SYNCING_DUPLICATE_TAGS = 2,
+  NOT_SYNCING_SERVER_ERROR = 3,
+  NOT_SYNCING_FAILED_CLEANUP = 4,
+  NOT_SYNCING_FAILED_DECRYPTION = 5,
+  NOT_SYNCING_FAILED_ADD = 6,
+  NOT_SYNCING_FAILED_UPDATE = 7,
+  NOT_SYNCING_FAILED_METADATA_PERSISTENCE = 8,
   NUM_SYNC_STATES
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordManager.ApplySyncChangesState"
 enum class ApplySyncChangesState {
   kApplyOK = 0,
@@ -117,71 +132,86 @@ enum class ApplySyncChangesState {
   kMaxValue = kApplyMetadataChangesFailed,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordGeneration.SubmissionEvent"
 enum PasswordSubmissionEvent {
-  PASSWORD_SUBMITTED,
-  PASSWORD_SUBMISSION_FAILED,
-  PASSWORD_NOT_SUBMITTED,
-  PASSWORD_OVERRIDDEN,
-  PASSWORD_USED,
-  GENERATED_PASSWORD_FORCE_SAVED,
+  PASSWORD_SUBMITTED = 0,
+  PASSWORD_SUBMISSION_FAILED = 1,
+  PASSWORD_NOT_SUBMITTED = 2,
+  PASSWORD_OVERRIDDEN = 3,
+  PASSWORD_USED = 4,
+  GENERATED_PASSWORD_FORCE_SAVED = 5,
   SUBMISSION_EVENT_ENUM_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum AutoSigninPromoUserAction {
-  AUTO_SIGNIN_NO_ACTION,
-  AUTO_SIGNIN_TURN_OFF,
-  AUTO_SIGNIN_OK_GOT_IT,
+  AUTO_SIGNIN_NO_ACTION = 0,
+  AUTO_SIGNIN_TURN_OFF = 1,
+  AUTO_SIGNIN_OK_GOT_IT = 2,
   AUTO_SIGNIN_PROMO_ACTION_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum AccountChooserUserAction {
-  ACCOUNT_CHOOSER_DISMISSED,
-  ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN,
-  ACCOUNT_CHOOSER_SIGN_IN,
+  ACCOUNT_CHOOSER_DISMISSED = 0,
+  ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN = 1,
+  ACCOUNT_CHOOSER_SIGN_IN = 2,
   ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordManager.Mediation{Silent,Optional,Required}"
 enum class CredentialManagerGetResult {
   // The promise is rejected.
-  kRejected,
+  kRejected = 0,
   // Auto sign-in is not allowed in the current context.
-  kNoneZeroClickOff,
+  kNoneZeroClickOff = 1,
   // No matching credentials found.
-  kNoneEmptyStore,
+  kNoneEmptyStore = 2,
   // User mediation required due to > 1 matching credentials.
-  kNoneManyCredentials,
+  kNoneManyCredentials = 3,
   // User mediation required due to the signed out state.
-  kNoneSignedOut,
+  kNoneSignedOut = 4,
   // User mediation required due to pending first run experience dialog.
-  kNoneFirstRun,
+  kNoneFirstRun = 5,
   // Return empty credential for whatever reason.
-  kNone,
+  kNone = 6,
   // Return a credential from the account chooser.
-  kAccountChooser,
+  kAccountChooser = 7,
   // User is auto signed in.
-  kAutoSignIn,
+  kAutoSignIn = 8,
   // No credentials are returned in incognito mode.
-  kNoneIncognito,
-  kMaxValue = kNoneIncognito,
+  kNoneIncognito = 9,
+  // No credentials are returned while autofill_assistant is running.
+  kNoneAutofillAssistant = 10,
+  kMaxValue = kNoneAutofillAssistant,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum PasswordReusePasswordFieldDetected {
-  NO_PASSWORD_FIELD,
-  HAS_PASSWORD_FIELD,
+  NO_PASSWORD_FIELD = 0,
+  HAS_PASSWORD_FIELD = 1,
   PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT
 };
 
-// Recorded into a UMA histogram, so order of enumerators should not be changed.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class SubmittedFormFrame {
-  MAIN_FRAME,
-  IFRAME_WITH_SAME_URL_AS_MAIN_FRAME,
-  IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME,
-  IFRAME_WITH_DIFFERENT_SIGNON_REALM,
+  MAIN_FRAME = 0,
+  IFRAME_WITH_SAME_URL_AS_MAIN_FRAME = 1,
+  IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME = 2,
+  IFRAME_WITH_DIFFERENT_SIGNON_REALM = 3,
   SUBMITTED_FORM_FRAME_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: "PasswordManager.AccessPasswordInSettings"
 enum AccessPasswordInSettingsEvent {
   ACCESS_PASSWORD_VIEWED = 0,
@@ -204,14 +234,16 @@ enum class ReauthResult {
 // Specifies the type of PasswordFormManagers and derived classes to distinguish
 // the context in which a PasswordFormManager is being created and used.
 enum class CredentialSourceType {
-  kUnknown,
+  kUnknown = 0,
   // This is used for form based credential management (PasswordFormManager).
-  kPasswordManager,
+  kPasswordManager = 1,
   // This is used for credential management API based credential management
   // (CredentialManagerPasswordFormManager).
-  kCredentialManagementAPI
+  kCredentialManagementAPI = 2
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metrics: PasswordManager.DeleteCorruptedPasswordsResult
 // Metrics: PasswordManager.DeleteUndecryptableLoginsReturnValue
 // A passwords is considered corrupted if it's stored locally using lost
@@ -230,7 +262,6 @@ enum class DeleteCorruptedPasswordsResult {
   kMaxValue = kEncryptionUnavailable,
 };
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 enum class GaiaPasswordHashChange {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -253,6 +284,8 @@ enum class GaiaPasswordHashChange {
   kMaxValue = SAVED_SYNC_PASSWORD_CHANGE_COUNT,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class IsSyncPasswordHashSaved {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -263,28 +296,9 @@ enum class IsSyncPasswordHashSaved {
   IS_SYNC_PASSWORD_HASH_SAVED_COUNT = 3,
   kMaxValue = IS_SYNC_PASSWORD_HASH_SAVED_COUNT,
 };
-#endif
 
-// Specifies the context in which the "Show all saved passwords" fallback is
-// shown or accepted.
-// Metrics:
-// - PasswordManager.ShowAllSavedPasswordsAcceptedContext
-// - PasswordManager.ShowAllSavedPasswordsShownContext
-//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class ShowAllSavedPasswordsContext {
-  kNone = 0,
-  // The "Show all saved passwords..." fallback is shown below a list of
-  // available passwords.
-  kPassword = 1,
-  // Obsolete.
-  kManualFallbackDeprecated = 2,
-  // The "Show all saved  passwords..." fallback is shown in context menu.
-  kContextMenu = 3,
-  kMaxValue = kContextMenu,
-};
-
 // Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"
 enum class CertificateError {
   NONE = 0,
@@ -296,7 +310,8 @@ enum class CertificateError {
   COUNT
 };
 
-// Used in UMA histograms, please do NOT reorder.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metric: "PasswordManager.ReusedPasswordType".
 enum class PasswordType {
   // Passwords saved by password manager.
@@ -316,6 +331,8 @@ enum class PasswordType {
   PASSWORD_TYPE_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class LinuxBackendMigrationStatus {
   // No migration was attempted (this value should not occur).
   kNotAttempted = 0,
@@ -337,14 +354,16 @@ enum class LinuxBackendMigrationStatus {
   // Could not replace old database.
   kFailedReplace = 8,
   // Could not initialise the temporary encrypted database.
-  kFailedInitEncrypted,
+  kFailedInitEncrypted = 9,
   // Could not reset th temporary encrypted database.
-  kDeprecatedFailedRecreateEncrypted,
+  kDeprecatedFailedRecreateEncrypted = 10,
   // Could not add entries into the temporary encrypted database.
-  kFailedWriteToEncrypted,
+  kFailedWriteToEncrypted = 11,
   kMaxValue = kFailedWriteToEncrypted
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Type of the password drop-down shown on focus field.
 enum class PasswordDropdownState {
   // The passwords are listed and maybe the "Show all" button.
@@ -355,6 +374,8 @@ enum class PasswordDropdownState {
 };
 
 // Type of the item the user selects in the password drop-down.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PasswordDropdownSelectedOption {
   // User selected a credential to fill.
   kPassword = 0,
@@ -362,10 +383,17 @@ enum class PasswordDropdownSelectedOption {
   kShowAll = 1,
   // User selected to generate a password.
   kGenerate = 2,
-  kMaxValue = kGenerate
+  // User unlocked the account-store to fill a password.
+  kUnlockAccountStorePasswords = 3,
+  // User unlocked the account-store to generate a password.
+  kUnlockAccountStoreGeneration = 4,
+  // Previoulsy opted-in user decided to log-in again to access their passwords.
+  kResigninToUnlockAccountStore = 5,
+  kMaxValue = kResigninToUnlockAccountStore
 };
 
-// Used in UMA histograms, please do NOT reorder.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Metric: "KeyboardAccessory.GenerationDialogChoice.{Automatic, Manual}".
 enum class GenerationDialogChoice {
   // The user accepted the generated password.
@@ -380,39 +408,102 @@ enum class GenerationDialogChoice {
 // histogram_suffixes in histograms.xml!
 enum class PasswordAccountStorageUserState {
   // Signed-out user (and no account storage opt-in exists).
-  kSignedOutUser,
+  kSignedOutUser = 0,
   // Signed-out user, but an account storage opt-in exists.
-  kSignedOutAccountStoreUser,
+  kSignedOutAccountStoreUser = 1,
   // Signed-in user, not opted in to the account storage (but will save
   // passwords to the account storage by default).
-  kSignedInUser,
+  kSignedInUser = 2,
   // Signed-in user, not opted in to the account storage, and has explicitly
   // chosen to save passwords only on the device.
-  kSignedInUserSavingLocally,
+  kSignedInUserSavingLocally = 3,
   // Signed-in user, opted in to the account storage, and saving passwords to
   // the account storage.
-  kSignedInAccountStoreUser,
+  kSignedInAccountStoreUser = 4,
   // Signed-in user and opted in to the account storage, but has chosen to save
   // passwords only on the device.
-  kSignedInAccountStoreUserSavingLocally,
+  kSignedInAccountStoreUserSavingLocally = 5,
   // Syncing user.
-  kSyncUser,
+  kSyncUser = 6,
 };
+
+// Represents different user interactions related to password check.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Always keep this enum in sync with the
+// corresponding PasswordCheckInteraction in enums.xml and
+// password_manager_proxy.js.
+enum class PasswordCheckInteraction {
+  kAutomaticPasswordCheck = 0,
+  kManualPasswordCheck = 1,
+  kPasswordCheckStopped = 2,
+  kChangePassword = 3,
+  kEditPassword = 4,
+  kRemovePassword = 5,
+  kShowPassword = 6,
+  // Must be last.
+  kMaxValue = kShowPassword,
+};
+
+// Metrics: PasswordManager.MoveToAccountStoreTrigger.
+// This must be kept in sync with the enum in password_move_to_account_dialog.js
+// (in chrome/browser/resources/settings/autofill_page).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MoveToAccountStoreTrigger {
+  // The user successfully logged in with a password from the profile store.
+  kSuccessfulLoginWithProfileStorePassword = 0,
+  // The user explicitly asked to move a password listed in Settings.
+  kExplicitlyTriggeredInSettings = 1,
+  kMaxValue = kExplicitlyTriggeredInSettings,
+};
+
+// Used to record metrics for the usage and timing of the GetChangePasswordUrl
+// call. These values are persisted to logs. Entries should not be renumbered
+// and numeric values should never be reused.
+enum class GetChangePasswordUrlMetric {
+  // Used when GetChangePasswordUrl is called before the response
+  // arrives.
+  kNotFetchedYet = 0,
+  // Used when a url was used, which corresponds to the requested site.
+  kUrlOverrideUsed = 1,
+  // Used when no override url was available.
+  kNoUrlOverrideAvailable = 2,
+  // Used when a url was used, which corresponds to a site from within same
+  // FacetGroup.
+  kGroupUrlOverrideUsed = 3,
+  kMaxValue = kGroupUrlOverrideUsed,
+};
+
+// Used to record what exactly was updated during password editing flow.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class PasswordEditUpdatedValues {
+  // Nothing was updated.
+  kNone = 0,
+  // Only username was changed.
+  kUsername = 1,
+  // Only password was changed.
+  kPassword = 2,
+  // Both password and username were updated.
+  kBoth = 3,
+  kMaxValue = kBoth,
+};
+
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
     PasswordAccountStorageUserState user_state);
 
 // The usage level of the account-scoped password storage. This is essentially
 // a less-detailed version of PasswordAccountStorageUserState, for metrics that
-// don't need the fully-detailed breakdown. Always keep this enum in sync with
-// the corresponding histogram_suffixes in histograms.xml!
+// don't need the fully-detailed breakdown.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PasswordAccountStorageUsageLevel {
   // The user is not using the account-scoped password storage. Either they're
   // not signed in, or they haven't opted in to the account storage.
-  kNotUsingAccountStorage,
+  kNotUsingAccountStorage = 0,
   // The user is signed in and has opted in to the account storage.
-  kUsingAccountStorage,
+  kUsingAccountStorage = 1,
   // The user has enabled Sync.
-  kSyncing,
+  kSyncing = 2,
 };
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
@@ -421,11 +512,23 @@ std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
 // bubbles.
 void LogGeneralUIDismissalReason(UIDismissalReason reason);
 
-// Log the |reason| a user dismissed the save password bubble.
-void LogSaveUIDismissalReason(UIDismissalReason reason);
+// Log the |reason| a user dismissed the save password bubble. If
+// |user_state| is set, the |reason| is also logged to a separate
+// user-state-specific histogram.
+void LogSaveUIDismissalReason(
+    UIDismissalReason reason,
+    base::Optional<PasswordAccountStorageUserState> user_state);
+
+// Log the |reason| a user dismissed the save password prompt after previously
+// having unblacklisted the origin while on the page.
+void LogSaveUIDismissalReasonAfterUnblacklisting(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
+
+// Log the |reason| a user dismissed the move password bubble.
+void LogMoveUIDismissalReason(UIDismissalReason reason,
+                              PasswordAccountStorageUserState user_state);
 
 // Log the |type| of a leak dialog shown to the user and the |reason| why it was
 // dismissed.
@@ -472,15 +575,6 @@ void LogPasswordReuse(int password_length,
                       bool password_field_detected,
                       PasswordType reused_password_type);
 
-// Log the context in which the "Show all saved passwords" fallback was shown.
-void LogContextOfShowAllSavedPasswordsShown(
-    ShowAllSavedPasswordsContext context);
-
-// Log the context in which the "Show all saved passwords" fallback was
-// accepted.
-void LogContextOfShowAllSavedPasswordsAccepted(
-    ShowAllSavedPasswordsContext context);
-
 // Log the type of the password dropdown when it's shown.
 void LogPasswordDropdownShown(PasswordDropdownState state, bool off_the_record);
 
@@ -500,16 +594,29 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
 
+// Logs how many account-stored passwords are available for filling in the
+// current password form right after unlock.
+void LogPasswordsCountFromAccountStoreAfterUnlock(
+    int account_store_passwords_count);
+
+// Logs how many account-stored passwords are downloaded right after unlock.
+// This is different from `LogPasswordsCountFromAccountStoreAfterUnlock` since
+// it records all the downloaded passwords not just those available for filling
+// in a specific password form.
+void LogDownloadedPasswordsCountFromAccountStoreAfterUnlock(
+    int account_store_passwords_count);
+
+// Logs how many blocklisted entries are downloaded to the account store right
+// after unlock.
+void LogDownloadedBlocklistedEntriesCountFromAccountStoreAfterUnlock(
+    int blocklist_entries_count);
+
 // Logs the result of a re-auth challenge in the password settings.
 void LogPasswordSettingsReauthResult(ReauthResult result);
 
 // Log a return value of LoginDatabase::DeleteUndecryptableLogins method.
 void LogDeleteUndecryptableLoginsReturnValue(
     DeleteCorruptedPasswordsResult result);
-
-// Log a result of removing passwords that couldn't be decrypted with the
-// present encryption key on MacOS.
-void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
 // Log whether a saved password was generated.
 void LogNewlySavedPasswordIsGenerated(
@@ -522,7 +629,6 @@ void LogGenerationDialogChoice(
     GenerationDialogChoice choice,
     autofill::password_generation::PasswordGenerationType type);
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save gaia password change event.
 void LogGaiaPasswordHashChange(GaiaPasswordHashChange event,
                                bool is_sync_password);
@@ -538,7 +644,9 @@ void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
                                     bool does_primary_account_exists,
                                     bool is_signed_in);
 
-#endif
+// Log the result of the password edit action.
+void LogPasswordEditResult(IsUsernameChanged password_changed,
+                           IsPasswordChanged username_changed);
 
 }  // namespace metrics_util
 

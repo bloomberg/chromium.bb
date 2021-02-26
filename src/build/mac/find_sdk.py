@@ -2,8 +2,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-"""Prints the lowest locally available SDK version greater than or equal to a
+r"""Prints the lowest locally available SDK version greater than or equal to a
 given minimum sdk version to standard output.
 
 If --print_sdk_path is passed, then the script will also print the SDK path.
@@ -11,8 +10,10 @@ If --print_bin_path is passed, then the script will also print the path to the
 toolchain bin dir.
 
 Usage:
-  python find_sdk.py [--print_sdk_path] \
-  [--print_bin_path] 10.6  # Ignores SDKs < 10.6
+  python find_sdk.py     \
+      [--print_sdk_path] \
+      [--print_bin_path] \
+      10.6  # Ignores SDKs < 10.6
 
 Sample Output:
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
@@ -39,7 +40,7 @@ class SdkError(Exception):
 
 def parse_version(version_str):
   """'10.6' => [10, 6]"""
-  return map(int, re.findall(r'(\d+)', version_str))
+  return [int(s) for s in re.findall(r'(\d+)', version_str)]
 
 
 def main():
@@ -64,7 +65,7 @@ def main():
     print(out, file=sys.stderr)
     print(err, file=sys.stderr)
     raise Exception('Error %d running xcode-select' % job.returncode)
-  dev_dir = out.rstrip()
+  dev_dir = out.decode('UTF-8').rstrip()
   sdk_dir = os.path.join(
       dev_dir, 'Platforms/MacOSX.platform/Developer/SDKs')
 
@@ -72,7 +73,7 @@ def main():
     raise SdkError('Install Xcode, launch it, accept the license ' +
       'agreement, and run `sudo xcode-select -s /path/to/Xcode.app` ' +
       'to continue.')
-  sdks = [re.findall('^MacOSX(10\.\d+)\.sdk$', s) for s in os.listdir(sdk_dir)]
+  sdks = [re.findall('^MacOSX(\d+\.\d+)\.sdk$', s) for s in os.listdir(sdk_dir)]
   sdks = [s[0] for s in sdks if s]  # [['10.5'], ['10.6']] => ['10.5', '10.6']
   sdks = [s for s in sdks  # ['10.5', '10.6'] => ['10.6']
           if parse_version(s) >= parse_version(min_sdk_version)]

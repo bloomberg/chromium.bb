@@ -210,9 +210,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOffKeepAllAccounts) {
 
 TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   std::string email = "pat@example.com";
-  AccountInfo info = identity_test_env()->MakeAccountAvailableWithCookies(
-      email, signin::GetTestGaiaIdForEmail(email));
-  base::RunLoop().RunUntilIdle();
+  AccountInfo info =
+      identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(email);
   EXPECT_TRUE(identity_test_env()->identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kNotRequired));
   EXPECT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
@@ -238,7 +237,9 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   // Set a fake picture URL.
   EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_picture, entry->GetAvatarIcon()));
   // Log out.
-  identity_test_env()->SetCookieAccounts({});
+  identity_test_env()->ClearPrimaryAccount();
+  base::RunLoop().RunUntilIdle();
+
   // Verify that the GAIA name and picture, and picture URL are unset.
   EXPECT_TRUE(entry->GetGAIAGivenName().empty());
   EXPECT_TRUE(entry->GetGAIAName().empty());
@@ -268,12 +269,12 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOutLogIn) {
   entry->RecordAccountMetrics();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
-      /*bucket=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*count=*/1);
+      /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
+      /*expected_count=*/1);
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Categories",
-      /*bucket=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*count=*/1);
+      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
+      /*expected_count=*/1);
 
   // Log out and record the metric again, sign-out wipes previous info in the
   // entry so again the default values get reported.
@@ -281,12 +282,12 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOutLogIn) {
   entry->RecordAccountMetrics();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
-      /*bucket=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*count=*/2);
+      /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
+      /*expected_count=*/2);
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Categories",
-      /*bucket=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*count=*/2);
+      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
+      /*expected_count=*/2);
 
   std::string email2 = "pat2@example.com";
   AccountInfo info2 = identity_test_env()->MakeAccountAvailableWithCookies(
@@ -306,14 +307,15 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOutLogIn) {
   entry->RecordAccountMetrics();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
-      /*bucket=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*count=*/3);
+      /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
+      /*expected_count=*/3);
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Categories",
-      /*bucket=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*count=*/3);
-  tester.ExpectTotalCount("Profile.AllAccounts.Names", /*count=*/3);
-  tester.ExpectTotalCount("Profile.AllAccounts.Categories", /*count=*/3);
+      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
+      /*expected_count=*/3);
+  tester.ExpectTotalCount("Profile.AllAccounts.Names", /*expected_count=*/3);
+  tester.ExpectTotalCount("Profile.AllAccounts.Categories",
+                          /*expected_count=*/3);
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, MultiLoginAndLogOut) {
@@ -344,13 +346,13 @@ TEST_F(GAIAInfoUpdateServiceTest, MultiLoginAndLogOut) {
   entry->RecordAccountMetrics();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
-      /*bucket=*/profile_metrics::AllAccountsNames::kMultipleNamesWithoutSync,
-      /*count=*/1);
+      /*sample=*/profile_metrics::AllAccountsNames::kMultipleNamesWithoutSync,
+      /*expected_count=*/1);
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Categories",
-      /*bucket=*/
+      /*sample=*/
       profile_metrics::AllAccountsCategories::kBothConsumerAndEnterpriseNoSync,
-      /*count=*/1);
+      /*expected_count=*/1);
 
   // Log out and record the metric again, sign-out wipes previous info in the
   // entry so the default values get reported.
@@ -358,14 +360,15 @@ TEST_F(GAIAInfoUpdateServiceTest, MultiLoginAndLogOut) {
   entry->RecordAccountMetrics();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
-      /*bucket=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*count=*/1);
+      /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
+      /*expected_count=*/1);
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Categories",
-      /*bucket=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*count=*/1);
-  tester.ExpectTotalCount("Profile.AllAccounts.Names", /*count=*/2);
-  tester.ExpectTotalCount("Profile.AllAccounts.Categories", /*count=*/2);
+      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
+      /*expected_count=*/1);
+  tester.ExpectTotalCount("Profile.AllAccounts.Names", /*expected_count=*/2);
+  tester.ExpectTotalCount("Profile.AllAccounts.Categories",
+                          /*expected_count=*/2);
 }
 #endif  // !defined(ANDROID)
 

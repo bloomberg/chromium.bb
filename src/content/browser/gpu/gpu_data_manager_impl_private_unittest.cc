@@ -26,6 +26,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_CHROMECAST)
+#include "chromecast/chromecast_buildflags.h"
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+#define CAST_AUDIO_ONLY
+#endif
+#endif
+
 namespace content {
 namespace {
 
@@ -292,7 +299,7 @@ TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
 }
 #endif  // !OS_FUCHSIA
 
-#if !BUILDFLAG(IS_CHROMECAST)
+#if !defined(CAST_AUDIO_ONLY)
 TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
   ScopedGpuDataManagerImplPrivate manager;
@@ -302,7 +309,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
 #endif  // !OS_ANDROID && !OS_CHROMEOS
 
 // Chromecast audio-only builds should not launch the GPU process.
-#if BUILDFLAG(IS_CHROMECAST)
+#if defined(CAST_AUDIO_ONLY)
 TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
   ScopedGpuDataManagerImplPrivate manager;
@@ -310,7 +317,7 @@ TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
 }
 #endif  // IS_CHROMECAST
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalToGL) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kMetal);
@@ -335,7 +342,7 @@ TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalWithGLDisabled) {
   manager->FallBackToNextGpuMode();
   EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if BUILDFLAG(ENABLE_VULKAN)
 TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithUseVulkanFlag) {

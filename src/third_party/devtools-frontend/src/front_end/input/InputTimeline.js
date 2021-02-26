@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
+import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Timeline from '../timeline/timeline.js';
@@ -17,7 +21,7 @@ import {InputModel} from './InputModel.js';
 export class InputTimeline extends UI.Widget.VBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('input/inputTimeline.css');
+    this.registerRequiredCSS('input/inputTimeline.css', {enableLegacyPatching: true});
     this.element.classList.add('inputs-timeline');
 
     this._tracingClient = null;
@@ -28,11 +32,11 @@ export class InputTimeline extends UI.Widget.VBox {
 
 
     this._toggleRecordAction =
-        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('input.toggle-recording'));
+        /** @type {!UI.Action.Action }*/ (UI.ActionRegistry.ActionRegistry.instance().action('input.toggle-recording'));
     this._startReplayAction =
-        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('input.start-replaying'));
+        /** @type {!UI.Action.Action }*/ (UI.ActionRegistry.ActionRegistry.instance().action('input.start-replaying'));
     this._togglePauseAction =
-        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('input.toggle-pause'));
+        /** @type {!UI.Action.Action }*/ (UI.ActionRegistry.ActionRegistry.instance().action('input.toggle-pause'));
 
     const toolbarContainer = this.contentElement.createChild('div', 'input-timeline-toolbar-container');
     this._panelToolbar = new UI.Toolbar.Toolbar('input-timeline-toolbar', toolbarContainer);
@@ -152,7 +156,7 @@ export class InputTimeline extends UI.Widget.VBox {
   async _saveToFile() {
     console.assert(this._state === State.Idle && this._tracingModel);
 
-    const fileName = `InputProfile-${new Date().toISO8601Compact()}.json`;
+    const fileName = `InputProfile-${Platform.DateUtilities.toISO8601Compact(new Date())}.json`;
     const stream = new Bindings.FileUtils.FileOutputStream();
 
     const accepted = await stream.open(fileName);

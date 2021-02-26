@@ -16,31 +16,30 @@
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/cfx_unicodeencodingex.h"
 #include "core/fxge/fx_font.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check.h"
+#include "xfa/fgas/font/cfgas_fontmgr.h"
+#include "xfa/fgas/font/cfgas_gemodule.h"
 #include "xfa/fgas/font/fgas_fontutils.h"
 
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadFont(const wchar_t* pszFontFamily,
                                                uint32_t dwFontStyles,
-                                               uint16_t wCodePage,
-                                               CFGAS_FontMgr* pFontMgr) {
+                                               uint16_t wCodePage) {
 #if defined(OS_WIN)
-  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>(pFontMgr);
+  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>();
   if (!pFont->LoadFontInternal(pszFontFamily, dwFontStyles, wCodePage))
     return nullptr;
   return pFont;
 #else
-  if (!pFontMgr)
-    return nullptr;
-  return pFontMgr->GetFontByCodePage(wCodePage, dwFontStyles, pszFontFamily);
+  return CFGAS_GEModule::Get()->GetFontMgr()->GetFontByCodePage(
+      wCodePage, dwFontStyles, pszFontFamily);
 #endif
 }
 
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadFont(
-    const RetainPtr<CPDF_Font>& pPDFFont,
-    CFGAS_FontMgr* pFontMgr) {
-  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>(pFontMgr);
+    const RetainPtr<CPDF_Font>& pPDFFont) {
+  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>();
   if (!pFont->LoadFontInternal(pPDFFont))
     return nullptr;
 
@@ -49,25 +48,24 @@ RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadFont(
 
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadFont(
-    std::unique_ptr<CFX_Font> pInternalFont,
-    CFGAS_FontMgr* pFontMgr) {
-  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>(pFontMgr);
+    std::unique_ptr<CFX_Font> pInternalFont) {
+  auto pFont = pdfium::MakeRetain<CFGAS_GEFont>();
   if (!pFont->LoadFontInternal(std::move(pInternalFont)))
     return nullptr;
+
   return pFont;
 }
 
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadStockFont(
     CPDF_Document* pDoc,
-    CFGAS_FontMgr* pMgr,
     const ByteString& font_family) {
   RetainPtr<CPDF_Font> stock_font =
       CPDF_Font::GetStockFont(pDoc, font_family.AsStringView());
-  return stock_font ? CFGAS_GEFont::LoadFont(stock_font, pMgr) : nullptr;
+  return stock_font ? CFGAS_GEFont::LoadFont(stock_font) : nullptr;
 }
 
-CFGAS_GEFont::CFGAS_GEFont(CFGAS_FontMgr* pFontMgr) : m_pFontMgr(pFontMgr) {}
+CFGAS_GEFont::CFGAS_GEFont() = default;
 
 CFGAS_GEFont::~CFGAS_GEFont() = default;
 
@@ -83,7 +81,7 @@ bool CFGAS_GEFont::LoadFontInternal(const wchar_t* pszFontFamily,
 
   int32_t iWeight =
       FontStyleIsForceBold(dwFontStyles) ? FXFONT_FW_BOLD : FXFONT_FW_NORMAL;
-  m_pFont = pdfium::MakeUnique<CFX_Font>();
+  m_pFont = std::make_unique<CFX_Font>();
   if (FontStyleIsItalic(dwFontStyles) && FontStyleIsForceBold(dwFontStyles))
     csFontFamily += ",BoldItalic";
   else if (FontStyleIsForceBold(dwFontStyles))
@@ -138,7 +136,7 @@ WideString CFGAS_GEFont::GetFamilyName() const {
 }
 
 uint32_t CFGAS_GEFont::GetFontStyles() const {
-  ASSERT(m_pFont);
+  DCHECK(m_pFont);
   if (m_dwLogFontStyle.has_value())
     return m_dwLogFontStyle.value();
 
@@ -247,15 +245,16 @@ std::pair<int32_t, RetainPtr<CFGAS_GEFont>> CFGAS_GEFont::GetGlyphIndexAndFont(
       }
     }
   }
-  if (!m_pFontMgr || !bRecursive)
+  if (!bRecursive)
     return {0xFFFF, nullptr};
 
+  CFGAS_FontMgr* pFontMgr = CFGAS_GEModule::Get()->GetFontMgr();
   WideString wsFamily = GetFamilyName();
   RetainPtr<CFGAS_GEFont> pFont =
-      m_pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), wsFamily.c_str());
+      pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), wsFamily.c_str());
 #if !defined(OS_WIN)
   if (!pFont)
-    pFont = m_pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), nullptr);
+    pFont = pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), nullptr);
 #endif
   if (!pFont || pFont == this)  // Avoids direct cycles below.
     return {0xFFFF, nullptr};

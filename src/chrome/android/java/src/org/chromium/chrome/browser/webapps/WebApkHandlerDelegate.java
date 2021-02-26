@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
@@ -12,7 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.webapk.lib.client.WebApkValidator;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 
 /**
  * Delegate for retrieving WebApkInfo.
@@ -55,6 +56,7 @@ public class WebApkHandlerDelegate {
      * Calls the native WebApkHandlerDelegate with information for each installed WebAPK.
      */
     @CalledByNative
+    @SuppressWarnings("QueryPermissionsNeeded")
     public void retrieveWebApks() {
         if (mNativePointer == 0) {
             return;
@@ -79,9 +81,9 @@ public class WebApkHandlerDelegate {
         // Pass non-null URL parameter so that {@link WebApkInfo#create()}
         // return value is non-null
         WebappInfo webApkInfo = WebappInfo.create(WebApkIntentDataProviderFactory.create(
-                packageInfo.packageName, "", ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */,
-                null /* shareDataActivityClassName */));
+                new Intent(), packageInfo.packageName, "", ShortcutSource.UNKNOWN,
+                false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                null /* shareData */, null /* shareDataActivityClassName */));
         if (webApkInfo == null) {
             return;
         }

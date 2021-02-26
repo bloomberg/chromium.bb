@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -194,8 +194,8 @@ void ErrorConsole::Enable() {
   prefs_ = ExtensionPrefs::Get(profile_);
 
   profile_observer_.Add(profile_);
-  if (profile_->HasOffTheRecordProfile())
-    profile_observer_.Add(profile_->GetOffTheRecordProfile());
+  if (profile_->HasPrimaryOTRProfile())
+    profile_observer_.Add(profile_->GetPrimaryOTRProfile());
 
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
@@ -266,7 +266,7 @@ void ErrorConsole::OnProfileWillBeDestroyed(Profile* profile) {
   profile_observer_.Remove(profile);
   // If incognito profile which we are associated with is destroyed, also
   // destroy all incognito errors.
-  if (profile->IsOffTheRecord() && profile_->IsSameProfile(profile))
+  if (profile->IsOffTheRecord() && profile_->IsSameOrParent(profile))
     errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors(), nullptr);
 }
 

@@ -12,9 +12,11 @@ import {BezierUI} from './BezierUI.js';
  * @unrestricted
  */
 export class BezierEditor extends UI.Widget.VBox {
-  constructor() {
+  /** @param {!UI.Geometry.CubicBezier} bezier */
+  constructor(bezier) {
     super(true);
-    this.registerRequiredCSS('inline_editor/bezierEditor.css');
+    this._bezier = bezier;
+    this.registerRequiredCSS('inline_editor/bezierEditor.css', {enableLegacyPatching: true});
     this.contentElement.tabIndex = 0;
     this.setDefaultFocusedElement(this.contentElement);
 
@@ -28,6 +30,8 @@ export class BezierEditor extends UI.Widget.VBox {
     this._outerContainer = this.contentElement.createChild('div', 'bezier-container');
 
     // Presets UI
+    /** @type{?PresetCategory} */
+    this._selectedCategory = null;
     this._presetsContainer = this._outerContainer.createChild('div', 'bezier-presets');
     this._presetUI = new BezierUI(40, 40, 0, 2, false);
     this._presetCategories = [];
@@ -38,7 +42,7 @@ export class BezierEditor extends UI.Widget.VBox {
 
     // Curve UI
     this._curveUI = new BezierUI(150, 250, 50, 7, true);
-    this._curve = this._outerContainer.createSVGChild('svg', 'bezier-curve');
+    this._curve = UI.UIUtils.createSVGChild(this._outerContainer, 'svg', 'bezier-curve');
     UI.UIUtils.installDragHandle(
         this._curve, this._dragStart.bind(this), this._dragMove.bind(this), this._dragEnd.bind(this), 'default');
 
@@ -51,7 +55,7 @@ export class BezierEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @param {?UI.Geometry.CubicBezier} bezier
+   * @param {!UI.Geometry.CubicBezier} bezier
    */
   setBezier(bezier) {
     if (!bezier) {
@@ -101,7 +105,7 @@ export class BezierEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    * @return {boolean}
    */
   _dragStart(event) {
@@ -128,6 +132,10 @@ export class BezierEditor extends UI.Widget.VBox {
    * @param {number} mouseY
    */
   _updateControlPosition(mouseX, mouseY) {
+    if (this._mouseDownPosition === undefined || this._controlPosition === undefined ||
+        this._selectedPoint === undefined) {
+      return;
+    }
     const deltaX = (mouseX - this._mouseDownPosition.x) / this._curveUI.curveWidth();
     const deltaY = (mouseY - this._mouseDownPosition.y) / this._curveUI.curveHeight();
     const newPosition = new UI.Geometry.Point(
@@ -136,7 +144,7 @@ export class BezierEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _dragMove(event) {
     this._updateControlPosition(event.x, event.y);
@@ -144,7 +152,7 @@ export class BezierEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _dragEnd(event) {
     this._updateControlPosition(event.x, event.y);
@@ -159,7 +167,7 @@ export class BezierEditor extends UI.Widget.VBox {
   _createCategory(presetGroup) {
     const presetElement = document.createElement('div');
     presetElement.classList.add('bezier-preset-category');
-    const iconElement = presetElement.createSVGChild('svg', 'bezier-preset monospace');
+    const iconElement = UI.UIUtils.createSVGChild(presetElement, 'svg', 'bezier-preset monospace');
     const category = {presets: presetGroup, presetIndex: 0, icon: presetElement};
     this._presetUI.drawCurve(UI.Geometry.CubicBezier.parse(category.presets[0].value), iconElement);
     iconElement.addEventListener('click', this._presetCategorySelected.bind(this, category));
@@ -173,10 +181,10 @@ export class BezierEditor extends UI.Widget.VBox {
    * @return {!Element}
    */
   _createPresetModifyIcon(parentElement, className, drawPath) {
-    const icon = parentElement.createSVGChild('svg', 'bezier-preset-modify ' + className);
-    icon.setAttribute('width', 20);
-    icon.setAttribute('height', 20);
-    const path = icon.createSVGChild('path');
+    const icon = UI.UIUtils.createSVGChild(parentElement, 'svg', 'bezier-preset-modify ' + className);
+    icon.setAttribute('width', '20');
+    icon.setAttribute('height', '20');
+    const path = UI.UIUtils.createSVGChild(icon, 'path');
     path.setAttribute('d', drawPath);
     return icon;
   }
@@ -185,7 +193,7 @@ export class BezierEditor extends UI.Widget.VBox {
     for (const category of this._presetCategories) {
       category.icon.classList.remove('bezier-preset-selected');
     }
-    delete this._selectedCategory;
+    this._selectedCategory = null;
     this._header.classList.remove('bezier-header-active');
   }
 
@@ -201,9 +209,12 @@ export class BezierEditor extends UI.Widget.VBox {
     this._header.classList.add('bezier-header-active');
     this._selectedCategory = category;
     this._selectedCategory.icon.classList.add('bezier-preset-selected');
-    this.setBezier(UI.Geometry.CubicBezier.parse(category.presets[category.presetIndex].value));
-    this._onchange();
-    this._startPreviewAnimation();
+    const newBezier = UI.Geometry.CubicBezier.parse(category.presets[category.presetIndex].value);
+    if (newBezier) {
+      this.setBezier(newBezier);
+      this._onchange();
+      this._startPreviewAnimation();
+    }
     if (event) {
       event.consume(true);
     }
@@ -214,16 +225,19 @@ export class BezierEditor extends UI.Widget.VBox {
    * @param {!Event} event
    */
   _presetModifyClicked(intensify, event) {
-    if (!this._selectedCategory) {
+    if (this._selectedCategory === null) {
       return;
     }
 
     const length = this._selectedCategory.presets.length;
     this._selectedCategory.presetIndex = (this._selectedCategory.presetIndex + (intensify ? 1 : -1) + length) % length;
-    this.setBezier(
-        UI.Geometry.CubicBezier.parse(this._selectedCategory.presets[this._selectedCategory.presetIndex].value));
-    this._onchange();
-    this._startPreviewAnimation();
+    const newBezier =
+        UI.Geometry.CubicBezier.parse(this._selectedCategory.presets[this._selectedCategory.presetIndex].value);
+    if (newBezier) {
+      this.setBezier(newBezier);
+      this._onchange();
+      this._startPreviewAnimation();
+    }
   }
 
   _startPreviewAnimation() {
@@ -282,4 +296,5 @@ export const Presets = [
 ];
 
 /** @typedef {{presets: !Array.<{name: string, value: string}>, icon: !Element, presetIndex: number}} */
+// @ts-ignore typedef
 export let PresetCategory;

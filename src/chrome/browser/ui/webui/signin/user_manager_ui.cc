@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui.h"
@@ -56,6 +55,9 @@ content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
     const base::DictionaryValue& localized_strings) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdUserManagerHost);
+
+  source->DisableTrustedTypesCSP();
+
   source->AddLocalizedStrings(localized_strings);
   source->AddBoolean("profileShortcutsEnabled",
                      ProfileShortcutManager::IsFeatureEnabled());

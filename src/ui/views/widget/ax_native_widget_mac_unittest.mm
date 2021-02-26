@@ -81,7 +81,7 @@ class FlexibleRoleTestView : public View {
 
 class TestLabelButton : public LabelButton {
  public:
-  TestLabelButton() : LabelButton(nullptr, base::string16()) {
+  TestLabelButton() {
     // Make sure the label doesn't cover the hit test co-ordinates.
     label()->SetSize(gfx::Size(1, 1));
   }
@@ -772,7 +772,7 @@ class TestComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override { return 2; }
-  base::string16 GetItemAt(int index) override {
+  base::string16 GetItemAt(int index) const override {
     return index == 0 ? base::SysNSStringToUTF16(kTestStringValue)
                       : base::ASCIIToUTF16("Second Item");
   }

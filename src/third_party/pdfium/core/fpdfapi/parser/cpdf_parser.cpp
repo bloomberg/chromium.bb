@@ -28,7 +28,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -58,9 +58,9 @@ class ObjectsHolderStub final : public CPDF_Parser::ParsedObjectsHolder {
 
 CPDF_Parser::CPDF_Parser(ParsedObjectsHolder* holder)
     : m_pObjectsHolder(holder),
-      m_CrossRefTable(pdfium::MakeUnique<CPDF_CrossRefTable>()) {
+      m_CrossRefTable(std::make_unique<CPDF_CrossRefTable>()) {
   if (!holder) {
-    m_pOwnedObjectsHolder = pdfium::MakeUnique<ObjectsHolderStub>();
+    m_pOwnedObjectsHolder = std::make_unique<ObjectsHolderStub>();
     m_pObjectsHolder = m_pOwnedObjectsHolder.get();
   }
 }
@@ -121,7 +121,7 @@ bool CPDF_Parser::InitSyntaxParser(
   if (validator->GetSize() < *header_offset + kPDFHeaderSize)
     return false;
 
-  m_pSyntax = pdfium::MakeUnique<CPDF_SyntaxParser>(validator, *header_offset);
+  m_pSyntax = std::make_unique<CPDF_SyntaxParser>(validator, *header_offset);
   return ParseFileVersion();
 }
 
@@ -243,7 +243,7 @@ CPDF_Parser::Error CPDF_Parser::SetEncryptHandler() {
   if (!pEncryptDict)
     return SUCCESS;
 
-  if (pEncryptDict->GetStringFor("Filter") != "Standard")
+  if (pEncryptDict->GetNameFor("Filter") != "Standard")
     return HANDLER_ERROR;
 
   auto pSecurityHandler = pdfium::MakeRetain<CPDF_SecurityHandler>();
@@ -306,7 +306,7 @@ bool CPDF_Parser::LoadAllCrossRefV4(FX_FILESIZE xref_offset) {
   xref_offset = GetDirectInteger(GetTrailer(), "Prev");
   while (xref_offset) {
     // Check for circular references.
-    if (pdfium::ContainsKey(seen_xref_offset, xref_offset))
+    if (pdfium::Contains(seen_xref_offset, xref_offset))
       return false;
 
     seen_xref_offset.insert(xref_offset);
@@ -326,7 +326,7 @@ bool CPDF_Parser::LoadAllCrossRefV4(FX_FILESIZE xref_offset) {
                             pDict->GetIntegerFor("XRefStm"));
 
     m_CrossRefTable = CPDF_CrossRefTable::MergeUp(
-        pdfium::MakeUnique<CPDF_CrossRefTable>(std::move(pDict)),
+        std::make_unique<CPDF_CrossRefTable>(std::move(pDict)),
         std::move(m_CrossRefTable));
   }
 
@@ -365,7 +365,7 @@ bool CPDF_Parser::LoadLinearizedAllCrossRefV4(FX_FILESIZE main_xref_offset) {
 
   // Merge the trailers.
   m_CrossRefTable = CPDF_CrossRefTable::MergeUp(
-      pdfium::MakeUnique<CPDF_CrossRefTable>(std::move(main_trailer)),
+      std::make_unique<CPDF_CrossRefTable>(std::move(main_trailer)),
       std::move(m_CrossRefTable));
 
   // Now GetTrailer() returns the merged trailer, where /Prev is from the
@@ -373,7 +373,7 @@ bool CPDF_Parser::LoadLinearizedAllCrossRefV4(FX_FILESIZE main_xref_offset) {
   FX_FILESIZE xref_offset = GetDirectInteger(GetTrailer(), "Prev");
   while (xref_offset) {
     // Check for circular references.
-    if (pdfium::ContainsKey(seen_xref_offset, xref_offset))
+    if (pdfium::Contains(seen_xref_offset, xref_offset))
       return false;
 
     seen_xref_offset.insert(xref_offset);
@@ -393,7 +393,7 @@ bool CPDF_Parser::LoadLinearizedAllCrossRefV4(FX_FILESIZE main_xref_offset) {
                             pDict->GetIntegerFor("XRefStm"));
 
     m_CrossRefTable = CPDF_CrossRefTable::MergeUp(
-        pdfium::MakeUnique<CPDF_CrossRefTable>(std::move(pDict)),
+        std::make_unique<CPDF_CrossRefTable>(std::move(pDict)),
         std::move(m_CrossRefTable));
   }
 
@@ -574,7 +574,7 @@ bool CPDF_Parser::LoadAllCrossRefV5(FX_FILESIZE xref_offset) {
       return false;
 
     // Check for circular references.
-    if (pdfium::ContainsKey(seen_xref_offset, xref_offset))
+    if (pdfium::Contains(seen_xref_offset, xref_offset))
       return false;
   }
   m_ObjectStreamMap.clear();
@@ -583,7 +583,7 @@ bool CPDF_Parser::LoadAllCrossRefV5(FX_FILESIZE xref_offset) {
 }
 
 bool CPDF_Parser::RebuildCrossRef() {
-  auto cross_ref_table = pdfium::MakeUnique<CPDF_CrossRefTable>();
+  auto cross_ref_table = std::make_unique<CPDF_CrossRefTable>();
 
   const uint32_t kBufferSize = 4096;
   m_pSyntax->SetReadBufferSize(kBufferSize);
@@ -610,7 +610,7 @@ bool CPDF_Parser::RebuildCrossRef() {
       if (pTrailer) {
         cross_ref_table = CPDF_CrossRefTable::MergeUp(
             std::move(cross_ref_table),
-            pdfium::MakeUnique<CPDF_CrossRefTable>(ToDictionary(
+            std::make_unique<CPDF_CrossRefTable>(ToDictionary(
                 pTrailer->IsStream() ? pTrailer->AsStream()->GetDict()->Clone()
                                      : std::move(pTrailer))));
       }
@@ -624,10 +624,10 @@ bool CPDF_Parser::RebuildCrossRef() {
           ToStream(m_pSyntax->GetIndirectObject(
               nullptr, CPDF_SyntaxParser::ParseType::kStrict));
 
-      if (pStream && pStream->GetDict()->GetStringFor("Type") == "XRef") {
+      if (pStream && pStream->GetDict()->GetNameFor("Type") == "XRef") {
         cross_ref_table = CPDF_CrossRefTable::MergeUp(
             std::move(cross_ref_table),
-            pdfium::MakeUnique<CPDF_CrossRefTable>(
+            std::make_unique<CPDF_CrossRefTable>(
                 ToDictionary(pStream->GetDict()->Clone())));
       }
 
@@ -671,11 +671,11 @@ bool CPDF_Parser::LoadCrossRefV5(FX_FILESIZE* pos, bool bMainXRef) {
   RetainPtr<CPDF_Dictionary> pNewTrailer = ToDictionary(pDict->Clone());
   if (bMainXRef) {
     m_CrossRefTable =
-        pdfium::MakeUnique<CPDF_CrossRefTable>(std::move(pNewTrailer));
+        std::make_unique<CPDF_CrossRefTable>(std::move(pNewTrailer));
     m_CrossRefTable->ShrinkObjectMap(size);
   } else {
     m_CrossRefTable = CPDF_CrossRefTable::MergeUp(
-        pdfium::MakeUnique<CPDF_CrossRefTable>(std::move(pNewTrailer)),
+        std::make_unique<CPDF_CrossRefTable>(std::move(pNewTrailer)),
         std::move(m_CrossRefTable));
   }
 
@@ -860,7 +860,7 @@ RetainPtr<CPDF_Object> CPDF_Parser::ParseIndirectObject(uint32_t objnum) {
     return nullptr;
 
   // Prevent circular parsing the same object.
-  if (pdfium::ContainsKey(m_ParsingObjNums, objnum))
+  if (pdfium::Contains(m_ParsingObjNums, objnum))
     return nullptr;
 
   pdfium::ScopedSetInsertion<uint32_t> local_insert(&m_ParsingObjNums, objnum);
@@ -883,7 +883,7 @@ RetainPtr<CPDF_Object> CPDF_Parser::ParseIndirectObject(uint32_t objnum) {
 
 const CPDF_ObjectStream* CPDF_Parser::GetObjectStream(uint32_t object_number) {
   // Prevent circular parsing the same object.
-  if (pdfium::ContainsKey(m_ParsingObjNums, object_number))
+  if (pdfium::Contains(m_ParsingObjNums, object_number))
     return nullptr;
 
   pdfium::ScopedSetInsertion<uint32_t> local_insert(&m_ParsingObjNums,
@@ -1049,7 +1049,7 @@ bool CPDF_Parser::LoadLinearizedAllCrossRefV5(FX_FILESIZE main_xref_offset) {
       return false;
 
     // Check for circular references.
-    if (pdfium::ContainsKey(seen_xref_offset, xref_offset))
+    if (pdfium::Contains(seen_xref_offset, xref_offset))
       return false;
   }
   m_ObjectStreamMap.clear();

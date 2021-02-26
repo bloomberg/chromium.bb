@@ -15,7 +15,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
@@ -114,6 +114,14 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     pending_bootstrap_ = std::move(pending_bootstrap);
   }
 
+  void set_verbose_logging_enabled(bool enabled) {
+    verbose_logging_enabled_ = enabled;
+  }
+
+  drivefs::mojom::ExtensionConnectionParams& get_last_extension_params() {
+    return *extension_params_;
+  }
+
   // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD2(OnMountFailed,
@@ -153,11 +161,24 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     return base::FilePath("/MyFiles");
   }
 
+  bool IsVerboseLoggingEnabled() override { return verbose_logging_enabled_; }
+
+  drivefs::mojom::DriveFsDelegate::ExtensionConnectionStatus ConnectToExtension(
+      drivefs::mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<drivefs::mojom::NativeMessagingPort> port,
+      mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host) override {
+    extension_params_ = std::move(params);
+    return drivefs::mojom::DriveFsDelegate::ExtensionConnectionStatus::
+        kExtensionNotFound;
+  }
+
   signin::IdentityManager* const identity_manager_;
   const AccountId account_id_;
   mojo::PendingRemote<mojom::DriveFsBootstrap> pending_bootstrap_;
+  bool verbose_logging_enabled_ = false;
   invalidation::FakeInvalidationService invalidation_service_;
   drive::DriveNotificationManager drive_notification_manager_;
+  drivefs::mojom::ExtensionConnectionParamsPtr extension_params_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingDriveFsHostDelegate);
 };
@@ -295,6 +316,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     EXPECT_EQ("test@example.com", config->user_email);
     EXPECT_EQ("recovered files",
               config->lost_and_found_directory_name.value_or("<None>"));
+    verbose_logging_enabled_ = config->enable_verbose_logging;
     init_access_token_ = std::move(config->access_token);
     receiver_.Bind(std::move(drive_fs_receiver));
     mojo::FusePipes(std::move(pending_delegate_receiver_), std::move(delegate));
@@ -311,6 +333,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
+  base::Optional<bool> verbose_logging_enabled_;
 
   mojo::Receiver<mojom::DriveFsBootstrap> bootstrap_receiver_{this};
   MockDriveFs mock_drivefs_;
@@ -336,6 +359,8 @@ TEST_F(DriveFsHostTest, Basic) {
 
   ASSERT_NO_FATAL_FAILURE(DoMount());
   EXPECT_FALSE(init_access_token_);
+  ASSERT_TRUE(verbose_logging_enabled_);
+  EXPECT_FALSE(verbose_logging_enabled_.value());
 
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
             host_->GetMountPath());
@@ -346,6 +371,15 @@ TEST_F(DriveFsHostTest, Basic) {
   delegate_.set_disconnect_handler(run_loop.QuitClosure());
   host_->Unmount();
   run_loop.Run();
+}
+
+TEST_F(DriveFsHostTest, EnableVerboseLogging) {
+  ASSERT_FALSE(host_->IsMounted());
+
+  host_delegate_->set_verbose_logging_enabled(true);
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  ASSERT_TRUE(verbose_logging_enabled_);
+  EXPECT_TRUE(verbose_logging_enabled_.value());
 }
 
 TEST_F(DriveFsHostTest, GetMountPathWhileUnmounted) {
@@ -456,7 +490,7 @@ TEST_F(DriveFsHostTest, OnSyncingStatusUpdate_ForwardToObservers) {
   auto status = mojom::SyncingStatus::New();
   status->item_events.emplace_back(base::in_place, 12, 34, "filename.txt",
                                    mojom::ItemEvent::State::kInProgress, 123,
-                                   456);
+                                   456, mojom::ItemEventReason::kPin);
   mojom::SyncingStatusPtr observed_status;
   EXPECT_CALL(observer, OnSyncingStatusUpdate(_))
       .WillOnce(CloneStruct(&observed_status));
@@ -727,6 +761,29 @@ TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
           }));
   delegate_.FlushForTesting();
   EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
+}
+
+TEST_F(DriveFsHostTest, ConnectToExtension) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  mojo::Remote<drivefs::mojom::NativeMessagingPort> remote;
+  mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host_remote;
+  auto receiver = host_remote.InitWithNewPipeAndPassReceiver();
+
+  base::RunLoop run_loop;
+  delegate_->ConnectToExtension(
+      drivefs::mojom::ExtensionConnectionParams::New("foo"),
+      remote.BindNewPipeAndPassReceiver(), std::move(host_remote),
+      base::BindLambdaForTesting(
+          [&](drivefs::mojom::DriveFsDelegate::ExtensionConnectionStatus
+                  status) {
+            EXPECT_EQ(drivefs::mojom::DriveFsDelegate::
+                          ExtensionConnectionStatus::kExtensionNotFound,
+                      status);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  EXPECT_EQ("foo", host_delegate_->get_last_extension_params().extension_id);
 }
 
 }  // namespace

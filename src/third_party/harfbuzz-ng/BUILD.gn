@@ -63,7 +63,6 @@ if (use_system_harfbuzz) {
     ]
 
     sources = [
-      "src/src/hb-aat-fdsc-table.hh",
       "src/src/hb-aat-layout-ankr-table.hh",
       "src/src/hb-aat-layout-bsln-table.hh",
       "src/src/hb-aat-layout-feat-table.hh",
@@ -160,6 +159,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-os2-unicode-ranges.hh",
       "src/src/hb-ot-post-macroman.hh",
       "src/src/hb-ot-shape-complex-arabic-fallback.hh",
+      "src/src/hb-ot-shape-complex-arabic-joining-list.hh",
       "src/src/hb-ot-shape-complex-arabic-table.hh",
       "src/src/hb-ot-shape-complex-arabic.cc",
       "src/src/hb-ot-shape-complex-arabic.hh",
@@ -173,6 +173,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-shape-complex-khmer-machine.hh",
       "src/src/hb-ot-shape-complex-khmer.cc",
       "src/src/hb-ot-shape-complex-khmer.hh",
+      "src/src/hb-ot-shape-complex-machine-index.hh",
       "src/src/hb-ot-shape-complex-myanmar-machine.hh",
       "src/src/hb-ot-shape-complex-myanmar.cc",
       "src/src/hb-ot-shape-complex-myanmar.hh",
@@ -279,13 +280,22 @@ if (use_system_harfbuzz) {
       } else {
         configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
         configs += [ "//build/config/gcc:symbol_visibility_default" ]
+
+        # Exposing symbols in component builds can cause a mixture of system
+        # harfbuzz symbols and //third_party harfbuzz symbols to be loaded at
+        # the same time.  This can cause issues for libraries that indirectly
+        # load harfbuzz like pango (see https://crbug.com/1146397), so include
+        # metrics symbols to prevent pango from using the system library.
+        # TODO(https://crbug.com/1148459): Remove this workaround once bug
+        # 1148459 is fixed.
+        defines -= [ "HB_NO_METRICS" ]
       }
     }
 
     if (use_system_freetype) {
       configs += [ "//build/linux:freetype_from_pkgconfig" ]
     } else {
-      configs += [ "//third_party/freetype:freetype_config" ]
+      configs += [ "//third_party/freetype:freetype_component_config" ]
     }
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [

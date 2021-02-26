@@ -9,6 +9,8 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -19,18 +21,24 @@
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/fake_arc_session.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -204,7 +212,8 @@ class GuestOsSharePathTest : public testing::Test {
 
   GuestOsSharePathTest()
       : local_state_(std::make_unique<ScopedTestingLocalState>(
-            TestingBrowserProcess::GetGlobal())) {
+            TestingBrowserProcess::GetGlobal())),
+        browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
@@ -241,6 +250,17 @@ class GuestOsSharePathTest : public testing::Test {
   }
 
   void SetUp() override {
+    component_manager_ =
+        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
+    component_manager_->set_supported_components({"cros-termina"});
+    component_manager_->ResetComponentState(
+        "cros-termina",
+        component_updater::FakeCrOSComponentManager::ComponentInfo(
+            component_updater::CrOSComponentManager::Error::NONE,
+            base::FilePath("/install/path"), base::FilePath("/mount/path")));
+    browser_part_.InitializeCrosComponentManager(component_manager_);
+    chromeos::DlcserviceClient::InitializeFake();
+
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     guest_os_share_path_ = GuestOsSharePath::GetForProfile(profile());
@@ -261,9 +281,15 @@ class GuestOsSharePathTest : public testing::Test {
 
     g_browser_process->platform_part()
         ->InitializeSchedulerConfigurationManager();
+
+    // Create ArcSessionManager for ARCVM testing.
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
+        std::make_unique<arc::ArcSessionRunner>(
+            base::BindRepeating(arc::FakeArcSession::Create)));
   }
 
   void TearDown() override {
+    arc_session_manager_.reset();
     g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     // Shutdown GuestOsSharePath to schedule FilePathWatchers to be destroyed,
     // then run thread bundle to ensure they are.
@@ -272,6 +298,9 @@ class GuestOsSharePathTest : public testing::Test {
     run_loop_.reset();
     scoped_user_manager_.reset();
     profile_.reset();
+    chromeos::DlcserviceClient::Shutdown();
+    browser_part_.ShutdownCrosComponentManager();
+    component_manager_.reset();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
@@ -299,9 +328,12 @@ class GuestOsSharePathTest : public testing::Test {
   base::test::ScopedFeatureList features_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   AccountId account_id_;
+  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 
  private:
   std::unique_ptr<ScopedTestingLocalState> local_state_;
+  scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
+  BrowserProcessPlatformPartTestApi browser_part_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePathTest);
 };
@@ -353,6 +385,28 @@ TEST_F(GuestOsSharePathTest, SuccessPluginVm) {
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
                      "path-to-share", Success::YES, ""));
+  run_loop()->Run();
+}
+
+// Tests that ARCVM can share path.
+TEST_F(GuestOsSharePathTest, SuccessArcvm) {
+  SetUpVolume();
+
+  // Set up VmInfo in |arc_session_manager_| to simulate a running ARCVM.
+  vm_tools::concierge::VmStartedSignal start_signal;
+  start_signal.set_name(arc::kArcVmName);
+  start_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
+  arc_session_manager_->OnVmStarted(start_signal);
+
+  guest_os_share_path_->SharePath(
+      arc::kArcVmName, drivefs_.Append("root").Append("ArcvmTest"), PERSIST_NO,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
+                     base::Unretained(this), arc::kArcVmName, Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
+                     "ArcvmTest", Success::YES, ""));
+  // Also validate the seneschal server handle.
+  EXPECT_EQ(1000UL, fake_seneschal_client_->last_share_path_request().handle());
   run_loop()->Run();
 }
 
@@ -756,6 +810,30 @@ TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
   run_loop()->Run();
 }
 
+// Tests that it cannot unshare path when ARCVM is not running.
+TEST_F(GuestOsSharePathTest, UnsharePathArcvmNotRunning) {
+  SetUpVolume();
+  DictionaryPrefUpdate update(profile()->GetPrefs(),
+                              prefs::kGuestOSPathsSharedToVms);
+  base::DictionaryValue* shared_paths = update.Get();
+  base::Value vms(base::Value::Type::LIST);
+  vms.Append(base::Value(arc::kArcVmName));
+  shared_paths->SetKey(shared_path_.value(), std::move(vms));
+
+  // Remove VmInfo from |arc_session_manager_| to simulate a stopped ARCVM.
+  vm_tools::concierge::VmStoppedSignal stop_signal;
+  stop_signal.set_name(arc::kArcVmName);
+  arc_session_manager_->OnVmStopped(stop_signal);
+
+  guest_os_share_path_->UnsharePath(
+      arc::kArcVmName, shared_path_, true,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), shared_path_, Persist::NO,
+                     SeneschalClientCalled::NO, "", Success::YES,
+                     "ARCVM not running, cannot unshare paths"));
+  run_loop()->Run();
+}
+
 TEST_F(GuestOsSharePathTest, UnsharePathInvalidPath) {
   SetUpVolume();
   base::FilePath invalid("invalid/path");
@@ -907,7 +985,7 @@ TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountExists) {
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
-  ASSERT_TRUE(base::DeleteFile(shared_path_, false));
+  ASSERT_TRUE(base::DeleteFile(shared_path_));
   guest_os_share_path_->set_seneschal_callback_for_testing(base::BindRepeating(
       &GuestOsSharePathTest::SeneschalUnsharePathCallback,
       base::Unretained(this), "unshare-on-delete", shared_path_, Persist::NO,
@@ -944,6 +1022,28 @@ TEST_F(GuestOsSharePathTest, RegisterPathThenUnshare) {
                      SeneschalClientCalled::YES, "MyFiles/path-to-share",
                      Success::YES, ""));
   run_loop()->Run();
+}
+
+TEST_F(GuestOsSharePathTest, IsPathShared) {
+  SetUpVolume();
+  // shared_path_ and children paths are shared for 'termina'.
+  for (auto& path : {shared_path_, shared_path_.Append("a.txt"),
+                     shared_path_.Append("a"), shared_path_.Append("a/b")}) {
+    EXPECT_TRUE(guest_os_share_path_->IsPathShared(
+        crostini::kCrostiniDefaultVmName, path));
+  }
+  // Any parent paths are not shared.
+  for (auto& path : {shared_path_.DirName(), root_}) {
+    EXPECT_FALSE(guest_os_share_path_->IsPathShared(
+        crostini::kCrostiniDefaultVmName, path));
+  }
+
+  // No paths are shared for 'not-shared' VM.
+  for (auto& path :
+       {shared_path_, shared_path_.Append("a.txt"), shared_path_.Append("a"),
+        shared_path_.Append("a/b"), shared_path_.DirName(), root_}) {
+    EXPECT_FALSE(guest_os_share_path_->IsPathShared("not-shared", path));
+  }
 }
 
 }  // namespace guest_os

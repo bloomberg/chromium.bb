@@ -28,7 +28,6 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.h"
@@ -182,7 +181,7 @@ void RTCDTMFSender::ContextDestroyed() {
   handler_->SetClient(nullptr);
 }
 
-void RTCDTMFSender::Trace(Visitor* visitor) {
+void RTCDTMFSender::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   RtcDtmfSenderHandler::Client::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

@@ -57,7 +57,22 @@ Polymer({
    * @private
    */
   onIronSelect_(e) {
-    // Call initialFocus() on the selected subpage, only if:
+    // Ignore bubbling 'iron-select' events not originating from
+    // |animatedPages| itself.
+    if (e.target !== this.$.animatedPages) {
+      return;
+    }
+
+    // <if expr="chromeos">
+    // If the setting ID parameter is present, don't focus anything since
+    // a setting element will be deep linked and focused.
+    if (loadTimeData.valueExists('isOSSettings') &&
+        loadTimeData.getBoolean('isOSSettings') && getSettingIdParameter()) {
+      return;
+    }
+    // </if>
+
+    // Call focusBackButton() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be
     //     focused (further below in this function).
@@ -65,7 +80,7 @@ Polymer({
         !settings.Router.getInstance().lastRouteChangeWasPopstate()) {
       const subpage = this.querySelector('settings-subpage.iron-selected');
       if (subpage) {
-        subpage.initialFocus();
+        subpage.focusBackButton();
         return;
       }
     }
@@ -93,11 +108,11 @@ Polymer({
         this.focusConfig.get(this.previousRoute_.path);
     if (pathConfig) {
       let handler;
-      if (typeof pathConfig == 'function') {
+      if (typeof pathConfig === 'function') {
         handler = pathConfig;
       } else {
         handler = () => {
-          if (typeof pathConfig == 'string') {
+          if (typeof pathConfig === 'string') {
             pathConfig = assert(this.querySelector(pathConfig));
           }
           cr.ui.focusWithoutInk(/** @type {!Element} */ (pathConfig));
@@ -138,7 +153,7 @@ Polymer({
   currentRouteChanged(newRoute, oldRoute) {
     this.previousRoute_ = oldRoute;
 
-    if (newRoute.section == this.section && newRoute.isSubpage()) {
+    if (newRoute.section === this.section && newRoute.isSubpage()) {
       this.switchToSubpage_(newRoute, oldRoute);
     } else {
       this.$.animatedPages.selected = 'default';

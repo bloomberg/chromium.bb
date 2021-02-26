@@ -5,68 +5,34 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class BoolAttributeSetter : public AXSparseAttributeSetter {
- public:
-  BoolAttributeSetter(AXBoolAttribute attribute) : attribute_(attribute) {}
+void SetIntAttribute(ax::mojom::blink::IntAttribute attribute,
+                     AXObject* object,
+                     ui::AXNodeData* node_data,
+                     const AtomicString& value) {
+  node_data->AddIntAttribute(attribute, value.ToInt());
+}
 
- private:
-  AXBoolAttribute attribute_;
+void SetBoolAttribute(ax::mojom::blink::BoolAttribute attribute,
+                      AXObject* object,
+                      ui::AXNodeData* node_data,
+                      const AtomicString& value) {
+  // ARIA booleans are true if not "false" and not specifically undefined.
+  bool is_true = !AccessibleNode::IsUndefinedAttrValue(value) &&
+                 !EqualIgnoringASCIICase(value, "false");
+  if (is_true)  // Not necessary to add if false
+    node_data->AddBoolAttribute(attribute, true);
+}
 
-  void Run(const AXObject& obj,
-           AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) override {
-    // ARIA booleans are true if not "false" and not specifically undefined.
-    bool is_true = !AccessibleNode::IsUndefinedAttrValue(value) &&
-                   !EqualIgnoringASCIICase(value, "false");
-    if (is_true)  // Not necessary to add if false
-      attribute_map.AddBoolAttribute(attribute_, true);
-  }
-};
-
-class IntAttributeSetter : public AXSparseAttributeSetter {
- public:
-  IntAttributeSetter(AXIntAttribute attribute) : attribute_(attribute) {}
-
- private:
-  AXIntAttribute attribute_;
-
-  void Run(const AXObject& obj,
-           AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) override {
-    attribute_map.AddIntAttribute(attribute_, value.ToInt());
-  }
-};
-
-class UIntAttributeSetter : public AXSparseAttributeSetter {
- public:
-  UIntAttributeSetter(AXUIntAttribute attribute) : attribute_(attribute) {}
-
- private:
-  AXUIntAttribute attribute_;
-
-  void Run(const AXObject& obj,
-           AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) override {
-    attribute_map.AddUIntAttribute(attribute_, value.ToInt());
-  }
-};
-
-class StringAttributeSetter : public AXSparseAttributeSetter {
- public:
-  StringAttributeSetter(AXStringAttribute attribute) : attribute_(attribute) {}
-
- private:
-  AXStringAttribute attribute_;
-
-  void Run(const AXObject& obj,
-           AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) override {
-    attribute_map.AddStringAttribute(attribute_, value);
-  }
-};
+void SetStringAttribute(ax::mojom::blink::StringAttribute attribute,
+                        AXObject* object,
+                        ui::AXNodeData* node_data,
+                        const AtomicString& value) {
+  node_data->AddStringAttribute(attribute, value.Utf8());
+}
 
 class ObjectAttributeSetter : public AXSparseAttributeSetter {
  public:
@@ -139,7 +105,8 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
         element->GetElementArrayAttribute(GetAttributeQualifiedName());
     if (!attr_associated_elements)
       return;
-    HeapVector<Member<AXObject>> objects;
+    HeapVector<Member<AXObject>>* objects =
+        MakeGarbageCollected<HeapVector<Member<AXObject>>>();
     for (const auto& associated_element : attr_associated_elements.value()) {
       AXObject* ax_element =
           obj.AXObjectCache().GetOrCreate(associated_element);
@@ -148,7 +115,7 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
       if (AXObject* parent = ax_element->ParentObject())
         parent->UpdateChildrenIfNecessary();
       if (!ax_element->AccessibilityIsIgnored())
-        objects.push_back(ax_element);
+        objects->push_back(ax_element);
     }
     attribute_map.AddObjectVectorAttribute(attribute_, objects);
   }
@@ -178,74 +145,65 @@ AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
     ax_sparse_attribute_setter_map.Set(
         html_names::kAriaErrormessageAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaErrorMessage));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaKeyshortcutsAttr,
-        new StringAttributeSetter(AXStringAttribute::kAriaKeyShortcuts));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaRoledescriptionAttr,
-        new StringAttributeSetter(AXStringAttribute::kAriaRoleDescription));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaBusyAttr,
-        new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaColcountAttr,
-        new IntAttributeSetter(AXIntAttribute::kAriaColumnCount));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaColindexAttr,
-        new UIntAttributeSetter(AXUIntAttribute::kAriaColumnIndex));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaColspanAttr,
-        new UIntAttributeSetter(AXUIntAttribute::kAriaColumnSpan));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaRowcountAttr,
-        new IntAttributeSetter(AXIntAttribute::kAriaRowCount));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaRowindexAttr,
-        new UIntAttributeSetter(AXUIntAttribute::kAriaRowIndex));
-    ax_sparse_attribute_setter_map.Set(
-        html_names::kAriaRowspanAttr,
-        new UIntAttributeSetter(AXUIntAttribute::kAriaRowSpan));
   }
   return ax_sparse_attribute_setter_map;
 }
 
+// TODO(meredithl): move the rest of the sparse attributes to this map.
+TempSetterMap& GetTempSetterMap() {
+  DEFINE_STATIC_LOCAL(TempSetterMap, temp_setter_map, ());
+  if (temp_setter_map.IsEmpty()) {
+    temp_setter_map.Set(
+        html_names::kAriaBusyAttr,
+        WTF::BindRepeating(&SetBoolAttribute,
+                           ax::mojom::blink::BoolAttribute::kBusy));
+    temp_setter_map.Set(
+        html_names::kAriaColcountAttr,
+        WTF::BindRepeating(&SetIntAttribute,
+                           ax::mojom::blink::IntAttribute::kAriaColumnCount));
+    temp_setter_map.Set(
+        html_names::kAriaColindexAttr,
+        WTF::BindRepeating(
+            &SetIntAttribute,
+            ax::mojom::blink::IntAttribute::kAriaCellColumnIndex));
+    temp_setter_map.Set(
+        html_names::kAriaColspanAttr,
+        WTF::BindRepeating(
+            &SetIntAttribute,
+            ax::mojom::blink::IntAttribute::kAriaCellColumnSpan));
+    temp_setter_map.Set(
+        html_names::kAriaRowcountAttr,
+        WTF::BindRepeating(&SetIntAttribute,
+                           ax::mojom::blink::IntAttribute::kAriaRowCount));
+    temp_setter_map.Set(
+        html_names::kAriaRowindexAttr,
+        WTF::BindRepeating(&SetIntAttribute,
+                           ax::mojom::blink::IntAttribute::kAriaCellRowIndex));
+    temp_setter_map.Set(
+        html_names::kAriaRowspanAttr,
+        WTF::BindRepeating(&SetIntAttribute,
+                           ax::mojom::blink::IntAttribute::kAriaCellRowSpan));
+    temp_setter_map.Set(
+        html_names::kAriaRoledescriptionAttr,
+        WTF::BindRepeating(
+            &SetStringAttribute,
+            ax::mojom::blink::StringAttribute::kRoleDescription));
+    temp_setter_map.Set(
+        html_names::kAriaKeyshortcutsAttr,
+        WTF::BindRepeating(&SetStringAttribute,
+                           ax::mojom::blink::StringAttribute::kKeyShortcuts));
+  }
+
+  return temp_setter_map;
+}
+
 void AXSparseAttributeAOMPropertyClient::AddStringProperty(
     AOMStringProperty property,
-    const String& value) {
-  AXStringAttribute attribute;
-  switch (property) {
-    case AOMStringProperty::kKeyShortcuts:
-      attribute = AXStringAttribute::kAriaKeyShortcuts;
-      break;
-    case AOMStringProperty::kRoleDescription:
-      attribute = AXStringAttribute::kAriaRoleDescription;
-      break;
-    default:
-      return;
-  }
-  sparse_attribute_client_.AddStringAttribute(attribute, value);
-}
+    const String& value) {}
 
 void AXSparseAttributeAOMPropertyClient::AddBooleanProperty(
     AOMBooleanProperty property,
-    bool value) {
-  AXBoolAttribute attribute;
-  switch (property) {
-    case AOMBooleanProperty::kBusy:
-      attribute = AXBoolAttribute::kAriaBusy;
-      break;
-    default:
-      return;
-  }
-  sparse_attribute_client_.AddBoolAttribute(attribute, value);
-}
-
-void AXSparseAttributeAOMPropertyClient::AddIntProperty(AOMIntProperty property,
-                                                        int32_t value) {}
-
-void AXSparseAttributeAOMPropertyClient::AddUIntProperty(
-    AOMUIntProperty property,
-    uint32_t value) {}
+    bool value) {}
 
 void AXSparseAttributeAOMPropertyClient::AddFloatProperty(
     AOMFloatProperty property,
@@ -290,18 +248,60 @@ void AXSparseAttributeAOMPropertyClient::AddRelationListProperty(
       return;
   }
 
-  HeapVector<Member<AXObject>> objects;
+  HeapVector<Member<AXObject>>* objects =
+      MakeGarbageCollected<HeapVector<Member<AXObject>>>();
   for (unsigned i = 0; i < relations.length(); ++i) {
     AccessibleNode* accessible_node = relations.item(i);
     if (accessible_node) {
       Element* element = accessible_node->element();
       AXObject* ax_element = ax_object_cache_->GetOrCreate(element);
       if (ax_element && !ax_element->AccessibilityIsIgnored())
-        objects.push_back(ax_element);
+        objects->push_back(ax_element);
     }
   }
 
   sparse_attribute_client_.AddObjectVectorAttribute(attribute, objects);
 }
+
+void AXNodeDataAOMPropertyClient::AddStringProperty(AOMStringProperty property,
+                                                    const String& value) {
+  ax::mojom::blink::StringAttribute attribute;
+  switch (property) {
+    case AOMStringProperty::kKeyShortcuts:
+      attribute = ax::mojom::blink::StringAttribute::kKeyShortcuts;
+      break;
+    case AOMStringProperty::kRoleDescription:
+      attribute = ax::mojom::blink::StringAttribute::kRoleDescription;
+      break;
+    default:
+      return;
+  }
+  node_data_.AddStringAttribute(attribute, value.Utf8());
+}
+
+void AXNodeDataAOMPropertyClient::AddBooleanProperty(
+    AOMBooleanProperty property,
+    bool value) {
+  ax::mojom::blink::BoolAttribute attribute;
+  switch (property) {
+    case AOMBooleanProperty::kBusy:
+      attribute = ax::mojom::blink::BoolAttribute::kBusy;
+      break;
+    default:
+      return;
+  }
+  node_data_.AddBoolAttribute(attribute, value);
+}
+
+void AXNodeDataAOMPropertyClient::AddFloatProperty(AOMFloatProperty property,
+                                                   float value) {}
+
+void AXNodeDataAOMPropertyClient::AddRelationProperty(
+    AOMRelationProperty property,
+    const AccessibleNode& value) {}
+
+void AXNodeDataAOMPropertyClient::AddRelationListProperty(
+    AOMRelationListProperty property,
+    const AccessibleNodeList& relations) {}
 
 }  // namespace blink

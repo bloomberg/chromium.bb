@@ -10,16 +10,13 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_hash_data.h"
+#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-#include "components/password_manager/core/browser/password_hash_data.h"  // nogncheck
-#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"  // nogncheck
-#endif
 
 namespace password_manager {
 
@@ -53,7 +50,7 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithArgs(
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {
-  const autofill::PasswordForm::Scheme scheme;
+  const PasswordForm::Scheme scheme;
   const char* signon_realm;
   const char* origin;
   const char* action;
@@ -67,25 +64,24 @@ struct PasswordFormData {
 };
 
 // Creates and returns a new PasswordForm built from |form_data|.
-std::unique_ptr<autofill::PasswordForm> PasswordFormFromData(
+std::unique_ptr<PasswordForm> PasswordFormFromData(
     const PasswordFormData& form_data);
 
 // Like PasswordFormFromData(), but also fills arbitrary values into fields not
 // specified by |form_data|.  This may be useful e.g. for tests looking to
 // verify the handling of these fields.  If |use_federated_login| is true, this
 // function will set the form's |federation_origin|.
-std::unique_ptr<autofill::PasswordForm> FillPasswordFormWithData(
+std::unique_ptr<PasswordForm> FillPasswordFormWithData(
     const PasswordFormData& form_data,
     bool use_federated_login = false);
 
 // Creates a new vector entry. Callers are expected to call .get() to get a raw
 // pointer to the underlying PasswordForm.
-std::unique_ptr<autofill::PasswordForm> CreateEntry(
-    const std::string& username,
-    const std::string& password,
-    const GURL& origin_url,
-    bool is_psl_match,
-    bool is_affiliation_based_match);
+std::unique_ptr<PasswordForm> CreateEntry(const std::string& username,
+                                          const std::string& password,
+                                          const GURL& origin_url,
+                                          bool is_psl_match,
+                                          bool is_affiliation_based_match);
 
 // Checks whether the PasswordForms pointed to in |actual_values| are in some
 // permutation pairwise equal to those in |expectations|. Returns true in case
@@ -94,8 +90,8 @@ std::unique_ptr<autofill::PasswordForm> CreateEntry(
 // Note: |expectations| should be a const ref, but needs to be a const pointer,
 // because GMock tried to copy the reference by value.
 bool ContainsEqualPasswordFormsUnordered(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& expectations,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& actual_values,
+    const std::vector<std::unique_ptr<PasswordForm>>& expectations,
+    const std::vector<std::unique_ptr<PasswordForm>>& actual_values,
     std::ostream* mismatch_output);
 
 MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
@@ -111,14 +107,14 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
   MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
 };
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
  public:
   MockPasswordReuseDetectorConsumer();
   ~MockPasswordReuseDetectorConsumer() override;
 
-  MOCK_METHOD4(OnReuseFound,
-               void(size_t,
+  MOCK_METHOD5(OnReuseCheckDone,
+               void(bool,
+                    size_t,
                     base::Optional<PasswordHashData>,
                     const std::vector<MatchingReusedCredential>&,
                     int));
@@ -145,7 +141,6 @@ class PasswordHashDataMatcher
 
 ::testing::Matcher<base::Optional<PasswordHashData>> Matches(
     base::Optional<PasswordHashData> expected);
-#endif
 
 }  // namespace password_manager
 

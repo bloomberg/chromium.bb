@@ -240,17 +240,19 @@ void PNGImageDecoder::SetBitDepth() {
   png_infop info = reader_->InfoPtr();
   bit_depth_ = png_get_bit_depth(png, info);
   decode_to_half_float_ =
-      (bit_depth_ == 16) &&
-      (high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) &&
-      // TODO(zakerinasab): https://crbug.com/874057
-      // Due to a lack of 16 bit APNG encoders, multi-frame 16 bit APNGs are not
-      // supported. In this case the decoder falls back to 8888 decode mode.
-      (repetition_count_ == kAnimationNone);
+      bit_depth_ == 16 &&
+      high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat &&
+      // TODO(crbug.com/874057): Implement support for 16-bit PNGs w/
+      // ImageFrame::kBlendAtopPreviousFrame.
+      repetition_count_ == kAnimationNone;
 }
 
 bool PNGImageDecoder::ImageIsHighBitDepth() {
   SetBitDepth();
-  return bit_depth_ == 16;
+  return bit_depth_ == 16 &&
+         // TODO(crbug.com/874057): Implement support for 16-bit PNGs w/
+         // ImageFrame::kBlendAtopPreviousFrame.
+         repetition_count_ == kAnimationNone;
 }
 
 bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {
@@ -711,7 +713,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
       // TODO: Apply the xform to the RGB pixels, skipping second pass over
       // data.
       if (ColorProfileTransform* xform = ColorTransform()) {
-        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Opaque;
+        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
         bool color_conversion_successful =
             skcms_Transform(dst_row, XformColorFormat(), alpha_format,
                             xform->SrcProfile(), dst_row, XformColorFormat(),
@@ -737,12 +739,10 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     auto* dst_profile = xform ? xform->DstProfile() : nullptr;
     auto src_format = has_alpha ? skcms_PixelFormat_RGBA_16161616BE
                                 : skcms_PixelFormat_RGB_161616BE;
-    auto src_alpha_format =
-        has_alpha ? skcms_AlphaFormat_Unpremul : skcms_AlphaFormat_Opaque;
-    auto dst_alpha_format = has_alpha ? (buffer.PremultiplyAlpha()
-                                             ? skcms_AlphaFormat_PremulAsEncoded
-                                             : skcms_AlphaFormat_Unpremul)
-                                      : skcms_AlphaFormat_Opaque;
+    auto src_alpha_format = skcms_AlphaFormat_Unpremul;
+    auto dst_alpha_format = (has_alpha && buffer.PremultiplyAlpha())
+                                ? skcms_AlphaFormat_PremulAsEncoded
+                                : skcms_AlphaFormat_Unpremul;
     bool success = skcms_Transform(
         src_ptr, src_format, src_alpha_format, src_profile, dst_row_f16,
         skcms_PixelFormat_RGBA_hhhh, dst_alpha_format, dst_profile, width);

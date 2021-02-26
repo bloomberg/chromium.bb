@@ -41,8 +41,10 @@ const char* Libgav1GetErrorString(Libgav1StatusCode status) {
       return "The bitstream is not encoded correctly or violates a bitstream "
              "conformance requirement.";
     case kLibgav1StatusTryAgain:
-      return "The operation is not allowed at the moment. This is not a fatal "
-             "error. Try again later.";
+      return "The operation is not allowed at the moment. Try again later.";
+    case kLibgav1StatusNothingToDequeue:
+      return "There are no enqueued frames, so there is nothing to dequeue. "
+             "Try enqueuing a frame before trying to dequeue again.";
     // This switch statement does not have a default case. This way the compiler
     // will warn if we neglect to update this function after adding a new value
     // to the Libgav1StatusCode enum type.

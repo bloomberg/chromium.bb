@@ -25,17 +25,14 @@ enum ChromeTextContext {
   // Headline text. Usually 20pt. Never multi-line.
   CONTEXT_HEADLINE = CHROME_TEXT_CONTEXT_START,
 
-  // "Body 1". Usually 13pt.
-  CONTEXT_BODY_TEXT_LARGE,
-
-  // "Body 2". Usually 12pt.
-  CONTEXT_BODY_TEXT_SMALL,
+  // Smaller version of CONTEXT_DIALOG_BODY_TEXT. Usually 12pt.
+  CONTEXT_DIALOG_BODY_TEXT_SMALL,
 
   // Text of the page title in the tab hover card.
   CONTEXT_TAB_HOVER_CARD_TITLE,
 
-  // Text of the number of tabs in the webui tab counter.
-  CONTEXT_WEB_UI_TAB_COUNTER,
+  // Text of the number of tabs in the tab counter used in tablet mode.
+  CONTEXT_TAB_COUNTER,
 
   // Text in the location bar entry, and primary text in the omnibox dropdown.
   CONTEXT_OMNIBOX_PRIMARY,
@@ -52,6 +49,24 @@ enum ChromeTextContext {
 
   // ToolbarButton label
   CONTEXT_TOOLBAR_BUTTON,
+
+  // Most text in the download shelf.  Usually 13pt.
+  CONTEXT_DOWNLOAD_SHELF,
+
+  // Status labels in the download shelf.  Usually 10pt.
+  CONTEXT_DOWNLOAD_SHELF_STATUS,
+
+  // Title label in the IPH bubble. Usually 18pt.
+  CONTEXT_IPH_BUBBLE_TITLE,
+
+  // Body text label in the IPH bubble when a title exists. Usually 13pt.
+  CONTEXT_IPH_BUBBLE_BODY_WITH_TITLE,
+
+  // Body text label in the IPH bubble when no title exists. Usually 14pt.
+  CONTEXT_IPH_BUBBLE_BODY_WITHOUT_TITLE,
+
+  // Button label in the IPH bubble. Usually 13pt.
+  CONTEXT_IPH_BUBBLE_BUTTON
 };
 
 enum ChromeTextStyle {

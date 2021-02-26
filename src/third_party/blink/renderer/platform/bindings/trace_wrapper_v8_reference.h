@@ -13,6 +13,9 @@
 
 namespace blink {
 
+template <typename T>
+struct TraceTrait;
+
 /**
  * TraceWrapperV8Reference is used to hold references from Blink to V8 that are
  * known to both garbage collectors. The reference is a regular traced reference
@@ -40,6 +43,7 @@ class TraceWrapperV8Reference {
   }
 
   bool IsEmpty() const { return handle_.IsEmpty(); }
+  bool IsEmptySafe() const { return handle_.IsEmptyThreadSafe(); }
   void Clear() { handle_.Reset(); }
   ALWAYS_INLINE const v8::TracedReference<T>& Get() const { return handle_; }
   ALWAYS_INLINE v8::TracedReference<T>& Get() { return handle_; }
@@ -118,6 +122,21 @@ class TraceWrapperV8Reference {
   v8::TracedReference<T> handle_;
 };
 
+template <typename T>
+struct TraceTrait<TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(TraceTrait);
+
+ public:
+  static TraceDescriptor GetTraceDescriptor(
+      const TraceWrapperV8Reference<T>* ref) {
+    return {ref, TraceTrait<TraceWrapperV8Reference<T>>::Trace};
+  }
+
+  static void Trace(Visitor* visitor, const void* ref) {
+    visitor->Trace(*static_cast<const TraceWrapperV8Reference<T>*>(ref));
+  }
+};
+
 }  // namespace blink
 
 namespace WTF {
@@ -137,6 +156,14 @@ struct VectorTraits<blink::TraceWrapperV8Reference<T>>
   static const bool kCanClearUnusedSlotsWithMemset = true;
   static const bool kCanCopyWithMemcpy = false;
   static const bool kCanMoveWithMemcpy = false;
+  static constexpr bool kCanTraceConcurrently = true;
+};
+
+template <typename T>
+struct HashTraits<blink::TraceWrapperV8Reference<T>>
+    : GenericHashTraits<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(HashTraits);
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 }  // namespace WTF

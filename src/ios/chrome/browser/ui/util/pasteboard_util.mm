@@ -7,9 +7,9 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <UIKit/UIKit.h>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "net/base/mac/url_conversions.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,4 +28,31 @@ void StoreURLInPasteboard(const GURL& URL) {
     (NSString*)kUTTypeUTF8PlainText : plainText,
   };
   [[UIPasteboard generalPasteboard] setItems:@[ copiedItem ]];
+}
+
+void StoreInPasteboard(NSString* text, const GURL& URL) {
+  DCHECK(text);
+  DCHECK(URL.is_valid());
+  if (!text || !URL.is_valid()) {
+    return;
+  }
+
+  NSData* plainText = [base::SysUTF8ToNSString(URL.spec())
+      dataUsingEncoding:NSUTF8StringEncoding];
+  NSDictionary* copiedURL = @{
+    (NSString*)kUTTypeURL : net::NSURLWithGURL(URL),
+    (NSString*)kUTTypeUTF8PlainText : plainText,
+  };
+
+  NSDictionary* copiedText = @{
+    (NSString*)kUTTypeText : text,
+    (NSString*)
+    kUTTypeUTF8PlainText : [text dataUsingEncoding:NSUTF8StringEncoding],
+  };
+
+  UIPasteboard.generalPasteboard.items = @[ copiedURL, copiedText ];
+}
+
+void ClearPasteboard() {
+  UIPasteboard.generalPasteboard.items = @[];
 }

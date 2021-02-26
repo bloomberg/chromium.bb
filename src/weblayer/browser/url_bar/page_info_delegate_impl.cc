@@ -10,10 +10,10 @@
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+#include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
-#include "weblayer/browser/tab_specific_content_settings_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "weblayer/browser/weblayer_impl_android.h"
@@ -90,6 +90,15 @@ HostContentSettingsMap* PageInfoDelegateImpl::GetContentSettings() {
       GetBrowserContext());
 }
 
+bool PageInfoDelegateImpl::IsSubresourceFilterActivated(const GURL& site_url) {
+  // As the WebLayer does not support subresource filtering, a site
+  // will not have ads blocked as a result of this setting. Return false
+  // so we do not show the ad blocking permission.
+  // TODO(https://crbug.com/1116095): Add subresource filtering to the
+  // WebLayer.
+  return false;
+}
+
 bool PageInfoDelegateImpl::IsContentDisplayedInVrHeadset() {
   // VR is not supported for WebLayer.
   return false;
@@ -108,9 +117,9 @@ PageInfoDelegateImpl::GetVisibleSecurityState() {
   return *security_state::GetVisibleSecurityState(web_contents_);
 }
 
-std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
-PageInfoDelegateImpl::GetTabSpecificContentSettingsDelegate() {
-  return std::make_unique<TabSpecificContentSettingsDelegate>(web_contents_);
+std::unique_ptr<content_settings::PageSpecificContentSettings::Delegate>
+PageInfoDelegateImpl::GetPageSpecificContentSettingsDelegate() {
+  return std::make_unique<PageSpecificContentSettingsDelegate>(web_contents_);
 }
 
 #if defined(OS_ANDROID)

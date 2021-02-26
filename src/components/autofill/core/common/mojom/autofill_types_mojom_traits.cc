@@ -104,6 +104,11 @@ bool StructTraits<
   if (!data.ReadBounds(&out->bounds))
     return false;
 
+  if (!data.ReadDatalistValues(&out->datalist_values))
+    return false;
+  if (!data.ReadDatalistLabels(&out->datalist_labels))
+    return false;
+
   return true;
 }
 
@@ -163,8 +168,6 @@ bool StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
                   autofill::FormFieldDataPredictions>::
     Read(autofill::mojom::FormFieldDataPredictionsDataView data,
          autofill::FormFieldDataPredictions* out) {
-  if (!data.ReadField(&out->field))
-    return false;
   if (!data.ReadSignature(&out->signature))
     return false;
   if (!data.ReadHeuristicType(&out->heuristic_type))
@@ -219,7 +222,7 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
     Read(autofill::mojom::PasswordFormFillDataDataView data,
          autofill::PasswordFormFillData* out) {
   if (!data.ReadFormRendererId(&out->form_renderer_id) ||
-      !data.ReadOrigin(&out->origin) || !data.ReadAction(&out->action) ||
+      !data.ReadUrl(&out->url) || !data.ReadAction(&out->action) ||
       !data.ReadUsernameField(&out->username_field) ||
       !data.ReadPasswordField(&out->password_field) ||
       !data.ReadPreferredRealm(&out->preferred_realm) ||
@@ -228,7 +231,6 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 
   out->uses_account_store = data.uses_account_store();
   out->wait_for_username = data.wait_for_username();
-  out->has_renderer_ids = data.has_renderer_ids();
   out->username_may_use_prefilled_placeholder =
       data.username_may_use_prefilled_placeholder();
 
@@ -261,81 +263,6 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
          data.ReadGenerationElement(&out->generation_element) &&
          data.ReadTextDirection(&out->text_direction) &&
          data.ReadFormData(&out->form_data);
-}
-
-// static
-bool StructTraits<
-    autofill::mojom::PasswordFormDataView,
-    autofill::PasswordForm>::Read(autofill::mojom::PasswordFormDataView data,
-                                  autofill::PasswordForm* out) {
-  if (!data.ReadScheme(&out->scheme) ||
-      !data.ReadSignonRealm(&out->signon_realm) ||
-      !data.ReadOriginWithPath(&out->origin) ||
-      !data.ReadAction(&out->action) ||
-      !data.ReadAffiliatedWebRealm(&out->affiliated_web_realm) ||
-      !data.ReadSubmitElement(&out->submit_element) ||
-      !data.ReadUsernameElement(&out->username_element) ||
-      !data.ReadSubmissionEvent(&out->submission_event))
-    return false;
-
-  out->username_marked_by_site = data.username_marked_by_site();
-
-  if (!data.ReadUsernameValue(&out->username_value) ||
-      !data.ReadAllPossibleUsernames(&out->all_possible_usernames) ||
-      !data.ReadAllPossiblePasswords(&out->all_possible_passwords) ||
-      !data.ReadPasswordElement(&out->password_element) ||
-      !data.ReadPasswordValue(&out->password_value))
-    return false;
-
-  out->form_has_autofilled_value = data.form_has_autofilled_value();
-
-  if (!data.ReadNewPasswordElement(&out->new_password_element) ||
-      !data.ReadNewPasswordValue(&out->new_password_value))
-    return false;
-
-  out->new_password_marked_by_site = data.new_password_marked_by_site();
-
-  if (!data.ReadConfirmationPasswordElement(
-          &out->confirmation_password_element))
-    return false;
-
-  if (!data.ReadDateCreated(&out->date_created) ||
-      !data.ReadDateSynced(&out->date_synced))
-    return false;
-
-  out->blacklisted_by_user = data.blacklisted_by_user();
-
-  if (!data.ReadType(&out->type))
-    return false;
-
-  out->times_used = data.times_used();
-
-  if (!data.ReadFormData(&out->form_data) ||
-      !data.ReadGenerationUploadStatus(&out->generation_upload_status) ||
-      !data.ReadDisplayName(&out->display_name) ||
-      !data.ReadIconUrl(&out->icon_url) ||
-      !data.ReadFederationOrigin(&out->federation_origin))
-    return false;
-
-  out->skip_zero_click = data.skip_zero_click();
-
-  out->was_parsed_using_autofill_predictions =
-      data.was_parsed_using_autofill_predictions();
-  out->is_public_suffix_match = data.is_public_suffix_match();
-  out->is_affiliation_based_match = data.is_affiliation_based_match();
-  out->only_for_fallback = data.only_for_fallback();
-  return true;
-}
-
-// static
-bool StructTraits<autofill::mojom::ValueElementPairDataView,
-                  autofill::ValueElementPair>::
-    Read(autofill::mojom::ValueElementPairDataView data,
-         autofill::ValueElementPair* out) {
-  if (!data.ReadValue(&out->first) || !data.ReadFieldName(&out->second))
-    return false;
-
-  return true;
 }
 
 bool StructTraits<

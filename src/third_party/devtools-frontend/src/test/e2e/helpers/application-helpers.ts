@@ -4,17 +4,18 @@
 
 import * as puppeteer from 'puppeteer';
 
-import {$$, click, resourcesPath, waitFor} from '../../shared/helper.js';
+import {$$, click, goToResource, waitFor} from '../../shared/helper.js';
 
 export async function navigateToApplicationTab(target: puppeteer.Page, testName: string) {
-  await target.goto(`${resourcesPath}/application/${testName}.html`);
+  await goToResource(`application/${testName}.html`);
   await click('#tab-resources');
   // Make sure the application navigation list is shown
   await waitFor('.storage-group-list-item');
 }
 
 export async function doubleClickSourceTreeItem(selector: string) {
-  await waitFor(selector);
+  const element = await waitFor(selector);
+  element.evaluate(el => el.scrollIntoView(true));
   await click(selector, {clickOptions: {clickCount: 2}});
 }
 
@@ -23,15 +24,18 @@ export async function getDataGridData(selector: string, columns: string[]) {
   await waitFor(selector);
 
   const dataGridNodes = await $$('.data-grid-data-grid-node');
-  const dataGridRowValues = await dataGridNodes.evaluate(
-      (nodes, columns) => nodes.map((row: Element) => {
-        const data: {[key: string]: string|null} = {};
-        for (const column of columns) {
-          data[column] = row.querySelector(`.${column}-column`)!.textContent;
-        }
-        return data;
-      }),
-      columns);
+  const dataGridRowValues = await Promise.all(dataGridNodes.map(node => node.evaluate((row: Element, columns) => {
+    const data: {[key: string]: string|null} = {};
+    for (const column of columns) {
+      data[column] = row.querySelector(`.${column}-column`)!.textContent;
+    }
+    return data;
+  }, columns)));
 
   return dataGridRowValues;
+}
+
+export async function getReportValues() {
+  const fields = await $$('.report-field-value');
+  return Promise.all(fields.map(node => node.evaluate(e => e.textContent)));
 }

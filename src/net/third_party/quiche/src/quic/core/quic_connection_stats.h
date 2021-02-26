@@ -47,9 +47,21 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QuicPacketCount packets_lost = 0;
   QuicPacketCount packet_spuriously_detected_lost = 0;
 
-  // The sum of the detection time of all lost packets. The detection time of a
-  // lost packet is defined as: T(detection) - T(send).
-  QuicTime::Delta total_loss_detection_time = QuicTime::Delta::Zero();
+  // The sum of loss detection response times of all lost packets, in number of
+  // round trips.
+  // Given a packet detected as lost:
+  //   T(S)                            T(1Rtt)    T(D)
+  //     |_________________________________|_______|
+  // Where
+  //   T(S) is the time when the packet is sent.
+  //   T(1Rtt) is one rtt after T(S), using the rtt at the time of detection.
+  //   T(D) is the time of detection, i.e. when the packet is declared as lost.
+  // The loss detection response time is defined as
+  //     (T(D) - T(S)) / (T(1Rtt) - T(S))
+  //
+  // The average loss detection response time is this number divided by
+  // |packets_lost|. Smaller result means detection is faster.
+  float total_loss_detection_response_time = 0.0;
 
   // Number of times this connection went through the slow start phase.
   uint32_t slowstart_count = 0;
@@ -90,6 +102,7 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
 
   int64_t min_rtt_us = 0;  // Minimum RTT in microseconds.
   int64_t srtt_us = 0;     // Smoothed RTT in microseconds.
+  int64_t cwnd_bootstrapping_rtt_us = 0;  // RTT used in cwnd_bootstrapping.
   QuicByteCount max_packet_size = 0;
   QuicByteCount max_received_packet_size = 0;
   QuicBandwidth estimated_bandwidth = QuicBandwidth::Zero();
@@ -104,6 +117,9 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
 
   // Maximum sequence reordering observed from acked packets.
   QuicPacketCount sent_packets_max_sequence_reordering = 0;
+  // Number of times that a packet is not detected as lost per reordering_shift,
+  // but would have been if the reordering_shift increases by one.
+  QuicPacketCount sent_packets_num_borderline_time_reorderings = 0;
 
   // The following stats are used only in TcpCubicSender.
   // The number of loss events from TCP's perspective.  Each loss event includes
@@ -112,6 +128,9 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
 
   // Creation time, as reported by the QuicClock.
   QuicTime connection_creation_time = QuicTime::Zero();
+
+  // Handshake completion time.
+  QuicTime handshake_completion_time = QuicTime::Zero();
 
   uint64_t blocked_frames_received = 0;
   uint64_t blocked_frames_sent = 0;
@@ -136,6 +155,29 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
 
   // Whether there is any non app-limited bandwidth sample.
   bool has_non_app_limited_sample = false;
+
+  // Packet number of first decrypted packet.
+  QuicPacketNumber first_decrypted_packet;
+
+  // Max consecutive retransmission timeout before making forward progress.
+  size_t max_consecutive_rto_with_forward_progress = 0;
+
+  // Number of sent packets that were encapsulated using Legacy Version
+  // Encapsulation.
+  QuicPacketCount sent_legacy_version_encapsulated_packets = 0;
+
+  // Number of times when the connection tries to send data but gets throttled
+  // by amplification factor.
+  size_t num_amplification_throttling = 0;
+
+  // Number of key phase updates that have occurred. In the case of a locally
+  // initiated key update, this is incremented when the keys are updated, before
+  // the peer has acknowledged the key update.
+  uint32_t key_update_count = 0;
+
+  // Counts the number of undecryptable packets received across all keys. Does
+  // not include packets where a decryption key for that level was absent.
+  QuicPacketCount num_failed_authentication_packets_received = 0;
 };
 
 }  // namespace quic

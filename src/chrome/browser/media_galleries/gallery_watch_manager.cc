@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -78,7 +77,7 @@ class GalleryWatchManager::FileWatchManager {
 
   // Posts success or failure via |callback| to the UI thread.
   void AddFileWatch(const base::FilePath& path,
-                    const base::Callback<void(bool)>& callback);
+                    base::OnceCallback<void(bool)> callback);
 
   void RemoveFileWatch(const base::FilePath& path);
 
@@ -116,14 +115,14 @@ GalleryWatchManager::FileWatchManager::~FileWatchManager() {
 
 void GalleryWatchManager::FileWatchManager::AddFileWatch(
     const base::FilePath& path,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
   if (base::Contains(watchers_, path)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(callback, false));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -136,8 +135,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   if (success)
     watchers_[path] = std::move(watcher);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, success));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
@@ -160,8 +159,8 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
 
   if (error)
     RemoveFileWatch(path);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback_, path, error));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback_, path, error));
 }
 
 GalleryWatchManager::WatchOwner::WatchOwner(BrowserContext* browser_context,
@@ -250,14 +249,14 @@ void GalleryWatchManager::ShutdownBrowserContext(
 void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
                                    const extensions::Extension* extension,
                                    MediaGalleryPrefId gallery_id,
-                                   const ResultCallback& callback) {
+                                   ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
   DCHECK(extension);
 
   WatchOwner owner(browser_context, extension->id(), gallery_id);
   if (base::Contains(watches_, owner)) {
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -266,14 +265,14 @@ void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
           Profile::FromBrowserContext(browser_context));
 
   if (!base::Contains(preferences->known_galleries(), gallery_id)) {
-    callback.Run(kInvalidGalleryIDError);
+    std::move(callback).Run(kInvalidGalleryIDError);
     return;
   }
 
   MediaGalleryPrefIdSet permitted =
       preferences->GalleriesForExtension(*extension);
   if (!base::Contains(permitted, gallery_id)) {
-    callback.Run(kNoPermissionError);
+    std::move(callback).Run(kNoPermissionError);
     return;
   }
 
@@ -296,18 +295,15 @@ void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
 
   // Start the FilePathWatcher on |gallery_path| if necessary.
   if (base::Contains(watched_paths_, path)) {
-    OnFileWatchActivated(owner, path, callback, true);
+    OnFileWatchActivated(owner, path, std::move(callback), true);
   } else {
-    base::Callback<void(bool)> on_watch_added =
-        base::Bind(&GalleryWatchManager::OnFileWatchActivated,
-                   weak_factory_.GetWeakPtr(),
-                   owner,
-                   path,
-                   callback);
+    base::OnceCallback<void(bool)> on_watch_added = base::BindOnce(
+        &GalleryWatchManager::OnFileWatchActivated, weak_factory_.GetWeakPtr(),
+        owner, path, std::move(callback));
     watch_manager_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FileWatchManager::AddFileWatch,
-                       watch_manager_->GetWeakPtr(), path, on_watch_added));
+        FROM_HERE, base::BindOnce(&FileWatchManager::AddFileWatch,
+                                  watch_manager_->GetWeakPtr(), path,
+                                  std::move(on_watch_added)));
   }
 }
 
@@ -389,15 +385,15 @@ void GalleryWatchManager::DeactivateFileWatch(const WatchOwner& owner,
 
 void GalleryWatchManager::OnFileWatchActivated(const WatchOwner& owner,
                                                const base::FilePath& path,
-                                               const ResultCallback& callback,
+                                               ResultCallback callback,
                                                bool success) {
   if (success) {
     // |watched_paths_| doesn't necessarily to contain |path| yet.
     // In that case, it calls the default constructor for NotificationInfo.
     watched_paths_[path].owners.insert(owner);
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
   } else {
-    callback.Run(kCouldNotWatchGalleryError);
+    std::move(callback).Run(kCouldNotWatchGalleryError);
   }
 }
 
@@ -433,8 +429,8 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
           notification_info->second.last_notify_time +
           base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds) -
           base::Time::Now();
-      base::PostDelayedTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&GalleryWatchManager::OnFilePathChanged,
                          weak_factory_.GetWeakPtr(), path, error),
           delay_to_next_valid_time);

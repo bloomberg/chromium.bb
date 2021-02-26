@@ -117,6 +117,19 @@ void aom_comp_mask_upsampled_pred_c(MACROBLOCKD* xd,
                                     int subpel_search);
 #define aom_comp_mask_upsampled_pred aom_comp_mask_upsampled_pred_c
 
+void aom_convolve8_c(const uint8_t* src,
+                     ptrdiff_t src_stride,
+                     uint8_t* dst,
+                     ptrdiff_t dst_stride,
+                     const InterpKernel* filter,
+                     int x0_q4,
+                     int x_step_q4,
+                     int y0_q4,
+                     int y_step_q4,
+                     int w,
+                     int h);
+#define aom_convolve8 aom_convolve8_c
+
 void aom_convolve8_horiz_c(const uint8_t* src,
                            ptrdiff_t src_stride,
                            uint8_t* dst,
@@ -8614,6 +8627,292 @@ void aom_highbd_sad8x8x4d_c(const uint8_t* src_ptr,
                             uint32_t* sad_array);
 #define aom_highbd_sad8x8x4d aom_highbd_sad8x8x4d_c
 
+unsigned int aom_highbd_sad_skip_128x128_c(const uint8_t* src_ptr,
+                                           int src_stride,
+                                           const uint8_t* ref_ptr,
+                                           int ref_stride);
+#define aom_highbd_sad_skip_128x128 aom_highbd_sad_skip_128x128_c
+
+void aom_highbd_sad_skip_128x128x4d_c(const uint8_t* src_ptr,
+                                      int src_stride,
+                                      const uint8_t* const ref_ptr[],
+                                      int ref_stride,
+                                      uint32_t* sad_array);
+#define aom_highbd_sad_skip_128x128x4d aom_highbd_sad_skip_128x128x4d_c
+
+unsigned int aom_highbd_sad_skip_128x64_c(const uint8_t* src_ptr,
+                                          int src_stride,
+                                          const uint8_t* ref_ptr,
+                                          int ref_stride);
+#define aom_highbd_sad_skip_128x64 aom_highbd_sad_skip_128x64_c
+
+void aom_highbd_sad_skip_128x64x4d_c(const uint8_t* src_ptr,
+                                     int src_stride,
+                                     const uint8_t* const ref_ptr[],
+                                     int ref_stride,
+                                     uint32_t* sad_array);
+#define aom_highbd_sad_skip_128x64x4d aom_highbd_sad_skip_128x64x4d_c
+
+unsigned int aom_highbd_sad_skip_16x16_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_16x16 aom_highbd_sad_skip_16x16_c
+
+void aom_highbd_sad_skip_16x16x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_16x16x4d aom_highbd_sad_skip_16x16x4d_c
+
+unsigned int aom_highbd_sad_skip_16x32_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_16x32 aom_highbd_sad_skip_16x32_c
+
+void aom_highbd_sad_skip_16x32x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_16x32x4d aom_highbd_sad_skip_16x32x4d_c
+
+unsigned int aom_highbd_sad_skip_16x4_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_16x4 aom_highbd_sad_skip_16x4_c
+
+void aom_highbd_sad_skip_16x4x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_16x4x4d aom_highbd_sad_skip_16x4x4d_c
+
+unsigned int aom_highbd_sad_skip_16x64_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_16x64 aom_highbd_sad_skip_16x64_c
+
+void aom_highbd_sad_skip_16x64x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_16x64x4d aom_highbd_sad_skip_16x64x4d_c
+
+unsigned int aom_highbd_sad_skip_16x8_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_16x8 aom_highbd_sad_skip_16x8_c
+
+void aom_highbd_sad_skip_16x8x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_16x8x4d aom_highbd_sad_skip_16x8x4d_c
+
+unsigned int aom_highbd_sad_skip_32x16_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_32x16 aom_highbd_sad_skip_32x16_c
+
+void aom_highbd_sad_skip_32x16x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_32x16x4d aom_highbd_sad_skip_32x16x4d_c
+
+unsigned int aom_highbd_sad_skip_32x32_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_32x32 aom_highbd_sad_skip_32x32_c
+
+void aom_highbd_sad_skip_32x32x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_32x32x4d aom_highbd_sad_skip_32x32x4d_c
+
+unsigned int aom_highbd_sad_skip_32x64_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_32x64 aom_highbd_sad_skip_32x64_c
+
+void aom_highbd_sad_skip_32x64x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_32x64x4d aom_highbd_sad_skip_32x64x4d_c
+
+unsigned int aom_highbd_sad_skip_32x8_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_32x8 aom_highbd_sad_skip_32x8_c
+
+void aom_highbd_sad_skip_32x8x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_32x8x4d aom_highbd_sad_skip_32x8x4d_c
+
+unsigned int aom_highbd_sad_skip_4x16_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_4x16 aom_highbd_sad_skip_4x16_c
+
+void aom_highbd_sad_skip_4x16x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_4x16x4d aom_highbd_sad_skip_4x16x4d_c
+
+unsigned int aom_highbd_sad_skip_4x4_c(const uint8_t* src_ptr,
+                                       int src_stride,
+                                       const uint8_t* ref_ptr,
+                                       int ref_stride);
+#define aom_highbd_sad_skip_4x4 aom_highbd_sad_skip_4x4_c
+
+void aom_highbd_sad_skip_4x4x4d_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* const ref_ptr[],
+                                  int ref_stride,
+                                  uint32_t* sad_array);
+#define aom_highbd_sad_skip_4x4x4d aom_highbd_sad_skip_4x4x4d_c
+
+unsigned int aom_highbd_sad_skip_4x8_c(const uint8_t* src_ptr,
+                                       int src_stride,
+                                       const uint8_t* ref_ptr,
+                                       int ref_stride);
+#define aom_highbd_sad_skip_4x8 aom_highbd_sad_skip_4x8_c
+
+void aom_highbd_sad_skip_4x8x4d_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* const ref_ptr[],
+                                  int ref_stride,
+                                  uint32_t* sad_array);
+#define aom_highbd_sad_skip_4x8x4d aom_highbd_sad_skip_4x8x4d_c
+
+unsigned int aom_highbd_sad_skip_64x128_c(const uint8_t* src_ptr,
+                                          int src_stride,
+                                          const uint8_t* ref_ptr,
+                                          int ref_stride);
+#define aom_highbd_sad_skip_64x128 aom_highbd_sad_skip_64x128_c
+
+void aom_highbd_sad_skip_64x128x4d_c(const uint8_t* src_ptr,
+                                     int src_stride,
+                                     const uint8_t* const ref_ptr[],
+                                     int ref_stride,
+                                     uint32_t* sad_array);
+#define aom_highbd_sad_skip_64x128x4d aom_highbd_sad_skip_64x128x4d_c
+
+unsigned int aom_highbd_sad_skip_64x16_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_64x16 aom_highbd_sad_skip_64x16_c
+
+void aom_highbd_sad_skip_64x16x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_64x16x4d aom_highbd_sad_skip_64x16x4d_c
+
+unsigned int aom_highbd_sad_skip_64x32_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_64x32 aom_highbd_sad_skip_64x32_c
+
+void aom_highbd_sad_skip_64x32x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_64x32x4d aom_highbd_sad_skip_64x32x4d_c
+
+unsigned int aom_highbd_sad_skip_64x64_c(const uint8_t* src_ptr,
+                                         int src_stride,
+                                         const uint8_t* ref_ptr,
+                                         int ref_stride);
+#define aom_highbd_sad_skip_64x64 aom_highbd_sad_skip_64x64_c
+
+void aom_highbd_sad_skip_64x64x4d_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* const ref_ptr[],
+                                    int ref_stride,
+                                    uint32_t* sad_array);
+#define aom_highbd_sad_skip_64x64x4d aom_highbd_sad_skip_64x64x4d_c
+
+unsigned int aom_highbd_sad_skip_8x16_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_8x16 aom_highbd_sad_skip_8x16_c
+
+void aom_highbd_sad_skip_8x16x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_8x16x4d aom_highbd_sad_skip_8x16x4d_c
+
+unsigned int aom_highbd_sad_skip_8x32_c(const uint8_t* src_ptr,
+                                        int src_stride,
+                                        const uint8_t* ref_ptr,
+                                        int ref_stride);
+#define aom_highbd_sad_skip_8x32 aom_highbd_sad_skip_8x32_c
+
+void aom_highbd_sad_skip_8x32x4d_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* const ref_ptr[],
+                                   int ref_stride,
+                                   uint32_t* sad_array);
+#define aom_highbd_sad_skip_8x32x4d aom_highbd_sad_skip_8x32x4d_c
+
+unsigned int aom_highbd_sad_skip_8x4_c(const uint8_t* src_ptr,
+                                       int src_stride,
+                                       const uint8_t* ref_ptr,
+                                       int ref_stride);
+#define aom_highbd_sad_skip_8x4 aom_highbd_sad_skip_8x4_c
+
+void aom_highbd_sad_skip_8x4x4d_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* const ref_ptr[],
+                                  int ref_stride,
+                                  uint32_t* sad_array);
+#define aom_highbd_sad_skip_8x4x4d aom_highbd_sad_skip_8x4x4d_c
+
+unsigned int aom_highbd_sad_skip_8x8_c(const uint8_t* src_ptr,
+                                       int src_stride,
+                                       const uint8_t* ref_ptr,
+                                       int ref_stride);
+#define aom_highbd_sad_skip_8x8 aom_highbd_sad_skip_8x8_c
+
+void aom_highbd_sad_skip_8x8x4d_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* const ref_ptr[],
+                                  int ref_stride,
+                                  uint32_t* sad_array);
+#define aom_highbd_sad_skip_8x8x4d aom_highbd_sad_skip_8x8x4d_c
+
 void aom_highbd_smooth_h_predictor_16x16_c(uint16_t* dst,
                                            ptrdiff_t y_stride,
                                            const uint16_t* above,
@@ -10189,6 +10488,22 @@ unsigned int aom_mse8x8_c(const uint8_t* src_ptr,
                           unsigned int* sse);
 #define aom_mse8x8 aom_mse8x8_c
 
+uint64_t aom_mse_wxh_16bit_c(uint8_t* dst,
+                             int dstride,
+                             uint16_t* src,
+                             int sstride,
+                             int w,
+                             int h);
+#define aom_mse_wxh_16bit aom_mse_wxh_16bit_c
+
+uint64_t aom_mse_wxh_16bit_highbd_c(uint16_t* dst,
+                                    int dstride,
+                                    uint16_t* src,
+                                    int sstride,
+                                    int w,
+                                    int h);
+#define aom_mse_wxh_16bit_highbd aom_mse_wxh_16bit_highbd_c
+
 unsigned int aom_obmc_sad128x128_c(const uint8_t* pre,
                                    int pre_stride,
                                    const int32_t* wsrc,
@@ -11541,11 +11856,310 @@ unsigned int aom_sad8xh_c(const uint8_t* a,
                           int height);
 #define aom_sad8xh aom_sad8xh_c
 
+unsigned int aom_sad_skip_128x128_c(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* ref_ptr,
+                                    int ref_stride);
+#define aom_sad_skip_128x128 aom_sad_skip_128x128_c
+
+void aom_sad_skip_128x128x4d_c(const uint8_t* src_ptr,
+                               int src_stride,
+                               const uint8_t* const ref_ptr[],
+                               int ref_stride,
+                               uint32_t* sad_array);
+#define aom_sad_skip_128x128x4d aom_sad_skip_128x128x4d_c
+
+unsigned int aom_sad_skip_128x64_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* ref_ptr,
+                                   int ref_stride);
+#define aom_sad_skip_128x64 aom_sad_skip_128x64_c
+
+void aom_sad_skip_128x64x4d_c(const uint8_t* src_ptr,
+                              int src_stride,
+                              const uint8_t* const ref_ptr[],
+                              int ref_stride,
+                              uint32_t* sad_array);
+#define aom_sad_skip_128x64x4d aom_sad_skip_128x64x4d_c
+
+unsigned int aom_sad_skip_16x16_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_16x16 aom_sad_skip_16x16_c
+
+void aom_sad_skip_16x16x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_16x16x4d aom_sad_skip_16x16x4d_c
+
+unsigned int aom_sad_skip_16x32_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_16x32 aom_sad_skip_16x32_c
+
+void aom_sad_skip_16x32x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_16x32x4d aom_sad_skip_16x32x4d_c
+
+unsigned int aom_sad_skip_16x4_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_16x4 aom_sad_skip_16x4_c
+
+void aom_sad_skip_16x4x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_16x4x4d aom_sad_skip_16x4x4d_c
+
+unsigned int aom_sad_skip_16x64_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_16x64 aom_sad_skip_16x64_c
+
+void aom_sad_skip_16x64x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_16x64x4d aom_sad_skip_16x64x4d_c
+
+unsigned int aom_sad_skip_16x8_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_16x8 aom_sad_skip_16x8_c
+
+void aom_sad_skip_16x8x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_16x8x4d aom_sad_skip_16x8x4d_c
+
+unsigned int aom_sad_skip_32x16_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_32x16 aom_sad_skip_32x16_c
+
+void aom_sad_skip_32x16x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_32x16x4d aom_sad_skip_32x16x4d_c
+
+unsigned int aom_sad_skip_32x32_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_32x32 aom_sad_skip_32x32_c
+
+void aom_sad_skip_32x32x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_32x32x4d aom_sad_skip_32x32x4d_c
+
+unsigned int aom_sad_skip_32x64_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_32x64 aom_sad_skip_32x64_c
+
+void aom_sad_skip_32x64x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_32x64x4d aom_sad_skip_32x64x4d_c
+
+unsigned int aom_sad_skip_32x8_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_32x8 aom_sad_skip_32x8_c
+
+void aom_sad_skip_32x8x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_32x8x4d aom_sad_skip_32x8x4d_c
+
+unsigned int aom_sad_skip_4x16_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_4x16 aom_sad_skip_4x16_c
+
+void aom_sad_skip_4x16x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_4x16x4d aom_sad_skip_4x16x4d_c
+
+unsigned int aom_sad_skip_4x4_c(const uint8_t* src_ptr,
+                                int src_stride,
+                                const uint8_t* ref_ptr,
+                                int ref_stride);
+#define aom_sad_skip_4x4 aom_sad_skip_4x4_c
+
+void aom_sad_skip_4x4x4d_c(const uint8_t* src_ptr,
+                           int src_stride,
+                           const uint8_t* const ref_ptr[],
+                           int ref_stride,
+                           uint32_t* sad_array);
+#define aom_sad_skip_4x4x4d aom_sad_skip_4x4x4d_c
+
+unsigned int aom_sad_skip_4x8_c(const uint8_t* src_ptr,
+                                int src_stride,
+                                const uint8_t* ref_ptr,
+                                int ref_stride);
+#define aom_sad_skip_4x8 aom_sad_skip_4x8_c
+
+void aom_sad_skip_4x8x4d_c(const uint8_t* src_ptr,
+                           int src_stride,
+                           const uint8_t* const ref_ptr[],
+                           int ref_stride,
+                           uint32_t* sad_array);
+#define aom_sad_skip_4x8x4d aom_sad_skip_4x8x4d_c
+
+unsigned int aom_sad_skip_64x128_c(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* ref_ptr,
+                                   int ref_stride);
+#define aom_sad_skip_64x128 aom_sad_skip_64x128_c
+
+void aom_sad_skip_64x128x4d_c(const uint8_t* src_ptr,
+                              int src_stride,
+                              const uint8_t* const ref_ptr[],
+                              int ref_stride,
+                              uint32_t* sad_array);
+#define aom_sad_skip_64x128x4d aom_sad_skip_64x128x4d_c
+
+unsigned int aom_sad_skip_64x16_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_64x16 aom_sad_skip_64x16_c
+
+void aom_sad_skip_64x16x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_64x16x4d aom_sad_skip_64x16x4d_c
+
+unsigned int aom_sad_skip_64x32_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_64x32 aom_sad_skip_64x32_c
+
+void aom_sad_skip_64x32x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_64x32x4d aom_sad_skip_64x32x4d_c
+
+unsigned int aom_sad_skip_64x64_c(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride);
+#define aom_sad_skip_64x64 aom_sad_skip_64x64_c
+
+void aom_sad_skip_64x64x4d_c(const uint8_t* src_ptr,
+                             int src_stride,
+                             const uint8_t* const ref_ptr[],
+                             int ref_stride,
+                             uint32_t* sad_array);
+#define aom_sad_skip_64x64x4d aom_sad_skip_64x64x4d_c
+
+unsigned int aom_sad_skip_8x16_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_8x16 aom_sad_skip_8x16_c
+
+void aom_sad_skip_8x16x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_8x16x4d aom_sad_skip_8x16x4d_c
+
+unsigned int aom_sad_skip_8x32_c(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride);
+#define aom_sad_skip_8x32 aom_sad_skip_8x32_c
+
+void aom_sad_skip_8x32x4d_c(const uint8_t* src_ptr,
+                            int src_stride,
+                            const uint8_t* const ref_ptr[],
+                            int ref_stride,
+                            uint32_t* sad_array);
+#define aom_sad_skip_8x32x4d aom_sad_skip_8x32x4d_c
+
+unsigned int aom_sad_skip_8x4_c(const uint8_t* src_ptr,
+                                int src_stride,
+                                const uint8_t* ref_ptr,
+                                int ref_stride);
+#define aom_sad_skip_8x4 aom_sad_skip_8x4_c
+
+void aom_sad_skip_8x4x4d_c(const uint8_t* src_ptr,
+                           int src_stride,
+                           const uint8_t* const ref_ptr[],
+                           int ref_stride,
+                           uint32_t* sad_array);
+#define aom_sad_skip_8x4x4d aom_sad_skip_8x4x4d_c
+
+unsigned int aom_sad_skip_8x8_c(const uint8_t* src_ptr,
+                                int src_stride,
+                                const uint8_t* ref_ptr,
+                                int ref_stride);
+#define aom_sad_skip_8x8 aom_sad_skip_8x8_c
+
+void aom_sad_skip_8x8x4d_c(const uint8_t* src_ptr,
+                           int src_stride,
+                           const uint8_t* const ref_ptr[],
+                           int ref_stride,
+                           uint32_t* sad_array);
+#define aom_sad_skip_8x8x4d aom_sad_skip_8x8x4d_c
+
 int aom_satd_c(const tran_low_t* coeff, int length);
 #define aom_satd aom_satd_c
 
 int aom_satd_lp_c(const int16_t* coeff, int length);
 #define aom_satd_lp aom_satd_lp_c
+
+void aom_scaled_2d_c(const uint8_t* src,
+                     ptrdiff_t src_stride,
+                     uint8_t* dst,
+                     ptrdiff_t dst_stride,
+                     const InterpKernel* filter,
+                     int x0_q4,
+                     int x_step_q4,
+                     int y0_q4,
+                     int y_step_q4,
+                     int w,
+                     int h);
+#define aom_scaled_2d aom_scaled_2d_c
 
 void aom_smooth_h_predictor_16x16_c(uint8_t* dst,
                                     ptrdiff_t y_stride,
@@ -12351,6 +12965,13 @@ uint64_t aom_sum_squares_2d_i16_c(const int16_t* src,
 
 uint64_t aom_sum_squares_i16_c(const int16_t* src, uint32_t N);
 #define aom_sum_squares_i16 aom_sum_squares_i16_c
+
+uint64_t aom_sum_sse_2d_i16_c(const int16_t* src,
+                              int src_stride,
+                              int width,
+                              int height,
+                              int* sum);
+#define aom_sum_sse_2d_i16 aom_sum_sse_2d_i16_c
 
 void aom_upsampled_pred_c(MACROBLOCKD* xd,
                           const struct AV1Common* const cm,

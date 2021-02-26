@@ -20,7 +20,16 @@ TestChromeBrowserStateManager::TestChromeBrowserStateManager(
     std::unique_ptr<ChromeBrowserState> browser_state,
     const base::FilePath& user_data_dir)
     : browser_state_(std::move(browser_state)),
-      browser_state_info_cache_(local_state_.Get(), user_data_dir) {}
+      browser_state_info_cache_(local_state_.Get(),
+                                user_data_dir.empty() && browser_state_.get()
+                                    ? browser_state_->GetStatePath().DirName()
+                                    : user_data_dir) {
+  if (browser_state_) {
+    browser_state_info_cache_.AddBrowserState(browser_state_->GetStatePath(),
+                                              /*gaia_id=*/std::string(),
+                                              /*user_name=*/base::string16());
+  }
+}
 
 TestChromeBrowserStateManager::~TestChromeBrowserStateManager() {}
 
@@ -30,6 +39,8 @@ ChromeBrowserState* TestChromeBrowserStateManager::GetLastUsedBrowserState() {
 
 ChromeBrowserState* TestChromeBrowserStateManager::GetBrowserState(
     const base::FilePath& path) {
+  if (browser_state_ && browser_state_->GetStatePath() == path)
+    return browser_state_.get();
   return nullptr;
 }
 

@@ -196,7 +196,8 @@ FATE_H264  := $(FATE_H264:%=fate-h264-conformance-%)                    \
               fate-h264-3386                                            \
               fate-h264-missing-frame                                   \
               fate-h264-ref-pic-mod-overflow                            \
-              fate-h264-timecode
+              fate-h264-timecode                                        \
+              fate-h264-encparams
 
 FATE_H264-$(call DEMDEC, H264, H264) += $(FATE_H264)
 FATE_H264-$(call DEMDEC,  MOV, H264) += fate-h264-crop-to-container
@@ -352,9 +353,9 @@ fate-h264-conformance-frext-hcafr3_hhi_a:         CMD = framecrc -vsync drop -i 
 fate-h264-conformance-frext-hcafr4_hhi_a:         CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HCAFR4_HHI.264
 fate-h264-conformance-frext-hcamff1_hhi_b:        CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HCAMFF1_HHI.264
 fate-h264-conformance-frext-hi422fr10_sony_b:     CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR10_SONY_B.264
-fate-h264-conformance-frext-hi422fr13_sony_b:     CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR13_SONY_B.264 -pix_fmt yuv422p10le
+fate-h264-conformance-frext-hi422fr13_sony_b:     CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR13_SONY_B.264 -pix_fmt yuv422p10le -vf scale
 fate-h264-conformance-frext-hi422fr1_sony_a:      CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR1_SONY_A.jsv
-fate-h264-conformance-frext-hi422fr6_sony_a:      CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR6_SONY_A.jsv -pix_fmt yuv422p10le
+fate-h264-conformance-frext-hi422fr6_sony_a:      CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/Hi422FR6_SONY_A.jsv -pix_fmt yuv422p10le -vf scale
 fate-h264-conformance-frext-hpca_brcm_c:          CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCA_BRCM_C.264
 fate-h264-conformance-frext-hpcadq_brcm_b:        CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCADQ_BRCM_B.264
 fate-h264-conformance-frext-hpcafl_bcrm_c:        CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCAFL_BRCM_C.264 -vsync drop
@@ -369,20 +370,20 @@ fate-h264-conformance-frext-hpcvfl_bcrm_a:        CMD = framecrc -vsync drop -i 
 fate-h264-conformance-frext-hpcvflnl_bcrm_a:      CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCVFLNL_BRCM_A.264 -vsync drop
 fate-h264-conformance-frext-hpcvmolq_brcm_b:      CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCVMOLQ_BRCM_B.264
 fate-h264-conformance-frext-hpcvnl_brcm_a:        CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/HPCVNL_BRCM_A.264
-fate-h264-conformance-frext-pph10i1_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I1_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i2_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I2_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i3_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I3_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i4_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I4_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i5_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I5_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i6_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I6_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph10i7_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I7_Panasonic_A.264 -pix_fmt yuv420p10le
-fate-h264-conformance-frext-pph422i1_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I1_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i2_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I2_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i3_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I3_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i4_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I4_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i5_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I5_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i6_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I6_Panasonic_A.264 -pix_fmt yuv422p10le
-fate-h264-conformance-frext-pph422i7_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I7_Panasonic_A.264 -pix_fmt yuv422p10le
+fate-h264-conformance-frext-pph10i1_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I1_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i2_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I2_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i3_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I3_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i4_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I4_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i5_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I5_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i6_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I6_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph10i7_panasonic_a:  CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH10I7_Panasonic_A.264 -pix_fmt yuv420p10le -vf scale
+fate-h264-conformance-frext-pph422i1_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I1_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i2_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I2_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i3_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I3_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i4_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I4_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i5_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I5_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i6_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I6_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
+fate-h264-conformance-frext-pph422i7_panasonic_a: CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/FRext/PPH422I7_Panasonic_A.264 -pix_fmt yuv422p10le -vf scale
 fate-h264-conformance-hcbp2_hhi_a:                CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/HCBP2_HHI_A.264
 fate-h264-conformance-hcmp1_hhi_a:                CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/HCMP1_HHI_A.264
 fate-h264-conformance-ls_sva_d:                   CMD = framecrc -vsync drop -i $(TARGET_SAMPLES)/h264-conformance/LS_SVA_D.264
@@ -428,12 +429,12 @@ fate-h264-extradata-reload:                       CMD = framemd5 -i $(TARGET_SAM
 fate-h264-extreme-plane-pred:                     CMD = framemd5 -i $(TARGET_SAMPLES)/h264/extreme-plane-pred.h264
 fate-h264-interlace-crop:                         CMD = framecrc -i $(TARGET_SAMPLES)/h264/interlaced_crop.mp4 -frames:v 3
 fate-h264-brokensps-2580:                         CMD = framecrc -i $(TARGET_SAMPLES)/h264/brokensps.flv -vf format=yuv420p,scale=w=192:h=144 -sws_flags bitexact+bilinear
-fate-h264-xavc-4389:                              CMD = framecrc -i $(TARGET_SAMPLES)/h264/SonyXAVC_LongGOP_green_pixelation_early_Frames.MXF -pix_fmt yuv422p10le
+fate-h264-xavc-4389:                              CMD = framecrc -i $(TARGET_SAMPLES)/h264/SonyXAVC_LongGOP_green_pixelation_early_Frames.MXF -pix_fmt yuv422p10le -vf scale -af aresample
 fate-h264-attachment-631:                         CMD = framecrc -i $(TARGET_SAMPLES)/h264/attachment631-small.mp4 -an -max_error_rate 0.96
-fate-h264-skip-nokey:                             CMD = framecrc -skip_frame nokey -i $(TARGET_SAMPLES)/h264/h264_intra_first-small.ts
-fate-h264-skip-nointra:                           CMD = framecrc -skip_frame nointra -i $(TARGET_SAMPLES)/h264/h264_intra_first-small.ts
+fate-h264-skip-nokey:                             CMD = framecrc -skip_frame nokey -i $(TARGET_SAMPLES)/h264/h264_intra_first-small.ts -vf scale -af aresample
+fate-h264-skip-nointra:                           CMD = framecrc -skip_frame nointra -i $(TARGET_SAMPLES)/h264/h264_intra_first-small.ts -vf scale -af aresample
 fate-h264-intra-refresh-recovery:                 CMD = framecrc -i $(TARGET_SAMPLES)/h264/intra_refresh.h264 -frames:v 10
-fate-h264-invalid-ref-mod:                        CMD = framecrc -i $(TARGET_SAMPLES)/h264/h264refframeregression.mp4 -an -frames 10 -pix_fmt yuv420p10le
+fate-h264-invalid-ref-mod:                        CMD = framecrc -i $(TARGET_SAMPLES)/h264/h264refframeregression.mp4 -an -frames 10 -pix_fmt yuv420p10le -vf scale
 fate-h264-lossless:                               CMD = framecrc -i $(TARGET_SAMPLES)/h264/lossless.h264
 fate-h264-mixed-nal-coding:                       CMD = framecrc -i $(TARGET_SAMPLES)/h264/mixed-nal-coding.mp4
 fate-h264-ref-pic-mod-overflow:                   CMD = framecrc -i $(TARGET_SAMPLES)/h264/ref-pic-mod-overflow.h264
@@ -443,6 +444,9 @@ fate-h264-3386:                                   CMD = framecrc -i $(TARGET_SAM
 fate-h264-missing-frame:                          CMD = framecrc -i $(TARGET_SAMPLES)/h264/nondeterministic_cut.h264
 fate-h264-timecode:                               CMD = framecrc -i $(TARGET_SAMPLES)/h264/crew_cif_timecode-2.h264
 
-fate-h264-reinit-%:                               CMD = framecrc -i $(TARGET_SAMPLES)/h264/$(@:fate-h264-%=%).h264 -vf format=yuv444p10le,scale=w=352:h=288
+fate-h264-reinit-%:                               CMD = framecrc -i $(TARGET_SAMPLES)/h264/$(@:fate-h264-%=%).h264 -vf scale,format=yuv444p10le,scale=w=352:h=288
 
 fate-h264-dts_5frames:                            CMD = probeframes $(TARGET_SAMPLES)/h264/dts_5frames.mkv
+
+fate-h264-encparams: CMD = venc_data $(TARGET_SAMPLES)/h264-conformance/FRext/FRExt_MMCO4_Sony_B.264 0 1
+FATE_SAMPLES_DUMP_DATA += fate-h264-encparams

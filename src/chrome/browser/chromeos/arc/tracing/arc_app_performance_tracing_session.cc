@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
@@ -19,8 +20,7 @@ namespace {
 // TODO(khmel), detect this per device.
 constexpr uint64_t kTargetFps = 60;
 
-constexpr base::TimeDelta kTargetFrameTime =
-    base::TimeDelta::FromSeconds(1) / kTargetFps;
+constexpr auto kTargetFrameTime = base::TimeDelta::FromSeconds(1) / kTargetFps;
 
 // Used for detection the idle. App considered in idle state when there is no
 // any commit for |kIdleThresholdFrames| frames.
@@ -133,7 +133,7 @@ void ArcAppPerformanceTracingSession::HandleCommit(
 
   if (detect_idles_) {
     const uint64_t display_frames_passed =
-        (frame_delta + kTargetFrameTime / 2) / kTargetFrameTime;
+        base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
     if (display_frames_passed >= kIdleThresholdFrames) {
       // Idle is detected, try the next time.
       Stop();
@@ -175,7 +175,7 @@ void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
     // fractional part of target frame interval |kTargetFrameTime| and is less
     // or equal half of it.
     const uint64_t display_frames_passed =
-        (frame_delta + kTargetFrameTime / 2) / kTargetFrameTime;
+        base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
     // Calculate difference from the ideal commit time, that should happen with
     // equal delay for each display frame.
     const base::TimeDelta vsync_error =
@@ -191,8 +191,7 @@ void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
   const size_t lower_position = frame_deltas_.size() / 10;
   const size_t upper_position = frame_deltas_.size() - 1 - lower_position;
   const double render_quality =
-      frame_deltas_[lower_position].InMicrosecondsF() /
-      frame_deltas_[upper_position].InMicrosecondsF();
+      frame_deltas_[lower_position] / frame_deltas_[upper_position];
 
   const double fps = frame_deltas_.size() / tracing_period.InSecondsF();
 

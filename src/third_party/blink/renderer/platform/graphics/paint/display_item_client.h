@@ -14,6 +14,12 @@
 
 namespace blink {
 
+enum class RasterEffectOutset : uint8_t {
+  kNone,
+  kHalfPixel,
+  kWholePixel,
+};
+
 // The class for objects that can be associated with display items. A
 // DisplayItemClient object should live at least longer than the document cycle
 // in which its display items are created during painting. After the document
@@ -21,8 +27,7 @@ namespace blink {
 // dereferenced unless we can make sure the client is still alive.
 class PLATFORM_EXPORT DisplayItemClient {
  public:
-  DisplayItemClient()
-      : paint_invalidation_reason_(PaintInvalidationReason::kJustCreated) {
+  DisplayItemClient() {
 #if DCHECK_IS_ON()
     OnCreate();
 #endif
@@ -48,16 +53,12 @@ class PLATFORM_EXPORT DisplayItemClient {
   // chunk client.
   virtual DOMNodeId OwnerNodeId() const { return kInvalidDOMNodeId; }
 
-  // The visual rect of this DisplayItemClient. For SPv1, it's in the object
-  // space of the object that owns the GraphicsLayer, i.e. offset by
-  // GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation().
-  // It's in the space of the parent transform node.
-  virtual IntRect VisualRect() const = 0;
-
   // The outset will be used to inflate visual rect after the visual rect is
   // mapped into the space of the composited layer, for any special raster
   // effects that might expand the rastered pixel area.
-  virtual float VisualRectOutsetForRasterEffects() const { return 0; }
+  virtual RasterEffectOutset VisualRectOutsetForRasterEffects() const {
+    return RasterEffectOutset::kNone;
+  }
 
   // The rect that needs to be invalidated partially for rasterization in this
   // client. It's in the same coordinate space as VisualRect().
@@ -111,6 +112,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   friend class FakeDisplayItemClient;
   friend class ObjectPaintInvalidatorTest;
   friend class PaintController;
+  friend class GraphicsLayer;  // Temporary for Validate().
 
   void Validate() const {
     paint_invalidation_reason_ = PaintInvalidationReason::kNone;
@@ -121,7 +123,8 @@ class PLATFORM_EXPORT DisplayItemClient {
   void OnDestroy();
 #endif
 
-  mutable PaintInvalidationReason paint_invalidation_reason_;
+  mutable PaintInvalidationReason paint_invalidation_reason_ =
+      PaintInvalidationReason::kJustCreated;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayItemClient);
 };

@@ -209,7 +209,7 @@ void ApplyAutoRegressiveFilterToChromaGrains_C(const FilmGrainParams& params,
             luma += luma_grain[(luma_y + i) * kLumaWidth + (luma_x + j)];
           } while (++j <= subsampling_x);
         } while (++i <= subsampling_y);
-        luma = RightShiftWithRounding(luma, subsampling_x + subsampling_y);
+        luma = SubsampledValue(luma, subsampling_x + subsampling_y);
         const int coeff_u = params.auto_regression_coeff_u[pos];
         const int coeff_v = params.auto_regression_coeff_v[pos];
         sum_u += luma * coeff_u;

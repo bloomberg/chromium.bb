@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_item_controller.h"
 
-#include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
@@ -13,8 +11,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -37,15 +37,16 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   if (window_count()) {
     // Tapping the shelf icon of an app that's showing PIP means expanding PIP.
     // Even if the app contains multiple windows, we just expand PIP without
     // showing the menu on the shelf icon.
     for (ui::BaseWindow* window : windows()) {
       aura::Window* native_window = window->GetNativeWindow();
-      if (native_window->GetProperty(ash::kWindowStateTypeKey) ==
-          ash::WindowStateType::kPip) {
+      if (native_window->GetProperty(chromeos::kWindowStateTypeKey) ==
+          chromeos::WindowStateType::kPip) {
         Profile* profile = ChromeLauncherController::instance()->profile();
         arc::ArcPipBridge* pip_bridge =
             arc::ArcPipBridge::GetForBrowserContext(profile);
@@ -56,7 +57,8 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
       }
     }
     AppWindowLauncherItemController::ItemSelected(std::move(event), display_id,
-                                                  source, std::move(callback));
+                                                  source, std::move(callback),
+                                                  filter_predicate);
     return;
   }
 
@@ -70,9 +72,13 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
 }
 
 ash::ShelfItemDelegate::AppMenuItems
-AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
-  if (!IsChromeApp())
-    return AppWindowLauncherItemController::GetAppMenuItems(event_flags);
+AppServiceAppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags,
+    const ItemFilterPredicate& filter_predicate) {
+  if (!IsChromeApp()) {
+    return AppWindowLauncherItemController::GetAppMenuItems(event_flags,
+                                                            filter_predicate);
+  }
 
   // The window could be teleported from the inactive user's profile to the
   // current active user, so search all profiles.
@@ -83,10 +89,15 @@ AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
 
     AppMenuItems items;
     bool switch_profile = false;
+    int command_id = -1;
     for (const ui::BaseWindow* window : windows()) {
+      ++command_id;
+      auto* native_window = window->GetNativeWindow();
+      if (!filter_predicate.is_null() && !filter_predicate.Run(native_window))
+        continue;
+
       extensions::AppWindow* const app_window =
-          app_window_registry->GetAppWindowForNativeWindow(
-              window->GetNativeWindow());
+          app_window_registry->GetAppWindowForNativeWindow(native_window);
       if (!app_window) {
         switch_profile = true;
         break;
@@ -108,7 +119,7 @@ AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
           image = *app_icon;
       }
 
-      items.push_back({app_window->GetTitle(), image});
+      items.push_back({command_id, app_window->GetTitle(), image});
     }
     if (!switch_profile)
       return items;
@@ -121,7 +132,8 @@ void AppServiceAppWindowLauncherItemController::OnWindowTitleChanged(
   if (!IsChromeApp())
     return;
 
-  ui::BaseWindow* const base_window = GetAppWindow(window);
+  ui::BaseWindow* const base_window =
+      GetAppWindow(window, true /*include_hidden*/);
 
   // For Chrome apps, use the window title (if set) to differentiate
   // show_in_shelf window shelf items instead of the default behavior of using
@@ -165,7 +177,6 @@ bool AppServiceAppWindowLauncherItemController::IsChromeApp() {
   Profile* const profile = ChromeLauncherController::instance()->profile();
   apps::AppServiceProxy* const proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
   return proxy->AppRegistryCache().GetAppType(shelf_id().app_id) ==
          apps::mojom::AppType::kExtension;
 }

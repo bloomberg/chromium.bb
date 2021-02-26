@@ -42,6 +42,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/drag_controller.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/selection_controller.h"
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/view.h"
@@ -51,11 +52,11 @@ namespace base {
 class TimeDelta;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 namespace ui {
 class ScopedPasswordInputEnabler;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace views {
 
@@ -90,12 +91,17 @@ class VIEWS_EXPORT Textfield : public View,
   static const gfx::FontList& GetDefaultFontList();
 
   Textfield();
+  Textfield(const Textfield&) = delete;
+  Textfield& operator=(const Textfield&) = delete;
   ~Textfield() override;
 
   // Set the controller for this textfield.
   void set_controller(TextfieldController* controller) {
     controller_ = controller;
   }
+
+  // TODD (kylixrd): Remove set_controller and refactor codebase.
+  void SetController(TextfieldController* controller);
 
   // Gets/Sets whether or not the Textfield is read-only.
   bool GetReadOnly() const;
@@ -113,14 +119,28 @@ class VIEWS_EXPORT Textfield : public View,
   // textfield.
   const base::string16& GetText() const;
 
-  // Sets the text currently displayed in the Textfield and the cursor position.
-  // Calls to |SetText| are often followed by updating the selection or cursor,
-  // which does not update the edit history. I.e. the cursor position after
-  // redoing this change will be determined by |cursor_position| here and not by
-  // any subsequent calls to e.g. |SetSelectedRange|. Selections are not
-  // explicitly set here since redo's clear the selection anyways.
+  // Sets the text currently displayed in the Textfield.
   void SetText(const base::string16& new_text);
-  void SetText(const base::string16& new_text, size_t cursor_position);
+
+  // Sets the text currently displayed in the Textfield and the cursor position.
+  // Does not fire notifications about the caret bounds changing. This is
+  // intended for low-level use, where callers need precise control over what
+  // notifications are fired when, e.g. to avoid firing duplicate accessibility
+  // notifications, which can cause issues for accessibility tools. Updating the
+  // selection or cursor separately afterwards does not update the edit history,
+  // i.e. the cursor position after redoing this change will be determined by
+  // |cursor_position| and not by subsequent calls to e.g. SetSelectedRange().
+  void SetTextWithoutCaretBoundsChangeNotification(const base::string16& text,
+                                                   size_t cursor_position);
+
+  // Scrolls all of |scroll_positions| into view, if possible. For each
+  // position, the minimum scrolling change necessary to just bring the position
+  // into view is applied. |scroll_positions| are applied in order, so later
+  // positions will have priority over earlier positions if not all can be
+  // visible simultaneously.
+  // NOTE: Unlike MoveCursorTo(), this will not fire any accessibility
+  // notifications.
+  void Scroll(const std::vector<size_t>& scroll_positions);
 
   // Appends the given string to the previously-existing text in the field.
   void AppendText(const base::string16& new_text);
@@ -218,7 +238,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Selects the specified logical text range.
   void SetSelectedRange(const gfx::Range& range);
-  void SetSelectedRange(const gfx::Range& range, bool primary);
+
+  // Without clearing the current selected range, adds |range| as an additional
+  // selection.
+  // NOTE: Unlike SetSelectedRange(), this will not fire any accessibility
+  // notifications.
+  void AddSecondarySelectedRange(const gfx::Range& range);
 
   // Gets the text selection model.
   const gfx::SelectionModel& GetSelectionModel() const;
@@ -260,6 +285,10 @@ class VIEWS_EXPORT Textfield : public View,
   int GetPasswordCharRevealIndex() const { return password_char_reveal_index_; }
 
   void SetExtraInsets(const gfx::Insets& insets);
+
+  // Fits the textfield to the local bounds, applying internal padding and
+  // updating the cursor position and visibility.
+  void FitToLocalBounds();
 
   // View overrides:
   int GetBaseline() const override;
@@ -346,7 +375,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // ui::TextInputClient overrides:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  void ConfirmCompositionText(bool keep_selection) override;
+  uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
   void InsertChar(const ui::KeyEvent& event) override;
@@ -377,10 +406,21 @@ class VIEWS_EXPORT Textfield : public View,
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
+  // Set whether the text should be used to improve typing suggestions.
+  void SetShouldDoLearning(bool value) { should_do_learning_ = value; }
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
+
+#if defined(OS_CHROMEOS)
+  gfx::Range GetAutocorrectRange() const override;
+  gfx::Rect GetAutocorrectCharacterBounds() const override;
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range) override;
+  void ClearAutocorrectRange() override;
 #endif
 
 #if defined(OS_WIN)
@@ -394,7 +434,7 @@ class VIEWS_EXPORT Textfield : public View,
 #endif
 
   views::PropertyChangedSubscription AddTextChangedCallback(
-      views::PropertyChangedCallback callback);
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
  protected:
   // Inserts or appends a character in response to an IME operation.
@@ -437,6 +477,8 @@ class VIEWS_EXPORT Textfield : public View,
  private:
   friend class TextfieldTestApi;
 
+  enum class TextChangeType { kNone, kInternal, kUserTriggered };
+
   // View overrides:
   // Declared final since overriding by subclasses would interfere with the
   // accounting related to the scheduled text edit command. Subclasses should
@@ -472,7 +514,12 @@ class VIEWS_EXPORT Textfield : public View,
   void UpdateSelectionBackgroundColor();
 
   // Does necessary updates when the text and/or cursor position changes.
-  void UpdateAfterChange(bool text_changed, bool cursor_changed);
+  // If |notify_caret_bounds_changed| is not explicitly set, it will be computed
+  // based on whether either of the other arguments is set.
+  void UpdateAfterChange(
+      TextChangeType text_change_type,
+      bool cursor_changed,
+      base::Optional<bool> notify_caret_bounds_changed = base::nullopt);
 
   // Updates cursor visibility and blinks the cursor if needed.
   void ShowCursor();
@@ -529,6 +576,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns true if an insertion cursor should be visible (a vertical bar,
   // placed at the point new text will be inserted).
   bool ShouldShowCursor() const;
+
+  // Converts a textfield width in "average characters" to the required number
+  // of DIPs, accounting for insets and cursor.
+  int CharsToDips(int width_in_chars) const;
 
   // Returns true if an insertion cursor should be visible and blinking.
   bool ShouldBlinkCursor() const;
@@ -651,6 +702,12 @@ class VIEWS_EXPORT Textfield : public View,
   // True if this textfield should use a focus ring to indicate focus.
   bool use_focus_ring_ = true;
 
+  // Whether the user should be notified if the clipboard is restricted.
+  bool show_rejection_ui_if_any_ = false;
+
+  // Whether the text should be used to improve typing suggestions.
+  base::Optional<bool> should_do_learning_;
+
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
   std::unique_ptr<ViewsTextServicesContextMenu> text_services_context_menu_;
@@ -659,17 +716,17 @@ class VIEWS_EXPORT Textfield : public View,
   // View containing the text cursor.
   View* cursor_view_ = nullptr;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // How this textfield was focused.
   ui::TextInputClient::FocusReason focus_reason_ =
       ui::TextInputClient::FOCUS_REASON_NONE;
 
   // The focus ring for this TextField.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   // The password char reveal index, for testing only.
   int password_char_reveal_index_ = -1;
@@ -685,10 +742,30 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Textfield);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Textfield, View)
+VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+VIEW_BUILDER_PROPERTY(SkColor, BackgroundColor)
+VIEW_BUILDER_PROPERTY(TextfieldController*, Controller)
+VIEW_BUILDER_PROPERTY(bool, CursorEnabled)
+VIEW_BUILDER_PROPERTY(int, DefaultWidthInChars)
+VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
+VIEW_BUILDER_PROPERTY(bool, Invalid)
+VIEW_BUILDER_PROPERTY(int, MinimumWidthInChars)
+VIEW_BUILDER_PROPERTY(base::string16, PlaceholderText)
+VIEW_BUILDER_PROPERTY(bool, ReadOnly)
+VIEW_BUILDER_PROPERTY(gfx::Range, SelectedRange)
+VIEW_BUILDER_PROPERTY(SkColor, SelectionBackgroundColor)
+VIEW_BUILDER_PROPERTY(SkColor, SelectionTextColor)
+VIEW_BUILDER_PROPERTY(base::string16, Text)
+VIEW_BUILDER_PROPERTY(SkColor, TextColor)
+VIEW_BUILDER_PROPERTY(int, TextInputFlags)
+VIEW_BUILDER_PROPERTY(ui::TextInputType, TextInputType)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, Textfield)
 
 #endif  // UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_

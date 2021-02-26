@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/optional.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -27,56 +27,18 @@ namespace enterprise_connectors {
 
 namespace {
 
-constexpr char kTestUrlMatchingPattern[] = "google.com";
-
-constexpr char kTestUrlNotMatchingPattern[] = "chromium.org";
-
 constexpr AnalysisConnector kAllAnalysisConnectors[] = {
     AnalysisConnector::FILE_DOWNLOADED, AnalysisConnector::FILE_ATTACHED,
     AnalysisConnector::BULK_DATA_ENTRY};
 
-constexpr safe_browsing::BlockLargeFileTransferValues
-    kAllBlockLargeFilesPolicyValues[] = {
-        safe_browsing::BlockLargeFileTransferValues::BLOCK_NONE,
-        safe_browsing::BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS,
-        safe_browsing::BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS,
-        safe_browsing::BlockLargeFileTransferValues::
-            BLOCK_LARGE_UPLOADS_AND_DOWNLOADS};
-
-constexpr safe_browsing::BlockUnsupportedFiletypesValues
-    kAllBlockUnsupportedFileTypesValues[] = {
-        safe_browsing::BlockUnsupportedFiletypesValues::
-            BLOCK_UNSUPPORTED_FILETYPES_NONE,
-        safe_browsing::BlockUnsupportedFiletypesValues::
-            BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS,
-        safe_browsing::BlockUnsupportedFiletypesValues::
-            BLOCK_UNSUPPORTED_FILETYPES_UPLOADS,
-        safe_browsing::BlockUnsupportedFiletypesValues::
-            BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS,
-};
-
-constexpr safe_browsing::AllowPasswordProtectedFilesValues
-    kAllAllowEncryptedPolicyValues[] = {
-        safe_browsing::AllowPasswordProtectedFilesValues::ALLOW_NONE,
-        safe_browsing::AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS,
-        safe_browsing::AllowPasswordProtectedFilesValues::ALLOW_UPLOADS,
-        safe_browsing::AllowPasswordProtectedFilesValues::
-            ALLOW_UPLOADS_AND_DOWNLOADS};
-
-constexpr safe_browsing::DelayDeliveryUntilVerdictValues
-    kAllDelayDeliveryUntilVerdictValues[] = {
-        safe_browsing::DelayDeliveryUntilVerdictValues::DELAY_NONE,
-        safe_browsing::DelayDeliveryUntilVerdictValues::DELAY_DOWNLOADS,
-        safe_browsing::DelayDeliveryUntilVerdictValues::DELAY_UPLOADS,
-        safe_browsing::DelayDeliveryUntilVerdictValues::
-            DELAY_UPLOADS_AND_DOWNLOADS,
-};
+constexpr ReportingConnector kAllReportingConnectors[] = {
+    ReportingConnector::SECURITY_EVENT};
 
 constexpr char kEmptySettingsPref[] = "[]";
 
-constexpr char kNormalSettingsPref[] = R"([
+constexpr char kNormalAnalysisSettingsPref[] = R"([
   {
-    "service_provider": "Google",
+    "service_provider": "google",
     "enable": [
       {"url_list": ["*"], "tags": ["dlp", "malware"]},
     ],
@@ -90,6 +52,12 @@ constexpr char kNormalSettingsPref[] = R"([
     "block_large_files": true,
     "block_unsupported_file_types": true,
   },
+])";
+
+constexpr char kNormalReportingSettingsPref[] = R"([
+  {
+    "service_provider": "google"
+  }
 ])";
 
 constexpr char kDlpAndMalwareUrl[] = "https://foo.com";
@@ -121,6 +89,14 @@ class ConnectorsManagerTest : public testing::Test {
     ASSERT_EQ(settings.block_unsupported_file_types,
               expected_block_unsupported_file_types_);
     ASSERT_EQ(settings.tags, expected_tags_);
+  }
+
+  void ValidateSettings(const ReportingSettings& settings) {
+    // For now, the URL is the same for both legacy and new policies, so
+    // checking the specific URL here.  When service providers become
+    // configurable this will change.
+    ASSERT_EQ(GURL("https://chromereporting-pa.googleapis.com/v1/events"),
+              settings.reporting_url);
   }
 
   class ScopedConnectorPref {
@@ -157,259 +133,6 @@ class ConnectorsManagerTest : public testing::Test {
   bool expected_block_unsupported_file_types_ = false;
 };
 
-// Tests that permutations of legacy policies produce expected settings from a
-// ConnectorsManager instance. T is a type used to iterate over policies with a
-// {NONE, DOWNLOADS, UPLOADS, UPLOADS_AND_DOWNLOADS} pattern without testing
-// every single permutation since these settings are independent.
-template <typename T>
-class ConnectorsManagerLegacyPoliciesTest
-    : public ConnectorsManagerTest,
-      public testing::WithParamInterface<std::tuple<AnalysisConnector, T>> {
- public:
-  ConnectorsManagerLegacyPoliciesTest<T>() {
-    scoped_feature_list_.InitWithFeatures(
-        {safe_browsing::kContentComplianceEnabled,
-         safe_browsing::kMalwareScanEnabled},
-        {});
-  }
-
-  AnalysisConnector connector() const { return std::get<0>(this->GetParam()); }
-  T tested_policy() const { return std::get<1>(this->GetParam()); }
-
-  bool upload_scan() const {
-    return connector() != AnalysisConnector::FILE_DOWNLOADED;
-  }
-
-  void TestPolicy() {
-    upload_scan() ? TestPolicyOnUpload() : TestPolicyOnDownload();
-  }
-
-  void TestPolicyOnDownload() {
-    // DLP only checks uploads by default and malware only checks downloads by
-    // default. Overriding the appropriate policies subsequently will change the
-    // tags matching the pattern.
-    auto default_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(default_settings.has_value());
-    expected_tags_ = {"malware"};
-    ValidateSettings(default_settings.value());
-
-    // The DLP tag is still absent if the patterns don't match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckComplianceOfDownloadedContent)
-        ->Append(kTestUrlNotMatchingPattern);
-    auto exempt_pattern_dlp_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(exempt_pattern_dlp_settings.has_value());
-    ValidateSettings(exempt_pattern_dlp_settings.value());
-
-    // The DLP tag is added once the patterns do match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckComplianceOfDownloadedContent)
-        ->Append(kTestUrlMatchingPattern);
-    auto scan_pattern_dlp_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(scan_pattern_dlp_settings.has_value());
-    expected_tags_ = {"dlp", "malware"};
-    ValidateSettings(scan_pattern_dlp_settings.value());
-
-    // The malware tag is removed once exempt patterns match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToNotCheckForMalwareOfDownloadedContent)
-        ->Append(kTestUrlMatchingPattern);
-    auto exempt_pattern_malware_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(exempt_pattern_malware_settings.has_value());
-    expected_tags_ = {"dlp"};
-    ValidateSettings(exempt_pattern_malware_settings.value());
-
-    // Both tags are removed once the patterns don't match them, resulting in no
-    // settings.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckComplianceOfDownloadedContent)
-        ->Remove(1, nullptr);
-    auto no_settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
-        url_, connector());
-    ASSERT_FALSE(no_settings.has_value());
-  }
-
-  void TestPolicyOnUpload() {
-    // DLP only checks uploads by default and malware only checks downloads by
-    // default. Overriding the appropriate policies subsequently will change the
-    // tags matching the pattern.
-    auto default_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(default_settings.has_value());
-    expected_tags_ = {"dlp"};
-    ValidateSettings(default_settings.value());
-
-    // The malware tag is still absent if the patterns don't match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckForMalwareOfUploadedContent)
-        ->Append(kTestUrlNotMatchingPattern);
-    auto exempt_pattern_malware_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(exempt_pattern_malware_settings.has_value());
-    ValidateSettings(exempt_pattern_malware_settings.value());
-
-    // The malware tag is added once the patterns do match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckForMalwareOfUploadedContent)
-        ->Append(kTestUrlMatchingPattern);
-    auto scan_pattern_malware_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(scan_pattern_malware_settings.has_value());
-    expected_tags_ = {"dlp", "malware"};
-    ValidateSettings(scan_pattern_malware_settings.value());
-
-    // The DLP tag is removed once exempt patterns match it.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToNotCheckComplianceOfUploadedContent)
-        ->Append(kTestUrlMatchingPattern);
-    auto exempt_pattern_dlp_settings =
-        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
-                                                              connector());
-    ASSERT_TRUE(exempt_pattern_dlp_settings.has_value());
-    expected_tags_ = {"malware"};
-    ValidateSettings(exempt_pattern_dlp_settings.value());
-
-    // Both tags are removed once the patterns don't match them, resulting in no
-    // settings.
-    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
-                   prefs::kURLsToCheckForMalwareOfUploadedContent)
-        ->Remove(1, nullptr);
-    auto no_settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
-        url_, connector());
-    ASSERT_FALSE(no_settings.has_value());
-  }
-};
-
-class ConnectorsManagerBlockLargeFileTest
-    : public ConnectorsManagerLegacyPoliciesTest<
-          safe_browsing::BlockLargeFileTransferValues> {
- public:
-  ConnectorsManagerBlockLargeFileTest() {
-    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
-        prefs::kBlockLargeFileTransfer, tested_policy());
-    expected_block_large_files_ = [this]() {
-      if (tested_policy() == safe_browsing::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS)
-        return true;
-      if (tested_policy() == safe_browsing::BLOCK_NONE)
-        return false;
-      return upload_scan()
-                 ? tested_policy() == safe_browsing::BLOCK_LARGE_UPLOADS
-                 : tested_policy() == safe_browsing::BLOCK_LARGE_DOWNLOADS;
-    }();
-  }
-};
-
-TEST_P(ConnectorsManagerBlockLargeFileTest, Test) {
-  TestPolicy();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ConnectorsManagerBlockLargeFileTest,
-    ConnectorsManagerBlockLargeFileTest,
-    testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
-                     testing::ValuesIn(kAllBlockLargeFilesPolicyValues)));
-
-class ConnectorsManagerBlockUnsupportedFileTypesTest
-    : public ConnectorsManagerLegacyPoliciesTest<
-          safe_browsing::BlockUnsupportedFiletypesValues> {
- public:
-  ConnectorsManagerBlockUnsupportedFileTypesTest() {
-    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
-        prefs::kBlockUnsupportedFiletypes, tested_policy());
-    expected_block_unsupported_file_types_ = [this]() {
-      if (tested_policy() ==
-          safe_browsing::BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS)
-        return true;
-      if (tested_policy() == safe_browsing::BLOCK_UNSUPPORTED_FILETYPES_NONE)
-        return false;
-      return upload_scan()
-                 ? tested_policy() ==
-                       safe_browsing::BLOCK_UNSUPPORTED_FILETYPES_UPLOADS
-                 : tested_policy() ==
-                       safe_browsing::BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS;
-    }();
-  }
-};
-
-TEST_P(ConnectorsManagerBlockUnsupportedFileTypesTest, Test) {
-  TestPolicy();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ConnectorsManagerBlockUnsupportedFileTypesTest,
-    ConnectorsManagerBlockUnsupportedFileTypesTest,
-    testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
-                     testing::ValuesIn(kAllBlockUnsupportedFileTypesValues)));
-
-class ConnectorsManagerAllowPasswordProtectedFilesTest
-    : public ConnectorsManagerLegacyPoliciesTest<
-          safe_browsing::AllowPasswordProtectedFilesValues> {
- public:
-  ConnectorsManagerAllowPasswordProtectedFilesTest() {
-    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
-        prefs::kAllowPasswordProtectedFiles, tested_policy());
-    expected_block_password_protected_files_ = [this]() {
-      if (tested_policy() == safe_browsing::ALLOW_UPLOADS_AND_DOWNLOADS)
-        return false;
-      if (tested_policy() == safe_browsing::ALLOW_NONE)
-        return true;
-      return upload_scan() ? tested_policy() != safe_browsing::ALLOW_UPLOADS
-                           : tested_policy() != safe_browsing::ALLOW_DOWNLOADS;
-    }();
-  }
-};
-
-TEST_P(ConnectorsManagerAllowPasswordProtectedFilesTest, Test) {
-  TestPolicy();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ConnectorsManagerAllowPasswordProtectedFilesTest,
-    ConnectorsManagerAllowPasswordProtectedFilesTest,
-    testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
-                     testing::ValuesIn(kAllAllowEncryptedPolicyValues)));
-
-class ConnectorsManagerDelayDeliveryUntilVerdictTest
-    : public ConnectorsManagerLegacyPoliciesTest<
-          safe_browsing::DelayDeliveryUntilVerdictValues> {
- public:
-  ConnectorsManagerDelayDeliveryUntilVerdictTest() {
-    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
-        prefs::kDelayDeliveryUntilVerdict, tested_policy());
-    expected_block_until_verdict_ = [this]() {
-      if (tested_policy() == safe_browsing::DELAY_UPLOADS_AND_DOWNLOADS)
-        return BlockUntilVerdict::BLOCK;
-      if (tested_policy() == safe_browsing::DELAY_NONE)
-        return BlockUntilVerdict::NO_BLOCK;
-      bool delay =
-          (upload_scan() && tested_policy() == safe_browsing::DELAY_UPLOADS) ||
-          (!upload_scan() && tested_policy() == safe_browsing::DELAY_DOWNLOADS);
-      return delay ? BlockUntilVerdict::BLOCK : BlockUntilVerdict::NO_BLOCK;
-    }();
-  }
-};
-
-TEST_P(ConnectorsManagerDelayDeliveryUntilVerdictTest, Test) {
-  TestPolicy();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ConnectorsManagerDelayDeliveryUntilVerdictTest,
-    ConnectorsManagerDelayDeliveryUntilVerdictTest,
-    testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
-                     testing::ValuesIn(kAllDelayDeliveryUntilVerdictValues)));
-
 class ConnectorsManagerConnectorPoliciesTest
     : public ConnectorsManagerTest,
       public testing::WithParamInterface<
@@ -425,8 +148,8 @@ class ConnectorsManagerConnectorPoliciesTest
 
   const char* pref() const { return ConnectorPref(connector()); }
 
-  void SetUpExpectedSettings(const char* pref) {
-    auto expected_settings = ExpectedSettings(pref, url());
+  void SetUpExpectedAnalysisSettings(const char* pref) {
+    auto expected_settings = ExpectedAnalysisSettings(pref, url());
     expect_settings_ = expected_settings.has_value();
     if (expected_settings.has_value()) {
       expected_tags_ = expected_settings.value().tags;
@@ -440,9 +163,14 @@ class ConnectorsManagerConnectorPoliciesTest
     }
   }
 
+  void SetUpExpectedReportingSettings(const char* pref) {
+    auto expected_settings = ExpectedReportingSettings(pref);
+    expect_settings_ = expected_settings.has_value();
+  }
+
  protected:
-  base::Optional<AnalysisSettings> ExpectedSettings(const char* pref,
-                                                    const char* url) {
+  base::Optional<AnalysisSettings> ExpectedAnalysisSettings(const char* pref,
+                                                            const char* url) {
     if (pref == kEmptySettingsPref || url == kNoTagsUrl)
       return base::nullopt;
 
@@ -463,6 +191,15 @@ class ConnectorsManagerConnectorPoliciesTest
     return settings;
   }
 
+  base::Optional<ReportingSettings> ExpectedReportingSettings(
+      const char* pref) {
+    if (pref == kEmptySettingsPref)
+      return base::nullopt;
+
+    ReportingSettings settings;
+    return settings;
+  }
+
   bool expect_settings_;
 };
 
@@ -470,8 +207,8 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
-  SetUpExpectedSettings(kNormalSettingsPref);
+  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
+  SetUpExpectedAnalysisSettings(kNormalAnalysisSettingsPref);
 
   // Verify that the expected settings are returned normally.
   auto settings_from_manager =
@@ -526,8 +263,11 @@ class ConnectorsManagerAnalysisConnectorsTest
       public testing::WithParamInterface<AnalysisConnector> {
  public:
   explicit ConnectorsManagerAnalysisConnectorsTest(bool enable = true) {
-    if (enable)
+    if (enable) {
       scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
+    }
   }
 
   AnalysisConnector connector() const { return GetParam(); }
@@ -543,7 +283,7 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
   // Once the pref is updated, the settings should be cached, and analysis
   // settings can be obtained.
   {
-    ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
+    ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
 
     const auto& cached_settings =
         manager->GetAnalysisConnectorsSettingsForTesting();
@@ -571,27 +311,23 @@ INSTANTIATE_TEST_CASE_P(ConnectorsManagerAnalysisConnectorsTest,
                         ConnectorsManagerAnalysisConnectorsTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
 
-class ConnectorsManagerNoFeatureTest
+class ConnectorsManagerAnalysisNoFeatureTest
     : public ConnectorsManagerAnalysisConnectorsTest {
  public:
-  ConnectorsManagerNoFeatureTest()
+  ConnectorsManagerAnalysisNoFeatureTest()
       : ConnectorsManagerAnalysisConnectorsTest(false) {}
 };
 
-TEST_P(ConnectorsManagerNoFeatureTest, Test) {
-  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
-
-  if (connector() == AnalysisConnector::FILE_DOWNLOADED)
-    expected_tags_ = {"malware"};
-  else
-    expected_tags_ = {"dlp"};
+TEST_P(ConnectorsManagerAnalysisNoFeatureTest, Test) {
+  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
 
   for (const char* url :
        {kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl}) {
+    // Only base::nullopt should be returned when the feature is disabled,
+    // regardless of what Connector or URL is used.
     auto settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
         GURL(url), connector());
-    ASSERT_TRUE(settings.has_value());
-    ValidateSettings(settings.value());
+    ASSERT_FALSE(settings.has_value());
   }
 
   // No cached settings imply the connector value was never read.
@@ -601,7 +337,116 @@ TEST_P(ConnectorsManagerNoFeatureTest, Test) {
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        ConnectorsManagerNoFeatureTest,
+                        ConnectorsManagerAnalysisNoFeatureTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
+
+class ConnectorsManagerReportingDynamicTest
+    : public ConnectorsManagerTest,
+      public testing::WithParamInterface<ReportingConnector> {
+ public:
+  ConnectorsManagerReportingDynamicTest() {
+    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  }
+
+  ReportingConnector connector() const { return GetParam(); }
+
+  const char* pref() const { return ConnectorPref(connector()); }
+};
+
+TEST_P(ConnectorsManagerReportingDynamicTest, DynamicPolicies) {
+  // The cache is initially empty.
+  auto* manager = ConnectorsManager::GetInstance();
+  ASSERT_TRUE(manager->GetReportingConnectorsSettingsForTesting().empty());
+
+  // Once the pref is updated, the settings should be cached, and reporting
+  // settings can be obtained.
+  {
+    ScopedConnectorPref scoped_pref(pref(), kNormalReportingSettingsPref);
+
+    const auto& cached_settings =
+        manager->GetReportingConnectorsSettingsForTesting();
+    ASSERT_FALSE(cached_settings.empty());
+    ASSERT_EQ(1u, cached_settings.count(connector()));
+    ASSERT_EQ(1u, cached_settings.at(connector()).size());
+
+    auto settings =
+        cached_settings.at(connector()).at(0).GetReportingSettings();
+    ASSERT_TRUE(settings.has_value());
+    ValidateSettings(settings.value());
+  }
+
+  // The cache should be empty again after the pref is reset.
+  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+}
+
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingDynamicTest,
+                        ConnectorsManagerReportingDynamicTest,
+                        testing::ValuesIn(kAllReportingConnectors));
+
+// Tests to make sure getting reporting settings work with both the feature flag
+// and the OnSecurityEventEnterpriseConnector policy. The parameter for these
+// tests is a tuple of:
+//
+//   enum class ReportingConnector[]: array of all reporting connectors.
+//   bool: enable feature flag.
+//   int: policy value.  0: don't set, 1: set to normal, 2: set to empty.
+class ConnectorsManagerReportingFeatureTest
+    : public ConnectorsManagerTest,
+      public testing::WithParamInterface<
+          std::tuple<ReportingConnector, bool, int>> {
+ public:
+  ConnectorsManagerReportingFeatureTest() {
+    if (enable_feature_flag()) {
+      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
+    }
+  }
+
+  ReportingConnector connector() const { return std::get<0>(GetParam()); }
+  bool enable_feature_flag() const { return std::get<1>(GetParam()); }
+  int policy_value() const { return std::get<2>(GetParam()); }
+
+  const char* pref() const { return ConnectorPref(connector()); }
+
+  const char* pref_value() const {
+    switch (policy_value()) {
+      case 1:
+        return kNormalReportingSettingsPref;
+      case 2:
+        return kEmptySettingsPref;
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+  bool reporting_enabled() const {
+    return enable_feature_flag() && policy_value() == 1;
+  }
+};
+
+TEST_P(ConnectorsManagerReportingFeatureTest, Test) {
+  std::unique_ptr<ScopedConnectorPref> scoped_pref;
+  if (policy_value() != 0)
+    scoped_pref = std::make_unique<ScopedConnectorPref>(pref(), pref_value());
+
+  auto settings =
+      ConnectorsManager::GetInstance()->GetReportingSettings(connector());
+  EXPECT_EQ(reporting_enabled(), settings.has_value());
+  if (settings.has_value())
+    ValidateSettings(settings.value());
+
+  EXPECT_EQ(enable_feature_flag() && policy_value() == 1,
+            !ConnectorsManager::GetInstance()
+                 ->GetReportingConnectorsSettingsForTesting()
+                 .empty());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ConnectorsManagerReportingFeatureTest,
+    testing::Combine(testing::ValuesIn(kAllReportingConnectors),
+                     testing::Bool(),
+                     testing::ValuesIn({0, 1, 2})));
 
 }  // namespace enterprise_connectors

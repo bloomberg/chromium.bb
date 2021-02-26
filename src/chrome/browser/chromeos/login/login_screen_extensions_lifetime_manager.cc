@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -67,7 +67,7 @@ void EnableLoginScreenPolicyExtensions() {
   extensions::ExtensionService* const extension_service =
       extensions::ExtensionSystem::Get(signin_profile)->extension_service();
   // This reapplies the policy. For the extensions that were previously disabled
-  // due to |DISABLE_BLOCKED_BY_POLICY|, this unsets this disable reason and
+  // due to `DISABLE_BLOCKED_BY_POLICY`, this unsets this disable reason and
   // reenables the extension.
   extension_service->CheckManagementPolicy();
 

@@ -4,12 +4,13 @@
 
 #include "components/performance_manager/test_support/performance_manager_browsertest_harness.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -17,28 +18,27 @@
 
 namespace performance_manager {
 
-PerformanceManagerBrowserTestHarness::PerformanceManagerBrowserTestHarness() {
-  helper_ = std::make_unique<PerformanceManagerTestHarnessHelper>();
-}
-
 PerformanceManagerBrowserTestHarness::~PerformanceManagerBrowserTestHarness() =
     default;
 
+void PerformanceManagerBrowserTestHarness::SetUp() {
+  PerformanceManagerLifetime::SetAdditionalGraphCreatedCallbackForTesting(
+      base::BindLambdaForTesting(
+          [self = this](Graph* graph) { self->OnGraphCreated(graph); }));
+
+  // The PM gets initialized in the following, so this must occur after
+  // setting the callback.
+  Super::SetUp();
+}
+
 void PerformanceManagerBrowserTestHarness::PreRunTestOnMainThread() {
   Super::PreRunTestOnMainThread();
-  helper_->SetUp();
-  helper_->OnWebContentsCreated(shell()->web_contents());
 
   // Set up the embedded web server.
   host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "components/test/data/performance_manager");
   ASSERT_TRUE(embedded_test_server()->Start());
-}
-
-void PerformanceManagerBrowserTestHarness::PostRunTestOnMainThread() {
-  helper_->TearDown();
-  Super::PostRunTestOnMainThread();
 }
 
 void PerformanceManagerBrowserTestHarness::SetUpCommandLine(
@@ -48,37 +48,10 @@ void PerformanceManagerBrowserTestHarness::SetUpCommandLine(
                                   "PerformanceManagerInstrumentation");
 }
 
-// We're a full embedder of the PM, so we have to wire up all of the embedder
-// hooks.
-void PerformanceManagerBrowserTestHarness::CreatedBrowserMainParts(
-    content::BrowserMainParts* browser_main_parts) {
-  helper_->SetUp();
-
-  // Expose interfaces to RenderProcess.
-  content::ShellContentBrowserClient::Get()
-      ->set_expose_interfaces_to_renderer_callback(base::BindRepeating(
-          [](service_manager::BinderRegistry* registry,
-             blink::AssociatedInterfaceRegistry* associated_registry_unused,
-             content::RenderProcessHost* render_process_host) {
-            PerformanceManagerRegistry::GetInstance()
-                ->CreateProcessNodeAndExposeInterfacesToRendererProcess(
-                    registry, render_process_host);
-          }));
-
-  // Expose interfaces to RenderFrame.
-  content::ShellContentBrowserClient::Get()
-      ->set_register_browser_interface_binders_for_frame_callback(
-          base::BindRepeating(
-              [](content::RenderFrameHost* render_frame_host,
-                 mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
-                PerformanceManagerRegistry::GetInstance()
-                    ->ExposeInterfacesToRenderFrame(map);
-              }));
-}
+void PerformanceManagerBrowserTestHarness::OnGraphCreated(Graph* graph) {}
 
 content::Shell* PerformanceManagerBrowserTestHarness::CreateShell() {
   content::Shell* shell = CreateBrowser();
-  helper_->OnWebContentsCreated(shell->web_contents());
   return shell;
 }
 

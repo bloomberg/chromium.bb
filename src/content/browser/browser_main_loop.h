@@ -50,11 +50,11 @@ class AudioManager;
 class AudioSystem;
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 class DeviceMonitorLinux;
 #endif
 class UserInputMonitor;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class DeviceMonitorMac;
 #endif
 }  // namespace media
@@ -210,7 +210,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void GetCompositingModeReporter(
       mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   media::DeviceMonitorMac* device_monitor_mac() const {
     return device_monitor_mac_.get();
   }
@@ -293,7 +293,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
       scoped_best_effort_execution_fence_;
 
-  // Members initialized in |MainMessageLoopStart()| ---------------------------
+  // Unregister UI thread from hang watching on destruction.
+  base::ScopedClosureRunner unregister_thread_closure_;
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
@@ -376,9 +377,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 

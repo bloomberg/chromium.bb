@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
-import android.support.test.filters.SmallTest;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,16 +21,16 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.SelectionClient;
@@ -38,7 +39,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestSelectionPopupController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.touch_selection.SelectionEventType;
@@ -55,8 +55,7 @@ import org.chromium.ui.touch_selection.SelectionEventType;
         ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS})
 public class ContextualSearchTapEventTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -68,6 +67,7 @@ public class ContextualSearchTapEventTest {
     private ContextualSearchPanel mPanel;
     private OverlayPanelManagerWrapper mPanelManager;
     private SelectionClient mContextualSearchClient;
+    private LayoutManagerImpl mLayoutManager;
 
     // --------------------------------------------------------------------------------------------
 
@@ -75,9 +75,9 @@ public class ContextualSearchTapEventTest {
      * ContextualSearchPanel wrapper that prevents native calls.
      */
     private static class ContextualSearchPanelWrapper extends ContextualSearchPanel {
-        public ContextualSearchPanelWrapper(
-                Context context, LayoutUpdateHost updateHost, OverlayPanelManager panelManager) {
-            super(context, updateHost, panelManager);
+        public ContextualSearchPanelWrapper(Context context, LayoutManagerImpl layoutManager,
+                OverlayPanelManager panelManager) {
+            super(context, layoutManager, panelManager);
         }
 
         @Override
@@ -97,17 +97,19 @@ public class ContextualSearchTapEventTest {
      */
     private static class ContextualSearchManagerWrapper extends ContextualSearchManager {
         public ContextualSearchManagerWrapper(ChromeActivity activity) {
-            super(activity, null);
+            super(activity, null, activity.getRootUiCoordinatorForTesting().getScrimCoordinator(),
+                    activity.getActivityTabProvider());
             setSelectionController(new MockCSSelectionController(activity, this));
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
-            ContentView cv = ContentView.createContentView(activity, webContents);
+            ContentView cv = ContentView.createContentView(
+                    activity, null /* eventOffsetHandler */, webContents);
             webContents.initialize(null, ViewAndroidDelegate.createBasicDelegate(cv), null,
-                    new ActivityWindowAndroid(activity),
-                    WebContents.createDefaultInternalsHolder());
+                    activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             SelectionPopupController selectionPopupController =
                     WebContentsUtils.createSelectionPopupController(webContents);
             selectionPopupController.setSelectionClient(this.getContextualSearchSelectionClient());
-            MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
+            MockContextualSearchPolicy policy =
+                    new MockContextualSearchPolicy(getSelectionController());
             setContextualSearchPolicy(policy);
             getSelectionController().setPolicy(policy);
         }

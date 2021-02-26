@@ -25,11 +25,11 @@ namespace {
 
 class LayerTreeHostScrollbarsPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
+      public ::testing::WithParamInterface<viz::RendererType> {
  protected:
   LayerTreeHostScrollbarsPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
-  RendererType renderer_type() const { return GetParam(); }
+  viz::RendererType renderer_type() const { return GetParam(); }
 
   void SetupTree() override {
     SetInitialDeviceScaleFactor(device_scale_factor_);
@@ -73,17 +73,10 @@ class PaintedScrollbar : public FakeScrollbar {
   SkColor color_ = SK_ColorGREEN;
 };
 
-LayerTreeTest::RendererType const kRendererTypes[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
-#if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
-#endif  // defined(ENABLE_CC_VULKAN_TESTS)
-};
-
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostScrollbarsPixelTest,
-                         ::testing::ValuesIn(kRendererTypes));
+                         ::testing::ValuesIn(viz::GetGpuRendererTypes()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
@@ -180,7 +173,8 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type_ == RENDERER_SKIA_GL)
+  if (renderer_type_ == viz::RendererType::kSkiaGL ||
+      renderer_type_ == viz::RendererType::kSkiaDawn)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(background,
@@ -208,7 +202,7 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
   PaintedOverlayScrollbar() {
     set_should_paint(true);
     set_has_thumb(true);
-    set_orientation(VERTICAL);
+    set_orientation(ScrollbarOrientation::VERTICAL);
     set_is_overlay(true);
     set_thumb_size(gfx::Size(15, 50));
     set_track_rect(gfx::Rect(0, 0, 15, 400));
@@ -253,7 +247,8 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostOverlayScrollbarsPixelTest,
-                         ::testing::ValuesIn(kRendererTypes));
+                         ::testing::ValuesIn(viz::GetGpuRendererTypes()),
+                         ::testing::PrintToStringParamName());
 
 // Simulate increasing the thickness of a painted overlay scrollbar. Ensure that
 // the scrollbar border remains crisp.

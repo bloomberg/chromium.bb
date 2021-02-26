@@ -34,7 +34,8 @@ void SimCompositor::SetWebView(
   test_web_view_client_ = &view_client;
 }
 
-SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
+SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds,
+                                              bool raster) {
   DCHECK(web_view_);
   DCHECK(!layer_tree_host()->defer_main_frame_update());
   // Verify that the need for a BeginMainFrame has been registered, and would
@@ -49,8 +50,7 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   SimCanvas::Commands commands;
   paint_commands_ = &commands;
 
-  layer_tree_host()->Composite(last_frame_time_,
-                               /*raster=*/false);
+  layer_tree_host()->CompositeForTest(last_frame_time_, raster);
 
   paint_commands_ = nullptr;
   return commands;
@@ -59,10 +59,10 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
 SimCanvas::Commands SimCompositor::PaintFrame() {
   DCHECK(web_view_);
 
+  if (!web_view_->MainFrameImpl())
+    return SimCanvas::Commands();
+
   auto* frame = web_view_->MainFrameImpl()->GetFrame();
-  DocumentLifecycle::AllowThrottlingScope throttling_scope(
-      frame->GetDocument()->Lifecycle());
-  frame->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   PaintRecordBuilder builder;
   frame->View()->PaintOutsideOfLifecycle(builder.Context(),
                                          kGlobalPaintFlattenCompositingLayers);
@@ -74,6 +74,10 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
 }
 
 void SimCompositor::DidBeginMainFrame() {
+  // Note that this will run *before* LocalFrameView::RunPostLifecycleSteps,
+  // due to the calling conventions of PageWidgetDelegate::DidBeginFrame(). As a
+  // result, frame throttling status has not been updated yet, and will be in
+  // the same state as when the lifecycle steps ran.
   *paint_commands_ = PaintFrame();
 }
 

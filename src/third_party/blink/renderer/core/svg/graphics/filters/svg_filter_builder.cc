@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
@@ -66,7 +67,7 @@ class FilterInputKeywords {
 SVGFilterGraphNodeMap::SVGFilterGraphNodeMap() = default;
 
 void SVGFilterGraphNodeMap::AddBuiltinEffect(FilterEffect* effect) {
-  effect_references_.insert(effect, FilterEffectSet());
+  effect_references_.insert(effect, MakeGarbageCollected<FilterEffectSet>());
 }
 
 void SVGFilterGraphNodeMap::AddPrimitive(
@@ -75,7 +76,7 @@ void SVGFilterGraphNodeMap::AddPrimitive(
   // The effect must be a newly created filter effect.
   DCHECK(!effect_references_.Contains(effect));
   DCHECK(!effect_element_.Contains(&primitive));
-  effect_references_.insert(effect, FilterEffectSet());
+  effect_references_.insert(effect, MakeGarbageCollected<FilterEffectSet>());
 
   // Add references from the inputs of this effect to the effect itself, to
   // allow determining what effects needs to be invalidated when a certain
@@ -97,7 +98,7 @@ void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
     InvalidateDependentEffects(effect_reference);
 }
 
-void SVGFilterGraphNodeMap::Trace(Visitor* visitor) {
+void SVGFilterGraphNodeMap::Trace(Visitor* visitor) const {
   visitor->Trace(effect_element_);
   visitor->Trace(effect_references_);
 }
@@ -165,7 +166,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
   EColorInterpolation filter_color_interpolation =
       ColorInterpolationForElement(filter_element, CI_AUTO);
   SVGUnitTypes::SVGUnitType primitive_units =
-      filter_element.primitiveUnits()->CurrentValue()->EnumValue();
+      filter_element.primitiveUnits()->CurrentEnumValue();
 
   for (SVGElement* element = Traversal<SVGElement>::FirstChild(filter_element);
        element; element = Traversal<SVGElement>::NextSibling(*element)) {

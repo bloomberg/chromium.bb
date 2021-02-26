@@ -7,6 +7,7 @@ syntax = "proto2";
 option java_multiple_files = true;
 option optimize_for = LITE_RUNTIME;
 
+option java_package = "remoting.apis.v1";
 package remoting.apis.v1;
 
 import "host_info.proto";
@@ -74,6 +75,9 @@ message HeartbeatRequest {
 
   // Indicates whether this request is the first heartbeat from a host instance.
   optional bool is_initial_heartbeat = 11;
+
+  // Local hostname of the machine.
+  optional string hostname = 12;
 }
 
 // Sent in response to a HeartbeatRequest.

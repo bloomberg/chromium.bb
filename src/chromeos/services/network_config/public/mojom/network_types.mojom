@@ -19,6 +19,7 @@ enum ConnectionStateType {
 enum DeviceStateType {
   kUninitialized,
   kDisabled,
+  kDisabling,
   kEnabling,
   kEnabled,
   kProhibited,
@@ -71,4 +72,22 @@ enum PolicySource {
   kDevicePolicyRecommended,
   // The property value came from an extension.
   kActiveExtension,
+};
+
+// The captive portal state. Provides additional details when the connection
+// state is kPortal.
+enum PortalState {
+  // The network is not connected or the portal state is not available.
+  kUnknown,
+  // The network is connected and no portal is detected.
+  kOnline,
+  // A portal is suspected but no redirect was provided.
+  kPortalSuspected,
+  // The network is in a portal state with a redirect URL.
+  kPortal,
+  // A proxy requiring authentication is detected.
+  kProxyAuthRequired,
+  // The network is connected but no internet is available and no proxy was
+  // detected.
+  kNoInternet,
 };

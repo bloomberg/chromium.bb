@@ -14,7 +14,7 @@
 
 #include "third_party/private_membership/src/internal/encrypted_bucket_id.h"
 
-#include "private_membership_rlwe.pb.h"
+#include "third_party/private_membership/src/private_membership_rlwe.pb.h"
 #include "third_party/private_membership/src/internal/rlwe_id_utils.h"
 #include "third_party/private_membership/src/internal/testing/constants.h"
 #include <gmock/gmock.h>
@@ -113,7 +113,7 @@ TEST(EncryptedBucketIdTest, ToUint32Success) {
   ASSERT_OK_AND_ASSIGN(auto encrypted_bucket_id,
                        EncryptedBucketId::Create("\xFF\xFF\xFF\xFF", 32));
   ASSERT_OK_AND_ASSIGN(auto x, encrypted_bucket_id.ToUint32());
-  EXPECT_EQ(x, (1LL << 32) - 1);
+  EXPECT_EQ(x, (int64_t{1} << 32) - 1);
 }
 
 TEST(EncryptedBucketIdTest, EqualsFalse) {

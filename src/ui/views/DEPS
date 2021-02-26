@@ -16,6 +16,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl/test/gl_surface_test_support.h",  # To initialize GL for tests.
   "+ui/native_theme",
+  "+ui/ozone/buildflags.h",
   "+ui/ozone/public",
   "+ui/platform_window",
   "+ui/resources/grit/ui_resources.h",
@@ -23,8 +24,6 @@ include_rules = [
   "+ui/touch_selection",
   "+ui/wm/core",
   "+ui/wm/public",
-
-  "-testing/gmock",
 ]
 
 specific_include_rules = {

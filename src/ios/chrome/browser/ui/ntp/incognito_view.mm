@@ -9,7 +9,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/ui/ntp/incognito_cookies_view.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -121,6 +122,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 }  // namespace
 
+@interface IncognitoView () <URLDropDelegate>
+
+@end
+
 @implementation IncognitoView {
   UIView* _containerView;
   UIStackView* _stackView;
@@ -131,8 +136,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   UILayoutGuide* _bottomUnsafeAreaGuide;
   UILayoutGuide* _bottomUnsafeAreaGuideInSuperview;
 
-  // Height constraints for adding margins for the toolbars.
-  NSLayoutConstraint* _topToolbarMarginHeight;
+  // Height constraint for adding margins for the bottom toolbar.
   NSLayoutConstraint* _bottomToolbarMarginHeight;
 
   // Constraint ensuring that |containerView| is at least as high as the
@@ -144,12 +148,22 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
   // The UrlLoadingService associated with this view.
   UrlLoadingBrowserAgent* _URLLoader;  // weak
+
+  // Handles drop interactions for this view.
+  URLDragDropHandler* _dragDropHandler;
 }
 - (instancetype)initWithFrame:(CGRect)frame
                     URLLoader:(UrlLoadingBrowserAgent*)URLLoader {
   self = [super initWithFrame:frame];
   if (self) {
     _URLLoader = URLLoader;
+
+    if (DragAndDropIsEnabled()) {
+      _dragDropHandler = [[URLDragDropHandler alloc] init];
+      _dragDropHandler.dropDelegate = self;
+      [self addInteraction:[[UIDropInteraction alloc]
+                               initWithDelegate:_dragDropHandler]];
+    }
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -183,9 +197,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
     [self addTextSections];
 
-    if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
-      [self addCookiesViewController];
-
     // |topGuide| and |bottomGuide| exist to vertically position the stackview
     // inside the container scrollview.
     UILayoutGuide* topGuide = [[UILayoutGuide alloc] init];
@@ -195,38 +206,34 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     [_containerView addLayoutGuide:bottomGuide];
     [_containerView addLayoutGuide:_bottomUnsafeAreaGuide];
 
-    // Those layout guide are used to prevent the content from being displayed
-    // below the toolbars.
+    // This layout guide is used to prevent the content from being displayed
+    // below the bottom toolbar.
     UILayoutGuide* bottomToolbarMarginGuide = [[UILayoutGuide alloc] init];
-    UILayoutGuide* topToolbarMarginGuide = [[UILayoutGuide alloc] init];
     [_containerView addLayoutGuide:bottomToolbarMarginGuide];
-    [_containerView addLayoutGuide:topToolbarMarginGuide];
 
     _bottomToolbarMarginHeight =
         [bottomToolbarMarginGuide.heightAnchor constraintEqualToConstant:0];
-    _topToolbarMarginHeight =
-        [topToolbarMarginGuide.heightAnchor constraintEqualToConstant:0];
     // Updates the constraints to the correct value.
     [self updateToolbarMargins];
 
     [self addSubview:_containerView];
 
     [NSLayoutConstraint activateConstraints:@[
-      // Position the two toolbar margin guides between the two guides used to
-      // have the correct centering margin.
+      // Position the stack view's top at some margin under from the container
+      // top.
       [topGuide.topAnchor constraintEqualToAnchor:_containerView.topAnchor],
-      [topToolbarMarginGuide.topAnchor
-          constraintEqualToAnchor:topGuide.bottomAnchor
-                         constant:kLayoutGuideVerticalMargin],
+      [_stackView.topAnchor constraintEqualToAnchor:topGuide.bottomAnchor
+                                           constant:kLayoutGuideVerticalMargin],
+
+      // Position the stack view's bottom guide at some margin from the
+      // container bottom.
       [bottomGuide.topAnchor
           constraintEqualToAnchor:bottomToolbarMarginGuide.bottomAnchor
                          constant:kLayoutGuideVerticalMargin],
       [_containerView.bottomAnchor
           constraintEqualToAnchor:bottomGuide.bottomAnchor],
 
-      // Position the stack view between the two toolbar margin guides.
-      [topToolbarMarginGuide.bottomAnchor
-          constraintEqualToAnchor:_stackView.topAnchor],
+      // Position the stack view above the bottom toolbar margin guide.
       [bottomToolbarMarginGuide.topAnchor
           constraintEqualToAnchor:_stackView.bottomAnchor],
 
@@ -256,7 +263,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
       // Activate the height constraints.
       _bottomToolbarMarginHeight,
-      _topToolbarMarginHeight,
 
       // Set a minimum top margin and make the bottom guide twice as tall as the
       // top guide.
@@ -338,19 +344,20 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   _visibleDataLabel.textColor = bodyTextColor;
 }
 
+#pragma mark - URLDropDelegate
+
+- (BOOL)canHandleURLDropInView:(UIView*)view {
+  return YES;
+}
+
+- (void)view:(UIView*)view didDropURL:(const GURL&)URL atPoint:(CGPoint)point {
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(URL));
+}
+
 #pragma mark - Private
 
 // Updates the height of the margins for the top and bottom toolbars.
 - (void)updateToolbarMargins {
-  if (IsRegularXRegularSizeClass(self)) {
-    _topToolbarMarginHeight.constant = 0;
-  } else {
-    CGFloat topInset = self.safeAreaInsets.top;
-    _topToolbarMarginHeight.constant =
-        topInset + ToolbarExpandedHeight(
-                       self.traitCollection.preferredContentSizeCategory);
-  }
-
   if (IsSplitToolbarMode(self)) {
     _bottomToolbarMarginHeight.constant = kSecondaryToolbarHeight;
   } else {
@@ -460,11 +467,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
          selector:@selector(contentSizeCategoryDidChange)
              name:UIContentSizeCategoryDidChangeNotification
            object:nil];
-}
-
-- (void)addCookiesViewController {
-  IncognitoCookiesView* cookiesView = [[IncognitoCookiesView alloc] init];
-  [_stackView addArrangedSubview:cookiesView];
 }
 
 @end

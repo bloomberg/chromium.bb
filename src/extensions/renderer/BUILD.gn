@@ -3,17 +3,18 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions)
 
-jumbo_source_set("renderer") {
+source_set("renderer") {
   sources = [
     "activity_log_converter_strategy.cc",
     "activity_log_converter_strategy.h",
     "api/automation/automation_api_helper.cc",
     "api/automation/automation_api_helper.h",
+    "api/automation/automation_api_util.cc",
+    "api/automation/automation_api_util.h",
     "api/automation/automation_ax_tree_wrapper.cc",
     "api/automation/automation_ax_tree_wrapper.h",
     "api/automation/automation_internal_custom_bindings.cc",
@@ -99,6 +100,8 @@ jumbo_source_set("renderer") {
     "display_source_custom_bindings.h",
     "dom_activity_logger.cc",
     "dom_activity_logger.h",
+    "dom_hooks_delegate.cc",
+    "dom_hooks_delegate.h",
     "extension_frame_helper.cc",
     "extension_frame_helper.h",
     "extension_injection_host.cc",
@@ -250,6 +253,7 @@ jumbo_source_set("renderer") {
   ]
 
   deps = [
+    "//build:chromeos_buildflags",
     "//chrome:resources",
     "//components/crx_file",
     "//components/guest_view/common",
@@ -263,6 +267,7 @@ jumbo_source_set("renderer") {
     "//extensions/common/api",
     "//gin",
     "//mojo/public/js:resources",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//skia",
     "//storage/common",
     "//third_party/blink/public:blink",
@@ -311,7 +316,7 @@ jumbo_source_set("renderer") {
   }
 }
 
-jumbo_static_library("unit_test_support") {
+static_library("unit_test_support") {
   # Sources that are shared between chrome-based renderer unit tests and
   # top-level extensions renderer unit tests.
   testonly = true
@@ -406,6 +411,7 @@ source_set("unit_tests") {
     ":unit_test_support",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/crx_file:crx_file",
     "//content/test:test_support",
     "//extensions:extensions_renderer_resources",

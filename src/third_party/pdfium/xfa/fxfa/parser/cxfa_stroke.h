@@ -7,9 +7,7 @@
 #ifndef XFA_FXFA_PARSER_CXFA_STROKE_H_
 #define XFA_FXFA_PARSER_CXFA_STROKE_H_
 
-#include <memory>
-
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "xfa/fxfa/fxfa_basic.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 
@@ -18,16 +16,17 @@ enum StrokeSameStyle {
   XFA_STROKE_SAMESTYLE_Corner = 2
 };
 
-class CXFA_GEPath;
-class CXFA_Graphics;
+class CFGAS_GEGraphics;
+class CFGAS_GEPath;
 class CXFA_Node;
 
-void XFA_StrokeTypeSetLineDash(CXFA_Graphics* pGraphics,
+void XFA_StrokeTypeSetLineDash(CFGAS_GEGraphics* pGraphics,
                                XFA_AttributeValue iStrokeType,
                                XFA_AttributeValue iCapType);
 
 class CXFA_Stroke : public CXFA_Node {
  public:
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_Stroke() override;
 
   bool IsCorner() const { return GetElementType() == XFA_Element::Corner; }
@@ -48,7 +47,9 @@ class CXFA_Stroke : public CXFA_Node {
 
   bool SameStyles(CXFA_Stroke* stroke, uint32_t dwFlags);
 
-  void Stroke(CXFA_GEPath* pPath, CXFA_Graphics* pGS, const CFX_Matrix& matrix);
+  void Stroke(CFGAS_GEPath* pPath,
+              CFGAS_GEGraphics* pGS,
+              const CFX_Matrix& matrix);
 
  protected:
   CXFA_Stroke(CXFA_Document* pDoc,
@@ -58,7 +59,7 @@ class CXFA_Stroke : public CXFA_Node {
               XFA_Element eType,
               pdfium::span<const PropertyData> properties,
               pdfium::span<const AttributeData> attributes,
-              std::unique_ptr<CJX_Object> js_node);
+              CJX_Object* js_node);
 };
 
 #endif  // XFA_FXFA_PARSER_CXFA_STROKE_H_

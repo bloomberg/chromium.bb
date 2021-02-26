@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -34,16 +34,20 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD2(IsDecoderConfigSupported,
                Supported(VideoDecoderImplementation,
                          const VideoDecoderConfig&));
+  MOCK_METHOD0(IsDecoderSupportKnown, bool());
+  MOCK_METHOD1(NotifyDecoderSupportKnown, void(base::OnceClosure));
   MOCK_METHOD3(CreateVideoDecoder,
                std::unique_ptr<media::VideoDecoder>(MediaLog*,
                                                     VideoDecoderImplementation,
                                                     RequestOverlayInfoCB));
 
+  MOCK_METHOD0(IsEncoderSupportKnown, bool());
+  MOCK_METHOD1(NotifyEncoderSupportKnown, void(base::OnceClosure));
   // CreateVideoEncodeAccelerator returns scoped_ptr, which the mocking
   // framework does not want. Trampoline it.
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
-  MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SequencedTaskRunner>());
   MOCK_METHOD0(GetMediaContextProvider, viz::RasterContextProvider*());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 

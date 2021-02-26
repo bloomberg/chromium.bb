@@ -14,13 +14,14 @@
 
 class CPDF_DeviceCS final : public CPDF_ColorSpace {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
-
+  CONSTRUCT_VIA_MAKE_RETAIN;
   ~CPDF_DeviceCS() override;
 
   // CPDF_ColorSpace:
-  bool GetRGB(const float* pBuf, float* R, float* G, float* B) const override;
+  bool GetRGB(pdfium::span<const float> pBuf,
+              float* R,
+              float* G,
+              float* B) const override;
   void TranslateImageLine(uint8_t* pDestBuf,
                           const uint8_t* pSrcBuf,
                           int pixels,

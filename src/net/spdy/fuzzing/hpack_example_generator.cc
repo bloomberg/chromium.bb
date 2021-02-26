@@ -55,10 +55,10 @@ int main(int argc, char** argv) {
 
   HpackFuzzUtil::GeneratorContext context;
   HpackFuzzUtil::InitializeGeneratorContext(&context);
-  spdy::HpackEncoder encoder(spdy::ObtainHpackHuffmanTable());
+  spdy::HpackEncoder encoder;
 
   for (int i = 0; i != example_count; ++i) {
-    spdy::SpdyHeaderBlock headers =
+    spdy::Http2HeaderBlock headers =
         HpackFuzzUtil::NextGeneratedHeaderSet(&context);
 
     std::string buffer;

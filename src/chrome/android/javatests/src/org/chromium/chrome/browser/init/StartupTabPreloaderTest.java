@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.init;
 
 import android.content.Intent;
-import android.support.test.filters.LargeTest;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -14,12 +15,15 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.net.test.EmbeddedTestServerRule;
@@ -139,10 +143,15 @@ public class StartupTabPreloaderTest {
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
 
+        Tab currentTab = mActivityRule.getActivity().getActivityTab();
+
         intent = new Intent(Intent.ACTION_VIEW);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mActivityRule.startMainActivityFromIntent(
-                intent, mServerRule.getServer().getURL(TEST_PAGE2));
+        String url = mServerRule.getServer().getURL(TEST_PAGE2);
+        mActivityRule.getActivity().startActivity(mActivityRule.prepareUrlIntent(intent, url));
+
+        CriteriaHelper.pollUiThread(
+                () -> mActivityRule.getActivity().getActivityTab() != currentTab);
+        ChromeTabUtils.waitForTabPageLoaded(mActivityRule.getActivity().getActivityTab(), url);
 
         // The second intent should be ignored and not increment the counters.
         Assert.assertEquals(

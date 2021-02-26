@@ -67,8 +67,8 @@
     attribute EventHandler onloadedmetadata;
     attribute EventHandler onloadstart;
     attribute EventHandler onmousedown;
-    [LenientThis] attribute EventHandler onmouseenter;
-    [LenientThis] attribute EventHandler onmouseleave;
+    [LegacyLenientThis] attribute EventHandler onmouseenter;
+    [LegacyLenientThis] attribute EventHandler onmouseleave;
     attribute EventHandler onmousemove;
     attribute EventHandler onmouseout;
     attribute EventHandler onmouseover;
@@ -80,7 +80,6 @@
     attribute EventHandler onplaying;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
-    [RuntimeEnabled=CSSContentVisibilityActivationEvent] attribute EventHandler onrendersubtreeactivation;
     attribute EventHandler onreset;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;
@@ -140,5 +139,8 @@
 
     // CSS Transitions
     // https://drafts.csswg.org/css-transitions/#interface-globaleventhandlers-idl
+    attribute EventHandler ontransitionrun;
+    attribute EventHandler ontransitionstart;
     attribute EventHandler ontransitionend;
+    attribute EventHandler ontransitioncancel;
 };

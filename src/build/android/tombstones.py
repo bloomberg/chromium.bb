@@ -19,7 +19,7 @@ from multiprocessing.pool import ThreadPool
 
 import devil_chromium
 
-from devil.android import device_blacklist
+from devil.android import device_denylist
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.utils import run_tests_helper
@@ -233,7 +233,7 @@ def main():
   parser.add_argument('--device',
                       help='The serial number of the device. If not specified '
                            'will use all devices.')
-  parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
+  parser.add_argument('--denylist-file', help='Device denylist JSON file.')
   parser.add_argument('-a', '--all-tombstones', action='store_true',
                       help='Resolve symbols for all tombstones, rather than '
                            'just the most recent.')
@@ -251,21 +251,19 @@ def main():
                       help='Path to the adb binary.')
   args = parser.parse_args()
 
-  devil_chromium.Initialize(adb_path=args.adb_path)
-
-  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
-               if args.blacklist_file
-               else None)
-
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
-  # Do an up-front test that the output directory is known.
-  constants.CheckOutputDirectory()
+
+  devil_chromium.Initialize(output_directory=constants.GetOutDirectory(),
+                            adb_path=args.adb_path)
+
+  denylist = (device_denylist.Denylist(args.denylist_file)
+              if args.denylist_file else None)
 
   if args.device:
     devices = [device_utils.DeviceUtils(args.device)]
   else:
-    devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+    devices = device_utils.DeviceUtils.HealthyDevices(denylist)
 
   # This must be done serially because strptime can hit a race condition if
   # used for the first time in a multithreaded environment.

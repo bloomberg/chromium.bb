@@ -17,6 +17,8 @@
 namespace v8 {
 namespace internal {
 
+#include "torque-generated/src/objects/name-tq-inl.inc"
+
 TQ_OBJECT_CONSTRUCTORS_IMPL(Name)
 TQ_OBJECT_CONSTRUCTORS_IMPL(Symbol)
 
@@ -92,6 +94,12 @@ uint32_t Name::Hash() {
   if (IsHashFieldComputed(field)) return field >> kHashShift;
   // Slow case: compute hash code and set it. Has to be a string.
   return String::cast(*this).ComputeAndSetHash();
+}
+
+uint32_t Name::hash() const {
+  uint32_t field = hash_field();
+  DCHECK(IsHashFieldComputed(field));
+  return field >> kHashShift;
 }
 
 DEF_GETTER(Name, IsInterestingSymbol, bool) {

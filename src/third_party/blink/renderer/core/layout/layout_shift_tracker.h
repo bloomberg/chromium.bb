@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
@@ -17,10 +18,11 @@
 
 namespace blink {
 
-class IntRect;
+class LayoutBox;
 class LayoutObject;
+class LayoutText;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TracedValue;
 class WebInputEvent;
 
@@ -31,27 +33,40 @@ class CORE_EXPORT LayoutShiftTracker final
  public:
   explicit LayoutShiftTracker(LocalFrameView*);
   ~LayoutShiftTracker() = default;
-  // |paint_offset_diff| is an additional amount by which the paint offset
-  // shifted that is not tracked in visual rects. Visual rects are in the
-  // local transform space of the LayoutObject. Any time the transform space is
-  // changed, the offset of that rect to the "origin" is reset. This offset
-  // is also known as the paint offset.
-  // In cases where we can communicate paint offset diffs across transform
-  // space change boundaries, |paint_offset_diff| is how to do it. In
-  // particular, many transform spaces are artificial and are used as an
-  // implementation detail of compositing to make it easier to isolate state for
-  // composited layers. We can easily pass the paint offset diff across such
-  // boundaries.
-  void NotifyObjectPrePaint(const LayoutObject& object,
-                            const PropertyTreeState& property_tree_state,
-                            const IntRect& old_visual_rect,
-                            const IntRect& new_visual_rect,
-                            FloatSize paint_offset_delta);
+
+  bool NeedsToTrack(const LayoutObject&) const;
+
+  // |old_rect| and |new_rect| are border box rects, united with layout overflow
+  // rects if the box has layout overflow and doesn't clip overflow, in the
+  // local transform space (property_tree_state.Transform()). |old_paint_offset|
+  // and |new_paint_offset| are the offsets of the border box rect in the local
+  // transform space, which are the same as |old_rect.offset| and
+  // |new_rect.offset| respectively if the rects are border box rects.
+  // As we don't save the old property tree state, the caller should adjust
+  // |old_rect| and |old_paint_offset| so that we can calculate the correct old
+  // visual representation and old starting point in the initial containing
+  // block and the viewport with the new property tree state in most cases.
+  void NotifyBoxPrePaint(const LayoutBox& box,
+                         const PropertyTreeStateOrAlias& property_tree_state,
+                         const PhysicalRect& old_rect,
+                         const PhysicalRect& new_rect,
+                         const PhysicalOffset& old_paint_offset,
+                         const PhysicalOffset& new_paint_offset);
+
+  void NotifyTextPrePaint(const LayoutText& text,
+                          const PropertyTreeStateOrAlias& property_tree_state,
+                          const LogicalOffset& old_starting_point,
+                          const LogicalOffset& new_starting_point,
+                          const PhysicalOffset& old_paint_offset,
+                          const PhysicalOffset& new_paint_offset,
+                          const LayoutUnit logical_height);
+
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
-  bool IsActive();
+  void NotifyFindInPageInput();
+  bool IsActive() const { return is_active_; }
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }
   float OverallMaxDistance() const { return overall_max_distance_; }
@@ -60,39 +75,78 @@ class CORE_EXPORT LayoutShiftTracker final
   base::TimeTicks MostRecentInputTimestamp() {
     return most_recent_input_timestamp_;
   }
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
-  // Saves and restores visual rects on layout objects when a layout tree is
-  // rebuilt by Node::ReattachLayoutTree.
-  class ReattachHook : public GarbageCollected<ReattachHook> {
+  // Saves and restores geometry on layout boxes when a layout tree is rebuilt
+  // by Node::ReattachLayoutTree.
+  class ReattachHookScope {
+    STACK_ALLOCATED();
+
    public:
-    ReattachHook() : scope_(nullptr) {}
-    void Trace(Visitor*);
+    explicit ReattachHookScope(const Node&);
+    ~ReattachHookScope();
 
-    class Scope {
-     public:
-      Scope(const Node&);
-      ~Scope();
-
-     private:
-      bool active_;
-      Scope* outer_;
-    };
+    ReattachHookScope(const ReattachHookScope&) = delete;
+    ReattachHookScope& operator=(const ReattachHookScope&) = delete;
 
     static void NotifyDetach(const Node&);
     static void NotifyAttach(const Node&);
 
    private:
-    Scope* scope_;
-    HeapHashMap<Member<const Node>, IntRect> visual_rects_;
+    ReattachHookScope* outer_;
+    static ReattachHookScope* top_;
+    struct Geometry {
+      PhysicalOffset paint_offset;
+      LayoutSize size;
+      PhysicalRect visual_overflow_rect;
+    };
+    HeapHashMap<Member<const Node>, Geometry> geometries_before_detach_;
+  };
+
+  class CORE_EXPORT ContainingBlockScope {
+    USING_FAST_MALLOC(ContainingBlockScope);
+
+   public:
+    // |old_size| and |new_size| are the border box sizes.
+    // |old_rect| and |new_rect| have the same definition as in
+    // NotifyBoxPrePaint().
+    ContainingBlockScope(const PhysicalSize& old_size,
+                         const PhysicalSize& new_size,
+                         const PhysicalRect& old_rect,
+                         const PhysicalRect& new_rect)
+        : outer_(top_),
+          old_size_(old_size),
+          new_size_(new_size),
+          old_rect_(old_rect),
+          new_rect_(new_rect) {
+      top_ = this;
+    }
+    ~ContainingBlockScope() {
+      DCHECK_EQ(top_, this);
+      top_ = outer_;
+    }
+
+    ContainingBlockScope(const ContainingBlockScope&) = delete;
+    ContainingBlockScope& operator=(const ContainingBlockScope&) = delete;
+
+   private:
+    friend class LayoutShiftTracker;
+    ContainingBlockScope* outer_;
+    static ContainingBlockScope* top_;
+    PhysicalSize old_size_;
+    PhysicalSize new_size_;
+    PhysicalRect old_rect_;
+    PhysicalRect new_rect_;
   };
 
  private:
   void ObjectShifted(const LayoutObject&,
-                     const PropertyTreeState&,
-                     FloatRect old_rect,
-                     FloatRect new_rect,
-                     FloatSize paint_offset_diff);
+                     const PropertyTreeStateOrAlias&,
+                     const PhysicalRect& old_rect,
+                     const PhysicalRect& new_rect,
+                     const FloatPoint& old_starting_point,
+                     const FloatPoint& new_starting_point);
+
   void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
@@ -105,6 +159,7 @@ class CORE_EXPORT LayoutShiftTracker final
   void SubmitPerformanceEntry(double score_delta, bool input_detected) const;
 
   Member<LocalFrameView> frame_view_;
+  bool is_active_;
 
   // The document cumulative layout shift (DCLS) score for this LocalFrame,
   // unweighted, with move distance applied.

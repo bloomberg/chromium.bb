@@ -453,10 +453,12 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
     LOGGER.warn('A transient error occurred while querying %s:\n'
                 '%s %s %s\n'
-                '%s %d %s',
+                '%s %d %s\n'
+                '%s',
                 conn.req_host, conn.req_params['method'],
                 conn.req_params['uri'],
-                http_version, http_version, response.status, response.reason)
+                http_version, http_version, response.status, response.reason,
+                contents)
 
     if idx < TRY_LIMIT - 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
@@ -706,6 +708,15 @@ def AbandonChange(host, change, msg=''):
   return ReadHttpJsonResponse(conn)
 
 
+def MoveChange(host, change, destination_branch):
+  """Move a Gerrit change to different destination branch."""
+  path = 'changes/%s/move' % change
+  body = {'destination_branch': destination_branch}
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  return ReadHttpJsonResponse(conn)
+
+
+
 def RestoreChange(host, change, msg=''):
   """Restores a previously abandoned change."""
   path = 'changes/%s/restore' % change
@@ -913,6 +924,12 @@ def GetGerritBranch(host, project, branch):
   if response:
     return response
   raise GerritError(200, 'Unable to get gerrit branch')
+
+
+def GetProjectHead(host, project):
+  conn = CreateHttpConn(host,
+                        '/projects/%s/HEAD' % urllib.parse.quote(project, ''))
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def GetAccountDetails(host, account_id='self'):

@@ -14,8 +14,8 @@ import {PathEncoder, PersistenceImpl} from './PersistenceImpl.js';
 export class Automapping {
   /**
    * @param {!Workspace.Workspace.WorkspaceImpl} workspace
-   * @param {function(!AutomappingStatus)} onStatusAdded
-   * @param {function(!AutomappingStatus)} onStatusRemoved
+   * @param {function(!AutomappingStatus):Promise<void>} onStatusAdded
+   * @param {function(!AutomappingStatus):Promise<void>} onStatusRemoved
    */
   constructor(workspace, onStatusAdded, onStatusRemoved) {
     this._workspace = workspace;
@@ -24,14 +24,17 @@ export class Automapping {
     this._onStatusRemoved = onStatusRemoved;
     /** @type {!Set<!AutomappingStatus>} */
     this._statuses = new Set();
-    this._statusSymbol = Symbol('Automapping.Status');
-    this._processingPromiseSymbol = Symbol('Automapping.ProcessingPromise');
-    this._metadataSymbol = Symbol('Automapping.Metadata');
-
 
     /** @type {!Map<string, !Workspace.UISourceCode.UISourceCode>} */
     this._fileSystemUISourceCodes = new Map();
     this._sweepThrottler = new Common.Throttler.Throttler(100);
+
+    /** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, !Promise<void>>} */
+    this._sourceCodeToProcessingPromiseMap = new WeakMap();
+    /** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, !AutomappingStatus>} */
+    this._sourceCodeToAutoMappingStatusMap = new WeakMap();
+    /** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, ?Workspace.UISourceCode.UISourceCodeMetadata>} */
+    this._sourceCodeToMetadataMap = new WeakMap();
 
     const pathEncoder = new PathEncoder();
     this._filesIndex = new FilePathIndex(pathEncoder);
@@ -83,7 +86,7 @@ export class Automapping {
 
     /**
      * @this {Automapping}
-     * @return {!Promise}
+     * @return {!Promise<void>}
      */
     function sweepUnmapped() {
       const networkProjects = this._workspace.projectsForType(Workspace.Workspace.projectTypes.Network);
@@ -158,7 +161,7 @@ export class Automapping {
     if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
       this._filesIndex.removePath(uiSourceCode.url());
       this._fileSystemUISourceCodes.delete(uiSourceCode.url());
-      const status = uiSourceCode[this._statusSymbol];
+      const status = this._sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
       if (status) {
         this._clearNetworkStatus(status.network);
       }
@@ -179,7 +182,7 @@ export class Automapping {
 
     this._filesIndex.removePath(oldURL);
     this._fileSystemUISourceCodes.delete(oldURL);
-    const status = uiSourceCode[this._statusSymbol];
+    const status = this._sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
     if (status) {
       this._clearNetworkStatus(status.network);
     }
@@ -193,7 +196,8 @@ export class Automapping {
    * @param {!Workspace.UISourceCode.UISourceCode} networkSourceCode
    */
   _computeNetworkStatus(networkSourceCode) {
-    if (networkSourceCode[this._processingPromiseSymbol] || networkSourceCode[this._statusSymbol]) {
+    if (this._sourceCodeToProcessingPromiseMap.has(networkSourceCode) ||
+        this._sourceCodeToAutoMappingStatusMap.has(networkSourceCode)) {
       return;
     }
     if (this._interceptors.some(interceptor => interceptor(networkSourceCode))) {
@@ -204,7 +208,7 @@ export class Automapping {
     }
     const createBindingPromise =
         this._createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
-    networkSourceCode[this._processingPromiseSymbol] = createBindingPromise;
+    this._sourceCodeToProcessingPromiseMap.set(networkSourceCode, createBindingPromise);
 
     /**
      * @param {?AutomappingStatus} status
@@ -215,7 +219,7 @@ export class Automapping {
       if (!status) {
         return null;
       }
-      if (networkSourceCode[this._processingPromiseSymbol] !== createBindingPromise) {
+      if (this._sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
         return null;
       }
       if (status.network.contentType().isFromSourceMap() || !status.fileSystem.contentType().isTextType()) {
@@ -249,7 +253,7 @@ export class Automapping {
         return null;
       }
 
-      if (networkSourceCode[this._processingPromiseSymbol] !== createBindingPromise) {
+      if (this._sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
         return null;
       }
 
@@ -257,12 +261,16 @@ export class Automapping {
       let isValid = false;
       const fileContent = fileSystemContent.content;
       if (target && target.type() === SDK.SDKModel.Type.Node) {
-        const rewrappedNetworkContent =
-            PersistenceImpl.rewrapNodeJSContent(status.fileSystem, fileContent, networkContent.content);
-        isValid = fileContent === rewrappedNetworkContent;
+        if (networkContent.content) {
+          const rewrappedNetworkContent =
+              PersistenceImpl.rewrapNodeJSContent(status.fileSystem, fileContent, networkContent.content);
+          isValid = fileContent === rewrappedNetworkContent;
+        }
       } else {
-        // Trim trailing whitespaces because V8 adds trailing newline.
-        isValid = fileContent.trimRight() === networkContent.content.trimRight();
+        if (networkContent.content) {
+          // Trim trailing whitespaces because V8 adds trailing newline.
+          isValid = fileContent.trimRight() === networkContent.content.trimRight();
+        }
       }
       if (!isValid) {
         this._prevalidationFailedForTest(status);
@@ -276,22 +284,23 @@ export class Automapping {
      * @this {Automapping}
      */
     function onStatus(status) {
-      if (networkSourceCode[this._processingPromiseSymbol] !== createBindingPromise) {
+      if (this._sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
         return;
       }
-      networkSourceCode[this._processingPromiseSymbol] = null;
+      this._sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
       if (!status) {
         this._onBindingFailedForTest();
         return;
       }
       // TODO(lushnikov): remove this check once there's a single uiSourceCode per url. @see crbug.com/670180
-      if (status.network[this._statusSymbol] || status.fileSystem[this._statusSymbol]) {
+      if (this._sourceCodeToAutoMappingStatusMap.has(status.network) ||
+          this._sourceCodeToAutoMappingStatusMap.has(status.fileSystem)) {
         return;
       }
 
       this._statuses.add(status);
-      status.network[this._statusSymbol] = status;
-      status.fileSystem[this._statusSymbol] = status;
+      this._sourceCodeToAutoMappingStatusMap.set(status.network, status);
+      this._sourceCodeToAutoMappingStatusMap.set(status.fileSystem, status);
       if (status.exactMatch) {
         const projectFolder = this._projectFoldersIndex.closestParentFolder(status.fileSystem.url());
         const newFolderAdded = projectFolder ? this._activeFoldersIndex.addFolder(projectFolder) : false;
@@ -316,18 +325,18 @@ export class Automapping {
    * @param {!Workspace.UISourceCode.UISourceCode} networkSourceCode
    */
   _clearNetworkStatus(networkSourceCode) {
-    if (networkSourceCode[this._processingPromiseSymbol]) {
-      networkSourceCode[this._processingPromiseSymbol] = null;
+    if (this._sourceCodeToProcessingPromiseMap.has(networkSourceCode)) {
+      this._sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
       return;
     }
-    const status = networkSourceCode[this._statusSymbol];
+    const status = this._sourceCodeToAutoMappingStatusMap.get(networkSourceCode);
     if (!status) {
       return;
     }
 
     this._statuses.delete(status);
-    status.network[this._statusSymbol] = null;
-    status.fileSystem[this._statusSymbol] = null;
+    this._sourceCodeToAutoMappingStatusMap.delete(status.network);
+    this._sourceCodeToAutoMappingStatusMap.delete(status.fileSystem);
     if (status.exactMatch) {
       const projectFolder = this._projectFoldersIndex.closestParentFolder(status.fileSystem.url());
       if (projectFolder) {
@@ -342,14 +351,18 @@ export class Automapping {
    * @return {!Promise<?AutomappingStatus>}
    */
   _createBinding(networkSourceCode) {
-    if (networkSourceCode.url().startsWith('file://') || networkSourceCode.url().startsWith('snippet://')) {
-      const decodedUrl = decodeURI(networkSourceCode.url());
+    const url = networkSourceCode.url();
+    if (url.startsWith('file://') || url.startsWith('snippet://')) {
+      const decodedUrl = sanitizeSourceUrl(url);
+      if (!decodedUrl) {
+        return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
+      }
       const fileSourceCode = this._fileSystemUISourceCodes.get(decodedUrl);
       const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
       return Promise.resolve(status);
     }
 
-    let networkPath = Common.ParsedURL.ParsedURL.extractPath(networkSourceCode.url());
+    let networkPath = Common.ParsedURL.ParsedURL.extractPath(url);
     if (networkPath === null) {
       return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
     }
@@ -357,9 +370,15 @@ export class Automapping {
     if (networkPath.endsWith('/')) {
       networkPath += 'index.html';
     }
-    const urlDecodedNetworkPath = decodeURI(networkPath);
+
+    const urlDecodedNetworkPath = sanitizeSourceUrl(networkPath);
+    if (!urlDecodedNetworkPath) {
+      return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
+    }
+
     const similarFiles =
-        this._filesIndex.similarFiles(urlDecodedNetworkPath).map(path => this._fileSystemUISourceCodes.get(path));
+        /** @type {!Array<!Workspace.UISourceCode.UISourceCode>} */ (
+            this._filesIndex.similarFiles(urlDecodedNetworkPath).map(path => this._fileSystemUISourceCodes.get(path)));
     if (!similarFiles.length) {
       return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
     }
@@ -367,11 +386,27 @@ export class Automapping {
     return this._pullMetadatas(similarFiles.concat(networkSourceCode)).then(onMetadatas.bind(this));
 
     /**
+     * @param {string} url
+     * @return {string|null}
+     */
+    function sanitizeSourceUrl(url) {
+      try {
+        const decodedUrl = decodeURI(url);
+        return decodedUrl;
+      } catch (error) {
+        Common.Console.Console.instance().error(
+            ls`The attempt to bind "${url}" in the workspace failed as this URI is malformed.`);
+        return null;
+      }
+    }
+
+    /**
      * @this {Automapping}
      */
     function onMetadatas() {
-      const activeFiles = similarFiles.filter(file => !!this._activeFoldersIndex.closestParentFolder(file.url()));
-      const networkMetadata = networkSourceCode[this._metadataSymbol];
+      const activeFiles = /** @type {!Array<!Workspace.UISourceCode.UISourceCode>} */ (
+          similarFiles.filter(file => !!file && !!this._activeFoldersIndex.closestParentFolder(file.url())));
+      const networkMetadata = this._sourceCodeToMetadataMap.get(networkSourceCode);
       if (!networkMetadata || (!networkMetadata.modificationTime && typeof networkMetadata.contentSize !== 'number')) {
         // If networkSourceCode does not have metadata, try to match against active folders.
         if (activeFiles.length !== 1) {
@@ -394,11 +429,11 @@ export class Automapping {
 
   /**
    * @param {!Array<!Workspace.UISourceCode.UISourceCode>} uiSourceCodes
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   _pullMetadatas(uiSourceCodes) {
     return Promise.all(uiSourceCodes.map(async file => {
-      file[this._metadataSymbol] = await file.requestMetadata();
+      this._sourceCodeToMetadataMap.set(file, await file.requestMetadata());
     }));
   }
 
@@ -409,13 +444,13 @@ export class Automapping {
    */
   _filterWithMetadata(files, networkMetadata) {
     return files.filter(file => {
-      const fileMetadata = file[this._metadataSymbol];
+      const fileMetadata = this._sourceCodeToMetadataMap.get(file);
       if (!fileMetadata) {
         return false;
       }
       // Allow a second of difference due to network timestamps lack of precision.
-      const timeMatches = !networkMetadata.modificationTime ||
-          Math.abs(networkMetadata.modificationTime - fileMetadata.modificationTime) < 1000;
+      const timeMatches = !networkMetadata.modificationTime || !fileMetadata.modificationTime ||
+          Math.abs(networkMetadata.modificationTime.getTime() - fileMetadata.modificationTime.getTime()) < 1000;
       const contentMatches = !networkMetadata.contentSize || fileMetadata.contentSize === networkMetadata.contentSize;
       return timeMatches && contentMatches;
     });

@@ -82,3 +82,27 @@
     border-color: WindowText;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .time-picker {
+    background: #3B3B3B;
+    border: 1px solid #858585;
+  }
+
+  .time-cell {
+    border: 1px solid transparent;
+    color: #ffffff;
+  }
+
+  .time-cell:hover {
+    background-color: #D1E6FF;
+    color: #3B3B3B;
+  }
+
+  .time-column:focus .time-cell.selected,
+  .time-cell.selected {
+    background-color: #99C8FF;
+    color: #3B3B3B;
+    border: 1px solid #FFFFFF;
+  }
+}

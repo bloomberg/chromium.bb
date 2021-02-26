@@ -4,8 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -50,14 +50,16 @@ void QuicSimpleDispatcher::OnRstStreamReceived(
 
 std::unique_ptr<QuicSession> QuicSimpleDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
-    const QuicSocketAddress& client_address,
-    quiche::QuicheStringPiece /*alpn*/,
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address,
+    absl::string_view /*alpn*/,
     const ParsedQuicVersion& version) {
   // The QuicServerSessionBase takes ownership of |connection| below.
-  QuicConnection* connection = new QuicConnection(
-      connection_id, client_address, helper(), alarm_factory(), writer(),
-      /* owns_writer= */ false, Perspective::IS_SERVER,
-      ParsedQuicVersionVector{version});
+  QuicConnection* connection =
+      new QuicConnection(connection_id, self_address, peer_address, helper(),
+                         alarm_factory(), writer(),
+                         /* owns_writer= */ false, Perspective::IS_SERVER,
+                         ParsedQuicVersionVector{version});
 
   auto session = std::make_unique<QuicSimpleServerSession>(
       config(), GetSupportedVersions(), connection, this, session_helper(),

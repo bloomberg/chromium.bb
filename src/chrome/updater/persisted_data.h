@@ -15,6 +15,7 @@ class PrefService;
 
 namespace base {
 class FilePath;
+class Value;
 class Version;
 }  // namespace base
 
@@ -29,7 +30,7 @@ struct RegistrationRequest;
 //
 // A mechanism to remove apps or app versions from prefs is needed.
 // TODO(sorin): crbug.com/1056450
-class PersistedData : public base::RefCounted<PersistedData> {
+class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
  public:
   // Constructs a provider using the specified |pref_service|.
   // The associated preferences are assumed to already be registered.
@@ -64,19 +65,27 @@ class PersistedData : public base::RefCounted<PersistedData> {
   // persistent data store.
   void RegisterApp(const RegistrationRequest& rq);
 
+  // This function removes a registered application from the persistent store.
+  bool RemoveApp(const std::string& id);
+
   // Returns the app ids of the applications registered in prefs, if the
   // application has a valid version.
   std::vector<std::string> GetAppIds() const;
 
  private:
-  friend class base::RefCounted<PersistedData>;
+  friend class base::RefCountedThreadSafe<PersistedData>;
   ~PersistedData();
+
+  // Returns nullptr if the app key does not exist.
+  const base::Value* GetAppKey(const std::string& id) const;
+
+  // Returns an existing or newly created app key under a root pref.
+  base::Value* GetOrCreateAppKey(const std::string& id, base::Value* root);
 
   std::string GetString(const std::string& id, const std::string& key) const;
   void SetString(const std::string& id,
                  const std::string& key,
                  const std::string& value);
-
   SEQUENCE_CHECKER(sequence_checker_);
 
   PrefService* pref_service_ = nullptr;  // Not owned by this class.

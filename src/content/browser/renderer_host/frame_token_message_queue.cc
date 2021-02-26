@@ -5,10 +5,6 @@
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 
 #include "base/bind.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/strings/string_number_conversions.h"
-#include "ipc/ipc_message.h"
 
 namespace content {
 
@@ -21,20 +17,22 @@ void FrameTokenMessageQueue::Init(Client* client) {
 }
 
 void FrameTokenMessageQueue::DidProcessFrame(uint32_t frame_token) {
-  // Frame tokens always increase.
-  if (frame_token <= last_received_frame_token_) {
-    // TODO(samans): Remove this once the investigation into
-    // https://crbug.com/1045372 is over.
-    static auto* last_frame_token = base::debug::AllocateCrashKeyString(
-        "last_frame_token", base::debug::CrashKeySize::Size32);
-    static auto* new_frame_token = base::debug::AllocateCrashKeyString(
-        "new_frame_token", base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(
-        last_frame_token, base::NumberToString(last_received_frame_token_));
-    base::debug::SetCrashKeyString(new_frame_token,
-                                   base::NumberToString(frame_token));
-    base::debug::DumpWithoutCrashing();
+  // The queue will be cleared if the Renderer has been Reset. Do not enforce
+  // token order, as ACKs for old frames may still be in flight from Viz.
+  if (callback_map_.empty()) {
+    last_received_frame_token_ = frame_token;
+    return;
+  }
 
+  // Frame tokens always increase. However when a Reset occurs old tokens can
+  // arrive. Do not enforce token order if we are seeing the ACK for the
+  // previous frame.
+  // TODO(jonross): we should consider updating LocalSurfaceId to also track
+  // frame_token. So that we could properly differentiate between origins of
+  // frame. As we cannot enforce ordering between Reset Renderers.
+  if ((frame_token <= last_received_frame_token_) &&
+      !(last_received_frame_token_reset_ &&
+        last_received_frame_token_reset_ != frame_token)) {
     client_->OnInvalidFrameToken(frame_token);
     return;
   }
@@ -57,12 +55,6 @@ void FrameTokenMessageQueue::DidProcessFrame(uint32_t frame_token) {
 void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
     uint32_t frame_token,
     base::OnceClosure callback) {
-  // Zero token is invalid.
-  if (!frame_token) {
-    client_->OnInvalidFrameToken(frame_token);
-    return;
-  }
-
   if (frame_token <= last_received_frame_token_) {
     std::move(callback).Run();
     return;
@@ -70,31 +62,10 @@ void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
   callback_map_.insert(std::make_pair(frame_token, std::move(callback)));
 }
 
-void FrameTokenMessageQueue::OnFrameSwapMessagesReceived(
-    uint32_t frame_token,
-    std::vector<IPC::Message> messages) {
-  // TODO(samans): Remove this once the investigation into
-  // https://crbug.com/1045372 is over.
-  if (!frame_token) {
-    base::debug::DumpWithoutCrashing();
-  }
-  EnqueueOrRunFrameTokenCallback(
-      frame_token, base::BindOnce(&FrameTokenMessageQueue::ProcessSwapMessages,
-                                  base::Unretained(this), std::move(messages)));
-}
-
 void FrameTokenMessageQueue::Reset() {
+  last_received_frame_token_reset_ = last_received_frame_token_;
   last_received_frame_token_ = 0;
   callback_map_.clear();
-}
-
-void FrameTokenMessageQueue::ProcessSwapMessages(
-    std::vector<IPC::Message> messages) {
-  for (const IPC::Message& i : messages) {
-    client_->OnProcessSwapMessage(i);
-    if (i.dispatch_error())
-      client_->OnMessageDispatchError(i);
-  }
 }
 
 }  // namespace content

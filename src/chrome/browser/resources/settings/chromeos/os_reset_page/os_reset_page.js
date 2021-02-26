@@ -10,10 +10,20 @@
 Polymer({
   is: 'os-settings-reset-page',
 
+  behaviors: [DeepLinkingBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /** @private */
     showPowerwashDialog_: Boolean,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([chromeos.settings.mojom.Setting.kPowerwash]),
+    },
   },
 
   /** @private */
@@ -30,5 +40,20 @@ Polymer({
   onPowerwashDialogClose_() {
     this.showPowerwashDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$.powerwash));
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(newRoute, oldRoute) {
+    // Does not apply to this page.
+    if (newRoute !== settings.routes.OS_RESET) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 });

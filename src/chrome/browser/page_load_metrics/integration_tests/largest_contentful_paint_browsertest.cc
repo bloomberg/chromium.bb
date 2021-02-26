@@ -7,6 +7,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/strcat.h"
 #include "base/test/trace_event_analyzer.h"
+#include "build/build_config.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -56,8 +57,8 @@ void ValidateTraceEvents(std::unique_ptr<TraceAnalyzer> analyzer) {
   ValidateCandidate(16 * 16, *events[0]);
   // LCP_1 uses blue96x96.png, of size 96 x 96.
   ValidateCandidate(96 * 96, *events[1]);
-  // LCP_2 uses green-16x16.png, of size 16 x 16.
-  ValidateCandidate(16 * 16, *events[2]);
+  // LCP_2 uses green-256x256.png, of size 16 x 16.
+  ValidateCandidate(256 * 256, *events[2]);
 }
 
 }  // namespace
@@ -76,6 +77,8 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
       base::StrCat({window_origin, "/images/green-16x16.png"});
   const std::string image_2_url_expected =
       base::StrCat({window_origin, "/images/blue96x96.png"});
+  const std::string image_3_url_expected =
+      base::StrCat({window_origin, "/images/green-256x256.png"});
 
   content::EvalJsResult result = EvalJs(web_contents(), "run_test()");
   EXPECT_EQ("", result.error);
@@ -85,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
   // need to be updated to reflect new semantics.
   const auto& list = result.value.GetList();
   const std::string expected_url[3] = {
-      image_1_url_expected, image_2_url_expected, image_1_url_expected};
+      image_1_url_expected, image_2_url_expected, image_3_url_expected};
   base::Optional<double> lcp_timestamps[3];
   for (size_t i = 0; i < 3; i++) {
     const std::string* url = list[i].FindStringPath("url");
@@ -94,12 +97,10 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
     lcp_timestamps[i] = list[i].FindDoublePath("time");
     EXPECT_TRUE(lcp_timestamps[i].has_value());
   }
-  EXPECT_EQ(lcp_timestamps[0], lcp_timestamps[2])
-      << "The first and last LCP reports should be for the same paint so they "
-         "should have the same timestamp";
   EXPECT_LT(lcp_timestamps[0], lcp_timestamps[1])
-      << "The first and second LCP reports should be for different paints so "
-         "should have different timestamps";
+      << "The first LCP report should be before the second";
+  EXPECT_LT(lcp_timestamps[1], lcp_timestamps[2])
+      << "The second LCP report should be before the third";
 
   // Need to navigate away from the test html page to force metrics to get
   // flushed/synced.
@@ -129,4 +130,19 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
   ExpectUniqueUMAPageLoadMetricNear(
       "PageLoad.PaintTiming.NavigationToLargestContentfulPaint.MainFrame",
       lcp_timestamps[2].value());
+}
+
+// TODO(crbug.com/1135527): Flaky.
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
+                       DISABLED_LargestContentfulPaint_SubframeInput) {
+  Start();
+  Load("/lcp_subframe_input.html");
+  auto* sub = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  EXPECT_EQ(EvalJs(sub, "test_step_1()").value.GetString(), "green-16x16.png");
+
+  content::SimulateMouseClickAt(web_contents(), 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(100, 100));
+
+  EXPECT_EQ(EvalJs(sub, "test_step_2()").value.GetString(), "green-16x16.png");
 }

@@ -45,10 +45,13 @@ RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(RTCIceCandidate* candidate)
     : Event(event_type_names::kIcecandidate, Bubbles::kNo, Cancelable::kNo),
       candidate_(candidate) {}
 
+// TODO(crbug.com/1070871): Use candidateOr(nullptr).
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(
     const AtomicString& type,
     const RTCPeerConnectionIceEventInit* initializer)
-    : Event(type, initializer), candidate_(initializer->candidate()) {}
+    : Event(type, initializer),
+      candidate_(initializer->hasCandidate() ? initializer->candidate()
+                                             : nullptr) {}
 
 RTCPeerConnectionIceEvent::~RTCPeerConnectionIceEvent() = default;
 
@@ -60,7 +63,7 @@ const AtomicString& RTCPeerConnectionIceEvent::InterfaceName() const {
   return event_interface_names::kRTCPeerConnectionIceEvent;
 }
 
-void RTCPeerConnectionIceEvent::Trace(Visitor* visitor) {
+void RTCPeerConnectionIceEvent::Trace(Visitor* visitor) const {
   visitor->Trace(candidate_);
   Event::Trace(visitor);
 }

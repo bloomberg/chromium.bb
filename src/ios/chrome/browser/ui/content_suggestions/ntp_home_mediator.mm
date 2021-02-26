@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -35,6 +37,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
@@ -50,7 +53,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -64,6 +66,15 @@
 #endif
 
 namespace {
+// URL for 'Manage Activity' item in the Discover feed menu.
+const char kFeedManageActivityURL[] =
+    "https://myactivity.google.com/myactivity?product=50";
+// URL for 'Manage Interests' item in the Discover feed menu.
+const char kFeedManageInterestsURL[] =
+    "https://google.com/preferences/interests";
+// URL for 'Learn More' item in the Discover feed menu;
+const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
+                                 "?p=new_tab&co=GENIE.Platform%3DiOS&oco=1";
 // URL for the page displaying help for the NTP.
 const char kNTPHelpURL[] =
     "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
@@ -368,6 +379,17 @@ const char kNTPHelpURL[] =
   if (notificationPromo->IsChromeCommandPromo()) {
     // "What's New" promo that runs a command can be added here by calling
     // self.dispatcher.
+    if (notificationPromo->command() == kSetDefaultBrowserCommand) {
+      base::RecordAction(
+          base::UserMetricsAction("IOS.DefaultBrowserNTPPromoTapped"));
+      [[UIApplication sharedApplication]
+                    openURL:
+                        [NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                    options:{}
+          completionHandler:nil];
+      return;
+    }
+
     DCHECK_EQ(kTestWhatsNewCommand, notificationPromo->command())
         << "Promo command is not valid.";
     return;
@@ -375,12 +397,33 @@ const char kNTPHelpURL[] =
   NOTREACHED() << "Promo type is neither URL or command.";
 }
 
-- (void)handleLearnMoreTapped {
+// Opens web page for a menu item in the NTP.
+- (void)openMenuItemWebPage:(GURL)URL {
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
-  _URLLoader->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(URL));
+  // TODO(crbug.com/1085419): Add metrics.
+}
+
+- (void)handleFeedManageActivityTapped {
+  [self openMenuItemWebPage:GURL(kFeedManageActivityURL)];
+  [self.discoverFeedMetrics recordHeaderMenuManageActivityTapped];
+}
+
+- (void)handleFeedManageInterestsTapped {
+  [self openMenuItemWebPage:GURL(kFeedManageInterestsURL)];
+  [self.discoverFeedMetrics recordHeaderMenuManageInterestsTapped];
+}
+
+- (void)handleFeedLearnMoreTapped {
+  [self openMenuItemWebPage:GURL(kFeedLearnMoreURL)];
+  [self.discoverFeedMetrics recordHeaderMenuLearnMoreTapped];
+}
+
+- (void)handleLearnMoreTapped {
+  [self openMenuItemWebPage:GURL(kNTPHelpURL)];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -628,27 +671,29 @@ const char kNTPHelpURL[] =
 - (void)updateAccountImage {
   UIImage* image;
   // Fetches user's identity from Authentication Service.
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identityService->WaitUntilCacheIsPopulated();
   ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
   if (identity) {
     // Fetches user's avatar from Authentication Service. Use cached version if
     // one is available. If not, use the default avatar and initiate a fetch
     // in the background. When background fetch completes, all observers will
     // be notified to refresh the user's avatar.
-    ios::ChromeIdentityService* identityService =
-        ios::GetChromeBrowserProvider()->GetChromeIdentityService();
     image = identityService->GetCachedAvatarForIdentity(identity);
     if (!image) {
       image = [self defaultAvatar];
       identityService->GetAvatarForIdentity(identity, nil);
     }
   } else {
-    // User is not signed in, show default avatar.
-    image = [self defaultAvatar];
+    // User is not signed in, don't show any avatar.
+    image = nil;
   }
   // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
   // specification of different image sizes.
   CGFloat dimension = ntp_home::kIdentityAvatarDimension;
-  if (image.size.width != dimension || image.size.height != dimension) {
+  if (image &&
+      (image.size.width != dimension || image.size.height != dimension)) {
     image = ResizeImage(image, CGSizeMake(dimension, dimension),
                         ProjectionMode::kAspectFit);
   }

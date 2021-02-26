@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
@@ -107,7 +108,7 @@ void DeleteFilesOnFileThread(const std::set<base::FilePath>& paths,
     num_delete_attempted++;
     DCHECK(!base::DirectoryExists(path));
 
-    if (!base::DeleteFile(path, false /* recursive */)) {
+    if (!base::DeleteFile(path)) {
       num_delete_failed++;
     }
   }

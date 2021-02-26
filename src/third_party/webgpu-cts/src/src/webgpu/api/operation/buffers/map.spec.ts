@@ -1,52 +1,97 @@
-export const description = ``;
+export const description = '';
 
-import { pbool, pcombine, poptions } from '../../../../common/framework/params.js';
-import { TestGroup } from '../../../../common/framework/test_group.js';
+import { pbool, params } from '../../../../common/framework/params_builder.js';
+import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { assert } from '../../../../common/framework/util/util.js';
 
 import { MappingTest } from './mapping_test.js';
 
-export const g = new TestGroup(MappingTest);
+export const g = makeTestGroup(MappingTest);
 
-g.test('mapWriteAsync', async t => {
-  const size = t.params.size;
-  const buffer = t.device.createBuffer({
-    size,
-    usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
+const kCases = [
+  { size: 0, range: [] },
+  { size: 0, range: [undefined] },
+  { size: 0, range: [undefined, undefined] },
+  { size: 0, range: [0] },
+  { size: 0, range: [0, undefined] },
+  { size: 0, range: [0, 0] },
+  { size: 12, range: [] },
+  { size: 12, range: [undefined] },
+  { size: 12, range: [undefined, undefined] },
+  { size: 12, range: [0] },
+  { size: 12, range: [0, undefined] },
+  { size: 12, range: [0, 12] },
+  { size: 12, range: [0, 0] },
+  { size: 12, range: [8] },
+  { size: 12, range: [8, undefined] },
+  { size: 12, range: [8, 4] },
+  { size: 28, range: [8, 8] },
+  { size: 28, range: [8, 12] },
+  { size: 512 * 1024, range: [] },
+];
+
+function reifyMapRange(bufferSize: number, range: (number | undefined)[]): [number, number] {
+  const offset = range[0] ?? 0;
+  return [offset, range[1] ?? bufferSize - offset];
+}
+
+g.test('mapAsync,write')
+  .params(kCases)
+  .fn(async t => {
+    const { size, range } = t.params;
+    const [rangeOffset, rangeSize] = reifyMapRange(size, range);
+
+    const buffer = t.device.createBuffer({
+      size,
+      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
+    });
+
+    await buffer.mapAsync(GPUMapMode.WRITE);
+    const arrayBuffer = buffer.getMappedRange(...range);
+    t.checkMapWrite(buffer, rangeOffset, arrayBuffer, rangeSize);
   });
 
-  const arrayBuffer = await buffer.mapWriteAsync();
-  t.checkMapWrite(buffer, arrayBuffer, size);
-}).params(poptions('size', [12, 512 * 1024]));
+g.test('mapAsync,read')
+  .params(kCases)
+  .fn(async t => {
+    const { size, range } = t.params;
+    const [, rangeSize] = reifyMapRange(size, range);
 
-g.test('mapReadAsync', async t => {
-  const size = t.params.size;
+    const buffer = t.device.createBuffer({
+      mappedAtCreation: true,
+      size,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    });
+    const init = buffer.getMappedRange(...range);
 
-  const [buffer, init] = t.device.createBufferMapped({
-    size,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    assert(init.byteLength === rangeSize);
+    const expected = new Uint32Array(new ArrayBuffer(rangeSize));
+    const data = new Uint32Array(init);
+    for (let i = 0; i < data.length; ++i) {
+      data[i] = expected[i] = i + 1;
+    }
+    buffer.unmap();
+
+    await buffer.mapAsync(GPUMapMode.READ);
+    const actual = new Uint8Array(buffer.getMappedRange(...range));
+    t.expectBuffer(actual, new Uint8Array(expected.buffer));
   });
 
-  const expected = new Uint32Array(new ArrayBuffer(size));
-  const data = new Uint32Array(init);
-  for (let i = 0; i < data.length; ++i) {
-    data[i] = expected[i] = i + 1;
-  }
-  buffer.unmap();
-
-  const actual = new Uint8Array(await buffer.mapReadAsync());
-  t.expectBuffer(actual, new Uint8Array(expected.buffer));
-}).params(poptions('size', [12, 512 * 1024]));
-
-g.test('createBufferMapped', async t => {
-  const size = t.params.size;
-  const [buffer, arrayBuffer] = t.device.createBufferMapped({
-    size,
-    usage: GPUBufferUsage.COPY_SRC | (t.params.mappable ? GPUBufferUsage.MAP_WRITE : 0),
-  });
-  t.checkMapWrite(buffer, arrayBuffer, size);
-}).params(
-  pcombine(
-    poptions('size', [12, 512 * 1024]), //
-    pbool('mappable')
+g.test('mappedAtCreation')
+  .params(
+    params()
+      .combine(kCases) //
+      .combine(pbool('mappable'))
   )
-);
+  .fn(async t => {
+    const { size, range, mappable } = t.params;
+    const [, rangeSize] = reifyMapRange(size, range);
+
+    const buffer = t.device.createBuffer({
+      mappedAtCreation: true,
+      size,
+      usage: GPUBufferUsage.COPY_SRC | (mappable ? GPUBufferUsage.MAP_WRITE : 0),
+    });
+    const arrayBuffer = buffer.getMappedRange(...range);
+    t.checkMapWrite(buffer, range[0] ?? 0, arrayBuffer, rangeSize);
+  });

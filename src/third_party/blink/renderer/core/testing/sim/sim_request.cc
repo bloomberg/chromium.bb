@@ -19,6 +19,7 @@ SimRequestBase::SimRequestBase(String url,
     : url_(url),
       redirect_url_(params.redirect_url),
       mime_type_(mime_type),
+      referrer_(params.referrer),
       start_immediately_(start_immediately),
       started_(false),
       client_(nullptr),
@@ -90,17 +91,17 @@ void SimRequestBase::Finish(bool body_loader_finished) {
   DCHECK(started_);
   if (error_) {
     DCHECK(!navigation_body_loader_);
-    client_->DidFail(*error_, total_encoded_data_length_,
-                     total_encoded_data_length_, total_encoded_data_length_);
+    client_->DidFail(*error_, base::TimeTicks::Now(),
+                     total_encoded_data_length_, total_encoded_data_length_,
+                     total_encoded_data_length_);
   } else {
     if (navigation_body_loader_) {
       if (!body_loader_finished)
         navigation_body_loader_->Finish();
     } else {
-      // TODO(esprehn): Is claiming a request time of 0 okay for tests?
-      client_->DidFinishLoading(base::TimeTicks(), total_encoded_data_length_,
-                                total_encoded_data_length_,
-                                total_encoded_data_length_, false);
+      client_->DidFinishLoading(
+          base::TimeTicks::Now(), total_encoded_data_length_,
+          total_encoded_data_length_, total_encoded_data_length_, false);
     }
   }
   Reset();

@@ -45,11 +45,9 @@ js_type_check("closure_compile_module") {
     ":cookies_page",
     ":disable_safebrowsing_dialog",
     ":do_not_track_toggle",
-    ":passwords_leak_detection_toggle",
     ":personalization_options.m",
     ":privacy_page",
     ":privacy_page_browser_proxy.m",
-    ":safe_browsing_browser_proxy",
     ":secure_dns",
     ":secure_dns_input",
     ":security_keys_bio_enroll_dialog",
@@ -66,6 +64,7 @@ js_type_check("closure_compile_module") {
 js_library("cookies_page") {
   deps = [
     ":collapse_radio_button",
+    ":do_not_track_toggle",
     "..:metrics_browser_proxy",
     "..:route",
     "..:router.m",
@@ -121,17 +120,6 @@ js_library("do_not_track_toggle") {
   ]
 }
 
-js_library("passwords_leak_detection_toggle") {
-  deps = [
-    "..:metrics_browser_proxy",
-    "../people_page:sync_browser_proxy.m",
-    "../prefs:prefs_behavior.m",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
-  ]
-}
-
 js_library("personalization_options.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/personalization_options.m.js" ]
   deps = [
@@ -175,13 +163,6 @@ js_library("privacy_page_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.m.js" ]
   deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
-}
-
-js_library("safe_browsing_browser_proxy") {
-  deps = [
-    "../site_settings:site_settings_prefs_browser_proxy",
-    "//ui/webui/resources/js:cr.m",
-  ]
 }
 
 js_library("security_keys_bio_enroll_dialog") {
@@ -249,7 +230,6 @@ js_library("security_page") {
   deps = [
     ":disable_safebrowsing_dialog",
     ":privacy_page_browser_proxy.m",
-    ":safe_browsing_browser_proxy",
     "..:i18n_setup",
     "..:metrics_browser_proxy",
     "..:route",
@@ -276,7 +256,6 @@ html_to_js("v3_ready_elements") {
     "cookies_page.js",
     "disable_safebrowsing_dialog.js",
     "do_not_track_toggle.js",
-    "passwords_leak_detection_toggle.js",
     "privacy_page.js",
     "secure_dns.js",
     "secure_dns_input.js",

@@ -71,3 +71,20 @@ uint64_t aom_var_2d_u16_c(uint8_t *src, int src_stride, int width, int height) {
 
   return (ss - s * s / (width * height));
 }
+
+uint64_t aom_sum_sse_2d_i16_c(const int16_t *src, int src_stride, int width,
+                              int height, int *sum) {
+  int r, c;
+  int16_t *srcp = (int16_t *)src;
+  int64_t ss = 0;
+
+  for (r = 0; r < height; r++) {
+    for (c = 0; c < width; c++) {
+      const int16_t v = srcp[c];
+      ss += v * v;
+      *sum += v;
+    }
+    srcp += src_stride;
+  }
+  return ss;
+}

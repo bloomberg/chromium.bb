@@ -29,14 +29,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
   NGPhysicalTextFragment(NGTextFragmentBuilder*);
 
-  using PassKey = util::PassKey<NGPhysicalTextFragment>;
-  // For use by TrimText only
-  NGPhysicalTextFragment(PassKey,
-                         const NGPhysicalTextFragment& source,
-                         unsigned start_offset,
-                         unsigned end_offset,
-                         scoped_refptr<const ShapeResultView> shape_result);
-
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // Returns true if the text is generated (from, e.g., list marker,
   // pseudo-element, ...) instead of from a DOM text node.
@@ -93,12 +85,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   scoped_refptr<const NGPhysicalTextFragment> CloneAsHiddenForPaint() const;
 
-  // Create a new fragment that has part of the text of this fragment.
-  // All other properties are the same as this fragment.
-  scoped_refptr<const NGPhysicalTextFragment> TrimText(
-      unsigned start_offset,
-      unsigned end_offset) const;
-
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
   NGTextFragmentPaintInfo PaintInfo() const {
@@ -139,7 +125,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Fragments are immutable but allow certain expensive data, specifically ink
   // overflow, to be cached as long as it is guaranteed to always recompute to
   // the same value.
-  mutable std::unique_ptr<NGInkOverflow> ink_overflow_;
+  mutable std::unique_ptr<NGSingleInkOverflow> ink_overflow_;
 
   friend class NGTextFragmentBuilder;
 };

@@ -66,6 +66,9 @@ message ChromeUserPopulation {
 
   // Indicates if user is in incognito mode.
   optional bool is_incognito = 7;
+
+  // If the user is opted in to MBB.
+  optional bool is_mbb_enabled = 8;
 }
 
 message ClientPhishingRequest {
@@ -348,6 +351,25 @@ message LoginReputationClientRequest {
   // Whether the ping sent to Safe Browsing is a normal (full request) ping or a
   // sample ping for URLs on the allow-list.
   optional ReportType report_type = 13;
+
+  // Information about Simplified URL display experiments in Chrome.
+  // See go/phishguard-ping-spoof-detection
+  message UrlDisplayExperiment {
+    // True if SafeBrowsingDelayedWarnings is enabled.
+    optional bool delayed_warnings_enabled = 1;
+    // True if the "mouse" parameter of SafeBrowsingDelayedWarnings is enabled.
+    optional bool delayed_warnings_mouse_clicks_enabled = 2;
+
+    // True if RevealSteadyStateUrlPathQueryAndRefOnHover is enabled.
+    optional bool reveal_on_hover = 3;
+    // True if HideSteadyStateUrlPathQueryAndRefOnInteraction is enabled.
+    optional bool hide_on_interaction = 4;
+    // True if OmniboxUIExperimentElideToRegistrableDomain is enabled.
+    optional bool elide_to_registrable_domain = 5;
+    // True if this is the control group. This sent by the finch config.
+    optional bool simplified_url_display_enabled = 6;
+  };
+  optional UrlDisplayExperiment url_display_experiment = 14;
 }
 
 // The message is used for client response for login reputation requests.
@@ -676,6 +698,11 @@ message ClientDownloadRequest {
 
     // Indicates if the given file is password protected.
     optional bool is_encrypted = 7;
+
+    // Only used on the client side, since filtering for executable files
+    // happens after the utility process has finished analyzing the archive.
+    optional bool is_executable = 8;
+    optional bool is_archive = 9;
   }
 
   repeated ArchivedBinary archived_binary = 22;
@@ -1285,6 +1312,8 @@ message ClientSafeBrowsingReportRequest {
     ANDROID_SAFETYNET = 3;
     // Flywheel (data compression service).
     FLYWHEEL = 4;
+    // Safe Browsing real time API.
+    REAL_TIME = 5;
   }
 
   // The information propagated from the client about various environment
@@ -1328,9 +1357,8 @@ message ClientSafeBrowsingReportRequest {
   optional DownloadItemInfo download_item_info = 24;
 
   // The SafetyNet ID of the Android device.
-  // TODO(crbug.com/1070836): Deprecate this field and the same field on the
-  // server-side.
-  optional string safety_net_id = 25;
+  // Deprecated, not launched.
+  optional string safety_net_id = 25 [deprecated = true];
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).

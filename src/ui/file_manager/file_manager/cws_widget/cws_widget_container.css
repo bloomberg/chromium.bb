@@ -48,7 +48,7 @@
 
 body.files-ng .cws-widget-buttons {
   align-items: center;
-  background: var(--cros-default-bg-color);
+  background: var(--cros-bg-color);
   display: flex;
   /* subtract the bottom padding from the container outside */
   height: calc(64px - 20px);
@@ -67,7 +67,7 @@ body.files-ng .cws-widget-buttons {
 }
 
 body.files-ng .cws-widget-webstore-button {
-  color: var(--cros-default-button-background-color-primary);
+  color: var(--cros-button-background-color-primary);
   height: 24px;
   padding-inline-start: 0;
 }
@@ -106,9 +106,14 @@ body.files-ng .cws-widget-webstore-button-label {
   background-image: -webkit-image-set(
     url(chrome://theme/IDR_ERROR_NETWORK_GENERIC) 1x,
     url(chrome://theme/IDR_ERROR_NETWORK_GENERIC@2x) 2x);
-  background-position: center;
+  background-position: center top;
   background-repeat: no-repeat;
-  height: 40px;
+  height: 100px;
+  margin-inline-start: 35px;
+}
+
+:root[dir=rtl] .cws-widget-error-dialog-frame .cws-widget-error-dialog-img {
+  margin-inline-start: -35px;
 }
 
 .cws-widget-error-dialog-text {

@@ -19,8 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -91,6 +89,7 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.account_id = user.GetAccountId();
   session->user_info.display_name = base::UTF16ToUTF8(user.display_name());
   session->user_info.display_email = user.display_email();
+  session->user_info.given_name = base::UTF16ToUTF8(user.GetGivenName());
   session->user_info.is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
   session->user_info.has_gaia_account = user.has_gaia_account();
@@ -104,19 +103,6 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGIN_DEFAULT_USER);
   }
-
-  if (user.IsSupervised()) {
-    SupervisedUserService* service =
-        SupervisedUserServiceFactory::GetForProfile(profile);
-    session->custodian_email = service->GetCustodianEmailAddress();
-    session->second_custodian_email = service->GetSecondCustodianEmailAddress();
-  }
-
-  chromeos::UserFlow* const user_flow =
-      chromeos::ChromeUserManager::Get()->GetUserFlow(user.GetAccountId());
-  session->should_enable_settings = user_flow->ShouldEnableSettings();
-  session->should_show_notification_tray =
-      user_flow->ShouldShowNotificationTray();
 
   return session;
 }
@@ -245,6 +231,10 @@ void SessionControllerClientImpl::RequestSignOut() {
   chrome::AttemptUserExit();
 }
 
+void SessionControllerClientImpl::AttemptRestartChrome() {
+  chrome::AttemptRestart();
+}
+
 void SessionControllerClientImpl::SwitchActiveUser(
     const AccountId& account_id) {
   DoSwitchActiveUser(account_id);
@@ -369,8 +359,6 @@ bool SessionControllerClientImpl::CanLockScreen() {
 
 // static
 bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
-  // TODO(xiyuan): Observe ash::prefs::kEnableAutoScreenLock and update ash.
-  // Tracked in http://crbug.com/670423
   const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
   for (auto* user : logged_in_users) {
     Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
@@ -610,15 +598,15 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
                           kSessionLengthLimitMinMs),
                  kSessionLengthLimitMaxMs));
   }
-  base::TimeTicks session_start_time;
+  base::Time session_start_time;
   if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
-    session_start_time = base::TimeTicks::FromInternalValue(
+    session_start_time = base::Time::FromInternalValue(
         local_state->GetInt64(prefs::kSessionStartTime));
   }
 
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
-  base::TimeTicks off_hours_session_end_time;
+  base::Time off_hours_session_end_time;
   // Use "OffHours" end time only if the session will be actually terminated.
   if (off_hours_controller->IsCurrentSessionAllowedOnlyForOffHours())
     off_hours_session_end_time = off_hours_controller->GetOffHoursEndTime();
@@ -643,7 +631,7 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
                                                session_start_time);
     return;
   }
-  base::TimeTicks off_hours_session_start_time = base::TimeTicks::Now();
+  base::Time off_hours_session_start_time = base::Time::Now();
   base::TimeDelta off_hours_session_length_limit =
       off_hours_session_end_time - off_hours_session_start_time;
   session_controller_->SetSessionLengthLimit(off_hours_session_length_limit,

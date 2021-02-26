@@ -60,39 +60,21 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   return EncryptionScheme::kUnencrypted;
 }
 
-VideoColorSpace ConvertColorParameterInformationToColorSpace(
-    const ColorParameterInformation& info) {
-  auto primary_id =
-      static_cast<VideoColorSpace::PrimaryID>(info.colour_primaries);
-  auto transfer_id =
-      static_cast<VideoColorSpace::TransferID>(info.transfer_characteristics);
-  auto matrix_id =
-      static_cast<VideoColorSpace::MatrixID>(info.matrix_coefficients);
-
-  // Note that we don't check whether the embedded ids are valid.  We rely on
-  // the underlying video decoder to reject any ids that it doesn't support.
-  return VideoColorSpace(primary_id, transfer_id, matrix_id,
-                         info.full_range ? gfx::ColorSpace::RangeID::FULL
-                                         : gfx::ColorSpace::RangeID::LIMITED);
-}
-
-MasteringMetadata ConvertMdcvToMasteringMetadata(
+gfx::MasteringMetadata ConvertMdcvToMasteringMetadata(
     const MasteringDisplayColorVolume& mdcv) {
-  MasteringMetadata mastering_metadata;
+  gfx::MasteringMetadata mastering_metadata;
 
-  mastering_metadata.primary_r = MasteringMetadata::Chromaticity(
+  mastering_metadata.primary_r = gfx::MasteringMetadata::Chromaticity(
       mdcv.display_primaries_rx, mdcv.display_primaries_ry);
-  mastering_metadata.primary_g = MasteringMetadata::Chromaticity(
+  mastering_metadata.primary_g = gfx::MasteringMetadata::Chromaticity(
       mdcv.display_primaries_gx, mdcv.display_primaries_gy);
-  mastering_metadata.primary_b = MasteringMetadata::Chromaticity(
+  mastering_metadata.primary_b = gfx::MasteringMetadata::Chromaticity(
       mdcv.display_primaries_bx, mdcv.display_primaries_by);
-  mastering_metadata.white_point =
-      MasteringMetadata::Chromaticity(mdcv.white_point_x, mdcv.white_point_y);
+  mastering_metadata.white_point = gfx::MasteringMetadata::Chromaticity(
+      mdcv.white_point_x, mdcv.white_point_y);
 
-  mastering_metadata.luminance_max =
-      static_cast<float>(mdcv.max_display_mastering_luminance);
-  mastering_metadata.luminance_min =
-      static_cast<float>(mdcv.min_display_mastering_luminance);
+  mastering_metadata.luminance_max = mdcv.max_display_mastering_luminance;
+  mastering_metadata.luminance_min = mdcv.min_display_mastering_luminance;
 
   return mastering_metadata;
 }
@@ -257,8 +239,7 @@ ParseResult MP4StreamParser::ParseBox() {
   } else {
     // TODO(wolenetz,chcunningham): Enforce more strict adherence to MSE byte
     // stream spec for ftyp and styp. See http://crbug.com/504514.
-    DVLOG(2) << "Skipping unrecognized top-level box: "
-             << FourCCToString(reader->type());
+    DVLOG(2) << "Skipping top-level box: " << FourCCToString(reader->type());
   }
 
   queue_.Pop(reader->box_size());
@@ -558,28 +539,25 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                               EmptyExtraData(), scheme);
       video_config.set_level(entry.video_codec_level);
 
-      if (entry.color_parameter_information) {
-        video_config.set_color_space_info(
-            ConvertColorParameterInformationToColorSpace(
-                *entry.color_parameter_information));
+      if (entry.video_color_space.IsSpecified())
+        video_config.set_color_space_info(entry.video_color_space);
 
-        if (entry.mastering_display_color_volume ||
-            entry.content_light_level_information) {
-          HDRMetadata hdr_metadata;
-          if (entry.mastering_display_color_volume) {
-            hdr_metadata.mastering_metadata = ConvertMdcvToMasteringMetadata(
-                *entry.mastering_display_color_volume);
-          }
-
-          if (entry.content_light_level_information) {
-            hdr_metadata.max_content_light_level =
-                entry.content_light_level_information->max_content_light_level;
-            hdr_metadata.max_frame_average_light_level =
-                entry.content_light_level_information
-                    ->max_pic_average_light_level;
-          }
-          video_config.set_hdr_metadata(hdr_metadata);
+      if (entry.mastering_display_color_volume ||
+          entry.content_light_level_information) {
+        gfx::HDRMetadata hdr_metadata;
+        if (entry.mastering_display_color_volume) {
+          hdr_metadata.mastering_metadata = ConvertMdcvToMasteringMetadata(
+              *entry.mastering_display_color_volume);
         }
+
+        if (entry.content_light_level_information) {
+          hdr_metadata.max_content_light_level =
+              entry.content_light_level_information->max_content_light_level;
+          hdr_metadata.max_frame_average_light_level =
+              entry.content_light_level_information
+                  ->max_pic_average_light_level;
+        }
+        video_config.set_hdr_metadata(hdr_metadata);
       }
 
       DVLOG(1) << "video_track_id=" << video_track_id

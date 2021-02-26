@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_BINDING_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_BINDING_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -15,8 +15,10 @@ namespace blink {
 class ExceptionState;
 class WebGLRenderingContextBase;
 class WebGLTexture;
+class XRFrame;
 class XRLightProbe;
 class XRSession;
+class XRView;
 
 class XRWebGLBinding final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -25,16 +27,16 @@ class XRWebGLBinding final : public ScriptWrappable {
   XRWebGLBinding(XRSession*, WebGLRenderingContextBase*, bool webgl2);
   ~XRWebGLBinding() override = default;
 
-  static XRWebGLBinding* Create(
-      XRSession*,
-      const WebGLRenderingContextOrWebGL2RenderingContext&,
-      ExceptionState&);
+  static XRWebGLBinding* Create(XRSession*,
+                                const XRWebGLRenderingContext&,
+                                ExceptionState&);
 
   XRSession* session() const { return session_; }
 
   WebGLTexture* getReflectionCubeMap(XRLightProbe*, ExceptionState&);
+  WebGLTexture* getCameraImage(XRFrame*, XRView*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const Member<XRSession> session_;

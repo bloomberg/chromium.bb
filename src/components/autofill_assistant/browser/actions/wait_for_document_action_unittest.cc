@@ -8,10 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,6 +24,7 @@ using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::IsNull;
@@ -32,12 +34,12 @@ using ::testing::SizeIs;
 
 class WaitForDocumentActionTest : public testing::Test {
  public:
-  WaitForDocumentActionTest()
-      : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  WaitForDocumentActionTest() {}
 
   void SetUp() override {
     ON_CALL(mock_action_delegate_, OnWaitForDocumentReadyState(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(OkClientStatus(), DOCUMENT_COMPLETE));
+        .WillByDefault(RunOnceCallback<2>(OkClientStatus(), DOCUMENT_COMPLETE,
+                                          base::TimeDelta::FromSeconds(0)));
   }
 
   // Runs the action defined in |proto_| and reports the result to
@@ -59,10 +61,6 @@ class WaitForDocumentActionTest : public testing::Test {
   }
 
  protected:
-  // task_env_ must be first to guarantee other field
-  // creation run in that environment.
-  base::test::TaskEnvironment task_env_;
-
   MockActionDelegate mock_action_delegate_;
   WaitForDocumentProto proto_;
   ProcessedActionProto processed_action_;
@@ -135,8 +133,9 @@ TEST_F(WaitForDocumentActionTest, WaitForDocumentInteractive) {
   EXPECT_CALL(mock_action_delegate_, OnGetDocumentReadyState(_, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_LOADING));
   EXPECT_CALL(mock_action_delegate_,
-              OnWaitForDocumentReadyState(_, DOCUMENT_INTERACTIVE, _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus(), DOCUMENT_INTERACTIVE));
+              OnWaitForDocumentReadyState(DOCUMENT_INTERACTIVE, _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus(), DOCUMENT_INTERACTIVE,
+                                   base::TimeDelta::FromSeconds(0)));
   proto_.set_timeout_ms(1000);
   Run();
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
@@ -147,52 +146,45 @@ TEST_F(WaitForDocumentActionTest, WaitForDocumentInteractive) {
 }
 
 TEST_F(WaitForDocumentActionTest, WaitForDocumentInteractiveTimesOut) {
+  InSequence sequence;
+
   // The first time the document is reported as loading.
   EXPECT_CALL(mock_action_delegate_, OnGetDocumentReadyState(_, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_LOADING));
-
-  // The document doesn't become complete right away.
-  base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
-      captured_callback;
   EXPECT_CALL(mock_action_delegate_,
-              OnWaitForDocumentReadyState(_, DOCUMENT_COMPLETE, _))
-      .WillOnce(Invoke(
-          [&captured_callback](
-              const Selector& frame, DocumentReadyState min_ready_state,
-              base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&
-                  callback) { captured_callback = std::move(callback); }));
+              OnWaitForDocumentReadyState(DOCUMENT_COMPLETE, _, _))
+      .WillOnce(RunOnceCallback<2>(ClientStatus(TIMED_OUT),
+                                   DOCUMENT_UNKNOWN_READY_STATE,
+                                   base::TimeDelta::FromSeconds(0)));
+  // The second time the document is reported interactive.
+  EXPECT_CALL(mock_action_delegate_, OnGetDocumentReadyState(_, _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_INTERACTIVE));
 
   proto_.set_timeout_ms(1000);
   proto_.set_min_ready_state(DOCUMENT_COMPLETE);
   Run();
-
-  // 1s afterwards, the document has become interactive, but not complete. The
-  // action times out and reports that.
-  EXPECT_CALL(mock_action_delegate_, OnGetDocumentReadyState(_, _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_INTERACTIVE));
-  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-
   EXPECT_EQ(TIMED_OUT, processed_action_.status());
   EXPECT_EQ(DOCUMENT_LOADING,
             processed_action_.wait_for_document_result().start_ready_state());
   EXPECT_EQ(DOCUMENT_INTERACTIVE,
             processed_action_.wait_for_document_result().end_ready_state());
-
-  // This callback should be ignored. It's too late. This should not crash.
-  std::move(captured_callback).Run(OkClientStatus(), DOCUMENT_COMPLETE);
 }
 
 TEST_F(WaitForDocumentActionTest, CheckDocumentInFrame) {
+  Selector expected_frame_selector({"#frame"});
   EXPECT_CALL(mock_action_delegate_,
-              OnShortWaitForElement(Selector({"#frame"}), _))
-      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
-
+              OnShortWaitForElement(expected_frame_selector, _))
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(),
+                                         base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(mock_action_delegate_,
-              OnGetDocumentReadyState(Selector({"#frame"}), _))
+              OnGetDocumentReadyState(
+                  EqualsElement(test_util::MockFindElement(
+                      mock_action_delegate_, expected_frame_selector)),
+                  _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_COMPLETE));
 
   proto_.set_timeout_ms(0);
-  proto_.mutable_frame()->add_selectors("#frame");
+  *proto_.mutable_frame() = ToSelectorProto("#frame");
   Run();
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
 }
@@ -200,10 +192,11 @@ TEST_F(WaitForDocumentActionTest, CheckDocumentInFrame) {
 TEST_F(WaitForDocumentActionTest, CheckFrameElementNotFound) {
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
       .WillRepeatedly(
-          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED),
+                             base::TimeDelta::FromSeconds(0)));
 
   proto_.set_timeout_ms(0);
-  proto_.mutable_frame()->add_selectors("#frame");
+  *proto_.mutable_frame() = ToSelectorProto("#frame");
   Run();
   EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, processed_action_.status());
 }

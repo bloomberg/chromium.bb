@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 
+#include "base/feature_list.h"
+#include "base/i18n/message_formatter.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -55,8 +57,17 @@ base::string16 GetFormattedUrl(const GURL& origin) {
 }
 
 base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
-  return l10n_util::GetStringUTF16(
-      ShouldCheckPasswords(leak_type) ? IDS_LEAK_CHECK_CREDENTIALS : IDS_OK);
+  // |ShouldShowChangePasswordButton()| and |ShouldCheckPasswords()| are not
+  // both true at the same time.
+  if (ShouldCheckPasswords(leak_type)) {
+    return l10n_util::GetStringUTF16(IDS_LEAK_CHECK_CREDENTIALS);
+  }
+
+  if (ShouldShowChangePasswordButton(leak_type)) {
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_CHANGE);
+  }
+
+  return l10n_util::GetStringUTF16(IDS_OK);
 }
 
 base::string16 GetCancelButtonLabel() {
@@ -78,6 +89,21 @@ base::string16 GetDescription(CredentialLeakType leak_type,
   }
 }
 
+base::string16 GetDescriptionWithCount(CredentialLeakType leak_type,
+                                       const GURL& origin,
+                                       CompromisedSitesCount saved_sites) {
+  IsSaved is_saved(IsPasswordSaved(leak_type));
+  if (ShouldCheckPasswords(leak_type) || is_saved) {
+    DCHECK_GE(saved_sites.value(), 1);
+    // saved_sites must be reduced by 1 if the saved sites include the origin as
+    // the origin is mentioned explicitly in the message.
+    return base::i18n::MessageFormatter::FormatWithNumberedArgs(
+        l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_SAVED_PASSWORDS_MESSAGE),
+        GetFormattedUrl(origin), saved_sites.value() - (is_saved ? 1 : 0));
+  }
+  return GetDescription(leak_type, origin);
+}
+
 base::string16 GetTitle(CredentialLeakType leak_type) {
   return l10n_util::GetStringUTF16(ShouldCheckPasswords(leak_type)
                                        ? IDS_CREDENTIAL_LEAK_TITLE_CHECK
@@ -97,8 +123,27 @@ bool ShouldCheckPasswords(CredentialLeakType leak_type) {
          password_manager::IsSyncingPasswordsNormally(leak_type);
 }
 
+bool ShouldShowChangePasswordButton(CredentialLeakType leak_type) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChange)) {
+    return false;
+  }
+
+  // Password change should be offered if all following conditions are
+  // fulfilled:
+  // - password is saved (The password change flows will automatically save the
+  // password. This should only happen as an update of an existing entry.)
+  // - sync is on (because the password change flow relies on password
+  // generation which is only available to sync users).
+  // - password is not used on the other sites (TODO(crbug/1086114): to be
+  // removed when we have proper UI).
+  return IsPasswordSaved(leak_type) && !IsPasswordUsedOnOtherSites(leak_type) &&
+         IsSyncingPasswordsNormally(leak_type);
+}
+
 bool ShouldShowCancelButton(CredentialLeakType leak_type) {
-  return ShouldCheckPasswords(leak_type);
+  return ShouldCheckPasswords(leak_type) ||
+         ShouldShowChangePasswordButton(leak_type);
 }
 
 LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {

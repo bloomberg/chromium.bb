@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$, getBrowserAndPages, resourcesPath, waitFor} from '../../shared/helper.js';
+import {getBrowserAndPages, goToResource, waitFor} from '../../shared/helper.js';
 
 export async function playMediaFile(media: string) {
   const {target} = getBrowserAndPages();
-  await target.goto(`${resourcesPath}/media/${media}`);
+  await goToResource(`media/${media}`);
 
   // Need to click play manually - autoplay policy prevents it otherwise.
-  return new Promise(async resolve => {
+  return new Promise<void>(async resolve => {
     await target.exposeFunction('resolve', resolve);
     await target.evaluate(() => {
       const videoElement = document.getElementsByName('media')[0] as HTMLVideoElement;
@@ -27,11 +27,10 @@ export async function playMediaFile(media: string) {
 }
 
 export async function getPlayerButton() {
-  await waitFor('.player-entry-tree-element');
-  return await $('.player-entry-tree-element');
+  return await waitFor('.player-entry-tree-element');
 }
 
 export async function getPlayerButtonText() {
   const playerEntry = await getPlayerButton();
-  return await playerEntry.evaluate(E => E.textContent);
+  return await playerEntry.evaluate(element => element.textContent as string);
 }

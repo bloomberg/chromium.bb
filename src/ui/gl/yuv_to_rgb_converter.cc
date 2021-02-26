@@ -4,6 +4,7 @@
 
 #include "ui/gl/yuv_to_rgb_converter.h"
 
+#include "base/notreached.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/color_transform.h"
@@ -96,7 +97,7 @@ STRINGIZE(
   void main() {
     vec3 yuv = vec3(
         TEX(a_y_texture, v_texCoord).r,
-        TEX(a_uv_texture, v_texCoord * 0.5).rg);
+        TEX(a_uv_texture, v_texCoord).rg);
     FRAGCOLOR = vec4(DoColorConversion(yuv), 1.0);
   }
 );
@@ -119,7 +120,7 @@ STRINGIZE(
 }  // namespace
 
 YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
-                                     const gfx::ColorSpace color_space) {
+                                     const gfx::ColorSpace& color_space) {
   std::unique_ptr<gfx::ColorTransform> color_transform =
       gfx::ColorTransform::NewColorTransform(
           color_space, color_space.GetAsFullRangeRGB(),
@@ -128,11 +129,12 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
 
   // On MacOS, the default texture target for native GpuMemoryBuffers is
   // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
-  // a GL surface. However, when ANGLE is used on top of SwiftShader, it's
-  // necessary to use GL_TEXTURE_2D instead.
+  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+  // it's necessary to use GL_TEXTURE_2D instead.
   // TODO(crbug.com/1056312): The proper behavior is to check the config
   // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
-  bool is_rect = !gl_version_info.is_angle_swiftshader;
+  bool is_rect =
+      !gl_version_info.is_angle_swiftshader && !gl_version_info.is_angle_metal;
   source_texture_target_ = (is_rect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D);
 
   const char* fragment_header = nullptr;
@@ -187,6 +189,12 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
   if (has_vertex_array_objects) {
     glGenVertexArraysOES(1, &vertex_array_object_);
   }
+
+  has_get_tex_level_parameter_ =
+      !gl_version_info.is_es || gl_version_info.IsAtLeastGLES(3, 1) ||
+      g_current_gl_driver->ext.b_GL_ANGLE_get_tex_level_parameter;
+  has_robust_resource_init_ =
+      g_current_gl_driver->ext.b_GL_ANGLE_robust_resource_initialization;
 }
 
 YUVToRGBConverter::~YUVToRGBConverter() {
@@ -204,7 +212,8 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
                                         const gfx::Size& size,
-                                        unsigned rgb_texture) {
+                                        unsigned rgb_texture,
+                                        unsigned rgb_texture_type) {
   GLenum source_target_getter = 0;
   switch (source_texture_target_) {
     case GL_TEXTURE_2D:
@@ -231,8 +240,37 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   // Allocate the rgb texture.
   glActiveTexture(old_active_texture);
   glBindTexture(target, rgb_texture);
-  glTexImage2D(target, 0, GL_RGB, size.width(), size.height(),
-               0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+  bool needs_texture_init = true;
+  if (has_get_tex_level_parameter_) {
+    GLint current_internal_format = 0;
+    glGetTexLevelParameteriv(target, 0, GL_TEXTURE_INTERNAL_FORMAT,
+                             &current_internal_format);
+
+    GLint current_type = 0;
+    glGetTexLevelParameteriv(target, 0, GL_TEXTURE_RED_TYPE, &current_type);
+
+    GLint current_width = 0;
+    glGetTexLevelParameteriv(target, 0, GL_TEXTURE_WIDTH, &current_width);
+
+    GLint current_height = 0;
+    glGetTexLevelParameteriv(target, 0, GL_TEXTURE_HEIGHT, &current_height);
+
+    if (current_internal_format == GL_RGB &&
+        static_cast<unsigned>(current_type) == rgb_texture_type &&
+        current_width == size.width() && current_height == size.height()) {
+      needs_texture_init = false;
+    }
+  }
+  if (needs_texture_init) {
+    glTexImage2D(target, 0, GL_RGB, size.width(), size.height(), 0, GL_RGB,
+                 rgb_texture_type, nullptr);
+    if (has_robust_resource_init_) {
+      // We're about to overwrite the whole texture with a draw, notify the
+      // driver that it doesn't need to perform robust resource init.
+      glTexParameteri(target, GL_RESOURCE_INITIALIZED_ANGLE, GL_TRUE);
+    }
+  }
 
   // Set up and issue the draw call.
   glActiveTexture(GL_TEXTURE0);
@@ -246,7 +284,11 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
   ScopedUseProgram use_program(program_);
-  glUniform2f(size_location_, size.width(), size.height());
+  if (source_texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
+    glUniform2f(size_location_, size.width(), size.height());
+  } else {
+    glUniform2f(size_location_, 1, 1);
+  }
   // User code may have set up the other vertex attributes in the
   // context in unexpected ways, including setting vertex attribute
   // divisors which may otherwise cause GL_INVALID_OPERATION during

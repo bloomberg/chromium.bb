@@ -39,11 +39,8 @@ class AXMenuListOption final : public AXNodeObject {
   AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
   ~AXMenuListOption() override;
 
-  int PosInSet() const override;
-  int SetSize() const override;
-
  private:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsMenuListOption() const override { return true; }
 

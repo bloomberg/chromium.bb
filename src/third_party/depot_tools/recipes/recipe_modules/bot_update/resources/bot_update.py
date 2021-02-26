@@ -34,7 +34,7 @@ import os.path as path
 BUF_SIZE = 256
 
 # How many seconds of no stdout activity before process is considered stale. Can
-# be overridden via environmnet variable `STALE_PROCESS_DURATION`. If set to 0,
+# be overridden via environment variable `STALE_PROCESS_DURATION`. If set to 0,
 # process won't be terminated.
 STALE_PROCESS_DURATION = 1200
 
@@ -588,54 +588,46 @@ def get_total_disk_space():
     return (total, free)
 
 
-def _get_target_branch_and_revision(solution_name, git_url, revisions):
-  normalized_name = solution_name.strip('/')
-  if normalized_name in revisions:
-    configured = revisions[normalized_name]
-  elif git_url in revisions:
-    configured = revisions[git_url]
+def ref_to_remote_ref(ref):
+  """Maps refs to equivalent remote ref.
+
+  This maps
+    - refs/heads/BRANCH -> refs/remotes/origin/BRANCH
+    - refs/branch-heads/BRANCH_HEAD -> refs/remotes/branch-heads/BRANCH_HEAD
+    - origin/BRANCH -> refs/remotes/origin/BRANCH
+  and leaves other refs unchanged.
+  """
+  if ref.startswith('refs/heads/'):
+    return 'refs/remotes/origin/' + ref[len('refs/heads/'):]
+  elif ref.startswith('refs/branch-heads/'):
+    return 'refs/remotes/branch-heads/' + ref[len('refs/branch-heads/'):]
+  elif ref.startswith('origin/'):
+    return 'refs/remotes/' + ref
   else:
-    return 'master', 'HEAD'
-
-  parts = configured.split(':', 1)
-  if len(parts) == 2:
-    # Support for "branch:revision" syntax.
-    return parts
-  if COMMIT_HASH_RE.match(configured):
-    return 'master', configured
-  return configured, 'HEAD'
+    return ref
 
 
-def get_target_pin(solution_name, git_url, revisions):
-  """Returns revision to be checked out if it is pinned, else None."""
-  _, revision = _get_target_branch_and_revision(
-      solution_name, git_url, revisions)
-  if COMMIT_HASH_RE.match(revision):
-    return revision
-  return None
+def get_target_branch_and_revision(solution_name, git_url, revisions):
+  solution_name = solution_name.strip('/')
+  configured = revisions.get(solution_name) or revisions.get(git_url)
 
-
-def force_solution_revision(solution_name, git_url, revisions, cwd):
-  branch, revision = _get_target_branch_and_revision(
-      solution_name, git_url, revisions)
-  if revision and revision.upper() != 'HEAD':
-    treeish = revision
+  if configured is None or COMMIT_HASH_RE.match(configured):
+    # TODO(crbug.com/1104182): Get the default branch instead of assuming
+    # 'master'.
+    branch = 'refs/remotes/origin/master'
+    revision = configured or 'HEAD'
+    return branch, revision
+  elif ':' in configured:
+    branch, revision = configured.split(':', 1)
   else:
-    # TODO(machenbach): This won't work with branch-heads, as Gerrit's
-    # destination branch would be e.g. refs/branch-heads/123. But here
-    # we need to pass refs/remotes/branch-heads/123 to check out.
-    # This will also not work if somebody passes a local refspec like
-    # refs/heads/master. It needs to translate to refs/remotes/origin/master
-    # first. See also https://crbug.com/740456 .
-    if branch.startswith(('refs/', 'origin/')):
-      treeish = branch
-    else:
-      treeish = 'origin/' + branch
+    branch = configured
+    revision = 'HEAD'
 
-  # Note that -- argument is necessary to ensure that git treats `treeish`
-  # argument as revision or ref, and not as a file/directory which happens to
-  # have the exact same name.
-  git('checkout', '--force', treeish, '--', cwd=cwd)
+  if not branch.startswith(('refs/', 'origin/')):
+    branch = 'refs/remotes/origin/' + branch
+  branch = ref_to_remote_ref(branch)
+
+  return branch, revision
 
 
 def _has_in_git_cache(revision_sha1, refs, git_cache_dir, url):
@@ -686,13 +678,13 @@ def _maybe_break_locks(checkout_path, tries=3):
 
 
 def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir):
+                  cleanup_dir, enforce_fetch):
   build_dir = os.getcwd()
   first_solution = True
   for sln in solutions:
     sln_dir = path.join(build_dir, sln['name'])
     _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir)
+                  cleanup_dir, enforce_fetch)
     if first_solution:
       git_ref = git('log', '--format=%H', '--max-count=1',
                     cwd=path.join(build_dir, sln['name'])
@@ -702,7 +694,7 @@ def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
 
 
 def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir):
+                  cleanup_dir, enforce_fetch):
   name = sln['name']
   url = sln['url']
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
@@ -720,8 +712,13 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         'GIT_TRACE_PERFORMANCE': 'true',
     }
 
+  branch, revision = get_target_branch_and_revision(name, url, revisions)
+  pin = revision if COMMIT_HASH_RE.match(revision) else None
+
+  if enforce_fetch:
+    git(*populate_cmd, env=env)
+
   # Step 1: populate/refresh cache, if necessary.
-  pin = get_target_pin(name, url, revisions)
   if not pin:
     # Refresh only once.
     git(*populate_cmd, env=env)
@@ -771,8 +768,6 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       if not path.isdir(sln_dir):
         git('clone', '--no-checkout', '--local', '--shared', mirror_dir,
             sln_dir)
-        # Detach HEAD to be consistent with the non-clone case
-        git('checkout', 'master', '--detach', cwd=sln_dir)
         _git_disable_gc(sln_dir)
       else:
         _git_disable_gc(sln_dir)
@@ -780,7 +775,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         git('fetch', 'origin', cwd=sln_dir)
       git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
       for ref in refs:
-        refspec = '%s:%s' % (ref, ref.lstrip('+'))
+        refspec = '%s:%s' % (ref, ref_to_remote_ref(ref.lstrip('+')))
         git('fetch', 'origin', refspec, cwd=sln_dir)
 
       # Windows sometimes has trouble deleting files.
@@ -789,7 +784,10 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       if sys.platform.startswith('win'):
         _maybe_break_locks(sln_dir, tries=3)
 
-      force_solution_revision(name, url, revisions, sln_dir)
+      # Note that the '--' argument is needed to ensure that git treats
+      # 'pin or branch' as revision or ref, and not as file/directory which
+      # happens to have the exact same name.
+      git('checkout', '--force', pin or branch, '--', cwd=sln_dir)
       git('clean', '-dff', cwd=sln_dir)
       return
     except SubprocessFailed as e:
@@ -869,14 +867,14 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
                     no_fetch_tags, refs, git_cache_dir, cleanup_dir,
-                    gerrit_reset, disable_syntax_validation):
+                    gerrit_reset, disable_syntax_validation, enforce_fetch):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print('Fetching Git checkout')
 
   git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
-                cleanup_dir)
+                cleanup_dir, enforce_fetch)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, target_cpu,
@@ -992,6 +990,13 @@ def parse_args():
       help=('Don\'t fetch tags from the server for the git checkout. '
             'This can speed up fetch considerably when '
             'there are many tags.'))
+  parse.add_option(
+      '--enforce_fetch',
+      action='store_true',
+      help=('Enforce a new fetch to refresh the git cache, even if the '
+            'solution revision passed in already exists in the current '
+            'git cache.'))
+
   # TODO(machenbach): Remove the flag when all uses have been removed.
   parse.add_option('--output_manifest', action='store_true',
                    help=('Deprecated.'))
@@ -1135,6 +1140,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
 
           # Control how the fetch step will occur.
           no_fetch_tags=options.no_fetch_tags,
+          enforce_fetch=options.enforce_fetch,
 
           # Finally, extra configurations cleanup dir location.
           refs=options.refs,

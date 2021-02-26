@@ -602,6 +602,8 @@ static int svq1_decode_frame_header(AVCodecContext *avctx, AVFrame *frame)
         if (skip_1stop_8data_bits(bitbuf) < 0)
             return AVERROR_INVALIDDATA;
     }
+    if (get_bits_left(bitbuf) <= 0)
+        return AVERROR_INVALIDDATA;
 
     s->width  = width;
     s->height = height;
@@ -677,7 +679,7 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
     if (result < 0)
         return result;
 
-    pmv = av_malloc((FFALIGN(s->width, 16) / 8 + 3) * sizeof(*pmv));
+    pmv = av_malloc_array(FFALIGN(s->width, 16) / 8 + 3, sizeof(*pmv));
     if (!pmv)
         return AVERROR(ENOMEM);
 

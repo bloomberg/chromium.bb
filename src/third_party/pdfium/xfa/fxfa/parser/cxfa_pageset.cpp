@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_pageset.h"
 
 #include "fxjs/xfa/cjx_container.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -38,6 +38,8 @@ CXFA_PageSet::CXFA_PageSet(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::PageSet,
                 kPageSetPropertyData,
                 kPageSetAttributeData,
-                pdfium::MakeUnique<CJX_Container>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Container>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_PageSet::~CXFA_PageSet() = default;

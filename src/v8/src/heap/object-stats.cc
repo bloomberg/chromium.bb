@@ -16,7 +16,7 @@
 #include "src/heap/heap-inl.h"
 #include "src/heap/mark-compact.h"
 #include "src/logging/counters.h"
-#include "src/objects/compilation-cache-inl.h"
+#include "src/objects/compilation-cache-table-inl.h"
 #include "src/objects/heap-object.h"
 #include "src/objects/js-array-inl.h"
 #include "src/objects/js-collection-inl.h"
@@ -150,7 +150,7 @@ FieldStatsCollector::GetInobjectFieldStats(Map map) {
   JSObjectFieldStats stats;
   stats.embedded_fields_count_ = JSObject::GetEmbedderFieldCount(map);
   if (!map.is_dictionary_map()) {
-    DescriptorArray descriptors = map.instance_descriptors();
+    DescriptorArray descriptors = map.instance_descriptors(kRelaxedLoad);
     for (InternalIndex descriptor : map.IterateOwnDescriptors()) {
       PropertyDetails details = descriptors.GetDetails(descriptor);
       if (details.location() == kField) {
@@ -426,7 +426,7 @@ class ObjectStatsCollectorImpl {
   bool CanRecordFixedArray(FixedArrayBase array);
   bool IsCowArray(FixedArrayBase array);
 
-  // Blacklist for objects that should not be recorded using
+  // Blocklist for objects that should not be recorded using
   // VirtualObjectStats and RecordSimpleVirtualObjectStats. For recording those
   // objects dispatch to the low level ObjectStats::RecordObjectStats manually.
   bool ShouldRecordObject(HeapObject object, CowMode check_cow_array);
@@ -565,9 +565,10 @@ void ObjectStatsCollectorImpl::RecordVirtualFunctionTemplateInfoDetails(
     FunctionTemplateInfo fti) {
   // named_property_handler and indexed_property_handler are recorded as
   // INTERCEPTOR_INFO_TYPE.
-  if (!fti.call_code().IsUndefined(isolate())) {
+  HeapObject call_code = fti.call_code(kAcquireLoad);
+  if (!call_code.IsUndefined(isolate())) {
     RecordSimpleVirtualObjectStats(
-        fti, CallHandlerInfo::cast(fti.call_code()),
+        fti, CallHandlerInfo::cast(call_code),
         ObjectStats::FUNCTION_TEMPLATE_INFO_ENTRIES_TYPE);
   }
   if (!fti.GetInstanceCallHandler().IsUndefined(isolate())) {
@@ -723,7 +724,7 @@ void ObjectStatsCollectorImpl::RecordVirtualFeedbackVectorDetails(
 
     // Log the monomorphic/polymorphic helper objects that this slot owns.
     for (int i = 0; i < it.entry_size(); i++) {
-      MaybeObject raw_object = vector.get(slot.ToInt() + i);
+      MaybeObject raw_object = vector.Get(slot.WithOffset(i));
       HeapObject object;
       if (raw_object->GetHeapObject(&object)) {
         if (object.IsCell() || object.IsWeakFixedArray()) {
@@ -839,7 +840,6 @@ void ObjectStatsCollectorImpl::RecordObjectStats(HeapObject obj,
 bool ObjectStatsCollectorImpl::CanRecordFixedArray(FixedArrayBase array) {
   ReadOnlyRoots roots(heap_);
   return array != roots.empty_fixed_array() &&
-         array != roots.empty_sloppy_arguments_elements() &&
          array != roots.empty_slow_element_dictionary() &&
          array != roots.empty_property_dictionary();
 }
@@ -884,7 +884,7 @@ void ObjectStatsCollectorImpl::RecordVirtualMapDetails(Map map) {
     // This will be logged as MAP_TYPE in Phase2.
   }
 
-  DescriptorArray array = map.instance_descriptors();
+  DescriptorArray array = map.instance_descriptors(kRelaxedLoad);
   if (map.owns_descriptors() &&
       array != ReadOnlyRoots(heap_).empty_descriptor_array()) {
     // Generally DescriptorArrays have their own instance type already
@@ -1021,16 +1021,13 @@ void ObjectStatsCollectorImpl::RecordVirtualBytecodeArrayDetails(
 
 namespace {
 
-ObjectStats::VirtualInstanceType CodeKindToVirtualInstanceType(
-    Code::Kind kind) {
+ObjectStats::VirtualInstanceType CodeKindToVirtualInstanceType(CodeKind kind) {
   switch (kind) {
 #define CODE_KIND_CASE(type) \
-  case Code::type:           \
+  case CodeKind::type:       \
     return ObjectStats::type;
     CODE_KIND_LIST(CODE_KIND_CASE)
 #undef CODE_KIND_CASE
-    default:
-      UNREACHABLE();
   }
   UNREACHABLE();
 }
@@ -1050,7 +1047,7 @@ void ObjectStatsCollectorImpl::RecordVirtualCodeDetails(Code code) {
                                    HeapObject::cast(source_position_table),
                                    ObjectStats::SOURCE_POSITION_TABLE_TYPE);
   }
-  if (code.kind() == Code::Kind::OPTIMIZED_FUNCTION) {
+  if (CodeKindIsOptimizedJSFunction(code.kind())) {
     DeoptimizationData input_data =
         DeoptimizationData::cast(code.deoptimization_data());
     if (input_data.length() > 0) {

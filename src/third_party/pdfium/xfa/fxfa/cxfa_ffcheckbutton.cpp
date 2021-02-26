@@ -6,8 +6,8 @@
 
 #include "xfa/fxfa/cxfa_ffcheckbutton.h"
 
-#include <utility>
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fwl/cfwl_checkbox.h"
 #include "xfa/fwl/cfwl_messagemouse.h"
 #include "xfa/fwl/cfwl_notedriver.h"
@@ -30,18 +30,21 @@ CXFA_FFCheckButton::CXFA_FFCheckButton(CXFA_Node* pNode,
 
 CXFA_FFCheckButton::~CXFA_FFCheckButton() = default;
 
+void CXFA_FFCheckButton::Trace(cppgc::Visitor* visitor) const {
+  CXFA_FFField::Trace(visitor);
+  visitor->Trace(m_pOldDelegate);
+  visitor->Trace(button_);
+}
+
 bool CXFA_FFCheckButton::LoadWidget() {
-  ASSERT(!IsLoaded());
+  DCHECK(!IsLoaded());
 
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
-  auto pNew = pdfium::MakeUnique<CFWL_CheckBox>(GetFWLApp());
-  CFWL_CheckBox* pCheckBox = pNew.get();
-  SetNormalWidget(std::move(pNew));
+  CFWL_CheckBox* pCheckBox = cppgc::MakeGarbageCollected<CFWL_CheckBox>(
+      GetFWLApp()->GetHeap()->GetAllocationHandle(), GetFWLApp());
+  SetNormalWidget(pCheckBox);
   pCheckBox->SetAdapterIface(this);
 
-  CFWL_NoteDriver* pNoteDriver = pCheckBox->GetOwnerApp()->GetNoteDriver();
+  CFWL_NoteDriver* pNoteDriver = pCheckBox->GetFWLApp()->GetNoteDriver();
   pNoteDriver->RegisterEventTarget(pCheckBox, pCheckBox);
   m_pOldDelegate = pCheckBox->GetDelegate();
   pCheckBox->SetDelegate(this);
@@ -229,7 +232,7 @@ void CXFA_FFCheckButton::AddUIMargin(XFA_AttributeValue iCapPlacement) {
   }
 }
 
-void CXFA_FFCheckButton::RenderWidget(CXFA_Graphics* pGS,
+void CXFA_FFCheckButton::RenderWidget(CFGAS_GEGraphics* pGS,
                                       const CFX_Matrix& matrix,
                                       HighlightOption highlight) {
   if (!HasVisibleStatus())
@@ -254,14 +257,10 @@ bool CXFA_FFCheckButton::OnLButtonUp(uint32_t dwFlags,
   if (!GetNormalWidget() || !IsButtonDown())
     return false;
 
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
-
   SetButtonDown(false);
-  SendMessageToFWLWidget(pdfium::MakeUnique<CFWL_MessageMouse>(
-      GetNormalWidget(), FWL_MouseCommand::LeftButtonUp, dwFlags,
-      FWLToClient(point)));
-
+  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonUp,
+                        dwFlags, FWLToClient(point));
+  SendMessageToFWLWidget(&msg);
   return true;
 }
 
@@ -298,24 +297,16 @@ bool CXFA_FFCheckButton::UpdateFWLData() {
   if (!GetNormalWidget())
     return false;
 
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
   SetFWLCheckState(m_pNode->GetCheckState());
   GetNormalWidget()->Update();
   return true;
 }
 
 void CXFA_FFCheckButton::OnProcessMessage(CFWL_Message* pMessage) {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
-
   m_pOldDelegate->OnProcessMessage(pMessage);
 }
 
 void CXFA_FFCheckButton::OnProcessEvent(CFWL_Event* pEvent) {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
   CXFA_FFField::OnProcessEvent(pEvent);
   switch (pEvent->GetType()) {
     case CFWL_Event::Type::CheckStateChanged: {
@@ -353,11 +344,8 @@ void CXFA_FFCheckButton::OnProcessEvent(CFWL_Event* pEvent) {
   m_pOldDelegate->OnProcessEvent(pEvent);
 }
 
-void CXFA_FFCheckButton::OnDrawWidget(CXFA_Graphics* pGraphics,
+void CXFA_FFCheckButton::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                                       const CFX_Matrix& matrix) {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
-
   m_pOldDelegate->OnDrawWidget(pGraphics, matrix);
 }
 

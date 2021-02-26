@@ -24,7 +24,9 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/permissions/features.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -33,9 +35,53 @@ using content_settings::ConcatenationIterator;
 using content_settings::Rule;
 using content_settings::RuleIterator;
 using content_settings::OriginIdentifierValueMap;
-using content_settings::ResourceIdentifier;
 
 namespace extensions {
+
+namespace {
+
+enum class FilterType {
+  WANT_DISCARDED_PATTERNS,
+  WANT_VALID_PATTERNS,
+};
+
+class FilterRuleIterator : public RuleIterator {
+ public:
+  FilterRuleIterator(std::unique_ptr<RuleIterator> iterator,
+                     const FilterType filter_type)
+      : iterator_(std::move(iterator)), filter_type_(filter_type) {}
+
+  ~FilterRuleIterator() override = default;
+
+  bool HasNext() const override {
+    if (!iterator_)
+      return false;
+    if (current_rule_)
+      return true;
+    while (iterator_->HasNext()) {
+      current_rule_ = iterator_->Next();
+      if (!((filter_type_ == FilterType::WANT_DISCARDED_PATTERNS) ^
+            current_rule_->primary_pattern.HasHostWildcards())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Rule Next() override {
+    DCHECK(current_rule_.has_value());
+    Rule rule = std::move(*current_rule_);
+    current_rule_.reset();
+    return rule;
+  }
+
+ private:
+  std::unique_ptr<RuleIterator> iterator_;
+  const FilterType filter_type_;
+  mutable base::Optional<Rule> current_rule_;
+};
+
+}  // namespace
 
 struct ContentSettingsStore::ExtensionEntry {
   // Extension id.
@@ -61,7 +107,33 @@ ContentSettingsStore::~ContentSettingsStore() {
 
 std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
     ContentSettingsType type,
-    const content_settings::ResourceIdentifier& identifier,
+    bool incognito) const {
+  if (base::FeatureList::IsEnabled(
+          content_settings::kDisallowWildcardsInPluginContentSettings) &&
+      type == ContentSettingsType::PLUGINS) {
+    return std::make_unique<FilterRuleIterator>(
+        GetAllRulesIterator(type, incognito), FilterType::WANT_VALID_PATTERNS);
+  } else {
+    return GetAllRulesIterator(type, incognito);
+  }
+}
+
+std::unique_ptr<RuleIterator> ContentSettingsStore::GetDiscardedRuleIterator(
+    ContentSettingsType type,
+    bool incognito) const {
+  if (base::FeatureList::IsEnabled(
+          content_settings::kDisallowWildcardsInPluginContentSettings) &&
+      type == ContentSettingsType::PLUGINS) {
+    return std::make_unique<FilterRuleIterator>(
+        GetAllRulesIterator(type, incognito),
+        FilterType::WANT_DISCARDED_PATTERNS);
+  } else {
+    return std::make_unique<content_settings::EmptyRuleIterator>();
+  }
+}
+
+std::unique_ptr<RuleIterator> ContentSettingsStore::GetAllRulesIterator(
+    ContentSettingsType type,
     bool incognito) const {
   std::vector<std::unique_ptr<RuleIterator>> iterators;
 
@@ -77,16 +149,16 @@ std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
 
     std::unique_ptr<RuleIterator> rule_it;
     if (incognito) {
-      rule_it = entry->incognito_session_only_settings.GetRuleIterator(
-          type, identifier, nullptr);
+      rule_it =
+          entry->incognito_session_only_settings.GetRuleIterator(type, nullptr);
       if (rule_it)
         iterators.push_back(std::move(rule_it));
-      rule_it = entry->incognito_persistent_settings.GetRuleIterator(
-          type, identifier, nullptr);
+      rule_it =
+          entry->incognito_persistent_settings.GetRuleIterator(type, nullptr);
       if (rule_it)
         iterators.push_back(std::move(rule_it));
     } else {
-      rule_it = entry->settings.GetRuleIterator(type, identifier, nullptr);
+      rule_it = entry->settings.GetRuleIterator(type, nullptr);
       if (rule_it)
         iterators.push_back(std::move(rule_it));
     }
@@ -103,18 +175,17 @@ void ContentSettingsStore::SetExtensionContentSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType type,
-    const content_settings::ResourceIdentifier& identifier,
     ContentSetting setting,
     ExtensionPrefsScope scope) {
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
     if (setting == CONTENT_SETTING_DEFAULT) {
-      map->DeleteValue(primary_pattern, secondary_pattern, type, identifier);
+      map->DeleteValue(primary_pattern, secondary_pattern, type);
     } else {
       // Do not set a timestamp for extension settings.
-      map->SetValue(primary_pattern, secondary_pattern, type, identifier,
-                    base::Time(), base::Value(setting), {});
+      map->SetValue(primary_pattern, secondary_pattern, type, base::Time(),
+                    base::Value(setting), {});
     }
   }
 
@@ -249,27 +320,17 @@ void ContentSettingsStore::ClearContentSettingsForExtensionAndContentType(
     const std::string& ext_id,
     ExtensionPrefsScope scope,
     ContentSettingsType content_type) {
-  bool notify = false;
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
     DCHECK(map);
 
-    // Get all of the resource identifiers for this |content_type|.
-    std::set<ResourceIdentifier> resource_identifiers;
-    for (const auto& entry : *map) {
-      if (entry.first.content_type == content_type)
-        resource_identifiers.insert(entry.first.resource_identifier);
-    }
+    if (map->find(content_type) == map->end())
+      return;
 
-    notify = !resource_identifiers.empty();
-
-    for (const ResourceIdentifier& resource_identifier : resource_identifiers)
-      map->DeleteValues(content_type, resource_identifier);
+    map->DeleteValues(content_type);
   }
-  if (notify) {
     NotifyOfContentSettingChanged(ext_id, scope != kExtensionPrefsScopeRegular);
-  }
 }
 
 std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
@@ -284,7 +345,7 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
   for (const auto& it : *map) {
     const auto& key = it.first;
     std::unique_ptr<RuleIterator> rule_iterator(
-        map->GetRuleIterator(key.content_type, key.resource_identifier,
+        map->GetRuleIterator(key,
                              nullptr));  // We already hold the lock.
     if (!rule_iterator)
       continue;
@@ -301,11 +362,7 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
           rule.secondary_pattern.ToString());
       setting_dict->SetString(
           content_settings_api_constants::kContentSettingsTypeKey,
-          content_settings_helpers::ContentSettingsTypeToString(
-              key.content_type));
-      setting_dict->SetString(
-          content_settings_api_constants::kResourceIdentifierKey,
-          key.resource_identifier);
+          content_settings_helpers::ContentSettingsTypeToString(key));
       ContentSetting content_setting =
           content_settings::ValueToContentSetting(&rule.value);
       DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
@@ -364,24 +421,27 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
       // settings from the pref store when it is written back.
       continue;
     }
+    if (content_settings_type == ContentSettingsType::PLUGINS) {
+      // Plugin content settings are no longer supported for extensions.
+      continue;
+    }
 
     const content_settings::ContentSettingsInfo* info =
         content_settings::ContentSettingsRegistry::GetInstance()->Get(
             content_settings_type);
+
+    if (secondary_pattern == primary_pattern &&
+        info->website_settings_info()->SupportsSecondaryPattern())
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+
     if (primary_pattern != secondary_pattern &&
         secondary_pattern != ContentSettingsPattern::Wildcard() &&
-        !info->website_settings_info()->SupportsEmbeddedExceptions() &&
-        base::FeatureList::IsEnabled(
-            permissions::features::kPermissionDelegation)) {
+        !info->website_settings_info()->SupportsSecondaryPattern()) {
       // Some types may have had embedded exceptions written even though they
       // aren't supported. This will implicitly delete these old settings from
       // the pref store when it is written back.
       continue;
     }
-
-    std::string resource_identifier;
-    dict->GetString(content_settings_api_constants::kResourceIdentifierKey,
-                    &resource_identifier);
 
     std::string content_setting_string;
     dict->GetString(content_settings_api_constants::kContentSettingKey,
@@ -394,13 +454,8 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     // settings to |CONTENT_SETTING_DEFAULT|.
     DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
 
-    SetExtensionContentSetting(extension_id,
-                               primary_pattern,
-                               secondary_pattern,
-                               content_settings_type,
-                               resource_identifier,
-                               setting,
-                               scope);
+    SetExtensionContentSetting(extension_id, primary_pattern, secondary_pattern,
+                               content_settings_type, setting, scope);
   }
 }
 

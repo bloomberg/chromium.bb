@@ -33,7 +33,6 @@ class CC_PAINT_EXPORT PaintFlags {
   enum Style {
     kFill_Style = SkPaint::kFill_Style,
     kStroke_Style = SkPaint::kStroke_Style,
-    kStrokeAndFill_Style = SkPaint::kStrokeAndFill_Style,
   };
   bool nothingToDraw() const;
   ALWAYS_INLINE Style getStyle() const {
@@ -62,6 +61,12 @@ class CC_PAINT_EXPORT PaintFlags {
   }
   ALWAYS_INLINE SkFilterQuality getFilterQuality() const {
     return static_cast<SkFilterQuality>(bitfields_.filter_quality_);
+  }
+  ALWAYS_INLINE bool useDarkModeForImage() const {
+    return bitfields_.use_dark_mode_for_image_;
+  }
+  ALWAYS_INLINE void setUseDarkModeForImage(bool use_dark_mode_for_image) {
+    bitfields_.use_dark_mode_for_image_ = use_dark_mode_for_image;
   }
   ALWAYS_INLINE SkScalar getStrokeWidth() const { return width_; }
   ALWAYS_INLINE void setStrokeWidth(SkScalar width) { width_ = width; }
@@ -141,9 +146,13 @@ class CC_PAINT_EXPORT PaintFlags {
     draw_looper_ = std::move(looper);
   }
 
-  // Returns true if this just represents an opacity blend when
-  // used as saveLayer flags.
+  // Returns true if this just represents an opacity blend when used as
+  // saveLayer flags, thus the saveLayer can be converted to a saveLayerAlpha.
   bool IsSimpleOpacity() const;
+
+  // Returns true if this (of a drawOp) allows the sequence
+  // saveLayerAlpha/drawOp/restore to be folded into a single drawOp by baking
+  // the alpha in the saveLayerAlpha into the flags of the drawOp.
   bool SupportsFoldingAlpha() const;
 
   // SkPaint does not support loopers, so callers of SkToPaint need
@@ -192,6 +201,9 @@ class CC_PAINT_EXPORT PaintFlags {
     uint32_t join_type_ : 2;
     uint32_t style_ : 2;
     uint32_t filter_quality_ : 2;
+    // Specifies whether the compositor should use a dark mode filter when
+    // rasterizing image on the draw op with this PaintFlags.
+    uint32_t use_dark_mode_for_image_ : 1;
   };
 
   union {

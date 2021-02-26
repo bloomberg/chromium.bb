@@ -18,7 +18,7 @@ SensorProviderProxy::SensorProviderProxy(LocalDOMWindow& window)
       inspector_mode_(false) {}
 
 void SensorProviderProxy::InitializeIfNeeded() {
-  if (IsInitialized())
+  if (sensor_provider_.is_bound())
     return;
 
   GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
@@ -41,13 +41,12 @@ SensorProviderProxy* SensorProviderProxy::From(LocalDOMWindow* window) {
     provider_proxy = MakeGarbageCollected<SensorProviderProxy>(*window);
     Supplement<LocalDOMWindow>::ProvideTo(*window, provider_proxy);
   }
-  provider_proxy->InitializeIfNeeded();
   return provider_proxy;
 }
 
 SensorProviderProxy::~SensorProviderProxy() = default;
 
-void SensorProviderProxy::Trace(Visitor* visitor) {
+void SensorProviderProxy::Trace(Visitor* visitor) const {
   visitor->Trace(sensor_proxies_);
   visitor->Trace(sensor_provider_);
   Supplement<LocalDOMWindow>::Trace(visitor);
@@ -92,6 +91,13 @@ void SensorProviderProxy::OnSensorProviderConnectionError() {
 void SensorProviderProxy::RemoveSensorProxy(SensorProxy* proxy) {
   DCHECK(sensor_proxies_.Contains(proxy));
   sensor_proxies_.erase(proxy);
+}
+
+void SensorProviderProxy::GetSensor(
+    device::mojom::blink::SensorType type,
+    device::mojom::blink::SensorProviderProxy::GetSensorCallback callback) {
+  InitializeIfNeeded();
+  sensor_provider_->GetSensor(type, std::move(callback));
 }
 
 }  // namespace blink

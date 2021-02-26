@@ -6,8 +6,10 @@
 #define DISCOVERY_PUBLIC_DNS_SD_SERVICE_PUBLISHER_H_
 
 #include <string>
+#include <utility>
 
 #include "discovery/dnssd/public/dns_sd_instance.h"
+#include "discovery/dnssd/public/dns_sd_instance_endpoint.h"
 #include "discovery/dnssd/public/dns_sd_publisher.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
 #include "platform/base/error.h"

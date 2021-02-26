@@ -16,6 +16,7 @@
 #define DAWNNATIVE_DYNAMICUPLOADER_H_
 
 #include "dawn_native/Forward.h"
+#include "dawn_native/IntegerTypes.h"
 #include "dawn_native/RingBufferAllocator.h"
 #include "dawn_native/StagingBuffer.h"
 
@@ -40,8 +41,10 @@ namespace dawn_native {
         // implemented.
         void ReleaseStagingBuffer(std::unique_ptr<StagingBufferBase> stagingBuffer);
 
-        ResultOrError<UploadHandle> Allocate(uint64_t allocationSize, Serial serial);
-        void Deallocate(Serial lastCompletedSerial);
+        ResultOrError<UploadHandle> Allocate(uint64_t allocationSize,
+                                             ExecutionSerial serial,
+                                             uint64_t offsetAlignment);
+        void Deallocate(ExecutionSerial lastCompletedSerial);
 
       private:
         static constexpr uint64_t kRingBufferSize = 4 * 1024 * 1024;
@@ -51,8 +54,11 @@ namespace dawn_native {
             RingBufferAllocator mAllocator;
         };
 
+        ResultOrError<UploadHandle> AllocateInternal(uint64_t allocationSize,
+                                                     ExecutionSerial serial);
+
         std::vector<std::unique_ptr<RingBuffer>> mRingBuffers;
-        SerialQueue<std::unique_ptr<StagingBufferBase>> mReleasedStagingBuffers;
+        SerialQueue<ExecutionSerial, std::unique_ptr<StagingBufferBase>> mReleasedStagingBuffers;
         DeviceBase* mDevice;
     };
 }  // namespace dawn_native

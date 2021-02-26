@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"sort"
 
 	"github.com/google/wuffs/lang/builtin"
 	"github.com/google/wuffs/lang/parse"
@@ -29,24 +30,16 @@ import (
 )
 
 type Error struct {
-	Err           error
-	Filename      string
-	Line          uint32
-	OtherFilename string
-	OtherLine     uint32
+	Err      error
+	Filename string
+	Line     uint32
 
 	TMap  *t.Map
 	Facts []*a.Expr
 }
 
 func (e *Error) Error() string {
-	s := ""
-	if e.OtherFilename != "" || e.OtherLine != 0 {
-		s = fmt.Sprintf("%s at %s:%d and %s:%d",
-			e.Err, e.Filename, e.Line, e.OtherFilename, e.OtherLine)
-	} else {
-		s = fmt.Sprintf("%s at %s:%d", e.Err, e.Filename, e.Line)
-	}
+	s := fmt.Sprintf("%s at %s:%d", e.Err, e.Filename, e.Line)
 	if e.TMap == nil {
 		return s
 	}
@@ -83,28 +76,75 @@ func Check(tm *t.Map, files []*a.File, resolveUse func(usePath string) ([]byte, 
 		}
 	}
 	c := &Checker{
-		tm:           tm,
-		resolveUse:   resolveUse,
-		reasonMap:    rMap,
-		consts:       map[t.QID]*a.Const{},
-		funcs:        map[t.QQID]*a.Func{},
-		localVars:    map[t.QQID]typeMap{},
-		statuses:     map[t.QID]*a.Status{},
-		structs:      map[t.QID]*a.Struct{},
-		useBaseNames: map[t.ID]struct{}{},
+		tm:         tm,
+		resolveUse: resolveUse,
+		reasonMap:  rMap,
+
+		topLevelNames: map[t.ID]a.Kind{
+			t.IDBase: a.KUse,
+		},
+
+		consts:   map[t.QID]*a.Const{},
+		statuses: map[t.QID]*a.Status{},
+		structs:  map[t.QID]*a.Struct{},
+
+		funcs:     map[t.QQID]*a.Func{},
+		localVars: map[t.QQID]typeMap{},
+
+		builtInSliceFuncs: map[t.QQID]*a.Func{},
+		builtInTableFuncs: map[t.QQID]*a.Func{},
+
+		builtInInterfaces:     map[t.QID][]t.QQID{},
+		builtInInterfaceFuncs: map[t.QQID]*a.Func{},
+		unseenInterfaceImpls:  map[t.QQID]*a.Func{},
 	}
 
-	_, err := c.parseBuiltInFuncs(builtin.Funcs, false)
-	if err != nil {
+	if err := c.parseBuiltInFuncs(nil, builtin.Funcs); err != nil {
 		return nil, err
 	}
-	c.builtInSliceFuncs, err = c.parseBuiltInFuncs(builtin.SliceFuncs, true)
-	if err != nil {
+	if err := c.parseBuiltInFuncs(c.builtInSliceFuncs, builtin.SliceFuncs); err != nil {
 		return nil, err
 	}
-	c.builtInTableFuncs, err = c.parseBuiltInFuncs(builtin.TableFuncs, true)
-	if err != nil {
+	if err := c.parseBuiltInFuncs(c.builtInTableFuncs, builtin.TableFuncs); err != nil {
 		return nil, err
+	}
+	if err := c.parseBuiltInFuncs(c.builtInInterfaceFuncs, builtin.InterfaceFuncs); err != nil {
+		return nil, err
+	}
+
+	for qqid := range c.builtInInterfaceFuncs {
+		qid := t.QID{qqid[0], qqid[1]}
+		c.builtInInterfaces[qid] = append(c.builtInInterfaces[qid], qqid)
+	}
+	for _, qqids := range c.builtInInterfaces {
+		sort.Slice(qqids, func(i int, j int) bool {
+			return qqids[i].LessThan(qqids[j])
+		})
+	}
+
+	for _, z := range builtin.Consts {
+		name, err := tm.Insert(z.Name)
+		if err != nil {
+			return nil, err
+		}
+		xType := (*a.TypeExpr)(nil)
+		switch z.Type {
+		case t.IDU32:
+			xType = typeExprU32
+		case t.IDU64:
+			xType = typeExprU64
+		default:
+			return nil, fmt.Errorf("check: unsupported built-in const type %q", z.Type.Str(tm))
+		}
+		value, err := tm.Insert(z.Value)
+		if err != nil {
+			return nil, err
+		}
+		cNode := a.NewConst(0, "", 0, name, xType, a.NewExpr(0, 0, value, nil, nil, nil, nil))
+		if err := c.checkConst(cNode.AsNode()); err != nil {
+			return nil, err
+		}
+		c.consts[t.QID{t.IDBase, name}] = cNode
 	}
 
 	for _, z := range builtin.Statuses {
@@ -150,10 +190,11 @@ var phases = [...]struct {
 	{a.KStruct, (*Checker).checkStructFields},
 	{a.KFunc, (*Checker).checkFuncSignature},
 	{a.KFunc, (*Checker).checkFuncContract},
+	{a.KFunc, (*Checker).checkFuncImplements},
 	{a.KFunc, (*Checker).checkFuncBody},
+	{a.KInvalid, (*Checker).checkInterfacesSatisfied},
 	{a.KStruct, (*Checker).checkFieldMethodCollisions},
 	{a.KInvalid, (*Checker).checkAllTypeChecked},
-	// TODO: check consts, funcs, structs and uses for name collisions.
 }
 
 type reason func(q *checker, n *a.Assert) error
@@ -165,19 +206,29 @@ type Checker struct {
 	resolveUse func(usePath string) ([]byte, error)
 	reasonMap  reasonMap
 
-	consts    map[t.QID]*a.Const
+	// The topLevelNames map is keyed by the const/status/struct/use
+	// unqualified name (ID, not QID).
+	//
+	// For `use "foo/bar"`, the name is the base name: "bar".
+	topLevelNames map[t.ID]a.Kind
+
+	// These maps are keyed by the const/status/struct name (QID).
+	consts   map[t.QID]*a.Const
+	statuses map[t.QID]*a.Status
+	structs  map[t.QID]*a.Struct
+
+	// These maps are keyed by the func name (QQID).
 	funcs     map[t.QQID]*a.Func
 	localVars map[t.QQID]typeMap
-	statuses  map[t.QID]*a.Status
-	structs   map[t.QID]*a.Struct
-
-	// useBaseNames are the base names of packages referred to by `use
-	// "foo/bar"` lines. The keys are `bar`, not `"foo/bar"`.
-	useBaseNames map[t.ID]struct{}
 
 	builtInSliceFuncs map[t.QQID]*a.Func
 	builtInTableFuncs map[t.QQID]*a.Func
-	unsortedStructs   []*a.Struct
+
+	builtInInterfaces     map[t.QID][]t.QQID
+	builtInInterfaceFuncs map[t.QQID]*a.Func
+	unseenInterfaceImpls  map[t.QQID]*a.Func
+
+	unsortedStructs []*a.Struct
 }
 
 func (c *Checker) checkUse(node *a.Node) error {
@@ -189,11 +240,14 @@ func (c *Checker) checkUse(node *a.Node) error {
 	baseName, err := c.tm.Insert(path.Base(filename))
 	if err != nil {
 		return fmt.Errorf("check: cannot resolve `use %s`: %v", usePath.Str(c.tm), err)
+	} else if c.topLevelNames[baseName] != 0 {
+		return &Error{
+			Err:      fmt.Errorf("check: duplicate top level name %q", baseName.Str(c.tm)),
+			Filename: node.AsUse().Filename(),
+			Line:     node.AsUse().Line(),
+		}
 	}
 	filename += ".wuffs"
-	if _, ok := c.useBaseNames[baseName]; ok {
-		return fmt.Errorf("check: duplicate `use \"etc\"` base name %q", baseName.Str(c.tm))
-	}
 
 	if c.resolveUse == nil {
 		return fmt.Errorf("check: cannot resolve a use declaration")
@@ -237,7 +291,7 @@ func (c *Checker) checkUse(node *a.Node) error {
 			}
 		}
 	}
-	c.useBaseNames[baseName] = struct{}{}
+	c.topLevelNames[baseName] = a.KUse
 	setPlaceholderMBoundsMType(node)
 	return nil
 }
@@ -245,13 +299,20 @@ func (c *Checker) checkUse(node *a.Node) error {
 func (c *Checker) checkStatus(node *a.Node) error {
 	n := node.AsStatus()
 	qid := n.QID()
-	if other, ok := c.statuses[qid]; ok {
+	if qid[0] == 0 {
+		if c.topLevelNames[qid[1]] != 0 {
+			return &Error{
+				Err:      fmt.Errorf("check: duplicate top level name %q", qid[1].Str(c.tm)),
+				Filename: n.Filename(),
+				Line:     n.Line(),
+			}
+		}
+		c.topLevelNames[qid[1]] = a.KStatus
+	} else if c.statuses[qid] != nil {
 		return &Error{
-			Err:           fmt.Errorf("check: duplicate status %s", qid.Str(c.tm)),
-			Filename:      n.Filename(),
-			Line:          n.Line(),
-			OtherFilename: other.Filename(),
-			OtherLine:     other.Line(),
+			Err:      fmt.Errorf("check: duplicate top level name %q", qid.Str(c.tm)),
+			Filename: n.Filename(),
+			Line:     n.Line(),
 		}
 	}
 	c.statuses[qid] = n
@@ -263,13 +324,20 @@ func (c *Checker) checkStatus(node *a.Node) error {
 func (c *Checker) checkConst(node *a.Node) error {
 	n := node.AsConst()
 	qid := n.QID()
-	if other, ok := c.consts[qid]; ok {
+	if qid[0] == 0 {
+		if c.topLevelNames[qid[1]] != 0 {
+			return &Error{
+				Err:      fmt.Errorf("check: duplicate top level name %q", qid[1].Str(c.tm)),
+				Filename: n.Filename(),
+				Line:     n.Line(),
+			}
+		}
+		c.topLevelNames[qid[1]] = a.KConst
+	} else if c.consts[qid] != nil {
 		return &Error{
-			Err:           fmt.Errorf("check: duplicate const %s", qid.Str(c.tm)),
-			Filename:      n.Filename(),
-			Line:          n.Line(),
-			OtherFilename: other.Filename(),
-			OtherLine:     other.Line(),
+			Err:      fmt.Errorf("check: duplicate top level %q", qid.Str(c.tm)),
+			Filename: n.Filename(),
+			Line:     n.Line(),
 		}
 	}
 	c.consts[qid] = n
@@ -327,7 +395,7 @@ func (c *Checker) checkConstElement(n *a.Expr, nb bounds, nLists int) error {
 		return nil
 	}
 	if cv := n.ConstValue(); cv == nil || cv.Cmp(nb[0]) < 0 || cv.Cmp(nb[1]) > 0 {
-		return fmt.Errorf("invalid const value %q not within %v", n.Str(c.tm), nb)
+		return fmt.Errorf("check: invalid const value %q not within %v", n.Str(c.tm), nb)
 	}
 	return nil
 }
@@ -335,21 +403,57 @@ func (c *Checker) checkConstElement(n *a.Expr, nb bounds, nLists int) error {
 func (c *Checker) checkStructDecl(node *a.Node) error {
 	n := node.AsStruct()
 	qid := n.QID()
-	if other, ok := c.structs[qid]; ok {
+	if qid[0] == 0 {
+		if c.topLevelNames[qid[1]] != 0 {
+			return &Error{
+				Err:      fmt.Errorf("check: duplicate top level name %q", qid[1].Str(c.tm)),
+				Filename: n.Filename(),
+				Line:     n.Line(),
+			}
+		}
+		c.topLevelNames[qid[1]] = a.KStruct
+	} else if c.structs[qid] != nil {
 		return &Error{
-			Err:           fmt.Errorf("check: duplicate struct %s", qid.Str(c.tm)),
-			Filename:      n.Filename(),
-			Line:          n.Line(),
-			OtherFilename: other.Filename(),
-			OtherLine:     other.Line(),
+			Err:      fmt.Errorf("check: duplicate top level name %q", qid.Str(c.tm)),
+			Filename: n.Filename(),
+			Line:     n.Line(),
 		}
 	}
 	c.structs[qid] = n
 	c.unsortedStructs = append(c.unsortedStructs, n)
 	setPlaceholderMBoundsMType(n.AsNode())
 
+	// Add entries to c.unseenInterfaceImpls that later stages remove, checking
+	// that the concrete type (in this package) actually implements the
+	// interfaces that it claims to.
+	for _, o := range n.Implements() {
+		// For example, qid and ifaceType could be "<>.hasher" (i.e. defined in
+		// this package, not the base package) and "base.hasher_u32".
+		//
+		// The "<>" denotes an empty element of a t.QID or t.QQID.
+		o := o.AsTypeExpr()
+		ifaceType := o.QID()
+
+		if (o.Decorator() != 0) || (ifaceType[0] != t.IDBase) ||
+			!builtin.InterfacesMap[ifaceType[1].Str(c.tm)] {
+			return fmt.Errorf("check: invalid interface type %q", o.Str(c.tm))
+		}
+		o.AsNode().SetMBounds(bounds{zero, zero})
+		o.AsNode().SetMType(typeExprTypeExpr)
+
+		if qid[0] != 0 {
+			continue
+		}
+		for _, ifaceFunc := range c.builtInInterfaces[ifaceType] {
+			// Continuing the example, ifaceFunc could be
+			// "base.hasher_u32.update_u32".
+			c.unseenInterfaceImpls[t.QQID{qid[0], qid[1], ifaceFunc[2]}] =
+				c.builtInInterfaceFuncs[ifaceFunc]
+		}
+	}
+
 	// A struct declaration implies a reset method.
-	in := a.NewStruct(0, n.Filename(), n.Line(), t.IDArgs, nil)
+	in := a.NewStruct(0, n.Filename(), n.Line(), t.IDArgs, nil, nil)
 	f := a.NewFunc(a.EffectImpure.AsFlags(), n.Filename(), n.Line(), qid[1], t.IDReset, in, nil, nil, nil)
 	if qid[0] != 0 {
 		f.AsNode().AsRaw().SetPackage(c.tm, qid[0])
@@ -462,13 +566,11 @@ func (c *Checker) checkFuncSignature(node *a.Node) error {
 	// implicit "return out"?
 
 	qqid := n.QQID()
-	if other, ok := c.funcs[qqid]; ok {
+	if c.funcs[qqid] != nil {
 		return &Error{
-			Err:           fmt.Errorf("check: duplicate function %s", qqid.Str(c.tm)),
-			Filename:      n.Filename(),
-			Line:          n.Line(),
-			OtherFilename: other.Filename(),
-			OtherLine:     other.Line(),
+			Err:      fmt.Errorf("check: duplicate top level name %q", qqid.Str(c.tm)),
+			Filename: n.Filename(),
+			Line:     n.Line(),
 		}
 	}
 	c.funcs[qqid] = n
@@ -529,6 +631,37 @@ func (c *Checker) checkFuncContract(node *a.Node) error {
 	return nil
 }
 
+func (c *Checker) checkFuncImplements(node *a.Node) error {
+	n := node.AsFunc()
+	o := c.unseenInterfaceImpls[n.QQID()]
+	if o == nil {
+		return nil
+	}
+
+	if (n.Effect() != o.Effect()) || !n.Out().Eq(o.Out()) {
+		return nil
+	}
+
+	// Check that the args (the implicit In types) match.
+	nArgs := n.In().Fields()
+	oArgs := o.In().Fields()
+	if len(nArgs) != len(oArgs) {
+		return nil
+	}
+	for i := range nArgs {
+		na := nArgs[i].AsField()
+		oa := oArgs[i].AsField()
+		if na.Name() != oa.Name() || !na.XType().Eq(oa.XType()) {
+			return nil
+		}
+	}
+
+	// TODO: check that n.Asserts() matches o.Asserts().
+
+	delete(c.unseenInterfaceImpls, n.QQID())
+	return nil
+}
+
 func (c *Checker) checkFuncBody(node *a.Node) error {
 	n := node.AsFunc()
 	if len(n.Body()) == 0 {
@@ -575,6 +708,30 @@ func (c *Checker) checkFuncBody(node *a.Node) error {
 	}
 
 	return nil
+}
+
+func (c *Checker) checkInterfacesSatisfied(node *a.Node) error {
+	if len(c.unseenInterfaceImpls) == 0 {
+		return nil
+	}
+
+	// Pick the largest t.QQID key, despite randomized map iteration order, for
+	// deterministic error messages. The zero-valued t.QQID is LessThan any
+	// non-zero value.
+	method, iface := t.QQID{}, t.QID{}
+	for qqid, f := range c.unseenInterfaceImpls {
+		if method.LessThan(qqid) {
+			fqqid := f.QQID()
+			method, iface = qqid, t.QID{fqqid[0], fqqid[1]}
+		}
+	}
+	// For example, at the end of the loop above, method and iface could be
+	// "<>.hasher.update_u32" and "base.hasher_u32".
+	//
+	// The "<>" denotes an empty element of a t.QID or t.QQID.
+
+	return fmt.Errorf("check: %q does not implement %q: no matching %q method",
+		method[1].Str(c.tm), iface.Str(c.tm), method[2].Str(c.tm))
 }
 
 func (c *Checker) checkFieldMethodCollisions(node *a.Node) error {
@@ -638,10 +795,14 @@ func nodeDebugString(tm *t.Map, n *a.Node) string {
 
 func allTypeChecked(tm *t.Map, n *a.Node) error {
 	return n.Walk(func(o *a.Node) error {
-		b := o.MBounds()
+		if b := o.MBounds(); (b[0] == nil) || (b[1] == nil) {
+			return fmt.Errorf("check: internal error: unchecked %s (missing bounds)",
+				nodeDebugString(tm, o))
+		}
 		typ := o.MType()
-		if b[0] == nil || b[1] == nil || typ == nil {
-			return fmt.Errorf("check: internal error: unchecked %s", nodeDebugString(tm, o))
+		if typ == nil {
+			return fmt.Errorf("check: internal error: unchecked %s (missing type)",
+				nodeDebugString(tm, o))
 		}
 
 		typOK := false
@@ -678,8 +839,6 @@ type checker struct {
 
 	errFilename string
 	errLine     uint32
-
-	jumpTargets []a.Loop
 
 	facts facts
 }

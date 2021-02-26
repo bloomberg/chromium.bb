@@ -19,8 +19,8 @@ class FilePath;
 
 namespace updater {
 
-bool RegisterUpdateAppsTask(const base::CommandLine& run_command);
-void UnregisterUpdateAppsTask();
+bool RegisterWakeTask(const base::CommandLine& run_command);
+void UnregisterWakeTask();
 
 base::string16 GetComServerClsidRegistryPath(REFCLSID clsid);
 base::string16 GetComServiceClsid();
@@ -28,6 +28,9 @@ base::string16 GetComServiceClsidRegistryPath();
 base::string16 GetComServiceAppidRegistryPath();
 base::string16 GetComIidRegistryPath(REFIID iid);
 base::string16 GetComTypeLibRegistryPath(REFIID iid);
+
+// Returns the interfaces ids of all interfaces declared in IDL of the updater.
+std::vector<GUID> GetInterfaces();
 
 // Parses the run time dependency file which contains all dependencies of
 // the `updater` target. This file is a text file, where each line of

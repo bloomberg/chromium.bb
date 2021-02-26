@@ -274,6 +274,10 @@ class BluetoothTestBase : public testing::Test {
 
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
 
+  // Simulates a signal by the OS that an ongoing discovery aborted because of
+  // some unexpected error.
+  virtual void SimulateLowEnergyDiscoveryFailure();
+
   // Simulates a connected low energy device. Used before starting a low energy
   // discovey session.
   virtual void SimulateConnectedLowEnergyDevice(
@@ -353,12 +357,14 @@ class BluetoothTestBase : public testing::Test {
   // Simulates a connection status change to disconnect.
   virtual void SimulateStatusChangeToDisconnect(BluetoothDevice* device) {}
 
-  // Simulates success of discovering services. |uuids| is used to create a
-  // service for each UUID string. Multiple UUIDs with the same value produce
-  // multiple service instances.
+  // Simulates success of discovering services. |uuids| and |blocked_uuids| are
+  // used to create a service for each UUID string. Multiple UUIDs with the same
+  // value produce multiple service instances. UUIDs in the |blocked_uuids| list
+  // create services which cannot be accessed (WinRT-only).
   virtual void SimulateGattServicesDiscovered(
       BluetoothDevice* device,
-      const std::vector<std::string>& uuids) {}
+      const std::vector<std::string>& uuids,
+      const std::vector<std::string>& blocked_uuids = {}) {}
 
   // Simulates a GATT Services changed event.
   virtual void SimulateGattServicesChanged(BluetoothDevice* device) {}
@@ -628,8 +634,7 @@ class BluetoothTestBase : public testing::Test {
       BluetoothGattService::GattErrorCode error_code);
 
   // Accessors to get callbacks bound to this fixture:
-  base::Closure GetCallback(Call expected);
-  base::OnceClosure GetOnceCallback(Call expected);
+  base::OnceClosure GetCallback(Call expected);
   BluetoothAdapter::CreateAdvertisementCallback GetCreateAdvertisementCallback(
       Call expected);
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
@@ -640,22 +645,22 @@ class BluetoothTestBase : public testing::Test {
       Call expected);
   BluetoothRemoteGattCharacteristic::NotifySessionCallback
   GetNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
-  base::Closure GetStopNotifyCallback(Call expected);
-  base::Closure GetStopNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
+  base::OnceClosure GetStopNotifyCallback(Call expected);
+  base::OnceClosure GetStopNotifyCheckForPrecedingCalls(
+      int num_of_preceding_calls);
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
-  BluetoothAdapter::ErrorOnceCallback GetErrorOnceCallback(Call expected);
   BluetoothAdapter::AdvertisementErrorCallback GetAdvertisementErrorCallback(
       Call expected);
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);
-  base::Callback<void(BluetoothRemoteGattService::GattErrorCode)>
+  base::OnceCallback<void(BluetoothRemoteGattService::GattErrorCode)>
   GetGattErrorCallback(Call expected);
   BluetoothRemoteGattCharacteristic::NotifySessionCallback
   GetReentrantStartNotifySessionSuccessCallback(
       Call expected,
       BluetoothRemoteGattCharacteristic* characteristic);
-  base::Callback<void(BluetoothGattService::GattErrorCode)>
+  base::OnceCallback<void(BluetoothGattService::GattErrorCode)>
   GetReentrantStartNotifySessionErrorCallback(
       Call expected,
       BluetoothRemoteGattCharacteristic* characteristic,

@@ -89,7 +89,7 @@ void PerfTestWithBVC::SetUp() {
   bookmarks::test::WaitForBookmarkModelToLoad(
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_browser_state_.get()));
-  ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(false));
+  ASSERT_TRUE(chrome_browser_state_->CreateHistoryService());
 
   // Force creation of AutocompleteClassifier instance.
   ios::AutocompleteClassifierFactory::GetForBrowserState(
@@ -123,7 +123,8 @@ void PerfTestWithBVC::SetUp() {
                      initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
       browserContainerViewController:[[BrowserContainerViewController alloc]
-                                         init]];
+                                         init]
+                          dispatcher:browser_->GetCommandDispatcher()];
   [bvc_ setActive:YES];
 
   // Create a real window to give to the browser view controller.

@@ -23,7 +23,6 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_info_label.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/i18n/number_formatting.h"
@@ -60,7 +59,7 @@ namespace ash {
 namespace tray {
 namespace {
 
-const int kMobileNetworkBatteryIconSize = 14;
+const int kMobileNetworkBatteryIconSize = 18;
 const int kPowerStatusPaddingRight = 10;
 
 bool IsSecondaryUser() {
@@ -72,8 +71,7 @@ bool IsSecondaryUser() {
 
 SkColor GetIconColor() {
   return AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      AshColorProvider::AshColorMode::kDark);
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
 }
 
 bool IsManagedByPolicy(const NetworkInfo& info) {
@@ -186,11 +184,6 @@ void NetworkListView::OnGetNetworkStateList(
     info->signal_strength =
         chromeos::network_config::GetWirelessSignalStrength(network.get());
 
-    if (network->captive_portal_provider) {
-      info->captive_portal_provider_name =
-          network->captive_portal_provider->name;
-    }
-
     info->type = network->type;
     info->source = network->source;
 
@@ -258,8 +251,8 @@ NetworkListView::UpdateNetworkListEntries() {
   int index = 0;
 
   const NetworkStateProperties* default_network = model()->default_network();
-  bool using_proxy = default_network &&
-                     default_network->proxy_mode == ProxyMode::kFixedServers;
+  bool using_proxy =
+      default_network && default_network->proxy_mode != ProxyMode::kDirect;
   // Show a warning that the connection might be monitored if connected to a VPN
   // or if the default network has a proxy installed.
   if (vpn_connected_ || using_proxy) {
@@ -394,8 +387,6 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
                                  kPowerStatusPaddingRight)));
   } else {
     icon = CreatePolicyView(info);
-    if (!icon)
-      icon = CreateControlledByExtensionView(info);
     if (icon)
       view->AddRightView(icon);
   }
@@ -516,7 +507,7 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   views::ImageView* icon = new views::ImageView;
   const SkColor icon_color = GetIconColor();
   icon->SetPreferredSize(gfx::Size(kMenuIconSize, kMenuIconSize));
-  icon->EnableCanvasFlippingForRTLUI(true);
+  icon->SetFlipCanvasOnPaintForRTLUI(true);
   PowerStatus::BatteryImageInfo icon_info;
   icon_info.charge_percent = info.battery_percentage;
   icon->SetImage(PowerStatus::GetBatteryImage(
@@ -524,7 +515,7 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
       AshColorProvider::GetSecondToneColor(icon_color), icon_color));
 
   // Show the numeric battery percentage on hover.
-  icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));
+  icon->SetTooltipText(base::FormatPercent(info.battery_percentage));
 
   return icon;
 }
@@ -538,21 +529,6 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
       gfx::CreateVectorIcon(kSystemMenuBusinessIcon, GetIconColor()));
-  return controlled_icon;
-}
-
-views::View* NetworkListView::CreateControlledByExtensionView(
-    const NetworkInfo& info) {
-  if (info.captive_portal_provider_name.empty())
-    return nullptr;
-
-  views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
-  controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kCaptivePortalIcon, GetIconColor()));
-  controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16(info.captive_portal_provider_name)));
-  controlled_icon->SetID(VIEW_ID_EXTENSION_CONTROLLED_WIFI);
   return controlled_icon;
 }
 
@@ -614,7 +590,7 @@ void NetworkListView::UpdateInfoLabel(int message_id,
     return;
   }
   if (!info_label)
-    info_label = new TrayInfoLabel(nullptr /* delegate */, message_id);
+    info_label = new TrayInfoLabel(message_id);
   else
     info_label->Update(message_id);
 
@@ -679,8 +655,11 @@ TriView* NetworkListView::CreateConnectionWarning() {
   label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING));
   label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-  style.SetupLabel(label);
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(
+      label, TrayPopupUtils::FontStyle::kDetailedViewLabel);
+
   connection_warning->AddView(TriView::Container::CENTER, label);
   connection_warning->SetContainerBorder(
       TriView::Container::CENTER, views::CreateEmptyBorder(gfx::Insets(

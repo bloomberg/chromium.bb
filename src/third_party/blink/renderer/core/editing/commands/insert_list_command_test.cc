@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 
@@ -68,6 +69,21 @@ TEST_F(InsertListCommandTest, UnlistifyParagraphCrashOnVisuallyEmptyParagraph) {
       "|<textarea style=\"float:left;\"></textarea>"
       "</ul></dl>",
       GetSelectionTextFromBody());
+}
+
+TEST_F(InsertListCommandTest, UnlistifyParagraphCrashOnNonLi) {
+  // Checks that InsertOrderedList does not cause a crash when the caret is in a
+  // non-<li> child of a list which contains non-<li> blocks.
+  GetDocument().setDesignMode("on");
+  Selection().SetSelection(SetSelectionTextToBody("<ol><div>|"
+                                                  "<p>foo</p><p>bar</p>"
+                                                  "</div></ol>"),
+                           SetSelectionOptions());
+  auto* command = MakeGarbageCollected<InsertListCommand>(
+      GetDocument(), InsertListCommand::kOrderedList);
+  // Crash happens here.
+  EXPECT_TRUE(command->Apply());
+  EXPECT_EQ("|foo<br><ol><p>bar</p></ol>", GetSelectionTextFromBody());
 }
 
 // Refer https://crbug.com/798176

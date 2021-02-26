@@ -17,6 +17,8 @@
 
 #include "dawn_native/Error.h"
 #include "dawn_native/RingBufferAllocator.h"
+#include "dawn_native/d3d12/IntegerTypes.h"
+#include "dawn_native/d3d12/PageableD3D12.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
 
 #include <list>
@@ -32,6 +34,16 @@ namespace dawn_native { namespace d3d12 {
     class Device;
     class GPUDescriptorHeapAllocation;
 
+    class ShaderVisibleDescriptorHeap : public Pageable {
+      public:
+        ShaderVisibleDescriptorHeap(ComPtr<ID3D12DescriptorHeap> d3d12DescriptorHeap,
+                                    uint64_t size);
+        ID3D12DescriptorHeap* GetD3D12DescriptorHeap() const;
+
+      private:
+        ComPtr<ID3D12DescriptorHeap> mD3d12DescriptorHeap;
+    };
+
     class ShaderVisibleDescriptorAllocator {
       public:
         static ResultOrError<std::unique_ptr<ShaderVisibleDescriptorAllocator>> Create(
@@ -43,29 +55,34 @@ namespace dawn_native { namespace d3d12 {
         // Returns true if the allocation was successful, when false is returned the current heap is
         // full and AllocateAndSwitchShaderVisibleHeap() must be called.
         bool AllocateGPUDescriptors(uint32_t descriptorCount,
-                                    Serial pendingSerial,
+                                    ExecutionSerial pendingSerial,
                                     D3D12_CPU_DESCRIPTOR_HANDLE* baseCPUDescriptor,
                                     GPUDescriptorHeapAllocation* allocation);
 
-        void Tick(uint64_t completedSerial);
+        void Tick(ExecutionSerial completedSerial);
 
         ID3D12DescriptorHeap* GetShaderVisibleHeap() const;
         MaybeError AllocateAndSwitchShaderVisibleHeap();
 
         // For testing purposes only.
-        Serial GetShaderVisibleHeapSerialForTesting() const;
+        HeapVersionID GetShaderVisibleHeapSerialForTesting() const;
         uint64_t GetShaderVisibleHeapSizeForTesting() const;
         uint64_t GetShaderVisiblePoolSizeForTesting() const;
+        bool IsShaderVisibleHeapLockedResidentForTesting() const;
+        bool IsLastShaderVisibleHeapInLRUForTesting() const;
 
         bool IsAllocationStillValid(const GPUDescriptorHeapAllocation& allocation) const;
 
       private:
         struct SerialDescriptorHeap {
-            Serial heapSerial;
-            ComPtr<ID3D12DescriptorHeap> heap;
+            ExecutionSerial heapSerial;
+            std::unique_ptr<ShaderVisibleDescriptorHeap> heap;
         };
 
-        ComPtr<ID3D12DescriptorHeap> mHeap;
+        ResultOrError<std::unique_ptr<ShaderVisibleDescriptorHeap>> AllocateHeap(
+            uint32_t descriptorCount) const;
+
+        std::unique_ptr<ShaderVisibleDescriptorHeap> mHeap;
         RingBufferAllocator mAllocator;
         std::list<SerialDescriptorHeap> mPool;
         D3D12_DESCRIPTOR_HEAP_TYPE mHeapType;
@@ -75,9 +92,13 @@ namespace dawn_native { namespace d3d12 {
         // The serial value of 0 means the shader-visible heaps have not been allocated.
         // This value is never returned in the GPUDescriptorHeapAllocation after
         // AllocateGPUDescriptors() is called.
-        Serial mHeapSerial = 0;
+        HeapVersionID mHeapSerial = HeapVersionID(0);
 
         uint32_t mSizeIncrement;
+
+        // The descriptor count is the current size of the heap in number of descriptors.
+        // This is stored on the allocator to avoid extra conversions.
+        uint32_t mDescriptorCount = 0;
     };
 }}  // namespace dawn_native::d3d12
 

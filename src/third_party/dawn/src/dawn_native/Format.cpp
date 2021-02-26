@@ -13,68 +13,88 @@
 // limitations under the License.
 
 #include "dawn_native/Format.h"
+
 #include "dawn_native/Device.h"
 #include "dawn_native/Extensions.h"
+#include "dawn_native/Texture.h"
 
 #include <bitset>
 
 namespace dawn_native {
 
+    namespace {
+
+        static const AspectInfo kStencil8AspectInfo = {{1, 1, 1},
+                                                       wgpu::TextureComponentType::Uint,
+                                                       ComponentTypeBit::Uint};
+    }
+
     // Format
 
-    // static
-    Format::Type Format::TextureComponentTypeToFormatType(
-        wgpu::TextureComponentType componentType) {
-        switch (componentType) {
+    ComponentTypeBit ToComponentTypeBit(wgpu::TextureComponentType type) {
+        switch (type) {
             case wgpu::TextureComponentType::Float:
             case wgpu::TextureComponentType::Sint:
             case wgpu::TextureComponentType::Uint:
+            case wgpu::TextureComponentType::DepthComparison:
+                // When the compiler complains that you need to add a case statement here, please
+                // also add a corresponding static assert below!
                 break;
-            default:
-                UNREACHABLE();
         }
-        // Check that Type correctly mirrors TextureComponentType except for "Other".
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Float) == Type::Float, "");
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Sint) == Type::Sint, "");
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Uint) == Type::Uint, "");
-        return static_cast<Type>(componentType);
-    }
 
-    // static
-    wgpu::TextureComponentType Format::FormatTypeToTextureComponentType(Type type) {
-        switch (type) {
-            case Type::Float:
-            case Type::Sint:
-            case Type::Uint:
-                break;
-            default:
-                UNREACHABLE();
-        }
-        // Check that Type correctly mirrors TextureComponentType except for "Other".
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Float) == Type::Float, "");
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Sint) == Type::Sint, "");
-        static_assert(static_cast<Type>(wgpu::TextureComponentType::Uint) == Type::Uint, "");
-        return static_cast<wgpu::TextureComponentType>(type);
+        // Check that ComponentTypeBit bits are in the same position / order as the respective
+        // wgpu::TextureComponentType value.
+        static_assert(ComponentTypeBit::Float ==
+                          static_cast<ComponentTypeBit>(
+                              1 << static_cast<uint32_t>(wgpu::TextureComponentType::Float)),
+                      "");
+        static_assert(ComponentTypeBit::Uint ==
+                          static_cast<ComponentTypeBit>(
+                              1 << static_cast<uint32_t>(wgpu::TextureComponentType::Uint)),
+                      "");
+        static_assert(ComponentTypeBit::Sint ==
+                          static_cast<ComponentTypeBit>(
+                              1 << static_cast<uint32_t>(wgpu::TextureComponentType::Sint)),
+                      "");
+        static_assert(
+            ComponentTypeBit::DepthComparison ==
+                static_cast<ComponentTypeBit>(
+                    1 << static_cast<uint32_t>(wgpu::TextureComponentType::DepthComparison)),
+            "");
+        return static_cast<ComponentTypeBit>(1 << static_cast<uint32_t>(type));
     }
 
     bool Format::IsColor() const {
-        return aspect == Aspect::Color;
+        return aspects == Aspect::Color;
     }
 
     bool Format::HasDepth() const {
-        return aspect == Depth || aspect == DepthStencil;
+        return (aspects & Aspect::Depth) != 0;
     }
 
     bool Format::HasStencil() const {
-        return aspect == Stencil || aspect == DepthStencil;
+        return (aspects & Aspect::Stencil) != 0;
     }
 
     bool Format::HasDepthOrStencil() const {
-        return aspect != Color;
+        return (aspects & (Aspect::Depth | Aspect::Stencil)) != 0;
     }
 
-    bool Format::HasComponentType(Type componentType) const {
-        return componentType == type;
+    const AspectInfo& Format::GetAspectInfo(wgpu::TextureAspect aspect) const {
+        return GetAspectInfo(ConvertAspect(*this, aspect));
+    }
+
+    const AspectInfo& Format::GetAspectInfo(Aspect aspect) const {
+        ASSERT(HasOneBit(aspect));
+        ASSERT(aspects & aspect);
+
+        // The stencil aspect is the only aspect that's not the first aspect. Since it is always the
+        // same aspect information, special case it to return a constant AspectInfo.
+        if (aspect == Aspect::Stencil) {
+            return kStencil8AspectInfo;
+        } else {
+            return firstAspect;
+        }
     }
 
     size_t Format::GetIndex() const {
@@ -97,8 +117,7 @@ namespace dawn_native {
         FormatTable table;
         std::bitset<kKnownFormatCount> formatsSet;
 
-        using Type = Format::Type;
-        using Aspect = Format::Aspect;
+        using Type = wgpu::TextureComponentType;
 
         auto AddFormat = [&table, &formatsSet](Format format) {
             size_t index = ComputeFormatIndex(format.format);
@@ -107,6 +126,10 @@ namespace dawn_native {
             // This checks that each format is set at most once, the first part of checking that all
             // formats are set exactly once.
             ASSERT(!formatsSet[index]);
+
+            // Vulkan describes bytesPerRow in units of texels. If there's any format for which this
+            // ASSERT isn't true, then additional validation on bytesPerRow must be added.
+            ASSERT((kTextureBytesPerRowAlignment % format.firstAspect.block.byteSize) == 0);
 
             table[index] = format;
             formatsSet.set(index);
@@ -121,15 +144,16 @@ namespace dawn_native {
             internalFormat.isCompressed = false;
             internalFormat.isSupported = true;
             internalFormat.supportsStorageUsage = supportsStorageUsage;
-            internalFormat.aspect = Aspect::Color;
-            internalFormat.type = type;
-            internalFormat.blockByteSize = byteSize;
-            internalFormat.blockWidth = 1;
-            internalFormat.blockHeight = 1;
+            internalFormat.aspects = Aspect::Color;
+            internalFormat.firstAspect.block.byteSize = byteSize;
+            internalFormat.firstAspect.block.width = 1;
+            internalFormat.firstAspect.block.height = 1;
+            internalFormat.firstAspect.baseType = type;
+            internalFormat.firstAspect.supportedComponentTypes = ToComponentTypeBit(type);
             AddFormat(internalFormat);
         };
 
-        auto AddDepthStencilFormat = [&AddFormat](wgpu::TextureFormat format, Format::Aspect aspect,
+        auto AddDepthStencilFormat = [&AddFormat](wgpu::TextureFormat format, Aspect aspects,
                                                   uint32_t byteSize) {
             Format internalFormat;
             internalFormat.format = format;
@@ -137,27 +161,13 @@ namespace dawn_native {
             internalFormat.isCompressed = false;
             internalFormat.isSupported = true;
             internalFormat.supportsStorageUsage = false;
-            internalFormat.aspect = aspect;
-            internalFormat.type = Type::Other;
-            internalFormat.blockByteSize = byteSize;
-            internalFormat.blockWidth = 1;
-            internalFormat.blockHeight = 1;
-            AddFormat(internalFormat);
-        };
-
-        auto AddDepthFormat = [&AddFormat](wgpu::TextureFormat format, uint32_t byteSize,
-                                           Type type) {
-            Format internalFormat;
-            internalFormat.format = format;
-            internalFormat.isRenderable = true;
-            internalFormat.isCompressed = false;
-            internalFormat.isSupported = true;
-            internalFormat.supportsStorageUsage = false;
-            internalFormat.aspect = Aspect::Depth;
-            internalFormat.type = type;
-            internalFormat.blockByteSize = byteSize;
-            internalFormat.blockWidth = 1;
-            internalFormat.blockHeight = 1;
+            internalFormat.aspects = aspects;
+            internalFormat.firstAspect.block.byteSize = byteSize;
+            internalFormat.firstAspect.block.width = 1;
+            internalFormat.firstAspect.block.height = 1;
+            internalFormat.firstAspect.baseType = wgpu::TextureComponentType::Float;
+            internalFormat.firstAspect.supportedComponentTypes =
+                ComponentTypeBit::Float | ComponentTypeBit::DepthComparison;
             AddFormat(internalFormat);
         };
 
@@ -169,11 +179,12 @@ namespace dawn_native {
             internalFormat.isCompressed = true;
             internalFormat.isSupported = isSupported;
             internalFormat.supportsStorageUsage = false;
-            internalFormat.aspect = Aspect::Color;
-            internalFormat.type = Type::Float;
-            internalFormat.blockByteSize = byteSize;
-            internalFormat.blockWidth = width;
-            internalFormat.blockHeight = height;
+            internalFormat.aspects = Aspect::Color;
+            internalFormat.firstAspect.block.byteSize = byteSize;
+            internalFormat.firstAspect.block.width = width;
+            internalFormat.firstAspect.block.height = height;
+            internalFormat.firstAspect.baseType = wgpu::TextureComponentType::Float;
+            internalFormat.firstAspect.supportedComponentTypes = ComponentTypeBit::Float;
             AddFormat(internalFormat);
         };
 
@@ -210,7 +221,8 @@ namespace dawn_native {
         AddColorFormat(wgpu::TextureFormat::BGRA8UnormSrgb, true, false, 4, Type::Float);
         AddColorFormat(wgpu::TextureFormat::RGB10A2Unorm, true, false, 4, Type::Float);
 
-        AddColorFormat(wgpu::TextureFormat::RG11B10Float, false, false, 4, Type::Float);
+        AddColorFormat(wgpu::TextureFormat::RG11B10Ufloat, false, false, 4, Type::Float);
+        AddColorFormat(wgpu::TextureFormat::RGB9E5Ufloat, false, false, 4, Type::Float);
 
         // 8 bytes color formats
         AddColorFormat(wgpu::TextureFormat::RG32Uint, true, true, 8, Type::Uint);
@@ -225,14 +237,13 @@ namespace dawn_native {
         AddColorFormat(wgpu::TextureFormat::RGBA32Sint, true, true, 16, Type::Sint);
         AddColorFormat(wgpu::TextureFormat::RGBA32Float, true, true, 16, Type::Float);
 
-        // Depth only formats
-        AddDepthFormat(wgpu::TextureFormat::Depth32Float, 4, Type::Float);
-
-        // Packed depth/depth-stencil formats
+        // Depth-stencil formats
+        AddDepthStencilFormat(wgpu::TextureFormat::Depth32Float, Aspect::Depth, 4);
         AddDepthStencilFormat(wgpu::TextureFormat::Depth24Plus, Aspect::Depth, 4);
         // TODO(cwallez@chromium.org): It isn't clear if this format should be copyable
         // because its size isn't well defined, is it 4, 5 or 8?
-        AddDepthStencilFormat(wgpu::TextureFormat::Depth24PlusStencil8, Aspect::DepthStencil, 4);
+        AddDepthStencilFormat(wgpu::TextureFormat::Depth24PlusStencil8,
+                              Aspect::Depth | Aspect::Stencil, 4);
 
         // BC compressed formats
         bool isBCFormatSupported = device->IsExtensionEnabled(Extension::TextureCompressionBC);
@@ -246,7 +257,7 @@ namespace dawn_native {
         AddCompressedFormat(wgpu::TextureFormat::BC3RGBAUnormSrgb, 16, 4, 4, isBCFormatSupported);
         AddCompressedFormat(wgpu::TextureFormat::BC5RGSnorm, 16, 4, 4, isBCFormatSupported);
         AddCompressedFormat(wgpu::TextureFormat::BC5RGUnorm, 16, 4, 4, isBCFormatSupported);
-        AddCompressedFormat(wgpu::TextureFormat::BC6HRGBSfloat, 16, 4, 4, isBCFormatSupported);
+        AddCompressedFormat(wgpu::TextureFormat::BC6HRGBFloat, 16, 4, 4, isBCFormatSupported);
         AddCompressedFormat(wgpu::TextureFormat::BC6HRGBUfloat, 16, 4, 4, isBCFormatSupported);
         AddCompressedFormat(wgpu::TextureFormat::BC7RGBAUnorm, 16, 4, 4, isBCFormatSupported);
         AddCompressedFormat(wgpu::TextureFormat::BC7RGBAUnormSrgb, 16, 4, 4, isBCFormatSupported);

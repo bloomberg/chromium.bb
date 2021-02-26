@@ -56,8 +56,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
 
   bool got_key_event = false;
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* child = new DeleteOnKeyEventView(&got_key_event);
   content->AddChildView(child);
@@ -115,7 +114,7 @@ class TestContextMenuController : public ContextMenuController {
 // and VKEY_APPS) by the pre-target handler installed on RootView.
 TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   // This behavior is intentionally unsupported on macOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -126,9 +125,8 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
       static_cast<internal::RootView*>(widget.GetRootView());
 
   TestContextMenuController controller;
-  View* focused_view = new View;
+  View* focused_view = widget.SetContentsView(std::make_unique<View>());
   focused_view->set_context_menu_controller(&controller);
-  widget.SetContentsView(focused_view);
   focused_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   focused_view->RequestFocus();
 
@@ -195,9 +193,8 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
   // Create a view capable of showing the context menu with two children one of
   // which handles all gesture events (e.g. a button).
   TestContextMenuController controller;
-  View* parent_view = new View;
+  View* parent_view = widget.SetContentsView(std::make_unique<View>());
   parent_view->set_context_menu_controller(&controller);
-  widget.SetContentsView(parent_view);
 
   View* gesture_handling_child_view = new GestureHandlingView;
   gesture_handling_child_view->SetBoundsRect(gfx::Rect(10, 10));
@@ -269,10 +266,9 @@ TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
   // which handles all gesture events (e.g. a button). Also mark this view
   // as disabled.
   TestContextMenuController controller;
-  View* parent_view = new View;
+  View* parent_view = widget.SetContentsView(std::make_unique<View>());
   parent_view->set_context_menu_controller(&controller);
   parent_view->SetEnabled(false);
-  widget.SetContentsView(parent_view);
 
   View* gesture_handling_child_view = new GestureHandlingView;
   gesture_handling_child_view->SetBoundsRect(gfx::Rect(10, 10));
@@ -413,8 +409,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   bool view_destroyed = false;
   View* child = new DeleteViewOnEvent(ui::ET_MOUSE_EXITED, &view_destroyed);
@@ -450,8 +445,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   bool view_destroyed = false;
   View* child = new DeleteViewOnEvent(ui::ET_MOUSE_ENTERED, &view_destroyed);
@@ -489,8 +483,7 @@ TEST_F(RootViewTest, RemoveViewOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   // |child| gets removed without being deleted, so make it a local
   // to prevent test memory leak.
@@ -529,8 +522,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseExitDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -565,8 +557,7 @@ TEST_F(RootViewTest,
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -603,8 +594,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -657,10 +647,10 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 
-  View* content = new View();
+  auto content = std::make_unique<View>();
   View* child = new DeleteWidgetOnMouseExit(widget);
   content->AddChildView(child);
-  widget->SetContentsView(content);
+  widget->SetContentsView(std::move(content));
 
   // Make |child| smaller than the containing Widget and RootView.
   child->SetBounds(100, 100, 100, 100);
@@ -693,10 +683,9 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 
-  View* content = new View();
   View* child = new DeleteWidgetOnMouseExit(widget);
   View* subchild = new View();
-  widget->SetContentsView(content);
+  View* content = widget->SetContentsView(std::make_unique<View>());
   content->AddChildView(child);
   child->AddChildView(subchild);
 
@@ -706,7 +695,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
   subchild->SetBounds(0, 0, 100, 100);
 
   // Make mouse enter and exit events get propagated from |subchild| to |child|.
-  child->set_notify_enter_exit_on_child(true);
+  child->SetNotifyEnterExitOnChild(true);
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget->GetRootView());
@@ -774,7 +763,7 @@ TEST_F(RootViewDesktopNativeWidgetTest, SingleLayoutDuringInit) {
   widget->CloseNow();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Tests that AnnounceText sets up the correct text value on the hidden view,
 // and that the resulting hidden view actually stays hidden.
@@ -804,7 +793,7 @@ TEST_F(RootViewTest, AnnounceTextTest) {
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 TEST_F(RootViewTest, MouseEventDispatchedToClosestEnabledView) {
   Widget widget;

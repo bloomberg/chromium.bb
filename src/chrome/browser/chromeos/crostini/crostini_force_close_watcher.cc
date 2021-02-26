@@ -56,7 +56,9 @@ ForceCloseWatcher::ForceCloseWatcher(std::unique_ptr<Delegate> delegate)
   delegate_->Watched(this);
 }
 
-ForceCloseWatcher::~ForceCloseWatcher() = default;
+ForceCloseWatcher::~ForceCloseWatcher() {
+  CHECK(!IsInObserverList());
+}
 
 ShellSurfaceForceCloseDelegate::ShellSurfaceForceCloseDelegate(
     exo::ShellSurfaceBase* shell_surface,
@@ -69,7 +71,9 @@ void ShellSurfaceForceCloseDelegate::ForceClose() {
   GetClosableWidget()->CloseNow();
 }
 
-ShellSurfaceForceCloseDelegate::~ShellSurfaceForceCloseDelegate() = default;
+ShellSurfaceForceCloseDelegate::~ShellSurfaceForceCloseDelegate() {
+  CHECK(!IsInObserverList());
+}
 
 views::Widget* ShellSurfaceForceCloseDelegate::GetClosableWidget() {
   DCHECK(shell_surface_->GetWidget());
@@ -106,8 +110,10 @@ void ShellSurfaceForceCloseDelegate::Hide() {
 }
 
 void ShellSurfaceForceCloseDelegate::OnWidgetDestroying(views::Widget* widget) {
-  if (current_dialog_)
+  if (current_dialog_) {
     current_dialog_->RemoveObserver(this);
+    current_dialog_ = nullptr;
+  }
 }
 
 }  //  namespace crostini

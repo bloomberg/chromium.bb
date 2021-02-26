@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
@@ -28,7 +28,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -146,7 +146,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   void DetectVideoAndHangUp() {
     StartDetectingVideo(left_tab_, "remote-view");
     StartDetectingVideo(right_tab_, "remote-view");
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // Video is choppy on Mac OS X. http://crbug.com/443542.
     WaitForVideoToPlay(left_tab_);
     WaitForVideoToPlay(right_tab_);
@@ -161,7 +161,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 
 // TODO(898546): many of these tests are failing on ASan builds.
 // They are also flaky crashers on Linux.
-#if defined(ADDRESS_SANITIZER) || defined(OS_LINUX)
+#if defined(ADDRESS_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 class DISABLED_WebRtcBrowserTest : public WebRtcBrowserTest {};
 #else
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(jam): this test only on 10.12.
   if (base::mac::IsOS10_12())
     return;

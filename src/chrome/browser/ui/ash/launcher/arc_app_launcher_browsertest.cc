@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -17,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -27,7 +29,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
@@ -36,6 +38,11 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
+#include "components/exo/test/exo_test_helper.h"
+#include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/display/types/display_constants.h"
@@ -84,7 +91,13 @@ constexpr char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
 constexpr char kTestShelfGroup[] = "shelf_group";
 constexpr char kTestShelfGroup2[] = "shelf_group_2";
 constexpr char kTestShelfGroup3[] = "shelf_group_3";
+constexpr char kTestLogicalWindow[] = "logical_window1";
+constexpr char kTestLogicalWindow2[] = "logical_window2";
+constexpr char kTestWindowTitle[] = "window1";
+constexpr char kTestWindowTitle2[] = "window2";
+constexpr char kTestWindowTitle3[] = "window3";
 constexpr int kAppAnimatedThresholdMs = 100;
+constexpr int kGeneratedIconSize = 32;
 
 std::string GetTestApp1Id(const std::string& package_name) {
   return ArcAppListPrefs::GetAppId(package_name, kTestAppActivity);
@@ -157,6 +170,21 @@ std::string CreateIntentUriWithShelfGroup(const std::string& shelf_group_id) {
                             shelf_group_id.c_str());
 }
 
+std::string CreateIntentUriWithShelfGroupAndLogicalWindow(
+    const std::string& shelf_group_id,
+    const std::string& logical_window_id) {
+  return base::StringPrintf(
+      "#Intent;S.org.chromium.arc.logical_window_id=%s;"
+      "S.org.chromium.arc.shelf_group_id=%s;end",
+      logical_window_id.c_str(), shelf_group_id.c_str());
+}
+
+ash::ShelfItemDelegate::AppMenuItems GetAppMenuItems(
+    ash::ShelfItemDelegate* delegate,
+    int event_flags) {
+  return delegate->GetAppMenuItems(event_flags, base::NullCallback());
+}
+
 }  // namespace
 
 class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
@@ -183,6 +211,13 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
     base::RunLoop run_loop;
     app_prefs()->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
+
+    // Allows creation of windows.
+    wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
+  }
+
+  void TearDownOnMainThread() override {
+    wm_helper_.reset();
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {
@@ -286,6 +321,11 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
     return model->GetShelfItemDelegate(ash::ShelfID(id));
   }
 
+  void WaitForDecompressTask() {
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }
 
   // Returns as AppHost interface in order to access to private implementation
@@ -306,8 +346,11 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
     return arc::ArcServiceManager::Get()->arc_bridge_service();
   }
 
+  arc::FakeAppInstance* arc_instance() { return app_instance_.get(); }
+
  private:
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
+  std::unique_ptr<exo::WMHelper> wm_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);
 };
@@ -599,4 +642,193 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
   // Disable ARC, this removes app and as result kills shelf group 3.
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
   EXPECT_FALSE(GetShelfItemDelegate(shelf_id3));
+}
+
+// Test Logical Windows: Among a group of windows that have the same group ID
+// and logical window ID, only one should be represented in the shelf at any
+// time. If that window is closed, a different window of the logical window
+// should be shown instead.
+IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
+  StartInstance();
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, true);
+
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
+  ASSERT_TRUE(info);
+
+  const std::string shelf_id1 =
+      arc::ArcAppShelfId(kTestShelfGroup, app_id).ToString();
+  const std::string shelf_id2 =
+      arc::ArcAppShelfId(kTestShelfGroup2, app_id).ToString();
+
+  // We will use the following 7 windows. Index 0 is skipped because task_ids
+  // start at 1.
+  const char* kTestWindowTitles[8] = {"",
+                                      kTestWindowTitle,
+                                      kTestWindowTitle2,
+                                      kTestWindowTitle,
+                                      kTestWindowTitle2,
+                                      kTestWindowTitle3,
+                                      kTestWindowTitle,
+                                      kTestWindowTitle2};
+  const char* kTestShelfGroups[8] = {"",
+                                     kTestShelfGroup,
+                                     kTestShelfGroup,
+                                     kTestShelfGroup,
+                                     kTestShelfGroup,
+                                     kTestShelfGroup,
+                                     kTestShelfGroup2,
+                                     kTestShelfGroup2};
+  const char* kTestLogicalWindows[8] = {"",
+                                        kTestLogicalWindow,
+                                        kTestLogicalWindow,
+                                        kTestLogicalWindow2,
+                                        kTestLogicalWindow2,
+                                        kTestLogicalWindow2,
+                                        kTestLogicalWindow,
+                                        kTestLogicalWindow};
+  const base::string16 kTestWindowUTF16Title =
+      base::ASCIIToUTF16(kTestWindowTitle);
+  const base::string16 kTestWindowUTF16Title2 =
+      base::ASCIIToUTF16(kTestWindowTitle2);
+  const base::string16 kTestWindowUTF16Title3 =
+      base::ASCIIToUTF16(kTestWindowTitle3);
+
+  // Create windows that will be associated with the tasks. Without this,
+  // GetAppMenuItems() will only return an empty list.
+  exo::test::ExoTestHelper exo_test_helper;
+  std::vector<exo::test::ExoTestWindow> test_windows;
+  for (int task_id = 1; task_id <= 7; task_id++) {
+    test_windows.push_back(
+        exo_test_helper.CreateWindow(640, 480, /* is_modal= */ false));
+    aura::Window* aura_window = test_windows[task_id - 1]
+                                    .shell_surface()
+                                    ->GetWidget()
+                                    ->GetNativeWindow();
+    ASSERT_TRUE(aura_window);
+    exo::SetShellApplicationId(
+        aura_window, base::StringPrintf("org.chromium.arc.%d", task_id));
+  }
+
+  // Group 1 with two logical windows: one with 2, and one with 3 tasks.
+  // First logical window
+  app_host()->OnTaskCreated(1, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                kTestShelfGroups[1], kTestLogicalWindows[1]));
+  arc_instance()->set_icon_response_type(
+      arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SEND_EMPTY);
+  app_host()->OnTaskDescriptionChanged(
+      1, kTestWindowTitles[1],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
+  WaitForDecompressTask();
+  ash::ShelfItemDelegate* delegate1 = GetShelfItemDelegate(shelf_id1);
+
+  ASSERT_TRUE(delegate1);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
+
+  app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                kTestShelfGroups[2], kTestLogicalWindows[2]));
+  app_host()->OnTaskDescriptionChanged(
+      2, kTestWindowTitles[2],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
+
+  WaitForDecompressTask();
+  ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
+
+  // Second logical window
+  for (int task_id = 3; task_id <= 5; task_id++) {
+    app_host()->OnTaskCreated(
+        task_id, info->package_name, info->activity, info->name,
+        CreateIntentUriWithShelfGroupAndLogicalWindow(
+            kTestShelfGroups[task_id], kTestLogicalWindows[task_id]));
+    app_host()->OnTaskDescriptionChanged(
+        task_id, kTestWindowTitles[task_id],
+        arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                             false /* app_icon */));
+  }
+
+  WaitForDecompressTask();
+  ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
+
+  // Group 2 with one logical window out of 2 tasks. Same logical window id as
+  // tasks 1 and 2, but different group.
+  app_host()->OnTaskCreated(6, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                kTestShelfGroups[6], kTestLogicalWindows[6]));
+  app_host()->OnTaskDescriptionChanged(
+      6, kTestWindowTitles[6],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
+  ash::ShelfItemDelegate* delegate2 = GetShelfItemDelegate(shelf_id2);
+
+  WaitForDecompressTask();
+  ASSERT_TRUE(delegate2);
+  ASSERT_NE(delegate1, delegate2);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
+
+  app_host()->OnTaskCreated(7, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                kTestShelfGroups[7], kTestLogicalWindows[7]));
+  app_host()->OnTaskDescriptionChanged(
+      7, kTestWindowTitles[7],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
+
+  WaitForDecompressTask();
+  ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
+
+  // Group 1 should be unchanged.
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
+
+  // Start closing, and see if the other parts of the logical windows show up.
+  // Group 1:
+  // Task 1 closes, task 2 should become visible:
+  app_host()->OnTaskDestroyed(1);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
+  // Task 4 is hidden, so should not change its entry's title.
+  app_host()->OnTaskDestroyed(4);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
+  // Task 3 closes, leaving only task 5 of this entry. This swaps the two
+  // entries.
+  app_host()->OnTaskDestroyed(3);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title3, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[1].title);
+  // Task 5 closes, close this entry fully.
+  app_host()->OnTaskDestroyed(5);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
+  // Task 2 closes, the full shelf group is closed now.
+  ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
+  app_host()->OnTaskDestroyed(2);
+  EXPECT_FALSE(GetShelfItemDelegate(shelf_id1));
+
+  // Group 2:
+  ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  // Task 7 is hidden, so should not change the entry:
+  app_host()->OnTaskDestroyed(7);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
+  // Task 6 is the last task, close group:
+  app_host()->OnTaskDestroyed(6);
+  EXPECT_FALSE(GetShelfItemDelegate(shelf_id2));
 }

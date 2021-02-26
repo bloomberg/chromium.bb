@@ -22,7 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,7 +92,7 @@ class AndroidTelemetryServiceTest : public testing::Test {
   }
 
   void SetOffTheRecordProfile() {
-    telemetry_service_->profile_ = profile()->GetOffTheRecordProfile();
+    telemetry_service_->profile_ = profile()->GetPrimaryOTRProfile();
   }
 
   void ResetProfile() { telemetry_service_->profile_ = profile(); }

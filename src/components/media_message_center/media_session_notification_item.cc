@@ -165,6 +165,10 @@ void MediaSessionNotificationItem::Dismiss() {
   controller_->RemoveItem(request_id_);
 }
 
+media_message_center::SourceType MediaSessionNotificationItem::SourceType() {
+  return media_message_center::SourceType::kLocalMediaSession;
+}
+
 void MediaSessionNotificationItem::SetController(
     mojo::Remote<media_session::mojom::MediaController> controller,
     media_session::mojom::MediaSessionInfoPtr session_info) {

@@ -19,6 +19,7 @@ class NavigationController {
   // |NavigationController::LoadURLParams|.
   struct NavigateParams {
     bool should_replace_current_entry = false;
+    bool enable_auto_play = false;
   };
 
   virtual ~NavigationController() = default;
@@ -60,6 +61,11 @@ class NavigationController {
   // Gets the page title of the given entry in the back/forward list, or an
   // empty string if there is no navigation entry at that index.
   virtual std::string GetNavigationEntryTitle(int index) = 0;
+
+  // Returns whether this entry will be skipped on a call to GoBack() or
+  // GoForward(). This will be true for navigations that were done without a
+  // user gesture, including both client side redirects and history.pushState.
+  virtual bool IsNavigationEntrySkippable(int index) = 0;
 };
 
 }  // namespace weblayer

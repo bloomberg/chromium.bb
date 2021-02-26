@@ -65,6 +65,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
 
     const VideoPixelFormat format =
         (bit_depth > 8) ? PIXEL_FORMAT_YUV420P10 : PIXEL_FORMAT_I420;
+    const int multiplier = format == PIXEL_FORMAT_YUV420P10 ? 2 : 1;
     DCHECK_LE(dimension, kDimension);
     const gfx::Size size(dimension, dimension);
 
@@ -75,9 +76,9 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
                   size.width() - visible_rect_crop,
                   size.height() - visible_rect_crop),  // visible_rect
         size,                                          // natural_size
-        size.width(),                                  // y_stride
-        size.width() / 2,                              // u_stride
-        size.width() / 2,                              // v_stride
+        size.width() * multiplier,                     // y_stride
+        size.width() * multiplier / 2,                 // u_stride
+        size.width() * multiplier / 2,                 // v_stride
         y_data,                                        // y_data
         u_data,                                        // u_data
         v_data,                                        // v_data
@@ -283,8 +284,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
   EXPECT_EQ(PIXEL_FORMAT_NV12, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame2) {
@@ -301,8 +301,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame2) {
   EXPECT_EQ(PIXEL_FORMAT_NV12, frame->format());
   EXPECT_EQ(2u, frame->NumTextures());
   EXPECT_EQ(2u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30Frame) {
@@ -319,14 +318,44 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30Frame) {
   EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 
   EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
   mock_gpu_factories_->created_memory_buffers()[0]->Map();
 
   void* memory = mock_gpu_factories_->created_memory_buffers()[0]->memory(0);
   EXPECT_EQ(as_xr30(0, 311, 0), *static_cast<uint32_t*>(memory));
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareP010Frame) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10, 10);
+  scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::P010);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(PIXEL_FORMAT_P016LE, frame->format());
+  EXPECT_EQ(1u, frame->NumTextures());
+  EXPECT_EQ(1u, sii_->shared_image_count());
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
+
+  EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
+  mock_gpu_factories_->created_memory_buffers()[0]->Map();
+
+  const uint16_t* y_memory = reinterpret_cast<uint16_t*>(
+      mock_gpu_factories_->created_memory_buffers()[0]->memory(0));
+  EXPECT_EQ(software_frame->visible_data(VideoFrame::kYPlane)[0] << 6,
+            y_memory[0]);
+  const uint16_t* uv_memory = reinterpret_cast<uint16_t*>(
+      mock_gpu_factories_->created_memory_buffers()[0]->memory(1));
+  EXPECT_EQ(software_frame->visible_data(VideoFrame::kUPlane)[0] << 6,
+            uv_memory[0]);
+  EXPECT_EQ(software_frame->visible_data(VideoFrame::kVPlane)[0] << 6,
+            uv_memory[1]);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT709) {
@@ -344,8 +373,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT709) {
   EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 
   EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
   mock_gpu_factories_->created_memory_buffers()[0]->Map();
@@ -369,8 +397,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT601) {
   EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 
   EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
   mock_gpu_factories_->created_memory_buffers()[0]->Map();
@@ -393,8 +420,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXB30Frame) {
   EXPECT_EQ(PIXEL_FORMAT_XB30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareRGBAFrame) {
@@ -411,18 +437,15 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareRGBAFrame) {
   EXPECT_EQ(PIXEL_FORMAT_ABGR, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame->metadata()->read_lock_fences_enabled);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, PreservesMetadata) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  software_frame->metadata()->SetBoolean(
-      media::VideoFrameMetadata::END_OF_STREAM, true);
+  software_frame->metadata()->end_of_stream = true;
   base::TimeTicks kTestReferenceTime =
       base::TimeDelta::FromMilliseconds(12345) + base::TimeTicks();
-  software_frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                           kTestReferenceTime);
+  software_frame->metadata()->reference_time = kTestReferenceTime;
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
@@ -430,14 +453,8 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, PreservesMetadata) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  bool end_of_stream = false;
-  EXPECT_TRUE(frame->metadata()->GetBoolean(
-      media::VideoFrameMetadata::END_OF_STREAM, &end_of_stream));
-  EXPECT_TRUE(end_of_stream);
-  base::TimeTicks render_time;
-  EXPECT_TRUE(frame->metadata()->GetTimeTicks(
-      VideoFrameMetadata::REFERENCE_TIME, &render_time));
-  EXPECT_EQ(kTestReferenceTime, render_time);
+  EXPECT_TRUE(frame->metadata()->end_of_stream);
+  EXPECT_EQ(kTestReferenceTime, *frame->metadata()->reference_time);
 }
 
 // CreateGpuMemoryBuffer can return null (e.g: when the GPU process is down).
@@ -638,8 +655,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameChangesPixelFormat) {
   EXPECT_EQ(PIXEL_FORMAT_ABGR, frame_1->format());
   EXPECT_EQ(1u, frame_1->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
-  EXPECT_TRUE(frame_1->metadata()->IsTrue(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+  EXPECT_TRUE(frame_1->metadata()->read_lock_fences_enabled);
 
   scoped_refptr<VideoFrame> software_frame_2 = CreateTestYUVVideoFrame(10);
   mock_gpu_factories_->SetVideoFrameOutputFormat(

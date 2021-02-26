@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -16,13 +17,13 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/search/ntp_features.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/common/extension_features.h"
 #include "net/base/load_flags.h"
@@ -93,6 +94,13 @@ bool JsonToPromoData(const base::Value& value,
   if (!promos->GetString("middle", &middle)) {
     DVLOG(1) << "No middle promo";
     return false;
+  }
+
+  const base::Value* middle_announce_payload = promos->FindKeyOfType(
+      "middle_announce_payload", base::Value::Type::DICTIONARY);
+  if (middle_announce_payload) {
+    JSONStringValueSerializer serializer(&result.middle_slot_json);
+    serializer.Serialize(*middle_announce_payload);
   }
 
   std::string log_url;

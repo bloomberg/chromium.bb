@@ -11,11 +11,13 @@
 
 #include "base/android/jni_android.h"
 #include "base/optional.h"
+#include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/view_layout.pb.h"
+#include "url/gurl.h"
 
 namespace autofill_assistant {
-
 namespace ui_controller_android_utils {
 
 // Returns a 32-bit Integer representing |color_string| in Java, or null if
@@ -47,6 +49,14 @@ int GetPixelSizeOrDefault(
     const ClientDimensionProto& proto,
     int default_value);
 
+// Returns an instance of an |AssistantDrawable| or nullptr if it could not
+// be created.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const DrawableProto& proto,
+    const UserModel* user_model = nullptr);
+
 // Returns the java equivalent of |proto|.
 base::android::ScopedJavaLocalRef<jobject> ToJavaValue(JNIEnv* env,
                                                        const ValueProto& proto);
@@ -71,8 +81,26 @@ std::string SafeConvertJavaStringToNative(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jstring);
 
-}  // namespace ui_controller_android_utils
+// Creates a BottomSheetState from the Android SheetState enum defined in
+// components/browser_ui/bottomsheet/BottomSheetController.java.
+BottomSheetState ToNativeBottomSheetState(int state);
 
+// Converts a BottomSheetState to the Android SheetState enum.
+int ToJavaBottomSheetState(BottomSheetState state);
+
+// Returns an instance of |AssistantChip| or nullptr if the chip type is
+// invalid.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChip(
+    JNIEnv* env,
+    const ChipProto& chip);
+
+// Returns a list of |AssistantChip| instances or nullptr if any of the chips
+// in |chips| has an invalid type.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChipList(
+    JNIEnv* env,
+    const std::vector<ChipProto>& chips);
+
+}  // namespace ui_controller_android_utils
 }  //  namespace autofill_assistant
 
 #endif  //  CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_UTILS_H_

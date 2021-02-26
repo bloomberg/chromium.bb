@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -89,9 +90,7 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
 
   style_sheet_ = MakeGarbageCollected<StyleSheetContents>(
       context, cached_style_sheet->Url(), this);
-
-  style_sheet_->ParseAuthorStyleSheet(
-      cached_style_sheet, document ? document->GetSecurityOrigin() : nullptr);
+  style_sheet_->ParseAuthorStyleSheet(cached_style_sheet);
 
   loading_ = false;
 
@@ -118,11 +117,9 @@ void StyleRuleImport::RequestStyleSheet() {
     // context document for getting origin and ResourceFetcher to use the main
     // Document's origin, while using the element document for CompleteURL() to
     // use imported Documents' base URLs.
-    document_for_origin = document->ContextDocument();
+    document_for_origin =
+        To<LocalDOMWindow>(document->GetExecutionContext())->document();
   }
-
-  if (!document_for_origin)
-    return;
 
   ResourceFetcher* fetcher = document_for_origin->Fetcher();
   if (!fetcher)
@@ -148,14 +145,15 @@ void StyleRuleImport::RequestStyleSheet() {
     root_sheet = sheet;
   }
 
-  Referrer referrer = parent_style_sheet_->ParserContext()->GetReferrer();
-  ResourceLoaderOptions options;
+  const CSSParserContext* parser_context = parent_style_sheet_->ParserContext();
+  Referrer referrer = parser_context->GetReferrer();
+  ResourceLoaderOptions options(parser_context->JavascriptWorld());
   options.initiator_info.name = fetch_initiator_type_names::kCSS;
   options.initiator_info.referrer = referrer.referrer;
   ResourceRequest resource_request(abs_url);
   resource_request.SetReferrerString(referrer.referrer);
   resource_request.SetReferrerPolicy(referrer.referrer_policy);
-  if (parent_style_sheet_->ParserContext()->IsAdRelated())
+  if (parser_context->IsAdRelated())
     resource_request.SetIsAdResource();
   FetchParameters params(std::move(resource_request), options);
   params.SetCharset(parent_style_sheet_->Charset());

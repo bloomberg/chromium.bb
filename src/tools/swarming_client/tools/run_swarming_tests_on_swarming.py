@@ -23,8 +23,9 @@ import sys
 import tempfile
 import time
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -50,8 +51,12 @@ def archive_tree(isolate_server):
   Manually creates a temporary isolated file and archives it.
   """
   cmd = [
-      'isolateserver.py', 'archive', '--isolate-server', isolate_server,
-      CLIENT_DIR, '--blacklist="\\.git"',
+      'isolateserver.py',
+      'archive',
+      '--isolate-server',
+      isolate_server,
+      CLIENT_DIR,
+      '--blacklist="\\.git"',
   ]
   if logging.getLogger().isEnabledFor(logging.INFO):
     cmd.append('--verbose')
@@ -78,11 +83,10 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
       # Creates a manual .isolated file. See
       # https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/Design.md#file-format
       isolated = {
-        'algo': 'sha-1',
-        'command': ['python', test],
-        'includes': [tree_isolated],
-        'read_only': 0,
-        'version': '1.4',
+          'algo': 'sha-1',
+          'command': ['python', test],
+          'includes': [tree_isolated],
+          'version': '2.0',
       }
       v = os.path.join(tempdir, test_name + '.isolated')
       tools.write_json(v, isolated, True)
@@ -121,16 +125,17 @@ def run_swarming_tests_on_swarming(
     for platform in oses:
       exploded.append((test_name, platform, isolated_hash))
 
-  tasks = [
-    (
+  tasks = [(
       parallel_execution.task_to_name(name, {'os': platform}, isolated_hash),
       isolated_hash,
-      {'os': platform},
-    ) for name, platform, isolated_hash in exploded
-  ]
+      {
+          'os': platform
+      },
+  ) for name, platform, isolated_hash in exploded]
 
   extra_args = [
-    '--hard-timeout', '180',
+      '--hard-timeout',
+      '180',
   ]
   if not no_idempotent:
     extra_args.append('--idempotent')
@@ -161,7 +166,9 @@ def main():
       help='Destination where to store the failure logs (recommended!)')
   parser.add_option('-o', '--os', help='Run tests only on this OS')
   parser.add_option(
-      '-t', '--test', action='append',
+      '-t',
+      '--test',
+      action='append',
       help='Run only these test, can be specified multiple times')
   parser.add_option(
       '--no-idempotent', action='store_true',
@@ -172,10 +179,9 @@ def main():
 
   oses = ['Linux', 'Mac', 'Windows']
   tests = [
-      os.path.relpath(i, CLIENT_DIR)
-      for i in (
-      glob.glob(os.path.join(CLIENT_DIR, 'tests', '*_test.py')) +
-      glob.glob(os.path.join(CLIENT_DIR, 'googletest', 'tests', '*_test.py')))
+      os.path.relpath(i, CLIENT_DIR) for i in
+      (glob.glob(os.path.join(CLIENT_DIR, 'tests', '*_test.py')) +
+       glob.glob(os.path.join(CLIENT_DIR, 'googletest', 'tests', '*_test.py')))
   ]
   valid_tests = sorted(map(os.path.basename, tests))
   assert len(valid_tests) == len(set(valid_tests)), (
@@ -184,17 +190,15 @@ def main():
   if options.test:
     for t in options.test:
       if not t in valid_tests:
-        parser.error(
-            '--test %s is unknown. Valid values are:\n%s' % (
-              t, '\n'.join('  ' + i for i in valid_tests)))
+        parser.error('--test %s is unknown. Valid values are:\n%s' %
+                     (t, '\n'.join('  ' + i for i in valid_tests)))
     filters = tuple(os.path.sep + t for t in options.test)
     tests = [t for t in tests if t.endswith(filters)]
 
   if options.os:
     if options.os not in oses:
-      parser.error(
-          '--os %s is unknown. Valid values are %s' % (
-            options.os, ', '.join(sorted(oses))))
+      parser.error('--os %s is unknown. Valid values are %s' %
+                   (options.os, ', '.join(sorted(oses))))
     oses = [options.os]
 
   if sys.platform in ('win32', 'cygwin'):
@@ -205,13 +209,8 @@ def main():
       print('Linux and Mac tests skipped since running on Windows.')
 
   return run_swarming_tests_on_swarming(
-      options.swarming,
-      options.isolate_server,
-      options.priority,
-      oses,
-      tests,
-      options.logs,
-      options.no_idempotent)
+      options.swarming, options.isolate_server, options.priority, oses, tests,
+      options.logs, options.no_idempotent)
 
 
 if __name__ == '__main__':

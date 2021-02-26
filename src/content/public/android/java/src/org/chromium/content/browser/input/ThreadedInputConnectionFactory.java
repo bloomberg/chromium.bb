@@ -10,6 +10,7 @@ import android.os.HandlerThread;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
@@ -39,6 +40,19 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     private CheckInvalidator mCheckInvalidator;
     private boolean mReentrantTriggering;
     private boolean mTriggerDelayedOnCreateInputConnection;
+
+    @IntDef({FocusState.NOT_APPLICABLE, FocusState.VIEW_FOCUSED_WITHOUT_WINDOW_FOCUS,
+            FocusState.VIEW_FOCUSED_THEN_WINDOW_FOCUSED})
+    @interface FocusState {
+        int NOT_APPLICABLE = 0;
+        int WINDOW_FOCUS_LOST = 1;
+        int VIEW_FOCUSED_WITHOUT_WINDOW_FOCUS = 2;
+        int VIEW_FOCUSED_THEN_WINDOW_FOCUSED = 3;
+    }
+
+    // A tri-state to keep track of view focus and window focus.
+    @FocusState
+    private int mFocusState = FocusState.NOT_APPLICABLE;
 
     // Initialization-on-demand holder for Handler.
     private static class LazyHandlerHolder {
@@ -85,7 +99,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                 containerView.getContext(), handler, containerView, this);
     }
 
-    @VisibleForTesting
     @Override
     public void setTriggerDelayedOnCreateInputConnection(boolean trigger) {
         mTriggerDelayedOnCreateInputConnection = trigger;
@@ -104,13 +117,13 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     @Override
     public ThreadedInputConnection initializeAndGet(View view, ImeAdapterImpl imeAdapter,
             int inputType, int inputFlags, int inputMode, int inputAction, int selectionStart,
-            int selectionEnd, EditorInfo outAttrs) {
+            int selectionEnd, String lastText, EditorInfo outAttrs) {
         ImeUtils.checkOnUiThread();
 
         // Compute outAttrs early in case we early out to prevent reentrancy. (crbug.com/636197)
         // TODO(changwan): move this up to ImeAdapter once ReplicaInputConnection is deprecated.
         ImeUtils.computeEditorInfo(inputType, inputFlags, inputMode, inputAction, selectionStart,
-                selectionEnd, outAttrs);
+                selectionEnd, lastText, outAttrs);
         if (DEBUG_LOGS) {
             Log.i(TAG, "initializeAndGet. outAttr: " + ImeUtils.getEditorInfoDebugString(outAttrs));
         }
@@ -160,7 +173,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         mProxyView.requestFocus();
         mReentrantTriggering = false;
 
-        view.getHandler().post(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 // This is a hack to make InputMethodManager believe that the proxy view
@@ -188,7 +201,34 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                     }
                 });
             }
-        });
+        };
+
+        if (mFocusState == FocusState.VIEW_FOCUSED_THEN_WINDOW_FOCUSED) {
+            // https://crbug.com/1108237: If the container view gets focused before the window gets
+            // focused, then keyboard fails to activate. When this happens, keyboard gets initially
+            // activated and then dismissed after some time (presumably caused by window dismissal
+            // behavior change with AndroidX.) As a workaround, we delay the keyboard activation by
+            // 1 sec. Note that we delay keyboard activation only the following happen:
+            // 1) Window focus loss.
+            // 2) (Optional) view focus loss.
+            // 3) View focus gain.
+            // 4) Window focus gain.
+            // (On N+ window focus gain occurs first, anyways.)
+            if (DEBUG_LOGS) {
+                Log.i(TAG,
+                        "Delaying keyboard activation by 1 second since view was focused before "
+                                + "window.");
+            }
+            postDelayed(view, r, 1000);
+            mFocusState = FocusState.NOT_APPLICABLE;
+        } else {
+            view.getHandler().post(r);
+        }
+    }
+
+    @VisibleForTesting
+    protected void postDelayed(View view, Runnable r, long delayMs) {
+        view.getHandler().postDelayed(r, delayMs);
     }
 
     // Note that this function is called both from IME thread and UI thread.
@@ -238,6 +278,13 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.d(TAG, "onWindowFocusChanged: " + gainFocus);
         if (!gainFocus && mCheckInvalidator != null) mCheckInvalidator.invalidate();
         if (mProxyView != null) mProxyView.onOriginalViewWindowFocusChanged(gainFocus);
+        if (!gainFocus) {
+            mFocusState = FocusState.WINDOW_FOCUS_LOST;
+        } else if (gainFocus && mFocusState == FocusState.VIEW_FOCUSED_WITHOUT_WINDOW_FOCUS) {
+            mFocusState = FocusState.VIEW_FOCUSED_THEN_WINDOW_FOCUSED;
+        } else {
+            mFocusState = FocusState.NOT_APPLICABLE;
+        }
     }
 
     @Override
@@ -245,6 +292,11 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.d(TAG, "onViewFocusChanged: " + gainFocus);
         if (!gainFocus && mCheckInvalidator != null) mCheckInvalidator.invalidate();
         if (mProxyView != null) mProxyView.onOriginalViewFocusChanged(gainFocus);
+        if (mFocusState == FocusState.WINDOW_FOCUS_LOST) {
+            if (gainFocus) mFocusState = FocusState.VIEW_FOCUSED_WITHOUT_WINDOW_FOCUS;
+        } else {
+            mFocusState = FocusState.NOT_APPLICABLE;
+        }
     }
 
     @Override
@@ -258,5 +310,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.d(TAG, "onViewDetachedFromWindow");
         if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
         if (mProxyView != null) mProxyView.onOriginalViewDetachedFromWindow();
+        mThreadedInputConnection = null;
     }
 }

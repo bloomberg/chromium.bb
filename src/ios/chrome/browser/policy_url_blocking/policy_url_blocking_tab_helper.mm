@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_tab_helper.h"
 
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -28,7 +28,7 @@ PolicyUrlBlockingTabHelper::ShouldAllowRequest(
       PolicyBlocklistServiceFactory::GetForBrowserState(
           web_state()->GetBrowserState());
   if (blocklistService->GetURLBlocklistState(gurl) ==
-      policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
+      policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST) {
     return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
         policy_url_blocking_util::CreateBlockedUrlError());
   }

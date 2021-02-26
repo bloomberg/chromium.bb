@@ -42,15 +42,39 @@ Polymer({
     },
 
     /**
+     * This is enabled when language settings update feature flag is enabled.
+     * @private
+     * */
+    languageSettingsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableLanguageSettingsV2');
+      },
+    },
+
+    /**
      * This is enabled when any of the smart inputs features is allowed.
      * @private
      * */
     smartInputsEnabled_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean('allowAssistivePersonalInfo');
+        return loadTimeData.getBoolean('allowAssistivePersonalInfo') ||
+            loadTimeData.getBoolean('allowEmojiSuggestion');
       },
     }
+  },
+
+  /** @private */
+  onLanguagesV2Click_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_LANGUAGES);
+  },
+
+  /** @private */
+  onInputClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.OS_LANGUAGES_INPUT);
   },
 
   /** @private */
@@ -67,22 +91,59 @@ Polymer({
   },
 
   /**
-   * @param {string} uiLanguage Current UI language fully specified, e.g.
-   *     "English (United States)".
+   * @param {string|undefined} uiLanguage Current UI language fully specified,
+   *     e.g. "English (United States)".
    * @param {string} id The input method ID, e.g. "US Keyboard".
+   * @param {!LanguageHelper} languageHelper The LanguageHelper object.
    * @return {string} A sublabel for the 'Languages and input' row
    * @private
    */
-  getSubLabel_(uiLanguage, id) {
+  getSubLabel_(uiLanguage, id, languageHelper) {
     const languageDisplayName =
-        this.languageHelper.getLanguage(uiLanguage).displayName;
-    const inputMethod =
-        this.languages.inputMethods.enabled.find(function(inputMethod) {
-          return inputMethod.id == id;
-        });
-    const inputMethodDisplayName = inputMethod ? inputMethod.displayName : '';
+        this.getLanguageDisplayName_(uiLanguage, languageHelper);
+    if (!languageDisplayName) {
+      return '';
+    }
+    const inputMethodDisplayName =
+        this.getInputMethodDisplayName_(id, languageHelper);
+    if (!inputMethodDisplayName) {
+      return languageDisplayName;
+    }
     // It is OK to use string concatenation here because it is just joining a 2
     // element list (i.e. it's a standard format).
     return languageDisplayName + ', ' + inputMethodDisplayName;
+  },
+
+  /**
+   * @param {string|undefined} code The language code of the language.
+   * @param {!LanguageHelper} languageHelper The LanguageHelper object.
+   * @return {string} The display name of the language specified.
+   * @private
+   */
+  getLanguageDisplayName_(code, languageHelper) {
+    if (!code) {
+      return '';
+    }
+    const language = languageHelper.getLanguage(code);
+    if (!language) {
+      return '';
+    }
+    return language.displayName;
+  },
+
+  /**
+   * @param {string} id The input method ID.
+   * @param {!LanguageHelper} languageHelper The LanguageHelper object.
+   * @return {string} The display name of the input method.
+   * @private
+   */
+  getInputMethodDisplayName_(id, languageHelper) {
+    // LanguageHelper.getInputMethodDisplayName will throw an error if the ID
+    // isn't found, such as when using CrOS on Linux.
+    try {
+      return languageHelper.getInputMethodDisplayName(id);
+    } catch (_) {
+      return '';
+    }
   },
 });

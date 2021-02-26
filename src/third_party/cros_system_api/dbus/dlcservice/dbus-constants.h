@@ -11,13 +11,13 @@ constexpr char kDlcServiceInterface[] = "org.chromium.DlcServiceInterface";
 constexpr char kDlcServiceServicePath[] = "/org/chromium/DlcService";
 constexpr char kDlcServiceServiceName[] = "org.chromium.DlcService";
 
-constexpr char kGetInstalledMethod[] = "GetInstalled";
-constexpr char kInstallMethod[] = "Install";
+constexpr char kInstallMethod[] = "InstallDlc";
 constexpr char kInstallDlcMethod[] = "InstallDlc";
 constexpr char kUninstallMethod[] = "Uninstall";
 constexpr char kPurgeMethod[] = "Purge";
+constexpr char kGetDlcStateMethod[] = "GetDlcState";
 constexpr char kGetExistingDlcsMethod[] = "GetExistingDlcs";
-constexpr char kOnInstallStatusSignal[] = "OnInstallStatus";
+constexpr char kDlcStateChangedSignal[] = "DlcStateChanged";
 
 // Error Codes from dlcservice.
 constexpr char kErrorNone[] = "org.chromium.DlcServiceInterface.NONE";

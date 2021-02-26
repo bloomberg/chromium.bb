@@ -273,7 +273,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // been visited before.
   url::Origin origin = url::Origin::Create(params->url());
   request->trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
+      net::IsolationInfo::RequestType::kMainFrame, origin, origin,
       net::SiteForCookies::FromOrigin(origin));
 
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
@@ -428,6 +428,7 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   in_progress_info.metered = item.AllowMetered();
   in_progress_info.bytes_wasted = item.GetBytesWasted();
   in_progress_info.auto_resume_count = item.GetAutoResumeCount();
+  in_progress_info.download_schedule = item.GetDownloadSchedule();
 
   download_info.in_progress_info = in_progress_info;
 
@@ -586,7 +587,7 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   // Make sure we only delete files.
   if (base::DirectoryExists(path))
     return true;
-  return base::DeleteFile(path, false);
+  return base::DeleteFile(path);
 }
 
 DownloadItem::DownloadRenameResult RenameDownloadedFile(

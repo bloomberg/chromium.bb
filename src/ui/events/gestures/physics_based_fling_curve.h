@@ -37,7 +37,9 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
                            gfx::Vector2dF* offset,
                            gfx::Vector2dF* velocity) override;
 
-  float curve_duration() const { return curve_duration_; }
+  // TODO(crbug.com/1028501): Use base::TimeDelta for curve_duration()
+  // once crrev.com/c/1865928 is merged.
+  float curve_duration() const { return curve_duration_.InSecondsF(); }
   const gfx::PointF& p1_for_testing() const { return p1_; }
   const gfx::PointF& p2_for_testing() const { return p2_; }
   static int default_bounds_multiplier_for_testing() {
@@ -45,6 +47,17 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
   }
 
  private:
+  // Default value used to scale the viewport when it is passed in as a
+  // parameter in the generation of a physics based fling curve. This value
+  // increases the upper bound of the scroll distance for a fling.
+  constexpr static int kDefaultBoundsMultiplier = 3;
+
+  // Calculates the curve duration and generates the control points for a bezier
+  // curve. The slope is based on the input initial |velocity|, calculated curve
+  // duration, and |distance_|. Returns the duration.
+  base::TimeDelta CalculateDurationAndConfigureControlPoints(
+      const gfx::Vector2dF& velocity);
+
   // Time when fling curve is generated.
   const base::TimeTicks start_timestamp_;
   // Cubic bezier curve control points.
@@ -52,25 +65,13 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
   gfx::PointF p2_;
   // Distance it can scroll with input velocity.
   const gfx::Vector2dF distance_;
-  // Time in seconds, till which fling can remain active relative to
-  // |start_timestamp_|.
-  // TODO (sarsha): Use base::TimeDelta for |curve_duration_| once
-  // crrev.com/c/1865928 is merged.
-  // crbug.com/1028501
-  const float curve_duration_;
-
-  // Default value used to scale the viewport when it is passed in as a
-  // parameter in the generation of a physics based fling curve. This value
-  // increases the upper bound of the scroll distance for a fling.
-  constexpr static int kDefaultBoundsMultiplier = 3;
+  // Time until which fling can remain active relative to |start_timestamp_|.
+  const base::TimeDelta curve_duration_;
 
   const gfx::CubicBezier bezier_;
   base::TimeDelta previous_time_delta_;
   gfx::Vector2dF cumulative_scroll_;
   gfx::Vector2dF prev_offset_;
-
-  float CalculateDurationAndConfigureControlPoints(
-      const gfx::Vector2dF& velocity);
 
   DISALLOW_COPY_AND_ASSIGN(PhysicsBasedFlingCurve);
 };

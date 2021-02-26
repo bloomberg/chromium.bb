@@ -77,9 +77,9 @@ bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IsExtensionIME(const std::string& input_method_id);
 
 // Returns true if |input_method_id| is component extension IME ID. This
-// function does not check |input_method_id| is really whitelisted one or not.
-// If you want to check |input_method_id| is whitelisted component extension
-// IME, please use ComponentExtensionIMEManager::IsWhitelisted instead.
+// function does not check |input_method_id| is really allowlisted one or not.
+// If you want to check |input_method_id| is allowlisted component extension
+// IME, please use ComponentExtensionIMEManager::Isallowlisted instead.
 bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IsComponentExtensionIME(const std::string& input_method_id);
 
@@ -88,20 +88,10 @@ bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
 bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IsArcIME(const std::string& input_method_id);
 
-// Returns true if the |input_method| is a member of |extension_id| of extension
-// IME, otherwise returns false.
-bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
-    IsMemberOfExtension(const std::string& input_method_id,
-                        const std::string& extension_id);
-
 // Returns true if the |input_method_id| is the extension based xkb keyboard,
 // otherwise returns false.
 bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IsKeyboardLayoutExtension(const std::string& input_method_id);
-
-// Returns true if |language| is the fake one for ARC IMEs.
-bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
-    IsLanguageForArcIME(const std::string& language);
 
 // Returns input method component id from the extension-based InputMethodID
 // for component IME extensions. This function does not check that
@@ -109,14 +99,7 @@ bool COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
 std::string COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     GetComponentIDByInputMethodID(const std::string& input_method_id);
 
-// Gets legacy xkb id (e.g. xkb:us::eng) from the new extension based xkb id
-// (e.g. _comp_ime_...xkb:us::eng). If the given id is not prefixed with
-// 'xkb:', just return the same as the given id.
-std::string COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
-    MaybeGetLegacyXkbId(const std::string& input_method_id);
-
 }  // namespace extension_ime_util
-
 }  // namespace chromeos
 
 #endif  // UI_BASE_IME_CHROMEOS_EXTENSION_IME_UTIL_H_

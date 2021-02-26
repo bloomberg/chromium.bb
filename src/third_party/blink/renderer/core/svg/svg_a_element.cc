@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -58,7 +59,7 @@ SVGAElement::SVGAElement(Document& document)
   AddToPropertyMap(svg_target_);
 }
 
-void SVGAElement::Trace(Visitor* visitor) {
+void SVGAElement::Trace(Visitor* visitor) const {
   visitor->Trace(svg_target_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
@@ -136,7 +137,8 @@ void SVGAElement::DefaultEventHandler(Event& event) {
         return;
 
       FrameLoadRequest frame_request(
-          &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
+          GetDocument().domWindow(),
+          ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent

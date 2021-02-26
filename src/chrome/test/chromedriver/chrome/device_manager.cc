@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,15 +20,15 @@
 
 const char kChromeCmdLineFile[] = "/data/local/tmp/chrome-command-line";
 
-Device::Device(
-    const std::string& device_serial, Adb* adb,
-    base::Callback<void()> release_callback)
+Device::Device(const std::string& device_serial,
+               Adb* adb,
+               base::OnceCallback<void()> release_callback)
     : serial_(device_serial),
       adb_(adb),
-      release_callback_(release_callback) {}
+      release_callback_(std::move(release_callback)) {}
 
 Device::~Device() {
-  release_callback_.Run();
+  std::move(release_callback_).Run();
 }
 
 // Only allow completely alpha exec names.
@@ -190,7 +190,10 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
     *device_socket = socket_name.substr(1);
   }
 
-  return adb_->ForwardPort(serial_, *device_socket, devtools_port);
+  Status status = adb_->ForwardPort(serial_, *device_socket, devtools_port);
+  if (status.IsOk())
+    devtools_port_ = *devtools_port;
+  return status;
 }
 
 Status Device::TearDown() {
@@ -200,6 +203,12 @@ Status Device::TearDown() {
     if (status.IsError())
       return status;
     active_package_ = "";
+  }
+  if (devtools_port_ != 0) {
+    Status status = adb_->KillForwardPort(serial_, devtools_port_);
+    if (status.IsError())
+      return status;
+    devtools_port_ = 0;
   }
   return Status(kOk);
 }
@@ -264,8 +273,8 @@ void DeviceManager::ReleaseDevice(const std::string& device_serial) {
 Device* DeviceManager::LockDevice(const std::string& device_serial) {
   active_devices_.push_back(device_serial);
   return new Device(device_serial, adb_,
-      base::Bind(&DeviceManager::ReleaseDevice, base::Unretained(this),
-                 device_serial));
+                    base::BindOnce(&DeviceManager::ReleaseDevice,
+                                   base::Unretained(this), device_serial));
 }
 
 bool DeviceManager::IsDeviceLocked(const std::string& device_serial) {

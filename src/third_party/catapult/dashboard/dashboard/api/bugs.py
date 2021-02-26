@@ -24,7 +24,7 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
     if not datastore_hooks.IsUnalteredQueryPermitted():
       raise api_request_handler.ForbiddenError()
 
-  def Post(self, bug_id, *unused_args):
+  def Post(self, *args, **kwargs):
     """Returns alert data in response to API requests.
 
     Argument:
@@ -33,11 +33,17 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
     Outputs:
       JSON data for the bug, see README.md.
     """
+    if len(args) == 0:
+      raise api_request_handler.BadRequestError('Invalid bug ID "None".')
+    bug_id = args[0]
+
     service = issue_tracker_service.IssueTrackerService(
         utils.ServiceAccountHttp())
+    project = kwargs.get('project', 'chromium')
 
     if bug_id == 'recent':
       response = service.List(
+          project=project,
           q='opened-after:today-5',
           label='Type-Bug-Regression,Performance',
           sort='-id')
@@ -46,8 +52,7 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
     try:
       bug_id = int(bug_id)
     except ValueError:
-      raise api_request_handler.BadRequestError(
-          'Invalid bug ID "%s".' % bug_id)
+      raise api_request_handler.BadRequestError('Invalid bug ID "%s".' % bug_id)
 
     try:
       include_comments = api_utils.ParseBool(
@@ -56,7 +61,7 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
       raise api_request_handler.BadRequestError(
           "value of |with_comments| should be 'true' or 'false'")
 
-    issue = service.GetIssue(bug_id)
+    issue = service.GetIssue(bug_id, project=project)
     bisects = []
 
     def _FormatDate(d):
@@ -64,31 +69,34 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
         return ''
       return d.isoformat()
 
-    response = {'bug': {
-        'author': issue.get('author', {}).get('name'),
-        'owner': issue.get('owner', {}).get('name'),
-        'legacy_bisects': [{
-            'status': b.status,
-            'bot': b.bot,
-            'bug_id': b.bug_id,
-            'buildbucket_link': (
-                'https://chromeperf.appspot.com/buildbucket_job_status/%s' %
-                b.buildbucket_job_id),
-            'command': b.GetConfigDict()['command'],
-            'culprit': None,
-            'metric': (b.results_data or {}).get('metric'),
-            'started_timestamp': _FormatDate(b.last_ran_timestamp),
-        } for b in bisects],
-        'cc': [cc.get('name') for cc in issue.get('cc', [])],
-        'components': issue.get('components', []),
-        'id': bug_id,
-        'labels': issue.get('labels', []),
-        'published': issue.get('published'),
-        'updated': issue.get('updated'),
-        'state': issue.get('state'),
-        'status': issue.get('status'),
-        'summary': issue.get('summary'),
-    }}
+    response = {
+        'bug': {
+            'author': issue.get('author', {}).get('name'),
+            'owner': issue.get('owner', {}).get('name'),
+            'legacy_bisects': [{
+                'status': b.status,
+                'bot': b.bot,
+                'bug_id': b.bug_id,
+                'buildbucket_link': (
+                    'https://chromeperf.appspot.com/buildbucket_job_status/%s' %
+                    b.buildbucket_job_id),
+                'command': b.GetConfigDict()['command'],
+                'culprit': None,
+                'metric': (b.results_data or {}).get('metric'),
+                'started_timestamp': _FormatDate(b.last_ran_timestamp),
+            } for b in bisects],
+            'cc': [cc.get('name') for cc in issue.get('cc', [])],
+            'components': issue.get('components', []),
+            'projectId': project,
+            'id': bug_id,
+            'labels': issue.get('labels', []),
+            'published': issue.get('published'),
+            'updated': issue.get('updated'),
+            'state': issue.get('state'),
+            'status': issue.get('status'),
+            'summary': issue.get('summary'),
+        }
+    }
 
     if include_comments:
       comments = service.GetIssueComments(bug_id)
@@ -99,3 +107,14 @@ class BugsHandler(api_request_handler.ApiRequestHandler):
       } for comment in comments]
 
     return response
+
+
+class BugsWithProjectHandler(BugsHandler):
+
+  def Post(self, *args, **kwargs):
+    # We translate the order of the arguments, because the first arg is the
+    # project and the second is the bug id.
+    if len(args) != 2:
+      raise api_request_handler.BadRequestError(
+          'Must have two non-empty arguments to URI.')
+    return super(BugsWithProjectHandler, self).Post(args[1], project=args[0])

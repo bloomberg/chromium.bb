@@ -12,39 +12,31 @@
 #define CALL_ADAPTATION_TEST_FAKE_RESOURCE_H_
 
 #include <string>
+#include <vector>
 
-#include "call/adaptation/resource.h"
-#include "rtc_base/ref_counted_object.h"
+#include "absl/types/optional.h"
+#include "api/adaptation/resource.h"
+#include "api/scoped_refptr.h"
 
 namespace webrtc {
 
 // Fake resource used for testing.
-class FakeResource : public rtc::RefCountedObject<Resource> {
+class FakeResource : public Resource {
  public:
+  static rtc::scoped_refptr<FakeResource> Create(std::string name);
+
   explicit FakeResource(std::string name);
   ~FakeResource() override;
 
-  void set_usage_state(ResourceUsageState usage_state);
-  void set_is_adaptation_up_allowed(bool is_adaptation_up_allowed);
-  size_t num_adaptations_applied() const;
+  void SetUsageState(ResourceUsageState usage_state);
 
   // Resource implementation.
-  std::string name() const override { return name_; }
-  bool IsAdaptationUpAllowed(
-      const VideoStreamInputState& input_state,
-      const VideoSourceRestrictions& restrictions_before,
-      const VideoSourceRestrictions& restrictions_after,
-      rtc::scoped_refptr<Resource> reason_resource) const override;
-  void OnAdaptationApplied(
-      const VideoStreamInputState& input_state,
-      const VideoSourceRestrictions& restrictions_before,
-      const VideoSourceRestrictions& restrictions_after,
-      rtc::scoped_refptr<Resource> reason_resource) override;
+  std::string Name() const override;
+  void SetResourceListener(ResourceListener* listener) override;
 
  private:
   const std::string name_;
-  bool is_adaptation_up_allowed_;
-  size_t num_adaptations_applied_;
+  ResourceListener* listener_;
 };
 
 }  // namespace webrtc

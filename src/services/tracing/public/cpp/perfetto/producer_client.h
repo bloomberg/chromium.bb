@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

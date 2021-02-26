@@ -39,6 +39,9 @@ class TestGetParts(unittest.TestCase):
     def test_get_parts_customize(self):
         config = model.Distribution(
             channel='canary',
+            app_name_fragment='Canary',
+            product_dirname='canary',
+            creator_code='cana',
             channel_customize=True).to_config(test_config.TestConfig())
         all_parts = parts.get_parts(config)
         self.assertEqual('test.signing.bundle_id.canary',
@@ -105,10 +108,10 @@ def _get_plist_read(other_version):
         path = path[first_slash + 1:]
 
         plists = {
-            'App Product.app/Contents/Info.plist': {
+            '$W/App Product.app/Contents/Info.plist': {
                 'KSVersion': '99.0.9999.99'
             },
-            'App Product.app/Contents/Frameworks/Product Framework.framework/Resources/Info.plist':
+            '$W/App Product.app/Contents/Frameworks/Product Framework.framework/Resources/Info.plist':
                 {
                     'CFBundleShortVersionString': other_version
                 }
@@ -127,7 +130,7 @@ def _get_plist_read(other_version):
 class TestSignChrome(unittest.TestCase):
 
     def setUp(self):
-        self.paths = model.Paths('$I', '$O', '$W')
+        self.paths = model.Paths('/$I', '/$O', '/$W')
 
     @mock.patch('signing.parts._sanity_check_version_keys')
     def test_sign_chrome(self, *args, **kwargs):
@@ -146,8 +149,8 @@ class TestSignChrome(unittest.TestCase):
         # Test that the provisioning profile is copied.
         self.assertEqual(kwargs['copy_files'].mock_calls, [
             mock.call.copy_files(
-                '$I/Product Packaging/provisiontest.provisionprofile',
-                '$W/App Product.app/Contents/embedded.provisionprofile')
+                '/$I/Product Packaging/provisiontest.provisionprofile',
+                '/$W/App Product.app/Contents/embedded.provisionprofile')
         ])
 
         # Ensure that all the parts are signed.
@@ -168,10 +171,10 @@ class TestSignChrome(unittest.TestCase):
         self.assertEqual(kwargs['run_command'].mock_calls, [
             mock.call.run_command([
                 'codesign', '--display', '--requirements', '-', '--verbose=5',
-                '$W/App Product.app'
+                '/$W/App Product.app'
             ]),
             mock.call.run_command(
-                ['spctl', '--assess', '-vv', '$W/App Product.app']),
+                ['spctl', '--assess', '-vv', '/$W/App Product.app']),
         ])
 
     @mock.patch('signing.parts._sanity_check_version_keys')
@@ -191,7 +194,7 @@ class TestSignChrome(unittest.TestCase):
         self.assertEqual(kwargs['run_command'].mock_calls, [
             mock.call.run_command([
                 'codesign', '--display', '--requirements', '-', '--verbose=5',
-                '$W/App Product.app'
+                '/$W/App Product.app'
             ]),
         ])
 
@@ -227,8 +230,8 @@ class TestSignChrome(unittest.TestCase):
         # Test that the provisioning profile is copied.
         self.assertEqual(kwargs['copy_files'].mock_calls, [
             mock.call.copy_files(
-                '$I/Product Packaging/provisiontest.provisionprofile',
-                '$W/App Product.app/Contents/embedded.provisionprofile')
+                '/$I/Product Packaging/provisiontest.provisionprofile',
+                '/$W/App Product.app/Contents/embedded.provisionprofile')
         ])
 
         # Ensure that only the app is signed.
@@ -240,10 +243,10 @@ class TestSignChrome(unittest.TestCase):
         self.assertEqual(kwargs['run_command'].mock_calls, [
             mock.call.run_command([
                 'codesign', '--display', '--requirements', '-', '--verbose=5',
-                '$W/App Product.app'
+                '/$W/App Product.app'
             ]),
             mock.call.run_command(
-                ['spctl', '--assess', '-vv', '$W/App Product.app']),
+                ['spctl', '--assess', '-vv', '/$W/App Product.app']),
         ])
 
     @mock.patch(
@@ -259,5 +262,5 @@ class TestSignChrome(unittest.TestCase):
     def test_sanity_check_bad(self, read_plist, **kwargs):
         config = model.Distribution().to_config(test_config.TestConfig())
         self.assertRaises(
-            ValueError,
-            lambda: parts.sign_chrome(self.paths, config, sign_framework=True))
+            ValueError, lambda: parts.sign_chrome(
+                self.paths, config, sign_framework=True))

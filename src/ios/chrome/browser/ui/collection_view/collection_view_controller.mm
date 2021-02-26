@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
+#import <MaterialComponents/MaterialCollectionCells.h>
+
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -12,7 +14,6 @@
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -98,23 +99,6 @@
     CollectionViewItem* item =
         [self.collectionViewModel itemAtIndexPath:indexPath];
     [self reconfigureCellAtIndexPath:indexPath withItem:item];
-  }
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (@available(iOS 13, *)) {
-    if ([self.traitCollection
-            hasDifferentColorAppearanceComparedToTraitCollection:
-                previousTraitCollection]) {
-      // MDCCollectionView doesn't support dynamic colors, so they have to be
-      // resolved now.
-      // TODO(crbug.com/984928): Clean up once dynamic color support is added.
-      self.styler.cellBackgroundColor =
-          [UIColor.cr_secondarySystemGroupedBackgroundColor
-              resolvedColorWithTraitCollection:self.traitCollection];
-      [self.collectionViewLayout invalidateLayout];
-    }
   }
 }
 

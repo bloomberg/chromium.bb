@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/stl_util.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
@@ -71,13 +71,14 @@ bool ReverseStringLess::operator()(const base::string16& lhs,
 
 bool MatchingReusedCredential::operator<(
     const MatchingReusedCredential& other) const {
-  return std::tie(signon_realm, username) <
-         std::tie(other.signon_realm, other.username);
+  return std::tie(signon_realm, username, in_store) <
+         std::tie(other.signon_realm, other.username, other.in_store);
 }
 
 bool MatchingReusedCredential::operator==(
     const MatchingReusedCredential& other) const {
-  return signon_realm == other.signon_realm && username == other.username;
+  return signon_realm == other.signon_realm && username == other.username &&
+         in_store == other.in_store;
 }
 
 PasswordReuseDetector::PasswordReuseDetector() = default;
@@ -85,7 +86,7 @@ PasswordReuseDetector::PasswordReuseDetector() = default;
 PasswordReuseDetector::~PasswordReuseDetector() = default;
 
 void PasswordReuseDetector::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+    std::vector<std::unique_ptr<PasswordForm>> results) {
   for (const auto& form : results)
     AddPassword(*form);
 }
@@ -104,8 +105,10 @@ void PasswordReuseDetector::CheckReuse(
     const std::string& domain,
     PasswordReuseDetectorConsumer* consumer) {
   DCHECK(consumer);
-  if (input.size() < kMinPasswordLengthToCheck)
+  if (input.size() < kMinPasswordLengthToCheck) {
+    consumer->OnReuseCheckDone(false, 0, base::nullopt, {}, saved_passwords_);
     return;
+  }
 
   base::Optional<PasswordHashData> reused_gaia_password_hash =
       CheckGaiaPasswordReuse(input, domain);
@@ -128,8 +131,10 @@ void PasswordReuseDetector::CheckReuse(
       std::max({saved_reused_password_length, gaia_reused_password_length,
                 enterprise_reused_password_length});
 
-  if (max_reused_password_length == 0)
+  if (max_reused_password_length == 0) {
+    consumer->OnReuseCheckDone(false, 0, base::nullopt, {}, saved_passwords_);
     return;
+  }
 
   base::Optional<PasswordHashData> reused_protected_password_hash =
       base::nullopt;
@@ -138,9 +143,9 @@ void PasswordReuseDetector::CheckReuse(
   } else if (enterprise_reused_password_length != 0) {
     reused_protected_password_hash = std::move(reused_enterprise_password_hash);
   }
-  consumer->OnReuseFound(max_reused_password_length,
-                         reused_protected_password_hash,
-                         matching_reused_credentials, saved_passwords_);
+  consumer->OnReuseCheckDone(true, max_reused_password_length,
+                             reused_protected_password_hash,
+                             matching_reused_credentials, saved_passwords_);
 }
 
 base::Optional<PasswordHashData> PasswordReuseDetector::CheckGaiaPasswordReuse(
@@ -280,13 +285,13 @@ void PasswordReuseDetector::ClearAllNonGmailPasswordHash() {
       });
 }
 
-void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
+void PasswordReuseDetector::AddPassword(const PasswordForm& form) {
   if (form.password_value.size() < kMinPasswordLengthToCheck)
     return;
 
   const auto result =
       passwords_with_matching_reused_credentials_[form.password_value].insert(
-          {form.signon_realm, form.username_value});
+          {form.signon_realm, form.username_value, form.in_store});
   if (result.second) {
     saved_passwords_++;
   }

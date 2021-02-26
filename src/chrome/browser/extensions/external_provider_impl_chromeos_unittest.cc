@@ -25,13 +25,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change_processor.h"
-#include "components/sync/model/sync_error_factory_mock.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -79,7 +81,8 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
-        service_, profile_.get(), &providers);
+        service_, profile_.get(), service_->pending_extension_manager(),
+        &providers);
 
     for (std::unique_ptr<ExternalProviderInterface>& provider : providers)
       service_->AddProviderForTesting(std::move(provider));
@@ -231,18 +234,27 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
   identity_test_env_profile_adaptor->identity_test_env()->SetPrimaryAccount(
       "test_user@gmail.com");
 
+  // OOBE screen completed with OS sync enabled.
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, true);
+  prefs->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
+
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();
 
+  // SplitSettingsSync makes ExternalPrefLoader wait for OS priority prefs.
+  syncer::ModelType priority_pref_type =
+      chromeos::features::IsSplitSettingsSyncEnabled()
+          ? syncer::OS_PRIORITY_PREFERENCES
+          : syncer::PRIORITY_PREFERENCES;
+
   // Priority sync completed.
-  PrefServiceSyncableFromProfile(profile_.get())
-      ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
-      ->MergeDataAndStartSyncing(syncer::PRIORITY_PREFERENCES,
-                                 syncer::SyncDataList(),
-                                 std::unique_ptr<syncer::SyncChangeProcessor>(
-                                     new syncer::FakeSyncChangeProcessor),
-                                 std::unique_ptr<syncer::SyncErrorFactory>(
-                                     new syncer::SyncErrorFactoryMock()));
+  PrefServiceSyncableFromProfile(profile())
+      ->GetSyncableService(priority_pref_type)
+      ->MergeDataAndStartSyncing(
+          priority_pref_type, syncer::SyncDataList(),
+          std::make_unique<syncer::FakeSyncChangeProcessor>(),
+          std::make_unique<syncer::SyncErrorFactoryMock>());
 
   content::WindowedNotificationObserver(
       extensions::NOTIFICATION_CRX_INSTALLER_DONE,

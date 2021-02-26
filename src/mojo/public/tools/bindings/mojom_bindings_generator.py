@@ -42,7 +42,7 @@ import mojom.fileutil as fileutil
 from mojom.generate.module import Module
 from mojom.generate import template_expander
 from mojom.generate import translate
-from mojom.generate.generator import AddComputedData, WriteFile
+from mojom.generate.generator import WriteFile
 
 sys.path.append(
     os.path.join(_GetDirAbove("mojo"), "tools", "diagnosis"))
@@ -50,10 +50,11 @@ import crbug_1001171
 
 
 _BUILTIN_GENERATORS = {
-  "c++": "mojom_cpp_generator",
-  "javascript": "mojom_js_generator",
-  "java": "mojom_java_generator",
-  "typescript": "mojom_ts_generator",
+    "c++": "mojom_cpp_generator",
+    "javascript": "mojom_js_generator",
+    "java": "mojom_java_generator",
+    "mojolpm": "mojom_mojolpm_generator",
+    "typescript": "mojom_ts_generator",
 }
 
 
@@ -108,6 +109,8 @@ def ScrambleMethodOrdinals(interfaces, salt):
     i = 0
     already_generated.clear()
     for method in interface.methods:
+      if method.explicit_ordinal is not None:
+        continue
       while True:
         i = i + 1
         if i == 1000000:
@@ -163,6 +166,8 @@ class MojomProcessor(object):
           language_map = self._typemap.get(language, {})
           language_map.update(typemap)
           self._typemap[language] = language_map
+    if 'c++' in self._typemap:
+      self._typemap['mojolpm'] = self._typemap['c++']
 
   def _GenerateModule(self, args, remaining_args, generator_modules,
                       rel_filename, imported_filename_stack):
@@ -185,7 +190,6 @@ class MojomProcessor(object):
       ScrambleMethodOrdinals(module.interfaces, salt)
 
     if self._should_generate(rel_filename.path):
-      AddComputedData(module)
       for language, generator_module in generator_modules.items():
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),
@@ -276,10 +280,11 @@ def main():
   generate_parser.add_argument("--filelist", help="mojom input file list")
   generate_parser.add_argument("-d", "--depth", dest="depth", default=".",
                                help="depth from source root")
-  generate_parser.add_argument("-g", "--generators",
+  generate_parser.add_argument("-g",
+                               "--generators",
                                dest="generators_string",
                                metavar="GENERATORS",
-                               default="c++,javascript,java",
+                               default="c++,javascript,java,mojolpm",
                                help="comma-separated list of generators")
   generate_parser.add_argument(
       "--gen_dir", dest="gen_directories", action="append", metavar="directory",

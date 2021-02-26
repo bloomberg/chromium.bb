@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/credentials_cleaner_runner_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,7 +21,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
-#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -37,15 +37,9 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MACOSX)
-// Use default store.
-#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
-// Don't do anything. We're going to use the default store.
-#elif defined(USE_X11)
-#include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 #endif
 
@@ -53,12 +47,7 @@ using password_manager::PasswordStore;
 
 namespace {
 
-#if defined(USE_X11)
-constexpr PasswordStoreX::MigrationToLoginDBStep
-    kMigrationToLoginDBNotAttempted = PasswordStoreX::NOT_ATTEMPTED;
-#endif
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 std::string GetSyncUsername(Profile* profile) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile);
@@ -67,7 +56,7 @@ std::string GetSyncUsername(Profile* profile) {
 }
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 bool IsSignedIn(Profile* profile) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile);
@@ -120,14 +109,14 @@ PasswordStoreFactory::PasswordStoreFactory()
           "PasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
   // from PasswordStore.
   DependsOn(IdentityManagerFactory::GetInstance());
 #endif
 }
 
-PasswordStoreFactory::~PasswordStoreFactory() {}
+PasswordStoreFactory::~PasswordStoreFactory() = default;
 
 scoped_refptr<RefcountedKeyedService>
 PasswordStoreFactory::BuildServiceInstanceFor(
@@ -140,7 +129,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabaseForProfileStorage(
           profile->GetPath()));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   login_db->InitPasswordRecoveryUtil(
@@ -149,13 +138,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
 
   scoped_refptr<PasswordStore> ps;
-#if defined(OS_WIN)
-  ps = new password_manager::PasswordStoreDefault(std::move(login_db));
-#elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
-  ps = new password_manager::PasswordStoreDefault(std::move(login_db));
-#elif defined(USE_X11)
-  ps = new PasswordStoreX(std::move(login_db), profile->GetPrefs());
-#elif defined(USE_OZONE)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_MAC) || defined(USE_X11) || defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #else
   NOTIMPLEMENTED();
@@ -168,7 +152,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   // Prepare password hash data for reuse detection.
   ps->PreparePasswordHashData(GetSyncUsername(profile), IsSignedIn(profile));
 #endif
@@ -181,14 +165,12 @@ PasswordStoreFactory::BuildServiceInstanceFor(
             ->GetNetworkContext();
       },
       profile);
-  password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60,
-                                                  network_context_getter);
+  password_manager_util::RemoveUselessCredentials(
+      CredentialsCleanerRunnerFactory::GetForProfile(profile), ps,
+      profile->GetPrefs(), base::TimeDelta::FromSeconds(60),
+      network_context_getter);
 
-  // Update the |kPasswordManagerOnboardingState| pref in the background.
-  UpdateOnboardingState(ps, profile->GetPrefs(),
-                        base::TimeDelta::FromSeconds(20));
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
       std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
@@ -197,17 +179,6 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
 
   return ps;
-}
-
-void PasswordStoreFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if defined(USE_X11)
-  // Notice that the preprocessor conditions above are exactly those that will
-  // result in using PasswordStoreX in BuildServiceInstanceFor().
-  registry->RegisterIntegerPref(
-      password_manager::prefs::kMigrationToLoginDBStep,
-      kMigrationToLoginDBNotAttempted);
-#endif
 }
 
 content::BrowserContext* PasswordStoreFactory::GetBrowserContextToUse(

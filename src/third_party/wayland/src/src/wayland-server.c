@@ -25,6 +25,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -45,6 +46,7 @@
 
 #include "wayland-util.h"
 #include "wayland-private.h"
+#include "wayland-server-private.h"
 #include "wayland-server.h"
 #include "wayland-os.h"
 
@@ -112,6 +114,7 @@ struct wl_global {
 	void *data;
 	wl_global_bind_func_t bind;
 	struct wl_list link;
+	bool removed;
 };
 
 struct wl_resource {
@@ -917,6 +920,12 @@ registry_bind(struct wl_client *client,
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid global %s (%d)", interface, name);
+	else if (strcmp(global->interface->name, interface) != 0)
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid interface for global %u: "
+				       "have %s, wanted %s",
+				       name, interface, global->interface->name);
 	else if (version == 0)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -986,7 +995,7 @@ display_get_registry(struct wl_client *client,
 		       &registry_resource->link);
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (wl_global_is_visible(client, global))
+		if (wl_global_is_visible(client, global) && !global->removed)
 			wl_resource_post_event(registry_resource,
 					       WL_REGISTRY_GLOBAL,
 					       global->name,
@@ -1202,6 +1211,7 @@ wl_global_create(struct wl_display *display,
 	global->version = version;
 	global->data = data;
 	global->bind = bind;
+	global->removed = false;
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
@@ -1214,15 +1224,50 @@ wl_global_create(struct wl_display *display,
 	return global;
 }
 
+/** Remove the global
+ *
+ * \param global The Wayland global.
+ *
+ * Broadcast a global remove event to all clients without destroying the
+ * global. This function can only be called once per global.
+ *
+ * wl_global_destroy() removes the global and immediately destroys it. On
+ * the other end, this function only removes the global, allowing clients
+ * that have not yet received the global remove event to continue to bind to
+ * it.
+ *
+ * This can be used by compositors to mitigate clients being disconnected
+ * because a global has been added and removed too quickly. Compositors can call
+ * wl_global_remove(), then wait an implementation-defined amount of time, then
+ * call wl_global_destroy(). Note that the destruction of a global is still
+ * racy, since clients have no way to acknowledge that they received the remove
+ * event.
+ *
+ * \since 1.17.90
+ */
 WL_EXPORT void
-wl_global_destroy(struct wl_global *global)
+wl_global_remove(struct wl_global *global)
 {
 	struct wl_display *display = global->display;
 	struct wl_resource *resource;
 
+	if (global->removed)
+		wl_abort("wl_global_remove: called twice on the same "
+			 "global '%s@%"PRIu32"'", global->interface->name,
+			 global->name);
+
 	wl_list_for_each(resource, &display->registry_resource_list, link)
 		wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
 				       global->name);
+
+	global->removed = true;
+}
+
+WL_EXPORT void
+wl_global_destroy(struct wl_global *global)
+{
+	if (!global->removed)
+		wl_global_remove(global);
 	wl_list_remove(&global->link);
 	free(global);
 }
@@ -1237,6 +1282,19 @@ WL_EXPORT void *
 wl_global_get_user_data(const struct wl_global *global)
 {
 	return global->data;
+}
+
+/** Set the global's user data
+ *
+ * \param global The global object
+ * \param data The user data pointer
+ *
+ * \since 1.17.90
+ */
+WL_EXPORT void
+wl_global_set_user_data(struct wl_global *global, void *data)
+{
+	global->data = data;
 }
 
 /** Get the current serial number
@@ -1362,7 +1420,7 @@ socket_data(int fd, uint32_t mask, void *data)
 	client_fd = wl_os_accept_cloexec(fd, (struct sockaddr *) &name,
 					 &length);
 	if (client_fd < 0)
-		wl_log("failed to accept: %m\n");
+		wl_log("failed to accept: %s\n", strerror(errno));
 	else
 		if (!wl_client_create(display, client_fd))
 			close(client_fd);
@@ -1378,7 +1436,7 @@ wl_socket_lock(struct wl_socket *socket)
 	snprintf(socket->lock_addr, sizeof socket->lock_addr,
 		 "%s%s", socket->addr.sun_path, LOCK_SUFFIX);
 
-	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
+	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC | O_RDWR,
 			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
 	if (socket->fd_lock < 0) {
@@ -1393,7 +1451,7 @@ wl_socket_lock(struct wl_socket *socket)
 		goto err_fd;
 	}
 
-	if (stat(socket->addr.sun_path, &socket_stat) < 0 ) {
+	if (lstat(socket->addr.sun_path, &socket_stat) < 0 ) {
 		if (errno != ENOENT) {
 			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);
@@ -1467,12 +1525,12 @@ _wl_display_add_socket(struct wl_display *display, struct wl_socket *s)
 
 	size = offsetof (struct sockaddr_un, sun_path) + strlen(s->addr.sun_path);
 	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
-		wl_log("bind() failed with error: %m\n");
+		wl_log("bind() failed with error: %s\n", strerror(errno));
 		return -1;
 	}
 
 	if (listen(s->fd, 128) < 0) {
-		wl_log("listen() failed with error: %m\n");
+		wl_log("listen() failed with error: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -1899,7 +1957,9 @@ wl_client_get_link(struct wl_client *client)
 WL_EXPORT struct wl_client *
 wl_client_from_link(struct wl_list *link)
 {
-	return container_of(link, struct wl_client, link);
+	struct wl_client *client;
+
+	return wl_container_of(link, client, link);
 }
 
 /** Add a listener for the client's resource creation signal

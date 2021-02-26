@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -309,11 +308,6 @@ void ChunkDemuxerStream::Read(ReadCB read_cb) {
   }
 
   CompletePendingReadIfPossible_Locked();
-}
-
-bool ChunkDemuxerStream::IsReadPending() const {
-  base::AutoLock auto_lock(lock_);
-  return !read_cb_.is_null();
 }
 
 DemuxerStream::Type ChunkDemuxerStream::type() const { return type_; }

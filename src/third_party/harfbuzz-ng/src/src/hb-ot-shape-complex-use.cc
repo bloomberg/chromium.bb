@@ -32,10 +32,11 @@
 
 #include "hb-ot-shape-complex-use.hh"
 #include "hb-ot-shape-complex-arabic.hh"
+#include "hb-ot-shape-complex-arabic-joining-list.hh"
 #include "hb-ot-shape-complex-vowel-constraints.hh"
 
 /* buffer var allocations */
-#define use_category() complex_var_u8_0()
+#define use_category() complex_var_u8_1()
 
 
 /*
@@ -152,40 +153,6 @@ struct use_shape_plan_t
   arabic_shape_plan_t *arabic_plan;
 };
 
-static bool
-has_arabic_joining (hb_script_t script)
-{
-  /* List of scripts that have data in arabic-table. */
-  switch ((int) script)
-  {
-    /* Unicode-1.1 additions */
-    case HB_SCRIPT_ARABIC:
-
-    /* Unicode-3.0 additions */
-    case HB_SCRIPT_MONGOLIAN:
-    case HB_SCRIPT_SYRIAC:
-
-    /* Unicode-5.0 additions */
-    case HB_SCRIPT_NKO:
-    case HB_SCRIPT_PHAGS_PA:
-
-    /* Unicode-6.0 additions */
-    case HB_SCRIPT_MANDAIC:
-
-    /* Unicode-7.0 additions */
-    case HB_SCRIPT_MANICHAEAN:
-    case HB_SCRIPT_PSALTER_PAHLAVI:
-
-    /* Unicode-9.0 additions */
-    case HB_SCRIPT_ADLAM:
-
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 static void *
 data_create_use (const hb_ot_shape_plan_t *plan)
 {
@@ -227,6 +194,7 @@ enum use_syllable_type_t {
   use_number_joiner_terminated_cluster,
   use_numeral_cluster,
   use_symbol_cluster,
+  use_hieroglyph_cluster,
   use_broken_cluster,
   use_non_cluster,
 };
@@ -308,6 +276,7 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
     {
       case use_independent_cluster:
       case use_symbol_cluster:
+      case use_hieroglyph_cluster:
       case use_non_cluster:
 	/* These don't join.  Nothing to do. */
 	last_form = _USE_NONE;

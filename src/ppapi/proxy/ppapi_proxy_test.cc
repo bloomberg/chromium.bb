@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/observer_list.h"
@@ -288,10 +288,6 @@ IPC::Sender* PluginProxyTestHarness::PluginDelegateMock::GetBrowserSender() {
 
 std::string PluginProxyTestHarness::PluginDelegateMock::GetUILanguage() {
   return std::string("en-US");
-}
-
-void PluginProxyTestHarness::PluginDelegateMock::PreCacheFontForFlash(
-    const void* logfontw) {
 }
 
 void PluginProxyTestHarness::PluginDelegateMock::SetActiveURL(

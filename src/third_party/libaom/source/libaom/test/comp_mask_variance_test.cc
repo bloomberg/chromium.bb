@@ -35,10 +35,12 @@ typedef void (*comp_mask_pred_func)(uint8_t *comp_pred, const uint8_t *pred,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask);
 
-#if HAVE_SSSE3 || HAVE_SSE2 || HAVE_AV2
+#if HAVE_SSSE3 || HAVE_SSE2 || HAVE_AVX2
 const BLOCK_SIZE kValidBlockSize[] = {
-  BLOCK_8X8,   BLOCK_8X16, BLOCK_8X32,  BLOCK_16X8,  BLOCK_16X16,
-  BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,
+  BLOCK_8X8,   BLOCK_8X16,  BLOCK_8X32,   BLOCK_16X8,   BLOCK_16X16,
+  BLOCK_16X32, BLOCK_32X8,  BLOCK_32X16,  BLOCK_32X32,  BLOCK_32X64,
+  BLOCK_64X32, BLOCK_64X64, BLOCK_64X128, BLOCK_128X64, BLOCK_128X128,
+  BLOCK_16X64, BLOCK_64X16
 };
 #endif
 typedef std::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
@@ -75,6 +77,7 @@ class AV1CompMaskVarianceTest
   uint8_t *ref_buffer_;
   uint8_t *ref_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1CompMaskVarianceTest);
 
 AV1CompMaskVarianceTest::~AV1CompMaskVarianceTest() { ; }
 
@@ -318,6 +321,7 @@ class AV1HighbdCompMaskVarianceTest
   uint16_t *ref_buffer_;
   uint16_t *ref_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HighbdCompMaskVarianceTest);
 
 AV1HighbdCompMaskVarianceTest::~AV1HighbdCompMaskVarianceTest() { ; }
 

@@ -10,19 +10,18 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/web_preferences.h"
-#include "content/public/renderer/render_view.h"
 #include "gin/converter.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -35,8 +34,8 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
 
+using blink::DragOperationsMask;
 using blink::WebDragData;
-using blink::WebDragOperationsMask;
 using blink::WebFrameWidget;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
@@ -48,7 +47,7 @@ using blink::WebURLError;
 using blink::WebURLResponse;
 using blink::WebVector;
 using blink::WebView;
-using content::WebPreferences;
+using blink::web_pref::WebPreferences;
 
 WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
                              WebViewPlugin::Delegate* delegate,
@@ -224,7 +223,7 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
   if (event.GetType() == blink::WebInputEvent::Type::kContextMenu) {
     if (delegate_) {
       const WebMouseEvent& mouse_event =
-          reinterpret_cast<const WebMouseEvent&>(event);
+          static_cast<const WebMouseEvent&>(event);
       delegate_->ShowContextMenu(mouse_event);
     }
     return blink::WebInputEventResult::kHandledSuppressed;
@@ -259,15 +258,20 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
 
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                                             const WebPreferences& preferences)
-    : plugin_(plugin) {
+    : plugin_(plugin),
+      agent_group_scheduler_(
+          blink::scheduler::WebThreadScheduler::MainThreadScheduler()
+              ->CreateAgentGroupScheduler()) {
   web_view_ =
       WebView::Create(/*client=*/this,
                       /*is_hidden=*/false,
+                      /*is_inside_portal=*/false,
                       /*compositing_enabled=*/false,
-                      /*opener=*/nullptr, mojo::NullAssociatedReceiver());
+                      /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
+                      *agent_group_scheduler_);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
-  content::RenderView::ApplyWebPreferences(preferences, web_view_);
+  blink::WebView::ApplyWebPreferences(preferences, web_view_);
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       web_view_, this, nullptr, base::UnguessableToken::Create(), nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
@@ -277,14 +281,13 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
           blink::mojom::FrameWidgetHostInterfaceBase>(),
       blink::CrossVariantMojoAssociatedReceiver<
           blink::mojom::FrameWidgetInterfaceBase>(),
-      blink::CrossVariantMojoAssociatedRemote<
-          blink::mojom::WidgetHostInterfaceBase>(),
-      blink::CrossVariantMojoAssociatedReceiver<
-          blink::mojom::WidgetInterfaceBase>());
+      blink_widget_host_receiver_.BindNewEndpointAndPassDedicatedRemote(),
+      blink_widget_.BindNewEndpointAndPassDedicatedReceiver(),
+      viz::FrameSinkId());
 
-  // The WebFrame created here was already attached to the Page as its
-  // main frame, and the WebFrameWidget has been initialized, so we can call
-  // WebViewImpl's DidAttachLocalMainFrame().
+  // The WebFrame created here was already attached to the Page as its main
+  // frame, and the WebFrameWidget has been initialized, so we can call
+  // WebView's DidAttachLocalMainFrame().
   web_view_->DidAttachLocalMainFrame();
 }
 
@@ -304,26 +307,22 @@ bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
   return true;
 }
 
-blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
-  // TODO(danakj): This should probably return the screen info for the
-  // RenderView.
-  return blink::WebScreenInfo();
-}
-
 void WebViewPlugin::WebViewHelper::SetToolTipText(
-    const WebString& text,
+    const base::string16& tooltip_text,
     base::i18n::TextDirection hint) {
-  if (plugin_->container_)
-    plugin_->container_->GetElement().SetAttribute("title", text);
+  if (plugin_->container_) {
+    plugin_->container_->GetElement().SetAttribute(
+        "title", WebString::FromUTF16(tooltip_text));
+  }
 }
 
-void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
-                                                 const WebDragData&,
-                                                 WebDragOperationsMask,
-                                                 const SkBitmap&,
-                                                 const gfx::Point&) {
+bool WebViewPlugin::WebViewHelper::InterceptStartDragging(const WebDragData&,
+                                                          DragOperationsMask,
+                                                          const SkBitmap&,
+                                                          const gfx::Point&) {
   // Immediately stop dragging.
   frame_->FrameWidget()->DragSourceSystemDragEnded();
+  return true;
 }
 
 void WebViewPlugin::WebViewHelper::DidInvalidateRect(const WebRect& rect) {
@@ -384,7 +383,7 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
       .Check();
 }
 
-void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
+void WebViewPlugin::WebViewHelper::FrameDetached() {
   frame_->FrameWidget()->Close();
   frame_->Close();
   frame_ = nullptr;

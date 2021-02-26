@@ -13,11 +13,11 @@
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 constexpr bool kScaleDeviceBuffer = false;
 #else
 constexpr bool kScaleDeviceBuffer = true;
@@ -67,7 +67,7 @@ bool CPDF_DeviceBuffer::Initialize() {
   FX_RECT bitmap_rect =
       m_Matrix.TransformRect(CFX_FloatRect(m_Rect)).GetOuterRect();
   return m_pBitmap->Create(bitmap_rect.Width(), bitmap_rect.Height(),
-                           FXDIB_Argb);
+                           FXDIB_Format::kArgb);
 }
 
 void CPDF_DeviceBuffer::OutputToDevice() {

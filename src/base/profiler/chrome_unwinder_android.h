@@ -19,7 +19,7 @@ namespace base {
 class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
  public:
   ChromeUnwinderAndroid(const ArmCFITable* cfi_table,
-                        const ModuleCache::Module* chrome_module);
+                        uintptr_t chrome_module_base_address);
   ~ChromeUnwinderAndroid() override;
   ChromeUnwinderAndroid(const ChromeUnwinderAndroid&) = delete;
   ChromeUnwinderAndroid& operator=(const ChromeUnwinderAndroid&) = delete;
@@ -41,9 +41,12 @@ class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
   static bool Step(RegisterContext* thread_context,
                    uintptr_t stack_top,
                    const ArmCFITable::FrameEntry& entry);
+  // Fallback setp that attempts to use lr as return address.
+  static bool StepUsingLrRegister(RegisterContext* thread_context,
+                                  uintptr_t stack_top);
 
   const ArmCFITable* cfi_table_;
-  const ModuleCache::Module* const chrome_module_;
+  const uintptr_t chrome_module_base_address_;
 };
 
 }  // namespace base

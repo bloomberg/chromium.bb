@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,7 +47,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
           PaintImage::kDefaultGeneratorClientId) {
   SetResources(resource_pool, &image_decode_cache_, GetGlobalTaskGraphRunner(),
                GetGlobalRasterBufferProvider(),
-               false /* use_gpu_rasterization */);
+               false /* use_gpu_rasterization */,
+               false /* use_oop_rasterization */);
   SetTileTaskManagerForTesting(std::make_unique<FakeTileTaskManagerImpl>());
 }
 

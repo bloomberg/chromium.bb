@@ -75,6 +75,9 @@ declare_args() {
   # further explanation, see
   # https://gn.googlesource.com/gn/+/refs/heads/master/docs/reference.md#toolchain-overview
   host_toolchain = ""
+
+  # Must be enabled for fuzzing targets.
+  use_libfuzzer = false
 }
 
 declare_args() {
@@ -158,6 +161,7 @@ _shared_binary_target_configs = [
   "//build/config:compiler_cpu_abi",
   "//build/config:default_optimization",
   "//build/config:sysroot_runtime_libraries",
+  "//build/config:operating_system_defines",
 ]
 
 # Apply that default list to the binary target types.

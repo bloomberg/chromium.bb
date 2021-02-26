@@ -11,21 +11,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
 class AppServiceAppItem : public ChromeAppListItem,
                           public app_list::AppContextMenuDelegate {
  public:
   static const char kItemType[];
-
-  static std::unique_ptr<app_list::AppContextMenu> MakeAppContextMenu(
-      apps::mojom::AppType app_type,
-      AppContextMenuDelegate* delegate,
-      Profile* profile,
-      const std::string& app_id,
-      AppListControllerDelegate* controller,
-      bool is_platform_app);
 
   AppServiceAppItem(Profile* profile,
                     AppListModelUpdater* model_updater,

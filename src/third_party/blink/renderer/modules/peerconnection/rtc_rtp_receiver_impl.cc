@@ -317,8 +317,8 @@ RTCRtpReceiverImpl::DtlsTransportInformation() {
   return internal_->state().webrtc_dtls_transport_information();
 }
 
-const blink::WebMediaStreamTrack& RTCRtpReceiverImpl::Track() const {
-  return internal_->state().track_ref()->web_track();
+MediaStreamComponent* RTCRtpReceiverImpl::Track() const {
+  return internal_->state().track_ref()->track();
 }
 
 Vector<String> RTCRtpReceiverImpl::StreamIds() const {
@@ -405,9 +405,10 @@ webrtc::RtpTransceiverDirection RTCRtpReceiverOnlyTransceiver::Direction()
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
-void RTCRtpReceiverOnlyTransceiver::SetDirection(
+webrtc::RTCError RTCRtpReceiverOnlyTransceiver::SetDirection(
     webrtc::RtpTransceiverDirection direction) {
   NOTIMPLEMENTED();
+  return webrtc::RTCError::OK();
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>

@@ -250,3 +250,10 @@ void FullscreenControllerImpl::EnterFullscreen() {
 void FullscreenControllerImpl::ExitFullscreen() {
   mediator_.ExitFullscreen();
 }
+
+void FullscreenControllerImpl::ResizeHorizontalViewport() {
+  // TODO(crbug.com/1114054) this hack temporarily force change webview's
+  // width insets to trigger a width recomputation of its content. It will cause
+  // two relayouts.
+  mediator_.ResizeHorizontalInsets();
+}

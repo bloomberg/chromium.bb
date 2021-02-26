@@ -63,19 +63,14 @@ gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) {
       resource_id);
 }
 
-base::DictionaryValue ShellContentClient::GetNetLogConstants() {
-  base::DictionaryValue client_constants;
-  client_constants.SetString("name", "content_shell");
-  client_constants.SetString(
-      "command_line",
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
-  base::DictionaryValue constants;
-  constants.SetKey("clientInfo", std::move(client_constants));
-  return constants;
-}
-
 blink::OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
   return &origin_trial_policy_;
+}
+
+void ShellContentClient::AddAdditionalSchemes(Schemes* schemes) {
+#if defined(OS_ANDROID)
+  schemes->local_schemes.push_back(url::kContentScheme);
+#endif
 }
 
 }  // namespace content

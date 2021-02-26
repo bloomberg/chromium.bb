@@ -16,6 +16,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -89,10 +90,9 @@ bool Throbber::IsRunning() const {
   return timer_.IsRunning();
 }
 
-BEGIN_METADATA(Throbber)
-METADATA_PARENT_CLASS(View)
-ADD_PROPERTY_METADATA(Throbber, bool, Checked)
-END_METADATA()
+BEGIN_METADATA(Throbber, View)
+ADD_PROPERTY_METADATA(bool, Checked)
+END_METADATA
 
 // Smoothed throbber ---------------------------------------------------------
 
@@ -150,10 +150,9 @@ void SmoothedThrobber::StopDelayOver() {
   Throbber::Stop();
 }
 
-BEGIN_METADATA(SmoothedThrobber)
-METADATA_PARENT_CLASS(Throbber)
-ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StartDelay)
-ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StopDelay)
-END_METADATA()
+BEGIN_METADATA(SmoothedThrobber, Throbber)
+ADD_PROPERTY_METADATA(base::TimeDelta, StartDelay)
+ADD_PROPERTY_METADATA(base::TimeDelta, StopDelay)
+END_METADATA
 
 }  // namespace views

@@ -31,7 +31,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   void CreateAXContext();
 
   // Base agent methods.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Restore() override;
 
   // Protocol methods.
@@ -45,6 +45,14 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
   protocol::Response getFullAXTree(
+      std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
+      override;
+  protocol::Response queryAXTree(
+      protocol::Maybe<int> dom_node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id,
+      protocol::Maybe<String> accessibleName,
+      protocol::Maybe<String> role,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
 

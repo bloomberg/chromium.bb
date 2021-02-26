@@ -6,6 +6,19 @@
  * @fileoverview Polymer element for displaying ARC ADB sideloading screen.
  */
 
+'use strict';
+
+(function() {
+
+/**
+ * UI mode for the dialog.
+ * @enum {string}
+ */
+const UIState = {
+  SETUP: 'setup',
+  ERROR: 'error',
+};
+
 // The constants need to be synced with EnableAdbSideloadingScreenView::UIState.
 const ADB_SIDELOADING_SCREEN_STATE = {
   ERROR: 1,
@@ -13,32 +26,29 @@ const ADB_SIDELOADING_SCREEN_STATE = {
 };
 
 Polymer({
-  is: 'oobe-adb-sideloading-screen',
+  is: 'oobe-adb-sideloading-element',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
-
-  properties: {
-    uiState_: String,
-  },
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   EXTERNAL_API: [
     'setScreenState',
   ],
 
-  ready() {
-    this.initializeLoginScreen('EnableAdbSideloadingScreen', {
-      noAnimatedTransition: true,
-      resetAllowed: true,
-    });
-    this.setScreenState(this.SCREEN_STATE_SETUP);
+  UI_STEPS: UIState,
+
+  defaultUIStep() {
+    return UIState.SETUP;
   },
 
-  focus() {
-    if (this.uiState_ === ADB_SIDELOADING_SCREEN_STATE.SETUP) {
-      this.$.enableAdbSideloadDialog.focus();
-    } else if (this.uiState_ === ADB_SIDELOADING_SCREEN_STATE.ERROR) {
-      this.$.enableAdbSideloadErrorDialog.focus();
-    }
+  ready() {
+    this.initializeLoginScreen('EnableAdbSideloadingScreen', {
+      resetAllowed: true,
+    });
   },
 
   /*
@@ -49,10 +59,6 @@ Polymer({
   },
 
   onBeforeShow(data) {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     this.setScreenState(this.SCREEN_STATE_SETUP);
   },
 
@@ -62,14 +68,10 @@ Polymer({
    */
   setScreenState(state) {
     if (state == ADB_SIDELOADING_SCREEN_STATE.ERROR) {
-      this.uiState_ = 'error';
+      this.setUIStep(UIState.ERROR);
     } else if (state == ADB_SIDELOADING_SCREEN_STATE.SETUP) {
-      this.uiState_ = 'setup';
+      this.setUIStep(UIState.SETUP);
     }
-  },
-
-  isState_(uiState, state) {
-    return uiState === state;
   },
 
   /**
@@ -90,7 +92,6 @@ Polymer({
     this.userActed('cancel-pressed');
   },
 
-
   /**
    * On-tap event handler for learn more link.
    *
@@ -100,3 +101,4 @@ Polymer({
     this.userActed('learn-more-link');
   },
 });
+})();

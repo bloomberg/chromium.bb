@@ -69,7 +69,13 @@ class SchedulerClient {
   virtual void ScheduledActionInvalidateLayerTreeFrameSink(
       bool needs_redraw) = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
-  virtual void DidFinishImplFrame() = 0;
+  // Called when the scheduler is done processing a frame. Note that the
+  // BeginFrameArgs instance passed may not necessarily be the same instance
+  // that was passed to WillBeginImplFrame(). Rather, |last_activated_args|
+  // represents the latest BeginFrameArgs instance that caused an activation to
+  // happen.
+  virtual void DidFinishImplFrame(
+      const viz::BeginFrameArgs& last_activated_args) = 0;
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                   FrameSkippedReason reason) = 0;
   virtual void WillNotReceiveBeginFrame() = 0;
@@ -79,11 +85,7 @@ class SchedulerClient {
   virtual void FrameIntervalUpdated(base::TimeDelta interval) = 0;
 
   // Functions used for reporting animation targeting UMA, crbug.com/758439.
-  virtual size_t CompositedAnimationsCount() const = 0;
-  virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool HasCustomPropertyAnimations() const = 0;
-  virtual bool CurrentFrameHadRAF() const = 0;
-  virtual bool NextFrameHasPendingRAF() const = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -281,7 +283,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // What the latest deadline was, and when it was scheduled.
   base::TimeTicks deadline_;
   base::TimeTicks deadline_scheduled_at_;
-  SchedulerStateMachine::BeginImplFrameDeadlineMode deadline_mode_;
+  SchedulerStateMachine::BeginImplFrameDeadlineMode deadline_mode_ =
+      SchedulerStateMachine::BeginImplFrameDeadlineMode::NONE;
 
   BeginFrameTracker begin_impl_frame_tracker_;
   viz::BeginFrameAck last_begin_frame_ack_;
@@ -318,6 +321,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
       SchedulerStateMachine::Action::NONE;
 
   bool stopped_ = false;
+
+  bool needs_finish_frame_for_synchronous_compositor_ = false;
 
   // Keeps track of the begin frame interval from the last BeginFrameArgs to
   // arrive so that |client_| can be informed about changes.
@@ -366,6 +371,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   void BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);
+  void FinishImplFrameSynchronous();
   void BeginImplFrame(const viz::BeginFrameArgs& args, base::TimeTicks now);
   void FinishImplFrame();
   void SendDidNotProduceFrame(const viz::BeginFrameArgs& args,

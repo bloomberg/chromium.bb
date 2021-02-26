@@ -80,7 +80,8 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
       // it.
       int qindex_delta = av1_compute_qdelta_by_rate(
           &cpi->rc, cm->current_frame.frame_type, base_qindex,
-          rate_ratio[i] / avg_ratio, cm->seq_params.bit_depth);
+          rate_ratio[i] / avg_ratio, cpi->is_screen_content_type,
+          cm->seq_params.bit_depth);
 
       // We don't allow qindex 0 in a segment if the base value is not 0.
       // Q index 0 (lossless) implies 4x4 encoding only and in AQ mode a segment
@@ -197,7 +198,8 @@ int av1_compute_q_from_energy_level_deltaq_mode(const AV1_COMP *const cpi,
   const int base_qindex = cm->quant_params.base_qindex;
   int qindex_delta = av1_compute_qdelta_by_rate(
       &cpi->rc, cm->current_frame.frame_type, base_qindex,
-      deltaq_rate_ratio[rate_level], cm->seq_params.bit_depth);
+      deltaq_rate_ratio[rate_level], cpi->is_screen_content_type,
+      cm->seq_params.bit_depth);
 
   if ((base_qindex != 0) && ((base_qindex + qindex_delta) == 0)) {
     qindex_delta = -base_qindex + 1;

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -29,7 +30,8 @@ namespace {
 
 // Returns the most recently active window from the |window_list| or nullptr
 // if the list is empty.
-aura::Window* GetActiveWindow(const WindowCycleList::WindowList& window_list) {
+aura::Window* GetActiveWindow(
+    const WindowCycleController::WindowList& window_list) {
   return window_list.empty() ? nullptr : window_list[0];
 }
 
@@ -75,7 +77,8 @@ bool WindowCycleController::CanCycle() {
   return !Shell::Get()->session_controller()->IsScreenLocked() &&
          !Shell::IsSystemModalWindowOpen() &&
          !Shell::Get()->screen_pinning_controller()->IsPinned() &&
-         !window_util::IsAnyWindowDragged();
+         !window_util::IsAnyWindowDragged() &&
+         !Shell::Get()->desks_controller()->AreDesksBeingModified();
 }
 
 void WindowCycleController::HandleCycleWindow(Direction direction) {
@@ -88,19 +91,25 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
   Step(direction);
 }
 
-void WindowCycleController::StartCycling() {
-  WindowCycleList::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
-          features::IsAltTabLimitedToActiveDesk() ? kActiveDesk : kAllDesks);
-  // Window cycle list windows will handle showing their transient related
-  // windows, so if a window in |window_list| has a transient root also in
-  // |window_list|, we can remove it as the transient root will handle showing
-  // the window.
-  window_util::RemoveTransientDescendants(&window_list);
+void WindowCycleController::Scroll(Direction direction) {
+  if (!CanCycle())
+    return;
 
-  active_desk_container_id_before_cycle_ =
-      desks_util::GetActiveDeskContainerId();
-  active_window_before_window_cycle_ = GetActiveWindow(window_list);
+  if (!IsCycling())
+    StartCycling();
+
+  DCHECK(window_cycle_list_);
+  window_cycle_list_->ScrollInDirection(direction);
+}
+
+void WindowCycleController::StartCycling() {
+  // Close the wallpaper preview if it is open to prevent visual glitches where
+  // the window view item for the preview is transparent
+  // (http://crbug.com/895265).
+  Shell::Get()->wallpaper_controller()->MaybeClosePreviewWallpaper();
+
+  WindowCycleController::WindowList window_list = CreateWindowList();
+  SaveCurrentActiveDeskAndWindow(window_list);
 
   window_cycle_list_ = std::make_unique<WindowCycleList>(window_list);
   event_filter_ = std::make_unique<WindowCycleEventFilter>();
@@ -118,11 +127,57 @@ void WindowCycleController::CancelCycling() {
   StopCycling();
 }
 
+void WindowCycleController::MaybeResetCycleList() {
+  if (!IsCycling())
+    return;
+
+  WindowCycleController::WindowList window_list = CreateWindowList();
+  SaveCurrentActiveDeskAndWindow(window_list);
+
+  DCHECK(window_cycle_list_);
+  window_cycle_list_->ReplaceWindows(window_list);
+}
+
+void WindowCycleController::SetFocusedWindow(aura::Window* window) {
+  if (!IsCycling())
+    return;
+
+  DCHECK(window_cycle_list_);
+  window_cycle_list_->SetFocusedWindow(window);
+}
+
+bool WindowCycleController::IsEventInCycleView(ui::LocatedEvent* event) {
+  return window_cycle_list_ && window_cycle_list_->IsEventInCycleView(event);
+}
+
+bool WindowCycleController::IsWindowListVisible() {
+  return window_cycle_list_ && window_cycle_list_->ShouldShowUi();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, private:
 
+WindowCycleController::WindowList WindowCycleController::CreateWindowList() {
+  WindowCycleController::WindowList window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
+          features::IsAltTabLimitedToActiveDesk() ? kActiveDesk : kAllDesks);
+  // Window cycle list windows will handle showing their transient related
+  // windows, so if a window in |window_list| has a transient root also in
+  // |window_list|, we can remove it as the transient root will handle showing
+  // the window.
+  window_util::EnsureTransientRoots(&window_list);
+  return window_list;
+}
+
+void WindowCycleController::SaveCurrentActiveDeskAndWindow(
+    const WindowCycleController::WindowList& window_list) {
+  active_desk_container_id_before_cycle_ =
+      desks_util::GetActiveDeskContainerId();
+  active_window_before_window_cycle_ = GetActiveWindow(window_list);
+}
+
 void WindowCycleController::Step(Direction direction) {
-  DCHECK(window_cycle_list_.get());
+  DCHECK(window_cycle_list_);
   window_cycle_list_->Step(direction);
 }
 

@@ -12,6 +12,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
+#include "util/chrono_helpers.h"
 
 using testing::_;
 using testing::Mock;
@@ -264,7 +265,7 @@ TEST_F(CompoundRtcpParserTest, ParsesSimpleFeedback) {
   // First scenario: Valid range of FrameIds is [0,42].
   const auto kMaxFeedbackFrameId0 = FrameId::first() + 42;
   const auto expected_frame_id0 = FrameId::first() + 10;
-  const auto expected_playout_delay = std::chrono::milliseconds(550);
+  const auto expected_playout_delay = milliseconds(550);
   EXPECT_CALL(*(client()),
               OnReceiverCheckpoint(expected_frame_id0, expected_playout_delay));
   EXPECT_TRUE(parser()->Parse(kFeedbackPacket, kMaxFeedbackFrameId0));
@@ -321,7 +322,7 @@ TEST_F(CompoundRtcpParserTest, ParsesFeedbackWithNacks) {
 
   const auto kMaxFeedbackFrameId = FrameId::first() + 42;
   const auto expected_frame_id = FrameId::first() + 10;
-  const auto expected_playout_delay = std::chrono::milliseconds(552);
+  const auto expected_playout_delay = milliseconds(552);
   EXPECT_CALL(*(client()),
               OnReceiverCheckpoint(expected_frame_id, expected_playout_delay));
   EXPECT_CALL(*(client()), OnReceiverIsMissingPackets(kMissingPackets));
@@ -386,7 +387,7 @@ TEST_F(CompoundRtcpParserTest, ParsesFeedbackWithAcks) {
   // Test the smaller packet.
   const auto kMaxFeedbackFrameId = FrameId::first() + 100;
   const auto expected_frame_id = FrameId::first() + 10;
-  const auto expected_playout_delay = std::chrono::milliseconds(294);
+  const auto expected_playout_delay = milliseconds(294);
   EXPECT_CALL(*(client()),
               OnReceiverCheckpoint(expected_frame_id, expected_playout_delay));
   EXPECT_CALL(*(client()), OnReceiverHasFrames(kFrame13Only));

@@ -4,23 +4,36 @@
 
 #include "chrome/browser/ui/webui/webui_util.h"
 
-#include "chrome/common/buildflags.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/resources/grit/webui_resources_map.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#elif defined(OS_WIN) || defined(OS_MAC)
+#include "base/enterprise_util.h"
+#endif
 
 namespace webui {
 
 namespace {
 
 void SetupPolymer3Defaults(content::WebUIDataSource* source) {
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  // TODO(crbug.com/1098690): Trusted Type Polymer
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
 }
 
 }  // namespace
@@ -30,9 +43,12 @@ void SetupWebUIDataSource(content::WebUIDataSource* source,
                           const std::string& generated_path,
                           int default_resource) {
   SetupPolymer3Defaults(source);
+  // TODO (crbug.com/1132403): Replace usages of |generated_path| with the new
+  // |resource_path| GRD property, and remove from here.
+  bool has_gen_path = !generated_path.empty();
   for (const GritResourceMap& resource : resources) {
     std::string path = resource.name;
-    if (path.rfind(generated_path, 0) == 0) {
+    if (has_gen_path && path.rfind(generated_path, 0) == 0) {
       path = path.substr(generated_path.size());
     }
 
@@ -40,17 +56,6 @@ void SetupWebUIDataSource(content::WebUIDataSource* source,
   }
   source->AddResourcePath("", default_resource);
 }
-
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
-                                 base::StringPiece bundled_path,
-                                 int bundle,
-                                 int default_resource) {
-  SetupPolymer3Defaults(source);
-  source->AddResourcePath(bundled_path, bundle);
-  source->AddResourcePath("", default_resource);
-}
-#endif
 
 void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
                              base::span<const LocalizedString> strings) {
@@ -68,6 +73,18 @@ void AddResourcePathsBulk(content::WebUIDataSource* source,
                           base::span<const GritResourceMap> resources) {
   for (const auto& resource : resources)
     source->AddResourcePath(resource.name, resource.value);
+}
+
+bool IsEnterpriseManaged() {
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
+#elif defined(OS_WIN) || defined(OS_MAC)
+  return base::IsMachineExternallyManaged();
+#else
+  return false;
+#endif
 }
 
 }  // namespace webui

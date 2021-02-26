@@ -11,7 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -21,15 +25,18 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 namespace blink {
+namespace web_pref {
+struct WebPreferences;
+}  // namespace web_pref
 class WebLocalFrame;
 class WebMouseEvent;
 }
 
 namespace content {
 class RenderView;
-struct WebPreferences;
 }
 
 // This class implements the WebPlugin interface by forwarding drawing and
@@ -66,11 +73,12 @@ class WebViewPlugin : public blink::WebPlugin,
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) data:text/html URL;
   // it is only used for navigation and never actually resolved.
-  static WebViewPlugin* Create(content::RenderView* render_view,
-                               Delegate* delegate,
-                               const content::WebPreferences& preferences,
-                               const std::string& html_data,
-                               const GURL& url);
+  static WebViewPlugin* Create(
+      content::RenderView* render_view,
+      Delegate* delegate,
+      const blink::web_pref::WebPreferences& preferences,
+      const std::string& html_data,
+      const GURL& url);
 
   blink::WebLocalFrame* main_frame() { return web_view_helper_.main_frame(); }
 
@@ -117,7 +125,7 @@ class WebViewPlugin : public blink::WebPlugin,
   friend class base::DeleteHelper<WebViewPlugin>;
   WebViewPlugin(content::RenderView* render_view,
                 Delegate* delegate,
-                const content::WebPreferences& preferences);
+                const blink::web_pref::WebPreferences& preferences);
   ~WebViewPlugin() override;
 
   blink::WebView* web_view() { return web_view_helper_.web_view(); }
@@ -154,10 +162,11 @@ class WebViewPlugin : public blink::WebPlugin,
   // A helper that handles interaction from WebViewPlugin's internal WebView.
   class WebViewHelper : public blink::WebViewClient,
                         public blink::WebWidgetClient,
-                        public blink::WebLocalFrameClient {
+                        public blink::WebLocalFrameClient,
+                        public blink::mojom::WidgetHost {
    public:
     WebViewHelper(WebViewPlugin* plugin,
-                  const content::WebPreferences& preferences);
+                  const blink::web_pref::WebPreferences& preferences);
     ~WebViewHelper() override;
 
     blink::WebView* web_view() { return web_view_; }
@@ -167,33 +176,56 @@ class WebViewPlugin : public blink::WebPlugin,
     bool AcceptsLoadDrops() override;
     bool CanHandleGestureEvent() override;
     bool CanUpdateLayout() override;
-    blink::WebScreenInfo GetScreenInfo() override;
     void DidInvalidateRect(const blink::WebRect&) override;
 
     // WebWidgetClient methods:
-    void SetToolTipText(const blink::WebString&,
-                        base::i18n::TextDirection) override;
-    void StartDragging(network::mojom::ReferrerPolicy,
-                       const blink::WebDragData&,
-                       blink::WebDragOperationsMask,
-                       const SkBitmap&,
-                       const gfx::Point&) override;
+    bool InterceptStartDragging(const blink::WebDragData&,
+                                blink::DragOperationsMask,
+                                const SkBitmap&,
+                                const gfx::Point&) override;
     void DidChangeCursor(const ui::Cursor& cursor) override;
     void ScheduleAnimation() override;
 
     // WebLocalFrameClient methods:
     void BindToFrame(blink::WebNavigationControl* frame) override;
     void DidClearWindowObject() override;
-    void FrameDetached(DetachType) override;
+    void FrameDetached() override;
     std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
         override;
+
+    // blink::mojom::WidgetHost implementation.
+    void SetCursor(const ui::Cursor& cursor) override {}
+    void SetToolTipText(const base::string16& tooltip_text,
+                        base::i18n::TextDirection hint) override;
+    void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override {}
+    void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                                base::i18n::TextDirection anchor_dir,
+                                const gfx::Rect& focus_rect,
+                                base::i18n::TextDirection focus_dir,
+                                bool is_anchor_first) override {}
+    void CreateFrameSink(
+        mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+            compositor_frame_sink_receiver,
+        mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>) override {}
+    void RegisterRenderFrameMetadataObserver(
+        mojo::PendingReceiver<cc::mojom::RenderFrameMetadataObserverClient>
+            render_frame_metadata_observer_client_receiver,
+        mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
+            render_frame_metadata_observer) override {}
 
    private:
     WebViewPlugin* plugin_;
     blink::WebNavigationControl* frame_ = nullptr;
 
+    std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
+        agent_group_scheduler_;
+
     // Owned by us, deleted via |close()|.
     blink::WebView* web_view_;
+
+    mojo::AssociatedReceiver<blink::mojom::WidgetHost>
+        blink_widget_host_receiver_{this};
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
   };
   WebViewHelper web_view_helper_;
 

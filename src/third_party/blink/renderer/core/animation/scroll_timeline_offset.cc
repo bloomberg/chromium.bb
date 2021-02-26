@@ -4,35 +4,22 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/string_or_scroll_timeline_element_based_offset.h"
+#include "base/optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/css_numeric_value_or_string_or_css_keyword_value_or_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
 namespace {
-
-bool StringToScrollOffset(String scroll_offset,
-                          const CSSParserContext& context,
-                          CSSPrimitiveValue** result) {
-  CSSTokenizer tokenizer(scroll_offset);
-  const auto tokens = tokenizer.TokenizeToEOF();
-  CSSParserTokenRange range(tokens);
-  CSSValue* value = css_parsing_utils::ConsumeScrollOffset(range, context);
-  if (!value)
-    return false;
-
-  // We support 'auto', but for simplicity just store it as nullptr.
-  *result = DynamicTo<CSSPrimitiveValue>(value);
-  return true;
-}
 
 bool ValidateElementBasedOffset(ScrollTimelineElementBasedOffset* offset) {
   if (!offset->hasTarget())
@@ -46,35 +33,82 @@ bool ValidateElementBasedOffset(ScrollTimelineElementBasedOffset* offset) {
   return true;
 }
 
+// TODO(majidvp): Dedup. This is a copy of the function in
+// third_party/blink/renderer/core/intersection_observer/intersection_geometry.cc
+// http://crbug.com/1023375
+
+// Return true if ancestor is in the containing block chain above descendant.
+bool IsContainingBlockChainDescendant(const LayoutObject* descendant,
+                                      const LayoutObject* ancestor) {
+  if (!ancestor || !descendant)
+    return false;
+  LocalFrame* ancestor_frame = ancestor->GetDocument().GetFrame();
+  LocalFrame* descendant_frame = descendant->GetDocument().GetFrame();
+  if (ancestor_frame != descendant_frame)
+    return false;
+
+  while (descendant && descendant != ancestor)
+    descendant = descendant->ContainingBlock();
+  return descendant;
+}
+
+bool ElementBasedOffsetsEqual(ScrollTimelineElementBasedOffset* o1,
+                              ScrollTimelineElementBasedOffset* o2) {
+  if (o1 == o2)
+    return true;
+  if (!o1 || !o2)
+    return false;
+  return (o1->edge() == o2->edge()) && (o1->target() == o2->target()) &&
+         (o1->threshold() == o2->threshold());
+}
+
+CSSKeywordValue* GetCSSKeywordValue(const ScrollTimelineOffsetValue& offset) {
+  if (offset.IsCSSKeywordValue())
+    return offset.GetAsCSSKeywordValue();
+  // CSSKeywordish:
+  if (offset.IsString() && !offset.GetAsString().IsEmpty())
+    return CSSKeywordValue::Create(offset.GetAsString());
+  return nullptr;
+}
+
 }  // namespace
 
 // static
 ScrollTimelineOffset* ScrollTimelineOffset::Create(
-    const StringOrScrollTimelineElementBasedOffset& input_offset,
-    const CSSParserContext& context) {
-  if (input_offset.IsString()) {
-    CSSPrimitiveValue* offset = nullptr;
-    if (!StringToScrollOffset(input_offset.GetAsString(), context, &offset)) {
+    const ScrollTimelineOffsetValue& input_offset) {
+  if (input_offset.IsCSSNumericValue()) {
+    auto* numeric = input_offset.GetAsCSSNumericValue();
+    const auto& offset = To<CSSPrimitiveValue>(*numeric->ToCSSValue());
+    bool matches_length_percentage = offset.IsLength() ||
+                                     offset.IsPercentage() ||
+                                     offset.IsCalculatedPercentageWithLength();
+    if (!matches_length_percentage)
       return nullptr;
-    }
+    return MakeGarbageCollected<ScrollTimelineOffset>(&offset);
+  }
 
-    return MakeGarbageCollected<ScrollTimelineOffset>(offset);
-  } else if (input_offset.IsScrollTimelineElementBasedOffset()) {
+  if (input_offset.IsScrollTimelineElementBasedOffset()) {
     auto* offset = input_offset.GetAsScrollTimelineElementBasedOffset();
     if (!ValidateElementBasedOffset(offset))
       return nullptr;
 
     return MakeGarbageCollected<ScrollTimelineOffset>(offset);
-  } else {
-    // The default case is "auto" which we initialized with null
+  }
+
+  if (auto* keyword = GetCSSKeywordValue(input_offset)) {
+    if (keyword->KeywordValueID() != CSSValueID::kAuto)
+      return nullptr;
     return MakeGarbageCollected<ScrollTimelineOffset>();
   }
+
+  return nullptr;
 }
 
-double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
-                                           ScrollOrientation orientation,
-                                           double max_offset,
-                                           double default_offset) {
+base::Optional<double> ScrollTimelineOffset::ResolveOffset(
+    Node* scroll_source,
+    ScrollOrientation orientation,
+    double max_offset,
+    double default_offset) {
   const LayoutBox* root_box = scroll_source->GetLayoutBox();
   DCHECK(root_box);
   Document& document = root_box->GetDocument();
@@ -95,27 +129,21 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
 
     return resolved;
   } else if (element_based_offset_) {
-    // We assume that the root is the target's ancestor in layout tree. Under
-    // this assumption |target.LocalToAncestorRect()| returns the targets's
-    // position relative to the root's border box, while ignoring scroll offset.
-    //
-    // TODO(majidvp): We need to validate this assumption and deal with cases
-    // where it is not true. See the spec discussion here:
-    // https://github.com/w3c/csswg-drafts/issues/4337#issuecomment-610989843
-
-    DCHECK(element_based_offset_->hasTarget());
+    if (!element_based_offset_->hasTarget())
+      return base::nullopt;
     Element* target = element_based_offset_->target();
     const LayoutBox* target_box = target->GetLayoutBox();
 
     // It is possible for target to not have a layout box e.g., if it is an
     // unattached element. In which case we return the default offset for now.
     //
-    // TODO(majidvp): Need to consider this case in the spec. Most likely we
-    // should remain unresolved. See the spec discussion here:
+    // See the spec discussion here:
     // https://github.com/w3c/csswg-drafts/issues/4337#issuecomment-610997231
-    if (!target_box) {
-      return default_offset;
-    }
+    if (!target_box)
+      return base::nullopt;
+
+    if (!IsContainingBlockChainDescendant(target_box, root_box))
+      return base::nullopt;
 
     PhysicalRect target_rect = target_box->PhysicalBorderBoxRect();
     target_rect = target_box->LocalToAncestorRect(
@@ -178,29 +206,36 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
   }
 }
 
-StringOrScrollTimelineElementBasedOffset
-ScrollTimelineOffset::ToStringOrScrollTimelineElementBasedOffset() const {
-  StringOrScrollTimelineElementBasedOffset result;
+ScrollTimelineOffsetValue ScrollTimelineOffset::ToScrollTimelineOffsetValue()
+    const {
+  ScrollTimelineOffsetValue result;
   if (length_based_offset_) {
-    result.SetString(length_based_offset_->CssText());
+    result.SetCSSNumericValue(
+        CSSNumericValue::FromCSSValue(*length_based_offset_.Get()));
   } else if (element_based_offset_) {
     result.SetScrollTimelineElementBasedOffset(element_based_offset_);
   } else {
     // This is the default value (i.e., 'auto' value)
-    result.SetString("auto");
+    result.SetCSSKeywordValue(CSSKeywordValue::Create("auto"));
   }
 
   return result;
 }
 
-ScrollTimelineOffset::ScrollTimelineOffset(CSSPrimitiveValue* offset)
+bool ScrollTimelineOffset::operator==(const ScrollTimelineOffset& o) const {
+  return DataEquivalent(length_based_offset_, o.length_based_offset_) &&
+         ElementBasedOffsetsEqual(element_based_offset_,
+                                  o.element_based_offset_);
+}
+
+ScrollTimelineOffset::ScrollTimelineOffset(const CSSPrimitiveValue* offset)
     : length_based_offset_(offset), element_based_offset_(nullptr) {}
 
 ScrollTimelineOffset::ScrollTimelineOffset(
     ScrollTimelineElementBasedOffset* offset)
     : length_based_offset_(nullptr), element_based_offset_(offset) {}
 
-void ScrollTimelineOffset::Trace(blink::Visitor* visitor) {
+void ScrollTimelineOffset::Trace(blink::Visitor* visitor) const {
   visitor->Trace(length_based_offset_);
   visitor->Trace(element_based_offset_);
 }

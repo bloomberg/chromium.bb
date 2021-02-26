@@ -82,7 +82,6 @@ public:
 ### GarbageCollectedMixin
 
 A non-leftmost base class of a garbage-collected class should derive from `GarbageCollectedMixin`.
-If a child class of `GarbageCollected<T>` has a non-leftmost base class deriving from `GarbageCollectedMixin`, the garbage-collected class must declare the `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` macro in its class declaration.
 
 A class deriving from `GarbageCollectedMixin` can be treated similarly as garbage-collected classes.
 Specifically, it can have `Member<T>`s and `WeakMember<T>`s, and a tracing method.
@@ -93,23 +92,20 @@ The [tracing](#Tracing) method of a garbage-collected class, if any, must contai
 class P : public GarbageCollectedMixin {
  public:
   // OK: Needs to trace q_.
-  virtual void Trace(Visitor* visitor) { visitor->Trace(q_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(q_); }
  private:
   // OK: Allowed to have Member<T>.
   Member<Q> q_;
 };
 
 class A final : public GarbageCollected<A>, public P {
-  USING_GARBAGE_COLLECTED_MIXIN(A);
  public:
   // Delegating call for P is needed.
-  virtual void Trace(Visitor* visitor) { P::Trace(visitor); }
+  virtual void Trace(Visitor* visitor) const { P::Trace(visitor); }
 };
 ```
 
-Internally, `GarbageCollectedMixin` defines pure virtual functions, and `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` implements these virtual functions.
-Therefore, you cannot instantiate a class that is a descendant of `GarbageCollectedMixin` but not a descendant of `GarbageCollected<T>`.
-Two or more base classes inheritng from `GarbageCollectedMixin` can be resolved with a single `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` declaration.
+You cannot instantiate a class that is a descendant of `GarbageCollectedMixin` but not a descendant of `GarbageCollected<T>`.
 
 ```c++
 class P : public GarbageCollectedMixin { };
@@ -117,12 +113,10 @@ class Q : public GarbageCollectedMixin { };
 class R : public Q { };
 
 class A : public GarbageCollected<A>, public P, public R {
-  USING_GARBAGE_COLLECTED_MIXIN(A);
   // OK: Resolving pure virtual functions of P and R.
 };
 
 class B : public GarbageCollected<B>, public P {
-  USING_GARBAGE_COLLECTED_MIXIN(B);
   // OK: Different garbage-collected classes may inherit from the same mixin (P).
 };
 
@@ -133,13 +127,6 @@ void foo() {
 ```
 
 ## Class properties
-
-### USING_GARBAGE_COLLECTED_MIXIN
-
-`USING_GARBAGE_COLLECTED_MIXIN(ClassName)` is a macro that must be declared in a garbage-collected class, if any of
-its base classes is a descendant of `GarbageCollectedMixin`.
-
-See [GarbageCollectedMixin](#GarbageCollectedMixin) for the use of `GarbageCollectedMixin` and this macro.
 
 ### USING_PRE_FINALIZER
 
@@ -252,7 +239,7 @@ It may take some time for the pointer in a `WeakMember<T>` to become `nullptr` a
 because this rewrite is only done within Blink GC's garbage collection period.
 
 ```c++
-class SomeGarbageCollectedClass : public GarbageCollected<GarbageCollectedSomething> {
+class SomeGarbageCollectedClass : public GarbageCollected<SomeGarbageCollectedClass> {
   ...
 private:
   Member<AnotherGarbageCollectedClass> another_; // OK, retained by Member<T>.
@@ -333,19 +320,19 @@ The basic form of tracing is illustrated below:
 class SomeGarbageCollectedClass final
     : public GarbageCollected<SomeGarbageCollectedClass> {
  public:
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
 private:
   Member<AnotherGarbageCollectedClass> another_;
 };
 
 // In an implementation file:
-void SomeGarbageCollectedClass::Trace(Visitor* visitor) {
+void SomeGarbageCollectedClass::Trace(Visitor* visitor) const {
   visitor->Trace(another_);
 }
 ```
 
-Specifically, if your class needs a tracing method, you need to declare and define a `Trace(Visitor*)` method.
+Specifically, if your class needs a tracing method, you need to declare and define a `Trace(Visitor*) const` method.
 This method is normally declared in the header file and defined once in the implementation file, but there are variations.
 Another common variation is to declare a virtual `Trace()` for base classes that will be subclassed.
 
@@ -360,7 +347,7 @@ The following example shows more involved usage:
 ```c++
 class A : public GarbageCollected<A> {
  public:
-  virtual void Trace(Visitor*) {} // Nothing to trace here.
+  virtual void Trace(Visitor*) const {} // Nothing to trace here.
 };
 
 class B : public A {
@@ -369,7 +356,7 @@ class B : public A {
 
 class C final : public B {
  public:
-  void Trace(Visitor*) final;
+  void Trace(Visitor*) const final;
 
  private:
   Member<X> x_;
@@ -377,7 +364,7 @@ class C final : public B {
   HeapVector<Member<Z>> z_;
 };
 
-void C::Trace(Visitor* visitor) {
+void C::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_); // Weak member needs to be traced.
   visitor->Trace(z_); // Heap collection does, too.
@@ -408,7 +395,7 @@ Heap collections do not inherit from `GarbageCollected` but are nonetheless allo
 ```c++
 class A final : public GarbageCollected<A> {
  public:
-  void Trace(Visitor* visitor) { visitor->Trace(vec_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(vec_); }
  private:
   HeapVector<Member<B>> vec_;
 };
@@ -464,14 +451,14 @@ The following example shows how this can be used:
 
 class W final : public GarbageCollected<W> {
  public:
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
  private:
   void ProcessCustomWeakness(const LivenessBroker&);
 
   UntracedMember<C> other_;
 };
 
-void W::Trace(Visitor* visitor) {
+void W::Trace(Visitor* visitor) const {
   visitor->template RegisterCustomWeakMethod<W, &W::ProcessCustomWeakness>(this);
 }
 
@@ -520,7 +507,7 @@ class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass>
 
 class MyNonGCButTraceableClass {
  public:
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     // ...
   }
 };
@@ -548,7 +535,7 @@ class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass>
 
 class MyNonGCButTraceableClass {
  public:
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     // ...
   }
 };

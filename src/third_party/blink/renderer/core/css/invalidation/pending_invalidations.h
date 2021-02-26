@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/invalidation/node_invalidation_sets.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -39,9 +38,10 @@ using PendingInvalidationMap =
 // InvalidationLists obtained from RuleFeatureSet.
 //
 // When we next read computed styles, for example from
-// user script or to render a frame, Invalidate(Document&)
-// is called to traverse the DOM and perform all
-// the pending style invalidations.
+// user script or to render a frame,
+// StyleInvalidator::Invalidate(Document&) is called to
+// traverse the DOM and perform all the pending style
+// invalidations.
 //
 // If an element is removed from the DOM tree, we call
 // ClearInvalidation(ContainerNode&).
@@ -66,8 +66,9 @@ class CORE_EXPORT PendingInvalidations {
 
  public:
   PendingInvalidations();
+  PendingInvalidations(const PendingInvalidations&) = delete;
+  PendingInvalidations& operator=(const PendingInvalidations&) = delete;
   ~PendingInvalidations() {}
-  void Invalidate(Document&);
   // May immediately invalidate the node and/or add pending invalidation sets to
   // this node.
   void ScheduleInvalidationSetsForNode(const InvalidationLists&,
@@ -81,14 +82,14 @@ class CORE_EXPORT PendingInvalidations {
   PendingInvalidationMap& GetPendingInvalidationMap() {
     return pending_invalidation_map_;
   }
-  void Trace(Visitor* visitor) { visitor->Trace(pending_invalidation_map_); }
+  void Trace(Visitor* visitor) const {
+    visitor->Trace(pending_invalidation_map_);
+  }
 
  private:
   NodeInvalidationSets& EnsurePendingInvalidations(ContainerNode&);
 
   PendingInvalidationMap pending_invalidation_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingInvalidations);
 };
 }  // namespace blink
 

@@ -21,11 +21,15 @@
 #include "components/safe_search_api/url_checker.h"
 
 class GURL;
-class SupervisedUserBlacklist;
+class SupervisedUserDenylist;
 
 namespace base {
 class TaskRunner;
 }
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -35,7 +39,7 @@ class SharedURLLoaderFactory;
 // if a URL should be allowed, blocked or warned about. It uses information
 // from multiple sources:
 //   * A default setting (allow, block or warn).
-//   * The set of installed and enabled whitelists which contain URL patterns
+//   * The set of installed and enabled allowlists which contain URL patterns
 //     and hostname hashes that should be allowed.
 //   * User-specified manual overrides (allow or block) for either sites
 //     (hostnames) or exact URLs, which take precedence over the previous
@@ -58,7 +62,7 @@ class SupervisedUserURLFilter {
 
   class Observer {
    public:
-    // Called whenever the whitelists are updated. This does *not* include
+    // Called whenever the allowlists are updated. This does *not* include
     // SetManualHosts/SetManualURLs.
     virtual void OnSiteListUpdated() = 0;
     // Called whenever a check started via
@@ -74,6 +78,11 @@ class SupervisedUserURLFilter {
 
   SupervisedUserURLFilter();
   ~SupervisedUserURLFilter();
+
+  // Returns true if the parental allowlist/blocklist should be skipped in
+  // |contents|. SafeSearch filtering is still applied to |contents|.
+  static bool ShouldSkipParentManualAllowlistFiltering(
+      content::WebContents* contents);
 
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
@@ -115,14 +124,23 @@ class SupervisedUserURLFilter {
   // Like |GetFilteringBehaviorForURL|, but also includes asynchronous checks
   // against a remote service. If the result is already determined by the
   // synchronous checks, then |callback| will be called synchronously.
-  // Returns true if |callback| was called synchronously.
+  // Returns true if |callback| was called synchronously. If
+  // |skip_manual_parent_filter| is set to true, it only uses the asynchronous
+  // safe search checks.
   bool GetFilteringBehaviorForURLWithAsyncChecks(
       const GURL& url,
+      FilteringBehaviorCallback callback,
+      bool skip_manual_parent_filter = false) const;
+
+  // Like |GetFilteringBehaviorForURLWithAsyncChecks| but used for subframes.
+  bool GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
+      const GURL& url,
+      const GURL& main_frame_url,
       FilteringBehaviorCallback callback) const;
 
-  // Gets all the whitelists that the url is part of. Returns id->name of each
-  // whitelist.
-  std::map<std::string, base::string16> GetMatchingWhitelistTitles(
+  // Gets all the allowlists that the url is part of. Returns id->name of each
+  // allowlist.
+  std::map<std::string, base::string16> GetMatchingAllowlistTitles(
       const GURL& url) const;
 
   // Sets the filtering behavior for pages not on a list (default is ALLOW).
@@ -132,13 +150,13 @@ class SupervisedUserURLFilter {
 
   // Asynchronously loads the specified site lists and updates the
   // filter to recognize each site on them.
-  void LoadWhitelists(
+  void LoadAllowlists(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
-  // Sets the static blacklist of blocked hosts.
-  void SetBlacklist(const SupervisedUserBlacklist* blacklist);
-  // Returns whether the static blacklist is set up.
-  bool HasBlacklist() const;
+  // Sets the static denylist of blocked hosts.
+  void SetDenylist(const SupervisedUserDenylist* denylist);
+  // Returns whether the static denylist is set up.
+  bool HasDenylist() const;
 
   // Set the list of matched patterns to the passed in list, for testing.
   void SetFromPatternsForTesting(const std::vector<std::string>& patterns);
@@ -163,7 +181,7 @@ class SupervisedUserURLFilter {
   // Returns whether the asynchronous checker is set up.
   bool HasAsyncURLChecker() const;
 
-  // Removes all filter entries, clears the blacklist and async checker if
+  // Removes all filter entries, clears the denylist and async checker if
   // present, and resets the default behavior to "allow".
   void Clear();
 
@@ -176,6 +194,9 @@ class SupervisedUserURLFilter {
 
  private:
   friend class SupervisedUserURLFilterTest;
+
+  bool RunAsyncChecker(const GURL& url,
+                       FilteringBehaviorCallback callback) const;
 
   void SetContents(std::unique_ptr<Contents> url_matcher);
 
@@ -204,7 +225,7 @@ class SupervisedUserURLFilter {
   std::map<std::string, bool> host_map_;
 
   // Not owned.
-  const SupervisedUserBlacklist* blacklist_;
+  const SupervisedUserDenylist* denylist_;
 
   std::unique_ptr<safe_search_api::URLChecker> async_url_checker_;
 

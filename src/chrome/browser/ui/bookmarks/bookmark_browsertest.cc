@@ -6,7 +6,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -36,6 +36,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -231,13 +232,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
       [&run_loop, page_title, page_url, expected_point](
           std::unique_ptr<ui::OSExchangeData> drag_data,
-          gfx::NativeView native_view,
-          ui::DragDropTypes::DragEventSource source, gfx::Point point,
-          int operation) {
+          gfx::NativeView native_view, ui::mojom::DragEventSource source,
+          gfx::Point point, int operation) {
         GURL url;
         base::string16 title;
         EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
-            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
+            ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &title));
         EXPECT_EQ(page_url, url);
         EXPECT_EQ(page_title, title);
 #if !defined(OS_WIN)
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
       {{node},
        kDragNodeIndex,
        platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()),
-       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+       ui::mojom::DragEventSource::kMouse,
        expected_point},
       std::move(cb));
 
@@ -280,15 +280,15 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
       [&run_loop, expected_point](std::unique_ptr<ui::OSExchangeData> drag_data,
                                   gfx::NativeView native_view,
-                                  ui::DragDropTypes::DragEventSource source,
+                                  ui::mojom::DragEventSource source,
                                   gfx::Point point, int operation) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
         GURL url;
         base::string16 title;
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.
         // See https://crbug.com/893432.
         EXPECT_FALSE(drag_data->provider().GetURLAndTitle(
-            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
+            ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &title));
 #endif
 #if !defined(OS_WIN)
         // On Windows, GetDragImage() is a NOTREACHED() as the Windows
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
                                    kDragNodeIndex,
                                    platform_util::GetViewForWindow(
                                        browser()->window()->GetNativeWindow()),
-                                   ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+                                   ui::mojom::DragEventSource::kMouse,
                                    expected_point,
                                },
                                std::move(cb));
@@ -323,6 +323,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForDuplicates) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
   const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
+  const BookmarkNode* other_parent =
+      bookmark_model->AddFolder(parent, 0, base::ASCIIToUTF16("Folder"));
+
   // Add one bookmark with a unique URL, two other bookmarks with a shared URL,
   // and three more with another shared URL.
   bookmark_model->AddURL(parent, parent->children().size(),
@@ -336,52 +339,49 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForDuplicates) {
   bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title5"), GURL("http://c.com"));
   bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title6"), GURL("http://c.com"));
+                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
+  bookmark_model->AddURL(other_parent, other_parent->children().size(),
+                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
   WaitForBookmarkModel(browser()->profile());
 
+  // The total number of bookmarks is 7, but it gets rounded down due to
+  // bucketing.
   ASSERT_THAT(
       histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
       testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
+
+  // 2 bookmarks have URL http://b.com and 4 have http://c.com. This counts as 4
+  // duplicates.
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.DuplicateUrl"),
-              testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
-}
-
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
-  BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
-  const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
-  // Add two bookmarks with a non-empty title and three with an empty one.
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title1"), GURL("http://a.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title2"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://d.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://e.com"));
-}
-
-// TODO(crbug.com/1017731): Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_EmitUmaForEmptyTitles DISABLED_EmitUmaForEmptyTitles
-#else
-#define MAYBE_EmitUmaForEmptyTitles EmitUmaForEmptyTitles
-#endif
-
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_EmitUmaForEmptyTitles) {
-  WaitForBookmarkModel(browser()->profile());
-
-  ASSERT_THAT(
-      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
-      testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+                  "Bookmarks.Count.OnProfileLoad.DuplicateUrl2"),
+              testing::ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
+  // 3 bookmarks have the pair (http://c.com, title5). This counts as 2
+  // duplicates when considering URLs and titles.
   EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.EmptyTitle"),
+                  "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitle"),
+              testing::ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
+  // Among the three above, only two have the same parent. This means only one
+  // counts as duplicate when considering all three attributes.
+  EXPECT_THAT(
+      histogram_tester()->GetAllSamples(
+          "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitleAndParent"),
+      testing::ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+
+  // The remaining histograms are the result of substracting the number of
+  // duplicates from the total, which is 7 despite the bucket for the first
+  // histogram above suggesting 6.
+  EXPECT_THAT(histogram_tester()->GetAllSamples(
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrl"),
               testing::ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
+  EXPECT_THAT(histogram_tester()->GetAllSamples(
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitle"),
+              testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+  EXPECT_THAT(histogram_tester()->GetAllSamples(
+                  "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitleAndParent"),
+              testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
 }
 
 #endif  // !defined(OS_CHROMEOS)

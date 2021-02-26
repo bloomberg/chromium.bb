@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
@@ -19,13 +19,13 @@ namespace blink {
 namespace {
 
 MediaStream* CreateMediaStream(V8TestingScope* scope) {
-  WebMediaStreamSource blink_source;
-  blink_source.Initialize("video source id", WebMediaStreamSource::kTypeVideo,
-                          "video source name", false /* remote */);
+  auto* source = MakeGarbageCollected<MediaStreamSource>(
+      "video source id", MediaStreamSource::kTypeVideo, "video source name",
+      false /* remote */);
   auto native_source = std::make_unique<MockMediaStreamVideoSource>();
   MockMediaStreamVideoSource* native_source_ptr = native_source.get();
-  blink_source.SetPlatformSource(std::move(native_source));
-  auto* component = MakeGarbageCollected<MediaStreamComponent>(blink_source);
+  source->SetPlatformSource(std::move(native_source));
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(source);
   component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source_ptr, MediaStreamVideoSource::ConstraintsOnceCallback(),
       true /* enabled */));

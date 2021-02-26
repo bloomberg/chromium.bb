@@ -17,13 +17,13 @@
 #include <memory>
 #include <type_traits>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -31,9 +31,8 @@ namespace test {
 // Some helpers.
 
 template <typename T, size_t N>
-quiche::QuicheStringPiece ToStringPiece(T (&data)[N]) {
-  return quiche::QuicheStringPiece(reinterpret_cast<const char*>(data),
-                                   N * sizeof(T));
+absl::string_view ToStringPiece(T (&data)[N]) {
+  return absl::string_view(reinterpret_cast<const char*>(data), N * sizeof(T));
 }
 
 // Overwrite the enum with some random value, probably not a valid value for
@@ -55,7 +54,7 @@ void CorruptEnum(T* out, Http2Random* rng) {
 
 // Base class for tests of the ability to decode a sequence of bytes with
 // various boundaries between the DecodeBuffers provided to the decoder.
-class RandomDecoderTest : public ::testing::Test {
+class RandomDecoderTest : public QuicheTest {
  public:
   // SelectSize returns the size of the next DecodeBuffer to be passed to the
   // decoder. Note that RandomDecoderTest allows that size to be zero, though
@@ -122,15 +121,15 @@ class RandomDecoderTest : public ::testing::Test {
   // Returns a SelectSize function for fast decoding, i.e. passing all that
   // is available to the decoder.
   static SelectSize SelectRemaining() {
-    return [](bool first, size_t offset, size_t remaining) -> size_t {
+    return [](bool /*first*/, size_t /*offset*/, size_t remaining) -> size_t {
       return remaining;
     };
   }
 
   // Returns a SelectSize function for decoding a single byte at a time.
   static SelectSize SelectOne() {
-    return
-        [](bool first, size_t offset, size_t remaining) -> size_t { return 1; };
+    return [](bool /*first*/, size_t /*offset*/,
+              size_t /*remaining*/) -> size_t { return 1; };
   }
 
   // Returns a SelectSize function for decoding a single byte at a time, where
@@ -149,7 +148,7 @@ class RandomDecoderTest : public ::testing::Test {
                                                const Validator& validator);
 
   static Validator ToValidator(std::nullptr_t) {
-    return [](const DecodeBuffer& input, DecodeStatus status) {
+    return [](const DecodeBuffer& /*input*/, DecodeStatus /*status*/) {
       return ::testing::AssertionSuccess();
     };
   }
@@ -165,7 +164,7 @@ class RandomDecoderTest : public ::testing::Test {
     if (validator == nullptr) {
       return ToValidator(nullptr);
     }
-    return [validator](const DecodeBuffer& input, DecodeStatus status) {
+    return [validator](const DecodeBuffer& /*input*/, DecodeStatus /*status*/) {
       return validator();
     };
   }

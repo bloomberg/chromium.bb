@@ -21,7 +21,6 @@ class PictureInPictureWindow
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PictureInPictureWindow>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureWindow);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -48,7 +47,7 @@ class PictureInPictureWindow
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget overrides.

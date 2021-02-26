@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/mock_download_item.h"
@@ -25,6 +24,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
@@ -55,8 +55,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void QueryDownloads(
       history::HistoryService::DownloadQueryCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
                                   base::Unretained(this), std::move(callback)));
   }
 
@@ -117,7 +117,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void ExpectQueryDownloadsDone() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    EXPECT_TRUE(!expect_query_downloads_.has_value());
+    EXPECT_FALSE(expect_query_downloads_.has_value());
   }
 
   void FailCreateDownload() {
@@ -164,10 +164,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
-    for (auto different = differences.begin(); different != differences.end();
-         ++different) {
-      EXPECT_TRUE(false) << *different;
-    }
+    for (int different : differences)
+      ADD_FAILURE() << different;
     remove_downloads_.clear();
   }
 
@@ -840,4 +838,31 @@ TEST_F(DownloadHistoryTest, RemoveClearedItemFromHistory) {
   ExpectDownloadsRemoved(ids);
 }
 
+// Test that large data URL will be truncated before being inserted into
+// history.
+TEST_F(DownloadHistoryTest, CreateLargeDataURLCompletedItem) {
+  // Create a fresh item not from download DB
+  CreateDownloadHistory({});
+
+  history::DownloadRow row;
+  std::string data_url = "data:text/html,";
+  data_url.append(std::string(2048, 'a'));
+  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), data_url.c_str(),
+                "http://example.com/referrer.html",
+                download::DownloadItem::IN_PROGRESS, &row);
+
+  // Incomplete download will not be inserted into history.
+  CallOnDownloadCreated(0);
+  ExpectNoDownloadCreated();
+
+  // Completed download should be inserted.
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item(0), GetState())
+      .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
+  row.state = history::DownloadState::COMPLETE;
+  data_url.resize(1024);
+  row.url_chain.back() = GURL(data_url);
+  item(0).NotifyObserversDownloadUpdated();
+  ExpectDownloadCreated(row);
+}
 }  // anonymous namespace

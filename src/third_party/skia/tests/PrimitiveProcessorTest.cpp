@@ -7,13 +7,15 @@
 
 // This is a GPU-backend specific test. It relies on static intializers to work
 
+#include <memory>
+
 #include "include/core/SkTypes.h"
 #include "tests/Test.h"
 
 #include "include/core/SkString.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkPointPriv.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
@@ -34,10 +36,8 @@ public:
 
     const char* name() const override { return "Dummy Op"; }
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context, int numAttribs) {
-        GrOpMemoryPool* pool = context->priv().opMemoryPool();
-
-        return pool->allocate<Op>(numAttribs);
+    static GrOp::Owner Make(GrRecordingContext* rContext, int numAttribs) {
+        return GrOp::Make<Op>(rContext, numAttribs);
     }
 
     FixedFunctionFlags fixedFunctionFlags() const override {
@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    friend class ::GrOpMemoryPool;
+    friend class ::GrOp;
 
     Op(int numAttribs) : INHERITED(ClassID()), fNumAttribs(numAttribs) {
         this->setBounds(SkRect::MakeWH(1.f, 1.f), HasAABloat::kNo, IsHairline::kNo);
@@ -62,7 +62,8 @@ private:
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView* writeView,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView) override {
+                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             GrXferBarrierFlags renderPassXferBarriers) override {
         class GP : public GrGeometryProcessor {
         public:
             static GrGeometryProcessor* Make(SkArenaAlloc* arena, int numAttribs) {
@@ -84,8 +85,7 @@ private:
                         fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
                     }
                     void setData(const GrGLSLProgramDataManager& pdman,
-                                 const GrPrimitiveProcessor& primProc,
-                                 const CoordTransformRange&) override {}
+                                 const GrPrimitiveProcessor& primProc) override {}
                 };
                 return new GLSLGP();
             }
@@ -99,8 +99,8 @@ private:
 
             GP(int numAttribs) : INHERITED(kGP_ClassID), fNumAttribs(numAttribs) {
                 SkASSERT(numAttribs > 1);
-                fAttribNames.reset(new SkString[numAttribs]);
-                fAttributes.reset(new Attribute[numAttribs]);
+                fAttribNames = std::make_unique<SkString[]>(numAttribs);
+                fAttributes = std::make_unique<Attribute[]>(numAttribs);
                 for (auto i = 0; i < numAttribs; ++i) {
                     fAttribNames[i].printf("attr%d", i);
                     // This gives us more of a mix of attribute types, and allows the
@@ -120,7 +120,7 @@ private:
             std::unique_ptr<SkString[]> fAttribNames;
             std::unique_ptr<Attribute[]> fAttributes;
 
-            typedef GrGeometryProcessor INHERITED;
+            using INHERITED = GrGeometryProcessor;
         };
 
         GrGeometryProcessor* gp = GP::Make(arena, fNumAttribs);
@@ -133,6 +133,7 @@ private:
                                                                    gp,
                                                                    GrProcessorSet::MakeEmptySet(),
                                                                    GrPrimitiveType::kTriangles,
+                                                                   renderPassXferBarriers,
                                                                    GrPipeline::InputFlags::kNone);
     }
 
@@ -162,12 +163,12 @@ private:
     GrSimpleMesh*  fMesh = nullptr;
     GrProgramInfo* fProgramInfo = nullptr;
 
-    typedef GrMeshDrawOp INHERITED;
+    using INHERITED = GrMeshDrawOp;
 };
-}
+}  // namespace
 
 DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
+    auto context = ctxInfo.directContext();
 #if GR_GPU_STATS
     GrGpu* gpu = context->priv().getGpu();
 #endif
@@ -183,7 +184,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
         ERRORF(reporter, "No attributes allowed?!");
         return;
     }
-    context->flush();
+    context->flushAndSubmit();
     context->priv().resetGpuStats();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 0);
@@ -195,14 +196,14 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     GrPaint grPaint;
     // This one should succeed.
     renderTargetContext->priv().testingOnly_addDrawOp(Op::Make(context, attribCnt));
-    context->flush();
+    context->flushAndSubmit();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 1);
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 0);
 #endif
     context->priv().resetGpuStats();
     renderTargetContext->priv().testingOnly_addDrawOp(Op::Make(context, attribCnt + 1));
-    context->flush();
+    context->flushAndSubmit();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 0);
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 1);

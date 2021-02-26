@@ -9,12 +9,12 @@
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/third_party/quiche/src/spdy/core/zero_copy_output_buffer.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_endianness_util.h"
 
 namespace spdy {
 
@@ -83,24 +83,26 @@ class QUICHE_EXPORT_PRIVATE SpdyFrameBuilder {
   // host to network form.
   bool WriteUInt8(uint8_t value) { return WriteBytes(&value, sizeof(value)); }
   bool WriteUInt16(uint16_t value) {
-    value = SpdyHostToNet16(value);
+    value = quiche::QuicheEndian::HostToNet16(value);
     return WriteBytes(&value, sizeof(value));
   }
   bool WriteUInt24(uint32_t value) {
-    value = SpdyHostToNet32(value);
+    value = quiche::QuicheEndian::HostToNet32(value);
     return WriteBytes(reinterpret_cast<char*>(&value) + 1, sizeof(value) - 1);
   }
   bool WriteUInt32(uint32_t value) {
-    value = SpdyHostToNet32(value);
+    value = quiche::QuicheEndian::HostToNet32(value);
     return WriteBytes(&value, sizeof(value));
   }
   bool WriteUInt64(uint64_t value) {
-    uint32_t upper = SpdyHostToNet32(static_cast<uint32_t>(value >> 32));
-    uint32_t lower = SpdyHostToNet32(static_cast<uint32_t>(value));
+    uint32_t upper =
+        quiche::QuicheEndian::HostToNet32(static_cast<uint32_t>(value >> 32));
+    uint32_t lower =
+        quiche::QuicheEndian::HostToNet32(static_cast<uint32_t>(value));
     return (WriteBytes(&upper, sizeof(upper)) &&
             WriteBytes(&lower, sizeof(lower)));
   }
-  bool WriteStringPiece32(const quiche::QuicheStringPiece value);
+  bool WriteStringPiece32(const absl::string_view value);
   bool WriteBytes(const void* data, uint32_t data_len);
 
  private:

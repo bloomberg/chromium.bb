@@ -26,16 +26,10 @@
 
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
-#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
@@ -84,31 +78,38 @@ PhysicalRect SVGLayoutSupport::VisualRectInAncestorSpace(
   return rect;
 }
 
-PhysicalRect SVGLayoutSupport::TransformVisualRect(
+static FloatRect MapToSVGRootIncludingFilter(
     const LayoutObject& object,
-    const AffineTransform& root_transform,
-    const FloatRect& local_rect) {
-  FloatRect adjusted_rect = root_transform.MapRect(local_rect);
+    const FloatRect& local_visual_rect) {
+  DCHECK(object.IsSVGChild());
 
-  if (adjusted_rect.IsEmpty())
-    return PhysicalRect();
+  FloatRect visual_rect = local_visual_rect;
+  const LayoutObject* parent = &object;
+  for (; !parent->IsSVGRoot(); parent = parent->Parent()) {
+    const ComputedStyle& style = parent->StyleRef();
+    if (style.HasFilter())
+      visual_rect = style.Filter().MapRect(visual_rect);
+    visual_rect = parent->LocalToSVGParentTransform().MapRect(visual_rect);
+  }
 
-  // Use EnclosingIntRect because we cannot properly apply subpixel offset of
-  // the SVGRoot since we don't know the desired subpixel accumulation at this
-  // point.
-  return PhysicalRect(EnclosingIntRect(adjusted_rect));
+  return To<LayoutSVGRoot>(*parent).LocalToBorderBoxTransform().MapRect(
+      visual_rect);
 }
 
 static const LayoutSVGRoot& ComputeTransformToSVGRoot(
     const LayoutObject& object,
-    AffineTransform& root_border_box_transform) {
+    AffineTransform& root_border_box_transform,
+    bool* filter_skipped) {
   DCHECK(object.IsSVGChild());
 
-  const LayoutObject* parent;
-  for (parent = &object; !parent->IsSVGRoot(); parent = parent->Parent())
+  const LayoutObject* parent = &object;
+  for (; !parent->IsSVGRoot(); parent = parent->Parent()) {
+    if (filter_skipped && parent->StyleRef().HasFilter())
+      *filter_skipped = true;
     root_border_box_transform.PreMultiply(parent->LocalToSVGParentTransform());
+  }
 
-  const LayoutSVGRoot& svg_root = ToLayoutSVGRoot(*parent);
+  const auto& svg_root = To<LayoutSVGRoot>(*parent);
   root_border_box_transform.PreMultiply(svg_root.LocalToBorderBoxTransform());
   return svg_root;
 }
@@ -120,10 +121,24 @@ bool SVGLayoutSupport::MapToVisualRectInAncestorSpace(
     PhysicalRect& result_rect,
     VisualRectFlags visual_rect_flags) {
   AffineTransform root_border_box_transform;
-  const LayoutSVGRoot& svg_root =
-      ComputeTransformToSVGRoot(object, root_border_box_transform);
-  result_rect =
-      TransformVisualRect(object, root_border_box_transform, local_visual_rect);
+  bool filter_skipped = false;
+  const LayoutSVGRoot& svg_root = ComputeTransformToSVGRoot(
+      object, root_border_box_transform, &filter_skipped);
+
+  FloatRect adjusted_rect;
+  if (filter_skipped)
+    adjusted_rect = MapToSVGRootIncludingFilter(object, local_visual_rect);
+  else
+    adjusted_rect = root_border_box_transform.MapRect(local_visual_rect);
+
+  if (adjusted_rect.IsEmpty()) {
+    result_rect = PhysicalRect();
+  } else {
+    // Use EnclosingIntRect because we cannot properly apply subpixel offset of
+    // the SVGRoot since we don't know the desired subpixel accumulation at this
+    // point.
+    result_rect = PhysicalRect(EnclosingIntRect(adjusted_rect));
+  }
 
   // Apply initial viewport clip.
   if (svg_root.ShouldApplyViewportClip()) {
@@ -151,9 +166,10 @@ void SVGLayoutSupport::MapLocalToAncestor(const LayoutObject* object,
   // localToBorderBoxTransform to map an element from SVG viewport coordinates
   // to CSS box coordinates.
   // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
-  if (parent->IsSVGRoot())
+  if (parent->IsSVGRoot()) {
     transform_state.ApplyTransform(
-        ToLayoutSVGRoot(parent)->LocalToBorderBoxTransform());
+        To<LayoutSVGRoot>(parent)->LocalToBorderBoxTransform());
+  }
 
   parent->MapLocalToAncestor(ancestor, transform_state, flags);
 }
@@ -172,7 +188,7 @@ void SVGLayoutSupport::MapAncestorToLocal(const LayoutObject& object,
          object.IsSVGForeignObject());
   AffineTransform local_to_svg_root;
   const LayoutSVGRoot& svg_root =
-      ComputeTransformToSVGRoot(object, local_to_svg_root);
+      ComputeTransformToSVGRoot(object, local_to_svg_root, nullptr);
 
   svg_root.MapAncestorToLocal(ancestor, transform_state, flags);
 
@@ -193,7 +209,7 @@ const LayoutObject* SVGLayoutSupport::PushMappingToContainer(
   // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
   if (parent->IsSVGRoot()) {
     TransformationMatrix matrix(
-        ToLayoutSVGRoot(parent)->LocalToBorderBoxTransform());
+        To<LayoutSVGRoot>(parent)->LocalToBorderBoxTransform());
     matrix.Multiply(object->LocalToSVGParentTransform());
     geometry_map.Push(object, matrix);
   } else {
@@ -203,91 +219,13 @@ const LayoutObject* SVGLayoutSupport::PushMappingToContainer(
   return parent;
 }
 
-// Update a bounding box taking into account the validity of the other bounding
-// box.
-inline void SVGLayoutSupport::UpdateObjectBoundingBox(
-    FloatRect& object_bounding_box,
-    bool& object_bounding_box_valid,
-    LayoutObject* other,
-    FloatRect other_bounding_box) {
-  auto* svg_container = DynamicTo<LayoutSVGContainer>(other);
-  bool other_valid =
-      svg_container ? svg_container->IsObjectBoundingBoxValid() : true;
-  if (!other_valid)
-    return;
-
-  if (!object_bounding_box_valid) {
-    object_bounding_box = other_bounding_box;
-    object_bounding_box_valid = true;
-    return;
-  }
-
-  object_bounding_box.UniteEvenIfEmpty(other_bounding_box);
-}
-
-static bool HasValidBoundingBoxForContainer(const LayoutObject* object) {
-  if (object->IsSVGShape())
-    return !ToLayoutSVGShape(object)->IsShapeEmpty();
-
-  if (object->IsSVGText())
-    return ToLayoutSVGText(object)->IsObjectBoundingBoxValid();
-
-  if (object->IsSVGHiddenContainer())
-    return false;
-
-  if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(object))
-    return foreign_object->IsObjectBoundingBoxValid();
-
-  if (object->IsSVGImage())
-    return ToLayoutSVGImage(object)->IsObjectBoundingBoxValid();
-
-  // TODO(fs): Can we refactor this code to include the container case
-  // in a more natural way?
-  return true;
-}
-
-void SVGLayoutSupport::ComputeContainerBoundingBoxes(
-    const LayoutObject* container,
-    FloatRect& object_bounding_box,
-    bool& object_bounding_box_valid,
-    FloatRect& stroke_bounding_box,
-    FloatRect& local_visual_rect) {
-  object_bounding_box = FloatRect();
-  object_bounding_box_valid = false;
-  stroke_bounding_box = FloatRect();
-
-  // When computing the strokeBoundingBox, we use the visualRects of
-  // the container's children so that the container's stroke includes the
-  // resources applied to the children (such as clips and filters). This allows
-  // filters applied to containers to correctly bound the children, and also
-  // improves inlining of SVG content, as the stroke bound is used in that
-  // situation also.
-  for (LayoutObject* current = container->SlowFirstChild(); current;
-       current = current->NextSibling()) {
-    // Don't include elements that are not rendered in the union.
-    if (!HasValidBoundingBoxForContainer(current))
-      continue;
-
-    const AffineTransform& transform = current->LocalToSVGParentTransform();
-    UpdateObjectBoundingBox(object_bounding_box, object_bounding_box_valid,
-                            current,
-                            transform.MapRect(current->ObjectBoundingBox()));
-    stroke_bounding_box.Unite(
-        transform.MapRect(current->VisualRectInLocalSVGCoordinates()));
-  }
-
-  local_visual_rect = stroke_bounding_box;
-  AdjustVisualRectWithResources(*container, object_bounding_box,
-                                local_visual_rect);
-}
-
 bool SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(
     const LayoutObject* start) {
   for (; start; start = start->Parent()) {
     if (start->IsSVGRoot())
-      return ToLayoutSVGRoot(start)->IsLayoutSizeChanged();
+      return To<LayoutSVGRoot>(start)->IsLayoutSizeChanged();
     if (start->IsSVGViewportContainer())
-      return ToLayoutSVGViewportContainer(start)->IsLayoutSizeChanged();
+      return To<LayoutSVGViewportContainer>(start)->IsLayoutSizeChanged();
   }
   NOTREACHED();
   return false;
@@ -296,85 +234,16 @@ bool SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(
 bool SVGLayoutSupport::ScreenScaleFactorChanged(const LayoutObject* ancestor) {
   for (; ancestor; ancestor = ancestor->Parent()) {
     if (ancestor->IsSVGRoot())
-      return ToLayoutSVGRoot(ancestor)->DidScreenScaleFactorChange();
+      return To<LayoutSVGRoot>(ancestor)->DidScreenScaleFactorChange();
     if (ancestor->IsSVGTransformableContainer())
-      return ToLayoutSVGTransformableContainer(ancestor)
+      return To<LayoutSVGTransformableContainer>(ancestor)
           ->DidScreenScaleFactorChange();
     if (ancestor->IsSVGViewportContainer())
-      return ToLayoutSVGViewportContainer(ancestor)
+      return To<LayoutSVGViewportContainer>(ancestor)
           ->DidScreenScaleFactorChange();
   }
   NOTREACHED();
   return false;
-}
-
-void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
-                                      bool force_layout,
-                                      bool screen_scaling_factor_changed,
-                                      bool layout_size_changed) {
-  for (LayoutObject* child = first_child; child; child = child->NextSibling()) {
-    bool force_child_layout = force_layout;
-
-    if (screen_scaling_factor_changed) {
-      // If the screen scaling factor changed we need to update the text
-      // metrics (note: this also happens for layoutSizeChanged=true).
-      if (child->IsSVGText())
-        ToLayoutSVGText(child)->SetNeedsTextMetricsUpdate();
-      force_child_layout = true;
-    }
-
-    if (layout_size_changed) {
-      // When selfNeedsLayout is false and the layout size changed, we have to
-      // check whether this child uses relative lengths
-      if (auto* element = DynamicTo<SVGElement>(child->GetNode())) {
-        if (element->HasRelativeLengths()) {
-          // FIXME: this should be done on invalidation, not during layout.
-          // When the layout size changed and when using relative values tell
-          // the LayoutSVGShape to update its shape object
-          if (child->IsSVGShape()) {
-            ToLayoutSVGShape(child)->SetNeedsShapeUpdate();
-          } else if (child->IsSVGText()) {
-            ToLayoutSVGText(child)->SetNeedsTextMetricsUpdate();
-            ToLayoutSVGText(child)->SetNeedsPositioningValuesUpdate();
-          }
-
-          force_child_layout = true;
-        }
-      }
-    }
-
-    // Resource containers are nasty: they can invalidate clients outside the
-    // current SubtreeLayoutScope.
-    // Since they only care about viewport size changes (to resolve their
-    // relative lengths), we trigger their invalidation directly from
-    // SVGSVGElement::svgAttributeChange() or at a higher SubtreeLayoutScope (in
-    // LayoutView::layout()). We do not create a SubtreeLayoutScope for
-    // resources because their ability to reference each other leads to circular
-    // layout. We protect against that within the layout code for resources, but
-    // it causes assertions if we use a SubTreeLayoutScope for them.
-    if (child->IsSVGResourceContainer()) {
-      // Lay out any referenced resources before the child.
-      LayoutResourcesIfNeeded(*child);
-      child->LayoutIfNeeded();
-    } else {
-      SubtreeLayoutScope layout_scope(*child);
-      if (force_child_layout) {
-        layout_scope.SetNeedsLayout(child,
-                                    layout_invalidation_reason::kSvgChanged);
-      }
-
-      // Lay out any referenced resources before the child.
-      LayoutResourcesIfNeeded(*child);
-      child->LayoutIfNeeded();
-    }
-  }
-}
-
-void SVGLayoutSupport::LayoutResourcesIfNeeded(const LayoutObject& object) {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(object);
-  if (resources)
-    resources->LayoutIfNeeded();
 }
 
 bool SVGLayoutSupport::IsOverflowHidden(const LayoutObject& object) {
@@ -389,7 +258,7 @@ bool SVGLayoutSupport::IsOverflowHidden(const ComputedStyle& style) {
          style.OverflowX() == EOverflow::kScroll;
 }
 
-void SVGLayoutSupport::AdjustVisualRectWithResources(
+void SVGLayoutSupport::AdjustWithClipPathAndMask(
     const LayoutObject& layout_object,
     const FloatRect& object_bounding_box,
     FloatRect& visual_rect) {
@@ -397,15 +266,10 @@ void SVGLayoutSupport::AdjustVisualRectWithResources(
       SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
   if (!resources)
     return;
-
-  if (LayoutSVGResourceFilter* filter = resources->Filter())
-    visual_rect = filter->ResourceBoundingBox(object_bounding_box);
-
   if (LayoutSVGResourceClipper* clipper = resources->Clipper())
     visual_rect.Intersect(clipper->ResourceBoundingBox(object_bounding_box));
-
   if (LayoutSVGResourceMasker* masker = resources->Masker())
-    visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box));
+    visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box, 1));
 }
 
 FloatRect SVGLayoutSupport::ExtendTextBBoxWithStroke(
@@ -426,20 +290,12 @@ FloatRect SVGLayoutSupport::ExtendTextBBoxWithStroke(
 
 FloatRect SVGLayoutSupport::ComputeVisualRectForText(
     const LayoutObject& layout_object,
-    const FloatRect& text_bounds,
-    const FloatRect& reference_box) {
+    const FloatRect& text_bounds) {
   DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
   FloatRect visual_rect = ExtendTextBBoxWithStroke(layout_object, text_bounds);
   if (const ShadowList* text_shadow = layout_object.StyleRef().TextShadow())
     text_shadow->AdjustRectForShadow(visual_rect);
-  AdjustVisualRectWithResources(layout_object, reference_box, visual_rect);
   return visual_rect;
-}
-
-bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(object);
-  return resources && resources->Filter();
 }
 
 bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
@@ -451,7 +307,7 @@ bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& clip_path =
         To<ShapeClipPathOperation>(*clip_path_operation);
-    return clip_path.GetPath(reference_box)
+    return clip_path.GetPath(reference_box, 1)
         .Contains(location.TransformedPoint());
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
@@ -460,26 +316,6 @@ bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
   if (!resources || !resources->Clipper())
     return true;
   return resources->Clipper()->HitTestClipContent(reference_box, location);
-}
-
-bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
-                                       HitTestResult& result,
-                                       const HitTestLocation& location,
-                                       const PhysicalOffset& accumulated_offset,
-                                       HitTestAction hit_test_action) {
-  for (LayoutObject* child = last_child; child;
-       child = child->PreviousSibling()) {
-    if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(child)) {
-      if (foreign_object->NodeAtPointFromSVG(
-              result, location, accumulated_offset, hit_test_action))
-        return true;
-    } else {
-      if (child->NodeAtPoint(result, location, accumulated_offset,
-                             hit_test_action))
-        return true;
-    }
-  }
-  return false;
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(
@@ -526,15 +362,13 @@ bool SVGLayoutSupport::IsLayoutableTextNode(const LayoutObject* object) {
   DCHECK(object->IsText());
   // <br> is marked as text, but is not handled by the SVG layout code-path.
   return object->IsSVGInlineText() &&
-         !ToLayoutSVGInlineText(object)->HasEmptyText();
+         !To<LayoutSVGInlineText>(object)->HasEmptyText();
 }
 
 bool SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(
     const ComputedStyle& style) {
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-
-  return style.HasIsolation() || style.HasOpacity() || style.HasBlendMode() ||
-         style.HasFilter() || svg_style.HasMasker() || style.ClipPath();
+  return style.HasGroupingProperty(style.BoxReflect()) ||
+         style.SvgStyle().HasMasker();
 }
 
 bool SVGLayoutSupport::WillIsolateBlendingDescendantsForObject(
@@ -547,6 +381,11 @@ bool SVGLayoutSupport::WillIsolateBlendingDescendantsForObject(
 }
 
 bool SVGLayoutSupport::IsIsolationRequired(const LayoutObject* object) {
+  if (SVGResources* resources =
+          SVGResourcesCache::CachedResourcesForLayoutObject(*object)) {
+    if (resources->Masker())
+      return true;
+  }
   return WillIsolateBlendingDescendantsForObject(object) &&
          object->HasNonIsolatedBlendingDescendants();
 }
@@ -697,6 +536,17 @@ LayoutObject* SVGLayoutSupport::FindClosestLayoutSVGText(
     const FloatPoint& point) {
   return SearchTreeForFindClosestLayoutSVGText(layout_object, point)
       .layout_object;
+}
+
+void SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(
+    const LayoutObject* object) {
+  for (auto* ancestor = object->Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    if (ancestor->IsSVGRoot()) {
+      To<LayoutSVGRoot>(ancestor)->NotifyDescendantCompositingReasonsChanged();
+      break;
+    }
+  }
 }
 
 }  // namespace blink

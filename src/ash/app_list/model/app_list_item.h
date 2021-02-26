@@ -19,8 +19,6 @@
 #include "components/sync/model/string_ordinal.h"
 #include "ui/gfx/image/image_skia.h"
 
-class FastShowPickler;
-
 namespace ash {
 enum class AppListConfigType;
 class AppListControllerImpl;
@@ -86,11 +84,14 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   }
   bool is_page_break() const { return metadata_->is_page_break; }
 
+  bool has_notification_badge() const { return has_notification_badge_; }
+
+  void UpdateBadgeForTesting(bool has_badge) { UpdateBadge(has_badge); }
+
  protected:
   // Subclasses also have mutable access to the metadata ptr.
   AppListItemMetadata* metadata() { return metadata_.get(); }
 
-  friend class ::FastShowPickler;
   friend class AppListControllerImpl;
   friend class AppListItemList;
   friend class AppListItemListTest;
@@ -106,6 +107,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // if the full name is too long to fit in a view).
   void SetNameAndShortName(const std::string& name,
                            const std::string& short_name);
+
+  // Updates whether the notification badge is shown on the view.
+  void UpdateBadge(bool has_badge);
 
   void set_position(const syncer::StringOrdinal& new_position) {
     DCHECK(new_position.IsValid());
@@ -131,6 +135,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   // A shortened name for the item, used for display.
   std::string short_name_;
+
+  // Whether this item currently has a notification badge that should be shown.
+  bool has_notification_badge_ = false;
 
   base::ObserverList<AppListItemObserver>::Unchecked observers_;
 

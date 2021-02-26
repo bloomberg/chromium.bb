@@ -20,72 +20,198 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define BUFFER_SIZE (64 * 1024 * 1024)
+#define IO_BUFFER_ARRAY_SIZE (64 * 1024 * 1024)
+#define PIXEL_BUFFER_ARRAY_SIZE (64 * 1024 * 1024)
+#define TOKEN_BUFFER_ARRAY_SIZE (128 * 1024)
 
 #define WUFFS_TESTLIB_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
-uint8_t global_got_array[BUFFER_SIZE];
-uint8_t global_want_array[BUFFER_SIZE];
-uint8_t global_work_array[BUFFER_SIZE];
-uint8_t global_src_array[BUFFER_SIZE];
-uint8_t global_pixel_array[BUFFER_SIZE];
+uint8_t g_have_array_u8[IO_BUFFER_ARRAY_SIZE];
+uint8_t g_want_array_u8[IO_BUFFER_ARRAY_SIZE];
+uint8_t g_work_array_u8[IO_BUFFER_ARRAY_SIZE];
+uint8_t g_src_array_u8[IO_BUFFER_ARRAY_SIZE];
 
-wuffs_base__slice_u8 global_got_slice = ((wuffs_base__slice_u8){
-    .ptr = global_got_array,
-    .len = BUFFER_SIZE,
-});
+uint8_t g_pixel_array_u8[PIXEL_BUFFER_ARRAY_SIZE];
 
-wuffs_base__slice_u8 global_want_slice = ((wuffs_base__slice_u8){
-    .ptr = global_want_array,
-    .len = BUFFER_SIZE,
-});
+wuffs_base__token g_have_array_token[TOKEN_BUFFER_ARRAY_SIZE];
+wuffs_base__token g_want_array_token[TOKEN_BUFFER_ARRAY_SIZE];
 
-wuffs_base__slice_u8 global_work_slice = ((wuffs_base__slice_u8){
-    .ptr = global_work_array,
-    .len = BUFFER_SIZE,
-});
+wuffs_base__slice_u8 g_have_slice_u8;
+wuffs_base__slice_u8 g_want_slice_u8;
+wuffs_base__slice_u8 g_work_slice_u8;
+wuffs_base__slice_u8 g_src_slice_u8;
 
-wuffs_base__slice_u8 global_src_slice = ((wuffs_base__slice_u8){
-    .ptr = global_src_array,
-    .len = BUFFER_SIZE,
-});
+wuffs_base__slice_u8 g_pixel_slice_u8;
 
-wuffs_base__slice_u8 global_pixel_slice = ((wuffs_base__slice_u8){
-    .ptr = global_pixel_array,
-    .len = BUFFER_SIZE,
-});
+wuffs_base__slice_token g_have_slice_token;
+wuffs_base__slice_token g_want_slice_token;
 
-char fail_msg[65536] = {0};
+void  //
+wuffs_testlib__initialize_global_xxx_slices() {
+  g_have_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_have_array_u8,
+      .len = IO_BUFFER_ARRAY_SIZE,
+  });
+  g_want_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_want_array_u8,
+      .len = IO_BUFFER_ARRAY_SIZE,
+  });
+  g_work_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_work_array_u8,
+      .len = IO_BUFFER_ARRAY_SIZE,
+  });
+  g_src_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_src_array_u8,
+      .len = IO_BUFFER_ARRAY_SIZE,
+  });
+  g_pixel_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_pixel_array_u8,
+      .len = PIXEL_BUFFER_ARRAY_SIZE,
+  });
 
-#define RETURN_FAIL(...)                                            \
-  return (snprintf(fail_msg, sizeof(fail_msg), ##__VA_ARGS__) >= 0) \
-             ? fail_msg                                             \
+  g_have_slice_token = ((wuffs_base__slice_token){
+      .ptr = g_have_array_token,
+      .len = TOKEN_BUFFER_ARRAY_SIZE,
+  });
+  g_want_slice_token = ((wuffs_base__slice_token){
+      .ptr = g_want_array_token,
+      .len = TOKEN_BUFFER_ARRAY_SIZE,
+  });
+}
+
+char g_fail_msg[65536] = {0};
+
+#define RETURN_FAIL(...)                                                \
+  return (snprintf(g_fail_msg, sizeof(g_fail_msg), ##__VA_ARGS__) >= 0) \
+             ? g_fail_msg                                               \
              : "unknown failure (snprintf-related)"
+
 #define INCR_FAIL(msg, ...) \
-  msg += snprintf(msg, sizeof(fail_msg) - (msg - fail_msg), ##__VA_ARGS__)
+  msg += snprintf(msg, sizeof(g_fail_msg) - (msg - g_fail_msg), ##__VA_ARGS__)
 
-int tests_run = 0;
+#define CHECK_STATUS(prefix, status)             \
+  do {                                           \
+    wuffs_base__status z = status;               \
+    if (z.repr) {                                \
+      RETURN_FAIL("%s: \"%s\"", prefix, z.repr); \
+    }                                            \
+  } while (0)
 
-uint64_t iterscale = 100;
+#define CHECK_STRING(string) \
+  do {                       \
+    const char* z = string;  \
+    if (z) {                 \
+      return z;              \
+    }                        \
+  } while (0)
 
-const char* proc_package_name = "unknown_package_name";
-const char* proc_func_name = "unknown_func_name";
-const char* focus = "";
-bool in_focus = false;
+int g_tests_run = 0;
 
-#define CHECK_FOCUS(func_name) \
-  proc_func_name = func_name;  \
-  in_focus = check_focus();    \
-  if (!in_focus) {             \
-    return NULL;               \
+struct {
+  int remaining_argc;
+  char** remaining_argv;
+
+  bool bench;
+  const char* focus;
+  uint64_t iterscale;
+  int reps;
+} g_flags = {0};
+
+const char*  //
+parse_flags(int argc, char** argv) {
+  g_flags.iterscale = 100;
+  g_flags.reps = 5;
+
+  int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
+  for (; c < argc; c++) {
+    char* arg = argv[c];
+    if (*arg++ != '-') {
+      break;
+    }
+
+    // A double-dash "--foo" is equivalent to a single-dash "-foo". As special
+    // cases, a bare "-" is not a flag (some programs may interpret it as
+    // stdin) and a bare "--" means to stop parsing flags.
+    if (*arg == '\x00') {
+      break;
+    } else if (*arg == '-') {
+      arg++;
+      if (*arg == '\x00') {
+        c++;
+        break;
+      }
+    }
+
+    if (!strcmp(arg, "bench")) {
+      g_flags.bench = true;
+      continue;
+    }
+
+    if (!strncmp(arg, "focus=", 6)) {
+      g_flags.focus = arg + 6;
+      continue;
+    }
+
+    if (!strncmp(arg, "iterscale=", 10)) {
+      arg += 10;
+      if (!*arg) {
+        return "missing -iterscale=N value";
+      }
+      char* end = NULL;
+      long int n = strtol(arg, &end, 10);
+      if (*end) {
+        return "invalid -iterscale=N value";
+      }
+      if ((n < 0) || (1000000 < n)) {
+        return "out-of-range -iterscale=N value";
+      }
+      g_flags.iterscale = n;
+      continue;
+    }
+
+    if (!strncmp(arg, "reps=", 5)) {
+      arg += 5;
+      if (!*arg) {
+        return "missing -reps=N value";
+      }
+      char* end = NULL;
+      long int n = strtol(arg, &end, 10);
+      if (*end) {
+        return "invalid -reps=N value";
+      }
+      if ((n < 0) || (1000000 < n)) {
+        return "out-of-range -reps=N value";
+      }
+      g_flags.reps = n;
+      continue;
+    }
+
+    return "unrecognized flag argument";
   }
 
-bool check_focus() {
-  const char* p = focus;
-  if (!*p) {
+  g_flags.remaining_argc = argc - c;
+  g_flags.remaining_argv = argv + c;
+  return NULL;
+}
+
+const char* g_proc_package_name = "unknown_package_name";
+const char* g_proc_func_name = "unknown_func_name";
+bool g_in_focus = false;
+
+#define CHECK_FOCUS(func_name)  \
+  g_proc_func_name = func_name; \
+  g_in_focus = check_focus();   \
+  if (!g_in_focus) {            \
+    return NULL;                \
+  }
+
+bool  //
+check_focus() {
+  const char* p = g_flags.focus;
+  if (!p || !*p) {
     return true;
   }
-  size_t n = strlen(proc_func_name);
+  size_t n = strlen(g_proc_func_name);
 
   // On each iteration of the loop, set p and q so that p (inclusive) and q
   // (exclusive) bracket the interesting fragment of the comma-separated
@@ -121,18 +247,18 @@ bool check_focus() {
         p += 9;
       }
 
-      // See if proc_func_name (with or without a "test_" or "bench_" prefix)
+      // See if g_proc_func_name (with or without a "test_" or "bench_" prefix)
       // starts with the [p, q) string.
-      if ((n >= q - p) && !strncmp(proc_func_name, p, q - p)) {
+      if ((n >= q - p) && !strncmp(g_proc_func_name, p, q - p)) {
         return true;
       }
       const char* unprefixed_proc_func_name = NULL;
       size_t unprefixed_n = 0;
-      if ((n >= q - p) && !strncmp(proc_func_name, "test_", 5)) {
-        unprefixed_proc_func_name = proc_func_name + 5;
+      if ((n >= q - p) && !strncmp(g_proc_func_name, "test_", 5)) {
+        unprefixed_proc_func_name = g_proc_func_name + 5;
         unprefixed_n = n - 5;
-      } else if ((n >= q - p) && !strncmp(proc_func_name, "bench_", 6)) {
-        unprefixed_proc_func_name = proc_func_name + 6;
+      } else if ((n >= q - p) && !strncmp(g_proc_func_name, "bench_", 6)) {
+        unprefixed_proc_func_name = g_proc_func_name + 6;
         unprefixed_n = n - 6;
       }
       if (unprefixed_proc_func_name && (unprefixed_n >= q - p) &&
@@ -155,17 +281,17 @@ bool check_focus() {
 
 // The order matters here. Clang also defines "__GNUC__".
 #if defined(__clang__)
-const char* cc = "clang" WUFFS_TESTLIB_QUOTE(__clang_major__);
-const char* cc_version = __clang_version__;
+const char* g_cc = "clang" WUFFS_TESTLIB_QUOTE(__clang_major__);
+const char* g_cc_version = __clang_version__;
 #elif defined(__GNUC__)
-const char* cc = "gcc" WUFFS_TESTLIB_QUOTE(__GNUC__);
-const char* cc_version = __VERSION__;
+const char* g_cc = "gcc" WUFFS_TESTLIB_QUOTE(__GNUC__);
+const char* g_cc_version = __VERSION__;
 #elif defined(_MSC_VER)
-const char* cc = "cl";
-const char* cc_version = "???";
+const char* g_cc = "cl";
+const char* g_cc_version = "???";
 #else
-const char* cc = "cc";
-const char* cc_version = "???";
+const char* g_cc = "cc";
+const char* g_cc_version = "???";
 #endif
 
 typedef struct {
@@ -175,39 +301,41 @@ typedef struct {
   size_t src_offset1;
 } golden_test;
 
-bool bench_warm_up;
-struct timeval bench_start_tv;
+bool g_bench_warm_up;
+struct timeval g_bench_start_tv;
 
-void bench_start() {
-  gettimeofday(&bench_start_tv, NULL);
+void  //
+bench_start() {
+  gettimeofday(&g_bench_start_tv, NULL);
 }
 
-void bench_finish(uint64_t iters, uint64_t n_bytes) {
+void  //
+bench_finish(uint64_t iters, uint64_t n_bytes) {
   struct timeval bench_finish_tv;
   gettimeofday(&bench_finish_tv, NULL);
   int64_t micros =
-      (int64_t)(bench_finish_tv.tv_sec - bench_start_tv.tv_sec) * 1000000 +
-      (int64_t)(bench_finish_tv.tv_usec - bench_start_tv.tv_usec);
+      (int64_t)(bench_finish_tv.tv_sec - g_bench_start_tv.tv_sec) * 1000000 +
+      (int64_t)(bench_finish_tv.tv_usec - g_bench_start_tv.tv_usec);
   uint64_t nanos = 1;
   if (micros > 0) {
     nanos = (uint64_t)(micros)*1000;
   }
   uint64_t kb_per_s = n_bytes * 1000000 / nanos;
 
-  const char* name = proc_func_name;
+  const char* name = g_proc_func_name;
   if ((strlen(name) >= 6) && !strncmp(name, "bench_", 6)) {
     name += 6;
   }
-  if (bench_warm_up) {
+  if (g_bench_warm_up) {
     printf("# (warm up) %s/%s\t%8" PRIu64 ".%06" PRIu64 " seconds\n",  //
-           name, cc, nanos / 1000000000, (nanos % 1000000000) / 1000);
+           name, g_cc, nanos / 1000000000, (nanos % 1000000000) / 1000);
   } else if (!n_bytes) {
     printf("Benchmark%s/%s\t%8" PRIu64 "\t%8" PRIu64 " ns/op\n",  //
-           name, cc, iters, nanos / iters);
+           name, g_cc, iters, nanos / iters);
   } else {
     printf("Benchmark%s/%s\t%8" PRIu64 "\t%8" PRIu64
-           " ns/op\t%8d.%03d MB/s\n",       //
-           name, cc, iters, nanos / iters,  //
+           " ns/op\t%8d.%03d MB/s\n",         //
+           name, g_cc, iters, nanos / iters,  //
            (int)(kb_per_s / 1000), (int)(kb_per_s % 1000));
   }
   // Flush stdout so that "wuffs bench | tee etc" still prints its numbers as
@@ -215,7 +343,8 @@ void bench_finish(uint64_t iters, uint64_t n_bytes) {
   fflush(stdout);
 }
 
-const char* chdir_to_the_wuffs_root_directory() {
+const char*  //
+chdir_to_the_wuffs_root_directory() {
   // Chdir to the Wuffs root directory, assuming that we're starting from
   // somewhere in the Wuffs repository, so we can find the root directory by
   // running chdir("..") a number of times.
@@ -242,75 +371,32 @@ const char* chdir_to_the_wuffs_root_directory() {
 
 typedef const char* (*proc)();
 
-int test_main(int argc, char** argv, proc* tests, proc* benches) {
+int  //
+test_main(int argc, char** argv, proc* tests, proc* benches) {
+  wuffs_testlib__initialize_global_xxx_slices();
   const char* status = chdir_to_the_wuffs_root_directory();
   if (status) {
     fprintf(stderr, "%s\n", status);
     return 1;
   }
 
-  bool bench = false;
-  int reps = 5;
-
-  int i;
-  for (i = 1; i < argc; i++) {
-    const char* arg = argv[i];
-    size_t arg_len = strlen(arg);
-    if (!strcmp(arg, "-bench")) {
-      bench = true;
-
-    } else if ((arg_len >= 7) && !strncmp(arg, "-focus=", 7)) {
-      focus = arg + 7;
-
-    } else if ((arg_len >= 11) && !strncmp(arg, "-iterscale=", 11)) {
-      arg += 11;
-      if (!*arg) {
-        fprintf(stderr, "missing -iterscale=N value\n");
-        return 1;
-      }
-      char* end = NULL;
-      long int n = strtol(arg, &end, 10);
-      if (*end) {
-        fprintf(stderr, "invalid -iterscale=N value\n");
-        return 1;
-      }
-      if ((n < 0) || (1000000 < n)) {
-        fprintf(stderr, "out-of-range -iterscale=N value\n");
-        return 1;
-      }
-      iterscale = n;
-
-    } else if ((arg_len >= 6) && !strncmp(arg, "-reps=", 6)) {
-      arg += 6;
-      if (!*arg) {
-        fprintf(stderr, "missing -reps=N value\n");
-        return 1;
-      }
-      char* end = NULL;
-      long int n = strtol(arg, &end, 10);
-      if (*end) {
-        fprintf(stderr, "invalid -reps=N value\n");
-        return 1;
-      }
-      if ((n < 0) || (1000000 < n)) {
-        fprintf(stderr, "out-of-range -reps=N value\n");
-        return 1;
-      }
-      reps = n;
-
-    } else {
-      fprintf(stderr, "unknown flag \"%s\"\n", arg);
-      return 1;
-    }
+  status = parse_flags(argc, argv);
+  if (status) {
+    fprintf(stderr, "%s\n", status);
+    return 1;
+  }
+  if (g_flags.remaining_argc > 0) {
+    fprintf(stderr, "unexpected (non-flag) argument\n");
+    return 1;
   }
 
+  int reps = 1;
   proc* procs = tests;
-  if (!bench) {
-    reps = 1;
-  } else {
-    reps++;  // +1 for the warm up run.
+  if (g_flags.bench) {
+    reps = g_flags.reps + 1;  // +1 for the warm up run.
     procs = benches;
-    printf("# %s\n# %s version %s\n#\n", proc_package_name, cc, cc_version);
+    printf("# %s\n# %s version %s\n#\n", g_proc_package_name, g_cc,
+           g_cc_version);
     printf(
         "# The output format, including the \"Benchmark\" prefixes, is "
         "compatible with the\n"
@@ -319,43 +405,43 @@ int test_main(int argc, char** argv, proc* tests, proc* benches) {
         "# install Go, then run \"go get golang.org/x/perf/cmd/benchstat\".\n");
   }
 
+  int i;
   for (i = 0; i < reps; i++) {
-    bench_warm_up = i == 0;
+    g_bench_warm_up = i == 0;
     proc* p;
     for (p = procs; *p; p++) {
-      proc_func_name = "unknown_func_name";
-      fail_msg[0] = 0;
-      in_focus = false;
+      g_proc_func_name = "unknown_func_name";
+      g_fail_msg[0] = 0;
+      g_in_focus = false;
       const char* status = (*p)();
-      if (!in_focus) {
+      if (!g_in_focus) {
         continue;
       }
       if (status) {
-        printf("%-16s%-8sFAIL %s: %s\n", proc_package_name, cc, proc_func_name,
-               status);
+        printf("%-16s%-8sFAIL %s: %s\n", g_proc_package_name, g_cc,
+               g_proc_func_name, status);
         return 1;
       }
       if (i == 0) {
-        tests_run++;
+        g_tests_run++;
       }
     }
     if (i != 0) {
       continue;
     }
-    if (bench) {
+    if (g_flags.bench) {
       printf("# %d benchmarks, 1+%d reps per benchmark, iterscale=%d\n",
-             tests_run, reps - 1, (int)(iterscale));
+             g_tests_run, g_flags.reps, (int)(g_flags.iterscale));
     } else {
-      printf("%-16s%-8sPASS (%d tests)\n", proc_package_name, cc, tests_run);
+      printf("%-16s%-8sPASS (%d tests)\n", g_proc_package_name, g_cc,
+             g_tests_run);
     }
   }
   return 0;
 }
 
-// WUFFS_INCLUDE_GUARD is where wuffs_base__foo_bar are defined.
-#ifdef WUFFS_INCLUDE_GUARD
-
-wuffs_base__io_buffer make_io_buffer_from_string(const char* ptr, size_t len) {
+wuffs_base__io_buffer  //
+make_io_buffer_from_string(const char* ptr, size_t len) {
   return ((wuffs_base__io_buffer){
       .data = ((wuffs_base__slice_u8){
           .ptr = ((uint8_t*)(ptr)),
@@ -368,10 +454,8 @@ wuffs_base__io_buffer make_io_buffer_from_string(const char* ptr, size_t len) {
   });
 }
 
-wuffs_base__rect_ie_u32 make_rect_ie_u32(uint32_t x0,
-                                         uint32_t y0,
-                                         uint32_t x1,
-                                         uint32_t y1) {
+wuffs_base__rect_ie_u32  //
+make_rect_ie_u32(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
   wuffs_base__rect_ie_u32 ret;
   ret.min_incl_x = x0;
   ret.min_incl_y = y0;
@@ -380,8 +464,8 @@ wuffs_base__rect_ie_u32 make_rect_ie_u32(uint32_t x0,
   return ret;
 }
 
-wuffs_base__io_buffer make_limited_reader(wuffs_base__io_buffer b,
-                                          uint64_t limit) {
+wuffs_base__io_buffer  //
+make_limited_reader(wuffs_base__io_buffer b, uint64_t limit) {
   uint64_t n = b.meta.wi - b.meta.ri;
   bool closed = b.meta.closed;
   if (n > limit) {
@@ -399,8 +483,8 @@ wuffs_base__io_buffer make_limited_reader(wuffs_base__io_buffer b,
   return ret;
 }
 
-wuffs_base__io_buffer make_limited_writer(wuffs_base__io_buffer b,
-                                          uint64_t limit) {
+wuffs_base__io_buffer  //
+make_limited_writer(wuffs_base__io_buffer b, uint64_t limit) {
   uint64_t n = b.data.len - b.meta.wi;
   if (n > limit) {
     n = limit;
@@ -416,22 +500,40 @@ wuffs_base__io_buffer make_limited_writer(wuffs_base__io_buffer b,
   return ret;
 }
 
+wuffs_base__token_buffer  //
+make_limited_token_writer(wuffs_base__token_buffer b, uint64_t limit) {
+  uint64_t n = b.data.len - b.meta.wi;
+  if (n > limit) {
+    n = limit;
+  }
+
+  wuffs_base__token_buffer ret;
+  ret.data.ptr = b.data.ptr + b.meta.wi;
+  ret.data.len = n;
+  ret.meta.wi = 0;
+  ret.meta.ri = 0;
+  ret.meta.pos = wuffs_base__u64__sat_add(b.meta.pos, b.meta.wi);
+  ret.meta.closed = b.meta.closed;
+  return ret;
+}
+
 // TODO: we shouldn't need to pass the rect. Instead, pass a subset pixbuf.
-const char* copy_to_io_buffer_from_pixel_buffer(wuffs_base__io_buffer* dst,
-                                                wuffs_base__pixel_buffer* src,
-                                                wuffs_base__rect_ie_u32 r) {
+const char*  //
+copy_to_io_buffer_from_pixel_buffer(wuffs_base__io_buffer* dst,
+                                    wuffs_base__pixel_buffer* src,
+                                    wuffs_base__rect_ie_u32 r) {
   if (!src) {
     return "copy_to_io_buffer_from_pixel_buffer: NULL src";
   }
 
   wuffs_base__pixel_format pixfmt =
       wuffs_base__pixel_config__pixel_format(&src->pixcfg);
-  if (wuffs_base__pixel_format__is_planar(pixfmt)) {
+  if (wuffs_base__pixel_format__is_planar(&pixfmt)) {
     // If we want to support planar pixel buffers, in the future, be concious
     // of pixel subsampling.
     return "copy_to_io_buffer_from_pixel_buffer: cannot copy from planar src";
   }
-  uint32_t bits_per_pixel = wuffs_base__pixel_format__bits_per_pixel(pixfmt);
+  uint32_t bits_per_pixel = wuffs_base__pixel_format__bits_per_pixel(&pixfmt);
   if (bits_per_pixel == 0) {
     return "copy_to_io_buffer_from_pixel_buffer: invalid bits_per_pixel";
   } else if ((bits_per_pixel % 8) != 0) {
@@ -466,7 +568,8 @@ const char* copy_to_io_buffer_from_pixel_buffer(wuffs_base__io_buffer* dst,
   return NULL;
 }
 
-const char* read_file(wuffs_base__io_buffer* dst, const char* path) {
+const char*  //
+read_file(wuffs_base__io_buffer* dst, const char* path) {
   if (!dst || !path) {
     RETURN_FAIL("read_file: NULL argument");
   }
@@ -518,7 +621,26 @@ const char* read_file(wuffs_base__io_buffer* dst, const char* path) {
   return NULL;
 }
 
-char* hex_dump(char* msg, wuffs_base__io_buffer* buf, size_t i) {
+const char*  //
+read_file_fragment(wuffs_base__io_buffer* dst,
+                   const char* path,
+                   size_t ri_min,
+                   size_t wi_max) {
+  CHECK_STRING(read_file(dst, path));
+  if (dst->meta.ri < ri_min) {
+    dst->meta.ri = ri_min;
+  }
+  if (dst->meta.wi > wi_max) {
+    dst->meta.wi = wi_max;
+  }
+  if (dst->meta.ri > dst->meta.wi) {
+    RETURN_FAIL("read_file_fragment(\"%s\"): ri > wi", path);
+  }
+  return NULL;
+}
+
+char*  //
+hex_dump(char* msg, wuffs_base__io_buffer* buf, size_t i) {
   if (!msg || !buf) {
     RETURN_FAIL("hex_dump: NULL argument");
   }
@@ -567,57 +689,60 @@ char* hex_dump(char* msg, wuffs_base__io_buffer* buf, size_t i) {
   return msg;
 }
 
-const char* check_io_buffers_equal(const char* prefix,
-                                   wuffs_base__io_buffer* got,
-                                   wuffs_base__io_buffer* want) {
-  if (!got || !want) {
+const char*  //
+check_io_buffers_equal(const char* prefix,
+                       wuffs_base__io_buffer* have,
+                       wuffs_base__io_buffer* want) {
+  if (!have || !want) {
     RETURN_FAIL("%sio_buffers_equal: NULL argument", prefix);
   }
-  char* msg = fail_msg;
+  char* msg = g_fail_msg;
   size_t i;
-  size_t n = got->meta.wi < want->meta.wi ? got->meta.wi : want->meta.wi;
+  size_t n = have->meta.wi < want->meta.wi ? have->meta.wi : want->meta.wi;
   for (i = 0; i < n; i++) {
-    if (got->data.ptr[i] != want->data.ptr[i]) {
+    if (have->data.ptr[i] != want->data.ptr[i]) {
       break;
     }
   }
-  if (got->meta.wi != want->meta.wi) {
-    INCR_FAIL(msg, "%sio_buffers_equal: wi: got %zu, want %zu.\n", prefix,
-              got->meta.wi, want->meta.wi);
-  } else if (i < got->meta.wi) {
+  if (have->meta.wi != want->meta.wi) {
+    INCR_FAIL(msg, "%sio_buffers_equal: wi: have %zu, want %zu.\n", prefix,
+              have->meta.wi, want->meta.wi);
+  } else if (i < have->meta.wi) {
     INCR_FAIL(msg, "%sio_buffers_equal: wi=%zu:\n", prefix, n);
   } else {
     return NULL;
   }
   INCR_FAIL(msg, "contents differ at byte %zu (in hex: 0x%06zx):\n", i, i);
-  msg = hex_dump(msg, got, i);
-  INCR_FAIL(msg, "excerpts of got (above) versus want (below):\n");
+  msg = hex_dump(msg, have, i);
+  INCR_FAIL(msg, "excerpts of have (above) versus want (below):\n");
   msg = hex_dump(msg, want, i);
-  return fail_msg;
+  return g_fail_msg;
 }
 
 // throughput_counter is whether to count dst or src bytes, or neither, when
 // calculating a benchmark's MB/s throughput number.
 //
-// Decoders typically use tc_dst. Encoders and hashes typically use tc_src.
+// Decoders typically use tcounter_dst. Encoders and hashes typically use
+// tcounter_src.
 typedef enum {
-  tc_neither = 0,
-  tc_dst = 1,
-  tc_src = 2,
+  tcounter_neither = 0,
+  tcounter_dst = 1,
+  tcounter_src = 2,
 } throughput_counter;
 
-const char* proc_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
-                                                      wuffs_base__io_buffer*,
-                                                      uint32_t,
-                                                      uint64_t,
-                                                      uint64_t),
-                            uint32_t wuffs_initialize_flags,
-                            throughput_counter tc,
-                            golden_test* gt,
-                            uint64_t wlimit,
-                            uint64_t rlimit,
-                            uint64_t iters,
-                            bool bench) {
+const char*  //
+proc_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
+                                          wuffs_base__io_buffer*,
+                                          uint32_t,
+                                          uint64_t,
+                                          uint64_t),
+                uint32_t wuffs_initialize_flags,
+                throughput_counter tcounter,
+                golden_test* gt,
+                uint64_t wlimit,
+                uint64_t rlimit,
+                uint64_t iters,
+                bool bench) {
   if (!codec_func) {
     RETURN_FAIL("NULL codec_func");
   }
@@ -626,13 +751,13 @@ const char* proc_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
   }
 
   wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
-      .data = global_src_slice,
+      .data = g_src_slice_u8,
   });
-  wuffs_base__io_buffer got = ((wuffs_base__io_buffer){
-      .data = global_got_slice,
+  wuffs_base__io_buffer have = ((wuffs_base__io_buffer){
+      .data = g_have_slice_u8,
   });
   wuffs_base__io_buffer want = ((wuffs_base__io_buffer){
-      .data = global_want_slice,
+      .data = g_want_slice_u8,
   });
 
   if (!gt->src_filename) {
@@ -660,20 +785,20 @@ const char* proc_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
   uint64_t n_bytes = 0;
   uint64_t i;
   for (i = 0; i < iters; i++) {
-    got.meta.wi = 0;
+    have.meta.wi = 0;
     src.meta.ri = gt->src_offset0;
     const char* status =
-        codec_func(&got, &src, wuffs_initialize_flags, wlimit, rlimit);
+        codec_func(&have, &src, wuffs_initialize_flags, wlimit, rlimit);
     if (status) {
       return status;
     }
-    switch (tc) {
-      case tc_neither:
+    switch (tcounter) {
+      case tcounter_neither:
         break;
-      case tc_dst:
-        n_bytes += got.meta.wi;
+      case tcounter_dst:
+        n_bytes += have.meta.wi;
         break;
-      case tc_src:
+      case tcounter_src:
         n_bytes += src.meta.ri - gt->src_offset0;
         break;
     }
@@ -691,36 +816,459 @@ const char* proc_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
       return status;
     }
   }
-  return check_io_buffers_equal("", &got, &want);
+  return check_io_buffers_equal("", &have, &want);
 }
 
-const char* do_bench_io_buffers(
-    const char* (*codec_func)(wuffs_base__io_buffer*,
-                              wuffs_base__io_buffer*,
-                              uint32_t,
-                              uint64_t,
-                              uint64_t),
-    uint32_t wuffs_initialize_flags,
-    throughput_counter tc,
-    golden_test* gt,
-    uint64_t wlimit,
-    uint64_t rlimit,
-    uint64_t iters_unscaled) {
-  return proc_io_buffers(codec_func, wuffs_initialize_flags, tc, gt, wlimit,
-                         rlimit, iters_unscaled * iterscale, true);
+const char*  //
+proc_token_decoder(const char* (*codec_func)(wuffs_base__token_buffer*,
+                                             wuffs_base__io_buffer*,
+                                             uint32_t,
+                                             uint64_t,
+                                             uint64_t),
+                   uint32_t wuffs_initialize_flags,
+                   throughput_counter tcounter,
+                   golden_test* gt,
+                   uint64_t wlimit,
+                   uint64_t rlimit,
+                   uint64_t iters,
+                   bool bench) {
+  if (!codec_func) {
+    RETURN_FAIL("NULL codec_func");
+  }
+  if (!gt) {
+    RETURN_FAIL("NULL golden_test");
+  }
+
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  wuffs_base__token_buffer have = ((wuffs_base__token_buffer){
+      .data = g_have_slice_token,
+  });
+
+  if (!gt->src_filename) {
+    src.meta.closed = true;
+  } else {
+    const char* status = read_file(&src, gt->src_filename);
+    if (status) {
+      return status;
+    }
+  }
+  if (gt->src_offset0 || gt->src_offset1) {
+    if (gt->src_offset0 > gt->src_offset1) {
+      RETURN_FAIL("inconsistent src_offsets");
+    }
+    if (gt->src_offset1 > src.meta.wi) {
+      RETURN_FAIL("src_offset1 too large");
+    }
+    src.meta.ri = gt->src_offset0;
+    src.meta.wi = gt->src_offset1;
+  }
+
+  if (bench) {
+    bench_start();
+  }
+  uint64_t n_bytes = 0;
+  uint64_t i;
+  for (i = 0; i < iters; i++) {
+    have.meta.wi = 0;
+    src.meta.ri = gt->src_offset0;
+    const char* status =
+        codec_func(&have, &src, wuffs_initialize_flags, wlimit, rlimit);
+    if (status) {
+      return status;
+    }
+    switch (tcounter) {
+      case tcounter_neither:
+        break;
+      case tcounter_dst:
+        RETURN_FAIL("cannot use tcounter_dst for token decoders");
+        break;
+      case tcounter_src:
+        n_bytes += src.meta.ri - gt->src_offset0;
+        break;
+    }
+  }
+  if (bench) {
+    bench_finish(iters, n_bytes);
+  }
+  return NULL;
 }
 
-const char* do_test_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
-                                                         wuffs_base__io_buffer*,
-                                                         uint32_t,
-                                                         uint64_t,
-                                                         uint64_t),
-                               golden_test* gt,
-                               uint64_t wlimit,
-                               uint64_t rlimit) {
+const char*  //
+do_bench_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
+                                              wuffs_base__io_buffer*,
+                                              uint32_t,
+                                              uint64_t,
+                                              uint64_t),
+                    uint32_t wuffs_initialize_flags,
+                    throughput_counter tcounter,
+                    golden_test* gt,
+                    uint64_t wlimit,
+                    uint64_t rlimit,
+                    uint64_t iters_unscaled) {
+  return proc_io_buffers(codec_func, wuffs_initialize_flags, tcounter, gt,
+                         wlimit, rlimit, iters_unscaled * g_flags.iterscale,
+                         true);
+}
+
+const char*  //
+do_bench_token_decoder(const char* (*codec_func)(wuffs_base__token_buffer*,
+                                                 wuffs_base__io_buffer*,
+                                                 uint32_t,
+                                                 uint64_t,
+                                                 uint64_t),
+                       uint32_t wuffs_initialize_flags,
+                       throughput_counter tcounter,
+                       golden_test* gt,
+                       uint64_t wlimit,
+                       uint64_t rlimit,
+                       uint64_t iters_unscaled) {
+  return proc_token_decoder(codec_func, wuffs_initialize_flags, tcounter, gt,
+                            wlimit, rlimit, iters_unscaled * g_flags.iterscale,
+                            true);
+}
+
+const char*  //
+do_test_io_buffers(const char* (*codec_func)(wuffs_base__io_buffer*,
+                                             wuffs_base__io_buffer*,
+                                             uint32_t,
+                                             uint64_t,
+                                             uint64_t),
+                   golden_test* gt,
+                   uint64_t wlimit,
+                   uint64_t rlimit) {
   return proc_io_buffers(codec_func,
                          WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED,
-                         tc_neither, gt, wlimit, rlimit, 1, false);
+                         tcounter_neither, gt, wlimit, rlimit, 1, false);
 }
 
-#endif  // WUFFS_INCLUDE_GUARD
+// --------
+
+const char*  //
+do_run__wuffs_base__image_decoder(wuffs_base__image_decoder* b,
+                                  uint64_t* n_bytes_out,
+                                  wuffs_base__io_buffer* dst,
+                                  wuffs_base__pixel_format pixfmt,
+                                  wuffs_base__io_buffer* src) {
+  wuffs_base__image_config ic = ((wuffs_base__image_config){});
+  wuffs_base__frame_config fc = ((wuffs_base__frame_config){});
+  wuffs_base__pixel_buffer pb = ((wuffs_base__pixel_buffer){});
+
+  uint32_t bits_per_pixel = wuffs_base__pixel_format__bits_per_pixel(&pixfmt);
+  if (bits_per_pixel == 0) {
+    return "do_run__wuffs_base__image_decoder: invalid bits_per_pixel";
+  } else if ((bits_per_pixel % 8) != 0) {
+    return "do_run__wuffs_base__image_decoder: cannot bench fractional bytes";
+  }
+  uint64_t bytes_per_pixel = bits_per_pixel / 8;
+
+  CHECK_STATUS("decode_image_config",
+               wuffs_base__image_decoder__decode_image_config(b, &ic, src));
+  wuffs_base__pixel_config__set(&ic.pixcfg, pixfmt.repr,
+                                WUFFS_BASE__PIXEL_SUBSAMPLING__NONE,
+                                wuffs_base__pixel_config__width(&ic.pixcfg),
+                                wuffs_base__pixel_config__height(&ic.pixcfg));
+  CHECK_STATUS("set_from_slice", wuffs_base__pixel_buffer__set_from_slice(
+                                     &pb, &ic.pixcfg, g_pixel_slice_u8));
+
+  while (true) {
+    wuffs_base__status status =
+        wuffs_base__image_decoder__decode_frame_config(b, &fc, src);
+    if (status.repr == wuffs_base__note__end_of_data) {
+      break;
+    } else {
+      CHECK_STATUS("decode_frame_config", status);
+    }
+    wuffs_base__pixel_blend blend =
+        ((wuffs_base__frame_config__index(&fc) == 0) ||
+         wuffs_base__frame_config__overwrite_instead_of_blend(&fc) ||
+         wuffs_base__pixel_format__is_indexed(&pixfmt))
+            ? WUFFS_BASE__PIXEL_BLEND__SRC
+            : WUFFS_BASE__PIXEL_BLEND__SRC_OVER;
+
+    CHECK_STATUS("decode_frame",
+                 wuffs_base__image_decoder__decode_frame(
+                     b, &pb, src, blend, g_work_slice_u8, NULL));
+
+    if (n_bytes_out) {
+      uint64_t frame_width = wuffs_base__frame_config__width(&fc);
+      uint64_t frame_height = wuffs_base__frame_config__height(&fc);
+      *n_bytes_out += frame_width * frame_height * bytes_per_pixel;
+    }
+    if (dst) {
+      CHECK_STRING(copy_to_io_buffer_from_pixel_buffer(
+          dst, &pb, wuffs_base__frame_config__bounds(&fc)));
+    }
+  }
+  return NULL;
+}
+
+const char*  //
+do_bench_image_decode(
+    const char* (*decode_func)(uint64_t* n_bytes_out,
+                               wuffs_base__io_buffer* dst,
+                               uint32_t wuffs_initialize_flags,
+                               wuffs_base__pixel_format pixfmt,
+                               wuffs_base__io_buffer* src),
+    uint32_t wuffs_initialize_flags,
+    wuffs_base__pixel_format pixfmt,
+    const char* src_filename,
+    size_t src_ri,
+    size_t src_wi,
+    uint64_t iters_unscaled) {
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
+
+  bench_start();
+  uint64_t n_bytes = 0;
+  uint64_t i;
+  uint64_t iters = iters_unscaled * g_flags.iterscale;
+  for (i = 0; i < iters; i++) {
+    src.meta.ri = src_ri;
+    CHECK_STRING(
+        (*decode_func)(&n_bytes, NULL, wuffs_initialize_flags, pixfmt, &src));
+  }
+  bench_finish(iters, n_bytes);
+  return NULL;
+}
+
+// --------
+
+const char*  //
+do_test__wuffs_base__hasher_u32(wuffs_base__hasher_u32* b,
+                                const char* src_filename,
+                                size_t src_ri,
+                                size_t src_wi,
+                                uint32_t want) {
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
+  uint32_t have = wuffs_base__hasher_u32__update_u32(
+      b, ((wuffs_base__slice_u8){
+             .ptr = (uint8_t*)(src.data.ptr + src.meta.ri),
+             .len = (size_t)(src.meta.wi - src.meta.ri),
+         }));
+  if (have != want) {
+    RETURN_FAIL("have 0x%08" PRIX32 ", want 0x%08" PRIX32, have, want);
+  }
+  return NULL;
+}
+
+const char*  //
+do_test__wuffs_base__image_config_decoder(wuffs_base__image_decoder* b,
+                                          const char* src_filename,
+                                          size_t src_ri,
+                                          size_t src_wi,
+                                          uint64_t want_num_frames) {
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
+
+  uint64_t have_num_frames;
+  for (have_num_frames = 0;; have_num_frames++) {
+    wuffs_base__status status =
+        wuffs_base__image_decoder__decode_frame_config(b, NULL, &src);
+    if (status.repr == wuffs_base__note__end_of_data) {
+      break;
+    } else if (!wuffs_base__status__is_ok(&status)) {
+      RETURN_FAIL("decode_frame_config: \"%s\"", status.repr);
+    }
+  }
+
+  if (have_num_frames != want_num_frames) {
+    RETURN_FAIL("num_frames: have %" PRIu64 ", want %" PRIu64, have_num_frames,
+                want_num_frames);
+  }
+  return NULL;
+}
+
+const char*  //
+do_test__wuffs_base__image_decoder(
+    wuffs_base__image_decoder* b,
+    const char* src_filename,
+    size_t src_ri,
+    size_t src_wi,
+    uint32_t want_width,
+    uint32_t want_height,
+    wuffs_base__color_u32_argb_premul want_final_pixel) {
+  if ((want_width > 16384) || (want_height > 16384) ||
+      ((want_width * want_height * 4) > PIXEL_BUFFER_ARRAY_SIZE)) {
+    return "want dimensions are too large";
+  }
+
+  wuffs_base__image_config ic = ((wuffs_base__image_config){});
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
+  CHECK_STATUS("decode_image_config",
+               wuffs_base__image_decoder__decode_image_config(b, &ic, &src));
+
+  uint32_t have_width = wuffs_base__pixel_config__width(&ic.pixcfg);
+  if (have_width != want_width) {
+    RETURN_FAIL("width: have %" PRIu32 ", want %" PRIu32, have_width,
+                want_width);
+  }
+  uint32_t have_height = wuffs_base__pixel_config__height(&ic.pixcfg);
+  if (have_height != want_height) {
+    RETURN_FAIL("height: have %" PRIu32 ", want %" PRIu32, have_height,
+                want_height);
+  }
+  wuffs_base__pixel_config__set(
+      &ic.pixcfg, WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL,
+      WUFFS_BASE__PIXEL_SUBSAMPLING__NONE, want_width, want_height);
+
+  wuffs_base__pixel_buffer pb = ((wuffs_base__pixel_buffer){});
+  CHECK_STATUS("set_from_slice", wuffs_base__pixel_buffer__set_from_slice(
+                                     &pb, &ic.pixcfg, g_pixel_slice_u8));
+  CHECK_STATUS("decode_frame", wuffs_base__image_decoder__decode_frame(
+                                   b, &pb, &src, WUFFS_BASE__PIXEL_BLEND__SRC,
+                                   g_work_slice_u8, NULL));
+
+  uint64_t n = wuffs_base__pixel_config__pixbuf_len(&ic.pixcfg);
+  if (n < 4) {
+    RETURN_FAIL("pixbuf_len too small");
+  } else if (n > PIXEL_BUFFER_ARRAY_SIZE) {
+    RETURN_FAIL("pixbuf_len too large");
+  } else {
+    wuffs_base__color_u32_argb_premul have_final_pixel =
+        wuffs_base__load_u32le__no_bounds_check(&g_pixel_array_u8[n - 4]);
+    if (have_final_pixel != want_final_pixel) {
+      RETURN_FAIL("final pixel: have 0x%08" PRIX32 ", want 0x%08" PRIX32,
+                  have_final_pixel, want_final_pixel);
+    }
+  }
+
+  if ((have_width > 0) && (have_height > 0)) {
+    wuffs_base__color_u32_argb_premul have_final_pixel =
+        wuffs_base__pixel_buffer__color_u32_at(&pb, have_width - 1,
+                                               have_height - 1);
+    if (have_final_pixel != want_final_pixel) {
+      RETURN_FAIL("final pixel: have 0x%08" PRIX32 ", want 0x%08" PRIX32,
+                  have_final_pixel, want_final_pixel);
+    }
+  }
+  return NULL;
+}
+
+const char*  //
+do_test__wuffs_base__io_transformer(wuffs_base__io_transformer* b,
+                                    const char* src_filename,
+                                    size_t src_ri,
+                                    size_t src_wi,
+                                    size_t want_wi,
+                                    uint8_t want_final_byte) {
+  if (want_wi > IO_BUFFER_ARRAY_SIZE) {
+    return "want_wi is too large";
+  }
+  wuffs_base__range_ii_u64 workbuf_len =
+      wuffs_base__io_transformer__workbuf_len(b);
+  if (workbuf_len.min_incl > workbuf_len.max_incl) {
+    return "inconsistent workbuf_len";
+  }
+  if (workbuf_len.max_incl > IO_BUFFER_ARRAY_SIZE) {
+    return "workbuf_len is too large";
+  }
+
+  wuffs_base__io_buffer have = ((wuffs_base__io_buffer){
+      .data = g_have_slice_u8,
+  });
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
+  CHECK_STATUS("transform_io", wuffs_base__io_transformer__transform_io(
+                                   b, &have, &src, g_work_slice_u8));
+  if (have.meta.wi != want_wi) {
+    RETURN_FAIL("dst wi: have %zu, want %zu", have.meta.wi, want_wi);
+  }
+  if ((have.meta.wi > 0) &&
+      (have.data.ptr[have.meta.wi - 1] != want_final_byte)) {
+    RETURN_FAIL("final byte: have 0x%02X, want 0x%02X",
+                have.data.ptr[have.meta.wi - 1], want_final_byte);
+  }
+  return NULL;
+}
+
+const char*  //
+do_test__wuffs_base__token_decoder(wuffs_base__token_decoder* b,
+                                   golden_test* gt) {
+  wuffs_base__io_buffer have = ((wuffs_base__io_buffer){
+      .data = g_have_slice_u8,
+  });
+  wuffs_base__io_buffer want = ((wuffs_base__io_buffer){
+      .data = g_want_slice_u8,
+  });
+  wuffs_base__token_buffer tok = ((wuffs_base__token_buffer){
+      .data = g_have_slice_token,
+  });
+  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
+      .data = g_src_slice_u8,
+  });
+
+  if (gt->src_filename) {
+    CHECK_STRING(
+        read_file_fragment(&src, gt->src_filename, gt->src_offset0,
+                           gt->src_offset1 ? gt->src_offset1 : UINT64_MAX));
+  } else {
+    src.meta.closed = true;
+  }
+
+  CHECK_STATUS("decode_tokens", wuffs_base__token_decoder__decode_tokens(
+                                    b, &tok, &src, g_work_slice_u8));
+
+  uint64_t pos = 0;
+  while (tok.meta.ri < tok.meta.wi) {
+    wuffs_base__token* t = &tok.data.ptr[tok.meta.ri++];
+    uint16_t len = wuffs_base__token__length(t);
+
+    if (wuffs_base__token__value(t) != 0) {
+      uint16_t con = wuffs_base__token__continued(t) ? 1 : 0;
+      int32_t vmajor = wuffs_base__token__value_major(t);
+
+      if ((have.data.len - have.meta.wi) < 16) {
+        return "testlib: output is too long";
+      }
+      // This 16-bytes-per-token debug format is the same one used by
+      // `script/print-json-token-debug-format.c`.
+      uint8_t* ptr = have.data.ptr + have.meta.wi;
+
+      wuffs_base__store_u32be__no_bounds_check(ptr + 0x0, (uint32_t)(pos));
+      wuffs_base__store_u16be__no_bounds_check(ptr + 0x4, len);
+      wuffs_base__store_u16be__no_bounds_check(ptr + 0x6, con);
+      if (vmajor > 0) {
+        wuffs_base__store_u32be__no_bounds_check(ptr + 0x8, vmajor);
+        uint32_t vminor = wuffs_base__token__value_minor(t);
+        wuffs_base__store_u32be__no_bounds_check(ptr + 0xC, vminor);
+      } else if (vmajor == 0) {
+        uint8_t vbc = wuffs_base__token__value_base_category(t);
+        uint32_t vbd = wuffs_base__token__value_base_detail(t);
+        wuffs_base__store_u32be__no_bounds_check(ptr + 0x8, 0);
+        wuffs_base__store_u8__no_bounds_check(ptr + 0x000C, vbc);
+        wuffs_base__store_u24be__no_bounds_check(ptr + 0xD, vbd);
+      } else {
+        wuffs_base__store_u8__no_bounds_check(ptr + 0x0008, 0x01);
+        wuffs_base__store_u56be__no_bounds_check(
+            ptr + 0x9, wuffs_base__token__value_extension(t));
+      }
+      have.meta.wi += 16;
+    }
+
+    pos += len;
+    if (pos > 0xFFFFFFFF) {
+      return "testlib: input is too long";
+    }
+  }
+
+  if (gt->want_filename) {
+    CHECK_STRING(read_file(&want, gt->want_filename));
+  } else {
+    want.meta.closed = true;
+  }
+  return check_io_buffers_equal("", &have, &want);
+}

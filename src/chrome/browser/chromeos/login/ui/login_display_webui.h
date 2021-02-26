@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -21,9 +20,11 @@ class AccountId;
 
 namespace chromeos {
 
+class UserBoardView;
+class UserSelectionScreen;
+
 // WebUI-based login UI implementation.
 class LoginDisplayWebUI : public LoginDisplay,
-                          public NativeWindowDelegate,
                           public SigninScreenHandlerDelegate,
                           public ui::UserActivityObserver {
  public:
@@ -37,39 +38,28 @@ class LoginDisplayWebUI : public LoginDisplay,
             bool show_users,
             bool allow_new_user) override;
   void OnPreferencesChanged() override;
-  void RemoveUser(const AccountId& account_id) override;
   void SetUIEnabled(bool is_enabled) override;
   void ShowError(int error_msg_id,
                  int login_attempts,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   void ShowPasswordChangedDialog(bool show_password_error,
-                                 const std::string& email) override;
+                                 const AccountId& account_id) override;
   void ShowSigninUI(const std::string& email) override;
-  void ShowWhitelistCheckFailedError() override;
-
-  // NativeWindowDelegate implementation:
-  gfx::NativeWindow GetNativeWindow() const override;
+  void ShowAllowlistCheckFailedError() override;
 
   // SigninScreenHandlerDelegate implementation:
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;
-  void Signout() override;
-
   void OnSigninScreenReady() override;
   void CancelUserAdding() override;
   void ShowEnterpriseEnrollmentScreen() override;
-  void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
-  void ShowUpdateRequiredScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  bool IsShowGuest() const override;
   bool IsShowUsers() const override;
   bool ShowUsersHasChanged() const override;
-  bool IsAllowNewUser() const override;
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
 
@@ -80,9 +70,6 @@ class LoginDisplayWebUI : public LoginDisplay,
   void OnUserActivity(const ui::Event* event) override;
 
  private:
-  // Whether to show guest login.
-  bool show_guest_ = false;
-
   // Whether to show the user pods or a GAIA sign in.
   // Public sessions are always shown.
   bool show_users_ = false;
@@ -98,6 +85,10 @@ class LoginDisplayWebUI : public LoginDisplay,
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
+
+  // Used only for the "user-adding" (aka "multiprofile") flow.
+  std::unique_ptr<UserSelectionScreen> user_selection_screen_;
+  base::WeakPtr<UserBoardView> user_board_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayWebUI);
 };

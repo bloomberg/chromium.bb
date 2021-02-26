@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/chromeos_buildflags.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
@@ -35,8 +36,8 @@ namespace {
 
 class MockShellAppDelegate : public extensions::ShellAppDelegate {
  public:
-  MockShellAppDelegate() : requested_(false) {
-    DCHECK(instance_ == nullptr);
+  MockShellAppDelegate() {
+    EXPECT_EQ(instance_, nullptr);
     instance_ = this;
   }
   ~MockShellAppDelegate() override { instance_ = nullptr; }
@@ -46,23 +47,25 @@ class MockShellAppDelegate : public extensions::ShellAppDelegate {
       const content::MediaStreamRequest& request,
       content::MediaResponseCallback callback,
       const extensions::Extension* extension) override {
-    requested_ = true;
-    if (request_message_loop_runner_.get())
-      request_message_loop_runner_->Quit();
+    media_access_requested_ = true;
+    if (media_access_request_quit_closure_)
+      std::move(media_access_request_quit_closure_).Run();
   }
 
   void WaitForRequestMediaPermission() {
-    if (requested_)
+    if (media_access_requested_)
       return;
-    request_message_loop_runner_ = new content::MessageLoopRunner;
-    request_message_loop_runner_->Run();
+    base::RunLoop run_loop;
+    media_access_request_quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   static MockShellAppDelegate* Get() { return instance_; }
 
  private:
-  bool requested_;
-  scoped_refptr<content::MessageLoopRunner> request_message_loop_runner_;
+  bool media_access_requested_ = false;
+  base::OnceClosure media_access_request_quit_closure_;
+
   static MockShellAppDelegate* instance_;
 };
 
@@ -71,7 +74,7 @@ MockShellAppDelegate* MockShellAppDelegate::instance_ = nullptr;
 class MockShellAppViewGuestDelegate
     : public extensions::ShellAppViewGuestDelegate {
  public:
-  MockShellAppViewGuestDelegate() {}
+  MockShellAppViewGuestDelegate() = default;
 
   extensions::AppDelegate* CreateAppDelegate() override {
     return new MockShellAppDelegate();
@@ -80,7 +83,7 @@ class MockShellAppViewGuestDelegate
 
 class MockExtensionsAPIClient : public extensions::ShellExtensionsAPIClient {
  public:
-  MockExtensionsAPIClient() {}
+  MockExtensionsAPIClient() = default;
 
   extensions::AppViewGuestDelegate* CreateAppViewGuestDelegate()
       const override {
@@ -105,7 +108,7 @@ class AppViewTest : public AppShellTest {
   content::WebContents* GetFirstAppWindowWebContents() {
     const AppWindowRegistry::AppWindowList& app_window_list =
         AppWindowRegistry::Get(browser_context_)->app_windows();
-    DCHECK(app_window_list.size() == 1);
+    EXPECT_EQ(1U, app_window_list.size());
     return (*app_window_list.begin())->web_contents();
   }
 
@@ -143,18 +146,13 @@ class AppViewTest : public AppShellTest {
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
+ private:
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
 };
 
-#if defined(OS_WIN)
-#define MAYBE_TestAppViewGoodDataShouldSucceed \
-  DISABLED_TestAppViewGoodDataShouldSucceed
-#else
-#define MAYBE_TestAppViewGoodDataShouldSucceed TestAppViewGoodDataShouldSucceed
-#endif
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_F(AppViewTest, MAYBE_TestAppViewGoodDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
   RunTest("testAppViewGoodDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
@@ -176,26 +174,22 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMediaRequest) {
 // Tests that <appview> correctly processes parameters passed on connect.
 // This test should fail to connect because the embedded app (skeleton) will
 // refuse the data passed by the embedder app and deny the request.
-// Disabled for flakiness on multiple platforms. See https://crbug.com/875908.
-IN_PROC_BROWSER_TEST_F(AppViewTest, DISABLED_TestAppViewRefusedDataShouldFail) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
   RunTest("testAppViewRefusedDataShouldFail",
           "app_view/apitest",
           "app_view/apitest/skeleton");
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#define MAYBE_TestAppViewWithUndefinedDataShouldSucceed \
-  DISABLED_TestAppViewWithUndefinedDataShouldSucceed
-#else
-#define MAYBE_TestAppViewWithUndefinedDataShouldSucceed \
-  TestAppViewWithUndefinedDataShouldSucceed
-#endif
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_F(AppViewTest,
-                       MAYBE_TestAppViewWithUndefinedDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
   RunTest("testAppViewWithUndefinedDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
+}
+
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewNoEmbedRequestListener) {
+  RunTest("testAppViewNoEmbedRequestListener", "app_view/apitest",
+          "app_view/apitest/no_embed_request_listener");
 }
 
 }  // namespace extensions

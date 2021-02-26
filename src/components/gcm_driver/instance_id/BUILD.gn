@@ -14,8 +14,6 @@ static_library("instance_id") {
     "instance_id.h",
     "instance_id_driver.cc",
     "instance_id_driver.h",
-    "instance_id_impl.cc",
-    "instance_id_impl.h",
     "instance_id_profile_service.cc",
     "instance_id_profile_service.h",
   ]
@@ -30,15 +28,17 @@ static_library("instance_id") {
   ]
 
   if (use_gcm_from_platform) {
-    sources -= [
-      "instance_id_impl.cc",
-      "instance_id_impl.h",
-    ]
+    assert(is_android)
     sources += [
       "instance_id_android.cc",
       "instance_id_android.h",
     ]
     deps += [ "android:jni_headers" ]
+  } else {
+    sources += [
+      "instance_id_impl.cc",
+      "instance_id_impl.h",
+    ]
   }
 }
 
@@ -47,8 +47,6 @@ static_library("test_support") {
   sources = [
     "fake_gcm_driver_for_instance_id.cc",
     "fake_gcm_driver_for_instance_id.h",
-    "scoped_use_fake_instance_id_android.cc",
-    "scoped_use_fake_instance_id_android.h",
   ]
 
   public_deps = [ ":instance_id" ]
@@ -59,6 +57,10 @@ static_library("test_support") {
   ]
 
   if (is_android) {
+    sources += [
+      "scoped_use_fake_instance_id_android.cc",
+      "scoped_use_fake_instance_id_android.h",
+    ]
     deps += [ "android:test_support_jni_headers" ]
   }
 }

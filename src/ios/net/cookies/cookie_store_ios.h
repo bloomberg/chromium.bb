@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
 #import "ios/net/cookies/system_cookie_store.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -197,7 +198,7 @@ class CookieStoreIOS : public net::CookieStore,
   std::unique_ptr<net::CookieMonster> cookie_monster_;
   std::unique_ptr<SystemCookieStore> system_store_;
   bool metrics_enabled_;
-  base::CancelableClosure flush_closure_;
+  base::CancelableOnceClosure flush_closure_;
 
   // Cookie notification methods.
   // The cookie cache is updated from both the system store and the
@@ -237,8 +238,8 @@ class CookieStoreIOS : public net::CookieStore,
   // UpdateCachesFromCookieMonster completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
-                        const net::CookieStatusList& cookies,
-                        const net::CookieStatusList& excluded_cookies);
+                        const net::CookieAccessResultList& cookies,
+                        const net::CookieAccessResultList& excluded_cookies);
 
   // Fetches new values for all (url, name) pairs that have hooks registered,
   // asynchronously invoking callbacks if necessary.
@@ -263,7 +264,7 @@ class CookieStoreIOS : public net::CookieStore,
   // calling the provided callback.
 
   void UpdateCachesAfterSet(SetCookiesCallback callback,
-                            net::CanonicalCookie::CookieInclusionStatus status);
+                            net::CookieAccessResult result);
   void UpdateCachesAfterDelete(DeleteCallback callback, uint32_t num_deleted);
   void UpdateCachesAfterClosure(base::OnceClosure callback);
 
@@ -272,12 +273,12 @@ class CookieStoreIOS : public net::CookieStore,
   // creation date.
   net::CookieList CanonicalCookieListFromSystemCookies(NSArray* cookies);
 
-  // Takes an NSArray of NSHTTPCookies as returns a net::CookieStatusList.
+  // Takes an NSArray of NSHTTPCookies as returns a net::CookieAccessResultList.
   // A status of "INCLUDE" is assigned to each cookie.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
-  net::CookieStatusList CanonicalCookieWithStatusListFromSystemCookies(
-      NSArray* cookies);
+  net::CookieAccessResultList
+  CanonicalCookieWithAccessResultListFromSystemCookies(NSArray* cookies);
 
   // Runs |callback| on CanonicalCookie with status List converted from cookies.
   void RunGetCookieListCallbackOnSystemCookies(GetCookieListCallback callback,

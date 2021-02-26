@@ -45,8 +45,9 @@ android_library("runtime_library_for_tests_java") {
   ]
 }
 
-proguarded_dist_dex("webapk_runtime_library") {
+dist_dex("webapk_runtime_library") {
   deps = [ ":runtime_library_for_assets_java" ]
+  proguard_enabled = true
   proguard_configs = [
     "runtime_library.proguard.flags",
     "//base/android/proguard/chromium_code.flags",
@@ -75,6 +76,7 @@ android_library("runtime_library_javatests") {
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]

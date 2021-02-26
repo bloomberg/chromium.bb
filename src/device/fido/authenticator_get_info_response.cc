@@ -27,9 +27,14 @@ cbor::Value::ArrayValue ToArrayValue(const Container& container) {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     base::flat_set<ProtocolVersion> in_versions,
+    base::flat_set<Ctap2Version> in_ctap2_versions,
     base::span<const uint8_t, kAaguidLength> in_aaguid)
     : versions(std::move(in_versions)),
-      aaguid(fido_parsing_utils::Materialize(in_aaguid)) {}
+      ctap2_versions(std::move(in_ctap2_versions)),
+      aaguid(fido_parsing_utils::Materialize(in_aaguid)) {
+  DCHECK_NE(base::Contains(versions, ProtocolVersion::kCtap2),
+            ctap2_versions.empty());
+}
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     AuthenticatorGetInfoResponse&& that) = default;
@@ -44,44 +49,76 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     const AuthenticatorGetInfoResponse& response) {
   cbor::Value::ArrayValue version_array;
   for (const auto& version : response.versions) {
-    version_array.emplace_back(
-        version == ProtocolVersion::kCtap2 ? kCtap2Version : kU2fVersion);
+    switch (version) {
+      case ProtocolVersion::kCtap2:
+        for (const auto& ctap2_version : response.ctap2_versions) {
+          switch (ctap2_version) {
+            case Ctap2Version::kCtap2_0:
+              version_array.emplace_back(kCtap2Version);
+              break;
+            case Ctap2Version::kCtap2_1:
+              version_array.emplace_back(kCtap2_1Version);
+              break;
+          }
+        }
+        break;
+      case ProtocolVersion::kU2f:
+        version_array.emplace_back(kU2fVersion);
+        break;
+      case ProtocolVersion::kUnknown:
+        NOTREACHED();
+    }
   }
   cbor::Value::MapValue device_info_map;
-  device_info_map.emplace(1, std::move(version_array));
+  device_info_map.emplace(0x01, std::move(version_array));
 
   if (response.extensions)
-    device_info_map.emplace(2, ToArrayValue(*response.extensions));
+    device_info_map.emplace(0x02, ToArrayValue(*response.extensions));
 
-  device_info_map.emplace(3, response.aaguid);
-  device_info_map.emplace(4, AsCBOR(response.options));
+  device_info_map.emplace(0x03, response.aaguid);
+  device_info_map.emplace(0x04, AsCBOR(response.options));
 
   if (response.max_msg_size) {
-    device_info_map.emplace(5,
+    device_info_map.emplace(0x05,
                             base::strict_cast<int64_t>(*response.max_msg_size));
   }
 
   if (response.pin_protocols) {
-    device_info_map.emplace(6, ToArrayValue(*response.pin_protocols));
+    cbor::Value::ArrayValue pin_protocols;
+    for (const PINUVAuthProtocol p : *response.pin_protocols) {
+      pin_protocols.push_back(cbor::Value(static_cast<int>(p)));
+    }
+    device_info_map.emplace(0x06, std::move(pin_protocols));
   }
 
   if (response.max_credential_count_in_list) {
-    device_info_map.emplace(
-        7, base::strict_cast<int64_t>(*response.max_credential_count_in_list));
+    device_info_map.emplace(0x07, base::strict_cast<int64_t>(
+                                      *response.max_credential_count_in_list));
   }
 
   if (response.max_credential_id_length) {
     device_info_map.emplace(
-        8, base::strict_cast<int64_t>(*response.max_credential_id_length));
+        0x08, base::strict_cast<int64_t>(*response.max_credential_id_length));
+  }
+
+  if (response.remaining_discoverable_credentials) {
+    device_info_map.emplace(0x14,
+                            base::strict_cast<int64_t>(
+                                *response.remaining_discoverable_credentials));
   }
 
   if (!response.algorithms.empty()) {
     std::vector<cbor::Value> algorithms_cbor;
     algorithms_cbor.reserve(response.algorithms.size());
     for (const auto& algorithm : response.algorithms) {
-      algorithms_cbor.emplace_back(cbor::Value(algorithm));
+      // Entries are PublicKeyCredentialParameters
+      // https://w3c.github.io/webauthn/#dictdef-publickeycredentialparameters
+      cbor::Value::MapValue entry;
+      entry.emplace("type", "public-key");
+      entry.emplace("alg", algorithm);
+      algorithms_cbor.emplace_back(cbor::Value(entry));
     }
-    device_info_map.emplace(10, std::move(algorithms_cbor));
+    device_info_map.emplace(0x0a, std::move(algorithms_cbor));
   }
 
   auto encoded_bytes =

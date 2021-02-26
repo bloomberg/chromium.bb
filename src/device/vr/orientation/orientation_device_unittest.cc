@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -162,10 +162,6 @@ class VROrientationDeviceTest : public testing::Test {
       device_->GetInlineFrameData(base::BindOnce(
           [](device::mojom::XRFrameDataPtr data) { EXPECT_FALSE(data); }));
     }
-  }
-
-  void SetInlinePosesEnabled(bool enabled) {
-    device_->SetInlinePosesEnabled(enabled);
   }
 
   std::unique_ptr<VROrientationSession> MakeDisplay() {
@@ -381,14 +377,6 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape270Test) {
                    EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
                    EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
-}
-
-TEST_F(VROrientationDeviceTest, NoMagicWindowPosesWhileBrowsing) {
-  InitializeDevice(FakeInitParams());
-
-  AssertInlineFrameDataAvailable(true);
-  SetInlinePosesEnabled(false);
-  AssertInlineFrameDataAvailable(false);
 }
 
 TEST_F(VROrientationDeviceTest, GetFrameDataHelper) {

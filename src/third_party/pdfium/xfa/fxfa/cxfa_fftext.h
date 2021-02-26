@@ -11,7 +11,7 @@
 
 class CXFA_FFText final : public CXFA_FFWidget {
  public:
-  explicit CXFA_FFText(CXFA_Node* pNode);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFText() override;
 
   // CXFA_FFWidget
@@ -22,13 +22,15 @@ class CXFA_FFText final : public CXFA_FFWidget {
   bool OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) override;
   FWL_WidgetHit HitTest(const CFX_PointF& point) override;
-  void RenderWidget(CXFA_Graphics* pGS,
+  void RenderWidget(CFGAS_GEGraphics* pGS,
                     const CFX_Matrix& matrix,
                     HighlightOption highlight) override;
   bool IsLoaded() override;
   bool PerformLayout() override;
 
  private:
+  explicit CXFA_FFText(CXFA_Node* pNode);
+
   const wchar_t* GetLinkURLAtPoint(const CFX_PointF& point);
 };
 

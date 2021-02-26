@@ -14,16 +14,24 @@ namespace blink {
 
 class ScriptState;
 class ScriptValue;
+class ScriptPromise;
+class QueryOptions;
 
 class FontManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   FontManager() = default;
-  ScriptValue query(ScriptState*);
 
-  DISALLOW_COPY_AND_ASSIGN(FontManager);
-  void Trace(blink::Visitor*) override;
+  // Disallow copy and assign.
+  FontManager(const FontManager&) = delete;
+  FontManager operator=(const FontManager&) = delete;
+
+  // FontManager IDL interface implementation.
+  ScriptValue query(ScriptState*, ExceptionState&);
+  ScriptPromise showFontChooser(ScriptState*, const QueryOptions* options);
+
+  void Trace(blink::Visitor*) const override;
 };
 
 }  // namespace blink

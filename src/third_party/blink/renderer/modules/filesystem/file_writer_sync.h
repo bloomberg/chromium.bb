@@ -46,12 +46,11 @@ class FileWriterSync final : public ScriptWrappable,
                              public FileWriterBase,
                              public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
  public:
   explicit FileWriterSync(ExecutionContext* context);
   ~FileWriterSync() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void write(Blob*, ExceptionState&);
   void seek(int64_t position, ExceptionState&);

@@ -65,16 +65,16 @@ base::flat_set<std::string> GetLoginScreenPolicyExtensionIds() {
   return extension_ids;
 }
 
-content::BrowserContext* GetBrowserContext() {
+Profile* GetProfile() {
   return ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
 extensions::ExtensionRegistry* GetExtensionRegistry() {
-  return extensions::ExtensionRegistry::Get(GetBrowserContext());
+  return extensions::ExtensionRegistry::Get(GetProfile());
 }
 
 extensions::ProcessManager* GetProcessManager() {
-  return extensions::ProcessManager::Get(GetBrowserContext());
+  return extensions::ProcessManager::Get(GetProfile());
 }
 
 // Loads the persistently stored information about the challenge-response keys
@@ -145,8 +145,8 @@ class ExtensionLoadObserver final
       public extensions::ExtensionHostObserver,
       public extensions::ExtensionRegistryObserver {
  public:
-  // Waits until all extensions in |extension_ids| are ready and invokes
-  // |callback| afterwards.
+  // Waits until all extensions in `extension_ids` are ready and invokes
+  // `callback` afterwards.
   static void WaitUntilExtensionsReady(
       const base::flat_set<std::string>& extension_ids,
       base::TimeDelta maximum_waiting_time,
@@ -228,10 +228,9 @@ class ExtensionLoadObserver final
 
   // extensions::ExtensionHostObserver
 
-  void OnExtensionHostDestroyed(
-      const extensions::ExtensionHost* host) override {
-    // TODO(crbug.com/1086475): Just stop observing |host| instead of all.
-    extension_host_observer_.RemoveAll();
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override {
+    DCHECK(extension_host_observer_.IsObserving(host));
+    extension_host_observer_.Remove(host);
     StopWaitingOnExtension(host->extension_id());
   }
 
@@ -247,21 +246,21 @@ class ExtensionLoadObserver final
     std::move(callback).Run();
   }
 
-  // Waits until all extensions in |extension_ids| are ready and invokes
-  // |callback| afterwards.
+  // Waits until all extensions in `extension_ids` are ready and invokes
+  // `callback` afterwards.
   void StartWaiting(const base::flat_set<std::string>& extension_ids,
                     base::OnceClosure callback) {
     extensions_ready_callback_ = std::move(callback);
 
-    // Do not wait longer than |maximum_waiting_time_|.
+    // Do not wait longer than `maximum_waiting_time_`.
     stop_waiting_timer_.Start(
         FROM_HERE, maximum_waiting_time_, this,
         &ExtensionLoadObserver::TriggerExtensionsReadyCallback);
 
     base::flat_set<std::string> login_screen_policy_extension_ids =
         GetLoginScreenPolicyExtensionIds();
-    // Get all ids that are both in |extension_ids| and
-    // |login_screen_policy_extension_ids|.
+    // Get all ids that are both in `extension_ids` and
+    // `login_screen_policy_extension_ids`.
     std::vector<std::string> extension_ids_to_wait_for;
     for (const std::string& extension_id : extension_ids) {
       if (login_screen_policy_extension_ids.contains(extension_id)) {
@@ -281,11 +280,11 @@ class ExtensionLoadObserver final
       const extensions::Extension* extension =
           GetExtensionRegistry()->GetInstalledExtension(extension_id);
       if (extension) {
-        OnExtensionInstalled(GetBrowserContext(), extension,
+        OnExtensionInstalled(GetProfile(), extension,
                              /*is_update=*/false);
       }
     }
-    // OnExtensionInstalled() can cause |this| to be destroyed, so it needs to
+    // OnExtensionInstalled() can cause `this` to be destroyed, so it needs to
     // be the last call of the method.
   }
 
@@ -324,7 +323,7 @@ class ExtensionLoadObserver final
     }
   }
 
-  // Triggers the callback. |this| may be destroyed after this function.
+  // Triggers the callback. `this` may be destroyed after this function.
   void TriggerExtensionsReadyCallback() {
     if (extensions_ready_callback_) {
       std::move(extensions_ready_callback_).Run();
@@ -363,13 +362,20 @@ bool ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
 
 ChallengeResponseAuthKeysLoader::ChallengeResponseAuthKeysLoader()
     : maximum_extension_load_waiting_time_(
-          kDefaultMaximumExtensionLoadWaitingTime) {}
+          kDefaultMaximumExtensionLoadWaitingTime) {
+  profile_subscription_.Add(GetProfile());
+}
 
 ChallengeResponseAuthKeysLoader::~ChallengeResponseAuthKeysLoader() = default;
 
 void ChallengeResponseAuthKeysLoader::LoadAvailableKeys(
     const AccountId& account_id,
     LoadAvailableKeysCallback callback) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   // Load the list of public keys of the cryptographic keys that can be used
   // for authenticating the user.
   std::vector<std::string> suitable_public_key_spki_items;
@@ -392,10 +398,21 @@ void ChallengeResponseAuthKeysLoader::LoadAvailableKeys(
                      std::move(callback)));
 }
 
+void ChallengeResponseAuthKeysLoader::OnProfileWillBeDestroyed(
+    Profile* profile) {
+  profile_is_destroyed_ = true;
+  profile_subscription_.Remove(profile);
+}
+
 void ChallengeResponseAuthKeysLoader::ContinueLoadAvailableKeysExtensionsLoaded(
     const AccountId& account_id,
     const std::vector<std::string>& suitable_public_key_spki_items,
     LoadAvailableKeysCallback callback) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   // Asynchronously poll all certificate providers to get the list of
   // currently available cryptographic keys.
   std::unique_ptr<CertificateProvider> cert_provider =
@@ -411,6 +428,11 @@ void ChallengeResponseAuthKeysLoader::ContinueLoadAvailableKeysWithCerts(
     const std::vector<std::string>& suitable_public_key_spki_items,
     LoadAvailableKeysCallback callback,
     net::ClientCertIdentityList /* cert_identities */) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   CertificateProviderService* const cert_provider_service =
       GetCertificateProviderService();
   std::vector<ChallengeResponseKey> filtered_keys;

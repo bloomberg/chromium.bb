@@ -17,7 +17,9 @@
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
 #if defined(USE_OZONE) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/views/test/ui_controls_factory_desktop_aura_ozone.h"
 #endif
 #if defined(USE_X11)
 #include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
@@ -36,15 +38,13 @@
 class InteractiveUITestSuite : public ChromeTestSuite {
  public:
   InteractiveUITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
-  ~InteractiveUITestSuite() override {}
+  ~InteractiveUITestSuite() override = default;
 
  protected:
   // ChromeTestSuite overrides:
   void Initialize() override {
-    // Browser tests are expected not to tear-down various globals and may
-    // complete with the thread priority being above NORMAL.
+    // Browser tests are expected not to tear-down various globals.
     base::TestSuite::DisableCheckForLeakedGlobals();
-    base::TestSuite::DisableCheckForThreadPriorityAtTestEnd();
 
     ChromeTestSuite::Initialize();
 
@@ -54,13 +54,29 @@ class InteractiveUITestSuite : public ChromeTestSuite {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui_controls::InstallUIControlsAura(
         aura::test::CreateUIControlsAura(nullptr));
-#elif defined(USE_OZONE) && defined(OS_LINUX)
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
-    ui::OzonePlatform::InitializeForUI(params);
 #elif defined(OS_LINUX)
+#if defined(USE_OZONE)
+    if (features::IsUsingOzonePlatform()) {
+      ui::OzonePlatform::InitParams params;
+      params.single_process = true;
+      ui::OzonePlatform::InitializeForUI(params);
+
+#if !BUILDFLAG(IS_LACROS)
+      // TODO(1134495): when ozone/wayland implements ui controls test helper,
+      // make lacros also use the ui controls created below.
+      //
+      // ui controls implementation for Ozone desktop.
+      ui_controls::InstallUIControlsAura(
+          views::test::CreateUIControlsDesktopAuraOzone());
+      return;
+#endif
+    }
+#endif
+#if defined(USE_X11)
+    DCHECK(!features::IsUsingOzonePlatform());
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());
+#endif
 #else
     ui_controls::EnableUIControls();
 #endif
@@ -82,6 +98,10 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
  public:
   explicit InteractiveUITestLauncherDelegate(ChromeTestSuiteRunner* runner)
       : ChromeTestLauncherDelegate(runner) {}
+  InteractiveUITestLauncherDelegate(const InteractiveUITestLauncherDelegate&) =
+      delete;
+  InteractiveUITestLauncherDelegate& operator=(
+      const InteractiveUITestLauncherDelegate&) = delete;
 
  protected:
   // content::TestLauncherDelegate:
@@ -105,7 +125,7 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
     ChromeTestLauncherDelegate::OnTestTimedOut(command_line);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PreRunTest() override {
     // Clear currently pressed modifier keys (if any) before the test starts.
     ui_test_utils::ClearKeyEventModifiers();
@@ -121,10 +141,7 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
     }
     ChromeTestLauncherDelegate::PostRunTest(test_result);
   }
-#endif  // defined(OS_MACOSX)
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InteractiveUITestLauncherDelegate);
+#endif  // defined(OS_MAC)
 };
 
 class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {

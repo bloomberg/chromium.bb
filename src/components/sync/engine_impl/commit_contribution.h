@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "components/sync/base/syncer_error.h"
-#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -22,8 +22,8 @@ class StatusController;
 // This class handles the bookkeeping related to the commit of these items.
 class CommitContribution {
  public:
-  CommitContribution();
-  virtual ~CommitContribution() = 0;
+  CommitContribution() = default;
+  virtual ~CommitContribution() = default;
 
   // Serialize this contribution's entries to the given commit request |msg|.
   //
@@ -46,10 +46,6 @@ class CommitContribution {
   // network error). This method may be called only if ProcessCommitResponse
   // was never called.
   virtual void ProcessCommitFailure(SyncCommitError commit_error) = 0;
-
-  // Cleans up any temporary state associated with the commit. Must be called
-  // before destruction.
-  virtual void CleanUp() = 0;
 
   // Returns the number of entries included in this contribution.
   virtual size_t GetNumEntries() const = 0;

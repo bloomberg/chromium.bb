@@ -219,7 +219,8 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()),
       ConvertUTF16ToJavaString(env,
-                               card.CardIdentifierStringForAutofillDisplay()));
+                               card.CardIdentifierStringForAutofillDisplay()),
+      ConvertUTF16ToJavaString(env, card.nickname()));
 }
 
 // static
@@ -245,6 +246,8 @@ void PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
       ConvertJavaStringToUTF8(Java_CreditCard_getBillingAddressId(env, jcard)));
   card->set_server_id(
       ConvertJavaStringToUTF8(Java_CreditCard_getServerId(env, jcard)));
+  card->SetNickname(
+      ConvertJavaStringToUTF16(Java_CreditCard_getNickname(env, jcard)));
 
   // Only set the guid if it is an existing card (java guid not empty).
   // Otherwise, keep the generated one.
@@ -277,6 +280,9 @@ PersonalDataManagerAndroid::CreateJavaProfileFromNative(
       env, ConvertUTF8ToJavaString(env, profile.guid()),
       ConvertUTF8ToJavaString(env, profile.origin()),
       profile.record_type() == AutofillProfile::LOCAL_PROFILE,
+      ConvertUTF16ToJavaString(
+          env, profile.GetInfo(AutofillType(NAME_HONORIFIC_PREFIX),
+                               g_browser_process->GetApplicationLocale())),
       ConvertUTF16ToJavaString(
           env, profile.GetInfo(AutofillType(NAME_FULL),
                                g_browser_process->GetApplicationLocale())),

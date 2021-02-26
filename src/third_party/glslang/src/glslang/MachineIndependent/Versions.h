@@ -36,6 +36,7 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
+
 #ifndef _VERSIONS_INCLUDED_
 #define _VERSIONS_INCLUDED_
 
@@ -198,6 +199,7 @@ const char* const E_GL_EXT_ray_query                        = "GL_EXT_ray_query"
 const char* const E_GL_EXT_ray_flags_primitive_culling      = "GL_EXT_ray_flags_primitive_culling";
 const char* const E_GL_EXT_blend_func_extended              = "GL_EXT_blend_func_extended";
 const char* const E_GL_EXT_shader_implicit_conversions      = "GL_EXT_shader_implicit_conversions";
+const char* const E_GL_EXT_fragment_shading_rate            = "GL_EXT_fragment_shading_rate";
 
 // Arrays of extensions for the above viewportEXTs duplications
 
@@ -296,6 +298,8 @@ const char* const E_GL_EXT_shader_subgroup_extended_types_int8    = "GL_EXT_shad
 const char* const E_GL_EXT_shader_subgroup_extended_types_int16   = "GL_EXT_shader_subgroup_extended_types_int16";
 const char* const E_GL_EXT_shader_subgroup_extended_types_int64   = "GL_EXT_shader_subgroup_extended_types_int64";
 const char* const E_GL_EXT_shader_subgroup_extended_types_float16 = "GL_EXT_shader_subgroup_extended_types_float16";
+
+const char* const E_GL_EXT_shader_atomic_float = "GL_EXT_shader_atomic_float";
 
 // Arrays of extensions for the above AEP duplications
 

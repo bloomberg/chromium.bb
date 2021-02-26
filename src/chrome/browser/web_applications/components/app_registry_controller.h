@@ -6,10 +6,15 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRY_CONTROLLER_H_
 
 #include "base/callback_forward.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Profile;
+
+namespace base {
+class Time;
+}
 
 namespace web_app {
 
@@ -31,28 +36,47 @@ class AppRegistryController {
   explicit AppRegistryController(Profile* profile);
   virtual ~AppRegistryController();
 
+  void SetSubsystems(OsIntegrationManager* os_integration_manager);
+
   virtual void Init(base::OnceClosure callback) = 0;
 
   virtual void SetAppUserDisplayMode(const AppId& app_id,
-                                     DisplayMode display_mode) = 0;
+                                     DisplayMode display_mode,
+                                     bool is_user_action) = 0;
 
   virtual void SetAppIsDisabled(const AppId& app_id, bool is_disabled) = 0;
 
   // TODO(crbug.com/897314): Finish experiment by legitimising it as a
   // DisplayMode or removing entirely.
-  void SetExperimentalTabbedWindowMode(const AppId& app_id, bool enabled);
+  void SetExperimentalTabbedWindowMode(const AppId& app_id,
+                                       bool enabled,
+                                       bool is_user_action);
 
   virtual void SetAppIsLocallyInstalled(const AppId& app_id,
                                         bool is_locally_installed) = 0;
+
+  virtual void SetAppLastLaunchTime(const AppId& app_id,
+                                    const base::Time& time) = 0;
+
+  virtual void SetAppInstallTime(const AppId& app_id,
+                                 const base::Time& time) = 0;
+
+  virtual void SetAppRunOnOsLoginMode(const AppId& app_id,
+                                      RunOnOsLoginMode mode) = 0;
 
   // Safe downcast:
   virtual WebAppSyncBridge* AsWebAppSyncBridge() = 0;
 
  protected:
   Profile* profile() const { return profile_; }
+  OsIntegrationManager& os_integration_manager() {
+    return *os_integration_manager_;
+  }
 
  private:
   Profile* const profile_;
+
+  OsIntegrationManager* os_integration_manager_ = nullptr;
 };
 
 }  // namespace web_app

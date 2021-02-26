@@ -50,7 +50,7 @@ avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFor
     FILE * f = fopen(inputFilename, "rb");
     if (!f) {
         fprintf(stderr, "Can't open JPEG file for read: %s\n", inputFilename);
-        goto cleanup;
+        return ret;
     }
 
     struct my_error_mgr jerr;
@@ -94,7 +94,10 @@ avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFor
         memcpy(pixelRow, buffer[0], rgb.rowBytes);
         ++row;
     }
-    avifImageRGBToYUV(avif, &rgb);
+    if (avifImageRGBToYUV(avif, &rgb) != AVIF_RESULT_OK) {
+        fprintf(stderr, "Conversion to YUV failed: %s\n", inputFilename);
+        goto cleanup;
+    }
 
     jpeg_finish_decompress(&cinfo);
     ret = AVIF_TRUE;
@@ -108,20 +111,10 @@ cleanup:
     return ret;
 }
 
-avifBool avifJPEGWrite(avifImage * avif, const char * outputFilename, int jpegQuality)
+avifBool avifJPEGWrite(avifImage * avif, const char * outputFilename, int jpegQuality, avifChromaUpsampling chromaUpsampling)
 {
     avifBool ret = AVIF_FALSE;
     FILE * f = NULL;
-
-    (void)avif;
-    (void)outputFilename;
-
-    avifRGBImage rgb;
-    avifRGBImageSetDefaults(&rgb, avif);
-    rgb.format = AVIF_RGB_FORMAT_RGB;
-    rgb.depth = 8;
-    avifRGBImageAllocatePixels(&rgb);
-    avifImageYUVToRGB(avif, &rgb);
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -129,9 +122,20 @@ avifBool avifJPEGWrite(avifImage * avif, const char * outputFilename, int jpegQu
     cinfo.err = jpeg_std_error(&jerr);
     jpeg_create_compress(&cinfo);
 
+    avifRGBImage rgb;
+    avifRGBImageSetDefaults(&rgb, avif);
+    rgb.format = AVIF_RGB_FORMAT_RGB;
+    rgb.chromaUpsampling = chromaUpsampling;
+    rgb.depth = 8;
+    avifRGBImageAllocatePixels(&rgb);
+    if (avifImageYUVToRGB(avif, &rgb) != AVIF_RESULT_OK) {
+        fprintf(stderr, "Conversion to RGB failed: %s\n", outputFilename);
+        goto cleanup;
+    }
+
     f = fopen(outputFilename, "wb");
     if (!f) {
-        fprintf(stderr, "Can't open PNG file for write: %s\n", outputFilename);
+        fprintf(stderr, "Can't open JPEG file for write: %s\n", outputFilename);
         goto cleanup;
     }
 

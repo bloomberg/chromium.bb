@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as PerfUIModule from './perf_ui.js';
 
 self.PerfUI = self.PerfUI || {};
@@ -65,9 +67,6 @@ PerfUI.OverviewGrid.Window = PerfUIModule.OverviewGrid.Window;
 
 /** @enum {symbol} */
 PerfUI.OverviewGrid.Events = PerfUIModule.OverviewGrid.Events;
-
-/** @constructor */
-PerfUI.PieChart = PerfUIModule.PieChart.PieChart;
 
 /** @constructor */
 PerfUI.TimelineGrid = PerfUIModule.TimelineGrid.TimelineGrid;

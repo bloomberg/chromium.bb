@@ -14,10 +14,12 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_permission.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/notifications/notification_metrics.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -102,8 +104,14 @@ void NotificationManager::OnPermissionRequestComplete(
     V8NotificationPermissionCallback* deprecated_callback,
     mojom::blink::PermissionStatus status) {
   String status_string = Notification::PermissionString(status);
-  if (deprecated_callback)
+  if (deprecated_callback) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_CALLBACK_FUNCTION)
+    deprecated_callback->InvokeAndReportException(
+        nullptr, V8NotificationPermission::Create(status_string).value());
+#else
     deprecated_callback->InvokeAndReportException(nullptr, status_string);
+#endif
+  }
 
   resolver->Resolve(status_string);
 }
@@ -165,6 +173,8 @@ void NotificationManager::DisplayPersistentNotification(
 
   if (author_data_size >
       mojom::blink::NotificationData::kMaximumDeveloperDataSize) {
+    RecordPersistentNotificationDisplayResult(
+        PersistentNotificationDisplayResult::kTooMuchData);
     resolver->Reject();
     return;
   }
@@ -181,10 +191,18 @@ void NotificationManager::DidDisplayPersistentNotification(
     mojom::blink::PersistentNotificationError error) {
   switch (error) {
     case mojom::blink::PersistentNotificationError::NONE:
+      RecordPersistentNotificationDisplayResult(
+          PersistentNotificationDisplayResult::kOk);
       resolver->Resolve();
       return;
     case mojom::blink::PersistentNotificationError::INTERNAL_ERROR:
+      RecordPersistentNotificationDisplayResult(
+          PersistentNotificationDisplayResult::kInternalError);
+      resolver->Reject();
+      return;
     case mojom::blink::PersistentNotificationError::PERMISSION_DENIED:
+      RecordPersistentNotificationDisplayResult(
+          PersistentNotificationDisplayResult::kPermissionDenied);
       // TODO(https://crbug.com/832944): Throw a TypeError if permission denied.
       resolver->Reject();
       return;
@@ -246,7 +264,7 @@ NotificationManager::GetNotificationService() {
   return notification_service_.get();
 }
 
-void NotificationManager::Trace(Visitor* visitor) {
+void NotificationManager::Trace(Visitor* visitor) const {
   visitor->Trace(notification_service_);
   visitor->Trace(permission_service_);
   Supplement<ExecutionContext>::Trace(visitor);

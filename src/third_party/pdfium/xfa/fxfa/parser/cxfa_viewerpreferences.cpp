@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_viewerpreferences.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -39,6 +39,8 @@ CXFA_ViewerPreferences::CXFA_ViewerPreferences(CXFA_Document* doc,
                 XFA_Element::ViewerPreferences,
                 kViewerPreferencesPropertyData,
                 kViewerPreferencesAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_ViewerPreferences::~CXFA_ViewerPreferences() = default;

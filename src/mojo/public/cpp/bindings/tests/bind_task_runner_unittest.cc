@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -305,13 +305,13 @@ TEST_F(AssociatedBindTaskRunnerTest, MethodCall) {
                          echo_replied = true;
                        }));
 
-  // The Echo request first arrives at the master endpoint's task runner, and
+  // The Echo request first arrives at the primary endpoint's task runner, and
   // then is forwarded to the associated endpoint's task runner.
   connection_receiver_task_runner_->RunOneTask();
   sender_receiver_task_runner_->RunOneTask();
   EXPECT_TRUE(echo_called);
 
-  // Similarly, the Echo response arrives at the master endpoint's task runner
+  // Similarly, the Echo response arrives at the primary endpoint's task runner
   // and then is forwarded to the associated endpoint's task runner.
   connection_remote_task_runner_->RunOneTask();
   sender_remote_task_runner_->RunOneTask();

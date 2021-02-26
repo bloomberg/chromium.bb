@@ -15,6 +15,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -92,8 +93,7 @@ void FootnoteContainerView::ResetBorder() {
                 ui::NativeTheme::kColorId_FootnoteContainerBorder)));
 }
 
-BEGIN_METADATA(FootnoteContainerView)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(FootnoteContainerView, View)
+END_METADATA
 
 }  // namespace views

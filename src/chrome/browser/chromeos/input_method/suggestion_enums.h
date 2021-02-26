@@ -5,11 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_SUGGESTION_ENUMS_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_SUGGESTION_ENUMS_H_
 
-#include <string>
-
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
-
 namespace chromeos {
 
 // Must match with IMEAssistiveAction in enums.xml
@@ -21,7 +16,10 @@ enum class AssistiveType {
   kPersonalName = 4,
   kEmoji = 5,
   kAssistiveAutocorrect = 6,
-  kMaxValue = kAssistiveAutocorrect,
+  kPersonalNumber = 7,  // Deprecated, combined with kPersonalPhoneNumber
+  kPersonalFirstName = 8,
+  kPersonalLastName = 9,
+  kMaxValue = kPersonalLastName,
 };
 
 enum class SuggestionStatus {
@@ -29,6 +27,17 @@ enum class SuggestionStatus {
   kAccept = 1,
   kDismiss = 2,
   kBrowsing = 3,
+  kOpenSettings = 4,
+};
+
+// Must match with IMEAssistiveDisabledReason in enums.xml
+enum class DisabledReason {
+  kNone = 0,
+  kFeatureFlagOff = 1,
+  kEnterpriseSettingsOff = 2,
+  kUserSettingsOff = 3,
+  kUrlOrAppNotAllowed = 4,
+  kMaxValue = kUrlOrAppNotAllowed,
 };
 
 }  // namespace chromeos

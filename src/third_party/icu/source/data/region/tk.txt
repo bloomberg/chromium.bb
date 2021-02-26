@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 tk{
     Countries{
         001{"Dünýä"}
@@ -179,13 +180,13 @@ tk{
         MA{"Marokko"}
         MC{"Monako"}
         MD{"Moldowa"}
-        ME{"Montenegro"}
+        ME{"Çernogoriýa"}
         MF{"Sen-Marten"}
         MG{"Madagaskar"}
         MH{"Marşall adalary"}
         MK{"Demirgazyk Makedoniýa"}
         ML{"Mali"}
-        MM{"Mýanma (Burma)"}
+        MM{"Mýanma (Birma)"}
         MN{"Mongoliýa"}
         MO{"Makao"}
         MP{"Demirgazyk Mariana adalary"}
@@ -308,5 +309,4 @@ tk{
         SZ{"Swazilend"}
         TL{"Gündogar Timor"}
     }
-    Version{"37"}
 }

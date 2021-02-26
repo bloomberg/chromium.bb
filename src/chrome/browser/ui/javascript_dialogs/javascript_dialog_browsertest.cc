@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
 
   // Try reloading.
   tab->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // If the WaitForLoadStop doesn't hang forever, we've passed.
 }
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
 
   // Try reloading tab one.
   tab1->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab1);
+  EXPECT_TRUE(content::WaitForLoadStop(tab1));
 
   // If the WaitForLoadStop doesn't hang forever, we've passed.
 }
@@ -240,7 +240,7 @@ class JavaScriptDialogDismissalCauseTester {
 
   void Reload() {
     tab_->GetController().Reload(content::ReloadType::NORMAL, false);
-    content::WaitForLoadStop(tab_);
+    EXPECT_TRUE(content::WaitForLoadStop(tab_));
   }
 
   void CallHandleDialog(bool accept, const base::string16* prompt_override) {
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
   chrome::CloseTab(browser());
 // There are differences in the implementations of Views on different platforms
 // that cause different dismissal causes.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On MacOS 10.13, |kDialogClosed| is logged, while for other versions
   // |kCancelDialogsCalled| is logged. Expect only one but not both.
   EXPECT_TRUE(tester.GetLastDismissalCause() ==

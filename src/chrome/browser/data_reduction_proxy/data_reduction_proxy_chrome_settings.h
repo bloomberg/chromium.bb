@@ -29,6 +29,8 @@ class DataReductionProxyData;
 class DataStore;
 }  // namespace data_reduction_proxy
 
+class HttpsImageCompressionBypassDecider;
+class HttpsImageCompressionInfoBarDecider;
 class PrefService;
 
 // Data reduction proxy settings class suitable for use with a Chrome browser.
@@ -74,19 +76,21 @@ class DataReductionProxyChromeSettings
   // Public for testing.
   void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs);
 
-  void SetIgnoreLongTermBlackListRules(
-      bool ignore_long_term_black_list_rules) override;
-
   // Builds an instance of DataReductionProxyData from the given |handle| and
   // |headers|.
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
   CreateDataFromNavigationHandle(content::NavigationHandle* handle,
                                  const net::HttpResponseHeaders* headers);
 
-  // This data will be used on the next commit if it's HTTP/HTTPS and the page
-  // is not an error page..
-  void SetDataForNextCommitForTesting(
-      std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data);
+  HttpsImageCompressionInfoBarDecider*
+  https_image_compression_infobar_decider() {
+    return https_image_compression_infobar_decider_.get();
+  }
+
+  HttpsImageCompressionBypassDecider* https_image_compression_bypass_decider()
+      const {
+    return https_image_compression_bypass_decider_.get();
+  }
 
  private:
   // Helper method for migrating the Data Reduction Proxy away from using the
@@ -95,10 +99,18 @@ class DataReductionProxyChromeSettings
   ProxyPrefMigrationResult MigrateDataReductionProxyOffProxyPrefsHelper(
       PrefService* prefs);
 
+  // Maintains the decider for this profile that decides whether to show infobar
+  // before triggering https image compression.
+  std::unique_ptr<HttpsImageCompressionInfoBarDecider>
+      https_image_compression_infobar_decider_;
+
+  // Maintains the decider for this profile to contain logic for https image
+  // compression bypass.
+  std::unique_ptr<HttpsImageCompressionBypassDecider>
+      https_image_compression_bypass_decider_;
+
   // Null before InitDataReductionProxySettings is called.
   Profile* profile_;
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettings);
 };

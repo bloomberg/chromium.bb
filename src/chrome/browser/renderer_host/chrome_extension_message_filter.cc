@@ -7,14 +7,13 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -64,9 +63,7 @@ ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
                            base::size(kExtensionFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
-      activity_log_(extensions::ActivityLog::GetInstance(profile)),
-      extension_info_map_(
-          extensions::ExtensionSystem::Get(profile)->info_map()) {
+      activity_log_(extensions::ActivityLog::GetInstance(profile)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observed_profiles_.Add(profile);
 }
@@ -111,7 +108,7 @@ void ChromeExtensionMessageFilter::OnDestruct() const {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     delete this;
   } else {
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
   }
 }
 

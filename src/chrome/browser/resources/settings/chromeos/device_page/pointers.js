@@ -10,7 +10,9 @@ Polymer({
   is: 'settings-pointers',
 
   behaviors: [
+    DeepLinkingBehavior,
     PrefsBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -21,11 +23,54 @@ Polymer({
 
     hasMouse: Boolean,
 
+    hasPointingStick: Boolean,
+
     hasTouchpad: Boolean,
+
+    swapPrimaryOptions: {
+      readOnly: true,
+      type: Array,
+      value() {
+        return [
+          {
+            value: false,
+            name: loadTimeData.getString('primaryMouseButtonLeft')
+          },
+          {
+            value: true,
+            name: loadTimeData.getString('primaryMouseButtonRight')
+          },
+        ];
+      },
+    },
+
+    /**
+     * Interim property for use until we have a separate subsection for pointing
+     * sticks. (See crbug.com/1114828)
+     * @private
+     */
+    showMouseSection_: {
+      type: Boolean,
+      computed: 'computeShowMouseSection_(separatePointingStickSettings_, ' +
+          'hasMouse, hasPointingStick)',
+    },
+
+    showHeadings_: {
+      type: Boolean,
+      computed: 'computeShowHeadings_(separatePointingStickSettings_, ' +
+          'hasMouse, hasPointingStick, hasTouchpad)',
+    },
+
+    subsectionClass_: {
+      type: String,
+      computed: 'computeSubsectionClass_(separatePointingStickSettings_, ' +
+          'hasMouse, hasPointingStick, hasTouchpad)',
+    },
 
     /**
      * TODO(michaelpg): settings-slider should optionally take a min and max so
      * we don't have to generate a simple range of natural numbers ourselves.
+     * These values match the TouchpadSensitivity enum in enums.xml.
      * @type {!Array<number>}
      * @private
      */
@@ -56,41 +101,98 @@ Polymer({
         return loadTimeData.getBoolean('allowScrollSettings');
       },
     },
+
+    /**
+     * TODO(crbug.com/1114828): Remove this conditional once the feature is
+     * launched.
+     * @private
+     */
+    separatePointingStickSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('separatePointingStickSettings');
+      },
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kTouchpadTapToClick,
+        chromeos.settings.mojom.Setting.kTouchpadTapDragging,
+        chromeos.settings.mojom.Setting.kTouchpadReverseScrolling,
+        chromeos.settings.mojom.Setting.kTouchpadAcceleration,
+        chromeos.settings.mojom.Setting.kTouchpadScrollAcceleration,
+        chromeos.settings.mojom.Setting.kTouchpadSpeed,
+        chromeos.settings.mojom.Setting.kMouseSwapPrimaryButtons,
+        chromeos.settings.mojom.Setting.kMouseReverseScrolling,
+        chromeos.settings.mojom.Setting.kMouseAcceleration,
+        chromeos.settings.mojom.Setting.kMouseScrollAcceleration,
+        chromeos.settings.mojom.Setting.kMouseSpeed,
+      ]),
+    },
   },
 
-  // Used to correctly identify when the mouse button has been released.
-  // crbug.com/686949.
-  receivedMouseSwapButtonsDown_: false,
+  /**
+   * @param {boolean} separateSettings
+   * @param {boolean} hasMouse
+   * @param {boolean} hasPointingStick
+   */
+  computeShowMouseSection_(separateSettings, hasMouse, hasPointingStick) {
+    return separateSettings ? hasMouse : hasMouse || hasPointingStick;
+  },
 
   /**
-   * Mouse and touchpad sections are only subsections if they are both present.
+   * Headings should only be visible if more than one subsection is present.
+   * @param {boolean} separateSettings
    * @param {boolean} hasMouse
+   * @param {boolean} hasPointingStick
+   * @param {boolean} hasTouchpad
+   * @return {boolean}
+   * @private
+   */
+  computeShowHeadings_(
+      separateSettings, hasMouse, hasPointingStick, hasTouchpad) {
+    if (!separateSettings) {
+      return (hasMouse || hasPointingStick) && hasTouchpad;
+    }
+    const sectionVisibilities = [hasMouse, hasPointingStick, hasTouchpad];
+    // Count the number of true values in sectionVisibilities.
+    const numVisibleSections = sectionVisibilities.filter(x => x).length;
+    return numVisibleSections > 1;
+  },
+
+  /**
+   * Mouse, pointing stick, and touchpad sections are only subsections if more
+   * than one is present.
+   * @param {boolean} separateSettings
+   * @param {boolean} hasMouse
+   * @param {boolean} hasPointingStick
    * @param {boolean} hasTouchpad
    * @return {string}
    * @private
    */
-  getSubsectionClass_(hasMouse, hasTouchpad) {
-    return hasMouse && hasTouchpad ? 'subsection' : '';
+  computeSubsectionClass_(
+      separateSettings, hasMouse, hasPointingStick, hasTouchpad) {
+    const subsections = this.computeShowHeadings_(
+        separateSettings, hasMouse, hasPointingStick, hasTouchpad);
+    return subsections ? 'subsection' : '';
   },
 
-  /** @private */
-  onMouseSwapButtonsDown_() {
-    this.receivedMouseSwapButtonsDown_ = true;
-  },
-
-  /** @private */
-  onMouseSwapButtonsUp_() {
-    this.receivedMouseSwapButtonsDown_ = false;
-    /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
-        .sendPrefChange();
-  },
-
-  /** @private */
-  onMouseSwapButtonsChange_() {
-    if (!this.receivedMouseSwapButtonsDown_) {
-      /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
-          .sendPrefChange();
+  /**
+   * @param {!settings.Route} route
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.POINTERS) {
+      return;
     }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -102,14 +204,21 @@ Polymer({
       return;
     }
 
-    if (event.path[0].tagName == 'A') {
+    if (event.path[0].tagName === 'A') {
       // Do not toggle reverse scrolling if the contained link is clicked.
       event.stopPropagation();
     }
   },
 
   /** @private */
-  onReverseScrollRowClicked_: function() {
+  onMouseReverseScrollRowClicked_: function() {
+    this.setPrefValue(
+        'settings.mouse.reverse_scroll',
+        !this.getPref('settings.mouse.reverse_scroll').value);
+  },
+
+  /** @private */
+  onTouchpadReverseScrollRowClicked_: function() {
     this.setPrefValue(
         'settings.touchpad.natural_scroll',
         !this.getPref('settings.touchpad.natural_scroll').value);

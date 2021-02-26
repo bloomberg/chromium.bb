@@ -23,7 +23,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -44,9 +43,12 @@ namespace error_page {
 
 namespace {
 
+// Hardcode these constants to avoid dependences on //chrome and //content.
+const char kChromeUIScheme[] = "chrome";
+const char kChromeUIDinoHost[] = "dino";
+
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
-static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE = 0,
@@ -169,6 +171,12 @@ const LocalizedErrorMap net_error_options[] = {
    SUGGEST_NONE,
    SHOW_NO_BUTTONS,
   },
+  {net::ERR_UPLOAD_FILE_CHANGED,
+   IDS_ERRORPAGES_HEADING_FILE_NOT_FOUND,
+   IDS_ERRORPAGES_SUMMARY_FILE_NOT_FOUND,
+   SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
+  },
   {net::ERR_CACHE_MISS,
    IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE,
@@ -276,6 +284,12 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION,
    SUGGEST_DISABLE_EXTENSION,
    SHOW_BUTTON_RELOAD,
+  },
+  {net::ERR_BLOCKED_BY_CSP,
+   IDS_ERRORPAGES_HEADING_BLOCKED,
+   IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_SECURITY,
+   SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_NETWORK_CHANGED,
    IDS_ERRORPAGES_HEADING_CONNECTION_INTERRUPTED,
@@ -445,7 +459,7 @@ const LocalizedErrorMap dns_probe_error_options[] = {
     {
         error_page::DNS_PROBE_FINISHED_NXDOMAIN,
         IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-        IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+        IDS_ERRORPAGES_CHECK_TYPO_SUMMARY,
         SUGGEST_DIAGNOSE_TOOL,
         SHOW_BUTTON_RELOAD,
     },
@@ -521,40 +535,6 @@ const char* GetIconClassForError(const std::string& error_domain,
                                  int error_code) {
   return IsOfflineError(error_domain, error_code) ? "icon-offline"
                                                   : "icon-generic";
-}
-
-// If the first suggestion is for a Google cache copy link, promote the
-// suggestion to a separate set of strings for displaying as a button.
-// Returns true if the cache copy button is shown.
-bool AddGoogleCachedCopyButton(base::ListValue* suggestions_summary_list,
-                               base::DictionaryValue* error_strings) {
-  if (suggestions_summary_list->empty())
-    return false;
-
-  base::DictionaryValue* suggestion;
-  suggestions_summary_list->GetDictionary(0, &suggestion);
-  int type = -1;
-  suggestion->GetInteger("type", &type);
-
-  if (type != kGoogleCachedCopySuggestionType)
-    return false;
-
-  base::string16 cache_url;
-  suggestion->GetString("urlCorrection", &cache_url);
-  int cache_tracking_id = -1;
-  suggestion->GetInteger("trackingId", &cache_tracking_id);
-  std::unique_ptr<base::DictionaryValue> cache_button(
-      new base::DictionaryValue);
-  cache_button->SetString(
-      "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
-  cache_button->SetString("cacheUrl", cache_url);
-  cache_button->SetInteger("trackingId", cache_tracking_id);
-  error_strings->Set("cacheButton", std::move(cache_button));
-
-  // Remove the item from suggestions dictionary so that it does not get
-  // displayed by the template in the details section.
-  suggestions_summary_list->Remove(0, nullptr);
-  return true;
 }
 
 // Helper function that creates a single entry dictionary and adds it
@@ -772,11 +752,15 @@ void GetSuggestionsSummaryList(int error_code,
 
 // If the current platform has a directly accesible network diagnostics tool and
 // the URL is valid add a suggestion.
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
   if (IsOnlySuggestion(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
+    int diagose_message_id =
+        error_code == error_page::DNS_PROBE_FINISHED_NXDOMAIN
+            ? IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_CHECK_TYPO_STANDALONE
+            : IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE;
+
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
-        IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE, false);
+                                   diagose_message_id, false);
     return;
   }
   if (IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
@@ -786,7 +770,7 @@ void GetSuggestionsSummaryList(int error_code,
 #else
   DCHECK(!IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL));
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN) ||
-        // (defined(OS_MACOSX) && !defined(OS_IOS))
+        // defined(OS_MAC)
 
   // Add list prefix header.
   error_strings->SetString("suggestionsSummaryListHeader",
@@ -920,12 +904,14 @@ LocalizedError::PageState LocalizedError::GetPageState(
     bool offline_content_feature_enabled,
     bool auto_fetch_feature_enabled,
     bool is_kiosk_mode,
-    const std::string& locale,
-    std::unique_ptr<error_page::ErrorPageParams> params) {
+    const std::string& locale) {
   LocalizedError::PageState result;
   result.is_offline_error = IsOfflineError(error_domain, error_code);
 
   webui::SetLoadTimeDataDefaults(locale, &result.strings);
+
+  bool show_game_instructions = failed_url.host() == kChromeUIDinoHost &&
+                                failed_url.scheme() == kChromeUIScheme;
 
   // Grab the strings and settings that depend on the error type.  Init
   // options with default values.
@@ -977,19 +963,14 @@ LocalizedError::PageState LocalizedError::GetPageState(
   result.strings.SetString("iconClass", icon_class);
 
   auto heading = std::make_unique<base::DictionaryValue>();
-  heading->SetString("msg",
-                     l10n_util::GetStringUTF16(options.heading_resource_id));
+
+  int msg_id = show_game_instructions ? IDS_ERRORPAGES_GAME_INSTRUCTIONS
+                                      : options.heading_resource_id;
+  heading->SetString("msg", l10n_util::GetStringUTF16(msg_id));
   heading->SetString("hostName", host_name);
   result.strings.Set("heading", std::move(heading));
 
-  auto summary = std::make_unique<base::DictionaryValue>();
-
-  // Set summary message under the heading.
-  summary->SetString(
-      "msg", l10n_util::GetStringUTF16(options.summary_resource_id));
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
   // Check if easter egg should be disabled.
   if (command_line->HasSwitch(
           error_page::switches::kDisableDinosaurEasterEgg)) {
@@ -999,6 +980,19 @@ LocalizedError::PageState LocalizedError::GetPageState(
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
   }
 
+  // Return early and don't add suggestions or other information when showing
+  // game instructions.
+  if (show_game_instructions) {
+    // When showing instructions, set an empty error to prevent a "NULL" string.
+    result.strings.SetString("errorCode", "");
+    return result;
+  }
+
+  auto summary = std::make_unique<base::DictionaryValue>();
+
+  // Set summary message under the heading.
+  summary->SetString("msg",
+                     l10n_util::GetStringUTF16(options.summary_resource_id));
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", host_name);
 
@@ -1023,69 +1017,34 @@ LocalizedError::PageState LocalizedError::GetPageState(
   }
   result.strings.SetString("errorCode", error_string);
 
-  // If no parameters were provided, use the defaults.
-  if (!params) {
-    params.reset(new error_page::ErrorPageParams());
-    params->suggest_reload = !!(options.buttons & SHOW_BUTTON_RELOAD);
-  }
+  base::ListValue* suggestions_details = result.strings.SetList(
+      "suggestionsDetails", std::make_unique<base::ListValue>());
+  base::ListValue* suggestions_summary_list = result.strings.SetList(
+      "suggestionsSummaryList", std::make_unique<base::ListValue>());
 
-  base::ListValue* suggestions_details = nullptr;
-  base::ListValue* suggestions_summary_list = nullptr;
-
-  bool use_default_suggestions = true;
-  if (!params->override_suggestions) {
-    // Detailed suggestion information.
-    suggestions_details = result.strings.SetList(
-        "suggestionsDetails", std::make_unique<base::ListValue>());
-    suggestions_summary_list = result.strings.SetList(
-        "suggestionsSummaryList", std::make_unique<base::ListValue>());
-  } else {
-    suggestions_summary_list = result.strings.SetList(
-        "suggestionsSummaryList", std::move(params->override_suggestions));
-    use_default_suggestions = false;
-    result.show_cached_copy_button_shown =
-        AddGoogleCachedCopyButton(suggestions_summary_list, &result.strings);
-  }
-
-  if (params->search_url.is_valid()) {
-    std::unique_ptr<base::DictionaryValue> search_suggestion(
-        new base::DictionaryValue);
-    search_suggestion->SetString("summary",l10n_util::GetStringUTF16(
-        IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY));
-    search_suggestion->SetString("searchUrl", params->search_url.spec() +
-                                 params->search_terms);
-    search_suggestion->SetString("searchTerms", params->search_terms);
-    search_suggestion->SetInteger("trackingId",
-                                  params->search_tracking_id);
-    suggestions_summary_list->Append(std::move(search_suggestion));
-  }
-
-  // Add the reload suggestion, if needed for pages that didn't come
+  // Add the reload suggestion, if needed, for pages that didn't come
   // from a post.
-  if (params->suggest_reload && !is_post) {
+  if ((options.buttons & SHOW_BUTTON_RELOAD) && !is_post) {
     auto reload_button = std::make_unique<base::DictionaryValue>();
     result.reload_button_shown = true;
     reload_button->SetString(
         "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
     reload_button->SetString("reloadUrl", failed_url.spec());
-    reload_button->SetInteger("reloadTrackingId", params->reload_tracking_id);
     result.strings.Set("reloadButton", std::move(reload_button));
   }
 
-  if (use_default_suggestions) {
 #if defined(OS_CHROMEOS)
-    // ChromeOS has its own diagnostics extension, which doesn't rely on a
-    // browser-initiated dialog.
-    can_show_network_diagnostics_dialog = true;
+  // ChromeOS has its own diagnostics extension, which doesn't rely on a
+  // browser-initiated dialog.
+  can_show_network_diagnostics_dialog = true;
 #endif  // defined(OS_CHROMEOS)
 
-    // Add default suggestions and any relevant supporting details.
-    GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
-                              locale, suggestions_summary_list,
-                              can_show_network_diagnostics_dialog, failed_url);
-    AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
-                          suggestions_details);
-  }
+  // Add default suggestions and any relevant supporting details.
+  GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
+                            locale, suggestions_summary_list,
+                            can_show_network_diagnostics_dialog, failed_url);
+  AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
+                        suggestions_details);
 
 #if defined(OS_ANDROID)
   if (!is_post && !result.reload_button_shown && !is_incognito &&
@@ -1126,10 +1085,12 @@ LocalizedError::PageState LocalizedError::GetPageState(
           {"offlineContentList", "actionText"},
           base::Value(l10n_util::GetStringUTF16(
               IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
-      result.strings.SetPath({"offlineContentList", "showText"},
-                             base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
-      result.strings.SetPath({"offlineContentList", "hideText"},
-                             base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
+      result.strings.SetPath(
+          {"offlineContentList", "showText"},
+          base::Value(l10n_util::GetStringUTF16(IDS_SHOW_CONTENT)));
+      result.strings.SetPath(
+          {"offlineContentList", "hideText"},
+          base::Value(l10n_util::GetStringUTF16(IDS_HIDE_CONTENT)));
     }
   }
 #endif  // defined(OS_ANDROID)

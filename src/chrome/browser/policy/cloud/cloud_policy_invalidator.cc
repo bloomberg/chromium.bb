@@ -12,10 +12,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
@@ -82,6 +84,26 @@ void RecordPolicyInvalidationMetric(PolicyInvalidationScope scope,
       policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
 }
 
+std::string ComposeOwnerName(PolicyInvalidationScope scope,
+                             const std::string& device_local_account_id) {
+  if (!base::FeatureList::IsEnabled(features::kInvalidatorUniqueOwnerName)) {
+    return "Cloud";
+  }
+
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return "CloudPolicy.User";
+    case PolicyInvalidationScope::kDevice:
+      return "CloudPolicy.Device";
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      DCHECK(!device_local_account_id.empty());
+      return base::StrCat(
+          {"CloudPolicy.DeviceLocalAccount.", device_local_account_id});
+    case PolicyInvalidationScope::kCBCM:
+      return "CloudPolicy.CBCM";
+  }
+}
+
 }  // namespace
 
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
@@ -100,6 +122,8 @@ const char* CloudPolicyInvalidator::GetPolicyRefreshMetricName(
       return kMetricDevicePolicyRefresh;
     case PolicyInvalidationScope::kDeviceLocalAccount:
       return kMetricDeviceLocalAccountPolicyRefresh;
+    case PolicyInvalidationScope::kCBCM:
+      return kMetricCBCMPolicyRefresh;
   }
 }
 
@@ -113,6 +137,8 @@ const char* CloudPolicyInvalidator::GetPolicyRefreshFcmMetricName(
       return kMetricDevicePolicyRefreshFcm;
     case PolicyInvalidationScope::kDeviceLocalAccount:
       return kMetricDeviceLocalAccountPolicyRefreshFcm;
+    case PolicyInvalidationScope::kCBCM:
+      return kMetricCBCMPolicyRefreshFcm;
   }
 }
 
@@ -126,6 +152,8 @@ const char* CloudPolicyInvalidator::GetPolicyInvalidationMetricName(
       return kMetricDevicePolicyInvalidations;
     case PolicyInvalidationScope::kDeviceLocalAccount:
       return kMetricDeviceLocalAccountPolicyInvalidations;
+    case PolicyInvalidationScope::kCBCM:
+      return kMetricCBCMPolicyInvalidations;
   }
 }
 
@@ -139,6 +167,8 @@ const char* CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(
       return kMetricDevicePolicyInvalidationsFcm;
     case PolicyInvalidationScope::kDeviceLocalAccount:
       return kMetricDeviceLocalAccountPolicyInvalidationsFcm;
+    case PolicyInvalidationScope::kCBCM:
+      return kMetricCBCMPolicyInvalidationsFcm;
   }
 }
 
@@ -148,8 +178,23 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
     int64_t highest_handled_invalidation_version)
+    : CloudPolicyInvalidator(scope,
+                             core,
+                             task_runner,
+                             clock,
+                             highest_handled_invalidation_version,
+                             /*device_local_account_id=*/"") {}
+
+CloudPolicyInvalidator::CloudPolicyInvalidator(
+    PolicyInvalidationScope scope,
+    CloudPolicyCore* core,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    base::Clock* clock,
+    int64_t highest_handled_invalidation_version,
+    const std::string& device_local_account_id)
     : state_(UNINITIALIZED),
       scope_(scope),
+      owner_name_(ComposeOwnerName(scope, device_local_account_id)),
       core_(core),
       task_runner_(task_runner),
       clock_(clock),
@@ -238,7 +283,9 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
   HandleInvalidation(list.back());
 }
 
-std::string CloudPolicyInvalidator::GetOwnerName() const { return "Cloud"; }
+std::string CloudPolicyInvalidator::GetOwnerName() const {
+  return owner_name_;
+}
 
 bool CloudPolicyInvalidator::IsPublicTopic(const syncer::Topic& topic) const {
   return IsPublicInvalidationTopic(topic);
@@ -298,8 +345,7 @@ void CloudPolicyInvalidator::OnStoreError(CloudPolicyStore* store) {}
 void CloudPolicyInvalidator::HandleInvalidation(
     const syncer::Invalidation& invalidation) {
   // Ignore old invalidations.
-  if (invalid_ &&
-      !invalidation.is_unknown_version() &&
+  if (invalid_ && !invalidation.is_unknown_version() &&
       invalidation.version() <= invalidation_version_) {
     return;
   }
@@ -356,8 +402,8 @@ void CloudPolicyInvalidator::HandleInvalidation(
   // before fetching the policy. Delay for at least 20ms so that if multiple
   // invalidations are received in quick succession, only one fetch will be
   // performed.
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
-      base::RandInt(20, max_fetch_delay_));
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(base::RandInt(20, max_fetch_delay_));
 
   // If there is a payload, the policy can be refreshed at any time, so set
   // the version and payload on the client immediately. Otherwise, the refresh

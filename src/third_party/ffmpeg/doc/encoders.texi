@@ -30,11 +30,7 @@ follows.
 
 Advanced Audio Coding (AAC) encoder.
 
-This encoder is the default AAC encoder, natively implemented into FFmpeg. Its
-quality is on par or better than libfdk_aac at the default bitrate of 128kbps.
-This encoder also implements more options, profiles and samplerates than
-other encoders (with only the AAC-HE profile pending to be implemented) so this
-encoder has become the default and is the recommended choice.
+This encoder is the default AAC encoder, natively implemented into FFmpeg.
 
 @subsection Options
 
@@ -651,10 +647,7 @@ configuration. You need to explicitly configure the build with
 so if you allow the use of GPL, you should configure with
 @code{--enable-gpl --enable-nonfree --enable-libfdk-aac}.
 
-This encoder is considered to produce output on par or worse at 128kbps to the
-@ref{aacenc,,the native FFmpeg AAC encoder} but can often produce better
-sounding audio at identical or lower bitrates and has support for the
-AAC-HE profiles.
+This encoder has support for the AAC-HE profiles.
 
 VBR encoding, enabled through the @option{vbr} or @option{flags
 +qscale} options, is experimental and only works with some
@@ -959,6 +952,11 @@ The default is 20ms.
 
 @item packet_loss (@emph{expect-loss})
 Set expected packet loss percentage. The default is 0.
+
+@item fec (@emph{n/a})
+Enable inband forward error correction. @option{packet_loss} must be non-zero
+to take advantage - frequency of FEC 'side-data' is proportional to expected packet loss.
+Default is disabled.
 
 @item application (N.A.)
 Set intended application type. Valid options are listed below:
@@ -1372,9 +1370,57 @@ can be selected with @code{-pred 1}.
 @subsection Options
 
 @table @option
-@item format
+@item format @var{integer}
 Can be set to either @code{j2k} or @code{jp2} (the default) that
 makes it possible to store non-rgb pix_fmts.
+
+@item tile_width @var{integer}
+Sets tile width. Range is 1 to 1073741824. Default is 256.
+
+@item tile_height @var{integer}
+Sets tile height. Range is 1 to 1073741824. Default is 256.
+
+@item pred @var{integer}
+Allows setting the discrete wavelet transform (DWT) type
+@table @option
+@item dwt97int (Lossy)
+@item dwt53 (Lossless)
+@end table
+Default is @code{dwt97int}
+
+@item sop @var{boolean}
+Enable this to add SOP marker at the start of each packet. Disabled by default.
+
+@item eph @var{boolean}
+Enable this to add EPH marker at the end of each packet header. Disabled by default.
+
+@item prog @var{integer}
+Sets the progression order to be used by the encoder.
+Possible values are:
+@table @option
+@item lrcp
+@item rlcp
+@item rpcl
+@item pcrl
+@item cprl
+@end table
+Set to @code{lrcp} by default.
+
+@item layer_rates @var{string}
+By default, when this option is not used, compression is done using the quality metric.
+This option allows for compression using compression ratio. The compression ratio for each
+level could be specified. The compression ratio of a layer @code{l} species the what ratio of
+total file size is contained in the first @code{l} layers.
+
+Example usage:
+
+@example
+ffmpeg -i input.bmp -c:v jpeg2000 -layer_rates "100,10,1" output.j2k
+@end example
+
+This would compress the image to contain 3 layers, where the data contained in the
+first layer would be compressed by 1000 times, compressed by 100 in the first two layers,
+and shall contain all data while using all 3 layers.
 
 @end table
 
@@ -1605,6 +1651,154 @@ Enable the use of global motion for block prediction. Default is true.
 @item enable-intrabc (@emph{boolean})
 Enable block copy mode for intra block prediction. This mode is
 useful for screen content. Default is true.
+
+@item enable-rect-partitions (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable rectangular partitions. Default is true.
+
+@item enable-1to4-partitions (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable 1:4/4:1 partitions. Default is true.
+
+@item enable-ab-partitions (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable AB shape partitions. Default is true.
+
+@item enable-angle-delta (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable angle delta intra prediction. Default is true.
+
+@item enable-cfl-intra (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable chroma predicted from luma intra prediction. Default is true.
+
+@item enable-filter-intra (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable filter intra predictor. Default is true.
+
+@item enable-intra-edge-filter (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable intra edge filter. Default is true.
+
+@item enable-smooth-intra (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable smooth intra prediction mode. Default is true.
+
+@item enable-paeth-intra (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable paeth predictor in intra prediction. Default is true.
+
+@item enable-palette (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable palette prediction mode. Default is true.
+
+@item enable-flip-idtx (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable extended transform type, including FLIPADST_DCT, DCT_FLIPADST,
+FLIPADST_FLIPADST, ADST_FLIPADST, FLIPADST_ADST, IDTX, V_DCT, H_DCT,
+V_ADST, H_ADST, V_FLIPADST, H_FLIPADST. Default is true.
+
+@item enable-tx64 (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable 64-pt transform. Default is true.
+
+@item reduced-tx-type-set (@emph{boolean}) (Requires libaom >= v2.0.0)
+Use reduced set of transform types. Default is false.
+
+@item use-intra-dct-only (@emph{boolean}) (Requires libaom >= v2.0.0)
+Use DCT only for INTRA modes. Default is false.
+
+@item use-inter-dct-only (@emph{boolean}) (Requires libaom >= v2.0.0)
+Use DCT only for INTER modes. Default is false.
+
+@item use-intra-default-tx-only (@emph{boolean}) (Requires libaom >= v2.0.0)
+Use Default-transform only for INTRA modes. Default is false.
+
+@item enable-ref-frame-mvs (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable temporal mv prediction. Default is true.
+
+@item enable-reduced-reference-set (@emph{boolean}) (Requires libaom >= v2.0.0)
+Use reduced set of single and compound references. Default is false.
+
+@item enable-obmc (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable obmc. Default is true.
+
+@item enable-dual-filter (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable dual filter. Default is true.
+
+@item enable-diff-wtd-comp (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable difference-weighted compound. Default is true.
+
+@item enable-dist-wtd-comp (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable distance-weighted compound. Default is true.
+
+@item enable-onesided-comp (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable one sided compound. Default is true.
+
+@item enable-interinter-wedge (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable interinter wedge compound. Default is true.
+
+@item enable-interintra-wedge (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable interintra wedge compound. Default is true.
+
+@item enable-masked-comp (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable masked compound. Default is true.
+
+@item enable-interintra-comp (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable interintra compound. Default is true.
+
+@item enable-smooth-interintra (@emph{boolean}) (Requires libaom >= v2.0.0)
+Enable smooth interintra mode. Default is true.
+
+@end table
+
+@section libsvtav1
+
+SVT-AV1 encoder wrapper.
+
+Requires the presence of the SVT-AV1 headers and library during configuration.
+You need to explicitly configure the build with @code{--enable-libsvtav1}.
+
+@subsection Options
+
+@table @option
+@item profile
+Set the encoding profile.
+
+@item level
+Set the operating point level.
+
+@item tier
+Set the operating point tier.
+
+@item rc
+Set the rate control mode to use.
+
+Possible modes:
+@table @option
+@item cqp
+Constant quantizer: use fixed values of qindex (dependent on the frame type)
+throughout the stream.  This mode is the default.
+
+@item vbr
+Variable bitrate: use a target bitrate for the whole stream.
+
+@item cvbr
+Constrained variable bitrate: use a target bitrate for each GOP.
+@end table
+
+@item qmax
+Set the maximum quantizer to use when using a bitrate mode.
+
+@item qmin
+Set the minimum quantizer to use when using a bitrate mode.
+
+@item qp
+Set the quantizer used in cqp rate control mode (0-63).
+
+@item sc_detection
+Enable scene change detection.
+
+@item la_depth
+Set number of frames to look ahead (0-120).
+
+@item preset
+Set the quality-speed tradeoff, in the range 0 to 8.  Higher values are
+faster but lower quality.  Defaults to 8 (highest speed).
+
+@item tile_rows
+Set log2 of the number of rows of tiles to use (0-6).
+
+@item tile_columns
+Set log2 of the number of columns of tiles to use (0-4).
 
 @end table
 
@@ -2732,6 +2926,14 @@ fastest.
 
 @end table
 
+@section MediaFoundation
+
+This provides wrappers to encoders (both audio and video) in the
+MediaFoundation framework. It can access both SW and HW encoders.
+Video encoders can take input in either of nv12 or yuv420p form
+(some encoders support both, some support only either - in practice,
+nv12 is the safer choice, especially among HW encoders).
+
 @section mpeg2
 
 MPEG-2 video encoder.
@@ -2739,6 +2941,30 @@ MPEG-2 video encoder.
 @subsection Options
 
 @table @option
+@item profile
+Select the mpeg2 profile to encode:
+
+@table @samp
+@item 422
+@item high
+@item ss
+Spatially Scalable
+@item snr
+SNR Scalable
+@item main
+@item simple
+@end table
+
+@item level
+Select the mpeg2 level to encode:
+
+@table @samp
+@item high
+@item high1440
+@item main
+@item low
+@end table
+
 @item seq_disp_ext @var{integer}
 Specifies if the encoder should write a sequence_display_extension to the
 output.
@@ -3099,6 +3325,11 @@ Include HDR metadata if the input frames have it
 (@emph{mastering_display_colour_volume} and @emph{content_light_level}
 messages).
 @end table
+
+@item tiles
+Set the number of tiles to encode the input video with, as columns x rows.
+Larger numbers allow greater parallelism in both encoding and decoding, but
+may decrease coding efficiency.
 
 @end table
 

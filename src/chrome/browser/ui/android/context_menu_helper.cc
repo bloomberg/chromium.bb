@@ -10,8 +10,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "chrome/android/chrome_jni_headers/ContextMenuHelper_jni.h"
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
@@ -59,8 +59,8 @@ void ContextMenuHelper::ShowContextMenu(
   context_menu_params_ = params;
   gfx::NativeView view = web_contents_->GetNativeView();
   if (!params.link_url.is_empty()) {
-    PerformanceHintsObserver::RecordPerformanceUMAForURL(web_contents_,
-                                                         params.link_url);
+    performance_hints::PerformanceHintsObserver::RecordPerformanceUMAForURL(
+        web_contents_, params.link_url);
   }
   Java_ContextMenuHelper_showContextMenu(
       env, java_obj_,
@@ -75,9 +75,11 @@ void ContextMenuHelper::OnContextMenuClosed(
   web_contents_->NotifyContextMenuClosed(context_menu_params_.custom_context);
 }
 
-void ContextMenuHelper::SetPopulator(const JavaRef<jobject>& jpopulator) {
+void ContextMenuHelper::SetPopulatorFactory(
+    const JavaRef<jobject>& jpopulator_factory) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContextMenuHelper_setPopulator(env, java_obj_, jpopulator);
+  Java_ContextMenuHelper_setPopulatorFactory(env, java_obj_,
+                                             jpopulator_factory);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ContextMenuHelper)

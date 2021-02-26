@@ -1,5 +1,7 @@
 include_rules = [
+  "+ui/base/ui_base_features.h",
   "+ui/display",
   "+ui/gfx",
   "+ui/latency",
+  "+ui/base/ui_base_features.h",
 ]

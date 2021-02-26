@@ -20,9 +20,10 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBar;
+import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -38,7 +39,8 @@ public class DownloadProgressInfoBar extends InfoBar {
          * Called when a link is clicked by the user.
          * @param itemId The ContentId of the item currently being shown in the InfoBar.
          */
-        void onLinkClicked(@Nullable ContentId itemId);
+        void onLinkClicked(
+                @Nullable ContentId itemId, @Nullable final OfflineItemSchedule schedule);
 
         /**
          * Called when the InfoBar is closed either implicitly or explicitly by the user.
@@ -86,7 +88,7 @@ public class DownloadProgressInfoBar extends InfoBar {
 
     @Override
     public void onLinkClicked() {
-        mClient.onLinkClicked(mInfo.id);
+        mClient.onLinkClicked(mInfo.id, mInfo.schedule);
     }
 
     /**
@@ -172,8 +174,8 @@ public class DownloadProgressInfoBar extends InfoBar {
     public void updateInfoBar(DownloadInfoBarController.DownloadProgressInfoBarData info) {
         if (getView() == null) return;
 
-        mInfo = info;
-        setLayoutProperties((InfoBarLayout) getView(), info);
+        mInfo.update(info);
+        setLayoutProperties((InfoBarLayout) getView(), mInfo);
     }
 
     @Override

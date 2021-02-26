@@ -68,6 +68,10 @@ bool IsUnsafeCharacter(char c) {
 LocalPolicyTestServer::LocalPolicyTestServer()
     : LocalPolicyTestServer(base::FilePath()) {
   config_file_ = server_data_dir_.GetPath().Append(kPolicyFileName);
+
+  if (!PathExists(config_file_)) {
+    SetEmptyConfig();
+  }
 }
 
 LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
@@ -76,6 +80,10 @@ LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
   base::ScopedAllowBlockingForTesting allow_blocking;
   CHECK(server_data_dir_.CreateUniqueTempDir());
   client_state_file_ = server_data_dir_.GetPath().Append(kClientStateFileName);
+
+  if (!config_file_.empty() && !PathExists(config_file_)) {
+    SetEmptyConfig();
+  }
 }
 
 LocalPolicyTestServer::LocalPolicyTestServer(
@@ -83,9 +91,8 @@ LocalPolicyTestServer::LocalPolicyTestServer(
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
   // Read configuration from a file under |source_root|.
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath source_root;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
-  config_file_ = source_root.AppendASCII(source_root_relative_config_file);
+  config_file_ = base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
+                     .AppendASCII(source_root_relative_config_file);
 }
 
 LocalPolicyTestServer::~LocalPolicyTestServer() {}
@@ -237,6 +244,13 @@ LocalPolicyTestServer::GetPythonPath() const {
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 
+  ret->push_back(pyproto_dir.AppendASCII("third_party")
+                     .AppendASCII("shell-encryption")
+                     .AppendASCII("src"));
+  ret->push_back(pyproto_dir.AppendASCII("third_party")
+                     .AppendASCII("private_membership")
+                     .AppendASCII("src"));
+
   return ret;
 }
 
@@ -286,6 +300,12 @@ std::string LocalPolicyTestServer::GetSelector(const std::string& type,
     selector = base::StringPrintf("%s/%s", type.c_str(), entity_id.c_str());
   std::replace_if(selector.begin(), selector.end(), IsUnsafeCharacter, '_');
   return selector;
+}
+
+void LocalPolicyTestServer::SetEmptyConfig() {
+  if (!SetConfig(base::Value(base::Value::Type::DICTIONARY))) {
+    LOG(ERROR) << "Failed to write empty config " << config_file_.value();
+  }
 }
 
 }  // namespace policy

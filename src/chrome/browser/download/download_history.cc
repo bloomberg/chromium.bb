@@ -36,7 +36,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,6 +56,24 @@
 #endif
 
 namespace {
+
+// Max data url size to be stored in history DB.
+const size_t kMaxDataURLSize = 1024u;
+
+// If there is a data URL at the end of the url chain, truncate it if it is too
+// long.
+void TruncatedDataUrlAtTheEndIfNeeded(std::vector<GURL>* url_chain) {
+  if (url_chain->empty())
+    return;
+  GURL* url = &url_chain->back();
+  if (url->SchemeIs(url::kDataScheme)) {
+    const std::string& data_url = url->spec();
+    if (data_url.size() > kMaxDataURLSize) {
+      GURL truncated_url(data_url.substr(0, kMaxDataURLSize));
+      url->Swap(&truncated_url);
+    }
+  }
+}
 
 // Per-DownloadItem data. This information does not belong inside DownloadItem,
 // and keeping maps in DownloadHistory from DownloadItem to this information is
@@ -158,6 +175,7 @@ history::DownloadRow GetDownloadRow(download::DownloadItem* item) {
   download.by_ext_id = by_ext_id;
   download.by_ext_name = by_ext_name;
   download.download_slice_info = history::GetHistoryDownloadSliceInfos(*item);
+  TruncatedDataUrlAtTheEndIfNeeded(&download.url_chain);
   return download;
 }
 
@@ -300,8 +318,10 @@ void DownloadHistory::LoadHistoryDownloads(
         history::ToContentDownloadState(row.state);
     download::DownloadInterruptReason history_reason =
         history::ToContentDownloadInterruptReason(row.interrupt_reason);
+    std::vector<GURL> url_chain = row.url_chain;
+    TruncatedDataUrlAtTheEndIfNeeded(&url_chain);
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
-        row.guid, loading_id_, row.current_path, row.target_path, row.url_chain,
+        row.guid, loading_id_, row.current_path, row.target_path, url_chain,
         row.referrer_url, row.site_url, row.tab_url, row.tab_referrer_url,
         base::nullopt, row.mime_type, row.original_mime_type, row.start_time,
         row.end_time, row.etag, row.last_modified, row.received_bytes,
@@ -509,8 +529,8 @@ void DownloadHistory::ScheduleRemoveDownload(uint32_t download_id) {
   // For database efficiency, batch removals together if they happen all at
   // once.
   if (removing_ids_.empty()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&DownloadHistory::RemoveDownloadsBatch,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadHistory::RemoveDownloadsBatch,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
   removing_ids_.insert(download_id);

@@ -59,8 +59,7 @@ inline int16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
   }
   assert(subsampling_y == 0 && subsampling_x == 0);
   const uint8x8_t mask_val0 = Load4(mask);
-  const uint8x8_t mask_val =
-      Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
+  const uint8x8_t mask_val = Load4<1>(mask + mask_stride, mask_val0);
   return vreinterpretq_s16_u16(vmovl_u8(mask_val));
 }
 
@@ -85,20 +84,19 @@ inline void WriteMaskBlendLine4x2(const int16_t* const pred_0,
                                   const int16x8_t pred_mask_0,
                                   const int16x8_t pred_mask_1, uint8_t* dst,
                                   const ptrdiff_t dst_stride) {
-  const int16x4_t pred_val_0_lo = vld1_s16(pred_0);
-  const int16x4_t pred_val_0_hi = vld1_s16(pred_0 + 4);
-  const int16x4_t pred_val_1_lo = vld1_s16(pred_1);
-  const int16x4_t pred_val_1_hi = vld1_s16(pred_1 + 4);
+  const int16x8_t pred_val_0 = vld1q_s16(pred_0);
+  const int16x8_t pred_val_1 = vld1q_s16(pred_1);
   // int res = (mask_value * prediction_0[x] +
   //      (64 - mask_value) * prediction_1[x]) >> 6;
   const int32x4_t weighted_pred_0_lo =
-      vmull_s16(vget_low_s16(pred_mask_0), pred_val_0_lo);
+      vmull_s16(vget_low_s16(pred_mask_0), vget_low_s16(pred_val_0));
   const int32x4_t weighted_pred_0_hi =
-      vmull_s16(vget_high_s16(pred_mask_0), pred_val_0_hi);
-  const int32x4_t weighted_combo_lo =
-      vmlal_s16(weighted_pred_0_lo, vget_low_s16(pred_mask_1), pred_val_1_lo);
+      vmull_s16(vget_high_s16(pred_mask_0), vget_high_s16(pred_val_0));
+  const int32x4_t weighted_combo_lo = vmlal_s16(
+      weighted_pred_0_lo, vget_low_s16(pred_mask_1), vget_low_s16(pred_val_1));
   const int32x4_t weighted_combo_hi =
-      vmlal_s16(weighted_pred_0_hi, vget_high_s16(pred_mask_1), pred_val_1_hi);
+      vmlal_s16(weighted_pred_0_hi, vget_high_s16(pred_mask_1),
+                vget_high_s16(pred_val_1));
   // dst[x] = static_cast<Pixel>(
   //     Clip3(RightShiftWithRounding(res, inter_post_round_bits), 0,
   //         (1 << kBitdepth8) - 1));
@@ -275,7 +273,7 @@ inline uint8x8_t GetInterIntraMask4x2(const uint8_t* mask,
   // TODO(b/150461164): Investigate the source of |mask| and see if the stride
   // can be removed.
   // TODO(b/150461164): The unit tests start at 8x8. Does this get run?
-  return Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
+  return Load4<1>(mask + mask_stride, mask_val0);
 }
 
 template <int subsampling_x, int subsampling_y>
@@ -434,7 +432,7 @@ void MaskBlendInit_NEON() { low_bitdepth::Init8bpp(); }
 }  // namespace dsp
 }  // namespace libgav1
 
-#else   // !LIBGAV1_ENABLE_NEON
+#else  // !LIBGAV1_ENABLE_NEON
 
 namespace libgav1 {
 namespace dsp {

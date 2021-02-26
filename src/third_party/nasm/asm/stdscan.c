@@ -33,10 +33,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "nctype.h"
 
 #include "nasm.h"
 #include "nasmlib.h"
@@ -86,7 +83,7 @@ void stdscan_cleanup(void)
     nasm_free(stdscan_tempstorage);
 }
 
-static char *stdscan_copy(char *p, int len)
+static char *stdscan_copy(const char *p, int len)
 {
     char *text;
 
@@ -113,8 +110,7 @@ static int stdscan_handle_brace(struct tokenval *tv)
 {
     if (!(tv->t_flag & TFLAG_BRC_ANY)) {
         /* invalid token is put inside braces */
-        nasm_error(ERR_NONFATAL,
-                    "`%s' is not a valid decorator with braces", tv->t_charptr);
+        nasm_nonfatal("`%s' is not a valid decorator with braces", tv->t_charptr);
         tv->t_type = TOKEN_INVALID;
     } else if (tv->t_flag & TFLAG_BRC_OPT) {
         if (is_reg_class(OPMASKREG, tv->t_integer)) {
@@ -128,17 +124,19 @@ static int stdscan_handle_brace(struct tokenval *tv)
 
 int stdscan(void *private_data, struct tokenval *tv)
 {
-    char ourcopy[MAX_KEYWORD + 1], *r, *s;
+    const char *r;
 
     (void)private_data;         /* Don't warn that this parameter is unused */
+
+    nasm_zero(*tv);
 
     stdscan_bufptr = nasm_skip_spaces(stdscan_bufptr);
     if (!*stdscan_bufptr)
         return tv->t_type = TOKEN_EOS;
 
     /* we have a token; either an id, a number or a char */
-    if (isidstart(*stdscan_bufptr) ||
-        (*stdscan_bufptr == '$' && isidstart(stdscan_bufptr[1]))) {
+    if (nasm_isidstart(*stdscan_bufptr) ||
+        (*stdscan_bufptr == '$' && nasm_isidstart(stdscan_bufptr[1]))) {
         /* now we've got an identifier */
         bool is_sym = false;
         int token_type;
@@ -150,7 +148,7 @@ int stdscan(void *private_data, struct tokenval *tv)
 
         r = stdscan_bufptr++;
         /* read the entire buffer to advance the buffer pointer but... */
-        while (isidchar(*stdscan_bufptr))
+        while (nasm_isidchar(*stdscan_bufptr))
             stdscan_bufptr++;
 
         /* ... copy only up to IDLEN_MAX-1 characters */
@@ -160,17 +158,17 @@ int stdscan(void *private_data, struct tokenval *tv)
         if (is_sym || stdscan_bufptr - r > MAX_KEYWORD)
             return tv->t_type = TOKEN_ID;       /* bypass all other checks */
 
-        for (s = tv->t_charptr, r = ourcopy; *s; s++)
-            *r++ = nasm_tolower(*s);
-        *r = '\0';
-        /* right, so we have an identifier sitting in temp storage. now,
-         * is it actually a register or instruction name, or what? */
-        token_type = nasm_token_hash(ourcopy, tv);
-
-	if (unlikely(tv->t_flag & TFLAG_WARN)) {
-	    nasm_error(ERR_WARNING|ERR_PASS1|ERR_WARN_PTR,
-		       "`%s' is not a NASM keyword", tv->t_charptr);
-	}
+        token_type = nasm_token_hash(tv->t_charptr, tv);
+        if (unlikely(tv->t_flag & TFLAG_WARN)) {
+            /*!
+             *!ptr [on] non-NASM keyword used in other assemblers
+             *!  warns about keywords used in other assemblers that might
+             *!  indicate a mistake in the source code.  Currently only the MASM
+             *!  \c{PTR} keyword is recognized. See also \k{pkg_masm}.
+             */
+            nasm_warn(WARN_PTR, "`%s' is not a NASM keyword",
+                       tv->t_charptr);
+        }
 
         if (likely(!(tv->t_flag & TFLAG_BRC))) {
             /* most of the tokens fall into this case */
@@ -178,7 +176,7 @@ int stdscan(void *private_data, struct tokenval *tv)
         } else {
             return tv->t_type = TOKEN_ID;
         }
-    } else if (*stdscan_bufptr == '$' && !isnumchar(stdscan_bufptr[1])) {
+    } else if (*stdscan_bufptr == '$' && !nasm_isnumchar(stdscan_bufptr[1])) {
         /*
          * It's a $ sign with no following hex number; this must
          * mean it's a Here token ($), evaluating to the current
@@ -191,7 +189,7 @@ int stdscan(void *private_data, struct tokenval *tv)
             return tv->t_type = TOKEN_BASE;
         }
         return tv->t_type = TOKEN_HERE;
-    } else if (isnumstart(*stdscan_bufptr)) {   /* now we've got a number */
+    } else if (nasm_isnumstart(*stdscan_bufptr)) {   /* now we've got a number */
         bool rn_error;
         bool is_hex = false;
         bool is_float = false;
@@ -224,7 +222,7 @@ int stdscan(void *private_data, struct tokenval *tv)
                 is_float = true;
                 if (*stdscan_bufptr == '+' || *stdscan_bufptr == '-')
                     stdscan_bufptr++;
-            } else if (isnumchar(c))
+            } else if (nasm_isnumchar(c))
                 ; /* just advance */
             else if (c == '.')
                 is_float = true;
@@ -273,7 +271,7 @@ int stdscan(void *private_data, struct tokenval *tv)
          * read the entire buffer to advance the buffer pointer
          * {rn-sae}, {rd-sae}, {ru-sae}, {rz-sae} contain '-' in tokens.
          */
-        while (isbrcchar(*stdscan_bufptr))
+        while (nasm_isbrcchar(*stdscan_bufptr))
             stdscan_bufptr++;
 
         token_len = stdscan_bufptr - r;
@@ -285,21 +283,14 @@ int stdscan(void *private_data, struct tokenval *tv)
         stdscan_bufptr = nasm_skip_spaces(stdscan_bufptr);
         /* if brace is not closed properly or token is too long  */
         if ((*stdscan_bufptr != '}') || (token_len > MAX_KEYWORD)) {
-            nasm_error(ERR_NONFATAL,
-                       "invalid decorator token inside braces");
+            nasm_nonfatal("invalid decorator token inside braces");
             return tv->t_type = TOKEN_INVALID;
         }
 
         stdscan_bufptr++;       /* skip closing brace */
 
-        for (s = tv->t_charptr, r = ourcopy; *s; s++)
-            *r++ = nasm_tolower(*s);
-        *r = '\0';
-
-        /* right, so we have a decorator sitting in temp storage. */
-        nasm_token_hash(ourcopy, tv);
-
         /* handle tokens inside braces */
+        nasm_token_hash(tv->t_charptr, tv);
         return stdscan_handle_brace(tv);
     } else if (*stdscan_bufptr == ';') {
         /* a comment has happened - stay */
@@ -331,8 +322,13 @@ int stdscan(void *private_data, struct tokenval *tv)
         stdscan_bufptr += 2;
         return tv->t_type = TOKEN_NE;
     } else if (stdscan_bufptr[0] == '<' && stdscan_bufptr[1] == '=') {
-        stdscan_bufptr += 2;
-        return tv->t_type = TOKEN_LE;
+        if (stdscan_bufptr[2] == '>') {
+            stdscan_bufptr += 3;
+            return tv->t_type = TOKEN_LEG;
+        } else {
+            stdscan_bufptr += 2;
+            return tv->t_type = TOKEN_LE;
+        }
     } else if (stdscan_bufptr[0] == '>' && stdscan_bufptr[1] == '=') {
         stdscan_bufptr += 2;
         return tv->t_type = TOKEN_GE;

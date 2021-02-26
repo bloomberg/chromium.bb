@@ -7,37 +7,12 @@
 
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
 
-const GrPipeline* GrSimpleMeshDrawOpHelperWithStencil::createPipelineWithStencil(
-                                            const GrCaps* caps,
-                                            SkArenaAlloc* arena,
-                                            GrSwizzle writeViewSwizzle,
-                                            GrAppliedClip&& appliedClip,
-                                            const GrXferProcessor::DstProxyView& dstProxyView) {
-    return GrSimpleMeshDrawOpHelper::CreatePipeline(caps,
-                                                    arena,
-                                                    writeViewSwizzle,
-                                                    std::move(appliedClip),
-                                                    dstProxyView,
-                                                    this->detachProcessorSet(),
-                                                    this->pipelineFlags(),
-                                                    this->stencilSettings());
-}
-
-const GrPipeline* GrSimpleMeshDrawOpHelperWithStencil::createPipelineWithStencil(
-        GrOpFlushState* flushState) {
-    return this->createPipelineWithStencil(&flushState->caps(),
-                                           flushState->allocator(),
-                                           flushState->writeView()->swizzle(),
-                                           flushState->detachAppliedClip(),
-                                           flushState->dstProxyView());
-}
-
 GrSimpleMeshDrawOpHelperWithStencil::GrSimpleMeshDrawOpHelperWithStencil(
-                                                    const MakeArgs& args,
+                                                    GrProcessorSet* processorSet,
                                                     GrAAType aaType,
                                                     const GrUserStencilSettings* stencilSettings,
                                                     InputFlags inputFlags)
-        : INHERITED(args, aaType, inputFlags)
+        : INHERITED(processorSet, aaType, inputFlags)
         , fStencilSettings(stencilSettings ? stencilSettings : &GrUserStencilSettings::kUnused) {}
 
 GrDrawOp::FixedFunctionFlags GrSimpleMeshDrawOpHelperWithStencil::fixedFunctionFlags() const {
@@ -76,7 +51,8 @@ GrProgramInfo* GrSimpleMeshDrawOpHelperWithStencil::createProgramInfoWithStencil
                                             GrAppliedClip&& appliedClip,
                                             const GrXferProcessor::DstProxyView& dstProxyView,
                                             GrGeometryProcessor* gp,
-                                            GrPrimitiveType primType) {
+                                            GrPrimitiveType primType,
+                                            GrXferBarrierFlags renderPassXferBarriers) {
     return CreateProgramInfo(caps,
                              arena,
                              writeViewSwizzle,
@@ -85,11 +61,12 @@ GrProgramInfo* GrSimpleMeshDrawOpHelperWithStencil::createProgramInfoWithStencil
                              gp,
                              this->detachProcessorSet(),
                              primType,
+                             renderPassXferBarriers,
                              this->pipelineFlags(),
                              this->stencilSettings());
 }
 
-#ifdef SK_DEBUG
+#if GR_TEST_UTILS
 SkString GrSimpleMeshDrawOpHelperWithStencil::dumpInfo() const {
     SkString result = INHERITED::dumpInfo();
     result.appendf("Stencil settings: %s\n", (fStencilSettings ? "yes" : "no"));

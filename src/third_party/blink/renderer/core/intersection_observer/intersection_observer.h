@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -32,7 +33,6 @@ class CORE_EXPORT IntersectionObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<IntersectionObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -64,12 +64,26 @@ class CORE_EXPORT IntersectionObserver final
 
   // Used to specify when callbacks should be invoked with new notifications.
   // Blink-internal users of IntersectionObserver will have their callbacks
-  // invoked synchronously at the end of a lifecycle update. Javascript
-  // observers will PostTask to invoke their callbacks.
+  // invoked synchronously either at the end of a lifecycle update or in the
+  // middle of the lifecycle post layout. Javascript observers will PostTask to
+  // invoke their callbacks.
   enum DeliveryBehavior {
+    kDeliverDuringPostLayoutSteps,
     kDeliverDuringPostLifecycleSteps,
     kPostTaskToDeliver
   };
+
+  // Used to specify whether the margins apply to the root element or the source
+  // element. The effect of the root element margins is that intermediate
+  // scrollers clip content by its bounding box without considering margins.
+  // That is, margins only apply to the last scroller (root). The effect of
+  // source element margins is that the margins apply to the first / deepest
+  // clipper, but do not apply to any other clippers. Note that in a case of a
+  // single clipper, the two approaches are equivalent.
+  //
+  // Note that the percentage margin is resolved against the root rect, even
+  // when the margin is applied to the target.
+  enum MarginTarget { kApplyMarginToRoot, kApplyMarginToTarget };
 
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
@@ -85,27 +99,30 @@ class CORE_EXPORT IntersectionObserver final
   // interpreted according to the given |semantics|. |delay| specifies the
   // minimum period between change notifications.
   static IntersectionObserver* Create(
-      const Vector<Length>& root_margin,
+      const Vector<Length>& margin,
       const Vector<float>& thresholds,
       Document* document,
       EventCallback callback,
+      LocalFrameUkmAggregator::MetricId ukm_metric_id,
       DeliveryBehavior behavior = kDeliverDuringPostLifecycleSteps,
       ThresholdInterpretation semantics = kFractionOfTarget,
       DOMHighResTimeStamp delay = 0,
       bool track_visbility = false,
       bool always_report_root_bounds = false,
+      MarginTarget margin_target = kApplyMarginToRoot,
       ExceptionState& = ASSERT_NO_EXCEPTION);
 
   static void ResumeSuspendedObservers();
 
   explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Node*,
-                                const Vector<Length>& root_margin,
+                                const Vector<Length>& margin,
                                 const Vector<float>& thresholds,
                                 ThresholdInterpretation semantics,
                                 DOMHighResTimeStamp delay,
                                 bool track_visibility,
-                                bool always_report_root_bounds);
+                                bool always_report_root_bounds,
+                                MarginTarget margin_target);
 
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -137,13 +154,16 @@ class CORE_EXPORT IntersectionObserver final
 
   DOMHighResTimeStamp GetTimeStamp() const;
   DOMHighResTimeStamp GetEffectiveDelay() const;
-  const Vector<Length>& RootMargin() const { return root_margin_; }
-  const Length& TopMargin() const { return root_margin_[0]; }
-  const Length& RightMargin() const { return root_margin_[1]; }
-  const Length& BottomMargin() const { return root_margin_[2]; }
-  const Length& LeftMargin() const { return root_margin_[3]; }
+  Vector<Length> RootMargin() const {
+    return margin_target_ == kApplyMarginToRoot ? margin_ : Vector<Length>();
+  }
+  Vector<Length> TargetMargin() const {
+    return margin_target_ == kApplyMarginToTarget ? margin_ : Vector<Length>();
+  }
 
   bool ComputeIntersections(unsigned flags);
+
+  LocalFrameUkmAggregator::MetricId GetUkmMetricId() const;
 
   void SetNeedsDelivery();
   DeliveryBehavior GetDeliveryBehavior() const;
@@ -158,7 +178,7 @@ class CORE_EXPORT IntersectionObserver final
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Enable/disable throttling of visibility checking, so we don't have to add
   // sleep() calls to tests to wait for notifications to show up.
@@ -175,7 +195,8 @@ class CORE_EXPORT IntersectionObserver final
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;
-  Vector<Length> root_margin_;
+  Vector<Length> margin_;
+  MarginTarget margin_target_;
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
   unsigned track_fraction_of_root_ : 1;

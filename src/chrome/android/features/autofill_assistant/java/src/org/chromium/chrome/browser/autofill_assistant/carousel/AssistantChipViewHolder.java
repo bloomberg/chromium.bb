@@ -5,12 +5,16 @@
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 
 /**
  * The {@link ViewHolder} responsible for reflecting an {@link AssistantChip} to a {@link
@@ -18,6 +22,7 @@ import org.chromium.chrome.autofill_assistant.R;
  */
 public class AssistantChipViewHolder extends ViewHolder {
     private final ButtonView mView;
+    private @Nullable PopupMenu mPopupMenu;
 
     /** The type of this ViewHolder, as returned by {@link #getViewType(AssistantChip)}. */
     private final int mType;
@@ -29,7 +34,7 @@ public class AssistantChipViewHolder extends ViewHolder {
     }
 
     public static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        LayoutInflater layoutInflater = LayoutUtils.createInflater(parent.getContext());
         ButtonView view = null;
         switch (viewType) {
             case AssistantChip.Type.CHIP_ASSISTIVE:
@@ -80,7 +85,22 @@ public class AssistantChipViewHolder extends ViewHolder {
 
         // Setting this view to clickable may be required for a11y to correctly announce it.
         mView.setClickable(true);
-        mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
+
+        // If a popup is specified, instead of invoking chip.getSelectedListener, show the popup
+        // menu and invoke the popup callback.
+        if (chip.getPopupItems() != null) {
+            mPopupMenu = new PopupMenu(mView.getContext(), mView);
+            for (int i = 0; i < chip.getPopupItems().size(); i++) {
+                mPopupMenu.getMenu().add(Menu.NONE, i, Menu.NONE, chip.getPopupItems().get(i));
+            }
+            mPopupMenu.setOnMenuItemClickListener(item -> {
+                chip.getOnPopupItemSelectedCallback().onResult(item.getItemId());
+                return true;
+            });
+            mView.setOnClickListener(ignoredView -> mPopupMenu.show());
+        } else {
+            mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
+        }
 
         int iconResource;
         int iconDescriptionResource = 0;
@@ -96,6 +116,10 @@ public class AssistantChipViewHolder extends ViewHolder {
             case AssistantChip.Icon.REFRESH:
                 iconResource = R.drawable.ic_refresh_black_24dp;
                 iconDescriptionResource = R.string.menu_refresh;
+                break;
+            case AssistantChip.Icon.OVERFLOW:
+                iconResource = R.drawable.ic_overflow_black_24dp;
+                iconDescriptionResource = R.string.autofill_assistant_overflow_options;
                 break;
             default:
                 iconResource = ButtonView.INVALID_ICON_ID;

@@ -19,8 +19,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class Profile;
@@ -33,6 +34,8 @@ class BinaryUploadService : public KeyedService {
  public:
   // The maximum size of data that can be uploaded via this service.
   constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
+
+  explicit BinaryUploadService(Profile* profile);
 
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -74,23 +77,25 @@ class BinaryUploadService : public KeyedService {
     FILE_ENCRYPTED = 7,
 
     // The file's type is not supported and the file was not uploaded.
-    UNSUPPORTED_FILE_TYPE = 8,
+    DLP_SCAN_UNSUPPORTED_FILE_TYPE = 8,
 
-    kMaxValue = UNSUPPORTED_FILE_TYPE,
+    kMaxValue = DLP_SCAN_UNSUPPORTED_FILE_TYPE,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos
   // will only be populated if the result is SUCCESS.
-  using Callback = base::OnceCallback<void(Result, DeepScanningClientResponse)>;
+  using ContentAnalysisCallback =
+      base::OnceCallback<void(Result,
+                              enterprise_connectors::ContentAnalysisResponse)>;
 
   // A class to encapsulate the a request for upload. This class will provide
-  // all the functionality needed to generate a DeepScanningRequest, and
+  // all the functionality needed to generate a ContentAnalysisRequest, and
   // subclasses will provide different sources of data to upload (e.g. file or
   // string).
   class Request {
    public:
     // |callback| will run on the UI thread.
-    explicit Request(Callback callback);
+    Request(ContentAnalysisCallback, GURL url);
     virtual ~Request();
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
@@ -124,29 +129,57 @@ class BinaryUploadService : public KeyedService {
     using DataCallback = base::OnceCallback<void(Result, const Data&)>;
     virtual void GetRequestData(DataCallback callback) = 0;
 
-    // Returns the metadata to upload, as a DeepScanningClientRequest.
-    const DeepScanningClientRequest& deep_scanning_request() const {
-      return deep_scanning_request_;
+    // Returns the URL to send the request to.
+    GURL GetUrlWithParams() const;
+
+    // Returns the metadata to upload, as a ContentAnalysisRequest.
+    const enterprise_connectors::ContentAnalysisRequest&
+    content_analysis_request() const {
+      return content_analysis_request_;
     }
 
-    // Methods for modifying the DeepScanningClientRequest.
-    void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
-    void set_request_malware_scan(
-        MalwareDeepScanningClientRequest malware_request);
-    void set_fcm_token(const std::string& token);
-    void set_dm_token(const std::string& token);
+    void set_tab_url(const GURL& tab_url);
+    const GURL& tab_url() const;
+
+    // Methods for modifying the ContentAnalysisRequest.
+    void set_analysis_connector(
+        enterprise_connectors::AnalysisConnector connector);
+    void set_url(const std::string& url);
+    void set_csd(ClientDownloadRequest csd);
+    void add_tag(const std::string& tag);
+    void set_email(const std::string& email);
     void set_request_token(const std::string& token);
+    void set_fcm_token(const std::string& token);
+    void set_device_token(const std::string& token);
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
     void clear_dlp_scan_request();
 
+    // Methods for accessing the ContentAnalysisRequest.
+    enterprise_connectors::AnalysisConnector analysis_connector();
+    const std::string& device_token() const;
+    const std::string& request_token() const;
+    const std::string& fcm_notification_token() const;
+    const std::string& filename() const;
+    const std::string& digest() const;
+
     // Finish the request, with the given |result| and |response| from the
     // server.
-    void FinishRequest(Result result, DeepScanningClientResponse response);
+    void FinishRequest(Result result,
+                       enterprise_connectors::ContentAnalysisResponse response);
+
+    // Calls SerializeToString on the appropriate proto request.
+    void SerializeToString(std::string* destination) const;
 
    private:
-    DeepScanningClientRequest deep_scanning_request_;
-    Callback callback_;
+    enterprise_connectors::ContentAnalysisRequest content_analysis_request_;
+    ContentAnalysisCallback content_analysis_callback_;
+
+    // The URL to send the data to for scanning.
+    GURL url_;
+
+    // The URL of the page that initially triggered the scan.
+    GURL tab_url_;
   };
 
   // Upload the given file contents for deep scanning if the browser is
@@ -155,13 +188,16 @@ class BinaryUploadService : public KeyedService {
 
   // Indicates whether the browser is allowed to upload data.
   using AuthorizationCallback = base::OnceCallback<void(bool)>;
-  void IsAuthorized(AuthorizationCallback callback);
+  void IsAuthorized(const GURL& url,
+                    AuthorizationCallback callback,
+                    enterprise_connectors::AnalysisConnector connector);
 
   // Run every callback in |authorization_callbacks_| and empty it.
-  void RunAuthorizationCallbacks();
+  void RunAuthorizationCallbacks(
+      enterprise_connectors::AnalysisConnector connector);
 
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
-  void ResetAuthorizationData();
+  void ResetAuthorizationData(const GURL& url);
 
   // Performs cleanup needed at shutdown.
   void Shutdown() override;
@@ -172,6 +208,11 @@ class BinaryUploadService : public KeyedService {
   // Returns the URL that requests are uploaded to. Scans for enterprise go to a
   // different URL than scans for Advanced Protection users.
   static GURL GetUploadUrl(bool is_advanced_protection_request);
+
+ protected:
+  void FinishRequest(Request* request,
+                     Result result,
+                     enterprise_connectors::ContentAnalysisResponse response);
 
  private:
   friend class BinaryUploadServiceTest;
@@ -191,15 +232,12 @@ class BinaryUploadService : public KeyedService {
                         bool success,
                         const std::string& response_data);
 
-  void OnGetResponse(Request* request, DeepScanningClientResponse response);
+  void OnGetResponse(Request* request,
+                     enterprise_connectors::ContentAnalysisResponse response);
 
   void MaybeFinishRequest(Request* request);
 
   void OnTimeout(Request* request);
-
-  void FinishRequest(Request* request,
-                     Result result,
-                     DeepScanningClientResponse response);
 
   bool IsActive(Request* request);
 
@@ -207,12 +245,24 @@ class BinaryUploadService : public KeyedService {
                                           bool authorized);
 
   // Callback once the response from the backend is received.
-  void ValidateDataUploadRequestCallback(BinaryUploadService::Result result,
-                                         DeepScanningClientResponse response);
+  void ValidateDataUploadRequestConnectorCallback(
+      enterprise_connectors::AnalysisConnector connector,
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
 
-  void RecordRequestMetrics(Request* request,
-                            Result result,
-                            const DeepScanningClientResponse& response);
+  // Callback once a request's instance ID is unregistered.
+  void InstanceIDUnregisteredCallback(
+      enterprise_connectors::AnalysisConnector connector,
+      bool);
+
+  void RecordRequestMetrics(Request* request, Result result);
+  void RecordRequestMetrics(
+      Request* request,
+      Result result,
+      const enterprise_connectors::ContentAnalysisResponse& response);
+
+  // Called at the end of the FinishRequest method.
+  void FinishRequestCleanup(Request* request, const std::string& instance_id);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
@@ -226,10 +276,13 @@ class BinaryUploadService : public KeyedService {
   base::flat_map<Request*, std::unique_ptr<MultipartUploadRequest>>
       active_uploads_;
   base::flat_map<Request*, std::string> active_tokens_;
-  base::flat_map<Request*, std::unique_ptr<MalwareDeepScanningVerdict>>
-      received_malware_verdicts_;
-  base::flat_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
-      received_dlp_verdicts_;
+
+  // Maps requests to each corresponding tag-result pairs.
+  base::flat_map<
+      Request*,
+      base::flat_map<std::string,
+                     enterprise_connectors::ContentAnalysisResponse::Result>>
+      received_connector_results_;
 
   // Indicates whether this browser can upload data for enterprise requests.
   // Advanced Protection scans are validated using the user's Advanced
@@ -238,7 +291,8 @@ class BinaryUploadService : public KeyedService {
   // yet.
   // true means the response indicates data can be uploaded.
   // false means the response indicates data cannot be uploaded.
-  base::Optional<bool> can_upload_enterprise_data_ = base::nullopt;
+  base::flat_map<enterprise_connectors::AnalysisConnector, bool>
+      can_upload_enterprise_data_;
 
   // Callbacks waiting on IsAuthorized request.
   std::list<base::OnceCallback<void(bool)>> authorization_callbacks_;

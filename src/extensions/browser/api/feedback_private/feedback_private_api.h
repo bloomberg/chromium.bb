@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "build/chromeos_buildflags.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -21,9 +22,9 @@ class FeedbackData;
 
 namespace extensions {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class LogSourceAccessManager;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
  public:
@@ -32,9 +33,9 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 
   FeedbackService* GetService() const;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   LogSourceAccessManager* GetLogSourceAccessManager() const;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void RequestFeedbackForFlow(const std::string& description_template,
                               const std::string& description_placeholder_text,
@@ -43,7 +44,8 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
                               const GURL& page_url,
                               api::feedback_private::FeedbackFlow flow,
                               bool from_assistant = false,
-                              bool include_bluetooth_logs = false);
+                              bool include_bluetooth_logs = false,
+                              bool from_kaleidoscope = false);
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*
@@ -65,9 +67,9 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
   content::BrowserContext* const browser_context_;
   std::unique_ptr<FeedbackService> service_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<LogSourceAccessManager> log_source_access_manager_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackPrivateAPI);
 };
@@ -127,11 +129,11 @@ class FeedbackPrivateReadLogSourceFunction : public ExtensionFunction {
   ~FeedbackPrivateReadLogSourceFunction() override {}
   ResponseAction Run() override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
  private:
   void OnCompleted(
       std::unique_ptr<api::feedback_private::ReadLogSourceResult> result);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 class FeedbackPrivateSendFeedbackFunction : public ExtensionFunction {
@@ -149,6 +151,19 @@ class FeedbackPrivateSendFeedbackFunction : public ExtensionFunction {
                         bool send_tab_titles,
                         scoped_refptr<feedback::FeedbackData> feedback_data);
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void OnAshLogsFetched(bool send_histograms,
+                        bool send_bluetooth_logs,
+                        bool send_tab_titles,
+                        scoped_refptr<feedback::FeedbackData> feedback_data);
+  void OnLacrosHistogramsFetched(
+      bool send_histograms,
+      bool send_bluetooth_logs,
+      bool send_tab_titles,
+      scoped_refptr<feedback::FeedbackData> feedback_data,
+      const std::string& compressed_histograms);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 class FeedbackPrivateLoginFeedbackCompleteFunction : public ExtensionFunction {

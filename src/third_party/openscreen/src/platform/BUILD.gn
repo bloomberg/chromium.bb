@@ -111,6 +111,7 @@ if (!build_with_chromium) {
     if (is_posix) {
       sources += [
         "impl/logging_posix.cc",
+        "impl/logging_test.h",
         "impl/platform_client_posix.cc",
         "impl/platform_client_posix.h",
         "impl/scoped_pipe.h",
@@ -202,6 +203,7 @@ source_set("unittests") {
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",
+    "base/udp_packet_unittest.cc",
   ]
 
   # The socket integration tests assume that you can Bind with UDP sockets,
@@ -220,6 +222,7 @@ source_set("unittests") {
 
     if (is_posix) {
       sources += [
+        "impl/logging_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
         "impl/socket_address_posix_unittest.cc",
         "impl/socket_handle_waiter_posix_unittest.cc",

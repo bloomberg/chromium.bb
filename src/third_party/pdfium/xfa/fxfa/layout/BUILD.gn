@@ -26,6 +26,7 @@ source_set("layout") {
   deps = [
     "../../../core/fxcrt",
     "../../../fxjs",
+    "../../../fxjs:gc",
     "../parser",
   ]
   allow_circular_includes_from = [ "../../../fxjs" ]

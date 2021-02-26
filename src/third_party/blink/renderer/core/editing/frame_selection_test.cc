@@ -48,7 +48,7 @@ class FrameSelectionTest : public EditingTestBase {
     return Selection().ComputeVisibleSelectionInDOMTree();
   }
   VisibleSelectionInFlatTree GetVisibleSelectionInFlatTree() const {
-    return Selection().GetSelectionInFlatTree();
+    return Selection().ComputeVisibleSelectionInFlatTree();
   }
 
   Text* AppendTextNode(const String& data);
@@ -126,7 +126,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   GetDocument().body()->focus();
   EXPECT_TRUE(GetDocument().body()->IsFocused());
 
-  Selection().SetCaretVisible(true);
+  Selection().SetCaretEnabled(true);
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
   UpdateAllLifecyclePhasesForTest();
@@ -143,7 +143,8 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
     frame_rect.SetHeight(frame_rect.Height() + 1);
     GetDummyPageHolder().GetFrameView().SetFrameRect(frame_rect);
   }
-  auto paint_controller = std::make_unique<PaintController>();
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   {
     GraphicsContext context(*paint_controller);
     paint_controller->UpdateCurrentPaintChunkProperties(

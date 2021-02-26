@@ -39,9 +39,7 @@ PresentationAvailability::PresentationAvailability(
           To<LocalDOMWindow>(execution_context)->GetFrame()->GetPage()),
       urls_(urls),
       value_(value),
-      state_(State::kActive) {
-  DCHECK(execution_context->IsDocument());
-}
+      state_(State::kActive) {}
 
 PresentationAvailability::~PresentationAvailability() = default;
 
@@ -122,7 +120,7 @@ bool PresentationAvailability::value() const {
   return value_;
 }
 
-void PresentationAvailability::Trace(Visitor* visitor) {
+void PresentationAvailability::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);

@@ -6,14 +6,15 @@ package org.chromium.components.browser_ui.site_settings;
 
 import static org.chromium.components.browser_ui.settings.SearchUtils.handleSearchNavigation;
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI;
+import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.format.Formatter;
 import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -22,8 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -46,13 +45,13 @@ import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
-import org.chromium.components.browser_ui.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ import java.util.Set;
 @UsedByReflection("site_settings_preferences.xml")
 public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener,
-                   AddExceptionPreference.SiteAddedCallback, View.OnClickListener,
+                   AddExceptionPreference.SiteAddedCallback,
                    PreferenceManager.OnPreferenceTreeClickListener {
     // The key to use to pass which category this preference should display,
     // e.g. Location/Popups/All sites (if blank).
@@ -89,12 +88,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
     // The list that contains preferences.
     private RecyclerView mListView;
-    // The view to show when the list is empty.
-    private TextView mEmptyView;
     // The item for searching the list of items.
     private MenuItem mSearchItem;
-    // The clear button displayed in the Storage view.
-    private Button mClearButton;
     // The Site Settings Category we are showing.
     private SiteSettingsCategory mCategory;
     // If not blank, represents a substring to use to search for site names.
@@ -131,7 +126,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public static final String FOUR_STATE_COOKIE_TOGGLE_KEY = "four_state_cookie_toggle";
 
     // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
-    public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
     public static final String NOTIFICATIONS_VIBRATE_TOGGLE_KEY = "notifications_vibrate";
     public static final String NOTIFICATIONS_QUIET_UI_TOGGLE_KEY = "notifications_quiet_ui";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
@@ -156,10 +150,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             int chooserDataType = mCategory.getObjectChooserDataType();
             boolean hasEntries =
                     chooserDataType == -1 ? addWebsites(sites) : addChosenObjects(sites);
-
-            if (mEmptyView == null) return;
-
-            mEmptyView.setVisibility(hasEntries ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -205,21 +195,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 getSiteSettingsClient().getBrowserContextHandle();
         for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_ENTRIES; i++) {
             if (!mCategory.showSites(i)) continue;
-            for (@ContentSettingException.Type int j = 0;
-                    j < ContentSettingException.Type.NUM_ENTRIES; j++) {
-                if (ContentSettingException.getContentSettingsType(j)
-                        == SiteSettingsCategory.contentSettingsType(i)) {
-                    return ContentSettingValues.BLOCK
-                            == website.site().getContentSettingPermission(j);
-                }
-            }
-            for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
-                if (PermissionInfo.getContentSettingsType(j)
-                        == SiteSettingsCategory.contentSettingsType(i)) {
-                    return j != PermissionInfo.Type.MIDI
-                            && ContentSettingValues.BLOCK
-                            == website.site().getPermission(browserContextHandle, j);
-                }
+            @ContentSettingValues
+            Integer contentSetting = website.site().getContentSetting(
+                    browserContextHandle, SiteSettingsCategory.contentSettingsType(i));
+            if (contentSetting != null) {
+                return ContentSettingValues.BLOCK == contentSetting;
             }
         }
         return false;
@@ -310,9 +290,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             mCategory = SiteSettingsCategory.createFromPreferenceKey(
                     browserContextHandle, getArguments().getString(EXTRA_CATEGORY, ""));
         }
-        if (mCategory == null) {
-            mCategory = SiteSettingsCategory.createFromType(
-                    browserContextHandle, SiteSettingsCategory.Type.ALL_SITES);
+
+        if (mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
+                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
+            throw new IllegalArgumentException("Use AllSiteSettings instead.");
         }
 
         int contentType = mCategory.getContentSettingsType();
@@ -322,14 +303,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 WebsitePreferenceBridge.requiresFourStateContentSetting(contentType);
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-
-        // Add custom views for Storage Preferences to bottom of the fragment.
-        if (mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
-            inflater.inflate(R.layout.storage_preferences_view, view, true);
-            mEmptyView = view.findViewById(R.id.empty_storage);
-            mClearButton = view.findViewById(R.id.clear_button);
-            mClearButton.setOnClickListener(this);
-        }
 
         mListView = getListView();
 
@@ -347,30 +320,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      */
     public SiteSettingsCategory getCategoryForTest() {
         return mCategory;
-    }
-
-    /**
-     * This clears all the storage for websites that are displayed to the user. This happens
-     * asynchronously, and then we call {@link #getInfoForOrigins()} when we're done.
-     */
-    public void clearStorage() {
-        if (mWebsites == null) return;
-        RecordUserAction.record("MobileSettingsStorageClearAll");
-
-        // The goal is to refresh the info for origins again after we've cleared all of them, so we
-        // wait until the last website is cleared to refresh the origin list.
-        final int[] numLeft = new int[1];
-        numLeft[0] = mWebsites.size();
-        for (int i = 0; i < mWebsites.size(); i++) {
-            WebsitePreference preference = mWebsites.get(i);
-            preference.site().clearAllStoredData(getSiteSettingsClient().getBrowserContextHandle(),
-                    new StoredDataClearedCallback() {
-                        @Override
-                        public void onStoredDataCleared() {
-                            if (--numLeft[0] <= 0) getInfoForOrigins();
-                        }
-                    });
-        }
     }
 
     @Override
@@ -451,66 +400,24 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         if (preference instanceof WebsitePreference) {
-            WebsitePreference website = (WebsitePreference) preference;
-            website.setFragment(SingleWebsiteSettings.class.getName());
-            // EXTRA_SITE re-uses already-fetched permissions, which we can only use if the Website
-            // was populated with data for all permission types.
-            if (mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)) {
-                website.putSiteIntoExtras(SingleWebsiteSettings.EXTRA_SITE);
+            WebsitePreference website_pref = (WebsitePreference) preference;
+
+            if (getSiteSettingsClient().isPageInfoV2Enabled()
+                    && !website_pref.getParent().getKey().equals(MANAGED_GROUP)) {
+                buildPreferenceDialog(website_pref.site()).show();
             } else {
-                website.putSiteAddressIntoExtras(SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
+                website_pref.setFragment(SingleWebsiteSettings.class.getName());
+
+                website_pref.putSiteAddressIntoExtras(SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
+
+                int navigationSource = getArguments().getInt(
+                        SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
+                website_pref.getExtras().putInt(
+                        SettingsNavigationSource.EXTRA_KEY, navigationSource);
             }
-            int navigationSource = getArguments().getInt(
-                    SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
-            website.getExtras().putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
         }
 
         return super.onPreferenceTreeClick(preference);
-    }
-
-    /** OnClickListener for the clear button. We show an alert dialog to confirm the action */
-    @Override
-    public void onClick(View v) {
-        if (getActivity() == null || v != mClearButton) return;
-
-        long totalUsage = 0;
-        boolean includesApps = false;
-        Set<String> originsWithInstalledApp =
-                getSiteSettingsClient().getWebappSettingsClient().getOriginsWithInstalledApp();
-        if (mWebsites != null) {
-            for (WebsitePreference preference : mWebsites) {
-                totalUsage += preference.site().getTotalUsage();
-                if (!includesApps) {
-                    includesApps = originsWithInstalledApp.contains(
-                            preference.site().getAddress().getOrigin());
-                }
-            }
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View dialogView =
-                getActivity().getLayoutInflater().inflate(R.layout.clear_data_dialog, null);
-        TextView message = dialogView.findViewById(android.R.id.message);
-        TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
-        TextView offlineText = dialogView.findViewById(R.id.offline_text);
-        signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_all_message);
-        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
-        String dialogFormattedText =
-                getString(includesApps ? R.string.webstorage_clear_data_dialog_message_with_app
-                                       : R.string.webstorage_clear_data_dialog_message,
-                        Formatter.formatShortFileSize(getActivity(), totalUsage));
-        message.setText(dialogFormattedText);
-        builder.setView(dialogView);
-        builder.setPositiveButton(R.string.storage_clear_dialog_clear_storage_option,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        clearStorage();
-                    }
-                });
-        builder.setNegativeButton(R.string.cancel, null);
-        builder.setTitle(R.string.storage_clear_site_storage_title);
-        builder.create().show();
     }
 
     // OnPreferenceChangeListener:
@@ -518,23 +425,20 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsClient().getBrowserContextHandle();
+        PrefService prefService = UserPrefs.get(browserContextHandle);
         if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
             for (@SiteSettingsCategory.Type int type = 0;
                     type < SiteSettingsCategory.Type.NUM_ENTRIES; type++) {
-                if (type == SiteSettingsCategory.Type.ALL_SITES
-                        || type == SiteSettingsCategory.Type.USE_STORAGE
-                        || !mCategory.showSites(type)) {
+                if (!mCategory.showSites(type)) {
                     continue;
                 }
 
                 WebsitePreferenceBridge.setCategoryEnabled(browserContextHandle,
                         SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
 
-                if (type == SiteSettingsCategory.Type.COOKIES) {
-                    updateThirdPartyCookiesCheckBox();
-                } else if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
+                if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
                     updateNotificationsSecondaryControls();
                 }
                 break;
@@ -550,17 +454,14 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else if (FOUR_STATE_COOKIE_TOGGLE_KEY.equals(preference.getKey())) {
             setCookieSettingsPreference((CookieSettingsState) newValue);
             getInfoForOrigins();
-        } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            getPrefs().setBlockThirdPartyCookies((boolean) newValue);
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            getPrefs().setNotificationsVibrateEnabled((boolean) newValue);
+            prefService.setBoolean(NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
         } else if (NOTIFICATIONS_QUIET_UI_TOGGLE_KEY.equals(preference.getKey())) {
-            boolean boolValue = (boolean) newValue;
-            if (boolValue) {
-                getPrefs().setEnableQuietNotificationPermissionUi(true);
+            if ((boolean) newValue) {
+                prefService.setBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI, true);
             } else {
                 // Clear the pref so if the default changes later the user will get the new default.
-                getPrefs().clearEnableNotificationPermissionUi();
+                prefService.clearPref(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);
             }
         }
         return true;
@@ -595,8 +496,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         WebsitePreferenceBridge.setCategoryEnabled(
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES,
                 allowCookies);
-        getPrefs().setCookieControlsMode(mode);
-        getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.BLOCK_THIRD_PARTY);
+        PrefService prefService = UserPrefs.get(getSiteSettingsClient().getBrowserContextHandle());
+        prefService.setInteger(COOKIE_CONTROLS_MODE, mode);
     }
 
     private boolean cookieSettingsExceptionShouldBlock() {
@@ -865,7 +766,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         for (Website site : sites) {
             for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
                 if (mSearch == null || mSearch.isEmpty()
-                        || info.getName().toLowerCase().contains(mSearch)) {
+                        || info.getName().toLowerCase(Locale.getDefault()).contains(mSearch)) {
                     Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry =
                             objects.get(info.getObject());
                     if (entry == null) {
@@ -890,8 +791,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             extras.putString(EXTRA_TITLE, getActivity().getTitle().toString());
             extras.putSerializable(ChosenObjectSettings.EXTRA_OBJECT_INFOS, entry.first);
             extras.putSerializable(ChosenObjectSettings.EXTRA_SITES, entry.second);
-            preference.setIcon(
-                    ContentSettingsResources.getIcon(mCategory.getContentSettingsType()));
+            preference.setIcon(SettingsUtils.getTintedIcon(getActivity(),
+                    ContentSettingsResources.getIcon(mCategory.getContentSettingsType())));
             preference.setTitle(entry.first.get(0).getName());
             preference.setFragment(ChosenObjectSettings.class.getCanonicalName());
             getPreferenceScreen().addPreference(preference);
@@ -933,7 +834,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         FourStateCookieSettingsPreference fourStateCookieToggle =
                 (FourStateCookieSettingsPreference) screen.findPreference(
                         FOUR_STATE_COOKIE_TOGGLE_KEY);
-        Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
+        // TODO(crbug.com/1104836): Remove the old third-party cookie blocking UI
         Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         Preference notificationsQuietUi = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
@@ -941,16 +842,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
         PreferenceGroup managedGroup = (PreferenceGroup) screen.findPreference(MANAGED_GROUP);
         boolean permissionBlockedByOs = mCategory.showPermissionBlockedMessage(getActivity());
-        // For these categories, no binary, tri-state or custom toggles should be shown.
-        boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
-                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE);
-        boolean hideSecondaryToggles = hideMainToggles || permissionBlockedByOs;
 
-        if (hideMainToggles) {
-            screen.removePreference(binaryToggle);
-            screen.removePreference(triStateToggle);
-            screen.removePreference(fourStateCookieToggle);
-        } else if (mRequiresTriStateSetting) {
+        if (mRequiresTriStateSetting) {
             screen.removePreference(binaryToggle);
             screen.removePreference(fourStateCookieToggle);
             configureTriStateToggle(triStateToggle, contentType);
@@ -964,18 +857,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             configureBinaryToggle(binaryToggle, contentType);
         }
 
-        if (permissionBlockedByOs) {
-            maybeShowOsWarning(screen);
-        }
-
-        if (!(mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                    && ContentSettingsFeatureList.isEnabled(
-                            ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS))) {
+        if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
             screen.removePreference(screen.findPreference(COOKIE_INFO_TEXT_KEY));
         }
 
-        if (hideSecondaryToggles) {
-            screen.removePreference(thirdPartyCookies);
+        if (permissionBlockedByOs) {
+            maybeShowOsWarning(screen);
+
             screen.removePreference(notificationsVibrate);
             screen.removePreference(notificationsQuietUi);
             screen.removePreference(explainProtectedMediaKey);
@@ -985,14 +873,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             // Since all preferences are hidden, there's nothing to do further and we can
             // simply return.
             return;
-        }
-
-        // Configure/hide the third-party cookies toggle, as needed.
-        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES) && !mRequiresFourStateSetting) {
-            thirdPartyCookies.setOnPreferenceChangeListener(this);
-            updateThirdPartyCookiesCheckBox();
-        } else {
-            screen.removePreference(thirdPartyCookies);
         }
 
         // Configure/hide the notifications secondary controls, as needed.
@@ -1016,7 +896,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         // Only show the link that explains protected content settings when needed.
-        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
+        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)
+                && getSiteSettingsClient().getSiteSettingsHelpClient().isHelpAndFeedbackEnabled()) {
             explainProtectedMediaKey.setOnPreferenceClickListener(preference -> {
                 getSiteSettingsClient()
                         .getSiteSettingsHelpClient()
@@ -1056,8 +937,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         // Show the link to system settings since permission is disabled.
         ChromeBasePreference osWarning = new ChromeBasePreference(getStyledContext(), null);
         ChromeBasePreference osWarningExtra = new ChromeBasePreference(getStyledContext(), null);
-        mCategory.configurePermissionIsOffPreferences(
-                osWarning, osWarningExtra, getActivity(), true);
+        mCategory.configurePermissionIsOffPreferences(osWarning, osWarningExtra, getActivity(),
+                true, getSiteSettingsClient().getAppName());
         if (osWarning.getTitle() != null) {
             osWarning.setKey(SingleWebsiteSettings.PREF_OS_PERMISSIONS_WARNING);
             screen.addPreference(osWarning);
@@ -1075,10 +956,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 new FourStateCookieSettingsPreference.Params();
         params.allowCookies = WebsitePreferenceBridge.isCategoryEnabled(
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES);
-        params.blockThirdPartyCookies = getPrefs().getBlockThirdPartyCookies();
-        params.cookieControlsMode = getPrefs().getCookieControlsMode();
+        PrefService prefService = UserPrefs.get(getSiteSettingsClient().getBrowserContextHandle());
+        params.cookieControlsMode = prefService.getInteger(COOKIE_CONTROLS_MODE);
         params.cookiesContentSettingEnforced = mCategory.isManaged();
-        params.thirdPartyBlockingEnforced = getPrefs().isBlockThirdPartyCookiesManaged();
+        params.cookieControlsModeEnforced = prefService.isManagedPreference(COOKIE_CONTROLS_MODE);
         fourStateCookieToggle.setState(params);
     }
 
@@ -1112,29 +993,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 getSiteSettingsClient().getManagedPreferenceDelegate()));
 
         // Set the checked value.
-        if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
-            binaryToggle.setChecked(
-                    WebsitePreferenceBridge.isAllowLocationEnabled(browserContextHandle));
-        } else {
-            binaryToggle.setChecked(
-                    WebsitePreferenceBridge.isCategoryEnabled(browserContextHandle, contentType));
-        }
-    }
-
-    private void updateThirdPartyCookiesCheckBox() {
-        ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
-                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
-                        THIRD_PARTY_COOKIES_TOGGLE_KEY);
-        thirdPartyCookiesPref.setChecked(getPrefs().getBlockThirdPartyCookies());
-        thirdPartyCookiesPref.setEnabled(WebsitePreferenceBridge.isCategoryEnabled(
-                getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES));
-        thirdPartyCookiesPref.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
-                getSiteSettingsClient().getManagedPreferenceDelegate()) {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return getPrefs().isBlockThirdPartyCookiesManaged();
-            }
-        });
+        binaryToggle.setChecked(
+                WebsitePreferenceBridge.isCategoryEnabled(browserContextHandle, contentType));
     }
 
     private void updateNotificationsSecondaryControls() {
@@ -1162,7 +1022,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 quiet_ui_pref = (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
             }
-            quiet_ui_pref.setChecked(getPrefs().getEnableQuietNotificationPermissionUi());
+            PrefService prefService = UserPrefs.get(browserContextHandle);
+            quiet_ui_pref.setChecked(
+                    prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
         } else if (quiet_ui_pref != null) {
             // Save a reference to allow re-adding it to the screen.
             mNotificationsQuietUiPref = quiet_ui_pref;
@@ -1180,7 +1042,46 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
     }
 
-    private SiteSettingsPrefClient getPrefs() {
-        return getSiteSettingsClient().getSiteSettingsPrefClient();
+    /**
+     * Builds an alert dialog which can be used to change the preference value  or remove
+     * for the exception for the current categories ContentSettingType on a Website.
+     */
+    private AlertDialog.Builder buildPreferenceDialog(Website site) {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
+        @ContentSettingsType
+        int contentSettingsType = mCategory.getContentSettingsType();
+
+        @ContentSettingValues
+        Integer value = site.getContentSetting(browserContextHandle, contentSettingsType);
+
+        CharSequence[] descriptions = new String[2];
+        descriptions[0] =
+                getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.ALLOW));
+        descriptions[1] =
+                getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.BLOCK));
+
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                .setPositiveButton(R.string.cancel, null)
+                .setNegativeButton(R.string.remove,
+                        (dialog, which) -> {
+                            site.setContentSetting(browserContextHandle, contentSettingsType,
+                                    ContentSettingValues.DEFAULT);
+
+                            getInfoForOrigins();
+                            dialog.dismiss();
+                        })
+                .setSingleChoiceItems(descriptions, value == ContentSettingValues.ALLOW ? 0 : 1,
+                        (dialog, which) -> {
+                            @ContentSettingValues
+                            int permission = which == 0 ? ContentSettingValues.ALLOW
+                                                        : ContentSettingValues.BLOCK;
+
+                            site.setContentSetting(
+                                    browserContextHandle, contentSettingsType, permission);
+
+                            getInfoForOrigins();
+                            dialog.dismiss();
+                        });
     }
 }

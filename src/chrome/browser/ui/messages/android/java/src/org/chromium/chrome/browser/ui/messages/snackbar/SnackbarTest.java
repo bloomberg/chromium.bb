@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.ui.messages.snackbar;
 
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,12 +13,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.concurrent.TimeUnit;
@@ -61,7 +59,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testStackQueuePersistentOrder() {
         final Snackbar stackbar = Snackbar.make(
                 "stack", mDefaultController, Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
@@ -98,7 +95,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testPersistentQueueStackOrder() {
         final Snackbar stackbar = Snackbar.make(
                 "stack", mDefaultController, Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
@@ -161,11 +157,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
     }
 
     void pollSnackbarCondition(String message, Supplier<Boolean> condition) {
-        CriteriaHelper.pollUiThread(new Criteria(message) {
-            @Override
-            public boolean isSatisfied() {
-                return condition.get();
-            }
-        });
+        CriteriaHelper.pollUiThread(condition::get, message);
     }
 }

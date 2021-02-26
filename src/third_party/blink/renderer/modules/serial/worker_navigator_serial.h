@@ -17,8 +17,6 @@ class Serial;
 class WorkerNavigatorSerial final
     : public GarbageCollected<WorkerNavigatorSerial>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorSerial);
-
  public:
   static const char kSupplementName[];
 
@@ -29,7 +27,7 @@ class WorkerNavigatorSerial final
 
   explicit WorkerNavigatorSerial(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Serial> serial_;

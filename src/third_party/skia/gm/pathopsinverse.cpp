@@ -110,14 +110,14 @@ private:
     SkPaint fTwoPaint;
     SkPaint fOutlinePaint;
     SkPaint fOpPaint[kReverseDifference_SkPathOp - kDifference_SkPathOp + 1];
-    typedef GM INHERITED;
+    using INHERITED = GM;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 DEF_GM( return new PathOpsInverseGM; )
 
-}
+}  // namespace skiagm
 
 #include "include/pathops/SkPathOps.h"
 #include "include/utils/SkParsePath.h"

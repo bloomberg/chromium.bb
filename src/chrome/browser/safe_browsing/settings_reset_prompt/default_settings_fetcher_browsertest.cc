@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -41,8 +41,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSettingsFetcherTest, FetchingSettingsSucceeded) {
   BrandcodedDefaultSettings* default_settings = new BrandcodedDefaultSettings();
 
   DefaultSettingsFetcher::FetchDefaultSettingsForTesting(
-      base::Bind(&DefaultSettingsFetcherTest::FetchedSettings,
-                 base::Unretained(this)),
+      base::BindOnce(&DefaultSettingsFetcherTest::FetchedSettings,
+                     base::Unretained(this)),
       base::WrapUnique(default_settings));
 
   base::RunLoop().RunUntilIdle();
@@ -56,8 +56,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSettingsFetcherTest, FetchingSettingsFailed) {
   // |FetchDefaultSettingsForTesting()|. The callback should still receive
   // default-constructed default settings.
   DefaultSettingsFetcher::FetchDefaultSettingsForTesting(
-      base::Bind(&DefaultSettingsFetcherTest::FetchedSettings,
-                 base::Unretained(this)),
+      base::BindOnce(&DefaultSettingsFetcherTest::FetchedSettings,
+                     base::Unretained(this)),
       nullptr);
 
   base::RunLoop().RunUntilIdle();

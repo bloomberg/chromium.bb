@@ -30,6 +30,8 @@
 
 namespace {
 
+typedef uint64_t (*MseWxH16bitFunc)(uint8_t *dst, int dstride, uint16_t *src,
+                                    int sstride, int w, int h);
 typedef unsigned int (*VarianceMxNFunc)(const uint8_t *a, int a_stride,
                                         const uint8_t *b, int b_stride,
                                         unsigned int *sse);
@@ -49,10 +51,13 @@ typedef unsigned int (*DistWtdSubpixAvgVarMxNFunc)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, uint32_t *sse, const uint8_t *second_pred,
     const DIST_WTD_COMP_PARAMS *jcp_param);
+
+#if !CONFIG_REALTIME_ONLY
 typedef uint32_t (*ObmcSubpelVarFunc)(const uint8_t *pre, int pre_stride,
                                       int xoffset, int yoffset,
                                       const int32_t *wsrc, const int32_t *mask,
                                       unsigned int *sse);
+#endif
 
 using libaom_test::ACMRandom;
 
@@ -275,6 +280,7 @@ static uint32_t dist_wtd_subpel_avg_variance_ref(
   return static_cast<uint32_t>(sse - ((se * se) >> (l2w + l2h)));
 }
 
+#if !CONFIG_REALTIME_ONLY
 static uint32_t obmc_subpel_variance_ref(const uint8_t *pre, int l2w, int l2h,
                                          int xoff, int yoff,
                                          const int32_t *wsrc,
@@ -324,6 +330,7 @@ static uint32_t obmc_subpel_variance_ref(const uint8_t *pre, int l2w, int l2h,
   *sse_ptr = static_cast<uint32_t>(sse);
   return static_cast<uint32_t>(sse - ((se * se) >> (l2w + l2h)));
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -403,6 +410,106 @@ std::ostream &operator<<(std::ostream &os, const TestParams<Func> &p) {
   return os << "width/height:" << p.width << "/" << p.height
             << " function:" << reinterpret_cast<const void *>(p.func)
             << " bit-depth:" << p.bit_depth;
+}
+
+// Main class for testing a function type
+template <typename FunctionType>
+class MseWxHTestClass
+    : public ::testing::TestWithParam<TestParams<FunctionType> > {
+ public:
+  virtual void SetUp() {
+    params_ = this->GetParam();
+
+    rnd_.Reset(ACMRandom::DeterministicSeed());
+    src_ = reinterpret_cast<uint16_t *>(
+        aom_memalign(16, block_size() * sizeof(src_)));
+    dst_ = reinterpret_cast<uint8_t *>(
+        aom_memalign(16, block_size() * sizeof(dst_)));
+    ASSERT_TRUE(src_ != NULL);
+    ASSERT_TRUE(dst_ != NULL);
+  }
+
+  virtual void TearDown() {
+    aom_free(src_);
+    aom_free(dst_);
+    src_ = NULL;
+    dst_ = NULL;
+    libaom_test::ClearSystemState();
+  }
+
+ protected:
+  void RefMatchTestMse();
+  void SpeedTest();
+
+ protected:
+  ACMRandom rnd_;
+  uint8_t *dst_;
+  uint16_t *src_;
+  TestParams<FunctionType> params_;
+
+  // some relay helpers
+  int block_size() const { return params_.block_size; }
+  int width() const { return params_.width; }
+  int height() const { return params_.height; }
+  int d_stride() const { return params_.width; }  // stride is same as width
+  int s_stride() const { return params_.width; }  // stride is same as width
+};
+
+template <typename MseWxHFunctionType>
+void MseWxHTestClass<MseWxHFunctionType>::SpeedTest() {
+  aom_usec_timer ref_timer, test_timer;
+  double elapsed_time_c = 0;
+  double elapsed_time_simd = 0;
+  int run_time = 10000000;
+  int w = width();
+  int h = height();
+  int dstride = d_stride();
+  int sstride = s_stride();
+
+  for (int k = 0; k < block_size(); ++k) {
+    dst_[k] = rnd_.Rand8();
+    src_[k] = rnd_.Rand8();
+  }
+  aom_usec_timer_start(&ref_timer);
+  for (int i = 0; i < run_time; i++) {
+    aom_mse_wxh_16bit_c(dst_, dstride, src_, sstride, w, h);
+  }
+  aom_usec_timer_mark(&ref_timer);
+  elapsed_time_c = static_cast<double>(aom_usec_timer_elapsed(&ref_timer));
+
+  aom_usec_timer_start(&test_timer);
+  for (int i = 0; i < run_time; i++) {
+    params_.func(dst_, dstride, src_, sstride, w, h);
+  }
+  aom_usec_timer_mark(&test_timer);
+  elapsed_time_simd = static_cast<double>(aom_usec_timer_elapsed(&test_timer));
+
+  printf("%dx%d\tc_time=%lf \t simd_time=%lf \t gain=%lf\n", width(), height(),
+         elapsed_time_c, elapsed_time_simd,
+         (elapsed_time_c / elapsed_time_simd));
+}
+
+template <typename MseWxHFunctionType>
+void MseWxHTestClass<MseWxHFunctionType>::RefMatchTestMse() {
+  uint64_t mse_ref = 0;
+  uint64_t mse_mod = 0;
+  int w = width();
+  int h = height();
+  int dstride = d_stride();
+  int sstride = s_stride();
+
+  for (int i = 0; i < 10; i++) {
+    for (int k = 0; k < block_size(); ++k) {
+      dst_[k] = rnd_.Rand8();
+      src_[k] = rnd_.Rand8();
+    }
+    ASM_REGISTER_STATE_CHECK(
+        mse_ref = aom_mse_wxh_16bit_c(dst_, dstride, src_, sstride, w, h));
+    ASM_REGISTER_STATE_CHECK(
+        mse_mod = params_.func(dst_, dstride, src_, sstride, w, h));
+    EXPECT_EQ(mse_ref, mse_mod)
+        << "ref mse: " << mse_ref << " mod mse: " << mse_mod;
+  }
 }
 
 // Main class for testing a function type
@@ -915,6 +1022,8 @@ void SubpelVarianceTest<DistWtdSubpixAvgVarMxNFunc>::RefTest() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if !CONFIG_REALTIME_ONLY
+
 static const int kMaskMax = 64;
 
 typedef TestParams<ObmcSubpelVarFunc> ObmcSubpelVarianceParams;
@@ -1070,6 +1179,10 @@ void ObmcVarianceTest<ObmcSubpelVarFunc>::SpeedTest() {
          params_.bit_depth, elapsed_time);
 }
 
+#endif  // !CONFIG_REALTIME_ONLY
+
+typedef MseWxHTestClass<MseWxH16bitFunc> MseWxHTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MseWxHTest);
 typedef MainTestClass<Get4x4SseFunc> AvxSseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxVarianceTest;
@@ -1077,10 +1190,15 @@ typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxSubpelVarianceTest;
 typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxSubpelAvgVarianceTest;
 typedef SubpelVarianceTest<DistWtdSubpixAvgVarMxNFunc>
     AvxDistWtdSubpelAvgVarianceTest;
+#if !CONFIG_REALTIME_ONLY
 typedef ObmcVarianceTest<ObmcSubpelVarFunc> AvxObmcSubpelVarianceTest;
+#endif
+typedef TestParams<MseWxH16bitFunc> MseWxHParams;
 
 TEST_P(AvxSseTest, RefSse) { RefTestSse(); }
 TEST_P(AvxSseTest, MaxSse) { MaxTestSse(); }
+TEST_P(MseWxHTest, RefMse) { RefMatchTestMse(); }
+TEST_P(MseWxHTest, DISABLED_SpeedMse) { SpeedTest(); }
 TEST_P(AvxMseTest, RefMse) { RefTestMse(); }
 TEST_P(AvxMseTest, MaxMse) { MaxTestMse(); }
 TEST_P(AvxVarianceTest, Zero) { ZeroTest(); }
@@ -1095,9 +1213,11 @@ TEST_P(AvxSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
 TEST_P(AvxSubpelVarianceTest, DISABLED_Speed) { SpeedTest(); }
 TEST_P(AvxSubpelAvgVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxDistWtdSubpelAvgVarianceTest, Ref) { RefTest(); }
+#if !CONFIG_REALTIME_ONLY
 TEST_P(AvxObmcSubpelVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxObmcSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
 TEST_P(AvxObmcSubpelVarianceTest, DISABLED_Speed) { SpeedTest(); }
+#endif
 
 INSTANTIATE_TEST_SUITE_P(C, SumOfSquaresTest,
                          ::testing::Values(aom_get_mb_ss_c));
@@ -1241,6 +1361,7 @@ INSTANTIATE_TEST_SUITE_P(
                           2, 4, &aom_dist_wtd_sub_pixel_avg_variance4x16_c,
                           0)));
 
+#if !CONFIG_REALTIME_ONLY
 INSTANTIATE_TEST_SUITE_P(
     C, AvxObmcSubpelVarianceTest,
     ::testing::Values(
@@ -1268,14 +1389,126 @@ INSTANTIATE_TEST_SUITE_P(
         ObmcSubpelVarianceParams(3, 5, &aom_obmc_sub_pixel_variance8x32_c, 0),
         ObmcSubpelVarianceParams(4, 2, &aom_obmc_sub_pixel_variance16x4_c, 0),
         ObmcSubpelVarianceParams(2, 4, &aom_obmc_sub_pixel_variance4x16_c, 0)));
+#endif
 
 #if CONFIG_AV1_HIGHBITDEPTH
+typedef uint64_t (*MseHBDWxH16bitFunc)(uint16_t *dst, int dstride,
+                                       uint16_t *src, int sstride, int w,
+                                       int h);
+
+template <typename FunctionType>
+class MseHBDWxHTestClass
+    : public ::testing::TestWithParam<TestParams<FunctionType> > {
+ public:
+  virtual void SetUp() {
+    params_ = this->GetParam();
+
+    rnd_.Reset(ACMRandom::DeterministicSeed());
+    src_ = reinterpret_cast<uint16_t *>(
+        aom_memalign(16, block_size() * sizeof(src_)));
+    dst_ = reinterpret_cast<uint16_t *>(
+        aom_memalign(16, block_size() * sizeof(dst_)));
+    ASSERT_TRUE(src_ != NULL);
+    ASSERT_TRUE(dst_ != NULL);
+  }
+
+  virtual void TearDown() {
+    aom_free(src_);
+    aom_free(dst_);
+    src_ = NULL;
+    dst_ = NULL;
+    libaom_test::ClearSystemState();
+  }
+
+ protected:
+  void RefMatchTestMse();
+  void SpeedTest();
+
+ protected:
+  ACMRandom rnd_;
+  uint16_t *dst_;
+  uint16_t *src_;
+  TestParams<FunctionType> params_;
+
+  // some relay helpers
+  int block_size() const { return params_.block_size; }
+  int width() const { return params_.width; }
+  int d_stride() const { return params_.width; }  // stride is same as width
+  int s_stride() const { return params_.width; }  // stride is same as width
+  int height() const { return params_.height; }
+  int mask() const { return params_.mask; }
+};
+
+template <typename MseHBDWxHFunctionType>
+void MseHBDWxHTestClass<MseHBDWxHFunctionType>::SpeedTest() {
+  aom_usec_timer ref_timer, test_timer;
+  double elapsed_time_c = 0;
+  double elapsed_time_simd = 0;
+  int run_time = 10000000;
+  int w = width();
+  int h = height();
+  int dstride = d_stride();
+  int sstride = s_stride();
+  for (int k = 0; k < block_size(); ++k) {
+    dst_[k] = rnd_.Rand16() & mask();
+    src_[k] = rnd_.Rand16() & mask();
+  }
+  aom_usec_timer_start(&ref_timer);
+  for (int i = 0; i < run_time; i++) {
+    aom_mse_wxh_16bit_highbd_c(dst_, dstride, src_, sstride, w, h);
+  }
+  aom_usec_timer_mark(&ref_timer);
+  elapsed_time_c = static_cast<double>(aom_usec_timer_elapsed(&ref_timer));
+
+  aom_usec_timer_start(&test_timer);
+  for (int i = 0; i < run_time; i++) {
+    params_.func(dst_, dstride, src_, sstride, w, h);
+  }
+  aom_usec_timer_mark(&test_timer);
+  elapsed_time_simd = static_cast<double>(aom_usec_timer_elapsed(&test_timer));
+
+  printf("%dx%d\tc_time=%lf \t simd_time=%lf \t gain=%lf\n", width(), height(),
+         elapsed_time_c, elapsed_time_simd,
+         (elapsed_time_c / elapsed_time_simd));
+}
+
+template <typename MseHBDWxHFunctionType>
+void MseHBDWxHTestClass<MseHBDWxHFunctionType>::RefMatchTestMse() {
+  uint64_t mse_ref = 0;
+  uint64_t mse_mod = 0;
+  int w = width();
+  int h = height();
+  int dstride = d_stride();
+  int sstride = s_stride();
+  for (int i = 0; i < 10; i++) {
+    for (int k = 0; k < block_size(); ++k) {
+      dst_[k] = rnd_.Rand16() & mask();
+      src_[k] = rnd_.Rand16() & mask();
+    }
+    ASM_REGISTER_STATE_CHECK(mse_ref = aom_mse_wxh_16bit_highbd_c(
+                                 dst_, dstride, src_, sstride, w, h));
+    ASM_REGISTER_STATE_CHECK(
+        mse_mod = params_.func(dst_, dstride, src_, sstride, w, h));
+    EXPECT_EQ(mse_ref, mse_mod)
+        << "ref mse: " << mse_ref << " mod mse: " << mse_mod;
+  }
+}
+
+typedef TestParams<MseHBDWxH16bitFunc> MseHBDWxHParams;
+typedef MseHBDWxHTestClass<MseHBDWxH16bitFunc> MseHBDWxHTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MseHBDWxHTest);
 typedef MainTestClass<VarianceMxNFunc> AvxHBDMseTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AvxHBDMseTest);
 typedef MainTestClass<VarianceMxNFunc> AvxHBDVarianceTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxHBDSubpelVarianceTest;
 typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxHBDSubpelAvgVarianceTest;
+#if !CONFIG_REALTIME_ONLY
 typedef ObmcVarianceTest<ObmcSubpelVarFunc> AvxHBDObmcSubpelVarianceTest;
+#endif
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AvxHBDObmcSubpelVarianceTest);
 
+TEST_P(MseHBDWxHTest, RefMse) { RefMatchTestMse(); }
+TEST_P(MseHBDWxHTest, DISABLED_SpeedMse) { SpeedTest(); }
 TEST_P(AvxHBDMseTest, RefMse) { RefTestMse(); }
 TEST_P(AvxHBDMseTest, MaxMse) { MaxTestMse(); }
 TEST_P(AvxHBDVarianceTest, Zero) { ZeroTest(); }
@@ -1569,6 +1802,7 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_c[] = {
 INSTANTIATE_TEST_SUITE_P(C, AvxHBDSubpelAvgVarianceTest,
                          ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_c));
 
+#if !CONFIG_REALTIME_ONLY
 const ObmcSubpelVarianceParams kArrayHBDObmcSubpelVariance_c[] = {
   ObmcSubpelVarianceParams(7, 7, &aom_highbd_obmc_sub_pixel_variance128x128_c,
                            8),
@@ -1687,9 +1921,17 @@ const ObmcSubpelVarianceParams kArrayHBDObmcSubpelVariance_c[] = {
 };
 INSTANTIATE_TEST_SUITE_P(C, AvxHBDObmcSubpelVarianceTest,
                          ::testing::ValuesIn(kArrayHBDObmcSubpelVariance_c));
+#endif  // !CONFIG_REALTIME_ONLY
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_SSE2
+INSTANTIATE_TEST_SUITE_P(
+    SSE2, MseWxHTest,
+    ::testing::Values(MseWxHParams(3, 3, &aom_mse_wxh_16bit_sse2, 8),
+                      MseWxHParams(3, 2, &aom_mse_wxh_16bit_sse2, 8),
+                      MseWxHParams(2, 3, &aom_mse_wxh_16bit_sse2, 8),
+                      MseWxHParams(2, 2, &aom_mse_wxh_16bit_sse2, 8)));
+
 INSTANTIATE_TEST_SUITE_P(SSE2, SumOfSquaresTest,
                          ::testing::Values(aom_get_mb_ss_sse2));
 
@@ -1783,6 +2025,15 @@ INSTANTIATE_TEST_SUITE_P(
                                 0)));
 
 #if CONFIG_AV1_HIGHBITDEPTH
+#if HAVE_SSE2
+INSTANTIATE_TEST_SUITE_P(
+    SSE2, MseHBDWxHTest,
+    ::testing::Values(MseHBDWxHParams(3, 3, &aom_mse_wxh_16bit_highbd_sse2, 10),
+                      MseHBDWxHParams(3, 2, &aom_mse_wxh_16bit_highbd_sse2, 10),
+                      MseHBDWxHParams(2, 3, &aom_mse_wxh_16bit_highbd_sse2, 10),
+                      MseHBDWxHParams(2, 2, &aom_mse_wxh_16bit_highbd_sse2,
+                                      10)));
+#endif  // HAVE_SSE2
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxSubpelVarianceTest,
@@ -1890,6 +2141,14 @@ INSTANTIATE_TEST_SUITE_P(SSE2, AvxHBDVarianceTest,
 
 #if HAVE_AVX2
 
+INSTANTIATE_TEST_SUITE_P(
+    AVX2, MseHBDWxHTest,
+    ::testing::Values(MseHBDWxHParams(3, 3, &aom_mse_wxh_16bit_highbd_avx2, 10),
+                      MseHBDWxHParams(3, 2, &aom_mse_wxh_16bit_highbd_avx2, 10),
+                      MseHBDWxHParams(2, 3, &aom_mse_wxh_16bit_highbd_avx2, 10),
+                      MseHBDWxHParams(2, 2, &aom_mse_wxh_16bit_highbd_avx2,
+                                      10)));
+
 const VarianceParams kArrayHBDVariance_avx2[] = {
   VarianceParams(7, 7, &aom_highbd_10_variance128x128_avx2, 10),
   VarianceParams(7, 6, &aom_highbd_10_variance128x64_avx2, 10),
@@ -1908,6 +2167,25 @@ const VarianceParams kArrayHBDVariance_avx2[] = {
 
 INSTANTIATE_TEST_SUITE_P(AVX2, AvxHBDVarianceTest,
                          ::testing::ValuesIn(kArrayHBDVariance_avx2));
+
+const SubpelVarianceParams kArrayHBDSubpelVariance_avx2[] = {
+  SubpelVarianceParams(7, 7, &aom_highbd_10_sub_pixel_variance128x128_avx2, 10),
+  SubpelVarianceParams(7, 6, &aom_highbd_10_sub_pixel_variance128x64_avx2, 10),
+  SubpelVarianceParams(6, 7, &aom_highbd_10_sub_pixel_variance64x128_avx2, 10),
+  SubpelVarianceParams(6, 6, &aom_highbd_10_sub_pixel_variance64x64_avx2, 10),
+  SubpelVarianceParams(6, 5, &aom_highbd_10_sub_pixel_variance64x32_avx2, 10),
+  SubpelVarianceParams(5, 6, &aom_highbd_10_sub_pixel_variance32x64_avx2, 10),
+  SubpelVarianceParams(5, 5, &aom_highbd_10_sub_pixel_variance32x32_avx2, 10),
+  SubpelVarianceParams(5, 4, &aom_highbd_10_sub_pixel_variance32x16_avx2, 10),
+  SubpelVarianceParams(4, 5, &aom_highbd_10_sub_pixel_variance16x32_avx2, 10),
+  SubpelVarianceParams(4, 4, &aom_highbd_10_sub_pixel_variance16x16_avx2, 10),
+  SubpelVarianceParams(4, 3, &aom_highbd_10_sub_pixel_variance16x8_avx2, 10),
+  SubpelVarianceParams(3, 4, &aom_highbd_10_sub_pixel_variance8x16_avx2, 10),
+  SubpelVarianceParams(3, 3, &aom_highbd_10_sub_pixel_variance8x8_avx2, 10),
+};
+
+INSTANTIATE_TEST_SUITE_P(AVX2, AvxHBDSubpelVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDSubpelVariance_avx2));
 #endif  // HAVE_AVX2
 
 const SubpelVarianceParams kArrayHBDSubpelVariance_sse2[] = {
@@ -2206,6 +2484,7 @@ INSTANTIATE_TEST_SUITE_P(
 #endif  // HAVE_SSSE3
 
 #if HAVE_SSE4_1
+#if !CONFIG_REALTIME_ONLY
 INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxObmcSubpelVarianceTest,
     ::testing::Values(
@@ -2254,9 +2533,18 @@ INSTANTIATE_TEST_SUITE_P(
                                  0),
         ObmcSubpelVarianceParams(2, 4, &aom_obmc_sub_pixel_variance4x16_sse4_1,
                                  0)));
+#endif
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
+
+INSTANTIATE_TEST_SUITE_P(
+    AVX2, MseWxHTest,
+    ::testing::Values(MseWxHParams(3, 3, &aom_mse_wxh_16bit_avx2, 8),
+                      MseWxHParams(3, 2, &aom_mse_wxh_16bit_avx2, 8),
+                      MseWxHParams(2, 3, &aom_mse_wxh_16bit_avx2, 8),
+                      MseWxHParams(2, 2, &aom_mse_wxh_16bit_avx2, 8)));
+
 INSTANTIATE_TEST_SUITE_P(AVX2, AvxMseTest,
                          ::testing::Values(MseParams(4, 4,
                                                      &aom_mse16x16_avx2)));
@@ -2326,21 +2614,48 @@ INSTANTIATE_TEST_SUITE_P(
     NEON, AvxVarianceTest,
     ::testing::Values(VarianceParams(7, 7, &aom_variance128x128_neon),
                       VarianceParams(6, 6, &aom_variance64x64_neon),
+                      VarianceParams(7, 6, &aom_variance128x64_neon),
+                      VarianceParams(6, 7, &aom_variance64x128_neon),
+                      VarianceParams(6, 6, &aom_variance64x64_neon),
                       VarianceParams(6, 5, &aom_variance64x32_neon),
                       VarianceParams(5, 6, &aom_variance32x64_neon),
                       VarianceParams(5, 5, &aom_variance32x32_neon),
+                      VarianceParams(5, 4, &aom_variance32x16_neon),
+                      VarianceParams(4, 5, &aom_variance16x32_neon),
                       VarianceParams(4, 4, &aom_variance16x16_neon),
                       VarianceParams(4, 3, &aom_variance16x8_neon),
                       VarianceParams(3, 4, &aom_variance8x16_neon),
-                      VarianceParams(3, 3, &aom_variance8x8_neon)));
+                      VarianceParams(3, 3, &aom_variance8x8_neon),
+                      VarianceParams(3, 2, &aom_variance8x4_neon),
+                      VarianceParams(2, 3, &aom_variance4x8_neon),
+                      VarianceParams(2, 2, &aom_variance4x4_neon)));
 
 INSTANTIATE_TEST_SUITE_P(
     NEON, AvxSubpelVarianceTest,
     ::testing::Values(
+        SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_neon, 0),
+        SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_neon, 0),
+        SubpelVarianceParams(6, 7, &aom_sub_pixel_variance64x128_neon, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_neon, 0),
+        SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_neon, 0),
+        SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_neon, 0),
         SubpelVarianceParams(5, 5, &aom_sub_pixel_variance32x32_neon, 0),
+        SubpelVarianceParams(5, 4, &aom_sub_pixel_variance32x16_neon, 0),
+        SubpelVarianceParams(4, 5, &aom_sub_pixel_variance16x32_neon, 0),
         SubpelVarianceParams(4, 4, &aom_sub_pixel_variance16x16_neon, 0),
-        SubpelVarianceParams(3, 3, &aom_sub_pixel_variance8x8_neon, 0)));
+        SubpelVarianceParams(4, 3, &aom_sub_pixel_variance16x8_neon, 0),
+        SubpelVarianceParams(3, 4, &aom_sub_pixel_variance8x16_neon, 0),
+        SubpelVarianceParams(3, 3, &aom_sub_pixel_variance8x8_neon, 0),
+        SubpelVarianceParams(3, 2, &aom_sub_pixel_variance8x4_neon, 0),
+        SubpelVarianceParams(2, 3, &aom_sub_pixel_variance4x8_neon, 0),
+        SubpelVarianceParams(2, 2, &aom_sub_pixel_variance4x4_neon, 0),
+
+        SubpelVarianceParams(6, 4, &aom_sub_pixel_variance64x16_neon, 0),
+        SubpelVarianceParams(4, 6, &aom_sub_pixel_variance16x64_neon, 0),
+        SubpelVarianceParams(5, 3, &aom_sub_pixel_variance32x8_neon, 0),
+        SubpelVarianceParams(3, 5, &aom_sub_pixel_variance8x32_neon, 0),
+        SubpelVarianceParams(4, 2, &aom_sub_pixel_variance16x4_neon, 0),
+        SubpelVarianceParams(2, 4, &aom_sub_pixel_variance4x16_neon, 0)));
 #endif  // HAVE_NEON
 
 #if HAVE_MSA

@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -65,11 +64,8 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -169,7 +165,7 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManagerStateWaiter);
 };
 
-// Blocks a thread associated with a given |task_runner| on construction and
+// Blocks a thread associated with a given `task_runner` on construction and
 // unblocks it on destruction.
 class ThreadBlocker {
  public:
@@ -184,10 +180,10 @@ class ThreadBlocker {
   ~ThreadBlocker() { unblock_event_->Signal(); }
 
  private:
-  // Blocks the target thread until |event| is signaled.
+  // Blocks the target thread until `event` is signaled.
   static void BlockThreadOnThread(base::WaitableEvent* event) { event->Wait(); }
 
-  // |unblock_event_| is deleted after BlockThreadOnThread returns.
+  // `unblock_event_` is deleted after BlockThreadOnThread returns.
   base::WaitableEvent* const unblock_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadBlocker);
@@ -216,8 +212,8 @@ class RequestDeferrer {
 
   void InterceptRequest(const HttpRequest& request) {
     start_event_.Signal();
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
                                   base::Unretained(this)));
     blocking_event_.Wait();
   }
@@ -664,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   // User session should be terminated.
   termination_waiter.Wait();
 
-  // Merge session should fail. Check after |termination_waiter| to ensure
+  // Merge session should fail. Check after `termination_waiter` to ensure
   // user profile is initialized and there is an OAuth2LoginManage.
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
@@ -772,14 +768,14 @@ class FakeGoogle {
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     // The scheme and host of the URL is actually not important but required to
-    // get a valid GURL in order to parse |request.relative_url|.
+    // get a valid GURL in order to parse `request.relative_url`.
     GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
     std::string request_path = request_url.path();
     std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (request_path == kHelloPagePath) {  // Serving "google" page.
       start_event_.Signal();
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
                                     base::Unretained(this)));
 
       http_response->set_code(net::HTTP_OK);
@@ -791,8 +787,8 @@ class FakeGoogle {
       http_response->set_content(kRandomPageContent);
     } else if (hang_merge_session_ && request_path == kMergeSessionPath) {
       merge_session_event_.Signal();
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
                                     base::Unretained(this)));
       return std::make_unique<HungResponse>();
     } else {
@@ -1022,7 +1018,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, Throttle) {
       new ExtensionTestMessageListener("non-google-xhr-received", false));
 
   // Load extension with a background page. The background page will
-  // attempt to load |fake_google_page_url_| via XHR.
+  // attempt to load `fake_google_page_url_` via XHR.
   const extensions::Extension* ext = LoadMergeSessionExtension();
   ASSERT_TRUE(ext);
 
@@ -1091,7 +1087,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, MAYBE_XHRNotThrottled) {
       new ExtensionTestMessageListener("non-google-xhr-received", false));
 
   // Load extension with a background page. The background page will
-  // attempt to load |fake_google_page_url_| via XHR.
+  // attempt to load `fake_google_page_url_` via XHR.
   const extensions::Extension* ext = LoadMergeSessionExtension();
   ASSERT_TRUE(ext);
 
@@ -1160,7 +1156,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTimeoutTest, XHRMergeTimeout) {
       new ExtensionTestMessageListener("non-google-xhr-received", false));
 
   // Load extension with a background page. The background page will
-  // attempt to load |fake_google_page_url_| via XHR.
+  // attempt to load `fake_google_page_url_` via XHR.
   const extensions::Extension* ext = LoadMergeSessionExtension();
   ASSERT_TRUE(ext);
 

@@ -16,13 +16,15 @@
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace rtc {
 class NetworkManager;
 }  // namespace rtc
 
 namespace remoting {
-
-class UrlRequestFactory;
 
 namespace protocol {
 
@@ -34,15 +36,16 @@ class IceConfigRequest;
 // TURN configuration.
 class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
  public:
-  typedef base::Callback<void(const IceConfig& ice_config)>
+  typedef base::OnceCallback<void(const IceConfig& ice_config)>
       GetIceConfigCallback;
 
   static scoped_refptr<TransportContext> ForTests(TransportRole role);
 
-  TransportContext(std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
-                   std::unique_ptr<UrlRequestFactory> url_request_factory,
-                   const NetworkSettings& network_settings,
-                   TransportRole role);
+  TransportContext(
+      std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const NetworkSettings& network_settings,
+      TransportRole role);
 
   void set_turn_ice_config(const IceConfig& ice_config) {
     // If an external entity is providing the ICE Config, then disable the
@@ -69,13 +72,10 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   void Prepare();
 
   // Requests fresh STUN and TURN information.
-  void GetIceConfig(const GetIceConfigCallback& callback);
+  void GetIceConfig(GetIceConfigCallback callback);
 
   PortAllocatorFactory* port_allocator_factory() {
     return port_allocator_factory_.get();
-  }
-  UrlRequestFactory* url_request_factory() {
-    return url_request_factory_.get();
   }
   const NetworkSettings& network_settings() const { return network_settings_; }
   TransportRole role() const { return role_; }
@@ -94,7 +94,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   void OnIceConfig(const IceConfig& ice_config);
 
   std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
-  std::unique_ptr<UrlRequestFactory> url_request_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
 

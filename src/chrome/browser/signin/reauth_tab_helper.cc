@@ -6,9 +6,18 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "content/public/browser/navigation_handle.h"
+#include "net/http/http_status_code.h"
 #include "url/origin.h"
 
 namespace signin {
+
+namespace {
+
+bool IsExpectedResponseCode(int response_code) {
+  return response_code == net::HTTP_OK || response_code == net::HTTP_NO_CONTENT;
+}
+
+}  // namespace
 
 // static
 void ReauthTabHelper::CreateForWebContents(content::WebContents* web_contents,
@@ -49,25 +58,42 @@ void ReauthTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  is_within_reauth_origin_ &=
+      url::IsSameOriginWith(reauth_url_, navigation_handle->GetURL());
+
   if (navigation_handle->IsErrorPage()) {
-    CompleteReauth(signin::ReauthResult::kLoadFailed);
+    has_last_committed_error_page_ = true;
     return;
   }
+
+  has_last_committed_error_page_ = false;
 
   GURL::Replacements replacements;
   replacements.ClearQuery();
   GURL url_without_query =
       navigation_handle->GetURL().ReplaceComponents(replacements);
-  if (url_without_query == reauth_url_) {
-    // TODO(https://crbug.com/1045515): check for the HTTP_OK response code once
-    // Gaia implements a landing page.
-    CompleteReauth(signin::ReauthResult::kSuccess);
+  if (url_without_query != reauth_url_)
     return;
+
+  if (!navigation_handle->GetResponseHeaders() ||
+      !IsExpectedResponseCode(
+          navigation_handle->GetResponseHeaders()->response_code())) {
+    CompleteReauth(signin::ReauthResult::kUnexpectedResponse);
   }
+
+  CompleteReauth(signin::ReauthResult::kSuccess);
 }
 
 void ReauthTabHelper::WebContentsDestroyed() {
   CompleteReauth(signin::ReauthResult::kDismissedByUser);
+}
+
+bool ReauthTabHelper::is_within_reauth_origin() {
+  return is_within_reauth_origin_;
+}
+
+bool ReauthTabHelper::has_last_committed_error_page() {
+  return has_last_committed_error_page_;
 }
 
 ReauthTabHelper::ReauthTabHelper(content::WebContents* web_contents,

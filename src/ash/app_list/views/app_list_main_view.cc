@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -22,6 +23,7 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
+#include "ash/search_box/search_box_view_base.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -31,7 +33,6 @@
 #include "base/strings/string_util.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
-#include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -181,22 +182,17 @@ void AppListMainView::OnAppListStateChanged(AppListState new_state,
   }
 }
 
-void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
+void AppListMainView::QueryChanged(SearchBoxViewBase* sender) {
   base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
-  bool should_show_search =
-      app_list_features::IsZeroStateSuggestionsEnabled()
-          ? search_box_view_->is_search_box_active() || !query.empty()
-          : !query.empty();
-  contents_view_->ShowSearchResults(should_show_search);
+  contents_view_->ShowSearchResults(search_box_view_->is_search_box_active() ||
+                                    !query.empty());
 
   delegate_->StartSearch(raw_query);
 }
 
-void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
-  if (!app_list_features::IsZeroStateSuggestionsEnabled())
-    return;
+void AppListMainView::ActiveChanged(SearchBoxViewBase* sender) {
   // Do not update views on closing.
   if (app_list_view_->app_list_state() == AppListViewState::kClosed)
     return;
@@ -215,8 +211,7 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
   }
 }
 
-void AppListMainView::SearchBoxFocusChanged(
-    search_box::SearchBoxViewBase* sender) {
+void AppListMainView::SearchBoxFocusChanged(SearchBoxViewBase* sender) {
   // A fake focus (highlight) is always set on the first search result. When the
   // user moves focus from the search box textfield (e.g. to close button or
   // last search result), the fake focus should be removed.

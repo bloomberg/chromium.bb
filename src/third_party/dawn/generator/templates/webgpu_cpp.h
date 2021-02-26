@@ -11,7 +11,6 @@
 //* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //* See the License for the specific language governing permissions and
 //* limitations under the License.
-
 #ifndef WEBGPU_CPP_H_
 #define WEBGPU_CPP_H_
 
@@ -21,6 +20,7 @@
 namespace wgpu {
 
     static constexpr uint64_t kWholeSize = WGPU_WHOLE_SIZE;
+    static constexpr uint32_t kStrideUndefined = WGPU_STRIDE_UNDEFINED;
 
     {% for type in by_category["enum"] %}
         enum class {{as_cppType(type.name)}} : uint32_t {
@@ -136,8 +136,10 @@ namespace wgpu {
         CType mHandle = nullptr;
     };
 
-{% macro render_cpp_default_value(member) -%}
+{% macro render_cpp_default_value(member, is_struct=True) -%}
     {%- if member.annotation in ["*", "const*", "const*const*"] and member.optional -%}
+        {{" "}}= nullptr
+    {%- elif member.type.category == "object" and member.optional and is_struct -%}
         {{" "}}= nullptr
     {%- elif member.type.category in ["enum", "bitmask"] and member.default_value != None -%}
         {{" "}}= {{as_cppType(member.type.name)}}::{{as_cppEnum(Name(member.default_value))}}
@@ -158,7 +160,7 @@ namespace wgpu {
             {%- else -%}
                 {{as_annotated_cppType(arg)}}
             {%- endif -%}
-            {{render_cpp_default_value(arg)}}
+            {{render_cpp_default_value(arg, False)}}
         {%- endfor -%}
     ) const
 {%- endmacro %}

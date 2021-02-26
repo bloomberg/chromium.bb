@@ -12,18 +12,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/power_monitor/power_observer.h"
+#include "base/stl_util.h"
 #include "base/values.h"
+#include "third_party/blink/public/common/peerconnection/peer_connection_tracker_mojom_traits.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
@@ -144,6 +146,8 @@ String SerializeDirection(webrtc::RtpTransceiverDirection direction) {
       return "'recvonly'";
     case webrtc::RtpTransceiverDirection::kInactive:
       return "'inactive'";
+    case webrtc::RtpTransceiverDirection::kStopped:
+      return "'stopped'";
     default:
       NOTREACHED();
       return String();
@@ -162,11 +166,11 @@ String SerializeSender(const String& indent,
   // track:'id',
   result.Append(indent);
   result.Append("  track:");
-  if (sender.Track().IsNull()) {
+  if (!sender.Track()) {
     result.Append("null");
   } else {
     result.Append("'");
-    result.Append(String(sender.Track().Source().Id()));
+    result.Append(sender.Track()->Id());
     result.Append("'");
   }
   result.Append(",\n");
@@ -185,10 +189,10 @@ String SerializeReceiver(const String& indent,
   StringBuilder result;
   result.Append("{\n");
   // track:'id',
-  DCHECK(!receiver.Track().IsNull());
+  DCHECK(receiver.Track());
   result.Append(indent);
   result.Append("  track:'");
-  result.Append(String(receiver.Track().Source().Id()));
+  result.Append(receiver.Track()->Id());
   result.Append("',\n");
   // streams:['id,'id'],
   result.Append(indent);
@@ -615,7 +619,10 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
       for (const auto* member : stats.Members()) {
         if (!member->is_defined())
           continue;
-        name_value_pairs->AppendString(member->name());
+        // Non-standardized / provisional stats which are not exposed
+        // to Javascript are postfixed with an asterisk.
+        std::string postfix = member->is_standardized() ? "" : "*";
+        name_value_pairs->AppendString(member->name() + postfix);
         name_value_pairs->Append(MemberToValue(*member));
       }
       stats_subdictionary->Set("values", std::move(name_value_pairs));
@@ -699,9 +706,31 @@ void PeerConnectionTracker::Bind(
 
 void PeerConnectionTracker::OnSuspend() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto it = peer_connection_local_id_map_.begin();
-       it != peer_connection_local_id_map_.end(); ++it) {
-    it->key->CloseClientPeerConnection();
+  // Closing peer connections fires events. If JavaScript triggers the creation
+  // or garbage collection of more peer connections, this would invalidate the
+  // |peer_connection_local_id_map_| iterator. Therefor we iterate on a copy.
+  PeerConnectionLocalIdMap peer_connection_map_copy =
+      peer_connection_local_id_map_;
+  for (const auto& pair : peer_connection_map_copy) {
+    RTCPeerConnectionHandler* peer_connection_handler = pair.key;
+    if (!base::Contains(peer_connection_local_id_map_,
+                        peer_connection_handler)) {
+      // Skip peer connections that have been unregistered during this method
+      // call. Avoids use-after-free.
+      continue;
+    }
+    peer_connection_handler->CloseClientPeerConnection();
+  }
+}
+
+void PeerConnectionTracker::OnThermalStateChange(
+    mojom::blink::DeviceThermalState thermal_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  mojo::EnumTraits<mojom::blink::DeviceThermalState,
+                   base::PowerObserver::DeviceThermalState>::
+      FromMojom(thermal_state, &current_thermal_state_);
+  for (auto& entry : peer_connection_local_id_map_) {
+    entry.key->OnThermalStateChange(current_thermal_state_);
   }
 }
 
@@ -778,6 +807,11 @@ void PeerConnectionTracker::RegisterPeerConnection(
   peer_connection_tracker_host_->AddPeerConnection(std::move(info));
 
   peer_connection_local_id_map_.insert(pc_handler, lid);
+
+  if (current_thermal_state_ !=
+      base::PowerObserver::DeviceThermalState::kUnknown) {
+    pc_handler->OnThermalStateChange(current_thermal_state_);
+  }
 }
 
 void PeerConnectionTracker::UnregisterPeerConnection(

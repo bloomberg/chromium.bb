@@ -1,4 +1,5 @@
 #!/usr/bin/env vpython
+# -*- coding: utf-8 -*-
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -91,16 +92,13 @@ def main(args):
 def gen_properties(**kwargs):
   out = {
       'caches': [],
-      'cipd_input':
-          None,
-      'command':
-          None,
+      'cipd_input': None,
+      'command': None,
       'containment': {
           'lower_priority': False,
           'containment_type': 'NONE',
       },
-      'relative_cwd':
-          None,
+      'relative_cwd': None,
       'dimensions': [
           {
               'key': 'os',
@@ -113,23 +111,18 @@ def gen_properties(**kwargs):
       ],
       'env': [],
       'env_prefixes': [],
-      'execution_timeout_secs':
-          60,
+      'execution_timeout_secs': 60,
       'extra_args': ['--some-arg', '123'],
-      'grace_period_secs':
-          30,
-      'idempotent':
-          False,
+      'grace_period_secs': 30,
+      'idempotent': False,
       'inputs_ref': {
           'isolated': None,
           'isolatedserver': '',
           'namespace': 'default-gzip',
       },
-      'io_timeout_secs':
-          60,
+      'io_timeout_secs': 60,
       'outputs': [],
-      'secret_bytes':
-          None,
+      'secret_bytes': None,
   }
   out.update(kwargs)
   return out
@@ -137,24 +130,22 @@ def gen_properties(**kwargs):
 
 def gen_request_data(properties=None, **kwargs):
   out = {
-      'name':
-          'unit_tests',
-      'parent_task_id':
-          '',
-      'pool_task_template':
-          'AUTO',
-      'priority':
-          101,
-      'request_uuid':
-          REQUEST_UUID,
+      'name': 'unit_tests',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 101,
+      'request_uuid': REQUEST_UUID,
       'task_slices': [{
           'expiration_secs': 3600,
           'properties': gen_properties(**(properties or {})),
           'wait_for_capacity': False,
       },],
       'tags': ['tag:a', 'tag:b'],
-      'user':
-          'joe@localhost',
+      'user': 'joe@localhost',
+      'realm': None,
+      'resultdb': {
+          'enable': False
+      },
   }
   out.update(kwargs)
   return out
@@ -357,70 +348,60 @@ class TestIsolated(auto_stub.TestCase, Common):
 class TestSwarmingTrigger(NetTestCase):
 
   def test_trigger_task_shards_2_shards(self):
-    task_request = swarming.NewTaskRequest(
-        name=TEST_NAME,
-        parent_task_id=None,
-        pool_task_template='AUTO',
-        priority=101,
-        task_slices=[
-            swarming.TaskSlice(
-                expiration_secs=60 * 60,
-                properties=swarming.TaskProperties(
-                    caches=[],
-                    cipd_input=None,
-                    command=['a', 'b'],
-                    containment=swarming.Containment(
-                        lower_priority=False,
-                        containment_type='NONE',
-                    ),
-                    relative_cwd=None,
-                    dimensions=[('os', 'Mac'), ('pool', 'default')],
-                    env={},
-                    env_prefixes=[],
-                    execution_timeout_secs=60,
-                    extra_args=[],
-                    grace_period_secs=30,
-                    idempotent=False,
-                    inputs_ref={
-                        'isolated': None,
-                        'isolatedserver': '',
-                        'namespace': 'default-gzip',
-                    },
-                    io_timeout_secs=60,
-                    outputs=[],
-                    secret_bytes=None),
-                wait_for_capacity=False),
-        ],
-        service_account=None,
-        tags=['tag:a', 'tag:b'],
-        user='joe@localhost')
 
-    request_1 = swarming.task_request_to_raw_request(task_request)
+    def make_new_request(shard_index):
+      return swarming.NewTaskRequest(
+          name=TEST_NAME,
+          parent_task_id=None,
+          pool_task_template='AUTO',
+          priority=101,
+          task_slices=[
+              swarming.TaskSlice(
+                  expiration_secs=60 * 60,
+                  properties=swarming.TaskProperties(
+                      caches=[],
+                      cipd_input=None,
+                      command=['a', 'b'],
+                      containment=swarming.Containment(
+                          lower_priority=False,
+                          containment_type='NONE',
+                      ),
+                      relative_cwd=None,
+                      dimensions=[('os', 'Mac'), ('pool', 'default')],
+                      env={
+                          'GTEST_SHARD_INDEX': str(shard_index),
+                          'GTEST_TOTAL_SHARDS': '2',
+                      },
+                      env_prefixes=[],
+                      execution_timeout_secs=60,
+                      extra_args=[],
+                      grace_period_secs=30,
+                      idempotent=False,
+                      inputs_ref={
+                          'isolated': None,
+                          'isolatedserver': '',
+                          'namespace': 'default-gzip',
+                      },
+                      io_timeout_secs=60,
+                      outputs=[],
+                      secret_bytes=None),
+                  wait_for_capacity=False),
+          ],
+          service_account=None,
+          tags=['tag:a', 'tag:b'],
+          user='joe@localhost',
+          realm=None,
+          resultdb={'enable': False})
+
+    task_request_1 = make_new_request(0)
+    request_1 = swarming.task_request_to_raw_request(task_request_1)
     request_1['name'] = u'unit_tests:0:2'
-    request_1['task_slices'][0]['properties']['env'] = [
-        {
-            'key': 'GTEST_SHARD_INDEX',
-            'value': '0'
-        },
-        {
-            'key': 'GTEST_TOTAL_SHARDS',
-            'value': '2'
-        },
-    ]
     result_1 = gen_request_response(request_1)
 
-    request_2 = swarming.task_request_to_raw_request(task_request)
+    task_request_2 = make_new_request(1)
+    request_2 = swarming.task_request_to_raw_request(task_request_2)
     request_2['name'] = u'unit_tests:1:2'
-    request_2['task_slices'][0]['properties']['env'] = [
-        {
-            'key': 'GTEST_SHARD_INDEX',
-            'value': '1'
-        },
-        {
-            'key': 'GTEST_TOTAL_SHARDS',
-            'value': '2'
-        },
-    ]
+    request_2['tags'] += [u'shard_index:1', u'total_shards:2']
     result_2 = gen_request_response(request_2, task_id='12400')
     self.expected_requests([
         (
@@ -439,8 +420,13 @@ class TestSwarmingTrigger(NetTestCase):
         ),
     ])
 
-    tasks = swarming.trigger_task_shards(
-        swarming='https://localhost:1', task_request=task_request, shards=2)
+    tasks = {}
+    tasks.update(
+        swarming.trigger_task_shards(
+            swarming='https://localhost:1', task_request=task_request_1))
+    tasks.update(
+        swarming.trigger_task_shards(
+            swarming='https://localhost:1', task_request=task_request_2))
     expected = {
         u'unit_tests:0:2': {
             'shard_index': 0,
@@ -495,10 +481,13 @@ class TestSwarmingTrigger(NetTestCase):
         ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
-        user='joe@localhost')
+        user='joe@localhost',
+        realm=None,
+        resultdb={'enable': False})
 
     request_1 = swarming.task_request_to_raw_request(task_request)
     request_1['name'] = u'unit_tests:2:4'
+    request_1['tags'].extend(['shard_index:2', 'total_shards:4'])
     request_1['task_slices'][0]['properties']['env'] = [
         {
             'key': 'GTEST_SHARD_INDEX',
@@ -522,7 +511,7 @@ class TestSwarmingTrigger(NetTestCase):
     ])
 
     tasks = swarming.trigger_task_shards(
-        swarming='https://localhost:1', task_request=task_request, shards=1)
+        swarming='https://localhost:1', task_request=task_request)
     expected = {
         u'unit_tests:2:4': {
             'shard_index': 2,
@@ -569,7 +558,9 @@ class TestSwarmingTrigger(NetTestCase):
         ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
-        user='joe@localhost')
+        user='joe@localhost',
+        realm=None,
+        resultdb={'enable': False})
 
     request = swarming.task_request_to_raw_request(task_request)
     self.assertEqual('123', request['parent_task_id'])
@@ -589,7 +580,7 @@ class TestSwarmingTrigger(NetTestCase):
     os.environ['SWARMING_TASK_ID'] = '123'
     try:
       tasks = swarming.trigger_task_shards(
-          swarming='https://localhost:1', shards=1, task_request=task_request)
+          swarming='https://localhost:1', task_request=task_request)
     finally:
       os.environ.pop('SWARMING_TASK_ID')
     expected = {
@@ -647,19 +638,19 @@ class TestSwarmingTrigger(NetTestCase):
         ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
-        user='joe@localhost')
+        user='joe@localhost',
+        realm=None,
+        resultdb={'enable': False})
 
     request = swarming.task_request_to_raw_request(task_request)
     expected = {
-        'client_package':
-            None,
+        'client_package': None,
         'packages': [{
             'package_name': 'mypackage',
             'path': 'path/to/package',
             'version': 'abc123',
         }],
-        'server':
-            None
+        'server': None
     }
     self.assertEqual(expected,
                      request['task_slices'][0]['properties']['cipd_input'])
@@ -679,7 +670,7 @@ class TestSwarmingTrigger(NetTestCase):
     os.environ['SWARMING_TASK_ID'] = '123'
     try:
       tasks = swarming.trigger_task_shards(
-          swarming='https://localhost:1', shards=1, task_request=task_request)
+          swarming='https://localhost:1', task_request=task_request)
     finally:
       os.environ.pop('SWARMING_TASK_ID')
     expected = {
@@ -691,6 +682,63 @@ class TestSwarmingTrigger(NetTestCase):
     }
     self.assertEqual(expected, tasks)
     self._check_output('', 'Priority was reset to 200\n')
+
+  def test_trigger_resultdb_and_realm(self):
+    task_request = swarming.NewTaskRequest(
+        name=TEST_NAME,
+        parent_task_id='123',
+        pool_task_template='AUTO',
+        priority=101,
+        task_slices=[
+            swarming.TaskSlice(
+                expiration_secs=60 * 60,
+                properties=swarming.TaskProperties(
+                    caches=[],
+                    cipd_input=None,
+                    command=['a', 'b'],
+                    containment=swarming.Containment(
+                        lower_priority=False,
+                        containment_type='NONE',
+                    ),
+                    relative_cwd=None,
+                    dimensions=[('os', 'Mac'), ('pool', 'default')],
+                    env={},
+                    env_prefixes=[],
+                    execution_timeout_secs=60,
+                    extra_args=[],
+                    grace_period_secs=30,
+                    idempotent=False,
+                    inputs_ref={
+                        'isolated': None,
+                        'isolatedserver': '',
+                        'namespace': 'default-gzip',
+                    },
+                    io_timeout_secs=60,
+                    outputs=[],
+                    secret_bytes=None),
+                wait_for_capacity=False),
+        ],
+        service_account=None,
+        tags=['tag:a', 'tag:b'],
+        user='joe@localhost',
+        realm="chromium:try",
+        resultdb={'enable': True})
+
+    request = swarming.task_request_to_raw_request(task_request)
+    self.assertTrue(request['resultdb']['enable'])
+    self.assertEqual('chromium:try', request['realm'])
+
+    self.expected_requests([
+        (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {
+                'data': request
+            },
+            gen_request_response(request),
+        ),
+    ])
+    swarming.trigger_task_shards(
+        swarming='https://localhost:1', task_request=task_request)
 
 
 class TestSwarmingCollection(NetTestCase):
@@ -949,6 +997,22 @@ class TestSwarmingCollection(NetTestCase):
          'Total duration: 1.0s', ''))
     self._check_output(expected, 'Results from some shards are missing: 1\n')
 
+  def test_collect_non_ascii(self):
+    data = gen_result_response(output='Non-ascii character: µ')
+    self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
+    self.assertEqual(0, collect('https://localhost:1', ['10100']))
+    expected = u'\n'.join(
+        ('+------------------------------------------------------+',
+         '| Shard 0  https://localhost:1/user/task/10100         |',
+         '+------------------------------------------------------+',
+         'Non-ascii character: µ',
+         '+------------------------------------------------------+',
+         '| End of shard 0                                       |',
+         '|  Pending: 6.0s  Duration: 1.0s  Bot: swarm6  Exit: 0 |',
+         '+------------------------------------------------------+',
+         'Total duration: 1.0s', ''))
+    self._check_output(expected, '')
+
   def test_collect_multi(self):
     actual_calls = []
 
@@ -1021,8 +1085,8 @@ class TestSwarmingCollection(NetTestCase):
     self.mock(logging, 'error', lambda *_: None)
     # Two shard results, attempt to use different servers.
     actual_calls = []
-    self.mock(isolateserver, 'fetch_isolated',
-              lambda *args: actual_calls.append(args))
+    self.mock(isolateserver,
+              'fetch_isolated', lambda *args: actual_calls.append(args))
     data = [
         gen_result_response(
             outputs_ref={
@@ -1074,16 +1138,11 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd(self):
     # Minimalist use.
     request = {
-        'name':
-            u'None/pool=default',
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/pool=default',
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1103,8 +1162,11 @@ class TestMain(NetTestCase):
                 False,
         },],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1144,16 +1206,11 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional(self):
     request = {
-        'name':
-            u'None/caches=c1_foo=bar_foo1=bar1_pool=default',
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/caches=c1_foo=bar_foo1=bar1_pool=default',
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1265,8 +1322,11 @@ class TestMain(NetTestCase):
             },
         ],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1331,16 +1391,11 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional_unsorted(self):
     request = {
-        'name':
-            u'None/foo1=bar1_os=Mac-10.12.6_pool=default',
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/foo1=bar1_os=Mac-10.12.6_pool=default',
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1428,8 +1483,11 @@ class TestMain(NetTestCase):
             },
         ],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1483,16 +1541,11 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional_sameexp(self):
     request = {
-        'name':
-            u'None/foo=bar_foo1=bar1_pool=default',
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/foo=bar_foo1=bar1_pool=default',
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1556,8 +1609,11 @@ class TestMain(NetTestCase):
             },
         ],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1612,16 +1668,11 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
-        'name':
-            u'None/pool=default/' + FILE_HASH,
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/pool=default/' + FILE_HASH,
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1635,20 +1686,20 @@ class TestMain(NetTestCase):
                     execution_timeout_secs=3600,
                     extra_args=None,
                     inputs_ref={
-                        'isolated':
-                            u'1111111111111111111111111111111111111111',
-                        'isolatedserver':
-                            'https://localhost:2',
-                        'namespace':
-                            'default-gzip',
+                        'isolated': u'1111111111111111111111111111111111111111',
+                        'isolatedserver': 'https://localhost:2',
+                        'namespace': 'default-gzip',
                     },
                     io_timeout_secs=1200),
             'wait_for_capacity':
                 False,
         },],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1691,16 +1742,11 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
-        'name':
-            u'None/pool=default',
-        'parent_task_id':
-            '',
-        'pool_task_template':
-            'AUTO',
-        'priority':
-            200,
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/pool=default',
+        'parent_task_id': '',
+        'pool_task_template': 'AUTO',
+        'priority': 200,
+        'request_uuid': REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1718,11 +1764,13 @@ class TestMain(NetTestCase):
             'wait_for_capacity':
                 False,
         },],
-        'service_account':
-            'bot',
+        'service_account': 'bot',
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
     self.expected_requests([
@@ -1770,12 +1818,9 @@ class TestMain(NetTestCase):
             'properties':
                 gen_properties(
                     inputs_ref={
-                        'isolated':
-                            u'1111111111111111111111111111111111111111',
-                        'isolatedserver':
-                            'https://localhost:2',
-                        'namespace':
-                            'default-gzip',
+                        'isolated': u'1111111111111111111111111111111111111111',
+                        'isolatedserver': 'https://localhost:2',
+                        'namespace': 'default-gzip',
                     }),
             'wait_for_capacity':
                 False,
@@ -1797,8 +1842,6 @@ class TestMain(NetTestCase):
         'https://localhost:1',
         '--isolate-server',
         'https://localhost:2',
-        '--shards',
-        '1',
         '--priority',
         '101',
         '--dimension',
@@ -1883,8 +1926,6 @@ class TestMain(NetTestCase):
         'https://localhost:1',
         '--isolate-server',
         'https://localhost:2',
-        '--shards',
-        '1',
         '--priority',
         '101',
         '--dimension',
@@ -1940,16 +1981,11 @@ class TestMain(NetTestCase):
                     }
                 },
                 'request': {
-                    'name':
-                        'unit_tests',
-                    'parent_task_id':
-                        '',
-                    'pool_task_template':
-                        'AUTO',
-                    'priority':
-                        101,
-                    'request_uuid':
-                        REQUEST_UUID,
+                    'name': 'unit_tests',
+                    'parent_task_id': '',
+                    'pool_task_template': 'AUTO',
+                    'priority': 101,
+                    'request_uuid': REQUEST_UUID,
                     'task_slices': [{
                         'expiration_secs':
                             3600,
@@ -1965,8 +2001,11 @@ class TestMain(NetTestCase):
                             False,
                     },],
                     'tags': ['tag:a', 'tag:b'],
-                    'user':
-                        'joe@localhost',
+                    'user': 'joe@localhost',
+                    'realm': None,
+                    'resultdb': {
+                        'enable': False
+                    },
                 },
             },
             True,
@@ -1984,23 +2023,18 @@ class TestMain(NetTestCase):
             'properties':
                 gen_properties(
                     cipd_input={
-                        'client_package':
-                            None,
+                        'client_package': None,
                         'packages': [{
                             'package_name': 'super/awesome/pkg',
                             'path': 'path/to/pkg',
                             'version': 'version:42',
                         },],
-                        'server':
-                            None,
+                        'server': None,
                     },
                     inputs_ref={
-                        'isolated':
-                            u'1111111111111111111111111111111111111111',
-                        'isolatedserver':
-                            'https://localhost:2',
-                        'namespace':
-                            'default-gzip',
+                        'isolated': u'1111111111111111111111111111111111111111',
+                        'isolatedserver': 'https://localhost:2',
+                        'namespace': 'default-gzip',
                     }),
             'wait_for_capacity':
                 False,
@@ -2022,8 +2056,6 @@ class TestMain(NetTestCase):
         'https://localhost:1',
         '--isolate-server',
         'https://localhost:2',
-        '--shards',
-        '1',
         '--priority',
         '101',
         '--dimension',
@@ -2146,12 +2178,9 @@ class TestMain(NetTestCase):
             }
         },
         'request': {
-            'name':
-                'unit_tests',
-            'parent_task_id':
-                '',
-            'priority':
-                101,
+            'name': 'unit_tests',
+            'parent_task_id': '',
+            'priority': 101,
             'task_slices': [{
                 'expiration_secs':
                     3600,
@@ -2163,8 +2192,7 @@ class TestMain(NetTestCase):
                     False,
             },],
             'tags': ['tag:a', 'tag:b'],
-            'user':
-                'joe@localhost',
+            'user': 'joe@localhost',
         },
     }
     with open(j, 'wb') as f:
@@ -2298,9 +2326,9 @@ class TestMain(NetTestCase):
         self.assertEqual([os.path.join(w, 'foo'), '--bar'], cmd)
         expected = os.environ.copy()
         expected['aa'] = 'bb'
-        expected['PATH'] = os.pathsep.join((os.path.join(w, 'foo', 'bar'),
-                                            os.path.join(w, 'second'),
-                                            expected['PATH']))
+        expected['PATH'] = os.pathsep.join(
+            (os.path.join(w, 'foo',
+                          'bar'), os.path.join(w, 'second'), expected['PATH']))
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
         self.assertEqual(expected, env)
@@ -2324,8 +2352,7 @@ class TestMain(NetTestCase):
                           'key': 'PATH',
                           'value': ['foo/bar', 'second']
                       },],
-                      'secret_bytes':
-                          None,
+                      'secret_bytes': None,
                   },
               },
           ),
@@ -2345,16 +2372,11 @@ class TestMain(NetTestCase):
 
   def test_run(self):
     request = {
-        'name':
-            u'None/pool=default',
-        'parent_task_id':
-            '',
-        'priority':
-            200,
-        'pool_task_template':
-            'AUTO',
-        'request_uuid':
-            REQUEST_UUID,
+        'name': u'None/pool=default',
+        'parent_task_id': '',
+        'priority': 200,
+        'pool_task_template': 'AUTO',
+        'request_uuid': REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -2374,8 +2396,11 @@ class TestMain(NetTestCase):
                 False,
         },],
         'tags': [],
-        'user':
-            None,
+        'user': None,
+        'realm': None,
+        'resultdb': {
+            'enable': False
+        },
     }
     result = gen_request_response(request)
 
@@ -2488,10 +2513,8 @@ class TestCommandBot(NetTestCase):
     self.now = six.text_type(
         datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     self.bot_1 = {
-        u'bot_id':
-            u'swarm1',
-        u'created_ts':
-            self.now,
+        u'bot_id': u'swarm1',
+        u'created_ts': self.now,
         u'dimensions': [
             {
                 u'key': u'cores',
@@ -2514,30 +2537,19 @@ class TestCommandBot(NetTestCase):
                 u'value': [u'Ubuntu', u'Ubuntu-12.04']
             },
         ],
-        u'external_ip':
-            u'1.1.1.1',
-        u'hostname':
-            u'swarm1.example.com',
-        u'internal_ip':
-            u'192.168.0.1',
-        u'is_dead':
-            True,
-        u'last_seen_ts':
-            'A long time ago',
-        u'quarantined':
-            False,
-        u'task_id':
-            u'',
-        u'task_name':
-            None,
-        u'version':
-            u'56918a2ea28a6f51751ad14cc086f118b8727905',
+        u'external_ip': u'1.1.1.1',
+        u'hostname': u'swarm1.example.com',
+        u'internal_ip': u'192.168.0.1',
+        u'is_dead': True,
+        u'last_seen_ts': 'A long time ago',
+        u'quarantined': False,
+        u'task_id': u'',
+        u'task_name': None,
+        u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
     }
     self.bot_2 = {
-        u'bot_id':
-            u'swarm2',
-        u'created_ts':
-            self.now,
+        u'bot_id': u'swarm2',
+        u'created_ts': self.now,
         u'dimensions': [
             {
                 u'key': u'cores',
@@ -2565,30 +2577,19 @@ class TestCommandBot(NetTestCase):
                 u'value': [u'Windows', u'Windows-6.1']
             },
         ],
-        u'external_ip':
-            u'1.1.1.2',
-        u'hostname':
-            u'swarm2.example.com',
-        u'internal_ip':
-            u'192.168.0.2',
-        u'is_dead':
-            False,
-        u'last_seen_ts':
-            self.now,
-        u'quarantined':
-            False,
-        u'task_id':
-            u'',
-        u'task_name':
-            None,
-        u'version':
-            u'56918a2ea28a6f51751ad14cc086f118b8727905',
+        u'external_ip': u'1.1.1.2',
+        u'hostname': u'swarm2.example.com',
+        u'internal_ip': u'192.168.0.2',
+        u'is_dead': False,
+        u'last_seen_ts': self.now,
+        u'quarantined': False,
+        u'task_id': u'',
+        u'task_name': None,
+        u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
     }
     self.bot_3 = {
-        u'bot_id':
-            u'swarm3',
-        u'created_ts':
-            self.now,
+        u'bot_id': u'swarm3',
+        u'created_ts': self.now,
         u'dimensions': [
             {
                 u'key': u'cores',
@@ -2611,30 +2612,19 @@ class TestCommandBot(NetTestCase):
                 u'value': [u'Mac', u'Mac-10.9']
             },
         ],
-        u'external_ip':
-            u'1.1.1.3',
-        u'hostname':
-            u'swarm3.example.com',
-        u'internal_ip':
-            u'192.168.0.3',
-        u'is_dead':
-            False,
-        u'last_seen_ts':
-            self.now,
-        u'quarantined':
-            False,
-        u'task_id':
-            u'148569b73a89501',
-        u'task_name':
-            u'browser_tests',
-        u'version':
-            u'56918a2ea28a6f51751ad14cc086f118b8727905',
+        u'external_ip': u'1.1.1.3',
+        u'hostname': u'swarm3.example.com',
+        u'internal_ip': u'192.168.0.3',
+        u'is_dead': False,
+        u'last_seen_ts': self.now,
+        u'quarantined': False,
+        u'task_id': u'148569b73a89501',
+        u'task_name': u'browser_tests',
+        u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
     }
     self.bot_4 = {
-        u'bot_id':
-            u'swarm4',
-        u'created_ts':
-            self.now,
+        u'bot_id': u'swarm4',
+        u'created_ts': self.now,
         u'dimensions': [
             {
                 u'key': u'cores',
@@ -2657,24 +2647,15 @@ class TestCommandBot(NetTestCase):
                 u'value': [u'Ubuntu', u'Ubuntu-12.04']
             },
         ],
-        u'external_ip':
-            u'1.1.1.4',
-        u'hostname':
-            u'swarm4.example.com',
-        u'internal_ip':
-            u'192.168.0.4',
-        u'is_dead':
-            False,
-        u'last_seen_ts':
-            self.now,
-        u'quarantined':
-            False,
-        u'task_id':
-            u'14856971a64c601',
-        u'task_name':
-            u'base_unittests',
-        u'version':
-            u'56918a2ea28a6f51751ad14cc086f118b8727905',
+        u'external_ip': u'1.1.1.4',
+        u'hostname': u'swarm4.example.com',
+        u'internal_ip': u'192.168.0.4',
+        u'is_dead': False,
+        u'last_seen_ts': self.now,
+        u'quarantined': False,
+        u'task_id': u'14856971a64c601',
+        u'task_name': u'base_unittests',
+        u'version': u'56918a2ea28a6f51751ad14cc086f118b8727905',
     }
 
   def mock_swarming_api(self, bots, cursor):

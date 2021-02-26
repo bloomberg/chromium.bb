@@ -190,11 +190,6 @@ void LogHistogramValue(signin_metrics::AccessPointAction action) {
                             signin_metrics::HISTOGRAM_MAX);
 }
 
-// Returns true if |profile| is a system profile or created from one.
-bool IsSystemProfile(Profile* profile) {
-  return profile->GetOriginalProfile()->IsSystemProfile();
-}
-
 void RedirectToNtpOrAppsPage(content::WebContents* contents,
                              signin_metrics::AccessPoint access_point) {
   // Do nothing if a navigation is pending, since this call can be triggered
@@ -367,7 +362,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     LocalAuth::SetLocalAuthCredentials(profile_, password_);
   }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   if (!password_.empty()) {
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(profile_,
@@ -380,8 +375,10 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
   }
 #endif
-
   if (reason == HandlerSigninReason::UNLOCK) {
+    DCHECK(!identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                .IsEmpty());
+
     identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
         gaia_id_, email_, result.refresh_token,
         result.is_under_advanced_protection,
@@ -396,11 +393,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
           base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_));
     }
 
-    if (identity_manager->HasPrimaryAccount()) {
-      identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
-          identity_manager->GetPrimaryAccountId(),
-          gaia::GaiaSource::kPrimaryAccountManager, {});
-    }
+    identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
+        identity_manager->GetPrimaryAccountId(),
+        gaia::GaiaSource::kPrimaryAccountManager, {});
 
     signin_metrics::LogSigninReason(
         GetSigninReasonFromHandlerSigninReason(reason));
@@ -495,7 +490,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   // If this was called from the user manager to reauthenticate the profile,
   // make sure the webui is aware.
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (IsSystemProfile(profile))
+  if (profile->IsSystemProfile())
     params.SetBoolean("dontResizeNonEmbeddedPages", true);
 
   content::WebContents* contents = web_ui()->GetWebContents();
@@ -616,7 +611,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
 
   Profile* profile = Profile::FromWebUI(web_ui());
   if (reason == HandlerSigninReason::FETCH_LST_ONLY ||
-      !IsSystemProfile(profile)) {
+      !profile->IsSystemProfile()) {
     FinishCompleteLogin(FinishCompleteLoginParams(
                             this, partition, current_url, base::FilePath(),
                             confirm_untrusted_signin_, email, gaia_id, password,
@@ -807,7 +802,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
   Browser* browser = GetDesktopBrowser();
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  if (IsSystemProfile(profile))
+  if (profile->IsSystemProfile())
     profile = g_browser_process->profile_manager()->GetProfileByPath(
         UserManager::GetSigninProfilePath());
   if (!error_msg.empty()) {
@@ -819,7 +814,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
 void InlineLoginHandlerImpl::SendLSTFetchResultsMessage(
     const base::Value& arg) {
   if (IsJavascriptAllowed())
-    CallJavascriptFunction("inline.login.sendLSTFetchResults", arg);
+    FireWebUIListener("send-lst-fetch-results", arg);
 }
 
 Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {

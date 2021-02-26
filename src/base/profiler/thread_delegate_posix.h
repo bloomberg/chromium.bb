@@ -5,6 +5,8 @@
 #ifndef BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
 #define BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/thread_delegate.h"
@@ -16,7 +18,10 @@ namespace base {
 // POSIX.
 class BASE_EXPORT ThreadDelegatePosix : public ThreadDelegate {
  public:
-  ThreadDelegatePosix(SamplingProfilerThreadToken thread_token);
+  static std::unique_ptr<ThreadDelegatePosix> Create(
+      SamplingProfilerThreadToken thread_token);
+
+  ~ThreadDelegatePosix() override;
 
   ThreadDelegatePosix(const ThreadDelegatePosix&) = delete;
   ThreadDelegatePosix& operator=(const ThreadDelegatePosix&) = delete;
@@ -28,6 +33,8 @@ class BASE_EXPORT ThreadDelegatePosix : public ThreadDelegate {
       RegisterContext* thread_context) override;
 
  private:
+  ThreadDelegatePosix(PlatformThreadId id, uintptr_t base_address);
+
   const PlatformThreadId thread_id_;
   const uintptr_t thread_stack_base_address_;
 };

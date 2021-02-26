@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
+#include <memory>
 #include <string>
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
@@ -29,8 +30,8 @@ class MediaNotificationListViewTest : public ChromeViewsTestBase {
 
     widget_ = CreateTestWidget();
 
-    list_view_ = new MediaNotificationListView();
-    widget_->SetContentsView(list_view_);
+    list_view_ =
+        widget_->SetContentsView(std::make_unique<MediaNotificationListView>());
 
     widget_->Show();
   }
@@ -42,7 +43,8 @@ class MediaNotificationListViewTest : public ChromeViewsTestBase {
 
   void ShowNotification(const std::string& id) {
     list_view_->ShowNotification(
-        id, std::make_unique<MediaNotificationContainerImplView>(id, nullptr));
+        id, std::make_unique<MediaNotificationContainerImplView>(id, nullptr,
+                                                                 nullptr));
   }
 
   void HideNotification(const std::string& id) {

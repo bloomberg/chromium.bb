@@ -122,6 +122,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 case ConnectivityManager.TYPE_BLUETOOTH:
                     return ConnectionSubtype.SUBTYPE_UNKNOWN;
                 case ConnectivityManager.TYPE_MOBILE:
+                case ConnectivityManager.TYPE_MOBILE_DUN:
+                case ConnectivityManager.TYPE_MOBILE_HIPRI:
                     // Use information from TelephonyManager to classify the connection.
                     switch (getNetworkSubType()) {
                         case TelephonyManager.NETWORK_TYPE_GPRS:
@@ -613,7 +615,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (ignoreConnectedNetwork(network, capabilities)) {
                 return;
             }
-            final boolean makeVpnDefault = capabilities.hasTransport(TRANSPORT_VPN);
+            final boolean makeVpnDefault = capabilities.hasTransport(TRANSPORT_VPN) &&
+                    // Only make the VPN the default if it isn't already.
+                    (mVpnInPlace == null || !network.equals(mVpnInPlace));
             if (makeVpnDefault) {
                 mVpnInPlace = network;
             }
@@ -1097,6 +1101,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             case ConnectivityManager.TYPE_BLUETOOTH:
                 return ConnectionType.CONNECTION_BLUETOOTH;
             case ConnectivityManager.TYPE_MOBILE:
+            case ConnectivityManager.TYPE_MOBILE_DUN:
+            case ConnectivityManager.TYPE_MOBILE_HIPRI:
                 // Use information from TelephonyManager to classify the connection.
                 switch (subtype) {
                     case TelephonyManager.NETWORK_TYPE_GPRS:
@@ -1117,6 +1123,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                         return ConnectionType.CONNECTION_3G;
                     case TelephonyManager.NETWORK_TYPE_LTE:
                         return ConnectionType.CONNECTION_4G;
+                    case TelephonyManager.NETWORK_TYPE_NR:
+                        return ConnectionType.CONNECTION_5G;
                     default:
                         return ConnectionType.CONNECTION_UNKNOWN;
                 }
@@ -1172,8 +1180,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Marshmallow and newer releases. Only available on Lollipop and newer releases.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    @VisibleForTesting
-    static long networkToNetId(Network network) {
+    public static long networkToNetId(Network network) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return ApiHelperForM.getNetworkHandle(network);
         } else {

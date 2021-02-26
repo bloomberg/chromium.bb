@@ -18,7 +18,6 @@
 #include <link.h>
 #include <unistd.h>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/multiprocess_exec.h"
@@ -36,7 +35,7 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 #include "test/linux/fake_ptrace_connection.h"
 #include "util/linux/auxiliary_vector.h"
@@ -85,7 +84,7 @@ void LocateExecutable(const ProcessType& process,
   *elf_address = base;
 }
 
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 void LocateExecutable(PtraceConnection* connection,
                       ProcessMemory* memory,
@@ -134,7 +133,7 @@ void ReadThisExecutableInTarget(ProcessType process,
   ASSERT_TRUE(range.Initialize(&memory, am_64_bit));
 
   VMAddress elf_address;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   FakePtraceConnection connection;
   ASSERT_TRUE(connection.Initialize(process));
   LocateExecutable(&connection, &memory, &elf_address);

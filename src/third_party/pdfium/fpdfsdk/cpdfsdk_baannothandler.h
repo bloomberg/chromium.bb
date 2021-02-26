@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "core/fxcrt/fx_coordinates.h"
+#include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/ipdfsdk_annothandler.h"
 
 class CFFL_InteractiveFormFiller;
@@ -37,6 +38,7 @@ class CPDFSDK_BAAnnotHandler final : public IPDFSDK_AnnotHandler {
   WideString GetText(CPDFSDK_Annot* pAnnot) override;
   WideString GetSelectedText(CPDFSDK_Annot* pAnnot) override;
   void ReplaceSelection(CPDFSDK_Annot* pAnnot, const WideString& text) override;
+  bool SelectAllText(CPDFSDK_Annot* pAnnot) override;
   bool CanUndo(CPDFSDK_Annot* pAnnot) override;
   bool CanRedo(CPDFSDK_Annot* pAnnot) override;
   bool Undo(CPDFSDK_Annot* pAnnot) override;

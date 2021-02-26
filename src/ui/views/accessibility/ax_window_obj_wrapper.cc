@@ -11,6 +11,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -88,6 +89,15 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
 
 AXWindowObjWrapper::~AXWindowObjWrapper() = default;
 
+bool AXWindowObjWrapper::HandleAccessibleAction(
+    const ui::AXActionData& action) {
+  if (action.action == ax::mojom::Action::kFocus) {
+    window_->Focus();
+    return true;
+  }
+  return false;
+}
+
 bool AXWindowObjWrapper::IsIgnored() {
   return false;
 }
@@ -134,8 +144,12 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     //
     // To avoid this double-parenting, only add the child tree ID of this
     // window if the top-level window doesn't have an associated Widget.
+    //
+    // Also, if this window is not visible, its child tree should also be
+    // non-visible so prune it.
     if (!window_->GetToplevelWindow() ||
-        GetWidgetForWindow(window_->GetToplevelWindow())) {
+        GetWidgetForWindow(window_->GetToplevelWindow()) ||
+        !window_->IsVisible()) {
       return;
     }
 
@@ -160,6 +174,9 @@ void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {
 }
 
 void AXWindowObjWrapper::OnWindowDestroying(aura::Window* window) {
+  if (window == window_)
+    window_destroying_ = true;
+
   Widget* widget = GetWidgetForWindow(window);
   if (widget)
     aura_obj_cache_->Remove(widget);
@@ -179,6 +196,9 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
+  if (window_destroying_)
+    return;
+
   if (window == window_)
     FireLocationChangesRecursively(window_, aura_obj_cache_);
 }
@@ -186,22 +206,34 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(
 void AXWindowObjWrapper::OnWindowPropertyChanged(aura::Window* window,
                                                  const void* key,
                                                  intptr_t old) {
+  if (window_destroying_)
+    return;
+
   if (window == window_ && key == ui::kChildAXTreeID)
     FireEvent(ax::mojom::Event::kChildrenChanged);
 }
 
 void AXWindowObjWrapper::OnWindowVisibilityChanged(aura::Window* window,
                                                    bool visible) {
+  if (window_destroying_)
+    return;
+
   FireEvent(ax::mojom::Event::kStateChanged);
 }
 
 void AXWindowObjWrapper::OnWindowTransformed(aura::Window* window,
                                              ui::PropertyChangeReason reason) {
+  if (window_destroying_)
+    return;
+
   if (window == window_)
     FireLocationChangesRecursively(window_, aura_obj_cache_);
 }
 
 void AXWindowObjWrapper::OnWindowTitleChanged(aura::Window* window) {
+  if (window_destroying_)
+    return;
+
   FireEventOnWindowChildWidgetAndRootView(
       window_, ax::mojom::Event::kTreeChanged, aura_obj_cache_);
 }

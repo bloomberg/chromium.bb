@@ -32,6 +32,17 @@ size_t {{struct.name}}::Hash(size_t seed) const {
 }
 {%- endif %}
 
+void {{struct.name}}::AsValueInto(base::trace_event::TracedValue* value) const {
+{%-  for field in struct.fields %}
+{%-    for line in field.kind|write_input_param_for_tracing(
+                                parameter_name=field.name,
+                                cpp_parameter_name='this->'+field.name,
+                                value='value') %}
+  {{line}}
+{%-    endfor -%}
+{%-  endfor %}
+}
+
 bool {{struct.name}}::Validate(
     const void* data,
     mojo::internal::ValidationContext* validation_context) {

@@ -24,6 +24,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_CHROMEOS)
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -162,6 +166,10 @@ class UpgradeDetectorImplTest : public ::testing::Test {
   ScopedTestingLocalState scoped_local_state_;
   InstalledVersionPoller::ScopedDisableForTesting scoped_poller_disabler_;
 
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
+
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTest);
 };
 
@@ -195,12 +203,9 @@ TEST_F(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   EXPECT_FALSE(detector.notify_upgrade());
   EXPECT_EQ(0, notifications_listener.notification_count());
 
+  // Users are notified about critical updates immediately.
   detector.OnExperimentChangesDetected(
       variations::VariationsService::Observer::CRITICAL);
-  EXPECT_FALSE(detector.notify_upgrade());
-  EXPECT_EQ(0, notifications_listener.notification_count());
-
-  detector.NotifyOnUpgradeWithTimePassed(base::TimeDelta::FromDays(30));
   EXPECT_TRUE(detector.notify_upgrade());
   EXPECT_EQ(1, notifications_listener.notification_count());
   EXPECT_EQ(1, detector.trigger_critical_update_call_count());
@@ -400,6 +405,10 @@ class UpgradeDetectorImplTimerTest : public UpgradeDetectorImplTest,
   }
 
  private:
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
+
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTimerTest);
 };
 

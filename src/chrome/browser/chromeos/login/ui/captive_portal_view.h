@@ -21,17 +21,14 @@ class CaptivePortalView : public SimpleWebViewDialog {
   // Starts loading.
   void StartLoad();
 
-  // Overridden from views::WidgetDelegate:
-  bool CanResize() const override;
-  ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-
   // Overridden from content::WebContentsDelegate:
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
+
+  // Overridden from SimpleWebViewDialog:
+  std::unique_ptr<views::WidgetDelegate> MakeWidgetDelegate() override;
 
  private:
   // Contains CaptivePortalWindowProxy to be notified when redirection state is

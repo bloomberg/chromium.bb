@@ -23,6 +23,9 @@ TEST_P(DebugMarkerTests, NoFailureWithoutDebugToolAttached) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 4, 4);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.PushDebugGroup("Event Start");
+    encoder.InsertDebugMarker("Marker");
+    encoder.PopDebugGroup();
     {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.PushDebugGroup("Event Start");
@@ -42,4 +45,8 @@ TEST_P(DebugMarkerTests, NoFailureWithoutDebugToolAttached) {
     queue.Submit(1, &commands);
 }
 
-DAWN_INSTANTIATE_TEST(DebugMarkerTests, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(DebugMarkerTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

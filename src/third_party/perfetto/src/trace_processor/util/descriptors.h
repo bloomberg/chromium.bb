@@ -18,12 +18,14 @@
 #define SRC_TRACE_PROCESSOR_UTIL_DESCRIPTORS_H_
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/trace_processor/basic_types.h"
 #include "perfetto/trace_processor/status.h"
+#include "protos/perfetto/common/descriptor.pbzero.h"
 
 namespace protozero {
 struct ConstBytes;
@@ -38,7 +40,8 @@ class FieldDescriptor {
                   uint32_t number,
                   uint32_t type,
                   std::string raw_type_name,
-                  bool is_repeated);
+                  bool is_repeated,
+                  bool is_extension = false);
 
   const std::string& name() const { return name_; }
   uint32_t number() const { return number_; }
@@ -46,6 +49,7 @@ class FieldDescriptor {
   const std::string& raw_type_name() const { return raw_type_name_; }
   const std::string& resolved_type_name() const { return resolved_type_name_; }
   bool is_repeated() const { return is_repeated_; }
+  bool is_extension() const { return is_extension_; }
 
   void set_resolved_type_name(const std::string& resolved_type_name) {
     resolved_type_name_ = resolved_type_name;
@@ -58,13 +62,19 @@ class FieldDescriptor {
   std::string raw_type_name_;
   std::string resolved_type_name_;
   bool is_repeated_;
+  bool is_extension_;
 };
+
+FieldDescriptor CreateFieldFromDecoder(
+    const protos::pbzero::FieldDescriptorProto::Decoder& f_decoder,
+    bool is_extension);
 
 class ProtoDescriptor {
  public:
   enum class Type { kEnum = 0, kMessage = 1 };
 
-  ProtoDescriptor(std::string package_name,
+  ProtoDescriptor(std::string file_name,
+                  std::string package_name,
                   std::string full_name,
                   Type type,
                   base::Optional<uint32_t> parent_id);
@@ -111,6 +121,8 @@ class ProtoDescriptor {
                                     : base::Optional<std::string>(it->second);
   }
 
+  const std::string& file_name() const { return file_name_; }
+
   const std::string& package_name() const { return package_name_; }
 
   const std::string& full_name() const { return full_name_; }
@@ -119,6 +131,7 @@ class ProtoDescriptor {
   std::vector<FieldDescriptor>* mutable_fields() { return &fields_; }
 
  private:
+  std::string file_name_;  // File in which descriptor was originally defined.
   std::string package_name_;
   std::string full_name_;
   const Type type_;
@@ -126,6 +139,8 @@ class ProtoDescriptor {
   std::vector<FieldDescriptor> fields_;
   std::vector<std::pair<int32_t, std::string>> enum_values_;
 };
+
+using ExtensionInfo = std::pair<std::string, protozero::ConstBytes>;
 
 class DescriptorPool {
  public:
@@ -140,13 +155,21 @@ class DescriptorPool {
     return descriptors_;
   }
 
+  std::vector<uint8_t> SerializeAsDescriptorSet();
+
  private:
-  void AddNestedProtoDescriptors(const std::string& package_name,
+  void AddNestedProtoDescriptors(const std::string& file_name,
+                                 const std::string& package_name,
                                  base::Optional<uint32_t> parent_idx,
-                                 protozero::ConstBytes descriptor_proto);
-  void AddEnumProtoDescriptors(const std::string& package_name,
+                                 protozero::ConstBytes descriptor_proto,
+                                 std::vector<ExtensionInfo>* extensions);
+  void AddEnumProtoDescriptors(const std::string& file_name,
+                               const std::string& package_name,
                                base::Optional<uint32_t> parent_idx,
                                protozero::ConstBytes descriptor_proto);
+
+  void CheckPreviousDefinition(const std::string& file_name,
+                               const std::string& descriptor_name);
 
   util::Status AddExtensionField(const std::string& package_name,
                                  protozero::ConstBytes field_desc_proto);
@@ -157,6 +180,7 @@ class DescriptorPool {
                                             const std::string& short_type);
 
   std::vector<ProtoDescriptor> descriptors_;
+  std::set<std::string> processed_files_;
 };
 
 }  // namespace trace_processor

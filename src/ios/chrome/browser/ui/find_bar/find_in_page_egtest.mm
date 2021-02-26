@@ -15,7 +15,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -25,14 +25,12 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1015113): The EG2 macro is breaking indexing for some reason
 // without the trailing semicolon.  For now, disable the extra semi warning
 // so Xcode indexing works for the egtest.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(FindInPageControllerAppInterface);
-#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -42,7 +40,8 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }  // namespace
 
 // Tests for Find in Page.
-@interface FindInPageTestCase : ChromeTestCase
+// Disabled all tests due to https://crbug.com/1107877.
+@interface FindInPageTestCase : WebHttpServerChromeTestCase
 
 // URL for a test page with |kFindInPageResponse|.
 @property(nonatomic, assign) GURL testURL;
@@ -103,14 +102,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 // Tests that find in page allows iteration between search results and displays
 // correct number of results.
-- (void)testFindInPage {
-// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
-  }
-#endif
-
+- (void)DISABLED_testFindInPage {
   // Type "find".
   [self typeFindInPageText:@"find"];
   // Should be highlighting result 1 of 2.
@@ -127,7 +119,6 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // Tests that Find In Page search term retention is working as expected, e.g.
 // the search term is persisted between FIP runs, but in incognito search term
 // is not retained and not autofilled.
-// TODO(crbug.com/1029709): Test failed.
 - (void)DISABLED_testFindInPageRetainsSearchTerm {
   // Type "find".
   [self typeFindInPageText:@"find"];
@@ -168,19 +159,12 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 // Tests accessibility of the Find in Page screen.
-- (void)testAccessibilityOnFindInPage {
-// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
-  }
-#endif
-
+//
+// Disabled due to https://crbug.com/1107877.
+- (void)DISABLED_testAccessibilityOnFindInPage {
   [self typeFindInPageText:@"find"];
+  [self assertResultStringIsResult:1 outOfTotal:2];
 
-  // Wait for UI to finish loading screen, before programatically verifying
-  // accessibility.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
@@ -192,7 +176,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kToolsMenuFindInPageId),
                                    grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
       performAction:grey_tap()];
 }
@@ -204,21 +188,8 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 - (void)typeFindInPageText:(NSString*)text {
-#if defined(CHROME_EARL_GREY_1)
   [[EarlGrey selectElementWithMatcher:[self findInPageInputField]]
-      performAction:grey_replaceText(text)];
-#elif defined(CHROME_EARL_GREY_2)
-  // There are two elements in the DOM (UITextField and
-  // UIAccessibilityTextFieldElement) that match the acessibilityID of
-  // kFindInPageInputFieldId. Choose the accessibility element.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kFindInPageInputFieldId),
-                                          grey_accessibilityElement(), nil)]
-      performAction:grey_replaceText(text)];
-#else
-#error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
-#endif
+      performAction:grey_typeText(text)];
 }
 
 - (id<GREYMatcher>)findInPageInputField {

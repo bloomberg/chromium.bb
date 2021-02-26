@@ -31,7 +31,6 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/mod_ops.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 namespace video_coding {
@@ -63,8 +62,7 @@ PacketBuffer::PacketBuffer(Clock* clock,
       first_packet_received_(false),
       is_cleared_to_first_seq_num_(false),
       buffer_(start_buffer_size),
-      sps_pps_idr_is_h264_keyframe_(
-          field_trial::IsEnabled("WebRTC-SpsPpsIdrIsH264Keyframe")) {
+      sps_pps_idr_is_h264_keyframe_(false) {
   RTC_DCHECK_LE(start_buffer_size, max_buffer_size);
   // Buffer size must always be a power of 2.
   RTC_DCHECK((start_buffer_size & (start_buffer_size - 1)) == 0);
@@ -78,7 +76,7 @@ PacketBuffer::~PacketBuffer() {
 PacketBuffer::InsertResult PacketBuffer::InsertPacket(
     std::unique_ptr<PacketBuffer::Packet> packet) {
   PacketBuffer::InsertResult result;
-  rtc::CritScope lock(&crit_);
+  MutexLock lock(&mutex_);
 
   uint16_t seq_num = packet->seq_num;
   size_t index = seq_num % buffer_.size();
@@ -112,7 +110,7 @@ PacketBuffer::InsertResult PacketBuffer::InsertPacket(
       // Clear the buffer, delete payload, and return false to signal that a
       // new keyframe is needed.
       RTC_LOG(LS_WARNING) << "Clear PacketBuffer and request key frame.";
-      Clear();
+      ClearInternal();
       result.buffer_cleared = true;
       return result;
     }
@@ -136,7 +134,7 @@ PacketBuffer::InsertResult PacketBuffer::InsertPacket(
 }
 
 void PacketBuffer::ClearTo(uint16_t seq_num) {
-  rtc::CritScope lock(&crit_);
+  MutexLock lock(&mutex_);
   // We have already cleared past this sequence number, no need to do anything.
   if (is_cleared_to_first_seq_num_ &&
       AheadOf<uint16_t>(first_seq_num_, seq_num)) {
@@ -173,7 +171,31 @@ void PacketBuffer::ClearTo(uint16_t seq_num) {
 }
 
 void PacketBuffer::Clear() {
-  rtc::CritScope lock(&crit_);
+  MutexLock lock(&mutex_);
+  ClearInternal();
+}
+
+PacketBuffer::InsertResult PacketBuffer::InsertPadding(uint16_t seq_num) {
+  PacketBuffer::InsertResult result;
+  MutexLock lock(&mutex_);
+  UpdateMissingPackets(seq_num);
+  result.packets = FindFrames(static_cast<uint16_t>(seq_num + 1));
+  return result;
+}
+
+absl::optional<int64_t> PacketBuffer::LastReceivedPacketMs() const {
+  MutexLock lock(&mutex_);
+  return last_received_packet_ms_;
+}
+
+absl::optional<int64_t> PacketBuffer::LastReceivedKeyframePacketMs() const {
+  MutexLock lock(&mutex_);
+  return last_received_keyframe_packet_ms_;
+}
+void PacketBuffer::ForceSpsPpsIdrIsH264Keyframe() {
+  sps_pps_idr_is_h264_keyframe_ = true;
+}
+void PacketBuffer::ClearInternal() {
   for (auto& entry : buffer_) {
     entry = nullptr;
   }
@@ -184,24 +206,6 @@ void PacketBuffer::Clear() {
   last_received_keyframe_packet_ms_.reset();
   newest_inserted_seq_num_.reset();
   missing_packets_.clear();
-}
-
-PacketBuffer::InsertResult PacketBuffer::InsertPadding(uint16_t seq_num) {
-  PacketBuffer::InsertResult result;
-  rtc::CritScope lock(&crit_);
-  UpdateMissingPackets(seq_num);
-  result.packets = FindFrames(static_cast<uint16_t>(seq_num + 1));
-  return result;
-}
-
-absl::optional<int64_t> PacketBuffer::LastReceivedPacketMs() const {
-  rtc::CritScope lock(&crit_);
-  return last_received_packet_ms_;
-}
-
-absl::optional<int64_t> PacketBuffer::LastReceivedKeyframePacketMs() const {
-  rtc::CritScope lock(&crit_);
-  return last_received_keyframe_packet_ms_;
 }
 
 bool PacketBuffer::ExpandBufferSize() {
@@ -359,15 +363,10 @@ std::vector<std::unique_ptr<PacketBuffer::Packet>> PacketBuffer::FindFrames(
               VideoFrameType::kVideoFrameDelta;
         }
 
-        // With IPPP, if this is not a keyframe, make sure there are no gaps
-        // in the packet sequence numbers up until this point.
-        const uint8_t h264tid =
-            buffer_[start_index] != nullptr
-                ? buffer_[start_index]->video_header.frame_marking.temporal_id
-                : kNoTemporalIdx;
-        if (h264tid == kNoTemporalIdx && !is_h264_keyframe &&
-            missing_packets_.upper_bound(start_seq_num) !=
-                missing_packets_.begin()) {
+        // If this is not a keyframe, make sure there are no gaps in the packet
+        // sequence numbers up until this point.
+        if (!is_h264_keyframe && missing_packets_.upper_bound(start_seq_num) !=
+                                     missing_packets_.begin()) {
           return found_frames;
         }
       }

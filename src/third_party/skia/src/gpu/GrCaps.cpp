@@ -5,17 +5,20 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/GrCaps.h"
+
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContextOptions.h"
 #include "include/private/GrTypesPriv.h"
-#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrBackendUtils.h"
+#include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrSurface.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrWindowRectangles.h"
 #include "src/utils/SkJSONWriter.h"
 
 GrCaps::GrCaps(const GrContextOptions& options) {
-    fMipMapSupport = false;
+    fMipmapSupport = false;
     fNPOTTextureTileSupport = false;
     fReuseScratchTextures = true;
     fReuseScratchBuffers = true;
@@ -26,6 +29,7 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fMultisampleDisableSupport = false;
     fDrawInstancedSupport = false;
     fNativeDrawIndirectSupport = false;
+    fUseClientSideIndirectBuffers = false;
     fMixedSamplesSupport = false;
     fConservativeRasterSupport = false;
     fWireframeSupport = false;
@@ -52,11 +56,11 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fWritePixelsRowBytesSupport = false;
     fReadPixelsRowBytesSupport = false;
     fShouldCollapseSrcOverToSrcWhenAble = false;
-    fDriverBlacklistCCPR = false;
-    fDriverBlacklistMSAACCPR = false;
+    fDriverDisableCCPR = false;
+    fDriverDisableMSAACCPR = false;
 
     fBlendEquationSupport = kBasic_BlendEquationSupport;
-    fAdvBlendEqBlacklist = 0;
+    fAdvBlendEqDisableFlags = 0;
 
     fMapBufferFlags = kNone_MapFlags;
 
@@ -96,6 +100,12 @@ void GrCaps::finishInitialization(const GrContextOptions& options) {
                                this->shaderCaps()->dualSourceBlendingSupport();
     }
 
+    if (!fNativeDrawIndirectSupport) {
+        // We will implement indirect draws with a polyfill, so the commands need to reside in CPU
+        // memory.
+        fUseClientSideIndirectBuffers = true;
+    }
+
     // Overrides happen last.
     this->applyOptionsOverrides(options);
 }
@@ -104,13 +114,13 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     fShaderCaps->applyOptionsOverrides(options);
     this->onApplyOptionsOverrides(options);
     if (options.fDisableDriverCorrectnessWorkarounds) {
-        SkASSERT(!fDriverBlacklistCCPR);
-        SkASSERT(!fDriverBlacklistMSAACCPR);
+        SkASSERT(!fDriverDisableCCPR);
+        SkASSERT(!fDriverDisableMSAACCPR);
         SkASSERT(!fAvoidStencilBuffers);
         SkASSERT(!fAvoidWritePixelsFastPath);
         SkASSERT(!fRequiresManualFBBarrierAfterTessellatedStencilDraw);
         SkASSERT(!fNativeDrawIndexedIndirectIsBroken);
-        SkASSERT(!fAdvBlendEqBlacklist);
+        SkASSERT(!fAdvBlendEqDisableFlags);
         SkASSERT(!fPerformColorClearsAsDraws);
         SkASSERT(!fPerformStencilClearsAsDraws);
         // Don't check the partial-clear workaround, since that is a backend limitation, not a
@@ -142,6 +152,9 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
         fShouldInitializeTextures = true;
     }
 #endif
+    if (options.fSuppressMipmapSupport) {
+        fMipmapSupport = false;
+    }
 
     if (fMaxWindowRectangles > GrWindowRectangles::kMaxWindows) {
         SkDebugf("WARNING: capping window rectangles at %i. HW advertises support for %i.\n",
@@ -189,7 +202,7 @@ static SkString map_flags_to_string(uint32_t flags) {
 void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->beginObject();
 
-    writer->appendBool("MIP Map Support", fMipMapSupport);
+    writer->appendBool("MIP Map Support", fMipmapSupport);
     writer->appendBool("NPOT Texture Tile Support", fNPOTTextureTileSupport);
     writer->appendBool("Reuse Scratch Textures", fReuseScratchTextures);
     writer->appendBool("Reuse Scratch Buffers", fReuseScratchBuffers);
@@ -200,6 +213,7 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Multisample disable support", fMultisampleDisableSupport);
     writer->appendBool("Draw Instanced Support", fDrawInstancedSupport);
     writer->appendBool("Native Draw Indirect Support", fNativeDrawIndirectSupport);
+    writer->appendBool("Use client side indirect buffers", fUseClientSideIndirectBuffers);
     writer->appendBool("Mixed Samples Support", fMixedSamplesSupport);
     writer->appendBool("Conservative Raster Support", fConservativeRasterSupport);
     writer->appendBool("Wireframe Support", fWireframeSupport);
@@ -229,9 +243,9 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
                        fTransferFromSurfaceToBufferSupport);
     writer->appendBool("Write pixels row bytes support", fWritePixelsRowBytesSupport);
     writer->appendBool("Read pixels row bytes support", fReadPixelsRowBytesSupport);
-    writer->appendBool("Blacklist CCPR on current driver [workaround]", fDriverBlacklistCCPR);
-    writer->appendBool("Blacklist MSAA version of CCPR on current driver [workaround]",
-                       fDriverBlacklistMSAACCPR);
+    writer->appendBool("Disable CCPR on current driver [workaround]", fDriverDisableCCPR);
+    writer->appendBool("Disable MSAA version of CCPR on current driver [workaround]",
+                       fDriverDisableMSAACCPR);
     writer->appendBool("Clamp-to-border", fClampToBorderSupport);
 
     writer->appendBool("Prefer VRAM Use over flushes [workaround]", fPreferVRAMUseOverFlushes);
@@ -245,7 +259,7 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
                        fNativeDrawIndexedIndirectIsBroken);
 
     if (this->advancedBlendEquationSupport()) {
-        writer->appendHexU32("Advanced Blend Equation Blacklist", fAdvBlendEqBlacklist);
+        writer->appendHexU32("Advanced Blend Equation Disable Flags", fAdvBlendEqDisableFlags);
     }
 
     writer->appendS32("Max Vertex Attributes", fMaxVertexAttributes);
@@ -299,12 +313,12 @@ bool GrCaps::canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src
 
 bool GrCaps::validateSurfaceParams(const SkISize& dimensions, const GrBackendFormat& format,
                                    GrRenderable renderable, int renderTargetSampleCnt,
-                                   GrMipMapped mipped) const {
+                                   GrMipmapped mipped) const {
     if (!this->isFormatTexturable(format)) {
         return false;
     }
 
-    if (GrMipMapped::kYes == mipped && !this->mipMapSupport()) {
+    if (GrMipmapped::kYes == mipped && !this->mipmapSupport()) {
         return false;
     }
 
@@ -358,9 +372,11 @@ GrCaps::SupportedRead GrCaps::supportedReadPixelsColorType(GrColorType srcColorT
             // offset alignment is a multiple of 2 but not 4.
             case 2:
                 read.fOffsetAlignmentForTransferBuffer *= 2;
+                break;
             // offset alignment is not a multiple of 2.
             default:
                 read.fOffsetAlignmentForTransferBuffer *= 4;
+                break;
         }
     }
     return read;
@@ -387,4 +403,45 @@ GrBackendFormat GrCaps::getDefaultBackendFormat(GrColorType colorType,
         return {};
     }
     return format;
+}
+
+bool GrCaps::areColorTypeAndFormatCompatible(GrColorType grCT,
+                                             const GrBackendFormat& format) const {
+    if (GrColorType::kUnknown == grCT) {
+        return false;
+    }
+
+    SkImage::CompressionType compression = GrBackendFormatToCompressionType(format);
+    if (compression != SkImage::CompressionType::kNone) {
+        return grCT == (SkCompressionTypeIsOpaque(compression) ? GrColorType::kRGB_888x
+                                                               : GrColorType::kRGBA_8888);
+    }
+
+    return this->onAreColorTypeAndFormatCompatible(grCT, format);
+}
+
+GrSwizzle GrCaps::getReadSwizzle(const GrBackendFormat& format, GrColorType colorType) const {
+    SkImage::CompressionType compression = GrBackendFormatToCompressionType(format);
+    if (compression != SkImage::CompressionType::kNone) {
+        if (colorType == GrColorType::kRGB_888x || colorType == GrColorType::kRGBA_8888) {
+            return GrSwizzle::RGBA();
+        }
+        SkDEBUGFAILF("Illegal color type (%d) and compressed format (%d) combination.", colorType,
+                     compression);
+        return {};
+    }
+
+    return this->onGetReadSwizzle(format, colorType);
+}
+
+bool GrCaps::isFormatCompressed(const GrBackendFormat& format) const {
+    return GrBackendFormatToCompressionType(format) != SkImage::CompressionType::kNone;
+}
+
+GrDstSampleType GrCaps::getDstSampleTypeForProxy(const GrRenderTargetProxy* rt) const {
+    SkASSERT(rt);
+    if (this->textureBarrierSupport() && !rt->requiresManualMSAAResolve()) {
+        return this->onGetDstSampleTypeForProxy(rt);
+    }
+    return GrDstSampleType::kAsTextureCopy;
 }

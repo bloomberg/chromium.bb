@@ -14,7 +14,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/buildflags.h"
@@ -25,43 +24,44 @@
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "ui/views/widget/native_widget_mac.h"
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util_internal.h"
+#include "ui/base/x/x11_util.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_gl_egl_utility.h"
 #endif
 
 namespace views {
 
 namespace {
 
-bool InitializeVisuals() {
+bool DoesVisualHaveAlphaForTest() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    const auto* const egl_utility =
+        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
+    return egl_utility ? egl_utility->X11DoesVisualHaveAlphaForTest() : false;
+  }
+#endif
 #if defined(USE_X11)
-  bool has_compositing_manager = false;
-  int depth = 0;
-  bool using_argb_visual;
-
-  if (depth > 0)
-    return has_compositing_manager;
-
-  // testing/xvfb.py runs xvfb and xcompmgr.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  has_compositing_manager = env->HasVar("_CHROMIUM_INSIDE_XVFB");
-  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-      has_compositing_manager, nullptr, &depth, nullptr, &using_argb_visual);
-
-  if (using_argb_visual)
-    EXPECT_EQ(32, depth);
-
-  return using_argb_visual;
+  return ui::DoesVisualHaveAlphaForTest();
 #else
   return false;
 #endif
 }
 
 }  // namespace
+
+void ViewsTestBase::WidgetCloser::operator()(Widget* widget) const {
+  widget->CloseNow();
+}
 
 ViewsTestBase::ViewsTestBase(
     std::unique_ptr<base::test::TaskEnvironment> task_environment)
@@ -75,7 +75,7 @@ ViewsTestBase::~ViewsTestBase() {
 }
 
 void ViewsTestBase::SetUp() {
-  has_compositing_manager_ = InitializeVisuals();
+  has_compositing_manager_ = DoesVisualHaveAlphaForTest();
 
   testing::Test::SetUp();
   setup_called_ = true;
@@ -144,6 +144,12 @@ void ViewsTestBase::SimulateNativeDestroy(Widget* widget) {
   test_helper_->SimulateNativeDestroy(widget);
 }
 
+#if !defined(OS_APPLE)
+int ViewsTestBase::GetSystemReservedHeightAtTopOfScreen() {
+  return 0;
+}
+#endif
+
 gfx::NativeWindow ViewsTestBase::GetContext() {
   return test_helper_->GetContext();
 }
@@ -151,7 +157,7 @@ gfx::NativeWindow ViewsTestBase::GetContext() {
 NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return new test::TestPlatformNativeWidget<NativeWidgetMac>(delegate, false,
                                                              nullptr);
 #elif defined(USE_AURA)

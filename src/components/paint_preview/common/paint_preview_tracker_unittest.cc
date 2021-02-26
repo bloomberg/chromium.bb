@@ -4,12 +4,14 @@
 
 #include "components/paint_preview/common/paint_preview_tracker.h"
 
+#include "base/containers/flat_map.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/serial_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,6 +23,36 @@ namespace {
 struct TestContext {
   const gfx::Rect* rect;
   bool was_called;
+};
+
+// A test canvas for checking that the pictures drawn to it have the cull rect
+// we expect them to.
+class ExpectSubframeCanvas : public SkCanvas {
+ public:
+  void onDrawPicture(const SkPicture* picture,
+                     const SkMatrix*,
+                     const SkPaint*) override {
+    drawn_pictures_.insert({picture->uniqueID(), picture->cullRect()});
+  }
+
+  void ExpectHasPicture(uint32_t expected_picture_id,
+                        const gfx::Rect& expected_bounds) {
+    auto it = drawn_pictures_.find(expected_picture_id);
+    if (it == drawn_pictures_.end()) {
+      ADD_FAILURE() << "Picture ID was not recorded.";
+      return;
+    }
+
+    SkIRect rect = it->second.round();
+    EXPECT_EQ(rect.x(), expected_bounds.x());
+    EXPECT_EQ(rect.y(), expected_bounds.y());
+    EXPECT_EQ(rect.width(), expected_bounds.width());
+    EXPECT_EQ(rect.height(), expected_bounds.height());
+  }
+
+ private:
+  // Map of picture id to expected bounds of pictures drawn into this canvas.
+  base::flat_map<uint32_t, SkRect> drawn_pictures_;
 };
 
 }  // namespace
@@ -48,17 +80,14 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
       tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
   PictureSerializationContext* context =
       tracker.GetPictureSerializationContext();
-  EXPECT_TRUE(context->count(content_id));
-  EXPECT_EQ((*context)[content_id], kEmbeddingTokenChild);
+  EXPECT_TRUE(context->content_id_to_embedding_token.count(content_id));
+  EXPECT_EQ(context->content_id_to_embedding_token[content_id],
+            kEmbeddingTokenChild);
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(100, 100);
-  tracker.CustomDataToSkPictureCallback(canvas, content_id);
-  sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
+  ExpectSubframeCanvas canvas;
+  tracker.CustomDataToSkPictureCallback(&canvas, content_id);
 
-  // TODO(crbug/1009552): find a good way to check that a filler picture was
-  // actually inserted into |pic|. This is difficult without using the
-  // underlying private picture record.
+  canvas.ExpectHasPicture(content_id, rect);
 }
 
 TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
@@ -87,11 +116,11 @@ TEST(PaintPreviewTrackerTest, TestAnnotateLinks) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   const GURL url_1("https://www.chromium.org");
-  const gfx::Rect rect_1(10, 20, 30, 40);
+  const auto rect_1 = SkRect::MakeXYWH(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);
 
   const GURL url_2("https://www.w3.org");
-  const gfx::Rect rect_2(15, 25, 35, 45);
+  const auto rect_2 = SkRect::MakeXYWH(15, 25, 35, 45);
   tracker.AnnotateLink(url_2, rect_2);
 
   ASSERT_EQ(tracker.GetLinks().size(), 2U);
@@ -114,11 +143,11 @@ TEST(PaintPreviewTrackerTest, TestAnnotateAndMoveLinks) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   const GURL url_1("https://www.chromium.org");
-  const gfx::Rect rect_1(10, 20, 30, 40);
+  const auto rect_1 = SkRect::MakeXYWH(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);
 
   const GURL url_2("https://www.w3.org");
-  const gfx::Rect rect_2(15, 25, 35, 45);
+  const auto rect_2 = SkRect::MakeXYWH(15, 25, 35, 45);
   tracker.AnnotateLink(url_2, rect_2);
 
   std::vector<mojom::LinkDataPtr> links;
@@ -136,6 +165,83 @@ TEST(PaintPreviewTrackerTest, TestAnnotateAndMoveLinks) {
   EXPECT_EQ(links[1]->rect.height(), rect_2.height());
   EXPECT_EQ(links[1]->rect.x(), rect_2.x());
   EXPECT_EQ(links[1]->rect.y(), rect_2.y());
+}
+
+TEST(PaintPreviewTrackerTest, AnnotateLinksWithTransform) {
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
+                              true);
+
+  const GURL url("http://www.chromium.org");
+  const auto rect = SkRect::MakeXYWH(10, 20, 30, 40);
+  tracker.AnnotateLink(url, rect);
+
+  std::vector<mojom::LinkDataPtr> links;
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x());
+  EXPECT_EQ(links[0]->rect.y(), rect.y());
+
+  tracker.Save();
+  tracker.Scale(2, 4);
+  tracker.AnnotateLink(url, rect);
+  links.clear();
+  tracker.MoveLinks(&links);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width() * 2);
+  EXPECT_EQ(links[0]->rect.height(), rect.height() * 4);
+  EXPECT_EQ(links[0]->rect.x(), rect.x() * 2);
+  EXPECT_EQ(links[0]->rect.y(), rect.y() * 4);
+
+  tracker.Translate(10, 20);
+  tracker.AnnotateLink(url, rect);
+  links.clear();
+  tracker.MoveLinks(&links);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width() * 2);
+  EXPECT_EQ(links[0]->rect.height(), rect.height() * 4);
+  EXPECT_EQ(links[0]->rect.x(), (10 + rect.x()) * 2);
+  EXPECT_EQ(links[0]->rect.y(), (20 + rect.y()) * 4);
+
+  tracker.Restore();
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x());
+  EXPECT_EQ(links[0]->rect.y(), rect.y());
+
+  tracker.Concat(SkMatrix::Translate(30, 100));
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x() + 30);
+  EXPECT_EQ(links[0]->rect.y(), rect.y() + 100);
+
+  tracker.Rotate(30);
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), 45);
+  EXPECT_EQ(links[0]->rect.height(), 49);
+  EXPECT_EQ(links[0]->rect.x(), 8);
+  EXPECT_EQ(links[0]->rect.y(), 122);
+
+  // no-op (ensure this doesn't crash).
+  tracker.Restore();
 }
 
 }  // namespace paint_preview

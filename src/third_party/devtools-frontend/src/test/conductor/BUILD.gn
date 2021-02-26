@@ -4,9 +4,16 @@
 
 import("../../third_party/typescript/typescript.gni")
 
-ts_library("conductor") {
-  testonly = true
+group("conductor") {
+  deps = [
+    ":implementation",
+    "../../scripts/hosted_mode",
+  ]
+}
+
+node_ts_library("implementation") {
   sources = [
+    "custom-query-handlers.ts",
     "hooks.ts",
     "mocha_hooks.ts",
     "puppeteer-state.ts",

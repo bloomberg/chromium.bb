@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,6 +31,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/disks/disk.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -700,7 +702,7 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
                    NoteTakingLockScreenSupport::kNotSupported}}));
 }
 
-// Verify that non-whitelisted apps cannot be enabled on lock screen.
+// Verify that non-allowlisted apps cannot be enabled on lock screen.
 TEST_F(NoteTakingHelperTest, CustomLockScreenEnabledApps) {
   Init(ENABLE_PALETTE);
 
@@ -715,7 +717,7 @@ TEST_F(NoteTakingHelperTest, CustomLockScreenEnabledApps) {
                    NoteTakingLockScreenSupport::kNotSupported}}));
 }
 
-TEST_F(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
+TEST_F(NoteTakingHelperTest, AllowlistedAndCustomAppsShowOnlyOnce) {
   Init(ENABLE_PALETTE);
 
   scoped_refptr<const extensions::Extension> extension = CreateExtension(
@@ -964,6 +966,21 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
 }
 
 TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
+  chromeos::disks::DiskMountManager::InitializeForTesting(
+      new file_manager::FakeDiskMountManager);
+
+  ASSERT_TRUE(chromeos::disks::DiskMountManager::GetInstance()->AddDiskForTest(
+      chromeos::disks::Disk::Builder()
+          .SetDevicePath("/device/source_path")
+          .SetFileSystemUUID("0123-abcd")
+          .Build()));
+  ASSERT_TRUE(
+      chromeos::disks::DiskMountManager::GetInstance()->AddMountPointForTest(
+          chromeos::disks::DiskMountManager::MountPointInfo(
+              "/device/source_path", "/media/removable/UNTITLED",
+              chromeos::MOUNT_TYPE_DEVICE,
+              chromeos::disks::MOUNT_CONDITION_NONE)));
+
   const std::string kPackage = "org.chromium.package";
   std::vector<IntentHandlerInfoPtr> handlers;
   handlers.emplace_back(CreateIntentHandlerInfo("App", kPackage));
@@ -993,7 +1010,7 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
 
   const base::FilePath kRemovablePath =
       base::FilePath(file_manager::util::kRemovableMediaPath)
-          .Append("image.jpg");
+          .Append("UNTITLED/image.jpg");
   intent_helper_.clear_handled_intents();
   file_system_->clear_handled_requests();
   helper()->LaunchAppForNewNote(profile(), kRemovablePath);
@@ -1024,6 +1041,8 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
   histogram_tester.ExpectUniqueSample(
       NoteTakingHelper::kDefaultLaunchResultHistogramName,
       static_cast<int>(LaunchResult::ANDROID_FAILED_TO_CONVERT_PATH), 1);
+
+  chromeos::disks::DiskMountManager::Shutdown();
 }
 
 TEST_F(NoteTakingHelperTest, NoAppsAvailable) {
@@ -1083,7 +1102,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {
   UninstallExtension(keep_extension.get(), profile());
   EXPECT_EQ(2, observer.num_updates());
 
-  // Non-whitelisted apps shouldn't trigger notifications.
+  // Non-allowlisted apps shouldn't trigger notifications.
   scoped_refptr<const extensions::Extension> other_extension =
       CreateExtension(crx_file::id_util::GenerateId("a"), "Some Other App");
   InstallExtension(other_extension.get(), profile());
@@ -1257,9 +1276,9 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
                   {kUnsupportedAppName, kUnsupportedAppId, false /*preferred*/,
                    NoteTakingLockScreenSupport::kNotSupported}}));
 
-  // Whitelist prod app by policy.
+  // Allowlist prod app by policy.
   profile_prefs_->SetManagedPref(
-      prefs::kNoteTakingAppsLockScreenWhitelist,
+      prefs::kNoteTakingAppsLockScreenAllowlist,
       extensions::ListBuilder().Append(prod_app->id()).Build());
 
   // The preferred app's status hasn't changed, so the observers can remain
@@ -1275,9 +1294,9 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
        {kUnsupportedAppName, kUnsupportedAppId, false /*preferred*/,
         NoteTakingLockScreenSupport::kNotSupported}}));
 
-  // Change whitelist so only dev app is whitelisted.
+  // Change allowlist so only dev app is allowlisted.
   profile_prefs_->SetManagedPref(
-      prefs::kNoteTakingAppsLockScreenWhitelist,
+      prefs::kNoteTakingAppsLockScreenAllowlist,
       extensions::ListBuilder().Append(dev_app->id()).Build());
 
   // The preferred app status changed, so observers are expected to be notified.
@@ -1304,9 +1323,9 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
   EXPECT_EQ(std::vector<Profile*>{profile()}, observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
-  // Policy with an empty whitelist - this should disallow all apps from the
+  // Policy with an empty allowlist - this should disallow all apps from the
   // lock screen.
-  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist,
+  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist,
                                  std::make_unique<base::ListValue>());
 
   // Preferred app changed notification is not expected if the preferred app is
@@ -1326,13 +1345,13 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
   UninstallExtension(prod_app.get(), profile());
   UninstallExtension(unsupported_app.get(), profile());
 
-  profile_prefs_->RemoveManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist);
+  profile_prefs_->RemoveManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist);
   // No preferred app installed, so no update notification.
   EXPECT_TRUE(observer.preferred_app_updates().empty());
 }
 
 TEST_F(NoteTakingHelperTest,
-       UpdateLockScreenSupportStatusWhenWhitelistPolicyRemoved) {
+       UpdateLockScreenSupportStatusWhenAllowlistPolicyRemoved) {
   Init(ENABLE_PALETTE);
   TestObserver observer;
 
@@ -1347,9 +1366,9 @@ TEST_F(NoteTakingHelperTest,
       {{kDevKeepAppName, NoteTakingHelper::kDevKeepExtensionId,
         true /*preferred*/, NoteTakingLockScreenSupport::kEnabled}}));
 
-  // Policy with an empty whitelist - this should disallow test app from running
+  // Policy with an empty allowlist - this should disallow test app from running
   // on lock screen.
-  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist,
+  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist,
                                  std::make_unique<base::ListValue>());
 
   // Preferred app settings changed - observers should be notified.
@@ -1362,9 +1381,9 @@ TEST_F(NoteTakingHelperTest,
                    true /*preferred*/,
                    NoteTakingLockScreenSupport::kNotAllowedByPolicy}}));
 
-  // Remove the whitelist policy - the preferred app should become enabled on
+  // Remove the allowlist policy - the preferred app should become enabled on
   // lock screen again.
-  profile_prefs_->RemoveManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist);
+  profile_prefs_->RemoveManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist);
 
   EXPECT_EQ(std::vector<Profile*>{profile()}, observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
@@ -1384,10 +1403,10 @@ TEST_F(NoteTakingHelperTest,
       CreateAndInstallLockScreenApp(NoteTakingHelper::kDevKeepExtensionId,
                                     kDevKeepAppName, profile());
 
-  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist,
+  profile_prefs_->SetManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist,
                                  std::make_unique<base::ListValue>());
   // Verify that observers are not notified of preferred app change if preferred
-  // app is not set when whitelist policy changes.
+  // app is not set when allowlist policy changes.
   EXPECT_TRUE(observer.preferred_app_updates().empty());
 
   // Set test app as preferred note taking app.
@@ -1398,7 +1417,7 @@ TEST_F(NoteTakingHelperTest,
   // Changing policy before the app's lock screen availability has been reported
   // to NoteTakingHelper clients is not expected to fire observers.
   profile_prefs_->SetManagedPref(
-      prefs::kNoteTakingAppsLockScreenWhitelist,
+      prefs::kNoteTakingAppsLockScreenAllowlist,
       extensions::ListBuilder().Append(app->id()).Build());
   EXPECT_TRUE(observer.preferred_app_updates().empty());
 
@@ -1452,8 +1471,8 @@ TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
   // Enabling an app on lock screen in secondary profile should fail.
   EXPECT_FALSE(helper()->SetPreferredAppEnabledOnLockScreen(profile(), true));
 
-  // Policy with an empty whitelist.
-  profile_prefs->SetManagedPref(prefs::kNoteTakingAppsLockScreenWhitelist,
+  // Policy with an empty allowlist.
+  profile_prefs->SetManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist,
                                 std::make_unique<base::ListValue>());
 
   // Changing policy should not notify observers in secondary profile.

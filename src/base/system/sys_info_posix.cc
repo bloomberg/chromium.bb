@@ -20,6 +20,7 @@
 #include "base/system/sys_info_internal.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include <sys/vfs.h>
@@ -28,7 +29,7 @@
 #include <sys/statvfs.h>
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <linux/magic.h>
 #include <sys/vfs.h>
 #endif
@@ -77,7 +78,7 @@ base::LazyInstance<
     base::internal::LazySysInfoValue<int64_t, AmountOfVirtualMemory>>::Leaky
     g_lazy_virtual_memory = LAZY_INSTANCE_INITIALIZER;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool IsStatsZeroIfUnlimited(const base::FilePath& path) {
   struct statfs stats;
 
@@ -92,7 +93,7 @@ bool IsStatsZeroIfUnlimited(const base::FilePath& path) {
   }
   return false;
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 bool GetDiskSpaceInfo(const base::FilePath& path,
                       int64_t* available_bytes,
@@ -101,7 +102,7 @@ bool GetDiskSpaceInfo(const base::FilePath& path,
   if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
     return false;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   const bool zero_size_means_unlimited =
       stats.f_blocks == 0 && IsStatsZeroIfUnlimited(path);
 #else
@@ -160,7 +161,7 @@ int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
   return total;
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID)
 // static
 std::string SysInfo::OperatingSystemName() {
   struct utsname info;
@@ -170,9 +171,10 @@ std::string SysInfo::OperatingSystemName() {
   }
   return std::string(info.sysname);
 }
-#endif  //! defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  //! defined(OS_APPLE) && !defined(OS_ANDROID)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_LACROS)
 // static
 std::string SysInfo::OperatingSystemVersion() {
   struct utsname info;
@@ -184,7 +186,8 @@ std::string SysInfo::OperatingSystemVersion() {
 }
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_LACROS)
 // static
 void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* minor_version,

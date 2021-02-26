@@ -10,8 +10,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 
-using autofill::PasswordForm;
-
 namespace password_manager {
 
 PasswordFeatureManagerImpl::PasswordFeatureManagerImpl(
@@ -40,9 +38,10 @@ bool PasswordFeatureManagerImpl::ShouldShowAccountStorageOptIn() const {
                                                       sync_service_);
 }
 
-bool PasswordFeatureManagerImpl::ShouldShowAccountStorageReSignin() const {
-  return features_util::ShouldShowAccountStorageReSignin(pref_service_,
-                                                         sync_service_);
+bool PasswordFeatureManagerImpl::ShouldShowAccountStorageReSignin(
+    const GURL& current_page_url) const {
+  return features_util::ShouldShowAccountStorageReSignin(
+      pref_service_, sync_service_, current_page_url);
 }
 
 void PasswordFeatureManagerImpl::OptInToAccountStorage() {
@@ -59,9 +58,9 @@ void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
   features_util::SetDefaultPasswordStore(pref_service_, sync_service_, store);
 }
 
-bool PasswordFeatureManagerImpl::ShouldShowPasswordStorePicker() const {
-  return features_util::ShouldShowPasswordStorePicker(pref_service_,
-                                                      sync_service_);
+bool PasswordFeatureManagerImpl::ShouldShowAccountStorageBubbleUi() const {
+  return features_util::ShouldShowAccountStorageBubbleUi(pref_service_,
+                                                         sync_service_);
 }
 
 PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
@@ -74,6 +73,16 @@ metrics_util::PasswordAccountStorageUsageLevel
 PasswordFeatureManagerImpl::ComputePasswordAccountStorageUsageLevel() const {
   return features_util::ComputePasswordAccountStorageUsageLevel(pref_service_,
                                                                 sync_service_);
+}
+
+void PasswordFeatureManagerImpl::RecordMoveOfferedToNonOptedInUser() {
+  features_util::RecordMoveOfferedToNonOptedInUser(pref_service_,
+                                                   sync_service_);
+}
+
+int PasswordFeatureManagerImpl::GetMoveOfferedToNonOptedInUserCount() const {
+  return features_util::GetMoveOfferedToNonOptedInUserCount(pref_service_,
+                                                            sync_service_);
 }
 
 }  // namespace password_manager

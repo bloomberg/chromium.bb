@@ -35,8 +35,8 @@ SkColorFilter_Matrix::SkColorFilter_Matrix(const float array[20], Domain domain)
     memcpy(fMatrix, array, 20 * sizeof(float));
 }
 
-uint32_t SkColorFilter_Matrix::getFlags() const {
-    return this->INHERITED::getFlags() | fFlags;
+uint32_t SkColorFilter_Matrix::onGetFlags() const {
+    return this->INHERITED::onGetFlags() | fFlags;
 }
 
 void SkColorFilter_Matrix::flatten(SkWriteBuffer& buffer) const {
@@ -53,8 +53,7 @@ sk_sp<SkFlattenable> SkColorFilter_Matrix::CreateProc(SkReadBuffer& buffer) {
         return nullptr;
     }
 
-    auto   is_rgba = buffer.isVersionLT(SkPicturePriv::kMatrixColorFilterDomain_Version) ||
-                     buffer.readBool();
+    auto   is_rgba = buffer.readBool();
     return is_rgba ? SkColorFilters::Matrix(matrix)
                    : SkColorFilters::HSLAMatrix(matrix);
 }
@@ -120,35 +119,35 @@ skvm::Color SkColorFilter_Matrix::onProgram(skvm::Builder* p, skvm::Color c,
         c = {r,g,b,a};
     }
 
-    return premul(c);    // note: rasterpipeline version does clamp01 first
+    return premul(clamp01(c));
 }
 
 #if SK_SUPPORT_GPU
 #include "src/gpu/effects/generated/GrColorMatrixFragmentProcessor.h"
 #include "src/gpu/effects/generated/GrHSLToRGBFilterEffect.h"
 #include "src/gpu/effects/generated/GrRGBToHSLFilterEffect.h"
-std::unique_ptr<GrFragmentProcessor> SkColorFilter_Matrix::asFragmentProcessor(
-        GrRecordingContext*, const GrColorInfo&) const {
+GrFPResult SkColorFilter_Matrix::asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> fp,
+                                                     GrRecordingContext*,
+                                                     const GrColorInfo&) const {
     switch (fDomain) {
         case Domain::kRGBA:
-            return GrColorMatrixFragmentProcessor::Make(fMatrix,
-                                                        /* premulInput = */    true,
-                                                        /* clampRGBOutput = */ true,
-                                                        /* premulOutput = */   true);
-        case Domain::kHSLA: {
-            std::unique_ptr<GrFragmentProcessor> series[] = {
-                GrRGBToHSLFilterEffect::Make(),
-                GrColorMatrixFragmentProcessor::Make(fMatrix,
-                                                     /* premulInput = */    false,
-                                                     /* clampRGBOutput = */ false,
-                                                     /* premulOutput = */   false),
-                GrHSLToRGBFilterEffect::Make(),
-            };
-            return GrFragmentProcessor::RunInSeries(series, SK_ARRAY_COUNT(series));
-        }
+            fp = GrColorMatrixFragmentProcessor::Make(std::move(fp), fMatrix,
+                                                      /* unpremulInput = */  true,
+                                                      /* clampRGBOutput = */ true,
+                                                      /* premulOutput = */   true);
+            break;
+
+        case Domain::kHSLA:
+            fp = GrRGBToHSLFilterEffect::Make(std::move(fp));
+            fp = GrColorMatrixFragmentProcessor::Make(std::move(fp), fMatrix,
+                                                      /* unpremulInput = */  false,
+                                                      /* clampRGBOutput = */ false,
+                                                      /* premulOutput = */   false);
+            fp = GrHSLToRGBFilterEffect::Make(std::move(fp));
+            break;
     }
 
-    SkUNREACHABLE;
+    return GrFPSuccess(std::move(fp));
 }
 
 #endif
@@ -172,6 +171,10 @@ sk_sp<SkColorFilter> SkColorFilters::Matrix(const SkColorMatrix& cm) {
 
 sk_sp<SkColorFilter> SkColorFilters::HSLAMatrix(const float array[20]) {
     return MakeMatrix(array, SkColorFilter_Matrix::Domain::kHSLA);
+}
+
+sk_sp<SkColorFilter> SkColorFilters::HSLAMatrix(const SkColorMatrix& cm) {
+    return MakeMatrix(cm.fMat.data(), SkColorFilter_Matrix::Domain::kHSLA);
 }
 
 void SkColorFilter_Matrix::RegisterFlattenables() {

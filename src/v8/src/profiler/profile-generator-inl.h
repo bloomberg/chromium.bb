@@ -28,13 +28,6 @@ CodeEntry::CodeEntry(CodeEventListener::LogEventsAndTags tag, const char* name,
       position_(0),
       line_info_(std::move(line_info)) {}
 
-inline CodeEntry* ProfileGenerator::FindEntry(Address address,
-                                              Address* out_instruction_start) {
-  CodeEntry* entry = code_map_->FindEntry(address, out_instruction_start);
-  if (entry) entry->mark_used();
-  return entry;
-}
-
 ProfileNode::ProfileNode(ProfileTree* tree, CodeEntry* entry,
                          ProfileNode* parent, int line_number)
     : tree_(tree),
@@ -86,7 +79,7 @@ inline CpuProfileNode::SourceType ProfileNode::source_type() const {
     case CodeEventListener::NUMBER_OF_LOG_EVENTS:
       return CpuProfileNode::kInternal;
   }
-}  // namespace internal
+}
 
 inline Isolate* ProfileNode::isolate() const { return tree_->isolate(); }
 

@@ -8,12 +8,17 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
+
+namespace base {
+class FuchsiaIntlProfileWatcher;
+}
 
 namespace display {
 class Screen;
@@ -26,6 +31,8 @@ struct MainFunctionParams;
 namespace cr_fuchsia {
 class LegacyMetricsClient;
 }
+
+class MediaResourceProviderService;
 
 class WebEngineBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -40,8 +47,12 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   WebEngineDevToolsController* devtools_controller() const {
     return devtools_controller_.get();
   }
+  MediaResourceProviderService* media_resource_provider_service() const {
+    return media_resource_provider_service_.get();
+  }
 
   // content::BrowserMainParts overrides.
+  void PostEarlyInitialization() override;
   void PreMainMessageLoopRun() override;
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
   bool MainMessageLoopRun(int* result_code) override;
@@ -50,6 +61,8 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   ContextImpl* context_for_test() const { return context_service_.get(); }
 
  private:
+  void OnIntlProfileChanged(const fuchsia::intl::Profile& profile);
+
   const content::MainFunctionParams& parameters_;
 
   fidl::InterfaceRequest<fuchsia::web::Context> request_;
@@ -60,6 +73,11 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<fidl::Binding<fuchsia::web::Context>> context_binding_;
   std::unique_ptr<WebEngineDevToolsController> devtools_controller_;
   std::unique_ptr<cr_fuchsia::LegacyMetricsClient> legacy_metrics_client_;
+  std::unique_ptr<MediaResourceProviderService>
+      media_resource_provider_service_;
+
+  // Used to respond to changes to the system's current locale.
+  std::unique_ptr<base::FuchsiaIntlProfileWatcher> intl_profile_watcher_;
 
   bool run_message_loop_ = true;
   base::OnceClosure quit_closure_;

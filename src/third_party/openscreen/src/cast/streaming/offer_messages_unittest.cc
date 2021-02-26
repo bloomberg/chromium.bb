@@ -4,6 +4,7 @@
 
 #include "cast/streaming/offer_messages.h"
 
+#include <limits>
 #include <utility>
 
 #include "cast/streaming/rtp_defines.h"
@@ -87,7 +88,7 @@ constexpr char kValidOffer[] = R"({
 
 void ExpectFailureOnParse(absl::string_view body) {
   ErrorOr<Json::Value> root = json::Parse(body);
-  ASSERT_TRUE(root.is_value());
+  ASSERT_TRUE(root.is_value()) << root.error();
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_error());
 }
 
@@ -194,7 +195,7 @@ TEST(OfferTest, CanParseValidButStreamlessOffer) {
     "castMode": "mirroring",
     "supportedStreams": []
   })");
-  ASSERT_TRUE(root.is_value());
+  ASSERT_TRUE(root.is_value()) << root.error();
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_value());
 }
 
@@ -258,14 +259,85 @@ TEST(OfferTest, CanParseValidZeroBitRateAudioOffer) {
       "rtpPayloadType": 96,
       "ssrc": 19088743,
       "bitRate": 0,
-      "timeBase": "1/96000",
+      "timeBase": "1/48000",
       "channels": 5,
       "aesKey": "51029e4e2347cbcb49d57ef10177aebd",
       "aesIvMask": "7f12a19be62a36c04ae4116caaeff5d2"
     }]
   })");
-  ASSERT_TRUE(root.is_value());
-  EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_value());
+  ASSERT_TRUE(root.is_value()) << root.error();
+  const auto offer = Offer::Parse(std::move(root.value()));
+  EXPECT_TRUE(offer.is_value()) << offer.error();
+}
+
+TEST(OfferTest, ErrorOnInvalidRtpTimebase) {
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/10000000",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "0",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/1",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "really fast plz, kthx",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
 }
 
 TEST(OfferTest, ErrorOnMissingVideoStreamMandatoryField) {
@@ -382,7 +454,7 @@ TEST(OfferTest, ParseAndToJsonResultsInSameOffer) {
   ExpectEqualsValidOffer(offer.value());
 
   auto eoj = offer.value().ToJson();
-  EXPECT_TRUE(eoj.is_value());
+  EXPECT_TRUE(eoj.is_value()) << eoj.error();
   ErrorOr<Offer> reparsed_offer = Offer::Parse(std::move(eoj.value()));
   ExpectEqualsValidOffer(reparsed_offer.value());
 }

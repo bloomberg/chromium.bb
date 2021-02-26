@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "printing/print_job_constants.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 
@@ -51,9 +51,9 @@ class PrinterQuery {
   // |ask_for_user_settings| is DEFAULTS.
   // Caller has to ensure that |this| is alive until |callback| is run.
   void GetSettings(GetSettingsAskParam ask_user_for_settings,
-                   int expected_page_count,
+                   uint32_t expected_page_count,
                    bool has_selection,
-                   MarginType margin_type,
+                   mojom::MarginType margin_type,
                    bool is_scripted,
                    bool is_modifiable,
                    base::OnceClosure callback);

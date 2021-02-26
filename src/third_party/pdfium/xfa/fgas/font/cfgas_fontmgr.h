@@ -15,15 +15,13 @@
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/observed_ptr.h"
+#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_face.h"
 #include "core/fxge/fx_freetype.h"
-#include "xfa/fgas/font/cfgas_pdffontmgr.h"
 
 class CFGAS_GEFont;
 class CFX_FontMapper;
-class CFX_FontSourceEnum_File;
 class IFX_SeekableReadStream;
 
 #if defined(OS_WIN)
@@ -96,11 +94,12 @@ class CFX_FontDescriptorInfo {
 
 #endif  // defined(OS_WIN)
 
-class CFGAS_FontMgr final : public Observable {
+class CFGAS_FontMgr {
  public:
   CFGAS_FontMgr();
   ~CFGAS_FontMgr();
 
+  bool EnumFonts();
   RetainPtr<CFGAS_GEFont> GetFontByCodePage(uint16_t wCodePage,
                                             uint32_t dwFontStyles,
                                             const wchar_t* pszFontFamily);
@@ -110,9 +109,6 @@ class CFGAS_FontMgr final : public Observable {
   RetainPtr<CFGAS_GEFont> LoadFont(const wchar_t* pszFontFamily,
                                    uint32_t dwFontStyles,
                                    uint16_t wCodePage);
-  void RemoveFont(const RetainPtr<CFGAS_GEFont>& pFont);
-
-  bool EnumFonts();
 
  private:
   RetainPtr<CFGAS_GEFont> GetFontByUnicodeImpl(wchar_t wUnicode,
@@ -151,12 +147,9 @@ class CFGAS_FontMgr final : public Observable {
 #if defined(OS_WIN)
   std::deque<FX_FONTDESCRIPTOR> m_FontFaces;
 #else
-  std::unique_ptr<CFX_FontSourceEnum_File> m_pFontSource;
   std::vector<std::unique_ptr<CFX_FontDescriptor>> m_InstalledFonts;
   std::map<uint32_t, std::unique_ptr<std::vector<CFX_FontDescriptorInfo>>>
       m_Hash2CandidateList;
-  std::map<RetainPtr<CFGAS_GEFont>, RetainPtr<IFX_SeekableReadStream>>
-      m_IFXFont2FileRead;
 #endif  // defined(OS_WIN)
 };
 

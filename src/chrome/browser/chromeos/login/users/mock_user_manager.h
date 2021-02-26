@@ -74,7 +74,6 @@ class MockUserManager : public ChromeUserManager {
   MOCK_METHOD1(RemoveSessionStateObserver,
                void(UserManager::UserSessionStateObserver*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
-  MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
   MOCK_CONST_METHOD0(IsGuestSessionAllowed, bool(void));
   MOCK_CONST_METHOD1(IsGaiaUserAllowed, bool(const user_manager::User& user));
   MOCK_CONST_METHOD1(IsUserAllowed, bool(const user_manager::User& user));
@@ -96,12 +95,8 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(AreEphemeralUsersEnabled, bool(void));
   MOCK_CONST_METHOD0(GetApplicationLocale, const std::string&(void));
   MOCK_CONST_METHOD0(GetLocalState, PrefService*(void));
-  MOCK_CONST_METHOD2(HandleUserOAuthTokenStatusChange,
-                     void(const AccountId&,
-                          user_manager::User::OAuthTokenStatus status));
   MOCK_CONST_METHOD0(IsEnterpriseManaged, bool(void));
   MOCK_METHOD1(LoadDeviceLocalAccounts, void(std::set<AccountId>*));
-  MOCK_METHOD0(PerformPreUserListLoadingActions, void(void));
   MOCK_METHOD0(PerformPostUserListLoadingActions, void(void));
   MOCK_METHOD1(PerformPostUserLoggedInActions, void(bool));
   MOCK_CONST_METHOD1(IsDemoApp, bool(const AccountId&));
@@ -110,10 +105,7 @@ class MockUserManager : public ChromeUserManager {
                      bool(const AccountId&));
   MOCK_METHOD0(DemoAccountLoggedIn, void(void));
   MOCK_METHOD1(KioskAppLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(ArcKioskAppLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(WebKioskAppLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));
   MOCK_CONST_METHOD1(GetResourceImagekiaNamed, const gfx::ImageSkia&(int));
   MOCK_CONST_METHOD1(GetResourceStringUTF16, base::string16(int));

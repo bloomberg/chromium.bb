@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/renderer/searchbox/search_bouncer.h"
+#include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -228,24 +228,3 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   }
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
-
-// SearchBouncer doesn't exist on Android.
-#if !defined(OS_ANDROID)
-TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
-  ChromeContentRendererClient client;
-  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
-  EXPECT_FALSE(client.ShouldSuppressErrorPage(
-      nullptr, GURL("http://example.com"), net::OK));
-  EXPECT_TRUE(client.ShouldSuppressErrorPage(
-      nullptr, GURL("http://example.com/n"), net::OK));
-  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
-}
-
-TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
-  ChromeContentRendererClient client;
-  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
-  EXPECT_TRUE(client.ShouldTrackUseCounter(GURL("http://example.com")));
-  EXPECT_FALSE(client.ShouldTrackUseCounter(GURL("http://example.com/n")));
-  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
-}
-#endif

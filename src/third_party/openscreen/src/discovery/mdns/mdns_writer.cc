@@ -4,6 +4,11 @@
 
 #include "discovery/mdns/mdns_writer.h"
 
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "absl/hash/hash.h"
 #include "absl/strings/ascii.h"
 #include "util/hashing.h"
@@ -199,6 +204,12 @@ bool MdnsWriter::Write(const NsecRecordRdata& rdata) {
     cursor.Commit();
     return true;
   }
+  return false;
+}
+
+bool MdnsWriter::Write(const OptRecordRdata& rdata) {
+  // OPT records are currently not supported for outgoing messages.
+  OSP_UNIMPLEMENTED();
   return false;
 }
 

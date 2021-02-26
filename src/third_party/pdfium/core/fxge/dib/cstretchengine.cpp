@@ -12,13 +12,11 @@
 #include "core/fxcrt/pauseindicator_iface.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "core/fxge/dib/scanlinecomposer_iface.h"
-#include "core/fxge/fx_dib.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
-
-constexpr int kMaxDestValue = 16711680;
 
 int GetPitchRoundUpTo4Bytes(int bits_per_pixel) {
   return (bits_per_pixel + 31) / 32 * 4;
@@ -41,15 +39,16 @@ bool CStretchEngine::CWeightTable::Calc(int dest_len,
                                         int src_min,
                                         int src_max,
                                         const FXDIB_ResampleOptions& options) {
+  // Help the compiler realize that these can't change during a loop iteration:
+  const bool bilinear = options.bInterpolateBilinear;
+
   m_WeightTables.clear();
   m_dwWeightTablesSize = 0;
   const double scale = static_cast<float>(src_len) / dest_len;
   const double base = dest_len < 0 ? src_len : 0;
-  const int ext_size = options.bInterpolateBicubic ? 3 : 1;
-  m_ItemSize =
-      sizeof(int) * 2 +
-      static_cast<int>(sizeof(int) *
-                       (ceil(fabs(static_cast<float>(scale))) + ext_size));
+  m_ItemSize = sizeof(int) * 2 +
+               static_cast<int>(sizeof(int) *
+                                (ceil(fabs(static_cast<float>(scale))) + 1));
 
   m_DestMin = dest_min;
   if (dest_max - dest_min > static_cast<int>((1U << 30) - 4) / m_ItemSize)
@@ -61,7 +60,7 @@ bool CStretchEngine::CWeightTable::Calc(int dest_len,
     for (int dest_pixel = dest_min; dest_pixel < dest_max; ++dest_pixel) {
       PixelWeight& pixel_weights = *GetPixelWeight(dest_pixel);
       double src_pos = dest_pixel * scale + scale / 2 + base;
-      if (options.bInterpolateBilinear) {
+      if (bilinear) {
         pixel_weights.m_SrcStart =
             static_cast<int>(floor(static_cast<float>(src_pos) - 1.0f / 2));
         pixel_weights.m_SrcEnd =
@@ -76,85 +75,6 @@ bool CStretchEngine::CWeightTable::Calc(int dest_len,
                                src_pos - pixel_weights.m_SrcStart - 1.0f / 2) *
                            65536);
           pixel_weights.m_Weights[0] = 65536 - pixel_weights.m_Weights[1];
-        }
-      } else if (options.bInterpolateBicubic) {
-        pixel_weights.m_SrcStart =
-            static_cast<int>(floor(static_cast<float>(src_pos) - 1.0f / 2));
-        pixel_weights.m_SrcEnd =
-            static_cast<int>(floor(static_cast<float>(src_pos) + 1.0f / 2));
-        int start = pixel_weights.m_SrcStart - 1;
-        int end = pixel_weights.m_SrcEnd + 1;
-        start = std::max(start, src_min);
-        end = std::min(end, src_max - 1);
-        if (pixel_weights.m_SrcStart < src_min) {
-          src_pos += src_min - pixel_weights.m_SrcStart;
-          pixel_weights.m_SrcStart = src_min;
-        }
-        pixel_weights.m_SrcEnd = std::min(pixel_weights.m_SrcEnd, src_max - 1);
-        int weight = FXSYS_roundf(
-            static_cast<float>(src_pos - pixel_weights.m_SrcStart - 1.0f / 2) *
-            256);
-        if (start == end) {
-          pixel_weights.m_Weights[0] =
-              (SDP_Table[256 + weight] + SDP_Table[weight] +
-               SDP_Table[256 - weight] + SDP_Table[512 - weight])
-              << 8;
-        } else if ((start == pixel_weights.m_SrcStart &&
-                    (pixel_weights.m_SrcStart == pixel_weights.m_SrcEnd ||
-                     end == pixel_weights.m_SrcEnd) &&
-                    start < end) ||
-                   (start < pixel_weights.m_SrcStart &&
-                    pixel_weights.m_SrcStart == pixel_weights.m_SrcEnd &&
-                    end == pixel_weights.m_SrcEnd)) {
-          if (start < pixel_weights.m_SrcStart) {
-            pixel_weights.m_Weights[0] = SDP_Table[256 + weight] << 8;
-            pixel_weights.m_Weights[1] =
-                (SDP_Table[weight] + SDP_Table[256 - weight] +
-                 SDP_Table[512 - weight])
-                << 8;
-          } else {
-            if (pixel_weights.m_SrcStart == pixel_weights.m_SrcEnd) {
-              pixel_weights.m_Weights[0] =
-                  (SDP_Table[256 + weight] + SDP_Table[weight] +
-                   SDP_Table[256 - weight])
-                  << 8;
-              pixel_weights.m_Weights[1] = SDP_Table[512 - weight] << 8;
-            } else {
-              pixel_weights.m_Weights[0] =
-                  (SDP_Table[256 + weight] + SDP_Table[weight]) << 8;
-              pixel_weights.m_Weights[1] =
-                  (SDP_Table[256 - weight] + SDP_Table[512 - weight]) << 8;
-            }
-          }
-          if (pixel_weights.m_SrcStart == pixel_weights.m_SrcEnd) {
-            pixel_weights.m_SrcEnd = end;
-          }
-          if (start < pixel_weights.m_SrcStart) {
-            pixel_weights.m_SrcStart = start;
-          }
-        } else if (start == pixel_weights.m_SrcStart &&
-                   start < pixel_weights.m_SrcEnd &&
-                   pixel_weights.m_SrcEnd < end) {
-          pixel_weights.m_Weights[0] =
-              (SDP_Table[256 + weight] + SDP_Table[weight]) << 8;
-          pixel_weights.m_Weights[1] = SDP_Table[256 - weight] << 8;
-          pixel_weights.m_Weights[2] = SDP_Table[512 - weight] << 8;
-          pixel_weights.m_SrcEnd = end;
-        } else if (start < pixel_weights.m_SrcStart &&
-                   pixel_weights.m_SrcStart < pixel_weights.m_SrcEnd &&
-                   pixel_weights.m_SrcEnd == end) {
-          pixel_weights.m_Weights[0] = SDP_Table[256 + weight] << 8;
-          pixel_weights.m_Weights[1] = SDP_Table[weight] << 8;
-          pixel_weights.m_Weights[2] =
-              (SDP_Table[256 - weight] + SDP_Table[512 - weight]) << 8;
-          pixel_weights.m_SrcStart = start;
-        } else {
-          pixel_weights.m_Weights[0] = SDP_Table[256 + weight] << 8;
-          pixel_weights.m_Weights[1] = SDP_Table[weight] << 8;
-          pixel_weights.m_Weights[2] = SDP_Table[256 - weight] << 8;
-          pixel_weights.m_Weights[3] = SDP_Table[512 - weight] << 8;
-          pixel_weights.m_SrcStart = start;
-          pixel_weights.m_SrcEnd = end;
         }
       } else {
         int pixel_pos = static_cast<int>(floor(static_cast<float>(src_pos)));
@@ -232,7 +152,7 @@ CStretchEngine::CStretchEngine(ScanlineComposerIface* pDestBitmap,
       m_SrcBpp(GetBppFromFormat(pSrcBitmap->GetFormat())),
       m_bHasAlpha(GetIsAlphaFromFormat(pSrcBitmap->GetFormat())),
       m_pSource(pSrcBitmap),
-      m_pSrcPalette(pSrcBitmap->GetPalette()),
+      m_pSrcPalette(pSrcBitmap->GetPaletteData()),
       m_SrcWidth(pSrcBitmap->GetWidth()),
       m_SrcHeight(pSrcBitmap->GetHeight()),
       m_pDestBitmap(pDestBitmap),
@@ -249,16 +169,14 @@ CStretchEngine::CStretchEngine(ScanlineComposerIface* pDestBitmap,
 
   size = GetPitchRoundUpTo4Bytes(size);
   m_DestScanline.resize(size);
-  if (dest_format == FXDIB_Rgb32)
+  if (dest_format == FXDIB_Format::kRgb32)
     std::fill(m_DestScanline.begin(), m_DestScanline.end(), 255);
   m_InterPitch = GetPitchRoundUpTo4Bytes(m_DestClip.Width() * m_DestBpp);
   m_ExtraMaskPitch = GetPitchRoundUpTo4Bytes(m_DestClip.Width() * 8);
   if (options.bNoSmoothing) {
     m_ResampleOptions.bNoSmoothing = true;
   } else {
-    bool bInterpol =
-        options.bInterpolateBilinear || options.bInterpolateBicubic;
-    if (!bInterpol && abs(dest_width) != 0 &&
+    if (!options.bInterpolateBilinear && abs(dest_width) != 0 &&
         abs(dest_height) / 8 < static_cast<long long>(m_SrcWidth) *
                                    m_SrcHeight / abs(dest_width)) {
       m_ResampleOptions.bInterpolateBilinear = true;
@@ -306,7 +224,7 @@ CStretchEngine::CStretchEngine(ScanlineComposerIface* pDestBitmap,
   }
 }
 
-CStretchEngine::~CStretchEngine() {}
+CStretchEngine::~CStretchEngine() = default;
 
 bool CStretchEngine::Continue(PauseIndicatorIface* pPause) {
   while (m_State == State::kHorizontal) {
@@ -387,8 +305,6 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
             if (src_scan[j / 8] & (1 << (7 - j % 8)))
               dest_a += pixel_weight * 255;
           }
-          if (m_ResampleOptions.bInterpolateBicubic)
-            dest_a = pdfium::clamp(dest_a, 0, kMaxDestValue);
           *dest_scan++ = static_cast<uint8_t>(dest_a >> 16);
         }
         break;
@@ -405,8 +321,6 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
             int pixel_weight = *pWeight;
             dest_a += pixel_weight * src_scan[j];
           }
-          if (m_ResampleOptions.bInterpolateBicubic)
-            dest_a = pdfium::clamp(dest_a, 0, kMaxDestValue);
           *dest_scan++ = static_cast<uint8_t>(dest_a >> 16);
         }
         break;
@@ -426,10 +340,6 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
             dest_r += pixel_weight * src_scan[j];
             dest_a += pixel_weight;
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_r = pdfium::clamp(dest_r, 0, kMaxDestValue);
-            dest_a = pdfium::clamp(dest_a, 0, 65536);
-          }
           *dest_scan++ = static_cast<uint8_t>(dest_r >> 16);
           *dest_scan_mask++ = static_cast<uint8_t>((dest_a * 255) >> 16);
         }
@@ -438,34 +348,29 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
       case TransformMethod::k8BppToManyBpp: {
         for (int col = m_DestClip.left; col < m_DestClip.right; ++col) {
           PixelWeight* pWeights = m_WeightTable.GetPixelWeight(col);
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = m_WeightTable.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
               return false;
 
             int pixel_weight = *pWeight;
-            unsigned long argb_cmyk = m_pSrcPalette[src_scan[j]];
-            if (m_DestFormat == FXDIB_Rgb) {
-              dest_r_y += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 16);
-              dest_g_m += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 8);
-              dest_b_c += pixel_weight * static_cast<uint8_t>(argb_cmyk);
+            unsigned long argb = m_pSrcPalette[src_scan[j]];
+            if (m_DestFormat == FXDIB_Format::kRgb) {
+              dest_r += pixel_weight * static_cast<uint8_t>(argb >> 16);
+              dest_g += pixel_weight * static_cast<uint8_t>(argb >> 8);
+              dest_b += pixel_weight * static_cast<uint8_t>(argb);
             } else {
-              dest_b_c += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 24);
-              dest_g_m += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 16);
-              dest_r_y += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 8);
+              dest_b += pixel_weight * static_cast<uint8_t>(argb >> 24);
+              dest_g += pixel_weight * static_cast<uint8_t>(argb >> 16);
+              dest_r += pixel_weight * static_cast<uint8_t>(argb >> 8);
             }
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-          }
-          *dest_scan++ = static_cast<uint8_t>(dest_b_c >> 16);
-          *dest_scan++ = static_cast<uint8_t>(dest_g_m >> 16);
-          *dest_scan++ = static_cast<uint8_t>(dest_r_y >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_b >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_g >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_r >> 16);
         }
         break;
       }
@@ -473,9 +378,9 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
         for (int col = m_DestClip.left; col < m_DestClip.right; ++col) {
           PixelWeight* pWeights = m_WeightTable.GetPixelWeight(col);
           int dest_a = 0;
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = m_WeightTable.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
@@ -483,27 +388,15 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
 
             int pixel_weight = *pWeight;
             pixel_weight = pixel_weight * src_scan_mask[j] / 255;
-            unsigned long argb_cmyk = m_pSrcPalette[src_scan[j]];
-            if (m_DestFormat == FXDIB_Rgba) {
-              dest_r_y += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 16);
-              dest_g_m += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 8);
-              dest_b_c += pixel_weight * static_cast<uint8_t>(argb_cmyk);
-            } else {
-              dest_b_c += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 24);
-              dest_g_m += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 16);
-              dest_r_y += pixel_weight * static_cast<uint8_t>(argb_cmyk >> 8);
-            }
+            unsigned long argb = m_pSrcPalette[src_scan[j]];
+            dest_b += pixel_weight * static_cast<uint8_t>(argb >> 24);
+            dest_g += pixel_weight * static_cast<uint8_t>(argb >> 16);
+            dest_r += pixel_weight * static_cast<uint8_t>(argb >> 8);
             dest_a += pixel_weight;
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-            dest_a = pdfium::clamp(dest_a, 0, 65536);
-          }
-          *dest_scan++ = static_cast<uint8_t>(dest_b_c >> 16);
-          *dest_scan++ = static_cast<uint8_t>(dest_g_m >> 16);
-          *dest_scan++ = static_cast<uint8_t>(dest_r_y >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_b >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_g >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_r >> 16);
           *dest_scan_mask++ = static_cast<uint8_t>((dest_a * 255) >> 16);
         }
         break;
@@ -511,9 +404,9 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
       case TransformMethod::kManyBpptoManyBpp: {
         for (int col = m_DestClip.left; col < m_DestClip.right; ++col) {
           PixelWeight* pWeights = m_WeightTable.GetPixelWeight(col);
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = m_WeightTable.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
@@ -521,18 +414,13 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
 
             int pixel_weight = *pWeight;
             const uint8_t* src_pixel = src_scan + j * Bpp;
-            dest_b_c += pixel_weight * (*src_pixel++);
-            dest_g_m += pixel_weight * (*src_pixel++);
-            dest_r_y += pixel_weight * (*src_pixel);
+            dest_b += pixel_weight * (*src_pixel++);
+            dest_g += pixel_weight * (*src_pixel++);
+            dest_r += pixel_weight * (*src_pixel);
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-          }
-          *dest_scan++ = static_cast<uint8_t>((dest_b_c) >> 16);
-          *dest_scan++ = static_cast<uint8_t>((dest_g_m) >> 16);
-          *dest_scan++ = static_cast<uint8_t>((dest_r_y) >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_b >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_g >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_r >> 16);
           dest_scan += Bpp - 3;
         }
         break;
@@ -541,9 +429,9 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
         for (int col = m_DestClip.left; col < m_DestClip.right; ++col) {
           PixelWeight* pWeights = m_WeightTable.GetPixelWeight(col);
           int dest_a = 0;
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = m_WeightTable.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
@@ -551,26 +439,20 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
 
             int pixel_weight = *pWeight;
             const uint8_t* src_pixel = src_scan + j * Bpp;
-            if (m_DestFormat == FXDIB_Argb) {
+            if (m_DestFormat == FXDIB_Format::kArgb) {
               pixel_weight = pixel_weight * src_pixel[3] / 255;
             } else {
               pixel_weight = pixel_weight * src_scan_mask[j] / 255;
             }
-            dest_b_c += pixel_weight * (*src_pixel++);
-            dest_g_m += pixel_weight * (*src_pixel++);
-            dest_r_y += pixel_weight * (*src_pixel);
+            dest_b += pixel_weight * (*src_pixel++);
+            dest_g += pixel_weight * (*src_pixel++);
+            dest_r += pixel_weight * (*src_pixel);
             dest_a += pixel_weight;
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-            dest_a = pdfium::clamp(dest_a, 0, 65536);
-          }
-          *dest_scan++ = static_cast<uint8_t>((dest_b_c) >> 16);
-          *dest_scan++ = static_cast<uint8_t>((dest_g_m) >> 16);
-          *dest_scan++ = static_cast<uint8_t>((dest_r_y) >> 16);
-          if (m_DestFormat == FXDIB_Argb)
+          *dest_scan++ = static_cast<uint8_t>(dest_b >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_g >> 16);
+          *dest_scan++ = static_cast<uint8_t>(dest_r >> 16);
+          if (m_DestFormat == FXDIB_Format::kArgb)
             *dest_scan = static_cast<uint8_t>((dest_a * 255) >> 16);
           if (dest_scan_mask)
             *dest_scan_mask++ = static_cast<uint8_t>((dest_a * 255) >> 16);
@@ -617,8 +499,6 @@ void CStretchEngine::StretchVert() {
             dest_a +=
                 pixel_weight * src_scan[(j - m_SrcClip.top) * m_InterPitch];
           }
-          if (m_ResampleOptions.bInterpolateBicubic)
-            dest_a = pdfium::clamp(dest_a, 0, kMaxDestValue);
           *dest_scan = static_cast<uint8_t>(dest_a >> 16);
           dest_scan += DestBpp;
         }
@@ -643,10 +523,6 @@ void CStretchEngine::StretchVert() {
             dest_a += pixel_weight *
                       src_scan_mask[(j - m_SrcClip.top) * m_ExtraMaskPitch];
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_k = pdfium::clamp(dest_k, 0, kMaxDestValue);
-            dest_a = pdfium::clamp(dest_a, 0, kMaxDestValue);
-          }
           *dest_scan = static_cast<uint8_t>(dest_k >> 16);
           dest_scan += DestBpp;
           *dest_scan_mask++ = static_cast<uint8_t>(dest_a >> 16);
@@ -658,9 +534,9 @@ void CStretchEngine::StretchVert() {
         for (int col = m_DestClip.left; col < m_DestClip.right; ++col) {
           unsigned char* src_scan =
               m_InterBuf.data() + (col - m_DestClip.left) * DestBpp;
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = table.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
@@ -669,18 +545,13 @@ void CStretchEngine::StretchVert() {
             int pixel_weight = *pWeight;
             const uint8_t* src_pixel =
                 src_scan + (j - m_SrcClip.top) * m_InterPitch;
-            dest_b_c += pixel_weight * (*src_pixel++);
-            dest_g_m += pixel_weight * (*src_pixel++);
-            dest_r_y += pixel_weight * (*src_pixel);
+            dest_b += pixel_weight * (*src_pixel++);
+            dest_g += pixel_weight * (*src_pixel++);
+            dest_r += pixel_weight * (*src_pixel);
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-          }
-          dest_scan[0] = static_cast<uint8_t>((dest_b_c) >> 16);
-          dest_scan[1] = static_cast<uint8_t>((dest_g_m) >> 16);
-          dest_scan[2] = static_cast<uint8_t>((dest_r_y) >> 16);
+          dest_scan[0] = static_cast<uint8_t>(dest_b >> 16);
+          dest_scan[1] = static_cast<uint8_t>(dest_g >> 16);
+          dest_scan[2] = static_cast<uint8_t>(dest_r >> 16);
           dest_scan += DestBpp;
         }
         break;
@@ -691,12 +562,12 @@ void CStretchEngine::StretchVert() {
           unsigned char* src_scan =
               m_InterBuf.data() + (col - m_DestClip.left) * DestBpp;
           unsigned char* src_scan_mask = nullptr;
-          if (m_DestFormat != FXDIB_Argb)
+          if (m_DestFormat != FXDIB_Format::kArgb)
             src_scan_mask = m_ExtraAlphaBuf.data() + (col - m_DestClip.left);
           int dest_a = 0;
-          int dest_r_y = 0;
-          int dest_g_m = 0;
-          int dest_b_c = 0;
+          int dest_r = 0;
+          int dest_g = 0;
+          int dest_b = 0;
           for (int j = pWeights->m_SrcStart; j <= pWeights->m_SrcEnd; ++j) {
             int* pWeight = table.GetValueFromPixelWeight(pWeights, j);
             if (!pWeight)
@@ -708,29 +579,23 @@ void CStretchEngine::StretchVert() {
             int mask_v = 255;
             if (src_scan_mask)
               mask_v = src_scan_mask[(j - m_SrcClip.top) * m_ExtraMaskPitch];
-            dest_b_c += pixel_weight * (*src_pixel++);
-            dest_g_m += pixel_weight * (*src_pixel++);
-            dest_r_y += pixel_weight * (*src_pixel);
-            if (m_DestFormat == FXDIB_Argb)
+            dest_b += pixel_weight * (*src_pixel++);
+            dest_g += pixel_weight * (*src_pixel++);
+            dest_r += pixel_weight * (*src_pixel);
+            if (m_DestFormat == FXDIB_Format::kArgb)
               dest_a += pixel_weight * (*(src_pixel + 1));
             else
               dest_a += pixel_weight * mask_v;
           }
-          if (m_ResampleOptions.bInterpolateBicubic) {
-            dest_r_y = pdfium::clamp(dest_r_y, 0, kMaxDestValue);
-            dest_g_m = pdfium::clamp(dest_g_m, 0, kMaxDestValue);
-            dest_b_c = pdfium::clamp(dest_b_c, 0, kMaxDestValue);
-            dest_a = pdfium::clamp(dest_a, 0, kMaxDestValue);
-          }
           if (dest_a) {
-            int r = static_cast<uint32_t>(dest_r_y) * 255 / dest_a;
-            int g = static_cast<uint32_t>(dest_g_m) * 255 / dest_a;
-            int b = static_cast<uint32_t>(dest_b_c) * 255 / dest_a;
+            int r = static_cast<uint32_t>(dest_r) * 255 / dest_a;
+            int g = static_cast<uint32_t>(dest_g) * 255 / dest_a;
+            int b = static_cast<uint32_t>(dest_b) * 255 / dest_a;
             dest_scan[0] = pdfium::clamp(b, 0, 255);
             dest_scan[1] = pdfium::clamp(g, 0, 255);
             dest_scan[2] = pdfium::clamp(r, 0, 255);
           }
-          if (m_DestFormat == FXDIB_Argb)
+          if (m_DestFormat == FXDIB_Format::kArgb)
             dest_scan[3] = static_cast<uint8_t>((dest_a) >> 16);
           else
             *dest_scan_mask = static_cast<uint8_t>((dest_a) >> 16);

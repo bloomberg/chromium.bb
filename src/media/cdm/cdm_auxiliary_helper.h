@@ -17,6 +17,7 @@
 #include "media/cdm/output_protection.h"
 #include "media/cdm/platform_verification.h"
 #include "media/media_buildflags.h"
+#include "url/origin.h"
 
 namespace cdm {
 class FileIO;
@@ -45,6 +46,10 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   // directly. Instead, it should call cdm::FileIO::Close() after it's not
   // needed anymore.
   virtual cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client);
+
+  // Gets the origin of the frame associated with the CDM, which could be empty
+  // if the origin is unavailable or if error happened.
+  virtual url::Origin GetCdmOrigin();
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;

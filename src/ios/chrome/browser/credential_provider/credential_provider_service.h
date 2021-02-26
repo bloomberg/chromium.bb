@@ -9,46 +9,109 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/driver/sync_service_observer.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
 
+@class ArchivableCredential;
 @class ArchivableCredentialStore;
+
+namespace syncer {
+class SyncService;
+}
 
 // A browser-context keyed service that is used to keep the Credential Provider
 // Extension data up to date.
 class CredentialProviderService
     : public KeyedService,
       public password_manager::PasswordStoreConsumer,
-      public password_manager::PasswordStore::Observer {
+      public password_manager::PasswordStore::Observer,
+      public signin::IdentityManager::Observer,
+      public syncer::SyncServiceObserver {
  public:
   // Initializes the service.
   CredentialProviderService(
       scoped_refptr<password_manager::PasswordStore> password_store,
-      ArchivableCredentialStore* credential_store);
+      AuthenticationService* authentication_service,
+      ArchivableCredentialStore* credential_store,
+      signin::IdentityManager* identity_manager,
+      syncer::SyncService* sync_service);
   ~CredentialProviderService() override;
 
   // KeyedService:
   void Shutdown() override;
+
+  // IdentityManager::Observer.
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   // Request all the credentials to sync them. Before adding the fresh ones,
   // the old ones are deleted.
   void RequestSyncAllCredentials();
 
+  // Evaluates if a credential refresh is needed, and request all the
+  // credentials to sync them if needed.
+  void RequestSyncAllCredentialsIfNeeded();
+
+  // Replaces all data with credentials created from the passed forms and then
+  // syncs to disk.
+  void SyncAllCredentials(
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> forms);
+
   // Syncs the credential store to disk.
-  void SyncStore(void (^completion)(NSError*)) const;
+  void SyncStore(bool set_first_time_sync_flag);
+
+  // Add credentials from |forms|.
+  void AddCredentials(
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> forms);
+
+  // Removes credentials from |forms|.
+  void RemoveCredentials(
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> forms);
+
+  // Syncs account_validation_id_.
+  void UpdateAccountValidationId();
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
+      override;
 
   // PasswordStore::Observer:
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
+  // Completion called after the affiliations are injected in the added forms.
+  // If no affiliation matcher is available, it is called right away.
+  void OnInjectedAffiliationAfterLoginsChanged(
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> forms);
+
+  // syncer::SyncServiceObserver:
+  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
+  // The interface for getting the primary account identifier.
+  AuthenticationService* authentication_service_ = nullptr;
+
+  // Identity manager to observe.
+  signin::IdentityManager* identity_manager_ = nullptr;
+
+  // Sync Service to observe.
+  syncer::SyncService* sync_service_ = nullptr;
+
   // The interface for saving and updating credentials.
   ArchivableCredentialStore* archivable_credential_store_ = nil;
+
+  // The current validation ID or nil.
+  NSString* account_validation_id_ = nil;
+
+  // Weak pointer factory.
+  base::WeakPtrFactory<CredentialProviderService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CredentialProviderService);
 };

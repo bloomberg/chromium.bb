@@ -30,7 +30,7 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 class ContextFactory;
 #endif
 class TouchEditingControllerFactory;
@@ -133,14 +133,16 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns true if the window passed in is in the Windows 8 metro
   // environment.
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const;
-#elif defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#elif BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+  (defined(OS_LINUX) || defined(OS_CHROMEOS))
   virtual gfx::ImageSkia* GetDefaultWindowIcon() const;
 #endif
 
   // Creates a default NonClientFrameView to be used for windows that don't
   // specify their own. If this function returns NULL, the
   // views::CustomFrameView type will be used.
-  virtual NonClientFrameView* CreateDefaultNonClientFrameView(Widget* widget);
+  virtual std::unique_ptr<NonClientFrameView> CreateDefaultNonClientFrameView(
+      Widget* widget);
 
   // AddRef/ReleaseRef are invoked while a menu is visible. They are used to
   // ensure we don't attempt to exit while a menu is showing.
@@ -160,7 +162,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
 #endif

@@ -6,12 +6,13 @@ include_rules = [
   "+ui/events",
   "+ui/base/x",
   "+ui/gfx",
+  "+ui/ozone/buildflags.h",
 ]
 
 specific_include_rules = {
 # Allow us to include ANGLE's base platform implementation.
   "angle_platform_impl.cc": [
-    "+third_party/angle/include/platform/Platform.h",
+    "+third_party/angle/include/platform/PlatformMethods.h",
   ],
   "direct_composition_surface_win_unittest.cc": [
     "+ui/base/win/hidden_window.h",
@@ -21,7 +22,16 @@ specific_include_rules = {
     "+third_party/angle/include/EGL/egl.h",
     "+third_party/angle/include/EGL/eglext.h",
   ],
+  "gl_fence_win_unittest.cc": [
+    "+media/base/win/d3d11_mocks.h",
+  ],
   "gl_surface_egl_unittest.cc": [
     "+ui/platform_window",
+  ],
+  "gl_image_egl_pixmap.cc": [
+    "+ui/base/ui_base_features.h",
+  ],
+  "hdr_metadata_helper_win_unittest.cc": [
+    "+media/base/win/d3d11_mocks.h",
   ],
 }

@@ -11,10 +11,13 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 
@@ -24,7 +27,6 @@ namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
-class ServiceWorkerResponseMetadataWriter;
 
 // Class that maintains the mapping between urls and a resource id
 // for a particular version's implicit script resources.
@@ -73,22 +75,29 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   friend class ServiceWorkerVersion;
   friend class ServiceWorkerVersionBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerReadFromCacheJobTest, ResourceNotFound);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerBrowserTest,
+                           DispatchFetchEventToBrokenWorker);
 
   ServiceWorkerScriptCacheMap(
       ServiceWorkerVersion* owner,
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerScriptCacheMap();
 
+  void OnWriterDisconnected(int64_t resource_id);
   void OnMetadataWritten(
-      std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
-      net::CompletionOnceCallback callback,
+      mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter>,
+      int64_t resource_id,
       int result);
+
+  void RunCallback(int64_t resource_id, int result);
 
   ServiceWorkerVersion* owner_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ResourceMap resource_map_;
   int main_script_net_error_ = net::OK;
   std::string main_script_status_message_;
+  base::flat_map</*resource_id=*/int64_t, net::CompletionOnceCallback>
+      callbacks_;
 
   base::WeakPtrFactory<ServiceWorkerScriptCacheMap> weak_factory_{this};
 

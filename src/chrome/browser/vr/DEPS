@@ -4,6 +4,7 @@ include_rules = [
   "+cc/test",
   "+cc/trees",
   "+chrome/android/features/vr/jni_headers",
+  "+components/webxr",
   "+device/vr",
 ]
 
@@ -12,6 +13,5 @@ include_rules = [
 specific_include_rules = {
   ".*test.*\.cc": [
     "+device/vr/test/test_hook.h",
-    "+third_party/openvr/src/headers/openvr.h",
   ]
 }

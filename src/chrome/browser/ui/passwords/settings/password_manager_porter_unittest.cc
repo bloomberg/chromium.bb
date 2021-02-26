@@ -298,7 +298,7 @@ class PasswordManagerPorterStoreTest
 MATCHER(FormHasDescription, "") {
   const auto& form = std::get<0>(arg);
   const auto& desc = std::get<1>(arg);
-  return form.origin == GURL(desc.origin) &&
+  return form.url == GURL(desc.origin) &&
          form.username_value == base::ASCIIToUTF16(desc.username) &&
          form.password_value == base::ASCIIToUTF16(desc.password);
 }
@@ -344,7 +344,7 @@ TEST_P(PasswordManagerPorterStoreTest, Import) {
   EXPECT_THAT(credentials.second,
               UnorderedPointwise(FormHasDescription(), tc.descriptions));
 
-  base::DeleteFile(temp_file_path, /*recursive=*/false);
+  base::DeleteFile(temp_file_path);
   store->ShutdownOnUIThread();
 }
 

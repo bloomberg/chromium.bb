@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/css/media_values.h"
 
 #include "third_party/blink/public/common/css/screen_spanning.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
@@ -22,21 +22,21 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
 namespace blink {
 
-PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id) {
+mojom::blink::PreferredColorScheme CSSValueIDToPreferredColorScheme(
+    CSSValueID id) {
   switch (id) {
-    case CSSValueID::kNoPreference:
-      return PreferredColorScheme::kNoPreference;
     case CSSValueID::kLight:
-      return PreferredColorScheme::kLight;
+      return mojom::blink::PreferredColorScheme::kLight;
     case CSSValueID::kDark:
-      return PreferredColorScheme::kDark;
+      return mojom::blink::PreferredColorScheme::kDark;
     default:
       NOTREACHED();
-      return PreferredColorScheme::kNoPreference;
+      return mojom::blink::PreferredColorScheme::kLight;
   }
 }
 
@@ -62,9 +62,9 @@ double MediaValues::CalculateViewportHeight(LocalFrame* frame) {
 
 int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
-  blink::WebScreenInfo screen_info =
+  blink::ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
-  int device_width = screen_info.rect.width;
+  int device_width = screen_info.rect.width();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_width = static_cast<int>(
         lroundf(device_width * screen_info.device_scale_factor));
@@ -74,9 +74,9 @@ int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
 
 int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
-  blink::WebScreenInfo screen_info =
+  blink::ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
-  int device_height = screen_info.rect.height;
+  int device_height = screen_info.rect.height();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_height = static_cast<int>(
         lroundf(device_height * screen_info.device_scale_factor));
@@ -97,7 +97,7 @@ float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
 int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  WebScreenInfo screen_info =
+  ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   if (screen_info.is_monochrome)
     return 0;
@@ -107,7 +107,7 @@ int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
 int MediaValues::CalculateMonochromeBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  WebScreenInfo screen_info =
+  ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   if (!screen_info.is_monochrome)
     return 0;
@@ -150,7 +150,7 @@ bool MediaValues::CalculateInImmersiveMode(LocalFrame* frame) {
   return frame->GetSettings()->GetImmersiveModeEnabled();
 }
 
-PointerType MediaValues::CalculatePrimaryPointerType(LocalFrame* frame) {
+ui::PointerType MediaValues::CalculatePrimaryPointerType(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   return frame->GetSettings()->GetPrimaryPointerType();
@@ -162,7 +162,7 @@ int MediaValues::CalculateAvailablePointerTypes(LocalFrame* frame) {
   return frame->GetSettings()->GetAvailablePointerTypes();
 }
 
-HoverType MediaValues::CalculatePrimaryHoverType(LocalFrame* frame) {
+ui::HoverType MediaValues::CalculatePrimaryHoverType(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   return frame->GetSettings()->GetPrimaryHoverType();
@@ -174,15 +174,6 @@ int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
   return frame->GetSettings()->GetAvailableHoverTypes();
 }
 
-DisplayShape MediaValues::CalculateDisplayShape(LocalFrame* frame) {
-  DCHECK(frame);
-  DCHECK(frame->GetPage());
-  return frame->GetPage()
-      ->GetChromeClient()
-      .GetScreenInfo(*frame)
-      .display_shape;
-}
-
 ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
@@ -190,7 +181,7 @@ ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame));
 }
 
-PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
+mojom::blink::PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
     LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
@@ -204,6 +195,13 @@ PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
   return frame->GetDocument()->GetStyleEngine().GetPreferredColorScheme();
 }
 
+mojom::blink::PreferredContrast MediaValues::CalculatePreferredContrast(
+    LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetPreferredContrast();
+}
+
 bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
@@ -213,6 +211,18 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
       return value.id == CSSValueID::kReduce;
   }
   return frame->GetSettings()->GetPrefersReducedMotion();
+}
+
+bool MediaValues::CalculatePrefersReducedData(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-reduced-data");
+    if (value.IsValid())
+      return value.id == CSSValueID::kReduce;
+  }
+  return (GetNetworkStateNotifier().SaveDataEnabled() &&
+          !frame->GetSettings()->GetDataSaverHoldbackWebApi());
 }
 
 ForcedColors MediaValues::CalculateForcedColors() {
@@ -229,8 +239,25 @@ NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {
 }
 
 ScreenSpanning MediaValues::CalculateScreenSpanning(LocalFrame* frame) {
-  // TODO(dlibby): Retrieve info propagated from the host as to our]
-  // screen-spanning state.
+  if (!frame->GetWidgetForLocalRoot())
+    return ScreenSpanning::kNone;
+
+  WebVector<WebRect> window_segments =
+      frame->GetWidgetForLocalRoot()->WindowSegments();
+
+  if (window_segments.size() == 2) {
+    // If there are two segments and the y value of the segments is the same,
+    // we have side-by-side segments which are represented as a single vertical
+    // fold.
+    if (window_segments[0].y == window_segments[1].y)
+      return ScreenSpanning::kSingleFoldVertical;
+
+    // If the x value of the segments is the same, we have stacked segments
+    // which are represented as a single horizontal fold.
+    if (window_segments[0].x == window_segments[1].x)
+      return ScreenSpanning::kSingleFoldHorizontal;
+  }
+
   return ScreenSpanning::kNone;
 }
 

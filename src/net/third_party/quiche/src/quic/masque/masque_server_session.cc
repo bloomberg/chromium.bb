@@ -30,7 +30,7 @@ MasqueServerSession::MasqueServerSession(
   masque_server_backend_->RegisterBackendClient(connection_id(), this);
 }
 
-void MasqueServerSession::OnMessageReceived(quiche::QuicheStringPiece message) {
+void MasqueServerSession::OnMessageReceived(absl::string_view message) {
   QUIC_DVLOG(1) << "Received DATAGRAM frame of length " << message.length();
 
   QuicConnectionId client_connection_id, server_connection_id;
@@ -81,7 +81,7 @@ void MasqueServerSession::OnConnectionClosed(
 
 std::unique_ptr<QuicBackendResponse> MasqueServerSession::HandleMasqueRequest(
     const std::string& masque_path,
-    const spdy::SpdyHeaderBlock& /*request_headers*/,
+    const spdy::Http2HeaderBlock& /*request_headers*/,
     const std::string& request_body,
     QuicSimpleServerBackend::RequestHandler* /*request_handler*/) {
   QUIC_DLOG(INFO) << "MasqueServerSession handling MASQUE request";
@@ -107,7 +107,7 @@ std::unique_ptr<QuicBackendResponse> MasqueServerSession::HandleMasqueRequest(
 
   // TODO(dschinazi) implement binary protocol sent in response body.
   const std::string response_body = "";
-  spdy::SpdyHeaderBlock response_headers;
+  spdy::Http2HeaderBlock response_headers;
   response_headers[":status"] = "200";
   auto response = std::make_unique<QuicBackendResponse>();
   response->set_response_type(QuicBackendResponse::REGULAR_RESPONSE);

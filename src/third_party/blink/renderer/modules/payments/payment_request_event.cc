@@ -44,6 +44,7 @@ PaymentRequestEvent* PaymentRequestEvent::Create(
       wait_until_observer, execution_context);
 }
 
+// TODO(crbug.com/1070871): Use fooOr() in members' initializers.
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
     const PaymentRequestEventInit* initializer,
@@ -52,9 +53,14 @@ PaymentRequestEvent::PaymentRequestEvent(
     WaitUntilObserver* wait_until_observer,
     ExecutionContext* execution_context)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_origin_(initializer->topOrigin()),
-      payment_request_origin_(initializer->paymentRequestOrigin()),
-      payment_request_id_(initializer->paymentRequestId()),
+      top_origin_(initializer->hasTopOrigin() ? initializer->topOrigin()
+                                              : String()),
+      payment_request_origin_(initializer->hasPaymentRequestOrigin()
+                                  ? initializer->paymentRequestOrigin()
+                                  : String()),
+      payment_request_id_(initializer->hasPaymentRequestId()
+                              ? initializer->paymentRequestId()
+                              : String()),
       method_data_(initializer->hasMethodData()
                        ? initializer->methodData()
                        : HeapVector<Member<PaymentMethodData>>()),
@@ -63,7 +69,9 @@ PaymentRequestEvent::PaymentRequestEvent(
       modifiers_(initializer->hasModifiers()
                      ? initializer->modifiers()
                      : HeapVector<Member<PaymentDetailsModifier>>()),
-      instrument_key_(initializer->instrumentKey()),
+      instrument_key_(initializer->hasInstrumentKey()
+                          ? initializer->instrumentKey()
+                          : String()),
       payment_options_(initializer->hasPaymentOptions()
                            ? initializer->paymentOptions()
                            : PaymentOptions::Create()),
@@ -180,14 +188,6 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
 ScriptPromise PaymentRequestEvent::changePaymentMethod(
     ScriptState* script_state,
     const String& method_name,
-    ExceptionState& exception_state) {
-  return changePaymentMethod(script_state, method_name, ScriptValue(),
-                             exception_state);
-}
-
-ScriptPromise PaymentRequestEvent::changePaymentMethod(
-    ScriptState* script_state,
-    const String& method_name,
     const ScriptValue& method_details,
     ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
@@ -205,9 +205,10 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
   }
 
   auto method_data = payments::mojom::blink::PaymentHandlerMethodData::New();
-  if (!method_details.IsEmpty()) {
+  if (!method_details.IsNull()) {
+    DCHECK(!method_details.IsEmpty());
     PaymentsValidators::ValidateAndStringifyObject(
-        script_state->GetIsolate(), "Method details", method_details,
+        script_state->GetIsolate(), method_details,
         method_data->stringified_data, exception_state);
     if (exception_state.HadException())
       return ScriptPromise();
@@ -321,7 +322,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
   }
 }
 
-void PaymentRequestEvent::Trace(Visitor* visitor) {
+void PaymentRequestEvent::Trace(Visitor* visitor) const {
   visitor->Trace(method_data_);
   visitor->Trace(total_);
   visitor->Trace(modifiers_);

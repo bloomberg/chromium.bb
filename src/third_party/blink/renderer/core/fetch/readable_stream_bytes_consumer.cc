@@ -58,7 +58,7 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
     return v;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -84,7 +84,7 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
     return v;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -95,9 +95,8 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
 
 ReadableStreamBytesConsumer::ReadableStreamBytesConsumer(
     ScriptState* script_state,
-    ReadableStream* stream,
-    ExceptionState& exception_state)
-    : reader_(stream->GetReaderNotForAuthorCode(script_state, exception_state)),
+    ReadableStream* stream)
+    : reader_(stream->GetReaderNotForAuthorCode(script_state)),
       script_state_(script_state) {}
 
 ReadableStreamBytesConsumer::~ReadableStreamBytesConsumer() {}
@@ -113,10 +112,10 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
     return Result::kDone;
 
   if (pending_buffer_) {
-    DCHECK_LE(pending_offset_, pending_buffer_->lengthAsSizeT());
+    DCHECK_LE(pending_offset_, pending_buffer_->length());
     *buffer = reinterpret_cast<const char*>(pending_buffer_->Data()) +
               pending_offset_;
-    *available = pending_buffer_->lengthAsSizeT() - pending_offset_;
+    *available = pending_buffer_->length() - pending_offset_;
     return Result::kOk;
   }
   if (!is_reading_) {
@@ -142,9 +141,9 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
 
 BytesConsumer::Result ReadableStreamBytesConsumer::EndRead(size_t read_size) {
   DCHECK(pending_buffer_);
-  DCHECK_LE(pending_offset_ + read_size, pending_buffer_->lengthAsSizeT());
+  DCHECK_LE(pending_offset_ + read_size, pending_buffer_->length());
   pending_offset_ += read_size;
-  if (pending_offset_ >= pending_buffer_->lengthAsSizeT()) {
+  if (pending_offset_ >= pending_buffer_->length()) {
     pending_buffer_ = nullptr;
     pending_offset_ = 0;
   }
@@ -177,7 +176,7 @@ BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
   return Error("Failed to read from a ReadableStream.");
 }
 
-void ReadableStreamBytesConsumer::Trace(Visitor* visitor) {
+void ReadableStreamBytesConsumer::Trace(Visitor* visitor) const {
   visitor->Trace(reader_);
   visitor->Trace(client_);
   visitor->Trace(pending_buffer_);

@@ -11,15 +11,16 @@ import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Callback;
+import org.chromium.base.CallbackController;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -40,8 +41,7 @@ public class EmptyBackgroundViewWrapper {
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final SnackbarManager mSnackbarManager;
 
-    private final ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
-    private final Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
+    CallbackController mCallbackController = new CallbackController();
     private @Nullable OverviewModeBehavior mOverviewModeBehavior;
 
     private EmptyBackgroundViewTablet mBackgroundView;
@@ -62,17 +62,15 @@ public class EmptyBackgroundViewWrapper {
     public EmptyBackgroundViewWrapper(TabModelSelector selector, TabCreator tabCreator,
             Activity activity, @Nullable AppMenuHandler menuHandler,
             SnackbarManager snackbarManager,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mActivity = activity;
         mMenuHandler = menuHandler;
         mTabModelSelector = selector;
         mTabCreator = tabCreator;
         mSnackbarManager = snackbarManager;
 
-        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
-        mOverviewModeSupplierCallback =
-                overviewModeBehavior -> mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeBehaviorSupplier.addObserver(mOverviewModeSupplierCallback);
+        overviewModeBehaviorSupplier.onAvailable(mCallbackController.makeCancelable(
+                overviewModeBehavior -> mOverviewModeBehavior = overviewModeBehavior));
 
         mTabModelObserver = new TabModelObserver() {
             @Override
@@ -118,7 +116,10 @@ public class EmptyBackgroundViewWrapper {
      * Called when the containing activity is being destroyed.
      */
     public void destroy() {
-        mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeSupplierCallback);
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
     }
 
     /**

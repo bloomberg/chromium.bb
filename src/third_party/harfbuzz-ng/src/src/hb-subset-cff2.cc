@@ -303,13 +303,13 @@ struct cff2_subset_plan {
     if (acc.fdSelect != &Null (CFF2FDSelect))
     {
       if (unlikely (!hb_plan_subset_cff_fdselect (plan,
-				  orig_fdcount,
-				  *(const FDSelect *)acc.fdSelect,
-				  subset_fdcount,
-				  subset_fdselect_size,
-				  subset_fdselect_format,
-				  subset_fdselect_ranges,
-				  fdmap)))
+						  orig_fdcount,
+						  *(const FDSelect *)acc.fdSelect,
+						  subset_fdcount,
+						  subset_fdselect_size,
+						  subset_fdselect_format,
+						  subset_fdselect_ranges,
+						  fdmap)))
 	return false;
     }
     else
@@ -343,7 +343,7 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
 {
   /* private dicts & local subrs */
   hb_vector_t<table_info_t>  private_dict_infos;
-  private_dict_infos.resize (plan.subset_fdcount);
+  if (unlikely (!private_dict_infos.resize (plan.subset_fdcount))) return false;
 
   for (int i = (int)acc.privateDicts.length; --i >= 0 ;)
   {

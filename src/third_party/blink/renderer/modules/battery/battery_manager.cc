@@ -88,7 +88,7 @@ void BatteryManager::DidUpdateData() {
 }
 
 void BatteryManager::RegisterWithDispatcher() {
-  BatteryDispatcher::Instance().AddController(this, GetFrame());
+  BatteryDispatcher::Instance().AddController(this, DomWindow());
 }
 
 void BatteryManager::UnregisterWithDispatcher() {
@@ -124,7 +124,7 @@ bool BatteryManager::HasPendingActivity() const {
           battery_property_->GetState() == BatteryProperty::kPending);
 }
 
-void BatteryManager::Trace(Visitor* visitor) {
+void BatteryManager::Trace(Visitor* visitor) const {
   visitor->Trace(battery_property_);
   PlatformEventController::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

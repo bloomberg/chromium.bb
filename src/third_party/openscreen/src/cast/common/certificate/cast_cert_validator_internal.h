@@ -7,14 +7,29 @@
 
 #include <openssl/x509.h>
 
+#include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "platform/base/error.h"
-
 namespace openscreen {
 namespace cast {
 
 struct TrustStore {
+  enum class Mode {
+    // In strict mode, only certificates signed by a CA will be accepted as
+    // part of authentication. Note that if a self-signed certificate is placed
+    // in a strict mode TrustStore, it cannot be used for authentication.
+    kStrict,
+
+    // In allow self signed mode, certificates signed by an arbitrary private
+    // key that have been placed in this trust store will be allowed. Note
+    // that certificates must still otherwise be valid.
+    kAllowSelfSigned
+  };
+
+  static TrustStore CreateInstanceFromPemFile(absl::string_view file_path);
+
   std::vector<bssl::UniquePtr<X509>> certs;
 };
 

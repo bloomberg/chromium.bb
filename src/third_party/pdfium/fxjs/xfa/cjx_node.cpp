@@ -11,18 +11,19 @@
 #include <vector>
 
 #include "core/fxcrt/cfx_memorystream.h"
+#include "core/fxcrt/cfx_readonlymemorystream.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/xml/cfx_xmldocument.h"
-#include "core/fxcrt/xml/cfx_xmlnode.h"
+#include "core/fxcrt/xml/cfx_xmlelement.h"
+#include "core/fxcrt/xml/cfx_xmlparser.h"
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
-#include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
-#include "xfa/fxfa/parser/cxfa_document_parser.h"
+#include "xfa/fxfa/parser/cxfa_document_builder.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/xfa_basic_data.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
@@ -153,10 +154,6 @@ bool CJX_Node::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
 }
 
-CXFA_Node* CJX_Node::GetXFANode() const {
-  return ToNode(GetXFAObject());
-}
-
 CJS_Result CJX_Node::applyXSL(CFX_V8* runtime,
                               const std::vector<v8::Local<v8::Value>>& params) {
   if (params.size() != 1)
@@ -182,12 +179,9 @@ CJS_Result CJX_Node::clone(CFX_V8* runtime,
     return CJS_Result::Failure(JSMessage::kParamError);
 
   CXFA_Node* pCloneNode = GetXFANode()->Clone(runtime->ToBoolean(params[0]));
-  CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-          pCloneNode);
-
   return CJS_Result::Success(
-      value->DirectGetValue().Get(runtime->GetIsolate()));
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pCloneNode));
 }
 
 CJS_Result CJX_Node::getAttribute(
@@ -198,7 +192,7 @@ CJS_Result CJX_Node::getAttribute(
 
   WideString expression = runtime->ToWideString(params[0]);
   return CJS_Result::Success(runtime->NewString(
-      GetAttribute(expression.AsStringView()).ToUTF8().AsStringView()));
+      GetAttributeByString(expression.AsStringView()).ToUTF8().AsStringView()));
 }
 
 CJS_Result CJX_Node::getElement(
@@ -217,11 +211,8 @@ CJS_Result CJX_Node::getElement(
   if (!pNode)
     return CJS_Result::Success(runtime->NewNull());
 
-  CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode);
-
   return CJS_Result::Success(
-      value->DirectGetValue().Get(runtime->GetIsolate()));
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode));
 }
 
 CJS_Result CJX_Node::isPropertySpecified(
@@ -269,14 +260,19 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
   if (params.size() >= 3)
     bOverwrite = runtime->ToBoolean(params[2]);
 
-  auto pParser = pdfium::MakeUnique<CXFA_DocumentParser>(GetDocument());
-  CFX_XMLNode* pXMLNode = pParser->ParseXMLData(expression);
+  auto stream =
+      pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(expression.raw_span());
+
+  CFX_XMLParser parser(stream);
+  std::unique_ptr<CFX_XMLDocument> xml_doc = parser.Parse();
+  CXFA_DocumentBuilder builder(GetDocument());
+  CFX_XMLNode* pXMLNode = builder.Build(xml_doc.get());
   if (!pXMLNode)
     return CJS_Result::Success();
 
   CFX_XMLDocument* top_xml_doc =
-      GetXFANode()->GetDocument()->GetNotify()->GetHDOC()->GetXMLDocument();
-  top_xml_doc->AppendNodesFrom(pParser->GetXMLDoc().get());
+      GetXFANode()->GetDocument()->GetNotify()->GetFFDoc()->GetXMLDocument();
+  top_xml_doc->AppendNodesFrom(xml_doc.get());
 
   if (bIgnoreRoot &&
       (pXMLNode->GetType() != CFX_XMLNode::Type::kElement ||
@@ -288,7 +284,7 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
   WideString wsContentType = GetCData(XFA_Attribute::ContentType);
   if (!wsContentType.IsEmpty()) {
     pFakeRoot->JSObject()->SetCData(XFA_Attribute::ContentType,
-                                    WideString(wsContentType), false, false);
+                                    WideString(wsContentType));
   }
 
   CFX_XMLNode* pFakeXMLRoot = pFakeRoot->GetXMLMappingNode();
@@ -317,8 +313,8 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
     pFakeXMLRoot->AppendLastChild(pXMLNode);
   }
 
-  pParser->ConstructXFANode(pFakeRoot, pFakeXMLRoot);
-  pFakeRoot = pParser->GetRootNode();
+  builder.ConstructXFANode(pFakeRoot, pFakeXMLRoot);
+  pFakeRoot = builder.GetRootNode();
   if (!pFakeRoot)
     return CJS_Result::Success();
 
@@ -432,7 +428,7 @@ CJS_Result CJX_Node::setAttribute(
   WideString attribute = runtime->ToWideString(params[1]);
 
   // Pass them to our method, however, in the more usual manner.
-  SetAttribute(attribute.AsStringView(), attributeValue.AsStringView(), true);
+  SetAttributeByString(attribute.AsStringView(), attributeValue);
   return CJS_Result::Success();
 }
 
@@ -446,7 +442,8 @@ CJS_Result CJX_Node::setElement(
   return CJS_Result::Success();
 }
 
-void CJX_Node::ns(CFXJSE_Value* pValue,
+void CJX_Node::ns(v8::Isolate* pIsolate,
+                  CFXJSE_Value* pValue,
                   bool bSetting,
                   XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -454,31 +451,35 @@ void CJX_Node::ns(CFXJSE_Value* pValue,
     return;
   }
   pValue->SetString(
-      TryNamespace().value_or(WideString()).ToUTF8().AsStringView());
+      pIsolate, TryNamespace().value_or(WideString()).ToUTF8().AsStringView());
 }
 
-void CJX_Node::model(CFXJSE_Value* pValue,
+void CJX_Node::model(v8::Isolate* pIsolate,
+                     CFXJSE_Value* pValue,
                      bool bSetting,
                      XFA_Attribute eAttribute) {
   if (bSetting) {
     ThrowInvalidPropertyException();
     return;
   }
-  pValue->Assign(GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-      GetXFANode()->GetModelNode()));
+  pValue->ForceSetValue(
+      pIsolate, GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+                    GetXFANode()->GetModelNode()));
 }
 
-void CJX_Node::isContainer(CFXJSE_Value* pValue,
+void CJX_Node::isContainer(v8::Isolate* pIsolate,
+                           CFXJSE_Value* pValue,
                            bool bSetting,
                            XFA_Attribute eAttribute) {
   if (bSetting) {
     ThrowInvalidPropertyException();
     return;
   }
-  pValue->SetBoolean(GetXFANode()->IsContainerNode());
+  pValue->SetBoolean(pIsolate, GetXFANode()->IsContainerNode());
 }
 
-void CJX_Node::isNull(CFXJSE_Value* pValue,
+void CJX_Node::isNull(v8::Isolate* pIsolate,
+                      CFXJSE_Value* pValue,
                       bool bSetting,
                       XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -486,13 +487,14 @@ void CJX_Node::isNull(CFXJSE_Value* pValue,
     return;
   }
   if (GetXFANode()->GetElementType() == XFA_Element::Subform) {
-    pValue->SetBoolean(false);
+    pValue->SetBoolean(pIsolate, false);
     return;
   }
-  pValue->SetBoolean(GetContent(false).IsEmpty());
+  pValue->SetBoolean(pIsolate, GetContent(false).IsEmpty());
 }
 
-void CJX_Node::oneOfChild(CFXJSE_Value* pValue,
+void CJX_Node::oneOfChild(v8::Isolate* pIsolate,
+                          CFXJSE_Value* pValue,
                           bool bSetting,
                           XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -503,7 +505,8 @@ void CJX_Node::oneOfChild(CFXJSE_Value* pValue,
   std::vector<CXFA_Node*> properties =
       GetXFANode()->GetNodeListWithFilter(XFA_NODEFILTER_OneOfProperty);
   if (!properties.empty()) {
-    pValue->Assign(
+    pValue->ForceSetValue(
+        pIsolate,
         GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
             properties.front()));
   }

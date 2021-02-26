@@ -113,6 +113,7 @@ class Array2D {
   int columns() const { return data_view_.columns(); }
   size_t size() const { return size_; }
   T* data() { return data_.get(); }
+  const T* data() const { return data_.get(); }
 
   T* operator[](int row) { return data_view_[row]; }
 

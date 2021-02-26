@@ -49,7 +49,7 @@ uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
 uint32_t kInitialCryptohomeBackoffIntervalMs = 200u;
 
 // Calculates the backoff interval that should be used next.
-// |backoff| The last backoff interval used.
+// `backoff` The last backoff interval used.
 uint32_t GetNextBackoffInterval(uint32_t backoff) {
   if (backoff == 0u)
     return kInitialCryptohomeBackoffIntervalMs;
@@ -61,12 +61,12 @@ void LoadDataForUser(
     uint32_t backoff_ms,
     const EasyUnlockKeyManager::GetDeviceDataListCallback& callback);
 
-// Callback passed to |LoadDataForUser()|.
-// If |LoadDataForUser| function succeeded, it invokes |callback| with the
+// Callback passed to `LoadDataForUser()`.
+// If `LoadDataForUser` function succeeded, it invokes `callback` with the
 // results.
-// If |LoadDataForUser| failed and further retries are allowed, schedules new
-// |LoadDataForUser| call with some backoff. If no further retires are allowed,
-// it invokes |callback| with the |LoadDataForUser| results.
+// If `LoadDataForUser` failed and further retries are allowed, schedules new
+// `LoadDataForUser` call with some backoff. If no further retires are allowed,
+// it invokes `callback` with the `LoadDataForUser` results.
 void RetryDataLoadOnError(
     const AccountId& account_id,
     uint32_t backoff_ms,
@@ -385,10 +385,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   if (account_id_ == account_id)
     return;
 
-  // Setting or clearing the account_id may changed |IsAllowed| value, so in
-  // these cases update the app state. Otherwise, it's enough to notify the app
-  // the user data has been updated.
-  const bool should_update_app_state = (account_id_ != account_id);
   account_id_ = account_id;
   pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
@@ -410,10 +406,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
     return;
   }
 
-  if (should_update_app_state) {
-    UpdateAppState();
-  }
-
+  UpdateAppState();
   LoadCurrentUserDataIfNeeded();
 
   // Start loading TPM system token.
@@ -507,7 +500,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
 
-    // Values such as the |instance_id| and |name| of the device are not
+    // Values such as the `instance_id` and `name` of the device are not
     // provided in the device dictionary that is persisted to the TPM during the
     // user session. However, in this particular scenario, we do not need these
     // values to safely construct and use the RemoteDevice objects.
@@ -515,7 +508,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
         account_id.GetUserEmail(), std::string() /* instance_id */,
         std::string() /* name */, std::string() /* pii_free_name */,
         decoded_public_key, decoded_psk /* persistent_symmetric_key */,
-        0L /* last_update_time_millis */, software_features, beacon_seeds);
+        0L /* last_update_time_millis */, software_features, beacon_seeds,
+        std::string() /* bluetooth_public_address */);
 
     remote_devices.push_back(remote_device);
     PA_LOG(VERBOSE) << "Loaded Remote Device:\n"

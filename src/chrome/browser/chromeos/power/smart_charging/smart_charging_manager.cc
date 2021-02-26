@@ -36,16 +36,14 @@ namespace {
 constexpr int kBucketSize = 15;
 
 // Interval at which data should be logged.
-constexpr base::TimeDelta kLoggingInterval = base::TimeDelta::FromMinutes(30);
+constexpr auto kLoggingInterval = base::TimeDelta::FromMinutes(30);
 
 // Count number of key, mouse, touch events or duration of audio/video playing
 // in the past 30 minutes.
-constexpr base::TimeDelta kUserActivityDuration =
-    base::TimeDelta::FromMinutes(30);
+constexpr auto kUserActivityDuration = base::TimeDelta::FromMinutes(30);
 
 // Granularity of input events is per minute.
-constexpr int kNumUserInputEventsBuckets =
-    kUserActivityDuration / base::TimeDelta::FromMinutes(1);
+constexpr int kNumUserInputEventsBuckets = kUserActivityDuration.InMinutes();
 
 constexpr char kSavedFileName[] = "past_charging_events.pb";
 constexpr char kSavedDir[] = "smartcharging";

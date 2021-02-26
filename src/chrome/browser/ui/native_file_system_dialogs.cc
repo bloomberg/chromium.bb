@@ -19,7 +19,7 @@ void ShowNativeFileSystemPermissionDialog(
 void ShowNativeFileSystemRestrictedDirectoryDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    content::NativeFileSystemPermissionContext::HandleType handle_type,
     base::OnceCallback<void(
         content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback,
@@ -28,17 +28,6 @@ void ShowNativeFileSystemRestrictedDirectoryDialog(
   // if the dialog was instantly dismissed.
   std::move(callback).Run(content::NativeFileSystemPermissionContext::
                               SensitiveDirectoryResult::kAbort);
-}
-
-void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    base::OnceCallback<void(permissions::PermissionAction result)> callback,
-    content::WebContents* web_contents,
-    base::ScopedClosureRunner fullscreen_block) {
-  // There's no dialog version of this available outside views, run callback as
-  // if the dialog was instantly dismissed.
-  std::move(callback).Run(permissions::PermissionAction::DISMISSED);
 }
 
 #endif  // !defined(TOOLKIT_VIEWS)

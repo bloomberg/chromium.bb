@@ -63,9 +63,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
   // client.  Does not count update messages that were received prior
   // to handshake confirmation.
   virtual int num_scup_messages_received() const = 0;
-
-  virtual void OnApplicationState(
-      std::unique_ptr<ApplicationState> application_state) = 0;
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
@@ -119,6 +116,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Returns true if early data (0-RTT) was accepted in the connection.
     virtual bool EarlyDataAccepted() const = 0;
 
+    // Returns the ssl_early_data_reason_t describing why 0-RTT was accepted or
+    // rejected.
+    virtual ssl_early_data_reason_t EarlyDataReason() const = 0;
+
     // Returns true if the client received an inchoate REJ during the handshake,
     // extending the handshake by one round trip. This only applies for QUIC
     // crypto handshakes. The equivalent feature in IETF QUIC is a Retry packet,
@@ -150,6 +151,18 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // buffered at each encryption level.
     virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const = 0;
 
+    // Returns whether the implementation supports key update.
+    virtual bool KeyUpdateSupportedLocally() const = 0;
+
+    // Called to generate a decrypter for the next key phase. Each call should
+    // generate the key for phase n+1.
+    virtual std::unique_ptr<QuicDecrypter>
+    AdvanceKeysAndCreateCurrentOneRttDecrypter() = 0;
+
+    // Called to generate an encrypter for the same key phase of the last
+    // decrypter returned by AdvanceKeysAndCreateCurrentOneRttDecrypter().
+    virtual std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() = 0;
+
     // Returns current handshake state.
     virtual HandshakeState GetHandshakeState() const = 0;
 
@@ -167,7 +180,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     virtual void OnHandshakeDoneReceived() = 0;
 
     // Called when application state is received.
-    virtual void OnApplicationState(
+    virtual void SetServerApplicationStateForResumption(
         std::unique_ptr<ApplicationState> application_state) = 0;
   };
 
@@ -206,6 +219,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   int num_sent_client_hellos() const override;
   bool IsResumption() const override;
   bool EarlyDataAccepted() const override;
+  ssl_early_data_reason_t EarlyDataReason() const override;
   bool ReceivedInchoateReject() const override;
 
   int num_scup_messages_received() const override;
@@ -223,10 +237,13 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
                           ConnectionCloseSource source) override;
   void OnHandshakeDoneReceived() override;
   HandshakeState GetHandshakeState() const override;
-  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
-
-  void OnApplicationState(
+  void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> application_state) override;
+  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
+  bool KeyUpdateSupportedLocally() const override;
+  std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
+      override;
+  std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
 
   std::string chlo_hash() const;
 

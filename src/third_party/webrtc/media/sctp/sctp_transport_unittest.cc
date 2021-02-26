@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <usrsctp.h>
 
 #include <memory>
 #include <string>
@@ -237,6 +238,73 @@ class SctpTransportTest : public ::testing::Test, public sigslot::has_slots<> {
   void OnChan1ReadyToSend() { ++transport1_ready_to_send_count_; }
   void OnChan2ReadyToSend() { ++transport2_ready_to_send_count_; }
 };
+
+TEST_F(SctpTransportTest, MessageInterleavedWithNotification) {
+  FakeDtlsTransport fake_dtls1("fake dtls 1", 0);
+  FakeDtlsTransport fake_dtls2("fake dtls 2", 0);
+  SctpFakeDataReceiver recv1;
+  SctpFakeDataReceiver recv2;
+  std::unique_ptr<SctpTransport> transport1(
+      CreateTransport(&fake_dtls1, &recv1));
+  std::unique_ptr<SctpTransport> transport2(
+      CreateTransport(&fake_dtls2, &recv2));
+
+  // Add a stream.
+  transport1->OpenStream(1);
+  transport2->OpenStream(1);
+
+  // Start SCTP transports.
+  transport1->Start(kSctpDefaultPort, kSctpDefaultPort, kSctpSendBufferSize);
+  transport2->Start(kSctpDefaultPort, kSctpDefaultPort, kSctpSendBufferSize);
+
+  // Connect the two fake DTLS transports.
+  fake_dtls1.SetDestination(&fake_dtls2, false);
+
+  // Ensure the SCTP association has been established
+  // Note: I'd rather watch for an assoc established state here but couldn't
+  //       find any exposed...
+  SendDataResult result;
+  ASSERT_TRUE(SendData(transport2.get(), 1, "meow", &result));
+  EXPECT_TRUE_WAIT(ReceivedData(&recv1, 1, "meow"), kDefaultTimeout);
+
+  // Detach the DTLS transport to ensure only we will inject packets from here
+  // on.
+  transport1->SetDtlsTransport(nullptr);
+
+  // Prepare chunk buffer and metadata
+  auto chunk = rtc::CopyOnWriteBuffer(32);
+  struct sctp_rcvinfo meta = {0};
+  meta.rcv_sid = 1;
+  meta.rcv_ssn = 1337;
+  meta.rcv_ppid = rtc::HostToNetwork32(51);  // text (complete)
+
+  // Inject chunk 1/2.
+  meta.rcv_tsn = 42;
+  meta.rcv_cumtsn = 42;
+  chunk.SetData("meow?", 5);
+  EXPECT_EQ(1, transport1->InjectDataOrNotificationFromSctpForTesting(
+                   chunk.data(), chunk.size(), meta, 0));
+
+  // Inject a notification in between chunks.
+  union sctp_notification notification;
+  memset(&notification, 0, sizeof(notification));
+  // Type chosen since it's not handled apart from being logged
+  notification.sn_header.sn_type = SCTP_PEER_ADDR_CHANGE;
+  notification.sn_header.sn_flags = 0;
+  notification.sn_header.sn_length = sizeof(notification);
+  EXPECT_EQ(1, transport1->InjectDataOrNotificationFromSctpForTesting(
+                   &notification, sizeof(notification), {0}, MSG_NOTIFICATION));
+
+  // Inject chunk 2/2
+  meta.rcv_tsn = 42;
+  meta.rcv_cumtsn = 43;
+  chunk.SetData(" rawr!", 6);
+  EXPECT_EQ(1, transport1->InjectDataOrNotificationFromSctpForTesting(
+                   chunk.data(), chunk.size(), meta, MSG_EOR));
+
+  // Expect the message to contain both chunks.
+  EXPECT_TRUE_WAIT(ReceivedData(&recv1, 1, "meow? rawr!"), kDefaultTimeout);
+}
 
 // Test that data can be sent end-to-end when an SCTP transport starts with one
 // transport (which is unwritable), and then switches to another transport. A
@@ -605,6 +673,15 @@ TEST_F(SctpTransportTest, ClosesRemoteStream) {
   transport1()->ResetStream(1);
   EXPECT_TRUE_WAIT(transport2_observer.WasStreamClosed(1), kDefaultTimeout);
 }
+TEST_F(SctpTransportTest, ClosesRemoteStreamWithNoData) {
+  SetupConnectedTransportsWithTwoStreams();
+  SctpTransportObserver transport1_observer(transport1());
+  SctpTransportObserver transport2_observer(transport2());
+
+  // Close stream 1 on transport 1. Transport 2 should notify us.
+  transport1()->ResetStream(1);
+  EXPECT_TRUE_WAIT(transport2_observer.WasStreamClosed(1), kDefaultTimeout);
+}
 
 TEST_F(SctpTransportTest, ClosesTwoRemoteStreams) {
   SetupConnectedTransportsWithTwoStreams();
@@ -712,6 +789,54 @@ TEST_F(SctpTransportTest, RejectsSendTooLargeMessages) {
   const char eleven_characters[] = "12345678901";
   SendDataResult result;
   EXPECT_FALSE(SendData(transport1(), 1, eleven_characters, &result));
+}
+
+// Regression test for: crbug.com/1137936
+TEST_F(SctpTransportTest, SctpRestartWithPendingDataDoesNotDeadlock) {
+  // In order to trigger a restart, we'll connect two transports, then
+  // disconnect them and connect the first to a third, which will initiate the
+  // new handshake.
+  FakeDtlsTransport fake_dtls1("fake dtls 1", 0);
+  FakeDtlsTransport fake_dtls2("fake dtls 2", 0);
+  FakeDtlsTransport fake_dtls3("fake dtls 3", 0);
+  SctpFakeDataReceiver recv1;
+  SctpFakeDataReceiver recv2;
+  SctpFakeDataReceiver recv3;
+
+  std::unique_ptr<SctpTransport> transport1(
+      CreateTransport(&fake_dtls1, &recv1));
+  std::unique_ptr<SctpTransport> transport2(
+      CreateTransport(&fake_dtls2, &recv2));
+  std::unique_ptr<SctpTransport> transport3(
+      CreateTransport(&fake_dtls3, &recv3));
+  SctpTransportObserver observer(transport1.get());
+
+  // Connect the first two transports.
+  fake_dtls1.SetDestination(&fake_dtls2, /*asymmetric=*/false);
+  transport1->OpenStream(1);
+  transport2->OpenStream(1);
+  transport1->Start(5000, 5000, kSctpSendBufferSize);
+  transport2->Start(5000, 5000, kSctpSendBufferSize);
+
+  // Sanity check that we can send data.
+  SendDataResult result;
+  ASSERT_TRUE(SendData(transport1.get(), 1, "foo", &result));
+  ASSERT_TRUE_WAIT(ReceivedData(&recv2, 1, "foo"), kDefaultTimeout);
+
+  // Disconnect the transports and attempt to send a message, which will be
+  // stored in an output queue; this is necessary to reproduce the bug.
+  fake_dtls1.SetDestination(nullptr, /*asymmetric=*/false);
+  EXPECT_TRUE(SendData(transport1.get(), 1, "bar", &result));
+
+  // Now connect to the third transport.
+  fake_dtls1.SetDestination(&fake_dtls3, /*asymmetric=*/false);
+  transport3->OpenStream(1);
+  transport3->Start(5000, 5000, kSctpSendBufferSize);
+
+  // Send data from the new endpoint to the original endpoint. If data is
+  // received that means the restart must have been successful.
+  EXPECT_TRUE(SendData(transport3.get(), 1, "baz", &result));
+  EXPECT_TRUE_WAIT(ReceivedData(&recv1, 1, "baz"), kDefaultTimeout);
 }
 
 }  // namespace cricket

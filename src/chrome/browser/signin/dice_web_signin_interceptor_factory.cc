@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/signin/dice_web_signin_interceptor_delegate.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
@@ -31,7 +32,14 @@ DiceWebSigninInterceptorFactory::DiceWebSigninInterceptorFactory()
 
 DiceWebSigninInterceptorFactory::~DiceWebSigninInterceptorFactory() = default;
 
+void DiceWebSigninInterceptorFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  DiceWebSigninInterceptor::RegisterProfilePrefs(registry);
+}
+
 KeyedService* DiceWebSigninInterceptorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new DiceWebSigninInterceptor(Profile::FromBrowserContext(context));
+  return new DiceWebSigninInterceptor(
+      Profile::FromBrowserContext(context),
+      std::make_unique<DiceWebSigninInterceptorDelegate>());
 }

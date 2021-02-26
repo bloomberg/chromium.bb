@@ -10,18 +10,17 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_metrics.h"
-#include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -47,7 +46,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -55,10 +54,13 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+
+using ::chromeos::WindowStateType;
 
 // A helper function to set the shelf auto-hide preference. This has the same
 // effect as the user toggling the shelf context menu option.
@@ -463,13 +465,11 @@ TEST_P(TabletModeWindowManagerTest,
   // is remaining as it is (but not maximized).
   DestroyTabletModeWindowManager();
 
-  if (chromeos::switches::ShouldShowShelfHotseat()) {
-    // Account for work-area updates when leaving tablet mode.
-    const gfx::Insets clamshell_insets =
-        WorkAreaInsets::ForWindow(window.get())->user_work_area_insets();
-    const gfx::Insets offset_difference = clamshell_insets - tablet_insets;
-    maximized_size.Inset(offset_difference);
-  }
+  // Account for work-area updates when leaving tablet mode.
+  const gfx::Insets clamshell_insets =
+      WorkAreaInsets::ForWindow(window.get())->user_work_area_insets();
+  const gfx::Insets offset_difference = clamshell_insets - tablet_insets;
+  maximized_size.Inset(offset_difference);
 
   EXPECT_FALSE(WindowState::Get(window.get())->IsMaximized());
   EXPECT_EQ(maximized_size.ToString(), window->bounds().ToString());
@@ -1598,6 +1598,27 @@ TEST_P(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
   EXPECT_EQ(rect.size(), child->bounds().size());
 }
 
+TEST_P(TabletModeWindowManagerTest, AllowNormalWindowBoundsChangeByVK) {
+  UpdateDisplay("1200x800");
+  gfx::Rect rect(0, 0, 1200, 600);
+  std::unique_ptr<aura::Window> window(CreateFixedSizeNonMaximizableWindow(
+      aura::client::WINDOW_TYPE_NORMAL, rect));
+  ASSERT_TRUE(CreateTabletModeWindowManager());
+
+  WindowState* window_state = WindowState::Get(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
+  gfx::Rect window_bounds = window->bounds();
+
+  // Simulate VK up.
+  wm::EnsureWindowNotInRect(window.get(), gfx::Rect(0, 600, 1200, 200));
+  EXPECT_NE(window->bounds(), window_bounds);
+
+  // Simulate VK dismissal.
+  wm::RestoreWindowBoundsOnClientFocusLost(window.get());
+  EXPECT_EQ(window->bounds(), window_bounds);
+}
+
 class TabletModeWindowManagerWithoutClamshellSplitViewTest
     : public TabletModeWindowManagerTest {
  public:
@@ -1897,13 +1918,13 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   // Clamshell -> Tablet mode transition. If overview is active, it will remain
   // in overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  OverviewAnimationWaiter start_overview_waiter;
   EXPECT_TRUE(overview_controller->StartOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   EXPECT_TRUE(manager);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  start_overview_waiter.Wait();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
 
   aura::Window* home_screen_window =
       Shell::Get()->app_list_controller()->GetHomeScreenWindow();
@@ -1915,9 +1936,9 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
       InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 0);
 
   // Tap at window to leave the overview mode.
-  OverviewAnimationWaiter end_overview_waiter;
   GetEventGenerator()->GestureTapAt(window->GetBoundsInScreen().CenterPoint());
-  end_overview_waiter.Wait();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
   tester.ExpectBucketCount(
       kHotseatGestureHistogramName,
       InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 1);

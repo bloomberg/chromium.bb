@@ -37,6 +37,7 @@ const char* kLogTypeHidDesc = "HID";
 const char* kLogTypeMemoryDesc = "Memory";
 const char* kLogTypePrinterDesc = "Printer";
 const char* kLogTypeFidoDesc = "FIDO";
+const char* kLogTypeSerialDesc = "Serial";
 
 enum class ShowTime {
   kNone,
@@ -64,6 +65,8 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypePrinterDesc;
     case LOG_TYPE_FIDO:
       return kLogTypeFidoDesc;
+    case LOG_TYPE_SERIAL:
+      return kLogTypeSerialDesc;
     case LOG_TYPE_UNKNOWN:
       break;
   }
@@ -469,6 +472,15 @@ void DeviceEventLogImpl::Clear(const base::Time& begin, const base::Time& end) {
                    [end](const LogEntry& entry) { return entry.time <= end; });
 
   entries_.erase(begin_it, end_rev_it.base());
+}
+
+int DeviceEventLogImpl::GetCountByLevelForTesting(LogLevel level) {
+  int count = 0;
+  for (const auto& entry : entries_) {
+    if (entry.log_level == level)
+      ++count;
+  }
+  return count;
 }
 
 DeviceEventLogImpl::LogEntry::LogEntry(const char* filedesc,

@@ -43,7 +43,7 @@ using google_breakpad::PDBSourceLineWriter;
 using google_breakpad::PESourceLineWriter;
 using std::unique_ptr;
 
-int wmain(int argc, wchar_t **argv) {
+int wmain(int argc, wchar_t** argv) {
   bool success;
   if (argc == 2) {
     PDBSourceLineWriter pdb_writer;

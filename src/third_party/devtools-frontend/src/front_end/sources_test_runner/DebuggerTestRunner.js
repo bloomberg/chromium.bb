@@ -6,7 +6,7 @@
  * @fileoverview using private properties isn't a Closure violation in tests.
  * @suppress {accessControls}
  */
-
+self.SourcesTestRunner = self.SourcesTestRunner || {};
 
 SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
   console.assert(TestRunner.debuggerModel.debuggerEnabled(), 'Debugger has to be enabled');
@@ -23,7 +23,9 @@ SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
 
 SourcesTestRunner.startDebuggerTestPromise = function(quiet) {
   let cb;
-  const p = new Promise(fullfill => cb = fullfill);
+  const p = new Promise(fullfill => {
+    cb = fullfill;
+  });
   SourcesTestRunner.startDebuggerTest(cb, quiet);
   return p;
 };
@@ -427,7 +429,9 @@ SourcesTestRunner.showUISourceCode = function(uiSourceCode, callback) {
 
 SourcesTestRunner.showUISourceCodePromise = function(uiSourceCode) {
   let fulfill;
-  const promise = new Promise(x => fulfill = x);
+  const promise = new Promise(x => {
+    fulfill = x;
+  });
   SourcesTestRunner.showUISourceCode(uiSourceCode, fulfill);
   return promise;
 };

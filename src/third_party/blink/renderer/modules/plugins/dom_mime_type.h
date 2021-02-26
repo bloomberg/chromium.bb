@@ -30,22 +30,21 @@
 namespace blink {
 
 class DOMPlugin;
-class LocalFrame;
+class LocalDOMWindow;
 
 class DOMMimeType final : public ScriptWrappable,
                           public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DOMMimeType(LocalFrame*, const MimeClassInfo&);
+  DOMMimeType(LocalDOMWindow*, const MimeClassInfo&);
 
   const String& type() const;
   String suffixes() const;
   const String& description() const;
   DOMPlugin* enabledPlugin() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<const MimeClassInfo> mime_class_info_;

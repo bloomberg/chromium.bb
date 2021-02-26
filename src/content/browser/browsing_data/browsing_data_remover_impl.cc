@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -19,11 +18,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,7 +69,7 @@ base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
 // datatypes, |embedder_matcher| must not be null; the decision for those
 // datatypes will be delegated to it.
 bool DoesOriginMatchMaskAndPredicate(
-    int origin_type_mask,
+    uint64_t origin_type_mask,
     base::OnceCallback<bool(const url::Origin&)> predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
@@ -113,8 +111,8 @@ bool DoesOriginMatchMaskAndPredicate(
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
-      remove_mask_(-1),
-      origin_type_mask_(-1),
+      remove_mask_(0xffffffffffffffffull),
+      origin_type_mask_(0xffffffffffffffffull),
       is_removing_(false),
       storage_partition_for_testing_(nullptr) {
   DCHECK(browser_context_);
@@ -130,13 +128,14 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
                              task_queue_.size(), 10);
 
   // If we are still removing data, notify observers that their task has been
-  // (albeit unsucessfuly) processed, so they can unregister themselves.
-  // TODO(bauerb): If it becomes a problem that browsing data might not actually
-  // be fully cleared when an observer is notified, add a success flag.
+  // (albeit unsuccessfully) processed, so they can unregister themselves.
   while (!task_queue_.empty()) {
-    for (Observer* observer : task_queue_.front().observers) {
-      if (observer_list_.HasObserver(observer))
-        observer->OnBrowsingDataRemoverDone();
+    const RemovalTask& task = task_queue_.front();
+    for (Observer* observer : task.observers) {
+      if (observer_list_.HasObserver(observer)) {
+        observer->OnBrowsingDataRemoverDone(
+            /*failed_data_types=*/task.remove_mask);
+      }
     }
     task_queue_.pop_front();
   }
@@ -153,7 +152,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 }
 
 bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
-    int origin_type_mask,
+    uint64_t origin_type_mask,
     const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
@@ -167,16 +166,16 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     int remove_mask,
-                                     int origin_type_mask) {
+                                     uint64_t remove_mask,
+                                     uint64_t origin_type_mask) {
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<BrowsingDataFilterBuilder>(), nullptr);
 }
 
 void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
                                              const base::Time& delete_end,
-                                             int remove_mask,
-                                             int origin_type_mask,
+                                             uint64_t remove_mask,
+                                             uint64_t origin_type_mask,
                                              Observer* observer) {
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
@@ -186,8 +185,8 @@ void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
 void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
   DCHECK(filter_builder);
@@ -199,8 +198,8 @@ void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
 void BrowsingDataRemoverImpl::RemoveInternal(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
   DCHECK(!observer || observer_list_.HasObserver(observer))
@@ -208,11 +207,11 @@ void BrowsingDataRemoverImpl::RemoveInternal(
       << "before observing a removal task.";
 
   // Remove() and RemoveAndReply() pass a null pointer to indicate no filter.
-  // No filter is equivalent to one that |IsEmptyBlacklist()|.
+  // No filter is equivalent to one that |MatchesAllOriginsAndDomains()|.
   if (!filter_builder) {
-    filter_builder =
-        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
-    DCHECK(filter_builder->IsEmptyBlacklist());
+    filter_builder = BrowsingDataFilterBuilder::Create(
+        BrowsingDataFilterBuilder::Mode::kPreserve);
+    DCHECK(filter_builder->MatchesAllOriginsAndDomains());
   }
 
   RemovalTask task(delete_begin, delete_end, remove_mask, origin_type_mask,
@@ -248,9 +247,8 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   // after a delay.
   slow_pending_tasks_closure_.Reset(base::BindRepeating(
       &BrowsingDataRemoverImpl::RecordUnfinishedSubTasks, GetWeakPtr()));
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        slow_pending_tasks_closure_.callback(),
-                        kSlowTaskTimeout);
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, slow_pending_tasks_closure_.callback(), kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, removal_task.filter_builder.get(),
@@ -260,9 +258,9 @@ void BrowsingDataRemoverImpl::RunNextTask() {
 void BrowsingDataRemoverImpl::RemoveImpl(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
+    uint64_t remove_mask,
     BrowsingDataFilterBuilder* filter_builder,
-    int origin_type_mask) {
+    uint64_t origin_type_mask) {
   // =============== README before adding more storage backends ===============
   //
   // If you're adding a data storage backend that is included among
@@ -271,8 +269,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // 2. Add a comment explaining why is it acceptable in your case to delete all
   //    data without filtering URLs / origins / domains.
   // 3. Do not support partial deletion, i.e. only delete your data if
-  //    |filter_builder.IsEmptyBlacklist()|. Add a comment explaining why this
-  //    is acceptable.
+  //    |filter_builder.MatchesAllOriginsAndDomains()|. Add a comment explaining
+  //    why this is acceptable.
   base::ScopedClosureRunner synchronous_clear_operations(
       CreateTaskCompletionClosure(TracingDataType::kSynchronous));
 
@@ -281,11 +279,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
   DCHECK_NE(base::Time(), delete_end);
+  DCHECK(domains_for_deferred_cookie_deletion_.empty());
 
   delete_begin_ = delete_begin;
   delete_end_ = delete_end;
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
+  failed_data_types_ = 0;
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice = NEITHER_COOKIES_NOR_CACHE;
@@ -312,7 +312,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
   base::RepeatingCallback<bool(const GURL&)> nullable_url_filter =
-      filter_builder->IsEmptyBlacklist()
+      filter_builder->MatchesAllOriginsAndDomains()
           ? base::RepeatingCallback<bool(const GURL&)>()
           : url_filter;
 
@@ -339,6 +339,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   if (remove_mask & DATA_TYPE_COOKIES &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     storage_partition_remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
+    if (embedder_delegate_) {
+      domains_for_deferred_cookie_deletion_ =
+          embedder_delegate_->GetDomainsForDeferredCookieDeletion(remove_mask);
+    }
   }
   if (remove_mask & DATA_TYPE_LOCAL_STORAGE) {
     storage_partition_remove_mask |=
@@ -389,13 +393,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         StoragePartition::REMOVE_DATA_MASK_CONVERSIONS;
   }
 
-  StoragePartition* storage_partition;
-  if (storage_partition_for_testing_) {
-    storage_partition = storage_partition_for_testing_;
-  } else {
-    storage_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_);
-  }
+  StoragePartition* storage_partition = GetStoragePartition();
 
   if (storage_partition_remove_mask) {
     uint32_t quota_storage_remove_mask =
@@ -412,12 +410,21 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // If cookies are supposed to be conditionally deleted from the storage
     // partition, create the deletion info object.
     network::mojom::CookieDeletionFilterPtr deletion_filter;
-    if (!filter_builder->IsEmptyBlacklist() &&
+    if (!filter_builder->MatchesAllOriginsAndDomains() &&
         (storage_partition_remove_mask &
          StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
       deletion_filter = filter_builder->BuildCookieDeletionFilter();
     } else {
       deletion_filter = network::mojom::CookieDeletionFilter::New();
+    }
+
+    if (!domains_for_deferred_cookie_deletion_.empty()) {
+      // The data types that require deferred deletion are currently not
+      // filterable. If they become filterable we need to check if the
+      // selected domains should actually be deleted.
+      DCHECK(!deletion_filter->excluding_domains.has_value());
+      deletion_filter->excluding_domains =
+          domains_for_deferred_cookie_deletion_;
     }
 
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
@@ -429,7 +436,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     bool perform_storage_cleanup =
         delete_begin_.is_null() && delete_end_.is_max() &&
         origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB &&
-        filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
+        filter_builder->GetMode() == BrowsingDataFilterBuilder::Mode::kPreserve;
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
@@ -461,9 +468,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     if (base::FeatureList::IsEnabled(
             features::kCodeCacheDeletionWithoutFilter)) {
-      // Experimentally perform blacklist deletions without filter and skip
+      // Experimentally perform preservelist deletions without filter and skip
       // origin specific deletions. See crbug.com/1040039#26.
-      if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      if (filter_builder->GetMode() ==
+          BrowsingDataFilterBuilder::Mode::kPreserve) {
         storage_partition->ClearCodeCaches(
             delete_begin, delete_end, /*filter=*/base::NullCallback(),
             CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
@@ -475,11 +483,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     }
 
     // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.
-    if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    if (filter_builder->GetMode() ==
+        BrowsingDataFilterBuilder::Mode::kPreserve) {
       // When clearing cache, wipe accumulated network related data
       // (TransportSecurityState and HttpServerPropertiesManager data).
-      network_context->ClearNetworkingHistorySince(
-          delete_begin,
+      network_context->ClearNetworkingHistoryBetween(
+          delete_begin, delete_end,
           CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
     }
 
@@ -527,8 +536,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS)) {
     BrowserContext::GetDefaultStoragePartition(browser_context_)
         ->GetNetworkContext()
-        ->ClearHttpAuthCache(delete_begin, CreateTaskCompletionClosureForMojo(
-                                               TracingDataType::kAuthCache));
+        ->ClearHttpAuthCache(
+            delete_begin_.is_null() ? base::Time::Min() : delete_begin_,
+            delete_end_.is_null() ? base::Time::Max() : delete_end_,
+            CreateTaskCompletionClosureForMojo(TracingDataType::kAuthCache));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -537,7 +548,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     embedder_delegate_->RemoveEmbedderData(
         delete_begin_, delete_end_, remove_mask, filter_builder,
         origin_type_mask,
-        CreateTaskCompletionClosure(TracingDataType::kEmbedderData));
+        base::BindOnce(
+            &BrowsingDataRemoverImpl::OnDelegateDone, GetWeakPtr(),
+            CreateTaskCompletionClosure(TracingDataType::kEmbedderData)));
   }
 }
 
@@ -564,19 +577,19 @@ const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTimeForTesting() {
   return delete_begin_;
 }
 
-int BrowsingDataRemoverImpl::GetLastUsedRemovalMaskForTesting() {
+uint64_t BrowsingDataRemoverImpl::GetLastUsedRemovalMaskForTesting() {
   return remove_mask_;
 }
 
-int BrowsingDataRemoverImpl::GetLastUsedOriginTypeMaskForTesting() {
+uint64_t BrowsingDataRemoverImpl::GetLastUsedOriginTypeMaskForTesting() {
   return origin_type_mask_;
 }
 
 BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer)
     : delete_begin(delete_begin),
@@ -601,6 +614,19 @@ bool BrowsingDataRemoverImpl::RemovalTask::IsSameDeletion(
          *filter_builder == *other.filter_builder;
 }
 
+StoragePartition* BrowsingDataRemoverImpl::GetStoragePartition() {
+  return storage_partition_for_testing_
+             ? storage_partition_for_testing_
+             : BrowserContext::GetDefaultStoragePartition(browser_context_);
+}
+
+void BrowsingDataRemoverImpl::OnDelegateDone(
+    base::OnceClosure completion_closure,
+    uint64_t failed_data_types) {
+  failed_data_types_ |= failed_data_types;
+  std::move(completion_closure).Run();
+}
+
 void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
   // TODO(msramek): Improve those tests so we don't have to do this. Tests
@@ -619,15 +645,16 @@ void BrowsingDataRemoverImpl::Notify() {
   const RemovalTask& task = task_queue_.front();
   for (Observer* observer : task.observers) {
     if (observer_list_.HasObserver(observer)) {
-      observer->OnBrowsingDataRemoverDone();
+      observer->OnBrowsingDataRemoverDone(failed_data_types_);
     }
   }
 
   base::TimeDelta delta = base::Time::Now() - task.task_started;
-  if (task.filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+  if (task.filter_builder->GetMode() ==
+      BrowsingDataFilterBuilder::Mode::kPreserve) {
     // Full, and time based and filtered deletions are often implemented
     // differently, so we track them in separate metrics.
-    if (!task.filter_builder->IsEmptyBlacklist()) {
+    if (!task.filter_builder->MatchesAllOriginsAndDomains()) {
       base::UmaHistogramMediumTimes(
           "History.ClearBrowsingData.Duration.FilteredDeletion", delta);
     } else if (task.delete_begin.is_null() && task.delete_end.is_max()) {
@@ -653,8 +680,8 @@ void BrowsingDataRemoverImpl::Notify() {
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }
 
@@ -671,6 +698,24 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
                          static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
+
+  // If any cookie deletions have been deferred do them now since all other
+  // tasks are completed.
+  if (!domains_for_deferred_cookie_deletion_.empty()) {
+    DCHECK(remove_mask_ & DATA_TYPE_COOKIES);
+    auto deletion_filter = network::mojom::CookieDeletionFilter::New();
+    deletion_filter->including_domains =
+        std::move(domains_for_deferred_cookie_deletion_);
+    // Moving a vector is defined to empty this vector.
+    DCHECK(domains_for_deferred_cookie_deletion_.empty());
+    GetStoragePartition()->ClearData(
+        StoragePartition::REMOVE_DATA_MASK_COOKIES,
+        /*quota_storage_remove_mask=*/0,
+        /*origin_matcher=*/base::NullCallback(), std::move(deletion_filter),
+        /*perform_storage_cleanup=*/false, delete_begin_, delete_end_,
+        CreateTaskCompletionClosure(TracingDataType::kDeferredCookies));
+    return;
+  }
 
   slow_pending_tasks_closure_.Cancel();
 

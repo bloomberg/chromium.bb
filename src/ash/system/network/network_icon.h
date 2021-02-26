@@ -27,8 +27,10 @@ enum IconType {
   ICON_TYPE_LIST,          // dark icons without VPN badges; in-line status
   ICON_TYPE_FEATURE_POD,   // icons in the network feature pod button in system
                            // menu
-  ICON_TYPE_FEATURE_POD_TOGGLED,  // toggled icons in the network feature pod
-                                  // button in system menu
+  ICON_TYPE_FEATURE_POD_TOGGLED,   // toggled icons in the network feature pod
+                                   // button in system menu
+  ICON_TYPE_FEATURE_POD_DISABLED,  // disabled icons in the network feature pod
+                                   // button in system menu
   ICON_TYPE_MENU_LIST,  // dark icons without VPN badges; separate status
 };
 
@@ -63,6 +65,10 @@ ASH_EXPORT gfx::ImageSkia GetImageForVPN(
     const chromeos::network_config::mojom::NetworkStateProperties* vpn,
     IconType icon_type,
     bool* animating = nullptr);
+
+// Returns an image for Wi-Fi with no connections available, Wi-Fi icon with
+// a cross in the center.
+ASH_EXPORT gfx::ImageSkia GetImageForWiFiNoConnections(IconType icon_type);
 
 // Returns an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.

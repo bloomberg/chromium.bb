@@ -6,9 +6,8 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
-    "android/java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/AndroidTaskUtils.java",
-    "android/java/src/org/chromium/chrome/browser/util/BitmapCache.java",
+    "android/java/src/org/chromium/chrome/browser/util/ChromeAccessibilityUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
     "android/java/src/org/chromium/chrome/browser/util/FileSizeUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/HashUtil.java",
@@ -22,9 +21,9 @@ android_library("java") {
     "//components/browser_ui/util/android:java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:androidx_collection_collection_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_legacy_legacy_support_core_utils_java",
+    "//ui/android:ui_full_java",
     "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -50,6 +49,7 @@ android_library("javatests") {
     "//chrome/test/android:chrome_java_test_support",
     "//components/signin/core/browser/android:java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",

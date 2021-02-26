@@ -7,11 +7,10 @@ package org.chromium.content.browser.scheduler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,7 +22,7 @@ import org.chromium.base.test.task.SchedulerTestHelpers;
 import org.chromium.base.test.task.ThreadPoolTestHelpers;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.app.ContentMain;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class NativePostTaskTest {
-    @Rule
-    public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     @After
     public void tearDown() {
         ThreadPoolTestHelpers.disableThreadPoolExecutionForTesting();
@@ -235,7 +231,7 @@ public class NativePostTaskTest {
     }
 
     private void startNativeScheduler() {
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         ContentMain.start(/* startServiceManagerOnly */ false);
         ThreadPoolTestHelpers.enableThreadPoolExecutionForTesting();
     }

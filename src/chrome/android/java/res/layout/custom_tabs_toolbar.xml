@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.toolbar.top.CustomTabToolbar
+<org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/toolbar"
@@ -14,6 +14,15 @@
         style="@style/ToolbarButton"
         android:layout_gravity="start|center_vertical"
         android:contentDescription="@string/close_tab" />
+    <org.chromium.ui.widget.ChromeImageButton
+        android:id="@+id/incognito_cct_logo_button"
+        style="@style/LocationBarButton"
+        android:layout_width="@dimen/location_bar_icon_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_incognito_cct_24dp"
+        android:visibility="gone" />
     <FrameLayout
         android:id="@+id/location_bar_frame_layout"
         android:layout_width="match_parent"
@@ -29,7 +38,7 @@
             android:visibility="invisible"
             app:tint="@color/default_icon_color_tint_list" />
         <view
-            class="org.chromium.chrome.browser.toolbar.top.CustomTabToolbar$InterceptTouchLayout"
+            class="org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,14 +105,25 @@
         android:layout_gravity="center_vertical|end"
         android:gravity="center_vertical"
         android:orientation="horizontal" />
-    <org.chromium.ui.widget.ChromeImageButton
-        android:id="@+id/menu_button"
-        style="@style/ToolbarButton"
+
+
+    <org.chromium.chrome.browser.toolbar.menu_button.MenuButton
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
         android:layout_width="42dp"
         android:paddingEnd="4dp"
-        android:src="@drawable/ic_more_vert_24dp"
-        android:contentDescription="@string/accessibility_toolbar_btn_menu"
-        android:background="@null"
-        app:tint="@color/default_icon_color_tint_list" />
-</org.chromium.chrome.browser.toolbar.top.CustomTabToolbar>
+        android:id="@+id/menu_button_wrapper">
+
+        <org.chromium.ui.widget.ChromeImageButton
+            android:id="@+id/menu_button"
+            style="@style/ToolbarButton"
+            android:src="@drawable/ic_more_vert_24dp"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/accessibility_toolbar_btn_menu"
+            android:background="@null"
+            app:tint="@color/default_icon_color_tint_list" />
+
+    </org.chromium.chrome.browser.toolbar.menu_button.MenuButton>
+</org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar>

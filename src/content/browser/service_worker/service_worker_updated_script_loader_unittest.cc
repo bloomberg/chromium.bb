@@ -8,19 +8,16 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -80,12 +77,12 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    context()->storage()->LazyInitializeForTest();
     SetUpRegistration(kScriptURL);
 
     // Create the old script resource in storage.
-    WriteToDiskCacheWithIdSync(context()->storage(), kScriptURL, kOldResourceId,
-                               kOldHeaders, kOldData, std::string());
+    WriteToDiskCacheWithIdSync(context()->GetStorageControl(), kScriptURL,
+                               kOldResourceId, kOldHeaders, kOldData,
+                               std::string());
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
@@ -167,7 +164,8 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
     // The response should also be stored in the storage.
     EXPECT_TRUE(ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
-        LookupResourceId(kScriptURL), context()->storage(), expected_body));
+        LookupResourceId(kScriptURL), context()->GetStorageControl(),
+        expected_body));
 
     std::string response;
     EXPECT_TRUE(mojo::BlockingCopyToString(client_->response_body_release(),

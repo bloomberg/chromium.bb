@@ -21,6 +21,10 @@ class TestPermissionsClient : public PermissionsClient {
   // PermissionsClient:
   HostContentSettingsMap* GetSettingsMap(
       content::BrowserContext* browser_context) override;
+  scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
+      content::BrowserContext* browser_context) override;
+  bool IsSubresourceFilterActivated(content::BrowserContext* browser_context,
+                                    const GURL& url) override;
   PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(
       content::BrowserContext* browser_context) override;
   PermissionManager* GetPermissionManager(

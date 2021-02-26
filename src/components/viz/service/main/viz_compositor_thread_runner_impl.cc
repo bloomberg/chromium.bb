@@ -37,6 +37,15 @@
 #include "components/ui_devtools/viz/overlay_agent_viz.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#if defined(USE_X11)
+#include "ui/base/x/x11_ui_thread.h"
+#endif
+
 namespace viz {
 namespace {
 
@@ -53,16 +62,32 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   thread->Start();
   return thread;
 #else  // !defined(OS_ANDROID)
-  auto thread = std::make_unique<base::Thread>(kThreadName);
 
+  std::unique_ptr<base::Thread> thread;
   base::Thread::Options thread_options;
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    auto* platform = ui::OzonePlatform::GetInstance();
+    thread_options.message_pump_type =
+        platform->GetPlatformProperties().message_pump_type_for_viz_compositor;
+    thread = std::make_unique<base::Thread>(kThreadName);
+  }
+#endif
+#if defined(USE_X11)
+  if (!thread) {
+    thread = std::make_unique<ui::X11UiThread>(kThreadName);
+    thread_options.message_pump_type = base::MessagePumpType::UI;
+  }
+#endif
+  if (!thread)
+    thread = std::make_unique<base::Thread>(kThreadName);
 
 #if defined(OS_FUCHSIA)
   // An IO message pump is needed to use FIDL.
   thread_options.message_pump_type = base::MessagePumpType::IO;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Increase the thread priority to get more reliable values in performance
   // test of macOS.
   thread_options.priority =
@@ -72,7 +97,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
           : thread_priority;
 #else
   thread_options.priority = thread_priority;
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   CHECK(thread->StartWithOptions(thread_options));
 
@@ -200,6 +225,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
       run_all_compositor_stages_before_draw;
   init_params.log_capture_pipeline_in_webrtc =
       features::ShouldWebRtcLogCapturePipeline();
+  init_params.debug_renderer_settings = params->debug_renderer_settings;
 
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(

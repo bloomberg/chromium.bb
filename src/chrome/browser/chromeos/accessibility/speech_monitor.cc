@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_controller.h"
 
 namespace chromeos {
@@ -29,7 +29,11 @@ SpeechMonitor::~SpeechMonitor() {
     CHECK(replay_called_) << "Expectation was made, but Replay() not called.";
 }
 
-bool SpeechMonitor::PlatformImplAvailable() {
+bool SpeechMonitor::PlatformImplSupported() {
+  return true;
+}
+
+bool SpeechMonitor::PlatformImplInitialized() {
   return true;
 }
 
@@ -87,6 +91,8 @@ void SpeechMonitor::ClearError() {
 void SpeechMonitor::SetError(const std::string& error) {
   error_ = error;
 }
+
+void SpeechMonitor::Shutdown() {}
 
 double SpeechMonitor::CalculateUtteranceDelayMS() {
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
@@ -213,8 +219,8 @@ void SpeechMonitor::MaybeContinueReplay() {
   }
 
   if (!replay_queue_.empty()) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&SpeechMonitor::MaybePrintExpectations,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPrintExpectationDelayMs));

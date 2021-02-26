@@ -31,8 +31,6 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
     : public GarbageCollected<HTMLMediaElementEncryptedMedia>,
       public Supplement<HTMLMediaElement>,
       public WebMediaPlayerEncryptedMediaClient {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
-
  public:
   static const char kSupplementName[];
 
@@ -57,7 +55,7 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
   ~HTMLMediaElementEncryptedMedia();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class SetMediaKeysHandler;

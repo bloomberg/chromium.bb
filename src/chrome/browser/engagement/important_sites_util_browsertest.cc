@@ -47,7 +47,7 @@ class ImportantSitesUtilBrowserTest : public AndroidBrowserTest {
     ASSERT_TRUE(host_content_settings_map);
     host_content_settings_map->SetContentSettingDefaultScope(
         origin.GetURL(), GURL(), ContentSettingsType::NOTIFICATIONS,
-        std::string() /* resource_identifier */, CONTENT_SETTING_ALLOW);
+        CONTENT_SETTING_ALLOW);
   }
 
   std::vector<std::string> GetImportantDomains(Profile* profile) {
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ImportantSitesUtilBrowserTest,
   // It also used to produce wrong results, since notification permission
   // information got inherited incorrectly.
   // See crbug.com/993021, crbug.com/1052406
-  auto* incognito_profile = profile()->GetOffTheRecordProfile();
+  auto* incognito_profile = profile()->GetPrimaryOTRProfile();
   ASSERT_TRUE(incognito_profile);
   ASSERT_TRUE(incognito_profile->IsOffTheRecord());
 

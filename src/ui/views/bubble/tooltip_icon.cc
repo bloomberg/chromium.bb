@@ -11,6 +11,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/info_bubble.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/mouse_watcher_view_host.h"
 
 namespace views {
@@ -123,8 +124,7 @@ void TooltipIcon::OnWidgetDestroyed(Widget* widget) {
   bubble_ = nullptr;
 }
 
-BEGIN_METADATA(TooltipIcon)
-METADATA_PARENT_CLASS(ImageView)
-END_METADATA()
+BEGIN_METADATA(TooltipIcon, ImageView)
+END_METADATA
 
 }  // namespace views

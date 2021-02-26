@@ -11,16 +11,19 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
+#include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
-#include "components/viz/common/quads/render_pass.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -30,6 +33,7 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
@@ -49,9 +53,9 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   int sorting_context_id = 65536;
 
   auto state = std::make_unique<SharedQuadState>();
-  state->SetAll(quad_transform, layer_rect, visible_layer_rect, gfx::RRectF(),
-                clip_rect, is_clipped, are_contents_opaque, opacity, blend_mode,
-                sorting_context_id);
+  state->SetAll(quad_transform, layer_rect, visible_layer_rect,
+                gfx::MaskFilterInfo(), clip_rect, is_clipped,
+                are_contents_opaque, opacity, blend_mode, sorting_context_id);
 
   auto copy = std::make_unique<SharedQuadState>(*state);
   EXPECT_EQ(quad_transform, copy->quad_to_target_transform);
@@ -63,7 +67,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   EXPECT_EQ(blend_mode, copy->blend_mode);
 }
 
-SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
+SharedQuadState* CreateSharedQuadState(CompositorRenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Rect layer_rect(26, 28);
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
@@ -75,9 +79,9 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(quad_transform, layer_rect, visible_layer_rect, gfx::RRectF(),
-                clip_rect, is_clipped, are_contents_opaque, opacity, blend_mode,
-                sorting_context_id);
+  state->SetAll(quad_transform, layer_rect, visible_layer_rect,
+                gfx::MaskFilterInfo(), clip_rect, is_clipped,
+                are_contents_opaque, opacity, blend_mode, sorting_context_id);
   return state;
 }
 
@@ -104,7 +108,7 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
 }
 
 #define CREATE_SHARED_STATE()                                              \
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();          \
+  auto render_pass = CompositorRenderPass::Create();                       \
   SharedQuadState* shared_state(CreateSharedQuadState(render_pass.get())); \
   SharedQuadState* copy_shared_state =                                     \
       render_pass->CreateAndAppendSharedQuadState();                       \
@@ -190,7 +194,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPassId render_pass_id = 61;
+  CompositorRenderPassId render_pass_id{61};
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0, 0, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -201,15 +205,15 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   float backdrop_filter_quality = 1.0f;
   bool can_use_backdrop_filter_cache = true;
 
-  RenderPassId copied_render_pass_id = 235;
+  CompositorRenderPassId copied_render_pass_id{235};
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_ALL_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
+  CREATE_QUAD_ALL_RP(CompositorRenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_rect, mask_texture_size,
                      filters_scale, filters_origin, tex_coord_rect,
                      force_anti_aliasing_off, backdrop_filter_quality,
                      can_use_backdrop_filter_cache, copied_render_pass_id);
-  EXPECT_EQ(DrawQuad::Material::kRenderPass, copy_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kCompositorRenderPass, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
   EXPECT_EQ(mask_resource_id, copy_quad->mask_resource_id());
@@ -417,6 +421,10 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::ProtectedVideoType protected_video_type =
       gfx::ProtectedVideoType::kHardwareProtected;
   gfx::ColorSpace video_color_space = gfx::ColorSpace::CreateJpeg();
+  gfx::HDRMetadata hdr_metadata = gfx::HDRMetadata();
+  hdr_metadata.max_content_light_level = 1000;
+  hdr_metadata.max_frame_average_light_level = 100;
+
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(YUVVideoDrawQuad, visible_rect, needs_blending,
@@ -439,12 +447,13 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(resource_multiplier, copy_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, copy_quad->bits_per_channel);
   EXPECT_EQ(gfx::ProtectedVideoType::kClear, copy_quad->protected_video_type);
+  EXPECT_EQ(gfx::HDRMetadata(), copy_quad->hdr_metadata);
 
   CREATE_QUAD_ALL(YUVVideoDrawQuad, ya_tex_coord_rect, uv_tex_coord_rect,
                   ya_tex_size, uv_tex_size, y_plane_resource_id,
                   u_plane_resource_id, v_plane_resource_id, a_plane_resource_id,
                   video_color_space, resource_offset, resource_multiplier,
-                  bits_per_channel, protected_video_type);
+                  bits_per_channel, protected_video_type, hdr_metadata);
   EXPECT_EQ(DrawQuad::Material::kYuvVideoContent, copy_quad->material);
   EXPECT_EQ(ya_tex_coord_rect, copy_quad->ya_tex_coord_rect);
   EXPECT_EQ(uv_tex_coord_rect, copy_quad->uv_tex_coord_rect);
@@ -458,6 +467,7 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(resource_multiplier, copy_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, copy_quad->bits_per_channel);
   EXPECT_EQ(protected_video_type, copy_quad->protected_video_type);
+  EXPECT_EQ(hdr_metadata, copy_quad->hdr_metadata);
 }
 
 TEST(DrawQuadTest, CopyPictureDrawQuad) {
@@ -526,9 +536,9 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
-TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
+TEST_F(DrawQuadIteratorTest, CompositorRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  int render_pass_id = 61;
+  CompositorRenderPassId render_pass_id{61};
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0.f, 0.f, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -537,10 +547,10 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::RectF tex_coord_rect(1.f, 1.f, 33.f, 19.f);
   bool force_anti_aliasing_off = false;
   float backdrop_filter_quality = 1.0f;
-  int copied_render_pass_id = 235;
+  CompositorRenderPassId copied_render_pass_id{235};
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
+  CREATE_QUAD_NEW_RP(CompositorRenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_rect, mask_texture_size,
                      filters_scale, filters_origin, tex_coord_rect,
                      force_anti_aliasing_off, backdrop_filter_quality,
@@ -684,6 +694,9 @@ TEST(DrawQuadTest, LargestQuadType) {
 
   for (int i = 0; i <= static_cast<int>(DrawQuad::Material::kMaxValue); ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::Material::kAggregatedRenderPass:
+        largest = std::max(largest, sizeof(AggregatedRenderPassDrawQuad));
+        break;
       case DrawQuad::Material::kDebugBorder:
         largest = std::max(largest, sizeof(DebugBorderDrawQuad));
         break;
@@ -693,8 +706,8 @@ TEST(DrawQuadTest, LargestQuadType) {
       case DrawQuad::Material::kTextureContent:
         largest = std::max(largest, sizeof(TextureDrawQuad));
         break;
-      case DrawQuad::Material::kRenderPass:
-        largest = std::max(largest, sizeof(RenderPassDrawQuad));
+      case DrawQuad::Material::kCompositorRenderPass:
+        largest = std::max(largest, sizeof(CompositorRenderPassDrawQuad));
         break;
       case DrawQuad::Material::kSolidColor:
         largest = std::max(largest, sizeof(SolidColorDrawQuad));
@@ -728,6 +741,9 @@ TEST(DrawQuadTest, LargestQuadType) {
   LOG(ERROR) << "kLargestDrawQuad " << LargestDrawQuadSize();
   for (int i = 0; i <= static_cast<int>(DrawQuad::Material::kMaxValue); ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::Material::kAggregatedRenderPass:
+        LOG(ERROR) << "AggregatedRenderPass " << sizeof(AggregatedRenderPass);
+        break;
       case DrawQuad::Material::kDebugBorder:
         LOG(ERROR) << "DebugBorderDrawQuad " << sizeof(DebugBorderDrawQuad);
         break;
@@ -737,8 +753,9 @@ TEST(DrawQuadTest, LargestQuadType) {
       case DrawQuad::Material::kTextureContent:
         LOG(ERROR) << "TextureDrawQuad " << sizeof(TextureDrawQuad);
         break;
-      case DrawQuad::Material::kRenderPass:
-        LOG(ERROR) << "RenderPassDrawQuad " << sizeof(RenderPassDrawQuad);
+      case DrawQuad::Material::kCompositorRenderPass:
+        LOG(ERROR) << "CompositorRenderPassDrawQuad "
+                   << sizeof(CompositorRenderPassDrawQuad);
         break;
       case DrawQuad::Material::kSolidColor:
         LOG(ERROR) << "SolidColorDrawQuad " << sizeof(SolidColorDrawQuad);

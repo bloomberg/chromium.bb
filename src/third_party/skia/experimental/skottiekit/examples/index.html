@@ -14,7 +14,7 @@
     // loadKit resolves with SkottieKit.
     const loadKit = SkottieKitInit({
       locateFile: (file) => '/bin/'+file,
-    }).ready();
+    });
 
     loadKit.then(() => {
       const n = performance.now();
@@ -33,8 +33,6 @@
     const loadOnboardingJSON = fetch(cdn + 'onboarding.json').then((resp) => {
       return resp.text();
     });
-
-
 
     function SkottieDemo(values, canvasID, width=400, height=400) {
       const [SkottieKit, legoJSON] = values;

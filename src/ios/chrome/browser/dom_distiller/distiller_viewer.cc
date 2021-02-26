@@ -23,8 +23,10 @@ DistillerViewer::DistillerViewer(
     dom_distiller::DomDistillerService* distillerService,
     PrefService* prefs,
     const GURL& url,
-    const DistillationFinishedCallback& callback)
-    : DistillerViewerInterface(prefs), url_(url), callback_(callback) {
+    DistillationFinishedCallback callback)
+    : DistillerViewerInterface(prefs),
+      url_(url),
+      callback_(std::move(callback)) {
   DCHECK(distillerService);
   DCHECK(url.is_valid());
   std::unique_ptr<dom_distiller::DistillerPage> page =
@@ -40,16 +42,19 @@ DistillerViewer::DistillerViewer(
     std::unique_ptr<dom_distiller::DistillerPage> page,
     PrefService* prefs,
     const GURL& url,
-    const DistillationFinishedCallback& callback)
-    : DistillerViewerInterface(prefs), url_(url), callback_(callback) {
+    DistillationFinishedCallback callback)
+    : DistillerViewerInterface(prefs),
+      url_(url),
+      callback_(std::move(callback)) {
   DCHECK(url.is_valid());
   SendCommonJavaScript();
   distiller_ = distiller_factory->CreateDistillerForUrl(url);
   distiller_->DistillPage(
       url, std::move(page),
-      base::Bind(&DistillerViewer::OnDistillerFinished, base::Unretained(this)),
-      base::Bind(&DistillerViewer::OnArticleDistillationUpdated,
-                 base::Unretained(this)));
+      base::BindOnce(&DistillerViewer::OnDistillerFinished,
+                     base::Unretained(this)),
+      base::BindRepeating(&DistillerViewer::OnArticleDistillationUpdated,
+                          base::Unretained(this)));
 }
 
 DistillerViewer::~DistillerViewer() {}
@@ -64,6 +69,7 @@ void DistillerViewer::OnDistillerFinished(
 
 void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {
+  DCHECK(!callback_.is_null());
   DomDistillerRequestViewBase::OnArticleReady(article_proto);
   bool is_empty = article_proto->pages_size() == 0 ||
                   article_proto->pages(0).html().empty();
@@ -82,9 +88,10 @@ void DistillerViewer::OnArticleReady(
     std::string html_and_script(html);
     html_and_script +=
         "<script> distillerOnIos = true; " + js_buffer_ + "</script>";
-    callback_.Run(url_, html_and_script, images, article_proto->title());
+    std::move(callback_).Run(url_, html_and_script, images,
+                             article_proto->title());
   } else {
-    callback_.Run(url_, std::string(), {}, std::string());
+    std::move(callback_).Run(url_, std::string(), {}, std::string());
   }
 }
 

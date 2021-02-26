@@ -18,8 +18,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -39,7 +38,7 @@
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/common/chrome_switches.h"
 #endif
 
@@ -188,10 +187,11 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
 
   // File Handlers should only be included in bookmark apps.
   if (app->from_bookmark()) {
-    FileHandlerManager& file_handler_manager =
-        WebAppProviderBase::GetProviderBase(profile)->file_handler_manager();
+    shortcut_info->is_multi_profile = true;
+    OsIntegrationManager& os_integration_manager =
+        WebAppProviderBase::GetProviderBase(profile)->os_integration_manager();
     if (const auto* file_handlers =
-            file_handler_manager.GetEnabledFileHandlers(app->id())) {
+            os_integration_manager.GetEnabledFileHandlers(app->id())) {
       shortcut_info->file_handler_extensions =
           apps::GetFileExtensionsFromFileHandlers(*file_handlers);
       shortcut_info->file_handler_mime_types =
@@ -216,7 +216,7 @@ bool ShouldCreateShortcutFor(ShortcutCreationReason reason,
   if (extension->is_platform_app())
     return true;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (extension->is_hosted_app() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHostedAppShimCreation)) {
@@ -254,7 +254,7 @@ void CreateShortcutsForWebApp(ShortcutCreationReason reason,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebAppProviderBase::GetProviderBase(profile)
-      ->shortcut_manager()
+      ->os_integration_manager()
       .GetShortcutInfoForApp(
           app_id, base::BindOnce(&CreateShortcutsWithInfo, reason, locations,
                                  std::move(callback)));
@@ -267,9 +267,8 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
       ShortcutInfoForExtensionAndProfile(app, profile));
   base::FilePath shortcut_data_dir =
       internals::GetShortcutDataDir(*shortcut_info);
-  internals::PostShortcutIOTask(
-      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
-      std::move(shortcut_info));
+  internals::ScheduleDeletePlatformShortcuts(
+      shortcut_data_dir, std::move(shortcut_info), base::DoNothing());
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,
@@ -283,7 +282,7 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
                                        old_app_title, std::move(callback)));
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
   std::move(callback).Run();
 }

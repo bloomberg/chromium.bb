@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/span.h"
@@ -109,6 +108,26 @@ TEST(WideString, Assign) {
       EXPECT_EQ(0, string2.ReferenceCountForTesting());
     }
     EXPECT_EQ(1, string1.ReferenceCountForTesting());
+  }
+  {
+    // From wchar_t*.
+    WideString string1 = L"abc";
+    EXPECT_EQ(L"abc", string1);
+    string1 = nullptr;
+    EXPECT_TRUE(string1.IsEmpty());
+    string1 = L"def";
+    EXPECT_EQ(L"def", string1);
+    string1 = L"";
+    EXPECT_TRUE(string1.IsEmpty());
+  }
+  {
+    // From WideStringView.
+    WideString string1(WideStringView(L"abc"));
+    EXPECT_EQ(L"abc", string1);
+    string1 = WideStringView(L"");
+    EXPECT_TRUE(string1.IsEmpty());
+    string1 = WideStringView(L"def");
+    EXPECT_EQ(L"def", string1);
   }
 }
 
@@ -693,9 +712,8 @@ TEST(WideString, Find) {
   EXPECT_FALSE(empty_string.Find(L'a').has_value());
   EXPECT_FALSE(empty_string.Find(L'\0').has_value());
 
-  Optional<size_t> result;
   WideString single_string(L"a");
-  result = single_string.Find(L'a');
+  Optional<size_t> result = single_string.Find(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find(L'b').has_value());
@@ -741,9 +759,8 @@ TEST(WideString, ReverseFind) {
   EXPECT_FALSE(empty_string.ReverseFind(L'a').has_value());
   EXPECT_FALSE(empty_string.ReverseFind(L'\0').has_value());
 
-  Optional<size_t> result;
   WideString single_string(L"a");
-  result = single_string.ReverseFind(L'a');
+  Optional<size_t> result = single_string.ReverseFind(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.ReverseFind(L'b').has_value());
@@ -1108,11 +1125,16 @@ TEST(WideString, ToUTF16LE) {
       {L"\x3132\x6162", ByteString("\x32\x31\x62\x61\0\0", 6)},
   };
 
-  for (size_t i = 0; i < FX_ArraySize(utf16le_encode_cases); ++i) {
+  for (size_t i = 0; i < pdfium::size(utf16le_encode_cases); ++i) {
     EXPECT_EQ(utf16le_encode_cases[i].bs,
               utf16le_encode_cases[i].ws.ToUTF16LE())
         << " for case number " << i;
   }
+}
+
+TEST(WideString, EncodeEntities) {
+  EXPECT_EQ(WideString(L"Symbols &<>'\".").EncodeEntities(),
+            L"Symbols &amp;&lt;&gt;&apos;&quot;.");
 }
 
 TEST(WideString, IsASCII) {
@@ -1450,9 +1472,8 @@ TEST(WideStringView, Find) {
   EXPECT_FALSE(empty_string.Find(L'a').has_value());
   EXPECT_FALSE(empty_string.Find(L'\0').has_value());
 
-  Optional<size_t> result;
   WideStringView single_string(L"a");
-  result = single_string.Find(L'a');
+  Optional<size_t> result = single_string.Find(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find(L'b').has_value());
@@ -1602,9 +1623,9 @@ TEST(WideStringView, AnyAllNoneOf) {
   EXPECT_TRUE(std::any_of(str.begin(), str.end(),
                           [](const wchar_t& c) { return c == L'a'; }));
 
-  EXPECT_TRUE(pdfium::ContainsValue(str, L'a'));
-  EXPECT_TRUE(pdfium::ContainsValue(str, L'b'));
-  EXPECT_FALSE(pdfium::ContainsValue(str, L'z'));
+  EXPECT_TRUE(pdfium::Contains(str, L'a'));
+  EXPECT_TRUE(pdfium::Contains(str, L'b'));
+  EXPECT_FALSE(pdfium::Contains(str, L'z'));
 }
 
 TEST(WideStringView, TrimmedRight) {
@@ -1645,7 +1666,7 @@ TEST(WideString, FormatString) {
   EXPECT_EQ(L"cla", WideString::Format(L"%.3ls", L"clams"));
   EXPECT_EQ(L"\u043e\u043f", WideString(L"\u043e\u043f"));
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // See https://bugs.chromium.org/p/pdfium/issues/detail?id=1132
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"\u043e\u043f"));
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"%ls", L"\u043e\u043f"));
@@ -1742,9 +1763,9 @@ TEST(WideString, AnyAllNoneOf) {
   EXPECT_TRUE(std::any_of(str.begin(), str.end(),
                           [](const wchar_t& c) { return c == L'a'; }));
 
-  EXPECT_TRUE(pdfium::ContainsValue(str, L'a'));
-  EXPECT_TRUE(pdfium::ContainsValue(str, L'b'));
-  EXPECT_FALSE(pdfium::ContainsValue(str, L'z'));
+  EXPECT_TRUE(pdfium::Contains(str, L'a'));
+  EXPECT_TRUE(pdfium::Contains(str, L'b'));
+  EXPECT_FALSE(pdfium::Contains(str, L'z'));
 }
 
 TEST(WideString, OStreamOverload) {

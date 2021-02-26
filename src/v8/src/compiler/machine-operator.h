@@ -49,27 +49,29 @@ using LoadRepresentation = MachineType;
 V8_EXPORT_PRIVATE LoadRepresentation LoadRepresentationOf(Operator const*)
     V8_WARN_UNUSED_RESULT;
 
-enum class LoadKind {
+enum class MemoryAccessKind {
   kNormal,
   kUnaligned,
   kProtected,
 };
 
-size_t hash_value(LoadKind);
+size_t hash_value(MemoryAccessKind);
 
-V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, LoadKind);
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, MemoryAccessKind);
 
 enum class LoadTransformation {
-  kS8x16LoadSplat,
-  kS16x8LoadSplat,
-  kS32x4LoadSplat,
-  kS64x2LoadSplat,
-  kI16x8Load8x8S,
-  kI16x8Load8x8U,
-  kI32x4Load16x4S,
-  kI32x4Load16x4U,
-  kI64x2Load32x2S,
-  kI64x2Load32x2U,
+  kS128Load8Splat,
+  kS128Load16Splat,
+  kS128Load32Splat,
+  kS128Load64Splat,
+  kS128Load8x8S,
+  kS128Load8x8U,
+  kS128Load16x4S,
+  kS128Load16x4U,
+  kS128Load32x2S,
+  kS128Load32x2U,
+  kS128Load32Zero,
+  kS128Load64Zero,
 };
 
 size_t hash_value(LoadTransformation);
@@ -77,7 +79,7 @@ size_t hash_value(LoadTransformation);
 V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, LoadTransformation);
 
 struct LoadTransformParameters {
-  LoadKind kind;
+  MemoryAccessKind kind;
   LoadTransformation transformation;
 };
 
@@ -87,6 +89,17 @@ V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&,
                                            LoadTransformParameters);
 
 V8_EXPORT_PRIVATE LoadTransformParameters const& LoadTransformParametersOf(
+    Operator const*) V8_WARN_UNUSED_RESULT;
+
+struct LoadLaneParameters {
+  MemoryAccessKind kind;
+  LoadRepresentation rep;
+  uint8_t laneidx;
+};
+
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, LoadLaneParameters);
+
+V8_EXPORT_PRIVATE LoadLaneParameters const& LoadLaneParametersOf(
     Operator const*) V8_WARN_UNUSED_RESULT;
 
 // A Store needs a MachineType and a WriteBarrierKind in order to emit the
@@ -122,6 +135,17 @@ using UnalignedStoreRepresentation = MachineRepresentation;
 UnalignedStoreRepresentation const& UnalignedStoreRepresentationOf(
     Operator const*) V8_WARN_UNUSED_RESULT;
 
+struct StoreLaneParameters {
+  MemoryAccessKind kind;
+  MachineRepresentation rep;
+  uint8_t laneidx;
+};
+
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, StoreLaneParameters);
+
+V8_EXPORT_PRIVATE StoreLaneParameters const& StoreLaneParametersOf(
+    Operator const*) V8_WARN_UNUSED_RESULT;
+
 class StackSlotRepresentation final {
  public:
   StackSlotRepresentation(int size, int alignment)
@@ -152,30 +176,30 @@ MachineRepresentation AtomicStoreRepresentationOf(Operator const* op)
 
 MachineType AtomicOpType(Operator const* op) V8_WARN_UNUSED_RESULT;
 
-class S8x16ShuffleParameter {
+class S128ImmediateParameter {
  public:
-  explicit S8x16ShuffleParameter(const uint8_t shuffle[16]) {
-    std::copy(shuffle, shuffle + 16, shuffle_.begin());
+  explicit S128ImmediateParameter(const uint8_t immediate[16]) {
+    std::copy(immediate, immediate + 16, immediate_.begin());
   }
-  const std::array<uint8_t, 16>& shuffle() const { return shuffle_; }
-  const uint8_t* data() const { return shuffle_.data(); }
-  uint8_t operator[](int x) const { return shuffle_[x]; }
+  const std::array<uint8_t, 16>& immediate() const { return immediate_; }
+  const uint8_t* data() const { return immediate_.data(); }
+  uint8_t operator[](int x) const { return immediate_[x]; }
 
  private:
-  std::array<uint8_t, 16> shuffle_;
+  std::array<uint8_t, 16> immediate_;
 };
 
-V8_EXPORT_PRIVATE bool operator==(S8x16ShuffleParameter const& lhs,
-                                  S8x16ShuffleParameter const& rhs);
-bool operator!=(S8x16ShuffleParameter const& lhs,
-                S8x16ShuffleParameter const& rhs);
+V8_EXPORT_PRIVATE bool operator==(S128ImmediateParameter const& lhs,
+                                  S128ImmediateParameter const& rhs);
+bool operator!=(S128ImmediateParameter const& lhs,
+                S128ImmediateParameter const& rhs);
 
-size_t hash_value(S8x16ShuffleParameter const& p);
+size_t hash_value(S128ImmediateParameter const& p);
 
 V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&,
-                                           S8x16ShuffleParameter const&);
+                                           S128ImmediateParameter const&);
 
-V8_EXPORT_PRIVATE S8x16ShuffleParameter const& S8x16ShuffleParameterOf(
+V8_EXPORT_PRIVATE S128ImmediateParameter const& S128ImmediateParameterOf(
     Operator const* op) V8_WARN_UNUSED_RESULT;
 
 StackCheckKind StackCheckKindOf(Operator const* op) V8_WARN_UNUSED_RESULT;
@@ -189,6 +213,14 @@ enum class ShiftKind { kNormal, kShiftOutZeros };
 size_t hash_value(ShiftKind);
 V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, ShiftKind);
 ShiftKind ShiftKindOf(Operator const*) V8_WARN_UNUSED_RESULT;
+
+// TruncateKind::kSetOverflowToMin sets the result of a saturating float-to-int
+// conversion to INT_MIN if the conversion returns INT_MAX due to overflow. This
+// makes it easier to detect an overflow. This parameter is ignored on platforms
+// like x64 and ia32 where a range overflow does not result in INT_MAX.
+enum class TruncateKind { kArchitectureDefault, kSetOverflowToMin };
+std::ostream& operator<<(std::ostream& os, TruncateKind kind);
+size_t hash_value(TruncateKind kind);
 
 // Interface for building machine-level operators. These operators are
 // machine-level but machine-independent and thus define a language suitable
@@ -222,13 +254,14 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
     kInt64AbsWithOverflow = 1u << 21,
     kWord32Rol = 1u << 22,
     kWord64Rol = 1u << 23,
+    kSatConversionIsSafe = 1u << 24,
     kAllOptionalOps =
         kFloat32RoundDown | kFloat64RoundDown | kFloat32RoundUp |
         kFloat64RoundUp | kFloat32RoundTruncate | kFloat64RoundTruncate |
         kFloat64RoundTiesAway | kFloat32RoundTiesEven | kFloat64RoundTiesEven |
         kWord32Ctz | kWord64Ctz | kWord32Popcnt | kWord64Popcnt |
         kWord32ReverseBits | kWord64ReverseBits | kInt32AbsWithOverflow |
-        kInt64AbsWithOverflow | kWord32Rol | kWord64Rol
+        kInt64AbsWithOverflow | kWord32Rol | kWord64Rol | kSatConversionIsSafe
   };
   using Flags = base::Flags<Flag, unsigned>;
 
@@ -295,6 +328,9 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
       AlignmentRequirements alignmentRequirements =
           AlignmentRequirements::FullUnalignedAccessSupport());
 
+  MachineOperatorBuilder(const MachineOperatorBuilder&) = delete;
+  MachineOperatorBuilder& operator=(const MachineOperatorBuilder&) = delete;
+
   const Operator* Comment(const char* msg);
   const Operator* AbortCSAAssert();
   const Operator* DebugBreak();
@@ -329,6 +365,11 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   // compatible with JavaScript's specification. Otherwise, we have to manually
   // generate a mask with 0x1f on the amount ahead of generating the shift.
   bool Word32ShiftIsSafe() const { return flags_ & kWord32ShiftIsSafe; }
+
+  // Return true if the target's implementation of float-to-int-conversions is a
+  // saturating conversion rounding towards 0. Otherwise, we have to manually
+  // generate the correct value if a saturating conversion is requested.
+  bool SatConversionIsSafe() const { return flags_ & kSatConversionIsSafe; }
 
   const Operator* Word64And();
   const Operator* Word64Or();
@@ -415,6 +456,10 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   // in the target type and are *not* defined for other inputs.
   // Use narrowing change operators only when there is a static guarantee that
   // the input value is representable in the target value.
+  //
+  // Some operators can have the behaviour on overflow change through specifying
+  // TruncateKind. The exact semantics are documented in the tests in
+  // test/cctest/compiler/test-run-machops.cc .
   const Operator* ChangeFloat32ToFloat64();
   const Operator* ChangeFloat64ToInt32();   // narrowing
   const Operator* ChangeFloat64ToInt64();
@@ -422,8 +467,8 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* ChangeFloat64ToUint64();
   const Operator* TruncateFloat64ToInt64();
   const Operator* TruncateFloat64ToUint32();
-  const Operator* TruncateFloat32ToInt32();
-  const Operator* TruncateFloat32ToUint32();
+  const Operator* TruncateFloat32ToInt32(TruncateKind kind);
+  const Operator* TruncateFloat32ToUint32(TruncateKind kind);
   const Operator* TryTruncateFloat32ToInt64();
   const Operator* TryTruncateFloat64ToInt64();
   const Operator* TryTruncateFloat32ToUint64();
@@ -576,6 +621,10 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* F64x2Qfms();
   const Operator* F64x2Pmin();
   const Operator* F64x2Pmax();
+  const Operator* F64x2Ceil();
+  const Operator* F64x2Floor();
+  const Operator* F64x2Trunc();
+  const Operator* F64x2NearestInt();
 
   const Operator* F32x4Splat();
   const Operator* F32x4ExtractLane(int32_t);
@@ -602,6 +651,10 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* F32x4Qfms();
   const Operator* F32x4Pmin();
   const Operator* F32x4Pmax();
+  const Operator* F32x4Ceil();
+  const Operator* F32x4Floor();
+  const Operator* F32x4Trunc();
+  const Operator* F32x4NearestInt();
 
   const Operator* I64x2Splat();
   const Operator* I64x2SplatI32Pair();
@@ -609,22 +662,23 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I64x2ReplaceLane(int32_t);
   const Operator* I64x2ReplaceLaneI32Pair(int32_t);
   const Operator* I64x2Neg();
+  const Operator* I64x2SConvertI32x4Low();
+  const Operator* I64x2SConvertI32x4High();
+  const Operator* I64x2UConvertI32x4Low();
+  const Operator* I64x2UConvertI32x4High();
+  const Operator* I64x2BitMask();
   const Operator* I64x2Shl();
   const Operator* I64x2ShrS();
   const Operator* I64x2Add();
   const Operator* I64x2Sub();
   const Operator* I64x2Mul();
-  const Operator* I64x2MinS();
-  const Operator* I64x2MaxS();
   const Operator* I64x2Eq();
-  const Operator* I64x2Ne();
-  const Operator* I64x2GtS();
-  const Operator* I64x2GeS();
   const Operator* I64x2ShrU();
-  const Operator* I64x2MinU();
-  const Operator* I64x2MaxU();
-  const Operator* I64x2GtU();
-  const Operator* I64x2GeU();
+  const Operator* I64x2ExtMulLowI32x4S();
+  const Operator* I64x2ExtMulHighI32x4S();
+  const Operator* I64x2ExtMulLowI32x4U();
+  const Operator* I64x2ExtMulHighI32x4U();
+  const Operator* I64x2SignSelect();
 
   const Operator* I32x4Splat();
   const Operator* I32x4ExtractLane(int32_t);
@@ -656,6 +710,14 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I32x4GeU();
   const Operator* I32x4Abs();
   const Operator* I32x4BitMask();
+  const Operator* I32x4DotI16x8S();
+  const Operator* I32x4ExtMulLowI16x8S();
+  const Operator* I32x4ExtMulHighI16x8S();
+  const Operator* I32x4ExtMulLowI16x8U();
+  const Operator* I32x4ExtMulHighI16x8U();
+  const Operator* I32x4SignSelect();
+  const Operator* I32x4ExtAddPairwiseI16x8S();
+  const Operator* I32x4ExtAddPairwiseI16x8U();
 
   const Operator* I16x8Splat();
   const Operator* I16x8ExtractLaneU(int32_t);
@@ -668,10 +730,10 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I16x8ShrS();
   const Operator* I16x8SConvertI32x4();
   const Operator* I16x8Add();
-  const Operator* I16x8AddSaturateS();
+  const Operator* I16x8AddSatS();
   const Operator* I16x8AddHoriz();
   const Operator* I16x8Sub();
-  const Operator* I16x8SubSaturateS();
+  const Operator* I16x8SubSatS();
   const Operator* I16x8Mul();
   const Operator* I16x8MinS();
   const Operator* I16x8MaxS();
@@ -684,15 +746,23 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I16x8UConvertI8x16High();
   const Operator* I16x8ShrU();
   const Operator* I16x8UConvertI32x4();
-  const Operator* I16x8AddSaturateU();
-  const Operator* I16x8SubSaturateU();
+  const Operator* I16x8AddSatU();
+  const Operator* I16x8SubSatU();
   const Operator* I16x8MinU();
   const Operator* I16x8MaxU();
   const Operator* I16x8GtU();
   const Operator* I16x8GeU();
   const Operator* I16x8RoundingAverageU();
+  const Operator* I16x8Q15MulRSatS();
   const Operator* I16x8Abs();
   const Operator* I16x8BitMask();
+  const Operator* I16x8ExtMulLowI8x16S();
+  const Operator* I16x8ExtMulHighI8x16S();
+  const Operator* I16x8ExtMulLowI8x16U();
+  const Operator* I16x8ExtMulHighI8x16U();
+  const Operator* I16x8SignSelect();
+  const Operator* I16x8ExtAddPairwiseI8x16S();
+  const Operator* I16x8ExtAddPairwiseI8x16U();
 
   const Operator* I8x16Splat();
   const Operator* I8x16ExtractLaneU(int32_t);
@@ -703,9 +773,9 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I8x16ShrS();
   const Operator* I8x16SConvertI16x8();
   const Operator* I8x16Add();
-  const Operator* I8x16AddSaturateS();
+  const Operator* I8x16AddSatS();
   const Operator* I8x16Sub();
-  const Operator* I8x16SubSaturateS();
+  const Operator* I8x16SubSatS();
   const Operator* I8x16Mul();
   const Operator* I8x16MinS();
   const Operator* I8x16MaxS();
@@ -716,18 +786,21 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
 
   const Operator* I8x16ShrU();
   const Operator* I8x16UConvertI16x8();
-  const Operator* I8x16AddSaturateU();
-  const Operator* I8x16SubSaturateU();
+  const Operator* I8x16AddSatU();
+  const Operator* I8x16SubSatU();
   const Operator* I8x16MinU();
   const Operator* I8x16MaxU();
   const Operator* I8x16GtU();
   const Operator* I8x16GeU();
   const Operator* I8x16RoundingAverageU();
+  const Operator* I8x16Popcnt();
   const Operator* I8x16Abs();
   const Operator* I8x16BitMask();
+  const Operator* I8x16SignSelect();
 
   const Operator* S128Load();
   const Operator* S128Store();
+  const Operator* S128Const(const uint8_t value[16]);
 
   const Operator* S128Zero();
   const Operator* S128And();
@@ -737,28 +810,35 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* S128Select();
   const Operator* S128AndNot();
 
-  const Operator* S8x16Swizzle();
-  const Operator* S8x16Shuffle(const uint8_t shuffle[16]);
+  const Operator* I8x16Swizzle();
+  const Operator* I8x16Shuffle(const uint8_t shuffle[16]);
 
-  const Operator* S1x2AnyTrue();
-  const Operator* S1x2AllTrue();
-  const Operator* S1x4AnyTrue();
-  const Operator* S1x4AllTrue();
-  const Operator* S1x8AnyTrue();
-  const Operator* S1x8AllTrue();
-  const Operator* S1x16AnyTrue();
-  const Operator* S1x16AllTrue();
+  const Operator* V32x4AnyTrue();
+  const Operator* V32x4AllTrue();
+  const Operator* V16x8AnyTrue();
+  const Operator* V16x8AllTrue();
+  const Operator* V8x16AnyTrue();
+  const Operator* V8x16AllTrue();
 
   // load [base + index]
   const Operator* Load(LoadRepresentation rep);
   const Operator* PoisonedLoad(LoadRepresentation rep);
   const Operator* ProtectedLoad(LoadRepresentation rep);
 
-  const Operator* LoadTransform(LoadKind kind, LoadTransformation transform);
+  const Operator* LoadTransform(MemoryAccessKind kind,
+                                LoadTransformation transform);
+
+  // SIMD load: replace a specified lane with [base + index].
+  const Operator* LoadLane(MemoryAccessKind kind, LoadRepresentation rep,
+                           uint8_t laneidx);
 
   // store [base + index], value
   const Operator* Store(StoreRepresentation rep);
   const Operator* ProtectedStore(MachineRepresentation rep);
+
+  // SIMD store: store a specified lane of value into [base + index].
+  const Operator* StoreLane(MemoryAccessKind kind, MachineRepresentation rep,
+                            uint8_t laneidx);
 
   // unaligned load [base + index]
   const Operator* UnalignedLoad(LoadRepresentation rep);
@@ -901,8 +981,6 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   MachineRepresentation const word_;
   Flags const flags_;
   AlignmentRequirements const alignment_requirements_;
-
-  DISALLOW_COPY_AND_ASSIGN(MachineOperatorBuilder);
 };
 
 

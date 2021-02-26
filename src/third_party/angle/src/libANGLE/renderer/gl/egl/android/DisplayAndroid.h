@@ -11,7 +11,6 @@
 
 #include <map>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "libANGLE/renderer/gl/egl/DisplayEGL.h"
@@ -47,7 +46,8 @@ class DisplayAndroid : public DisplayEGL
                                                          EGLClientBuffer buffer,
                                                          const egl::AttributeMap &attribs) override;
 
-    egl::Error makeCurrent(egl::Surface *drawSurface,
+    egl::Error makeCurrent(egl::Display *display,
+                           egl::Surface *drawSurface,
                            egl::Surface *readSurface,
                            gl::Context *context) override;
 
@@ -68,14 +68,7 @@ class DisplayAndroid : public DisplayEGL
 
     bool mSupportsSurfaceless;
 
-    EGLSurface mDummyPbuffer;
-
-    struct CurrentNativeContext
-    {
-        EGLSurface surface = EGL_NO_SURFACE;
-        EGLContext context = EGL_NO_CONTEXT;
-    };
-    std::unordered_map<std::thread::id, CurrentNativeContext> mCurrentNativeContext;
+    EGLSurface mMockPbuffer;
 };
 
 }  // namespace rx

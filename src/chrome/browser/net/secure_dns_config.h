@@ -9,15 +9,14 @@
 
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "net/dns/dns_config.h"
-
-namespace net {
-struct DnsOverHttpsServerConfig;
-}  // namespace net
+#include "net/dns/public/dns_over_https_server_config.h"
+#include "net/dns/public/secure_dns_mode.h"
 
 // Representation of a complete Secure DNS configuration.
 class SecureDnsConfig {
  public:
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.net
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SecureDnsManagementMode
   // Forced management description types. We will check for the override cases
   // in the order they are listed in the enum.
   enum class ManagementMode {
@@ -29,13 +28,13 @@ class SecureDnsConfig {
     kDisabledParentalControls,
   };
 
-  // String representations for net::DnsConfig::SecureDnsMode.  Used for both
-  // configuration storage and UI state.
+  // String representations for net::SecureDnsMode.  Used for both configuration
+  // storage and UI state.
   static constexpr char kModeOff[] = "off";
   static constexpr char kModeAutomatic[] = "automatic";
   static constexpr char kModeSecure[] = "secure";
 
-  SecureDnsConfig(net::DnsConfig::SecureDnsMode mode,
+  SecureDnsConfig(net::SecureDnsMode mode,
                   std::vector<net::DnsOverHttpsServerConfig> servers,
                   ManagementMode management_mode);
   // This class is move-only to avoid any accidental copying.
@@ -45,19 +44,18 @@ class SecureDnsConfig {
 
   // Identifies the SecureDnsMode corresponding to one of the above names, or
   // returns nullopt if the name is unrecognized.
-  static base::Optional<net::DnsConfig::SecureDnsMode> ParseMode(
-      base::StringPiece name);
+  static base::Optional<net::SecureDnsMode> ParseMode(base::StringPiece name);
   // Converts a secure DNS mode to one of the above names.
-  static const char* ModeToString(net::DnsConfig::SecureDnsMode mode);
+  static const char* ModeToString(net::SecureDnsMode mode);
 
-  net::DnsConfig::SecureDnsMode mode() { return mode_; }
+  net::SecureDnsMode mode() { return mode_; }
   const std::vector<net::DnsOverHttpsServerConfig>& servers() {
     return servers_;
   }
   ManagementMode management_mode() { return management_mode_; }
 
  private:
-  net::DnsConfig::SecureDnsMode mode_;
+  net::SecureDnsMode mode_;
   std::vector<net::DnsOverHttpsServerConfig> servers_;
   ManagementMode management_mode_;
 };

@@ -11,11 +11,13 @@
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_switches.h"
@@ -53,7 +55,7 @@ SyncReader::SyncReader(
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
       trailing_renderer_missed_callback_count_(0),
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
       maximum_wait_time_(params.GetBufferDuration() / 2),
 #else
       // TODO(dalecurtis): Investigate if we can reduce this on all platforms.

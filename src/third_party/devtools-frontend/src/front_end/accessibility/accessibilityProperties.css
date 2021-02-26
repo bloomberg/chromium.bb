@@ -5,7 +5,7 @@
  */
 
 .ax-name {
-  color: rgb(153, 69, 0);
+  color: rgb(153 69 0);
   flex-shrink: 0;
 }
 
@@ -18,9 +18,18 @@
 }
 
 .ax-value-string {
-  color: rgb(200, 0, 0);
+  color: rgb(200 0 0);
 }
 
 span.ax-internal-role {
   font-style: italic;
+}
+
+#source-order-warning {
+  padding-bottom: 0;
+  text-align: left;
+}
+
+.source-order-checkbox {
+  margin: 5px;
 }

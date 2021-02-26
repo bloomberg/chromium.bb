@@ -31,7 +31,8 @@ cr.define('settings', function() {
     DISPLAY_OFF_SLEEP: 0,
     DISPLAY_OFF: 1,
     DISPLAY_ON: 2,
-    OTHER: 3,
+    SHUT_DOWN: 3,
+    STOP_SESSION: 4,
   };
 
   /**
@@ -86,16 +87,6 @@ cr.define('settings', function() {
    */
   let ExternalStorage;
 
-  /**
-   * @typedef {{
-   *   id: string,
-   *   name: string,
-   *   description: string,
-   *   diskUsageLabel: string,
-   * }}
-   */
-  let DlcMetadata;
-
   /** @interface */
   class DevicePageBrowserProxy {
     /** Initializes the mouse and touchpad handler. */
@@ -106,6 +97,9 @@ cr.define('settings', function() {
 
     /** Initializes the keyboard WebUI handler. */
     initializeKeyboard() {}
+
+    /** Initializes the keyboard update watcher. */
+    initializeKeyboardWatcher() {}
 
     /** Shows the Ash keyboard shortcut viewer. */
     showKeyboardShortcutViewer() {}
@@ -193,16 +187,16 @@ cr.define('settings', function() {
     highlightDisplay(id) {}
 
     /**
-     * @return {!Promise<!Array<!settings.DlcMetadata>>} A list of DLC metadata.
+     * Updates the position of the dragged display to render preview indicators
+     * as the display is being dragged around.
+     * @param {string} id Display id of selected display.
+     * @param {number} deltaX x-axis position change since the last update.
+     * @param {number} deltaY y-axis position change since the last update.
      */
-    getDlcList() {}
+    dragDisplayDelta(id, deltaX, deltaY) {}
 
-    /**
-     * Purges the DLC with the provided |dlcId| from the device.
-     * @param {string} dlcId The ID of the DLC to purge from the device.
-     * @return {!Promise<boolean>} Whether purging of DLC was successful.
-     */
-    purgeDlc(dlcId) {}
+    updateStorageInfo() {}
+    openMyFiles() {}
   }
 
   /**
@@ -227,6 +221,11 @@ cr.define('settings', function() {
     /** @override */
     showKeyboardShortcutViewer() {
       chrome.send('showKeyboardShortcutViewer');
+    }
+
+    /** @override */
+    initializeKeyboardWatcher() {
+      chrome.send('initializeKeyboardWatcher');
     }
 
     /** @override */
@@ -300,13 +299,18 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getDlcList() {
-      return cr.sendWithPromise('getDlcList');
+    dragDisplayDelta(id, deltaX, deltaY) {
+      chrome.send('dragDisplayDelta', [id, deltaX, deltaY]);
     }
 
     /** @override */
-    purgeDlc(dlcId) {
-      return cr.sendWithPromise('purgeDlc', dlcId);
+    updateStorageInfo() {
+      chrome.send('updateStorageInfo');
+    }
+
+    /** @override */
+    openMyFiles() {
+      chrome.send('openMyFiles');
     }
   }
 
@@ -324,6 +328,5 @@ cr.define('settings', function() {
     NoteAppLockScreenSupport,
     PowerManagementSettings,
     PowerSource,
-    DlcMetadata,
   };
 });

@@ -94,8 +94,10 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      memory_pressure_listener_(base::BindRepeating(
-          &startup_metric_utils::OnMemoryPressureBeforeFirstNonEmptyPaint)) {
+      memory_pressure_listener_(
+          FROM_HERE,
+          base::BindRepeating(&startup_metric_utils::
+                                  OnMemoryPressureBeforeFirstNonEmptyPaint)) {
   // FirstWebContentsProfiler is created before the main MessageLoop starts
   // running. At that time, any visible WebContents should have a pending
   // NavigationEntry, i.e. should have dispatched DidStartNavigation() but not
@@ -201,13 +203,13 @@ void BeginFirstWebContentsProfiling() {
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // TODO(https://crbug.com/1032348): It is incorrect to have a visible
     // browser window with no active WebContents, but reports on Mac show that
     // it happens.
     if (!contents)
       continue;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
     if (contents->GetVisibility() != content::Visibility::VISIBLE)
       continue;

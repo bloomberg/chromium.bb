@@ -72,6 +72,16 @@ void MockMediaSessionPlayerObserver::OnExitPictureInPicture(int player_id) {
   players_[player_id].is_in_picture_in_picture_ = false;
 }
 
+void MockMediaSessionPlayerObserver::OnSetAudioSinkId(
+    int player_id,
+    const std::string& raw_device_id) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+
+  ++received_set_audio_sink_id_calls_;
+  players_[player_id].audio_sink_id_ = raw_device_id;
+}
+
 base::Optional<media_session::MediaPosition>
 MockMediaSessionPlayerObserver::GetPosition(int player_id) const {
   EXPECT_GE(player_id, 0);
@@ -103,6 +113,12 @@ bool MockMediaSessionPlayerObserver::IsPlaying(size_t player_id) {
 double MockMediaSessionPlayerObserver::GetVolumeMultiplier(size_t player_id) {
   EXPECT_GT(players_.size(), player_id);
   return players_[player_id].volume_multiplier_;
+}
+
+void MockMediaSessionPlayerObserver::SetAudioSinkId(size_t player_id,
+                                                    std::string sink_id) {
+  EXPECT_GT(players_.size(), player_id);
+  players_[player_id].audio_sink_id_ = std::move(sink_id);
 }
 
 void MockMediaSessionPlayerObserver::SetPlaying(size_t player_id,
@@ -144,10 +160,28 @@ int MockMediaSessionPlayerObserver::received_exit_picture_in_picture_calls()
   return received_exit_picture_in_picture_calls_;
 }
 
+int MockMediaSessionPlayerObserver::received_set_audio_sink_id_calls() const {
+  return received_set_audio_sink_id_calls_;
+}
+
 bool MockMediaSessionPlayerObserver::HasVideo(int player_id) const {
   EXPECT_GE(player_id, 0);
   EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
   return false;
+}
+
+std::string MockMediaSessionPlayerObserver::GetAudioOutputSinkId(
+    int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return players_.at(player_id).audio_sink_id_;
+}
+
+bool MockMediaSessionPlayerObserver::SupportsAudioOutputDeviceSwitching(
+    int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return players_.at(player_id).supports_device_switching_;
 }
 
 MockMediaSessionPlayerObserver::MockPlayer::MockPlayer(bool is_playing,

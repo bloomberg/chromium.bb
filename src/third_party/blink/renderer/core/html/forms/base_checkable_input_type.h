@@ -38,10 +38,8 @@ namespace blink {
 
 // Base of checkbox and radio types.
 class BaseCheckableInputType : public InputType, public InputTypeView {
-  USING_GARBAGE_COLLECTED_MIXIN(BaseCheckableInputType);
-
  public:
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
 
  protected:

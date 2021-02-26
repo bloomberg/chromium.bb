@@ -17,7 +17,7 @@
   `);
 
   function findRequestByURL(url) {
-    var requests = NetworkTestRunner.networkRequests();
+    const requests = NetworkTestRunner.networkRequests();
     for (var i = 0; i < requests.length; ++i) {
       if (url.test(requests[i].url()))
         return requests[i];
@@ -35,7 +35,8 @@
   }
 
   addCookieHeadersToRequest(findRequestByURL(/inspected-page\.html$/));
-  var log = await SDK.HARLog.build(NetworkTestRunner.networkRequests());
+  const requests = NetworkTestRunner.networkRequests();
+  var log = await SDK.HARLog.build(requests);
   // Filter out favicon.ico requests that only appear on certain platforms.
   log.entries = log.entries.filter(function(entry) {
     return !/favicon\.ico$/.test(entry.request.url);

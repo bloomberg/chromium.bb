@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -109,6 +110,7 @@
 }
 
 - (void)stop {
+  self.viewController.textChangeDelegate = nil;
   _editView.reset();
   self.editController = nil;
   self.viewController = nil;
@@ -128,6 +130,16 @@
 - (void)focusOmnibox {
   if (![self.textField isFirstResponder]) {
     base::RecordAction(base::UserMetricsAction("MobileOmniboxFocused"));
+
+    // In multiwindow context, -becomeFirstRepsonder is not enough to get the
+    // keyboard input. The window will not automatically become key. Make it key
+    // manually. UITextField does this under the hood when tapped from
+    // -[UITextInteractionAssistant(UITextInteractionAssistant_Internal)
+    // setFirstResponderIfNecessaryActivatingSelection:]
+    if (IsMultipleScenesSupported()) {
+      [self.textField.window makeKeyAndVisible];
+    }
+
     [self.textField becomeFirstResponder];
   }
 }
@@ -176,6 +188,17 @@
 
 - (id<EditViewAnimatee>)animatee {
   return self.viewController;
+}
+
+#pragma mark Scribble
+
+- (void)focusOmniboxForScribble {
+  [self.textField becomeFirstResponder];
+  [self.viewController prepareOmniboxForScribble];
+}
+
+- (UIResponder<UITextInput>*)scribbleInput {
+  return self.viewController.textField;
 }
 
 #pragma mark - OmniboxViewControllerDelegate

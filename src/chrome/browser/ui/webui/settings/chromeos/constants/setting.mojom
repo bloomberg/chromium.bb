@@ -16,7 +16,7 @@ enum Setting {
   kDisconnectWifiNetwork = 5,
   kPreferWifiNetwork = 6,
   kForgetWifiNetwork = 7,
-  kConfigureWifi = 8,
+  kWifiAddNetwork = 8,
   kWifiAutoConfigureIp = 9,
   kWifiDns = 10,
   kWifiProxy = 11,
@@ -31,7 +31,12 @@ enum Setting {
   kCellularProxy = 20,
   kCellularAutoConnectToNetwork = 21,
   kInstantTetheringOnOff = 22,
-  kDisconnectTetherNetwork = 22,
+  kDisconnectTetherNetwork = 23,
+  kWifiMetered = 24,
+  kCellularMetered = 25,
+  kCellularAddNetwork = 26,
+  kCellularRemoveESimNetwork = 27,
+  kCellularRenameESimNetwork = 28,
 
   // Bluetooth section.
   kBluetoothOnOff = 100,
@@ -49,24 +54,35 @@ enum Setting {
   kMessagesSetUp = 205,
   kMessagesOnOff = 206,
   kForgetPhone = 207,
+  kNearbyShareOnOff = 208,
+  kPhoneHubOnOff = 209,
+  kPhoneHubNotificationsOnOff = 210,
+  // Note: Value 211 was for deprecated kPhoneHubNotificationBadgeOnOff.
+  // Do not reuse.
+  kPhoneHubTaskContinuationOnOff = 212,
+  kWifiSyncOnOff = 213,
 
   // People section.
   kAddAccount = 300,
   kRemoveAccount = 301,
-  kSyncOnOff = 302,
+  kSplitSyncOnOff = 302,
   kLockScreen = 303,
   kChangeAuthPin = 304,
   kGuestBrowsing = 305,
   kShowUsernamesAndPhotosAtSignIn = 306,
   kRestrictSignIn = 307,
-  kAddToUserWhitelist = 308,
-  kRemoveFromUserWhitelist = 309,
+  kAddToUserAllowlist = 308,
+  kRemoveFromUserAllowlist = 309,
   kAddKerberosTicket = 310,
   kRemoveKerberosTicket = 311,
   kSetActiveKerberosTicket = 312,
   kAddFingerprint = 313,
   kRemoveFingerprint = 314,
   kSetUpParentalControls = 315,
+  kNonSplitSyncEncryptionOptions = 316,
+  kAutocompleteSearchesAndUrls = 317,
+  kMakeSearchesAndBrowsingBetter = 318,
+  kGoogleDriveSearchSuggestions = 319,
 
   // Device section.
   kTouchpadTapToClick = 400,
@@ -91,16 +107,28 @@ enum Setting {
   kStylusLatestNoteOnLockScreen = 419,
   kDisplayOrientation = 420,
   kDisplayArrangement = 421,
-  kPowerIdleBehavior = 422,
+  kPowerIdleBehaviorWhileCharging = 422,
   kPowerSource = 423,
   kSleepWhenLaptopLidClosed = 424,
   kDisplayResolution = 425,
   kDisplayRefreshRate = 426,
+  // Note: Value 427 was for deprecated Remove DLC - see
+  // https://crbug.com/1108093. Do not reuse.
+  kDisplayMirroring = 428,
+  kAllowWindowsToSpanDisplays = 429,
+  kAmbientColors = 430,
+  kTouchscreenCalibration = 431,
+  kNightLightColorTemperature = 432,
+  kPowerIdleBehaviorWhileOnBattery = 433,
+  kDisplayOverscan = 434,
 
   // Personalization section.
   kOpenWallpaper = 500,
   kAmbientModeOnOff = 501,
   kAmbientModeSource = 502,
+  kChangeDeviceAccountImage = 503,
+  // Note: Value 504 was for deprecated kAmbientModeUpdatePhotosContainers.
+  // Do not reuse.
 
   // Search and Assistant section.
   kPreferredSearchEngine = 600,
@@ -110,6 +138,7 @@ enum Setting {
   kAssistantOkGoogle = 604,
   kAssistantNotifications = 605,
   kAssistantVoiceInput = 606,
+  kTrainAssistantVoiceModel = 607,
 
   // Apps section.
   kManageAndroidPreferences = 700,
@@ -134,13 +163,20 @@ enum Setting {
 
   // Privacy section.
   kVerifiedAccess = 1101,
-  kKeepWifiOnDuringSleep = 1102,
+  // Note: Value 1102 was for deprecated "Keep wi-fi on during sleep" setting -
+  // see https://bugs.chromium.org/p/chromium/issues/detail?id=1077126.
+  // Do not reuse.
   kUsageStatsAndCrashReports = 1103,
 
   // Languages and Input section.
   kAddLanguage = 1200,
   kShowInputOptionsInShelf = 1201,
   kShowPersonalInformationSuggestions = 1202,
+  kShowEmojiSuggestions = 1203,
+  kChangeDeviceLanguage = 1204,
+  kOfferTranslation = 1205,
+  kAddInputMethod = 1206,
+  kSpellCheck = 1207,
 
   // Files section.
   kGoogleDriveConnection = 1300,
@@ -165,7 +201,7 @@ enum Setting {
   kStickyKeys = 1511,
   kOnScreenKeyboard = 1512,
   kDictation = 1513,
-  kSpeakToType = 1514,
+  kHighlightKeyboardFocus = 1514,
   kHighlightTextCaret = 1515,
   kAutoClickWhenCursorStops = 1516,
   kLargeCursor = 1517,
@@ -178,6 +214,9 @@ enum Setting {
   kSwitchActionAutoScan = 1524,
   kSwitchActionAutoScanKeyboard = 1525,
   kGetImageDescriptionsFromGoogle = 1526,
+  kLiveCaptions = 1527,
+  kEnableCursorColor = 1528,
+  kFullscreenMagnifierFocusFollowing = 1529,
 
   // Reset section.
   kPowerwash = 1600,
@@ -185,4 +224,14 @@ enum Setting {
   // About Chrome OS section.
   kChangeChromeChannel = 1700,
   kCopyDetailedBuildInfo = 1701,
+  kCheckForOsUpdate = 1702,
+  kSeeWhatsNew = 1703,
+  kGetHelpWithChromeOs = 1704,
+  kReportAnIssue = 1705,
+  kTermsOfService = 1706,
+
+  // Kerberos section.
+  kAddKerberosTicketV2 = 1800,
+  kRemoveKerberosTicketV2 = 1801,
+  kSetActiveKerberosTicketV2 = 1802,
 };

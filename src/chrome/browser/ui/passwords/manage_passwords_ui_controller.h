@@ -17,6 +17,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/post_save_compromised_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,6 +34,7 @@ enum class CredentialType;
 struct InteractionsStats;
 class PasswordFeatureManager;
 class PasswordFormManagerForUI;
+class PostSaveCompromisedHelper;
 }  // namespace password_manager
 
 class AccountChooserPrompt;
@@ -74,29 +76,30 @@ class ManagePasswordsUIController
       bool is_update) override;
   void OnHideManualFallbackForSaving() override;
   bool OnChooseCredentials(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
-      const ManagePasswordsState::CredentialsCallback& callback) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>>
+          local_credentials,
+      const url::Origin& origin,
+      ManagePasswordsState::CredentialsCallback callback) override;
   void OnAutoSignin(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
+      const url::Origin& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnPasswordAutofilled(
-      const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches)
-      override;
+      const std::vector<const password_manager::PasswordForm*>& password_forms,
+      const url::Origin& origin,
+      const std::vector<const password_manager::PasswordForm*>*
+          federated_matches) override;
   void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
                         const GURL& origin) override;
   void OnShowMoveToAccountBubble(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
       override;
 
-  void NotifyUnsyncedCredentialsWillBeDeleted(
-      const std::vector<autofill::PasswordForm>& unsynced_credentials);
+  virtual void NotifyUnsyncedCredentialsWillBeDeleted(
+      std::vector<password_manager::PasswordForm> unsynced_credentials);
 
   // PasswordStore::Observer:
   void OnLoginsChanged(
@@ -116,21 +119,23 @@ class ManagePasswordsUIController
 
   // PasswordsModelDelegate:
   content::WebContents* GetWebContents() const override;
-  const GURL& GetOrigin() const override;
+  url::Origin GetOrigin() const override;
   password_manager::PasswordFormMetricsRecorder*
   GetPasswordFormMetricsRecorder() override;
   password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       override;
   password_manager::ui::State GetState() const override;
-  const autofill::PasswordForm& GetPendingPassword() const override;
-  const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials()
+  const password_manager::PasswordForm& GetPendingPassword() const override;
+  const std::vector<password_manager::PasswordForm>& GetUnsyncedCredentials()
       const override;
   password_manager::metrics_util::CredentialSourceType GetCredentialSource()
       const override;
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
-      const override;
+  const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+  GetCurrentForms() const override;
   const password_manager::InteractionsStats* GetCurrentInteractionStats()
       const override;
+  size_t GetTotalNumberCompromisedPasswords() const override;
+  bool DidAuthForAccountStoreOptInFail() const override;
   bool BubbleIsManualFallbackForSaving() const override;
   void OnBubbleShown() override;
   void OnBubbleHidden() override;
@@ -140,21 +145,26 @@ class ManagePasswordsUIController
   void OnPasswordsRevealed() override;
   void SavePassword(const base::string16& username,
                     const base::string16& password) override;
+  void SaveUnsyncedCredentialsInProfileStore(
+      const std::vector<password_manager::PasswordForm>& selected_credentials)
+      override;
+  void DiscardUnsyncedCredentials() override;
   void MovePasswordToAccountStore() override;
+  void BlockMovingPasswordToAccountStore() override;
   void ChooseCredential(
-      const autofill::PasswordForm& form,
+      const password_manager::PasswordForm& form,
       password_manager::CredentialType credential_type) override;
   void NavigateToPasswordManagerAccountDashboard(
       password_manager::ManagePasswordsReferrer referrer) override;
   void NavigateToPasswordManagerSettingsPage(
       password_manager::ManagePasswordsReferrer referrer) override;
-  void EnableSync(const AccountInfo& account,
-                  bool is_default_promo_account) override;
+  void EnableSync(const AccountInfo& account) override;
   void OnDialogHidden() override;
   bool AuthenticateUser() override;
   void AuthenticateUserForAccountStoreOptInAndSavePassword(
       const base::string16& username,
       const base::string16& password) override;
+  void AuthenticateUserForAccountStoreOptInAndMovePassword() override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;
 
 #if defined(UNIT_TEST)
@@ -208,7 +218,8 @@ class ManagePasswordsUIController
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
   // PasswordsLeakDialogDelegate:
-  void NavigateToPasswordCheckup() override;
+  void NavigateToPasswordCheckup(
+      password_manager::PasswordCheckReferrer referrer) override;
   void OnLeakDialogHidden() override;
 
   enum class BubbleStatus {
@@ -261,11 +272,22 @@ class ManagePasswordsUIController
   // saved against the current origin. If the reauth was unsuccessful, it
   // changes the default destination to profle store and reopens the save
   // bubble.
-  void AuthenticateUserForAccountStoreOptInCallback(
-      const GURL& origin,
+  void FinishSavingPasswordAfterAccountStoreOptInAuth(
+      const url::Origin& origin,
       password_manager::PasswordFormManagerForUI* form_manager,
       const base::string16& username,
       const base::string16& password,
+      password_manager::PasswordManagerClient::ReauthSucceeded
+          reauth_succeeded);
+
+  void OnTriggerPostSaveCompromisedBubble(
+      password_manager::PostSaveCompromisedHelper::BubbleType type,
+      size_t count_compromised_passwords_);
+
+  // Triggered from a reauthentication flow. If |form_manager| is still valid
+  // and the reauth was successful, the password is moved to the account store.
+  void FinishMovingPasswordAfterAccountStoreOptInAuth(
+      password_manager::PasswordFormManagerForUI* form_manager,
       password_manager::PasswordManagerClient::ReauthSucceeded
           reauth_succeeded);
 
@@ -277,6 +299,10 @@ class ManagePasswordsUIController
 
   // The controller for the blocking dialogs.
   std::unique_ptr<PasswordBaseDialogController> dialog_controller_;
+
+  // The helper to pop up a reminder about compromised passwords.
+  std::unique_ptr<password_manager::PostSaveCompromisedHelper>
+      post_save_compromised_helper_;
 
   BubbleStatus bubble_status_ = BubbleStatus::NOT_SHOWN;
 

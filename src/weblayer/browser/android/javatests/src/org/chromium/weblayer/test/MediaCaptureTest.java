@@ -11,9 +11,11 @@ import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.webkit.ValueCallback;
 
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,8 +23,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.MediaCaptureCallback;
 import org.chromium.weblayer.TestWebLayer;
@@ -83,7 +87,10 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
-    public void testMediaCapture_basic() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 20, sdk_is_less_than = 24,
+            message = "Failing on {Lollipop,Marshmallow} Tablet Tester. https://crbug.com/1107380")
+    public void
+    testMediaCapture_basic() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
 
@@ -92,15 +99,17 @@ public final class MediaCaptureTest {
         Assert.assertTrue(mCaptureCallback.mAudio);
         Assert.assertTrue(mCaptureCallback.mVideo);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> { return getMediaCaptureNotification() != null; });
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(getMediaCaptureNotification(), Matchers.notNullValue());
+            });
         }
 
         stopStream();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> { return getMediaCaptureNotification() == null; });
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(getMediaCaptureNotification(), Matchers.nullValue());
+            });
         }
     }
 
@@ -110,7 +119,10 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
-    public void testMediaCapture_rememberPermission() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 20, sdk_is_less_than = 24,
+            message = "Failing on {Lollipop,Marshmallow} Tablet Tester. https://crbug.com/1107380")
+    public void
+    testMediaCapture_rememberPermission() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
 
@@ -139,7 +151,10 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
-    public void testMediaCapture_twoStreams() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 20, sdk_is_less_than = 24,
+            message = "Failing on {Lollipop,Marshmallow} Tablet Tester. https://crbug.com/1107380")
+    public void
+    testMediaCapture_twoStreams() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));
 
@@ -167,7 +182,10 @@ public final class MediaCaptureTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
-    public void testMediaCapture_twoStreamsNotification() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 20, sdk_is_less_than = 24,
+            message = "Failing on {Lollipop,Marshmallow} Tablet Tester. https://crbug.com/1107380")
+    public void
+    testMediaCapture_twoStreamsNotification() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));
 
@@ -176,8 +194,9 @@ public final class MediaCaptureTest {
         Assert.assertTrue(mCaptureCallback.mAudio);
         Assert.assertFalse(mCaptureCallback.mVideo);
 
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return getMediaCaptureNotification() != null; });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getMediaCaptureNotification(), Matchers.notNullValue());
+        });
         Notification audioNotification = getMediaCaptureNotification();
 
         // Video stream.
@@ -187,9 +206,9 @@ public final class MediaCaptureTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             Notification combinedNotification = getMediaCaptureNotification();
-            return combinedNotification != null
-                    && combinedNotification.getSmallIcon().getResId()
-                    != audioNotification.getSmallIcon().getResId();
+            Criteria.checkThat(combinedNotification, Matchers.notNullValue());
+            Criteria.checkThat(combinedNotification.getSmallIcon().getResId(),
+                    Matchers.not(audioNotification.getSmallIcon().getResId()));
         });
 
         mCaptureCallback.mStateCountDown = new BoundedCountDownLatch(2);
@@ -200,7 +219,7 @@ public final class MediaCaptureTest {
         Assert.assertFalse(mCaptureCallback.mVideo);
 
         CriteriaHelper.pollInstrumentationThread(
-                () -> { return getMediaCaptureNotification() == null; });
+                () -> Criteria.checkThat(getMediaCaptureNotification(), Matchers.nullValue()));
     }
 
     private void grantPermissionAndWaitForStreamToStart() throws Throwable {

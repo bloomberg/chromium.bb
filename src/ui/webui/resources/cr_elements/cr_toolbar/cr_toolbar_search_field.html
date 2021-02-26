@@ -25,9 +25,6 @@
       }
 
       cr-icon-button {
-        --cr-icon-button-fill-color-focus: var(
-            --cr-toolbar-search-field-input-bg-color,
-            var(--cr-toolbar-background-color));
         --cr-icon-button-size: var(--cr-toolbar-icon-container-size, 32px);
         margin: var(--cr-toolbar-icon-margin, 6px);
       }
@@ -53,13 +50,14 @@
       }
 
       #prompt {
-        --cr-toolbar-search-field-prompt-opacity: .7;
+        color: var(--cr-toolbar-search-field-prompt-color, white);
         opacity: 0;
       }
 
       @media (prefers-color-scheme: dark) {
         #prompt {
           --cr-toolbar-search-field-prompt-opacity: 1;
+          color: var(--cr-secondary-text-color, white);
         }
       }
 
@@ -94,7 +92,7 @@
 
       label {
         bottom: 0;
-        cursor: text;
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         left: 0;
         overflow: hidden;
         position: absolute;
@@ -112,6 +110,7 @@
         background: transparent;
         border: none;
         color: var(--cr-toolbar-search-field-input-text-color, white);
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         font: inherit;
         outline: none;
         padding: 0;
@@ -120,8 +119,7 @@
       }
 
       input[type='search']::-webkit-search-cancel-button {
-        -webkit-appearance: none;
-        margin: 0;
+        display: none;
       }
 
       :host([narrow]) {
@@ -135,19 +133,21 @@
             var(--cr-toolbar-search-field-background, rgba(0, 0, 0, 0.22));
         border-radius:
             var(--cr-toolbar-search-field-border-radius, 2px);
-        cursor: text;
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         padding-inline-end: 0;
         width: var(--cr-toolbar-field-width, 680px);
       }
 
       :host(:not([narrow]):not([showing-search])) #icon {
-        opacity: .7;
+        opacity: var(--cr-toolbar-search-field-icon-opacity, .7);
       }
 
       :host(:not([narrow])) #prompt {
-        margin-inline-start:
-            var(--cr-toolbar-search-field-prompt-margin-inline-start);
-        opacity: var(--cr-toolbar-search-field-prompt-opacity);
+        opacity: var(--cr-toolbar-search-field-prompt-opacity, .7);
+      }
+
+      :host([narrow]) #prompt {
+        opacity: var(--cr-toolbar-search-field-narrow-mode-prompt-opacity, 0);
       }
 
       :host([narrow]:not([showing-search])) #searchTerm {
@@ -165,7 +165,9 @@
 
       :host([narrow][showing-search]) #icon,
       :host([narrow][showing-search]) paper-spinner-lite {
-        margin-inline-start: 18px;  /* Line up with Menu icon. */
+        /* 18px to line up with the Menu icon by default. */
+        margin-inline-start:
+            var(--cr-toolbar-search-icon-margin-inline-start, 18px);
       }
     </style>
     <template is="dom-if" id="spinnerTemplate">
@@ -174,19 +176,21 @@
     </template>
     <cr-icon-button id="icon" iron-icon="cr:search" title="[[label]]" dir="ltr"
         tabindex$="[[computeIconTabIndex_(narrow, hasSearchText)]]"
-        aria-hidden$="[[computeIconAriaHidden_(narrow, hasSearchText)]]">
+        aria-hidden$="[[computeIconAriaHidden_(narrow, hasSearchText)]]"
+        on-click="onSearchIconClicked_">
     </cr-icon-button>
     <div id="searchTerm">
       <label id="prompt" for="searchInput" aria-hidden="true">[[label]]</label>
       <input id="searchInput"
           aria-labelledby="prompt"
+          autocomplete="off"
           type="search"
           on-input="onSearchTermInput"
           on-search="onSearchTermSearch"
           on-keydown="onSearchTermKeydown_"
           on-focus="onInputFocus_"
           on-blur="onInputBlur_"
-          autofocus
+          autofocus$="[[autofocus]]"
           spellcheck="false">
     </div>
     <template is="dom-if" if="[[hasSearchText]]">

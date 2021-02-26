@@ -36,6 +36,7 @@ void WeightMaskInit_NEON();
 #define LIBGAV1_Dsp8bpp_WeightMask_16x8 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_WeightMask_16x16 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_WeightMask_16x32 LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp8bpp_WeightMask_16x64 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_WeightMask_32x8 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_WeightMask_32x16 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_WeightMask_32x32 LIBGAV1_CPU_NEON

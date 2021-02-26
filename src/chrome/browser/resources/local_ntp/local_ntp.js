@@ -1686,29 +1686,25 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
    * @param {!function()} callback
    */
   function createActionButton(callback) {
-    const icon = document.createElement('button');
+    const icon = document.createElement('div');
     icon.classList.add(CLASSES.REMOVE_ICON);
-    icon.tabIndex = -1;
-    icon.onmousedown = e => {
+    const action = document.createElement('button');
+    action.classList.add(CLASSES.REMOVE_MATCH);
+    action.appendChild(icon);
+    action.onmousedown = e => {
       e.preventDefault();  // Stops default browser action (focus)
     };
-    icon.onauxclick = e => {
+    action.onauxclick = e => {
       if (e.button == 1) {
         // Middle click on delete should just noop for now (matches omnibox).
         e.preventDefault();
       }
     };
-    icon.onclick = e => {
+    action.onclick = e => {
       callback();
       e.preventDefault();  // Stops default browser action (navigation)
     };
 
-    const action = document.createElement('div');
-
-    action.classList.add(CLASSES.REMOVE_MATCH);
-    action.tabIndex = 0;
-    action.setAttribute('role', 'button');
-    action.appendChild(icon);
     return action;
   }
 
@@ -1747,18 +1743,18 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
     // preventing the popup from losing focus and closing as a result.
     headerEl.tabIndex = -1;
     headerEl.append(document.createTextNode(suggestionGroup.header));
-    if (configData.suggestionTransparencyEnabled) {
-      const toggle = createActionButton(() => {
-        groupEl.classList.toggle(CLASSES.COLLAPSED);
-        updateToggleButtonA11y(
-            toggle, groupEl.classList.contains(CLASSES.COLLAPSED));
-        window.chrome.embeddedSearch.searchBox
-            .toggleSuggestionGroupIdVisibility(suggestionGroupId);
-      });
-      updateToggleButtonA11y(toggle, suggestionGroup.hidden);
-      headerEl.appendChild(toggle);
-      realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
-    }
+
+    const toggle = createActionButton(() => {
+      groupEl.classList.toggle(CLASSES.COLLAPSED);
+      updateToggleButtonA11y(
+          toggle, groupEl.classList.contains(CLASSES.COLLAPSED));
+      window.chrome.embeddedSearch.searchBox.toggleSuggestionGroupIdVisibility(
+          suggestionGroupId);
+    });
+    updateToggleButtonA11y(toggle, suggestionGroup.hidden);
+    headerEl.appendChild(toggle);
+    realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
+
     groupEl.appendChild(headerEl);
     realboxMatchesEl.appendChild(groupEl);
     suggestionGroupElsMap[suggestionGroupId] = groupEl;
@@ -1852,7 +1848,7 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
       }
     }
 
-    if (match.supportsDeletion && configData.suggestionTransparencyEnabled) {
+    if (match.supportsDeletion) {
       const remove = createActionButton(() => {
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
       });

@@ -32,7 +32,7 @@ class PrefService;
 namespace chromeos {
 namespace app_time {
 
-class AppTimeLimitsWhitelistPolicyWrapper;
+class AppTimeLimitsAllowlistPolicyWrapper;
 class AppTimeNotificationDelegate;
 class PersistedAppInfo;
 
@@ -107,7 +107,7 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   bool IsAppBlocked(const AppId& app_id) const;
   bool IsAppTimeLimitReached(const AppId& app_id) const;
   bool IsAppActive(const AppId& app_id) const;
-  bool IsWhitelistedApp(const AppId& app_id) const;
+  bool IsAllowlistedApp(const AppId& app_id) const;
 
   // Manages AppStateObservers.
   void AddAppStateObserver(AppStateObserver* observer);
@@ -134,6 +134,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Reporting enablement is set if |enabled| has value.
   void SetReportingEnabled(base::Optional<bool> enabled);
 
+  void GenerateHiddenApps(
+      enterprise_management::ChildStatusReportRequest* report);
+
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
   AppActivityReportInterface::ReportParams GenerateAppActivityReport(
@@ -156,7 +159,7 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
                    const base::Optional<AppLimit>& app_limit);
 
   // Sets the app identified with |app_id| as being always available.
-  void SetAppWhitelisted(const AppId& app_id);
+  void SetAppAllowlisted(const AppId& app_id);
 
   // Reset time has been reached at |timestamp|.
   void OnResetTimeReached(base::Time timestamp);
@@ -165,9 +168,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void OnChromeAppActivityChanged(ChromeAppActivityState state,
                                   base::Time timestamp);
 
-  // Whitelisted applications changed. Called by AppTimeController.
-  void OnTimeLimitWhitelistChanged(
-      const AppTimeLimitsWhitelistPolicyWrapper& wrapper);
+  // Allowlisted applications changed. Called by AppTimeController.
+  void OnTimeLimitAllowlistChanged(
+      const AppTimeLimitsAllowlistPolicyWrapper& wrapper);
 
   // Saves app activity into user preference.
   void SaveAppActivity();

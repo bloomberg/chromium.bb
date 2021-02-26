@@ -4,18 +4,21 @@
 
 package org.chromium.android_webview.test.devui.util;
 
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasHost;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasParamWithValue;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasPath;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasScheme;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasHost;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasParamWithValue;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasPath;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasScheme;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.content.Intent;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,15 +26,19 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.devui.util.CrashBugUrlFactory;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tests for CrashBugUrlFactory class
+ * Unit tests for CrashBugUrlFactory class
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@OnlyRunIn(SINGLE_PROCESS) // These are unit tests
+@Batch(Batch.UNIT_TESTS)
 public class CrashBugUrlFactoryTest {
     @Test
     @SmallTest
@@ -48,8 +55,8 @@ public class CrashBugUrlFactoryTest {
         final String expectedDescription = ""
                 + "Build fingerprint: " + Build.FINGERPRINT + "\n"
                 + "Android API level: 100\n"
-                + "WebView package: 10.0.1234.5\n"
-                + "DevTools versions: " + CrashBugUrlFactory.getCurrentDevToolsVersion() + "\n"
+                + "Crashed WebView version: 10.0.1234.5\n"
+                + "DevTools version: " + CrashBugUrlFactory.getCurrentDevToolsVersion() + "\n"
                 + "Application: org.test.package (1.0.2.3)\n"
                 + "If this app is available on Google Play, please include a URL:\n"
                 + "\n"

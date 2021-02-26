@@ -43,13 +43,14 @@ const ui::ThemeProvider* CaptivePortalWidget::GetThemeProvider() const {
 
 // The captive portal dialog is system-modal, but uses the web-content-modal
 // dialog manager (odd) and requires this atypical dialog widget initialization.
-views::Widget* CreateWindowAsFramelessChild(Profile* profile,
-                                            views::WidgetDelegate* delegate,
-                                            gfx::NativeView parent) {
+views::Widget* CreateWindowAsFramelessChild(
+    Profile* profile,
+    std::unique_ptr<views::WidgetDelegate> delegate,
+    gfx::NativeView parent) {
   views::Widget* widget = new CaptivePortalWidget(profile);
 
   views::Widget::InitParams params;
-  params.delegate = delegate;
+  params.delegate = delegate.release();
   params.child = true;
   params.parent = parent;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -70,11 +71,12 @@ CaptivePortalWindowProxy::CaptivePortalWindowProxy(
 }
 
 CaptivePortalWindowProxy::~CaptivePortalWindowProxy() {
-  if (!widget_)
-    return;
-  DCHECK_EQ(STATE_DISPLAYED, GetState());
-  widget_->RemoveObserver(this);
-  widget_->Close();
+  if (widget_) {
+    DCHECK_EQ(STATE_DISPLAYED, GetState());
+    widget_->RemoveObserver(this);
+    widget_->Close();
+  }
+  CHECK(!IsInObserverList());
 }
 
 void CaptivePortalWindowProxy::ShowIfRedirected() {
@@ -99,11 +101,14 @@ void CaptivePortalWindowProxy::Show() {
 
   InitCaptivePortalView();
 
-  CaptivePortalView* portal = captive_portal_view_.release();
+  std::unique_ptr<views::WidgetDelegate> delegate =
+      captive_portal_view_->MakeWidgetDelegate();
+  CaptivePortalView* portal =
+      delegate->SetContentsView(std::move(captive_portal_view_));
   auto* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   widget_ = CreateWindowAsFramelessChild(
-      profile_, portal,
+      profile_, std::move(delegate),
       manager->delegate()->GetWebContentsModalDialogHost()->GetHostView());
   portal->Init();
   widget_->AddObserver(this);
@@ -119,11 +124,6 @@ void CaptivePortalWindowProxy::Close() {
 
 void CaptivePortalWindowProxy::OnRedirected() {
   if (GetState() == STATE_WAITING_FOR_REDIRECTION) {
-    if (!started_loading_at_.is_null()) {
-      UMA_HISTOGRAM_TIMES("CaptivePortal.RedirectTime",
-                          base::Time::Now() - started_loading_at_);
-      started_loading_at_ = base::Time();
-    }
     Show();
   }
   delegate_->OnPortalDetected();
@@ -161,7 +161,6 @@ void CaptivePortalWindowProxy::InitCaptivePortalView() {
     captive_portal_view_for_testing_ = captive_portal_view_.get();
   }
 
-  started_loading_at_ = base::Time::Now();
   captive_portal_view_->StartLoad();
 }
 

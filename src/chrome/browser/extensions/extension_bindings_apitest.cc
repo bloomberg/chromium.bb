@@ -5,7 +5,6 @@
 // Contains holistic tests of the bindings infrastructure
 
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
@@ -42,8 +41,10 @@ void MouseDownInWebContents(content::WebContents* web_contents) {
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(10, 10);
   mouse_event.click_count = 1;
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  web_contents->GetMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
 }
 
 void MouseUpInWebContents(content::WebContents* web_contents) {
@@ -53,8 +54,10 @@ void MouseUpInWebContents(content::WebContents* web_contents) {
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(10, 10);
   mouse_event.click_count = 1;
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  web_contents->GetMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
 }
 
 class ExtensionBindingsApiTest : public ExtensionApiTest {
@@ -138,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 // Regression test for http://crbug.com/269149.
 // Regression test for http://crbug.com/436593.
 // Flaky on Mac. http://crbug.com/733064.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_EventOverriding DISABLED_EventOverriding
 #else
 #define MAYBE_EventOverriding EventOverriding
@@ -349,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ValidationInterception) {
       browser(),
       embedded_test_server()->GetURL(
           "/extensions/api_test/bindings/validation_interception.html"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   ASSERT_FALSE(web_contents->IsCrashed());
   bool caught = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

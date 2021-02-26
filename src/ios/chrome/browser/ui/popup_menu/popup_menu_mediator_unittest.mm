@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
@@ -13,6 +14,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
@@ -25,12 +27,15 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
+#include "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
 #include "ios/chrome/browser/policy/policy_features.h"
+#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web/features.h"
@@ -40,6 +45,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/text_zoom_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -123,7 +129,22 @@ class PopupMenuMediatorTest : public ChromeWebTest {
         [[PopupMenuMediator alloc] initWithType:type
                                     isIncognito:is_incognito
                                readingListModel:reading_list_model_.get()
-                      triggerNewIncognitoTabTip:trigger_incognito_hint];
+                      triggerNewIncognitoTabTip:trigger_incognito_hint
+                         browserPolicyConnector:nil];
+    return mediator_;
+  }
+
+  PopupMenuMediator* CreateMediatorWithBrowserPolicyConnector(
+      PopupMenuType type,
+      BOOL is_incognito,
+      BOOL trigger_incognito_hint,
+      BrowserPolicyConnectorIOS* browser_policy_connector) {
+    mediator_ =
+        [[PopupMenuMediator alloc] initWithType:type
+                                    isIncognito:is_incognito
+                               readingListModel:reading_list_model_.get()
+                      triggerNewIncognitoTabTip:trigger_incognito_hint
+                         browserPolicyConnector:browser_policy_connector];
     return mediator_;
   }
 
@@ -218,6 +239,16 @@ class PopupMenuMediatorTest : public ChromeWebTest {
     return NO;
   }
 
+  bool HasEnterpriseInfoItem(FakePopupMenuConsumer* consumer) {
+    for (NSArray* innerArray in consumer.popupMenuItems) {
+      for (PopupMenuTextItem* item in innerArray) {
+        if (item.accessibilityIdentifier == kTextMenuEnterpriseInfo)
+          return YES;
+      }
+    }
+    return NO;
+  }
+
   FakeOverlayPresentationContext presentation_context_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
@@ -262,13 +293,20 @@ TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
           ->IsUserFeedbackEnabled()) {
     number_of_action_items++;
   }
+
+  if (ios::GetChromeBrowserProvider()
+          ->GetTextZoomProvider()
+          ->IsTextZoomEnabled()) {
+    number_of_action_items++;
+  }
+
   // Checks that Tools Menu has the right number of items in each section.
   CheckMediatorSetItems(@[
-    // Stop/Reload, New Tab, New Incognito Tab
+    // Stop/Reload, New Tab, New Incognito Tab.
     @(3),
-    // 4 collections + Settings
-    @(5),
-    // Other actions, depending on configuration
+    // 4 collections, Downloads, Settings.
+    @(6),
+    // Other actions, depending on configuration.
     @(number_of_action_items)
   ]);
 }
@@ -371,6 +409,7 @@ TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
 TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
   const GURL kUrl("https://chromium.test");
   web_state_->SetCurrentURL(kUrl);
+  CreatePrefs();
   CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
                  /*trigger_incognito_hint=*/NO);
   mediator_.webStateList = web_state_list_.get();
@@ -378,6 +417,7 @@ TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
       browser_.get(), OverlayModality::kWebContentArea);
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
+  mediator_.prefService = prefs_.get();
   SetUpActiveWebState();
   ASSERT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/YES));
 
@@ -398,13 +438,6 @@ TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
 
 // Tests that the "Text Zoom..." button is disabled on non-HTML pages.
 TEST_F(PopupMenuMediatorTest, TestTextZoomDisabled) {
-  // This feature is currently disabled on iPad. See crbug.com/1061119.
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    return;
-  }
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(web::kWebPageTextAccessibility);
-
   CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
                  /*trigger_incognito_hint=*/NO);
   mediator_.webStateList = web_state_list_.get();
@@ -422,25 +455,54 @@ TEST_F(PopupMenuMediatorTest, TestTextZoomDisabled) {
   EXPECT_TRUE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/NO));
 }
 
-// Tests that this feature is disabled on iPad, no matter the state of the
-// Feature flag. See crbug.com/1061119.
-TEST_F(PopupMenuMediatorTest, TestTextZoomDisabledIPad) {
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
-    return;
-  }
-
+// Tests that the "Managed by..." item is hidden when none of the policies is
+// set.
+TEST_F(PopupMenuMediatorTest, TestEnterpriseInfoHidden) {
+  // Enabled the feature flag.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(web::kWebPageTextAccessibility);
+  feature_list.InitAndEnableFeature(kEnableIOSManagedSettingsUI);
 
   CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
                  /*trigger_incognito_hint=*/NO);
-  mediator_.webStateList = web_state_list_.get();
 
+  mediator_.webStateList = web_state_list_.get();
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
-  FontSizeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(0));
   SetUpActiveWebState();
-  EXPECT_FALSE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/YES));
+
+  ASSERT_FALSE(HasEnterpriseInfoItem(consumer));
+}
+
+// Tests that the "Managed by..." item is shown.
+TEST_F(PopupMenuMediatorTest, TestEnterpriseInfoShown) {
+  // Enabled the feature flag.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnableIOSManagedSettingsUI);
+
+  // Set a policy.
+  base::ScopedTempDir state_directory;
+  ASSERT_TRUE(state_directory.CreateUniqueTempDir());
+
+  std::unique_ptr<EnterprisePolicyTestHelper> enterprise_policy_helper =
+      std::make_unique<EnterprisePolicyTestHelper>(state_directory.GetPath());
+  BrowserPolicyConnectorIOS* connector =
+      enterprise_policy_helper->GetBrowserPolicyConnector();
+
+  policy::PolicyMap map;
+  map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
+          policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
+          base::Value("hello"), nullptr);
+  enterprise_policy_helper->GetPolicyProvider()->UpdateChromePolicy(map);
+
+  CreateMediatorWithBrowserPolicyConnector(
+      PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+      /*trigger_incognito_hint=*/NO, connector);
+
+  mediator_.webStateList = web_state_list_.get();
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  SetUpActiveWebState();
+  ASSERT_TRUE(HasEnterpriseInfoItem(consumer));
 }
 
 // Tests that 1) the tools menu has an enabled 'Add to Bookmarks' button when
@@ -452,12 +514,14 @@ TEST_F(PopupMenuMediatorTest, TestBookmarksToolsMenuButtons) {
   web_state_->SetCurrentURL(url);
   CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
                  /*trigger_incognito_hint=*/NO);
+  CreatePrefs();
   SetUpBookmarks();
   bookmarks::AddIfNotBookmarked(bookmark_model_, url,
                                 base::SysNSStringToUTF16(@"Test bookmark"));
   mediator_.webStateList = web_state_list_.get();
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
+  mediator_.prefService = prefs_.get();
 
   EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
 

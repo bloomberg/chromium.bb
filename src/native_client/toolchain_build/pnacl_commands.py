@@ -15,6 +15,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.file_tools
@@ -36,44 +37,86 @@ DRIVER_UTILS = [name + '.py' for name in
                      'driver_tools', 'elftools', 'filetype', 'ldtools',
                      'loader', 'nativeld', 'pathtools', 'shelltools')]
 
-# The archive itself contains the 'cmake343' directory.
-PREBUILT_CMAKE_DIR = os.path.join(NACL_DIR, 'cmake343')
-PREBUILT_CMAKE_ARCHIVE = 'cmake343_%s.tgz'
-PREBUILT_CMAKE_URL = ('https://commondatastorage.googleapis.com/' +
-                      'chromium-browser-clang/tools/')
-PREBUILT_CMAKE_BIN = os.path.join(PREBUILT_CMAKE_DIR, 'bin', 'cmake')
+def CMakePlatformName():
+    return {
+        'linux': 'Linux',
+        'linux2': 'Linux',
+        'darwin': 'Darwin',
+        'win32': 'win64'
+    }[sys.platform]
 
 
-def PrebuiltCmake():
-  if (pynacl.platform.IsLinux() and not pynacl.platform.IsLinux64() or
-      pynacl.platform.IsWindows()):
-    # Prebuilt CMake does not work on linux32, and there is none for Windows.
-    return 'cmake'
-  return PREBUILT_CMAKE_BIN
+def CMakeArch():
+    return 'x64' if pynacl.platform.IsWindows() else 'x86_64'
+
+WASM_STORAGE_BASE = 'https://wasm.storage.googleapis.com/'
+PREBUILT_CMAKE_VERSION = '3.15.3'
+PREBUILT_CMAKE_BASE_NAME = 'cmake-%s-%s-%s' % (
+    PREBUILT_CMAKE_VERSION, CMakePlatformName(), CMakeArch())
+PREBUILT_CMAKE_DIR = os.path.join(NACL_DIR, PREBUILT_CMAKE_BASE_NAME)
+
+def PrebuiltCMakeBin():
+    if pynacl.platform.IsMac():
+        bin_dir = os.path.join('CMake.app', 'Contents', 'bin')
+    else:
+        bin_dir = 'bin'
+    suffix = '.exe' if pynacl.platform.IsWindows() else ''
+    return os.path.join(PREBUILT_CMAKE_DIR, bin_dir, 'cmake' + suffix)
 
 
-def InstallPrebuiltCMake():
-  if os.path.isdir(PREBUILT_CMAKE_DIR):
-    print('Prebuilt CMake directory already exists')
-    if not os.path.isfile(PREBUILT_CMAKE_BIN):
-      raise Exception('Prebuilt CMake dir %s exists but does not contain CMake'%
-                      PREBUILT_CMAKE_DIR)
-  else:
-    assert not pynacl.platform.IsWindows()
-    platform = 'Darwin' if pynacl.platform.IsMac() else 'Linux'
-    filename = PREBUILT_CMAKE_ARCHIVE % platform
-    url = PREBUILT_CMAKE_URL + filename
-    os.mkdir(PREBUILT_CMAKE_DIR)
-    download_target = os.path.join(PREBUILT_CMAKE_DIR, filename)
+def SyncArchive(out_dir, name, url, create_out_dir=False):
+    """Download and extract an archive (zip, tar.gz or tar.xz) file from a URL.
+
+    The extraction happens in the prebuilt dir. If create_out_dir is True,
+    out_dir will be created and the archive will be extracted inside. Otherwise
+    the archive is expected to contain a top-level directory with all the
+    files; this is expected to be 'out_dir', so if 'out_dir' already exists
+    then the download will be skipped.
+    """
+    stamp_file = os.path.join(out_dir, 'stamp.txt')
+    if os.path.isdir(out_dir):
+        if os.path.isfile(stamp_file):
+            with open(stamp_file) as f:
+                stamp_url = f.read().strip()
+            if stamp_url == url:
+                print('%s directory already exists' % name)
+                return
+        print('%s directory exists but is not up-to-date' % name)
+    print('Downloading %s from %s' % (name, url))
+
+    if create_out_dir:
+        os.makedirs(out_dir)
+        work_dir = out_dir
+    else:
+        work_dir = os.path.dirname(out_dir)
+
+    basename = url.split('/')[-1]
+    download_target = os.path.join(work_dir, basename)
     pynacl.http_download.HttpDownload(url, download_target)
+    try:
+        print('Extracting into %s' % work_dir)
+        ext = os.path.splitext(url)[-1]
+        if ext == '.zip':
+            with zipfile.ZipFile(download_target, 'r') as zip:
+                zip.extractall(path=work_dir)
+        elif ext == '.xz':
+            subprocess.check_call(
+                ['tar', '-xvf', download_target], cwd=work_dir)
+        else:
+            with open(download_target) as f:
+                tarfile.open(fileobj=f).extractall(path=work_dir)
+    except Exception as e:
+        print('Error downloading/extracting %s: %s' % (url, e))
+        raise
 
-    print('Downloaded %s' % url)
-    # The tar file itself includes the 'cmake343' directory, so set the
-    # extract path to WORK_DIR to get the right path
-    with open(download_target) as f:
-      tarfile.open(mode='r:gz', fileobj=f).extractall(path=NACL_DIR)
-    assert os.path.isfile(PREBUILT_CMAKE_BIN)
-    print('Extracted CMake to %s' % PREBUILT_CMAKE_DIR)
+    with open(stamp_file, 'w') as f:
+        f.write(url + '\n')
+
+
+def SyncPrebuiltCMake():
+    extension = '.zip' if pynacl.platform.IsWindows() else '.tar.gz'
+    url = WASM_STORAGE_BASE + PREBUILT_CMAKE_BASE_NAME + extension
+    SyncArchive(PREBUILT_CMAKE_DIR, 'cmake', url)
 
 
 def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,

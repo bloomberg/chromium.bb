@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -65,7 +67,26 @@ std::unique_ptr<Printer> SpecificsToPrinter(
     printer->set_make_and_model(
         MakeAndModel(specifics.manufacturer(), specifics.model()));
   }
-  printer->set_uri(specifics.uri());
+
+  bool result = false;
+  std::string message;
+  Uri uri(specifics.uri());
+  const Uri::ParserStatus uri_error_code = uri.GetLastParsingError().status;
+  if (uri_error_code == Uri::ParserStatus::kNoErrors) {
+    // Versions of Chrome <= R85 saved incorrectly AppSocket printers with a
+    // default IPP path. Here, we have to make sure that URIs of these types of
+    // printers do not contain a path component. It would cause an error in the
+    // printer->SetUri(...) method.
+    if (uri.GetScheme() == "socket")
+      uri.SetPathEncoded("");
+    result = printer->SetUri(uri, &message);
+  } else {
+    message = "Malformed URI, error code: " +
+              base::NumberToString(static_cast<int>(uri_error_code));
+  }
+  if (!result)
+    LOG(WARNING) << message;
+
   printer->set_uuid(specifics.uuid());
   printer->set_print_server_uri(specifics.print_server_uri());
 
@@ -104,8 +125,8 @@ void MergePrinterToSpecifics(const Printer& printer,
   if (!printer.make_and_model().empty())
     specifics->set_make_and_model(printer.make_and_model());
 
-  if (!printer.uri().empty())
-    specifics->set_uri(printer.uri());
+  if (printer.HasUri())
+    specifics->set_uri(printer.uri().GetNormalized());
 
   if (!printer.uuid().empty())
     specifics->set_uuid(printer.uuid());
@@ -118,8 +139,8 @@ void MergePrinterToSpecifics(const Printer& printer,
 }
 
 std::string MakeAndModel(base::StringPiece make, base::StringPiece model) {
-  return model.starts_with(make) ? model.as_string()
-                                 : base::JoinString({make, model}, " ");
+  return base::StartsWith(model, make) ? model.as_string()
+                                       : base::JoinString({make, model}, " ");
 }
 
 }  // namespace chromeos

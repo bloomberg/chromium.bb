@@ -34,6 +34,7 @@ namespace blink {
 class WebNode;
 class WebView;
 class WebFormControlElement;
+class WebFormElement;
 template <typename T>
 class WebVector;
 }  // namespace blink
@@ -118,6 +119,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void AddFormObserver(Observer* observer);
   void RemoveFormObserver(Observer* observer);
 
+  // Instructs `form_tracker_` to track the autofilled `element`.
+  void TrackAutofilledElement(const blink::WebFormControlElement& element);
+
   FormTracker* form_tracker_for_testing() { return &form_tracker_; }
 
   void SelectWasUpdated(const blink::WebFormControlElement& element);
@@ -128,12 +132,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
  private:
   friend class FormControlClickDetectionTest;
-
-  // Functor used as a simplified comparison function for FormData. Only
-  // compares forms at a high level (notably name, origin, action).
-  struct FormDataCompare {
-    bool operator()(const FormData& lhs, const FormData& rhs) const;
-  };
 
   // Flags passed to ShowSuggestions.
   struct ShowSuggestionsOptions {
@@ -148,19 +146,10 @@ class AutofillAgent : public content::RenderFrameObserver,
     // after the last character in the element.
     bool requires_caret_at_end;
 
-    // Specifies that all of <datalist> suggestions and no autofill suggestions
-    // are shown. |autofill_on_empty_values| and |requires_caret_at_end| are
-    // ignored if |datalist_only| is true.
-    bool datalist_only;
-
     // Specifies that all autofill suggestions should be shown and none should
     // be elided because of the current value of |element| (relevant for inline
     // autocomplete).
     bool show_full_suggestion_list;
-
-    // Specifies that only show a suggestions box if |element| is part of a
-    // password form, otherwise show no suggestions.
-    bool show_password_suggestions_only;
 
     // Specifies that the first suggestion must be auto-selected when the
     // dropdown is shown. Enabled when the user presses ARROW_DOWN on a field.
@@ -168,8 +157,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   };
 
   // content::RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void DidFinishDocumentLoad() override;
   void DidChangeScrollOffset() override;
   void FocusedElementChanged(const blink::WebElement& element) override;
@@ -207,13 +195,15 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebFormControlElement& element) override;
   bool ShouldSuppressKeyboard(
       const blink::WebFormControlElement& element) override;
+  void FormElementReset(const blink::WebFormElement& form) override;
+  void PasswordFieldReset(const blink::WebInputElement& element) override;
 
   void HandleFocusChangeComplete();
 
   // Helper method which collects unowned elements (i.e., those not inside a
   // form tag) and writes them into |output|. Returns true if the process is
   // successful, and all conditions for firing events are true.
-  bool CollectFormlessElements(FormData* output);
+  bool CollectFormlessElements(FormData* output) const;
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest, CollectFormlessElements);
 
   void OnTextFieldDidChange(const blink::WebInputElement& element);
@@ -251,7 +241,10 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Attempt to get submitted FormData from last_interacted_form_ or
   // provisionally_saved_form_, return true if |form| is set.
-  bool GetSubmittedForm(FormData* form);
+  base::Optional<FormData> GetSubmittedForm() const;
+
+  // Pushes the value of GetSubmittedForm() to the AutofillDriver.
+  void SendPotentiallySubmittedFormToBrowser();
 
   void ResetLastInteractedElements();
   void UpdateLastInteractedForm(blink::WebFormElement form);
@@ -323,8 +316,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // WILL_SEND_SUBMIT_EVENT and form submitted are both fired for same form.
   // The submitted_forms_ is cleared when we know no more submission could
   // happen for that form.
-  // We use a simplified comparison function.
-  std::set<FormData, FormDataCompare> submitted_forms_;
+  std::set<FormRendererId> submitted_forms_;
 
   // The query node autofill state prior to previewing the form.
   blink::WebAutofillState query_node_autofill_state_;

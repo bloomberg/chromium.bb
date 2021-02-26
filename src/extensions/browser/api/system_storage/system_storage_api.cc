@@ -92,8 +92,7 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
       result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  Respond(OneArgument(
-      std::make_unique<base::Value>(api::system_storage::ToString(result))));
+  Respond(OneArgument(base::Value(api::system_storage::ToString(result))));
 }
 
 SystemStorageGetAvailableCapacityFunction::
@@ -139,7 +138,7 @@ void SystemStorageGetAvailableCapacityFunction::OnQueryCompleted(
     api::system_storage::StorageAvailableCapacityInfo result;
     result.id = transient_id;
     result.available_capacity = available_capacity;
-    Respond(OneArgument(result.ToValue()));
+    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
   } else {
     Respond(Error("Error occurred when querying available capacity."));
   }

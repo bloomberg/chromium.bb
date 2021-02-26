@@ -10,6 +10,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 
 blink::Manifest::ImageResource CreateImage(const std::string& url,
@@ -17,7 +18,7 @@ blink::Manifest::ImageResource CreateImage(const std::string& url,
   blink::Manifest::ImageResource image;
   image.src = GURL("https://example.com" + url);
   image.sizes.push_back(size);
-  image.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+  image.purpose.push_back(blink::mojom::ManifestImageResource_Purpose::ANY);
   return image;
 }
 
@@ -44,12 +45,10 @@ class ShortcutInfoTest : public testing::Test {
 
 TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
   info_.name = base::ASCIIToUTF16("old name");
-  manifest_.name =
-      base::NullableString16(base::ASCIIToUTF16("new name"), false);
+  manifest_.name = base::ASCIIToUTF16("new name");
 
   info_.short_name = base::ASCIIToUTF16("old short name");
-  manifest_.short_name =
-      base::NullableString16(base::ASCIIToUTF16("new short name"), false);
+  manifest_.short_name = base::ASCIIToUTF16("new short name");
 
   info_.url = GURL("https://old.com/start");
   manifest_.start_url = GURL("https://new.com/start");
@@ -73,8 +72,8 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
 
   info_.UpdateFromManifest(manifest_);
 
-  ASSERT_EQ(manifest_.name.string(), info_.name);
-  ASSERT_EQ(manifest_.short_name.string(), info_.short_name);
+  ASSERT_EQ(manifest_.name, info_.name);
+  ASSERT_EQ(manifest_.short_name, info_.short_name);
   ASSERT_EQ(manifest_.start_url, info_.url);
   ASSERT_EQ(manifest_.scope, info_.scope);
   ASSERT_EQ(manifest_.display, info_.display);
@@ -85,27 +84,25 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
 }
 
 TEST_F(ShortcutInfoTest, NameFallsBackToShortName) {
-  manifest_.short_name =
-      base::NullableString16(base::ASCIIToUTF16("short_name"), false);
+  manifest_.short_name = base::ASCIIToUTF16("short_name");
   info_.UpdateFromManifest(manifest_);
 
-  ASSERT_EQ(manifest_.short_name.string(), info_.name);
+  ASSERT_EQ(manifest_.short_name, info_.name);
 }
 
 TEST_F(ShortcutInfoTest, ShortNameFallsBackToName) {
-  manifest_.name = base::NullableString16(base::ASCIIToUTF16("name"), false);
+  manifest_.name = base::ASCIIToUTF16("name");
   info_.UpdateFromManifest(manifest_);
 
-  ASSERT_EQ(manifest_.name.string(), info_.short_name);
+  ASSERT_EQ(manifest_.name, info_.short_name);
 }
 
 TEST_F(ShortcutInfoTest, UserTitleBecomesShortName) {
-  manifest_.short_name =
-      base::NullableString16(base::ASCIIToUTF16("name"), false);
+  manifest_.short_name = base::ASCIIToUTF16("name");
   info_.user_title = base::ASCIIToUTF16("title");
   info_.UpdateFromManifest(manifest_);
 
-  ASSERT_EQ(manifest_.short_name.string(), info_.user_title);
+  ASSERT_EQ(manifest_.short_name, info_.user_title);
 }
 
 // Test that if a manifest with an empty name and empty short_name is passed,
@@ -118,7 +115,7 @@ TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
   info_.name = initial_name;
   info_.short_name = initial_short_name;
   manifest_.display = blink::mojom::DisplayMode::kStandalone;
-  manifest_.name = base::NullableString16(base::string16(), false);
+  manifest_.name = base::string16();
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(initial_name, info_.name);
@@ -159,6 +156,5 @@ TEST_F(ShortcutInfoTest, ShortcutShortNameBackfilled) {
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(info_.shortcut_items.size(), 1u);
-  EXPECT_EQ(info_.shortcut_items[0].short_name.string(),
-            base::UTF8ToUTF16("name"));
+  EXPECT_EQ(info_.shortcut_items[0].short_name, base::ASCIIToUTF16("name"));
 }

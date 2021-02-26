@@ -6,21 +6,21 @@ package org.chromium.chrome.test;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 
+import org.hamcrest.Matchers;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
 
@@ -38,17 +38,13 @@ public class MultiActivityTestRule implements TestRule {
             throws TimeoutException {
         waitForTabCreation(activity);
 
-        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f);
+        ChromeApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f);
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (!ChromeTabUtils.isLoadingAndRenderingDone(tab)) return false;
-                if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ChromeTabUtils.isLoadingAndRenderingDone(tab), Matchers.is(true));
+            Criteria.checkThat(tab.getTitle(), Matchers.is(expectedTitle));
         });
     }
 
@@ -65,11 +61,11 @@ public class MultiActivityTestRule implements TestRule {
 
     private void ruleSetUp() {
         mContext = InstrumentationRegistry.getTargetContext();
-        ApplicationTestUtils.setUp(mContext);
+        ChromeApplicationTestUtils.setUp(mContext);
     }
 
     private void ruleTearDown() {
-        ApplicationTestUtils.tearDown(mContext);
+        ChromeApplicationTestUtils.tearDown(mContext);
     }
 
     @Override

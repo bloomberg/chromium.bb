@@ -18,11 +18,6 @@ namespace {
 static base::LazyInstance<content::BluetoothBlocklist>::Leaky g_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
-void RecordUMAParsedNonEmptyString(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Bluetooth.Web.Blocklist.ParsedNonEmptyString",
-                        success);
-}
-
 }  // namespace
 
 namespace content {
@@ -75,7 +70,6 @@ void BluetoothBlocklist::Add(base::StringPiece blocklist_string) {
     }
     invalid_values = true;
   }
-  RecordUMAParsedNonEmptyString(parsed_values && !invalid_values);
 }
 
 bool BluetoothBlocklist::IsExcluded(const BluetoothUUID& uuid) const {
@@ -184,8 +178,6 @@ void BluetoothBlocklist::PopulateWithDefaultValues() {
 }
 
 void BluetoothBlocklist::PopulateWithServerProvidedValues() {
-  // DCHECK to maybe help debug https://crbug.com/604078.
-  DCHECK(GetContentClient());
   Add(GetContentClient()->browser()->GetWebBluetoothBlocklist());
 }
 

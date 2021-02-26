@@ -11,9 +11,8 @@
 #include <new>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_ptr_util.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_bitmasks.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_reader.h"
@@ -46,7 +45,7 @@ const size_t kPadLengthFieldSize = 1;
 // The size of one parameter in SETTINGS frame.
 const size_t kOneSettingParameterSize = 6;
 
-size_t GetUncompressedSerializedLength(const SpdyHeaderBlock& headers) {
+size_t GetUncompressedSerializedLength(const Http2HeaderBlock& headers) {
   const size_t num_name_value_pairs_size = sizeof(uint32_t);
   const size_t length_of_name_size = num_name_value_pairs_size;
   const size_t length_of_value_size = num_name_value_pairs_size;
@@ -414,12 +413,12 @@ std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
   switch (frame_ir->frame_type()) {
     case SpdyFrameType::HEADERS: {
       return std::make_unique<SpdyHeaderFrameIterator>(
-          framer, quiche::QuicheWrapUnique(
+          framer, absl::WrapUnique(
                       static_cast<const SpdyHeadersIR*>(frame_ir.release())));
     }
     case SpdyFrameType::PUSH_PROMISE: {
       return std::make_unique<SpdyPushPromiseFrameIterator>(
-          framer, quiche::QuicheWrapUnique(
+          framer, absl::WrapUnique(
                       static_cast<const SpdyPushPromiseIR*>(frame_ir.release())));
     }
     case SpdyFrameType::DATA: {
@@ -1269,7 +1268,7 @@ size_t SpdyFramer::SerializeFrame(const SpdyFrameIR& frame,
 
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
   if (hpack_encoder_ == nullptr) {
-    hpack_encoder_ = std::make_unique<HpackEncoder>(ObtainHpackHuffmanTable());
+    hpack_encoder_ = std::make_unique<HpackEncoder>();
     if (!compression_enabled()) {
       hpack_encoder_->DisableCompression();
     }

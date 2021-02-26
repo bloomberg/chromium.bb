@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_BROWSER_DM_TOKEN_STORAGE_LINUX_H_
 #define CHROME_BROWSER_POLICY_BROWSER_DM_TOKEN_STORAGE_LINUX_H_
 
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 #include <string>
 
@@ -18,27 +18,28 @@
 
 namespace policy {
 
-// Implementation of BrowserDMTokenStorage for Linux. The global singleton
-// instance can be retrieved by calling BrowserDMTokenStorage::Get().
-class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
+// Implementation of BrowserDMTokenStorage delegate for Linux.
+class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage::Delegate {
  public:
-  // Get the global singleton instance by calling BrowserDMTokenStorage::Get().
   BrowserDMTokenStorageLinux();
   ~BrowserDMTokenStorageLinux() override;
 
  private:
-  // override BrowserDMTokenStorage
+  // override BrowserDMTokenStorage::Delegate
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
   bool InitEnrollmentErrorOption() override;
-  StoreTask SaveDMTokenTask(const std::string& token,
-                            const std::string& client_id) override;
+  BrowserDMTokenStorage::StoreTask SaveDMTokenTask(
+      const std::string& token,
+      const std::string& client_id) override;
   scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
   // Returns the content of "/etc/machine-id". Virtual for tests.
   virtual std::string ReadMachineIdFile();
 
+  // Allows caching of the machine ID
+  std::string client_id_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitClientId);

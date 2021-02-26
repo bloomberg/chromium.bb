@@ -12,6 +12,7 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_file_util.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -140,7 +141,7 @@ class VisitedLink : public testing::Test {
  protected:
   base::FilePath db_path_;
   void SetUp() override { ASSERT_TRUE(base::CreateTemporaryFile(&db_path_)); }
-  void TearDown() override { base::DeleteFile(db_path_, false); }
+  void TearDown() override { base::DeleteFile(db_path_); }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -182,7 +183,13 @@ TEST_F(VisitedLink, TestAddAndQuery) {
 }
 
 // Tests how long it takes to write and read a large database to and from disk.
-TEST_F(VisitedLink, TestBigTable) {
+// TODO(crbug.com/1128183): Fix flakiness on macOS and Android.
+#if defined(OS_MAC) || defined(OS_ANDROID)
+#define MAYBE_TestBigTable DISABLED_TestBigTable
+#else
+#define MAYBE_TestBigTable TestBigTable
+#endif
+TEST_F(VisitedLink, MAYBE_TestBigTable) {
   base::test::ScopedDisableRunLoopTimeout disable_run_timeout;
   // create a big DB
   {

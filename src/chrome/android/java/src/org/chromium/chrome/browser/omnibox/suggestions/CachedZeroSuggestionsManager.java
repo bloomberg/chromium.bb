@@ -8,11 +8,13 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_Z
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_GROUP_ID_PREFIX;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_STARRED_PREFIX;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_NATIVE_SUBTYPES_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX;
@@ -24,14 +26,20 @@ import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.ArraySet;
 
+import org.chromium.base.Function;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult.GroupDetails;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * CachedZeroSuggestionsManager manages caching and restoring zero suggestions.
@@ -43,7 +51,7 @@ public class CachedZeroSuggestionsManager {
     public static void saveToCache(AutocompleteResult resultToCache) {
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
         cacheSuggestionList(manager, resultToCache.getSuggestionsList());
-        cacheGroupHeaders(manager, resultToCache.getGroupHeaders());
+        cacheGroupsDetails(manager, resultToCache.getGroupsDetails());
     }
 
     /**
@@ -54,10 +62,10 @@ public class CachedZeroSuggestionsManager {
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
         List<OmniboxSuggestion> suggestions =
                 CachedZeroSuggestionsManager.readCachedSuggestionList(manager);
-        SparseArray<String> groupHeaders =
-                CachedZeroSuggestionsManager.readCachedGroupHeaders(manager);
-        removeInvalidSuggestionsAndGroupHeaders(suggestions, groupHeaders);
-        return new AutocompleteResult(suggestions, groupHeaders);
+        SparseArray<GroupDetails> groupsDetails =
+                CachedZeroSuggestionsManager.readCachedGroupsDetails(manager);
+        removeInvalidSuggestionsAndGroupsDetails(suggestions, groupsDetails);
+        return new AutocompleteResult(suggestions, groupsDetails);
     }
 
     /**
@@ -67,33 +75,48 @@ public class CachedZeroSuggestionsManager {
      */
     private static void cacheSuggestionList(
             SharedPreferencesManager prefs, List<OmniboxSuggestion> suggestions) {
-        final int size = suggestions.size();
-        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, size);
-        for (int i = 0; i < size; i++) {
-            OmniboxSuggestion suggestion = suggestions.get(i);
-            if (suggestion.hasAnswer()) continue;
+        int numCachableSuggestions = 0;
 
+        // Write 0 here to avoid something wrong in the for loop, and the real size will be updated
+        // after the for loop.
+        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, 0);
+        for (int i = 0; i < suggestions.size(); i++) {
+            OmniboxSuggestion suggestion = suggestions.get(i);
+            if (!shouldCacheSuggestion(suggestion)) continue;
+
+            prefs.writeString(KEY_ZERO_SUGGEST_URL_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getUrl().serialize());
             prefs.writeString(
-                    KEY_ZERO_SUGGEST_URL_PREFIX.createKey(i), suggestion.getUrl().serialize());
-            prefs.writeString(
-                    KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(i), suggestion.getDisplayText());
-            prefs.writeString(
-                    KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(i), suggestion.getDescription());
-            prefs.writeInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(i), suggestion.getType());
-            prefs.writeBoolean(KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(i),
+                    KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getDisplayText());
+            prefs.writeString(KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getDescription());
+            prefs.writeInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getType());
+            prefs.writeStringSet(
+                    KEY_ZERO_SUGGEST_NATIVE_SUBTYPES_PREFIX.createKey(numCachableSuggestions),
+                    convertSet(suggestion.getSubtypes(), v -> v.toString()));
+            prefs.writeBoolean(
+                    KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(numCachableSuggestions),
                     suggestion.isSearchSuggestion());
             prefs.writeBoolean(
-                    KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX.createKey(i), suggestion.isDeletable());
-            prefs.writeBoolean(
-                    KEY_ZERO_SUGGEST_IS_STARRED_PREFIX.createKey(i), suggestion.isStarred());
-            prefs.writeString(KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(i),
+                    KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.isDeletable());
+            prefs.writeBoolean(KEY_ZERO_SUGGEST_IS_STARRED_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.isStarred());
+            prefs.writeString(
+                    KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(numCachableSuggestions),
                     suggestion.getPostContentType());
-            prefs.writeString(KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(i),
+            prefs.writeString(
+                    KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(numCachableSuggestions),
                     suggestion.getPostData() == null
                             ? null
                             : Base64.encodeToString(suggestion.getPostData(), Base64.DEFAULT));
-            prefs.writeInt(KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(i), suggestion.getGroupId());
+            prefs.writeInt(KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getGroupId());
+            numCachableSuggestions++;
         }
+        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, numCachableSuggestions);
     }
 
     /**
@@ -148,10 +171,21 @@ public class CachedZeroSuggestionsManager {
             int groupId = prefs.readInt(
                     KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(i), OmniboxSuggestion.INVALID_GROUP);
 
-            OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, isSearchType, 0, 0,
-                    displayText, classifications, description, classifications, null, null, url,
-                    GURL.emptyGURL(), null, isStarred, isDeletable, postContentType, postData,
-                    groupId, null, null);
+            Set<Integer> subtypes = null;
+            try {
+                Set<String> subtypeStrings = prefs.readStringSet(
+                        KEY_ZERO_SUGGEST_NATIVE_SUBTYPES_PREFIX.createKey(i), null);
+                subtypes = convertSet(subtypeStrings, v -> Integer.parseInt(v));
+            } catch (NumberFormatException e) {
+                // Subtype information contains malformed elements, suggesting that the
+                // entire cache may be damaged.
+                return Collections.emptyList();
+            }
+
+            OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, subtypes, isSearchType,
+                    0, 0, displayText, classifications, description, classifications, null, null,
+                    url, GURL.emptyGURL(), null, isStarred, isDeletable, postContentType, postData,
+                    groupId, null, null, false, null);
             suggestions.add(suggestion);
         }
 
@@ -159,58 +193,68 @@ public class CachedZeroSuggestionsManager {
     }
 
     /**
-     * Cache suggestion group headers in shared preferences.
+     * Cache suggestion group details in shared preferences.
      *
      * @param prefs Shared preferences manager.
+     * @param groupsDetails Map of Group ID to GroupDetails.
      */
-    private static void cacheGroupHeaders(
-            SharedPreferencesManager prefs, SparseArray<String> groupHeaders) {
-        final int size = groupHeaders.size();
+    private static void cacheGroupsDetails(
+            SharedPreferencesManager prefs, SparseArray<GroupDetails> groupsDetails) {
+        final int size = groupsDetails.size();
         prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, size);
         for (int i = 0; i < size; i++) {
+            final GroupDetails details = groupsDetails.valueAt(i);
+            String title = details.title;
+            boolean collapsedByDefault = details.collapsedByDefault;
+
             prefs.writeInt(
-                    KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i), groupHeaders.keyAt(i));
-            prefs.writeString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i),
-                    groupHeaders.valueAt(i));
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i), groupsDetails.keyAt(i));
+            prefs.writeString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i), title);
+            prefs.writeBoolean(
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX.createKey(i),
+                    collapsedByDefault);
         }
     }
 
     /**
-     * Restore group headers from shared preferences.
+     * Restore group details from shared preferences.
      *
      * @param prefs Shared preferences manager.
-     * @return Map of group ID to header text previously cached in shared preferences.
+     * @return Map of group ID to GroupDetails previously cached in shared preferences.
      */
     @NonNull
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static SparseArray<String> readCachedGroupHeaders(SharedPreferencesManager prefs) {
+    static SparseArray<GroupDetails> readCachedGroupsDetails(SharedPreferencesManager prefs) {
         final int size = prefs.readInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, 0);
-        final SparseArray<String> groupHeaders = new SparseArray<>(size);
+        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>(size);
 
         for (int i = 0; i < size; i++) {
             int groupId = prefs.readInt(KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX.createKey(i),
                     OmniboxSuggestion.INVALID_GROUP);
             String groupTitle =
                     prefs.readString(KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX.createKey(i), null);
-            groupHeaders.put(groupId, groupTitle);
+            boolean collapsedByDefault = prefs.readBoolean(
+                    KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX.createKey(i), false);
+
+            groupsDetails.put(groupId, new GroupDetails(groupTitle, collapsedByDefault));
         }
-        return groupHeaders;
+        return groupsDetails;
     }
 
     /**
-     * Remove all invalid entries for group headers and omnibox suggestions.
+     * Remove all invalid entries for group details map and omnibox suggestions list.
      *
      * @param suggestions List of suggestions to scan for invalid entries.
-     * @param groupHeaders Group headers to scan for invalid entries.
+     * @param groupsDetails Map of GroupDetails to scan for invalid entries.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static void removeInvalidSuggestionsAndGroupHeaders(
-            List<OmniboxSuggestion> suggestions, SparseArray<String> groupHeaders) {
-        // Remove all group headers that have invalid index or title.
-        for (int index = groupHeaders.size() - 1; index >= 0; index--) {
-            if (groupHeaders.keyAt(index) == OmniboxSuggestion.INVALID_GROUP
-                    || TextUtils.isEmpty(groupHeaders.valueAt(index))) {
-                groupHeaders.removeAt(index);
+    static void removeInvalidSuggestionsAndGroupsDetails(
+            List<OmniboxSuggestion> suggestions, SparseArray<GroupDetails> groupsDetails) {
+        // Remove all group details that have invalid index or title.
+        for (int index = groupsDetails.size() - 1; index >= 0; index--) {
+            if (groupsDetails.keyAt(index) == OmniboxSuggestion.INVALID_GROUP
+                    || TextUtils.isEmpty(groupsDetails.valueAt(index).title)) {
+                groupsDetails.removeAt(index);
             }
         }
 
@@ -220,9 +264,42 @@ public class CachedZeroSuggestionsManager {
             final int groupId = suggestion.getGroupId();
             if (!suggestion.getUrl().isValid() || suggestion.getUrl().isEmpty()
                     || (groupId != OmniboxSuggestion.INVALID_GROUP
-                            && groupHeaders.indexOfKey(groupId) < 0)) {
+                            && groupsDetails.indexOfKey(groupId) < 0)) {
                 suggestions.remove(index);
             }
         }
+    }
+
+    /**
+     * Check if the suggestion is needed to be cached.
+     *
+     * @param suggestion The OmniboxSuggestion to check.
+     * @return Whether or not the suggestion can be cached.
+     */
+    private static boolean shouldCacheSuggestion(OmniboxSuggestion suggestion) {
+        return !suggestion.hasAnswer()
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_URL
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_TEXT
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_IMAGE
+                && suggestion.getType() != OmniboxSuggestionType.TILE_NAVSUGGEST;
+    }
+
+    /**
+     * Convert the set of type T to set of type U objects.
+     *
+     * @param <T> Type of data held in the input set (inferred).
+     * @param <U> Type of data held in the output set (inferred).
+     * @param input Input set.
+     * @param converter Function object that converts type T into type U.
+     * @return A set of input objects converted to string.
+     */
+    private static <T, U> Set<U> convertSet(Set<T> input, Function<T, U> converter) {
+        if (input == null) return null;
+
+        Set<U> result = new ArraySet<>(input.size());
+        for (T item : input) {
+            result.add(converter.apply(item));
+        }
+        return result;
     }
 }

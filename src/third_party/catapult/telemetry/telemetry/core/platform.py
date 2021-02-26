@@ -262,7 +262,7 @@ class Platform(object):
   def CanTakeScreenshot(self):
     return self._platform_backend.CanTakeScreenshot()
 
-  # TODO(nednguyen): Implement this on Mac, Linux & Win. (crbug.com/369490)
+  # TODO(crbug.com/369490): Implement this on Mac, Linux & Win.
   def TakeScreenshot(self, file_path):
     """ Takes a screenshot of the platform and save to |file_path|.
 
@@ -304,12 +304,12 @@ class Platform(object):
     """
     self._platform_backend.StopVideoRecording(video_path)
 
-  def SetFullPerformanceModeEnabled(self, enabled):
-    """ Set full performance mode on the platform.
+  def SetPerformanceMode(self, performance_mode):
+    """ Set the performance mode on the platform.
 
     Note: this can be no-op on certain platforms.
     """
-    return self._platform_backend.SetFullPerformanceModeEnabled(enabled)
+    return self._platform_backend.SetPerformanceMode(performance_mode)
 
   def StartLocalServer(self, server):
     """Starts a LocalServer and associates it with this platform.

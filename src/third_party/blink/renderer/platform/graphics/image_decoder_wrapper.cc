@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/image_decoder_wrapper.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 
@@ -201,9 +202,13 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
 bool ImageDecoderWrapper::ShouldDecodeToExternalMemory(
     size_t frame_count,
     bool resume_decoding) const {
-  // Multi-frame images need their decode cached in the decoder to allow using
-  // subsequent frames to be decoded by caching dependent frames.
-  // Also external allocators don't work for multi-frame images right now.
+  // Some multi-frame images need their decode cached in the decoder to allow
+  // future frames to reference previous frames.
+  //
+  // This implies extra requirements on external memory allocators for
+  // multi-frame images. However, there is no enforcement of these extra
+  // requirements. As a result, do not attempt to use external memory
+  // allocators for multi-frame images.
   if (generator_->IsMultiFrame())
     return false;
 
@@ -287,7 +292,6 @@ std::unique_ptr<ImageDecoder> ImageDecoderWrapper::CreateDecoderWithData(
   // The newly created decoder just grabbed the data.  No need to reset it.
   return ImageDecoder::Create(data_, all_data_received_, alpha_option_,
                               decoding_option_, decoder_color_behavior_,
-                              ImageDecoder::OverrideAllowDecodeToYuv::kDeny,
                               scaled_size_);
 }
 

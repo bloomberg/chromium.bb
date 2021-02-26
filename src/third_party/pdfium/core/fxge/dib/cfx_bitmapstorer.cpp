@@ -10,9 +10,9 @@
 
 #include "core/fxge/dib/cfx_dibitmap.h"
 
-CFX_BitmapStorer::CFX_BitmapStorer() {}
+CFX_BitmapStorer::CFX_BitmapStorer() = default;
 
-CFX_BitmapStorer::~CFX_BitmapStorer() {}
+CFX_BitmapStorer::~CFX_BitmapStorer() = default;
 
 RetainPtr<CFX_DIBitmap> CFX_BitmapStorer::Detach() {
   return std::move(m_pBitmap);
@@ -42,13 +42,13 @@ void CFX_BitmapStorer::ComposeScanline(int line,
 bool CFX_BitmapStorer::SetInfo(int width,
                                int height,
                                FXDIB_Format src_format,
-                               uint32_t* pSrcPalette) {
+                               pdfium::span<const uint32_t> src_palette) {
   auto pBitmap = pdfium::MakeRetain<CFX_DIBitmap>();
   if (!pBitmap->Create(width, height, src_format))
     return false;
 
-  if (pSrcPalette)
-    pBitmap->SetPalette(pSrcPalette);
+  if (!src_palette.empty())
+    pBitmap->SetPalette(src_palette);
 
   m_pBitmap = std::move(pBitmap);
   return true;

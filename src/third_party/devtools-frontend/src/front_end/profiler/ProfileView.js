@@ -40,12 +40,62 @@ export class ProfileView extends UI.View.SimpleView {
       width: '120px',
       fixedWidth: true,
       sortable: true,
-      sort: DataGrid.DataGrid.Order.Descending
+      sort: DataGrid.DataGrid.Order.Descending,
+      titleDOMFragment: undefined,
+      align: undefined,
+      editable: undefined,
+      nonSelectable: undefined,
+      longText: undefined,
+      disclosure: undefined,
+      weight: undefined,
+      allowInSortByEvenWhenHidden: undefined,
+      dataType: undefined,
+      defaultWeight: undefined
     });
-    columns.push({id: 'total', title: this.columnHeader('total'), width: '120px', fixedWidth: true, sortable: true});
-    columns.push({id: 'function', title: Common.UIString.UIString('Function'), disclosure: true, sortable: true});
+    columns.push({
+      id: 'total',
+      title: this.columnHeader('total'),
+      width: '120px',
+      fixedWidth: true,
+      sortable: true,
+      sort: undefined,
+      titleDOMFragment: undefined,
+      align: undefined,
+      editable: undefined,
+      nonSelectable: undefined,
+      longText: undefined,
+      disclosure: undefined,
+      weight: undefined,
+      allowInSortByEvenWhenHidden: undefined,
+      dataType: undefined,
+      defaultWeight: undefined
+    });
+    columns.push({
+      id: 'function',
+      title: Common.UIString.UIString('Function'),
+      disclosure: true,
+      sortable: true,
+      sort: undefined,
+      titleDOMFragment: undefined,
+      align: undefined,
+      editable: undefined,
+      nonSelectable: undefined,
+      longText: undefined,
+      weight: undefined,
+      allowInSortByEvenWhenHidden: undefined,
+      dataType: undefined,
+      defaultWeight: undefined,
+      width: undefined,
+      fixedWidth: undefined
+    });
 
-    this.dataGrid = new DataGrid.DataGrid.DataGridImpl({displayName: ls`Profiler`, columns});
+    this.dataGrid = new DataGrid.DataGrid.DataGridImpl({
+      displayName: ls`Profiler`,
+      columns,
+      editCallback: undefined,
+      deleteCallback: undefined,
+      refreshCallback: undefined
+    });
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this._sortProfile, this);
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this._nodeSelected.bind(this, true));
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, this._nodeSelected.bind(this, false));
@@ -69,6 +119,22 @@ export class ProfileView extends UI.View.SimpleView {
     this.resetButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._resetClicked, this);
 
     this._linkifier = new Components.Linkifier.Linkifier(maxLinkLength);
+
+    // Properties set in `initialize` and guaranteed to be non-null.
+
+    /** @type {!Formatter} */
+    this._nodeFormatter;
+
+    /** @type {!Common.Settings.Setting<string>} */
+    this._viewType;
+
+    // Properties set in subclasses.
+
+    /** @type {number} */
+    this.adjustedTotal;
+
+    /** @type {!WritableProfileHeader} */
+    this.profileHeader;
   }
 
   /**
@@ -76,7 +142,7 @@ export class ProfileView extends UI.View.SimpleView {
    * @return {!Element}
    */
   static buildPopoverTable(entryInfo) {
-    const table = createElement('table');
+    const table = document.createElement('table');
     for (const entry of entryInfo) {
       const row = table.createChild('tr');
       row.createChild('td').textContent = entry.title;
@@ -105,27 +171,25 @@ export class ProfileView extends UI.View.SimpleView {
 
   /**
    * @param {!Formatter} nodeFormatter
-   * @param {!Array<string>=} viewTypes
    * @protected
    */
-  initialize(nodeFormatter, viewTypes) {
+  initialize(nodeFormatter) {
     this._nodeFormatter = nodeFormatter;
 
     this._viewType = Common.Settings.Settings.instance().createSetting('profileView', ViewTypes.Heavy);
-    viewTypes = viewTypes || [ViewTypes.Flame, ViewTypes.Heavy, ViewTypes.Tree];
+    const viewTypes = [ViewTypes.Flame, ViewTypes.Heavy, ViewTypes.Tree];
 
     const optionNames = new Map([
       [ViewTypes.Flame, ls`Chart`],
       [ViewTypes.Heavy, ls`Heavy (Bottom Up)`],
       [ViewTypes.Tree, ls`Tree (Top Down)`],
-      [ViewTypes.Text, ls`Text (Top Down)`],
     ]);
 
-    const options =
-        new Map(viewTypes.map(type => [type, this.viewSelectComboBox.createOption(optionNames.get(type), type)]));
+    const options = new Map(viewTypes.map(
+        type => [type, this.viewSelectComboBox.createOption(/** @type {string} */ (optionNames.get(type)), type)]));
     const optionName = this._viewType.get() || viewTypes[0];
     const option = options.get(optionName) || options.get(viewTypes[0]);
-    this.viewSelectComboBox.select(option);
+    this.viewSelectComboBox.select(/** @type {!Element} */ (option));
 
     this._changeView();
     if (this._flameChart) {
@@ -177,7 +241,8 @@ export class ProfileView extends UI.View.SimpleView {
   _getBottomUpProfileDataGridTree() {
     if (!this._bottomUpProfileDataGridTree) {
       this._bottomUpProfileDataGridTree = new BottomUpProfileDataGridTree(
-          this._nodeFormatter, this._searchableView, this._profile.root, this.adjustedTotal);
+          this._nodeFormatter, this._searchableView,
+          /** @type {!SDK.ProfileTreeModel.ProfileTreeModel} */ (this._profile).root, this.adjustedTotal);
     }
     return this._bottomUpProfileDataGridTree;
   }
@@ -188,14 +253,15 @@ export class ProfileView extends UI.View.SimpleView {
   _getTopDownProfileDataGridTree() {
     if (!this._topDownProfileDataGridTree) {
       this._topDownProfileDataGridTree = new TopDownProfileDataGridTree(
-          this._nodeFormatter, this._searchableView, this._profile.root, this.adjustedTotal);
+          this._nodeFormatter, this._searchableView,
+          /** @type {!SDK.ProfileTreeModel.ProfileTreeModel} */ (this._profile).root, this.adjustedTotal);
     }
     return this._topDownProfileDataGridTree;
   }
 
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
-   * @param {!DataGrid.DataGrid.DataGridNode} gridNode
+   * @param {!DataGrid.DataGrid.DataGridNode<?>} gridNode
    */
   _populateContextMenu(contextMenu, gridNode) {
     const node = /** @type {!ProfileDataGridNode} */ (gridNode);
@@ -215,7 +281,9 @@ export class ProfileView extends UI.View.SimpleView {
     if (!this.profileDataGridTree) {
       return;
     }
-    const selectedProfileNode = this.dataGrid.selectedNode ? this.dataGrid.selectedNode.profileNode : null;
+    const selectedProfileNode = this.dataGrid.selectedNode ?
+        /** @type {!ProfileDataGridNode} */ (this.dataGrid.selectedNode).profileNode :
+        null;
 
     this.dataGrid.rootNode().removeChildren();
 
@@ -227,11 +295,14 @@ export class ProfileView extends UI.View.SimpleView {
     }
 
     if (selectedProfileNode) {
+      // TODO(crbug.com/1011811): Cleanup the added `selected` property to this SDK class.
+      // @ts-ignore
       selectedProfileNode.selected = true;
     }
   }
 
   refreshVisibleData() {
+    /** @type {?DataGrid.DataGrid.DataGridNode<?>} */
     let child = this.dataGrid.rootNode().children[0];
     while (child) {
       child.refresh();
@@ -266,7 +337,9 @@ export class ProfileView extends UI.View.SimpleView {
    * @override
    */
   searchCanceled() {
-    this._searchableElement.searchCanceled();
+    if (this._searchableElement) {
+      this._searchableElement.searchCanceled();
+    }
   }
 
   /**
@@ -276,21 +349,27 @@ export class ProfileView extends UI.View.SimpleView {
    * @param {boolean=} jumpBackwards
    */
   performSearch(searchConfig, shouldJump, jumpBackwards) {
-    this._searchableElement.performSearch(searchConfig, shouldJump, jumpBackwards);
+    if (this._searchableElement) {
+      this._searchableElement.performSearch(searchConfig, shouldJump, jumpBackwards);
+    }
   }
 
   /**
    * @override
    */
   jumpToNextSearchResult() {
-    this._searchableElement.jumpToNextSearchResult();
+    if (this._searchableElement) {
+      this._searchableElement.jumpToNextSearchResult();
+    }
   }
 
   /**
    * @override
    */
   jumpToPreviousSearchResult() {
-    this._searchableElement.jumpToPreviousSearchResult();
+    if (this._searchableElement) {
+      this._searchableElement.jumpToPreviousSearchResult();
+    }
   }
 
   /**
@@ -298,21 +377,6 @@ export class ProfileView extends UI.View.SimpleView {
    */
   linkifier() {
     return this._linkifier;
-  }
-
-  _ensureTextViewCreated() {
-    if (this._textView) {
-      return;
-    }
-    this._textView = new UI.View.SimpleView(ls`Call tree`);
-    this._textView.registerRequiredCSS('profiler/profilesPanel.css');
-    this.populateTextView(this._textView);
-  }
-
-  /**
-   * @param {!UI.View.SimpleView} view
-   */
-  populateTextView(view) {
   }
 
   /**
@@ -337,9 +401,15 @@ export class ProfileView extends UI.View.SimpleView {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   async _onEntryInvoked(event) {
+    if (!this._dataProvider) {
+      return;
+    }
     const entryIndex = event.data;
+    // TODO(crbug.com/1011811): Expose `_entryNodes` on the interface, every data provider
+    //                          implementation sets it.
+    // @ts-ignore
     const node = this._dataProvider._entryNodes[entryIndex];
-    const debuggerModel = this._profileHeader._debuggerModel;
+    const debuggerModel = this.profileHeader._debuggerModel;
     if (!node || !node.scriptId || !debuggerModel) {
       return;
     }
@@ -365,7 +435,7 @@ export class ProfileView extends UI.View.SimpleView {
       this._visibleView.detach();
     }
 
-    this._viewType.set(this.viewSelectComboBox.selectedOption().value);
+    this._viewType.set(/** @type {!HTMLOptionElement} */ (this.viewSelectComboBox.selectedOption()).value);
     switch (this._viewType.get()) {
       case ViewTypes.Flame:
         this._ensureFlameChartCreated();
@@ -384,11 +454,6 @@ export class ProfileView extends UI.View.SimpleView {
         this._visibleView = this.dataGrid.asWidget();
         this._searchableElement = this.profileDataGridTree;
         break;
-      case ViewTypes.Text:
-        this._ensureTextViewCreated();
-        this._visibleView = this._textView;
-        this._searchableElement = this._textView;
-        break;
     }
 
     const isFlame = this._viewType.get() === ViewTypes.Flame;
@@ -396,7 +461,9 @@ export class ProfileView extends UI.View.SimpleView {
     this.excludeButton.setVisible(!isFlame);
     this.resetButton.setVisible(!isFlame);
 
-    this._visibleView.show(this._searchableView.element);
+    if (this._visibleView) {
+      this._visibleView.show(this._searchableView.element);
+    }
   }
 
   /**
@@ -416,8 +483,10 @@ export class ProfileView extends UI.View.SimpleView {
     }
 
     this.resetButton.setEnabled(true);
-    this.resetButton.element.focus();
-    this.profileDataGridTree.focus(this.dataGrid.selectedNode);
+    /** @type {!HTMLElement} */ (this.resetButton.element).focus();
+    if (this.profileDataGridTree) {
+      this.profileDataGridTree.focus(/** @type {!ProfileDataGridNode} */ (this.dataGrid.selectedNode));
+    }
     this.refresh();
     this.refreshVisibleData();
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuProfileNodeFocused);
@@ -434,11 +503,13 @@ export class ProfileView extends UI.View.SimpleView {
     }
 
     this.resetButton.setEnabled(true);
-    this.resetButton.element.focus();
+    /** @type {!HTMLElement} */ (this.resetButton.element).focus();
 
     selectedNode.deselect();
 
-    this.profileDataGridTree.exclude(selectedNode);
+    if (this.profileDataGridTree) {
+      this.profileDataGridTree.exclude(/** @type {!ProfileDataGridNode} */ (selectedNode));
+    }
     this.refresh();
     this.refreshVisibleData();
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuProfileNodeExcluded);
@@ -450,17 +521,22 @@ export class ProfileView extends UI.View.SimpleView {
   _resetClicked(event) {
     this.viewSelectComboBox.selectElement().focus();
     this.resetButton.setEnabled(false);
-    this.profileDataGridTree.restore();
+    if (this.profileDataGridTree) {
+      this.profileDataGridTree.restore();
+    }
     this._linkifier.reset();
     this.refresh();
     this.refreshVisibleData();
   }
 
   _sortProfile() {
+    if (!this.profileDataGridTree) {
+      return;
+    }
     const sortAscending = this.dataGrid.isSortOrderAscending();
     const sortColumnId = this.dataGrid.sortColumnId();
     const sortProperty = sortColumnId === 'function' ? 'functionName' : sortColumnId || '';
-    this.profileDataGridTree.sort(ProfileDataGridTree.propertyComparator(sortProperty, sortAscending));
+    this.profileDataGridTree.sort(ProfileDataGridTree.propertyComparator(sortProperty, sortAscending), false);
 
     this.refresh();
   }
@@ -473,7 +549,6 @@ export const ViewTypes = {
   Flame: 'Flame',
   Tree: 'Tree',
   Heavy: 'Heavy',
-  Text: 'Text'
 };
 
 /**
@@ -489,29 +564,32 @@ export class WritableProfileHeader extends ProfileHeader {
   constructor(debuggerModel, type, title) {
     super(type, title || Common.UIString.UIString('Profile %d', type.nextProfileUid()));
     this._debuggerModel = debuggerModel;
-    this._tempFile = null;
   }
 
   /**
    * @param {!Bindings.FileUtils.ChunkedReader} reader
    */
   _onChunkTransferred(reader) {
-    this.updateStatus(Common.UIString.UIString(
-        'Loading… %d%%', Platform.NumberUtilities.bytesToString(this._jsonifiedProfile.length)));
+    if (this._jsonifiedProfile) {
+      this.updateStatus(Common.UIString.UIString(
+          'Loading… %d%%', Platform.NumberUtilities.bytesToString(this._jsonifiedProfile.length)));
+    }
   }
 
   /**
    * @param {!Bindings.FileUtils.ChunkedReader} reader
    */
   _onError(reader) {
-    this.updateStatus(
-        Common.UIString.UIString('File \'%s\' read error: %s', reader.fileName(), reader.error().message));
+    const error = /** @type {*} */ (reader.error());
+    if (error) {
+      this.updateStatus(Common.UIString.UIString('File \'%s\' read error: %s', reader.fileName(), error.message));
+    }
   }
 
   /**
    * @override
    * @param {string} text
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async write(text) {
     this._jsonifiedProfile += text;
@@ -520,7 +598,7 @@ export class WritableProfileHeader extends ProfileHeader {
   /**
    * @override
    */
-  close() {
+  async close() {
   }
 
   /**
@@ -544,7 +622,7 @@ export class WritableProfileHeader extends ProfileHeader {
    * @return {boolean}
    */
   canSaveToFile() {
-    return !this.fromFile() && this._protocolProfile;
+    return !this.fromFile() && !!this._protocolProfile;
   }
 
   /**
@@ -552,13 +630,19 @@ export class WritableProfileHeader extends ProfileHeader {
    */
   async saveToFile() {
     const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
-    this._fileName = this._fileName ||
-        `${this.profileType().typeName()}-${new Date().toISO8601Compact()}${this.profileType().fileExtension()}`;
+    if (!this._fileName) {
+      const now = Platform.DateUtilities.toISO8601Compact(new Date());
+      const fileExtension = this.profileType().fileExtension();
+
+      /** @type {string} */
+      this._fileName = `${this.profileType().typeName()}-${now}${fileExtension}`;
+    }
+
     const accepted = await fileOutputStream.open(this._fileName);
-    if (!accepted || !this._tempFile) {
+    if (!accepted || !this.tempFile) {
       return;
     }
-    const data = await this._tempFile.read();
+    const data = await this.tempFile.read();
     if (data) {
       await fileOutputStream.write(data);
     }
@@ -585,7 +669,7 @@ export class WritableProfileHeader extends ProfileHeader {
     let error = null;
     try {
       this._profile = /** @type {!Protocol.Profiler.Profile} */ (JSON.parse(this._jsonifiedProfile));
-      this.setProfile(this._profile);
+      this.setProfile(/** @type {!Protocol.Profiler.Profile} */ (this._profile));
       this.updateStatus(Common.UIString.UIString('Loaded'), false);
     } catch (e) {
       error = e;
@@ -605,8 +689,8 @@ export class WritableProfileHeader extends ProfileHeader {
   setProtocolProfile(profile) {
     this.setProfile(profile);
     this._protocolProfile = profile;
-    this._tempFile = new Bindings.TempFile.TempFile();
-    this._tempFile.write([JSON.stringify(profile)]);
+    this.tempFile = new Bindings.TempFile.TempFile();
+    this.tempFile.write([JSON.stringify(profile)]);
     if (this.canSaveToFile()) {
       this.dispatchEventToListeners(Events.ProfileReceived);
     }

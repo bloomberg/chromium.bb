@@ -42,12 +42,13 @@ StorageController::DomStorageConnection GetDomStorageConnection() {
 
 // static
 StorageController* StorageController::GetInstance() {
-  DEFINE_STATIC_LOCAL(StorageController, gCachedStorageAreaController,
-                      (GetDomStorageConnection(),
-                       Thread::MainThread()->Scheduler()->IPCTaskRunner(),
-                       base::SysInfo::IsLowEndDevice()
-                           ? kStorageControllerTotalCacheLimitInBytesLowEnd
-                           : kStorageControllerTotalCacheLimitInBytes));
+  DEFINE_STATIC_LOCAL(
+      StorageController, gCachedStorageAreaController,
+      (GetDomStorageConnection(),
+       Thread::MainThread()->Scheduler()->DeprecatedDefaultTaskRunner(),
+       base::SysInfo::IsLowEndDevice()
+           ? kStorageControllerTotalCacheLimitInBytesLowEnd
+           : kStorageControllerTotalCacheLimitInBytes));
   return &gCachedStorageAreaController;
 }
 
@@ -55,17 +56,23 @@ StorageController* StorageController::GetInstance() {
 bool StorageController::CanAccessStorageArea(LocalFrame* frame,
                                              StorageArea::StorageType type) {
   if (auto* settings_client = frame->GetContentSettingsClient()) {
-    return settings_client->AllowStorage(
-        type == StorageArea::StorageType::kLocalStorage);
+    switch (type) {
+      case StorageArea::StorageType::kLocalStorage:
+        return settings_client->AllowStorageAccessSync(
+            WebContentSettingsClient::StorageType::kLocalStorage);
+      case StorageArea::StorageType::kSessionStorage:
+        return settings_client->AllowStorageAccessSync(
+            WebContentSettingsClient::StorageType::kSessionStorage);
+    }
   }
   return true;
 }
 
 StorageController::StorageController(
     DomStorageConnection connection,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     size_t total_cache_limit)
-    : ipc_runner_(std::move(ipc_runner)),
+    : task_runner_(std::move(task_runner)),
       namespaces_(MakeGarbageCollected<
                   HeapHashMap<String, WeakMember<StorageNamespace>>>()),
       total_cache_limit_(total_cache_limit),

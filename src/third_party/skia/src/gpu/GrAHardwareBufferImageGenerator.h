@@ -40,10 +40,10 @@ public:
 
 protected:
 
-    bool onIsValid(GrContext*) const override;
+    bool onIsValid(GrRecordingContext*) const override;
 
     GrSurfaceProxyView onGenerateTexture(GrRecordingContext*, const SkImageInfo&, const SkIPoint&,
-                                         GrMipMapped, GrImageTexGenPolicy) override;
+                                         GrMipmapped, GrImageTexGenPolicy) override;
 
 private:
     GrAHardwareBufferImageGenerator(const SkImageInfo&, AHardwareBuffer*, SkAlphaType,
@@ -60,6 +60,6 @@ private:
     const bool       fIsProtectedContent;
     GrSurfaceOrigin  fSurfaceOrigin;
 
-    typedef SkImageGenerator INHERITED;
+    using INHERITED = SkImageGenerator;
 };
 #endif  // GrAHardwareBufferImageGenerator_DEFINED

@@ -205,8 +205,9 @@ class DeskPreviewView::ShadowRenderer : public ui::LayerDelegate {
 // -----------------------------------------------------------------------------
 // DeskPreviewView
 
-DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
-    : views::Button(mini_view),
+DeskPreviewView::DeskPreviewView(PressedCallback callback,
+                                 DeskMiniView* mini_view)
+    : views::Button(std::move(callback)),
       mini_view_(mini_view),
       wallpaper_preview_(new DeskWallpaperPreview),
       desk_mirrored_contents_view_(new views::View),
@@ -218,6 +219,7 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 
   SetFocusPainter(nullptr);
   SetInkDropMode(InkDropMode::OFF);
+  SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   SetPaintToLayer(ui::LAYER_TEXTURED);
   layer()->SetFillsBoundsOpaquely(false);
@@ -271,7 +273,7 @@ void DeskPreviewView::OnRemovingDesk() {
   // Since the mini view has a remove animation, we don't want this desk preview
   // to be pressed while it's animating. The desk will have already be removed
   // after this.
-  listener_ = nullptr;
+  SetCallback(views::Button::PressedCallback());
 }
 
 void DeskPreviewView::RecreateDeskContentsMirrorLayers() {

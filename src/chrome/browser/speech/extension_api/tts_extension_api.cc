@@ -16,13 +16,16 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "content/public/browser/tts_controller.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace constants = tts_extension_api_constants;
 
@@ -303,8 +306,8 @@ ExtensionFunction::ResponseAction TtsResumeFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction TtsIsSpeakingFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      content::TtsController::GetInstance()->IsSpeaking())));
+  return RespondNow(OneArgument(
+      base::Value(content::TtsController::GetInstance()->IsSpeaking())));
 }
 
 ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
@@ -333,7 +336,8 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
     result_voices->Append(std::move(result_voice));
   }
 
-  return RespondNow(OneArgument(std::move(result_voices)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(result_voices))));
 }
 
 TtsAPI::TtsAPI(content::BrowserContext* context) {
@@ -348,8 +352,11 @@ TtsAPI::TtsAPI(content::BrowserContext* context) {
   registry.RegisterFunction<TtsPauseFunction>();
   registry.RegisterFunction<TtsResumeFunction>();
 
+#if defined(OS_CHROMEOS)
   // Ensure we're observing newly added engines for the given context.
-  TtsEngineExtensionObserver::GetInstance(Profile::FromBrowserContext(context));
+  TtsEngineExtensionObserverChromeOS::GetInstance(
+      Profile::FromBrowserContext(context));
+#endif  // defined(OS_CHROMEOS)
 }
 
 TtsAPI::~TtsAPI() {

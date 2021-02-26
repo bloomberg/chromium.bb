@@ -6,15 +6,11 @@
 
 #include "xfa/fwl/cfwl_messagekillfocus.h"
 
-#include <memory>
-
-#include "third_party/base/ptr_util.h"
-
 CFWL_MessageKillFocus::CFWL_MessageKillFocus(CFWL_Widget* pSrcTarget)
     : CFWL_MessageKillFocus(pSrcTarget, nullptr) {}
 
 CFWL_MessageKillFocus::CFWL_MessageKillFocus(CFWL_Widget* pSrcTarget,
                                              CFWL_Widget* pDstTarget)
-    : CFWL_Message(CFWL_Message::Type::KillFocus, pSrcTarget, pDstTarget) {}
+    : CFWL_Message(CFWL_Message::Type::kKillFocus, pSrcTarget, pDstTarget) {}
 
 CFWL_MessageKillFocus::~CFWL_MessageKillFocus() = default;

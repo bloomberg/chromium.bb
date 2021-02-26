@@ -40,6 +40,7 @@
 namespace blink {
 
 class ExceptionState;
+class FrameSelection;
 class Node;
 class Range;
 class SetSelectionOptions;
@@ -48,7 +49,6 @@ class TreeScope;
 class CORE_EXPORT DOMSelection final : public ScriptWrappable,
                                        public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 
  public:
   explicit DOMSelection(const TreeScope*);
@@ -100,9 +100,10 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
   // Microsoft Selection Object API
   void empty();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
+  FrameSelection& Selection() const;
   bool IsAvailable() const;
 
   void UpdateFrameSelection(const SelectionInDOMTree&,

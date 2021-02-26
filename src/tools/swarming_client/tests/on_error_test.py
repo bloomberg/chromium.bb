@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2014 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -16,6 +16,7 @@ import ssl
 import subprocess
 import sys
 import threading
+import unittest
 
 import six
 from six.moves import BaseHTTPServer
@@ -34,7 +35,8 @@ PEM = os.path.join(test_env.TESTS_DIR, 'self_signed.pem')
 
 
 def _serialize_env():
-  return dict((unicode(k), six.text_type(v.encode('ascii', 'replace')))
+  return dict((six.ensure_text(k),
+               six.ensure_text(v.encode('ascii', 'replace')))
               for k, v in os.environ.items())
 
 
@@ -109,7 +111,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_response(200)
     self.send_header('Content-type', 'text/plain')
     self.end_headers()
-    self.wfile.write('Rock on')
+    self.wfile.write(b'Rock on')
 
   def do_POST(self):
     self.server.register_call(self)
@@ -120,7 +122,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
       'id': '1234',
       'url': 'https://localhost/error/1234',
     }
-    self.wfile.write(json.dumps(data))
+    self.wfile.write(json.dumps(data).encode())
 
 
 def start_server():
@@ -146,7 +148,6 @@ class OnErrorBase(auto_stub.TestCase):
     os.chdir(test_env.TESTS_DIR)
     self._atexit = []
     self.mock(atexit, 'register', self._atexit.append)
-    self.mock(on_error, '_ENABLED_DOMAINS', (self.HOSTNAME,))
     self.mock(on_error, '_HOSTNAME', None)
     self.mock(on_error, '_SERVER', None)
     self.mock(on_error, '_is_in_test', lambda: False)
@@ -186,7 +187,7 @@ class OnErrorServerTest(OnErrorBase):
     self.assertEqual(1, len(httpd.requests))
     resource, params = httpd.requests[0]
     self.assertEqual('/ereporter2/api/v1/on_error', resource)
-    self.assertEqual(['r', 'v'], params.keys())
+    self.assertEqual(['r', 'v'], list(params.keys()))
     self.assertEqual('1', params['v'])
     return params['r']
 
@@ -220,6 +221,7 @@ class OnErrorServerTest(OnErrorBase):
         u'os': six.text_type(sys.platform),
         u'python_version': six.text_type(platform.python_version()),
         u'source': u'main.py',
+        u'stack': u'None' if six.PY2 else 'NoneType: None',
         u'user': six.text_type(getpass.getuser()),
         # The version was added dynamically for testing purpose.
         u'version': u'123',
@@ -253,8 +255,10 @@ class OnErrorServerTest(OnErrorBase):
         u'os': six.text_type(sys.platform),
         u'python_version': six.text_type(platform.python_version()),
         u'source': u'main.py',
-        u'stack': u'File "main.py", line 0, in run_shell_out\n'
-                  u'  raise TypeError(\'You are not my type\')',
+        u'stack': u'Traceback (most recent call last):\n'
+                  u'  File "main.py", line 0, in run_shell_out\n'
+                  u'    raise TypeError(\'You are not my type\')\n'
+                  u'TypeError: You are not my type',
         u'user': six.text_type(getpass.getuser()),
     }
     self.assertEqual(expected, actual)
@@ -286,8 +290,10 @@ class OnErrorServerTest(OnErrorBase):
         u'os': six.text_type(sys.platform),
         u'python_version': six.text_type(platform.python_version()),
         u'source': u'main.py',
-        u'stack': u'File "main.py", line 0, in run_shell_out\n'
-                  u'  raise TypeError(\'You are not my type #2\')',
+        u'stack': u'Traceback (most recent call last):\n'
+                  u'  File "main.py", line 0, in run_shell_out\n'
+                  u'    raise TypeError(\'You are not my type #2\')\n'
+                  u'TypeError: You are not my type #2',
         u'user': six.text_type(getpass.getuser()),
     }
     self.assertEqual(expected, actual)

@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -63,15 +64,15 @@ class CC_EXPORT TileManagerClient {
   virtual void NotifyTileStateChanged(const Tile* tile) = 0;
 
   // Given an empty raster tile priority queue, this will build a priority queue
-  // that will return tiles in order in which they should be rasterized.
-  // Note if the queue was previous built, Reset must be called on it.
+  // that will return tiles in the order in which they should be rasterized.
+  // Note if the queue was previously built, Reset must be called on it.
   virtual std::unique_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,
       RasterTilePriorityQueue::Type type) = 0;
 
   // Given an empty eviction tile priority queue, this will build a priority
-  // queue that will return tiles in order in which they should be evicted.
-  // Note if the queue was previous built, Reset must be called on it.
+  // queue that will return tiles in the order in which they should be evicted.
+  // Note if the queue was previously built, Reset must be called on it.
   virtual std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) = 0;
 
@@ -83,6 +84,12 @@ class CC_EXPORT TileManagerClient {
   // Requests the color space into which tiles should be rasterized.
   virtual gfx::ColorSpace GetRasterColorSpace(
       gfx::ContentColorUsage content_color_usage) const = 0;
+
+  // Return the SDR white level for rasterization. Some systems have variable
+  // white levels (e.g., Windows SDR brightness slider). This should return the
+  // level of the monitor on which the rasterized content will be displayed (and
+  // changing the SDR white level of the display will trigger a re-raster).
+  virtual float GetSDRWhiteLevel() const = 0;
 
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
@@ -96,6 +103,9 @@ class CC_EXPORT TileManagerClient {
   // Returns the sample count to use if MSAA is enabled for a tile.
   virtual int GetMSAASampleCountForRaster(
       const scoped_refptr<DisplayItemList>& display_list) = 0;
+
+  // True if there is a pending tree.
+  virtual bool HasPendingTree() = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -169,7 +179,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
                     ImageDecodeCache* image_decode_cache,
                     TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
-                    bool use_gpu_rasterization);
+                    bool use_gpu_rasterization,
+                    bool use_oop_rasterization);
 
   // This causes any completed raster work to finalize, so that tiles get up to
   // date draw information.
@@ -182,8 +193,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info,
                                    int layer_id,
                                    int source_frame_number,
-                                   int flags,
-                                   bool can_use_lcd_text);
+                                   int flags);
 
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
@@ -364,6 +374,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& raster_color_space,
+      float sdr_white_level,
       PrioritizedWorkToSchedule* work_to_schedule);
 
   std::unique_ptr<EvictionTilePriorityQueue>
@@ -397,6 +408,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void PartitionImagesForCheckering(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& raster_color_space,
+      float sdr_white_level,
       std::vector<DrawImage>* sync_decoded_images,
       std::vector<PaintImage>* checkered_images,
       const gfx::Rect* invalidated_rect,
@@ -404,6 +416,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void AddCheckeredImagesToDecodeQueue(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& raster_color_space,
+      float sdr_white_level,
       CheckerImageTracker::DecodeType decode_type,
       CheckerImageTracker::ImageDecodeQueue* image_decode_queue);
 
@@ -428,6 +441,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   const TileManagerSettings tile_manager_settings_;
   bool use_gpu_rasterization_;
+  bool use_oop_rasterization_;
 
   std::unordered_map<Tile::Id, Tile*> tiles_;
 

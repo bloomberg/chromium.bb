@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/video_types.h"
 #include "ui/gl/gl_export.h"
@@ -54,6 +55,8 @@ struct GL_EXPORT DCRendererLayerParams {
 
   gfx::ProtectedVideoType protected_video_type =
       gfx::ProtectedVideoType::kClear;
+
+  gfx::HDRMetadata hdr_metadata;
 };
 
 }  // namespace ui

@@ -8,9 +8,8 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "printing/mojom/print.mojom.h"
+#include "build/chromeos_buildflags.h"
 #include "printing/page_setup.h"
-#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_conversion.h"
 #include "printing/units.h"
@@ -31,8 +30,8 @@ PrintingContext::PrintingContext(Delegate* delegate)
 
 PrintingContext::~PrintingContext() = default;
 
-void PrintingContext::set_margin_type(MarginType type) {
-  DCHECK(type != CUSTOM_MARGINS);
+void PrintingContext::set_margin_type(mojom::MarginType type) {
+  DCHECK(type != mojom::MarginType::kCustomMargins);
   settings_->set_margin_type(type);
 }
 
@@ -74,10 +73,12 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
   pdf_settings.SetBoolKey(kSettingShouldPrintBackgrounds, false);
   pdf_settings.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
-  pdf_settings.SetIntKey(kSettingMarginsType, printing::NO_MARGINS);
+  pdf_settings.SetIntKey(kSettingMarginsType,
+                         static_cast<int>(mojom::MarginType::kNoMargins));
   pdf_settings.SetBoolKey(kSettingCollate, true);
   pdf_settings.SetIntKey(kSettingCopies, 1);
-  pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
+  pdf_settings.SetIntKey(kSettingColor,
+                         static_cast<int>(mojom::ColorModel::kColor));
   pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
   pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
   pdf_settings.SetIntKey(
@@ -96,10 +97,14 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
 PrintingContext::Result PrintingContext::UpdatePrintSettings(
     base::Value job_settings) {
   ResetSettings();
-
-  if (!PrintSettingsFromJobSettings(job_settings, settings_.get())) {
-    NOTREACHED();
-    return OnError();
+  {
+    std::unique_ptr<PrintSettings> settings =
+        PrintSettingsFromJobSettings(job_settings);
+    if (!settings) {
+      NOTREACHED();
+      return OnError();
+    }
+    settings_ = std::move(settings);
   }
 
   PrinterType printer_type = static_cast<PrinterType>(
@@ -141,7 +146,7 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
       job_settings.FindIntKey(kSettingPreviewPageCount).value_or(0));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 PrintingContext::Result PrintingContext::UpdatePrintSettingsFromPOD(
     std::unique_ptr<PrintSettings> job_settings) {
   ResetSettings();

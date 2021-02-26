@@ -48,6 +48,12 @@ class BufferVk : public BufferImpl
     ~BufferVk() override;
     void destroy(const gl::Context *context) override;
 
+    angle::Result setDataWithUsageFlags(const gl::Context *context,
+                                        gl::BufferBinding target,
+                                        const void *data,
+                                        size_t size,
+                                        gl::BufferUsage usage,
+                                        GLbitfield flags) override;
     angle::Result setData(const gl::Context *context,
                           gl::BufferBinding target,
                           const void *data,
@@ -70,6 +76,10 @@ class BufferVk : public BufferImpl
                            GLbitfield access,
                            void **mapPtr) override;
     angle::Result unmap(const gl::Context *context, GLboolean *result) override;
+    angle::Result getSubData(const gl::Context *context,
+                             GLintptr offset,
+                             GLsizeiptr size,
+                             void *outData) override;
 
     angle::Result getIndexRange(const gl::Context *context,
                                 gl::DrawElementsType type,
@@ -84,15 +94,17 @@ class BufferVk : public BufferImpl
 
     const vk::BufferHelper &getBuffer() const
     {
-        ASSERT(mBuffer && mBuffer->valid());
+        ASSERT(isBufferValid());
         return *mBuffer;
     }
 
     vk::BufferHelper &getBuffer()
     {
-        ASSERT(mBuffer && mBuffer->valid());
+        ASSERT(isBufferValid());
         return *mBuffer;
     }
+
+    bool isBufferValid() const { return mBuffer && mBuffer->valid(); }
 
     angle::Result mapImpl(ContextVk *contextVk, void **mapPtr);
     angle::Result mapRangeImpl(ContextVk *contextVk,
@@ -115,7 +127,6 @@ class BufferVk : public BufferImpl
                                                 bool hostVisible);
 
   private:
-    void initializeStagingBuffer(ContextVk *contextVk, gl::BufferBinding target, size_t size);
     angle::Result initializeShadowBuffer(ContextVk *contextVk,
                                          gl::BufferBinding target,
                                          size_t size);
@@ -139,6 +150,16 @@ class BufferVk : public BufferImpl
                                const uint8_t *data,
                                size_t size,
                                size_t offset);
+    angle::Result acquireAndUpdate(ContextVk *contextVk,
+                                   const uint8_t *data,
+                                   size_t size,
+                                   size_t offset);
+    angle::Result setDataWithMemoryType(const gl::Context *context,
+                                        gl::BufferBinding target,
+                                        const void *data,
+                                        size_t size,
+                                        VkMemoryPropertyFlags memoryPropertyFlags,
+                                        bool persistentMapRequired);
     angle::Result setDataImpl(ContextVk *contextVk,
                               const uint8_t *data,
                               size_t size,
@@ -171,9 +192,6 @@ class BufferVk : public BufferImpl
 
     // Pool of BufferHelpers for mBuffer to acquire from
     vk::DynamicBuffer mBufferPool;
-
-    // All staging buffer support is provided by a DynamicBuffer.
-    vk::DynamicBuffer mStagingBuffer;
 
     // For GPU-read only buffers glMap* latency is reduced by maintaining a copy
     // of the buffer which is writeable only by the CPU. The contents are updated on all

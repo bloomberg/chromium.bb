@@ -47,9 +47,6 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItemView(AppsGridView* apps_grid_view,
                   AppListItem* item,
-                  AppListViewDelegate* delegate);
-  AppListItemView(AppsGridView* apps_grid_view,
-                  AppListItem* item,
                   AppListViewDelegate* delegate,
                   bool is_in_folder);
   ~AppListItemView() override;
@@ -115,11 +112,13 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
       float icon_scale);
 
   // Returns the title bounds for with |target_bounds| as the bounds of this
-  // view and given |title_size|.
+  // view and given |title_size| and the |icon_scale| if the icon was scaled
+  // from the original display size.
   static gfx::Rect GetTitleBoundsForTargetViewBounds(
       const AppListConfig& config,
       const gfx::Rect& target_bounds,
-      const gfx::Size& title_size);
+      const gfx::Size& title_size,
+      float icon_scale);
 
   // views::Button overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -139,14 +138,21 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Ensures this item view has its own layer.
   void EnsureLayer();
 
+  bool HasNotificationBadge();
+
   void FireMouseDragTimerForTest();
 
   bool FireTouchDragTimerForTest();
 
   bool is_folder() const { return is_folder_; }
 
+  bool IsNotificationIndicatorShownForTest() const;
+
+  SkColor GetNotificationIndicatorColorForTest() const;
+
  private:
   class IconImageView;
+  class AppNotificationIndicatorView;
 
   enum UIState {
     UI_STATE_NORMAL,              // Normal UI (icon + label)
@@ -221,6 +227,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // AppListItemObserver overrides:
   void ItemIconChanged(AppListConfigType config_type) override;
   void ItemNameChanged() override;
+  void ItemBadgeVisibilityChanged() override;
   void ItemBeingDestroyed() override;
 
   // ui::ImplicitAnimationObserver:
@@ -295,6 +302,13 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // The scaling factor for displaying the app icon.
   float icon_scale_ = 1.0f;
+
+  // Draws an indicator in the top right corner of the image to represent an
+  // active notification.
+  AppNotificationIndicatorView* notification_indicator_ = nullptr;
+
+  // Whether the notification indicator flag is enabled.
+  const bool is_notification_indicator_enabled_;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 

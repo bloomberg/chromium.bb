@@ -10,7 +10,8 @@
 #include <memory>
 
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
+#include "third_party/base/span.h"
 
 class CFX_ScanlineCompositor {
  public:
@@ -20,7 +21,7 @@ class CFX_ScanlineCompositor {
   bool Init(FXDIB_Format dest_format,
             FXDIB_Format src_format,
             int32_t width,
-            uint32_t* pSrcPalette,
+            pdfium::span<const uint32_t> src_palette,
             uint32_t mask_color,
             BlendMode blend_type,
             bool bClip,
@@ -55,16 +56,38 @@ class CFX_ScanlineCompositor {
                             uint8_t* dst_extra_alpha);
 
  private:
+  class Palette {
+   public:
+    Palette();
+    ~Palette();
+
+    void Reset();
+    pdfium::span<uint8_t> Make8BitPalette(size_t nElements);
+    pdfium::span<uint32_t> Make32BitPalette(size_t nElements);
+
+    // Hard CHECK() if mismatch between created and requested widths.
+    pdfium::span<const uint8_t> Get8BitPalette() const;
+    pdfium::span<const uint32_t> Get32BitPalette() const;
+
+   private:
+    // If 0, then no |m_pData|.
+    // If 1, then |m_pData| is really uint8_t* instead.
+    // If 4, then |m_pData| is uint32_t* as expected.
+    size_t m_Width = 0;
+    size_t m_nElements = 0;
+    std::unique_ptr<uint32_t, FxFreeDeleter> m_pData;
+  };
+
   void InitSourcePalette(FXDIB_Format src_format,
                          FXDIB_Format dest_format,
-                         const uint32_t* pSrcPalette);
+                         pdfium::span<const uint32_t> src_palette);
 
   void InitSourceMask(uint32_t mask_color);
 
   int m_iTransparency;
   FXDIB_Format m_SrcFormat;
   FXDIB_Format m_DestFormat;
-  std::unique_ptr<uint32_t, FxFreeDeleter> m_pSrcPalette;
+  Palette m_SrcPalette;
   int m_MaskAlpha;
   int m_MaskRed;
   int m_MaskGreen;

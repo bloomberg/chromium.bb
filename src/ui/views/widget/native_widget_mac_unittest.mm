@@ -401,56 +401,6 @@ class PaintCountView : public View {
   DISALLOW_COPY_AND_ASSIGN(PaintCountView);
 };
 
-// Test for correct child window restore when parent window is minimized
-// and restored using -makeKeyAndOrderFront:.
-// Parent-child window relationships in AppKit are not supported when window
-// visibility changes.
-// Disabled because it relies on cocoa occlusion APIs
-// and state changes that are unavoidably flaky.
-TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-  NSWindow* ns_window = widget->GetNativeWindow().GetNativeNSWindow();
-
-  Widget* child_widget = CreateChildPlatformWidget(widget->GetNativeView());
-  NSWindow* child_ns_window =
-      child_widget->GetNativeWindow().GetNativeNSWindow();
-
-  // Set parent bounds that overlap child.
-  widget->SetBounds(gfx::Rect(100, 100, 300, 300));
-  child_widget->SetBounds(gfx::Rect(110, 110, 100, 100));
-
-  widget->Show();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(widget->IsMinimized());
-
-  // Minimize parent.
-  [ns_window performMiniaturize:nil];
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(widget->IsMinimized());
-  EXPECT_FALSE(widget->IsVisible());
-  EXPECT_FALSE(child_widget->IsVisible());
-
-  // Restore parent window as AppController does.
-  [ns_window makeKeyAndOrderFront:nil];
-
-  // Wait and check that child is really visible.
-  // TODO(kirr): remove the fixed delay.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitWhenIdleClosure(),
-      base::TimeDelta::FromSeconds(2));
-  run_loop.Run();
-
-  EXPECT_FALSE(widget->IsMinimized());
-  EXPECT_TRUE(widget->IsVisible());
-  EXPECT_TRUE(child_widget->IsVisible());
-  // Check that child window is visible.
-  EXPECT_TRUE([child_ns_window occlusionState] & NSWindowOcclusionStateVisible);
-  EXPECT_TRUE(IsWindowStackedAbove(child_widget, widget));
-  widget->Close();
-}
 
 // Test that a child widget is only added to its parent NSWindow when the
 // parent is on the active space. Otherwise, it may cause a space transition.
@@ -870,29 +820,13 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     // to the child window is released inside WidgetOwnerNSWindowAdapter::
     // OnWindowWillClose().
     [native_parent close];
-    EXPECT_TRUE(child_dealloced);
   }
+
+  // Check this only once the autorelease pool has been drained: AppKit likes to
+  // autorelease NSWindows when tearing them down, presumably to make UAF bugs
+  // with NSWindows less likely.
+  EXPECT_TRUE(child_dealloced);
   EXPECT_TRUE(native_parent_dealloced);
-}
-
-// Tests visibility for child of native NSWindow, reshowing after -[NSApp hide].
-// Occasionally flaky (maybe due to [NSApp hide]). See https://crbug.com/777247.
-TEST_F(NativeWidgetMacTest, DISABLED_VisibleAfterNativeParentShow) {
-  NSWindow* native_parent = MakeBorderlessNativeParent();
-  Widget* child = AttachPopupToNativeParent(native_parent);
-  child->Show();
-  EXPECT_TRUE(child->IsVisible());
-
-  WidgetChangeObserver child_observer(child);
-  [NSApp hide:nil];
-  child_observer.WaitForVisibleCounts(0, 1);
-  EXPECT_FALSE(child->IsVisible());
-
-  [native_parent makeKeyAndOrderFront:nil];
-  child_observer.WaitForVisibleCounts(1, 1);
-  EXPECT_TRUE(child->IsVisible());
-
-  [native_parent close];
 }
 
 // Tests visibility for a child of a native NSWindow, reshowing after a
@@ -948,9 +882,9 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   const base::string16 long_tooltip(2000, 'W');
 
   // Create a nested layout to test corner cases.
-  LabelButton* back = new LabelButton(nullptr, base::string16());
+  LabelButton* back =
+      widget->GetContentsView()->AddChildView(std::make_unique<LabelButton>());
   back->SetBounds(10, 10, 80, 80);
-  widget->GetContentsView()->AddChildView(back);
   widget->Show();
 
   ui::test::EventGenerator event_generator(GetContext(),
@@ -962,9 +896,9 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
 
   // Create a new button for the "front", and set the tooltip, but don't add it
   // to the view hierarchy yet.
-  LabelButton* front = new LabelButton(nullptr, base::string16());
-  front->SetBounds(20, 20, 40, 40);
-  front->SetTooltipText(tooltip_front);
+  auto front_managed = std::make_unique<LabelButton>();
+  front_managed->SetBounds(20, 20, 40, 40);
+  front_managed->SetTooltipText(tooltip_front);
 
   // Changing the tooltip text shouldn't require an additional mousemove to take
   // effect.
@@ -973,7 +907,7 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
 
   // Adding a new view under the mouse should also take immediate effect.
-  back->AddChildView(front);
+  LabelButton* front = back->AddChildView(std::move(front_managed));
   EXPECT_EQ(tooltip_front, TooltipTextForWidget(widget));
 
   // A long tooltip will be wrapped by Cocoa, but the full string should appear.
@@ -1078,25 +1012,13 @@ TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
 
 namespace {
 
-// Delegate to make Widgets of a provided ui::ModalType.
-class ModalDialogDelegate : public DialogDelegateView {
- public:
-  explicit ModalDialogDelegate(ui::ModalType modal_type)
-      : modal_type_(modal_type) {}
-
-  void SetButtons(int buttons) {
-    DialogDelegate::SetButtons(buttons);
-    DialogModelChanged();
-  }
-
-  // DialogDelegateView:
-  ui::ModalType GetModalType() const override { return modal_type_; }
-
- private:
-  const ui::ModalType modal_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
-};
+// TODO(ellyjones): Once DialogDelegate::CreateDialogWidget can accept a
+// unique_ptr, return unique_ptr here.
+DialogDelegateView* MakeModalDialog(ui::ModalType modal_type) {
+  auto dialog = std::make_unique<DialogDelegateView>();
+  dialog->SetModalType(modal_type);
+  return dialog.release();
+}
 
 // While in scope, waits for a call to a swizzled objective C method, then quits
 // a nested run loop.
@@ -1155,7 +1077,7 @@ ScopedSwizzleWaiter* ScopedSwizzleWaiter::instance_ = nullptr;
 // animation). However, testing with overlapping swizzlers is tricky.
 Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       [native_parent contentView]);
 
   modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
@@ -1187,7 +1109,7 @@ Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
 // sheet animation is blocking.
 Widget* ShowWindowModalWidget(NSWindow* native_parent) {
   Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_WINDOW), nullptr,
       [native_parent contentView]);
   sheet_widget->Show();
   return sheet_widget;
@@ -1253,7 +1175,7 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
 TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   NSWindow* native_parent = MakeBorderlessNativeParent();
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       [native_parent contentView]);
 
   modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
@@ -1308,12 +1230,25 @@ TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   EXPECT_FALSE([retained_animation isAnimating]);
 }
 
+// Expect that |children|, the list of child windows of a window that has a
+// sheet open, is logically empty. "Logically empty" accounts for the
+// AppKit-created visual effect window that shows atop windows with open sheets
+// on macOS 11.
+void AssertNoChildrenForWindowWithSheet(NSArray<NSWindow*>* children) {
+  if (base::mac::IsAtLeastOS11()) {
+    ASSERT_EQ(1u, children.count);
+    EXPECT_NSEQ(@"NSSheetEffectDimmingWindow", children[0].className);
+  } else {
+    ASSERT_EQ(0u, children.count);
+  }
+}
+
 // Tests behavior of window-modal dialogs, displayed as sheets.
 TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   NSWindow* native_parent = MakeClosableTitledNativeParent();
 
   Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_WINDOW), nullptr,
       [native_parent contentView]);
 
   WidgetChangeObserver widget_observer(sheet_widget);
@@ -1365,8 +1300,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   ASSERT_EQ(2u, children.size());
   EXPECT_TRUE(children.count(sheet_widget));
 
-  // Sheets are not child windows of their parent NSWindow, though.
-  ASSERT_EQ(0u, [native_parent childWindows].count);
+  AssertNoChildrenForWindowWithSheet(native_parent.childWindows);
 
   // Modal, so the close button in the parent window should get disabled.
   EXPECT_FALSE([parent_close_button isEnabled]);
@@ -1389,7 +1323,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   widget_observer.WaitForVisibleCounts(1, 1);
   EXPECT_FALSE(sheet_widget->IsVisible());
   [native_parent makeKeyAndOrderFront:nil];
-  ASSERT_EQ(0u, [native_parent childWindows].count);
+  AssertNoChildrenForWindowWithSheet(native_parent.childWindows);
   widget_observer.WaitForVisibleCounts(2, 1);
   EXPECT_TRUE(sheet_widget->IsVisible());
 
@@ -1706,7 +1640,7 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
 
   // Create a dialog widget (also TYPE_WINDOW), but with a DialogDelegate.
   Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       regular_widget->GetNativeView());
   EXPECT_TRUE([dialog_widget->GetNativeWindow().GetNativeNSWindow()
                    canBecomeKeyWindow]);
@@ -1714,7 +1648,7 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
   EXPECT_FALSE([dialog_widget->GetNativeWindow().GetNativeNSWindow()
                     canBecomeMainWindow]);
 
-  // Create a bubble widget with a parent: also shouldn't get main.
+  // Create a bubble widget (with a parent): also shouldn't get main.
   BubbleDialogDelegateView* bubble_view = new SimpleBubbleView();
   bubble_view->set_parent_window(regular_widget->GetNativeView());
   Widget* bubble_widget = BubbleDialogDelegateView::CreateBubble(bubble_view);
@@ -1727,15 +1661,6 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
                     collectionBehavior] &
                 NSWindowCollectionBehaviorTransient);
 
-  // But a bubble without a parent should still be able to become main.
-  Widget* toplevel_bubble_widget =
-      BubbleDialogDelegateView::CreateBubble(new SimpleBubbleView());
-  EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow().GetNativeNSWindow()
-                   canBecomeKeyWindow]);
-  EXPECT_TRUE([toplevel_bubble_widget->GetNativeWindow().GetNativeNSWindow()
-                   canBecomeMainWindow]);
-
-  toplevel_bubble_widget->CloseNow();
   regular_widget->CloseNow();
 }
 
@@ -1934,98 +1859,6 @@ TEST_F(NativeWidgetMacTest, ChangeOpacity) {
   EXPECT_NE(old_opacity, [ns_window alphaValue]);
   EXPECT_DOUBLE_EQ(.7f, [ns_window alphaValue]);
 
-  widget->CloseNow();
-}
-
-// Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
-// parameter to BridgedContentView::drawRect, for a titled window (window with a
-// toolbar).
-TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-
-  gfx::Rect screen_rect(50, 50, 100, 100);
-  widget->SetBounds(screen_rect);
-
-  // Setup the mock content view for the NSWindow, so that we can intercept
-  // drawRect.
-  NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
-  base::scoped_nsobject<MockBridgedView> mock_bridged_view(
-      [[MockBridgedView alloc] init]);
-  // Reset drawRect count.
-  [mock_bridged_view setDrawRectCount:0];
-  [window setContentView:mock_bridged_view];
-
-  // Ensure the initial draw of the window is done.
-  while ([mock_bridged_view drawRectCount] == 0)
-    base::RunLoop().RunUntilIdle();
-
-  // Add a dummy view to the widget. This will cause SchedulePaint to be called
-  // on the dummy view.
-  View* dummy_view = new View();
-  gfx::Rect dummy_bounds(25, 30, 10, 15);
-  dummy_view->SetBoundsRect(dummy_bounds);
-  // Reset drawRect count.
-  [mock_bridged_view setDrawRectCount:0];
-  widget->GetContentsView()->AddChildView(dummy_view);
-
-  // SchedulePaint is asyncronous. Wait for drawRect: to be called.
-  while ([mock_bridged_view drawRectCount] == 0)
-    base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
-  int client_area_height = widget->GetClientAreaBoundsInScreen().height();
-  // These are expected dummy_view bounds in AppKit coordinate system. The y
-  // coordinate of rect origin is calculated as:
-  // client_area_height - 30 (dummy_view's y coordinate) - 15 (dummy view's
-  // height).
-  gfx::Rect expected_appkit_bounds(25, client_area_height - 45, 10, 15);
-  EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
-              [mock_bridged_view lastDirtyRect]);
-  widget->CloseNow();
-}
-
-// Test that NativeWidgetMac::SchedulePaintInRect correctly passes the dirtyRect
-// parameter to BridgedContentView::drawRect, for a borderless window.
-TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
-  Widget* widget = CreateTopLevelFramelessPlatformWidget();
-
-  gfx::Rect screen_rect(50, 50, 100, 100);
-  widget->SetBounds(screen_rect);
-
-  // Setup the mock content view for the NSWindow, so that we can intercept
-  // drawRect.
-  NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
-  base::scoped_nsobject<MockBridgedView> mock_bridged_view(
-      [[MockBridgedView alloc] init]);
-  // Reset drawRect count.
-  [mock_bridged_view setDrawRectCount:0];
-  [window setContentView:mock_bridged_view];
-
-  // Ensure the initial draw of the window is done.
-  while ([mock_bridged_view drawRectCount] == 0)
-    base::RunLoop().RunUntilIdle();
-
-  // Add a dummy view to the widget. This will cause SchedulePaint to be called
-  // on the dummy view.
-  View* dummy_view = new View();
-  gfx::Rect dummy_bounds(25, 30, 10, 15);
-  dummy_view->SetBoundsRect(dummy_bounds);
-  // Reset drawRect count.
-  [mock_bridged_view setDrawRectCount:0];
-  widget->GetRootView()->AddChildView(dummy_view);
-
-  // SchedulePaint is asyncronous. Wait for drawRect: to be called.
-  while ([mock_bridged_view drawRectCount] == 0)
-    base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
-  // These are expected dummy_view bounds in AppKit coordinate system. The y
-  // coordinate of rect origin is calculated as:
-  // 100(client area height) - 30 (dummy_view's y coordinate) - 15 (dummy view's
-  // height).
-  gfx::Rect expected_appkit_bounds(25, 55, 10, 15);
-  EXPECT_NSEQ(expected_appkit_bounds.ToCGRect(),
-              [mock_bridged_view lastDirtyRect]);
   widget->CloseNow();
 }
 
@@ -2387,7 +2220,7 @@ NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
 
 // Test TouchBar integration.
 TEST_F(NativeWidgetMacTest, TouchBar) {
-  ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
+  DialogDelegate* delegate = MakeModalDialog(ui::MODAL_TYPE_NONE);
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
   NSView* content =
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()

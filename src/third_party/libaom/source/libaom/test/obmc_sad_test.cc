@@ -37,6 +37,7 @@ typedef libaom_test::FuncParam<ObmcSadF> TestFuncs;
 ////////////////////////////////////////////////////////////////////////////////
 
 class ObmcSadTest : public FunctionEquivalenceTest<ObmcSadF> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ObmcSadTest);
 
 TEST_P(ObmcSadTest, RandomValues) {
   DECLARE_ALIGNED(32, uint8_t, pre[MAX_SB_SQUARE]);
@@ -152,6 +153,7 @@ INSTANTIATE_TEST_SUITE_P(AVX2, ObmcSadTest,
 ////////////////////////////////////////////////////////////////////////////////
 
 class ObmcSadHBDTest : public FunctionEquivalenceTest<ObmcSadF> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ObmcSadHBDTest);
 
 TEST_P(ObmcSadHBDTest, RandomValues) {
   DECLARE_ALIGNED(32, uint16_t, pre[MAX_SB_SQUARE]);

@@ -23,8 +23,11 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -41,13 +44,17 @@ public class TabGroupUtils {
     private static TabModelSelectorTabObserver sTabModelSelectorTabObserver;
     private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
 
-    public static void maybeShowIPH(@FeatureConstants String featureName, View view) {
+    public static void maybeShowIPH(@FeatureConstants String featureName, View view,
+            @Nullable BottomSheetController bottomSheetController) {
         // For tab group, all three IPHs are valid. For conditional tab strip, the only valid IPH
         // below is TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE.
         if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && !(TabUiFeatureUtilities.isConditionalTabStripEnabled()
                         && featureName.equals(
                                 FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE))) {
+            return;
+        }
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled() && view == null) {
             return;
         }
 
@@ -82,9 +89,39 @@ public class TabGroupUtils {
         ViewRectProvider rectProvider = new ViewRectProvider(view);
 
         TextBubble textBubble = new TextBubble(view.getContext(), view, textId, accessibilityTextId,
-                true, rectProvider, AccessibilityUtil.isAccessibilityEnabled());
+                true, rectProvider, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> tracker.dismissed(featureName));
+        if (!TabUiFeatureUtilities.isLaunchBugFixEnabled()) {
+            textBubble.addOnDismissListener(() -> tracker.dismissed(featureName));
+            textBubble.show();
+            return;
+        }
+        if (bottomSheetController == null) return;
+        assert featureName.equals(FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE);
+
+        // This observer is added when IPH shows and is removed when IPH is dismissed via user
+        // explicitly closing the text bubble.
+        BottomSheetObserver bottomSheetObserver = new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetStateChanged(int newState) {
+                if (newState == BottomSheetController.SheetState.HIDDEN) {
+                    textBubble.show();
+                } else {
+                    textBubble.dismiss();
+                }
+            }
+        };
+
+        textBubble.addOnDismissListener(() -> {
+            // Don't dismiss the feature when the hide is caused by bottom sheet showing.
+            if (bottomSheetController.getSheetState() != BottomSheetController.SheetState.HIDDEN) {
+                return;
+            }
+            tracker.dismissed(featureName);
+            bottomSheetController.removeObserver(bottomSheetObserver);
+        });
+
+        bottomSheetController.addObserver(bottomSheetObserver);
         textBubble.show();
     }
 
@@ -110,7 +147,7 @@ public class TabGroupUtils {
                                 && (transition & PageTransition.CORE_MASK)
                                         == PageTransition.GENERATED)) {
                     maybeShowIPH(FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
-                            tab.getView());
+                            tab.getView(), null);
                     sTabModelSelectorTabObserver.destroy();
                 }
             }

@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user_type.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class AccountId;
@@ -58,9 +60,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   class Delegate : public AuthStatusConsumer {
    public:
     ~Delegate() override {}
-    virtual void WhiteListCheckFailed(const std::string& email) = 0;
+    virtual void AllowlistCheckFailed(const std::string& email) = 0;
     virtual void PolicyLoadFailed() = 0;
-    virtual void SetAuthFlowOffline(bool offline) = 0;
   };
 
   LoginPerformer(scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -73,6 +74,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   void PerformLogin(const UserContext& user_context,
                     AuthorizationMode auth_mode);
 
+  // TODO(crbug.com/866790): Check it is not used anymore and remove it.
   // Performs supervised user login with a given |user_context|.
   void LoginAsSupervisedUser(const UserContext& user_context);
 
@@ -96,7 +98,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetected() override;
+  void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnOldEncryptionDetected(const UserContext& user_context,
                                bool has_incomplete_migration) override;
 
@@ -129,9 +131,13 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
 
   // Check if user is allowed to sign in on device. |wildcard_match| will
   // contain additional information whether this user is explicitly listed or
-  // not (may be relevant for external-based sign-in).
-  virtual bool IsUserWhitelisted(const AccountId& account_id,
-                                 bool* wildcard_match) = 0;
+  // not (may be relevant for external-based sign-in). |user_type| will be used
+  // to check if the user is allowed because of the user type, pass
+  // base::nullopt if user type is not known.
+  virtual bool IsUserAllowlisted(
+      const AccountId& account_id,
+      bool* wildcard_match,
+      const base::Optional<user_manager::UserType>& user_type) = 0;
 
  protected:
   // Platform-dependant methods to be implemented by concrete class.
@@ -144,26 +150,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // This method should run addional online check if user can sign in on device.
   // Either |success_callback| or |failure_callback| should be called upon this
   // check.
-  virtual void RunOnlineWhitelistCheck(const AccountId& account_id,
+  virtual void RunOnlineAllowlistCheck(const AccountId& account_id,
                                        bool wildcard_match,
                                        const std::string& refresh_token,
                                        base::OnceClosure success_callback,
                                        base::OnceClosure failure_callback) = 0;
-
-  // Supervised users-related methods.
-
-  // Check if supervised users are allowed on this device.
-  virtual bool AreSupervisedUsersAllowed() = 0;
-
-  // Check which authenticator should be used for supervised user.
-  virtual bool UseExtendedAuthenticatorForSupervisedUser(
-      const UserContext& user_context) = 0;
-
-  // Probably transform supervised user's authentication key.
-  virtual UserContext TransformSupervisedKey(const UserContext& context) = 0;
-
-  // Set up sign-in flow for supervised user.
-  virtual void SetupSupervisedUserFlow(const AccountId& account_id) = 0;
 
   // Set up sign-in flow for Easy Unlock.
   virtual void SetupEasyUnlockUserFlow(const AccountId& account_id) = 0;
@@ -193,15 +184,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
 
   // Starts authentication.
   void StartAuthentication();
-  void NotifyWhitelistCheckFailure();
+  void NotifyAllowlistCheckFailure();
 
   // Makes sure that authenticator is created.
   void EnsureAuthenticator();
   void EnsureExtendedAuthenticator();
-
-  // Actual implementation of LoginAsSupervisedUser that is run after trusted
-  // values check.
-  void TrustedLoginAsSupervisedUser(const UserContext& user_context);
 
   // Actual implementantion of PeformLogin that is run after trusted values
   // check.

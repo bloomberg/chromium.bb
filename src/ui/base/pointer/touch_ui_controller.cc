@@ -4,12 +4,14 @@
 
 #include "ui/base/pointer/touch_ui_controller.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -22,16 +24,26 @@
 
 namespace ui {
 
-#if defined(OS_WIN)
 namespace {
+
+#if defined(OS_WIN)
 
 bool IsTabletMode() {
   return base::win::IsWindows10TabletMode(
       gfx::SingletonHwnd::GetInstance()->hwnd());
 }
 
-}  // namespace
 #endif  // defined(OS_WIN)
+
+void RecordEnteredTouchMode() {
+  base::RecordAction(base::UserMetricsAction("TouchMode.EnteredTouchMode"));
+}
+
+void RecordEnteredNonTouchMode() {
+  base::RecordAction(base::UserMetricsAction("TouchMode.EnteredNonTouchMode"));
+}
+
+}  // namespace
 
 TouchUiController::TouchUiScoperForTesting::TouchUiScoperForTesting(
     bool enabled,
@@ -42,6 +54,11 @@ TouchUiController::TouchUiScoperForTesting::TouchUiScoperForTesting(
 
 TouchUiController::TouchUiScoperForTesting::~TouchUiScoperForTesting() {
   controller_->SetTouchUiState(old_state_);
+}
+
+void TouchUiController::TouchUiScoperForTesting::UpdateState(bool enabled) {
+  controller_->SetTouchUiState(enabled ? TouchUiState::kEnabled
+                                       : TouchUiState::kDisabled);
 }
 
 // static
@@ -61,7 +78,7 @@ TouchUiController* TouchUiController::Get() {
 TouchUiController::TouchUiController(TouchUiState touch_ui_state)
     : touch_ui_state_(touch_ui_state) {
 #if defined(OS_WIN)
-  if (base::MessageLoopCurrentForUI::IsSet() &&
+  if (base::CurrentUIThread::IsSet() &&
       (base::win::GetVersion() >= base::win::Version::WIN10)) {
     singleton_hwnd_observer_ =
         std::make_unique<gfx::SingletonHwndObserver>(base::BindRepeating(
@@ -72,6 +89,11 @@ TouchUiController::TouchUiController(TouchUiState touch_ui_state)
     tablet_mode_ = IsTabletMode();
   }
 #endif
+
+  if (touch_ui())
+    RecordEnteredTouchMode();
+  else
+    RecordEnteredNonTouchMode();
 }
 
 TouchUiController::~TouchUiController() = default;
@@ -79,10 +101,8 @@ TouchUiController::~TouchUiController() = default;
 void TouchUiController::OnTabletModeToggled(bool enabled) {
   const bool was_touch_ui = touch_ui();
   tablet_mode_ = enabled;
-  if (touch_ui() != was_touch_ui) {
-    TRACE_EVENT0("ui", "TouchUiController.NotifyListeners");
-    callback_list_.Notify();
-  }
+  if (touch_ui() != was_touch_ui)
+    TouchUiChanged();
 }
 
 std::unique_ptr<TouchUiController::Subscription>
@@ -94,11 +114,19 @@ TouchUiController::TouchUiState TouchUiController::SetTouchUiState(
     TouchUiState touch_ui_state) {
   const bool was_touch_ui = touch_ui();
   const TouchUiState old_state = std::exchange(touch_ui_state_, touch_ui_state);
-  if (touch_ui() != was_touch_ui) {
-    TRACE_EVENT0("ui", "TouchUiController.NotifyListeners");
-    callback_list_.Notify();
-  }
+  if (touch_ui() != was_touch_ui)
+    TouchUiChanged();
   return old_state;
+}
+
+void TouchUiController::TouchUiChanged() {
+  if (touch_ui())
+    RecordEnteredTouchMode();
+  else
+    RecordEnteredNonTouchMode();
+
+  TRACE_EVENT0("ui", "TouchUiController.NotifyListeners");
+  callback_list_.Notify();
 }
 
 }  // namespace ui

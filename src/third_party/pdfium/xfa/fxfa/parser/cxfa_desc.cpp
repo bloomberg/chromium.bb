@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_desc.h"
 
 #include "fxjs/xfa/cjx_desc.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -35,6 +35,8 @@ CXFA_Desc::CXFA_Desc(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Desc,
                 kDescPropertyData,
                 kDescAttributeData,
-                pdfium::MakeUnique<CJX_Desc>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Desc>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Desc::~CXFA_Desc() = default;

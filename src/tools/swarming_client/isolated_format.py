@@ -19,7 +19,7 @@ from utils import fs
 from utils import tools
 
 # Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.6'
+ISOLATED_FILE_VERSION = '2.0'
 
 
 # Chunk size to use when doing disk I/O.
@@ -29,9 +29,9 @@ DISK_FILE_CHUNK = 1024 * 1024
 # Sadly, hashlib uses 'shaX' instead of the standard 'sha-X' so explicitly
 # specify the names here.
 SUPPORTED_ALGOS = {
-  'sha-1': hashlib.sha1,
-  'sha-256': hashlib.sha256,
-  'sha-512': hashlib.sha512,
+    'sha-1': hashlib.sha1,
+    'sha-256': hashlib.sha256,
+    'sha-512': hashlib.sha512,
 }
 
 
@@ -206,7 +206,7 @@ def _expand_symlinks(indir, relfile):
 
 
 @tools.profile
-def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
+def expand_directory_and_symlink(indir, relfile, denylist, follow_symlinks):
   """Expands a single input. It can result in multiple outputs.
 
   This function is recursive when relfile is a directory.
@@ -273,19 +273,19 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     try:
       for filename in fs.listdir(infile):
         inner_relfile = os.path.join(relfile, filename)
-        if blacklist and blacklist(inner_relfile):
+        if denylist and denylist(inner_relfile):
           continue
         if fs.isdir(os.path.join(indir, inner_relfile)):
           inner_relfile += os.path.sep
         # Apply recursively.
         for i, is_symlink in expand_directory_and_symlink(
-            indir, inner_relfile, blacklist, follow_symlinks):
+            indir, inner_relfile, denylist, follow_symlinks):
           yield i, is_symlink
     except OSError as e:
       raise MappingError(
           u'Unable to iterate over directory %s.\n%s' % (infile, e))
   else:
-    # Always add individual files even if they were blacklisted.
+    # Always add individual files even if they were in the denylist.
     if fs.isdir(infile):
       raise MappingError(
           u'Input directory %s must have a trailing slash' % infile)
@@ -297,7 +297,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
 
 
 @tools.profile
-def file_to_metadata(filepath, read_only, collapse_symlinks):
+def file_to_metadata(filepath, collapse_symlinks):
   """Processes an input file, a dependency, and return meta data about it.
 
   Behaviors:
@@ -307,10 +307,6 @@ def file_to_metadata(filepath, read_only, collapse_symlinks):
 
   Arguments:
     filepath: File to act on.
-    read_only: If 1 or 2, the file mode is manipulated. In practice, only save
-               one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
-               windows, mode is not set since all files are 'executable' by
-               default.
     collapse_symlinks: True if symlinked files should be treated like they were
                        the normal underlying file.
 
@@ -318,8 +314,6 @@ def file_to_metadata(filepath, read_only, collapse_symlinks):
     The necessary dict to create a entry in the 'files' section of an .isolated
     file *except* 'h' for files.
   """
-  # TODO(maruel): None is not a valid value.
-  assert read_only in (None, 0, 1, 2), read_only
   out = {}
   # Always check the file stat and check if it is a link.
   try:
@@ -339,8 +333,6 @@ def file_to_metadata(filepath, read_only, collapse_symlinks):
     filemode = stat.S_IMODE(filestats.st_mode)
     # Remove write access for group and all access to 'others'.
     filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
-    if read_only:
-      filemode &= ~stat.S_IWUSR
     if filemode & (stat.S_IXUSR|stat.S_IRGRP) == (stat.S_IXUSR|stat.S_IRGRP):
       # Only keep x group bit if both x user bit and group read bit are set.
       filemode |= stat.S_IXGRP
@@ -407,7 +399,7 @@ def load_isolated(content, algo):
     raise IsolatedError('Expected dict, got %r' % data)
 
   # Check 'version' first, since it could modify the parsing after.
-  value = data.get('version', '1.0')
+  value = data.get('version', '2.0')
   if not isinstance(value, six.string_types):
     raise IsolatedError('Expected string, got %r' % value)
   try:
@@ -471,8 +463,8 @@ def load_isolated(content, algo):
               raise IsolatedError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'h':
             if not is_valid_hash(subsubvalue, algo):
-              raise IsolatedError('Expected %s, got %r' %
-                                  (algo_name, subsubvalue))
+              raise IsolatedError(
+                  'Expected %s, got %r' % (algo_name, subsubvalue))
           elif subsubkey == 's':
             if not isinstance(subsubvalue, six.integer_types):
               raise IsolatedError('Expected int or long, got %r' % subsubvalue)
@@ -513,8 +505,9 @@ def load_isolated(content, algo):
         raise IsolatedError('Key \'os\' is not allowed starting version 1.4')
 
     elif key == 'read_only':
-      if not value in (0, 1, 2):
-        raise IsolatedError('Expected 0, 1 or 2, got %r' % value)
+      if version >= (2, 0):
+        raise IsolatedError('Key \'read_only\' is not allowed starting version'
+                            ' 2.0')
 
     elif key == 'relative_cwd':
       if not isinstance(value, six.string_types):

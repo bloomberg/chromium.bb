@@ -32,8 +32,9 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Consumer;
-import org.chromium.chrome.browser.feed.FeedLoggingBridge;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
+import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.store.LocalActionMutation;
@@ -45,7 +46,10 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMa
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeTaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
+import org.chromium.chrome.browser.feed.v1.FeedLoggingBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure;
@@ -53,6 +57,9 @@ import org.chromium.components.feed.core.proto.libraries.api.internal.StreamData
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamUploadableAction;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
 import org.chromium.components.feed.core.proto.wire.ConsistencyTokenProto.ConsistencyToken;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.time.Duration;
@@ -65,7 +72,10 @@ import java.util.Set;
 /** Tests of the {@link FeedActionManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+@Features.DisableFeatures({ChromeFeatureList.INTEREST_FEED_V2,
+        ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD})
+@Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+        ChromeFeatureList.REPORT_FEED_USER_ACTIONS})
 public class FeedActionManagerImplTest {
     private static final String CONTENT_ID_STRING = "contentIdString";
     private static final String SESSION_ID = "session";
@@ -94,6 +104,9 @@ public class FeedActionManagerImplTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
     @Mock
     private FeedSessionManager mFeedSessionManager;
     @Mock
@@ -108,6 +121,13 @@ public class FeedActionManagerImplTest {
     private FeedLoggingBridge mFeedLoggingBridge;
     @Mock
     private Runnable mStoreViewActionsRunnable;
+    @Mock
+    private UserPrefs.Natives mUserPrefsJniMock;
+    @Mock
+    private Profile mProfile;
+    @Mock
+    private PrefService mPrefService;
+
     @Captor
     private ArgumentCaptor<Integer> mActionTypeCaptor;
     @Captor
@@ -130,6 +150,11 @@ public class FeedActionManagerImplTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
+
+        mocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
+
         mActionManager = new FeedActionManagerImpl(mStore, mFakeThreadUtils, getTaskQueue(),
                 mFakeMainThreadRunner, new TestViewHandler(), mFakeClock, mFeedLoggingBridge);
         mActionManager.initialize(mFeedSessionManager);
@@ -148,6 +173,7 @@ public class FeedActionManagerImplTest {
         mViewport = new TestView();
         mViewport.setRectOnScreen(VIEWPORT_RECT);
         mActionManager.setViewport(mViewport);
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(false);
     }
 
     @Test
@@ -235,28 +261,104 @@ public class FeedActionManagerImplTest {
     }
 
     @Test
-    public void triggerCreateAndUploadAction() throws Exception {
+    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)
+    public void triggerCreateAndUploadAction_whenUploadDisabled_byCantUploadWithNotice()
+            throws Exception {
+        // Set things so that, when the conditional upload feature is enabled, the upload of clicks
+        // and views cannot take place.
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(false);
+        when(mPrefService.getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD)).thenReturn(true);
+
         mFakeClock.set(DEFAULT_TIME);
-        mActionManager.createAndUploadAction(CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mActionManager.createAndUploadAction(
+                CONTENT_ID_STRING, ACTION_PAYLOAD, ActionManager.UploadActionType.CLICK);
+        verify(mFeedSessionManager, never()).triggerUploadActions(mActionCaptor.capture());
+
+        triggerViewActionAndVerifyUpserted(/* expectUpserted= */ false);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)
+    public void triggerCreateAndUploadAction_whenUploadEnabled_byCanUploadWithNotice()
+            throws Exception {
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(true);
+        when(mPrefService.getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD)).thenReturn(true);
+
+        mFakeClock.set(DEFAULT_TIME);
+        mActionManager.createAndUploadAction(
+                CONTENT_ID_STRING, ACTION_PAYLOAD, ActionManager.UploadActionType.CLICK);
         verify(mFeedSessionManager).triggerUploadActions(mActionCaptor.capture());
         StreamUploadableAction action =
                 (StreamUploadableAction) mActionCaptor.getValue().toArray()[0];
         assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
         assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
         assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
+
+        triggerViewActionAndVerifyUpserted(/* expectUpserted= */ true);
     }
 
     @Test
-    public void triggerCreateAndStoreAction() throws Exception {
+    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)
+    public void triggerCreateAndUploadAction_whenUploadEnabled_byNoClickAction() throws Exception {
+        // Set things so that, when the conditional upload feature is enabled, the upload of clicks
+        // and views cannot take place.
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(false);
+        when(mPrefService.getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD)).thenReturn(true);
+
         mFakeClock.set(DEFAULT_TIME);
-        mActionManager.createAndStoreAction(CONTENT_ID_STRING, ACTION_PAYLOAD);
-        verify(mUploadableActionMutation)
-                .upsert(mUploadableActionCaptor.capture(), mContentIdStringCaptor.capture());
-        StreamUploadableAction action = mUploadableActionCaptor.getValue();
+        mActionManager.createAndUploadAction(
+                CONTENT_ID_STRING, ACTION_PAYLOAD, ActionManager.UploadActionType.MISC);
+        verify(mFeedSessionManager).triggerUploadActions(mActionCaptor.capture());
+        StreamUploadableAction action =
+                (StreamUploadableAction) mActionCaptor.getValue().toArray()[0];
         assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
         assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
         assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
-        assertThat(mContentIdStringCaptor.getValue()).isEqualTo(CONTENT_ID_STRING);
+
+        // Try to store a view action and verify it isn't stored because, althought explicit actions
+        // can be uploaded, clicks and views cannot be yet uploaded.
+        triggerViewActionAndVerifyUpserted(/* expectUpserted= */ false);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)
+    public void triggerCreateAndUploadAction_whenLogEnabled_byNoNoticeCard() throws Exception {
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(false);
+        when(mPrefService.getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD)).thenReturn(false);
+
+        mFakeClock.set(DEFAULT_TIME);
+        mActionManager.createAndUploadAction(
+                CONTENT_ID_STRING, ACTION_PAYLOAD, ActionManager.UploadActionType.MISC);
+        verify(mFeedSessionManager).triggerUploadActions(mActionCaptor.capture());
+        StreamUploadableAction action =
+                (StreamUploadableAction) mActionCaptor.getValue().toArray()[0];
+        assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
+        assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
+        assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
+
+        triggerViewActionAndVerifyUpserted(/* expectUpserted= */ true);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)
+    public void triggerCreateAndUploadAction_whenLogEnabled_byCondUploadFeatureDisabled()
+            throws Exception {
+        // Set things so that, when the conditional upload feature is enabled, the upload of clicks
+        // and views would not take place.
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(false);
+        when(mPrefService.getBoolean(Pref.LAST_FETCH_HAD_NOTICE_CARD)).thenReturn(true);
+
+        mFakeClock.set(DEFAULT_TIME);
+        mActionManager.createAndUploadAction(
+                CONTENT_ID_STRING, ACTION_PAYLOAD, ActionManager.UploadActionType.MISC);
+        verify(mFeedSessionManager).triggerUploadActions(mActionCaptor.capture());
+        StreamUploadableAction action =
+                (StreamUploadableAction) mActionCaptor.getValue().toArray()[0];
+        assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
+        assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
+        assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
+
+        triggerViewActionAndVerifyUpserted(/* expectUpserted= */ true);
     }
 
     @Test
@@ -636,6 +738,29 @@ public class FeedActionManagerImplTest {
         @Override
         public Rect getRectOnScreen(View view) {
             return ((TestView) view).getRectOnScreen();
+        }
+    }
+
+    private void triggerViewActionAndVerifyUpserted(boolean expectUpserted) {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+
+        if (expectUpserted) {
+            verifyActionsUpserted(
+                    StreamUploadableAction.newBuilder()
+                            .setFeatureContentId(CONTENT_ID_STRING)
+                            .setPayload(ACTION_PAYLOAD)
+                            .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                            .setDurationMs(LONG_DURATION_MS)
+                            .build());
+        } else {
+            verify(mUploadableActionMutation, never())
+                    .upsert(mUploadableActionCaptor.capture(), mContentIdStringCaptor.capture());
         }
     }
 }

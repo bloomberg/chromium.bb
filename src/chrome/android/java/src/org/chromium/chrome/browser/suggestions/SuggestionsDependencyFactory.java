@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.components.favicon.LargeIconBridge;
 
 /**
  * Provides an injection mechanisms for dependencies of the suggestions package.
@@ -34,10 +34,6 @@ public class SuggestionsDependencyFactory {
             throw new IllegalStateException("A real instance already exists.");
         }
         sInstance = testInstance;
-    }
-
-    public SuggestionsEventReporter createEventReporter() {
-        return new SuggestionsEventReporterBridge();
     }
 
     public MostVisitedSites createMostVisitedSites(Profile profile) {

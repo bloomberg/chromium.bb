@@ -69,7 +69,7 @@ class ImageEventListener : public NativeEventListener {
 
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(doc_);
     NativeEventListener::Trace(visitor);
   }
@@ -93,13 +93,14 @@ struct DowncastTraits<ImageEventListener> {
 class ImageDocumentParser : public RawDataDocumentParser {
  public:
   ImageDocumentParser(ImageDocument* document)
-      : RawDataDocumentParser(document) {}
+      : RawDataDocumentParser(document),
+        world_(document->GetExecutionContext()->GetCurrentWorld()) {}
 
   ImageDocument* GetDocument() const {
     return To<ImageDocument>(RawDataDocumentParser::GetDocument());
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(image_resource_);
     RawDataDocumentParser::Trace(visitor);
   }
@@ -109,6 +110,7 @@ class ImageDocumentParser : public RawDataDocumentParser {
   void Finish() override;
 
   Member<ImageResource> image_resource_;
+  const scoped_refptr<const DOMWrapperWorld> world_;
 };
 
 // --------
@@ -144,7 +146,7 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!image_resource_) {
     ResourceRequest request(GetDocument()->Url());
     request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-    image_resource_ = ImageResource::Create(request);
+    image_resource_ = ImageResource::Create(request, world_);
     image_resource_->NotifyStartLoad();
 
     GetDocument()->CreateDocumentStructure(image_resource_->GetContent());
@@ -202,11 +204,10 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
       did_shrink_image_(false),
       should_shrink_image_(ShouldShrinkToFit()),
       image_is_loaded_(false),
-      style_mouse_cursor_mode_(kDefault),
       shrink_to_fit_mode_(GetFrame()->GetSettings()->GetViewportEnabled()
                               ? kViewport
                               : kDesktop) {
-  SetCompatibilityMode(kQuirksMode);
+  SetCompatibilityMode(kNoQuirksMode);
   LockCompatibilityMode();
 }
 
@@ -225,6 +226,8 @@ IntSize ImageDocument::ImageSize() const {
 void ImageDocument::CreateDocumentStructure(
     ImageResourceContent* image_content) {
   auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*this);
+  root_element->SetInlineStyleProperty(
+      CSSPropertyID::kHeight, 100, CSSPrimitiveValue::UnitType::kPercentage);
   AppendChild(root_element);
   root_element->InsertedByParser();
 
@@ -243,7 +246,7 @@ void ImageDocument::CreateDocumentStructure(
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
     body->setAttribute(html_names::kStyleAttr,
-                       "margin: 0px; background: #0e0e0e;");
+                       "margin: 0px; background: #0e0e0e; height: 100%");
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
@@ -265,7 +268,7 @@ void ImageDocument::CreateDocumentStructure(
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
-    body->setAttribute(html_names::kStyleAttr, "margin: 0px;");
+    body->setAttribute(html_names::kStyleAttr, "margin: 0px; height: 100%");
   }
 
   WillInsertBody();
@@ -390,11 +393,17 @@ void ImageDocument::ImageClicked(int x, int y) {
 
 void ImageDocument::ImageLoaded() {
   image_is_loaded_ = true;
+  UpdateImageStyle();
+}
 
-  if (ShouldShrinkToFit()) {
-    // The checkerboard background needs to be inserted.
-    UpdateImageStyle();
-  }
+ImageDocument::MouseCursorMode ImageDocument::ComputeMouseCursorMode() const {
+  if (!image_is_loaded_)
+    return kDefault;
+  if (shrink_to_fit_mode_ != kDesktop || !ShouldShrinkToFit())
+    return kDefault;
+  if (ImageFitsInWindow())
+    return kDefault;
+  return should_shrink_image_ ? kZoomIn : kZoomOut;
 }
 
 void ImageDocument::UpdateImageStyle() {
@@ -405,33 +414,20 @@ void ImageDocument::UpdateImageStyle() {
     if (shrink_to_fit_mode_ == kViewport)
       image_style.Append("max-width: 100%;");
     image_style.Append("margin: auto;");
+  }
 
+  MouseCursorMode cursor_mode = ComputeMouseCursorMode();
+  if (cursor_mode == kZoomIn)
+    image_style.Append("cursor: zoom-in;");
+  else if (cursor_mode == kZoomOut)
+    image_style.Append("cursor: zoom-out;");
+
+  if (GetFrame()->IsMainFrame()) {
     if (image_is_loaded_) {
-      MouseCursorMode new_cursor_mode = kDefault;
-
-      if (shrink_to_fit_mode_ != kViewport) {
-        // In desktop mode, the user can click on the image to zoom in or out.
-        DCHECK_EQ(shrink_to_fit_mode_, kDesktop);
-        if (ImageFitsInWindow()) {
-          new_cursor_mode = kDefault;
-        } else {
-          new_cursor_mode = should_shrink_image_ ? kZoomIn : kZoomOut;
-        }
-      }
-
-      // The only thing that can differ between updates is
-      // the type of cursor being displayed.
-      if (new_cursor_mode == style_mouse_cursor_mode_) {
-        return;
-      }
-      style_mouse_cursor_mode_ = new_cursor_mode;
-
-      if (shrink_to_fit_mode_ == kDesktop) {
-        if (style_mouse_cursor_mode_ == kZoomIn)
-          image_style.Append("cursor: zoom-in;");
-        else if (style_mouse_cursor_mode_ == kZoomOut)
-          image_style.Append("cursor: zoom-out;");
-      }
+      image_style.Append("background-color: hsl(0, 0%, 90%);");
+      image_style.Append("transition: background-color 300ms;");
+    } else if (image_size_is_known_) {
+      image_style.Append("background-color: hsl(0, 0%, 25%);");
     }
   }
 
@@ -450,6 +446,7 @@ void ImageDocument::ImageUpdated() {
     return;
 
   image_size_is_known_ = true;
+  UpdateImageStyle();
 
   if (ShouldShrinkToFit()) {
     // Force resizing of the image
@@ -562,7 +559,7 @@ bool ImageDocument::ShouldShrinkToFit() const {
   return GetFrame()->IsMainFrame() && !is_wrap_content_web_view;
 }
 
-void ImageDocument::Trace(Visitor* visitor) {
+void ImageDocument::Trace(Visitor* visitor) const {
   visitor->Trace(div_element_);
   visitor->Trace(image_element_);
   HTMLDocument::Trace(visitor);

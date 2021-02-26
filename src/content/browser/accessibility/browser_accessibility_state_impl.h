@@ -60,19 +60,16 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   bool IsAccessibleBrowser() override;
   void AddUIThreadHistogramCallback(base::OnceClosure callback) override;
   void AddOtherThreadHistogramCallback(base::OnceClosure callback) override;
-
+  void UpdateUniqueUserHistograms() override;
   void UpdateHistogramsForTesting() override;
+  void SetCaretBrowsingState(bool enabled) override;
 
-  // Returns whether caret browsing is enabled for this browser session.
+  // Returns whether caret browsing is enabled for the most recently
+  // used profile.
   bool IsCaretBrowsingEnabled() const;
 
   // AXModeObserver
   void OnAXModeAdded(ui::AXMode mode) override;
-
-  // Fire frequent metrics signals to ensure users keeping browser open multiple
-  // days are counted each day, not only at launch. This is necessary, because
-  // UMA only aggregates uniques on a daily basis,
-  void UpdateUniqueUserHistograms();
 
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because
@@ -113,6 +110,10 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   std::vector<base::OnceClosure> other_thread_histogram_callbacks_;
 
   bool disable_hot_tracking_;
+
+  // Keeps track of whether caret browsing is enabled for the most
+  // recently used profile.
+  bool caret_browsing_enabled_ = false;
 
 #if defined(OS_WIN)
   // Only used on Windows

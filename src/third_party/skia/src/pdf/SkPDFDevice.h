@@ -85,8 +85,6 @@ public:
                        SkCanvas::SrcRectConstraint) override;
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override;
-    void drawDevice(SkBaseDevice*, int x, int y,
-                    const SkPaint&) override;
 
     // PDF specific methods.
     void drawSprite(const SkBitmap& bitmap, int x, int y,
@@ -111,8 +109,9 @@ protected:
 
     void drawAnnotation(const SkRect&, const char key[], SkData* value) override;
 
-    void drawSpecial(SkSpecialImage*, int x, int y, const SkPaint&,
-                     SkImage*, const SkMatrix&) override;
+    void drawDevice(SkBaseDevice*, const SkPaint&) override;
+    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkPaint&) override;
+
     sk_sp<SkSpecialImage> makeSpecial(const SkBitmap&) override;
     sk_sp<SkSpecialImage> makeSpecial(const SkImage*) override;
     SkImageFilterCache* getImageFilterCache() override;
@@ -191,7 +190,7 @@ private:
 
     void reset();
 
-    typedef SkClipStackDevice INHERITED;
+    using INHERITED = SkClipStackDevice;
 };
 
 #endif

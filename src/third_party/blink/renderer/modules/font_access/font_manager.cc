@@ -9,9 +9,11 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/font_access/font_iterator.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 namespace blink {
 
@@ -23,11 +25,13 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace
 
-ScriptValue FontManager::query(ScriptState* script_state) {
-  FontCache* font_cache = FontCache::GetFontCache();
+ScriptValue FontManager::query(ScriptState* script_state,
+                               ExceptionState& exception_state) {
+  if (exception_state.HadException())
+    return ScriptValue();
 
   auto* iterator =
-      MakeGarbageCollected<FontIterator>(font_cache->EnumerateAvailableFonts());
+      MakeGarbageCollected<FontIterator>(ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
   auto context = script_state->GetContext();
 
@@ -43,7 +47,15 @@ ScriptValue FontManager::query(ScriptState* script_state) {
   return ScriptValue(script_state->GetIsolate(), result);
 }
 
-void FontManager::Trace(blink::Visitor* visitor) {
+ScriptPromise FontManager::showFontChooser(ScriptState* script_state,
+                                           const QueryOptions* options) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                         "Not implemented yet"));
+}
+
+void FontManager::Trace(blink::Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 

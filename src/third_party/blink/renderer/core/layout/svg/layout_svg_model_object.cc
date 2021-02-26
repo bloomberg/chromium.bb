@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ LayoutSVGModelObject::LayoutSVGModelObject(SVGElement* node)
 
 bool LayoutSVGModelObject::IsChildAllowed(LayoutObject* child,
                                           const ComputedStyle&) const {
+  NOT_DESTROYED();
   return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText());
 }
 
@@ -51,11 +53,13 @@ void LayoutSVGModelObject::MapLocalToAncestor(
     const LayoutBoxModelObject* ancestor,
     TransformState& transform_state,
     MapCoordinatesFlags flags) const {
+  NOT_DESTROYED();
   SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
 PhysicalRect LayoutSVGModelObject::VisualRectInDocument(
     VisualRectFlags flags) const {
+  NOT_DESTROYED();
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View(), flags);
 }
 
@@ -63,18 +67,21 @@ void LayoutSVGModelObject::MapAncestorToLocal(
     const LayoutBoxModelObject* ancestor,
     TransformState& transform_state,
     MapCoordinatesFlags flags) const {
+  NOT_DESTROYED();
   SVGLayoutSupport::MapAncestorToLocal(*this, ancestor, transform_state, flags);
 }
 
 const LayoutObject* LayoutSVGModelObject::PushMappingToContainer(
     const LayoutBoxModelObject* ancestor_to_stop_at,
     LayoutGeometryMap& geometry_map) const {
+  NOT_DESTROYED();
   return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
                                                   geometry_map);
 }
 
 void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
                                          MapCoordinatesFlags mode) const {
+  NOT_DESTROYED();
   quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));
 }
 
@@ -83,21 +90,31 @@ void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
 void LayoutSVGModelObject::AddOutlineRects(Vector<PhysicalRect>& rects,
                                            const PhysicalOffset&,
                                            NGOutlineType) const {
-  rects.push_back(
-      PhysicalRect::EnclosingRect(VisualRectInLocalSVGCoordinates()));
+  NOT_DESTROYED();
+  FloatRect visual_rect = VisualRectInLocalSVGCoordinates();
+  bool was_empty = visual_rect.IsEmpty();
+  SVGLayoutSupport::AdjustWithClipPathAndMask(*this, ObjectBoundingBox(),
+                                              visual_rect);
+  // If visual rect is clipped away then don't add it.
+  if (!was_empty && visual_rect.IsEmpty())
+    return;
+  rects.push_back(PhysicalRect::EnclosingRect(visual_rect));
 }
 
 FloatRect LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {
+  NOT_DESTROYED();
   return StrokeBoundingBox();
 }
 
 void LayoutSVGModelObject::WillBeDestroyed() {
-  SVGResourcesCache::ClientDestroyed(*this);
+  NOT_DESTROYED();
+  SVGResourcesCache::RemoveResources(*this);
   SVGResources::ClearClipPathFilterMask(*GetElement(), Style());
   LayoutObject::WillBeDestroyed();
 }
 
 AffineTransform LayoutSVGModelObject::CalculateLocalTransform() const {
+  NOT_DESTROYED();
   auto* element = GetElement();
   if (element->HasTransform(SVGElement::kIncludeMotionTransform))
     return element->CalculateTransform(SVGElement::kIncludeMotionTransform);
@@ -106,6 +123,7 @@ AffineTransform LayoutSVGModelObject::CalculateLocalTransform() const {
 
 bool LayoutSVGModelObject::CheckForImplicitTransformChange(
     bool bbox_changed) const {
+  NOT_DESTROYED();
   // If the transform is relative to the reference box, check relevant
   // conditions to see if we need to recompute the transform.
   switch (StyleRef().TransformBox()) {
@@ -120,14 +138,8 @@ bool LayoutSVGModelObject::CheckForImplicitTransformChange(
 
 void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
                                           const ComputedStyle* old_style) {
-  // Since layout depends on the bounds of the filter, we need to force layout
-  // when the filter changes. We also need to make sure paint will be
-  // performed, since if the filter changed we will not have cached result from
-  // before and thus will not flag paint in ClientLayoutChanged.
-  if (diff.FilterChanged()) {
-    SetNeedsLayoutAndFullPaintInvalidation(
-        layout_invalidation_reason::kStyleChange);
-  }
+  NOT_DESTROYED();
+  LayoutObject::StyleDidChange(diff, old_style);
 
   if (diff.NeedsFullLayout()) {
     SetNeedsBoundariesUpdate();
@@ -135,22 +147,48 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
       SetNeedsTransformUpdate();
   }
 
-  if (IsBlendingAllowed()) {
-    bool has_blend_mode_changed =
-        (old_style && old_style->HasBlendMode()) == !StyleRef().HasBlendMode();
-    if (Parent() && has_blend_mode_changed) {
-      Parent()->DescendantIsolationRequirementsChanged(
-          StyleRef().HasBlendMode() ? kDescendantIsolationRequired
-                                    : kDescendantIsolationNeedsUpdate);
-    }
-
-    if (has_blend_mode_changed)
-      SetNeedsPaintPropertyUpdate();
-  }
-
-  LayoutObject::StyleDidChange(diff, old_style);
   SVGResources::UpdateClipPathFilterMask(*GetElement(), old_style, StyleRef());
-  SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
+
+  if (!Parent())
+    return;
+  if (diff.BlendModeChanged() && !IsSVGHiddenContainer()) {
+    DCHECK(IsBlendingAllowed());
+    Parent()->DescendantIsolationRequirementsChanged(
+        StyleRef().HasBlendMode() ? kDescendantIsolationRequired
+                                  : kDescendantIsolationNeedsUpdate);
+  }
+  if (diff.CompositingReasonsChanged())
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  if (diff.HasDifference()) {
+    SVGResourcesCache::UpdateResources(*this);
+    LayoutSVGResourceContainer::StyleDidChange(*this, diff);
+  }
+}
+
+void LayoutSVGModelObject::InsertedIntoTree() {
+  NOT_DESTROYED();
+  LayoutObject::InsertedIntoTree();
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
+                                                                         false);
+  if (SVGResourcesCache::AddResources(*this))
+    SetNeedsPaintPropertyUpdate();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
+}
+
+void LayoutSVGModelObject::WillBeRemovedFromTree() {
+  NOT_DESTROYED();
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
+                                                                         false);
+  if (SVGResourcesCache::RemoveResources(*this))
+    SetNeedsPaintPropertyUpdate();
+  LayoutObject::WillBeRemovedFromTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
 }
 
 }  // namespace blink

@@ -1,19 +1,11 @@
-CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS oldChildWindow.applicationCache.oncached is newChildWindow.applicationCache.oncached
-PASS oldChildWindow.applicationCache.onchecking is newChildWindow.applicationCache.onchecking
-PASS oldChildWindow.applicationCache.ondownloading is newChildWindow.applicationCache.ondownloading
-PASS oldChildWindow.applicationCache.onerror is newChildWindow.applicationCache.onerror
-PASS oldChildWindow.applicationCache.onnoupdate is newChildWindow.applicationCache.onnoupdate
-PASS oldChildWindow.applicationCache.onobsolete is newChildWindow.applicationCache.onobsolete
-PASS oldChildWindow.applicationCache.onprogress is newChildWindow.applicationCache.onprogress
-PASS oldChildWindow.applicationCache.onupdateready is newChildWindow.applicationCache.onupdateready
-PASS oldChildWindow.applicationCache.status is newChildWindow.applicationCache.status
 PASS oldChildWindow.closed is newChildWindow.closed
+PASS oldChildWindow.cookieStore.onchange is newChildWindow.cookieStore.onchange
+PASS oldChildWindow.crossOriginIsolated is newChildWindow.crossOriginIsolated
 PASS oldChildWindow.defaultStatus is newChildWindow.defaultStatus
 PASS oldChildWindow.defaultstatus is newChildWindow.defaultstatus
 PASS oldChildWindow.devicePixelRatio is newChildWindow.devicePixelRatio
@@ -164,7 +156,10 @@ PASS oldChildWindow.ontouchcancel is newChildWindow.ontouchcancel
 PASS oldChildWindow.ontouchend is newChildWindow.ontouchend
 PASS oldChildWindow.ontouchmove is newChildWindow.ontouchmove
 PASS oldChildWindow.ontouchstart is newChildWindow.ontouchstart
+PASS oldChildWindow.ontransitioncancel is newChildWindow.ontransitioncancel
 PASS oldChildWindow.ontransitionend is newChildWindow.ontransitionend
+PASS oldChildWindow.ontransitionrun is newChildWindow.ontransitionrun
+PASS oldChildWindow.ontransitionstart is newChildWindow.ontransitionstart
 PASS oldChildWindow.onunhandledrejection is newChildWindow.onunhandledrejection
 PASS oldChildWindow.onunload is newChildWindow.onunload
 PASS oldChildWindow.onvolumechange is newChildWindow.onvolumechange
@@ -180,6 +175,7 @@ PASS oldChildWindow.outerHeight is newChildWindow.outerHeight
 PASS oldChildWindow.outerWidth is newChildWindow.outerWidth
 PASS oldChildWindow.pageXOffset is newChildWindow.pageXOffset
 PASS oldChildWindow.pageYOffset is newChildWindow.pageYOffset
+PASS oldChildWindow.performance.eventCounts.size is newChildWindow.performance.eventCounts.size
 PASS oldChildWindow.performance.navigation.redirectCount is newChildWindow.performance.navigation.redirectCount
 PASS oldChildWindow.performance.navigation.type is newChildWindow.performance.navigation.type
 PASS oldChildWindow.performance.onresourcetimingbufferfull is newChildWindow.performance.onresourcetimingbufferfull

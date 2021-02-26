@@ -19,14 +19,14 @@ Process ToExecutionContextProcess(CallStackProfileParams::Process process) {
       return GPU_PROCESS;
     case CallStackProfileParams::UTILITY_PROCESS:
       return UTILITY_PROCESS;
+    case CallStackProfileParams::NETWORK_SERVICE_PROCESS:
+      return NETWORK_SERVICE_PROCESS;
     case CallStackProfileParams::ZYGOTE_PROCESS:
       return ZYGOTE_PROCESS;
     case CallStackProfileParams::SANDBOX_HELPER_PROCESS:
       return SANDBOX_HELPER_PROCESS;
     case CallStackProfileParams::PPAPI_PLUGIN_PROCESS:
       return PPAPI_PLUGIN_PROCESS;
-    case CallStackProfileParams::PPAPI_BROKER_PROCESS:
-      return PPAPI_BROKER_PROCESS;
   }
   NOTREACHED();
   return UNKNOWN_PROCESS;

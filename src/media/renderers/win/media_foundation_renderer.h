@@ -18,6 +18,7 @@
 #include "base/unguessable_token.h"
 #include "base/win/windows_types.h"
 #include "media/base/buffering_state.h"
+#include "media/base/media_export.h"
 #include "media/base/media_resource.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
@@ -33,8 +34,9 @@ namespace media {
 
 // MediaFoundationRenderer bridges the Renderer and Windows MFMediaEngine
 // interfaces.
-class MediaFoundationRenderer : public Renderer,
-                                public MediaFoundationRendererExtension {
+class MEDIA_EXPORT MediaFoundationRenderer
+    : public Renderer,
+      public MediaFoundationRendererExtension {
  public:
   // Whether MediaFoundationRenderer() is supported on the current device.
   static bool IsSupported();
@@ -64,9 +66,6 @@ class MediaFoundationRenderer : public Renderer,
   void SetDCompMode(bool enabled, SetDCompModeCB callback) override;
   void GetDCompSurface(GetDCompSurfaceCB callback) override;
   void SetVideoStreamEnabled(bool enabled) override;
-  // SetPlaybackElementId() must be called before Initialize() as
-  // |playback_element_id| is used in Initialize().
-  void SetPlaybackElementId(uint64_t playback_element_id) override;
   void SetOutputParams(const gfx::Rect& output_rect) override;
 
  private:
@@ -83,12 +82,12 @@ class MediaFoundationRenderer : public Renderer,
   // Callbacks for |mf_media_engine_notify_|.
   void OnPlaybackError(PipelineStatus status);
   void OnPlaybackEnded();
-  void OnBufferingStateChanged(BufferingState state,
-                               BufferingStateChangeReason reason);
-  void OnVideoNaturalSizeChanged();
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason);
+  void OnVideoNaturalSizeChange();
   void OnTimeUpdate();
 
-  void OnCdmProxyReceived(IMFCdmProxy* cdm);
+  void OnCdmProxyReceived(Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy);
 
   HRESULT SetDCompModeInternal(bool enabled);
   HRESULT GetDCompSurfaceInternal(HANDLE* surface_handle);
@@ -134,12 +133,6 @@ class MediaFoundationRenderer : public Renderer,
   // Used for RendererClient::OnStatisticsUpdate().
   PipelineStatistics statistics_ = {};
   base::RepeatingTimer statistics_timer_;
-
-  // An identifier corresponds to a WebMediaPlayer. It allows MFMediaEngine
-  // to track the same playback session is running as Renderer can be destroyed
-  // after a period of inactivity by Chromium media pipeliine.
-  // Init it to an invalid ID.
-  uint64_t playback_element_id_ = 0;
 
   // A fake window handle passed to MF-based rendering pipeline for OPM.
   HWND virtual_video_window_ = nullptr;

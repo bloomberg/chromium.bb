@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -551,9 +551,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveKeys) {
         std::move(signal).Run();
       },
       run_update_entries.QuitClosure());
-  ProtoDatabaseImpl<TestProto>* wrapper =
-      reinterpret_cast<ProtoDatabaseImpl<TestProto>*>(db_.get());
-  wrapper->RemoveKeysForTesting(
+  db_->RemoveKeysForTesting(
       base::BindRepeating([](const std::string& str) { return true; }),
       kTestPrefix, std::move(expect_update_success));
   run_update_entries.Run();

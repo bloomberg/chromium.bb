@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#import "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -16,7 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
@@ -146,7 +147,7 @@ void TestFormResponseProvider::GetResponseHeadersAndBody(
 }  // namespace
 
 // Tests submition of HTTP forms POST data including cases involving navigation.
-@interface FormsTestCase : ChromeTestCase
+@interface FormsTestCase : WebHttpServerChromeTestCase
 @end
 
 @implementation FormsTestCase
@@ -498,13 +499,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that pressing the button on a POST-based form with same-page action
 // does not change the page URL and that the back button works as expected
 // afterwards.
-// TODO(crbug.com/714303): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPostFormToSamePage testPostFormToSamePage
-#else
-#define MAYBE_testPostFormToSamePage FLAKY_testPostFormToSamePage
-#endif
-- (void)MAYBE_testPostFormToSamePage {
+- (void)testPostFormToSamePage {
   web::test::SetUpHttpServer(std::make_unique<TestFormResponseProvider>());
   const GURL formURL = GetFormPostOnSamePageUrl();
 
@@ -533,7 +528,20 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that submitting a POST-based form by tapping the 'Go' button on the
 // keyboard navigates to the correct URL and the back button works as expected
 // afterwards.
-- (void)testPostFormEntryWithKeyboard {
+// TODO:(crbug.com/1147654): re-enable after figuring out why it is failing on
+// simulator
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPostFormEntryWithKeyboard \
+  DISABLE_testPostFormEntryWithKeyboard
+#else
+#define MAYBE_testPostFormEntryWithKeyboard testPostFormEntryWithKeyboard
+#endif
+- (void)MAYBE_testPostFormEntryWithKeyboard {
+  // Test fails on iPad Air 2 13.4 crbug.com/1102608.
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Fails in iOS 13 on iPads.");
+  }
+
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 

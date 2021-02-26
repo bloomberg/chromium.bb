@@ -17,7 +17,8 @@
 namespace autofill {
 
 TestAutofillClient::TestAutofillClient()
-    : form_origin_(GURL("https://example.test")), source_id_(-1) {}
+    : form_origin_(GURL("https://example.test")),
+      last_committed_url_(GURL("https://example.test")) {}
 
 TestAutofillClient::~TestAutofillClient() {}
 
@@ -70,13 +71,21 @@ AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
   return &test_address_normalizer_;
 }
 
+AutofillOfferManager* TestAutofillClient::GetAutofillOfferManager() {
+  return autofill_offer_manager_.get();
+}
+
+const GURL& TestAutofillClient::GetLastCommittedURL() {
+  return last_committed_url_;
+}
+
 security_state::SecurityLevel
 TestAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_level_;
 }
 
-std::string TestAutofillClient::GetPageLanguage() const {
-  return page_language_;
+translate::LanguageState* TestAutofillClient::GetLanguageState() {
+  return &mock_translate_driver_.GetLanguageState();
 }
 
 #if !defined(OS_IOS)
@@ -98,13 +107,13 @@ void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 std::vector<std::string>
-TestAutofillClient::GetMerchantWhitelistForVirtualCards() {
-  return merchant_whitelist_;
+TestAutofillClient::GetAllowedMerchantsForVirtualCards() {
+  return allowed_merchants_;
 }
 
 std::vector<std::string>
-TestAutofillClient::GetBinRangeWhitelistForVirtualCards() {
-  return bin_range_whitelist_;
+TestAutofillClient::GetAllowedBinRangesForVirtualCards() {
+  return allowed_bin_ranges_;
 }
 
 void TestAutofillClient::ShowLocalCardMigrationDialog(
@@ -204,11 +213,7 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
 void TestAutofillClient::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<Suggestion>& suggestions,
-    bool autoselect_first_suggestion,
-    PopupType popup_type,
+    const AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
 void TestAutofillClient::UpdateAutofillPopupDataListValues(
@@ -220,6 +225,10 @@ base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
 }
 
 void TestAutofillClient::PinPopupView() {}
+
+AutofillClient::PopupOpenArgs TestAutofillClient::GetReopenPopupArgs() const {
+  return {};
+}
 
 void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
                                      PopupType popup_type) {}
@@ -257,6 +266,12 @@ void TestAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   std::move(callback).Run("some risk data");
 }
+
+#if defined(OS_IOS)
+bool TestAutofillClient::IsQueryIDRelevant(int query_id) {
+  return true;
+}
+#endif
 
 void TestAutofillClient::InitializeUKMSources() {
   test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);

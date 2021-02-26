@@ -9,9 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/mojom/assistant_controller.mojom-forward.h"
 #include "base/component_export.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 
 namespace assistant {
 namespace api {

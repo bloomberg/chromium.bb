@@ -25,7 +25,6 @@ class ScriptState;
 class Lock final : public ScriptWrappable,
                    public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Lock);
 
  public:
   Lock(ScriptState*,
@@ -36,7 +35,7 @@ class Lock final : public ScriptWrappable,
        LockManager*);
   ~Lock() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Lock.idl
   String name() const { return name_; }

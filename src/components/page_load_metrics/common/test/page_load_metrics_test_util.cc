@@ -22,6 +22,11 @@ void PopulateRequiredTimingFields(
         OptionalMin(inout_timing->paint_timing->first_image_paint,
                     inout_timing->paint_timing->first_contentful_paint);
   }
+  if (inout_timing->paint_timing->first_paint &&
+      !inout_timing->paint_timing->first_eligible_to_paint) {
+    inout_timing->paint_timing->first_eligible_to_paint =
+        inout_timing->paint_timing->first_paint;
+  }
   if (inout_timing->document_timing->load_event_start &&
       !inout_timing->document_timing->dom_content_loaded_event_start) {
     inout_timing->document_timing->dom_content_loaded_event_start =
@@ -63,6 +68,13 @@ void PopulateRequiredTimingFields(
           base::TimeDelta();
     }
   }
+}
+
+// Sets the experimental LCP values to be equal to the non-experimental
+// counterparts.
+void PopulateExperimentalLCP(page_load_metrics::mojom::PaintTimingPtr& timing) {
+  timing->experimental_largest_contentful_paint =
+      timing->largest_contentful_paint->Clone();
 }
 
 page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(

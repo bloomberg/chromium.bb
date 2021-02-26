@@ -1,5 +1,8 @@
 syntax = "proto2";
+
 package protobuf_mutator;
+
+import "google/protobuf/any.proto";
 
 message Msg {
   enum Enum {
@@ -93,33 +96,38 @@ message Msg {
     Msg oneof_msg = 68;
   }
 
-  // TODO(vitalybuka): Tests maps.
-  // map<string, uint64> map = 69;
-  // map<int32, bytes> map2 = 71;
+  optional SubMsg sub_message = 69;
 
   required group Group = 70 {
     required bool required_bool = 1;
     optional bool optional_bool = 2;
     repeated bool repeated_bool = 3;
   }
-}
 
-message SmallMessage {
-  enum Enum {
-    ENUM_0 = 0;
-    ENUM_1 = 1;
-    ENUM_2 = 2;
-    ENUM_3 = 3;
+  message EmptyMessage {}
+
+  message RegressionMessage {
+    enum SingleValueEnum { ENUM_0 = 0; }
+    optional SingleValueEnum enum = 2;
   }
 
-  optional bool opt_bool = 1;
-  optional Enum opt_enum = 2;
+  message SmallMessage {
+    enum Enum {
+      ENUM_0 = 0;
+      ENUM_1 = 1;
+      ENUM_2 = 2;
+      ENUM_3 = 3;
+    }
+
+    optional bool opt_bool = 1;
+    optional Enum opt_enum = 2;
+  }
+
+  message MapMessage {
+    map<string, int32> map1 = 1;
+    map<int32, Msg> map2 = 2;
+  }
+
+  optional google.protobuf.Any any = 90;
 }
 
-message RegressionMessage {
-  enum SingleValueEnum { ENUM_0 = 0; }
-  optional SingleValueEnum enum = 2;
-}
-
-message EmptyMessage {
-}

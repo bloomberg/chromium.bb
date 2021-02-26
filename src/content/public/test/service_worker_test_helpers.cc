@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
@@ -72,8 +72,8 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
 
   void OnStopped() {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&StoppedObserver::OnStopped, this));
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&StoppedObserver::OnStopped, this));
       return;
     }
     std::move(completion_callback_ui_).Run();

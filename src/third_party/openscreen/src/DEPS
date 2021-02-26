@@ -8,7 +8,6 @@
 # to list the dependency's destination directory.
 
 use_relative_paths = True
-use_relative_hooks = True
 
 vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
@@ -28,7 +27,7 @@ vars = {
   # (from binaries with GN arg `use_coverage=true`).
   #
   # TODO(issuetracker.google.com/155195126): Change this to False and update
-  # buildbot to call update.py instead.
+  # buildbot to call tools/download-clang-update-script.py instead.
   'checkout_clang_coverage_tools': True,
 }
 
@@ -51,6 +50,12 @@ deps = {
     'condition': 'not build_with_chromium',
   },
 
+  'third_party/libprotobuf-mutator/src': {
+    'url': Var('chromium_git') +
+      '/external/github.com/google/libprotobuf-mutator.git' + '@' '439e81f8f4847ec6e2bf11b3aa634a5d8485633d',
+    'condition': 'not build_with_chromium',
+  },
+
   'third_party/zlib/src': {
     'url': Var('github') +
       '/madler/zlib.git' +
@@ -61,7 +66,7 @@ deps = {
   'third_party/jsoncpp/src': {
     'url': Var('chromium_git') +
       '/external/github.com/open-source-parsers/jsoncpp.git' +
-      '@' + 'd2e6a971f4544c55b8e3b25cf96db266971b778f', # version 1.9.2
+      '@' + '9059f5cad030ba11d37818847443a53918c327b1', # version 1.9.4
     'condition': 'not build_with_chromium',
   },
 
@@ -126,6 +131,12 @@ hooks = [
     # NOTE: This file appears in .gitignore, as it is not a part of the
     # openscreen repo.
   },
+ {
+    'name': 'yajsv_update_script',
+    'pattern': '.',
+    'condition': 'not build_with_chromium',
+    'action': [ 'python', 'tools/download-yajsv.py' ],
+  },
   {
     'name': 'update_clang',
     'pattern': '.',
@@ -174,10 +185,11 @@ include_rules = [
   # rules when in Chromium.
   '-third_party/abseil',
 
-  # Abseil whitelist.
+  # Abseil allowed headers.
   '+absl/algorithm/container.h',
   '+absl/base/thread_annotations.h',
   '+absl/hash/hash.h',
+  '+absl/hash/hash_testing.h',
   '+absl/strings/ascii.h',
   '+absl/strings/match.h',
   '+absl/strings/numbers.h',

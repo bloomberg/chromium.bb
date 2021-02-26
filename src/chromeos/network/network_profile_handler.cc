@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -70,14 +71,13 @@ void NetworkProfileHandler::RemoveObserver(NetworkProfileObserver* observer) {
 }
 
 void NetworkProfileHandler::GetManagerPropertiesCallback(
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
-  if (DBUS_METHOD_CALL_FAILURE) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
     LOG(ERROR) << "Error when requesting manager properties.";
     return;
   }
 
-  const base::Value* profiles = properties.FindKey(shill::kProfilesProperty);
+  const base::Value* profiles = properties->FindKey(shill::kProfilesProperty);
   if (!profiles) {
     LOG(ERROR) << "Manager properties returned from Shill don't contain "
                << "the field " << shill::kProfilesProperty;
@@ -136,7 +136,7 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
 
 void NetworkProfileHandler::GetProfilePropertiesCallback(
     const std::string& profile_path,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (pending_profile_creations_.erase(profile_path) == 0) {
     VLOG(1) << "Ignore received properties, profile was removed.";
     return;

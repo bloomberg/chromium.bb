@@ -21,19 +21,9 @@ public class PlatformSoftwareVideoDecoderFactory extends MediaCodecVideoDecoderF
    */
   private static final Predicate<MediaCodecInfo> defaultAllowedPredicate =
       new Predicate<MediaCodecInfo>() {
-        private String[] prefixWhitelist =
-            Arrays.copyOf(MediaCodecUtils.SOFTWARE_IMPLEMENTATION_PREFIXES,
-                MediaCodecUtils.SOFTWARE_IMPLEMENTATION_PREFIXES.length);
-
         @Override
         public boolean test(MediaCodecInfo arg) {
-          final String name = arg.getName();
-          for (String prefix : prefixWhitelist) {
-            if (name.startsWith(prefix)) {
-              return true;
-            }
-          }
-          return false;
+          return MediaCodecUtils.isSoftwareOnly(arg);
         }
       };
 

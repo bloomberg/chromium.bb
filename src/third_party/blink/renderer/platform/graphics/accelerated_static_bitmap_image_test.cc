@@ -42,8 +42,8 @@ GLbyte SyncTokenMatcher(const gpu::SyncToken& token) {
 
 gpu::SyncToken GenTestSyncToken(GLbyte id) {
   gpu::SyncToken token;
-  // Store id in the first byte
-  reinterpret_cast<GLbyte*>(&token)[0] = id;
+  token.Set(gpu::CommandBufferNamespace::GPU_IO,
+            gpu::CommandBufferId::FromUnsafeValue(64), id);
   return token;
 }
 
@@ -51,6 +51,7 @@ scoped_refptr<StaticBitmapImage> CreateBitmap() {
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   auto release_callback = viz::SingleReleaseCallback::Create(
       base::BindOnce([](const gpu::SyncToken&, bool) {}));
+
   return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
       mailbox, GenTestSyncToken(100), 0, SkImageInfo::MakeN32Premul(100, 100),
       GL_TEXTURE_2D, true, SharedGpuContext::ContextProviderWrapper(),
@@ -81,10 +82,9 @@ class AcceleratedStaticBitmapImageTest : public Test {
 TEST_F(AcceleratedStaticBitmapImageTest, SkImageCached) {
   auto bitmap = CreateBitmap();
 
-  sk_sp<SkImage> stored_image =
-      bitmap->PaintImageForCurrentFrame().GetSkImage();
-  auto stored_image2 = bitmap->PaintImageForCurrentFrame().GetSkImage();
-  EXPECT_EQ(stored_image.get(), stored_image2.get());
+  cc::PaintImage stored_image = bitmap->PaintImageForCurrentFrame();
+  auto stored_image2 = bitmap->PaintImageForCurrentFrame();
+  EXPECT_EQ(stored_image, stored_image2);
 }
 
 TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {

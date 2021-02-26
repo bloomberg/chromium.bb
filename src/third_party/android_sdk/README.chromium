@@ -1,11 +1,11 @@
 Name: Android SDK
 URL: http://developer.android.com/sdk/index.html
-Version: 29
-  Android SDK Build-tools 29.0.2
-  Android SDK Command-line Tools 1.0.0 rc1
-  Android SDK Emulator 29.1.12
-  Android SDK Platform-tools 29.0.5
-  Android SDK Platform API 29
+Version: 30
+  Android SDK Build-tools 30.0.1
+  Android SDK Command-line Tools 3.0
+  Android SDK Emulator 30.0.12
+  Android SDK Platform-tools 30.0.3
+  Android SDK Platform API 30
   Android SDK Sources 29
   Google Cloud Messaging 3
   SDK Patch Applier v4
@@ -21,12 +21,21 @@ Local Modifications:
   - Added extras/chromium/.
 
 Update Instructions:
-* public/tools/bin/sdkmanager --list  # Look for "Installed packages:"
-* For cmdline-tools run: sdkmanager --channel=3 'cmdline-tools;latest'
-* Prepare the CIPD yaml files for packages that need update and add them
-  to android-sdk-packager buildbucket configuation file.
-  Submit the changes into gerrit (See crrev.com/c/1803895 as a reference)
-* Wait until the builder android-sdk-packager creates new CIPD packages
-* Update //DEPS with InstanceIds from the CIPD
-* Update versions in this README.chromium.
+* What to update:
+  * public/cmdline-tools/latest/bin/sdkmanager --list
+    * Note the 'Available Updates:' section of the output.
+* How to update packages:
+  * Find the latest build on the android-sdk-packager builder. Get the CIPD
+    instance id from its logs and update //DEPS:
+    https://ci.chromium.org/p/chromium/builders/ci/android-sdk-packager
+  * Use `public/cmdline-tools/latest/bin/sdkmanager platform-tools` to make
+    sure that it is the latest version.
+  * Update this file with the new version.
+* Adding new sdk packages:
+  * Prepare the CIPD yaml files for packages in the cipd/ directory.
+  * Add them to android-sdk-packager buildbucket configuation file:
+    infra/config/subprojects/chromium/master-only/ci.star
+  * Submit the changes into gerrit (See crrev.com/c/2241994 as a reference)
+  * Follow the update instructions to get a build from the CI builder.
+* Updating this file:
   * The overall Version field should correspond to the Platform API version.

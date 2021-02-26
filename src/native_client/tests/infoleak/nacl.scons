@@ -28,7 +28,12 @@ if not env.Bit('bitcode'):
                          # stmxcsr/ldmxcsr correctly.  stmxcsr seems to do
                          # nothing, and ldmxcsr always reads back the
                          # hardware's power-up default value of 0x1f80.
-                         is_broken=env.IsRunningUnderValgrind())
+                         # TODO(crbug.com/1101347): On ARM bots, this fails
+                         # with the following error message:
+                         # 'Signal 7 from trusted code: pc=b6ecbe50'.
+                         is_broken=env.IsRunningUnderValgrind()
+                             or (env.Bit('build_arm')
+                                 and not env.UsingEmulator()))
 
 if not env.Bit('bitcode') and not env.Bit('build_mips32'):
   fpu_cw_sources = ['test_fpu_control_word.c']

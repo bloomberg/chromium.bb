@@ -38,11 +38,11 @@ static int constexpr kMaxRatings = 5;
 static int constexpr kMaxGenres = 3;
 static int constexpr kMaxInteractionStatistics = 3;
 static int constexpr kMaxImages = 5;
-static int constexpr kMaxAssociatedOrigins = 5;
 
 // Gets the property of entity with corresponding name. May be null if not found
 // or if the property has no values.
-Property* GetProperty(Entity* entity, const std::string& name) {
+Property* MediaFeedsConverter::GetProperty(Entity* entity,
+                                           const std::string& name) {
   auto property = std::find_if(
       entity->properties.begin(), entity->properties.end(),
       [&name](const PropertyPtr& property) { return property->name == name; });
@@ -59,21 +59,32 @@ Property* GetProperty(Entity* entity, const std::string& name) {
 // found and be valid. If is_required is not set, returns false only if the
 // property is found and is invalid.
 template <typename T>
-bool ConvertProperty(
+bool MediaFeedsConverter::ConvertProperty(
     Entity* entity,
     T* converted_item,
     const std::string& property_name,
     bool is_required,
     base::OnceCallback<bool(const Property& property, T*)> convert_property) {
   auto* property = GetProperty(entity, property_name);
-  if (!property)
+  if (!property) {
+    if (is_required)
+      Log("Missing " + property_name + ".");
+
     return !is_required;
-  return std::move(convert_property).Run(*property, converted_item);
+  }
+
+  bool was_converted =
+      std::move(convert_property).Run(*property, converted_item);
+
+  if (!was_converted)
+    Log("Invalid " + property_name + ".");
+
+  return was_converted;
 }
 
 // Validates a property identified by name using the provided callback. Returns
 // true only if the property is valid.
-bool ValidateProperty(
+bool MediaFeedsConverter::ValidateProperty(
     Entity* entity,
     const std::string& name,
     base::OnceCallback<bool(const Property& property)> property_is_valid) {
@@ -89,7 +100,7 @@ bool ValidateProperty(
 
 // Checks that the property contains at least one URL and that all URLs it
 // contains are valid.
-bool IsUrl(const Property& property) {
+bool MediaFeedsConverter::IsUrl(const Property& property) {
   return !property.values->url_values.empty() &&
          std::accumulate(property.values->url_values.begin(),
                          property.values->url_values.end(), true,
@@ -99,7 +110,7 @@ bool IsUrl(const Property& property) {
 }
 
 // Checks that the property is a positive integer.
-bool IsPositiveInteger(const Property& property) {
+bool MediaFeedsConverter::IsPositiveInteger(const Property& property) {
   if (!property.values->long_values.empty())
     return property.values->long_values[0] > 0;
   if (!property.values->double_values.empty())
@@ -109,7 +120,7 @@ bool IsPositiveInteger(const Property& property) {
 
 // Checks that the property contains at least one non-empty string and that all
 // strings it contains are non-empty.
-bool IsNonEmptyString(const Property& property) {
+bool MediaFeedsConverter::IsNonEmptyString(const Property& property) {
   return (!property.values->string_values.empty() &&
           std::accumulate(property.values->string_values.begin(),
                           property.values->string_values.end(), true,
@@ -118,8 +129,22 @@ bool IsNonEmptyString(const Property& property) {
                           }));
 }
 
+// Returns the non-empty string in the first position. If there is more than
+// one string value or it is empty then returns nullopt.
+base::Optional<std::string> MediaFeedsConverter::GetFirstNonEmptyString(
+    const Property& prop) {
+  if (prop.values->string_values.size() != 1)
+    return base::nullopt;
+
+  auto& string = prop.values->string_values[0];
+  if (string.empty())
+    return base::nullopt;
+
+  return string;
+}
+
 // Checks that the property contains at least one valid email address.
-bool IsEmail(const Property& email) {
+bool MediaFeedsConverter::IsEmail(const Property& email) {
   if (email.values->string_values.empty())
     return false;
 
@@ -128,7 +153,7 @@ bool IsEmail(const Property& email) {
 }
 
 // Checks whether the media item type is supported.
-bool IsMediaItemType(const std::string& type) {
+bool MediaFeedsConverter::IsMediaItemType(const std::string& type) {
   static const base::NoDestructor<base::flat_set<base::StringPiece>>
       kSupportedTypes(base::flat_set<base::StringPiece>(
           {schema_org::entity::kVideoObject, schema_org::entity::kMovie,
@@ -137,13 +162,13 @@ bool IsMediaItemType(const std::string& type) {
 }
 
 // Checks that the property contains at least one valid date / date-time.
-bool IsDateOrDateTime(const Property& property) {
+bool MediaFeedsConverter::IsDateOrDateTime(const Property& property) {
   return !property.values->date_time_values.empty();
 }
 
 // Gets a positive integer from the property which may be stored as a long or
 // double.
-base::Optional<uint64_t> GetPositiveIntegerFromProperty(
+base::Optional<uint64_t> MediaFeedsConverter::GetPositiveIntegerFromProperty(
     Entity* entity,
     const std::string& property_name) {
   auto* property = GetProperty(entity, property_name);
@@ -166,7 +191,7 @@ base::Optional<uint64_t> GetPositiveIntegerFromProperty(
 // Gets the duration from the property and store the result in item. Returns
 // true if the duration was valid.
 template <typename T>
-bool GetDuration(const Property& property, T* item) {
+bool MediaFeedsConverter::GetDuration(const Property& property, T* item) {
   if (property.values->time_values.empty())
     return false;
 
@@ -175,8 +200,8 @@ bool GetDuration(const Property& property, T* item) {
 }
 
 // Converts a string to a mojo ContentAttribute.
-base::Optional<mojom::ContentAttribute> GetContentAttribute(
-    const std::string& value) {
+base::Optional<mojom::ContentAttribute>
+MediaFeedsConverter::GetContentAttribute(const std::string& value) {
   if (value == "iconic")
     return mojom::ContentAttribute::kIconic;
 
@@ -220,8 +245,8 @@ base::Optional<mojom::ContentAttribute> GetContentAttribute(
 // string attributes in the "additionalProperty" property. This property is
 // optional according to the spec. Returns nullopt if the property is invalid,
 // empty vector if the property is not present or present but empty.
-base::Optional<std::vector<mojom::ContentAttribute>> GetContentAttributes(
-    const EntityPtr& image) {
+base::Optional<std::vector<mojom::ContentAttribute>>
+MediaFeedsConverter::GetContentAttributes(const EntityPtr& image) {
   auto* property =
       GetProperty(image.get(), schema_org::property::kAdditionalProperty);
 
@@ -257,8 +282,8 @@ base::Optional<std::vector<mojom::ContentAttribute>> GetContentAttributes(
 // least one media image and no more than kMaxImages. A media image is either a
 // valid URL string or an ImageObject entity containing a width, height, and
 // URL.
-base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
-    const Property& property) {
+base::Optional<std::vector<mojom::MediaImagePtr>>
+MediaFeedsConverter::GetMediaImage(const Property& property) {
   if (property.values->url_values.empty() &&
       property.values->entity_values.empty()) {
     return base::nullopt;
@@ -305,10 +330,7 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
     image->src = url->values->url_values[0];
 
     auto content_attributes = GetContentAttributes(image_object);
-    if (!content_attributes.has_value())
-      continue;
-
-    if (!content_attributes.value().empty()) {
+    if (content_attributes && !content_attributes.value().empty()) {
       image->content_attributes = std::move(content_attributes.value());
     }
 
@@ -320,8 +342,9 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
 }
 
 // Returns true if the image has at least one of the provided attributes.
-bool ImageHasOneOfAttributes(const mojom::MediaImagePtr& image,
-                             std::vector<mojom::ContentAttribute> attributes) {
+bool MediaFeedsConverter::ImageHasOneOfAttributes(
+    const mojom::MediaImagePtr& image,
+    std::vector<mojom::ContentAttribute> attributes) {
   for (auto attribute : attributes) {
     if (base::Contains(image->content_attributes, attribute))
       return true;
@@ -331,8 +354,8 @@ bool ImageHasOneOfAttributes(const mojom::MediaImagePtr& image,
 
 // Gets logos from a property. Logos have additional requirements beyond those
 // for media images.
-base::Optional<std::vector<mojom::MediaImagePtr>> GetLogoImages(
-    const Property& property) {
+base::Optional<std::vector<mojom::MediaImagePtr>>
+MediaFeedsConverter::GetLogoImages(const Property& property) {
   auto images = GetMediaImage(property);
   if (!images.has_value())
     return base::nullopt;
@@ -350,7 +373,7 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetLogoImages(
   return logos;
 }
 
-bool GetCurrentlyLoggedInUser(
+bool MediaFeedsConverter::GetCurrentlyLoggedInUser(
     const Property& member,
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (member.values->entity_values.empty())
@@ -392,7 +415,7 @@ bool GetCurrentlyLoggedInUser(
 
 // Validates the provider property of an entity. Outputs the name and images
 // properties.
-bool ValidateProvider(
+bool MediaFeedsConverter::ValidateProvider(
     const Property& provider,
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (provider.values->entity_values.empty())
@@ -415,9 +438,11 @@ bool ValidateProvider(
   if (!maybe_images.has_value() || maybe_images.value().empty())
     return false;
 
-  if (!ConvertProperty(organization.get(), result,
-                       schema_org::property::kMember, /*is_required=*/false,
-                       base::BindOnce(&GetCurrentlyLoggedInUser))) {
+  if (!ConvertProperty(
+          organization.get(), result, schema_org::property::kMember,
+          /*is_required=*/false,
+          base::BindOnce(&MediaFeedsConverter::GetCurrentlyLoggedInUser,
+                         base::Unretained(this)))) {
     return false;
   }
 
@@ -427,51 +452,35 @@ bool ValidateProvider(
   return true;
 }
 
-// Gets the associated origin URLs and places a duplicate-free set in the result
-// struct.
-bool GetAssociatedOriginURLs(
-    const Property& property,
-    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
-  if (property.values->url_values.empty())
-    return false;
-
-  for (const auto& url : property.values->url_values) {
-    // Exceeded the maximum allowed number of associated origins.
-    if (result->associated_origins.size() == kMaxAssociatedOrigins)
-      break;
-
-    if (!url.SchemeIs(url::kHttpsScheme))
-      continue;
-
-    result->associated_origins.insert(url::Origin::Create(url));
-  }
-
-  return true;
-}
-
-// Gets the associated origins information and validates against the spec.
-bool GetAssociatedOrigins(
+// Gets the feed additional properties.
+bool MediaFeedsConverter::GetFeedAdditionalProperties(
     const Property& property,
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (property.values->entity_values.empty())
     return false;
 
-  auto& entity = property.values->entity_values[0];
-  if (!entity || entity->type != schema_org::entity::kPropertyValue)
-    return false;
+  for (const auto& entity : property.values->entity_values) {
+    if (!entity || entity->type != schema_org::entity::kPropertyValue)
+      continue;
 
-  if (!ValidateProperty(entity.get(), schema_org::property::kName,
-                        base::BindOnce([](const Property& name) {
-                          return !name.values->string_values.empty() &&
-                                 name.values->string_values[0] ==
-                                     "associatedOrigin";
-                        }))) {
-    return false;
-  }
+    auto* name_prop = GetProperty(entity.get(), schema_org::property::kName);
+    if (!name_prop)
+      continue;
 
-  if (!ConvertProperty(entity.get(), result, schema_org::property::kValue,
-                       false, base::BindOnce(&GetAssociatedOriginURLs))) {
-    return false;
+    auto name = GetFirstNonEmptyString(*name_prop);
+    if (!name)
+      continue;
+
+    // If the property is "cookieNameFilter" then the value should be a single
+    // non-empty string.
+    if (name == "cookieNameFilter") {
+      auto* value = GetProperty(entity.get(), schema_org::property::kValue);
+      if (!value)
+        continue;
+
+      result->cookie_name_filter =
+          GetFirstNonEmptyString(*value).value_or(std::string());
+    }
   }
 
   return true;
@@ -479,7 +488,8 @@ bool GetAssociatedOrigins(
 
 // Gets the author property and stores the result in item. Returns true if the
 // author was valid.
-bool GetMediaItemAuthor(const Property& author, mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetMediaItemAuthor(const Property& author,
+                                             mojom::MediaFeedItem* item) {
   item->author = mojom::Author::New();
 
   if (IsNonEmptyString(author)) {
@@ -513,7 +523,8 @@ bool GetMediaItemAuthor(const Property& author, mojom::MediaFeedItem* item) {
 
 // Gets the ratings property and stores the result in item. Returns true if the
 // ratings were valid.
-bool GetContentRatings(const Property& property, mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetContentRatings(const Property& property,
+                                            mojom::MediaFeedItem* item) {
   if (property.values->entity_values.empty() ||
       property.values->entity_values.size() > kMaxRatings)
     return false;
@@ -551,7 +562,7 @@ bool GetContentRatings(const Property& property, mojom::MediaFeedItem* item) {
 // Gets the identifiers property and stores the result in item. Item should be a
 // struct with an identifiers field. Returns true if the identifiers were valid.
 template <typename T>
-bool GetIdentifiers(const Property& property, T* item) {
+bool MediaFeedsConverter::GetIdentifiers(const Property& property, T* item) {
   if (property.values->entity_values.empty())
     return false;
 
@@ -599,8 +610,8 @@ bool GetIdentifiers(const Property& property, T* item) {
 
 // Gets the interaction type from a property containing an interaction type
 // string.
-base::Optional<mojom::InteractionCounterType> GetInteractionType(
-    const Property& property) {
+base::Optional<mojom::InteractionCounterType>
+MediaFeedsConverter::GetInteractionType(const Property& property) {
   if (property.values->url_values.empty())
     return base::nullopt;
   GURL type = property.values->url_values[0];
@@ -620,8 +631,8 @@ base::Optional<mojom::InteractionCounterType> GetInteractionType(
 
 // Gets the interaction statistics property and stores the result in item.
 // Returns true if the statistics were valid.
-bool GetInteractionStatistics(const Property& property,
-                              mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetInteractionStatistics(const Property& property,
+                                                   mojom::MediaFeedItem* item) {
   if (property.values->entity_values.empty() ||
       property.values->entity_values.size() > kMaxInteractionStatistics) {
     return false;
@@ -652,7 +663,7 @@ bool GetInteractionStatistics(const Property& property,
   return true;
 }
 
-base::Optional<mojom::MediaFeedItemType> GetMediaItemType(
+base::Optional<mojom::MediaFeedItemType> MediaFeedsConverter::GetMediaItemType(
     const std::string& schema_org_type) {
   if (schema_org_type == schema_org::entity::kVideoObject) {
     return mojom::MediaFeedItemType::kVideo;
@@ -665,18 +676,21 @@ base::Optional<mojom::MediaFeedItemType> GetMediaItemType(
 }
 
 // Gets the isFamilyFriendly property and stores the result in item.
-bool GetIsFamilyFriendly(const Property& property, mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetIsFamilyFriendly(const Property& property,
+                                              mojom::MediaFeedItem* item) {
   if (property.values->bool_values.empty()) {
     return false;
   }
 
-  item->is_family_friendly = property.values->bool_values[0];
+  item->is_family_friendly = property.values->bool_values[0]
+                                 ? media_feeds::mojom::IsFamilyFriendly::kYes
+                                 : media_feeds::mojom::IsFamilyFriendly::kNo;
   return true;
 }
 
 // Gets the action status from embedded in the action property of the entity.
-base::Optional<mojom::MediaFeedItemActionStatus> GetActionStatus(
-    Entity* entity) {
+base::Optional<mojom::MediaFeedItemActionStatus>
+MediaFeedsConverter::GetActionStatus(Entity* entity) {
   auto* action = GetProperty(entity, schema_org::property::kPotentialAction);
   if (!action || action->values->entity_values.empty())
     return base::nullopt;
@@ -710,9 +724,10 @@ base::Optional<mojom::MediaFeedItemActionStatus> GetActionStatus(
 // Gets the watchAction properties from an embedded entity and stores the result
 // in item. Returns true if the action was valid.
 template <typename T>
-bool GetAction(mojom::MediaFeedItemActionStatus action_status,
-               const Property& property,
-               T* item) {
+bool MediaFeedsConverter::GetAction(
+    mojom::MediaFeedItemActionStatus action_status,
+    const Property& property,
+    T* item) {
   if (property.values->entity_values.empty())
     return false;
 
@@ -738,18 +753,11 @@ bool GetAction(mojom::MediaFeedItemActionStatus action_status,
   return true;
 }
 
-// Represents a candidate for use as the item's main episode or play next
-// candidate.
-struct EpisodeCandidate {
-  Entity* entity;
-  mojom::MediaFeedItemActionStatus action_status;
-  int season_number;
-  int episode_number;
-};
-
 // Gets the TV episode stored in an embedded entity and stores the result in
 // item. Returns true if the TV episode was valid.
-bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetEpisode(
+    const MediaFeedsConverter::EpisodeCandidate& candidate,
+    mojom::MediaFeedItem* item) {
   if (!item->tv_episode)
     item->tv_episode = mojom::TVEpisode::New();
 
@@ -765,7 +773,8 @@ bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
   if (!ConvertProperty<mojom::TVEpisode>(
           candidate.entity, item->tv_episode.get(),
           schema_org::property::kIdentifier, false,
-          base::BindOnce(&GetIdentifiers<mojom::TVEpisode>))) {
+          base::BindOnce(&MediaFeedsConverter::GetIdentifiers<mojom::TVEpisode>,
+                         base::Unretained(this)))) {
     return false;
   }
 
@@ -780,15 +789,16 @@ bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
 
   if (!ConvertProperty<mojom::MediaFeedItem>(
           candidate.entity, item, schema_org::property::kPotentialAction, true,
-          base::BindOnce(&GetAction<mojom::MediaFeedItem>,
-                         candidate.action_status))) {
+          base::BindOnce(&MediaFeedsConverter::GetAction<mojom::MediaFeedItem>,
+                         base::Unretained(this), candidate.action_status))) {
     return false;
   }
 
   if (!ConvertProperty<mojom::TVEpisode>(
           candidate.entity, item->tv_episode.get(),
           schema_org::property::kDuration, true,
-          base::BindOnce(&GetDuration<mojom::TVEpisode>))) {
+          base::BindOnce(&MediaFeedsConverter::GetDuration<mojom::TVEpisode>,
+                         base::Unretained(this)))) {
     return false;
   }
 
@@ -798,8 +808,9 @@ bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
 // Gets the PlayNextCandidate stored in an embedded entity and stores the result
 // in item. Returns true if the PlayNextCandidate was valid. See the spec for
 // this feature: https://wicg.github.io/media-feeds/#play-next-tv-episodes
-bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
-                          mojom::MediaFeedItem* item) {
+bool MediaFeedsConverter::GetPlayNextCandidate(
+    const MediaFeedsConverter::EpisodeCandidate& candidate,
+    mojom::MediaFeedItem* item) {
   if (!item->play_next_candidate)
     item->play_next_candidate = mojom::PlayNextCandidate::New();
 
@@ -814,7 +825,9 @@ bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
   if (!ConvertProperty<mojom::PlayNextCandidate>(
           candidate.entity, item->play_next_candidate.get(),
           schema_org::property::kIdentifier, false,
-          base::BindOnce(&GetIdentifiers<mojom::PlayNextCandidate>))) {
+          base::BindOnce(
+              &MediaFeedsConverter::GetIdentifiers<mojom::PlayNextCandidate>,
+              base::Unretained(this)))) {
     return false;
   }
 
@@ -830,15 +843,18 @@ bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
   if (!ConvertProperty<mojom::PlayNextCandidate>(
           candidate.entity, item->play_next_candidate.get(),
           schema_org::property::kPotentialAction, true,
-          base::BindOnce(&GetAction<mojom::PlayNextCandidate>,
-                         candidate.action_status))) {
+          base::BindOnce(
+              &MediaFeedsConverter::GetAction<mojom::PlayNextCandidate>,
+              base::Unretained(this), candidate.action_status))) {
     return false;
   }
 
   if (!ConvertProperty<mojom::PlayNextCandidate>(
           candidate.entity, item->play_next_candidate.get(),
           schema_org::property::kDuration, true,
-          base::BindOnce(&GetDuration<mojom::PlayNextCandidate>))) {
+          base::BindOnce(
+              &MediaFeedsConverter::GetDuration<mojom::PlayNextCandidate>,
+              base::Unretained(this)))) {
     return false;
   }
 
@@ -846,7 +862,8 @@ bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
 }
 
 // Converts the entity to an EpisodeCandidate.
-base::Optional<EpisodeCandidate> GetEpisodeCandidate(const EntityPtr& entity) {
+base::Optional<MediaFeedsConverter::EpisodeCandidate>
+MediaFeedsConverter::GetEpisodeCandidate(const EntityPtr& entity) {
   if (entity->type != schema_org::entity::kTVEpisode)
     return base::nullopt;
 
@@ -868,9 +885,9 @@ base::Optional<EpisodeCandidate> GetEpisodeCandidate(const EntityPtr& entity) {
 
 // Converts all the entity values in the property to episode candidates. Returns
 // base::nullopt if any of the entities are not valid episode candidates.
-base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidatesFromProperty(
-    Property* property,
-    int season_number) {
+base::Optional<std::vector<MediaFeedsConverter::EpisodeCandidate>>
+MediaFeedsConverter::GetEpisodeCandidatesFromProperty(Property* property,
+                                                      int season_number) {
   std::vector<EpisodeCandidate> episodes;
   if (!property) {
     return episodes;
@@ -888,8 +905,8 @@ base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidatesFromProperty(
 // Gets a list of EpisodeCandidates from the entity. These can be embedded
 // either in the season or episode properties. Returns base::nullopt if any
 // candidates were invalid.
-base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidates(
-    Entity* entity) {
+base::Optional<std::vector<MediaFeedsConverter::EpisodeCandidate>>
+MediaFeedsConverter::GetEpisodeCandidates(Entity* entity) {
   std::vector<EpisodeCandidate> candidates;
   auto* seasons = GetProperty(entity, schema_org::property::kContainsSeason);
   if (seasons) {
@@ -921,8 +938,9 @@ base::Optional<std::vector<EpisodeCandidate>> GetEpisodeCandidates(
 
 // Picks the main episode for the item from a list of candidates. Returns
 // base::nullopt if there is no main episode.
-base::Optional<EpisodeCandidate> PickMainEpisode(
-    std::vector<EpisodeCandidate> candidates) {
+base::Optional<MediaFeedsConverter::EpisodeCandidate>
+MediaFeedsConverter::PickMainEpisode(
+    std::vector<MediaFeedsConverter::EpisodeCandidate> candidates) {
   if (candidates.empty())
     return base::nullopt;
 
@@ -945,9 +963,10 @@ base::Optional<EpisodeCandidate> PickMainEpisode(
 
 // Picks the play next candidate for the item from a list of candidates. Returns
 // base::nullopt if there is no matching candidate.
-base::Optional<EpisodeCandidate> PickPlayNextCandidate(
-    std::vector<EpisodeCandidate> candidates,
-    const base::Optional<EpisodeCandidate>& main_episode,
+base::Optional<MediaFeedsConverter::EpisodeCandidate>
+MediaFeedsConverter::PickPlayNextCandidate(
+    std::vector<MediaFeedsConverter::EpisodeCandidate> candidates,
+    const base::Optional<MediaFeedsConverter::EpisodeCandidate>& main_episode,
     const std::map<int, int>& number_of_episodes) {
   if (!main_episode.has_value())
     return base::nullopt;
@@ -984,8 +1003,8 @@ base::Optional<EpisodeCandidate> PickPlayNextCandidate(
 // Gets the TV season stored in an embedded entity and updates a map of (season
 // number)->(number of episodes). Returns true if the TV season was valid.
 // Embedded episodes are handled separately and not checked here.
-bool GetSeason(const Property& property,
-               std::map<int, int>* number_of_episodes) {
+bool MediaFeedsConverter::GetSeason(const Property& property,
+                                    std::map<int, int>* number_of_episodes) {
   if (property.values->entity_values.empty())
     return false;
 
@@ -1011,8 +1030,8 @@ bool GetSeason(const Property& property,
 
 // Gets the broadcastEvent entity from the entity and store the result in item
 // as LiveDetails. Returns true if the broadcastEvent was valid.
-bool GetLiveDetails(const EntityPtr& broadcastEvent,
-                    mojom::MediaFeedItem* converted_item) {
+bool MediaFeedsConverter::GetLiveDetails(const EntityPtr& broadcastEvent,
+                                         mojom::MediaFeedItem* converted_item) {
   converted_item->live = mojom::LiveDetails::New();
 
   auto* start_date =
@@ -1032,28 +1051,39 @@ bool GetLiveDetails(const EntityPtr& broadcastEvent,
   return true;
 }
 
-bool GetMediaFeedItem(const EntityPtr& item,
-                      mojom::MediaFeedItem* converted_item,
-                      base::flat_set<std::string>* item_ids,
-                      bool is_embedded_item) {
+bool MediaFeedsConverter::GetMediaFeedItem(
+    const EntityPtr& item,
+    mojom::MediaFeedItem* converted_item,
+    base::flat_set<std::string>* item_ids,
+    bool is_embedded_item) {
   auto convert_property = base::BindRepeating(
-      &ConvertProperty<mojom::MediaFeedItem>, item.get(), converted_item);
+      &MediaFeedsConverter::ConvertProperty<mojom::MediaFeedItem>,
+      base::Unretained(this), item.get(), converted_item);
 
   auto type = GetMediaItemType(item->type);
-  if (!type.has_value())
+  if (!type.has_value()) {
+    Log("Missing item type.");
     return false;
+  }
   converted_item->type = type.value();
 
   // Check that the id is present and unique. This does not get converted.
   if (item->id == "" || item_ids->find(item->id) != item_ids->end()) {
+    Log("Invalid item ID.");
     return false;
   }
   item_ids->insert(item->id);
 
   auto* name = GetProperty(item.get(), schema_org::property::kName);
   if (name && IsNonEmptyString(*name)) {
-    converted_item->name = base::ASCIIToUTF16(name->values->string_values[0]);
+    const auto value = name->values->string_values[0];
+    if (!base::UTF8ToUTF16(value.c_str(), value.size(),
+                           &converted_item->name)) {
+      Log("Invalid name.");
+      return false;
+    }
   } else {
+    Log("Invalid name.");
     return false;
   }
 
@@ -1063,11 +1093,14 @@ bool GetMediaFeedItem(const EntityPtr& item,
     converted_item->date_published =
         date_published->values->date_time_values[0];
   } else {
+    Log("Invalid datePublished.");
     return false;
   }
 
-  if (!convert_property.Run(schema_org::property::kIsFamilyFriendly, true,
-                            base::BindOnce(&GetIsFamilyFriendly))) {
+  if (!convert_property.Run(
+          schema_org::property::kIsFamilyFriendly, false,
+          base::BindOnce(&MediaFeedsConverter::GetIsFamilyFriendly,
+                         base::Unretained(this)))) {
     return false;
   }
 
@@ -1079,47 +1112,63 @@ bool GetMediaFeedItem(const EntityPtr& item,
     return false;
   converted_item->images = std::move(converted_images.value());
 
-  if (!convert_property.Run(schema_org::property::kInteractionStatistic, false,
-                            base::BindOnce(&GetInteractionStatistics))) {
+  if (!convert_property.Run(
+          schema_org::property::kInteractionStatistic, false,
+          base::BindOnce(&MediaFeedsConverter::GetInteractionStatistics,
+                         base::Unretained(this)))) {
     return false;
   }
 
-  if (!convert_property.Run(schema_org::property::kContentRating, false,
-                            base::BindOnce(&GetContentRatings))) {
+  if (!convert_property.Run(
+          schema_org::property::kContentRating, false,
+          base::BindOnce(&MediaFeedsConverter::GetContentRatings,
+                         base::Unretained(this)))) {
     return false;
   }
 
   auto* genre = GetProperty(item.get(), schema_org::property::kGenre);
   if (genre) {
-    if (!IsNonEmptyString(*genre))
+    if (!IsNonEmptyString(*genre)) {
+      Log("Empty genre.");
       return false;
+    }
     for (const auto& genre_value : genre->values->string_values) {
       converted_item->genre.push_back(genre_value);
-      if (converted_item->genre.size() >= kMaxGenres)
+      if (converted_item->genre.size() >= kMaxGenres) {
+        Log("Exceeded maximum genres.");
         return false;
+      }
     }
   }
 
   if (!convert_property.Run(
           schema_org::property::kIdentifier, false,
-          base::BindOnce(&GetIdentifiers<mojom::MediaFeedItem>))) {
+          base::BindOnce(
+              &MediaFeedsConverter::GetIdentifiers<mojom::MediaFeedItem>,
+              base::Unretained(this)))) {
     return false;
   }
 
   if (converted_item->type == mojom::MediaFeedItemType::kVideo) {
-    if (!convert_property.Run(schema_org::property::kAuthor, true,
-                              base::BindOnce(&GetMediaItemAuthor))) {
+    if (!convert_property.Run(
+            schema_org::property::kAuthor, true,
+            base::BindOnce(&MediaFeedsConverter::GetMediaItemAuthor,
+                           base::Unretained(this)))) {
       return false;
     }
     if (!convert_property.Run(
             schema_org::property::kDuration, !converted_item->live,
-            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+            base::BindOnce(
+                &MediaFeedsConverter::GetDuration<mojom::MediaFeedItem>,
+                base::Unretained(this)))) {
       return false;
     }
   } else if (converted_item->type == mojom::MediaFeedItemType::kMovie) {
     if (!convert_property.Run(
             schema_org::property::kDuration, /*is_required=*/true,
-            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+            base::BindOnce(
+                &MediaFeedsConverter::GetDuration<mojom::MediaFeedItem>,
+                base::Unretained(this)))) {
       return false;
     }
   } else if (converted_item->type == mojom::MediaFeedItemType::kTVSeries) {
@@ -1127,22 +1176,29 @@ bool GetMediaFeedItem(const EntityPtr& item,
     auto* season =
         GetProperty(item.get(), schema_org::property::kContainsSeason);
 
-    if (season && !GetSeason(*season, &number_of_episodes))
+    if (season && !GetSeason(*season, &number_of_episodes)) {
+      Log("Invalid season.");
       return false;
+    }
 
     auto episodes = GetEpisodeCandidates(item.get());
-    if (!episodes.has_value())
+    if (!episodes.has_value()) {
+      Log("Invalid episode.");
       return false;
+    }
 
     auto main_episode = PickMainEpisode(episodes.value());
     if (main_episode.has_value() &&
-        !GetEpisode(main_episode.value(), converted_item))
+        !GetEpisode(main_episode.value(), converted_item)) {
+      Log("Invalid main episode.");
       return false;
+    }
 
     auto next_episode = PickPlayNextCandidate(episodes.value(), main_episode,
                                               number_of_episodes);
     if (next_episode.has_value() &&
         !GetPlayNextCandidate(next_episode.value(), converted_item)) {
+      Log("Invalid PlayNextCandidate.");
       return false;
     }
 
@@ -1151,7 +1207,9 @@ bool GetMediaFeedItem(const EntityPtr& item,
     if (!converted_item->tv_episode &&
         !convert_property.Run(
             schema_org::property::kDuration, /*is_required=*/false,
-            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+            base::BindOnce(
+                &MediaFeedsConverter::GetDuration<mojom::MediaFeedItem>,
+                base::Unretained(this)))) {
       return false;
     }
   }
@@ -1162,10 +1220,11 @@ bool GetMediaFeedItem(const EntityPtr& item,
     auto action_status = GetActionStatus(item.get());
     converted_item->action_status =
         action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
-    if (!convert_property.Run(schema_org::property::kPotentialAction,
-                              !has_embedded_action,
-                              base::BindOnce(&GetAction<mojom::MediaFeedItem>,
-                                             converted_item->action_status))) {
+    if (!convert_property.Run(
+            schema_org::property::kPotentialAction, !has_embedded_action,
+            base::BindOnce(
+                &MediaFeedsConverter::GetAction<mojom::MediaFeedItem>,
+                base::Unretained(this), converted_item->action_status))) {
       return false;
     }
   }
@@ -1176,7 +1235,7 @@ bool GetMediaFeedItem(const EntityPtr& item,
 // Given the schema.org data_feed_items, iterate through and convert all feed
 // items into MediaFeedItemPtr types. Store the converted items in
 // converted_feed_items. Skips invalid feed items.
-void GetDataFeedItems(
+void MediaFeedsConverter::GetDataFeedItems(
     const PropertyPtr& data_feed_items,
     std::vector<mojom::MediaFeedItemPtr>* converted_feed_items) {
   if (data_feed_items->values->entity_values.empty())
@@ -1190,17 +1249,21 @@ void GetDataFeedItems(
     if (item->type == schema_org::entity::kBroadcastEvent) {
       auto* embedded_item =
           GetProperty(item.get(), schema_org::property::kWorkPerformed);
-      if (!embedded_item || embedded_item->values->entity_values.empty())
+      if (!embedded_item || embedded_item->values->entity_values.empty()) {
+        Log("BroadcastEvent with no embedded item.");
         continue;
+      }
 
       if (!GetMediaFeedItem(embedded_item->values->entity_values[0],
                             converted_item.get(), &item_ids,
                             /*is_embedded_item=*/true)) {
+        Log("Item was invalid");
         continue;
       }
 
-      if (!GetLiveDetails(item, converted_item.get()))
-        continue;
+      if (!GetLiveDetails(item, converted_item.get())) {
+        Log("Invalid live details for BroadcastEvent item.");
+      }
 
       bool has_embedded_action =
           item->type == schema_org::entity::kTVSeries && converted_item->action;
@@ -1213,34 +1276,47 @@ void GetDataFeedItems(
         if (!action ||
             !GetAction<mojom::MediaFeedItem>(converted_item->action_status,
                                              *action, converted_item.get())) {
+          Log("Invalid action for BroadcastEvent item.");
           continue;
         }
       }
     } else {
       if (!GetMediaFeedItem(item, converted_item.get(), &item_ids,
-                            /*is_embedded_item=*/false))
+                            /*is_embedded_item=*/false)) {
+        Log("Item was invalid");
         continue;
+      }
     }
 
     converted_feed_items->push_back(std::move(converted_item));
   }
 }
 
-// static
-bool ConvertMediaFeed(
+bool MediaFeedsConverter::ConvertMediaFeedImpl(
     const schema_org::improved::mojom::EntityPtr& entity,
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
-  if (!entity || entity->type != schema_org::entity::kCompleteDataFeed)
+  if (!entity) {
+    Log("No feed entity. There may have been a problem parsing the schema.org "
+        "data.");
     return false;
+  }
 
-  DCHECK(result);
+  if (entity->type != schema_org::entity::kCompleteDataFeed) {
+    Log("Entity type was not CompleteDataFeed");
+    return false;
+  }
+
   auto* provider = GetProperty(entity.get(), schema_org::property::kProvider);
-  if (!ValidateProvider(*provider, result))
+  if (!provider || !ValidateProvider(*provider, result)) {
+    Log("Invalid provider.");
     return false;
+  }
 
-  if (!ConvertProperty(entity.get(), result,
-                       schema_org::property::kAdditionalProperty, false,
-                       base::BindOnce(&GetAssociatedOrigins))) {
+  if (!ConvertProperty(
+          entity.get(), result, schema_org::property::kAdditionalProperty,
+          false,
+          base::BindOnce(&MediaFeedsConverter::GetFeedAdditionalProperties,
+                         base::Unretained(this)))) {
     return false;
   }
 
@@ -1255,6 +1331,25 @@ bool ConvertMediaFeed(
   }
 
   return true;
+}
+
+bool MediaFeedsConverter::ConvertMediaFeed(
+    const schema_org::improved::mojom::EntityPtr& entity,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
+  DCHECK(result);
+
+  bool was_successful = ConvertMediaFeedImpl(entity, result);
+
+  result->error_logs = log_;
+  log_.clear();
+
+  return was_successful;
+}
+
+// Append a string to the log message.
+void MediaFeedsConverter::Log(const std::string& message) {
+  log_.append("\n");
+  log_.append(message);
 }
 
 }  // namespace media_feeds

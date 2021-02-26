@@ -33,8 +33,10 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Root from '../root/root.js';
 
 import {Action, Events as ActionEvents} from './Action.js';  // eslint-disable-line no-unused-vars
+import {ActionRegistry} from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';
 import {GlassPane, PointerEventsBehavior} from './GlassPane.js';
@@ -61,7 +63,8 @@ export class Toolbar {
     this.element.className = className;
     this.element.classList.add('toolbar');
     this._enabled = true;
-    this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/toolbar.css');
+    this._shadowRoot = createShadowRootWithCoreStyles(
+        this.element, {cssFile: 'ui/toolbar.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this._contentElement = this._shadowRoot.createChild('div', 'toolbar-shadow');
     this._insertionPoint = this._contentElement.createChild('slot');
   }
@@ -256,7 +259,7 @@ export class Toolbar {
    * @return {!ToolbarButton}
    */
   static createActionButtonForId(actionId, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
-    const action = self.UI.actionRegistry.action(actionId);
+    const action = ActionRegistry.instance().action(actionId);
     return Toolbar.createActionButton(/** @type {!Action} */ (action), options);
   }
 
@@ -399,7 +402,7 @@ export class Toolbar {
    * @return {!Promise<void>}
    */
   async appendItemsAtLocation(location) {
-    const extensions = self.runtime.extensions(Provider);
+    const extensions = Root.Runtime.Runtime.instance().extensions(Provider);
     const filtered = extensions.filter(e => e.descriptor()['location'] === location);
     const items = await Promise.all(filtered.map(extension => {
       const descriptor = extension.descriptor();
@@ -438,7 +441,8 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
    */
   constructor(element) {
     super();
-    this.element = element;
+    /** @type {!HTMLElement} */
+    this.element = /** @type {!HTMLElement} */ (element);
     this.element.classList.add('toolbar-item');
     this._visible = true;
     this._enabled = true;
@@ -446,14 +450,15 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {string} title
+   * @param {string | undefined} actionId
    */
-  setTitle(title) {
+  setTitle(title, actionId = undefined) {
     if (this._title === title) {
       return;
     }
     this._title = title;
     ARIAUtils.setAccessibleName(this.element, title);
-    Tooltip.install(this.element, title, undefined, {
+    Tooltip.install(this.element, title, actionId, {
       anchorTooltipAtElement: true,
     });
   }
@@ -560,6 +565,10 @@ export class ToolbarButton extends ToolbarItem {
     this._title = '';
   }
 
+  focus() {
+    this.element.focus();
+  }
+
   /**
    * @param {string} text
    */
@@ -641,8 +650,9 @@ export class ToolbarInput extends ToolbarItem {
    * @param {number=} shrinkFactor
    * @param {string=} tooltip
    * @param {(function(string, string, boolean=):!Promise<!Suggestions>)=} completions
+   * @param {boolean=} dynamicCompletions
    */
-  constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions) {
+  constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions) {
     const element = document.createElement('div');
     element.classList.add('toolbar-input');
     super(element);
@@ -656,7 +666,7 @@ export class ToolbarInput extends ToolbarItem {
     this._proxyElement = this._prompt.attach(internalPromptElement);
     this._proxyElement.classList.add('toolbar-prompt-proxy');
     this._proxyElement.addEventListener('keydown', event => this._onKeydownCallback(event));
-    this._prompt.initialize(completions || (() => Promise.resolve([])), ' ');
+    this._prompt.initialize(completions || (() => Promise.resolve([])), ' ', dynamicCompletions);
     if (tooltip) {
       this._prompt.setTitle(tooltip);
     }
@@ -1007,7 +1017,7 @@ export class ToolbarComboBox extends ToolbarItem {
   }
 
   /**
-   * @return {?Element}
+   * @return {?HTMLOptionElement}
    */
   selectedOption() {
     if (this._selectElement.selectedIndex >= 0) {
@@ -1132,7 +1142,12 @@ export class ToolbarCheckbox extends ToolbarItem {
     this.element.classList.add('checkbox');
     this.inputElement = this.element.checkboxElement;
     if (tooltip) {
-      Tooltip.install(this.element, tooltip, undefined, {
+      // install on the checkbox
+      Tooltip.install(this.inputElement, tooltip, undefined, {
+        anchorTooltipAtElement: true,
+      });
+      // install on the checkbox label
+      Tooltip.install(this.element.textElement, tooltip, undefined, {
         anchorTooltipAtElement: true,
       });
     }
@@ -1167,7 +1182,7 @@ export class ToolbarCheckbox extends ToolbarItem {
 
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {
   /**
-   * @param {!Common.Settings.Setting<*>} setting
+   * @param {!Common.Settings.Setting<boolean>} setting
    * @param {string=} tooltip
    * @param {string=} alternateTitle
    */

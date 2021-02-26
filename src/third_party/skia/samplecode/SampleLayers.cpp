@@ -163,7 +163,7 @@ protected:
     }
 
 private:
-    typedef Sample INHERITED;
+    using INHERITED = Sample;
 };
 DEF_SAMPLE( return new LayersView; )
 
@@ -206,7 +206,7 @@ protected:
 
         SkPaint paint;
         paint.setAlpha(0xCC);
-        canvas->saveLayer({ &bounds, &paint, fFilter.get(), nullptr, nullptr, 0 });
+        canvas->saveLayer(SkCanvas::SaveLayerRec(&bounds, &paint, fFilter.get(), 0));
 
         canvas->restore();
     }
@@ -226,6 +226,6 @@ protected:
     }
 
 private:
-    typedef Sample INHERITED;
+    using INHERITED = Sample;
 };
 DEF_SAMPLE( return new BackdropView; )

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -18,7 +19,7 @@ void CheckUnsizedMediaViolation(const LayoutObject* layout_object,
   bool is_unsized = !style.LogicalWidth().IsSpecified() &&
                     !style.LogicalHeight().IsSpecified();
   if (is_unsized) {
-    layout_object->GetDocument().IsFeatureEnabled(
+    layout_object->GetDocument().GetExecutionContext()->IsFeatureEnabled(
         mojom::blink::DocumentPolicyFeature::kUnsizedMedia,
         send_report ? ReportOptions::kReportOnFailure
                     : ReportOptions::kDoNotReport);

@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/gfx/color_palette.h"
@@ -329,11 +330,31 @@ class IndicatorPillView : public views::View {
 
 // -----------------------------------------------------------------------------
 // DisplayAlignmentIndicator:
+
+// static
+std::unique_ptr<DisplayAlignmentIndicator> DisplayAlignmentIndicator::Create(
+    const display::Display& src_display,
+    const gfx::Rect& bounds) {
+  // Using `new` to access a non-public constructor.
+  return base::WrapUnique(
+      new DisplayAlignmentIndicator(src_display, bounds, ""));
+}
+
+// static
+std::unique_ptr<DisplayAlignmentIndicator>
+DisplayAlignmentIndicator::CreateWithPill(const display::Display& src_display,
+                                          const gfx::Rect& bounds,
+                                          const std::string& target_name) {
+  // Using `new` to access a non-public constructor.
+  return base::WrapUnique(
+      new DisplayAlignmentIndicator(src_display, bounds, target_name));
+}
+
 DisplayAlignmentIndicator::DisplayAlignmentIndicator(
     const display::Display& src_display,
     const gfx::Rect& bounds,
     const std::string& target_name)
-    : indicator_view_(new IndicatorHighlightView(src_display)) {
+    : display_id_(src_display.id()) {
   gfx::Rect thickened_bounds = bounds;
   AdjustIndicatorBounds(src_display, &thickened_bounds);
 
@@ -343,7 +364,8 @@ DisplayAlignmentIndicator::DisplayAlignmentIndicator(
 
   indicator_widget_.Init(std::move(indicator_widget_params));
   indicator_widget_.SetVisibilityChangedAnimationsEnabled(false);
-  indicator_widget_.SetContentsView(indicator_view_);
+  indicator_view_ = indicator_widget_.SetContentsView(
+      std::make_unique<IndicatorHighlightView>(src_display));
   indicator_widget_.SetBounds(thickened_bounds);
 
   const IndicatorPosition indicator_position =
@@ -352,15 +374,12 @@ DisplayAlignmentIndicator::DisplayAlignmentIndicator(
 
   // Only create IndicatorPillView when |target_name| is specified.
   if (!target_name.empty()) {
-    auto pill_ptr =
-        std::make_unique<IndicatorPillView>(base::UTF8ToUTF16(target_name));
-    pill_view_ = pill_ptr.get();
-    pill_view_->SetPosition(indicator_position);
-
     pill_widget_ = std::make_unique<views::Widget>();
     pill_widget_->Init(CreateInitParams(src_display.id(), "IndicatorPill"));
     pill_widget_->SetVisibilityChangedAnimationsEnabled(false);
-    pill_widget_->SetContentsView(pill_ptr.release());
+    pill_view_ = pill_widget_->SetContentsView(
+        std::make_unique<IndicatorPillView>(base::UTF8ToUTF16(target_name)));
+    pill_view_->SetPosition(indicator_position);
 
     gfx::Size pill_size = pill_view_->GetPreferredSize();
     gfx::Rect pill_bounds = gfx::Rect(
@@ -386,6 +405,16 @@ void DisplayAlignmentIndicator::Hide() {
 
   if (pill_widget_)
     pill_widget_->Hide();
+}
+
+void DisplayAlignmentIndicator::Update(const display::Display& display,
+                                       gfx::Rect bounds) {
+  DCHECK(!pill_widget_);
+
+  AdjustIndicatorBounds(display, &bounds);
+  const IndicatorPosition src_direction = GetIndicatorPosition(display, bounds);
+  indicator_view_->SetPosition(src_direction);
+  indicator_widget_.SetBounds(bounds);
 }
 
 }  // namespace ash

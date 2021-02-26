@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "common/Constants.h"
+#include "utils/TextureFormatUtils.h"
 
 namespace utils {
 
@@ -33,6 +34,8 @@ namespace utils {
                                           SingleShaderStage stage,
                                           const char* source);
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source);
+    wgpu::ShaderModule CreateShaderModuleFromWGSL(const wgpu::Device& device, const char* source);
+
     std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source);
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
@@ -50,11 +53,15 @@ namespace utils {
     wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
                                               uint64_t offset,
                                               uint32_t bytesPerRow,
-                                              uint32_t rowsPerImage);
-    wgpu::TextureCopyView CreateTextureCopyView(wgpu::Texture texture,
-                                                uint32_t level,
-                                                uint32_t slice,
-                                                wgpu::Origin3D origin);
+                                              uint32_t rowsPerImage = wgpu::kStrideUndefined);
+    wgpu::TextureCopyView CreateTextureCopyView(
+        wgpu::Texture texture,
+        uint32_t level,
+        wgpu::Origin3D origin,
+        wgpu::TextureAspect aspect = wgpu::TextureAspect::All);
+    wgpu::TextureDataLayout CreateTextureDataLayout(uint64_t offset,
+                                                    uint32_t bytesPerRow,
+                                                    uint32_t rowsPerImage = wgpu::kStrideUndefined);
 
     struct ComboRenderPassDescriptor : public wgpu::RenderPassDescriptor {
       public:
@@ -67,7 +74,7 @@ namespace utils {
 
         std::array<wgpu::RenderPassColorAttachmentDescriptor, kMaxColorAttachments>
             cColorAttachments;
-        wgpu::RenderPassDepthStencilAttachmentDescriptor cDepthStencilAttachmentInfo;
+        wgpu::RenderPassDepthStencilAttachmentDescriptor cDepthStencilAttachmentInfo = {};
     };
 
     struct BasicRenderPass {

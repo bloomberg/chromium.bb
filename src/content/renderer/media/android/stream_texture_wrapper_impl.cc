@@ -5,11 +5,13 @@
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace {
@@ -62,6 +64,11 @@ void StreamTextureWrapperImpl::CreateVideoFrame(
   gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
       gpu::MailboxHolder(mailbox, gpu::SyncToken(), GL_TEXTURE_EXTERNAL_OES)};
 
+  gpu::SharedImageInterface* sii = factory_->SharedImageInterface();
+  sii->NotifyMailboxAdded(mailbox, gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                                       gpu::SHARED_IMAGE_USAGE_GLES2 |
+                                       gpu::SHARED_IMAGE_USAGE_RASTER);
+
   // The pixel format doesn't matter here as long as it's valid for texture
   // frames. But SkiaRenderer wants to ensure that the format of the resource
   // used here which will eventually create a promise image must match the
@@ -79,8 +86,8 @@ void StreamTextureWrapperImpl::CreateVideoFrame(
   new_frame->set_ycbcr_info(ycbcr_info);
 
   if (enable_texture_copy_) {
-    new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
-                                      true);
+    new_frame->metadata()->copy_mode =
+        media::VideoFrameMetadata::CopyMode::kCopyToNewTexture;
   }
 
   SetCurrentFrameInternal(new_frame);

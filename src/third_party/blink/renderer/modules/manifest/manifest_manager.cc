@@ -156,8 +156,9 @@ void ManifestManager::FetchManifest() {
   }
 
   LocalDOMWindow& window = *GetSupplementable();
+  ResourceFetcher* document_fetcher = window.document()->Fetcher();
   fetcher_ = MakeGarbageCollected<ManifestFetcher>(manifest_url_);
-  fetcher_->Start(window, ManifestUseCredentials(),
+  fetcher_->Start(window, ManifestUseCredentials(), document_fetcher,
                   WTF::Bind(&ManifestManager::OnManifestFetchComplete,
                             WrapWeakPersistent(this), window.Url()));
 }
@@ -259,7 +260,7 @@ void ManifestManager::ContextDestroyed() {
   ResolveCallbacks(ResolveStateFailure);
 }
 
-void ManifestManager::Trace(Visitor* visitor) {
+void ManifestManager::Trace(Visitor* visitor) const {
   visitor->Trace(fetcher_);
   visitor->Trace(manifest_change_notifier_);
   visitor->Trace(receivers_);

@@ -85,12 +85,17 @@ WebURL WebDocument::Url() const {
 WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
   if (!ConstUnwrap<Document>())
     return WebSecurityOrigin();
-  return WebSecurityOrigin(ConstUnwrap<Document>()->GetSecurityOrigin());
+  ExecutionContext* context = ConstUnwrap<Document>()->GetExecutionContext();
+  if (!context)
+    return WebSecurityOrigin();
+  return WebSecurityOrigin(context->GetSecurityOrigin());
 }
 
 bool WebDocument::IsSecureContext() const {
   const Document* document = ConstUnwrap<Document>();
-  return document && document->IsSecureContext();
+  ExecutionContext* context =
+      document ? document->GetExecutionContext() : nullptr;
+  return context && context->IsSecureContext();
 }
 
 WebString WebDocument::Encoding() const {
@@ -232,14 +237,6 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
   CSSSelectorWatch::From(*document).WatchCSSSelectors(selectors);
 }
 
-network::mojom::ReferrerPolicy WebDocument::GetReferrerPolicy() const {
-  return ConstUnwrap<Document>()->GetReferrerPolicy();
-}
-
-WebString WebDocument::OutgoingReferrer() {
-  return WebString(Unwrap<Document>()->OutgoingReferrer());
-}
-
 WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
   WebVector<WebDraggableRegion> draggable_regions;
   const Document* document = ConstUnwrap<Document>();
@@ -281,6 +278,10 @@ uint64_t WebDocument::GetVisualViewportScrollingElementIdForTesting() {
       ->GetVisualViewport()
       .GetScrollElementId()
       .GetStableId();
+}
+
+bool WebDocument::IsLoaded() {
+  return !ConstUnwrap<Document>()->Parser();
 }
 
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}

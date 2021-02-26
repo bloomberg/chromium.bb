@@ -4,18 +4,96 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /** Autofill Assistant related preferences util class. */
-class AutofillAssistantPreferencesUtil {
-    // Avoid instatiation by accident.
+public class AutofillAssistantPreferencesUtil {
+    /**
+     * If a user explicitly cancels a lite script >= this number, they will implicitly opt-out of
+     * this experience and never see a lite script again. Note: this is only temporarily in place
+     * until we have a better and more user-friendly solution, see crbug.com/1110887.
+     */
+    private static final int LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT = 2;
+
+    // Avoid instantiation by accident.
     private AutofillAssistantPreferencesUtil() {}
 
     /** Checks whether the Autofill Assistant switch preference in settings is on. */
     static boolean isAutofillAssistantSwitchOn() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, true);
+    }
+
+    /** Checks whether proactive help is enabled. */
+    public static boolean isProactiveHelpOn() {
+        return isProactiveHelpSwitchOn() && isAutofillAssistantSwitchOn();
+    }
+
+    /**
+     * Checks whether the proactive help switch preference in settings is on.
+     * Warning: even if the switch is on, it can appear disabled if the Autofill Assistant switch is
+     * off. Use {@link #isProactiveHelpOn()} to determine whether to trigger proactive help.
+     */
+    private static boolean isProactiveHelpSwitchOn() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_PROACTIVE_HELP)) {
+            return false;
+        }
+
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_PROACTIVE_HELP, true);
+    }
+
+    /** Enables or disables the proactive help setting. */
+    public static void setProactiveHelpSwitch(boolean enabled) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_PROACTIVE_HELP, enabled);
+    }
+
+    /** Returns whether the user has seen a lite script before or not. */
+    public static boolean isAutofillAssistantFirstTimeLiteScriptUser() {
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER, true);
+    }
+
+    /** Marks a user as having seen a lite script at least once before. */
+    public static void setAutofillAssistantReturningLiteScriptUser() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER, false);
+    }
+
+    /** Returns the number of times a user has explicitly canceled a lite script. */
+    static int getAutofillAssistantNumberOfLiteScriptsCanceled() {
+        return SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED, 0);
+    }
+
+    /**
+     * Returns whether the user has explicitly canceled the lite script at least {@code
+     * LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT} times.
+     */
+    static boolean isAutofillAssistantLiteScriptCancelThresholdReached() {
+        return getAutofillAssistantNumberOfLiteScriptsCanceled()
+                >= LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT;
+    }
+
+    /** Increments the number of times a user has explicitly canceled a lite script. */
+    static void incrementAutofillAssistantNumberOfLiteScriptsCanceled() {
+        int numCanceled = getAutofillAssistantNumberOfLiteScriptsCanceled() + 1;
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.writeInt(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED,
+                numCanceled);
+        if (isAutofillAssistantLiteScriptCancelThresholdReached()
+                && !sharedPreferencesManager.contains(
+                        ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED)) {
+            // Disable the flag, such that users will not see the lite script again. This will also
+            // create the setting in the Chrome settings, if it was not present before, which will
+            // allow users to opt back in.
+            sharedPreferencesManager.writeBoolean(
+                    ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, false);
+        }
     }
 
     /** Checks whether the Autofill Assistant onboarding has been accepted. */
@@ -30,7 +108,11 @@ class AutofillAssistantPreferencesUtil {
     }
 
     /** Checks whether the Autofill Assistant onboarding screen should be shown. */
-    static boolean getShowOnboarding() {
+    public static boolean getShowOnboarding() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ASSISTANT_DISABLE_ONBOARDING_FLOW)) {
+            return false;
+        }
         return !isAutofillAssistantSwitchOn() || !isAutofillOnboardingAccepted();
     }
 
@@ -40,8 +122,10 @@ class AutofillAssistantPreferencesUtil {
      * @param accept Flag indicating whether the ToS have been accepted.
      */
     static void setInitialPreferences(boolean accept) {
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, accept);
+        if (accept) {
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, accept);
+        }
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED, accept);
     }

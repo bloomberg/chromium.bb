@@ -5,15 +5,15 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 
-#include <map>
+#include <cstdint>
+#include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/favicon_base/favicon_callback.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -25,6 +25,13 @@ struct UserMetricsAction;
 namespace bookmarks {
 
 class BookmarkModel;
+class BookmarkPermanentNode;
+
+// A callback that generates a std::unique_ptr<BookmarkPermanentNode>, given a
+// max ID to use. The max ID argument will be updated after if a new node has
+// been created and assigned an ID.
+using LoadManagedNodeCallback =
+    base::OnceCallback<std::unique_ptr<BookmarkPermanentNode>(int64_t*)>;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
@@ -39,20 +46,13 @@ class BookmarkClient {
   // Called during initialization of BookmarkModel.
   virtual void Init(BookmarkModel* model);
 
-  // Returns true if the embedder favors touch icons over favicons.
-  virtual bool PreferTouchIcon();
-
-  // Requests a favicon from the history cache for the web page at |page_url|.
-  // |callback| is run when the favicon has been fetched. If |type| is:
-  // - favicon_base::IconType::kFavicon, the returned gfx::Image is a
-  //   multi-resolution image of gfx::kFaviconSize DIP width and height. The
-  //   data from the history cache is resized if need be.
-  // - not favicon_base::IconType::kFavicon, the returned gfx::Image is a
-  //   single-resolution image with the largest bitmap in the history cache for
-  //   |page_url| and |type|.
+  // Requests a favicon from the history cache for the web page at |page_url|
+  // for icon type favicon_base::IconType::kFavicon. |callback| is run when the
+  // favicon has been fetched, which returns gfx::Image is a multi-resolution
+  // image of gfx::kFaviconSize DIP width and height. The data from the history
+  // cache is resized if need be.
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      favicon_base::IconType type,
       favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker);
 

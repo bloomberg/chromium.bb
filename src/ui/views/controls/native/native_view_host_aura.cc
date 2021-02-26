@@ -102,12 +102,18 @@ void NativeViewHostAura::AttachNativeView() {
   original_transform_changed_ = false;
   AddClippingWindow();
   InstallMask();
+  ApplyRoundedCorners();
 }
 
 void NativeViewHostAura::SetParentAccessible(
     gfx::NativeViewAccessible accessible) {
   host_->native_view()->SetProperty(
       aura::client::kParentNativeViewAccessibleKey, accessible);
+}
+
+gfx::NativeViewAccessible NativeViewHostAura::GetParentAccessible() {
+  return host_->native_view()->GetProperty(
+      aura::client::kParentNativeViewAccessibleKey);
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
@@ -160,19 +166,20 @@ void NativeViewHostAura::RemovedFromWidget() {
   }
 }
 
+bool NativeViewHostAura::SetCornerRadii(
+    const gfx::RoundedCornersF& corner_radii) {
+  corner_radii_ = corner_radii;
+  ApplyRoundedCorners();
+  return true;
+}
+
 bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
-#if defined(OS_WIN)
-  // TODO(crbug/843250): On Aura, layer masks don't play with HiDPI. Fix this
-  // and enable this on Windows.
-  return false;
-#else
   UninstallMask();
   mask_ = std::move(mask);
   if (mask_)
     mask_->layer()->SetFillsBoundsOpaquely(false);
   InstallMask();
   return true;
-#endif
 }
 
 void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
@@ -331,6 +338,17 @@ void NativeViewHostAura::RemoveClippingWindow() {
   }
   if (clipping_window_->parent())
     clipping_window_->parent()->RemoveChild(clipping_window_.get());
+}
+
+void NativeViewHostAura::ApplyRoundedCorners() {
+  if (!host_->native_view())
+    return;
+
+  ui::Layer* layer = host_->native_view()->layer();
+  if (layer->rounded_corner_radii() != corner_radii_) {
+    layer->SetRoundedCornerRadius(corner_radii_);
+    layer->SetIsFastRoundedCorner(true);
+  }
 }
 
 void NativeViewHostAura::InstallMask() {

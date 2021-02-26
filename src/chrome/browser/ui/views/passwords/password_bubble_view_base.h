@@ -14,6 +14,16 @@
 namespace content {
 class WebContents;
 }
+
+namespace password_manager {
+struct PasswordForm;
+}  // namespace password_manager
+
+namespace views {
+class Label;
+}
+
+class FeaturePromoControllerViews;
 class PasswordBubbleControllerBase;
 
 // Base class for all manage-passwords bubbles. Provides static methods for
@@ -41,7 +51,8 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   static PasswordBubbleViewBase* CreateBubble(
       content::WebContents* web_contents,
       views::View* anchor_view,
-      DisplayReason reason);
+      DisplayReason reason,
+      FeaturePromoControllerViews* promo_controller);
 
   // Closes the existing bubble.
   static void CloseCurrentBubble();
@@ -57,10 +68,6 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   virtual PasswordBubbleControllerBase* GetController() = 0;
   virtual const PasswordBubbleControllerBase* GetController() const = 0;
 
-  // LocationBarBubbleDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-
  protected:
   // The |easily_dismissable| flag indicates if the bubble should close upon
   // a click in the content area of the browser.
@@ -70,7 +77,15 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
 
   ~PasswordBubbleViewBase() override;
 
+  static std::unique_ptr<views::Label> CreateUsernameLabel(
+      const password_manager::PasswordForm& form);
+  static std::unique_ptr<views::Label> CreatePasswordLabel(
+      const password_manager::PasswordForm& form);
+
  private:
+  // views::BubbleDialogDelegateView:
+  void Init() override;
+
   // WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
 

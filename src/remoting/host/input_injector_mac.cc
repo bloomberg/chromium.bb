@@ -14,12 +14,15 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/break_iterator.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "remoting/host/clipboard.h"
@@ -293,14 +296,42 @@ void InputInjectorMac::Core::InjectTextEvent(const TextEvent& event) {
 
   base::string16 text = base::UTF8ToUTF16(event.text());
 
-  // Applications that ignore UnicodeString field will see the text event as
-  // Space key.
-  ui_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
-                                /*pressed=*/true, 0, text));
-  ui_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
-                                /*pressed=*/false, 0, text));
+  // CGEventKeyboardSetUnicodeString appears to only process up to 20 code
+  // units (and key presses are generally expected to generate a single
+  // character), so split the input text into graphemes.
+  base::i18n::BreakIterator grapheme_iterator(
+      text, base::i18n::BreakIterator::BREAK_CHARACTER);
+
+  if (!grapheme_iterator.Init()) {
+    LOG(ERROR) << "Failed to init grapheme iterator.";
+    return;
+  }
+
+  while (grapheme_iterator.Advance()) {
+    base::StringPiece16 grapheme = grapheme_iterator.GetStringPiece();
+
+    if (grapheme.length() == 1 && grapheme[0] == '\n') {
+      // On Mac, the return key sends "\r" rather than "\n", so handle it
+      // specially.
+      ui_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(CreateAndPostKeyEvent, kVK_Return,
+                                    /*pressed=*/true, 0, base::string16()));
+      ui_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(CreateAndPostKeyEvent, kVK_Return,
+                                    /*pressed=*/false, 0, base::string16()));
+    } else {
+      // Applications that ignore UnicodeString field will see the text event as
+      // Space key.
+      ui_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
+                         /*pressed=*/true, 0, base::string16(grapheme)));
+      ui_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
+                         /*pressed=*/false, 0, base::string16(grapheme)));
+    }
+  }
 }
 
 void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {

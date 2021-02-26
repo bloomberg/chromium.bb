@@ -24,6 +24,10 @@
 #include "av1/encoder/cost.h"
 #endif
 
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,18 +64,12 @@ void aom_start_encode(aom_writer *w, uint8_t *buffer);
 
 int aom_stop_encode(aom_writer *w);
 
+int aom_tell_size(aom_writer *w);
+
 static INLINE void aom_write(aom_writer *w, int bit, int probability) {
   int p = (0x7FFFFF - (probability << 15) + probability) >> 8;
 #if CONFIG_BITSTREAM_DEBUG
   aom_cdf_prob cdf[2] = { (aom_cdf_prob)p, 32767 };
-  /*int queue_r = 0;
-  int frame_idx_r = 0;
-  int queue_w = bitstream_queue_get_write();
-  int frame_idx_w = aom_bitstream_queue_get_frame_writee();
-  if (frame_idx_w == frame_idx_r && queue_w == queue_r) {
-    fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
-    frame_idx_w, queue_w);
-  }*/
   bitstream_queue_push(bit, cdf, 2);
 #endif
 
@@ -91,14 +89,6 @@ static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
 static INLINE void aom_write_cdf(aom_writer *w, int symb,
                                  const aom_cdf_prob *cdf, int nsymbs) {
 #if CONFIG_BITSTREAM_DEBUG
-  /*int queue_r = 0;
-  int frame_idx_r = 0;
-  int queue_w = bitstream_queue_get_write();
-  int frame_idx_w = aom_bitstream_queue_get_frame_writee();
-  if (frame_idx_w == frame_idx_r && queue_w == queue_r) {
-    fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
-    frame_idx_w, queue_w);
-  }*/
   bitstream_queue_push(symb, cdf, nsymbs);
 #endif
 

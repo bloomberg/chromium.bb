@@ -7,7 +7,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_proxy.h"
-#include "chrome/browser/chromeos/printing/server_printers_provider_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -33,7 +32,6 @@ CupsPrintersManagerFactory::CupsPrintersManagerFactory()
           "CupsPrintersManagerFactory",
           BrowserContextDependencyManager::GetInstance()),
       proxy_(CupsPrintersManagerProxy::Create()) {
-  DependsOn(chromeos::ServerPrintersProviderFactory::GetInstance());
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
 }
 
@@ -51,6 +49,12 @@ KeyedService* CupsPrintersManagerFactory::BuildServiceInstanceFor(
       ProfileHelper::IsSigninProfile(profile)) {
     return nullptr;
   }
+
+  // In Guest Mode, only use the OffTheRecord profile.
+  if (profile->IsGuestSession() && !profile->IsOffTheRecord()) {
+    return nullptr;
+  }
+
   auto manager = CupsPrintersManager::Create(profile);
   if (ProfileHelper::IsPrimaryProfile(profile)) {
     proxy_->SetManager(manager.get());
@@ -71,7 +75,7 @@ void CupsPrintersManagerFactory::BrowserContextShutdown(
 
 content::BrowserContext* CupsPrintersManagerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 bool CupsPrintersManagerFactory::ServiceIsCreatedWithBrowserContext() const {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_NATIVE_INPUT_METHOD_ENGINE_H_
 
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
+#include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom-forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -42,6 +43,19 @@ class NativeInputMethodEngine : public InputMethodEngine {
   // Returns whether this is connected to the input engine.
   bool IsConnectedForTesting() const;
 
+  AssistiveSuggester* get_assistive_suggester_for_testing() {
+    return assistive_suggester_;
+  }
+
+  AutocorrectManager* get_autocorrect_manager_for_testing() {
+    return autocorrect_manager_;
+  }
+
+  // Used to show special UI to user for interacting with autocorrected text.
+  void OnAutocorrect(std::string typed_word,
+                     std::string corrected_word,
+                     int start_index);
+
  private:
   class ImeObserver : public InputMethodEngineBase::Observer,
                       public ime::mojom::InputChannel {
@@ -49,7 +63,8 @@ class NativeInputMethodEngine : public InputMethodEngine {
     // |base_observer| is to forward events to extension during this migration.
     // It will be removed when the official extension is completely migrated.
     ImeObserver(std::unique_ptr<InputMethodEngineBase::Observer> base_observer,
-                std::unique_ptr<AssistiveSuggester> assistive_suggester);
+                std::unique_ptr<AssistiveSuggester> assistive_suggester,
+                std::unique_ptr<AutocorrectManager> autocorrect_manager);
     ~ImeObserver() override;
 
     // InputMethodEngineBase::Observer:
@@ -76,36 +91,57 @@ class NativeInputMethodEngine : public InputMethodEngine {
         const std::string& component_id,
         int candidate_id,
         InputMethodEngineBase::MouseButtonEvent button) override;
+    void OnAssistiveWindowButtonClicked(
+        const ui::ime::AssistiveWindowButton& button) override;
     void OnMenuItemActivated(const std::string& component_id,
                              const std::string& menu_id) override;
     void OnScreenProjectionChanged(bool is_projected) override;
+    void OnSuggestionsChanged(
+        const std::vector<std::string>& suggestions) override;
+    void OnInputMethodOptionsChanged(const std::string& engine_id) override;
 
     // mojom::InputChannel:
     void ProcessMessage(const std::vector<uint8_t>& message,
-                        ProcessMessageCallback callback) override {}
+                        ProcessMessageCallback callback) override;
+    void OnInputMethodChanged(const std::string& engine_id) override {}
+    void OnFocus(ime::mojom::InputFieldInfoPtr input_field_info) override {}
+    void OnBlur() override {}
+    void OnSurroundingTextChanged(
+        const std::string& text,
+        uint32_t offset,
+        ime::mojom::SelectionRangePtr selection_range) override {}
+    void OnCompositionCanceled() override {}
     void ProcessKeypressForRulebased(
-        ime::mojom::KeypressInfoForRulebasedPtr message,
+        ime::mojom::PhysicalKeyEventPtr event,
         ProcessKeypressForRulebasedCallback callback) override {}
+    void OnKeyEvent(ime::mojom::PhysicalKeyEventPtr event,
+                    OnKeyEventCallback callback) override {}
     void ResetForRulebased() override {}
     void GetRulebasedKeypressCountForTesting(
         GetRulebasedKeypressCountForTestingCallback callback) override {}
+    void CommitText(const std::string& text) override;
+    void SetComposition(const std::string& text) override;
+    void SetCompositionRange(uint32_t start_byte_index,
+                             uint32_t end_byte_index) override;
+    void FinishComposition() override;
+    void DeleteSurroundingText(uint32_t before, uint32_t after) override;
 
     // Flush all relevant Mojo pipes.
     void FlushForTesting();
 
     // Returns whether this is connected to the input engine.
-    bool IsConnectedForTesting() const { return connected_to_engine_; }
+    bool IsConnectedForTesting() const { return active_engine_id_.has_value(); }
 
    private:
     // Called when this is connected to the input engine. |bound| indicates
     // the success of the connection.
-    void OnConnected(base::Time start, bool bound);
+    void OnConnected(base::Time start, std::string engine_id, bool bound);
 
     // Called when there's a connection error.
     void OnError(base::Time start);
 
-    // Called when a key press is processed by Mojo.
-    void OnKeyEventResponse(
+    // Called when a rule-based key press is processed by Mojo.
+    void OnRuleBasedKeyEventResponse(
         base::Time start,
         ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
         ime::mojom::KeypressResponseForRulebasedPtr response);
@@ -114,12 +150,16 @@ class NativeInputMethodEngine : public InputMethodEngine {
     mojo::Remote<ime::mojom::InputEngineManager> remote_manager_;
     mojo::Receiver<ime::mojom::InputChannel> receiver_from_engine_;
     mojo::Remote<ime::mojom::InputChannel> remote_to_engine_;
-    bool connected_to_engine_ = false;
+    base::Optional<std::string> active_engine_id_;
 
     std::unique_ptr<AssistiveSuggester> assistive_suggester_;
+    std::unique_ptr<AutocorrectManager> autocorrect_manager_;
   };
 
   ImeObserver* GetNativeObserver() const;
+
+  AssistiveSuggester* assistive_suggester_ = nullptr;
+  AutocorrectManager* autocorrect_manager_ = nullptr;
 };
 
 }  // namespace chromeos

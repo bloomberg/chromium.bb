@@ -56,6 +56,7 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
       mojom::MediaStreamType type,
       const std::string& id,
       const std::string& name,
+      const media::VideoCaptureControlSupport& control_support,
       media::VideoFacingMode facing,
       const base::Optional<std::string>& group_id = base::nullopt);
   MediaStreamDevice(mojom::MediaStreamType type,
@@ -91,6 +92,9 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
 
   // The device's unique ID.
   std::string id;
+
+  // The control support for video capture device.
+  media::VideoCaptureControlSupport video_control_support;
 
   // The facing mode for video capture device.
   media::VideoFacingMode video_facing;

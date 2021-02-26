@@ -187,8 +187,6 @@ source_set("parser") {
     "cxfa_delete.h",
     "cxfa_delta.cpp",
     "cxfa_delta.h",
-    "cxfa_deltas.cpp",
-    "cxfa_deltas.h",
     "cxfa_desc.cpp",
     "cxfa_desc.h",
     "cxfa_destination.cpp",
@@ -199,8 +197,8 @@ source_set("parser") {
     "cxfa_digestmethods.h",
     "cxfa_document.cpp",
     "cxfa_document.h",
-    "cxfa_document_parser.cpp",
-    "cxfa_document_parser.h",
+    "cxfa_document_builder.cpp",
+    "cxfa_document_builder.h",
     "cxfa_documentassembly.cpp",
     "cxfa_documentassembly.h",
     "cxfa_draw.cpp",
@@ -381,8 +379,6 @@ source_set("parser") {
     "cxfa_neverembed.h",
     "cxfa_node.cpp",
     "cxfa_node.h",
-    "cxfa_nodehelper.cpp",
-    "cxfa_nodehelper.h",
     "cxfa_nodeiteratortemplate.h",
     "cxfa_nodelocale.cpp",
     "cxfa_nodelocale.h",
@@ -672,10 +668,12 @@ source_set("parser") {
     "cxfa_xsl.h",
     "cxfa_zpl.cpp",
     "cxfa_zpl.h",
+    "gced_locale_iface.h",
     "xfa_basic_data.cpp",
     "xfa_basic_data.h",
     "xfa_document_datamerger_imp.cpp",
     "xfa_document_datamerger_imp.h",
+    "xfa_resolvenode_rs.cpp",
     "xfa_resolvenode_rs.h",
     "xfa_utils.cpp",
     "xfa_utils.h",
@@ -685,9 +683,11 @@ source_set("parser") {
     "../../../core/fxcrt",
     "../../../core/fxge",
     "../../../fxjs",
+    "../../../fxjs:gc",
     "../../fde",
-    "../../fgas",
-    "../../fxgraphics",
+    "../../fgas/crt",
+    "../../fgas/font",
+    "../../fgas/graphics",
   ]
   allow_circular_includes_from = [ "../../../fxjs" ]
   configs += [
@@ -699,7 +699,7 @@ source_set("parser") {
 
 pdfium_unittest_source_set("unittests") {
   sources = [
-    "cxfa_document_parser_unittest.cpp",
+    "cxfa_document_builder_unittest.cpp",
     "cxfa_localevalue_unittest.cpp",
     "cxfa_measurement_unittest.cpp",
     "cxfa_node_unittest.cpp",
@@ -711,11 +711,12 @@ pdfium_unittest_source_set("unittests") {
   deps = [
     ":parser",
     "../../../fxjs",
+    "../../../fxjs:gc",
   ]
   pdfium_root_dir = "../../../"
 }
 
 pdfium_embeddertest_source_set("embeddertests") {
-  sources = [ "cxfa_document_parser_embeddertest.cpp" ]
+  sources = [ "cxfa_document_builder_embeddertest.cpp" ]
   pdfium_root_dir = "../../../"
 }

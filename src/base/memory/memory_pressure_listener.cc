@@ -5,7 +5,8 @@
 #include "base/memory/memory_pressure_listener.h"
 
 #include "base/observer_list_threadsafe.h"
-#include "base/trace_event/trace_event.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
@@ -18,7 +19,13 @@ class MemoryPressureObserver {
   ~MemoryPressureObserver() = delete;
 
   void AddObserver(MemoryPressureListener* listener, bool sync) {
-    async_observers_->AddObserver(listener);
+    // TODO(crbug.com/1063868): DCHECK instead of silently failing when a
+    // MemoryPressureListener is created in a non-sequenced context. Tests will
+    // need to be adjusted for that to work.
+    if (SequencedTaskRunnerHandle::IsSet()) {
+      async_observers_->AddObserver(listener);
+    }
+
     if (sync) {
       AutoLock lock(sync_observers_lock_);
       sync_observers_.AddObserver(listener);
@@ -60,17 +67,20 @@ subtle::Atomic32 g_notifications_suppressed = 0;
 }  // namespace
 
 MemoryPressureListener::MemoryPressureListener(
+    const base::Location& creation_location,
     const MemoryPressureListener::MemoryPressureCallback& callback)
-    : callback_(callback) {
+    : callback_(callback), creation_location_(creation_location) {
   GetMemoryPressureObserver()->AddObserver(this, false);
 }
 
 MemoryPressureListener::MemoryPressureListener(
+    const base::Location& creation_location,
     const MemoryPressureListener::MemoryPressureCallback& callback,
     const MemoryPressureListener::SyncMemoryPressureCallback&
         sync_memory_pressure_callback)
     : callback_(callback),
-      sync_memory_pressure_callback_(sync_memory_pressure_callback) {
+      sync_memory_pressure_callback_(sync_memory_pressure_callback),
+      creation_location_(creation_location) {
   GetMemoryPressureObserver()->AddObserver(this, true);
 }
 
@@ -79,6 +89,9 @@ MemoryPressureListener::~MemoryPressureListener() {
 }
 
 void MemoryPressureListener::Notify(MemoryPressureLevel memory_pressure_level) {
+  TRACE_EVENT2("base", "MemoryPressureListener::Notify",
+               "listener_creation_info", creation_location_.ToString(), "level",
+               memory_pressure_level);
   callback_.Run(memory_pressure_level);
 }
 

@@ -121,7 +121,7 @@ source_set("sel") {
     "thread_suspension_unwind.c",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "linux/nacl_signal.c" ]
   }
 
@@ -176,7 +176,7 @@ source_set("sel") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     sources += [
       "linux/nacl_bootstrap_args.c",
       "linux/nacl_thread_nice.c",
@@ -235,7 +235,7 @@ source_set("sel") {
     if (is_mac) {
       sources += [ "osx/nacl_signal_32.c" ]
     }
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [ "linux/nacl_signal_32.c" ]
     }
     if (is_win) {
@@ -257,7 +257,7 @@ source_set("sel") {
         "osx/nacl_signal_64.c",
       ]
     }
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "arch/x86_64/sel_addrspace_posix_x86_64.c",
         "linux/nacl_signal_64.c",
@@ -342,7 +342,7 @@ executable("sel_ldr") {
     ":sel_main",
     "//build/win:default_exe_manifest",
   ]
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     ldflags = [ "-pie" ]
     data_deps = [ "linux:bootstrap" ]
   }

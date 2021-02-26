@@ -43,6 +43,7 @@ class PeriodicBackgroundSyncPermissionContext
 #if defined(OS_ANDROID)
   virtual bool IsTwaInstalled(const GURL& origin) const;
 #endif
+  virtual GURL GetDefaultSearchEngineUrl() const;
 
  private:
   // PermissionContextBase implementation.
@@ -63,7 +64,8 @@ class PeriodicBackgroundSyncPermissionContext
                            const GURL& embedding_origin,
                            permissions::BrowserPermissionCallback callback,
                            bool persist,
-                           ContentSetting content_setting) override;
+                           ContentSetting content_setting,
+                           bool is_one_time) override;
 
   DISALLOW_COPY_AND_ASSIGN(PeriodicBackgroundSyncPermissionContext);
 };

@@ -12,9 +12,9 @@
 #include <condition_variable>  // NOLINT
 #include <functional>
 #include <memory>
-#include <mutex>  // NOLINT
+#include <mutex>
 #include <queue>
-#include <thread>  // NOLINT
+#include <thread>
 #include <vector>
 
 #include "absl/base/thread_annotations.h"

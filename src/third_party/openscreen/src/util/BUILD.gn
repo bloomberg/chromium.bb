@@ -23,12 +23,17 @@ source_set("util") {
     "alarm.h",
     "big_endian.cc",
     "big_endian.h",
+    "chrono_helpers.h",
     "crypto/certificate_utils.cc",
     "crypto/certificate_utils.h",
     "crypto/digest_sign.cc",
     "crypto/digest_sign.h",
     "crypto/openssl_util.cc",
     "crypto/openssl_util.h",
+    "crypto/pem_helpers.cc",
+    "crypto/pem_helpers.h",
+    "crypto/random_bytes.cc",
+    "crypto/random_bytes.h",
     "crypto/rsa_private_key.cc",
     "crypto/rsa_private_key.h",
     "crypto/secure_hash.cc",
@@ -37,6 +42,7 @@ source_set("util") {
     "crypto/sha2.h",
     "hashing.h",
     "integer_division.h",
+    "json/json_helpers.h",
     "json/json_serialization.cc",
     "json/json_serialization.h",
     "json/json_value.cc",
@@ -81,11 +87,12 @@ source_set("unittests") {
   sources = [
     "alarm_unittest.cc",
     "big_endian_unittest.cc",
-    "crypto/certificate_utils_unittest.cc",
+    "crypto/random_bytes_unittest.cc",
     "crypto/rsa_private_key_unittest.cc",
     "crypto/secure_hash_unittest.cc",
     "crypto/sha2_unittest.cc",
     "integer_division_unittest.cc",
+    "json/json_helpers_unittest.cc",
     "json/json_serialization_unittest.cc",
     "json/json_value_unittest.cc",
     "operation_loop_unittest.cc",
@@ -102,6 +109,12 @@ source_set("unittests") {
   # when trace logging is enabled.
   if (enable_trace_logging) {
     sources += [ "trace_logging_unittest.cc" ]
+  }
+
+  # TODO(http://issuetracker.google.com/159955844): test fails on fieldtrial
+  # bot, needs to be diagnosed and reenabled in Chrome.
+  if (!build_with_chromium) {
+    sources += [ "crypto/certificate_utils_unittest.cc" ]
   }
 
   deps = [

@@ -6,15 +6,12 @@
 
 #include "xfa/fxfa/cxfa_fontmgr.h"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
-
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "xfa/fgas/font/cfgas_defaultfontmanager.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
+#include "xfa/fgas/font/cfgas_pdffontmgr.h"
 #include "xfa/fgas/font/fgas_fontutils.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
@@ -22,6 +19,8 @@
 CXFA_FontMgr::CXFA_FontMgr() = default;
 
 CXFA_FontMgr::~CXFA_FontMgr() = default;
+
+void CXFA_FontMgr::Trace(cppgc::Visitor* visitor) const {}
 
 RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
                                               WideStringView wsFontFamily,
@@ -41,21 +40,19 @@ RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
       return pFont;
   }
   if (!pFont) {
-    pFont = CFGAS_DefaultFontManager::GetFont(hDoc->GetApp()->GetFDEFontMgr(),
-                                              wsFontFamily, dwFontStyles);
+    pFont = CFGAS_DefaultFontManager::GetFont(wsFontFamily, dwFontStyles);
   }
   if (!pFont && pMgr) {
     pFont = pMgr->GetFont(wsEnglishName.AsStringView(), dwFontStyles, false);
     if (pFont)
       return pFont;
   }
-  if (!pFont) {
-    pFont = CFGAS_DefaultFontManager::GetDefaultFont(
-        hDoc->GetApp()->GetFDEFontMgr(), dwFontStyles);
-  }
+  if (!pFont)
+    pFont = CFGAS_DefaultFontManager::GetDefaultFont(dwFontStyles);
+
   if (!pFont) {
     pFont = CFGAS_GEFont::LoadStockFont(
-        hDoc->GetPDFDoc(), hDoc->GetApp()->GetFDEFontMgr(),
+        hDoc->GetPDFDoc(),
         ByteString::Format("%ls", WideString(wsFontFamily).c_str()));
   }
   if (pFont)

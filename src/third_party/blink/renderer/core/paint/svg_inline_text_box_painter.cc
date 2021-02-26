@@ -17,10 +17,11 @@
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
@@ -68,11 +69,11 @@ LayoutObject& SVGInlineTextBoxPainter::ParentInlineLayoutObject() const {
 }
 
 LayoutSVGInlineText& SVGInlineTextBoxPainter::InlineText() const {
-  return ToLayoutSVGInlineText(InlineLayoutObject());
+  return To<LayoutSVGInlineText>(InlineLayoutObject());
 }
 
 void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
-                                    const LayoutPoint& paint_offset) {
+                                    const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelectionDragImage);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
@@ -99,8 +100,10 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     LayoutObject& parent_layout_object = ParentInlineLayoutObject();
     const ComputedStyle& style = parent_layout_object.StyleRef();
 
-    DrawingRecorder recorder(paint_info.context, svg_inline_text_box_,
-                             paint_info.phase);
+    DrawingRecorder recorder(
+        paint_info.context, svg_inline_text_box_, paint_info.phase,
+        EnclosingIntRect(
+            parent_layout_object.VisualRectInLocalSVGCoordinates()));
     InlineTextBoxPainter text_painter(svg_inline_text_box_);
     const DocumentMarkerVector& markers_to_paint =
         text_painter.ComputeMarkersToPaint();
@@ -218,8 +221,9 @@ void SVGInlineTextBoxPainter::PaintSelectionBackground(
     return;
 
   auto layout_item = svg_inline_text_box_.GetLineLayoutItem();
-  Color background_color = SelectionPaintingUtils::SelectionBackgroundColor(
-      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
+  Color background_color = HighlightPaintingUtils::HighlightBackgroundColor(
+      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode(),
+      kPseudoIdSelection);
   if (!background_color.Alpha())
     return;
 
@@ -420,7 +424,8 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
   if (HasShadow(paint_info, style)) {
     flags.setLooper(style.TextShadow()->CreateDrawLooper(
         DrawLooperBuilder::kShadowRespectsAlpha,
-        style.VisitedDependentColor(GetCSSPropertyColor())));
+        style.VisitedDependentColor(GetCSSPropertyColor()),
+        style.UsedColorScheme()));
   }
 
   if (resource_mode == kApplyToStrokeMode) {
@@ -472,8 +477,11 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   context.GetPaintController().SetTextPainted();
 
   if (!scaled_font.ShouldSkipDrawing()) {
-    PaintTimingDetector::NotifyTextPaint(
-        InlineLayoutObject().FragmentsVisualRectBoundingBox());
+    PaintTiming& timing = PaintTiming::From(
+        text_layout_object.GetNode()->GetDocument().TopDocument());
+    timing.MarkFirstContentfulPaint();
+    PaintTimingDetector::NotifyTextPaint(EnclosingIntRect(
+        InlineLayoutObject().VisualRectInLocalSVGCoordinates()));
   }
 }
 
@@ -592,7 +600,7 @@ SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
 
 void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     const PaintInfo& paint_info,
-    const LayoutPoint& point,
+    const PhysicalOffset& point,
     const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
@@ -639,7 +647,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
 
 void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& point,
+    const PhysicalOffset& point,
     const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {

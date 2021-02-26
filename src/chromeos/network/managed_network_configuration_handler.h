@@ -21,7 +21,6 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class Value;
 }  // namespace base
 
 namespace chromeos {
@@ -69,11 +68,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // Provides the properties of the network with |service_path| to |callback|.
   // |userhash| is used to set the "Source" property. If not provided then
   // user policies will be ignored.
-  virtual void GetProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void GetProperties(const std::string& userhash,
+                             const std::string& service_path,
+                             network_handler::PropertiesCallback callback) = 0;
 
   // Provides the managed properties of the network with |service_path| to
   // |callback|. |userhash| is used to ensure that the user's policy is
@@ -82,25 +79,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::PropertiesCallback callback) = 0;
 
   // Sets the user's settings of an already configured network with
   // |service_path|. A network can be initially configured by calling
   // CreateConfiguration or if it is managed by a policy. The given properties
   // will be merged with the existing settings, and it won't clear any existing
   // properties.
-  virtual void SetProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
-  virtual void SetManagerProperty(
-      const std::string& property_name,
-      const base::Value& value,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void SetProperties(const std::string& service_path,
+                             const base::DictionaryValue& user_settings,
+                             base::OnceClosure callback,
+                             network_handler::ErrorCallback error_callback) = 0;
 
   // Initially configures an unconfigured network with the given user settings
   // and returns the new identifier to |callback| if successful. Fails if the
@@ -110,16 +99,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
-      const network_handler::ServiceResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      network_handler::ServiceResultCallback callback,
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Removes the user's configuration from the network with |service_path|. The
   // network may still show up in the visible networks after this, but no user
   // configuration will remain. If it was managed, it will still be configured.
   virtual void RemoveConfiguration(
       const std::string& service_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Removes the user's configuration from the network with |service_path| in
   // the network's active network profile.
@@ -127,8 +116,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // configuration is only removed from a single network profile.
   virtual void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Only to be called by NetworkConfigurationUpdater or from tests. Sets
   // |network_configs_onc| and |global_network_config| as the current policy of
@@ -170,6 +159,18 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
       const std::string& profile_path,
       ::onc::ONCSource* onc_source) const = 0;
 
+  // Returns true if the network with |guid| is configured by device or user
+  // policy for profile |profile_path|.
+  virtual bool IsNetworkConfiguredByPolicy(
+      const std::string& guid,
+      const std::string& profile_path) const = 0;
+
+  // Returns true if the configuration of the network with |guid| is not
+  // managed by policy for profile with |profile_path| and thus can be removed.
+  virtual bool CanRemoveNetworkConfig(
+      const std::string& guid,
+      const std::string& profile_path) const = 0;
+
   // Return true if the AllowOnlyPolicyNetworksToConnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToConnect() const = 0;
 
@@ -180,8 +181,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // Return true if the AllowOnlyPolicyNetworksToAutoconnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToAutoconnect() const = 0;
 
-  // Return the list of blacklisted WiFi networks (identified by HexSSIDs).
-  virtual std::vector<std::string> GetBlacklistedHexSSIDs() const = 0;
+  // Return the list of blocked WiFi networks (identified by HexSSIDs).
+  virtual std::vector<std::string> GetBlockedHexSSIDs() const = 0;
 
   static std::unique_ptr<ManagedNetworkConfigurationHandler>
   InitializeForTesting(

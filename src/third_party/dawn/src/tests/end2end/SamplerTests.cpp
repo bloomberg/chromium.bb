@@ -46,12 +46,12 @@ namespace {
             255,
         },
     };
-}
+}  // namespace
 
 class SamplerTest : public DawnTest {
-protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+  protected:
+    void SetUp() override {
+        DawnTest::SetUp();
         mRenderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
         auto vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
@@ -90,7 +90,6 @@ protected:
         descriptor.size.width = 2;
         descriptor.size.height = 2;
         descriptor.size.depth = 1;
-        descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = 1;
@@ -105,9 +104,8 @@ protected:
 
         wgpu::Buffer stagingBuffer =
             utils::CreateBufferFromData(device, data, sizeof(data), wgpu::BufferUsage::CopySrc);
-        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 256, 0);
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
+        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 256);
+        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
         wgpu::Extent3D copySize = {2, 2, 1};
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -179,4 +177,8 @@ TEST_P(SamplerTest, AddressMode) {
     }
 }
 
-DAWN_INSTANTIATE_TEST(SamplerTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(SamplerTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

@@ -301,22 +301,6 @@ suite('PaymentsSection', function() {
         });
   });
 
-  test('verify save disabled for expired credit card', function() {
-    const creditCard = createEmptyCreditCardEntry();
-
-    const now = new Date();
-    creditCard.expirationYear = now.getFullYear() - 2;
-    // works fine for January.
-    creditCard.expirationMonth = now.getMonth() - 1;
-
-    const creditCardDialog = createCreditCardDialog(creditCard);
-
-    return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
-        .then(function() {
-          assertTrue(creditCardDialog.$.saveButton.disabled);
-        });
-  });
-
   test('verify save new credit card', function() {
     const creditCard = createEmptyCreditCardEntry();
     const creditCardDialog = createCreditCardDialog(creditCard);
@@ -328,9 +312,8 @@ suite('PaymentsSection', function() {
           assertTrue(creditCardDialog.$.expired.hidden);
           assertTrue(creditCardDialog.$.saveButton.disabled);
 
-          // Add a name and trigger the on-input handler.
+          // Add a name.
           creditCardDialog.set('creditCard.name', 'Jane Doe');
-          creditCardDialog.onCreditCardNameOrNumberChanged_();
           flush();
 
           assertTrue(creditCardDialog.$.expired.hidden);
@@ -587,29 +570,10 @@ suite('PaymentsSection', function() {
     assertEquals(0, upiRows.length);
   });
 
-  test('CanMakePaymentToggle_Visible', function() {
-    // The privacy settings redesign exposes the 'canMakePayment' toggle
-    // in the Payments section.
-    loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
-    const section = createPaymentsSection(
-        /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
-    assertTrue(isVisible(section.$$('#canMakePaymentToggle')));
-  });
-
-  test('CanMakePaymentToggle_NotPresentBeforeRedesign', function() {
-    // Before the privacy settings redesign, the 'canMakePayment' toggle
-    // lived elsewhere.
-    loadTimeData.overrideValues({'privacySettingsRedesignEnabled': false});
-    const section = createPaymentsSection(
-        /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
-    assertFalse(!!section.$$('#canMakePaymentToggle'));
-  });
-
   test('CanMakePaymentToggle_RecordsMetrics', async function() {
     const testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
 
-    loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
     const section = createPaymentsSection(
         /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
 

@@ -554,7 +554,10 @@ if env.Bit('linux'):
       'nacl_bootstrap_prereservation_test.out',
       command=env.AddBootstrap(nacl_bootstrap_prereservation_test_exe, []))
   env.AddNodeToTestSuite(node, ['small_tests'],
-                         'run_nacl_bootstrap_prereservation_test')
+                         'run_nacl_bootstrap_prereservation_test',
+                         # TODO(crbug.com/1101347): This fails on ARM bots.
+                         is_broken=env.Bit('build_arm')
+                             and not env.UsingEmulator())
 
 
 # also seems to have issues with windows coverage or VMs

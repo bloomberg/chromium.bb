@@ -10,7 +10,11 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/cert/x509_certificate.h"
@@ -19,10 +23,16 @@ class PrefRegistrySimple;
 class Profile;
 
 namespace chromeos {
+
+namespace platform_keys {
+class KeyPermissionsManager;
+class PlatformKeysService;
+}  // namespace platform_keys
+
 namespace cert_provisioning {
 
 // Used for both DeleteVaKey and DeleteVaKeysByPrefix
-using DeleteVaKeyCallback = base::OnceCallback<void(base::Optional<bool>)>;
+using DeleteVaKeyCallback = base::OnceCallback<void(bool)>;
 
 const char kKeyNamePrefix[] = "cert-provis-";
 
@@ -65,44 +75,50 @@ using CertProfileId = std::string;
 // with definitions of RequiredClientCertificateForDevice and
 // RequiredClientCertificateForUser policies in policy_templates.json file.
 const char kCertProfileIdKey[] = "cert_profile_id";
+const char kCertProfileRenewalPeroidSec[] = "renewal_period_seconds";
 const char kCertProfilePolicyVersionKey[] = "policy_version";
+const char kCertProfileIsVaEnabledKey[] = "enable_remote_attestation_check";
 
 struct CertProfile {
+  static base::Optional<CertProfile> MakeFromValue(const base::Value& value);
+
+  CertProfile() = default;
+  // For tests.
+  CertProfile(CertProfileId profile_id,
+              std::string policy_version,
+              bool is_va_enabled,
+              base::TimeDelta renewal_period);
+
   CertProfileId profile_id;
   std::string policy_version;
+  bool is_va_enabled = true;
+  // Default renewal period 0 means that a certificate will be renewed only
+  // after the previous one has expired (0 seconds before it is expires).
+  base::TimeDelta renewal_period = base::TimeDelta::FromSeconds(0);
 
   // IMPORTANT:
   // Increment this when you add/change any member in CertProfile (and update
   // all functions that fail to compile because of it).
-  static constexpr int kVersion = 2;
+  static constexpr int kVersion = 4;
 
-  static base::Optional<CertProfile> MakeFromValue(const base::Value& value);
   bool operator==(const CertProfile& other) const;
   bool operator!=(const CertProfile& other) const;
 };
 
+struct CertProfileComparator {
+  bool operator()(const CertProfile& a, const CertProfile& b) const;
+};
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+const char* GetPrefNameForCertProfiles(CertScope scope);
 const char* GetPrefNameForSerialization(CertScope scope);
 
 // Returns the nickname (CKA_LABEL) for keys created for the |profile_id|.
 std::string GetKeyName(CertProfileId profile_id);
 // Returns the key type for VA API calls for |scope|.
 attestation::AttestationKeyType GetVaKeyType(CertScope scope);
-const char* GetPlatformKeysTokenId(CertScope scope);
-
-// The Verified Access APIs are used to generate key pairs. For user-specific
-// key pairs, it is possible to reuse the key pair that is used for Verified
-// Access challenge response generation and name it with a custom name. For
-// device-wide key pairs, the key pair used for Verified Access challenge
-// response generation must be stable, but an additional key pair can be
-// embedded (key_name_for_spkac). See
-// http://go/chromeos-va-registering-device-wide-keys-support for details. For
-// these reasons, the name of key that should be registered and will be used for
-// certificate provisioning is passed as key_name for user-specific keys and
-// key_name_for_spkac for device-wide keys.
-std::string GetVaKeyName(CertScope scope, CertProfileId profile_id);
-std::string GetVaKeyNameForSpkac(CertScope scope, CertProfileId profile_id);
+platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope);
 
 // This functions should be used to delete keys that were created by
 // TpmChallengeKey* and were not registered yet. (To delete registered keys
@@ -122,6 +138,25 @@ void DeleteVaKeysByPrefix(CertScope scope,
 scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
     const char* data,
     size_t length);
+
+// Returns the PlatformKeysService to be used.
+// If |scope| is CertScope::kDevice, |profile| is ignored and the
+// device-wide PlatformKeysService is returned.
+// If |scope| is CertScope::kUser, returns the service for |profile|.
+// The returned object is owned by the Profile (user-specific) or globally
+// (device-wide) and may only be used until it notifies its observers that it is
+// being shut down.
+platform_keys::PlatformKeysService* GetPlatformKeysService(CertScope scope,
+                                                           Profile* profile);
+
+// Returns the KeyPermissionsManager to be used.
+// If |scope| is CertScope::kDevice, |profile| is ignored and the
+// system token key permissions manager is returned.
+// If |scope| is CertScope::kUser, returns the user private slot key permissions
+// manager for |profile|.
+platform_keys::KeyPermissionsManager* GetKeyPermissionsManager(
+    CertScope scope,
+    Profile* profile);
 
 }  // namespace cert_provisioning
 }  // namespace chromeos

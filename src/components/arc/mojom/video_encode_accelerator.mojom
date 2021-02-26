@@ -7,6 +7,7 @@
 
 module arc.mojom;
 
+import "components/arc/mojom/gfx.mojom";
 import "components/arc/mojom/video_common.mojom";
 
 // Next MinVersion: 5
@@ -28,7 +29,8 @@ enum VideoFrameStorageType {
 };
 
 // The encoder parameter set which matches to
-// media::VideoEncodeAccelerator::Config.
+// media::VideoEncodeAccelerator::Config except |is_constrained_h264| parameter
+// which is a flag for H264 profile.
 //  |input_format| is the pixel format of the input frames.
 //  |input_visible_size| is the resolution of the input frames.
 //  |output_profile| is the codec profile of the encoded output stream.
@@ -84,7 +86,7 @@ interface VideoEncodeAccelerator {
 
   [MinVersion=4]
   Initialize@9(VideoEncodeAcceleratorConfig config,
-               VideoEncodeClient client) => (Result result);
+               pending_remote<VideoEncodeClient> client) => (Result result);
 
   // Initializes the video encoder with specific configuration.  Called once per
   // encoder construction.
@@ -97,7 +99,8 @@ interface VideoEncodeAccelerator {
   //  invoke any other methods before the callback.
   [MinVersion=1]
   InitializeDeprecated@7(VideoEncodeAcceleratorConfig config,
-                         VideoEncodeClient client) => (bool success);
+                         pending_remote<VideoEncodeClient> client) =>
+                             (bool success);
 
   // Encodes the given frame.
   // Parameters:
@@ -156,7 +159,6 @@ interface VideoEncodeAccelerator {
 // Interface for clients that use VideoEncodeAccelerator. These callbacks will
 // not be made unless VideoEncodeAccelerator::Initialize() has returned
 // successfully.
-// Next MinVersion: 1
 // Next Method ID: 3
 interface VideoEncodeClient {
   // Callback to tell the client what size of frames and buffers to provide

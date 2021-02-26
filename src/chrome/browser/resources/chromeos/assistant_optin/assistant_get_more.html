@@ -1,6 +1,7 @@
 <!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
+<link rel="import" href="/components/oobe_i18n_behavior.html">
 
 <dom-module id="assistant-get-more">
   <template>
@@ -22,7 +23,7 @@
           </div>
           <div class="flex layout horizontal center">
             <div id="ready-image-container">
-              <img id="ready-img" class="oobe-illustration"
+              <img id="ready-img" class="oobe-illustration" aria-hidden="true"
                   src="assistant_ready.svg">
             </div>
             <div class="vertical-line"></div>
@@ -32,7 +33,7 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
+        <oobe-text-button id="next-button" inverse on-click="onNextTap_"
             disabled="[[buttonsDisabled]]" hidden="[[moreContents]]"
             text-key="assistantReadyButton">
         </oobe-text-button>

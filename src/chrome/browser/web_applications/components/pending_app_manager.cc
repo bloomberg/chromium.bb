@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -24,8 +24,9 @@ PendingAppManager::SynchronizeRequest::SynchronizeRequest(
 
 PendingAppManager::SynchronizeRequest::~SynchronizeRequest() = default;
 
-PendingAppManager::SynchronizeRequest& PendingAppManager::SynchronizeRequest::
-operator=(PendingAppManager::SynchronizeRequest&&) = default;
+PendingAppManager::SynchronizeRequest&
+PendingAppManager::SynchronizeRequest::operator=(
+    PendingAppManager::SynchronizeRequest&&) = default;
 
 PendingAppManager::SynchronizeRequest::SynchronizeRequest(
     SynchronizeRequest&& other) = default;
@@ -36,16 +37,17 @@ PendingAppManager::~PendingAppManager() {
   DCHECK(!registration_callback_);
 }
 
-void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
-                                      AppShortcutManager* shortcut_manager,
-                                      FileHandlerManager* file_handler_manager,
-                                      WebAppUiManager* ui_manager,
-                                      InstallFinalizer* finalizer) {
+void PendingAppManager::SetSubsystems(
+    AppRegistrar* registrar,
+    OsIntegrationManager* os_integration_manager,
+    WebAppUiManager* ui_manager,
+    InstallFinalizer* finalizer,
+    InstallManager* install_manager) {
   registrar_ = registrar;
-  shortcut_manager_ = shortcut_manager;
-  file_handler_manager_ = file_handler_manager;
+  os_integration_manager_ = os_integration_manager;
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
+  install_manager_ = install_manager;
 }
 
 void PendingAppManager::SynchronizeInstalledApps(
@@ -70,7 +72,7 @@ void PendingAppManager::SynchronizeInstalledApps(
 
   std::vector<GURL> desired_urls;
   for (const auto& info : desired_apps_install_options)
-    desired_urls.push_back(info.url);
+    desired_urls.push_back(info.install_url);
 
   std::sort(desired_urls.begin(), desired_urls.end());
 
@@ -111,10 +113,15 @@ void PendingAppManager::ClearRegistrationCallbackForTesting() {
   registration_callback_ = RegistrationCallback();
 }
 
-void PendingAppManager::OnRegistrationFinished(const GURL& launch_url,
+void PendingAppManager::SetRegistrationsCompleteCallbackForTesting(
+    base::OnceClosure callback) {
+  registrations_complete_callback_ = std::move(callback);
+}
+
+void PendingAppManager::OnRegistrationFinished(const GURL& install_url,
                                                RegistrationResultCode result) {
   if (registration_callback_)
-    registration_callback_.Run(launch_url, result);
+    registration_callback_.Run(install_url, result);
 }
 
 void PendingAppManager::InstallForSynchronizeCallback(
@@ -161,6 +168,10 @@ void PendingAppManager::OnAppSynchronized(ExternalInstallSource source,
                                   std::move(request.uninstall_results)));
     synchronize_requests_.erase(source);
   }
+}
+void PendingAppManager::ClearSynchronizeRequestsForTesting() {
+  synchronize_requests_.erase(synchronize_requests_.begin(),
+                              synchronize_requests_.end());
 }
 
 }  // namespace web_app

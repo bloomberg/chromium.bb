@@ -1143,7 +1143,7 @@ template <int bitdepth>
 struct LoopFilterFuncs_SSE4_1 {
   LoopFilterFuncs_SSE4_1() = delete;
 
-  static const int kThreshShift = bitdepth - 8;
+  static constexpr int kThreshShift = bitdepth - 8;
 
   static void Vertical4(void* dest, ptrdiff_t stride, int outer_thresh,
                         int inner_thresh, int hev_thresh);
@@ -2245,7 +2245,7 @@ void LoopFilterInit_SSE4_1() {
 }  // namespace dsp
 }  // namespace libgav1
 
-#else   // !LIBGAV1_ENABLE_SSE4_1
+#else  // !LIBGAV1_ENABLE_SSE4_1
 namespace libgav1 {
 namespace dsp {
 

@@ -9,7 +9,7 @@
 #define GrMtlUniformHandler_DEFINED
 
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrTAllocator.h"
+#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 #include <vector>
@@ -31,7 +31,7 @@ public:
     struct MtlUniformInfo : public UniformInfo {
         uint32_t fUBOffset;
     };
-    typedef GrTAllocator<MtlUniformInfo> UniformInfoArray;
+    typedef GrTBlockList<MtlUniformInfo> UniformInfoArray;
 
     const GrShaderVar& getUniformVariable(UniformHandle u) const override {
         return fUniforms.item(u.toIndex()).fVariable;
@@ -46,6 +46,9 @@ public:
     }
 
     UniformInfo& uniform(int idx) override {
+        return fUniforms.item(idx);
+    }
+    const UniformInfo& uniform(int idx) const override {
         return fUniforms.item(idx);
     }
 
@@ -98,7 +101,7 @@ private:
 
     friend class GrMtlPipelineStateBuilder;
 
-    typedef GrGLSLUniformHandler INHERITED;
+    using INHERITED = GrGLSLUniformHandler;
 };
 
 #endif

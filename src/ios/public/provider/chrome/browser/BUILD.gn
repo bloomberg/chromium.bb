@@ -15,15 +15,18 @@ source_set("browser") {
     "geolocation_updater_provider.mm",
     "overrides_provider.h",
     "overrides_provider.mm",
+    "text_zoom_provider.h",
+    "text_zoom_provider.mm",
   ]
   deps = [
     "//base",
     "//components/metrics",
     "//ios/public/provider/chrome/browser/mailto",
     "//ios/web/public",
+    "//ios/web/public/js_messaging",
     "//url",
   ]
-  libs = [ "CoreLocation.framework" ]
+  frameworks = [ "CoreLocation.framework" ]
 }
 
 source_set("test_support") {
@@ -34,10 +37,13 @@ source_set("test_support") {
     "test_chrome_browser_provider.mm",
     "test_chrome_provider_initializer.h",
     "test_chrome_provider_initializer.mm",
+    "test_text_zoom_provider.h",
+    "test_text_zoom_provider.mm",
   ]
   deps = [
     ":browser",
     "//base",
+    "//ios/public/provider/chrome/browser/discover_feed",
     "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/mailto:test_support",

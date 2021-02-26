@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
 
 #include "base/containers/queue.h"
-#include "base/single_thread_task_runner.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 
@@ -15,6 +14,7 @@
 
 namespace base {
 class WaitableEvent;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace media {
@@ -34,9 +34,10 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
       const VideoTrackRecorder::OnErrorCB& on_error_cb,
       int32_t bits_per_second,
       media::VideoCodecProfile codec,
+      base::Optional<uint8_t> level,
       const gfx::Size& size,
       bool use_native_input,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -69,8 +70,9 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
              const VideoTrackRecorder::OnErrorCB& on_error_cb,
              int32_t bits_per_second,
              media::VideoCodecProfile codec,
+             base::Optional<uint8_t> level,
              const gfx::Size& size,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+             scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
   void FrameFinished(std::unique_ptr<InputBuffer> shm);
@@ -88,6 +90,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
 
   const media::VideoCodecProfile codec_;
+
+  const base::Optional<uint8_t> level_;
 
   // The underlying VEA to perform encoding on.
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;

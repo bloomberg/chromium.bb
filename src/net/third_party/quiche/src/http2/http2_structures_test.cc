@@ -24,6 +24,7 @@
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -47,7 +48,9 @@ E IncrementEnum(E e) {
 template <class T>
 AssertionResult VerifyRandomCalls() {
   T t1;
-  Http2Random seq1;
+  // Initialize with a stable key, to avoid test flakiness.
+  Http2Random seq1(
+      "6d9a61ddf2bc1fc0b8245505a1f28e324559d8b5c9c3268f38b42b1af3287c47");
   Randomize(&t1, &seq1);
 
   T t2;
@@ -149,8 +152,7 @@ TEST(Http2FrameHeaderTest, Eq) {
 // The tests of the valid frame types include EXPECT_DEBUG_DEATH, which is
 // quite slow, so using value parameterized tests in order to allow sharding.
 class Http2FrameHeaderTypeAndFlagTest
-    : public ::testing::TestWithParam<
-          std::tuple<Http2FrameType, Http2FrameFlag>> {
+    : public QuicheTestWithParam<std::tuple<Http2FrameType, Http2FrameFlag>> {
  protected:
   Http2FrameHeaderTypeAndFlagTest()
       : type_(std::get<0>(GetParam())), flags_(std::get<1>(GetParam())) {

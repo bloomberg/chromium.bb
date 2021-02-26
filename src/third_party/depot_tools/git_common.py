@@ -530,7 +530,11 @@ def get_or_create_merge_base(branch, parent=None):
   parent = parent or upstream(branch)
   if parent is None or branch is None:
     return None
-  actual_merge_base = run('merge-base', parent, branch)
+
+  try:
+    actual_merge_base = run('merge-base', '--fork-point', parent, branch)
+  except subprocess2.CalledProcessError:
+    actual_merge_base = run('merge-base', parent, branch)
 
   if base_upstream != parent:
     base = None
@@ -1036,18 +1040,22 @@ def get_branches_info(include_tracking_status):
   info_map = {}
   data = run('for-each-ref', format_string, 'refs/heads')
   BranchesInfo = collections.namedtuple(
-      'BranchesInfo', 'hash upstream ahead behind')
+      'BranchesInfo', 'hash upstream commits behind')
   for line in data.splitlines():
     (branch, branch_hash, upstream_branch, tracking_status) = line.split(':')
 
-    ahead_match = re.search(r'ahead (\d+)', tracking_status)
-    ahead = int(ahead_match.group(1)) if ahead_match else None
+    commits = None
+    base = get_or_create_merge_base(branch)
+    if base:
+      commits_list = run('rev-list', '--count', branch, '^%s' % base, '--')
+      commits = int(commits_list) or None
 
     behind_match = re.search(r'behind (\d+)', tracking_status)
     behind = int(behind_match.group(1)) if behind_match else None
 
     info_map[branch] = BranchesInfo(
-        hash=branch_hash, upstream=upstream_branch, ahead=ahead, behind=behind)
+        hash=branch_hash, upstream=upstream_branch, commits=commits, 
+        behind=behind)
 
   # Set None for upstreams which are not branches (e.g empty upstream, remotes
   # and deleted upstream branches).
@@ -1083,6 +1091,7 @@ def make_workdir(repository, new_workdir):
     'refs',
     'remotes',
     'rr-cache',
+    'shallow',
   ]
   make_workdir_common(repository, new_workdir, GIT_DIRECTORY_WHITELIST,
                       ['HEAD'])

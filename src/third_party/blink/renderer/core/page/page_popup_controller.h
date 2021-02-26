@@ -46,7 +46,6 @@ class PagePopupClient;
 
 class PagePopupController : public ScriptWrappable, public Supplement<Page> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PagePopupController);
 
  public:
   static const char kSupplementName[];
@@ -68,7 +67,7 @@ class PagePopupController : public ScriptWrappable, public Supplement<Page> {
 
   static CSSFontSelector* CreateCSSFontSelector(Document& popup_document);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PagePopup& popup_;

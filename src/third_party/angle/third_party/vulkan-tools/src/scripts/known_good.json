@@ -6,7 +6,7 @@
       "sub_dir" : "Vulkan-Headers",
       "build_dir" : "Vulkan-Headers/build",
       "install_dir" : "Vulkan-Headers/build/install",
-      "commit" : "v1.2.140"
+      "commit" : "v1.2.159"
     },
     {
       "name" : "MoltenVK",
@@ -14,10 +14,10 @@
       "sub_dir" : "MoltenVK",
       "build_dir" : "MoltenVK",
       "install_dir" : "MoltenVK",
-      "commit" : "v1.0.41",
+      "commit" : "v1.1.0",
       "custom_build" : [
-        "./fetchDependencies",
-        "xcodebuild -project MoltenVKPackaging.xcodeproj GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_CONFIG_LOG_LEVEL=1' -scheme \"MoltenVK Package\" build"
+        "./fetchDependencies --macos --no-parallel-build",
+        "xcodebuild -project MoltenVKPackaging.xcodeproj GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_CONFIG_LOG_LEVEL=1' -scheme \"MoltenVK Package (macOS only)\" build"
       ],
       "build_step" : "custom",
       "build_platforms" : [
@@ -30,7 +30,7 @@
       "sub_dir" : "Vulkan-Loader",
       "build_dir" : "Vulkan-Loader/build",
       "install_dir" : "Vulkan-Loader/build/install",
-      "commit" : "v1.2.140",
+      "commit" : "v1.2.159",
       "deps" : [
         {
           "var_name" : "VULKAN_HEADERS_INSTALL_DIR",

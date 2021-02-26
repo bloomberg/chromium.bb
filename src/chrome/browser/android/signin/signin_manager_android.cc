@@ -23,7 +23,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/google/core/common/google_util.h"
@@ -31,7 +31,9 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
@@ -64,7 +66,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
     } else {
       std::unique_ptr<content::BrowsingDataFilterBuilder> google_tld_filter =
           content::BrowsingDataFilterBuilder::Create(
-              content::BrowsingDataFilterBuilder::WHITELIST);
+              content::BrowsingDataFilterBuilder::Mode::kDelete);
 
       // TODO(msramek): BrowsingDataFilterBuilder was not designed for
       // large filters. Optimize it.
@@ -83,7 +85,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
 
   ~ProfileDataRemover() override {}
 
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     remover_->RemoveObserver(this);
 
     if (all_data_) {
@@ -131,8 +133,8 @@ SigninManagerAndroid::SigninManagerAndroid(
 
   signin_allowed_.Init(
       prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
+                          base::Unretained(this)));
 
   force_browser_signin_.Init(prefs::kForceBrowserSignin,
                              g_browser_process->local_state());
@@ -274,6 +276,13 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env) {
   }
 
   return domain;
+}
+
+void SigninManagerAndroid::
+    LogOutAllAccountsForMobileIdentityConsistencyRollback(JNIEnv* env) {
+  identity_manager_->GetAccountsCookieMutator()->LogOutAllAccounts(
+      gaia::GaiaSource::kAccountReconcilorMirror,
+      signin::AccountsCookieMutator::LogOutFromCookieCompletedCallback());
 }
 
 void SigninManagerAndroid::WipeProfileData(

@@ -29,16 +29,6 @@ typedef std::list<URLRequestTestJob*> URLRequestJobList;
 base::LazyInstance<URLRequestJobList>::Leaky
     g_pending_jobs = LAZY_INSTANCE_INITIALIZER;
 
-class TestJobProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
- public:
-  // URLRequestJobFactory::ProtocolHandler implementation:
-  URLRequestJob* MaybeCreateJob(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const override {
-    return new URLRequestTestJob(request, network_delegate);
-  }
-};
-
 }  // namespace
 
 // static getters for known URLs
@@ -136,20 +126,8 @@ std::string URLRequestTestJob::test_error_headers() {
   return std::string(kHeaders, base::size(kHeaders));
 }
 
-// static
-std::unique_ptr<URLRequestJobFactory::ProtocolHandler>
-URLRequestTestJob::CreateProtocolHandler() {
-  return std::make_unique<TestJobProtocolHandler>();
-}
-
-URLRequestTestJob::URLRequestTestJob(URLRequest* request,
-                                     NetworkDelegate* network_delegate)
-    : URLRequestTestJob(request, network_delegate, false) {}
-
-URLRequestTestJob::URLRequestTestJob(URLRequest* request,
-                                     NetworkDelegate* network_delegate,
-                                     bool auto_advance)
-    : URLRequestJob(request, network_delegate),
+URLRequestTestJob::URLRequestTestJob(URLRequest* request, bool auto_advance)
+    : URLRequestJob(request),
       auto_advance_(auto_advance),
       stage_(WAITING),
       priority_(DEFAULT_PRIORITY),
@@ -160,11 +138,10 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       async_reads_(false) {}
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
-                                     NetworkDelegate* network_delegate,
                                      const std::string& response_headers,
                                      const std::string& response_data,
                                      bool auto_advance)
-    : URLRequestJob(request, network_delegate),
+    : URLRequestJob(request),
       auto_advance_(auto_advance),
       stage_(WAITING),
       priority_(DEFAULT_PRIORITY),

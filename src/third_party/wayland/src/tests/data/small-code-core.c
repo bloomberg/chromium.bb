@@ -32,7 +32,7 @@
 extern const struct wl_interface another_intf_interface;
 extern const struct wl_interface intf_not_here_interface;
 
-static const struct wl_interface *types[] = {
+static const struct wl_interface *small_test_types[] = {
 	NULL,
 	&intf_not_here_interface,
 	NULL,
@@ -44,13 +44,13 @@ static const struct wl_interface *types[] = {
 };
 
 static const struct wl_message intf_A_requests[] = {
-	{ "rq1", "sun", types + 0 },
-	{ "rq2", "nsiufho", types + 1 },
-	{ "destroy", "", types + 0 },
+	{ "rq1", "sun", small_test_types + 0 },
+	{ "rq2", "nsiufho", small_test_types + 1 },
+	{ "destroy", "", small_test_types + 0 },
 };
 
 static const struct wl_message intf_A_events[] = {
-	{ "hey", "", types + 0 },
+	{ "hey", "", small_test_types + 0 },
 };
 
 WL_EXPORT const struct wl_interface intf_A_interface = {

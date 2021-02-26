@@ -17,7 +17,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 #include "ui/aura/window.h"
 #endif
 
@@ -87,7 +87,6 @@ class ResizeAreaTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<TestResizeAreaDelegate> delegate_;
-  ResizeArea* resize_area_ = nullptr;
   views::Widget* widget_ = nullptr;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -122,10 +121,10 @@ void ResizeAreaTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
   delegate_ = std::make_unique<TestResizeAreaDelegate>();
-  resize_area_ = new ResizeArea(delegate_.get());
+  auto resize_area = std::make_unique<ResizeArea>(delegate_.get());
 
   gfx::Size size(10, 10);
-  resize_area_->SetBounds(0, 0, size.width(), size.height());
+  resize_area->SetBounds(0, 0, size.width(), size.height());
 
   views::Widget::InitParams init_params(
       CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS));
@@ -133,7 +132,7 @@ void ResizeAreaTest::SetUp() {
 
   widget_ = new views::Widget();
   widget_->Init(std::move(init_params));
-  widget_->SetContentsView(resize_area_);
+  widget_->SetContentsView(std::move(resize_area));
   widget_->Show();
 
   event_generator_ =
@@ -148,7 +147,7 @@ void ResizeAreaTest::TearDown() {
 }
 
 // TODO(tdanderson): Enable these tests on OSX. See crbug.com/710475.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Verifies the correct calls have been made to
 // TestResizeAreaDelegate::OnResize() for a sequence of mouse events
 // corresponding to a successful resize operation.
@@ -202,6 +201,6 @@ TEST_F(ResizeAreaTest, NoDragOnGestureTap) {
 
   EXPECT_EQ(0, resize_amount());
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 }  // namespace views

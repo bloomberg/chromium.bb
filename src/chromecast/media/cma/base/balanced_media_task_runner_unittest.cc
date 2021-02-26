@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -172,10 +172,9 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
 
   bool may_run = context.media_task_runner->PostMediaTask(
       FROM_HERE,
-      base::Bind(&BalancedMediaTaskRunnerTest::Task,
-                 base::Unretained(this),
-                 task_runner_id,
-                 context.task_timestamp_list[context.task_index]),
+      base::BindOnce(&BalancedMediaTaskRunnerTest::Task, base::Unretained(this),
+                     task_runner_id,
+                     context.task_timestamp_list[context.task_index]),
       context.task_timestamp_list[context.task_index]);
   EXPECT_EQ(may_run, expected_may_run);
 
@@ -207,7 +206,7 @@ void BalancedMediaTaskRunnerTest::Task(
 
 void BalancedMediaTaskRunnerTest::OnTestTimeout() {
   ADD_FAILURE() << "Test timed out";
-  if (base::MessageLoopCurrent::Get())
+  if (base::CurrentThread::Get())
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 

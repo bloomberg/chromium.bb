@@ -14,6 +14,7 @@
 #include "api/task_queue/default_task_queue_factory.h"
 #include "modules/audio_device/include/mock_audio_device.h"
 #include "modules/audio_processing/include/mock_audio_processing.h"
+#include "modules/utility/include/mock/mock_process_thread.h"
 #include "test/gtest.h"
 #include "test/mock_transport.h"
 
@@ -24,6 +25,9 @@ using ::testing::NiceMock;
 using ::testing::Return;
 
 constexpr int kPcmuPayload = 0;
+constexpr int kPcmuSampleRateHz = 8000;
+constexpr int kDtmfEventDurationMs = 1000;
+constexpr DtmfEvent kDtmfEventCode = DtmfEvent::kDigitZero;
 
 class VoipCoreTest : public ::testing::Test {
  public:
@@ -37,15 +41,20 @@ class VoipCoreTest : public ::testing::Test {
     rtc::scoped_refptr<AudioProcessing> audio_processing =
         new rtc::RefCountedObject<test::MockAudioProcessing>();
 
-    voip_core_ = std::make_unique<VoipCore>();
-    voip_core_->Init(std::move(encoder_factory), std::move(decoder_factory),
-                     CreateDefaultTaskQueueFactory(), audio_device_,
-                     std::move(audio_processing));
+    auto process_thread = std::make_unique<NiceMock<MockProcessThread>>();
+    // Hold the pointer to use for testing.
+    process_thread_ = process_thread.get();
+
+    voip_core_ = std::make_unique<VoipCore>(
+        std::move(encoder_factory), std::move(decoder_factory),
+        CreateDefaultTaskQueueFactory(), audio_device_,
+        std::move(audio_processing), std::move(process_thread));
   }
 
   std::unique_ptr<VoipCore> voip_core_;
   NiceMock<MockTransport> transport_;
   rtc::scoped_refptr<test::MockAudioDeviceModule> audio_device_;
+  NiceMock<MockProcessThread>* process_thread_;
 };
 
 // Validate expected API calls that involves with VoipCore. Some verification is
@@ -67,6 +76,12 @@ TEST_F(VoipCoreTest, BasicVoipCoreOperation) {
 
   EXPECT_TRUE(voip_core_->StartSend(*channel));
   EXPECT_TRUE(voip_core_->StartPlayout(*channel));
+
+  voip_core_->RegisterTelephoneEventType(*channel, kPcmuPayload,
+                                         kPcmuSampleRateHz);
+
+  EXPECT_TRUE(voip_core_->SendDtmfEvent(*channel, kDtmfEventCode,
+                                        kDtmfEventDurationMs));
 
   // Program mock as operational that is ready to be stopped.
   EXPECT_CALL(*audio_device_, Recording()).WillOnce(Return(true));
@@ -91,9 +106,109 @@ TEST_F(VoipCoreTest, ExpectFailToUseReleasedChannelId) {
   // These should be no-op.
   voip_core_->SetSendCodec(*channel, kPcmuPayload, kPcmuFormat);
   voip_core_->SetReceiveCodecs(*channel, {{kPcmuPayload, kPcmuFormat}});
+  voip_core_->RegisterTelephoneEventType(*channel, kPcmuPayload,
+                                         kPcmuSampleRateHz);
 
   EXPECT_FALSE(voip_core_->StartSend(*channel));
   EXPECT_FALSE(voip_core_->StartPlayout(*channel));
+  EXPECT_FALSE(voip_core_->SendDtmfEvent(*channel, kDtmfEventCode,
+                                         kDtmfEventDurationMs));
+}
+
+TEST_F(VoipCoreTest, SendDtmfEventWithoutRegistering) {
+  // Program mock as non-operational and ready to start send.
+  EXPECT_CALL(*audio_device_, Recording()).WillOnce(Return(false));
+  EXPECT_CALL(*audio_device_, InitRecording()).WillOnce(Return(0));
+  EXPECT_CALL(*audio_device_, StartRecording()).WillOnce(Return(0));
+
+  auto channel = voip_core_->CreateChannel(&transport_, 0xdeadc0de);
+  EXPECT_TRUE(channel);
+
+  voip_core_->SetSendCodec(*channel, kPcmuPayload, kPcmuFormat);
+
+  EXPECT_TRUE(voip_core_->StartSend(*channel));
+  // Send Dtmf event without registering beforehand, thus payload
+  // type is not set and false is expected.
+  EXPECT_FALSE(voip_core_->SendDtmfEvent(*channel, kDtmfEventCode,
+                                         kDtmfEventDurationMs));
+
+  // Program mock as sending and is ready to be stopped.
+  EXPECT_CALL(*audio_device_, Recording()).WillOnce(Return(true));
+  EXPECT_CALL(*audio_device_, StopRecording()).WillOnce(Return(0));
+
+  EXPECT_TRUE(voip_core_->StopSend(*channel));
+  voip_core_->ReleaseChannel(*channel);
+}
+
+TEST_F(VoipCoreTest, SendDtmfEventWithoutStartSend) {
+  auto channel = voip_core_->CreateChannel(&transport_, 0xdeadc0de);
+  EXPECT_TRUE(channel);
+
+  voip_core_->RegisterTelephoneEventType(*channel, kPcmuPayload,
+                                         kPcmuSampleRateHz);
+  // Send Dtmf event without calling StartSend beforehand, thus
+  // Dtmf events cannot be sent and false is expected.
+  EXPECT_FALSE(voip_core_->SendDtmfEvent(*channel, kDtmfEventCode,
+                                         kDtmfEventDurationMs));
+
+  voip_core_->ReleaseChannel(*channel);
+}
+
+TEST_F(VoipCoreTest, StartSendAndPlayoutWithoutSettingCodec) {
+  auto channel = voip_core_->CreateChannel(&transport_, 0xdeadc0de);
+  EXPECT_TRUE(channel);
+
+  // Call StartSend and StartPlayout without setting send/receive
+  // codec. Code should see that codecs aren't set and return false.
+  EXPECT_FALSE(voip_core_->StartSend(*channel));
+  EXPECT_FALSE(voip_core_->StartPlayout(*channel));
+
+  voip_core_->ReleaseChannel(*channel);
+}
+
+TEST_F(VoipCoreTest, StopSendAndPlayoutWithoutStarting) {
+  auto channel = voip_core_->CreateChannel(&transport_, 0xdeadc0de);
+  EXPECT_TRUE(channel);
+
+  voip_core_->SetSendCodec(*channel, kPcmuPayload, kPcmuFormat);
+  voip_core_->SetReceiveCodecs(*channel, {{kPcmuPayload, kPcmuFormat}});
+
+  // Call StopSend and StopPlayout without starting them in
+  // the first place. Should see that it is already in the
+  // stopped state and return true.
+  EXPECT_TRUE(voip_core_->StopSend(*channel));
+  EXPECT_TRUE(voip_core_->StopPlayout(*channel));
+
+  voip_core_->ReleaseChannel(*channel);
+}
+
+// This tests correctness on ProcessThread usage where we expect the first/last
+// channel creation/release triggers its Start/Stop method once only.
+TEST_F(VoipCoreTest, TestProcessThreadOperation) {
+  EXPECT_CALL(*process_thread_, Start);
+  EXPECT_CALL(*process_thread_, RegisterModule).Times(2);
+
+  auto channel_one = voip_core_->CreateChannel(&transport_, 0xdeadc0de);
+  auto channel_two = voip_core_->CreateChannel(&transport_, 0xdeadbeef);
+  EXPECT_TRUE(channel_one);
+  EXPECT_TRUE(channel_two);
+
+  EXPECT_CALL(*process_thread_, Stop);
+  EXPECT_CALL(*process_thread_, DeRegisterModule).Times(2);
+
+  voip_core_->ReleaseChannel(*channel_one);
+  voip_core_->ReleaseChannel(*channel_two);
+
+  EXPECT_CALL(*process_thread_, Start);
+  EXPECT_CALL(*process_thread_, RegisterModule);
+
+  auto channel_three = voip_core_->CreateChannel(&transport_, absl::nullopt);
+  EXPECT_TRUE(channel_three);
+
+  EXPECT_CALL(*process_thread_, Stop);
+  EXPECT_CALL(*process_thread_, DeRegisterModule);
+
+  voip_core_->ReleaseChannel(*channel_three);
 }
 
 }  // namespace

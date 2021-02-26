@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B6060BD222716FC0015F0A0 /* HTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B6060BC222716FC0015F0A0 /* HTTPRequest.m */; };
+		5B6060C02227201B0015F0A0 /* HTTPPutRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B6060BF2227201B0015F0A0 /* HTTPPutRequest.m */; };
+		5B6060C7222735E50015F0A0 /* HTTPGetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B6060C6222735E50015F0A0 /* HTTPGetRequest.m */; };
+		5B6060CA2227374E0015F0A0 /* HTTPSimplePostRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B6060C92227374E0015F0A0 /* HTTPSimplePostRequest.m */; };
+		5B6060D022273BDA0015F0A0 /* SymbolCollectorClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B6060CF22273BDA0015F0A0 /* SymbolCollectorClient.m */; };
+		5B97447524D0AA5F000C71F5 /* encoding_util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B97447424D0AA5F000C71F5 /* encoding_util.m */; };
 		8B31022C11F0CEBD00FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
 		8DD76F9A0486AA7600D96B5E /* symupload.m in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* symupload.m */; settings = {ATTRIBUTES = (); }; };
 		8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
@@ -30,16 +36,28 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		08FB7796FE84155DC02AAC07 /* symupload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = symupload.m; sourceTree = "<group>"; };
+		08FB7796FE84155DC02AAC07 /* symupload.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; path = symupload.m; sourceTree = "<group>"; tabWidth = 2; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		5B6060BB222716FC0015F0A0 /* HTTPRequest.h */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = HTTPRequest.h; path = ../../../common/mac/HTTPRequest.h; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060BC222716FC0015F0A0 /* HTTPRequest.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; name = HTTPRequest.m; path = ../../../common/mac/HTTPRequest.m; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060BE2227201B0015F0A0 /* HTTPPutRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HTTPPutRequest.h; path = ../../../common/mac/HTTPPutRequest.h; sourceTree = "<group>"; };
+		5B6060BF2227201B0015F0A0 /* HTTPPutRequest.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; name = HTTPPutRequest.m; path = ../../../common/mac/HTTPPutRequest.m; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060C22227303A0015F0A0 /* encoding_util.h */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = encoding_util.h; path = ../../../common/mac/encoding_util.h; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060C5222735E50015F0A0 /* HTTPGetRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HTTPGetRequest.h; path = ../../../common/mac/HTTPGetRequest.h; sourceTree = "<group>"; };
+		5B6060C6222735E50015F0A0 /* HTTPGetRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HTTPGetRequest.m; path = ../../../common/mac/HTTPGetRequest.m; sourceTree = "<group>"; };
+		5B6060C82227374E0015F0A0 /* HTTPSimplePostRequest.h */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = HTTPSimplePostRequest.h; path = ../../../common/mac/HTTPSimplePostRequest.h; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060C92227374E0015F0A0 /* HTTPSimplePostRequest.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; name = HTTPSimplePostRequest.m; path = ../../../common/mac/HTTPSimplePostRequest.m; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060CE22273BDA0015F0A0 /* SymbolCollectorClient.h */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = SymbolCollectorClient.h; path = ../../../common/mac/SymbolCollectorClient.h; sourceTree = "<group>"; tabWidth = 2; };
+		5B6060CF22273BDA0015F0A0 /* SymbolCollectorClient.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; name = SymbolCollectorClient.m; path = ../../../common/mac/SymbolCollectorClient.m; sourceTree = "<group>"; tabWidth = 2; };
+		5B97447424D0AA5F000C71F5 /* encoding_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = encoding_util.m; path = ../../../common/mac/encoding_util.m; sourceTree = "<group>"; };
 		8B31022B11F0CE6900FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B3102B611F0D5CE00FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B3102B711F0D5CE00FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
 		8DD76FA10486AA7600D96B5E /* symupload */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = symupload; sourceTree = BUILT_PRODUCTS_DIR; };
-		9BD833680B03E4080055103E /* HTTPMultipartUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPMultipartUpload.h; path = ../../../common/mac/HTTPMultipartUpload.h; sourceTree = "<group>"; };
-		9BD833690B03E4080055103E /* HTTPMultipartUpload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPMultipartUpload.m; path = ../../../common/mac/HTTPMultipartUpload.m; sourceTree = "<group>"; };
+		9BD833680B03E4080055103E /* HTTPMultipartUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = HTTPMultipartUpload.h; path = ../../../common/mac/HTTPMultipartUpload.h; sourceTree = "<group>"; tabWidth = 2; };
+		9BD833690B03E4080055103E /* HTTPMultipartUpload.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; name = HTTPMultipartUpload.m; path = ../../../common/mac/HTTPMultipartUpload.m; sourceTree = "<group>"; tabWidth = 2; };
 		9BD835FB0B0544950055103E /* minidump_upload */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = minidump_upload; sourceTree = BUILT_PRODUCTS_DIR; };
-		9BD836000B0544BA0055103E /* minidump_upload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = minidump_upload.m; sourceTree = "<group>"; };
+		9BD836000B0544BA0055103E /* minidump_upload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = minidump_upload.m; path = ../../../common/mac/minidump_upload.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +83,18 @@
 		08FB7794FE84155DC02AAC07 /* symupload */ = {
 			isa = PBXGroup;
 			children = (
+				5B6060CE22273BDA0015F0A0 /* SymbolCollectorClient.h */,
+				5B6060CF22273BDA0015F0A0 /* SymbolCollectorClient.m */,
+				5B6060C82227374E0015F0A0 /* HTTPSimplePostRequest.h */,
+				5B6060C92227374E0015F0A0 /* HTTPSimplePostRequest.m */,
+				5B6060C5222735E50015F0A0 /* HTTPGetRequest.h */,
+				5B6060C6222735E50015F0A0 /* HTTPGetRequest.m */,
+				5B6060C22227303A0015F0A0 /* encoding_util.h */,
+				5B97447424D0AA5F000C71F5 /* encoding_util.m */,
+				5B6060BE2227201B0015F0A0 /* HTTPPutRequest.h */,
+				5B6060BF2227201B0015F0A0 /* HTTPPutRequest.m */,
+				5B6060BB222716FC0015F0A0 /* HTTPRequest.h */,
+				5B6060BC222716FC0015F0A0 /* HTTPRequest.m */,
 				8B31022B11F0CE6900FCF3E4 /* Breakpad.xcconfig */,
 				8B3102B611F0D5CE00FCF3E4 /* BreakpadDebug.xcconfig */,
 				8B3102B711F0D5CE00FCF3E4 /* BreakpadRelease.xcconfig */,
@@ -137,9 +167,15 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB927808733DD40010E9CD /* Build configuration list for PBXProject "symupload" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* symupload */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -156,6 +192,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DD76F9A0486AA7600D96B5E /* symupload.m in Sources */,
+				5B6060CA2227374E0015F0A0 /* HTTPSimplePostRequest.m in Sources */,
+				5B6060D022273BDA0015F0A0 /* SymbolCollectorClient.m in Sources */,
+				5B6060C7222735E50015F0A0 /* HTTPGetRequest.m in Sources */,
+				5B6060C02227201B0015F0A0 /* HTTPPutRequest.m in Sources */,
+				5B6060BD222716FC0015F0A0 /* HTTPRequest.m in Sources */,
+				5B97447524D0AA5F000C71F5 /* encoding_util.m in Sources */,
 				9BD8336B0B03E4080055103E /* HTTPMultipartUpload.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace network {
@@ -81,7 +82,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                         WorkerGlobalScope*,
                         v8_inspector::V8InspectorSession*);
   ~InspectorNetworkAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 
@@ -97,7 +98,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                                  ResourceLoadPriority);
   void PrepareRequest(DocumentLoader*,
                       ResourceRequest&,
-                      const FetchInitiatorInfo&,
+                      ResourceLoaderOptions&,
                       ResourceType);
   void WillSendRequest(uint64_t identifier,
                        DocumentLoader*,
@@ -136,9 +137,12 @@ class CORE_EXPORT InspectorNetworkAgent final
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
-  void DidFailLoading(uint64_t identifier,
-                      DocumentLoader*,
-                      const ResourceError&);
+  void DidFailLoading(
+      CoreProbeSink* sink,
+      uint64_t identifier,
+      DocumentLoader*,
+      const ResourceError&,
+      const base::UnguessableToken& devtools_frame_or_worker_token);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
   void ScriptImported(uint64_t identifier, const String& source_string);
   void DidReceiveScriptResponse(uint64_t identifier);
@@ -192,7 +196,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                                const char* payload,
                                size_t payload_length);
   void DidReceiveWebSocketMessageError(uint64_t identifier, const String&);
-  void SetDevToolsIds(ResourceRequest& request);
+  void SetDevToolsIds(ResourceRequest& request, const FetchInitiatorInfo&);
 
   // Called from frontend
   protocol::Response enable(Maybe<int> total_buffer_size,
@@ -201,6 +205,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   protocol::Response disable() override;
   protocol::Response setExtraHTTPHeaders(
       std::unique_ptr<protocol::Network::Headers>) override;
+  protocol::Response setAttachDebugStack(bool enabled) override;
   void getResponseBody(const String& request_id,
                        std::unique_ptr<GetResponseBodyCallback>) override;
   protocol::Response searchInResponseBody(
@@ -290,6 +295,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   InspectorAgentState::Boolean bypass_service_worker_;
   InspectorAgentState::BooleanMap blocked_urls_;
   InspectorAgentState::StringMap extra_request_headers_;
+  InspectorAgentState::Boolean attach_debug_stack_enabled_;
   InspectorAgentState::Integer total_buffer_size_;
   InspectorAgentState::Integer resource_buffer_size_;
   InspectorAgentState::Integer max_post_data_size_;

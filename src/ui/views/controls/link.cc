@@ -17,6 +17,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/style/platform_style.h"
 
@@ -51,16 +52,32 @@ SkColor Link::GetColor() const {
                : ui::NativeTheme::kColorId_LinkEnabled);
 }
 
+void Link::SetForceUnderline(bool force_underline) {
+  if (force_underline_ == force_underline)
+    return;
+
+  force_underline_ = force_underline;
+  RecalculateFont();
+}
+
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   if (!GetEnabled())
     return gfx::kNullCursor;
   return GetNativeHandCursor();
 }
 
-bool Link::CanProcessEventsWithinSubtree() const {
+bool Link::GetCanProcessEventsWithinSubtree() const {
   // Links need to be able to accept events (e.g., clicking) even though
   // in general Labels do not.
-  return View::CanProcessEventsWithinSubtree();
+  return View::GetCanProcessEventsWithinSubtree();
+}
+
+void Link::OnMouseEntered(const ui::MouseEvent& event) {
+  RecalculateFont();
+}
+
+void Link::OnMouseExited(const ui::MouseEvent& event) {
+  RecalculateFont();
 }
 
 bool Link::OnMousePressed(const ui::MouseEvent& event) {
@@ -84,13 +101,8 @@ void Link::OnMouseReleased(const ui::MouseEvent& event) {
   OnMouseCaptureLost();
   if (GetEnabled() &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-      HitTestPoint(event.location())) {
-    // Focus the link on click.
-    RequestFocus();
-
-    if (!callback_.is_null())
-      callback_.Run(this, event.flags());
-  }
+      HitTestPoint(event.location()))
+    OnClick(event);
 }
 
 void Link::OnMouseCaptureLost() {
@@ -106,13 +118,7 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   SetPressed(false);
-
-  // Focus the link on key pressed.
-  RequestFocus();
-
-  if (!callback_.is_null())
-    callback_.Run(this, event.flags());
-
+  OnClick(event);
   return true;
 }
 
@@ -123,9 +129,7 @@ void Link::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     SetPressed(true);
   } else if (event->type() == ui::ET_GESTURE_TAP) {
-    RequestFocus();
-    if (!callback_.is_null())
-      callback_.Run(this, event->flags());
+    OnClick(*event);
   } else {
     SetPressed(false);
     return;
@@ -195,11 +199,18 @@ void Link::SetPressed(bool pressed) {
   }
 }
 
+void Link::OnClick(const ui::Event& event) {
+  RequestFocus();
+  if (callback_)
+    callback_.Run(event);
+}
+
 void Link::RecalculateFont() {
   const int style = font_list().GetFontStyle();
-  const int intended_style = (GetEnabled() && HasFocus())
-                                 ? (style | gfx::Font::UNDERLINE)
-                                 : (style & ~gfx::Font::UNDERLINE);
+  const int intended_style =
+      ((GetEnabled() && (HasFocus() || IsMouseHovered())) || force_underline_)
+          ? (style | gfx::Font::UNDERLINE)
+          : (style & ~gfx::Font::UNDERLINE);
 
   if (style != intended_style)
     Label::SetFontList(font_list().DeriveWithStyle(intended_style));
@@ -210,7 +221,7 @@ void Link::ConfigureFocus() {
   if (GetText().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
     SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -218,9 +229,8 @@ void Link::ConfigureFocus() {
   }
 }
 
-BEGIN_METADATA(Link)
-METADATA_PARENT_CLASS(Label)
-ADD_READONLY_PROPERTY_METADATA(Link, SkColor, Color)
-END_METADATA()
+BEGIN_METADATA(Link, Label)
+ADD_READONLY_PROPERTY_METADATA(SkColor, Color)
+END_METADATA
 
 }  // namespace views

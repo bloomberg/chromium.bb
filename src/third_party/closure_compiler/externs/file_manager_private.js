@@ -4,9 +4,7 @@
 
 /** @fileoverview Externs generated from namespace: fileManagerPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.fileManagerPrivate = {};
 
 /** @enum {string} */
@@ -91,6 +89,7 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
   ERROR_INVALID_ARCHIVE: 'error_invalid_archive',
   ERROR_AUTHENTICATION: 'error_authentication',
   ERROR_PATH_UNMOUNTED: 'error_path_unmounted',
+  ERROR_NEED_PASSWORD: 'error_need_password',
 };
 
 /** @enum {string} */
@@ -162,6 +161,9 @@ chrome.fileManagerPrivate.DeviceEventType = {
   RENAME_START: 'rename_start',
   RENAME_SUCCESS: 'rename_success',
   RENAME_FAIL: 'rename_fail',
+  PARTITION_START: 'partition_start',
+  PARTITION_SUCCESS: 'partition_success',
+  PARTITION_FAIL: 'partition_fail',
 };
 
 /** @enum {string} */
@@ -169,6 +171,7 @@ chrome.fileManagerPrivate.DriveSyncErrorType = {
   DELETE_WITHOUT_PERMISSION: 'delete_without_permission',
   SERVICE_UNAVAILABLE: 'service_unavailable',
   NO_SERVER_SPACE: 'no_server_space',
+  NO_LOCAL_SPACE: 'no_local_space',
   MISC: 'misc',
 };
 
@@ -178,6 +181,9 @@ chrome.fileManagerPrivate.TaskResult = {
   MESSAGE_SENT: 'message_sent',
   FAILED: 'failed',
   EMPTY: 'empty',
+  FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
+      'failed_plugin_vm_task_directory_not_shared',
+  FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE: 'failed_plugin_vm_task_external_drive',
 };
 
 /** @enum {string} */
@@ -359,7 +365,8 @@ chrome.fileManagerPrivate.IconSet;
  *   mountContext: (!chrome.fileManagerPrivate.MountContext|undefined),
  *   diskFileSystemType: (string|undefined),
  *   iconSet: !chrome.fileManagerPrivate.IconSet,
- *   driveLabel: (string|undefined)
+ *   driveLabel: (string|undefined),
+ *   remoteMountPath: (string|undefined)
  * }}
  */
 chrome.fileManagerPrivate.VolumeMetadata;
@@ -380,7 +387,7 @@ chrome.fileManagerPrivate.MountCompletedEvent;
  *   transferState: !chrome.fileManagerPrivate.TransferState,
  *   processed: number,
  *   total: number,
- *   num_total_jobs: number,
+ *   numTotalJobs: number,
  *   hideWhenZeroJobs: boolean
  * }}
  */
@@ -474,7 +481,8 @@ chrome.fileManagerPrivate.DriveMetadataSearchResult;
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveConnectionStateType,
  *   reason: (!chrome.fileManagerPrivate.DriveOfflineReason|undefined),
- *   hasCellularNetworkAccess: boolean
+ *   hasCellularNetworkAccess: boolean,
+ *   canPinHostedFiles: boolean
  * }}
  */
 chrome.fileManagerPrivate.DriveConnectionState;
@@ -531,6 +539,51 @@ chrome.fileManagerPrivate.CrostiniEvent;
 chrome.fileManagerPrivate.AndroidApp;
 
 /**
+ * @typedef {{
+ *   type: string,
+ *   tags: !Object,
+ * }}
+ */
+chrome.fileManagerPrivate.StreamInfo;
+
+/**
+ * @typedef {{
+ *   data: string,
+ *   type: string,
+ * }}
+ */
+chrome.fileManagerPrivate.AttachedImages;
+
+/**
+ * @typedef {{
+ *   mimeType: string,
+ *   height: (number|undefined),
+ *   width: (number|undefined),
+ *   duration: (number|undefined),
+ *   rotation: (number|undefined),
+ *   album: (string|undefined),
+ *   artist: (string|undefined),
+ *   comment: (string|undefined),
+ *   copyright: (string|undefined),
+ *   disc: (number|undefined),
+ *   genre: (string|undefined),
+ *   language: (string|undefined),
+ *   title: (string|undefined),
+ *   track: (number|undefined),
+ *   rawTags: !Array<!chrome.fileManagerPrivate.StreamInfo>,
+ *   attachedImages: !Array<!chrome.fileManagerPrivate.AttachedImages>,
+ * }}
+ */
+chrome.fileManagerPrivate.MediaMetadata;
+
+/**
+ * @typedef {{
+ *   itemUrls: !Array<string>
+ * }}
+ */
+chrome.fileManagerPrivate.HoldingSpaceState;
+
+/**
  * Logout the current user for navigating to the re-authentication screen for
  * the Google account.
  */
@@ -575,12 +628,32 @@ chrome.fileManagerPrivate.setDefaultTask = function(taskId, entries, mimeTypes,
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
 /**
- * Gets the MIME type of a file.
- * @param {!Entry} entry
- * @param {function((string|undefined))} callback Callback that MIME type of the
- *     file is passed.
+ * Gets the MIME type of an entry.
+ * @param {!Entry} entry The Entry.
+ * @param {function((string|undefined))} callback The MIME type callback.
  */
 chrome.fileManagerPrivate.getMimeType = function(entry, callback) {};
+
+/**
+ * Gets the content sniffed MIME type of a file.
+ * @param {!FileEntry} fileEntry The file entry.
+ * @param {function((string|undefined))} callback The MIME type callback.
+ * $(ref:runtime.lastError) will be set if there was an error.
+ */
+chrome.fileManagerPrivate.getContentMimeType = function(fileEntry, callback) {};
+
+/**
+ * Gets the content metadata from an Audio or Video file.
+ * @param {!FileEntry} fileEntry The file entry.
+ * @param {string} mimeType The content sniffed mimeType of the file.
+ * @param {boolean} includeImages If true, return metadata tags and thumbnail
+ *     images. If false, return metadata tags only.
+ * @param {function((!chrome.fileManagerPrivate.MediaMetadata|undefined))}
+ *     callback The content MediaMetadata callback.
+ * $(ref:runtime.lastError) will be set if there was an error.
+ */
+chrome.fileManagerPrivate.getContentMetadata = function(fileEntry, mimeType,
+    includeImages, callback) {};
 
 /**
  * Gets localized strings and initialization data. |callback|
@@ -660,7 +733,7 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names,
 /**
  * Pins/unpins a Drive file in the cache. |entry| Entry of a file to pin/unpin.
  * |pin| Pass true to pin the file. |callback| Completion callback.
- * $(ref:runtime.lastError) will be set if     there was an error.
+ * $(ref:runtime.lastError) will be set if there was an error.
  * @param {!Entry} entry
  * @param {boolean} pin
  * @param {function()} callback Callback that does not take arguments.
@@ -673,20 +746,21 @@ chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {};
  * backend. If resolving entry fails, the entry will be just ignored and the
  * corresponding entry does not appear in the result.
  * @param {!Array<!Entry>} entries
- * @param {function(!Array<!Entry>):void} callback Completion callback
+ * @param {function(!Array<!Entry>): void} callback Completion callback
  *     with resolved entries.
  */
 chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
     callback) {};
 
 /**
- * Mount a resource or a file. |source| Mount point source. For compressed
- * files it is relative file path     within external file system |callback|
- * @param {string} source
- * @param {function(string):void} callback callback Callback with source path of
- *     the mount.
+ * Mounts a resource or a file.
+ * @param {string} source Mount point source. For compressed files it is
+ *     the relative file path within the external file system.
+ * @param {string|undefined} password Optional password to decrypt the file.
+ * @param {function(string): void} callback callback Callback called with the
+ *     source path of the mount.
  */
-chrome.fileManagerPrivate.addMount = function(source, callback) {};
+chrome.fileManagerPrivate.addMount = function(source, password, callback) {};
 
 /**
  * Unmounts a mounted resource. |volumeId| An ID of the volume.
@@ -717,6 +791,14 @@ chrome.fileManagerPrivate.startCopy = function(entry, parentEntry, newName,
     callback) {};
 
 /**
+ * Copies an image to the system clipboard. |entry| Entry of the image to copy
+ * to the system clipboard.
+ * @param {!Entry} entry
+ * @param {function((boolean|undefined))} callback
+ */
+chrome.fileManagerPrivate.copyImageToClipboard = function(entry, callback) {};
+
+/**
  * Cancels the running copy task. |copyId| ID of the copy task to be cancelled.
  * |callback| Completion callback of the cancel.
  * @param {number} copyId
@@ -742,6 +824,16 @@ chrome.fileManagerPrivate.getSizeStats = function(volumeId, callback) {};
  */
 chrome.fileManagerPrivate.formatVolume = function(volumeId, filesystem,
     volumeLabel) {};
+
+/**
+ * Deletes partitions of removable device, creates a single partition
+ * and format it.
+ * @param {string} devicePath
+ * @param {chrome.fileManagerPrivate.FormatFileSystemType} filesystem
+ * @param {string} volumeLabel
+ */
+chrome.fileManagerPrivate.singlePartitionFormat = function(devicePath,
+  filesystem, volumeLabel) {};
 
 /**
  * Renames a mounted volume. |volumeId| ID of the volume to be renamed to
@@ -776,7 +868,7 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 /**
  * Performs drive metadata search. |searchParams| |callback|
  * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>):void}
+ * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>): void}
  *     callback
  */
 chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams, callback) {};
@@ -794,7 +886,7 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
 /**
  * Search files in My Files.
  * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function(!Array<Object>):void} callback
+ * @param {function(!Array<Object>): void} callback
  */
 chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
 
@@ -814,7 +906,7 @@ chrome.fileManagerPrivate.zipSelection = function(entries, parentEntry,
 
 /**
  * Retrieves the state of the current drive connection. |callback|
- * @param {function(!chrome.fileManagerPrivate.DriveConnectionState):void}
+ * @param {function(!chrome.fileManagerPrivate.DriveConnectionState): void}
  *     callback
  */
 chrome.fileManagerPrivate.getDriveConnectionState = function(callback) {};
@@ -1024,17 +1116,42 @@ chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
  * For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
  * returns a thumbnail appropriate for file list or grid views; otherwise,
  * returns a thumbnail appropriate for quickview.
- * @param {Object} entry
+ * @param {!FileEntry} entry
  * @param {boolean} cropToSquare
- * @param {function(string):void} callback |thumbnailDataUrl| A data URL for the
- *     thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
+ * @param {function(string): void} callback |thumbnailDataUrl| A data URL for
+ *     the thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
  *     available.
  */
-chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback) {};
+chrome.fileManagerPrivate.getDriveThumbnail = function(entry, cropToSquare, callback) {};
+
+/**
+ * For a local PDF file, retrieves its thumbnail with a given |width| and
+ * |height|.
+ * @param {!FileEntry} entry
+ * @param {number} width
+ * @param {number} height
+ * @param {function(string): void} callback |thumbnailDataUrl| A data URL for
+ *     the thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
+ *     available.
+ */
+chrome.fileManagerPrivate.getPdfThumbnail = function(entry, width, height, callback) {};
+
+/**
+  Retrieves a thumbnail of an ARC DocumentsProvider file, close in size to
+  |widthHint| and |heightHint|, but not necessarily exactly this size.
+ * @param {!FileEntry} entry
+ * @param {number} widthHint
+ * @param {number} heightHint
+ * @param {function(string): void} callback |thumbnailDataUrl| A data URL for the
+ *     thumbnail; |thumbnailDataUrl| is empty if no thumbnail was available.
+ *     Note: The thumbnail data may originate from third-party application code,
+ *     and is untrustworthy (Security).
+ */
+chrome.fileManagerPrivate.getArcDocumentsProviderThumbnail = function(entry, widthHint, heightHint, callback) {};
 
 /**
  * @param {!Array<string>} extensions
- * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>):void} callback
+ * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>): void} callback
  *     Completion callback.
  */
 chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) {};
@@ -1045,11 +1162,49 @@ chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) 
  */
 chrome.fileManagerPrivate.selectAndroidPickerApp = function(androidApp, callback) {};
 
+/**
+ * Return true if sharesheet contains share targets for entries.
+ * @param {!Array<!Entry>} entries
+ * @param {function((boolean|undefined))} callback
+ */
+chrome.fileManagerPrivate.sharesheetHasTargets = function(entries, callback) {};
+
+/**
+ * Invoke Sharesheet for selected files. If not possible, then returns
+ * an error via chrome.runtime.lastError. |entries| Array of selected entries.
+ * @param {!Array<!Entry>} entries
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.invokeSharesheet = function(entries, callback) {};
+
+/**
+ * Adds or removes a list of entries to temporary holding space. Any entries
+ * whose current holding space state matches the intended state will be skipped.
+ * |entries| The list of entries whose holding space needs to be updated. |add|
+ * Whether items should be added or removed from the holding space. |callback|
+ * Completion callback.
+ * @param {!Array<!Entry>} entries
+ * @param {boolean} added
+ * @param {function(): void=} callback Callback that does not take arguments.
+ */
+chrome.fileManagerPrivate.toggleAddedToHoldingSpace = function(entries, added, callback) {};
+
+/**
+ * Retrieves the current holding space state, for example the list of items the
+ * holding space currently contains. |callback| The result callback.
+ * @param {function(!chrome.fileManagerPrivate.HoldingSpaceState): void}
+ *     callback |state| Describes the current holding space state.
+ */
+chrome.fileManagerPrivate.getHoldingSpaceState = function(callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onFileTransfersUpdated;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onPinTransfersUpdated;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onCopyProgress;

@@ -13,14 +13,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,7 +119,7 @@ const base::TimeDelta kHalfDay = base::TimeDelta::FromHours(12);
 // A time delta with length zero.
 const base::TimeDelta kZeroTime = base::TimeDelta();
 
-// When the password will expire in |kUrgentWarningDays| or less, the
+// When the password will expire in `kUrgentWarningDays` or less, the
 // UrgentPasswordExpiryNotification will be used - which is larger and actually
 // a dialog (not a true notification) - instead of the normal notification.
 const int kUrgentWarningDays = 3;
@@ -192,7 +193,7 @@ InSessionPasswordChangeManager::InSessionPasswordChangeManager(
       urgent_warning_days_(kUrgentWarningDays) {
   DCHECK(primary_user_);
 
-  // Add |this| as a SessionActivationObserver to see when the screen is locked.
+  // Add `this` as a SessionActivationObserver to see when the screen is locked.
   auto* session_controller = ash::SessionController::Get();
   if (session_controller) {
     session_controller->AddSessionActivationObserverForAccountId(
@@ -201,7 +202,7 @@ InSessionPasswordChangeManager::InSessionPasswordChangeManager(
 }
 
 InSessionPasswordChangeManager::~InSessionPasswordChangeManager() {
-  // Remove |this| as a SessionActivationObserver.
+  // Remove `this` as a SessionActivationObserver.
   auto* session_controller = ash::SessionController::Get();
   if (session_controller) {
     session_controller->RemoveSessionActivationObserverForAccountId(
@@ -381,7 +382,8 @@ void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {
   NotifyObservers(Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
 }
 
-void InSessionPasswordChangeManager::OnPasswordChangeDetected() {
+void InSessionPasswordChangeManager::OnPasswordChangeDetected(
+    const UserContext& user_context) {
   VLOG(1) << "Failed to change cryptohome password: PasswordChangeDetected";
   RecordCryptohomePasswordChangeFailure(password_source_);
   NotifyObservers(Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
@@ -408,6 +410,9 @@ void InSessionPasswordChangeManager::OnAuthSuccess(
   DismissExpiryNotification();
   PasswordChangeDialog::Dismiss();
   ConfirmPasswordChangeDialog::Dismiss();
+  // We request a new sync token. It will be updated locally and signal the fact
+  // of password change to other devices owned by the user.
+  CreateTokenAsync();
   RecordEvent(InSessionPasswordChangeEvent::kFinishPasswordChange);
 }
 
@@ -419,6 +424,39 @@ void InSessionPasswordChangeManager::OnLockStateChanged(bool locked) {
   if (!locked) {
     OnScreenUnlocked();
   }
+}
+
+void InSessionPasswordChangeManager::OnTokenCreated(
+    const std::string& sync_token) {
+  PrefService* prefs = primary_profile_->GetPrefs();
+
+  // Set token value in prefs for in-session operations and ephemeral users and
+  // local settings for login screen sync.
+  prefs->SetString(prefs::kSamlPasswordSyncToken, sync_token);
+  user_manager::known_user::SetPasswordSyncToken(primary_user_->GetAccountId(),
+                                                 sync_token);
+}
+
+void InSessionPasswordChangeManager::OnTokenFetched(
+    const std::string& sync_token) {
+  // Ignored.
+}
+
+void InSessionPasswordChangeManager::OnTokenVerified(bool is_valid) {
+  // Ignored.
+}
+
+void InSessionPasswordChangeManager::OnApiCallFailed(
+    PasswordSyncTokenFetcher::ErrorType error_type) {
+  // TODO(crbug.com/1112896): Error types will be tracked by UMA histograms.
+  // Going forward we should also consider re-trying token creation depending on
+  // the error_type.
+}
+
+void InSessionPasswordChangeManager::CreateTokenAsync() {
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenCreate();
 }
 
 // static

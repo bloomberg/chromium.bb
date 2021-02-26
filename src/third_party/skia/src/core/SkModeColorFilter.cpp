@@ -38,12 +38,13 @@ bool SkModeColorFilter::onAsAColorMode(SkColor* color, SkBlendMode* mode) const 
     return true;
 }
 
-uint32_t SkModeColorFilter::getFlags() const {
+uint32_t SkModeColorFilter::onGetFlags() const {
     uint32_t flags = 0;
     switch (fMode) {
         case SkBlendMode::kDst:      //!< [Da, Dc]
         case SkBlendMode::kSrcATop:  //!< [Da, Sc * Da + (1 - Sa) * Dc]
             flags |= kAlphaUnchanged_Flag;
+            break;
         default:
             break;
     }
@@ -74,9 +75,11 @@ bool SkModeColorFilter::onAppendStages(const SkStageRec& rec, bool shaderIsOpaqu
 skvm::Color SkModeColorFilter::onProgram(skvm::Builder* p, skvm::Color c,
                                          SkColorSpace* dstCS,
                                          skvm::Uniforms* uniforms, SkArenaAlloc*) const {
+    SkColor4f color = SkColor4f::FromColor(fColor);
+    SkColorSpaceXformSteps(sk_srgb_singleton(), kUnpremul_SkAlphaType,
+                                         dstCS,   kPremul_SkAlphaType).apply(color.vec());
     skvm::Color dst = c,
-                src = p->uniformPremul(SkColor4f::FromColor(fColor), sk_srgb_singleton(),
-                                       uniforms, dstCS);
+                src = p->uniformColor(color, uniforms);
     return p->blend(fMode, src,dst);
 }
 
@@ -84,29 +87,40 @@ skvm::Color SkModeColorFilter::onProgram(skvm::Builder* p, skvm::Color c,
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrBlend.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrXfermodeFragmentProcessor.h"
+#include "src/gpu/effects/GrBlendFragmentProcessor.h"
 #include "src/gpu/effects/generated/GrConstColorProcessor.h"
 
-std::unique_ptr<GrFragmentProcessor> SkModeColorFilter::asFragmentProcessor(
-        GrRecordingContext*, const GrColorInfo& dstColorInfo) const {
-    if (SkBlendMode::kDst == fMode) {
-        return nullptr;
+GrFPResult SkModeColorFilter::asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> inputFP,
+                                                  GrRecordingContext*,
+                                                  const GrColorInfo& dstColorInfo) const {
+    if (fMode == SkBlendMode::kDst) {
+        // If the blend mode is "dest," the blend color won't factor into it at all.
+        // We can return the input FP as-is.
+        return GrFPSuccess(std::move(inputFP));
     }
 
-    auto constFP = GrConstColorProcessor::Make(SkColorToPMColor4f(fColor, dstColorInfo),
-                                               GrConstColorProcessor::InputMode::kIgnore);
-    auto fp = GrXfermodeFragmentProcessor::MakeFromSrcProcessor(std::move(constFP), fMode);
-    if (!fp) {
-        return nullptr;
+    SkDEBUGCODE(const bool fpHasConstIO = !inputFP || inputFP->hasConstantOutputForConstantInput();)
+
+    auto colorFP = GrConstColorProcessor::Make(SkColorToPMColor4f(fColor, dstColorInfo));
+    auto xferFP = GrBlendFragmentProcessor::Make(
+            std::move(colorFP), std::move(inputFP), fMode,
+            GrBlendFragmentProcessor::BlendBehavior::kSkModeBehavior);
+
+    if (xferFP == nullptr) {
+        // This is only expected to happen if the blend mode is "dest" and the input FP is null.
+        // Since we already did an early-out in the "dest" blend mode case, we shouldn't get here.
+        SkDEBUGFAIL("GrBlendFragmentProcessor::Make returned null unexpectedly");
+        return GrFPFailure(nullptr);
     }
-#ifdef SK_DEBUG
+
     // With a solid color input this should always be able to compute the blended color
-    // (at least for coeff modes)
-    if ((unsigned)fMode <= (unsigned)SkBlendMode::kLastCoeffMode) {
-        SkASSERT(fp->hasConstantOutputForConstantInput());
-    }
-#endif
-    return fp;
+    // (at least for coeff modes).
+    // Occasionally, we even do better than we started; specifically, in "src" blend mode, we end up
+    // ditching the input FP entirely, which turns a non-constant operation into a constant one.
+    SkASSERT(fMode > SkBlendMode::kLastCoeffMode ||
+             xferFP->hasConstantOutputForConstantInput() >= fpHasConstIO);
+
+    return GrFPSuccess(std::move(xferFP));
 }
 
 #endif

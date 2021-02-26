@@ -28,19 +28,23 @@ namespace chrome {
 void ShowSettingsResetPrompt(
     Browser* browser,
     safe_browsing::SettingsResetPromptController* controller) {
-  SettingsResetPromptDialog* dialog = new SettingsResetPromptDialog(controller);
+  SettingsResetPromptDialog* dialog =
+      new SettingsResetPromptDialog(browser, controller);
   // The dialog will delete itself, as implemented in
   // |DialogDelegateView::DeleteDelegate()|, when its widget is closed.
-  dialog->Show(browser);
+  dialog->Show();
 }
 
 }  // namespace chrome
 
 SettingsResetPromptDialog::SettingsResetPromptDialog(
+    Browser* browser,
     safe_browsing::SettingsResetPromptController* controller)
-    : browser_(nullptr), controller_(controller) {
+    : browser_(browser), controller_(controller) {
+  DCHECK(browser_);
   DCHECK(controller_);
 
+  SetShowIcon(false);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL));
@@ -63,18 +67,23 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
       },
       base::Unretained(this)));
 
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  views::StyledLabel* dialog_label =
-      new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
-  dialog_label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
+  views::StyledLabel* const dialog_label =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  dialog_label->SetText(controller_->GetMainText());
+  dialog_label->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
   dialog_label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   views::StyledLabel::RangeStyleInfo url_style;
   url_style.text_style = STYLE_EMPHASIZED_SECONDARY;
   dialog_label->AddStyleRange(controller_->GetMainTextUrlRange(), url_style);
-  AddChildView(dialog_label);
 }
 
 SettingsResetPromptDialog::~SettingsResetPromptDialog() {
@@ -84,41 +93,16 @@ SettingsResetPromptDialog::~SettingsResetPromptDialog() {
     controller_->Close();
 }
 
-void SettingsResetPromptDialog::Show(Browser* browser) {
-  DCHECK(browser);
+void SettingsResetPromptDialog::Show() {
   DCHECK(controller_);
-
-  browser_ = browser;
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser_);
   constrained_window::CreateBrowserModalDialogViews(
       this, browser_view->GetNativeWindow())
       ->Show();
   controller_->DialogShown();
 }
 
-// WidgetDelegate overrides.
-
-ui::ModalType SettingsResetPromptDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-bool SettingsResetPromptDialog::ShouldShowWindowIcon() const {
-  return false;
-}
-
-bool SettingsResetPromptDialog::ShouldShowCloseButton() const {
-  return false;
-}
-
 base::string16 SettingsResetPromptDialog::GetWindowTitle() const {
   return controller_ ? controller_->GetWindowTitle() : base::string16();
-}
-
-// View overrides.
-
-gfx::Size SettingsResetPromptDialog::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }

@@ -112,6 +112,26 @@ TEST(ByteString, Assign) {
     }
     EXPECT_EQ(1, string1.ReferenceCountForTesting());
   }
+  {
+    // From char*.
+    ByteString string1 = "abc";
+    EXPECT_EQ("abc", string1);
+    string1 = nullptr;
+    EXPECT_TRUE(string1.IsEmpty());
+    string1 = "def";
+    EXPECT_EQ("def", string1);
+    string1 = "";
+    EXPECT_TRUE(string1.IsEmpty());
+  }
+  {
+    // From ByteStringView.
+    ByteString string1(ByteStringView("abc"));
+    EXPECT_EQ("abc", string1);
+    string1 = ByteStringView("");
+    EXPECT_TRUE(string1.IsEmpty());
+    string1 = ByteStringView("def");
+    EXPECT_EQ("def", string1);
+  }
 }
 
 TEST(ByteString, OperatorLT) {
@@ -684,9 +704,8 @@ TEST(ByteString, Find) {
   EXPECT_FALSE(empty_string.Find('a').has_value());
   EXPECT_FALSE(empty_string.Find('\0').has_value());
 
-  Optional<size_t> result;
   ByteString single_string("a");
-  result = single_string.Find('a');
+  Optional<size_t> result = single_string.Find('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find('b').has_value());
@@ -733,9 +752,8 @@ TEST(ByteString, ReverseFind) {
   EXPECT_FALSE(empty_string.ReverseFind('a').has_value());
   EXPECT_FALSE(empty_string.ReverseFind('\0').has_value());
 
-  Optional<size_t> result;
   ByteString single_string("a");
-  result = single_string.ReverseFind('a');
+  Optional<size_t> result = single_string.ReverseFind('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.ReverseFind('b').has_value());
@@ -1253,9 +1271,8 @@ TEST(ByteStringView, Find) {
   EXPECT_FALSE(empty_string.Find('a').has_value());
   EXPECT_FALSE(empty_string.Find('\0').has_value());
 
-  Optional<size_t> result;
   ByteStringView single_string("a");
-  result = single_string.Find('a');
+  Optional<size_t> result = single_string.Find('a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find('b').has_value());
@@ -1622,9 +1639,9 @@ TEST(ByteStringView, AnyAllNoneOf) {
   EXPECT_TRUE(std::any_of(str.begin(), str.end(),
                           [](const char& c) { return c == 'a'; }));
 
-  EXPECT_TRUE(pdfium::ContainsValue(str, 'a'));
-  EXPECT_TRUE(pdfium::ContainsValue(str, 'b'));
-  EXPECT_FALSE(pdfium::ContainsValue(str, 'z'));
+  EXPECT_TRUE(pdfium::Contains(str, 'a'));
+  EXPECT_TRUE(pdfium::Contains(str, 'b'));
+  EXPECT_FALSE(pdfium::Contains(str, 'z'));
 }
 
 TEST(ByteString, FormatWidth) {
@@ -1739,9 +1756,9 @@ TEST(ByteString, AnyAllNoneOf) {
   EXPECT_TRUE(std::any_of(str.begin(), str.end(),
                           [](const char& c) { return c == 'a'; }));
 
-  EXPECT_TRUE(pdfium::ContainsValue(str, 'a'));
-  EXPECT_TRUE(pdfium::ContainsValue(str, 'b'));
-  EXPECT_FALSE(pdfium::ContainsValue(str, 'z'));
+  EXPECT_TRUE(pdfium::Contains(str, 'a'));
+  EXPECT_TRUE(pdfium::Contains(str, 'b'));
+  EXPECT_FALSE(pdfium::Contains(str, 'z'));
 }
 
 TEST(CFX_BytrString, EqualNoCase) {

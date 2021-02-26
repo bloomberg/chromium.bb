@@ -43,12 +43,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
                               mojo::ScopedDataPipeProducerHandle)>;
   using UnidirectionalStreamAcceptanceCallback =
       base::OnceCallback<void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>;
-  QuicTransport(const GURL& url,
-                const url::Origin& origin,
-                const net::NetworkIsolationKey& key,
-                NetworkContext* context,
-                mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
-                    handshake_client);
+  QuicTransport(
+      const GURL& url,
+      const url::Origin& origin,
+      const net::NetworkIsolationKey& key,
+      const std::vector<mojom::QuicTransportCertificateFingerprintPtr>&
+          fingerprints,
+      NetworkContext* context,
+      mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
+          handshake_client);
   ~QuicTransport() override;
 
   // mojom::QuicTransport implementation:
@@ -62,6 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   void AcceptUnidirectionalStream(
       UnidirectionalStreamAcceptanceCallback callback) override;
   void SendFin(uint32_t stream_id) override;
+  void AbortStream(uint32_t stream_id, uint64_t code) override;
 
   // net::QuicTransportClient::Visitor implementation:
   void OnConnected() override;

@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -26,10 +25,12 @@
 #include "services/resource_coordinator/memory_instrumentation/queued_request_dispatcher.h"
 #include "services/resource_coordinator/memory_instrumentation/switches.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer_proto.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer_traced_value.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -62,14 +63,21 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
 
 CoordinatorImpl::CoordinatorImpl()
     : next_dump_id_(0),
-      client_process_timeout_(base::TimeDelta::FromSeconds(15)) {
+      client_process_timeout_(base::TimeDelta::FromSeconds(15)),
+      use_proto_writer_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMemoryTrackingProtoWriter)) {
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
   base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
       mojom::kServiceTracingProcessId);
 
-  tracing_observer_ = std::make_unique<TracingObserver>(
-      base::trace_event::TraceLog::GetInstance(), nullptr);
+  if (use_proto_writer_) {
+    tracing_observer_ = std::make_unique<TracingObserverProto>(
+        base::trace_event::TraceLog::GetInstance(), nullptr);
+  } else {
+    tracing_observer_ = std::make_unique<TracingObserverTracedValue>(
+        base::trace_event::TraceLog::GetInstance(), nullptr);
+  }
 }
 
 CoordinatorImpl::~CoordinatorImpl() {
@@ -567,7 +575,8 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     return;
   }
 
-  QueuedRequestDispatcher::Finalize(request, tracing_observer_.get());
+  QueuedRequestDispatcher::Finalize(request, tracing_observer_.get(),
+                                    use_proto_writer_);
 
   queued_memory_dump_requests_.pop_front();
   request = nullptr;

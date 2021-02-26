@@ -4,10 +4,11 @@
 
 import("../../../third_party/typescript/typescript.gni")
 
-ts_library("application") {
-  testonly = true
+node_ts_library("application") {
   sources = [
     "cookies_test.ts",
+    "frame-tree_test.ts",
+    "service-worker-network_test.ts",
     "session-storage_test.ts",
     "websql-database_test.ts",
   ]

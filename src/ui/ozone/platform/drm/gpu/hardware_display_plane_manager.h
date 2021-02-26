@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/gpu/crtc_commit_request.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/public/swap_completion_callback.h"
@@ -56,6 +57,42 @@ struct HardwareDisplayPlaneList {
 
 class HardwareDisplayPlaneManager {
  public:
+  struct CrtcProperties {
+    // Unique identifier for the CRTC. This must be greater than 0 to be valid.
+    uint32_t id;
+    // Keeps track of the CRTC state. If a surface has been bound, then the
+    // value is set to true. Otherwise it is false.
+    DrmDevice::Property active;
+    DrmDevice::Property mode_id;
+    // Optional properties.
+    DrmDevice::Property ctm;
+    DrmDevice::Property gamma_lut;
+    DrmDevice::Property gamma_lut_size;
+    DrmDevice::Property degamma_lut;
+    DrmDevice::Property degamma_lut_size;
+    DrmDevice::Property out_fence_ptr;
+    DrmDevice::Property background_color;
+  };
+
+  struct CrtcState {
+    CrtcState();
+    ~CrtcState();
+    CrtcState(const CrtcState&) = delete;
+    CrtcState& operator=(const CrtcState&) = delete;
+    CrtcState(CrtcState&&);
+
+    drmModeModeInfo mode = {};
+    scoped_refptr<DrmFramebuffer> modeset_framebuffer;
+
+    CrtcProperties properties = {};
+
+    // Cached blobs for the properties since the CRTC properties are applied on
+    // the next page flip and we need to keep the properties valid until then.
+    ScopedDrmPropertyBlob ctm_blob;
+    ScopedDrmPropertyBlob gamma_lut_blob;
+    ScopedDrmPropertyBlob degamma_lut_blob;
+  };
+
   explicit HardwareDisplayPlaneManager(DrmDevice* drm);
   virtual ~HardwareDisplayPlaneManager();
 
@@ -63,14 +100,13 @@ class HardwareDisplayPlaneManager {
   // or crtcs found.
   bool Initialize();
 
-  // Performs modesetting, either atomic or legacy, depending on the device.
-  virtual bool Modeset(uint32_t crtc_id,
-                       uint32_t framebuffer_id,
-                       uint32_t connector_id,
-                       const drmModeModeInfo& mode,
-                       const HardwareDisplayPlaneList& plane_list) = 0;
-
-  virtual bool DisableModeset(uint32_t crtc_id, uint32_t connector) = 0;
+  // |commit_request| contains all the necessary information to build the
+  // atomic/legacy request. It acts as a thin wrapper that looks like the atomic
+  // request. It then gets converted into an atomic request for DRM atomic and
+  // has all the parameters for a legacy request.
+  // TODO(markyacoub): Consolidate this Commit() with the overloaded page flip
+  // Commit() down below.
+  virtual bool Commit(CommitRequest commit_request, uint32_t flags) = 0;
 
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
@@ -84,7 +120,7 @@ class HardwareDisplayPlaneManager {
   void SetBackgroundColor(uint32_t crtc_id, const uint64_t background_color);
 
   // Sets the degamma/gamma luts on the CRTC object with ID |crtc_id|.
-  bool SetGammaCorrection(
+  virtual bool SetGammaCorrection(
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
@@ -97,7 +133,6 @@ class HardwareDisplayPlaneManager {
                                    uint32_t crtc_id);
 
   // Commit the plane states in |plane_list|.
-  //
   // If |page_flip_request| is null, this tests the plane configuration without
   // submitting it.
   // The fence returned in |out_fence| will signal when the currently scanned
@@ -145,44 +180,35 @@ class HardwareDisplayPlaneManager {
   // called whenever a DRM hotplug event is received via UDEV.
   void ResetConnectorsCache(const ScopedDrmResourcesPtr& resources);
 
+  // Get Immutable CRTC State.
+  const CrtcState& GetCrtcStateForCrtcId(uint32_t crtc_id);
+
+  // TODO(markyacoub): this seems hacky, this could be cleaned up a bit. Clarify
+  // which resources needed to be tracked internally in
+  // HardwareDisplayPlaneManager and which should be taken care of by the
+  // caller.
+  void ResetModesetBufferOfCrtc(uint32_t crtc_id);
+
  protected:
   struct ConnectorProperties {
     uint32_t id;
     DrmDevice::Property crtc_id;
   };
 
-  struct CrtcProperties {
-    // Unique identifier for the CRTC. This must be greater than 0 to be valid.
-    uint32_t id;
-    DrmDevice::Property active;
-    DrmDevice::Property mode_id;
-    // Optional properties.
-    DrmDevice::Property ctm;
-    DrmDevice::Property gamma_lut;
-    DrmDevice::Property gamma_lut_size;
-    DrmDevice::Property degamma_lut;
-    DrmDevice::Property degamma_lut_size;
-    DrmDevice::Property out_fence_ptr;
-    DrmDevice::Property background_color;
-  };
-
-  struct CrtcState {
-    CrtcState();
-    ~CrtcState();
-    CrtcState(CrtcState&&);
-
-    CrtcProperties properties = {};
-
-    // Cached blobs for the properties since the CRTC properties are applied on
-    // the next page flip and we need to keep the properties valid until then.
-    ScopedDrmPropertyBlob ctm_blob;
-    ScopedDrmPropertyBlob gamma_lut_blob;
-    ScopedDrmPropertyBlob degamma_lut_blob;
-
-    DISALLOW_COPY_AND_ASSIGN(CrtcState);
-  };
-
   bool InitializeCrtcState();
+
+  void UpdateCrtcAndPlaneStatesAfterModeset(
+      const CommitRequest& commit_request);
+
+  // As the CRTC is being initialized, all connectors connected to it should
+  // be disabled. This is a workaround for a bug on Hatch where Puff enables
+  // a connector in dev mode before Chrome even starts. The kernel maps the HW
+  // state at initial modeset (with a dangling connector attached to a CRTC).
+  // When an Atomic Modeset is performed, it fails to modeset as the CRTC is
+  // already attached to another dead connector. (Analysis: crbug/1067121#c5)
+  // TODO(b/168154314): Remove this call when the bug is fixed.
+  void DisableConnectedConnectorsToCrtcs(
+      const ScopedDrmResourcesPtr& resources);
 
   virtual bool InitializePlanes() = 0;
 
@@ -206,13 +232,22 @@ class HardwareDisplayPlaneManager {
   int LookupCrtcIndex(uint32_t crtc_id) const;
   int LookupConnectorIndex(uint32_t connector_idx) const;
 
+  // Get Mutable CRTC State.
+  CrtcState& CrtcStateForCrtcId(uint32_t crtc_id);
+
   // Returns true if |plane| can support |overlay| and compatible with
   // |crtc_index|.
   virtual bool IsCompatible(HardwareDisplayPlane* plane,
                             const DrmOverlayPlane& overlay,
                             uint32_t crtc_index) const;
 
+  // Resets |plane_list| setting all planes to unused.
+  // Frees any temporary data structure in |plane_list| used for pageflipping.
   void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
+  // Restores |plane_list| planes |in_use| flag to what it was before
+  // BeginFrame was called.
+  // Frees any temporary data structure in |plane_list| used for pageflipping.
+  void RestoreCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
 
   // Populates scanout formats supported by all planes.
   void PopulateSupportedFormats();

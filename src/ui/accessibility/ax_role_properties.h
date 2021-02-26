@@ -113,6 +113,9 @@ AX_BASE_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 // API.
 AX_BASE_EXPORT bool IsPresentational(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a radio.
+AX_BASE_EXPORT bool IsRadio(const ax::mojom::Role role);
+
 // Returns true if the provided role supports a range-based value, such as a
 // slider.
 AX_BASE_EXPORT bool IsRangeValueSupported(const ax::mojom::Role role);
@@ -136,6 +139,10 @@ AX_BASE_EXPORT bool IsSectionhead(const ax::mojom::Role role);
 
 // Returns true if the role is a subclass of the ARIA Select abstract role.
 AX_BASE_EXPORT bool IsSelect(const ax::mojom::Role role);
+
+// Returns true if the role is one of those exposed by the HTML <select>
+// element.
+AX_BASE_EXPORT bool IsSelectElement(const ax::mojom::Role role);
 
 // Returns true if the provided role is ordered-set like, specifically if it
 // can hold set_size values.
@@ -161,13 +168,13 @@ AX_BASE_EXPORT bool IsTableLike(const ax::mojom::Role role);
 // table is not used for layout purposes.
 AX_BASE_EXPORT bool IsTableRow(ax::mojom::Role role);
 
-// Returns true if it's a text-related node e.g. static text, line break, or
-// inline text box node.
+// Returns true if the provided role is text-related, e.g., static text, line
+// break, or inline text box.
 AX_BASE_EXPORT bool IsText(ax::mojom::Role role);
 
-// Returns true if it's a text-related node e.g. a static text or line break
-// node.
-AX_BASE_EXPORT bool IsTextOrLineBreak(ax::mojom::Role role);
+// Returns true if the node should be read only by default
+AX_BASE_EXPORT bool ShouldHaveReadonlyStateByDefault(
+    const ax::mojom::Role role);
 
 // Returns true if the role supports expand/collapse.
 AX_BASE_EXPORT bool SupportsExpandCollapse(const ax::mojom::Role role);
@@ -183,10 +190,6 @@ AX_BASE_EXPORT bool SupportsSelected(const ax::mojom::Role role);
 
 // Returns true if the provided role supports toggle.
 AX_BASE_EXPORT bool SupportsToggle(const ax::mojom::Role role);
-
-// Returns true if the node should be read only by default
-AX_BASE_EXPORT bool ShouldHaveReadonlyStateByDefault(
-    const ax::mojom::Role role);
 
 }  // namespace ui
 

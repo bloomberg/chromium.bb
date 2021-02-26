@@ -9,7 +9,8 @@ import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -448,14 +449,8 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * @RetryOnFailure
-     * BUG=813837
-     */
-    // Originally flaked only in multi-process mode (http://crbug.com/616505)
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testTouchScrollCanBeAlteredByUi() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -572,6 +567,7 @@ public class AndroidScrollIntegrationTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/1147938")
     public void testFlingScroll() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =

@@ -6,7 +6,8 @@
 
 namespace blink {
 
-TextDecorationThickness::TextDecorationThickness() = default;
+TextDecorationThickness::TextDecorationThickness()
+    : thickness_(Length::Auto()) {}
 
 TextDecorationThickness::TextDecorationThickness(const Length& length)
     : thickness_(length) {}
@@ -14,11 +15,6 @@ TextDecorationThickness::TextDecorationThickness(const Length& length)
 TextDecorationThickness::TextDecorationThickness(CSSValueID from_font_keyword) {
   DCHECK_EQ(from_font_keyword, CSSValueID::kFromFont);
   thickness_from_font_ = true;
-}
-
-Length TextDecorationThickness::Thickness() const {
-  DCHECK(!thickness_from_font_);
-  return thickness_;
 }
 
 bool TextDecorationThickness::operator==(

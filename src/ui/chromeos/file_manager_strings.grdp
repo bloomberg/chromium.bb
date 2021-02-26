@@ -77,8 +77,8 @@
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
   </message>
-  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" translateable="false" desc="PluginVm local directory label.">
-    Plugin VM
+  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" desc="Parallels local directory label.">
+    Windows files
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
@@ -113,6 +113,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_EXTERNAL_LINK_MESSAGE" desc="Message read by Chromevox/screenreader when focusing a link that launches an external application.">
     External link
+  </message>
+  <message name="IDS_FILE_BROWSER_CAMERA_DIRECTORY_LABEL" desc="Camera local directory label.">
+    Camera
   </message>
 
   <!-- File selection a11y -->
@@ -263,8 +266,11 @@
     <ph name="NUMBER_OF_FILES">$1<ex>3</ex></ph> items
   </message>
 
-  <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED" desc="Title of the error dialog when file mount operation failed.">
-    Unable to open "<ph name="PATH">$1<ex>/path/to/zipfile.zip</ex></ph>": <ph name="ERROR_MESSAGE">$2<ex>Bad zip file format</ex></ph>
+  <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_MESSAGE" desc="Message shown when opening an archive takes a long time.">
+    Opening "<ph name="PATH">$1<ex>zipfile.zip</ex></ph>"
+  </message>
+  <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED" desc="Error message when an archive mount operation failed.">
+    Could not open "<ph name="PATH">$1<ex>zipfile.zip</ex></ph>"
   </message>
   <message name="IDS_FILE_BROWSER_UNMOUNT_FAILED" desc="Title of the error dialog when device unmount operation failed.">
    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Don't remove your device just yet!<ph name="END_BOLD">&lt;/b&gt;</ph>
@@ -280,6 +286,9 @@
     Open
   </message>
   <message name="IDS_FILE_BROWSER_FORMAT_DEVICE_BUTTON_LABEL" desc="Title of the action for formatting removable device.">
+    Format device
+  </message>
+  <message name="IDS_FILE_BROWSER_REPARTITION_DEVICE_BUTTON_LABEL" desc="Title of the action for repartitioning removable device.">
     Format device
   </message>
   <message name="IDS_FILE_BROWSER_CONFIGURE_VOLUME_BUTTON_LABEL" desc="Title of the action for configuring the selected volume.">
@@ -586,6 +595,9 @@
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item's label, showing dialog to share the selected Google Drive files. This message is also used as a tooltip label and a spoken feedback label of a button which also shows the dialog to share the files. The translation should be consistent with the sharing dialog's title in Google Drive Web UI.">
     Share with others
   </message>
+  <message name="IDS_FILE_BROWSER_MANAGE_TOAST_BUTTON_LABEL" desc="Toast button label, manage file and folder sharing">
+    Manage
+  </message>
   <message name="IDS_FILE_BROWSER_MANAGE_IN_DRIVE_BUTTON_LABEL" desc="Menu item's label, showing dialog to open the selected Google Drive files in the Drive webpage for managing sharing permissions, etc.">
     Manage in Drive
   </message>
@@ -595,17 +607,17 @@
   <message name="IDS_FILE_BROWSER_MANAGE_LINUX_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the crostini Linux container.">
     Manage Linux sharing
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" translateable="false" desc="Label for menu that will share a folder with the Plugin VM.">
-    Share with Plugin VM
+  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" desc="Label for menu that will share a folder with Parallels.">
+    Share with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" translateable="false" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
-    Manage Plugin VM sharing
+  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with Parallels.">
+    Manage Parallels Desktop sharing
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="Title of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
-    Unable to open with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is not in a directory shared into the VM.">
+    To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first move them to the Windows files folder.
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
-    To open files with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> apps, first move them to <ph name="SHARED_DIRECTORY_LABEL">$2<ex>Plugin VM</ex></ph> folder.
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is on an external drive so isn't accessile from with the VM.">
+    To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first copy them to the Windows files folder.
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files
@@ -617,7 +629,7 @@
     Cancel selection
   </message>
   <message name="IDS_FILE_BROWSER_READ_ONLY_LABEL" desc="Label for an indicator which means that the current folder is read-only.">
-    Read only
+    Read-only
   </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_LISTVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'list view' mode.">
     Switch to list view
@@ -718,14 +730,33 @@
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
     Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
   </message>
+  <message name="IDS_FILE_BROWSER_COPIED" desc="File Manager status message.">
+    Copied.
+  </message>
   <message name="IDS_FILE_BROWSER_COPIED_TO" desc="File Manager status message.">
     Copied to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
   </message>
+  <!-- TODO (crbug/1093603): Clean up after FilesTransferDetails launch. -->
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
+  </message>
+  <!-- TODO: End. -->
+  <message name="IDS_FILE_BROWSER_COPY_FILE_NAME_LONG" desc="File Manager status message including destination folder when copying one file.">
+    Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG" desc="File Manager status message including destination folder when copying multiple files or folders. 'Item' is used here as a generic term for file or directory.">
+    Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_TIME_REMAINING_ESTIMATE"
+           desc="The progress panel message indicating estimate of remaining time of a file operation. The time will be in 1 part (hour or minute) like '2 hours' or '3 min'.">
+    About <ph name="REMAINING_TIME">$1<ex>1 min</ex></ph> remaining
+  </message>
+  <message name="IDS_FILE_BROWSER_TIME_REMAINING_ESTIMATE_2"
+           desc="The progress panel message indicating estimate of remaining time of a file operation. The time will be in 2 parts and has both hour and minute like '2 hours 1 min'.">
+    About <ph name="REMAINING_TIME_HOUR">$1<ex>2 hours</ex></ph> <ph name="REMAINING_TIME_MINUTE">$2<ex>3 min</ex></ph> remaining
   </message>
   <message name="IDS_FILE_BROWSER_COPY_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
     Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> already exists. Rename it and try again.
@@ -739,14 +770,34 @@
   <message name="IDS_FILE_BROWSER_COPY_UNEXPECTED_ERROR" desc="File Manager error message.">
     Copy operation failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not copy</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_FILE_COPIED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> copied.
+  </message>
   <message name="IDS_FILE_BROWSER_FILE_ITEMS" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items
   </message>
+  <message name="IDS_FILE_BROWSER_FILE_ITEMS_COPIED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items copied.
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_ITEMS_MOVED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items moved.
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_MOVED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> moved.
+  </message>
+   <!-- TODO (crbug/1093603): Clean up after FilesTransferDetails launch. -->
   <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME" desc="File Manager status message.">
     Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     Moving <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
+  </message>
+  <!-- TODO: End. -->
+  <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME_LONG" desc="File Manager status message including destination folder when moving one file.">
+    Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING_LONG" desc="File Manager status message inlcuding destination folder when moving multipel files. 'Item' is used here as a generic term for file or directory.">
+    Moving <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
     Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> already exists. Rename it and try again.
@@ -759,6 +810,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
     Move failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not move</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_MOVED" desc="File Manager status message.">
+    Moved.
   </message>
   <message name="IDS_FILE_BROWSER_MOVED_TO" desc="File Manager status message.">
     Moved to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
@@ -864,6 +918,15 @@
   <message name="IDS_FILE_BROWSER_UPLOAD_LABEL" desc="Upload label.">
     Upload
   </message>
+  <message name="IDS_FILE_BROWSER_COMPLETE_LABEL" desc="Complete label.">
+    Complete
+  </message>
+  <message name="IDS_FILE_BROWSER_DISMISS_LABEL" desc="Dismiss label.">
+    Dismiss
+  </message>
+  <message name="IDS_FILE_BROWSER_PENDING_LABEL" desc="Pending label.">
+    Pending
+  </message>
   <message name="IDS_FILE_BROWSER_SEARCH_TEXT_LABEL" desc="Search text field label.">
     Search
   </message>
@@ -899,6 +962,15 @@
  <message name="IDS_FILE_BROWSER_CONFIRM_DELETE_SOME" desc="Asks the user if they are sure they want to delete multiple files/directories.">
    Are you sure you want to delete <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items?
  </message>
+ <message name="IDS_FILE_BROWSER_UNDO_DELETE_ONE" desc="Confirm to a user that they have deleted a single file and offer to undo">
+   <ph name="FILE_NAME">$1<ex>file.txt</ex></ph> deleted
+ </message>
+ <message name="IDS_FILE_BROWSER_UNDO_DELETE_SOME" desc="Confirm to a user that they have deleted multiple files and offer to undo">
+   <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items deleted
+ </message>
+ <message name="IDS_FILE_BROWSER_UNDO_DELETE_ACTION_LABEL" desc="Undo label shown on toast to undo delete operation">
+   Undo
+ </message>
 
   <message name="IDS_FILE_BROWSER_UNKNOWN_FILESYSTEM_WARNING" desc="Displayed when device contents cannot be read because filesystem is unknown.">
     This device cannot be opened because its filesystem was not recognized.
@@ -913,8 +985,16 @@
   <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE" desc="Title of the format USB drive dialog.">
     Format <ph name="DRIVE_NAME">$1<ex>Untitled USB</ex></ph>
   </message>
+  <!-- TODO (crbug/1129692): Clean up after SinglePartitionFormat launch. -->
   <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_MESSAGE" desc="Advisory message shown before formatting a USB drive.">
     Formatting a drive will delete all data stored on it. This action cannot be undone.
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_PARTITION_DIALOG_MESSAGE" desc="Advisory message shown before formatting a USB partition.">
+    Formatting a partition will erase all data stored on it. This action cannot be undone.
+  </message>
+  <!-- TODO END -->
+  <message name="IDS_FILE_BROWSER_REPARTITION_DIALOG_MESSAGE" desc="Advisory message shown before formatting a USB drive.">
+    Formatting a drive will erase all data stored on it and remove all existing partitions, including partitions that may not be visible. This action cannot be undone.
   </message>
   <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_DELETE_WARNING" desc="Advisory message shown before formatting a USB drive that contains files.">
     <ph name="TOTAL_FILE_SIZE">$1<ex>38.3 MB</ex></ph> of files will be deleted
@@ -925,10 +1005,17 @@
   <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_FORMAT_LABEL" desc="Label for the format filesystem selector">
     Format
   </message>
+  <!-- TODO (crbug/1129692): Clean up after SinglePartitionFormat launch. -->
   <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
     Erase and Format
   </message>
-
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_CONFIRM_SHORT_LABEL" desc="Label for the confirm button">
+    Format
+  </message>
+  <!-- TODO END -->
+  <message name="IDS_FILE_BROWSER_REPARTITION_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
+    Format
+  </message>
   <message name="IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE" desc="Notification message displayed while formatting an external drive">
     Formatting <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>...
   </message>
@@ -937,6 +1024,16 @@
   </message>
   <message name="IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE" desc="Notification message displayed if formatting of an external drive has failed">
     Could not format <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
+  </message>
+
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_TITLE" desc="Title of the password prompt dialog.">
+    Password
+  </message>
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
+    Unlock
+  </message>
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_INVALID" desc="Error message displayed when the user enters an invalid password.">
+    Invalid password
   </message>
 
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
@@ -1088,6 +1185,15 @@
   <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user how to make multiple selected files available offline.">
     To save these files for offline use, get back online, right-click the files, and select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> option.
   </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_BANNER_MESSAGE" desc="Message informing the user that they can make files available offline.">
+    You can make files available offline for access when you don't have internet connection.
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_PROGRESS_MESSAGE" desc="Message informing the user a Google Drive file is being downloaded for offline use.">
+    Making <ph name="FILE_NAME">$1<ex>document.pdf</ex></ph> available offline
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_PROGRESS_MESSAGE_PLURAL" desc="Message informing the user multiple Google Drive files are being downloaded for offline use.">
+    Making <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> files available offline
+  </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_NO_PLAYBACK_AVAILABLE" desc="Massage for user to notify no playback is available.">
     No playback available
   </message>
@@ -1191,10 +1297,10 @@
     Share folder with Linux
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the crostini container.">
-    Give Linux apps permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
+    Give Linux apps permission to access files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the crostini container.">
-    Give Linux apps permission to modify files in your Google Drive. Changes will sync to your other devices.
+    Give Linux apps permission to access files in your Google Drive. Changes will sync to your other devices.
   </message>
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI" desc="Confirmation message shown when a user shares a folder with the crostini container.">
     1 folder shared with Linux
@@ -1202,20 +1308,29 @@
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the crostini container.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Linux
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE" translateable="false" desc="Message title shown when a user shares the root of a volume such as 'My files' with the Plugin VM.">
-    Share folder with PluginVm
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the Parallels.">
+    Share folder with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the Plugin VM." >
-    Give Plugin VM permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with Parallels." >
+    Give Parallels Desktop permission to access files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE" translateable="false" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the Plugin VM.">
-    Give Plugin VM permission to modify files in your Google Drive. Changes will sync to your other devices.
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with Parallels.">
+    Give Parallels Desktop permission to access files in your Google Drive. Changes will sync to your other devices.
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares a folder with the Plugin VM.">
-    1 folder shared with Plugin VM
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" desc="Confirmation message shown when a user shares a folder with Parallels.">
+    1 folder shared with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" translateable="false" desc="Confirmation message shown when a user shares more than 1 folder with the Plugin VM.">
-    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Plugin VM
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with Parallels.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Parallels Desktop
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_CROSTINI" desc="Message shown in FilesApp message bar when a user has shared a folder with the crostini container.">
+    This folder is shared with Linux
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_CROSTINI_AND_PLUGIN_VM" desc="Message shown in FilesApp message bar when a user has shared a folder with the crostini container and with Parallels. Do not translate 'Linux' or 'Parallels Desktop'">
+    This folder is shared with Linux and Parallels Desktop
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_PLUGIN_VM" desc="Message shown in FilesApp message bar when a user has shared a folder with Parallels. Do not translate 'Parallels Desktop'">
+    This folder is shared with Parallels Desktop
   </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
@@ -1381,7 +1496,7 @@
     More...
   </message>
 <message name="IDS_FILE_BROWSER_READONLY_INDICATOR_TOOLTIP" desc="Tooltip for the readonly indicator in the Files app.">
-    Files in this folder are read only. Some activities are not supported.
+    The contents of this folder are read-only. Some activities are not supported.
   </message>
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...
@@ -1430,6 +1545,14 @@
   </message>
   <message name="IDS_FILE_BROWSER_LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL" desc="Label for the breadcrumb sub-folder elider button in the Files app folder location line.">
     More sub-folders...
+  </message>
+
+<!-- Holding space -->
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_PIN_TO_SHELF_COMMAND_LABEL" desc="Label for the command which pins one or more files to the holding space in the shelf.">
+    Pin to shelf
+  </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_UNPIN_FROM_SHELF_COMMAND_LABEL" desc="Label for the command which unpins one or more files from the holding space in the shelf.">
+    Unpin from shelf
   </message>
 
 <!-- Common for Audio player and Media player -->

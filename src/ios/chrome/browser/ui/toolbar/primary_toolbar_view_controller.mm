@@ -4,10 +4,13 @@
 
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 
+#import <MaterialComponents/MaterialProgressView.h>
+
 #include "base/check.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -21,7 +24,6 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,6 +35,8 @@
 @property(nonatomic, assign) BOOL isNTP;
 // The last fullscreen progress registered.
 @property(nonatomic, assign) CGFloat previousFullscreenProgress;
+// Pan Gesture Recognizer for the view revealing pan gesture handler.
+@property(nonatomic, weak) UIPanGestureRecognizer* panGestureRecognizer;
 @end
 
 @implementation PrimaryToolbarViewController
@@ -52,6 +56,33 @@
                         completion:^(BOOL finished) {
                           [weakSelf stopProgressBar];
                         }];
+}
+
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler {
+  _panGestureHandler = panGestureHandler;
+  [self.view removeGestureRecognizer:self.panGestureRecognizer];
+
+  UIPanGestureRecognizer* panGestureRecognizer = [[UIPanGestureRecognizer alloc]
+      initWithTarget:panGestureHandler
+              action:@selector(handlePanGesture:)];
+  panGestureRecognizer.maximumNumberOfTouches = 1;
+  [self.view addGestureRecognizer:panGestureRecognizer];
+
+  self.panGestureRecognizer = panGestureRecognizer;
+}
+
+#pragma mark - viewRevealingAnimatee
+
+- (void)willAnimateViewReveal:(ViewRevealState)currentViewRevealState {
+}
+
+- (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
+  self.view.topCornersRounded =
+      (nextViewRevealState != ViewRevealState::Hidden);
+}
+
+- (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
 }
 
 #pragma mark - AdaptiveToolbarViewController
@@ -180,8 +211,12 @@
 
 #pragma mark - ActivityServicePositioner
 
-- (UIView*)shareButtonView {
+- (UIView*)sourceView {
   return self.view.shareButton;
+}
+
+- (CGRect)sourceRect {
+  return self.view.shareButton.bounds;
 }
 
 #pragma mark - FullscreenUIElement

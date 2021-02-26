@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -59,7 +61,9 @@ views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
 
 // static
 void HatsBubbleView::ShowOnContentReady(Browser* browser,
-                                        const std::string& site_id) {
+                                        const std::string& site_id,
+                                        base::OnceClosure success_callback,
+                                        base::OnceClosure failure_callback) {
   if (site_id == "test_site_id") {
     // Directly show the bubble during tests.
     HatsBubbleView::Show(browser, base::DoNothing());
@@ -70,7 +74,14 @@ void HatsBubbleView::ShowOnContentReady(Browser* browser,
   // The bubble will only show after the survey content is retrieved.
   // If it fails due to no internet connection or any other reason, the bubble
   // will not show.
-  HatsWebDialog::Create(browser, site_id);
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopMigration)) {
+    // Self deleting on close.
+    new HatsNextWebDialog(browser, site_id, std::move(success_callback),
+                          std::move(failure_callback));
+  } else {
+    HatsWebDialog::Create(browser, site_id);
+  }
 }
 
 void HatsBubbleView::Show(Browser* browser,
@@ -100,6 +111,7 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
       close_bubble_helper_(this, browser),
       consent_callback_(std::move(consent_callback)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
+  SetShowIcon(true);
 
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL));
@@ -143,10 +155,6 @@ base::string16 HatsBubbleView::GetWindowTitle() const {
 gfx::ImageSkia HatsBubbleView::GetWindowIcon() {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_PRODUCT_LOGO_32);
-}
-
-bool HatsBubbleView::ShouldShowWindowIcon() const {
-  return true;
 }
 
 bool HatsBubbleView::ShouldShowCloseButton() const {

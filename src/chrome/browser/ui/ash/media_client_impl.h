@@ -6,20 +6,18 @@
 #define CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_IMPL_H_
 
 #include "ash/public/cpp/media_client.h"
+#include "ash/public/cpp/media_controller.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 
-namespace ash {
-enum class MediaCaptureState;
-class MediaController;
-}  // namespace ash
-
 class MediaClientImpl : public ash::MediaClient,
                         public BrowserListObserver,
+                        public chromeos::VmCameraMicManager::Observer,
                         public MediaCaptureDevicesDispatcher::Observer {
  public:
   MediaClientImpl();
@@ -54,6 +52,10 @@ class MediaClientImpl : public ash::MediaClient,
 
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
+
+  // chromeos::VmCameraMicManager::Observer
+  void OnVmCameraMicActiveChanged(
+      chromeos::VmCameraMicManager* manager) override;
 
   // Enables/disables custom media key handling when |context| is the active
   // browser. Media keys will be forwarded to |delegate|.
@@ -94,6 +96,9 @@ class MediaClientImpl : public ash::MediaClient,
   bool is_forcing_media_client_key_handling_ = false;
 
   content::BrowserContext* active_context_ = nullptr;
+
+  ash::MediaCaptureState vm_media_capture_state_ =
+      ash::MediaCaptureState::kNone;
 
   base::WeakPtrFactory<MediaClientImpl> weak_ptr_factory_{this};
 

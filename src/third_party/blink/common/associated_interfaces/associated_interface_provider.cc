@@ -20,7 +20,7 @@ class AssociatedInterfaceProvider::LocalProvider
   explicit LocalProvider(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     associated_interface_provider_receiver_.Bind(
-        remote_.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        remote_.BindNewEndpointAndPassDedicatedReceiver(),
         std::move(task_runner));
   }
 
@@ -63,7 +63,8 @@ class AssociatedInterfaceProvider::LocalProvider
 AssociatedInterfaceProvider::AssociatedInterfaceProvider(
     mojo::PendingAssociatedRemote<mojom::AssociatedInterfaceProvider> proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : proxy_(std::move(proxy)), task_runner_(std::move(task_runner)) {
+    : proxy_(std::move(proxy), task_runner),
+      task_runner_(std::move(task_runner)) {
   DCHECK(proxy_.is_bound());
 }
 

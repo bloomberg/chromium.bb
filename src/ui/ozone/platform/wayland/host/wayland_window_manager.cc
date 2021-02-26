@@ -20,6 +20,11 @@ void WaylandWindowManager::RemoveObserver(WaylandWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WaylandWindowManager::NotifyWindowConfigured(WaylandWindow* window) {
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnWindowConfigured(window);
+}
+
 void WaylandWindowManager::GrabLocatedEvents(WaylandWindow* window) {
   DCHECK_NE(located_events_grabber_, window);
 
@@ -77,6 +82,37 @@ WaylandWindow* WaylandWindowManager::GetCurrentKeyboardFocusedWindow() const {
   return nullptr;
 }
 
+WaylandWindow* WaylandWindowManager::FindParentForNewWindow(
+    gfx::AcceleratedWidget parent_widget) const {
+  auto* parent_window = GetWindow(parent_widget);
+
+  // If propagated parent has already had a child, it means that |this| is a
+  // submenu of a 3-dot menu. In aura, the parent of a 3-dot menu and its
+  // submenu is the main native widget, which is the main window. In contrast,
+  // Wayland requires a menu window to be a parent of a submenu window. Thus,
+  // check if the suggested parent has a child. If yes, take its child as a
+  // parent of |this|.
+  // Another case is a notification window or a drop down window, which does not
+  // have a parent in aura. In this case, take the current focused window as a
+  // parent.
+  if (!parent_window)
+    parent_window = GetCurrentFocusedWindow();
+
+  // If there is no current focused window, figure out the current active window
+  // set by the Wayland server. Only one window at a time can be set as active.
+  if (!parent_window) {
+    auto windows = GetAllWindows();
+    for (auto* window : windows) {
+      if (window->IsActive()) {
+        parent_window = window;
+        break;
+      }
+    }
+  }
+
+  return parent_window ? parent_window->GetTopMostChildWindow() : nullptr;
+}
+
 std::vector<WaylandWindow*> WaylandWindowManager::GetWindowsOnOutput(
     uint32_t output_id) {
   std::vector<WaylandWindow*> result;
@@ -103,6 +139,28 @@ void WaylandWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
 
   for (WaylandWindowObserver& observer : observers_)
     observer.OnWindowRemoved(window);
+}
+
+void WaylandWindowManager::AddSubsurface(gfx::AcceleratedWidget widget,
+                                         WaylandSubsurface* subsurface) {
+  auto* window = window_map_[widget];
+  DCHECK(window);
+
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnSubsurfaceAdded(window, subsurface);
+}
+
+void WaylandWindowManager::RemoveSubsurface(gfx::AcceleratedWidget widget,
+                                            WaylandSubsurface* subsurface) {
+  auto* window = window_map_[widget];
+  DCHECK(window);
+
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnSubsurfaceRemoved(window, subsurface);
+}
+
+gfx::AcceleratedWidget WaylandWindowManager::AllocateAcceleratedWidget() {
+  return ++last_accelerated_widget_;
 }
 
 std::vector<WaylandWindow*> WaylandWindowManager::GetAllWindows() const {

@@ -25,11 +25,10 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.FileProviderHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.offline_items_collection.LaunchLocation;
@@ -377,7 +377,7 @@ public class OfflinePageUtils {
                     uri = Uri.parse(tabUrl);
                 }
                 final Uri finalUri = uri;
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(finalUri));
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(finalUri));
             });
         } else {
             callback.onResult(Uri.parse(tabUrl));
@@ -394,7 +394,7 @@ public class OfflinePageUtils {
      *                      afterwards via PostTask.
      */
     public static void maybeShareOfflinePage(Tab tab, final Callback<ShareParams> shareCallback) {
-        if (tab == null) {
+        if (tab == null || !tab.isInitialized()) {
             shareCallback.onResult(null);
             return;
         }
@@ -598,8 +598,7 @@ public class OfflinePageUtils {
             }
             @Override
             protected void onPostExecute(Uri uri) {
-                ShareParams.Builder builder =
-                        new ShareParams.Builder(window, pageTitle, pageUrl).setShareDirectly(false);
+                ShareParams.Builder builder = new ShareParams.Builder(window, pageTitle, pageUrl);
                 // Only try to share the offline page if we have a content URI making the actual
                 // file available.
                 // TODO(985699): Sharing the page's online URL is a temporary fix for crashes when
@@ -636,14 +635,11 @@ public class OfflinePageUtils {
      * @param offlineId The ID of the offline page to open.
      * @param location  Indicates where the offline page is launched.
      * @param callback  The callback to pass back the LoadUrlParams for launching an URL.
+     * @param profile   The profile to get an instance of OfflinePageBridge.
      */
     public static void getLoadUrlParamsForOpeningOfflineVersion(final String url, long offlineId,
-            final @LaunchLocation int location, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(Profile.getLastUsedRegularProfile());
+            final @LaunchLocation int location, Callback<LoadUrlParams> callback, Profile profile) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(profile);
         if (offlinePageBridge == null) {
             callback.onResult(null);
             return;
@@ -659,14 +655,11 @@ public class OfflinePageUtils {
      * Otherwise, the file or content URL from the intent will be launched.
      * @param intentUrl URL from the intent.
      * @param callback  The callback to pass back the launching URL and extra headers.
+     * @param profile   The profile to get an instance of OfflinePageBridge.
      */
     public static void getLoadUrlParamsForOpeningMhtmlFileOrContent(
-            final String intentUrl, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(Profile.getLastUsedRegularProfile());
+            final String intentUrl, Callback<LoadUrlParams> callback, Profile profile) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(profile);
         if (offlinePageBridge == null) {
             callback.onResult(new LoadUrlParams(intentUrl));
             return;

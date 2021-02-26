@@ -7,14 +7,14 @@
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 #include "ash/quick_answers/ui/quick_answers_view.h"
-#include "ash/quick_answers/ui/user_consent_view.h"
+#include "ash/quick_answers/ui/user_notice_view.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,16 +28,23 @@ QuickAnswersUiController::QuickAnswersUiController(
     : controller_(controller) {}
 
 QuickAnswersUiController::~QuickAnswersUiController() {
-  CloseQuickAnswersView();
-  CloseUserConsentView();
+  quick_answers_view_ = nullptr;
+  user_notice_view_ = nullptr;
 }
 
 void QuickAnswersUiController::CreateQuickAnswersView(
     const gfx::Rect& bounds,
     const std::string& title,
     const std::string& query) {
-  DCHECK(!quick_answers_view_);
-  DCHECK(!user_consent_view_);
+  // Currently there are timing issues that causes the quick answers view is not
+  // dismissed. TODO(updowndota): Remove the special handling after the root
+  // cause is found.
+  if (quick_answers_view_) {
+    LOG(ERROR) << "Quick answers view not dismissed.";
+    CloseQuickAnswersView();
+  }
+
+  DCHECK(!user_notice_view_);
   SetActiveQuery(query);
   quick_answers_view_ = new QuickAnswersView(bounds, title, this);
   quick_answers_view_->GetWidget()->ShowInactive();
@@ -49,7 +56,7 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
 
   ash::AssistantInteractionController::Get()->StartTextInteraction(
       query_, /*allow_tts=*/false,
-      chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
+      chromeos::assistant::AssistantQuerySource::kQuickAnswers);
   controller_->OnQuickAnswerClick();
 }
 
@@ -93,34 +100,40 @@ void QuickAnswersUiController::UpdateQuickAnswersBounds(
   if (quick_answers_view_)
     quick_answers_view_->UpdateAnchorViewBounds(anchor_bounds);
 
-  if (user_consent_view_)
-    user_consent_view_->UpdateAnchorViewBounds(anchor_bounds);
+  if (user_notice_view_)
+    user_notice_view_->UpdateAnchorViewBounds(anchor_bounds);
 }
 
-void QuickAnswersUiController::CreateUserConsentView(
-    const gfx::Rect& anchor_bounds) {
+void QuickAnswersUiController::CreateUserNoticeView(
+    const gfx::Rect& anchor_bounds,
+    const base::string16& intent_type,
+    const base::string16& intent_text) {
   DCHECK(!quick_answers_view_);
-  DCHECK(!user_consent_view_);
-  user_consent_view_ = new quick_answers::UserConsentView(anchor_bounds, this);
-  user_consent_view_->GetWidget()->ShowInactive();
+  DCHECK(!user_notice_view_);
+  user_notice_view_ = new quick_answers::UserNoticeView(
+      anchor_bounds, intent_type, intent_text, this);
+  user_notice_view_->GetWidget()->ShowInactive();
 }
 
-bool QuickAnswersUiController::CloseUserConsentView() {
-  if (user_consent_view_) {
-    user_consent_view_->GetWidget()->Close();
-    user_consent_view_ = nullptr;
-    return true;
+void QuickAnswersUiController::CloseUserNoticeView() {
+  if (user_notice_view_) {
+    user_notice_view_->GetWidget()->Close();
+    user_notice_view_ = nullptr;
   }
-  return false;
 }
 
-void QuickAnswersUiController::OnConsentGrantedButtonPressed() {
-  DCHECK(user_consent_view_);
-  controller_->OnUserConsentGranted();
+void QuickAnswersUiController::OnAcceptButtonPressed() {
+  DCHECK(user_notice_view_);
+  controller_->OnUserNoticeAccepted();
+
+  // The Quick-Answer displayed should gain focus if it is created when this
+  // button is pressed.
+  if (quick_answers_view_)
+    quick_answers_view_->RequestFocus();
 }
 
 void QuickAnswersUiController::OnManageSettingsButtonPressed() {
-  controller_->OnConsentSettingsRequestedByUser();
+  controller_->OnNoticeSettingsRequestedByUser();
 }
 
 void QuickAnswersUiController::OnDogfoodButtonPressed() {

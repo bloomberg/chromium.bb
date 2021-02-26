@@ -10,10 +10,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
@@ -22,6 +25,7 @@
 #include "device/base/features.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
@@ -30,8 +34,6 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -51,7 +53,7 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus,
   // On Chrome OS, Bluez might not be ready by the time we initialize the
   // BluezDBusManager so we initialize the clients anyway.
   bool should_check_object_manager = true;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   should_check_object_manager = false;
 #endif
 
@@ -89,8 +91,8 @@ dbus::Bus* bluez::BluezDBusManager::GetSystemBus() {
 }
 
 void BluezDBusManager::CallWhenObjectManagerSupportIsKnown(
-    base::Closure callback) {
-  object_manager_support_known_callback_ = callback;
+    base::OnceClosure callback) {
+  object_manager_support_known_callback_ = std::move(callback);
 }
 
 BluetoothAdapterClient* bluez::BluezDBusManager::GetBluetoothAdapterClient() {
@@ -114,6 +116,11 @@ BluetoothDebugManagerClient*
 bluez::BluezDBusManager::GetBluetoothDebugManagerClient() {
   DCHECK(object_manager_support_known_);
   return client_bundle_->bluetooth_debug_manager_client();
+}
+
+BluetoothBatteryClient* bluez::BluezDBusManager::GetBluetoothBatteryClient() {
+  DCHECK(object_manager_support_known_);
+  return client_bundle_->bluetooth_battery_client();
 }
 
 BluetoothDeviceClient* bluez::BluezDBusManager::GetBluetoothDeviceClient() {
@@ -150,17 +157,6 @@ BluetoothInputClient* bluez::BluezDBusManager::GetBluetoothInputClient() {
   return client_bundle_->bluetooth_input_client();
 }
 
-BluetoothMediaClient* bluez::BluezDBusManager::GetBluetoothMediaClient() {
-  DCHECK(object_manager_support_known_);
-  return client_bundle_->bluetooth_media_client();
-}
-
-BluetoothMediaTransportClient*
-bluez::BluezDBusManager::GetBluetoothMediaTransportClient() {
-  DCHECK(object_manager_support_known_);
-  return client_bundle_->bluetooth_media_transport_client();
-}
-
 BluetoothProfileManagerClient*
 bluez::BluezDBusManager::GetBluetoothProfileManagerClient() {
   DCHECK(object_manager_support_known_);
@@ -185,10 +181,8 @@ void BluezDBusManager::OnObjectManagerSupported(dbus::Response* response) {
   InitializeClients();
 
   object_manager_support_known_ = true;
-  if (!object_manager_support_known_callback_.is_null()) {
-    object_manager_support_known_callback_.Run();
-    object_manager_support_known_callback_.Reset();
-  }
+  if (object_manager_support_known_callback_)
+    std::move(object_manager_support_known_callback_).Run();
 }
 
 void BluezDBusManager::OnObjectManagerNotSupported(
@@ -199,10 +193,8 @@ void BluezDBusManager::OnObjectManagerNotSupported(
   // We don't initialize clients since the clients need ObjectManager.
 
   object_manager_support_known_ = true;
-  if (!object_manager_support_known_callback_.is_null()) {
-    object_manager_support_known_callback_.Run();
-    object_manager_support_known_callback_.Reset();
-  }
+  if (object_manager_support_known_callback_)
+    std::move(object_manager_support_known_callback_).Run();
 }
 
 void BluezDBusManager::InitializeClients() {
@@ -226,10 +218,6 @@ void BluezDBusManager::InitializeClients() {
                                                  bluetooth_service_name);
   client_bundle_->bluetooth_le_advertising_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
-  client_bundle_->bluetooth_media_client()->Init(GetSystemBus(),
-                                                 bluetooth_service_name);
-  client_bundle_->bluetooth_media_transport_client()->Init(
-      GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_profile_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
 
@@ -237,6 +225,14 @@ void BluezDBusManager::InitializeClients() {
   client_bundle_->bluetooth_debug_manager_client()->Init(
       GetSystemBus(),
       bluetooth_object_manager::kBluetoothObjectManagerServiceName);
+
+#if BUILDFLAG(IS_ASH)
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kShowBluetoothDeviceBattery)) {
+    client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
+                                                     bluetooth_service_name);
+  }
+#endif
 
   if (!alternate_bus_)
     return;
@@ -258,7 +254,7 @@ void BluezDBusManager::Initialize(dbus::Bus* system_bus) {
 
   BluezDBusThreadManager::Initialize();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   DCHECK(system_bus);
   // On ChromeOS, BluetoothSystem needs a separate connection to Bluez, so we
   // use BluezDBusThreadManager to get two different connections to the same
@@ -317,7 +313,7 @@ void BluezDBusManager::Shutdown() {
   g_bluez_dbus_manager = nullptr;
   delete dbus_manager;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   if (!g_using_bluez_dbus_manager_for_testing)
     BluezDBusThreadManager::Shutdown();
 #endif
@@ -354,6 +350,12 @@ void BluezDBusManagerSetter::SetBluetoothAgentManagerClient(
     std::unique_ptr<BluetoothAgentManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_agent_manager_client_ = std::move(client);
+}
+
+void BluezDBusManagerSetter::SetBluetoothBatteryClient(
+    std::unique_ptr<BluetoothBatteryClient> client) {
+  bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_battery_client_ =
+      std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothDebugManagerClient(
@@ -397,18 +399,6 @@ void BluezDBusManagerSetter::SetBluetoothInputClient(
     std::unique_ptr<BluetoothInputClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_input_client_ =
       std::move(client);
-}
-
-void BluezDBusManagerSetter::SetBluetoothMediaClient(
-    std::unique_ptr<BluetoothMediaClient> client) {
-  bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_media_client_ =
-      std::move(client);
-}
-
-void BluezDBusManagerSetter::SetBluetoothMediaTransportClient(
-    std::unique_ptr<BluetoothMediaTransportClient> client) {
-  bluez::BluezDBusManager::Get()
-      ->client_bundle_->bluetooth_media_transport_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothProfileManagerClient(

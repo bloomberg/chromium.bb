@@ -9,14 +9,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
 
 SetAttributeAction::SetAttributeAction(ActionDelegate* delegate,
                                        const ActionProto& proto)
     : Action(delegate, proto) {
-  DCHECK_GT(proto_.set_attribute().element().selectors_size(), 0);
   DCHECK_GT(proto_.set_attribute().attribute_size(), 0);
 }
 
@@ -31,9 +32,12 @@ void SetAttributeAction::InternalProcessAction(ProcessActionCallback callback) {
     return;
   }
   delegate_->ShortWaitForElement(
-      selector, base::BindOnce(&SetAttributeAction::OnWaitForElement,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               std::move(callback), selector));
+      selector,
+      base::BindOnce(&SetAttributeAction::OnWaitForElementTimed,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&SetAttributeAction::OnWaitForElement,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(callback), selector)));
 }
 
 void SetAttributeAction::OnWaitForElement(ProcessActionCallback callback,
@@ -45,9 +49,11 @@ void SetAttributeAction::OnWaitForElement(ProcessActionCallback callback,
     return;
   }
 
-  delegate_->SetAttribute(
-      selector, ExtractVector(proto_.set_attribute().attribute()),
-      proto_.set_attribute().value(),
+  action_delegate_util::FindElementAndPerform(
+      delegate_, selector,
+      base::BindOnce(&ActionDelegate::SetAttribute, delegate_->GetWeakPtr(),
+                     ExtractVector(proto_.set_attribute().attribute()),
+                     proto_.set_attribute().value()),
       base::BindOnce(&SetAttributeAction::OnSetAttribute,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -20,7 +24,7 @@ class AppServiceProxyTest : public testing::Test {
     void FlushPendingCallbacks() {
       for (auto& callback : pending_callbacks_) {
         auto iv = apps::mojom::IconValue::New();
-        iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+        iv->icon_type = apps::mojom::IconType::kUncompressed;
         iv->uncompressed =
             gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
         iv->is_placeholder_icon = false;
@@ -43,11 +47,11 @@ class AppServiceProxyTest : public testing::Test {
         apps::mojom::AppType app_type,
         const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override {
-      if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+      if (icon_type == apps::mojom::IconType::kUncompressed) {
         pending_callbacks_.push_back(std::move(callback));
       }
       return nullptr;
@@ -59,13 +63,12 @@ class AppServiceProxyTest : public testing::Test {
 
   UniqueReleaser LoadIcon(apps::IconLoader* loader, const std::string& app_id) {
     static constexpr auto app_type = apps::mojom::AppType::kWeb;
-    static constexpr auto icon_compression =
-        apps::mojom::IconCompression::kUncompressed;
+    static constexpr auto icon_type = apps::mojom::IconType::kUncompressed;
     static constexpr int32_t size_hint_in_dip = 1;
     static bool allow_placeholder_icon = false;
 
-    return loader->LoadIcon(app_type, app_id, icon_compression,
-                            size_hint_in_dip, allow_placeholder_icon,
+    return loader->LoadIcon(app_type, app_id, icon_type, size_hint_in_dip,
+                            allow_placeholder_icon,
                             base::BindOnce(&AppServiceProxyTest::OnLoadIcon,
                                            base::Unretained(this)));
   }
@@ -82,6 +85,8 @@ class AppServiceProxyTest : public testing::Test {
   int NumOuterFinishedCallbacks() { return num_outer_finished_callbacks_; }
 
   int num_outer_finished_callbacks_ = 0;
+
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(AppServiceProxyTest, IconCache) {
@@ -181,4 +186,65 @@ TEST_F(AppServiceProxyTest, IconCoalescer) {
   EXPECT_EQ(0, fake.NumPendingCallbacks());
   EXPECT_EQ(3, fake.NumInnerFinishedCallbacks());
   EXPECT_EQ(6, NumOuterFinishedCallbacks());
+}
+
+TEST_F(AppServiceProxyTest, ProxyAccessPerProfile) {
+  TestingProfile::Builder profile_builder;
+
+  // We expect an App Service in a regular profile.
+  auto profile = profile_builder.Build();
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile.get());
+  EXPECT_TRUE(proxy);
+
+  // We expect the same App Service in the incognito profile branched from that
+  // regular profile.
+  // TODO(https://crbug.com/1122463): this should be nullptr once we address all
+  // incognito access to the App Service.
+  TestingProfile::Builder incognito_builder;
+  auto* incognito_proxy = apps::AppServiceProxyFactory::GetForProfile(
+      incognito_builder.BuildIncognito(profile.get()));
+  EXPECT_EQ(proxy, incognito_proxy);
+
+  // We expect a different App Service in the Guest Session profile.
+  TestingProfile::Builder guest_builder;
+  guest_builder.SetGuestSession();
+  auto guest_profile = guest_builder.Build();
+  auto* guest_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(guest_profile.get());
+  EXPECT_TRUE(guest_proxy);
+  EXPECT_NE(guest_proxy, proxy);
+}
+
+TEST_F(AppServiceProxyTest, RedirectInIncognitoProxyAccessPerProfile) {
+  TestingProfile::Builder profile_builder;
+
+  // We expect an App Service in a regular profile.
+  auto profile = profile_builder.Build();
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile.get());
+  EXPECT_TRUE(proxy);
+
+  // We get the same App Service using GetForProfileRedirectInIncognito.
+  auto* redirected_proxy =
+      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
+          profile.get());
+  EXPECT_EQ(proxy, redirected_proxy);
+
+  // We expect the same App Service in the incognito profile branched from that
+  // regular profile.
+  TestingProfile::Builder incognito_builder;
+  auto* incognito_proxy =
+      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
+          incognito_builder.BuildIncognito(profile.get()));
+  EXPECT_EQ(proxy, incognito_proxy);
+
+  // We expect a different (but still valid) App Service in the Guest Session
+  // profile.
+  TestingProfile::Builder guest_builder;
+  guest_builder.SetGuestSession();
+  auto guest_profile = guest_builder.Build();
+  auto* guest_proxy =
+      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
+          guest_profile.get());
+  EXPECT_TRUE(guest_proxy);
+  EXPECT_NE(guest_proxy, proxy);
 }

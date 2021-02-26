@@ -22,12 +22,9 @@ class ReportingObserver;
 
 // ReportingContext processes all reports for an ExecutionContext, and serves as
 // a container for all active ReportingObservers on that ExecutionContext.
-class CORE_EXPORT ReportingContext final
-    : public GarbageCollected<ReportingContext>,
-      public mojom::blink::ReportingObserver,
-      public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(ReportingContext);
-
+class CORE_EXPORT ReportingContext : public GarbageCollected<ReportingContext>,
+                                     public mojom::blink::ReportingObserver,
+                                     public Supplement<ExecutionContext> {
  public:
   static const char kSupplementName[];
 
@@ -42,7 +39,8 @@ class CORE_EXPORT ReportingContext final
   void Bind(mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver);
 
   // Queues a report for the Reporting API and in all registered observers.
-  void QueueReport(Report*, const Vector<String>& endpoints = {"default"});
+  virtual void QueueReport(Report*,
+                           const Vector<String>& endpoints = {"default"});
 
   void RegisterObserver(blink::ReportingObserver*);
   void UnregisterObserver(blink::ReportingObserver*);
@@ -50,7 +48,7 @@ class CORE_EXPORT ReportingContext final
   // mojom::blink::ReportingObserver implementation.
   void Notify(mojom::blink::ReportPtr report) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Counts the use of a report type via UseCounter.
@@ -64,7 +62,7 @@ class CORE_EXPORT ReportingContext final
   void SendToReportingAPI(Report* report, const String& endpoint) const;
 
   HeapListHashSet<Member<blink::ReportingObserver>> observers_;
-  HeapHashMap<String, HeapListHashSet<Member<Report>>> report_buffer_;
+  HeapHashMap<String, Member<HeapListHashSet<Member<Report>>>> report_buffer_;
   Member<ExecutionContext> execution_context_;
 
   // This is declared mutable so that the service endpoint can be cached by

@@ -8,9 +8,12 @@
 #include <map>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -21,13 +24,6 @@ class NavigationRequest;
 // before they are processed by the implementation. This enables unit/browser
 // tests to scrutinize/alter the parameters, or simulate race conditions by
 // triggering other calls just before processing DidCommitProvisionalLoad.
-//
-// IMPORTANT NOTE: Avoid using this when IsPerNavigationMojoInterfaceEnabled()
-// is false as this might not do what you expect it to.
-// In real code and without the above flag, DidCommit* calls are sent right
-// after OnCrossDocumentCommitProcessed, which is NOT handled by this class.
-// You might end up with a deleted NavigationRequest and/or mismatched params
-// and NavigationRequest.
 class DidCommitNavigationInterceptor : public WebContentsObserver {
  public:
   // Constructs an instance that will intercept DidCommitProvisionalLoad calls
@@ -55,6 +51,40 @@ class DidCommitNavigationInterceptor : public WebContentsObserver {
   std::map<RenderFrameHost*, std::unique_ptr<FrameAgent>> frame_agents_;
 
   DISALLOW_COPY_AND_ASSIGN(DidCommitNavigationInterceptor);
+};
+
+// A helper class to run a predefined callback just before processing the
+// DidCommitProvisionalLoad IPC for |deferred_url|.
+class CommitMessageDelayer : public DidCommitNavigationInterceptor {
+ public:
+  using DidCommitCallback = base::OnceCallback<void(RenderFrameHost*)>;
+
+  // Starts monitoring |web_contents| for DidCommit IPC and executes
+  // |deferred_action| for each DidCommit IPC that matches |deferred_url|.
+  explicit CommitMessageDelayer(WebContents* web_contents,
+                                const GURL& deferred_url,
+                                DidCommitCallback deferred_action);
+  ~CommitMessageDelayer() override;
+
+  // Waits until DidCommit IPC arrives for |deferred_url|, then calls
+  // |deferred_action|, then handles the IPC, then returns.
+  void Wait();
+
+ private:
+  // DidCommitNavigationInterceptor:
+  bool WillProcessDidCommitNavigation(
+      RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
+      override;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  const GURL deferred_url_;
+  DidCommitCallback deferred_action_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommitMessageDelayer);
 };
 
 }  // namespace content

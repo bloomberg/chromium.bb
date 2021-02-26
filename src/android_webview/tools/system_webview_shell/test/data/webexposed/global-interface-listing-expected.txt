@@ -683,6 +683,8 @@ interface CanvasRenderingContext2D
     getter fillStyle
     getter filter
     getter font
+    getter fontKerning
+    getter fontVariantCaps
     getter globalAlpha
     getter globalCompositeOperation
     getter imageSmoothingEnabled
@@ -699,6 +701,9 @@ interface CanvasRenderingContext2D
     getter strokeStyle
     getter textAlign
     getter textBaseline
+    getter textLetterSpacing
+    getter textRendering
+    getter textWordSpacing
     method arc
     method arcTo
     method beginPath
@@ -707,6 +712,7 @@ interface CanvasRenderingContext2D
     method clip
     method closePath
     method constructor
+    method createConicGradient
     method createImageData
     method createLinearGradient
     method createPattern
@@ -745,6 +751,8 @@ interface CanvasRenderingContext2D
     setter fillStyle
     setter filter
     setter font
+    setter fontKerning
+    setter fontVariantCaps
     setter globalAlpha
     setter globalCompositeOperation
     setter imageSmoothingEnabled
@@ -761,6 +769,9 @@ interface CanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
+    setter textLetterSpacing
+    setter textRendering
+    setter textWordSpacing
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -4229,6 +4240,8 @@ interface OffscreenCanvasRenderingContext2D
     getter fillStyle
     getter filter
     getter font
+    getter fontKerning
+    getter fontVariantCaps
     getter globalAlpha
     getter globalCompositeOperation
     getter imageSmoothingEnabled
@@ -4244,6 +4257,9 @@ interface OffscreenCanvasRenderingContext2D
     getter shadowOffsetY
     getter strokeStyle
     getter textAlign
+    getter textLetterSpacing
+    getter textRendering
+    getter textWordSpacing
     getter textBaseline
     method arc
     method arcTo
@@ -4253,6 +4269,7 @@ interface OffscreenCanvasRenderingContext2D
     method clip
     method closePath
     method constructor
+    method createConicGradient
     method createImageData
     method createLinearGradient
     method createPattern
@@ -4289,6 +4306,8 @@ interface OffscreenCanvasRenderingContext2D
     setter fillStyle
     setter filter
     setter font
+    setter fontKerning
+    setter fontVariantCaps
     setter globalAlpha
     setter globalCompositeOperation
     setter imageSmoothingEnabled
@@ -4305,6 +4324,9 @@ interface OffscreenCanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
+    setter textLetterSpacing
+    setter textRendering
+    setter textWordSpacing
 interface Option
     attribute @@toStringTag
     getter defaultSelected

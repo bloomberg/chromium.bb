@@ -178,8 +178,8 @@ class FilmGrain {
   //
   // noise_stripes_[kPlaneU][luma_num] or noise_stripes_[kPlaneV][luma_num]
   // is an array that has (34 >> subsampling_y_) rows and
-  // RightShiftWithRounding(width_, subsampling_x_) columns and contains noise
-  // for the chroma components.
+  // SubsampledValue(width_, subsampling_x_) columns and contains noise for the
+  // chroma components.
   Array2DView<GrainType> noise_stripes_[kMaxPlanes];
   // Owns the memory that the elements of noise_stripes_ point to.
   std::unique_ptr<GrainType[]> noise_buffer_;

@@ -17,12 +17,12 @@
 #include <android/hardware_buffer.h>
 
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/gpu/gl/GrGLTypes.h"
-#include "include/private/GrRecordingContext.h"
 #include "src/core/SkMessageBus.h"
 #include "src/gpu/GrAHardwareBufferUtils.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrResourceCache.h"
@@ -81,11 +81,11 @@ GrAHardwareBufferImageGenerator::~GrAHardwareBufferImageGenerator() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 GrSurfaceProxyView GrAHardwareBufferImageGenerator::makeView(GrRecordingContext* context) {
-    if (context->priv().abandoned()) {
+    if (context->abandoned()) {
         return {};
     }
 
-    auto direct = context->priv().asDirectContext();
+    auto direct = context->asDirectContext();
     if (!direct) {
         return {};
     }
@@ -178,9 +178,9 @@ GrSurfaceProxyView GrAHardwareBufferImageGenerator::makeView(GrRecordingContext*
 
                 return tex;
             },
-            backendFormat, {width, height}, GrRenderable::kNo, 1, GrMipMapped::kNo,
-            GrMipMapsStatus::kNotAllocated, GrInternalSurfaceFlags::kReadOnly, SkBackingFit::kExact,
-            SkBudgeted::kNo, GrProtected(fIsProtectedContent), GrSurfaceProxy::UseAllocator::kYes);
+            backendFormat, {width, height}, GrMipmapped::kNo, GrMipmapStatus::kNotAllocated,
+            GrInternalSurfaceFlags::kReadOnly, SkBackingFit::kExact, SkBudgeted::kNo,
+            GrProtected(fIsProtectedContent), GrSurfaceProxy::UseAllocator::kYes);
 
     GrSwizzle readSwizzle = context->priv().caps()->getReadSwizzle(backendFormat, grColorType);
 
@@ -191,7 +191,7 @@ GrSurfaceProxyView GrAHardwareBufferImageGenerator::onGenerateTexture(
         GrRecordingContext* context,
         const SkImageInfo& info,
         const SkIPoint& origin,
-        GrMipMapped mipMapped,
+        GrMipmapped mipMapped,
         GrImageTexGenPolicy texGenPolicy) {
     GrSurfaceProxyView texProxyView = this->makeView(context);
     if (!texProxyView.proxy()) {
@@ -200,7 +200,7 @@ GrSurfaceProxyView GrAHardwareBufferImageGenerator::onGenerateTexture(
     SkASSERT(texProxyView.asTextureProxy());
 
     if (texGenPolicy == GrImageTexGenPolicy::kDraw && origin.isZero() &&
-        info.dimensions() == this->getInfo().dimensions() && mipMapped == GrMipMapped::kNo) {
+        info.dimensions() == this->getInfo().dimensions() && mipMapped == GrMipmapped::kNo) {
         // If the caller wants the full non-MIP mapped texture we're done.
         return texProxyView;
     }
@@ -215,7 +215,7 @@ GrSurfaceProxyView GrAHardwareBufferImageGenerator::onGenerateTexture(
                                     SkBackingFit::kExact, budgeted);
 }
 
-bool GrAHardwareBufferImageGenerator::onIsValid(GrContext* context) const {
+bool GrAHardwareBufferImageGenerator::onIsValid(GrRecordingContext* context) const {
     if (nullptr == context) {
         return false; //CPU backend is not supported, because hardware buffer can be swizzled
     }

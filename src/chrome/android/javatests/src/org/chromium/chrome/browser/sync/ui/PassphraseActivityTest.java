@@ -10,7 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,12 +22,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -55,15 +53,11 @@ public class PassphraseActivityTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @RetryOnFailure
     public void testCallbackAfterBackgrounded() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         // Override before signing in, otherwise regular ProfileSyncService will be created.
         overrideProfileSyncService();
-        SigninTestUtil.addAndSignInTestAccount();
-
-        // PassphraseActivity won't start if an account isn't set.
-        Assert.assertNotNull(ChromeSigninController.get().getSignedInAccountName());
+        mChromeBrowserTestRule.addTestAccountThenSigninAndEnableSync();
 
         // Create the activity.
         final PassphraseActivity activity = launchPassphraseActivity();

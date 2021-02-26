@@ -114,6 +114,16 @@ export class WasmEngineProxy extends Engine {
         'trace_processor_compute_metric', rawComputeMetric);
   }
 
+  async enableMetatrace(): Promise<void> {
+    await this.queueRequest(
+        'trace_processor_enable_metatrace', new Uint8Array());
+  }
+
+  disableAndReadMetatrace(): Promise<Uint8Array> {
+    return this.queueRequest(
+        'trace_processor_disable_and_read_metatrace', new Uint8Array());
+  }
+
   // Enqueues a request to the worker queue via postMessage(). The returned
   // promised will be resolved once the worker replies to the postMessage()
   // with the paylad of the response, a proto-encoded object which wraps the
@@ -136,10 +146,11 @@ export class WasmEngineProxy extends Engine {
     // Requests should be executed and ACKed by the worker in the same order
     // they came in.
     assertTrue(request.id === response.id);
-    if (response.aborted) {
-      request.respHandler.reject('WASM module crashed');
-    } else {
-      request.respHandler.resolve(response.data);
-    }
+
+    // If the Wasm call fails (e.g. hits a PERFETTO_CHECK) it will throw an
+    // error in wasm_bridge.ts and show the crash dialog. In no case we can
+    // gracefully handle a Wasm crash, so we fail fast there rather than
+    // propagating the error here rejecting the promise.
+    request.respHandler.resolve(response.data);
   }
 }

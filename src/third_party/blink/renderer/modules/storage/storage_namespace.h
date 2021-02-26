@@ -69,8 +69,6 @@ class WebViewClient;
 class MODULES_EXPORT StorageNamespace final
     : public GarbageCollected<StorageNamespace>,
       public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(StorageNamespace);
-
  public:
   static const char kSupplementName[];
 
@@ -100,7 +98,7 @@ class MODULES_EXPORT StorageNamespace final
   void AddInspectorStorageAgent(InspectorDOMStorageAgent* agent);
   void RemoveInspectorStorageAgent(InspectorDOMStorageAgent* agent);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // Iterates all of the inspector agents and calls
   // |DidDispatchDOMStorageEvent|.

@@ -26,6 +26,14 @@ struct QuicTransportError {
   bool safe_to_report_details = false;
 };
 
+// The fingerprint of a certificate accompanied with the hash algorithm.
+// https://wicg.github.io/web-transport/#quic-transport-configuration
+// https://www.w3.org/TR/webrtc/#dom-rtcdtlsfingerprint
+struct QuicTransportCertificateFingerprint {
+  string algorithm;
+  string fingerprint;
+};
+
 // A mojo interface for https://wicg.github.io/web-transport/#quic-transport.
 interface QuicTransport {
   // A datagram message is sent from the client. The response message represents
@@ -54,6 +62,9 @@ interface QuicTransport {
   // be able to write any data to the stream, but it may be able to use other
   // functions such as reading data from the stream.
   SendFin(uint32 stream_id);
+
+  // Aborts the stream for |stream_id|.
+  AbortStream(uint32 stream_id, uint64 code);
 };
 
 // A mojo interface for the client of QuicTransport.

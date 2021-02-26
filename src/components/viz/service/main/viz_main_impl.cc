@@ -23,7 +23,7 @@
 #include "media/gpu/buildflags.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "third_party/skia/include/core/SkFontLCDConfig.h"
+#include "skia/ext/legacy_display_globals.h"
 
 namespace {
 
@@ -159,18 +159,15 @@ void VizMainImpl::CreateGpuService(
   if (!gpu_init_->gpu_info().in_process_gpu) {
     // If the GPU is running in the browser process, discardable memory manager
     // has already been initialized.
-    discardable_shared_memory_manager_ = std::make_unique<
+    discardable_shared_memory_manager_ = base::MakeRefCounted<
         discardable_memory::ClientDiscardableSharedMemoryManager>(
         std::move(discardable_memory_manager), io_task_runner());
     base::DiscardableMemoryAllocator::SetInstance(
         discardable_shared_memory_manager_.get());
   }
 
-  SkFontLCDConfig::SetSubpixelOrder(
-      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
-          subpixel_rendering));
-  SkFontLCDConfig::SetSubpixelOrientation(
-      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+  skia::LegacyDisplayGlobals::SetCachedPixelGeometry(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaPixelGeometry(
           subpixel_rendering));
 
   gpu_service_->Bind(std::move(pending_receiver));
@@ -199,7 +196,8 @@ void VizMainImpl::CreateInfoCollectionGpuService(
 
   info_collection_gpu_service_ = std::make_unique<InfoCollectionGpuServiceImpl>(
       gpu_thread_task_runner_, io_task_runner(),
-      gpu_init_->device_perf_info().value(), std::move(pending_receiver));
+      gpu_init_->device_perf_info().value(), gpu_init_->gpu_info().active_gpu(),
+      std::move(pending_receiver));
 }
 #endif
 
@@ -238,6 +236,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   // road so that all crash reports caused by this issue look the same and have
   // the same signature. https://crbug.com/928845
   CHECK(!task_executor_);
+
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       this, gpu_thread_task_runner_, gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
@@ -55,7 +56,10 @@ void WaylandDataDeviceBase::ReadClipboardDataFromFD(
     const std::string& mime_type) {
   std::vector<uint8_t> contents;
   wl::ReadDataFromFD(std::move(fd), &contents);
-  connection_->clipboard()->SetData(contents, mime_type);
+  connection_->clipboard()->SetData(
+      scoped_refptr<base::RefCountedBytes>(
+          base::RefCountedBytes::TakeVector(&contents)),
+      mime_type);
 }
 
 void WaylandDataDeviceBase::RegisterDeferredReadCallback() {
@@ -64,7 +68,7 @@ void WaylandDataDeviceBase::RegisterDeferredReadCallback() {
   deferred_read_callback_.reset(wl_display_sync(connection_->display()));
 
   static const wl_callback_listener kListener = {
-      GtkPrimarySelectionDevice::DeferredReadCallback};
+      WaylandDataDeviceBase::DeferredReadCallback};
 
   wl_callback_add_listener(deferred_read_callback_.get(), &kListener, this);
 

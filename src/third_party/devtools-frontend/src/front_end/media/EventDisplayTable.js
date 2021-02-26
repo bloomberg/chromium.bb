@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as DataGrid from '../data_grid/data_grid.js';
+import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
 
 import {PlayerEvent} from './MediaModel.js';  // eslint-disable-line no-unused-vars
@@ -13,9 +14,9 @@ import {PlayerEvent} from './MediaModel.js';  // eslint-disable-line no-unused-v
  *     title: string,
  *     sortable: boolean,
  *     weight: (number|undefined),
- *     sortingFunction: (!function(!EventNode, !EventNode):number|undefined),
  * }}
  */
+// @ts-ignore typedef
 export let EventDisplayColumnConfig;
 
 /** @enum {string} */
@@ -26,11 +27,11 @@ export const MediaEventColumnKeys = {
 };
 
 /**
- * @unrestricted
+ * @extends {DataGrid.DataGrid.DataGridNode<!EventNode>}
  */
 export class EventNode extends DataGrid.DataGrid.DataGridNode {
   /**
-   * @param {!Event} event
+   * @param {!PlayerEvent} event
    */
   constructor(event) {
     super(event, false);
@@ -40,19 +41,20 @@ export class EventNode extends DataGrid.DataGrid.DataGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = this.createTD(columnId);
     const cellData = /** @type string */ (this.data[columnId]);
     if (columnId === MediaEventColumnKeys.Value) {
       const enclosed = cell.createChild('div', 'event-display-table-contents-json-wrapper');
-      this._expandableElement = new SourceFrame.JSONView(new SourceFrame.ParsedJSON(cellData, '', ''), true);
+      this._expandableElement =
+          new SourceFrame.JSONView.JSONView(new SourceFrame.JSONView.ParsedJSON(cellData, '', ''), true);
       this._expandableElement.markAsRoot();
       this._expandableElement.show(enclosed);
     } else {
       cell.classList.add('event-display-table-basic-text-table-entry');
-      cell.createTextChild(cellData);
+      UI.UIUtils.createTextChild(cell, cellData);
     }
     return cell;
   }
@@ -66,7 +68,7 @@ export class PlayerEventsView extends UI.Widget.VBox {
     super();
 
     // Set up element styles.
-    this.registerRequiredCSS('media/eventDisplayTable.css');
+    this.registerRequiredCSS('media/eventDisplayTable.css', {enableLegacyPatching: true});
     this.contentElement.classList.add('event-display-table-contents-table-container');
 
     this._dataGrid = this._createDataGrid([
@@ -74,11 +76,14 @@ export class PlayerEventsView extends UI.Widget.VBox {
         id: MediaEventColumnKeys.Timestamp,
         title: ls`Timestamp`,
         weight: 1,
-        sortingFunction: DataGrid.SortableDataGrid.SortableDataGrid.NumericComparator.bind(
-            null, MediaEventColumnKeys.Timestamp)
+        sortable: false,
       },
-      {id: MediaEventColumnKeys.Event, title: ls`Event Name`, weight: 2},
-      {id: MediaEventColumnKeys.Value, title: ls`Value`, weight: 7}
+      {id: MediaEventColumnKeys.Event, title: ls`Event name`, weight: 2, sortable: false}, {
+        id: MediaEventColumnKeys.Value,
+        title: ls`Value`,
+        weight: 7,
+        sortable: false,
+      }
     ]);
 
     this._firstEventTime = 0;
@@ -88,7 +93,7 @@ export class PlayerEventsView extends UI.Widget.VBox {
 
   /**
    * @param {!Array.<!EventDisplayColumnConfig>} headers
-   * @return !DataGrid.SortableDataGrid
+   * @return {!DataGrid.DataGrid.DataGridImpl<!EventNode>}
    */
   _createDataGrid(headers) {
     const gridColumnDescs = [];
@@ -99,7 +104,13 @@ export class PlayerEventsView extends UI.Widget.VBox {
     // TODO(tmathmeyer) SortableDataGrid doesn't play nice with nested JSON
     // renderers, since they can change size, and this breaks the visible
     // element computation in ViewportDataGrid.
-    const datagrid = new DataGrid.DataGrid.DataGridImpl({displayName: ls`Event Display`, columns: gridColumnDescs});
+    const datagrid = new DataGrid.DataGrid.DataGridImpl({
+      displayName: ls`Event display`,
+      columns: gridColumnDescs,
+      deleteCallback: undefined,
+      editCallback: undefined,
+      refreshCallback: undefined,
+    });
     datagrid.asWidget().contentElement.classList.add('no-border-top-datagrid');
     return datagrid;
   }
@@ -108,11 +119,11 @@ export class PlayerEventsView extends UI.Widget.VBox {
    * @param {!PlayerEvent} event
    */
   onEvent(event) {
-    if (this._firstEventTime === 0) {
+    if (this._firstEventTime === 0 && typeof event.timestamp === 'number') {
       this._firstEventTime = event.timestamp;
     }
-    event = this._subtractFirstEventTime(event);
 
+    event = this._subtractFirstEventTime(event);
     const stringified = /** @type {string} */ (event.value);
     try {
       const json = JSON.parse(stringified);
@@ -120,7 +131,12 @@ export class PlayerEventsView extends UI.Widget.VBox {
       delete json['event'];
       event.value = json;
       const node = new EventNode(event);
-      this._dataGrid.rootNode().appendChild(node);
+      const scroll = /** @type {!HTMLElement} */ (this._dataGrid.scrollContainer);
+      const isAtBottom = scroll.scrollTop === (scroll.scrollHeight - scroll.offsetHeight);
+      this._dataGrid.rootNode().appendChild(/** @type {!DataGrid.DataGrid.DataGridNode<!EventNode>} */ (node));
+      if (isAtBottom) {
+        scroll.scrollTop = scroll.scrollHeight;
+      }
     } catch (e) {
       // If this is a legacy message event, ignore it for now until they
       // are handled.
@@ -131,7 +147,9 @@ export class PlayerEventsView extends UI.Widget.VBox {
    * @param {!PlayerEvent} event
    */
   _subtractFirstEventTime(event) {
-    event.displayTimestamp = (event.timestamp - this._firstEventTime).toFixed(3);
+    if (typeof event.timestamp === 'number') {
+      event.displayTimestamp = (event.timestamp - this._firstEventTime).toFixed(3);
+    }
     return event;
   }
 

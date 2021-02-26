@@ -88,6 +88,7 @@ class BuildCompDiffwtdMaskD16Test
                     DIFFWTD_MASK_TYPE mask_type);
   libaom_test::ACMRandom rnd_;
 };  // class BuildCompDiffwtdMaskD16Test
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BuildCompDiffwtdMaskD16Test);
 
 void BuildCompDiffwtdMaskD16Test::RunCheckOutput(
     buildcompdiffwtdmaskd16_func test_impl) {

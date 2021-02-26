@@ -15,7 +15,7 @@ namespace blink {
 
 GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
-    mojom::ScriptType script_type,
+    mojom::blink::ScriptType script_type,
     const String& global_scope_name,
     const String& user_agent,
     const base::Optional<UserAgentMetadata>& ua_metadata,
@@ -31,13 +31,15 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const Vector<String>* origin_trial_tokens,
     const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,
-    V8CacheOptions v8_cache_options,
+    mojom::blink::V8CacheOptions v8_cache_options,
     WorkletModuleResponsesMap* module_responses_map,
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
         browser_interface_broker,
     BeginFrameProviderParams begin_frame_provider_params,
     const FeaturePolicy* parent_feature_policy,
-    base::UnguessableToken agent_cluster_id)
+    base::UnguessableToken agent_cluster_id,
+    const base::Optional<ExecutionContextToken>& parent_context_token,
+    bool parent_cross_origin_isolated_capability)
     : script_url(script_url.Copy()),
       script_type(script_type),
       global_scope_name(global_scope_name.IsolatedCopy()),
@@ -63,7 +65,10 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
           parent_feature_policy,
           ParsedFeaturePolicy() /* container_policy */,
           starter_origin->ToUrlOrigin())),
-      agent_cluster_id(agent_cluster_id) {
+      agent_cluster_id(agent_cluster_id),
+      parent_context_token(parent_context_token),
+      parent_cross_origin_isolated_capability(
+          parent_cross_origin_isolated_capability) {
   this->outside_content_security_policy_headers.ReserveInitialCapacity(
       outside_content_security_policy_headers.size());
   for (const auto& header : outside_content_security_policy_headers) {

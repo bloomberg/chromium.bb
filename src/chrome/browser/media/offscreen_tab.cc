@@ -9,11 +9,10 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
-#include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
+#include "components/media_router/browser/presentation/presentation_navigation_policy.h"
+#include "components/media_router/browser/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/presentation_receiver_flags.h"
@@ -49,7 +48,7 @@ constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
 // capture functionality. The WebContents native view, although attached to the
 // window tree, does not become visible on-screen (until it is properly made
 // visible by the user, for example by switching to the tab).
-class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
+class OffscreenTab::WindowAdoptionAgent final : protected aura::WindowObserver {
  public:
   explicit WindowAdoptionAgent(aura::Window* content_window)
       : content_window_(content_window) {
@@ -125,7 +124,7 @@ class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
 OffscreenTab::OffscreenTab(Owner* owner, content::BrowserContext* context)
     : owner_(owner),
       otr_profile_(Profile::FromBrowserContext(context)->GetOffTheRecordProfile(
-          Profile::OTRProfileID::CreateUnique("Media::OffscreenTab"))),
+          Profile::OTRProfileID::CreateUniqueForMediaRouter())),
       content_capture_was_detected_(false),
       navigation_policy_(
           std::make_unique<media_router::DefaultNavigationPolicy>()) {
@@ -165,8 +164,7 @@ void OffscreenTab::Start(const GURL& start_url,
 
   // Set initial size, if specified.
   if (!initial_size.IsEmpty()) {
-    ResizeWebContents(offscreen_tab_web_contents_.get(),
-                      gfx::Rect(initial_size));
+    offscreen_tab_web_contents_.get()->Resize(gfx::Rect(initial_size));
   }
 
   // Mute audio output.  When tab capture starts, the audio will be
@@ -271,10 +269,9 @@ bool OffscreenTab::PreHandleGestureEvent(WebContents* source,
   return true;
 }
 
-bool OffscreenTab::CanDragEnter(
-    WebContents* source,
-    const content::DropData& data,
-    blink::WebDragOperationsMask operations_allowed) {
+bool OffscreenTab::CanDragEnter(WebContents* source,
+                                const content::DropData& data,
+                                blink::DragOperationsMask operations_allowed) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Halt all drag attempts onto the page since there should be no direct user
   // interaction with it.
@@ -293,15 +290,10 @@ bool OffscreenTab::IsWebContentsCreationOverridden(
   return true;
 }
 
-bool OffscreenTab::EmbedsFullscreenWidget() {
-  // OffscreenTab will manage fullscreen widgets.
-  return true;
-}
-
 void OffscreenTab::EnterFullscreenModeForTab(
-    WebContents* contents,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
+  auto* contents = WebContents::FromRenderFrameHost(requesting_frame);
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   if (in_fullscreen_mode())
@@ -310,7 +302,7 @@ void OffscreenTab::EnterFullscreenModeForTab(
   non_fullscreen_size_ =
       contents->GetRenderWidgetHostView()->GetViewBounds().size();
   if (contents->IsBeingCaptured() && !contents->GetPreferredSize().IsEmpty())
-    ResizeWebContents(contents, gfx::Rect(contents->GetPreferredSize()));
+    contents->Resize(gfx::Rect(contents->GetPreferredSize()));
 }
 
 void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
@@ -319,7 +311,7 @@ void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
   if (!in_fullscreen_mode())
     return;
 
-  ResizeWebContents(contents, gfx::Rect(non_fullscreen_size_));
+  contents->Resize(gfx::Rect(non_fullscreen_size_));
   non_fullscreen_size_ = gfx::Size();
 }
 
@@ -351,16 +343,6 @@ bool OffscreenTab::CheckMediaAccessPermission(
             content::WebContents::FromRenderFrameHost(render_frame_host));
   return type == blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE ||
          type == blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
-}
-
-void OffscreenTab::DidShowFullscreenWidget() {
-  if (!offscreen_tab_web_contents_->IsBeingCaptured() ||
-      offscreen_tab_web_contents_->GetPreferredSize().IsEmpty())
-    return;  // Do nothing, since no preferred size is specified.
-  content::RenderWidgetHostView* const current_fs_view =
-      offscreen_tab_web_contents_->GetFullscreenRenderWidgetHostView();
-  if (current_fs_view)
-    current_fs_view->SetSize(offscreen_tab_web_contents_->GetPreferredSize());
 }
 
 void OffscreenTab::DidStartNavigation(

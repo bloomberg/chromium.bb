@@ -87,7 +87,7 @@ class StaticMapIterator {
   friend class StaticMap<Key, Value, Compare>;
 
   // Only StaticMap can call this constructor.
-  explicit StaticMapIterator(const char* base, const int32_t &index);
+  explicit StaticMapIterator(const char* base, const int32_t& index);
 
   // Index of node that the iterator is pointing to.
   int32_t index_;

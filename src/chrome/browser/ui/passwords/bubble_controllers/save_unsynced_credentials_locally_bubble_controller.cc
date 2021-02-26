@@ -6,9 +6,11 @@
 
 #include <utility>
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace metrics_util = password_manager::metrics_util;
 
@@ -19,10 +21,8 @@ SaveUnsyncedCredentialsLocallyBubbleController::
           std::move(delegate),
           /*display_disposition=*/metrics_util::
               AUTOMATIC_SAVE_UNSYNCED_CREDENTIALS_LOCALLY),
-      unsynced_credentials_(delegate_->GetUnsyncedCredentials()),
-      dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION) {
-  DCHECK(!unsynced_credentials_.empty());
-}
+      dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
+      unsynced_credentials_(delegate_->GetUnsyncedCredentials()) {}
 
 SaveUnsyncedCredentialsLocallyBubbleController::
     ~SaveUnsyncedCredentialsLocallyBubbleController() {
@@ -30,14 +30,19 @@ SaveUnsyncedCredentialsLocallyBubbleController::
     OnBubbleClosing();
 }
 
-void SaveUnsyncedCredentialsLocallyBubbleController::OnSaveClicked() {
-  NOTIMPLEMENTED();
+void SaveUnsyncedCredentialsLocallyBubbleController::OnSaveClicked(
+    const std::vector<bool>& was_credential_selected) {
+  DCHECK(was_credential_selected.size() == unsynced_credentials_.size());
+  std::vector<password_manager::PasswordForm> credentials_to_save;
+  for (size_t i = 0; i < unsynced_credentials_.size(); i++) {
+    if (was_credential_selected[i])
+      credentials_to_save.push_back(unsynced_credentials_[i]);
+  }
+  delegate_->SaveUnsyncedCredentialsInProfileStore(credentials_to_save);
 }
 
 void SaveUnsyncedCredentialsLocallyBubbleController::OnCancelClicked() {
-  // TODO(crbug.com/1060132): This method should clear the unsynced credentials
-  // wherever they are being stored.
-  NOTIMPLEMENTED();
+  delegate_->DiscardUnsyncedCredentials();
 }
 
 void SaveUnsyncedCredentialsLocallyBubbleController::ReportInteractions() {
@@ -49,6 +54,6 @@ void SaveUnsyncedCredentialsLocallyBubbleController::ReportInteractions() {
 
 base::string16 SaveUnsyncedCredentialsLocallyBubbleController::GetTitle()
     const {
-  // TODO(crbug.com/1062344): Add proper (translated) string.
-  return base::ASCIIToUTF16("These passwords were not commited:");
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_UNSYNCED_CREDENTIALS_BUBBLE_TITLE);
 }

@@ -93,8 +93,24 @@ TEST(ReactorUnitTests, Uninitialized)
 
 	auto routine = function("one");
 
-	int result = routine();
-	EXPECT_EQ(result, result);  // Anything is fine, just don't crash
+	if(!__has_feature(memory_sanitizer) || !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+	{
+		int result = routine();
+		EXPECT_EQ(result, result);  // Anything is fine, just don't crash
+	}
+	else
+	{
+		// Optimizations may turn the conditional If() in the Reactor code
+		// into a conditional move or arithmetic operations, which would not
+		// trigger a MemorySanitizer error. However, in that case the equals
+		// operator below should trigger it before the abort is reached.
+		EXPECT_DEATH(
+		    {
+			    int result = routine();
+			    if(result == 0) abort();
+		    },
+		    "MemorySanitizer: use-of-uninitialized-value");
+	}
 }
 
 TEST(ReactorUnitTests, Unreachable)
@@ -2050,6 +2066,11 @@ using IntrinsicTestParams_Float = IntrinsicTestParams<RValue<Float>(RValue<Float
 using IntrinsicTestParams_Float4 = IntrinsicTestParams<RValue<Float4>(RValue<Float4>), float(float), float>;
 using IntrinsicTestParams_Float4_Float4 = IntrinsicTestParams<RValue<Float4>(RValue<Float4>, RValue<Float4>), float(float, float), std::pair<float, float>>;
 
+// TODO(b/147818976): Each function has its own precision requirements for Vulkan, sometimes broken down
+// by input range. These are currently validated by deqp, but we can improve our own tests as well.
+// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#spirvenv-precision-operation
+constexpr double INTRINSIC_PRECISION = 1e-4;
+
 struct IntrinsicTest_Float : public testing::TestWithParam<IntrinsicTestParams_Float>
 {
 	void test()
@@ -2064,7 +2085,7 @@ struct IntrinsicTest_Float : public testing::TestWithParam<IntrinsicTestParams_F
 		for(auto &&v : GetParam().testValues)
 		{
 			SCOPED_TRACE(v);
-			EXPECT_FLOAT_EQ(routine(v), GetParam().refFunc(v));
+			EXPECT_NEAR(routine(v), GetParam().refFunc(v), INTRINSIC_PRECISION);
 		}
 	}
 };
@@ -2145,10 +2166,10 @@ struct IntrinsicTest_Float4 : public testing::TestWithParam<IntrinsicTestParams_
 			SCOPED_TRACE(v);
 			float4_value result = invokeRoutine(routine, float4_value{ v });
 			float4_value expected = float4_value{ GetParam().refFunc(v) };
-			EXPECT_FLOAT_EQ(result.v[0], expected.v[0]);
-			EXPECT_FLOAT_EQ(result.v[1], expected.v[1]);
-			EXPECT_FLOAT_EQ(result.v[2], expected.v[2]);
-			EXPECT_FLOAT_EQ(result.v[3], expected.v[3]);
+			EXPECT_NEAR(result.v[0], expected.v[0], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[1], expected.v[1], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[2], expected.v[2], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[3], expected.v[3], INTRINSIC_PRECISION);
 		}
 	}
 };
@@ -2172,19 +2193,19 @@ struct IntrinsicTest_Float4_Float4 : public testing::TestWithParam<IntrinsicTest
 			SCOPED_TRACE(v);
 			float4_value result = invokeRoutine(routine, float4_value{ v.first }, float4_value{ v.second });
 			float4_value expected = float4_value{ GetParam().refFunc(v.first, v.second) };
-			EXPECT_FLOAT_EQ(result.v[0], expected.v[0]);
-			EXPECT_FLOAT_EQ(result.v[1], expected.v[1]);
-			EXPECT_FLOAT_EQ(result.v[2], expected.v[2]);
-			EXPECT_FLOAT_EQ(result.v[3], expected.v[3]);
+			EXPECT_NEAR(result.v[0], expected.v[0], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[1], expected.v[1], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[2], expected.v[2], INTRINSIC_PRECISION);
+			EXPECT_NEAR(result.v[3], expected.v[3], INTRINSIC_PRECISION);
 		}
 	}
 };
 
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(IntrinsicTestParams_Float, IntrinsicTest_Float, testing::Values(
-	IntrinsicTestParams_Float{ [](Float v) { return rr::Exp2(v); }, exp2f, {0.f, 1.f, 12345.f} },
-	IntrinsicTestParams_Float{ [](Float v) { return rr::Log2(v); }, log2f, {0.f, 1.f, 12345.f} },
-	IntrinsicTestParams_Float{ [](Float v) { return rr::Sqrt(v); }, sqrtf, {0.f, 1.f, 12345.f} }
+	IntrinsicTestParams_Float{ [](Float v) { return rr::Exp2(v); }, exp2f, {0.f, 1.f, 123.f} },
+	IntrinsicTestParams_Float{ [](Float v) { return rr::Log2(v); }, log2f, {1.f, 123.f} },
+	IntrinsicTestParams_Float{ [](Float v) { return rr::Sqrt(v); }, sqrtf, {0.f, 1.f, 123.f} }
 ));
 // clang-format on
 
@@ -2201,30 +2222,30 @@ float vulkan_coshf(float a)
 // clang-format off
 constexpr float PI = 3.141592653589793f;
 INSTANTIATE_TEST_SUITE_P(IntrinsicTestParams_Float4, IntrinsicTest_Float4, testing::Values(
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sin(v); },   sinf,   {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Cos(v); },   cosf,   {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Tan(v); },   tanf,   {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Asin(v); },  asinf,  {0.f, 1.f, -1.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Acos(v); },  acosf,  {0.f, 1.f, -1.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Atan(v); },  atanf,  {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sinh(v); },  vulkan_sinhf,  {0.f, 1.f, PI, 12345.f, 0x1.65a84ep6}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Cosh(v); },  vulkan_coshf,  {0.f, 1.f, PI, 12345.f, 0x1.65a84ep6} },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Tanh(v); },  tanhf,  {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Asinh(v); }, asinhf, {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Acosh(v); }, acoshf, {     1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Atanh(v); }, atanhf, {0.f, 1.f, -1.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Exp(v); },   expf,   {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Log(v); },   logf,   {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Exp2(v); },  exp2f,  {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Log2(v); },  log2f,  {0.f, 1.f, PI, 12345.f}  },
-	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sqrt(v); },  sqrtf,  {0.f, 1.f, PI, 12345.f}  }
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sin(v); },                    sinf,          {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Cos(v); },                    cosf,          {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Tan(v); },                    tanf,          {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Asin(v, Precision::Full); },  asinf,         {0.f, 1.f, -1.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Acos(v, Precision::Full); },  acosf,         {0.f, 1.f, -1.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Atan(v); },                   atanf,         {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sinh(v); },                   vulkan_sinhf,  {0.f, 1.f, PI}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Cosh(v); },                   vulkan_coshf,  {0.f, 1.f, PI} },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Tanh(v); },                   tanhf,         {0.f, 1.f, PI}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Asinh(v); },                  asinhf,        {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Acosh(v); },                  acoshf,        {     1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Atanh(v); },                  atanhf,        {0.f, 0.9999f, -0.9999f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Exp(v); },                    expf,          {0.f, 1.f, PI}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Log(v); },                    logf,          {1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Exp2(v); },                   exp2f,         {0.f, 1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Log2(v); },                   log2f,         {1.f, PI, 123.f}  },
+	IntrinsicTestParams_Float4{ [](RValue<Float4> v) { return rr::Sqrt(v); },                   sqrtf,         {0.f, 1.f, PI, 123.f}  }
 ));
 // clang-format on
 
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(IntrinsicTestParams_Float4_Float4, IntrinsicTest_Float4_Float4, testing::Values(
-	IntrinsicTestParams_Float4_Float4{ [](RValue<Float4> v1, RValue<Float4> v2) { return Atan2(v1, v2); }, atan2f, { {0.f, 0.f}, {0.f, -1.f}, {-1.f, 0.f}, {12345.f, 12345.f} } },
-	IntrinsicTestParams_Float4_Float4{ [](RValue<Float4> v1, RValue<Float4> v2) { return Pow(v1, v2); },   powf,   { {0.f, 0.f}, {0.f, -1.f}, {-1.f, 0.f}, {12345.f, 12345.f} } }
+	IntrinsicTestParams_Float4_Float4{ [](RValue<Float4> v1, RValue<Float4> v2) { return Atan2(v1, v2); }, atan2f, { {0.f, 0.f}, {0.f, -1.f}, {-1.f, 0.f}, {123.f, 123.f} } },
+	IntrinsicTestParams_Float4_Float4{ [](RValue<Float4> v1, RValue<Float4> v2) { return Pow(v1, v2); },   powf,   { {1.f, 0.f}, {1.f, -1.f}, {-1.f, 0.f} } }
 ));
 // clang-format on
 
@@ -3054,6 +3075,161 @@ TEST(ReactorUnitTests, PrintReactorTypes)
 	}
 
 #endif
+}
+
+// Test constant <op> variable
+template<typename T, typename Func>
+T Arithmetic_LhsConstArg(T arg1, T arg2, Func f)
+{
+	using ReactorT = CToReactorT<T>;
+
+	FunctionT<T(T)> function;
+	{
+		ReactorT lhs = arg1;
+		ReactorT rhs = function.template Arg<0>();
+		ReactorT result = f(lhs, rhs);
+		Return(result);
+	}
+
+	auto routine = function("one");
+	return routine(arg2);
+}
+
+// Test variable <op> constant
+template<typename T, typename Func>
+T Arithmetic_RhsConstArg(T arg1, T arg2, Func f)
+{
+	using ReactorT = CToReactorT<T>;
+
+	FunctionT<T(T)> function;
+	{
+		ReactorT lhs = function.template Arg<0>();
+		ReactorT rhs = arg2;
+		ReactorT result = f(lhs, rhs);
+		Return(result);
+	}
+
+	auto routine = function("one");
+	return routine(arg1);
+}
+
+// Test constant <op> constant
+template<typename T, typename Func>
+T Arithmetic_TwoConstArgs(T arg1, T arg2, Func f)
+{
+	using ReactorT = CToReactorT<T>;
+
+	FunctionT<T()> function;
+	{
+		ReactorT lhs = arg1;
+		ReactorT rhs = arg2;
+		ReactorT result = f(lhs, rhs);
+		Return(result);
+	}
+
+	auto routine = function("one");
+	return routine();
+}
+
+template<typename T, typename Func>
+void Arithmetic_ConstArgs(T arg1, T arg2, T expected, Func f)
+{
+	SCOPED_TRACE(std::to_string(arg1) + " <op> " + std::to_string(arg2) + " = " + std::to_string(expected));
+	T result{};
+	result = Arithmetic_LhsConstArg(arg1, arg2, std::forward<Func>(f));
+	EXPECT_EQ(result, expected);
+	result = Arithmetic_RhsConstArg(arg1, arg2, std::forward<Func>(f));
+	EXPECT_EQ(result, expected);
+	result = Arithmetic_TwoConstArgs(arg1, arg2, std::forward<Func>(f));
+	EXPECT_EQ(result, expected);
+}
+
+// Test that we generate valid code for when one or both args to arithmetic operations
+// are constant. In particular, we want to validate the case for two const args, as
+// often lowered instructions do not support this case.
+TEST(ReactorUnitTests, Arithmetic_ConstantArgs)
+{
+	Arithmetic_ConstArgs(2, 3, 5, [](auto c1, auto c2) { return c1 + c2; });
+	Arithmetic_ConstArgs(5, 3, 2, [](auto c1, auto c2) { return c1 - c2; });
+	Arithmetic_ConstArgs(2, 3, 6, [](auto c1, auto c2) { return c1 * c2; });
+	Arithmetic_ConstArgs(6, 3, 2, [](auto c1, auto c2) { return c1 / c2; });
+	Arithmetic_ConstArgs(0xF0F0, 0xAAAA, 0xA0A0, [](auto c1, auto c2) { return c1 & c2; });
+	Arithmetic_ConstArgs(0xF0F0, 0xAAAA, 0xFAFA, [](auto c1, auto c2) { return c1 | c2; });
+	Arithmetic_ConstArgs(0xF0F0, 0xAAAA, 0x5A5A, [](auto c1, auto c2) { return c1 ^ c2; });
+
+	Arithmetic_ConstArgs(2.f, 3.f, 5.f, [](auto c1, auto c2) { return c1 + c2; });
+	Arithmetic_ConstArgs(5.f, 3.f, 2.f, [](auto c1, auto c2) { return c1 - c2; });
+	Arithmetic_ConstArgs(2.f, 3.f, 6.f, [](auto c1, auto c2) { return c1 * c2; });
+	Arithmetic_ConstArgs(6.f, 3.f, 2.f, [](auto c1, auto c2) { return c1 / c2; });
+}
+
+// Test for Subzero bad code-gen that was fixed in swiftshader-cl/50008
+// This tests the case of copying enough arguments to local variables so that the locals
+// get spilled to the stack when no more registers remain, and making sure these copies
+// are generated correctly. Without the aforementioned fix, this fails 100% on Windows x86.
+TEST(ReactorUnitTests, SpillLocalCopiesOfArgs)
+{
+	struct Helpers
+	{
+		static bool True() { return true; }
+	};
+
+	const int numLoops = 5;  // 2 should be enough, but loop more to make sure
+
+	FunctionT<int(int, int, int, int, int, int, int, int, int, int, int, int)> function;
+	{
+		Int result = 0;
+		Int a1 = function.Arg<0>();
+		Int a2 = function.Arg<1>();
+		Int a3 = function.Arg<2>();
+		Int a4 = function.Arg<3>();
+		Int a5 = function.Arg<4>();
+		Int a6 = function.Arg<5>();
+		Int a7 = function.Arg<6>();
+		Int a8 = function.Arg<7>();
+		Int a9 = function.Arg<8>();
+		Int a10 = function.Arg<9>();
+		Int a11 = function.Arg<10>();
+		Int a12 = function.Arg<11>();
+
+		for(int i = 0; i < numLoops; ++i)
+		{
+			// Copy all arguments to locals so that Ice::LocalVariableSplitter::handleSimpleVarAssign
+			// creates Variable copies of arguments. We loop so that we create enough of these so
+			// that some spill over to the stack.
+			Int i1 = a1;
+			Int i2 = a2;
+			Int i3 = a3;
+			Int i4 = a4;
+			Int i5 = a5;
+			Int i6 = a6;
+			Int i7 = a7;
+			Int i8 = a8;
+			Int i9 = a9;
+			Int i10 = a10;
+			Int i11 = a11;
+			Int i12 = a12;
+
+			// Forcibly materialize all variables so that Ice::Variable instances are created for each
+			// local; otherwise, Reactor r-value optimizations kick in, and the locals are elided.
+			Variable::materializeAll();
+
+			// We also need to create a separate block that uses the variables declared above
+			// so that rr::optimize() doesn't optimize them out when attempting to eliminate stores
+			// followed by a load in the same block.
+			If(Call(Helpers::True))
+			{
+				result += (i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8 + i9 + i10 + i11 + i12);
+			}
+		}
+
+		Return(result);
+	}
+
+	auto routine = function("one");
+	int result = routine(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+	int expected = numLoops * (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12);
+	EXPECT_EQ(result, expected);
 }
 
 int main(int argc, char **argv)

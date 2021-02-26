@@ -11,18 +11,34 @@
 
 UserActionsUIHandler::UserActionsUIHandler()
     : action_callback_(base::Bind(&UserActionsUIHandler::OnUserAction,
-                                  base::Unretained(this))) {
-  base::AddActionCallback(action_callback_);
-}
+                                  base::Unretained(this))) {}
 
 UserActionsUIHandler::~UserActionsUIHandler() {
   base::RemoveActionCallback(action_callback_);
 }
 
-void UserActionsUIHandler::RegisterMessages() {}
+void UserActionsUIHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "pageLoaded", base::BindRepeating(&UserActionsUIHandler::HandlePageLoaded,
+                                        base::Unretained(this)));
+}
+
+void UserActionsUIHandler::HandlePageLoaded(const base::ListValue* args) {
+  AllowJavascript();
+}
+
+void UserActionsUIHandler::OnJavascriptAllowed() {
+  base::AddActionCallback(action_callback_);
+}
+
+void UserActionsUIHandler::OnJavascriptDisallowed() {
+  base::RemoveActionCallback(action_callback_);
+}
 
 void UserActionsUIHandler::OnUserAction(const std::string& action,
                                         base::TimeTicks action_time) {
+  if (!IsJavascriptAllowed())
+    return;
   base::Value user_action_name(action);
   web_ui()->CallJavascriptFunctionUnsafe("userActions.observeUserAction",
                                          user_action_name);

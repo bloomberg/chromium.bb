@@ -242,6 +242,6 @@ TEST_P(AV1NewEncodeDecodePerfTest, PerfTest) {
   printf("}\n");
 }
 
-AV1_INSTANTIATE_TEST_CASE(AV1NewEncodeDecodePerfTest,
-                          ::testing::Values(::libaom_test::kTwoPassGood));
+AV1_INSTANTIATE_TEST_SUITE(AV1NewEncodeDecodePerfTest,
+                           ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

@@ -19,7 +19,7 @@
 
 # Parses commands from git cl -h.
 __git_cl_commands () {
-  git cl -h 2> /dev/null | sed -n 's/^\s*\x1b\[32m\(.*\)\x1b\[39m.*$/\1/p'
+  git cl -h 2> /dev/null | sed -n 's/^\s*\x1b\[32m\(\S\+\)\s*\x1b\[39m.*$/\1/p'
 }
 
 # Caches variables in __git_cl_all_commands.
@@ -30,5 +30,19 @@ __git_cl_compute_all_commands () {
 
 _git_cl () {
   __git_cl_compute_all_commands
-  __gitcomp_nl "$(__git_cl_all_commands)"
+  local subcommands=$(echo "$__git_cl_all_commands" | xargs)
+  local subcommand=$(__git_find_on_cmdline "$subcommands")
+  if [[ -z "$subcommand" ]]; then
+      __gitcomp "$subcommands"
+      return
+  fi
+
+  case "$subcommand,$cur" in
+      upload,--*)
+          __gitcomp_builtin cl_upload
+          ;;
+      "",*)
+          __gitcomp_nl "${__git_cl_all_commands}"
+          ;;
+  esac
 }

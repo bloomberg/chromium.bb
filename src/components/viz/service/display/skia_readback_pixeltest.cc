@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/test_switches.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
@@ -42,14 +42,14 @@ base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
   return test_dir.Append(base::FilePath(basename));
 }
 
-SharedQuadState* CreateSharedQuadState(RenderPass* render_pass,
+SharedQuadState* CreateSharedQuadState(AggregatedRenderPass* render_pass,
                                        const gfx::Rect& rect) {
   const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = rect;
   const gfx::Rect clip_rect = rect;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), layer_rect, visible_layer_rect,
-                       gfx::RRectF(), clip_rect, /*is_clipped=*/false,
+                       gfx::MaskFilterInfo(), clip_rect, /*is_clipped=*/false,
                        /*are_contents_opaque=*/false, /*opacity=*/1.0f,
                        SkBlendMode::kSrcOver,
                        /*sorting_context_id=*/0);
@@ -106,9 +106,9 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
     gpu::SharedImageInterface* sii =
         child_context_provider_->SharedImageInterface();
     DCHECK(sii);
-    gpu::Mailbox mailbox =
-        sii->CreateSharedImage(format, size, gfx::ColorSpace(),
-                               gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
+    gpu::Mailbox mailbox = sii->CreateSharedImage(
+        format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
     gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
     TransferableResource gl_resource = TransferableResource::MakeGL(
@@ -122,7 +122,7 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
   }
 
   // Creates a RenderPass that embeds a single quad containing |source_bitmap_|.
-  std::unique_ptr<RenderPass> GenerateRootRenderPass() {
+  std::unique_ptr<AggregatedRenderPass> GenerateRootRenderPass() {
     ResourceFormat format =
         (source_bitmap_.info().colorType() == kBGRA_8888_SkColorType)
             ? ResourceFormat::BGRA_8888
@@ -138,8 +138,8 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
     ResourceId mapped_resource_id = resource_map[resource_id];
 
     const gfx::Rect output_rect(kSourceSize);
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(/*render_pass_id=*/1, output_rect, output_rect,
+    auto pass = std::make_unique<AggregatedRenderPass>();
+    pass->SetNew(AggregatedRenderPassId{1}, output_rect, output_rect,
                  gfx::Transform());
 
     SharedQuadState* sqs = CreateSharedQuadState(pass.get(), output_rect);
@@ -163,7 +163,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   // Generates a RenderPass which contains one quad that spans the full output.
   // The quad has our source image, so the framebuffer should contain the source
   // image after DrawFrame().
-  std::unique_ptr<RenderPass> pass = GenerateRootRenderPass();
+  auto pass = GenerateRootRenderPass();
 
   std::unique_ptr<CopyOutputResult> result;
   base::RunLoop loop;
@@ -193,12 +193,16 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   request->set_result_selection(result_selection);
   pass->copy_requests.push_back(std::move(request));
 
-  RenderPassList pass_list;
+  AggregatedRenderPassList pass_list;
+  SurfaceDamageRectList surface_damage_rect_list;
   pass_list.push_back(std::move(pass));
 
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
-  renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize,
-                       gfx::DisplayColorSpaces());
+  renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize, gfx::DisplayColorSpaces(),
+                       &surface_damage_rect_list);
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
 
   loop.Run();
 
@@ -212,7 +216,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
 
   base::FilePath expected_path = GetExpectedPath();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kCCRebaselinePixeltests)) {
+          switches::kRebaselinePixelTests)) {
     EXPECT_TRUE(cc::WritePNGFile(actual, expected_path, false));
   }
 

@@ -90,6 +90,7 @@ CastWebViewDefault::CastWebViewDefault(
       session_id_(params.window_params.session_id),
       sdk_version_(params.sdk_version),
       allow_media_access_(params.allow_media_access),
+      log_js_console_messages_(params.log_js_console_messages),
       log_prefix_(params.log_prefix),
       renderer_prelauncher_(TakeOrCreatePrelauncher(prelaunch_url_,
                                                     renderer_pool_,
@@ -109,9 +110,9 @@ CastWebViewDefault::CastWebViewDefault(
   web_contents_->GetNativeView()->SetName(params.activity_id);
 #endif
 
-#if BUILDFLAG(IS_ANDROID_THINGS)
-  // Configure the ducking multiplier for AThings speakers. We don't want the
-  // Chromium MediaSession to duck since we are doing our own ducking.
+#if BUILDFLAG(IS_ANDROID_APPLIANCE)
+  // Configure the ducking multiplier for AThings-like speakers. We don't want
+  // the Chromium MediaSession to duck since we are doing our own ducking.
   constexpr double kDuckingMultiplier = 1.0;
   content::MediaSession::Get(web_contents_.get())
       ->SetDuckingVolumeMultiplier(kDuckingMultiplier);
@@ -226,6 +227,8 @@ bool CastWebViewDefault::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
+  if (!log_js_console_messages_)
+    return true;
   base::string16 single_line_message;
   // Mult-line message is not friendly to dumpstate redact.
   base::ReplaceChars(message, base::ASCIIToUTF16("\n"),
@@ -300,19 +303,6 @@ void CastWebViewDefault::RequestMediaAccessPermission(
 
   std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK,
                           std::unique_ptr<content::MediaStreamUI>());
-}
-
-std::unique_ptr<content::BluetoothChooser>
-CastWebViewDefault::RunBluetoothChooser(
-    content::RenderFrameHost* frame,
-    const content::BluetoothChooser::EventHandler& event_handler) {
-  std::unique_ptr<content::BluetoothChooser> chooser;
-  if (delegate_) {
-    chooser = delegate_->RunBluetoothChooser(frame, event_handler);
-  }
-  return chooser
-             ? std::move(chooser)
-             : WebContentsDelegate::RunBluetoothChooser(frame, event_handler);
 }
 
 bool CastWebViewDefault::ShouldAllowRunningInsecureContent(

@@ -24,9 +24,11 @@ IntentFilter GetIntentFilter(const std::string& host,
                              const std::string& pkg_name) {
   std::vector<IntentFilter::AuthorityEntry> authorities;
   authorities.emplace_back(host, /*port=*/-1);
-  return IntentFilter(pkg_name, std::move(authorities),
+  return IntentFilter(pkg_name, /*actions=*/std::vector<std::string>(),
+                      std::move(authorities),
                       std::vector<IntentFilter::PatternMatcher>(),
-                      std::vector<std::string>());
+                      /*schemes=*/std::vector<std::string>(),
+                      /*mime_types=*/std::vector<std::string>());
 }
 
 }  // namespace
@@ -45,10 +47,8 @@ class ArcIntentHelperTest : public testing::Test {
     void OpenArcCustomTab(
         const GURL& url,
         int32_t task_id,
-        int32_t surface_id,
-        int32_t top_margin,
         mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override {
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(mojo::NullRemote());
     }
     void OpenChromePageFromArc(mojom::ChromePage chrome_page) override {}
 

@@ -14,7 +14,7 @@ function checkImageData(canvasColorSettings, imageData) {
     assert_equals(imageData.data.length, 4 * xWidth * xHeight);
   } else {
     assert_equals("float32", imageDataColorSettings.storageFormat);
-    assert_equals(imageData.dataUnion.length, 4 * xWidth * xHeight);
+    assert_equals(imageData.data.length, 4 * xWidth * xHeight);
   }
 }
 
@@ -37,8 +37,6 @@ var testScenariosCreateImageData = [
       {colorSpace: "srgb", pixelFormat: "uint8"}],
   ["Test color managed cretateImageData: {srgb, float16} -> {srgb, float32}",
       {colorSpace: "srgb", pixelFormat: "float16"}],
-  ["Test color managed cretateImageData: {linear-rgb, float16} -> {linear-rgb, float32}",
-      {colorSpace: "linear-rgb", pixelFormat: "float16"}],
   ["Test color managed cretateImageData: {rec2020, float16} -> {rec2020, float32}",
       {colorSpace: "rec2020", pixelFormat: "float16"}],
   ["Test color managed cretateImageData: {p3, float16} -> {p3, float32}",
@@ -62,8 +60,6 @@ var testScenariosGetImageData = [
       {colorSpace: "srgb", pixelFormat: "uint8"}],
   ["Test color managed getImageData: {srgb, float16} -> {srgb, float32}",
       {colorSpace: "srgb", pixelFormat: "float16"}],
-  ["Test color managed getImageData: {linear-rgb, float16} -> {srgb, float32}",
-      {colorSpace: "linear-rgb", pixelFormat: "float16"}],
   ["Test color managed getImageData: {rec2020, float16} -> {rec2020, float32}",
       {colorSpace: "rec2020", pixelFormat: "float16"}],
   ["Test color managed getImageData: {p3, float16} -> {p3, float32}",
@@ -78,20 +74,10 @@ generate_tests(runTestGetImageData, testScenariosGetImageData);
 // the output correcteness is verified as a unit test. Please see:
 // CanvasRenderingContext2DTest::ColorManagedGetPutImageData
 
-var dataU8 = new Uint8ClampedArray(4 * xWidth * xHeight);
-var dataU16 = new Uint16Array(4 * xWidth * xHeight);
-var dataF32 = new Float32Array(4 * xWidth * xHeight);
-function prepareDataArrays() {
-  for (i = 0; i < 4 * xWidth * xHeight; i++) {
-    dataU8[i] = (i % 4 == 3) ? 255 : i % 256;
-    dataU16[i] = dataU8[i] * 257;
-    dataF32[i] = dataU8[i] / 255.0;
-  }
-}
 
 var testScenariosPutImageData = [];
 function prepareTestScenariosPutImageData() {
-  var colorSpaces = ["srgb", "linear-rgb", "p3", "rec2020"];
+  var colorSpaces = ["srgb", "p3", "rec2020"];
   var imageDataStorageFormats = ["uint8", "uint16", "float32"];
   var canvasPixelFormats = ["uint8", "float16"];
 
@@ -110,25 +96,24 @@ function prepareTestScenariosPutImageData() {
         }
 }
 
-function createAndPutImageData(data, imageDataColorSettings, canvasColorSettings) {
+function createAndPutImageData(imageDataColorSettings, canvasColorSettings) {
   // create color managed canvas
   var aCanvas = document.createElement("canvas");
   aCanvas.width = xWidth;
   aCanvas.height = xHeight;
   var ctx = aCanvas.getContext('2d', canvasColorSettings);
   // create color managed ImageData
-  var imageData = ctx.createImageData(data, xWidth, xHeight, imageDataColorSettings);
-  // put image data into canvas. test succeeds if this does not crash.
+  var imageData = ctx.createImageData(xWidth, xHeight, imageDataColorSettings);
+  // This test does not check the values that were written.
   ctx.putImageData(imageData, 0, 0);
 }
 
 function runTestPutImageData(imageDataColorSettings, canvasColorSettings) {
-  createAndPutImageData(dataU8, imageDataColorSettings, canvasColorSettings);
-  createAndPutImageData(dataU16, imageDataColorSettings, canvasColorSettings);
-  createAndPutImageData(dataF32, imageDataColorSettings, canvasColorSettings);
+  createAndPutImageData(imageDataColorSettings, canvasColorSettings);
+  createAndPutImageData(imageDataColorSettings, canvasColorSettings);
+  createAndPutImageData(imageDataColorSettings, canvasColorSettings);
 }
 
-prepareDataArrays();
 prepareTestScenariosPutImageData();
 generate_tests(runTestPutImageData, testScenariosPutImageData);
 

@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
@@ -16,20 +17,19 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ThemeColorProvider;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -55,31 +55,32 @@ public class BottomControlsCoordinator {
     private final BottomControlsMediator mMediator;
 
     /** The coordinator for the split toolbar's bottom toolbar component. */
-    private @Nullable BottomToolbarCoordinator mBottomToolbarCoordinator;
     private @Nullable TabGroupUi mTabGroupUi;
 
     /**
      * Build the coordinator that manages the bottom controls.
-     * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
+     * @param controlsSizer A {@link BrowserControlsSizer} to update the bottom controls
      *                          height for the renderer.
+     * @param fullscreenManager A {@link FullscreenManager} to listen for fullscreen changes.
      * @param stub The bottom controls {@link ViewStub} to inflate.
-     * @param tabProvider
-     * @param tabSwitcherLongclickListener
      * @param themeColorProvider The {@link ThemeColorProvider} for the bottom toolbar.
      * @param shareDelegateSupplier The supplier for the {@link ShareDelegate} the bottom controls
      *         should use to share content.
-     * @param showStartSurfaceCallable The action that opens the start surface, returning true if
-     *         the start surface is shown.
      * @param openHomepageAction The action that opens the homepage.
      * @param setUrlBarFocusAction The function that sets Url bar focus. The first argument is
      *         whether the bar should be focused, and the second is the OmniboxFocusReason.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control scrim view.
+     * @param omniboxFocusStateSupplier Supplier to access the focus state of the omnibox.
      */
-    public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
-            ActivityTabProvider tabProvider, OnLongClickListener tabSwitcherLongclickListener,
+    @SuppressLint("CutPasteId") // Not actually cut and paste since it's View vs ViewGroup.
+    public BottomControlsCoordinator(BrowserControlsSizer controlsSizer,
+            FullscreenManager fullscreenManager, ViewStub stub,
             ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
-            Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
-            Callback<Integer> setUrlBarFocusAction) {
+            ObservableSupplier<AppMenuButtonHelper> menuButtonHelperSupplier,
+            Runnable openHomepageAction, Callback<Integer> setUrlBarFocusAction,
+            ScrimCoordinator scrimCoordinator,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
         final ScrollingBottomViewResourceFrameLayout root =
                 (ScrollingBottomViewResourceFrameLayout) stub.inflate();
 
@@ -88,37 +89,26 @@ public class BottomControlsCoordinator {
         PropertyModelChangeProcessor.create(
                 model, new ViewHolder(root), BottomControlsViewBinder::bind);
 
-        int bottomToolbarHeightId;
+        int bottomControlsHeightId = R.dimen.bottom_controls_height;
 
-        if (BottomToolbarConfiguration.isLabeledBottomToolbarEnabled()) {
-            bottomToolbarHeightId = R.dimen.labeled_bottom_toolbar_height;
-        } else {
-            bottomToolbarHeightId = R.dimen.bottom_toolbar_height;
-        }
+        View container = root.findViewById(R.id.bottom_container_slot);
+        ViewGroup.LayoutParams params = container.getLayoutParams();
+        params.height = root.getResources().getDimensionPixelOffset(bottomControlsHeightId);
+        mMediator = new BottomControlsMediator(model, controlsSizer, fullscreenManager,
+                root.getResources().getDimensionPixelOffset(bottomControlsHeightId));
 
-        View toolbar = root.findViewById(R.id.bottom_container_slot);
-        ViewGroup.LayoutParams params = toolbar.getLayoutParams();
-        params.height = root.getResources().getDimensionPixelOffset(bottomToolbarHeightId);
-        mMediator = new BottomControlsMediator(model, fullscreenManager,
-                root.getResources().getDimensionPixelOffset(bottomToolbarHeightId));
-
-        if ((TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
-                    && !(TabUiFeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
-                            && BottomToolbarConfiguration.isBottomToolbarEnabled()))
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 || TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
-                    root.findViewById(R.id.bottom_container_slot), themeColorProvider);
-        } else {
-            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
-                    root.findViewById(R.id.bottom_toolbar_stub), tabProvider,
-                    tabSwitcherLongclickListener, themeColorProvider, shareDelegateSupplier,
-                    showStartSurfaceCallable, openHomepageAction, setUrlBarFocusAction);
+                    root.findViewById(R.id.bottom_container_slot), themeColorProvider,
+                    scrimCoordinator, omniboxFocusStateSupplier);
         }
+        Toast.setGlobalExtraYOffset(
+                root.getResources().getDimensionPixelSize(bottomControlsHeightId));
 
-        Toast.setGlobalExtraYOffset(root.getResources().getDimensionPixelSize(
-                BottomToolbarConfiguration.isLabeledBottomToolbarEnabled()
-                        ? R.dimen.labeled_bottom_toolbar_height
-                        : R.dimen.bottom_toolbar_height));
+        // Set the visibility of BottomControls to false by default. Components within
+        // BottomControls should update the visibility explicitly if needed.
+        mMediator.setBottomControlsVisible(false);
     }
 
     /**
@@ -126,16 +116,13 @@ public class BottomControlsCoordinator {
      * dependencies.
      * <p>
      * Calling this must occur after the native library have completely loaded.
-     * @param chromeActivity ChromeActivity instance to use.
+     * @param activity Activity instance to use.
      * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
-     * @param layoutManager A {@link LayoutManager} to attach overlays to.
+     * @param layoutManager A {@link LayoutManagerImpl} to attach overlays to.
      * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
      *                            bottom toolbar's tab switcher button is clicked.
      * @param newTabClickListener An {@link OnClickListener} that is triggered when the
      *                            bottom toolbar's new tab button is clicked.
-     * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
-     *                         bottom toolbar's menu button is clicked.
-     * @param overviewModeBehavior The overview mode manager.
      * @param windowAndroid A {@link WindowAndroid} for watching keyboard visibility events.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
@@ -143,24 +130,17 @@ public class BottomControlsCoordinator {
      * @param topToolbarRoot The root {@link ViewGroup} of the top toolbar.
      * @param closeAllTabsAction The runnable that closes all tabs in the current tab model.
      */
-    public void initializeWithNative(ChromeActivity chromeActivity, ResourceManager resourceManager,
-            LayoutManager layoutManager, OnClickListener tabSwitcherListener,
-            OnClickListener newTabClickListener, AppMenuButtonHelper menuButtonHelper,
-            OverviewModeBehavior overviewModeBehavior, WindowAndroid windowAndroid,
+    public void initializeWithNative(Activity activity, ResourceManager resourceManager,
+            LayoutManagerImpl layoutManager, OnClickListener tabSwitcherListener,
+            OnClickListener newTabClickListener, WindowAndroid windowAndroid,
             TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
             ViewGroup topToolbarRoot, Runnable closeAllTabsAction) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setWindowAndroid(windowAndroid);
 
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
-                    menuButtonHelper, overviewModeBehavior, tabCountProvider,
-                    incognitoStateProvider, topToolbarRoot, closeAllTabsAction);
-        }
-
         if (mTabGroupUi != null) {
-            mTabGroupUi.initializeWithNative(chromeActivity, mMediator::setBottomControlsVisible);
+            mTabGroupUi.initializeWithNative(activity, mMediator::setBottomControlsVisible);
         }
     }
 
@@ -169,9 +149,6 @@ public class BottomControlsCoordinator {
      */
     public void setBottomControlsVisible(boolean isVisible) {
         mMediator.setBottomControlsVisible(isVisible);
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.setBottomToolbarVisible(isVisible);
-        }
     }
 
     /**
@@ -186,8 +163,17 @@ public class BottomControlsCoordinator {
      * Clean up any state when the bottom controls component is destroyed.
      */
     public void destroy() {
-        if (mBottomToolbarCoordinator != null) mBottomToolbarCoordinator.destroy();
         if (mTabGroupUi != null) mTabGroupUi.destroy();
         mMediator.destroy();
+    }
+
+    /**
+     * @return {@link Supplier} that provides dialog visibility.
+     */
+    public Supplier<Boolean> getTabGridDialogVisibilitySupplier() {
+        if (mTabGroupUi == null) {
+            return null;
+        }
+        return mTabGroupUi.getTabGridDialogVisibilitySupplier();
     }
 }

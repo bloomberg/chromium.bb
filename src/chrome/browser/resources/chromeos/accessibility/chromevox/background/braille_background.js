@@ -76,7 +76,7 @@ BrailleBackground = class {
       return;
     }
 
-    if (localStorage['enableBrailleLogging'] == 'true') {
+    if (localStorage['enableBrailleLogging'] === 'true') {
       const logStr = 'Braille "' + params.text.toString() + '"';
       LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.BRAILLE);
       console.log(logStr);
@@ -114,6 +114,21 @@ BrailleBackground = class {
    */
   getTranslatorManager() {
     return this.translatorManager_;
+  }
+
+  /** @override */
+  panLeft() {
+    this.displayManager_.panLeft();
+  }
+
+  /** @override */
+  panRight() {
+    this.displayManager_.panRight();
+  }
+
+  /** @override */
+  route(displayPosition) {
+    return this.displayManager_.route(displayPosition);
   }
 
   /**

@@ -20,6 +20,7 @@
 #include "components/exo/display.h"
 #include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 
 namespace exo {
 namespace wayland {
@@ -251,12 +252,12 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
     return surface &&
            wl_resource_get_client(GetSurfaceResource(surface)) == client_;
   }
-  DataOffer* OnDataOffer(DataOffer::Purpose purpose) override {
+  DataOffer* OnDataOffer() override {
     wl_resource* data_offer_resource =
         wl_resource_create(client_, &wl_data_offer_interface,
                            wl_resource_get_version(data_device_resource_), 0);
     std::unique_ptr<DataOffer> data_offer = std::make_unique<DataOffer>(
-        new WaylandDataOfferDelegate(data_offer_resource), purpose);
+        new WaylandDataOfferDelegate(data_offer_resource));
     SetDataOfferResource(data_offer.get(), data_offer_resource);
     SetImplementation(data_offer_resource, &data_offer_implementation,
                       std::move(data_offer));
@@ -303,19 +304,46 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
                  uint32_t serial) {
     base::Optional<wayland::SerialTracker::EventType> event_type =
         serial_tracker_->GetEventType(serial);
+    if (event_type == base::nullopt) {
+      LOG(ERROR) << "The serial passed to StartDrag does not exist.";
+      if (source) {
+        source->Cancelled();
+      }
+      return;
+    }
     if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON_DOWN &&
         serial_tracker_->GetPointerDownSerial() == serial) {
-      data_device->StartDrag(
-          source, origin, icon,
-          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+      DCHECK(data_device);
+      data_device->StartDrag(source, origin, icon,
+                             ui::mojom::DragEventSource::kMouse);
     } else if (event_type == wayland::SerialTracker::EventType::TOUCH_DOWN &&
                serial_tracker_->GetTouchDownSerial() == serial) {
-      data_device->StartDrag(
-          source, origin, icon,
-          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
+      DCHECK(data_device);
+      data_device->StartDrag(source, origin, icon,
+                             ui::mojom::DragEventSource::kTouch);
     } else {
-      source->Cancelled();
+      LOG(ERROR) << "The serial passed to StartDrag does not match its "
+                    "expected types.";
+      if (source) {
+        source->Cancelled();
+      }
     }
+  }
+
+  void SetSelection(DataDevice* data_device,
+                    DataSource* source,
+                    uint32_t serial) {
+    base::Optional<wayland::SerialTracker::EventType> event_type =
+        serial_tracker_->GetEventType(serial);
+    if (event_type == base::nullopt) {
+      LOG(ERROR) << "The serial passed to SetSelection does not exist.";
+      if (source) {
+        source->Cancelled();
+      }
+      return;
+    }
+    DCHECK(data_device);
+    data_device->SetSelection(source);
   }
 
  private:
@@ -347,10 +375,15 @@ void data_device_start_drag(wl_client* client,
 
 void data_device_set_selection(wl_client* client,
                                wl_resource* resource,
-                               wl_resource* data_source,
+                               wl_resource* source_resource,
                                uint32_t serial) {
-  GetUserDataAs<DataDevice>(resource)->SetSelection(
-      data_source ? GetUserDataAs<DataSource>(data_source) : nullptr, serial);
+  DataDevice* data_device = GetUserDataAs<DataDevice>(resource);
+  static_cast<WaylandDataDeviceDelegate*>(data_device->get_delegate())
+      ->SetSelection(data_device,
+                     source_resource
+                         ? GetUserDataAs<DataSource>(source_resource)
+                         : nullptr,
+                     serial);
 }
 
 void data_device_release(wl_client* client, wl_resource* resource) {

@@ -103,6 +103,14 @@
         <item name="android:textAlignment">center</item>
     </style>
 
+    <style name="MenuChip" parent="Chip">
+        <item name="cornerRadius">@dimen/chip_default_height</item>
+        <item name="primaryTextAppearance">@style/TextAppearance.MenuChip.Text.Blue</item>
+        <item name="chipColor">@color/menu_chip_background</item>
+        <item name="solidColorChip">true</item>
+        <item name="verticalInset">@dimen/menu_chip_vertical_inset</item>
+    </style>
+
     <!-- Used by Chrome and Content -->
     <style name="TextAppearance" parent="android:TextAppearance" tools:ignore="UnusedResources" />
     <style name="TextAppearance.RobotoMediumStyle">
@@ -158,8 +166,8 @@
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Tertiary">
-        <item name="android:textColor">@color/default_text_color_tertiary</item>
+    <style name="TextAppearance.TextLarge.Disabled">
+        <item name="android:textColor">@color/default_text_color_disabled</item>
     </style>
 
     <style name="TextAppearance.TextMediumThick.Primary">
@@ -182,8 +190,8 @@
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextMedium.Tertiary">
-        <item name="android:textColor">@color/default_text_color_tertiary</item>
+    <style name="TextAppearance.TextMedium.Disabled">
+        <item name="android:textColor">@color/default_text_color_disabled</item>
     </style>
 
     <style name="TextAppearance.TextSmall.Primary">
@@ -194,8 +202,8 @@
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
     </style>
 
-    <style name="TextAppearance.TextSmall.Tertiary">
-        <item name="android:textColor">@color/default_text_color_tertiary</item>
+    <style name="TextAppearance.TextSmall.Disabled">
+        <item name="android:textColor">@color/default_text_color_disabled</item>
     </style>
 
     <style name="TextAppearance.BlackLink" tools:ignore="UnusedResources">
@@ -234,11 +242,11 @@
         <item name="android:textColor">@color/default_text_color_secondary_light_list</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Tertiary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary_light</item>
+    <style name="TextAppearance.TextLarge.Disabled.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_disabled_light</item>
     </style>
-    <style name="TextAppearance.TextSmall.Tertiary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary_light</item>
+    <style name="TextAppearance.TextSmall.Disabled.Light" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_disabled_light</item>
     </style>
 
     <style name="TextAppearance.WhiteLink" tools:ignore="UnusedResources">
@@ -274,14 +282,14 @@
         <item name="android:textColor">@color/default_text_color_secondary_dark</item>
     </style>
 
-    <style name="TextAppearance.TextLarge.Tertiary.Dark" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    <style name="TextAppearance.TextLarge.Disabled.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_disabled_dark</item>
     </style>
-    <style name="TextAppearance.TextMedium.Tertiary.Dark" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    <style name="TextAppearance.TextMedium.Disabled.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_disabled_dark</item>
     </style>
-    <style name="TextAppearance.TextSmall.Tertiary.Dark" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary_dark</item>
+    <style name="TextAppearance.TextSmall.Disabled.Dark" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_disabled_dark</item>
     </style>
 
     <!-- Inverse text styles -->
@@ -293,6 +301,9 @@
         <item name="android:textColor">@color/default_text_color_inverse</item>
     </style>
     <style name="TextAppearance.TextMedium.Primary.Inverse" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_inverse</item>
+    </style>
+    <style name="TextAppearance.TextSmall.Primary.Inverse" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse</item>
     </style>
 
@@ -310,9 +321,20 @@
         <item name="android:textColor">@color/blue_when_enabled</item>
     </style>
 
+    <style name="TextAppearance.TextMediumThick.Green">
+        <item name="android:textColor">@color/default_green</item>
+    </style>
+    <style name="TextAppearance.TextMediumThick.Green.Dark">
+        <item name="android:textColor">@color/default_green_dark</item>
+    </style>
+
     <style name="TextAppearance.Button.Text.Blue" parent="TextAppearance.TextAccentMediumThick"
         tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>
+    </style>
+    <style name="TextAppearance.Button.Text.Blue.Dark" parent="TextAppearance.TextAccentMediumThick"
+        tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/blue_when_enabled_dark</item>
     </style>
     <style name="TextAppearance.Button.Text.Filled" parent="TextAppearance.TextAccentMediumThick">
         <item name="android:textColor">@color/default_text_color_inverse</item>
@@ -320,6 +342,9 @@
     <style name="TextAppearance.Button.Text.Inverse" parent="TextAppearance.TextAccentMediumThick"
         tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse_list</item>
+    </style>
+    <style name="TextAppearance.MenuChip.Text.Blue" parent="TextAppearance.Button.Text.Blue">
+       <item name="android:textSize">@dimen/text_size_small</item>
     </style>
 
     <!-- Blue Non Adaptive Text Styles -->

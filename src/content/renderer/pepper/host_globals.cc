@@ -133,15 +133,6 @@ PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
   return inst->module()->pp_module();
 }
 
-std::string HostGlobals::GetCmdLine() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kPpapiFlashArgs);
-}
-
-void HostGlobals::PreCacheFontForFlash(const void* logfontw) {
-  // Not implemented in-process.
-}
-
 void HostGlobals::LogWithSource(PP_Instance instance,
                                 PP_LogLevel level,
                                 const std::string& source,

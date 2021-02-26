@@ -5,6 +5,7 @@
 
 """Unit tests for git_cache.py"""
 
+import logging
 import os
 import shutil
 import subprocess
@@ -245,6 +246,8 @@ class MirrorTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   sys.exit(coverage_utils.covered_main((
     os.path.join(DEPOT_TOOLS_ROOT, 'git_cache.py')
   ), required_percentage=0))

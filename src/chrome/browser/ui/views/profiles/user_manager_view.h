@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -22,7 +24,9 @@ class UserManagerView;
 
 class UserManagerProfileDialogDelegate
     : public views::DialogDelegateView,
-      public UserManagerProfileDialog::BaseDialogDelegate {
+      public UserManagerProfileDialog::BaseDialogDelegate,
+      public ChromeWebModalDialogManagerDelegate,
+      public web_modal::WebContentsModalDialogHost {
  public:
   UserManagerProfileDialogDelegate(UserManagerView* parent,
                                    views::WebView* web_view,
@@ -36,6 +40,17 @@ class UserManagerProfileDialogDelegate
   // Display the local error message inside login window.
   void DisplayErrorMessage();
 
+  // ChromeWebModalDialogManagerDelegate
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+
+  // web_modal::WebContentsModalDialogHost
+  gfx::NativeView GetHostView() const override;
+  gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  gfx::Size GetMaximumDialogSize() override;
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
+
  private:
   UserManagerProfileDialogDelegate();
 
@@ -45,12 +60,8 @@ class UserManagerProfileDialogDelegate
 
   // views::DialogDelegate:
   gfx::Size CalculatePreferredSize() const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   ui::ModalType GetModalType() const override;
   void DeleteDelegate() override;
-  base::string16 GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
 
   UserManagerView* parent_;  // Not owned.
@@ -120,10 +131,6 @@ class UserManagerView : public views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
   // views::DialogDelegateView:
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
   views::WebView* web_view_;

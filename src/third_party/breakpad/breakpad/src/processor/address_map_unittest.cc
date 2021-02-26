@@ -189,7 +189,7 @@ static bool RunTests() {
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   BPLOG_INIT(&argc, &argv);
 
   return RunTests() ? 0 : 1;

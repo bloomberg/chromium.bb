@@ -72,10 +72,11 @@ namespace viz {
 namespace mojom {
 class DisplayPrivate;
 class ExternalBeginFrameController;
+class DelegatedInkPointRenderer;
 }  // namespace mojom
 class ContextProvider;
 class HostFrameSinkManager;
-class LocalSurfaceIdAllocation;
+class LocalSurfaceId;
 class RasterContextProvider;
 }
 
@@ -204,10 +205,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 #endif
 
   // Sets the compositor's device scale factor and size.
-  void SetScaleAndSize(
-      float scale,
-      const gfx::Size& size_in_pixel,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+  void SetScaleAndSize(float scale,
+                       const gfx::Size& size_in_pixel,
+                       const viz::LocalSurfaceId& local_surface_id);
 
   // Set the output color profile into which this compositor should render. Also
   // sets the SDR white level (in nits) used to scale HDR color space primaries.
@@ -346,6 +346,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override;
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -397,18 +400,28 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
     return scroll_input_handler_.get();
   }
 
+  virtual void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver);
+
  private:
   friend class base::RefCounted<Compositor>;
 
-  // Called when throughput data for the tracker of |tracker_id| is ready.
-  void ReportThroughputForTracker(
+  // Called when collected metrics for the tracker of |tracker_id| is ready.
+  void ReportMetricsForTracker(
       int tracker_id,
-      cc::FrameSequenceMetrics::ThroughputData throughput);
+      const cc::FrameSequenceMetrics::CustomReportData& data);
 
   gfx::Size size_;
 
   ui::ContextFactory* context_factory_;
 
+  // |display_private_| can be null for:
+  // 1. Tests that don't set |display_private_|.
+  // 2. Intermittently on creation or if there is some kind of error (GPU crash,
+  //    GL context loss, etc.) that triggers reinitializing message pipes to the
+  //    GPU process RootCompositorFrameSinkImpl.
+  // Therefore, it should always be null checked for safety before use.
+  //
   // These pointers are owned by |context_factory_|, and must be reset before
   // calling RemoveCompositor();
   viz::mojom::DisplayPrivate* display_private_ = nullptr;
@@ -440,6 +453,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   scoped_refptr<cc::Layer> root_web_layer_;
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
+  base::WeakPtr<cc::InputHandler> input_handler_weak_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Snapshot of last set vsync parameters, to avoid redundant IPCs.
@@ -483,6 +497,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   ThroughputTrackerMap throughput_tracker_map_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
+  base::WeakPtrFactory<Compositor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

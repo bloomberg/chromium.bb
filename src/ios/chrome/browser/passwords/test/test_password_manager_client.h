@@ -32,10 +32,11 @@ class TestPasswordManagerClient
   // PromptUserTo*Ptr functions allow to both override PromptUserTo* methods
   // and expect calls.
   MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManagerForUI*));
-  MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
-               bool(const std::vector<autofill::PasswordForm*>& local_forms,
-                    const GURL& origin,
-                    const CredentialsCallback& callback));
+  MOCK_METHOD3(
+      PromptUserToChooseCredentialsPtr,
+      bool(const std::vector<password_manager::PasswordForm*>& local_forms,
+           const url::Origin& origin,
+           CredentialsCallback callback));
 
   scoped_refptr<TestPasswordStore> password_store() const;
   void set_password_store(scoped_refptr<TestPasswordStore> store);
@@ -49,7 +50,7 @@ class TestPasswordManagerClient
   PrefService* GetPrefs() const override;
   PasswordStore* GetProfilePasswordStore() const override;
   const PasswordManager* GetPasswordManager() const override;
-  const GURL& GetLastCommittedEntryURL() const override;
+  url::Origin GetLastCommittedOrigin() const override;
   // Stores |manager| into |manager_|. Save() should be
   // called manually in test. To put expectation on this function being called,
   // use PromptUserToSavePasswordPtr.
@@ -59,9 +60,9 @@ class TestPasswordManagerClient
   // Mocks choosing a credential by the user. To put expectation on this
   // function being called, use PromptUserToChooseCredentialsPtr.
   bool PromptUserToChooseCredentials(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
-      const CredentialsCallback& callback) override;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
+      const url::Origin& origin,
+      CredentialsCallback callback) override;
 
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   GURL last_committed_url_;

@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GEOMETRY_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GEOMETRY_ELEMENT_H_
 
-#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
 
 class Path;
+class SVGAnimatedNumber;
 class SVGPointTearOff;
 
 class SVGGeometryElement : public SVGGraphicsElement {
@@ -52,14 +52,14 @@ class SVGGeometryElement : public SVGGraphicsElement {
   SVGAnimatedNumber* pathLength() const { return path_length_.Get(); }
 
   virtual float getTotalLength(ExceptionState&);
-  virtual SVGPointTearOff* getPointAtLength(float distance);
+  virtual SVGPointTearOff* getPointAtLength(float distance, ExceptionState&);
 
   float AuthorPathLength() const;
   float PathLengthScaleFactor() const;
   static float PathLengthScaleFactor(float computed_path_length,
                                      float author_path_length);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SVGGeometryElement(const QualifiedName&,

@@ -18,6 +18,7 @@
 <script src="chrome://resources/js/cr/ui.js"></script>
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://resources/js/assert.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 </head>
 
@@ -32,6 +33,7 @@
     <div class="header-row">
       <button id="reload-policies">$i18n{reloadPolicies}</button>
       <button id="export-policies">$i18n{exportPoliciesJSON}</button>
+      <button id="copy-policies">$i18n{copyPoliciesJSON}</button>
       <div id="show-unset-container" class="show-unset-checkbox">
         <label>
           <input id="show-unset" type="checkbox">
@@ -190,6 +192,11 @@
       <div class="value row" role="row" hidden>
         <div class="name" role="rowheader">$i18n{value}</div>
         <div class="value" role="cell"></div>
+        <div class="copy" role="cell">
+          <a is="action-link" class="copy-value link" role="cell">
+            <img src="../../../../ui/webui/resources/images/icon_copy_content.svg">
+          </a>
+        </div>
       </div>
       <div class="errors row" role="row" hidden>
         <div class="name" role="rowheader">$i18n{error}</div>

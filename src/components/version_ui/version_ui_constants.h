@@ -18,7 +18,6 @@ extern const char kVersionJS[];
 // Must match the constants used in the resource files.
 extern const char kRequestVersionInfo[];
 extern const char kRequestVariationInfo[];
-extern const char kRequestPluginInfo[];
 extern const char kRequestPathInfo[];
 
 extern const char kKeyVariationsList[];
@@ -53,14 +52,11 @@ extern const char kExecutablePathName[];
 #if defined(OS_CHROMEOS)
 extern const char kFirmwareVersion[];
 #endif
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-extern const char kFlashPlugin[];
-extern const char kFlashVersion[];
-#endif
 #if !defined(OS_IOS)
 extern const char kJSEngine[];
 extern const char kJSVersion[];
 #endif
+extern const char kLogoAltText[];
 extern const char kOfficial[];
 #if !defined(OS_CHROMEOS)
 extern const char kOSName[];
@@ -86,8 +82,8 @@ extern const char kUserAgentName[];
 extern const char kVariationsCmdName[];
 extern const char kVariationsName[];
 extern const char kVersion[];
-extern const char kVersionBitSize[];
 extern const char kVersionModifier[];
+extern const char kVersionProcessorVariation[];
 
 }  // namespace version_ui
 

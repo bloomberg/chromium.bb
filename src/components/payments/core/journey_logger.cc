@@ -97,21 +97,6 @@ JourneyLogger::~JourneyLogger() {
                         has_recorded_);
 }
 
-void JourneyLogger::IncrementSelectionAdds(Section section) {
-  DCHECK_LT(section, SECTION_MAX);
-  sections_[section].number_selection_adds_++;
-}
-
-void JourneyLogger::IncrementSelectionChanges(Section section) {
-  DCHECK_LT(section, SECTION_MAX);
-  sections_[section].number_selection_changes_++;
-}
-
-void JourneyLogger::IncrementSelectionEdits(Section section) {
-  DCHECK_LT(section, SECTION_MAX);
-  sections_[section].number_selection_edits_++;
-}
-
 void JourneyLogger::SetNumberOfSuggestionsShown(Section section,
                                                 int number,
                                                 bool has_complete_suggestion) {
@@ -179,12 +164,16 @@ void JourneyLogger::SetRequestedInformation(bool requested_shipping,
 void JourneyLogger::SetRequestedPaymentMethodTypes(
     bool requested_basic_card,
     bool requested_method_google,
+    bool requested_method_secure_payment_confirmation,
     bool requested_method_other) {
   if (requested_basic_card)
     SetEventOccurred(EVENT_REQUEST_METHOD_BASIC_CARD);
 
   if (requested_method_google)
     SetEventOccurred(EVENT_REQUEST_METHOD_GOOGLE);
+
+  if (requested_method_secure_payment_confirmation)
+    SetEventOccurred(EVENT_REQUEST_METHOD_SECURE_PAYMENT_CONFIRMATION);
 
   if (requested_method_other)
     SetEventOccurred(EVENT_REQUEST_METHOD_OTHER);
@@ -264,6 +253,10 @@ void JourneyLogger::RecordTransactionAmount(std::string currency,
       .Record(ukm::UkmRecorder::Get());
 }
 
+void JourneyLogger::RecordCheckoutStep(CheckoutFunnelStep step) {
+  base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel", step);
+}
+
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
   if (has_recorded_) {
@@ -274,6 +267,23 @@ void JourneyLogger::RecordJourneyStatsHistograms(
 
   RecordEventsMetric(completion_status);
   RecordTimeToCheckout(completion_status);
+
+  // Depending on the completion status record kPaymentRequestTriggered and/or
+  // kCompleted checkout steps.
+  switch (completion_status) {
+    case COMPLETION_STATUS_COMPLETED:
+      RecordCheckoutStep(CheckoutFunnelStep::kPaymentRequestTriggered);
+      RecordCheckoutStep(CheckoutFunnelStep::kCompleted);
+      break;
+    case COMPLETION_STATUS_USER_ABORTED:
+    case COMPLETION_STATUS_OTHER_ABORTED:
+      RecordCheckoutStep(CheckoutFunnelStep::kPaymentRequestTriggered);
+      break;
+    case COMPLETION_STATUS_COULD_NOT_SHOW:
+      break;
+    default:
+      NOTREACHED();
+  }
 
   // These following metrics only make sense if the Payment Request was
   // triggered.
@@ -288,18 +298,6 @@ void JourneyLogger::RecordSectionSpecificStats(
     std::string name_suffix = GetHistogramNameSuffix(i, completion_status);
     // Only log the metrics for a section if it was requested by the merchant.
     if (sections_[i].is_requested_) {
-      base::UmaHistogramCustomCounts(
-          "PaymentRequest.NumberOfSelectionAdds." + name_suffix,
-          std::min(sections_[i].number_selection_adds_, MAX_EXPECTED_SAMPLE),
-          MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
-      base::UmaHistogramCustomCounts(
-          "PaymentRequest.NumberOfSelectionChanges." + name_suffix,
-          std::min(sections_[i].number_selection_changes_, MAX_EXPECTED_SAMPLE),
-          MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
-      base::UmaHistogramCustomCounts(
-          "PaymentRequest.NumberOfSelectionEdits." + name_suffix,
-          std::min(sections_[i].number_selection_edits_, MAX_EXPECTED_SAMPLE),
-          MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
       base::UmaHistogramCustomCounts(
           "PaymentRequest.NumberOfSuggestionsShown." + name_suffix,
           std::min(sections_[i].number_suggestions_shown_, MAX_EXPECTED_SAMPLE),
@@ -409,6 +407,8 @@ void JourneyLogger::RecordTimeToCheckout(
         selected_method_suffix = ".BasicCard";
       } else if (events_ & EVENT_SELECTED_GOOGLE) {
         selected_method_suffix = ".Google";
+      } else if (events_ & EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION) {
+        selected_method_suffix = ".SecurePaymentConfirmation";
       } else {
         DCHECK(events_ & EVENT_SELECTED_OTHER);
         selected_method_suffix = ".Other";
@@ -460,6 +460,7 @@ void JourneyLogger::ValidateEventBits() const {
     bit_vector.push_back(events_ & EVENT_SELECTED_CREDIT_CARD);
     bit_vector.push_back(events_ & EVENT_SELECTED_GOOGLE);
     bit_vector.push_back(events_ & EVENT_SELECTED_OTHER);
+    bit_vector.push_back(events_ & EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION);
     DCHECK(ValidateExclusiveBitVector(bit_vector));
     bit_vector.clear();
   }
@@ -469,6 +470,8 @@ void JourneyLogger::ValidateEventBits() const {
     DCHECK(events_ & EVENT_REQUEST_METHOD_BASIC_CARD);
   } else if (events_ & EVENT_SELECTED_GOOGLE) {
     DCHECK(events_ & EVENT_REQUEST_METHOD_GOOGLE);
+  } else if (events_ & EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION) {
+    DCHECK(events_ & EVENT_REQUEST_METHOD_SECURE_PAYMENT_CONFIRMATION);
   } else if (events_ & EVENT_SELECTED_OTHER) {
     // It is possible that a service worker based app responds to "basic-card"
     // request.
@@ -488,6 +491,9 @@ void JourneyLogger::ValidateEventBits() const {
   if (events_ & EVENT_SKIPPED_SHOW) {
     // Built in autofill payment handler for basic card should not skip UI show.
     DCHECK(!(events_ & EVENT_SELECTED_CREDIT_CARD));
+    // Internal secure payment confirmation payment handler should not skip UI
+    // show.
+    DCHECK(!(events_ & EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION));
   }
 
   // Check that the two bits are not set at the same time.

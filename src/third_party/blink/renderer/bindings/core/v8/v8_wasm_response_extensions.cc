@@ -39,7 +39,6 @@ static const int kWasmModuleTag = 1;
 // received bytes get forwarded to the V8 API class |WasmStreaming|.
 class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
                                               public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderForWasmStreaming);
 
  public:
   FetchDataLoaderForWasmStreaming(std::shared_ptr<v8::WasmStreaming> streaming,
@@ -104,7 +103,7 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
     return AbortCompilation();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     visitor->Trace(script_state_);
@@ -161,7 +160,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 class WasmDataLoaderClient final
     : public GarbageCollected<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
   explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)
@@ -170,7 +168,7 @@ class WasmDataLoaderClient final
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
   void Abort() override { loader_->AbortFromClient(); }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(loader_);
     FetchDataLoader::Client::Trace(visitor);
   }
@@ -210,7 +208,8 @@ class ExceptionToAbortStreamingScope {
 };
 
 RawResource* GetRawResource(ScriptState* script_state,
-                            const String& url_string) {
+                            const String& url_string,
+                            Response* response) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return nullptr;
@@ -222,6 +221,18 @@ RawResource* GetRawResource(ScriptState* script_state,
     return nullptr;
   Resource* resource = fetcher->CachedResource(url);
   if (!resource)
+    return nullptr;
+
+  // Make sure the resource matches the |response|. To check that, we make sure
+  // the response times match, and the response sources match.
+  const ResourceResponse& resource_response = resource->GetResponse();
+  const FetchResponseData* fetch_response_data =
+      response->GetResponse()->InternalResponse();
+  if (resource_response.ResponseTime() != fetch_response_data->ResponseTime())
+    return nullptr;
+  bool from_service_worker = fetch_response_data->ResponseSource() ==
+                             network::mojom::FetchResponseSource::kUnspecified;
+  if (resource_response.WasFetchedViaServiceWorker() != from_service_worker)
     return nullptr;
 
   // Wasm modules should be fetched as raw resources.
@@ -254,6 +265,10 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
       return;
 
     v8::OwnedBuffer serialized_module = compiled_module.Serialize();
+    // V8 might not be able to serialize the module.
+    if (serialized_module.size == 0)
+      return;
+
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                          "v8.wasm.cachedModule", TRACE_EVENT_SCOPE_THREAD,
                          "producedCacheSize", serialized_module.size);
@@ -331,20 +346,11 @@ void StreamFromResponseCallback(
     return;
   }
 
-  Body::BodyLocked body_locked = response->IsBodyLocked(exception_state);
-  if (body_locked == Body::BodyLocked::kBroken)
-    return;
-
-  if (body_locked == Body::BodyLocked::kLocked ||
-      response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (response->IsBodyLocked() || response->IsBodyUsed()) {
     exception_state.ThrowTypeError(
         "Cannot compile WebAssembly.Module from an already read Response");
     return;
   }
-
-  if (exception_state.HadException())
-    return;
 
   if (!response->BodyBuffer()) {
     // Since the status is 2xx (ok), this must be status 204 (No Content),
@@ -356,13 +362,12 @@ void StreamFromResponseCallback(
   String url = response->url();
   const std::string& url_utf8 = url.Utf8();
   streaming->SetUrl(url_utf8.c_str(), url_utf8.size());
-  RawResource* raw_resource = GetRawResource(script_state, url);
-  if (raw_resource) {
-    SingleCachedMetadataHandler* cache_handler =
-        raw_resource->ScriptCacheHandler();
+  RawResource* resource = GetRawResource(script_state, url, response);
+  if (resource) {
+    SingleCachedMetadataHandler* cache_handler = resource->ScriptCacheHandler();
     if (cache_handler) {
       auto client = std::make_shared<WasmStreamingClient>(
-          url, raw_resource->GetResponse().ResponseTime());
+          url, resource->GetResponse().ResponseTime());
       streaming->SetClient(client);
       scoped_refptr<CachedMetadata> cached_module =
           cache_handler->GetCachedMetadata(kWasmModuleTag);

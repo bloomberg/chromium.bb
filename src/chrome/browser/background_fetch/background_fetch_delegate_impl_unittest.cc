@@ -38,18 +38,11 @@ class BackgroundFetchDelegateImplTest : public testing::Test {
 
     // Add |OriginUrl()| to |profile_|'s history so the UKM background
     // recording conditions are met.
-    ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
-                                              /* no_db= */ false));
+    ASSERT_TRUE(profile_.CreateHistoryService());
     auto* history_service = HistoryServiceFactory::GetForProfile(
         &profile_, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->AddPage(OriginUrl(), base::Time::Now(),
                              history::SOURCE_BROWSED);
-  }
-
-  void WaitForUkmEvent() {
-    base::RunLoop run_loop;
-    delegate_->set_ukm_event_recorded_for_testing(run_loop.QuitClosure());
-    run_loop.Run();
   }
 
  protected:
@@ -72,9 +65,13 @@ TEST_F(BackgroundFetchDelegateImplTest, RecordUkmEvent) {
     EXPECT_EQ(entries.size(), 0u);
   }
 
+  base::RunLoop run_loop;
+  recorder_->SetOnAddEntryCallback(
+      ukm::builders::BackgroundFetchDeletingRegistration::kEntryName,
+      run_loop.QuitClosure());
   delegate_->RecordBackgroundFetchDeletingRegistrationUkmEvent(
       origin, /* user_initiated_abort= */ true);
-  WaitForUkmEvent();
+  run_loop.Run();
 
   {
     std::vector<const ukm::mojom::UkmEntry*> entries =

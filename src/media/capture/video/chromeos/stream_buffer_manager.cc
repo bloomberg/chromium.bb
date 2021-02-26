@@ -8,16 +8,16 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
-#include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/chromeos/request_builder.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -27,10 +27,12 @@ namespace media {
 StreamBufferManager::StreamBufferManager(
     CameraDeviceContext* device_context,
     bool video_capture_use_gmb,
-    std::unique_ptr<CameraBufferFactory> camera_buffer_factory)
+    std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
+    ClientType client_type)
     : device_context_(device_context),
       video_capture_use_gmb_(video_capture_use_gmb),
-      camera_buffer_factory_(std::move(camera_buffer_factory)) {
+      camera_buffer_factory_(std::move(camera_buffer_factory)),
+      client_type_(client_type) {
   if (video_capture_use_gmb_) {
     gmb_support_ = std::make_unique<gpu::GpuMemoryBufferSupport>();
   }
@@ -41,7 +43,9 @@ StreamBufferManager::~StreamBufferManager() {
 }
 
 void StreamBufferManager::ReserveBuffer(StreamType stream_type) {
-  if (video_capture_use_gmb_) {
+  // The YUV output buffer for reprocessing is not passed to client, so can be
+  // allocated by the local buffer factory without zero-copy concerns.
+  if (video_capture_use_gmb_ && stream_type != StreamType::kYUVOutput) {
     ReserveBufferFromPool(stream_type);
   } else {
     ReserveBufferFromFactory(stream_type);
@@ -64,7 +68,6 @@ gfx::GpuMemoryBuffer* StreamBufferManager::GetGpuMemoryBufferById(
 base::Optional<StreamBufferManager::Buffer>
 StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
                                                 uint64_t buffer_ipc_id,
-                                                int rotation,
                                                 VideoCaptureFormat* format) {
   DCHECK(stream_context_.count(stream_type));
   auto& stream_context = stream_context_[stream_type];
@@ -79,6 +82,16 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
   *format = GetStreamCaptureFormat(stream_type);
   // We only support NV12 at the moment.
   DCHECK_EQ(format->pixel_format, PIXEL_FORMAT_NV12);
+
+  int rotation = device_context_->GetCameraFrameRotation();
+  if (base::FeatureList::IsEnabled(
+          features::kDisableCameraFrameRotationAtSource)) {
+    // For a device that don't have the camera sensor installed to match the
+    // device's natural orientation, we have to fix the sensor orientation here.
+    // Otherwise the recorded video in Chrome camera app would have wrong
+    // orientation because we no longer rotate the frames for the video encoder.
+    rotation = device_context_->GetRotationFromSensorOrientation();
+  }
 
   if (rotation == 0) {
     return std::move(buffer_pair.vcd_buffer);
@@ -143,7 +156,8 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
     // We have to reserve a new buffer because the size is different.
     Buffer rotated_buffer;
     if (!device_context_->ReserveVideoCaptureBufferFromPool(
-            format->frame_size, format->pixel_format, &rotated_buffer)) {
+            client_type_, format->frame_size, format->pixel_format,
+            &rotated_buffer)) {
       DLOG(WARNING) << "Failed to reserve video capture buffer";
       original_gmb->Unmap();
       return std::move(buffer_pair.vcd_buffer);
@@ -154,8 +168,8 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
     DCHECK(gfx_format);
     auto rotated_gmb = gmb_support_->CreateGpuMemoryBufferImplFromHandle(
         rotated_buffer.handle_provider->GetGpuMemoryBufferHandle(),
-        format->frame_size, *gfx_format,
-        CameraBufferFactory::GetBufferUsage(*gfx_format), base::NullCallback());
+        format->frame_size, *gfx_format, stream_context->buffer_usage,
+        base::NullCallback());
 
     if (!rotated_gmb || !rotated_gmb->Map()) {
       DLOG(WARNING) << "Failed to map rotated buffer";
@@ -238,19 +252,19 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     stream_context->capture_format = capture_format;
     stream_context->stream = std::move(stream);
 
-    const ChromiumPixelFormat stream_format =
-        camera_buffer_factory_->ResolveStreamBufferFormat(
-            stream_context->stream->format);
-    // Internally we keep track of the VideoPixelFormat that's actually
-    // supported by the camera instead of the one requested by the client.
-    stream_context->capture_format.pixel_format = stream_format.video_format;
-
     switch (stream_type) {
       case StreamType::kPreviewOutput:
+        stream_context->buffer_dimension = gfx::Size(
+            stream_context->stream->width, stream_context->stream->height);
+        stream_context->buffer_usage =
+            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
+        break;
       case StreamType::kYUVInput:
       case StreamType::kYUVOutput:
         stream_context->buffer_dimension = gfx::Size(
             stream_context->stream->width, stream_context->stream->height);
+        stream_context->buffer_usage =
+            gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE;
         break;
       case StreamType::kJpegOutput: {
         auto jpeg_size = GetMetadataEntryAsSpan<int32_t>(
@@ -258,12 +272,21 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
             cros::mojom::CameraMetadataTag::ANDROID_JPEG_MAX_SIZE);
         CHECK_EQ(jpeg_size.size(), 1u);
         stream_context->buffer_dimension = gfx::Size(jpeg_size[0], 1);
+        stream_context->buffer_usage =
+            gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE;
         break;
       }
       default: {
         NOTREACHED();
       }
     }
+    const ChromiumPixelFormat stream_format =
+        camera_buffer_factory_->ResolveStreamBufferFormat(
+            stream_context->stream->format, stream_context->buffer_usage);
+    // Internally we keep track of the VideoPixelFormat that's actually
+    // supported by the camera instead of the one requested by the client.
+    stream_context->capture_format.pixel_format = stream_format.video_format;
+
     stream_context_[stream_type] = std::move(stream_context);
 
     // For input stream, there is no need to allocate buffers.
@@ -381,7 +404,8 @@ void StreamBufferManager::ReserveBufferFromFactory(StreamType stream_type) {
     return;
   }
   auto gmb = camera_buffer_factory_->CreateGpuMemoryBuffer(
-      stream_context->buffer_dimension, *gfx_format);
+      stream_context->buffer_dimension, *gfx_format,
+      stream_context->buffer_usage);
   if (!gmb) {
     device_context_->SetErrorState(
         media::VideoCaptureError::
@@ -418,7 +442,7 @@ void StreamBufferManager::ReserveBufferFromPool(StreamType stream_type) {
   }
   Buffer vcd_buffer;
   if (!device_context_->ReserveVideoCaptureBufferFromPool(
-          stream_context->buffer_dimension,
+          client_type_, stream_context->buffer_dimension,
           stream_context->capture_format.pixel_format, &vcd_buffer)) {
     DLOG(WARNING) << "Failed to reserve video capture buffer";
     return;
@@ -426,7 +450,7 @@ void StreamBufferManager::ReserveBufferFromPool(StreamType stream_type) {
   auto gmb = gmb_support_->CreateGpuMemoryBufferImplFromHandle(
       vcd_buffer.handle_provider->GetGpuMemoryBufferHandle(),
       stream_context->buffer_dimension, *gfx_format,
-      CameraBufferFactory::GetBufferUsage(*gfx_format), base::NullCallback());
+      stream_context->buffer_usage, base::NullCallback());
   stream_context->free_buffers.push(vcd_buffer.id);
   stream_context->buffers.insert(std::make_pair(
       vcd_buffer.id, BufferPair(std::move(gmb), std::move(vcd_buffer))));

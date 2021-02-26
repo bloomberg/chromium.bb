@@ -33,6 +33,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   UsbDeviceHandleUsbfs(
       scoped_refptr<UsbDevice> device,
       base::ScopedFD fd,
+      base::ScopedFD lifeline_fd,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // UsbDeviceHandle implementation.
@@ -103,6 +104,10 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   void SetConfigurationComplete(int configuration_value,
                                 bool success,
                                 ResultCallback callback);
+  void SetAlternateInterfaceSettingComplete(int interface_number,
+                                            int alternate_setting,
+                                            bool success,
+                                            ResultCallback callback);
   void ReleaseInterfaceComplete(int interface_number, ResultCallback callback);
   void IsochronousTransferInternal(uint8_t endpoint_address,
                                    scoped_refptr<base::RefCountedBytes> buffer,

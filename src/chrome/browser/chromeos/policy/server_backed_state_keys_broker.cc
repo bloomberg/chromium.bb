@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -31,7 +32,7 @@ ServerBackedStateKeysBroker::~ServerBackedStateKeysBroker() {
 
 ServerBackedStateKeysBroker::Subscription
 ServerBackedStateKeysBroker::RegisterUpdateCallback(
-    const base::RepeatingClosure& callback) {
+    const UpdateCallback& callback) {
   if (!available())
     FetchStateKeys();
   return update_callbacks_.Add(callback);
@@ -39,7 +40,7 @@ ServerBackedStateKeysBroker::RegisterUpdateCallback(
 
 void ServerBackedStateKeysBroker::RequestStateKeys(StateKeysCallback callback) {
   if (!available()) {
-    request_callbacks_.push_back(std::move(callback));
+    request_callbacks_.AddUnsafe(std::move(callback));
     FetchStateKeys();
     return;
   }
@@ -79,12 +80,7 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
   if (send_notification)
     update_callbacks_.Notify();
 
-  std::vector<StateKeysCallback> callbacks;
-  request_callbacks_.swap(callbacks);
-  for (auto& callback : callbacks) {
-    if (!callback.is_null())
-      std::move(callback).Run(state_keys_);
-  }
+  request_callbacks_.Notify(state_keys_);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_GESTURE_EVENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_GESTURE_EVENT_H_
 
-#include "base/logging.h"
+#include <memory>
+
+#include "base/check.h"
+#include "base/notreached.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -23,7 +26,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
  public:
   using InertialPhaseState = mojom::InertialPhaseState;
 
-  bool is_source_touch_event_set_non_blocking = false;
+  bool is_source_touch_event_set_blocking = false;
 
   // The pointer type for the first touch point in the gesture.
   WebPointerProperties::PointerType primary_pointer_type =
@@ -76,7 +79,10 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // a hit-test. Should be used for gestures queued up internally within
       // the renderer process. This is an ElementIdType instead of ElementId
       // due to the fact that ElementId has a non-trivial constructor that
-      // can't easily participate in this union of structs.
+      // can't easily participate in this union of structs. Note that while
+      // this is used in scroll unification to perform a main thread hit test,
+      // in which case |main_thread_hit_tested| is true, it is also used in
+      // other cases like scroll events reinjected for scrollbar scrolling.
       cc::ElementIdType scrollable_area_element_id;
       // Initial motion that triggered the scroll.
       float delta_x_hint;
@@ -95,6 +101,14 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // True if this event is generated from a wheel event with synthetic
       // phase.
       bool synthetic;
+      // If true, this event has been hit tested by the main thread and the
+      // result is stored in scrollable_area_element_id. Used only in scroll
+      // unification when the event is sent back the the compositor for a
+      // second time after the main thread hit test is complete.
+      bool main_thread_hit_tested;
+      // If true, this event will be used for cursor control instead of
+      // scrolling. the entire scroll sequence will be used for cursor control.
+      bool cursor_control;
     } scroll_begin;
 
     struct {
@@ -317,10 +331,11 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   // Coalesce the |new_event| with |last_event| and optionally
   // |second_last_event|. Scroll and pinch are two separate gestures so they
   // would need separate events that is why this method returns a pair.
-  static std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
-      const WebGestureEvent* second_last_event,
-      const WebGestureEvent& last_event,
-      const WebGestureEvent& new_event);
+  static std::pair<std::unique_ptr<WebGestureEvent>,
+                   std::unique_ptr<WebGestureEvent>>
+  CoalesceScrollAndPinch(const WebGestureEvent* second_last_event,
+                         const WebGestureEvent& last_event,
+                         const WebGestureEvent& new_event);
 
   // Whether |event_in_queue| is a touchscreen GesturePinchUpdate or
   // GestureScrollUpdate and has the same modifiers/source as the new

@@ -339,6 +339,9 @@ below:
         <message name="IDS_AX_COLOR_EDIT_SATURATION" desc="Accessibility label of the saturation edit box in a color picker popup">
           Saturation
         </message>
+        <message name="IDS_AX_COLOR_EYEDROPPER" desc="Accessibility label of the eyedropper button in a color picker popup">
+          Eyedropper
+        </message>
         <message name="IDS_AX_COLOR_FORMAT_TOGGLER" desc="Accessibility label of the format toggler spinbutton in a color picker popup">
           Format toggler
         </message>
@@ -500,6 +503,12 @@ below:
       </message>
       <message name="IDS_AX_ROLE_DOC_PAGE_BREAK" desc="Accessibility role description for page break">
         page break
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PAGE_FOOTER" desc="Accessibility role description for page footer">
+        page footer
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PAGE_HEADER" desc="Accessibility role description for page header">
+        page header
       </message>
       <message name="IDS_AX_ROLE_DOC_PAGE_LIST" desc="Accessibility role description for page list">
         page list
@@ -706,9 +715,6 @@ below:
         <message name="IDS_AX_ROLE_MENU_BAR" desc="Accessibility role description for a menu bar">
           menu bar
         </message>
-        <message name="IDS_AX_ROLE_MENU_BUTTON" desc="Accessibility role description for a menu button, a button that opens a menu">
-          menu button
-        </message>
         <message name="IDS_AX_ROLE_MENU_ITEM" desc="Accessibility role description for a menu item">
           menu item
         </message>
@@ -781,6 +787,45 @@ below:
         <message name="IDS_AX_ROLE_TREE_ITEM" desc="Accessibility role description for a tree item">
           tree item
         </message>
+        <message name="IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION" desc="Accessibility state description for a multiselectable node when some children are selected">
+          multiselectable, <ph name="SELECTED">$1<ex>3</ex></ph> of <ph name="COUNT">$2<ex>10</ex></ph> selected.
+        </message>
+        <message name="IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION_NONE" desc="Accessibility state description for a multiselectable node when no children are selected">
+          multiselectable, none selected.
+        </message>
+        <message name="IDS_AX_TOGGLE_BUTTON_ON" desc="Accessibility state description for a toggle button when it is in the on/checked state">
+          On
+        </message>
+        <message name="IDS_AX_TOGGLE_BUTTON_OFF" desc="Accessibility state description for a toggle button when it is in the off/unchecked state">
+          Off
+        </message>
+        <message name="IDS_AX_CHECKBOX_PARTIALLY_CHECKED" desc="Accessibility state description for a checkbox that is in the partially checked state">
+          Partially Checked
+        </message>
+        <message name="IDS_AX_LIST_BOX_STATE_DESCRIPTION" desc="Accessibility state description for a list box of items">
+          <ph name="COUNT">$1<ex>3</ex></ph> items
+        </message>
+        <message name="IDS_AX_LIST_BOX_ITEM_STATE_DESCRIPTION" desc="Accessibility state description for an item that is part of a list box">
+          in list, item <ph name="INDEX">$1<ex>1</ex></ph> of <ph name="COUNT">$2<ex>3</ex></ph>
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_PAGE" desc="Accessibility state description for aria-current value of page.">
+          current page
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_STEP" desc="Accessibility state description for aria-current value of step.">
+          current step
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_LOCATION" desc="Accessibility state description for aria-current value of location.">
+          current location
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_DATE" desc="Accessibility state description for aria-current value of date.">
+          current date
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_TIME" desc="Accessibility state description for aria-current value of time.">
+          current time
+        </message>
+        <message name="IDS_AX_ARIA_CURRENT_TRUE" desc="Accessibility state description for aria-current value of true.">
+          current item
+        </message>
       </if>
 
       <!-- Automatic image annotations for accessibility -->
@@ -795,6 +840,14 @@ below:
             Unlabeled image
           </message>
         </else>
+      </if>
+      <if expr="is_android">
+        <message name="IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION_ANDROID_LTR" desc="Accessibility message spoken out loud to screen reader users on Android to inform them that they can get a description of an image by opening the 'More Options' menu on the top right. This is only for LTR languages. The 'more options' text should match TC ID 8110367050267853536">
+          This image isn‘t labeled. Open the More Options menu at the top right to get image descriptions.
+        </message>
+        <message name="IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION_ANDROID_RTL" desc="Accessibility message spoken out loud to screen reader users on Android to inform them that they can get a description of an image by opening the 'More Options' menu on the top left. This is only for RTL languages. The 'more options' text should match TC ID 8110367050267853536">
+          This image isn‘t labeled. Open the More Options menu at the top left to get image descriptions.
+        </message>
       </if>
       <message name="IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION" desc="Accessibility message spoken out loud to screen reader users to inform them that they can get a description of an image by opening the context menu.">
         To get missing image descriptions, open the context menu.
@@ -1007,6 +1060,12 @@ below:
       </message>
       <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL" desc="Heading or short sentence shown there is a field which accepts multiple e-mail addresses and a user specified a value which is not a comma-separated e-mail addresses.">
         Please enter a comma separated list of email addresses.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_NOT_EQUAL" desc="Heading or short sentence shown when a form control value in a webpage needs to be equal to a minimum and maximum value specified by the page author, but a user specified a too small or large value.">
+        Value must be <ph name="VALUE">$1<ex>1</ex></ph>.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_NOT_EQUAL_DATETIME" desc="Heading or short sentence shown when a form control value in a webpage needs to be equal to a minimum and maximum date/time value specified by the page author, but a user specified an earlier or later date/time.">
+        Value must be <ph name="VALUE_DATE_OR_TIME">$1<ex>02/09/2020</ex></ph>.
       </message>
       <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW" desc="Heading or short sentence shown when a form control value in a webpage needs to be larger than or equal to a minimum value specified by the page author, but a user specified a too small value.">
         Value must be greater than or equal to <ph name="MINIMUM">$1<ex>0</ex></ph>.

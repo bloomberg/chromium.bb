@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
 #define COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/metrics/unsent_log_store.h"
 
@@ -31,17 +32,36 @@ class UnsentLogStoreMetrics {
     END_RECALL_STATUS  // Number of bins to use to create the histogram.
   };
 
-  UnsentLogStoreMetrics() {}
-  virtual ~UnsentLogStoreMetrics() {}
+  UnsentLogStoreMetrics();
+  virtual ~UnsentLogStoreMetrics();
 
-  virtual void RecordLogReadStatus(LogReadStatus status) {}
+  virtual void RecordLogReadStatus(LogReadStatus status);
 
-  virtual void RecordCompressionRatio(
-    size_t compressed_size, size_t original_size) {}
+  virtual void RecordCompressionRatio(size_t compressed_size,
+                                      size_t original_size);
 
-  virtual void RecordDroppedLogSize(size_t size) {}
+  // Records the size of a dropped log in bytes.
+  virtual void RecordDroppedLogSize(size_t size);
 
-  virtual void RecordDroppedLogsNum(int dropped_logs_num) {}
+  // Record the number of logs that were dropped (not staged).  These include
+  // logs that were dropped due to be being too large and also logs that were
+  // dropped because there were too many.
+  virtual void RecordDroppedLogsNum(int dropped_logs_num);
+
+  // Records the number of logs that were not dropped and instead staged /
+  // intended to be sent.
+  virtual void RecordIntendingToSentLogs(int num);
+
+  // Record when a single staged log was sent.
+  virtual void RecordSentLog();
+
+  virtual void RecordLastUnsentLogMetadataMetrics(int unsent_samples_count,
+                                                  int sent_samples_count,
+                                                  int persisted_size_in_kb);
+
+  // The feature to record the unsent log info metrics, refer to
+  // UnsentLogStoreMetricsImpl::RecordLastUnsentLogMetadataMetrics.
+  static const base::Feature kRecordLastUnsentLogMetadataMetrics;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnsentLogStoreMetrics);

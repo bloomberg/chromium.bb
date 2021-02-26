@@ -90,6 +90,10 @@ class FullscreenController {
   // Exits fullscreen mode, animating in toolbars and resetting the progress to
   // 1.0.
   virtual void ExitFullscreen() = 0;
+
+  // Force horizontal content resize, when content isn't tracking resize by
+  // itself.
+  virtual void ResizeHorizontalViewport() = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_

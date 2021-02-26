@@ -24,8 +24,7 @@ int ToClampedBitsPerSecond(int32_t bytes, Clock::duration time_window) {
   // Divide |bytes| by |time_window| and scale the units to bits per second.
   constexpr int64_t kBitsPerByte = 8;
   constexpr int64_t kClockTicksPerSecond =
-      std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1))
-          .count();
+      Clock::to_duration(std::chrono::seconds(1)).count();
   const int64_t bits = bytes * kBitsPerByte;
   const int64_t bits_per_second =
       (bits * kClockTicksPerSecond) / time_window.count();

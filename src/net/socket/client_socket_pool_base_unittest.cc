@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -241,6 +241,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const AddressList& addresses,
       std::unique_ptr<
           SocketPerformanceWatcher> /* socket_performance_watcher */,
+      NetworkQualityEstimator* /* network_quality_estimator */,
       NetLog* /* net_log */,
       const NetLogSource& /*source*/) override {
     allocation_count_++;
@@ -375,7 +376,7 @@ class TestConnectJob : public ConnectJob {
   int ConnectInternal() override {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(
-        ignored, nullptr, nullptr, NetLogSource());
+        ignored, nullptr, nullptr, nullptr, NetLogSource());
     switch (job_type_) {
       case kMockJob:
         return DoConnect(true /* successful */, false /* sync */,
@@ -4224,11 +4225,11 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   // Verify the backup timer doesn't create a backup job, by making
   // the backup job a pending job instead of a waiting job, so it
   // *would* complete if it were created.
+  base::RunLoop loop;
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromSeconds(1));
-  base::RunLoop().Run();
+      FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
+  loop.Run();
   EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
 }
 

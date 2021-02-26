@@ -4,16 +4,55 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_renderer_warmup_client.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+void WritePredictionToConsoleLog(
+    const NavigationPredictorKeyedService::Prediction& prediction) {
+  if (!prediction.web_contents())
+    return;
+
+  base::DictionaryValue message;
+
+  base::ListValue url_list;
+  for (const GURL& url : prediction.sorted_predicted_urls()) {
+    url_list.Append(url.spec());
+  }
+
+  message.SetKey("predictions", std::move(url_list));
+  if (prediction.source_document_url()) {
+    message.SetStringKey("source_url",
+                         prediction.source_document_url()->spec());
+  }
+
+  std::string json_body;
+  if (!base::JSONWriter::Write(message, &json_body)) {
+    NOTREACHED();
+    return;
+  }
+
+  prediction.web_contents()->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kInfo,
+      "JSON Navigation Prediction: " + json_body);
+}
+
+}  // namespace
+
 NavigationPredictorKeyedService::Prediction::Prediction(
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     const base::Optional<GURL>& source_document_url,
     const base::Optional<std::vector<std::string>>& external_app_packages_name,
     PredictionSource prediction_source,
@@ -110,7 +149,7 @@ NavigationPredictorKeyedService::Prediction::sorted_predicted_urls() const {
   return sorted_predicted_urls_;
 }
 
-const content::WebContents*
+content::WebContents*
 NavigationPredictorKeyedService::Prediction::web_contents() const {
   DCHECK_EQ(PredictionSource::kAnchorElementsParsedFromWebPage,
             prediction_source_);
@@ -119,7 +158,10 @@ NavigationPredictorKeyedService::Prediction::web_contents() const {
 
 NavigationPredictorKeyedService::NavigationPredictorKeyedService(
     content::BrowserContext* browser_context)
-    : search_engine_preconnector_(browser_context) {
+    : search_engine_preconnector_(browser_context),
+      renderer_warmup_client_(
+          std::make_unique<NavigationPredictorRendererWarmupClient>(
+              Profile::FromBrowserContext(browser_context))) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!browser_context->IsOffTheRecord());
 
@@ -127,6 +169,8 @@ NavigationPredictorKeyedService::NavigationPredictorKeyedService(
   // Start preconnecting to the search engine.
   search_engine_preconnector_.StartPreconnecting(/*with_startup_delay=*/true);
 #endif
+
+  AddObserver(renderer_warmup_client_.get());
 }
 
 NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
@@ -134,7 +178,7 @@ NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
 }
 
 void NavigationPredictorKeyedService::OnPredictionUpdated(
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     const GURL& document_url,
     PredictionSource prediction_source,
     const std::vector<GURL>& sorted_predicted_urls) {
@@ -150,6 +194,11 @@ void NavigationPredictorKeyedService::OnPredictionUpdated(
                                 prediction_source, sorted_predicted_urls);
   for (auto& observer : observer_list_) {
     observer.OnPredictionUpdated(last_prediction_);
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "console-log-json-navigation-predictions-for-testing")) {
+    WritePredictionToConsoleLog(last_prediction_.value());
   }
 }
 
@@ -167,12 +216,9 @@ void NavigationPredictorKeyedService::OnPredictionUpdatedByExternalAndroidApp(
     observer.OnPredictionUpdated(last_prediction_);
   }
 
-  LOCAL_HISTOGRAM_COUNTS_100(
+  UMA_HISTOGRAM_COUNTS_100(
       "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs",
       sorted_predicted_urls.size());
-
-  // TODO(https://crbug.com/1014210): Notify the predicted URLs to the
-  // observers.
 }
 
 void NavigationPredictorKeyedService::AddObserver(Observer* observer) {

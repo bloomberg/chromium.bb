@@ -6,9 +6,10 @@ package org.chromium.components.browser_ui.widget;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.support.test.filters.SmallTest;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -41,8 +42,7 @@ public class RadioButtonRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
 
     private RadioButtonWithDescriptionLayout mLayout;
 

@@ -59,8 +59,7 @@ std::unique_ptr<KeyedService> BuildHistoryService(
   // Delete the file before creating the service.
   base::FilePath history_path(
       profile->GetPath().Append(history::kHistoryFilename));
-  if (!base::DeleteFile(history_path, false) ||
-      base::PathExists(history_path)) {
+  if (!base::DeleteFile(history_path) || base::PathExists(history_path)) {
     ADD_FAILURE() << "failed to delete history db file "
                   << history_path.value();
     return nullptr;
@@ -85,7 +84,7 @@ static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.exe");
 static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
     FILE_PATH_LITERAL("spam.dmg");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.dmg");
 static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
@@ -136,13 +135,13 @@ class LastDownloadFinderTest : public testing::Test {
       std::unique_ptr<ClientIncidentReport_DownloadDetails>* result,
       std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
           non_binary_result,
-      const base::Closure& quit_closure,
+      base::OnceClosure quit_closure,
       std::unique_ptr<ClientIncidentReport_DownloadDetails> download,
       std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
           non_binary_download) {
     *result = std::move(download);
     *non_binary_result = std::move(non_binary_download);
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
  protected:
@@ -185,7 +184,7 @@ class LastDownloadFinderTest : public testing::Test {
         prefs::kSafeBrowsingEnabled,
         safe_browsing_opt_in == SAFE_BROWSING_ONLY ||
             safe_browsing_opt_in == SAFE_BROWSING_AND_EXTENDED_REPORTING);
-    safe_browsing::SetExtendedReportingPref(
+    safe_browsing::SetExtendedReportingPrefForTests(
         prefs.get(),
         safe_browsing_opt_in == EXTENDED_REPORTING_ONLY ||
             safe_browsing_opt_in == SAFE_BROWSING_AND_EXTENDED_REPORTING);
@@ -201,8 +200,8 @@ class LastDownloadFinderTest : public testing::Test {
   }
 
   LastDownloadFinder::DownloadDetailsGetter GetDownloadDetailsGetter() {
-    return base::Bind(&LastDownloadFinderTest::GetDownloadDetails,
-                      base::Unretained(this));
+    return base::BindRepeating(&LastDownloadFinderTest::GetDownloadDetails,
+                               base::Unretained(this));
   }
 
   void AddDownload(Profile* profile, const history::DownloadRow& download) {
@@ -228,9 +227,9 @@ class LastDownloadFinderTest : public testing::Test {
 
     std::unique_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
         GetDownloadDetailsGetter(),
-        base::Bind(&LastDownloadFinderTest::OnLastDownload,
-                   base::Unretained(this), last_binary_download,
-                   last_non_binary_download, run_loop.QuitClosure())));
+        base::BindOnce(&LastDownloadFinderTest::OnLastDownload,
+                       base::Unretained(this), last_binary_download,
+                       last_non_binary_download, run_loop.QuitClosure())));
 
     if (finder)
       run_loop.Run();
@@ -270,9 +269,9 @@ class LastDownloadFinderTest : public testing::Test {
  private:
   // A HistoryService::DownloadCreateCallback that asserts that the download was
   // created and runs |closure|.
-  void ContinueOnDownloadCreated(const base::Closure& closure, bool created) {
+  void ContinueOnDownloadCreated(base::OnceClosure closure, bool created) {
     ASSERT_TRUE(created);
-    closure.Run();
+    std::move(closure).Run();
   }
 
   // A HistoryService::DownloadCreateCallback that asserts that the download was
@@ -281,8 +280,9 @@ class LastDownloadFinderTest : public testing::Test {
 
   void GetDownloadDetails(
       content::BrowserContext* context,
-      const DownloadMetadataManager::GetDownloadDetailsCallback& callback) {
-    callback.Run(std::unique_ptr<ClientIncidentReport_DownloadDetails>());
+      DownloadMetadataManager::GetDownloadDetailsCallback callback) {
+    std::move(callback).Run(
+        std::unique_ptr<ClientIncidentReport_DownloadDetails>());
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -370,7 +370,7 @@ TEST_F(LastDownloadFinderTest, NonBinaryOnly) {
   EXPECT_TRUE(last_non_binary_download);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
 // Tests that nothing happens if the binary is an executable for a different OS.
 TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
   // Create a profile with a history service that is opted-in.
@@ -397,9 +397,11 @@ TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
   // Start a finder and kill it before the search completes.
-  LastDownloadFinder::Create(GetDownloadDetailsGetter(),
-                             base::Bind(&LastDownloadFinderTest::NeverCalled,
-                                        base::Unretained(this))).reset();
+  LastDownloadFinder::Create(
+      GetDownloadDetailsGetter(),
+      base::BindOnce(&LastDownloadFinderTest::NeverCalled,
+                     base::Unretained(this)))
+      .reset();
 }
 
 // Tests that a download in profile added after the search is begun is found.
@@ -421,9 +423,9 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   // Create a finder that we expect will find a download in the second profile.
   std::unique_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
       GetDownloadDetailsGetter(),
-      base::Bind(&LastDownloadFinderTest::OnLastDownload,
-                 base::Unretained(this), &last_binary_download,
-                 &last_non_binary_download, run_loop.QuitClosure())));
+      base::BindOnce(&LastDownloadFinderTest::OnLastDownload,
+                     base::Unretained(this), &last_binary_download,
+                     &last_non_binary_download, run_loop.QuitClosure())));
 
   run_loop.Run();
 

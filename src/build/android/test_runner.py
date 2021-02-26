@@ -40,6 +40,7 @@ from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import output_manager
 from pylib.base import output_manager_factory
+from pylib.base import result_sink
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.results import json_results
@@ -218,12 +219,19 @@ def AddCommonOptions(parser):
       '--isolated-script-test-repeat',
       dest='repeat', type=int, default=0,
       help='Number of times to repeat the specified set of tests.')
+
   # This is currently only implemented for gtests and instrumentation tests.
   parser.add_argument(
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       '--isolated-script-test-also-run-disabled-tests',
       dest='run_disabled', action='store_true',
       help='Also run disabled tests if applicable.')
+
+  # These are currently only implemented for gtests.
+  parser.add_argument('--isolated-script-test-output',
+                      help='If present, store test results on this path.')
+  parser.add_argument('--isolated-script-test-perf-output',
+                      help='If present, store chartjson results on this path.')
 
   AddTestLauncherOptions(parser)
 
@@ -255,10 +263,9 @@ def AddDeviceOptions(parser):
       type=os.path.realpath,
       help='Specify the absolute path of the adb binary that '
            'should be used.')
-  parser.add_argument(
-      '--blacklist-file',
-      type=os.path.realpath,
-      help='Device blacklist file.')
+  parser.add_argument('--denylist-file',
+                      type=os.path.realpath,
+                      help='Device denylist file.')
   parser.add_argument(
       '-d', '--device', nargs='+',
       dest='test_devices',
@@ -343,9 +350,6 @@ def AddGTestOptions(parser):
       help='Host directory to which app data files will be'
            ' saved. Used with --app-data-file.')
   parser.add_argument(
-      '--isolated-script-test-perf-output',
-      help='If present, store chartjson results on this path.')
-  parser.add_argument(
       '--delete-stale-data',
       dest='delete_stale_data', action='store_true',
       help='Delete stale test data on the device.')
@@ -370,6 +374,9 @@ def AddGTestOptions(parser):
       help=('If present, test artifacts will be uploaded to this Google '
             'Storage bucket.'))
   parser.add_argument(
+      '--render-test-output-dir',
+      help='If present, store rendering artifacts in this path.')
+  parser.add_argument(
       '--runtime-deps-path',
       dest='runtime_deps_path', type=os.path.realpath,
       help='Runtime data dependency file from GN.')
@@ -389,6 +396,12 @@ def AddGTestOptions(parser):
       '--test-apk-incremental-install-json',
       type=os.path.realpath,
       help='Path to install json for the test apk.')
+  parser.add_argument('--test-launcher-batch-limit',
+                      dest='test_launcher_batch_limit',
+                      type=int,
+                      help='The max number of tests to run in a shard. '
+                      'Ignores non-positive ints and those greater than '
+                      'MAX_SHARDS')
   parser.add_argument(
       '-w', '--wait-for-java-debugger', action='store_true',
       help='Wait for java debugger to attach before running any application '
@@ -481,6 +494,15 @@ def AddInstrumentationTestOptions(parser):
            'the first element being the package and the second the path to the '
            'replacement APK. Only supports replacing one package. Example: '
            '--replace-system-package com.example.app,path/to/some.apk')
+  parser.add_argument(
+      '--remove-system-package',
+      default=[],
+      action='append',
+      dest='system_packages_to_remove',
+      help='Specifies a system package to remove before testing if it exists '
+      'on the system. WARNING: THIS WILL PERMANENTLY REMOVE THE SYSTEM APP. '
+      'Unlike --replace-system-package, the app will not be restored after '
+      'tests are finished.')
 
   parser.add_argument(
       '--use-webview-provider',
@@ -539,6 +561,13 @@ def AddInstrumentationTestOptions(parser):
       help='Wait for java debugger to attach before running any application '
            'code. Also disables test timeouts and sets retries=0.')
 
+  # WPR record mode.
+  parser.add_argument('--wpr-enable-record',
+                      action='store_true',
+                      default=False,
+                      help='If true, WPR server runs in record mode.'
+                      'otherwise, runs in replay mode.')
+
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
   parser.add_argument(
@@ -553,6 +582,10 @@ def AddInstrumentationTestOptions(parser):
 def AddSkiaGoldTestOptions(parser):
   """Adds Skia Gold test options to |parser|."""
   parser = parser.add_argument_group("Skia Gold arguments")
+  parser.add_argument(
+      '--code-review-system',
+      help='A non-default code review system to pass to pass to Gold, if '
+      'applicable')
   parser.add_argument(
       '--git-revision', help='The git commit currently being tested.')
   parser.add_argument(
@@ -621,6 +654,13 @@ def AddJUnitTestOptions(parser):
   parser.add_argument(
       '--runner-filter',
       help='Filters tests by runner class. Must be fully qualified.')
+  parser.add_argument(
+      '--shards',
+      default=1,
+      type=int,
+      help='Number of shards to run junit tests in parallel on. Only 1 shard '
+      'is supported when test-filter is specified. Values less than 1 will '
+      'use auto select.')
   parser.add_argument(
       '-s', '--test-suite', required=True,
       help='JUnit test suite to run.')
@@ -716,11 +756,12 @@ _DEFAULT_PLATFORM_MODE_TESTS = [
 ]
 
 
-def RunTestsCommand(args):
+def RunTestsCommand(args, result_sink_client=None):
   """Checks test type and dispatches to the appropriate function.
 
   Args:
     args: argparse.Namespace object.
+    result_sink_client: A ResultSinkClient object.
 
   Returns:
     Integer indicated exit code.
@@ -734,7 +775,7 @@ def RunTestsCommand(args):
   ProcessCommonOptions(args)
   logging.info('command: %s', ' '.join(sys.argv))
   if args.enable_platform_mode or command in _DEFAULT_PLATFORM_MODE_TESTS:
-    return RunTestsInPlatformMode(args)
+    return RunTestsInPlatformMode(args, result_sink_client)
 
   if command == 'python':
     return _RunPythonTests(args)
@@ -752,7 +793,7 @@ _SUPPORTED_IN_PLATFORM_MODE = [
 ]
 
 
-def RunTestsInPlatformMode(args):
+def RunTestsInPlatformMode(args, result_sink_client=None):
 
   def infra_error(message):
     logging.fatal(message)
@@ -811,6 +852,8 @@ def RunTestsInPlatformMode(args):
     finally:
       if args.json_results_file and os.path.exists(json_file.name):
         shutil.move(json_file.name, args.json_results_file)
+      elif args.isolated_script_test_output and os.path.exists(json_file.name):
+        shutil.move(json_file.name, args.isolated_script_test_output)
       else:
         os.remove(json_file.name)
 
@@ -822,10 +865,16 @@ def RunTestsInPlatformMode(args):
       global_results_tags.add('UNRELIABLE_RESULTS')
       raise
     finally:
-      json_results.GenerateJsonResultsFile(
-          all_raw_results, json_file.name,
-          global_tags=list(global_results_tags),
-          indent=2)
+      if args.isolated_script_test_output:
+        json_results.GenerateJsonTestResultFormatFile(all_raw_results,
+                                                      json_file.name,
+                                                      indent=2)
+      else:
+        json_results.GenerateJsonResultsFile(
+            all_raw_results,
+            json_file.name,
+            global_tags=list(global_results_tags),
+            indent=2)
 
   @contextlib.contextmanager
   def upload_logcats_file():
@@ -890,6 +939,13 @@ def RunTestsInPlatformMode(args):
 
         iteration_count += 1
         for r in iteration_results.GetAll():
+          if result_sink_client:
+            # Some tests put in non utf-8 char as part of the test
+            # which breaks uploads, so need to decode and re-encode.
+            result_sink_client.Post(
+                r.GetName(), r.GetType(),
+                r.GetLog().decode('utf-8', 'replace').encode('utf-8'))
+
           result_counts[r.GetName()][r.GetType()] += 1
         report_results.LogFull(
             results=iteration_results,
@@ -926,7 +982,8 @@ def RunTestsInPlatformMode(args):
                          str(tot_tests),
                          str(iteration_count))
 
-    if args.local_output or not local_utils.IsOnSwarming():
+    if (args.local_output or not local_utils.IsOnSwarming()
+        ) and not args.isolated_script_test_output:
       with out_manager.ArchivedTempfile(
           'test_results_presentation.html',
           'test_results_presentation',
@@ -1022,13 +1079,18 @@ def main():
     else:
       parser.error('unrecognized arguments: %s' % ' '.join(unknown_args))
 
-  # --replace-system-package has the potential to cause issues if
-  # --enable-concurrent-adb is set, so disallow that combination
-  if (hasattr(args, 'replace_system_package') and
-      hasattr(args, 'enable_concurrent_adb') and args.replace_system_package and
-      args.enable_concurrent_adb):
-    parser.error('--replace-system-package and --enable-concurrent-adb cannot '
-                 'be used together')
+  # --replace-system-package/--remove-system-package has the potential to cause
+  # issues if --enable-concurrent-adb is set, so disallow that combination.
+  concurrent_adb_enabled = (hasattr(args, 'enable_concurrent_adb')
+                            and args.enable_concurrent_adb)
+  replacing_system_packages = (hasattr(args, 'replace_system_package')
+                               and args.replace_system_package)
+  removing_system_packages = (hasattr(args, 'system_packages_to_remove')
+                              and args.system_packages_to_remove)
+  if (concurrent_adb_enabled
+      and (replacing_system_packages or removing_system_packages)):
+    parser.error('--enable-concurrent-adb cannot be used with either '
+                 '--replace-system-package or --remove-system-package')
 
   # --use-webview-provider has the potential to cause issues if
   # --enable-concurrent-adb is set, so disallow that combination
@@ -1047,8 +1109,11 @@ def main():
       args.wait_for_java_debugger)):
     args.num_retries = 0
 
+  # Result-sink may not exist in the environment if rdb stream is not enabled.
+  result_sink_client = result_sink.TryInitClient()
+
   try:
-    return RunTestsCommand(args)
+    return RunTestsCommand(args, result_sink_client)
   except base_error.BaseError as e:
     logging.exception('Error occurred.')
     if e.is_infra_error:

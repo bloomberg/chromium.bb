@@ -29,6 +29,8 @@ class MessageCenterChangeObserver::Impl
   Impl() : notification_received_(false) {
     message_center::MessageCenter::Get()->AddObserver(this);
   }
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
 
   ~Impl() override {
     message_center::MessageCenter::Get()->RemoveObserver(this);
@@ -72,8 +74,6 @@ class MessageCenterChangeObserver::Impl
 
   bool notification_received_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
 MessageCenterChangeObserver::MessageCenterChangeObserver() : impl_(new Impl) {}
@@ -232,8 +232,7 @@ bool NotificationsTest::CancelNotification(const char* notification_id,
 void NotificationsTest::GetDisabledContentSettings(
     ContentSettingsForOneType* settings) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
-                              content_settings::ResourceIdentifier(), settings);
+      ->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS, settings);
 
   for (auto it = settings->begin(); it != settings->end();) {
     if (it->GetContentSetting() != CONTENT_SETTING_BLOCK ||

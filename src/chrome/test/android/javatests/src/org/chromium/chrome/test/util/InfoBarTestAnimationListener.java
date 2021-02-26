@@ -5,8 +5,8 @@
 package org.chromium.chrome.test.util;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
+import org.chromium.components.infobars.InfoBarAnimationListener;
+import org.chromium.components.infobars.InfoBarUiItem;
 
 import java.util.concurrent.TimeoutException;
 

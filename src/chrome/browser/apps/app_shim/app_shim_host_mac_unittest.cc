@@ -61,8 +61,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
   void SetUserAttention(
       chrome::mojom::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
-  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
-                             profile_menu_items) override {}
+  void UpdateProfileMenu(
+      std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items,
+      bool use_new_picker) override {}
 
   bool received_launch_done_result_ = false;
   chrome::mojom::AppShimLaunchResult launch_done_result_ =
@@ -178,6 +179,7 @@ class AppShimHostTest : public testing::Test,
     ++close_count_;
   }
   void OnShimFocus(AppShimHost* host) override { ++focus_count_; }
+  void OnShimReopen(AppShimHost* host) override {}
   void OnShimOpenedFiles(AppShimHost* host,
                          const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,

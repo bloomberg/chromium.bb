@@ -71,7 +71,6 @@
     "source_frame",
     "text_editor"
   ],
-  "scripts": [],
   "modules": [
     "perf_ui.js",
     "perf_ui-legacy.js",
@@ -83,7 +82,7 @@
     "LiveHeapProfile.js",
     "NetworkPriorities.js",
     "OverviewGrid.js",
-    "PieChart.js",
+    "PieChart_bridge.js",
     "TimelineGrid.js",
     "TimelineOverviewPane.js"
   ],
@@ -92,7 +91,6 @@
     "filmStripView.css",
     "flameChart.css",
     "overviewGrid.css",
-    "pieChart.css",
     "timelineGrid.css",
     "timelineOverviewInfo.css"
   ]

@@ -47,6 +47,13 @@ class ScriptExecutorDelegate {
     virtual void OnNavigationStateChanged() = 0;
   };
 
+  class Listener : public base::CheckedObserver {
+   public:
+    // The execution flow is being stopped.
+    virtual void OnPause(const std::string& message,
+                         const std::string& button_label) = 0;
+  };
+
   virtual const ClientSettings& GetSettings() = 0;
   virtual const GURL& GetCurrentURL() = 0;
   virtual const GURL& GetDeeplinkURL() = 0;
@@ -63,6 +70,9 @@ class ScriptExecutorDelegate {
   // Enters the given state. Returns true if the state was changed.
   virtual bool EnterState(AutofillAssistantState state) = 0;
 
+  virtual void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) = 0;
+
   // Make the area of the screen that correspond to the given elements
   // touchable.
   virtual void SetTouchableElementArea(const ElementAreaProto& element) = 0;
@@ -75,13 +85,22 @@ class ScriptExecutorDelegate {
   virtual void ClearInfoBox() = 0;
   virtual void SetCollectUserDataOptions(
       CollectUserDataOptions* collect_user_data_options) = 0;
+  virtual void SetLastSuccessfulUserDataOptions(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options) = 0;
+  virtual const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
+      const = 0;
   virtual void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
-  virtual void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) = 0;
   virtual void SetProgress(int progress) = 0;
+  virtual bool SetProgressActiveStepIdentifier(
+      const std::string& active_step_identifier) = 0;
+  virtual void SetProgressActiveStep(int active_step) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
+  virtual void SetProgressBarErrorState(bool error) = 0;
+  virtual void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration&
+          configuration) = 0;
   virtual void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_action) = 0;
   virtual ViewportMode GetViewportMode() = 0;
@@ -96,11 +115,15 @@ class ScriptExecutorDelegate {
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) = 0;
   virtual UserModel* GetUserModel() = 0;
   virtual EventHandler* GetEventHandler() = 0;
+  virtual void SetShowFeedbackChip(bool show_feedback_chip) = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {
     SetTouchableElementArea(ElementAreaProto::default_instance());
   }
+
+  // The next navigation is expected and will not cause an error.
+  virtual void ExpectNavigation() = 0;
 
   // Returns true if a new document is being fetched for the main frame.
   //
@@ -130,29 +153,40 @@ class ScriptExecutorDelegate {
   // until the end of the flow.
   virtual void RequireUI() = 0;
 
-  // Register a listener that can be told about changes. Duplicate calls are
-  // ignored.
-  virtual void AddListener(NavigationListener* listener) = 0;
+  // Register a navigation listener that can be told about navigation state
+  // changes. Duplicate calls are ignored.
+  virtual void AddNavigationListener(NavigationListener* listener) = 0;
 
-  // Removes a previously registered listener. Does nothing if no such listeners
+  // Removes a previously registered navigation listener. Does nothing if no
+  // such listener exists.
+  virtual void RemoveNavigationListener(NavigationListener* listener) = 0;
+
+  // Add a listener that can be told about changes. Duplicate calls are ignored.
+  virtual void AddListener(Listener* listener) = 0;
+
+  // Removes a previously registered listener. Does nothing if no such listener
   // exists.
-  virtual void RemoveListener(NavigationListener* listener) = 0;
+  virtual void RemoveListener(Listener* listener) = 0;
 
   // Set how the sheet should behave when entering a prompt state.
   virtual void SetExpandSheetForPromptAction(bool expand) = 0;
 
-  // Set the domains whitelist for browse mode.
-  virtual void SetBrowseDomainsWhitelist(std::vector<std::string> domains) = 0;
+  // Set the domains allowlist for browse mode.
+  virtual void SetBrowseDomainsAllowlist(std::vector<std::string> domains) = 0;
 
   // Sets the generic UI to show to the user.
   virtual void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback) = 0;
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) = 0;
 
   // Clears the generic UI.
   virtual void ClearGenericUi() = 0;
+
+  // Sets whether browse mode should be invisible or not. Must be set before
+  // calling |EnterState(BROWSE)| to take effect.
+  virtual void SetBrowseModeInvisible(bool invisible) = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

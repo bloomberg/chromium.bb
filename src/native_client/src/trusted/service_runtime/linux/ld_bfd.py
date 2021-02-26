@@ -31,7 +31,8 @@ def GccPrintName(cxx_bin, what, switch, defresult):
   popen = subprocess.Popen(cxx_bin + ' ' + switch,
                            shell=True,
                            stdout=subprocess.PIPE,
-                           stdin=subprocess.PIPE)
+                           stdin=subprocess.PIPE,
+                           universal_newlines=True)
   result, error = popen.communicate()
   if popen.returncode != 0:
     print("Could not find %s: %s" % (what, error))

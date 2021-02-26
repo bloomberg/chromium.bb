@@ -11,7 +11,7 @@
 <translation id="1546934824884762070">एक अनपेक्षित एरर आली. कृपया डेव्हलपरकडे या समस्येची तक्रार करा.</translation>
 <translation id="1697532407822776718">तुम्ही पूर्णपणे तयार आहात!</translation>
 <translation id="1742469581923031760">कनेक्ट करीत आहे...</translation>
-<translation id="177096447311351977">क्लायंट साठी चॅनेल IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
+<translation id="177096447311351977">क्लायंट साठी चॅनल IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">हटवा</translation>
 <translation id="2009755455353575666">कनेक्शन अयशस्वी</translation>
 <translation id="2038229918502634450">धोरण बदल विचारात घेण्यासाठी, होस्ट रीस्टार्ट करीत आहे.</translation>
@@ -59,7 +59,7 @@
 <translation id="3905196214175737742">चुकीचे होस्ट मालक डोमेन.</translation>
 <translation id="3931191050278863510">होस्ट थांबले.</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
-<translation id="405887016757208221">सत्र आरंभ करण्यात रिमोट कॉंप्युटर अयशस्वी झाले आहे. समस्या कायम राहिल्यास कृपया होस्ट पुन्हा कॉन्फिगर करण्‍याचा प्रयत्न करा.</translation>
+<translation id="405887016757208221">सत्र आरंभ करण्यात रिमोट कॉंप्युटर अयशस्वी झाले आहे. समस्या कायम राहिल्यास कृपया होस्ट पुन्हा कॉंफिगर करण्‍याचा प्रयत्न करा.</translation>
 <translation id="4060747889721220580">फाइल डाउनलोड करा</translation>
 <translation id="4126409073460786861">सेटअप करणे पूर्ण झाल्यावर, पेज रिफ्रेश करा, त्यानंतर तुम्ही तुमचे डिव्हाइस निवडून आणि पिन एंटर करून कॉंप्युटर ॲक्सेस करू शकाल</translation>
 <translation id="4145029455188493639"><ph name="EMAIL_ADDRESS" /> म्हणून साइन इन केले.</translation>
@@ -107,7 +107,7 @@
 <translation id="5841343754884244200">डिस्प्ले पर्याय</translation>
 <translation id="6033507038939587647">कीबोर्ड पर्याय</translation>
 <translation id="6040143037577758943">बंद करा</translation>
-<translation id="6062854958530969723">होस्ट प्रारंभ अयशस्वी झाला.</translation>
+<translation id="6062854958530969723">होस्ट सुरू अयशस्वी झाला.</translation>
 <translation id="6099500228377758828">Chrome रिमोट डेस्कटॉप सेवा</translation>
 <translation id="6122191549521593678">ऑनलाइन</translation>
 <translation id="6178645564515549384">दूरस्थ सहाय्यासाठी मूळ संदेशन होस्ट</translation>
@@ -119,7 +119,7 @@
 <translation id="6612717000975622067">Ctrl-Alt-Del पाठवा</translation>
 <translation id="6654753848497929428">शेअर करा</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. सर्व हक्क राखीव.</translation>
-<translation id="677755392401385740">वापरकर्त्यासाठी प्रारंभ केलेला होस्ट: <ph name="HOST_USERNAME" />.</translation>
+<translation id="677755392401385740">वापरकर्त्यासाठी सुरू केलेला होस्ट: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6939719207673461467">कीबोर्ड दर्शवा/लपवा.</translation>
 <translation id="6963936880795878952">रिमोट कॉंप्युटरशी कनेक्शन तात्पुरते ब्लॉक केली आहेत, कारण कोणीतरी अवैध पिन सह त्यावर कनेक्ट करण्‍याचा प्रयत्न करत होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
@@ -162,7 +162,7 @@
 
 '<ph name="SERVICE_SCRIPT_NAME" />' वर आधीच खूण केलेली असल्यास, ती काढा आणि त्यावर पुन्हा खूण करा.</translation>
 <translation id="8383794970363966105">Chromoting वापरण्यासाठी, तुम्हाला आपल्या डिव्हाइसमध्ये एक Google खाते जोडणे आवश्यक असेल.</translation>
-<translation id="8386846956409881180">अवैध OAuth क्रेडेंशियलसह होस्ट कॉन्फिगर केला आहे.</translation>
+<translation id="8386846956409881180">अवैध OAuth क्रेडेंशियलसह होस्ट कॉंफिगर केला आहे.</translation>
 <translation id="8397385476380433240"><ph name="PRODUCT_NAME" /> ला परवानगी द्या</translation>
 <translation id="8406498562923498210">तुमच्या Chrome रिमोट डेस्कटॉप वातावरणात लाँच करण्यासाठी सेशन निवडा. (लक्षात घ्या की काही सेशन प्रकार Chrome रिमोट डेस्कटॉप आणि लोकल कन्सोलवर एकाच वेळी रन होण्यास कदाचित सपोर्ट करणार नाहीत.)</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
@@ -178,7 +178,7 @@
 <translation id="9126115402994542723">या डिव्हाइसवरून या होस्टशी कनेक्ट करताना पुन्हा पिन साठी विचारू नका.</translation>
 <translation id="916856682307586697">डीफॉल्ट XSession लाँच करा</translation>
 <translation id="9187628920394877737"><ph name="PRODUCT_NAME" /> ला 'स्क्रीन रेकॉर्डिंग' ची परवानगी द्या</translation>
-<translation id="9213184081240281106">चुकीचे होस्ट कॉन्फिगरेशन.</translation>
+<translation id="9213184081240281106">चुकीचे होस्ट कॉंफिगरेशन.</translation>
 <translation id="981121421437150478">ऑफलाइन</translation>
 <translation id="985602178874221306">Chromium लेखक</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (अखरेचे ऑनलाइन <ph name="DATE_OR_TIME" />)</translation>

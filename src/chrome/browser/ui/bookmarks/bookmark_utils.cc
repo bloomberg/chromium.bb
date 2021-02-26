@@ -38,7 +38,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -71,12 +71,12 @@ class RTLFlipSource : public gfx::ImageSkiaSource {
   const gfx::ImageSkia source_;
 };
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MAC)
 gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
   return gfx::CreateVectorIcon(icon,
                                color_utils::DeriveDefaultIconColor(text_color));
 }
-#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
+#endif  // !defined(OS_WIN) && !defined(OS_MAC)
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace
@@ -261,12 +261,12 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 
 #if defined(TOOLKIT_VIEWS)
 // TODO(bsep): vectorize the Windows versions: crbug.com/564112
-gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
+ui::ImageModel GetBookmarkFolderIcon(SkColor text_color) {
   gfx::ImageSkia folder;
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_FOLDER_CLOSED);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int resource_id = color_utils::IsDark(text_color) ? IDR_FOLDER_CLOSED
                                                     : IDR_FOLDER_CLOSED_WHITE;
   folder = *ui::ResourceBundle::GetSharedInstance()
@@ -278,15 +278,19 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
                              : vector_icons::kFolderIcon,
                          text_color);
 #endif
-  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
+  // TODO(crbug.com/1119823): Return the unflipped image here
+  // (as a vector if possible); callers should have the responsibility to flip
+  // when painting as necessary.
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size()));
 }
 
-gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
+ui::ImageModel GetBookmarkManagedFolderIcon(SkColor text_color) {
   gfx::ImageSkia folder;
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_MANAGED);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int resource_id = color_utils::IsDark(text_color)
                         ? IDR_BOOKMARK_BAR_FOLDER_MANAGED
                         : IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE;
@@ -299,7 +303,11 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
                              : vector_icons::kFolderManagedIcon,
                          text_color);
 #endif
-  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
+  // TODO(crbug.com/1119823): Return the unflipped image here
+  // (as a vector if possible); callers should have the responsibility to flip
+  // when painting as necessary.
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size()));
 }
 #endif
 

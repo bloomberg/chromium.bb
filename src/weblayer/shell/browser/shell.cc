@@ -16,6 +16,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
+#include "weblayer/browser/browser_impl.h"
+#include "weblayer/browser/browser_list.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
@@ -30,26 +32,26 @@ const int kDefaultTestWindowHeightDip = 700;
 
 std::vector<Shell*> Shell::windows_;
 
-Shell::Shell(std::unique_ptr<Tab> tab)
-    : tab_(std::move(tab)), window_(nullptr) {
+Shell::Shell(std::unique_ptr<Browser> browser)
+    : browser_(std::move(browser)), window_(nullptr) {
   windows_.push_back(this);
-  if (tab_) {
-    tab_->AddObserver(this);
-    tab_->GetNavigationController()->AddObserver(this);
+  if (tab()) {
+    tab()->AddObserver(this);
+    tab()->GetNavigationController()->AddObserver(this);
 #if !defined(OS_ANDROID)  // Android does this in Java.
 
     // TODO: how will tests work with this on android? can we get to the
     // concrete type?
 
-    static_cast<TabImpl*>(tab_.get())->profile()->SetDownloadDelegate(this);
+    static_cast<TabImpl*>(tab())->profile()->SetDownloadDelegate(this);
 #endif
   }
 }
 
 Shell::~Shell() {
-  if (tab_) {
-    tab_->GetNavigationController()->RemoveObserver(this);
-    tab_->RemoveObserver(this);
+  if (tab()) {
+    tab()->GetNavigationController()->RemoveObserver(this);
+    tab()->RemoveObserver(this);
   }
   PlatformCleanUp();
 
@@ -63,17 +65,19 @@ Shell::~Shell() {
   // Always destroy WebContents before calling PlatformExit(). WebContents
   // destruction sequence may depend on the resources destroyed in
   // PlatformExit() (e.g. the display::Screen singleton).
-  tab_.reset();
+  browser_.reset();
 
   if (windows_.empty()) {
+    PlatformExit();
+
     if (*g_quit_main_message_loop)
       std::move(*g_quit_main_message_loop).Run();
   }
 }
 
-Shell* Shell::CreateShell(std::unique_ptr<Tab> tab,
+Shell* Shell::CreateShell(std::unique_ptr<Browser> browser,
                           const gfx::Size& initial_size) {
-  Shell* shell = new Shell(std::move(tab));
+  Shell* shell = new Shell(std::move(browser));
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -90,13 +94,6 @@ void Shell::CloseAllWindows() {
 
   // Pump the message loop to allow window teardown tasks to run.
   base::RunLoop().RunUntilIdle();
-
-  // If there were no windows open then the message loop quit closure will
-  // not have been run.
-  if (*g_quit_main_message_loop)
-    std::move(*g_quit_main_message_loop).Run();
-
-  PlatformExit();
 }
 
 void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
@@ -104,11 +101,22 @@ void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
 }
 
 Tab* Shell::tab() {
+  if (!browser())
+    return nullptr;
+  if (browser()->GetTabs().empty())
+    return nullptr;
+  return browser()->GetTabs()[0];
+}
+
+Browser* Shell::browser() {
 #if defined(OS_ANDROID)
   // TODO(jam): this won't work if we need more than one Shell in a test.
-  return Tab::GetLastTabForTesting();
+  const auto& browsers = BrowserList::GetInstance()->browsers();
+  if (browsers.empty())
+    return nullptr;
+  return *(browsers.begin());
 #else
-  return tab_.get();
+  return browser_.get();
 #endif
 }
 
@@ -121,7 +129,8 @@ void Shell::DisplayedUrlChanged(const GURL& url) {
 }
 
 void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
-  NavigationController* navigation_controller = tab_->GetNavigationController();
+  NavigationController* navigation_controller =
+      tab()->GetNavigationController();
 
   PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
 
@@ -158,16 +167,26 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   return GetShellDefaultSize();
 }
 
+#if defined(OS_ANDROID)
+Shell* Shell::CreateNewWindow(const GURL& url, const gfx::Size& initial_size) {
+  // On Android, the browser is owned by the Java side.
+  return CreateNewWindowWithBrowser(nullptr, url, initial_size);
+}
+#else
 Shell* Shell::CreateNewWindow(Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
-#if defined(OS_ANDROID)
-  std::unique_ptr<Tab> tab;
-#else
-  auto tab = Tab::Create(web_profile);
+  auto browser = Browser::Create(web_profile, nullptr);
+  browser->CreateTab();
+  return CreateNewWindowWithBrowser(std::move(browser), url, initial_size);
+}
 #endif
 
-  Shell* shell = CreateShell(std::move(tab), AdjustWindowSize(initial_size));
+Shell* Shell::CreateNewWindowWithBrowser(std::unique_ptr<Browser> browser,
+                                         const GURL& url,
+                                         const gfx::Size& initial_size) {
+  Shell* shell =
+      CreateShell(std::move(browser), AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;

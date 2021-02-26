@@ -149,6 +149,12 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   // Fast-forwards virtual time by |delta| but not causing any task execution.
   void AdvanceMockTickClock(TimeDelta delta);
 
+  // Fast-forward virtual time, but not tick time. May be useful for testing
+  // timers when simulating suspend/resume or time adjustments. As it doesn't
+  // advance tick time, no tasks are automatically processed
+  // (ProcessAllTasksNoLaterThan is not called).
+  void AdvanceWallClock(TimeDelta delta);
+
   // Fast-forwards virtual time just until all tasks are executed.
   void FastForwardUntilNoTasksRemain();
 
@@ -168,16 +174,10 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
 
   // Returns a Clock that uses the virtual time of |this| as its time source.
   // The returned Clock will hold a reference to |this|.
-  // TODO(tzik): Remove DeprecatedGetMockClock() after updating all callers to
-  // use non-owning Clock.
-  std::unique_ptr<Clock> DeprecatedGetMockClock() const;
   Clock* GetMockClock() const;
 
   // Returns a TickClock that uses the virtual time ticks of |this| as its tick
   // source. The returned TickClock will hold a reference to |this|.
-  // TODO(tzik): Replace Remove DeprecatedGetMockTickClock() after updating all
-  // callers to use non-owning TickClock.
-  std::unique_ptr<TickClock> DeprecatedGetMockTickClock() const;
   const TickClock* GetMockTickClock() const;
 
   // Cancelled pending tasks get pruned automatically.

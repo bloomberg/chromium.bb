@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Build;
+import android.view.View;
 
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ImmutableWeakReference;
@@ -63,8 +64,19 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
         return mModalDialogManager;
     }
 
+    @Override
+    public View getReadbackView() {
+        BrowserViewController viewController = getBrowser().getPossiblyNullViewController();
+        if (viewController == null) return null;
+        return viewController.getViewForMagnifierReadback();
+    }
+
     public void setModalDialogManager(ModalDialogManager modalDialogManager) {
         mModalDialogManager = modalDialogManager;
+    }
+
+    public BrowserImpl getBrowser() {
+        return mFragment.getBrowser();
     }
 
     @Override

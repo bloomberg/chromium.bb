@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
@@ -43,8 +42,8 @@ class FileStreamWriter::OperationRunner
 
     util::FileSystemURLParser parser(url);
     if (!parser.Parse()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(std::move(callback), base::File::FILE_ERROR_SECURITY));
       return;
     }
@@ -67,8 +66,8 @@ class FileStreamWriter::OperationRunner
 
     // If the file system got unmounted, then abort the writing operation.
     if (!file_system_.get()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(std::move(callback), base::File::FILE_ERROR_ABORT));
       return;
     }
@@ -84,11 +83,8 @@ class FileStreamWriter::OperationRunner
   void CloseRunnerOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (!abort_callback_.is_null()) {
-      const AbortCallback last_abort_callback = abort_callback_;
-      abort_callback_ = AbortCallback();
-      last_abort_callback.Run();
-    }
+    if (!abort_callback_.is_null())
+      std::move(abort_callback_).Run();
 
     // Close the file (if opened).
     file_opener_.reset();
@@ -109,12 +105,12 @@ class FileStreamWriter::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    abort_callback_ = AbortCallback();
+    abort_callback_.Reset();
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
 
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(callback), result));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
   }
 
   // Forwards a response of writing to a file to the IO thread.
@@ -123,9 +119,9 @@ class FileStreamWriter::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    abort_callback_ = AbortCallback();
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(callback), result));
+    abort_callback_.Reset();
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
   }
 
   AbortCallback abort_callback_;
@@ -146,8 +142,8 @@ FileStreamWriter::FileStreamWriter(const storage::FileSystemURL& url,
 FileStreamWriter::~FileStreamWriter() {
   // Close the runner explicitly if the file streamer is
   if (state_ != CANCELLING) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   }
 
@@ -162,8 +158,8 @@ void FileStreamWriter::Initialize(base::OnceClosure pending_closure,
   DCHECK_EQ(NOT_INITIALIZED, state_);
   state_ = INITIALIZING;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OperationRunner::OpenFileOnUIThread, runner_, url_,
                      base::BindOnce(&FileStreamWriter::OnOpenFileCompleted,
                                     weak_ptr_factory_.GetWeakPtr(),
@@ -248,8 +244,8 @@ int FileStreamWriter::Cancel(net::CompletionOnceCallback callback) {
   // Abort and optimistically return an OK result code, as the aborting
   // operation is always forced and can't be cancelled. Similarly, for closing
   // files.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), net::OK));
@@ -314,8 +310,8 @@ void FileStreamWriter::WriteAfterInitialized(
 
   state_ = EXECUTING;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OperationRunner::WriteFileOnUIThread, runner_, buffer,
                      current_offset_, buffer_length,
                      base::BindOnce(&FileStreamWriter::OnWriteFileCompleted,

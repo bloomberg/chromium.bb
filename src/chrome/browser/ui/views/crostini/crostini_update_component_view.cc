@@ -46,21 +46,6 @@ void CrostiniUpdateComponentView::Show(Profile* profile) {
   g_crostini_upgrade_view->GetWidget()->Show();
 }
 
-base::string16 CrostiniUpdateComponentView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINA_UPDATE_REQUIRED);
-}
-
-bool CrostiniUpdateComponentView::ShouldShowCloseButton() const {
-  return false;
-}
-
-gfx::Size CrostiniUpdateComponentView::CalculatePreferredSize() const {
-  const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
-                           margins().width();
-  return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
-}
-
 // static
 CrostiniUpdateComponentView*
 CrostiniUpdateComponentView::GetActiveViewForTesting() {
@@ -69,6 +54,10 @@ CrostiniUpdateComponentView::GetActiveViewForTesting() {
 
 CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
   SetButtons(ui::DIALOG_BUTTON_OK);
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_TERMINA_UPDATE_REQUIRED);
+  set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH));
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

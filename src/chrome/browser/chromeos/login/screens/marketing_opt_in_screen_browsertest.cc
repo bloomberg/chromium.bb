@@ -20,13 +20,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/marketing_backend_connector.h"
-#include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -45,16 +47,16 @@ namespace chromeos {
 
 namespace {
 
-const std::initializer_list<base::StringPiece> kChromebookEmailToggle = {
-    "marketing-opt-in", "chromebookUpdatesOption"};
-const std::initializer_list<base::StringPiece> kChromebookEmailToggleDiv = {
-    "marketing-opt-in", "marketing-opt-in-toggle"};
-const std::initializer_list<base::StringPiece> kMarketingA11yButton = {
+const test::UIPath kChromebookEmailToggle = {"marketing-opt-in",
+                                             "chromebookUpdatesOption"};
+const test::UIPath kChromebookEmailToggleDiv = {"marketing-opt-in",
+                                                "marketing-opt-in-toggle"};
+const test::UIPath kMarketingA11yButton = {
     "marketing-opt-in", "marketing-opt-in-accessibility-button"};
-const std::initializer_list<base::StringPiece> kMarketingFinalA11yPage = {
-    "marketing-opt-in", "finalAccessibilityPage"};
-const std::initializer_list<base::StringPiece> kMarketingA11yButtonToggle = {
-    "marketing-opt-in", "a11yNavButtonToggle"};
+const test::UIPath kMarketingFinalA11yPage = {"marketing-opt-in",
+                                              "finalAccessibilityPage"};
+const test::UIPath kMarketingA11yButtonToggle = {"marketing-opt-in",
+                                                 "a11yNavButtonToggle"};
 
 // Parameter to be used in tests.
 struct RegionToCodeMap {
@@ -122,11 +124,16 @@ class MarketingOptInScreenTest : public OobeBaseTest,
   void WaitForScreenExit();
   void SetUpLocalState() override {}
 
+  // Logs in as a normal user. Overridden by subclasses.
+  virtual void PerformLogin();
+
   base::Optional<MarketingOptInScreen::Result> screen_result_;
   base::HistogramTester histogram_tester_;
 
  protected:
   base::test::ScopedFeatureList feature_list_;
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, {}, &fake_gaia_};
+
  private:
   void HandleScreenExit(MarketingOptInScreen::Result result);
 
@@ -134,8 +141,8 @@ class MarketingOptInScreenTest : public OobeBaseTest,
   base::RepeatingClosure screen_exit_callback_;
   MarketingOptInScreen::ScreenExitCallback original_callback_;
 
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
   LocalStateMixin local_state_mixin_{&mixin_host_, this};
-  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
 /**
@@ -163,10 +170,8 @@ class MarketingOptInScreenTestWithRequest : public MarketingOptInScreenTest {
 };
 
 MarketingOptInScreenTest::MarketingOptInScreenTest() {
-  // To reuse existing wizard controller in the flow.
   feature_list_.InitWithFeatures(
-      {chromeos::features::kOobeScreensPriority,
-       ::features::kOobeMarketingDoubleOptInCountriesSupported,
+      {::features::kOobeMarketingDoubleOptInCountriesSupported,
        ::features::kOobeMarketingAdditionalCountriesSupported},
       {});
 }
@@ -179,15 +184,15 @@ void MarketingOptInScreenTest::SetUpOnMainThread() {
       &MarketingOptInScreenTest::HandleScreenExit, base::Unretained(this)));
 
   OobeBaseTest::SetUpOnMainThread();
-  login_manager_mixin_.LoginAsNewReguarUser();
-  OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  PerformLogin();
+  OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       ash::prefs::kGestureEducationNotificationShown, true);
 }
 
 MarketingOptInScreen* MarketingOptInScreenTest::GetScreen() {
-  return MarketingOptInScreen::Get(
-      WizardController::default_controller()->screen_manager());
+  return WizardController::default_controller()
+      ->GetScreen<MarketingOptInScreen>();
 }
 
 void MarketingOptInScreenTest::ShowMarketingOptInScreen() {
@@ -254,6 +259,10 @@ void MarketingOptInScreenTest::WaitForScreenExit() {
   base::RunLoop run_loop;
   screen_exit_callback_ = run_loop.QuitClosure();
   run_loop.Run();
+}
+
+void MarketingOptInScreenTest::PerformLogin() {
+  login_manager_mixin_.LoginAsNewRegularUser();
 }
 
 void MarketingOptInScreenTest::HandleScreenExit(
@@ -398,12 +407,16 @@ IN_PROC_BROWSER_TEST_P(MarketingTestCountryCodes, CountryCodes) {
   TapOnGetStartedAndWaitForScreenExit();
   WaitForBackendRequest();
   EXPECT_EQ(GetRequestedCountryCode(), param.country_code);
-  histogram_tester_.ExpectUniqueSample(
-      "OOBE.MarketingOptInScreen.Event." + std::string(param.country_code),
+  const auto event =
       (param.is_default_opt_in)
           ? MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptIn
-          : MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptOut,
-      1);
+          : MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptOut;
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.MarketingOptInScreen.Event." + std::string(param.country_code),
+      event, 1);
+  // Expect a generic event in addition to the country specific one.
+  histogram_tester_.ExpectUniqueSample("OOBE.MarketingOptInScreen.Event", event,
+                                       1);
 
   // Expect successful geolocation resolve.
   ExpectGeolocationMetric(true, std::string(param.country_code).size());
@@ -430,9 +443,8 @@ class MarketingDisabledExtraCountries : public MarketingOptInScreenTest,
   MarketingDisabledExtraCountries() {
     feature_list_.Reset();
     feature_list_.InitWithFeatures(
-        {chromeos::features::kOobeScreensPriority},
-        {::features::kOobeMarketingDoubleOptInCountriesSupported,
-         ::features::kOobeMarketingAdditionalCountriesSupported});
+        {}, {::features::kOobeMarketingDoubleOptInCountriesSupported,
+             ::features::kOobeMarketingAdditionalCountriesSupported});
   }
 
   ~MarketingDisabledExtraCountries() = default;
@@ -477,10 +489,8 @@ class MarketingOptInScreenTestDisabled : public MarketingOptInScreenTest {
  public:
   MarketingOptInScreenTestDisabled() {
     feature_list_.Reset();
-    // Enable |kOobeScreensPriority| to reuse existing wizard controller in
-    // the flow and disable kOobeMarketingScreen to disable marketing screen.
-    feature_list_.InitWithFeatures({chromeos::features::kOobeScreensPriority},
-                                   {::features::kOobeMarketingScreen});
+    // Disable kOobeMarketingScreen to disable marketing screen.
+    feature_list_.InitWithFeatures({}, {::features::kOobeMarketingScreen});
   }
 
   ~MarketingOptInScreenTestDisabled() override = default;
@@ -489,6 +499,35 @@ class MarketingOptInScreenTestDisabled : public MarketingOptInScreenTest {
 IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestDisabled, FeatureDisabled) {
   ShowMarketingOptInScreen();
 
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            MarketingOptInScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Marketing-opt-in.Next", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Marketing-opt-in",
+                                     0);
+}
+
+class MarketingOptInScreenTestChildUser : public MarketingOptInScreenTest {
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    // Child users require a user policy, set up an empty one so the user can
+    // get through login.
+    ASSERT_TRUE(user_policy_mixin_.RequestPolicyUpdate());
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+  }
+  void PerformLogin() override { login_manager_mixin_.LoginAsNewChildUser(); }
+
+ private:
+  LocalPolicyTestServerMixin policy_server_mixin_{&mixin_host_};
+  UserPolicyMixin user_policy_mixin_{
+      &mixin_host_,
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
+      &policy_server_mixin_};
+};
+
+IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestChildUser, DisabledForChild) {
+  ShowMarketingOptInScreen();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
             MarketingOptInScreen::Result::NOT_APPLICABLE);

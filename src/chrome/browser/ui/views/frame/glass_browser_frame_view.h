@@ -12,13 +12,11 @@
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public views::ButtonListener,
                               public TabIconViewModel {
  public:
   // Alpha to use for features in the titlebar (the window title and caption
@@ -31,12 +29,14 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  GlassBrowserFrameView(const GlassBrowserFrameView&) = delete;
+  GlassBrowserFrameView& operator=(const GlassBrowserFrameView&) = delete;
   ~GlassBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
   bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const override;
+      const gfx::Size& tabstrip_minimum_size) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(
@@ -57,14 +57,12 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void ResetWindowControls() override;
   void SizeConstraintsChanged() override {}
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
   bool IsMaximized() const;
+  bool IsWebUITabStrip() const;
 
   // Visual height of the titlebar when the window is maximized (i.e. excluding
   // the area above the top of the screen).
@@ -72,7 +70,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   SkColor GetTitlebarColor() const;
 
-  views::Label* window_title_for_testing() { return window_title_; }
+  const views::Label* window_title_for_testing() const { return window_title_; }
 
  protected:
   // views::View:
@@ -81,6 +79,19 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void Layout() override;
 
  private:
+  friend class GlassBrowserCaptionButtonContainer;
+
+  // Describes the type of titlebar that a window might have; used to query
+  // whether specific elements may be present.
+  enum class TitlebarType {
+    // A custom drawn titlebar, with window title and/or icon.
+    kCustom,
+    // The system titlebar, drawn by Windows.
+    kSystem,
+    // Any visible titlebar.
+    kAny
+  };
+
   // Returns the thickness of the window border for the left, right, and bottom
   // edges of the frame. On Windows 10 this is a mostly-transparent handle that
   // allows you to resize the window.
@@ -113,15 +124,13 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // edge of the caption buttons.
   int MinimizeButtonX() const;
 
-  // Returns whether the toolbar is currently visible.
-  bool IsToolbarVisible() const;
+  // Returns whether or not the window should display an icon of the specified
+  // |type|.
+  bool ShouldShowWindowIcon(TitlebarType type) const;
 
-  bool ShowCustomIcon() const;
-  bool ShowCustomTitle() const;
-  bool ShowSystemIcon() const;
-
-  Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
-                                              int accessible_name_resource_id);
+  // Returns whether or not the window should display a title of the specified
+  // |type|.
+  bool ShouldShowWindowTitle(TitlebarType type) const;
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
@@ -129,8 +138,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Layout various sub-components of this view.
   void LayoutTitleBar();
   void LayoutCaptionButtons();
-  void LayoutCaptionButton(Windows10CaptionButton* button,
-                           int previous_button_x);
   void LayoutClientView();
 
   // Returns the insets of the client area. If |restored| is true, this is
@@ -154,20 +161,19 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   base::win::ScopedHICON big_window_icon_;
 
   // Icon and title. Only used when custom-drawing the titlebar for popups.
-  TabIconView* window_icon_;
-  views::Label* window_title_;
+  TabIconView* window_icon_ = nullptr;
+  views::Label* window_title_ = nullptr;
 
-  // Custom-drawn caption buttons. Only used when custom-drawing the titlebar.
-  Windows10CaptionButton* minimize_button_;
-  Windows10CaptionButton* maximize_button_;
-  Windows10CaptionButton* restore_button_;
-  Windows10CaptionButton* close_button_;
+  // The container holding the caption buttons (minimize, maximize, close, etc.)
+  // May be null if the caption button container is destroyed before the frame
+  // view. Always check for validity before using!
+  GlassBrowserCaptionButtonContainer* caption_button_container_;
 
   // Whether or not the window throbber is currently animating.
-  bool throbber_running_;
+  bool throbber_running_ = false;
 
   // The index of the current frame of the throbber animation.
-  int throbber_frame_;
+  int throbber_frame_ = 0;
 
   // How much extra space to reserve in non-maximized windows for a drag handle.
   int drag_handle_padding_;
@@ -175,8 +181,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];
   static void InitThrobberIcons();
-
-  DISALLOW_COPY_AND_ASSIGN(GlassBrowserFrameView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_

@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/borealis/borealis_features.h"
+#include "chrome/browser/chromeos/borealis/borealis_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +25,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
@@ -81,7 +85,10 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) ||
-      plugin_vm::IsPluginVmEnabled(profile)) {
+      plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile) ||
+      borealis::BorealisService::GetForProfile(profile)
+          ->Features()
+          .IsEnabled()) {
     auto* registry_service =
         guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
     registry_service->UpdateApplicationList(request);
@@ -110,8 +117,11 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) &&
       request.owner_id() == crostini::CryptohomeIdForProfile(profile)) {
-    crostini::LaunchContainerTerminal(
-        profile, request.vm_name(), request.container_name(),
+    // kInvalidDisplayId will launch terminal on the current active display.
+    crostini::LaunchTerminal(
+        profile, display::kInvalidDisplayId,
+        crostini::ContainerId(request.vm_name(), request.container_name()),
+        request.cwd(),
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
   }

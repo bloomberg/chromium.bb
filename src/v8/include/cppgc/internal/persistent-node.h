@@ -19,7 +19,7 @@ class Visitor;
 
 namespace internal {
 
-// PersistentNode represesents a variant of two states:
+// PersistentNode represents a variant of two states:
 // 1) traceable node with a back pointer to the Persistent object;
 // 2) freelist entry.
 class PersistentNode final {
@@ -56,6 +56,11 @@ class PersistentNode final {
 
   bool IsUsed() const { return trace_; }
 
+  void* owner() const {
+    CPPGC_DCHECK(IsUsed());
+    return owner_;
+  }
+
  private:
   // PersistentNode acts as a designated union:
   // If trace_ != nullptr, owner_ points to the corresponding Persistent handle.
@@ -67,11 +72,13 @@ class PersistentNode final {
   TraceCallback trace_ = nullptr;
 };
 
-class V8_EXPORT PersistentRegion {
+class V8_EXPORT PersistentRegion final {
   using PersistentNodeSlots = std::array<PersistentNode, 256u>;
 
  public:
   PersistentRegion() = default;
+  // Clears Persistent fields to avoid stale pointers after heap teardown.
+  ~PersistentRegion();
 
   PersistentRegion(const PersistentRegion&) = delete;
   PersistentRegion& operator=(const PersistentRegion&) = delete;
@@ -100,6 +107,14 @@ class V8_EXPORT PersistentRegion {
 
   std::vector<std::unique_ptr<PersistentNodeSlots>> nodes_;
   PersistentNode* free_list_head_ = nullptr;
+};
+
+// CrossThreadPersistent uses PersistentRegion but protects it using this lock
+// when needed.
+class V8_EXPORT PersistentRegionLock final {
+ public:
+  PersistentRegionLock();
+  ~PersistentRegionLock();
 };
 
 }  // namespace internal

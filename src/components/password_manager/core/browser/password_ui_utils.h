@@ -12,15 +12,12 @@
 
 #include "base/strings/string_piece.h"
 
-#include "url/gurl.h"
-
-namespace autofill {
-struct PasswordForm;
-}
+#include "url/origin.h"
 
 namespace password_manager {
 
 class PasswordFormManagerForUI;
+struct PasswordForm;
 
 // Reverses order of labels in hostname.
 std::string SplitByDotAndReverse(base::StringPiece host);
@@ -36,12 +33,12 @@ std::string SplitByDotAndReverse(base::StringPiece host);
 //  if available, otherwise it is the reversed package name (e.g.
 //  com.example.android gets transformed to android.example.com).
 std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
-    const autofill::PasswordForm& password_form);
+    const PasswordForm& password_form);
 
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
 // |password_form|) and without prefixes "m.", "mobile." or "www.".
-std::string GetShownOrigin(const GURL& origin);
+std::string GetShownOrigin(const url::Origin& origin);
 
 // Updates the |form_manager| pending credentials with |username| and
 // |password|.

@@ -68,7 +68,7 @@ Example:
 """
 
 import base64
-import BaseHTTPServer
+from six.moves import BaseHTTPServer
 import cgi
 import glob
 import google.protobuf.text_format
@@ -78,15 +78,16 @@ import logging
 import os
 import random
 import re
+import six
 import sys
 import time
 import tlslite
 import tlslite.api
 import tlslite.utils
 import tlslite.utils.cryptomath
-import urllib
-import urllib2
-import urlparse
+from six.moves import urllib
+from six.moves.urllib import request as urllib_request
+from six.moves.urllib import parse as urlparse
 
 import asn1der
 import testserver_base
@@ -107,8 +108,18 @@ try:
 except ImportError:
   dp = None
 
+# pyopenssl is only reliably available on Chrome OS builds.
+# This is currently OK because policy_testserver.py's support for certificate
+# provisioning is only used in Tast test for now.
+# TODO(https://bugs.chromium.org/p/chromium/issues/detail?id=1101729): Switch
+# to issuing certificates in the test..
+try:
+    from OpenSSL import crypto
+except ImportError:
+    crypto = None
+
 # ASN.1 object identifier for PKCS#1/RSA.
-PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
+PKCS1_RSA_OID = b'\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
 # List of machines that trigger the server to send kiosk enrollment response
 # for the register request.
@@ -205,6 +216,41 @@ POLICY_COMMON_DEFINITIONS_TYPES = [
   'StringListPolicyProto'
 ]
 
+# Private key used for issuing certificates for issuing certificates
+# for the built-in certificate provisioning feature.
+CERT_PROVISIONING_CA_PRIVATE_KEY_PEM="""\
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAyh01PGm57kraP7TJpCtGEpvSx6OwKJmqCQp/kmr9hfFTrWW3
+W4QgdmprzmYNt8vxtJkRLCz9/4K1lk1hfoDu5Qpx5VaNZ0bcwfzRG/PxcB9+XzZp
+gppqpyq1HACYudqPi9wsxw1qSrB4Av1W+paOpdM6/blchwJpRuOmrb1iwooVYmR/
+CnSDIEppPk5I8iwN3VTq3cSErDrC4Xtquw3jHs4aaq55ZcD31WRumiTkZY6oBZsH
+gzFsy+uCqwfv8aIA6wU0nPo5tfq0xzIjDhAA/ZSkSx05UrEk1S7rgvpRIJMZ/+Pi
+Jz/VX32XOBXyrGuwD+pS9zvtsPQ2rzz9aPhDFwIDAQABAoIBAH8tPdBT3rD43Lf1
+dGQe7qrK7ii88R27A2lI99kUBY8AuVyEgonNa/fXIxru0Hb0l5TCNDIN5Y2fm8+F
+xXEqhCgPGHfsrHFt/375LENgjm21A3m57U5HCBFEKE4EehWIV4bz9iESae2xePK4
+osBveDcT4SzCNFynwcLfgIQWhUxPI7TlwEkR79vcM+l6CtbUVxUW+wTTS/Zp72FM
+sBBNsXIBB0yHh0m30vg43jv3apBaZxogAPx2crWOu1A2NK20gQPgrCIHIjn1Of4e
+JvWSwKFnmF9UzwDQ1KZo25EX4BEirVYYlk84Eq9Ds2ojOVD+mCEfbrEsqPorYl+c
+F2d9CQECgYEA96kRVjhrS/Hbo5KNUOnOBs0uD8hCJ0cGlTRAvkwhGAENolewIuyj
+wwXGfkAV0Rs3qf4HjzVeEiX1QegsHxqFPOhjuDK34pH6caU6UI1R6BAr9H6QmEO9
+53LlKvlX+6kJ+RjXxvmftRFWgPhY526IbXgY4judI1+LR9FPmzyCLEECgYEA0OuD
+Oc//mZomtnBVFiw0RiamERTMsWO6G7QVDs814utHaFVzJWkqVn6eIns5NgfyZ0ZE
+xand7/wUtz0YM0wvdZPllhL0zXSujfqScO3qeE3XLPspv4dom+jdgwr1uR8rE5Av
+8qeLrZaItSWDMKL2+1QX0Frn3k1cMO/wiw+w+VcCgYEAgtK5SL1W2HAzIK3anmJT
+Jb6e1VFouIzJSmmmxZ87YA22YQpHDbvJKczUNH6vx5zEA7Uf0yNSxO1uJ9l37Ro6
+RZlQi82m2zVXgU7RhhmQqbBZN7bftL8cArXrno7GTjbWANKBsSbNmX1GH6yQcfgu
+cv0cz+zDrhrbXR2RGqSU8sECgYBmf3VVMsfq+ycNENWd2DgZRrLo5HR8fzn6h4Jh
+TqXYW6gf9vRUIWFlKB+7OQtbh9CUfHQXKfy51cnwEGhEGpeaLuJPm6NA/YL6Izof
+b4o+VapA5kSYM/3NqBStSv49QZ5nrbDocuzjUFxnyyyu+vUDX0GDtmXVucyGMeGo
+yB0CZwKBgQDZ8RwInbSZbAo2/fjIxFGxxV0tSRH1n5L27QB5jzikXW+6jBOYRDQh
+fHXdC808L+jJ0zgOBlJbbCM3TliiVqDE6Lcc3GShA1mrjvGmAy05e1ejgGZYX7c5
+C97TFZS6CD+9uC2FV4RWJuO56kCGlDVLI3/iwIThtywvDt0qKnSsGA==
+-----END RSA PRIVATE KEY-----"""
+
+# The obfuscated_customer_id that will be served in device policy PolicyData
+# responses.
+OBFUSCATED_CUSTOMER_ID = 'policy_testserver_customer_id'
+
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
 
@@ -267,6 +313,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       raw_reply = 'Invalid path'
     self.send_response(http_response)
     self.end_headers()
+    if six.PY3 and isinstance(raw_reply, str):
+      raw_reply = raw_reply.encode()
     self.wfile.write(raw_reply)
 
   def do_POST(self):
@@ -275,6 +323,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if (http_response == 200):
       self.send_header('Content-Type', 'application/x-protobuffer')
     self.end_headers()
+    if six.PY3 and isinstance(raw_reply, str):
+      raw_reply = raw_reply.encode()
     self.wfile.write(raw_reply)
 
   def HandleExternalPolicyDataRequest(self):
@@ -297,11 +347,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     rmsg = dm.DeviceManagementRequest()
-    length = int(self.headers.getheader('content-length'))
+    length = int(self.headers.get('content-length'))
     rmsg.ParseFromString(self.rfile.read(length))
 
     logging.debug('gaia auth token -> ' +
-                  self.headers.getheader('Authorization', ''))
+                  self.headers.get('Authorization', ''))
     logging.debug('oauth token -> ' + str(self.GetUniqueParam('oauth_token')))
     logging.debug('deviceid -> ' + str(self.GetUniqueParam('deviceid')))
     self.DumpMessage('Request', rmsg)
@@ -360,10 +410,13 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     elif request_type == 'app_install_report':
       response = self.ProcessAppInstallReportRequest(
           rmsg.app_install_report_request)
+    elif request_type == 'client_cert_provisioning':
+      response = self.ProcessClientCertProvisioningRequest(
+          rmsg.client_certificate_provisioning_request)
     else:
       return (400, 'Invalid request parameter')
 
-    if isinstance(response[1], basestring):
+    if isinstance(response[1], str):
       body = response[1]
     elif isinstance(response[1], google.protobuf.message.Message):
       self.DumpMessage('Response', response[1])
@@ -406,7 +459,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return oauth_token
 
     match = re.match('GoogleLogin auth=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       return match.group(1)
 
@@ -418,7 +471,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if no token is present.
     """
     match = re.match('GoogleEnrollmentToken token=(\\S+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       return match.group(1)
 
@@ -837,7 +890,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     enrollment_token = None
     match = re.match('GoogleEnrollmentToken token=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       enrollment_token = match.group(1)
     if not enrollment_token:
@@ -914,9 +967,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
     elif field.type == field.TYPE_STRING:
-      assert type(field_value) in [str, unicode]
+      if six.PY3:
+        assert isinstance(field_value, str)
+      else:
+        assert type(field_value) in [str, unicode]
     elif field.type == field.TYPE_BYTES:
-      assert type(field_value) in [str, unicode]
+      if six.PY3:
+        assert isinstance(field_value, str)
+      else:
+        assert type(field_value) in [str, unicode]
       field_value = field_value.decode('hex')
     elif (field.type == field.TYPE_INT64 or
           field.type == field.TYPE_INT32 or
@@ -1055,7 +1114,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # Fetch the ids from the policy JSON, if none in the config directory.
       policy = self.server.GetPolicies()
       ext_policies = policy.get(request.policy_type, {})
-      ids = ext_policies.keys()
+      ids = list(ext_policies.keys())
 
     for settings_entity_id in ids:
       # Reuse the extension policy request, to trigger the same signature
@@ -1183,6 +1242,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if user_affiliation_ids:
       policy_data.user_affiliation_ids.extend(user_affiliation_ids)
 
+    if msg.policy_type == 'google/chromeos/device':
+      # Fill |obfuscated_customer_id| for PolicyData in device policy fetches.
+      # Verified Access attestation using the Enterprise Machine Key (EMK)
+      # requires it since https://crbug.com/1073974.
+      policy_data.obfuscated_customer_id = OBFUSCATED_CUSTOMER_ID
+
     response.policy_data = policy_data.SerializeToString()
 
     # Sign the serialized policy data
@@ -1210,6 +1275,89 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               client_key['private_key'].hashAndSign(response.new_public_key))
 
     return (200, response.SerializeToString())
+
+  def ProcessClientCertProvisioningRequest(self, msg):
+    """Handles a client certificate provisioning request.
+
+    Issues a client certificate generated with the public key provided and
+    sends it back to the requesting client.
+
+    Args:
+      msg: The ClientCertificateProvisioningRequest message received from the
+        client. Contains one of start_csr_request, finish_csr_request, or
+        download_cert_request.
+
+    Returns:
+      A tuple of HTTP status code and a ClientCertificateProvisioningResponse
+      message that is filled with hard coded data and in the case of a
+      download_cert_request in addition with the generated certificate.
+    """
+
+    if crypto == None:
+      return (400, 'Could not find pyopenssl.')
+
+    if msg.HasField('start_csr_request'):
+      start_csr_response = dm.StartCsrResponse()
+
+      # real but outdated b64 encoded verified access challenge received from
+      # the Enterprise Verified Access Test extension
+      va_challenge_b64 = (
+        'CkEKFkVudGVycHJpc2VLZXlDaGFsbGVuZ2USIO6YSl1AvTjbEvRukIFMF2pA4AwCc1w4f'
+        'ZX3n3sGcLInGOPh+IWKLhKAAm/WHGk7ahCjPk4IXLfDlUUmmZdfW1scNcwkKk/x24Znvb'
+        'T7tyrmxLzO5nG69ycW7f+2bacbtfGlf0UOGeljcqBIIoHjJPlm0d2gCTa2msghS9ovaSg'
+        '/wbY5DPeNkcG5drDq5Es5hzlZ49Bhvv5cAbDDsGNobPJQ3ojbu/mrdlb3mlB1oNTmbfoP'
+        'TBrr6n9JXvywsJmHyInTySiFPOR8TT1cQoDA0pZ0ccHMJfLia1/FCW/pGpI6GpSzCQLq2'
+        'hH0cFVuef3lGn09EeUHTPejbm6gcrHe9VDAFXMI8SzUlgMBBjHtTpo9GXJbwkTrGFXdkE'
+        'U5BY1KukrsIVqdmAGFTDM='
+      )
+
+      va_challenge = base64.b64decode(va_challenge_b64)
+      start_csr_response.invalidation_topic = 'invalidation_topic_123'
+      start_csr_response.va_challenge = va_challenge
+      start_csr_response.hashing_algorithm = 2
+      start_csr_response.signing_algorithm = 1
+      start_csr_response.data_to_sign = 'data_to_sign_123'
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.start_csr_response.\
+          CopyFrom(start_csr_response)
+      return (200, response)
+
+    if msg.HasField('finish_csr_request'):
+      finish_csr_response = dm.FinishCsrResponse()
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.finish_csr_response.\
+          CopyFrom(finish_csr_response)
+      return (200, response)
+
+    if msg.HasField('download_cert_request'):
+      download_cert_response = dm.DownloadCertResponse()
+
+      pubKey = crypto.load_publickey(crypto.FILETYPE_ASN1, msg.public_key)
+
+      caPrivKey = crypto.load_privatekey(
+        crypto.FILETYPE_PEM, CERT_PROVISIONING_CA_PRIVATE_KEY_PEM, 'pass')
+
+      cert = crypto.X509()
+      cert.set_serial_number(3)
+      cert.gmtime_adj_notBefore(0)
+      cert.gmtime_adj_notAfter(365*24*60*60)
+      cert.get_subject().CN = "TastTest"
+      cert.set_issuer(cert.get_subject())
+      cert.set_issuer(cert.get_subject())
+      cert.set_pubkey(pubKey)
+      cert.sign(caPrivKey, 'sha256')
+
+      download_cert_response.pem_encoded_certificate  =\
+        crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.\
+        download_cert_response.CopyFrom(download_cert_response)
+      return (200, response)
+
+    return (400, 'Invalid request parameter')
 
   def GetSignatureForDomain(self, signatures, username):
     parsed_username = username.split("@", 1)
@@ -1245,7 +1393,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     dmtoken = None
     request_device_id = self.GetUniqueParam('deviceid')
     match = re.match('GoogleDMToken token=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       dmtoken = match.group(1)
     if not dmtoken:
@@ -1323,7 +1471,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
         try:
           key_str = open(key_path).read()
         except IOError:
-          print 'Failed to load private key from %s' % key_path
+          print('Failed to load private key from %s' % key_path)
           continue
         try:
           key = tlslite.api.parsePEMKey(key_str, private=True)
@@ -1340,7 +1488,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
           # Create a dictionary with the wildcard domain + signature
           key_info['signatures'] = {'*': key_sig}
         except IOError:
-          print 'Failed to read validation signature from %s.sig' % key_path
+          print('Failed to read validation signature from %s.sig' % key_path)
         self.keys.append(key_info)
     else:
       # Use the canned private keys if none were passed from the command line.
@@ -1364,7 +1512,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
 
       algorithm = asn1der.Sequence(
           [ asn1der.Data(asn1der.OBJECT_IDENTIFIER, PKCS1_RSA_OID),
-            asn1der.Data(asn1der.NULL, '') ])
+            asn1der.Data(asn1der.NULL, b'') ])
       rsa_pubkey = asn1der.Sequence([ asn1der.Integer(key.n),
                                       asn1der.Integer(key.e) ])
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
@@ -1383,7 +1531,9 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     policy = {}
     if json is None:
       logging.error('No JSON module, cannot parse policy information')
-    else :
+    elif not os.path.exists(self.policy_path):
+      logging.warning('Missing policies file %s' % self.policy_path)
+    else:
       try:
         policy = json.loads(open(self.policy_path).read(), strict=False)
       except IOError:
@@ -1443,8 +1593,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     token_info_url = config.get('token_info_url')
     if token_info_url is not None:
       try:
-        token_info = urllib2.urlopen(token_info_url + '?' +
-            urllib.urlencode({'access_token': auth_token})).read()
+        token_info = urllib_request.urlopen(token_info_url + '?' +
+            urlparse.urlencode({'access_token': auth_token})).read()
         return json.loads(token_info)['email']
       except Exception as e:
         logging.info('Failed to resolve user: %s', e)
@@ -1519,8 +1669,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       state_keys: The state keys to set.
     """
     if dmtoken in self._registered_tokens:
-      self._registered_tokens[dmtoken]['state_keys'] = map(
-          lambda key : key.encode('hex'), state_keys)
+      self._registered_tokens[dmtoken]['state_keys'] = [key.encode('hex')
+              for key in state_keys]
       self.WriteClientState()
 
   def LookupToken(self, dmtoken):
@@ -1547,7 +1697,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       no matching record.
     """
     self.ReadClientStateFile()
-    for client in self._registered_tokens.values():
+    for client in list(self._registered_tokens.values()):
       if state_key.encode('hex') in client.get('state_keys', []):
         return client
 
@@ -1561,12 +1711,11 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     """
     self.ReadClientStateFile()
     state_keys = sum([ c.get('state_keys', [])
-                       for c in self._registered_tokens.values() ], [])
-    hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
-                      set(state_keys))
-    return filter(
-        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
-        hashed_keys)
+                       for c in list(self._registered_tokens.values()) ], [])
+    hashed_keys = [hashlib.sha256(key.decode('hex')).digest() for key in
+               set(state_keys)]
+    return [hash for hash in hashed_keys if int(hash.encode('hex'), 16)
+        % modulus == remainder]
 
   def GetMatchingSerialHashes(self, modulus, remainder):
     """Returns all serial hashes from configuration.
@@ -1574,13 +1723,12 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Returns:
       The list of hashes
     """
-    brand_serial_keys = (self.GetPolicies().get('initial_enrollment_state', {}).
-                         keys())
-    hashed_keys = map(lambda key: hashlib.sha256(key).digest()[0:8],
-                      brand_serial_keys)
-    return filter(
-        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
-        hashed_keys)
+    brand_serial_keys = \
+        list(self.GetPolicies().get('initial_enrollment_state', {}).keys())
+    hashed_keys = [hashlib.sha256(key).digest()[0:8] for key in
+               brand_serial_keys]
+    return [hash for hash in hashed_keys if int(hash.encode('hex'), 16)
+        % modulus == remainder]
 
 
   def UnregisterDevice(self, dmtoken):
@@ -1589,7 +1737,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Args:
       dmtoken: The device management token provided by the client.
     """
-    if dmtoken in self._registered_tokens.keys():
+    if dmtoken in list(self._registered_tokens.keys()):
       del self._registered_tokens[dmtoken]
       self.WriteClientState()
 

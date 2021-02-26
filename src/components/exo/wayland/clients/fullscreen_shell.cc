@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -112,7 +112,7 @@ void FullscreenClient::Paint(const wl_callback_listener& frame_listener) {
   canvas->drawRect(rect, paint);
 
   if (gr_context_) {
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     glFinish();
   }
 

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ACCESSIBILITY_CAPTION_CONTROLLER_H_
 
 #include <memory>
-#include <string>
 #include <unordered_map>
 
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -43,7 +42,7 @@ class CaptionController : public BrowserListObserver, public KeyedService {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. These should be the same as
-  // LiveCaptionsSessionEvent in enums.xml.
+  // LiveCaptionSessionEvent in enums.xml.
   enum class SessionEvent {
     // We began receiving captions for an audio stream.
     kStreamStarted = 0,
@@ -62,27 +61,33 @@ class CaptionController : public BrowserListObserver, public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Off the record profiles will default to having the feature disabled.
-  static void InitOffTheRecordPrefs(Profile* off_the_record_profile);
-
   void Init();
 
   // Routes a transcription to the CaptionBubbleController that belongs to the
-  // appropriate browser.
-  void DispatchTranscription(
+  // appropriate browser. Returns whether the transcription result was routed
+  // successfully. Transcriptions will halt if this returns false.
+  bool DispatchTranscription(
       content::WebContents* web_contents,
       const chrome::mojom::TranscriptionResultPtr& transcription_result);
 
+  // Alerts the CaptionBubbleController that belongs to the appropriate browser
+  // that there is an error in the speech recognition service.
+  void OnError(content::WebContents* web_contents);
+
+  CaptionBubbleController* GetCaptionBubbleControllerForBrowser(
+      Browser* browser);
+
  private:
   friend class CaptionControllerFactory;
+  friend class CaptionControllerTest;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
   void OnLiveCaptionEnabledChanged();
+  void OnLiveCaptionLanguageChanged();
   bool IsLiveCaptionEnabled();
-  void UpdateSpeechRecognitionServiceEnabled();
   void UpdateUIEnabled();
   void UpdateCaptionStyle();
 

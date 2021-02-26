@@ -601,18 +601,6 @@ void RecordParallelDownloadRequestCount(int request_count) {
                               request_count, 1, 10, 11);
 }
 
-void RecordParallelDownloadAddStreamSuccess(bool success,
-                                            bool support_range_request) {
-  if (support_range_request) {
-    base::UmaHistogramBoolean("Download.ParallelDownloadAddStreamSuccess",
-                              success);
-  } else {
-    base::UmaHistogramBoolean(
-        "Download.ParallelDownloadAddStreamSuccess.NoAcceptRangesHeader",
-        success);
-  }
-}
-
 void RecordParallelRequestCreationFailure(DownloadInterruptReason reason) {
   base::UmaHistogramSparse("Download.ParallelDownload.CreationFailureReason",
                            reason);
@@ -650,7 +638,6 @@ void RecordParallelizableDownloadStats(
   if (!uses_parallel_requests)
     return;
 
-  base::TimeDelta time_saved;
   if (bytes_downloaded_with_parallel_streams > 0) {
     int64_t bandwidth_with_parallel_streams = CalculateBandwidthBytesPerSecond(
         bytes_downloaded_with_parallel_streams, time_with_parallel_streams);
@@ -658,20 +645,6 @@ void RecordParallelizableDownloadStats(
         "Download.ParallelizableDownloadBandwidth."
         "WithParallelRequestsMultipleStreams",
         bandwidth_with_parallel_streams);
-    if (bandwidth_without_parallel_streams > 0) {
-      time_saved = base::TimeDelta::FromMilliseconds(
-                       1000.0 * bytes_downloaded_with_parallel_streams /
-                       bandwidth_without_parallel_streams) -
-                   time_with_parallel_streams;
-    }
-  }
-
-  int kMillisecondsPerHour =
-      base::checked_cast<int>(base::Time::kMillisecondsPerSecond * 60 * 60);
-  if (time_saved >= base::TimeDelta()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.EstimatedTimeSavedWithParallelDownload",
-        time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
   }
 }
 
@@ -697,11 +670,6 @@ void RecordParallelizableDownloadAverageStats(
         "Download.Parallelizable.FileSize.HighDownloadBandwidth", file_size_kb,
         1, kMaxFileSizeKb, 50);
   }
-}
-
-void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Download.ParallelDownload.CreationEvent", event,
-                            ParallelDownloadCreationEvent::COUNT);
 }
 
 void RecordSavePackageEvent(SavePackageEvent event) {
@@ -751,17 +719,6 @@ void RecordDownloadValidationMetrics(DownloadMetricsCallsite callsite,
       DownloadContent::MAX);
 }
 
-void RecordDownloadSourcePageTransitionType(
-    const base::Optional<ui::PageTransition>& page_transition) {
-  if (!page_transition)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.PageTransition",
-      ui::PageTransitionStripQualifier(page_transition.value()),
-      ui::PAGE_TRANSITION_LAST_CORE + 1);
-}
-
 void RecordDownloadHttpResponseCode(int response_code,
                                     bool is_background_mode) {
   int status_code = net::HttpUtil::MapStatusCodeForHistogram(response_code);
@@ -788,10 +745,6 @@ void RecordResumptionRestartReason(DownloadInterruptReason reason) {
   base::UmaHistogramSparse("Download.ResumptionRestart.Reason", reason);
 }
 
-void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
-  base::UmaHistogramEnumeration("Download.ResumptionRestart.Counts", type);
-}
-
 void RecordDownloadManagerCreationTimeSinceStartup(
     base::TimeDelta elapsed_time) {
   base::UmaHistogramLongTimes("Download.DownloadManager.CreationDelay",
@@ -801,6 +754,10 @@ void RecordDownloadManagerCreationTimeSinceStartup(
 void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
   base::UmaHistogramMemoryKB("Download.DownloadManager.MemoryUsage",
                              bytes_used / 1000);
+}
+
+void RecordDownloadLaterEvent(DownloadLaterEvent event) {
+  base::UmaHistogramEnumeration("Download.Later.Events", event);
 }
 
 #if defined(OS_ANDROID)

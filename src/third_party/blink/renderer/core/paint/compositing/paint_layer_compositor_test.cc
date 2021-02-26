@@ -29,8 +29,7 @@ class PaintLayerCompositorTest : public RenderingTest {
 TEST_F(PaintLayerCompositorTest, AdvancingToCompositingInputsClean) {
   SetBodyInnerHTML("<div id='box' style='position: relative'></div>");
 
-  PaintLayer* box_layer =
-      ToLayoutBox(GetLayoutObjectByElementId("box"))->Layer();
+  PaintLayer* box_layer = GetPaintLayerByElementId("box");
   ASSERT_TRUE(box_layer);
   EXPECT_FALSE(box_layer->NeedsCompositingInputsUpdate());
 
@@ -118,6 +117,35 @@ TEST_F(PaintLayerCompositorTest, CompositingInputsUpdateStopsContainStrict) {
             GetDocument().Lifecycle().GetState());
   EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());
   EXPECT_FALSE(target->NeedsCompositingInputsUpdate());
+}
+
+TEST_F(PaintLayerCompositorTest, SubframeRebuildGraphicsLayers) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML("<iframe src='http://test.com'></iframe>");
+  SetChildFrameHTML(
+      "<div id='target' style='will-change: opacity; opacity: 0.5'></div>");
+
+  UpdateAllLifecyclePhasesForTest();
+  auto* child_layout_view = ChildDocument().GetLayoutView();
+  auto* child_root_graphics_layer =
+      child_layout_view->Layer()->GraphicsLayerBacking(child_layout_view);
+  ASSERT_TRUE(child_root_graphics_layer);
+  EXPECT_EQ(GetLayoutView().Layer()->GraphicsLayerBacking(),
+            child_root_graphics_layer->Parent());
+
+  // This simulates that the subframe rebuilds GraphicsLayer tree, while the
+  // main frame doesn't have any compositing flags set. The root GraphicsLayer
+  // of the subframe should be hooked up in the GraphicsLayer tree correctly.
+  child_root_graphics_layer->RemoveFromParent();
+  child_layout_view->Compositor()->SetNeedsCompositingUpdate(
+      kCompositingUpdateRebuildTree);
+  GetLayoutView().Compositor()->UpdateAssignmentsIfNeededRecursive(
+      DocumentLifecycle::kCompositingAssignmentsClean);
+  ASSERT_EQ(
+      child_root_graphics_layer,
+      child_layout_view->Layer()->GraphicsLayerBacking(child_layout_view));
+  EXPECT_EQ(GetLayoutView().Layer()->GraphicsLayerBacking(),
+            child_root_graphics_layer->Parent());
 }
 
 }  // namespace blink

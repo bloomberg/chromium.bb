@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,8 +51,9 @@ class WebAppShortcutCreatorMock : public WebAppShortcutCreator {
   MOCK_CONST_METHOD0(GetAppBundlesByIdUnsorted, std::vector<base::FilePath>());
   MOCK_CONST_METHOD1(RevealAppShimInFinder, void(const base::FilePath&));
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
+  WebAppShortcutCreatorMock(const WebAppShortcutCreatorMock&) = delete;
+  WebAppShortcutCreatorMock& operator=(const WebAppShortcutCreatorMock&) =
+      delete;
 };
 
 class WebAppShortcutCreatorSortingMock : public WebAppShortcutCreator {
@@ -64,8 +64,10 @@ class WebAppShortcutCreatorSortingMock : public WebAppShortcutCreator {
 
   MOCK_CONST_METHOD0(GetAppBundlesByIdUnsorted, std::vector<base::FilePath>());
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorSortingMock);
+  WebAppShortcutCreatorSortingMock(const WebAppShortcutCreatorSortingMock&) =
+      delete;
+  WebAppShortcutCreatorSortingMock& operator=(
+      const WebAppShortcutCreatorSortingMock&) = delete;
 };
 
 std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
@@ -76,12 +78,16 @@ std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
   info->profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info->profile_name = "profile name";
   info->version_for_display = "stable 1.0";
+  info->is_multi_profile = true;
   return info;
 }
 
 class WebAppShortcutCreatorTest : public testing::Test {
  protected:
   WebAppShortcutCreatorTest() {}
+  WebAppShortcutCreatorTest(const WebAppShortcutCreatorTest&) = delete;
+  WebAppShortcutCreatorTest& operator=(const WebAppShortcutCreatorTest&) =
+      delete;
 
   void SetUp() override {
     base::mac::SetBaseBundleID(kFakeChromeBundleId);
@@ -135,8 +141,6 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath shim_base_name_;
   base::FilePath shim_path_;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorTest);
 };
 
 }  // namespace
@@ -163,7 +167,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   EXPECT_TRUE(base::PathExists(strings_file));
 
   // Delete it here, just to test that it is not recreated.
-  EXPECT_TRUE(base::DeleteFileRecursively(strings_file));
+  EXPECT_TRUE(base::DeletePathRecursively(strings_file));
 
   // Ensure the strings file wasn't recreated. It's not needed for any other
   // tests.
@@ -217,7 +221,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
         [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
     EXPECT_EQ(doc_types_array, nil);
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register 2 mime types (and 2 invalid extensions). We should now have
   // kCFBundleTypeMIMETypesKey but not kCFBundleTypeExtensionsKey.
@@ -249,7 +253,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
     EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register 3 valid extensions (and 2 invalid ones) with the 2 mime types.
   info_->file_handler_extensions.insert(".cow");
@@ -281,7 +285,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
     EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register just extensions.
   info_->file_handler_mime_types.clear();
@@ -308,7 +312,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
     EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 }
 
 TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
@@ -364,7 +368,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path.Append("Contents")));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path.Append("Contents")));
 
   std::vector<base::FilePath> updated_paths;
   EXPECT_TRUE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
@@ -381,7 +385,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path.Append("Contents")));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path.Append("Contents")));
 
   updated_paths.clear();
   EXPECT_FALSE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
@@ -420,7 +424,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path));
 
   // The original shim should be recreated.
   std::vector<base::FilePath> updated_paths;
@@ -430,7 +434,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteShortcutsSingleProfile) {
-  info_->url = GURL();
+  info_->is_multi_profile = false;
 
   base::FilePath other_shim_path =
       shim_path_.DirName().Append("Copy of Shim.app");
@@ -486,7 +490,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteAllShortcutsForProfile) {
-  info_->url = GURL();
+  info_->is_multi_profile = false;
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

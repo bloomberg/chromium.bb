@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -38,11 +38,12 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
     // Encode an integer (|varint_| or |varint2_| or string length) with a
     // prefix, using |byte_| for the high bits.
     kVarintEncode,
-    // Determine if Huffman encoding should be used for |name_| or |value_|, set
-    // up |name_| or |value_| and |huffman_encoded_string_| accordingly, and
-    // write the Huffman bit to |byte_|.
+    // Determine if Huffman encoding should be used for the header name or
+    // value, set |use_huffman_| and |string_length_| appropriately, write the
+    // Huffman bit to |byte_|.
     kStartString,
-    // Write string.
+    // Write header name or value, performing Huffman encoding if |use_huffman_|
+    // is true.
     kWriteString
   };
 
@@ -52,19 +53,17 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
   void DoStartField();
   void DoSBit(bool s_bit);
   void DoVarintEncode(uint64_t varint, uint64_t varint2, std::string* output);
-  void DoStartString(quiche::QuicheStringPiece name,
-                     quiche::QuicheStringPiece value);
-  void DoWriteString(std::string* output);
+  void DoStartString(absl::string_view name, absl::string_view value);
+  void DoWriteString(absl::string_view name,
+                     absl::string_view value,
+                     std::string* output);
 
+  // True if name or value should be Huffman encoded.
+  bool use_huffman_;
 
-  // Storage for the Huffman encoded string literal to be written if Huffman
-  // encoding is used.
-  std::string huffman_encoded_string_;
-
-  // If Huffman encoding is used, points to a substring of
-  // |huffman_encoded_string_|.
-  // Otherwise points to a substring of |name_| or |value_|.
-  quiche::QuicheStringPiece string_to_write_;
+  // Length of name or value string to be written.
+  // If |use_huffman_| is true, length is after Huffman encoding.
+  size_t string_length_;
 
   // Storage for a single byte that contains multiple fields, that is, multiple
   // states are writing it.
@@ -78,6 +77,9 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
 
   // Field currently being decoded.
   QpackInstructionFields::const_iterator field_;
+
+  // Latched value of gfe2_reloadable_flag_quic_use_fast_huffman_encoder.
+  const bool use_fast_huffman_encoder_;
 };
 
 }  // namespace quic

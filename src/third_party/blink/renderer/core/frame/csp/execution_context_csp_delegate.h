@@ -17,12 +17,10 @@ class SecurityContext;
 class ExecutionContextCSPDelegate final
     : public GarbageCollected<ExecutionContextCSPDelegate>,
       public ContentSecurityPolicyDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(ExecutionContextCSPDelegate);
-
  public:
   explicit ExecutionContextCSPDelegate(ExecutionContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ContentSecurityPolicyDelegate overrides:
   const SecurityOrigin* GetSecurityOrigin() override;
@@ -42,6 +40,7 @@ class ExecutionContextCSPDelegate final
                            bool use_reporting_api) override;
   void Count(WebFeature) override;
   void AddConsoleMessage(ConsoleMessage*) override;
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) override;
   void DisableEval(const String& error_message) override;
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) override;

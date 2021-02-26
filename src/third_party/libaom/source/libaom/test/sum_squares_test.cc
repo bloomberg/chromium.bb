@@ -85,6 +85,7 @@ class SumSquaresTest : public ::testing::TestWithParam<TestFuncs> {
   int16_t *src_;
   ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SumSquaresTest);
 
 void SumSquaresTest::RunTest(int isRandom) {
   int failed = 0;
@@ -165,6 +166,15 @@ INSTANTIATE_TEST_SUITE_P(
 
 #endif  // HAVE_SSE2
 
+#if HAVE_NEON
+
+INSTANTIATE_TEST_SUITE_P(
+    NEON, SumSquaresTest,
+    ::testing::Values(TestFuncs(&aom_sum_squares_2d_i16_c,
+                                &aom_sum_squares_2d_i16_neon)));
+
+#endif  // HAVE_NEON
+
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
     AVX2, SumSquaresTest,
@@ -184,6 +194,7 @@ class SumSquares1DTest : public FunctionEquivalenceTest<F1D> {
   static const int kIterations = 1000;
   static const int kMaxSize = 256;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SumSquares1DTest);
 
 TEST_P(SumSquares1DTest, RandomValues) {
   DECLARE_ALIGNED(16, int16_t, src[kMaxSize * kMaxSize]);
@@ -303,6 +314,7 @@ class SSETest : public ::testing::TestWithParam<SSETestParam> {
   uint8_t *ref_;
   ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SSETest);
 
 void SSETest::RunTest(int isRandom, int width, int height, int run_times) {
   int failed = 0;
@@ -472,6 +484,7 @@ class SSE_Sum_Test : public ::testing::TestWithParam<SSE_SumTestParam> {
   int16_t *src_;
   ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SSE_Sum_Test);
 
 void SSE_Sum_Test::RunTest(int isRandom, int width, int height, int run_times) {
   aom_usec_timer ref_timer, test_timer;
@@ -619,6 +632,7 @@ class Lowbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
   uint8_t *src_;
   ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Lowbd2dVarTest);
 
 void Lowbd2dVarTest::RunTest(int isRandom) {
   int failed = 0;
@@ -749,6 +763,7 @@ class Highbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
   uint16_t *src_;
   ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Highbd2dVarTest);
 
 void Highbd2dVarTest::RunTest(int isRandom) {
   int failed = 0;

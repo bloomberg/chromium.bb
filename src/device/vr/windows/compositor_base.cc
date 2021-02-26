@@ -17,6 +17,17 @@ namespace {
 // Number of frames to use for sliding averages for pose timings,
 // as used for estimating prediction times.
 constexpr unsigned kSlidingAverageSize = 5;
+
+device::mojom::XRRenderInfoPtr GetRenderInfo(
+    const device::mojom::XRFrameData& frame_data) {
+  device::mojom::XRRenderInfoPtr result = device::mojom::XRRenderInfo::New();
+
+  result->frame_id = frame_data.frame_id;
+  result->pose = frame_data.pose.Clone();
+
+  return result;
+}
+
 }  // namespace
 
 namespace device {
@@ -33,6 +44,18 @@ bool XRDeviceAbstraction::HasSessionEnded() {
   return false;
 }
 void XRDeviceAbstraction::OnLayerBoundsChanged() {}
+device::mojom::XREnvironmentBlendMode
+XRDeviceAbstraction::GetEnvironmentBlendMode(
+    device::mojom::XRSessionMode session_mode) {
+  return device::mojom::XREnvironmentBlendMode::kOpaque;
+}
+device::mojom::XRInteractionMode XRDeviceAbstraction::GetInteractionMode(
+    device::mojom::XRSessionMode session_mode) {
+  return device::mojom::XRInteractionMode::kWorldSpace;
+}
+bool XRDeviceAbstraction::CanEnableAntiAliasing() const {
+  return true;
+}
 
 XRCompositorCommon::OutstandingFrame::OutstandingFrame() = default;
 XRCompositorCommon::OutstandingFrame::~OutstandingFrame() = default;
@@ -100,7 +123,8 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
   if (on_webxr_submitted_)
     std::move(on_webxr_submitted_).Run();
 
-  if (!pending_frame_ || pending_frame_->frame_data_->frame_id != frame_index) {
+  if (!pending_frame_ ||
+      pending_frame_->render_info_->frame_id != frame_index) {
     // We weren't expecting a submitted frame.  This can happen if WebXR was
     // hidden by an overlay for some time.
     if (submit_client_) {
@@ -178,7 +202,6 @@ void XRCompositorCommon::RequestSession(
         on_visibility_state_changed,
     mojom::XRRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
-  DCHECK_EQ(options->mode, mojom::XRSessionMode::kImmersiveVr);
   webxr_has_pose_ = false;
   presentation_receiver_.reset();
   frame_data_receiver_.reset();
@@ -227,7 +250,24 @@ void XRCompositorCommon::RequestSession(
   auto session = device::mojom::XRSession::New();
   session->data_provider = frame_data_receiver_.BindNewPipeAndPassRemote();
   session->submit_frame_sink = std::move(submit_frame_sink);
-  session->uses_input_eventing = UsesInputEventing();
+
+  // Currently, the initial filtering of supported devices happens on the
+  // browser side (BrowserXRRuntimeImpl::SupportsFeature()), so if we have
+  // reached this point, it is safe to assume that all requested features are
+  // enabled.
+  // TODO(https://crbug.com/995377): revisit the approach when the bug is fixed.
+  session->enabled_features.insert(session->enabled_features.end(),
+                                   options->required_features.begin(),
+                                   options->required_features.end());
+  session->enabled_features.insert(session->enabled_features.end(),
+                                   options->optional_features.begin(),
+                                   options->optional_features.end());
+
+  session->device_config = device::mojom::XRSessionDeviceConfig::New();
+  session->device_config->uses_input_eventing = UsesInputEventing();
+  session->device_config->enable_anti_aliasing = CanEnableAntiAliasing();
+  session->enviroment_blend_mode = GetEnvironmentBlendMode(options->mode);
+  session->interaction_mode = GetInteractionMode(options->mode);
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
@@ -275,6 +315,20 @@ void XRCompositorCommon::SetVisibilityState(
   }
 }
 
+void XRCompositorCommon::SetStageParameters(
+    mojom::VRStageParametersPtr stage_parameters) {
+  // If the stage parameters are identical no need to update them.
+  if ((!current_stage_parameters_ && !stage_parameters) ||
+      (current_stage_parameters_ && stage_parameters &&
+       current_stage_parameters_.Equals(stage_parameters))) {
+    return;
+  }
+
+  // If they have changed, increment the ID and save the new parameters.
+  stage_parameters_id_++;
+  current_stage_parameters_ = std::move(stage_parameters);
+}
+
 void XRCompositorCommon::Init() {}
 
 void XRCompositorCommon::StartPendingFrame() {
@@ -283,8 +337,9 @@ void XRCompositorCommon::StartPendingFrame() {
     pending_frame_->waiting_for_webxr_ = webxr_visible_;
     pending_frame_->waiting_for_overlay_ = overlay_visible_;
     pending_frame_->frame_data_ = GetNextFrameData();
-    // pending_frame_->frame_data_ should never be null
+    // GetNextFrameData() should never return null:
     DCHECK(pending_frame_->frame_data_);
+    pending_frame_->render_info_ = GetRenderInfo(*pending_frame_->frame_data_);
   }
 }
 
@@ -323,13 +378,21 @@ void XRCompositorCommon::GetFrameData(
   pending_frame_->webxr_has_pose_ = true;
   pending_frame_->sent_frame_data_time_ = base::TimeTicks::Now();
 
+  // If the stage parameters have been updated since the last frame that was
+  // sent, send the updated values.
+  pending_frame_->frame_data_->stage_parameters_id = stage_parameters_id_;
+  if (options->stage_parameters_id != stage_parameters_id_) {
+    pending_frame_->frame_data_->stage_parameters =
+        current_stage_parameters_.Clone();
+  }
+
   // Yield here to let the event queue process pending mojo messages,
   // specifically the next gamepad callback request that's likely to
   // have been sent during WaitGetPoses.
   task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&XRCompositorCommon::SendFrameData, base::Unretained(this),
-                     std::move(callback), pending_frame_->frame_data_.Clone()));
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::SendFrameData,
+                                base::Unretained(this), std::move(callback),
+                                std::move(pending_frame_->frame_data_)));
 
   next_frame_id_ += 1;
   if (next_frame_id_ < 0) {
@@ -413,7 +476,7 @@ void XRCompositorCommon::RequestNextOverlayPose(
   // Ensure we have a pending frame.
   StartPendingFrame();
   pending_frame_->overlay_has_pose_ = true;
-  std::move(callback).Run(pending_frame_->frame_data_.Clone());
+  std::move(callback).Run(pending_frame_->render_info_->Clone());
 }
 
 void XRCompositorCommon::SetOverlayAndWebXRVisibility(bool overlay_visible,

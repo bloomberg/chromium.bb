@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
@@ -58,11 +59,15 @@ using media::android_mojo_util::CreateProvisionFetcher;
 using media::android_mojo_util::CreateMediaDrmStorage;
 #endif  // defined(OS_ANDROID)
 
+#if BUILDFLAG(IS_ASH)
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
+#endif  // BUILDFLAG(IS_ASH)
+
 namespace media {
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MACOSX) || \
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN) || defined(OS_LINUX)
 gpu::CommandBufferStub* GetCommandBufferStub(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -101,11 +106,24 @@ D3D11VideoDecoder::GetD3D11DeviceCB GetD3D11DeviceCallback() {
 #endif
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-// Return true if we switch to use new HW-accelerated video decoder.
-bool IsNewAcceleratedVideoDecoderUsed(
+// Returns true if |gpu_preferences| says that the direct video decoder is
+// supported and the feature flag says so. This only applies to ChromeOS builds,
+// otherwise it returns false.
+bool ShouldUseChromeOSDirectVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences) {
-  return !gpu_preferences.force_disable_new_accelerated_video_decoder &&
-         base::FeatureList::IsEnabled(kChromeosVideoDecoder);
+#if BUILDFLAG(IS_ASH)
+  const bool should_use_direct_video_decoder =
+      !gpu_preferences.platform_disallows_chromeos_direct_video_decoder &&
+      base::FeatureList::IsEnabled(kUseChromeOSDirectVideoDecoder);
+
+  // For testing purposes, the following flag allows using the "other" video
+  // decoder implementation.
+  if (base::FeatureList::IsEnabled(kUseAlternateVideoDecoderImplementation))
+    return !should_use_direct_video_decoder;
+  return should_use_direct_video_decoder;
+#else
+  return false;
+#endif
 }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
@@ -169,11 +187,12 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   }
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
+  if (ShouldUseChromeOSDirectVideoDecoder(gpu_preferences_)) {
     if (!cros_supported_configs_) {
       cros_supported_configs_ =
-          ChromeosVideoDecoderFactory::GetSupportedConfigs();
+          ChromeosVideoDecoderFactory::GetSupportedConfigs(gpu_workarounds_);
     }
+
     supported_config_map[VideoDecoderImplementation::kDefault] =
         *cros_supported_configs_;
     return supported_config_map;
@@ -226,7 +245,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   switch (implementation) {
     case VideoDecoderImplementation::kDefault: {
 #if defined(OS_ANDROID)
-      auto get_stub_cb = base::Bind(
+      auto get_stub_cb = base::BindRepeating(
           &GetCommandBufferStub, gpu_task_runner_, media_gpu_channel_manager_,
           command_buffer_id->channel_token, command_buffer_id->route_id);
       std::unique_ptr<SharedImageVideoProvider> image_provider;
@@ -243,7 +262,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       // requiring the provider to set |is_vulkan| in the ImageRecord.
       auto frame_info_helper =
           FrameInfoHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
-      video_decoder = std::make_unique<MediaCodecVideoDecoder>(
+      video_decoder = MediaCodecVideoDecoder::Create(
           gpu_preferences_, gpu_feature_info_, media_log->Clone(),
           DeviceInfo::GetInstance(),
           CodecAllocator::GetInstance(gpu_task_runner_),
@@ -256,7 +275,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
               std::move(frame_info_helper)));
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
+      if (ShouldUseChromeOSDirectVideoDecoder(gpu_preferences_)) {
         auto frame_pool = std::make_unique<PlatformVideoFramePool>(
             gpu_memory_buffer_factory_);
         auto frame_converter = MailboxVideoFrameConverter::Create(
@@ -269,7 +288,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 command_buffer_id->route_id));
         video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter),
-            gpu_memory_buffer_factory_);
+            media_log->Clone());
       } else {
         video_decoder = VdaVideoDecoder::Create(
             task_runner, gpu_task_runner_, media_log->Clone(),
@@ -280,7 +299,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 command_buffer_id->route_id));
       }
 
-#elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #if defined(OS_WIN)
       // Don't instantiate the DXVA decoder if it's not supported.
       if (gpu_workarounds_.disable_dxva_video_decoder)
@@ -322,14 +342,16 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 }
 
 std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
-    mojom::FrameInterfaceFactory* interface_provider) {
+    mojom::FrameInterfaceFactory* frame_interfaces) {
 #if defined(OS_ANDROID)
   return std::make_unique<AndroidCdmFactory>(
-      base::BindRepeating(&CreateProvisionFetcher, interface_provider),
-      base::BindRepeating(&CreateMediaDrmStorage, interface_provider));
+      base::BindRepeating(&CreateProvisionFetcher, frame_interfaces),
+      base::BindRepeating(&CreateMediaDrmStorage, frame_interfaces));
+#elif BUILDFLAG(IS_ASH)
+  return std::make_unique<chromeos::ChromeOsCdmFactory>(frame_interfaces);
 #else
   return nullptr;
-#endif  // defined(OS_ANDROID)
+#endif
 }
 
 }  // namespace media

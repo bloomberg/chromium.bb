@@ -39,7 +39,7 @@ class MockTextInputClient : public TextInputClient {
  public:
   ~MockTextInputClient() {}
   MOCK_METHOD1(SetCompositionText, void(const ui::CompositionText&));
-  MOCK_METHOD1(ConfirmCompositionText, void(bool));
+  MOCK_METHOD1(ConfirmCompositionText, uint32_t(bool));
   MOCK_METHOD0(ClearCompositionText, void());
   MOCK_METHOD1(InsertText, void(const base::string16&));
   MOCK_METHOD1(InsertChar, void(const ui::KeyEvent&));
@@ -187,6 +187,7 @@ class TSFInputPanelTest : public testing::Test {
  protected:
   void SetUp() override {
     text_store_ = new TSFTextStore();
+    EXPECT_EQ(S_OK, text_store_->Initialize());
     sink_ = new MockStoreACPSink();
     EXPECT_EQ(S_OK, text_store_->AdviseSink(IID_ITextStoreACPSink, sink_.get(),
                                             TS_AS_ALL_SINKS));
@@ -216,7 +217,9 @@ class TSFMultipleInputPanelTest : public testing::Test {
  protected:
   void SetUp() override {
     text_store1_ = new TSFTextStore();
+    EXPECT_EQ(S_OK, text_store1_->Initialize());
     text_store2_ = new TSFTextStore();
+    EXPECT_EQ(S_OK, text_store2_->Initialize());
     sink1_ = new MockStoreACPSink();
     sink2_ = new MockStoreACPSink();
     EXPECT_EQ(S_OK, text_store1_->AdviseSink(IID_ITextStoreACPSink,

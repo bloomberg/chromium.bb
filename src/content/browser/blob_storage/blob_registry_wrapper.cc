@@ -5,7 +5,6 @@
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -43,12 +42,14 @@ class BindingDelegate : public storage::BlobRegistryImpl::Delegate {
 // static
 scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-    scoped_refptr<storage::FileSystemContext> file_system_context) {
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    scoped_refptr<BlobRegistryWrapper> registry_for_fallback_url_registry) {
   scoped_refptr<BlobRegistryWrapper> result(new BlobRegistryWrapper());
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread,
                                 result, std::move(blob_storage_context),
-                                std::move(file_system_context)));
+                                std::move(file_system_context),
+                                std::move(registry_for_fallback_url_registry)));
   return result;
 }
 
@@ -70,10 +71,15 @@ BlobRegistryWrapper::~BlobRegistryWrapper() {}
 
 void BlobRegistryWrapper::InitializeOnIOThread(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-    scoped_refptr<storage::FileSystemContext> file_system_context) {
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    scoped_refptr<BlobRegistryWrapper> registry_for_fallback_url_registry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  url_registry_ = std::make_unique<storage::BlobUrlRegistry>(
+      registry_for_fallback_url_registry
+          ? registry_for_fallback_url_registry->url_registry()->AsWeakPtr()
+          : nullptr);
   blob_registry_ = std::make_unique<storage::BlobRegistryImpl>(
-      blob_storage_context->context()->AsWeakPtr(),
+      blob_storage_context->context()->AsWeakPtr(), url_registry_->AsWeakPtr(),
       std::move(file_system_context));
 }
 

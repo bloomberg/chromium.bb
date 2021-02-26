@@ -40,6 +40,10 @@ rtc_library("fuzz_data_helper") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
 }
 
+set_defaults("webrtc_fuzzer_test") {
+  absl_deps = []
+}
+
 template("webrtc_fuzzer_test") {
   fuzzer_test(target_name) {
     forward_variables_from(invoker, "*")
@@ -47,6 +51,21 @@ template("webrtc_fuzzer_test") {
       ":fuzz_data_helper",
       ":webrtc_fuzzer_main",
     ]
+
+    # If absl_deps is [], no action is needed. If not [], then it needs to be
+    # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
+    # otherwise it just needs to be added to deps.
+    if (absl_deps != []) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (build_with_chromium) {
+        deps += [ "//third_party/abseil-cpp:absl" ]
+      } else {
+        deps += absl_deps
+      }
+    }
+
     if (!build_with_chromium && is_clang) {
       suppressed_configs = [ "//build/config/clang:find_bad_constructs" ]
     }
@@ -194,10 +213,8 @@ webrtc_fuzzer_test("rtcp_receiver_fuzzer") {
 
 webrtc_fuzzer_test("rtp_packet_fuzzer") {
   sources = [ "rtp_packet_fuzzer.cc" ]
-  deps = [
-    "../../modules/rtp_rtcp:rtp_rtcp_format",
-    "//third_party/abseil-cpp/absl/types:optional",
-  ]
+  deps = [ "../../modules/rtp_rtcp:rtp_rtcp_format" ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
   seed_corpus = "corpora/rtp-corpus"
 }
 
@@ -240,8 +257,8 @@ rtc_library("audio_decoder_fuzzer") {
     "../../modules/rtp_rtcp:rtp_rtcp_format",
     "../../rtc_base:checks",
     "../../rtc_base:rtc_base_approved",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
 webrtc_fuzzer_test("audio_decoder_ilbc_fuzzer") {
@@ -318,7 +335,7 @@ webrtc_fuzzer_test("audio_encoder_opus_fuzzer") {
 }
 
 webrtc_fuzzer_test("audio_encoder_isac_fixed_fuzzer") {
-  sources = [ "audio_encoder_isax_fixed_fuzzer.cc" ]
+  sources = [ "audio_encoder_isac_fixed_fuzzer.cc" ]
   deps = [
     ":audio_encoder_fuzzer",
     "../../api/audio_codecs/isac:audio_encoder_isac_fix",
@@ -327,7 +344,7 @@ webrtc_fuzzer_test("audio_encoder_isac_fixed_fuzzer") {
 }
 
 webrtc_fuzzer_test("audio_encoder_isac_float_fuzzer") {
-  sources = [ "audio_encoder_isax_float_fuzzer.cc" ]
+  sources = [ "audio_encoder_isac_float_fuzzer.cc" ]
   deps = [
     ":audio_encoder_fuzzer",
     "../../api/audio_codecs/isac:audio_encoder_isac_float",
@@ -439,8 +456,8 @@ rtc_library("audio_processing_fuzzer_helper") {
     "../../modules/audio_processing:audio_frame_proxies",
     "../../rtc_base:checks",
     "../../rtc_base:rtc_base_approved",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
 webrtc_fuzzer_test("audio_processing_fuzzer") {
@@ -461,8 +478,8 @@ webrtc_fuzzer_test("audio_processing_fuzzer") {
     "../../rtc_base:rtc_task_queue",
     "../../rtc_base:safe_minmax",
     "../../system_wrappers:field_trial",
-    "//third_party/abseil-cpp/absl/memory",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/memory" ]
   seed_corpus = "corpora/audio_processing-corpus"
 }
 
@@ -565,15 +582,6 @@ webrtc_fuzzer_test("string_to_number_fuzzer") {
   sources = [ "string_to_number_fuzzer.cc" ]
   deps = [ "../../rtc_base:rtc_base_approved" ]
   seed_corpus = "corpora/string_to_number-corpus"
-}
-
-webrtc_fuzzer_test("rtp_rtcp_demuxer_helper_fuzzer") {
-  sources = [ "rtp_rtcp_demuxer_helper_fuzzer.cc" ]
-  deps = [
-    "../../api:array_view",
-    "../../call:rtp_receiver",
-  ]
-  seed_corpus = "corpora/rtcp-corpus"
 }
 
 webrtc_fuzzer_test("sctp_utils_fuzzer") {

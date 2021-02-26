@@ -7,7 +7,8 @@ package org.chromium.android_webview.test.services;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.os.ParcelFileDescriptor;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -43,6 +44,9 @@ import java.io.IOException;
 /**
  * Instrumentation tests for WebView's implementation of MinidumpUploaderDelegate, and the
  * interoperability of WebView's minidump-copying and minidump-uploading logic.
+ *
+ * These tests loads native library and mark the process as a browser process, it's safer to
+ * leave them unbatched to avoid possible state leaking between tests.
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)

@@ -155,7 +155,7 @@ interface TestObject {
     [Custom=Setter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
-    [RuntimeEnabled=FeatureName] attribute long originTrialEnabledLongAttribute;
+    [RuntimeEnabled=OriginTrialFeature] attribute long originTrialEnabledLongAttribute;
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
@@ -204,13 +204,13 @@ interface TestObject {
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
-    [Unforgeable] attribute long unforgeableLongAttribute;
+    [LegacyUnforgeable] attribute long unforgeableLongAttribute;
     [Measure] attribute long measuredLongAttribute;
     [SameObject] readonly attribute TestInterface sameObjectAttribute;
     [SameObject, SaveSameObject] readonly attribute TestInterface saveSameObjectAttribute;
     [SameObject, SaveSameObject] static readonly attribute TestInterface staticSaveSameObjectAttribute;
     [Unscopable] attribute long unscopableLongAttribute;
-    [Unscopable, RuntimeEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
+    [Unscopable, RuntimeEnabled=OriginTrialFeature] attribute long unscopableOriginTrialEnabledLongAttribute;
     [Unscopable, RuntimeEnabled=RuntimeFeature] attribute long unscopableRuntimeEnabledLongAttribute;
     [Unscopable] void unscopableVoidMethod();
     [Unscopable, RuntimeEnabled=RuntimeFeature] void unscopableRuntimeEnabledVoidMethod();
@@ -472,6 +472,14 @@ interface TestObject {
     [HighEntropy,MeasureAs=TestAttributeHighEntropy] attribute DOMString highEntropyAttributeWithMeasureAs;
     [HighEntropy,MeasureAs=TestAttributeHighEntropy] readonly attribute DOMString highEntropyReadonlyAttributeWithMeasureAs;
 
+    // [HighEntropy=Direct] attributes
+    [HighEntropy=Direct,MeasureAs=TestAttributeHighEntropyUnsignedLong] readonly attribute unsigned long highEntropyDirectUnsignedLong;
+    [HighEntropy=Direct,MeasureAs=TestAttributeHighEntropyDOMString] readonly attribute DOMString highEntropyDirectDomString;
+    [HighEntropy=Direct,MeasureAs=TestAttributeHighEntropyArrayDOMString] readonly attribute FrozenArray<DOMString> highEntropyDirectArrayDomString;
+
+    // [HighEntropy=Direct] methods
+    [HighEntropy=Direct,MeasureAs=TestMethodHighEntropyDirectNoArgsRetBoolean] boolean highEntropyDirectBoolean();
+
     // with [CEReactions] for not overloaded method
     [CEReactions] void ceReactionsNotOverloadedMethod(boolean arg);
     // with and without [CEReactions] for overloaded method
@@ -485,16 +493,8 @@ interface TestObject {
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod();
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod(long arg);
     [NotEnumerable] void notEnumerableVoidMethod();
-    [RuntimeEnabled=FeatureName] void originTrialEnabledVoidMethod();
-    [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsOriginTrialEnabledVoidMethod();
-    // TODO(iclelland): Re-enable origin trials on overloaded methods
-    // (crbug.com/621641)
-    // [RuntimeEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(DOMString stringArg);
-    // [RuntimeEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(long longArg);
-    // [RuntimeEnabled=FeatureName1] void partiallyOriginTrialEnabledOverloadedVoidMethod(DOMString stringArg);
-    // [RuntimeEnabled=FeatureName2] void partiallyOriginTrialEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
-    // void partiallyOriginTrialEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
-    // [RuntimeEnabled=FeatureName3] void partiallyOriginTrialEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
+    [RuntimeEnabled=OriginTrialFeature] void originTrialEnabledVoidMethod();
+    [PerWorldBindings, RuntimeEnabled=OriginTrialFeature] void perWorldBindingsOriginTrialEnabledVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [LogActivity, LogAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
@@ -519,7 +519,7 @@ interface TestObject {
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [DefaultValue=Undefined] optional Node node2);
-    [Unforgeable] void unforgeableVoidMethod();
+    [LegacyUnforgeable] void unforgeableVoidMethod();
     [NewObject] TestInterface newObjectTestInterfaceMethod();
     [NewObject] Promise<TestInterface> newObjectTestInterfacePromiseMethod();
     [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();

@@ -62,18 +62,19 @@ class FakeIsolateServerHandler(httpserver.Handler):
     """Processes handlers_endpoints_v1.StorageRequest."""
     request = json.loads(body)
     message = 'gs' if finalize_gs else 'datastore'
-    content = request['content'] if not finalize_gs else None
+    content = base64.b64decode(request['content']) if not finalize_gs else None
     embedded = FakeSigner.validate(request['upload_ticket'], message)
     # Embedded is an internal format used by
     # handlers_endpoints_v1.IsolateService.generate_ticket.
     namespace = embedded['n']
     d = embedded['d']
-    if self.server.store_hash_instead:
-      if not finalize_gs:
-        self.server.contents.setdefault(namespace, {})[d] = hash_content(
-            content)
-    else:
-      self.server.contents.setdefault(namespace, {})[d] = content
+
+    if not finalize_gs:
+      if self.server.store_hash_instead:
+        self.server.contents.setdefault(namespace,
+                                        {})[d] = hash_content(content)
+      else:
+        self.server.contents.setdefault(namespace, {})[d] = content
     self.send_json({'ok': True})
 
   ### Faked HTTP Methods
@@ -87,6 +88,10 @@ class FakeIsolateServerHandler(httpserver.Handler):
           'primary_url': self.server.url})
     elif self.path == '/auth/api/v1/accounts/self':
       self.send_json({'identity': 'user:joe', 'xsrf_token': 'foo'})
+    elif self.path.startswith('/FAKE_GCS/'):
+      namespace, h = self.path[len('/FAKE_GCS/'):].split('/', 1)
+      content = self.server.contents.get(namespace, {}).get(h)
+      self.send_octet_stream(content)
     else:
       raise NotImplementedError(self.path)
 
@@ -114,12 +119,13 @@ class FakeIsolateServerHandler(httpserver.Handler):
       request = json.loads(body)
       namespace = request['namespace']['namespace']
       for index, i in enumerate(request['items']):
-        append_entry({
-            'd': i['digest'],
-            'i': i['is_isolated'],
-            'n': namespace,
-            's': i['size'],
-        }, index, response['items'])
+        append_entry(
+            {
+                'd': i['digest'],
+                'i': i['is_isolated'],
+                'n': namespace,
+                's': int(i['size']),
+            }, index, response['items'])
       logging.info('Returning %s' % response)
       self.send_json(response)
     elif self.path.startswith('/_ah/api/isolateservice/v1/store_inline'):
@@ -133,7 +139,18 @@ class FakeIsolateServerHandler(httpserver.Handler):
       if data is None:
         logging.error(
             'Failed to retrieve %s / %s', namespace, request['digest'])
-      self.send_json({'content': data})
+      elif self._should_push_to_gs(None, len(data)):
+        self.send_json({
+            'url': self._generate_signed_url(request['digest'], namespace)
+        })
+        return
+
+      if data and not self.server.store_hash_instead:
+        data = base64.b64encode(data).decode()
+
+      self.send_json({
+          'content': data,
+      })
     elif self.path.startswith('/_ah/api/isolateservice/v1/server_details'):
       self.send_json({'server_version': 'such a good version'})
     else:
@@ -156,11 +173,12 @@ class FakeIsolateServerHandler(httpserver.Handler):
         self.server.contents.setdefault(namespace, {})[h] = body
 
       self.send_octet_stream(
-          '',
+          b'',
           headers={
               # This is to simulate
               # https://cloud.google.com/storage/docs/xml-api/reference-headers#xgooghash
-              'x-goog-hash': 'md5=' + base64.b64encode(md5_hash.digest()),
+              'x-goog-hash':
+                  'md5=' + base64.b64encode(md5_hash.digest()).decode(),
           })
     else:
       raise NotImplementedError(self.path)
@@ -186,14 +204,12 @@ class FakeIsolateServer(httpserver.Server):
     assert not self._server.store_hash_instead
     h = hash_content(content)
     logging.info('add_content_compressed(%s, %s)', namespace, h)
-    self._server.contents.setdefault(namespace, {})[h] = base64.b64encode(
-        zlib.compress(content))
+    self._server.contents.setdefault(namespace, {})[h] = zlib.compress(content)
     return h
 
   def add_content(self, namespace, content):
     assert not self._server.store_hash_instead
     h = hash_content(content)
     logging.info('add_content(%s, %s)', namespace, h)
-    self._server.contents.setdefault(namespace, {})[h] = base64.b64encode(
-        content)
+    self._server.contents.setdefault(namespace, {})[h] = content
     return h

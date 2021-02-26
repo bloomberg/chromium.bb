@@ -51,7 +51,8 @@ struct TypeConverter<MultiCacheQueryOptionsPtr,
 
     MultiCacheQueryOptionsPtr output = MultiCacheQueryOptions::New();
     output->query_options = std::move(query_options);
-    output->cache_name = input->cacheName();
+    if (input->hasCacheName())
+      output->cache_name = input->cacheName();
     return output;
   }
 };
@@ -75,7 +76,10 @@ bool IsCacheStorageAllowed(ScriptState* script_state) {
     settings_client = To<WorkerGlobalScope>(context)->ContentSettingsClient();
 
   // This triggers a sync IPC.
-  return settings_client ? settings_client->AllowCacheStorage() : true;
+  return settings_client
+             ? settings_client->AllowStorageAccessSync(
+                   WebContentSettingsClient::StorageType::kCacheStorage)
+             : true;
 }
 
 }  // namespace
@@ -128,15 +132,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   "CacheStorage", "CacheStorage::Open::Callback",
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   CacheStorageTracedValue(result->get_status()));
-              switch (result->get_status()) {
-                case mojom::blink::CacheStorageError::kErrorNotFound:
-                case mojom::blink::CacheStorageError::kErrorStorage:
-                  resolver->Resolve();
-                  break;
-                default:
-                  RejectCacheStorageWithError(resolver, result->get_status());
-                  break;
-              }
+              RejectCacheStorageWithError(resolver, result->get_status());
             } else {
               TRACE_EVENT_WITH_FLOW1(
                   "CacheStorage", "CacheStorage::Open::Callback",
@@ -498,7 +494,7 @@ bool CacheStorage::HasPendingActivity() const {
   return ever_used_;
 }
 
-void CacheStorage::Trace(Visitor* visitor) {
+void CacheStorage::Trace(Visitor* visitor) const {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
   visitor->Trace(cache_storage_remote_);

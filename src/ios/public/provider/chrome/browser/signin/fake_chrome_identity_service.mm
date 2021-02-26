@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -19,6 +20,8 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -120,7 +123,7 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
 @end
 
 namespace ios {
-NSString* const kManagedIdentityEmailFormat = @"%@@google.com";
+NSString* const kManagedIdentityEmailSuffix = @"@google.com";
 NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
@@ -171,13 +174,12 @@ FakeChromeIdentityService::CreateFakeChromeIdentityInteractionManager(
   return manager;
 }
 
-bool FakeChromeIdentityService::IsValidIdentity(
-    ChromeIdentity* identity) const {
+bool FakeChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) {
   return [identities_ indexOfObject:identity] != NSNotFound;
 }
 
 ChromeIdentity* FakeChromeIdentityService::GetIdentityWithGaiaID(
-    const std::string& gaia_id) const {
+    const std::string& gaia_id) {
   NSString* gaiaID = base::SysUTF8ToNSString(gaia_id);
   NSUInteger index =
       [identities_ indexOfObjectPassingTest:^BOOL(ChromeIdentity* obj,
@@ -190,15 +192,15 @@ ChromeIdentity* FakeChromeIdentityService::GetIdentityWithGaiaID(
   return [identities_ objectAtIndex:index];
 }
 
-bool FakeChromeIdentityService::HasIdentities() const {
+bool FakeChromeIdentityService::HasIdentities() {
   return [identities_ count] > 0;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentities() const {
+NSArray* FakeChromeIdentityService::GetAllIdentities() {
   return identities_;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay() const {
+NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
   return identities_;
 }
 
@@ -302,7 +304,7 @@ void FakeChromeIdentityService::SetUpForIntegrationTests() {}
 void FakeChromeIdentityService::AddManagedIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {
     NSString* email =
-        [NSString stringWithFormat:kManagedIdentityEmailFormat, name];
+        [NSString stringWithFormat:@"%@%@", name, kManagedIdentityEmailSuffix];
     NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
     [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
                                                           gaiaID:gaiaID
@@ -327,19 +329,15 @@ void FakeChromeIdentityService::AddIdentity(ChromeIdentity* identity) {
   FireIdentityListChanged();
 }
 
-void FakeChromeIdentityService::RemoveIdentity(ChromeIdentity* identity) {
-  if ([identities_ indexOfObject:identity] != NSNotFound) {
-    [identities_ removeObject:identity];
-    FireIdentityListChanged();
-  }
-}
-
 void FakeChromeIdentityService::SetFakeMDMError(bool fakeMDMError) {
   _fakeMDMError = fakeMDMError;
 }
 
-bool FakeChromeIdentityService::HasPendingCallback() {
-  return _pendingCallback > 0;
+bool FakeChromeIdentityService::WaitForServiceCallbacksToComplete() {
+  ConditionBlock condition = ^() {
+    return _pendingCallback == 0;
+  };
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
 }
 
 }  // namespace ios

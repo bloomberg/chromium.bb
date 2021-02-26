@@ -20,8 +20,6 @@
 #include <lib/zx/channel.h>
 #include <zircon/status.h>
 
-#include "common/debug.h"
-
 namespace
 {
 
@@ -82,7 +80,7 @@ ScenicWindow::~ScenicWindow()
     destroy();
 }
 
-bool ScenicWindow::initialize(const std::string &name, int width, int height)
+bool ScenicWindow::initializeImpl(const std::string &name, int width, int height)
 {
     // Set up scenic resources.
     mShape.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
@@ -113,6 +111,8 @@ bool ScenicWindow::initialize(const std::string &name, int width, int height)
 
     return true;
 }
+
+void ScenicWindow::disableErrorMessageDialog() {}
 
 void ScenicWindow::destroy()
 {
@@ -161,6 +161,12 @@ void ScenicWindow::messageLoop()
 void ScenicWindow::setMousePosition(int x, int y)
 {
     UNIMPLEMENTED();
+}
+
+bool ScenicWindow::setOrientation(int width, int height)
+{
+    UNIMPLEMENTED();
+    return false;
 }
 
 bool ScenicWindow::setPosition(int x, int y)

@@ -15,14 +15,16 @@ class XRTargetRaySpace : public XRSpace {
   XRTargetRaySpace(XRSession* session, XRInputSource* input_space);
 
   base::Optional<TransformationMatrix> MojoFromNative() override;
-  base::Optional<TransformationMatrix> NativeFromMojo() override;
   bool EmulatedPosition() const override;
 
-  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
+  base::Optional<device::mojom::blink::XRNativeOriginInformation> NativeOrigin()
+      const override;
 
   bool IsStationary() const override;
 
-  void Trace(Visitor*) override;
+  std::string ToString() const override;
+
+  void Trace(Visitor*) const override;
 
  private:
   Member<XRInputSource> input_source_;

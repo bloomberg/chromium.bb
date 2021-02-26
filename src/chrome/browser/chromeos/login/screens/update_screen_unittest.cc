@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -17,6 +18,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
@@ -68,6 +70,8 @@ class UpdateScreenUnitTest : public testing::Test {
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
 
     // Initialize objects needed by UpdateScreen.
+    wizard_context_ = std::make_unique<WizardContext>();
+    PowerManagerClient::InitializeFake();
     fake_update_engine_client_ = new FakeUpdateEngineClient();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
@@ -94,6 +98,7 @@ class UpdateScreenUnitTest : public testing::Test {
     mock_error_screen_.reset();
     network_portal_detector::Shutdown();
     NetworkHandler::Shutdown();
+    PowerManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -107,6 +112,7 @@ class UpdateScreenUnitTest : public testing::Test {
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
   MockNetworkPortalDetector* mock_network_portal_detector_;
   FakeUpdateEngineClient* fake_update_engine_client_;
+  std::unique_ptr<WizardContext> wizard_context_;
 
   base::Optional<UpdateScreen::Result> last_screen_result_;
 
@@ -125,7 +131,7 @@ class UpdateScreenUnitTest : public testing::Test {
 
 TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->Show();
+  update_screen_->Show(wizard_context_.get());
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -141,7 +147,7 @@ TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->Show();
+  update_screen_->Show(wizard_context_.get());
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -157,7 +163,7 @@ TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->Show();
+  update_screen_->Show(wizard_context_.get());
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -171,7 +177,7 @@ TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandleCriticalUpdateError) {
   // DUT reaches UpdateScreen.
-  update_screen_->Show();
+  update_screen_->Show(wizard_context_.get());
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);

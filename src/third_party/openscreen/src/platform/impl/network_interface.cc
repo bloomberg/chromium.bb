@@ -29,8 +29,8 @@ absl::optional<InterfaceInfo> GetLoopbackInterfaceForTesting() {
                std::find_if(
                    info.addresses.begin(), info.addresses.end(),
                    [](const IPSubnet& subnet) {
-                     return subnet.address == IPAddress::kV4LoopbackAddress ||
-                            subnet.address == IPAddress::kV6LoopbackAddress;
+                     return subnet.address == IPAddress::kV4LoopbackAddress() ||
+                            subnet.address == IPAddress::kV6LoopbackAddress();
                    }) != info.addresses.end();
       });
 

@@ -7,18 +7,18 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/infobar_android.h"
+#include "components/infobars/android/infobar_android.h"
 
 class SearchGeolocationDisclosureInfoBarDelegate;
 
-class SearchGeolocationDisclosureInfoBar : public InfoBarAndroid {
+class SearchGeolocationDisclosureInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit SearchGeolocationDisclosureInfoBar(
       std::unique_ptr<SearchGeolocationDisclosureInfoBarDelegate> delegate);
   ~SearchGeolocationDisclosureInfoBar() override;
 
  private:
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void OnLinkClicked(JNIEnv* env,

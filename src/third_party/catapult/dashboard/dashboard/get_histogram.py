@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint for getting a histogram."""
 from __future__ import print_function
 from __future__ import division
@@ -11,10 +10,10 @@ import json
 
 from google.appengine.ext import ndb
 
-from dashboard import post_data_handler
+from dashboard.common import request_handler
 
 
-class GetHistogramHandler(post_data_handler.PostDataHandler):
+class GetHistogramHandler(request_handler.RequestHandler):
   """URL endpoint to get histogramby guid."""
 
   def post(self):

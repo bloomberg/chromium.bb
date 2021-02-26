@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -64,7 +65,11 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
                                    &ct_policy_enforcer_,
                                    &transport_security_state_,
                                    &ct_verifier_,
-                                   UnknownRootAllowlistForHost(host)),
+                                   /*sct_auditing_delegate=*/nullptr,
+                                   UnknownRootAllowlistForHost(host),
+                                   // Fine to use an empty NetworkIsolationKey
+                                   // here, since this isn't used in Chromium.
+                                   net::NetworkIsolationKey()),
         cert_verifier_(std::move(cert_verifier)) {}
 
  private:
@@ -88,8 +93,8 @@ std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
       std::make_unique<SimpleTicketCrypter>(QuicChromiumClock::GetInstance()));
   CHECK(proof_source->Initialize(
 #if defined(OS_WIN)
-      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_certificate_file))),
-      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_key_file))),
+      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_certificate_file))),
+      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_key_file))),
       base::FilePath()));
 #else
       base::FilePath(GetQuicFlag(FLAGS_certificate_file)),

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -32,6 +33,11 @@ using ::testing::Combine;
 using ::testing::Values;
 
 namespace media {
+
+bool operator==(const FakePhotoDeviceConfig& lhs,
+                const FakePhotoDeviceConfig& rhs) {
+  return std::memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
+}
 
 namespace {
 
@@ -74,8 +80,7 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
 class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
  protected:
   FakeVideoCaptureDeviceTestBase()
-      : descriptors_(new VideoCaptureDeviceDescriptors()),
-        client_(CreateClient()),
+      : client_(CreateClient()),
         image_capture_client_(new ImageCaptureClient()),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
@@ -86,6 +91,17 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
         BindToCurrentLoop(base::BindRepeating(
             &FakeVideoCaptureDeviceTestBase::OnFrameCaptured,
             base::Unretained(this))));
+  }
+
+  void GetDevicesInfo() {
+    devices_info_.clear();
+    base::RunLoop run_loop;
+    video_capture_device_factory_->GetDevicesInfo(base::BindLambdaForTesting(
+        [this, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+          devices_info_ = std::move(result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
   }
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
@@ -101,7 +117,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_;
+  std::vector<VideoCaptureDeviceInfo> devices_info_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockVideoCaptureDeviceClient> client_;
   const scoped_refptr<ImageCaptureClient> image_capture_client_;
@@ -130,8 +146,8 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
     return;
   }
 
-  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
-  ASSERT_FALSE(descriptors_->empty());
+  GetDevicesInfo();
+  ASSERT_FALSE(devices_info_.empty());
 
   std::unique_ptr<VideoCaptureDevice> device =
       FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
@@ -192,17 +208,15 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   video_capture_device_factory_->SetToDefaultDevicesConfig(4);
-  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
-  ASSERT_EQ(4u, descriptors_->size());
+  GetDevicesInfo();
+  ASSERT_EQ(4u, devices_info_.size());
   const VideoPixelFormat expected_format_by_device_index[] = {
       PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_MJPEG,
       PIXEL_FORMAT_I420};
 
   int device_index = 0;
-  for (const auto& descriptors_iterator : *descriptors_) {
-    VideoCaptureFormats supported_formats;
-    video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
-                                                       &supported_formats);
+  for (const auto& device : devices_info_) {
+    const VideoCaptureFormats& supported_formats = device.supported_formats;
     ASSERT_EQ(6u, supported_formats.size());
     VideoPixelFormat expected_format =
         expected_format_by_device_index[device_index];
@@ -405,6 +419,7 @@ struct CommandLineTestData {
   size_t expected_device_count;
   FakeVideoCaptureDevice::DisplayMediaType expected_display_media_type;
   std::vector<VideoPixelFormat> expected_pixel_formats;
+  FakePhotoDeviceConfig expected_photo_device_config;
 };
 
 class FakeVideoCaptureDeviceFactoryTest
@@ -417,14 +432,12 @@ TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
   device_setting.device_id = "Device with no supported formats";
   config.emplace_back(device_setting);
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
-  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
-  EXPECT_EQ(1u, descriptors_->size());
-  VideoCaptureFormats supported_formats;
-  video_capture_device_factory_->GetSupportedFormats(descriptors_->at(0),
-                                                     &supported_formats);
+  GetDevicesInfo();
+  EXPECT_EQ(1u, devices_info_.size());
+  VideoCaptureFormats& supported_formats = devices_info_[0].supported_formats;
   EXPECT_EQ(0u, supported_formats.size());
   auto device =
-      video_capture_device_factory_->CreateDevice(descriptors_->at(0));
+      video_capture_device_factory_->CreateDevice(devices_info_[0].descriptor);
   EXPECT_TRUE(device.get());
 
   auto client = CreateClient();
@@ -442,26 +455,27 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest,
   FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       GetParam().switch_value_string, &config);
   for (const auto& settings : config) {
+    EXPECT_EQ(GetParam().expected_photo_device_config,
+              settings.photo_device_config);
     EXPECT_EQ(GetParam().expected_display_media_type,
               settings.display_media_type);
   }
 
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
-  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
-  EXPECT_EQ(GetParam().expected_device_count, descriptors_->size());
+  GetDevicesInfo();
+  EXPECT_EQ(GetParam().expected_device_count, devices_info_.size());
 
   int device_index = 0;
-  for (const auto& descriptors_iterator : *descriptors_) {
-    VideoCaptureFormats supported_formats;
-    video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
-                                                       &supported_formats);
+  for (const auto& device_info : devices_info_) {
+    const VideoCaptureFormats& supported_formats =
+        device_info.supported_formats;
     for (const auto& supported_formats_entry : supported_formats) {
       EXPECT_EQ(GetParam().expected_pixel_formats[device_index],
                 supported_formats_entry.pixel_format);
     }
 
     std::unique_ptr<VideoCaptureDevice> device =
-        video_capture_device_factory_->CreateDevice(descriptors_iterator);
+        video_capture_device_factory_->CreateDevice(device_info.descriptor);
     ASSERT_TRUE(device);
 
     VideoCaptureParams capture_params;
@@ -491,7 +505,8 @@ INSTANTIATE_TEST_SUITE_P(
                                5,
                                1u,
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
-                               {PIXEL_FORMAT_I420}},
+                               {PIXEL_FORMAT_I420},
+                               {{true, true, true}, false, false, false}},
            CommandLineTestData{"fps=29.97,device-count=1",
                                29.97f,
                                1u,
@@ -524,6 +539,24 @@ INSTANTIATE_TEST_SUITE_P(
                                0u,
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420}},
+           CommandLineTestData{"hardware-support=none",
+                               20,
+                               1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
+                               {PIXEL_FORMAT_I420},
+                               {{false, false, false}}},
+           CommandLineTestData{"hardware-support=zoom,fps=60",
+                               60,
+                               1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
+                               {PIXEL_FORMAT_I420},
+                               {{false, false, true}}},
+           CommandLineTestData{"hardware-support=pan-tilt-zoom,fps=60",
+                               60,
+                               1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
+                               {PIXEL_FORMAT_I420},
+                               {{true, true, true}}},
            CommandLineTestData{"display-media-type=window",
                                20,
                                1u,

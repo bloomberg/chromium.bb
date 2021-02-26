@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "cc/ipc/cc_param_traits_macros.h"
 #include "content/common/content_param_traits_macros.h"
-#include "content/common/cursors/webcursor.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "net/base/hash_value.h"
 #include "ui/accessibility/ax_mode.h"
@@ -26,32 +25,16 @@ namespace blink {
 class PolicyValue;
 class MessagePortChannel;
 class MessagePortDescriptor;
-struct TransferableMessage;
-}
-
-namespace content {
-struct RecordContentToVisibleTimeRequest;
 }
 
 namespace viz {
 class FrameSinkId;
 class LocalSurfaceId;
-class LocalSurfaceIdAllocation;
 class SurfaceId;
 class SurfaceInfo;
 }  // namespace viz
 
 namespace IPC {
-
-template <>
-struct CONTENT_EXPORT ParamTraits<content::WebCursor> {
-  typedef content::WebCursor param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct CONTENT_EXPORT ParamTraits<blink::MessagePortChannel> {
@@ -94,18 +77,6 @@ struct CONTENT_EXPORT ParamTraits<ui::AXMode> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<
-    scoped_refptr<base::RefCountedData<blink::TransferableMessage>>> {
-  typedef scoped_refptr<base::RefCountedData<blink::TransferableMessage>>
-      param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct CONTENT_EXPORT ParamTraits<viz::FrameSinkId> {
   typedef viz::FrameSinkId param_type;
   static void Write(base::Pickle* m, const param_type& p);
@@ -118,16 +89,6 @@ struct CONTENT_EXPORT ParamTraits<viz::FrameSinkId> {
 template <>
 struct CONTENT_EXPORT ParamTraits<viz::LocalSurfaceId> {
   typedef viz::LocalSurfaceId param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<viz::LocalSurfaceIdAllocation> {
-  typedef viz::LocalSurfaceIdAllocation param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -158,16 +119,6 @@ struct CONTENT_EXPORT ParamTraits<viz::SurfaceInfo> {
 template <>
 struct CONTENT_EXPORT ParamTraits<net::SHA256HashValue> {
   typedef net::SHA256HashValue param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<content::RecordContentToVisibleTimeRequest> {
-  using param_type = content::RecordContentToVisibleTimeRequest;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

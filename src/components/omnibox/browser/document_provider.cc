@@ -44,6 +44,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -98,40 +99,6 @@ AutocompleteMatch::DocumentType GetIconForMIMEType(
   return iterator != kIconMap.end()
              ? iterator->second
              : AutocompleteMatch::DocumentType::DRIVE_OTHER;
-}
-
-const char kErrorMessageAdminDisabled[] =
-    "Not eligible to query due to admin disabled Chrome search settings.";
-const char kErrorMessageRetryLater[] = "Not eligible to query, see retry info.";
-
-// TODO(manukh): Remove ResponseContainsBackoffSignal once the check using http
-// status code in |OnURLLoadComplete| rolls out and the backend returns to
-// sending 4xx backoff responses as opposed to 2xx; or, if the backend is never
-// adjusted to send 2xx responses, once that check rolls out.
-bool ResponseContainsBackoffSignal(const base::DictionaryValue* root_dict) {
-  const base::DictionaryValue* error_info;
-  if (!root_dict->GetDictionary("error", &error_info)) {
-    return false;
-  }
-  int code;
-  std::string status;
-  std::string message;
-  if (!error_info->GetInteger("code", &code) ||
-      !error_info->GetString("status", &status) ||
-      !error_info->GetString("message", &message)) {
-    return false;
-  }
-
-  // 403/PERMISSION_DENIED: Account is currently ineligible to receive results.
-  if (code == 403 && status == "PERMISSION_DENIED" &&
-      message == kErrorMessageAdminDisabled) {
-    return true;
-  }
-
-  // 503/UNAVAILABLE: Uninteresting set of results, or another server request to
-  // backoff.
-  return code == 503 && status == "UNAVAILABLE" &&
-         message == kErrorMessageRetryLater;
 }
 
 struct FieldMatches {
@@ -341,11 +308,6 @@ std::string ExtractDocIdFromUrl(const std::string& url) {
   return std::string();
 }
 
-base::string16 TitleForAutocompletion(AutocompleteMatch match) {
-  return match.contents +
-         base::UTF8ToUTF16(" - " + match.destination_url.spec());
-}
-
 bool WithinBounds(int value, int min, int max) {
   return value >= min && (value < max || max == -1);
 }
@@ -461,7 +423,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 
   // There should be no document suggestions fetched for on-focus suggestion
   // requests, or if the input is empty.
-  if (input.from_omnibox_focus() ||
+  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
       input.type() == metrics::OmniboxInputType::EMPTY) {
     return;
   }
@@ -731,15 +693,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
     return matches;
   }
 
-  // The server may ask the client to back off, in which case we back off for
-  // the session.
-  // TODO(skare): Respect retryDelay if provided, ideally by calling via gRPC.
-  if (ResponseContainsBackoffSignal(root_dict)) {
-    backoff_for_session_ = true;
-    return matches;
-  }
-
-  // Otherwise parse the results.
+  // Parse the results.
   if (!root_dict->GetList("results", &results_list)) {
     return matches;
   }
@@ -793,7 +747,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       WithinBounds(input_.text().length(), min_query_show_length_,
                    max_query_show_length_);
   // In order to compare small slices of input length while excluding noise from
-  // the larger group of all input lenghts, |min_query_log_length_| and
+  // the larger group of all input lengths, |min_query_log_length_| and
   // |max_query_log_length_| specify the queries that will log
   // field_trial_triggered. E.g., if |min_query_log_length_| is 50 and
   // |max_query_log_length_| is -1, only inputs of length 50 or greater which
@@ -887,19 +841,18 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
           display_owner && !owners.empty() ? *owners[0] : "");
       AutocompleteMatch::AddLastClassificationIfNecessary(
           &match.description_class, 0, ACMatchClassification::DIM);
-      // Exclude date from description_for_shortcut to avoid showing stale dates
-      // from the shortcuts provider.
-      match.description_for_shortcuts = GetMatchDescription(
-          "", mimetype, display_owner && !owners.empty() ? *owners[0] : "");
+      // Exclude date & owner from description_for_shortcut to avoid showing
+      // stale data from the shortcuts provider.
+      match.description_for_shortcuts = GetMatchDescription("", mimetype, "");
       AutocompleteMatch::AddLastClassificationIfNecessary(
           &match.description_class_for_shortcuts, 0,
           ACMatchClassification::DIM);
-      match.RecordAdditionalInfo(
-          "description_for_shortcuts",
-          base::UTF16ToUTF8(match.description_for_shortcuts));
+      match.RecordAdditionalInfo("description_for_shortcuts",
+                                 match.description_for_shortcuts);
     }
 
-    match.TryAutocompleteWithTitle(TitleForAutocompletion(match), input_);
+    match.TryRichAutocompletion(base::UTF8ToUTF16(match.destination_url.spec()),
+                                match.contents, input_);
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     match.RecordAdditionalInfo("client score", client_score);
     match.RecordAdditionalInfo("server score", server_score);
@@ -925,8 +878,9 @@ void DocumentProvider::CopyCachedMatchesToMatches(
                   auto match = cache_key_match_pair.second;
                   match.relevance = 0;
                   match.allowed_to_be_default_match = false;
-                  match.TryAutocompleteWithTitle(TitleForAutocompletion(match),
-                                                 input_);
+                  match.TryRichAutocompletion(
+                      base::UTF8ToUTF16(match.destination_url.spec()),
+                      match.contents, input_);
                   match.contents_class =
                       DocumentProvider::Classify(match.contents, input_.text());
                   match.RecordAdditionalInfo("from cache", "true");

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
-#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 #include <windows.h>
 #include <winternl.h>
@@ -14,7 +13,6 @@
 #define _NTDEF_  // Prevent redefition errors, must come after <winternl.h>
 #include <ntsecapi.h>  // For POLICY_ALL_ACCESS types
 
-#include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,7 +20,7 @@
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
@@ -51,9 +49,58 @@ const char kMacAddressParameterName[] = "wlan_mac_addr";
 const char kUploadDeviceDetailsResponseDeviceResourceIdParameterName[] =
     "deviceResourceId";
 const char kOsVersion[] = "os_edition";
+const char kBuiltInAdminNameParameterName[] = "built_in_admin_name";
+const char kAdminGroupNameParameterName[] = "admin_group_name";
+const char kDmToken[] = "dm_token";
+const char kObfuscatedGaiaId[] = "obfuscated_gaia_id";
+
+// Registry key to control whether upload device details from ESA feature is
+// enabled.
+const wchar_t kUploadDeviceDetailsFromEsaEnabledRegKey[] =
+    L"upload_device_details_from_esa";
+
+// True when upload device details from ESA feature  is enabled.
+bool g_upload_device_details_from_esa_enabled = false;
 
 // Maximum number of retries if a HTTP call to the backend fails.
 constexpr unsigned int kMaxNumHttpRetries = 3;
+
+// Defines a task that is called by the ESA to upload device details.
+class UploadDeviceDetailsTask : public extension::Task {
+ public:
+  static std::unique_ptr<extension::Task> Create() {
+    std::unique_ptr<extension::Task> esa_task(new UploadDeviceDetailsTask());
+    return esa_task;
+  }
+
+  // ESA calls this to retrieve a configuration for the task execution. Return
+  // a default config for now.
+  extension::Config GetConfig() final { return extension::Config(); }
+
+  // ESA calls this to set all the user-device contexts for the execution of the
+  // task.
+  HRESULT SetContext(const std::vector<extension::UserDeviceContext>& c) final {
+    context_ = c;
+    return S_OK;
+  }
+
+  // ESA calls execute function to perform the actual task.
+  HRESULT Execute() final {
+    HRESULT task_status = S_OK;
+    for (const auto& c : context_) {
+      HRESULT hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(c);
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "Failed uploading device details for " << c.user_sid
+                     << ". hr=" << putHR(hr);
+        task_status = hr;
+      }
+    }
+    return task_status;
+  }
+
+ private:
+  std::vector<extension::UserDeviceContext> context_;
+};
 }  // namespace
 
 // static
@@ -69,27 +116,74 @@ GemDeviceDetailsManager** GemDeviceDetailsManager::GetInstanceStorage() {
   return &instance_storage;
 }
 
+// static
+extension::TaskCreator
+GemDeviceDetailsManager::UploadDeviceDetailsTaskCreator() {
+  return base::BindRepeating(&UploadDeviceDetailsTask::Create);
+}
+
 GemDeviceDetailsManager::GemDeviceDetailsManager(
     base::TimeDelta upload_device_details_request_timeout)
     : upload_device_details_request_timeout_(
-          upload_device_details_request_timeout) {}
+          upload_device_details_request_timeout) {
+  g_upload_device_details_from_esa_enabled =
+      GetGlobalFlagOrDefault(kUploadDeviceDetailsFromEsaEnabledRegKey, 0) == 1;
+}
 
 GemDeviceDetailsManager::~GemDeviceDetailsManager() = default;
 
 GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
   GURL gem_service_url = GetGcpwServiceUrl();
-
   return gem_service_url.Resolve(kGemServiceUploadDeviceDetailsPath);
 }
 
-// Uploads the device details into GEM database using |access_token| for
-// authentication and authorization. The GEM service would use |serial_number|
-// and |machine_guid| for identifying the device entry in GEM database.
+bool GemDeviceDetailsManager::UploadDeviceDetailsFromEsaFeatureEnabled() const {
+  return g_upload_device_details_from_esa_enabled;
+}
+
+// Uploads the device details into GEM database using |dm_token|
+// for authentication and authorization. The GEM service would use
+// |serial_number| and |machine_guid| for identifying the device
+// entry in GEM database.
+HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
+    const extension::UserDeviceContext& context) {
+  base::string16 obfuscated_user_id;
+  HRESULT status = GetIdFromSid(context.user_sid.c_str(), &obfuscated_user_id);
+  if (FAILED(status)) {
+    LOGFN(ERROR) << "Could not get user id from sid " << context.user_sid;
+    return status;
+  }
+
+  return UploadDeviceDetailsInternal(
+      /* access_token= */ std::string(), obfuscated_user_id, context.dm_token,
+      context.user_sid, context.device_resource_id,
+      /* username= */ L"", /* domain= */ L"");
+}
+
+// Uploads the device details into GEM database using |access_token|
+// for authentication and authorization. The GEM service would use
+// |serial_number| and |machine_guid| for identifying the device
+// entry in GEM database.
 HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
     const std::string& access_token,
     const base::string16& sid,
     const base::string16& username,
     const base::string16& domain) {
+  return UploadDeviceDetailsInternal(access_token,
+                                     /* obfuscated_user_id= */ L"",
+                                     /* dm_token= */ L"", sid,
+                                     /* device_resource_id= */ L"", username,
+                                     domain);
+}
+
+HRESULT GemDeviceDetailsManager::UploadDeviceDetailsInternal(
+    const std::string access_token,
+    const base::string16 obfuscated_user_id,
+    const base::string16 dm_token,
+    const base::string16 sid,
+    const base::string16 device_resource_id,
+    const base::string16 username,
+    const base::string16 domain) {
   base::string16 serial_number = GetSerialNumber();
   base::string16 machine_guid;
   HRESULT hr = GetMachineGuid(&machine_guid);
@@ -103,9 +197,36 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   std::string version;
   GetOsVersion(&version);
 
+  // Extract built-in administrator and administrator group name
+  // in device locale.
+  base::string16 admin_group_name = L"";
+  hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
+                                          &admin_group_name);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "LookupLocalizedNameForWellKnownSid  hr=" << putHR(hr);
+    hr = S_OK;
+  }
+
+  base::string16 built_in_admin_name = L"";
+  hr = GetLocalizedNameBuiltinAdministratorAccount(&built_in_admin_name);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetLocalizedNameBuiltinAdministratorAccount  hr="
+                 << putHR(hr);
+    hr = S_OK;
+  }
+
   base::Value mac_address_value_list(base::Value::Type::LIST);
   for (const std::string& mac_address : mac_addresses)
     mac_address_value_list.Append(base::Value(mac_address));
+
+  base::string16 dm_token_value = dm_token;
+  if (dm_token_value.empty()) {
+    hr = GetGCPWDmToken(sid, &dm_token_value);
+    if (FAILED(hr)) {
+      LOGFN(WARNING) << "Failed to fetch DmToken hr=" << putHR(hr);
+      hr = S_OK;
+    }
+  }
 
   request_dict_.reset(new base::Value(base::Value::Type::DICTIONARY));
   request_dict_->SetStringKey(
@@ -116,17 +237,35 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
       base::UTF16ToUTF8(machine_guid));
   request_dict_->SetStringKey(kUploadDeviceDetailsRequestUserSidParameterName,
                               base::UTF16ToUTF8(sid));
-  request_dict_->SetStringKey(kUploadDeviceDetailsRequestUsernameParameterName,
-                              base::UTF16ToUTF8(username));
-  request_dict_->SetStringKey(kUploadDeviceDetailsRequestDomainParameterName,
-                              base::UTF16ToUTF8(domain));
+
+  if (!username.empty()) {
+    request_dict_->SetStringKey(
+        kUploadDeviceDetailsRequestUsernameParameterName,
+        base::UTF16ToUTF8(username));
+  }
+
+  if (!domain.empty()) {
+    request_dict_->SetStringKey(kUploadDeviceDetailsRequestDomainParameterName,
+                                base::UTF16ToUTF8(domain));
+  }
+
   request_dict_->SetBoolKey(kIsAdJoinedUserParameterName,
                             OSUserManager::Get()->IsUserDomainJoined(sid));
   request_dict_->SetKey(kMacAddressParameterName,
                         std::move(mac_address_value_list));
   request_dict_->SetStringKey(kOsVersion, version);
+  request_dict_->SetStringKey(kBuiltInAdminNameParameterName,
+                              built_in_admin_name);
+  request_dict_->SetStringKey(kAdminGroupNameParameterName, admin_group_name);
+  request_dict_->SetStringKey(kDmToken, base::UTF16ToUTF8(dm_token_value));
 
-  base::string16 known_resource_id = GetUserDeviceResourceId(sid);
+  if (!obfuscated_user_id.empty()) {
+    request_dict_->SetStringKey(kObfuscatedGaiaId, obfuscated_user_id);
+  }
+
+  base::string16 known_resource_id = device_resource_id.empty()
+                                         ? GetUserDeviceResourceId(sid)
+                                         : device_resource_id;
   if (!known_resource_id.empty()) {
     request_dict_->SetStringKey(
         kUploadDeviceDetailsRequestDeviceResourceIdParameterName,
@@ -158,6 +297,11 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   }
 
   return hr;
+}
+
+void GemDeviceDetailsManager::
+    SetUploadDeviceDetailsFromEsaFeatureEnabledForTesting(bool value) {
+  g_upload_device_details_from_esa_enabled = value;
 }
 
 }  // namespace credential_provider

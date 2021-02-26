@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.os.Build;
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -14,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -49,16 +47,16 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_retry.html", this);
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("components/test/data/payments/render_tests");
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
 
     @Override
     public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
-        String billing_address_id = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "333-333-3333", "jon.doe@gmail.com", "en-US"));
+        String billing_address_id = helper.setProfile(
+                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
+                        "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                        "US", "333-333-3333", "jon.doe@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true /* isLocal */,
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
                 "2050", "mastercard", R.drawable.mc_card, billing_address_id, "" /* serverId */));
@@ -225,8 +223,6 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/979159")
     @Feature({"Payments", "RenderTest"})
     public void testRetryWithPayerErrors() throws Throwable {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());

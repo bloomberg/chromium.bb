@@ -58,6 +58,7 @@ if (has_nasm_deps) {
 
     nasm_flags += [
       "-W+error=all",
+      "-Wno-macro-params-legacy",
       "-P" + rebase_path("$platform_config_root/config.asm", root_build_dir),
     ]
 
@@ -163,6 +164,10 @@ config("ffmpeg_warnings") {
       # `return LICENSE_PREFIX FFMPEG_LICENSE + sizeof(LICENSE_PREFIX) - 1;`
       # while -Wstring-plus-int wants &FFMPEG_LICENSE[sizeof(LICENSE_PREFIX)-1]
       "-Wno-string-plus-int",
+
+      # video_enc_params.c has a condition that is always false when size_t is
+      # 64 bits.
+      "-Wno-tautological-constant-out-of-range-compare",
     ]
 
     if (target_cpu == "arm" || target_cpu == "arm64") {

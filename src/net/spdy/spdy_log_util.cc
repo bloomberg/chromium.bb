@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/abseil_string_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -23,13 +24,13 @@ base::Value ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
       {"[", base::NumberToString(debug_data.size()), " bytes were stripped]"}));
 }
 
-base::ListValue ElideSpdyHeaderBlockForNetLog(
-    const spdy::SpdyHeaderBlock& headers,
+base::ListValue ElideHttp2HeaderBlockForNetLog(
+    const spdy::Http2HeaderBlock& headers,
     NetLogCaptureMode capture_mode) {
   base::ListValue headers_list;
   for (const auto& header : headers) {
-    base::StringPiece key = header.first;
-    base::StringPiece value = header.second;
+    base::StringPiece key = base::StringViewToStringPiece(header.first);
+    base::StringPiece value = base::StringViewToStringPiece(header.second);
     headers_list.Append(NetLogStringValue(
         base::StrCat({key, ": ",
                       ElideHeaderValueForNetLog(capture_mode, key.as_string(),
@@ -38,10 +39,11 @@ base::ListValue ElideSpdyHeaderBlockForNetLog(
   return headers_list;
 }
 
-base::Value SpdyHeaderBlockNetLogParams(const spdy::SpdyHeaderBlock* headers,
-                                        NetLogCaptureMode capture_mode) {
+base::Value Http2HeaderBlockNetLogParams(const spdy::Http2HeaderBlock* headers,
+                                         NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
-  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  dict.SetKey("headers",
+              ElideHttp2HeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);
 }
 

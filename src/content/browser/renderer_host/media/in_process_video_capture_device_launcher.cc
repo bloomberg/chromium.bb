@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/common/buildflags.h"
@@ -43,20 +43,19 @@
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 #include "media/capture/video/chromeos/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
-  auto io_task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+  auto io_task_runner = content::GetIOThreadTaskRunner({});
   return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
       std::make_unique<media::VideoCaptureJpegDecoderImpl>(
           base::BindRepeating(
@@ -65,7 +64,7 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
           std::move(send_log_message_cb)),
       io_task_runner);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The maximum number of video frame buffers in-flight at any one time. This
 // value should be based on the logical capacity of the capture pipeline, and
@@ -111,8 +110,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   // Wrap the receiver, to trampoline all its method calls from the device
   // to the IO thread.
   auto receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-      receiver_on_io_thread,
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      receiver_on_io_thread, GetIOThreadTaskRunner({}));
 
   base::OnceClosure start_capture_closure;
   // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|
@@ -152,8 +150,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 #endif  // !defined(OS_ANDROID)
 
     case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
-      FALLTHROUGH;
-    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE: {
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
       if (desktop_id.is_null()) {
         DLOG(ERROR) << "Desktop media ID is null";
@@ -251,10 +249,9 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
 
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
       new media::VideoCaptureBufferPoolImpl(
-          std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           requested_buffer_type, buffer_pool_max_buffer_count);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<media::VideoCaptureDeviceClient>(
       requested_buffer_type, std::move(receiver), std::move(buffer_pool),
       base::BindRepeating(
@@ -266,7 +263,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
 #else
   return std::make_unique<media::VideoCaptureDeviceClient>(
       requested_buffer_type, std::move(receiver), std::move(buffer_pool));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
@@ -419,7 +416,7 @@ void InProcessVideoCaptureDeviceLauncher::
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(DesktopMediaID::kFakeId, desktop_id.id);
 
-  auto fake_device_factory =
+  fake_device_factory_ =
       std::make_unique<media::FakeVideoCaptureDeviceFactory>();
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -431,17 +428,30 @@ void InProcessVideoCaptureDeviceLauncher::
             command_line->GetSwitchValueASCII(
                 switches::kUseFakeDeviceForMediaStream),
             &config);
-    fake_device_factory->SetToCustomDevicesConfig(config);
+    fake_device_factory_->SetToCustomDevicesConfig(config);
   }
-  media::VideoCaptureDeviceDescriptors device_descriptors;
-  fake_device_factory->GetDeviceDescriptors(&device_descriptors);
-  if (device_descriptors.empty()) {
+
+  // base::Unretained() is safe because |this| owns |fake_device_factory_|.
+  fake_device_factory_->GetDevicesInfo(base::BindOnce(
+      &InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated,
+      base::Unretained(this), params, std::move(device_client),
+      std::move(result_callback)));
+}
+
+void InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated(
+    const media::VideoCaptureParams& params,
+    std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
+    ReceiveDeviceCallback result_callback,
+    std::vector<media::VideoCaptureDeviceInfo> devices_info) {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+
+  if (devices_info.empty()) {
     LOG(ERROR) << "Cannot start with no fake device config";
     std::move(result_callback).Run(nullptr);
     return;
   }
   auto video_capture_device =
-      fake_device_factory->CreateDevice(device_descriptors.front());
+      fake_device_factory_->CreateDevice(devices_info.front().descriptor);
   video_capture_device->AllocateAndStart(params, std::move(device_client));
   std::move(result_callback).Run(std::move(video_capture_device));
 }

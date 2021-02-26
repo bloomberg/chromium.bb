@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {click, getBrowserAndPages, waitFor} from '../../shared/helper.js';
+import {$$, click, getBrowserAndPages, waitFor, waitForFunction} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {addBreakpointForLine, openSourceCodeEditorForFile, retrieveTopCallFrameScriptLocation} from '../helpers/sources-helpers.js';
 
 const PRETTY_PRINT_BUTTON = '[aria-label="Pretty print minified-sourcecode.js"]';
@@ -32,9 +32,9 @@ describe('The Sources Tab', async function() {
   this.timeout(10000);
 
   it('can format a JavaScript file', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'minified-sourcecode.js', 'minified-sourcecode.html');
+    await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
     await prettyPrintMinifiedFile(frontend);
 
     const expectedLines = [
@@ -66,22 +66,25 @@ describe('The Sources Tab', async function() {
   });
 
   it('causes the correct line number to show up in the console panel', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'minified-sourcecode.js', 'minified-sourcecode.html');
+    await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
     await prettyPrintMinifiedFile(frontend);
 
     await click('#tab-console');
 
     await waitFor('.console-group-messages');
-
-    const messageLinks = await frontend.evaluate(() => {
-      return Array.from(document.querySelectorAll('.console-group-messages .source-code'))
-          .map(message => ({
-                 message: message.querySelector('.console-message-text')!.textContent,
-                 lineNumber: message.querySelector('.console-message-anchor')!.textContent,
-               }));
+    const messages = await waitForFunction(async () => {
+      const messages = await $$('.console-group-messages .source-code');
+      return messages.length === 2 ? messages : undefined;
     });
+
+    const messageLinks = await Promise.all(messages.map(
+        messageHandle =>
+            (messageHandle.evaluate(message => ({
+                                      message: message.querySelector('.console-message-text')!.textContent,
+                                      lineNumber: message.querySelector('.console-message-anchor')!.textContent,
+                                    })))));
 
     assert.deepEqual(messageLinks, [
       {
@@ -98,7 +101,7 @@ describe('The Sources Tab', async function() {
   it('can add breakpoint for formatted file', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'minified-sourcecode.js', 'minified-sourcecode.html');
+    await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
     await prettyPrintMinifiedFile(frontend);
     await addBreakpointForLine(frontend, 10);
 
@@ -109,8 +112,8 @@ describe('The Sources Tab', async function() {
   it('can add breakpoint for unformatted file', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'minified-sourcecode.js', 'minified-sourcecode.html');
-    await addBreakpointForLine(frontend, 5);
+    await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
+    await addBreakpointForLine(frontend, 6);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('notFormattedFunction();', target);
     assert.deepEqual(scriptLocation, 'minified-sourcecode.js:6');
@@ -119,8 +122,8 @@ describe('The Sources Tab', async function() {
   it('can add breakpoint on minified source and then break correctly on formatted source', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'minified-sourcecode.js', 'minified-sourcecode.html');
-    await addBreakpointForLine(frontend, 5);
+    await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
+    await addBreakpointForLine(frontend, 6);
     await prettyPrintMinifiedFile(frontend);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('notFormattedFunction();', target);
@@ -131,7 +134,7 @@ describe('The Sources Tab', async function() {
   it.skip('[crbug.com/1003497] can add breakpoint for inline scripts in HTML file', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await openSourceCodeEditorForFile(target, 'inline-script.html', 'inline-script.html');
+    await openSourceCodeEditorForFile('inline-script.html', 'inline-script.html');
     await addBreakpointForLine(frontend, 16);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('functionInInlineScriptWithSourceURL();', target);

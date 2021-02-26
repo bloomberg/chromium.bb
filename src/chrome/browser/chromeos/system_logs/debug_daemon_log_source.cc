@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -22,6 +24,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "components/feedback/feedback_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,7 +35,6 @@ namespace {
 
 constexpr char kNotAvailable[] = "<not available>";
 constexpr char kRoutesKeyName[] = "routes";
-constexpr char kNetworkStatusKeyName[] = "network-status";
 constexpr char kLogTruncated[] = "<earlier logs truncated>\n";
 
 // List of user log files that Chrome reads directly as these logs are generated
@@ -51,67 +53,21 @@ constexpr struct UserLogs {
     {"logout-times", "logout-times"},
 };
 
+// List of debugd entries to exclude from the results.
+constexpr std::array<const char*, 2> kExcludeList = {
+    // Shill device and service properties are retrieved by ShillLogSource.
+    // TODO(https://crbug.com/967800): Modify debugd to omit these for
+    // feedback report gathering and remove these entries.
+    "network-devices",
+    "network-services",
+};
+
 // Buffer size for user logs in bytes. Given that maximum feedback report size
 // is ~7M and that majority of log files are under 1M, we set a per-file limit
 // of 1MiB.
 const int64_t kMaxLogSize = 1024 * 1024;
 
 }  // namespace
-
-bool ReadEndOfFile(const base::FilePath& path,
-                   std::string* contents,
-                   size_t max_size) {
-  if (!contents) {
-    LOG(ERROR) << "contents buffer is null.";
-    return false;
-  }
-
-  if (path.ReferencesParent()) {
-    LOG(ERROR) << "ReadEndOfFile can't be called on file paths with parent "
-                  "references.";
-    return false;
-  }
-
-  base::ScopedFILE fp(base::OpenFile(path, "r"));
-  if (!fp) {
-    PLOG(ERROR) << "Failed to open file " << path.value();
-    return false;
-  }
-
-  std::unique_ptr<char[]> chunk(new char[max_size]);
-  std::unique_ptr<char[]> last_chunk(new char[max_size]);
-  chunk[0] = '\0';
-  last_chunk[0] = '\0';
-
-  size_t bytes_read = 0;
-
-  // Since most logs are not seekable, read until the end keeping tracking of
-  // last two chunks.
-  while ((bytes_read = fread(chunk.get(), 1, max_size, fp.get())) == max_size) {
-    last_chunk.swap(chunk);
-    chunk[0] = '\0';
-  }
-
-  if (last_chunk[0] == '\0') {
-    // File is smaller than max_size
-    contents->assign(chunk.get(), bytes_read);
-  } else if (bytes_read == 0) {
-    // File is exactly max_size or a multiple of max_size
-    contents->assign(last_chunk.get(), max_size);
-  } else {
-    // Number of bytes to keep from last_chunk
-    size_t bytes_from_last = max_size - bytes_read;
-
-    // Shift left last_chunk by size of chunk and fit it in the back of
-    // last_chunk.
-    memmove(last_chunk.get(), last_chunk.get() + bytes_read, bytes_from_last);
-    memcpy(last_chunk.get() + bytes_from_last, chunk.get(), bytes_read);
-
-    contents->assign(last_chunk.get(), max_size);
-  }
-
-  return true;
-}
 
 // Reads the contents of the user log files listed in |kUserLogs| and adds them
 // to the |response| parameter.
@@ -121,9 +77,9 @@ void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
     std::string profile_prefix = "Profile[" + base::NumberToString(i) + "] ";
     for (const auto& log : kUserLogs) {
       std::string value;
-      const bool read_success =
-          ReadEndOfFile(profile_dirs[i].Append(log.log_file_relative_path),
-                        &value, kMaxLogSize);
+      const bool read_success = feedback_util::ReadEndOfFile(
+          profile_dirs[i].Append(log.log_file_relative_path), kMaxLogSize,
+          &value);
 
       if (read_success && value.length() == kMaxLogSize) {
         value.replace(0, strlen(kLogTruncated), kLogTruncated);
@@ -160,11 +116,6 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
                     false,  // No IPv6
                     base::BindOnce(&DebugDaemonLogSource::OnGetRoutes,
                                    weak_ptr_factory_.GetWeakPtr()));
-  ++num_pending_requests_;
-
-  client->GetNetworkStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          kNetworkStatusKeyName));
   ++num_pending_requests_;
 
   if (scrub_) {
@@ -207,7 +158,11 @@ void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
   // We ignore 'succeeded' for this callback - we want to display as much of the
   // debug info as we can even if we failed partway through parsing, and if we
   // couldn't fetch any of it, none of the fields will even appear.
-  response_->insert(logs.begin(), logs.end());
+  for (const auto& log : logs) {
+    if (base::Contains(kExcludeList, log.first))
+      continue;
+    response_->insert(log);
+  }
   RequestCompleted();
 }
 

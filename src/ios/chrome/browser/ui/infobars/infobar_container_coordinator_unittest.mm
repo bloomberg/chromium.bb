@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 
+#import <WebKit/WebKit.h>
+
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -27,8 +28,11 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/web/common/crw_web_view_content_view.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -36,11 +40,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// Exposed for testing.
-@interface InfobarContainerCoordinator (Testing)
-@property(nonatomic, assign) BOOL legacyContainerFullscrenSupportDisabled;
-@end
 
 // Test ContainerCoordinatorPositioner.
 @interface TestContainerCoordinatorPositioner : NSObject <InfobarPositioner>
@@ -69,7 +68,13 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   InfobarContainerCoordinatorTest()
       : browser_(std::make_unique<TestBrowser>()),
         base_view_controller_([[FakeBaseViewController alloc] init]),
-        positioner_([[TestContainerCoordinatorPositioner alloc] init]) {
+        positioner_([[TestContainerCoordinatorPositioner alloc] init]),
+        web_view_([[WKWebView alloc]
+            initWithFrame:scoped_window_.Get().bounds
+            configuration:[[WKWebViewConfiguration alloc] init]]),
+        content_view_([[CRWWebViewContentView alloc]
+            initWithWebView:web_view_
+                 scrollView:web_view_.scrollView]) {
     // Enable kIOSInfobarUIReboot flag.
     feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
                                    {kInfobarUIRebootOnlyiOS13});
@@ -84,6 +89,15 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
     navigation_manager_ = navigation_manager.get();
     web_state->SetNavigationManager(std::move(navigation_manager));
     web_state->SetBrowserState(browser_->GetBrowserState());
+    web_state->SetView(content_view_);
+    CRWWebViewScrollViewProxy* scroll_view_proxy =
+        [[CRWWebViewScrollViewProxy alloc] init];
+    UIScrollView* scroll_view = [[UIScrollView alloc] init];
+    [scroll_view_proxy setScrollView:scroll_view];
+    id web_view_proxy_mock = OCMProtocolMock(@protocol(CRWWebViewProxy));
+    [[[web_view_proxy_mock stub] andReturn:scroll_view_proxy] scrollViewProxy];
+    web_state->SetWebViewProxy(web_view_proxy_mock);
+
     browser_->GetWebStateList()->InsertWebState(0, std::move(web_state),
                                                 WebStateList::INSERT_NO_FLAGS,
                                                 WebStateOpener());
@@ -103,17 +117,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
     [scoped_key_window_.Get() setRootViewController:base_view_controller_];
     positioner_.baseView = base_view_controller_.view;
     infobar_container_coordinator_.positioner = positioner_;
-    infobar_container_coordinator_.legacyContainerFullscrenSupportDisabled =
-        YES;
     [infobar_container_coordinator_ start];
-
-    // Setup the Legacy InfobarController and InfobarDelegate.
-    TestInfoBarDelegate* test_legacy_infobar_delegate =
-        new TestInfoBarDelegate(@"Legacy Infobar");
-    legacy_controller_ = [[ConfirmInfoBarController alloc]
-        initWithInfoBarDelegate:test_legacy_infobar_delegate];
-    legacy_infobar_delegate_ =
-        std::unique_ptr<ConfirmInfoBarDelegate>(test_legacy_infobar_delegate);
   }
 
   ~InfobarContainerCoordinatorTest() override {
@@ -187,18 +191,19 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   void AddSecondWebstate() {
     std::unique_ptr<web::TestWebState> second_web_state =
         std::make_unique<web::TestWebState>();
+    second_web_state->SetView(content_view_);
+    CRWWebViewScrollViewProxy* scroll_view_proxy =
+        [[CRWWebViewScrollViewProxy alloc] init];
+    UIScrollView* scroll_view = [[UIScrollView alloc] init];
+    [scroll_view_proxy setScrollView:scroll_view];
+    id web_view_proxy_mock = OCMProtocolMock(@protocol(CRWWebViewProxy));
+    [[[web_view_proxy_mock stub] andReturn:scroll_view_proxy] scrollViewProxy];
+    second_web_state->SetWebViewProxy(web_view_proxy_mock);
     InfoBarManagerImpl::CreateForWebState(second_web_state.get());
     InfobarBadgeTabHelper::CreateForWebState(second_web_state.get());
     browser_->GetWebStateList()->InsertWebState(1, std::move(second_web_state),
                                                 WebStateList::INSERT_NO_FLAGS,
                                                 WebStateOpener());
-  }
-
-  // Adds a Legacy Infobar to the InfobarManager, triggering an InfobarBanner
-  // presentation.
-  void AddLegacyInfobar() {
-    GetInfobarManager()->AddInfoBar(std::make_unique<InfoBarIOS>(
-        legacy_controller_, std::move(legacy_infobar_delegate_)));
   }
 
   // Returns InfoBarManager attached to web_state_.
@@ -219,8 +224,9 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   InfobarPasswordCoordinator* second_coordinator_;
   InfobarConfirmCoordinator* confirm_coordinator_;
   std::unique_ptr<IOSChromeSavePasswordInfoBarDelegate> infobar_delegate_;
-  ConfirmInfoBarController* legacy_controller_;
-  std::unique_ptr<ConfirmInfoBarDelegate> legacy_infobar_delegate_;
+  ScopedKeyWindow scoped_window_;
+  WKWebView* web_view_ = nil;
+  CRWWebViewContentView* content_view_ = nil;
 };
 
 // Tests infobarBannerState is InfobarBannerPresentationState::Presented once an
@@ -288,64 +294,6 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissal) {
                InfobarBannerPresentationState::NotPresented;
       }));
   ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-}
-
-// Tests that a legacy Infobar can be presented and
-// infobarBannerState is still NotPresented.
-TEST_F(InfobarContainerCoordinatorTest, TestLegacyInfobarPresentation) {
-  EXPECT_FALSE([infobar_container_coordinator_
-      isInfobarPresentingForWebState:browser_->GetWebStateList()
-                                         ->GetActiveWebState()]);
-  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::NotPresented);
-  AddLegacyInfobar();
-  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-  EXPECT_TRUE([infobar_container_coordinator_
-      isInfobarPresentingForWebState:browser_->GetWebStateList()
-                                         ->GetActiveWebState()]);
-}
-
-// Tests that the presentation of a LegacyInfobar doesn't dismiss the previously
-// presented InfobarBanner.
-TEST_F(InfobarContainerCoordinatorTest,
-       TestInfobarBannerPresentationBeforeLegacyPresentation) {
-  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-  AddInfobar(/*high_priority_presentation=*/false);
-  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForUIElementTimeout, ^bool {
-        return infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented;
-      }));
-  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-  AddLegacyInfobar();
-  EXPECT_EQ(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-}
-
-// Tests that a presented LegacyInfobar doesn't interfere with presenting an
-// InfobarBanner.
-TEST_F(InfobarContainerCoordinatorTest,
-       TestInfobarBannerPresentationAfterLegacyPresentation) {
-  EXPECT_FALSE([infobar_container_coordinator_
-      isInfobarPresentingForWebState:browser_->GetWebStateList()
-                                         ->GetActiveWebState()]);
-  AddLegacyInfobar();
-  ASSERT_TRUE([infobar_container_coordinator_
-      isInfobarPresentingForWebState:browser_->GetWebStateList()
-                                         ->GetActiveWebState()]);
-  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
-            InfobarBannerPresentationState::Presented);
-  AddInfobar(/*high_priority_presentation=*/false);
-  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForUIElementTimeout, ^bool {
-        return infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented;
-      }));
-  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
             InfobarBannerPresentationState::Presented);
 }
 

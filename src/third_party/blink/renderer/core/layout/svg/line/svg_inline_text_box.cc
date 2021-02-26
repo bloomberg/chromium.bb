@@ -30,17 +30,17 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
-struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
+struct SameSizeAsSVGInlineTextBox : public InlineTextBox {
   LayoutUnit float1;
   uint32_t bitfields : 1;
   Vector<SVGTextFragment> vector;
 };
 
-static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize),
-              "SVGInlineTextBox has an unexpected size");
+ASSERT_SIZE(SVGInlineTextBox, SameSizeAsSVGInlineTextBox);
 
 SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item,
                                    int start,
@@ -171,7 +171,7 @@ LayoutRect SVGInlineTextBox::LocalSelectionRect(
 }
 
 void SVGInlineTextBox::Paint(const PaintInfo& paint_info,
-                             const LayoutPoint& paint_offset,
+                             const PhysicalOffset& paint_offset,
                              LayoutUnit,
                              LayoutUnit) const {
   SVGInlineTextBoxPainter(*this).Paint(paint_info, paint_offset);
@@ -230,8 +230,8 @@ bool SVGInlineTextBox::MapStartEndPositionsIntoFragmentCoordinates(
   return start_position < end_position;
 }
 
-void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
-                                           const LayoutPoint&,
+void SVGInlineTextBox::PaintDocumentMarker(const PaintInfo&,
+                                           const PhysicalOffset&,
                                            const DocumentMarker&,
                                            const ComputedStyle&,
                                            const Font&,
@@ -241,7 +241,7 @@ void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
 }
 
 void SVGInlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
-                                                 const LayoutPoint& point,
+                                                 const PhysicalOffset& point,
                                                  const TextMarkerBase& marker,
                                                  const ComputedStyle& style,
                                                  const Font& font) const {
@@ -250,7 +250,7 @@ void SVGInlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
 }
 
 void SVGInlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
-                                                 const LayoutPoint& point,
+                                                 const PhysicalOffset& point,
                                                  const TextMarkerBase& marker,
                                                  const ComputedStyle& style,
                                                  const Font& font) const {

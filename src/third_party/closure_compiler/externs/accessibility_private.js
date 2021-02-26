@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: accessibilityPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.accessibilityPrivate = {};
 
 /**
@@ -59,6 +57,7 @@ chrome.accessibilityPrivate.Gesture = {
   TAP2: 'tap2',
   TAP3: 'tap3',
   TAP4: 'tap4',
+  TOUCH_EXPLORE: 'touchExplore',
 };
 
 /**
@@ -77,6 +76,14 @@ chrome.accessibilityPrivate.SwitchAccessBubble = {
   BACK_BUTTON: 'backButton',
   MENU: 'menu',
 };
+
+/**
+ * @typedef {{
+ *   x: number,
+ *   y: number
+ * }}
+ */
+chrome.accessibilityPrivate.PointScanPoint;
 
 /**
  * @enum {string}
@@ -99,6 +106,7 @@ chrome.accessibilityPrivate.SwitchAccessMenuAction = {
   MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
   MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
   PASTE: 'paste',
+  POINT_SCAN: 'pointScan',
   SCROLL_DOWN: 'scrollDown',
   SCROLL_LEFT: 'scrollLeft',
   SCROLL_RIGHT: 'scrollRight',
@@ -148,10 +156,23 @@ chrome.accessibilityPrivate.SyntheticMouseEventType = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.SyntheticMouseEventButton = {
+  LEFT: 'left',
+  MIDDLE: 'middle',
+  RIGHT: 'right',
+  BACK: 'back',
+  FOWARD: 'foward',
+};
+
+/**
  * @typedef {{
  *   type: !chrome.accessibilityPrivate.SyntheticMouseEventType,
  *   x: number,
- *   y: number
+ *   y: number,
+ *   touchAccessibility: (boolean|undefined),
+ *   mouseButton: (!chrome.accessibilityPrivate.SyntheticMouseEventButton|undefined)
  * }}
  */
 chrome.accessibilityPrivate.SyntheticMouseEvent;
@@ -187,6 +208,21 @@ chrome.accessibilityPrivate.FocusType = {
 chrome.accessibilityPrivate.FocusRingInfo;
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.AcceleratorAction = {
+  FOCUS_PREVIOUS_PANE: 'focusPreviousPane',
+  FOCUS_NEXT_PANE: 'focusNextPane',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.AccessibilityFeature = {
+  SELECT_TO_SPEAK_NAVIGATION_CONTROL: 'selectToSpeakNavigationControl',
+};
+
+/**
  * Called to translate localeCodeToTranslate into human-readable string in the
  * locale specified by displayLocaleCode
  * @param {string} localeCodeToTranslate
@@ -197,7 +233,7 @@ chrome.accessibilityPrivate.getDisplayNameForLocale = function(localeCodeToTrans
 
 /**
  * Called to request battery status from Chrome OS system.
- * @param {function(string):void} callback Returns battery description as a
+ * @param {function(string): void} callback Returns battery description as a
  *     string.
  */
 chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
@@ -246,19 +282,6 @@ chrome.accessibilityPrivate.setKeyboardListener = function(enabled, capture) {};
 chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 
 /**
- * Shows or hides the Switch Access menu. If shown, it is at the indicated
- * location.
-TODO(anastasi): Remove this function once the menu refactor is
- * complete.
- * @param {boolean} show If true, show the menu. If false, hide the menu.
- * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
- *     an element, in global screen coordinates, to place the menu next to.
- * @param {number} item_count The number of items that need to be shown in the
- *     menu.
- */
-chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds, item_count) {};
-
-/**
  * When enabled, forwards key events to the Switch Access extension
  * @param {boolean} shouldForward
  */
@@ -276,6 +299,11 @@ chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(shouldForw
  *     The actions to be shown in the menu.
  */
 chrome.accessibilityPrivate.updateSwitchAccessBubble = function(bubble, show, anchor, actions) {};
+
+/**
+ * Activates point scanning in Switch Access.
+ */
+chrome.accessibilityPrivate.activatePointScan = function() {};
 
 /**
  * Sets current ARC app to use native ARC support.
@@ -308,16 +336,29 @@ chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
  * states, between selecting with the mouse, speaking, and inactive.
  * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state
  */
-chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
+chrome.accessibilityPrivate.setSelectToSpeakState = function(state) {};
 
 /**
- * Called by the Autoclick extension when findScrollableBoundsForPoint has found
- * a scrolling container. |rect| will be the bounds of the nearest scrollable
- * ancestor of the node at the point requested using
- * findScrollableBoundsForPoint.
+ * Called by the Accessibility Common extension when
+ * onScrollableBoundsForPointRequested has found a scrolling container. |rect|
+ * will be the bounds of the nearest scrollable ancestor of the node at the
+ * point requested using onScrollableBoundsForPointRequested.
  * @param {!chrome.accessibilityPrivate.ScreenRect} rect
  */
-chrome.accessibilityPrivate.onScrollableBoundsForPointFound = function(rect) {};
+chrome.accessibilityPrivate.handleScrollableBoundsForPointFound = function(rect) {};
+
+/**
+ * Called by the Accessibility Common extension to move |rect| within the
+ * magnifier viewport (e.g. when focus has changed). If |rect| is already
+ * completely within the viewport, magnifier doesn't move. If any edge of |rect|
+ * is outside the viewport (e.g. if rect is larger than or extends partially
+ * beyond the viewport), magnifier will center the overflowing dimensions of the
+ * viewport on center of |rect| (e.g. center viewport vertically if |rect|
+ * extends beyond bottom of screen).
+ * @param {!chrome.accessibilityPrivate.ScreenRect} rect Rect to ensure visible
+ *     in the magnified viewport.
+ */
+chrome.accessibilityPrivate.moveMagnifierToRect = function(rect) {};
 
 /**
  * Toggles dictation between active and inactive states.
@@ -337,6 +378,30 @@ chrome.accessibilityPrivate.setVirtualKeyboardVisible = function(isVisible) {};
  * @param {string} subpage
  */
 chrome.accessibilityPrivate.openSettingsSubpage = function(subpage) {};
+
+/**
+ * Performs an accelerator action.
+ * @param {!chrome.accessibilityPrivate.AcceleratorAction} acceleratorAction
+ */
+chrome.accessibilityPrivate.performAcceleratorAction = function(acceleratorAction) {};
+
+/**
+ * Checks to see if an accessibility feature is enabled.
+ * @param {!chrome.accessibilityPrivate.AccessibilityFeature} feature
+ * @param {function(boolean): void} callback Returns whether feature is enabled.
+ */
+chrome.accessibilityPrivate.isFeatureEnabled = function(feature, callback) {};
+
+/**
+ * Updates properties on the Select-to-speak panel.
+ * @param {boolean} show True if the panel should be shown, false otherwise
+ * @param {!chrome.accessibilityPrivate.ScreenRect=} anchor A rectangle
+ *     indicating the bounds of the object the panel should be displayed next
+ * to.
+ * @param {boolean=} isPaused Whether Select-to-speak playback is paused.
+ */
+chrome.accessibilityPrivate.updateSelectToSpeakPanel = function(
+    show, anchor, isPaused) {};
 
 /**
  * Fired whenever ChromeVox should output introduction.
@@ -380,6 +445,12 @@ chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
 chrome.accessibilityPrivate.onSwitchAccessCommand;
 
 /**
+ * Fired when Chrome OS has received the final point of point scanning.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onPointScanSet;
+
+/**
  * Fired when an internal component within accessibility wants to force speech
  * output for an accessibility extension. Do not use without approval from
  * accessibility owners.
@@ -393,7 +464,13 @@ chrome.accessibilityPrivate.onAnnounceForAccessibility;
  * Clicks.
  * @type {!ChromeEvent}
  */
-chrome.accessibilityPrivate.findScrollableBoundsForPoint;
+chrome.accessibilityPrivate.onScrollableBoundsForPointRequested;
+
+/**
+ * Fired when Chrome OS magnifier bounds are updated.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onMagnifierBoundsChanged;
 
 /**
  * Fired when a custom spoken feedback on the active window gets enabled or

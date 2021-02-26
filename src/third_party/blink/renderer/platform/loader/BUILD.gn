@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
@@ -13,9 +12,14 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
 }
 
 blink_platform_sources("loader") {
+  configs += [ "//build/config/compiler:noshadowing" ]
+
   sources = [
     "allowed_by_nosniff.cc",
     "allowed_by_nosniff.h",
+    "child_url_loader_factory_bundle.cc",
+    "code_cache_loader.cc",
+    "code_cache_loader.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/cors_error_string.cc",
@@ -35,6 +39,8 @@ blink_platform_sources("loader") {
     "fetch/data_pipe_bytes_consumer.cc",
     "fetch/data_pipe_bytes_consumer.h",
     "fetch/detachable_use_counter.h",
+    "fetch/fetch_api_request_body_mojom_traits.cc",
+    "fetch/fetch_api_request_body_mojom_traits.h",
     "fetch/fetch_client_settings_object.h",
     "fetch/fetch_client_settings_object_snapshot.cc",
     "fetch/fetch_client_settings_object_snapshot.h",
@@ -50,6 +56,7 @@ blink_platform_sources("loader") {
     "fetch/integrity_metadata.cc",
     "fetch/integrity_metadata.h",
     "fetch/loading_attribute_value.h",
+    "fetch/loading_behavior_observer.h",
     "fetch/memory_cache.cc",
     "fetch/memory_cache.h",
     "fetch/null_resource_fetcher_properties.cc",
@@ -102,6 +109,7 @@ blink_platform_sources("loader") {
     "fetch/source_keyed_cached_metadata_handler.h",
     "fetch/stale_revalidation_resource_client.cc",
     "fetch/stale_revalidation_resource_client.h",
+    "fetch/subresource_web_bundle.h",
     "fetch/text_resource_decoder_options.cc",
     "fetch/text_resource_decoder_options.h",
     "fetch/trust_token_params_conversion.cc",
@@ -110,9 +118,17 @@ blink_platform_sources("loader") {
     "fetch/unique_identifier.h",
     "fetch/url_loader/request_conversion.cc",
     "fetch/url_loader/request_conversion.h",
+    "fetch/url_loader/web_bundle_subresource_loader.cc",
+    "fetch/url_loader/web_bundle_subresource_loader.h",
+    "fetch/url_loader/worker_main_script_loader.cc",
+    "fetch/url_loader/worker_main_script_loader.h",
+    "fetch/url_loader/worker_main_script_loader_client.h",
     "fetch/worker_resource_timing_notifier.h",
+    "frame_request_blocker.cc",
+    "frame_request_blocker.h",
     "ftp_directory_listing.cc",
     "ftp_directory_listing.h",
+    "internet_disconnected_web_url_loader.cc",
     "link_header.cc",
     "link_header.h",
     "mixed_content_autoupgrade_status.h",
@@ -120,6 +136,9 @@ blink_platform_sources("loader") {
     "static_data_navigation_body_loader.h",
     "subresource_integrity.cc",
     "subresource_integrity.h",
+    "tracked_child_url_loader_factory_bundle.cc",
+    "web_url_request_extra_data.cc",
+    "web_url_request_util.cc",
   ]
 
   sources += get_target_outputs(
@@ -128,12 +147,22 @@ blink_platform_sources("loader") {
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util",
+    "//components/web_package",
+    "//net",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
     "//services/network/public/mojom:mojom_blink",
+    "//third_party/blink/renderer/platform/blob:blob",
+    "//third_party/blink/renderer/platform/instrumentation:instrumentation",
+    "//third_party/blink/renderer/platform/network:network",
+    "//third_party/blink/renderer/platform/scheduler:scheduler",
   ]
+  public_deps = [ "//third_party/blink/renderer/platform/heap:heap" ]
+  allow_circular_includes_from =
+      [ "//third_party/blink/renderer/platform/network:network" ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   # This target defines test files for blink_platform_unittests and only the
   # blink_platform_unittests target should depend on it.
   visibility = [ "//third_party/blink/renderer/platform:*" ]
@@ -141,10 +170,13 @@ jumbo_source_set("unit_tests") {
 
   # Source files for blink_platform_unittests.
   sources = [
+    "allowed_by_nosniff_test.cc",
+    "cors/cors_test.cc",
     "fetch/buffering_bytes_consumer_test.cc",
     "fetch/bytes_consumer_test.cc",
     "fetch/client_hints_preferences_test.cc",
     "fetch/data_pipe_bytes_consumer_test.cc",
+    "fetch/fetch_api_request_body_mojom_traits_test.cc",
     "fetch/fetch_utils_test.cc",
     "fetch/memory_cache_correctness_test.cc",
     "fetch/memory_cache_test.cc",
@@ -160,6 +192,8 @@ jumbo_source_set("unit_tests") {
     "fetch/response_body_loader_test.cc",
     "fetch/shared_buffer_bytes_consumer_test.cc",
     "fetch/source_keyed_cached_metadata_handler_test.cc",
+    "fetch/url_loader/web_bundle_subresource_loader_test.cc",
+    "fetch/url_loader/worker_main_script_loader_unittest.cc",
     "ftp_directory_listing_test.cc",
     "link_header_test.cc",
     "static_data_navigation_body_loader_test.cc",
@@ -169,13 +203,20 @@ jumbo_source_set("unit_tests") {
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 
   deps = [
+    "//base/test:test_support",
+    "//components/web_package:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//net/traffic_annotation:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/blink/public:test_headers",
     "//third_party/blink/renderer/platform:platform",
+    "//third_party/blink/renderer/platform:test_support",
   ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   # This target defines test files for platform:test_support that
   # blink_platform_unittests and blink_unittests can use.
   visibility = [ "//third_party/blink/renderer/platform:test_support" ]
@@ -212,6 +253,7 @@ jumbo_source_set("test_support") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/renderer/platform:platform",
     "//third_party/blink/renderer/platform/blob:generator",
+    "//third_party/blink/renderer/platform/scheduler:test_support",
     "//third_party/icu",
   ]
 }

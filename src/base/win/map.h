@@ -10,7 +10,8 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/win/vector.h"
 #include "base/win/winrt_foundation_helpers.h"
@@ -398,7 +399,7 @@ class Map
  private:
   ~Map() override {
     // Handlers should not outlive the Map. Furthermore, they must ensure
-    // they are unregistered before the the handler is destroyed. This implies
+    // they are unregistered before the handler is destroyed. This implies
     // there should be no handlers left when the Map is destructed.
     DCHECK(handlers_.empty());
   }

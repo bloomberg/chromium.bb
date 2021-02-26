@@ -5,10 +5,10 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 
 #include "base/test/values_test_util.h"
-#include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -79,8 +79,7 @@ class MockCastSessionObserver : public CastSessionTracker::Observer {
 class CastSessionTrackerTest : public testing::Test {
  public:
   CastSessionTrackerTest()
-      : socket_service_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
+      : socket_service_(content::GetUIThreadTaskRunner({})),
         message_handler_(&socket_service_),
         session_tracker_(&media_sink_service_,
                          &message_handler_,

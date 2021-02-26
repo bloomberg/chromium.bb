@@ -50,8 +50,8 @@ export class ScreencastApp {
     this._rootSplitWidget.show(rootView.element);
     this._rootSplitWidget.hideMain();
 
-    this._rootSplitWidget.setSidebarWidget(self.UI.inspectorView);
-    self.UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
+    this._rootSplitWidget.setSidebarWidget(UI.InspectorView.InspectorView.instance());
+    UI.InspectorView.InspectorView.instance().setOwnerSplit(this._rootSplitWidget);
     rootView.attachToDocument(document);
     rootView.focus();
   }
@@ -67,7 +67,9 @@ export class ScreencastApp {
     this._screenCaptureModel = screenCaptureModel;
     this._toggleButton.setEnabled(true);
     this._screencastView = new ScreencastView(screenCaptureModel);
-    this._rootSplitWidget.setMainWidget(this._screencastView);
+    if (this._rootSplitWidget) {
+      this._rootSplitWidget.setMainWidget(this._screencastView);
+    }
     this._screencastView.initialize();
     this._onScreencastEnabledChanged();
   }
@@ -82,8 +84,10 @@ export class ScreencastApp {
     }
     delete this._screenCaptureModel;
     this._toggleButton.setEnabled(false);
-    this._screencastView.detach();
-    delete this._screencastView;
+    if (this._screencastView) {
+      this._screencastView.detach();
+      delete this._screencastView;
+    }
     this._onScreencastEnabledChanged();
   }
 

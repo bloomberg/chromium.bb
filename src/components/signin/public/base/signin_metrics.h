@@ -59,6 +59,11 @@ enum ProfileSignout : int {
   SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT,
   // Sign out is forced allowed. Only used for tests.
   FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+  // User cleared account cookies when there's no sync consent, which has caused
+  // sign out.
+  USER_DELETED_ACCOUNT_COOKIES,
+  // Signout triggered by MobileIdentityConsistency rollback.
+  MOBILE_IDENTITY_CONSISTENCY_ROLLBACK,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
@@ -163,7 +168,27 @@ enum class AccessPoint : int {
   ACCESS_POINT_SYNC_ERROR_CARD = 28,
   ACCESS_POINT_FORCED_SIGNIN = 29,
   ACCESS_POINT_ACCOUNT_RENAMED = 30,
+  ACCESS_POINT_WEB_SIGNIN = 31,
+  ACCESS_POINT_SAFETY_CHECK = 32,
   ACCESS_POINT_MAX,  // This must be last.
+};
+
+// Enum values which enumerates all access points where transactional reauth
+// could be initiated. Transactional reauth is used when the user already has
+// a valid refresh token but a system still wants to verify user's identity.
+enum class ReauthAccessPoint {
+  // The code expects kUnknown to be the first, so it should not be reordered.
+  kUnknown = 0,
+
+  // Account password storage opt-in:
+  kAutofillDropdown = 1,
+  kPasswordSaveBubble = 2,
+  kPasswordSettings = 3,
+  kGeneratePasswordDropdown = 4,
+  kGeneratePasswordContextMenu = 5,
+  kPasswordMoveBubble = 6,
+
+  kMaxValue = kPasswordMoveBubble
 };
 
 // Enum values which enumerates all user actions on the sign-in promo.
@@ -393,7 +418,7 @@ void LogAccountEquality(AccountEquality equality);
 void LogCookieJarStableAge(const base::TimeDelta stable_age,
                            const ReportingType type);
 
-// Records three counts for the number of accounts in the cookei jar.
+// Records three counts for the number of accounts in the cookie jar.
 void LogCookieJarCounts(const int signed_in,
                         const int signed_out,
                         const int total,
@@ -407,6 +432,14 @@ void LogAccountRelation(const AccountRelation relation,
 // Records if the best guess is that this profile is currently shared or not
 // between multiple users.
 void LogIsShared(const bool is_shared, const ReportingType type);
+
+// Records the number of signed-in accounts in the cookie jar for the given
+// (potentially unconsented) primary account type, characterized by sync being
+// enabled (`primary_syncing`) and the account being managed (i.e. enterprise,
+// `primary_managed`).
+void LogSignedInCookiesCountsPerPrimaryAccountType(int signed_in_accounts_count,
+                                                   bool primary_syncing,
+                                                   bool primary_managed);
 
 // Records the source that updated a refresh token.
 void RecordRefreshTokenUpdatedFromSource(bool refresh_token_is_valid,

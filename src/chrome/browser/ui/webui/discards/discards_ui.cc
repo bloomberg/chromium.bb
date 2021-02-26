@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ui/webui/discards/site_data.mojom-forward.h"
 #include "chrome/browser/ui/webui/discards/site_data_provider_impl.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/favicon_base/favicon_url_parser.h"
@@ -41,13 +41,11 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/resources/grit/ui_resources_map.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace resource_coordinator {
-class LocalSiteCharacteristicsDataStoreInspector;
-}  // namespace resource_coordinator
 
 namespace {
 
@@ -133,9 +131,6 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
       info->loading_state = lifecycle_unit->GetLoadingState();
       info->state = lifecycle_unit->GetState();
-      resource_coordinator::DecisionDetails freeze_details;
-      info->can_freeze = lifecycle_unit->CanFreeze(&freeze_details);
-      info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
       resource_coordinator::DecisionDetails discard_details;
       info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
       info->discard_reason = lifecycle_unit->GetDiscardReason();
@@ -193,12 +188,6 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
     std::move(callback).Run();
   }
 
-  void FreezeById(int32_t id) override {
-    auto* lifecycle_unit = GetLifecycleUnitById(id);
-    if (lifecycle_unit)
-      lifecycle_unit->Freeze();
-  }
-
   void LoadById(int32_t id) override {
     auto* lifecycle_unit = GetLifecycleUnitById(id);
     if (lifecycle_unit)
@@ -225,38 +214,29 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIDiscardsHost));
 
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
 
-  source->AddResourcePath("discards.js", IDR_DISCARDS_JS);
+  const GritResourceMap kResources[] = {
+      {"discards.js", IDR_DISCARDS_JS},
+      {"discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS},
+      {"database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS},
+      {"discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS},
+      {"sorted_table_behavior.js", IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS},
+      {"graph_tab.js", IDR_DISCARDS_GRAPH_TAB_JS},
 
-  source->AddResourcePath("discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS);
-
-  source->AddResourcePath("database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS);
-  source->AddResourcePath("discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS);
-  source->AddResourcePath("sorted_table_behavior.js",
-                          IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS);
-  source->AddResourcePath("graph_tab.js", IDR_DISCARDS_GRAPH_TAB_JS);
-
-  source->AddResourcePath("mojo_api.js", IDR_DISCARDS_MOJO_API_JS);
-
-  // Full paths (relative to src) are important for Mojom generated files.
-  source->AddResourcePath(
-      "chrome/browser/ui/webui/discards/discards.mojom-lite.js",
-      IDR_DISCARDS_MOJOM_LITE_JS);
-  source->AddResourcePath(
-      "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-lite.js",
-      IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_LITE_JS);
-  source->AddResourcePath(
-      "chrome/browser/ui/webui/discards/site_data.mojom-lite.js",
-      IDR_DISCARDS_SITE_DATA_MOJOM_LITE_JS);
-
-  // Add the mojo base dependency for the WebUI Graph Dump.
-  source->AddResourcePath(
-      "mojo/public/mojom/base/process_id.mojom-lite.js",
-      IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS);
-
-  source->SetDefaultResource(IDR_DISCARDS_HTML);
+      // Full paths (relative to source) for mojom generated files.
+      {"chrome/browser/ui/webui/discards/discards.mojom-webui.js",
+       IDR_DISCARDS_MOJOM_WEBUI_JS},
+      {"chrome/browser/resource_coordinator/"
+       "lifecycle_unit_state.mojom-webui.js",
+       IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_WEBUI_JS},
+      {"chrome/browser/ui/webui/discards/site_data.mojom-webui.js",
+       IDR_DISCARDS_SITE_DATA_MOJOM_WEBUI_JS},
+  };
+  webui::SetupWebUIDataSource(source.get(), kResources, "", IDR_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
@@ -265,8 +245,7 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  data_store_inspector_ = resource_coordinator::
-      LocalSiteCharacteristicsDataStoreInspector::GetForProfile(profile);
+  profile_id_ = profile->UniqueId();
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(DiscardsUI)
@@ -281,8 +260,12 @@ void DiscardsUI::BindInterface(
 
 void DiscardsUI::BindInterface(
     mojo::PendingReceiver<discards::mojom::SiteDataProvider> receiver) {
-  site_data_provider_ = std::make_unique<SiteDataProviderImpl>(
-      data_store_inspector_, std::move(receiver));
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    // Forward the interface receiver directly to the service.
+    performance_manager::PerformanceManager::CallOnGraph(
+        FROM_HERE, base::BindOnce(&SiteDataProviderImpl::CreateAndBind,
+                                  std::move(receiver), profile_id_));
+  }
 }
 
 void DiscardsUI::BindInterface(

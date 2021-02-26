@@ -145,12 +145,9 @@ const char kOptionalUsedWithGC[] =
     "[blink-gc] Disallowed construction of %0 found; %1 is a garbage-collected "
     "type. optional cannot hold garbage-collected objects.";
 
-const char kMissingMixinMarker[] =
-    "[blink-gc] Garbage-collected class %0 derives mixin class %1. "
-    "You must add USING_GARBAGE_COLLECTED_MIXIN(%2).";
-
-const char kMissingMixinMarkerNote[] =
-    "[blink-gc] Mixin base class derived here:";
+const char kVariantUsedWithGC[] =
+    "[blink-gc] Disallowed construction of %0 found; %1 is a garbage-collected "
+    "type. absl::variant cannot hold garbage-collected objects.";
 
 } // namespace
 
@@ -253,10 +250,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kUniquePtrUsedWithGC);
   diag_optional_used_with_gc_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kOptionalUsedWithGC);
-  diag_missing_mixin_marker_ =
-      diagnostic_.getCustomDiagID(getErrorLevel(), kMissingMixinMarker);
-  diag_missing_mixin_marker_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kMissingMixinMarkerNote);
+  diag_variant_used_with_gc_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kVariantUsedWithGC);
 }
 
 bool DiagnosticsReporter::hasErrorOccurred() const
@@ -553,17 +548,10 @@ void DiagnosticsReporter::OptionalUsedWithGC(
       << optional << gc_type << expr->getSourceRange();
 }
 
-void DiagnosticsReporter::MissingMixinMarker(
-    const clang::CXXRecordDecl* bad_class,
-    const clang::CXXRecordDecl* mixin_class,
-    const clang::CXXBaseSpecifier* first_base) {
-  ReportDiagnostic(first_base->getBaseTypeLoc(), diag_missing_mixin_marker_)
-      << bad_class << mixin_class << bad_class->getName()
-      << first_base->getSourceRange();
-}
-
-void DiagnosticsReporter::MissingMixinMarkerNote(
-    const clang::CXXBaseSpecifier* base) {
-  ReportDiagnostic(base->getBaseTypeLoc(), diag_missing_mixin_marker_note_)
-      << base->getSourceRange();
+void DiagnosticsReporter::VariantUsedWithGC(
+    const clang::Expr* expr,
+    const clang::CXXRecordDecl* variant,
+    const clang::CXXRecordDecl* gc_type) {
+  ReportDiagnostic(expr->getBeginLoc(), diag_variant_used_with_gc_)
+      << variant << gc_type << expr->getSourceRange();
 }

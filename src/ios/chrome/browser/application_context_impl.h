@@ -18,8 +18,9 @@ class CommandLine;
 class SequencedTaskRunner;
 }
 
-class BreadcrumbManager;
 class ApplicationBreadcrumbsLogger;
+class BreadcrumbManager;
+class BreadcrumbPersistentStorageManager;
 
 namespace network {
 class NetworkChangeManager;
@@ -73,6 +74,8 @@ class ApplicationContextImpl : public ApplicationContext {
   SafeBrowsingService* GetSafeBrowsingService() override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
+  BreadcrumbPersistentStorageManager* GetBreadcrumbPersistentStorageManager()
+      override;
 
  private:
   // Sets the locale used by the application.
@@ -93,7 +96,10 @@ class ApplicationContextImpl : public ApplicationContext {
   // |breadcrumb_manager_|. Will be null if breadcrumbs feature is not enabled.
   std::unique_ptr<ApplicationBreadcrumbsLogger> application_breadcrumbs_logger_;
 
-  // Must be destroyed after |local_state_|.
+  // Must be destroyed after |local_state_|. BrowserStatePolicyConnector isn't a
+  // keyed service because the pref service, which isn't a keyed service, has a
+  // hard dependency on the policy infrastructure. In order to outlive the pref
+  // service, the policy connector must live outside the keyed services.
   std::unique_ptr<BrowserPolicyConnectorIOS> browser_policy_connector_;
 
   std::unique_ptr<PrefService> local_state_;

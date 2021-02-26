@@ -13,6 +13,7 @@ Polymer({
 
   behaviors: [
     FindShortcutBehavior,
+    I18nBehavior,
     Polymer.IronResizableBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -67,6 +68,14 @@ Polymer({
       value: null,
     },
 
+    /**
+     * Whether the subpage search term should be preserved across navigations.
+     */
+    preserveSearchTerm: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     active_: {
       type: Boolean,
@@ -97,8 +106,55 @@ Polymer({
     }
   },
 
+  /**
+   * @return {!Promise<!CrSearchFieldElement>}
+   * @private
+   */
+  getSearchField_() {
+    let searchField = this.$$('cr-search-field');
+    if (searchField) {
+      return Promise.resolve(searchField);
+    }
+
+    return new Promise(resolve => {
+      listenOnce(this, 'dom-change', () => {
+        searchField = this.$$('cr-search-field');
+        resolve(assert(searchField));
+      });
+    });
+  },
+
+  /**
+   * Restore search field value from URL search param
+   * @private
+   */
+  restoreSearchInput_() {
+    const searchField = this.$$('cr-search-field');
+    if (assert(searchField)) {
+      const urlSearchQuery =
+          settings.Router.getInstance().getQueryParameters().get(
+              'searchSubpage') ||
+          '';
+      this.searchTerm = urlSearchQuery;
+      searchField.setValue(urlSearchQuery);
+    }
+  },
+
+  /**
+   * Preserve search field value to URL search param
+   * @private
+   */
+  preserveSearchInput_() {
+    const query = this.searchTerm;
+    const searchParams = query.length > 0 ?
+        new URLSearchParams('searchSubpage=' + encodeURIComponent(query)) :
+        undefined;
+    const currentRoute = settings.Router.getInstance().getCurrentRoute();
+    settings.Router.getInstance().navigateTo(currentRoute, searchParams);
+  },
+
   /** Focuses the back button when page is loaded. */
-  initialFocus() {
+  focusBackButton() {
     if (this.hideCloseButton) {
       return;
     }
@@ -107,13 +163,27 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged(route) {
-    this.active_ = this.getAttribute('route-path') == route.path;
+  currentRouteChanged(newRoute, oldRoute) {
+    this.active_ = this.getAttribute('route-path') === newRoute.path;
+    if (this.active_ && this.searchLabel && this.preserveSearchTerm) {
+      this.getSearchField_().then(() => this.restoreSearchInput_());
+    }
+    // <if expr="chromeos">
+    if (!oldRoute && loadTimeData.valueExists('isOSSettings') &&
+        loadTimeData.getBoolean('isOSSettings') && !getSettingIdParameter()) {
+      // If an OS settings subpage is opened directly (i.e the |oldRoute| is
+      // null, e.g via an OS settings search result that surfaces from the
+      // Chrome OS launcher), the back button should be focused since it's the
+      // first actionable element in the the subpage. An exception is when
+      // a setting is deep linked, focus that setting instead of back button.
+      this.focusBackButton();
+    }
+    // </if>
   },
 
   /** @private */
   onActiveChanged_() {
-    if (this.lastActiveValue_ == this.active_) {
+    if (this.lastActiveValue_ === this.active_) {
       return;
     }
     this.lastActiveValue_ = this.active_;
@@ -155,7 +225,24 @@ Polymer({
 
   /** @private */
   onSearchChanged_(e) {
+    if (this.searchTerm === e.detail) {
+      return;
+    }
+
     this.searchTerm = e.detail;
+    if (this.preserveSearchTerm && this.active_) {
+      this.preserveSearchInput_();
+    }
+  },
+
+  /** @private */
+  getBackButtonAriaLabel_() {
+    return this.i18n('subpageBackButtonAriaLabel', this.pageTitle);
+  },
+
+  /** @private */
+  getBackButtonAriaRoleDescription_() {
+    return this.i18n('subpageBackButtonAriaRoleDescription', this.pageTitle);
   },
 
   // Override FindShortcutBehavior methods.
@@ -170,6 +257,6 @@ Polymer({
   // Override FindShortcutBehavior methods.
   searchInputHasFocus() {
     const field = this.$$('cr-search-field');
-    return field.getSearchInput() == field.shadowRoot.activeElement;
+    return field.getSearchInput() === field.shadowRoot.activeElement;
   },
 });

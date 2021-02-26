@@ -9,31 +9,34 @@
 
 #include <vector>
 
-#include "core/fxcrt/unowned_ptr.h"
+#include "v8/include/cppgc/macros.h"
+#include "v8/include/cppgc/member.h"
 #include "xfa/fxfa/parser/xfa_basic_data.h"
 
 class CXFA_Object;
 
-enum XFA_ResolveNode_RSType {
-  XFA_ResolveNode_RSType_Nodes,
-  XFA_ResolveNode_RSType_Attribute,
-  XFA_ResolveNode_RSType_CreateNodeOne,
-  XFA_ResolveNode_RSType_CreateNodeAll,
-  XFA_ResolveNode_RSType_CreateNodeMidAll,
-  XFA_ResolveNode_RSType_ExistNodes,
-};
+class XFA_ResolveNodeRS {
+  CPPGC_STACK_ALLOCATED();  // Allow raw/unowned pointers.
 
-struct XFA_RESOLVENODE_RS {
-  XFA_RESOLVENODE_RS();
-  ~XFA_RESOLVENODE_RS();
+ public:
+  enum class Type {
+    kNodes,
+    kAttribute,
+    kCreateNodeOne,
+    kCreateNodeAll,
+    kCreateNodeMidAll,
+    kExistNodes,
+  };
 
-  XFA_ResolveNode_RSType dwFlags = XFA_ResolveNode_RSType_Nodes;
+  XFA_ResolveNodeRS();
+  ~XFA_ResolveNodeRS();
+
+  Type dwFlags = Type::kNodes;
   XFA_SCRIPTATTRIBUTEINFO script_attribute;
-  std::vector<UnownedPtr<CXFA_Object>> objects;
+
+  // Vector of Member would be correct for stack-based vectors, if
+  // STL worked with cppgc.
+  std::vector<cppgc::Member<CXFA_Object>> objects;
 };
-
-inline XFA_RESOLVENODE_RS::XFA_RESOLVENODE_RS() = default;
-
-inline XFA_RESOLVENODE_RS::~XFA_RESOLVENODE_RS() = default;
 
 #endif  // XFA_FXFA_PARSER_XFA_RESOLVENODE_RS_H_

@@ -9,12 +9,12 @@
 
 namespace blink {
 
-void ScriptFunction::Trace(Visitor* visitor) {
+void ScriptFunction::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   CustomWrappableAdapter::Trace(visitor);
 }
 
-v8::Local<v8::Function> ScriptFunction::BindToV8Function() {
+v8::Local<v8::Function> ScriptFunction::BindToV8Function(int length) {
 #if DCHECK_IS_ON()
   DCHECK(!bind_to_v8_function_already_called_);
   bind_to_v8_function_already_called_ = true;
@@ -24,7 +24,7 @@ v8::Local<v8::Function> ScriptFunction::BindToV8Function() {
   // The wrapper is held alive by the CallHandlerInfo internally in V8 as long
   // as the function is alive.
   return v8::Function::New(script_state_->GetContext(), CallCallback, wrapper,
-                           0, v8::ConstructorBehavior::kThrow)
+                           length, v8::ConstructorBehavior::kThrow)
       .ToLocalChecked();
 }
 

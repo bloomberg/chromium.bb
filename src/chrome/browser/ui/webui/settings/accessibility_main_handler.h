@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_ACCESSIBILITY_MAIN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_ACCESSIBILITY_MAIN_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -23,13 +26,15 @@ class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler {
  public:
   AccessibilityMainHandler();
   ~AccessibilityMainHandler() override;
+  AccessibilityMainHandler(const AccessibilityMainHandler&) = delete;
+  AccessibilityMainHandler& operator=(const AccessibilityMainHandler&) = delete;
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  void HandleGetScreenReaderState(const base::ListValue* args);
+  void HandleA11yPageReady(const base::ListValue* args);
   void HandleCheckAccessibilityImageLabels(const base::ListValue* args);
 
  private:
@@ -41,11 +46,7 @@ class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler {
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_subscription_;
-#else
-
 #endif  // defined(OS_CHROMEOS)
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityMainHandler);
 };
 
 }  // namespace settings

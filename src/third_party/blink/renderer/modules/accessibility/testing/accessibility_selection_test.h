@@ -16,8 +16,6 @@ class AXObject;
 class AXSelection;
 class LocalFrameClient;
 
-namespace test {
-
 // Makes writing and debugging selection tests easier.
 class AccessibilitySelectionTest : public AccessibilityTest {
   USING_FAST_MALLOC(AccessibilitySelectionTest);
@@ -26,6 +24,8 @@ class AccessibilitySelectionTest : public AccessibilityTest {
   AccessibilitySelectionTest(LocalFrameClient* local_frame_client = nullptr);
 
  protected:
+  void SetUp() override;
+
   // Gets a text representation of the accessibility tree that is currently
   // selected and annotates it with markers indicating the anchor and focus of
   // |selection|.
@@ -83,7 +83,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ParameterizedAccessibilitySelectionTest,
                          testing::Bool());
 
-}  // namespace test
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_SELECTION_TEST_H_

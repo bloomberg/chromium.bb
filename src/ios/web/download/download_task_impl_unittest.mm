@@ -548,7 +548,7 @@ TEST_F(DownloadTaskImplTest, Cookie) {
       /*last_access=*/now,
       /*secure=*/false,
       /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
-      net::COOKIE_PRIORITY_DEFAULT);
+      net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false);
   cookie_store_.SetAllCookies({expected_cookie});
 
   // Start the download and make sure that all cookie from BrowserState were
@@ -571,7 +571,7 @@ TEST_F(DownloadTaskImplTest, FileDeletion) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath temp_file = temp_dir.GetPath().AppendASCII("DownloadTaskImpl");
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
   ASSERT_FALSE(base::PathExists(temp_file));
   std::unique_ptr<net::URLFetcherResponseWriter> writer =
       std::make_unique<net::URLFetcherFileWriter>(

@@ -90,11 +90,15 @@ typedef unsigned int (*aom_obmc_subpixvariance_fn_t)(
 
 typedef struct aom_variance_vtable {
   aom_sad_fn_t sdf;
+  // Same as normal sad, but downsample the rows by a factor of 2.
+  aom_sad_fn_t sdsf;
   aom_sad_avg_fn_t sdaf;
   aom_variance_fn_t vf;
   aom_subpixvariance_fn_t svf;
   aom_subp_avg_variance_fn_t svaf;
   aom_sad_multi_d_fn_t sdx4df;
+  // Same as sadx4, but downsample the rows by a factor of 2.
+  aom_sad_multi_d_fn_t sdsx4df;
   aom_masked_sad_fn_t msdf;
   aom_masked_subpixvariance_fn_t msvf;
   aom_obmc_sad_fn_t osdf;

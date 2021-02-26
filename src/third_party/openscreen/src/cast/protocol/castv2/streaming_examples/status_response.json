@@ -1,0 +1,9 @@
+{
+  "status": {
+    "result": "ok",
+    "seqNum": 820263769,
+    "wifiSnr": 13,
+    "wifiSpeed": [100000, 650000000, 43000000, 48000000]
+  },
+  "type": "STATUS_RESPONSE"
+}

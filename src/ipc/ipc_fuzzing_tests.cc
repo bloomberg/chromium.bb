@@ -74,7 +74,7 @@ TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
   m.WriteInt(2);
 
   base::PickleIterator iter(m);
-  const char* data = NULL;
+  const char* data = nullptr;
   EXPECT_TRUE(iter.ReadBytes(&data, sizeof(int)));
 }
 
@@ -141,8 +141,7 @@ TEST(IPCMessageIntegrity, DISABLED_ReadVectorTooLarge3) {
 
 class SimpleListener : public IPC::Listener {
  public:
-  SimpleListener() : other_(NULL) {
-  }
+  SimpleListener() : other_(nullptr) {}
   void Init(IPC::Sender* s) {
     other_ = s;
   }
@@ -223,8 +222,7 @@ class FuzzerServerListener : public SimpleListener {
 
 class FuzzerClientListener : public SimpleListener {
  public:
-  FuzzerClientListener() : last_msg_(NULL) {
-  }
+  FuzzerClientListener() : last_msg_(nullptr) {}
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     last_msg_ = new IPC::Message(msg);
@@ -248,7 +246,7 @@ class FuzzerClientListener : public SimpleListener {
       return false;
 
     delete last_msg_;
-    last_msg_ = NULL;
+    last_msg_ = nullptr;
     return true;
   }
 
@@ -259,7 +257,7 @@ class FuzzerClientListener : public SimpleListener {
  private:
   bool MsgHandlerInternal(uint32_t type_id) {
     base::RunLoop().Run();
-    if (NULL == last_msg_)
+    if (!last_msg_)
       return false;
     if (FUZZER_ROUTING_ID != last_msg_->routing_id())
       return false;
@@ -291,7 +289,7 @@ TEST_F(IPCFuzzingTest, SanityTest) {
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
 
-  IPC::Message* msg = NULL;
+  IPC::Message* msg = nullptr;
   int value = 43;
   msg = new MsgClassIS(value, base::ASCIIToUTF16("expect 43"));
   sender()->Send(msg);

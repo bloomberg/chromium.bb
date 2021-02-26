@@ -3,8 +3,11 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+
+<link rel="import" href="/components/oobe_i18n_behavior.html">
 
 <!--
   OOBE Welcome screen
@@ -65,68 +68,68 @@
       <div slot="footer" class="welcome-illustration flex layout vertical center
           center-justified">
         <if expr="chromeos and _google_chrome">
-          <video muted hidden oobe_devices="chromebox"
+          <video muted hidden oobe_devices="chromebox" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="intro"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/chromebox_intro_2x.webm">
           </video>
-          <video muted loop hidden oobe_devices="chromebox"
+          <video muted loop hidden oobe_devices="chromebox" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="loop"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/chromebox_loop_2x.webm">
           </video>
-          <video muted hidden oobe_devices="laptop_G"
+          <video muted hidden oobe_devices="laptop_G" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="intro"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_intro_2x.webm">
           </video>
-          <video muted loop hidden oobe_devices="laptop_G"
+          <video muted loop hidden oobe_devices="laptop_G" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="loop"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_loop_2x.webm">
           </video>
-          <video muted hidden oobe_devices="laptop"
+          <video muted hidden oobe_devices="laptop" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="intro"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_intro_2x.webm">
           </video>
-          <video muted loop hidden oobe_devices="laptop"
+          <video muted loop hidden oobe_devices="laptop" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="loop"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_loop_2x.webm">
           </video>
-          <video muted hidden oobe_devices="tablet_G"
+          <video muted hidden oobe_devices="tablet_G" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="intro"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_intro_2x.webm">
           </video>
-          <video muted loop hidden oobe_devices="tablet_G"
+          <video muted loop hidden oobe_devices="tablet_G" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="loop"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_loop_2x.webm">
           </video>
-          <video muted hidden oobe_devices="tablet"
+          <video muted hidden oobe_devices="tablet" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="intro"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_intro_2x.webm">
           </video>
-          <video muted loop hidden oobe_devices="tablet"
+          <video muted loop hidden oobe_devices="tablet" aria-hidden="true"
               oobe_orientations="portrait,landscape" oobe_types="loop"
               class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_loop_2x.webm">
           </video>
         </if>
         <div id="enableDebuggingDiv" hidden="[[!debuggingLinkVisible]]">
-          <a href="#" on-tap="onDebuggingLinkClicked_" id="enableDebuggingLink"
-             class="oobe-local-link">
+          <a on-click="onDebuggingLinkClicked_" id="enableDebuggingLink"
+             class="oobe-local-link" is="action-link">
             [[i18nDynamic(locale, 'debuggingFeaturesLink')]]
           </a>
         </div>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal center">
+      <div slot="back-navigation">
         <oobe-welcome-secondary-button id="languageSelectionButton"
             icon1x="oobe-welcome-dialog-20:language"
             icon2x="oobe-welcome-dialog-40:language"
-            on-tap="onLanguageClicked_"
+            on-click="onLanguageClicked_"
             label-for-aria="[[i18nDynamic(locale, 'languageButtonLabel',
                 currentLanguage)]]">
           <div slot="text">[[currentLanguage]]</div>
@@ -135,16 +138,17 @@
             text-key="accessibilityLink"
             icon1x="oobe-welcome-dialog-20:accessibility"
             icon2x="oobe-welcome-dialog-40:accessibility"
-            on-tap="onAccessibilityClicked_"></oobe-welcome-secondary-button>
+            on-click="onAccessibilityClicked_"></oobe-welcome-secondary-button>
         <oobe-welcome-secondary-button id="timezoneSettingsButton"
             text-key="timezoneButtonText"
             icon1x="oobe-welcome-32:timezone"
             icon2x="oobe-welcome-64:timezone"
-            on-tap="onTimezoneClicked_"
+            on-click="onTimezoneClicked_"
             hidden="[[!timezoneButtonVisible]]"></oobe-welcome-secondary-button>
-        <div class="flex"></div>
+      </div>
+      <div slot="bottom-buttons">
         <oobe-next-button id="welcomeNextButton"
-            inverse on-tap="onNextClicked_" text-key="welcomeNextButtonText">
+            inverse on-click="onNextClicked_" text-key="welcomeNextButtonText">
         </oobe-text-button>
       </div>
     </oobe-dialog>

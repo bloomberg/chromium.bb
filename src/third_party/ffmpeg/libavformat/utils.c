@@ -37,6 +37,7 @@
 
 #include "libavcodec/bytestream.h"
 #include "libavcodec/internal.h"
+#include "libavcodec/packet_internal.h"
 #include "libavcodec/raw.h"
 
 #include "avformat.h"
@@ -219,7 +220,7 @@ static const AVCodec *find_probe_decoder(AVFormatContext *s, const AVStream *st,
         const AVCodec *probe_codec = NULL;
         void *iter = NULL;
         while ((probe_codec = av_codec_iterate(&iter))) {
-            if (probe_codec->id == codec_id &&
+            if (probe_codec->id == codec->id &&
                     av_codec_is_decoder(probe_codec) &&
                     !(probe_codec->capabilities & (AV_CODEC_CAP_AVOID_PROBING | AV_CODEC_CAP_EXPERIMENTAL))) {
                 return probe_codec;
@@ -438,40 +439,6 @@ static int init_input(AVFormatContext *s, const char *filename,
                                  s, 0, s->format_probesize);
 }
 
-int ff_packet_list_put(AVPacketList **packet_buffer,
-                       AVPacketList **plast_pktl,
-                       AVPacket      *pkt, int flags)
-{
-    AVPacketList *pktl = av_mallocz(sizeof(AVPacketList));
-    int ret;
-
-    if (!pktl)
-        return AVERROR(ENOMEM);
-
-    if (flags & FF_PACKETLIST_FLAG_REF_PACKET) {
-        if ((ret = av_packet_ref(&pktl->pkt, pkt)) < 0) {
-            av_free(pktl);
-            return ret;
-        }
-    } else {
-        ret = av_packet_make_refcounted(pkt);
-        if (ret < 0) {
-            av_free(pktl);
-            return ret;
-        }
-        av_packet_move_ref(&pktl->pkt, pkt);
-    }
-
-    if (*packet_buffer)
-        (*plast_pktl)->next = pktl;
-    else
-        *packet_buffer = pktl;
-
-    /* Add the packet in the buffered packet list. */
-    *plast_pktl = pktl;
-    return 0;
-}
-
 int avformat_queue_attached_pictures(AVFormatContext *s)
 {
     int i, ret;
@@ -485,10 +452,10 @@ int avformat_queue_attached_pictures(AVFormatContext *s)
                 continue;
             }
 
-            ret = ff_packet_list_put(&s->internal->raw_packet_buffer,
+            ret = avpriv_packet_list_put(&s->internal->raw_packet_buffer,
                                      &s->internal->raw_packet_buffer_end,
                                      &s->streams[i]->attached_pic,
-                                     FF_PACKETLIST_FLAG_REF_PACKET);
+                                     av_packet_ref, 0);
             if (ret < 0)
                 return ret;
         }
@@ -638,11 +605,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (id3v2_extra_meta) {
         if (!strcmp(s->iformat->name, "mp3") || !strcmp(s->iformat->name, "aac") ||
             !strcmp(s->iformat->name, "tta") || !strcmp(s->iformat->name, "wav")) {
-            if ((ret = ff_id3v2_parse_apic(s, &id3v2_extra_meta)) < 0)
+            if ((ret = ff_id3v2_parse_apic(s, id3v2_extra_meta)) < 0)
                 goto close;
-            if ((ret = ff_id3v2_parse_chapters(s, &id3v2_extra_meta)) < 0)
+            if ((ret = ff_id3v2_parse_chapters(s, id3v2_extra_meta)) < 0)
                 goto close;
-            if ((ret = ff_id3v2_parse_priv(s, &id3v2_extra_meta)) < 0)
+            if ((ret = ff_id3v2_parse_priv(s, id3v2_extra_meta)) < 0)
                 goto close;
         } else
             av_log(s, AV_LOG_DEBUG, "demuxer does not support additional id3 data, skipping\n");
@@ -841,7 +808,7 @@ int ff_read_packet(AVFormatContext *s, AVPacket *pkt)
                 if ((err = probe_codec(s, st, NULL)) < 0)
                     return err;
             if (st->request_probe <= 0) {
-                ff_packet_list_get(&s->internal->raw_packet_buffer,
+                avpriv_packet_list_get(&s->internal->raw_packet_buffer,
                                    &s->internal->raw_packet_buffer_end, pkt);
                 s->internal->raw_packet_buffer_remaining_size += pkt->size;
                 return 0;
@@ -914,9 +881,9 @@ int ff_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (!pktl && st->request_probe <= 0)
             return ret;
 
-        err = ff_packet_list_put(&s->internal->raw_packet_buffer,
+        err = avpriv_packet_list_put(&s->internal->raw_packet_buffer,
                                  &s->internal->raw_packet_buffer_end,
-                                 pkt, 0);
+                                 pkt, NULL, 0);
         if (err < 0) {
             av_packet_unref(pkt);
             return err;
@@ -1011,7 +978,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 }
 
-static int is_intra_only(enum AVCodecID id)
+int ff_is_intra_only(enum AVCodecID id)
 {
     const AVCodecDescriptor *d = avcodec_descriptor_get(id);
     if (!d)
@@ -1156,7 +1123,7 @@ static void update_initial_timestamps(AVFormatContext *s, int stream_index,
         if (st->start_time == AV_NOPTS_VALUE && pktl_it->pkt.pts != AV_NOPTS_VALUE) {
             st->start_time = pktl_it->pkt.pts;
             if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && st->codecpar->sample_rate)
-                st->start_time += av_rescale_q(st->skip_samples, (AVRational){1, st->codecpar->sample_rate}, st->time_base);
+                st->start_time = av_sat_add64(st->start_time, av_rescale_q(st->skip_samples, (AVRational){1, st->codecpar->sample_rate}, st->time_base));
         }
     }
 
@@ -1169,12 +1136,12 @@ static void update_initial_timestamps(AVFormatContext *s, int stream_index,
             st->start_time = pts;
         }
         if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && st->codecpar->sample_rate)
-            st->start_time += av_rescale_q(st->skip_samples, (AVRational){1, st->codecpar->sample_rate}, st->time_base);
+            st->start_time = av_sat_add64(st->start_time, av_rescale_q(st->skip_samples, (AVRational){1, st->codecpar->sample_rate}, st->time_base));
     }
 }
 
 static void update_initial_durations(AVFormatContext *s, AVStream *st,
-                                     int stream_index, int duration)
+                                     int stream_index, int64_t duration)
 {
     AVPacketList *pktl = s->internal->packet_buffer ? s->internal->packet_buffer : s->internal->parse_queue;
     int64_t cur_dts    = RELATIVE_TS_BASE;
@@ -1359,7 +1326,7 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
             if (st->last_IP_duration == 0 && (uint64_t)pkt->duration <= INT32_MAX)
                 st->last_IP_duration = pkt->duration;
             if (pkt->dts != AV_NOPTS_VALUE)
-                st->cur_dts = pkt->dts + st->last_IP_duration;
+                st->cur_dts = av_sat_add64(pkt->dts, st->last_IP_duration);
             if (pkt->dts != AV_NOPTS_VALUE &&
                 pkt->pts == AV_NOPTS_VALUE &&
                 st->last_IP_duration > 0 &&
@@ -1410,7 +1377,7 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
             presentation_delayed, delay, av_ts2str(pkt->pts), av_ts2str(pkt->dts), av_ts2str(st->cur_dts), st->index, st->id);
 
     /* update flags */
-    if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA || is_intra_only(st->codecpar->codec_id))
+    if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA || ff_is_intra_only(st->codecpar->codec_id))
         pkt->flags |= AV_PKT_FLAG_KEY;
 #if FF_API_CONVERGENCE_DURATION
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -1418,20 +1385,6 @@ FF_DISABLE_DEPRECATION_WARNINGS
         pkt->convergence_duration = pc->convergence_duration;
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
-}
-
-void ff_packet_list_free(AVPacketList **pkt_buf, AVPacketList **pkt_buf_end)
-{
-    AVPacketList *tmp = *pkt_buf;
-
-    while (tmp) {
-        AVPacketList *pktl = tmp;
-        tmp = pktl->next;
-        av_packet_unref(&pktl->pkt);
-        av_freep(&pktl);
-    }
-    *pkt_buf     = NULL;
-    *pkt_buf_end = NULL;
 }
 
 /**
@@ -1531,9 +1484,9 @@ static int parse_packet(AVFormatContext *s, AVPacket *pkt,
 
         compute_pkt_fields(s, st, st->parser, &out_pkt, next_dts, next_pts);
 
-        ret = ff_packet_list_put(&s->internal->parse_queue,
+        ret = avpriv_packet_list_put(&s->internal->parse_queue,
                                  &s->internal->parse_queue_end,
-                                 &out_pkt, 0);
+                                 &out_pkt, NULL, 0);
         if (ret < 0) {
             av_packet_unref(&out_pkt);
             goto fail;
@@ -1549,21 +1502,6 @@ static int parse_packet(AVFormatContext *s, AVPacket *pkt,
 fail:
     av_packet_unref(pkt);
     return ret;
-}
-
-int ff_packet_list_get(AVPacketList **pkt_buffer,
-                       AVPacketList **pkt_buffer_end,
-                       AVPacket      *pkt)
-{
-    AVPacketList *pktl;
-    av_assert0(*pkt_buffer);
-    pktl        = *pkt_buffer;
-    *pkt        = pktl->pkt;
-    *pkt_buffer = pktl->next;
-    if (!pktl->next)
-        *pkt_buffer_end = NULL;
-    av_freep(&pktl);
-    return 0;
 }
 
 static int64_t ts_to_samples(AVStream *st, int64_t ts)
@@ -1696,7 +1634,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 
     if (!got_packet && s->internal->parse_queue)
-        ret = ff_packet_list_get(&s->internal->parse_queue, &s->internal->parse_queue_end, pkt);
+        ret = avpriv_packet_list_get(&s->internal->parse_queue, &s->internal->parse_queue_end, pkt);
 
     if (ret >= 0) {
         AVStream *st = s->streams[pkt->stream_index];
@@ -1780,7 +1718,7 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt)
 
     if (!genpts) {
         ret = s->internal->packet_buffer
-              ? ff_packet_list_get(&s->internal->packet_buffer,
+              ? avpriv_packet_list_get(&s->internal->packet_buffer,
                                         &s->internal->packet_buffer_end, pkt)
               : read_frame_internal(s, pkt);
         if (ret < 0)
@@ -1829,7 +1767,7 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt)
             st = s->streams[next_pkt->stream_index];
             if (!(next_pkt->pts == AV_NOPTS_VALUE && st->discard < AVDISCARD_ALL &&
                   next_pkt->dts != AV_NOPTS_VALUE && !eof)) {
-                ret = ff_packet_list_get(&s->internal->packet_buffer,
+                ret = avpriv_packet_list_get(&s->internal->packet_buffer,
                                                &s->internal->packet_buffer_end, pkt);
                 goto return_packet;
             }
@@ -1844,9 +1782,9 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt)
                 return ret;
         }
 
-        ret = ff_packet_list_put(&s->internal->packet_buffer,
+        ret = avpriv_packet_list_put(&s->internal->packet_buffer,
                                  &s->internal->packet_buffer_end,
-                                 pkt, 0);
+                                 pkt, NULL, 0);
         if (ret < 0) {
             av_packet_unref(pkt);
             return ret;
@@ -1874,9 +1812,9 @@ static void flush_packet_queue(AVFormatContext *s)
 {
     if (!s->internal)
         return;
-    ff_packet_list_free(&s->internal->parse_queue,       &s->internal->parse_queue_end);
-    ff_packet_list_free(&s->internal->packet_buffer,     &s->internal->packet_buffer_end);
-    ff_packet_list_free(&s->internal->raw_packet_buffer, &s->internal->raw_packet_buffer_end);
+    avpriv_packet_list_free(&s->internal->parse_queue,       &s->internal->parse_queue_end);
+    avpriv_packet_list_free(&s->internal->packet_buffer,     &s->internal->packet_buffer_end);
+    avpriv_packet_list_free(&s->internal->raw_packet_buffer, &s->internal->raw_packet_buffer_end);
 
     s->internal->raw_packet_buffer_remaining_size = RAW_PACKET_BUFFER_SIZE;
 }
@@ -2783,7 +2721,7 @@ static void estimate_timings_from_bit_rate(AVFormatContext *ic)
                 st      = ic->streams[i];
                 if (   st->time_base.num <= INT64_MAX / ic->bit_rate
                     && st->duration == AV_NOPTS_VALUE) {
-                    duration = av_rescale(8 * filesize, st->time_base.den,
+                    duration = av_rescale(filesize, 8LL * st->time_base.den,
                                           ic->bit_rate *
                                           (int64_t) st->time_base.num);
                     st->duration = duration;
@@ -2985,16 +2923,16 @@ static void estimate_timings(AVFormatContext *ic, int64_t old_offset)
         for (i = 0; i < ic->nb_streams; i++) {
             st = ic->streams[i];
             if (st->time_base.den)
-                av_log(ic, AV_LOG_TRACE, "stream %d: start_time: %0.3f duration: %0.3f\n", i,
-                       (double) st->start_time * av_q2d(st->time_base),
-                       (double) st->duration   * av_q2d(st->time_base));
+                av_log(ic, AV_LOG_TRACE, "stream %d: start_time: %s duration: %s\n", i,
+                       av_ts2timestr(st->start_time, &st->time_base),
+                       av_ts2timestr(st->duration, &st->time_base));
         }
         av_log(ic, AV_LOG_TRACE,
-                "format: start_time: %0.3f duration: %0.3f (estimate from %s) bitrate=%"PRId64" kb/s\n",
-                (double) ic->start_time / AV_TIME_BASE,
-                (double) ic->duration   / AV_TIME_BASE,
-                duration_estimate_name(ic->duration_estimation_method),
-                (int64_t)ic->bit_rate / 1000);
+               "format: start_time: %s duration: %s (estimate from %s) bitrate=%"PRId64" kb/s\n",
+               av_ts2timestr(ic->start_time, &AV_TIME_BASE_Q),
+               av_ts2timestr(ic->duration, &AV_TIME_BASE_Q),
+               duration_estimate_name(ic->duration_estimation_method),
+               (int64_t)ic->bit_rate / 1000);
     }
 }
 
@@ -3568,9 +3506,6 @@ static int extract_extradata(AVStream *st, const AVPacket *pkt)
     }
 
     while (ret >= 0 && !sti->avctx->extradata) {
-        int extradata_size;
-        uint8_t *extradata;
-
         ret = av_bsf_receive_packet(sti->extract_extradata.bsf, pkt_ref);
         if (ret < 0) {
             if (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
@@ -3578,19 +3513,15 @@ static int extract_extradata(AVStream *st, const AVPacket *pkt)
             continue;
         }
 
-        extradata = av_packet_get_side_data(pkt_ref, AV_PKT_DATA_NEW_EXTRADATA,
-                                            &extradata_size);
-
-        if (extradata) {
-            av_assert0(!sti->avctx->extradata);
-            if ((unsigned)extradata_size < FF_MAX_EXTRADATA_SIZE)
-                sti->avctx->extradata = av_mallocz(extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-            if (!sti->avctx->extradata) {
-                av_packet_unref(pkt_ref);
-                return AVERROR(ENOMEM);
+        for (int i = 0; i < pkt_ref->side_data_elems; i++) {
+            AVPacketSideData *side_data = &pkt_ref->side_data[i];
+            if (side_data->type == AV_PKT_DATA_NEW_EXTRADATA) {
+                sti->avctx->extradata      = side_data->data;
+                sti->avctx->extradata_size = side_data->size;
+                side_data->data = NULL;
+                side_data->size = 0;
+                break;
             }
-            memcpy(sti->avctx->extradata, extradata, extradata_size);
-            sti->avctx->extradata_size = extradata_size;
         }
         av_packet_unref(pkt_ref);
     }
@@ -3833,9 +3764,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
 
         if (!(ic->flags & AVFMT_FLAG_NOBUFFER)) {
-            ret = ff_packet_list_put(&ic->internal->packet_buffer,
+            ret = avpriv_packet_list_put(&ic->internal->packet_buffer,
                                      &ic->internal->packet_buffer_end,
-                                     &pkt1, 0);
+                                     &pkt1, NULL, 0);
             if (ret < 0)
                 goto unref_then_goto_end;
 
@@ -4133,8 +4064,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
             avcodec_string(buf, sizeof(buf), st->internal->avctx, 0);
             av_log(ic, AV_LOG_WARNING,
                    "Could not find codec parameters for stream %d (%s): %s\n"
-                   "Consider increasing the value for the 'analyzeduration' and 'probesize' options\n",
-                   i, buf, errmsg);
+                   "Consider increasing the value for the 'analyzeduration' (%"PRId64") and 'probesize' (%"PRId64") options\n",
+                   i, buf, errmsg, ic->max_analyze_duration, ic->probesize);
         } else {
             ret = 0;
         }
@@ -5508,6 +5439,8 @@ uint8_t *av_stream_get_side_data(const AVStream *st,
             return st->side_data[i].data;
         }
     }
+    if (size)
+        *size = 0;
     return NULL;
 }
 

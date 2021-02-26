@@ -1,0 +1,202 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module crosapi.mojom;
+
+import "chromeos/crosapi/mojom/account_manager.mojom";
+import "chromeos/crosapi/mojom/feedback.mojom";
+import "chromeos/crosapi/mojom/file_manager.mojom";
+import "chromeos/crosapi/mojom/keystore_service.mojom";
+import "chromeos/crosapi/mojom/message_center.mojom";
+import "chromeos/crosapi/mojom/screen_manager.mojom";
+import "chromeos/crosapi/mojom/select_file.mojom";
+import "mojo/public/mojom/base/big_string.mojom";
+import "mojo/public/mojom/base/token.mojom";
+import "mojo/public/mojom/base/values.mojom";
+import "services/device/public/mojom/hid.mojom";
+import "url/mojom/url.mojom";
+
+// LacrosInfo is a set of parameters passed to ash from lacros-chrome
+// upon lacros startup, which contains the lacros information such as version,
+// etc.
+[Stable]
+struct LacrosInfo {
+  // Version of lacros-chrome displayed to user in feedback report, etc.
+  // It includes both browser version and channel in the format of:
+  // {browser version} {channel}
+  // For example, "87.0.0.1 dev", "86.0.4240.38 beta".
+  string lacros_version@0;
+
+  // TODO(crbug.com/1119925): Add more parameters later.
+};
+
+// AshChromeService defines the APIs that live in ash-chrome and are
+// accessed from lacros-chrome. When adding a major new API please note the
+// milestone when you added it, to help us reason about compatibility between
+// lacros-chrome and older ash-chrome binaries.
+//
+// Next version: 6
+// Next method id: 9
+[Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e"]
+interface AshChromeService {
+  // Binds Chrome OS Account Manager for Identity management.
+  // Added in M87.
+  [MinVersion=4]
+  BindAccountManager@7(pending_receiver<AccountManager> receiver);
+
+  // Binds the FileManager interface for showing files, folders, etc.
+  // Added in M88.
+  [MinVersion=5]
+  BindFileManager@8(pending_receiver<FileManager> receiver);
+
+  // Binds the KeystoreService interface for challenging keys.
+  // Added in M87.
+  BindKeystoreService@2(pending_receiver<KeystoreService> receiver);
+
+  // Binds the MessageCenter interface for showing notification messages.
+  // Added in M86.
+  BindMessageCenter@3(pending_receiver<MessageCenter> receiver);
+
+  // Binds the ScreenManager interface for interacting with windows, screens and
+  // displays.
+  // Added in M86.
+  BindScreenManager@1(pending_receiver<ScreenManager> receiver);
+
+  // Binds the SelectFile interface for open/save dialogs.
+  // Added in M86.
+  BindSelectFile@0(pending_receiver<SelectFile> receiver);
+
+  // Binds the HidManager interface for support HID devices.
+  // Added in M87.
+  BindHidManager@4(pending_receiver<device.mojom.HidManager> receiver);
+
+  // Binds the Feedback interface for showing feedback UI.
+  // Added in M87.
+  [MinVersion=3] BindFeedback@5(pending_receiver<Feedback> receiver);
+
+  // Passes generic lacros information such as lacros version, etc into ash
+  // in |lacros_info| during startup.
+  // Added in M87.
+  [MinVersion=3] OnLacrosStartup@6(LacrosInfo lacros_info);
+};
+
+[Stable, Extensible]
+enum SessionType {
+  kUnknown,
+  kRegularSession,
+  kGuestSession,
+  kPublicSession
+};
+
+// Device mode (e.g. enterprise enrollment state). See policy::DeviceMode.
+[Stable, Extensible]
+enum DeviceMode {
+  kUnknown = 0,
+  // Not yet set.
+  kNotSet,
+  // Locally owned as consumer device.
+  kConsumer,
+  // Enrolled as an enterprise device.
+  kEnterprise,
+  // Joined Active Directory.
+  kEnterpriseActiveDirectory,
+  // Retail kiosk device.
+  kLegacyRetailMode,
+  // Locally owned as consumer kiosk and can auto-launch a kiosk webapp.
+  kConsumerKioskAutolaunch,
+  // Demo mode, either enrolled online or setup in offline demo mode.
+  kDemo,
+};
+
+// LacrosInitParams is a set of parameters for initialization of lacros-chrome,
+// which is passed from ash-chrome to lacros-chrome. Since ash-chrome and
+// lacros-chrome may have different versions, lacros-chrome must handle this
+// struct carefully.
+//
+// If ash-chrome is older than lacros-chrome, then some fields may not be
+// present in the serialized IPC message. This manifests as the newer (missing)
+// fields taking on default values in lacros-chrome. This means
+// that the default value for each field must always be interpreted to mean:
+// this field was not sent because ash-chrome was too old. If the default value
+// needs to have a different meaning, then we must also add a bool field
+// describing the validity of this field. Mojo currently does not support
+// optional primitives.
+//
+// If ash-chrome is newer than lacros-chrome, then some fields may not be
+// processed by lacros-chrome.
+[Stable]
+struct LacrosInitParams {
+  // This is ash-chrome's version of the AshChromeService interface. This is
+  // used by lacros-chrome to determine which interface methods are safe to
+  // call.
+  [MinVersion=1]
+  uint32 ash_chrome_service_version@0;
+
+  // Deprecated in M88. |ash_metrics_enabled| always has a value.
+  [MinVersion=2]
+  bool deprecated_ash_metrics_enabled_has_value@1;
+
+  // Whether metrics are enabled in ash-chrome. On lacros first run we inherit
+  // metrics consent from ash, because on Chrome OS metrics consent is chosen
+  // during the out-of-box experience. After first run lacros handles metrics
+  // consent via settings.
+  [MinVersion=2]
+  bool ash_metrics_enabled@2;
+
+  // Type of the ash-chrome session at lacros startup time.
+  [MinVersion=3]
+  SessionType session_type@3;
+
+  // Device mode at lacros startup time. If lacros is running during the
+  // out-of-box experience, the device mode might change later (e.g. if the
+  // user chooses to enroll the device).
+  [MinVersion=4]
+  DeviceMode device_mode@4;
+
+  // Ash sends all known crosapi interfaces and their versions at startup so
+  // that Lacros can synchronously query version info. Interfaces are identified
+  // by a UUID, which is manually generated and assigned via the UUID mojom
+  // qualifier.
+  // Added in M88.
+  [MinVersion=5]
+  map<mojo_base.mojom.Token, uint32>? interface_versions@5;
+};
+
+// LacrosChromeService defines the APIs that live in lacros-chrome and
+// are accessed from ash-chrome.
+[Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91"]
+interface LacrosChromeService {
+  // Ash-chrome can pass initialize parameters via this method.
+  // The parameters are available on lacros-chrome startup.
+  Init@2(LacrosInitParams params);
+
+  // Returns the pending_receiver of AshChromeService.
+  // Ash-chrome is expected to call this method on initialization.
+  // Lacros-chrome may call AshChromeService APIs earlier than this
+  // invocation. In the case, the calls are queued, and processed
+  // sequentially, when ash-chrome binds the receiver to the service.
+  RequestAshChromeServiceReceiver@0() => (
+      pending_receiver<AshChromeService> receiver);
+
+  // Opens a new window in lacros-chrome with, currently, the last used profile.
+  // The callback is called on the command execution.
+  NewWindow@1() => ();
+
+  // Returns lacros feedback data used for generating feedback report in
+  // a dictionary object, each entry representing a log entry in the feedback
+  // report, for example, "Lacros crash_report_ids: xxx",
+  // "Lacros extensions: xxx", "Lacros mem_usage: xxx", etc.
+  [MinVersion=6]
+  GetFeedbackData@3() => (
+      mojo_base.mojom.DictionaryValue feedback_info);
+
+  // Returns the lacros histograms used for generating feedback report.
+  // The histograms returned is zip compressed and is typically around 100KB.
+  [MinVersion=7]
+  GetHistograms@4() => (mojo_base.mojom.BigString compressed_histograms);
+
+  // Returns Url of the active tab from lacros if there is any.
+  [MinVersion=8]
+  GetActiveTabUrl@5() => (url.mojom.Url? url);
+};

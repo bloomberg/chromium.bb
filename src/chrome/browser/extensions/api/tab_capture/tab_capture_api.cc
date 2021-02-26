@@ -32,12 +32,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 
 using content::DesktopMediaID;
 using content::WebContentsMediaCaptureId;
@@ -56,8 +56,8 @@ const char kGrantError[] =
     "Extension has not been invoked for the current page (see activeTab "
     "permission). Chrome pages cannot be captured.";
 
-const char kNotWhitelistedForOffscreenTabApi[] =
-    "Extension is not whitelisted for use of the unstable, in-development "
+const char kNotAllowlistedForOffscreenTabApi[] =
+    "Extension is not allowlisted for use of the unstable, in-development "
     "chrome.tabCapture.captureOffscreenTab API.";
 const char kInvalidStartUrl[] =
     "Invalid/Missing/Malformatted starting URL for off-screen tab.";
@@ -142,7 +142,7 @@ bool GetAutoThrottlingFromOptions(TabCapture::CaptureOptions* options) {
       }
       // Remove the key from the properties to avoid an "unrecognized
       // constraint" error in the renderer.
-      props.RemoveWithoutPathExpansion(kEnableAutoThrottlingKey, nullptr);
+      props.RemoveKey(kEnableAutoThrottlingKey);
     }
   }
 
@@ -216,10 +216,10 @@ Browser* GetLastActiveBrowser(const Profile* profile,
 
 }  // namespace
 
-// Whitelisted extensions that do not check for a browser action grant because
+// Allowlisted extensions that do not check for a browser action grant because
 // they provide API's. If there are additional extension ids that need
-// whitelisting and are *not* the Media Router extension, add them to a new
-// kWhitelist array.
+// allowlisting and are *not* the Media Router extension, add them to a new
+// kAllowlist array.
 const char* const kMediaRouterExtensionIds[] = {
     "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
     "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Stable
@@ -245,12 +245,12 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   const std::string& extension_id = extension()->id();
 
   // Make sure either we have been granted permission to capture through an
-  // extension icon click or our extension is whitelisted.
+  // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) != extension_id &&
+          switches::kAllowlistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
                                   base::size(kMediaRouterExtensionIds))) {
     return RespondNow(Error(kGrantError));
@@ -285,7 +285,8 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   // chrome/renderer/resources/extensions/tab_capture_custom_bindings.js
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->MergeDictionary(params->options.ToValue().get());
-  return RespondNow(OneArgument(std::move(result)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
 
 ExtensionFunction::ResponseAction TabCaptureGetCapturedTabsFunction::Run() {
@@ -293,7 +294,8 @@ ExtensionFunction::ResponseAction TabCaptureGetCapturedTabsFunction::Run() {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   if (registry)
     registry->GetCapturedTabs(extension()->id(), list.get());
-  return RespondNow(OneArgument(std::move(list)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
 }
 
 ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
@@ -301,18 +303,18 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
       TabCapture::CaptureOffscreenTab::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Make sure the extension is whitelisted for using this API, regardless of
+  // Make sure the extension is allowlisted for using this API, regardless of
   // Chrome channel.
   //
   // TODO(miu): Use _api_features.json and extensions::Feature library instead.
   // http://crbug.com/537732
-  const bool is_whitelisted_extension =
+  const bool is_allowlisted_extension =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) == extension()->id() ||
+          switches::kAllowlistedExtensionID) == extension()->id() ||
       SimpleFeature::IsIdInArray(extension()->id(), kMediaRouterExtensionIds,
                                  base::size(kMediaRouterExtensionIds));
-  if (!is_whitelisted_extension)
-    return RespondNow(Error(kNotWhitelistedForOffscreenTabApi));
+  if (!is_allowlisted_extension)
+    return RespondNow(Error(kNotAllowlistedForOffscreenTabApi));
 
   const GURL start_url(params->start_url);
   if (!IsAcceptableOffscreenTabUrl(start_url))
@@ -324,11 +326,12 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   content::WebContents* const extension_web_contents = GetSenderWebContents();
   EXTENSION_FUNCTION_VALIDATE(extension_web_contents);
   OffscreenTab* const offscreen_tab =
-      OffscreenTabsOwner::Get(extension_web_contents)->OpenNewTab(
-          start_url,
-          DetermineInitialSize(params->options),
-          (is_whitelisted_extension && params->options.presentation_id) ?
-              *params->options.presentation_id : std::string());
+      OffscreenTabsOwner::Get(extension_web_contents)
+          ->OpenNewTab(
+              start_url, DetermineInitialSize(params->options),
+              (is_allowlisted_extension && params->options.presentation_id)
+                  ? *params->options.presentation_id
+                  : std::string());
   if (!offscreen_tab)
     return RespondNow(Error(kTooManyOffscreenTabs));
 
@@ -352,7 +355,8 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   // the custom JS bindings in the extension's render process to complete the
   // request.  See the comment at end of TabCaptureCaptureFunction::RunSync()
   // for more details.
-  return RespondNow(OneArgument(params->options.ToValue()));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(params->options.ToValue())));
 }
 
 // static
@@ -432,12 +436,12 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
   const std::string& extension_id = extension()->id();
 
   // Make sure either we have been granted permission to capture through an
-  // extension icon click or our extension is whitelisted.
+  // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) != extension_id) {
+          switches::kAllowlistedExtensionID) != extension_id) {
     return RespondNow(Error(kGrantError));
   }
 
@@ -457,7 +461,7 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
       return RespondNow(Error(kInvalidOriginError));
     }
 
-    if (!content::IsOriginSecure(origin)) {
+    if (!blink::network_utils::IsOriginSecure(origin)) {
       return RespondNow(Error(kTabUrlNotSecure));
     }
 
@@ -478,7 +482,7 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
     return RespondNow(Error(kCapturingSameTab));
   }
 
-  return RespondNow(OneArgument(std::make_unique<base::Value>(device_id)));
+  return RespondNow(OneArgument(base::Value(device_id)));
 }
 
 }  // namespace extensions

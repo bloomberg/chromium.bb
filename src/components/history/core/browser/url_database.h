@@ -11,12 +11,17 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
 #include "sql/statement.h"
 
 class GURL;
+
+namespace base {
+class Time;
+}
 
 namespace sql {
 class Database;
@@ -26,6 +31,8 @@ namespace history {
 
 struct KeywordSearchTermRow;
 struct KeywordSearchTermVisit;
+struct NormalizedKeywordSearchTermVisit;
+
 class VisitDatabase;  // For friend statement.
 
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
@@ -44,17 +51,6 @@ class URLDatabase {
   // This object must be destroyed on the thread where all accesses are
   // happening to avoid thread-safety problems.
   virtual ~URLDatabase();
-
-  // Converts a GURL to a string used in the history database. We plan to
-  // do more complex operations than just getting the spec out involving
-  // punycode, so this function should be used instead of url.spec() when
-  // interacting with the database.
-  //
-  // TODO(brettw) this should be moved out of the public section and the
-  // entire public HistoryDatabase interface should use GURL. This should
-  // also probably return a string instead since that is what the DB uses
-  // internally and we can avoid the extra conversion.
-  static std::string GURLToDatabaseURL(const GURL& url);
 
   // URL table functions -------------------------------------------------------
 
@@ -225,10 +221,12 @@ class URLDatabase {
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);
 
-  // Returns up to max_count of the most recent search terms.
-  std::vector<KeywordSearchTermVisit> GetMostRecentKeywordSearchTerms(
-      KeywordID keyword_id,
-      int max_count);
+  // Returns the most recent (i.e., no older than |age_threshold|) normalized
+  // search terms (i.e., search terms in lower case with whitespaces collapsed)
+  // for the specified keyword.
+  std::vector<NormalizedKeywordSearchTermVisit>
+  GetMostRecentNormalizedKeywordSearchTerms(KeywordID keyword_id,
+                                            base::Time age_threshold);
 
   // Deletes all searches matching |term|.
   bool DeleteKeywordSearchTerm(const base::string16& term);
@@ -241,12 +239,12 @@ class URLDatabase {
   // Deletes any search corresponding to |url_id|.
   bool DeleteKeywordSearchTermForURL(URLID url_id);
 
-  // Migration -----------------------------------------------------------------
-
-  // Do to a bug we were setting the favicon of about:blank. This forces
-  // about:blank to have no icon or title. Returns true on success, false if
-  // the favicon couldn't be updated.
-  bool MigrateFromVersion11ToVersion12();
+  // This is a cover for VisitDatabase::GetVisitsForURL(). It's here to avoid
+  // changing a ton of callback code that currently takes a UrlDatabase.
+  //
+  // TODO(https://crbug.com/1141501): this is for an experiment, and will be
+  // removed once data is collected from experiment.
+  virtual bool GetVisitsForUrl2(URLID url_id, VisitVector* visits);
 
  protected:
   friend class VisitDatabase;
@@ -341,6 +339,15 @@ class URLDatabase {
 extern const int kLowQualityMatchTypedLimit;
 extern const int kLowQualityMatchVisitLimit;
 extern const int kLowQualityMatchAgeLimitInDays;
+
+// The time interval within which a duplicate query is considered invalid for
+// autocomplete purposes.
+// These invalid duplicates are extracted from search query URLs which are
+// identical or nearly identical to the original search query URL and issued too
+// closely to it, i.e., within this time interval. They are typically recorded
+// as a result of back/forward navigations or user interactions in the search
+// result page and are likely not newly initiated searches.
+extern const base::TimeDelta kAutocompleteDuplicateVisitIntervalThreshold;
 
 // Returns the date threshold for considering an history item as significant.
 base::Time AutocompleteAgeThreshold();

@@ -38,6 +38,7 @@ class TestFileSelectListener : public content::FileSelectListener {
       : files_(files) {}
 
  private:
+  ~TestFileSelectListener() override = default;
   // content::FileSelectListener overrides.
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
                     const base::FilePath& base_dir,
@@ -49,16 +50,16 @@ class TestFileSelectListener : public content::FileSelectListener {
   std::vector<blink::mojom::FileChooserFileInfoPtr>* files_;
 };
 
-// Fill in the arguments to be passed to the DeepScanCompletionCallback()
+// Fill in the arguments to be passed to the ContentAnalysisCompletionCallback()
 // method based on a list of paths and the desired result for each path.
 // This function simulates a path either passing the deep scan (status of true)
 // or failing (status of false).
-void PrepareDeepScanCompletionCallbackArgs(
+void PrepareContentAnalysisCompletionCallbackArgs(
     std::vector<base::FilePath> paths,
     std::vector<bool> status,
     std::vector<blink::mojom::FileChooserFileInfoPtr>* orig_files,
-    safe_browsing::DeepScanningDialogDelegate::Data* data,
-    safe_browsing::DeepScanningDialogDelegate::Result* result) {
+    enterprise_connectors::ContentAnalysisDelegate::Data* data,
+    enterprise_connectors::ContentAnalysisDelegate::Result* result) {
   DCHECK_EQ(status.size(), paths.size());
 
   for (auto& path : paths) {
@@ -105,7 +106,7 @@ TEST_F(FileSelectHelperTest, IsAcceptTypeValid) {
   EXPECT_FALSE(FileSelectHelper::IsAcceptTypeValid("abc/def "));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(FileSelectHelperTest, ZipPackage) {
   // Zip the package.
   const char app_name[] = "CalculatorFake.app";
@@ -138,7 +139,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
     EXPECT_TRUE(base::ContentsEqual(orig_file, final_file));
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
   // The empty path should be preserved.
@@ -238,122 +239,122 @@ TEST_F(FileSelectHelperTest, LastSelectedDirectory) {
 // The following tests depend on the full safe browsing feature set.
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 
-TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_NoFiles) {
+TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_NoFiles) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
-  safe_browsing::DeepScanningDialogDelegate::Data data;
-  safe_browsing::DeepScanningDialogDelegate::Result result;
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
-  file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
-                                                 result);
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
 
   EXPECT_EQ(0u, files.size());
 }
 
-TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OneOKFile) {
+TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_OneOKFile) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
-  safe_browsing::DeepScanningDialogDelegate::Data data;
-  safe_browsing::DeepScanningDialogDelegate::Result result;
-  PrepareDeepScanCompletionCallbackArgs({data_dir_.AppendASCII("foo.doc")},
-                                        {true}, &orig_files, &data, &result);
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+  PrepareContentAnalysisCompletionCallbackArgs(
+      {data_dir_.AppendASCII("foo.doc")}, {true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
-  file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
-                                                 result);
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
 
   EXPECT_EQ(1u, files.size());
 }
 
-TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoOKFiles) {
+TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_TwoOKFiles) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
-  safe_browsing::DeepScanningDialogDelegate::Data data;
-  safe_browsing::DeepScanningDialogDelegate::Result result;
-  PrepareDeepScanCompletionCallbackArgs(
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+  PrepareContentAnalysisCompletionCallbackArgs(
       {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {true, true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
-  file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
-                                                 result);
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
 
   EXPECT_EQ(2u, files.size());
 }
 
-TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoBadFiles) {
+TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_TwoBadFiles) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
-  safe_browsing::DeepScanningDialogDelegate::Data data;
-  safe_browsing::DeepScanningDialogDelegate::Result result;
-  PrepareDeepScanCompletionCallbackArgs(
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+  PrepareContentAnalysisCompletionCallbackArgs(
       {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {false, false}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
-  file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
-                                                 result);
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
 
   EXPECT_EQ(0u, files.size());
 }
 
-TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OKBadFiles) {
+TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_OKBadFiles) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
-  safe_browsing::DeepScanningDialogDelegate::Data data;
-  safe_browsing::DeepScanningDialogDelegate::Result result;
-  PrepareDeepScanCompletionCallbackArgs(
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+  PrepareContentAnalysisCompletionCallbackArgs(
       {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {false, true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
-  file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
-                                                 result);
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
 
   ASSERT_EQ(1u, files.size());
   EXPECT_EQ(data_dir_.AppendASCII("bar.doc"),

@@ -124,12 +124,15 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
   };
 
   static BlockCompletion FallThrough() {
-    BlockCompletion completion = {kFallThrough, TestOperand(), 1, kNoValue};
+    BlockCompletion completion = {kFallThrough, TestOperand(kImmediate, 0), 1,
+                                  kNoValue};
     return completion;
   }
 
-  static BlockCompletion Jump(int offset) {
-    BlockCompletion completion = {kJump, TestOperand(), offset, kNoValue};
+  static BlockCompletion Jump(int offset,
+                              TestOperand operand = TestOperand(kImmediate,
+                                                                0)) {
+    BlockCompletion completion = {kJump, operand, offset, kNoValue};
     return completion;
   }
 
@@ -145,6 +148,8 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
   }
 
   InstructionSequenceTest();
+  InstructionSequenceTest(const InstructionSequenceTest&) = delete;
+  InstructionSequenceTest& operator=(const InstructionSequenceTest&) = delete;
 
   void SetNumRegs(int num_general_registers, int num_double_registers);
   int GetNumRegs(MachineRepresentation rep);
@@ -223,7 +228,7 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
 
   Instruction* EmitBranch(TestOperand input_op);
   Instruction* EmitFallThrough();
-  Instruction* EmitJump();
+  Instruction* EmitJump(TestOperand input_op);
   Instruction* NewInstruction(InstructionCode code, size_t outputs_size,
                               InstructionOperand* outputs,
                               size_t inputs_size = 0,
@@ -246,6 +251,7 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
   InstructionOperand ConvertOutputOp(VReg vreg, TestOperand op);
   InstructionBlock* NewBlock(bool deferred = false);
   void WireBlock(size_t block_offset, int jump_offset);
+  void CalculateDominators();
 
   Instruction* Emit(InstructionCode code, size_t outputs_size = 0,
                     InstructionOperand* outputs = nullptr,
@@ -276,8 +282,6 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
   LoopBlocks loop_blocks_;
   InstructionBlock* current_block_;
   bool block_returns_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstructionSequenceTest);
 };
 
 }  // namespace compiler

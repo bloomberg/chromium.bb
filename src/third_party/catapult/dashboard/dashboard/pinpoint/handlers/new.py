@@ -40,7 +40,9 @@ class New(api_request_handler.ApiRequestHandler):
     # TODO(dberris): Validate the inputs based on the type of job requested.
     job = _CreateJob(self.request)
 
-    scheduler.Schedule(job)
+    # We apply the cost-based scheduling at job creation time, so that we can
+    # roll out the feature as jobs come along.
+    scheduler.Schedule(job, scheduler.Cost(job))
 
     job.PostCreationUpdate()
 
@@ -55,6 +57,10 @@ def _CreateJob(request):
   original_arguments = request.params.mixed()
   logging.debug('Received Params: %s', original_arguments)
 
+  # This call will fail if some of the required arguments are not in the
+  # original request.
+  _ValidateRequiredParams(original_arguments)
+
   arguments = _ArgumentsWithConfiguration(original_arguments)
   logging.debug('Updated Params: %s', arguments)
 
@@ -63,7 +69,10 @@ def _CreateJob(request):
 
   # Validate the priority, if it's present.
   priority = _ValidatePriority(arguments.get('priority'))
-  bug_id = _ValidateBugId(arguments.get('bug_id'))
+
+  # Validate and find the associated issue.
+  bug_id, project = _ValidateBugId(
+      arguments.get('bug_id'), arguments.get('project', 'chromium'))
   comparison_mode = _ValidateComparisonMode(arguments.get('comparison_mode'))
   comparison_magnitude = _ValidateComparisonMagnitude(
       arguments.get('comparison_magnitude'))
@@ -77,12 +86,12 @@ def _CreateJob(request):
   # If this is a try job, we assume it's higher priority than bisections, so
   # we'll set it at a negative priority.
   if priority not in arguments and comparison_mode == job_state.TRY:
-    arguments['priority'] = -10
+    priority = -1
 
   # TODO(dberris): Make this the default when we've graduated the beta.
   use_execution_engine = (
-      arguments.get('experimental_execution_engine') and
-      arguments.get('comparison_mode') == job_state.PERFORMANCE)
+      arguments.get('experimental_execution_engine')
+      and arguments.get('comparison_mode') == job_state.PERFORMANCE)
 
   # Ensure that we have the required fields in tryjob requests.
   if comparison_mode == 'try':
@@ -92,8 +101,8 @@ def _CreateJob(request):
     # First we check whether there's a quest that's of type 'RunTelemetryTest'.
     is_telemetry_test = any(
         [isinstance(q, quest_module.RunTelemetryTest) for q in quests])
-    if is_telemetry_test and ('story' not in arguments and
-                              'story_tags' not in arguments):
+    if is_telemetry_test and ('story' not in arguments
+                              and 'story_tags' not in arguments):
       raise ValueError(
           'Missing either "story" or "story_tags" as arguments for try jobs.')
 
@@ -112,7 +121,8 @@ def _CreateJob(request):
       tags=tags,
       user=user,
       priority=priority,
-      use_execution_engine=use_execution_engine)
+      use_execution_engine=use_execution_engine,
+      project=project)
 
   if use_execution_engine:
     # TODO(dberris): We need to figure out a way to get the arguments to be more
@@ -170,7 +180,7 @@ def _ArgumentsWithConfiguration(original_arguments):
   if configuration:
     try:
       default_arguments = bot_configurations.Get(configuration)
-    except KeyError:
+    except ValueError:
       # Reraise with a clearer message.
       raise ValueError("Bot Config: %s doesn't exist." % configuration)
     logging.info('Bot Config: %s', default_arguments)
@@ -204,14 +214,19 @@ def _ArgumentsWithConfiguration(original_arguments):
   return new_arguments
 
 
-def _ValidateBugId(bug_id):
+def _ValidateBugId(bug_id, project):
   if not bug_id:
-    return None
+    return None, None
 
   try:
-    return int(bug_id)
+    # TODO(dberris): Figure out a way to check the issue tracker if the project
+    # is valid at creation time. That might involve a user credential check, so
+    # we might need to update the scopes we're asking for. For now trust that
+    # the inputs are valid.
+    return int(bug_id), project
   except ValueError:
     raise ValueError(_ERROR_BUG_ID)
+
 
 def _ValidatePriority(priority):
   if not priority:
@@ -272,8 +287,8 @@ def _ValidateChanges(comparison_mode, arguments):
     return change_1, change_2
 
   # Everything else that follows only applies to bisections.
-  assert (comparison_mode == job_state.FUNCTIONAL or
-          comparison_mode == job_state.PERFORMANCE)
+  assert (comparison_mode == job_state.FUNCTIONAL
+          or comparison_mode == job_state.PERFORMANCE)
 
   if 'start_git_hash' not in arguments or 'end_git_hash' not in arguments:
     raise ValueError(
@@ -356,7 +371,16 @@ def _GenerateQuests(arguments):
                        quest_module.ReadValue)
     elif target == 'vr_perf_tests':
       quest_classes = (quest_module.FindIsolate,
-                       quest_module.RunVrTelemetryTest,
+                       quest_module.RunVrTelemetryTest, quest_module.ReadValue)
+    elif 'browser_test' in target:
+      quest_classes = (quest_module.FindIsolate, quest_module.RunBrowserTest,
+                       quest_module.ReadValue)
+    elif 'instrumentation_test' in target:
+      quest_classes = (quest_module.FindIsolate,
+                       quest_module.RunInstrumentationTest,
+                       quest_module.ReadValue)
+    elif 'webrtc_perf_tests' in target:
+      quest_classes = (quest_module.FindIsolate, quest_module.RunWebRtcTest,
                        quest_module.ReadValue)
     else:
       quest_classes = (quest_module.FindIsolate, quest_module.RunGTest,
@@ -394,3 +418,16 @@ def _ValidateTags(tags):
 
 def _ValidateUser(user):
   return user or utils.GetEmail()
+
+
+_REQUIRED_NON_EMPTY_PARAMS = {'target', 'benchmark'}
+
+
+def _ValidateRequiredParams(params):
+  missing = _REQUIRED_NON_EMPTY_PARAMS - set(params.keys())
+  if missing:
+    raise ValueError('Missing required parameters: %s' % (list(missing)))
+  # Check that they're not empty.
+  empty_keys = [key for key in _REQUIRED_NON_EMPTY_PARAMS if not params[key]]
+  if empty_keys:
+    raise ValueError('Parameters must not be empty: %s' % (empty_keys))

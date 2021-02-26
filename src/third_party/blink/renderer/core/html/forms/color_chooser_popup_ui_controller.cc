@@ -63,7 +63,7 @@ ColorChooserPopupUIController::~ColorChooserPopupUIController() {
   DCHECK(!popup_);
 }
 
-void ColorChooserPopupUIController::Trace(Visitor* visitor) {
+void ColorChooserPopupUIController::Trace(Visitor* visitor) const {
   visitor->Trace(chrome_client_);
   visitor->Trace(eye_dropper_chooser_);
   ColorChooserUIController::Trace(visitor);
@@ -102,7 +102,9 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
       client_->ElementRectRelativeToViewport(), frame_->View());
 
   PagePopupClient::AddString(
-      "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light dark'><style>\n",
+      data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
   PagePopupClient::AddString(
@@ -116,7 +118,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   AddProperty("isEyeDropperEnabled", features::IsEyeDropperEnabled(), data);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif
@@ -140,6 +142,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
                        data);
   AddLocalizedProperty("axFormatTogglerLabel", IDS_AX_COLOR_FORMAT_TOGGLER,
                        data);
+  AddLocalizedProperty("axEyedropperLabel", IDS_AX_COLOR_EYEDROPPER, data);
 #else
   CHECK(false) << "We should never reach PagePopupClient code on Android";
 #endif
@@ -161,7 +164,9 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       client_->ElementRectRelativeToViewport(), frame_->View());
 
   PagePopupClient::AddString(
-      "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light dark'><style>\n",
+      data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet());
   if (features::IsFormControlsRefreshEnabled())
@@ -184,7 +189,7 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
   AddProperty("isFormControlsRefreshEnabled",
               features::IsFormControlsRefreshEnabled(), data);
   AddProperty("isEyeDropperEnabled", features::IsEyeDropperEnabled(), data);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif
@@ -225,6 +230,7 @@ void ColorChooserPopupUIController::SetValue(const String& value) {
 
 void ColorChooserPopupUIController::DidClosePopup() {
   popup_ = nullptr;
+  eye_dropper_chooser_.reset();
 
   if (!chooser_)
     EndChooser();
@@ -271,6 +277,12 @@ void ColorChooserPopupUIController::EyeDropperResponseHandler(bool success,
 }
 
 void ColorChooserPopupUIController::OpenEyeDropper() {
+  // Don't open the eye dropper without user activation or if it is already
+  // opened.
+  if (!LocalFrame::HasTransientUserActivation(frame_) ||
+      eye_dropper_chooser_.is_bound())
+    return;
+
   frame_->GetBrowserInterfaceBroker().GetInterface(
       eye_dropper_chooser_.BindNewPipeAndPassReceiver(
           frame_->GetTaskRunner(TaskType::kUserInteraction)));

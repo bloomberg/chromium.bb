@@ -4,11 +4,16 @@
 
 package org.chromium.weblayer_private;
 
+import android.content.Context;
+import android.text.TextUtils;
+
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.weblayer.WebLayer;
 
 /**
  * Helper for metrics_browsertest.cc
@@ -16,10 +21,13 @@ import org.chromium.base.annotations.NativeMethods;
 @JNINamespace("weblayer")
 class MetricsTestHelper {
     private static class TestGmsBridge extends GmsBridge {
-        private final boolean mUserConsent;
+        private final @ConsentType int mConsentType;
+        private Callback<Boolean> mConsentCallback;
+        public static TestGmsBridge sInstance;
 
-        public TestGmsBridge(boolean userConsent) {
-            mUserConsent = userConsent;
+        public TestGmsBridge(@ConsentType int consentType) {
+            sInstance = this;
+            mConsentType = consentType;
         }
 
         @Override
@@ -35,7 +43,11 @@ class MetricsTestHelper {
         @Override
         public void queryMetricsSetting(Callback<Boolean> callback) {
             ThreadUtils.assertOnUiThread();
-            callback.onResult(mUserConsent);
+            if (mConsentType == ConsentType.DELAY_CONSENT) {
+                mConsentCallback = callback;
+            } else {
+                callback.onResult(mConsentType == ConsentType.CONSENT);
+            }
         }
 
         @Override
@@ -45,8 +57,35 @@ class MetricsTestHelper {
     }
 
     @CalledByNative
-    private static void installTestGmsBridge(boolean userConsent) {
-        GmsBridge.injectInstance(new TestGmsBridge(userConsent));
+    private static void installTestGmsBridge(@ConsentType int consentType) {
+        GmsBridge.injectInstance(new TestGmsBridge(consentType));
+    }
+
+    @CalledByNative
+    private static void runConsentCallback(boolean hasConsent) {
+        assert TestGmsBridge.sInstance != null;
+        assert TestGmsBridge.sInstance.mConsentCallback != null;
+        TestGmsBridge.sInstance.mConsentCallback.onResult(hasConsent);
+    }
+
+    @CalledByNative
+    private static void createProfile(String name) {
+        Context appContext = ContextUtils.getApplicationContext();
+        WebLayer weblayer = WebLayer.loadSync(appContext);
+
+        String nameOrNull = null;
+        if (!TextUtils.isEmpty(name)) nameOrNull = name;
+        weblayer.getProfile(nameOrNull);
+    }
+
+    @CalledByNative
+    private static void destroyProfile(String name) {
+        Context appContext = ContextUtils.getApplicationContext();
+        WebLayer weblayer = WebLayer.loadSync(appContext);
+
+        String nameOrNull = null;
+        if (!TextUtils.isEmpty(name)) nameOrNull = name;
+        weblayer.getProfile(nameOrNull).destroy();
     }
 
     @CalledByNative

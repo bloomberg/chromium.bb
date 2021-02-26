@@ -93,8 +93,7 @@ void MdnsProbeImpl::Postpone(std::chrono::seconds delay) {
 
   successful_probe_queries_ = 0;
   alarm_.Cancel();
-  alarm_.ScheduleFromNow([this]() { ProbeOnce(); },
-                         std::chrono::duration_cast<Clock::duration>(delay));
+  alarm_.ScheduleFromNow([this]() { ProbeOnce(); }, Clock::to_duration(delay));
 }
 
 void MdnsProbeImpl::OnMessageReceived(const MdnsMessage& message) {

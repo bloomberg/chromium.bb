@@ -24,8 +24,6 @@
 
 namespace rlwe {
 
-const uint256_pod kuint256max = {absl::kuint128max, absl::kuint128max};
-
 // Returns the 0-based position of the last set bit (i.e., most significant bit)
 // in the given uint64. The argument may not be 0.
 //
@@ -40,7 +38,7 @@ const uint256_pod kuint256max = {absl::kuint128max, absl::kuint128max};
     }                                         \
   } while (0)
 static inline int Fls64(Uint64 n) {
-  DCHECK_NE(0, n);
+  //DCHECK_NE(0, n);
   int pos = 0;
   STEP(Uint64, n, pos, 0x20);
   Uint32 n32 = n;

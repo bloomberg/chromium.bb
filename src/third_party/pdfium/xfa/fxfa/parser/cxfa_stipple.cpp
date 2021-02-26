@@ -6,10 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_stipple.h"
 
-#include "core/fxge/render_defines.h"
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_color.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -35,7 +34,9 @@ CXFA_Stipple::CXFA_Stipple(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Stipple,
                 kStipplePropertyData,
                 kStippleAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Stipple::~CXFA_Stipple() = default;
 
@@ -49,8 +50,8 @@ int32_t CXFA_Stipple::GetRate() {
       .value_or(GetDefaultRate());
 }
 
-void CXFA_Stipple::Draw(CXFA_Graphics* pGS,
-                        CXFA_GEPath* fillPath,
+void CXFA_Stipple::Draw(CFGAS_GEGraphics* pGS,
+                        CFGAS_GEPath* fillPath,
                         const CFX_RectF& rtFill,
                         const CFX_Matrix& matrix) {
   int32_t iRate = GetRate();
@@ -66,7 +67,7 @@ void CXFA_Stipple::Draw(CXFA_Graphics* pGS,
   FX_ARGB cr = AlphaAndColorRefToArgb(iRate * alpha / 100, colorref);
 
   pGS->SaveGraphState();
-  pGS->SetFillColor(CXFA_GEColor(cr));
-  pGS->FillPath(fillPath, FXFILL_WINDING, &matrix);
+  pGS->SetFillColor(CFGAS_GEColor(cr));
+  pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding, &matrix);
   pGS->RestoreGraphState();
 }

@@ -3,24 +3,23 @@
 # found in the LICENSE file.
 
 from datetime import date
-import json
 import logging
 import os
 import re
-import subprocess
-from subprocess import CalledProcessError
 import shutil
 import sys
 import tempfile
 
+from gpu_tests import color_profile_manager
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
-from gpu_tests import color_profile_manager
+from gpu_tests.skia_gold import gpu_skia_gold_properties
+from gpu_tests.skia_gold import gpu_skia_gold_session_manager
 
 from py_utils import cloud_storage
 
 from telemetry.util import image_util
-from telemetry.util import rgba_color
 
 GPU_RELATIVE_PATH = "content/test/data/gpu/"
 GPU_DATA_DIR = os.path.join(path_util.GetChromiumSrcDir(), GPU_RELATIVE_PATH)
@@ -29,24 +28,7 @@ TEST_DATA_DIRS = [
     os.path.join(path_util.GetChromiumSrcDir(), 'media/test/data'),
 ]
 
-GOLDCTL_BIN = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
-                           'skia_goldctl')
-if sys.platform == 'win32':
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'win', 'goldctl') + '.exe'
-elif sys.platform == 'darwin':
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'mac', 'goldctl')
-else:
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'linux', 'goldctl')
-
-SKIA_GOLD_INSTANCE = 'chrome-gpu'
-SKIA_GOLD_CORPUS = SKIA_GOLD_INSTANCE
-
-
-# This is mainly used to determine if we need to run a subprocess through the
-# shell - on Windows, finding executables via PATH doesn't work properly unless
-# run through the shell.
-def IsWin():
-  return sys.platform == 'win32'
+SKIA_GOLD_CORPUS = 'chrome-gpu'
 
 
 class _ImageParameters(object):
@@ -58,6 +40,8 @@ class _ImageParameters(object):
     self.device_string = None
     self.msaa = False
     self.model_name = None
+    self.driver_version = None
+    self.driver_vendor = None
 
 
 class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
@@ -76,9 +60,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   _image_parameters = None
 
   _skia_gold_temp_dir = None
-
-  _local_run = None
-  _git_revision = None
+  _skia_gold_session_manager = None
+  _skia_gold_properties = None
 
   @classmethod
   def SetParsedCommandLineOptions(cls, options):
@@ -94,25 +77,45 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
     super(SkiaGoldIntegrationTestBase, cls).SetUpProcess()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     cls.SetStaticServerDirs(TEST_DATA_DIRS)
     cls._skia_gold_temp_dir = tempfile.mkdtemp()
 
-  @staticmethod
-  def _AddDefaultArgs(browser_args):
-    if not browser_args:
-      browser_args = []
+  @classmethod
+  def GetSkiaGoldProperties(cls):
+    if not cls._skia_gold_properties:
+      cls._skia_gold_properties =\
+          gpu_skia_gold_properties.GpuSkiaGoldProperties(
+              cls.GetParsedCommandLineOptions())
+    return cls._skia_gold_properties
+
+  @classmethod
+  def GetSkiaGoldSessionManager(cls):
+    if not cls._skia_gold_session_manager:
+      cls._skia_gold_session_manager =\
+          gpu_skia_gold_session_manager.GpuSkiaGoldSessionManager(
+              cls._skia_gold_temp_dir, cls.GetSkiaGoldProperties())
+    return cls._skia_gold_session_manager
+
+  @classmethod
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(SkiaGoldIntegrationTestBase,
+                         cls).GenerateBrowserArgs(additional_args)
+    default_args.extend([cba.ENABLE_GPU_BENCHMARKING, cba.TEST_TYPE_GPU])
     force_color_profile_arg = [
-        arg for arg in browser_args if arg.startswith('--force-color-profile=')
+        arg for arg in default_args if arg.startswith('--force-color-profile=')
     ]
     if not force_color_profile_arg:
-      browser_args = browser_args + [
-          '--force-color-profile=srgb',
-          '--ensure-forced-color-profile',
-      ]
-    # All tests receive the following options.
-    return browser_args + ['--enable-gpu-benchmarking', '--test-type=gpu']
+      default_args.extend([
+          cba.FORCE_COLOR_PROFILE_SRGB,
+          cba.ENSURE_FORCED_COLOR_PROFILE,
+      ])
+    return default_args
 
   @classmethod
   def StopBrowser(cls):
@@ -162,16 +165,27 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         help='For Skia Gold integration. Always report that the test passed '
         'even if the Skia Gold image comparison reported a failure, but '
         'otherwise perform the same steps as usual.')
+    # Telemetry is *still* using optparse instead of argparse, so we can't have
+    # these two options in a mutually exclusive group.
     parser.add_option(
-        '--local-run',
+        '--local-pixel-tests',
+        action='store_true',
         default=None,
-        type=int,
         help='Specifies to run the test harness in local run mode or not. When '
         'run in local mode, uploading to Gold is disabled and links to '
         'help with local debugging are output. Running in local mode also '
-        'implies --no-luci-auth. If left unset, the test harness will '
-        'attempt to detect whether it is running on a workstation or not '
-        'and set this option accordingly.')
+        'implies --no-luci-auth. If both this and --no-local-pixel-tests are '
+        'left unset, the test harness will attempt to detect whether it is '
+        'running on a workstation or not and set this option accordingly.')
+    parser.add_option(
+        '--no-local-pixel-tests',
+        action='store_false',
+        dest='local_pixel_tests',
+        help='Specifies to run the test harness in non-local (bot) mode. When '
+        'run in this mode, data is actually uploaded to Gold and triage links '
+        'arge generated. If both this and --local-pixel-tests are left unset, '
+        'the test harness will attempt to detect whether it is running on a '
+        'workstation or not and set this option accordingly.')
     parser.add_option(
         '--no-luci-auth',
         action='store_true',
@@ -225,12 +239,14 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       raise Exception('GPU device information was incomplete')
     # TODO(senorblanco): This should probably be checking
     # for the presence of the extensions in system_info.gpu_aux_attributes
-    # in order to check for MSAA, rather than sniffing the blacklist.
+    # in order to check for MSAA, rather than sniffing the blocklist.
     params.msaa = not (('disable_chromium_framebuffer_multisample' in
                         system_info.gpu.driver_bug_workarounds) or
                        ('disable_multisample_render_to_texture' in system_info.
                         gpu.driver_bug_workarounds))
     params.model_name = system_info.model_name
+    params.driver_version = device.driver_version
+    params.driver_vendor = device.driver_vendor
 
   @classmethod
   def _UploadBitmapToCloudStorage(cls, bucket, name, bitmap, public=False):
@@ -246,88 +262,17 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   # bots, so kept around for future use.
   @classmethod
   def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
+    revision = cls.GetSkiaGoldProperties().git_revision
     machine_name = re.sub(r'\W+', '_',
                           cls.GetParsedCommandLineOptions().test_machine_name)
     base_bucket = '%s/gold_failures' % (cls._error_image_cloud_storage_bucket)
     image_name_with_revision_and_machine = '%s_%s_%s.png' % (
-        image_name, machine_name, cls._GetBuildRevision())
+        image_name, machine_name, revision)
     cls._UploadBitmapToCloudStorage(
         base_bucket,
         image_name_with_revision_and_machine,
         screenshot,
         public=True)
-
-  def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
-                                tolerance, device_pixel_ratio,
-                                test_machine_name):
-    def _CompareScreenshotWithExpectation(expectation):
-      """Compares a portion of the screenshot to the given expectation.
-
-      Fails the test if a the screenshot does not match within the tolerance.
-
-      Args:
-        expectation: A dict defining an expected color region. It must contain
-            'location', 'size', and 'color' keys. See pixel_test_pages.py for
-            examples.
-      """
-      location = expectation["location"]
-      size = expectation["size"]
-      x0 = int(location[0] * device_pixel_ratio)
-      x1 = int((location[0] + size[0]) * device_pixel_ratio)
-      y0 = int(location[1] * device_pixel_ratio)
-      y1 = int((location[1] + size[1]) * device_pixel_ratio)
-      for x in range(x0, x1):
-        for y in range(y0, y1):
-          if (x < 0 or y < 0 or x >= image_util.Width(screenshot)
-              or y >= image_util.Height(screenshot)):
-            self.fail(('Expected pixel location [%d, %d] is out of range on ' +
-                       '[%d, %d] image') % (x, y, image_util.Width(screenshot),
-                                            image_util.Height(screenshot)))
-
-          actual_color = image_util.GetPixelColor(screenshot, x, y)
-          expected_color = rgba_color.RgbaColor(
-              expectation["color"][0], expectation["color"][1],
-              expectation["color"][2],
-              expectation["color"][3] if len(expectation["color"]) > 3 else 255)
-          if not actual_color.IsEqual(expected_color, tolerance):
-            self.fail('Expected pixel at ' + str(location) +
-                      ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
-                      ' to be ' + str(expectation["color"]) + " but got [" +
-                      str(actual_color.r) + ", " + str(actual_color.g) + ", " +
-                      str(actual_color.b) + ", " + str(actual_color.a) + "]")
-
-    # First scan through the expected_colors and see if there are any scale
-    # factor overrides that would preempt the device pixel ratio. This
-    # is mainly a workaround for complex tests like the Maps test.
-    for expectation in expected_colors:
-      if 'scale_factor_overrides' in expectation:
-        for override in expectation['scale_factor_overrides']:
-          # Require exact matches to avoid confusion, because some
-          # machine models and names might be subsets of others
-          # (e.g. Nexus 5 vs Nexus 5X).
-          if ('device_type' in override
-              and (tab.browser.platform.GetDeviceTypeName() ==
-                   override['device_type'])):
-            logging.warning('Overriding device_pixel_ratio ' +
-                            str(device_pixel_ratio) + ' with scale factor ' +
-                            str(override['scale_factor']) +
-                            ' for device type ' + override['device_type'])
-            device_pixel_ratio = override['scale_factor']
-            break
-          if (test_machine_name and 'machine_name' in override
-              and override["machine_name"] == test_machine_name):
-            logging.warning('Overriding device_pixel_ratio ' +
-                            str(device_pixel_ratio) + ' with scale factor ' +
-                            str(override['scale_factor']) +
-                            ' for machine name ' + test_machine_name)
-            device_pixel_ratio = override['scale_factor']
-            break
-        # Only support one "scale_factor_overrides" in the expectation format.
-        break
-    for expectation in expected_colors:
-      if "scale_factor_overrides" in expectation:
-        continue
-      _CompareScreenshotWithExpectation(expectation)
 
   @staticmethod
   def _UrlToImageName(url):
@@ -336,37 +281,39 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     image_name = re.sub(r'(\.|/|-)', '_', image_name)
     return image_name
 
-  def _GetBuildIdArgs(self):
-    # Get all the information that goldctl requires.
-    parsed_options = self.GetParsedCommandLineOptions()
-    build_id_args = [
-        '--commit',
-        self._GetBuildRevision(),
-    ]
-    # If --gerrit-issue is passed, then we assume we're running on a trybot.
-    if parsed_options.gerrit_issue:
-      # yapf: disable
-      build_id_args += [
-          '--issue', parsed_options.gerrit_issue,
-          '--patchset', parsed_options.gerrit_patchset,
-          '--jobid', parsed_options.buildbucket_id,
-          '--crs', 'gerrit',
-          '--cis', 'buildbucket',
-      ]
-      # yapf: enable
-    return build_id_args
-
   def GetGoldJsonKeys(self, page):
     """Get all the JSON metadata that will be passed to golctl."""
     img_params = self.GetImageParameters(page)
+    # The frequently changing last part of the ANGLE driver version (revision of
+    # some sort?) messes a bit with inexact matching since each revision will
+    # be treated as a separate trace, so strip it off.
+    _StripAngleRevisionFromDriver(img_params)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-        'vendor_id': _ToHexOrNone(img_params.vendor_id),
-        'device_id': _ToHexOrNone(img_params.device_id),
-        'vendor_string': _ToNonEmptyStrOrNone(img_params.vendor_string),
-        'device_string': _ToNonEmptyStrOrNone(img_params.device_string),
-        'msaa': str(img_params.msaa),
-        'model_name': _ToNonEmptyStrOrNone(img_params.model_name),
+        'vendor_id':
+        _ToHexOrNone(img_params.vendor_id),
+        'device_id':
+        _ToHexOrNone(img_params.device_id),
+        'vendor_string':
+        _ToNonEmptyStrOrNone(img_params.vendor_string),
+        'device_string':
+        _ToNonEmptyStrOrNone(img_params.device_string),
+        'msaa':
+        str(img_params.msaa),
+        'model_name':
+        _ToNonEmptyStrOrNone(img_params.model_name),
+        'os':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSName()),
+        'os_version':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSVersionName()),
+        'os_version_detail_string':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSVersionDetailString()),
+        'driver_version':
+        _ToNonEmptyStrOrNone(img_params.driver_version),
+        'driver_vendor':
+        _ToNonEmptyStrOrNone(img_params.driver_vendor),
+        'combined_hardware_identifier':
+        _GetCombinedHardwareIdentifier(img_params),
     }
     # If we have a grace period active, then the test is potentially flaky.
     # Include a pair that will cause Gold to ignore any untriaged images, which
@@ -376,17 +323,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       gpu_keys['ignore'] = '1'
     return gpu_keys
 
-# TODO(crbug.com/1076144): This is due for a refactor, likely similar to how
-# the instrumentation tests handle it (see
-# //build/android/pylib/utils/gold_utils.py), which will address the
-# too-many-locals error.
-# pylint: disable=too-many-locals
-
-  def _UploadTestResultToSkiaGold(self,
-                                  image_name,
-                                  screenshot,
-                                  page,
-                                  build_id_args=None):
+  def _UploadTestResultToSkiaGold(self, image_name, screenshot, page):
     """Compares the given image using Skia Gold and uploads the result.
 
     No uploading is done if the test is being run in local run mode. Compares
@@ -397,128 +334,65 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       image_name: the name of the image being checked.
       screenshot: the image being checked as a Telemetry Bitmap.
       page: the GPU PixelTestPage object for the test.
-      build_id_args: a list of build-identifying flags and values.
     """
-    if self.GetParsedCommandLineOptions().bypass_skia_gold_functionality:
-      logging.warning('Not actually comparing with Gold due to '
-                      '--bypass-skia-gold-functionality being present.')
-      return
-    if not isinstance(build_id_args, list) or '--commit' not in build_id_args:
-      raise Exception('Requires build args to be specified, including --commit')
-
     # Write screenshot to PNG file on local disk.
     png_temp_file = tempfile.NamedTemporaryFile(
         suffix='.png', dir=self._skia_gold_temp_dir).name
     image_util.WritePngFile(screenshot, png_temp_file)
 
     gpu_keys = self.GetGoldJsonKeys(page)
-    json_temp_file = tempfile.NamedTemporaryFile(
-        suffix='.json', dir=self._skia_gold_temp_dir).name
-    failure_file = tempfile.NamedTemporaryFile(
-        suffix='.txt', dir=self._skia_gold_temp_dir).name
-    with open(json_temp_file, 'w+') as f:
-      json.dump(gpu_keys, f)
+    gold_session = self.GetSkiaGoldSessionManager().GetSkiaGoldSession(
+        gpu_keys, corpus=SKIA_GOLD_CORPUS)
+    gold_properties = self.GetSkiaGoldProperties()
+    use_luci = not (gold_properties.local_pixel_tests
+                    or gold_properties.no_luci_auth)
 
-    # Figure out any extra args we need to pass to goldctl.
-    extra_imgtest_args = []
-    extra_auth_args = []
-    parsed_options = self.GetParsedCommandLineOptions()
-    if self._IsLocalRun():
-      extra_imgtest_args.append('--dryrun')
-    elif not parsed_options.no_luci_auth:
-      extra_auth_args = ['--luci']
+    inexact_matching_args = page.matching_algorithm.GetCmdline()
 
-    # Run goldctl for a result.
-    try:
-      subprocess.check_output(
-          [GOLDCTL_BIN, 'auth', '--work-dir', self._skia_gold_temp_dir] +
-          extra_auth_args,
-          stderr=subprocess.STDOUT)
-      algorithm_args = page.matching_algorithm.GetCmdline()
-      if algorithm_args:
-        logging.info('Using non-exact matching algorithm %s for %s',
-                     page.matching_algorithm.Name(), image_name)
-      # yapf: disable
-      cmd = ([
-          GOLDCTL_BIN,
-          'imgtest', 'add',
-          '--passfail',
-          '--test-name', image_name,
-          '--instance', SKIA_GOLD_INSTANCE,
-          '--keys-file', json_temp_file,
-          '--png-file', png_temp_file,
-          '--work-dir', self._skia_gold_temp_dir,
-          '--failure-file', failure_file
-      ] + build_id_args + extra_imgtest_args + algorithm_args)
-      # yapf: enable
-      output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-      # TODO(skbug.com/10245): Remove this once the issue with auto-triaging
-      # inexactly matched images is fixed.
-      if 'VP9_YUY2' in image_name:
-        logging.error(output)
-    except CalledProcessError as e:
-      # We don't want to bother printing out triage links for local runs.
-      # Instead, we print out local filepaths for debugging. However, we want
-      # these to be at the bottom of the output so they're easier to find, so
-      # that is handled later.
-      if self._IsLocalRun():
-        pass
-      # The triage link for the image is output to the failure file, so report
-      # that if it's available so it shows up in Milo. If for whatever reason
-      # the file is not present or malformed, the triage link will still be
-      # present in the stdout of the goldctl command.
-      # If we're running on a trybot, instead generate a link to all results
-      # for the CL so that the user can visit a single page instead of
-      # clicking on multiple links on potentially multiple bots.
-      elif parsed_options.gerrit_issue:
-        cl_images = ('https://%s-gold.skia.org/search?'
-                     'issue=%s&new_clstore=true' %
-                     (SKIA_GOLD_INSTANCE, parsed_options.gerrit_issue))
-        self.artifacts.CreateLink('triage_link_for_entire_cl', cl_images)
+    status, error = gold_session.RunComparison(
+        name=image_name,
+        png_file=png_temp_file,
+        inexact_matching_args=inexact_matching_args,
+        use_luci=use_luci)
+    if not status:
+      return
+
+    status_codes =\
+        self.GetSkiaGoldSessionManager().GetSessionClass().StatusCodes
+    if status == status_codes.AUTH_FAILURE:
+      logging.error('Gold authentication failed with output %s', error)
+    elif status == status_codes.INIT_FAILURE:
+      logging.error('Gold initialization failed with output %s', error)
+    elif status == status_codes.COMPARISON_FAILURE_REMOTE:
+      # We currently don't have an internal instance + public mirror like the
+      # general Chrome Gold instance, so just report the "internal" link, which
+      # points to the correct instance.
+      _, triage_link = gold_session.GetTriageLinks(image_name)
+      if not triage_link:
+        logging.error('Failed to get triage link for %s, raw output: %s',
+                      image_name, error)
+        logging.error('Reason for no triage link: %s',
+                      gold_session.GetTriageLinkOmissionReason(image_name))
+      elif gold_properties.IsTryjobRun():
+        self.artifacts.CreateLink('triage_link_for_entire_cl', triage_link)
       else:
-        try:
-          with open(failure_file, 'r') as ff:
-            self.artifacts.CreateLink('gold_triage_link', ff.read())
-        except Exception:
-          logging.error('Failed to read contents of goldctl failure file')
-
-      logging.error('goldctl failed with output: %s', e.output)
-      if self._IsLocalRun():
-        # Intentionally not cleaned up so the user can look at its contents.
-        diff_dir = tempfile.mkdtemp()
-        # yapf: disable
-        cmd = [
-            GOLDCTL_BIN,
-            'diff',
-            '--corpus', SKIA_GOLD_CORPUS,
-            '--instance', SKIA_GOLD_INSTANCE,
-            '--input', png_temp_file,
-            '--test', image_name,
-            '--work-dir', self._skia_gold_temp_dir,
-            '--out-dir', diff_dir,
-        ]
-        # yapf: enable
-        try:
-          subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except CalledProcessError as e:
-          logging.error('Failed to generate diffs from Gold: %s', e)
-
-        # The directory should contain "input-<hash>.png", "closest-<hash>.png",
-        # and "diff.png".
-        for f in os.listdir(diff_dir):
-          filepath = os.path.join(diff_dir, f)
-          if f.startswith("input-"):
-            logging.error("Image produced by %s: file://%s", image_name,
-                          filepath)
-          elif f.startswith("closest-"):
-            logging.error("Closest image for %s: file://%s", image_name,
-                          filepath)
-          elif f == "diff.png":
-            logging.error("Diff image for %s: file://%s", image_name, filepath)
-
-      if self._ShouldReportGoldFailure(page):
-        raise Exception('goldctl command failed, see above for details')
-# pylint: enable=too-many-locals
+        self.artifacts.CreateLink('gold_triage_link', triage_link)
+    elif status == status_codes.COMPARISON_FAILURE_LOCAL:
+      logging.error('Local comparison failed. Local diff files:')
+      _OutputLocalDiffFiles(gold_session, image_name)
+    elif status == status_codes.LOCAL_DIFF_FAILURE:
+      logging.error(
+          'Local comparison failed and an error occurred during diff '
+          'generation: %s', error)
+      # There might be some files, so try outputting them.
+      logging.error('Local diff files:')
+      _OutputLocalDiffFiles(gold_session, image_name)
+    else:
+      logging.error(
+          'Given unhandled SkiaGoldSession StatusCode %s with error %s', status,
+          error)
+    if self._ShouldReportGoldFailure(page):
+      raise Exception('goldctl command failed, see above for details')
 
   def _ShouldReportGoldFailure(self, page):
     """Determines if a Gold failure should actually be surfaced.
@@ -539,86 +413,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     if _GracePeriodActive(page):
       return False
     return True
-
-  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
-                                             device_pixel_ratio, build_id_args):
-    """Samples the given screenshot and verifies pixel color values.
-
-    In case any of the samples do not match the expected color, it raises
-    a Failure and uploads the image to Gold.
-
-    Args:
-      tab: the Telemetry Tab object that the test was run in.
-      page: the GPU PixelTestPage object for the test.
-      screenshot: the screenshot of the test page as a Telemetry Bitmap.
-      device_pixel_ratio: the device pixel ratio for the test device as a float.
-      build_id_args: a list of build-identifying flags and values.
-    """
-    try:
-      self._CompareScreenshotSamples(
-          tab, screenshot, page.expected_colors, page.tolerance,
-          device_pixel_ratio,
-          self.GetParsedCommandLineOptions().test_machine_name)
-    except Exception as comparison_exception:
-      # An exception raised from self.fail() indicates a failure.
-      image_name = self._UrlToImageName(page.name)
-      # We want to report the screenshot comparison failure, not any failures
-      # related to Gold.
-      try:
-        self._UploadTestResultToSkiaGold(
-            image_name, screenshot, page, build_id_args=build_id_args)
-      except Exception as gold_exception:
-        logging.error(str(gold_exception))
-      # TODO(https://crbug.com/1043129): Switch this to just "raise" once these
-      # tests are run with Python 3. Python 2's behavior with nested try/excepts
-      # is weird and ends up re-raising the exception raised by
-      # _UploadTestResultToSkiaGold instead of the one by
-      # _CompareScreenshotSamples. See https://stackoverflow.com/q/28698622.
-      raise comparison_exception
-
-  @classmethod
-  def _IsLocalRun(cls):
-    """Returns whether the test is running on a local workstation or not."""
-    # Do nothing if we've already determine whether we're in local mode or not.
-    if cls._local_run is not None:
-      pass
-    # Use the --local-run value if it's been set.
-    elif cls.GetParsedCommandLineOptions().local_run is not None:
-      cls._local_run = cls.GetParsedCommandLineOptions().local_run
-    # Look for the presence of the SWARMING_SERVER environment variable as a
-    # heuristic to determine whether we're running on a workstation or a bot.
-    # This should always be set on swarming, but would be strange to be set on
-    # a workstation.
-    cls._local_run = 'SWARMING_SERVER' not in os.environ
-    if cls._local_run:
-      logging.warning(
-          'Automatically determined that test is running on a workstation')
-    else:
-      logging.warning('Automatically determined that test is running on a bot')
-    return cls._local_run
-
-  @classmethod
-  def _GetBuildRevision(cls):
-    """Returns the current git master revision being tested."""
-    # Do nothing if we've already determined the git revision.
-    if cls._git_revision is not None:
-      pass
-    # use the --git-revision value if it's been set.
-    elif cls.GetParsedCommandLineOptions().git_revision:
-      cls._git_revision = cls.GetParsedCommandLineOptions().git_revision
-    # Try to determine what revision we're on using git.
-    else:
-      try:
-        cls._git_revision = subprocess.check_output(
-            ['git', 'rev-parse', 'origin/master'],
-            shell=IsWin(),
-            cwd=path_util.GetChromiumSrcDir()).strip()
-        logging.warning('Automatically determined git revision to be %s',
-                        cls._git_revision)
-      except subprocess.CalledProcessError:
-        raise Exception('--git-revision not passed, and unable to '
-                        'determine revision using git')
-    return cls._git_revision
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -653,6 +447,64 @@ def _GracePeriodActive(page):
     Otherwise, False.
   """
   return page.grace_period_end and date.today() <= page.grace_period_end
+
+
+def _StripAngleRevisionFromDriver(img_params):
+  """Strips the revision off the end of an ANGLE driver version.
+
+  E.g. 2.1.0.b50541b2d6c4 -> 2.1.0
+
+  Modifies the string in place. No-ops if the driver vendor is not ANGLE.
+
+  Args:
+    img_params: An _ImageParameters instance to modify.
+  """
+  if 'ANGLE' not in img_params.driver_vendor or not img_params.driver_version:
+    return
+  # Assume that we're never going to have portions of the driver we care about
+  # that are longer than 8 characters.
+  driver_parts = img_params.driver_version.split('.')
+  kept_parts = []
+  for part in driver_parts:
+    if len(part) > 8:
+      break
+    kept_parts.append(part)
+  img_params.driver_version = '.'.join(kept_parts)
+
+
+def _GetCombinedHardwareIdentifier(img_params):
+  """Combine all relevant hardware identifiers into a single key.
+
+  This makes Gold forwarding more precise by allowing us to forward explicit
+  configurations instead of individual components.
+  """
+  vendor_id = _ToHexOrNone(img_params.vendor_id)
+  device_id = _ToHexOrNone(img_params.device_id)
+  device_string = _ToNonEmptyStrOrNone(img_params.device_string)
+  combined_hw_identifiers = ('vendor_id:{vendor_id}, '
+                             'device_id:{device_id}, '
+                             'device_string:{device_string}')
+  combined_hw_identifiers = combined_hw_identifiers.format(
+      vendor_id=vendor_id, device_id=device_id, device_string=device_string)
+  return combined_hw_identifiers
+
+
+def _OutputLocalDiffFiles(gold_session, image_name):
+  """Logs the local diff image files from the given SkiaGoldSession.
+
+  Args:
+    gold_session: A skia_gold_session.SkiaGoldSession instance to pull files
+        from.
+    image_name: A string containing the name of the image/test that was
+        compared.
+  """
+  given_file = gold_session.GetGivenImageLink(image_name)
+  closest_file = gold_session.GetClosestImageLink(image_name)
+  diff_file = gold_session.GetDiffImageLink(image_name)
+  failure_message = 'Unable to retrieve link'
+  logging.error('Generated image: %s', given_file or failure_message)
+  logging.error('Closest image: %s', closest_file or failure_message)
+  logging.error('Diff image: %s', diff_file or failure_message)
 
 
 def load_tests(loader, tests, pattern):

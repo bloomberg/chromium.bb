@@ -8,12 +8,15 @@
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -53,7 +56,7 @@ class PLATFORM_EXPORT ResponseBodyLoaderDrainableInterface
   // them back to the associated client asynchronously.
   virtual BytesConsumer& DrainAsBytesConsumer() = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 // ResponseBodyLoader reads the response body and reports the contents to the
@@ -70,8 +73,6 @@ class PLATFORM_EXPORT ResponseBodyLoader final
     : public ResponseBodyLoaderDrainableInterface,
       private ResponseBodyLoaderClient,
       private BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ResponseBodyLoader);
-
  public:
   ResponseBodyLoader(BytesConsumer&,
                      ResponseBodyLoaderClient&,
@@ -90,17 +91,25 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   // drained data pipe. This function cannot be called when suspended.
   void Abort();
 
-  // Suspendes loading.
-  void Suspend();
+  // Suspends loading.
+  void Suspend(WebURLLoader::DeferType suspended_state);
 
   // Resumes loading.
   void Resume();
 
   bool IsAborted() const { return aborted_; }
-  bool IsSuspended() const { return suspended_; }
+  bool IsSuspended() const {
+    return suspended_state_ != WebURLLoader::DeferType::kNotDeferred;
+  }
+  bool IsSuspendedForBackForwardCache() const {
+    return suspended_state_ ==
+           WebURLLoader::DeferType::kDeferredWithBackForwardCache;
+  }
   bool IsDrained() const { return drained_; }
 
-  void Trace(Visitor*) override;
+  void EvictFromBackForwardCacheIfDrained();
+
+  void Trace(Visitor*) const override;
 
   // The maximal number of bytes consumed in a task. When there are more bytes
   // in the data pipe, they will be consumed in following tasks. Setting a too
@@ -110,6 +119,7 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   static constexpr size_t kMaxNumConsumedBytesInTask = 64 * 1024;
 
  private:
+  class Buffer;
   class DelegatingBytesConsumer;
 
   // ResponseBodyLoaderClient implementation.
@@ -117,18 +127,22 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;
+  void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason) override;
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;
   String DebugName() const override { return "ResponseBodyLoader"; }
-
+  // When |buffer_data_while_suspended_for_bfcache_| is true, we'll save the
+  // response body read when suspended.
+  Member<Buffer> body_buffer_;
   Member<BytesConsumer> bytes_consumer_;
   Member<DelegatingBytesConsumer> delegating_bytes_consumer_;
   const Member<ResponseBodyLoaderClient> client_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  WebURLLoader::DeferType suspended_state_ =
+      WebURLLoader::DeferType::kNotDeferred;
   bool started_ = false;
   bool aborted_ = false;
-  bool suspended_ = false;
   bool drained_ = false;
   bool finish_signal_is_pending_ = false;
   bool fail_signal_is_pending_ = false;

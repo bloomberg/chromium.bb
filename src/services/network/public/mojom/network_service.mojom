@@ -15,6 +15,7 @@ import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_raw_headers.mojom";
+import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
@@ -42,7 +43,8 @@ struct LoadInfo {
   uint64 upload_size;
 };
 
-// Network service interface to the browser.
+// Implemented by the browser process. The network service sends messages to
+// the browser process over this interface.
 interface NetworkServiceClient {
   // Called periodically to update the client about progress of the current
   // loads. To avoid flooding the client, it has to ack the update before it can
@@ -63,7 +65,7 @@ interface NetworkServiceClient {
     int32 process_id,
     int32 routing_id,
     string devtool_request_id,
-    array<CookieWithStatus> cookies_with_status,
+    array<CookieWithAccessResult> cookies_with_access_result,
     array<HttpRawHeaderPair> headers);
 
   // Called to send information about the cookies blocked from storage from a
@@ -73,7 +75,7 @@ interface NetworkServiceClient {
     int32 process_id,
     int32 routing_id,
     string devtool_request_id,
-    array<CookieAndLineWithStatus> cookies_with_status,
+    array<CookieAndLineWithAccessResult> cookies_with_access_result,
     array<HttpRawHeaderPair> headers,
     string? raw_response_headers);
 
@@ -102,17 +104,6 @@ interface NetworkServiceClient {
     int32 render_frame_id,
     mojo_base.mojom.UnguessableToken devtool_request_id,
     URLLoaderCompletionStatus status);
-
-  // Called to log a UKM event for the
-  // Extensions.CrossOriginFetchFromContentScript3 metric.  See the metric
-  // definition in //tools/metrics/ukm/ukm.xml for more details, including when
-  // this event should be logged.
-  //
-  // |isolated_world_hostname| is the hostname of the isolated world origin
-  // that has initiated the network request.  See the doc comment for
-  // network.mojom.URLRequest.isolated_world_origin for more details.
-  // In practice, |isolated_world_hostname| is the Chrome Extension ID.
-  LogCrossOriginFetchFromContentScript3(string isolated_world_hostname);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -149,10 +140,10 @@ struct HttpAuthDynamicParams {
 
   // True if Negotiate SPNs (service principal names) should include ports
   // when the port isn't a standard port (80 or 443).
-  bool enable_negotiate_port = true;
+  bool enable_negotiate_port = false;
 
   // Whether NTLM V2 is enabled on POSIX platforms. No effect elsewhere.
-  bool ntlm_v2_enabled = false;
+  bool ntlm_v2_enabled = true;
 
   // The AccountManager AccountManagerget.AccountsByTypeAndFeatures on Android
   // when using Negotiate authentication.
@@ -161,6 +152,10 @@ struct HttpAuthDynamicParams {
   // Indicates whether the GSSAPI library should be loaded. Only supported on
   // Chrome OS.
   bool allow_gssapi_library_load = true;
+
+  // True if Basic authentication challenges should be allowed for non-secure
+  // HTTP responses.
+  bool basic_over_http_enabled = true;
 };
 
 // Values for configuring OSCrypt.
@@ -203,7 +198,11 @@ struct LoggingSettings {
   handle<platform> log_file_descriptor;
 };
 
-// Browser interface to the network service.
+// Implemented by the network service. The browser process sends messages to
+// the network service over this interface.
+//
+// This is a trusted interface that only the browser process should have access
+// to. It must not be sent to any untrusted process like a renderer process.
 interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
@@ -358,7 +357,7 @@ interface NetworkService {
   // - see https://www.chromium.org/flash-roadmap).
   AddCorbExceptionForPlugin(int32 process_id);
 
-  // Notifies |request_initiator_site_lock| enforcement code that |process_id|
+  // Notifies |request_initiator_origin_lock| enforcement code that |process_id|
   // is proxying requests on behalf of a plugin from
   // |allowed_request_initiator| origin.
   //
@@ -394,6 +393,22 @@ interface NetworkService {
   // https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.z52drgpfgulz.
   SetTrustTokenKeyCommitments(string raw_commitments) => ();
 
+  // Clears the SCT auditing cache.
+  [EnableIf=is_ct_supported]
+  ClearSCTAuditingCache();
+
+  // Configures SCT auditing.
+  // This allows the embedder to specify whether SCT auditing should be enabled,
+  // what sampling rate to use on reports, and which URLLoaderFactory to use for
+  // sending reports.
+  // TODO(cthomp): Document what happens if the URLLoaderFactory is destroyed.
+  [EnableIf=is_ct_supported]
+  ConfigureSCTAuditing(bool enabled,
+                       double sampling_rate,
+                       url.mojom.Url report_uri,
+                       MutableNetworkTrafficAnnotationTag traffic_annotation,
+                       pending_remote<network.mojom.URLLoaderFactory> factory);
+
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.
@@ -403,4 +418,15 @@ interface NetworkService {
   // Binds the test service's testing interface. Available only in some test
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
+
+  // Sets the preloaded First-Party Sets data. |raw_sets| is the JSON-encoded
+  // string representation of a collection of set declarations according to the
+  // format specified in this document:
+  // https://github.com/privacycg/first-party-sets
+  // Note that by setting the preloaded First-Party Sets, any previous notion of
+  // preloaded First-Party Sets is cleared. This method can be partially
+  // successful in the event of malformed input (which also clears previously-
+  // known First-Party Sets), but does nothing if given non-JSON input or JSON
+  // which is not a dictionary.
+  SetPreloadedFirstPartySets(string raw_sets);
 };

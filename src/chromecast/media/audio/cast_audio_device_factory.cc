@@ -6,12 +6,13 @@
 
 #include <string>
 
-#include "content/renderer/media/audio/audio_output_ipc_factory.h"
+#include "base/logging.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/output_device_info.h"
+#include "third_party/blink/public/web/modules/media/audio/web_audio_output_ipc_factory.h"
 
 namespace chromecast {
 namespace media {
@@ -78,20 +79,19 @@ class NonSwitchableAudioRendererSink
 };
 
 scoped_refptr<::media::AudioOutputDevice> NewOutputDevice(
-    int render_frame_id,
+    const blink::LocalFrameToken& frame_token,
     const ::media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   auto device = base::MakeRefCounted<::media::AudioOutputDevice>(
-      content::AudioOutputIPCFactory::get()->CreateAudioOutputIPC(
-          render_frame_id),
-      content::AudioOutputIPCFactory::get()->io_task_runner(), params,
+      blink::WebAudioOutputIPCFactory::GetInstance().CreateAudioOutputIPC(
+          frame_token),
+      blink::WebAudioOutputIPCFactory::GetInstance().io_task_runner(), params,
       auth_timeout);
   device->RequestDeviceAuthorization();
   return device;
 }
 
-CastAudioDeviceFactory::CastAudioDeviceFactory()
-    : content::AudioDeviceFactory() {
+CastAudioDeviceFactory::CastAudioDeviceFactory() {
   DVLOG(1) << "Register CastAudioDeviceFactory";
 }
 
@@ -101,7 +101,7 @@ CastAudioDeviceFactory::~CastAudioDeviceFactory() {
 
 scoped_refptr<::media::AudioRendererSink>
 CastAudioDeviceFactory::CreateFinalAudioRendererSink(
-    int render_frame_id,
+    const blink::LocalFrameToken& frame_token,
     const ::media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   // Use default implementation.
@@ -111,7 +111,7 @@ CastAudioDeviceFactory::CreateFinalAudioRendererSink(
 scoped_refptr<::media::AudioRendererSink>
 CastAudioDeviceFactory::CreateAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const blink::LocalFrameToken& frame_token,
     const ::media::AudioSinkParameters& params) {
   // Use default implementation.
   return nullptr;
@@ -120,15 +120,15 @@ CastAudioDeviceFactory::CreateAudioRendererSink(
 scoped_refptr<::media::SwitchableAudioRendererSink>
 CastAudioDeviceFactory::CreateSwitchableAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const blink::LocalFrameToken& frame_token,
     const ::media::AudioSinkParameters& params) {
-  return base::MakeRefCounted<NonSwitchableAudioRendererSink>(NewOutputDevice(
-      render_frame_id, params, base::TimeDelta::FromSeconds(100)));
+  return base::MakeRefCounted<NonSwitchableAudioRendererSink>(
+      NewOutputDevice(frame_token, params, base::TimeDelta::FromSeconds(100)));
 }
 
 scoped_refptr<::media::AudioCapturerSource>
 CastAudioDeviceFactory::CreateAudioCapturerSource(
-    int render_frame_id,
+    const blink::LocalFrameToken& frame_token,
     const ::media::AudioSourceParameters& params) {
   // Use default implementation.
   return nullptr;

@@ -5,16 +5,18 @@
 
 : # meson and ninja must be in your PATH.
 
-: # If you're running this on Windows, be sure you've already run this (from your VC2017 install dir):
-: #     "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvars64.bat"
+: # If you're running this on Windows, be sure you've already run this (from your VC2019 install dir):
+: #     "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvars64.bat"
 
-git clone -b 0.6.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
+git clone -b 0.7.1 --depth 1 https://code.videolan.org/videolan/dav1d.git
 
 cd dav1d
 mkdir build
 cd build
 
-: # macOS might required: -Dc_args=-fno-stack-check
+: # macOS might require: -Dc_args=-fno-stack-check
+: # Build with asan: -Db_sanitize=address
+: # Build with ubsan: -Db_sanitize=undefined
 meson --default-library=static --buildtype release ..
 ninja
 cd ../..

@@ -51,6 +51,14 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
     return base::nullopt;
   }
 
+  // syncer::DeviceInfoSyncClient:
+  std::string GetFCMRegistrationToken() const override { return std::string(); }
+
+  // syncer::DeviceInfoSyncClient:
+  syncer::ModelTypeSet GetInterestedDataTypes() const override {
+    return syncer::ModelTypeSet();
+  }
+
  private:
   PrefService* const prefs_;
 };
@@ -117,5 +125,6 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)
           ->GetStoreFactory(),
       std::move(local_device_info_provider), std::move(device_prefs),
-      std::move(device_info_sync_client));
+      std::move(device_info_sync_client),
+      /*sync_invalidations_service=*/nullptr);
 }

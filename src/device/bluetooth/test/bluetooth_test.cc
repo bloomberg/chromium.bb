@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 
@@ -87,7 +87,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::EXPECTED),
-      GetErrorOnceCallback(Call::NOT_EXPECTED));
+      GetErrorCallback(Call::NOT_EXPECTED));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -95,7 +95,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySessionExpectedToFail() {
   adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::NOT_EXPECTED),
-      GetErrorOnceCallback(Call::EXPECTED));
+      GetErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -114,6 +114,10 @@ BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
     int device_ordinal) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void BluetoothTestBase::SimulateLowEnergyDiscoveryFailure() {
+  NOTIMPLEMENTED();
 }
 
 BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
@@ -403,14 +407,7 @@ void BluetoothTestBase::ReentrantStartNotifySessionErrorCallback(
   }
 }
 
-base::Closure BluetoothTestBase::GetCallback(Call expected) {
-  if (expected == Call::EXPECTED)
-    ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::Callback, weak_factory_.GetWeakPtr(),
-                    expected);
-}
-
-base::OnceClosure BluetoothTestBase::GetOnceCallback(Call expected) {
+base::OnceClosure BluetoothTestBase::GetCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
   return base::BindOnce(&BluetoothTestBase::Callback,
@@ -421,8 +418,8 @@ BluetoothAdapter::CreateAdvertisementCallback
 BluetoothTestBase::GetCreateAdvertisementCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::CreateAdvertisementCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::CreateAdvertisementCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothAdapter::DiscoverySessionCallback
@@ -456,18 +453,18 @@ BluetoothTestBase::GetNotifyCheckForPrecedingCalls(int num_of_preceding_calls) {
                         weak_factory_.GetWeakPtr(), num_of_preceding_calls);
 }
 
-base::Closure BluetoothTestBase::GetStopNotifyCallback(Call expected) {
+base::OnceClosure BluetoothTestBase::GetStopNotifyCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::StopNotifyCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::StopNotifyCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
-base::Closure BluetoothTestBase::GetStopNotifyCheckForPrecedingCalls(
+base::OnceClosure BluetoothTestBase::GetStopNotifyCheckForPrecedingCalls(
     int num_of_preceding_calls) {
   ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::StopNotifyCheckForPrecedingCalls,
-                    weak_factory_.GetWeakPtr(), num_of_preceding_calls);
+  return base::BindOnce(&BluetoothTestBase::StopNotifyCheckForPrecedingCalls,
+                        weak_factory_.GetWeakPtr(), num_of_preceding_calls);
 }
 
 BluetoothRemoteGattCharacteristic::ValueCallback
@@ -482,14 +479,6 @@ BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback(
     Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;
-  return base::Bind(&BluetoothTestBase::ErrorCallback,
-                    weak_factory_.GetWeakPtr(), expected);
-}
-
-BluetoothAdapter::ErrorOnceCallback BluetoothTestBase::GetErrorOnceCallback(
-    Call expected) {
-  if (expected == Call::EXPECTED)
-    ++expected_error_callback_calls_;
   return base::BindOnce(&BluetoothTestBase::ErrorCallback,
                         weak_factory_.GetWeakPtr(), expected);
 }
@@ -498,8 +487,8 @@ BluetoothAdapter::AdvertisementErrorCallback
 BluetoothTestBase::GetAdvertisementErrorCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;
-  return base::Bind(&BluetoothTestBase::AdvertisementErrorCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::AdvertisementErrorCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothDevice::ConnectErrorCallback
@@ -510,12 +499,12 @@ BluetoothTestBase::GetConnectErrorCallback(Call expected) {
                         weak_factory_.GetWeakPtr(), expected);
 }
 
-base::Callback<void(BluetoothRemoteGattService::GattErrorCode)>
+base::OnceCallback<void(BluetoothRemoteGattService::GattErrorCode)>
 BluetoothTestBase::GetGattErrorCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;
-  return base::Bind(&BluetoothTestBase::GattErrorCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::GattErrorCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothRemoteGattCharacteristic::NotifySessionCallback
@@ -529,14 +518,14 @@ BluetoothTestBase::GetReentrantStartNotifySessionSuccessCallback(
       weak_factory_.GetWeakPtr(), expected, characteristic);
 }
 
-base::Callback<void(BluetoothGattService::GattErrorCode)>
+base::OnceCallback<void(BluetoothGattService::GattErrorCode)>
 BluetoothTestBase::GetReentrantStartNotifySessionErrorCallback(
     Call expected,
     BluetoothRemoteGattCharacteristic* characteristic,
     bool error_in_reentrant) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;
-  return base::Bind(
+  return base::BindOnce(
       &BluetoothTestBase::ReentrantStartNotifySessionErrorCallback,
       weak_factory_.GetWeakPtr(), expected, characteristic, error_in_reentrant);
 }

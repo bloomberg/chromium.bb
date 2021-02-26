@@ -13,10 +13,9 @@
 #include "base/strings/string16.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
 #include "services/device/public/mojom/fingerprint.mojom-forward.h"
-#include "services/media_session/public/mojom/media_session_service.mojom-forward.h"
+#include "services/media_session/public/cpp/media_session_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace aura {
@@ -30,21 +29,28 @@ class OSExchangeData;
 namespace ash {
 
 class AccessibilityDelegate;
+class CaptureModeDelegate;
 class ScreenshotDelegate;
 class BackGestureContextualNudgeDelegate;
 class BackGestureContextualNudgeController;
+class NearbyShareController;
+class NearbyShareDelegate;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
   // The Shell owns the delegate.
-  virtual ~ShellDelegate() {}
+  virtual ~ShellDelegate() = default;
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
   virtual bool CanShowWindowForUser(const aura::Window* window) const = 0;
 
-  // TODO(jamescook): Replace with a mojo-compatible interface.
+  // Creates and returns the delegate of the Capture Mode feature.
+  virtual std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
+      const = 0;
+
+  // Creates the screenshot delegate, which has dependencies on //chrome.
   virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
@@ -55,8 +61,14 @@ class ASH_EXPORT ShellDelegate {
   CreateBackGestureContextualNudgeDelegate(
       BackGestureContextualNudgeController* controller) = 0;
 
+  virtual std::unique_ptr<NearbyShareDelegate> CreateNearbyShareDelegate(
+      NearbyShareController* controller) const = 0;
+
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
+
+  // Sets the tab scrubber |enabled_| field to |enabled|.
+  virtual void SetTabScrubberEnabled(bool enabled) = 0;
 
   // Returns true if |window| allows default touch behaviors. If false, it means
   // no default touch behavior is allowed (i.e., the touch action of window is
@@ -85,11 +97,6 @@ class ASH_EXPORT ShellDelegate {
   virtual void BindFingerprint(
       mojo::PendingReceiver<device::mojom::Fingerprint> receiver) {}
 
-  // Binds a NavigableContentsFactory receiver for the current active user.
-  virtual void BindNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
-          receiver) = 0;
-
   // Binds a MultiDeviceSetup receiver for the primary profile.
   virtual void BindMultiDeviceSetup(
       mojo::PendingReceiver<
@@ -97,7 +104,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns an interface to the Media Session service, or null if not
   // available.
-  virtual media_session::mojom::MediaSessionService* GetMediaSessionService();
+  virtual media_session::MediaSessionService* GetMediaSessionService();
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
 };

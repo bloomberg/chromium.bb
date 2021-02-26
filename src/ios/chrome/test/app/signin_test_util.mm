@@ -67,14 +67,6 @@ void TearDownMockAuthentication() {
       ->ResetChromeIdentityServiceObserverForTesting();
 }
 
-void SetUpMockAccountReconcilor() {
-  GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(false);
-}
-
-void TearDownMockAccountReconcilor() {
-  GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(true);
-}
-
 void SignOutAndClearIdentities() {
   // EarlGrey monitors network requests by swizzling internal iOS network
   // objects and expects them to be dealloced before the tear down. It is
@@ -125,6 +117,7 @@ void ResetSigninPromoPreferences() {
   prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, false);
   prefs->SetInteger(prefs::kIosSettingsSigninPromoDisplayedCount, 0);
   prefs->SetBoolean(prefs::kIosSettingsPromoAlreadySeen, false);
+  prefs->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
 }  // namespace chrome_test_util

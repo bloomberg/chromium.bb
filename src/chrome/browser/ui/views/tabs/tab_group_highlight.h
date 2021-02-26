@@ -17,12 +17,14 @@ class TabGroupHighlight : public views::View {
  public:
   TabGroupHighlight(TabGroupViews* tab_group_views,
                     const tab_groups::TabGroupId& group);
+  TabGroupHighlight(const TabGroupHighlight&) = delete;
+  TabGroupHighlight& operator=(const TabGroupHighlight&) = delete;
 
   const tab_groups::TabGroupId& group() const { return group_; }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-  bool CanProcessEventsWithinSubtree() const override;
+  bool GetCanProcessEventsWithinSubtree() const override;
 
  private:
   // Returns the highlight shape, which immitates the tab highlight shape.
@@ -30,8 +32,6 @@ class TabGroupHighlight : public views::View {
 
   TabGroupViews* const tab_group_views_;
   const tab_groups::TabGroupId group_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabGroupHighlight);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HIGHLIGHT_H_

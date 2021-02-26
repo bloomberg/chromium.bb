@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.partnercustomizations;
 import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,8 +21,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -37,8 +38,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
@@ -75,10 +74,10 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testHomepageInitialLoading() {
         Assert.assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                        mActivityTestRule.getActivity().getActivityTab())));
     }
 
     /**
@@ -95,7 +94,8 @@ public class PartnerHomepageIntegrationTest {
             mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
             UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
             Assert.assertNotSame(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                    Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                    Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                            mActivityTestRule.getActivity().getActivityTab())));
 
             // Click homepage button.
             ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(),
@@ -110,7 +110,8 @@ public class PartnerHomepageIntegrationTest {
                         }
                     });
             Assert.assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
-                    Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+                    Uri.parse(ChromeTabUtils.getUrlStringOnUiThread(
+                            mActivityTestRule.getActivity().getActivityTab())));
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -151,7 +152,6 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testPreferenceCustomUriFixup() {
         // Change home page custom URI on hompage edit screen.
         final SettingsActivity editHomepagePreferenceActivity =
@@ -169,12 +169,7 @@ public class PartnerHomepageIntegrationTest {
                 (Button) editHomepagePreferenceActivity.findViewById(R.id.homepage_save);
         TouchCommon.singleClickView(saveButton);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return editHomepagePreferenceActivity.isDestroyed();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> editHomepagePreferenceActivity.isDestroyed());
 
         Assert.assertEquals("http://chrome.com/", HomepageManager.getHomepageUri());
     }
@@ -185,7 +180,6 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testLastTabClosed() {
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());

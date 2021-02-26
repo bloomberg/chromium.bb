@@ -11,7 +11,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -243,8 +243,8 @@ void DuplicateCheckDone(const GURL& url,
   bool duplicate_request_exists =
       result == OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND;
   OfflinePageInfoBarDelegate::Create(
-      base::Bind(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref,
-                 origin),
+      base::BindOnce(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref,
+                     origin),
       url, duplicate_request_exists, web_contents);
 }
 
@@ -262,16 +262,17 @@ content::WebContents::Getter GetWebContentsGetter(
     content::WebContents* web_contents) {
   // The FrameTreeNode ID should be used to access the WebContents.
   int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
-  if (frame_tree_node_id != -1) {
-    return base::Bind(content::WebContents::FromFrameTreeNodeId,
-                      frame_tree_node_id);
+  if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
+    return base::BindRepeating(content::WebContents::FromFrameTreeNodeId,
+                               frame_tree_node_id);
   }
 
   // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
   // the WebContents.
-  return base::Bind(&GetWebContentsByFrameID,
-                    web_contents->GetMainFrame()->GetProcess()->GetID(),
-                    web_contents->GetMainFrame()->GetRoutingID());
+  return base::BindRepeating(
+      &GetWebContentsByFrameID,
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
 }
 
 void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
@@ -328,7 +329,8 @@ void OnOfflinePageAcquireFileAccessPermissionDone(
       chrome::GetBrowserContextRedirectedInIncognito(
           web_contents->GetBrowserContext()),
       url,
-      base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref, origin));
+      base::BindOnce(&DuplicateCheckDone, url, original_url, j_tab_ref,
+                     origin));
 }
 
 void InitializeBackendOnProfileCreated(Profile* profile) {
@@ -394,14 +396,14 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
       GetWebContentsGetter(web_contents);
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
-      base::Bind(&OnOfflinePageAcquireFileAccessPermissionDone,
-                 web_contents_getter, j_tab_ref, origin));
+      base::BindOnce(&OnOfflinePageAcquireFileAccessPermissionDone,
+                     web_contents_getter, j_tab_ref, origin));
 }
 
 static jlong JNI_OfflinePageDownloadBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ProfileKey* key = ::android::GetLastUsedProfileKey();
+  ProfileKey* key = ::android::GetLastUsedRegularProfileKey();
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
       key, base::BindOnce(&InitializeBackendOnProfileCreated));
 

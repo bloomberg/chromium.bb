@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
@@ -235,7 +236,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
 
-  // By default the URL should not be returned for a query that includes "com".
+  // By default, a tld match should not contribute to the suggestion score.
   std::string url_string("http://fedcba.com/");
   const GURL url(url_string);
   history::URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
@@ -246,7 +247,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
   ScoredHistoryMatch scored(row, visits, ASCIIToUTF16("fed com"),
                             Make2Terms("fed", "com"), two_words_no_offsets,
                             word_starts, false, 1, now);
-  EXPECT_EQ(0, scored.raw_score);
+  EXPECT_GT(scored.raw_score, 0);
 
   // Now allow credit for the match in the TLD.
   base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_tld_matches_, true);
@@ -254,6 +255,8 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
       row, visits, ASCIIToUTF16("fed com"), Make2Terms("fed", "com"),
       two_words_no_offsets, word_starts, false, 1, now);
   EXPECT_GT(scored_with_tld.raw_score, 0);
+
+  EXPECT_GT(scored_with_tld.raw_score, scored.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
@@ -261,7 +264,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
 
-  // By default the URL should not be returned for a query that includes "http".
+  // By default, a scheme match should not contribute to the suggestion score
   std::string url_string("http://fedcba/");
   const GURL url(url_string);
   history::URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
@@ -272,7 +275,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
   ScoredHistoryMatch scored(row, visits, ASCIIToUTF16("fed http"),
                             Make2Terms("fed", "http"), two_words_no_offsets,
                             word_starts, false, 1, now);
-  EXPECT_EQ(0, scored.raw_score);
+  EXPECT_GT(scored.raw_score, 0);
 
   // Now allow credit for the match in the scheme.
   base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_scheme_matches_, true);
@@ -280,6 +283,8 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
       row, visits, ASCIIToUTF16("fed http"), Make2Terms("fed", "http"),
       two_words_no_offsets, word_starts, false, 1, now);
   EXPECT_GT(scored_with_scheme.raw_score, 0);
+
+  EXPECT_GT(scored_with_scheme.raw_score, scored.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, MatchURLComponents) {
@@ -722,46 +727,31 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   EXPECT_GT(hostname_mid_word_score, protocol_mid_word_score);
   EXPECT_GT(hostname_mid_word_score, tld_score);
   EXPECT_GT(hostname_mid_word_score, tld_mid_word_score);
+}
 
-  // Check that midword matches are not allowed when
-  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is disabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
+TEST_F(ScoredHistoryMatchTest, GetTopicalityScore_MidwordMatching) {
+  GURL url("http://abc.def.com/path1/path2?arg1=val1&arg2=val2#hash_fragment");
+  base::string16 title = ASCIIToUTF16("here is a - title");
+  auto Score = [&](const std::vector<const std::string>& term_vector,
+                   const WordStarts term_word_starts) {
+    return GetTopicalityScoreOfTermAgainstURLAndTitle(
+        term_vector, term_word_starts, url, title);
+  };
 
-    const float wordstart = Score({"frag"}, {0u});
-    const float midword = Score({"ment"}, {0u});
-    const float wordstart_midword_continuation =
-        Score({"frag", "ment"}, {0u, 0u});
-    const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
+  // Check that midword matches are allowed and scored.
+  const float wordstart = Score({"frag"}, {0u});
+  const float midword = Score({"ment"}, {0u});
+  const float wordstart_midword_continuation =
+      Score({"frag", "ment"}, {0u, 0u});
+  const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
 
-    EXPECT_GT(wordstart, 0);
-    EXPECT_EQ(midword, 0);
-    EXPECT_EQ(wordstart_midword_continuation, 0);
-    EXPECT_EQ(wordstart_midword_disjoint, 0);
-  }
-
-  // Check that midword matches are allowed but not scored when
-  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
-
-    const float wordstart = Score({"frag"}, {0u});
-    const float midword = Score({"ment"}, {0u});
-    const float wordstart_midword_continuation =
-        Score({"frag", "ment"}, {0u, 0u});
-    const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
-
-    EXPECT_GT(wordstart, 0);
-    EXPECT_EQ(midword, 0);
-    EXPECT_GT(wordstart_midword_continuation, 0);
-    EXPECT_GT(wordstart_midword_disjoint, 0);
-    EXPECT_GT(wordstart, wordstart_midword_continuation);
-    EXPECT_EQ(wordstart_midword_continuation, wordstart_midword_disjoint);
-  }
+  EXPECT_GT(wordstart, 0);
+  // Midword matches should not contribute to the score if they are disjoint.
+  EXPECT_EQ(midword, 0);
+  EXPECT_GT(wordstart_midword_continuation, 0);
+  EXPECT_GT(wordstart_midword_disjoint, 0);
+  // Midword matches should not contribute to the score if they are disjoint.
+  EXPECT_GT(wordstart_midword_continuation, wordstart_midword_disjoint);
 }
 
 // Test the function GetFinalRelevancyScore().

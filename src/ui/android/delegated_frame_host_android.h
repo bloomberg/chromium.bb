@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/layers/deadline_policy.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -48,14 +49,19 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   ~DelegatedFrameHostAndroid() override;
 
+  static int64_t TimeDeltaToFrames(base::TimeDelta delta) {
+    return base::ClampRound<int64_t>(delta /
+                                     viz::BeginFrameArgs::DefaultInterval());
+  }
+
   // Wait up to 5 seconds for the first frame to be produced. Having Android
   // display a placeholder for a longer period of time is preferable to drawing
   // nothing, and the first frame can take a while on low-end systems.
   static constexpr base::TimeDelta FirstFrameTimeout() {
     return base::TimeDelta::FromSeconds(5);
   }
-  static constexpr int64_t FirstFrameTimeoutFrames() {
-    return FirstFrameTimeout() / viz::BeginFrameArgs::DefaultInterval();
+  static int64_t FirstFrameTimeoutFrames() {
+    return TimeDeltaToFrames(FirstFrameTimeout());
   }
 
   // Wait up to 1 second for a frame of the correct size to be produced. Android
@@ -64,12 +70,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   static constexpr base::TimeDelta ResizeTimeout() {
     return base::TimeDelta::FromSeconds(1);
   }
-  static constexpr int64_t ResizeTimeoutFrames() {
-    return ResizeTimeout() / viz::BeginFrameArgs::DefaultInterval();
+  static int64_t ResizeTimeoutFrames() {
+    return TimeDeltaToFrames(ResizeTimeout());
   }
-
-  // FrameEvictorClient implementation.
-  void EvictDelegatedFrame() override;
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
@@ -102,10 +105,12 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   bool HasSavedFrame() const;
   void WasHidden();
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
-                const gfx::Size& size_in_pixels);
+                const gfx::Size& size_in_pixels,
+                bool is_fullscreen);
   void EmbedSurface(const viz::LocalSurfaceId& new_local_surface_id,
                     const gfx::Size& new_size_in_pixels,
-                    cc::DeadlinePolicy deadline_policy);
+                    cc::DeadlinePolicy deadline_policy,
+                    bool is_fullscreen);
 
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).
@@ -121,6 +126,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void SetTopControlsVisibleHeight(float height);
 
  private:
+  // FrameEvictorClient implementation.
+  void EvictDelegatedFrame() override;
+
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;

@@ -26,23 +26,6 @@ found in the LICENSE file.
  * The distribution of durations between consecutive display compositor's swap
  * buffer calls, or DRM page flips on ChromeOS devices, during animations.
  *
- * percentage_smooth
- * =================
- * The percentage of frame_times that are less than 17ms.
- *
- * TODO(chiniforooshan): This metric weighs all frames equally. So, e.g.
- * percentage_smooth is lower (worse) if we have 10 100ms-frames instead of 5
- * 1s-frames. I think it makes more sense to compute the percentage of
- * non-smooth time during animation.
- * This metric does not require summary_options as it reports only one number.
- *
- * frame_lengths
- * ============================
- * frame_times in vsyncs instead of milli-seconds. In other words, frame_lengths
- * is the distribution of durations between consecutive display compositor's
- * swap buffer calls, in terms of vsyncs. Short frames (ones shorter than half
- * of the refresh period) are filtered out, unlike in frame_times.
- *
  * avg_surface_fps
  * ==============================
  * Average number of frames, ignoring short frames, per second during
@@ -66,10 +49,6 @@ found in the LICENSE file.
  *
  * TODO(crbug.com/896231): we may want to consider reporting frame_times for all
  * ui::compositors separately, e.g. as ash_frame_times and browser_frame_times.
- *
- * ui_percentage_smooth
- * ====================
- * The percentage of ui_frame_times that are less than 17ms.
  */
 tr.exportTo('tr.metrics.rendering', function() {
   // Various tracing events.
@@ -250,14 +229,6 @@ tr.exportTo('tr.metrics.rendering', function() {
           description: 'Raw frame times.',
           summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
         });
-    histograms.createHistogram(
-        `${prefix}percentage_smooth`,
-        tr.b.Unit.byName.unitlessNumber_biggerIsBetter,
-        100 * tr.b.math.Statistics.sum(frameTimes, (x => (x < 17 ? 1 : 0))) /
-            frameTimes.length,
-        { description: 'Percentage of frames that were hitting 60 FPS.',
-          summaryOptions: {},
-        });
   }
 
   function addFrameTimeHistograms(histograms, model, segments,
@@ -288,15 +259,13 @@ tr.exportTo('tr.metrics.rendering', function() {
           histograms, model, frameSegments,
           (thread, segment) => thread.getCpuTimeForRange(segment.boundsRange),
           category => `thread_${category}_cpu_time_per_frame`,
-          'CPU cores of a thread group per frame',
-          tr.b.Unit.byName.timeDurationInMs_smallerIsBetter);
+          'CPU cores of a thread group per frame');
       tr.metrics.rendering.addCpuUtilizationHistograms(
           histograms, model, frameSegments,
           (thread, segment) =>
             thread.getNumToplevelSlicesForRange(segment.boundsRange),
           category => `tasks_per_frame_${category}`,
-          'Number of tasks of a thread group per frame',
-          tr.b.Unit.byName.unitlessNumber_smallerIsBetter);
+          'Number of tasks of a thread group per frame');
 
       let totalWallTime = 0;
       let totalCpuTime = 0;
@@ -323,13 +292,6 @@ tr.exportTo('tr.metrics.rendering', function() {
         tr.b.math.Statistics.sum(frameSegments, fs => fs.duration);
     addJankCountHistograms(histograms, validFrames, prefix);
     const frameLengths = validFrames.map(frame => frame.length);
-    histograms.createHistogram(
-        prefix + 'frame_lengths',
-        tr.b.Unit.byName.unitlessNumber_smallerIsBetter,
-        frameLengths,
-        { binBoundaries: tr.v.HistogramBinBoundaries.createLinear(0, 5, 20),
-          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
-          description: 'Frame times in vsyncs.' });
 
     histograms.createHistogram(
         prefix + 'avg_surface_fps',

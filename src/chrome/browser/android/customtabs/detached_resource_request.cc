@@ -61,7 +61,7 @@ void DetachedResourceRequest::CreateAndStart(
     content::BrowserContext* browser_context,
     const GURL& url,
     const GURL& site_for_cookies,
-    const net::URLRequest::ReferrerPolicy referrer_policy,
+    const net::ReferrerPolicy referrer_policy,
     Motivation motivation,
     const std::string& package_name,
     DetachedResourceRequest::OnResultCallback cb) {
@@ -77,7 +77,7 @@ DetachedResourceRequest::~DetachedResourceRequest() = default;
 DetachedResourceRequest::DetachedResourceRequest(
     const GURL& url,
     const GURL& site_for_cookies,
-    net::URLRequest::ReferrerPolicy referrer_policy,
+    net::ReferrerPolicy referrer_policy,
     Motivation motivation,
     const std::string& package_name,
     DetachedResourceRequest::OnResultCallback cb)
@@ -126,7 +126,7 @@ DetachedResourceRequest::DetachedResourceRequest(
   // key.
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RedirectMode::kUpdateNothing, site_for_cookies_origin,
+      net::IsolationInfo::RequestType::kOther, site_for_cookies_origin,
       site_for_cookies_origin,
       net::SiteForCookies::FromOrigin(site_for_cookies_origin));
 

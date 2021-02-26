@@ -232,6 +232,8 @@ def main(args=None):
   parser.add_argument('branches', nargs='*',
                       help='Branches to be rebased. All branches are assumed '
                            'if none specified.')
+  parser.add_argument('--keep-empty', '-e', action='store_true',
+                      help='Do not automatically delete empty branches.')
   opts = parser.parse_args(args)
 
   if opts.verbose:  # pragma: no cover
@@ -314,7 +316,8 @@ def main(args=None):
       print('  %s' % branch)
 
   if not retcode:
-    remove_empty_branches(branch_tree)
+    if not opts.keep_empty:
+      remove_empty_branches(branch_tree)
 
     # return_branch may not be there any more.
     if return_branch in git.branches():

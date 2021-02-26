@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/features.h"
@@ -87,6 +88,11 @@ void NavigationDownloadPolicy::RecordHistogram() const {
     }
   }
   DCHECK(first_type_seen);
+}
+
+bool ShouldSkipEarlyCommitPendingForCrashedFrame() {
+  return base::FeatureList::IsEnabled(
+      features::kSkipEarlyCommitPendingForCrashedFrame);
 }
 
 }  // namespace content

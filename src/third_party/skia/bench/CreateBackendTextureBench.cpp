@@ -7,17 +7,17 @@
 
 #include "bench/Benchmark.h"
 #include "include/core/SkCanvas.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 
 class CreateBackendTextureBench : public Benchmark {
 private:
     SkString fName;
     SkTArray<GrBackendTexture> fBackendTextures;
-    GrMipMapped fMipMapped;
+    GrMipmapped fMipmapped;
 
 public:
-    CreateBackendTextureBench(GrMipMapped mipMapped) : fMipMapped(mipMapped) {
-        fName.printf("create_backend_texture%s", mipMapped == GrMipMapped::kYes ? "_mipped" : "");
+    CreateBackendTextureBench(GrMipmapped mipMapped) : fMipmapped(mipMapped) {
+        fName.printf("create_backend_texture%s", mipMapped == GrMipmapped::kYes ? "_mipped" : "");
     }
 
 private:
@@ -26,24 +26,23 @@ private:
     const char* onGetName() override { return fName.c_str(); }
 
     void onDraw(int loops, SkCanvas* canvas) override {
-        GrContext* context = canvas->getGrContext();
+        auto context = canvas->recordingContext()->asDirectContext();
 
-        fBackendTextures.reserve(loops);
+        fBackendTextures.reserve_back(loops);
 
         static const int kSize = 16;
         for (int i = 0; i < loops; ++i) {
             fBackendTextures.push_back(context->createBackendTexture(
-                    kSize, kSize, kRGBA_8888_SkColorType, SkColors::kRed, fMipMapped,
+                    kSize, kSize, kRGBA_8888_SkColorType, SkColors::kRed, fMipmapped,
                     GrRenderable::kNo, GrProtected::kNo));
         }
     }
 
     void onPerCanvasPostDraw(SkCanvas* canvas) override {
-        GrContext* context = canvas->getGrContext();
+        auto context = canvas->recordingContext()->asDirectContext();
 
-        GrFlushInfo info;
-        info.fFlags = kSyncCpu_GrFlushFlag;
-        context->flush(info);
+        context->flush();
+        context->submit(true);
 
         for (int i = 0; i < fBackendTextures.count(); ++i) {
             if (fBackendTextures[i].isValid()) {
@@ -54,5 +53,5 @@ private:
     }
 };
 
-DEF_BENCH(return new CreateBackendTextureBench(GrMipMapped::kNo);)
-DEF_BENCH(return new CreateBackendTextureBench(GrMipMapped::kYes);)
+DEF_BENCH(return new CreateBackendTextureBench(GrMipmapped::kNo);)
+DEF_BENCH(return new CreateBackendTextureBench(GrMipmapped::kYes);)

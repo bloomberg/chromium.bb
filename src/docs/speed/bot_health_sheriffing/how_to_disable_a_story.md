@@ -22,7 +22,8 @@ As of January 2020, no benchmarks are named in a similar fashion.
 
 Start a fresh branch in an up-to-date Chromium checkout. If you're unsure of how to do this, [see these instructions](https://www.chromium.org/developers/how-tos/get-the-code).
 
-In your editor, open up [`tools/perf/expectations.config`](https://cs.chromium.org/chromium/src/tools/perf/expectations.config?q=expectations.config&sq=package:chromium&dr).
+
+In your editor, open up [`tools/perf/expectations.config`](https://cs.chromium.org/chromium/src/tools/perf/expectations.config?q=expectations.config&sq=package:chromium&dr).
 
 You'll see that the file is divided into sections sorted alphabetically by benchmark name. Find the section for the benchmark in question. (If it doesn't exist, add it in the correct alphabetical location.)
 
@@ -46,21 +47,21 @@ Add a new line for each story that you need to disable, or an asterisk if you're
 
 For example, an entry disabling a particular story might look like:
 
-    crbug.com/738453 [ Nexus_6 ] blink_perf.canvas/putImageData.html [ Skip ]
+    crbug.com/738453 [ Nexus_6 ] blink_perf.layout/subtree-detaching.html [ Skip ]
 
 
 whereas an entry disabling a benchmark on an entire platform might look like:
 
-    crbug.com/593973 [ Android_Svelte ] blink_perf.canvas/* [ Skip ]
+    crbug.com/593973 [ Android_Svelte ] blink_perf.layout/* [ Skip ]
 
 ## Submit changes
 
 Once you've committed your changes locally, your CL can be submitted with:
 
-- `No-Try:True`
-- `Tbr:`someone from [`tools/perf/OWNERS`](https://cs.chromium.org/chromium/src/tools/perf/OWNERS?q=tools/perf/owners&sq=package:chromium&dr)
-- `CC:`benchmark owner found in [this spreadsheet](https://docs.google.com/spreadsheets/u/1/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
-- `Bug:`tracking bug
+- `No-Try: True`
+- `Tbr: `someone from [`tools/perf/OWNERS`](https://cs.chromium.org/chromium/src/tools/perf/OWNERS?q=tools/perf/owners&sq=package:chromium&dr)
+- `CC: `benchmark owner found in [this spreadsheet](https://docs.google.com/spreadsheets/u/1/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
+- `Bug: `tracking bug
 
 *Please make sure to CC the benchmark owner so that they're aware that they've lost coverage.*
 

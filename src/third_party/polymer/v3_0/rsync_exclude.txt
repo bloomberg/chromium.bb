@@ -31,14 +31,14 @@ package-lock.json
 */site/
 */templates/
 
-# iron-autogrow-textarea
-iron-autogrow-textarea/*
-
 # iron-checked-element-behavior
 iron-checked-element-behavior/*
 
 # iron-form-element-behavior
 iron-form-element-behavior/*
+
+# iron-validatable-behavior
+iron-validatable-behavior/*
 
 # iron-test-helpers
 iron-test-helpers/iron-test-helpers.js
@@ -48,16 +48,14 @@ iron-test-helpers/test-helpers.js
 paper-behaviors/paper-button-behavior.js
 paper-behaviors/paper-checked-element-behavior.js
 
-# paper-input
-paper-input/paper-input-behavior.js
-paper-input/paper-input-char-counter.js
-paper-input/paper-input.js
-paper-input/paper-textarea.js
-
 # paper-spinner
 paper-spinner/paper-spinner.js
 
 # paper-styles
+paper-styles/classes/*
+paper-styles/demo-pages.js
+paper-styles/element-styles/*
+paper-styles/default-theme.js
 paper-styles/paper-styles-classes.js
 paper-styles/paper-styles.js
 

@@ -17,6 +17,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_split.h"
 #include "base/task/single_thread_task_executor.h"
@@ -115,8 +116,8 @@ const char* acceptable_errors[] = {
     // Uniform, const, input can't be modified
     "can't modify a",
     "global variable initializers must be constant expressions",
-    "must explicitly specify all locations when using multiple fragment "
-    "outputs",
+    ("must explicitly specify all locations when using multiple fragment "
+     "outputs"),
 };
 
 // Filter errors which we don't think interfere with fuzzing everything.

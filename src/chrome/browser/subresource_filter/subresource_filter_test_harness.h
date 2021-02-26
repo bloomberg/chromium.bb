@@ -15,18 +15,25 @@
 
 class ChromeSubresourceFilterClient;
 class GURL;
-class SubresourceFilterContentSettingsManager;
 
 namespace content {
 class RenderFrameHost;
 }  // namespace content
 
+namespace subresource_filter {
+class SubresourceFilterContentSettingsManager;
+}
+
 // End to end unit test harness of (most of) the browser process portions of the
 // subresource filtering code.
 class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
  public:
-  static constexpr char const kDefaultDisallowedUrl[] =
+  // Allowlist rules must prefix a disallowed rule in order to work correctly.
+  static constexpr const char kDefaultAllowedSuffix[] = "not_disallowed.html";
+  static constexpr const char kDefaultDisallowedSuffix[] = "disallowed.html";
+  static constexpr const char kDefaultDisallowedUrl[] =
       "https://example.test/disallowed.html";
+
   SubresourceFilterTestHarness();
   ~SubresourceFilterTestHarness() override;
 
@@ -50,9 +57,10 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
 
   ChromeSubresourceFilterClient* GetClient();
 
-  void RemoveURLFromBlacklist(const GURL& url);
+  void RemoveURLFromBlocklist(const GURL& url);
 
-  SubresourceFilterContentSettingsManager* GetSettingsManager();
+  subresource_filter::SubresourceFilterContentSettingsManager*
+  GetSettingsManager();
 
   subresource_filter::testing::ScopedSubresourceFilterConfigurator&
   scoped_configuration() {

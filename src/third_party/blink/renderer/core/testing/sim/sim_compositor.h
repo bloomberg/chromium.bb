@@ -45,12 +45,9 @@ class SimCompositor final : public frame_test_helpers::TestWebWidgetClient {
   // Returns all drawing commands that were issued during painting the frame
   // (including cached ones).
   // TODO(dcheng): This should take a base::TimeDelta.
-  SimCanvas::Commands BeginFrame(double time_delta_in_seconds = 0.016);
-
-  // Similar to BeginFrame() but doesn't require NeedsBeginFrame(). This is
-  // useful for testing the painting after a frame is throttled (for which
-  // we don't schedule a BeginFrame).
-  SimCanvas::Commands PaintFrame();
+  // Rasterization of tiles is only performed when |raster| is true.
+  SimCanvas::Commands BeginFrame(double time_delta_in_seconds = 0.016,
+                                 bool raster = false);
 
   // Helpers to query the state of the compositor from tests.
   //
@@ -78,6 +75,8 @@ class SimCompositor final : public frame_test_helpers::TestWebWidgetClient {
   base::TimeTicks LastFrameTime() const { return last_frame_time_; }
 
  private:
+  SimCanvas::Commands PaintFrame();
+
   // TestWebWidgetClient overrides:
   void DidBeginMainFrame() override;
 

@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview
+ * @suppress {uselessCode} Temporary suppress because of the line exporting.
+ */
+
+// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+
+/**
  * Namespace for common types.
  */
 const VolumeManagerCommon = {};
@@ -12,7 +19,7 @@ const VolumeManagerCommon = {};
  * @enum {string}
  * @const
  */
-const AllowedPaths = {
+/* #export */ const AllowedPaths = {
   NATIVE_PATH: 'nativePath',
   ANY_PATH: 'anyPath',
   ANY_PATH_OR_URL: 'anyPathOrUrl',
@@ -206,7 +213,8 @@ VolumeManagerCommon.VolumeError = {
   INVALID_DEVICE_PATH: 'error_invalid_device_path',
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  INVALID_ARCHIVE: 'error_invalid_archive'
+  INVALID_ARCHIVE: 'error_invalid_archive',
+  NEED_PASSWORD: 'error_need_password',
 };
 Object.freeze(VolumeManagerCommon.VolumeError);
 
@@ -427,3 +435,6 @@ VolumeManagerCommon.createArchiveOpenedEvent = mountPoint => {
       VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE,
       {detail: {mountPoint: mountPoint}});
 };
+
+// eslint-disable-next-line semi,no-extra-semi
+/* #export */ {VolumeManagerCommon};

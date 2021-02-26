@@ -5,9 +5,12 @@
 #ifndef CC_TEST_TEST_HOOKS_H_
 #define CC_TEST_TEST_HOOKS_H_
 
+#include <memory>
+
 #include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 
 namespace gfx {
 struct PresentationFeedback;
@@ -15,6 +18,7 @@ struct PresentationFeedback;
 
 namespace viz {
 class CompositorFrame;
+class DisplayCompositorMemoryAndTaskController;
 class OutputSurface;
 class SkiaOutputSurface;
 }
@@ -96,7 +100,7 @@ class TestHooks : public AnimationDelegate {
       const viz::CompositorFrame& frame) {}
   virtual void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) {}
+      const viz::AggregatedRenderPassList& render_passes) {}
   virtual void DisplayDidDrawAndSwapOnThread() {}
 
   // Main thread hooks.
@@ -138,8 +142,11 @@ class TestHooks : public AnimationDelegate {
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.
   virtual void RequestNewLayerTreeFrameSink() = 0;
+  virtual std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+  CreateDisplayControllerOnThread() = 0;
   virtual std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread() = 0;
+  CreateDisplaySkiaOutputSurfaceOnThread(
+      viz::DisplayCompositorMemoryAndTaskController*) = 0;
   virtual std::unique_ptr<viz::OutputSurface>
   CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) = 0;

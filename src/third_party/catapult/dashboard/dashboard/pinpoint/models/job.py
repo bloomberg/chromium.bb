@@ -55,12 +55,10 @@ COMPARISON_MODES = job_state.COMPARISON_MODES
 RETRY_OPTIONS = taskqueue.TaskRetryOptions(
     task_retry_limit=8, min_backoff_seconds=2)
 
-CREATED_COMMENT_FORMAT = u"""{title}
-{url}
-
-The job has been scheduled on the "{configuration}" queue which currently has
-{pending} pending jobs.
-"""
+_FIRST_OR_LAST_FAILED_COMMENT = (
+    u"""One or both of the initial changes failed to produce any results.
+Perhaps the job is misconfigured or the tests are broken? See the job
+page for details.""")
 
 
 def JobFromId(job_id):
@@ -178,6 +176,7 @@ class Job(ndb.Model):
   # Request parameters.
   arguments = ndb.JsonProperty(required=True)
   bug_id = ndb.IntegerProperty()
+  project = ndb.StringProperty(default='chromium')
   comparison_mode = ndb.StringProperty()
 
   # The Gerrit server url and change id of the code review to update upon
@@ -278,7 +277,8 @@ class Job(ndb.Model):
           tags=None,
           user=None,
           priority=None,
-          use_execution_engine=False):
+          use_execution_engine=False,
+          project='chromium'):
     """Creates a new Job, adds Changes to it, and puts it in the Datstore.
 
     Args:
@@ -303,6 +303,7 @@ class Job(ndb.Model):
       use_execution_engine: A bool indicating whether to use the experimental
         execution engine. Currently defaulted to False, but will be switched to
         True and eventually removed as an option later.
+      project: A Monorail project ID.
 
     Returns:
       A Job object.
@@ -325,7 +326,9 @@ class Job(ndb.Model):
         user=user,
         started=False,
         cancelled=False,
-        use_execution_engine=use_execution_engine, priority=priority)
+        use_execution_engine=use_execution_engine,
+        priority=priority,
+        project=project)
 
     # Pull out the benchmark arguments to the top-level.
     job.benchmark_arguments = BenchmarkArguments.FromArgs(args)
@@ -349,7 +352,6 @@ class Job(ndb.Model):
     return job
 
   def PostCreationUpdate(self):
-    title = _ROUND_PUSHPIN + ' Pinpoint job created and queued.'
     pending = 0
     if self.configuration:
       try:
@@ -358,15 +360,12 @@ class Job(ndb.Model):
         logging.warning('Error encountered fetching queue named "%s": %s ',
                         self.configuration, e)
 
-    comment = CREATED_COMMENT_FORMAT.format(
-        title=title,
-        url=self.url,
-        configuration=self.configuration if self.configuration else '(None)',
-        pending=pending)
+    bug_update = job_bug_update.JobUpdateBuilder(self).CreationUpdate(pending)
     deferred.defer(
         _PostBugCommentDeferred,
         self.bug_id,
-        comment,
+        bug_update.comment_text,
+        project=self.project,
         send_email=True,
         _retry_options=RETRY_OPTIONS)
 
@@ -461,6 +460,8 @@ class Job(ndb.Model):
         _PostBugCommentDeferred,
         self.bug_id,
         comment,
+        labels=job_bug_update.ComputeLabelUpdates(['Pinpoint-Job-Started']),
+        project=self.project,
         send_email=True,
         _retry_options=RETRY_OPTIONS)
 
@@ -500,6 +501,7 @@ class Job(ndb.Model):
           _PostBugCommentDeferred,
           self.bug_id,
           '\n'.join((title, self.url)),
+          project=self.project,
           labels=['Pinpoint-Tryjob-Completed'],
           _retry_options=RETRY_OPTIONS)
       return
@@ -533,6 +535,21 @@ class Job(ndb.Model):
       }
 
     if not differences:
+      # First, check if there are no differences because one side of bisection
+      # failed outright.
+      if self.state.FirstOrLastChangeFailed():
+        title = "<b>%s Job finished with errors.</b>" % _CRYING_CAT_FACE
+        comment = '\n'.join(
+            (title, self.url, '', _FIRST_OR_LAST_FAILED_COMMENT))
+        deferred.defer(
+            _PostBugCommentDeferred,
+            self.bug_id,
+            comment,
+            project=self.project,
+            labels=job_bug_update.ComputeLabelUpdates(['Pinpoint-Job-Failed']),
+            _retry_options=RETRY_OPTIONS)
+        return
+
       # When we cannot find a difference, we want to not only update the issue
       # with that (minimal) information but also automatically mark the issue
       # WontFix. This is based on information we've gathered in production that
@@ -543,7 +560,9 @@ class Job(ndb.Model):
           _PostBugCommentDeferred,
           self.bug_id,
           '\n'.join((title, self.url)),
-          labels=['Pinpoint-No-Repro'],
+          project=self.project,
+          labels=job_bug_update.ComputeLabelUpdates(
+              ['Pinpoint-Job-Completed', 'Pinpoint-No-Repro']),
           status='WontFix',
           _retry_options=RETRY_OPTIONS)
       return
@@ -553,14 +572,9 @@ class Job(ndb.Model):
         self.state.metric)
     bug_update_builder.SetExaminedCount(changes_examined)
     for change_a, change_b in differences:
-      if change_b.patch:
-        commit = change_b.patch
-      else:
-        commit = change_b.last_commit
-
       values_a = result_values[change_a]
       values_b = result_values[change_b]
-      bug_update_builder.AddDifference(commit, values_a, values_b)
+      bug_update_builder.AddDifference(change_b, values_a, values_b)
 
     deferred.defer(
         job_bug_update.UpdatePostAndMergeDeferred,
@@ -568,6 +582,7 @@ class Job(ndb.Model):
         self.bug_id,
         self.tags,
         self.url,
+        self.project,
         _retry_options=RETRY_OPTIONS)
 
   def _UpdateGerritIfNeeded(self):
@@ -614,7 +629,8 @@ class Job(ndb.Model):
         _PostBugCommentDeferred,
         self.bug_id,
         comment,
-        labels=['Pinpoint-Job-Failed'],
+        project=self.project,
+        labels=job_bug_update.ComputeLabelUpdates(['Pinpoint-Job-Failed']),
         send_email=True,
         _retry_options=RETRY_OPTIONS)
     scheduler.Complete(self)
@@ -732,17 +748,25 @@ class Job(ndb.Model):
         raise
 
   def AsDict(self, options=None):
+    def IsoFormatOrNone(attr):
+      time = getattr(self, attr, None)
+      if time:
+        return time.isoformat()
+      return None
+
     d = {
         'job_id': self.job_id,
         'configuration': self.configuration,
         'results_url': self.results_url,
         'arguments': self.arguments,
         'bug_id': self.bug_id,
+        'project': self.project,
         'comparison_mode': self.comparison_mode,
         'name': self.auto_name,
         'user': self.user,
-        'created': self.created.isoformat(),
-        'updated': self.updated.isoformat(),
+        'created': IsoFormatOrNone('created'),
+        'updated': IsoFormatOrNone('updated'),
+        'started_time': IsoFormatOrNone('started_time'),
         'difference_count': self.difference_count,
         'exception': self.exception_details_dict,
         'status': self.status,
@@ -795,6 +819,7 @@ class Job(ndb.Model):
 
     self.cancelled = True
     self.cancel_reason = '{}: {}'.format(user, reason)
+    self.updated = datetime.datetime.now()
 
     # Remove any "task" identifiers.
     self.task = None
@@ -806,8 +831,9 @@ class Job(ndb.Model):
         _PostBugCommentDeferred,
         self.bug_id,
         comment,
+        project=self.project,
         send_email=True,
-        labels=['Pinpoint-Job-Cancelled'],
+        labels=job_bug_update.ComputeLabelUpdates(['Pinpoint-Job-Cancelled']),
         _retry_options=RETRY_OPTIONS)
 
 
@@ -822,4 +848,3 @@ def _PostBugCommentDeferred(bug_id, *args, **kwargs):
 
 def _UpdateGerritDeferred(*args, **kwargs):
   gerrit_service.PostChangeComment(*args, **kwargs)
-

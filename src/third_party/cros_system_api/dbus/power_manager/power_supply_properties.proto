@@ -202,5 +202,10 @@ message PowerSupplyProperties {
   // Battery status read from sysfs.
   optional string battery_status = 31;
 
-  // Next ID to use: 32
+  // The device's preferred minimum external power input in watts (W). When
+  // requesting the user use a higher-power external power source, this value
+  // can be displayed.
+  optional double preferred_minimum_external_power = 32;
+
+  // Next ID to use: 33
 }

@@ -16,12 +16,14 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/language_prefs.h"
+#include "components/metrics/demographics/user_demographics.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
@@ -38,6 +40,7 @@
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #include "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_requirements_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -164,11 +167,13 @@ void WebViewBrowserState::RegisterPrefs(
   pref_registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                                      true);
   language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
+  metrics::RegisterDemographicsProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
   autofill::prefs::RegisterProfilePrefs(pref_registry);
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
+  safe_browsing::RegisterProfilePrefs(pref_registry);
 
   // Instantiate all factories to setup dependency graph for pref registration.
   WebViewLanguageModelManagerFactory::GetInstance();
@@ -182,6 +187,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewAccountPasswordStoreFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
+  WebViewPasswordRequirementsServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();

@@ -2,17 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
-jumbo_component("snapshot") {
+component("snapshot") {
   sources = [
     "screenshot_grabber.cc",
     "screenshot_grabber.h",
@@ -79,19 +72,21 @@ jumbo_component("snapshot") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreGraphics.framework",
     ]
   }
 }
 
-jumbo_source_set("snapshot_export") {
+source_set("snapshot_export") {
   sources = [ "snapshot_export.h" ]
   visibility = [ ":*" ]
 }
 
 test("snapshot_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [ "test/run_all_unittests.cc" ]
 
   if (is_mac) {

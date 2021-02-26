@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/char_traits.h"
@@ -16,7 +17,6 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
-#include "google/cacheinvalidation/types.pb.h"
 
 namespace drive {
 
@@ -50,7 +50,6 @@ DriveNotificationManager::DriveNotificationManager(
       batch_timer_(clock) {
   DCHECK(invalidation_service_);
   RegisterDriveNotifications();
-  RestartPollingTimer();
 }
 
 DriveNotificationManager::~DriveNotificationManager() {
@@ -122,12 +121,17 @@ void DriveNotificationManager::OnIncomingInvalidation(
 
 std::string DriveNotificationManager::GetOwnerName() const { return "Drive"; }
 bool DriveNotificationManager::IsPublicTopic(const syncer::Topic& topic) const {
-  return base::StringPiece(topic).starts_with(kTeamDriveChangePrefix);
+  return base::StartsWith(topic, kTeamDriveChangePrefix);
 }
 
 void DriveNotificationManager::AddObserver(
     DriveNotificationObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observers_.might_have_observers()) {
+    UpdateRegisteredDriveNotifications();
+    RestartPollingTimer();
+  }
+
   observers_.AddObserver(observer);
 }
 
@@ -135,6 +139,14 @@ void DriveNotificationManager::RemoveObserver(
     DriveNotificationObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
+
+  if (!observers_.might_have_observers()) {
+    CHECK(invalidation_service_->UpdateInterestedTopics(this,
+                                                        syncer::TopicSet()));
+    polling_timer_.Stop();
+    batch_timer_.Stop();
+    invalidated_change_ids_.clear();
+  }
 }
 
 void DriveNotificationManager::UpdateTeamDriveIds(
@@ -157,8 +169,18 @@ void DriveNotificationManager::UpdateTeamDriveIds(
     }
   }
 
-  if (set_changed) {
+  if (set_changed && observers_.might_have_observers()) {
     UpdateRegisteredDriveNotifications();
+  }
+}
+
+void DriveNotificationManager::ClearTeamDriveIds() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!team_drive_ids_.empty()) {
+    team_drive_ids_.clear();
+    if (observers_.might_have_observers()) {
+      UpdateRegisteredDriveNotifications();
+    }
   }
 }
 
@@ -232,7 +254,7 @@ void DriveNotificationManager::RegisterDriveNotifications() {
 
   invalidation_service_->RegisterInvalidationHandler(this);
 
-  UpdateRegisteredDriveNotifications();
+  push_notification_registered_ = true;
 
   UMA_HISTOGRAM_BOOLEAN("Drive.PushNotificationRegistered",
                         push_notification_registered_);
@@ -251,7 +273,6 @@ void DriveNotificationManager::UpdateRegisteredDriveNotifications() {
   }
 
   CHECK(invalidation_service_->UpdateInterestedTopics(this, topics));
-  push_notification_registered_ = true;
   OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
 }
 
@@ -291,7 +312,7 @@ syncer::Topic DriveNotificationManager::GetTeamDriveInvalidationTopic(
 std::string DriveNotificationManager::ExtractTeamDriveId(
     base::StringPiece topic_name) const {
   base::StringPiece prefix = kTeamDriveChangePrefix;
-  if (!topic_name.starts_with(prefix)) {
+  if (!base::StartsWith(topic_name, prefix)) {
     return {};
   }
   return topic_name.substr(prefix.size()).as_string();

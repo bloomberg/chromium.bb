@@ -24,6 +24,8 @@ extern "C" {
 #define PDFACTION_URI 3
 // Launch an application or open a file.
 #define PDFACTION_LAUNCH 4
+// Go to a destination in an embedded file.
+#define PDFACTION_EMBEDDEDGOTO 5
 
 // View destination fit types. See pdfmark reference v9, page 48.
 #define PDFDEST_VIEW_UNKNOWN_MODE 0
@@ -197,8 +199,8 @@ FPDFAction_GetURIPath(FPDF_DOCUMENT document,
 FPDF_EXPORT int FPDF_CALLCONV FPDFDest_GetDestPageIndex(FPDF_DOCUMENT document,
                                                         FPDF_DEST dest);
 
+// Experimental API.
 // Get the view (fit type) specified by |dest|.
-// Experimental API. Subject to change.
 //
 //   dest         - handle to the destination.
 //   pNumParams   - receives the number of view parameters, which is at most 4.
@@ -291,6 +293,17 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_Enumerate(FPDF_PAGE page,
                                                        int* start_pos,
                                                        FPDF_LINK* link_annot);
 
+// Experimental API.
+// Gets FPDF_ANNOTATION object for |link_annot|.
+//
+//   page       - handle to the page in which FPDF_LINK object is present.
+//   link_annot - handle to link annotation.
+//
+// Returns FPDF_ANNOTATION from the FPDF_LINK and NULL on failure,
+// if the input link annot or page is NULL.
+FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV
+FPDFLink_GetAnnot(FPDF_PAGE page, FPDF_LINK link_annot);
+
 // Get the rectangle for |link_annot|.
 //
 //   link_annot - handle to the link annotation.
@@ -319,8 +332,20 @@ FPDFLink_GetQuadPoints(FPDF_LINK link_annot,
                        int quad_index,
                        FS_QUADPOINTSF* quad_points);
 
+// Experimental API
+// Gets an additional-action from |page|.
+//
+//   page      - handle to the page, as returned by FPDF_LoadPage().
+//   aa_type   - the type of the page object's addtional-action, defined
+//               in public/fpdf_formfill.h
+//
+//   Returns the handle to the action data, or NULL if there is no
+//   additional-action of type |aa_type|.
+FPDF_EXPORT FPDF_ACTION FPDF_CALLCONV FPDF_GetPageAAction(FPDF_PAGE page,
+                                                          int aa_type);
+
+// Experimental API.
 // Get the file identifer defined in the trailer of |document|.
-// Experimental API. Subject to change.
 //
 //   document - handle to the document.
 //   id_type  - the file identifier type to retrieve.

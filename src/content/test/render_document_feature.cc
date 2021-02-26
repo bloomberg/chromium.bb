@@ -21,9 +21,8 @@ void InitAndEnableRenderDocumentFeature(
 
 std::vector<std::string> RenderDocumentFeatureLevelValues() {
   return {
-      GetRenderDocumentLevelName(RenderDocumentLevel::kDisabled),
       GetRenderDocumentLevelName(RenderDocumentLevel::kCrashedFrame),
-      // TODO(https://crbug.com/936696): Add kSubframe when tests are passing.
+      GetRenderDocumentLevelName(RenderDocumentLevel::kSubframe),
   };
 }
 

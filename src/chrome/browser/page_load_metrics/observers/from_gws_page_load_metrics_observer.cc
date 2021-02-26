@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -41,7 +42,7 @@ const char kHistogramFromGWSParseDuration[] =
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 const char kHistogramFromGWSFirstInputDelay[] =
-    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay3";
+    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay4";
 
 const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.NewNavigation."
@@ -114,6 +115,10 @@ const char kHistogramFromGWSForegroundDurationWithoutPaint[] =
     "WithoutPaint";
 const char kHistogramFromGWSForegroundDurationNoCommit[] =
     "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration.NoCommit";
+
+const char kHistogramFromGWSCumulativeLayoutShiftMainFrame[] =
+    "PageLoad.Clients.FromGoogleSearch.LayoutInstability.CumulativeShiftScore."
+    "MainFrame";
 
 }  // namespace internal
 
@@ -322,6 +327,11 @@ bool WasAbortedBeforeInteraction(
   }
 }
 
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
+}
+
 }  // namespace
 
 FromGWSPageLoadMetricsLogger::FromGWSPageLoadMetricsLogger() = default;
@@ -433,17 +443,6 @@ void FromGWSPageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event,
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnUserInput(event, timing, GetDelegate());
-}
-
-void FromGWSPageLoadMetricsObserver::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  logger_.OnTimingUpdate(subframe_rfh, timing);
-}
-
-void FromGWSPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  logger_.OnDidFinishSubFrameNavigation(navigation_handle, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsLogger::OnCommit(
@@ -621,8 +620,11 @@ void FromGWSPageLoadMetricsLogger::OnFirstInputInPage(
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
           timing.interactive_timing->first_input_delay, delegate)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstInputDelay,
-                        timing.interactive_timing->first_input_delay.value());
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramFromGWSFirstInputDelay,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
   }
 }
 
@@ -665,20 +667,6 @@ void FromGWSPageLoadMetricsLogger::FlushMetricsOnAppEnterBackground(
   LogForegroundDurations(timing, delegate, base::TimeTicks::Now());
 }
 
-void FromGWSPageLoadMetricsLogger::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
-}
-
-void FromGWSPageLoadMetricsLogger::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, delegate);
-}
-
 void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (!delegate.DidCommit() || !ShouldLogPostCommitMetrics(delegate.GetUrl()))
@@ -686,11 +674,17 @@ void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
-          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+          delegate.GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
   if (all_frames_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLargestContentfulPaint,
                         all_frames_largest_contentful_paint.Time().value());
   }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame,
+      LayoutShiftUmaValue(
+          delegate.GetMainFrameRenderData().layout_shift_score));
 }

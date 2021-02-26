@@ -23,16 +23,17 @@ class CastAppDiscoveryService {
 
   class Subscription {
    public:
-    Subscription(Subscription&&);
+    Subscription(CastAppDiscoveryService* discovery_service, uint32_t id);
+    Subscription(Subscription&&) noexcept;
+    Subscription(Subscription&) = delete;
+    Subscription& operator=(Subscription&&);
+    Subscription& operator=(const Subscription&) = delete;
     ~Subscription();
-    Subscription& operator=(Subscription);
 
     void Reset();
 
    private:
     friend class CastAppDiscoveryService;
-
-    Subscription(CastAppDiscoveryService* discovery_service, uint32_t id);
 
     void Swap(Subscription& other);
 
@@ -57,15 +58,7 @@ class CastAppDiscoveryService {
   // this method when the user initiates a user gesture.
   virtual void Refresh() = 0;
 
- protected:
-  Subscription MakeSubscription(CastAppDiscoveryService* discovery_service,
-                                uint32_t id) {
-    return Subscription(discovery_service, id);
-  }
-
  private:
-  friend class Subscription;
-
   virtual void RemoveAvailabilityCallback(uint32_t id) = 0;
 };
 

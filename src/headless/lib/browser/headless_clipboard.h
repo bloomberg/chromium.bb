@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
 namespace headless {
 
@@ -25,42 +26,65 @@ class HeadlessClipboard : public ui::Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ui::ClipboardBuffer buffer) const override;
-  bool IsFormatAvailable(const ui::ClipboardFormatType& format,
-                         ui::ClipboardBuffer buffer) const override;
+  bool IsFormatAvailable(
+      const ui::ClipboardFormatType& format,
+      ui::ClipboardBuffer buffer,
+      const ui::DataTransferEndpoint* data_dst) const override;
   void Clear(ui::ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ui::ClipboardBuffer buffer,
+                          const ui::DataTransferEndpoint* data_dst,
                           std::vector<base::string16>* types) const override;
   std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
-      ui::ClipboardBuffer buffer) const override;
+      ui::ClipboardBuffer buffer,
+      const ui::DataTransferEndpoint* data_dst) const override;
   void ReadText(ui::ClipboardBuffer buffer,
+                const ui::DataTransferEndpoint* data_dst,
                 base::string16* result) const override;
   void ReadAsciiText(ui::ClipboardBuffer buffer,
+                     const ui::DataTransferEndpoint* data_dst,
                      std::string* result) const override;
   void ReadHTML(ui::ClipboardBuffer buffer,
+                const ui::DataTransferEndpoint* data_dst,
                 base::string16* markup,
                 std::string* src_url,
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
-  void ReadRTF(ui::ClipboardBuffer buffer, std::string* result) const override;
+  void ReadSvg(ui::ClipboardBuffer buffer,
+               const ui::DataTransferEndpoint* data_dst,
+               base::string16* result) const override;
+  void ReadRTF(ui::ClipboardBuffer buffer,
+               const ui::DataTransferEndpoint* data_dst,
+               std::string* result) const override;
   void ReadImage(ui::ClipboardBuffer buffer,
+                 const ui::DataTransferEndpoint* data_dst,
                  ReadImageCallback callback) const override;
   void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const base::string16& type,
+                      const ui::DataTransferEndpoint* data_dst,
                       base::string16* result) const override;
-  void ReadBookmark(base::string16* title, std::string* url) const override;
+  void ReadBookmark(const ui::DataTransferEndpoint* data_dst,
+                    base::string16* title,
+                    std::string* url) const override;
   void ReadData(const ui::ClipboardFormatType& format,
+                const ui::DataTransferEndpoint* data_dst,
                 std::string* result) const override;
-  void WritePortableRepresentations(ui::ClipboardBuffer buffer,
-                                    const ObjectMap& objects) override;
+#if defined(USE_OZONE)
+  bool IsSelectionBufferAvailable() const override;
+#endif  // defined(USE_OZONE)
+  void WritePortableRepresentations(
+      ui::ClipboardBuffer buffer,
+      const ObjectMap& objects,
+      std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
   void WritePlatformRepresentations(
       ui::ClipboardBuffer buffer,
-      std::vector<Clipboard::PlatformRepresentation> platform_representations)
-      override;
+      std::vector<Clipboard::PlatformRepresentation> platform_representations,
+      std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,
                  const char* url_data,
                  size_t url_len) override;
+  void WriteSvg(const char* markup_data, size_t markup_len) override;
   void WriteRTF(const char* rtf_data, size_t data_len) override;
   void WriteBookmark(const char* title_data,
                      size_t title_len,

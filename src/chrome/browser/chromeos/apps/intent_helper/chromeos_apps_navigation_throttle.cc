@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
@@ -110,7 +109,7 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       break;
     case apps::PickerEntryType::kWeb:
     case apps::PickerEntryType::kDevice:
-    case apps::PickerEntryType::kMacNative:
+    case apps::PickerEntryType::kMacOs:
       break;
   }
 
@@ -152,36 +151,6 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
                      ui_auto_display_service, url));
 }
 
-// static
-apps::AppsNavigationThrottle::Platform
-ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
-    const std::string& selected_launch_name,
-    PickerAction picker_action) {
-  switch (picker_action) {
-    case PickerAction::PREFERRED_ACTIVITY_FOUND:
-      return selected_launch_name ==
-                     apps::AppsNavigationThrottle::kUseBrowserForLink
-                 ? Platform::CHROME
-                 : Platform::ARC;
-    case PickerAction::ARC_APP_PRESSED:
-    case PickerAction::ARC_APP_PREFERRED_PRESSED:
-    case PickerAction::PWA_APP_PRESSED:
-    case PickerAction::ERROR_BEFORE_PICKER:
-    case PickerAction::ERROR_AFTER_PICKER:
-    case PickerAction::DIALOG_DEACTIVATED:
-    case PickerAction::CHROME_PRESSED:
-    case PickerAction::CHROME_PREFERRED_PRESSED:
-    case PickerAction::OBSOLETE_ALWAYS_PRESSED:
-    case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
-    case PickerAction::INVALID:
-    case PickerAction::DEVICE_PRESSED:
-    case PickerAction::MAC_NATIVE_APP_PRESSED:
-      break;
-  }
-  return apps::AppsNavigationThrottle::GetDestinationPlatform(
-      selected_launch_name, picker_action);
-}
-
 // Removes the flag signaling that the current tab was started via
 // ChromeShellDelegate if the current throttle corresponds to a navigation
 // passing thru different domains or schemes, except if |current_url| has a
@@ -211,8 +180,8 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   if (web_contents && web_contents->GetController().IsInitialNavigation()) {
     // Workaround for b/79167225, closing |web_contents| here may be dangerous.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
                                   weak_factory_.GetWeakPtr()));
   } else {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
@@ -301,9 +270,6 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
     const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
     content::WebContents* web_contents,
     const GURL& url) {
-  if (apps_for_picker.empty())
-    return false;
-
   // If we only have PWAs in the app list, do not show the intent picker.
   // Instead just show the omnibox icon. This is to reduce annoyance to users
   // until "Remember my choice" is available for desktop PWAs.
@@ -312,8 +278,8 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
   if (ContainsOnlyPwasAndMacApps(apps_for_picker))
     return false;
 
-  DCHECK(ui_auto_display_service_);
-  return ui_auto_display_service_->ShouldAutoDisplayUi(url);
+  return AppsNavigationThrottle::ShouldAutoDisplayUi(apps_for_picker,
+                                                     web_contents, url);
 }
 
 bool ChromeOsAppsNavigationThrottle::ShouldLaunchPreferredApp(const GURL& url) {

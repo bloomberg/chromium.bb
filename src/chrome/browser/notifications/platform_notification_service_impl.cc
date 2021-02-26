@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -106,6 +107,9 @@ class RevokeDeleteCountRecorder
     : public base::RefCounted<RevokeDeleteCountRecorder> {
  public:
   RevokeDeleteCountRecorder() : total_deleted_count_(0) {}
+  RevokeDeleteCountRecorder(const RevokeDeleteCountRecorder&) = delete;
+  RevokeDeleteCountRecorder& operator=(const RevokeDeleteCountRecorder&) =
+      delete;
 
   void OnDeleted(bool success, size_t deleted_count) {
     total_deleted_count_ += deleted_count;
@@ -120,8 +124,6 @@ class RevokeDeleteCountRecorder
   }
 
   size_t total_deleted_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(RevokeDeleteCountRecorder);
 };
 
 }  // namespace
@@ -162,8 +164,7 @@ void PlatformNotificationServiceImpl::Shutdown() {
 void PlatformNotificationServiceImpl::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
+    ContentSettingsType content_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (content_type != ContentSettingsType::NOTIFICATIONS)
@@ -450,8 +451,8 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     // the 1x bitmap - crbug.com/585815.
     button.icon =
         gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
-    if (action.type == blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT) {
-      button.placeholder = action.placeholder.as_optional_string16().value_or(
+    if (action.type == blink::mojom::NotificationActionType::TEXT) {
+      button.placeholder = action.placeholder.value_or(
           l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER));
     }
     buttons.push_back(button);

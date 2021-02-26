@@ -57,15 +57,16 @@ struct hb_subset_context_t :
   hb_blob_t *source_blob;
   hb_subset_plan_t *plan;
   hb_serialize_context_t *serializer;
-  unsigned int debug_depth;
+  hb_tag_t table_tag;
 
   hb_subset_context_t (hb_blob_t *source_blob_,
 		       hb_subset_plan_t *plan_,
-		       hb_serialize_context_t *serializer_) :
-			source_blob (source_blob_),
+		       hb_serialize_context_t *serializer_,
+		       hb_tag_t table_tag_) :
+		        source_blob (source_blob_),
 			plan (plan_),
 			serializer (serializer_),
-			debug_depth (0) {}
+			table_tag (table_tag_) {}
 };
 
 

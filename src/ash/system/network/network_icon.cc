@@ -25,6 +25,7 @@
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -165,28 +166,13 @@ ImageType ImageTypeForNetworkType(NetworkType network_type) {
   return NONE;
 }
 
-gfx::Size GetSizeForIconType(IconType icon_type) {
-  int size = kMenuIconSize;
-  if (IsTrayIcon(icon_type)) {
-    size = kUnifiedTrayIconSize;
-  } else if (icon_type == ICON_TYPE_DEFAULT_VIEW) {
-    size = kUnifiedFeaturePodVectorIconSize;
-  }
-  return gfx::Size(size, size);
-}
-
-int GetPaddingForIconType(IconType icon_type) {
-  if (IsTrayIcon(icon_type))
-    return kUnifiedTrayNetworkIconPadding;
-  return kTrayNetworkIconPadding;
-}
-
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
                                 IconType icon_type,
                                 int index) {
   return gfx::CanvasImageSource::MakeImageSkia<SignalStrengthImageSource>(
       image_type, GetDefaultColorForIconType(icon_type),
-      GetSizeForIconType(icon_type), index, GetPaddingForIconType(icon_type));
+      gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize), index,
+      kUnifiedTrayNetworkIconPadding);
 }
 
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
@@ -228,8 +214,7 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
   float floored_animation_value =
       std::floor(animation * kNumFadeImages) / kNumFadeImages;
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      AshColorProvider::AshColorMode::kLight);
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
   return gfx::CreateVectorIcon(
       kNetworkVpnIcon,
       gfx::Tween::ColorValueBetween(
@@ -450,21 +435,19 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 SkColor GetDefaultColorForIconType(IconType icon_type) {
   switch (icon_type) {
     case ICON_TYPE_TRAY_OOBE:
-      return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconPrimary,
-          AshColorProvider::AshColorMode::kLight);
+      return kIconColorInOobe;
     case ICON_TYPE_FEATURE_POD:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconSystemMenu,
-          AshColorProvider::AshColorMode::kDark);
+          AshColorProvider::ContentLayerType::kButtonIconColor);
     case ICON_TYPE_FEATURE_POD_TOGGLED:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconSystemMenuToggled,
-          AshColorProvider::AshColorMode::kDark);
+          AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
+    case ICON_TYPE_FEATURE_POD_DISABLED:
+      return AshColorProvider::GetDisabledColor(
+          GetDefaultColorForIconType(ICON_TYPE_FEATURE_POD));
     default:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconPrimary,
-          AshColorProvider::AshColorMode::kDark);
+          AshColorProvider::ContentLayerType::kIconColorPrimary);
   }
 }
 
@@ -514,10 +497,14 @@ gfx::ImageSkia GetImageForVPN(const NetworkStateProperties* vpn,
   return icon->image();
 }
 
+gfx::ImageSkia GetImageForWiFiNoConnections(IconType icon_type) {
+  return gfx::CreateVectorIcon(kUnifiedMenuWifiNoConnectionIcon,
+                               GetDefaultColorForIconType(icon_type));
+}
+
 gfx::ImageSkia GetImageForWiFiEnabledState(bool enabled, IconType icon_type) {
   if (!enabled) {
-    return gfx::CreateVectorIcon(kUnifiedMenuWifiOffIcon,
-                                 GetSizeForIconType(icon_type).width(),
+    return gfx::CreateVectorIcon(kUnifiedMenuWifiOffIcon, kUnifiedTrayIconSize,
                                  GetDefaultColorForIconType(icon_type));
   }
 

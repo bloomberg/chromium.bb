@@ -23,7 +23,6 @@
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
@@ -93,8 +92,7 @@ void ObserverOnLogoAvailable(LogoObserver* observer,
       break;
 
     case LogoCallbackReason::REVALIDATED:
-      // TODO(sfiera): double-check whether we should inform the observer of the
-      // fresh metadata.
+      observer->OnCachedLogoRevalidated();
       break;
 
     case LogoCallbackReason::DETERMINED:

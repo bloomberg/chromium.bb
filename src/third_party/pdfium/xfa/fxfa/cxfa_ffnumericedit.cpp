@@ -6,9 +6,7 @@
 
 #include "xfa/fxfa/cxfa_ffnumericedit.h"
 
-#include <utility>
-
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check.h"
 #include "xfa/fwl/cfwl_edit.h"
 #include "xfa/fwl/cfwl_eventvalidate.h"
 #include "xfa/fwl/cfwl_notedriver.h"
@@ -23,18 +21,15 @@ CXFA_FFNumericEdit::CXFA_FFNumericEdit(CXFA_Node* pNode)
 CXFA_FFNumericEdit::~CXFA_FFNumericEdit() = default;
 
 bool CXFA_FFNumericEdit::LoadWidget() {
-  ASSERT(!IsLoaded());
+  DCHECK(!IsLoaded());
 
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
-  auto pNewEdit = pdfium::MakeUnique<CFWL_Edit>(
-      GetFWLApp(), pdfium::MakeUnique<CFWL_WidgetProperties>(), nullptr);
-  CFWL_Edit* pWidget = pNewEdit.get();
-  SetNormalWidget(std::move(pNewEdit));
+  CFWL_Edit* pWidget = cppgc::MakeGarbageCollected<CFWL_Edit>(
+      GetFWLApp()->GetHeap()->GetAllocationHandle(), GetFWLApp(),
+      CFWL_Widget::Properties(), nullptr);
+  SetNormalWidget(pWidget);
   pWidget->SetAdapterIface(this);
 
-  CFWL_NoteDriver* pNoteDriver = pWidget->GetOwnerApp()->GetNoteDriver();
+  CFWL_NoteDriver* pNoteDriver = pWidget->GetFWLApp()->GetNoteDriver();
   pNoteDriver->RegisterEventTarget(pWidget, pWidget);
   m_pOldDelegate = pWidget->GetDelegate();
   pWidget->SetDelegate(this);
@@ -73,9 +68,6 @@ void CXFA_FFNumericEdit::UpdateWidgetProperty() {
 }
 
 void CXFA_FFNumericEdit::OnProcessEvent(CFWL_Event* pEvent) {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
   if (pEvent->GetType() == CFWL_Event::Type::Validate) {
     CFWL_EventValidate* event = static_cast<CFWL_EventValidate*>(pEvent);
     event->bValidate = OnValidate(GetNormalWidget(), event->wsInsert);
@@ -85,9 +77,6 @@ void CXFA_FFNumericEdit::OnProcessEvent(CFWL_Event* pEvent) {
 }
 
 bool CXFA_FFNumericEdit::OnValidate(CFWL_Widget* pWidget, WideString& wsText) {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
-
   WideString wsPattern = m_pNode->GetPictureContent(XFA_VALUEPICTURE_Edit);
   if (!wsPattern.IsEmpty())
     return true;

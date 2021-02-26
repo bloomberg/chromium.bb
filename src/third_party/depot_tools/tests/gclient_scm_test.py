@@ -1009,7 +1009,7 @@ class BranchHeadsTest(fake_repos.FakeReposTestBase):
     self.options = BaseGitWrapperTestCase.OptionsObject()
     self.url = self.git_base + 'repo_1'
     self.mirror = None
-    mock.patch('sys.stdout').start()
+    mock.patch('sys.stdout', StringIO()).start()
     self.addCleanup(mock.patch.stopall)
 
   def setUpMirror(self):
@@ -1122,7 +1122,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.options = BaseGitWrapperTestCase.OptionsObject()
     self.url = self.git_base + 'repo_1'
     self.mirror = None
-    mock.patch('sys.stdout').start()
+    mock.patch('sys.stdout', StringIO()).start()
     self.addCleanup(mock.patch.stopall)
 
   def setUpMirror(self):

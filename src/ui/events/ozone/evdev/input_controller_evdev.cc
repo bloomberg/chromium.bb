@@ -38,6 +38,10 @@ void InputControllerEvdev::set_has_mouse(bool has_mouse) {
   has_mouse_ = has_mouse;
 }
 
+void InputControllerEvdev::set_has_pointing_stick(bool has_pointing_stick) {
+  has_pointing_stick_ = has_pointing_stick;
+}
+
 void InputControllerEvdev::set_has_touchpad(bool has_touchpad) {
   has_touchpad_ = has_touchpad;
 }
@@ -49,6 +53,10 @@ void InputControllerEvdev::SetInputDevicesEnabled(bool enabled) {
 
 bool InputControllerEvdev::HasMouse() {
   return has_mouse_;
+}
+
+bool InputControllerEvdev::HasPointingStick() {
+  return has_pointing_stick_;
 }
 
 bool InputControllerEvdev::HasTouchpad() {
@@ -169,8 +177,27 @@ void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
 }
 
 void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
+  if (mouse_acceleration_suspended_) {
+    stored_mouse_acceleration_setting_ = enabled;
+    return;
+  }
   input_device_settings_.mouse_acceleration_enabled = enabled;
   ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SuspendMouseAcceleration() {
+  // multiple calls to suspend are currently not supported.
+  DCHECK(!mouse_acceleration_suspended_);
+  stored_mouse_acceleration_setting_ =
+      input_device_settings_.mouse_acceleration_enabled;
+  mouse_acceleration_suspended_ = true;
+  input_device_settings_.mouse_acceleration_enabled = false;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::EndMouseAccelerationSuspension() {
+  mouse_acceleration_suspended_ = false;
+  SetMouseAcceleration(stored_mouse_acceleration_setting_);
 }
 
 void InputControllerEvdev::SetMouseScrollAcceleration(bool enabled) {
@@ -236,6 +263,20 @@ void InputControllerEvdev::UpdateCapsLockLed() {
   if (caps_lock_state != caps_lock_led_state_)
     input_device_factory_->SetCapsLockLed(caps_lock_state);
   caps_lock_led_state_ = caps_lock_state;
+}
+
+void InputControllerEvdev::PlayVibrationEffect(int id,
+                                               uint8_t amplitude,
+                                               uint16_t duration_millis) {
+  if (!input_device_factory_)
+    return;
+  input_device_factory_->PlayVibrationEffect(id, amplitude, duration_millis);
+}
+
+void InputControllerEvdev::StopVibration(int id) {
+  if (!input_device_factory_)
+    return;
+  input_device_factory_->StopVibration(id);
 }
 
 }  // namespace ui

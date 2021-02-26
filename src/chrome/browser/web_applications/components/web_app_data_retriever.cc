@@ -16,8 +16,8 @@
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "chrome/common/web_application_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -49,6 +49,17 @@ void WebAppDataRetriever::GetWebApplicationInfo(
     return;
   }
 
+  // Makes a copy of WebContents fields right after Commit but before a mojo
+  // request to the renderer process.
+  default_web_application_info_ = std::make_unique<WebApplicationInfo>();
+  default_web_application_info_->start_url =
+      web_contents->GetLastCommittedURL();
+  default_web_application_info_->title = web_contents->GetTitle();
+  if (default_web_application_info_->title.empty()) {
+    default_web_application_info_->title =
+        base::UTF8ToUTF16(default_web_application_info_->start_url.spec());
+  }
+
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
@@ -61,9 +72,9 @@ void WebAppDataRetriever::GetWebApplicationInfo(
                      weak_ptr_factory_.GetWeakPtr()));
   // Bind the InterfacePtr into the callback so that it's kept alive
   // until there's either a connection error or a response.
-  auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(
-      base::BindOnce(&WebAppDataRetriever::OnGetWebApplicationInfo,
+  auto* web_page_metadata_proxy = chrome_render_frame.get();
+  web_page_metadata_proxy->GetWebPageMetadata(
+      base::BindOnce(&WebAppDataRetriever::OnGetWebPageMetadata,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(chrome_render_frame), entry->GetUniqueID()));
 }
@@ -127,32 +138,39 @@ void WebAppDataRetriever::RenderProcessGone(base::TerminationStatus status) {
   CallCallbackOnError();
 }
 
-void WebAppDataRetriever::OnGetWebApplicationInfo(
+void WebAppDataRetriever::OnGetWebPageMetadata(
     mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
         chrome_render_frame,
     int last_committed_nav_entry_unique_id,
-    const WebApplicationInfo& web_app_info) {
+    chrome::mojom::WebPageMetadataPtr web_page_metadata) {
   if (ShouldStopRetrieval())
     return;
+
+  DCHECK(default_web_application_info_);
 
   content::WebContents* contents = web_contents();
   Observe(nullptr);
 
+  std::unique_ptr<WebApplicationInfo> info;
+
   content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
-  if (!entry || last_committed_nav_entry_unique_id != entry->GetUniqueID()) {
-    std::move(get_web_app_info_callback_).Run(nullptr);
-    return;
+
+  if (entry) {
+    if (entry->GetUniqueID() == last_committed_nav_entry_unique_id) {
+      info = std::make_unique<WebApplicationInfo>(*web_page_metadata);
+      if (info->start_url.is_empty())
+        info->start_url = std::move(default_web_application_info_->start_url);
+      if (info->title.empty())
+        info->title = std::move(default_web_application_info_->title);
+    } else {
+      // WebContents navigation state changed during the call. Ignore the mojo
+      // request result. Use default initial info instead.
+      info = std::move(default_web_application_info_);
+    }
   }
 
-  auto info = std::make_unique<WebApplicationInfo>(web_app_info);
-  if (info->app_url.is_empty())
-    info->app_url = contents->GetLastCommittedURL();
-
-  if (info->title.empty())
-    info->title = contents->GetTitle();
-  if (info->title.empty())
-    info->title = base::UTF8ToUTF16(info->app_url.spec());
+  default_web_application_info_.reset();
 
   std::move(get_web_app_info_callback_).Run(std::move(info));
 }
@@ -189,6 +207,8 @@ void WebAppDataRetriever::OnIconsDownloaded(bool success, IconsMap icons_map) {
 void WebAppDataRetriever::CallCallbackOnError() {
   Observe(nullptr);
   DCHECK(ShouldStopRetrieval());
+
+  default_web_application_info_.reset();
 
   // Call a callback as a tail call. The callback may destroy |this|.
   if (get_web_app_info_callback_) {

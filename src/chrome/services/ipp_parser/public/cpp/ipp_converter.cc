@@ -58,7 +58,7 @@ ssize_t IppWrite(base::span<uint8_t>* dst, ipp_uchar_t* source, size_t bytes) {
 
 // Returns a parsed HttpHeader on success, empty Optional on failure.
 base::Optional<HttpHeader> ParseHeader(base::StringPiece header) {
-  if (header.find(kCarriage) != std::string::npos) {
+  if (base::Contains(header, kCarriage)) {
     return base::nullopt;
   }
 
@@ -106,6 +106,13 @@ base::Optional<ValueType> ValueTagToType(const int value_tag) {
     case IPP_TAG_NAMELANG:
       return ValueType::STRING;
 
+    // Octet (binary) string
+    case IPP_TAG_STRING:
+      return ValueType::OCTET;
+
+    case IPP_TAG_RESOLUTION:
+      return ValueType::RESOLUTION;
+
     default:
       break;
   }
@@ -116,30 +123,38 @@ base::Optional<ValueType> ValueTagToType(const int value_tag) {
 }
 
 std::vector<bool> IppGetBools(ipp_attribute_t* attr) {
+  const size_t count = ippGetCount(attr);
+
   std::vector<bool> ret;
-  for (int i = 0; i < ippGetCount(attr); ++i) {
+  ret.reserve(count);
+  for (size_t i = 0; i < count; ++i) {
     // No decipherable failure condition for this libCUPS method.
-    bool v = ippGetBoolean(attr, i);
-    ret.emplace_back(v);
+    ret.push_back(ippGetBoolean(attr, i));
   }
   return ret;
 }
 
 base::Optional<std::vector<int>> IppGetInts(ipp_attribute_t* attr) {
+  const size_t count = ippGetCount(attr);
+
   std::vector<int> ret;
-  for (int i = 0; i < ippGetCount(attr); ++i) {
+  ret.reserve(count);
+  for (size_t i = 0; i < count; ++i) {
     int v = ippGetInteger(attr, i);
     if (!v) {
       return base::nullopt;
     }
-    ret.emplace_back(v);
+    ret.push_back(v);
   }
   return ret;
 }
 
 base::Optional<std::vector<std::string>> IppGetStrings(ipp_attribute_t* attr) {
+  const size_t count = ippGetCount(attr);
+
   std::vector<std::string> ret;
-  for (int i = 0; i < ippGetCount(attr); ++i) {
+  ret.reserve(count);
+  for (size_t i = 0; i < count; ++i) {
     const char* v = ippGetString(
         attr, i, nullptr /* TODO(crbug.com/945409): figure out language */);
     if (!v) {
@@ -149,6 +164,46 @@ base::Optional<std::vector<std::string>> IppGetStrings(ipp_attribute_t* attr) {
   }
   return ret;
 }
+
+base::Optional<std::vector<std::vector<uint8_t>>> IppGetOctets(
+    ipp_attribute_t* attr) {
+  const size_t count = ippGetCount(attr);
+
+  std::vector<std::vector<uint8_t>> ret;
+  ret.reserve(count);
+  for (size_t i = 0; i < count; ++i) {
+    int len = 0;
+    const uint8_t* v =
+        static_cast<const uint8_t*>(ippGetOctetString(attr, i, &len));
+    if (!v || len <= 0) {
+      return base::nullopt;
+    }
+    ret.emplace_back(v, v + len);
+  }
+  return ret;
+}
+
+base::Optional<std::vector<ipp_parser::mojom::ResolutionPtr>> IppGetResolutions(
+    ipp_attribute_t* attr) {
+  const size_t count = ippGetCount(attr);
+
+  std::vector<ipp_parser::mojom::ResolutionPtr> ret;
+  ret.reserve(count);
+  for (size_t i = 0; i < count; ++i) {
+    int xres = 0;
+    int yres = 0;
+    ipp_res_t units{};
+    xres = ippGetResolution(attr, i, &yres, &units);
+    if (xres <= 0 || yres <= 0 || units != IPP_RES_PER_INCH) {
+      LOG(ERROR) << "bad resolution: " << xres << ", " << yres << ", "
+                 << int(units);
+      return base::nullopt;
+    }
+    ret.push_back(ipp_parser::mojom::Resolution(xres, yres).Clone());
+  }
+  return ret;
+}
+
 }  // namespace
 
 base::Optional<std::vector<std::string>> ParseRequestLine(
@@ -170,13 +225,11 @@ base::Optional<std::vector<uint8_t>> BuildRequestLine(
     base::StringPiece method,
     base::StringPiece endpoint,
     base::StringPiece http_version) {
-  std::vector<uint8_t> ret;
   std::string status_line =
       base::StrCat({method, kStatusDelimiter, endpoint, kStatusDelimiter,
                     http_version, kCarriage});
 
-  std::copy(status_line.begin(), status_line.end(), std::back_inserter(ret));
-  return ret;
+  return std::vector<uint8_t>(status_line.begin(), status_line.end());
 }
 
 base::Optional<std::vector<HttpHeader>> ParseHeaders(
@@ -185,6 +238,7 @@ base::Optional<std::vector<HttpHeader>> ParseHeaders(
       headers_slice, kCarriage, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   std::vector<HttpHeader> ret;
+  ret.reserve(raw_headers.size());
   for (auto raw_header : raw_headers) {
     auto header = ParseHeader(raw_header);
     if (!header) {
@@ -208,9 +262,7 @@ base::Optional<std::vector<uint8_t>> BuildHeaders(
   // End-of-headers sentinel is a double carriage return; add the second one.
   headers += kCarriage;
 
-  std::vector<uint8_t> ret;
-  std::copy(headers.begin(), headers.end(), std::back_inserter(ret));
-  return ret;
+  return std::vector<uint8_t>(headers.begin(), headers.end());
 }
 
 // Synchronously reads/parses |ipp_slice| and returns the resulting ipp_t
@@ -227,7 +279,7 @@ printing::ScopedIppPtr ParseIppMessage(base::span<const uint8_t> ipp_slice) {
 
   if (ret == IPP_STATE_ERROR) {
     // Read failed, clear and return nullptr
-    ipp.reset(nullptr);
+    ipp.reset();
   }
 
   return ipp;
@@ -281,6 +333,10 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 
   // Marshall request
   std::vector<uint8_t> ret;
+  const size_t request_size = request_line_buffer->size() +
+                              headers_buffer->size() +
+                              ipp_message_buffer->size() + ipp_data.size();
+  ret.reserve(request_size);
 
   ret.insert(ret.end(), request_line_buffer->begin(),
              request_line_buffer->end());
@@ -386,11 +442,27 @@ ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
         attrptr->value->set_strings(*vals);
         break;
       }
+      case ValueType::OCTET: {
+        auto vals = IppGetOctets(attr);
+        if (!vals.has_value()) {
+          return nullptr;
+        }
+        attrptr->value->set_octets(*vals);
+        break;
+      }
+      case ValueType::RESOLUTION: {
+        auto vals = IppGetResolutions(attr);
+        if (!vals.has_value()) {
+          return nullptr;
+        }
+        attrptr->value->set_resolutions(std::move(*vals));
+        break;
+      }
       default:
         NOTREACHED();
     }
 
-    attributes.emplace_back(std::move(attrptr));
+    attributes.push_back(std::move(attrptr));
   }
 
   ret->attributes = std::move(attributes);

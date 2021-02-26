@@ -19,18 +19,16 @@ namespace {
 SizeBounds AdjustAvailableSizeForParentAvailableSize(
     const View* host,
     const SizeBounds& child_available_size) {
-  if (!host || !host->parent() || child_available_size == SizeBounds())
-    return child_available_size;
-
-  SizeBounds host_additional_size = host->parent()->GetAvailableSize(host);
-  host_additional_size.Enlarge(-host->width(), -host->height());
-  return SizeBounds(
-      child_available_size.width() && host_additional_size.width()
-          ? *child_available_size.width() + *host_additional_size.width()
-          : child_available_size.width(),
-      child_available_size.height() && host_additional_size.height()
-          ? *child_available_size.height() + *host_additional_size.height()
-          : child_available_size.height());
+  SizeBounds available_size = child_available_size;
+  if (host && host->parent() && available_size != SizeBounds()) {
+    SizeBounds host_additional_size = host->parent()->GetAvailableSize(host);
+    host_additional_size.Enlarge(-host->width(), -host->height());
+    if (host_additional_size.width().is_bounded())
+      available_size.width() += host_additional_size.width();
+    if (host_additional_size.height().is_bounded())
+      available_size.height() += host_additional_size.height();
+  }
+  return available_size;
 }
 
 }  // anonymous namespace
@@ -54,7 +52,7 @@ gfx::Size LayoutManagerBase::GetMinimumSize(const View* host) const {
 int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
                                                   int width) const {
   if (!cached_height_for_width_ || cached_height_for_width_->width() != width) {
-    const int height = CalculateProposedLayout(SizeBounds(width, base::nullopt))
+    const int height = CalculateProposedLayout(SizeBounds(width, SizeBound()))
                            .host_size.height();
     cached_height_for_width_ = gfx::Size(width, height);
   }
@@ -175,6 +173,8 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
     // events that wouldn't do anything useful).
     if (new_available_size != cached_available_size_ || child_layout.visible ||
         !child_layout.bounds.IsEmpty()) {
+      const bool size_changed =
+          child_view->bounds().size() != child_layout.bounds.size();
       if (child_view->bounds() != child_layout.bounds)
         child_view->SetBoundsRect(child_layout.bounds);
       // Child layouts which are not invalid will not be laid out by the default
@@ -182,7 +182,7 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
       // constraint it's important that the child view be laid out. So we'll do
       // it here.
       // TODO(dfried): figure out a better way to handle this.
-      else if (child_layout.available_size != SizeBounds())
+      if (!size_changed && child_layout.available_size != SizeBounds())
         child_view->Layout();
     }
   }

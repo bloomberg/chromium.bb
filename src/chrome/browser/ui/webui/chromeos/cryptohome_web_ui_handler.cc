@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/chromeos/cryptohome_web_ui_handler.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,14 +35,16 @@ void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   cryptohome_client->TpmIsReady(GetCryptohomeBoolCallback("tpm-is-ready"));
   cryptohome_client->TpmIsEnabled(GetCryptohomeBoolCallback("tpm-is-enabled"));
   cryptohome_client->TpmIsOwned(GetCryptohomeBoolCallback("tpm-is-owned"));
-  cryptohome_client->TpmIsBeingOwned(
-      GetCryptohomeBoolCallback("tpm-is-being-owned"));
   cryptohome_client->Pkcs11IsTpmTokenReady(
       GetCryptohomeBoolCallback("pkcs11-is-tpm-token-ready"));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&crypto::IsTPMTokenReady, base::Closure()),
+  cryptohome_client->GetTpmStatus(
+      cryptohome::GetTpmStatusRequest(),
+      base::BindOnce(&CryptohomeWebUIHandler::OnCryptohomeTpmStatus,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&crypto::IsTPMTokenReady, base::Closure()),
       base::BindOnce(&CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -59,6 +61,21 @@ DBusMethodCallback<bool> CryptohomeWebUIHandler::GetCryptohomeBoolCallback(
     const std::string& destination_id) {
   return base::BindOnce(&CryptohomeWebUIHandler::OnCryptohomeBoolProperty,
                         weak_ptr_factory_.GetWeakPtr(), destination_id);
+}
+
+void CryptohomeWebUIHandler::OnCryptohomeTpmStatus(
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (!reply.has_value() || reply->has_error() ||
+      !reply->HasExtension(cryptohome::GetTpmStatusReply::reply)) {
+    LOG(ERROR) << "TPM status request failed, error: "
+               << (reply.has_value() && reply->has_error() ? reply->error()
+                                                           : 0);
+    return;
+  }
+  auto reply_proto = reply->GetExtension(cryptohome::GetTpmStatusReply::reply);
+
+  SetCryptohomeProperty("has-reset-lock-permissions",
+                        base::Value(reply_proto.has_reset_lock_permissions()));
 }
 
 void CryptohomeWebUIHandler::OnCryptohomeBoolProperty(

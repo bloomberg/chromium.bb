@@ -25,8 +25,8 @@ service traced_probes /system/bin/traced_probes
     class late_start
     disabled
     user nobody
-    # Despite the "log" group below, traced_probes is whitelisted for log read
-    # access only on userdebug/eng via selinux (see traced_probes.te).
+    # Despite the "log" group below, traced_probes is allowed to read log
+    # only on userdebug/eng via selinux (see traced_probes.te).
     group nobody readproc log
     writepid /dev/cpuset/system-background/tasks
     # Clean up procfs configuration even if traced_probes crashes
@@ -50,11 +50,13 @@ on property:persist.traced.enable=1 && property:debug.atrace.user_initiated=""
 on property:persist.traced.enable=1
     # Trace files need to be:
     # - Written by either uid:shell or uid:statsd.
-    # - Read by shell and dropbox (dropbox is part of system_server).
-    # When written to dropbox, they are persistet in the perfetto-traces folder
-    # only for the time it takes to make a dropbox call, and unlinked
-    # immediately in any case.
+    # - Read by shell and incidentd.
     mkdir /data/misc/perfetto-traces 0773 root shell
+
+    # This directory allows shell to save configs file in a place where the
+    # perfetto cmdline client can read then. /data/local/tmp/ isn't safe because
+    # too many other domains can write into that. See b/170404111.
+    mkdir /data/misc/perfetto-configs 0775 root shell
 
     start traced
     start traced_probes

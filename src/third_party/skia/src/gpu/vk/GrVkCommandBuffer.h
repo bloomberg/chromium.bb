@@ -9,6 +9,7 @@
 #define GrVkCommandBuffer_DEFINED
 
 #include "include/gpu/vk/GrVkTypes.h"
+#include "src/gpu/GrCommandBufferRef.h"
 #include "src/gpu/GrManagedResource.h"
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/gpu/vk/GrVkSemaphore.h"
@@ -46,9 +47,9 @@ public:
                          BarrierType barrierType,
                          void* barrier);
 
-    void bindInputBuffer(GrVkGpu* gpu, uint32_t binding, const GrVkMeshBuffer* vbuffer);
+    void bindInputBuffer(GrVkGpu* gpu, uint32_t binding, sk_sp<const GrBuffer> buffer);
 
-    void bindIndexBuffer(GrVkGpu* gpu, const GrVkMeshBuffer* ibuffer);
+    void bindIndexBuffer(GrVkGpu* gpu, sk_sp<const GrBuffer> buffer);
 
     void bindPipeline(const GrVkGpu* gpu, const GrVkPipeline* pipeline);
 
@@ -122,15 +123,19 @@ public:
         fTrackedRecycledResources.append(1, &resource);
     }
 
+    void addGrBuffer(sk_sp<const GrBuffer> buffer) {
+        fTrackedGpuBuffers.push_back(std::move(buffer));
+    }
+
+    void addGrSurface(sk_sp<const GrSurface> surface) {
+        fTrackedGpuSurfaces.push_back(std::move(surface));
+    }
+
     void releaseResources();
 
     void freeGPUData(const GrGpu* gpu, VkCommandPool pool) const;
 
     bool hasWork() const { return fHasWork; }
-
-#ifdef SK_DEBUG
-    bool validateNoSharedImageResources(const GrVkCommandBuffer* other);
-#endif
 
 protected:
     GrVkCommandBuffer(VkCommandBuffer cmdBuffer, bool isWrapped = false)
@@ -145,10 +150,12 @@ protected:
 
     void addingWork(const GrVkGpu* gpu);
 
-    void submitPipelineBarriers(const GrVkGpu* gpu);
+    void submitPipelineBarriers(const GrVkGpu* gpu, bool forSelfDependency = false);
 
     SkTDArray<const GrManagedResource*>   fTrackedResources;
     SkTDArray<const GrRecycledResource*>  fTrackedRecycledResources;
+    SkSTArray<16, sk_sp<const GrBuffer>>  fTrackedGpuBuffers;
+    SkSTArray<16, gr_cb<const GrSurface>> fTrackedGpuSurfaces;
 
     // Tracks whether we are in the middle of a command buffer begin/end calls and thus can add
     // new commands to the buffer;
@@ -186,8 +193,8 @@ private:
     float      fCachedBlendConstant[4];
 
     // Tracking of memory barriers so that we can submit them all in a batch together.
-    SkSTArray<4, VkBufferMemoryBarrier> fBufferBarriers;
-    SkSTArray<1, VkImageMemoryBarrier> fImageBarriers;
+    SkSTArray<1, VkBufferMemoryBarrier> fBufferBarriers;
+    SkSTArray<2, VkImageMemoryBarrier> fImageBarriers;
     bool fBarriersByRegion = false;
     VkPipelineStageFlags fSrcStageMask = 0;
     VkPipelineStageFlags fDstStageMask = 0;
@@ -322,7 +329,7 @@ private:
     VkFence                                                     fSubmitFence;
     SkTArray<sk_sp<GrRefCntedCallback>>                         fFinishedProcs;
 
-    typedef GrVkCommandBuffer INHERITED;
+    using INHERITED = GrVkCommandBuffer;
 };
 
 class GrVkSecondaryCommandBuffer : public GrVkCommandBuffer {
@@ -348,7 +355,7 @@ private:
     // Used for accessing fIsActive (on GrVkCommandBuffer)
     friend class GrVkPrimaryCommandBuffer;
 
-    typedef GrVkCommandBuffer INHERITED;
+    using INHERITED = GrVkCommandBuffer;
 };
 
 #endif

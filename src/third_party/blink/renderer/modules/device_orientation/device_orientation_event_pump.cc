@@ -44,16 +44,15 @@ namespace blink {
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool absolute)
-    : DeviceSensorEventPump(std::move(task_runner)),
-      absolute_(absolute),
-      fall_back_to_absolute_orientation_sensor_(!absolute) {
+DeviceOrientationEventPump::DeviceOrientationEventPump(LocalFrame& frame,
+                                                       bool absolute)
+    : DeviceSensorEventPump(frame), absolute_(absolute) {
   relative_orientation_sensor_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
+      this, frame.DomWindow(),
+      device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
   absolute_orientation_sensor_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
+      this, frame.DomWindow(),
+      device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
 }
 
 DeviceOrientationEventPump::~DeviceOrientationEventPump() = default;
@@ -64,12 +63,13 @@ void DeviceOrientationEventPump::SetController(
   DCHECK(!controller_);
 
   controller_ = controller;
-  StartListening(controller_->GetWindow().GetFrame());
+  Start(*controller_->GetWindow().GetFrame());
 }
 
 void DeviceOrientationEventPump::RemoveController() {
   controller_ = nullptr;
-  StopListening();
+  Stop();
+  data_.Clear();
 }
 
 DeviceOrientationData*
@@ -77,26 +77,19 @@ DeviceOrientationEventPump::LatestDeviceOrientationData() {
   return data_.Get();
 }
 
-void DeviceOrientationEventPump::Trace(Visitor* visitor) {
+void DeviceOrientationEventPump::Trace(Visitor* visitor) const {
   visitor->Trace(relative_orientation_sensor_);
   visitor->Trace(absolute_orientation_sensor_);
   visitor->Trace(data_);
   visitor->Trace(controller_);
+  DeviceSensorEventPump::Trace(visitor);
 }
 
-void DeviceOrientationEventPump::StartListening(LocalFrame* frame) {
-  // TODO(crbug.com/850619): ensure a valid frame is passed
-  if (!frame)
-    return;
-  Start(frame);
-}
-
-void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
-  if (!sensor_provider_) {
-    DCHECK(frame);
-
-    frame->GetBrowserInterfaceBroker().GetInterface(
-        sensor_provider_.BindNewPipeAndPassReceiver());
+void DeviceOrientationEventPump::SendStartMessage(LocalFrame& frame) {
+  if (!sensor_provider_.is_bound()) {
+    frame.GetBrowserInterfaceBroker().GetInterface(
+        sensor_provider_.BindNewPipeAndPassReceiver(
+            frame.GetTaskRunner(TaskType::kSensor)));
     sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
                   WrapWeakPersistent(this)));
@@ -105,15 +98,12 @@ void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
   if (absolute_) {
     absolute_orientation_sensor_->Start(sensor_provider_.get());
   } else {
-    fall_back_to_absolute_orientation_sensor_ = true;
-    should_suspend_absolute_orientation_sensor_ = false;
+    // Start() is asynchronous. Therefore IsConnected() can not be checked right
+    // away to determine if we should attempt to fall back to
+    // absolute_orientation_sensor_.
+    attempted_to_fall_back_to_absolute_orientation_sensor_ = false;
     relative_orientation_sensor_->Start(sensor_provider_.get());
   }
-}
-
-void DeviceOrientationEventPump::StopListening() {
-  Stop();
-  data_.Clear();
 }
 
 void DeviceOrientationEventPump::SendStopMessage() {
@@ -122,22 +112,8 @@ void DeviceOrientationEventPump::SendStopMessage() {
   // the event listener is more rare than the page visibility changing,
   // Sensor::Suspend() is used to optimize this case for not doing extra work.
 
-  relative_orientation_sensor_->Stop();
-  // This is needed in case we fallback to using the absolute orientation
-  // sensor. In this case, the relative orientation sensor is marked as
-  // SensorState::SHOULD_SUSPEND, and if the relative orientation sensor
-  // is not available, the absolute orientation sensor should also be marked as
-  // SensorState::SHOULD_SUSPEND, but only after the
-  // absolute_orientation_sensor_.Start() is called for initializing
-  // the absolute orientation sensor in
-  // DeviceOrientationEventPump::DidStartIfPossible().
-  if (relative_orientation_sensor_->state() ==
-          DeviceSensorEntry::State::SHOULD_SUSPEND &&
-      fall_back_to_absolute_orientation_sensor_) {
-    should_suspend_absolute_orientation_sensor_ = true;
-  }
-
   absolute_orientation_sensor_->Stop();
+  relative_orientation_sensor_->Stop();
 
   // Reset the cached data because DeviceOrientationDispatcher resets its
   // data when stopping. If we don't reset here as well, then when starting back
@@ -161,18 +137,23 @@ void DeviceOrientationEventPump::FireEvent(TimerBase*) {
 }
 
 void DeviceOrientationEventPump::DidStartIfPossible() {
-  if (!absolute_ && !relative_orientation_sensor_->IsConnected() &&
-      fall_back_to_absolute_orientation_sensor_ && sensor_provider_) {
-    // When relative orientation sensor is not available fall back to using
-    // the absolute orientation sensor but only on the first failure.
-    fall_back_to_absolute_orientation_sensor_ = false;
+  if (!absolute_ && sensor_provider_.is_bound() &&
+      !relative_orientation_sensor_->IsConnected() &&
+      !attempted_to_fall_back_to_absolute_orientation_sensor_) {
+    // If relative_orientation_sensor_ was requested but was not able to connect
+    // then fall back to using absolute_orientation_sensor_.
+    attempted_to_fall_back_to_absolute_orientation_sensor_ = true;
     absolute_orientation_sensor_->Start(sensor_provider_.get());
-    if (should_suspend_absolute_orientation_sensor_) {
-      // The absolute orientation sensor needs to be marked as
-      // SensorState::SUSPENDED when it is successfully initialized.
+    if (relative_orientation_sensor_->state() ==
+        DeviceSensorEntry::State::SHOULD_SUSPEND) {
+      // If SendStopMessage() was called before the OnSensorCreated() callback
+      // registered that relative_orientation_sensor_ was not able to connect
+      // then absolute_orientation_sensor_ needs to be Stop()'d so that it
+      // matches the relative_orientation_sensor_ state.
       absolute_orientation_sensor_->Stop();
-      should_suspend_absolute_orientation_sensor_ = false;
     }
+    // Start() is asynchronous. Give the OnSensorCreated() callback time to fire
+    // before calling DeviceSensorEventPump::DidStartIfPossible().
     return;
   }
   DeviceSensorEventPump::DidStartIfPossible();

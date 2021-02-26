@@ -49,28 +49,6 @@ std::string SigSchemeToString(securemessage::SigScheme scheme) {
   return std::string();
 }
 
-// Parses the serialized HeaderAndBody string returned by the DBus client, and
-// calls the corresponding SecureMessageDelegate unwrap callback.
-void HandleUnwrapResult(
-    const SecureMessageDelegate::UnwrapSecureMessageCallback& callback,
-    const std::string& unwrap_result) {
-  securemessage::HeaderAndBody header_and_body;
-  if (!header_and_body.ParseFromString(unwrap_result)) {
-    callback.Run(false, std::string(), securemessage::Header());
-  } else {
-    callback.Run(true, header_and_body.body(), header_and_body.header());
-  }
-}
-
-// The SecureMessageDelegate expects the keys in the reverse order returned by
-// the DBus client.
-void HandleKeyPairResult(
-    const SecureMessageDelegate::GenerateKeyPairCallback& callback,
-    const std::string& private_key,
-    const std::string& public_key) {
-  callback.Run(public_key, private_key);
-}
-
 }  // namespace
 
 // static
@@ -100,26 +78,30 @@ SecureMessageDelegateImpl::SecureMessageDelegateImpl()
 SecureMessageDelegateImpl::~SecureMessageDelegateImpl() {}
 
 void SecureMessageDelegateImpl::GenerateKeyPair(
-    const GenerateKeyPairCallback& callback) {
+    GenerateKeyPairCallback callback) {
   dbus_client_->GenerateEcP256KeyPair(
-      base::BindOnce(HandleKeyPairResult, callback));
+      base::BindOnce(&SecureMessageDelegateImpl::OnGenerateKeyPairResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SecureMessageDelegateImpl::DeriveKey(const std::string& private_key,
                                           const std::string& public_key,
-                                          const DeriveKeyCallback& callback) {
-  dbus_client_->PerformECDHKeyAgreement(private_key, public_key, callback);
+                                          DeriveKeyCallback callback) {
+  dbus_client_->PerformECDHKeyAgreement(
+      private_key, public_key,
+      base::BindOnce(&SecureMessageDelegateImpl::OnDeriveKeyResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SecureMessageDelegateImpl::CreateSecureMessage(
     const std::string& payload,
     const std::string& key,
     const CreateOptions& create_options,
-    const CreateSecureMessageCallback& callback) {
+    CreateSecureMessageCallback callback) {
   if (create_options.signature_scheme == securemessage::RSA2048_SHA256) {
     PA_LOG(ERROR) << "Unable to create message: RSA2048_SHA256 not supported "
                   << "by the ChromeOS daemon.";
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -141,18 +123,21 @@ void SecureMessageDelegateImpl::CreateSecureMessage(
   options.encryption_type = EncSchemeToString(create_options.encryption_scheme);
   options.signature_type = SigSchemeToString(create_options.signature_scheme);
 
-  dbus_client_->CreateSecureMessage(payload, options, callback);
+  dbus_client_->CreateSecureMessage(
+      payload, options,
+      base::BindOnce(&SecureMessageDelegateImpl::OnCreateSecureMessageResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SecureMessageDelegateImpl::UnwrapSecureMessage(
     const std::string& serialized_message,
     const std::string& key,
     const UnwrapOptions& unwrap_options,
-    const UnwrapSecureMessageCallback& callback) {
+    UnwrapSecureMessageCallback callback) {
   if (unwrap_options.signature_scheme == securemessage::RSA2048_SHA256) {
     PA_LOG(ERROR) << "Unable to unwrap message: RSA2048_SHA256 not supported "
                   << "by the ChromeOS daemon.";
-    callback.Run(false, std::string(), securemessage::Header());
+    std::move(callback).Run(false, std::string(), securemessage::Header());
     return;
   }
 
@@ -167,7 +152,41 @@ void SecureMessageDelegateImpl::UnwrapSecureMessage(
 
   dbus_client_->UnwrapSecureMessage(
       serialized_message, options,
-      base::BindOnce(&HandleUnwrapResult, callback));
+      base::BindOnce(&SecureMessageDelegateImpl::OnUnwrapSecureMessageResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SecureMessageDelegateImpl::OnGenerateKeyPairResult(
+    GenerateKeyPairCallback callback,
+    const std::string& private_key,
+    const std::string& public_key) {
+  // The SecureMessageDelegate expects the keys in the reverse order returned by
+  // the DBus client.
+  std::move(callback).Run(public_key, private_key);
+}
+
+void SecureMessageDelegateImpl::OnDeriveKeyResult(
+    DeriveKeyCallback callback,
+    const std::string& derived_key) {
+  std::move(callback).Run(derived_key);
+}
+
+void SecureMessageDelegateImpl::OnCreateSecureMessageResult(
+    CreateSecureMessageCallback callback,
+    const std::string& secure_message) {
+  std::move(callback).Run(secure_message);
+}
+
+void SecureMessageDelegateImpl::OnUnwrapSecureMessageResult(
+    UnwrapSecureMessageCallback callback,
+    const std::string& unwrap_result) {
+  securemessage::HeaderAndBody header_and_body;
+  if (!header_and_body.ParseFromString(unwrap_result)) {
+    std::move(callback).Run(false, std::string(), securemessage::Header());
+  } else {
+    std::move(callback).Run(true, header_and_body.body(),
+                            header_and_body.header());
+  }
 }
 
 }  // namespace multidevice

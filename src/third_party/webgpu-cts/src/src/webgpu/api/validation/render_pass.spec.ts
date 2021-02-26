@@ -2,14 +2,14 @@ export const description = `
 render pass validation tests.
 `;
 
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
   getUniformBuffer(): GPUBuffer {
     return this.device.createBuffer({
-      size: 4 * Float32Array.BYTES_PER_ELEMENT,
+      size: 8 * Float32Array.BYTES_PER_ELEMENT,
       usage: GPUBufferUsage.UNIFORM,
     });
   }
@@ -67,80 +67,82 @@ class F extends ValidationTest {
   }
 }
 
-export const g = new TestGroup(F);
+export const g = makeTestGroup(F);
 
-g.test('it is invalid to draw in a render pass with missing bind groups', async t => {
-  const { setBindGroup1, setBindGroup2, _success } = t.params;
+g.test('it_is_invalid_to_draw_in_a_render_pass_with_missing_bind_groups')
+  .params([
+    { setBindGroup1: true, setBindGroup2: true, _success: true },
+    { setBindGroup1: true, setBindGroup2: false, _success: false },
+    { setBindGroup1: false, setBindGroup2: true, _success: false },
+    { setBindGroup1: false, setBindGroup2: false, _success: false },
+  ])
+  .fn(async t => {
+    const { setBindGroup1, setBindGroup2, _success } = t.params;
 
-  const uniformBuffer = t.getUniformBuffer();
+    const uniformBuffer = t.getUniformBuffer();
 
-  const bindGroupLayout1 = t.device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.VERTEX,
-        type: 'uniform-buffer',
-      },
-    ],
-  });
-
-  const bindGroup1 = t.device.createBindGroup({
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: uniformBuffer,
+    const bindGroupLayout1 = t.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          type: 'uniform-buffer',
         },
-      },
-    ],
-    layout: bindGroupLayout1,
-  });
+      ],
+    });
 
-  const bindGroupLayout2 = t.device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.FRAGMENT,
-        type: 'uniform-buffer',
-      },
-    ],
-  });
-
-  const bindGroup2 = t.device.createBindGroup({
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: uniformBuffer,
+    const bindGroup1 = t.device.createBindGroup({
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer,
+          },
         },
-      },
-    ],
-    layout: bindGroupLayout2,
+      ],
+      layout: bindGroupLayout1,
+    });
+
+    const bindGroupLayout2 = t.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          type: 'uniform-buffer',
+        },
+      ],
+    });
+
+    const bindGroup2 = t.device.createBindGroup({
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer,
+          },
+        },
+      ],
+      layout: bindGroupLayout2,
+    });
+
+    const pipelineLayout = t.device.createPipelineLayout({
+      bindGroupLayouts: [bindGroupLayout1, bindGroupLayout2],
+    });
+
+    const pipeline = t.createRenderPipeline(pipelineLayout);
+
+    const commandEncoder = t.device.createCommandEncoder();
+    const renderPass = t.beginRenderPass(commandEncoder);
+    renderPass.setPipeline(pipeline);
+    if (setBindGroup1) {
+      renderPass.setBindGroup(0, bindGroup1);
+    }
+    if (setBindGroup2) {
+      renderPass.setBindGroup(1, bindGroup2);
+    }
+    renderPass.draw(3, 1, 0, 0);
+    renderPass.endPass();
+    t.expectValidationError(() => {
+      commandEncoder.finish();
+    }, !_success);
   });
-
-  const pipelineLayout = t.device.createPipelineLayout({
-    bindGroupLayouts: [bindGroupLayout1, bindGroupLayout2],
-  });
-
-  const pipeline = t.createRenderPipeline(pipelineLayout);
-
-  const commandEncoder = t.device.createCommandEncoder();
-  const renderPass = t.beginRenderPass(commandEncoder);
-  renderPass.setPipeline(pipeline);
-  if (setBindGroup1) {
-    renderPass.setBindGroup(0, bindGroup1);
-  }
-  if (setBindGroup2) {
-    renderPass.setBindGroup(1, bindGroup2);
-  }
-  renderPass.draw(3, 1, 0, 0);
-  renderPass.endPass();
-  t.expectValidationError(() => {
-    commandEncoder.finish();
-  }, !_success);
-}).params([
-  { setBindGroup1: true, setBindGroup2: true, _success: true },
-  { setBindGroup1: true, setBindGroup2: false, _success: false },
-  { setBindGroup1: false, setBindGroup2: true, _success: false },
-  { setBindGroup1: false, setBindGroup2: false, _success: false },
-]);

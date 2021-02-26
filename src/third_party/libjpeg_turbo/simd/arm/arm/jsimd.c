@@ -5,7 +5,7 @@
  * Copyright (C) 2011, Nokia Corporation and/or its subsidiary(-ies).
  * Copyright (C) 2009-2011, 2013-2014, 2016, 2018, D. R. Commander.
  * Copyright (C) 2015-2016, 2018, Matthieu Darbois.
- * Copyright 2019 Google LLC.
+ * Copyright (C) 2019, Google LLC.
  *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -164,6 +164,19 @@ jsimd_can_rgb_ycc(void)
 GLOBAL(int)
 jsimd_can_rgb_gray(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (simd_support & JSIMD_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -246,6 +259,37 @@ jsimd_rgb_gray_convert(j_compress_ptr cinfo, JSAMPARRAY input_buf,
                        JSAMPIMAGE output_buf, JDIMENSION output_row,
                        int num_rows)
 {
+  void (*neonfct) (JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch (cinfo->in_color_space) {
+  case JCS_EXT_RGB:
+    neonfct = jsimd_extrgb_gray_convert_neon;
+    break;
+  case JCS_EXT_RGBX:
+  case JCS_EXT_RGBA:
+    neonfct = jsimd_extrgbx_gray_convert_neon;
+    break;
+  case JCS_EXT_BGR:
+    neonfct = jsimd_extbgr_gray_convert_neon;
+    break;
+  case JCS_EXT_BGRX:
+  case JCS_EXT_BGRA:
+    neonfct = jsimd_extbgrx_gray_convert_neon;
+    break;
+  case JCS_EXT_XBGR:
+  case JCS_EXT_ABGR:
+    neonfct = jsimd_extxbgr_gray_convert_neon;
+    break;
+  case JCS_EXT_XRGB:
+  case JCS_EXT_ARGB:
+    neonfct = jsimd_extxrgb_gray_convert_neon;
+    break;
+  default:
+    neonfct = jsimd_extrgb_gray_convert_neon;
+    break;
+  }
+
+  neonfct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
 }
 
 GLOBAL(void)
@@ -298,12 +342,38 @@ jsimd_ycc_rgb565_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
 GLOBAL(int)
 jsimd_can_h2v2_downsample(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_NEON)
+    return 1;
+
   return 0;
 }
 
 GLOBAL(int)
 jsimd_can_h2v1_downsample(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+
+  if (simd_support & JSIMD_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -311,12 +381,18 @@ GLOBAL(void)
 jsimd_h2v2_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
                       JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
+  jsimd_h2v2_downsample_neon(cinfo->image_width, cinfo->max_v_samp_factor,
+                             compptr->v_samp_factor, compptr->width_in_blocks,
+                             input_data, output_data);
 }
 
 GLOBAL(void)
 jsimd_h2v1_downsample(j_compress_ptr cinfo, jpeg_component_info *compptr,
                       JSAMPARRAY input_data, JSAMPARRAY output_data)
 {
+  jsimd_h2v1_downsample_neon(cinfo->image_width, cinfo->max_v_samp_factor,
+                             compptr->v_samp_factor, compptr->width_in_blocks,
+                             input_data, output_data);
 }
 
 GLOBAL(int)
@@ -598,6 +674,17 @@ jsimd_convsamp_float(JSAMPARRAY sample_data, JDIMENSION start_col,
 GLOBAL(int)
 jsimd_can_fdct_islow(void)
 {
+  init_simd();
+
+  /* The code is optimised for these values only */
+  if (DCTSIZE != 8)
+    return 0;
+  if (sizeof(DCTELEM) != 2)
+    return 0;
+
+  if (simd_support & JSIMD_NEON)
+    return 1;
+
   return 0;
 }
 
@@ -627,6 +714,7 @@ jsimd_can_fdct_float(void)
 GLOBAL(void)
 jsimd_fdct_islow(DCTELEM *data)
 {
+  jsimd_fdct_islow_neon(data);
 }
 
 GLOBAL(void)

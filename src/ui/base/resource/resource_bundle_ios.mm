@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "ui/base/resource/resource_handle.h"
@@ -80,14 +81,8 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
         locale_file_path, app_locale);
   }
 
-  // Don't try to load empty values or values that are not absolute paths.
-  if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
-    return base::FilePath();
-
-  if (!base::PathExists(locale_file_path))
-    return base::FilePath();
-
-  return locale_file_path;
+  // Don't try to load from paths that are not absolute.
+  return locale_file_path.IsAbsolute() ? locale_file_path : base::FilePath();
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {

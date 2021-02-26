@@ -58,8 +58,14 @@
   <message name="IDS_POLICY_DM_STATUS_REQUEST_TOO_LARGE" desc="Message indicating a request to enterprise server is too large.">
     Request is too large
   </message>
+  <message name="IDS_POLICY_DM_STATUS_SERVICE_TOO_MANY_REQUESTS" desc="Message indicating the enterprise server receives too many requests in a short time period.">
+    Too many requests
+  </message>
   <message name="IDS_POLICY_DM_STATUS_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Message to show when the user tries to enroll a device with a packaged license using a consumer account.">
     Can't enroll with consumer account (packaged license available).
+  </message>
+  <message name="IDS_POLICY_DM_STATUS_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL" desc="Message to show when the user tries to enroll a device with an ineligible enterprise account.">
+    Can't enroll with enterprise account (enterprise account is not eligible).
   </message>
   <message name="IDS_POLICY_VALIDATION_OK" desc="Message indicating successful policy validation.">
     Validation successful
@@ -235,9 +241,6 @@
   <message name="IDS_POLICY_OVERRIDDEN" desc="The text displayed in the status column when the corresponding policy is being ignored because another policy is overriding it.">
     Ignored because it was overridden by <ph name="POLICY_NAME">$1<ex>ProxyMode</ex></ph>.
   </message>
-  <message name="IDS_POLICY_DEPRECATED" desc="The text displayed in the status column when the corresponding policy is deprecated.">
-    This policy has been deprecated.
-  </message>
   <message name="IDS_POLICY_VALUE_DEPRECATED" desc="The text displayed in the status column when a specific value for a policy is deprecated.">
     This value is deprecated for this policy.
   </message>
@@ -368,6 +371,9 @@ Additional details:
   <message name="IDS_POLICY_LABEL_DEPRECATED" desc="Label for the status of a deprecated policy.">
     Deprecated
   </message>
+  <message name="IDS_POLICY_LABEL_FUTURE" desc="Label for the status of an unreleased policy.">
+    Unreleased
+  </message>
   <message name="IDS_POLICY_LABEL_IGNORED" desc="Label for the ignored row in the policy table.">
     Ignored
   </message>
@@ -438,6 +444,12 @@ Additional details:
   <message name="IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT" desc="Indicates that a policy is set by default in an enterprise environment and can be overridden (for Chrome OS only).">
     Enterprise default
   </message>
+  <message name="IDS_POLICY_SOURCE_DEFAULT" desc="Indicates that a policy is set by default and can be overridden.">
+    Default
+  </message>
+  <message name="IDS_POLICY_SOURCE_COMMAND_LINE" desc="Indicates that a policy is set by command line switch for testing purpose.">
+    Command line
+  </message>
   <message name="IDS_POLICY_SOURCE_CLOUD" desc="Indicates that the policy originates from the cloud.">
     Cloud
   </message>
@@ -504,6 +516,9 @@ Additional details:
   <message name="IDS_POLICY_BLOCKED" desc="Text explaining that a policy is blocked, therefore ignored.">
     This policy is blocked, its value will be ignored.
   </message>
+  <message name="IDS_POLICY_INVALID" desc="Text explaining that a policy failed to validate against a schema, and therefore ignored.">
+    This policy value failed to validate against its schema and will be ignored.
+  </message>
   <message name="IDS_POLICY_IGNORED_BY_GROUP_MERGING" desc="Text explaining that a policy is ignored because another policy of the same group has a higher priority">
     This policy is ignored because another policy from the same policy group has a higher priority.
   </message>
@@ -514,7 +529,7 @@ Additional details:
     <message name="IDS_POLICY_SPELLCHECK_UNKNOWN_LANGUAGE" desc="Warning message in the policy summary page for the spellcheck policies when a language is unrecognized or unsupported.">
       List entry "<ph name="LANGUAGE_ID">$1<ex>xx-YY</ex></ph>": Unknown or unsupported language.
     </message>
-    <message name="IDS_POLICY_SPELLCHECK_BLACKLIST_IGNORE" desc="Warning message in the policy summary page for the spellcheck blacklist policy when a language is both force-enabled and force-disabled. 'SpellcheckLanguage' is a policy name and shouldn't be translated.">
+    <message name="IDS_POLICY_SPELLCHECK_BLOCKLIST_IGNORE" desc="Warning message in the policy summary page for the spellcheck blocklist policy when a language is both force-enabled and force-disabled. 'SpellcheckLanguage' is a policy name and shouldn't be translated.">
     List entry "<ph name="LANGUAGE_ID">$1<ex>en-GB</ex></ph>": Entry ignored because it is also included in the SpellcheckLanguage policy.
     </message>
   </if>
@@ -539,6 +554,12 @@ Additional details:
   <message name="IDS_POLICY_SIGNIN_PROFILE" desc="Label to indicate that the policy is for the sign-in screen profile.">
     sign-in screen profile
   </message>
+  <message name ="IDS_POLICY_COPY_VALUE" desc="Help text for link that copies the value of a policy.">
+    Copy the value of <ph name="POLICY_NAME">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy
+  </message>
+  <message name="IDS_COPY_POLICIES_JSON" desc="Label for the button that copies policies in JSON format.">
+    Copy as JSON
+  </message>
 
   <!-- Strings for Disabled chrome://.* screen -->
   <message name="IDS_CHROME_URLS_DISABLED_PAGE_HEADER" desc="A heading for the user when the application is blocked.">
@@ -550,4 +571,37 @@ Additional details:
   <message name="IDS_CHROME_URLS_DISABLED_PAGE_MESSAGE" desc="A paragraph informing the user that the application is blocked.">
     This application has been blocked by your administrator
   </message>
+
+  <!-- Strings for Data Leak Prevention -->
+  <message name="IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE" desc="A toast informing the user that paste is blocked.">
+    Pasting from <ph name="ORIGIN_NAME">$1<ex>corp.google.com</ex></ph> to this location is blocked by your administrator
+  </message>
+  <message name="IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM" desc="A toast informing the user that sharing clipboard data to VMs is blocked.">
+    Your administrator has blocked sharing from <ph name="ORIGIN_NAME">$1<ex>corp.google.com</ex></ph> to <ph name="VM_NAME">$2<ex>Linux</ex></ph>
+  </message>
+  <message name="IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_TWO_VMS" desc="A toast informing the user that sharing clipboard data to VMs is blocked.">
+    Your administrator has blocked sharing from <ph name="ORIGIN_NAME">$1<ex>corp.google.com</ex></ph> to <ph name="VM_NAME_1">$2<ex>Linux</ex></ph> and <ph name="VM_NAME_2">$3<ex>Parallels</ex></ph>
+  </message>
+  <message name="IDS_POLICY_DLP_ANDROID_APPS" desc="Name shown for ARC in data leak prevention toasts.">
+    Android apps
+  </message>
+  <message name="IDS_POLICY_DLP_PRINTING_BLOCKED_TITLE" desc="The title for notification informing the user that printing is blocked.">
+    Printing is blocked
+  </message>
+  <message name="IDS_POLICY_DLP_PRINTING_BLOCKED_MESSAGE" desc="The message for notification informing the user that printing is blocked.">
+    Printing of this content is blocked by your administrator.
+  </message>
+  <message name="IDS_POLICY_DLP_SCREEN_CAPTURE_PAUSED_TITLE" desc="The title for notification informing the user that screen capture is paused.">
+    Screen capture paused
+  </message>
+  <message name="IDS_POLICY_DLP_SCREEN_CAPTURE_PAUSED_MESSAGE" desc="The message for notification informing the user that screen capture is paused.">
+    Screen capture was paused by your administrator due to content on your screen.
+  </message>
+  <message name="IDS_POLICY_DLP_SCREEN_CAPTURE_RESUMED_TITLE" desc="The title for notification informing the user that screen capture is resumed.">
+    Screen capture resumed
+  </message>
+  <message name="IDS_POLICY_DLP_SCREEN_CAPTURE_RESUMED_MESSAGE" desc="The message for notification informing the user that screen capture is resumed.">
+    Screen capture was resumed.
+  </message>
+
 </grit-part>

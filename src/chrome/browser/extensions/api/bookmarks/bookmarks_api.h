@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -50,6 +50,8 @@ struct CreateDetails;
 class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
  public:
   explicit BookmarkEventRouter(Profile* profile);
+  BookmarkEventRouter(const BookmarkEventRouter&) = delete;
+  BookmarkEventRouter& operator=(const BookmarkEventRouter&) = delete;
   ~BookmarkEventRouter() override;
 
   // bookmarks::BookmarkModelObserver:
@@ -91,8 +93,6 @@ class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
   content::BrowserContext* browser_context_;
   bookmarks::BookmarkModel* model_;
   bookmarks::ManagedBookmarkService* managed_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
 };
 
 class BookmarksAPI : public BrowserContextKeyedAPI,
@@ -165,7 +165,7 @@ class BookmarksFunction : public ExtensionFunction,
   bool EditBookmarksEnabled();
 
   // Helper that checks if |node| can be modified. Returns false if |node|
-  // is NULL, or a managed node, or the root node. In these cases the node
+  // is nullptr, or a managed node, or the root node. In these cases the node
   // can't be edited, can't have new child nodes appended, and its direct
   // children can't be moved or reordered.
   bool CanBeModified(const bookmarks::BookmarkNode* node, std::string* error);

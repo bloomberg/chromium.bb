@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +19,10 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/private_network_settings.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/permissions/permission_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -28,6 +33,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -40,6 +46,7 @@ const char kCookieValue[] = "converted=true";
 // TODO(maksims): use year 3000 when we get rid off the 32-bit
 // versions. https://crbug.com/619828
 const char kCookieOptions[] = ";expires=Wed Jan 01 2038 00:00:00 GMT";
+constexpr int kBlockAll = 2;
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
   base::Value value =
@@ -71,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_DefaultCookiesSetting) {
   PolicyMap policies;
   policies.Set(key::kDefaultCookiesSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(CONTENT_SETTING_SESSION_ONLY),
-               nullptr);
+               base::Value(CONTENT_SETTING_SESSION_ONLY), nullptr);
   UpdateProviderPolicy(policies);
 }
 
@@ -102,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WebsiteCookiesSetting) {
   // Now set the policy and the cookie should be gone after another restart.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetWebsiteSettingDefaultScope(
-          GURL(kURL), GURL(kURL), ContentSettingsType::COOKIES, std::string(),
+          GURL(kURL), GURL(kURL), ContentSettingsType::COOKIES,
           std::make_unique<base::Value>(CONTENT_SETTING_SESSION_ONLY));
 }
 
@@ -123,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   // Disable Javascript via policy.
   PolicyMap policies;
   policies.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   // Reload the page.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -142,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
+               base::Value(CONTENT_SETTING_ALLOW), nullptr);
   UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
@@ -185,8 +191,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
   // Set the policy to block Web Bluetooth.
   PolicyMap policies;
   policies.Set(key::kDefaultWebBluetoothGuardSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(2), nullptr);
   UpdateProviderPolicy(policies);
 
   std::string rejection;
@@ -210,14 +215,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
 
   // Update policy to change the default permission value to 'block'.
   PolicyMap policies;
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(2));
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting, base::Value(2));
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'ask'.
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(3));
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting, base::Value(3));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 }
@@ -252,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   entry.SetKey("devices", std::move(devices_value));
   entry.SetKey("urls", std::move(urls_value));
 
-  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy_value->Append(std::move(entry));
+  base::Value policy_value(base::Value::Type::LIST);
+  policy_value.Append(std::move(entry));
 
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
             std::move(policy_value));
@@ -264,12 +267,64 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
 
   // Remove the policy to ensure that it can be dynamically updated.
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
-            std::make_unique<base::Value>(base::Value::Type::LIST));
+            base::Value(base::Value::Type::LIST));
   UpdateProviderPolicy(policies);
 
   EXPECT_FALSE(
       context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 }
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ShouldAllowInsecurePrivateNetworkRequests) {
+  const auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+
+  // By default, we should block requests.
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com")));
+
+  PolicyMap policies;
+  SetPolicy(&policies, key::kInsecurePrivateNetworkRequestsAllowed,
+            base::Value(false));
+  UpdateProviderPolicy(policies);
+
+  // Explicitly-disallowing is the same as not setting the policy.
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com")));
+
+  base::Value allowlist(base::Value::Type::LIST);
+  allowlist.Append(base::Value("http://bleep.com"));
+  allowlist.Append(base::Value("http://woohoo.com:1234"));
+  SetPolicy(&policies, key::kInsecurePrivateNetworkRequestsAllowedForUrls,
+            std::move(allowlist));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://default.com")));
+
+  EXPECT_TRUE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com/heyo")));
+
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("https://bleep.com")));
+
+  EXPECT_TRUE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://woohoo.com:1234/index.html")));
+
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://woohoo.com/index.html")));
+}
+
+class DisallowWildcardPolicyTest : public PolicyTest {
+ public:
+  DisallowWildcardPolicyTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        content_settings::kDisallowWildcardsInPluginContentSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 
 class ScrollToTextFragmentPolicyTest
     : public PolicyTest,
@@ -281,8 +336,7 @@ class ScrollToTextFragmentPolicyTest
     PolicyMap policies;
     policies.Set(key::kScrollToTextFragmentEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(IsScrollToTextFragmentEnabled()),
-                 nullptr);
+                 base::Value(IsScrollToTextFragmentEnabled()), nullptr);
     UpdateProviderPolicy(policies);
     PolicyTest::CreatedBrowserMainParts(browser_main_parts);
   }
@@ -298,7 +352,7 @@ IN_PROC_BROWSER_TEST_P(ScrollToTextFragmentPolicyTest, RunPolicyTest) {
   ui_test_utils::NavigateToURL(browser(), target_text_url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   ASSERT_TRUE(content::WaitForRenderFrameReady(contents->GetMainFrame()));
 
   content::RenderFrameSubmissionObserver frame_observer(contents);
@@ -311,11 +365,124 @@ IN_PROC_BROWSER_TEST_P(ScrollToTextFragmentPolicyTest, RunPolicyTest) {
         contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
   }
   EXPECT_EQ(IsScrollToTextFragmentEnabled(),
-            !contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+            !frame_observer.LastRenderFrameMetadata().is_scroll_offset_at_top);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ScrollToTextFragmentPolicyTest,
                          ::testing::Bool());
+
+class SensorsPolicyTest : public PolicyTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Sensors API is behind Experimental Web Platform Features flag.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    PolicyTest::SetUpCommandLine(command_line);
+  }
+
+  void VerifyPermission(const char* url, ContentSetting content_setting_type) {
+    permissions::PermissionManager* permission_manager =
+        PermissionManagerFactory::GetForProfile(browser()->profile());
+    EXPECT_EQ(permission_manager
+                  ->GetPermissionStatus(ContentSettingsType::SENSORS, GURL(url),
+                                        GURL(url))
+                  .content_setting,
+              content_setting_type);
+  }
+
+  void AllowUrl(const char* url) {
+    base::Value policy_value(base::Value::Type::LIST);
+    policy_value.Append(url);
+    SetPolicy(&policies_, key::kSensorsAllowedForUrls, std::move(policy_value));
+    UpdateProviderPolicy(policies_);
+  }
+
+  void BlockUrl(const char* url) {
+    base::Value policy_value(base::Value::Type::LIST);
+    policy_value.Append(url);
+    SetPolicy(&policies_, key::kSensorsBlockedForUrls, std::move(policy_value));
+    UpdateProviderPolicy(policies_);
+  }
+
+  void ClearLists() {
+    base::Value policy_value_allow(base::Value::Type::LIST);
+    base::Value policy_value_block(base::Value::Type::LIST);
+    SetPolicy(&policies_, key::kSensorsAllowedForUrls,
+              std::move(policy_value_allow));
+    SetPolicy(&policies_, key::kSensorsBlockedForUrls,
+              std::move(policy_value_block));
+    UpdateProviderPolicy(policies_);
+  }
+
+  void SetDefault(int default_value) {
+    SetPolicy(&policies_, key::kDefaultSensorsSetting,
+              base::Value(default_value));
+    UpdateProviderPolicy(policies_);
+  }
+
+ private:
+  PolicyMap policies_;
+};
+
+IN_PROC_BROWSER_TEST_F(SensorsPolicyTest, BlockSensorApi) {
+  // Navigate to a secure context.
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("localhost", "/simple_page.html"));
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_THAT(
+      web_contents->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
+      testing::StartsWith("http://localhost:"));
+
+  // Set the policy to block Sensors.
+  SetDefault(kBlockAll);
+
+  std::string rejection;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "const sensor = new AmbientLightSensor();"
+      "sensor.onreading = () => { domAutomationController.send('Success'); };"
+      "sensor.onerror = (event) => {"
+      "  domAutomationController.send(event.error.name + ': ' + "
+      "event.error.message);"
+      "};"
+      "sensor.start();",
+      &rejection));
+  EXPECT_THAT(rejection,
+              testing::MatchesRegex("NotAllowedError: .*Permissions.*"));
+}
+
+IN_PROC_BROWSER_TEST_F(SensorsPolicyTest, DynamicRefresh) {
+  constexpr char kFooUrl[] = "https://foo.sensor";
+  constexpr char kBarUrl[] = "https://bar.sensor";
+  constexpr int kAllowAll = 1;
+
+  BlockUrl(kFooUrl);
+  VerifyPermission(kFooUrl, ContentSetting::CONTENT_SETTING_BLOCK);
+  VerifyPermission(kBarUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+
+  BlockUrl(kBarUrl);
+  VerifyPermission(kFooUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+  VerifyPermission(kBarUrl, ContentSetting::CONTENT_SETTING_BLOCK);
+
+  SetDefault(kBlockAll);
+  ClearLists();
+  AllowUrl(kFooUrl);
+  VerifyPermission(kFooUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+  VerifyPermission(kBarUrl, ContentSetting::CONTENT_SETTING_BLOCK);
+
+  AllowUrl(kBarUrl);
+  VerifyPermission(kFooUrl, ContentSetting::CONTENT_SETTING_BLOCK);
+  VerifyPermission(kBarUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+
+  SetDefault(kAllowAll);
+  ClearLists();
+  VerifyPermission(kFooUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+  VerifyPermission(kBarUrl, ContentSetting::CONTENT_SETTING_ALLOW);
+}
 
 }  // namespace policy

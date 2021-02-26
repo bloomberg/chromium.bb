@@ -548,7 +548,7 @@ constexpr uint8_t kInterIntraMaskSmooth32x32[] = {
 const uint8_t* kInterIntraMasks[kNumInterIntraModes][4][4] = {
     // kInterIntraModeDc. This is a special case where all the non-nullptr
     // entries point to kInterIntraMaskDc (all entries of the array are 32). The
-    // width can be set according the prediction size to achieve the desired
+    // width can be set according to the prediction size to achieve the desired
     // result.
     {{kInterIntraMaskDc, kInterIntraMaskDc, nullptr, nullptr},
      {kInterIntraMaskDc, kInterIntraMaskDc, kInterIntraMaskDc, nullptr},

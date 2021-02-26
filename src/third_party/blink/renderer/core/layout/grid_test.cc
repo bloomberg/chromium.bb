@@ -36,8 +36,8 @@ TEST_F(GridTest, EmptyGrid) {
 
   EXPECT_FALSE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   EXPECT_EQ(0u, grid->AutoRepeatTracks(kForRows));
   EXPECT_EQ(0u, grid->AutoRepeatTracks(kForColumns));
@@ -57,7 +57,7 @@ TEST_F(GridTest, SingleChild) {
   auto* layout_grid = GetGridByElementId("target");
   auto* grid = layout_grid->InternalGrid();
   ASSERT_NE(grid, nullptr);
-  auto* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
+  auto* child = GetLayoutBoxByElementId("child");
   ASSERT_NE(child, nullptr);
 
   EXPECT_EQ(1u, grid->NumTracks(kForRows));
@@ -65,8 +65,8 @@ TEST_F(GridTest, SingleChild) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child);
   EXPECT_EQ(0u, area.columns.StartLine());
@@ -156,9 +156,9 @@ TEST_F(GridTest, IntrinsicGrid) {
   auto* layout_grid = GetGridByElementId("target");
   auto* grid = layout_grid->InternalGrid();
   ASSERT_NE(grid, nullptr);
-  auto* child1 = ToLayoutBox(GetLayoutObjectByElementId("child1"));
+  auto* child1 = GetLayoutBoxByElementId("child1");
   ASSERT_NE(child1, nullptr);
-  auto* child2 = ToLayoutBox(GetLayoutObjectByElementId("child2"));
+  auto* child2 = GetLayoutBoxByElementId("child2");
   ASSERT_NE(child2, nullptr);
 
   EXPECT_EQ(8u, grid->NumTracks(kForRows));
@@ -166,8 +166,8 @@ TEST_F(GridTest, IntrinsicGrid) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(-2, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(2u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child1);
   EXPECT_EQ(0u, area.columns.StartLine());
@@ -283,7 +283,7 @@ TEST_F(GridTest, ExplicitlyPositionedChild) {
   auto* layout_grid = GetGridByElementId("target");
   auto* grid = layout_grid->InternalGrid();
   ASSERT_NE(grid, nullptr);
-  auto* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
+  auto* child = GetLayoutBoxByElementId("child");
   ASSERT_NE(child, nullptr);
 
   EXPECT_EQ(1u, grid->NumTracks(kForRows));
@@ -291,8 +291,8 @@ TEST_F(GridTest, ExplicitlyPositionedChild) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child);
   EXPECT_EQ(1u, area.columns.StartLine());

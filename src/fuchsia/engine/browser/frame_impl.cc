@@ -6,16 +6,18 @@
 
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
-#include "base/bind_helpers.h"
-#include "base/fuchsia/default_context.h"
+#include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -34,13 +36,17 @@
 #include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
+#include "fuchsia/cast_streaming/public/cast_streaming.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
+#include "fuchsia/engine/browser/cast_streaming_session_client.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
 #include "fuchsia/engine/browser/frame_window_tree_host.h"
 #include "fuchsia/engine/browser/media_player_impl.h"
+#include "fuchsia/engine/browser/navigation_policy_handler.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "fuchsia/engine/common/cast_streaming.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/net_errors.h"
@@ -56,16 +62,20 @@
 
 namespace {
 
-// logging::LogSeverity does not define a value to disable logging so set a
-// value much lower than logging::LOG_VERBOSE here.
-const logging::LogSeverity kLogSeverityNone =
-    std::numeric_limits<logging::LogSeverity>::min();
+// logging::LogSeverity does not define a value to disable logging; define one.
+// Since this value is used to determine whether incoming log severity is above
+// a threshold, set the value much higher than logging::LOG_ERROR.
+const logging::LogSeverity kLogSeverityUnreachable =
+    std::numeric_limits<logging::LogSeverity>::max();
 
 // Simulated screen bounds to use when headless rendering is enabled.
 constexpr gfx::Size kHeadlessWindowSize = {1, 1};
 
 // Simulated screen bounds to use when testing the SemanticsManager.
 constexpr gfx::Size kSemanticsTestingWindowSize = {720, 640};
+
+// A special value which matches all origins when specified in an origin list.
+constexpr char kWildcardOrigin[] = "*";
 
 // Used for attaching popup-related metadata to a WebContents.
 constexpr char kPopupCreationInfo[] = "popup-creation-info";
@@ -92,26 +102,23 @@ bool FrameFocusRules::SupportsChildActivation(const aura::Window*) const {
   return true;
 }
 
-bool IsOriginWhitelisted(const GURL& url,
-                         const std::vector<std::string>& allowed_origins) {
-  constexpr const char kWildcard[] = "*";
-
+// TODO(crbug.com/1113289): Use OnLoadScriptInjectorHost's origin matching code.
+bool IsUrlMatchedByOriginList(const GURL& url,
+                              const std::vector<std::string>& allowed_origins) {
   for (const std::string& origin : allowed_origins) {
-    if (origin == kWildcard)
+    if (origin == kWildcardOrigin)
       return true;
 
     GURL origin_url(origin);
     if (!origin_url.is_valid()) {
-      DLOG(WARNING) << "Ignored invalid origin spec for whitelisting: "
-                    << origin;
+      DLOG(WARNING)
+          << "Ignored invalid origin spec when checking allowed list: "
+          << origin;
       continue;
     }
 
     if (origin_url != url.GetOrigin())
       continue;
-
-    // TODO(crbug.com/893236): Add handling for nonstandard origins
-    // (e.g. data: URIs).
 
     return true;
   }
@@ -122,7 +129,7 @@ logging::LogSeverity ConsoleLogLevelToLoggingSeverity(
     fuchsia::web::ConsoleLogLevel level) {
   switch (level) {
     case fuchsia::web::ConsoleLogLevel::NONE:
-      return kLogSeverityNone;
+      return kLogSeverityUnreachable;
     case fuchsia::web::ConsoleLogLevel::DEBUG:
       return logging::LOG_VERBOSE;
     case fuchsia::web::ConsoleLogLevel::INFO:
@@ -220,30 +227,37 @@ base::Optional<url::Origin> ParseAndValidateWebOrigin(
 }  // namespace
 
 // static
-FrameImpl* FrameImpl::FromRenderFrameHost(
-    content::RenderFrameHost* render_frame_host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
+FrameImpl* FrameImpl::FromWebContents(content::WebContents* web_contents) {
   if (!web_contents)
     return nullptr;
 
   auto& map = WebContentsToFrameImplMap();
   auto it = map.find(web_contents);
-  if (it == map.end())
-    return nullptr;
+  DCHECK(it != map.end()) << "WebContents not owned by a FrameImpl.";
   return it->second;
+}
+
+// static
+FrameImpl* FrameImpl::FromRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  return FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host));
 }
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
+                     fuchsia::web::CreateFrameParams params_for_popups,
                      fidl::InterfaceRequest<fuchsia::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
       context_(context),
+      params_for_popups_(std::move(params_for_popups)),
       navigation_controller_(web_contents_.get()),
-      log_level_(kLogSeverityNone),
+      log_level_(kLogSeverityUnreachable),
       url_request_rewrite_rules_manager_(web_contents_.get()),
+      permission_controller_(web_contents_.get()),
       binding_(this, std::move(frame_request)),
-      media_blocker_(web_contents_.get()) {
+      media_blocker_(web_contents_.get()),
+      theme_manager_(web_contents_.get()) {
   DCHECK(!WebContentsToFrameImplMap()[web_contents_.get()]);
   WebContentsToFrameImplMap()[web_contents_.get()] = this;
 
@@ -274,22 +288,6 @@ zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
   return zx::unowned_channel(binding_.channel());
 }
 
-FrameImpl::OriginScopedScript::OriginScopedScript() = default;
-
-FrameImpl::OriginScopedScript::OriginScopedScript(
-    std::vector<std::string> origins,
-    base::ReadOnlySharedMemoryRegion script)
-    : origins_(std::move(origins)), script_(std::move(script)) {}
-
-FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
-    FrameImpl::OriginScopedScript&& other) {
-  origins_ = std::move(other.origins_);
-  script_ = std::move(other.script_);
-  return *this;
-}
-
-FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
-
 aura::Window* FrameImpl::root_window() const {
   return window_tree_host_->window();
 }
@@ -305,7 +303,10 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
     return;
   }
 
-  if (!IsOriginWhitelisted(web_contents_->GetLastCommittedURL(), origins)) {
+  // Prevents script injection into the wrong document if the renderer recently
+  // navigated to a different origin.
+  if (!IsUrlMatchedByOriginList(web_contents_->GetLastCommittedURL(),
+                                origins)) {
     result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
     callback(std::move(result));
     return;
@@ -451,12 +452,19 @@ void FrameImpl::MaybeSendPopup() {
   // The PopupFrameCreationInfo won't be needed anymore, so clear it out.
   popup->SetUserData(kPopupCreationInfo, nullptr);
 
-  popup_listener_->OnPopupFrameCreated(
-      context_->CreateFrameForPopupWebContents(std::move(popup)),
-      std::move(creation_info), [this] {
-        popup_ack_outstanding_ = false;
-        MaybeSendPopup();
-      });
+  // ContextImpl::CreateFrameInternal() verified that |params_for_popups_| can
+  // be cloned, so it cannot fail here.
+  fuchsia::web::CreateFrameParams params;
+  CHECK_EQ(ZX_OK, params_for_popups_.Clone(&params));
+
+  fidl::InterfaceHandle<fuchsia::web::Frame> frame_handle;
+  context_->CreateFrameForWebContents(std::move(popup), std::move(params),
+                                      frame_handle.NewRequest());
+  popup_listener_->OnPopupFrameCreated(std::move(frame_handle),
+                                       std::move(creation_info), [this] {
+                                         popup_ack_outstanding_ = false;
+                                         MaybeSendPopup();
+                                       });
   popup_ack_outstanding_ = true;
 }
 
@@ -472,11 +480,12 @@ void FrameImpl::DestroyWindowTreeHost() {
   window_tree_host_->Hide();
   window_tree_host_->compositor()->SetVisible(false);
   window_tree_host_.reset();
+  accessibility_bridge_.reset();
 
   // Allows posted focus events to process before the FocusController is torn
   // down.
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(focus_controller_));
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(focus_controller_));
 }
 
 void FrameImpl::CloseAndDestroyFrame(zx_status_t error) {
@@ -495,7 +504,65 @@ void FrameImpl::OnMediaPlayerDisconnect() {
   media_player_ = nullptr;
 }
 
+void FrameImpl::OnAccessibilityError(zx_status_t error) {
+  // The task is posted so |accessibility_bridge_| does not tear |this| down
+  // while events are still being processed.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FrameImpl::CloseAndDestroyFrame,
+                                weak_factory_.GetWeakPtr(), error));
+}
+
+bool FrameImpl::MaybeHandleCastStreamingMessage(
+    std::string* origin,
+    fuchsia::web::WebMessage* message,
+    PostMessageCallback* callback) {
+  if (!IsCastStreamingEnabled())
+    return false;
+
+  if (!cast_streaming::IsCastStreamingAppOrigin(*origin))
+    return false;
+
+  fuchsia::web::Frame_PostMessage_Result result;
+  if (cast_streaming_session_client_ ||
+      !cast_streaming::IsValidCastStreamingMessage(*message)) {
+    // The Cast Streaming MessagePort should only be set once and |message|
+    // should be a valid Cast Streaming Message.
+    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+    (*callback)(std::move(result));
+    return true;
+  }
+
+  cast_streaming_session_client_ = std::make_unique<CastStreamingSessionClient>(
+      std::move((*message->mutable_outgoing_transfer())[0].message_port()));
+  result.set_response(fuchsia::web::Frame_PostMessage_Response());
+  (*callback)(std::move(result));
+  return true;
+}
+
+void FrameImpl::MaybeStartCastStreaming(
+    content::NavigationHandle* navigation_handle) {
+  if (!IsCastStreamingEnabled() || !cast_streaming_session_client_)
+    return;
+
+  mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&cast_streaming_receiver);
+  cast_streaming_session_client_->StartMojoConnection(
+      std::move(cast_streaming_receiver));
+}
+
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  CreateViewWithViewRef(std::move(view_token),
+                        std::move(view_ref_pair.control_ref),
+                        std::move(view_ref_pair.view_ref));
+}
+
+void FrameImpl::CreateViewWithViewRef(
+    fuchsia::ui::views::ViewToken view_token,
+    fuchsia::ui::views::ViewRefControl control_ref,
+    fuchsia::ui::views::ViewRef view_ref) {
   if (IsHeadless()) {
     LOG(WARNING) << "CreateView() called on a HEADLESS Context.";
     CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
@@ -505,15 +572,26 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   // If a View to this Frame is already active then disconnect it.
   DestroyWindowTreeHost();
 
-  InitWindowTreeHost(std::move(view_token));
+  scenic::ViewRefPair view_ref_pair;
+  view_ref_pair.control_ref = std::move(control_ref);
+  view_ref_pair.view_ref = std::move(view_ref);
+  InitWindowTreeHost(std::move(view_token), std::move(view_ref_pair));
 
-  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
-      base::fuchsia::ComponentContextForCurrentProcess()
-          ->svc()
-          ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager;
+  if (!semantics_manager_for_test_) {
+    semantics_manager =
+        base::ComponentContextForProcess()
+            ->svc()
+            ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
+  }
+
+  // If the SemanticTree owned by |accessibility_bridge_| is disconnected, it
+  // will cause |this| to be closed.
   accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-      std::move(semantics_manager), window_tree_host_->CreateViewRef(),
-      web_contents_.get());
+      semantics_manager_for_test_ ? semantics_manager_for_test_
+                                  : semantics_manager.get(),
+      window_tree_host_->CreateViewRef(), web_contents_.get(),
+      base::BindOnce(&FrameImpl::OnAccessibilityError, base::Unretained(this)));
 }
 
 void FrameImpl::GetMediaPlayer(
@@ -561,6 +639,8 @@ void FrameImpl::AddBeforeLoadJavaScript(
     std::vector<std::string> origins,
     fuchsia::mem::Buffer script,
     AddBeforeLoadJavaScriptCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
   fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result;
   if (!context_->IsJavaScriptInjectionAllowed()) {
     result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
@@ -568,58 +648,48 @@ void FrameImpl::AddBeforeLoadJavaScript(
     return;
   }
 
-  // Convert the script to UTF8 and store it as a shared memory buffer, so that
-  // it can be efficiently shared with multiple renderer processes.
-  base::string16 script_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
-    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+  std::string script_as_string;
+  if (!cr_fuchsia::StringFromMemBuffer(script, &script_as_string)) {
+    LOG(ERROR) << "Couldn't read script from buffer.";
+    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
     callback(std::move(result));
     return;
   }
 
-  // Create a read-only VMO from |script|.
-  fuchsia::mem::Buffer script_buffer =
-      cr_fuchsia::MemBufferFromString16(script_utf16, "cr-before-load-js");
+  // TODO(crbug.com/1108607): Only allow wildcards to be specified standalone.
+  if (std::any_of(origins.begin(), origins.end(),
+                  [kWildcardOrigin](base::StringPiece origin) {
+                    return origin == kWildcardOrigin;
+                  })) {
+    script_injector_.AddScriptForAllOrigins(id, script_as_string);
+  } else {
+    std::vector<url::Origin> origins_converted;
+    for (const std::string& origin : origins) {
+      url::Origin origin_parsed = url::Origin::Create(GURL(origin));
+      if (origin_parsed.opaque()) {
+        result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+        callback(std::move(result));
+        return;
+      }
+      origins_converted.push_back(origin_parsed);
+    }
 
-  // Wrap the VMO into a read-only shared-memory container that Mojo can work
-  // with.
-  base::subtle::PlatformSharedMemoryRegion script_region =
-      base::subtle::PlatformSharedMemoryRegion::Take(
-          std::move(script_buffer.vmo),
-          base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
-          script_buffer.size, base::UnguessableToken::Create());
-  script_region.ConvertToReadOnly();
-  auto script_region_mojo =
-      base::ReadOnlySharedMemoryRegion::Deserialize(std::move(script_region));
-
-  // If there is no script with the identifier |id|, then create a place for it
-  // at the end of the injection sequence.
-  if (before_load_scripts_.find(id) == before_load_scripts_.end())
-    before_load_scripts_order_.push_back(id);
-
-  before_load_scripts_[id] =
-      OriginScopedScript(origins, std::move(script_region_mojo));
+    script_injector_.AddScript(id, origins_converted, script_as_string);
+  }
 
   result.set_response(fuchsia::web::Frame_AddBeforeLoadJavaScript_Response());
   callback(std::move(result));
 }
 
 void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
-  before_load_scripts_.erase(id);
-
-  for (auto script_id_iter = before_load_scripts_order_.begin();
-       script_id_iter != before_load_scripts_order_.end(); ++script_id_iter) {
-    if (*script_id_iter == id) {
-      before_load_scripts_order_.erase(script_id_iter);
-      return;
-    }
-  }
+  script_injector_.RemoveScript(id);
 }
 
 void FrameImpl::PostMessage(std::string origin,
                             fuchsia::web::WebMessage message,
                             PostMessageCallback callback) {
-  constexpr char kWildcardOrigin[] = "*";
+  if (MaybeHandleCastStreamingMessage(&origin, &message, &callback))
+    return;
 
   fuchsia::web::Frame_PostMessage_Result result;
   if (origin.empty()) {
@@ -645,11 +715,9 @@ void FrameImpl::PostMessage(std::string origin,
     return;
   }
 
-  // Include outgoing MessagePorts in the message.
+  // Convert and pass along any MessagePorts contained in the message.
   std::vector<blink::WebMessagePort> message_ports;
   if (message.has_outgoing_transfer()) {
-    // Verify that all the Transferables are valid before we start allocating
-    // resources to them.
     for (const fuchsia::web::OutgoingTransferable& outgoing :
          message.outgoing_transfer()) {
       if (!outgoing.is_message_port()) {
@@ -718,19 +786,26 @@ void FrameImpl::EnableHeadlessRendering() {
     return;
   }
 
-  InitWindowTreeHost(fuchsia::ui::views::ViewToken());
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  InitWindowTreeHost(fuchsia::ui::views::ViewToken(), std::move(view_ref_pair));
 
   gfx::Rect bounds(kHeadlessWindowSize);
   if (semantics_manager_for_test_) {
     accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-        std::move(semantics_manager_for_test_),
-        window_tree_host_->CreateViewRef(), web_contents_.get());
+        semantics_manager_for_test_, window_tree_host_->CreateViewRef(),
+        web_contents_.get(),
+        base::BindOnce(&FrameImpl::OnAccessibilityError,
+                       base::Unretained(this)));
 
     // Set bounds for testing hit testing.
     bounds.set_size(kSemanticsTestingWindowSize);
   }
 
   window_tree_host_->SetBoundsInPixels(bounds);
+
+  // FrameWindowTreeHost will Show() itself when the View is attached, but
+  // in headless mode there is no View, so Show() it explicitly.
+  window_tree_host_->Show();
 }
 
 void FrameImpl::DisableHeadlessRendering() {
@@ -744,11 +819,12 @@ void FrameImpl::DisableHeadlessRendering() {
   DestroyWindowTreeHost();
 }
 
-void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token) {
+void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token,
+                                   scenic::ViewRefPair view_ref_pair) {
   DCHECK(!window_tree_host_);
 
   window_tree_host_ = std::make_unique<FrameWindowTreeHost>(
-      std::move(view_token), web_contents_.get());
+      std::move(view_token), std::move(view_ref_pair), web_contents_.get());
   window_tree_host_->InitHost();
   root_window()->AddPreTargetHandler(&event_filter_);
 
@@ -769,7 +845,8 @@ void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token) {
   root_window()->AddChild(web_contents_->GetNativeView());
   web_contents_->GetNativeView()->Show();
 
-  window_tree_host_->Show();
+  // FrameWindowTreeHost will Show() itself when the View is actually attached
+  // to the view-tree to be displayed. See https://crbug.com/1109270
 }
 
 void FrameImpl::SetMediaSessionId(uint64_t session_id) {
@@ -810,6 +887,27 @@ void FrameImpl::GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) {
   callback(task_stats.mem_private_bytes);
 }
 
+void FrameImpl::SetNavigationPolicyProvider(
+    fuchsia::web::NavigationPolicyProviderParams params,
+    fidl::InterfaceHandle<fuchsia::web::NavigationPolicyProvider> provider) {
+  navigation_policy_handler_ = std::make_unique<NavigationPolicyHandler>(
+      std::move(params), std::move(provider));
+}
+
+void FrameImpl::SetPreferredTheme(fuchsia::settings::ThemeType theme) {
+  theme_manager_.SetTheme(theme, base::BindOnce(
+                                     [](FrameImpl* frame_impl, bool result) {
+                                       // TODO(crbug.com/1148454): Destroy the
+                                       // frame once a fake Display service is
+                                       // implemented.
+
+                                       // if (!result)
+                                       //   frame_impl->CloseAndDestroyFrame
+                                       //       ZX_ERR_INVALID_ARGS);
+                                     },
+                                     base::Unretained(this)));
+}
+
 void FrameImpl::ForceContentDimensions(
     std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) {
   if (!web_dips) {
@@ -842,14 +940,6 @@ void FrameImpl::SetPermissionState(
     return;
   }
 
-  auto web_origin = ParseAndValidateWebOrigin(web_origin_string);
-  if (!web_origin) {
-    LOG(ERROR) << "SetPermissionState() called with invalid web_origin: "
-               << web_origin_string;
-    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
-    return;
-  }
-
   content::PermissionType type =
       FidlPermissionTypeToContentPermissionType(fidl_permission.type());
 
@@ -858,12 +948,29 @@ void FrameImpl::SetPermissionState(
           ? blink::mojom::PermissionStatus::GRANTED
           : blink::mojom::PermissionStatus::DENIED;
 
+  // TODO(crbug.com/1136994): Remove this once the PermissionManager API is
+  // available.
+  if (web_origin_string == "*" &&
+      type == content::PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
+    permission_controller_.SetDefaultPermissionState(type, state);
+    return;
+  }
+
+  // Handle per-origin permissions specifications.
+  auto web_origin = ParseAndValidateWebOrigin(web_origin_string);
+  if (!web_origin) {
+    LOG(ERROR) << "SetPermissionState() called with invalid web_origin: "
+               << web_origin_string;
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
   permission_controller_.SetPermissionState(type, web_origin.value(), state);
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
-  context_->DestroyFrame(this);
+  CloseAndDestroyFrame(ZX_OK);
 }
 
 void FrameImpl::SetBlockMediaLoading(bool blocked) {
@@ -879,7 +986,8 @@ bool FrameImpl::DidAddMessageToConsole(
   logging::LogSeverity log_severity =
       blink::ConsoleMessageLevelToLogSeverity(log_level);
   if (log_level_ > log_severity) {
-    return false;
+    // Prevent the default logging mechanism from logging the message.
+    return true;
   }
 
   std::string formatted_message =
@@ -887,6 +995,8 @@ bool FrameImpl::DidAddMessageToConsole(
                          line_no, base::UTF16ToUTF8(message).data());
   switch (log_level) {
     case blink::mojom::ConsoleMessageLevel::kVerbose:
+      // TODO(crbug.com/1139396): Use a more verbose value than INFO once using
+      // fx_logger directly. LOG() does not support VERBOSE.
       LOG(INFO) << "debug:" << formatted_message;
       break;
     case blink::mojom::ConsoleMessageLevel::kInfo:
@@ -899,12 +1009,12 @@ bool FrameImpl::DidAddMessageToConsole(
       LOG(ERROR) << "error:" << formatted_message;
       break;
     default:
+      // TODO(crbug.com/1139396): Eliminate this case via refactoring. All
+      // values are handled above.
       DLOG(WARNING) << "Unknown log level: " << log_severity;
+      // Let the default logging mechanism handle the message.
       return false;
   }
-
-  if (console_log_message_hook_)
-    console_log_message_hook_.Run(formatted_message);
 
   return true;
 }
@@ -980,30 +1090,15 @@ bool FrameImpl::CheckMediaAccessPermission(
 
 void FrameImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (before_load_scripts_.empty())
-    return;
-
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
   }
 
-  mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
-      before_load_script_injector;
-  navigation_handle->GetRenderFrameHost()
-      ->GetRemoteAssociatedInterfaces()
-      ->GetInterface(&before_load_script_injector);
+  script_injector_.InjectScriptsForURL(navigation_handle->GetURL(),
+                                       navigation_handle->GetRenderFrameHost());
 
-  // Provision the renderer's ScriptInjector with the scripts scoped to this
-  // page's origin.
-  before_load_script_injector->ClearOnLoadScripts();
-  for (uint64_t script_id : before_load_scripts_order_) {
-    const OriginScopedScript& script = before_load_scripts_[script_id];
-    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins())) {
-      before_load_script_injector->AddOnLoadScript(
-          mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
-    }
-  }
+  MaybeStartCastStreaming(navigation_handle);
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -1041,4 +1136,9 @@ void FrameImpl::ResourceLoadComplete(
     base::RecordComputedAction(
         base::StringPrintf("WebEngine.ResourceRequestError:%d", net_error));
   }
+}
+
+// TODO(crbug.com/1136681#c6): Move below GetBindingChannelForTest when fixed.
+void FrameImpl::EnableExplicitSitesFilter(std::string error_page) {
+  explicit_sites_filter_error_page_ = std::move(error_page);
 }

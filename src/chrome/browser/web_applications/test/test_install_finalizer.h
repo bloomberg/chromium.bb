@@ -9,7 +9,6 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
@@ -23,15 +22,14 @@ class TestInstallFinalizer final : public InstallFinalizer {
   static AppId GetAppIdForUrl(const GURL& url);
 
   TestInstallFinalizer();
+  TestInstallFinalizer(const TestInstallFinalizer&) = delete;
+  TestInstallFinalizer& operator=(const TestInstallFinalizer&) = delete;
   ~TestInstallFinalizer() override;
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
-  void FinalizeFallbackInstallAfterSync(
-      const AppId& app_id,
-      InstallFinalizedCallback callback) override;
   void FinalizeUninstallAfterSync(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
@@ -50,8 +48,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  bool CanAddAppToQuickLaunchBar() const override;
-  void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool CanReparentTab(const AppId& app_id,
                       bool shortcut_created) const override;
   void ReparentTab(const AppId& app_id,
@@ -81,9 +77,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   }
 
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
-  int num_add_app_to_quick_launch_bar_calls() {
-    return num_add_app_to_quick_launch_bar_calls_;
-  }
 
  private:
   void Finalize(const WebApplicationInfo& web_app_info,
@@ -100,9 +93,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   std::set<AppId> user_uninstalled_external_apps_;
 
   int num_reparent_tab_calls_ = 0;
-  int num_add_app_to_quick_launch_bar_calls_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(TestInstallFinalizer);
 };
 
 }  // namespace web_app

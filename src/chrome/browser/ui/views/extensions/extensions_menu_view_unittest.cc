@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
@@ -77,9 +76,7 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
  public:
   ExtensionsMenuViewUnitTest()
       : allow_extension_menu_instances_(
-            ExtensionsMenuView::AllowInstancesForTesting()) {
-    feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-  }
+            ExtensionsMenuView::AllowInstancesForTesting()) {}
   ~ExtensionsMenuViewUnitTest() override = default;
 
   // TestWithBrowserView:
@@ -105,6 +102,8 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
   ExtensionsMenuItemView* GetOnlyMenuItem();
 
   void ClickPinButton(ExtensionsMenuItemView* menu_item) const;
+  void ClickContextMenuButton(ExtensionsMenuItemView* menu_item) const;
+  void ClickButton(views::Button* button) const;
 
   std::vector<ToolbarActionView*> GetPinnedExtensionViews();
 
@@ -124,7 +123,6 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
 
  private:
   base::AutoReset<bool> allow_extension_menu_instances_;
-  base::test::ScopedFeatureList feature_list_;
 
   extensions::ExtensionService* extension_service_ = nullptr;
 
@@ -148,7 +146,7 @@ void ExtensionsMenuViewUnitTest::SetUp() {
   views::test::ReduceAnimationDuration(extensions_container());
 
   ExtensionsMenuView::ShowBubble(extensions_container()->extensions_button(),
-                                 browser(), extensions_container());
+                                 browser(), extensions_container(), true);
 }
 
 scoped_refptr<const extensions::Extension>
@@ -174,15 +172,23 @@ ExtensionsMenuItemView* ExtensionsMenuViewUnitTest::GetOnlyMenuItem() {
 
 void ExtensionsMenuViewUnitTest::ClickPinButton(
     ExtensionsMenuItemView* menu_item) const {
-  views::ImageButton* pin_button = menu_item->pin_button_for_testing();
+  ClickButton(menu_item->pin_button_for_testing());
+}
+
+void ExtensionsMenuViewUnitTest::ClickContextMenuButton(
+    ExtensionsMenuItemView* menu_item) const {
+  ClickButton(menu_item->context_menu_button_for_testing());
+}
+
+void ExtensionsMenuViewUnitTest::ClickButton(views::Button* button) const {
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(1, 1),
                              gfx::Point(), ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
-  pin_button->OnMousePressed(press_event);
+  button->OnMousePressed(press_event);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(1, 1),
                                gfx::Point(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-  pin_button->OnMouseReleased(release_event);
+  button->OnMouseReleased(release_event);
 }
 
 std::vector<ToolbarActionView*>
@@ -192,7 +198,7 @@ ExtensionsMenuViewUnitTest::GetPinnedExtensionViews() {
     // Ensure we don't downcast the ExtensionsToolbarButton.
     if (child->GetClassName() == ToolbarActionView::kClassName) {
       ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
       // queries the underlying model and not GetVisible(), as that relies on an
       // animation running, which is not reliable in unit tests on Mac.
@@ -237,7 +243,7 @@ void ExtensionsMenuViewUnitTest::LayoutMenuIfNecessary() {
 }
 
 void ExtensionsMenuViewUnitTest::WaitForAnimation() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
   // of support in unit tests. Therefore this is a no-op.
 #else
@@ -516,6 +522,20 @@ TEST_F(ExtensionsMenuViewUnitTest, PinButtonUserAction) {
   EXPECT_EQ(1, user_action_tester.GetActionCount(kPinButtonUserAction));
   ClickPinButton(menu_item);  // Unpin.
   EXPECT_EQ(2, user_action_tester.GetActionCount(kPinButtonUserAction));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ContextMenuButtonUserAction) {
+  base::UserActionTester user_action_tester;
+  AddSimpleExtension("Test Extension");
+
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
+
+  constexpr char kContextMenuButtonUserAction[] =
+      "Extensions.Toolbar.MoreActionsButtonPressedFromMenu";
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kContextMenuButtonUserAction));
+  ClickContextMenuButton(menu_item);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kContextMenuButtonUserAction));
 }
 
 // TODO(crbug.com/984654): When supported, add a test to verify the

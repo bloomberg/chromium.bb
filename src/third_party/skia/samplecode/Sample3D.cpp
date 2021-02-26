@@ -261,7 +261,7 @@ public:
     virtual void drawContent(SkCanvas* canvas, SkColor, int index, bool drawFront) = 0;
 
     void onDrawContent(SkCanvas* canvas) override {
-        if (!canvas->getGrContext() && !(fFlags & kCanRunOnCPU)) {
+        if (!canvas->recordingContext() && !(fFlags & kCanRunOnCPU)) {
             return;
         }
 
@@ -347,7 +347,7 @@ public:
     }
 
 private:
-    typedef Sample3DView INHERITED;
+    using INHERITED = Sample3DView;
 };
 
 class SampleBump3D : public SampleCubeBase {
@@ -356,20 +356,20 @@ class SampleBump3D : public SampleCubeBase {
     SkRRect                fRR;
 
 public:
-    SampleBump3D() : SampleCubeBase(kShowLightDome) {}
+    SampleBump3D() : SampleCubeBase(Flags(kCanRunOnCPU | kShowLightDome)) {}
 
     SkString name() override { return SkString("bump3d"); }
 
     void onOnceBeforeDraw() override {
         fRR = SkRRect::MakeRectXY({20, 20, 380, 380}, 50, 50);
         auto img = GetResourceAsImage("images/brickwork-texture.jpg");
-        fImgShader = img->makeShader(SkMatrix::MakeScale(2, 2));
+        fImgShader = img->makeShader(SkMatrix::Scale(2, 2));
         img = GetResourceAsImage("images/brickwork_normal-map.jpg");
-        fBmpShader = img->makeShader(SkMatrix::MakeScale(2, 2));
+        fBmpShader = img->makeShader(SkMatrix::Scale(2, 2));
 
         const char code[] = R"(
-            in fragmentProcessor color_map;
-            in fragmentProcessor normal_map;
+            uniform shader color_map;
+            uniform shader normal_map;
 
             layout (marker=local_to_world)          uniform float4x4 localToWorld;
             layout (marker=normals(local_to_world)) uniform float4x4 localToWorldAdjInv;
@@ -381,18 +381,18 @@ public:
                 return n;
             }
 
-            void main(float2 p, inout half4 color) {
+            half4 main(float2 p) {
                 float3 norm = convert_normal_sample(sample(normal_map, p));
-                float3 plane_norm = normalize(localToWorldAdjInv * float4(norm, 0)).xyz;
+                float3 plane_norm = normalize(localToWorldAdjInv * norm.xyz0).xyz;
 
-                float3 plane_pos = (localToWorld * float4(p, 0, 1)).xyz;
+                float3 plane_pos = (localToWorld * p.xy01).xyz;
                 float3 light_dir = normalize(lightPos - plane_pos);
 
                 float ambient = 0.2;
                 float dp = dot(plane_norm, light_dir);
                 float scale = min(ambient + max(dp, 0), 1);
 
-                color = sample(color_map, p) * half4(float4(scale, scale, scale, 1));
+                return sample(color_map, p) * scale.xxx1;
             }
         )";
         auto [effect, error] = SkRuntimeEffect::Make(SkString(code));
@@ -408,7 +408,7 @@ public:
         }
 
         SkRuntimeShaderBuilder builder(fEffect);
-        builder.input("lightPos") = fLight.computeWorldPos(fSphere);
+        builder.uniform("lightPos") = fLight.computeWorldPos(fSphere);
         // localToWorld matrices are automatically populated, via layout(marker)
 
         builder.child("color_map")  = fImgShader;
@@ -466,18 +466,18 @@ public:
             layout (marker=normals(local_to_world)) uniform float4x4 localToWorldAdjInv;
             uniform float3   lightPos;
 
-            void main(float2 p, inout half4 color) {
+            half4 main(float2 p) {
                 float3 norm = normalize(vtx_normal);
-                float3 plane_norm = normalize(localToWorldAdjInv * float4(norm, 0)).xyz;
+                float3 plane_norm = normalize(localToWorldAdjInv * norm.xyz0).xyz;
 
-                float3 plane_pos = (localToWorld * float4(p, 0, 1)).xyz;
+                float3 plane_pos = (localToWorld * p.xy01).xyz;
                 float3 light_dir = normalize(lightPos - plane_pos);
 
                 float ambient = 0.2;
                 float dp = dot(plane_norm, light_dir);
                 float scale = min(ambient + max(dp, 0), 1);
 
-                color = half4(0.7, 0.9, 0.3, 1) * half4(float4(scale, scale, scale, 1));
+                return half4(0.7, 0.9, 0.3, 1) * scale.xxx1;
             }
         )";
         auto [effect, error] = SkRuntimeEffect::Make(SkString(code));
@@ -493,7 +493,7 @@ public:
         }
 
         SkRuntimeShaderBuilder builder(fEffect);
-        builder.input("lightPos") = fLight.computeWorldPos(fSphere);
+        builder.uniform("lightPos") = fLight.computeWorldPos(fSphere);
 
         SkPaint paint;
         paint.setColor(color);

@@ -4,21 +4,22 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 
-import org.chromium.base.ContextUtils;
+import androidx.annotation.Nullable;
+
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
-import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 /**
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
@@ -37,8 +38,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public Activity getActivityContext() {
-        return ContextUtils.activityFromContext(mTab.getBrowser().getContext());
+    public Context getContext() {
+        return mTab.getBrowser().getContext();
     }
 
     @Override
@@ -84,14 +85,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         // Otherwise defer to ExternalNavigationHandler's default logic.
         return StartActivityIfNeededResult.DID_NOT_HANDLE;
-    }
-
-    @Override
-    public boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
-        // TODO(crbug.com/1063399): Determine if this behavior should be refined.
-        ExternalNavigationHandler.startActivity(intent, proxy, this);
-        return true;
     }
 
     // This method should never be invoked as WebLayer does not handle incoming intents.
@@ -154,7 +147,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen
     // for WebLayer.
-    public void maybeSetUserGesture(Intent intent) {}
+    public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {}
 
     @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen
@@ -189,6 +183,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public boolean canCloseTabOnIncognitoIntentLaunch() {
+        return hasValidTab();
+    }
+
+    @Override
     public boolean isIntentForTrustedCallingApp(Intent intent) {
         return false;
     }
@@ -200,12 +199,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean isIntentToAutofillAssistant(Intent intent) {
-        return false;
-    }
-
-    @Override
-    public boolean isValidWebApk(String packageName) {
-        // TODO(crbug.com/1063874): Determine whether to refine this.
         return false;
     }
 

@@ -15,8 +15,8 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/privacy_container_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_answer_card_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
@@ -27,11 +27,13 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/view_model.h"
@@ -70,27 +72,6 @@ float GetOpacityForProgress(float progress,
       1.0f);
 }
 
-// Notifies assistive technology that all schedules animations have completed on
-// this view and that a location change event has occurred. This should be used
-// for notifying a11y to update view locations after transformation animations.
-// This object will delete itself after running OnImplicitAnimationsCompleted.
-class AccessibilityAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit AccessibilityAnimationObserver(views::View* view) : view_(view) {}
-  ~AccessibilityAnimationObserver() override = default;
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, true);
-    delete this;
-  }
-
- private:
-  views::View* const view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityAnimationObserver);
-};
-
 }  // namespace
 
 ContentsView::ContentsView(AppListView* app_list_view)
@@ -111,41 +92,40 @@ void ContentsView::Init(AppListModel* model) {
 
   AppListViewDelegate* view_delegate = GetAppListMainView()->view_delegate();
 
-  apps_container_view_ = new AppsContainerView(this, model);
-
-  AddLauncherPage(apps_container_view_, AppListState::kStateApps);
+  apps_container_view_ =
+      AddLauncherPage(std::make_unique<AppsContainerView>(this, model),
+                      AppListState::kStateApps);
 
   // Search results UI.
-  search_results_page_view_ =
-      new SearchResultPageView(view_delegate, view_delegate->GetSearchModel());
+  auto search_results_page_view =
+      std::make_unique<SearchResultPageView>(view_delegate->GetSearchModel());
 
   // Search result containers:
-  if (app_list_features::IsAnswerCardEnabled()) {
-    search_result_answer_card_view_ =
-        new SearchResultAnswerCardView(view_delegate);
-    search_results_page_view_->AddSearchResultContainerView(
-        search_result_answer_card_view_);
-  }
+  privacy_container_view_ =
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<PrivacyContainerView>(view_delegate));
 
   expand_arrow_view_ =
       AddChildView(std::make_unique<ExpandArrowView>(this, app_list_view_));
 
-  search_result_tile_item_list_view_ = new SearchResultTileItemListView(
-      GetSearchBoxView()->search_box(), view_delegate);
-  search_results_page_view_->AddSearchResultContainerView(
-      search_result_tile_item_list_view_);
+  search_result_tile_item_list_view_ =
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<SearchResultTileItemListView>(
+              GetSearchBoxView()->search_box(), view_delegate));
 
   search_result_list_view_ =
-      new SearchResultListView(GetAppListMainView(), view_delegate);
-  search_results_page_view_->AddSearchResultContainerView(
-      search_result_list_view_);
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<SearchResultListView>(GetAppListMainView(),
+                                                 view_delegate));
 
-  AddLauncherPage(search_results_page_view_, AppListState::kStateSearchResults);
+  search_results_page_view_ = AddLauncherPage(
+      std::move(search_results_page_view), AppListState::kStateSearchResults);
 
-  assistant_page_view_ =
-      new AssistantPageView(view_delegate->GetAssistantViewDelegate(), this);
-  assistant_page_view_->SetVisible(false);
-  AddLauncherPage(assistant_page_view_, AppListState::kStateEmbeddedAssistant);
+  auto assistant_page_view = std::make_unique<AssistantPageView>(
+      view_delegate->GetAssistantViewDelegate());
+  assistant_page_view->SetVisible(false);
+  assistant_page_view_ = AddLauncherPage(std::move(assistant_page_view),
+                                         AppListState::kStateEmbeddedAssistant);
 
   int initial_page_index = GetPageIndexForState(AppListState::kStateApps);
   DCHECK_GE(initial_page_index, 0);
@@ -331,6 +311,7 @@ void ContentsView::ActivePageChanged() {
 
   GetAppListMainView()->model()->SetState(state);
   UpdateSearchBoxVisibility(state);
+  app_list_view_->UpdateWindowTitle();
 }
 
 void ContentsView::ShowSearchResults(bool show) {
@@ -490,15 +471,11 @@ AppListMainView* ContentsView::GetAppListMainView() const {
   return app_list_view_->app_list_main_view();
 }
 
-int ContentsView::AddLauncherPage(AppListPage* view) {
+void ContentsView::AddLauncherPageInternal(std::unique_ptr<AppListPage> view,
+                                           AppListState state) {
   view->set_contents_view(this);
-  AddChildView(view);
-  app_list_pages_.push_back(view);
-  return app_list_pages_.size() - 1;
-}
-
-int ContentsView::AddLauncherPage(AppListPage* view, AppListState state) {
-  int page_index = AddLauncherPage(view);
+  app_list_pages_.push_back(AddChildView(std::move(view)));
+  int page_index = app_list_pages_.size() - 1;
   bool success =
       state_to_view_.insert(std::make_pair(state, page_index)).second;
   success = success &&
@@ -506,7 +483,6 @@ int ContentsView::AddLauncherPage(AppListPage* view, AppListState state) {
 
   // There shouldn't be duplicates in either map.
   DCHECK(success);
-  return page_index;
 }
 
 gfx::Rect ContentsView::GetSearchBoxBounds(AppListState state) const {
@@ -688,10 +664,6 @@ void ContentsView::TransitionChanged() {
   UpdateSearchBoxAnimation(progress, current_state, target_state);
 }
 
-views::View* ContentsView::GetSelectedView() const {
-  return app_list_pages_[GetActivePageIndex()]->GetSelectedView();
-}
-
 void ContentsView::UpdateYPositionAndOpacity() {
   const int current_page = pagination_model_.has_transition()
                                ? pagination_model_.transition().target_page
@@ -709,7 +681,8 @@ void ContentsView::UpdateYPositionAndOpacity() {
 
   const bool restore_opacity = !app_list_view_->is_in_drag() &&
                                target_view_state() != AppListViewState::kClosed;
-  if (current_state != AppListState::kStateApps) {
+  if (current_state != AppListState::kStateApps ||
+      app_list_view_->is_side_shelf()) {
     expand_arrow_view_->layer()->SetOpacity(0.0f);
   } else if (restore_opacity) {
     expand_arrow_view_->layer()->SetOpacity(1.0f);
@@ -783,17 +756,16 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
 
   // Fade in or out the expand arrow.
   const bool target_arrow_visibility =
-      target_page == AppListState::kStateApps && !closing;
+      target_page == AppListState::kStateApps && !closing &&
+      !app_list_view_->is_side_shelf();
   animate_opacity(duration, expand_arrow_view_, target_arrow_visibility);
 
   // Animates layer's vertical position (using transform animation).
   // |layer| - The layer to transform.
-  // |view| - Optional, the view to which the layer belongs (if the layer is a
-  // view layer).
   // |y_offset| - The initial vertical offset - the layer's vertical offset will
   //              be animated to 0.
   auto animate_transform = [](base::TimeDelta duration, float y_offset,
-                              ui::Layer* layer, views::View* view) {
+                              ui::Layer* layer) {
     gfx::Transform transform;
     transform.Translate(0, y_offset);
     layer->SetTransform(transform);
@@ -804,10 +776,6 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
     settings->SetTransitionDuration(duration);
     settings->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-    // Observer will delete itself after animation completes.
-    if (view)
-      settings->AddObserver(new AccessibilityAnimationObserver(view));
-
     layer->SetTransform(gfx::Transform());
   };
 
@@ -857,7 +825,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   // For search box, animate the search_box view layer instead of the widget
   // layer to avoid conflict with pagination model transitions (which update the
   // search box widget layer transform as the transition progresses).
-  animate_transform(duration, y_offset, search_box->layer(), search_box);
+  animate_transform(duration, y_offset, search_box->layer());
 
   // Update app list page bounds to their target values. This assumes that
   // potential in-progress pagination transition does not directly animate page
@@ -874,14 +842,14 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   }
 
   // Assistant page and search results page may host native views (e.g. for
-  // search result answer cards, or card assistant results). These windows are
-  // descendants of the app list view window layer rather than the page layers,
-  // so they have to be animated separately from their associated page.
+  // card assistant results). These windows are descendants of the app list
+  // view window layer rather than the page layers, so they have to be
+  // animated separately from their associated page.
   for (auto* child_window : GetWidget()->GetNativeWindow()->children()) {
     View* host_view = child_window->GetProperty(views::kHostViewKey);
     if (!host_view)
       continue;
-    animate_transform(duration, y_offset, child_window->layer(), nullptr);
+    animate_transform(duration, y_offset, child_window->layer());
   }
 
   last_target_view_state_ = target_view_state;
@@ -893,7 +861,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   animate_transform(
       duration,
       expand_arrow_view()->CalculateOffsetFromCurrentAppListProgress(progress),
-      expand_arrow_view()->layer(), expand_arrow_view());
+      expand_arrow_view()->layer());
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

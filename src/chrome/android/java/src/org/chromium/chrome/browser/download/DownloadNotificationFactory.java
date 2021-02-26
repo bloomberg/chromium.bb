@@ -30,18 +30,16 @@ import android.text.TextUtils;
 
 import androidx.core.app.NotificationCompat;
 
-import com.google.ipc.invalidation.util.Preconditions;
-
 import org.chromium.base.ContentUriUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -61,6 +59,18 @@ public final class DownloadNotificationFactory {
     // Limit the origin length so that the eTLD+1 cannot be hidden. If the origin exceeds this
     // length the eTLD+1 is extracted and shown.
     public static final int MAX_ORIGIN_LENGTH = 40;
+
+    private static <T> void checkNotNull(T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
+    }
+
+    private static void checkArgument(boolean expression) {
+        if (!expression) {
+            throw new IllegalArgumentException();
+        }
+    }
 
     /**
      * Builds a downloads notification based on the status of the download and its information. All
@@ -83,9 +93,9 @@ public final class DownloadNotificationFactory {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_NOTIFICATION_BADGE)) {
             channelId = ChromeChannelDefinitions.ChannelId.COMPLETED_DOWNLOADS;
         }
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */, channelId,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */, channelId,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(LegacyHelpers.isLegacyDownload(
                                                                  downloadUpdate.getContentId())
@@ -118,9 +128,9 @@ public final class DownloadNotificationFactory {
 
         switch (downloadStatus) {
             case DownloadNotificationService.DownloadStatus.IN_PROGRESS:
-                Preconditions.checkNotNull(downloadUpdate.getProgress());
-                Preconditions.checkNotNull(downloadUpdate.getContentId());
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkNotNull(downloadUpdate.getProgress());
+                checkNotNull(downloadUpdate.getContentId());
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 if (downloadUpdate.getIsDownloadPending()) {
                     contentText =
@@ -199,8 +209,8 @@ public final class DownloadNotificationFactory {
 
                 break;
             case DownloadNotificationService.DownloadStatus.PAUSED:
-                Preconditions.checkNotNull(downloadUpdate.getContentId());
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkNotNull(downloadUpdate.getContentId());
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 contentText =
                         context.getResources().getString(R.string.download_notification_paused);
@@ -238,7 +248,7 @@ public final class DownloadNotificationFactory {
 
                 break;
             case DownloadNotificationService.DownloadStatus.COMPLETED:
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 // Don't show file size in incognito mode.
                 if (downloadUpdate.getTotalBytes() > 0 && !downloadUpdate.getIsOffTheRecord()) {
@@ -258,8 +268,8 @@ public final class DownloadNotificationFactory {
                     if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())
                             && !ChromeFeatureList.isEnabled(
                                     ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-                        Preconditions.checkNotNull(downloadUpdate.getContentId());
-                        Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1
+                        checkNotNull(downloadUpdate.getContentId());
+                        checkArgument(downloadUpdate.getSystemDownloadId() != -1
                                 || ContentUriUtils.isContentUri(downloadUpdate.getFilePath()));
 
                         intent = new Intent(ACTION_NOTIFICATION_CLICKED);
@@ -373,7 +383,7 @@ public final class DownloadNotificationFactory {
      * @param builder The builder to build notification.
      * @param subText A string shown as sub text on the notification.
      */
-    private static void setSubText(ChromeNotificationBuilder builder, String subText) {
+    private static void setSubText(NotificationWrapperBuilder builder, String subText) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             builder.setSubText(subText);
         } else {

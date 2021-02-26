@@ -45,10 +45,10 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 #include <sys/prctl.h>
 #endif
 
@@ -61,7 +61,7 @@
 #include <sys/ucontext.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #error "macOS should use launch_mac.cc"
 #endif
 
@@ -108,7 +108,7 @@ sigset_t SetSignalMask(const sigset_t& new_sigmask) {
   return old_sigmask;
 }
 
-#if (!defined(OS_LINUX) && !defined(OS_AIX)) || \
+#if (!defined(OS_LINUX) && !defined(OS_AIX) && !defined(OS_CHROMEOS)) || \
     (!defined(__i386__) && !defined(__x86_64__) && !defined(__arm__))
 void ResetChildSignalHandlersToDefaults() {
   // The previous signal handlers are likely to be meaningless in the child's
@@ -206,7 +206,7 @@ struct ScopedDIRClose {
 // Automatically closes |DIR*|s.
 typedef std::unique_ptr<DIR, ScopedDIRClose> ScopedDIR;
 
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 static const char kFDDir[] = "/proc/self/fd";
 #elif defined(OS_SOLARIS)
 static const char kFDDir[] = "/dev/fd";
@@ -317,7 +317,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
   pid_t pid;
   base::TimeTicks before_fork = TimeTicks::Now();
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
   if (options.clone_flags) {
     // Signal handling in this function assumes the creation of a new
     // process, so we check that a thread is not being created by mistake
@@ -413,7 +413,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     // any hidden calls to malloc.
     void *malloc_thunk =
         reinterpret_cast<void*>(reinterpret_cast<intptr_t>(malloc) & ~4095);
-    mprotect(malloc_thunk, 4096, PROT_READ | PROT_WRITE | PROT_EXEC);
+    HANDLE_EINTR(mprotect(malloc_thunk, 4096, PROT_READ | PROT_WRITE | PROT_EXEC));
     memset(reinterpret_cast<void*>(malloc), 0xff, 8);
 #endif  // 0
 
@@ -451,7 +451,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
     // Set NO_NEW_PRIVS by default. Since NO_NEW_PRIVS only exists in kernel
     // 3.5+, do not check the return value of prctl here.
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 #ifndef PR_SET_NO_NEW_PRIVS
 #define PR_SET_NO_NEW_PRIVS 38
 #endif
@@ -666,7 +666,8 @@ bool GetAppOutputWithExitCode(const CommandLine& cl,
 
 #endif  // !defined(OS_NACL_NONSFI)
 
-#if defined(OS_LINUX) || defined(OS_NACL_NONSFI) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI) || \
+    defined(OS_AIX)
 namespace {
 
 // This function runs on the stack specified on the clone call. It uses longjmp
@@ -732,15 +733,15 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
     return CloneAndLongjmpInChild(flags, ptid, ctid, &env);
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Since we use clone() directly, it does not call any pthread_aftork()
   // callbacks, we explicitly clear tid cache here (normally this call is
   // done as pthread_aftork() callback).  See crbug.com/902514.
   base::internal::ClearTidCache();
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   return 0;
 }
-#endif  // defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI)
 
 }  // namespace base

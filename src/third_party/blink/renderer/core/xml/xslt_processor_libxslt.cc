@@ -106,7 +106,7 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
                reinterpret_cast<const char*>(uri));
       xmlFree(base);
 
-      ResourceLoaderOptions fetch_options;
+      ResourceLoaderOptions fetch_options(nullptr /* world */);
       fetch_options.initiator_info.name = fetch_initiator_type_names::kXml;
       FetchParameters params(ResourceRequest(url), fetch_options);
       params.MutableResourceRequest().SetMode(
@@ -137,8 +137,9 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
         size_t offset = 0;
         for (const auto& span : *data) {
           bool final_chunk = offset + span.size() == data->size();
-          if (!xmlParseChunk(ctx, span.data(), static_cast<int>(span.size()),
-                             final_chunk))
+          // Stop parsing chunks if xmlParseChunk returns an error.
+          if (xmlParseChunk(ctx, span.data(), static_cast<int>(span.size()),
+                            final_chunk))
             break;
           offset += span.size();
         }

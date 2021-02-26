@@ -259,7 +259,7 @@ static bool ssl_write_client_cipher_list(SSL_HANDSHAKE *hs, CBB *out) {
         continue;
       }
       any_enabled = true;
-      if (!CBB_add_u16(&child, ssl_cipher_get_value(cipher))) {
+      if (!CBB_add_u16(&child, SSL_CIPHER_get_protocol_id(cipher))) {
         return false;
       }
     }
@@ -358,8 +358,7 @@ static bool parse_supported_versions(SSL_HANDSHAKE *hs, uint16_t *version,
 
   uint8_t alert = SSL_AD_DECODE_ERROR;
   if (!ssl_parse_extensions(&extensions, &alert, ext_types,
-                            OPENSSL_ARRAY_SIZE(ext_types),
-                            1 /* ignore unknown */)) {
+                            /*ignore_unknown=*/true)) {
     ssl_send_alert(ssl, SSL3_AL_FATAL, alert);
     return false;
   }
@@ -1268,10 +1267,10 @@ static enum ssl_hs_wait_t do_send_client_key_exchange(SSL_HANDSHAKE *hs) {
   uint32_t alg_k = hs->new_cipher->algorithm_mkey;
   uint32_t alg_a = hs->new_cipher->algorithm_auth;
   if (ssl_cipher_uses_certificate_auth(hs->new_cipher)) {
-    CRYPTO_BUFFER *leaf =
+    const CRYPTO_BUFFER *leaf =
         sk_CRYPTO_BUFFER_value(hs->new_session->certs.get(), 0);
     CBS leaf_cbs;
-    CBS_init(&leaf_cbs, CRYPTO_BUFFER_data(leaf), CRYPTO_BUFFER_len(leaf));
+    CRYPTO_BUFFER_init_CBS(leaf, &leaf_cbs);
 
     // Check the key usage matches the cipher suite. We do this unconditionally
     // for non-RSA certificates. In particular, it's needed to distinguish ECDH

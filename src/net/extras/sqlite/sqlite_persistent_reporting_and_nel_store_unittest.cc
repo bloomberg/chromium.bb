@@ -15,13 +15,19 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/features.h"
+#include "net/base/network_isolation_key.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_test_util.h"
 #include "net/test/test_with_task_environment.h"
+#include "sql/database.h"
+#include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -82,7 +88,10 @@ const std::vector<TestCase> kCoalescingTestcasesForUpdateDetails = {
 class SQLitePersistentReportingAndNelStoreTest
     : public TestWithTaskEnvironment {
  public:
-  SQLitePersistentReportingAndNelStoreTest() {}
+  SQLitePersistentReportingAndNelStoreTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kPartitionNelAndReportingByNetworkIsolationKey);
+  }
 
   void CreateStore() {
     store_ = std::make_unique<SQLitePersistentReportingAndNelStore>(
@@ -174,10 +183,13 @@ class SQLitePersistentReportingAndNelStoreTest
 
   void TearDown() override { DestroyStore(); }
 
-  NetworkErrorLoggingService::NelPolicy MakeNelPolicy(url::Origin origin,
-                                                      base::Time last_used) {
+  NetworkErrorLoggingService::NelPolicy MakeNelPolicy(
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin,
+      base::Time last_used) {
     NetworkErrorLoggingService::NelPolicy policy;
-    policy.origin = origin;
+    policy.key =
+        NetworkErrorLoggingService::NelPolicyKey(network_isolation_key, origin);
     policy.received_ip_address = IPAddress::IPv4Localhost();
     policy.report_to = "group";
     policy.expires = kExpires;
@@ -189,9 +201,10 @@ class SQLitePersistentReportingAndNelStoreTest
   }
 
   ReportingEndpoint MakeReportingEndpoint(
-      url::Origin origin,
-      std::string group_name,
-      GURL url,
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin,
+      const std::string& group_name,
+      const GURL& url,
       int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority,
       int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight) {
     ReportingEndpoint::EndpointInfo info;
@@ -199,25 +212,36 @@ class SQLitePersistentReportingAndNelStoreTest
     info.priority = priority;
     info.weight = weight;
     ReportingEndpoint endpoint(
-        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
-                                  group_name),
+        ReportingEndpointGroupKey(network_isolation_key, origin, group_name),
         std::move(info));
     return endpoint;
   }
 
   CachedReportingEndpointGroup MakeReportingEndpointGroup(
-      url::Origin origin,
-      std::string group_name,
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin,
+      const std::string& group_name,
       base::Time last_used,
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
       base::Time expires = kExpires) {
     return CachedReportingEndpointGroup(
-        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
-                                  group_name),
+        ReportingEndpointGroupKey(network_isolation_key, origin, group_name),
         include_subdomains, expires, last_used);
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
+
+  // Use origins distinct from those used in origin fields of keys, to avoid any
+  // risk of tests passing due to comparing origins that are the same but come
+  // from different sources.
+  const NetworkIsolationKey kNik1_ = NetworkIsolationKey(
+      url::Origin::Create(GURL("https://top-frame-origin-nik1.test")),
+      url::Origin::Create(GURL("https://frame-origin-nik1.test")));
+  const NetworkIsolationKey kNik2_ = NetworkIsolationKey(
+      url::Origin::Create(GURL("https://top-frame-origin-nik2.test")),
+      url::Origin::Create(GURL("https://frame-origin-nik2.test")));
+
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<SQLitePersistentReportingAndNelStore> store_;
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
@@ -237,12 +261,78 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {
   EXPECT_NE(std::string::npos, contents.find("reporting_endpoint_groups"));
 }
 
+TEST_F(SQLitePersistentReportingAndNelStoreTest, TestInvalidMetaTableRecovery) {
+  CreateStore();
+  InitializeStore();
+  base::Time now = base::Time::Now();
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
+  store_->AddNelPolicy(policy1);
+
+  // Close and reopen the database.
+  DestroyStore();
+  CreateStore();
+
+  // Load the stored policy.
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy1.key, policies[0].key);
+  EXPECT_EQ(policy1.received_ip_address, policies[0].received_ip_address);
+  EXPECT_EQ(policy1.report_to, policies[0].report_to);
+  EXPECT_TRUE(WithinOneMicrosecond(policy1.expires, policies[0].expires));
+  EXPECT_EQ(policy1.include_subdomains, policies[0].include_subdomains);
+  EXPECT_EQ(policy1.success_fraction, policies[0].success_fraction);
+  EXPECT_EQ(policy1.failure_fraction, policies[0].failure_fraction);
+  EXPECT_TRUE(WithinOneMicrosecond(policy1.last_used, policies[0].last_used));
+  DestroyStore();
+  policies.clear();
+
+  // Now corrupt the meta table.
+  {
+    sql::Database db;
+    ASSERT_TRUE(
+        db.Open(temp_dir_.GetPath().Append(kReportingAndNELStoreFilename)));
+    sql::MetaTable meta_table;
+    meta_table.Init(&db, 1, 1);
+    ASSERT_TRUE(db.Execute("DELETE FROM meta"));
+    db.Close();
+  }
+
+  base::HistogramTester hist_tester;
+
+  // Upon loading, the database should be reset to a good, blank state.
+  CreateStore();
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(0U, policies.size());
+
+  hist_tester.ExpectUniqueSample("ReportingAndNEL.CorruptMetaTable", 1, 1);
+
+  // Verify that, after, recovery, the database persists properly.
+  NetworkErrorLoggingService::NelPolicy policy2 = MakeNelPolicy(
+      kNik2_, url::Origin::Create(GURL("https://www.bar.test")), now);
+  store_->AddNelPolicy(policy2);
+  DestroyStore();
+
+  CreateStore();
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy2.key, policies[0].key);
+  EXPECT_EQ(policy2.received_ip_address, policies[0].received_ip_address);
+  EXPECT_EQ(policy2.report_to, policies[0].report_to);
+  EXPECT_TRUE(WithinOneMicrosecond(policy2.expires, policies[0].expires));
+  EXPECT_EQ(policy2.include_subdomains, policies[0].include_subdomains);
+  EXPECT_EQ(policy2.success_fraction, policies[0].success_fraction);
+  EXPECT_EQ(policy2.failure_fraction, policies[0].failure_fraction);
+  EXPECT_TRUE(WithinOneMicrosecond(policy2.last_used, policies[0].last_used));
+}
+
 TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistNelPolicy) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NelPolicy policy =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.foo.test")), now);
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
   store_->AddNelPolicy(policy);
 
   // Close and reopen the database.
@@ -253,7 +343,7 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistNelPolicy) {
   std::vector<NetworkErrorLoggingService::NelPolicy> policies;
   LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
-  EXPECT_EQ(policy.origin, policies[0].origin);
+  EXPECT_EQ(policy.key, policies[0].key);
   EXPECT_EQ(policy.received_ip_address, policies[0].received_ip_address);
   EXPECT_EQ(policy.report_to, policies[0].report_to);
   EXPECT_TRUE(WithinOneMicrosecond(policy.expires, policies[0].expires));
@@ -282,8 +372,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, UpdateNelPolicyAccessTime) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NelPolicy policy =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.foo.test")), now);
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
   store_->AddNelPolicy(policy);
 
   policy.last_used = now + base::TimeDelta::FromDays(1);
@@ -297,7 +387,7 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, UpdateNelPolicyAccessTime) {
   std::vector<NetworkErrorLoggingService::NelPolicy> policies;
   LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
-  EXPECT_EQ(policy.origin, policies[0].origin);
+  EXPECT_EQ(policy.key, policies[0].key);
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
@@ -305,10 +395,10 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteNelPolicy) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NelPolicy policy1 =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.foo.test")), now);
-  NetworkErrorLoggingService::NelPolicy policy2 =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.bar.test")), now);
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
+  NetworkErrorLoggingService::NelPolicy policy2 = MakeNelPolicy(
+      kNik2_, url::Origin::Create(GURL("https://www.bar.test")), now);
   store_->AddNelPolicy(policy1);
   store_->AddNelPolicy(policy2);
 
@@ -322,7 +412,7 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteNelPolicy) {
   std::vector<NetworkErrorLoggingService::NelPolicy> policies;
   LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
-  EXPECT_EQ(policy2.origin, policies[0].origin);
+  EXPECT_EQ(policy2.key, policies[0].key);
 
   // Delete after having closed and reopened.
   store_->DeleteNelPolicy(policy2);
@@ -337,20 +427,40 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteNelPolicy) {
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest,
        NelPolicyUniquenessConstraint) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("https://www.bar.test"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("https://www.foo.test"));
 
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(kOrigin, now);
-  // Different NEL policy (different last_used) with the same origin.
-  NetworkErrorLoggingService::NelPolicy policy2 =
-      MakeNelPolicy(kOrigin, now + base::TimeDelta::FromDays(1));
+  base::Time later = now + base::TimeDelta::FromDays(1);
 
+  // Add 3 entries, 2 identical except for NIK, 2 identical except for origin.
+  // Entries should not conflict with each other. These are added in lexical
+  // order.
+  NetworkErrorLoggingService::NelPolicy policy1 =
+      MakeNelPolicy(kNik1_, kOrigin1, now);
+  NetworkErrorLoggingService::NelPolicy policy2 =
+      MakeNelPolicy(kNik1_, kOrigin2, now);
+  NetworkErrorLoggingService::NelPolicy policy3 =
+      MakeNelPolicy(kNik2_, kOrigin1, now);
   store_->AddNelPolicy(policy1);
-  // Adding a policy with the same origin should trigger a warning and fail to
-  // execute.
   store_->AddNelPolicy(policy2);
+  store_->AddNelPolicy(policy3);
+
+  // Add policies that are identical except for expiration time. These should
+  // trigger a warning an fail to execute.
+  NetworkErrorLoggingService::NelPolicy policy4 =
+      MakeNelPolicy(kNik1_, kOrigin1, later);
+  NetworkErrorLoggingService::NelPolicy policy5 =
+      MakeNelPolicy(kNik1_, kOrigin2, later);
+  NetworkErrorLoggingService::NelPolicy policy6 =
+      MakeNelPolicy(kNik2_, kOrigin1, later);
+  store_->AddNelPolicy(policy4);
+  store_->AddNelPolicy(policy5);
+  store_->AddNelPolicy(policy6);
 
   // Close and reopen the database.
   DestroyStore();
@@ -358,15 +468,25 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
 
   std::vector<NetworkErrorLoggingService::NelPolicy> policies;
   LoadNelPolicies(&policies);
-  // Only the first policy we added should be in the store.
-  ASSERT_EQ(1u, policies.size());
-  EXPECT_EQ(policy1.origin, policies[0].origin);
+
+  // Only the first 3 policies should be in the store.
+
+  ASSERT_EQ(3u, policies.size());
+
+  EXPECT_EQ(policy1.key, policies[0].key);
   EXPECT_TRUE(WithinOneMicrosecond(policy1.last_used, policies[0].last_used));
+
+  EXPECT_EQ(policy2.key, policies[1].key);
+  EXPECT_TRUE(WithinOneMicrosecond(policy2.last_used, policies[1].last_used));
+
+  EXPECT_EQ(policy3.key, policies[2].key);
+  EXPECT_TRUE(WithinOneMicrosecond(policy3.last_used, policies[2].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, CoalesceNelPolicyOperations) {
-  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(
-      url::Origin::Create(GURL("https://www.foo.test")), base::Time::Now());
+  NetworkErrorLoggingService::NelPolicy policy =
+      MakeNelPolicy(kNik1_, url::Origin::Create(GURL("https://www.foo.test")),
+                    base::Time::Now());
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -422,10 +542,14 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   InitializeStore();
 
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NelPolicy policy1 =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.foo.test")), now);
-  NetworkErrorLoggingService::NelPolicy policy2 =
-      MakeNelPolicy(url::Origin::Create(GURL("https://www.bar.test")), now);
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
+  // Only has different host.
+  NetworkErrorLoggingService::NelPolicy policy2 = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.bar.test")), now);
+  // Only has different NetworkIsolationKey.
+  NetworkErrorLoggingService::NelPolicy policy3 = MakeNelPolicy(
+      kNik2_, url::Origin::Create(GURL("https://www.foo.test")), now);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -437,13 +561,106 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
       base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
-  // Delete on |policy2| should not cancel addition of unrelated |policy1|.
+  // Delete on |policy2| and |policy3| should not cancel addition of unrelated
+  // |policy1|.
   store_->AddNelPolicy(policy1);
   store_->DeleteNelPolicy(policy2);
-  EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
+  store_->DeleteNelPolicy(policy3);
+  EXPECT_EQ(3u, store_->GetQueueLengthForTesting());
 
   event.Signal();
   RunUntilIdle();
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       DontPersistNelPoliciesWithTransientNetworkIsolationKeys) {
+  CreateStore();
+  InitializeStore();
+
+  base::Time now = base::Time::Now();
+  NetworkErrorLoggingService::NelPolicy policy =
+      MakeNelPolicy(NetworkIsolationKey::CreateTransient(),
+                    url::Origin::Create(GURL("https://www.foo.test")), now);
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddNelPolicy(policy);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->UpdateNelPolicyAccessTime(policy);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->DeleteNelPolicy(policy);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close and reopen the database.
+  DestroyStore();
+  CreateStore();
+
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
+  EXPECT_EQ(0u, policies.size());
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       NelPoliciesRestoredWithNetworkIsolationKeysDisabled) {
+  CreateStore();
+  InitializeStore();
+
+  base::Time now = base::Time::Now();
+  // Policy with non-empty NetworkIsolationKey.
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), now);
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddNelPolicy(policy);
+  EXPECT_EQ(1u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close the database, disable kPartitionNelAndReportingByNetworkIsolationKey,
+  // and re-open it.
+  DestroyStore();
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionNelAndReportingByNetworkIsolationKey);
+  CreateStore();
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
+
+  // No entries should be restored.
+  ASSERT_EQ(0u, policies.size());
+
+  // Now reload the store with kPartitionNelAndReportingByNetworkIsolationKey
+  // enabled again.
+  DestroyStore();
+  feature_list.Reset();
+  CreateStore();
+  LoadNelPolicies(&policies);
+
+  // The entry is back!
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy.key, policies[0].key);
+  EXPECT_TRUE(WithinOneMicrosecond(policy.expires, policies[0].expires));
 }
 
 // These tests test that a SQLitePersistentReportingAndNelStore
@@ -478,10 +695,12 @@ class SQLitePersistNelTest : public SQLitePersistentReportingAndNelStoreTest {
   }
 
   NetworkErrorLoggingService::RequestDetails MakeRequestDetails(
-      GURL url,
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& url,
       Error error_type) {
     NetworkErrorLoggingService::RequestDetails details;
 
+    details.network_isolation_key = network_isolation_key;
     details.uri = url;
     details.referrer = GURL("https://referrer.com/");
     details.user_agent = "Mozilla/1.0";
@@ -504,18 +723,18 @@ class SQLitePersistNelTest : public SQLitePersistentReportingAndNelStoreTest {
 TEST_F(SQLitePersistNelTest, AddAndRetrieveNelPolicy) {
   const GURL kUrl("https://www.foo.test");
   const url::Origin kOrigin = url::Origin::Create(kUrl);
+  const NetworkErrorLoggingService::NelPolicyKey kKey(kNik1_, kOrigin);
 
-  service_->OnHeader(kOrigin, kServerIP, kHeader);
+  service_->OnHeader(kNik1_, kOrigin, kServerIP, kHeader);
   RunUntilIdle();
 
-  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin));
+  EXPECT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey));
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
-  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(
-                    url::Origin::Create(kUrl)));
+  EXPECT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey));
 
   EXPECT_THAT(reporting_service_->reports(),
               testing::ElementsAre(ReportUrlIs(kUrl)));
@@ -524,32 +743,34 @@ TEST_F(SQLitePersistNelTest, AddAndRetrieveNelPolicy) {
 TEST_F(SQLitePersistNelTest, AddAndDeleteNelPolicy) {
   const GURL kUrl("https://www.foo.test");
   const url::Origin kOrigin = url::Origin::Create(kUrl);
+  const NetworkErrorLoggingService::NelPolicyKey kKey(kNik1_, kOrigin);
 
-  service_->OnHeader(kOrigin, kServerIP, kHeader);
+  service_->OnHeader(kNik1_, kOrigin, kServerIP, kHeader);
   RunUntilIdle();
 
-  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin));
+  EXPECT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey));
   SimulateRestart();
 
   // Deletes the stored policy.
-  service_->OnHeader(kOrigin, kServerIP, kHeaderMaxAge0);
+  service_->OnHeader(kNik1_, kOrigin, kServerIP, kHeaderMaxAge0);
   RunUntilIdle();
 
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey));
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey));
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
 TEST_F(SQLitePersistNelTest, ExpirationTimeIsPersisted) {
   const GURL kUrl("https://www.foo.test");
   const url::Origin kOrigin = url::Origin::Create(kUrl);
+  const NetworkIsolationKey kNik;
 
-  service_->OnHeader(kOrigin, kServerIP, kHeader);
+  service_->OnHeader(kNik, kOrigin, kServerIP, kHeader);
   RunUntilIdle();
 
   // Makes the policy we just added expired.
@@ -557,17 +778,17 @@ TEST_F(SQLitePersistNelTest, ExpirationTimeIsPersisted) {
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik, kUrl, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
   EXPECT_EQ(0u, reporting_service_->reports().size());
 
   // Add the policy again so that it is not expired.
-  service_->OnHeader(kOrigin, kServerIP, kHeader);
+  service_->OnHeader(kNik, kOrigin, kServerIP, kHeader);
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik, kUrl, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
   EXPECT_THAT(reporting_service_->reports(),
@@ -578,14 +799,14 @@ TEST_F(SQLitePersistNelTest, OnRequestUpdatesAccessTime) {
   const GURL kUrl("https://www.foo.test");
   const url::Origin kOrigin = url::Origin::Create(kUrl);
 
-  service_->OnHeader(kOrigin, kServerIP, kHeader);
+  service_->OnHeader(kNik1_, kOrigin, kServerIP, kHeader);
   RunUntilIdle();
 
   SimulateRestart();
 
   // Update the access time by sending a request.
   clock_.Advance(base::TimeDelta::FromSeconds(100));
-  service_->OnRequest(MakeRequestDetails(kUrl, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
   EXPECT_THAT(reporting_service_->reports(),
@@ -594,11 +815,12 @@ TEST_F(SQLitePersistNelTest, OnRequestUpdatesAccessTime) {
   SimulateRestart();
   // Check that the policy's access time has been updated.
   base::Time now = clock_.Now();
-  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(kOrigin, now);
+  NetworkErrorLoggingService::NelPolicy policy =
+      MakeNelPolicy(kNik1_, kOrigin, now);
   std::vector<NetworkErrorLoggingService::NelPolicy> policies;
   LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
-  EXPECT_EQ(policy.origin, policies[0].origin);
+  EXPECT_EQ(policy.key, policies[0].key);
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
@@ -607,18 +829,20 @@ TEST_F(SQLitePersistNelTest, RemoveSomeBrowsingData) {
   const url::Origin kOrigin1 = url::Origin::Create(kUrl1);
   const url::Origin kOrigin2 =
       url::Origin::Create(GURL("https://www.bar.test"));
+  const NetworkErrorLoggingService::NelPolicyKey kKey1(kNik1_, kOrigin1);
+  const NetworkErrorLoggingService::NelPolicyKey kKey2(kNik2_, kOrigin2);
 
-  service_->OnHeader(kOrigin1, kServerIP, kHeader);
-  service_->OnHeader(kOrigin2, kServerIP, kHeader);
+  service_->OnHeader(kNik1_, kOrigin1, kServerIP, kHeader);
+  service_->OnHeader(kNik2_, kOrigin2, kServerIP, kHeader);
   RunUntilIdle();
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl1, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
-  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  ASSERT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey1));
+  ASSERT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey2));
   EXPECT_THAT(reporting_service_->reports(),
               testing::ElementsAre(ReportUrlIs(kUrl1)));
 
@@ -631,15 +855,15 @@ TEST_F(SQLitePersistNelTest, RemoveSomeBrowsingData) {
       kOrigin1.host()));
   RunUntilIdle();
 
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey1));
+  EXPECT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey2));
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl1, ERR_INVALID_RESPONSE));
   RunUntilIdle();
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey1));
+  EXPECT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey2));
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
@@ -648,19 +872,21 @@ TEST_F(SQLitePersistNelTest, RemoveAllBrowsingData) {
   const url::Origin kOrigin1 = url::Origin::Create(kUrl1);
   const GURL kUrl2("https://www.bar.test");
   const url::Origin kOrigin2 = url::Origin::Create(kUrl2);
+  const NetworkErrorLoggingService::NelPolicyKey kKey1(kNik1_, kOrigin1);
+  const NetworkErrorLoggingService::NelPolicyKey kKey2(kNik2_, kOrigin2);
 
-  service_->OnHeader(kOrigin1, kServerIP, kHeader);
-  service_->OnHeader(kOrigin2, kServerIP, kHeader);
+  service_->OnHeader(kNik1_, kOrigin1, kServerIP, kHeader);
+  service_->OnHeader(kNik2_, kOrigin2, kServerIP, kHeader);
   RunUntilIdle();
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
-  service_->OnRequest(MakeRequestDetails(kUrl2, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik2_, kUrl2, ERR_INVALID_RESPONSE));
   RunUntilIdle();
 
-  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  ASSERT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey1));
+  ASSERT_EQ(1u, service_->GetPolicyKeysForTesting().count(kKey2));
   EXPECT_THAT(reporting_service_->reports(),
               testing::ElementsAre(ReportUrlIs(kUrl1), ReportUrlIs(kUrl2)));
 
@@ -669,29 +895,31 @@ TEST_F(SQLitePersistNelTest, RemoveAllBrowsingData) {
   service_->RemoveAllBrowsingData();
   RunUntilIdle();
 
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey1));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey2));
 
   SimulateRestart();
 
-  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
-  service_->OnRequest(MakeRequestDetails(kUrl2, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik1_, kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kNik2_, kUrl2, ERR_INVALID_RESPONSE));
   RunUntilIdle();
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
-  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey1));
+  EXPECT_EQ(0u, service_->GetPolicyKeysForTesting().count(kKey2));
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistReportingClients) {
   const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
+  url::Origin foo;
 
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
   ReportingEndpoint endpoint = MakeReportingEndpoint(
-      kOrigin, kGroupName1, GURL("https://endpoint.test/1"));
+      kNik1_, kOrigin, kGroupName1, GURL("https://endpoint.test/1"));
   CachedReportingEndpointGroup group =
-      MakeReportingEndpointGroup(kOrigin, kGroupName1, now);
+      MakeReportingEndpointGroup(kNik1_, kOrigin, kGroupName1, now);
+  foo = *(kNik1_.GetTopFrameSite());
 
   store_->AddReportingEndpoint(endpoint);
   store_->AddReportingEndpointGroup(group);
@@ -705,12 +933,16 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistReportingClients) {
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, endpoints.size());
+  EXPECT_EQ(endpoint.group_key.network_isolation_key,
+            endpoints[0].group_key.network_isolation_key);
   EXPECT_EQ(endpoint.group_key.origin, endpoints[0].group_key.origin);
   EXPECT_EQ(endpoint.group_key.group_name, endpoints[0].group_key.group_name);
   EXPECT_EQ(endpoint.info.url, endpoints[0].info.url);
   EXPECT_EQ(endpoint.info.priority, endpoints[0].info.priority);
   EXPECT_EQ(endpoint.info.weight, endpoints[0].info.weight);
   ASSERT_EQ(1u, groups.size());
+  EXPECT_EQ(group.group_key.network_isolation_key,
+            groups[0].group_key.network_isolation_key);
   EXPECT_EQ(group.group_key.origin, groups[0].group_key.origin);
   EXPECT_EQ(group.group_key.group_name, groups[0].group_key.group_name);
   EXPECT_EQ(group.include_subdomains, groups[0].include_subdomains);
@@ -724,7 +956,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   InitializeStore();
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now);
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now);
 
   store_->AddReportingEndpointGroup(group);
 
@@ -739,6 +972,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, groups.size());
+  EXPECT_EQ(group.group_key.network_isolation_key,
+            groups[0].group_key.network_isolation_key);
   EXPECT_EQ(group.group_key.origin, groups[0].group_key.origin);
   EXPECT_EQ(group.group_key.group_name, groups[0].group_key.group_name);
   EXPECT_TRUE(WithinOneMicrosecond(group.last_used, groups[0].last_used));
@@ -748,9 +983,9 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
        UpdateReportingEndpointDetails) {
   CreateStore();
   InitializeStore();
-  ReportingEndpoint endpoint =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.foo.test")),
-                            kGroupName1, GURL("https://endpoint.test/1"));
+  ReportingEndpoint endpoint = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/1"));
 
   store_->AddReportingEndpoint(endpoint);
 
@@ -766,6 +1001,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, endpoints.size());
+  EXPECT_EQ(endpoint.group_key.network_isolation_key,
+            endpoints[0].group_key.network_isolation_key);
   EXPECT_EQ(endpoint.group_key.origin, endpoints[0].group_key.origin);
   EXPECT_EQ(endpoint.group_key.group_name, endpoints[0].group_key.group_name);
   EXPECT_EQ(endpoint.info.url, endpoints[0].info.url);
@@ -779,8 +1016,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   InitializeStore();
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now,
-      OriginSubdomains::EXCLUDE, kExpires);
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now, OriginSubdomains::EXCLUDE, kExpires);
 
   store_->AddReportingEndpointGroup(group);
 
@@ -797,6 +1034,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, groups.size());
+  EXPECT_EQ(group.group_key.network_isolation_key,
+            groups[0].group_key.network_isolation_key);
   EXPECT_EQ(group.group_key.origin, groups[0].group_key.origin);
   EXPECT_EQ(group.group_key.group_name, groups[0].group_key.group_name);
   EXPECT_EQ(group.include_subdomains, groups[0].include_subdomains);
@@ -807,12 +1046,12 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
 TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteReportingEndpoint) {
   CreateStore();
   InitializeStore();
-  ReportingEndpoint endpoint1 =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.foo.test")),
-                            kGroupName1, GURL("https://endpoint.test/1"));
-  ReportingEndpoint endpoint2 =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.bar.test")),
-                            kGroupName2, GURL("https://endpoint.test/2"));
+  ReportingEndpoint endpoint1 = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/1"));
+  ReportingEndpoint endpoint2 = MakeReportingEndpoint(
+      kNik2_, url::Origin::Create(GURL("https://www.bar.test")), kGroupName2,
+      GURL("https://endpoint.test/2"));
 
   store_->AddReportingEndpoint(endpoint1);
   store_->AddReportingEndpoint(endpoint2);
@@ -843,9 +1082,11 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteReportingEndpointGroup) {
   InitializeStore();
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group1 = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now);
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now);
   CachedReportingEndpointGroup group2 = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.bar.test")), kGroupName2, now);
+      kNik2_, url::Origin::Create(GURL("https://www.bar.test")), kGroupName2,
+      now);
 
   store_->AddReportingEndpointGroup(group1);
   store_->AddReportingEndpointGroup(group2);
@@ -873,20 +1114,45 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteReportingEndpointGroup) {
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest,
        ReportingEndpointUniquenessConstraint) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("https://www.bar.test"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("https://www.foo.test"));
   const GURL kEndpoint("https://endpoint.test/1");
 
   CreateStore();
   InitializeStore();
-  ReportingEndpoint endpoint1 = MakeReportingEndpoint(
-      kOrigin, kGroupName1, kEndpoint, 1 /* priority */, 1 /* weight */);
-  ReportingEndpoint endpoint2 = MakeReportingEndpoint(
-      kOrigin, kGroupName1, kEndpoint, 2 /* priority */, 2 /* weight */);
 
+  // Add 3 entries, 2 identical except for NIK, 2 identical except for origin.
+  // Entries should not conflict with each other. These are added in lexical
+  // order.
+  ReportingEndpoint endpoint1 =
+      MakeReportingEndpoint(kNik1_, kOrigin1, kGroupName1, kEndpoint,
+                            1 /* priority */, 1 /* weight */);
+  ReportingEndpoint endpoint2 =
+      MakeReportingEndpoint(kNik1_, kOrigin2, kGroupName1, kEndpoint,
+                            2 /* priority */, 2 /* weight */);
+  ReportingEndpoint endpoint3 =
+      MakeReportingEndpoint(kNik2_, kOrigin2, kGroupName1, kEndpoint,
+                            3 /* priority */, 3 /* weight */);
   store_->AddReportingEndpoint(endpoint1);
-  // Adding an endpoint with the same origin, group name, and url should trigger
-  // a warning and fail to execute.
   store_->AddReportingEndpoint(endpoint2);
+  store_->AddReportingEndpoint(endpoint3);
+
+  // Add entries that are identical except for expiration time. These should
+  // trigger a warning an fail to execute.
+  ReportingEndpoint endpoint4 =
+      MakeReportingEndpoint(kNik1_, kOrigin1, kGroupName1, kEndpoint,
+                            4 /* priority */, 4 /* weight */);
+  ReportingEndpoint endpoint5 =
+      MakeReportingEndpoint(kNik1_, kOrigin2, kGroupName1, kEndpoint,
+                            5 /* priority */, 5 /* weight */);
+  ReportingEndpoint endpoint6 =
+      MakeReportingEndpoint(kNik2_, kOrigin2, kGroupName1, kEndpoint,
+                            6 /* priority */, 6 /* weight */);
+  store_->AddReportingEndpoint(endpoint4);
+  store_->AddReportingEndpoint(endpoint5);
+  store_->AddReportingEndpoint(endpoint6);
 
   DestroyStore();
   CreateStore();
@@ -894,33 +1160,64 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
-  // Only the first endpoint we added should be in the store.
-  ASSERT_EQ(1u, endpoints.size());
-  EXPECT_EQ(endpoint1.group_key.origin, endpoints[0].group_key.origin);
-  EXPECT_EQ(endpoint1.group_key.group_name, endpoints[0].group_key.group_name);
+
+  // Only the first 3 endpoints should be in the store.
+
+  ASSERT_EQ(3u, endpoints.size());
+
+  EXPECT_EQ(endpoint1.group_key, endpoints[0].group_key);
   EXPECT_EQ(endpoint1.info.url, endpoints[0].info.url);
   EXPECT_EQ(endpoint1.info.priority, endpoints[0].info.priority);
   EXPECT_EQ(endpoint1.info.weight, endpoints[0].info.weight);
+
+  EXPECT_EQ(endpoint2.group_key, endpoints[1].group_key);
+  EXPECT_EQ(endpoint2.info.url, endpoints[1].info.url);
+  EXPECT_EQ(endpoint2.info.priority, endpoints[1].info.priority);
+  EXPECT_EQ(endpoint2.info.weight, endpoints[1].info.weight);
+
+  EXPECT_EQ(endpoint3.group_key, endpoints[2].group_key);
+  EXPECT_EQ(endpoint3.info.url, endpoints[2].info.url);
+  EXPECT_EQ(endpoint3.info.priority, endpoints[2].info.priority);
+  EXPECT_EQ(endpoint3.info.weight, endpoints[2].info.weight);
 }
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest,
        ReportingEndpointGroupUniquenessConstraint) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("https://www.bar.test"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("https://www.foo.test"));
 
   CreateStore();
   InitializeStore();
-  base::Time now = base::Time::Now();
-  CachedReportingEndpointGroup group1 =
-      MakeReportingEndpointGroup(kOrigin, kGroupName1, now);
-  base::Time time2 = now + base::TimeDelta::FromDays(7);
-  CachedReportingEndpointGroup group2 =
-      MakeReportingEndpointGroup(kOrigin, kGroupName1, time2);
-  LOG(INFO) << "foo";
 
+  base::Time now = base::Time::Now();
+  base::Time later = now + base::TimeDelta::FromDays(7);
+
+  // Add 3 entries, 2 identical except for NIK, 2 identical except for origin.
+  // Entries should not conflict with each other. These are added in lexical
+  // order.
+  CachedReportingEndpointGroup group1 =
+      MakeReportingEndpointGroup(kNik1_, kOrigin1, kGroupName1, now);
+  CachedReportingEndpointGroup group2 =
+      MakeReportingEndpointGroup(kNik1_, kOrigin2, kGroupName1, now);
+  CachedReportingEndpointGroup group3 =
+      MakeReportingEndpointGroup(kNik2_, kOrigin1, kGroupName1, now);
   store_->AddReportingEndpointGroup(group1);
-  // Adding an endpoint group with the same origin and group name should trigger
-  // a warning and fail to execute.
   store_->AddReportingEndpointGroup(group2);
+  store_->AddReportingEndpointGroup(group3);
+
+  // Add entries that are identical except for expiration time. These should
+  // trigger a warning an fail to execute.
+  CachedReportingEndpointGroup group4 =
+      MakeReportingEndpointGroup(kNik1_, kOrigin1, kGroupName1, later);
+  CachedReportingEndpointGroup group5 =
+      MakeReportingEndpointGroup(kNik1_, kOrigin2, kGroupName1, later);
+  CachedReportingEndpointGroup group6 =
+      MakeReportingEndpointGroup(kNik2_, kOrigin1, kGroupName1, later);
+  store_->AddReportingEndpointGroup(group4);
+  store_->AddReportingEndpointGroup(group5);
+  store_->AddReportingEndpointGroup(group6);
 
   DestroyStore();
   CreateStore();
@@ -928,20 +1225,32 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
-  // Only the first group we added should be in the store.
-  ASSERT_EQ(1u, groups.size());
-  EXPECT_EQ(group1.group_key.origin, groups[0].group_key.origin);
-  EXPECT_EQ(group1.group_key.group_name, groups[0].group_key.group_name);
+
+  // Only the first 3 endpoints should be in the store.
+
+  ASSERT_EQ(3u, groups.size());
+
+  EXPECT_EQ(group1.group_key, groups[0].group_key);
   EXPECT_EQ(group1.include_subdomains, groups[0].include_subdomains);
   EXPECT_TRUE(WithinOneMicrosecond(group1.expires, groups[0].expires));
   EXPECT_TRUE(WithinOneMicrosecond(group1.last_used, groups[0].last_used));
+
+  EXPECT_EQ(group2.group_key, groups[1].group_key);
+  EXPECT_EQ(group2.include_subdomains, groups[1].include_subdomains);
+  EXPECT_TRUE(WithinOneMicrosecond(group2.expires, groups[1].expires));
+  EXPECT_TRUE(WithinOneMicrosecond(group2.last_used, groups[1].last_used));
+
+  EXPECT_EQ(group3.group_key, groups[2].group_key);
+  EXPECT_EQ(group3.include_subdomains, groups[2].include_subdomains);
+  EXPECT_TRUE(WithinOneMicrosecond(group3.expires, groups[2].expires));
+  EXPECT_TRUE(WithinOneMicrosecond(group3.last_used, groups[2].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest,
        CoalesceReportingEndpointOperations) {
-  ReportingEndpoint endpoint =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.foo.test")),
-                            kGroupName1, GURL("https://endpoint.test/1"));
+  ReportingEndpoint endpoint = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/1"));
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -997,12 +1306,17 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
   CreateStore();
   InitializeStore();
 
-  ReportingEndpoint endpoint1 =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.foo.test")),
-                            kGroupName1, GURL("https://endpoint.test/1"));
-  ReportingEndpoint endpoint2 =
-      MakeReportingEndpoint(url::Origin::Create(GURL("https://www.bar.test")),
-                            kGroupName2, GURL("https://endpoint.test/2"));
+  ReportingEndpoint endpoint1 = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/1"));
+  // Only has different host.
+  ReportingEndpoint endpoint2 = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.bar.test")), kGroupName1,
+      GURL("https://endpoint.test/2"));
+  // Only has different NetworkIsolationKey.
+  ReportingEndpoint endpoint3 = MakeReportingEndpoint(
+      kNik2_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/3"));
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1014,10 +1328,12 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
       base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
-  // Delete on |endpoint2| should not cancel addition of unrelated |endpoint1|.
+  // Delete on |endpoint2| and |endpoint3| should not cancel addition of
+  // unrelated |endpoint1|.
   store_->AddReportingEndpoint(endpoint1);
   store_->DeleteReportingEndpoint(endpoint2);
-  EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
+  store_->DeleteReportingEndpoint(endpoint3);
+  EXPECT_EQ(3u, store_->GetQueueLengthForTesting());
 
   event.Signal();
   RunUntilIdle();
@@ -1027,7 +1343,8 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
        CoalesceReportingEndpointGroupOperations) {
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now);
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1127,9 +1444,16 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
 
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group1 = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now);
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now);
+  // Only has different host.
   CachedReportingEndpointGroup group2 = MakeReportingEndpointGroup(
-      url::Origin::Create(GURL("https://www.bar.test")), kGroupName2, now);
+      kNik1_, url::Origin::Create(GURL("https://www.bar.test")), kGroupName1,
+      now);
+  // Only has different NetworkIsolationKey.
+  CachedReportingEndpointGroup group3 = MakeReportingEndpointGroup(
+      kNik2_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      now);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1141,13 +1465,211 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest,
       base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
-  // Delete on |group2| should not cancel addition of unrelated |group2|.
+  // Delete on |group2| and |group3| should not cancel addition of unrelated
+  // |group1|.
   store_->AddReportingEndpointGroup(group1);
   store_->DeleteReportingEndpointGroup(group2);
-  EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
+  store_->DeleteReportingEndpointGroup(group3);
+  EXPECT_EQ(3u, store_->GetQueueLengthForTesting());
 
   event.Signal();
   RunUntilIdle();
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       DontPersistReportingEndpointsWithTransientNetworkIsolationKeys) {
+  CreateStore();
+  InitializeStore();
+
+  ReportingEndpoint endpoint =
+      MakeReportingEndpoint(NetworkIsolationKey::CreateTransient(),
+                            url::Origin::Create(GURL("https://www.foo.test")),
+                            kGroupName1, GURL("https://endpoint.test/1"));
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddReportingEndpoint(endpoint);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->UpdateReportingEndpointDetails(endpoint);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->DeleteReportingEndpoint(endpoint);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close and reopen the database.
+  DestroyStore();
+  CreateStore();
+
+  std::vector<ReportingEndpoint> endpoints;
+  std::vector<CachedReportingEndpointGroup> groups;
+  LoadReportingClients(&endpoints, &groups);
+  ASSERT_EQ(0u, endpoints.size());
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       DontPersistReportingEndpointGroupsWithTransientNetworkIsolationKeys) {
+  CreateStore();
+  InitializeStore();
+
+  base::Time now = base::Time::Now();
+  CachedReportingEndpointGroup group = MakeReportingEndpointGroup(
+      NetworkIsolationKey::CreateTransient(),
+      url::Origin::Create(GURL("https://www.foo.test")), kGroupName1, now);
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddReportingEndpointGroup(group);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->UpdateReportingEndpointGroupAccessTime(group);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->UpdateReportingEndpointGroupDetails(group);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+  store_->DeleteReportingEndpointGroup(group);
+  EXPECT_EQ(0u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close and reopen the database.
+  DestroyStore();
+  CreateStore();
+
+  std::vector<ReportingEndpoint> endpoints;
+  std::vector<CachedReportingEndpointGroup> groups;
+  LoadReportingClients(&endpoints, &groups);
+  ASSERT_EQ(0u, groups.size());
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       ReportingEndpointsRestoredWithNetworkIsolationKeysDisabled) {
+  CreateStore();
+  InitializeStore();
+
+  // Endpoint with non-empty NetworkIsolationKey.
+  ReportingEndpoint endpoint = MakeReportingEndpoint(
+      kNik1_, url::Origin::Create(GURL("https://www.foo.test")), kGroupName1,
+      GURL("https://endpoint.test/"));
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddReportingEndpoint(endpoint);
+  EXPECT_EQ(1u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close the database, disable kPartitionNelAndReportingByNetworkIsolationKey,
+  // and re-open it.
+  DestroyStore();
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionNelAndReportingByNetworkIsolationKey);
+  CreateStore();
+
+  std::vector<ReportingEndpoint> endpoints;
+  std::vector<CachedReportingEndpointGroup> groups;
+  LoadReportingClients(&endpoints, &groups);
+  // No entries should be restored.
+  ASSERT_EQ(0u, endpoints.size());
+
+  // Now reload the store with kPartitionNelAndReportingByNetworkIsolationKey
+  // enabled again.
+  DestroyStore();
+  feature_list.Reset();
+  CreateStore();
+  LoadReportingClients(&endpoints, &groups);
+
+  // The entry is back!
+  ASSERT_EQ(1u, endpoints.size());
+  EXPECT_EQ(endpoint.group_key, endpoints[0].group_key);
+  EXPECT_EQ(endpoint.info.url, endpoints[0].info.url);
+  EXPECT_EQ(endpoint.info.priority, endpoints[0].info.priority);
+  EXPECT_EQ(endpoint.info.weight, endpoints[0].info.weight);
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       ReportingEndpointGroupsRestoredWithNetworkIsolationKeysDisabled) {
+  CreateStore();
+  InitializeStore();
+
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.test"));
+
+  CreateStore();
+  InitializeStore();
+  base::Time now = base::Time::Now();
+  // Group with non-empty NetworkIsolationKey.
+  CachedReportingEndpointGroup group =
+      MakeReportingEndpointGroup(kNik1_, kOrigin, kGroupName1, now);
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Wedge the background thread to make sure it doesn't start consuming the
+  // queue.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
+                     base::Unretained(this), &event));
+
+  store_->AddReportingEndpointGroup(group);
+  EXPECT_EQ(1u, store_->GetQueueLengthForTesting());
+
+  event.Signal();
+  RunUntilIdle();
+
+  // Close the database, disable kPartitionNelAndReportingByNetworkIsolationKey,
+  // and re-open it.
+  DestroyStore();
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionNelAndReportingByNetworkIsolationKey);
+  CreateStore();
+
+  std::vector<ReportingEndpoint> endpoints;
+  std::vector<CachedReportingEndpointGroup> groups;
+  // No entries should be restored.
+  LoadReportingClients(&endpoints, &groups);
+  EXPECT_TRUE(groups.empty());
+
+  // Now reload the store with kPartitionNelAndReportingByNetworkIsolationKey
+  // enabled again.
+  DestroyStore();
+  feature_list.Reset();
+  CreateStore();
+  LoadReportingClients(&endpoints, &groups);
+
+  // The entry is back!
+  ASSERT_EQ(1u, groups.size());
+  EXPECT_EQ(group.group_key, groups[0].group_key);
+  EXPECT_EQ(group.include_subdomains, groups[0].include_subdomains);
+  EXPECT_TRUE(WithinOneMicrosecond(group.expires, groups[0].expires));
+  EXPECT_TRUE(WithinOneMicrosecond(group.last_used, groups[0].last_used));
 }
 
 }  // namespace net

@@ -5,7 +5,7 @@
 #ifndef CAST_STREAMING_OFFER_MESSAGES_H_
 #define CAST_STREAMING_OFFER_MESSAGES_H_
 
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <string>
 #include <vector>
 

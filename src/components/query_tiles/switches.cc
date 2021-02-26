@@ -10,10 +10,17 @@ const base::Feature kQueryTilesGeoFilter{"QueryTilesGeoFilter",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kQueryTiles{"QueryTiles",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQueryTilesInNTP{"QueryTilesInNTP",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kQueryTilesInOmnibox{"QueryTilesInOmnibox",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kQueryTilesEnableQueryEditing{
     "QueryTilesEnableQueryEditing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQueryTilesLocalOrdering{"QueryTilesLocalOrdering",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQueryTilesRemoveTrendingTilesAfterInactivity{
+    "QueryTilesRemoveTrendingAfterInactivity",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsEnabledQueryTilesInOmnibox() {
   return base::FeatureList::IsEnabled(features::kQueryTilesGeoFilter) &&
@@ -29,5 +36,7 @@ const char kQueryTilesCountryCode[] = "query-tiles-country-code";
 
 const char kQueryTilesInstantBackgroundTask[] =
     "query-tiles-instant-background-task";
+
+const char kQueryTilesEnableTrending[] = "query-tiles-enable-trending";
 }  // namespace switches
 }  // namespace query_tiles

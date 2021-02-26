@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
@@ -99,7 +100,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // WebSocketSpdyStreamAdapter::Delegate methods.
   void OnHeadersSent() override;
   void OnHeadersReceived(
-      const spdy::SpdyHeaderBlock& response_headers) override;
+      const spdy::Http2HeaderBlock& response_headers) override;
   void OnClose(int status) override;
 
   // Called by |spdy_stream_request_| when requested stream is ready.
@@ -113,7 +114,9 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // in which case returns OK, otherwise returns ERR_INVALID_RESPONSE.
   int ValidateUpgradeResponse(const HttpResponseHeaders* headers);
 
-  void OnFailure(const std::string& message);
+  void OnFailure(const std::string& message,
+                 int net_error,
+                 base::Optional<int> response_code);
 
   HandshakeResult result_;
 
@@ -126,7 +129,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
 
   HttpResponseInfo* http_response_info_;
 
-  spdy::SpdyHeaderBlock http2_request_headers_;
+  spdy::Http2HeaderBlock http2_request_headers_;
 
   // The sub-protocols we requested.
   std::vector<std::string> requested_sub_protocols_;

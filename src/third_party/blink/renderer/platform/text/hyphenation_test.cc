@@ -7,14 +7,17 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 using testing::ElementsAre;
 using testing::ElementsAreArray;
 
-#if defined(OS_ANDROID)
-#define USE_MINIKIN_HYPHENATION
+#if defined(USE_MINIKIN_HYPHENATION) && defined(OS_FUCHSIA)
+// Fuchsia doesn't include |blink_platform_unittests_data|.
+#undef USE_MINIKIN_HYPHENATION
 #endif
+
 #if defined(USE_MINIKIN_HYPHENATION)
 #include "base/files/file_path.h"
 #include "third_party/blink/renderer/platform/text/hyphenation/hyphenation_minikin.h"
@@ -34,8 +37,8 @@ class HyphenationTest : public testing::Test {
  protected:
   void TearDown() override { LayoutLocale::ClearForTesting(); }
 
-#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
-  // Get a |Hyphenation| instnace for the specified locale for testing.
+#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MAC)
+  // Get a |Hyphenation| instance for the specified locale for testing.
   scoped_refptr<Hyphenation> GetHyphenation(const AtomicString& locale) {
 #if defined(USE_MINIKIN_HYPHENATION)
     // Because the mojo service to open hyphenation dictionaries is not
@@ -45,7 +48,7 @@ class HyphenationTest : public testing::Test {
 #if defined(OS_ANDROID)
     base::FilePath path("/system/usr/hyphen-data");
 #else
-#error "This configuration is not supported."
+    base::FilePath path = test::HyphenationDictionaryDir();
 #endif
     path = path.AppendASCII(filename);
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -69,16 +72,42 @@ TEST_F(HyphenationTest, Get) {
   EXPECT_EQ(nullptr, LayoutLocale::Get("en-UK")->GetHyphenation());
 }
 
-#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
-// TODO(crbug.com/851413): Reenable this test.
-#if defined(OS_ANDROID)
-#define MAYBE_HyphenLocations DISABLED_HyphenLocations
-#else
-#define MAYBE_HyphenLocations HyphenLocations
+#if defined(USE_MINIKIN_HYPHENATION)
+TEST_F(HyphenationTest, MapLocale) {
+  EXPECT_EQ(HyphenationMinikin::MapLocale("de-de"), "de-1996");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("de-de-xyz"), "de-1996");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("de-li"), "de-1996");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("de-li-1901"), "de-ch-1901");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en"), "en-gb");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en-gu"), "en-us");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en-gu-xyz"), "en-us");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en-xyz"), "en-gb");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en-xyz-xyz"), "en-gb");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("fr-ca"), "fr");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("fr-fr"), "fr");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("fr-fr-xyz"), "fr");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("mn-xyz"), "mn-cyrl");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("und-Deva-xyz"), "hi");
+
+  const char* no_map_locales[] = {"en-us", "fr"};
+  for (const char* locale_str : no_map_locales) {
+    AtomicString locale(locale_str);
+    AtomicString mapped_locale = HyphenationMinikin::MapLocale(locale);
+    // If no mapping, the same instance should be returned.
+    EXPECT_EQ(locale.Impl(), mapped_locale.Impl());
+  }
+}
 #endif
-TEST_F(HyphenationTest, MAYBE_HyphenLocations) {
+
+#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MAC)
+TEST_F(HyphenationTest, HyphenLocations) {
   scoped_refptr<Hyphenation> hyphenation = GetHyphenation("en-us");
-  ASSERT_TRUE(hyphenation) << "Cannot find the hyphenation engine";
+#if defined(OS_ANDROID)
+  // Hyphenation is available only for Android M MR1 or later.
+  if (!hyphenation)
+    return;
+#endif
+  ASSERT_TRUE(hyphenation) << "Cannot find the hyphenation for en-us";
 
   // Get all hyphenation points by |HyphenLocations|.
   const String word("hyphenation");

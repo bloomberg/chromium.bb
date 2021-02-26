@@ -62,9 +62,10 @@ void It2MeConfirmationDialogProxy::Core::Show(
     const std::string& remote_user_email) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  dialog_->Show(remote_user_email,
-                base::Bind(&It2MeConfirmationDialogProxy::Core::ReportResult,
-                           base::Unretained(this)));
+  dialog_->Show(
+      remote_user_email,
+      base::BindOnce(&It2MeConfirmationDialogProxy::Core::ReportResult,
+                     base::Unretained(this)));
 }
 
 void It2MeConfirmationDialogProxy::Core::ReportResult(
@@ -91,10 +92,10 @@ It2MeConfirmationDialogProxy::~It2MeConfirmationDialogProxy() {
 
 void It2MeConfirmationDialogProxy::Show(
     const std::string& remote_user_email,
-    const It2MeConfirmationDialog::ResultCallback& callback) {
+    It2MeConfirmationDialog::ResultCallback callback) {
   DCHECK(core_->caller_task_runner()->BelongsToCurrentThread());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   core_->ui_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&Core::Show, base::Unretained(core_.get()),
                                 remote_user_email));

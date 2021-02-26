@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/audio/audio_output_ipc.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace media {
 class AudioParameters;
@@ -29,10 +30,11 @@ class PepperPlatformAudioOutput
  public:
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
-  static PepperPlatformAudioOutput* Create(int sample_rate,
-                                           int frames_per_buffer,
-                                           int source_render_frame_id,
-                                           AudioHelper* client);
+  static PepperPlatformAudioOutput* Create(
+      int sample_rate,
+      int frames_per_buffer,
+      const blink::LocalFrameToken& source_frame_token,
+      AudioHelper* client);
 
   // The following three methods are all called on main thread.
 
@@ -72,7 +74,7 @@ class PepperPlatformAudioOutput
 
   bool Initialize(int sample_rate,
                   int frames_per_buffer,
-                  int source_render_frame_id,
+                  const blink::LocalFrameToken& source_frame_token,
                   AudioHelper* client);
 
   // I/O thread backends to above functions.

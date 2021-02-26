@@ -26,12 +26,11 @@ const char kPluginVmImage[] = "plugin_vm.image";
 // this user on this device.
 const char kPluginVmImageExists[] = "plugin_vm.image_exists";
 
-// A boolean preference indicating whether Plugin VM is allowed to use printers.
+// Boolean preferences indicating whether Plugin VM is allowed to use certain
+// devices.
 const char kPluginVmPrintersAllowed[] = "plugin_vm.printers_allowed";
-
-// A boolean preference indicating whether the camera should be shared with
-// PluginVm.
-const char kPluginVmCameraSharing[] = "plugin_vm.camera_sharing";
+const char kPluginVmCameraAllowed[] = "plugin_vm.camera_allowed";
+const char kPluginVmMicAllowed[] = "plugin_vm.mic_allowed";
 
 // A string preference that specifies PluginVm licensing user id.
 const char kPluginVmUserId[] = "plugin_vm.user_id";
@@ -40,16 +39,30 @@ const char kPluginVmUserId[] = "plugin_vm.user_id";
 // GuestOsEngagementMetrics.
 const char kEngagementPrefsPrefix[] = "plugin_vm.metrics";
 
+// A boolean preference indicating whether data collection performed by PluginVm
+// is allowed by the corresponding boolean user policy.
+const char kPluginVmDataCollectionAllowed[] =
+    "plugin_vm.data_collection_allowed";
+
+// A uint64 preference indicating free disk space (in GB) required in order to
+// proceed with Plugin VM installation
+const char kPluginVmRequiredFreeDiskSpaceGB[] =
+    "plugin_vm.required_free_disk_space";
+constexpr int64_t kDefaultRequiredFreeDiskSpaceGB = 20LL;
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmAllowed, false);
   registry->RegisterDictionaryPref(kPluginVmImage);
   registry->RegisterBooleanPref(kPluginVmImageExists, false);
-
   // TODO(crbug.com/1066760): For convenience this currently defaults to true,
   // but we'll need to revisit before launch.
   registry->RegisterBooleanPref(kPluginVmPrintersAllowed, true);
-  registry->RegisterBooleanPref(kPluginVmCameraSharing, false);
+  registry->RegisterBooleanPref(kPluginVmCameraAllowed, false);
+  registry->RegisterBooleanPref(kPluginVmMicAllowed, false);
   registry->RegisterStringPref(kPluginVmUserId, std::string());
+  registry->RegisterBooleanPref(kPluginVmDataCollectionAllowed, false);
+  registry->RegisterIntegerPref(kPluginVmRequiredFreeDiskSpaceGB,
+                                kDefaultRequiredFreeDiskSpaceGB);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

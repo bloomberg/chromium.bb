@@ -13,12 +13,103 @@
 // Just for the DWMWINDOWATTRIBUTE enums (DWMWA_CLOAKED).
 #include <dwmapi.h>
 
+#include <algorithm>
+
 #include "modules/desktop_capture/win/scoped_gdi_object.h"
+#include "rtc_base/arraysize.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/string_utils.h"
 #include "rtc_base/win32.h"
 
 namespace webrtc {
+
+namespace {
+
+struct GetWindowListParams {
+  GetWindowListParams(int flags, DesktopCapturer::SourceList* result)
+      : ignoreUntitled(flags & GetWindowListFlags::kIgnoreUntitled),
+        ignoreUnresponsive(flags & GetWindowListFlags::kIgnoreUnresponsive),
+        result(result) {}
+  const bool ignoreUntitled;
+  const bool ignoreUnresponsive;
+  DesktopCapturer::SourceList* const result;
+};
+
+BOOL CALLBACK GetWindowListHandler(HWND hwnd, LPARAM param) {
+  GetWindowListParams* params = reinterpret_cast<GetWindowListParams*>(param);
+  DesktopCapturer::SourceList* list = params->result;
+
+  // Skip untitled window if ignoreUntitled specified
+  if (params->ignoreUntitled && GetWindowTextLength(hwnd) == 0) {
+    return TRUE;
+  }
+
+  // Skip invisible and minimized windows
+  if (!IsWindowVisible(hwnd) || IsIconic(hwnd)) {
+    return TRUE;
+  }
+
+  // Skip windows which are not presented in the taskbar,
+  // namely owned window if they don't have the app window style set
+  HWND owner = GetWindow(hwnd, GW_OWNER);
+  LONG exstyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+  if (owner && !(exstyle & WS_EX_APPWINDOW)) {
+    return TRUE;
+  }
+
+  // If ignoreUnresponsive is true then skip unresponsive windows. Set timout
+  // with 50ms, in case system is under heavy load, the check can wait longer
+  // but wont' be too long to delay the the enumeration.
+  const UINT uTimeout = 50;  // ms
+  if (params->ignoreUnresponsive &&
+      !SendMessageTimeout(hwnd, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, uTimeout,
+                          nullptr)) {
+    return TRUE;
+  }
+
+  // Capture the window class name, to allow specific window classes to be
+  // skipped.
+  //
+  // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassa
+  // says lpszClassName field in WNDCLASS is limited by 256 symbols, so we don't
+  // need to have a buffer bigger than that.
+  const size_t kMaxClassNameLength = 256;
+  WCHAR class_name[kMaxClassNameLength] = L"";
+  const int class_name_length =
+      GetClassNameW(hwnd, class_name, kMaxClassNameLength);
+  if (class_name_length < 1)
+    return TRUE;
+
+  // Skip Program Manager window.
+  if (wcscmp(class_name, L"Progman") == 0)
+    return TRUE;
+
+  // Skip Start button window on Windows Vista, Windows 7.
+  // On Windows 8, Windows 8.1, Windows 10 Start button is not a top level
+  // window, so it will not be examined here.
+  if (wcscmp(class_name, L"Button") == 0)
+    return TRUE;
+
+  DesktopCapturer::Source window;
+  window.id = reinterpret_cast<WindowId>(hwnd);
+
+  const size_t kTitleLength = 500;
+  WCHAR window_title[kTitleLength] = L"";
+  if (GetWindowTextW(hwnd, window_title, kTitleLength) > 0) {
+    window.title = rtc::ToUtf8(window_title);
+  }
+
+  // Skip windows when we failed to convert the title or it is empty.
+  if (params->ignoreUntitled && window.title.empty())
+    return TRUE;
+
+  list->push_back(window);
+
+  return TRUE;
+}
+
+}  // namespace
 
 // Prefix used to match the window class for Chrome windows.
 const wchar_t kChromeWindowClassPrefix[] = L"Chrome_WidgetWin_";
@@ -157,6 +248,16 @@ bool IsWindowMaximized(HWND window, bool* result) {
   return true;
 }
 
+bool IsWindowValidAndVisible(HWND window) {
+  return IsWindow(window) && IsWindowVisible(window) && !IsIconic(window);
+}
+
+bool GetWindowList(int flags, DesktopCapturer::SourceList* windows) {
+  GetWindowListParams params(flags, windows);
+  return ::EnumWindows(&GetWindowListHandler,
+                       reinterpret_cast<LPARAM>(&params)) != 0;
+}
+
 // WindowCaptureHelperWin implementation.
 WindowCaptureHelperWin::WindowCaptureHelperWin() {
   // Try to load dwmapi.dll dynamically since it is not available on XP.
@@ -223,12 +324,13 @@ bool WindowCaptureHelperWin::IsWindowChromeNotification(HWND hwnd) {
 }
 
 // |content_rect| is preferred because,
-// 1. WindowCapturerWin is using GDI capturer, which cannot capture DX output.
+// 1. WindowCapturerWinGdi is using GDI capturer, which cannot capture DX
+// output.
 //    So ScreenCapturer should be used as much as possible to avoid
 //    uncapturable cases. Note: lots of new applications are using DX output
 //    (hardware acceleration) to improve the performance which cannot be
-//    captured by WindowCapturerWin. See bug http://crbug.com/741770.
-// 2. WindowCapturerWin is still useful because we do not want to expose the
+//    captured by WindowCapturerWinGdi. See bug http://crbug.com/741770.
+// 2. WindowCapturerWinGdi is still useful because we do not want to expose the
 //    content on other windows if the target window is covered by them.
 // 3. Shadow and borders should not be considered as "content" on other
 //    windows because they do not expose any useful information.
@@ -288,8 +390,8 @@ bool WindowCaptureHelperWin::IsWindowOnCurrentDesktop(HWND hwnd) {
 }
 
 bool WindowCaptureHelperWin::IsWindowVisibleOnCurrentDesktop(HWND hwnd) {
-  return !::IsIconic(hwnd) && ::IsWindowVisible(hwnd) &&
-         IsWindowOnCurrentDesktop(hwnd) && !IsWindowCloaked(hwnd);
+  return IsWindowValidAndVisible(hwnd) && IsWindowOnCurrentDesktop(hwnd) &&
+         !IsWindowCloaked(hwnd);
 }
 
 // A cloaked window is composited but not visible to the user.
@@ -303,11 +405,30 @@ bool WindowCaptureHelperWin::IsWindowCloaked(HWND hwnd) {
   int res = 0;
   if (dwm_get_window_attribute_func_(hwnd, DWMWA_CLOAKED, &res, sizeof(res)) !=
       S_OK) {
-    // Cannot tell so assume not cloacked for backward compatibility.
+    // Cannot tell so assume not cloaked for backward compatibility.
     return false;
   }
 
   return res != 0;
+}
+
+bool WindowCaptureHelperWin::EnumerateCapturableWindows(
+    DesktopCapturer::SourceList* results) {
+  if (!webrtc::GetWindowList((GetWindowListFlags::kIgnoreUntitled |
+                              GetWindowListFlags::kIgnoreUnresponsive),
+                             results)) {
+    return false;
+  }
+
+  for (auto it = results->begin(); it != results->end();) {
+    if (!IsWindowVisibleOnCurrentDesktop(reinterpret_cast<HWND>(it->id))) {
+      it = results->erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace webrtc

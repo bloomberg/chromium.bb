@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_occur.h"
 
 #include "fxjs/xfa/cjx_occur.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -34,7 +34,9 @@ CXFA_Occur::CXFA_Occur(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Occur,
                 kOccurPropertyData,
                 kOccurAttributeData,
-                pdfium::MakeUnique<CJX_Occur>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Occur>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Occur::~CXFA_Occur() = default;
 

@@ -42,8 +42,8 @@ class Tokenizer {
   // Splits |input| into a series of tokens delimited in the input string by
   // any of the characters in |delimiters|.  The tokens are passed back in the
   // |output| vector.
-  static void Tokenize(const string &delimiters, const string &input,
-                       vector<string> *output);
+  static void Tokenize(const string& delimiters, const string& input,
+                       vector<string>* output);
 };
 
 }  // namespace crash

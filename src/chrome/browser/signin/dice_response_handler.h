@@ -12,6 +12,9 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -30,6 +33,9 @@ class IdentityManager;
 
 // Exposed for testing.
 extern const int kDiceTokenFetchTimeoutSeconds;
+// Exposed for testing.
+extern const int kLockAccountReconcilorTimeoutHours;
+extern const base::Feature kSupportOAuthOutageInDice;
 
 // Delegate interface for processing a dice request.
 class ProcessDiceHeaderDelegate {
@@ -75,6 +81,9 @@ class DiceResponseHandler : public KeyedService {
 
   // Returns the number of pending DiceTokenFetchers. Exposed for testing.
   size_t GetPendingDiceTokenFetchersCountForTesting() const;
+
+  // Sets |task_runner_| for testing.
+  void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  private:
   // Helper class to fetch a refresh token from an authorization code.
@@ -132,6 +141,7 @@ class DiceResponseHandler : public KeyedService {
       const std::string& gaia_id,
       const std::string& email,
       const std::string& authorization_code,
+      bool no_authorization_code,
       std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
 
   // Process the Dice enable sync action.
@@ -152,6 +162,8 @@ class DiceResponseHandler : public KeyedService {
                               bool is_under_advanced_protection);
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
+  // Called to unlock the reconcilor after a SLO outage.
+  void OnTimeoutUnlockReconcilor();
 
   SigninClient* signin_client_;
   signin::IdentityManager* identity_manager_;
@@ -159,7 +171,11 @@ class DiceResponseHandler : public KeyedService {
   AboutSigninInternals* about_signin_internals_;
   base::FilePath profile_path_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
-
+  // Lock the account reconcilor for kLockAccountReconcilorTimeoutHours
+  // when there was OAuth outage in Dice.
+  std::unique_ptr<AccountReconcilor::Lock> lock_;
+  std::unique_ptr<base::OneShotTimer> timer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(DiceResponseHandler);
 };
 

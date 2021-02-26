@@ -122,6 +122,16 @@ namespace absl {
 ABSL_NAMESPACE_BEGIN
 namespace container_internal {
 
+template <typename AllocType>
+void SwapAlloc(AllocType& lhs, AllocType& rhs,
+               std::true_type /* propagate_on_container_swap */) {
+  using std::swap;
+  swap(lhs, rhs);
+}
+template <typename AllocType>
+void SwapAlloc(AllocType& /*lhs*/, AllocType& /*rhs*/,
+               std::false_type /* propagate_on_container_swap */) {}
+
 template <size_t Width>
 class probe_seq {
  public:
@@ -169,9 +179,13 @@ struct IsDecomposable<
 
 // TODO(alkis): Switch to std::is_nothrow_swappable when gcc/clang supports it.
 template <class T>
-constexpr bool IsNoThrowSwappable() {
+constexpr bool IsNoThrowSwappable(std::true_type = {} /* is_swappable */) {
   using std::swap;
   return noexcept(swap(std::declval<T&>(), std::declval<T&>()));
+}
+template <class T>
+constexpr bool IsNoThrowSwappable(std::false_type /* is_swappable */) {
+  return false;
 }
 
 template <typename T>
@@ -497,6 +511,18 @@ inline size_t GrowthToLowerboundCapacity(size_t growth) {
   return growth + static_cast<size_t>((static_cast<int64_t>(growth) - 1) / 7);
 }
 
+inline void AssertIsFull(ctrl_t* ctrl) {
+  ABSL_HARDENING_ASSERT((ctrl != nullptr && IsFull(*ctrl)) &&
+                        "Invalid operation on iterator. The element might have "
+                        "been erased, or the table might have rehashed.");
+}
+
+inline void AssertIsValid(ctrl_t* ctrl) {
+  ABSL_HARDENING_ASSERT((ctrl == nullptr || IsFull(*ctrl)) &&
+                        "Invalid operation on iterator. The element might have "
+                        "been erased, or the table might have rehashed.");
+}
+
 // Policy: a policy defines how to perform different operations on
 // the slots of the hashtable (see hash_policy_traits.h for the full interface
 // of policy).
@@ -511,7 +537,8 @@ inline size_t GrowthToLowerboundCapacity(size_t growth) {
 // if they are equal, false if they are not. If two keys compare equal, then
 // their hash values as defined by Hash MUST be equal.
 //
-// Allocator: an Allocator [https://devdocs.io/cpp/concept/allocator] with which
+// Allocator: an Allocator
+// [https://en.cppreference.com/w/cpp/named_req/Allocator] with which
 // the storage of the hashtable will be allocated and the elements will be
 // constructed and destroyed.
 template <class Policy, class Hash, class Eq, class Alloc>
@@ -617,7 +644,7 @@ class raw_hash_set {
 
     // PRECONDITION: not an end() iterator.
     reference operator*() const {
-      assert_is_full();
+      AssertIsFull(ctrl_);
       return PolicyTraits::element(slot_);
     }
 
@@ -626,7 +653,7 @@ class raw_hash_set {
 
     // PRECONDITION: not an end() iterator.
     iterator& operator++() {
-      assert_is_full();
+      AssertIsFull(ctrl_);
       ++ctrl_;
       ++slot_;
       skip_empty_or_deleted();
@@ -640,8 +667,8 @@ class raw_hash_set {
     }
 
     friend bool operator==(const iterator& a, const iterator& b) {
-      a.assert_is_valid();
-      b.assert_is_valid();
+      AssertIsValid(a.ctrl_);
+      AssertIsValid(b.ctrl_);
       return a.ctrl_ == b.ctrl_;
     }
     friend bool operator!=(const iterator& a, const iterator& b) {
@@ -653,13 +680,6 @@ class raw_hash_set {
       // This assumption helps the compiler know that any non-end iterator is
       // not equal to any end iterator.
       ABSL_INTERNAL_ASSUME(ctrl != nullptr);
-    }
-
-    void assert_is_full() const {
-      ABSL_HARDENING_ASSERT(ctrl_ != nullptr && IsFull(*ctrl_));
-    }
-    void assert_is_valid() const {
-      ABSL_HARDENING_ASSERT(ctrl_ == nullptr || IsFull(*ctrl_));
     }
 
     void skip_empty_or_deleted() {
@@ -1045,7 +1065,9 @@ class raw_hash_set {
   }
 
   iterator insert(const_iterator, node_type&& node) {
-    return insert(std::move(node)).first;
+    auto res = insert(std::move(node));
+    node = std::move(res.node);
+    return res.position;
   }
 
   // This overload kicks in if we can deduce the key from args. This enables us
@@ -1174,7 +1196,7 @@ class raw_hash_set {
   // This overload is necessary because otherwise erase<K>(const K&) would be
   // a better match if non-const iterator is passed as an argument.
   void erase(iterator it) {
-    it.assert_is_full();
+    AssertIsFull(it.ctrl_);
     PolicyTraits::destroy(&alloc_ref(), it.slot_);
     erase_meta_only(it);
   }
@@ -1208,7 +1230,7 @@ class raw_hash_set {
   }
 
   node_type extract(const_iterator position) {
-    position.inner_.assert_is_full();
+    AssertIsFull(position.inner_.ctrl_);
     auto node =
         CommonAccess::Transfer<node_type>(alloc_ref(), position.inner_.slot_);
     erase_meta_only(position);
@@ -1225,8 +1247,8 @@ class raw_hash_set {
 
   void swap(raw_hash_set& that) noexcept(
       IsNoThrowSwappable<hasher>() && IsNoThrowSwappable<key_equal>() &&
-      (!AllocTraits::propagate_on_container_swap::value ||
-       IsNoThrowSwappable<allocator_type>())) {
+      IsNoThrowSwappable<allocator_type>(
+          typename AllocTraits::propagate_on_container_swap{})) {
     using std::swap;
     swap(ctrl_, that.ctrl_);
     swap(slots_, that.slots_);
@@ -1236,12 +1258,8 @@ class raw_hash_set {
     swap(hash_ref(), that.hash_ref());
     swap(eq_ref(), that.eq_ref());
     swap(infoz_, that.infoz_);
-    if (AllocTraits::propagate_on_container_swap::value) {
-      swap(alloc_ref(), that.alloc_ref());
-    } else {
-      // If the allocators do not compare equal it is officially undefined
-      // behavior. We choose to do nothing.
-    }
+    SwapAlloc(alloc_ref(), that.alloc_ref(),
+              typename AllocTraits::propagate_on_container_swap{});
   }
 
   void rehash(size_t n) {
@@ -1311,6 +1329,7 @@ class raw_hash_set {
       }
       if (ABSL_PREDICT_TRUE(g.MatchEmpty())) return end();
       seq.next();
+      assert(seq.index() < capacity_ && "full table!");
     }
   }
   template <class K = key_type>
@@ -1662,8 +1681,8 @@ class raw_hash_set {
 #endif
         return {seq.offset(mask.LowestBitSet()), seq.index()};
       }
-      assert(seq.index() < capacity_ && "full table!");
       seq.next();
+      assert(seq.index() < capacity_ && "full table!");
     }
   }
 
@@ -1694,6 +1713,7 @@ class raw_hash_set {
       }
       if (ABSL_PREDICT_TRUE(g.MatchEmpty())) break;
       seq.next();
+      assert(seq.index() < capacity_ && "full table!");
     }
     return {prepare_insert(hash), true};
   }

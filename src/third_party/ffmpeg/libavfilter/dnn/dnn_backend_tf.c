@@ -31,19 +31,33 @@
 #include "libavutil/avassert.h"
 #include "dnn_backend_native_layer_pad.h"
 #include "dnn_backend_native_layer_maximum.h"
+#include "dnn_io_proc.h"
 
 #include <tensorflow/c/c_api.h>
 
+typedef struct TFContext {
+    const AVClass *class;
+} TFContext;
+
 typedef struct TFModel{
+    TFContext ctx;
+    DNNModel *model;
     TF_Graph *graph;
     TF_Session *session;
     TF_Status *status;
-    TF_Output input;
-    TF_Tensor *input_tensor;
-    TF_Output *outputs;
-    TF_Tensor **output_tensors;
-    uint32_t nb_output;
 } TFModel;
+
+static const AVClass dnn_tensorflow_class = {
+    .class_name = "dnn_tensorflow",
+    .item_name  = av_default_item_name,
+    .option     = NULL,
+    .version    = LIBAVUTIL_VERSION_INT,
+    .category   = AV_CLASS_CATEGORY_FILTER,
+};
+
+static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                      const char **output_names, uint32_t nb_output, AVFrame *out_frame,
+                                      int do_ioproc);
 
 static void free_buffer(void *data, size_t length)
 {
@@ -108,13 +122,16 @@ static TF_Tensor *allocate_input_tensor(const DNNData *input)
 static DNNReturnType get_input_tf(void *model, DNNData *input, const char *input_name)
 {
     TFModel *tf_model = (TFModel *)model;
+    TFContext *ctx = &tf_model->ctx;
     TF_Status *status;
     int64_t dims[4];
 
     TF_Output tf_output;
     tf_output.oper = TF_GraphOperationByName(tf_model->graph, input_name);
-    if (!tf_output.oper)
+    if (!tf_output.oper) {
+        av_log(ctx, AV_LOG_ERROR, "Could not find \"%s\" in model\n", input_name);
         return DNN_ERROR;
+    }
 
     tf_output.index = 0;
     input->dt = TF_OperationOutputType(tf_output);
@@ -123,6 +140,7 @@ static DNNReturnType get_input_tf(void *model, DNNData *input, const char *input
     TF_GraphGetTensorShape(tf_model->graph, tf_output, dims, 4, status);
     if (TF_GetCode(status) != TF_OK){
         TF_DeleteStatus(status);
+        av_log(ctx, AV_LOG_ERROR, "Failed to get input tensor shape: number of dimension incorrect\n");
         return DNN_ERROR;
     }
     TF_DeleteStatus(status);
@@ -136,96 +154,36 @@ static DNNReturnType get_input_tf(void *model, DNNData *input, const char *input
     return DNN_SUCCESS;
 }
 
-static DNNReturnType set_input_output_tf(void *model, DNNData *input, const char *input_name, const char **output_names, uint32_t nb_output)
+static DNNReturnType get_output_tf(void *model, const char *input_name, int input_width, int input_height,
+                                   const char *output_name, int *output_width, int *output_height)
 {
+    DNNReturnType ret;
     TFModel *tf_model = (TFModel *)model;
-    TF_SessionOptions *sess_opts;
-    const TF_Operation *init_op = TF_GraphOperationByName(tf_model->graph, "init");
+    AVFrame *in_frame = av_frame_alloc();
+    AVFrame *out_frame = av_frame_alloc();
+    in_frame->width = input_width;
+    in_frame->height = input_height;
 
-    // Input operation
-    tf_model->input.oper = TF_GraphOperationByName(tf_model->graph, input_name);
-    if (!tf_model->input.oper){
-        return DNN_ERROR;
-    }
-    tf_model->input.index = 0;
-    if (tf_model->input_tensor){
-        TF_DeleteTensor(tf_model->input_tensor);
-    }
-    tf_model->input_tensor = allocate_input_tensor(input);
-    if (!tf_model->input_tensor){
-        return DNN_ERROR;
-    }
-    input->data = (float *)TF_TensorData(tf_model->input_tensor);
+    ret = execute_model_tf(tf_model->model, input_name, in_frame, &output_name, 1, out_frame, 0);
+    *output_width = out_frame->width;
+    *output_height = out_frame->height;
 
-    // Output operation
-    if (nb_output == 0)
-        return DNN_ERROR;
-
-    av_freep(&tf_model->outputs);
-    tf_model->outputs = av_malloc_array(nb_output, sizeof(*tf_model->outputs));
-    if (!tf_model->outputs)
-        return DNN_ERROR;
-    for (int i = 0; i < nb_output; ++i) {
-        tf_model->outputs[i].oper = TF_GraphOperationByName(tf_model->graph, output_names[i]);
-        if (!tf_model->outputs[i].oper){
-            av_freep(&tf_model->outputs);
-            return DNN_ERROR;
-        }
-        tf_model->outputs[i].index = 0;
-    }
-
-    if (tf_model->output_tensors) {
-        for (uint32_t i = 0; i < tf_model->nb_output; ++i) {
-            if (tf_model->output_tensors[i]) {
-                TF_DeleteTensor(tf_model->output_tensors[i]);
-                tf_model->output_tensors[i] = NULL;
-            }
-        }
-    }
-    av_freep(&tf_model->output_tensors);
-    tf_model->output_tensors = av_mallocz_array(nb_output, sizeof(*tf_model->output_tensors));
-    if (!tf_model->output_tensors) {
-        av_freep(&tf_model->outputs);
-        return DNN_ERROR;
-    }
-
-    tf_model->nb_output = nb_output;
-
-    if (tf_model->session){
-        TF_CloseSession(tf_model->session, tf_model->status);
-        TF_DeleteSession(tf_model->session, tf_model->status);
-    }
-
-    sess_opts = TF_NewSessionOptions();
-    tf_model->session = TF_NewSession(tf_model->graph, sess_opts, tf_model->status);
-    TF_DeleteSessionOptions(sess_opts);
-    if (TF_GetCode(tf_model->status) != TF_OK)
-    {
-        return DNN_ERROR;
-    }
-
-    // Run initialization operation with name "init" if it is present in graph
-    if (init_op){
-        TF_SessionRun(tf_model->session, NULL,
-                      NULL, NULL, 0,
-                      NULL, NULL, 0,
-                      &init_op, 1, NULL, tf_model->status);
-        if (TF_GetCode(tf_model->status) != TF_OK)
-        {
-            return DNN_ERROR;
-        }
-    }
-
-    return DNN_SUCCESS;
+    av_frame_free(&out_frame);
+    av_frame_free(&in_frame);
+    return ret;
 }
 
 static DNNReturnType load_tf_model(TFModel *tf_model, const char *model_filename)
 {
+    TFContext *ctx = &tf_model->ctx;
     TF_Buffer *graph_def;
     TF_ImportGraphDefOptions *graph_opts;
+    TF_SessionOptions *sess_opts;
+    const TF_Operation *init_op;
 
     graph_def = read_graph(model_filename);
     if (!graph_def){
+        av_log(ctx, AV_LOG_ERROR, "Failed to read model \"%s\" graph\n", model_filename);
         return DNN_ERROR;
     }
     tf_model->graph = TF_NewGraph();
@@ -237,7 +195,31 @@ static DNNReturnType load_tf_model(TFModel *tf_model, const char *model_filename
     if (TF_GetCode(tf_model->status) != TF_OK){
         TF_DeleteGraph(tf_model->graph);
         TF_DeleteStatus(tf_model->status);
+        av_log(ctx, AV_LOG_ERROR, "Failed to import serialized graph to model graph\n");
         return DNN_ERROR;
+    }
+
+    init_op = TF_GraphOperationByName(tf_model->graph, "init");
+    sess_opts = TF_NewSessionOptions();
+    tf_model->session = TF_NewSession(tf_model->graph, sess_opts, tf_model->status);
+    TF_DeleteSessionOptions(sess_opts);
+    if (TF_GetCode(tf_model->status) != TF_OK)
+    {
+        av_log(ctx, AV_LOG_ERROR, "Failed to create new session with model graph\n");
+        return DNN_ERROR;
+    }
+
+    // Run initialization operation with name "init" if it is present in graph
+    if (init_op){
+        TF_SessionRun(tf_model->session, NULL,
+                      NULL, NULL, 0,
+                      NULL, NULL, 0,
+                      &init_op, 1, NULL, tf_model->status);
+        if (TF_GetCode(tf_model->status) != TF_OK)
+        {
+            av_log(ctx, AV_LOG_ERROR, "Failed to run session when initializing\n");
+            return DNN_ERROR;
+        }
     }
 
     return DNN_SUCCESS;
@@ -248,6 +230,7 @@ static DNNReturnType load_tf_model(TFModel *tf_model, const char *model_filename
 static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_op, TF_Operation **cur_op,
                                     ConvolutionalParams* params, const int layer)
 {
+    TFContext *ctx = &tf_model->ctx;
     TF_Operation *op;
     TF_OperationDescription *op_desc;
     TF_Output input;
@@ -273,10 +256,12 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     memcpy(TF_TensorData(tensor), params->kernel, size * sizeof(float));
     TF_SetAttrTensor(op_desc, "value", tensor, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to set value for kernel of conv layer %d\n", layer);
         return DNN_ERROR;
     }
     op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add kernel to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -290,6 +275,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     TF_SetAttrType(op_desc, "Tperm", TF_INT32);
     op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add transpose to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -304,6 +290,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     TF_SetAttrString(op_desc, "padding", "VALID", 5);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add conv2d to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -316,10 +303,12 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     memcpy(TF_TensorData(tensor), params->biases, params->output_num * sizeof(float));
     TF_SetAttrTensor(op_desc, "value", tensor, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to set value for conv_biases of conv layer %d\n", layer);
         return DNN_ERROR;
     }
     op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add conv_biases to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -332,6 +321,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     TF_SetAttrType(op_desc, "T", TF_FLOAT);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add bias_add to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -347,6 +337,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
         op_desc = TF_NewOperation(tf_model->graph, "Sigmoid", name_buffer);
         break;
     default:
+        av_log(ctx, AV_LOG_ERROR, "Unsupported convolutional activation function\n");
         return DNN_ERROR;
     }
     input.oper = *cur_op;
@@ -354,6 +345,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
     TF_SetAttrType(op_desc, "T", TF_FLOAT);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add activation function to conv layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -363,6 +355,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
 static DNNReturnType add_depth_to_space_layer(TFModel *tf_model, TF_Operation **cur_op,
                                               DepthToSpaceParams *params, const int layer)
 {
+    TFContext *ctx = &tf_model->ctx;
     TF_OperationDescription *op_desc;
     TF_Output input;
     char name_buffer[NAME_BUFFER_SIZE];
@@ -376,6 +369,7 @@ static DNNReturnType add_depth_to_space_layer(TFModel *tf_model, TF_Operation **
     TF_SetAttrInt(op_desc, "block_size", params->block_size);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add depth_to_space to layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -385,6 +379,7 @@ static DNNReturnType add_depth_to_space_layer(TFModel *tf_model, TF_Operation **
 static DNNReturnType add_pad_layer(TFModel *tf_model, TF_Operation **cur_op,
                                               LayerPadParams *params, const int layer)
 {
+    TFContext *ctx = &tf_model->ctx;
     TF_Operation *op;
     TF_Tensor *tensor;
     TF_OperationDescription *op_desc;
@@ -409,10 +404,12 @@ static DNNReturnType add_pad_layer(TFModel *tf_model, TF_Operation **cur_op,
     pads[7] = params->paddings[3][1];
     TF_SetAttrTensor(op_desc, "value", tensor, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to set value for pad of layer %d\n", layer);
         return DNN_ERROR;
     }
     op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add pad to layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -427,6 +424,7 @@ static DNNReturnType add_pad_layer(TFModel *tf_model, TF_Operation **cur_op,
     TF_SetAttrString(op_desc, "mode", "SYMMETRIC", 9);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add mirror_pad to layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -436,6 +434,7 @@ static DNNReturnType add_pad_layer(TFModel *tf_model, TF_Operation **cur_op,
 static DNNReturnType add_maximum_layer(TFModel *tf_model, TF_Operation **cur_op,
                                        DnnLayerMaximumParams *params, const int layer)
 {
+    TFContext *ctx = &tf_model->ctx;
     TF_Operation *op;
     TF_Tensor *tensor;
     TF_OperationDescription *op_desc;
@@ -452,10 +451,12 @@ static DNNReturnType add_maximum_layer(TFModel *tf_model, TF_Operation **cur_op,
     *y = params->val.y;
     TF_SetAttrTensor(op_desc, "value", tensor, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to set value for maximum/y of layer %d", layer);
         return DNN_ERROR;
     }
     op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add maximum/y to layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -469,6 +470,7 @@ static DNNReturnType add_maximum_layer(TFModel *tf_model, TF_Operation **cur_op,
     TF_SetAttrType(op_desc, "T", TF_FLOAT);
     *cur_op = TF_FinishOperation(op_desc, tf_model->status);
     if (TF_GetCode(tf_model->status) != TF_OK){
+        av_log(ctx, AV_LOG_ERROR, "Failed to add maximum to layer %d\n", layer);
         return DNN_ERROR;
     }
 
@@ -477,6 +479,7 @@ static DNNReturnType add_maximum_layer(TFModel *tf_model, TF_Operation **cur_op,
 
 static DNNReturnType load_native_model(TFModel *tf_model, const char *model_filename)
 {
+    TFContext *ctx = &tf_model->ctx;
     int32_t layer;
     TF_OperationDescription *op_desc;
     TF_Operation *op;
@@ -487,15 +490,16 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
     int64_t transpose_perm_shape[] = {4};
     int64_t input_shape[] = {1, -1, -1, -1};
     DNNReturnType layer_add_res;
-    DNNModel *native_model = NULL;
-    ConvolutionalNetwork *conv_network;
+    DNNModel *model = NULL;
+    NativeModel *native_model;
 
-    native_model = ff_dnn_load_model_native(model_filename);
-    if (!native_model){
+    model = ff_dnn_load_model_native(model_filename, NULL, NULL);
+    if (!model){
+        av_log(ctx, AV_LOG_ERROR, "Failed to load native model\n");
         return DNN_ERROR;
     }
 
-    conv_network = (ConvolutionalNetwork *)native_model->model;
+    native_model = (NativeModel *)model->model;
     tf_model->graph = TF_NewGraph();
     tf_model->status = TF_NewStatus();
 
@@ -503,6 +507,7 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
     { \
         TF_DeleteGraph(tf_model->graph); \
         TF_DeleteStatus(tf_model->status); \
+        av_log(ctx, AV_LOG_ERROR, "Failed to set value or add operator to layer\n"); \
         return DNN_ERROR; \
     }
 
@@ -528,26 +533,26 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
     }
     transpose_op = TF_FinishOperation(op_desc, tf_model->status);
 
-    for (layer = 0; layer < conv_network->layers_num; ++layer){
-        switch (conv_network->layers[layer].type){
+    for (layer = 0; layer < native_model->layers_num; ++layer){
+        switch (native_model->layers[layer].type){
         case DLT_INPUT:
             layer_add_res = DNN_SUCCESS;
             break;
         case DLT_CONV2D:
             layer_add_res = add_conv_layer(tf_model, transpose_op, &op,
-                                           (ConvolutionalParams *)conv_network->layers[layer].params, layer);
+                                           (ConvolutionalParams *)native_model->layers[layer].params, layer);
             break;
         case DLT_DEPTH_TO_SPACE:
             layer_add_res = add_depth_to_space_layer(tf_model, &op,
-                                                     (DepthToSpaceParams *)conv_network->layers[layer].params, layer);
+                                                     (DepthToSpaceParams *)native_model->layers[layer].params, layer);
             break;
         case DLT_MIRROR_PAD:
             layer_add_res = add_pad_layer(tf_model, &op,
-                                          (LayerPadParams *)conv_network->layers[layer].params, layer);
+                                          (LayerPadParams *)native_model->layers[layer].params, layer);
             break;
         case DLT_MAXIMUM:
             layer_add_res = add_maximum_layer(tf_model, &op,
-                                          (DnnLayerMaximumParams *)conv_network->layers[layer].params, layer);
+                                          (DnnLayerMaximumParams *)native_model->layers[layer].params, layer);
             break;
         default:
             CLEANUP_ON_ERROR(tf_model);
@@ -567,17 +572,17 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
         CLEANUP_ON_ERROR(tf_model);
     }
 
-    ff_dnn_free_model_native(&native_model);
+    ff_dnn_free_model_native(&model);
 
     return DNN_SUCCESS;
 }
 
-DNNModel *ff_dnn_load_model_tf(const char *model_filename)
+DNNModel *ff_dnn_load_model_tf(const char *model_filename, const char *options, void *userdata)
 {
     DNNModel *model = NULL;
     TFModel *tf_model = NULL;
 
-    model = av_malloc(sizeof(DNNModel));
+    model = av_mallocz(sizeof(DNNModel));
     if (!model){
         return NULL;
     }
@@ -587,6 +592,8 @@ DNNModel *ff_dnn_load_model_tf(const char *model_filename)
         av_freep(&model);
         return NULL;
     }
+    tf_model->ctx.class = &dnn_tensorflow_class;
+    tf_model->model = model;
 
     if (load_tf_model(tf_model, model_filename) != DNN_SUCCESS){
         if (load_native_model(tf_model, model_filename) != DNN_SUCCESS){
@@ -598,47 +605,141 @@ DNNModel *ff_dnn_load_model_tf(const char *model_filename)
     }
 
     model->model = (void *)tf_model;
-    model->set_input_output = &set_input_output_tf;
     model->get_input = &get_input_tf;
+    model->get_output = &get_output_tf;
+    model->options = options;
+    model->userdata = userdata;
 
     return model;
 }
 
-
-
-DNNReturnType ff_dnn_execute_model_tf(const DNNModel *model, DNNData *outputs, uint32_t nb_output)
+static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                      const char **output_names, uint32_t nb_output, AVFrame *out_frame,
+                                      int do_ioproc)
 {
+    TF_Output *tf_outputs;
     TFModel *tf_model = (TFModel *)model->model;
-    uint32_t nb = FFMIN(nb_output, tf_model->nb_output);
-    if (nb == 0)
-        return DNN_ERROR;
+    TFContext *ctx = &tf_model->ctx;
+    DNNData input, output;
+    TF_Tensor **output_tensors;
+    TF_Output tf_input;
+    TF_Tensor *input_tensor;
 
-    av_assert0(tf_model->output_tensors);
-    for (uint32_t i = 0; i < tf_model->nb_output; ++i) {
-        if (tf_model->output_tensors[i]) {
-            TF_DeleteTensor(tf_model->output_tensors[i]);
-            tf_model->output_tensors[i] = NULL;
+    if (get_input_tf(tf_model, &input, input_name) != DNN_SUCCESS)
+        return DNN_ERROR;
+    input.height = in_frame->height;
+    input.width = in_frame->width;
+
+    tf_input.oper = TF_GraphOperationByName(tf_model->graph, input_name);
+    if (!tf_input.oper){
+        av_log(ctx, AV_LOG_ERROR, "Could not find \"%s\" in model\n", input_name);
+        return DNN_ERROR;
+    }
+    tf_input.index = 0;
+    input_tensor = allocate_input_tensor(&input);
+    if (!input_tensor){
+        av_log(ctx, AV_LOG_ERROR, "Failed to allocate memory for input tensor\n");
+        return DNN_ERROR;
+    }
+    input.data = (float *)TF_TensorData(input_tensor);
+
+    if (do_ioproc) {
+        if (tf_model->model->pre_proc != NULL) {
+            tf_model->model->pre_proc(in_frame, &input, tf_model->model->userdata);
+        } else {
+            proc_from_frame_to_dnn(in_frame, &input, ctx);
         }
     }
 
-    TF_SessionRun(tf_model->session, NULL,
-                  &tf_model->input, &tf_model->input_tensor, 1,
-                  tf_model->outputs, tf_model->output_tensors, nb,
-                  NULL, 0, NULL, tf_model->status);
-
-    if (TF_GetCode(tf_model->status) != TF_OK){
+    if (nb_output != 1) {
+        // currently, the filter does not need multiple outputs,
+        // so we just pending the support until we really need it.
+        av_log(ctx, AV_LOG_ERROR, "do not support multiple outputs\n");
         return DNN_ERROR;
     }
 
-    for (uint32_t i = 0; i < nb; ++i) {
-        outputs[i].height = TF_Dim(tf_model->output_tensors[i], 1);
-        outputs[i].width = TF_Dim(tf_model->output_tensors[i], 2);
-        outputs[i].channels = TF_Dim(tf_model->output_tensors[i], 3);
-        outputs[i].data = TF_TensorData(tf_model->output_tensors[i]);
-        outputs[i].dt = TF_TensorType(tf_model->output_tensors[i]);
+    tf_outputs = av_malloc_array(nb_output, sizeof(*tf_outputs));
+    if (tf_outputs == NULL) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to allocate memory for *tf_outputs\n"); \
+        return DNN_ERROR;
     }
 
+    output_tensors = av_mallocz_array(nb_output, sizeof(*output_tensors));
+    if (!output_tensors) {
+        av_freep(&tf_outputs);
+        av_log(ctx, AV_LOG_ERROR, "Failed to allocate memory for output tensor\n"); \
+        return DNN_ERROR;
+    }
+
+    for (int i = 0; i < nb_output; ++i) {
+        tf_outputs[i].oper = TF_GraphOperationByName(tf_model->graph, output_names[i]);
+        if (!tf_outputs[i].oper) {
+            av_freep(&tf_outputs);
+            av_freep(&output_tensors);
+            av_log(ctx, AV_LOG_ERROR, "Could not find output \"%s\" in model\n", output_names[i]); \
+            return DNN_ERROR;
+        }
+        tf_outputs[i].index = 0;
+    }
+
+    TF_SessionRun(tf_model->session, NULL,
+                  &tf_input, &input_tensor, 1,
+                  tf_outputs, output_tensors, nb_output,
+                  NULL, 0, NULL, tf_model->status);
+    if (TF_GetCode(tf_model->status) != TF_OK) {
+        av_freep(&tf_outputs);
+        av_freep(&output_tensors);
+        av_log(ctx, AV_LOG_ERROR, "Failed to run session when executing model\n");
+        return DNN_ERROR;
+    }
+
+    for (uint32_t i = 0; i < nb_output; ++i) {
+        output.height = TF_Dim(output_tensors[i], 1);
+        output.width = TF_Dim(output_tensors[i], 2);
+        output.channels = TF_Dim(output_tensors[i], 3);
+        output.data = TF_TensorData(output_tensors[i]);
+        output.dt = TF_TensorType(output_tensors[i]);
+
+        if (do_ioproc) {
+            if (tf_model->model->post_proc != NULL) {
+                tf_model->model->post_proc(out_frame, &output, tf_model->model->userdata);
+            } else {
+                proc_from_dnn_to_frame(out_frame, &output, ctx);
+            }
+        } else {
+            out_frame->width = output.width;
+            out_frame->height = output.height;
+        }
+    }
+
+    for (uint32_t i = 0; i < nb_output; ++i) {
+        if (output_tensors[i]) {
+            TF_DeleteTensor(output_tensors[i]);
+        }
+    }
+    TF_DeleteTensor(input_tensor);
+    av_freep(&output_tensors);
+    av_freep(&tf_outputs);
     return DNN_SUCCESS;
+}
+
+DNNReturnType ff_dnn_execute_model_tf(const DNNModel *model, const char *input_name, AVFrame *in_frame,
+                                      const char **output_names, uint32_t nb_output, AVFrame *out_frame)
+{
+    TFModel *tf_model = (TFModel *)model->model;
+    TFContext *ctx = &tf_model->ctx;
+
+    if (!in_frame) {
+        av_log(ctx, AV_LOG_ERROR, "in frame is NULL when execute model.\n");
+        return DNN_ERROR;
+    }
+
+    if (!out_frame) {
+        av_log(ctx, AV_LOG_ERROR, "out frame is NULL when execute model.\n");
+        return DNN_ERROR;
+    }
+
+    return execute_model_tf(model, input_name, in_frame, output_names, nb_output, out_frame, 1);
 }
 
 void ff_dnn_free_model_tf(DNNModel **model)
@@ -657,19 +758,6 @@ void ff_dnn_free_model_tf(DNNModel **model)
         if (tf_model->status){
             TF_DeleteStatus(tf_model->status);
         }
-        if (tf_model->input_tensor){
-            TF_DeleteTensor(tf_model->input_tensor);
-        }
-        if (tf_model->output_tensors) {
-            for (uint32_t i = 0; i < tf_model->nb_output; ++i) {
-                if (tf_model->output_tensors[i]) {
-                    TF_DeleteTensor(tf_model->output_tensors[i]);
-                    tf_model->output_tensors[i] = NULL;
-                }
-            }
-        }
-        av_freep(&tf_model->outputs);
-        av_freep(&tf_model->output_tensors);
         av_freep(&tf_model);
         av_freep(model);
     }

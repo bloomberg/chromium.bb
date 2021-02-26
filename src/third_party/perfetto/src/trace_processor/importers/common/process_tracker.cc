@@ -25,21 +25,36 @@ namespace perfetto {
 namespace trace_processor {
 
 ProcessTracker::ProcessTracker(TraceProcessorContext* context)
-    : context_(context) {}
+    : context_(context), args_tracker_(context) {
+  // Reserve utid/upid 0. These are special as embedders (e.g. Perfetto UI)
+  // exclude them by filtering them out. If the parsed trace contains ftrace
+  // data, SetPidZeroIgnoredForIdleProcess will create a mapping
+  // to these rows for tid/pid 0.
+  tables::ThreadTable::Row thread_row;
+  thread_row.tid = 0;
+  context_->storage->mutable_thread_table()->Insert(thread_row);
+
+  tables::ProcessTable::Row process_row;
+  process_row.pid = 0;
+  context_->storage->mutable_process_table()->Insert(process_row);
+
+  // An element to match the reserved tid = 0.
+  thread_name_priorities_.push_back(ThreadNamePriority::kOther);
+}
 
 ProcessTracker::~ProcessTracker() = default;
 
 UniqueTid ProcessTracker::StartNewThread(base::Optional<int64_t> timestamp,
-                                         uint32_t tid,
-                                         StringId thread_name_id) {
+                                         uint32_t tid) {
   tables::ThreadTable::Row row;
   row.tid = tid;
-  row.name = thread_name_id;
   row.start_ts = timestamp;
 
   auto* thread_table = context_->storage->mutable_thread_table();
   UniqueTid new_utid = thread_table->Insert(row).row;
   tids_[tid].emplace_back(new_utid);
+  PERFETTO_DCHECK(thread_name_priorities_.size() == new_utid);
+  thread_name_priorities_.push_back(ThreadNamePriority::kOther);
   return new_utid;
 }
 
@@ -85,23 +100,28 @@ base::Optional<UniqueTid> ProcessTracker::GetThreadOrNull(uint32_t tid) {
 
 UniqueTid ProcessTracker::GetOrCreateThread(uint32_t tid) {
   auto utid = GetThreadOrNull(tid);
-  return utid ? *utid : StartNewThread(base::nullopt, tid, kNullStringId);
+  return utid ? *utid : StartNewThread(base::nullopt, tid);
 }
 
 UniqueTid ProcessTracker::UpdateThreadName(uint32_t tid,
-                                           StringId thread_name_id) {
-  auto* thread_table = context_->storage->mutable_thread_table();
+                                           StringId thread_name_id,
+                                           ThreadNamePriority priority) {
   auto utid = GetOrCreateThread(tid);
-  if (!thread_name_id.is_null())
-    thread_table->mutable_name()->Set(utid, thread_name_id);
+  UpdateThreadNameByUtid(utid, thread_name_id, priority);
   return utid;
 }
 
-void ProcessTracker::SetThreadNameIfUnset(UniqueTid utid,
-                                          StringId thread_name_id) {
+void ProcessTracker::UpdateThreadNameByUtid(UniqueTid utid,
+                                            StringId thread_name_id,
+                                            ThreadNamePriority priority) {
+  if (thread_name_id.is_null())
+    return;
+
   auto* thread_table = context_->storage->mutable_thread_table();
-  if (thread_table->name()[utid].is_null())
+  if (priority >= thread_name_priorities_[utid]) {
     thread_table->mutable_name()->Set(utid, thread_name_id);
+    thread_name_priorities_[utid] = priority;
+  }
 }
 
 bool ProcessTracker::IsThreadAlive(UniqueTid utid) {
@@ -175,13 +195,12 @@ UniqueTid ProcessTracker::UpdateThread(uint32_t tid, uint32_t pid) {
   base::Optional<UniqueTid> opt_utid = GetThreadOrNull(tid, pid);
 
   // If no matching thread was found, create a new one.
-  UniqueTid utid =
-      opt_utid ? *opt_utid : StartNewThread(base::nullopt, tid, kNullStringId);
+  UniqueTid utid = opt_utid ? *opt_utid : StartNewThread(base::nullopt, tid);
   PERFETTO_DCHECK(thread_table->tid()[utid] == tid);
 
   // Find matching process or create new one.
   if (!thread_table->upid()[utid].has_value()) {
-    thread_table->mutable_upid()->Set(utid, GetOrCreateProcess(pid));
+    AssociateThreadToProcess(utid, GetOrCreateProcess(pid));
   }
 
   ResolvePendingAssociations(utid, *thread_table->upid()[utid]);
@@ -201,7 +220,7 @@ UniquePid ProcessTracker::StartNewProcess(base::Optional<int64_t> timestamp,
 
   // Create a new UTID for the main thread, so we don't end up reusing an old
   // entry in case of TID recycling.
-  StartNewThread(timestamp, /*tid=*/pid, kNullStringId);
+  StartNewThread(timestamp, /*tid=*/pid);
 
   // Note that we erased the pid above so this should always return a new
   // process.
@@ -232,7 +251,8 @@ UniquePid ProcessTracker::StartNewProcess(base::Optional<int64_t> timestamp,
 
 UniquePid ProcessTracker::SetProcessMetadata(uint32_t pid,
                                              base::Optional<uint32_t> ppid,
-                                             base::StringView name) {
+                                             base::StringView name,
+                                             base::StringView cmdline) {
   auto proc_name_id = context_->storage->InternString(name);
 
   base::Optional<UniquePid> pupid;
@@ -244,6 +264,8 @@ UniquePid ProcessTracker::SetProcessMetadata(uint32_t pid,
 
   auto* process_table = context_->storage->mutable_process_table();
   process_table->mutable_name()->Set(upid, proc_name_id);
+  process_table->mutable_cmdline()->Set(
+      upid, context_->storage->InternString(cmdline));
 
   if (pupid)
     process_table->mutable_parent_upid()->Set(upid, *pupid);
@@ -313,13 +335,13 @@ void ProcessTracker::AssociateThreads(UniqueTid utid1, UniqueTid utid2) {
   auto opt_upid2 = tt->upid()[utid2];
 
   if (opt_upid1.has_value() && !opt_upid2.has_value()) {
-    tt->mutable_upid()->Set(utid2, *opt_upid1);
+    AssociateThreadToProcess(utid2, *opt_upid1);
     ResolvePendingAssociations(utid2, *opt_upid1);
     return;
   }
 
   if (opt_upid2.has_value() && !opt_upid1.has_value()) {
-    tt->mutable_upid()->Set(utid1, *opt_upid2);
+    AssociateThreadToProcess(utid1, *opt_upid2);
     ResolvePendingAssociations(utid1, *opt_upid2);
     return;
   }
@@ -385,7 +407,7 @@ void ProcessTracker::ResolvePendingAssociations(UniqueTid utid_arg,
       // Update the other thread and associated it to the same process.
       PERFETTO_DCHECK(!tt->upid()[other_utid] ||
                       tt->upid()[other_utid] == upid);
-      tt->mutable_upid()->Set(other_utid, upid);
+      AssociateThreadToProcess(other_utid, upid);
 
       // Erase the pair. The |pending_assocs_| vector is not sorted and swapping
       // a std::pair<uint32_t, uint32_t> is cheap.
@@ -399,10 +421,29 @@ void ProcessTracker::ResolvePendingAssociations(UniqueTid utid_arg,
   }  // while (!resolved_utids.empty())
 }
 
+void ProcessTracker::AssociateThreadToProcess(UniqueTid utid, UniquePid upid) {
+  auto* thread_table = context_->storage->mutable_thread_table();
+  thread_table->mutable_upid()->Set(utid, upid);
+  auto* process_table = context_->storage->mutable_process_table();
+  bool main_thread = thread_table->tid()[utid] == process_table->pid()[upid];
+  thread_table->mutable_is_main_thread()->Set(utid, main_thread);
+}
+
 void ProcessTracker::SetPidZeroIgnoredForIdleProcess() {
   // Create a mapping from (t|p)id 0 -> u(t|p)id 0 for the idle process.
   tids_.emplace(0, std::vector<UniqueTid>{0});
   pids_.emplace(0, 0);
+
+  auto swapper_id = context_->storage->InternString("swapper");
+  UpdateThreadName(0, swapper_id, ThreadNamePriority::kTraceProcessorConstant);
+}
+
+ArgsTracker::BoundInserter ProcessTracker::AddArgsTo(UniquePid upid) {
+  return args_tracker_.AddArgsTo(upid);
+}
+
+void ProcessTracker::NotifyEndOfFile() {
+  args_tracker_.Flush();
 }
 
 }  // namespace trace_processor

@@ -8,12 +8,33 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
+config("vr_gl_mode") {
+  if (use_command_buffer) {
+    defines = [
+      "VR_USE_COMMAND_BUFFER",
+      "GL_GLEXT_PROTOTYPES",
+    ]
+  } else {
+    defines = [ "VR_USE_NATIVE_GL" ]
+  }
+}
+
+source_set("vr_gl_bindings") {
+  sources = [ "gl_bindings.h" ]
+  public_configs = [ ":vr_gl_mode" ]
+  if (use_command_buffer) {
+    public_deps = [ "//gpu/command_buffer/client:gles2_c_lib" ]
+  } else {
+    public_deps = [ "//ui/gl" ]
+  }
+}
+
 if (enable_vr) {
   # TODO(https://crbug.com/1073113): Flesh out and cleanup this target.
   component("vr_base") {
     visibility = [
       # TODO(https://crbug.com/843374): Move arcore_device
-      "//chrome/browser/android/vr/*",
+      "//chrome/browser/*",
       "//content/services/isolated_xr_device/*",
       "//device/vr/*",
     ]
@@ -25,11 +46,15 @@ if (enable_vr) {
       "vr_device.h",
       "vr_device_base.cc",
       "vr_device_base.h",
+      "vr_gl_util.cc",
+      "vr_gl_util.h",
     ]
 
+    public_configs = [ ":vr_gl_mode" ]
     public_deps = [
+      ":vr_gl_bindings",
       "//device/vr/public/cpp",
-      "//device/vr/public/mojom",
+      "//device/vr/public/mojom:isolated_xr_service",
     ]
     deps = [
       "//base",
@@ -66,7 +91,7 @@ if (enable_vr) {
       "//components/ukm:ukm",
       "//device/base",
       "//device/vr/buildflags",
-      "//device/vr/public/mojom",
+      "//device/vr/public/mojom:isolated_xr_service",
       "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
@@ -91,13 +116,6 @@ if (enable_vr) {
         "android/gvr/gvr_utils.h",
       ]
 
-      if (enable_arcore) {
-        sources += [
-          "android/arcore/arcore_device_provider_factory.cc",
-          "android/arcore/arcore_device_provider_factory.h",
-        ]
-      }
-
       deps += [
         ":jni_headers",
         "//third_party/blink/public:blink_headers",
@@ -107,37 +125,15 @@ if (enable_vr) {
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
-    if (enable_openvr) {
-      if (!is_component_build) {
-        defines += [ "OPENVR_BUILD_STATIC" ]
-      }
-
-      deps += [ "//third_party/openvr:openvr" ]
+    if (enable_windows_mr || enable_openxr) {
       sources += [
-        "openvr/openvr_api_wrapper.cc",
-        "openvr/openvr_api_wrapper.h",
-        "openvr/openvr_device.cc",
-        "openvr/openvr_device.h",
-        "openvr/openvr_gamepad_helper.cc",
-        "openvr/openvr_gamepad_helper.h",
-        "openvr/openvr_render_loop.cc",
-        "openvr/openvr_render_loop.h",
-        "openvr/openvr_type_converters.cc",
-        "openvr/openvr_type_converters.h",
         "test/test_hook.h",
-      ]
-    }
-
-    if (enable_openvr || enable_oculus_vr || enable_windows_mr ||
-        enable_openxr) {
-      sources += [
         "windows/compositor_base.cc",
         "windows/compositor_base.h",
       ]
     }
 
-    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr ||
-                   enable_openxr)) {
+    if (is_win && (enable_windows_mr || enable_openxr)) {
       libs = [
         "d3d11.lib",
         "DXGI.lib",
@@ -222,21 +218,6 @@ if (enable_vr) {
       ]
     }
 
-    if (enable_oculus_vr) {
-      deps += [ "//third_party/libovr" ]
-
-      sources += [
-        "oculus/oculus_device.cc",
-        "oculus/oculus_device.h",
-        "oculus/oculus_gamepad_helper.cc",
-        "oculus/oculus_gamepad_helper.h",
-        "oculus/oculus_render_loop.cc",
-        "oculus/oculus_render_loop.h",
-        "oculus/oculus_type_converters.cc",
-        "oculus/oculus_type_converters.h",
-      ]
-    }
-
     if (enable_openxr) {
       deps += [
         "//components/version_info",
@@ -251,6 +232,8 @@ if (enable_vr) {
         "openxr/openxr_defs.h",
         "openxr/openxr_device.cc",
         "openxr/openxr_device.h",
+        "openxr/openxr_extension_helper.cc",
+        "openxr/openxr_extension_helper.h",
         "openxr/openxr_input_helper.cc",
         "openxr/openxr_input_helper.h",
         "openxr/openxr_interaction_profiles.h",
@@ -290,7 +273,7 @@ if (enable_vr) {
       ":vr_base",
       "//base",
       "//device/vr/orientation",
-      "//device/vr/public/mojom",
+      "//device/vr/public/mojom:isolated_xr_service",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
       "//testing/gmock",
@@ -320,35 +303,6 @@ if (enable_vr) {
   }
 }
 
-if (enable_openvr) {
-  shared_library("openvr_mock") {
-    testonly = true
-    output_name = "mock_vr_clients/bin/vrclient"
-    if (target_cpu == "x64" && is_win) {
-      output_name = "mock_vr_clients/bin/vrclient_x64"
-    }
-
-    sources = [
-      "openvr/test/fake_openvr_impl_api.cc",
-      "openvr/test/test_helper.cc",
-      "openvr/test/test_helper.h",
-      "test/test_hook.h",
-    ]
-
-    libs = [
-      "d3d11.lib",
-      "DXGI.lib",
-    ]
-
-    deps = [
-      ":directx_helpers",
-      "//base",
-      "//device/vr/public/mojom:test_mojom",
-      "//third_party/openvr:openvr_headers",
-    ]
-  }
-}
-
 if (enable_openxr) {
   # The OpenXR Loader by default looks for the path to the OpenXR Runtime from a
   # registry key, which typically points to the OpenXR runtime installed on the
@@ -370,6 +324,8 @@ if (enable_openxr) {
 
     sources = [
       "openxr/openxr_defs.h",
+      "openxr/openxr_extension_helper.cc",
+      "openxr/openxr_extension_helper.h",
       "openxr/openxr_util.cc",
       "openxr/openxr_util.h",
       "openxr/test/fake_openxr_impl_api.cc",

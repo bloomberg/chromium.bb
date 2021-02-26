@@ -29,12 +29,11 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
                                     public ExecutionContextLifecycleObserver,
                                     public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMScheduler);
 
  public:
   static const char kSupplementName[];
 
-  static DOMScheduler* From(LocalDOMWindow&);
+  static DOMScheduler* scheduler(LocalDOMWindow&);
 
   explicit DOMScheduler(LocalDOMWindow*);
 
@@ -67,7 +66,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
 
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static constexpr size_t kWebSchedulingPriorityCount =

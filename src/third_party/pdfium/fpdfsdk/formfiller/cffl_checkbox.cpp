@@ -14,18 +14,17 @@
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
 #include "fpdfsdk/pwl/cpwl_special_button.h"
 #include "public/fpdf_fwlevent.h"
-#include "third_party/base/ptr_util.h"
 
 CFFL_CheckBox::CFFL_CheckBox(CPDFSDK_FormFillEnvironment* pApp,
                              CPDFSDK_Widget* pWidget)
     : CFFL_Button(pApp, pWidget) {}
 
-CFFL_CheckBox::~CFFL_CheckBox() {}
+CFFL_CheckBox::~CFFL_CheckBox() = default;
 
 std::unique_ptr<CPWL_Wnd> CFFL_CheckBox::NewPWLWindow(
     const CPWL_Wnd::CreateParams& cp,
     std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData) {
-  auto pWnd = pdfium::MakeUnique<CPWL_CheckBox>(cp, std::move(pAttachedData));
+  auto pWnd = std::make_unique<CPWL_CheckBox>(cp, std::move(pAttachedData));
   pWnd->Realize();
   pWnd->SetCheck(m_pWidget->IsChecked());
   return std::move(pWnd);
@@ -64,7 +63,7 @@ bool CFFL_CheckBox::OnChar(CPDFSDK_Annot* pAnnot,
       CFFL_FormFiller::OnChar(pAnnot, nChar, nFlags);
 
       CPWL_CheckBox* pWnd = GetCheckBox(pPageView, true);
-      if (pWnd) {
+      if (pWnd && !pWnd->IsReadOnly()) {
         CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot);
         pWnd->SetCheck(!pWidget->IsChecked());
       }

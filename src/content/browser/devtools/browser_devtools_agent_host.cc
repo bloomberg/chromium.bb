@@ -22,7 +22,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 
 namespace content {
 
@@ -67,7 +67,8 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
   BrowserDevToolsAgentHostInstances().erase(this);
 }
 
-bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                             bool acquire_wake_lock) {
   if (!session->GetClient()->MayAttachToBrowser())
     return false;
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -79,8 +80,9 @@ class TestShimClient : public chrome::mojom::AppShim {
   void SetUserAttention(
       chrome::mojom::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
-  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
-                             profile_menu_items) override {}
+  void UpdateProfileMenu(
+      std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items,
+      bool use_new_picker) override {}
 
  private:
   void OnShimConnectedDone(
@@ -143,6 +145,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
  private:
   // chrome::mojom::AppShimHost.
   void FocusApp() override {}
+  void ReopenApp() override {}
   void FilesOpened(const std::vector<base::FilePath>& files) override {}
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
 

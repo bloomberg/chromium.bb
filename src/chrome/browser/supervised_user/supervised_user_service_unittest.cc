@@ -22,19 +22,15 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
+#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -57,12 +53,6 @@ using extensions::Extension;
 using content::MessageLoopRunner;
 
 namespace {
-
-#if !defined(OS_ANDROID)
-void OnProfileDownloadedFail(const base::string16& full_name) {
-  ASSERT_TRUE(false) << "Profile download should not have succeeded.";
-}
-#endif
 
 // Base class for helper objects that wait for certain events to happen.
 // This class will ensure that calls to QuitRunLoop() (triggered by a subclass)
@@ -131,7 +121,7 @@ class SiteListObserver : public AsyncTestHelper {
   SiteListObserver() {}
   ~SiteListObserver() {}
 
-  void Init(SupervisedUserWhitelistService* service) {
+  void Init(SupervisedUserAllowlistService* service) {
     service->AddSiteListsChangedCallback(base::Bind(
         &SiteListObserver::OnSiteListsChanged, base::Unretained(this)));
 
@@ -206,10 +196,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
                             base::Unretained(result_holder)));
   }
 
-  signin::IdentityTestEnvironment* identity_test_env() {
-    return identity_test_environment_adaptor_->identity_test_env();
-  }
-
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
   content::BrowserTaskEnvironment task_environment_;
@@ -218,22 +204,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
 };
 
 }  // namespace
-
-#if !defined(OS_ANDROID)
-// Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
-// DCHECK is hit when the service is destroyed, this test passed.
-TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
-  CustodianProfileDownloaderService* downloader_service =
-      CustodianProfileDownloaderServiceFactory::GetForProfile(profile_.get());
-
-  // Emulate being logged in, then start to download a profile so a
-  // ProfileDownloader gets created.
-  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
-      "logged_in@gmail.com");
-
-  downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
-}
-#endif
 
 namespace {
 
@@ -381,7 +351,7 @@ class SupervisedUserServiceExtensionTestBase
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();
-    site_list_observer_.Init(service->GetWhitelistService());
+    site_list_observer_.Init(service->GetAllowlistService());
 
     SupervisedUserURLFilter* url_filter = service->GetURLFilter();
     url_filter->SetBlockingTaskRunnerForTesting(
@@ -596,14 +566,14 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(youtube_url));
 
-  // Load a whitelist.
+  // Load a allowlist.
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  SupervisedUserWhitelistService* whitelist_service =
-      supervised_user_service->GetWhitelistService();
-  base::FilePath whitelist_path =
+  SupervisedUserAllowlistService* allowlist_service =
+      supervised_user_service->GetAllowlistService();
+  base::FilePath allowlist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
-  whitelist_service->LoadWhitelistForTesting(id1, title1, whitelist_path);
+  allowlist_service->LoadAllowlistForTesting(id1, title1, allowlist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
@@ -617,10 +587,10 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Load a second whitelist.
-  whitelist_path =
+  // Load a second allowlist.
+  allowlist_path =
       test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
-  whitelist_service->LoadWhitelistForTesting(id2, title2, whitelist_path);
+  allowlist_service->LoadAllowlistForTesting(id2, title2, allowlist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(2u, site_list_observer_.site_lists().size());
@@ -637,8 +607,8 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Unload the first whitelist.
-  whitelist_service->UnloadWhitelist(id1);
+  // Unload the first allowlist.
+  allowlist_service->UnloadAllowlist(id1);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());

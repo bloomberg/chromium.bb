@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <sstream>
-#include <vector>
 
 #include "constants/page_object.h"
 #include "core/fpdfapi/edit/cpdf_contentstream_write_utils.h"
@@ -22,10 +21,9 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_pathdata.h"
-#include "core/fxge/render_defines.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
 
@@ -368,8 +366,9 @@ FPDF_EXPORT FPDF_CLIPPATH FPDF_CALLCONV FPDF_CreateClipPath(float left,
   CPDF_Path Path;
   Path.AppendRect(left, bottom, right, top);
 
-  auto pNewClipPath = pdfium::MakeUnique<CPDF_ClipPath>();
-  pNewClipPath->AppendPath(Path, FXFILL_ALTERNATE, false);
+  auto pNewClipPath = std::make_unique<CPDF_ClipPath>();
+  pNewClipPath->AppendPath(Path, CFX_FillRenderOptions::FillType::kEvenOdd,
+                           false);
 
   // Caller takes ownership.
   return FPDFClipPathFromCPDFClipPath(pNewClipPath.release());
@@ -400,10 +399,12 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_InsertClipPath(FPDF_PAGE page,
       strClip << "0 0 m W n ";
     } else {
       OutputPath(strClip, path);
-      if (pClipPath->GetClipType(i) == FXFILL_WINDING)
+      if (pClipPath->GetClipType(i) ==
+          CFX_FillRenderOptions::FillType::kWinding) {
         strClip << "W n\n";
-      else
+      } else {
         strClip << "W* n\n";
+      }
     }
   }
   CPDF_Document* pDoc = pPage->GetDocument();

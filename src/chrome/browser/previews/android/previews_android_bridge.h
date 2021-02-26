@@ -12,8 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 
+namespace content {
+class WebContents;
+}
+
 class PreviewsAndroidBridge {
  public:
+  // Creates InfoBar that shows https images are optimized in the
+  // |web_contents|, and returns whether InfoBar was displayed successfully.
+  static bool CreateHttpsImageCompressionInfoBar(
+      content::WebContents* web_contents);
+
   PreviewsAndroidBridge(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
   virtual ~PreviewsAndroidBridge();
@@ -23,16 +32,16 @@ class PreviewsAndroidBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents);
 
-  base::android::ScopedJavaLocalRef<jstring> GetStalePreviewTimestamp(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_web_contents);
-
   void LoadOriginal(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jobject>& j_web_contents);
 
   base::android::ScopedJavaLocalRef<jstring> GetPreviewsType(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
+  jboolean IsHttpsImageCompressionApplied(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents);

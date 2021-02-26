@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -24,7 +25,7 @@ bool PathProvider(int key, FilePath* result);
 
 #if defined(OS_WIN)
 bool PathProviderWin(int key, FilePath* result);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 bool PathProviderMac(int key, FilePath* result);
 #elif defined(OS_ANDROID)
 bool PathProviderAndroid(int key, FilePath* result);
@@ -70,7 +71,7 @@ Provider base_provider_win = {
 };
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 Provider base_provider_mac = {
   PathProviderMac,
   &base_provider,
@@ -102,7 +103,7 @@ Provider base_provider_fuchsia = {PathProviderFuchsia, &base_provider,
                                   true};
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID) && \
     !defined(OS_FUCHSIA)
 Provider base_provider_posix = {
   PathProviderPosix,
@@ -126,7 +127,7 @@ struct PathData {
   PathData() : cache_disabled(false) {
 #if defined(OS_WIN)
     providers = &base_provider_win;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     providers = &base_provider_mac;
 #elif defined(OS_ANDROID)
     providers = &base_provider_android;
@@ -143,8 +144,9 @@ static PathData* GetPathData() {
   return path_data;
 }
 
-// Tries to find |key| in the cache. |path_data| should be locked by the caller!
-bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result) {
+// Tries to find |key| in the cache.
+bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result)
+    EXCLUSIVE_LOCKS_REQUIRED(path_data->lock) {
   if (path_data->cache_disabled)
     return false;
   // check for a cached version
@@ -156,9 +158,9 @@ bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result) {
   return false;
 }
 
-// Tries to find |key| in the overrides map. |path_data| should be locked by the
-// caller!
-bool LockedGetFromOverrides(int key, PathData* path_data, FilePath* result) {
+// Tries to find |key| in the overrides map.
+bool LockedGetFromOverrides(int key, PathData* path_data, FilePath* result)
+    EXCLUSIVE_LOCKS_REQUIRED(path_data->lock) {
   // check for an overridden version.
   PathMap::const_iterator it = path_data->overrides.find(key);
   if (it != path_data->overrides.end()) {
@@ -226,6 +228,12 @@ bool PathService::Get(int key, FilePath* result) {
     path_data->cache[key] = path;
 
   return true;
+}
+
+FilePath PathService::CheckedGet(int key) {
+  FilePath path;
+  LOG_IF(FATAL, !Get(key, &path)) << "Failed to get the path for " << key;
+  return path;
 }
 
 // static

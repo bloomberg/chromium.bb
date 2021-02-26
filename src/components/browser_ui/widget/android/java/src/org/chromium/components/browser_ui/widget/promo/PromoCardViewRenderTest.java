@@ -6,14 +6,15 @@ package org.chromium.components.browser_ui.widget.promo;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,17 +24,16 @@ import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.browser_ui.widget.test.R;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
-import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
 
@@ -48,8 +48,7 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
 
     public PromoCardViewRenderTest(boolean nightModeEnabled) {
         NightModeTestUtils.setUpNightModeForDummyUiActivity(nightModeEnabled);
@@ -110,11 +109,12 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
         mModel.set(PromoCardProperties.HAS_SECONDARY_BUTTON, false);
         setPromoCard(LayoutStyle.LARGE);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(View.GONE, () -> {
-            ButtonCompat secondaryButton =
-                    mPromoCardCoordinator.getView().findViewById(R.id.promo_secondary_button);
-            return secondaryButton.getVisibility();
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            int visibility = mPromoCardCoordinator.getView()
+                                     .findViewById(R.id.promo_secondary_button)
+                                     .getVisibility();
+            Criteria.checkThat(visibility, Matchers.is(View.GONE));
+        });
 
         mRenderTestRule.render(mPromoCardCoordinator.getView(), "promo_card_secondary_hidden");
     }

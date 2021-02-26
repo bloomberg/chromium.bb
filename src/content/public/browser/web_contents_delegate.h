@@ -13,25 +13,24 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/bluetooth_chooser.h"
-#include "content/public/browser/bluetooth_scanning_prompt.h"
 #include "content/public/browser/eye_dropper.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -73,6 +72,12 @@ struct Referrer;
 struct SecurityStyleExplanations;
 }  // namespace content
 
+namespace device {
+namespace mojom {
+class GeolocationContext;
+}
+}  // namespace device
+
 namespace gfx {
 class Rect;
 class Size;
@@ -88,6 +93,7 @@ class SurfaceId;
 
 namespace blink {
 class WebGestureEvent;
+enum class ProtocolHandlerSecurityLevel;
 }
 
 namespace content {
@@ -291,7 +297,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // cancel the operation. This method is used by Chromium Embedded Framework.
   virtual bool CanDragEnter(WebContents* source,
                             const DropData& data,
-                            blink::WebDragOperationsMask operations_allowed);
+                            blink::DragOperationsMask operations_allowed);
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(WebContents* source) {}
@@ -410,7 +416,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This function is responsible for calling listener->FileSelected() or
   // listener->FileSelectionCanceled().
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              std::unique_ptr<FileSelectListener> listener,
+                              scoped_refptr<FileSelectListener> listener,
                               const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
@@ -419,14 +425,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This function is responsible for calling listener->FileSelected() or
   // listener->FileSelectionCanceled().
   virtual void EnumerateDirectory(WebContents* web_contents,
-                                  std::unique_ptr<FileSelectListener> listener,
+                                  scoped_refptr<FileSelectListener> listener,
                                   const base::FilePath& path);
-
-  // Shows a chooser for the user to select a nearby Bluetooth device. The
-  // observer must live at least as long as the returned chooser object.
-  virtual std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
-      RenderFrameHost* frame,
-      const BluetoothChooser::EventHandler& event_handler);
 
   // Creates an info bar for the user to control the receiving of the SMS.
   virtual void CreateSmsPrompt(RenderFrameHost*,
@@ -435,25 +435,10 @@ class CONTENT_EXPORT WebContentsDelegate {
                                base::OnceCallback<void()> on_confirm,
                                base::OnceCallback<void()> on_cancel);
 
-  // Shows a prompt for the user to allow/block Bluetooth scanning. The
-  // observer must live at least as long as the returned prompt object.
-  virtual std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
-      RenderFrameHost* frame,
-      const BluetoothScanningPrompt::EventHandler& event_handler);
-
-  // Returns true if the delegate will embed a WebContents-owned fullscreen
-  // render widget.  In this case, the delegate may access the widget by calling
-  // WebContents::GetFullscreenRenderWidgetHostView().  If false is returned,
-  // WebContents will be responsible for showing the fullscreen widget.
-  virtual bool EmbedsFullscreenWidget();
-
   // Called when the renderer puts a tab into fullscreen mode.
-  // |origin| is the origin of the initiating frame inside the |web_contents|.
-  // |origin| can be empty in which case the |web_contents| last committed
-  // URL's origin should be used.
+  // |requesting_frame| is the specific content frame requesting fullscreen.
   virtual void EnterFullscreenModeForTab(
-      WebContents* web_contents,
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) {}
 
   // Called when the renderer puts a tab out of fullscreen mode.
@@ -469,10 +454,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual blink::mojom::DisplayMode GetDisplayMode(
       const WebContents* web_contents);
 
+  // Returns the security level to use for Navigator.RegisterProtocolHandler().
+  virtual blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel(
+      RenderFrameHost* requesting_frame);
+
   // Register a new handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
   // gesture.
-  virtual void RegisterProtocolHandler(WebContents* web_contents,
+  virtual void RegisterProtocolHandler(RenderFrameHost* requesting_frame,
                                        const std::string& protocol,
                                        const GURL& url,
                                        bool user_gesture) {}
@@ -480,7 +469,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Unregister the registered handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
   // gesture.
-  virtual void UnregisterProtocolHandler(WebContents* web_contents,
+  virtual void UnregisterProtocolHandler(RenderFrameHost* requesting_frame,
                                          const std::string& protocol,
                                          const GURL& url,
                                          bool user_gesture) {}
@@ -637,8 +626,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual int GetBottomControlsHeight();
   virtual int GetBottomControlsMinHeight();
   virtual bool ShouldAnimateBrowserControlsHeightChanges();
-  virtual bool DoBrowserControlsShrinkRendererSize(
-      const WebContents* web_contents);
+  virtual bool DoBrowserControlsShrinkRendererSize(WebContents* web_contents);
+  // Returns true if the top controls should only expand at the top of the page,
+  // so they'll only be visible if the page is scrolled to the top.
+  virtual bool OnlyExpandTopControlsAtPageTop();
 
   // Propagates to the browser that gesture scrolling has changed state. This is
   // used by the browser to assist in controlling the behavior of sliding the
@@ -646,9 +637,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
 
   // Give WebContentsDelegates the opportunity to adjust the previews state.
-  virtual void AdjustPreviewsStateForNavigation(WebContents* web_contents,
-                                                PreviewsState* previews_state) {
-  }
+  virtual void AdjustPreviewsStateForNavigation(
+      WebContents* web_contents,
+      blink::PreviewsState* previews_state) {}
 
   // Requests to print an out-of-process subframe for the specified WebContents.
   // |rect| is the rectangular area where its content resides in its parent
@@ -662,12 +653,12 @@ class CONTENT_EXPORT WebContentsDelegate {
                                          RenderFrameHost* subframe_host) const {
   }
 
-  // Requests to capture a paint preview of an out-of-process subframe for the
-  // specified WebContents. |rect| is the rectangular area where its content
-  // resides in its parent frame. |guid| is a globally unique identitier for an
-  // entire paint preview. |render_frame_host| is the render frame host of the
-  // subframe to be captured.
-  virtual void CapturePaintPreviewOfCrossProcessSubframe(
+  // Requests to capture a paint preview of a subframe for the specified
+  // WebContents. |rect| is the rectangular area where its content resides in
+  // its parent frame. |guid| is a globally unique identitier for an entire
+  // paint preview. |render_frame_host| is the render frame host of the subframe
+  // to be captured.
+  virtual void CapturePaintPreviewOfSubframe(
       WebContents* web_contents,
       const gfx::Rect& rect,
       const base::UnguessableToken& guid,
@@ -705,6 +696,15 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* predecessor_contents,
       std::unique_ptr<WebContents> portal_contents);
 
+  // If |old_contents| is being inspected by a DevTools window, it updates the
+  // window to inspect |new_contents| instead and calls |callback| after it
+  // finishes asynchronously. If no window is present, or no update is
+  // necessary, |callback| is run synchronously (immediately on the same stack).
+  virtual void UpdateInspectedWebContentsIfNecessary(
+      WebContents* old_contents,
+      WebContents* new_contents,
+      base::OnceCallback<void()> callback);
+
   // Returns true if the widget's frame content needs to be stored before
   // eviction and displayed until a new frame is generated. If false, a white
   // solid color is displayed instead.
@@ -731,6 +731,12 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Invoked when media playback is interrupted or completed.
   virtual void MediaWatchTimeChanged(const MediaPlayerWatchTime& watch_time) {}
+
+  // Returns a  InstalledWebappGeolocationContext if this web content is running
+  // in a installed webapp and geolocation should be deleagted from the
+  // installed webapp; otherwise returns nullptr.
+  virtual device::mojom::GeolocationContext*
+  GetInstalledWebappGeolocationContext();
 
   // Returns a weak ptr to the web contents delegate.
   virtual base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr();

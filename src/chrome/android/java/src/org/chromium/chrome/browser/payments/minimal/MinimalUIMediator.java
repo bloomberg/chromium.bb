@@ -19,17 +19,17 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.payments.PackageManagerDelegate;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.CompleteAndCloseObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ConfirmObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.DismissObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ErrorAndCloseObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ReadyObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
+import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.ui.modelutil.PropertyModel;
 

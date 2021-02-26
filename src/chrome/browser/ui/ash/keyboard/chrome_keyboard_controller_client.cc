@@ -27,8 +27,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
@@ -231,6 +231,10 @@ void ChromeKeyboardControllerClient::SetDraggableArea(const gfx::Rect& bounds) {
 bool ChromeKeyboardControllerClient::SetWindowBoundsInScreen(
     const gfx::Rect& bounds_in_screen) {
   return keyboard_controller_->SetWindowBoundsInScreen(bounds_in_screen);
+}
+
+void ChromeKeyboardControllerClient::SetKeyboardConfigFromPref(bool enabled) {
+  keyboard_controller_->SetKeyboardConfigFromPref(enabled);
 }
 
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {

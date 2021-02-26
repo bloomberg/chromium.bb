@@ -53,9 +53,11 @@ struct URLResponseHead {
   // True if the request accessed the network in the process of retrieving data.
   bool network_accessed = false;
 
-  // The appcache this response was loaded from, or kAppCacheNoCacheId.
+  // The appcache this response was loaded from, or
+  // kAppCacheNoCacheId (hard-coded as 0 because services/network
+  // can't take a dependency on Blink).
   // TODO(rdsmith): Remove conceptual dependence on appcache.
-  int64 appcache_id;
+  int64 appcache_id = 0;
 
   // The manifest url of the appcache this response was loaded from.
   // Note: this value is only populated for main resource requests.
@@ -74,7 +76,7 @@ struct URLResponseHead {
   bool was_fetched_via_spdy = false;
 
   // True if the response was delivered after NPN is negotiated.
-  bool was_alpn_negotiated;
+  bool was_alpn_negotiated = false;
 
   // True if response could use alternate protocol. However, browser will
   // ignore the alternate protocol when spdy is not enabled on browser side.
@@ -103,11 +105,21 @@ struct URLResponseHead {
   // reissued by the renderer).
   bool was_fetched_via_service_worker = false;
 
+  // Source of a serviceworker response - CacheStorage, HttpCache, Network or
+  // Unspecified (default).
+  // The value can be Unspecified in some cases including:
+  // 1. |was_fetched_via_service_worker| is false.
+  // 2. The service worker responded with an error (response status code is 0).
+  // 3. The service worker responded with a generated response, i.e.,
+  // `respondWith(new Response(...))`.
+  FetchResponseSource service_worker_response_source =
+      FetchResponseSource.kUnspecified;
+
   // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
   // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
   // renderer has to resend the request with skip service worker flag
   // considering the CORS preflight logic.
-  bool was_fallback_required_by_service_worker;
+  bool was_fallback_required_by_service_worker = false;
 
   // The URL list of the Response object the service worker passed to
   // respondWith() to create this response. For example, if the service worker
@@ -120,11 +132,7 @@ struct URLResponseHead {
   array<url.mojom.Url> url_list_via_service_worker;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
-  FetchResponseType response_type;
-
-  // True when the response is served from the CacheStorage via the
-  // ServiceWorker.
-  bool is_in_cache_storage = false;
+  FetchResponseType response_type = FetchResponseType.kDefault;
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
@@ -169,12 +177,18 @@ struct URLResponseHead {
   // True if this resource is served from the prefetch cache.
   bool was_in_prefetch_cache = false;
 
+  // True if the request included a cookie.
+  bool was_cookie_in_request = false;
+
   // True if the response was intercepted by a plugin.
   bool intercepted_by_plugin = false;
 
   // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
   // will be removed in the future.
   bool is_legacy_tls_version = false;
+
+  // https://fetch.spec.whatwg.org/#concept-response-range-requested-flag
+  bool has_range_requested = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-timing-allow-passed
   bool timing_allow_passed = false;

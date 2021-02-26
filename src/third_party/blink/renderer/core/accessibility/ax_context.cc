@@ -25,4 +25,12 @@ AXObjectCache& AXContext::GetAXObjectCache() {
   return *document_->ExistingAXObjectCache();
 }
 
+bool AXContext::HasActiveDocument() {
+  return document_ && document_->IsActive();
+}
+
+Document* AXContext::GetDocument() {
+  return document_;
+}
+
 }  // namespace blink

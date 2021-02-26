@@ -58,16 +58,16 @@ MetricsPrivateGetIsCrashReportingEnabledFunction::Run() {
   MetricsPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetMetricsPrivateDelegate();
 
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      delegate && delegate->IsCrashReportingEnabled())));
+  return RespondNow(OneArgument(
+      base::Value(delegate && delegate->IsCrashReportingEnabled())));
 }
 
 ExtensionFunction::ResponseAction MetricsPrivateGetFieldTrialFunction::Run() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(base::FieldTrialList::FindFullName(name))));
+  return RespondNow(
+      OneArgument(base::Value(base::FieldTrialList::FindFullName(name))));
 }
 
 ExtensionFunction::ResponseAction
@@ -82,7 +82,9 @@ MetricsPrivateGetVariationParamsFunction::Run() {
                                      &result.additional_properties)) {
     dict = result.ToValue();
   }
-  return RespondNow(dict ? OneArgument(std::move(dict)) : NoArguments());
+  return RespondNow(
+      dict ? OneArgument(base::Value::FromUniquePtrValue(std::move(dict)))
+           : NoArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -305,7 +307,7 @@ MetricsPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
     result.buckets.push_back(std::move(bucket));
   }
 
-  return OneArgument(result.ToValue());
+  return OneArgument(base::Value::FromUniquePtrValue(result.ToValue()));
 }
 
 }  // namespace extensions

@@ -40,6 +40,7 @@
 #include "src/flags/flags.h"
 #include "src/heap/factory.h"
 #include "src/init/v8.h"
+#include "src/objects/js-function.h"
 #include "src/objects/objects.h"
 #include "src/zone/accounting-allocator.h"
 
@@ -136,10 +137,16 @@ class CcTest {
   static i::Heap* heap();
   static i::ReadOnlyHeap* read_only_heap();
 
-  static void CollectGarbage(i::AllocationSpace space);
+  static void AddGlobalFunction(v8::Local<v8::Context> env, const char* name,
+                                v8::FunctionCallback callback);
+  static void CollectGarbage(i::AllocationSpace space,
+                             i::Isolate* isolate = nullptr);
   static void CollectAllGarbage(i::Isolate* isolate = nullptr);
   static void CollectAllAvailableGarbage(i::Isolate* isolate = nullptr);
   static void PreciseCollectAllGarbage(i::Isolate* isolate = nullptr);
+
+  static i::Handle<i::String> MakeString(const char* str);
+  static i::Handle<i::String> MakeName(const char* str, int suffix);
 
   static v8::base::RandomNumberGenerator* random_number_generator();
 
@@ -313,7 +320,7 @@ class LocalContext {
   v8::Context* operator*() { return operator->(); }
   bool IsReady() { return !context_.IsEmpty(); }
 
-  v8::Local<v8::Context> local() {
+  v8::Local<v8::Context> local() const {
     return v8::Local<v8::Context>::New(isolate_, context_);
   }
 
@@ -610,7 +617,7 @@ class InitializedHandleScope {
 
 class HandleAndZoneScope : public InitializedHandleScope {
  public:
-  HandleAndZoneScope();
+  explicit HandleAndZoneScope(bool support_zone_compression = false);
   ~HandleAndZoneScope();
 
   // Prefixing the below with main_ reduces a lot of naming clashes.
@@ -640,6 +647,8 @@ class ManualGCScope {
   ManualGCScope()
       : flag_concurrent_marking_(i::FLAG_concurrent_marking),
         flag_concurrent_sweeping_(i::FLAG_concurrent_sweeping),
+        flag_stress_concurrent_allocation_(
+            i::FLAG_stress_concurrent_allocation),
         flag_stress_incremental_marking_(i::FLAG_stress_incremental_marking),
         flag_parallel_marking_(i::FLAG_parallel_marking),
         flag_detect_ineffective_gcs_near_heap_limit_(
@@ -647,6 +656,7 @@ class ManualGCScope {
     i::FLAG_concurrent_marking = false;
     i::FLAG_concurrent_sweeping = false;
     i::FLAG_stress_incremental_marking = false;
+    i::FLAG_stress_concurrent_allocation = false;
     // Parallel marking has a dependency on concurrent marking.
     i::FLAG_parallel_marking = false;
     i::FLAG_detect_ineffective_gcs_near_heap_limit = false;
@@ -654,6 +664,7 @@ class ManualGCScope {
   ~ManualGCScope() {
     i::FLAG_concurrent_marking = flag_concurrent_marking_;
     i::FLAG_concurrent_sweeping = flag_concurrent_sweeping_;
+    i::FLAG_stress_concurrent_allocation = flag_stress_concurrent_allocation_;
     i::FLAG_stress_incremental_marking = flag_stress_incremental_marking_;
     i::FLAG_parallel_marking = flag_parallel_marking_;
     i::FLAG_detect_ineffective_gcs_near_heap_limit =
@@ -663,6 +674,7 @@ class ManualGCScope {
  private:
   bool flag_concurrent_marking_;
   bool flag_concurrent_sweeping_;
+  bool flag_stress_concurrent_allocation_;
   bool flag_stress_incremental_marking_;
   bool flag_parallel_marking_;
   bool flag_detect_ineffective_gcs_near_heap_limit_;
@@ -673,6 +685,9 @@ class ManualGCScope {
 // of construction.
 class TestPlatform : public v8::Platform {
  public:
+  TestPlatform(const TestPlatform&) = delete;
+  TestPlatform& operator=(const TestPlatform&) = delete;
+
   // v8::Platform implementation.
   v8::PageAllocator* GetPageAllocator() override {
     return old_platform_->GetPageAllocator();
@@ -734,8 +749,6 @@ class TestPlatform : public v8::Platform {
 
  private:
   v8::Platform* old_platform_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPlatform);
 };
 
 #if defined(USE_SIMULATOR)

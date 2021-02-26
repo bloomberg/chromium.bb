@@ -13,7 +13,7 @@
 #include "src/wasm/wasm-limits.h"
 #include "src/wasm/wasm-linkage.h"
 #include "src/wasm/wasm-module.h"
-#include "src/wasm/wasm-opcodes.h"
+#include "src/wasm/wasm-opcodes-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -21,14 +21,21 @@ namespace wasm {
 
 bool DecodeLocalDecls(const WasmFeatures& enabled, BodyLocalDecls* decls,
                       const byte* start, const byte* end) {
-  Decoder decoder(start, end);
-  if (WasmDecoder<Decoder::kValidate>::DecodeLocals(enabled, &decoder, nullptr,
-                                                    &decls->type_list)) {
-    DCHECK(decoder.ok());
-    decls->encoded_size = decoder.pc_offset();
-    return true;
+  WasmFeatures no_features = WasmFeatures::None();
+  Zone* zone = decls->type_list.get_allocator().zone();
+  WasmDecoder<Decoder::kFullValidation> decoder(
+      zone, nullptr, enabled, &no_features, nullptr, start, end, 0);
+  uint32_t length;
+  if (!decoder.DecodeLocals(decoder.pc(), &length, 0)) {
+    decls->encoded_size = 0;
+    return false;
   }
-  return false;
+  DCHECK(decoder.ok());
+  decls->encoded_size = length;
+  // Copy the decoded locals types into {decls->type_list}.
+  DCHECK(decls->type_list.empty());
+  decls->type_list = std::move(decoder.local_types_);
+  return true;
 }
 
 BytecodeIterator::BytecodeIterator(const byte* start, const byte* end,
@@ -47,23 +54,30 @@ DecodeResult VerifyWasmCode(AccountingAllocator* allocator,
                             const WasmModule* module, WasmFeatures* detected,
                             const FunctionBody& body) {
   Zone zone(allocator, ZONE_NAME);
-  WasmFullDecoder<Decoder::kValidate, EmptyInterface> decoder(
+  WasmFullDecoder<Decoder::kFullValidation, EmptyInterface> decoder(
       &zone, module, enabled, detected, body);
   decoder.Decode();
   return decoder.toResult(nullptr);
 }
 
 unsigned OpcodeLength(const byte* pc, const byte* end) {
-  Decoder decoder(pc, end);
-  return WasmDecoder<Decoder::kNoValidate>::OpcodeLength(&decoder, pc);
+  WasmFeatures no_features = WasmFeatures::None();
+  Zone* no_zone = nullptr;
+  WasmModule* no_module = nullptr;
+  FunctionSig* no_sig = nullptr;
+  WasmDecoder<Decoder::kNoValidation> decoder(no_zone, no_module, no_features,
+                                              &no_features, no_sig, pc, end, 0);
+  return WasmDecoder<Decoder::kNoValidation>::OpcodeLength(&decoder, pc);
 }
 
 std::pair<uint32_t, uint32_t> StackEffect(const WasmModule* module,
                                           const FunctionSig* sig,
                                           const byte* pc, const byte* end) {
   WasmFeatures unused_detected_features = WasmFeatures::None();
-  WasmDecoder<Decoder::kNoValidate> decoder(
-      module, WasmFeatures::All(), &unused_detected_features, sig, pc, end);
+  Zone* no_zone = nullptr;
+  WasmDecoder<Decoder::kNoValidation> decoder(
+      no_zone, module, WasmFeatures::All(), &unused_detected_features, sig, pc,
+      end);
   return decoder.StackEffect(pc);
 }
 
@@ -110,9 +124,9 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
                       std::ostream& os, std::vector<int>* line_numbers) {
   Zone zone(allocator, ZONE_NAME);
   WasmFeatures unused_detected_features = WasmFeatures::None();
-  WasmDecoder<Decoder::kNoValidate> decoder(module, WasmFeatures::All(),
-                                            &unused_detected_features, body.sig,
-                                            body.start, body.end);
+  WasmDecoder<Decoder::kNoValidation> decoder(
+      &zone, module, WasmFeatures::All(), &unused_detected_features, body.sig,
+      body.start, body.end);
   int line_nr = 0;
   constexpr int kNoByteCode = -1;
 
@@ -135,12 +149,12 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         if (decls.type_list[pos] == type) {
           ++count;
         } else {
-          os << " " << count << " " << type.type_name();
+          os << " " << count << " " << type.name();
           type = decls.type_list[pos];
           count = 1;
         }
       }
-      os << " " << count << " " << type.type_name();
+      os << " " << count << " " << type.name();
     }
     os << std::endl;
     if (line_numbers) line_numbers->push_back(kNoByteCode);
@@ -160,12 +174,14 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
   unsigned control_depth = 0;
   for (; i.has_next(); i.next()) {
     unsigned length =
-        WasmDecoder<Decoder::kNoValidate>::OpcodeLength(&decoder, i.pc());
+        WasmDecoder<Decoder::kNoValidation>::OpcodeLength(&decoder, i.pc());
 
     unsigned offset = 1;
     WasmOpcode opcode = i.current();
-    if (WasmOpcodes::IsPrefixOpcode(opcode)) {
-      os << PrefixName(opcode) << ", ";
+    WasmOpcode prefix = kExprUnreachable;
+    bool has_prefix = WasmOpcodes::IsPrefixOpcode(opcode);
+    if (has_prefix) {
+      prefix = i.current();
       opcode = i.prefixed_opcode();
       offset = 2;
     }
@@ -181,6 +197,10 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         "                                                                ";
     os.write(padding, num_whitespaces);
 
+    if (has_prefix) {
+      os << PrefixName(prefix) << ", ";
+    }
+
     os << RawOpcodeName(opcode) << ",";
 
     if (opcode == kExprLoop || opcode == kExprIf || opcode == kExprBlock ||
@@ -190,7 +210,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
       // TODO(7748) Update this for gc and ref types if needed
       switch (i.pc()[1]) {
 #define CASE_LOCAL_TYPE(local_name, type_name) \
-  case kLocal##local_name:                     \
+  case k##local_name##Code:                    \
     os << " kWasm" #type_name ",";             \
     break;
 
@@ -223,12 +243,12 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
       case kExprIf:
       case kExprBlock:
       case kExprTry: {
-        BlockTypeImmediate<Decoder::kNoValidate> imm(WasmFeatures::All(), &i,
-                                                     i.pc());
+        BlockTypeImmediate<Decoder::kNoValidation> imm(WasmFeatures::All(), &i,
+                                                       i.pc() + 1);
         os << " @" << i.pc_offset();
         if (decoder.Complete(imm)) {
           for (uint32_t i = 0; i < imm.out_arity(); i++) {
-            os << " " << imm.out_type(i).type_name();
+            os << " " << imm.out_type(i).name();
           }
         }
         control_depth++;
@@ -239,33 +259,33 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         control_depth--;
         break;
       case kExprBr: {
-        BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchDepthImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
         os << " depth=" << imm.depth;
         break;
       }
       case kExprBrIf: {
-        BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchDepthImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
         os << " depth=" << imm.depth;
         break;
       }
       case kExprBrTable: {
-        BranchTableImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchTableImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
         os << " entries=" << imm.table_count;
         break;
       }
       case kExprCallIndirect: {
-        CallIndirectImmediate<Decoder::kNoValidate> imm(WasmFeatures::All(), &i,
-                                                        i.pc());
+        CallIndirectImmediate<Decoder::kNoValidation> imm(WasmFeatures::All(),
+                                                          &i, i.pc() + 1);
         os << " sig #" << imm.sig_index;
-        if (decoder.Complete(i.pc(), imm)) {
+        if (decoder.Complete(imm)) {
           os << ": " << *imm.sig;
         }
         break;
       }
       case kExprCallFunction: {
-        CallFunctionImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        CallFunctionImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
         os << " function #" << imm.index;
-        if (decoder.Complete(i.pc(), imm)) {
+        if (decoder.Complete(imm)) {
           os << ": " << *imm.sig;
         }
         break;
@@ -283,8 +303,10 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
 
 BitVector* AnalyzeLoopAssignmentForTesting(Zone* zone, size_t num_locals,
                                            const byte* start, const byte* end) {
-  Decoder decoder(start, end);
-  return WasmDecoder<Decoder::kValidate>::AnalyzeLoopAssignment(
+  WasmFeatures no_features = WasmFeatures::None();
+  WasmDecoder<Decoder::kFullValidation> decoder(
+      zone, nullptr, no_features, &no_features, nullptr, start, end, 0);
+  return WasmDecoder<Decoder::kFullValidation>::AnalyzeLoopAssignment(
       &decoder, start, static_cast<uint32_t>(num_locals), zone);
 }
 

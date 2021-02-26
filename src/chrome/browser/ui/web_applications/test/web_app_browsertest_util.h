@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -21,6 +22,9 @@ enum class InstallResultCode;
 
 // Synchronous version of InstallManager::InstallWebAppFromInfo.
 AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
+
+// Navigates to |app_url|, verifies WebApp installability, and installs app.
+AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url);
 
 // Launches a new app window for |app| in |profile|.
 Browser* LaunchWebAppBrowser(Profile*, const AppId&);
@@ -59,7 +63,19 @@ enum AppMenuCommandState {
 // For a non-app browser, determines if the command is enabled/disabled/absent.
 AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser);
 
+void CloseAndWait(Browser* browser);
+
 bool IsBrowserOpen(const Browser* test_browser);
+
+// Launches the app for |app| in |profile|.
+void UninstallWebApp(Profile* profile, const AppId& app_id);
+
+// Synchronous read of an app icon pixel.
+SkColor ReadAppIconPixel(Profile* profile,
+                         const AppId& app_id,
+                         SquareSizePx size,
+                         int x,
+                         int y);
 
 }  // namespace web_app
 

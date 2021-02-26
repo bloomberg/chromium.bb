@@ -34,13 +34,7 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
       options_(options),
       permission_service_(ExecutionContext::From(script_state)) {}
 
-void MIDIAccessInitializer::Dispose() {
-  dispatcher_.reset();
-}
-
 void MIDIAccessInitializer::ContextDestroyed() {
-  dispatcher_.reset();
-
   ScriptPromiseResolver::ContextDestroyed();
 }
 
@@ -108,7 +102,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
       break;
     case Result::OK:
       return Resolve(MakeGarbageCollected<MIDIAccess>(
-          std::move(dispatcher_), options_->hasSysex() && options_->sysex(),
+          dispatcher_, options_->hasSysex() && options_->sysex(),
           port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:
       return Reject(MakeGarbageCollected<DOMException>(
@@ -124,7 +118,8 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
                                          "Unknown internal error occurred."));
 }
 
-void MIDIAccessInitializer::Trace(Visitor* visitor) {
+void MIDIAccessInitializer::Trace(Visitor* visitor) const {
+  visitor->Trace(dispatcher_);
   visitor->Trace(options_);
   visitor->Trace(permission_service_);
   ScriptPromiseResolver::Trace(visitor);
@@ -137,10 +132,7 @@ ExecutionContext* MIDIAccessInitializer::GetExecutionContext() const {
 void MIDIAccessInitializer::StartSession() {
   DCHECK(!dispatcher_);
 
-  // See https://bit.ly/2S0zRAS for task types.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  dispatcher_ = std::make_unique<MIDIDispatcher>(task_runner);
+  dispatcher_ = MakeGarbageCollected<MIDIDispatcher>(GetExecutionContext());
   dispatcher_->SetClient(this);
 }
 

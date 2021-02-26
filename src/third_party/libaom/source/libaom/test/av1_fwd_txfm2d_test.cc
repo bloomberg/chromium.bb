@@ -354,6 +354,7 @@ void AV1FwdTxfm2dSpeedTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
 typedef std::tuple<TX_SIZE, lowbd_fwd_txfm_func> LbdFwdTxfm2dParam;
 
 class AV1FwdTxfm2dTest : public ::testing::TestWithParam<LbdFwdTxfm2dParam> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1FwdTxfm2dTest);
 
 TEST_P(AV1FwdTxfm2dTest, match) {
   AV1FwdTxfm2dMatchTest(GET_PARAM(0), GET_PARAM(1));
@@ -417,6 +418,20 @@ INSTANTIATE_TEST_SUITE_P(AVX2, AV1FwdTxfm2dTest,
                          Combine(ValuesIn(fwd_txfm_for_avx2),
                                  Values(av1_lowbd_fwd_txfm_avx2)));
 #endif  // HAVE_AVX2
+
+#if HAVE_NEON
+
+static TX_SIZE fwd_txfm_for_neon[] = { TX_4X4,   TX_8X8,   TX_16X16, TX_32X32,
+                                       TX_64X64, TX_4X8,   TX_8X4,   TX_8X16,
+                                       TX_16X8,  TX_16X32, TX_32X16, TX_32X64,
+                                       TX_64X32, TX_4X16,  TX_16X4,  TX_8X32,
+                                       TX_32X8,  TX_16X64, TX_64X16 };
+
+INSTANTIATE_TEST_SUITE_P(NEON, AV1FwdTxfm2dTest,
+                         Combine(ValuesIn(fwd_txfm_for_neon),
+                                 Values(av1_lowbd_fwd_txfm_neon)));
+
+#endif  // HAVE_NEON
 
 typedef void (*Highbd_fwd_txfm_func)(const int16_t *src_diff, tran_low_t *coeff,
                                      int diff_stride, TxfmParam *txfm_param);
@@ -548,6 +563,7 @@ typedef std::tuple<TX_SIZE, Highbd_fwd_txfm_func> HighbdFwdTxfm2dParam;
 
 class AV1HighbdFwdTxfm2dTest
     : public ::testing::TestWithParam<HighbdFwdTxfm2dParam> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HighbdFwdTxfm2dTest);
 
 TEST_P(AV1HighbdFwdTxfm2dTest, match) {
   AV1HighbdFwdTxfm2dMatchTest(GET_PARAM(0), GET_PARAM(1));
@@ -580,4 +596,17 @@ INSTANTIATE_TEST_SUITE_P(AVX2, AV1HighbdFwdTxfm2dTest,
                          Combine(ValuesIn(Highbd_fwd_txfm_for_avx2),
                                  Values(av1_highbd_fwd_txfm)));
 #endif  // HAVE_AVX2
+
+#if HAVE_NEON
+static TX_SIZE Highbd_fwd_txfm_for_neon[] = {
+  TX_4X4,  TX_8X8,  TX_16X16, TX_32X32, TX_64X64, TX_4X8,   TX_8X4,
+  TX_8X16, TX_16X8, TX_16X32, TX_32X16, TX_32X64, TX_64X32, TX_4X16,
+  TX_16X4, TX_8X32, TX_32X8,  TX_16X64, TX_64X16
+};
+
+INSTANTIATE_TEST_SUITE_P(NEON, AV1HighbdFwdTxfm2dTest,
+                         Combine(ValuesIn(Highbd_fwd_txfm_for_neon),
+                                 Values(av1_highbd_fwd_txfm)));
+#endif  // HAVE_NEON
+
 }  // namespace

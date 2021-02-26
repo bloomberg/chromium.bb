@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_font.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_fill.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 
@@ -61,7 +61,9 @@ CXFA_Font::CXFA_Font(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Font,
           kFontPropertyData,
           kFontAttributeData,
-          pdfium::MakeUnique<CJX_Node>(this)) {}
+          cppgc::MakeGarbageCollected<CJX_Node>(
+              doc->GetHeap()->GetAllocationHandle(),
+              this)) {}
 
 CXFA_Font::~CXFA_Font() = default;
 

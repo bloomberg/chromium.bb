@@ -19,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_scoped_pref_update.h"
@@ -46,6 +47,8 @@ const base::FilePath::CharType kArcTestDirectory[] =
     FILE_PATH_LITERAL("arc_default_apps");
 const base::FilePath::CharType kArcTestBoardDirectory[] =
     FILE_PATH_LITERAL("arc_board_default_apps");
+const base::FilePath::CharType kArcTestNonAdaptiveDirectory[] =
+    FILE_PATH_LITERAL("arc_non_adaptive_default_apps");
 
 bool use_test_apps_directory = false;
 
@@ -228,6 +231,7 @@ void ArcDefaultAppList::LoadDefaultApps(std::string board_name) {
     DCHECK(valid_path);
     sources.push_back(base_path.Append(kArcTestDirectory));
     sources.push_back(base_path.Append(kArcTestBoardDirectory));
+    sources.push_back(base_path.Append(kArcTestNonAdaptiveDirectory));
   }
 
   // Using base::Unretained(this) here is safe since we own barrier_closure_.

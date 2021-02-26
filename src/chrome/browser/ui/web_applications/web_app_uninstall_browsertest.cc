@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -47,7 +47,7 @@ class WebAppUninstallBrowserTest : public WebAppControllerBrowserTest {
 };
 
 // Tests that app windows are restored in a tab if the app is uninstalled.
-IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUninstallBrowserTest,
                        RestoreAppWindowForUninstalledApp) {
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
 }
 
 // Check that uninstalling a PWA with a window opened doesn't crash.
-IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUninstallBrowserTest,
                        UninstallPwaWithWindowOpened) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
 }
 
 // PWAs moved to tabbed browsers should not get closed when uninstalled.
-IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUninstallBrowserTest,
                        UninstallPwaWithWindowMovedToTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -118,13 +118,5 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
                 ->GetLastCommittedURL(),
             GetSecureAppURL());
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppUninstallBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
 
 }  // namespace web_app

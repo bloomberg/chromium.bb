@@ -13,10 +13,13 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
@@ -72,19 +75,14 @@ void LogStartMenuShortcutStatus(StartMenuShortcutStatus status) {
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx
 // in order for the UAC dialog to appear in the foreground and for focus
 // to be returned to this process once the UAC task is dismissed. Returns
-// NULL on failure, a handle to the UAC window on success.
+// nullptr on failure, a handle to the UAC window on success.
 HWND CreateUACForegroundWindow() {
-  HWND foreground_window = ::CreateWindowEx(WS_EX_TOOLWINDOW,
-                                            L"STATIC",
-                                            NULL,
-                                            WS_POPUP | WS_VISIBLE,
-                                            0, 0, 0, 0,
-                                            NULL, NULL,
-                                            ::GetModuleHandle(NULL),
-                                            NULL);
+  HWND foreground_window = ::CreateWindowEx(
+      WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP | WS_VISIBLE, 0, 0, 0, 0,
+      nullptr, nullptr, ::GetModuleHandle(nullptr), nullptr);
   if (foreground_window) {
-    HMONITOR monitor = ::MonitorFromWindow(foreground_window,
-                                           MONITOR_DEFAULTTONEAREST);
+    HMONITOR monitor =
+        ::MonitorFromWindow(foreground_window, MONITOR_DEFAULTTONEAREST);
     if (monitor) {
       MONITORINFO mi = {0};
       mi.cbSize = sizeof(mi);
@@ -92,10 +90,8 @@ HWND CreateUACForegroundWindow() {
       RECT screen_rect = mi.rcWork;
       int x_offset = (screen_rect.right - screen_rect.left) / 2;
       int y_offset = (screen_rect.bottom - screen_rect.top) / 2;
-      ::MoveWindow(foreground_window,
-                   screen_rect.left + x_offset,
-                   screen_rect.top + y_offset,
-                   0, 0, FALSE);
+      ::MoveWindow(foreground_window, screen_rect.left + x_offset,
+                   screen_rect.top + y_offset, 0, 0, FALSE);
     } else {
       NOTREACHED() << "Unable to get default monitor";
     }
@@ -121,7 +117,7 @@ std::wstring GetCloudManagementPoliciesRegistryPath() {
   return key_path;
 }
 
-// Retruns the registry key path and value name where the cloud management
+// Reruns the registry key path and value name where the cloud management
 // enrollment option is stored.
 void GetCloudManagementBlockOnFailureRegistryPath(base::string16* key_path,
                                                   base::string16* value_name) {
@@ -133,8 +129,8 @@ void GetCloudManagementBlockOnFailureRegistryPath(base::string16* key_path,
 
 void InstallUtil::TriggerActiveSetupCommand() {
   base::string16 active_setup_reg(install_static::GetActiveSetupPath());
-  base::win::RegKey active_setup_key(
-      HKEY_LOCAL_MACHINE, active_setup_reg.c_str(), KEY_QUERY_VALUE);
+  base::win::RegKey active_setup_key(HKEY_LOCAL_MACHINE,
+                                     active_setup_reg.c_str(), KEY_QUERY_VALUE);
   base::string16 cmd_str;
   LONG read_status = active_setup_key.ReadValue(L"StubPath", &cmd_str);
   if (read_status != ERROR_SUCCESS) {
@@ -273,35 +269,22 @@ void InstallUtil::AddInstallerResultItems(
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
   install_list->AddCreateRegKeyWorkItem(root, state_key, KEY_WOW64_32KEY);
-  install_list->AddSetRegValueWorkItem(root,
-                                       state_key,
-                                       KEY_WOW64_32KEY,
+  install_list->AddSetRegValueWorkItem(root, state_key, KEY_WOW64_32KEY,
                                        installer::kInstallerResult,
-                                       installer_result,
-                                       true);
-  install_list->AddSetRegValueWorkItem(root,
-                                       state_key,
-                                       KEY_WOW64_32KEY,
+                                       installer_result, true);
+  install_list->AddSetRegValueWorkItem(root, state_key, KEY_WOW64_32KEY,
                                        installer::kInstallerError,
-                                       static_cast<DWORD>(status),
-                                       true);
+                                       static_cast<DWORD>(status), true);
   if (string_resource_id != 0) {
     base::string16 msg = installer::GetLocalizedString(string_resource_id);
-    install_list->AddSetRegValueWorkItem(root,
-                                         state_key,
-                                         KEY_WOW64_32KEY,
+    install_list->AddSetRegValueWorkItem(root, state_key, KEY_WOW64_32KEY,
                                          installer::kInstallerResultUIString,
-                                         msg,
-                                         true);
+                                         msg, true);
   }
-  if (launch_cmd != NULL && !launch_cmd->empty()) {
+  if (launch_cmd != nullptr && !launch_cmd->empty()) {
     install_list->AddSetRegValueWorkItem(
-        root,
-        state_key,
-        KEY_WOW64_32KEY,
-        installer::kInstallerSuccessLaunchCmdLine,
-        *launch_cmd,
-        true);
+        root, state_key, KEY_WOW64_32KEY,
+        installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
   }
 }
 
@@ -361,7 +344,7 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
 // static
 base::string16 InstallUtil::GetToastActivatorRegistryPath() {
   return STRING16_LITERAL("Software\\Classes\\CLSID\\") +
-         base::win::String16FromGUID(install_static::GetToastActivatorClsid());
+         base::win::WStringFromGUID(install_static::GetToastActivatorClsid());
 }
 
 // static
@@ -406,8 +389,8 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       REGSAM wow64_access,
                                       const base::string16& value_name) {
   RegKey key;
-  LONG result = key.Open(reg_root, key_path.c_str(),
-                         KEY_SET_VALUE | wow64_access);
+  LONG result =
+      key.Open(reg_root, key_path.c_str(), KEY_SET_VALUE | wow64_access);
   if (result == ERROR_SUCCESS)
     result = key.DeleteValue(value_name.c_str());
   if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
@@ -435,10 +418,10 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
       predicate.Evaluate(actual_value)) {
     key.Close();
-    delete_result = DeleteRegistryKey(root_key,
-                                      key_to_delete_path,
-                                      wow64_access)
-        ? DELETED : DELETE_FAILED;
+    delete_result =
+        DeleteRegistryKey(root_key, key_to_delete_path, wow64_access)
+            ? DELETED
+            : DELETE_FAILED;
   }
   return delete_result;
 }
@@ -456,8 +439,8 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
   RegKey key;
   base::string16 actual_value;
   if (key.Open(root_key, key_path,
-               KEY_QUERY_VALUE | KEY_SET_VALUE | wow64_access)
-          == ERROR_SUCCESS &&
+               KEY_QUERY_VALUE | KEY_SET_VALUE | wow64_access) ==
+          ERROR_SUCCESS &&
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
       predicate.Evaluate(actual_value)) {
     LONG result = key.DeleteValue(value_name);
@@ -500,18 +483,24 @@ void InstallUtil::ComposeCommandLine(const base::string16& program,
       base::CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
-void InstallUtil::AppendModeSwitch(base::CommandLine* command_line) {
+void InstallUtil::AppendModeAndChannelSwitches(
+    base::CommandLine* command_line) {
   const install_static::InstallDetails& install_details =
       install_static::InstallDetails::Get();
   if (*install_details.install_switch())
     command_line->AppendSwitch(install_details.install_switch());
+  if (install_details.channel_origin() ==
+      install_static::ChannelOrigin::kPolicy) {
+    command_line->AppendSwitchNative(installer::switches::kChannel,
+                                     install_details.channel());
+  }
 }
 
 // static
 base::string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";
   wchar_t date_str[base::size(kDateFormat)] = {0};
-  int len = GetDateFormatW(LOCALE_INVARIANT, 0, NULL, kDateFormat, date_str,
+  int len = GetDateFormatW(LOCALE_INVARIANT, 0, nullptr, kDateFormat, date_str,
                            base::size(date_str));
   if (len) {
     --len;  // Subtract terminating \0.
@@ -528,7 +517,7 @@ base::string16 InstallUtil::GetCurrentDate() {
 bool InstallUtil::ProgramCompare::OpenForInfo(const base::FilePath& path,
                                               base::File* file) {
   DCHECK(file);
-  file->Initialize(path, base::File::FLAG_OPEN);
+  file->Initialize(path, base::File::FLAG_OPEN | base::File::FLAG_SHARE_DELETE);
   return file->IsValid();
 }
 
@@ -562,21 +551,21 @@ base::Optional<base::Version> InstallUtil::GetDowngradeVersion() {
 // static
 void InstallUtil::AddUpdateDowngradeVersionItem(
     HKEY root,
-    const base::Version* current_version,
+    const base::Version& current_version,
     const base::Version& new_version,
     WorkItemList* list) {
   DCHECK(list);
   const auto downgrade_version = GetDowngradeVersion();
-  if (current_version && new_version < *current_version) {
+  if (current_version.IsValid() && new_version < current_version) {
     // This is a downgrade. Write the value if this is the first one (i.e., no
     // previous value exists). Otherwise, leave any existing value in place.
     if (!downgrade_version) {
       list->AddSetRegValueWorkItem(
           root, install_static::GetClientStateKeyPath(), KEY_WOW64_32KEY,
-          kRegDowngradeVersion,
-          base::ASCIIToUTF16(current_version->GetString()), true);
+          kRegDowngradeVersion, base::ASCIIToUTF16(current_version.GetString()),
+          true);
     }
-  } else if (!current_version || new_version >= downgrade_version) {
+  } else if (!current_version.IsValid() || new_version >= downgrade_version) {
     // This is a new install or an upgrade to/past a previous DowngradeVersion.
     list->AddDeleteRegValueWorkItem(root,
                                     install_static::GetClientStateKeyPath(),
@@ -647,7 +636,7 @@ base::string16 InstallUtil::GetCloudManagementEnrollmentToken() {
   RegKey key;
   base::string16 value;
   for (const auto& key_and_value :
-           GetCloudManagementEnrollmentTokenRegistryPaths()) {
+       GetCloudManagementEnrollmentTokenRegistryPaths()) {
     if (key.Open(HKEY_LOCAL_MACHINE, key_and_value.first.c_str(),
                  KEY_QUERY_VALUE) == ERROR_SUCCESS &&
         key.ReadValue(key_and_value.second.c_str(), &value) == ERROR_SUCCESS) {
@@ -711,22 +700,19 @@ base::string16 InstallUtil::GetLongAppDescription() {
 }
 
 InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)
-    : path_to_match_(path_to_match),
-      file_info_() {
+    : path_to_match_(path_to_match), file_info_() {
   DCHECK(!path_to_match_.empty());
   if (!OpenForInfo(path_to_match_, &file_)) {
     PLOG(WARNING) << "Failed opening " << path_to_match_.value()
                   << "; falling back to path string comparisons.";
   } else if (!GetInfo(file_, &file_info_)) {
-    PLOG(WARNING) << "Failed getting information for "
-                  << path_to_match_.value()
+    PLOG(WARNING) << "Failed getting information for " << path_to_match_.value()
                   << "; falling back to path string comparisons.";
     file_.Close();
   }
 }
 
-InstallUtil::ProgramCompare::~ProgramCompare() {
-}
+InstallUtil::ProgramCompare::~ProgramCompare() {}
 
 bool InstallUtil::ProgramCompare::Evaluate(const base::string16& value) const {
   // Suss out the exe portion of the value, which is expected to be a command
@@ -758,8 +744,7 @@ bool InstallUtil::ProgramCompare::EvaluatePath(
   base::File file;
   BY_HANDLE_FILE_INFORMATION info = {};
 
-  return (OpenForInfo(path, &file) &&
-          GetInfo(file, &info) &&
+  return (OpenForInfo(path, &file) && GetInfo(file, &info) &&
           info.dwVolumeSerialNumber == file_info_.dwVolumeSerialNumber &&
           info.nFileIndexHigh == file_info_.nFileIndexHigh &&
           info.nFileIndexLow == file_info_.nFileIndexLow);

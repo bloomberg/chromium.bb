@@ -11,11 +11,11 @@
 }
 
 
-:host([two-columns-adaptable]) #top-scroll-container {
+:host([two-columns-adaptable]) #topScrollContainer {
   flex-direction: var(--oobe-dialog-adaptable-flex-direction);
 }
 
-#top-scroll-container {
+#topScrollContainer {
   border: transparent;
   overflow-y: auto;
 }
@@ -25,10 +25,6 @@
   padding-inline-end: var(--oobe-dialog-content-padding);
   padding-inline-start: var(--oobe-dialog-content-padding);
   padding-top: var(--oobe-dialog-content-padding);
-}
-
-#header-container[android] {
-  padding: 48px 48px 0 48px;
 }
 
 #oobe-title {
@@ -56,7 +52,16 @@
 #oobe-subtitle .fallback {
   color: var(--oobe-subheader-text-color);
   line-height: var(--subtitle-line-height);
+  overflow-wrap: break-word;
   margin: 0;
+}
+
+#footerContainer ::slotted(*) {
+  line-height: var(--subtitle-line-height);
+}
+
+:host(:not([has-buttons])) #footerContainer {
+  margin-bottom: 40px;
 }
 
 #oobe-progress ::slotted(paper-progress) {
@@ -67,32 +72,32 @@
   width: 100%;
 }
 
-#footer-container {
+#footerContainer {
   padding-bottom: 0;
   padding-inline-end: var(--oobe-dialog-content-padding);
   padding-inline-start: var(--oobe-dialog-content-padding);
 
   /* TODO(https://crbug.com/1017173) Make it adaptive. */
-  padding-top: 20px;
+  padding-top: var(--oobe-dialog-content-padding-top);
 }
 
-#footer-container[noFooterPadding] {
+#footerContainer[noFooterPadding] {
   padding: 0;
 }
 
-#footer-container[footerShrinkable] {
+#footerContainer[footerShrinkable] {
   flex-shrink: 1;
 }
 
 
 
-#top-scroll-container[scrollable].can-scroll:not(.is-scrolled):not(.scrolled-to-bottom) {
+#topScrollContainer.can-scroll:not(.is-scrolled):not(.scrolled-to-bottom) {
   background: linear-gradient(0deg,
                               rgba(var(--google-grey-refresh-100-rgb), 1) 0,
                               rgba(var(--google-grey-refresh-100-rgb), 0) 8px);
 
 }
-#top-scroll-container[scrollable].can-scroll.is-scrolled:not(.scrolled-to-bottom) {
+#topScrollContainer.can-scroll.is-scrolled:not(.scrolled-to-bottom) {
   background: linear-gradient(0deg,
                               rgba(var(--google-grey-refresh-100-rgb), 1) 0,
                               rgba(var(--google-grey-refresh-100-rgb), 0) 8px),
@@ -100,7 +105,7 @@
                               rgba(var(--google-grey-refresh-100-rgb), 1) 0,
                               rgba(var(--google-grey-refresh-100-rgb), 0) 8px);
 }
-#top-scroll-container[scrollable].is-scrolled.scrolled-to-bottom {
+#topScrollContainer.is-scrolled.scrolled-to-bottom {
   background: linear-gradient(180deg,
                               rgba(var(--google-grey-refresh-100-rgb), 1) 0,
                               rgba(var(--google-grey-refresh-100-rgb), 0) 8px);
@@ -115,16 +120,8 @@
   z-index: 1;
 }
 
-#buttons-overlay {
-  background: rgba(var(--google-grey-900-rgb), 0.6);
-}
-
 :host #oobe-bottom[no-buttons-padding] {
   padding: unset;
-}
-
-#oobe-bottom ::slotted(*) {
-  width: 100%;
 }
 
 #oobe-icon-div ::slotted(hd-iron-icon),

@@ -40,13 +40,17 @@ namespace metadata {
   F(benchmark_story_tags,              KeyType::kMulti,   Variadic::kString), \
   F(statsd_triggering_subscription_id, KeyType::kSingle,  Variadic::kInt),    \
   F(trace_uuid,                        KeyType::kSingle,  Variadic::kString), \
+  F(unique_session_name,               KeyType::kSingle,  Variadic::kString), \
   F(system_name,                       KeyType::kSingle,  Variadic::kString), \
   F(system_version,                    KeyType::kSingle,  Variadic::kString), \
   F(system_release,                    KeyType::kSingle,  Variadic::kString), \
   F(system_machine,                    KeyType::kSingle,  Variadic::kString), \
   F(android_build_fingerprint,         KeyType::kSingle,  Variadic::kString), \
-  F(trace_size_bytes,                  KeyType::kSingle,  Variadic::kInt), \
-  F(all_data_source_started_ns,        KeyType::kSingle,  Variadic::kInt)
+  F(trace_size_bytes,                  KeyType::kSingle,  Variadic::kInt),    \
+  F(all_data_source_started_ns,        KeyType::kSingle,  Variadic::kInt),    \
+  F(tracing_started_ns,                KeyType::kSingle,  Variadic::kInt),    \
+  F(tracing_disabled_ns,               KeyType::kSingle,  Variadic::kInt),    \
+  F(trace_config_pbtxt,                KeyType::kSingle, Variadic::kString)
 // clang-format on
 
 // Compile time list of metadata items.
@@ -73,7 +77,7 @@ constexpr char const* kKeyTypeNames[] = {
 // Declares an enum of literals (one for each item). The enum values of each
 // literal corresponds to the string index in the arrays below.
 #define PERFETTO_TP_META_ENUM(name, ...) name
-enum KeyIDs : size_t {
+enum KeyId : size_t {
   PERFETTO_TP_METADATA(PERFETTO_TP_META_ENUM),
   kNumKeys
 };

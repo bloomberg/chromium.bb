@@ -734,10 +734,6 @@ ffmpeg -dump_attachment:t "" -i INPUT
 Technical note -- attachments are implemented as codec extradata, so this
 option can actually be used to extract extradata from any stream, not just
 attachments.
-
-@item -noautorotate
-Disable automatically rotating video based on file metadata.
-
 @end table
 
 @section Video Options
@@ -819,6 +815,18 @@ Create the filtergraph specified by @var{filtergraph} and use it to
 filter the stream.
 
 This is an alias for @code{-filter:v}, see the @ref{filter_option,,-filter option}.
+
+@item -autorotate
+Automatically rotate the video according to file metadata. Enabled by
+default, use @option{-noautorotate} to disable it.
+
+@item -autoscale
+Automatically scale the video according to the resolution of first frame.
+Enabled by default, use @option{-noautoscale} to disable it. When autoscale is
+disabled, all output frames of filter graph might not be in the same resolution
+and may be inadequate for some encoder/muxer. Therefore, it is not recommended
+to disable it unless you really know what you are doing.
+Disable autoscale at your own risk.
 @end table
 
 @section Advanced Video options
@@ -848,8 +856,8 @@ factor if negative.
 Force interlacing support in encoder (MPEG-2 and MPEG-4 only).
 Use this option if your input file is interlaced and you want
 to keep the interlaced format for minimum losses.
-The alternative is to deinterlace the input stream with
-@option{-deinterlace}, but deinterlacing introduces losses.
+The alternative is to deinterlace the input stream by use of a filter
+such as @code{yadif} or @code{bwdif}, but deinterlacing introduces losses.
 @item -psnr
 Calculate PSNR of compressed frames.
 @item -vstats
@@ -1034,6 +1042,18 @@ If @var{device} is an integer, it selects the device by its index in a
 system-dependent list of devices.  If @var{device} is any other string, it
 selects the first device with a name containing that string as a substring.
 
+The following options are recognized:
+@table @option
+@item debug
+If set to 1, enables the validation layer, if installed.
+@item linear_images
+If set to 1, images allocated by the hwcontext will be linear and locally mappable.
+@item instance_extensions
+A plus separated list of additional instance extensions to enable.
+@item device_extensions
+A plus separated list of additional device extensions to enable.
+@end table
+
 Examples:
 @table @emph
 @item -init_hw_device vulkan:1
@@ -1041,6 +1061,9 @@ Choose the second device on the system.
 
 @item -init_hw_device vulkan:RADV
 Choose the first device with a name containing the string @emph{RADV}.
+
+@item -init_hw_device vulkan:0,instance_extensions=VK_KHR_wayland_surface+VK_KHR_xcb_surface
+Choose the first device and enable the Wayland and XCB instance extensions.
 @end table
 
 @end table
@@ -1666,8 +1689,9 @@ not start from timestamp 0, such as transport streams.
 @item -thread_queue_size @var{size} (@emph{input})
 This option sets the maximum number of queued packets when reading from the
 file or device. With low latency / high rate live streams, packets may be
-discarded if they are not read in a timely manner; raising this value can
-avoid it.
+discarded if they are not read in a timely manner; setting this value can
+force ffmpeg to use a separate input thread and read packets as soon as they
+arrive. By default ffmpeg only do this if multiple inputs are specified.
 
 @item -sdp_file @var{file} (@emph{global})
 Print sdp information for an output stream to @var{file}.
@@ -1706,6 +1730,8 @@ Stop and abort on various conditions. The following flags are available:
 @table @option
 @item empty_output
 No packets were passed to the muxer, the output is empty.
+@item empty_output_stream
+No packets were passed to the muxer in some of the output streams.
 @end table
 
 @item -xerror (@emph{global})
@@ -1719,6 +1745,16 @@ this buffer, in packets, for the matching output stream.
 
 The default value of this option should be high enough for most uses, so only
 touch this option if you are sure that you need it.
+
+@item -auto_conversion_filters (@emph{global})
+Enable automatically inserting format conversion filters in all filter
+graphs, including those defined by @option{-vf}, @option{-af},
+@option{-filter_complex} and @option{-lavfi}. If filter format negotiation
+requires a conversion, the initialization of the filters will fail.
+Conversions can still be performed by inserting the relevant conversion
+filter (scale, aresample) in the graph.
+On by default, to explicitly disable it you need to specify
+@code{-noauto_conversion_filters}.
 
 @end table
 
@@ -2014,6 +2050,7 @@ ffmpeg -i src.ext -lmax 21*QP2LAMBDA dst.ext
 @ifset config-avfilter
 @include filters.texi
 @end ifset
+@include general_contents.texi
 @end ifset
 
 @chapter See Also

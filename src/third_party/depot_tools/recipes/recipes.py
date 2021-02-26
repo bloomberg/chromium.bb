@@ -25,6 +25,7 @@ To fix bugs, fix in the googlesource repo then run the autoroller.
 
 # pylint: disable=wrong-import-position
 import argparse
+import errno
 import json
 import logging
 import os
@@ -103,7 +104,9 @@ def parse(repo_root, recipes_cfg_path):
     raise MalformedRecipesCfg(ex.message, recipes_cfg_path)
 
 
-_BAT = '.bat' if sys.platform.startswith(('win', 'cygwin')) else ''
+IS_WIN = sys.platform.startswith(('win', 'cygwin'))
+
+_BAT = '.bat' if IS_WIN else ''
 GIT = 'git' + _BAT
 VPYTHON = 'vpython' + _BAT
 CIPD = 'cipd' + _BAT
@@ -195,6 +198,13 @@ def checkout_engine(engine_path, repo_root, recipes_cfg_path):
     try:
       _git_check_call(['diff', '--quiet', revision], cwd=engine_path)
     except subprocess.CalledProcessError:
+      index_lock = os.path.join(engine_path, '.git', 'index.lock')
+      try:
+        os.remove(index_lock)
+      except OSError as exc:
+        if exc.errno != errno.ENOENT:
+          logging.warn('failed to remove %r, reset will fail: %s', index_lock,
+                       exc)
       _git_check_call(['reset', '-q', '--hard', revision], cwd=engine_path)
 
     # If the engine has refactored/moved modules we need to clean all .pyc files
@@ -230,12 +240,19 @@ def main():
 
   engine_path = checkout_engine(engine_override, repo_root, recipes_cfg_path)
 
-  try:
-    return _subprocess_call(
-        [VPYTHON, '-u',
-         os.path.join(engine_path, 'recipe_engine', 'main.py')] + args)
-  except KeyboardInterrupt:
-    return 1
+  argv = (
+      [VPYTHON, '-u',
+       os.path.join(engine_path, 'recipe_engine', 'main.py')] + args)
+
+  if IS_WIN:
+    # No real 'exec' on windows; set these signals to ignore so that they
+    # propagate to our children but we still wait for the child process to quit.
+    signal.signal(signal.SIGBREAK, signal.SIG_IGN)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    return _subprocess_call(argv)
+  else:
+    os.execvp(argv[0], argv)
 
 
 if __name__ == '__main__':

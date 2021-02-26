@@ -12,8 +12,6 @@
 #include "ash/system/accessibility/switch_access_menu_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
-#include "ui/accessibility/accessibility_switches.h"
 
 namespace ash {
 
@@ -29,10 +27,8 @@ class SwitchAccessMenuBubbleControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilitySwitchAccess);
     AshTestBase::SetUp();
-    Shell::Get()->accessibility_controller()->SetSwitchAccessEnabled(true);
+    Shell::Get()->accessibility_controller()->switch_access().SetEnabled(true);
   }
 
   SwitchAccessMenuBubbleController* GetBubbleController() {
@@ -78,8 +74,8 @@ TEST_F(SwitchAccessMenuBubbleControllerTest, ShowBackButton) {
   GetBubbleController()->ShowBackButton(anchor_rect);
 
   gfx::Rect bounds = GetBackButtonBounds();
-  EXPECT_EQ(bounds.width(), 36);
-  EXPECT_EQ(bounds.height(), 36);
+  EXPECT_GT(bounds.width(), 36);
+  EXPECT_GT(bounds.height(), 36);
 }
 
 TEST_F(SwitchAccessMenuBubbleControllerTest, ShowMenu) {

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/json/json_writer.h"
+#include "base/json/json_reader.h"
 
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,11 +41,11 @@ TEST(JSONWriterTest, BasicTypes) {
   EXPECT_TRUE(JSONWriter::Write(Value(1.0), &output_js));
   EXPECT_EQ("1.0", output_js);
 
-  // Test Real values in the the range (-1, 1) must have leading zeros
+  // Test Real values in the range (-1, 1) must have leading zeros
   EXPECT_TRUE(JSONWriter::Write(Value(0.2), &output_js));
   EXPECT_EQ("0.2", output_js);
 
-  // Test Real values in the the range (-1, 1) must have leading zeros
+  // Test Real values in the range (-1, 1) must have leading zeros
   EXPECT_TRUE(JSONWriter::Write(Value(-0.8), &output_js));
   EXPECT_EQ("-0.8", output_js);
 
@@ -184,6 +186,28 @@ TEST(JSONWriterTest, StackOverflow) {
     if (next_list)
       next_list->Remove(0, nullptr);
   }
+}
+
+TEST(JSONWriterTest, TestMaxDepthWithValidNodes) {
+  // Create JSON to the max depth - 1.  Nodes at that depth are still valid
+  // for writing which matches the JSONParser logic.
+  std::string nested_json;
+  for (int i = 0; i < 199; ++i) {
+    std::string node = "[";
+    for (int j = 0; j < 5; j++) {
+      node.append(StringPrintf("%d,", j));
+    }
+    nested_json.insert(0, node);
+    nested_json.append("]");
+  }
+
+  // Ensure we can read and write the JSON
+  JSONReader::ValueWithError json_val = JSONReader::ReadAndReturnValueWithError(
+      nested_json, JSON_ALLOW_TRAILING_COMMAS);
+  EXPECT_TRUE(json_val.value);
+  const Value& value = json_val.value.value();
+  std::string serialized;
+  EXPECT_TRUE(JSONWriter::Write(value, &serialized));
 }
 
 }  // namespace base

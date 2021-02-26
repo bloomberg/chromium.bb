@@ -13,11 +13,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace password_manager {
+
+struct PasswordForm;
 
 // Encapsulates the data from the password manager backend as used by the UI.
 class UiCredential {
@@ -33,8 +31,7 @@ class UiCredential {
                url::Origin origin,
                IsPublicSuffixMatch is_public_suffix_match,
                IsAffiliationBasedMatch is_affiliation_based_match);
-  UiCredential(const autofill::PasswordForm& form,
-               const url::Origin& affiliated_origin);
+  UiCredential(const PasswordForm& form, const url::Origin& affiliated_origin);
   UiCredential(UiCredential&&);
   UiCredential(const UiCredential&);
   UiCredential& operator=(UiCredential&&);

@@ -12,7 +12,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     this._popover = new UI.GlassPane.GlassPane();
-    this._popover.registerRequiredCSS('inline_editor/swatchPopover.css');
+    this._popover.registerRequiredCSS('inline_editor/swatchPopover.css', {enableLegacyPatching: true});
     this._popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     this._popover.setMarginBehavior(UI.GlassPane.MarginBehavior.Arrow);
     this._popover.element.addEventListener('mousedown', e => e.consume(), false);
@@ -21,13 +21,17 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     this._boundOnKeyDown = this._onKeyDown.bind(this);
     this._boundFocusOut = this._onFocusOut.bind(this);
     this._isHidden = true;
+    /** @type {?Element} */
+    this._anchorElement = null;
   }
 
   /**
-   * @param {!Event} event
+   * @param {!FocusEvent} event
    */
   _onFocusOut(event) {
-    if (this._isHidden || !event.relatedTarget || event.relatedTarget.isSelfOrDescendant(this._view.contentElement)) {
+    const relatedTarget = /** @type {?Element} */ (event.relatedTarget);
+    if (this._isHidden || !relatedTarget || !this._view ||
+        relatedTarget.isSelfOrDescendant(this._view.contentElement)) {
       return;
     }
     this._hideProxy();
@@ -55,7 +59,9 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
       this.hide(true);
     }
 
-    delete this._isHidden;
+    this.dispatchEventToListeners(Events.WillShowPopover);
+
+    this._isHidden = false;
     this._anchorElement = anchorElement;
     this._view = view;
     this._hiddenCallback = hiddenCallback;
@@ -64,20 +70,24 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
 
     const document = this._popover.element.ownerDocument;
     document.addEventListener('mousedown', this._hideProxy, false);
-    document.defaultView.addEventListener('resize', this._hideProxy, false);
+    if (document.defaultView) {
+      document.defaultView.addEventListener('resize', this._hideProxy, false);
+    }
     this._view.contentElement.addEventListener('keydown', this._boundOnKeyDown, false);
   }
 
   reposition() {
     // This protects against trying to reposition the popover after it has been hidden.
-    if (this._isHidden) {
+    if (this._isHidden || !this._view) {
       return;
     }
     // Unbind "blur" listener to avoid reenterability: |popover.show()| will hide the popover and trigger it synchronously.
     this._view.contentElement.removeEventListener('focusout', this._boundFocusOut, false);
     this._view.show(this._popover.contentElement);
-    this._popover.setContentAnchorBox(this._anchorElement.boxInWindow());
-    this._popover.show(this._anchorElement.ownerDocument);
+    if (this._anchorElement) {
+      this._popover.setContentAnchorBox(this._anchorElement.boxInWindow());
+      this._popover.show(/** @type {!Document} */ (this._anchorElement.ownerDocument));
+    }
     this._view.contentElement.addEventListener('focusout', this._boundFocusOut, false);
     if (!this._focusRestorer) {
       this._focusRestorer = new UI.Widget.WidgetFocusRestorer(this._view);
@@ -96,14 +106,18 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     this._popover.hide();
 
     document.removeEventListener('mousedown', this._hideProxy, false);
-    document.defaultView.removeEventListener('resize', this._hideProxy, false);
+    if (document.defaultView) {
+      document.defaultView.removeEventListener('resize', this._hideProxy, false);
+    }
 
     if (this._hiddenCallback) {
       this._hiddenCallback.call(null, !!commitEdit);
     }
 
-    this._focusRestorer.restore();
-    delete this._anchorElement;
+    if (this._focusRestorer) {
+      this._focusRestorer.restore();
+    }
+    this._anchorElement = null;
     if (this._view) {
       this._view.detach();
       this._view.contentElement.removeEventListener('keydown', this._boundOnKeyDown, false);
@@ -116,14 +130,20 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (event.key === 'Enter') {
+    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    if (keyboardEvent.key === 'Enter') {
       this.hide(true);
-      event.consume(true);
+      keyboardEvent.consume(true);
       return;
     }
-    if (event.key === 'Escape') {
+    if (keyboardEvent.key === 'Escape') {
       this.hide(false);
-      event.consume(true);
+      keyboardEvent.consume(true);
     }
   }
 }
+
+/** @enum {symbol} */
+export const Events = {
+  WillShowPopover: Symbol('WillShowPopover'),
+};

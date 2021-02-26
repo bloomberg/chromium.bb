@@ -53,7 +53,11 @@ AXRestriction AXMenuListPopup::Restriction() const {
 
 bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  return AccessibilityIsIgnoredByDefault(ignored_reasons);
+  // Base whether the menupopup is ignored on the containing <select>.
+  if (parent_)
+    return parent_->ComputeAccessibilityIsIgnored(ignored_reasons);
+
+  return kIgnoreObject;
 }
 
 AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
@@ -105,8 +109,8 @@ void AXMenuListPopup::AddChildren() {
   for (auto* const option_element : html_select_element->GetOptionList()) {
     AXMenuListOption* option = MenuListOptionAXObject(option_element);
     if (option) {
-      option->SetParent(this);
       children_.push_back(option);
+      option->SetParent(this);
     }
   }
 }
@@ -133,15 +137,14 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
   if (old_index != option_index && old_index >= 0 &&
       old_index < static_cast<int>(children_.size())) {
     AXObject* previous_child = children_[old_index].Get();
-    cache.PostNotification(previous_child,
-                           ax::mojom::Event::kMenuListItemSelected);
+    cache.MarkAXObjectDirty(previous_child, false);
   }
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
     AXObject* child = children_[option_index].Get();
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
     cache.PostNotification(this, ax::mojom::Event::kActiveDescendantChanged);
-    cache.PostNotification(child, ax::mojom::Event::kMenuListItemSelected);
+    cache.MarkAXObjectDirty(child, false);
   }
 }
 
@@ -151,7 +154,7 @@ void AXMenuListPopup::DidHide() {
   cache.PostNotification(this, ax::mojom::Event::kHide);
   if (descendant) {
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
-    cache.PostNotification(descendant, ax::mojom::Event::kMenuListItemSelected);
+    cache.MarkAXObjectDirty(descendant, false);
   }
 }
 
@@ -176,7 +179,7 @@ AXObject* AXMenuListPopup::ActiveDescendant() {
   if (parent_ && !parent_->IsFocused())
     return nullptr;
 
-  if (active_index_ < 0 || active_index_ >= static_cast<int>(Children().size()))
+  if (active_index_ < 0 || active_index_ >= ChildCountIncludingIgnored())
     return nullptr;
 
   return children_[active_index_].Get();

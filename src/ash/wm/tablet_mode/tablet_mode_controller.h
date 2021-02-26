@@ -12,8 +12,8 @@
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -23,10 +23,13 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/ui/base/tablet_state.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -75,10 +78,6 @@ class ASH_EXPORT TabletModeController
       public ui::LayerAnimationObserver,
       public ui::LayerObserver {
  public:
-  // Enable or disable using a screenshot for testing as it makes the
-  // initialization flow async, which makes most tests harder to write.
-  static void SetUseScreenshotForTest(bool use_screenshot);
-
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
@@ -90,6 +89,15 @@ class ASH_EXPORT TabletModeController
 
   // Public so it can be used by unit tests.
   constexpr static char kLidAngleHistogramName[] = "Ash.TouchView.LidAngle";
+
+  // Enable or disable using a screenshot for testing as it makes the
+  // initialization flow async, which makes most tests harder to write.
+  static void SetUseScreenshotForTest(bool use_screenshot);
+
+  // Returns the the animation property that we observe when transitioning from
+  // clamshell to tablet mode.
+  static ui::LayerAnimationElement::AnimatableProperty
+  GetObservedTabletTransitionProperty();
 
   TabletModeController();
   ~TabletModeController() override;
@@ -185,6 +193,15 @@ class ASH_EXPORT TabletModeController
   // Returns true if the system tray should have a overview button.
   bool ShouldShowOverviewButton() const;
 
+  // ForcePhysicalTabletState is to control physical tablet state. The default
+  // state is not to force the state, so the tablet-mode controller will observe
+  // device configurations.
+  enum class ForcePhysicalTabletState {
+    kDefault,
+    kForceTabletMode,
+    kForceClamshellMode,
+  };
+
   // Defines how the tablet mode controller controls the
   // tablet mode and its transition between clamshell mode.
   // This is defined as a public to define constexpr in cc.
@@ -194,12 +211,12 @@ class ASH_EXPORT TabletModeController
     bool observe_pointer_device_events = true;
     bool block_internal_input_device = false;
     bool always_show_overview_button = false;
-    bool force_physical_tablet_state = false;
+    ForcePhysicalTabletState force_physical_tablet_state =
+        ForcePhysicalTabletState::kDefault;
   };
 
  private:
   class DestroyObserver;
-  class TabletModeTransitionFpsCounter;
   class ScopedShelfHider;
   friend class TabletModeControllerTestApi;
 
@@ -329,10 +346,11 @@ class ASH_EXPORT TabletModeController
   // present, convertible device cannot see accelerometer data.
   bool have_seen_accelerometer_data_ = false;
 
-  // True if ChromeOS EC lid angle driver is present. In this case Chrome does
-  // not calculate lid angle itself, but will reply on the tablet-mode flag that
-  // EC sends to decide if the device should in tablet mode.
-  bool ec_lid_angle_driver_present_ = false;
+  // If ECLidAngleDriverStatus is supported, Chrome does not calculate lid angle
+  // itself, but will reply on the tablet-mode flag that EC sends to decide if
+  // the device should in tablet mode.
+  ECLidAngleDriverStatus ec_lid_angle_driver_status_ =
+      ECLidAngleDriverStatus::UNKNOWN;
 
   // Whether the lid angle can be detected by browser. If it's true, the device
   // is a convertible device (both screen acclerometer and keyboard acclerometer
@@ -414,7 +432,7 @@ class ASH_EXPORT TabletModeController
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
 
-  State state_ = State::kInClamshellMode;
+  chromeos::TabletState tablet_state_;
 
   // Calls RecordLidAngle() periodically.
   base::RepeatingTimer record_lid_angle_timer_;
@@ -443,7 +461,8 @@ class ASH_EXPORT TabletModeController
   // does not show the old version of shelf in the background).
   std::unique_ptr<ScopedShelfHider> shelf_hider_;
 
-  std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
+  // Tracks and record transition smoothness.
+  base::Optional<ui::ThroughputTracker> transition_tracker_;
 
   base::CancelableOnceCallback<void(std::unique_ptr<viz::CopyOutputResult>)>
       screenshot_taken_callback_;

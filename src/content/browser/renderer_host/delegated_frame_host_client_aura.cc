@@ -6,7 +6,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "content/common/view_messages.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -33,9 +32,7 @@ SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor() const {
   // may not match the page's, so use black as the gutter color to avoid
   // flashes of brighter colors during the transition.
   if (render_widget_host_view_->host()->delegate() &&
-      render_widget_host_view_->host()
-          ->delegate()
-          ->IsFullscreenForCurrentTab()) {
+      render_widget_host_view_->host()->delegate()->IsFullscreen()) {
     return SK_ColorBLACK;
   }
   if (render_widget_host_view_->GetBackgroundColor())

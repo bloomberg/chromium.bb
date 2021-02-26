@@ -8,8 +8,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 /**
  * {@link DefaultItemAnimator} implementation that notifies the given {@link ContentChangedListener}
@@ -19,11 +19,25 @@ public class StreamItemAnimator extends DefaultItemAnimator {
     private final ContentChangedListener mContentChangedListener;
     private final ViewActionManager mViewActionManager;
     private boolean mIsStreamContentVisible;
+    private RecyclerView mParent;
 
-    public StreamItemAnimator(
-            ContentChangedListener contentChangedListener, ViewActionManager viewActionManager) {
+    public StreamItemAnimator(ContentChangedListener contentChangedListener,
+            ViewActionManager viewActionManager, RecyclerView parent) {
         this.mContentChangedListener = contentChangedListener;
         this.mViewActionManager = viewActionManager;
+        mParent = parent;
+    }
+
+    @Override
+    public void onAddFinished(RecyclerView.ViewHolder item) {
+        super.onAddFinished(item);
+        mContentChangedListener.onAddFinished();
+    }
+
+    @Override
+    public void onAddStarting(RecyclerView.ViewHolder item) {
+        super.onAddStarting(item);
+        mContentChangedListener.onAddStarting();
     }
 
     @Override

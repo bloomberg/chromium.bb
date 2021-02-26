@@ -42,31 +42,46 @@ It should print "PASS", amongst other information, and exit(0).
 // compiling it.
 #define WUFFS_IMPLEMENTATION
 
+// Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
+// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
+// the entire Wuffs standard library, implementing a variety of codecs and file
+// formats. Without this macro definition, an optimizing compiler or linker may
+// very well discard Wuffs code for unused codecs, but listing the Wuffs
+// modules we use makes that process explicit. Preprocessing means that such
+// code simply isn't compiled.
+#define WUFFS_CONFIG__MODULES
+#define WUFFS_CONFIG__MODULE__BASE
+#define WUFFS_CONFIG__MODULE__ADLER32
+#define WUFFS_CONFIG__MODULE__DEFLATE
+#define WUFFS_CONFIG__MODULE__ZLIB
+
 // If building this program in an environment that doesn't easily accommodate
 // relative includes, you can use the script/inline-c-relative-includes.go
 // program to generate a stand-alone C file.
 #include "../../../release/c/wuffs-unsupported-snapshot.c"
 #include "../fuzzlib/fuzzlib.c"
 
-#define DST_BUFFER_SIZE 65536
+#define DST_BUFFER_ARRAY_SIZE 65536
 
 // Wuffs allows either statically or dynamically allocated work buffers. This
 // program exercises static allocation.
-#define WORK_BUFFER_SIZE WUFFS_ZLIB__DECODER_WORKBUF_LEN_MAX_INCL_WORST_CASE
-#if WORK_BUFFER_SIZE > 0
-uint8_t work_buffer[WORK_BUFFER_SIZE];
+#define WORK_BUFFER_ARRAY_SIZE \
+  WUFFS_ZLIB__DECODER_WORKBUF_LEN_MAX_INCL_WORST_CASE
+#if WORK_BUFFER_ARRAY_SIZE > 0
+uint8_t g_work_buffer_array[WORK_BUFFER_ARRAY_SIZE];
 #else
 // Not all C/C++ compilers support 0-length arrays.
-uint8_t work_buffer[1];
+uint8_t g_work_buffer_array[1];
 #endif
 
-const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
+const char*  //
+fuzz(wuffs_base__io_buffer* src, uint64_t hash) {
   wuffs_zlib__decoder dec;
-  const char* status = wuffs_zlib__decoder__initialize(
+  wuffs_base__status status = wuffs_zlib__decoder__initialize(
       &dec, sizeof dec, WUFFS_VERSION,
       (hash & 1) ? WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED : 0);
-  if (status) {
-    return status;
+  if (!wuffs_base__status__is_ok(&status)) {
+    return wuffs_base__status__message(&status);
   }
 
   // Ignore the checksum for 99.99%-ish of all input. When fuzzers generate
@@ -74,29 +89,26 @@ const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
   // verify that checksumming does not lead to e.g. buffer overflows.
   wuffs_zlib__decoder__set_ignore_checksum(&dec, hash & 0xFFFE);
 
-  uint8_t dst_buffer[DST_BUFFER_SIZE];
+  uint8_t dst_buffer[DST_BUFFER_ARRAY_SIZE];
   wuffs_base__io_buffer dst = ((wuffs_base__io_buffer){
       .data = ((wuffs_base__slice_u8){
           .ptr = dst_buffer,
-          .len = DST_BUFFER_SIZE,
+          .len = DST_BUFFER_ARRAY_SIZE,
       }),
   });
 
   while (true) {
     dst.meta.wi = 0;
-    status = wuffs_zlib__decoder__decode_io_writer(&dec, &dst, src,
-                                                   ((wuffs_base__slice_u8){
-                                                       .ptr = work_buffer,
-                                                       .len = WORK_BUFFER_SIZE,
-                                                   }));
-    if (status != wuffs_base__suspension__short_write) {
+    status = wuffs_zlib__decoder__transform_io(
+        &dec, &dst, src,
+        wuffs_base__make_slice_u8(g_work_buffer_array, WORK_BUFFER_ARRAY_SIZE));
+    if (status.repr != wuffs_base__suspension__short_write) {
       break;
     }
     if (dst.meta.wi == 0) {
-      fprintf(stderr,
-              "wuffs_zlib__decoder__decode_io_writer made no progress\n");
+      fprintf(stderr, "wuffs_zlib__decoder__transform_io made no progress\n");
       intentional_segfault();
     }
   }
-  return status;
+  return wuffs_base__status__message(&status);
 }

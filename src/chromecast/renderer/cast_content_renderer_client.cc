@@ -18,20 +18,22 @@
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/cast_websocket_handshake_throttle_provider.h"
+#include "chromecast/renderer/identification_settings_manager.h"
 #include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
-#include "chromecast/renderer/on_load_script_injector.h"
-#include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
+#include "components/on_load_script_injector/renderer/on_load_script_injector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "media/remoting/receiver_controller.h"
+#include "media/remoting/remoting_constants.h"
+#include "media/remoting/stream_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -57,7 +59,6 @@
 #include "extensions/common/extension_urls.h"            // nogncheck
 #include "extensions/renderer/dispatcher.h"              // nogncheck
 #include "extensions/renderer/extension_frame_helper.h"  // nogncheck
-#include "extensions/renderer/guest_view/extensions_guest_view_container.h"  // nogncheck
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"  // nogncheck
 #endif
 
@@ -179,13 +180,10 @@ void CastContentRendererClient::RenderFrameCreated(
 
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new media_control::MediaPlaybackOptions(render_frame);
-  if (!::chromecast::IsFeatureEnabled(kUseQueryableDataBackend)) {
-    new QueryableDataBindings(render_frame);
-  }
 
   // Add script injection support to the RenderFrame, used by Cast platform
-  // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.
-  new OnLoadScriptInjector(render_frame);
+  // APIs. The injector's lifetime is bound to the RenderFrame's lifetime.
+  new on_load_script_injector::OnLoadScriptInjector(render_frame);
 
   if (!app_media_capabilities_observer_receiver_.is_bound()) {
     mojo::Remote<mojom::ApplicationMediaCapabilities> app_media_capabilities;
@@ -204,26 +202,23 @@ void CastContentRendererClient::RenderFrameCreated(
   dispatcher->OnRenderFrameCreated(render_frame);
 #endif
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
   // JsChannelBindings destroys itself when the RenderFrame is destroyed.
   JsChannelBindings::Create(render_frame);
 #endif
 
   activity_url_filter_manager_->OnRenderFrameCreated(render_frame);
-}
 
-content::BrowserPluginDelegate*
-CastContentRendererClient::CreateBrowserPluginDelegate(
-    content::RenderFrame* render_frame,
-    const content::WebPluginInfo& info,
-    const std::string& mime_type,
-    const GURL& original_url) {
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  if (mime_type == content::kBrowserPluginMimeType) {
-    return new extensions::ExtensionsGuestViewContainer(render_frame);
-  }
-#endif
-  return nullptr;
+  // |base::Unretained| is safe here since the callback is triggered before the
+  // destruction of IdentificationSettingsManager by which point
+  // CastContentRendererClient should be alive.
+  settings_managers_.emplace(
+      render_frame->GetRoutingID(),
+      std::make_unique<IdentificationSettingsManager>(
+          render_frame,
+          base::BindOnce(&CastContentRendererClient::OnRenderFrameRemoved,
+                         base::Unretained(this),
+                         render_frame->GetRoutingID())));
 }
 
 void CastContentRendererClient::RunScriptsAtDocumentStart(
@@ -299,10 +294,10 @@ bool CastContentRendererClient::IsSupportedVideoType(
 // TODO(servolk): make use of eotf.
 
   // TODO(1066567): Check attached screen for support of type.hdr_metadata_type.
-  if (type.hdr_metadata_type != ::media::HdrMetadataType::kNone) {
-    NOTIMPLEMENTED() << "HdrMetadataType support signaling not implemented.";
-    return false;
-  }
+if (type.hdr_metadata_type != ::gfx::HdrMetadataType::kNone) {
+  NOTIMPLEMENTED() << "HdrMetadataType support signaling not implemented.";
+  return false;
+}
 
 #if defined(OS_ANDROID)
   return supported_profiles_->IsSupportedVideoConfig(
@@ -348,6 +343,20 @@ bool CastContentRendererClient::DeferMediaLoad(
   return RunWhenInForeground(render_frame, std::move(closure));
 }
 
+std::unique_ptr<::media::Demuxer>
+CastContentRendererClient::OverrideDemuxerForUrl(
+    content::RenderFrame* render_frame,
+    const GURL& url,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  if (render_frame->GetRenderFrameMediaPlaybackOptions()
+          .is_remoting_renderer_enabled() &&
+      url.SchemeIs(::media::remoting::kRemotingScheme)) {
+    return std::make_unique<::media::remoting::StreamProvider>(
+        ::media::remoting::ReceiverController::GetInstance(), task_runner);
+  }
+  return nullptr;
+}
+
 bool CastContentRendererClient::RunWhenInForeground(
     content::RenderFrame* render_frame,
     base::OnceClosure closure) {
@@ -385,7 +394,7 @@ std::unique_ptr<content::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(
-      type, activity_url_filter_manager_.get());
+      type, activity_url_filter_manager(), this);
 }
 
 base::Optional<::media::AudioRendererAlgorithmParameters>
@@ -401,6 +410,25 @@ CastContentRendererClient::GetAudioRendererAlgorithmParameters(
 #else
   return base::nullopt;
 #endif
+}
+
+IdentificationSettingsManager*
+CastContentRendererClient::GetSettingsManagerFromRenderFrameID(
+    int render_frame_id) {
+  const auto& it = settings_managers_.find(render_frame_id);
+  if (it == settings_managers_.end()) {
+    return nullptr;
+  }
+  return it->second.get();
+}
+
+void CastContentRendererClient::OnRenderFrameRemoved(int render_frame_id) {
+  size_t result = settings_managers_.erase(render_frame_id);
+  if (result != 1U) {
+    LOG(WARNING)
+        << "Can't find the identification settings manager for render frame: "
+        << render_frame_id;
+  }
 }
 
 }  // namespace shell

@@ -26,8 +26,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
-import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.ui.widget.Toast;
 
@@ -74,7 +74,7 @@ public class StatusView extends LinearLayout {
     private boolean mLastTouchDelegateRtlness;
     private Rect mLastTouchDelegateRect;
 
-    private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
+    private LocationBarDataProvider mLocationBarDataProvider;
 
     public StatusView(Context context, AttributeSet attributes) {
         super(context, attributes);
@@ -93,9 +93,8 @@ public class StatusView extends LinearLayout {
         configureAccessibilityDescriptions();
     }
 
-    void setToolbarCommonPropertiesModel(
-            ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
-        mToolbarCommonPropertiesModel = toolbarCommonPropertiesModel;
+    void setLocationBarDataProvider(LocationBarDataProvider toolbarCommonPropertiesModel) {
+        mLocationBarDataProvider = toolbarCommonPropertiesModel;
     }
 
     /**
@@ -103,9 +102,8 @@ public class StatusView extends LinearLayout {
      */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        if (mToolbarCommonPropertiesModel != null
-                && mDelegate.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
+        if (mLocationBarDataProvider != null
+                && mDelegate.shouldShowSearchEngineLogo(mLocationBarDataProvider.isIncognito())) {
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(mIconView.getLayoutParams());
             layoutParams.setMarginEnd(0);
@@ -115,7 +113,9 @@ public class StatusView extends LinearLayout {
             // Setup the padding once we're loaded, the other padding changes will happen with post-
             // layout positioning.
             setPaddingRelative(getPaddingStart(), getPaddingTop(),
-                    getEndPaddingPixelSizeForFocusState(false), getPaddingBottom());
+                    getResources().getDimensionPixelOffset(
+                            R.dimen.sei_location_bar_icon_end_padding),
+                    getPaddingBottom());
             // Note: the margins and implicit padding were removed from the status view for the
             // dse icon experiment. Moving padding values that were there to the verbose status
             // text view and the verbose text extra space.
@@ -152,9 +152,8 @@ public class StatusView extends LinearLayout {
         // This is to prevent the visibility of the view being changed both implicitly here and
         // explicitly in setStatusIconShown. The visibility should only be set here through code not
         // related to the dse icon.
-        if (mToolbarCommonPropertiesModel != null
-                && mDelegate.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
+        if (mLocationBarDataProvider != null
+                && mDelegate.shouldShowSearchEngineLogo(mLocationBarDataProvider.isIncognito())) {
             return;
         }
 
@@ -313,9 +312,8 @@ public class StatusView extends LinearLayout {
         // This is to prevent the visibility of the view being changed both explicitly here and
         // implicitly in animateStatusIcon. The visibility should only be set here through code
         // related to the dse icon.
-        if (mToolbarCommonPropertiesModel != null
-                && !mDelegate.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
+        if (mLocationBarDataProvider != null
+                && !mDelegate.shouldShowSearchEngineLogo(mLocationBarDataProvider.isIncognito())) {
             // Let developers know that they shouldn't use this code-path.
             assert false : "Only DSE icon code should set the status icon visibility manually.";
             return;
@@ -423,19 +421,6 @@ public class StatusView extends LinearLayout {
     }
 
     /**
-     * @returns The end padding for the given state.
-     */
-    public int getEndPaddingPixelSizeForFocusState(boolean hasFocus) {
-        if (hasFocus) {
-            return getResources().getDimensionPixelOffset(
-                    R.dimen.sei_location_bar_icon_end_padding_focused);
-        } else {
-            return getResources().getDimensionPixelOffset(
-                    R.dimen.sei_location_bar_icon_end_padding);
-        }
-    }
-
-    /**
      * Create a touch delegate to expand the clickable area for the padlock icon (see
      * crbug.com/970031 for motivation/info). This method will be called when the icon is animating
      * in and when layout changes. It's called on these intervals because (1) the layout could
@@ -465,8 +450,8 @@ public class StatusView extends LinearLayout {
                     getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
         }
         if (mTouchDelegateEndOffset == 0) {
-            mTouchDelegateEndOffset = getResources().getDimensionPixelSize(
-                    R.dimen.location_bar_start_icon_margin_end);
+            mTouchDelegateEndOffset =
+                    getResources().getDimensionPixelSize(R.dimen.location_bar_icon_margin_end);
         }
         touchDelegateBounds.left -= isRtl ? mTouchDelegateEndOffset : mTouchDelegateStartOffset;
         touchDelegateBounds.right += isRtl ? mTouchDelegateStartOffset : mTouchDelegateEndOffset;

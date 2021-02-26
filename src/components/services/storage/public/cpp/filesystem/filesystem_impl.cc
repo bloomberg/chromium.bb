@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -193,10 +194,11 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
   std::move(callback).Run(error, std::move(file));
 }
 
-void FilesystemImpl::RemoveFile(const base::FilePath& path,
-                                RemoveFileCallback callback) {
-  std::move(callback).Run(
-      base::DeleteFile(MakeAbsolute(path), /*recursive=*/false));
+void FilesystemImpl::WriteFileAtomically(const base::FilePath& path,
+                                         const std::string& contents,
+                                         WriteFileAtomicallyCallback callback) {
+  std::move(callback).Run(base::ImportantFileWriter::WriteFileAtomically(
+      MakeAbsolute(path), std::move(contents)));
 }
 
 void FilesystemImpl::CreateDirectory(const base::FilePath& path,
@@ -206,15 +208,15 @@ void FilesystemImpl::CreateDirectory(const base::FilePath& path,
   std::move(callback).Run(error);
 }
 
-void FilesystemImpl::RemoveDirectory(const base::FilePath& path,
-                                     RemoveDirectoryCallback callback) {
-  const base::FilePath full_path = MakeAbsolute(path);
-  if (!base::DirectoryExists(full_path)) {
-    std::move(callback).Run(false);
-    return;
-  }
+void FilesystemImpl::DeleteFile(const base::FilePath& path,
+                                DeleteFileCallback callback) {
+  std::move(callback).Run(base::DeleteFile(MakeAbsolute(path)));
+}
 
-  std::move(callback).Run(base::DeleteFile(full_path, /*recursive=*/false));
+void FilesystemImpl::DeletePathRecursively(
+    const base::FilePath& path,
+    DeletePathRecursivelyCallback callback) {
+  std::move(callback).Run(base::DeletePathRecursively(MakeAbsolute(path)));
 }
 
 void FilesystemImpl::GetFileInfo(const base::FilePath& path,
@@ -224,6 +226,19 @@ void FilesystemImpl::GetFileInfo(const base::FilePath& path,
     std::move(callback).Run(std::move(info));
   else
     std::move(callback).Run(base::nullopt);
+}
+
+void FilesystemImpl::GetPathAccess(const base::FilePath& path,
+                                   GetPathAccessCallback callback) {
+  std::move(callback).Run(GetPathAccessLocal(MakeAbsolute(path)));
+}
+
+void FilesystemImpl::GetMaximumPathComponentLength(
+    const base::FilePath& path,
+    GetMaximumPathComponentLengthCallback callback) {
+  int len = base::GetMaximumPathComponentLength(MakeAbsolute(path));
+  bool success = len != -1;
+  return std::move(callback).Run(success, len);
 }
 
 void FilesystemImpl::RenameFile(const base::FilePath& old_path,
@@ -250,6 +265,13 @@ void FilesystemImpl::LockFile(const base::FilePath& path,
   std::move(callback).Run(base::File::FILE_OK, std::move(lock));
 }
 
+void FilesystemImpl::SetOpenedFileLength(base::File file,
+                                         uint64_t length,
+                                         SetOpenedFileLengthCallback callback) {
+  bool success = file.SetLength(length);
+  std::move(callback).Run(success, std::move(file));
+}
+
 // static
 FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
     const base::FilePath& path) {
@@ -263,7 +285,7 @@ FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
     return base::File::FILE_ERROR_IN_USE;
 
 #if !defined(OS_FUCHSIA)
-  base::File::Error error = file.Lock();
+  base::File::Error error = file.Lock(base::File::LockMode::kExclusive);
   if (error != base::File::FILE_OK)
     return error;
 #endif
@@ -274,6 +296,29 @@ FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
 // static
 void FilesystemImpl::UnlockFileLocal(const base::FilePath& path) {
   GetLockTable().RemoveLock(path);
+}
+
+// static
+mojom::PathAccessInfoPtr FilesystemImpl::GetPathAccessLocal(
+    const base::FilePath& path) {
+  mojom::PathAccessInfoPtr info;
+#if defined(OS_WIN)
+  uint32_t attributes = ::GetFileAttributes(path.value().c_str());
+  if (attributes != INVALID_FILE_ATTRIBUTES) {
+    info = mojom::PathAccessInfo::New();
+    info->can_read = true;
+    if ((attributes & FILE_ATTRIBUTE_READONLY) == 0)
+      info->can_write = true;
+  }
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  const char* const c_path = path.value().c_str();
+  if (!access(c_path, F_OK)) {
+    info = mojom::PathAccessInfo::New();
+    info->can_read = !access(c_path, R_OK);
+    info->can_write = !access(c_path, W_OK);
+  }
+#endif
+  return info;
 }
 
 // static

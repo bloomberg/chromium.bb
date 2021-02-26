@@ -217,10 +217,10 @@ void EngineRequestsImpl::GetLoadedModules(
     SandboxGetLoadedModulesCallback result_callback) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
-  std::set<base::string16> modules;
+  std::set<std::wstring> modules;
   bool result = chrome_cleaner_sandbox::SandboxGetLoadedModules(pid, &modules);
 
-  std::vector<base::string16> modules_list(modules.begin(), modules.end());
+  std::vector<std::wstring> modules_list(modules.begin(), modules.end());
   mojo_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(std::move(result_callback), result,
                                              std::move(modules_list)));
@@ -241,7 +241,7 @@ void EngineRequestsImpl::GetProcessCommandLine(
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
 
-  base::string16 command_line;
+  std::wstring command_line;
   bool result =
       chrome_cleaner_sandbox::SandboxGetProcessCommandLine(pid, &command_line);
 
@@ -282,7 +282,7 @@ void EngineRequestsImpl::GetUserInfoFromSID(
 
 void EngineRequestsImpl::SandboxOpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const base::string16& sub_key,
+    const std::wstring& sub_key,
     uint32_t dw_access,
     SandboxOpenReadOnlyRegistryCallback result_callback) {
   base::ThreadPool::PostTask(
@@ -294,7 +294,7 @@ void EngineRequestsImpl::SandboxOpenReadOnlyRegistry(
 
 void EngineRequestsImpl::OpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const base::string16& sub_key,
+    const std::wstring& sub_key,
     uint32_t dw_access,
     SandboxOpenReadOnlyRegistryCallback result_callback) {
   if (metadata_observer_)
@@ -316,7 +316,7 @@ void EngineRequestsImpl::OpenReadOnlyRegistry(
 
 void EngineRequestsImpl::SandboxNtOpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     SandboxNtOpenReadOnlyRegistryCallback result_callback) {
   base::ThreadPool::PostTask(
@@ -328,7 +328,7 @@ void EngineRequestsImpl::SandboxNtOpenReadOnlyRegistry(
 
 void EngineRequestsImpl::NtOpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     SandboxNtOpenReadOnlyRegistryCallback result_callback) {
   if (metadata_observer_)

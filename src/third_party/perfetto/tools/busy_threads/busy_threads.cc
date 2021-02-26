@@ -23,11 +23,12 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/time.h"
+#include "perfetto/ext/base/scoped_file.h"
 
 #define PERFETTO_HAVE_PTHREADS                \
   (PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
    PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
-   PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX))
+   PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE))
 
 #if PERFETTO_HAVE_PTHREADS
 #include <pthread.h>
@@ -51,12 +52,13 @@ void SetRandomThreadName(uint32_t thread_name_count) {
 void PrintUsage(const char* bin_name) {
 #if PERFETTO_HAVE_PTHREADS
   PERFETTO_ELOG(
-      "Usage: %s --threads=N --period_us=N --duty_cycle=[1-100] "
+      "Usage: %s [--background] --threads=N --period_us=N --duty_cycle=[1-100] "
       "[--thread_names=N]",
       bin_name);
 #else
-  PERFETTO_ELOG("Usage: %s --threads=N --period_us=N --duty_cycle=[1-100]",
-                bin_name);
+  PERFETTO_ELOG(
+      "Usage: %s [--background] --threads=N --period_us=N --duty_cycle=[1-100]",
+      bin_name);
 #endif
 }
 
@@ -92,15 +94,17 @@ __attribute__((noreturn)) void BusyWait(int64_t tstart,
 }
 
 int BusyThreadsMain(int argc, char** argv) {
+  bool background = false;
   int64_t num_threads = -1;
   int64_t period_us = -1;
   int64_t duty_cycle = -1;
   uint32_t thread_name_count = 0;
 
   static struct option long_options[] = {
+    {"background", no_argument, nullptr, 'd'},
     {"threads", required_argument, nullptr, 't'},
     {"period_us", required_argument, nullptr, 'p'},
-    {"duty_cycle", required_argument, nullptr, 'd'},
+    {"duty_cycle", required_argument, nullptr, 'c'},
 #if PERFETTO_HAVE_PTHREADS
     {"thread_names", required_argument, nullptr, 'r'},
 #endif
@@ -110,13 +114,16 @@ int BusyThreadsMain(int argc, char** argv) {
   int c;
   while ((c = getopt_long(argc, argv, "", long_options, &option_index)) != -1) {
     switch (c) {
+      case 'd':
+        background = true;
+        break;
       case 't':
         num_threads = atol(optarg);
         break;
       case 'p':
         period_us = atol(optarg);
         break;
-      case 'd':
+      case 'c':
         duty_cycle = atol(optarg);
         break;
 #if PERFETTO_HAVE_PTHREADS
@@ -134,7 +141,33 @@ int BusyThreadsMain(int argc, char** argv) {
     return 1;
   }
 
-  int64_t busy_us = static_cast<int64_t>(period_us * (duty_cycle / 100.0));
+  if (background) {
+    pid_t pid;
+    switch (pid = fork()) {
+      case -1:
+        PERFETTO_FATAL("fork");
+      case 0: {
+        PERFETTO_CHECK(setsid() != -1);
+        base::ignore_result(chdir("/"));
+        base::ScopedFile null = base::OpenFile("/dev/null", O_RDONLY);
+        PERFETTO_CHECK(null);
+        PERFETTO_CHECK(dup2(*null, STDIN_FILENO) != -1);
+        PERFETTO_CHECK(dup2(*null, STDOUT_FILENO) != -1);
+        PERFETTO_CHECK(dup2(*null, STDERR_FILENO) != -1);
+        // Do not accidentally close stdin/stdout/stderr.
+        if (*null <= 2)
+          null.release();
+        break;
+      }
+      default:
+        printf("%d\n", pid);
+        exit(0);
+    }
+  }
+
+  int64_t busy_us =
+      static_cast<int64_t>(static_cast<double>(period_us) *
+                           (static_cast<double>(duty_cycle) / 100.0));
 
   PERFETTO_LOG("Spawning %" PRId64 " threads; period duration: %" PRId64
                "us; busy duration: %" PRId64 "us.",

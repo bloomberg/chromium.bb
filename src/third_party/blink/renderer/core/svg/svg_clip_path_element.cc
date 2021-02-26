@@ -36,7 +36,7 @@ SVGClipPathElement::SVGClipPathElement(Document& document)
   AddToPropertyMap(clip_path_units_);
 }
 
-void SVGClipPathElement::Trace(Visitor* visitor) {
+void SVGClipPathElement::Trace(Visitor* visitor) const {
   visitor->Trace(clip_path_units_);
   SVGGraphicsElement::Trace(visitor);
 }
@@ -45,8 +45,7 @@ void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kClipPathUnitsAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(GetLayoutObject());
+    auto* layout_object = To<LayoutSVGResourceContainer>(GetLayoutObject());
     if (layout_object)
       layout_object->InvalidateCacheAndMarkForLayout();
     return;

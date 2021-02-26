@@ -21,6 +21,8 @@ std::string DisplayModeToString(blink::mojom::DisplayMode display) {
       return "standalone";
     case blink::mojom::DisplayMode::kFullscreen:
       return "fullscreen";
+    case blink::mojom::DisplayMode::kWindowControlsOverlay:
+      return "window-controls-overlay";
   }
   return "";
 }
@@ -34,53 +36,66 @@ blink::mojom::DisplayMode DisplayModeFromString(const std::string& display) {
     return blink::mojom::DisplayMode::kStandalone;
   if (base::LowerCaseEqualsASCII(display, "fullscreen"))
     return blink::mojom::DisplayMode::kFullscreen;
+  if (base::LowerCaseEqualsASCII(display, "window-controls-overlay"))
+    return blink::mojom::DisplayMode::kWindowControlsOverlay;
   return blink::mojom::DisplayMode::kUndefined;
 }
 
+bool IsBasicDisplayMode(blink::mojom::DisplayMode display) {
+  if (display == blink::mojom::DisplayMode::kBrowser ||
+      display == blink::mojom::DisplayMode::kMinimalUi ||
+      display == blink::mojom::DisplayMode::kStandalone ||
+      display == blink::mojom::DisplayMode::kFullscreen) {
+    return true;
+  }
+
+  return false;
+}
+
 std::string WebScreenOrientationLockTypeToString(
-    blink::WebScreenOrientationLockType orientation) {
+    device::mojom::ScreenOrientationLockType orientation) {
   switch (orientation) {
-    case blink::kWebScreenOrientationLockDefault:
+    case device::mojom::ScreenOrientationLockType::DEFAULT:
       return "";
-    case blink::kWebScreenOrientationLockPortraitPrimary:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY:
       return "portrait-primary";
-    case blink::kWebScreenOrientationLockPortraitSecondary:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY:
       return "portrait-secondary";
-    case blink::kWebScreenOrientationLockLandscapePrimary:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY:
       return "landscape-primary";
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY:
       return "landscape-secondary";
-    case blink::kWebScreenOrientationLockAny:
+    case device::mojom::ScreenOrientationLockType::ANY:
       return "any";
-    case blink::kWebScreenOrientationLockLandscape:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE:
       return "landscape";
-    case blink::kWebScreenOrientationLockPortrait:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT:
       return "portrait";
-    case blink::kWebScreenOrientationLockNatural:
+    case device::mojom::ScreenOrientationLockType::NATURAL:
       return "natural";
   }
   return "";
 }
 
-blink::WebScreenOrientationLockType WebScreenOrientationLockTypeFromString(
+device::mojom::ScreenOrientationLockType WebScreenOrientationLockTypeFromString(
     const std::string& orientation) {
   if (base::LowerCaseEqualsASCII(orientation, "portrait-primary"))
-    return blink::kWebScreenOrientationLockPortraitPrimary;
+    return device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY;
   if (base::LowerCaseEqualsASCII(orientation, "portrait-secondary"))
-    return blink::kWebScreenOrientationLockPortraitSecondary;
+    return device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY;
   if (base::LowerCaseEqualsASCII(orientation, "landscape-primary"))
-    return blink::kWebScreenOrientationLockLandscapePrimary;
+    return device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY;
   if (base::LowerCaseEqualsASCII(orientation, "landscape-secondary"))
-    return blink::kWebScreenOrientationLockLandscapeSecondary;
+    return device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY;
   if (base::LowerCaseEqualsASCII(orientation, "any"))
-    return blink::kWebScreenOrientationLockAny;
+    return device::mojom::ScreenOrientationLockType::ANY;
   if (base::LowerCaseEqualsASCII(orientation, "landscape"))
-    return blink::kWebScreenOrientationLockLandscape;
+    return device::mojom::ScreenOrientationLockType::LANDSCAPE;
   if (base::LowerCaseEqualsASCII(orientation, "portrait"))
-    return blink::kWebScreenOrientationLockPortrait;
+    return device::mojom::ScreenOrientationLockType::PORTRAIT;
   if (base::LowerCaseEqualsASCII(orientation, "natural"))
-    return blink::kWebScreenOrientationLockNatural;
-  return blink::kWebScreenOrientationLockDefault;
+    return device::mojom::ScreenOrientationLockType::NATURAL;
+  return device::mojom::ScreenOrientationLockType::DEFAULT;
 }
 
 }  // namespace blink

@@ -9,19 +9,24 @@
 #include <memory>
 #include <set>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_receiver.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 // QPACK decoder class.  Exactly one instance should exist per QUIC connection.
 // This class vends a new QpackProgressiveDecoder instance for each new header
 // list to be encoded.
+// QpackProgressiveDecoder detects and signals errors with header blocks, which
+// are stream errors.
+// The only input of QpackDecoder is the encoder stream.  Any error QpackDecoder
+// signals is an encoder stream error, which is fatal to the connection.
 class QUIC_EXPORT_PRIVATE QpackDecoder
     : public QpackEncoderStreamReceiver::Delegate,
       public QpackProgressiveDecoder::BlockedStreamLimitEnforcer,
@@ -34,8 +39,8 @@ class QUIC_EXPORT_PRIVATE QpackDecoder
    public:
     virtual ~EncoderStreamErrorDelegate() {}
 
-    virtual void OnEncoderStreamError(
-        quiche::QuicheStringPiece error_message) = 0;
+    virtual void OnEncoderStreamError(QuicErrorCode error_code,
+                                      absl::string_view error_message) = 0;
   };
 
   QpackDecoder(uint64_t maximum_dynamic_table_capacity,
@@ -80,12 +85,13 @@ class QUIC_EXPORT_PRIVATE QpackDecoder
   // QpackEncoderStreamReceiver::Delegate implementation
   void OnInsertWithNameReference(bool is_static,
                                  uint64_t name_index,
-                                 quiche::QuicheStringPiece value) override;
-  void OnInsertWithoutNameReference(quiche::QuicheStringPiece name,
-                                    quiche::QuicheStringPiece value) override;
+                                 absl::string_view value) override;
+  void OnInsertWithoutNameReference(absl::string_view name,
+                                    absl::string_view value) override;
   void OnDuplicate(uint64_t index) override;
   void OnSetDynamicTableCapacity(uint64_t capacity) override;
-  void OnErrorDetected(quiche::QuicheStringPiece error_message) override;
+  void OnErrorDetected(QuicErrorCode error_code,
+                       absl::string_view error_message) override;
 
   // delegate must be set if dynamic table capacity is not zero.
   void set_qpack_stream_sender_delegate(QpackStreamSenderDelegate* delegate) {

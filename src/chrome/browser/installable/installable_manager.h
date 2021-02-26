@@ -14,6 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_params.h"
@@ -80,6 +82,7 @@ class InstallableManager
   friend class content::WebContentsUserData<InstallableManager>;
   friend class AddToHomescreenDataFetcherTest;
   friend class InstallableManagerBrowserTest;
+  friend class InstallableManagerOfflineCapabilityBrowserTest;
   friend class InstallableManagerUnitTest;
   friend class TestInstallableManager;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
@@ -92,8 +95,12 @@ class InstallableManager
                            CheckLazyServiceWorkerNoFetchHandlerFails);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManifestUrlChangeFlushesState);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckWebapp);
 
-  using IconPurpose = blink::Manifest::ImageResource::Purpose;
+  using IconPurpose = blink::mojom::ManifestImageResource_Purpose;
 
   enum class IconUsage { kPrimary, kSplash };
 
@@ -181,7 +188,8 @@ class InstallableManager
   // Resets members to empty and removes all queued tasks.
   // Called when navigating to a new page or if the WebContents is destroyed
   // whilst waiting for a callback.
-  void Reset();
+  // If populated, the given |error| is reported to all queued tasks.
+  void Reset(base::Optional<InstallableStatusCode> error = base::nullopt);
 
   // Sets the fetched bit on the installable and icon subtasks.
   // Called if no manifest (or an empty manifest) was fetched from the site.
@@ -205,7 +213,14 @@ class InstallableManager
                                 bool check_webapp_manifest_display,
                                 bool prefer_maskable_icon);
   void CheckServiceWorker();
-  void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
+  void OnDidCheckHasServiceWorker(
+      base::TimeTicks check_service_worker_start_time,
+      content::ServiceWorkerCapability capability);
+  void OnDidCheckOfflineCapability(
+      base::TimeTicks check_service_worker_start_time,
+      bool enforce_offline_capability,
+      content::OfflineCapability capability,
+      int64_t service_worker_registration_id);
 
   void CheckAndFetchBestIcon(int ideal_icon_size_in_px,
                              int minimum_icon_size_in_px,
@@ -222,6 +237,7 @@ class InstallableManager
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidUpdateWebManifestURL(
+      content::RenderFrameHost* rfh,
       const base::Optional<GURL>& manifest_url) override;
   void WebContentsDestroyed() override;
 

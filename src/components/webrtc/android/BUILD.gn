@@ -14,12 +14,13 @@ android_library("java") {
     "//base:base_java",
     "//components/browser_ui/notifications/android:java",
     "//components/url_formatter/android:url_formatter_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
   ]
+  resources_package = "org.chromium.components.webrtc"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.webrtc"
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",

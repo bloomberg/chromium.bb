@@ -35,7 +35,6 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -338,7 +337,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
-void WebDevToolsAgentImpl::Trace(Visitor* visitor) {
+void WebDevToolsAgentImpl::Trace(Visitor* visitor) const {
   visitor->Trace(agent_);
   visitor->Trace(network_agents_);
   visitor->Trace(page_agents_);
@@ -376,10 +375,9 @@ void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
 
 void WebDevToolsAgentImpl::InspectElement(
     const gfx::Point& point_in_local_root) {
-  WebFloatRect rect(point_in_local_root.x(), point_in_local_root.y(), 0, 0);
-  web_local_frame_impl_->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
-      &rect);
-  gfx::PointF point(rect.x, rect.y);
+  gfx::PointF point =
+      web_local_frame_impl_->FrameWidgetImpl()->DIPsToBlinkSpace(
+          gfx::PointF(point_in_local_root));
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |

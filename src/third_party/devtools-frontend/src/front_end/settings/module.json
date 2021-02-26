@@ -10,14 +10,26 @@
       "bindings": [
         {
           "shortcut": "F1",
-          "keybindSets": ["devToolsDefault"]
+          "keybindSets": [
+            "devToolsDefault"
+          ]
         },
         {
           "shortcut": "Shift+?"
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+,",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+,",
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -36,8 +48,18 @@
       "className": "Settings.SettingsScreen.ActionDelegate",
       "bindings": [
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+K Ctrl+S",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+K Meta+S",
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -57,11 +79,6 @@
       "type": "context-menu-item",
       "location": "mainMenuHelp/default",
       "actionId": "settings.documentation"
-    },
-    {
-      "type": "view",
-      "id": "settings-default",
-      "title": "Settings"
     },
     {
       "type": "view",
@@ -94,7 +111,6 @@
       "id": "keybinds",
       "title": "Shortcuts",
       "order": 100,
-      "experiment": "customKeyboardShortcuts",
       "className": "Settings.KeybindsSettingsTab"
     },
     {
@@ -105,9 +121,9 @@
     }
   ],
   "dependencies": [
-    "components"
+    "components",
+    "i18n"
   ],
-  "scripts": [],
   "modules": [
     "settings.js",
     "settings-legacy.js",

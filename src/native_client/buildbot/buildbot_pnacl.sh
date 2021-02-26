@@ -43,26 +43,6 @@ clobber() {
   rm -rf scons-out ../xcodebuild ../out
 }
 
-# Generate filenames for arm bot uploads and downloads
-NAME_ARM_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
-}
-
-NAME_ARM_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
-}
-
-NAME_ARM_TRY_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/"
-  echo -n "${BUILDBOT_SLAVENAME}/"
-  echo -n "${BUILDBOT_BUILDNUMBER}"
-}
-NAME_ARM_TRY_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
-}
-
 # Remove unneeded intermediate object files from the output to reduce the size
 # of the tarball we copy between builders. The exception for the /lib directory
 # is because nacl-clang needs crt{1,i,n}.o
@@ -75,40 +55,28 @@ prune-scons-out() {
 
 # Tar up the executables which are shipped to the arm HW bots
 archive-for-hw-bots() {
-  local name=$1
-  local try=$2
-
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
   prune-scons-out
 
   # delete nexes from pexe mode directories to force translation
   # TODO(dschuff) enable this once we can translate on the hw bots
   #find scons-out/*pexe*/ -name '*.nexe' -print0 | xargs -0 rm -f
-  tar cvfz arm-scons.tgz scons-out/*arm*
-
-  echo "@@@BUILD_STEP archive_binaries@@@"
-  if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm-scons.tgz
-  else
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm-scons.tgz
-  fi
+  #
+  # ${BETWEEN_BUILDERS} is set to a temp directory on the builder bot, and its
+  # contents are copied to native_client/between_builders on the tester bot.
+  tar cvfz ${BETWEEN_BUILDERS}/arm-scons.tgz scons-out/*arm*
 }
 
 # Untar archived executables for HW bots
 unarchive-for-hw-bots() {
-  local name=$1
-  local try=$2
-
-  echo "@@@BUILD_STEP fetch_binaries@@@"
-  if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm-scons.tgz
-  else
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm-scons.tgz
-  fi
-
   echo "@@@BUILD_STEP untar_binaries@@@"
   rm -rf scons-out/
-  tar xvfz arm-scons.tgz --no-same-owner
+  tar xvfz between_builders/arm-scons.tgz --no-same-owner
+  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
+    # Hack: Some files are expected to be under opt-linux-arm.
+    mkdir scons-out/opt-linux-arm
+    cp -R scons-out/dbg-linux-arm/* scons-out/opt-linux-arm
+  fi
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -145,36 +113,36 @@ mode-trybot-qemu() {
 }
 
 mode-buildbot-arm-dbg() {
-  BUILD_MODE_HOST=DEDUG
+  BUILD_MODE_HOST=DEBUG
   mode-buildbot-arm
-  archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
+  archive-for-hw-bots
 }
 
 mode-buildbot-arm-opt() {
   mode-buildbot-arm
-  archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
+  archive-for-hw-bots
 }
 
 mode-buildbot-arm-try() {
   mode-buildbot-arm
-  archive-for-hw-bots $(NAME_ARM_TRY_UPLOAD) try
+  archive-for-hw-bots
 }
 
 # NOTE: the hw bots are too slow to build stuff on so we just
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
-  BUILD_MODE_HOST=DEDUG
-  unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  regular
+  BUILD_MODE_HOST=DEBUG
+  unarchive-for-hw-bots
   mode-buildbot-arm-hw
 }
 
 mode-buildbot-arm-hw-opt() {
-  unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  regular
+  unarchive-for-hw-bots
   mode-buildbot-arm-hw
 }
 
 mode-buildbot-arm-hw-try() {
-  unarchive-for-hw-bots $(NAME_ARM_TRY_DOWNLOAD)  try
+  unarchive-for-hw-bots
   mode-buildbot-arm-hw
 }
 

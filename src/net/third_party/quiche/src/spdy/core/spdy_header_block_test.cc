@@ -17,20 +17,19 @@ namespace test {
 
 class ValueProxyPeer {
  public:
-  static quiche::QuicheStringPiece key(SpdyHeaderBlock::ValueProxy* p) {
+  static absl::string_view key(Http2HeaderBlock::ValueProxy* p) {
     return p->key_;
   }
 };
 
-std::pair<quiche::QuicheStringPiece, quiche::QuicheStringPiece> Pair(
-    quiche::QuicheStringPiece k,
-    quiche::QuicheStringPiece v) {
+std::pair<absl::string_view, absl::string_view> Pair(absl::string_view k,
+                                                     absl::string_view v) {
   return std::make_pair(k, v);
 }
 
-// This test verifies that SpdyHeaderBlock behaves correctly when empty.
-TEST(SpdyHeaderBlockTest, EmptyBlock) {
-  SpdyHeaderBlock block;
+// This test verifies that Http2HeaderBlock behaves correctly when empty.
+TEST(Http2HeaderBlockTest, EmptyBlock) {
+  Http2HeaderBlock block;
   EXPECT_TRUE(block.empty());
   EXPECT_EQ(0u, block.size());
   EXPECT_EQ(block.end(), block.find("foo"));
@@ -40,21 +39,21 @@ TEST(SpdyHeaderBlockTest, EmptyBlock) {
   block.erase("bar");
 }
 
-TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
-  SpdyHeaderBlock block;
-  quiche::QuicheStringPiece copied_key1;
+TEST(Http2HeaderBlockTest, KeyMemoryReclaimedOnLookup) {
+  Http2HeaderBlock block;
+  absl::string_view copied_key1;
   {
     auto proxy1 = block["some key name"];
     copied_key1 = ValueProxyPeer::key(&proxy1);
   }
-  quiche::QuicheStringPiece copied_key2;
+  absl::string_view copied_key2;
   {
     auto proxy2 = block["some other key name"];
     copied_key2 = ValueProxyPeer::key(&proxy2);
   }
   // Because proxy1 was never used to modify the block, the memory used for the
   // key could be reclaimed and used for the second call to operator[].
-  // Therefore, we expect the pointers of the two QuicheStringPieces to be
+  // Therefore, we expect the pointers of the two absl::string_views to be
   // equal.
   EXPECT_EQ(copied_key1.data(), copied_key2.data());
 
@@ -63,7 +62,7 @@ TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
     block["some other key name"] = "some value";
   }
   // Nothing should blow up when proxy1 is destructed, and we should be able to
-  // modify and access the SpdyHeaderBlock.
+  // modify and access the Http2HeaderBlock.
   block["key"] = "value";
   EXPECT_EQ("value", block["key"]);
   EXPECT_EQ("some value", block["some other key name"]);
@@ -71,8 +70,8 @@ TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
 }
 
 // This test verifies that headers can be set in a variety of ways.
-TEST(SpdyHeaderBlockTest, AddHeaders) {
-  SpdyHeaderBlock block;
+TEST(Http2HeaderBlockTest, AddHeaders) {
+  Http2HeaderBlock block;
   block["foo"] = std::string(300, 'x');
   block["bar"] = "baz";
   block["qux"] = "qux1";
@@ -90,29 +89,29 @@ TEST(SpdyHeaderBlockTest, AddHeaders) {
   EXPECT_EQ(block.end(), block.find("key"));
 }
 
-// This test verifies that SpdyHeaderBlock can be copied using Clone().
-TEST(SpdyHeaderBlockTest, CopyBlocks) {
-  SpdyHeaderBlock block1;
+// This test verifies that Http2HeaderBlock can be copied using Clone().
+TEST(Http2HeaderBlockTest, CopyBlocks) {
+  Http2HeaderBlock block1;
   block1["foo"] = std::string(300, 'x');
   block1["bar"] = "baz";
   block1.insert(std::make_pair("qux", "qux1"));
 
-  SpdyHeaderBlock block2 = block1.Clone();
-  SpdyHeaderBlock block3(block1.Clone());
+  Http2HeaderBlock block2 = block1.Clone();
+  Http2HeaderBlock block3(block1.Clone());
 
   EXPECT_EQ(block1, block2);
   EXPECT_EQ(block1, block3);
 }
 
-TEST(SpdyHeaderBlockTest, Equality) {
+TEST(Http2HeaderBlockTest, Equality) {
   // Test equality and inequality operators.
-  SpdyHeaderBlock block1;
+  Http2HeaderBlock block1;
   block1["foo"] = "bar";
 
-  SpdyHeaderBlock block2;
+  Http2HeaderBlock block2;
   block2["foo"] = "bar";
 
-  SpdyHeaderBlock block3;
+  Http2HeaderBlock block3;
   block3["baz"] = "qux";
 
   EXPECT_EQ(block1, block2);
@@ -122,28 +121,28 @@ TEST(SpdyHeaderBlockTest, Equality) {
   EXPECT_NE(block1, block2);
 }
 
-SpdyHeaderBlock ReturnTestHeaderBlock() {
-  SpdyHeaderBlock block;
+Http2HeaderBlock ReturnTestHeaderBlock() {
+  Http2HeaderBlock block;
   block["foo"] = "bar";
   block.insert(std::make_pair("foo2", "baz"));
   return block;
 }
 
 // Test that certain methods do not crash on moved-from instances.
-TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
-  SpdyHeaderBlock block1;
+TEST(Http2HeaderBlockTest, MovedFromIsValid) {
+  Http2HeaderBlock block1;
   block1["foo"] = "bar";
 
-  SpdyHeaderBlock block2(std::move(block1));
+  Http2HeaderBlock block2(std::move(block1));
   EXPECT_THAT(block2, ElementsAre(Pair("foo", "bar")));
 
   block1["baz"] = "qux";  // NOLINT  testing post-move behavior
 
-  SpdyHeaderBlock block3(std::move(block1));
+  Http2HeaderBlock block3(std::move(block1));
 
   block1["foo"] = "bar";  // NOLINT  testing post-move behavior
 
-  SpdyHeaderBlock block4(std::move(block1));
+  Http2HeaderBlock block4(std::move(block1));
 
   block1.clear();  // NOLINT  testing post-move behavior
   EXPECT_TRUE(block1.empty());
@@ -151,7 +150,7 @@ TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
   block1["foo"] = "bar";
   EXPECT_THAT(block1, ElementsAre(Pair("foo", "bar")));
 
-  SpdyHeaderBlock block5 = ReturnTestHeaderBlock();
+  Http2HeaderBlock block5 = ReturnTestHeaderBlock();
   block5.AppendValueOrAddHeader("foo", "bar2");
   EXPECT_THAT(block5, ElementsAre(Pair("foo", std::string("bar\0bar2", 8)),
                                   Pair("foo2", "baz")));
@@ -159,8 +158,8 @@ TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
 
 // This test verifies that headers can be appended to no matter how they were
 // added originally.
-TEST(SpdyHeaderBlockTest, AppendHeaders) {
-  SpdyHeaderBlock block;
+TEST(Http2HeaderBlockTest, AppendHeaders) {
+  Http2HeaderBlock block;
   block["foo"] = "foo";
   block.AppendValueOrAddHeader("foo", "bar");
   EXPECT_EQ(Pair("foo", std::string("foo\0bar", 7)), *block.find("foo"));
@@ -193,31 +192,31 @@ TEST(SpdyHeaderBlockTest, AppendHeaders) {
   EXPECT_EQ("singleton", block["h4"]);
 }
 
-TEST(SpdyHeaderBlockTest, CompareValueToStringPiece) {
-  SpdyHeaderBlock block;
+TEST(Http2HeaderBlockTest, CompareValueToStringPiece) {
+  Http2HeaderBlock block;
   block["foo"] = "foo";
   block.AppendValueOrAddHeader("foo", "bar");
   const auto& val = block["foo"];
   const char expected[] = "foo\0bar";
-  EXPECT_TRUE(quiche::QuicheStringPiece(expected, 7) == val);
-  EXPECT_TRUE(val == quiche::QuicheStringPiece(expected, 7));
-  EXPECT_FALSE(quiche::QuicheStringPiece(expected, 3) == val);
-  EXPECT_FALSE(val == quiche::QuicheStringPiece(expected, 3));
+  EXPECT_TRUE(absl::string_view(expected, 7) == val);
+  EXPECT_TRUE(val == absl::string_view(expected, 7));
+  EXPECT_FALSE(absl::string_view(expected, 3) == val);
+  EXPECT_FALSE(val == absl::string_view(expected, 3));
   const char not_expected[] = "foo\0barextra";
-  EXPECT_FALSE(quiche::QuicheStringPiece(not_expected, 12) == val);
-  EXPECT_FALSE(val == quiche::QuicheStringPiece(not_expected, 12));
+  EXPECT_FALSE(absl::string_view(not_expected, 12) == val);
+  EXPECT_FALSE(val == absl::string_view(not_expected, 12));
 
   const auto& val2 = block["foo2"];
-  EXPECT_FALSE(quiche::QuicheStringPiece(expected, 7) == val2);
-  EXPECT_FALSE(val2 == quiche::QuicheStringPiece(expected, 7));
-  EXPECT_FALSE(quiche::QuicheStringPiece("") == val2);
-  EXPECT_FALSE(val2 == quiche::QuicheStringPiece(""));
+  EXPECT_FALSE(absl::string_view(expected, 7) == val2);
+  EXPECT_FALSE(val2 == absl::string_view(expected, 7));
+  EXPECT_FALSE(absl::string_view("") == val2);
+  EXPECT_FALSE(val2 == absl::string_view(""));
 }
 
-// This test demonstrates that the SpdyHeaderBlock data structure does not place
-// any limitations on the characters present in the header names.
-TEST(SpdyHeaderBlockTest, UpperCaseNames) {
-  SpdyHeaderBlock block;
+// This test demonstrates that the Http2HeaderBlock data structure does not
+// place any limitations on the characters present in the header names.
+TEST(Http2HeaderBlockTest, UpperCaseNames) {
+  Http2HeaderBlock block;
   block["Foo"] = "foo";
   block.AppendValueOrAddHeader("Foo", "bar");
   EXPECT_NE(block.end(), block.find("foo"));
@@ -231,7 +230,7 @@ TEST(SpdyHeaderBlockTest, UpperCaseNames) {
 }
 
 namespace {
-size_t SpdyHeaderBlockSize(const SpdyHeaderBlock& block) {
+size_t Http2HeaderBlockSize(const Http2HeaderBlock& block) {
   size_t size = 0;
   for (const auto& pair : block) {
     size += pair.first.size() + pair.second.size();
@@ -240,38 +239,38 @@ size_t SpdyHeaderBlockSize(const SpdyHeaderBlock& block) {
 }
 }  // namespace
 
-// Tests SpdyHeaderBlock SizeEstimate().
-TEST(SpdyHeaderBlockTest, TotalBytesUsed) {
-  SpdyHeaderBlock block;
+// Tests Http2HeaderBlock SizeEstimate().
+TEST(Http2HeaderBlockTest, TotalBytesUsed) {
+  Http2HeaderBlock block;
   const size_t value_size = 300;
   block["foo"] = std::string(value_size, 'x');
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
   block.insert(std::make_pair("key", std::string(value_size, 'x')));
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
   block.AppendValueOrAddHeader("abc", std::string(value_size, 'x'));
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
 
   // Replace value for existing key.
   block["foo"] = std::string(value_size, 'x');
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
   block.insert(std::make_pair("key", std::string(value_size, 'x')));
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
   // Add value for existing key.
   block.AppendValueOrAddHeader("abc", std::string(value_size, 'x'));
-  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  EXPECT_EQ(block.TotalBytesUsed(), Http2HeaderBlockSize(block));
 
-  // Copies/clones SpdyHeaderBlock.
+  // Copies/clones Http2HeaderBlock.
   size_t block_size = block.TotalBytesUsed();
-  SpdyHeaderBlock block_copy = std::move(block);
+  Http2HeaderBlock block_copy = std::move(block);
   EXPECT_EQ(block_size, block_copy.TotalBytesUsed());
 
   // Erases key.
   block_copy.erase("foo");
-  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+  EXPECT_EQ(block_copy.TotalBytesUsed(), Http2HeaderBlockSize(block_copy));
   block_copy.erase("key");
-  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+  EXPECT_EQ(block_copy.TotalBytesUsed(), Http2HeaderBlockSize(block_copy));
   block_copy.erase("abc");
-  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+  EXPECT_EQ(block_copy.TotalBytesUsed(), Http2HeaderBlockSize(block_copy));
 }
 
 }  // namespace test

@@ -199,12 +199,18 @@
 #else
 #define V8_TARGET_ARCH_STORES_RETURN_ADDRESS_ON_STACK false
 #endif
+constexpr int kReturnAddressStackSlotCount =
+    V8_TARGET_ARCH_STORES_RETURN_ADDRESS_ON_STACK ? 1 : 0;
 
 // Number of bits to represent the page size for paged spaces.
 #if defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_PPC64)
 // PPC has large (64KB) physical pages.
 const int kPageSizeBits = 19;
 #else
+// Arm64 supports up to 64k OS pages on Linux, however 4k pages are more common
+// so we keep the V8 page size at 256k. Nonetheless, we need to make sure we
+// don't decrease it further in the future due to reserving 3 OS pages for every
+// executable V8 page.
 const int kPageSizeBits = 18;
 #endif
 

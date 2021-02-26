@@ -40,6 +40,22 @@ export class CSSFormatter {
    */
   constructor(builder) {
     this._builder = builder;
+
+    /** @type {number} */
+    this._toOffset;
+    /** @type {number} */
+    this._fromOffset;
+    /** @type {!Array.<number>} */
+    this._lineEndings;
+    /** @type {number} */
+    this._lastLine = -1;
+    /** @type {{ eatWhitespace: (boolean|undefined), seenProperty: (boolean|undefined), inPropertyValue: (boolean|undefined), afterClosingBrace: (boolean|undefined)}} */
+    this._state = {
+      eatWhitespace: undefined,
+      seenProperty: undefined,
+      inPropertyValue: undefined,
+      afterClosingBrace: undefined,
+    };
   }
 
   /**
@@ -52,8 +68,13 @@ export class CSSFormatter {
     this._lineEndings = lineEndings;
     this._fromOffset = fromOffset;
     this._toOffset = toOffset;
+    this._state = {
+      eatWhitespace: undefined,
+      seenProperty: undefined,
+      inPropertyValue: undefined,
+      afterClosingBrace: undefined,
+    };
     this._lastLine = -1;
-    this._state = {};
     const tokenize = createTokenizer('text/css');
     const oldEnforce = this._builder.setEnforceSpaceBetweenWords(false);
     tokenize(text.substring(this._fromOffset, this._toOffset), this._tokenCallback.bind(this));
@@ -71,7 +92,7 @@ export class CSSFormatter {
     if (startLine !== this._lastLine) {
       this._state.eatWhitespace = true;
     }
-    if (/^property/.test(type) && !this._state.inPropertyValue) {
+    if (type && /^property/.test(type) && !this._state.inPropertyValue) {
       this._state.seenProperty = true;
     }
     this._lastLine = startLine;

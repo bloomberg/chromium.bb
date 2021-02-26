@@ -361,15 +361,17 @@ SpirvShader::SpirvShader(
 				{
 					case spv::CapabilityMatrix: capabilities.Matrix = true; break;
 					case spv::CapabilityShader: capabilities.Shader = true; break;
+					case spv::CapabilityStorageImageMultisample: capabilities.StorageImageMultisample = true; break;
 					case spv::CapabilityClipDistance: capabilities.ClipDistance = true; break;
 					case spv::CapabilityCullDistance: capabilities.CullDistance = true; break;
+					case spv::CapabilityImageCubeArray: capabilities.ImageCubeArray = true; break;
 					case spv::CapabilityInputAttachment: capabilities.InputAttachment = true; break;
 					case spv::CapabilitySampled1D: capabilities.Sampled1D = true; break;
 					case spv::CapabilityImage1D: capabilities.Image1D = true; break;
-					case spv::CapabilityImageCubeArray: capabilities.ImageCubeArray = true; break;
 					case spv::CapabilitySampledBuffer: capabilities.SampledBuffer = true; break;
 					case spv::CapabilitySampledCubeArray: capabilities.SampledCubeArray = true; break;
 					case spv::CapabilityImageBuffer: capabilities.ImageBuffer = true; break;
+					case spv::CapabilityImageMSArray: capabilities.ImageMSArray = true; break;
 					case spv::CapabilityStorageImageExtendedFormats: capabilities.StorageImageExtendedFormats = true; break;
 					case spv::CapabilityImageQuery: capabilities.ImageQuery = true; break;
 					case spv::CapabilityDerivativeControl: capabilities.DerivativeControl = true; break;
@@ -715,6 +717,7 @@ SpirvShader::SpirvShader(
 				if(!strcmp(ext, "SPV_KHR_device_group")) break;
 				if(!strcmp(ext, "SPV_KHR_multiview")) break;
 				if(!strcmp(ext, "SPV_EXT_shader_stencil_export")) break;
+				if(!strcmp(ext, "SPV_KHR_float_controls")) break;
 				UNSUPPORTED("SPIR-V Extension: %s", ext);
 				break;
 			}
@@ -1630,7 +1633,7 @@ SpirvShader::EmitResult SpirvShader::EmitInstruction(InsnIterator insn, EmitStat
 #if SPIRV_SHADER_ENABLE_DBG
 	{
 		auto text = spvtools::spvInstructionBinaryToText(
-		    SPV_ENV_VULKAN_1_1,
+		    vk::SPIRV_VERSION,
 		    insn.wordPointer(0),
 		    insn.wordCount(),
 		    insns.data(),
@@ -2479,11 +2482,11 @@ SpirvShader::Operand::Operand(const SpirvShader *shader, const EmitState *state,
 {}
 
 SpirvShader::Operand::Operand(const EmitState *state, const Object &object)
-    : constant(object.constantValue.data())
+    : constant(object.kind == SpirvShader::Object::Kind::Constant ? object.constantValue.data() : nullptr)
     , intermediate(object.kind == SpirvShader::Object::Kind::Intermediate ? &state->getIntermediate(object.id()) : nullptr)
     , componentCount(intermediate ? intermediate->componentCount : object.constantValue.size())
 {
-	ASSERT(intermediate || (object.kind == SpirvShader::Object::Kind::Constant));
+	ASSERT(intermediate || constant);
 }
 
 SpirvShader::Operand::Operand(const Intermediate &value)
@@ -2491,6 +2494,24 @@ SpirvShader::Operand::Operand(const Intermediate &value)
     , intermediate(&value)
     , componentCount(value.componentCount)
 {
+}
+
+bool SpirvShader::Operand::isConstantZero() const
+{
+	if(!constant)
+	{
+		return false;
+	}
+
+	for(uint32_t i = 0; i < componentCount; i++)
+	{
+		if(constant[i] != 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 SpirvRoutine::SpirvRoutine(vk::PipelineLayout const *pipelineLayout)

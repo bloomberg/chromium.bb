@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * Test suite for FaceDetectionImpl.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class FaceDetectionImplTest {
     private static final org.chromium.skia.mojom.Bitmap MONA_LISA_BITMAP =
             TestUtils.mojoBitmapFromFile("mona_lisa.jpg");
@@ -79,9 +81,9 @@ public class FaceDetectionImplTest {
         Assert.assertEquals(1, results.length);
         Assert.assertEquals(
                 api == DetectionProviderType.GMS_CORE ? 4 : 0, results[0].landmarks.length);
-        Assert.assertEquals(40.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
-        Assert.assertEquals(40.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
-        Assert.assertEquals(24.0, results[0].boundingBox.x, BOUNDING_BOX_POSITION_ERROR);
+        Assert.assertEquals(36.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
+        Assert.assertEquals(38.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
+        Assert.assertEquals(26.0, results[0].boundingBox.x, BOUNDING_BOX_POSITION_ERROR);
         Assert.assertEquals(20.0, results[0].boundingBox.y, BOUNDING_BOX_POSITION_ERROR);
     }
 
@@ -115,9 +117,9 @@ public class FaceDetectionImplTest {
 
         FaceDetectionResult[] results = detect(mojoBitmap, true, DetectionProviderType.ANDROID);
         Assert.assertEquals(1, results.length);
-        Assert.assertEquals(40.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
-        Assert.assertEquals(40.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
-        Assert.assertEquals(24.0, results[0].boundingBox.x, BOUNDING_BOX_POSITION_ERROR);
+        Assert.assertEquals(36.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
+        Assert.assertEquals(38.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
+        Assert.assertEquals(26.0, results[0].boundingBox.x, BOUNDING_BOX_POSITION_ERROR);
         Assert.assertEquals(20.0, results[0].boundingBox.y, BOUNDING_BOX_POSITION_ERROR);
     }
 

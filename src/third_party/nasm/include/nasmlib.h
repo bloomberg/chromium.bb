@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------- *
  *
- *   Copyright 1996-2018 The NASM Authors - All Rights Reserved
+ *   Copyright 1996-2020 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
  *
@@ -41,36 +41,25 @@
 #include "compiler.h"
 #include "bytesex.h"
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif
-
 /*
- * tolower table -- avoids a function call on some platforms.
- * NOTE: unlike the tolower() function in ctype, EOF is *NOT*
- * a permitted value, for obvious reasons.
+ * Useful construct for private values
  */
-void tolower_init(void);
-extern unsigned char nasm_tolower_tab[256];
-#define nasm_tolower(x) nasm_tolower_tab[(unsigned char)(x)]
-
-/* Wrappers around <ctype.h> functions */
-/* These are only valid for values that cannot include EOF */
-#define nasm_isspace(x)  isspace((unsigned char)(x))
-#define nasm_isalpha(x)  isalpha((unsigned char)(x))
-#define nasm_isdigit(x)  isdigit((unsigned char)(x))
-#define nasm_isalnum(x)  isalnum((unsigned char)(x))
-#define nasm_isxdigit(x) isxdigit((unsigned char)(x))
+union intorptr {
+    int64_t i;
+    uint64_t u;
+    size_t s;
+    void *p;
+    const void *cp;
+    uintptr_t up;
+};
+typedef union intorptr intorptr;
 
 /*
- * Wrappers around malloc, realloc and free. nasm_malloc will
- * fatal-error and die rather than return NULL; nasm_realloc will
- * do likewise, and will also guarantee to work right on being
- * passed a NULL pointer; nasm_free will do nothing if it is passed
- * a NULL pointer.
+ * Wrappers around malloc, realloc, free and a few more. nasm_malloc
+ * will fatal-error and die rather than return NULL; nasm_realloc will
+ * do likewise, and will also guarantee to work right on being passed
+ * a NULL pointer; nasm_free will do nothing if it is passed a NULL
+ * pointer.
  */
 void * safe_malloc(1) nasm_malloc(size_t);
 void * safe_malloc(1) nasm_zalloc(size_t);
@@ -82,23 +71,57 @@ char * safe_alloc nasm_strndup(const char *, size_t);
 char * safe_alloc nasm_strcat(const char *one, const char *two);
 char * safe_alloc end_with_null nasm_strcatn(const char *one, ...);
 
+/*
+ * nasm_[v]asprintf() are variants of the semi-standard [v]asprintf()
+ * functions, except that we return the pointer instead of a count.
+ * The size of the string (including the final NUL!) is available
+ * by calling nasm_aprintf_size() afterwards.
+ *
+ * nasm_[v]axprintf() are similar, but allocates a user-defined amount
+ * of storage before the string, and returns a pointer to the
+ * allocated buffer. The value of nasm_aprintf_size() does *not* include
+ * this additional storage.
+ */
+char * safe_alloc printf_func(1, 2) nasm_asprintf(const char *fmt, ...);
+char * safe_alloc nasm_vasprintf(const char *fmt, va_list ap);
+void * safe_alloc printf_func(2, 3) nasm_axprintf(size_t extra, const char *fmt, ...);
+void * safe_alloc nasm_vaxprintf(size_t extra, const char *fmt, va_list ap);
+
+/*
+ * nasm_last_string_len() returns the length of the last string allocated
+ * by [v]asprintf, nasm_strdup, nasm_strcat, or nasm_strcatn.
+ *
+ * nasm_last_string_size() returns the equivalent size including the
+ * final NUL.
+ */
+static inline size_t nasm_last_string_len(void)
+{
+    extern size_t _nasm_last_string_size;
+    return _nasm_last_string_size - 1;
+}
+static inline size_t nasm_last_string_size(void)
+{
+    extern size_t _nasm_last_string_size;
+    return _nasm_last_string_size;
+}
+
 /* Assert the argument is a pointer without evaluating it */
 #define nasm_assert_pointer(p) ((void)sizeof(*(p)))
 
 #define nasm_new(p) ((p) = nasm_zalloc(sizeof(*(p))))
-#define nasm_newn(p,n) ((p) = nasm_calloc(sizeof(*(p)),(n)))
+#define nasm_newn(p,n) ((p) = nasm_calloc((n), sizeof(*(p))))
 /*
  * This is broken on platforms where there are pointers which don't
  * match void * in their internal layout.  It unfortunately also
  * loses any "const" part of the argument, although hopefully the
  * compiler will warn in that case.
  */
-#define nasm_delete(p)						\
-    do {							\
-	void **_pp = (void **)&(p);				\
-	nasm_assert_pointer(p);					\
-	nasm_free(*_pp);					\
-	*_pp = NULL;						\
+#define nasm_delete(p)                          \
+    do {                                        \
+        void **_pp = (void **)&(p);             \
+        nasm_assert_pointer(p);                 \
+        nasm_free(*_pp);                        \
+        *_pp = NULL;                            \
     } while (0)
 #define nasm_zero(x) (memset(&(x), 0, sizeof(x)))
 #define nasm_zeron(p,n) (memset((p), 0, (n)*sizeof(*(p))))
@@ -111,32 +134,60 @@ void nasm_read(void *, size_t, FILE *);
 void nasm_write(const void *, size_t, FILE *);
 
 /*
+ * NASM failure at build time if the argument is false
+ */
+#ifdef static_assert
+# define nasm_static_assert(x) static_assert((x), #x)
+#elif defined(HAVE_FUNC_ATTRIBUTE_ERROR) && defined(__OPTIMIZE__)
+# define nasm_static_assert(x)                                              \
+    do {                                                                    \
+        if (!(x)) {                                                         \
+            extern void __attribute__((error("assertion " #x " failed")))   \
+                _nasm_static_fail(void);                                    \
+            _nasm_static_fail();                                            \
+        }                                                                   \
+    } while (0)
+#else
+/* See http://www.drdobbs.com/compile-time-assertions/184401873 */
+# define nasm_static_assert(x)                                              \
+    do { enum { _static_assert_failed = 1/(!!(x)) }; } while (0)
+#endif
+
+/*
+ * conditional static assert, if we know it is possible to determine
+ * the assert value at compile time. Since if_constant triggers
+ * pedantic warnings on gcc, turn them off explicitly around this code.
+ */
+#ifdef static_assert
+# define nasm_try_static_assert(x)                                          \
+    do {                                                                    \
+        not_pedantic_start                                                  \
+        static_assert(if_constant(x, true), #x);                            \
+        not_pedantic_end                                                    \
+    } while (0)
+#elif defined(HAVE_FUNC_ATTRIBUTE_ERROR) && defined(__OPTIMIZE__)
+# define nasm_try_static_assert(x)                                          \
+    do {                                                                    \
+        if (!if_constant(x, true)) {                                        \
+            extern void __attribute__((error("assertion " #x " failed")))   \
+                _nasm_static_fail(void);                                    \
+            _nasm_static_fail();                                            \
+        }                                                                   \
+    } while (0)
+#else
+# define nasm_try_static_assert(x) ((void)0)
+#endif
+
+/*
  * NASM assert failure
  */
 fatal_func nasm_assert_failed(const char *, int, const char *);
 #define nasm_assert(x)                                          \
     do {                                                        \
+        nasm_try_static_assert(x);                              \
         if (unlikely(!(x)))                                     \
             nasm_assert_failed(__FILE__,__LINE__,#x);           \
     } while (0)
-
-/*
- * NASM failure at build time if the argument is false
- */
-#ifdef static_assert
-# define nasm_static_assert(x) static_assert(x, #x)
-#elif defined(HAVE_FUNC_ATTRIBUTE_ERROR) && defined(__OPTIMIZE__)
-# define nasm_static_assert(x)                                           \
-    if (!(x)) {                                                         \
-        extern void __attribute__((error("assertion " #x " failed")))   \
-            _nasm_static_fail(void);					\
-        _nasm_static_fail();                                            \
-    }
-#else
-/* See http://www.drdobbs.com/compile-time-assertions/184401873 */
-# define nasm_static_assert(x) \
-    do { enum { _static_assert_failed = 1/(!!(x)) }; } while (0)
-#endif
 
 /* Utility function to generate a string for an invalid enum */
 const char *invalid_enum_str(int);
@@ -173,8 +224,12 @@ char *nasm_strsep(char **stringp, const char *delim);
 size_t pure_func strnlen(const char *, size_t);
 #endif
 
-/* This returns the numeric value of a given 'digit'. */
-#define numvalue(c)         ((c) >= 'a' ? (c) - 'a' + 10 : (c) >= 'A' ? (c) - 'A' + 10 : (c) - '0')
+/* This returns the numeric value of a given 'digit'; no check for validity */
+static inline unsigned int numvalue(unsigned char c)
+{
+    c |= 0x20;
+    return c >= 'a' ? c - 'a' + 10 : c - '0';
+}
 
 /*
  * Convert a string into a number, using NASM number rules. Sets
@@ -240,7 +295,7 @@ const char *filename_set_extension(const char *inname, const char *extension);
 /*
  * Power of 2 align helpers
  */
-#undef ALIGN_MASK		/* Some BSD flavors define these in system headers */
+#undef ALIGN_MASK               /* Some BSD flavors define these in system headers */
 #undef ALIGN
 #define ALIGN_MASK(v, mask)     (((v) + (mask)) & ~(mask))
 #define ALIGN(v, a)             ALIGN_MASK(v, (a) - 1)
@@ -266,24 +321,8 @@ int bsi(const char *string, const char **array, int size);
 int bsii(const char *string, const char **array, int size);
 
 /*
- * These functions are used to keep track of the source code file and name.
+ * Convenient string processing helper routines
  */
-void src_init(void);
-void src_free(void);
-const char *src_set_fname(const char *newname);
-const char *src_get_fname(void);
-int32_t src_set_linnum(int32_t newline);
-int32_t src_get_linnum(void);
-/* Can be used when there is no need for the old information */
-void src_set(int32_t line, const char *filename);
-/*
- * src_get gets both the source file name and line.
- * It is also used if you maintain private status about the source location
- * It return 0 if the information was the same as the last time you
- * checked, -2 if the name changed and (new-old) if just the line changed.
- */
-int32_t src_get(int32_t *xline, const char **xname);
-
 char *nasm_skip_spaces(const char *p);
 char *nasm_skip_word(const char *p);
 char *nasm_zap_spaces_fwd(char *p);
@@ -312,15 +351,21 @@ const char * pure_func prefix_name(int);
  * Wrappers around fopen()... for future change to a dedicated structure
  */
 enum file_flags {
-    NF_BINARY	= 0x00000000,   /* Binary file (default) */
-    NF_TEXT	= 0x00000001,   /* Text file */
+    NF_BINARY   = 0x00000000,   /* Binary file (default) */
+    NF_TEXT     = 0x00000001,   /* Text file */
     NF_NONFATAL = 0x00000000,   /* Don't die on open failure (default) */
     NF_FATAL    = 0x00000002,   /* Die on open failure */
-    NF_FORMAP   = 0x00000004    /* Intended to use nasm_map_file() */
+    NF_FORMAP   = 0x00000004,   /* Intended to use nasm_map_file() */
+    NF_IONBF    = 0x00000010,   /* Force unbuffered stdio */
+    NF_IOLBF    = 0x00000020,   /* Force line buffered stdio */
+    NF_IOFBF    = 0000000030    /* Force fully buffered stdio */
 };
+#define NF_BUF_MASK  0x30
 
 FILE *nasm_open_read(const char *filename, enum file_flags flags);
 FILE *nasm_open_write(const char *filename, enum file_flags flags);
+
+void nasm_set_binary_mode(FILE *f);
 
 /* Probe for existence of a file */
 bool nasm_file_exists(const char *filename);
@@ -410,5 +455,8 @@ static inline int64_t const_func signed_bits(int64_t value, int bits)
 
 /* check if value is power of 2 */
 #define is_power2(v)   ((v) && ((v) & ((v) - 1)) == 0)
+
+/* try to get the system stack size */
+extern size_t nasm_get_stack_size_limit(void);
 
 #endif

@@ -14,10 +14,10 @@
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
-#include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -84,17 +84,17 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
-  const user_manager::UserList GetUsers() override;
-  void ShowFeedback() override;
-  void ShowResetScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
   void OnCancelPasswordChangedFlow() override;
+  bool HasUserPods() override;
+  void AddObserver(LoginDisplayHost::Observer* observer) override;
+  void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
-  static const trace_event_internal::TraceID kShowLoginWebUIid;
+  static const char kShowLoginWebUIid[];
 
   views::Widget* login_window_for_test() { return login_window_; }
 
@@ -134,6 +134,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // ash::MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
@@ -169,10 +171,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Shows OOBE/sign in WebUI that was previously initialized in hidden state.
   void ShowWebUI();
 
-  // Initializes |login_window_| and |login_view_| fields if needed.
+  // Initializes `login_window_` and `login_view_` fields if needed.
   void InitLoginWindowAndView();
 
-  // Closes |login_window_| and resets |login_window_| and |login_view_| fields.
+  // Closes `login_window_` and resets `login_window_` and `login_view_` fields.
   void ResetLoginWindowAndView();
 
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
@@ -186,7 +188,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
 
-  // Creates or recreates |existing_user_controller_|.
+  // Creates or recreates `existing_user_controller_`.
   void CreateExistingUserController();
 
   // Plays startup sound if needed and audio device is ready.
@@ -197,8 +199,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // OOBE and some screens (camera, recovery) controller.
   std::unique_ptr<WizardController> wizard_controller_;
-
-  std::unique_ptr<SignInScreenController> signin_screen_controller_;
 
   // Whether progress bar is shown on the OOBE page.
   bool oobe_progress_bar_visible_ = false;
@@ -255,6 +255,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;
+
+  base::ObserverList<LoginDisplayHost::Observer> observers_;
 
   base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
 

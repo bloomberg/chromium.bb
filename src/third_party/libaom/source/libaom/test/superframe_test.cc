@@ -94,6 +94,7 @@ class SuperframeTest
   int n_tile_cols_;
   int n_tile_rows_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SuperframeTest);
 
 TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {
   sf_count_max_ = 0;  // early exit on successful test.

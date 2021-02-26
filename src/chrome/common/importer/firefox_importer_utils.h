@@ -31,13 +31,13 @@ int GetCurrentFirefoxMajorVersionFromRegistry();
 base::FilePath GetFirefoxInstallPathFromRegistry();
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Get the directory in which the Firefox .dylibs live, we need to load these
 // in order to decoded FF profile passwords.
 // The Path is usuall FF App Bundle/Contents/Mac OS/
 // Returns empty path on failure.
 base::FilePath GetFirefoxDylibPath();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 struct FirefoxDetail {
   // |path| represents the Path field in Profiles.ini.
@@ -45,7 +45,7 @@ struct FirefoxDetail {
   // in stored.
   base::FilePath path;
   // The user specified name of the profile.
-  std::string name;
+  base::string16 name;
 };
 
 inline bool operator==(const FirefoxDetail& a1, const FirefoxDetail& a2) {

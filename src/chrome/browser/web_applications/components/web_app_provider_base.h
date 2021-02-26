@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_PROVIDER_BASE_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_PROVIDER_BASE_H_
 
-#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -16,8 +15,6 @@ namespace web_app {
 class AppIconManager;
 class AppRegistrar;
 class AppRegistryController;
-class AppShortcutManager;
-class FileHandlerManager;
 class InstallFinalizer;
 class InstallManager;
 class ManifestUpdateManager;
@@ -27,12 +24,15 @@ class WebAppAudioFocusIdMap;
 class WebAppPolicyManager;
 class WebAppUiManager;
 class SystemWebAppManager;
+class OsIntegrationManager;
 
 class WebAppProviderBase : public KeyedService {
  public:
   static WebAppProviderBase* GetProviderBase(Profile* profile);
 
   WebAppProviderBase();
+  WebAppProviderBase(const WebAppProviderBase&) = delete;
+  WebAppProviderBase& operator=(const WebAppProviderBase&) = delete;
   ~WebAppProviderBase() override;
 
   // The app registry model.
@@ -56,16 +56,14 @@ class WebAppProviderBase : public KeyedService {
 
   virtual WebAppAudioFocusIdMap& audio_focus_id_map() = 0;
 
-  virtual FileHandlerManager& file_handler_manager() = 0;
-
   // Implements fetching of app icons.
   virtual AppIconManager& icon_manager() = 0;
 
-  virtual AppShortcutManager& shortcut_manager() = 0;
-
   virtual SystemWebAppManager& system_web_app_manager() = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
+  // Manage all OS hooks that need to be deployed during Web Apps install
+  virtual OsIntegrationManager& os_integration_manager() = 0;
+
 };
 
 }  // namespace web_app

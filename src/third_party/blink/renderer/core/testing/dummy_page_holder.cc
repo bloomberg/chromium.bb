@@ -33,6 +33,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -53,7 +56,8 @@ class DummyLocalFrameClient : public EmptyLocalFrameClient {
 
  private:
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
+    return std::make_unique<WebURLLoaderFactoryWithMock>(
+        WebURLLoaderMockFactory::GetSingletonInstance());
   }
 };
 
@@ -80,16 +84,27 @@ DummyPageHolder::DummyPageHolder(
   if (!local_frame_client_)
     local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
+  mojo::PendingAssociatedRemote<mojom::blink::PolicyContainerHost>
+      stub_policy_container_remote;
+  ignore_result(
+      stub_policy_container_remote.InitWithNewEndpointAndPassReceiver());
+
   // Create new WindowAgentFactory as this page will be isolated from others.
   frame_ = MakeGarbageCollected<LocalFrame>(
       local_frame_client_.Get(), *page_,
-      /* FrameOwner* */ nullptr, base::UnguessableToken::Create(),
+      /* FrameOwner* */ nullptr, /* Frame* parent */ nullptr,
+      /* Frame* previous_sibling */ nullptr,
+      FrameInsertType::kInsertInConstructor, base::UnguessableToken::Create(),
       /* WindowAgentFactory* */ nullptr,
-      /* InterfaceRegistry* */ nullptr, clock);
+      /* InterfaceRegistry* */ nullptr,
+      std::make_unique<PolicyContainer>(
+          std::move(stub_policy_container_remote),
+          mojom::blink::PolicyContainerDocumentPolicies::New()),
+      clock);
   frame_->SetView(
       MakeGarbageCollected<LocalFrameView>(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);
-  frame_->Init();
+  frame_->Init(nullptr);
 
   CoreInitializer::GetInstance().ProvideModulesToPage(GetPage(), nullptr);
 }

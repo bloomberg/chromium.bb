@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -134,6 +136,8 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::EnterPictureInPicture;
     case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
       return MediaSessionUserAction::ExitPictureInPicture;
+    case media_session::mojom::MediaSessionAction::kSwitchAudioDevice:
+      return MediaSessionUserAction::SwitchAudioDevice;
   }
   NOTREACHED();
   return MediaSessionUserAction::Play;
@@ -170,16 +174,8 @@ bool MediaSessionImpl::PlayerIdentifier::operator==(
 
 bool MediaSessionImpl::PlayerIdentifier::operator<(
     const PlayerIdentifier& other) const {
-  return MediaSessionImpl::PlayerIdentifier::Hash()(*this) <
-         MediaSessionImpl::PlayerIdentifier::Hash()(other);
-}
-
-size_t MediaSessionImpl::PlayerIdentifier::Hash::operator()(
-    const PlayerIdentifier& player_identifier) const {
-  size_t hash =
-      std::hash<MediaSessionPlayerObserver*>()(player_identifier.observer);
-  hash += std::hash<int>()(player_identifier.player_id);
-  return hash;
+  return observer != other.observer ? observer < other.observer
+                                    : player_id < other.player_id;
 }
 
 // static
@@ -225,6 +221,22 @@ MediaSessionImpl::~MediaSessionImpl() {
   DCHECK(audio_focus_state_ == State::INACTIVE);
 }
 
+#if defined(OS_ANDROID)
+void MediaSessionImpl::ClearMediaSessionAndroid() {
+  session_android_.reset();
+}
+
+MediaSessionAndroid* MediaSessionImpl::GetMediaSessionAndroid() {
+  // |session_android_| can be null if a portal is activated, the java
+  // WebContents is destroyed and ClearMediaSessionAndroid is called.
+  // TODO(crbug.com/1091229): Remove this when we correctly support media
+  // sessions in portals.
+  if (!session_android_)
+    session_android_ = std::make_unique<MediaSessionAndroid>(this);
+  return session_android_.get();
+}
+#endif
+
 void MediaSessionImpl::WebContentsDestroyed() {
   // This should only work for tests. In production, all the players should have
   // already been removed before WebContents is destroyed.
@@ -252,6 +264,13 @@ void MediaSessionImpl::DidFinishNavigation(
     return;
   }
 
+  auto new_origin = url::Origin::Create(navigation_handle->GetURL());
+  if (navigation_handle->IsInMainFrame() &&
+      !new_origin.IsSameOriginWith(origin_)) {
+    audio_device_id_for_origin_.reset();
+    origin_ = new_origin;
+  }
+
   RenderFrameHost* rfh = navigation_handle->GetRenderFrameHost();
   if (services_.count(rfh))
     services_[rfh]->DidFinishNavigation();
@@ -262,7 +281,7 @@ void MediaSessionImpl::DidFinishNavigation(
 void MediaSessionImpl::OnWebContentsFocused(RenderWidgetHost*) {
   focused_ = true;
 
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MAC)
   // If we have just gained focus and we have audio focus we should re-request
   // system audio focus. This will ensure this media session is towards the top
   // of the stack if we have multiple sessions active at the same time.
@@ -280,6 +299,7 @@ void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
 }
 
 void MediaSessionImpl::DidUpdateFaviconURL(
+    RenderFrameHost* rfh,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   std::vector<media_session::MediaImage> icons;
 
@@ -333,6 +353,8 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
     return AddPepperPlayer(observer, player_id);
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
+  if (audio_device_id_for_origin_)
+    observer->OnSetAudioSinkId(player_id, audio_device_id_for_origin_.value());
 
   AudioFocusType required_audio_focus_type;
   if (media_content_type == media::MediaContentType::Persistent)
@@ -358,6 +380,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
         iter->second = required_audio_focus_type;
 
       UpdateRoutedService();
+      RebuildAndNotifyActionsChanged();
       RebuildAndNotifyMediaPositionChanged();
       return true;
     }
@@ -390,19 +413,10 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
 
 void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
                                     int player_id) {
-  PlayerIdentifier identifier(observer, player_id);
-
-  auto iter = normal_players_.find(identifier);
-  if (iter != normal_players_.end())
-    normal_players_.erase(iter);
-
-  auto it = pepper_players_.find(identifier);
-  if (it != pepper_players_.end())
-    pepper_players_.erase(it);
-
-  it = one_shot_players_.find(identifier);
-  if (it != one_shot_players_.end())
-    one_shot_players_.erase(it);
+  const PlayerIdentifier identifier(observer, player_id);
+  normal_players_.erase(identifier);
+  pepper_players_.erase(identifier);
+  one_shot_players_.erase(identifier);
 
   AbandonSystemAudioFocusIfNeeded();
   UpdateRoutedService();
@@ -831,7 +845,6 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
-
   if (web_contents && web_contents->GetMainFrame() &&
       web_contents->GetMainFrame()->GetView()) {
     focused_ = web_contents->GetMainFrame()->GetView()->HasFocus();
@@ -845,7 +858,8 @@ void MediaSessionImpl::Initialize() {
   delegate_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
 
   DCHECK(web_contents());
-  DidUpdateFaviconURL(web_contents()->GetFaviconURLs());
+  DidUpdateFaviconURL(web_contents()->GetMainFrame(),
+                      web_contents()->GetFaviconURLs());
 }
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
@@ -938,6 +952,12 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
                 kInPictureInPicture
           : media_session::mojom::MediaPictureInPictureState::
                 kNotInPictureInPicture;
+
+  auto shared_audio_device_id = GetSharedAudioOutputDeviceId();
+  // When the default audio device is in use, or this session's players are
+  // using different devices, the |audio_sink_id| attribute should remain unset.
+  if (shared_audio_device_id != media::AudioDeviceDescription::kDefaultDeviceId)
+    info->audio_sink_id = shared_audio_device_id;
 
   return info;
 }
@@ -1051,6 +1071,16 @@ void MediaSessionImpl::ExitPictureInPicture() {
   DCHECK_EQ(normal_players_.size(), 1u);
   normal_players_.begin()->first.observer->OnExitPictureInPicture(
       normal_players_.begin()->first.player_id);
+}
+
+void MediaSessionImpl::SetAudioSinkId(const base::Optional<std::string>& id) {
+  audio_device_id_for_origin_ = id;
+
+  for (const auto& it : normal_players_) {
+    it.first.observer->OnSetAudioSinkId(
+        it.first.player_id,
+        id.value_or(media::AudioDeviceDescription::kDefaultDeviceId));
+  }
 }
 
 void MediaSessionImpl::GetMediaImageBitmap(
@@ -1332,6 +1362,19 @@ void MediaSessionImpl::OnPictureInPictureAvailabilityChanged() {
   RebuildAndNotifyActionsChanged();
 }
 
+void MediaSessionImpl::OnAudioOutputSinkIdChanged() {
+  if (audio_device_id_for_origin_ &&
+      audio_device_id_for_origin_ != GetSharedAudioOutputDeviceId()) {
+    audio_device_id_for_origin_.reset();
+  }
+
+  RebuildAndNotifyMediaSessionInfoChanged();
+}
+
+void MediaSessionImpl::OnAudioOutputSinkChangingDisabled() {
+  RebuildAndNotifyMediaSessionInfoChanged();
+}
+
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ && base::Contains(routed_service_->actions(), action);
@@ -1374,6 +1417,13 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
         media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
     actions.insert(
         media_session::mojom::MediaSessionAction::kExitPictureInPicture);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          media::kGlobalMediaControlsSeamlessTransfer) &&
+      IsAudioOutputDeviceSwitchingSupported()) {
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kSwitchAudioDevice);
   }
 
   // If we support kSeekTo then we support kScrubTo as well.
@@ -1450,6 +1500,33 @@ bool MediaSessionImpl::IsPictureInPictureAvailable() const {
 
   auto& first = normal_players_.begin()->first;
   return first.observer->IsPictureInPictureAvailable(first.player_id);
+}
+
+std::string MediaSessionImpl::GetSharedAudioOutputDeviceId() const {
+  if (normal_players_.empty())
+    return media::AudioDeviceDescription::kDefaultDeviceId;
+
+  auto& first = normal_players_.begin()->first;
+  const auto& first_id = first.observer->GetAudioOutputSinkId(first.player_id);
+  if (std::all_of(normal_players_.cbegin(), normal_players_.cend(),
+                  [&first_id](const auto& player) {
+                    return player.first.observer->GetAudioOutputSinkId(
+                               player.first.player_id) == first_id;
+                  })) {
+    return first_id;
+  }
+
+  return media::AudioDeviceDescription::kDefaultDeviceId;
+}
+
+bool MediaSessionImpl::IsAudioOutputDeviceSwitchingSupported() const {
+  if (normal_players_.empty())
+    return false;
+
+  return base::ranges::all_of(normal_players_, [](const auto& player) {
+    return player.first.observer->SupportsAudioOutputDeviceSwitching(
+        player.first.player_id);
+  });
 }
 
 MediaAudioVideoState MediaSessionImpl::GetMediaAudioVideoState() {

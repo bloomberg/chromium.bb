@@ -364,7 +364,7 @@
   </if>
   <if expr="is_android">
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ENABLE_FIDO_AUTH_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows the use of fingerprint to unmask cards starting next time. If checked, then a fingerprint prompt will immediately follow." formatter_data="android_java">
-      Use fingerprint to verify this card next time.
+      Use screen lock to confirm cards from now on
     </message>
   </if>
   <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog.">
@@ -503,6 +503,11 @@
   </message>
   <message name="IDS_AUTOFILL_SAVE_UPI_PROMPT_REJECT" desc="Text for the button to reject saving a UPI ID locally, after the user used it in a page. A UPI ID is an email-like string.">
     No thanks
+  </message>
+
+  <!-- Credit card offers and rewards related strings -->
+  <message name="IDS_AUTOFILL_OFFERS_CASHBACK" desc="Displays that a cashback offer will be rewarded if credit card is used on current page. Part of Autofill suggestions popup.">
+    Cashback linked
   </message>
 
 </grit-part>

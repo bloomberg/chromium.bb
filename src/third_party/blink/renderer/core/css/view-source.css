@@ -30,8 +30,8 @@ table {
     width: 100%;
     border-spacing: 0;
     white-space: pre-wrap !important;
-    margin: 0;
     word-break: break-word;
+    margin: 0;
     font-size: initial;
     font-family: monospace;
     tab-size: 4;

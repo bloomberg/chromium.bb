@@ -87,10 +87,16 @@ void ExtractVersionNumbers(const std::string& version,
          bugfix_version);
 }
 
+// Returns if a micro-architecture supports the cycles:ppp event.
+bool MicroarchitectureHasCyclesPPPEvent(const std::string& uarch) {
+  return uarch == "Goldmont" || uarch == "GoldmontPlus" ||
+         uarch == "Broadwell" || uarch == "Kabylake" || uarch == "Tigerlake";
+}
+
 // Returns if a micro-architecture supports LBR callgraph profiling.
 bool MicroarchitectureHasLBRCallgraph(const std::string& uarch) {
   return uarch == "Haswell" || uarch == "Broadwell" || uarch == "Skylake" ||
-         uarch == "Kabylake";
+         uarch == "Kabylake" || uarch == "Tigerlake";
 }
 
 // Returns if a kernel release supports LBR callgraph profiling.
@@ -103,6 +109,11 @@ bool KernelReleaseHasLBRCallgraph(const std::string& release) {
 // Hopefully we never need a space in a command argument.
 const char kPerfCommandDelimiter[] = " ";
 
+// Collect precise=3 (:ppp) cycle events on microarchitectures that support it.
+const char kPerfFPCallgraphPPPCmd[] =
+    "perf record -a -e cycles:ppp -g -c 4000037";
+
+// Collect default (imprecise) cycle events everywhere else.
 const char kPerfCyclesCmd[] = "perf record -a -e cycles -c 1000003";
 
 const char kPerfFPCallgraphCmd[] = "perf record -a -e cycles -g -c 4000037";
@@ -116,30 +127,33 @@ const char kPerfLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 // we sample on the branches retired event.
 const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 
-// The following events count misses in the level 1 caches and level 2 TLBs.
+// The following events count misses in the last level caches and level 2 TLBs.
 
 // TLB miss cycles for IvyBridge, Haswell, Broadwell and SandyBridge.
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
-    "perf record -a -e itlb_misses.walk_duration -c 20001";
+    "perf record -a -e itlb_misses.walk_duration -c 30001";
 
 const char kPerfDTLBMissCyclesCmdIvyBridge[] =
-    "perf record -a -e dtlb_load_misses.walk_duration -c 20001";
+    "perf record -a -e dtlb_load_misses.walk_duration -g -c 160001";
 
-// TLB miss cycles for Skylake and Kabylake.
+// TLB miss cycles for Skylake, Kabylake, Tigerlake.
 const char kPerfITLBMissCyclesCmdSkylake[] =
-    "perf record -a -e itlb_misses.walk_pending -c 20001";
+    "perf record -a -e itlb_misses.walk_pending -c 30001";
 
 const char kPerfDTLBMissCyclesCmdSkylake[] =
-    "perf record -a -e dtlb_load_misses.walk_pending -c 20001";
+    "perf record -a -e dtlb_load_misses.walk_pending -g -c 160001";
 
 // TLB miss cycles for Atom, including Silvermont, Airmont and Goldmont.
 const char kPerfITLBMissCyclesCmdAtom[] =
-    "perf record -a -e page_walks.i_side_cycles -c 20001";
+    "perf record -a -e page_walks.i_side_cycles -c 30001";
 
 const char kPerfDTLBMissCyclesCmdAtom[] =
-    "perf record -a -e page_walks.d_side_cycles -c 20001";
+    "perf record -a -e page_walks.d_side_cycles -g -c 160001";
 
-const char kPerfCacheMissesCmd[] = "perf record -a -e cache-misses -c 12007";
+const char kPerfLLCMissesCmd[] = "perf record -a -e r412e -g -c 30007";
+// Precise events (request zero skid) for last level cache misses.
+const char kPerfLLCMissesPreciseCmd[] =
+    "perf record -a -e r412e:pp -g -c 30007";
 
 const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     const CPUIdentity& cpuid) {
@@ -153,48 +167,72 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   const char* itlb_miss_cycles_cmd = kPerfITLBMissCyclesCmdIvyBridge;
   const char* dtlb_miss_cycles_cmd = kPerfDTLBMissCyclesCmdIvyBridge;
   const char* lbr_cmd = kPerfLBRCmd;
+  const char* cycles_cmd = kPerfCyclesCmd;
+  const char* fp_callgraph_cmd = kPerfFPCallgraphCmd;
+  const char* lbr_callgraph_cmd = kPerfLBRCallgraphCmd;
 
-  if (cpu_uarch == "Skylake" || cpu_uarch == "Kabylake") {
+  if (cpu_uarch == "Skylake" || cpu_uarch == "Kabylake" ||
+      cpu_uarch == "Tigerlake" || cpu_uarch == "GoldmontPlus") {
     itlb_miss_cycles_cmd = kPerfITLBMissCyclesCmdSkylake;
     dtlb_miss_cycles_cmd = kPerfDTLBMissCyclesCmdSkylake;
   }
   if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
-      cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
+      cpu_uarch == "Goldmont") {
     itlb_miss_cycles_cmd = kPerfITLBMissCyclesCmdAtom;
     dtlb_miss_cycles_cmd = kPerfDTLBMissCyclesCmdAtom;
+  }
+  if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
+      cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
     lbr_cmd = kPerfLBRCmdAtom;
+  }
+  if (MicroarchitectureHasCyclesPPPEvent(cpu_uarch)) {
+    fp_callgraph_cmd = kPerfFPCallgraphPPPCmd;
+  }
+
+  cmds.emplace_back(WeightAndValue(50.0, cycles_cmd));
+
+  // Haswell and newer big Intel cores support LBR callstack profiling. This
+  // requires kernel support, which was added in kernel 4.4, and it was
+  // backported to kernel 3.18. Collect LBR callstack profiling where
+  // supported in addition to FP callchains. The former works with binaries
+  // compiled with frame pointers disabled, but it only captures callchains
+  // after profiling is enabled, so it's likely missing the lower frames of
+  // the callstack.
+  if (MicroarchitectureHasLBRCallgraph(cpu_uarch) &&
+      KernelReleaseHasLBRCallgraph(cpuid.release)) {
+    cmds.emplace_back(WeightAndValue(10.0, fp_callgraph_cmd));
+    cmds.emplace_back(WeightAndValue(10.0, lbr_callgraph_cmd));
+  } else {
+    cmds.emplace_back(WeightAndValue(20.0, fp_callgraph_cmd));
   }
 
   if (cpu_uarch == "IvyBridge" || cpu_uarch == "Haswell" ||
       cpu_uarch == "Broadwell" || cpu_uarch == "SandyBridge" ||
       cpu_uarch == "Skylake" || cpu_uarch == "Kabylake" ||
-      cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
-      cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
-    cmds.push_back(WeightAndValue(50.0, kPerfCyclesCmd));
-    // Haswell and newer big Intel cores support LBR callstack profiling. This
-    // requires kernel support, which was added in kernel 4.4, and it was
-    // backported to kernel 3.18. Collect LBR callstack profiling where
-    // supported in addition to FP callchains. The former works with binaries
-    // compiled with frame pointers disabled, but it only captures callchains
-    // after profiling is enabled, so it's likely missing the lower frames of
-    // the callstack.
-    if (MicroarchitectureHasLBRCallgraph(cpu_uarch) &&
-        KernelReleaseHasLBRCallgraph(cpuid.release)) {
-      cmds.push_back(WeightAndValue(10.0, kPerfFPCallgraphCmd));
-      cmds.push_back(WeightAndValue(10.0, kPerfLBRCallgraphCmd));
+      cpu_uarch == "Tigerlake" || cpu_uarch == "Silvermont" ||
+      cpu_uarch == "Airmont" || cpu_uarch == "Goldmont" ||
+      cpu_uarch == "GoldmontPlus") {
+    cmds.emplace_back(WeightAndValue(15.0, lbr_cmd));
+    cmds.emplace_back(WeightAndValue(5.0, itlb_miss_cycles_cmd));
+    cmds.emplace_back(WeightAndValue(5.0, dtlb_miss_cycles_cmd));
+    // Only Goldmont and GoldmontPlus support precise events on last level cache
+    // misses.
+    if (cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
+      cmds.emplace_back(WeightAndValue(5.0, kPerfLLCMissesPreciseCmd));
     } else {
-      cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
+      cmds.emplace_back(WeightAndValue(5.0, kPerfLLCMissesCmd));
     }
-    cmds.push_back(WeightAndValue(15.0, lbr_cmd));
-    cmds.push_back(WeightAndValue(5.0, itlb_miss_cycles_cmd));
-    cmds.push_back(WeightAndValue(5.0, dtlb_miss_cycles_cmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
     return cmds;
   }
-  // Other 64-bit x86
-  cmds.push_back(WeightAndValue(75.0, kPerfCyclesCmd));
-  cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
-  cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
+  // Other 64-bit x86. We collect LLC misses for other Intel CPUs, but not for
+  // non-Intel CPUs such as AMD, since the event code provided for LLC is
+  // Intel specific.
+  if (cpuid.vendor=="GenuineIntel"){
+    cmds.emplace_back(WeightAndValue(25.0, cycles_cmd));
+    cmds.emplace_back(WeightAndValue(5.0, kPerfLLCMissesCmd));
+  } else {
+    cmds.emplace_back(WeightAndValue(30.0, cycles_cmd));
+  }
   return cmds;
 }
 
@@ -226,13 +264,13 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
   if (cpuid.arch == "x86" ||      // 32-bit x86, or...
       cpuid.arch == "armv7l" ||   // ARM32
       cpuid.arch == "aarch64") {  // ARM64
-    cmds.push_back(WeightAndValue(80.0, kPerfCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
+    cmds.emplace_back(WeightAndValue(80.0, kPerfCyclesCmd));
+    cmds.emplace_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
     return cmds;
   }
 
   // Unknown CPUs
-  cmds.push_back(WeightAndValue(1.0, kPerfCyclesCmd));
+  cmds.emplace_back(WeightAndValue(1.0, kPerfCyclesCmd));
   return cmds;
 }
 
@@ -466,8 +504,11 @@ bool CommandSamplesCPUCycles(const std::vector<std::string>& args) {
   // Command must start with "perf record".
   if (args.size() < 4 || args[0] != "perf" || args[1] != "record")
     return false;
+  // Cycles event can be either the raw 'cycles' event, or the event name can be
+  // annotated with some qualifier suffix. Check for all cases.
   for (size_t i = 2; i + 1 < args.size(); ++i) {
-    if (args[i] == "-e" && args[i + 1] == "cycles")
+    if (args[i] == "-e" &&
+        (args[i + 1] == "cycles" || args[i + 1].rfind("cycles:", 0) == 0))
       return true;
   }
   return false;

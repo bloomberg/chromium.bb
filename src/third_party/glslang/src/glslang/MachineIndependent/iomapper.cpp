@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
 
 #include "../Include/Common.h"
 #include "../Include/InfoSink.h"
@@ -79,6 +79,11 @@ public:
             target = &outputList;
         else if (base->getQualifier().isUniformOrBuffer() && !base->getQualifier().isPushConstant())
             target = &uniformList;
+        // If a global is being visited, then we should also traverse it incase it's evaluation
+        // ends up visiting inputs we want to tag as live
+        else if (base->getQualifier().storage == EvqGlobal)
+            addGlobalReference(base->getName());
+
         if (target) {
             TVarEntryInfo ent = {base->getId(), base, ! traverseAll};
             ent.stage = intermediate.getStage();
@@ -309,26 +314,43 @@ struct TSymbolValidater
         TIntermSymbol* base = ent1.symbol;
         const TType& type = ent1.symbol->getType();
         const TString& name = entKey.first;
-        TString mangleName1, mangleName2;
-        type.appendMangledName(mangleName1);
         EShLanguage stage = ent1.stage;
+        TString mangleName1, mangleName2;
         if (currentStage != stage) {
             preStage = currentStage;
             currentStage = stage;
             nextStage = EShLangCount;
             for (int i = currentStage + 1; i < EShLangCount; i++) {
-                if (inVarMaps[i] != nullptr)
+                if (inVarMaps[i] != nullptr) {
                     nextStage = static_cast<EShLanguage>(i);
+                    break;
+                }
             }
         }
+
+        if (type.getQualifier().isArrayedIo(stage)) {
+            TType subType(type, 0);
+            subType.appendMangledName(mangleName1);
+        } else {
+            type.appendMangledName(mangleName1);
+        }
+
         if (base->getQualifier().storage == EvqVaryingIn) {
             // validate stage in;
             if (preStage == EShLangCount)
                 return;
+            if (name == "gl_PerVertex")
+                return;
             if (outVarMaps[preStage] != nullptr) {
                 auto ent2 = outVarMaps[preStage]->find(name);
                 if (ent2 != outVarMaps[preStage]->end()) {
-                    ent2->second.symbol->getType().appendMangledName(mangleName2);
+                    if (ent2->second.symbol->getType().getQualifier().isArrayedIo(preStage)) {
+                        TType subType(ent2->second.symbol->getType(), 0);
+                        subType.appendMangledName(mangleName2);
+                    }
+                    else {
+                        ent2->second.symbol->getType().appendMangledName(mangleName2);
+                    }
                     if (mangleName1 == mangleName2)
                         return;
                     else {
@@ -343,10 +365,18 @@ struct TSymbolValidater
             // validate stage out;
             if (nextStage == EShLangCount)
                 return;
+            if (name == "gl_PerVertex")
+                return;
             if (outVarMaps[nextStage] != nullptr) {
                 auto ent2 = inVarMaps[nextStage]->find(name);
                 if (ent2 != inVarMaps[nextStage]->end()) {
-                    ent2->second.symbol->getType().appendMangledName(mangleName2);
+                    if (ent2->second.symbol->getType().getQualifier().isArrayedIo(nextStage)) {
+                        TType subType(ent2->second.symbol->getType(), 0);
+                        subType.appendMangledName(mangleName2);
+                    }
+                    else {
+                        ent2->second.symbol->getType().appendMangledName(mangleName2);
+                    }
                     if (mangleName1 == mangleName2)
                         return;
                     else {
@@ -579,10 +609,7 @@ TDefaultGlslIoResolver::TDefaultGlslIoResolver(const TIntermediate& intermediate
 
 int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInfo& ent) {
     const TType& type = ent.symbol->getType();
-    const TString& name = IsAnonymous(ent.symbol->getName()) ?
-                            ent.symbol->getType().getTypeName()
-                            :
-                            ent.symbol->getName();
+    const TString& name = getAccessName(ent.symbol);
     if (currentStage != stage) {
         preStage = currentStage;
         currentStage = stage;
@@ -630,7 +657,7 @@ int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInf
         TVarSlotMap::iterator iter = storageSlotMap[resourceKey].find(name);
         if (iter != storageSlotMap[resourceKey].end()) {
             // If interface resource be found, set it has location and this symbol's new location
-            // equal the symbol's explicit location declarated in pre or next stage.
+            // equal the symbol's explicit location declaration in pre or next stage.
             //
             // vs:    out vec4 a;
             // fs:    layout(..., location = 3,...) in vec4 a;
@@ -666,10 +693,7 @@ int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInf
 
 int TDefaultGlslIoResolver::resolveUniformLocation(EShLanguage /*stage*/, TVarEntryInfo& ent) {
     const TType& type = ent.symbol->getType();
-    const TString& name = IsAnonymous(ent.symbol->getName()) ?
-                            ent.symbol->getType().getTypeName()
-                            :
-                            ent.symbol->getName();
+    const TString& name = getAccessName(ent.symbol);
     // kick out of not doing this
     if (! doAutoLocationMapping()) {
         return ent.newLocation = -1;
@@ -712,7 +736,7 @@ int TDefaultGlslIoResolver::resolveUniformLocation(EShLanguage /*stage*/, TVarEn
         TVarSlotMap::iterator iter = slotMap.find(name);
         if (iter != slotMap.end()) {
             // If uniform resource be found, set it has location and this symbol's new location
-            // equal the uniform's explicit location declarated in other stage.
+            // equal the uniform's explicit location declaration in other stage.
             //
             // vs:    uniform vec4 a;
             // fs:    layout(..., location = 3,...) uniform vec4 a;
@@ -720,7 +744,7 @@ int TDefaultGlslIoResolver::resolveUniformLocation(EShLanguage /*stage*/, TVarEn
             location = iter->second;
         }
         if (! hasLocation) {
-            // No explicit location declaraten in other stage.
+            // No explicit location declaration in other stage.
             // So we should find a new slot for this uniform.
             //
             // vs:    uniform vec4 a;
@@ -729,7 +753,7 @@ int TDefaultGlslIoResolver::resolveUniformLocation(EShLanguage /*stage*/, TVarEn
             storageSlotMap[resourceKey][name] = location;
         }
     } else {
-        // the first uniform declarated in a program.
+        // the first uniform declaration in a program.
         TVarSlotMap varSlotMap;
         location = getFreeSlot(resourceKey, 0, size);
         varSlotMap[name] = location;
@@ -740,11 +764,8 @@ int TDefaultGlslIoResolver::resolveUniformLocation(EShLanguage /*stage*/, TVarEn
 
 int TDefaultGlslIoResolver::resolveBinding(EShLanguage /*stage*/, TVarEntryInfo& ent) {
     const TType& type = ent.symbol->getType();
-    const TString& name = IsAnonymous(ent.symbol->getName()) ?
-                            ent.symbol->getType().getTypeName()
-                            :
-                            ent.symbol->getName();
-    // On OpenGL arrays of opaque types take a seperate binding for each element
+    const TString& name = getAccessName(ent.symbol);
+    // On OpenGL arrays of opaque types take a separate binding for each element
     int numBindings = intermediate.getSpv().openGl != 0 && type.isSizedArray() ? type.getCumulativeArraySize() : 1;
     TResourceType resource = getResourceType(type);
     // don't need to handle uniform symbol, it will be handled in resolveUniformLocation
@@ -818,10 +839,7 @@ void TDefaultGlslIoResolver::endCollect(EShLanguage /*stage*/) {
 
 void TDefaultGlslIoResolver::reserverStorageSlot(TVarEntryInfo& ent, TInfoSink& infoSink) {
     const TType& type = ent.symbol->getType();
-    const TString& name = IsAnonymous(ent.symbol->getName()) ?
-                            ent.symbol->getType().getTypeName()
-                            :
-                            ent.symbol->getName();
+    const TString& name = getAccessName(ent.symbol);
     TStorageQualifier storage = type.getQualifier().storage;
     EShLanguage stage(EShLangCount);
     switch (storage) {
@@ -881,10 +899,7 @@ void TDefaultGlslIoResolver::reserverStorageSlot(TVarEntryInfo& ent, TInfoSink& 
 
 void TDefaultGlslIoResolver::reserverResourceSlot(TVarEntryInfo& ent, TInfoSink& infoSink) {
     const TType& type = ent.symbol->getType();
-    const TString& name = IsAnonymous(ent.symbol->getName()) ?
-                            ent.symbol->getType().getTypeName()
-                            :
-                            ent.symbol->getName();
+    const TString& name = getAccessName(ent.symbol);
     int resource = getResourceType(type);
     if (type.getQualifier().hasBinding()) {
         TVarSlotMap& varSlotMap = resourceSlotMap[resource];
@@ -905,6 +920,13 @@ void TDefaultGlslIoResolver::reserverResourceSlot(TVarEntryInfo& ent, TInfoSink&
             }
         }
     }
+}
+
+const TString& TDefaultGlslIoResolver::getAccessName(const TIntermSymbol* symbol)
+{
+    return symbol->getBasicType() == EbtBlock ?
+        symbol->getType().getTypeName() :
+        symbol->getName();
 }
 
 //TDefaultGlslIoResolver end
@@ -1088,11 +1110,12 @@ bool TIoMapper::addStage(EShLanguage stage, TIntermediate& intermediate, TInfoSi
     TVarGatherTraverser iter_binding_live(intermediate, false, inVarMap, outVarMap, uniformVarMap);
     root->traverse(&iter_binding_all);
     iter_binding_live.pushFunction(intermediate.getEntryPointMangledName().c_str());
-    while (! iter_binding_live.functions.empty()) {
-        TIntermNode* function = iter_binding_live.functions.back();
-        iter_binding_live.functions.pop_back();
-        function->traverse(&iter_binding_live);
+    while (! iter_binding_live.destinations.empty()) {
+        TIntermNode* destination = iter_binding_live.destinations.back();
+        iter_binding_live.destinations.pop_back();
+        destination->traverse(&iter_binding_live);
     }
+
     // sort entries by priority. see TVarEntryInfo::TOrderByPriority for info.
     std::for_each(inVarMap.begin(), inVarMap.end(),
                   [&inVector](TVarLivePair p) { inVector.push_back(p); });
@@ -1183,11 +1206,12 @@ bool TGlslIoMapper::addStage(EShLanguage stage, TIntermediate& intermediate, TIn
                                           *uniformVarMap[stage]);
     root->traverse(&iter_binding_all);
     iter_binding_live.pushFunction(intermediate.getEntryPointMangledName().c_str());
-    while (! iter_binding_live.functions.empty()) {
-        TIntermNode* function = iter_binding_live.functions.back();
-        iter_binding_live.functions.pop_back();
-        function->traverse(&iter_binding_live);
+    while (! iter_binding_live.destinations.empty()) {
+        TIntermNode* destination = iter_binding_live.destinations.back();
+        iter_binding_live.destinations.pop_back();
+        destination->traverse(&iter_binding_live);
     }
+
     TNotifyInOutAdaptor inOutNotify(stage, *resolver);
     TNotifyUniformAdaptor uniformNotify(stage, *resolver);
     // Resolve current stage input symbol location with previous stage output here,
@@ -1264,4 +1288,4 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
 
 } // end namespace glslang
 
-#endif // GLSLANG_WEB
+#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

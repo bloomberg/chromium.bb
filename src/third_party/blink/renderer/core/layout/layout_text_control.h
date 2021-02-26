@@ -37,13 +37,30 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   ~LayoutTextControl() override;
 
   TextControlElement* GetTextControlElement() const;
-  const char* GetName() const override { return "LayoutTextControl"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutTextControl";
+  }
 
   bool CreatesNewFormattingContext() const final {
+    NOT_DESTROYED();
     // INPUT and other replaced elements rendered by Blink itself should be
     // completely contained.
     return true;
   }
+
+  static void StyleDidChange(HTMLElement* inner_editor,
+                             const ComputedStyle* old_style,
+                             const ComputedStyle& new_style);
+  static int ScrollbarThickness(const LayoutBox& box);
+  static float GetAvgCharWidth(const ComputedStyle& style);
+  static bool HasValidAvgCharWidth(const Font& font);
+
+  static void HitInnerEditorElement(const LayoutBox& box,
+                                    HTMLElement& inner_editor,
+                                    HitTestResult&,
+                                    const HitTestLocation&,
+                                    const PhysicalOffset& accumulated_offset);
 
  protected:
   LayoutTextControl(TextControlElement*);
@@ -52,49 +69,28 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   // innerEditorElement may outlive the layout tree.
   TextControlInnerEditorElement* InnerEditorElement() const;
 
-  int ScrollbarThickness() const;
-
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void HitInnerEditorElement(HitTestResult&,
-                             const HitTestLocation&,
-                             const PhysicalOffset& accumulated_offset);
-
-  static bool HasValidAvgCharWidth(const SimpleFontData*,
-                                   const AtomicString& family);
-  float GetAvgCharWidth(const AtomicString& family) const;
-  virtual LayoutUnit PreferredContentLogicalWidth(float char_width) const = 0;
-  virtual LayoutUnit ComputeControlLogicalHeight(
-      LayoutUnit line_height,
-      LayoutUnit non_content_height) const = 0;
-
-  void ComputeLogicalHeight(LayoutUnit logical_height,
-                            LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const override;
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
   LayoutUnit FirstLineBoxBaseline() const override;
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectTextControl || LayoutBlockFlow::IsOfType(type);
   }
 
  private:
-  MinMaxSizes ComputeIntrinsicLogicalWidths() const final;
-  void RemoveLeftoverAnonymousBlock(LayoutBlock*) final {}
+  void RemoveLeftoverAnonymousBlock(LayoutBlock*) final { NOT_DESTROYED(); }
 
   void AddOutlineRects(Vector<PhysicalRect>&,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
 
-  bool CanBeProgramaticallyScrolled() const final { return true; }
-};
-
-template <>
-struct DowncastTraits<LayoutTextControl> {
-  static bool AllowFrom(const LayoutObject& object) {
-    return object.IsTextControl();
+  bool CanBeProgramaticallyScrolled() const final {
+    NOT_DESTROYED();
+    return true;
   }
 };
 

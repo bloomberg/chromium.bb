@@ -57,7 +57,7 @@ BooleanOrString::BooleanOrString(const BooleanOrString&) = default;
 BooleanOrString::~BooleanOrString() = default;
 BooleanOrString& BooleanOrString::operator=(const BooleanOrString&) = default;
 
-void BooleanOrString::Trace(Visitor* visitor) {
+void BooleanOrString::Trace(Visitor* visitor) const {
 }
 
 void V8BooleanOrString::ToImpl(
@@ -78,7 +78,7 @@ void V8BooleanOrString::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

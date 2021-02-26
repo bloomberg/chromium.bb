@@ -40,10 +40,10 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
 #include <time.h>
 
 #include "nasmlib.h"
+#include "nctype.h"
 #include "strlist.h"
 #include "preproc.h"
 #include "insnsi.h"     /* For enum opcode */
@@ -51,6 +51,11 @@
 #include "labels.h"     /* For enum mangle_index, enum label_type */
 #include "opflags.h"
 #include "regs.h"
+#include "srcfile.h"
+#include "error.h"
+
+/* Program name for error messages etc. */
+extern const char *_progname;
 
 /* Time stamp for the official start of compilation */
 struct compile_time {
@@ -132,6 +137,7 @@ struct out_data {
     int32_t tsegment;           /* Target segment for relocation */
     int32_t twrt;               /* Relocation with respect to */
     int64_t relbase;            /* Relative base for OUT_RELADDR */
+    struct src_location where;  /* Source file and line */
 };
 
 /*
@@ -150,6 +156,7 @@ typedef void (*ldfunc)(char *label, int32_t segment, int64_t offset,
 enum token_type { /* token types, other than chars */
     TOKEN_INVALID = -1, /* a placeholder value */
     TOKEN_EOS = 0,      /* end of string */
+    TOKEN_QMARK = '?',
     TOKEN_EQ = '=',
     TOKEN_GT = '>',
     TOKEN_LT = '<',     /* aliases */
@@ -163,7 +170,8 @@ enum token_type { /* token types, other than chars */
     TOKEN_INSN,         /* instruction name */
     TOKEN_HERE,         /* $ */
     TOKEN_BASE,         /* $$ */
-    TOKEN_SPECIAL,      /* BYTE, WORD, DWORD, QWORD, FAR, NEAR, etc */
+    TOKEN_SIZE,		/* BYTE, WORD, DWORD, QWORD, etc */
+    TOKEN_SPECIAL,      /* REL, FAR, NEAR, STRICT, NOSPLIT, etc */
     TOKEN_PREFIX,       /* A32, O16, LOCK, REPNZ, TIMES, etc */
     TOKEN_SHL,          /* << or <<< */
     TOKEN_SHR,          /* >> */
@@ -173,15 +181,18 @@ enum token_type { /* token types, other than chars */
     TOKEN_GE,           /* >= */
     TOKEN_LE,           /* <= */
     TOKEN_NE,           /* <> (!= is same as <>) */
+    TOKEN_LEG,          /* <=> */
     TOKEN_DBL_AND,      /* && */
     TOKEN_DBL_OR,       /* || */
     TOKEN_DBL_XOR,      /* ^^ */
     TOKEN_SEG,          /* SEG */
     TOKEN_WRT,          /* WRT */
-    TOKEN_FLOATIZE,     /* __floatX__ */
+    TOKEN_FLOATIZE,     /* __?floatX?__ */
     TOKEN_STRFUNC,      /* __utf16*__, __utf32*__ */
     TOKEN_IFUNC,        /* __ilog2*__ */
     TOKEN_DECORATOR,    /* decorators such as {...} */
+    TOKEN_MASM_PTR,     /* __?masm_ptr?__ for the masm package */
+    TOKEN_MASM_FLAT,    /* __?masm_flat?__ for the masm package */
     TOKEN_OPMASK        /* translated token for opmask registers */
 };
 
@@ -325,6 +336,13 @@ typedef expr *(*evalfunc)(scanner sc, void *scprivate,
 /*
  * preprocessors ought to look like this:
  */
+
+enum preproc_mode {
+    PP_NORMAL,                  /* Assembly */
+    PP_DEPS,                    /* Dependencies only */
+    PP_PREPROC                  /* Preprocessing only */
+};
+
 struct preproc_ops {
     /*
      * Called once at the very start of assembly.
@@ -336,7 +354,8 @@ struct preproc_ops {
      * of the pass, an error reporting function, an evaluator
      * function, and a listing generator to talk to.
      */
-    void (*reset)(const char *file, int pass, StrList *deplist);
+    void (*reset)(const char *file, enum preproc_mode mode,
+                  struct strlist *deplist);
 
     /*
      * Called to fetch a line of preprocessed source. The line
@@ -345,8 +364,15 @@ struct preproc_ops {
      */
     char *(*getline)(void);
 
-    /* Called at the end of a pass */
-    void (*cleanup)(int pass);
+    /* Called at the end of each pass. */
+    void (*cleanup_pass)(void);
+
+    /*
+     * Called at the end of the assembly session,
+     * after cleanup_pass() has been called for the
+     * last pass.
+     */
+    void (*cleanup_session)(void);
 
     /* Additional macros specific to output format */
     void (*extra_stdmac)(macros_t *macros);
@@ -362,52 +388,23 @@ struct preproc_ops {
     void (*pre_command)(const char *what, char *str);
 
     /* Include path from command line */
-    void (*include_path)(const char *path);
+    void (*include_path)(struct strlist *ipath);
 
     /* Unwind the macro stack when printing an error message */
-    void (*error_list_macros)(int severity);
+    void (*error_list_macros)(errflags severity);
+
+    /* Return true if an error message should be suppressed */
+    bool (*suppress_error)(errflags severity);
 };
 
 extern const struct preproc_ops nasmpp;
 extern const struct preproc_ops preproc_nop;
 
 /* List of dependency files */
-extern StrList *depend_list;
+extern struct strlist *depend_list;
 
-/*
- * Some lexical properties of the NASM source language, included
- * here because they are shared between the parser and preprocessor.
- */
-
-/*
- * isidstart matches any character that may start an identifier, and isidchar
- * matches any character that may appear at places other than the start of an
- * identifier. E.g. a period may only appear at the start of an identifier
- * (for local labels), whereas a number may appear anywhere *but* at the
- * start.
- * isbrcchar matches any character that may placed inside curly braces as a
- * decorator. E.g. {rn-sae}, {1to8}, {k1}{z}
- */
-
-#define isidstart(c) (nasm_isalpha(c)   ||  \
-                      (c) == '_'        ||  \
-                      (c) == '.'        ||  \
-                      (c) == '?'        ||  \
-                      (c) == '@')
-
-#define isidchar(c) (isidstart(c)       ||  \
-                     nasm_isdigit(c)    ||  \
-                     (c) == '$'         ||  \
-                     (c) == '#'         ||  \
-                     (c) == '~')
-
-#define isbrcchar(c) (isidchar(c)       ||  \
-                      (c) == '-')
-
-/* Ditto for numeric constants. */
-
-#define isnumstart(c)  (nasm_isdigit(c) || (c) == '$')
-#define isnumchar(c)   (nasm_isalnum(c) || (c) == '_')
+/* TASM mode changes some properties */
+extern bool tasm_compatible_mode;
 
 /*
  * inline function to skip past an identifier; returns the first character past
@@ -417,10 +414,10 @@ static inline char *nasm_skip_identifier(const char *str)
 {
     const char *p = str;
 
-    if (!isidstart(*p++)) {
+    if (!nasm_isidstart(*p++)) {
         p = NULL;
     } else {
-        while (isidchar(*p++))
+        while (nasm_isidchar(*p++))
             ;
     }
     return (char *)p;
@@ -432,7 +429,6 @@ static inline char *nasm_skip_identifier(const char *str)
 enum {
     LIST_READ,
     LIST_MACRO,
-    LIST_MACRO_NOLIST,
     LIST_INCLUDE,
     LIST_INCBIN,
     LIST_TIMES
@@ -466,6 +462,7 @@ enum ccode { /* condition code names */
 #define TFLAG_BRC_ANY   (TFLAG_BRC | TFLAG_BRC_OPT)
 #define TFLAG_BRDCAST   (1 << 2)    /* broadcasting decorator */
 #define TFLAG_WARN	(1 << 3)    /* warning only, treat as ID */
+#define TFLAG_DUP	(1 << 4)    /* valid ID but also has context-specific use */
 
 static inline uint8_t get_cond_opcode(enum ccode c)
 {
@@ -552,13 +549,6 @@ enum prefixes { /* instruction prefixes */
     PREFIX_ENUM_LIMIT
 };
 
-enum extop_type { /* extended operand types */
-    EOT_NOTHING,
-    EOT_DB_STRING,      /* Byte string */
-    EOT_DB_STRING_FREE, /* Byte string which should be nasm_free'd*/
-    EOT_DB_NUMBER       /* Integer */
-};
-
 enum ea_flags { /* special EA flags */
     EAF_BYTEOFFS    =  1,   /* force offset part to byte size */
     EAF_WORDOFFS    =  2,   /* force offset part to [d]word size */
@@ -599,15 +589,34 @@ typedef struct operand { /* operand to an instruction */
 #define OPFLAG_RELATIVE     8   /* operand is self-relative, e.g. [foo - $]
                                    where foo is not in the current segment */
 
+enum extop_type { /* extended operand types */
+    EOT_NOTHING = 0,
+    EOT_EXTOP,          /* Subexpression */
+    EOT_DB_STRING,      /* Byte string */
+    EOT_DB_FLOAT,       /* Floating-pointer number (special byte string) */
+    EOT_DB_STRING_FREE, /* Byte string which should be nasm_free'd*/
+    EOT_DB_NUMBER,      /* Integer */
+    EOT_DB_RESERVE      /* ? */
+};
+
 typedef struct extop { /* extended operand */
-    struct extop    *next;      /* linked list */
-    char            *stringval; /* if it's a string, then here it is */
-    size_t          stringlen;  /* ... and here's how long it is */
-    int64_t         offset;     /* ... it's given here ... */
-    int32_t         segment;    /* if it's a number/address, then... */
-    int32_t         wrt;        /* ... and here */
-    bool            relative;   /* self-relative expression */
-    enum extop_type type;       /* defined above */
+    struct extop    *next;       /* linked list */
+    union {
+        struct {                 /* text or byte string */
+            char    *data;
+            size_t   len;
+        } string;
+        struct {                 /* numeric expression */
+            int64_t  offset;     /* numeric value or address offset */
+            int32_t  segment;    /* address segment */
+            int32_t  wrt;        /* address wrt */
+            bool     relative;   /* self-relative expression */
+        } num;
+        struct extop *subexpr;   /* actual expressions */
+    } val;
+    size_t dup;                  /* duplicated? */
+    enum extop_type type;        /* defined above */
+    int elem;                    /* element size override, if any (bytes) */
 } extop;
 
 enum ea_type {
@@ -760,7 +769,9 @@ struct pragma {
 enum nasm_limit {
     LIMIT_PASSES,
     LIMIT_STALLED,
-    LIMIT_MACROS,
+    LIMIT_MACRO_LEVELS,
+    LIMIT_MACRO_TOKENS,
+    LIMIT_MMACROS,
     LIMIT_REP,
     LIMIT_EVAL,
     LIMIT_LINES
@@ -813,7 +824,7 @@ struct ofmt {
     /*
      * This, if non-NULL, is a NULL-terminated list of `char *'s
      * pointing to extra standard macros supplied by the object
-     * format (e.g. a sensible initial default value of __SECT__,
+     * format (e.g. a sensible initial default value of __?SECT?__,
      * and user-level equivalents for any format-specific
      * directives).
      */
@@ -829,7 +840,7 @@ struct ofmt {
      * This procedure is called at the start of each pass.
      */
     void (*reset)(void);
-    
+
     /*
      * This is the modern output function, which gets passed
      * a struct out_data with much more information.  See the
@@ -901,7 +912,7 @@ struct ofmt {
      * the segment, by setting `*bits' to 16 or 32. Or, if it
      * doesn't wish to define a default, it can leave `bits' alone.
      */
-    int32_t (*section)(char *name, int pass, int *bits);
+    int32_t (*section)(char *name, int *bits);
 
     /*
      * This function is called when a label is defined
@@ -946,8 +957,7 @@ struct ofmt {
      * This procedure is called to allow the output driver to
      * process its own specific directives. When called, it has the
      * directive word in `directive' and the parameter string in
-     * `value'. It is called in both assembly passes, and `pass'
-     * will be either 1 or 2.
+     * `value'.
      *
      * The following values are (currently) possible for
      * directive_result:
@@ -959,7 +969,7 @@ struct ofmt {
      *				  "invalid parameter to [*] directive"
      */
     enum directive_result
-    (*directive)(enum directive directive, char *value, int pass);
+    (*directive)(enum directive directive, char *value);
 
     /*
      * This procedure is called after assembly finishes, to allow
@@ -983,7 +993,6 @@ struct ofmt {
  */
 struct ofmt_alias {
     const char  *shortname;
-    const char  *fullname;
     const struct ofmt *ofmt;
 };
 
@@ -1094,25 +1103,40 @@ extern const struct dfmt *dfmt;
 
 #define TYS_ELEMENTS(x) ((x) << 8)
 
+/* Sizes corresponding to various tokens */
+enum byte_sizes {
+    SIZE_BYTE	=  1,
+    SIZE_WORD	=  2,
+    SIZE_DWORD	=  4,
+    SIZE_QWORD	=  8,
+    SIZE_TWORD  = 10,
+    SIZE_OWORD  = 16,
+    SIZE_YWORD  = 32,
+    SIZE_ZWORD  = 64
+};
+
 enum special_tokens {
-    SPECIAL_ENUM_START  = PREFIX_ENUM_LIMIT,
-    S_ABS               = SPECIAL_ENUM_START,
-    S_BYTE,
+    SIZE_ENUM_START     = PREFIX_ENUM_LIMIT,
+    S_BYTE              = SIZE_ENUM_START,
+    S_WORD,
     S_DWORD,
+    S_QWORD,
+    S_TWORD,
+    S_OWORD,
+    S_YWORD,
+    S_ZWORD,
+    SIZE_ENUM_LIMIT,
+
+    SPECIAL_ENUM_START  = SIZE_ENUM_LIMIT,
+    S_ABS		= SPECIAL_ENUM_START,
     S_FAR,
     S_LONG,
     S_NEAR,
     S_NOSPLIT,
-    S_OWORD,
-    S_QWORD,
     S_REL,
     S_SHORT,
     S_STRICT,
     S_TO,
-    S_TWORD,
-    S_WORD,
-    S_YWORD,
-    S_ZWORD,
     SPECIAL_ENUM_LIMIT
 };
 
@@ -1242,15 +1266,7 @@ enum decorator_tokens {
  */
 
 /*
- * This declaration passes the "pass" number to all other modules
- * "pass0" assumes the values: 0, 0, ..., 0, 1, 2
- * where 0 = optimizing pass
- *       1 = pass 1
- *       2 = pass 2
- */
-
-/* 
- * flag to disable optimizations selectively 
+ * flag to disable optimizations selectively
  * this is useful to turn-off certain optimizations
  */
 enum optimization_disable_flag {
@@ -1263,10 +1279,66 @@ struct optimization {
     int flag;
 };
 
-extern int pass0;
-extern int64_t passn;           /* Actual pass number */
+/*
+ * Various types of compiler passes we may execute.
+ * If these are changed, you need to also change _pass_types[]
+ * in asm/nasm.c.
+ */
+enum pass_type {
+    PASS_INIT,            /* Initialization, not doing anything yet */
+    PASS_PREPROC,         /* Preprocess-only mode (similar to PASS_FIRST) */
+    PASS_FIRST,           /* The very first pass over the code */
+    PASS_OPT,             /* Optimization pass */
+    PASS_STAB,            /* Stabilization pass (original pass 1) */
+    PASS_FINAL            /* Code generation pass (original pass 2) */
+};
+extern const char * const _pass_types[];
+extern enum pass_type _pass_type;
+static inline enum pass_type pass_type(void)
+{
+    return _pass_type;
+}
+static inline const char *pass_type_name(void)
+{
+    return _pass_types[_pass_type];
+}
+/* True during initialization, no code read yet */
+static inline bool not_started(void)
+{
+    return pass_type() == PASS_INIT;
+}
+/* True for the initial pass and setup (old "pass2 < 2") */
+static inline bool pass_first(void)
+{
+    return pass_type() <= PASS_FIRST;
+}
+/* At this point we better have stable definitions */
+static inline bool pass_stable(void)
+{
+    return pass_type() >= PASS_STAB;
+}
+/* True for the code generation pass only, (old "pass1 >= 2") */
+static inline bool pass_final(void)
+{
+    return pass_type() >= PASS_FINAL;
+}
+/* True for code generation *or* preprocess-only mode */
+static inline bool pass_final_or_preproc(void)
+{
+    return pass_type() >= PASS_FINAL || pass_type() == PASS_PREPROC;
+}
 
-extern bool tasm_compatible_mode;
+/*
+ * The actual pass number. 0 is used during initialization, the very
+ * first pass is 1, and then it is simply increasing numbers until we are
+ * done.
+ */
+extern int64_t _passn;           /* Actual pass number */
+static inline int64_t pass_count(void)
+{
+    return _passn;
+}
+
 extern struct optimization optimizing;
 extern int globalbits;          /* 16, 32 or 64-bit mode */
 extern int globalrel;           /* default to relative addressing? */
@@ -1280,4 +1352,4 @@ extern const char *outname;     /* output filename */
  */
 int64_t switch_segment(int32_t segment);
 
-#endif
+#endif  /* NASM_NASM_H */

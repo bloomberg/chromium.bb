@@ -9,9 +9,9 @@
 #include "base/android/jni_string.h"
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
-#include "content/browser/android/content_feature_list.h"
 #include "content/browser/android/content_ui_event_handler.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
@@ -148,8 +148,8 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
   return view_.GetWindowAndroid();
 }
 
-void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  *out = GetViewBounds();
+gfx::Rect WebContentsViewAndroid::GetContainerBounds() const {
+  return GetViewBounds();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
@@ -178,12 +178,6 @@ void WebContentsViewAndroid::RestoreFocus() {
 }
 
 void WebContentsViewAndroid::FocusThroughTabTraversal(bool reverse) {
-  content::RenderWidgetHostView* fullscreen_view =
-      web_contents_->GetFullscreenRenderWidgetHostView();
-  if (fullscreen_view) {
-    fullscreen_view->Focus();
-    return;
-  }
   web_contents_->GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
@@ -304,12 +298,12 @@ void WebContentsViewAndroid::ShowPopupMenu(
 
 void WebContentsViewAndroid::StartDragging(
     const DropData& drop_data,
-    blink::WebDragOperationsMask allowed_ops,
+    blink::DragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
-    const DragEventSourceInfo& event_info,
+    const blink::mojom::DragEventSourceInfo& event_info,
     RenderWidgetHostImpl* source_rwh) {
-  if (drop_data.text.is_null()) {
+  if (!drop_data.text) {
     // Need to clear drag and drop state in blink.
     OnSystemDragEnded();
     return;
@@ -337,9 +331,10 @@ void WebContentsViewAndroid::StartDragging(
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jtext =
-      ConvertUTF16ToJavaString(env, drop_data.text.string());
+      ConvertUTF16ToJavaString(env, *drop_data.text);
 
-  if (!native_view->StartDragAndDrop(jtext, gfx::ConvertToJavaBitmap(bitmap))) {
+  if (!native_view->StartDragAndDrop(jtext,
+                                     gfx::ConvertToJavaBitmap(*bitmap))) {
     // Need to clear drag and drop state in blink.
     OnSystemDragEnded();
     return;
@@ -354,7 +349,7 @@ void WebContentsViewAndroid::StartDragging(
   }
 }
 
-void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
+void WebContentsViewAndroid::UpdateDragCursor(blink::DragOperation op) {
   // Intentional no-op because Android does not have cursor.
 }
 
@@ -382,9 +377,9 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
         if (base::EqualsASCII(mime_type, ui::kMimeTypeURIList)) {
           drop_data.url = GURL(drop_content);
         } else if (base::EqualsASCII(mime_type, ui::kMimeTypeText)) {
-          drop_data.text = base::NullableString16(drop_content, false);
+          drop_data.text = drop_content;
         } else {
-          drop_data.html = base::NullableString16(drop_content, false);
+          drop_data.html = drop_content;
         }
       }
 
@@ -412,9 +407,9 @@ void WebContentsViewAndroid::OnDragEntered(
     const std::vector<DropData::Metadata>& metadata,
     const gfx::PointF& location,
     const gfx::PointF& screen_location) {
-  blink::WebDragOperationsMask allowed_ops =
-      static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
-                                                blink::kWebDragOperationMove);
+  blink::DragOperationsMask allowed_ops =
+      static_cast<blink::DragOperationsMask>(blink::kDragOperationCopy |
+                                             blink::kDragOperationMove);
   web_contents_->GetRenderViewHost()->GetWidget()->
       DragTargetDragEnterWithMetaData(metadata, location, screen_location,
                                       allowed_ops, 0);
@@ -425,9 +420,9 @@ void WebContentsViewAndroid::OnDragUpdated(const gfx::PointF& location,
   drag_location_ = location;
   drag_screen_location_ = screen_location;
 
-  blink::WebDragOperationsMask allowed_ops =
-      static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
-                                                blink::kWebDragOperationMove);
+  blink::DragOperationsMask allowed_ops =
+      static_cast<blink::DragOperationsMask>(blink::kDragOperationCopy |
+                                             blink::kDragOperationMove);
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragOver(
       location, screen_location, allowed_ops, 0);
 }
@@ -460,7 +455,7 @@ void WebContentsViewAndroid::OnSystemDragEnded() {
 
 void WebContentsViewAndroid::OnDragEnded() {
   web_contents_->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
-      drag_location_, drag_screen_location_, blink::kWebDragOperationNone);
+      drag_location_, drag_screen_location_, blink::kDragOperationNone);
   OnSystemDragEnded();
 
   drag_location_ = gfx::PointF();
@@ -515,6 +510,11 @@ bool WebContentsViewAndroid::DoBrowserControlsShrinkRendererSize() const {
   auto* delegate = web_contents_->GetDelegate();
   return delegate &&
          delegate->DoBrowserControlsShrinkRendererSize(web_contents_);
+}
+
+bool WebContentsViewAndroid::OnlyExpandTopControlsAtPageTop() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate && delegate->OnlyExpandTopControlsAtPageTop();
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
@@ -579,7 +579,8 @@ void WebContentsViewAndroid::OnSizeChanged() {
   }
 }
 
-void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {
+void WebContentsViewAndroid::OnPhysicalBackingSizeChanged(
+    base::Optional<base::TimeDelta> deadline_override) {
   if (web_contents_->GetRenderWidgetHostView())
     web_contents_->SendScreenRects();
 }
@@ -589,6 +590,20 @@ void WebContentsViewAndroid::OnBrowserControlsHeightChanged() {
   if (rwhv)
     rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                       base::nullopt);
+}
+
+void WebContentsViewAndroid::OnControlsResizeViewChanged() {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                      base::nullopt);
+}
+
+void WebContentsViewAndroid::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
 }
 
 } // namespace content

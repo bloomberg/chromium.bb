@@ -66,6 +66,7 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
     DCHECK(!outgoing_stream_->write_promise_resolver_);
 
     if (outgoing_stream_->client_) {
+      outgoing_stream_->state_ = State::kSentFin;
       outgoing_stream_->client_->SendFin();
       outgoing_stream_->client_ = nullptr;
     }
@@ -87,7 +88,7 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
     return close(script_state, exception_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(outgoing_stream_);
     UnderlyingSinkBase::Trace(visitor);
   }
@@ -167,7 +168,7 @@ void OutgoingStream::ContextDestroyed() {
   ResetPipe();
 }
 
-void OutgoingStream::Trace(Visitor* visitor) {
+void OutgoingStream::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(client_);
   visitor->Trace(writable_);
@@ -211,6 +212,7 @@ void OutgoingStream::OnPeerClosed(MojoResult result,
 void OutgoingStream::HandlePipeClosed() {
   DVLOG(1) << "OutgoingStream::HandlePipeClosed() this=" << this;
 
+  ScriptState::Scope scope(script_state_);
   ErrorStreamAbortAndReset(IsLocalAbort(false));
 }
 
@@ -240,13 +242,13 @@ ScriptPromise OutgoingStream::SinkWrite(ScriptState* script_state,
     const auto* array_buffer = buffer_source.GetAsArrayBuffer();
     data = base::span<const uint8_t>(
         static_cast<const uint8_t*>(array_buffer->Data()),
-        array_buffer->ByteLengthAsSizeT());
+        array_buffer->ByteLength());
   } else {
     DCHECK(buffer_source.IsArrayBufferView());
     const auto* array_buffer_view = buffer_source.GetAsArrayBufferView().View();
     data = base::span<const uint8_t>(
         static_cast<const uint8_t*>(array_buffer_view->BaseAddress()),
-        array_buffer_view->byteLengthAsSizeT());
+        array_buffer_view->byteLength());
   }
 
   if (!data_pipe_) {
@@ -388,6 +390,8 @@ void OutgoingStream::AbortAndReset() {
   }
 
   if (client_) {
+    DCHECK_EQ(state_, State::kOpen);
+    state_ = State::kAborted;
     client_->OnOutgoingStreamAbort();
     client_ = nullptr;
   }

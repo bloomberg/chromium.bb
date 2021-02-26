@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 
+#include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -31,16 +32,9 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-constexpr int kHelpButtonTag = 1;
-constexpr int kReScanButtonTag = 2;
-
-}  // namespace
-
 class BluetoothStatusContainer : public views::View {
  public:
-  explicit BluetoothStatusContainer(views::ButtonListener* listener);
+  explicit BluetoothStatusContainer(ChooserController* chooser_controller);
 
   void ShowScanningLabelAndThrobber();
   void ShowReScanButton(bool enabled);
@@ -56,7 +50,7 @@ class BluetoothStatusContainer : public views::View {
 };
 
 BluetoothStatusContainer::BluetoothStatusContainer(
-    views::ButtonListener* listener) {
+    ChooserController* chooser_controller) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto* rescan_container = AddChildView(std::make_unique<views::View>());
@@ -65,13 +59,21 @@ BluetoothStatusContainer::BluetoothStatusContainer(
           views::BoxLayout::Orientation::kHorizontal))
       ->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto re_scan_button = views::MdTextButton::Create(
-      listener,
+  auto re_scan_button = std::make_unique<views::MdTextButton>(
+      views::Button::PressedCallback(),
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN));
+  re_scan_button->SetCallback(base::BindRepeating(
+      [](views::MdTextButton* button, ChooserController* chooser_controller) {
+        // Refreshing will cause the table view to yield focus, which will land
+        // on the help button. Instead, briefly let the rescan button take
+        // focus. When it hides itself, focus will advance to the "Cancel"
+        // button as desired.
+        button->RequestFocus();
+        chooser_controller->RefreshOptions();
+      },
+      re_scan_button.get(), chooser_controller));
   re_scan_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN_TOOLTIP));
-  re_scan_button->SetFocusForPlatform();
-  re_scan_button->set_tag(kReScanButtonTag);
   re_scan_button_ = rescan_container->AddChildView(std::move(re_scan_button));
 
   auto* scan_container = AddChildView(std::make_unique<views::View>());
@@ -157,10 +159,13 @@ DeviceChooserContentView::DeviceChooserContentView(
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, link_text, &offset);
-  auto adapter_off_help = std::make_unique<views::StyledLabel>(text, this);
+  auto adapter_off_help = std::make_unique<views::StyledLabel>();
+  adapter_off_help->SetText(text);
   adapter_off_help->AddStyleRange(
-      gfx::Range(0, link_text.size()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+      gfx::Range(offset, offset + link_text.size()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink(
+          base::BindRepeating(&ChooserController::OpenAdapterOffHelpUrl,
+                              base::Unretained(chooser_controller_.get()))));
   adapter_off_view_ = add_centering_view(std::move(adapter_off_help));
 
   UpdateTableView();
@@ -270,27 +275,6 @@ void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
     GetWidget()->GetRootView()->Layout();
 }
 
-void DeviceChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                      const gfx::Range& range,
-                                                      int event_flags) {
-  chooser_controller_->OpenAdapterOffHelpUrl();
-}
-
-void DeviceChooserContentView::ButtonPressed(views::Button* sender,
-                                             const ui::Event& event) {
-  if (sender->tag() == kHelpButtonTag) {
-    chooser_controller_->OpenHelpCenterUrl();
-  } else {
-    DCHECK_EQ(kReScanButtonTag, sender->tag());
-    // Refreshing will cause the table view to yield focus, which
-    // will land on the help button. Instead, briefly let the
-    // rescan button take focus. When it hides itself, focus will
-    // advance to the "Cancel" button as desired.
-    sender->RequestFocus();
-    chooser_controller_->RefreshOptions();
-  }
-}
-
 base::string16 DeviceChooserContentView::GetWindowTitle() const {
   return chooser_controller_->GetTitle();
 }
@@ -298,16 +282,16 @@ base::string16 DeviceChooserContentView::GetWindowTitle() const {
 std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
   const auto make_help_button = [this]() {
     auto help_button = views::CreateVectorImageButtonWithNativeTheme(
-        this, vector_icons::kHelpOutlineIcon);
-    help_button->SetFocusForPlatform();
+        base::BindRepeating(&ChooserController::OpenHelpCenterUrl,
+                            base::Unretained(chooser_controller_.get())),
+        vector_icons::kHelpOutlineIcon);
     help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    help_button->set_tag(kHelpButtonTag);
     return help_button;
   };
 
   const auto make_bluetooth_status_container = [this]() {
     auto bluetooth_status_container =
-        std::make_unique<BluetoothStatusContainer>(this);
+        std::make_unique<BluetoothStatusContainer>(chooser_controller_.get());
     bluetooth_status_container_ = bluetooth_status_container.get();
     return bluetooth_status_container;
   };

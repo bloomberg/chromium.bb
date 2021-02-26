@@ -72,8 +72,7 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version,
       uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked);
+      uint64_t smallest_received);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeStreamsBlockedPacket(
       uint64_t num,
@@ -106,24 +105,33 @@ class QuicTestPacketMaker {
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code,
       quic::QuicStreamId data_stream_id,
-      quiche::QuicheStringPiece data);
+      absl::string_view data);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataAndRstPacket(
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quiche::QuicheStringPiece data,
+      absl::string_view data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDataRstAndAckPacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId data_stream_id,
+      absl::string_view data,
+      quic::QuicStreamId rst_stream_id,
+      quic::QuicRstStreamErrorCode rst_error_code,
+      uint64_t largest_received,
+      uint64_t smallest_received);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked);
+      uint64_t smallest_received);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
@@ -132,7 +140,6 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       bool include_stop_sending_if_v99);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
@@ -142,7 +149,6 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
 
@@ -158,7 +164,7 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quiche::QuicheStringPiece data,
+      absl::string_view data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode error_code,
       quic::QuicErrorCode quic_error,
@@ -169,12 +175,11 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quiche::QuicheStringPiece data,
+      absl::string_view data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
 
@@ -183,7 +188,6 @@ class QuicTestPacketMaker {
       bool include_version,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details,
       uint64_t frame_type);
@@ -202,22 +206,20 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       uint64_t packet_number,
       uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked);
+      uint64_t smallest_received);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       uint64_t packet_number,
       uint64_t first_received,
       uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked);
+      uint64_t smallest_received);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quiche::QuicheStringPiece data);
+      absl::string_view data);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
       uint64_t packet_number,
@@ -225,9 +227,8 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       bool fin,
-      quiche::QuicheStringPiece data);
+      absl::string_view data);
 
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeRequestHeadersAndMultipleDataFramesPacket(
@@ -236,7 +237,7 @@ class QuicTestPacketMaker {
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data_writes);
@@ -249,7 +250,7 @@ class QuicTestPacketMaker {
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length);
 
@@ -259,7 +260,7 @@ class QuicTestPacketMaker {
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       quic::QuicRstStreamErrorCode error_code);
@@ -272,7 +273,7 @@ class QuicTestPacketMaker {
       quic::QuicStreamId promised_stream_id,
       bool should_include_version,
       bool fin,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       size_t* spdy_headers_frame_length);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
@@ -282,7 +283,7 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       size_t* spdy_headers_frame_length);
 
   // Creates a packet containing the initial SETTINGS frame, and saves the
@@ -297,13 +298,26 @@ class QuicTestPacketMaker {
       quic::QuicStreamId parent_stream_id,
       spdy::SpdyPriority priority);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPriorityPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      quic::QuicStreamId id,
+      quic::QuicStreamId parent_stream_id,
+      spdy::SpdyPriority priority);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMultiplePriorityFramesPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      const std::vector<Http2StreamDependency>& priority_frames);
+
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeAckAndMultiplePriorityFramesPacket(
       uint64_t packet_number,
       bool should_include_version,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       const std::vector<Http2StreamDependency>& priority_frames);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRetransmissionPacket(
@@ -316,26 +330,27 @@ class QuicTestPacketMaker {
       bool should_include_version,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
       quic::QuicStreamId id,
       spdy::SpdyPriority priority);
+
+  std::unique_ptr<quic::QuicEncryptedPacket> MakeStatelessResetPacket();
 
   // Removes all stream frames associated with |stream_id|.
   void RemoveSavedStreamFrames(quic::QuicStreamId stream_id);
 
   void SetEncryptionLevel(quic::EncryptionLevel level);
 
-  spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
-                                          const std::string& scheme,
-                                          const std::string& path) const;
+  spdy::Http2HeaderBlock GetRequestHeaders(const std::string& method,
+                                           const std::string& scheme,
+                                           const std::string& path) const;
 
-  spdy::SpdyHeaderBlock ConnectRequestHeaders(
+  spdy::Http2HeaderBlock ConnectRequestHeaders(
       const std::string& host_port) const;
 
-  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status) const;
+  spdy::Http2HeaderBlock GetResponseHeaders(const std::string& status) const;
 
-  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status,
-                                           const std::string& alt_svc) const;
+  spdy::Http2HeaderBlock GetResponseHeaders(const std::string& status,
+                                            const std::string& alt_svc) const;
 
   spdy::SpdyFramer* spdy_request_framer() { return &spdy_request_framer_; }
   spdy::SpdyFramer* spdy_response_framer() { return &spdy_response_framer_; }
@@ -351,7 +366,7 @@ class QuicTestPacketMaker {
   }
 
   std::string QpackEncodeHeaders(quic::QuicStreamId stream_id,
-                                 spdy::SpdyHeaderBlock headers,
+                                 spdy::Http2HeaderBlock headers,
                                  size_t* encoded_data_length);
 
  private:
@@ -370,12 +385,12 @@ class QuicTestPacketMaker {
   // Use and increase stream's current offset.
   void AddQuicStreamFrame(quic::QuicStreamId stream_id,
                           bool fin,
-                          quiche::QuicheStringPiece data);
+                          absl::string_view data);
   // Use |offset| and do not change stream's current offset.
   void AddQuicStreamFrameWithOffset(quic::QuicStreamId stream_id,
                                     bool fin,
                                     quic::QuicStreamOffset offset,
-                                    quiche::QuicheStringPiece data);
+                                    absl::string_view data);
   void AddQuicAckFrame(uint64_t largest_received, uint64_t smallest_received);
   void AddQuicAckFrame(uint64_t first_received,
                        uint64_t largest_received,
@@ -392,7 +407,7 @@ class QuicTestPacketMaker {
   void AddQuicPathResponseFrame();
   void AddQuicPathChallengeFrame();
   void AddQuicStopSendingFrame(quic::QuicStreamId stream_id,
-                               quic::QuicApplicationErrorCode error_code);
+                               quic::QuicRstStreamErrorCode error_code);
   void AddQuicCryptoFrame(quic::EncryptionLevel level,
                           quic::QuicStreamOffset offset,
                           quic::QuicPacketLength data_length);
@@ -410,7 +425,7 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       bool fin,
       spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       quic::QuicStreamId parent_stream_id);
 
   bool ShouldIncludeVersion(bool include_version) const;

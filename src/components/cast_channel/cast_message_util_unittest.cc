@@ -4,6 +4,7 @@
 
 #include "components/cast_channel/cast_message_util.h"
 
+#include "base/strings/strcat.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,12 +15,21 @@ using base::test::ParseJson;
 
 namespace cast_channel {
 
-TEST(CastMessageUtilTest, IsCastInternalNamespace) {
-  EXPECT_TRUE(IsCastInternalNamespace("urn:x-cast:com.google.cast.receiver"));
-  EXPECT_FALSE(IsCastInternalNamespace("urn:x-cast:com.google.youtube"));
-  EXPECT_FALSE(IsCastInternalNamespace("urn:x-cast:com.foo"));
-  EXPECT_FALSE(IsCastInternalNamespace("foo"));
-  EXPECT_FALSE(IsCastInternalNamespace(""));
+TEST(CastMessageUtilTest, IsCastReservedNamespace) {
+  EXPECT_TRUE(
+      IsCastReservedNamespace("urn:x-cast:com.google.cast.receiver.xyzzy"));
+  EXPECT_TRUE(IsCastReservedNamespace("urn:x-cast:com.google.cast.receiver"));
+  EXPECT_FALSE(IsCastReservedNamespace("urn:x-cast:com.google.cast"));
+  EXPECT_FALSE(IsCastReservedNamespace("urn:x-cast:com.google.cast."));
+  EXPECT_FALSE(
+      IsCastReservedNamespace("urn:x-cast:com.google.cast.foo.receiver"));
+  EXPECT_FALSE(
+      IsCastReservedNamespace("urn:x-cast:com.google.cast.receiverfoo"));
+  EXPECT_FALSE(IsCastReservedNamespace("urn:x-cast:com.google.cast.xyzzy"));
+  EXPECT_FALSE(IsCastReservedNamespace("urn:x-cast:com.google.youtube"));
+  EXPECT_FALSE(IsCastReservedNamespace("urn:x-cast:com.foo"));
+  EXPECT_FALSE(IsCastReservedNamespace("foo"));
+  EXPECT_FALSE(IsCastReservedNamespace(""));
 }
 
 TEST(CastMessageUtilTest, CastMessageType) {
@@ -30,17 +40,27 @@ TEST(CastMessageUtilTest, CastMessageType) {
 }
 
 TEST(CastMessageUtilTest, GetLaunchSessionResponseOk) {
-  std::string payload = R"(
+  std::string status = R"(
+    {
+      "applications": [
+        {
+          "appId": "2FE23A98",
+          "universalAppId": "AD9AF8E0",
+          "appType": "ANDROID_TV"
+        }
+      ]
+    }
+  )";
+  std::string payload = base::StrCat({R"(
     {
       "type": "RECEIVER_STATUS",
       "requestId": 123,
-      "status": {}
-    }
-  )";
+      "status": )",
+                                      status, "}"});
 
   LaunchSessionResponse response = GetLaunchSessionResponse(ParseJson(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kOk, response.result);
-  EXPECT_TRUE(response.receiver_status);
+  EXPECT_EQ(ParseJson(status), response.receiver_status);
 }
 
 TEST(CastMessageUtilTest, GetLaunchSessionResponseError) {
@@ -172,6 +192,11 @@ TEST(CastMessageUtilTest, CreateVolumeRequest) {
   EXPECT_EQ("theSourceId", message.source_id());
   EXPECT_EQ(kPlatformReceiverId, message.destination_id());
   EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
+}
+
+TEST(CastMessageUtilTest, GetConnectionType) {
+  EXPECT_EQ(VirtualConnectionType::kStrong, GetConnectionType("receiver-0"));
+  EXPECT_EQ(VirtualConnectionType::kInvisible, GetConnectionType("sender-123"));
 }
 
 }  // namespace cast_channel

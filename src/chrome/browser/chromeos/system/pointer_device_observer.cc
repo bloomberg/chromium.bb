@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -27,6 +27,7 @@ void PointerDeviceObserver::Init() {
 
 void PointerDeviceObserver::CheckDevices() {
   CheckMouseExists();
+  CheckPointingStickExists();
   CheckTouchpadExists();
 }
 
@@ -56,6 +57,12 @@ void PointerDeviceObserver::CheckMouseExists() {
       &PointerDeviceObserver::OnMouseExists, weak_factory_.GetWeakPtr()));
 }
 
+void PointerDeviceObserver::CheckPointingStickExists() {
+  InputDeviceSettings::Get()->PointingStickExists(
+      base::BindOnce(&PointerDeviceObserver::OnPointingStickExists,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void PointerDeviceObserver::OnTouchpadExists(bool exists) {
   for (auto& observer : observers_)
     observer.TouchpadExists(exists);
@@ -64,6 +71,11 @@ void PointerDeviceObserver::OnTouchpadExists(bool exists) {
 void PointerDeviceObserver::OnMouseExists(bool exists) {
   for (auto& observer : observers_)
     observer.MouseExists(exists);
+}
+
+void PointerDeviceObserver::OnPointingStickExists(bool exists) {
+  for (auto& observer : observers_)
+    observer.PointingStickExists(exists);
 }
 
 PointerDeviceObserver::Observer::~Observer() {

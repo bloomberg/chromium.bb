@@ -142,6 +142,8 @@ struct Capabilities {
 
   bool android_use_running_app;
 
+  int android_devtools_port = 0;
+
   base::FilePath binary;
 
   // If provided, the remote debugging address to connect to.
@@ -185,12 +187,7 @@ struct Capabilities {
 
   std::set<WebViewInfo::Type> window_types;
 
-  bool use_automation_extension;
-
-  // Temporary capability to enable LaunchApp command
-  // TODO remove with all LaunchApp code in m84.
-  // see https://crbug.com/chromedriver/1778
-  bool enable_launch_app;
+  bool webSocketUrl = false;
 };
 
 bool GetChromeOptionsDictionary(const base::DictionaryValue& params,

@@ -7,6 +7,7 @@
 
 #include "modules/skottie/src/effects/Effects.h"
 
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGRenderEffect.h"
 #include "src/utils/SkJSON.h"
@@ -79,7 +80,7 @@ private:
                 fRepeatEdge = 0; // 0 -> clamp, 1 -> repeat
 };
 
-} // anonymous ns
+}  // namespace
 
 sk_sp<sksg::RenderNode> EffectBuilder::attachGaussianBlurEffect(
         const skjson::ArrayValue& jprops,

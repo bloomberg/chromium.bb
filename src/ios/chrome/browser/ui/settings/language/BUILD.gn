@@ -42,20 +42,26 @@ source_set("language_ui") {
     "language_settings_table_view_controller.mm",
   ]
   deps = [
+    "//components/prefs",
+    "//components/translate/core/browser:translate_pref_names",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells:public",
+    "//ios/chrome/browser/ui/settings/elements:enterprise_info_popover_view_controller",
     "//ios/chrome/browser/ui/settings/language/cells",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
+    "//net",
     "//ui/base",
   ]
   public_deps = [ ":language_ui_constants" ]
@@ -87,24 +93,9 @@ source_set("unit_tests") {
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/settings/language",
     "//ios/chrome/browser/ui/settings/language/cells",
+    "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "language_settings_app_interface.h",
-    "language_settings_app_interface.mm",
-  ]
-  deps = [
-    "//components/language/core/browser",
-    "//components/translate/core/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/translate",
-    "//ios/chrome/test/app:test_support",
+    "//ui/base:base",
   ]
 }
 
@@ -162,22 +153,5 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/strings:ui_strings_grit",
   ]
-  libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "language_settings_egtest.mm" ]
-  deps = [
-    ":eg_test_support",
-    ":language_ui_constants",
-    "//components/translate/core/browser:translate_pref_names",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ui/strings:ui_strings_grit",
-  ]
+  frameworks = [ "UIKit.framework" ]
 }

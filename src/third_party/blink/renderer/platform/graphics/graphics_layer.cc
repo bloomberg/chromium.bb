@@ -36,18 +36,21 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
@@ -60,8 +63,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-#include "third_party/skia/include/core/SkMatrix44.h"
-
 namespace blink {
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
@@ -72,12 +73,13 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
-      painted_(false),
+      raster_invalidated_(false),
+      should_create_layers_after_paint_(false),
+      repainted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
-      mask_layer_(nullptr),
       raster_invalidation_function_(
-          base::BindRepeating(&GraphicsLayer::SetNeedsDisplayInRect,
+          base::BindRepeating(&GraphicsLayer::InvalidateRaster,
                               base::Unretained(this))) {
   // TODO(crbug.com/1033240): Debugging information for the referenced bug.
   // Remove when it is fixed.
@@ -88,14 +90,14 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
-  CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
-  CcLayer()->SetHitTestable(hit_testable_);
+  layer_->SetIsDrawable(draws_content_ && contents_visible_);
+  layer_->SetHitTestable(hit_testable_);
 
   UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
-  CcLayer()->ClearClient();
+  CcLayer().ClearClient();
   contents_layer_ = nullptr;
 
 #if DCHECK_IS_ON()
@@ -110,11 +112,6 @@ GraphicsLayer::~GraphicsLayer() {
   // LayerTreeHost before a new layer with the same ElementId is added. See
   // https://crbug.com/979002 for more information.
   SetElementId(CompositorElementId());
-}
-
-IntRect GraphicsLayer::VisualRect() const {
-  DCHECK(layer_state_);
-  return IntRect(layer_state_->offset, IntSize(Size()));
 }
 
 void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
@@ -170,11 +167,18 @@ void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
     }
   }
 
+  if (ShouldCreateLayersAfterPaint()) {
+    json.SetBoolean("shouldCreateLayersAfterPaint", true);
+  } else {
 #if DCHECK_IS_ON()
-  if (HasLayerState() && DrawsContent() &&
-      (flags & kLayerTreeIncludesPaintRecords))
-    json.SetValue("paintRecord", RecordAsJSON(*CapturePaintRecord()));
+    if (HasLayerState() && cc_display_item_list_ &&
+        (flags & kLayerTreeIncludesPaintRecords)) {
+      LoggingCanvas canvas;
+      cc_display_item_list_->Raster(&canvas);
+      json.SetValue("paintRecord", canvas.Log());
+    }
 #endif
+  }
 }
 
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
@@ -213,6 +217,8 @@ bool GraphicsLayer::SetChildren(const GraphicsLayerVector& new_children) {
 }
 
 void GraphicsLayer::AddChildInternal(GraphicsLayer* child_layer) {
+  // TODO(szager): Remove CHECK after diagnosing crbug.com/1092673
+  CHECK(child_layer);
   DCHECK_NE(child_layer, this);
 
   if (child_layer->Parent())
@@ -255,147 +261,181 @@ void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
     return;
 
   offset_from_layout_object_ = offset;
-
-  // If the compositing layer offset changes, we need to repaint.
-  SetNeedsDisplay();
+  Invalidate(PaintInvalidationReason::kFullLayer);  // As DisplayItemClient.
 }
 
 IntRect GraphicsLayer::InterestRect() {
   return previous_interest_rect_;
 }
 
-bool GraphicsLayer::PaintRecursively() {
-  Vector<GraphicsLayer*> repainted_layers;
-  PaintRecursivelyInternal(repainted_layers);
-
-  // Notify the controllers that the artifact has been pushed and some
-  // lifecycle state can be freed (such as raster invalidations).
-  for (auto* layer : repainted_layers) {
-#if DCHECK_IS_ON()
-    if (VLOG_IS_ON(2))
-      LOG(ERROR) << "FinishCycle for GraphicsLayer: " << layer->DebugName();
-#endif
-    layer->GetPaintController().FinishCycle();
-  }
-  return !repainted_layers.IsEmpty();
+void GraphicsLayer::ClearPaintStateRecursively() {
+  ForAllGraphicsLayers(
+      *this,
+      [](GraphicsLayer& layer) -> bool {
+        layer.paint_controller_ = nullptr;
+        layer.raster_invalidator_ = nullptr;
+        return true;
+      },
+      [](GraphicsLayer&, const cc::Layer&) {});
 }
 
-void GraphicsLayer::PaintRecursivelyInternal(
-    Vector<GraphicsLayer*>& repainted_layers) {
-  // TODO(crbug.com/1033240): Debugging information for the referenced bug.
-  // Remove when it is fixed.
-  CHECK(&client_);
-  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
-          DisplayLockContextLifecycleTarget::kSelf)) {
+bool GraphicsLayer::PaintRecursively(
+    GraphicsContext& context,
+    Vector<PreCompositedLayerInfo>& pre_composited_layers,
+    PaintBenchmarkMode benchmark_mode) {
+  bool repainted = false;
+  ForAllGraphicsLayers(
+      *this,
+      [&](GraphicsLayer& layer) -> bool {
+        if (layer.Client().ShouldSkipPaintingSubtree()) {
+          layer.ClearPaintStateRecursively();
+          return false;
+        }
+        layer.Paint(pre_composited_layers, benchmark_mode);
+        repainted |= layer.repainted_;
+        return true;
+      },
+      [&](const GraphicsLayer& layer, cc::Layer& contents_layer) {
+        PaintChunkSubsetRecorder subset_recorder(context.GetPaintController());
+        auto contents_state = layer.GetContentsPropertyTreeState();
+        RecordForeignLayer(
+            context, layer, DisplayItem::kForeignLayerContentsWrapper,
+            &contents_layer, layer.GetContentsOffsetFromTransformNode(),
+            &contents_state);
+        pre_composited_layers.push_back(
+            PreCompositedLayerInfo{subset_recorder.Get()});
+      });
+#if DCHECK_IS_ON()
+  if (repainted) {
+    VLOG(2) << "GraphicsLayer tree:\n"
+            << GraphicsLayerTreeAsTextForTesting(
+                   this, VLOG_IS_ON(3) ? 0xffffffff : kOutputAsLayerTree)
+                   .Utf8();
+  }
+#endif
+  return repainted;
+}
+
+void GraphicsLayer::PaintForTesting(const IntRect& interest_rect) {
+  Vector<PreCompositedLayerInfo> pre_composited_layers;
+  Paint(pre_composited_layers, PaintBenchmarkMode::kNormal, &interest_rect);
+}
+
+void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
+                          PaintBenchmarkMode benchmark_mode,
+                          const IntRect* interest_rect) {
+  repainted_ = false;
+
+  DCHECK(!client_.ShouldSkipPaintingSubtree());
+
+  if (!PaintsContentOrHitTest()) {
+    if (IsHitTestable()) {
+      pre_composited_layers.push_back(
+          PreCompositedLayerInfo{PaintChunkSubset(), this});
+    }
     return;
   }
 
-  if (PaintsContentOrHitTest()) {
-    if (Paint())
-      repainted_layers.push_back(this);
-  }
-
-  if (MaskLayer())
-    MaskLayer()->PaintRecursivelyInternal(repainted_layers);
-
-  for (auto* child : Children())
-    child->PaintRecursivelyInternal(repainted_layers);
-}
-
-bool GraphicsLayer::Paint() {
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
+  // TODO(chrishtr): I think this might have been due to iframe throttling.
+  // The comment above and the code here was written before the early
+  // out if client_.ShouldThrottleRendering() was true was added. Throttled
+  // layers can of course have a stale or missing layer_state_.
   if (!layer_state_)
-    return false;
+    return;
 #endif
-
-  if (PaintWithoutCommit()) {
-    GetPaintController().CommitNewDisplayItems();
-    UpdateSafeOpaqueBackgroundColor();
-  } else if (!needs_check_raster_invalidation_) {
-    return false;
-  }
-
-#if DCHECK_IS_ON()
-  if (VLOG_IS_ON(2)) {
-    LOG(ERROR) << "Painted GraphicsLayer: " << DebugName()
-               << " interest_rect=" << InterestRect().ToString();
-  }
-#endif
-
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-  // Generate raster invalidations for SPv1.
-  IntRect layer_bounds(layer_state_->offset, IntSize(Size()));
-  EnsureRasterInvalidator().Generate(
-      raster_invalidation_function_,
-      GetPaintController().GetPaintArtifactShared(), layer_bounds,
-      layer_state_->state, VisualRectSubpixelOffset(), this);
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      PaintsContentOrHitTest()) {
-    auto& tracking = EnsureRasterInvalidator().EnsureTracking();
-    tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
-                                     InterestRect());
-    if (auto record = tracking.UnderInvalidationRecord()) {
-      // Add the under-invalidation overlay onto the painted result.
-      GetPaintController().AppendDebugDrawingAfterCommit(std::move(record),
-                                                         layer_state_->state);
-      // Ensure the compositor will raster the under-invalidation overlay.
-      CcLayer()->SetNeedsDisplay();
+  IntRect new_interest_rect =
+      interest_rect
+          ? *interest_rect
+          : client_.ComputeInterestRect(this, previous_interest_rect_);
+
+  auto& paint_controller = GetPaintController();
+  PaintController::ScopedBenchmarkMode scoped_benchmark_mode(paint_controller,
+                                                             benchmark_mode);
+  bool cached = !paint_controller.ShouldForcePaintForBenchmark() &&
+                !client_.NeedsRepaint(*this) &&
+                // TODO(wangxianzhu): This will be replaced by subsequence
+                // caching when unifying PaintController.
+                paint_controller.ClientCacheIsValid(*this) &&
+                previous_interest_rect_ == new_interest_rect;
+  if (!cached) {
+    GraphicsContext context(paint_controller);
+    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
+    paint_controller.UpdateCurrentPaintChunkProperties(
+        nullptr, layer_state_->state.GetPropertyTreeState());
+    previous_interest_rect_ = new_interest_rect;
+    client_.PaintContents(this, context, painting_phase_, new_interest_rect);
+    paint_controller.CommitNewDisplayItems();
+    // TODO(wangxianzhu): Remove this and friend class in DisplayItemClient
+    // when unifying PaintController.
+    Validate();
+    DVLOG(2) << "Painted GraphicsLayer: " << DebugName()
+             << " interest_rect=" << InterestRect().ToString();
+  }
+
+  PaintChunkSubset chunks(paint_controller.GetPaintArtifactShared());
+  pre_composited_layers.push_back(PreCompositedLayerInfo{chunks, this});
+
+  if (cached && !needs_check_raster_invalidation_ &&
+      paint_controller.GetBenchmarkMode() !=
+          PaintBenchmarkMode::kForceRasterInvalidationAndConvert) {
+    return;
+  }
+
+  if (!ShouldCreateLayersAfterPaint()) {
+    auto& raster_invalidator = EnsureRasterInvalidator();
+    gfx::Size old_layer_size = raster_invalidator.LayerBounds().size();
+    gfx::Rect layer_bounds(layer_state_->offset, Size());
+    PropertyTreeState property_tree_state = GetPropertyTreeState().Unalias();
+    EnsureRasterInvalidator().Generate(raster_invalidation_function_, chunks,
+                                       layer_bounds, property_tree_state, this);
+
+    base::Optional<RasterUnderInvalidationCheckingParams>
+        raster_under_invalidation_params;
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+        PaintsContentOrHitTest()) {
+      raster_under_invalidation_params.emplace(
+          EnsureRasterInvalidator().EnsureTracking(), InterestRect(),
+          DebugName());
+    }
+
+    // If nothing changed in the layer, keep the original display item list.
+    // Here check layer_bounds because RasterInvalidator doesn't issue raster
+    // invalidation when only layer_bounds change.
+    if (raster_invalidated_ || !cc_display_item_list_ ||
+        old_layer_size != Size() || raster_under_invalidation_params) {
+      cc_display_item_list_ = PaintChunksToCcLayer::Convert(
+          chunks, property_tree_state,
+          gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
+          cc::DisplayItemList::kTopLevelDisplayItemList,
+          base::OptionalOrNullptr(raster_under_invalidation_params));
+      raster_invalidated_ = false;
     }
   }
 
   needs_check_raster_invalidation_ = false;
-  return true;
+  repainted_ = true;
 }
 
-void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
-  if (!DrawsContent())
-    return;
-  CcLayer()->SetSafeOpaqueBackgroundColor(
-      GetPaintController().GetPaintArtifact().SafeOpaqueBackgroundColor(
-          GetPaintController().GetPaintArtifact().PaintChunks()));
-}
-
-bool GraphicsLayer::PaintWithoutCommitForTesting(
-    const base::Optional<IntRect>& interest_rect) {
-  return PaintWithoutCommit(base::OptionalOrNullptr(interest_rect));
-}
-
-bool GraphicsLayer::PaintWithoutCommit(const IntRect* interest_rect) {
-  DCHECK(PaintsContentOrHitTest());
-
-  if (client_.ShouldThrottleRendering() || client_.IsUnderSVGHiddenContainer())
-    return false;
-
-  IntRect new_interest_rect;
-  if (!interest_rect) {
-    new_interest_rect =
-        client_.ComputeInterestRect(this, previous_interest_rect_);
-    interest_rect = &new_interest_rect;
+void GraphicsLayer::SetShouldCreateLayersAfterPaint(
+    bool should_create_layers_after_paint) {
+  DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
+  if (should_create_layers_after_paint != should_create_layers_after_paint_) {
+    should_create_layers_after_paint_ = should_create_layers_after_paint;
+    // Depending on |should_create_layers_after_paint_|, raster invalidation
+    // will happen in via two different code paths. When it changes we need to
+    // fully invalidate because the incremental raster invalidations of these
+    // code paths will not work.
+    if (raster_invalidator_)
+      raster_invalidator_->ClearOldStates();
   }
-
-  if (!GetPaintController().ShouldForcePaintForBenchmark() &&
-      !client_.NeedsRepaint(*this) &&
-      !GetPaintController().CacheIsAllInvalid() &&
-      previous_interest_rect_ == *interest_rect) {
-    GetPaintController().UpdateUMACountsOnFullyCached();
-    return false;
-  }
-
-  GraphicsContext context(GetPaintController());
-  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-  GetPaintController().UpdateCurrentPaintChunkProperties(nullptr,
-                                                         layer_state_->state);
-
-  previous_interest_rect_ = *interest_rect;
-  client_.PaintContents(this, context, painting_phase_, *interest_rect);
-  return true;
 }
 
 void GraphicsLayer::NotifyChildListChange() {
-  // cc::Layers are created in PaintArtifactCompositor.
   client_.GraphicsLayersDidChange();
 }
 
@@ -406,12 +446,12 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
   // shouldn't receive the drawsContent flag, so it is only given
   // contentsVisible.
 
-  CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
+  CcLayer().SetIsDrawable(draws_content_ && contents_visible_);
   if (contents_layer_)
     contents_layer_->SetIsDrawable(contents_visible_);
 
   if (draws_content_)
-    CcLayer()->SetNeedsDisplay();
+    CcLayer().SetNeedsDisplay();
 }
 
 void GraphicsLayer::UpdateContentsLayerBounds() {
@@ -507,19 +547,20 @@ String GraphicsLayer::DebugName(const cc::Layer* layer) const {
 }
 
 const gfx::Size& GraphicsLayer::Size() const {
-  return CcLayer()->bounds();
+  return CcLayer().bounds();
 }
 
 void GraphicsLayer::SetSize(const gfx::Size& size) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  if (size == CcLayer()->bounds())
+  if (size == CcLayer().bounds())
     return;
 
   Invalidate(PaintInvalidationReason::kIncremental);  // as DisplayItemClient.
 
-  CcLayer()->SetBounds(size);
-  // Note that we don't resize m_contentsLayer. It's up the caller to do that.
+  CcLayer().SetBounds(size);
+  SetNeedsCheckRasterInvalidation();
+  // Note that we don't resize contents_layer_. It's up the caller to do that.
 }
 
 void GraphicsLayer::SetDrawsContent(bool draws_content) {
@@ -528,6 +569,11 @@ void GraphicsLayer::SetDrawsContent(bool draws_content) {
   // layer in SetupContentsLayer().
   if (draws_content == draws_content_)
     return;
+
+  // This may affect which layers the client collects.
+  client_.GraphicsLayersDidChange();
+  // This flag will be updated when the layer is repainted.
+  should_create_layers_after_paint_ = false;
 
   draws_content_ = draws_content;
   UpdateLayerIsDrawable();
@@ -549,39 +595,45 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
-RGBA32 GraphicsLayer::BackgroundColor() const {
-  return CcLayer()->background_color();
-}
-
-void GraphicsLayer::SetBackgroundColor(RGBA32 color) {
-  CcLayer()->SetBackgroundColor(color);
+void GraphicsLayer::SetContentsLayerBackgroundColor(Color color) {
+  if (contents_layer_)
+    contents_layer_->SetBackgroundColor(color.Rgb());
 }
 
 bool GraphicsLayer::ContentsOpaque() const {
-  return CcLayer()->contents_opaque();
+  return CcLayer().contents_opaque();
 }
 
 void GraphicsLayer::SetContentsOpaque(bool opaque) {
-  CcLayer()->SetContentsOpaque(opaque);
+  CcLayer().SetContentsOpaque(opaque);
   if (contents_layer_ && !prevent_contents_opaque_changes_)
     contents_layer_->SetContentsOpaque(opaque);
 }
 
-void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
-  if (mask_layer == mask_layer_)
-    return;
+void GraphicsLayer::SetContentsOpaqueForText(bool opaque) {
+  CcLayer().SetContentsOpaqueForText(opaque);
+}
 
-  mask_layer_ = mask_layer;
+void GraphicsLayer::SetPaintsHitTest(bool paints_hit_test) {
+  if (paints_hit_test_ == paints_hit_test)
+    return;
+  // This may affect which layers the client collects.
+  client_.GraphicsLayersDidChange();
+  // This flag will be updated when the layer is repainted.
+  should_create_layers_after_paint_ = false;
+  paints_hit_test_ = paints_hit_test;
 }
 
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {
   if (hit_testable_ == should_hit_test)
     return;
+  // This may affect which layers the client collects.
+  client_.GraphicsLayersDidChange();
   hit_testable_ = should_hit_test;
-  CcLayer()->SetHitTestable(should_hit_test);
+  CcLayer().SetHitTestable(should_hit_test);
 }
 
-void GraphicsLayer::SetContentsNeedsDisplay() {
+void GraphicsLayer::InvalidateContents() {
   if (contents_layer_) {
     contents_layer_->SetNeedsDisplay();
     TrackRasterInvalidation(*this, contents_rect_,
@@ -589,27 +641,10 @@ void GraphicsLayer::SetContentsNeedsDisplay() {
   }
 }
 
-void GraphicsLayer::SetNeedsDisplay() {
-  if (!PaintsContentOrHitTest())
-    return;
-
-  CcLayer()->SetNeedsDisplay();
-
-  // Invalidate the paint controller if it exists, but don't bother creating one
-  // if not.
-  if (paint_controller_)
-    paint_controller_->InvalidateAll();
-
-  if (raster_invalidator_)
-    raster_invalidator_->ClearOldStates();
-
-  TrackRasterInvalidation(*this, IntRect(IntPoint(), IntSize(Size())),
-                          PaintInvalidationReason::kFullLayer);
-}
-
-void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
+void GraphicsLayer::InvalidateRaster(const IntRect& rect) {
   DCHECK(PaintsContentOrHitTest());
-  CcLayer()->SetNeedsDisplayRect(rect);
+  raster_invalidated_ = true;
+  CcLayer().SetNeedsDisplayRect(rect);
 }
 
 void GraphicsLayer::SetContentsRect(const IntRect& rect) {
@@ -621,15 +656,11 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
   client_.GraphicsLayersDidChange();
 }
 
-cc::PictureLayer* GraphicsLayer::CcLayer() const {
-  return layer_.get();
-}
-
 void GraphicsLayer::SetPaintingPhase(GraphicsLayerPaintingPhase phase) {
   if (painting_phase_ == phase)
     return;
   painting_phase_ = phase;
-  SetNeedsDisplay();
+  Invalidate(PaintInvalidationReason::kFullLayer);  // As DisplayItemClient.
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {
@@ -640,34 +671,10 @@ PaintController& GraphicsLayer::GetPaintController() const {
 }
 
 void GraphicsLayer::SetElementId(const CompositorElementId& id) {
-  if (cc::Layer* layer = CcLayer())
-    layer->SetElementId(id);
+  CcLayer().SetElementId(id);
 }
 
-sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
-  DCHECK(PaintsContentOrHitTest());
-
-  if (client_.ShouldThrottleRendering())
-    return sk_sp<PaintRecord>(new PaintRecord);
-
-  if (client_.IsUnderSVGHiddenContainer())
-    return sk_sp<PaintRecord>(new PaintRecord);
-
-  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
-          DisplayLockContextLifecycleTarget::kSelf)) {
-    return sk_sp<PaintRecord>(new PaintRecord);
-  }
-
-  FloatRect bounds((IntRect(IntPoint(), IntSize(Size()))));
-  GraphicsContext graphics_context(GetPaintController());
-  graphics_context.BeginRecording(bounds);
-  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-  GetPaintController().GetPaintArtifact().Replay(
-      graphics_context, layer_state_->state, layer_state_->offset);
-  return graphics_context.EndRecording();
-}
-
-void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
+void GraphicsLayer::SetLayerState(const PropertyTreeStateOrAlias& layer_state,
                                   const IntPoint& layer_offset) {
   if (layer_state_) {
     if (layer_state_->state == layer_state &&
@@ -676,17 +683,17 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
     layer_state_->state = layer_state;
     layer_state_->offset = layer_offset;
   } else {
-    layer_state_ =
-        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
+    layer_state_ = std::make_unique<LayerState>(
+        LayerState{RefCountedPropertyTreeState(layer_state), layer_offset});
   }
 
-  if (auto* layer = CcLayer())
-    layer->SetSubtreePropertyChanged();
+  CcLayer().SetSubtreePropertyChanged();
   client_.GraphicsLayersDidChange();
 }
 
-void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
-                                          const IntPoint& layer_offset) {
+void GraphicsLayer::SetContentsLayerState(
+    const PropertyTreeStateOrAlias& layer_state,
+    const IntPoint& layer_offset) {
   DCHECK(ContentsLayer());
 
   if (contents_layer_state_) {
@@ -696,67 +703,40 @@ void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
     contents_layer_state_->state = layer_state;
     contents_layer_state_->offset = layer_offset;
   } else {
-    contents_layer_state_ =
-        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
+    contents_layer_state_ = std::make_unique<LayerState>(
+        LayerState{RefCountedPropertyTreeState(layer_state), layer_offset});
   }
 
   ContentsLayer()->SetSubtreePropertyChanged();
   client_.GraphicsLayersDidChange();
 }
 
-scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
-    PaintingControlSetting painting_control) {
-  TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
-
-  if (painting_control == SUBSEQUENCE_CACHING_DISABLED)
-    PaintController::SetSubsequenceCachingDisabledForBenchmark();
-  else if (painting_control == PARTIAL_INVALIDATION)
-    PaintController::SetPartialInvalidationForBenchmark();
-
-  PaintController& paint_controller = GetPaintController();
-  // We also disable caching when Painting or Construction are disabled. In both
-  // cases we would like to compare assuming the full cost of recording, not the
-  // cost of re-using cached content.
-  if (painting_control == DISPLAY_LIST_CACHING_DISABLED)
-    paint_controller.InvalidateAll();
-
-  // Anything other than PAINTING_BEHAVIOR_NORMAL is for testing. In non-testing
-  // scenarios, it is an error to call GraphicsLayer::Paint. Actual painting
-  // occurs in LocalFrameView::PaintTree() which calls GraphicsLayer::Paint();
-  // this method merely copies the painted output to the cc::DisplayItemList.
-  if (painting_control != PAINTING_BEHAVIOR_NORMAL)
-    Paint();
-
-  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
-
-  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-  PaintChunksToCcLayer::ConvertInto(
-      GetPaintController().PaintChunks(), layer_state_->state,
-      gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
-      VisualRectSubpixelOffset(),
-      paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);
-
-  PaintController::ClearFlagsForBenchmark();
-
-  display_list->Finalize();
-  return display_list;
+scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList() {
+  DCHECK(!ShouldCreateLayersAfterPaint());
+  return cc_display_item_list_;
 }
 
-size_t GraphicsLayer::GetApproximateUnsharedMemoryUsage() const {
+size_t GraphicsLayer::ApproximateUnsharedMemoryUsageRecursive() const {
   size_t result = sizeof(*this);
-  result += GetPaintController().ApproximateUnsharedMemoryUsage();
+  if (paint_controller_)
+    result += paint_controller_->ApproximateUnsharedMemoryUsage();
   if (raster_invalidator_)
     result += raster_invalidator_->ApproximateUnsharedMemoryUsage();
+  for (auto* child : Children())
+    result += child->ApproximateUnsharedMemoryUsageRecursive();
   return result;
 }
 
-// Subpixel offset for visual rects which excluded composited layer's subpixel
-// accumulation during paint invalidation.
-// See PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
-FloatSize GraphicsLayer::VisualRectSubpixelOffset() const {
-  if (GetCompositingReasons() & CompositingReason::kComboAllDirectReasons)
-    return FloatSize(client_.SubpixelAccumulation());
-  return FloatSize();
-}
-
 }  // namespace blink
+
+#if DCHECK_IS_ON()
+void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
+  if (!layer) {
+    LOG(ERROR) << "Cannot showGraphicsLayerTree for (nil).";
+    return;
+  }
+
+  String output = blink::GraphicsLayerTreeAsTextForTesting(layer, 0xffffffff);
+  LOG(INFO) << output.Utf8();
+}
+#endif

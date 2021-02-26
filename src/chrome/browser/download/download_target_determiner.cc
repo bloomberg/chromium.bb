@@ -524,14 +524,17 @@ DownloadTargetDeterminer::DoRequestConfirmation() {
 
 void DownloadTargetDeterminer::RequestConfirmationDone(
     DownloadConfirmationResult result,
-    const base::FilePath& virtual_path) {
+    const base::FilePath& virtual_path,
+    base::Optional<download::DownloadSchedule> download_schedule) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_->IsTransient());
   DVLOG(20) << "User selected path:" << virtual_path.AsUTF8Unsafe();
 #if defined(OS_ANDROID)
   is_checking_dialog_confirmed_path_ = false;
+  download_schedule_ = std::move(download_schedule);
 #endif
   if (result == DownloadConfirmationResult::CANCELED) {
+    RecordDownloadCancelReason(DownloadCancelReason::kTargetConfirmationResult);
     ScheduleCallbackAndDeleteSelf(
         download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return;
@@ -676,8 +679,8 @@ void IsHandledBySafePlugin(int render_process_id,
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, is_handled_safely));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, is_handled_safely));
 }
 
 }  // namespace
@@ -979,6 +982,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->mime_type = mime_type_;
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
   target_info->mixed_content_status = mixed_content_status_;
+  target_info->download_schedule = std::move(download_schedule_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1051,7 +1055,8 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
   // The user may still be prompted even if this pref is disabled due to, for
   // example, there being an unresolvable filename conflict or the target path
   // is not writeable.
-  return download_prefs_->PromptForDownload()
+  return (download_prefs_->PromptForDownload() ||
+          download_prefs_->PromptDownloadLater())
              ? DownloadConfirmationReason::PREFERENCE
              : DownloadConfirmationReason::NONE;
 }

@@ -6,7 +6,7 @@
 #define PLATFORM_TEST_FAKE_CLOCK_H_
 
 #include <atomic>
-#include <thread>  // NOLINT
+#include <thread>
 #include <vector>
 
 #include "platform/api/time.h"

@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -33,7 +33,7 @@ void EnableLazyLoadInSettings(Settings& settings) {
   settings.SetLazyLoadEnabled(true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void RegisterMockedHttpURLLoad(const std::string& base_url,
                                const std::string& file_name) {
   url_test_helpers::RegisterMockedURLLoadFromBase(
@@ -238,14 +238,14 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XMLStyleSheet) {
   TestGreenDiv(*page_holder);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
   RegisterMockedHttpURLLoad("http://internal.test/", "sometext.html");
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("http://internal.test/sometext.html");
   web_view_helper.LoadAhem();
-  web_view_helper.Resize(WebSize(640, 480));
+  web_view_helper.Resize(gfx::Size(640, 480));
 
   // Move the visual viewport to the start of the target div containing the
   // text.
@@ -260,7 +260,8 @@ TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
   TestTextInputHostWaiter waiter;
   waiter.Init(run_loop.QuitClosure(), main_frame->GetBrowserInterfaceBroker());
   main_frame->GetBrowserInterfaceBroker().GetInterface(
-      main_frame->text_input_host_.BindNewPipeAndPassReceiver());
+      main_frame->text_input_host_.BindNewPipeAndPassReceiver(
+          main_frame->GetTaskRunner(blink::TaskType::kInternalDefault)));
   // Since we're zoomed in to 2X, each char of Ahem is 20px wide/tall in
   // viewport space. We expect to hit the fifth char on the first line.
   main_frame->GetCharacterIndexAtPoint(gfx::Point(100, 15));

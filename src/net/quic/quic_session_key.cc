@@ -30,7 +30,12 @@ QuicSessionKey::QuicSessionKey(const std::string& host,
                                const NetworkIsolationKey& network_isolation_key,
                                bool disable_secure_dns)
     : QuicSessionKey(
-          quic::QuicServerId(host, port, privacy_mode == PRIVACY_MODE_ENABLED),
+          // TODO(crbug.com/1103350): Handle non-boolean privacy modes.
+          quic::QuicServerId(
+              host,
+              port,
+              privacy_mode == PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS ||
+                  privacy_mode == PRIVACY_MODE_ENABLED),
           socket_tag,
           network_isolation_key,
           disable_secure_dns) {}
@@ -58,6 +63,14 @@ bool QuicSessionKey::operator<(const QuicSessionKey& other) const {
 }
 bool QuicSessionKey::operator==(const QuicSessionKey& other) const {
   return server_id_ == other.server_id_ && socket_tag_ == other.socket_tag_ &&
+         network_isolation_key_ == other.network_isolation_key_ &&
+         disable_secure_dns_ == other.disable_secure_dns_;
+}
+
+bool QuicSessionKey::CanUseForAliasing(const QuicSessionKey& other) const {
+  return server_id_.privacy_mode_enabled() ==
+             other.server_id_.privacy_mode_enabled() &&
+         socket_tag_ == other.socket_tag_ &&
          network_isolation_key_ == other.network_isolation_key_ &&
          disable_secure_dns_ == other.disable_secure_dns_;
 }

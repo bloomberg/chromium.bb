@@ -69,7 +69,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                               public CompositorAnimationClient,
                               public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Animation);
   USING_PRE_FINALIZER(Animation, Dispose);
 
  public:
@@ -200,6 +199,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   AnimationTimeline* timeline() { return timeline_; }
+  virtual void setTimeline(AnimationTimeline* timeline);
   Document* GetDocument() const;
 
   base::Optional<double> startTime() const;
@@ -221,12 +221,16 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   // This should only be used for CSS
   void Unpause();
+  bool ResetsCurrentTimeOnResume() const {
+    return reset_current_time_on_resume_;
+  }
 
   void SetOutdated();
   bool Outdated() { return outdated_; }
 
   CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
-      const PaintArtifactCompositor* paint_artifact_compositor) const;
+      const PaintArtifactCompositor* paint_artifact_compositor,
+      PropertyHandleSet* unsupported_properties = nullptr) const;
   void StartAnimationOnCompositor(
       const PaintArtifactCompositor* paint_artifact_compositor);
   void CancelAnimationOnCompositor();
@@ -265,8 +269,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void SetEffectSuppressed(bool);
 
   void InvalidateKeyframeEffect(const TreeScope&);
+  void InvalidateEffectTargetStyle();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
 
@@ -286,16 +291,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // depends on computed values.
   virtual void FlushPendingUpdates() const {}
 
-  // TODO(yigu): This is a reverse dependency between AnimationTimeline and
-  // Animation. We should move the update logic once snapshotting is
-  // implemented. https://crbug.com/1060578.
-  void UpdateCompositorScrollTimeline();
-
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
   base::Optional<double> CurrentTimeInternal() const;
+  TimelinePhase CurrentPhaseInternal() const;
   virtual AnimationEffect::EventDelegate* CreateEventDelegate(
       Element* target,
       const AnimationEffect::EventDelegate* old_event_delegate) {
@@ -304,6 +305,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
  private:
   void SetCurrentTimeInternal(double new_current_time);
+  void SetHoldTimeAndPhase(
+      base::Optional<double> new_hold_time /* in seconds */,
+      TimelinePhase new_hold_phase);
+  void ResetHoldTimeAndPhase();
+  bool ValidateHoldTimeAndPhase() const;
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -319,6 +325,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   base::Optional<double> CalculateStartTime(double current_time) const;
   base::Optional<double> CalculateCurrentTime() const;
+  TimelinePhase CalculateCurrentPhase() const;
 
   void BeginUpdatingState();
   void EndUpdatingState();
@@ -382,7 +389,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::Optional<double> pending_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
+  base::Optional<TimelinePhase> hold_phase_;
   base::Optional<double> previous_current_time_;
+  bool reset_current_time_on_resume_ = false;
 
   unsigned sequence_number_;
 
@@ -470,7 +479,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
     void Detach();
 
-    void Trace(Visitor* visitor) { visitor->Trace(animation_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(animation_); }
 
     CompositorAnimation* GetAnimation() const {
       return compositor_animation_.get();

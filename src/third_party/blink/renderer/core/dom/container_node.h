@@ -385,7 +385,12 @@ class CORE_EXPORT ContainerNode : public Node {
 
   virtual bool ChildrenCanHaveStyle() const { return true; }
 
-  void Trace(Visitor*) override;
+  // This is similar to GetLayoutBox(), but returns nullptr if it's not
+  // scrollable. Some elements override this to delegate scroll operations to
+  // a descendant LayoutBox.
+  virtual LayoutBox* GetLayoutBoxForScrolling() const;
+
+  void Trace(Visitor*) const override;
 
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);

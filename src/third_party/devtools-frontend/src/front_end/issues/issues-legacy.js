@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as IssuesModule from './issues.js';
 
 self.Issues = self.Issues || {};
@@ -13,5 +15,3 @@ Issues = Issues || {};
 Issues.IssuesPane = IssuesModule.IssuesPane.IssuesPaneImpl;
 
 Issues.IssueRevealer = IssuesModule.IssueRevealer.IssueRevealer;
-
-Issues.IssueAggregator = IssuesModule.IssueAggregator.IssueAggregator;

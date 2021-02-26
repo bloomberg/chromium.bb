@@ -17,8 +17,6 @@ class WorkerNavigator;
 class WorkerNavigatorWakeLock final
     : public GarbageCollected<WorkerNavigatorWakeLock>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorWakeLock);
-
  public:
   static const char kSupplementName[];
 
@@ -28,7 +26,7 @@ class WorkerNavigatorWakeLock final
 
   explicit WorkerNavigatorWakeLock(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   WakeLock* GetWakeLock(ScriptState*);

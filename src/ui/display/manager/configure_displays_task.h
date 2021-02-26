@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +66,7 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
   void OnDisplaySnapshotsInvalidated() override;
 
  private:
-  void OnConfigured(size_t index, bool success);
+  void OnConfigured(const base::flat_map<int64_t, bool>& statuses);
 
   NativeDisplayDelegate* delegate_;  // Not owned.
 
@@ -74,17 +75,6 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
   // When the task finishes executing it runs the callback to notify that the
   // task is done and the task status.
   ResponseCallback callback_;
-
-  // Stores the indexes of pending requests in |requests_|.
-  base::queue<size_t> pending_request_indexes_;
-
-  // Used to keep make sure that synchronous executions do not recurse during
-  // the configuration.
-  bool is_configuring_;
-
-  // Number of display configured. This is used to check whether there are
-  // pending requests.
-  size_t num_displays_configured_;
 
   Status task_status_;
 

@@ -1353,7 +1353,7 @@ int aom_wiener_denoise_2d(const uint8_t *const data[3], uint8_t *denoised[3],
   if (chroma_sub[0] != chroma_sub[1]) {
     fprintf(stderr,
             "aom_wiener_denoise_2d doesn't handle different chroma "
-            "subsampling");
+            "subsampling\n");
     return 0;
   }
   init_success &= aom_flat_block_finder_init(&block_finder_full, block_size,

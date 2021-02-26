@@ -32,8 +32,6 @@ enum {
 #endif
   DIR_RESOURCES,               // Directory containing separate file resources
                                // used by Chrome at runtime.
-  DIR_INSPECTOR_DEBUG,         // Directory where non-bundled and non-minified
-                               // web inspector is located.
   DIR_APP_DICTIONARIES,        // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,          // Directory for a user's "My Documents".
   DIR_USER_MUSIC,              // Directory for a user's music.
@@ -46,14 +44,14 @@ enum {
   DIR_INTERNAL_PLUGINS,        // Directory where internal plugins reside.
   DIR_COMPONENTS,              // Directory where built-in implementations of
                                // component-updated libraries or data reside.
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   DIR_POLICY_FILES,  // Directory for system-wide read-only
                      // policy files that allow sys-admins
                      // to set policies for chrome. This directory
                      // contains subdirectories.
 #endif
 #if defined(OS_CHROMEOS) || \
-    (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING)) || defined(OS_MACOSX)
+    (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING)) || defined(OS_MAC)
   DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions
                                  // on Chrome Mac and Chromium Linux.
                                  // On Chrome OS, this path is used for OEM
@@ -61,7 +59,7 @@ enum {
                                  // create it.
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DIR_STANDALONE_EXTERNAL_EXTENSIONS,  // Directory for 'per-extension'
                                        // definition manifest files that
                                        // describe extensions which are to be
@@ -86,14 +84,10 @@ enum {
                              // playback.
   FILE_PEPPER_FLASH_PLUGIN,  // Full path to the bundled Pepper Flash plugin
                              // file.
-  FILE_PEPPER_FLASH_SYSTEM_PLUGIN,  // Full path to the system version of the
-                                    // Pepper Flash plugin, downloadable from
-                                    // Adobe website. Querying this path might
-                                    // succeed no matter the file exists or not.
   DIR_PNACL_BASE,                   // Full path to the base dir for PNaCl.
   DIR_PNACL_COMPONENT,              // Full path to the latest PNaCl version
                                     // (subdir of DIR_PNACL_BASE).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DIR_BUNDLED_WIDEVINE_CDM,  // Full path to the directory containing the
                              // bundled Widevine CDM.
 #if !defined(OS_CHROMEOS)
@@ -101,9 +95,9 @@ enum {
                                        // downloaded by the component
                                        // updater.
   FILE_COMPONENT_WIDEVINE_CDM_HINT,    // A file in a known location that points
-                                       // to the component updated Widevine CDM.
+                                     // to the component updated Widevine CDM.
 #endif                                 // !defined(OS_CHROMEOS)
-#endif                                 // defined(OS_LINUX)
+#endif                  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   FILE_RESOURCES_PACK,  // Full path to the .pak file containing binary data.
                         // This includes data for internal pages (e.g., html
                         // files and images), unless these resources are
@@ -122,7 +116,7 @@ enum {
   DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,  // Directory where sanitized
                                              // supervised user whitelists are
                                              // installed.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
   DIR_NATIVE_MESSAGING,       // System directory where native messaging host
                               // manifest files are stored.
   DIR_USER_NATIVE_MESSAGING,  // Directory with Native Messaging Hosts
@@ -137,14 +131,11 @@ enum {
   DIR_GEN_TEST_DATA,  // Directory where generated test data resides.
   DIR_TEST_DATA,      // Directory where unit test data resides.
   DIR_TEST_TOOLS,     // Directory where unit test tools reside.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   FILE_COMPONENT_FLASH_HINT,  // A file in a known location that points to
                               // the component updated flash plugin.
-#endif  // defined(OS_LINUX)
+#endif                        // defined(OS_LINUX) || defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
-  FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
-                                   // Chrome OS.
-
   // File containing the location of the updated TPM firmware binary in the file
   // system.
   FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,

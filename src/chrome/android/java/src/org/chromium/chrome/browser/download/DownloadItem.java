@@ -178,6 +178,7 @@ public class DownloadItem {
         offlineItem.completionTimeMs = item.getEndTime();
         offlineItem.externallyRemoved = item.hasBeenExternallyRemoved();
         offlineItem.canRename = item.getDownloadInfo().state() == DownloadState.COMPLETE;
+        offlineItem.schedule = downloadInfo.getOfflineItemSchedule();
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED

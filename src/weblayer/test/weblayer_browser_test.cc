@@ -5,6 +5,7 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/base_paths.h"
+#include "content/public/browser/browser_context.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
@@ -17,11 +18,6 @@ namespace weblayer {
 
 WebLayerBrowserTest::WebLayerBrowserTest() {
   CreateTestServer(base::FilePath(FILE_PATH_LITERAL("weblayer/test/data")));
-
-  // Disable auto reload since most browser tests do not expect error pages to
-  // reload automatically. Tests that want auto reload can explicitly enable
-  // this feature.
-  feature_list_.InitAndDisableFeature(features::kEnableAutoReload);
 }
 
 WebLayerBrowserTest::~WebLayerBrowserTest() = default;
@@ -29,6 +25,15 @@ WebLayerBrowserTest::~WebLayerBrowserTest() = default;
 void WebLayerBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kNoInitialNavigation);
+
+  // Disable auto reload since most browser tests do not expect error pages to
+  // reload automatically. Tests that want auto reload can explicitly append
+  // switches::kEnableAutoReload, which will override the disable here.
+  command_line->AppendSwitch(switches::kDisableAutoReload);
+
+  if (start_in_incognito_mode_)
+    command_line->AppendSwitch(switches::kStartInIncognito);
+
   SetUpCommandLine(command_line);
   content::BrowserTestBase::SetUp();
 }
@@ -45,14 +50,26 @@ void WebLayerBrowserTest::PreRunTestOnMainThread() {
       static_cast<BrowserContextImpl*>(browser_context);
   browser_context_impl->profile_impl()->SetDownloadDirectory(
       browser_context->GetPath());
+  // Accessing a browser context may involve storage partition initialization.
+  // Wait for the initialization to be completed.
+  base::RunLoop().RunUntilIdle();
 }
 
 void WebLayerBrowserTest::PostRunTestOnMainThread() {
   Shell::CloseAllWindows();
 }
 
+void WebLayerBrowserTest::SetShellStartsInIncognitoMode() {
+  DCHECK(!set_up_called());
+  start_in_incognito_mode_ = true;
+}
+
 ProfileImpl* WebLayerBrowserTest::GetProfile() {
   return static_cast<TabImpl*>(shell_->tab())->profile();
+}
+
+content::BrowserContext* WebLayerBrowserTest::GetBrowserContext() {
+  return GetProfile()->GetBrowserContext();
 }
 
 }  // namespace weblayer

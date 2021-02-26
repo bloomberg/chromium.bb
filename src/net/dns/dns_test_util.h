@@ -16,6 +16,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "net/dns/dns_client.h"
@@ -23,8 +24,8 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/esni_content.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "net/socket/socket_test_util.h"
 
 namespace net {
@@ -59,7 +60,7 @@ static const char* const kT0IpAddresses[] = {
   "74.125.226.177", "74.125.226.178"
 };
 static const char kT0CanonName[] = "www.l.google.com";
-static const int kT0TTL = 0x000000e4;
+static const base::TimeDelta kT0Ttl = base::TimeDelta::FromSeconds(0x000000e4);
 // +1 for the CNAME record.
 static const unsigned kT0RecordCount = base::size(kT0IpAddresses) + 1;
 
@@ -89,7 +90,7 @@ static const char* const kT1IpAddresses[] = {
   "64.233.169.121"
 };
 static const char kT1CanonName[] = "ghs.l.google.com";
-static const int kT1TTL = 0x0000010b;
+static const base::TimeDelta kT1Ttl = base::TimeDelta::FromSeconds(0x0000010b);
 // +1 for the CNAME record.
 static const unsigned kT1RecordCount = base::size(kT1IpAddresses) + 1;
 
@@ -118,7 +119,7 @@ static const char* const kT2IpAddresses[] = {
   "129.10.116.81"
 };
 static const char kT2CanonName[] = "vulcan.ccs.neu.edu";
-static const int kT2TTL = 0x0000012c;
+static const base::TimeDelta kT2Ttl = base::TimeDelta::FromSeconds(0x0000012c);
 // +1 for the CNAME record.
 static const unsigned kT2RecordCount = base::size(kT2IpAddresses) + 1;
 
@@ -160,12 +161,12 @@ static const char* const kT3IpAddresses[] = {
   "74.125.226.176", "74.125.226.177"
 };
 static const char kT3CanonName[] = "www.l.google.com";
-static const int kT3TTL = 0x00000015;
+static const base::TimeDelta kT3Ttl = base::TimeDelta::FromSeconds(0x00000015);
 // +2 for the CNAME records, +1 for TXT record.
 static const unsigned kT3RecordCount = base::size(kT3IpAddresses) + 3;
 
 //-----------------------------------------------------------------------------
-// Query/response set for www.gstatic.com, ID is fixed to 4.
+// Query/response set for www.gstatic.com, ID is fixed to 0.
 static const char kT4HostName[] = "www.gstatic.com";
 static const uint16_t kT4Qtype = dns_protocol::kTypeA;
 static const char kT4DnsName[] = {0x03, 'w', 'w', 'w', 0x07, 'g',
@@ -174,31 +175,15 @@ static const char kT4DnsName[] = {0x03, 'w', 'w', 'w', 0x07, 'g',
 static const size_t kT4QuerySize = 33;
 static const uint8_t kT4ResponseDatagram[] = {
     // response contains the following IP addresses: 172.217.6.195.
-    0x00, 0x04, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
     0x00, 0x00, 0x03, 0x77, 0x77, 0x77, 0x07, 0x67, 0x73, 0x74,
     0x61, 0x74, 0x69, 0x63, 0x03, 0x63, 0x6f, 0x6d, 0x00, 0x00,
     0x01, 0x00, 0x01, 0xc0, 0x0c, 0x00, 0x01, 0x00, 0x01, 0x00,
     0x00, 0x01, 0x2b, 0x00, 0x04, 0xac, 0xd9, 0x06, 0xc3};
 
 static const char* const kT4IpAddresses[] = {"172.217.6.195"};
-static const int kT4TTL = 0x0000012b;
+static const base::TimeDelta kT4Ttl = base::TimeDelta::FromSeconds(0x0000012b);
 static const unsigned kT4RecordCount = base::size(kT0IpAddresses);
-
-//--------------------------------------------------------------------
-// A well-formed ESNI (TLS 1.3 Encrypted Server Name Indication,
-// draft 4) keys object ("ESNIKeys" member of the ESNIRecord struct from
-// the spec).
-//
-// (This is cribbed from boringssl SSLTest.ESNIKeysDeserialize (CL 37704/13).)
-extern const char kWellFormedEsniKeys[];
-extern const size_t kWellFormedEsniKeysSize;
-
-// Returns a well-formed ESNI keys object identical to kWellFormedEsniKeys,
-// except that the first 0x22 bytes of |custom_data| are written over
-// fields of the keys object in a manner that leaves length prefixes
-// correct and enum members valid, and so that distinct values of
-// |custom_data| result in distinct returned keys.
-std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data = "");
 
 class AddressSorter;
 class DnsClient;
@@ -207,27 +192,61 @@ class IPAddress;
 class ResolveContext;
 class URLRequestContext;
 
-// Builds an address record for the given name and IP.
-DnsResourceRecord BuildTestAddressRecord(std::string name, const IPAddress& ip);
+DnsResourceRecord BuildTestDnsRecord(
+    std::string name,
+    uint16_t type,
+    std::string rdata,
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
 
-// Builds a DNS response that includes address records.
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
-                                                  const IPAddress& ip);
-std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
+DnsResourceRecord BuildTestAddressRecord(
     std::string name,
     const IPAddress& ip,
-    std::string cannonname);
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
+
+DnsResourceRecord BuildTestTextRecord(
+    std::string name,
+    std::vector<std::string> text_strings,
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
+
+DnsResourceRecord BuildTestHttpsAliasRecord(
+    std::string name,
+    base::StringPiece alias_name,
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
+
+// `params` is a mapping from service param keys to a string containing the
+// encoded bytes of a service param value (without the value length prefix which
+// this method will automatically add).
+DnsResourceRecord BuildTestHttpsServiceRecord(
+    std::string name,
+    uint16_t priority,
+    base::StringPiece service_name,
+    const std::map<uint16_t, std::string>& params,
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
+
+DnsResponse BuildTestDnsResponse(
+    std::string name,
+    uint16_t type,
+    const std::vector<DnsResourceRecord>& answers,
+    const std::vector<DnsResourceRecord>& authority = {},
+    const std::vector<DnsResourceRecord>& additional = {});
+
+DnsResponse BuildTestDnsAddressResponse(std::string name,
+                                        const IPAddress& ip,
+                                        std::string answer_name = "");
+DnsResponse BuildTestDnsAddressResponseWithCname(std::string name,
+                                                 const IPAddress& ip,
+                                                 std::string cannonname,
+                                                 std::string answer_name = "");
 
 // If |answer_name| is empty, |name| will be used for all answer records, as is
 // the normal behavior.
-std::unique_ptr<DnsResponse> BuildTestDnsTextResponse(
+DnsResponse BuildTestDnsTextResponse(
     std::string name,
     std::vector<std::vector<std::string>> text_records,
     std::string answer_name = "");
-std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
-    std::string name,
-    std::vector<std::string> pointer_names,
-    std::string answer_name = "");
+DnsResponse BuildTestDnsPointerResponse(std::string name,
+                                        std::vector<std::string> pointer_names,
+                                        std::string answer_name = "");
 
 struct TestServiceRecord {
   uint16_t priority;
@@ -236,23 +255,28 @@ struct TestServiceRecord {
   std::string target;
 };
 
-std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
+DnsResponse BuildTestDnsServiceResponse(
     std::string name,
     std::vector<TestServiceRecord> service_records,
     std::string answer_name = "");
 
-std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
-    std::string hostname,
-    std::vector<EsniContent> esni_records,
-    std::string answer_name = "");
-
 struct MockDnsClientRule {
   enum ResultType {
-    NODOMAIN,   // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
-    FAIL,       // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
-    TIMEOUT,    // Fail asynchronously with ERR_DNS_TIMED_OUT.
-    EMPTY,      // Return an empty response.
-    MALFORMED,  // "Succeed" but with an unparsable response.
+    // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
+    NODOMAIN,
+    // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
+    FAIL,
+    // Fail asynchronously with ERR_DNS_TIMED_OUT.
+    TIMEOUT,
+    // Simulates a slow transaction that will complete only with a lenient
+    // timeout. Fails asynchronously with ERR_DNS_TIMED_OUT only if the
+    // transaction was created with |fast_timeout|. Otherwise completes
+    // successfully as if the ResultType were |OK|.
+    SLOW,
+    // Return an empty response.
+    EMPTY,
+    // "Succeed" but with an unparsable response.
+    MALFORMED,
 
     // Results in the response in |Result::response| or, if null, results in a
     // localhost IP response.
@@ -260,15 +284,16 @@ struct MockDnsClientRule {
   };
 
   struct Result {
-    explicit Result(ResultType type);
-    explicit Result(std::unique_ptr<DnsResponse> response);
+    explicit Result(ResultType type,
+                    base::Optional<DnsResponse> response = base::nullopt);
+    explicit Result(DnsResponse response);
     Result(Result&& result);
     ~Result();
 
     Result& operator=(Result&& result);
 
     ResultType type;
-    std::unique_ptr<DnsResponse> response;
+    base::Optional<DnsResponse> response;
   };
 
   // If |delay| is true, matching transactions will be delayed until triggered
@@ -304,15 +329,16 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
       DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
       bool secure,
-      DnsConfig::SecureDnsMode secure_dns_mode,
-      ResolveContext* resolve_context) override;
+      SecureDnsMode secure_dns_mode,
+      ResolveContext* resolve_context,
+      bool fast_timeout) override;
 
   std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
       ResolveContext* resolve_context) override;
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override;
 
-  DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
+  SecureDnsMode GetSecureDnsModeForTest() override;
 
   void CompleteDelayedTransactions();
   // If there are any pending transactions of the given type,

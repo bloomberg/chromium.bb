@@ -183,6 +183,7 @@ class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param>,
   cfl_subtract_average_fn sub_avg;
   cfl_subtract_average_fn sub_avg_ref;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CFLSubAvgTest);
 
 TEST_P(CFLSubAvgTest, SubAvgTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
@@ -286,6 +287,7 @@ class CFLSubsampleLBDTest
     fun_444_ref = cfl_get_luma_subsampling_444_lbd_c(tx_size);
   }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CFLSubsampleLBDTest);
 
 TEST_P(CFLSubsampleLBDTest, SubsampleLBD420Test) {
   subsampleTest(fun_420, fun_420_ref, width >> 1, height >> 1,
@@ -329,6 +331,7 @@ class CFLSubsampleHBDTest
     fun_444_ref = cfl_get_luma_subsampling_444_hbd_c(tx_size);
   }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CFLSubsampleHBDTest);
 
 TEST_P(CFLSubsampleHBDTest, SubsampleHBD420Test) {
   subsampleTest(fun_420, fun_420_ref, width >> 1, height >> 1,
@@ -372,6 +375,7 @@ class CFLPredictTest : public ::testing::TestWithParam<predict_param>,
   cfl_predict_lbd_fn predict;
   cfl_predict_lbd_fn predict_ref;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CFLPredictTest);
 
 TEST_P(CFLPredictTest, PredictTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
@@ -419,6 +423,7 @@ class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd>,
   cfl_predict_hbd_fn predict;
   cfl_predict_hbd_fn predict_ref;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CFLPredictHBDTest);
 
 TEST_P(CFLPredictHBDTest, PredictHBDTest) {
   int bd = 12;

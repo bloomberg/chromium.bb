@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_handler.h"
 #include <memory>
 
-#include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -28,12 +27,13 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
+#include "chrome/browser/ui/webui/util/image_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -54,6 +54,8 @@ std::string ConvertAlertStateToString(TabAlertState alert_state) {
       return "audio-muting";
     case TabAlertState::BLUETOOTH_CONNECTED:
       return "bluetooth-connected";
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      return "bluetooth-connected";
     case TabAlertState::USB_CONNECTED:
       return "usb-connected";
     case TabAlertState::HID_CONNECTED:
@@ -69,48 +71,6 @@ std::string ConvertAlertStateToString(TabAlertState alert_state) {
     default:
       NOTREACHED();
   }
-}
-
-// Writes bytes to a std::vector that can be fetched. This is used to record the
-// output of skia image encoding.
-class BufferWStream : public SkWStream {
- public:
-  BufferWStream() = default;
-  ~BufferWStream() override = default;
-
-  // Returns the output buffer by moving.
-  std::vector<unsigned char> GetBuffer() { return std::move(result_); }
-
-  // SkWStream:
-  bool write(const void* buffer, size_t size) override {
-    const unsigned char* bytes = reinterpret_cast<const unsigned char*>(buffer);
-    result_.insert(result_.end(), bytes, bytes + size);
-    return true;
-  }
-
-  size_t bytesWritten() const override { return result_.size(); }
-
- private:
-  std::vector<unsigned char> result_;
-};
-
-std::string MakeDataURIForImage(base::span<const uint8_t> image_data,
-                                base::StringPiece mime_subtype) {
-  std::string result = "data:image/";
-  result.append(mime_subtype.begin(), mime_subtype.end());
-  result += ";base64,";
-  result += base::Base64Encode(image_data);
-  return result;
-}
-
-std::string EncodePNGAndMakeDataURI(gfx::ImageSkia image, float scale_factor) {
-  const SkBitmap& bitmap = image.GetRepresentation(scale_factor).GetBitmap();
-  BufferWStream stream;
-  const bool encoding_succeeded =
-      SkEncodeImage(&stream, bitmap, SkEncodedImageFormat::kPNG, 100);
-  DCHECK(encoding_succeeded);
-  return MakeDataURIForImage(
-      base::as_bytes(base::make_span(stream.GetBuffer())), "png");
 }
 
 class WebUIBackgroundMenuModel : public ui::SimpleMenuModel {
@@ -221,6 +181,7 @@ void TabStripUIHandler::OnJavascriptAllowed() {
 void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
   switch (change.type) {
     case TabGroupChange::kCreated:
+    case TabGroupChange::kEditorOpened:
     case TabGroupChange::kContentsChanged: {
       // TabGroupChange::kCreated events are unnecessary as the front-end will
       // assume a group was created if there is a tab-group-state-changed event
@@ -258,9 +219,9 @@ void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
 
 void TabStripUIHandler::TabGroupedStateChanged(
     base::Optional<tab_groups::TabGroupId> group,
+    content::WebContents* contents,
     int index) {
-  int tab_id = extensions::ExtensionTabUtil::GetTabId(
-      browser_->tab_strip_model()->GetWebContentsAt(index));
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(contents);
   if (group.has_value()) {
     FireWebUIListener("tab-group-state-changed", base::Value(tab_id),
                       base::Value(index),
@@ -297,8 +258,6 @@ void TabStripUIHandler::OnTabStripModelChanged(
     case TabStripModelChange::kMoved: {
       auto* move = change.GetMove();
 
-      // TODO(johntlee): Investigate if this is still needed, when
-      // TabGroupChange::kMoved exists.
       base::Optional<tab_groups::TabGroupId> tab_group_id =
           tab_strip_model->GetTabGroupForTab(move->to_index);
       if (tab_group_id.has_value()) {
@@ -309,16 +268,9 @@ void TabStripUIHandler::OnTabStripModelChanged(
         if (tabs_in_group == selection.new_model.selected_indices()) {
           // If the selection includes all the tabs within the changed tab's
           // group, it is an indication that the entire group is being moved.
-          // To prevent sending multiple events for the same batch move, fire a
-          // separate single tab-group-moved event once all tabs have been
-          // moved. All tabs have moved only after all the indices in the group
-          // are in the correct continuous order.
-          if (tabs_in_group.back() - tabs_in_group.front() + 1 ==
-              static_cast<int>(tabs_in_group.size())) {
-            FireWebUIListener("tab-group-moved",
-                              base::Value(tab_group_id.value().ToString()),
-                              base::Value(tabs_in_group[0]));
-          }
+          // To prevent sending multiple events for each tab in the group,
+          // ignore these tabs moving as entire group moves will be handled by
+          // TabGroupChange::kMoved.
           break;
         }
       }
@@ -326,7 +278,8 @@ void TabStripUIHandler::OnTabStripModelChanged(
       FireWebUIListener(
           "tab-moved",
           base::Value(extensions::ExtensionTabUtil::GetTabId(move->contents)),
-          base::Value(move->to_index));
+          base::Value(move->to_index),
+          base::Value(tab_strip_model->IsTabPinned(move->to_index)));
       break;
     }
     case TabStripModelChange::kReplaced: {
@@ -467,7 +420,7 @@ base::DictionaryValue TabStripUIHandler::GetTabData(
   tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
 
   if (!tab_renderer_data.favicon.isNull()) {
-    tab_data.SetString("favIconUrl", EncodePNGAndMakeDataURI(
+    tab_data.SetString("favIconUrl", webui::EncodePNGAndMakeDataURI(
                                          tab_renderer_data.favicon,
                                          web_ui()->GetDeviceScaleFactor()));
     tab_data.SetBoolean("isDefaultFavicon",
@@ -662,23 +615,24 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
       return;
     }
 
-    // If moving within the same browser, just do a simple move.
+    // When a group is moved, all the tabs in it need to be selected at the same
+    // time. This mimics the way the native tab strip works and also allows
+    // this handler to ignore the events for each individual tab moving.
+    int active_index =
+        target_browser->tab_strip_model()->selection_model().active();
+    ui::ListSelectionModel group_selection;
+    group_selection.SetSelectedIndex(group->ListTabs().front());
+    group_selection.SetSelectionFromAnchorTo(group->ListTabs().back());
+    group_selection.set_active(active_index);
+    target_browser->tab_strip_model()->SetSelectionFromModel(group_selection);
+
     target_browser->tab_strip_model()->MoveGroupTo(group_id.value(), to_index);
     return;
   }
 
-  // Create a new group and copy the visuals to it.
-  tab_groups::TabGroupId new_group_id = tab_groups::TabGroupId::GenerateNew();
-  browser_->tab_strip_model()->group_model()->AddTabGroup(
-      new_group_id,
+  target_browser->tab_strip_model()->group_model()->AddTabGroup(
+      group_id.value(),
       base::Optional<tab_groups::TabGroupVisualData>{*group->visual_data()});
-
-  // The front-end needs to understand that the tab group ID has changed so
-  // that when the tabs are moved into the new group, the new group ID is
-  // updated with the correct value.
-  FireWebUIListener("tab-group-id-replaced",
-                    base::Value(group->id().ToString()),
-                    base::Value(new_group_id.ToString()));
 
   std::vector<int> source_tab_indices = group->ListTabs();
   int tab_count = source_tab_indices.size();
@@ -686,8 +640,8 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
     // The index needs to account for the tabs being detached, as they will
     // cause the indices to shift.
     int from_index = source_tab_indices[i] - i;
-    tab_strip_ui::MoveTabAcrossWindows(
-        source_browser, from_index, target_browser, to_index + i, new_group_id);
+    tab_strip_ui::MoveTabAcrossWindows(source_browser, from_index,
+                                       target_browser, to_index + i, group_id);
   }
 }
 
@@ -806,8 +760,15 @@ void TabStripUIHandler::HandleShowTabContextMenu(const base::ListValue* args) {
   const bool got_tab = extensions::ExtensionTabUtil::GetTabById(
       tab_id, browser_->profile(), true /* include_incognito */, &browser,
       nullptr, nullptr, &tab_index);
-  DCHECK(got_tab);
-  DCHECK_EQ(browser, browser_);
+  CHECK(got_tab);
+
+  if (browser != browser_) {
+    // TODO(crbug.com/1141573): Investigate how a context menu is being opened
+    // for a tab that is no longer in the tab strip. Until then, fire a
+    // tab-removed event so the tab is removed from this tab strip.
+    FireWebUIListener("tab-removed", base::Value(tab_id));
+    return;
+  }
 
   DCHECK(embedder_);
   embedder_->ShowContextMenuAtPoint(
@@ -874,7 +835,7 @@ void TabStripUIHandler::HandleThumbnailUpdate(
     ThumbnailTracker::CompressedThumbnailData image) {
   // Send base-64 encoded image to JS side.
   std::string data_uri =
-      MakeDataURIForImage(base::make_span(image->data), "jpeg");
+      webui::MakeDataURIForImage(base::make_span(image->data), "jpeg");
 
   const int tab_id = extensions::ExtensionTabUtil::GetTabId(tab);
   FireWebUIListener("tab-thumbnail-updated", base::Value(tab_id),

@@ -4,9 +4,13 @@
 
 #include "chrome/common/google_url_loader_throttle.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "components/google/core/common/google_util.h"
+#include "net/base/url_util.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -26,6 +30,8 @@ void GoogleURLLoaderThrottle::UpdateCorsExemptHeader(
     network::mojom::NetworkContextParams* params) {
   params->cors_exempt_header_list.push_back(
       safe_search_util::kGoogleAppsAllowedDomains);
+  params->cors_exempt_header_list.push_back(
+      safe_search_util::kYouTubeRestrictHeaderName);
 #if defined(OS_ANDROID)
   params->cors_exempt_header_list.push_back(kCCTClientDataHeader);
 #endif
@@ -34,11 +40,13 @@ void GoogleURLLoaderThrottle::UpdateCorsExemptHeader(
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
 #if defined(OS_ANDROID)
     const std::string& client_data_header,
+    bool night_mode_enabled,
 #endif
     chrome::mojom::DynamicParams dynamic_params)
     :
 #if defined(OS_ANDROID)
       client_data_header_(client_data_header),
+      night_mode_enabled_(night_mode_enabled),
 #endif
       dynamic_params_(std::move(dynamic_params)) {
 }
@@ -64,7 +72,7 @@ void GoogleURLLoaderThrottle::WillStartRequest(
       dynamic_params_.youtube_restrict <
           safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
-        request->url, &request->headers,
+        request->url, &request->cors_exempt_headers,
         static_cast<safe_search_util::YouTubeRestrictMode>(
             dynamic_params_.youtube_restrict));
   }
@@ -81,6 +89,20 @@ void GoogleURLLoaderThrottle::WillStartRequest(
       google_util::IsGoogleAssociatedDomainUrl(request->url)) {
     request->cors_exempt_headers.SetHeader(kCCTClientDataHeader,
                                            client_data_header_);
+  }
+
+  bool is_google_homepage_or_search =
+      google_util::IsGoogleHomePageUrl(request->url) ||
+      google_util::IsGoogleSearchUrl(request->url);
+  if (is_google_homepage_or_search) {
+    // TODO (crbug.com/1081510): Remove this experimental code once a final
+    // solution is agreed upon.
+    if (base::FeatureList::IsEnabled(features::kAndroidDarkSearch)) {
+      request->url = net::AppendOrReplaceQueryParameter(
+          request->url, "cs", night_mode_enabled_ ? "1" : "0");
+    }
+    base::UmaHistogramBoolean("Android.DarkTheme.DarkSearchRequested",
+                              night_mode_enabled_);
   }
 #endif
 }
@@ -105,7 +127,7 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
       dynamic_params_.youtube_restrict <
           safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
-        redirect_info->new_url, modified_headers,
+        redirect_info->new_url, modified_cors_exempt_headers,
         static_cast<safe_search_util::YouTubeRestrictMode>(
             dynamic_params_.youtube_restrict));
   }

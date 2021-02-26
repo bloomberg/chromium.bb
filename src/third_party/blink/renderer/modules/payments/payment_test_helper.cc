@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_currency_amount.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_method_data.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -214,10 +214,7 @@ payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest() {
 }
 
 PaymentRequestV8TestingScope::PaymentRequestV8TestingScope()
-    : V8TestingScope(KURL("https://www.example.com/")) {
-  GetDocument().SetSecureContextModeForTesting(
-      SecureContextMode::kSecureContext);
-}
+    : V8TestingScope(KURL("https://www.example.com/")) {}
 
 PaymentRequestMockFunctionScope::PaymentRequestMockFunctionScope(
     ScriptState* script_state)

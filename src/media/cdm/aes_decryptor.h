@@ -17,12 +17,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
+#include "media/cdm/json_web_key.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -65,10 +67,8 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   std::unique_ptr<CallbackRegistration> RegisterEventCB(
       EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
-  int GetCdmId() const override;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                DecryptCB decrypt_cb) override;
@@ -176,11 +176,19 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   CdmKeysInfo GenerateKeysInfoList(const std::string& session_id,
                                    CdmKeyInformation::KeyStatus status);
 
-  // Callbacks for firing session events.
+  // Gets the record of key usage for persistent-usage-record session. Used
+  // by ClearKeyPersistentSessionCdm.
+  // Returns false if the session type is not Persistent-Usage-Record.
+  bool GetRecordOfKeyUsage(const std::string& session_id,
+                           KeyIdList& key_ids,
+                           base::Time& first_decryption_time,
+                           base::Time& latest_decryption_time);
+
+  // Callbacks for firing session events. No SessionExpirationUpdateCB since
+  // the keys never expire.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
-  SessionExpirationUpdateCB session_expiration_update_cb_;
 
   // Since only Decrypt() is called off the renderer thread, we only need to
   // protect |key_map_|, the only member variable that is shared between
@@ -194,11 +202,11 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   // CdmSessionType for each session.
   std::map<std::string, CdmSessionType> open_sessions_;
 
-  // Protect |new_audio_key_cb_| and |new_video_key_cb_| as they are set on the
-  // main thread but called on the media thread.
-  mutable base::Lock new_key_cb_lock_;
-  NewKeyCB new_audio_key_cb_ GUARDED_BY(new_key_cb_lock_);
-  NewKeyCB new_video_key_cb_ GUARDED_BY(new_key_cb_lock_);
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
+
+  // First and latest decryption time for persistent-usage-record
+  base::Time first_decryption_time_ GUARDED_BY(key_map_lock_);
+  base::Time latest_decryption_time_ GUARDED_BY(key_map_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(AesDecryptor);
 };

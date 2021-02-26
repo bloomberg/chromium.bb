@@ -624,6 +624,429 @@ int64_t av1_lowbd_pixel_proj_error_sse4_1(
   return err;
 }
 
+// When params->r[0] > 0 and params->r[1] > 0. In this case all elements of
+// C and H need to be computed.
+static AOM_INLINE void calc_proj_params_r0_r1_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m128i h00, h01, h11, c0, c1;
+  const __m128i zero = _mm_setzero_si128();
+  h01 = h11 = c0 = c1 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(dat + i * dat_stride + j))));
+      const __m128i s_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(src + i * src_stride + j))));
+      __m128i f1 = _mm_loadu_si128((__m128i *)(flt0 + i * flt0_stride + j));
+      __m128i f2 = _mm_loadu_si128((__m128i *)(flt1 + i * flt1_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f1 = _mm_sub_epi32(f1, d);
+      f2 = _mm_sub_epi32(f2, d);
+
+      const __m128i h00_even = _mm_mul_epi32(f1, f1);
+      const __m128i h00_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f1, 32));
+      h00 = _mm_add_epi64(h00, h00_even);
+      h00 = _mm_add_epi64(h00, h00_odd);
+
+      const __m128i h01_even = _mm_mul_epi32(f1, f2);
+      const __m128i h01_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f2, 32));
+      h01 = _mm_add_epi64(h01, h01_even);
+      h01 = _mm_add_epi64(h01, h01_odd);
+
+      const __m128i h11_even = _mm_mul_epi32(f2, f2);
+      const __m128i h11_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(f2, 32));
+      h11 = _mm_add_epi64(h11, h11_even);
+      h11 = _mm_add_epi64(h11, h11_odd);
+
+      const __m128i c0_even = _mm_mul_epi32(f1, s);
+      const __m128i c0_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(s, 32));
+      c0 = _mm_add_epi64(c0, c0_even);
+      c0 = _mm_add_epi64(c0, c0_odd);
+
+      const __m128i c1_even = _mm_mul_epi32(f2, s);
+      const __m128i c1_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(s, 32));
+      c1 = _mm_add_epi64(c1, c1_even);
+      c1 = _mm_add_epi64(c1, c1_odd);
+    }
+  }
+
+  __m128i c_low = _mm_unpacklo_epi64(c0, c1);
+  const __m128i c_high = _mm_unpackhi_epi64(c0, c1);
+  c_low = _mm_add_epi64(c_low, c_high);
+
+  __m128i h0x_low = _mm_unpacklo_epi64(h00, h01);
+  const __m128i h0x_high = _mm_unpackhi_epi64(h00, h01);
+  h0x_low = _mm_add_epi64(h0x_low, h0x_high);
+
+  // Using the symmetric properties of H,  calculations of H[1][0] are not
+  // needed.
+  __m128i h1x_low = _mm_unpacklo_epi64(zero, h11);
+  const __m128i h1x_high = _mm_unpackhi_epi64(zero, h11);
+  h1x_low = _mm_add_epi64(h1x_low, h1x_high);
+
+  xx_storeu_128(C, c_low);
+  xx_storeu_128(H[0], h0x_low);
+  xx_storeu_128(H[1], h1x_low);
+
+  H[0][0] /= size;
+  H[0][1] /= size;
+  H[1][1] /= size;
+
+  // Since H is a symmetric matrix
+  H[1][0] = H[0][1];
+  C[0] /= size;
+  C[1] /= size;
+}
+
+// When only params->r[0] > 0. In this case only H[0][0] and C[0] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r0_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m128i h00, c0;
+  const __m128i zero = _mm_setzero_si128();
+  c0 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(dat + i * dat_stride + j))));
+      const __m128i s_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(src + i * src_stride + j))));
+      __m128i f1 = _mm_loadu_si128((__m128i *)(flt0 + i * flt0_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f1 = _mm_sub_epi32(f1, d);
+
+      const __m128i h00_even = _mm_mul_epi32(f1, f1);
+      const __m128i h00_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f1, 32));
+      h00 = _mm_add_epi64(h00, h00_even);
+      h00 = _mm_add_epi64(h00, h00_odd);
+
+      const __m128i c0_even = _mm_mul_epi32(f1, s);
+      const __m128i c0_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(s, 32));
+      c0 = _mm_add_epi64(c0, c0_even);
+      c0 = _mm_add_epi64(c0, c0_odd);
+    }
+  }
+  const __m128i h00_val = _mm_add_epi64(h00, _mm_srli_si128(h00, 8));
+
+  const __m128i c0_val = _mm_add_epi64(c0, _mm_srli_si128(c0, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(c0_val, zero);
+  const __m128i h0x = _mm_unpacklo_epi64(h00_val, zero);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[0], h0x);
+
+  H[0][0] /= size;
+  C[0] /= size;
+}
+
+// When only params->r[1] > 0. In this case only H[1][1] and C[1] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r1_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt1, int flt1_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m128i h11, c1;
+  const __m128i zero = _mm_setzero_si128();
+  c1 = h11 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(dat + i * dat_stride + j))));
+      const __m128i s_load = _mm_cvtepu8_epi32(
+          _mm_cvtsi32_si128(*((int *)(src + i * src_stride + j))));
+      __m128i f2 = _mm_loadu_si128((__m128i *)(flt1 + i * flt1_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f2 = _mm_sub_epi32(f2, d);
+
+      const __m128i h11_even = _mm_mul_epi32(f2, f2);
+      const __m128i h11_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(f2, 32));
+      h11 = _mm_add_epi64(h11, h11_even);
+      h11 = _mm_add_epi64(h11, h11_odd);
+
+      const __m128i c1_even = _mm_mul_epi32(f2, s);
+      const __m128i c1_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(s, 32));
+      c1 = _mm_add_epi64(c1, c1_even);
+      c1 = _mm_add_epi64(c1, c1_odd);
+    }
+  }
+
+  const __m128i h11_val = _mm_add_epi64(h11, _mm_srli_si128(h11, 8));
+
+  const __m128i c1_val = _mm_add_epi64(c1, _mm_srli_si128(c1, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(zero, c1_val);
+  const __m128i h1x = _mm_unpacklo_epi64(zero, h11_val);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[1], h1x);
+
+  H[1][1] /= size;
+  C[1] /= size;
+}
+
+// SSE4.1 variant of av1_calc_proj_params_c.
+void av1_calc_proj_params_sse4_1(const uint8_t *src8, int width, int height,
+                                 int src_stride, const uint8_t *dat8,
+                                 int dat_stride, int32_t *flt0, int flt0_stride,
+                                 int32_t *flt1, int flt1_stride,
+                                 int64_t H[2][2], int64_t C[2],
+                                 const sgr_params_type *params) {
+  if ((params->r[0] > 0) && (params->r[1] > 0)) {
+    calc_proj_params_r0_r1_sse4_1(src8, width, height, src_stride, dat8,
+                                  dat_stride, flt0, flt0_stride, flt1,
+                                  flt1_stride, H, C);
+  } else if (params->r[0] > 0) {
+    calc_proj_params_r0_sse4_1(src8, width, height, src_stride, dat8,
+                               dat_stride, flt0, flt0_stride, H, C);
+  } else if (params->r[1] > 0) {
+    calc_proj_params_r1_sse4_1(src8, width, height, src_stride, dat8,
+                               dat_stride, flt1, flt1_stride, H, C);
+  }
+}
+
+static AOM_INLINE void calc_proj_params_r0_r1_high_bd_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  __m128i h00, h01, h11, c0, c1;
+  const __m128i zero = _mm_setzero_si128();
+  h01 = h11 = c0 = c1 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m128i s_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m128i f1 = _mm_loadu_si128((__m128i *)(flt0 + i * flt0_stride + j));
+      __m128i f2 = _mm_loadu_si128((__m128i *)(flt1 + i * flt1_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f1 = _mm_sub_epi32(f1, d);
+      f2 = _mm_sub_epi32(f2, d);
+
+      const __m128i h00_even = _mm_mul_epi32(f1, f1);
+      const __m128i h00_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f1, 32));
+      h00 = _mm_add_epi64(h00, h00_even);
+      h00 = _mm_add_epi64(h00, h00_odd);
+
+      const __m128i h01_even = _mm_mul_epi32(f1, f2);
+      const __m128i h01_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f2, 32));
+      h01 = _mm_add_epi64(h01, h01_even);
+      h01 = _mm_add_epi64(h01, h01_odd);
+
+      const __m128i h11_even = _mm_mul_epi32(f2, f2);
+      const __m128i h11_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(f2, 32));
+      h11 = _mm_add_epi64(h11, h11_even);
+      h11 = _mm_add_epi64(h11, h11_odd);
+
+      const __m128i c0_even = _mm_mul_epi32(f1, s);
+      const __m128i c0_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(s, 32));
+      c0 = _mm_add_epi64(c0, c0_even);
+      c0 = _mm_add_epi64(c0, c0_odd);
+
+      const __m128i c1_even = _mm_mul_epi32(f2, s);
+      const __m128i c1_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(s, 32));
+      c1 = _mm_add_epi64(c1, c1_even);
+      c1 = _mm_add_epi64(c1, c1_odd);
+    }
+  }
+
+  __m128i c_low = _mm_unpacklo_epi64(c0, c1);
+  const __m128i c_high = _mm_unpackhi_epi64(c0, c1);
+  c_low = _mm_add_epi64(c_low, c_high);
+
+  __m128i h0x_low = _mm_unpacklo_epi64(h00, h01);
+  const __m128i h0x_high = _mm_unpackhi_epi64(h00, h01);
+  h0x_low = _mm_add_epi64(h0x_low, h0x_high);
+
+  // Using the symmetric properties of H,  calculations of H[1][0] are not
+  // needed.
+  __m128i h1x_low = _mm_unpacklo_epi64(zero, h11);
+  const __m128i h1x_high = _mm_unpackhi_epi64(zero, h11);
+  h1x_low = _mm_add_epi64(h1x_low, h1x_high);
+
+  xx_storeu_128(C, c_low);
+  xx_storeu_128(H[0], h0x_low);
+  xx_storeu_128(H[1], h1x_low);
+
+  H[0][0] /= size;
+  H[0][1] /= size;
+  H[1][1] /= size;
+
+  // Since H is a symmetric matrix
+  H[1][0] = H[0][1];
+  C[0] /= size;
+  C[1] /= size;
+}
+
+// When only params->r[0] > 0. In this case only H[0][0] and C[0] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r0_high_bd_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  __m128i h00, c0;
+  const __m128i zero = _mm_setzero_si128();
+  c0 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m128i s_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m128i f1 = _mm_loadu_si128((__m128i *)(flt0 + i * flt0_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f1 = _mm_sub_epi32(f1, d);
+
+      const __m128i h00_even = _mm_mul_epi32(f1, f1);
+      const __m128i h00_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(f1, 32));
+      h00 = _mm_add_epi64(h00, h00_even);
+      h00 = _mm_add_epi64(h00, h00_odd);
+
+      const __m128i c0_even = _mm_mul_epi32(f1, s);
+      const __m128i c0_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f1, 32), _mm_srli_epi64(s, 32));
+      c0 = _mm_add_epi64(c0, c0_even);
+      c0 = _mm_add_epi64(c0, c0_odd);
+    }
+  }
+  const __m128i h00_val = _mm_add_epi64(h00, _mm_srli_si128(h00, 8));
+
+  const __m128i c0_val = _mm_add_epi64(c0, _mm_srli_si128(c0, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(c0_val, zero);
+  const __m128i h0x = _mm_unpacklo_epi64(h00_val, zero);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[0], h0x);
+
+  H[0][0] /= size;
+  C[0] /= size;
+}
+
+// When only params->r[1] > 0. In this case only H[1][1] and C[1] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r1_high_bd_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt1, int flt1_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  __m128i h11, c1;
+  const __m128i zero = _mm_setzero_si128();
+  c1 = h11 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 4) {
+      const __m128i u_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m128i s_load = _mm_cvtepu16_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m128i f2 = _mm_loadu_si128((__m128i *)(flt1 + i * flt1_stride + j));
+      __m128i d = _mm_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m128i s = _mm_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm_sub_epi32(s, d);
+      f2 = _mm_sub_epi32(f2, d);
+
+      const __m128i h11_even = _mm_mul_epi32(f2, f2);
+      const __m128i h11_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(f2, 32));
+      h11 = _mm_add_epi64(h11, h11_even);
+      h11 = _mm_add_epi64(h11, h11_odd);
+
+      const __m128i c1_even = _mm_mul_epi32(f2, s);
+      const __m128i c1_odd =
+          _mm_mul_epi32(_mm_srli_epi64(f2, 32), _mm_srli_epi64(s, 32));
+      c1 = _mm_add_epi64(c1, c1_even);
+      c1 = _mm_add_epi64(c1, c1_odd);
+    }
+  }
+
+  const __m128i h11_val = _mm_add_epi64(h11, _mm_srli_si128(h11, 8));
+
+  const __m128i c1_val = _mm_add_epi64(c1, _mm_srli_si128(c1, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(zero, c1_val);
+  const __m128i h1x = _mm_unpacklo_epi64(zero, h11_val);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[1], h1x);
+
+  H[1][1] /= size;
+  C[1] /= size;
+}
+
+// SSE4.1 variant of av1_calc_proj_params_high_bd_c.
+void av1_calc_proj_params_high_bd_sse4_1(const uint8_t *src8, int width,
+                                         int height, int src_stride,
+                                         const uint8_t *dat8, int dat_stride,
+                                         int32_t *flt0, int flt0_stride,
+                                         int32_t *flt1, int flt1_stride,
+                                         int64_t H[2][2], int64_t C[2],
+                                         const sgr_params_type *params) {
+  if ((params->r[0] > 0) && (params->r[1] > 0)) {
+    calc_proj_params_r0_r1_high_bd_sse4_1(src8, width, height, src_stride, dat8,
+                                          dat_stride, flt0, flt0_stride, flt1,
+                                          flt1_stride, H, C);
+  } else if (params->r[0] > 0) {
+    calc_proj_params_r0_high_bd_sse4_1(src8, width, height, src_stride, dat8,
+                                       dat_stride, flt0, flt0_stride, H, C);
+  } else if (params->r[1] > 0) {
+    calc_proj_params_r1_high_bd_sse4_1(src8, width, height, src_stride, dat8,
+                                       dat_stride, flt1, flt1_stride, H, C);
+  }
+}
+
 #if CONFIG_AV1_HIGHBITDEPTH
 int64_t av1_highbd_pixel_proj_error_sse4_1(
     const uint8_t *src8, int width, int height, int src_stride,

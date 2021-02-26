@@ -1,69 +1,44 @@
-import { objectEquals } from './util/util.js';
+import { comparePublicParamsPaths, Ordering } from './query/compare.js';
+import { kWildcard, kParamSeparator, kParamKVSeparator } from './query/separators.js';
 
-// tslint:disable-next-line: no-any
-export type ParamArgument = any;
-export interface ParamSpec {
+// Consider adding more types here if needed
+//
+// TODO: This type isn't actually used to constrain what you're allowed to do in `.params()`, so
+// it's not really serving its purpose. Figure out how to fix that?
+export type ParamArgument =
+  | undefined
+  | null
+  | number
+  | string
+  | boolean
+  | number[]
+  | { readonly [k: string]: undefined | null | number | string | boolean };
+export type CaseParams = {
+  readonly [k: string]: ParamArgument;
+};
+export interface CaseParamsRW {
   [k: string]: ParamArgument;
 }
-export type ParamSpecIterable = Iterable<ParamSpec>;
-export type ParamSpecIterator = IterableIterator<ParamSpec>;
+export type CaseParamsIterable = Iterable<CaseParams>;
 
-export function extractPublicParams(params: ParamSpec): ParamSpec {
-  const publicParams: ParamSpec = {};
+export function paramKeyIsPublic(key: string): boolean {
+  return !key.startsWith('_');
+}
+
+export function extractPublicParams(params: CaseParams): CaseParams {
+  const publicParams: CaseParamsRW = {};
   for (const k of Object.keys(params)) {
-    if (!k.startsWith('_')) {
+    if (paramKeyIsPublic(k)) {
       publicParams[k] = params[k];
     }
   }
   return publicParams;
 }
 
-export function stringifyPublicParams(p: ParamSpec | null): string {
-  if (p === null || paramsEquals(p, {})) {
-    return '';
-  }
-  return JSON.stringify(extractPublicParams(p));
-}
+export const badParamValueChars = new RegExp(
+  '[' + kParamKVSeparator + kParamSeparator + kWildcard + ']'
+);
 
-export function paramsEquals(x: ParamSpec | null, y: ParamSpec | null): boolean {
-  if (x === y) {
-    return true;
-  }
-  if (x === null) {
-    x = {};
-  }
-  if (y === null) {
-    y = {};
-  }
-
-  for (const xk of Object.keys(x)) {
-    if (x[xk] !== undefined && !y.hasOwnProperty(xk)) {
-      return false;
-    }
-    if (!objectEquals(x[xk], y[xk])) {
-      return false;
-    }
-  }
-
-  for (const yk of Object.keys(y)) {
-    if (y[yk] !== undefined && !x.hasOwnProperty(yk)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function paramsSupersets(sup: ParamSpec | null, sub: ParamSpec | null): boolean {
-  if (sub === null) {
-    return true;
-  }
-  if (sup === null) {
-    sup = {};
-  }
-  for (const k of Object.keys(sub)) {
-    if (!sup.hasOwnProperty(k) || sup[k] !== sub[k]) {
-      return false;
-    }
-  }
-  return true;
+export function publicParamsEquals(x: CaseParams, y: CaseParams): boolean {
+  return comparePublicParamsPaths(x, y) === Ordering.Equal;
 }

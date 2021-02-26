@@ -6,8 +6,6 @@
 
 dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
     required GPUExtent3D size;
-    // TODO(crbug.com/1069302): arrayLayerCount is deprecated; remove it.
-    unsigned long arrayLayerCount;
     GPUIntegerCoordinate mipLevelCount = 1;
     GPUSize32 sampleCount = 1;
     GPUTextureDimension dimension = "2d";
@@ -50,8 +48,10 @@ enum GPUTextureFormat {
     "bgra8unorm",
     "bgra8unorm-srgb",
     /* Packed 32 bit formats */
+    "rgb9e5ufloat",
     "rgb10a2unorm",
     "rg11b10float",
+    "rg11b10ufloat",
     /* Normal 64 bit formats */
     "rg32uint",
     "rg32sint",
@@ -79,6 +79,7 @@ enum GPUTextureFormat {
     "bc5-rg-unorm",
     "bc5-rg-snorm",
     "bc6h-rgb-ufloat",
+    "bc6h-rgb-float",
     "bc6h-rgb-sfloat",
     "bc7-rgba-unorm",
     "bc7-rgba-unorm-srgb"

@@ -13,7 +13,7 @@ Are you a Google employee? See
 ## System requirements
 
 * A 64-bit Mac running 10.12.6 or later.
-* [Xcode](https://developer.apple.com/xcode) 10.0+.
+* [Xcode](https://developer.apple.com/xcode) 11.4+.
 * The current version of the JDK (required for the Closure compiler).
 
 ## Install `depot_tools`
@@ -73,10 +73,11 @@ development and testing purposes.
 Since the iOS build is a bit more complicated than a desktop build, we provide
 `ios/build/tools/setup-gn.py`, which will create four appropriately configured
 build directories under `out` for Release and Debug device and simulator
-builds, and generates an appropriate Xcode workspace
-(`out/build/all.xcworkspace`) as well.
+builds, and generates an appropriate Xcode project (`out/build/all.xcodeproj`)
+as well.
 
-More information about [developing with Xcode](xcode_tips.md).
+More information about [developing with Xcode](xcode_tips.md). *Xcode project
+is an artifact, any changes made in the project itself will be ignored.*
 
 You can customize the build by editing the file `$HOME/.setup-gn` (create it if
 it does not exist).  Look at `src/ios/build/tools/setup-gn.config` for
@@ -98,6 +99,34 @@ files is updated (either by you or after rebasing). If you forget to run it,
 the list of targets and files in the Xcode solution may be stale. You can run
 the script directly or use either `gclient sync` or `gclient runhooks` which
 will run `setup-gn.py` for you as part of the update hooks.
+
+You can add a custom hook to `.gclient` file to configure `setup-gn.py` to
+be run as part of `gclient runhooks`. In that case, your `.gclient` file
+would look like this:
+
+```
+solutions = [
+  {
+    "name"        : "src",
+    "url"         : "https://chromium.googlesource.com/chromium/src.git",
+    "deps_file"   : "DEPS",
+    "managed"     : False,
+    "custom_deps" : {},
+    "custom_vars" : {},
+    "custom_hooks": [{
+      "name": "setup_gn",
+      "pattern": ".",
+      "action": [
+        "python",
+        "src/ios/build/tools/setup-gn.py",
+      ]
+    }],
+    "safesync_url": "",
+  },
+]
+target_os = ["ios"]
+target_os_only = True
+```
 
 You can also follow the manual instructions on the
 [Mac page](../mac_build_instructions.md), but make sure you set the
@@ -298,6 +327,23 @@ If you have problems building, join us in `#chromium` on `irc.freenode.net` and
 ask there. As mentioned above, be sure that the
 [waterfall](https://build.chromium.org/buildbot/waterfall/) is green and the tree
 is open before checking out. This will increase your chances of success.
+
+### Debugging
+
+To help with deterministic builds, and to work with Goma, the path to source
+files in debugging symbols are relative to source directory. To allow Xcode
+to find the source files, you need to ensure to have an `~/.lldbinit-Xcode`
+file with the following lines into it (substitute {SRC} for your actual path
+to the root of Chromium's sources):
+
+```
+script sys.path[:0] = ['{SRC}/tools/lldb']
+script import lldbinit
+```
+
+This will also allow you to see the content of some of Chromium types in the
+debugger like `base::string16`, ... If you want to use `lldb` directly, name
+the file `~/.lldbinit` instead of `~/.lldbinit-Xcode`.
 
 ### Improving performance of `git status`
 

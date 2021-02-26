@@ -46,9 +46,9 @@ namespace {
 void InvalidateInlineItems(LayoutObject* object) {
   DCHECK(object->IsInLayoutNGInlineFormattingContext());
 
-  if (auto* layout_text = ToLayoutTextOrNull(object)) {
+  if (auto* layout_text = DynamicTo<LayoutText>(object)) {
     layout_text->InvalidateInlineItems();
-  } else if (auto* layout_inline = ToLayoutInlineOrNull(object)) {
+  } else if (auto* layout_inline = DynamicTo<LayoutInline>(object)) {
     // In some cases, only top-level objects are moved, when |SplitFlow()| moves
     // subtree, or when moving without |notify_layout_object|. Ensure to
     // invalidate all descendants in this inline formatting context.
@@ -63,7 +63,7 @@ void InvalidateInlineItems(LayoutObject* object) {
     // This LayoutObject is not technically destroyed, but further access should
     // be prohibited when moved to different parent as if it were destroyed.
     if (object->FirstInlineFragmentItemIndex()) {
-      if (auto* text = ToLayoutTextOrNull(object))
+      if (auto* text = DynamicTo<LayoutText>(object))
         text->DetachAbstractInlineTextBoxesIfNeeded();
       NGFragmentItems::LayoutObjectWillBeMoved(*object);
     }
@@ -97,7 +97,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
   DCHECK_EQ(this, owner->VirtualChildren());
 
   if (old_child->IsFloatingOrOutOfFlowPositioned())
-    ToLayoutBox(old_child)->RemoveFloatingOrPositionedChildFromBlockLists();
+    To<LayoutBox>(old_child)->RemoveFloatingOrPositionedChildFromBlockLists();
 
   if (!owner->DocumentBeingDestroyed()) {
     // So that we'll get the appropriate dirty bit set (either that a normal
@@ -116,7 +116,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
 
   // If we have a line box wrapper, delete it.
   if (old_child->IsBox())
-    ToLayoutBox(old_child)->DeleteLineBoxWrapper();
+    To<LayoutBox>(old_child)->DeleteLineBoxWrapper();
 
   if (!owner->DocumentBeingDestroyed()) {
     owner->NotifyOfSubtreeChange();
@@ -125,8 +125,8 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
       LayoutCounter::LayoutObjectSubtreeWillBeDetached(old_child);
       old_child->WillBeRemovedFromTree();
     } else if (old_child->IsBox() &&
-               ToLayoutBox(old_child)->IsOrthogonalWritingModeRoot()) {
-      ToLayoutBox(old_child)->UnmarkOrthogonalWritingModeRoot();
+               To<LayoutBox>(old_child)->IsOrthogonalWritingModeRoot()) {
+      To<LayoutBox>(old_child)->UnmarkOrthogonalWritingModeRoot();
     }
 
     if (old_child->IsInLayoutNGInlineFormattingContext()) {
@@ -242,12 +242,8 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
-  if (owner->ForceLegacyLayout()) {
+  if (owner->ForceLegacyLayout() && !new_child->IsLayoutNGObject())
     new_child->SetForceLegacyLayout();
-    // TODO(crbug.com/943574): This would be a great place to DCHECK that the
-    // child isn't an NG object, but there are unfortunately cases where this
-    // actually happens.
-  }
 
   new_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);

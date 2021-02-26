@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_slider_container.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "ui/base/ui_base_features.h"
 
@@ -54,7 +53,7 @@ namespace blink {
 SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
-  setAttribute(html_names::kIdAttr, shadow_element_names::SliderThumb());
+  setAttribute(html_names::kIdAttr, shadow_element_names::kIdSliderThumb);
 }
 
 void SliderThumbElement::SetPositionFromValue() {
@@ -91,10 +90,6 @@ bool SliderThumbElement::MatchesReadWritePseudoClass() const {
   return HostInput() && HostInput()->MatchesReadWritePseudoClass();
 }
 
-const Node* SliderThumbElement::FocusDelegate() const {
-  return HostInput();
-}
-
 void SliderThumbElement::DragFrom(const LayoutPoint& point) {
   StartDragging();
   SetPositionFromPoint(point);
@@ -103,7 +98,7 @@ void SliderThumbElement::DragFrom(const LayoutPoint& point) {
 void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   HTMLInputElement* input(HostInput());
   Element* track_element = input->UserAgentShadowRoot()->getElementById(
-      shadow_element_names::SliderTrack());
+      shadow_element_names::kIdSliderTrack);
 
   const LayoutObject* input_object = input->GetLayoutObject();
   const LayoutBox* thumb_box = GetLayoutBox();
@@ -119,7 +114,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   LayoutUnit track_size;
   LayoutUnit position;
   LayoutUnit current_position;
-  const LayoutBox* input_box = ToLayoutBox(input_object);
+  const auto* input_box = To<LayoutBox>(input_object);
   PhysicalOffset thumb_offset =
       thumb_box->LocalToAncestorPoint(PhysicalOffset(), input_box) -
       track_box->LocalToAncestorPoint(PhysicalOffset(), input_box);
@@ -275,22 +270,10 @@ HTMLInputElement* SliderThumbElement::HostInput() const {
   return To<HTMLInputElement>(OwnerShadowHost());
 }
 
-static const AtomicString& SliderThumbShadowPartId() {
-  DEFINE_STATIC_LOCAL(const AtomicString, slider_thumb,
-                      ("-webkit-slider-thumb"));
-  return slider_thumb;
-}
-
-static const AtomicString& MediaSliderThumbShadowPartId() {
-  DEFINE_STATIC_LOCAL(const AtomicString, media_slider_thumb,
-                      ("-webkit-media-slider-thumb"));
-  return media_slider_thumb;
-}
-
 const AtomicString& SliderThumbElement::ShadowPseudoId() const {
   HTMLInputElement* input = HostInput();
   if (!input || !input->GetLayoutObject())
-    return SliderThumbShadowPartId();
+    return shadow_element_names::kPseudoSliderThumb;
 
   const ComputedStyle& slider_style = input->GetLayoutObject()->StyleRef();
   switch (slider_style.EffectiveAppearance()) {
@@ -298,9 +281,9 @@ const AtomicString& SliderThumbElement::ShadowPseudoId() const {
     case kMediaSliderThumbPart:
     case kMediaVolumeSliderPart:
     case kMediaVolumeSliderThumbPart:
-      return MediaSliderThumbShadowPartId();
+      return shadow_element_names::kPseudoMediaSliderThumb;
     default:
-      return SliderThumbShadowPartId();
+      return shadow_element_names::kPseudoSliderThumb;
   }
 }
 
@@ -339,9 +322,10 @@ HTMLInputElement* SliderContainerElement::HostInput() const {
   return To<HTMLInputElement>(OwnerShadowHost());
 }
 
-LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&,
-                                                         LegacyLayout) {
-  return new LayoutSliderContainer(this);
+LayoutObject* SliderContainerElement::CreateLayoutObject(
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return LayoutObjectFactory::CreateFlexibleBox(*this, style, legacy);
 }
 
 void SliderContainerElement::DefaultEventHandler(Event& event) {
@@ -373,7 +357,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
 
   TouchList* touches = event->targetTouches();
   auto* thumb = To<SliderThumbElement>(
-      GetTreeScope().getElementById(shadow_element_names::SliderThumb()));
+      GetTreeScope().getElementById(shadow_element_names::kIdSliderThumb));
   if (!thumb || !touches)
     return;
 
@@ -436,13 +420,8 @@ bool SliderContainerElement::CanSlide() {
 }
 
 const AtomicString& SliderContainerElement::ShadowPseudoId() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, media_slider_container,
-                      ("-webkit-media-slider-container"));
-  DEFINE_STATIC_LOCAL(const AtomicString, slider_container,
-                      ("-webkit-slider-container"));
-
   if (!OwnerShadowHost() || !OwnerShadowHost()->GetLayoutObject())
-    return slider_container;
+    return shadow_element_names::kPseudoSliderContainer;
 
   const ComputedStyle& slider_style =
       OwnerShadowHost()->GetLayoutObject()->StyleRef();
@@ -451,9 +430,9 @@ const AtomicString& SliderContainerElement::ShadowPseudoId() const {
     case kMediaSliderThumbPart:
     case kMediaVolumeSliderPart:
     case kMediaVolumeSliderThumbPart:
-      return media_slider_container;
+      return shadow_element_names::kPseudoMediaSliderContainer;
     default:
-      return slider_container;
+      return shadow_element_names::kPseudoSliderContainer;
   }
 }
 

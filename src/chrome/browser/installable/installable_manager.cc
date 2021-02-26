@@ -7,12 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
@@ -22,10 +23,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/origin.h"
@@ -96,7 +99,7 @@ int GetMinimumSplashIconSizeInPx() {
 #endif
 }
 
-using IconPurpose = blink::Manifest::ImageResource::Purpose;
+using IconPurpose = blink::mojom::ManifestImageResource_Purpose;
 
 struct ImageTypeDetails {
   const char* extension;
@@ -147,11 +150,11 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
       continue;
 
     if (!(base::Contains(icon.purpose,
-                         blink::Manifest::ImageResource::Purpose::ANY) ||
+                         blink::mojom::ManifestImageResource_Purpose::ANY) ||
           (prefer_maskable_icon &&
            base::Contains(
                icon.purpose,
-               blink::Manifest::ImageResource::Purpose::MASKABLE)))) {
+               blink::mojom::ManifestImageResource_Purpose::MASKABLE)))) {
       continue;
     }
 
@@ -159,14 +162,15 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
       if (size.IsEmpty())  // "any"
         return true;
       if (base::Contains(icon.purpose,
-                         blink::Manifest::ImageResource::Purpose::ANY) &&
+                         blink::mojom::ManifestImageResource_Purpose::ANY) &&
           size.width() >= kMinimumPrimaryIconSizeInPx &&
           size.height() >= kMinimumPrimaryIconSizeInPx) {
         return true;
       }
       if (prefer_maskable_icon &&
-          base::Contains(icon.purpose,
-                         blink::Manifest::ImageResource::Purpose::MASKABLE) &&
+          base::Contains(
+              icon.purpose,
+              blink::mojom::ManifestImageResource_Purpose::MASKABLE) &&
           size.height() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx &&
           size.width() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx) {
         return true;
@@ -175,6 +179,15 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
   }
 
   return false;
+}
+
+bool ShouldRejectDisplayMode(blink::mojom::DisplayMode display_mode) {
+  return !(
+      display_mode == blink::mojom::DisplayMode::kStandalone ||
+      display_mode == blink::mojom::DisplayMode::kFullscreen ||
+      display_mode == blink::mojom::DisplayMode::kMinimalUi ||
+      (display_mode == blink::mojom::DisplayMode::kWindowControlsOverlay &&
+       base::FeatureList::IsEnabled(features::kWebAppWindowControlsOverlay)));
 }
 
 // Returns true if |params| specifies a full PWA check.
@@ -291,6 +304,7 @@ bool InstallableManager::IsOriginConsideredSecure(const GURL& url) {
 void InstallableManager::GetData(const InstallableParams& params,
                                  InstallableCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(callback);
 
   if (IsParamsForPwaCheck(params))
     has_pwa_check_ = true;
@@ -308,6 +322,7 @@ void InstallableManager::GetData(const InstallableParams& params,
 void InstallableManager::GetAllErrors(
     base::OnceCallback<void(std::vector<content::InstallabilityError>
                                 installability_errors)> callback) {
+  DCHECK(callback);
   InstallableParams params;
   params.check_eligibility = true;
   params.valid_manifest = true;
@@ -322,6 +337,7 @@ void InstallableManager::GetAllErrors(
 
 void InstallableManager::GetPrimaryIcon(
     base::OnceCallback<void(const SkBitmap*)> callback) {
+  DCHECK(callback);
   InstallableParams params;
   params.valid_primary_icon = true;
   GetData(params,
@@ -457,13 +473,17 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          (!params.valid_splash_icon || IsIconFetchComplete(IconUsage::kSplash));
 }
 
-void InstallableManager::Reset() {
+void InstallableManager::Reset(base::Optional<InstallableStatusCode> error) {
+  DCHECK(!error || error.value() != NO_ERROR_DETECTED);
   // Prevent any outstanding callbacks to or from this object from being called.
   weak_factory_.InvalidateWeakPtrs();
   icons_.clear();
 
   // If we have paused tasks, we are waiting for a service worker.
-  task_queue_.Reset();
+  if (error)
+    task_queue_.ResetWithError(error.value());
+  else
+    task_queue_.Reset();
   has_pwa_check_ = false;
 
   eligibility_ = std::make_unique<EligiblityProperty>();
@@ -575,9 +595,6 @@ void InstallableManager::CheckEligiblity() {
           ->IsOffTheRecord()) {
     eligibility_->errors.push_back(IN_INCOGNITO);
   }
-  if (web_contents->GetMainFrame()->GetParent()) {
-    eligibility_->errors.push_back(NOT_IN_MAIN_FRAME);
-  }
   if (!IsContentSecure(web_contents)) {
     eligibility_->errors.push_back(NOT_FROM_SECURE_ORIGIN);
   }
@@ -641,18 +658,32 @@ bool InstallableManager::IsManifestValidForWebApp(
     is_valid = false;
   }
 
-  if ((manifest.name.is_null() || manifest.name.string().empty()) &&
-      (manifest.short_name.is_null() || manifest.short_name.string().empty())) {
+  if ((!manifest.name || manifest.name->empty()) &&
+      (!manifest.short_name || manifest.short_name->empty())) {
     valid_manifest_->errors.push_back(MANIFEST_MISSING_NAME_OR_SHORT_NAME);
     is_valid = false;
   }
 
-  if (check_webapp_manifest_display &&
-      manifest.display != blink::mojom::DisplayMode::kStandalone &&
-      manifest.display != blink::mojom::DisplayMode::kFullscreen &&
-      manifest.display != blink::mojom::DisplayMode::kMinimalUi) {
-    valid_manifest_->errors.push_back(MANIFEST_DISPLAY_NOT_SUPPORTED);
-    is_valid = false;
+  if (check_webapp_manifest_display) {
+    blink::mojom::DisplayMode display_mode_to_evaluate = manifest.display;
+    InstallableStatusCode manifest_error = MANIFEST_DISPLAY_NOT_SUPPORTED;
+
+    if (base::FeatureList::IsEnabled(
+            features::kWebAppManifestDisplayOverride)) {
+      // Unsupported values are ignored when we parse the manifest, and
+      // consequently aren't in the manifest.display_override array.
+      // If this array is not empty, the first value will "win", so validate
+      // this value is installable.
+      if (!manifest.display_override.empty()) {
+        display_mode_to_evaluate = manifest.display_override[0];
+        manifest_error = MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED;
+      }
+    }
+
+    if (ShouldRejectDisplayMode(display_mode_to_evaluate)) {
+      valid_manifest_->errors.push_back(manifest_error);
+      is_valid = false;
+    }
   }
 
   if (!DoesManifestContainRequiredIcon(manifest, prefer_maskable_icon)) {
@@ -674,16 +705,35 @@ void InstallableManager::CheckServiceWorker() {
   service_worker_context_->CheckHasServiceWorker(
       manifest().scope,
       base::BindOnce(&InstallableManager::OnDidCheckHasServiceWorker,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(),
+                     base::TimeTicks::Now()));
 }
 
 void InstallableManager::OnDidCheckHasServiceWorker(
+    base::TimeTicks check_service_worker_start_time,
     content::ServiceWorkerCapability capability) {
   if (!GetWebContents())
     return;
 
   switch (capability) {
     case content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
+      if (base::FeatureList::IsEnabled(
+              blink::features::kCheckOfflineCapability)) {
+        const bool enforce_offline_capability =
+            (blink::features::kCheckOfflineCapabilityParam.Get() ==
+             blink::features::CheckOfflineCapabilityMode::kEnforce);
+
+        service_worker_context_->CheckOfflineCapability(
+            manifest().scope,
+            base::BindOnce(&InstallableManager::OnDidCheckOfflineCapability,
+                           weak_factory_.GetWeakPtr(),
+                           check_service_worker_start_time,
+                           enforce_offline_capability));
+
+        // Execution continues in OnDidCheckOfflineCapability.
+        if (enforce_offline_capability)
+          return;
+      }
       worker_->has_worker = true;
       break;
     case content::ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER:
@@ -703,6 +753,42 @@ void InstallableManager::OnDidCheckHasServiceWorker(
       }
       worker_->has_worker = false;
       worker_->error = NO_MATCHING_SERVICE_WORKER;
+      break;
+  }
+
+  // These are recorded in OnDidCheckOfflineCapability() when
+  // CheckOfflineCapability is enabled.
+  if (!base::FeatureList::IsEnabled(blink::features::kCheckOfflineCapability)) {
+    InstallableMetrics::RecordCheckServiceWorkerTime(
+        base::TimeTicks::Now() - check_service_worker_start_time);
+    InstallableMetrics::RecordCheckServiceWorkerStatus(
+        InstallableMetrics::ConvertFromServiceWorkerCapability(capability));
+  }
+
+  worker_->fetched = true;
+  WorkOnTask();
+}
+
+void InstallableManager::OnDidCheckOfflineCapability(
+    base::TimeTicks check_service_worker_start_time,
+    bool enforce_offline_capability,
+    content::OfflineCapability capability,
+    int64_t service_worker_registration_id) {
+  InstallableMetrics::RecordCheckServiceWorkerTime(
+      base::TimeTicks::Now() - check_service_worker_start_time);
+  InstallableMetrics::RecordCheckServiceWorkerStatus(
+      InstallableMetrics::ConvertFromOfflineCapability(capability));
+
+  if (!enforce_offline_capability)
+    return;
+
+  switch (capability) {
+    case content::OfflineCapability::kSupported:
+      worker_->has_worker = true;
+      break;
+    case content::OfflineCapability::kUnsupported:
+      worker_->has_worker = false;
+      worker_->error = NOT_OFFLINE_CAPABLE;
       break;
   }
 
@@ -788,14 +874,15 @@ void InstallableManager::DidFinishNavigation(
     content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
       !handle->IsSameDocument()) {
-    Reset();
+    Reset(USER_NAVIGATED);
   }
 }
 
 void InstallableManager::DidUpdateWebManifestURL(
+    content::RenderFrameHost* rfh,
     const base::Optional<GURL>& manifest_url) {
   // A change in the manifest URL invalidates our entire internal state.
-  Reset();
+  Reset(MANIFEST_URL_CHANGED);
 }
 
 void InstallableManager::WebContentsDestroyed() {

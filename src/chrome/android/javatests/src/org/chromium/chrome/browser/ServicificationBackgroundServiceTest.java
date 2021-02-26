@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 
@@ -21,7 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -36,7 +36,6 @@ import java.nio.channels.FileChannel;
  * browser.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 public final class ServicificationBackgroundServiceTest {
     private ServicificationBackgroundService mServicificationBackgroundService;
     private RandomAccessFile mMappedSpareFile;
@@ -117,6 +116,10 @@ public final class ServicificationBackgroundServiceTest {
     @LargeTest
     @Feature({"ServicificationStartup"})
     @CommandLineFlags.Add({"force-fieldtrials=*Foo/Bar", "enable-features=UMABackgroundSessions"})
+    @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/1096833
+    // Verifies that the memory-mapped file for persistent histogram data exists and contains a
+    // valid SystemProfile. This test isn't run on low end devices which use local memory for
+    // storing histogram data.
     public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());

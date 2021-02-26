@@ -7,9 +7,11 @@
 
 #include <fuchsia/media/drm/cpp/fidl.h>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
@@ -36,8 +38,10 @@ class FuchsiaCdm : public ContentDecryptionModule,
 
     DISALLOW_COPY_AND_ASSIGN(SessionCallbacks);
   };
+  using ReadyCB = base::OnceCallback<void(bool, const std::string&)>;
 
   FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
+             ReadyCB ready_cb,
              SessionCallbacks callbacks);
 
   // ContentDecryptionModule implementation:
@@ -64,18 +68,19 @@ class FuchsiaCdm : public ContentDecryptionModule,
   std::unique_ptr<CallbackRegistration> RegisterEventCB(
       EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
-  int GetCdmId() const override;
   FuchsiaCdmContext* GetFuchsiaCdmContext() override;
 
   // FuchsiaCdmContext implementation:
   std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateVideoDecryptor(
       FuchsiaSecureStreamDecryptor::Client* client) override;
+  std::unique_ptr<FuchsiaClearStreamDecryptor> CreateAudioDecryptor() override;
 
  private:
   class CdmSession;
 
   ~FuchsiaCdm() override;
 
+  void OnProvisioned();
   void OnCreateSession(std::unique_ptr<CdmSession> session,
                        uint32_t promise_id,
                        const std::string& session_id);
@@ -93,6 +98,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
   base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
+  ReadyCB ready_cb_;
   SessionCallbacks session_callbacks_;
 
   FuchsiaDecryptor decryptor_;
@@ -100,6 +106,8 @@ class FuchsiaCdm : public ContentDecryptionModule,
   base::Lock new_key_cb_for_video_lock_;
   base::RepeatingClosure new_key_cb_for_video_
       GUARDED_BY(new_key_cb_for_video_lock_);
+
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
 };

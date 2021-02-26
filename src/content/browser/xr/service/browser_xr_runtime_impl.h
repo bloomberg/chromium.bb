@@ -10,10 +10,10 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "build/build_config.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/xr_consent_helper.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -36,6 +36,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       base::OnceCallback<void(device::mojom::XRSessionPtr)>;
   explicit BrowserXRRuntimeImpl(
       device::mojom::XRDeviceId id,
+      device::mojom::XRDeviceDataPtr device_data,
       mojo::PendingRemote<device::mojom::XRRuntime> runtime,
       device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntimeImpl() override;
@@ -47,6 +48,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
 
   bool SupportsCustomIPD() const;
   bool SupportsNonEmulatedHeight() const;
+  bool SupportsArBlendMode();
 
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
@@ -59,10 +61,6 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
                       RequestSessionCallback callback);
-  void ShowConsentPrompt(int render_process_id,
-                         int render_frame_id,
-                         content::XrConsentPromptLevel consent_level,
-                         content::OnXrUserConsentCallback consent_callback);
   void EnsureInstalled(int render_process_id,
                        int render_frame_id,
                        base::OnceCallback<void(bool)> install_callback);
@@ -76,10 +74,13 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
 
   device::mojom::XRDeviceId GetId() const { return id_; }
 
+#if defined(OS_WIN)
+  base::Optional<LUID> GetLuid() const;
+#endif
+
   // BrowserXRRuntime
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void SetInlinePosesEnabled(bool enabled) override;
 
   // Called to allow the runtime to conduct any cleanup it needs to do before it
   // is removed.
@@ -105,6 +106,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   void OnInstallFinished(bool succeeded);
 
   device::mojom::XRDeviceId id_;
+  device::mojom::XRDeviceDataPtr device_data_;
   mojo::Remote<device::mojom::XRRuntime> runtime_;
   mojo::Remote<device::mojom::XRSessionController>
       immersive_session_controller_;
@@ -118,7 +120,6 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       this};
 
   base::ObserverList<Observer> observers_;
-  std::unique_ptr<content::XrConsentHelper> consent_helper_;
   std::unique_ptr<content::XrInstallHelper> install_helper_;
   base::OnceCallback<void(bool)> install_finished_callback_;
 

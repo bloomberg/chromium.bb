@@ -32,7 +32,7 @@ namespace dbg {
 
 class File;
 class VariableContainer;
-class EventListener;
+class ServerEventListener;
 
 // Scope is a container for variables and is used to provide source data for the
 // DAP 'Scope' type:
@@ -107,6 +107,8 @@ class Thread
 public:
 	using ID = dbg::ID<Thread>;
 
+	using UpdateFrame = std::function<void(Frame &)>;
+
 	// The current execution state.
 	enum class State
 	{
@@ -124,11 +126,14 @@ public:
 	std::string name() const;
 
 	// enter() pushes the thread's stack with a new frame created with the given
-	// file and function.
-	void enter(Context::Lock &lock, const std::shared_ptr<File> &file, const std::string &function);
+	// file and function, then calls f to modify the new frame of the stack.
+	void enter(const std::shared_ptr<File> &file, const std::string &function, const UpdateFrame &f = nullptr);
 
 	// exit() pops the thread's stack frame.
-	void exit();
+	// If isStep is true, then this will be considered a line-steppable event,
+	// and the debugger may pause at the function call at the new top most stack
+	// frame.
+	void exit(bool isStep = false);
 
 	// frame() returns a copy of the thread's top most stack frame.
 	Frame frame() const;
@@ -150,7 +155,7 @@ public:
 	// from full line updates. Note that we cannot simply examine line position
 	// changes as single-line loops such as `while(true) { foo(); }` would not
 	// be correctly steppable.
-	void update(bool isStep, std::function<void(Frame &)> f);
+	void update(bool isStep, const UpdateFrame &f);
 
 	// resume() resumes execution of the thread by unblocking a call to
 	// update() and setting the thread's state to State::Running.
@@ -181,7 +186,7 @@ public:
 	const ID id;
 
 private:
-	EventListener *const broadcast;
+	Context *const ctx;
 
 	void onLocationUpdate(marl::lock &lock) REQUIRES(mutex);
 
@@ -189,7 +194,7 @@ private:
 	std::string name_ GUARDED_BY(mutex);
 	std::vector<std::shared_ptr<Frame>> frames GUARDED_BY(mutex);
 	State state_ GUARDED_BY(mutex) = State::Running;
-	std::shared_ptr<Frame> pauseAtFrame GUARDED_BY(mutex);
+	std::weak_ptr<Frame> pauseAtFrame GUARDED_BY(mutex);
 
 	std::condition_variable stateCV;
 };

@@ -6,6 +6,8 @@
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -15,7 +17,7 @@ CookieJar::CookieJar(blink::Document* document)
 
 CookieJar::~CookieJar() = default;
 
-void CookieJar::Trace(Visitor* visitor) {
+void CookieJar::Trace(Visitor* visitor) const {
   visitor->Trace(backend_);
   visitor->Trace(document_);
 }
@@ -57,7 +59,7 @@ bool CookieJar::CookiesEnabled() {
 void CookieJar::RequestRestrictedCookieManagerIfNeeded() {
   if (!backend_.is_bound() || !backend_.is_connected()) {
     backend_.reset();
-    document_->GetBrowserInterfaceBroker().GetInterface(
+    document_->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
         backend_.BindNewPipeAndPassReceiver(
             document_->GetTaskRunner(TaskType::kInternalDefault)));
   }

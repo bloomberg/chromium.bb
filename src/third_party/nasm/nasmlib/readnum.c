@@ -37,7 +37,7 @@
 
 #include "compiler.h"
 
-#include <ctype.h>
+#include "nctype.h"
 
 #include "nasmlib.h"
 #include "error.h"
@@ -163,10 +163,16 @@ int64_t readnum(const char *str, bool *error)
         r++;
     }
 
-    if (warn)
-        nasm_error(ERR_WARNING | ERR_PASS1 | ERR_WARN_NOV,
+    if (warn) {
+        /*!
+         *!number-overflow [on] numeric constant does not fit
+         *!    covers warnings about numeric constants which
+         *!    don't fit in 64 bits.
+         */
+        nasm_warn(WARN_NUMBER_OVERFLOW,
 		   "numeric constant %s does not fit in 64 bits",
 		   str);
+    }
 
     return result * sign;
 }

@@ -161,14 +161,15 @@ void SecureChannel::OnMessageReceived(const Connection& connection,
   if (!secure_context_) {
     PA_LOG(WARNING) << "Received unexpected message before authentication "
                     << "was complete. Feature: " << wire_message.feature()
-                    << ", Payload: " << wire_message.payload();
+                    << ", Payload size: " << wire_message.payload().size()
+                    << " byte(s)";
     return;
   }
 
   secure_context_->Decode(
       wire_message.payload(),
-      base::Bind(&SecureChannel::OnMessageDecoded,
-                 weak_ptr_factory_.GetWeakPtr(), wire_message.feature()));
+      base::BindOnce(&SecureChannel::OnMessageDecoded,
+                     weak_ptr_factory_.GetWeakPtr(), wire_message.feature()));
 }
 
 void SecureChannel::OnSendCompleted(const Connection& connection,
@@ -212,8 +213,8 @@ void SecureChannel::OnSendCompleted(const Connection& connection,
   }
 
   PA_LOG(ERROR) << "Could not send message: {"
-                << "payload: \"" << pending_message_->payload << "\", "
-                << "feature: \"" << pending_message_->feature << "\""
+                << "payload size: " << pending_message_->payload.size()
+                << " byte(s), feature: \"" << pending_message_->feature << "\""
                 << "}";
   pending_message_.reset();
 
@@ -243,7 +244,7 @@ void SecureChannel::Authenticate() {
   authenticator_ = DeviceToDeviceAuthenticator::Factory::Create(
       connection_.get(),
       multidevice::SecureMessageDelegateImpl::Factory::Create());
-  authenticator_->Authenticate(base::Bind(
+  authenticator_->Authenticate(base::BindOnce(
       &SecureChannel::OnAuthenticationResult, weak_ptr_factory_.GetWeakPtr()));
 
   TransitionToStatus(Status::AUTHENTICATING);
@@ -262,14 +263,15 @@ void SecureChannel::ProcessMessageQueue() {
   PA_LOG(INFO) << "Sending message to " << connection_->GetDeviceAddress()
                << ": {"
                << "feature: \"" << pending_message_->feature << "\", "
-               << "payload: \"" << pending_message_->payload << "\""
+               << "payload size: " << pending_message_->payload.size()
+               << " byte(s)"
                << "}";
 
   secure_context_->Encode(
       pending_message_->payload,
-      base::Bind(&SecureChannel::OnMessageEncoded,
-                 weak_ptr_factory_.GetWeakPtr(), pending_message_->feature,
-                 pending_message_->sequence_number));
+      base::BindOnce(&SecureChannel::OnMessageEncoded,
+                     weak_ptr_factory_.GetWeakPtr(), pending_message_->feature,
+                     pending_message_->sequence_number));
 }
 
 void SecureChannel::OnMessageEncoded(const std::string& feature,
@@ -284,7 +286,7 @@ void SecureChannel::OnMessageDecoded(const std::string& feature,
   PA_LOG(VERBOSE) << "Received message from " << connection_->GetDeviceAddress()
                   << ": {"
                   << "feature: \"" << feature << "\", "
-                  << "payload: \"" << decoded_message << "\""
+                  << "payload size: " << decoded_message.size() << " byte(s)"
                   << "}";
 
   for (auto& observer : observer_list_)

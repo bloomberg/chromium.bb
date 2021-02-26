@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -308,26 +309,28 @@ class AutofillProviderBrowserTestWithSkipFlagOff
   base::test::ScopedFeatureList feature_list_;
 };
 
+// TODO(crbug.com/1076487): These tests are flaky on all platforms.
+
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOn,
-                       LabelTagChangeImpactFormComparing) {
+                       DISABLED_LabelTagChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOn,
-                       InferredLabelChangeNotImpactFormComparing) {
+                       DISABLED_InferredLabelChangeNotImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", true /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOff,
-                       LabelTagChangeImpactFormComparing) {
+                       DISABLED_LabelTagChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOff,
-                       InferredLabelChangeImpactFormComparing) {
+                       DISABLED_InferredLabelChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", false /*expect_forms_same*/);
 }

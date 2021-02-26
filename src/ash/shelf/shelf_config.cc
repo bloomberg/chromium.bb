@@ -13,10 +13,10 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observer.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -55,13 +55,13 @@ void RecordReasonForShowingShelfControls() {
         kControlButtonsShownForShelfNavigationButtonsSetting;
   }
 
-  if (accessibility_controller->spoken_feedback_enabled())
+  if (accessibility_controller->spoken_feedback().enabled())
     buttons_shown_reason_mask |= kControlButtonsShownForSpokenFeedback;
 
-  if (accessibility_controller->switch_access_enabled())
+  if (accessibility_controller->switch_access().enabled())
     buttons_shown_reason_mask |= kControlButtonsShownForSwitchAccess;
 
-  if (accessibility_controller->autoclick_enabled())
+  if (accessibility_controller->autoclick().enabled())
     buttons_shown_reason_mask |= kControlButtonsShownForAutoclick;
 
   base::UmaHistogramExactLinear(
@@ -100,28 +100,28 @@ class ShelfConfig::ShelfAccessibilityObserver : public AccessibilityObserver {
 };
 
 ShelfConfig::ShelfConfig()
-    : in_tablet_mode_(false),
+    : use_in_app_shelf_in_overview_(false),
+      overview_mode_(false),
+      in_tablet_mode_(false),
       is_dense_(false),
       shelf_controls_shown_(true),
       is_virtual_keyboard_shown_(false),
       is_app_list_visible_(false),
       shelf_button_icon_size_(44),
+      shelf_button_icon_size_median_(40),
       shelf_button_icon_size_dense_(36),
       shelf_button_size_(56),
+      shelf_button_size_median_(52),
       shelf_button_size_dense_(48),
       shelf_button_spacing_(8),
       shelf_status_area_hit_region_padding_(4),
       shelf_status_area_hit_region_padding_dense_(2),
-      app_icon_group_margin_(16),
-      shelf_control_permanent_highlight_background_(
-          SkColorSetA(SK_ColorWHITE, 26)),  // 10%
+      app_icon_group_margin_tablet_(16),
+      app_icon_group_margin_clamshell_(12),
       shelf_focus_border_color_(gfx::kGoogleBlue300),
       workspace_area_visible_inset_(2),
       workspace_area_auto_hide_inset_(5),
       hidden_shelf_in_screen_portion_(3),
-      shelf_ink_drop_base_color_(SK_ColorWHITE),
-      shelf_ink_drop_visible_opacity_(0.2f),
-      shelf_icon_color_(SK_ColorWHITE),
       status_indicator_offset_from_shelf_edge_(1),
       scrollable_shelf_ripple_padding_(2),
       shelf_tooltip_preview_height_(128),
@@ -155,11 +155,10 @@ void ShelfConfig::RemoveObserver(Observer* observer) {
 void ShelfConfig::Init() {
   Shell* const shell = Shell::Get();
 
-  if (chromeos::switches::ShouldShowShelfHotseat()) {
-    shell->app_list_controller()->AddObserver(this);
-    display::Screen::GetScreen()->AddObserver(this);
-    shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
-  }
+  shell->app_list_controller()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
+  shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  shell->overview_controller()->AddObserver(this);
 
   shell->tablet_mode_controller()->AddObserver(this);
   in_tablet_mode_ = shell->IsInTabletMode();
@@ -170,12 +169,22 @@ void ShelfConfig::Shutdown() {
   Shell* const shell = Shell::Get();
   shell->tablet_mode_controller()->RemoveObserver(this);
 
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return;
-
+  shell->overview_controller()->RemoveObserver(this);
   shell->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   shell->app_list_controller()->RemoveObserver(this);
+}
+
+void ShelfConfig::OnOverviewModeWillStart() {
+  DCHECK(!overview_mode_);
+  use_in_app_shelf_in_overview_ = is_in_app();
+  overview_mode_ = true;
+}
+
+void ShelfConfig::OnOverviewModeEnding(OverviewSession* overview_session) {
+  overview_mode_ = false;
+  use_in_app_shelf_in_overview_ = false;
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/false);
 }
 
 void ShelfConfig::OnTabletModeStarting() {
@@ -187,9 +196,6 @@ void ShelfConfig::OnTabletModeStarting() {
   DCHECK(!in_tablet_mode_);
   in_tablet_mode_ = true;
 
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return;
-
   UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/true);
 }
 
@@ -200,9 +206,6 @@ void ShelfConfig::OnTabletModeEnding() {
   // the shelf bounds are stabilized early so as not to have multiple
   // unnecessary work-area bounds changes.
   in_tablet_mode_ = false;
-
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return;
 
   UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/true);
 }
@@ -228,31 +231,46 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
 
 bool ShelfConfig::ShelfControlsForcedShownForAccessibility() const {
   auto* accessibility_controller = Shell::Get()->accessibility_controller();
-  return accessibility_controller->spoken_feedback_enabled() ||
-         accessibility_controller->autoclick_enabled() ||
-         accessibility_controller->switch_access_enabled() ||
+  return accessibility_controller->spoken_feedback().enabled() ||
+         accessibility_controller->autoclick().enabled() ||
+         accessibility_controller->switch_access().enabled() ||
          accessibility_controller
              ->tablet_mode_shelf_navigation_buttons_enabled();
 }
 
-int ShelfConfig::GetShelfButtonSize(bool force_dense) const {
-  return (is_dense_ || force_dense) ? shelf_button_size_dense_
-                                    : shelf_button_size_;
-}
+int ShelfConfig::GetShelfButtonSize(HotseatDensity density) const {
+  if (is_dense_)
+    return shelf_button_size_dense_;
 
-int ShelfConfig::GetShelfButtonIconSize(bool force_dense) const {
-  return (is_dense_ || force_dense) ? shelf_button_icon_size_dense_
-                                    : shelf_button_icon_size_;
-}
-
-int ShelfConfig::GetHotseatSize(bool force_dense) const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() ||
-      !Shell::Get()->IsInTabletMode()) {
-    return shelf_size();
+  switch (density) {
+    case HotseatDensity::kNormal:
+      return shelf_button_size_;
+    case HotseatDensity::kSemiDense:
+      return shelf_button_size_median_;
+    case HotseatDensity::kDense:
+      return shelf_button_size_dense_;
   }
+}
 
-  return (is_dense_ || force_dense) ? shelf_button_size_dense_
-                                    : shelf_button_size_;
+int ShelfConfig::GetShelfButtonIconSize(HotseatDensity density) const {
+  if (is_dense_)
+    return shelf_button_icon_size_dense_;
+
+  switch (density) {
+    case HotseatDensity::kNormal:
+      return shelf_button_icon_size_;
+    case HotseatDensity::kSemiDense:
+      return shelf_button_icon_size_median_;
+    case HotseatDensity::kDense:
+      return shelf_button_icon_size_dense_;
+  }
+}
+
+int ShelfConfig::GetHotseatSize(HotseatDensity density) const {
+  if (!in_tablet_mode_)
+    return shelf_size();
+
+  return GetShelfButtonSize(density);
 }
 
 int ShelfConfig::shelf_size() const {
@@ -284,9 +302,6 @@ int ShelfConfig::button_spacing() const {
 }
 
 int ShelfConfig::control_size() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return 40;
-
   if (!in_tablet_mode_)
     return 36;
 
@@ -294,8 +309,7 @@ int ShelfConfig::control_size() const {
 }
 
 int ShelfConfig::control_border_radius() const {
-  return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
-          in_tablet_mode_)
+  return (is_in_app() && in_tablet_mode_)
              ? control_size() / 2 - in_app_control_button_height_inset_
              : control_size() / 2;
 }
@@ -313,10 +327,7 @@ base::TimeDelta ShelfConfig::hotseat_background_animation_duration() const {
 }
 
 base::TimeDelta ShelfConfig::shelf_animation_duration() const {
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    return hotseat_background_animation_duration();
-
-  return base::TimeDelta::FromMilliseconds(200);
+  return hotseat_background_animation_duration();
 }
 
 int ShelfConfig::status_area_hit_region_padding() const {
@@ -327,10 +338,17 @@ int ShelfConfig::status_area_hit_region_padding() const {
 bool ShelfConfig::is_in_app() const {
   Shell* shell = Shell::Get();
   const auto* session = shell->session_controller();
-  if (!session)
+  if (!session ||
+      session->GetSessionState() != session_manager::SessionState::ACTIVE) {
     return false;
-  return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
-         (!is_app_list_visible_ || is_virtual_keyboard_shown_);
+  }
+  if (is_virtual_keyboard_shown_)
+    return true;
+  if (is_app_list_visible_)
+    return false;
+  if (overview_mode_)
+    return use_in_app_shelf_in_overview_;
+  return true;
 }
 
 float ShelfConfig::drag_hide_ratio_threshold() const {
@@ -343,10 +361,9 @@ void ShelfConfig::UpdateConfig(bool new_is_app_list_visible,
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   const bool new_is_dense =
-      chromeos::switches::ShouldShowShelfHotseat() &&
-      (!in_tablet_mode_ ||
-       (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
-        screen_size.height() <= kDenseShelfScreenSizeThreshold));
+      !in_tablet_mode_ ||
+      (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
+       screen_size.height() <= kDenseShelfScreenSizeThreshold);
 
   const bool can_hide_shelf_controls =
       in_tablet_mode_ && features::IsHideShelfControlsInTabletModeEnabled();
@@ -368,7 +385,7 @@ void ShelfConfig::UpdateConfig(bool new_is_app_list_visible,
           ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
           : false;
 
-  if (is_dense_ == new_is_dense &&
+  if (!tablet_mode_changed && is_dense_ == new_is_dense &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
       is_virtual_keyboard_shown_ == new_is_virtual_keyboard_shown &&
       is_app_list_visible_ == new_is_app_list_visible) {
@@ -384,10 +401,6 @@ void ShelfConfig::UpdateConfig(bool new_is_app_list_visible,
 }
 
 int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
-  // Before the hotseat redesign, the shelf always has the same size.
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return 56;
-
   // In clamshell mode, the shelf always has the same size.
   if (!in_tablet_mode_)
     return 48;
@@ -402,13 +415,14 @@ SkColor ShelfConfig::GetShelfControlButtonColor() const {
   const session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
 
-  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode_ &&
+  if (in_tablet_mode_ &&
       session_state == session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
   } else if (session_state == session_manager::SessionState::OOBE) {
     return SkColorSetA(SK_ColorBLACK, 16);  // 6% opacity
   }
-  return shelf_control_permanent_highlight_background_;
+  return AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
 }
 
 SkColor ShelfConfig::GetShelfWithAppListColor() const {
@@ -419,64 +433,42 @@ SkColor ShelfConfig::GetMaximizedShelfColor() const {
   return SkColorSetA(GetDefaultShelfColor(), 0xFF);  // 100% opacity
 }
 
-SkColor ShelfConfig::GetThemedColorFromWallpaper(SkColor base_color) const {
-  if (!Shell::Get()->wallpaper_controller())
-    return base_color;
+AshColorProvider::BaseLayerType ShelfConfig::GetShelfBaseLayerType() const {
+  if (!in_tablet_mode_)
+    return AshColorProvider::BaseLayerType::kTransparent80;
 
-  SkColor dark_muted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                    color_utils::SaturationRange::MUTED));
+  if (!is_in_app())
+    return AshColorProvider::BaseLayerType::kTransparent60;
 
-  if (dark_muted_color == kInvalidWallpaperColor)
-    return base_color;
-
-  int base_alpha = SkColorGetA(base_color);
-  // Combine SK_ColorBLACK at 50% opacity with |dark_muted_color|.
-  base_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
-
-  return SkColorSetA(base_color, base_alpha);
+  return AshColorProvider::Get()->IsDarkModeEnabled()
+             ? AshColorProvider::BaseLayerType::kTransparent90
+             : AshColorProvider::BaseLayerType::kOpaque;
 }
 
 SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (!features::IsBackgroundBlurEnabled()) {
-    return GetThemedColorFromWallpaper(
-        AshColorProvider::Get()->GetBaseLayerColor(
-            AshColorProvider::BaseLayerType::kTransparent90,
-            AshColorProvider::AshColorMode::kDark));
+    return AshColorProvider::Get()->GetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparent90);
   }
 
-  AshColorProvider::BaseLayerType layer_type;
-  if (!chromeos::switches::ShouldShowShelfHotseat()) {
-    layer_type = in_tablet_mode_
-                     ? AshColorProvider::BaseLayerType::kTransparent60
-                     : AshColorProvider::BaseLayerType::kTransparent80;
-  } else if (in_tablet_mode_) {
-    layer_type = is_in_app() ? AshColorProvider::BaseLayerType::kTransparent90
-                             : AshColorProvider::BaseLayerType::kTransparent60;
-  } else {
-    layer_type = AshColorProvider::BaseLayerType::kTransparent80;
-  }
+  AshColorProvider::BaseLayerType layer_type = GetShelfBaseLayerType();
 
-  SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(
-      layer_type, AshColorProvider::AshColorMode::kDark);
-
-  return GetThemedColorFromWallpaper(final_color);
+  return AshColorProvider::Get()->GetBaseLayerColor(layer_type);
 }
 
 int ShelfConfig::GetShelfControlButtonBlurRadius() const {
-  if (features::IsBackgroundBlurEnabled() &&
-      chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode_ &&
-      !is_in_app()) {
+  if (features::IsBackgroundBlurEnabled() && in_tablet_mode_ && !is_in_app())
     return shelf_blur_radius_;
-  }
   return 0;
 }
 
 int ShelfConfig::GetAppIconEndPadding() const {
-  return chromeos::switches::ShouldShowShelfHotseat() ? app_icon_end_padding_
-                                                      : 0;
+  return app_icon_end_padding_;
+}
+
+int ShelfConfig::GetAppIconGroupMargin() const {
+  return in_tablet_mode_ ? app_icon_group_margin_tablet_
+                         : app_icon_group_margin_clamshell_;
 }
 
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {

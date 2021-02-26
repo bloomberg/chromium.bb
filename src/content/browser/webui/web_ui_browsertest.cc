@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -14,9 +14,12 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -31,6 +34,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_ui_browsertest_util.h"
 #include "content/shell/browser/shell.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "ui/events/base_event_utils.h"
@@ -40,6 +44,19 @@ namespace content {
 namespace {
 
 using WebUIImplBrowserTest = ContentBrowserTest;
+
+// TODO(crbug.com/154571): Shared workers are not available on Android.
+#if !defined(OS_ANDROID)
+const char kLoadSharedWorkerScript[] = R"(
+    new Promise((resolve) => {
+      const sharedWorker = new SharedWorker($1);
+      sharedWorker.port.onmessage = (event) => {
+        resolve(event.data === 'pong');
+      };
+      sharedWorker.port.postMessage('ping');
+    });
+  )";
+#endif  // !defined(OS_ANDROID)
 
 class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
@@ -52,6 +69,10 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
         "notifyFinish",
         base::BindRepeating(&TestWebUIMessageHandler::OnNotifyFinish,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "sendMessage",
+        base::BindRepeating(&TestWebUIMessageHandler::OnSendMessase,
+                            base::Unretained(this)));
   }
 
   void set_finish_closure(base::RepeatingClosure closure) {
@@ -60,6 +81,10 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
 
   int message_requiring_gesture_count() const {
     return message_requiring_gesture_count_;
+  }
+
+  void set_send_message_closure(base::OnceClosure closure) {
+    send_message_closure_ = std::move(closure);
   }
 
  private:
@@ -72,8 +97,27 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
       finish_closure_.Run();
   }
 
+  void OnSendMessase(const base::ListValue* args) {
+    // This message will be invoked when WebContents changes the main RFH
+    // and the old main RFH is still alive during navigating from WebUI page
+    // to cross-site. WebUI message should be handled with old main RFH.
+
+    if (send_message_closure_)
+      std::move(send_message_closure_).Run();
+
+    // AllowJavascript should not have a CHECK crash.
+    AllowJavascript();
+
+    // WebUI::CallJavascriptFunctionUnsafe should be run with old main RFH.
+    web_ui()->CallJavascriptFunctionUnsafe("test");
+
+    if (finish_closure_)
+      std::move(finish_closure_).Run();
+  }
+
   int message_requiring_gesture_count_ = 0;
   base::RepeatingClosure finish_closure_;
+  base::OnceClosure send_message_closure_;
 };
 
 class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
@@ -251,13 +295,13 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, SameDocumentNavigationsAndReload) {
   ASSERT_TRUE(ExecuteScript(web_contents,
                             "window.history.pushState({}, '', 'foo.html')"));
   shell()->GoBackOrForward(-1);
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
 
   // Test handler should still have JavaScript allowed after in-page navigation.
   EXPECT_TRUE(test_handler->IsJavascriptAllowed());
 
   shell()->Reload();
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
 
   // Verify that after a reload, the test handler has been disallowed.
   EXPECT_FALSE(test_handler->IsJavascriptAllowed());
@@ -336,6 +380,44 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
   EXPECT_TRUE(NavigateToURL(web_contents, untrusted_url));
   EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
             web_contents->GetTitle());
+}
+
+// Verify that we can successfully navigate to a chrome-untrusted:// URL
+// without a crash while WebUI::Send is being performed.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, NavigateWhileWebUISend) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto* web_contents = shell()->web_contents();
+  ASSERT_TRUE(NavigateToURL(web_contents, GetWebUIURL(kChromeUIGpuHost)));
+
+  auto* test_handler = new TestWebUIMessageHandler;
+  web_contents->GetWebUI()->AddMessageHandler(base::WrapUnique(test_handler));
+
+  auto* webui = static_cast<WebUIImpl*>(web_contents->GetWebUI());
+  EXPECT_EQ(web_contents->GetMainFrame(), webui->frame_host_for_test());
+
+  test_handler->set_finish_closure(base::BindLambdaForTesting([&]() {
+    EXPECT_NE(web_contents->GetMainFrame(), webui->frame_host_for_test());
+  }));
+
+  bool received_send_message = false;
+  test_handler->set_send_message_closure(
+      base::BindLambdaForTesting([&]() { received_send_message = true; }));
+
+  base::RunLoop run_loop;
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("onunload=function() { chrome.send('sendMessage')}"),
+      base::BindOnce([](base::OnceClosure callback,
+                        base::Value) { std::move(callback).Run(); },
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  RenderFrameDeletedObserver delete_observer(web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(
+      web_contents, embedded_test_server()->GetURL("/simple_page.html")));
+  delete_observer.WaitUntilDeleted();
+
+  EXPECT_TRUE(received_send_message);
 }
 
 class WebUIRequestSchemesTest : public ContentBrowserTest {
@@ -451,5 +533,63 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
         web_contents->GetMainFrame()->GetProcess()->GetID(), url));
   }
 }
+
+class WebUIWorkerTest : public ContentBrowserTest {
+ public:
+  WebUIWorkerTest() { WebUIControllerFactory::RegisterFactory(&factory_); }
+
+  ~WebUIWorkerTest() override {
+    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+  }
+
+  WebUIWorkerTest(const WebUIWorkerTest&) = delete;
+
+  WebUIWorkerTest& operator=(const WebUIWorkerTest&) = delete;
+
+ private:
+  TestWebUIControllerFactory factory_;
+};
+
+// TODO(crbug.com/154571): Shared workers are not available on Android.
+#if !defined(OS_ANDROID)
+// Verify that we can create SharedWorker with scheme "chrome://" under
+// WebUI page.
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest, CanCreateWebUISharedWorkerForWebUI) {
+  const GURL web_ui_url =
+      GURL(GetWebUIURL("test-host/title2.html?notrustedtypes=true"));
+  const GURL web_ui_worker_url =
+      GURL(GetWebUIURL("test-host/web_ui_shared_worker.js"));
+
+  auto* web_contents = shell()->web_contents();
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
+
+  EXPECT_EQ(true, EvalJs(web_contents,
+                         JsReplace(kLoadSharedWorkerScript,
+                                   web_ui_worker_url.spec().c_str()),
+                         EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
+// Verify that pages with scheme other than "chrome://" cannot create
+// SharedWorker with scheme "chrome://".
+IN_PROC_BROWSER_TEST_F(WebUIWorkerTest,
+                       CannotCreateWebUISharedWorkerForNonWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL non_web_ui_url =
+      GURL(embedded_test_server()->GetURL("/title1.html?notrustedtypes=true"));
+  const GURL web_ui_worker_url =
+      GURL(GetWebUIURL("test-host/web_ui_shared_worker.js"));
+
+  auto* web_contents = shell()->web_contents();
+  ASSERT_TRUE(NavigateToURL(web_contents, non_web_ui_url));
+
+  auto result = EvalJs(
+      web_contents,
+      JsReplace(kLoadSharedWorkerScript, web_ui_worker_url.spec().c_str()),
+      EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */);
+  std::string expected_failure = R"(a JavaScript error:
+Error: Failed to construct 'SharedWorker')";
+  EXPECT_THAT(result.error, ::testing::StartsWith(expected_failure));
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace content

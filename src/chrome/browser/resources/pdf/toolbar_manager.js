@@ -4,20 +4,42 @@
 
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
-/** Idle time in ms before the UI is hidden. */
+/**
+ * Idle time in ms before the UI is hidden.
+ * @type {number}
+ */
 const HIDE_TIMEOUT = 2000;
-/** Time in ms after force hide before toolbar is shown again. */
+
+/**
+ * Time in ms after force hide before toolbar is shown again.
+ * @type {number}
+ */
 const FORCE_HIDE_TIMEOUT = 1000;
+
 /**
  * Velocity required in a mousemove to reveal the UI (pixels/ms). This is
  * intended to be high enough that a fast flick of the mouse is required to
  * reach it.
+ * @type {number}
  */
 const SHOW_VELOCITY = 10;
-/** Distance from the top of the screen required to reveal the toolbars. */
+
+/**
+ * Distance from the top of the screen required to reveal the toolbars.
+ * @type {number}
+ */
 const TOP_TOOLBAR_REVEAL_DISTANCE = 100;
-/** Distance from the bottom-right of the screen required to reveal toolbars. */
+
+/**
+ * Distance from right of the screen required to reveal toolbars.
+ * @type {number}
+ */
 const SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT = 150;
+
+/**
+ * Distance from bottom of the screen required to reveal toolbars.
+ * @type {number}
+ */
 const SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM = 250;
 
 /**
@@ -45,7 +67,7 @@ function isMouseNearSideToolbar(e, window, reverse) {
   return atSide && atBottom;
 }
 
-/** Responsible for co-ordinating between multiple toolbar elements. */
+// Responsible for co-ordinating between multiple toolbar elements.
 export class ToolbarManager {
   /**
    * @param {!Window} window The window containing the UI.
@@ -89,6 +111,12 @@ export class ToolbarManager {
     this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
     this.resizeDropdowns_();
 
+    document.addEventListener(
+        'mousemove',
+        e => this.handleMouseMove_(/** @type {!MouseEvent} */ (e)));
+    document.addEventListener(
+        'mouseout', () => this.hideToolbarsForMouseOut_());
+
     if (this.isPrintPreview_) {
       this.zoomToolbar_.addEventListener('keyboard-navigation-active', e => {
         this.keyboardNavigationActive = e.detail;
@@ -96,8 +124,11 @@ export class ToolbarManager {
     }
   }
 
-  /** @param {!MouseEvent} e */
-  handleMouseMove(e) {
+  /**
+   * @param {!MouseEvent} e
+   * @private
+   */
+  handleMouseMove_(e) {
     this.isMouseNearTopToolbar_ = !!this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ =
         isMouseNearSideToolbar(e, this.window_, this.isPrintPreview_);
@@ -192,8 +223,9 @@ export class ToolbarManager {
   /**
    * Hide toolbars after a delay, regardless of the position of the mouse.
    * Intended to be called when the mouse has moved out of the parent window.
+   * @private
    */
-  hideToolbarsForMouseOut() {
+  hideToolbarsForMouseOut_() {
     this.isMouseNearTopToolbar_ = false;
     this.isMouseNearSideToolbar_ = false;
     this.hideToolbarsAfterTimeout();

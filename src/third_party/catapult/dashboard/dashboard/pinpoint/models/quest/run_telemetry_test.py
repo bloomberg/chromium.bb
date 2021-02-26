@@ -1,7 +1,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Quest for running a Telemetry benchmark in Swarming."""
 from __future__ import print_function
 from __future__ import division
@@ -11,9 +10,9 @@ import re
 
 from dashboard.pinpoint.models.quest import run_performance_test
 
-
 _DEFAULT_EXTRA_ARGS = [
-    '-v', '--upload-results', '--output-format', 'histograms']
+    '-v', '--upload-results', '--output-format', 'histograms'
+]
 
 _STORY_REGEX = re.compile(r'[^a-zA-Z0-9]')
 
@@ -51,11 +50,29 @@ def ChangeDependentArgs(args, change):
 
 class RunTelemetryTest(run_performance_test.RunPerformanceTest):
 
+  @classmethod
+  def _ComputeCommand(cls, arguments):
+    # We're moving the definition of which command to run here, instead of
+    # relying on what's in the isolate because the 'command' feature is
+    # deprecated and will be removed soon (EOY 2020).
+    # TODO(dberris): Move this out to a configuration elsewhere.
+    command = [
+        'luci-auth', 'context', '--', 'vpython', '../../testing/test_env.py',
+        '../../testing/scripts/run_performance_tests.py',
+        '../../tools/perf/run_benchmark'
+    ]
+    relative_cwd = arguments.get('relative_cwd', 'out/Release')
+    return relative_cwd, command
+
   def Start(self, change, isolate_server, isolate_hash):
     extra_swarming_tags = {'change': str(change)}
-    return self._Start(change, isolate_server, isolate_hash,
-                       ChangeDependentArgs(self._extra_args, change),
-                       extra_swarming_tags)
+    return self._Start(
+        change,
+        isolate_server,
+        isolate_hash,
+        ChangeDependentArgs(self._extra_args, change),
+        extra_swarming_tags,
+        execution_timeout_secs=None)
 
   @classmethod
   def _ExtraTestArgs(cls, arguments):
@@ -85,8 +102,8 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
       extra_test_args += ('--story-tag-filter', story_tags)
 
     # TODO: Workaround for crbug.com/677843.
-    if (benchmark.startswith('startup.warm') or
-        benchmark.startswith('start_with_url.warm')):
+    if (benchmark.startswith('startup.warm')
+        or benchmark.startswith('start_with_url.warm')):
       extra_test_args += ('--pageset-repeat', '2')
     else:
       extra_test_args += ('--pageset-repeat', '1')

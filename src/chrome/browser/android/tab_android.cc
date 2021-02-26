@@ -26,8 +26,9 @@
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,12 +39,12 @@
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/url_constants.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
@@ -222,6 +223,24 @@ std::unique_ptr<content::WebContents> TabAndroid::SwapWebContents(
   return base::WrapUnique(old_contents);
 }
 
+bool TabAndroid::IsCustomTab() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isCustomTab(env, weak_java_tab_.get(env));
+}
+
+bool TabAndroid::IsHidden() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isHidden(env, weak_java_tab_.get(env));
+}
+
+void TabAndroid::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TabAndroid::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
@@ -234,7 +253,7 @@ void TabAndroid::InitWebContents(
     const JavaParamRef<jobject>& jweb_contents,
     jint jparent_tab_id,
     const JavaParamRef<jobject>& jweb_contents_delegate,
-    const JavaParamRef<jobject>& jcontext_menu_populator) {
+    const JavaParamRef<jobject>& jcontext_menu_populator_factory) {
   web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
   DCHECK(web_contents_.get());
 
@@ -246,12 +265,13 @@ void TabAndroid::InitWebContents(
 
   AttachTabHelpers(web_contents_.get());
 
+  PropagateHideFutureNavigationsToHistoryTabHelper();
+  PropagateBlockNewNotificationRequestsToWebContents();
+
   SetWindowSessionID(session_window_id_);
 
-  ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
-      jcontext_menu_populator);
-  ViewAndroidHelper::FromWebContents(web_contents())->
-      SetViewAndroid(web_contents()->GetNativeView());
+  ContextMenuHelper::FromWebContents(web_contents())
+      ->SetPopulatorFactory(jcontext_menu_populator_factory);
 
   synced_tab_delegate_->SetWebContents(web_contents(), jparent_tab_id);
 
@@ -267,15 +287,18 @@ void TabAndroid::InitWebContents(
 
   // Shows a warning notification for dangerous flags in about:flags.
   chrome::ShowBadFlagsPrompt(web_contents());
+
+  for (Observer& observer : observers_)
+    observer.OnInitWebContents(this);
 }
 
 void TabAndroid::UpdateDelegates(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents_delegate,
-    const JavaParamRef<jobject>& jcontext_menu_populator) {
-  ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
-      jcontext_menu_populator);
+    const JavaParamRef<jobject>& jcontext_menu_populator_factory) {
+  ContextMenuHelper::FromWebContents(web_contents())
+      ->SetPopulatorFactory(jcontext_menu_populator_factory);
   web_contents_delegate_ =
       std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
@@ -345,7 +368,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
-    const JavaParamRef<jstring>& j_initiator_origin,
+    const JavaParamRef<jobject>& j_initiator_origin,
     const JavaParamRef<jstring>& j_extra_headers,
     const JavaParamRef<jobject>& j_post_data,
     jint page_transition,
@@ -366,14 +389,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
   if (gurl.is_empty())
     return PAGE_LOAD_FAILED;
-
-  // If the page was prerendered, use it.
-  // Note in incognito mode, we don't have a PrerenderManager.
-  bool loaded;
-  if (prerender::PrerenderManager::MaybeUsePrerenderedPage(
-          GetProfile(), web_contents(), gurl, &loaded)) {
-    return loaded ? FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
-  }
 
   GURL fixed_url(
       url_formatter::FixupURL(gurl.possibly_invalid_spec(), std::string()));
@@ -407,8 +422,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
           content::Referrer::ConvertToPolicy(referrer_policy));
     }
     if (j_initiator_origin) {
-      load_params.initiator_origin = url::Origin::Create(GURL(
-          base::android::ConvertJavaStringToUTF8(env, j_initiator_origin)));
+      load_params.initiator_origin =
+          url::Origin::FromJavaObject(j_initiator_origin);
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.should_replace_current_entry = should_replace_current_entry;
@@ -456,13 +471,63 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
   renderer->RequestReloadImageForContextNode();
 }
 
+void TabAndroid::SetAddApi2TransitionToFutureNavigations(JNIEnv* env,
+                                                         jboolean should_add) {
+  should_add_api2_transition_to_future_navigations_ = should_add;
+}
+
 scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
   return devtools_host_;
+}
+
+void TabAndroid::SetHideFutureNavigations(JNIEnv* env, jboolean hide) {
+  if (hide_future_navigations_ == hide)
+    return;
+  hide_future_navigations_ = hide;
+  PropagateHideFutureNavigationsToHistoryTabHelper();
+}
+
+void TabAndroid::SetShouldBlockNewNotificationRequests(JNIEnv* env,
+                                                       jboolean value) {
+  if (should_block_new_notification_requests_ == value)
+    return;
+
+  should_block_new_notification_requests_ = value;
+  PropagateBlockNewNotificationRequestsToWebContents();
 }
 
 void TabAndroid::SetDevToolsAgentHost(
     scoped_refptr<content::DevToolsAgentHost> host) {
   devtools_host_ = std::move(host);
+}
+
+void TabAndroid::PropagateHideFutureNavigationsToHistoryTabHelper() {
+  if (!web_contents())
+    return;
+  auto* history_tab_helper = HistoryTabHelper::FromWebContents(web_contents());
+  if (history_tab_helper)
+    history_tab_helper->set_hide_all_navigations(hide_future_navigations_);
+}
+
+void TabAndroid::PropagateBlockNewNotificationRequestsToWebContents() {
+  if (!web_contents())
+    return;
+  NotificationPermissionContext::SetBlockNewNotificationRequests(
+      web_contents(), should_block_new_notification_requests_);
+}
+
+base::android::ScopedJavaLocalRef<jobject> JNI_TabImpl_FromWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jweb_contents) {
+  base::android::ScopedJavaLocalRef<jobject> jtab;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  TabAndroid* tab =
+      web_contents ? TabAndroid::FromWebContents(web_contents) : nullptr;
+  if (tab)
+    jtab = tab->GetJavaObject();
+  return jtab;
 }
 
 static void JNI_TabImpl_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

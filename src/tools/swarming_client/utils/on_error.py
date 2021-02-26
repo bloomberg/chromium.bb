@@ -25,14 +25,6 @@ from . import tools
 from . import zip_package
 
 
-# It is very important to not get reports from non Chromium infrastructure. We
-# *really* do not want to know anything about you, dear non Google employee.
-_ENABLED_DOMAINS = (
-  '.chromium.org',
-  '.google.com',
-  '.google.com.internal',
-)
-
 # If this envar is '1' then disable reports. Useful when developing the client.
 _DISABLE_ENVVAR = 'SWARMING_DISABLE_ON_ERROR'
 
@@ -94,7 +86,7 @@ def _reformat_stack(stack):
     return l
 
   # Trim paths.
-  out = map(replace, stack.splitlines(True))
+  out = list(map(replace, stack.splitlines(True)))
 
   # Trim indentation.
   while all(l.startswith(' ') for l in out):
@@ -132,7 +124,7 @@ def _serialize_env():
   ANSI escape code.
   """
   return dict(
-      (k, v.encode('ascii', 'replace')) for k, v in os.environ.items())
+      (k, v.encode('ascii', 'replace').decode()) for k, v in os.environ.items())
 
 
 def _report_exception(message, e, stack):
@@ -236,13 +228,6 @@ def report_on_exception_exit(server):
     return False
 
   _HOSTNAME = socket.getfqdn()
-  if not _HOSTNAME.endswith(_ENABLED_DOMAINS):
-    # Silently skip non-google infrastructure. Technically, it reports to the
-    # server the client code is talking to so in practice, it would be safe for
-    # non googler to manually enable this assuming their client code talks to a
-    # server they also own. Please send a CL if you desire this functionality.
-    return False
-
   _SERVER = net.get_http_service(server, allow_cached=False)
   atexit.register(_check_for_exception_on_exit)
   return True
@@ -261,8 +246,7 @@ def report(error):
   """
   exc_info = sys.exc_info()
   if _SERVER:
-    _report_exception(
-        error, exc_info[1], ''.join(traceback.format_tb(exc_info[2])))
+    _report_exception(error, exc_info[1], traceback.format_exc())
     return
 
   if error:

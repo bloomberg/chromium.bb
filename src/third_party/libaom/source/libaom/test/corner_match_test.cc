@@ -47,6 +47,7 @@ class AV1CornerMatchTest : public ::testing::TestWithParam<CornerMatchParam> {
 
   libaom_test::ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1CornerMatchTest);
 
 AV1CornerMatchTest::~AV1CornerMatchTest() {}
 void AV1CornerMatchTest::SetUp() {

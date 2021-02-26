@@ -14,15 +14,14 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using autofill::FormFieldData;
-using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using base::StringPiece;
 using testing::_;
@@ -37,8 +36,8 @@ namespace {
 // Creates a dummy observed form with some basic arbitrary values.
 PasswordForm CreateObserved() {
   PasswordForm form;
-  form.origin = GURL("https://example.in");
-  form.signon_realm = form.origin.spec();
+  form.url = GURL("https://example.in");
+  form.signon_realm = form.url.spec();
   form.action = GURL("https://login.example.org");
   return form;
 }
@@ -89,14 +88,14 @@ class FormSaverImplSaveTest
       public ::testing::WithParamInterface<SaveOperation> {
  protected:
   // Either saves, updates or replaces |pending| according to the test param.
-  void SaveCredential(autofill::PasswordForm pending,
-                      const std::vector<const autofill::PasswordForm*>& matches,
+  void SaveCredential(PasswordForm pending,
+                      const std::vector<const PasswordForm*>& matches,
                       const base::string16& old_password);
 };
 
 void FormSaverImplSaveTest::SaveCredential(
-    autofill::PasswordForm pending,
-    const std::vector<const autofill::PasswordForm*>& matches,
+    PasswordForm pending,
+    const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
   switch (GetParam()) {
     case SaveOperation::kSave:
@@ -218,7 +217,7 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnExactMatch) {
   constexpr char kNewPassword[] = "new_password";
 
   PasswordForm duplicate = CreatePending("nameofuser", kOldPassword);
-  duplicate.origin = GURL("https://example.in/somePath");
+  duplicate.url = GURL("https://example.in/somePath");
 
   PasswordForm expected_update = duplicate;
   expected_update.password_value = ASCIIToUTF16(kNewPassword);
@@ -234,8 +233,8 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnPSLMatch) {
   constexpr char kNewPassword[] = "new_password";
 
   PasswordForm duplicate = CreatePending("nameofuser", kOldPassword);
-  duplicate.origin = GURL("https://www.example.in");
-  duplicate.signon_realm = duplicate.origin.spec();
+  duplicate.url = GURL("https://www.example.in");
+  duplicate.signon_realm = duplicate.url.spec();
   duplicate.is_public_suffix_match = true;
 
   PasswordForm expected_update = duplicate;
@@ -321,14 +320,14 @@ INSTANTIATE_TEST_SUITE_P(All,
 // the PasswordStore.
 TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
   PasswordForm observed = CreateObserved();
-  observed.blacklisted_by_user = false;
+  observed.blocked_by_user = false;
   observed.username_value = ASCIIToUTF16("user1");
   observed.username_element = ASCIIToUTF16("user");
   observed.password_value = ASCIIToUTF16("12345");
   observed.password_element = ASCIIToUTF16("password");
   observed.all_possible_usernames = {
       {ASCIIToUTF16("user2"), ASCIIToUTF16("field")}};
-  observed.origin = GURL("https://www.example.com/foobar");
+  observed.url = GURL("https://www.example.com/foobar");
 
   PasswordForm blacklisted =
       password_manager_util::MakeNormalizedBlacklistedForm(

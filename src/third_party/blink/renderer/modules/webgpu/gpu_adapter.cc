@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
@@ -26,7 +27,12 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   // TODO(crbug.com/1048603): We should validate that the extension_set is a
   // subset of the adapter's extension set.
   requested_device_properties.textureCompressionBC =
+      extension_set.Contains("texture-compression-bc") ||
       extension_set.Contains("textureCompressionBC");
+  requested_device_properties.shaderFloat16 =
+      extension_set.Contains("shader-float16");
+  requested_device_properties.timestampQuery =
+      extension_set.Contains("timestamp-query");
 
   return requested_device_properties;
 }
@@ -62,6 +68,9 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
         execution_context, GetDawnControlClient(), this, device_client_id,
         descriptor);
     resolver->Resolve(device);
+    ukm::builders::ClientRenderingAPI(execution_context->UkmSourceID())
+        .SetGPUDevice(static_cast<int>(true))
+        .Record(execution_context->UkmRecorder());
   } else {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kOperationError,
@@ -72,7 +81,14 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
 void GPUAdapter::InitializeExtensionNameList() {
   DCHECK(extension_name_list_.IsEmpty());
   if (adapter_properties_.textureCompressionBC) {
+    extension_name_list_.emplace_back("texture-compression-bc");
     extension_name_list_.emplace_back("textureCompressionBC");
+  }
+  if (adapter_properties_.shaderFloat16) {
+    extension_name_list_.emplace_back("shader-float16");
+  }
+  if (adapter_properties_.timestampQuery) {
+    extension_name_list_.emplace_back("timestamp-query");
   }
 }
 

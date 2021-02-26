@@ -5,6 +5,9 @@
 #include "components/query_tiles/test/fake_tile_service.h"
 
 #include <utility>
+#include <vector>
+
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace query_tiles {
 namespace {
@@ -75,19 +78,39 @@ void FakeTileService::GetQueryTiles(GetTilesCallback callback) {
   for (auto& tile : tiles_)
     tiles.push_back(*tile.get());
 
-  std::move(callback).Run(tiles);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(tiles)));
 }
 
 void FakeTileService::GetTile(const std::string& tile_id,
                               TileCallback callback) {
   auto tile = FindTile(tiles_, tile_id);
-  std::move(callback).Run(tile);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(tile)));
 }
 
 void FakeTileService::StartFetchForTiles(
     bool is_from_reduced_mode,
-    BackgroundTaskFinishedCallback callback) {}
+    BackgroundTaskFinishedCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), false /*need_reschedule*/));
+}
 
 void FakeTileService::CancelTask() {}
+
+void FakeTileService::PurgeDb() {}
+
+void FakeTileService::SetServerUrl(const std::string& url) {}
+
+void FakeTileService::OnTileClicked(const std::string& url) {}
+
+void FakeTileService::OnQuerySelected(
+    const base::Optional<std::string>& parent_tile_id,
+    const base::string16& query_text) {}
+
+Logger* FakeTileService::GetLogger() {
+  return nullptr;
+}
 
 }  // namespace query_tiles

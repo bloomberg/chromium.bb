@@ -44,10 +44,11 @@ void SendStream::SendFin() {
 }
 
 void SendStream::OnOutgoingStreamAbort() {
+  quic_transport_->AbortStream(stream_id_);
   quic_transport_->ForgetStream(stream_id_);
 }
 
-void SendStream::Trace(Visitor* visitor) {
+void SendStream::Trace(Visitor* visitor) const {
   visitor->Trace(outgoing_stream_);
   visitor->Trace(quic_transport_);
   ScriptWrappable::Trace(visitor);

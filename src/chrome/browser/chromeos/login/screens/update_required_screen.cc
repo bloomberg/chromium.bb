@@ -10,19 +10,23 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 
 namespace {
@@ -30,6 +34,7 @@ constexpr char kUserActionSelectNetworkButtonClicked[] = "select-network";
 constexpr char kUserActionUpdateButtonClicked[] = "update";
 constexpr char kUserActionAcceptUpdateOverCellular[] = "update-accept-cellular";
 constexpr char kUserActionRejectUpdateOverCellular[] = "update-reject-cellular";
+constexpr char kUserActionConfirmDeleteUsersData[] = "confirm-delete-users";
 
 // Delay before showing error message if captive portal is detected.
 // We wait for this delay to let captive portal to perform redirect and show
@@ -40,23 +45,24 @@ constexpr const base::TimeDelta kDelayErrorMessage =
 
 namespace chromeos {
 
-// static
-UpdateRequiredScreen* UpdateRequiredScreen::Get(ScreenManager* manager) {
-  return static_cast<UpdateRequiredScreen*>(
-      manager->GetScreen(UpdateRequiredView::kScreenId));
-}
-
 UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
-                                           ErrorScreen* error_screen)
+                                           ErrorScreen* error_screen,
+                                           base::RepeatingClosure exit_callback)
     : BaseScreen(UpdateRequiredView::kScreenId,
                  OobeScreenPriority::SCREEN_UPDATE_REQUIRED),
       view_(view),
       error_screen_(error_screen),
+      exit_callback_(std::move(exit_callback)),
       histogram_helper_(
           std::make_unique<ErrorScreensHistogramHelper>("UpdateRequired")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
       clock_(base::DefaultClock::GetInstance()) {
   error_message_delay_ = kDelayErrorMessage;
+
+  eol_message_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kDeviceMinimumVersionAueMessage,
+      base::Bind(&UpdateRequiredScreen::OnEolMessageChanged,
+                 weak_factory_.GetWeakPtr()));
   if (view_)
     view_->Bind(this);
 }
@@ -90,6 +96,8 @@ void UpdateRequiredScreen::ShowImpl() {
   }
   // Check network state to set initial screen UI.
   RefreshNetworkState();
+  // Fire it once so we're sure we get an invocation on startup.
+  OnEolMessageChanged();
 
   version_updater_->GetEolInfo(base::BindOnce(
       &UpdateRequiredScreen::OnGetEolInfo, weak_factory_.GetWeakPtr()));
@@ -99,15 +107,34 @@ void UpdateRequiredScreen::OnGetEolInfo(
     const chromeos::UpdateEngineClient::EolInfo& info) {
   //  TODO(crbug.com/1020616) : Handle if the device is left on this screen
   //  for long enough to reach Eol.
-  if (!info.eol_date.is_null() && info.eol_date <= clock_->Now()) {
+  if (chromeos::switches::IsAueReachedForUpdateRequiredForTest() ||
+      (!info.eol_date.is_null() && info.eol_date <= clock_->Now())) {
     EnsureScreenIsShown();
-    if (view_)
+    if (view_) {
       view_->SetUIState(UpdateRequiredView::EOL_REACHED);
+      view_->SetIsUserDataPresent(
+          !user_manager::UserManager::Get()->GetUsers().empty());
+    }
   } else {
     // UI state does not change for EOL devices.
     // Subscribe to network state change notifications to adapt the UI as
     // network changes till update is started.
     ObserveNetworkState();
+  }
+}
+
+void UpdateRequiredScreen::OnEolMessageChanged() {
+  chromeos::CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::BindOnce(&UpdateRequiredScreen::OnEolMessageChanged,
+                         weak_factory_.GetWeakPtr()));
+  if (status != chromeos::CrosSettingsProvider::TRUSTED)
+    return;
+
+  std::string eol_message;
+  if (view_ && CrosSettings::Get()->GetString(
+                   chromeos::kDeviceMinimumVersionAueMessage, &eol_message)) {
+    view_->SetEolMessage(eol_message);
   }
 }
 
@@ -137,6 +164,8 @@ void UpdateRequiredScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionRejectUpdateOverCellular) {
     version_updater_->RejectUpdateOverCellular();
     version_updater_->StartExitUpdate(VersionUpdater::Result::UPDATE_ERROR);
+  } else if (action_id == kUserActionConfirmDeleteUsersData) {
+    DeleteUsersData();
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -154,8 +183,8 @@ void UpdateRequiredScreen::RefreshNetworkState() {
   if (!view_ || is_updating_now_)
     return;
 
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network = handler->DefaultNetwork();
   // Set the UI state as per the current network state.
   // If device was connected to a good network at the start, we are already
   // showing (by default) the update required screen. If network switches from
@@ -166,7 +195,7 @@ void UpdateRequiredScreen::RefreshNetworkState() {
     // No network is available for the update process to start.
     view_->SetUIState(UpdateRequiredView::UPDATE_NO_NETWORK);
     waiting_for_connection_ = false;
-  } else if (network->IsUsingMobileData()) {
+  } else if (handler->default_network_is_metered()) {
     // The device is either connected to a metered network at the start or has
     // switched to one.
     view_->SetUIState(UpdateRequiredView::UPDATE_NEED_PERMISSION);
@@ -244,12 +273,14 @@ void UpdateRequiredScreen::OnUpdateButtonClicked() {
 }
 
 void UpdateRequiredScreen::OnWaitForRebootTimeElapsed() {
+  LOG(ERROR) << "Unable to reboot - asking for a manual reboot.";
   EnsureScreenIsShown();
   if (view_)
     view_->SetUIState(UpdateRequiredView::UPDATE_COMPLETED_NEED_REBOOT);
 }
 
 void UpdateRequiredScreen::PrepareForUpdateCheck() {
+  VLOG(1) << "Update check started.";
   error_message_timer_.Stop();
   error_screen_->HideCaptivePortal();
 
@@ -271,7 +302,7 @@ void UpdateRequiredScreen::ShowErrorMessage() {
   error_screen_->SetHideCallback(base::BindOnce(
       &UpdateRequiredScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->SetIsPersistentError(true /* is_persistent */);
-  error_screen_->Show();
+  error_screen_->Show(nullptr);
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
 }
 
@@ -315,6 +346,7 @@ void UpdateRequiredScreen::UpdateInfoChanged(
       EnsureScreenIsShown();
       break;
     case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
+      VLOG(1) << "Need permission to update.";
       EnsureScreenIsShown();
       if (metered_network_update_permission) {
         version_updater_->SetUpdateOverCellularOneTimePermission();
@@ -322,12 +354,14 @@ void UpdateRequiredScreen::UpdateInfoChanged(
       }
       break;
     case update_engine::Operation::UPDATED_NEED_REBOOT:
+      VLOG(1) << "Update completed successfully.";
       EnsureScreenIsShown();
       waiting_for_reboot_ = true;
       version_updater_->RebootAfterUpdate();
       break;
     case update_engine::Operation::ERROR:
     case update_engine::Operation::REPORTING_ERROR_EVENT:
+      LOG(ERROR) << "Exiting update due to error.";
       version_updater_->StartExitUpdate(VersionUpdater::Result::UPDATE_ERROR);
       break;
     default:
@@ -343,6 +377,11 @@ void UpdateRequiredScreen::FinishExitUpdate(VersionUpdater::Result result) {
   is_updating_now_ = false;
   if (view_)
     view_->SetUIState(UpdateRequiredView::UPDATE_ERROR);
+}
+
+void UpdateRequiredScreen::Exit() {
+  DCHECK(!is_hidden());
+  exit_callback_.Run();
 }
 
 VersionUpdater* UpdateRequiredScreen::GetVersionUpdaterForTesting() {
@@ -382,7 +421,25 @@ void UpdateRequiredScreen::OnErrorScreenHidden() {
   error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
   // Return to the default state.
   error_screen_->SetIsPersistentError(false /* is_persistent */);
-  Show();
+  Show(context());
 }
+
+void UpdateRequiredScreen::DeleteUsersData() {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  // Make a copy of the list since we'll be removing users and the list would
+  // change underneath.
+  const user_manager::UserList user_list = user_manager->GetUsers();
+  for (user_manager::User* user : user_list) {
+    user_manager->RemoveUser(user->GetAccountId(), this /* delegate */);
+  }
+}
+
+void UpdateRequiredScreen::OnUserRemoved(const AccountId& account_id) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager->GetUsers().empty())
+    view_->SetIsUserDataPresent(false);
+}
+
+void UpdateRequiredScreen::OnBeforeUserRemoved(const AccountId& account_id) {}
 
 }  // namespace chromeos

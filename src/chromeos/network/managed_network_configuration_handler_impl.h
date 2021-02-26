@@ -22,7 +22,7 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
@@ -42,45 +42,35 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void AddObserver(NetworkPolicyObserver* observer) override;
   void RemoveObserver(NetworkPolicyObserver* observer) override;
 
-  void GetProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void GetProperties(const std::string& userhash,
+                     const std::string& service_path,
+                     network_handler::PropertiesCallback callback) override;
 
   void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::PropertiesCallback callback) override;
 
-  void SetProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
-  void SetManagerProperty(
-      const std::string& property_name,
-      const base::Value& value,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void SetProperties(const std::string& service_path,
+                     const base::DictionaryValue& user_settings,
+                     base::OnceClosure callback,
+                     network_handler::ErrorCallback error_callback) override;
 
   void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
-      const network_handler::ServiceResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ServiceResultCallback callback,
+      network_handler::ErrorCallback error_callback) const override;
 
   void RemoveConfiguration(
       const std::string& service_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) const override;
 
   void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) const override;
 
   void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
@@ -105,10 +95,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const std::string& profile_path,
       ::onc::ONCSource* onc_source) const override;
 
+  bool IsNetworkConfiguredByPolicy(
+      const std::string& guid,
+      const std::string& profile_path) const override;
+
+  bool CanRemoveNetworkConfig(const std::string& guid,
+                              const std::string& profile_path) const override;
+
   bool AllowOnlyPolicyNetworksToConnect() const override;
   bool AllowOnlyPolicyNetworksToConnectIfAvailable() const override;
   bool AllowOnlyPolicyNetworksToAutoconnect() const override;
-  std::vector<std::string> GetBlacklistedHexSSIDs() const override;
+  std::vector<std::string> GetBlockedHexSSIDs() const override;
 
   // NetworkProfileObserver overrides
   void OnProfileAdded(const NetworkProfile& profile) override;
@@ -137,15 +134,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   friend class ProhibitedTechnologiesHandlerTest;
 
   struct Policies;
-  typedef base::OnceCallback<void(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> properties)>
-      GetDevicePropertiesCallback;
   typedef std::map<std::string, std::unique_ptr<Policies>> UserToPoliciesMap;
   typedef std::map<std::string, std::unique_ptr<PolicyApplicator>>
       UserToPolicyApplicatorMap;
   typedef std::map<std::string, std::set<std::string>>
       UserToModifiedPoliciesMap;
+
+  // The type of properties to send after a Get{Managed}Properties call.
+  enum class PropertiesType {
+    kUnmanaged,
+    kManaged,
+  };
 
   ManagedNetworkConfigurationHandlerImpl();
 
@@ -156,21 +155,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
             NetworkConfigurationHandler* network_configuration_handler,
             NetworkDeviceHandler* network_device_handler,
             ProhibitedTechnologiesHandler* prohibitied_technologies_handler);
-
-  // Sends the response to the caller of GetManagedProperties.
-  void SendManagedProperties(
-      const std::string& userhash,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> shill_properties);
-
-  // Sends the response to the caller of GetProperties.
-  void SendProperties(const std::string& userhash,
-                      network_handler::DictionaryResultCallback callback,
-                      const network_handler::ErrorCallback& error_callback,
-                      const std::string& service_path,
-                      std::unique_ptr<base::DictionaryValue> shill_properties);
 
   // Returns the Policies for the given |userhash|, or the device policies if
   // |userhash| is empty.
@@ -187,7 +171,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   // Helper method to append associated Device properties to |properties|.
   void GetDeviceStateProperties(const std::string& service_path,
-                                base::DictionaryValue* properties);
+                                base::Value* properties);
 
   // Callback for NetworkConfigurationHandler::GetProperties requests from
   // Get{Managed}Properties. This callback fills in properties from
@@ -195,30 +179,32 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // Note: Requesting Device properties requires an additional fetch and
   // additional copying of data, so we only do it for Cellular networks which
   // contain a lot of necessary state in the associated Device object.
-  void GetPropertiesCallback(
-      GetDevicePropertiesCallback send_callback,
-      const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
+  void GetPropertiesCallback(PropertiesType properties_type,
+                             const std::string& userhash,
+                             network_handler::PropertiesCallback callback,
+                             const std::string& service_path,
+                             base::Optional<base::Value> shill_properties);
 
-  void GetDevicePropertiesSuccess(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> network_properties,
-      GetDevicePropertiesCallback send_callback,
-      const std::string& device_path,
-      const base::DictionaryValue& device_properties);
-  void GetDevicePropertiesFailure(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> network_properties,
-      GetDevicePropertiesCallback send_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+  void OnGetDeviceProperties(PropertiesType properties_type,
+                             const std::string& userhash,
+                             const std::string& service_path,
+                             network_handler::PropertiesCallback callback,
+                             base::Optional<base::Value> network_properties,
+                             const std::string& device_path,
+                             base::Optional<base::Value> device_properties);
+
+  void SendProperties(PropertiesType properties_type,
+                      const std::string& userhash,
+                      const std::string& service_path,
+                      network_handler::PropertiesCallback callback,
+                      base::Optional<base::Value> shill_properties);
 
   // Called from SetProperties, calls NCH::SetShillProperties.
   void SetShillProperties(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> shill_dictionary,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback);
 
   // Sets the active proxy values in managed network configurations depending on
   // the source of the configuration. Proxy enforced by user policy

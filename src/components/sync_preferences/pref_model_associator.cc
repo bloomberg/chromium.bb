@@ -114,14 +114,15 @@ void PrefModelAssociator::InitPrefAndAssociate(
   if (sync_pref.IsValid()) {
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
     DCHECK(pref_name == preference.name());
-    base::JSONReader reader;
-    std::unique_ptr<base::Value> sync_value(
-        reader.ReadToValueDeprecated(preference.value()));
-    if (!sync_value.get()) {
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(preference.value());
+    if (!parsed_json.value) {
       LOG(ERROR) << "Failed to deserialize value of preference '" << pref_name
-                 << "': " << reader.GetErrorMessage();
+                 << "': " << parsed_json.error_message;
       return;
     }
+    std::unique_ptr<base::Value> sync_value =
+        base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 
     if (user_pref_value) {
       DVLOG(1) << "Found user pref value for " << pref_name;
@@ -408,9 +409,9 @@ base::Optional<syncer::ModelError> PrefModelAssociator::ProcessSyncChanges(
       continue;
     }
 
-    std::unique_ptr<base::Value> new_value(
+    base::Optional<base::Value> new_value(
         ReadPreferenceSpecifics(pref_specifics));
-    if (!new_value.get()) {
+    if (!new_value) {
       // Skip values we can't deserialize.
       // TODO(zea): consider taking some further action such as erasing the
       // bad data.
@@ -440,18 +441,17 @@ base::Optional<syncer::ModelError> PrefModelAssociator::ProcessSyncChanges(
 }
 
 // static
-base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
+base::Optional<base::Value> PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
-  base::JSONReader reader;
-  std::unique_ptr<base::Value> value(
-      reader.ReadToValueDeprecated(preference.value()));
-  if (!value.get()) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(preference.value());
+  if (!parsed_json.value) {
     std::string err =
-        "Failed to deserialize preference value: " + reader.GetErrorMessage();
+        "Failed to deserialize preference value: " + parsed_json.error_message;
     LOG(ERROR) << err;
-    return nullptr;
+    return base::nullopt;
   }
-  return value.release();
+  return std::move(parsed_json.value);
 }
 
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
@@ -603,7 +603,6 @@ bool PrefModelAssociator::TypeMatchesUserPrefStore(
   if (!local_value || local_value->type() == new_value.type())
     return true;
 
-  UMA_HISTOGRAM_BOOLEAN("Sync.Preferences.RemotePrefTypeMismatch", true);
   DLOG(WARNING) << "Unexpected type mis-match for pref. "
                 << "Synced value for " << pref_name << " is of type "
                 << new_value.type() << " which doesn't match the locally "

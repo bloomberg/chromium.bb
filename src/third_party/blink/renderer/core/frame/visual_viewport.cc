@@ -156,7 +156,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   {
-    DCHECK(!transform_parent->IsInSubtreeOfPageScale());
+    DCHECK(!transform_parent->Unalias().IsInSubtreeOfPageScale());
 
     TransformPaintPropertyNode::State state;
     state.flags.in_subtree_of_page_scale = false;
@@ -178,7 +178,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     if (scale_ != 1.f)
       state.transform_and_origin = {TransformationMatrix().Scale(scale_)};
     state.flags.in_subtree_of_page_scale = false;
-    state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
+    state.direct_compositing_reasons = CompositingReason::kViewport;
     state.compositor_element_id = page_scale_element_id_;
 
     if (!page_scale_node_) {
@@ -259,7 +259,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     TransformPaintPropertyNode::State state{
         FloatSize(-scroll_position.Width(), -scroll_position.Height())};
     state.scroll = scroll_node_;
-    state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
+    state.direct_compositing_reasons = CompositingReason::kViewport;
     if (!scroll_translation_node_) {
       scroll_translation_node_ = TransformPaintPropertyNode::Create(
           *page_scale_node_, std::move(state));
@@ -323,9 +323,9 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   parent_property_tree_state_ =
-      PropertyTreeState(*transform_parent, *clip_parent, *effect_parent);
+      PropertyTreeStateOrAlias(*transform_parent, *clip_parent, *effect_parent);
 
-  if (change == PaintPropertyChangeType::kNodeAddedOrRemoved)
+  if (change == PaintPropertyChangeType::kNodeAddedOrRemoved && MainFrame())
     MainFrame()->View()->SetVisualViewportNeedsRepaint();
 
   return change;
@@ -335,7 +335,7 @@ VisualViewport::~VisualViewport() {
   SendUMAMetrics();
 }
 
-void VisualViewport::Trace(Visitor* visitor) {
+void VisualViewport::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   ScrollableArea::Trace(visitor);
 }
@@ -571,9 +571,8 @@ void VisualViewport::CreateLayers() {
   if (!GetPage().GetSettings().GetAcceleratedCompositingEnabled())
     return;
 
-  DCHECK(!scrollbar_layer_horizontal_ && !scrollbar_layer_vertical_);
-  DCHECK(MainFrame());
-  DCHECK(MainFrame()->GetDocument());
+  DCHECK(!scrollbar_layer_horizontal_);
+  DCHECK(!scrollbar_layer_vertical_);
 
   needs_paint_property_update_ = true;
 
@@ -588,7 +587,9 @@ void VisualViewport::CreateLayers() {
   LayerForScrollingDidChange(coordinator->GetCompositorAnimationTimeline());
 
   InitializeScrollbars();
-  coordinator->UpdateCompositorScrollOffset(*MainFrame(), *this);
+
+  if (MainFrame())
+    coordinator->UpdateCompositorScrollOffset(*MainFrame(), *this);
 }
 
 void VisualViewport::InitializeScrollbars() {
@@ -618,11 +619,8 @@ void VisualViewport::InitializeScrollbars() {
 }
 
 int VisualViewport::ScrollbarThickness() const {
-  auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
-  int thickness = theme.ScrollbarThickness(kRegularScrollbar);
-  return clampTo<int>(
-      std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-          MainFrame(), thickness)));
+  return ScrollbarThemeOverlayMobile::GetInstance().ScrollbarThickness(
+      ScaleFromDIP());
 }
 
 void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
@@ -631,14 +629,13 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
       is_horizontal ? scrollbar_layer_horizontal_ : scrollbar_layer_vertical_;
   if (!scrollbar_layer) {
     auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
-    int thumb_thickness = clampTo<int>(
-        std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-            MainFrame(), theme.ThumbThickness())));
-    int scrollbar_margin = clampTo<int>(
-        std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-            MainFrame(), theme.ScrollbarMargin())));
+    float scale = ScaleFromDIP();
+    int thumb_thickness = theme.ThumbThickness(scale);
+    int scrollbar_margin = theme.ScrollbarMargin(scale);
     cc::ScrollbarOrientation cc_orientation =
-        orientation == kHorizontalScrollbar ? cc::HORIZONTAL : cc::VERTICAL;
+        orientation == kHorizontalScrollbar
+            ? cc::ScrollbarOrientation::HORIZONTAL
+            : cc::ScrollbarOrientation::VERTICAL;
     scrollbar_layer = cc::SolidColorScrollbarLayer::Create(
         cc_orientation, thumb_thickness, scrollbar_margin,
         /*is_left_side_vertical_scrollbar*/ false);
@@ -839,7 +836,7 @@ scoped_refptr<base::SingleThreadTaskRunner> VisualViewport::GetTimerTaskRunner()
   return MainFrame()->GetTaskRunner(TaskType::kInternalDefault);
 }
 
-WebColorScheme VisualViewport::UsedColorScheme() const {
+mojom::blink::ColorScheme VisualViewport::UsedColorScheme() const {
   if (LocalFrame* main_frame = MainFrame()) {
     if (Document* main_document = main_frame->GetDocument())
       return main_document->GetLayoutView()->StyleRef().UsedColorScheme();
@@ -1079,37 +1076,36 @@ void VisualViewport::DisposeImpl() {
 
 void VisualViewport::Paint(GraphicsContext& context) const {
   // TODO(crbug.com/1015625): Avoid scroll_layer_.
-  // For now disable scroll_layer_ for CAP to avoid updating unit tests.
-  if (scroll_layer_ && !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    PropertyTreeState state = parent_property_tree_state_;
+  if (scroll_layer_) {
+    auto state = parent_property_tree_state_;
     state.SetTransform(*scroll_translation_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Scroll Layer"));
     RecordForeignLayer(context, debug_name_client,
                        DisplayItem::kForeignLayerViewportScroll, scroll_layer_,
-                       FloatPoint(), &state);
+                       IntPoint(), &state);
   }
 
   if (scrollbar_layer_horizontal_) {
-    PropertyTreeState state = parent_property_tree_state_;
+    auto state = parent_property_tree_state_;
     state.SetEffect(*horizontal_scrollbar_effect_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Horizontal Scrollbar"));
     RecordForeignLayer(
         context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
         scrollbar_layer_horizontal_,
-        FloatPoint(0, size_.Height() - ScrollbarThickness()), &state);
+        IntPoint(0, size_.Height() - ScrollbarThickness()), &state);
   }
 
   if (scrollbar_layer_vertical_) {
-    PropertyTreeState state = parent_property_tree_state_;
+    auto state = parent_property_tree_state_;
     state.SetEffect(*vertical_scrollbar_effect_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Vertical Scrollbar"));
     RecordForeignLayer(
         context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
         scrollbar_layer_vertical_,
-        FloatPoint(size_.Width() - ScrollbarThickness(), 0), &state);
+        IntPoint(size_.Width() - ScrollbarThickness(), 0), &state);
   }
 }
 

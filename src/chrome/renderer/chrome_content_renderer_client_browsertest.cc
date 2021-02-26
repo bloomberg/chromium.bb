@@ -11,13 +11,10 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -136,8 +133,8 @@ class ChromeContentRendererClientBrowserTest :
 
     EXPECT_EQ(request.relative_url, GetParam().expected_url)
         << "URL is wrong for test " << GetParam().name;
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   message_runner_->QuitClosure());
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, message_runner_->QuitClosure());
   }
 
   void WaitForYouTubeRequest() {
@@ -148,7 +145,7 @@ class ChromeContentRendererClientBrowserTest :
     host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    https_server_->RegisterRequestMonitor(base::Bind(
+    https_server_->RegisterRequestMonitor(base::BindRepeating(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());

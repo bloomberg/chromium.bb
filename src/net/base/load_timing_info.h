@@ -27,7 +27,6 @@ namespace net {
 // The general order for events is:
 // request_start
 // service_worker_start_time
-// service_worker_ready_time
 // proxy_start
 // proxy_end
 // dns_start
@@ -38,6 +37,10 @@ namespace net {
 // connect_end
 // send_start
 // send_end
+// service_worker_ready_time
+// service_worker_fetch_start
+// service_worker_respond_with_settled
+// first_early_hints_time
 // receive_headers_start
 // receive_headers_end
 //
@@ -149,7 +152,16 @@ struct NET_EXPORT LoadTimingInfo {
   // if this is greater than |request_start|.
   base::TimeTicks service_worker_ready_time;
 
-  // The time spent determing which proxy to use.  Null when there is no PAC.
+  // The time when serviceworker fetch event was popped off the event queue
+  // and fetch event handler started running.
+  // If the response is not provided by the ServiceWorker, kept empty.
+  base::TimeTicks service_worker_fetch_start;
+
+  // The time when serviceworker's fetch event's respondWith promise was
+  // settled. If the response is not provided by the ServiceWorker, kept empty.
+  base::TimeTicks service_worker_respond_with_settled;
+
+  // The time spent determining which proxy to use.  Null when there is no PAC.
   base::TimeTicks proxy_resolve_start;
   base::TimeTicks proxy_resolve_end;
 
@@ -166,6 +178,9 @@ struct NET_EXPORT LoadTimingInfo {
   // (http://www.w3.org/TR/resource-timing/) for Web-surfacing requests.
   base::TimeTicks receive_headers_start;
   base::TimeTicks receive_headers_end;
+
+  // The time that the first 103 Early Hints response is received.
+  base::TimeTicks first_early_hints_time;
 
   // In case the resource was proactively pushed by the server, these are
   // the times that push started and ended. Note that push_end will be null

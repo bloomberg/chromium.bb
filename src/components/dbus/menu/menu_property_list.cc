@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/image_model.h"
@@ -14,10 +16,55 @@
 #include "ui/gfx/image/image.h"
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
-
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/events/keycodes/keysym_to_unicode.h"           // nogncheck
 #endif
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"             // nogncheck
+#include "ui/ozone/public/ozone_platform.h"       // nogncheck
+#include "ui/ozone/public/platform_menu_utils.h"  // nogncheck
+#endif
+
+namespace {
+
+std::string ToDBusKeySym(ui::KeyboardCode code) {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    const auto* const platorm_menu_utils =
+        ui::OzonePlatform::GetInstance()->GetPlatformMenuUtils();
+    if (platorm_menu_utils)
+      return platorm_menu_utils->ToDBusKeySym(code);
+    return {};
+  }
+#endif
+#if defined(USE_X11)
+  return base::UTF16ToUTF8(
+      base::string16(1, ui::GetUnicodeCharacterFromXKeySym(
+                            XKeysymForWindowsKeyCode(code, false))));
+#endif
+  return {};
+}
+
+std::vector<DbusString> GetDbusMenuShortcut(ui::Accelerator accelerator) {
+  auto dbus_key_sym = ToDBusKeySym(accelerator.key_code());
+  if (dbus_key_sym.empty())
+    return {};
+
+  std::vector<DbusString> parts;
+  if (accelerator.IsCtrlDown())
+    parts.emplace_back("Control");
+  if (accelerator.IsAltDown())
+    parts.emplace_back("Alt");
+  if (accelerator.IsShiftDown())
+    parts.emplace_back("Shift");
+  if (accelerator.IsCmdDown())
+    parts.emplace_back("Super");
+  parts.emplace_back(dbus_key_sym);
+  return parts;
+}
+
+}  // namespace
 
 MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,
                                                     int i) {
@@ -46,23 +93,11 @@ MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,
 
   ui::Accelerator accelerator;
   if (menu->GetAcceleratorAt(i, &accelerator)) {
-    std::vector<DbusString> parts;
-    if (accelerator.IsCtrlDown())
-      parts.push_back(DbusString("Control"));
-    if (accelerator.IsAltDown())
-      parts.push_back(DbusString("Alt"));
-    if (accelerator.IsShiftDown())
-      parts.push_back(DbusString("Shift"));
-    if (accelerator.IsCmdDown())
-      parts.push_back(DbusString("Super"));
-#if defined(USE_X11)
-    parts.push_back(DbusString(XKeysymToString(
-        XKeysymForWindowsKeyCode(accelerator.key_code(), false))));
-    properties["shortcut"] =
-        MakeDbusVariant(MakeDbusArray(DbusArray<DbusString>(std::move(parts))));
-#else
-    NOTIMPLEMENTED();
-#endif
+    auto parts = GetDbusMenuShortcut(accelerator);
+    if (!parts.empty()) {
+      properties["shortcut"] = MakeDbusVariant(
+          MakeDbusArray(DbusArray<DbusString>(std::move(parts))));
+    }
   }
 
   switch (menu->GetTypeAt(i)) {

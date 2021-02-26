@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 
   aom_codec_ctx_t codec;
   if (aom_codec_dec_init(&codec, decoder, NULL, 0))
-    die_codec(&codec, "Failed to initialize decoder.");
+    die("Failed to initialize decoder.");
 
   if (aom_codec_control(&codec, AV1D_SET_OUTPUT_ALL_LAYERS, 1)) {
     die_codec(&codec, "Failed to set output_all_layers control.");

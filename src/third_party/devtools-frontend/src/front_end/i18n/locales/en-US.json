@@ -1,0 +1,287 @@
+{
+  "coverage/CoverageListView.js | Byte": {
+    "message": "1 byte"
+  },
+  "coverage/CoverageListView.js | ByteS": {
+    "message": "1 byte, {PH1}"
+  },
+  "coverage/CoverageListView.js | codeCoverage": {
+    "message": "Code Coverage"
+  },
+  "coverage/CoverageListView.js | css": {
+    "message": "CSS"
+  },
+  "coverage/CoverageListView.js | jsCoverageWithPerBlock": {
+    "message": "JS coverage with per block granularity: Once a block of JavaScript was executed, that block is marked as covered."
+  },
+  "coverage/CoverageListView.js | jsCoverageWithPerFunction": {
+    "message": "JS coverage with per function granularity: Once a function was executed, the whole function is marked as covered."
+  },
+  "coverage/CoverageListView.js | jsPerBlock": {
+    "message": "JS (per block)"
+  },
+  "coverage/CoverageListView.js | jsPerFunction": {
+    "message": "JS (per function)"
+  },
+  "coverage/CoverageListView.js | sBytes": {
+    "message": "{PH1} bytes"
+  },
+  "coverage/CoverageListView.js | sBytesS": {
+    "message": "{PH1} bytes, {PH2}"
+  },
+  "coverage/CoverageListView.js | sBytesSBelongToBlocksOf": {
+    "message": "{PH1} bytes ({PH2} %) belong to blocks of JavaScript that have not (yet) been executed."
+  },
+  "coverage/CoverageListView.js | sBytesSBelongToBlocksOfJavascript": {
+    "message": "{PH1} bytes ({PH2} %) belong to blocks of JavaScript that have executed at least once."
+  },
+  "coverage/CoverageListView.js | sBytesSBelongToFunctionsThatHave": {
+    "message": "{PH1} bytes ({PH2} %) belong to functions that have not (yet) been executed."
+  },
+  "coverage/CoverageListView.js | sBytesSBelongToFunctionsThatHaveExecuted": {
+    "message": "{PH1} bytes ({PH2} %) belong to functions that have executed at least once."
+  },
+  "coverage/CoverageListView.js | sOfFileUnusedSOfFileUsed": {
+    "message": "{PH1} % of file unused, {PH2} % of file used"
+  },
+  "coverage/CoverageListView.js | sPercent": {
+    "message": "{PH1} %"
+  },
+  "coverage/CoverageListView.js | totalBytes": {
+    "message": "Total Bytes"
+  },
+  "coverage/CoverageListView.js | type": {
+    "message": "Type"
+  },
+  "coverage/CoverageListView.js | unusedBytes": {
+    "message": "Unused Bytes"
+  },
+  "coverage/CoverageListView.js | url": {
+    "message": "URL"
+  },
+  "coverage/CoverageListView.js | usageVisualization": {
+    "message": "Usage Visualization"
+  },
+  "coverage/CoverageView.js | all": {
+    "message": "All"
+  },
+  "coverage/CoverageView.js | chooseCoverageGranularityPer": {
+    "message": "Choose coverage granularity: Per function has low overhead, per block has significant overhead."
+  },
+  "coverage/CoverageView.js | clearAll": {
+    "message": "Clear all"
+  },
+  "coverage/CoverageView.js | clickTheRecordButtonSToStart": {
+    "message": "Click the record button {PH1} to start capturing coverage."
+  },
+  "coverage/CoverageView.js | clickTheReloadButtonSToReloadAnd": {
+    "message": "Click the reload button {PH1} to reload and start capturing coverage."
+  },
+  "coverage/CoverageView.js | contentScripts": {
+    "message": "Content scripts"
+  },
+  "coverage/CoverageView.js | css": {
+    "message": "CSS"
+  },
+  "coverage/CoverageView.js | export": {
+    "message": "Export..."
+  },
+  "coverage/CoverageView.js | filterCoverageByType": {
+    "message": "Filter coverage by type"
+  },
+  "coverage/CoverageView.js | filteredSTotalS": {
+    "message": "Filtered: {PH1}  Total: {PH2}"
+  },
+  "coverage/CoverageView.js | includeExtensionContentScripts": {
+    "message": "Include extension content scripts"
+  },
+  "coverage/CoverageView.js | javascript": {
+    "message": "JavaScript"
+  },
+  "coverage/CoverageView.js | perBlock": {
+    "message": "Per block"
+  },
+  "coverage/CoverageView.js | perFunction": {
+    "message": "Per function"
+  },
+  "coverage/CoverageView.js | sOfSSUsedSoFarSUnused": {
+    "message": "{PH1} of {PH2} ({PH3}%) used so far,\n        {PH4} unused."
+  },
+  "coverage/CoverageView.js | urlFilter": {
+    "message": "URL filter"
+  },
+  "coverage/ModuleUIStrings.js | coverage": {
+    "message": "Coverage"
+  },
+  "coverage/ModuleUIStrings.js | instrumentCoverage": {
+    "message": "Instrument coverage"
+  },
+  "coverage/ModuleUIStrings.js | performance": {
+    "message": "Performance"
+  },
+  "coverage/ModuleUIStrings.js | startInstrumentingCoverageAnd": {
+    "message": "Start instrumenting coverage and reload page"
+  },
+  "coverage/ModuleUIStrings.js | stopInstrumentingCoverageAndShow": {
+    "message": "Stop instrumenting coverage and show results"
+  },
+  "devices/DevicesView.js | thisPanelHasBeenDeprecatedIn": {
+    "message": "This panel has been deprecated in favor of the {PH1} interface, which has equivalent functionality."
+  },
+  "devices/ModuleUIStrings.js | android": {
+    "message": "android"
+  },
+  "devices/ModuleUIStrings.js | mobile": {
+    "message": "mobile"
+  },
+  "devices/ModuleUIStrings.js | remoteDevices": {
+    "message": "Remote devices"
+  },
+  "devices/ModuleUIStrings.js | usb": {
+    "message": "usb"
+  },
+  "resources/ClearStorageView.js | storageQuotaUsed": {
+    "message": "{PH1} used out of {PH2} storage quota"
+  },
+  "resources/ClearStorageView.js | storageQuotaUsedWithBytes": {
+    "message": "{PH1} bytes used out of {PH2} bytes storage quota"
+  },
+  "resources/ClearStorageView.js | storageWithCustomMarker": {
+    "message": "{PH1} (custom)"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | addFilenamePattern": {
+    "message": "Add filename pattern"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | addPattern": {
+    "message": "Add pattern..."
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | behavior": {
+    "message": "Behavior"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | blackbox": {
+    "message": "Blackbox"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | blackboxContentScripts": {
+    "message": "Blackbox content scripts"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | blackboxContentScriptsExtension": {
+    "message": "Blackbox content scripts (extension scripts in the page)"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | blackboxScriptsWhoseNamesMatchS": {
+    "message": "Blackbox scripts whose names match '{PH1}'"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | debuggerWillSkipThroughThe": {
+    "message": "Debugger will skip through the scripts and will not stop on exceptions thrown by them."
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | disabled": {
+    "message": "Disabled"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | frameworkBlackboxing": {
+    "message": "Framework Blackboxing"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | noBlackboxedPatterns": {
+    "message": "No blackboxed patterns"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | pattern": {
+    "message": "Pattern"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | patternAlreadyExists": {
+    "message": "Pattern already exists"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | patternCannotBeEmpty": {
+    "message": "Pattern cannot be empty"
+  },
+  "settings/FrameworkBlackboxSettingsTab.js | patternMustBeAValidRegular": {
+    "message": "Pattern must be a valid regular expression"
+  },
+  "settings/KeybindsSettingsTab.js | addAShortcut": {
+    "message": "Add a shortcut"
+  },
+  "settings/KeybindsSettingsTab.js | confirmChanges": {
+    "message": "Confirm changes"
+  },
+  "settings/KeybindsSettingsTab.js | discardChanges": {
+    "message": "Discard changes"
+  },
+  "settings/KeybindsSettingsTab.js | editShortcut": {
+    "message": "Edit shortcut"
+  },
+  "settings/KeybindsSettingsTab.js | FullListOfDevtoolsKeyboard": {
+    "message": "Full list of DevTools keyboard shortcuts and gestures"
+  },
+  "settings/KeybindsSettingsTab.js | keyboardShortcutsList": {
+    "message": "Keyboard shortcuts list"
+  },
+  "settings/KeybindsSettingsTab.js | matchShortcutsFromPreset": {
+    "message": "Match shortcuts from preset"
+  },
+  "settings/KeybindsSettingsTab.js | noShortcutForAction": {
+    "message": "No shortcut for action"
+  },
+  "settings/KeybindsSettingsTab.js | removeShortcut": {
+    "message": "Remove shortcut"
+  },
+  "settings/KeybindsSettingsTab.js | ResetShortcutsForAction": {
+    "message": "Reset shortcuts for action"
+  },
+  "settings/KeybindsSettingsTab.js | RestoreDefaultShortcuts": {
+    "message": "Restore default shortcuts"
+  },
+  "settings/KeybindsSettingsTab.js | shortcutModified": {
+    "message": "Shortcut modified"
+  },
+  "settings/KeybindsSettingsTab.js | shortcuts": {
+    "message": "Shortcuts"
+  },
+  "settings/KeybindsSettingsTab.js | shortcutsCannotContainOnly": {
+    "message": "Shortcuts cannot contain only modifier keys."
+  },
+  "settings/KeybindsSettingsTab.js | thisShortcutIsInUseByS": {
+    "message": "This shortcut is in use by {PH1}: {PH2}."
+  },
+  "settings/ModuleUIStrings.js | blackboxing": {
+    "message": "Blackboxing"
+  },
+  "settings/ModuleUIStrings.js | documentation": {
+    "message": "Documentation"
+  },
+  "settings/ModuleUIStrings.js | experiments": {
+    "message": "Experiments"
+  },
+  "settings/ModuleUIStrings.js | preferences": {
+    "message": "Preferences"
+  },
+  "settings/ModuleUIStrings.js | settings": {
+    "message": "Settings"
+  },
+  "settings/ModuleUIStrings.js | shortcuts": {
+    "message": "Shortcuts"
+  },
+  "settings/SettingsScreen.js | experiments": {
+    "message": "Experiments"
+  },
+  "settings/SettingsScreen.js | oneOrMoreSettingsHaveChanged": {
+    "message": "One or more settings have changed which requires a reload to take effect."
+  },
+  "settings/SettingsScreen.js | preferences": {
+    "message": "Preferences"
+  },
+  "settings/SettingsScreen.js | restoreDefaultsAndReload": {
+    "message": "Restore defaults and reload"
+  },
+  "settings/SettingsScreen.js | settings": {
+    "message": "Settings"
+  },
+  "settings/SettingsScreen.js | shortcuts": {
+    "message": "Shortcuts"
+  },
+  "settings/SettingsScreen.js | theseExperimentsAreParticularly": {
+    "message": "These experiments are particularly unstable. Enable at your own risk."
+  },
+  "settings/SettingsScreen.js | theseExperimentsCouldBeUnstable": {
+    "message": "These experiments could be unstable or unreliable and may require you to restart DevTools."
+  },
+  "settings/SettingsScreen.js | warning": {
+    "message": "WARNING:"
+  }
+}

@@ -10,6 +10,8 @@
 
 #include "base/optional.h"
 #include "cc/paint/paint_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -25,16 +27,17 @@ namespace cc {
 class CC_PAINT_EXPORT DecodedDrawImage {
  public:
   DecodedDrawImage(sk_sp<const SkImage> image,
+                   sk_sp<SkColorFilter> dark_mode_color_filter,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
-                   SkFilterQuality filter_quality,
-                   bool is_budgeted);
+                   SkFilterQuality filter_quality);
+  DecodedDrawImage(const gpu::Mailbox& mailbox, SkFilterQuality filter_quality);
   DecodedDrawImage(base::Optional<uint32_t> transfer_cache_entry_id,
+                   sk_sp<SkColorFilter> dark_mode_color_filter,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
                    SkFilterQuality filter_quality,
-                   bool needs_mips,
-                   bool is_budgeted);
+                   bool needs_mips);
   DecodedDrawImage(const DecodedDrawImage& other);
   DecodedDrawImage(DecodedDrawImage&& other);
   DecodedDrawImage& operator=(const DecodedDrawImage&);
@@ -44,6 +47,9 @@ class CC_PAINT_EXPORT DecodedDrawImage {
   ~DecodedDrawImage();
 
   const sk_sp<const SkImage>& image() const { return image_; }
+  const sk_sp<SkColorFilter>& dark_mode_color_filter() const {
+    return dark_mode_color_filter_;
+  }
   base::Optional<uint32_t> transfer_cache_entry_id() const {
     return transfer_cache_entry_id_;
   }
@@ -57,17 +63,20 @@ class CC_PAINT_EXPORT DecodedDrawImage {
   bool transfer_cache_entry_needs_mips() const {
     return transfer_cache_entry_needs_mips_;
   }
-  bool is_budgeted() const { return is_budgeted_; }
-  operator bool() const { return image_ || transfer_cache_entry_id_; }
+  const gpu::Mailbox& mailbox() const { return mailbox_; }
+  explicit operator bool() const {
+    return image_ || transfer_cache_entry_id_ || !mailbox_.IsZero();
+  }
 
  private:
   sk_sp<const SkImage> image_;
+  gpu::Mailbox mailbox_;
   base::Optional<uint32_t> transfer_cache_entry_id_;
+  sk_sp<SkColorFilter> dark_mode_color_filter_;
   SkSize src_rect_offset_;
   SkSize scale_adjustment_;
   SkFilterQuality filter_quality_;
   bool transfer_cache_entry_needs_mips_ = false;
-  bool is_budgeted_;
 };
 
 }  // namespace cc

@@ -5,203 +5,259 @@
 #ifndef UI_GFX_X_XPROTO_TYPES_H_
 #define UI_GFX_X_XPROTO_TYPES_H_
 
-#include <X11/Xlib-xcb.h>
-#include <xcb/xcb.h>
-#include <xcb/xcbext.h>
-
 #include <cstdint>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/component_export.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "ui/gfx/x/request_queue.h"
-#include "ui/gfx/x/xproto_util.h"
-
-typedef struct _XDisplay XDisplay;
+#include "ui/gfx/x/error.h"
 
 namespace x11 {
+
+class Connection;
+
+constexpr uint8_t kSendEventMask = 0x80;
+
+namespace detail {
+
+template <typename T>
+void VerifyAlignment(T* t, size_t offset) {
+  // On the wire, X11 types are always aligned to their size.  This is a sanity
+  // check to ensure padding etc are working properly.
+  if (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+    DCHECK_EQ(offset % sizeof(*t), 0UL);
+}
+
+}  // namespace detail
+
+// Wraps data read from the connection.
+struct COMPONENT_EXPORT(X11) ReadBuffer {
+  explicit ReadBuffer(scoped_refptr<base::RefCountedMemory> data);
+
+  ReadBuffer(const ReadBuffer&) = delete;
+  ReadBuffer(ReadBuffer&&);
+
+  ~ReadBuffer();
+
+  scoped_refptr<base::RefCountedMemory> ReadAndAdvance(size_t length);
+
+  int TakeFd();
+
+  scoped_refptr<base::RefCountedMemory> data;
+  size_t offset = 0;
+  const int* fds = nullptr;
+};
+
+// Wraps data to write to the connection.
+class COMPONENT_EXPORT(X11) WriteBuffer {
+ public:
+  WriteBuffer();
+
+  WriteBuffer(const WriteBuffer&) = delete;
+  WriteBuffer(WriteBuffer&&);
+
+  ~WriteBuffer();
+
+  void AppendBuffer(scoped_refptr<base::RefCountedMemory> buffer, size_t size);
+
+  std::vector<scoped_refptr<base::RefCountedMemory>>& GetBuffers();
+
+  size_t offset() const { return offset_; }
+
+  std::vector<int>& fds() { return fds_; }
+
+  template <typename T>
+  void Write(const T* t) {
+    static_assert(std::is_trivially_copyable<T>::value, "");
+    detail::VerifyAlignment(t, offset_);
+    const uint8_t* start = reinterpret_cast<const uint8_t*>(t);
+    std::copy(start, start + sizeof(*t), std::back_inserter(current_buffer_));
+    offset_ += sizeof(*t);
+  }
+
+ private:
+  void AppendCurrentBuffer();
+
+  std::vector<scoped_refptr<base::RefCountedMemory>> buffers_;
+  std::vector<uint8_t> current_buffer_;
+  size_t offset_ = 0;
+  std::vector<int> fds_;
+};
 
 namespace detail {
 
 template <typename Reply>
-std::unique_ptr<Reply> ReadReply(const uint8_t* buffer);
+std::unique_ptr<Reply> ReadReply(ReadBuffer* buffer);
 
-}
-
-using Error = xcb_generic_error_t;
+}  // namespace detail
 
 template <class Reply>
 class Future;
+
+template <typename T>
+T Read(ReadBuffer* buf);
+
+template <typename T>
+WriteBuffer Write(const T& t);
+
+template <typename T>
+void ReadEvent(T* event, ReadBuffer* buf);
 
 template <typename Reply>
 struct Response {
   operator bool() const { return reply.get(); }
   const Reply* operator->() const { return reply.get(); }
+  Reply* operator->() { return reply.get(); }
 
   std::unique_ptr<Reply> reply;
-  std::unique_ptr<Error, base::FreeDeleter> error;
+  std::unique_ptr<Error> error;
 
  private:
   friend class Future<Reply>;
 
-  Response(std::unique_ptr<Reply> reply,
-           std::unique_ptr<Error, base::FreeDeleter> error)
+  Response(std::unique_ptr<Reply> reply, std::unique_ptr<Error> error)
       : reply(std::move(reply)), error(std::move(error)) {}
 };
 
 template <>
 struct Response<void> {
-  std::unique_ptr<Error, base::FreeDeleter> error;
+  std::unique_ptr<Error> error;
 
  private:
   friend class Future<void>;
 
-  explicit Response(std::unique_ptr<Error, base::FreeDeleter> error)
-      : error(std::move(error)) {}
+  explicit Response(std::unique_ptr<Error> error) : error(std::move(error)) {}
+};
+
+class COMPONENT_EXPORT(X11) FutureBase {
+ public:
+  using RawReply = scoped_refptr<base::RefCountedMemory>;
+  using RawError = scoped_refptr<base::RefCountedMemory>;
+  using ResponseCallback =
+      base::OnceCallback<void(RawReply reply, RawError error)>;
+
+  FutureBase(const FutureBase&) = delete;
+  FutureBase& operator=(const FutureBase&) = delete;
+
+ protected:
+  FutureBase(Connection* connection,
+             base::Optional<unsigned int> sequence,
+             const char* request_name);
+  ~FutureBase();
+
+  FutureBase(FutureBase&& future);
+  FutureBase& operator=(FutureBase&& future);
+
+  void SyncImpl(RawError* raw_error, RawReply* raw_reply);
+  void SyncImpl(RawError* raw_error);
+
+  void OnResponseImpl(ResponseCallback callback);
+
+  x11::Connection* connection() { return connection_; }
+
+  static std::unique_ptr<Error> ParseErrorImpl(x11::Connection* connection,
+                                               RawError raw_error);
+
+ private:
+  void Reset();
+
+  Connection* connection_ = nullptr;
+  base::Optional<unsigned int> sequence_;
+  const char* request_name_ = nullptr;
 };
 
 // An x11::Future wraps an asynchronous response from the X11 server.  The
 // response may be waited-for with Sync(), or asynchronously handled by
 // installing a response handler using OnResponse().
 template <typename Reply>
-class Future {
+class Future : public FutureBase {
  public:
   using Callback = base::OnceCallback<void(Response<Reply> response)>;
-  using RQ = RequestQueue;
 
-  // If a user-defined response-handler is not installed before this object goes
-  // out of scope, a default response handler will be installed.  The default
-  // handler throws away the reply and prints the error if there is one.
-  ~Future() {
-    if (!sequence_)
-      return;
-
-    EnqueueRequest(base::BindOnce(
-        [](XDisplay* display, RQ::Reply reply, RQ::Error error) {
-          if (!error)
-            return;
-
-          x11::LogErrorEventDescription(XErrorEvent({
-              .type = error->response_type,
-              .display = display,
-              .resourceid = error->resource_id,
-              .serial = error->full_sequence,
-              .error_code = error->error_code,
-              .request_code = error->major_code,
-              .minor_code = error->minor_code,
-          }));
-        },
-        display_));
-  }
-
-  Future(const Future&) = delete;
-  Future& operator=(const Future&) = delete;
-
-  Future(Future&& future)
-      : display_(future.display_), sequence_(future.sequence_) {
-    future.display_ = nullptr;
-    future.sequence_ = base::nullopt;
-  }
-  Future& operator=(Future&& future) {
-    display_ = future.display_;
-    sequence_ = future.sequence_;
-    future.display_ = nullptr;
-    future.sequence_ = base::nullopt;
-  }
-
-  xcb_connection_t* connection() { return XGetXCBConnection(display_); }
+  Future() : FutureBase(nullptr, base::nullopt, nullptr) {}
 
   // Blocks until we receive the response from the server. Returns the response.
   Response<Reply> Sync() {
-    if (!sequence_)
-      return {{}, {}};
-
-    Error* raw_error = nullptr;
-    uint8_t* raw_reply = reinterpret_cast<uint8_t*>(
-        xcb_wait_for_reply(connection(), *sequence_, &raw_error));
-    sequence_ = base::nullopt;
+    RawError raw_error;
+    RawReply raw_reply;
+    SyncImpl(&raw_error, &raw_reply);
 
     std::unique_ptr<Reply> reply;
     if (raw_reply) {
-      reply = detail::ReadReply<Reply>(raw_reply);
-      free(raw_reply);
+      auto buf = ReadBuffer(raw_reply);
+      reply = detail::ReadReply<Reply>(&buf);
     }
 
-    std::unique_ptr<Error, base::FreeDeleter> error;
-    if (raw_error)
-      error.reset(raw_error);
+    std::unique_ptr<Error> error = ParseErrorImpl(connection(), raw_error);
 
     return {std::move(reply), std::move(error)};
   }
 
   // Installs |callback| to be run when the response is received.
   void OnResponse(Callback callback) {
-    if (!sequence_)
-      return;
-
     // This intermediate callback handles the conversion from |raw_reply| to a
     // real Reply object before feeding the result to |callback|.  This means
     // |callback| must be bound as the first argument of the intermediate
     // function.
-    auto wrapper = [](Callback callback, RQ::Reply raw_reply, RQ::Error error) {
-      std::unique_ptr<Reply> reply =
-          raw_reply ? detail::ReadReply<Reply>(raw_reply.get()) : nullptr;
+    auto wrapper = [](x11::Connection* connection, Callback callback,
+                      RawReply raw_reply, RawError raw_error) {
+      std::unique_ptr<Reply> reply;
+      if (raw_reply) {
+        ReadBuffer buf(raw_reply);
+        reply = detail::ReadReply<Reply>(&buf);
+      }
+      std::unique_ptr<Error> error = ParseErrorImpl(connection, raw_error);
       std::move(callback).Run({std::move(reply), std::move(error)});
     };
-    EnqueueRequest(base::BindOnce(wrapper, std::move(callback)));
+    OnResponseImpl(base::BindOnce(wrapper, connection(), std::move(callback)));
+  }
 
-    sequence_ = base::nullopt;
+  void IgnoreError() {
+    OnResponse(base::BindOnce([](Response<Reply>) {}));
   }
 
  private:
   template <typename R>
-  friend Future<R> SendRequest(XDisplay*, std::vector<uint8_t>*);
+  friend Future<R> SendRequest(Connection*, WriteBuffer*, bool, const char*);
 
-  Future(XDisplay* display, base::Optional<unsigned int> sequence)
-      : display_(display), sequence_(sequence) {}
-
-  void EnqueueRequest(RQ::ResponseCallback callback) {
-    RQ::GetInstance()->AddRequest(std::is_void<Reply>::value, *sequence_,
-                                  std::move(callback));
-  }
-
-  XDisplay* display_;
-  base::Optional<unsigned int> sequence_;
+  Future(Connection* connection,
+         base::Optional<unsigned int> sequence,
+         const char* request_name)
+      : FutureBase(connection, sequence, request_name) {}
 };
 
 // Sync() specialization for requests that don't generate replies.  The returned
 // response will only contain an error if there was one.
 template <>
 inline Response<void> Future<void>::Sync() {
-  if (!sequence_)
-    return Response<void>(nullptr);
-
-  Error* raw_error = xcb_request_check(connection(), {*sequence_});
-  std::unique_ptr<Error, base::FreeDeleter> error;
-  if (raw_error)
-    error.reset(raw_error);
-
-  return Response<void>{std::move(error)};
+  RawError raw_error;
+  SyncImpl(&raw_error);
+  return Response<void>{ParseErrorImpl(connection(), raw_error)};
 }
 
 // OnResponse() specialization for requests that don't generate replies.  The
 // response argument to |callback| will only contain an error if there was one.
 template <>
 inline void Future<void>::OnResponse(Callback callback) {
-  if (!sequence_)
-    return;
-
   // See Future<Reply>::OnResponse() for an explanation of why
   // this wrapper is necessary.
-  auto wrapper = [](Callback callback, RQ::Reply reply, RQ::Error error) {
+  auto wrapper = [](x11::Connection* connection, Callback callback,
+                    RawReply reply, RawError error) {
     DCHECK(!reply);
-    std::move(callback).Run(Response<void>{std::move(error)});
+    std::move(callback).Run(Response<void>{ParseErrorImpl(connection, error)});
   };
-  EnqueueRequest(base::BindOnce(wrapper, std::move(callback)));
+  OnResponseImpl(base::BindOnce(wrapper, connection(), std::move(callback)));
+}
 
-  sequence_ = base::nullopt;
+template <>
+inline void Future<void>::IgnoreError() {
+  OnResponse(base::BindOnce([](Response<void>) {}));
 }
 
 }  // namespace x11

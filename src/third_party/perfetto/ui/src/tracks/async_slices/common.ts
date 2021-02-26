@@ -13,7 +13,7 @@
 // limitations under the License.
 import {TrackData} from '../../common/track_data';
 
-export const SLICE_TRACK_KIND = 'AsyncSliceTrack';
+export const ASYNC_SLICE_TRACK_KIND = 'AsyncSliceTrack';
 
 export interface Config {
   maxDepth: number;
@@ -28,4 +28,6 @@ export interface Data extends TrackData {
   ends: Float64Array;
   depths: Uint16Array;
   titles: Uint16Array;  // Index in |strings|.
+  isInstant: Uint16Array;
+  isIncomplete: Uint16Array;
 }

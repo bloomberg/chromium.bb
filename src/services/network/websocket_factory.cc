@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/isolation_info.h"
 #include "net/base/url_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -36,13 +37,14 @@ void WebSocketFactory::CreateWebSocket(
     int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
+    net::NetworkTrafficAnnotationTag traffic_annotation,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
-  if (isolation_info.redirect_mode() !=
-      net::IsolationInfo::RedirectMode::kUpdateNothing) {
+  if (isolation_info.request_type() !=
+      net::IsolationInfo::RequestType::kOther) {
     mojo::ReportBadMessage(
-        "WebSocket's IsolationInfo::RedirectMode must be kUpdateNothing");
+        "WebSocket's IsolationInfo::RequestType must be kOther");
     return;
   }
 
@@ -61,9 +63,11 @@ void WebSocketFactory::CreateWebSocket(
   connections_.insert(std::make_unique<WebSocket>(
       this, url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, render_frame_id, origin,
-      options, has_raw_headers_access, std::move(handshake_client),
-      std::move(auth_handler), std::move(header_client),
+      options, traffic_annotation, has_raw_headers_access,
+      std::move(handshake_client), std::move(auth_handler),
+      std::move(header_client),
       throttler_.IssuePendingConnectionTracker(process_id),
+      DataPipeUseTracker(context_->network_service(), DataPipeUser::kWebSocket),
       throttler_.CalculateDelay(process_id)));
 }
 

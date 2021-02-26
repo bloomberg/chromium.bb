@@ -7,6 +7,7 @@
 #include "core/fpdfapi/font/cpdf_type3font.h"
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #include "core/fpdfapi/font/cpdf_type3char.h"
@@ -15,7 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/fx_system.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -28,7 +29,6 @@ CPDF_Type3Font::CPDF_Type3Font(CPDF_Document* pDocument,
                                FormFactoryIface* pFormFactory)
     : CPDF_SimpleFont(pDocument, pFontDict), m_pFormFactory(pFormFactory) {
   ASSERT(GetDocument());
-  memset(m_CharWidthL, 0, sizeof(m_CharWidthL));
 }
 
 CPDF_Type3Font::~CPDF_Type3Font() = default;
@@ -74,7 +74,7 @@ bool CPDF_Type3Font::Load() {
     m_FontBBox = box.ToFxRect();
   }
 
-  static constexpr size_t kCharLimit = FX_ArraySize(m_CharWidthL);
+  static constexpr size_t kCharLimit = std::extent<decltype(m_CharWidthL)>();
   int StartChar = m_pFontDict->GetIntegerFor("FirstChar");
   if (StartChar >= 0 && static_cast<size_t>(StartChar) < kCharLimit) {
     const CPDF_Array* pWidthArray = m_pFontDict->GetArrayFor("Widths");
@@ -124,7 +124,7 @@ CPDF_Type3Char* CPDF_Type3Font::LoadChar(uint32_t charcode) {
       m_pFontResources ? m_pFontResources.Get() : m_pPageResources.Get(),
       pStream);
 
-  auto pNewChar = pdfium::MakeUnique<CPDF_Type3Char>();
+  auto pNewChar = std::make_unique<CPDF_Type3Char>();
 
   // This can trigger recursion into this method. The content of |m_CacheMap|
   // can change as a result. Thus after it returns, check the cache again for
@@ -147,8 +147,8 @@ CPDF_Type3Char* CPDF_Type3Font::LoadChar(uint32_t charcode) {
   return pCachedChar;
 }
 
-uint32_t CPDF_Type3Font::GetCharWidthF(uint32_t charcode) {
-  if (charcode >= FX_ArraySize(m_CharWidthL))
+int CPDF_Type3Font::GetCharWidthF(uint32_t charcode) {
+  if (charcode >= pdfium::size(m_CharWidthL))
     charcode = 0;
 
   if (m_CharWidthL[charcode])

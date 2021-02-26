@@ -10,6 +10,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/values.h"
+#include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -32,7 +33,7 @@ bool AreMakeCredentialRequestMapKeysCorrect(
   return std::all_of(
       request_map.begin(), request_map.end(), [](const auto& param) {
         return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
-                param.first.GetInteger() <= 9u);
+                param.first.GetInteger() <= 10u);
       });
 }
 
@@ -156,6 +157,11 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
           return base::nullopt;
         }
         request.android_client_data_ext = std::move(*android_client_data_ext);
+      } else if (extension_name == kExtensionLargeBlobKey) {
+        if (!extension.second.is_bool() || !extension.second.GetBool()) {
+          return base::nullopt;
+        }
+        request.large_blob_key = true;
       }
     }
   }
@@ -200,7 +206,31 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
             std::numeric_limits<uint8_t>::max()) {
       return base::nullopt;
     }
-    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
+    base::Optional<PINUVAuthProtocol> pin_protocol =
+        ToPINUVAuthProtocol(pin_protocol_it->second.GetUnsigned());
+    if (!pin_protocol) {
+      return base::nullopt;
+    }
+    request.pin_protocol = *pin_protocol;
+  }
+
+  const auto enterprise_attestation_it = request_map.find(cbor::Value(10));
+  if (enterprise_attestation_it != request_map.end()) {
+    if (!enterprise_attestation_it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+    switch (enterprise_attestation_it->second.GetUnsigned()) {
+      case 1:
+        request.attestation_preference = AttestationConveyancePreference::
+            kEnterpriseIfRPListedOnAuthenticator;
+        break;
+      case 2:
+        request.attestation_preference =
+            AttestationConveyancePreference::kEnterpriseApprovedByBrowser;
+        break;
+      default:
+        return base::nullopt;
+    }
   }
 
   return request;
@@ -253,6 +283,10 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
     extensions[cbor::Value(kExtensionHmacSecret)] = cbor::Value(true);
   }
 
+  if (request.large_blob_key) {
+    extensions[cbor::Value(kExtensionLargeBlobKey)] = cbor::Value(true);
+  }
+
   if (request.cred_protect) {
     extensions.emplace(kExtensionCredProtect,
                        static_cast<int64_t>(*request.cred_protect));
@@ -272,7 +306,8 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
   }
 
   if (request.pin_protocol) {
-    cbor_map[cbor::Value(9)] = cbor::Value(*request.pin_protocol);
+    cbor_map[cbor::Value(9)] =
+        cbor::Value(static_cast<uint8_t>(*request.pin_protocol));
   }
 
   cbor::Value::MapValue option_map;
@@ -290,6 +325,17 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
 
   if (!option_map.empty()) {
     cbor_map[cbor::Value(7)] = cbor::Value(std::move(option_map));
+  }
+
+  switch (request.attestation_preference) {
+    case AttestationConveyancePreference::kEnterpriseIfRPListedOnAuthenticator:
+      cbor_map.emplace(10, static_cast<int64_t>(1));
+      break;
+    case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
+      cbor_map.emplace(10, static_cast<int64_t>(2));
+      break;
+    default:
+      break;
   }
 
   return std::make_pair(CtapRequestCommand::kAuthenticatorMakeCredential,

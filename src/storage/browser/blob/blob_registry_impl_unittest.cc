@@ -11,26 +11,27 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_registry.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/fake_progress_client.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
@@ -79,14 +80,14 @@ class BlobRegistryImplTest : public testing::Test {
         FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
                           false /* force_in_memory */,
                           std::vector<std::string>()));
-    registry_impl_ = std::make_unique<BlobRegistryImpl>(context_->AsWeakPtr(),
-                                                        file_system_context_);
+    registry_impl_ = std::make_unique<BlobRegistryImpl>(
+        context_->AsWeakPtr(), url_registry_.AsWeakPtr(), file_system_context_);
     auto delegate = std::make_unique<MockBlobRegistryDelegate>();
     delegate_ptr_ = delegate.get();
     registry_impl_->Bind(registry_.BindNewPipeAndPassReceiver(),
                          std::move(delegate));
 
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &BlobRegistryImplTest::OnBadMessage, base::Unretained(this)));
 
     BlobStorageLimits limits;
@@ -107,8 +108,7 @@ class BlobRegistryImplTest : public testing::Test {
   void TearDown() override {
     base::ThreadRestrictions::SetIOAllowed(true);
 
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   std::unique_ptr<BlobDataHandle> CreateBlobFromString(
@@ -191,6 +191,7 @@ class BlobRegistryImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
+  BlobUrlRegistry url_registry_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
   mojo::Remote<blink::mojom::BlobRegistry> registry_;
   MockBlobRegistryDelegate* delegate_ptr_;
@@ -276,6 +277,37 @@ TEST_F(BlobRegistryImplTest, Register_EmptyBlob) {
   EXPECT_TRUE(registry_->Register(blob.BindNewPipeAndPassReceiver(), kId,
                                   kContentType, kContentDisposition,
                                   std::vector<blink::mojom::DataElementPtr>()));
+
+  EXPECT_TRUE(bad_messages_.empty());
+
+  EXPECT_EQ(kId, UUIDFromBlob(blob.get()));
+  EXPECT_TRUE(context_->registry().HasEntry(kId));
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  EXPECT_EQ(kContentType, handle->content_type());
+  EXPECT_EQ(kContentDisposition, handle->content_disposition());
+  EXPECT_EQ(0u, handle->size());
+
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_FALSE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
+  EXPECT_EQ(0u, BlobsUnderConstruction());
+}
+
+TEST_F(BlobRegistryImplTest, Register_EmptyBytesBlob) {
+  const std::string kId = "id";
+  const std::string kContentType = "content/type";
+  const std::string kContentDisposition = "disposition";
+
+  std::vector<blink::mojom::DataElementPtr> elements;
+  elements.push_back(
+      blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
+          0, base::nullopt, CreateBytesProvider(""))));
+
+  mojo::Remote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.BindNewPipeAndPassReceiver(), kId,
+                                  kContentType, kContentDisposition,
+                                  std::move(elements)));
 
   EXPECT_TRUE(bad_messages_.empty());
 
@@ -613,7 +645,9 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_Valid) {
   ASSERT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
 
   BlobDataBuilder expected_blob_data(kId);
-  expected_blob_data.AppendFileSystemFile(url, 0, 16, base::Time(), nullptr);
+  expected_blob_data.AppendFileSystemFile(file_system_context_->CrackURL(url),
+                                          0, 16, base::Time(),
+                                          file_system_context_);
 
   EXPECT_EQ(expected_blob_data, *handle->CreateSnapshot());
   EXPECT_EQ(0u, BlobsUnderConstruction());

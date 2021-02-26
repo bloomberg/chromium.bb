@@ -51,33 +51,22 @@ GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  if (webgpu_desc->hasBindings()) {
-    device->AddConsoleWarning(
-        "GPUBindGroupDescriptor.bindings is deprecated: renamed to entries");
-  }
-
   uint32_t entry_count = 0;
   std::unique_ptr<WGPUBindGroupEntry[]> entries;
-  if (webgpu_desc->hasEntries()) {
-    entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
-    entries = entry_count != 0 ? AsDawnType(webgpu_desc->entries()) : nullptr;
-  } else {
-    if (!webgpu_desc->hasBindings()) {
-      exception_state.ThrowTypeError("required member entries is undefined.");
-      return nullptr;
-    }
-
-    entry_count = static_cast<uint32_t>(webgpu_desc->bindings().size());
-    entries = entry_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
+  entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
+  if (entry_count > 0) {
+    entries = AsDawnType(webgpu_desc->entries());
   }
 
+  std::string label;
   WGPUBindGroupDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   dawn_desc.entryCount = entry_count;
   dawn_desc.entries = entries.get();
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPUBindGroup>(

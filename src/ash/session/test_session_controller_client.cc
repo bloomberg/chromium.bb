@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <string>
 
+#include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -134,9 +136,9 @@ void TestSessionControllerClient::CreatePredefinedUserSessions(int count) {
 void TestSessionControllerClient::AddUserSession(
     const std::string& display_email,
     user_manager::UserType user_type,
-    bool enable_settings,
     bool provide_pref_service,
-    bool is_new_profile) {
+    bool is_new_profile,
+    const std::string& given_name) {
   auto account_id = AccountId::FromUserEmail(
       use_lower_case_user_id_ ? GetUserIdFromEmail(display_email)
                               : display_email);
@@ -148,8 +150,7 @@ void TestSessionControllerClient::AddUserSession(
   session.user_info.display_email = display_email;
   session.user_info.is_ephemeral = false;
   session.user_info.is_new_profile = is_new_profile;
-  session.should_enable_settings = enable_settings;
-  session.should_show_notification_tray = true;
+  session.user_info.given_name = given_name;
   controller_->UpdateUserSession(std::move(session));
 
   if (provide_pref_service && prefs_provider_ &&
@@ -196,6 +197,12 @@ void TestSessionControllerClient::SetUserPrefService(
 }
 
 void TestSessionControllerClient::RequestLockScreen() {
+  if (should_show_lock_screen_) {
+    // The lock screen can't be shown without a wallpaper.
+    Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+    Shell::Get()->login_screen_controller()->ShowLockScreen();
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&TestSessionControllerClient::SetSessionState,
                                 weak_ptr_factory_.GetWeakPtr(),
@@ -206,6 +213,8 @@ void TestSessionControllerClient::RequestSignOut() {
   Reset();
   ++request_sign_out_count_;
 }
+
+void TestSessionControllerClient::AttemptRestartChrome() {}
 
 void TestSessionControllerClient::SwitchActiveUser(
     const AccountId& account_id) {

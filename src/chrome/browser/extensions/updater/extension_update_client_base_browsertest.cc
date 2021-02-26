@@ -4,12 +4,13 @@
 
 #include "chrome/browser/extensions/updater/extension_update_client_base_browsertest.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -151,7 +152,7 @@ void ExtensionUpdateClientBaseTest::CreatedBrowserMainParts(
     content::BrowserMainParts* parts) {
   ExtensionBrowserTest::CreatedBrowserMainParts(parts);
   static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-      new TestChromeBrowserMainExtraParts(this));
+      std::make_unique<TestChromeBrowserMainExtraParts>(this));
 }
 
 void ExtensionUpdateClientBaseTest::SetUpOnMainThread() {

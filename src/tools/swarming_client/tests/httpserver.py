@@ -22,7 +22,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_response(200)
     self.send_header('Content-type', 'application/json')
     self.end_headers()
-    json.dump(data, self.wfile)
+    self.wfile.write(json.dumps(data).encode())
 
   def send_octet_stream(self, data, headers=None):
     """Sends a binary response."""
@@ -50,7 +50,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
   def do_OPTIONS(self):
     if self.path == _STOP_EVENT:
       self.server.parent._stopped = True
-    self.send_octet_stream('')
+    self.send_octet_stream(b'')
 
   def log_message(self, fmt, *args):
     logging.info(

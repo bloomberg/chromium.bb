@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/progress_reporter.h"
 
 #if defined(OS_WIN)
@@ -262,6 +263,27 @@ void UpdateBoundTexturePassthroughSize(gl::GLApi* api,
                              &texture_memory_size);
 
   texture->SetEstimatedSize(texture_memory_size);
+}
+
+void ReturnProgramInfoData(DecoderClient* client,
+                           const std::vector<uint8_t>& info,
+                           GLES2ReturnDataType type,
+                           uint32_t program) {
+  // Limit the data size in order not to block the IO threads too long.
+  // https://docs.google.com/document/d/1qEfU0lAkeZ8lU06qtxv7ENGxRxExxztXu1LhIDNGqtU/edit?disco=AAAACksORlU
+  constexpr static size_t kMaxDataSize = 8 * 1024 * 1024;
+  if (info.size() > kMaxDataSize)
+    return;
+
+  std::vector<uint8_t> return_data;
+  return_data.resize(sizeof(cmds::GLES2ReturnProgramInfo) + info.size());
+  auto* return_program_info =
+      reinterpret_cast<cmds::GLES2ReturnProgramInfo*>(return_data.data());
+  return_program_info->return_data_header.return_data_type = type;
+  return_program_info->program_client_id = program;
+  memcpy(return_program_info->deserialized_buffer, info.data(), info.size());
+  client->HandleReturnData(
+      base::span<uint8_t>(return_data.data(), return_data.size()));
 }
 
 }  // anonymous namespace
@@ -859,7 +881,7 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
   if (entries_processed)
     *entries_processed = process_pos;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Aggressively call glFlush on macOS. This is the only fix that has been
   // found so far to avoid crashes on Intel drivers. The workaround
   // isn't needed for WebGL contexts, though.
@@ -944,7 +966,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       "GL_OES_EGL_image",
       "GL_OES_EGL_image_external",
       "GL_OES_EGL_image_external_essl3",
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       "GL_ANGLE_texture_rectangle",
 #endif
     };
@@ -956,7 +978,9 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
           "GL_ANGLE_depth_texture",
           "GL_ANGLE_framebuffer_multisample",
+          "GL_ANGLE_get_tex_level_parameter",
           "GL_ANGLE_instanced_arrays",
+          "GL_ANGLE_memory_object_flags",
           "GL_ANGLE_pack_reverse_row_order",
           "GL_ANGLE_texture_compression_dxt1",
           "GL_ANGLE_texture_compression_dxt3",
@@ -1092,8 +1116,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     bound_buffers_[GL_DISPATCH_INDIRECT_BUFFER] = 0;
   }
 
-  if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
-      feature_info_->feature_flags().is_swiftshader) {
+  if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
   }
 
@@ -1200,7 +1223,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   api()->glGetIntegervFn(GL_SCISSOR_BOX, scissor_);
   ApplySurfaceDrawOffset();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On mac we need the ANGLE_texture_rectangle extension to support IOSurface
   // backbuffers, but we don't want it exposed to WebGL user shaders. This
   // disables support for it in the shader compiler. We then enable it
@@ -1209,6 +1232,11 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   if (feature_info_->IsWebGLContext())
     api()->glDisableFn(GL_TEXTURE_RECTANGLE_ANGLE);
 #endif
+
+  // Register this object as a GPU switching observer.
+  if (feature_info_->IsWebGLContext()) {
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+  }
 
   set_initialized();
   return gpu::ContextResult::kSuccess;
@@ -1314,6 +1342,11 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     }
   }
   deschedule_until_finished_fences_.clear();
+
+  // Unregister this object as a GPU switching observer.
+  if (feature_info_->IsWebGLContext()) {
+    ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
+  }
 
   // Destroy the surface before the context, some surface destructors make GL
   // calls.
@@ -1550,7 +1583,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.discard_framebuffer =
       feature_info_->feature_flags().ext_discard_framebuffer;
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // This is unconditionally true on mac, no need to test for it at runtime.
   caps.iosurface = true;
 #endif
@@ -1598,6 +1631,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
+  caps.use_gpu_fences_for_overlay_planes = surface_->SupportsPlaneGpuFences();
   caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
@@ -1870,6 +1904,12 @@ void GLES2DecoderPassthroughImpl::MarkContextLost(
 
 gpu::gles2::Logger* GLES2DecoderPassthroughImpl::GetLogger() {
   return &logger_;
+}
+
+void GLES2DecoderPassthroughImpl::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {
+  // Send OnGpuSwitched notification to renderer process via decoder client.
+  client()->OnGpuSwitched(active_gpu_heuristic);
 }
 
 void GLES2DecoderPassthroughImpl::BeginDecoding() {
@@ -2451,6 +2491,52 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
           api()->glGetProgramivFn(query.program_service_id, GL_LINK_STATUS,
                                   &link_status);
           result = link_status;
+
+          // Send back all program information as early as possible to be cached
+          // at the client side.
+          GLuint program_client_id = 0u;
+          GetClientID(&resources_->program_id_map, query.program_service_id,
+                      &program_client_id);
+
+          // TODO(jie.a.chen@intel.com): Merge the all return data into 1 IPC
+          // message if it becomes a concern.
+          std::vector<uint8_t> program_info;
+          error::Error error =
+              DoGetProgramInfoCHROMIUM(program_client_id, &program_info);
+          if (error == error::kNoError) {
+            ReturnProgramInfoData(client(), program_info,
+                                  GLES2ReturnDataType::kES2ProgramInfo,
+                                  program_client_id);
+          }
+
+          if (feature_info_->IsWebGL2OrES3OrHigherContext()) {
+            std::vector<uint8_t> uniform_blocks;
+            error =
+                DoGetUniformBlocksCHROMIUM(program_client_id, &uniform_blocks);
+            if (error == error::kNoError) {
+              ReturnProgramInfoData(client(), uniform_blocks,
+                                    GLES2ReturnDataType::kES3UniformBlocks,
+                                    program_client_id);
+            }
+
+            std::vector<uint8_t> transform_feedback_varyings;
+            error = DoGetTransformFeedbackVaryingsCHROMIUM(
+                program_client_id, &transform_feedback_varyings);
+            if (error == error::kNoError) {
+              ReturnProgramInfoData(
+                  client(), transform_feedback_varyings,
+                  GLES2ReturnDataType::kES3TransformFeedbackVaryings,
+                  program_client_id);
+            }
+
+            std::vector<uint8_t> uniforms;
+            error = DoGetUniformsES3CHROMIUM(program_client_id, &uniforms);
+            if (error == error::kNoError) {
+              ReturnProgramInfoData(client(), uniforms,
+                                    GLES2ReturnDataType::kES3Uniforms,
+                                    program_client_id);
+            }
+          }
         }
         break;
 
@@ -2865,14 +2951,13 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
 void GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult(
     const char* function_name,
     uint64_t swap_id,
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    gfx::SwapCompletionResult result) {
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
   // Handling of the out-fence should have already happened before reaching
   // this function, so we don't expect to get a valid fence here.
-  DCHECK(!gpu_fence);
+  DCHECK(!result.gpu_fence);
 
-  CheckSwapBuffersResult(result, function_name);
+  CheckSwapBuffersResult(result.swap_result, function_name);
 }
 
 error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/apps_section.h"
 
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -17,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -39,7 +43,7 @@ const std::vector<SearchConcept>& GetAppsSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT,
        mojom::kAppManagementSubpagePath,
        mojom::SearchResultIcon::kAppsGrid,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAppManagement},
        {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT_ALT1, SearchConcept::kAltTagEnd}},
@@ -73,7 +77,9 @@ const std::vector<SearchConcept>& GetAndroidSettingsSearchConcepts() {
        mojom::SearchResultIcon::kGooglePlay,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kManageAndroidPreferences}},
+       {.setting = mojom::Setting::kManageAndroidPreferences},
+       {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -85,7 +91,8 @@ const std::vector<SearchConcept>& GetAndroidNoPlayStoreSearchConcepts() {
        mojom::SearchResultIcon::kAndroid,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kManageAndroidPreferences}},
+       {.setting = mojom::Setting::kManageAndroidPreferences},
+       {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -130,7 +137,7 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
 bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
   // Even if not allowed, we still want to show Plugin VM if the VM image is on
   // disk, so that users are still able to delete the image at will.
-  return plugin_vm::IsPluginVmAllowedForProfile(profile) ||
+  return plugin_vm::PluginVmFeatures::Get()->IsAllowed(profile) ||
          pref_service.GetBoolean(plugin_vm::prefs::kPluginVmImageExists);
 }
 
@@ -143,7 +150,8 @@ AppsSection::AppsSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service),
       arc_app_list_prefs_(arc_app_list_prefs) {
-  registry()->AddSearchTags(GetAppsSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetAppsSearchConcepts());
 
   if (arc::IsArcAllowedForProfile(profile)) {
     pref_change_registrar_.Init(pref_service_);
@@ -173,24 +181,6 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  html_source->AddResourcePath("app-management/app_management.mojom-lite.js",
-                               IDR_OS_SETTINGS_APP_MANAGEMENT_MOJO_LITE_JS);
-  html_source->AddResourcePath(
-      "app-management/types.mojom-lite.js",
-      IDR_OS_SETTINGS_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
-  html_source->AddResourcePath(
-      "app-management/bitmap.mojom-lite.js",
-      IDR_OS_SETTINGS_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
-  html_source->AddResourcePath(
-      "app-management/file_path.mojom-lite.js",
-      IDR_OS_SETTINGS_APP_MANAGEMENT_FILE_PATH_MOJO_LITE_JS);
-  html_source->AddResourcePath(
-      "app-management/image.mojom-lite.js",
-      IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
-  html_source->AddResourcePath(
-      "app-management/image_info.mojom-lite.js",
-      IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
-
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to
   // enable/disable the Play Store and link to Android settings which is
@@ -218,6 +208,71 @@ void AppsSection::AddHandlers(content::WebUI* web_ui) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::PluginVmHandler>(profile()));
   }
+}
+
+int AppsSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_APPS_TITLE;
+}
+
+mojom::Section AppsSection::GetSection() const {
+  return mojom::Section::kApps;
+}
+
+mojom::SearchResultIcon AppsSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kAppsGrid;
+}
+
+std::string AppsSection::GetSectionPath() const {
+  return mojom::kAppsSectionPath;
+}
+
+bool AppsSection::LogMetric(mojom::Setting setting, base::Value& value) const {
+  // Unimplemented.
+  return false;
+}
+
+void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kTurnOnPlayStore);
+
+  // Manage apps.
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_APPS_LINK_TEXT,
+                                     mojom::Subpage::kAppManagement,
+                                     mojom::SearchResultIcon::kAppsGrid,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kAppManagementSubpagePath);
+  // Note: The subpage name in the UI is updated dynamically based on the app
+  // being shown, but we use a generic "App details" string here.
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_APP_DETAILS_TITLE, mojom::Subpage::kAppDetails,
+      mojom::Subpage::kAppManagement, mojom::SearchResultIcon::kAppsGrid,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kAppDetailsSubpagePath);
+  generator->RegisterNestedSubpage(IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS,
+                                   mojom::Subpage::kPluginVmSharedPaths,
+                                   mojom::Subpage::kAppManagement,
+                                   mojom::SearchResultIcon::kAppsGrid,
+                                   mojom::SearchResultDefaultRank::kMedium,
+                                   mojom::kPluginVmSharedPathsSubpagePath);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_LABEL,
+      mojom::Subpage::kPluginVmUsbPreferences, mojom::Subpage::kAppManagement,
+      mojom::SearchResultIcon::kAppsGrid,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPluginVmUsbPreferencesSubpagePath);
+
+  // Google Play Store.
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_ANDROID_APPS_LABEL,
+                                     mojom::Subpage::kGooglePlayStore,
+                                     mojom::SearchResultIcon::kGooglePlay,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kGooglePlayStoreSubpagePath);
+  static constexpr mojom::Setting kGooglePlayStoreSettings[] = {
+      mojom::Setting::kManageAndroidPreferences,
+      mojom::Setting::kRemovePlayStore,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kGooglePlayStore,
+                            kGooglePlayStoreSettings, generator);
+  generator->RegisterTopLevelAltSetting(
+      mojom::Setting::kManageAndroidPreferences);
 }
 
 void AppsSection::OnAppRegistered(const std::string& app_id,
@@ -264,34 +319,75 @@ void AppsSection::AddPluginVmLoadTimeData(
        IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE},
       {"pluginVmSharedPathsRemoveSharing",
        IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING},
+      {"pluginVmSharedPathsRemoveFailureDialogMessage",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE},
+      {"pluginVmSharedPathsRemoveFailureDialogTitle",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_DIALOG_TITLE},
+      {"pluginVmSharedPathsRemoveFailureTryAgain",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_TRY_AGAIN},
+      {"pluginVmSharedPathsListEmptyMessage",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_LIST_EMPTY_MESSAGE},
+      {"pluginVmSharedUsbDevicesLabel",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_LABEL},
+      {"pluginVmSharedUsbDevicesDescription",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_DESCRIPTION},
+      {"pluginVmSharedUsbDevicesExtraDescription",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_EXTRA_DESCRIPTION},
+      {"pluginVmSharedUsbDevicesListEmptyMessage",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE},
+      {"pluginVmSharedUsbDevicesInUse",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_IN_USE},
+      {"pluginVmSharedUsbDevicesReassign",
+       IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_REASSIGN},
+      {"pluginVmPermissionDialogCameraLabel",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_CAMERA_LABEL},
+      {"pluginVmPermissionDialogMicrophoneLabel",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_MICROPHONE_LABEL},
+      {"pluginVmPermissionDialogRelaunchButton",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_RELAUNCH_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddBoolean("showPluginVm",
                           ShowPluginVm(profile(), *pref_service_));
+  html_source->AddString(
+      "pluginVmSharedPathsInstructionsLocate",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_LOCATE,
+          base::UTF8ToUTF16(plugin_vm::kChromeOSBaseDirectoryDisplayText)));
+  html_source->AddBoolean(
+      "showPluginVmCameraPermissions",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowCameraPermissions));
+  html_source->AddBoolean(
+      "showPluginVmMicrophonePermissions",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowMicrophonePermissions));
 }
 
 void AppsSection::UpdateAndroidSearchTags() {
-  registry()->RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidSettingsSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidSettingsSearchConcepts());
 
   if (!arc::IsPlayStoreAvailable()) {
-    registry()->AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+    updater.AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
     return;
   }
 
   if (!arc::IsArcPlayStoreEnabledForProfile(profile())) {
-    registry()->AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+    updater.AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetAndroidPlayStoreSearchConcepts());
+  updater.AddSearchTags(GetAndroidPlayStoreSearchConcepts());
 
   if (arc_app_list_prefs_ &&
       arc_app_list_prefs_->IsRegistered(arc::kSettingsAppId)) {
-    registry()->AddSearchTags(GetAndroidSettingsSearchConcepts());
+    updater.AddSearchTags(GetAndroidSettingsSearchConcepts());
   }
 }
 

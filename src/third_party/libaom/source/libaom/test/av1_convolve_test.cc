@@ -20,6 +20,11 @@
 
 namespace {
 
+// TODO(any): Remove following INTERP_FILTERS_ALL define, so that 12-tap filter
+// is tested once 12-tap filter SIMD is done.
+#undef INTERP_FILTERS_ALL
+#define INTERP_FILTERS_ALL 4
+
 // All single reference convolve tests are parameterized on block size,
 // bit-depth, and function to test.
 //

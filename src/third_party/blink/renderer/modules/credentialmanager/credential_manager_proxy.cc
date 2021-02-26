@@ -12,7 +12,11 @@
 namespace blink {
 
 CredentialManagerProxy::CredentialManagerProxy(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {
+    : Supplement<LocalDOMWindow>(window),
+      authenticator_(window.GetExecutionContext()),
+      credential_manager_(window.GetExecutionContext()),
+      webotp_service_(window.GetExecutionContext()),
+      payment_credential_(window.GetExecutionContext()) {
   LocalFrame* frame = window.GetFrame();
   DCHECK(frame);
   frame->GetBrowserInterfaceBroker().GetInterface(
@@ -25,15 +29,27 @@ CredentialManagerProxy::CredentialManagerProxy(LocalDOMWindow& window)
 
 CredentialManagerProxy::~CredentialManagerProxy() = default;
 
-mojom::blink::SmsReceiver* CredentialManagerProxy::SmsReceiver() {
-  if (!sms_receiver_) {
+mojom::blink::WebOTPService* CredentialManagerProxy::WebOTPService() {
+  if (!webotp_service_.is_bound()) {
     LocalFrame* frame = GetSupplementable()->GetFrame();
     DCHECK(frame);
     frame->GetBrowserInterfaceBroker().GetInterface(
-        sms_receiver_.BindNewPipeAndPassReceiver(
+        webotp_service_.BindNewPipeAndPassReceiver(
             frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
-  return sms_receiver_.get();
+  return webotp_service_.get();
+}
+
+payments::mojom::blink::PaymentCredential*
+CredentialManagerProxy::PaymentCredential() {
+  if (!payment_credential_.is_bound()) {
+    LocalFrame* frame = GetSupplementable()->GetFrame();
+    DCHECK(frame);
+    frame->GetBrowserInterfaceBroker().GetInterface(
+        payment_credential_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  }
+  return payment_credential_.get();
 }
 
 // static
@@ -48,6 +64,14 @@ CredentialManagerProxy* CredentialManagerProxy::From(
     ProvideTo(window, supplement);
   }
   return supplement;
+}
+
+void CredentialManagerProxy::Trace(Visitor* visitor) const {
+  visitor->Trace(authenticator_);
+  visitor->Trace(credential_manager_);
+  visitor->Trace(webotp_service_);
+  visitor->Trace(payment_credential_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 // static

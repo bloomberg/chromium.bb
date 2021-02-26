@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -53,8 +54,6 @@ void CreateNewEntry(content::WebContents* tab,
           ->GetSendTabToSelfModel();
   DCHECK(model);
 
-  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime",
-                        model->IsReady());
   if (!model->IsReady()) {
     DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
     return;
@@ -94,12 +93,6 @@ void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state) {
   base::UmaHistogramEnumeration("SendTabToSelf." + entry_point + ".ClickResult",
                                 state);
-}
-
-void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
-                                    const int& device_count) {
-  base::UmaHistogramCounts100("SendTabToSelf." + entry_point + ".DeviceCount",
-                              device_count);
 }
 
 size_t GetValidDeviceCount(Profile* profile) {

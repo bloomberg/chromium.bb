@@ -14,12 +14,13 @@ namespace test {
 // THIS IMPLEMENTATION IS NOT SECURE. It is only intended for testing purposes.
 class TestTicketCrypter : public ProofSource::TicketCrypter {
  public:
+  TestTicketCrypter();
   ~TestTicketCrypter() override = default;
 
   // TicketCrypter interface
   size_t MaxOverhead() override;
-  std::vector<uint8_t> Encrypt(quiche::QuicheStringPiece in) override;
-  void Decrypt(quiche::QuicheStringPiece in,
+  std::vector<uint8_t> Encrypt(absl::string_view in) override;
+  void Decrypt(absl::string_view in,
                std::unique_ptr<ProofSource::DecryptCallback> callback) override;
 
   void SetRunCallbacksAsync(bool run_async);
@@ -31,7 +32,7 @@ class TestTicketCrypter : public ProofSource::TicketCrypter {
 
  private:
   // Performs the Decrypt operation synchronously.
-  std::vector<uint8_t> Decrypt(quiche::QuicheStringPiece in);
+  std::vector<uint8_t> Decrypt(absl::string_view in);
 
   struct PendingCallback {
     std::unique_ptr<ProofSource::DecryptCallback> callback;
@@ -41,6 +42,7 @@ class TestTicketCrypter : public ProofSource::TicketCrypter {
   bool fail_decrypt_ = false;
   bool run_async_ = false;
   std::vector<PendingCallback> pending_callbacks_;
+  std::vector<uint8_t> ticket_prefix_;
 };
 
 }  // namespace test

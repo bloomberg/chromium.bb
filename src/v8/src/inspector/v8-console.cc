@@ -411,7 +411,7 @@ static void timeEndFunction(const v8::debug::ConsoleCallArguments& info,
         helper.consoleMessageStorage()->timeEnd(helper.contextId(), title);
   }
   String16 message =
-      protocolTitle + ": " + String16::fromDouble(elapsed) + "ms";
+      protocolTitle + ": " + String16::fromDouble(elapsed) + " ms";
   if (timeLog)
     helper.reportCallAndReplaceFirstArgument(ConsoleAPIType::kLog, message);
   else
@@ -872,7 +872,6 @@ V8Console::CommandLineAPIScope::~CommandLineAPIScope() {
                          ->GetOwnPropertyDescriptor(
                              m_context, v8::Local<v8::String>::Cast(name))
                          .ToLocal(&descriptor);
-      DCHECK(success);
       USE(success);
     }
   }

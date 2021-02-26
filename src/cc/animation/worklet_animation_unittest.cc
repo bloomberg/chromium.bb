@@ -4,7 +4,9 @@
 
 #include "cc/animation/worklet_animation.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_effect.h"
@@ -57,8 +59,7 @@ class MockScrollTimeline : public ScrollTimeline {
   MockScrollTimeline()
       : ScrollTimeline(ElementId(),
                        ScrollTimeline::ScrollDown,
-                       base::nullopt,
-                       base::nullopt,
+                       std::vector<double>(),
                        0,
                        AnimationIdProvider::NextTimelineId()) {}
   MOCK_CONST_METHOD2(CurrentTime,
@@ -553,20 +554,6 @@ TEST_F(WorkletAnimationTest, SkipLockedAnimations) {
   worklet_animation->UpdateInputState(state.get(), time, scroll_tree, true);
   input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->updated_animations.size(), 1u);
-}
-
-TEST_F(WorkletAnimationTest, UpdateScrollTimelineScrollerId) {
-  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
-  EXPECT_EQ(scroll_timeline->GetPendingIdForTest(), ElementId());
-
-  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
-      worklet_animation_id_, "test_name", 1, nullptr, nullptr);
-  host_->AddAnimationTimeline(scroll_timeline);
-  scroll_timeline->AttachAnimation(worklet_animation);
-  ElementId scroller_id = ElementId(1);
-  worklet_animation->UpdateScrollTimeline(scroller_id, base::nullopt,
-                                          base::nullopt);
-  EXPECT_EQ(scroll_timeline->GetPendingIdForTest(), scroller_id);
 }
 
 }  // namespace

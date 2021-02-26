@@ -16,7 +16,6 @@
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
-#include "components/sync/syncable/syncable_read_transaction.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace syncer {
@@ -203,11 +202,10 @@ void GetUpdatesProcessor::PrepareGetUpdates(
         << "Failed to look up handler for " << ModelTypeToString(type);
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
-    handler_it->second->GetDownloadProgress(progress_marker);
+    *progress_marker = handler_it->second->GetDownloadProgress();
     progress_marker->clear_gc_directive();
 
-    sync_pb::DataTypeContext context;
-    handler_it->second->GetDataTypeContext(&context);
+    sync_pb::DataTypeContext context = handler_it->second->GetDataTypeContext();
     if (!context.context().empty())
       get_updates->add_client_contexts()->Swap(&context);
   }
@@ -224,8 +222,8 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
   bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
 
   if (cycle->context()->debug_info_getter()) {
-    sync_pb::DebugInfo* debug_info = msg->mutable_debug_info();
-    CopyClientDebugInfo(cycle->context()->debug_info_getter(), debug_info);
+    *msg->mutable_debug_info() =
+        cycle->context()->debug_info_getter()->GetDebugInfo();
   }
 
   SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(cycle, msg);
@@ -372,13 +370,6 @@ void GetUpdatesProcessor::ApplyUpdates(const ModelTypeSet& gu_types,
                                        StatusController* status_controller) {
   status_controller->set_get_updates_request_types(gu_types);
   delegate_.ApplyUpdates(gu_types, status_controller, update_handler_map_);
-}
-
-void GetUpdatesProcessor::CopyClientDebugInfo(
-    DebugInfoGetter* debug_info_getter,
-    sync_pb::DebugInfo* debug_info) {
-  DVLOG(1) << "Copying client debug info to send.";
-  debug_info_getter->GetDebugInfo(debug_info);
 }
 
 }  // namespace syncer

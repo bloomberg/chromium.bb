@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
@@ -68,9 +69,9 @@ class VR_EXPORT VRBrowserRendererThreadWin {
     bool indicators_visible_ = false;
   };
 
-  void OnPose(int request_id, device::mojom::XRFrameDataPtr data);
+  void OnPose(int request_id, device::mojom::XRRenderInfoPtr data);
   void SubmitResult(bool success);
-  void SubmitFrame(device::mojom::XRFrameDataPtr data);
+  void SubmitFrame(int16_t frame_id);
   void StartOverlay();
   void StopOverlay();
   void OnWebXRSubmitted();

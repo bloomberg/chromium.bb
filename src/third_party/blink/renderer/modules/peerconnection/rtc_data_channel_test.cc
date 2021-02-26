@@ -13,9 +13,13 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -50,6 +54,11 @@ class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
   MockPeerConnectionHandler(
       scoped_refptr<base::TestSimpleTaskRunner> signaling_thread)
       : signaling_thread_(signaling_thread) {}
+
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread()
+      const override {
+    return signaling_thread_;
+  }
 
   void RunSynchronousOnceClosureOnSignalingThread(
       CrossThreadOnceClosure closure,
@@ -253,6 +262,9 @@ TEST_F(RTCDataChannelTest, BufferedAmount) {
   String message(std::string(100, 'A').c_str());
   channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
+  // The actual send operation is posted to the signaling thread; wait for it
+  // to run to avoid a memory leak.
+  signaling_thread()->RunUntilIdle();
 }
 
 TEST_F(RTCDataChannelTest, BufferedAmountLow) {
@@ -272,6 +284,9 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
   ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ("bufferedamountlow",
             channel->scheduled_events_.back()->type().Utf8());
+  // The actual send operation is posted to the signaling thread; wait for it
+  // to run to avoid a memory leak.
+  signaling_thread()->RunUntilIdle();
 }
 
 TEST_F(RTCDataChannelTest, Open) {
@@ -345,6 +360,41 @@ TEST_F(RTCDataChannelTest, CloseAfterContextDestroyed) {
   channel->ContextDestroyed();
   channel->close();
   EXPECT_EQ(String::FromUTF8("closed"), channel->readyState());
+}
+
+TEST_F(RTCDataChannelTest, StopsThrottling) {
+  V8TestingScope scope;
+
+  auto* scheduler = scope.GetFrame().GetFrameScheduler()->GetPageScheduler();
+  EXPECT_FALSE(scheduler->OptedOutFromAggressiveThrottlingForTest());
+
+  // Creating an RTCDataChannel doesn't enable the opt-out.
+  scoped_refptr<MockDataChannel> webrtc_channel(
+      new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
+  std::unique_ptr<MockPeerConnectionHandler> pc(
+      new MockPeerConnectionHandler(signaling_thread()));
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      scope.GetExecutionContext(), webrtc_channel.get(), pc.get());
+  EXPECT_EQ("connecting", channel->readyState());
+  EXPECT_FALSE(scheduler->OptedOutFromAggressiveThrottlingForTest());
+
+  // Transitioning to 'open' enables the opt-out.
+  webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("open", channel->readyState());
+  EXPECT_TRUE(scheduler->OptedOutFromAggressiveThrottlingForTest());
+
+  // Transitioning to 'closing' keeps the opt-out enabled.
+  webrtc_channel->ChangeState(webrtc::DataChannelInterface::kClosing);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("closing", channel->readyState());
+  EXPECT_TRUE(scheduler->OptedOutFromAggressiveThrottlingForTest());
+
+  // Transitioning to 'closed' stops the opt-out.
+  webrtc_channel->ChangeState(webrtc::DataChannelInterface::kClosed);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("closed", channel->readyState());
+  EXPECT_FALSE(scheduler->OptedOutFromAggressiveThrottlingForTest());
 }
 
 }  // namespace blink

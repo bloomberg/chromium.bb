@@ -39,12 +39,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
+#include "nctype.h"
 #include <time.h>
 
 #include "nasm.h"
@@ -63,17 +58,19 @@ static void nop_init(void)
     /* Nothing to do */
 }
 
-static void nop_reset(const char *file, int pass, StrList *deplist)
+static void nop_reset(const char *file, enum preproc_mode mode,
+                      struct strlist *deplist)
 {
+    (void)mode;                 /* placate compilers */
+
     src_set(0, file);
     nop_lineinc = 1;
     nop_fp = nasm_open_read(file, NF_TEXT);
 
     if (!nop_fp)
-	nasm_fatal_fl(ERR_NOFILE, "unable to open input file `%s'", file);
-    (void)pass;                 /* placate compilers */
+	nasm_fatalf(ERR_NOFILE, "unable to open input file `%s'", file);
 
-    strlist_add_string(deplist, file);
+    strlist_add(deplist, file);
 }
 
 static char *nop_getline(void)
@@ -86,7 +83,6 @@ static char *nop_getline(void)
     src_set_linnum(src_get_linnum() + nop_lineinc);
 
     while (1) {                 /* Loop to handle %line */
-
         p = buffer;
         while (1) {             /* Loop to handle long lines */
             q = fgets(p, bufsize - (p - buffer), nop_fp);
@@ -119,29 +115,35 @@ static char *nop_getline(void)
             int32_t ln;
             int li;
             char *nm = nasm_malloc(strlen(buffer));
-            if (sscanf(buffer + 5, "%"PRId32"+%d %s", &ln, &li, nm) == 3) {
-                src_set(ln, nm);
+            int conv = sscanf(buffer + 5, "%"PRId32"+%d %s", &ln, &li, nm);
+            if (conv >= 2) {
+                if (!pp_noline)
+                    src_set(ln, conv >= 3 ? nm : NULL);
                 nop_lineinc = li;
-                nasm_free(nm);
-                continue;
             }
             nasm_free(nm);
+            if (conv >= 2)
+                continue;
         }
         break;
     }
 
-    lfmt->line(LIST_READ, buffer);
+    lfmt->line(LIST_READ, src_get_linnum(), buffer);
 
     return buffer;
 }
 
-static void nop_cleanup(int pass)
+static void nop_cleanup_pass(void)
 {
-    (void)pass;                     /* placate GCC */
     if (nop_fp) {
         fclose(nop_fp);
         nop_fp = NULL;
     }
+}
+
+static void nop_cleanup_session(void)
+{
+    /* Nothing we need to do */
 }
 
 static void nop_extra_stdmac(macros_t *macros)
@@ -170,21 +172,28 @@ static void nop_pre_command(const char *what, char *string)
     (void)string;
 }
 
-static void nop_include_path(const char *path)
+static void nop_include_path(struct strlist *list)
 {
-    (void)path;
+    (void)list;
 }
 
-static void nop_error_list_macros(int severity)
+static void nop_error_list_macros(errflags severity)
 {
     (void)severity;
+}
+
+static bool nop_suppress_error(errflags severity)
+{
+    (void)severity;
+    return false;
 }
 
 const struct preproc_ops preproc_nop = {
     nop_init,
     nop_reset,
     nop_getline,
-    nop_cleanup,
+    nop_cleanup_pass,
+    nop_cleanup_session,
     nop_extra_stdmac,
     nop_pre_define,
     nop_pre_undefine,
@@ -192,4 +201,5 @@ const struct preproc_ops preproc_nop = {
     nop_pre_command,
     nop_include_path,
     nop_error_list_macros,
+    nop_suppress_error
 };

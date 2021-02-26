@@ -147,7 +147,8 @@ A common convention is to place the build directory in the top directory of
 the repository with a name of `build` and place the install directory as a
 child of the build directory with the name `install`. The remainder of these
 instructions follow this convention, although you can use any name for these
-directories and place them in any location.
+directories and place them in any location (see option `--dir` in the
+[notes](#notes)).
 
 ### Building Dependent Repositories with Known-Good Revisions
 
@@ -243,7 +244,7 @@ on/off options currently supported by this repository:
 | Option | Platform | Default | Description |
 | ------ | -------- | ------- | ----------- |
 | BUILD_LAYERS | All | `ON` | Controls whether or not the validation layers are built. |
-| BUILD_LAYER_SUPPORT_FILES | All | `OFF` | Controls whether or not layer support files are built if the layers are not built. |
+| BUILD_LAYER_SUPPORT_FILES | All | `OFF` | Controls whether or not layer support files are installed. |
 | BUILD_TESTS | All | `???` | Controls whether or not the validation layer tests are built. The default is `ON` when the Google Test repository is cloned into the `external` directory.  Otherwise, the default is `OFF`. |
 | INSTALL_TESTS | All | `OFF` | Controls whether or not the validation layer tests are installed. This option is only available when a copy of Google Test is available
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |
@@ -295,7 +296,9 @@ work with the solution interactively.
     cd build
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
-                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
+                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
+                 ..
     cmake --build .
 
 The above commands instruct CMake to find and use the default Visual Studio
@@ -315,7 +318,9 @@ create a build directory and generate the Visual Studio project files:
     cd build
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
-                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
+                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir
+                 ..
 
 > Note: The `..` parameter tells `cmake` the location of the top of the
 > repository. If you place your build directory someplace else, you'll need to
@@ -396,7 +401,9 @@ location of the loader's install directory:
 
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
                  -DVULKAN_LOADER_INSTALL_DIR=absolute_path_to_install_dir \
-                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir ..
+                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
+                 ..
 
 ### Windows Tests and Demos
 
@@ -471,7 +478,9 @@ CMake with the `--build` option or `make` to build from the command line.
     cd build
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
-          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
+          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
+          ..
     make
 
 See below for the details.
@@ -488,6 +497,7 @@ create a build directory and generate the make files.
           -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
           -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
           -DCMAKE_INSTALL_PREFIX=install ..
 
 > Note: The `..` parameter tells `cmake` the location of the top of the
@@ -811,6 +821,7 @@ build is:
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
           -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
           -DCMAKE_BUILD_TYPE=Debug ..
     make
 
@@ -828,6 +839,7 @@ To create and open an Xcode project:
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
           -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_TOOLS_INSTALL_DIR=absolute_path_to_install_dir \
           -GXcode ..
     open VULKAN.xcodeproj
 

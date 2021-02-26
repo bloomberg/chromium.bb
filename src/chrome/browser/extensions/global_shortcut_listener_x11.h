@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/connection.h"
 
 namespace ui {
 class KeyEvent;
@@ -47,8 +47,8 @@ class GlobalShortcutListenerX11 : public GlobalShortcutListener,
   bool is_listening_;
 
   // The x11 default display and the native root window.
-  ::Display* x_display_;
-  ::Window x_root_window_;
+  x11::Connection* connection_;
+  x11::Window x_root_window_;
 
   // A set of registered accelerators.
   typedef std::set<ui::Accelerator> RegisteredHotKeys;

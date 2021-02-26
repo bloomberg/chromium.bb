@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
@@ -32,14 +33,16 @@ class NetworkStateHandler;
 // networks.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
     : public NetworkConnectionObserver,
-      public NetworkConfigurationObserver {
+      public NetworkConfigurationObserver,
+      public LoginState::Observer {
  public:
   NetworkMetadataStore(
       NetworkConfigurationHandler* network_configuration_handler,
       NetworkConnectionHandler* network_connection_handler,
       NetworkStateHandler* network_state_handler,
       PrefService* profile_pref_service,
-      PrefService* device_pref_service);
+      PrefService* device_pref_service,
+      bool is_enterprise_managed);
 
   ~NetworkMetadataStore() override;
 
@@ -48,8 +51,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // prior to using this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // LoginState::Observer overrides.
+  void LoggedInStateChanged() override;
+
   // NetworkConnectionObserver::
   void ConnectSucceeded(const std::string& service_path) override;
+  void ConnectFailed(const std::string& service_path,
+                     const std::string& error_name) override;
 
   // NetworkConfigurationObserver::
   void OnConfigurationCreated(const std::string& service_path,
@@ -75,6 +83,28 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Networks which were created by the logged in user will return true.
   bool GetIsCreatedByUser(const std::string& network_guid);
 
+  // When another user modifies a watched field.
+  bool GetIsFieldExternallyModified(const std::string& network_guid,
+                                    const std::string& field);
+
+  // If a connection to a Wi-Fi network fails because of a bad password before
+  // it has ever connected successfully, then this will return true. Once there
+  // has been a successful connection with the currently saved password, this
+  // will always return false.
+  bool GetHasBadPassword(const std::string& network_guid);
+
+  // Stores a list of user-entered APN entries for a cellular network. Takes
+  // ownership of |list|.
+  void SetCustomAPNList(const std::string& network_guid, base::Value list);
+
+  // Returns custom apn list for cellular network with given guid. Returns
+  // nullptr if no pref exists for |network_guid|.
+  const base::Value* GetCustomAPNList(const std::string& network_guid);
+
+  // When the active user is the device owner and its the first login, this
+  // marks networks that were added in OOBE to the user's list.
+  void OwnSharedNetworksOnFirstUserLogin();
+
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);
   void RemoveObserver(NetworkMetadataObserver* observer);
@@ -91,6 +121,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
                base::Value value);
   const base::Value* GetPref(const std::string& network_guid,
                              const std::string& key);
+  void UpdateExternalModifications(const std::string& network_guid,
+                                   const std::string& field);
+
+  // Sets the owner metadata when there is an active user, otherwise a no-op.
+  void SetIsCreatedByUser(const std::string& network_guid);
 
   base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;
@@ -98,6 +133,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   NetworkStateHandler* network_state_handler_;
   PrefService* profile_pref_service_;
   PrefService* device_pref_service_;
+  bool is_enterprise_managed_;
   base::WeakPtrFactory<NetworkMetadataStore> weak_ptr_factory_{this};
 };
 

@@ -158,7 +158,7 @@ Response* Response::Create(ScriptState* script_state,
     // Avoid calling into V8 from the following constructor parameters, which
     // is potentially unsafe.
     DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(body.As<v8::Object>());
-    if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLengthAsSizeT())
+    if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLength())
              .IsValid()) {
       exception_state.ThrowRangeError(
           "The provided ArrayBuffer exceeds the maximum supported size");
@@ -173,8 +173,7 @@ Response* Response::Create(ScriptState* script_state,
     // is potentially unsafe.
     DOMArrayBufferView* array_buffer_view =
         V8ArrayBufferView::ToImpl(body.As<v8::Object>());
-    if (!base::CheckedNumeric<wtf_size_t>(
-             array_buffer_view->byteLengthAsSizeT())
+    if (!base::CheckedNumeric<wtf_size_t>(array_buffer_view->byteLength())
              .IsValid()) {
       exception_state.ThrowRangeError(
           "The provided ArrayBufferView exceeds the maximum supported size");
@@ -293,12 +292,9 @@ Response* Response::Create(ScriptState* script_state,
     // then IsStreamLocked and IsStreamDisturbed will always be false.
     // So we don't have to check BodyStreamBuffer is a ReadableStream
     // or not.
-    if (body->IsStreamLocked(exception_state).value_or(true) ||
-        body->IsStreamDisturbed(exception_state).value_or(true)) {
-      if (!exception_state.HadException()) {
-        exception_state.ThrowTypeError(
-            "Response body object should not be disturbed or locked");
-      }
+    if (body->IsStreamLocked() || body->IsStreamDisturbed()) {
+      exception_state.ThrowTypeError(
+          "Response body object should not be disturbed or locked");
       return nullptr;
     }
 
@@ -381,22 +377,30 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   response->SetURLList(fetch_api_response.url_list);
   response->SetStatus(fetch_api_response.status_code);
   response->SetStatusMessage(WTF::AtomicString(fetch_api_response.status_text));
+  response->SetRequestMethod(
+      WTF::AtomicString(fetch_api_response.request_method));
   response->SetResponseTime(fetch_api_response.response_time);
   response->SetCacheStorageCacheName(
       fetch_api_response.cache_storage_cache_name);
+  response->SetConnectionInfo(fetch_api_response.connection_info);
+  response->SetAlpnNegotiatedProtocol(
+      WTF::AtomicString(fetch_api_response.alpn_negotiated_protocol));
   response->SetLoadedWithCredentials(
       fetch_api_response.loaded_with_credentials);
+  response->SetWasFetchedViaSpdy(fetch_api_response.was_fetched_via_spdy);
+  response->SetHasRangeRequested(fetch_api_response.has_range_requested);
 
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);
 
-  // TODO(wanderview): This sets the mime type of the Response based on the
-  // current headers.  This should be correct for most cases, but technically
-  // the mime type should really be frozen at the initial Response
-  // construction.  We should plumb the value through the cache_storage
-  // persistence layer and include the explicit mime type in FetchAPIResponse
-  // to set here. See: crbug.com/938939
-  response->SetMimeType(response->HeaderList()->ExtractMIMEType());
+  // Use the |mime_type| provided by the FetchAPIResponse if its set.
+  // Otherwise fall back to extracting the mime type from the headers.  This
+  // can happen when the response is loaded from an older cache_storage
+  // instance that did not yet store the mime_type value.
+  if (!fetch_api_response.mime_type.IsNull())
+    response->SetMimeType(fetch_api_response.mime_type);
+  else
+    response->SetMimeType(response->HeaderList()->ExtractMIMEType());
 
   return response;
 }
@@ -469,15 +473,10 @@ Headers* Response::headers() const {
 
 Response* Response::clone(ScriptState* script_state,
                           ExceptionState& exception_state) {
-  if (IsBodyLocked(exception_state) == BodyLocked::kLocked ||
-      IsBodyUsed(exception_state) == BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (IsBodyLocked() || IsBodyUsed()) {
     exception_state.ThrowTypeError("Response body is already used");
     return nullptr;
   }
-
-  if (exception_state.HadException())
-    return nullptr;
 
   FetchResponseData* response = response_->Clone(script_state, exception_state);
   if (exception_state.HadException())
@@ -520,16 +519,9 @@ bool Response::HasBody() const {
   return response_->InternalBuffer();
 }
 
-Body::BodyUsed Response::IsBodyUsed(ExceptionState& exception_state) {
+bool Response::IsBodyUsed() const {
   auto* body_buffer = InternalBodyBuffer();
-  if (!body_buffer)
-    return BodyUsed::kUnused;
-  base::Optional<bool> stream_disturbed =
-      body_buffer->IsStreamDisturbed(exception_state);
-  if (exception_state.HadException())
-    return BodyUsed::kBroken;
-  DCHECK(stream_disturbed.has_value());
-  return stream_disturbed.value() ? BodyUsed::kUsed : BodyUsed::kUnused;
+  return body_buffer && body_buffer->IsStreamDisturbed();
 }
 
 String Response::MimeType() const {
@@ -554,17 +546,12 @@ FetchHeaderList* Response::InternalHeaderList() const {
   return response_->InternalHeaderList();
 }
 
-void Response::Trace(Visitor* visitor) {
+void Response::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ActiveScriptWrappable<Response>::Trace(visitor);
   Body::Trace(visitor);
   visitor->Trace(response_);
   visitor->Trace(headers_);
-}
-
-bool Response::IsBodyUsedForDCheck(ExceptionState& exception_state) {
-  return InternalBodyBuffer() &&
-         InternalBodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
 }  // namespace blink

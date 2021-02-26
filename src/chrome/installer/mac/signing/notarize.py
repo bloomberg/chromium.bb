@@ -101,6 +101,14 @@ def wait_for_results(uuids, config):
                     plist = plistlib.loads(e.output)
                     if plist['product-errors'][0]['code'] == 1519:
                         continue
+                # Sometimes there are network hiccups when fetching notarization
+                # info, but that often fixes itself and shouldn't derail the
+                # entire signing operation. More serious extended connectivity
+                # problems will eventually fall through to the "no results"
+                # timeout.
+                if e.returncode == 13:
+                    logger.warning(e.output)
+                    continue
                 raise e
 
             plist = plistlib.loads(output)
@@ -148,10 +156,7 @@ def staple_bundled_parts(parts, paths):
     part_paths = [
         part.path
         for part in parts
-        # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
-        # the signing environment is on a macOS release that supports
-        # Xcode 10.2 or newer.
-        if part.path[-4:] in ('.app',)
+        if part.path[-4:] in ('.app', '.xpc')
     ]
     # Reverse-sort the paths so that more nested paths are stapled before
     # less-nested ones.

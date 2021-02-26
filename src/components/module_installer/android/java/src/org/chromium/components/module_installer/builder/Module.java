@@ -4,11 +4,15 @@
 
 package org.chromium.components.module_installer.builder;
 
+import android.content.Context;
+
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BundleUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.module_installer.engine.InstallEngine;
@@ -18,11 +22,12 @@ import org.chromium.components.module_installer.util.Timer;
 /**
  * Represents a feature module. Can be used to install the module, access its interface, etc. See
  * {@link ModuleInterface} for how to conveniently create an instance of the module class for a
- * specific feature module.
+ * specific feature module. The @MainDex annotation supports module use in the renderer process.
  *
  * @param <T> The interface of the module
  */
 @JNINamespace("module_installer")
+@MainDex
 public class Module<T> {
     private final String mName;
     private final Class<T> mInterfaceClass;
@@ -104,7 +109,24 @@ public class Module<T> {
                 ensureNativeLoaded();
             }
 
-            mImpl = mInterfaceClass.cast(instantiateReflectively(mImplClassName));
+            Object impl = instantiateReflectively(mName, mImplClassName);
+            try {
+                mImpl = mInterfaceClass.cast(impl);
+            } catch (ClassCastException e) {
+                ClassLoader interfaceClassLoader = mInterfaceClass.getClassLoader();
+                ClassLoader implClassLoader = impl.getClass().getClassLoader();
+                throw new RuntimeException("Failure casting " + mName
+                                + " module class, interface ClassLoader: " + interfaceClassLoader
+                                + " (parent " + interfaceClassLoader.getParent() + ")"
+                                + ", impl ClassLoader: " + implClassLoader + " (parent "
+                                + implClassLoader.getParent() + ")"
+                                + ", equal: " + interfaceClassLoader.equals(implClassLoader)
+                                + " (parents equal: "
+                                + interfaceClassLoader.getParent().equals(
+                                        implClassLoader.getParent())
+                                + ")",
+                        e);
+            }
             return mImpl;
         }
     }
@@ -157,7 +179,7 @@ public class Module<T> {
         }
 
         return (ModuleDescriptor) instantiateReflectively(
-                "org.chromium.components.module_installer.builder.ModuleDescriptor_" + name);
+                name, "org.chromium.components.module_installer.builder.ModuleDescriptor_" + name);
     }
 
     /**
@@ -166,12 +188,17 @@ public class Module<T> {
      * Ignores strict mode violations since accessing code in a module may cause its DEX file to be
      * loaded and on some devices that can cause such a violation.
      *
+     * @param moduleName The module's name.
      * @param className The object's class name.
      * @return The object.
      */
-    private static Object instantiateReflectively(String className) {
+    private static Object instantiateReflectively(String moduleName, String className) {
+        Context context = ContextUtils.getApplicationContext();
+        if (BundleUtils.isIsolatedSplitInstalled(context, moduleName)) {
+            context = BundleUtils.createIsolatedSplitContext(context, moduleName);
+        }
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return Class.forName(className).newInstance();
+            return context.getClassLoader().loadClass(className).newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_hyphenation.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -33,6 +33,8 @@ CXFA_Hyphenation::CXFA_Hyphenation(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Hyphenation,
                 {},
                 kHyphenationAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Hyphenation::~CXFA_Hyphenation() = default;

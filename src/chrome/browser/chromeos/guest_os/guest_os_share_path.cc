@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -20,10 +20,14 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,6 +37,10 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Root path under which FUSE filesystems such as DriveFS, SmbFs are mounted.
+constexpr base::FilePath::CharType kFuseFsRootPath[] =
+    FILE_PATH_LITERAL("/media/fuse");
 
 void OnSeneschalSharePathResponse(
     guest_os::GuestOsSharePath::SharePathCallback callback,
@@ -147,6 +155,14 @@ void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
   }
 }
 
+// Same as parent.AppendRelativePath(child, path) except that it allows
+// parent == child, in which case path is unchanged.
+bool AppendRelativePath(const base::FilePath& parent,
+                        const base::FilePath& child,
+                        base::FilePath* path) {
+  return child == parent || parent.AppendRelativePath(child, path);
+}
+
 }  // namespace
 
 namespace guest_os {
@@ -210,12 +226,18 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   }
 
   vm_tools::seneschal::SharePathRequest request;
+  base::FilePath fuse_fs_root_path(kFuseFsRootPath);
   base::FilePath drivefs_path;
   base::FilePath relative_path;
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
+  chromeos::smb_client::SmbService* smb_service =
+      chromeos::smb_client::SmbServiceFactory::Get(profile_);
+  chromeos::smb_client::SmbFsShare* smb_share = nullptr;
+  base::FilePath smbfs_mount_point_path;
+  base::FilePath smbfs_mount_name;
 
   // Allow MyFiles directory and subdirs.
   bool allowed_path = false;
@@ -223,10 +245,11 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   base::FilePath android_files(file_manager::util::kAndroidFilesPath);
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
-  base::FilePath system_fonts(file_manager::util::kSystemFontsPath);
   base::FilePath linux_files =
       file_manager::util::GetCrostiniMountDirectory(profile_);
-  if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
+  base::FilePath system_fonts(file_manager::util::kSystemFontsPath);
+  base::FilePath archive_mount(file_manager::util::kArchiveMountPath);
+  if (AppendRelativePath(my_files, path, &relative_path)) {
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::MY_FILES);
@@ -235,29 +258,25 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
              (drivefs_mount_point_path =
                   integration_service->GetMountPointPath())
                  .AppendRelativePath(path, &drivefs_path) &&
-             base::FilePath("/media/fuse")
-                 .AppendRelativePath(drivefs_mount_point_path,
-                                     &drivefs_mount_name)) {
-    // Allow subdirs of DriveFS except .Trash.
+             fuse_fs_root_path.AppendRelativePath(drivefs_mount_point_path,
+                                                  &drivefs_mount_name)) {
+    // Allow subdirs of DriveFS (/media/fuse/drivefs-*) except .Trash.
     request.set_drivefs_mount_name(drivefs_mount_name.value());
     base::FilePath root("root");
     base::FilePath team_drives("team_drives");
     base::FilePath computers("Computers");
     base::FilePath trash(".Trash");  // Not to be shared!
-    if (root == drivefs_path ||
-        root.AppendRelativePath(drivefs_path, &relative_path)) {
+    if (AppendRelativePath(root, drivefs_path, &relative_path)) {
       // My Drive and subdirs.
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE);
-    } else if (team_drives == drivefs_path ||
-               team_drives.AppendRelativePath(drivefs_path, &relative_path)) {
+    } else if (AppendRelativePath(team_drives, drivefs_path, &relative_path)) {
       // Team Drives and subdirs.
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_TEAM_DRIVES);
-    } else if (computers == drivefs_path ||
-               computers.AppendRelativePath(drivefs_path, &relative_path)) {
+    } else if (AppendRelativePath(computers, drivefs_path, &relative_path)) {
       // Computers and subdirs.
       allowed_path = true;
       request.set_storage_location(
@@ -276,8 +295,7 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       // but is included to make it explicit that .Trash should not be shared.
       allowed_path = false;
     }
-  } else if (path == android_files ||
-             android_files.AppendRelativePath(path, &relative_path)) {
+  } else if (AppendRelativePath(android_files, path, &relative_path)) {
     // Allow Android files and subdirs.
     allowed_path = true;
     request.set_storage_location(
@@ -287,17 +305,32 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::REMOVABLE);
-  } else if (path == linux_files ||
-             linux_files.AppendRelativePath(path, &relative_path)) {
+  } else if (AppendRelativePath(linux_files, path, &relative_path)) {
     // Allow Linux files and subdirs.
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::LINUX_FILES);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
-  } else if (path == system_fonts ||
-             system_fonts.AppendRelativePath(path, &relative_path)) {
+  } else if (AppendRelativePath(system_fonts, path, &relative_path)) {
+    // Allow /usr/share/fonts and subdirs.
     allowed_path = true;
     request.set_storage_location(vm_tools::seneschal::SharePathRequest::FONTS);
+  } else if (archive_mount.AppendRelativePath(path, &relative_path)) {
+    // Allow subdirs of /media/archive.
+    allowed_path = true;
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::ARCHIVE);
+  } else if (smb_service &&
+             (smb_share = smb_service->GetSmbFsShareForPath(path)) &&
+             AppendRelativePath(
+                 smbfs_mount_point_path = smb_share->mount_path(), path,
+                 &relative_path) &&
+             fuse_fs_root_path.AppendRelativePath(smbfs_mount_point_path,
+                                                  &smbfs_mount_name)) {
+    // Allow smbfs mounts (/media/fuse/smbfs-*) and subdirs.
+    allowed_path = true;
+    request.set_storage_location(vm_tools::seneschal::SharePathRequest::SMBFS);
+    request.set_smbfs_mount_name(smbfs_mount_name.value());
   }
 
   if (!allowed_path) {
@@ -324,6 +357,15 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     request.set_handle(
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
             ->seneschal_server_handle());
+  } else if (vm_name == arc::kArcVmName) {
+    const auto& vm_info = arc::ArcSessionManager::Get()->GetVmInfo();
+    if (!vm_info) {
+      LOG(WARNING) << "ARCVM not running, cannot share paths";
+      std::move(callback).Run(base::FilePath(), false,
+                              "ARCVM not running, cannot share paths");
+      return;
+    }
+    request.set_handle(vm_info->seneschal_server_handle());
   } else {
     // Restart VM if not currently running.
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
@@ -331,7 +373,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
         crostini_manager->GetVmInfo(vm_name);
     if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
       crostini_manager->RestartCrostini(
-          vm_name, crostini::kCrostiniDefaultContainerName,
+          crostini::ContainerId(vm_name,
+                                crostini::kCrostiniDefaultContainerName),
           base::BindOnce(&OnVmRestartedForSeneschal, profile_, vm_name,
                          std::move(callback), std::move(request)));
       return;
@@ -360,6 +403,14 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
     request.set_handle(
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
             ->seneschal_server_handle());
+  } else if (vm_name == arc::kArcVmName) {
+    const auto& vm_info = arc::ArcSessionManager::Get()->GetVmInfo();
+    if (!vm_info) {
+      LOG(WARNING) << "ARCVM not running, cannot unshare paths";
+      std::move(callback).Run(true, "ARCVM not running, cannot unshare paths");
+      return;
+    }
+    request.set_handle(vm_info->seneschal_server_handle());
   } else {
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
     base::Optional<crostini::VmInfo> vm_info =
@@ -372,22 +423,24 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
   }
 
   // Convert path to a virtual path relative to one of the external mounts,
-  // then get it as a FilesSystemURL to convert to a path inside crostini,
-  // then remove /mnt/chromeos/ base dir prefix to get the path to unshare.
+  // then get it as a FilesSystemURL to convert to a path inside the VM,
+  // then remove mount base dir prefix to get the path to unshare.
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   base::FilePath virtual_path;
+  base::FilePath dummy_vm_mount("/");
   base::FilePath inside;
   bool result = mount_points->GetVirtualPath(path, &virtual_path);
   if (result) {
     storage::FileSystemURL url = mount_points->CreateCrackedFileSystemURL(
         url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
-    result = file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-        profile_, url, &inside);
+    result = file_manager::util::ConvertFileSystemURLToPathInsideVM(
+        profile_, url, dummy_vm_mount,
+        /*map_crostini_home=*/vm_name == crostini::kCrostiniDefaultVmName,
+        &inside);
   }
   base::FilePath unshare_path;
-  if (!result || !crostini::ContainerChromeOSBaseDirectory().AppendRelativePath(
-                     inside, &unshare_path)) {
+  if (!result || !dummy_vm_mount.AppendRelativePath(inside, &unshare_path)) {
     std::move(callback).Run(false, "Invalid path to unshare");
     return;
   }
@@ -521,6 +574,21 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   }
 }
 
+bool GuestOsSharePath::IsPathShared(const std::string& vm_name,
+                                    base::FilePath path) const {
+  while (true) {
+    auto it = shared_paths_.find(path);
+    if (it != shared_paths_.end() && it->second.vm_names.count(vm_name) > 0) {
+      return true;
+    }
+    base::FilePath parent = path.DirName();
+    if (parent == path) {
+      return false;
+    }
+    path = std::move(parent);
+  }
+}
+
 void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
                                        const file_manager::Volume& volume) {
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
@@ -593,7 +661,7 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   auto changed = [](base::RepeatingClosure deleted, const base::FilePath& path,
                     bool error) {
     if (!error && !base::PathExists(path)) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI}, deleted);
+      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, deleted);
     }
   };
   // Start watcher on its sequenced task runner.  It must also be destroyed
@@ -603,7 +671,10 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   file_watcher_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          base::IgnoreResult(&base::FilePathWatcher::Watch),
+          base::IgnoreResult(static_cast<bool (base::FilePathWatcher::*)(
+                                 const base::FilePath&, bool,
+                                 const base::FilePathWatcher::Callback&)>(
+              &base::FilePathWatcher::Watch)),
           base::Unretained(watcher.get()), path, false,
           base::BindRepeating(std::move(changed), std::move(deleted))));
   shared_paths_.emplace(path, SharedPathInfo(std::move(watcher), vm_name));

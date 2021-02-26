@@ -33,7 +33,6 @@ namespace {
             wgpu::TextureDescriptor descriptor;
             descriptor.dimension = wgpu::TextureDimension::e2D;
             descriptor.size = {1, 1, 1};
-            descriptor.arrayLayerCount = 1;
             descriptor.sampleCount = 1;
             descriptor.mipLevelCount = 1;
             descriptor.usage = usage;
@@ -92,7 +91,7 @@ namespace {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             DummyRenderPass dummyRenderPass(device);
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-            pass.SetIndexBuffer(buffer);
+            pass.SetIndexBufferWithFormat(buffer, wgpu::IndexFormat::Uint32);
             pass.SetVertexBuffer(0, buffer);
             pass.EndPass();
             encoder.Finish();
@@ -136,7 +135,7 @@ namespace {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             DummyRenderPass dummyRenderPass(device);
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-            pass.SetIndexBuffer(buffer);
+            pass.SetIndexBufferWithFormat(buffer, wgpu::IndexFormat::Uint32);
             pass.SetBindGroup(0, bg);
             pass.EndPass();
             ASSERT_DEVICE_ERROR(encoder.Finish());
@@ -259,12 +258,12 @@ namespace {
             DummyRenderPass dummyRenderPass(device);
 
             wgpu::RenderPassEncoder pass0 = encoder.BeginRenderPass(&dummyRenderPass);
-            pass0.SetIndexBuffer(buffer0);
+            pass0.SetIndexBufferWithFormat(buffer0, wgpu::IndexFormat::Uint32);
             pass0.SetBindGroup(0, bg1);
             pass0.EndPass();
 
             wgpu::RenderPassEncoder pass1 = encoder.BeginRenderPass(&dummyRenderPass);
-            pass1.SetIndexBuffer(buffer1);
+            pass1.SetIndexBufferWithFormat(buffer1, wgpu::IndexFormat::Uint32);
             pass1.SetBindGroup(0, bg0);
             pass1.EndPass();
 
@@ -350,7 +349,7 @@ namespace {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
             pass.SetPipeline(rp);
 
-            pass.SetIndexBuffer(buffer);
+            pass.SetIndexBufferWithFormat(buffer, wgpu::IndexFormat::Uint32);
             pass.Draw(3);
 
             pass.SetBindGroup(0, bg);
@@ -415,7 +414,7 @@ namespace {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
             pass.SetPipeline(rp);
 
-            pass.SetIndexBuffer(buffer);
+            pass.SetIndexBufferWithFormat(buffer, wgpu::IndexFormat::Uint32);
             pass.SetBindGroup(0, writeBG);
             pass.Draw(3);
 
@@ -515,8 +514,8 @@ namespace {
         {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-            pass.SetIndexBuffer(buffer0);
-            pass.SetIndexBuffer(buffer1);
+            pass.SetIndexBufferWithFormat(buffer0, wgpu::IndexFormat::Uint32);
+            pass.SetIndexBufferWithFormat(buffer1, wgpu::IndexFormat::Uint32);
             pass.SetBindGroup(0, bg);
             pass.EndPass();
             ASSERT_DEVICE_ERROR(encoder.Finish());
@@ -527,8 +526,8 @@ namespace {
         {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-            pass.SetIndexBuffer(buffer1);
-            pass.SetIndexBuffer(buffer0);
+            pass.SetIndexBufferWithFormat(buffer1, wgpu::IndexFormat::Uint32);
+            pass.SetIndexBufferWithFormat(buffer0, wgpu::IndexFormat::Uint32);
             pass.SetBindGroup(0, bg);
             pass.EndPass();
             ASSERT_DEVICE_ERROR(encoder.Finish());
@@ -585,7 +584,7 @@ namespace {
             {
                 wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
                 wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-                pass.SetIndexBuffer(buffer0);
+                pass.SetIndexBufferWithFormat(buffer0, wgpu::IndexFormat::Uint32);
                 pass.SetBindGroup(0, bg0);
                 pass.SetBindGroup(0, bg1);
                 pass.EndPass();
@@ -597,7 +596,7 @@ namespace {
             {
                 wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
                 wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-                pass.SetIndexBuffer(buffer0);
+                pass.SetIndexBufferWithFormat(buffer0, wgpu::IndexFormat::Uint32);
                 pass.SetBindGroup(0, bg1);
                 pass.SetBindGroup(0, bg0);
                 pass.EndPass();
@@ -725,7 +724,7 @@ namespace {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             DummyRenderPass dummyRenderPass(device);
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
-            pass.SetIndexBuffer(buffer);
+            pass.SetIndexBufferWithFormat(buffer, wgpu::IndexFormat::Uint32);
             pass.SetBindGroup(0, bg);
             pass.EndPass();
             ASSERT_DEVICE_ERROR(encoder.Finish());
@@ -868,7 +867,7 @@ namespace {
             {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
               wgpu::BindingType::SampledTexture},
              {1, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-              wgpu::BindingType::ReadonlyStorageTexture, false, false,
+              wgpu::BindingType::ReadonlyStorageTexture, false, 0, false,
               wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float, kFormat}});
         wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -901,7 +900,7 @@ namespace {
         {
             // Create a texture
             wgpu::Texture texture =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as sampled binding
@@ -931,7 +930,7 @@ namespace {
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture},
                          {1, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -970,15 +969,15 @@ namespace {
         {
             // Create a texture
             wgpu::Texture texture =
-                CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as writeonly storage binding
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::WriteonlyStorageTexture, false,
-                  false, wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float,
-                  kFormat}});
+                  0, false, wgpu::TextureViewDimension::Undefined,
+                  wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}});
 
             // It is invalid to use the texture as both writeonly storage and render target in
@@ -1017,10 +1016,10 @@ namespace {
             // Create a bind group to use the texture as sampled and writeonly bindings
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat},
                          {1, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -1060,10 +1059,10 @@ namespace {
         {
             // Create textures that will be used as both a sampled texture and a render target
             wgpu::Texture t0 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView v0 = t0.CreateView();
             wgpu::Texture t1 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView v1 = t1.CreateView();
 
             // Create bind groups to use the texture as sampled
@@ -1099,11 +1098,11 @@ namespace {
             // Create bind groups to use the texture as readonly and writeonly bindings
             wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
@@ -1131,11 +1130,11 @@ namespace {
             // Create bind groups to use the texture as readonly and writeonly bindings
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
             wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
@@ -1174,8 +1173,8 @@ namespace {
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::WriteonlyStorageTexture, false,
-                  false, wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float,
-                  kFormat}});
+                  0, false, wgpu::TextureViewDimension::Undefined,
+                  wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup sampledBG = utils::MakeBindGroup(device, sampledBGL, {{0, view}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
 
@@ -1204,11 +1203,11 @@ namespace {
             // Create bind groups to use the texture as readonly and writeonly storage bindings
             wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
@@ -1249,8 +1248,8 @@ namespace {
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::WriteonlyStorageTexture, false,
-                  false, wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float,
-                  kFormat}});
+                  0, false, wgpu::TextureViewDimension::Undefined,
+                  wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup sampledBG = utils::MakeBindGroup(device, sampledBGL, {{0, view}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
 
@@ -1277,11 +1276,11 @@ namespace {
             // Create the bind group to use the texture as readonly and writeonly storage bindings
             wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
@@ -1313,12 +1312,12 @@ namespace {
         wgpu::Texture texture0 = CreateTexture(wgpu::TextureUsage::CopySrc);
         wgpu::Texture texture1 =
             CreateTexture(wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled |
-                          wgpu::TextureUsage::OutputAttachment);
+                          wgpu::TextureUsage::RenderAttachment);
         wgpu::TextureView view0 = texture0.CreateView();
         wgpu::TextureView view1 = texture1.CreateView();
 
-        wgpu::TextureCopyView srcView = utils::CreateTextureCopyView(texture0, 0, 0, {0, 0, 0});
-        wgpu::TextureCopyView dstView = utils::CreateTextureCopyView(texture1, 0, 0, {0, 0, 0});
+        wgpu::TextureCopyView srcView = utils::CreateTextureCopyView(texture0, 0, {0, 0, 0});
+        wgpu::TextureCopyView dstView = utils::CreateTextureCopyView(texture1, 0, {0, 0, 0});
         wgpu::Extent3D copySize = {1, 1, 1};
 
         // Use the texture as both copy dst and output attachment in render pass
@@ -1354,10 +1353,10 @@ namespace {
         {
             // Create textures that will be used as both a sampled texture and a render target
             wgpu::Texture texture0 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view0 = texture0.CreateView();
             wgpu::Texture texture1 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment);
+                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view1 = texture1.CreateView();
 
             // Create the bind group to use the texture as sampled
@@ -1404,12 +1403,12 @@ namespace {
             // Create the bind group to use the texture as readonly and writeonly bindings
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
 
             wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
 
             wgpu::BindGroup writeBG0 = utils::MakeBindGroup(device, writeBGL, {{0, view0}});
@@ -1467,10 +1466,10 @@ namespace {
             // Create a bind group whose bindings are not visible in render pass
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat},
                          {1, wgpu::ShaderStage::None, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -1489,10 +1488,10 @@ namespace {
             // Create a bind group whose bindings are not visible in compute pass
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat},
                          {1, wgpu::ShaderStage::None, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -1517,7 +1516,7 @@ namespace {
     TEST_F(ResourceUsageTrackingTest, TextureUsageConflictWithInvisibleStageInBindGroup) {
         // Create texture and texture view
         wgpu::Texture texture =
-            CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::OutputAttachment);
+            CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::RenderAttachment);
         wgpu::TextureView view = texture.CreateView();
 
         // Test render pass
@@ -1528,7 +1527,7 @@ namespace {
             // Create a bind group which use the texture as readonly storage in compute stage
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}});
 
@@ -1547,10 +1546,10 @@ namespace {
             // Create a bind group which contains both fragment and compute stages
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat},
                          {1, wgpu::ShaderStage::Compute, wgpu::BindingType::WriteonlyStorageTexture,
-                          false, false, wgpu::TextureViewDimension::Undefined,
+                          false, 0, false, wgpu::TextureViewDimension::Undefined,
                           wgpu::TextureComponentType::Float, kFormat}});
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
@@ -1583,12 +1582,12 @@ namespace {
         wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
             device,
             {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-              wgpu::BindingType::ReadonlyStorageTexture, false, false,
+              wgpu::BindingType::ReadonlyStorageTexture, false, 0, false,
               wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float, kFormat}});
         wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
             device,
             {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-              wgpu::BindingType::WriteonlyStorageTexture, false, false,
+              wgpu::BindingType::WriteonlyStorageTexture, false, 0, false,
               wgpu::TextureViewDimension::Undefined, wgpu::TextureComponentType::Float, kFormat}});
         wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
         wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});

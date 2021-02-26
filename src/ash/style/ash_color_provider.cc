@@ -6,15 +6,28 @@
 
 #include <math.h>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/dark_mode/color_mode_observer.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "base/bind.h"
 #include "base/check_op.h"
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "ui/chromeos/colors/cros_colors.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/webui/resources/css/cros_colors.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace ash {
 
@@ -39,30 +52,69 @@ constexpr int kAlpha60 = 153;  // 60%
 constexpr int kAlpha80 = 204;  // 80%
 constexpr int kAlpha90 = 230;  // 90%
 
-// Gets the color mode value from feature flag "--ash-color-mode".
-AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
-  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+// Alpha value that is used to calculate themed color. Please see function
+// GetBackgroundThemedColor() about how the themed color is calculated.
+constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
+constexpr int kLightBackgroundBlendAlpha = 191;  // 75%
 
-  if (!cl->HasSwitch(switches::kAshColorMode))
-    return AshColorProvider::AshColorMode::kDefault;
+// The default background color that can be applied on any layer.
+constexpr SkColor kBackgroundColorDefaultLight = SK_ColorWHITE;
+constexpr SkColor kBackgroundColorDefaultDark = gfx::kGoogleGrey900;
 
-  const std::string switch_value =
-      cl->GetSwitchValueASCII(switches::kAshColorMode);
-  if (switch_value == switches::kAshColorModeDark)
-    return AshColorProvider::AshColorMode::kDark;
+// The spacing between a pill button's icon and label, if it has both.
+constexpr int kPillButtonImageLabelSpacingDp = 8;
 
-  if (switch_value == switches::kAshColorModeLight)
-    return AshColorProvider::AshColorMode::kLight;
+// AshColorProvider is kind of NativeTheme of ChromeOS. This will notify the
+// View::OnThemeChanged to live update the colors on color mode/theme changes.
+void NotifyThemeChanges() {
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+}
 
-  return AshColorProvider::AshColorMode::kDefault;
+// Get the corresponding ColorName for |type|. ColorName is an enum in
+// cros_colors.h file that is generated from cros_colors.json5, which includes
+// the color IDs and colors that will be used by ChromeOS WebUI.
+ColorName TypeToColorName(AshColorProvider::ContentLayerType type) {
+  switch (type) {
+    case AshColorProvider::ContentLayerType::kTextColorPrimary:
+      return ColorName::kTextColorPrimary;
+    case AshColorProvider::ContentLayerType::kTextColorSecondary:
+      return ColorName::kTextColorSecondary;
+    case AshColorProvider::ContentLayerType::kTextColorAlert:
+      return ColorName::kTextColorAlert;
+    case AshColorProvider::ContentLayerType::kTextColorWarning:
+      return ColorName::kTextColorWarning;
+    case AshColorProvider::ContentLayerType::kTextColorPositive:
+      return ColorName::kTextColorPositive;
+    case AshColorProvider::ContentLayerType::kIconColorPrimary:
+      return ColorName::kIconColorPrimary;
+    case AshColorProvider::ContentLayerType::kIconColorAlert:
+      return ColorName::kIconColorAlert;
+    case AshColorProvider::ContentLayerType::kIconColorWarning:
+      return ColorName::kIconColorWarning;
+    case AshColorProvider::ContentLayerType::kIconColorPositive:
+      return ColorName::kIconColorPositive;
+    default:
+      DCHECK_EQ(AshColorProvider::ContentLayerType::kIconColorProminent, type);
+      return ColorName::kIconColorProminent;
+  }
+}
+
+// Get the color from cros_colors.h header file that is generated from
+// cros_colors.json5. Colors there will also be used by ChromeOS WebUI.
+SkColor ResolveColor(AshColorProvider::ContentLayerType type,
+                     bool is_dark_mode) {
+  return cros_colors::ResolveColor(TypeToColorName(type), is_dark_mode);
 }
 
 }  // namespace
 
-AshColorProvider::AshColorProvider()
-    : color_mode_(GetColorModeFromCommandLine()) {}
+AshColorProvider::AshColorProvider() {
+  Shell::Get()->session_controller()->AddObserver(this);
+}
 
-AshColorProvider::~AshColorProvider() = default;
+AshColorProvider::~AshColorProvider() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
+}
 
 // static
 AshColorProvider* AshColorProvider::Get() {
@@ -82,191 +134,295 @@ SkColor AshColorProvider::GetSecondToneColor(SkColor color_of_first_tone) {
       std::round(SkColorGetA(color_of_first_tone) * kSecondToneOpacity));
 }
 
-SkColor AshColorProvider::DeprecatedGetShieldLayerColor(
-    ShieldLayerType type,
-    SkColor default_color) const {
-  if (color_mode_ == AshColorMode::kDefault)
-    return default_color;
-
-  return GetShieldLayerColorImpl(type, color_mode_);
+// static
+void AshColorProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDarkModeEnabled,
+                                kDefaultDarkModeEnabled);
+  registry->RegisterBooleanPref(prefs::kColorModeThemed,
+                                kDefaultColorModeThemed);
 }
 
-SkColor AshColorProvider::GetShieldLayerColor(
-    ShieldLayerType type,
-    AshColorMode given_color_mode) const {
-  AshColorMode color_mode =
-      color_mode_ != AshColorMode::kDefault ? color_mode_ : given_color_mode;
-  DCHECK(color_mode != AshColorMode::kDefault);
-  return GetShieldLayerColorImpl(type, color_mode);
+void AshColorProvider::OnActiveUserPrefServiceChanged(PrefService* prefs) {
+  active_user_pref_service_ = prefs;
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(prefs);
+
+  pref_change_registrar_->Add(
+      prefs::kDarkModeEnabled,
+      base::BindRepeating(&AshColorProvider::NotifyDarkModeEnabledPrefChange,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kColorModeThemed,
+      base::BindRepeating(&AshColorProvider::NotifyColorModeThemedPrefChange,
+                          base::Unretained(this)));
+
+  // Immediately tell all the observers to load this user's saved preferences.
+  NotifyDarkModeEnabledPrefChange();
+  NotifyColorModeThemedPrefChange();
 }
 
-SkColor AshColorProvider::DeprecatedGetBaseLayerColor(
-    BaseLayerType type,
-    SkColor default_color) const {
-  if (color_mode_ == AshColorMode::kDefault)
-    return default_color;
-
-  return GetBaseLayerColorImpl(type, color_mode_);
+void AshColorProvider::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  if (!features::IsDarkLightModeEnabled())
+    return;
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(
+      IsDarkModeEnabled());
 }
 
-SkColor AshColorProvider::GetBaseLayerColor(
-    BaseLayerType type,
-    AshColorMode given_color_mode) const {
-  AshColorMode color_mode =
-      color_mode_ != AshColorMode::kDefault ? color_mode_ : given_color_mode;
-  DCHECK(color_mode != AshColorMode::kDefault);
-  return GetBaseLayerColorImpl(type, color_mode);
+SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
+  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
+  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  return SkColorSetA(GetBackgroundColor(), kAlphas[static_cast<int>(type)]);
 }
 
-SkColor AshColorProvider::DeprecatedGetControlsLayerColor(
-    ControlsLayerType type,
-    SkColor default_color) const {
-  if (color_mode_ == AshColorMode::kDefault)
-    return default_color;
-
-  return GetControlsLayerColorImpl(type, color_mode_);
+SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
+  constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60,
+                             kAlpha80, kAlpha90, 0xFF};
+  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  return SkColorSetA(GetBackgroundColor(), kAlphas[static_cast<int>(type)]);
 }
 
-SkColor AshColorProvider::GetControlsLayerColor(
-    ControlsLayerType type,
-    AshColorMode given_color_mode) const {
-  AshColorMode color_mode =
-      color_mode_ != AshColorMode::kDefault ? color_mode_ : given_color_mode;
-  DCHECK(color_mode != AshColorMode::kDefault);
-  return GetControlsLayerColorImpl(type, color_mode);
+SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
+  constexpr SkColor kLightColors[] = {SkColorSetA(SK_ColorBLACK, 0x24),
+                                      gfx::kGoogleBlue600,
+                                      SkColorSetA(SK_ColorBLACK, 0x0D),
+                                      gfx::kGoogleRed600,
+                                      gfx::kGoogleYellow600,
+                                      gfx::kGoogleGreen600,
+                                      SkColorSetA(gfx::kGoogleBlue600, 0x3D),
+                                      gfx::kGoogleBlue600};
+  constexpr SkColor kDarkColors[] = {SkColorSetA(SK_ColorWHITE, 0x24),
+                                     gfx::kGoogleBlue300,
+                                     SkColorSetA(SK_ColorWHITE, 0x1A),
+                                     gfx::kGoogleRed300,
+                                     gfx::kGoogleYellow300,
+                                     gfx::kGoogleGreen300,
+                                     SkColorSetA(gfx::kGoogleBlue300, 0x3D),
+                                     gfx::kGoogleBlue300};
+  DCHECK(base::size(kLightColors) == base::size(kDarkColors));
+  static_assert(
+      base::size(kLightColors) == base::size(kDarkColors),
+      "Size of kLightColors should equal to the size of kDarkColors.");
+  const size_t index = static_cast<size_t>(type);
+  DCHECK_LT(index, base::size(kLightColors));
+  return IsDarkModeEnabled() ? kDarkColors[index] : kLightColors[index];
 }
 
-SkColor AshColorProvider::DeprecatedGetContentLayerColor(
-    ContentLayerType type,
-    SkColor default_color) const {
-  if (color_mode_ == AshColorMode::kDefault)
-    return default_color;
-
-  return GetContentLayerColorImpl(type, color_mode_);
-}
-
-SkColor AshColorProvider::GetContentLayerColor(
-    ContentLayerType type,
-    AshColorMode given_color_mode) const {
-  AshColorMode color_mode =
-      color_mode_ != AshColorMode::kDefault ? color_mode_ : given_color_mode;
-  DCHECK(color_mode != AshColorMode::kDefault);
-  return GetContentLayerColorImpl(type, color_mode);
+SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
+  const bool is_dark_mode = IsDarkModeEnabled();
+  switch (type) {
+    case ContentLayerType::kSeparatorColor:
+    case ContentLayerType::kShelfHandleColor:
+      return is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0x24)
+                          : SkColorSetA(SK_ColorBLACK, 0x24);
+    case ContentLayerType::kIconColorSecondary:
+      return gfx::kGoogleGrey500;
+    case ContentLayerType::kButtonLabelColor:
+    case ContentLayerType::kButtonIconColor:
+    case ContentLayerType::kAppStateIndicatorColor:
+    case ContentLayerType::kSliderColorInactive:
+    case ContentLayerType::kRadioColorInactive:
+      return is_dark_mode ? gfx::kGoogleGrey200 : gfx::kGoogleGrey700;
+    case ContentLayerType::kButtonLabelColorBlue:
+    case ContentLayerType::kSliderColorActive:
+    case ContentLayerType::kRadioColorActive:
+      return is_dark_mode ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
+    case ContentLayerType::kButtonLabelColorPrimary:
+    case ContentLayerType::kButtonIconColorPrimary:
+      return is_dark_mode ? gfx::kGoogleGrey900 : gfx::kGoogleGrey200;
+    case ContentLayerType::kAppStateIndicatorColorInactive:
+      return GetDisabledColor(
+          GetContentLayerColor(ContentLayerType::kAppStateIndicatorColor));
+    case ContentLayerType::kCurrentDeskColor:
+      return is_dark_mode ? SK_ColorWHITE : SK_ColorBLACK;
+    default:
+      return ResolveColor(type, is_dark_mode);
+  }
 }
 
 AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
     SkColor bg_color) const {
-  const SkColor base_color = color_utils::GetColorWithMaxContrast(bg_color);
-  const float opacity = color_utils::IsDark(base_color)
-                            ? kDarkInkRippleOpacity
-                            : kLightInkRippleOpacity;
+  if (bg_color == gfx::kPlaceholderColor)
+    bg_color = GetBackgroundColor();
+
+  const bool is_dark = color_utils::IsDark(bg_color);
+  const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
+  const float opacity =
+      is_dark ? kLightInkRippleOpacity : kDarkInkRippleOpacity;
   return RippleAttributes(base_color, opacity, opacity);
 }
 
-SkColor AshColorProvider::GetShieldLayerColorImpl(
-    ShieldLayerType type,
-    AshColorMode color_mode) const {
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
-  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
-  return SkColorSetA(
-      color_mode == AshColorMode::kLight ? SK_ColorWHITE : gfx::kGoogleGrey900,
-      kAlphas[static_cast<int>(type)]);
+SkColor AshColorProvider::GetBackgroundColor() const {
+  return IsThemed() ? GetBackgroundThemedColor() : GetBackgroundDefaultColor();
 }
 
-SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
-                                                AshColorMode color_mode) const {
-  SkColor light_color, dark_color;
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
-                         kAlpha90, 0xFF,     0xFF};
-  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
-  const int transparent_alpha = kAlphas[static_cast<int>(type)];
-
-  switch (type) {
-    case BaseLayerType::kTransparent20:
-    case BaseLayerType::kTransparent40:
-    case BaseLayerType::kTransparent60:
-    case BaseLayerType::kTransparent80:
-    case BaseLayerType::kTransparent90:
-      light_color = SkColorSetA(SK_ColorWHITE, transparent_alpha);
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, transparent_alpha);
-      break;
-    case BaseLayerType::kOpaque:
-      light_color = SK_ColorWHITE;
-      dark_color = gfx::kGoogleGrey900;
-      break;
-    case BaseLayerType::kRed:
-      light_color = gfx::kGoogleRed600;
-      dark_color = gfx::kGoogleRed300;
-      break;
+void AshColorProvider::DecoratePillButton(views::LabelButton* button,
+                                          const gfx::VectorIcon* icon) {
+  if (icon) {
+    SkColor enabled_icon_color =
+        GetContentLayerColor(ContentLayerType::kButtonIconColor);
+    button->SetImage(views::Button::STATE_NORMAL,
+                     gfx::CreateVectorIcon(*icon, enabled_icon_color));
+    button->SetImage(
+        views::Button::STATE_DISABLED,
+        gfx::CreateVectorIcon(*icon, GetDisabledColor(enabled_icon_color)));
+    button->SetImageLabelSpacing(kPillButtonImageLabelSpacingDp);
   }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+
+  SkColor enabled_text_color =
+      GetContentLayerColor(ContentLayerType::kButtonLabelColor);
+  button->SetEnabledTextColors(enabled_text_color);
+  button->SetTextColor(views::Button::STATE_DISABLED,
+                       GetDisabledColor(enabled_text_color));
+
+  // TODO(sammiequon): Add a default rounded rect background. It should probably
+  // be optional as some buttons still require customization. At that point we
+  // should package the parameters of this function into a struct.
 }
 
-SkColor AshColorProvider::GetControlsLayerColorImpl(
-    ControlsLayerType type,
-    AshColorMode color_mode) const {
-  SkColor light_color, dark_color;
-  switch (type) {
-    case ControlsLayerType::kHairlineBorder:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
-      dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
-      break;
-    case ControlsLayerType::kInactiveControlBackground:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x0D);  // 5%
-      dark_color = SkColorSetA(SK_ColorWHITE, 0x1A);   // 10%
-      break;
-    case ControlsLayerType::kActiveControlBackground:
-    case ControlsLayerType::kFocusRing:
-      light_color = gfx::kGoogleBlue600;
-      dark_color = gfx::kGoogleBlue300;
-      break;
-  }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+void AshColorProvider::DecorateCloseButton(views::ImageButton* button,
+                                           int button_size,
+                                           const gfx::VectorIcon& icon) {
+  DCHECK(!icon.is_empty());
+  SkColor enabled_icon_color =
+      GetContentLayerColor(ContentLayerType::kButtonIconColor);
+  button->SetImage(views::Button::STATE_NORMAL,
+                   gfx::CreateVectorIcon(icon, enabled_icon_color));
+
+  // Add a rounded rect background. The rounding will be half the button size so
+  // it is a circle.
+  SkColor icon_background_color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80);
+  button->SetBackground(views::CreateRoundedRectBackground(
+      icon_background_color, button_size / 2));
+
+  // TODO(sammiequon): Add background blur as per spec. Background blur is quite
+  // heavy, and we may have many close buttons showing at a time. They'll be
+  // added separately so its easier to monitor performance.
 }
 
-SkColor AshColorProvider::GetContentLayerColorImpl(
-    ContentLayerType type,
-    AshColorMode color_mode) const {
-  SkColor light_color, dark_color;
-  switch (type) {
-    case ContentLayerType::kSeparator:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
-      dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
-      break;
-    case ContentLayerType::kTextPrimary:
-      return cros_colors::ResolveColor(ColorName::kCrosDefaultTextColor,
-                                       color_mode);
-    case ContentLayerType::kTextSecondary:
-      return cros_colors::ResolveColor(
-          ColorName::kCrosDefaultTextColorSecondary, color_mode);
-    case ContentLayerType::kIconPrimary:
-      return cros_colors::ResolveColor(ColorName::kCrosDefaultIconColorPrimary,
-                                       color_mode);
-    case ContentLayerType::kIconSecondary:
-      light_color = dark_color = gfx::kGoogleGrey500;
-      break;
-    case ContentLayerType::kIconRed:
-      light_color = gfx::kGoogleRed600;
-      dark_color = gfx::kGoogleRed300;
-      break;
-    case ContentLayerType::kProminentIconButton:
-    case ContentLayerType::kSliderThumbEnabled:
-      return cros_colors::ResolveColor(
-          ColorName::kCrosDefaultIconColorProminent, color_mode);
-    case ContentLayerType::kSliderThumbDisabled:
-      light_color = gfx::kGoogleGrey600;
-      dark_color = gfx::kGoogleGrey600;
-      break;
-    case ContentLayerType::kIconSystemMenu:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey200;
-      break;
-    case ContentLayerType::kIconSystemMenuToggled:
-      light_color = gfx::kGoogleGrey200;
-      dark_color = gfx::kGoogleGrey900;
-      break;
+void AshColorProvider::DecorateFloatingIconButton(views::ImageButton* button,
+                                                  const gfx::VectorIcon& icon) {
+  DecorateIconButton(button, icon, /*toggled=*/false,
+                     GetDefaultSizeOfVectorIcon(icon));
+}
+
+void AshColorProvider::DecorateIconButton(views::ImageButton* button,
+                                          const gfx::VectorIcon& icon,
+                                          bool toggled,
+                                          int icon_size) {
+  DCHECK(!icon.is_empty());
+  const SkColor normal_color =
+      GetContentLayerColor(ContentLayerType::kButtonIconColor);
+  const SkColor toggled_icon_color =
+      GetContentLayerColor(ContentLayerType::kButtonIconColorPrimary);
+  const SkColor icon_color = toggled ? toggled_icon_color : normal_color;
+
+  // Skip repainting if the incoming icon is the same as the current icon. If
+  // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
+  // grab the ImageSkia from a cache, so it will be cheap. Note that this
+  // assumes that toggled/disabled images changes at the same time as the normal
+  // image, which it currently does.
+  const gfx::ImageSkia new_normal_image =
+      gfx::CreateVectorIcon(icon, icon_size, icon_color);
+  const gfx::ImageSkia& old_normal_image =
+      button->GetImage(views::Button::STATE_NORMAL);
+  if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
+      new_normal_image.BackedBySameObjectAs(old_normal_image)) {
+    return;
   }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+
+  button->SetImage(views::Button::STATE_NORMAL, new_normal_image);
+  button->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, icon_size, GetDisabledColor(icon_color)));
+}
+
+void AshColorProvider::AddObserver(ColorModeObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AshColorProvider::RemoveObserver(ColorModeObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool AshColorProvider::IsDarkModeEnabled() const {
+  if (!features::IsDarkLightModeEnabled() && override_light_mode_as_default_)
+    return false;
+
+  if (!active_user_pref_service_ || !features::IsDarkLightModeEnabled())
+    return kDefaultDarkModeEnabled;
+  return active_user_pref_service_->GetBoolean(prefs::kDarkModeEnabled);
+}
+
+bool AshColorProvider::IsThemed() const {
+  if (!active_user_pref_service_)
+    return kDefaultColorModeThemed;
+  return active_user_pref_service_->GetBoolean(prefs::kColorModeThemed);
+}
+
+void AshColorProvider::ToggleColorMode() {
+  DCHECK(active_user_pref_service_);
+  active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled,
+                                        !IsDarkModeEnabled());
+  active_user_pref_service_->CommitPendingWrite();
+
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(
+      IsDarkModeEnabled());
+}
+
+void AshColorProvider::UpdateColorModeThemed(bool is_themed) {
+  if (is_themed == IsThemed())
+    return;
+
+  DCHECK(active_user_pref_service_);
+  active_user_pref_service_->SetBoolean(prefs::kColorModeThemed, is_themed);
+  active_user_pref_service_->CommitPendingWrite();
+}
+
+SkColor AshColorProvider::GetBackgroundDefaultColor() const {
+  return IsDarkModeEnabled() ? kBackgroundColorDefaultDark
+                             : kBackgroundColorDefaultLight;
+}
+
+SkColor AshColorProvider::GetBackgroundThemedColor() const {
+  const SkColor default_color = GetBackgroundDefaultColor();
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  if (!wallpaper_controller)
+    return default_color;
+
+  const bool is_dark_mode = IsDarkModeEnabled();
+  color_utils::LumaRange luma_range = is_dark_mode
+                                          ? color_utils::LumaRange::DARK
+                                          : color_utils::LumaRange::LIGHT;
+  SkColor muted_color =
+      wallpaper_controller->GetProminentColor(color_utils::ColorProfile(
+          luma_range, color_utils::SaturationRange::MUTED));
+  if (muted_color == kInvalidWallpaperColor)
+    return default_color;
+
+  return color_utils::GetResultingPaintColor(
+      SkColorSetA(is_dark_mode ? SK_ColorBLACK : SK_ColorWHITE,
+                  is_dark_mode ? kDarkBackgroundBlendAlpha
+                               : kLightBackgroundBlendAlpha),
+      muted_color);
+}
+
+void AshColorProvider::NotifyDarkModeEnabledPrefChange() {
+  const bool is_enabled = IsDarkModeEnabled();
+  for (auto& observer : observers_)
+    observer.OnColorModeChanged(is_enabled);
+
+  NotifyThemeChanges();
+}
+
+void AshColorProvider::NotifyColorModeThemedPrefChange() {
+  const bool is_themed = IsThemed();
+  for (auto& observer : observers_)
+    observer.OnColorModeThemed(is_themed);
+
+  NotifyThemeChanges();
 }
 
 }  // namespace ash

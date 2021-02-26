@@ -110,6 +110,11 @@ void BadClockUI::HandleCommand(SecurityInterstitialCommand command) {
     case CMD_OPEN_WHITEPAPER:
       controller_->OpenExtendedReportingWhitepaper(true);
       break;
+    case CMD_OPEN_ENHANCED_PROTECTION_SETTINGS:
+      controller_->metrics_helper()->RecordUserInteraction(
+          security_interstitials::MetricsHelper::OPEN_ENHANCED_PROTECTION);
+      controller_->OpenEnhancedProtectionSettings();
+      break;
     case CMD_PROCEED:
     case CMD_OPEN_HELP_CENTER:
     case CMD_RELOAD:

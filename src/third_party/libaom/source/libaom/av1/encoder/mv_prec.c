@@ -224,7 +224,7 @@ static AOM_INLINE void collect_mv_stats_b(MV_STATS *mv_stats,
   }
 
   // Add texture information
-  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const BLOCK_SIZE bsize = mbmi->bsize;
   const int num_rows = block_size_high[bsize];
   const int num_cols = block_size_wide[bsize];
   const int y_stride = cpi->source->y_stride;

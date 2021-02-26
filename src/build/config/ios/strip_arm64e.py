@@ -18,9 +18,9 @@ def check_output(command):
   if process.returncode:
     sys.stderr.write('error: command failed with retcode %d: %s\n\n' %
                      (process.returncode, ' '.join(map(repr, command))))
-    sys.stderr.write(errs)
+    sys.stderr.write(errs.decode('UTF-8', errors='ignore'))
     sys.exit(process.returncode)
-  return outs
+  return outs.decode('UTF-8')
 
 
 def check_call(command):
@@ -33,6 +33,7 @@ def parse_args(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--input', required=True, help='Path to input binary')
   parser.add_argument('--output', required=True, help='Path to output binary')
+  parser.add_argument('--xcode-version', required=True, help='Version of Xcode')
   return parser.parse_args(args)
 
 

@@ -42,6 +42,25 @@ struct ContentId {
   bool operator<(const ContentId& content_id) const;
 };
 
+// Contains all the information to schedule the download of the offline item.
+struct OfflineItemSchedule {
+ public:
+  OfflineItemSchedule(bool only_on_wifi, base::Optional<base::Time> start_time);
+
+  OfflineItemSchedule(const OfflineItemSchedule& other);
+  OfflineItemSchedule& operator=(const OfflineItemSchedule& other);
+  ~OfflineItemSchedule();
+
+  bool operator==(const OfflineItemSchedule& other) const;
+
+  // Whether the download should only happen on WIFI.
+  bool only_on_wifi;
+
+  // Time to start downloading the offline item. Will be ignored if
+  // |only_on_wifi_| is true.
+  base::Optional<base::Time> start_time;
+};
+
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum class OfflineItemProgressUnit {
@@ -80,6 +99,8 @@ struct OfflineItem {
 
   OfflineItem();
   OfflineItem(const OfflineItem& other);
+  OfflineItem& operator=(const OfflineItem& other);
+
   explicit OfflineItem(const ContentId& id);
 
   ~OfflineItem();
@@ -211,6 +232,9 @@ struct OfflineItem {
   // Whether the download might be dangerous and will require additional
   // validation from user.
   bool is_dangerous;
+
+  // The criteria for when the offline item is likely to download.
+  base::Optional<OfflineItemSchedule> schedule;
 };
 
 // Implemented for test-only. See test_support/offline_item_test_support.cc.
@@ -261,4 +285,4 @@ struct OfflineItemShareInfo {
 
 }  // namespace offline_items_collection
 
-#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_OFFLINE_ITEM_H_
+#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_OFFLINE_ITEM_H_

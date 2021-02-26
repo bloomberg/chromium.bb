@@ -55,7 +55,7 @@ class PriorityQueue {
 
   const EntryType& operator[](wtf_size_t index) const { return heap_[index]; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(heap_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(heap_); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PriorityQueueTest, Updates);
@@ -142,6 +142,8 @@ inline void PriorityQueue<PriorityType, ElementType>::Remove(
   Swap(heap_[index], heap_.back());
   heap_.pop_back();
   element->PriorityQueueHandle() = kNotFound;
+  if (index == heap_.size() || PercolateUp(index) != index)
+    return;
   PercolateDown(index);
 }
 

@@ -49,12 +49,15 @@ enum ReauthReason {
   // User cancelled the password change prompt when prompted by Chrome OS.
   PASSWORD_UPDATE_SKIPPED = 8,
 
+  // SAML password sync token validation failed.
+  SAML_PASSWORD_SYNC_TOKEN_VALIDATION_FAILED = 9,
+
   // Must be the last value in this list.
   NUM_REAUTH_FLOW_REASONS,
 };
 
 void RecordReauthReason(const AccountId& account_id, ReauthReason reason);
-void SendReauthReason(const AccountId& account_id);
+void SendReauthReason(const AccountId& account_id, bool password_changed);
 
 }  // namespace chromeos
 

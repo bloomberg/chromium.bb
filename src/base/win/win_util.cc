@@ -78,7 +78,7 @@ bool SetPropVariantValueForPropertyStore(
   // See third_party/perl/c/i686-w64-mingw32/include/propkey.h for GUID and
   // PID definitions.
   DPLOG(ERROR) << "Failed to set property with GUID "
-               << String16FromGUID(property_key.fmtid) << " PID "
+               << WStringFromGUID(property_key.fmtid) << " PID "
                << property_key.pid;
 #endif
   return false;
@@ -340,10 +340,8 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("ACPI"),
-                     CompareCase::INSENSITIVE_ASCII) ||
-          StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("HID\\VID"),
-                     CompareCase::INSENSITIVE_ASCII)) {
+      if (StartsWith(device_id, L"ACPI", CompareCase::INSENSITIVE_ASCII) ||
+          StartsWith(device_id, L"HID\\VID", CompareCase::INSENSITIVE_ASCII)) {
         if (reason) {
           *reason += "device: ";
           *reason += WideToUTF8(device_id);
@@ -450,10 +448,11 @@ bool SetClsidForPropertyStore(IPropertyStore* property_store,
 
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
                               const wchar_t* app_id) {
-  // App id should be less than 64 chars and contain no space. And recommended
+  // App id should be less than 128 chars and contain no space. And recommended
   // format is CompanyName.ProductName[.SubProduct.ProductNumber].
-  // See http://msdn.microsoft.com/en-us/library/dd378459%28VS.85%29.aspx
-  DCHECK_LT(lstrlen(app_id), 64);
+  // See
+  // https://docs.microsoft.com/en-us/windows/win32/shell/appids#how-to-form-an-application-defined-appusermodelid
+  DCHECK_LT(lstrlen(app_id), 128);
   DCHECK_EQ(wcschr(app_id, L' '), nullptr);
 
   return SetStringValueForPropertyStore(property_store, PKEY_AppUserModel_ID,
@@ -722,7 +721,7 @@ void EnableHighDPISupport() {
   }
 }
 
-string16 String16FromGUID(REFGUID rguid) {
+std::wstring WStringFromGUID(REFGUID rguid) {
   // This constant counts the number of characters in the formatted string,
   // including the null termination character.
   constexpr int kGuidStringCharacters =
@@ -734,7 +733,7 @@ string16 String16FromGUID(REFGUID rguid) {
       rguid.Data2, rguid.Data3, rguid.Data4[0], rguid.Data4[1], rguid.Data4[2],
       rguid.Data4[3], rguid.Data4[4], rguid.Data4[5], rguid.Data4[6],
       rguid.Data4[7])));
-  return string16(as_u16cstr(guid_string), kGuidStringCharacters - 1);
+  return std::wstring(guid_string, kGuidStringCharacters - 1);
 }
 
 bool PinUser32(NativeLibraryLoadError* error) {

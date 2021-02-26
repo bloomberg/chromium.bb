@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
 
 #ifndef _IOMAPPER_INCLUDED
 #define _IOMAPPER_INCLUDED
@@ -186,7 +186,7 @@ protected:
     }
 };
 
-// Defaulf I/O resolver for OpenGL
+// Default I/O resolver for OpenGL
 struct TDefaultGlslIoResolver : public TDefaultIoResolverBase {
 public:
     typedef std::map<TString, int> TVarSlotMap;  // <resourceName, location/binding>
@@ -203,6 +203,7 @@ public:
     void endCollect(EShLanguage) override;
     void reserverStorageSlot(TVarEntryInfo& ent, TInfoSink& infoSink) override;
     void reserverResourceSlot(TVarEntryInfo& ent, TInfoSink& infoSink) override;
+    const TString& getAccessName(const TIntermSymbol*);
     // in/out symbol and uniform symbol are stored in the same resourceSlotMap, the storage key is used to identify each type of symbol.
     // We use stage and storage qualifier to construct a storage key. it can help us identify the same storage resource used in different stage.
     // if a resource is a program resource and we don't need know it usage stage, we can use same stage to build storage key.
@@ -298,4 +299,4 @@ public:
 
 #endif // _IOMAPPER_INCLUDED
 
-#endif //  GLSLANG_WEB
+#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

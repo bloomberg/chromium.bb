@@ -20,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -42,21 +43,21 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process/port_provider_mac.h"
+#endif  // OS_APPLE
+
 #if defined(OS_IOS)
 #include "base/test/test_listener_ios.h"
-#endif  // OS_IOS
-#endif  // OS_MACOSX
-
-#include "base/i18n/rtl.h"
-#if !defined(OS_IOS)
+#include "base/test/test_support_ios.h"
+#else
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #endif
@@ -65,11 +66,7 @@
 #include "base/test/test_support_android.h"
 #endif
 
-#if defined(OS_IOS)
-#include "base/test/test_support_ios.h"
-#endif
-
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/test/fontconfig_util_linux.h"
 #endif
 
@@ -224,14 +221,14 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
     EXPECT_FALSE(IsProcessBackgrounded());
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // Flakes are found on Mac OS 10.11. See https://crbug.com/931721#c7.
     EXPECT_FALSE(IsProcessBackgrounded());
 #endif
   }
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the calling process's task port, ignoring its argument.
   class CurrentProcessPortProvider : public PortProvider {
     mach_port_t TaskForPid(ProcessHandle process) const override {
@@ -243,7 +240,7 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
 #endif
 
   bool IsProcessBackgrounded() const {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     CurrentProcessPortProvider port_provider;
     return Process::Current().IsProcessBackgrounded(&port_provider);
 #else
@@ -385,14 +382,14 @@ void TestSuite::PreInitialize() {
   testing::GTEST_FLAG(catch_exceptions) = false;
 #endif
   EnableTerminationOnHeapCorruption();
-#if defined(OS_LINUX) && defined(USE_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_AURA)
   // When calling native char conversion functions (e.g wrctomb) we need to
   // have the locale set. In the absence of such a call the "C" locale is the
   // default. In the gtk code (below) gtk_init() implicitly sets a locale.
   setlocale(LC_ALL, "");
   // We still need number to string conversions to be locale insensitive.
   setlocale(LC_NUMERIC, "C");
-#endif  // defined(OS_LINUX) && defined(USE_AURA)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_AURA)
 
   // On Android, AtExitManager is created in
   // testing/android/native_test_wrapper.cc before main() is called.
@@ -439,11 +436,36 @@ int TestSuite::Run() {
   RunTestsFromIOSApp();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   mac::ScopedNSAutoreleasePool scoped_pool;
 #endif
 
-  Initialize();
+  {
+    // Some features are required to be checked as soon as possible. Thus, make
+    // sure that the FeatureList is initalized before Initialize() is called so
+    // that tests that rely on this call are able to check the enabled and
+    // disabled featured passed via a command line.
+    //
+    // PS: When use_x11 and use_ozone are both true, some test suites need to
+    // check if Ozone is being used during the Initialize() call below.
+    // However, the feature list isn't initialized until later, when running
+    // each test suite inside RUN_ALL_TESTS() below. Eagerly initialize a
+    // ScopedFeatureList here to ensure the correct value is set for
+    // feature::IsUsingOzonePlatform.
+    //
+    // TODO(https://crbug.com/1096425): Remove the comment about
+    // UseOzonePlatform when USE_X11 is removed.
+    std::string enabled =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnableFeatures);
+    std::string disabled =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kDisableFeatures);
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitFromCommandLine(enabled, disabled);
+    Initialize();
+  }
+
   std::string client_func =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTestChildProcess);
@@ -457,7 +479,7 @@ int TestSuite::Run() {
 
   int result = RUN_ALL_TESTS();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // This MUST happen before Shutdown() since Shutdown() tears down
   // objects (such as NotificationService::current()) that Cocoa
   // objects use to remove themselves as observers.
@@ -477,11 +499,6 @@ void TestSuite::DisableCheckForLeakedGlobals() {
 void TestSuite::DisableCheckForThreadAndProcessPriority() {
   DCHECK(!is_initialized_);
   check_for_thread_and_process_priority_ = false;
-}
-
-void TestSuite::DisableCheckForThreadPriorityAtTestEnd() {
-  DCHECK(!is_initialized_);
-  check_for_thread_priority_at_test_end_ = false;
 }
 
 void TestSuite::UnitTestAssertHandler(const char* file,
@@ -590,6 +607,16 @@ void TestSuite::Initialize() {
   }
 #endif
 
+#if defined(DCHECK_IS_CONFIGURABLE)
+  // Default the configurable DCHECK level to FATAL when running death tests'
+  // child process, so that they behave as expected.
+  // TODO(crbug.com/1057995): Remove this in favor of the codepath in
+  // FeatureList::SetInstance() when/if OnTestStart() TestEventListeners
+  // are fixed to be invoked in the child process as expected.
+  if (command_line->HasSwitch("gtest_internal_run_death_test"))
+    logging::LOGGING_DCHECK = logging::LOG_FATAL;
+#endif
+
 #if defined(OS_IOS)
   InitIOSTestMessageLoop();
 #endif  // OS_IOS
@@ -623,7 +650,7 @@ void TestSuite::Initialize() {
   // TODO(jshin): Should we set the locale via an OS X locale API here?
   i18n::SetICUDefaultLocale("en_US");
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   SetUpFontconfig();
 #endif
 
@@ -636,11 +663,6 @@ void TestSuite::Initialize() {
   if (check_for_leaked_globals_)
     listeners.Append(new CheckForLeakedGlobals);
   if (check_for_thread_and_process_priority_) {
-#if !defined(OS_ANDROID)
-    // TODO(https://crbug.com/931706): Check thread priority on Android.
-    listeners.Append(
-        new CheckThreadPriority(check_for_thread_priority_at_test_end_));
-#endif
 #if !defined(OS_IOS)
     listeners.Append(new CheckProcessPriority);
 #endif
@@ -650,7 +672,9 @@ void TestSuite::Initialize() {
 
   TestTimeouts::Initialize();
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   trace_to_file_.BeginTracingFromCommandLineOptions();
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
   debug::StartProfiling(GetProfileName());
 

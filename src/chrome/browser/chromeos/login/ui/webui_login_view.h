@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +37,7 @@ class Widget;
 namespace chromeos {
 
 class OobeUI;
+class LoginDisplayHostWebUI;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
@@ -60,7 +62,8 @@ class WebUILoginView : public views::View,
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit WebUILoginView(const WebViewSettings& settings);
+  WebUILoginView(const WebViewSettings& settings,
+                 base::WeakPtr<LoginDisplayHostWebUI> controller);
   ~WebUILoginView() override;
 
   // Initializes the webui login view.
@@ -129,11 +132,9 @@ class WebUILoginView : public views::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  views::WebView* web_view();
-
  private:
   // Map type for the accelerator-to-identifier map.
-  typedef std::map<ui::Accelerator, std::string> AccelMap;
+  typedef std::map<ui::Accelerator, ash::LoginAcceleratorAction> AccelMap;
 
   // ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override;
@@ -158,10 +159,6 @@ class WebUILoginView : public views::View,
   // Overridden from ash::SystemTrayFocusObserver.
   void OnFocusLeavingSystemTray(bool reverse) override;
 
-  // Attempts to move focus to system tray. Returns whether the attempt was
-  // successful (it might fail if the system tray is not visible).
-  bool MoveFocusToSystemTray(bool reverse);
-
   // Performs series of actions when login prompt is considered
   // to be ready and visible.
   // 1. Emits LoginPromptVisible signal if needed
@@ -173,8 +170,10 @@ class WebUILoginView : public views::View,
   // WebView configuration options.
   const WebViewSettings settings_;
 
+  base::WeakPtr<LoginDisplayHostWebUI> controller_;
+
   // WebView for rendering a webpage as a webui login.
-  std::unique_ptr<views::WebView> webui_login_;
+  views::WebView* web_view_ = nullptr;
 
   // Converts keyboard events on the WebContents to accelerators.
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;

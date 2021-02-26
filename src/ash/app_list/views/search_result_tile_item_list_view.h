@@ -28,13 +28,13 @@ class APP_LIST_EXPORT SearchResultTileItemListView
  public:
   SearchResultTileItemListView(views::Textfield* search_box,
                                AppListViewDelegate* view_delegate);
+  SearchResultTileItemListView(const SearchResultTileItemListView&) = delete;
+  SearchResultTileItemListView& operator=(const SearchResultTileItemListView&) =
+      delete;
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
   SearchResultTileItemView* GetResultViewAt(size_t index) override;
-  void NotifyFirstResultYIndex(int y_index) override;
-  int GetYSize() override;
-  SearchResultBaseView* GetFirstResultView() override;
 
   // Overridden from views::View:
   const char* GetClassName() const override;
@@ -76,13 +76,10 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   base::string16 recent_playstore_query_;
 
   base::OneShotTimer playstore_impression_timer_;
-  const bool is_play_store_app_search_enabled_;
 
   const bool is_app_reinstall_recommendation_enabled_;
 
   const size_t max_search_result_tiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };
 
 }  // namespace ash

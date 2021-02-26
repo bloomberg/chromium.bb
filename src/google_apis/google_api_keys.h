@@ -9,6 +9,8 @@
 // google_api_keys_unittest.cc.
 #include <string>
 
+#include "build/build_config.h"
+
 // These functions enable you to retrieve keys to use for Google APIs
 // such as Translate and Safe Browsing.
 //
@@ -24,11 +26,17 @@
 // https://developers.google.com/console/help/ and
 // https://developers.google.com/console/.
 //
-// The keys must either be provided using preprocessor variables (set
-// via e.g. ~/.gyp/include.gypi). Alternatively, in Chromium builds, they can be
-// overridden at runtime using environment variables of the same name.
-// Environment variable overrides will be ignored for official Google Chrome
-// builds.
+// The keys must either be provided using preprocessor variables (set via e.g.
+// GN args). Alternatively, they can be overridden at runtime using one of the
+// following methods (in priority order):
+// - Command line parameters (only for GOOGLE_CLIENT_ID_MAIN and
+//   GOOGLE_CLIENT_SECRET_MAIN values). The command-line parameters are
+//   --oauth2-client-id and --oauth2-client-secret.
+// - Config file entry of the same name. Path to a config file is set via the
+//   --gaia-config command line parameter. See google_apis/gaia/gaia_config.h
+//   for syntax reference.
+// - Environment variables of the same name. Environment variable overrides will
+//   be ignored for official Google Chrome builds.
 //
 // The names of the preprocessor variables (or environment variables
 // to override them at runtime in Chromium builds) are as follows:
@@ -44,11 +52,6 @@
 // - GOOGLE_CLIENT_SECRET_[client name]
 //   (e.g. GOOGLE_CLIENT_SECRET_CLOUD_PRINT, i.e. one for each item in
 //   the OAuth2Client enumeration below)
-//
-// The GOOGLE_CLIENT_ID_MAIN and GOOGLE_CLIENT_SECRET_MAIN values can
-// also be set via the command line (this overrides any other
-// setting).  The command-line parameters are --oauth2-client-id and
-// --oauth2-client-secret.
 //
 // If some of the parameters mentioned above are not provided,
 // Chromium will still build and run, but services that require them
@@ -79,9 +82,17 @@ std::string GetRemotingAPIKey();
 // Retrieves the Sharing API Key.
 std::string GetSharingAPIKey();
 
-#if defined(OS_IOS)
+// Retrieves the Speech On-Device API (SODA) API Key.
+std::string GetSodaAPIKey();
+
+// Retrieves the DevTools Survey API Key. Note there is no public API to replace
+// this functionality.
+std::string GetDevtoolsSurveysAPIKey();
+
+#if defined(OS_IOS) || defined(OS_FUCHSIA)
 // Sets the API key. This should be called as early as possible before this
-// API key is even accessed.
+// API key is even accessed. It must be called before GetAPIKey.
+// TODO(https://crbug.com/1166007): Enforce this is called before GetAPIKey.
 void SetAPIKey(const std::string& api_key);
 #endif
 

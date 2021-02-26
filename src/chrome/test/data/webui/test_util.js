@@ -4,8 +4,11 @@
 
 // clang-format off
 // #import {afterNextRender, beforeNextRender, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {assertEquals} from './chai_assert.js';
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 // clang-format on
+
+// Do not depend on the Chai Assertion Library in this file. Some consumers of
+// the following test utils are not configured to use Chai.
 
 cr.define('test_util', function() {
   /**
@@ -25,8 +28,8 @@ cr.define('test_util', function() {
     return isDone() ? Promise.resolve() : new Promise(function(resolve) {
       new MutationObserver(function(mutations, observer) {
         for (const mutation of mutations) {
-          assertEquals('attributes', mutation.type);
-          if (mutation.attributeName === attributeName && isDone()) {
+          if (mutation.type === 'attributes' &&
+              mutation.attributeName === attributeName && isDone()) {
             observer.disconnect();
             resolve();
             return;
@@ -43,7 +46,7 @@ cr.define('test_util', function() {
   /**
    * Converts an event occurrence to a promise.
    * @param {string} eventType
-   * @param {!HTMLElement} target
+   * @param {!Element|!EventTarget|!Window} target
    * @return {!Promise} A promise firing once the event occurs.
    */
   /* #export */ function eventToPromise(eventType, target) {
@@ -59,8 +62,8 @@ cr.define('test_util', function() {
    * Data-binds two Polymer properties using the property-changed events and
    * set/notifyPath API. Useful for testing components which would normally be
    * used together.
-   * @param {!HTMLElement} el1
-   * @param {!HTMLElement} el2
+   * @param {!Element} el1
+   * @param {!Element} el2
    * @param {string} property
    */
   /* #export */ function fakeDataBind(el1, el2, property) {

@@ -12,8 +12,6 @@ https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/a/avahi/li
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/a/avahi/libavahi-common3_0.7-4+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/b/bluez/libbluetooth3_5.50-1+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/b/bluez/libbluetooth-dev_5.50-1+b1_mips64el.deb
-https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/b/brltty/libbrlapi0.7_6.0+dfsg-4+b1_mips64el.deb
-https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/b/brltty/libbrlapi-dev_6.0+dfsg-4+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/b/brotli/libbrotli1_1.0.7-5+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/c/cairo/libcairo2_1.16.0-4_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/c/cairo/libcairo2-dev_1.16.0-4_mips64el.deb
@@ -252,6 +250,10 @@ https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/m/mesa/mes
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/m/minizip/libminizip1_1.1-8+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/m/minizip/libminizip-dev_1.1-8+b1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/m/mtdev/libmtdev1_1.1.5-1.1_mips64el.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/ncurses/libncurses6_6.1+20191019-1_mips64el.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/ncurses/libncurses-dev_6.1+20191019-1_mips64el.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/ncurses/libncursesw6_6.1+20191019-1_mips64el.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/ncurses/libtinfo6_6.1+20191019-1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/nettle/libhogweed5_3.5.1+really3.5.1-2_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/nettle/libnettle7_3.5.1+really3.5.1-2_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/n/nspr/libnspr4_4.23-1_mips64el.deb
@@ -320,8 +322,6 @@ https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/libwayland-egl1_1.17.0-1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/libwayland-server0_1.17.0-1_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland-protocols/wayland-protocols_1.18-1_all.deb
-https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xcb-proto/python-xcbgen_1.13-1_all.deb
-https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xcb-proto/xcb-proto_1.13-1_all.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xft/libxft2_2.3.2-2_mips64el.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xorgproto/x11proto-composite-dev_2018.4-4_all.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xorgproto/x11proto-damage-dev_2018.4-4_all.deb

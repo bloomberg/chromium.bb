@@ -11,13 +11,16 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.ValueCallback;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
@@ -28,6 +31,7 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+import org.chromium.weblayer_private.media.MediaRouteDialogFragmentImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +40,7 @@ import java.util.List;
  * Implementation of {@link IBrowser}.
  */
 @JNINamespace("weblayer")
-public class BrowserImpl extends IBrowser.Stub {
+public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChangeListener {
     private final ObserverList<VisibleSecurityStateObserver> mVisibleSecurityStateObservers =
             new ObserverList<VisibleSecurityStateObserver>();
 
@@ -56,6 +60,10 @@ public class BrowserImpl extends IBrowser.Stub {
     private final ProfileImpl mProfile;
     private Context mEmbedderActivityContext;
     private BrowserViewController mViewController;
+    // Used to save UI state between destroyAttachmentState() and createAttachmentState() calls so
+    // it can be preserved during device rotations or other events that cause the Fragment to be
+    // recreated.
+    private BrowserViewController.State mViewControllerState;
     private FragmentWindowAndroid mWindowAndroid;
     private IBrowserClient mClient;
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
@@ -63,10 +71,20 @@ public class BrowserImpl extends IBrowser.Stub {
     private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
     private boolean mFragmentResumed;
+
+    // Tracks whether the fragment is in the middle of a configuration change and was attached when
+    // the configuration change started. This is set to true in onFragmentStop() and false when
+    // isViewAttachedToWindow() is true in either onViewAttachedToWindow() or onFragmentStarted().
+    // It's important to only set this to false when isViewAttachedToWindow() is true, as otherwise
+    // the WebContents may be prematurely hidden.
+    private boolean mInConfigurationChangeAndWasAttached;
+
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
     private Float mFontScale;
+    private boolean mViewAttachedToWindow;
+    private boolean mNotifyOnBrowserControlsOffsetsChanged;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -76,6 +94,17 @@ public class BrowserImpl extends IBrowser.Stub {
         byte[] mCryptoKey;
         byte[] mMinimalPersistenceState;
     };
+
+    /**
+     * @param windowAndroid a window that was created by a {@link BrowserFragmentImpl}. It's not
+     *         valid to call this method with other {@link WindowAndroid} instances. Typically this
+     *         should be the {@link WindowAndroid} of a {@link WebContents}.
+     * @return the associated BrowserImpl instance.
+     */
+    public static BrowserImpl fromWindowAndroid(WindowAndroid windowAndroid) {
+        assert windowAndroid instanceof FragmentWindowAndroid;
+        return ((FragmentWindowAndroid) windowAndroid).getBrowser();
+    }
 
     /**
      * Allows observing of visible security state of the active tab.
@@ -106,6 +135,8 @@ public class BrowserImpl extends IBrowser.Stub {
                 ? savedInstanceState.getByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY)
                 : null;
 
+        windowAndroid.restoreInstanceState(savedInstanceState);
+
         createAttachmentState(embedderAppContext, windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
         mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
@@ -115,13 +146,13 @@ public class BrowserImpl extends IBrowser.Stub {
         return mWindowAndroid;
     }
 
-    public ViewGroup getViewAndroidDelegateContainerView() {
+    public ContentView getViewAndroidDelegateContainerView() {
         if (mViewController == null) return null;
         return mViewController.getContentView();
     }
 
-    public ViewGroup getAutofillView() {
-        return getViewController().getAutofillView();
+    public UrlBarControllerImpl getUrlBarControllerImpl() {
+        return mUrlBarController;
     }
 
     // Called from constructor and onFragmentAttached() to configure state needed when attached.
@@ -132,7 +163,8 @@ public class BrowserImpl extends IBrowser.Stub {
         assert mEmbedderActivityContext == null;
         mWindowAndroid = windowAndroid;
         mEmbedderActivityContext = embedderAppContext;
-        mViewController = new BrowserViewController(windowAndroid);
+        mViewController = new BrowserViewController(
+                windowAndroid, this, mViewControllerState, mInConfigurationChangeAndWasAttached);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
@@ -160,6 +192,10 @@ public class BrowserImpl extends IBrowser.Stub {
             outState.putByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY,
                     BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser));
         }
+
+        if (mWindowAndroid != null) {
+            mWindowAndroid.saveInstanceState(outState);
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -182,9 +218,32 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @Override
+    public void setTopViewAndScrollingBehavior(IObjectWrapper viewWrapper, int minHeight,
+            boolean onlyExpandControlsAtPageTop, boolean animate) {
+        StrictModeWorkaround.apply();
+        if (minHeight < 0) {
+            throw new IllegalArgumentException("Top view min height must be non-negative.");
+        }
+
+        getViewController().setTopControlsAnimationsEnabled(animate);
+        getViewController().setTopView(ObjectWrapper.unwrap(viewWrapper, View.class));
+        getViewController().setTopControlsMinHeight(minHeight);
+        getViewController().setOnlyExpandTopControlsAtPageTop(onlyExpandControlsAtPageTop);
+    }
+
+    @Override
     public void setBottomView(IObjectWrapper viewWrapper) {
         StrictModeWorkaround.apply();
         getViewController().setBottomView(ObjectWrapper.unwrap(viewWrapper, View.class));
+    }
+
+    @Override
+    public TabImpl createTab() {
+        TabImpl tab = new TabImpl(this, mProfile, mWindowAndroid);
+        // This needs |alwaysAdd| set to true as the Tab is created with the Browser already set to
+        // this.
+        addTab(tab, /* alwaysAdd */ true);
+        return tab;
     }
 
     @Override
@@ -194,11 +253,19 @@ public class BrowserImpl extends IBrowser.Stub {
                 (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
     }
 
+    // Only call this if it's guaranteed that Browser is attached to an activity.
+    @NonNull
     public BrowserViewController getViewController() {
         if (mViewController == null) {
             throw new RuntimeException("Currently Tab requires Activity context, so "
                     + "it exists only while BrowserFragment is attached to an Activity");
         }
+        return mViewController;
+    }
+
+    // Can be null in the middle of destroy, or if fragment is detached from activity.
+    @Nullable
+    public BrowserViewController getPossiblyNullViewController() {
         return mViewController;
     }
 
@@ -216,6 +283,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @Override
+    @NonNull
     public ProfileImpl getProfile() {
         StrictModeWorkaround.apply();
         return mProfile;
@@ -224,14 +292,17 @@ public class BrowserImpl extends IBrowser.Stub {
     @Override
     public void addTab(ITab iTab) {
         StrictModeWorkaround.apply();
-        TabImpl tab = (TabImpl) iTab;
-        if (tab.getBrowser() == this) return;
+        addTab((TabImpl) iTab, /* alwaysAdd */ false);
+    }
+
+    private void addTab(TabImpl tab, boolean alwaysAdd) {
+        if (!alwaysAdd && tab.getBrowser() == this) return;
         BrowserImplJni.get().addTab(mNativeBrowser, tab.getNativeTab());
     }
 
     @CalledByNative
-    private void createTabForSessionRestore(long nativeTab) {
-        new TabImpl(mProfile, mWindowAndroid, nativeTab);
+    private void createJavaTabForNativeTab(long nativeTab) {
+        new TabImpl(this, mProfile, mWindowAndroid, nativeTab);
     }
 
     private void checkPreferences() {
@@ -298,36 +369,23 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @CalledByNative
-    private void onTabAdded(TabImpl tab) {
+    private void onTabAdded(TabImpl tab) throws RemoteException {
         tab.attachToBrowser(this);
-        try {
-            if (mClient != null) mClient.onTabAdded(tab);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
+        if (mClient != null) mClient.onTabAdded(tab);
+    }
+
+    @CalledByNative
+    private void onActiveTabChanged(TabImpl tab) throws RemoteException {
+        if (mViewController != null) mViewController.setActiveTab(tab);
+        if (!mInDestroy && mClient != null) {
+            mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
         }
     }
 
     @CalledByNative
-    private void onActiveTabChanged(TabImpl tab) {
-        mViewController.setActiveTab(tab);
+    private void onTabRemoved(TabImpl tab) throws RemoteException {
         if (mInDestroy) return;
-        try {
-            if (mClient != null) {
-                mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
-            }
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    @CalledByNative
-    private void onTabRemoved(TabImpl tab) {
-        if (mInDestroy) return;
-        try {
-            if (mClient != null) mClient.onTabRemoved(tab.getId());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+        if (mClient != null) mClient.onTabRemoved(tab.getId());
         // This doesn't reset state on TabImpl as |browser| is either about to be
         // destroyed, or switching to a different fragment.
     }
@@ -354,7 +412,7 @@ public class BrowserImpl extends IBrowser.Stub {
         return true;
     }
 
-    public TabImpl getActiveTab() {
+    public @Nullable TabImpl getActiveTab() {
         return BrowserImplJni.get().getActiveTab(mNativeBrowser);
     }
 
@@ -388,10 +446,8 @@ public class BrowserImpl extends IBrowser.Stub {
             updateAllTabsAndSetActive();
         } else if (persistenceInfo.mPersistenceId == null
                 || persistenceInfo.mPersistenceId.isEmpty()) {
-            TabImpl tab = new TabImpl(mProfile, mWindowAndroid);
-            addTab(tab);
-            boolean set_active_result = setActiveTab(tab);
-            assert set_active_result;
+            boolean setActiveResult = setActiveTab(createTab());
+            assert setActiveResult;
         } // else case is session restore, which will asynchronously create tabs.
     }
 
@@ -403,8 +459,8 @@ public class BrowserImpl extends IBrowser.Stub {
         destroyTabImpl((TabImpl) iTab);
     }
 
+    @CalledByNative
     private void destroyTabImpl(TabImpl tab) {
-        BrowserImplJni.get().removeTab(mNativeBrowser, tab.getNativeTab());
         tab.destroy();
     }
 
@@ -412,6 +468,31 @@ public class BrowserImpl extends IBrowser.Stub {
     public IUrlBarController getUrlBarController() {
         StrictModeWorkaround.apply();
         return mUrlBarController;
+    }
+
+    @Override
+    public void setBrowserControlsOffsetsEnabled(boolean enable) {
+        mNotifyOnBrowserControlsOffsetsChanged = enable;
+    }
+
+    public void onBrowserControlsOffsetsChanged(TabImpl tab, boolean isTop, int controlsOffset) {
+        if (mNotifyOnBrowserControlsOffsetsChanged && tab == getActiveTab()) {
+            try {
+                mClient.onBrowserControlsOffsetsChanged(isTop, controlsOffset);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isRestoringPreviousState() {
+        return BrowserImplJni.get().isRestoringPreviousState(mNativeBrowser);
+    }
+
+    @CalledByNative
+    private void onRestoreCompleted() throws RemoteException {
+        if (WebLayerFactoryImpl.getClientMajorVersion() >= 87) mClient.onRestoreCompleted();
     }
 
     public View getFragmentView() {
@@ -439,12 +520,16 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void onFragmentStart() {
         mFragmentStarted = true;
+        if (mViewAttachedToWindow) {
+            mInConfigurationChangeAndWasAttached = false;
+        }
         BrowserImplJni.get().onFragmentStart(mNativeBrowser);
         updateAllTabs();
         checkPreferences();
     }
 
-    public void onFragmentStop() {
+    public void onFragmentStop(boolean forConfigurationChange) {
+        mInConfigurationChangeAndWasAttached = forConfigurationChange;
         mFragmentStarted = false;
         updateAllTabs();
     }
@@ -452,10 +537,12 @@ public class BrowserImpl extends IBrowser.Stub {
     public void onFragmentResume() {
         mFragmentResumed = true;
         WebLayerAccessibilityUtil.get().onBrowserResumed();
+        BrowserImplJni.get().onFragmentResume(mNativeBrowser);
     }
 
     public void onFragmentPause() {
         mFragmentResumed = false;
+        BrowserImplJni.get().onFragmentPause(mNativeBrowser);
     }
 
     public boolean isStarted() {
@@ -466,14 +553,57 @@ public class BrowserImpl extends IBrowser.Stub {
         return mFragmentResumed;
     }
 
+    public boolean isInConfigurationChangeAndWasAttached() {
+        return mInConfigurationChangeAndWasAttached;
+    }
+
+    public boolean isViewAttachedToWindow() {
+        return mViewAttachedToWindow;
+    }
+
+    @Override
+    public void onViewAttachedToWindow(View v) {
+        mViewAttachedToWindow = true;
+        if (mFragmentStarted) {
+            mInConfigurationChangeAndWasAttached = false;
+        }
+        updateAllTabsViewAttachedState();
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        // Note this separate state is needed because v.isAttachedToWindow()
+        // still returns true inside this call.
+        mViewAttachedToWindow = false;
+        updateAllTabsViewAttachedState();
+    }
+
+    public MediaRouteDialogFragmentImpl createMediaRouteDialogFragment() {
+        try {
+            return MediaRouteDialogFragmentImpl.fromRemoteFragment(
+                    mClient.createMediaRouteDialogFragment());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    private void updateAllTabsViewAttachedState() {
+        for (Object tab : getTabs()) {
+            ((TabImpl) tab).updateViewAttachedStateFromBrowser();
+        }
+    }
+
     private void destroyAttachmentState() {
         if (mLocaleReceiver != null) {
             mLocaleReceiver.destroy();
             mLocaleReceiver = null;
         }
         if (mViewController != null) {
+            mViewControllerState = mViewController.getState();
             mViewController.destroy();
             mViewController = null;
+            mViewAttachedToWindow = false;
+            updateAllTabsViewAttachedState();
         }
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
@@ -502,7 +632,6 @@ public class BrowserImpl extends IBrowser.Stub {
         long createBrowser(long profile, BrowserImpl caller);
         void deleteBrowser(long browser);
         void addTab(long nativeBrowserImpl, long nativeTab);
-        void removeTab(long nativeBrowserImpl, long nativeTab);
         TabImpl[] getTabs(long nativeBrowserImpl);
         void setActiveTab(long nativeBrowserImpl, long nativeTab);
         TabImpl getActiveTab(long nativeBrowserImpl);
@@ -515,5 +644,8 @@ public class BrowserImpl extends IBrowser.Stub {
                 byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
         void webPreferencesChanged(long nativeBrowserImpl);
         void onFragmentStart(long nativeBrowserImpl);
+        void onFragmentResume(long nativeBrowserImpl);
+        void onFragmentPause(long nativeBrowserImpl);
+        boolean isRestoringPreviousState(long nativeBrowserImpl);
     }
 }

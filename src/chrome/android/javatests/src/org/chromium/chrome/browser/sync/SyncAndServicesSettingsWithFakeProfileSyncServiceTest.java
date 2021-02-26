@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.support.test.filters.LargeTest;
-
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -45,7 +44,7 @@ public class SyncAndServicesSettingsWithFakeProfileSyncServiceTest {
     public void testTrustedVaultKeyRequiredShowsSyncErrorCard() throws Exception {
         FakeProfileSyncService fakeProfileSyncService =
                 (FakeProfileSyncService) mSyncTestRule.getProfileSyncService();
-        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncActive();
         fakeProfileSyncService.setEngineInitialized(true);
         fakeProfileSyncService.setTrustedVaultKeyRequiredForPreferredDataTypes(true);

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
@@ -51,12 +52,12 @@ VideoRtpStream::~VideoRtpStream() {}
 void VideoRtpStream::InsertVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK(client_);
-  base::TimeTicks reference_time;
-  if (!video_frame->metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::REFERENCE_TIME, &reference_time)) {
+  if (!video_frame->metadata()->reference_time.has_value()) {
     client_->OnError("Missing REFERENCE_TIME.");
     return;
   }
+
+  base::TimeTicks reference_time = *video_frame->metadata()->reference_time;
   DCHECK(!reference_time.is_null());
   if (expecting_a_refresh_frame_) {
     // There is uncertainty as to whether the video frame was in response to a
@@ -77,6 +78,13 @@ void VideoRtpStream::InsertVideoFrame(
     client_->OnError("Incompatible video frame format.");
     return;
   }
+
+  // Used by chrome/browser/media/cast_mirroring_performance_browsertest.cc
+  TRACE_EVENT_INSTANT2("cast_perf_test", "ConsumeVideoFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
+                       (reference_time - base::TimeTicks()).InMicroseconds(),
+                       "time_delta", video_frame->timestamp().InMicroseconds());
+
   video_sender_->InsertRawVideoFrame(std::move(video_frame), reference_time);
 }
 

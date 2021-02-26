@@ -585,20 +585,19 @@ static bool ShouldAllowExternalLoad(const KURL& url) {
   // content. If we had more context, we could potentially allow the parser to
   // load a DTD. As things stand, we take the conservative route and allow
   // same-origin requests only.
-  if (!XMLDocumentParserScope::current_document_->GetSecurityOrigin()
-           ->CanRequest(url)) {
+  auto* current_context =
+      XMLDocumentParserScope::current_document_->GetExecutionContext();
+  if (!current_context->GetSecurityOrigin()->CanRequest(url)) {
     // FIXME: This is copy/pasted. We should probably build console logging into
     // canRequest().
     if (!url.IsNull()) {
-      String message =
-          "Unsafe attempt to load URL " + url.ElidedString() +
-          " from frame with URL " +
-          XMLDocumentParserScope::current_document_->Url().ElidedString() +
-          ". Domains, protocols and ports must match.\n";
-      XMLDocumentParserScope::current_document_->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kSecurity,
-              mojom::ConsoleMessageLevel::kError, message));
+      String message = "Unsafe attempt to load URL " + url.ElidedString() +
+                       " from frame with URL " +
+                       current_context->Url().ElidedString() +
+                       ". Domains, protocols and ports must match.\n";
+      current_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kSecurity,
+          mojom::blink::ConsoleMessageLevel::kError, message));
     }
     return false;
   }
@@ -622,7 +621,8 @@ static void* OpenFunc(const char* uri) {
     Document* document = XMLDocumentParserScope::current_document_;
     XMLDocumentParserScope scope(nullptr);
     // FIXME: We should restore the original global error handler as well.
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(
+        document->GetExecutionContext()->GetCurrentWorld());
     options.initiator_info.name = fetch_initiator_type_names::kXml;
     FetchParameters params(ResourceRequest(url), options);
     params.MutableResourceRequest().SetMode(
@@ -756,6 +756,7 @@ XMLDocumentParser::XMLDocumentParser(Document& document,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&document),
+      document_(&document),
       script_runner_(frame_view
                          ? MakeGarbageCollected<XMLParserScriptRunner>(this)
                          : nullptr),  // Don't execute scripts for
@@ -783,6 +784,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&fragment->GetDocument()),
+      document_(&fragment->GetDocument()),
       script_runner_(nullptr),  // Don't execute scripts for document fragments.
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(true) {
@@ -827,11 +829,12 @@ XMLParserContext::~XMLParserContext() {
 
 XMLDocumentParser::~XMLDocumentParser() = default;
 
-void XMLDocumentParser::Trace(Visitor* visitor) {
+void XMLDocumentParser::Trace(Visitor* visitor) const {
   visitor->Trace(current_node_);
   visitor->Trace(current_node_stack_);
   visitor->Trace(leaf_text_node_);
   visitor->Trace(xml_errors_);
+  visitor->Trace(document_);
   visitor->Trace(script_runner_);
   ScriptableDocumentParser::Trace(visitor);
   XMLParserScriptRunnerHost::Trace(visitor);
@@ -1011,8 +1014,8 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
     q_name = QualifiedName(g_null_atom, prefix + ":" + local_name, g_null_atom);
   Element* new_element = current_node_->GetDocument().CreateElement(
       q_name,
-      parsing_fragment_ ? CreateElementFlags::ByFragmentParser()
-                        : CreateElementFlags::ByParser(),
+      parsing_fragment_ ? CreateElementFlags::ByFragmentParser(document_)
+                        : CreateElementFlags::ByParser(document_),
       is);
   if (!new_element) {
     StopParsing();

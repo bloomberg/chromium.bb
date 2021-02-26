@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -202,13 +201,18 @@ class FileManagerPrivateGetProvidersFunction : public ExtensionFunction {
   FileManagerPrivateGetProvidersFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProviders",
                              FILEMANAGERPRIVATE_GETPROVIDERS)
+
+  FileManagerPrivateGetProvidersFunction(
+      const FileManagerPrivateGetProvidersFunction&) = delete;
+  FileManagerPrivateGetProvidersFunction& operator=(
+      const FileManagerPrivateGetProvidersFunction&) = delete;
+
  protected:
   ~FileManagerPrivateGetProvidersFunction() override = default;
 
  private:
   ResponseAction Run() override;
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetProvidersFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.addProvidedFileSystem method.
@@ -218,13 +222,18 @@ class FileManagerPrivateAddProvidedFileSystemFunction
   FileManagerPrivateAddProvidedFileSystemFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.addProvidedFileSystem",
                              FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM)
+
+  FileManagerPrivateAddProvidedFileSystemFunction(
+      const FileManagerPrivateAddProvidedFileSystemFunction&) = delete;
+  FileManagerPrivateAddProvidedFileSystemFunction& operator=(
+      const FileManagerPrivateAddProvidedFileSystemFunction&) = delete;
+
  protected:
   ~FileManagerPrivateAddProvidedFileSystemFunction() override = default;
 
  private:
   ResponseAction Run() override;
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateAddProvidedFileSystemFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.configureVolume method.
@@ -234,6 +243,12 @@ class FileManagerPrivateConfigureVolumeFunction
   FileManagerPrivateConfigureVolumeFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.configureVolume",
                              FILEMANAGERPRIVATE_CONFIGUREVOLUME)
+
+  FileManagerPrivateConfigureVolumeFunction(
+      const FileManagerPrivateConfigureVolumeFunction&) = delete;
+  FileManagerPrivateConfigureVolumeFunction& operator=(
+      const FileManagerPrivateConfigureVolumeFunction&) = delete;
+
  protected:
   ~FileManagerPrivateConfigureVolumeFunction() override = default;
 
@@ -242,7 +257,6 @@ class FileManagerPrivateConfigureVolumeFunction
   void OnCompleted(base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateConfigureVolumeFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.mountCrostini method.
@@ -253,16 +267,16 @@ class FileManagerPrivateMountCrostiniFunction : public LoggedExtensionFunction {
                              FILEMANAGERPRIVATE_MOUNTCROSTINI)
   FileManagerPrivateMountCrostiniFunction();
 
+  FileManagerPrivateMountCrostiniFunction(
+      const FileManagerPrivateMountCrostiniFunction&) = delete;
+  FileManagerPrivateMountCrostiniFunction& operator=(
+      const FileManagerPrivateMountCrostiniFunction&) = delete;
+
  protected:
   ~FileManagerPrivateMountCrostiniFunction() override;
 
   ResponseAction Run() override;
   void RestartCallback(crostini::CrostiniResult);
-
- private:
-  std::string source_path_;
-  std::string mount_label_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateMountCrostiniFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.importCrostiniImage method.
@@ -274,6 +288,11 @@ class FileManagerPrivateInternalImportCrostiniImageFunction
                              FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE)
   FileManagerPrivateInternalImportCrostiniImageFunction();
 
+  FileManagerPrivateInternalImportCrostiniImageFunction(
+      const FileManagerPrivateInternalImportCrostiniImageFunction&) = delete;
+  FileManagerPrivateInternalImportCrostiniImageFunction& operator=(
+      const FileManagerPrivateInternalImportCrostiniImageFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalImportCrostiniImageFunction() override;
 
@@ -281,8 +300,6 @@ class FileManagerPrivateInternalImportCrostiniImageFunction
   ResponseAction Run() override;
 
   std::string image_path_;
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalImportCrostiniImageFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.sharePathsWithCrostini
@@ -295,6 +312,11 @@ class FileManagerPrivateInternalSharePathsWithCrostiniFunction
       FILEMANAGERPRIVATEINTERNAL_SHAREPATHSWITHCROSTINI)
   FileManagerPrivateInternalSharePathsWithCrostiniFunction() = default;
 
+  FileManagerPrivateInternalSharePathsWithCrostiniFunction(
+      const FileManagerPrivateInternalSharePathsWithCrostiniFunction&) = delete;
+  FileManagerPrivateInternalSharePathsWithCrostiniFunction& operator=(
+      const FileManagerPrivateInternalSharePathsWithCrostiniFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalSharePathsWithCrostiniFunction() override =
       default;
@@ -302,8 +324,6 @@ class FileManagerPrivateInternalSharePathsWithCrostiniFunction
  private:
   ResponseAction Run() override;
   void SharePathsCallback(bool success, const std::string& failure_reason);
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalSharePathsWithCrostiniFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.unsharePathWithCrostini
@@ -316,6 +336,13 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
       FILEMANAGERPRIVATEINTERNAL_UNSHAREPATHWITHCROSTINI)
   FileManagerPrivateInternalUnsharePathWithCrostiniFunction() = default;
 
+  FileManagerPrivateInternalUnsharePathWithCrostiniFunction(
+      const FileManagerPrivateInternalUnsharePathWithCrostiniFunction&) =
+      delete;
+  FileManagerPrivateInternalUnsharePathWithCrostiniFunction& operator=(
+      const FileManagerPrivateInternalUnsharePathWithCrostiniFunction&) =
+      delete;
+
  protected:
   ~FileManagerPrivateInternalUnsharePathWithCrostiniFunction() override =
       default;
@@ -323,8 +350,6 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
  private:
   ResponseAction Run() override;
   void UnsharePathCallback(bool success, const std::string& failure_reason);
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalUnsharePathWithCrostiniFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getCrostiniSharedPaths
@@ -337,14 +362,17 @@ class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
       FILEMANAGERPRIVATEINTERNAL_GETCROSTINISHAREDPATHS)
   FileManagerPrivateInternalGetCrostiniSharedPathsFunction() = default;
 
+  FileManagerPrivateInternalGetCrostiniSharedPathsFunction(
+      const FileManagerPrivateInternalGetCrostiniSharedPathsFunction&) = delete;
+  FileManagerPrivateInternalGetCrostiniSharedPathsFunction operator=(
+      const FileManagerPrivateInternalGetCrostiniSharedPathsFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalGetCrostiniSharedPathsFunction() override =
       default;
 
  private:
   ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalGetCrostiniSharedPathsFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getLinuxPackageInfo method.
@@ -356,6 +384,11 @@ class FileManagerPrivateInternalGetLinuxPackageInfoFunction
                              FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO)
   FileManagerPrivateInternalGetLinuxPackageInfoFunction() = default;
 
+  FileManagerPrivateInternalGetLinuxPackageInfoFunction(
+      const FileManagerPrivateInternalGetLinuxPackageInfoFunction&) = delete;
+  FileManagerPrivateInternalGetLinuxPackageInfoFunction operator=(
+      const FileManagerPrivateInternalGetLinuxPackageInfoFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalGetLinuxPackageInfoFunction() override = default;
 
@@ -363,8 +396,6 @@ class FileManagerPrivateInternalGetLinuxPackageInfoFunction
   ResponseAction Run() override;
   void OnGetLinuxPackageInfo(
       const crostini::LinuxPackageInfo& linux_package_info);
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalGetLinuxPackageInfoFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.installLinuxPackage method.
@@ -376,14 +407,17 @@ class FileManagerPrivateInternalInstallLinuxPackageFunction
                              FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE)
   FileManagerPrivateInternalInstallLinuxPackageFunction() = default;
 
+  FileManagerPrivateInternalInstallLinuxPackageFunction(
+      const FileManagerPrivateInternalInstallLinuxPackageFunction&) = delete;
+  FileManagerPrivateInternalInstallLinuxPackageFunction operator=(
+      const FileManagerPrivateInternalInstallLinuxPackageFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalInstallLinuxPackageFunction() override = default;
 
  private:
   ResponseAction Run() override;
   void OnInstallLinuxPackage(crostini::CrostiniResult result);
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalInstallLinuxPackageFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getCustomActions method.
@@ -393,6 +427,12 @@ class FileManagerPrivateInternalGetCustomActionsFunction
   FileManagerPrivateInternalGetCustomActionsFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getCustomActions",
                              FILEMANAGERPRIVATEINTERNAL_GETCUSTOMACTIONS)
+
+  FileManagerPrivateInternalGetCustomActionsFunction(
+      const FileManagerPrivateInternalGetCustomActionsFunction&) = delete;
+  FileManagerPrivateInternalGetCustomActionsFunction operator=(
+      const FileManagerPrivateInternalGetCustomActionsFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalGetCustomActionsFunction() override = default;
 
@@ -402,7 +442,6 @@ class FileManagerPrivateInternalGetCustomActionsFunction
                    base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalGetCustomActionsFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.executeCustomAction method.
@@ -412,6 +451,12 @@ class FileManagerPrivateInternalExecuteCustomActionFunction
   FileManagerPrivateInternalExecuteCustomActionFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeCustomAction",
                              FILEMANAGERPRIVATEINTERNAL_EXECUTECUSTOMACTION)
+
+  FileManagerPrivateInternalExecuteCustomActionFunction(
+      const FileManagerPrivateInternalExecuteCustomActionFunction&) = delete;
+  FileManagerPrivateInternalExecuteCustomActionFunction operator=(
+      const FileManagerPrivateInternalExecuteCustomActionFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalExecuteCustomActionFunction() override = default;
 
@@ -420,8 +465,6 @@ class FileManagerPrivateInternalExecuteCustomActionFunction
   void OnCompleted(base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalExecuteCustomActionFunction);
 };
 
 // Implements the chrome.fileManagerPrivateInternal.getRecentFiles method.
@@ -431,6 +474,12 @@ class FileManagerPrivateInternalGetRecentFilesFunction
   FileManagerPrivateInternalGetRecentFilesFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getRecentFiles",
                              FILEMANAGERPRIVATE_GETRECENTFILES)
+
+  FileManagerPrivateInternalGetRecentFilesFunction(
+      const FileManagerPrivateInternalGetRecentFilesFunction&) = delete;
+  FileManagerPrivateInternalGetRecentFilesFunction& operator=(
+      FileManagerPrivateInternalGetRecentFilesFunction&) = delete;
+
  protected:
   ~FileManagerPrivateInternalGetRecentFilesFunction() override = default;
 
@@ -444,7 +493,6 @@ class FileManagerPrivateInternalGetRecentFilesFunction
           entry_definition_list);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalGetRecentFilesFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.detectCharacterEncoding method.

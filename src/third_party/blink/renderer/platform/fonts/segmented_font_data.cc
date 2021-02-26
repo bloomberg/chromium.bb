@@ -86,4 +86,13 @@ bool SegmentedFontData::ShouldSkipDrawing() const {
   return false;
 }
 
+bool SegmentedFontData::HasAdvanceOverride() const {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
+    if ((*it)->FontData()->HasAdvanceOverride())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace blink

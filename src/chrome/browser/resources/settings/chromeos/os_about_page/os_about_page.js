@@ -11,6 +11,7 @@ Polymer({
   is: 'os-settings-about-page',
 
   behaviors: [
+    DeepLinkingBehavior,
     WebUIListenerBehavior,
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
@@ -25,6 +26,7 @@ Polymer({
         message: '',
         progress: 0,
         rollback: false,
+        powerwash: false,
         status: UpdateStatus.DISABLED
       },
     },
@@ -53,6 +55,12 @@ Polymer({
     /** @private {!BrowserChannel} */
     targetChannel_: String,
 
+    /** @private */
+    isLts_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {?RegulatoryInfo} */
     regulatoryInfo_: Object,
 
@@ -70,12 +78,6 @@ Polymer({
 
     /** @private */
     hasInternetConnection_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
-    hasReleaseNotes_: {
       type: Boolean,
       value: false,
     },
@@ -102,14 +104,7 @@ Polymer({
     showRelaunch_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @private */
-    showRelaunchAndPowerwash_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeShowRelaunchAndPowerwash_(' +
-          'currentUpdateStatusEvent_, targetChannel_, currentChannel_)',
+      computed: 'computeShowRelaunch_(currentUpdateStatusEvent_)',
     },
 
     /** @private */
@@ -150,16 +145,39 @@ Polymer({
 
     /** @private {!AboutPageUpdateInfo|undefined} */
     updateInfo_: Object,
+
+    /**
+     * Whether the deep link to the check for OS update setting was unable to
+     * be shown.
+     * @private
+     */
+    isPendingOsUpdateDeepLink_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kCheckForOsUpdate,
+        chromeos.settings.mojom.Setting.kSeeWhatsNew,
+        chromeos.settings.mojom.Setting.kGetHelpWithChromeOs,
+        chromeos.settings.mojom.Setting.kReportAnIssue,
+        chromeos.settings.mojom.Setting.kTermsOfService,
+      ]),
+    },
   },
 
   observers: [
     'updateShowUpdateStatus_(' +
         'hasEndOfLife_, currentUpdateStatusEvent_,' +
         'hasCheckedForUpdates_)',
-    'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_,' +
-        'currentChannel_)',
     'updateShowButtonContainer_(' +
-        'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
+        'showRelaunch_, showCheckUpdates_)',
     'handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
   ],
 
@@ -184,6 +202,7 @@ Polymer({
     this.aboutBrowserProxy_.getChannelInfo().then(info => {
       this.currentChannel_ = info.currentChannel;
       this.targetChannel_ = info.targetChannel;
+      this.isLts_ = info.isLts;
       this.startListening_();
     });
 
@@ -196,16 +215,12 @@ Polymer({
       this.eolMessageWithMonthAndYear_ = result.aboutPageEndOfLifeMessage || '';
     });
 
-    this.aboutBrowserProxy_.getEnabledReleaseNotes().then(result => {
-      this.hasReleaseNotes_ = result;
-    });
-
     this.aboutBrowserProxy_.checkInternetConnection().then(result => {
       this.hasInternetConnection_ = result;
     });
 
     if (settings.Router.getInstance().getQueryParameters().get(
-            'checkForUpdate') == 'true') {
+            'checkForUpdate') === 'true') {
       this.onCheckUpdatesClick_();
     }
   },
@@ -217,6 +232,22 @@ Polymer({
   currentRouteChanged(newRoute, oldRoute) {
     settings.MainPageBehavior.currentRouteChanged.call(
         this, newRoute, oldRoute);
+
+    // Does not apply to this page.
+    if (newRoute !== settings.routes.ABOUT_ABOUT) {
+      return;
+    }
+
+    this.attemptDeepLink().then(result => {
+      if (!result.deepLinkShown && result.pendingSettingId) {
+        // Only the check for OS update is expected to fail deep link when
+        // awaiting the check for update.
+        assert(
+            result.pendingSettingId ===
+            chromeos.settings.mojom.Setting.kCheckForOsUpdate);
+        this.isPendingOsUpdateDeepLink_ = true;
+      }
+    });
   },
 
   // Override settings.MainPageBehavior method.
@@ -240,9 +271,9 @@ Polymer({
    * @private
    */
   onUpdateStatusChanged_(event) {
-    if (event.status == UpdateStatus.CHECKING) {
+    if (event.status === UpdateStatus.CHECKING) {
       this.hasCheckedForUpdates_ = true;
-    } else if (event.status == UpdateStatus.NEED_PERMISSION_TO_UPDATE) {
+    } else if (event.status === UpdateStatus.NEED_PERMISSION_TO_UPDATE) {
       this.showUpdateWarningDialog_ = true;
       this.updateInfo_ = {version: event.version, size: event.size};
     }
@@ -279,7 +310,7 @@ Polymer({
   updateShowUpdateStatus_() {
     // Do not show the "updated" status if we haven't checked yet or the update
     // warning dialog is shown to user.
-    if (this.currentUpdateStatusEvent_.status == UpdateStatus.UPDATED &&
+    if (this.currentUpdateStatusEvent_.status === UpdateStatus.UPDATED &&
         (!this.hasCheckedForUpdates_ || this.showUpdateWarningDialog_)) {
       this.showUpdateStatus_ = false;
       return;
@@ -292,7 +323,7 @@ Polymer({
     }
 
     this.showUpdateStatus_ =
-        this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED;
+        this.currentUpdateStatusEvent_.status !== UpdateStatus.DISABLED;
   },
 
   /**
@@ -301,14 +332,24 @@ Polymer({
    * @private
    */
   updateShowButtonContainer_() {
-    this.showButtonContainer_ = this.showRelaunch_ ||
-        this.showRelaunchAndPowerwash_ || this.showCheckUpdates_;
+    this.showButtonContainer_ = this.showRelaunch_ || this.showCheckUpdates_;
+
+    // Check if we have yet to focus the check for update button.
+    if (!this.isPendingOsUpdateDeepLink_) {
+      return;
+    }
+
+    this.showDeepLink(chromeos.settings.mojom.Setting.kCheckForOsUpdate)
+        .then(result => {
+          if (result.deepLinkShown) {
+            this.isPendingOsUpdateDeepLink_ = false;
+          }
+        });
   },
 
   /** @private */
-  updateShowRelaunch_() {
-    this.showRelaunch_ =
-        this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && !this.isRollback_();
+  computeShowRelaunch_() {
+    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
   },
 
   /**
@@ -316,8 +357,9 @@ Polymer({
    * @private
    */
   shouldShowLearnMoreLink_() {
-    return this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
+    return this.currentUpdateStatusEvent_.status === UpdateStatus.FAILED;
   },
+
 
   /**
    * @return {string}
@@ -329,7 +371,7 @@ Polymer({
       case UpdateStatus.NEED_PERMISSION_TO_UPDATE:
         return this.i18nAdvanced('aboutUpgradeCheckStarted');
       case UpdateStatus.NEARLY_UPDATED:
-        if (this.currentChannel_ != this.targetChannel_) {
+        if (this.currentChannel_ !== this.targetChannel_) {
           return this.i18nAdvanced('aboutUpgradeSuccessChannelSwitch');
         }
         if (this.currentUpdateStatusEvent_.rollback) {
@@ -339,14 +381,14 @@ Polymer({
       case UpdateStatus.UPDATED:
         return this.i18nAdvanced('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
-        assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
+        assert(typeof this.currentUpdateStatusEvent_.progress === 'number');
         const progressPercent = this.currentUpdateStatusEvent_.progress + '%';
 
-        if (this.currentChannel_ != this.targetChannel_) {
+        if (this.currentChannel_ !== this.targetChannel_) {
           return this.i18nAdvanced('aboutUpgradeUpdatingChannelSwitch', {
             substitutions: [
-              this.i18nAdvanced(
-                  settings.browserChannelToI18nId(this.targetChannel_)),
+              this.i18nAdvanced(settings.browserChannelToI18nId(
+                  this.targetChannel_, this.isLts_)),
               progressPercent
             ]
           });
@@ -403,6 +445,7 @@ Polymer({
         return 'cr:error';
       case UpdateStatus.UPDATED:
       case UpdateStatus.NEARLY_UPDATED:
+        // TODO(crbug.com/986596): Don't use browser icons here. Fork them.
         return 'settings:check-circle';
       default:
         return null;
@@ -433,7 +476,7 @@ Polymer({
    * @private
    */
   checkStatus_(status) {
-    return this.currentUpdateStatusEvent_.status == status;
+    return this.currentUpdateStatusEvent_.status === status;
   },
 
   /** @private */
@@ -445,15 +488,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isRollback_() {
-    assert(this.currentChannel_.length > 0);
-    assert(this.targetChannel_.length > 0);
-    if (this.currentUpdateStatusEvent_.rollback) {
-      return true;
-    }
-    // Channel switch to a more stable channel is also a rollback
-    return settings.isTargetChannelMoreStable(
-        this.currentChannel_, this.targetChannel_);
+  isPowerwash_() {
+    return this.currentUpdateStatusEvent_.powerwash;
   },
 
   /** @private */
@@ -462,24 +498,19 @@ Polymer({
         settings.routes.DETAILED_BUILD_INFO);
   },
 
-  /** @private */
-  onRelaunchAndPowerwashClick_() {
-    settings.recordSettingChange();
-    if (this.currentUpdateStatusEvent_.rollback) {
-      // Wipe already initiated, simply relaunch.
-      this.lifetimeBrowserProxy_.relaunch();
-    } else {
-      this.lifetimeBrowserProxy_.factoryReset(
-          /* requestTpmFirmwareUpdate= */ false);
-    }
-  },
-
   /**
-   * @return {boolean}
+   * @return {string}
    * @private
    */
-  computeShowRelaunchAndPowerwash_() {
-    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && this.isRollback_();
+  getRelaunchButtonText_() {
+    if (this.checkStatus_(UpdateStatus.NEARLY_UPDATED)) {
+      if (this.isPowerwash_()) {
+        return this.i18nAdvanced('aboutRelaunchAndPowerwash');
+      } else {
+        return this.i18nAdvanced('aboutRelaunch');
+      }
+    }
+    return '';
   },
 
   /** @private */

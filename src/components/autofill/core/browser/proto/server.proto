@@ -92,7 +92,7 @@ message AutofillRandomizedValue {
   //
   // BIT_K encodings:
   //    each randomized bit i in |encoded_bits| corresponds to bit k of the byte
-  //    at the corresponsding offset i of the original metadata value, up to
+  //    at the corresponding offset i of the original metadata value, up to
   //    i=64 (8 bytes).
   //
   // EVEN_BITS encoding:
@@ -103,7 +103,7 @@ message AutofillRandomizedValue {
   //     each randomized bit i in |encoded_bits| corresponds to bit 2*i+1 of the
   //     original metadata value, up to i=256 (32 bytes).
   //
-  // ALL_BITS encding:
+  // ALL_BITS encoding:
   //     each bit i in |encoded_bits| corresponds to bit i of the original
   //     metadata value, up to i=512 (64 bytes).
   //
@@ -115,6 +115,25 @@ message AutofillRandomizedValue {
   // transmitted as noise. For all of the other encodings, the encoded bits
   // does not encode any full bytes.
   optional bytes encoded_bits = 2;
+
+  // 32-bit checksum before randomization (passed in clear text). Note that
+  // this value may not be present; for now, it is only stored for metadata
+  // values of type FORM_URL.
+  optional fixed32 checksum = 3;
+}
+
+// Describes how the button is implemented in HTML source. Corresponds to
+// the mojo ButtonTitleType enum defined in
+// components/autofill/core/common/mojom/autofill_types.mojom.h
+enum ButtonTitleType {
+  NONE = 0;
+  BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>
+  BUTTON_ELEMENT_BUTTON_TYPE = 2;  // <button type='button'>
+  INPUT_ELEMENT_SUBMIT_TYPE = 3;   // <input type='submit'>
+  INPUT_ELEMENT_BUTTON_TYPE = 4;   // <input type='button'>
+  HYPERLINK = 5;                   // e.g. <a class='button'>
+  DIV = 6;                         // e.g. <div id='submit'>
+  SPAN = 7;                        // e.g. <span name='btn'>
 }
 
 // The collection of autofill field metadata to be sent using randomization.
@@ -130,6 +149,20 @@ message AutofillRandomizedFormMetadata {
 
   // Location of form as URL.
   optional AutofillRandomizedValue url = 4;
+
+  // Information about a button's title (sync with another ButtonTitle in this
+  // proto).
+  message ButtonTitle {
+    // Text showed on the button.
+    optional AutofillRandomizedValue title = 1;
+
+    // Describes how the button is implemented in HTML source.
+    optional ButtonTitleType type = 2;
+  }
+  // Titles of form's buttons. Example: <input type="submit" value="XXXXX">
+  repeated ButtonTitle button_title = 5;
+
+  reserved 6;
 }
 
 // The collection of autofill field metadata to be sent using randomization.
@@ -374,6 +407,7 @@ message AutofillUploadContents {
     DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD = 8;            // unused
     DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD = 9;  // unused
     PROBABLE_FORM_SUBMISSION = 10;
+    CHANGE_PASSWORD_FORM_CLEARED = 11;
   }
 
   // The type of the event that was taken as an indication that the form has
@@ -386,24 +420,13 @@ message AutofillUploadContents {
   // Form-level metadata observed by the client, randomized.
   optional AutofillRandomizedFormMetadata randomized_form_metadata = 32;
 
-  // Information about a button's title.
+  // Information about a button's title (sync with another ButtonTitle in this
+  // proto).
   message ButtonTitle {
     // Text showed on the button.
     optional string title = 1;
 
-    // Describes how the button is implemented in HTML source. Corresponds to
-    // the mojo ButtonTitleType enum defined in
-    // components/autofill/core/common/mojom/autofill_types.mojom.h
-    enum ButtonTitleType {
-      NONE = 0;
-      BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>
-      BUTTON_ELEMENT_BUTTON_TYPE = 2;  // <button type='button'>
-      INPUT_ELEMENT_SUBMIT_TYPE = 3;   // <input type='submit'>
-      INPUT_ELEMENT_BUTTON_TYPE = 4;   // <input type='button'>
-      HYPERLINK = 5;                   // e.g. <a class='button'>
-      DIV = 6;                         // e.g. <div id='submit'>
-      SPAN = 7;                        // e.g. <span name='btn'>
-    }
+    // Describes how the button is implemented in HTML source.
     optional ButtonTitleType type = 2;
   }
   // Titles of form's buttons.

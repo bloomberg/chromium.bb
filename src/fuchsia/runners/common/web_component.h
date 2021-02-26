@@ -18,7 +18,6 @@
 
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/startup_context.h"
-#include "base/logging.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "url/gurl.h"
 
@@ -30,7 +29,8 @@ class WebContentRunner;
 // (e.g. Cast applications) can extend this class to configure the Frame to
 // their needs, publish additional APIs, etc.
 class WebComponent : public fuchsia::sys::ComponentController,
-                     public fuchsia::ui::app::ViewProvider {
+                     public fuchsia::ui::app::ViewProvider,
+                     public fuchsia::web::NavigationEventListener {
  public:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified by |startup_context|,
@@ -60,6 +60,12 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   WebContentRunner* runner() const { return runner_; }
 
+  // Returns the component's startup context (e.g. incoming services, public
+  // service directory, etc).
+  base::fuchsia::StartupContext* startup_context() const {
+    return startup_context_.get();
+  }
+
  protected:
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;
@@ -71,17 +77,23 @@ class WebComponent : public fuchsia::sys::ComponentController,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
       fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
       override;
+  void CreateViewWithViewRef(zx::eventpair view_token,
+                             fuchsia::ui::views::ViewRefControl control_ref,
+                             fuchsia::ui::views::ViewRef view_ref) override;
+
+  // fuchsia::web::NavigationEventListener implementation.
+  // Used to detect when the Frame enters an error state (e.g. the top-level
+  // content's Renderer process crashes).
+  void OnNavigationStateChanged(
+      fuchsia::web::NavigationState change,
+      OnNavigationStateChangedCallback callback) override;
 
   // Reports the supplied exit-code and reason to the |controller_binding_| and
-  // requests that the |runner_| delete this component.
-  virtual void DestroyComponent(int termination_exit_code,
+  // requests that the |runner_| delete this component. The EXITED |reason| is
+  // used to indicate Frame disconnection, in which case the |exit_code| is set
+  // to the status reported by the FramePtr's error handler.
+  virtual void DestroyComponent(int64_t exit_code,
                                 fuchsia::sys::TerminationReason reason);
-
-  // Returns the component's startup context (e.g. incoming services, public
-  // service directory, etc).
-  base::fuchsia::StartupContext* startup_context() const {
-    return startup_context_.get();
-  }
 
  private:
   WebContentRunner* const runner_ = nullptr;
@@ -105,12 +117,17 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // sys::ComponentController::OnTerminated event.
   fuchsia::sys::TerminationReason termination_reason_ =
       fuchsia::sys::TerminationReason::UNKNOWN;
-  int termination_exit_code_ = 0;
+  int64_t termination_exit_code_ = 0;
 
   bool view_is_bound_ = false;
 
   bool component_started_ = false;
   bool enable_remote_debugging_ = false;
+
+  // Used to watch for failures of the Frame's web content, including Renderer
+  // process crashes.
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      navigation_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebComponent);
 };

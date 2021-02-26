@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
@@ -20,10 +22,8 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_macros.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -411,7 +411,7 @@ QuicErrorCode QuicFixedSocketAddress::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  quiche::QuicheStringPiece address;
+  absl::string_view address;
   if (!peer_hello.GetStringPiece(tag_, &address)) {
     if (presence_ == PRESENCE_REQUIRED) {
       *error_details = "Missing " + QuicTagToString(tag_);
@@ -434,7 +434,7 @@ QuicConfig::QuicConfig()
       max_undecryptable_packets_(0),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
       client_connection_options_(kCLOP, PRESENCE_OPTIONAL),
-      idle_timeout_to_send_(QuicTime::Delta::Infinite()),
+      max_idle_timeout_to_send_(QuicTime::Delta::Infinite()),
       max_bidirectional_streams_(kMIBS, PRESENCE_REQUIRED),
       max_unidirectional_streams_(kMIUS, PRESENCE_OPTIONAL),
       bytes_for_connection_id_(kTCID, PRESENCE_OPTIONAL),
@@ -447,12 +447,16 @@ QuicConfig::QuicConfig()
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
       initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
+      support_handshake_done_(0, PRESENCE_OPTIONAL),
+      key_update_supported_remotely_(false),
+      key_update_supported_locally_(false),
       alternate_server_address_ipv6_(kASAD, PRESENCE_OPTIONAL),
       alternate_server_address_ipv4_(kASAD, PRESENCE_OPTIONAL),
       stateless_reset_token_(kSRST, PRESENCE_OPTIONAL),
       max_ack_delay_ms_(kMAD, PRESENCE_OPTIONAL),
+      min_ack_delay_ms_(0, PRESENCE_OPTIONAL),
       ack_delay_exponent_(kADE, PRESENCE_OPTIONAL),
-      max_packet_size_(0, PRESENCE_OPTIONAL),
+      max_udp_payload_size_(0, PRESENCE_OPTIONAL),
       max_datagram_frame_size_(0, PRESENCE_OPTIONAL),
       active_connection_id_limit_(0, PRESENCE_OPTIONAL) {
   SetDefaults();
@@ -543,17 +547,17 @@ void QuicConfig::SetIdleNetworkTimeout(QuicTime::Delta idle_network_timeout) {
     QUIC_BUG << "Invalid idle network timeout " << idle_network_timeout;
     return;
   }
-  idle_timeout_to_send_ = idle_network_timeout;
+  max_idle_timeout_to_send_ = idle_network_timeout;
 }
 
 QuicTime::Delta QuicConfig::IdleNetworkTimeout() const {
   // TODO(b/152032210) add a QUIC_BUG to ensure that is not called before we've
   // received the peer's values. This is true in production code but not in all
   // of our tests that use a fake QuicConfig.
-  if (!received_idle_timeout_.has_value()) {
-    return idle_timeout_to_send_;
+  if (!received_max_idle_timeout_.has_value()) {
+    return max_idle_timeout_to_send_;
   }
-  return received_idle_timeout_.value();
+  return received_max_idle_timeout_.value();
 }
 
 void QuicConfig::SetMaxBidirectionalStreamsToSend(uint32_t max_streams) {
@@ -589,10 +593,10 @@ uint32_t QuicConfig::ReceivedMaxUnidirectionalStreams() const {
 }
 
 void QuicConfig::SetMaxAckDelayToSendMs(uint32_t max_ack_delay_ms) {
-  return max_ack_delay_ms_.SetSendValue(max_ack_delay_ms);
+  max_ack_delay_ms_.SetSendValue(max_ack_delay_ms);
 }
 
-uint32_t QuicConfig::GetMaxAckDelayToToSendMs() const {
+uint32_t QuicConfig::GetMaxAckDelayToSendMs() const {
   return max_ack_delay_ms_.GetSendValue();
 }
 
@@ -602,6 +606,22 @@ bool QuicConfig::HasReceivedMaxAckDelayMs() const {
 
 uint32_t QuicConfig::ReceivedMaxAckDelayMs() const {
   return max_ack_delay_ms_.GetReceivedValue();
+}
+
+void QuicConfig::SetMinAckDelayMs(uint32_t min_ack_delay_ms) {
+  min_ack_delay_ms_.SetSendValue(min_ack_delay_ms);
+}
+
+uint32_t QuicConfig::GetMinAckDelayToSendMs() const {
+  return min_ack_delay_ms_.GetSendValue();
+}
+
+bool QuicConfig::HasReceivedMinAckDelayMs() const {
+  return min_ack_delay_ms_.HasReceivedValue();
+}
+
+uint32_t QuicConfig::ReceivedMinAckDelayMs() const {
+  return min_ack_delay_ms_.GetReceivedValue();
 }
 
 void QuicConfig::SetAckDelayExponentToSend(uint32_t exponent) {
@@ -620,20 +640,20 @@ uint32_t QuicConfig::ReceivedAckDelayExponent() const {
   return ack_delay_exponent_.GetReceivedValue();
 }
 
-void QuicConfig::SetMaxPacketSizeToSend(uint64_t max_packet_size) {
-  max_packet_size_.SetSendValue(max_packet_size);
+void QuicConfig::SetMaxPacketSizeToSend(uint64_t max_udp_payload_size) {
+  max_udp_payload_size_.SetSendValue(max_udp_payload_size);
 }
 
 uint64_t QuicConfig::GetMaxPacketSizeToSend() const {
-  return max_packet_size_.GetSendValue();
+  return max_udp_payload_size_.GetSendValue();
 }
 
 bool QuicConfig::HasReceivedMaxPacketSize() const {
-  return max_packet_size_.HasReceivedValue();
+  return max_udp_payload_size_.HasReceivedValue();
 }
 
 uint64_t QuicConfig::ReceivedMaxPacketSize() const {
-  return max_packet_size_.GetReceivedValue();
+  return max_udp_payload_size_.GetReceivedValue();
 }
 
 void QuicConfig::SetMaxDatagramFrameSizeToSend(
@@ -832,6 +852,35 @@ bool QuicConfig::DisableConnectionMigration() const {
   return connection_migration_disabled_.HasReceivedValue();
 }
 
+void QuicConfig::SetSupportHandshakeDone() {
+  support_handshake_done_.SetSendValue(1);
+}
+
+bool QuicConfig::HandshakeDoneSupported() const {
+  return support_handshake_done_.HasSendValue() &&
+         support_handshake_done_.GetSendValue() > 0;
+}
+
+bool QuicConfig::PeerSupportsHandshakeDone() const {
+  return support_handshake_done_.HasReceivedValue();
+}
+
+void QuicConfig::SetKeyUpdateSupportedLocally() {
+  key_update_supported_locally_ = true;
+}
+
+bool QuicConfig::KeyUpdateSupportedForConnection() const {
+  return KeyUpdateSupportedRemotely() && KeyUpdateSupportedLocally();
+}
+
+bool QuicConfig::KeyUpdateSupportedLocally() const {
+  return key_update_supported_locally_;
+}
+
+bool QuicConfig::KeyUpdateSupportedRemotely() const {
+  return key_update_supported_remotely_;
+}
+
 void QuicConfig::SetIPv6AlternateServerAddressToSend(
     const QuicSocketAddress& alternate_server_address_ipv6) {
   if (!alternate_server_address_ipv6.host().IsIPv6()) {
@@ -871,12 +920,13 @@ const QuicSocketAddress& QuicConfig::ReceivedIPv4AlternateServerAddress()
 }
 
 void QuicConfig::SetOriginalConnectionIdToSend(
-    const QuicConnectionId& original_connection_id) {
-  original_connection_id_to_send_ = original_connection_id;
+    const QuicConnectionId& original_destination_connection_id) {
+  original_destination_connection_id_to_send_ =
+      original_destination_connection_id;
 }
 
 bool QuicConfig::HasReceivedOriginalConnectionId() const {
-  return received_original_connection_id_.has_value();
+  return received_original_destination_connection_id_.has_value();
 }
 
 QuicConnectionId QuicConfig::ReceivedOriginalConnectionId() const {
@@ -884,7 +934,41 @@ QuicConnectionId QuicConfig::ReceivedOriginalConnectionId() const {
     QUIC_BUG << "No received original connection ID";
     return EmptyQuicConnectionId();
   }
-  return received_original_connection_id_.value();
+  return received_original_destination_connection_id_.value();
+}
+
+void QuicConfig::SetInitialSourceConnectionIdToSend(
+    const QuicConnectionId& initial_source_connection_id) {
+  initial_source_connection_id_to_send_ = initial_source_connection_id;
+}
+
+bool QuicConfig::HasReceivedInitialSourceConnectionId() const {
+  return received_initial_source_connection_id_.has_value();
+}
+
+QuicConnectionId QuicConfig::ReceivedInitialSourceConnectionId() const {
+  if (!HasReceivedInitialSourceConnectionId()) {
+    QUIC_BUG << "No received initial source connection ID";
+    return EmptyQuicConnectionId();
+  }
+  return received_initial_source_connection_id_.value();
+}
+
+void QuicConfig::SetRetrySourceConnectionIdToSend(
+    const QuicConnectionId& retry_source_connection_id) {
+  retry_source_connection_id_to_send_ = retry_source_connection_id;
+}
+
+bool QuicConfig::HasReceivedRetrySourceConnectionId() const {
+  return received_retry_source_connection_id_.has_value();
+}
+
+QuicConnectionId QuicConfig::ReceivedRetrySourceConnectionId() const {
+  if (!HasReceivedRetrySourceConnectionId()) {
+    QUIC_BUG << "No received retry source connection ID";
+    return EmptyQuicConnectionId();
+  }
+  return received_retry_source_connection_id_.value();
 }
 
 void QuicConfig::SetStatelessResetTokenToSend(
@@ -938,14 +1022,16 @@ void QuicConfig::ToHandshakeMessage(
   // the one received. Additionally, when QUIC_CRYPTO is used, the server
   // MUST send an idle timeout no greater than the idle timeout it received
   // from the client. We therefore send the received value if it is lower.
-  QuicFixedUint32 idle_timeout_seconds(kICSL, PRESENCE_REQUIRED);
-  uint32_t idle_timeout_to_send_seconds = idle_timeout_to_send_.ToSeconds();
-  if (received_idle_timeout_.has_value() &&
-      received_idle_timeout_->ToSeconds() < idle_timeout_to_send_seconds) {
-    idle_timeout_to_send_seconds = received_idle_timeout_->ToSeconds();
+  QuicFixedUint32 max_idle_timeout_seconds(kICSL, PRESENCE_REQUIRED);
+  uint32_t max_idle_timeout_to_send_seconds =
+      max_idle_timeout_to_send_.ToSeconds();
+  if (received_max_idle_timeout_.has_value() &&
+      received_max_idle_timeout_->ToSeconds() <
+          max_idle_timeout_to_send_seconds) {
+    max_idle_timeout_to_send_seconds = received_max_idle_timeout_->ToSeconds();
   }
-  idle_timeout_seconds.SetSendValue(idle_timeout_to_send_seconds);
-  idle_timeout_seconds.ToHandshakeMessage(out);
+  max_idle_timeout_seconds.SetSendValue(max_idle_timeout_to_send_seconds);
+  max_idle_timeout_seconds.ToHandshakeMessage(out);
 
   // Do not need a version check here, max...bi... will encode
   // as "MIDS" -- the max initial dynamic streams tag -- if
@@ -955,8 +1041,10 @@ void QuicConfig::ToHandshakeMessage(
     max_unidirectional_streams_.ToHandshakeMessage(out);
     ack_delay_exponent_.ToHandshakeMessage(out);
   }
-  if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_negotiate_ack_delay_time, 1, 4);
+  if (max_ack_delay_ms_.GetSendValue() != kDefaultDelayedAckTimeMs) {
+    // Only send max ack delay if it is using a non-default value, because
+    // the default value is used by QuicSentPacketManager if it is not
+    // sent during the handshake, and we want to save bytes.
     max_ack_delay_ms_.ToHandshakeMessage(out);
   }
   bytes_for_connection_id_.ToHandshakeMessage(out);
@@ -986,12 +1074,12 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
     // the one received. Additionally, when QUIC_CRYPTO is used, the server
     // MUST send an idle timeout no greater than the idle timeout it received
     // from the client.
-    QuicFixedUint32 idle_timeout_seconds(kICSL, PRESENCE_REQUIRED);
-    error = idle_timeout_seconds.ProcessPeerHello(peer_hello, hello_type,
-                                                  error_details);
+    QuicFixedUint32 max_idle_timeout_seconds(kICSL, PRESENCE_REQUIRED);
+    error = max_idle_timeout_seconds.ProcessPeerHello(peer_hello, hello_type,
+                                                      error_details);
     if (error == QUIC_NO_ERROR) {
-      if (idle_timeout_seconds.GetReceivedValue() >
-          idle_timeout_to_send_.ToSeconds()) {
+      if (max_idle_timeout_seconds.GetReceivedValue() >
+          max_idle_timeout_to_send_.ToSeconds()) {
         // The received value is higher than ours, ignore it if from the client
         // and raise an error if from the server.
         if (hello_type == SERVER) {
@@ -1000,8 +1088,8 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
               "Invalid value received for " + QuicTagToString(kICSL);
         }
       } else {
-        received_idle_timeout_ = QuicTime::Delta::FromSeconds(
-            idle_timeout_seconds.GetReceivedValue());
+        received_max_idle_timeout_ = QuicTime::Delta::FromSeconds(
+            max_idle_timeout_seconds.GetReceivedValue());
       }
     }
   }
@@ -1056,9 +1144,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
                                                     error_details);
   }
 
-  if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time) &&
-      error == QUIC_NO_ERROR) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_negotiate_ack_delay_time, 2, 4);
+  if (error == QUIC_NO_ERROR) {
     error = max_ack_delay_ms_.ProcessPeerHello(peer_hello, hello_type,
                                                error_details);
   }
@@ -1073,12 +1159,13 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
 }
 
 bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
-  if (original_connection_id_to_send_.has_value()) {
-    params->original_connection_id = original_connection_id_to_send_.value();
+  if (original_destination_connection_id_to_send_.has_value()) {
+    params->original_destination_connection_id =
+        original_destination_connection_id_to_send_.value();
   }
 
-  params->idle_timeout_milliseconds.set_value(
-      idle_timeout_to_send_.ToMilliseconds());
+  params->max_idle_timeout_ms.set_value(
+      max_idle_timeout_to_send_.ToMilliseconds());
 
   if (stateless_reset_token_.HasSendValue()) {
     QuicUint128 stateless_reset_token = stateless_reset_token_.GetSendValue();
@@ -1088,7 +1175,7 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
             sizeof(stateless_reset_token));
   }
 
-  params->max_packet_size.set_value(GetMaxPacketSizeToSend());
+  params->max_udp_payload_size.set_value(GetMaxPacketSizeToSend());
   params->max_datagram_frame_size.set_value(GetMaxDatagramFrameSizeToSend());
   params->initial_max_data.set_value(
       GetInitialSessionFlowControlWindowToSend());
@@ -1108,14 +1195,16 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
       GetMaxBidirectionalStreamsToSend());
   params->initial_max_streams_uni.set_value(
       GetMaxUnidirectionalStreamsToSend());
-  if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_negotiate_ack_delay_time, 3, 4);
-    params->max_ack_delay.set_value(kDefaultDelayedAckTimeMs);
+  params->max_ack_delay.set_value(GetMaxAckDelayToSendMs());
+  if (min_ack_delay_ms_.HasSendValue()) {
+    params->min_ack_delay_us.set_value(min_ack_delay_ms_.GetSendValue() *
+                                       kNumMicrosPerMilli);
   }
   params->ack_delay_exponent.set_value(GetAckDelayExponentToSend());
-  params->disable_migration =
+  params->disable_active_migration =
       connection_migration_disabled_.HasSendValue() &&
       connection_migration_disabled_.GetSendValue() != 0;
+  params->support_handshake_done = HandshakeDoneSupported();
 
   if (alternate_server_address_ipv6_.HasSendValue() ||
       alternate_server_address_ipv4_.HasSendValue()) {
@@ -1138,27 +1227,27 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
         active_connection_id_limit_.GetSendValue());
   }
 
-  if (GetQuicRestartFlag(quic_google_transport_param_send_new)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_google_transport_param_send_new, 1, 3);
-    if (initial_round_trip_time_us_.HasSendValue()) {
-      params->initial_round_trip_time_us.set_value(
-          initial_round_trip_time_us_.GetSendValue());
-    }
-    if (connection_options_.HasSendValues() &&
-        !connection_options_.GetSendValues().empty()) {
-      params->google_connection_options = connection_options_.GetSendValues();
-    }
+  if (initial_source_connection_id_to_send_.has_value()) {
+    params->initial_source_connection_id =
+        initial_source_connection_id_to_send_.value();
   }
 
-  if (!GetQuicRestartFlag(quic_google_transport_param_omit_old)) {
-    if (!params->google_quic_params) {
-      params->google_quic_params = std::make_unique<CryptoHandshakeMessage>();
-    }
-    initial_round_trip_time_us_.ToHandshakeMessage(
-        params->google_quic_params.get());
-    connection_options_.ToHandshakeMessage(params->google_quic_params.get());
-  } else {
-    QUIC_RESTART_FLAG_COUNT_N(quic_google_transport_param_omit_old, 1, 3);
+  if (retry_source_connection_id_to_send_.has_value()) {
+    params->retry_source_connection_id =
+        retry_source_connection_id_to_send_.value();
+  }
+
+  if (initial_round_trip_time_us_.HasSendValue()) {
+    params->initial_round_trip_time_us.set_value(
+        initial_round_trip_time_us_.GetSendValue());
+  }
+  if (connection_options_.HasSendValues() &&
+      !connection_options_.GetSendValues().empty()) {
+    params->google_connection_options = connection_options_.GetSendValues();
+  }
+
+  if (!KeyUpdateSupportedLocally()) {
+    params->key_update_not_yet_supported = true;
   }
 
   params->custom_parameters = custom_transport_parameters_to_send_;
@@ -1168,21 +1257,21 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
 
 QuicErrorCode QuicConfig::ProcessTransportParameters(
     const TransportParameters& params,
-    HelloType hello_type,
     bool is_resumption,
     std::string* error_details) {
-  if (!is_resumption && params.original_connection_id.has_value()) {
-    received_original_connection_id_ = params.original_connection_id.value();
+  if (!is_resumption && params.original_destination_connection_id.has_value()) {
+    received_original_destination_connection_id_ =
+        params.original_destination_connection_id.value();
   }
 
-  if (params.idle_timeout_milliseconds.value() > 0 &&
-      params.idle_timeout_milliseconds.value() <
-          static_cast<uint64_t>(idle_timeout_to_send_.ToMilliseconds())) {
+  if (params.max_idle_timeout_ms.value() > 0 &&
+      params.max_idle_timeout_ms.value() <
+          static_cast<uint64_t>(max_idle_timeout_to_send_.ToMilliseconds())) {
     // An idle timeout of zero indicates it is disabled.
     // We also ignore values higher than ours which will cause us to use the
     // smallest value between ours and our peer's.
-    received_idle_timeout_ = QuicTime::Delta::FromMilliseconds(
-        params.idle_timeout_milliseconds.value());
+    received_max_idle_timeout_ =
+        QuicTime::Delta::FromMilliseconds(params.max_idle_timeout_ms.value());
   }
 
   if (!is_resumption && !params.stateless_reset_token.empty()) {
@@ -1198,8 +1287,8 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
     stateless_reset_token_.SetReceivedValue(stateless_reset_token);
   }
 
-  if (params.max_packet_size.IsValid()) {
-    max_packet_size_.SetReceivedValue(params.max_packet_size.value());
+  if (params.max_udp_payload_size.IsValid()) {
+    max_udp_payload_size_.SetReceivedValue(params.max_udp_payload_size.value());
   }
 
   if (params.max_datagram_frame_size.IsValid()) {
@@ -1233,10 +1322,7 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
       params.initial_max_stream_data_uni.value());
 
   if (!is_resumption) {
-    if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_negotiate_ack_delay_time, 4, 4);
-      max_ack_delay_ms_.SetReceivedValue(params.max_ack_delay.value());
-    }
+    max_ack_delay_ms_.SetReceivedValue(params.max_ack_delay.value());
     if (params.ack_delay_exponent.IsValid()) {
       ack_delay_exponent_.SetReceivedValue(params.ack_delay_exponent.value());
     }
@@ -1250,48 +1336,51 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
             params.preferred_address->ipv4_socket_address);
       }
     }
+    if (GetQuicReloadableFlag(quic_record_received_min_ack_delay)) {
+      if (params.min_ack_delay_us.value() != 0) {
+        if (params.min_ack_delay_us.value() >
+            params.max_ack_delay.value() * kNumMicrosPerMilli) {
+          *error_details = "MinAckDelay is greater than MaxAckDelay.";
+          return IETF_QUIC_PROTOCOL_VIOLATION;
+        }
+        QUIC_RELOADABLE_FLAG_COUNT(quic_record_received_min_ack_delay);
+        min_ack_delay_ms_.SetReceivedValue(params.min_ack_delay_us.value() /
+                                           kNumMicrosPerMilli);
+      }
+    }
   }
 
-  if (params.disable_migration) {
+  if (params.disable_active_migration) {
     connection_migration_disabled_.SetReceivedValue(1u);
+  }
+  if (params.support_handshake_done) {
+    support_handshake_done_.SetReceivedValue(1u);
+  }
+  if (!is_resumption && !params.key_update_not_yet_supported) {
+    key_update_supported_remotely_ = true;
   }
 
   active_connection_id_limit_.SetReceivedValue(
       params.active_connection_id_limit.value());
 
-  bool google_params_already_parsed = false;
-  if (GetQuicRestartFlag(quic_google_transport_param_send_new)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_google_transport_param_send_new, 2, 3);
-    if (params.initial_round_trip_time_us.value() > 0) {
-      google_params_already_parsed = true;
-      initial_round_trip_time_us_.SetReceivedValue(
-          params.initial_round_trip_time_us.value());
+  if (!is_resumption) {
+    if (params.initial_source_connection_id.has_value()) {
+      received_initial_source_connection_id_ =
+          params.initial_source_connection_id.value();
     }
-    if (params.google_connection_options.has_value()) {
-      google_params_already_parsed = true;
-      connection_options_.SetReceivedValues(
-          params.google_connection_options.value());
+    if (params.retry_source_connection_id.has_value()) {
+      received_retry_source_connection_id_ =
+          params.retry_source_connection_id.value();
     }
   }
 
-  if (!GetQuicRestartFlag(quic_google_transport_param_omit_old)) {
-    const CryptoHandshakeMessage* peer_params = params.google_quic_params.get();
-    if (peer_params != nullptr && !google_params_already_parsed) {
-      QuicErrorCode error = initial_round_trip_time_us_.ProcessPeerHello(
-          *peer_params, hello_type, error_details);
-      if (error != QUIC_NO_ERROR) {
-        DCHECK(!error_details->empty());
-        return error;
-      }
-      error = connection_options_.ProcessPeerHello(*peer_params, hello_type,
-                                                   error_details);
-      if (error != QUIC_NO_ERROR) {
-        DCHECK(!error_details->empty());
-        return error;
-      }
-    }
-  } else {
-    QUIC_RESTART_FLAG_COUNT_N(quic_google_transport_param_omit_old, 2, 3);
+  if (params.initial_round_trip_time_us.value() > 0) {
+    initial_round_trip_time_us_.SetReceivedValue(
+        params.initial_round_trip_time_us.value());
+  }
+  if (params.google_connection_options.has_value()) {
+    connection_options_.SetReceivedValues(
+        params.google_connection_options.value());
   }
 
   received_custom_transport_parameters_ = params.custom_parameters;

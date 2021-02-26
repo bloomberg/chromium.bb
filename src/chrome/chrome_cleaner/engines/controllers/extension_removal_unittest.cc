@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -136,8 +136,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   void SetUp() override {
     EXPECT_CALL(mock_chrome_prompt_ipc_, MockPostPromptUserTask(_, _, _, _))
         .WillRepeatedly([](const std::vector<base::FilePath>& files_to_delete,
-                           const std::vector<base::string16>& registry_keys,
-                           const std::vector<base::string16>& extension_ids,
+                           const std::vector<std::wstring>& registry_keys,
+                           const std::vector<std::wstring>& extension_ids,
                            ChromePromptIPC::PromptUserCallback* callback) {
           std::move(*callback).Run(PromptUserResponse::ACCEPTED_WITHOUT_LOGS);
         });
@@ -190,8 +190,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   }
 
   void AddForcelistExtension(HKEY hkey,
-                             const base::string16& name,
-                             const base::string16& value) {
+                             const std::wstring& name,
+                             const std::wstring& value) {
     base::win::RegKey policy_key;
     ASSERT_EQ(ERROR_SUCCESS,
               policy_key.Create(hkey, kChromePoliciesForcelistKeyPath,
@@ -202,8 +202,8 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   }
 
   void AddExtensionSettingsExtension(HKEY hkey,
-                                     const base::string16& name,
-                                     const base::string16& value) {
+                                     const std::wstring& name,
+                                     const std::wstring& value) {
     base::win::RegKey settings_key;
     ASSERT_EQ(ERROR_SUCCESS,
               settings_key.Create(hkey, kExtensionSettingsPolicyPath,
@@ -333,19 +333,19 @@ MULTIPROCESS_TEST_MAIN(EngineSandboxMain) {
 
 TEST_F(ExtensionCleanupTest, CleanupExtensions) {
   std::vector<ForceInstalledExtension> extensions_to_cleanup{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   std::unique_ptr<UwEMatchers> matchers =
@@ -395,36 +395,36 @@ TEST_F(ExtensionCleanupTest, CleanupExtensions) {
 
 TEST_F(ExtensionCleanupTest, CleanupSomeExtensions) {
   std::vector<ForceInstalledExtension> expected_extensions{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   std::vector<ForceInstalledExtension> expected_final_extensions{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION}};
   std::vector<ForceInstalledExtension> extensions_to_cleanup{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   std::unique_ptr<UwEMatchers> matchers =
@@ -474,19 +474,19 @@ TEST_F(ExtensionCleanupTest, CleanupSomeExtensions) {
 
 TEST_F(ExtensionCleanupTest, CleanupNoExtensions) {
   std::vector<ForceInstalledExtension> expected_extensions{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   std::vector<ForceInstalledExtension> extensions_to_cleanup;
@@ -537,19 +537,19 @@ TEST_F(ExtensionCleanupTest, CleanupNoExtensions) {
 
 TEST_F(ExtensionCleanupTest, DISABLED_CleanupNoExtensionsWhenNotAllowed) {
   std::vector<ForceInstalledExtension> expected_extensions{
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId2)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId2)).value(),
        DEFAULT_APPS_EXTENSION},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId3)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId3)).value(),
        POLICY_EXTENSION_FORCELIST},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId4)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId4)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId5)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId5)).value(),
        POLICY_EXTENSION_SETTINGS},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId6)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId6)).value(),
        POLICY_MASTER_PREFERENCES},
-      {ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId7)).value(),
+      {ExtensionID::Create(base::WideToUTF8(kTestExtensionId7)).value(),
        POLICY_MASTER_PREFERENCES},
   };
   std::vector<ForceInstalledExtension> extensions_to_cleanup =

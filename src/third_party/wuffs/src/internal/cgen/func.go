@@ -17,6 +17,7 @@ package cgen
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 
 	a "github.com/google/wuffs/lang/ast"
 	t "github.com/google/wuffs/lang/token"
@@ -37,7 +38,7 @@ type funk struct {
 	varList           []*a.Var
 	varResumables     map[t.ID]bool
 	derivedVars       map[t.ID]struct{}
-	jumpTargets       map[a.Loop]uint32
+	jumpTargets       map[a.Loop]string
 	coroSuspPoint     uint32
 	ioBinds           uint32
 	tempW             uint32
@@ -47,17 +48,21 @@ type funk struct {
 	hasGotoOK         bool
 }
 
-func (k *funk) jumpTarget(n a.Loop) (uint32, error) {
+func (k *funk) jumpTarget(tm *t.Map, n a.Loop) (string, error) {
+	if label := n.Label(); label != 0 {
+		return label.Str(tm), nil
+	}
 	if k.jumpTargets == nil {
-		k.jumpTargets = map[a.Loop]uint32{}
+		k.jumpTargets = map[a.Loop]string{}
 	}
 	if jt, ok := k.jumpTargets[n]; ok {
 		return jt, nil
 	}
-	jt := uint32(len(k.jumpTargets))
-	if jt == 1000000 {
-		return 0, fmt.Errorf("too many jump targets")
+	jtInt := len(k.jumpTargets)
+	if jtInt == 1000000 {
+		return "", fmt.Errorf("too many jump targets")
 	}
+	jt := strconv.Itoa(jtInt)
 	k.jumpTargets[n] = jt
 	return jt, nil
 }
@@ -67,85 +72,120 @@ func (g *gen) funcCName(n *a.Func) string {
 		// TODO: this isn't right if r[0] != 0, i.e. the receiver is from a
 		// used package. There might be similar cases elsewhere in this
 		// package.
-		return g.pkgPrefix + r.Str(g.tm) + "__" + n.FuncName().Str(g.tm)
+		return g.pkgPrefix + r[1].Str(g.tm) + "__" + n.FuncName().Str(g.tm)
 	}
 	return g.pkgPrefix + n.FuncName().Str(g.tm)
 }
 
-// C++ related function signature constants.
+// writeFunctionSignature modes.
 const (
-	cppNone          = 0 // Not C++, just plain C.
-	cppInsideStruct  = 1
-	cppOutsideStruct = 2
+	wfsCDecl         = 0
+	wfsCppDecl       = 1
+	wfsCFuncPtrField = 2
+	wfsCFuncPtrType  = 3
 )
 
-func (g *gen) writeFuncSignature(b *buffer, n *a.Func, cpp uint32) error {
-	if cpp != cppNone {
-		b.writes("inline ")
-	} else if n.Public() {
-		b.writes("WUFFS_BASE__MAYBE_STATIC ")
-	} else {
-		b.writes("static ")
+func (g *gen) writeFuncSignature(b *buffer, n *a.Func, wfs uint32) error {
+	switch wfs {
+	case wfsCDecl:
+		if n.Public() {
+			b.writes("WUFFS_BASE__MAYBE_STATIC ")
+		} else {
+			b.writes("static ")
+		}
+
+	case wfsCppDecl:
+		b.writes("  inline ")
+
+	case wfsCFuncPtrField, wfsCFuncPtrType:
+		// No-op.
 	}
 
 	// TODO: write n's return values.
 	if n.Effect().Coroutine() {
-		b.writes("wuffs_base__status ")
+		b.writes("wuffs_base__status")
 	} else if out := n.Out(); out == nil {
-		b.writes("wuffs_base__empty_struct ")
+		b.writes("wuffs_base__empty_struct")
 		// TODO: does writeCTypeName generate the right C if out is an array?
 	} else if err := g.writeCTypeName(b, out, "", ""); err != nil {
 		return err
 	}
 
-	// The empty // comment makes clang-format place the function name at the
-	// start of a line.
-	b.writes("//\n")
-
-	switch cpp {
-	case cppNone:
-		b.writes(g.funcCName(n))
-	case cppInsideStruct:
-		b.writes(n.FuncName().Str(g.tm))
-	case cppOutsideStruct:
-		b.writes(g.pkgPrefix)
-		b.writes(n.Receiver().Str(g.tm))
-		b.writes("::")
-		b.writes(n.FuncName().Str(g.tm))
+	switch wfs {
+	case wfsCDecl:
+		b.writes("\n")
+	case wfsCppDecl:
+		b.writes("\n  ")
+	case wfsCFuncPtrField:
+		b.writes(" ")
 	}
 
-	b.writeb('(')
 	comma := false
-	if cpp == cppNone {
+	switch wfs {
+	case wfsCDecl:
+		b.writes(g.funcCName(n))
+		b.writeb('(')
 		if r := n.Receiver(); !r.IsZero() {
+			b.writes("\n    ")
 			if n.Effect().Pure() {
 				b.writes("const ")
 			}
-			b.printf("%s%s *self", g.pkgPrefix, r.Str(g.tm))
+			b.printf("%s%s* self", g.pkgPrefix, r[1].Str(g.tm))
 			comma = true
 		}
+
+	case wfsCppDecl:
+		b.writes(n.FuncName().Str(g.tm))
+		b.writeb('(')
+		if len(n.In().Fields()) > 0 {
+			b.writes("\n      ")
+		}
+
+	case wfsCFuncPtrField, wfsCFuncPtrType:
+		b.writes("(*")
+		if wfs == wfsCFuncPtrField {
+			b.writes(n.FuncName().Str(g.tm))
+			b.writes(")(\n    ")
+		} else {
+			b.writes(")(")
+		}
+		if n.Effect().Pure() {
+			b.writes("const ")
+		}
+		b.writes("void*")
+		if wfs == wfsCFuncPtrField {
+			b.writes(" self")
+		}
+		comma = true
 	}
 
 	for _, o := range n.In().Fields() {
 		if comma {
-			b.writeb(',')
+			b.writes(",\n    ")
+			if wfs == wfsCppDecl {
+				b.writes("  ")
+			}
 		}
 		comma = true
 		o := o.AsField()
-		if err := g.writeCTypeName(b, o.XType(), aPrefix, o.Name().Str(g.tm)); err != nil {
+		varNamePrefix, varName := "", ""
+		if wfs != wfsCFuncPtrType {
+			varNamePrefix, varName = aPrefix, o.Name().Str(g.tm)
+		}
+		if err := g.writeCTypeName(b, o.XType(), varNamePrefix, varName); err != nil {
 			return err
 		}
 	}
 
 	b.printf(")")
-	if cpp != cppNone && !n.Receiver().IsZero() && n.Effect().Pure() {
-		b.writes(" const ")
+	if (wfs == wfsCppDecl) && !n.Receiver().IsZero() && n.Effect().Pure() {
+		b.writes(" const")
 	}
 	return nil
 }
 
 func (g *gen) writeFuncPrototype(b *buffer, n *a.Func) error {
-	if err := g.writeFuncSignature(b, n, cppNone); err != nil {
+	if err := g.writeFuncSignature(b, n, wfsCDecl); err != nil {
 		return err
 	}
 	b.writes(";\n\n")
@@ -156,34 +196,40 @@ func (g *gen) writeFuncImpl(b *buffer, n *a.Func) error {
 	k := g.funks[n.QQID()]
 
 	b.printf("// -------- func %s.%s\n\n", g.pkgName, n.QQID().Str(g.tm))
-	if err := g.writeFuncSignature(b, n, cppNone); err != nil {
+	if err := g.writeFuncSignature(b, n, wfsCDecl); err != nil {
 		return err
 	}
-	b.writes("{\n")
-	b.writex(k.bPrologue)
-	if k.astFunc.Effect().Coroutine() {
-		b.writex(k.bBodyResume)
+	b.writes(" {\n")
+
+	if (len(n.Body()) != 0) || n.Effect().Coroutine() || (n.Out() != nil) {
+		b.writex(k.bPrologue)
+		if n.Effect().Coroutine() {
+			b.writex(k.bBodyResume)
+		}
+		b.writex(k.bBody)
+		if n.Effect().Coroutine() {
+			b.writex(k.bBodySuspend)
+		} else if k.hasGotoOK {
+			b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
+		}
 	}
-	b.writex(k.bBody)
-	if k.astFunc.Effect().Coroutine() {
-		b.writex(k.bBodySuspend)
-	} else if k.hasGotoOK {
-		b.writes("\ngoto ok;ok:\n") // The goto avoids the "unused label" warning.
-	}
+
 	b.writex(k.bEpilogue)
 	b.writes("}\n\n")
 	return nil
 }
 
 func (g *gen) gatherFuncImpl(_ *buffer, n *a.Func) error {
+	coroID := uint32(0)
 	if n.Public() && n.Effect().Coroutine() {
-		g.numPublicCoroutines++
+		g.numPublicCoroutines[n.Receiver()]++
+		coroID = g.numPublicCoroutines[n.Receiver()]
 	}
 
 	g.currFunk = funk{
 		astFunc: n,
 		cName:   g.funcCName(n),
-		coroID:  g.numPublicCoroutines,
+		coroID:  coroID,
 
 		returnsStatus: n.Effect().Coroutine() ||
 			((n.Out() != nil) && n.Out().IsStatus()),
@@ -194,13 +240,14 @@ func (g *gen) gatherFuncImpl(_ *buffer, n *a.Func) error {
 	}
 	g.findDerivedVars()
 
+	if err := g.writeFuncImplBody(&g.currFunk.bBody); err != nil {
+		return err
+	}
+
 	if err := g.writeFuncImplPrologue(&g.currFunk.bPrologue); err != nil {
 		return err
 	}
 	if err := g.writeFuncImplBodyResume(&g.currFunk.bBodyResume); err != nil {
-		return err
-	}
-	if err := g.writeFuncImplBody(&g.currFunk.bBody); err != nil {
 		return err
 	}
 	if err := g.writeFuncImplBodySuspend(&g.currFunk.bBodySuspend); err != nil {
@@ -217,7 +264,7 @@ func (g *gen) gatherFuncImpl(_ *buffer, n *a.Func) error {
 	return nil
 }
 
-func (g *gen) writeOutParamZeroValue(b *buffer, typ *a.TypeExpr) error {
+func writeOutParamZeroValue(b *buffer, tm *t.Map, typ *a.TypeExpr) error {
 	if typ == nil {
 		b.writes("wuffs_base__make_empty_struct()")
 		return nil
@@ -232,57 +279,68 @@ func (g *gen) writeOutParamZeroValue(b *buffer, typ *a.TypeExpr) error {
 	} else if (typ.Decorator() == 0) && (typ.QID()[0] == t.IDBase) {
 		switch typ.QID()[1] {
 		case t.IDRangeIEU32:
-			b.writes("wuffs_base__utility__make_range_ie_u32(0, 0)")
+			b.writes("wuffs_base__utility__empty_range_ie_u32()")
 			return nil
 		case t.IDRangeIIU32:
-			b.writes("wuffs_base__utility__make_range_ii_u32(0, 0)")
+			b.writes("wuffs_base__utility__empty_range_ii_u32()")
 			return nil
 		case t.IDRangeIEU64:
-			b.writes("wuffs_base__utility__make_range_ie_u64(0, 0)")
+			b.writes("wuffs_base__utility__empty_range_ie_u64()")
 			return nil
 		case t.IDRangeIIU64:
-			b.writes("wuffs_base__utility__make_range_ii_u64(0, 0)")
+			b.writes("wuffs_base__utility__empty_range_ii_u64()")
 			return nil
 		case t.IDRectIEU32:
-			b.writes("wuffs_base__utility__make_rect_ie_u32(0, 0, 0, 0)")
+			b.writes("wuffs_base__utility__empty_rect_ie_u32()")
 			return nil
 		case t.IDRectIIU32:
-			b.writes("wuffs_base__utility__make_rect_ii_u32(0, 0, 0, 0)")
+			b.writes("wuffs_base__utility__empty_rect_ii_u32()")
 			return nil
 		}
 	}
-	return fmt.Errorf("internal error: cannot write the zero value of type %q", typ.Str(g.tm))
+	return fmt.Errorf("internal error: cannot write the zero value of type %q", typ.Str(tm))
+}
+
+func writeFuncImplSelfMagicCheck(b *buffer, tm *t.Map, f *a.Func) error {
+	returnsStatus := f.Effect().Coroutine() ||
+		((f.Out() != nil) && f.Out().IsStatus())
+
+	b.writes("  if (!self) {\n    return ")
+	if returnsStatus {
+		b.writes("wuffs_base__make_status(wuffs_base__error__bad_receiver)")
+	} else if err := writeOutParamZeroValue(b, tm, f.Out()); err != nil {
+		return err
+	}
+	b.writes(";\n  }\n")
+
+	if f.Effect().Pure() {
+		b.writes("  if ((self->private_impl.magic != WUFFS_BASE__MAGIC) &&\n")
+		b.writes("      (self->private_impl.magic != WUFFS_BASE__DISABLED)) {\n")
+	} else {
+		b.writes("  if (self->private_impl.magic != WUFFS_BASE__MAGIC) {\n")
+	}
+	b.writes("    return ")
+	if returnsStatus {
+		b.writes("wuffs_base__make_status(\n" +
+			"        (self->private_impl.magic == WUFFS_BASE__DISABLED)\n" +
+			"            ? wuffs_base__error__disabled_by_previous_error\n" +
+			"            : wuffs_base__error__initialize_not_called)")
+	} else if err := writeOutParamZeroValue(b, tm, f.Out()); err != nil {
+		return err
+	}
+
+	b.writes(";\n  }\n")
+	return nil
 }
 
 func (g *gen) writeFuncImplPrologue(b *buffer) error {
+	oldLenB := len(*b)
+
 	// Check the initialized/disabled state and the "self" arg.
 	if g.currFunk.astFunc.Public() && !g.currFunk.astFunc.Receiver().IsZero() {
-		out := g.currFunk.astFunc.Out()
-
-		b.writes("if (!self) { return ")
-		if g.currFunk.returnsStatus {
-			b.writes("wuffs_base__error__bad_receiver")
-		} else if err := g.writeOutParamZeroValue(b, out); err != nil {
+		if err := writeFuncImplSelfMagicCheck(b, g.tm, g.currFunk.astFunc); err != nil {
 			return err
 		}
-		b.writes(";}")
-
-		if g.currFunk.astFunc.Effect().Pure() {
-			b.writes("if ((self->private_impl.magic != WUFFS_BASE__MAGIC) &&")
-			b.writes("    (self->private_impl.magic != WUFFS_BASE__DISABLED)) {")
-		} else {
-			b.writes("if (self->private_impl.magic != WUFFS_BASE__MAGIC) {")
-		}
-		b.writes("return ")
-		if g.currFunk.returnsStatus {
-			b.writes("(self->private_impl.magic == WUFFS_BASE__DISABLED) " +
-				"? wuffs_base__error__disabled_by_previous_error " +
-				": wuffs_base__error__initialize_not_called")
-		} else if err := g.writeOutParamZeroValue(b, out); err != nil {
-			return err
-		}
-
-		b.writes(";}\n")
 	}
 
 	// For public functions, check (at runtime) the other args for bounds and
@@ -295,10 +353,10 @@ func (g *gen) writeFuncImplPrologue(b *buffer) error {
 		// For public coroutines, check that we are not suspended in an active
 		// coroutine.
 		if g.currFunk.astFunc.Effect().Coroutine() {
-			b.printf("if ((self->private_impl.active_coroutine != 0) && "+
+			b.printf("if ((self->private_impl.active_coroutine != 0) &&\n"+
 				"(self->private_impl.active_coroutine != %d)) {\n", g.currFunk.coroID)
 			b.writes("self->private_impl.magic = WUFFS_BASE__DISABLED;\n")
-			b.writes("return wuffs_base__error__interleaved_coroutine_calls;\n")
+			b.writes("return wuffs_base__make_status(wuffs_base__error__interleaved_coroutine_calls);\n")
 			b.writes("}\n")
 			b.writes("self->private_impl.active_coroutine = 0;\n")
 		}
@@ -307,15 +365,21 @@ func (g *gen) writeFuncImplPrologue(b *buffer) error {
 	if g.currFunk.astFunc.Effect().Coroutine() ||
 		(g.currFunk.returnsStatus && (len(g.currFunk.derivedVars) > 0)) {
 		// TODO: rename the "status" variable to "ret"?
-		b.printf("wuffs_base__status status = NULL;\n")
+		b.printf("wuffs_base__status status = wuffs_base__make_status(NULL);\n")
 	}
-	b.writes("\n")
+
+	if oldLenB != len(*b) {
+		b.writes("\n")
+	}
 
 	// Generate the local variables.
+	oldLenB = len(*b)
 	if err := g.writeVars(b, &g.currFunk, false); err != nil {
 		return err
 	}
-	b.writes("\n")
+	if oldLenB != len(*b) {
+		b.writes("\n")
+	}
 
 	if g.currFunk.derivedVars != nil {
 		for _, o := range g.currFunk.astFunc.In().Fields() {
@@ -330,15 +394,21 @@ func (g *gen) writeFuncImplPrologue(b *buffer) error {
 }
 
 func (g *gen) writeFuncImplBodyResume(b *buffer) error {
-	if g.currFunk.astFunc.Effect().Coroutine() {
+	if g.currFunk.coroSuspPoint > 0 {
 		// TODO: don't hard-code [0], and allow recursive coroutines.
 		b.printf("uint32_t coro_susp_point = self->private_impl.%s%s[0];\n",
 			pPrefix, g.currFunk.astFunc.FuncName().Str(g.tm))
-		b.printf("if (coro_susp_point) {\n")
-		if err := g.writeResumeSuspend(b, &g.currFunk, false); err != nil {
+
+		resumeBuffer := buffer{}
+		if err := g.writeResumeSuspend(&resumeBuffer, &g.currFunk, false); err != nil {
 			return err
 		}
-		b.writes("}\n")
+		if len(resumeBuffer) > 0 {
+			b.writes("if (coro_susp_point) {\n")
+			b.writex(resumeBuffer)
+			b.writes("}\n")
+		}
+
 		// Generate a coroutine switch similiar to the technique in
 		// https://www.chiark.greenend.org.uk/~sgtatham/coroutines.html
 		//
@@ -358,40 +428,56 @@ func (g *gen) writeFuncImplBody(b *buffer) error {
 }
 
 func (g *gen) writeFuncImplBodySuspend(b *buffer) error {
-	if g.currFunk.astFunc.Effect().Coroutine() {
+	if g.currFunk.coroSuspPoint > 0 {
 		// We've reached the end of the function body. Reset the coroutine
 		// suspension point so that the next call to this function starts at
 		// the top.
-		b.writes("\ngoto ok;ok:") // The goto avoids the "unused label" warning.
+		b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
 		b.printf("self->private_impl.%s%s[0] = 0;\n",
 			pPrefix, g.currFunk.astFunc.FuncName().Str(g.tm))
-		b.writes("goto exit; }\n\n") // Close the coroutine switch.
+		b.writes("goto exit;\n}\n\n") // Close the coroutine switch.
 
-		b.writes("goto suspend;suspend:") // The goto avoids the "unused label" warning.
+		b.writes("goto suspend;\nsuspend:\n") // The goto avoids the "unused label" warning.
 
 		b.printf("self->private_impl.%s%s[0] = "+
-			"wuffs_base__status__is_suspension(status) ? coro_susp_point : 0;\n",
+			"wuffs_base__status__is_suspension(&status) ? coro_susp_point : 0;\n",
 			pPrefix, g.currFunk.astFunc.FuncName().Str(g.tm))
 		if g.currFunk.astFunc.Public() {
 			b.printf("self->private_impl.active_coroutine = "+
-				"wuffs_base__status__is_suspension(status) ? %d : 0;\n", g.currFunk.coroID)
+				"wuffs_base__status__is_suspension(&status) ? %d : 0;\n", g.currFunk.coroID)
 		}
 		if err := g.writeResumeSuspend(b, &g.currFunk, true); err != nil {
 			return err
 		}
 		b.writes("\n")
+
+	} else if g.currFunk.astFunc.Effect().Coroutine() {
+		b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
 	}
 	return nil
 }
 
 func (g *gen) writeFuncImplEpilogue(b *buffer) error {
+	epilogue := ""
 	if g.currFunk.astFunc.Effect().Coroutine() ||
 		(g.currFunk.returnsStatus && (len(g.currFunk.derivedVars) > 0)) {
 
-		b.writes("goto exit;exit:") // The goto avoids the "unused label" warning.
+		b.writes("goto exit;\nexit:\n") // The goto avoids the "unused label" warning.
+
+		if g.currFunk.astFunc.Public() {
+			epilogue = "if (wuffs_base__status__is_error(&status)) {\n" +
+				"self->private_impl.magic = WUFFS_BASE__DISABLED;\n}\n" +
+				"return status;\n"
+		} else {
+			epilogue = "return status;\n"
+		}
+	} else if g.currFunk.astFunc.Out() == nil {
+		epilogue = "return wuffs_base__make_empty_struct();\n"
 	}
 
-	if g.currFunk.derivedVars != nil {
+	if (epilogue == "") && g.currFunk.astFunc.BodyEndsWithReturn() {
+		// No-op.
+	} else if g.currFunk.derivedVars != nil {
 		for _, o := range g.currFunk.astFunc.In().Fields() {
 			o := o.AsField()
 			if err := g.writeSaveDerivedVar(b, "", aPrefix, o.Name(), o.XType()); err != nil {
@@ -401,17 +487,7 @@ func (g *gen) writeFuncImplEpilogue(b *buffer) error {
 		b.writes("\n")
 	}
 
-	if g.currFunk.astFunc.Effect().Coroutine() ||
-		(g.currFunk.returnsStatus && (len(g.currFunk.derivedVars) > 0)) {
-
-		if g.currFunk.astFunc.Public() {
-			b.writes("if (wuffs_base__status__is_error(status)) { " +
-				"self->private_impl.magic = WUFFS_BASE__DISABLED; }\n")
-		}
-		b.writes("return status;\n")
-	} else if g.currFunk.astFunc.Out() == nil {
-		b.writes("return wuffs_base__make_empty_struct();\n")
-	}
+	b.writes(epilogue)
 	return nil
 }
 
@@ -424,7 +500,7 @@ func (g *gen) writeFuncImplArgChecks(b *buffer, n *a.Func) error {
 
 		// TODO: Also check elements, for array-typed arguments.
 		switch {
-		case oTyp.IsIOType() || (oTyp.Decorator() == t.IDPtr):
+		case oTyp.IsIOTokenType() || (oTyp.Decorator() == t.IDPtr):
 			checks = append(checks, fmt.Sprintf("!%s%s", aPrefix, o.Name().Str(g.tm)))
 
 		case oTyp.IsRefined():
@@ -470,10 +546,10 @@ func (g *gen) writeFuncImplArgChecks(b *buffer, n *a.Func) error {
 		}
 		b.writes(c)
 	}
-	b.writes(") {")
+	b.writes(") {\n")
 	b.writes("self->private_impl.magic = WUFFS_BASE__DISABLED;\n")
 	if g.currFunk.astFunc.Effect().Coroutine() {
-		b.writes("return wuffs_base__error__bad_argument;\n\n")
+		b.writes("return wuffs_base__make_status(wuffs_base__error__bad_argument);\n")
 	} else {
 		// TODO: don't assume that the return type is empty.
 		b.printf("return wuffs_base__make_empty_struct();\n")

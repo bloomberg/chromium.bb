@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
@@ -74,32 +75,7 @@ static PositionType CanonicalizeCandidate(const PositionType& candidate) {
 }
 
 template <typename PositionType>
-static PositionType CanonicalPosition(const PositionType& position) {
-  // Sometimes updating selection positions can be extremely expensive and
-  // occur frequently.  Often calling preventDefault on mousedown events can
-  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
-  TRACE_EVENT0("input", "VisibleUnits::canonicalPosition");
-
-  // FIXME (9535):  Canonicalizing to the leftmost candidate means that if
-  // we're at a line wrap, we will ask layoutObjects to paint downstream
-  // carets for other layoutObjects. To fix this, we need to either a) add
-  // code to all paintCarets to pass the responsibility off to the appropriate
-  // layoutObject for VisiblePosition's like these, or b) canonicalize to the
-  // rightmost candidate unless the affinity is upstream.
-  if (position.IsNull())
-    return PositionType();
-
-  DCHECK(position.GetDocument());
-  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
-
-  const PositionType& backward_candidate = MostBackwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(backward_candidate))
-    return backward_candidate;
-
-  const PositionType& forward_candidate = MostForwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(forward_candidate))
-    return forward_candidate;
-
+static PositionType SnapFallbackTemplate(const PositionType& position) {
   // When neither upstream or downstream gets us to a candidate
   // (upstream/downstream won't leave blocks or enter new ones), we search
   // forward and backward until we find one.
@@ -152,12 +128,93 @@ static PositionType CanonicalPosition(const PositionType& position) {
   return next;
 }
 
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> SnapBackwardTemplate(
+    const PositionTemplate<Strategy>& position) {
+  // Sometimes updating selection positions can be extremely expensive and
+  // occur frequently.  Often calling preventDefault on mousedown events can
+  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
+  TRACE_EVENT0("input", "VisibleUnits::SnapBackward");
+
+  if (position.IsNull())
+    return PositionWithAffinityTemplate<Strategy>();
+
+  DCHECK(position.GetDocument());
+  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
+
+  const PositionTemplate<Strategy>& candidate1 =
+      MostBackwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(candidate1)) {
+    return PositionWithAffinityTemplate<Strategy>(candidate1,
+                                                  TextAffinity::kUpstream);
+  }
+
+  const PositionTemplate<Strategy>& candidate2 =
+      MostForwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(candidate2)) {
+    return PositionWithAffinityTemplate<Strategy>(candidate2,
+                                                  TextAffinity::kDownstream);
+  }
+
+  return PositionWithAffinityTemplate<Strategy>(SnapFallbackTemplate(position),
+                                                TextAffinity::kDownstream);
+}
+
+PositionWithAffinity SnapBackward(const Position& position) {
+  return SnapBackwardTemplate(position);
+}
+
+PositionInFlatTreeWithAffinity SnapBackward(
+    const PositionInFlatTree& position) {
+  return SnapBackwardTemplate(position);
+}
+
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> SnapForwardTemplate(
+    const PositionTemplate<Strategy>& position) {
+  // Sometimes updating selection positions can be extremely expensive and
+  // occur frequently.  Often calling preventDefault on mousedown events can
+  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
+  TRACE_EVENT0("input", "VisibleUnits::SnapForward");
+
+  if (position.IsNull())
+    return PositionWithAffinityTemplate<Strategy>();
+
+  DCHECK(position.GetDocument());
+  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
+
+  const PositionTemplate<Strategy>& candidate1 =
+      MostForwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(candidate1)) {
+    return PositionWithAffinityTemplate<Strategy>(candidate1,
+                                                  TextAffinity::kDownstream);
+  }
+
+  const PositionTemplate<Strategy>& candidate2 =
+      MostBackwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(candidate2)) {
+    return PositionWithAffinityTemplate<Strategy>(candidate2,
+                                                  TextAffinity::kDownstream);
+  }
+
+  return PositionWithAffinityTemplate<Strategy>(SnapFallbackTemplate(position),
+                                                TextAffinity::kDownstream);
+}
+
+PositionWithAffinity SnapForward(const Position& position) {
+  return SnapForwardTemplate(position);
+}
+
+PositionInFlatTreeWithAffinity SnapForward(const PositionInFlatTree& position) {
+  return SnapForwardTemplate(position);
+}
+
 Position CanonicalPositionOf(const Position& position) {
-  return CanonicalPosition(position);
+  return SnapBackward(position).GetPosition();
 }
 
 PositionInFlatTree CanonicalPositionOf(const PositionInFlatTree& position) {
-  return CanonicalPosition(position);
+  return SnapBackward(position).GetPosition();
 }
 
 template <typename Strategy>
@@ -452,19 +509,33 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
   if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
     return false;
+  if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object)) {
+    // Returns false for empty content editable, e.g.
+    //  - <div contenteditable></div>
+    //  - <div contenteditable><span></span></div>
+    // Note: tests[1][2] require this.
+    // [1] editing/style/underline.html
+    // [2] editing/inserting/return-with-object-element.html
+    if (block_flow->HasNGInlineNodeData() &&
+        block_flow->GetNGInlineNodeData()
+            ->ItemsData(false)
+            .text_content.IsEmpty() &&
+        block_flow->HasLineIfEmpty())
+      return false;
+  }
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
        o = o->NextInPreOrder()) {
     if (o->NonPseudoNode()) {
-      if ((o->IsText() && ToLayoutText(o)->HasNonCollapsedText()) ||
-          (o->IsBox() && ToLayoutBox(o)->PixelSnappedLogicalHeight()) ||
+      if ((o->IsText() && To<LayoutText>(o)->HasNonCollapsedText()) ||
+          (o->IsBox() && To<LayoutBox>(o)->PixelSnappedLogicalHeight()) ||
           (o->IsLayoutInline() && IsEmptyInline(LineLayoutItem(o)) &&
            // TODO(crbug.com/771398): Find alternative ways to check whether an
            // empty LayoutInline is rendered, without checking InlineBox.
            BoundingBoxLogicalHeight(
                o,
-               ToLayoutInline(o)->PhysicalLinesBoundingBox().ToLayoutRect())))
+               To<LayoutInline>(o)->PhysicalLinesBoundingBox().ToLayoutRect())))
         return true;
     }
   }
@@ -514,7 +585,7 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
   if (!layout_object)
     return false;
 
-  const LayoutText* text_layout_object = ToLayoutText(layout_object);
+  const auto* text_layout_object = To<LayoutText>(layout_object);
   const int text_offset =
       offset_in_node - text_layout_object->TextStartOffset();
   if (!text_layout_object->ContainsCaretOffset(text_offset))
@@ -566,7 +637,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
   // There is a VisiblePosition inside an empty inline-block container.
   return layout_object->IsAtomicInlineLevel() &&
          CanHaveChildrenForEditing(node) &&
-         !ToLayoutBox(layout_object)->Size().IsEmpty() &&
+         !To<LayoutBox>(layout_object)->Size().IsEmpty() &&
          !HasRenderedNonAnonymousDescendantsWithHeight(layout_object);
 }
 
@@ -688,7 +759,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
     // return current position if it is in laid out text
     if (!layout_object->IsText())
       continue;
-    const LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    const auto* const text_layout_object = To<LayoutText>(layout_object);
     if (!text_layout_object->HasNonCollapsedText())
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -727,12 +798,12 @@ namespace {
 bool HasInvisibleFirstLetter(const Node* node) {
   if (!node || !node->IsTextNode())
     return false;
-  const LayoutTextFragment* remaining_text =
-      ToLayoutTextFragmentOrNull(node->GetLayoutObject());
+  const auto* remaining_text =
+      DynamicTo<LayoutTextFragment>(node->GetLayoutObject());
   if (!remaining_text || !remaining_text->IsRemainingTextLayoutObject())
     return false;
-  const LayoutTextFragment* first_letter =
-      ToLayoutTextFragmentOrNull(AssociatedLayoutObjectOf(*node, 0));
+  const auto* first_letter =
+      DynamicTo<LayoutTextFragment>(AssociatedLayoutObjectOf(*node, 0));
   if (!first_letter || first_letter == remaining_text)
     return false;
   return first_letter->StyleRef().Visibility() != EVisibility::kVisible ||
@@ -830,7 +901,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
     // return current position if it is in laid out text
     if (!layout_object->IsText())
       continue;
-    const LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    const auto* const text_layout_object = To<LayoutText>(layout_object);
     if (!text_layout_object->HasNonCollapsedText())
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -1229,7 +1300,7 @@ static Vector<FloatQuad> ComputeTextBounds(
     LayoutObject* const layout_object = node.GetLayoutObject();
     if (!layout_object || !layout_object->IsText())
       continue;
-    const LayoutText* layout_text = ToLayoutText(layout_object);
+    const auto* layout_text = To<LayoutText>(layout_object);
     unsigned start_offset =
         node == start_container ? start_position.OffsetInContainerNode() : 0;
     unsigned end_offset = node == end_container

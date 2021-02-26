@@ -20,7 +20,7 @@ namespace base {
 class SamplingHeapProfilerTest : public ::testing::Test {
  public:
   void SetUp() override {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     allocator::InitializeAllocatorShim();
 #endif
     SamplingHeapProfiler::Init();
@@ -222,7 +222,13 @@ TEST_F(SamplingHeapProfilerTest, DISABLED_SequentialLargeSmallStats) {
 
 // Platform TLS: alloc+free[ns]: 22.184  alloc[ns]: 8.910  free[ns]: 13.274
 // thread_local: alloc+free[ns]: 18.353  alloc[ns]: 5.021  free[ns]: 13.331
-TEST_F(SamplingHeapProfilerTest, MANUAL_SamplerMicroBenchmark) {
+// TODO(crbug.com/1117342) Disabled on Mac
+#if defined(OS_MAC)
+#define MAYBE_MANUAL_SamplerMicroBenchmark DISABLED_MANUAL_SamplerMicroBenchmark
+#else
+#define MAYBE_MANUAL_SamplerMicroBenchmark MANUAL_SamplerMicroBenchmark
+#endif
+TEST_F(SamplingHeapProfilerTest, MAYBE_MANUAL_SamplerMicroBenchmark) {
   // With the sampling interval of 100KB it happens to record ~ every 450th
   // allocation in the browser process. We model this pattern here.
   constexpr size_t sampling_interval = 100000;
@@ -270,7 +276,13 @@ class StartStopThread : public SimpleThread {
   WaitableEvent* event_;
 };
 
-TEST_F(SamplingHeapProfilerTest, StartStop) {
+// Flaky on Mac. crbug.com/1116543
+#if defined(OS_MAC)
+#define MAYBE_StartStop DISABLED_StartStop
+#else
+#define MAYBE_StartStop StartStop
+#endif
+TEST_F(SamplingHeapProfilerTest, MAYBE_StartStop) {
   auto* profiler = SamplingHeapProfiler::Get();
   EXPECT_EQ(0, GetRunningSessionsCount());
   profiler->Start();

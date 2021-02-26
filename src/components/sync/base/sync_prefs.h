@@ -20,16 +20,11 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/user_demographics.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "third_party/metrics_proto/user_demographics.pb.h"
 
+class PrefRegistrySimple;
 class PrefService;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 namespace syncer {
 
@@ -69,7 +64,7 @@ class SyncPrefs : public CryptoSyncPrefs,
   explicit SyncPrefs(PrefService* pref_service);
   ~SyncPrefs() override;
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
   void RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
@@ -169,12 +164,23 @@ class SyncPrefs : public CryptoSyncPrefs,
   bool IsPassphrasePrompted() const;
   void SetPassphrasePrompted(bool value);
 
+#if defined(OS_ANDROID)
+  // Sets a boolean pref representing that Sync should no longer respect whether
+  // Android master sync is enabled/disabled. It is set per-device and never
+  // gets cleared.
+  void SetDecoupledFromAndroidMasterSync();
+
+  // Gets the value for the boolean pref representing whether Sync should no
+  // longer respect if Android master sync is enabled/disabled. Returns false
+  // until |SetDecoupledFromAndroidMasterSync()| is called.
+  bool GetDecoupledFromAndroidMasterSync();
+#endif  // defined(OS_ANDROID)
+
   // For testing.
   void SetManagedForTest(bool is_managed);
 
   // Get/set for the last known sync invalidation versions.
-  void GetInvalidationVersions(
-      std::map<ModelType, int64_t>* invalidation_versions) const;
+  std::map<ModelType, int64_t> GetInvalidationVersions() const;
   void UpdateInvalidationVersions(
       const std::map<ModelType, int64_t>& invalidation_versions);
 
@@ -188,14 +194,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
 
-  // Gets the synced user’s birth year and gender from synced prefs and adds
-  // noise to the birth year, see doc of UserDemographicsStatus in
-  // components/sync/base/user_demographics.h for more details. You need to
-  // provide an accurate |now| time that represents the current time.
-  UserDemographicsResult GetUserNoisedBirthYearAndGender(base::Time now);
-
  private:
-  static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,
+  static void RegisterTypeSelectedPref(PrefRegistrySimple* prefs,
                                        UserSelectableType type);
 
   void OnSyncManagedPrefChanged();
@@ -228,11 +228,7 @@ void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service);
 void ClearObsoleteFirstSyncTime(PrefService* pref_service);
 void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
-#if defined(OS_CHROMEOS)
-void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service);
-#endif  // defined(OS_CHROMEOS)
 void MigrateSyncSuppressedPref(PrefService* pref_service);
-void ClearObsoleteMemoryPressurePrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

@@ -28,11 +28,11 @@ class CFX_GraphStateData {
 
   CFX_GraphStateData();
   CFX_GraphStateData(const CFX_GraphStateData& src);
-  CFX_GraphStateData(CFX_GraphStateData&& src);
+  CFX_GraphStateData(CFX_GraphStateData&& src) noexcept;
   ~CFX_GraphStateData();
 
   CFX_GraphStateData& operator=(const CFX_GraphStateData& that);
-  CFX_GraphStateData& operator=(CFX_GraphStateData&& that);
+  CFX_GraphStateData& operator=(CFX_GraphStateData&& that) noexcept;
 
   LineCap m_LineCap = LineCapButt;
   LineJoin m_LineJoin = LineJoinMiter;
@@ -45,8 +45,7 @@ class CFX_GraphStateData {
 class CFX_RetainableGraphStateData : public Retainable,
                                      public CFX_GraphStateData {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   RetainPtr<CFX_RetainableGraphStateData> Clone() const;
 

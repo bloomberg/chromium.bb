@@ -4,13 +4,22 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+// #import 'chrome://resources/cr_elements/icons.m.js';
 
 // #import {downAndUp, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise, flushTasks} from '../test_util.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-icon-button', function() {
+  /** @type {!CrIconButtonElement} */
   let button;
+
+  /** @override */
+  suiteSetup(function() {
+    /* #ignore */ return PolymerTest.importHtml(
+        /* #ignore */ 'chrome://resources/cr_elements/icons.html');
+  });
 
   /** @param {string} key */
   function press(key) {
@@ -19,8 +28,9 @@ suite('cr-icon-button', function() {
   }
 
   setup(async () => {
-    PolymerTest.clearBody();
-    button = document.createElement('cr-icon-button');
+    document.body.innerHTML = '';
+    button = /** @type {!CrIconButtonElement} */ (
+        document.createElement('cr-icon-button'));
     document.body.appendChild(button);
     await test_util.flushTasks();
   });
@@ -43,6 +53,16 @@ suite('cr-icon-button', function() {
     button.$$('iron-icon').icon = 'another-icon-key';
     button.ironIcon = '';
     assertFalse(!!button.$$('iron-icon'));
+  });
+
+  test('iron-icon children svg and img elements have role set to none', () => {
+    button.ironIcon = 'cr:clear';
+    assertTrue(!!button.shadowRoot);
+    const ironIcons = button.shadowRoot.querySelectorAll('iron-icon');
+    assertEquals(1, ironIcons.length);
+    const iconChildren = ironIcons[0].shadowRoot.querySelectorAll('svg', 'img');
+    assertEquals(1, iconChildren.length);
+    assertEquals(iconChildren[0].getAttribute('role'), 'none');
   });
 
   test('enter emits click event', async () => {
@@ -112,7 +132,8 @@ suite('cr-icon-button', function() {
     document.body.innerHTML =
         '<cr-icon-button custom-tab-index="-1"></cr-icon-button>';
     await test_util.flushTasks();
-    button = document.body.querySelector('cr-icon-button');
+    button = /** @type {!CrIconButtonElement} */ (
+        document.body.querySelector('cr-icon-button'));
     assertEquals('-1', button.getAttribute('tabindex'));
     button.disabled = true;
     assertEquals('-1', button.getAttribute('tabindex'));
@@ -122,7 +143,8 @@ suite('cr-icon-button', function() {
 
   test('tabindex update', async () => {
     document.body.innerHTML = '<cr-icon-button></cr-icon-button>';
-    button = document.body.querySelector('cr-icon-button');
+    button = /** @type {!CrIconButtonElement} */ (
+        document.body.querySelector('cr-icon-button'));
     assertEquals('0', button.getAttribute('tabindex'));
     button.customTabIndex = 1;
     assertEquals('1', button.getAttribute('tabindex'));

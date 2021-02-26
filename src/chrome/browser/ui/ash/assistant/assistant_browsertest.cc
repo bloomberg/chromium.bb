@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/run_loop.h"
+#include "base/test/bind.h"
+#include "base/test/scoped_run_loop_timeout.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/service.h"
 #include "content/public/test/browser_test.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
 namespace assistant {
@@ -25,14 +25,6 @@ constexpr int kVersion = 1;
 
 constexpr int kStartBrightnessPercent = 50;
 
-// Ensures that |str_| starts with |prefix_|. If it doesn't, this will print a
-// nice error message.
-#define EXPECT_STARTS_WITH(str_, prefix_)                                      \
-  ({                                                                           \
-    EXPECT_TRUE(base::StartsWith(str_, prefix_, base::CompareCase::SENSITIVE)) \
-        << "Expected '" << str_ << "'' to start with '" << prefix_ << "'";     \
-  })
-
 // Ensures that |value_| is within the range {min_, max_}. If it isn't, this
 // will print a nice error message.
 #define EXPECT_WITHIN_RANGE(min_, value_, max_)                \
@@ -44,27 +36,22 @@ constexpr int kStartBrightnessPercent = 50;
 
 }  // namespace
 
-class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
-                             public testing::WithParamInterface<bool> {
+class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
  public:
-  AssistantBrowserTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          features::kAssistantResponseProcessingV2);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          features::kAssistantResponseProcessingV2);
-    }
-  }
-
+  AssistantBrowserTest() = default;
   ~AssistantBrowserTest() override = default;
+
+  AssistantTestMixin* tester() { return &tester_; }
 
   void ShowAssistantUi() {
     if (!tester()->IsVisible())
       tester()->PressAssistantKey();
   }
 
-  AssistantTestMixin* tester() { return &tester_; }
+  void CloseAssistantUi() {
+    if (tester()->IsVisible())
+      tester()->PressAssistantKey();
+  }
 
   void InitializeBrightness() {
     auto* power_manager = chromeos::PowerManagerClient::Get();
@@ -127,7 +114,7 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(AssistantBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest,
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
                        ShouldOpenAssistantUiWhenPressingAssistantKey) {
   tester()->StartAssistantAndWaitForReady();
 
@@ -136,7 +123,7 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest,
   EXPECT_TRUE(tester()->IsVisible());
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldDisplayTextResponse) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayTextResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -151,23 +138,23 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldDisplayTextResponse) {
   });
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldDisplayCardResponse) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayCardResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
 
-  EXPECT_TRUE(tester()->IsVisible());
+  ASSERT_TRUE(tester()->IsVisible());
 
   tester()->SendTextQuery("What is the highest mountain in the world?");
   tester()->ExpectCardResponse("Mount Everest");
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpVolume) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpVolume) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
 
-  EXPECT_TRUE(tester()->IsVisible());
+  ASSERT_TRUE(tester()->IsVisible());
 
   auto* cras = chromeos::CrasAudioHandler::Get();
   constexpr int kStartVolumePercent = 50;
@@ -184,12 +171,12 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpVolume) {
                                    cras));
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownVolume) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownVolume) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
 
-  EXPECT_TRUE(tester()->IsVisible());
+  ASSERT_TRUE(tester()->IsVisible());
 
   auto* cras = chromeos::CrasAudioHandler::Get();
   constexpr int kStartVolumePercent = 50;
@@ -206,12 +193,12 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownVolume) {
                                    cras));
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpBrightness) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpBrightness) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
 
-  EXPECT_TRUE(tester()->IsVisible());
+  ASSERT_TRUE(tester()->IsVisible());
 
   InitializeBrightness();
 
@@ -220,12 +207,12 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpBrightness) {
   ExpectBrightnessUp();
 }
 
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownBrightness) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
 
-  EXPECT_TRUE(tester()->IsVisible());
+  ASSERT_TRUE(tester()->IsVisible());
 
   InitializeBrightness();
 
@@ -234,64 +221,44 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownBrightness) {
   ExpectBrightnessDown();
 }
 
-// We parameterize all AssistantBrowserTests to verify that they work for both
-// response processing v1 as well as response processing v2.
-INSTANTIATE_TEST_SUITE_P(All, AssistantBrowserTest, testing::Bool());
-
-// TODO(b/153485859): Move to assistant_timers_browsertest.cc.
-class AssistantTimersV2BrowserTest : public MixinBasedInProcessBrowserTest {
- public:
-  AssistantTimersV2BrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kAssistantTimersV2);
-  }
-
-  AssistantTimersV2BrowserTest(const AssistantTimersV2BrowserTest&) = delete;
-  AssistantTimersV2BrowserTest& operator=(const AssistantTimersV2BrowserTest&) =
-      delete;
-
-  ~AssistantTimersV2BrowserTest() override = default;
-
-  void ShowAssistantUi() {
-    if (!tester()->IsVisible())
-      tester()->PressAssistantKey();
-  }
-
-  AssistantTestMixin* tester() { return &tester_; }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
-                             kVersion};
-};
-
-IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
-                       ShouldDismissTimerNotificationsWhenDisablingAssistant) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
+                       ShouldPuntWhenChangingUnsupportedSetting) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
-  EXPECT_TRUE(tester()->IsVisible());
 
-  // Confirm no Assistant notifications are currently being shown.
-  auto* message_center = message_center::MessageCenter::Get();
-  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
+  ASSERT_TRUE(tester()->IsVisible());
 
-  // Start a timer for one minute.
-  tester()->SendTextQuery("Set a timer for 1 minute.");
+  tester()->SendTextQuery("enable night mode");
 
-  // Check for a stable substring of the expected answers.
-  tester()->ExpectTextResponse("1 min.");
+  tester()->ExpectTextResponse("Night Mode isn't available on your device");
+}
 
-  // Confirm that an Assistant timer notification is now showing.
-  auto notifications = message_center->FindNotificationsByAppId("assistant");
-  ASSERT_EQ(1u, notifications.size());
-  EXPECT_STARTS_WITH((*notifications.begin())->id(), "assistant/timer");
+// TODO(crbug.com/1112278): Disabled because it's flaky.
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
+                       DISABLED_ShouldShowSingleErrorOnNetworkDown) {
+  tester()->StartAssistantAndWaitForReady();
 
-  // Disable Assistant.
-  tester()->SetAssistantEnabled(false);
+  ShowAssistantUi();
+
+  ASSERT_TRUE(tester()->IsVisible());
+
+  tester()->DisableFakeS3Server();
+
   base::RunLoop().RunUntilIdle();
 
-  // Confirm that our Assistant timer notification has been dismissed.
-  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
+  tester()->SendTextQuery("Is this thing on?");
+
+  tester()->ExpectErrorResponse(
+      "Something went wrong. Try again in a few seconds");
+
+  // Make sure no further changes happen to the view hierarchy.
+  tester()->ExpectNoChange(base::TimeDelta::FromSeconds(1));
+
+  // This is necessary to prevent a UserInitiatedVoicelessActivity from
+  // blocking test harness teardown while we wait on assistant to finish
+  // the interaction.
+  CloseAssistantUi();
 }
 
 }  // namespace assistant

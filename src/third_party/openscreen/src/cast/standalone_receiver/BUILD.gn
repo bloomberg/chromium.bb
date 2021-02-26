@@ -9,31 +9,28 @@ import("//build_overrides/build.gni")
 # standalone platform implementation; since this is itself a standalone
 # application.
 if (!build_with_chromium) {
-  executable("cast_receiver") {
-    sources = [
-      "cast_agent.cc",
-      "cast_agent.h",
-      "cast_socket_message_port.cc",
-      "cast_socket_message_port.h",
-      "main.cc",
-      "streaming_playback_controller.cc",
-      "streaming_playback_controller.h",
-    ]
-    deps = [
-      "../../platform",
-      "../../third_party/jsoncpp",
-      "../common:public",
-      "../common/channel/proto:channel_proto",
-      "../receiver:channel",
-      "../streaming:receiver",
-    ]
+  shared_sources = [
+    "cast_service.cc",
+    "cast_service.h",
+    "mirroring_application.cc",
+    "mirroring_application.h",
+    "streaming_playback_controller.cc",
+    "streaming_playback_controller.h",
+  ]
 
-    defines = []
-    include_dirs = []
-    lib_dirs = []
-    libs = []
-    if (have_ffmpeg && have_libsdl2) {
-      defines += [ "CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS" ]
+  shared_deps = [
+    "../common:public",
+    "../streaming:receiver",
+  ]
+
+  have_external_libs = have_ffmpeg && have_libsdl2
+
+  if (have_external_libs) {
+    source_set("standalone_receiver_sdl") {
+      sources = shared_sources
+      deps = shared_deps
+
+      defines = [ "CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS" ]
       sources += [
         "avcodec_glue.h",
         "decoder.cc",
@@ -47,14 +44,36 @@ if (!build_with_chromium) {
         "sdl_video_player.cc",
         "sdl_video_player.h",
       ]
-      include_dirs += ffmpeg_include_dirs + libsdl2_include_dirs
-      lib_dirs += ffmpeg_lib_dirs + libsdl2_lib_dirs
-      libs += ffmpeg_libs + libsdl2_libs
+      include_dirs = ffmpeg_include_dirs + libsdl2_include_dirs
+      lib_dirs = ffmpeg_lib_dirs + libsdl2_lib_dirs
+      libs = ffmpeg_libs + libsdl2_libs
+    }
+  }
+
+  source_set("standalone_receiver_dummy") {
+    sources = shared_sources
+    deps = shared_deps
+
+    sources += [
+      "dummy_player.cc",
+      "dummy_player.h",
+    ]
+  }
+
+  executable("cast_receiver") {
+    sources = [ "main.cc" ]
+
+    deps = [
+      "../receiver:agent",
+      "../receiver:channel",
+    ]
+
+    configs += [ "../common:certificate_config" ]
+
+    if (have_external_libs) {
+      deps += [ ":standalone_receiver_sdl" ]
     } else {
-      sources += [
-        "dummy_player.cc",
-        "dummy_player.h",
-      ]
+      deps += [ ":standalone_receiver_dummy" ]
     }
   }
 }

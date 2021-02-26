@@ -17,7 +17,7 @@
 #include "components/viz/test/test_image_factory.h"
 #include "gpu/config/gpu_feature_info.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace gpu {
 class GLInProcessContext;
@@ -34,6 +34,7 @@ class GrContextForGLES2Interface;
 }
 
 namespace viz {
+class DisplayCompositorMemoryAndTaskController;
 
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
 
@@ -56,7 +57,7 @@ class TestInProcessContextProvider
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
-  class GrContext* GrContext() override;
+  class GrDirectContext* GrContext() override;
   gpu::SharedImageInterface* SharedImageInterface() override;
   ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
@@ -82,6 +83,7 @@ class TestInProcessContextProvider
   gpu::Capabilities caps_;
 
   // Used if support_gles2_interface.
+  std::unique_ptr<DisplayCompositorMemoryAndTaskController> display_controller_;
   std::unique_ptr<gpu::GLInProcessContext> gles2_context_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_implementation_gles2_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;

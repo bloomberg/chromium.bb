@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -23,15 +23,22 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/updater/win/net/net_util.h"
 #include "chrome/updater/win/net/network.h"
+#include "chrome/updater/win/net/proxy_info.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
+#include "chrome/updater/win/net/scoped_winttp_proxy_info.h"
 #include "chrome/updater/win/util.h"
 #include "url/url_constants.h"
 
 namespace updater {
 
 namespace {
+
+constexpr base::TaskTraits kTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 void CrackUrl(const GURL& url,
               bool* is_https,
@@ -50,71 +57,98 @@ void CrackUrl(const GURL& url,
 
 }  // namespace
 
-NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(const HINTERNET& session_handle)
+NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(
+    const HINTERNET& session_handle,
+    scoped_refptr<ProxyConfiguration> proxy_configuration)
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      session_handle_(session_handle) {}
+      session_handle_(session_handle),
+      proxy_configuration_(proxy_configuration) {}
 
-NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() = default;
+NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() {
+  DVLOG(3) << "~NetworkFetcherWinHTTP";
+}
 
 void NetworkFetcherWinHTTP::Close() {
+  // |write_data_callback_| maintains an outstanding reference to this object
+  // and the reference must be released to avoid leaking the object.
+  write_data_callback_.Reset();
   request_handle_.reset();
 }
 
+void NetworkFetcherWinHTTP::CompleteFetch() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!file_.IsValid()) {
+    std::move(fetch_complete_callback_).Run();
+    return;
+  }
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce([](base::File& file) { file.Close(); }, std::ref(file_)),
+      base::BindOnce(&NetworkFetcherWinHTTP::CompleteFetch, this));
+}
+
 std::string NetworkFetcherWinHTTP::GetResponseBody() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return post_response_body_;
 }
 
 HRESULT NetworkFetcherWinHTTP::GetNetError() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return net_error_;
 }
 
 std::string NetworkFetcherWinHTTP::GetHeaderETag() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return etag_;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return header_etag_;
 }
 
-int64_t NetworkFetcherWinHTTP::GetXHeaderRetryAfterSec() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return xheader_retry_after_sec_;
+std::string NetworkFetcherWinHTTP::GetHeaderXCupServerProof() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return header_x_cup_server_proof_;
+}
+
+int64_t NetworkFetcherWinHTTP::GetHeaderXRetryAfterSec() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return header_x_retry_after_sec_;
 }
 
 base::FilePath NetworkFetcherWinHTTP::GetFilePath() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return file_path_;
 }
 
 int64_t NetworkFetcherWinHTTP::GetContentSize() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return content_size_;
 }
 
 void NetworkFetcherWinHTTP::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     FetchStartedCallback fetch_started_callback,
     FetchProgressCallback fetch_progress_callback,
     FetchCompleteCallback fetch_complete_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   url_ = url;
   fetch_started_callback_ = std::move(fetch_started_callback);
   fetch_progress_callback_ = std::move(fetch_progress_callback);
   fetch_complete_callback_ = std::move(fetch_complete_callback);
 
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
-  CrackUrl(url, &is_https_, &host_, &port_, &path_for_request_);
+  DCHECK(url_.SchemeIsHTTPOrHTTPS());
+  CrackUrl(url_, &is_https_, &host_, &port_, &path_for_request_);
 
   verb_ = L"POST";
-  content_type_ = L"Content-Type: application/json\r\n";
-  write_data_callback_ = base::BindRepeating(
-      &NetworkFetcherWinHTTP::WriteDataToMemory, base::Unretained(this));
+  content_type_ = content_type;
+  write_data_callback_ =
+      base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToMemory, this);
 
   net_error_ = BeginFetch(post_data, post_additional_headers);
+
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::DownloadToFile(
@@ -123,7 +157,7 @@ void NetworkFetcherWinHTTP::DownloadToFile(
     FetchStartedCallback fetch_started_callback,
     FetchProgressCallback fetch_progress_callback,
     FetchCompleteCallback fetch_complete_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   url_ = url;
   file_path_ = file_path;
@@ -135,25 +169,32 @@ void NetworkFetcherWinHTTP::DownloadToFile(
   CrackUrl(url, &is_https_, &host_, &port_, &path_for_request_);
 
   verb_ = L"GET";
-  write_data_callback_ = base::BindRepeating(
-      &NetworkFetcherWinHTTP::WriteDataToFile, base::Unretained(this));
+  write_data_callback_ =
+      base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToFile, this);
 
   net_error_ = BeginFetch({}, {});
+
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 HRESULT NetworkFetcherWinHTTP::BeginFetch(
     const std::string& data,
-    const base::flat_map<std::string, std::string>& additional_headers) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    base::flat_map<std::string, std::string> additional_headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   connect_handle_ = Connect();
   if (!connect_handle_.get())
     return HRESULTFromLastError();
 
+  base::Optional<ScopedWinHttpProxyInfo> winhttp_proxy_info =
+      proxy_configuration_->GetProxyForUrl(session_handle_, url_);
+
   request_handle_ = OpenRequest();
   if (!request_handle_.get())
     return HRESULTFromLastError();
+
+  SetProxyForRequest(request_handle_.get(), winhttp_proxy_info);
 
   const auto winhttp_callback = ::WinHttpSetStatusCallback(
       request_handle_.get(), &NetworkFetcherWinHTTP::WinHttpStatusCallback,
@@ -174,17 +215,17 @@ HRESULT NetworkFetcherWinHTTP::BeginFetch(
   if (FAILED(hr))
     return hr;
 
-  if (!content_type_.empty()) {
-    ::WinHttpAddRequestHeaders(
-        request_handle_.get(), content_type_.data(), content_type_.size(),
-        WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
-  }
+  if (!content_type_.empty())
+    additional_headers.insert({"Content-Type", content_type_});
+
   for (const auto& header : additional_headers) {
     const auto raw_header = base::SysUTF8ToWide(
         base::StrCat({header.first, ": ", header.second, "\r\n"}));
-    ::WinHttpAddRequestHeaders(
-        request_handle_.get(), raw_header.c_str(), raw_header.size(),
-        WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
+    if (!::WinHttpAddRequestHeaders(
+            request_handle_.get(), raw_header.c_str(), raw_header.size(),
+            WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
+      PLOG(ERROR) << "Failed to set the request header: " << raw_header;
+    }
   }
 
   hr = SendRequest(data);
@@ -195,13 +236,13 @@ HRESULT NetworkFetcherWinHTTP::BeginFetch(
 }
 
 scoped_hinternet NetworkFetcherWinHTTP::Connect() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return scoped_hinternet(::WinHttpConnect(
       session_handle_, base::SysUTF8ToWide(host_).c_str(), port_, 0));
 }
 
 scoped_hinternet NetworkFetcherWinHTTP::OpenRequest() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   uint32_t flags = WINHTTP_FLAG_REFRESH;
   if (is_https_)
     flags |= WINHTTP_FLAG_SECURE;
@@ -212,7 +253,7 @@ scoped_hinternet NetworkFetcherWinHTTP::OpenRequest() {
 }
 
 HRESULT NetworkFetcherWinHTTP::SendRequest(const std::string& data) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   VLOG(2) << data;
 
@@ -229,7 +270,7 @@ HRESULT NetworkFetcherWinHTTP::SendRequest(const std::string& data) {
 }
 
 void NetworkFetcherWinHTTP::SendRequestComplete() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::string16 all;
   QueryHeadersString(
@@ -240,18 +281,18 @@ void NetworkFetcherWinHTTP::SendRequestComplete() {
 
   net_error_ = ReceiveResponse();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 HRESULT NetworkFetcherWinHTTP::ReceiveResponse() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!::WinHttpReceiveResponse(request_handle_.get(), nullptr))
     return HRESULTFromLastError();
   return S_OK;
 }
 
-void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void NetworkFetcherWinHTTP::HeadersAvailable() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::string16 all;
   QueryHeadersString(request_handle_.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF,
@@ -262,7 +303,7 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
   net_error_ = QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_STATUS_CODE,
                                WINHTTP_HEADER_NAME_BY_INDEX, &response_code);
   if (FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
@@ -271,88 +312,81 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
       QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_CONTENT_LENGTH,
                       WINHTTP_HEADER_NAME_BY_INDEX, &content_length);
   if (FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
   base::string16 etag;
   if (SUCCEEDED(QueryHeadersString(request_handle_.get(), WINHTTP_QUERY_ETAG,
                                    WINHTTP_HEADER_NAME_BY_INDEX, &etag))) {
-    etag_ = base::SysWideToUTF8(etag);
+    header_etag_ = base::SysWideToUTF8(etag);
+  }
+
+  base::string16 xheader_cup_server_proof;
+  if (SUCCEEDED(QueryHeadersString(
+          request_handle_.get(), WINHTTP_QUERY_CUSTOM,
+          base::SysUTF8ToWide(
+              update_client::NetworkFetcher::kHeaderXCupServerProof)
+              .c_str(),
+          &xheader_cup_server_proof))) {
+    header_x_cup_server_proof_ = base::SysWideToUTF8(xheader_cup_server_proof);
   }
 
   int xheader_retry_after_sec = 0;
   if (SUCCEEDED(QueryHeadersInt(
           request_handle_.get(), WINHTTP_QUERY_CUSTOM,
-          base::SysUTF8ToWide(
-              update_client::NetworkFetcher::kHeaderXRetryAfter),
+          base::SysUTF8ToWide(update_client::NetworkFetcher::kHeaderXRetryAfter)
+              .c_str(),
           &xheader_retry_after_sec))) {
-    xheader_retry_after_sec_ = xheader_retry_after_sec;
+    header_x_retry_after_sec_ = xheader_retry_after_sec;
   }
 
   std::move(fetch_started_callback_).Run(response_code, content_length);
 
-  net_error_ = QueryDataAvailable();
+  // Start reading the body of response.
+  net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
-HRESULT NetworkFetcherWinHTTP::QueryDataAvailable() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!::WinHttpQueryDataAvailable(request_handle_.get(), nullptr))
-    return HRESULTFromLastError();
-  return S_OK;
-}
+HRESULT NetworkFetcherWinHTTP::ReadData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-void NetworkFetcherWinHTTP::QueryDataAvailableComplete(
-    size_t num_bytes_available) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  net_error_ = ReadData(num_bytes_available);
-  if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
-}
-
-HRESULT NetworkFetcherWinHTTP::ReadData(size_t num_bytes_available) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  const int num_bytes_to_read = base::saturated_cast<int>(num_bytes_available);
-  read_buffer_.resize(num_bytes_to_read);
+  // Use a fixed buffer size, larger than the internal WinHTTP buffer size (8K),
+  // according to the documentation for WinHttpReadData.
+  constexpr size_t kNumBytesToRead = 0x4000;  // 16KiB.
+  read_buffer_.resize(kNumBytesToRead);
 
   if (!::WinHttpReadData(request_handle_.get(), &read_buffer_.front(),
                          read_buffer_.size(), nullptr)) {
     return HRESULTFromLastError();
   }
+
+  DVLOG(3) << "reading data...";
   return S_OK;
 }
 
 void NetworkFetcherWinHTTP::ReadDataComplete(size_t num_bytes_read) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  fetch_progress_callback_.Run(base::saturated_cast<int64_t>(num_bytes_read));
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   read_buffer_.resize(num_bytes_read);
   write_data_callback_.Run();
 }
 
 void NetworkFetcherWinHTTP::RequestError(const WINHTTP_ASYNC_RESULT* result) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   net_error_ = HRESULTFromUpdaterError(result->dwError);
-  std::move(fetch_complete_callback_).Run();
+  CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::WriteDataToFile() {
-  constexpr base::TaskTraits kTaskTraits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
-      base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileBlocking,
-                     base::Unretained(this)),
-      base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileComplete,
-                     base::Unretained(this)));
+      base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileBlocking, this),
+      base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileComplete, this));
 }
 
+// Returns true if EOF is reached.
 bool NetworkFetcherWinHTTP::WriteDataToFileBlocking() {
   if (read_buffer_.empty()) {
     file_.Close();
@@ -375,7 +409,7 @@ bool NetworkFetcherWinHTTP::WriteDataToFileBlocking() {
       -1) {
     net_error_ = HRESULTFromUpdaterError(base::File::GetLastFileError());
     file_.Close();
-    base::DeleteFile(file_path_, false);
+    base::DeleteFile(file_path_);
     return false;
   }
 
@@ -384,34 +418,37 @@ bool NetworkFetcherWinHTTP::WriteDataToFileBlocking() {
 }
 
 void NetworkFetcherWinHTTP::WriteDataToFileComplete(bool is_eof) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  fetch_progress_callback_.Run(base::saturated_cast<int64_t>(content_size_));
 
   if (is_eof || FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
-  net_error_ = QueryDataAvailable();
+  net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::WriteDataToMemory() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (read_buffer_.empty()) {
     VLOG(2) << post_response_body_;
     net_error_ = S_OK;
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
   post_response_body_.append(read_buffer_.begin(), read_buffer_.end());
   content_size_ += read_buffer_.size();
+  fetch_progress_callback_.Run(base::saturated_cast<int64_t>(content_size_));
 
-  net_error_ = QueryDataAvailable();
+  net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void __stdcall NetworkFetcherWinHTTP::WinHttpStatusCallback(HINTERNET handle,
@@ -424,16 +461,16 @@ void __stdcall NetworkFetcherWinHTTP::WinHttpStatusCallback(HINTERNET handle,
   NetworkFetcherWinHTTP* network_fetcher =
       reinterpret_cast<NetworkFetcherWinHTTP*>(context);
   network_fetcher->main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&NetworkFetcherWinHTTP::StatusCallback,
-                                base::Unretained(network_fetcher), handle,
-                                status, info, info_len));
+      FROM_HERE,
+      base::BindOnce(&NetworkFetcherWinHTTP::StatusCallback, network_fetcher,
+                     handle, status, info, info_len));
 }
 
 void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
                                            uint32_t status,
                                            void* info,
                                            uint32_t info_len) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::StringPiece status_string;
   base::string16 info_string;
   switch (status) {
@@ -476,8 +513,8 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       status_string = "connection closed";
       break;
     case WINHTTP_CALLBACK_STATUS_REDIRECT:
+      // |info| may contain invalid URL data and not safe to reference always.
       status_string = "redirect";
-      info_string.assign(static_cast<base::char16*>(info), info_len);  // URL.
       break;
     case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
       status_string = "data available";
@@ -531,11 +568,7 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       SendRequestComplete();
       break;
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
-      ReceiveResponseComplete();
-      break;
-    case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
-      DCHECK_EQ(info_len, sizeof(uint32_t));
-      QueryDataAvailableComplete(*static_cast<uint32_t*>(info));
+      HeadersAvailable();
       break;
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
       DCHECK_EQ(info, &read_buffer_.front());
@@ -543,8 +576,6 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
       RequestError(static_cast<const WINHTTP_ASYNC_RESULT*>(info));
-      break;
-    default:
       break;
   }
 }

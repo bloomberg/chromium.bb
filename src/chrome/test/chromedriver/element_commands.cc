@@ -524,39 +524,7 @@ Status ExecuteSendKeysToElement(Session* session,
                                     args, &get_content_editable);
     if (status.IsError())
       return status;
-    bool is_content_editable;
-    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
-        is_content_editable) {
-      // If element is contentEditable, will move caret
-      // at end of element text. W3C mandates that the
-      // caret be moved "after any child content"
-      std::unique_ptr<base::Value> result;
-      status = web_view->CallFunction(
-          session->GetCurrentFrameId(),
-          "function(element) {"
-          "var range = document.createRange();"
-          "range.selectNodeContents(element);"
-          "range.collapse();"
-          "var sel = window.getSelection();"
-          "sel.removeAllRanges();"
-          "sel.addRange(range);"
-          "while (element.parentElement && "
-          "element.parentElement.isContentEditable) {"
-          "    element = element.parentElement;"
-          "  }"
-          "return element;"
-          "}",
-          args, &result);
-      if (status.IsError())
-        return status;
-      const base::DictionaryValue* element_dict;
-      std::string target_element_id;
-      if (!result->GetAsDictionary(&element_dict) ||
-          !element_dict->GetString(GetElementKey(), &target_element_id))
-        return Status(kUnknownError, "no element reference returned by script");
-      return SendKeysToElement(session, web_view, target_element_id, false,
-                               key_list);
-    }
+
     // If element_type is in textControlTypes, sendKeys should append
     bool is_textControlType = is_input && textControlTypes.find(element_type) !=
                                               textControlTypes.end();
@@ -568,6 +536,69 @@ Status ExecuteSendKeysToElement(Session* session,
       return status;
     bool is_text = is_textControlType || is_textarea;
 
+    bool is_content_editable;
+    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
+        is_content_editable) {
+      // If element is contentEditable
+      // check if element is focused
+      bool is_focused = false;
+      status = IsElementFocused(session, web_view, element_id, &is_focused);
+      if (status.IsError())
+        return status;
+
+      // Get top level contentEditable element
+      std::unique_ptr<base::Value> result;
+      status = web_view->CallFunction(
+          session->GetCurrentFrameId(),
+          "function(element) {"
+          "while (element.parentElement && "
+          "element.parentElement.isContentEditable) {"
+          "    element = element.parentElement;"
+          "  }"
+          "return element;"
+          "}",
+          args, &result);
+      if (status.IsError())
+        return status;
+      const base::DictionaryValue* element_dict;
+      std::string top_element_id;
+      if (!result->GetAsDictionary(&element_dict) ||
+          !element_dict->GetString(GetElementKey(), &top_element_id))
+        return Status(kUnknownError, "no element reference returned by script");
+
+      // check if top level contentEditable element is focused
+      bool is_top_focused = false;
+      status =
+          IsElementFocused(session, web_view, top_element_id, &is_top_focused);
+      if (status.IsError())
+        return status;
+      // If is_text we want to send keys to the element
+      // Otherwise, send keys to the top element
+      if ((is_text && !is_focused) || (!is_text && !is_top_focused)) {
+        // If element does not currentley have focus
+        // will move caret
+        // at end of element text. W3C mandates that the
+        // caret be moved "after any child content"
+        // Set selection using the element itself
+        std::unique_ptr<base::Value> unused;
+        status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                        "function(element) {"
+                                        "var range = document.createRange();"
+                                        "range.selectNodeContents(element);"
+                                        "range.collapse();"
+                                        "var sel = window.getSelection();"
+                                        "sel.removeAllRanges();"
+                                        "sel.addRange(range);"
+                                        "}",
+                                        args, &unused);
+        if (status.IsError())
+          return status;
+      }
+      // Use top level element id for the purpose of focusing
+      if (!is_text)
+        return SendKeysToElement(session, web_view, top_element_id, is_text,
+                                 key_list);
+    }
     return SendKeysToElement(session, web_view, element_id, is_text, key_list);
   }
 }
@@ -706,6 +737,61 @@ Status ExecuteIsElementEnabled(Session* session,
       args,
       value);
   }
+}
+
+Status ExecuteGetComputedLabel(Session* session,
+                               WebView* web_view,
+                               const std::string& element_id,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
+  std::unique_ptr<base::Value> axNode;
+  Status status = GetAXNodeByElementId(session, web_view, element_id, &axNode);
+  if (status.IsError())
+    return status;
+
+  // Computed label stores as `name` in the AXTree.
+  base::Optional<base::Value> nameNode = axNode->ExtractKey("name");
+  if (!nameNode) {
+    // No computed label found. Return empty string.
+    *value = std::make_unique<base::Value>("");
+    return Status(kOk);
+  }
+
+  base::Optional<base::Value> nameVal = nameNode->ExtractKey("value");
+  if (!nameVal)
+    return Status(kUnknownError,
+                  "No name value found in the node in CDP response");
+
+  *value = std::make_unique<base::Value>(std::move(*nameVal));
+
+  return Status(kOk);
+}
+
+Status ExecuteGetComputedRole(Session* session,
+                              WebView* web_view,
+                              const std::string& element_id,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value) {
+  std::unique_ptr<base::Value> axNode;
+  Status status = GetAXNodeByElementId(session, web_view, element_id, &axNode);
+  if (status.IsError())
+    return status;
+
+  base::Optional<base::Value> roleNode = axNode->ExtractKey("role");
+  if (!roleNode) {
+    // No computed role found. Return empty string.
+    *value = std::make_unique<base::Value>("");
+    return Status(kOk);
+  }
+
+  base::Optional<base::Value> roleVal = roleNode->ExtractKey("value");
+  if (!roleVal)
+    return Status(kUnknownError,
+                  "No role value found in the node in CDP response");
+
+  *value = std::make_unique<base::Value>(std::move(*roleVal));
+
+  return Status(kOk);
 }
 
 Status ExecuteIsElementDisplayed(Session* session,
@@ -907,8 +993,8 @@ Status ExecuteElementScreenshot(Session* session,
   // view port. However, CaptureScreenshot expects a location relative to the
   // document origin. We make the adjustment using the scroll amount of the top
   // level window. Scrolling of frames has already been included in |location|.
-  // Scroll information can be in either document.documentElement or
-  // document.body, depending on document compatibility mode. The parentheses
+  // Use window.pageXOffset and widnow.pageYOffset for scroll information,
+  // should always return scroll amount regardless of doctype. The parentheses
   // around the JavaScript code below is needed because JavaScript syntax
   // doesn't allow a statement to start with an object literal.
   // document.documentElement.clientHeight and Width provide viewport height
@@ -916,8 +1002,8 @@ Status ExecuteElementScreenshot(Session* session,
   std::unique_ptr<base::Value> browser_info;
   status = web_view->EvaluateScript(
       std::string(),
-      "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
-      "  y: document.documentElement.scrollTop || document.body.scrollTop,"
+      "({x: window.pageXOffset,"
+      "  y: window.pageYOffset,"
       "  height: document.documentElement.clientHeight,"
       "  width: document.documentElement.clientWidth,"
       "  device_pixel_ratio: window.devicePixelRatio})",

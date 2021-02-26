@@ -5,28 +5,24 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
-import android.view.WindowManager.BadTokenException;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
@@ -44,9 +40,8 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.webapk.lib.client.WebApkValidator;
+import org.chromium.url.Origin;
 
 import java.util.List;
 
@@ -72,19 +67,25 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public Activity getActivityContext() {
+    public Context getContext() {
         if (mTab.getWindowAndroid() == null) return null;
-        return ContextUtils.activityFromContext(mTab.getWindowAndroid().getContext().get());
+        return mTab.getWindowAndroid().getContext().get();
     }
 
+    /**
+     * Gets the {@link Activity} linked to this instance if it is available. At times this object
+     * might not have an associated Activity, in which case the ApplicationContext is returned.
+     * @return The activity {@link Context} if it can be reached.
+     *         Application {@link Context} if not.
+     */
     protected final Context getAvailableContext() {
-        return ExternalNavigationHandler.getAvailableContext(this);
+        Activity activityContext = ContextUtils.activityFromContext(getContext());
+        if (activityContext == null) return ContextUtils.getApplicationContext();
+        return activityContext;
     }
 
     /**
      * Determines whether Chrome will be handling the given Intent.
-     *
-     * Note this function is slow on Android versions less than Lollipop.
      *
      * @param intent            Intent that will be fired.
      * @param matchDefaultOnly  See {@link PackageManager#MATCH_DEFAULT_ONLY}.
@@ -148,17 +149,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
-        try {
-            return startIncognitoIntentInternal(
-                    intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);
-        } catch (BadTokenException e) {
-            return false;
-        }
-    }
-
-    @Override
     public @OverrideUrlLoadingResult int handleIncognitoIntentTargetingSelf(
             final Intent intent, final String referrerUrl, final String fallbackUrl) {
         String primaryUrl = intent.getDataString();
@@ -166,59 +156,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 referrerUrl, primaryUrl, fallbackUrl, this, false, true);
         return (isUrlLoadedInTheSameTab) ? OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB
                                          : OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-    }
-
-    private boolean startIncognitoIntentInternal(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
-        if (!hasValidTab()) return false;
-        Context context = mTab.getWindowAndroid().getContext().get();
-        if (!(context instanceof Activity)) return false;
-
-        Activity activity = (Activity) context;
-        new UiUtils.CompatibleAlertDialogBuilder(activity, R.style.Theme_Chromium_AlertDialog)
-                .setTitle(R.string.external_app_leave_incognito_warning_title)
-                .setMessage(R.string.external_app_leave_incognito_warning)
-                .setPositiveButton(R.string.external_app_leave_incognito_leave,
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                try {
-                                    ExternalNavigationHandler.startActivity(
-                                            intent, proxy, ExternalNavigationDelegateImpl.this);
-                                    if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
-                                            && needsToCloseTab) {
-                                        closeTab();
-                                    }
-                                } catch (ActivityNotFoundException e) {
-                                    // The activity that we thought was going to handle the intent
-                                    // no longer exists, so catch the exception and assume Chrome
-                                    // can handle it.
-                                    ExternalNavigationHandler.loadUrlFromIntent(referrerUrl,
-                                            fallbackUrl, intent.getDataString(),
-                                            ExternalNavigationDelegateImpl.this, needsToCloseTab,
-                                            true);
-                                }
-                            }
-                        })
-                .setNegativeButton(R.string.external_app_leave_incognito_stay,
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                ExternalNavigationHandler.loadUrlFromIntent(referrerUrl,
-                                        fallbackUrl, intent.getDataString(),
-                                        ExternalNavigationDelegateImpl.this, needsToCloseTab, true);
-                            }
-                        })
-                .setOnCancelListener(new OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        ExternalNavigationHandler.loadUrlFromIntent(referrerUrl, fallbackUrl,
-                                intent.getDataString(), ExternalNavigationDelegateImpl.this,
-                                needsToCloseTab, true);
-                    }
-                })
-                .show();
-        return true;
     }
 
     @Override
@@ -288,10 +225,17 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void maybeSetUserGesture(Intent intent) {
+    public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {
+        if (!hasUserGesture && !isRendererInitiated && initiatorOrigin == null) return;
         // The intent can be used to launch Chrome itself, record the user
-        // gesture here so that it can be used later.
-        IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+        // gesture, whether request is renderer initiated and initiator origin here so that it can
+        // be used later.
+        IntentWithRequestMetadataHandler.RequestMetadata metadata =
+                new IntentWithRequestMetadataHandler.RequestMetadata(
+                        hasUserGesture, isRendererInitiated, initiatorOrigin);
+        IntentWithRequestMetadataHandler.getInstance().onNewIntentWithRequestMetadata(
+                intent, metadata);
     }
 
     @Override
@@ -369,6 +313,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public boolean canCloseTabOnIncognitoIntentLaunch() {
+        return (mTab != null && !mTab.isClosing() && mTab.isInitialized());
+    }
+
+    @Override
     public boolean isIntentForTrustedCallingApp(Intent intent) {
         return false;
     }
@@ -381,11 +330,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentToAutofillAssistant(Intent intent) {
         return AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(intent);
-    }
-
-    @Override
-    public boolean isValidWebApk(String packageName) {
-        return WebApkValidator.isValidWebApk(ContextUtils.getApplicationContext(), packageName);
     }
 
     @Override

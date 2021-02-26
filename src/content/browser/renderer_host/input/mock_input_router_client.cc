@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 
 #include "content/browser/renderer_host/input/input_router.h"
-#include "content/common/input/input_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -23,7 +22,7 @@ MockInputRouterClient::MockInputRouterClient()
       in_flight_event_count_(0),
       filter_state_(blink::mojom::InputEventResultState::kNotConsumed),
       filter_input_event_called_(false),
-      white_listed_touch_action_(cc::TouchAction::kAuto) {}
+      compositor_allowed_touch_action_(cc::TouchAction::kAuto) {}
 
 MockInputRouterClient::~MockInputRouterClient() {}
 
@@ -31,7 +30,7 @@ blink::mojom::InputEventResultState MockInputRouterClient::FilterInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
   filter_input_event_called_ = true;
-  last_filter_event_.reset(new InputEvent(input_event, latency_info));
+  last_filter_event_ = input_event.Clone();
   return filter_state_;
 }
 
@@ -49,9 +48,9 @@ void MockInputRouterClient::DidOverscroll(
   overscroll_ = params;
 }
 
-void MockInputRouterClient::OnSetWhiteListedTouchAction(
-    cc::TouchAction white_listed_touch_action) {
-  white_listed_touch_action_ = white_listed_touch_action;
+void MockInputRouterClient::OnSetCompositorAllowedTouchAction(
+    cc::TouchAction compositor_allowed_touch_action) {
+  compositor_allowed_touch_action_ = compositor_allowed_touch_action;
 }
 
 void MockInputRouterClient::DidStartScrollingViewport() {}
@@ -107,10 +106,11 @@ ui::DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
   return overscroll;
 }
 
-cc::TouchAction MockInputRouterClient::GetAndResetWhiteListedTouchAction() {
-  cc::TouchAction white_listed_touch_action = white_listed_touch_action_;
-  white_listed_touch_action_ = cc::TouchAction::kAuto;
-  return white_listed_touch_action;
+cc::TouchAction
+MockInputRouterClient::GetAndResetCompositorAllowedTouchAction() {
+  cc::TouchAction allowed = compositor_allowed_touch_action_;
+  compositor_allowed_touch_action_ = cc::TouchAction::kAuto;
+  return allowed;
 }
 
 bool MockInputRouterClient::NeedsBeginFrameForFlingProgress() {

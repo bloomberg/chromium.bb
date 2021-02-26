@@ -40,6 +40,7 @@
 #include "remoting/signaling/remoting_log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -109,12 +110,13 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
   // The policy watcher runs on the |file_task_runner| but we want to run the
   // callbacks on |task_runner| so we use a shim to post them to it.
   PolicyWatcher::PolicyUpdatedCallback update_callback =
-      base::Bind(&It2MeNativeMessagingHost::OnPolicyUpdate, weak_ptr_);
+      base::BindRepeating(&It2MeNativeMessagingHost::OnPolicyUpdate, weak_ptr_);
   PolicyWatcher::PolicyErrorCallback error_callback =
-      base::Bind(&It2MeNativeMessagingHost::OnPolicyError, weak_ptr_);
+      base::BindRepeating(&It2MeNativeMessagingHost::OnPolicyError, weak_ptr_);
   policy_watcher_->StartWatching(
-      base::Bind(&PolicyUpdateCallback, task_runner(), update_callback),
-      base::Bind(&PolicyErrorCallback, task_runner(), error_callback));
+      base::BindRepeating(&PolicyUpdateCallback, task_runner(),
+                          update_callback),
+      base::BindRepeating(&PolicyErrorCallback, task_runner(), error_callback));
 }
 
 It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
@@ -174,10 +176,9 @@ void It2MeNativeMessagingHost::Start(Client* client) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   client_ = client;
 #if !defined(OS_CHROMEOS)
-  log_message_handler_.reset(
-      new LogMessageHandler(
-          base::Bind(&It2MeNativeMessagingHost::SendMessageToClient,
-                     base::Unretained(this))));
+  log_message_handler_ = std::make_unique<LogMessageHandler>(
+      base::BindRepeating(&It2MeNativeMessagingHost::SendMessageToClient,
+                          base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -212,8 +213,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
   if (!policy_received_) {
     DCHECK(!pending_connect_);
     pending_connect_ =
-        base::Bind(&It2MeNativeMessagingHost::ProcessConnect, weak_ptr_,
-                   base::Passed(&message), base::Passed(&response));
+        base::BindOnce(&It2MeNativeMessagingHost::ProcessConnect, weak_ptr_,
+                       base::Passed(&message), base::Passed(&response));
     return;
   }
 
@@ -251,7 +252,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool terminate_upon_input = false;
   message->GetBoolean("terminateUponInput", &terminate_upon_input);
 
-  std::unique_ptr<SignalStrategy> signal_strategy;
+  It2MeHost::CreateDeferredConnectContext create_connection_context;
   std::unique_ptr<RegisterSupportHostRequest> register_host_request;
   std::unique_ptr<LogToServer> log_to_server;
   if (use_signaling_proxy) {
@@ -259,24 +260,58 @@ void It2MeNativeMessagingHost::ProcessConnect(
       // Allow unauthenticated users for the delegated signal strategy case.
       username = kAnonymousUserName;
     }
-    signal_strategy = CreateDelegatedSignalStrategy(message.get());
-    register_host_request =
-        std::make_unique<XmppRegisterSupportHostRequest>(kRemotingBotJid);
-    log_to_server = std::make_unique<XmppLogToServer>(
-        ServerLogEntry::IT2ME, signal_strategy.get(), kRemotingBotJid,
-        host_context_->network_task_runner());
+    auto signal_strategy = CreateDelegatedSignalStrategy(message.get());
+    if (signal_strategy) {
+      create_connection_context = base::BindOnce(
+          [](std::unique_ptr<remoting::SignalStrategy> signal_strategy,
+             ChromotingHostContext* context) {
+            auto connection_context =
+                std::make_unique<It2MeHost::DeferredConnectContext>();
+            connection_context->register_request =
+                std::make_unique<XmppRegisterSupportHostRequest>(
+                    kRemotingBotJid);
+            connection_context->log_to_server =
+                std::make_unique<XmppLogToServer>(
+                    ServerLogEntry::IT2ME, signal_strategy.get(),
+                    kRemotingBotJid, context->network_task_runner());
+            connection_context->signal_strategy = std::move(signal_strategy);
+            return connection_context;
+          },
+          std::move(signal_strategy));
+    }
   } else {
-    std::string access_token = ExtractAccessToken(message.get());
-    signal_strategy = CreateFtlSignalStrategy(username, access_token);
-    register_host_request =
-        std::make_unique<RemotingRegisterSupportHostRequest>(
-            std::make_unique<PassthroughOAuthTokenGetter>(username,
-                                                          access_token));
-    log_to_server = std::make_unique<RemotingLogToServer>(
-        ServerLogEntry::IT2ME,
-        std::make_unique<PassthroughOAuthTokenGetter>(username, access_token));
+    if (!username.empty()) {
+      std::string access_token = ExtractAccessToken(message.get());
+      create_connection_context = base::BindOnce(
+          [](const std::string& username, const std::string& access_token,
+             ChromotingHostContext* host_context) {
+            auto connection_context =
+                std::make_unique<It2MeHost::DeferredConnectContext>();
+            connection_context->signal_strategy =
+                std::make_unique<FtlSignalStrategy>(
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory(),
+                    std::make_unique<FtlClientUuidDeviceIdProvider>());
+            connection_context->register_request =
+                std::make_unique<RemotingRegisterSupportHostRequest>(
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory());
+            connection_context->log_to_server =
+                std::make_unique<RemotingLogToServer>(
+                    ServerLogEntry::IT2ME,
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory());
+            return connection_context;
+          },
+          username, access_token);
+    } else {
+      LOG(ERROR) << "'userName' not found in request.";
+    }
   }
-  if (!signal_strategy) {
+  if (!create_connection_context) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
@@ -308,9 +343,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        std::make_unique<It2MeConfirmationDialogFactory>(),
-                       std::move(register_host_request),
-                       std::move(log_to_server), weak_ptr_,
-                       std::move(signal_strategy), username, ice_config);
+                       weak_ptr_, std::move(create_connection_context),
+                       username, ice_config);
 
   SendMessageToClient(std::move(response));
 }
@@ -446,17 +480,20 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state,
 }
 
 void It2MeNativeMessagingHost::SetPolicyErrorClosureForTesting(
-    const base::Closure& closure) {
-  policy_error_closure_for_testing_ = closure;
+    base::OnceClosure closure) {
+  policy_error_closure_for_testing_ = std::move(closure);
 }
 
-void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
+void It2MeNativeMessagingHost::OnNatPoliciesChanged(
+    bool nat_traversal_enabled,
+    bool relay_connections_allowed) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);
+  message->SetBoolean("relayConnectionsAllowed", relay_connections_allowed);
   SendMessageToClient(std::move(message));
 }
 
@@ -526,7 +563,7 @@ void It2MeNativeMessagingHost::OnPolicyError() {
   policy_received_ = true;
 
   if (policy_error_closure_for_testing_) {
-    policy_error_closure_for_testing_.Run();
+    std::move(policy_error_closure_for_testing_).Run();
   }
 
   if (it2me_host_) {
@@ -559,20 +596,6 @@ It2MeNativeMessagingHost::CreateDelegatedSignalStrategy(
   incoming_message_callback_ =
       delegating_signal_strategy->GetIncomingMessageCallback();
   return delegating_signal_strategy;
-}
-
-std::unique_ptr<SignalStrategy>
-It2MeNativeMessagingHost::CreateFtlSignalStrategy(
-    const std::string& username,
-    const std::string& access_token) {
-  if (username.empty()) {
-    LOG(ERROR) << "'userName' not found in request.";
-    return nullptr;
-  }
-
-  return std::make_unique<FtlSignalStrategy>(
-      std::make_unique<PassthroughOAuthTokenGetter>(username, access_token),
-      std::make_unique<FtlClientUuidDeviceIdProvider>());
 }
 
 std::string It2MeNativeMessagingHost::ExtractAccessToken(

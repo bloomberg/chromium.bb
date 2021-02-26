@@ -14,8 +14,8 @@
 #include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #endif
 
 namespace {
@@ -51,21 +51,16 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 
 void MaybeInitializeGDI() {
 #if defined(OS_WIN)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  // Patch utility processes which explicitly need GDI. Anything else, just
-  // return.
-  service_manager::SandboxType service_sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(command_line);
-  if (!(service_sandbox_type == service_manager::SandboxType::kPpapi ||
-        service_sandbox_type ==
-            service_manager::SandboxType::kPrintCompositor ||
-        service_sandbox_type == service_manager::SandboxType::kPdfConversion)) {
+  // Only patch utility processes which explicitly need GDI.
+  sandbox::policy::SandboxType service_sandbox_type =
+      sandbox::policy::SandboxTypeFromCommandLine(
+          *base::CommandLine::ForCurrentProcess());
+  bool need_gdi =
+      service_sandbox_type == sandbox::policy::SandboxType::kPpapi ||
+      service_sandbox_type == sandbox::policy::SandboxType::kPrintCompositor ||
+      service_sandbox_type == sandbox::policy::SandboxType::kPdfConversion;
+  if (!need_gdi)
     return;
-  }
 
 #if defined(COMPONENT_BUILD)
   HMODULE module = ::GetModuleHandleA("pdfium.dll");

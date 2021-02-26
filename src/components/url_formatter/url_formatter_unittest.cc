@@ -247,6 +247,19 @@ TEST(UrlFormatterTest, FormatUrl) {
            kFormatUrlOmitTrivialSubdomains | kFormatUrlTrimAfterHost,
        net::UnescapeRule::NORMAL, L"view-source:https://www.google.com/foo",
        20},
+#if defined(OS_WIN)
+      {"view-source should not omit file on Windows",
+       "view-source:file:///C:/Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitDefaults | kFormatUrlOmitFileScheme,
+       net::UnescapeRule::NORMAL,
+       L"view-source:file:///C:/Users/homedirname/folder/file.pdf/", 19},
+#else
+      {"view-source should not omit file",
+       "view-source:file:///Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitDefaults | kFormatUrlOmitFileScheme,
+       net::UnescapeRule::NORMAL,
+       L"view-source:file:///Users/homedirname/folder/file.pdf/", 19},
+#endif
 
       // -------- omit https --------
       {"omit https", "https://www.google.com/", kFormatUrlOmitHTTPS,
@@ -598,6 +611,33 @@ TEST(UrlFormatterTest, FormatUrlRoundTripQueryEscaped) {
     } else {
       EXPECT_EQ(url.spec(), GURL(formatted).spec());
     }
+  }
+}
+
+TEST(UrlFormatterTest, StripWWWFromHostComponent) {
+  {
+    // Typical public URL should have www stripped.
+    std::string url = "https://www.google.com/abc";
+    url::Component host(8, 14);
+    ASSERT_EQ("www.google.com", url.substr(host.begin, host.len));
+    StripWWWFromHostComponent(url, &host);
+    EXPECT_EQ("google.com", url.substr(host.begin, host.len));
+  }
+  {
+    // Intranet hostname should not have www stripped.
+    std::string url = "https://www.foobar/abc";
+    url::Component host(8, 10);
+    ASSERT_EQ("www.foobar", url.substr(host.begin, host.len));
+    StripWWWFromHostComponent(url, &host);
+    EXPECT_EQ("www.foobar", url.substr(host.begin, host.len));
+  }
+  {
+    // Domain and registry should be excluded from www stripping.
+    std::string url = "https://www.co.uk/abc";
+    url::Component host(8, 9);
+    ASSERT_EQ("www.co.uk", url.substr(host.begin, host.len));
+    StripWWWFromHostComponent(url, &host);
+    EXPECT_EQ("www.co.uk", url.substr(host.begin, host.len));
   }
 }
 

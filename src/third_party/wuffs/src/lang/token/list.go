@@ -81,11 +81,22 @@ func (x ID) IsNumLiteral(m *Map) bool {
 	return false
 }
 
-func (x ID) IsStrLiteral(m *Map) bool {
+// IsDQStrLiteral returns whether x is a double-quote string literal.
+func (x ID) IsDQStrLiteral(m *Map) bool {
 	if x < nBuiltInIDs {
 		return false
 	} else if s := m.ByID(x); s != "" {
 		return s[0] == '"'
+	}
+	return false
+}
+
+// IsSQStrLiteral returns whether x is a single-quote string literal.
+func (x ID) IsSQStrLiteral(m *Map) bool {
+	if x < nBuiltInIDs {
+		return false
+	} else if s := m.ByID(x); s != "" {
+		return s[0] == '\''
 	}
 	return false
 }
@@ -149,6 +160,13 @@ type QID [2]ID
 
 func (x QID) IsZero() bool { return x == QID{} }
 
+func (x QID) LessThan(y QID) bool {
+	if x[0] != y[0] {
+		return x[0] < y[0]
+	}
+	return x[1] < y[1]
+}
+
 // Str returns a string form of x.
 func (x QID) Str(m *Map) string {
 	if x[0] != 0 {
@@ -161,6 +179,16 @@ func (x QID) Str(m *Map) string {
 type QQID [3]ID
 
 func (x QQID) IsZero() bool { return x == QQID{} }
+
+func (x QQID) LessThan(y QQID) bool {
+	if x[0] != y[0] {
+		return x[0] < y[0]
+	}
+	if x[1] != y[1] {
+		return x[1] < y[1]
+	}
+	return x[2] < y[2]
+}
 
 // Str returns a string form of x.
 func (x QQID) Str(m *Map) string {
@@ -180,216 +208,230 @@ type Token struct {
 }
 
 // nBuiltInIDs is the number of built-in IDs. The packing is:
-//  - Zero is invalid.
-//  - [ 0x01,  0x0F] are squiggly punctuation, such as "(", ")" and ";".
-//  - [ 0x10,  0x2F] are squiggly assignments, such as "=" and "+=".
-//  - [ 0x30,  0x4F] are operators, such as "+", "==" and "not".
-//  - [ 0x50,  0x7F] are x-ops (disambiguation forms): unary vs binary "+".
-//  - [ 0x80,  0x9F] are keywords, such as "if" and "return".
-//  - [ 0xA0,  0xAF] are type modifiers, such as "ptr" and "slice".
-//  - [ 0xB0,  0xBF] are literals, such as "false" and "true".
-//  - [ 0xC0,  0xFF] are reserved.
-//  - [0x100, 0x3FF] are identifiers, such as "bool", "u32" and "read_u8".
+//  -            0x00 is invalid.
+//  -  0x01 ..=  0x0F are squiggly punctuation, such as ";", "." and "?".
+//  -  0x10 ..=  0x1F are squiggly bookends, such as "(", ")" and "]".
+//  -  0x20 ..=  0x3F are squiggly assignments, such as "=" and "+=".
+//  -  0x40 ..=  0x6F are operators, such as "+", "==" and "not".
+//  -  0x70 ..=  0xAF are x-ops (disambiguation forms): unary vs binary "+".
+//  -  0xB0 ..=  0xCF are keywords, such as "if" and "return".
+//  -  0xD0 ..=  0xDF are type modifiers, such as "ptr" and "slice".
+//  -  0xE0 ..=  0xFF are literals, such as "ok" and "true".
+//  - 0x100 ..= 0x3FF are identifiers, such as "bool", "u32" and "read_u8".
 //
-// "Squiggly" means a sequence of non-alpha-numeric characters, such as "+" and
-// "&=". Roughly speaking, their IDs range in [0x01, 0x4F], or disambiguation
-// forms range in [0x50, 0x7F], but vice versa does not necessarily hold. For
-// example, the "and" operator is not "squiggly" but it is within [0x01, 0x4F].
+// Squiggly means a sequence of non-alpha-numeric bytes, such as "+" and "&=".
 const (
-	nBuiltInSymbolicIDs = ID(0x80)  // 128
+	nBuiltInSymbolicIDs = ID(0xB0)  // 176
 	nBuiltInIDs         = ID(0x400) // 1024
 )
 
 const (
-	IDInvalid   = ID(0)
+	IDInvalid = ID(0x00)
+
 	IDSemicolon = ID(0x01)
-
-	minOpen = 0x02
-	maxOpen = 0x04
-
-	IDOpenParen   = ID(0x02)
-	IDOpenBracket = ID(0x03)
-	IDOpenCurly   = ID(0x04)
-
-	minClose = 0x05
-	maxClose = 0x07
-
-	IDCloseParen   = ID(0x05)
-	IDCloseBracket = ID(0x06)
-	IDCloseCurly   = ID(0x07)
-
-	IDDot      = ID(0x08)
-	IDDotDot   = ID(0x09)
-	IDDotDotEq = ID(0x0A)
-	IDComma    = ID(0x0B)
-	IDExclam   = ID(0x0C)
-	IDQuestion = ID(0x0D)
-	IDColon    = ID(0x0E)
+	IDDot       = ID(0x02)
+	IDDotDot    = ID(0x03)
+	IDDotDotEq  = ID(0x04)
+	IDComma     = ID(0x05)
+	IDExclam    = ID(0x06)
+	IDQuestion  = ID(0x07)
+	IDColon     = ID(0x08)
 )
 
 const (
-	minAssign = 0x10
-	maxAssign = 0x2F
+	minOpen = 0x10
+	maxOpen = 0x17
 
-	IDPlusEq           = ID(0x10)
-	IDMinusEq          = ID(0x11)
-	IDStarEq           = ID(0x12)
-	IDSlashEq          = ID(0x13)
-	IDShiftLEq         = ID(0x14)
-	IDShiftREq         = ID(0x15)
-	IDAmpEq            = ID(0x16)
-	IDPipeEq           = ID(0x17)
-	IDHatEq            = ID(0x18)
-	IDPercentEq        = ID(0x19)
-	IDTildeModShiftLEq = ID(0x1A)
-	IDTildeModPlusEq   = ID(0x1B)
-	IDTildeModMinusEq  = ID(0x1C)
-	IDTildeSatPlusEq   = ID(0x1D)
-	IDTildeSatMinusEq  = ID(0x1E)
+	IDOpenParen       = ID(0x10)
+	IDOpenBracket     = ID(0x11)
+	IDOpenCurly       = ID(0x12)
+	IDOpenDoubleCurly = ID(0x13)
 
-	IDEq         = ID(0x20)
-	IDEqQuestion = ID(0x21)
+	minClose = 0x18
+	maxClose = 0x1F
+
+	IDCloseParen       = ID(0x18)
+	IDCloseBracket     = ID(0x19)
+	IDCloseCurly       = ID(0x1A)
+	IDCloseDoubleCurly = ID(0x1B)
 )
 
 const (
-	minOp          = 0x30
-	minAmbiguousOp = 0x30
-	maxAmbiguousOp = 0x4F
-	minXOp         = 0x50
-	maxXOp         = 0x7F
-	maxOp          = 0x7F
+	minAssign = 0x20
+	maxAssign = 0x3F
 
-	IDPlus           = ID(0x30)
-	IDMinus          = ID(0x31)
-	IDStar           = ID(0x32)
-	IDSlash          = ID(0x33)
-	IDShiftL         = ID(0x34)
-	IDShiftR         = ID(0x35)
-	IDAmp            = ID(0x36)
-	IDPipe           = ID(0x37)
-	IDHat            = ID(0x38)
-	IDPercent        = ID(0x39)
-	IDTildeModShiftL = ID(0x3A)
-	IDTildeModPlus   = ID(0x3B)
-	IDTildeModMinus  = ID(0x3C)
-	IDTildeSatPlus   = ID(0x3D)
-	IDTildeSatMinus  = ID(0x3E)
+	IDPlusEq    = ID(0x20)
+	IDMinusEq   = ID(0x21)
+	IDStarEq    = ID(0x22)
+	IDSlashEq   = ID(0x23)
+	IDShiftLEq  = ID(0x24)
+	IDShiftREq  = ID(0x25)
+	IDAmpEq     = ID(0x26)
+	IDPipeEq    = ID(0x27)
+	IDHatEq     = ID(0x28)
+	IDPercentEq = ID(0x29)
 
-	IDNotEq       = ID(0x40)
-	IDLessThan    = ID(0x41)
-	IDLessEq      = ID(0x42)
-	IDEqEq        = ID(0x43)
-	IDGreaterEq   = ID(0x44)
-	IDGreaterThan = ID(0x45)
+	IDTildeModPlusEq   = ID(0x30)
+	IDTildeModMinusEq  = ID(0x31)
+	IDTildeModStarEq   = ID(0x32)
+	IDTildeModShiftLEq = ID(0x34)
 
-	IDAnd = ID(0x48)
-	IDOr  = ID(0x49)
-	IDNot = ID(0x4A)
-	IDAs  = ID(0x4B)
+	IDTildeSatPlusEq  = ID(0x38)
+	IDTildeSatMinusEq = ID(0x39)
+
+	IDEq         = ID(0x3E)
+	IDEqQuestion = ID(0x3F)
+)
+
+const (
+	minOp          = 0x40
+	minAmbiguousOp = 0x40
+	maxAmbiguousOp = 0x6F
+	minXOp         = 0x70
+	maxXOp         = 0xAF
+	maxOp          = 0xAF
+
+	IDPlus    = ID(0x40)
+	IDMinus   = ID(0x41)
+	IDStar    = ID(0x42)
+	IDSlash   = ID(0x43)
+	IDShiftL  = ID(0x44)
+	IDShiftR  = ID(0x45)
+	IDAmp     = ID(0x46)
+	IDPipe    = ID(0x47)
+	IDHat     = ID(0x48)
+	IDPercent = ID(0x49)
+
+	IDTildeModPlus   = ID(0x50)
+	IDTildeModMinus  = ID(0x51)
+	IDTildeModStar   = ID(0x52)
+	IDTildeModShiftL = ID(0x54)
+
+	IDTildeSatPlus  = ID(0x58)
+	IDTildeSatMinus = ID(0x59)
+
+	IDNotEq       = ID(0x60)
+	IDLessThan    = ID(0x61)
+	IDLessEq      = ID(0x62)
+	IDEqEq        = ID(0x63)
+	IDGreaterEq   = ID(0x64)
+	IDGreaterThan = ID(0x65)
+
+	IDAnd = ID(0x68)
+	IDOr  = ID(0x69)
+	IDAs  = ID(0x6A)
+
+	IDNot = ID(0x6F)
 
 	// The IDXFoo IDs are not returned by the tokenizer. They are used by the
 	// ast.Node ID-typed fields to disambiguate e.g. unary vs binary plus.
 
-	IDXUnaryPlus  = ID(0x50)
-	IDXUnaryMinus = ID(0x51)
-	IDXUnaryNot   = ID(0x52)
+	IDXBinaryPlus    = ID(0x70)
+	IDXBinaryMinus   = ID(0x71)
+	IDXBinaryStar    = ID(0x72)
+	IDXBinarySlash   = ID(0x73)
+	IDXBinaryShiftL  = ID(0x74)
+	IDXBinaryShiftR  = ID(0x75)
+	IDXBinaryAmp     = ID(0x76)
+	IDXBinaryPipe    = ID(0x77)
+	IDXBinaryHat     = ID(0x78)
+	IDXBinaryPercent = ID(0x79)
 
-	IDXBinaryPlus           = ID(0x58)
-	IDXBinaryMinus          = ID(0x59)
-	IDXBinaryStar           = ID(0x5A)
-	IDXBinarySlash          = ID(0x5B)
-	IDXBinaryShiftL         = ID(0x5C)
-	IDXBinaryShiftR         = ID(0x5D)
-	IDXBinaryAmp            = ID(0x5E)
-	IDXBinaryPipe           = ID(0x5F)
-	IDXBinaryHat            = ID(0x60)
-	IDXBinaryPercent        = ID(0x61)
-	IDXBinaryTildeModShiftL = ID(0x62)
-	IDXBinaryTildeModPlus   = ID(0x63)
-	IDXBinaryTildeModMinus  = ID(0x64)
-	IDXBinaryTildeSatPlus   = ID(0x65)
-	IDXBinaryTildeSatMinus  = ID(0x66)
-	IDXBinaryNotEq          = ID(0x67)
-	IDXBinaryLessThan       = ID(0x68)
-	IDXBinaryLessEq         = ID(0x69)
-	IDXBinaryEqEq           = ID(0x6A)
-	IDXBinaryGreaterEq      = ID(0x6B)
-	IDXBinaryGreaterThan    = ID(0x6C)
-	IDXBinaryAnd            = ID(0x6D)
-	IDXBinaryOr             = ID(0x6E)
-	IDXBinaryAs             = ID(0x6F)
+	IDXBinaryTildeModPlus   = ID(0x80)
+	IDXBinaryTildeModMinus  = ID(0x81)
+	IDXBinaryTildeModStar   = ID(0x82)
+	IDXBinaryTildeModShiftL = ID(0x84)
 
-	IDXAssociativePlus = ID(0x70)
-	IDXAssociativeStar = ID(0x71)
-	IDXAssociativeAmp  = ID(0x72)
-	IDXAssociativePipe = ID(0x73)
-	IDXAssociativeHat  = ID(0x74)
-	IDXAssociativeAnd  = ID(0x75)
-	IDXAssociativeOr   = ID(0x76)
+	IDXBinaryTildeSatPlus  = ID(0x88)
+	IDXBinaryTildeSatMinus = ID(0x89)
+
+	IDXBinaryNotEq       = ID(0x90)
+	IDXBinaryLessThan    = ID(0x91)
+	IDXBinaryLessEq      = ID(0x92)
+	IDXBinaryEqEq        = ID(0x93)
+	IDXBinaryGreaterEq   = ID(0x94)
+	IDXBinaryGreaterThan = ID(0x95)
+
+	IDXBinaryAnd = ID(0x98)
+	IDXBinaryOr  = ID(0x99)
+	IDXBinaryAs  = ID(0x9A)
+
+	IDXAssociativePlus = ID(0xA0)
+	IDXAssociativeStar = ID(0xA1)
+	IDXAssociativeAmp  = ID(0xA2)
+	IDXAssociativePipe = ID(0xA3)
+	IDXAssociativeHat  = ID(0xA4)
+	IDXAssociativeAnd  = ID(0xA5)
+	IDXAssociativeOr   = ID(0xA6)
+
+	IDXUnaryPlus  = ID(0xAC)
+	IDXUnaryMinus = ID(0xAD)
+	IDXUnaryNot   = ID(0xAF)
 )
 
 const (
-	minKeyword = 0x80
-	maxKeyword = 0x9F
+	minKeyword = 0xB0
+	maxKeyword = 0xCF
 
-	// TODO: sort these by name, when the list has stabilized.
-	IDFunc     = ID(0x80)
-	IDAssert   = ID(0x81)
-	IDWhile    = ID(0x82)
-	IDIf       = ID(0x83)
-	IDElse     = ID(0x84)
-	IDReturn   = ID(0x85)
-	IDBreak    = ID(0x86)
-	IDContinue = ID(0x87)
-	IDStruct   = ID(0x88)
-	IDUse      = ID(0x89)
-	IDVar      = ID(0x8A)
-	IDPre      = ID(0x8B)
-	IDInv      = ID(0x8C)
-	IDPost     = ID(0x8D)
-	IDVia      = ID(0x8E)
-	IDPub      = ID(0x8F)
-	IDPri      = ID(0x90)
-	IDConst    = ID(0x91)
-	IDIterate  = ID(0x92)
-	IDYield    = ID(0x93)
-	IDIOBind   = ID(0x94)
-	IDIOLimit  = ID(0x95)
+	IDAssert     = ID(0xB0)
+	IDBreak      = ID(0xB1)
+	IDConst      = ID(0xB2)
+	IDContinue   = ID(0xB3)
+	IDElse       = ID(0xB4)
+	IDEndwhile   = ID(0xB5)
+	IDFunc       = ID(0xB6)
+	IDIOBind     = ID(0xB7)
+	IDIOLimit    = ID(0xB8)
+	IDIf         = ID(0xB9)
+	IDImplements = ID(0xBA)
+	IDInv        = ID(0xBB)
+	IDIterate    = ID(0xBC)
+	IDPost       = ID(0xBD)
+	IDPre        = ID(0xBE)
+	IDPri        = ID(0xBF)
+	IDPub        = ID(0xC0)
+	IDReturn     = ID(0xC1)
+	IDStruct     = ID(0xC2)
+	IDUse        = ID(0xC3)
+	IDVar        = ID(0xC4)
+	IDVia        = ID(0xC5)
+	IDWhile      = ID(0xC6)
+	IDYield      = ID(0xC7)
 )
 
 const (
-	minTypeModifier = 0xA0
-	maxTypeModifier = 0xAF
+	minTypeModifier = 0xD0
+	maxTypeModifier = 0xDF
 
-	IDArray = ID(0xA0)
-	IDNptr  = ID(0xA1)
-	IDPtr   = ID(0xA2)
-	IDSlice = ID(0xA3)
-	IDTable = ID(0xA4)
+	IDArray = ID(0xD0)
+	IDNptr  = ID(0xD1)
+	IDPtr   = ID(0xD2)
+	IDSlice = ID(0xD3)
+	IDTable = ID(0xD4)
 )
 
 const (
-	minBuiltInLiteral    = 0xB0
-	minBuiltInNumLiteral = 0xC0
-	maxBuiltInNumLiteral = 0xCF
-	maxBuiltInLiteral    = 0xCF
+	minBuiltInLiteral    = 0xE0
+	minBuiltInNumLiteral = 0xF0
+	maxBuiltInNumLiteral = 0xFF
+	maxBuiltInLiteral    = 0xFF
 
-	IDFalse   = ID(0xB0)
-	IDTrue    = ID(0xB1)
-	IDNothing = ID(0xB2)
-	IDNullptr = ID(0xB3)
-	IDOk      = ID(0xB4)
+	IDFalse   = ID(0xE0)
+	IDTrue    = ID(0xE1)
+	IDNothing = ID(0xE2)
+	IDNullptr = ID(0xE3)
+	IDOk      = ID(0xE4)
 
-	ID0   = ID(0xC0)
-	ID1   = ID(0xC1)
-	ID2   = ID(0xC2)
-	ID4   = ID(0xC3)
-	ID8   = ID(0xC4)
-	ID16  = ID(0xC5)
-	ID32  = ID(0xC6)
-	ID64  = ID(0xC7)
-	ID128 = ID(0xC8)
-	ID256 = ID(0xC9)
+	ID0   = ID(0xF0)
+	ID1   = ID(0xF1)
+	ID2   = ID(0xF2)
+	ID4   = ID(0xF3)
+	ID8   = ID(0xF4)
+	ID16  = ID(0xF5)
+	ID32  = ID(0xF6)
+	ID64  = ID(0xF7)
+	ID128 = ID(0xF8)
+	ID256 = ID(0xF9)
 )
 
 const (
@@ -408,12 +450,13 @@ const (
 	IDCoroutineResumed = ID(0x101)
 	IDThis             = ID(0x102)
 
-	IDT1      = ID(0x108)
-	IDT2      = ID(0x109)
-	IDDagger1 = ID(0x10A)
-	IDDagger2 = ID(0x10B)
+	IDT1      = ID(0x104)
+	IDT2      = ID(0x105)
+	IDDagger1 = ID(0x106)
+	IDDagger2 = ID(0x107)
 
-	IDQNullptr     = ID(0x10C)
+	IDQNullptr     = ID(0x10B)
+	IDQPackage     = ID(0x10C)
 	IDQPlaceholder = ID(0x10D)
 	IDQTypeExpr    = ID(0x10E)
 
@@ -430,15 +473,18 @@ const (
 	IDU32 = ID(0x116)
 	IDU64 = ID(0x117)
 
-	IDBase          = ID(0x120)
-	IDBool          = ID(0x121)
-	IDEmptyIOReader = ID(0x122)
-	IDEmptyIOWriter = ID(0x123)
-	IDEmptyStruct   = ID(0x124)
-	IDIOReader      = ID(0x125)
-	IDIOWriter      = ID(0x126)
-	IDStatus        = ID(0x127)
-	IDUtility       = ID(0x128)
+	IDBase            = ID(0x120)
+	IDBool            = ID(0x121)
+	IDEmptyIOReader   = ID(0x122)
+	IDEmptyIOWriter   = ID(0x123)
+	IDEmptyStruct     = ID(0x124)
+	IDMoreInformation = ID(0x125)
+	IDIOReader        = ID(0x126)
+	IDIOWriter        = ID(0x127)
+	IDStatus          = ID(0x128)
+	IDTokenReader     = ID(0x129)
+	IDTokenWriter     = ID(0x12A)
+	IDUtility         = ID(0x12B)
 
 	IDRangeIEU32 = ID(0x130)
 	IDRangeIIU32 = ID(0x131)
@@ -449,27 +495,34 @@ const (
 
 	IDFrameConfig   = ID(0x150)
 	IDImageConfig   = ID(0x151)
-	IDPixelBuffer   = ID(0x152)
-	IDPixelConfig   = ID(0x153)
-	IDPixelSwizzler = ID(0x154)
+	IDPixelBlend    = ID(0x152)
+	IDPixelBuffer   = ID(0x153)
+	IDPixelConfig   = ID(0x154)
+	IDPixelFormat   = ID(0x155)
+	IDPixelSwizzler = ID(0x156)
 
 	IDDecodeFrameOptions = ID(0x158)
 
-	IDCanUndoByte      = ID(0x160)
-	IDCountSince       = ID(0x161)
-	IDHistoryAvailable = ID(0x162)
-	IDMark             = ID(0x163)
-	IDPosition         = ID(0x164)
-	IDSince            = ID(0x165)
-	IDSkip             = ID(0x166)
-	IDSkipFast         = ID(0x167)
-	IDTake             = ID(0x168)
+	IDCanUndoByte   = ID(0x160)
+	IDCountSince    = ID(0x161)
+	IDHistoryLength = ID(0x162)
+	IDIsClosed      = ID(0x163)
+	IDMark          = ID(0x164)
+	IDMatch15       = ID(0x165)
+	IDMatch31       = ID(0x166)
+	IDMatch7        = ID(0x167)
+	IDPosition      = ID(0x168)
+	IDSince         = ID(0x169)
+	IDSkip          = ID(0x16A)
+	IDSkipU32       = ID(0x16B)
+	IDSkipU32Fast   = ID(0x16C)
 
-	IDCopyFromSlice        = ID(0x170)
-	IDCopyNFromHistory     = ID(0x171)
-	IDCopyNFromHistoryFast = ID(0x172)
-	IDCopyNFromReader      = ID(0x173)
-	IDCopyNFromSlice       = ID(0x174)
+	IDCopyFromSlice                 = ID(0x170)
+	IDLimitedCopyU32FromHistory     = ID(0x171)
+	IDLimitedCopyU32FromHistoryFast = ID(0x172)
+	IDLimitedCopyU32FromReader      = ID(0x173)
+	IDLimitedCopyU32FromSlice       = ID(0x174)
+	IDLimitedCopyU32ToSlice         = ID(0x175)
 
 	// -------- 0x180 block.
 
@@ -504,6 +557,8 @@ const (
 	IDReadU64LE      = ID(0x19F)
 
 	// --------
+
+	IDPeekU64LEAt = ID(0x1A0)
 
 	IDPeekU8 = ID(0x1A1)
 
@@ -556,21 +611,26 @@ const (
 
 	// --------
 
-	IDWriteFastU8    = ID(0x1E1)
-	IDWriteFastU16BE = ID(0x1E2)
-	IDWriteFastU16LE = ID(0x1E3)
-	IDWriteFastU24BE = ID(0x1E4)
-	IDWriteFastU24LE = ID(0x1E5)
-	IDWriteFastU32BE = ID(0x1E6)
-	IDWriteFastU32LE = ID(0x1E7)
-	IDWriteFastU40BE = ID(0x1E8)
-	IDWriteFastU40LE = ID(0x1E9)
-	IDWriteFastU48BE = ID(0x1EA)
-	IDWriteFastU48LE = ID(0x1EB)
-	IDWriteFastU56BE = ID(0x1EC)
-	IDWriteFastU56LE = ID(0x1ED)
-	IDWriteFastU64BE = ID(0x1EE)
-	IDWriteFastU64LE = ID(0x1EF)
+	IDWriteU8Fast    = ID(0x1E1)
+	IDWriteU16BEFast = ID(0x1E2)
+	IDWriteU16LEFast = ID(0x1E3)
+	IDWriteU24BEFast = ID(0x1E4)
+	IDWriteU24LEFast = ID(0x1E5)
+	IDWriteU32BEFast = ID(0x1E6)
+	IDWriteU32LEFast = ID(0x1E7)
+	IDWriteU40BEFast = ID(0x1E8)
+	IDWriteU40LEFast = ID(0x1E9)
+	IDWriteU48BEFast = ID(0x1EA)
+	IDWriteU48LEFast = ID(0x1EB)
+	IDWriteU56BEFast = ID(0x1EC)
+	IDWriteU56LEFast = ID(0x1ED)
+	IDWriteU64BEFast = ID(0x1EE)
+	IDWriteU64LEFast = ID(0x1EF)
+
+	// --------
+
+	IDWriteSimpleTokenFast   = ID(0x1F1)
+	IDWriteExtendedTokenFast = ID(0x1F2)
 
 	// -------- 0x200 block.
 
@@ -591,27 +651,23 @@ const (
 	IDIsOK         = ID(0x231)
 	IDIsSuspension = ID(0x232)
 
-	IDAvailable = ID(0x240)
-	IDHeight    = ID(0x241)
-	IDLength    = ID(0x242)
-	IDPrefix    = ID(0x243)
-	IDRow       = ID(0x244)
-	IDStride    = ID(0x245)
-	IDSuffix    = ID(0x246)
-	IDWidth     = ID(0x247)
-	IDIO        = ID(0x248)
-	IDLimit     = ID(0x249)
-	IDData      = ID(0x24A)
+	IDData            = ID(0x240)
+	IDHeight          = ID(0x241)
+	IDIO              = ID(0x242)
+	IDLength          = ID(0x243)
+	IDLimit           = ID(0x244)
+	IDPrefix          = ID(0x245)
+	IDRow             = ID(0x246)
+	IDStride          = ID(0x247)
+	IDSuffix          = ID(0x248)
+	IDValidUTF8Length = ID(0x249)
+	IDWidth           = ID(0x24A)
+
+	IDSwizzleInterleavedFromReader = ID(0x280)
 )
 
 var builtInsByID = [nBuiltInIDs]string{
-	IDOpenParen:    "(",
-	IDCloseParen:   ")",
-	IDOpenBracket:  "[",
-	IDCloseBracket: "]",
-	IDOpenCurly:    "{",
-	IDCloseCurly:   "}",
-
+	IDSemicolon: ";",
 	IDDot:       ".",
 	IDDotDot:    "..",
 	IDDotDotEq:  "..=",
@@ -619,42 +675,57 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDExclam:    "!",
 	IDQuestion:  "?",
 	IDColon:     ":",
-	IDSemicolon: ";",
 
-	IDPlusEq:           "+=",
-	IDMinusEq:          "-=",
-	IDStarEq:           "*=",
-	IDSlashEq:          "/=",
-	IDShiftLEq:         "<<=",
-	IDShiftREq:         ">>=",
-	IDAmpEq:            "&=",
-	IDPipeEq:           "|=",
-	IDHatEq:            "^=",
-	IDPercentEq:        "%=",
-	IDTildeModShiftLEq: "~mod<<=",
+	IDOpenParen:       "(",
+	IDOpenBracket:     "[",
+	IDOpenCurly:       "{",
+	IDOpenDoubleCurly: "{{",
+
+	IDCloseParen:       ")",
+	IDCloseBracket:     "]",
+	IDCloseCurly:       "}",
+	IDCloseDoubleCurly: "}}",
+
+	IDPlusEq:    "+=",
+	IDMinusEq:   "-=",
+	IDStarEq:    "*=",
+	IDSlashEq:   "/=",
+	IDShiftLEq:  "<<=",
+	IDShiftREq:  ">>=",
+	IDAmpEq:     "&=",
+	IDPipeEq:    "|=",
+	IDHatEq:     "^=",
+	IDPercentEq: "%=",
+
 	IDTildeModPlusEq:   "~mod+=",
 	IDTildeModMinusEq:  "~mod-=",
-	IDTildeSatPlusEq:   "~sat+=",
-	IDTildeSatMinusEq:  "~sat-=",
+	IDTildeModStarEq:   "~mod*=",
+	IDTildeModShiftLEq: "~mod<<=",
+
+	IDTildeSatPlusEq:  "~sat+=",
+	IDTildeSatMinusEq: "~sat-=",
 
 	IDEq:         "=",
 	IDEqQuestion: "=?",
 
-	IDPlus:           "+",
-	IDMinus:          "-",
-	IDStar:           "*",
-	IDSlash:          "/",
-	IDShiftL:         "<<",
-	IDShiftR:         ">>",
-	IDAmp:            "&",
-	IDPipe:           "|",
-	IDHat:            "^",
-	IDPercent:        "%",
-	IDTildeModShiftL: "~mod<<",
+	IDPlus:    "+",
+	IDMinus:   "-",
+	IDStar:    "*",
+	IDSlash:   "/",
+	IDShiftL:  "<<",
+	IDShiftR:  ">>",
+	IDAmp:     "&",
+	IDPipe:    "|",
+	IDHat:     "^",
+	IDPercent: "%",
+
 	IDTildeModPlus:   "~mod+",
 	IDTildeModMinus:  "~mod-",
-	IDTildeSatPlus:   "~sat+",
-	IDTildeSatMinus:  "~sat-",
+	IDTildeModStar:   "~mod*",
+	IDTildeModShiftL: "~mod<<",
+
+	IDTildeSatPlus:  "~sat+",
+	IDTildeSatMinus: "~sat-",
 
 	IDNotEq:       "<>",
 	IDLessThan:    "<",
@@ -665,31 +736,34 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	IDAnd: "and",
 	IDOr:  "or",
-	IDNot: "not",
 	IDAs:  "as",
 
-	IDFunc:     "func",
-	IDAssert:   "assert",
-	IDWhile:    "while",
-	IDIf:       "if",
-	IDElse:     "else",
-	IDReturn:   "return",
-	IDBreak:    "break",
-	IDContinue: "continue",
-	IDStruct:   "struct",
-	IDUse:      "use",
-	IDVar:      "var",
-	IDPre:      "pre",
-	IDInv:      "inv",
-	IDPost:     "post",
-	IDVia:      "via",
-	IDPub:      "pub",
-	IDPri:      "pri",
-	IDConst:    "const",
-	IDIterate:  "iterate",
-	IDYield:    "yield",
-	IDIOBind:   "io_bind",
-	IDIOLimit:  "io_limit",
+	IDNot: "not",
+
+	IDAssert:     "assert",
+	IDBreak:      "break",
+	IDConst:      "const",
+	IDContinue:   "continue",
+	IDElse:       "else",
+	IDEndwhile:   "endwhile",
+	IDFunc:       "func",
+	IDIOBind:     "io_bind",
+	IDIOLimit:    "io_limit",
+	IDIf:         "if",
+	IDImplements: "implements",
+	IDInv:        "inv",
+	IDIterate:    "iterate",
+	IDPost:       "post",
+	IDPre:        "pre",
+	IDPri:        "pri",
+	IDPub:        "pub",
+	IDReturn:     "return",
+	IDStruct:     "struct",
+	IDUse:        "use",
+	IDVar:        "var",
+	IDVia:        "via",
+	IDWhile:      "while",
+	IDYield:      "yield",
 
 	IDArray: "array",
 	IDNptr:  "nptr",
@@ -736,6 +810,10 @@ var builtInsByID = [nBuiltInIDs]string{
 	// the nullptr literal.
 	IDQNullptr: "«Nullptr»",
 
+	// IDQPackage is used by the type checker to build an artificial MType for
+	// used (imported) packages.
+	IDQPackage: "«Package»",
+
 	// IDQPlaceholder is used by the type checker to build an artificial MType
 	// for AST nodes that aren't expression nodes or type expression nodes,
 	// such as struct definition nodes and statement nodes. Its presence means
@@ -762,15 +840,18 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDU32: "u32",
 	IDU64: "u64",
 
-	IDBase:          "base",
-	IDBool:          "bool",
-	IDEmptyIOReader: "empty_io_reader",
-	IDEmptyIOWriter: "empty_io_writer",
-	IDEmptyStruct:   "empty_struct",
-	IDIOReader:      "io_reader",
-	IDIOWriter:      "io_writer",
-	IDStatus:        "status",
-	IDUtility:       "utility",
+	IDBase:            "base",
+	IDBool:            "bool",
+	IDEmptyIOReader:   "empty_io_reader",
+	IDEmptyIOWriter:   "empty_io_writer",
+	IDEmptyStruct:     "empty_struct",
+	IDMoreInformation: "more_information",
+	IDIOReader:        "io_reader",
+	IDIOWriter:        "io_writer",
+	IDStatus:          "status",
+	IDTokenReader:     "token_reader",
+	IDTokenWriter:     "token_writer",
+	IDUtility:         "utility",
 
 	IDRangeIEU32: "range_ie_u32",
 	IDRangeIIU32: "range_ii_u32",
@@ -781,27 +862,34 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	IDFrameConfig:   "frame_config",
 	IDImageConfig:   "image_config",
+	IDPixelBlend:    "pixel_blend",
 	IDPixelBuffer:   "pixel_buffer",
 	IDPixelConfig:   "pixel_config",
+	IDPixelFormat:   "pixel_format",
 	IDPixelSwizzler: "pixel_swizzler",
 
 	IDDecodeFrameOptions: "decode_frame_options",
 
-	IDCanUndoByte:      "can_undo_byte",
-	IDCountSince:       "count_since",
-	IDHistoryAvailable: "history_available",
-	IDMark:             "mark",
-	IDPosition:         "position",
-	IDSince:            "since",
-	IDSkip:             "skip",
-	IDSkipFast:         "skip_fast",
-	IDTake:             "take",
+	IDCanUndoByte:   "can_undo_byte",
+	IDCountSince:    "count_since",
+	IDHistoryLength: "history_length",
+	IDIsClosed:      "is_closed",
+	IDMark:          "mark",
+	IDMatch15:       "match15",
+	IDMatch31:       "match31",
+	IDMatch7:        "match7",
+	IDPosition:      "position",
+	IDSince:         "since",
+	IDSkip:          "skip",
+	IDSkipU32:       "skip_u32",
+	IDSkipU32Fast:   "skip_u32_fast",
 
-	IDCopyFromSlice:        "copy_from_slice",
-	IDCopyNFromHistory:     "copy_n_from_history",
-	IDCopyNFromHistoryFast: "copy_n_from_history_fast",
-	IDCopyNFromReader:      "copy_n_from_reader",
-	IDCopyNFromSlice:       "copy_n_from_slice",
+	IDCopyFromSlice:                 "copy_from_slice",
+	IDLimitedCopyU32FromHistory:     "limited_copy_u32_from_history",
+	IDLimitedCopyU32FromHistoryFast: "limited_copy_u32_from_history_fast",
+	IDLimitedCopyU32FromReader:      "limited_copy_u32_from_reader",
+	IDLimitedCopyU32FromSlice:       "limited_copy_u32_from_slice",
+	IDLimitedCopyU32ToSlice:         "limited_copy_u32_to_slice",
 
 	// -------- 0x180 block.
 
@@ -836,6 +924,8 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDReadU64LE:      "read_u64le",
 
 	// --------
+
+	IDPeekU64LEAt: "peek_u64le_at",
 
 	IDPeekU8: "peek_u8",
 
@@ -886,21 +976,26 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	// --------
 
-	IDWriteFastU8:    "write_fast_u8",
-	IDWriteFastU16BE: "write_fast_u16be",
-	IDWriteFastU16LE: "write_fast_u16le",
-	IDWriteFastU24BE: "write_fast_u24be",
-	IDWriteFastU24LE: "write_fast_u24le",
-	IDWriteFastU32BE: "write_fast_u32be",
-	IDWriteFastU32LE: "write_fast_u32le",
-	IDWriteFastU40BE: "write_fast_u40be",
-	IDWriteFastU40LE: "write_fast_u40le",
-	IDWriteFastU48BE: "write_fast_u48be",
-	IDWriteFastU48LE: "write_fast_u48le",
-	IDWriteFastU56BE: "write_fast_u56be",
-	IDWriteFastU56LE: "write_fast_u56le",
-	IDWriteFastU64BE: "write_fast_u64be",
-	IDWriteFastU64LE: "write_fast_u64le",
+	IDWriteU8Fast:    "write_u8_fast",
+	IDWriteU16BEFast: "write_u16be_fast",
+	IDWriteU16LEFast: "write_u16le_fast",
+	IDWriteU24BEFast: "write_u24be_fast",
+	IDWriteU24LEFast: "write_u24le_fast",
+	IDWriteU32BEFast: "write_u32be_fast",
+	IDWriteU32LEFast: "write_u32le_fast",
+	IDWriteU40BEFast: "write_u40be_fast",
+	IDWriteU40LEFast: "write_u40le_fast",
+	IDWriteU48BEFast: "write_u48be_fast",
+	IDWriteU48LEFast: "write_u48le_fast",
+	IDWriteU56BEFast: "write_u56be_fast",
+	IDWriteU56LEFast: "write_u56le_fast",
+	IDWriteU64BEFast: "write_u64be_fast",
+	IDWriteU64LEFast: "write_u64le_fast",
+
+	// --------
+
+	IDWriteSimpleTokenFast:   "write_simple_token_fast",
+	IDWriteExtendedTokenFast: "write_extended_token_fast",
 
 	// -------- 0x200 block.
 
@@ -919,17 +1014,19 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDIsOK:         "is_ok",
 	IDIsSuspension: "is_suspension",
 
-	IDAvailable: "available",
-	IDHeight:    "height",
-	IDLength:    "length",
-	IDPrefix:    "prefix",
-	IDRow:       "row",
-	IDStride:    "stride",
-	IDSuffix:    "suffix",
-	IDWidth:     "width",
-	IDIO:        "io",
-	IDLimit:     "limit",
-	IDData:      "data",
+	IDData:            "data",
+	IDHeight:          "height",
+	IDIO:              "io",
+	IDLength:          "length",
+	IDLimit:           "limit",
+	IDPrefix:          "prefix",
+	IDRow:             "row",
+	IDStride:          "stride",
+	IDSuffix:          "suffix",
+	IDValidUTF8Length: "valid_utf_8_length",
+	IDWidth:           "width",
+
+	IDSwizzleInterleavedFromReader: "swizzle_interleaved_from_reader",
 }
 
 var builtInsByName = map[string]ID{}
@@ -948,8 +1045,6 @@ var squiggles = [256]ID{
 	')': IDCloseParen,
 	'[': IDOpenBracket,
 	']': IDCloseBracket,
-	'{': IDOpenCurly,
-	'}': IDCloseCurly,
 
 	',': IDComma,
 	'!': IDExclam,
@@ -1024,6 +1119,14 @@ var lexers = [256][]suffixLexer{
 		{"=", IDGreaterEq},
 		{"", IDGreaterThan},
 	},
+	'{': {
+		{"{", IDOpenDoubleCurly},
+		{"", IDOpenCurly},
+	},
+	'}': {
+		{"}", IDCloseDoubleCurly},
+		{"", IDCloseCurly},
+	},
 	'~': {
 		{"mod<<=", IDTildeModShiftLEq},
 		{"mod<<", IDTildeModShiftL},
@@ -1031,6 +1134,8 @@ var lexers = [256][]suffixLexer{
 		{"mod+", IDTildeModPlus},
 		{"mod-=", IDTildeModMinusEq},
 		{"mod-", IDTildeModMinus},
+		{"mod*=", IDTildeModStarEq},
+		{"mod*", IDTildeModStar},
 		{"sat+=", IDTildeSatPlusEq},
 		{"sat+", IDTildeSatPlus},
 		{"sat-=", IDTildeSatMinusEq},
@@ -1039,10 +1144,6 @@ var lexers = [256][]suffixLexer{
 }
 
 var ambiguousForms = [nBuiltInSymbolicIDs]ID{
-	IDXUnaryPlus:  IDPlus,
-	IDXUnaryMinus: IDMinus,
-	IDXUnaryNot:   IDNot,
-
 	IDXBinaryPlus:           IDPlus,
 	IDXBinaryMinus:          IDMinus,
 	IDXBinaryStar:           IDStar,
@@ -1053,9 +1154,10 @@ var ambiguousForms = [nBuiltInSymbolicIDs]ID{
 	IDXBinaryPipe:           IDPipe,
 	IDXBinaryHat:            IDHat,
 	IDXBinaryPercent:        IDPercent,
-	IDXBinaryTildeModShiftL: IDTildeModShiftL,
 	IDXBinaryTildeModPlus:   IDTildeModPlus,
 	IDXBinaryTildeModMinus:  IDTildeModMinus,
+	IDXBinaryTildeModStar:   IDTildeModStar,
+	IDXBinaryTildeModShiftL: IDTildeModShiftL,
 	IDXBinaryTildeSatPlus:   IDTildeSatPlus,
 	IDXBinaryTildeSatMinus:  IDTildeSatMinus,
 	IDXBinaryNotEq:          IDNotEq,
@@ -1075,6 +1177,10 @@ var ambiguousForms = [nBuiltInSymbolicIDs]ID{
 	IDXAssociativeHat:  IDHat,
 	IDXAssociativeAnd:  IDAnd,
 	IDXAssociativeOr:   IDOr,
+
+	IDXUnaryPlus:  IDPlus,
+	IDXUnaryMinus: IDMinus,
+	IDXUnaryNot:   IDNot,
 }
 
 func init() {
@@ -1103,12 +1209,6 @@ func addXForms(table *[nBuiltInSymbolicIDs]ID) {
 	}
 }
 
-var unaryForms = [nBuiltInSymbolicIDs]ID{
-	IDPlus:  IDXUnaryPlus,
-	IDMinus: IDXUnaryMinus,
-	IDNot:   IDXUnaryNot,
-}
-
 var binaryForms = [nBuiltInSymbolicIDs]ID{
 	IDPlusEq:           IDXBinaryPlus,
 	IDMinusEq:          IDXBinaryMinus,
@@ -1120,9 +1220,10 @@ var binaryForms = [nBuiltInSymbolicIDs]ID{
 	IDPipeEq:           IDXBinaryPipe,
 	IDHatEq:            IDXBinaryHat,
 	IDPercentEq:        IDXBinaryPercent,
-	IDTildeModShiftLEq: IDXBinaryTildeModShiftL,
 	IDTildeModPlusEq:   IDXBinaryTildeModPlus,
 	IDTildeModMinusEq:  IDXBinaryTildeModMinus,
+	IDTildeModStarEq:   IDXBinaryTildeModStar,
+	IDTildeModShiftLEq: IDXBinaryTildeModShiftL,
 	IDTildeSatPlusEq:   IDXBinaryTildeSatPlus,
 	IDTildeSatMinusEq:  IDXBinaryTildeSatMinus,
 
@@ -1136,9 +1237,10 @@ var binaryForms = [nBuiltInSymbolicIDs]ID{
 	IDPipe:           IDXBinaryPipe,
 	IDHat:            IDXBinaryHat,
 	IDPercent:        IDXBinaryPercent,
-	IDTildeModShiftL: IDXBinaryTildeModShiftL,
 	IDTildeModPlus:   IDXBinaryTildeModPlus,
 	IDTildeModMinus:  IDXBinaryTildeModMinus,
+	IDTildeModStar:   IDXBinaryTildeModStar,
+	IDTildeModShiftL: IDXBinaryTildeModShiftL,
 	IDTildeSatPlus:   IDXBinaryTildeSatPlus,
 	IDTildeSatMinus:  IDXBinaryTildeSatMinus,
 
@@ -1164,6 +1266,12 @@ var associativeForms = [nBuiltInSymbolicIDs]ID{
 	IDOr:  IDXAssociativeOr,
 }
 
+var unaryForms = [nBuiltInSymbolicIDs]ID{
+	IDPlus:  IDXUnaryPlus,
+	IDMinus: IDXUnaryMinus,
+	IDNot:   IDXUnaryNot,
+}
+
 var isTightLeft = [...]bool{
 	IDSemicolon: true,
 
@@ -1182,7 +1290,6 @@ var isTightRight = [...]bool{
 	IDOpenParen:   true,
 	IDOpenBracket: true,
 
-	IDDot:      true,
-	IDExclam:   true,
-	IDQuestion: true,
+	IDDot:    true,
+	IDExclam: true,
 }

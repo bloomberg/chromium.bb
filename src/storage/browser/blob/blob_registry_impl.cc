@@ -30,33 +30,6 @@ BlobRegistryImpl::URLStoreCreationHook* g_url_store_creation_hook = nullptr;
 
 class BlobRegistryImpl::BlobUnderConstruction {
  public:
-  BlobUnderConstruction(BlobRegistryImpl* blob_registry,
-                        const std::string& uuid,
-                        const std::string& content_type,
-                        const std::string& content_disposition,
-                        std::vector<blink::mojom::DataElementPtr> elements,
-                        mojo::ReportBadMessageCallback bad_message_callback)
-      : blob_registry_(blob_registry),
-        uuid_(uuid),
-        builder_(std::make_unique<BlobDataBuilder>(uuid)),
-        bad_message_callback_(std::move(bad_message_callback)) {
-    builder_->set_content_type(content_type);
-    builder_->set_content_disposition(content_disposition);
-    for (auto& element : elements)
-      elements_.emplace_back(std::move(element));
-  }
-
-  // Call this after constructing to kick of fetching of UUIDs of blobs
-  // referenced by this new blob. This (and any further methods) could end up
-  // deleting |this| by removing it from the blobs_under_construction_
-  // collection in the blob service.
-  void StartTransportation(base::WeakPtr<BlobImpl> blob_impl);
-
-  ~BlobUnderConstruction() = default;
-
-  const std::string& uuid() const { return uuid_; }
-
- private:
   // Holds onto a blink::mojom::DataElement struct and optionally a bound
   // mojo::Remote<blink::mojom::BytesProvider> or
   // mojo::Remote<blink::mojom::Blob>, if the element encapsulates a large byte
@@ -76,10 +49,37 @@ class BlobRegistryImpl::BlobUnderConstruction {
     ElementEntry& operator=(ElementEntry&& other) = default;
 
     blink::mojom::DataElementPtr element;
+    FileSystemURL filesystem_url;
     mojo::Remote<blink::mojom::BytesProvider> bytes_provider;
     mojo::Remote<blink::mojom::Blob> blob;
   };
 
+  BlobUnderConstruction(BlobRegistryImpl* blob_registry,
+                        const std::string& uuid,
+                        const std::string& content_type,
+                        const std::string& content_disposition,
+                        std::vector<ElementEntry> elements,
+                        mojo::ReportBadMessageCallback bad_message_callback)
+      : blob_registry_(blob_registry),
+        uuid_(uuid),
+        builder_(std::make_unique<BlobDataBuilder>(uuid)),
+        elements_(std::move(elements)),
+        bad_message_callback_(std::move(bad_message_callback)) {
+    builder_->set_content_type(content_type);
+    builder_->set_content_disposition(content_disposition);
+  }
+
+  // Call this after constructing to kick of fetching of UUIDs of blobs
+  // referenced by this new blob. This (and any further methods) could end up
+  // deleting |this| by removing it from the blobs_under_construction_
+  // collection in the blob service.
+  void StartTransportation(base::WeakPtr<BlobImpl> blob_impl);
+
+  ~BlobUnderConstruction() = default;
+
+  const std::string& uuid() const { return uuid_; }
+
+ private:
   BlobStorageContext* context() const { return blob_registry_->context_.get(); }
 
   // Marks this blob as broken. If an optional |bad_message_reason| is provided,
@@ -372,17 +372,20 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   for (const auto& entry : elements_) {
     auto& element = entry.element;
     if (element->is_bytes()) {
-      transport_strategy_->AddBytesElement(element->get_bytes().get(),
-                                           entry.bytes_provider);
+      if (element->get_bytes()->length > 0) {
+        transport_strategy_->AddBytesElement(element->get_bytes().get(),
+                                             entry.bytes_provider);
+      }
     } else if (element->is_file()) {
       const auto& f = element->get_file();
       builder_->AppendFile(
           f->path, f->offset, f->length,
           f->expected_modification_time.value_or(base::Time()));
     } else if (element->is_file_filesystem()) {
+      DCHECK(entry.filesystem_url.is_valid());
       const auto& f = element->get_file_filesystem();
       builder_->AppendFileSystemFile(
-          f->url, f->offset, f->length,
+          entry.filesystem_url, f->offset, f->length,
           f->expected_modification_time.value_or(base::Time()),
           blob_registry_->file_system_context_);
     } else if (element->is_blob()) {
@@ -488,8 +491,10 @@ bool BlobRegistryImpl::BlobUnderConstruction::ContainsCycles(
 
 BlobRegistryImpl::BlobRegistryImpl(
     base::WeakPtr<BlobStorageContext> context,
+    base::WeakPtr<BlobUrlRegistry> url_registry,
     scoped_refptr<FileSystemContext> file_system_context)
     : context_(std::move(context)),
+      url_registry_(std::move(url_registry)),
       file_system_context_(std::move(file_system_context)) {}
 
 BlobRegistryImpl::~BlobRegistryImpl() {
@@ -529,9 +534,12 @@ void BlobRegistryImpl::Register(
 
   Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
-  for (const auto& element : elements) {
-    if (element->is_file()) {
-      if (!delegate->CanReadFile(element->get_file()->path)) {
+  std::vector<BlobUnderConstruction::ElementEntry> element_entries;
+  element_entries.reserve(elements.size());
+  for (auto& element : elements) {
+    BlobUnderConstruction::ElementEntry entry(std::move(element));
+    if (entry.element->is_file()) {
+      if (!delegate->CanReadFile(entry.element->get_file()->path)) {
         std::unique_ptr<BlobDataHandle> handle = context_->AddBrokenBlob(
             uuid, content_type, content_disposition,
             BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
@@ -539,12 +547,13 @@ void BlobRegistryImpl::Register(
         std::move(callback).Run();
         return;
       }
-    } else if (element->is_file_filesystem()) {
-      FileSystemURL filesystem_url(
-          file_system_context_->CrackURL(element->get_file_filesystem()->url));
-      if (!filesystem_url.is_valid() ||
-          !file_system_context_->GetFileSystemBackend(filesystem_url.type()) ||
-          !delegate->CanReadFileSystemFile(filesystem_url)) {
+    } else if (entry.element->is_file_filesystem()) {
+      entry.filesystem_url = file_system_context_->CrackURL(
+          entry.element->get_file_filesystem()->url);
+      if (!entry.filesystem_url.is_valid() ||
+          !file_system_context_->GetFileSystemBackend(
+              entry.filesystem_url.type()) ||
+          !delegate->CanReadFileSystemFile(entry.filesystem_url)) {
         std::unique_ptr<BlobDataHandle> handle = context_->AddBrokenBlob(
             uuid, content_type, content_disposition,
             BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
@@ -553,10 +562,11 @@ void BlobRegistryImpl::Register(
         return;
       }
     }
+    element_entries.push_back(std::move(entry));
   }
 
   blobs_under_construction_[uuid] = std::make_unique<BlobUnderConstruction>(
-      this, uuid, content_type, content_disposition, std::move(elements),
+      this, uuid, content_type, content_disposition, std::move(element_entries),
       receivers_.GetBadMessageCallback());
 
   std::unique_ptr<BlobDataHandle> handle = context_->AddFutureBlob(
@@ -625,7 +635,7 @@ void BlobRegistryImpl::URLStoreForOrigin(
   Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
   auto self_owned_associated_receiver = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<BlobURLStoreImpl>(context_, delegate),
+      std::make_unique<BlobURLStoreImpl>(url_registry_, delegate),
       std::move(receiver));
   if (g_url_store_creation_hook)
     g_url_store_creation_hook->Run(self_owned_associated_receiver);

@@ -7,6 +7,9 @@ package org.chromium.weblayer_private;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -22,12 +25,15 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 public final class FullscreenCallbackProxy {
     private long mNativeFullscreenCallbackProxy;
     private IFullscreenCallbackClient mClient;
+    private TabImpl mTab;
+    private FullscreenToast mToast;
 
-    FullscreenCallbackProxy(long tab, IFullscreenCallbackClient client) {
+    FullscreenCallbackProxy(TabImpl tab, long nativeTab, IFullscreenCallbackClient client) {
         assert client != null;
         mClient = client;
+        mTab = tab;
         mNativeFullscreenCallbackProxy =
-                FullscreenCallbackProxyJni.get().createFullscreenCallbackProxy(this, tab);
+                FullscreenCallbackProxyJni.get().createFullscreenCallbackProxy(this, nativeTab);
     }
 
     public void setClient(IFullscreenCallbackClient client) {
@@ -39,6 +45,19 @@ public final class FullscreenCallbackProxy {
         FullscreenCallbackProxyJni.get().deleteFullscreenCallbackProxy(
                 mNativeFullscreenCallbackProxy);
         mNativeFullscreenCallbackProxy = 0;
+        destroyToast();
+        mTab = null;
+    }
+
+    public void destroyToast() {
+        if (mToast == null) return;
+        mToast.destroy();
+        mToast = null;
+    }
+
+    @VisibleForTesting
+    public boolean didShowFullscreenToast() {
+        return mToast != null && mToast.didShowFullscreenToast();
     }
 
     @CalledByNative
@@ -46,18 +65,23 @@ public final class FullscreenCallbackProxy {
         ValueCallback<Void> exitFullscreenCallback = new ValueCallback<Void>() {
             @Override
             public void onReceiveValue(Void result) {
+                ThreadUtils.assertOnUiThread();
                 if (mNativeFullscreenCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }
+                destroyToast();
                 FullscreenCallbackProxyJni.get().doExitFullscreen(mNativeFullscreenCallbackProxy);
             }
         };
+        destroyToast();
+        mToast = new FullscreenToast(mTab);
         mClient.enterFullscreen(ObjectWrapper.wrap(exitFullscreenCallback));
     }
 
     @CalledByNative
     private void exitFullscreen() throws RemoteException {
         mClient.exitFullscreen();
+        destroyToast();
     }
 
     @NativeMethods

@@ -14,6 +14,7 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.UpdateDelta;
@@ -113,6 +114,15 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         }
     }
 
+    /** @see OfflineContentProvider#changeSchedule */
+    public void changeSchedule(final OfflineItem item, final OfflineItemSchedule schedule) {
+        if (mLegacyProvider != null && LegacyHelpers.isLegacyDownload(item.id)) {
+            mLegacyProvider.changeSchedule(item, schedule);
+        } else {
+            mProvider.changeSchedule(item.id, schedule);
+        }
+    }
+
     /** @see OfflineContentProvider#getItemById(ContentId, Callback) */
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
         if (mLegacyProvider != null && LegacyHelpers.isLegacyDownload(id)) {
@@ -179,7 +189,7 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
 
     // OfflineContentProvider.Observer implementation.
     @Override
-    public void onItemsAdded(ArrayList<OfflineItem> items) {
+    public void onItemsAdded(List<OfflineItem> items) {
         for (OfflineContentProvider.Observer observer : mObservers) observer.onItemsAdded(items);
     }
 

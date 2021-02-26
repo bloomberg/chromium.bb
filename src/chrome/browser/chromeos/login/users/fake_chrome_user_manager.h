@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/user.h"
@@ -34,12 +35,11 @@ class FakeChromeUserManager : public ChromeUserManager {
   user_manager::User* AddKioskAppUser(const AccountId& account_id);
   user_manager::User* AddArcKioskAppUser(const AccountId& account_id);
   user_manager::User* AddWebKioskAppUser(const AccountId& account_id);
-  user_manager::User* AddSupervisedUser(const AccountId& account_id);
   user_manager::User* AddPublicAccountUser(const AccountId& account_id);
   user_manager::User* AddActiveDirectoryUser(const AccountId& account_id);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
-  // Sets the user as having its profile created if |set_profile_created_flag|
+  // Sets the user as having its profile created if `set_profile_created_flag`
   // is true, but does not create a profile.
   // NOTE: This does not match production, which first logs in the user, then
   // creates the profile and updates the user later.
@@ -51,15 +51,15 @@ class FakeChromeUserManager : public ChromeUserManager {
   user_manager::User* AddUserWithAffiliation(const AccountId& account_id,
                                              bool is_affiliated);
 
-  // Creates and adds user with specified |account_id| and |user_type|. Sets
-  // user affiliation. If |profile| is valid, maps it to the created user.
+  // Creates and adds user with specified `account_id` and `user_type`. Sets
+  // user affiliation. If `profile` is valid, maps it to the created user.
   user_manager::User* AddUserWithAffiliationAndTypeAndProfile(
       const AccountId& account_id,
       bool is_affiliated,
       user_manager::UserType user_type,
       TestingProfile* profile);
 
-  // Creates the instance returned by |GetLocalState()| (which returns nullptr
+  // Creates the instance returned by `GetLocalState()` (which returns nullptr
   // by default).
   void CreateLocalState();
 
@@ -114,7 +114,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool IsLoggedInAsChildUser() const override;
   bool IsLoggedInAsPublicAccount() const override;
   bool IsLoggedInAsGuest() const override;
-  bool IsLoggedInAsSupervisedUser() const override;
   bool IsLoggedInAsKioskApp() const override;
   bool IsLoggedInAsArcKioskApp() const override;
   bool IsLoggedInAsWebKioskApp() const override;
@@ -122,7 +121,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool IsLoggedInAsStub() const override;
   bool IsUserNonCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
-  bool AreSupervisedUsersAllowed() const override;
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const user_manager::User& user) const override;
   bool IsUserAllowed(const user_manager::User& user) const override;
@@ -146,12 +144,8 @@ class FakeChromeUserManager : public ChromeUserManager {
 
   // user_manager::UserManagerBase override.
   const std::string& GetApplicationLocale() const override;
-  void HandleUserOAuthTokenStatusChange(
-      const AccountId& account_id,
-      user_manager::User::OAuthTokenStatus status) const override;
   void LoadDeviceLocalAccounts(std::set<AccountId>* users_set) override;
   bool IsEnterpriseManaged() const override;
-  void PerformPreUserListLoadingActions() override;
   void PerformPostUserListLoadingActions() override;
   void PerformPostUserLoggedInActions(bool browser_restart) override;
   bool IsDemoApp(const AccountId& account_id) const override;
@@ -159,10 +153,7 @@ class FakeChromeUserManager : public ChromeUserManager {
       const AccountId& account_id) const override;
   void DemoAccountLoggedIn() override;
   void KioskAppLoggedIn(user_manager::User* user) override;
-  void ArcKioskAppLoggedIn(user_manager::User* user) override;
-  void WebKioskAppLoggedIn(user_manager::User* user) override;
   void PublicAccountUserLoggedIn(user_manager::User* user) override;
-  void SupervisedUserLoggedIn(const AccountId& account_id) override;
   void OnUserRemoved(const AccountId& account_id) override;
   void SetOwnerId(const AccountId& account_id) override;
 

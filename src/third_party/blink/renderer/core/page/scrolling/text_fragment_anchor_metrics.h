@@ -22,6 +22,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
     String text;
     TextFragmentSelector selector;
+    bool is_list_item = false;
+    bool is_table_cell = false;
   };
 
   // An enum to indicate which parameters were specified in the text fragment.
@@ -38,7 +40,18 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
     kMaxValue = kTextRangeWithContext,
   };
 
+  // Update corresponding |TextFragmentLinkOpenSource| in enums.xml.
+  enum class TextFragmentLinkOpenSource {
+    kUnknown,
+    kSearchEngine,
+
+    kMaxValue = kSearchEngine,
+  };
+
   explicit TextFragmentAnchorMetrics(Document* document);
+
+  static TextFragmentAnchorParameters GetParametersForSelector(
+      const TextFragmentSelector& selector);
 
   void DidCreateAnchor(int selector_count, int directive_length);
 
@@ -49,18 +62,26 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void ScrollCancelled();
 
+  void DidStartSearch();
+
   void DidScroll();
 
   void DidNonZeroScroll();
+
+  void DidScrollToTop();
 
   void ReportMetrics();
 
   void Dismissed();
 
-  void Trace(Visitor*);
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
+
+  void SetSearchEngineSource(bool has_search_engine_source);
+
+  void Trace(Visitor*) const;
 
  private:
-  TextFragmentAnchorParameters GetParametersForMatch(const Match& match);
+  std::string GetPrefixForHistograms() const;
 
   Member<Document> document_;
 
@@ -73,9 +94,13 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
   Vector<Match> matches_;
   bool ambiguous_match_ = false;
   bool scroll_cancelled_ = false;
-  base::TimeTicks create_time_;
+  base::TimeTicks search_start_time_;
   base::TimeTicks first_scroll_into_view_time_;
   bool did_non_zero_scroll_ = false;
+  bool did_scroll_to_top_ = false;
+  bool has_search_engine_source_ = false;
+
+  const base::TickClock* tick_clock_;
 };
 
 }  // namespace blink

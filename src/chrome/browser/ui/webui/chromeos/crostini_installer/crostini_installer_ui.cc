@@ -7,8 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -23,10 +24,12 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -48,7 +51,6 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"errorTitle", IDS_CROSTINI_INSTALLER_ERROR_TITLE},
 
       {"loadTerminaError", IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR},
-      {"startConciergeError", IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR},
       {"createDiskImageError", IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR},
       {"startTerminaVmError", IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR},
       {"startContainerError", IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR},
@@ -60,7 +62,6 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"unknownError", IDS_CROSTINI_INSTALLER_UNKNOWN_ERROR},
 
       {"loadTerminaMessage", IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE},
-      {"startConciergeMessage", IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE},
       {"createDiskImageMessage",
        IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE},
       {"startTerminaVmMessage",
@@ -84,6 +85,7 @@ void AddStringResources(content::WebUIDataSource* source) {
        IDS_CROSTINI_INSTALLER_USERNAME_INVALID_CHARACTERS_ERROR},
       {"usernameNotAvailableError",
        IDS_CROSTINI_INSTALLER_USERNAME_NOT_AVAILABLE_ERROR},
+      {"customDiskSizeLabel", IDS_CROSTINI_INSTALLER_CUSTOM_DISK_SIZE_LABEL},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -117,6 +119,13 @@ void AddStringResources(content::WebUIDataSource* source) {
           ui::FormatBytesWithUnits(crostini::disk::kRecommendedDiskSizeBytes,
                                    ui::DATA_UNITS_GIBIBYTE,
                                    /*show_units=*/true)));
+  source->AddString(
+      "recommendedDiskSizeLabel",
+      l10n_util::GetStringFUTF8(
+          IDS_CROSTINI_INSTALLER_RECOMMENDED_DISK_SIZE_LABEL,
+          ui::FormatBytesWithUnits(crostini::disk::kRecommendedDiskSizeBytes,
+                                   ui::DATA_UNITS_GIBIBYTE,
+                                   /*show_units=*/true)));
   source->AddString("offlineError",
                     l10n_util::GetStringFUTF8(
                         IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_name));
@@ -130,15 +139,14 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrostiniInstallerHost);
   auto* profile = Profile::FromWebUI(web_ui);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
   AddStringResources(source);
   source->AddBoolean(
       "diskResizingEnabled",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
-  source->AddBoolean(
-      "crostiniCustomUsername",
-      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername));
   source->AddString("defaultContainerUsername",
                     crostini::DefaultContainerUserNameForProfile(profile));
 
@@ -149,8 +157,8 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
                           IDR_CROSTINI_INSTALLER_MOJO_LITE_JS);
   source->AddResourcePath("crostini_types.mojom-lite.js",
                           IDR_CROSTINI_INSTALLER_TYPES_MOJO_LITE_JS);
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
   source->AddResourcePath("images/linux_illustration.png",
                           IDR_LINUX_ILLUSTRATION);
   source->SetDefaultResource(IDR_CROSTINI_INSTALLER_INDEX_HTML);
@@ -162,8 +170,13 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
 
 CrostiniInstallerUI::~CrostiniInstallerUI() = default;
 
-bool CrostiniInstallerUI::can_close() {
-  return can_close_;
+bool CrostiniInstallerUI::RequestClosePage() {
+  if (page_closed_ || !page_handler_) {
+    return true;
+  }
+
+  page_handler_->RequestClosePage();
+  return false;
 }
 
 void CrostiniInstallerUI::ClickInstallForTesting() {
@@ -200,12 +213,12 @@ void CrostiniInstallerUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page),
       // Using Unretained(this) because |page_handler_| will not out-live
       // |this|.
-      base::BindOnce(&CrostiniInstallerUI::OnWebUICloseDialog,
+      base::BindOnce(&CrostiniInstallerUI::OnPageClosed,
                      base::Unretained(this)));
 }
 
-void CrostiniInstallerUI::OnWebUICloseDialog() {
-  can_close_ = true;
+void CrostiniInstallerUI::OnPageClosed() {
+  page_closed_ = true;
   // CloseDialog() is a no-op if we are not in a dialog (e.g. user
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(nullptr);

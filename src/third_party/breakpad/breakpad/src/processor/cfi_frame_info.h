@@ -72,9 +72,9 @@ class CFIFrameInfo {
   // Set the expression for computing a call frame address, return
   // address, or register's value. At least the CFA rule and the RA
   // rule must be set before calling FindCallerRegs.
-  void SetCFARule(const string &expression) { cfa_rule_ = expression; }
-  void SetRARule(const string &expression)  { ra_rule_ = expression; }
-  void SetRegisterRule(const string &register_name, const string &expression) {
+  void SetCFARule(const string& expression) { cfa_rule_ = expression; }
+  void SetRARule(const string& expression)  { ra_rule_ = expression; }
+  void SetRegisterRule(const string& register_name, const string& expression) {
     register_rules_[register_name] = expression;
   }
 
@@ -96,9 +96,9 @@ class CFIFrameInfo {
   // These may be helpful in computing the caller's PC and stack
   // pointer, if their values are not explicitly specified.
   template<typename ValueType>
-  bool FindCallerRegs(const RegisterValueMap<ValueType> &registers,
-                      const MemoryRegion &memory,
-                      RegisterValueMap<ValueType> *caller_registers) const;
+  bool FindCallerRegs(const RegisterValueMap<ValueType>& registers,
+                      const MemoryRegion& memory,
+                      RegisterValueMap<ValueType>* caller_registers) const;
 
   // Serialize the rules in this object into a string in the format
   // of STACK CFI records.
@@ -148,28 +148,28 @@ class CFIRuleParser {
     virtual ~Handler() { }
 
     // The input specifies EXPRESSION as the CFA/RA computation rule.
-    virtual void CFARule(const string &expression) = 0;
-    virtual void RARule(const string &expression) = 0;
+    virtual void CFARule(const string& expression) = 0;
+    virtual void RARule(const string& expression) = 0;
 
     // The input specifies EXPRESSION as the recovery rule for register NAME.
-    virtual void RegisterRule(const string &name, const string &expression) = 0;
+    virtual void RegisterRule(const string& name, const string& expression) = 0;
   };
     
   // Construct a parser which feeds its results to HANDLER.
-  CFIRuleParser(Handler *handler) : handler_(handler) { }
+  CFIRuleParser(Handler* handler) : handler_(handler) { }
 
   // Parse RULE_SET as a set of CFA computation and RA/register
   // recovery rules, as appearing in STACK CFI records. Report the
   // results of parsing by making the appropriate calls to handler_.
   // Return true if parsing was successful, false otherwise.
-  bool Parse(const string &rule_set);
+  bool Parse(const string& rule_set);
 
  private:
   // Report any accumulated rule to handler_
   bool Report();
 
   // The handler to which the parser reports its findings.
-  Handler *handler_;
+  Handler* handler_;
 
   // Working data.
   string name_, expression_;
@@ -180,15 +180,15 @@ class CFIRuleParser {
 class CFIFrameInfoParseHandler: public CFIRuleParser::Handler {
  public:
   // Populate FRAME_INFO with the results of parsing.
-  CFIFrameInfoParseHandler(CFIFrameInfo *frame_info)
+  CFIFrameInfoParseHandler(CFIFrameInfo* frame_info)
       : frame_info_(frame_info) { }
 
-  void CFARule(const string &expression);
-  void RARule(const string &expression);
-  void RegisterRule(const string &name, const string &expression);
+  void CFARule(const string& expression);
+  void RARule(const string& expression);
+  void RegisterRule(const string& name, const string& expression);
 
  private:
-  CFIFrameInfo *frame_info_;
+  CFIFrameInfo* frame_info_;
 };
 
 // A utility class template for simple 'STACK CFI'-driven stack walkers.
@@ -212,14 +212,14 @@ class SimpleCFIWalker {
   // A structure describing one architecture register.
   struct RegisterSet {
     // The register name, as it appears in STACK CFI rules.
-    const char *name;
+    const char* name;
 
     // An alternate name that the register's value might be found
     // under in a register value dictionary, or NULL. When generating
     // names, prefer NAME to this value. It's common to list ".cfa" as
     // an alternative name for the stack pointer, and ".ra" as an
     // alternative name for the instruction pointer.
-    const char *alternate_name;
+    const char* alternate_name;
 
     // True if the callee is expected to preserve the value of this
     // register. If this flag is true for some register R, and the STACK
@@ -240,7 +240,7 @@ class SimpleCFIWalker {
   // architecture's register set. REGISTER_MAP is an array of
   // RegisterSet structures; MAP_SIZE is the number of elements in the
   // array.
-  SimpleCFIWalker(const RegisterSet *register_map, size_t map_size)
+  SimpleCFIWalker(const RegisterSet* register_map, size_t map_size)
       : register_map_(register_map), map_size_(map_size) { }
 
   // Compute the calling frame's raw context given the callee's raw
@@ -256,15 +256,15 @@ class SimpleCFIWalker {
   // fill in CALLER_CONTEXT with the caller's register values, and set
   // CALLER_VALIDITY to indicate which registers are valid in
   // CALLER_CONTEXT. Return true on success, or false on failure.
-  bool FindCallerRegisters(const MemoryRegion &memory,
-                           const CFIFrameInfo &cfi_frame_info,
-                           const RawContextType &callee_context,
+  bool FindCallerRegisters(const MemoryRegion& memory,
+                           const CFIFrameInfo& cfi_frame_info,
+                           const RawContextType& callee_context,
                            int callee_validity,
-                           RawContextType *caller_context,
-                           int *caller_validity) const;
+                           RawContextType* caller_context,
+                           int* caller_validity) const;
 
  private:
-  const RegisterSet *register_map_;
+  const RegisterSet* register_map_;
   size_t map_size_;
 };
 

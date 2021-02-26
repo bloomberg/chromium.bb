@@ -36,9 +36,9 @@ if (rtc_include_tests) {
       "../../video:encoded_image",
       "../../video:video_bitrate_allocation",
       "../../video:video_frame",
-      "../../video:video_frame_i420",
       "../../video:video_rtp_headers",
       "//testing/gtest",
     ]
+    absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
   }
 }

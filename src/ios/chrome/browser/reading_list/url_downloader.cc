@@ -103,7 +103,7 @@ void URLDownloader::DownloadCompletionHandler(
     SuccessState success) {
   DCHECK(working_);
 
-  auto post_delete = base::Bind(
+  auto post_delete = base::BindOnce(
       [](URLDownloader* _this, const GURL& url, const std::string& title,
          const base::FilePath& offline_path, SuccessState success) {
         _this->download_completion_.Run(url, _this->distilled_url_, success,
@@ -121,14 +121,14 @@ void URLDownloader::DownloadCompletionHandler(
         reading_list::OfflineURLDirectoryAbsolutePath(base_directory_, url);
     task_tracker_.PostTaskAndReply(
         task_runner_.get(), FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             [](const base::FilePath& offline_directory_path) {
-              base::DeleteFileRecursively(offline_directory_path);
+              base::DeletePathRecursively(offline_directory_path);
             },
             directory_path),
-        post_delete);
+        std::move(post_delete));
   } else {
-    post_delete.Run();
+    std::move(post_delete).Run();
   }
 }
 
@@ -154,7 +154,7 @@ void URLDownloader::HandleNextTask() {
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
-        base::BindOnce(&base::DeleteFileRecursively, directory_path),
+        base::BindOnce(&base::DeletePathRecursively, directory_path),
         base::BindOnce(&URLDownloader::DeleteCompletionHandler,
                        base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {
@@ -182,7 +182,8 @@ void URLDownloader::DownloadURL(const GURL& url, bool offline_url_exists) {
   distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_factory_, std::move(reading_list_distiller_page), pref_service_,
       url,
-      base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
+      base::BindRepeating(&URLDownloader::DistillerCallback,
+                          base::Unretained(this))));
 }
 
 void URLDownloader::DistilledPageRedirectedToURL(const GURL& page_url,

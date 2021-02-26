@@ -9,8 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/json/json_parser.h"
-#include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -113,7 +112,7 @@ void StoreImpl(const base::FilePath& cache_dir,
             static_cast<int>(checksum.size())) {
       LOG(ERROR) << "Failed to create ppd cache file";
       file.Close();
-      if (!base::DeleteFile(path, false)) {
+      if (!base::DeleteFile(path)) {
         LOG(ERROR) << "Failed to cleanup failed creation.";
       }
     } else {

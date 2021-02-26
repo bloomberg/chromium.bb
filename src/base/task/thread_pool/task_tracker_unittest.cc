@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
@@ -27,7 +26,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/test_utils.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -54,6 +53,8 @@ class CallbackThread : public SimpleThread {
  public:
   explicit CallbackThread(OnceClosure closure)
       : SimpleThread("CallbackThread"), closure_(std::move(closure)) {}
+  CallbackThread(const CallbackThread&) = delete;
+  CallbackThread& operator=(const CallbackThread&) = delete;
 
   // Returns true once the callback returns.
   bool has_returned() { return has_returned_.IsSet(); }
@@ -66,8 +67,6 @@ class CallbackThread : public SimpleThread {
 
   OnceClosure closure_;
   AtomicFlag has_returned_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackThread);
 };
 
 class ThreadPostingAndRunningTask : public SimpleThread {
@@ -107,6 +106,9 @@ class ThreadPostingAndRunningTask : public SimpleThread {
         expect_post_succeeds_(false) {
     EXPECT_TRUE(task_source_);
   }
+  ThreadPostingAndRunningTask(const ThreadPostingAndRunningTask&) = delete;
+  ThreadPostingAndRunningTask& operator=(const ThreadPostingAndRunningTask&) =
+      delete;
 
   RegisteredTaskSource TakeTaskSource() { return std::move(task_source_); }
 
@@ -142,13 +144,11 @@ class ThreadPostingAndRunningTask : public SimpleThread {
   RegisteredTaskSource task_source_;
   const Action action_;
   const bool expect_post_succeeds_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadPostingAndRunningTask);
 };
 
 class ScopedSetSingletonAllowed {
  public:
-  ScopedSetSingletonAllowed(bool singleton_allowed)
+  explicit ScopedSetSingletonAllowed(bool singleton_allowed)
       : previous_value_(
             ThreadRestrictions::SetSingletonAllowed(singleton_allowed)) {}
   ~ScopedSetSingletonAllowed() {
@@ -161,6 +161,11 @@ class ScopedSetSingletonAllowed {
 
 class ThreadPoolTaskTrackerTest
     : public testing::TestWithParam<TaskShutdownBehavior> {
+ public:
+  ThreadPoolTaskTrackerTest(const ThreadPoolTaskTrackerTest&) = delete;
+  ThreadPoolTaskTrackerTest& operator=(const ThreadPoolTaskTrackerTest&) =
+      delete;
+
  protected:
   ThreadPoolTaskTrackerTest() = default;
 
@@ -249,8 +254,6 @@ class ThreadPoolTaskTrackerTest
   CheckedLock lock_;
 
   size_t num_tasks_executed_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolTaskTrackerTest);
 };
 
 #define WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED() \
@@ -1165,6 +1168,8 @@ namespace {
 class WaitAllowedTestThread : public SimpleThread {
  public:
   WaitAllowedTestThread() : SimpleThread("WaitAllowedTestThread") {}
+  WaitAllowedTestThread(const WaitAllowedTestThread&) = delete;
+  WaitAllowedTestThread& operator=(const WaitAllowedTestThread&) = delete;
 
  private:
   void Run() override {
@@ -1209,8 +1214,6 @@ class WaitAllowedTestThread : public SimpleThread {
         allow_wait_in_task_tracker_destructor;
     task_tracker.reset();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(WaitAllowedTestThread);
 };
 
 }  // namespace
@@ -1225,55 +1228,6 @@ TEST(ThreadPoolTaskTrackerWaitAllowedTest, WaitAllowed) {
   WaitAllowedTestThread wait_allowed_test_thread;
   wait_allowed_test_thread.Start();
   wait_allowed_test_thread.Join();
-}
-
-// Verify that ThreadPool.TaskLatency.* histograms are correctly recorded
-// when a task runs.
-TEST(ThreadPoolTaskTrackerHistogramTest, TaskLatency) {
-  TaskTracker tracker("Test");
-
-  struct {
-    const TaskTraits traits;
-    const char* const expected_histogram;
-  } static constexpr kTests[] = {
-      {{TaskPriority::BEST_EFFORT},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "BackgroundTaskPriority"},
-      {{MayBlock(), TaskPriority::BEST_EFFORT},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "BackgroundTaskPriority"},
-      {{WithBaseSyncPrimitives(), TaskPriority::BEST_EFFORT},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "BackgroundTaskPriority"},
-      {{TaskPriority::USER_VISIBLE},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserVisibleTaskPriority"},
-      {{MayBlock(), TaskPriority::USER_VISIBLE},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserVisibleTaskPriority"},
-      {{WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserVisibleTaskPriority"},
-      {{TaskPriority::USER_BLOCKING},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserBlockingTaskPriority"},
-      {{MayBlock(), TaskPriority::USER_BLOCKING},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserBlockingTaskPriority"},
-      {{WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
-       "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserBlockingTaskPriority"}};
-
-  for (const auto& test : kTests) {
-    Task task(FROM_HERE, DoNothing(), TimeDelta());
-    ASSERT_TRUE(tracker.WillPostTask(&task, test.traits.shutdown_behavior()));
-
-    HistogramTester tester;
-
-    test::QueueAndRunTaskSource(
-        &tracker, test::CreateSequenceWithTask(std::move(task), test.traits));
-    tester.ExpectTotalCount(test.expected_histogram, 1);
-  }
 }
 
 }  // namespace internal

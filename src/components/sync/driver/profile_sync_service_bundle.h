@@ -11,11 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/sync/invalidations/mock_sync_invalidations_service.h"
+#include "components/sync/invalidations/switches.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace syncer {
@@ -41,9 +43,7 @@ class ProfileSyncServiceBundle {
 
   // Accessors
 
-  sync_preferences::TestingPrefServiceSyncable* pref_service() {
-    return &pref_service_;
-  }
+  TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
   signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
@@ -61,12 +61,21 @@ class ProfileSyncServiceBundle {
     return identity_provider_.get();
   }
 
+  MockSyncInvalidationsService* sync_invalidations_service() {
+    if (base::FeatureList::IsEnabled(switches::kSyncSendInterestedDataTypes)) {
+      return &sync_invalidations_service_;
+    } else {
+      return nullptr;
+    }
+  }
+
  private:
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  TestingPrefServiceSimple pref_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
+  testing::NiceMock<MockSyncInvalidationsService> sync_invalidations_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
 };

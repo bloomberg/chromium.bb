@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include <memory>
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -12,7 +13,8 @@
 #include "components/viz/test/host_frame_sink_manager_test_api.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
-#include "content/browser/renderer_host/frame_connector_delegate.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
+#include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -21,33 +23,36 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_render_widget_host_delegate.h"
-#include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 
 namespace content {
 
 namespace {
 
-class MockFrameConnectorDelegate : public FrameConnectorDelegate {
+class MockFrameConnector : public CrossProcessFrameConnector {
  public:
-  MockFrameConnectorDelegate(RenderWidgetHostViewChildFrame* view,
-                             RenderWidgetHostViewBase* parent_view,
-                             RenderWidgetHostViewBase* root_view,
-                             bool use_zoom_for_device_scale_factor)
-      : FrameConnectorDelegate(use_zoom_for_device_scale_factor),
+  MockFrameConnector(RenderWidgetHostViewChildFrame* view,
+                     RenderWidgetHostViewBase* parent_view,
+                     RenderWidgetHostViewBase* root_view,
+                     bool use_zoom_for_device_scale_factor)
+      : CrossProcessFrameConnector(nullptr),
         parent_view_(parent_view),
         root_view_(root_view) {
     view_ = view;
-    view_->SetFrameConnectorDelegate(this);
+    view_->SetFrameConnector(this);
+    set_use_zoom_for_device_scale_factor_for_testing(
+        use_zoom_for_device_scale_factor);
   }
 
-  ~MockFrameConnectorDelegate() override {
+  ~MockFrameConnector() override {
     if (view_) {
-      view_->SetFrameConnectorDelegate(nullptr);
+      view_->SetFrameConnector(nullptr);
       view_ = nullptr;
     }
   }
@@ -64,7 +69,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
   RenderWidgetHostViewBase* parent_view_;
   RenderWidgetHostViewBase* root_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockFrameConnectorDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockFrameConnector);
 };
 
 // Used as a target for the RenderWidgetHostInputEventRouter. We record what
@@ -74,7 +79,7 @@ class TestRenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewChildFrame {
  public:
   explicit TestRenderWidgetHostViewChildFrame(RenderWidgetHost* widget)
-      : RenderWidgetHostViewChildFrame(widget) {
+      : RenderWidgetHostViewChildFrame(widget, blink::ScreenInfo()) {
     Init();
   }
   ~TestRenderWidgetHostViewChildFrame() override = default;
@@ -179,6 +184,27 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
   uint32_t unique_id_for_last_touch_ack_ = 0;
 };
 
+class MockInputTargetClient : public viz::mojom::InputTargetClient {
+ public:
+  explicit MockInputTargetClient(
+      mojo::PendingReceiver<viz::mojom::InputTargetClient> pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
+  ~MockInputTargetClient() override = default;
+
+  // viz::mojom::InputTargetClient:
+  void FrameSinkIdAt(const gfx::PointF& point,
+                     const uint64_t trace_id,
+                     FrameSinkIdAtCallback callback) override {
+    if (forward_callback_)
+      std::move(forward_callback_).Run(std::move(callback));
+    else if (callback)
+      std::move(callback).Run(viz::FrameSinkId(), point);
+  }
+
+  base::OnceCallback<void(FrameSinkIdAtCallback)> forward_callback_;
+  mojo::Receiver<viz::mojom::InputTargetClient> receiver_;
+};
+
 }  // namespace
 
 class RenderWidgetHostInputEventRouterTest : public testing::Test {
@@ -204,13 +230,29 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     process_host_root_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    mojo::PendingRemote<mojom::Widget> widget_root;
-    widget_impl_root_ = std::make_unique<MockWidgetImpl>(
-        widget_root.InitWithNewPipeAndPassReceiver());
+    agent_scheduling_group_host_root_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_host_root_);
     widget_host_root_ = std::make_unique<RenderWidgetHostImpl>(
-        &delegate_, process_host_root_.get(),
-        process_host_root_->GetNextRoutingID(), std::move(widget_root),
+        &delegate_, *agent_scheduling_group_host_root_,
+        process_host_root_->GetNextRoutingID(),
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
+
+    mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
+    auto blink_widget_receiver =
+        blink_widget.BindNewEndpointAndPassDedicatedReceiver();
+    widget_host_root_->BindWidgetInterfaces(
+        blink_widget_host.BindNewEndpointAndPassDedicatedReceiver(),
+        blink_widget.Unbind());
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
+    auto frame_widget_receiver =
+        frame_widget.BindNewEndpointAndPassDedicatedReceiver();
+    widget_host_root_->BindFrameWidgetInterfaces(
+        frame_widget_host.BindNewEndpointAndPassDedicatedReceiver(),
+        frame_widget.Unbind());
+
     view_root_ =
         std::make_unique<MockRootRenderWidgetHostView>(widget_host_root_.get());
 
@@ -219,8 +261,10 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     // connected on the other end, as we really don't want it to respond
     // anyways.
     mojo::Remote<viz::mojom::InputTargetClient> input_target_client;
-    ignore_result(input_target_client.BindNewPipeAndPassReceiver());
-    widget_host_root_->SetInputTargetClient(std::move(input_target_client));
+    input_target_client_root_ = std::make_unique<MockInputTargetClient>(
+        input_target_client.BindNewPipeAndPassReceiver());
+    widget_host_root_->SetInputTargetClientForTesting(
+        std::move(input_target_client));
 
     EXPECT_EQ(view_root_.get(),
               rwhier()->FindViewFromFrameSinkId(view_root_->GetFrameSinkId()));
@@ -228,10 +272,14 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
   struct ChildViewState {
     std::unique_ptr<MockRenderProcessHost> process_host;
-    std::unique_ptr<MockWidgetImpl> widget_impl;
+    std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host;
     std::unique_ptr<RenderWidgetHostImpl> widget_host;
     std::unique_ptr<TestRenderWidgetHostViewChildFrame> view;
-    std::unique_ptr<MockFrameConnectorDelegate> frame_connector;
+    std::unique_ptr<MockFrameConnector> frame_connector;
+
+    ChildViewState() = default;
+    ChildViewState(ChildViewState&&) = default;
+    ~ChildViewState() { process_host->Cleanup(); }
   };
 
   ChildViewState MakeChildView(RenderWidgetHostViewBase* parent_view) {
@@ -239,16 +287,15 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     child.process_host =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    mojo::PendingRemote<mojom::Widget> widget_child;
-    child.widget_impl = std::make_unique<MockWidgetImpl>(
-        widget_child.InitWithNewPipeAndPassReceiver());
+    child.agent_scheduling_group_host =
+        std::make_unique<AgentSchedulingGroupHost>(*child.process_host);
     child.widget_host = std::make_unique<RenderWidgetHostImpl>(
-        &delegate_, child.process_host.get(),
-        child.process_host->GetNextRoutingID(), std::move(widget_child),
+        &delegate_, *child.agent_scheduling_group_host,
+        child.process_host->GetNextRoutingID(),
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     child.view = std::make_unique<TestRenderWidgetHostViewChildFrame>(
         child.widget_host.get());
-    child.frame_connector = std::make_unique<MockFrameConnectorDelegate>(
+    child.frame_connector = std::make_unique<MockFrameConnector>(
         child.view.get(), parent_view, view_root_.get(),
         false /* use_zoom_for_device_scale_factor */);
 
@@ -261,6 +308,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   void TearDown() override {
     view_root_.reset();
     widget_host_root_.reset();
+    process_host_root_->Cleanup();
+    agent_scheduling_group_host_root_.reset();
     process_host_root_.reset();
     base::RunLoop().RunUntilIdle();
 
@@ -291,9 +340,10 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::unique_ptr<BrowserContext> browser_context_;
 
   std::unique_ptr<MockRenderProcessHost> process_host_root_;
-  std::unique_ptr<MockWidgetImpl> widget_impl_root_;
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_root_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host_root_;
   std::unique_ptr<MockRootRenderWidgetHostView> view_root_;
+  std::unique_ptr<MockInputTargetClient> input_target_client_root_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouterTest);
@@ -411,7 +461,10 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   // Tell the child that it has event handlers, to prevent the touch event
   // queue in the renderer host from acking the touch events immediately.
-  child.widget_host->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      /*has_touch_event_handlers=*/true, /*has_hit_testable_scrollbar=*/false);
+  child.widget_host->SetHasTouchEventConsumers(
+      std::move(touch_event_consumers));
 
   // Make sure we route touch events to child. This will cause the RWH's
   // InputRouter to IPC the event into the ether, from which it will never
@@ -610,7 +663,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        CancelScrollBubblingWhenChildDetaches) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   {
@@ -663,7 +716,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        ContinueScrollBubblingWhenIrrelevantChildDetaches) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer = MakeChildView(view_root_.get());
@@ -689,7 +742,7 @@ void RenderWidgetHostInputEventRouterTest::TestSendNewGestureWhileBubbling(
     bool should_cancel) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   TestRenderWidgetHostViewChildFrame* cur_target = bubbling_origin;
@@ -800,7 +853,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 TEST_F(RenderWidgetHostInputEventRouterTest, DoNotBubbleMultipleSequences) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer1 = MakeChildView(view_root_.get());
@@ -828,7 +881,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        DoNotBubbleIfUnrelatedGestureInTarget) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState child = MakeChildView(view_root_.get());
@@ -874,7 +927,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        NestedDoNotBubbleIfUnrelatedGestureInTarget) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer = MakeChildView(view_root_.get());
@@ -957,6 +1010,37 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
   rwhier()->OnRenderWidgetHostViewBaseDestroyed(child.view.get());
 
   EXPECT_FALSE(targeter->is_auto_scroll_in_progress());
+}
+
+TEST_F(RenderWidgetHostInputEventRouterTest, QueryResultAfterChildViewDead) {
+  ChildViewState child = MakeChildView(view_root_.get());
+
+  view_root_->SetHittestResult(child.view.get(), true);
+
+  input_target_client_root_->forward_callback_ = base::BindOnce(
+      [](viz::FrameSinkId ret,
+         base::WeakPtrFactory<RenderWidgetHostViewBase>* factory,
+         MockInputTargetClient::FrameSinkIdAtCallback callback) {
+        // Simulate destruction of the view.
+        factory->InvalidateWeakPtrs();
+
+        if (callback)
+          std::move(callback).Run(ret, gfx::PointF());
+      },
+      child.view->GetFrameSinkId(),
+      &view_root_->RenderWidgetHostViewBase::weak_factory_);
+
+  // Simulate mouse event.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  rwhier()->RouteMouseEvent(view_root_.get(), &mouse_event,
+                            ui::LatencyInfo(ui::SourceEventType::MOUSE));
+
+  // Wait for the callback.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

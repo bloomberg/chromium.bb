@@ -13,6 +13,7 @@
     <messages fallback_to_english="true">
       <part file="../accessibility/accessibility_strings.grdp" />
       <part file="../animation/animation_strings.grdp" />
+      <part file="../developer_resources/developer_resources_strings.grdp" />
       <part file="../lighthouse/lighthouse_strings.grdp" />
       <part file="../bindings/bindings_strings.grdp" />
       <part file="../browser_debugger/browser_debugger_strings.grdp" />
@@ -24,10 +25,8 @@
       <part file="../console/console_strings.grdp" />
       <part file="../console_counters/console_counters_strings.grdp" />
       <part file="../cookie_table/cookie_table_strings.grdp" />
-      <part file="../coverage/coverage_strings.grdp" />
       <part file="../css_overview/css_overview_strings.grdp" />
       <part file="../data_grid/data_grid_strings.grdp" />
-      <part file="../devices/devices_strings.grdp" />
       <part file="../elements/elements_strings.grdp" />
       <part file="../emulated_devices/emulated_devices_strings.grdp" />
       <part file="../emulation/emulation_strings.grdp" />
@@ -61,7 +60,6 @@
       <part file="../sdk/sdk_strings.grdp" />
       <part file="../search/search_strings.grdp" />
       <part file="../security/security_strings.grdp" />
-      <part file="../settings/settings_strings.grdp" />
       <part file="../snippets/snippets_strings.grdp" />
       <part file="../source_frame/source_frame_strings.grdp" />
       <part file="../sources/sources_strings.grdp" />
@@ -70,6 +68,7 @@
       <part file="../timeline_model/timeline_model_strings.grdp" />
       <part file="../ui/ui_strings.grdp" />
       <part file="../web_audio/web_audio_strings.grdp" />
+      <part file="../webauthn/webauthn_strings.grdp" />
       <part file="../workspace/workspace_strings.grdp" />
       <part file="shared_strings.grdp" />
     </messages>

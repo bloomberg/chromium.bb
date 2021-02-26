@@ -7,14 +7,13 @@
 #include <string>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/session/arc_session.h"
 
 namespace arc {
@@ -71,21 +70,16 @@ ToLoginManagerPlayStoreAutoUpdate(StartParams::PlayStoreAutoUpdate update) {
 
 class ArcContainerClientAdapter
     : public ArcClientAdapter,
-      public chromeos::SessionManagerClient::Observer,
-      public chromeos::UpstartClient::Observer {
+      public chromeos::SessionManagerClient::Observer {
  public:
   ArcContainerClientAdapter() {
     if (chromeos::SessionManagerClient::Get())
       chromeos::SessionManagerClient::Get()->AddObserver(this);
-    if (chromeos::UpstartClient::Get())
-      chromeos::UpstartClient::Get()->AddObserver(this);
   }
 
   ~ArcContainerClientAdapter() override {
     if (chromeos::SessionManagerClient::Get())
       chromeos::SessionManagerClient::Get()->RemoveObserver(this);
-    if (chromeos::UpstartClient::Get())
-      chromeos::UpstartClient::Get()->RemoveObserver(this);
   }
 
   // ArcClientAdapter overrides:
@@ -98,8 +92,6 @@ class ArcContainerClientAdapter
     request.set_play_store_auto_update(
         ToLoginManagerPlayStoreAutoUpdate(params.play_store_auto_update));
     request.set_arc_custom_tabs_experiment(params.arc_custom_tabs_experiment);
-    request.set_arc_print_spooler_experiment(
-        params.arc_print_spooler_experiment);
     request.set_disable_system_default_app(
         params.arc_disable_system_default_app);
 
@@ -112,6 +104,8 @@ class ArcContainerClientAdapter
     login_manager::UpgradeArcContainerRequest request;
     request.set_account_id(params.account_id);
     request.set_is_account_managed(params.is_account_managed);
+    request.set_is_managed_adb_sideloading_allowed(
+        params.is_managed_adb_sideloading_allowed);
     request.set_skip_boot_completed_broadcast(
         params.skip_boot_completed_broadcast);
     request.set_packages_cache_mode(
@@ -147,12 +141,6 @@ class ArcContainerClientAdapter
 
   // chromeos::SessionManagerClient::Observer overrides:
   void ArcInstanceStopped() override {
-    for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped();
-  }
-
-  // chromeos::UpstartClient::Observer overrides:
-  void ArcStopped() override {
     for (auto& observer : observer_list_)
       observer.ArcInstanceStopped();
   }

@@ -22,7 +22,7 @@
 #include "src/utils/compiler_attributes.h"
 
 #if !defined(LIBGAV1_ENABLE_LOGGING)
-#if defined(NDEBUG)
+#if defined(NDEBUG) || defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
 #define LIBGAV1_ENABLE_LOGGING 0
 #else
 #define LIBGAV1_ENABLE_LOGGING 1

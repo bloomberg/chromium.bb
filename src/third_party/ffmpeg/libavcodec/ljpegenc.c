@@ -309,7 +309,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     s->scratch = av_malloc_array(avctx->width + 1, sizeof(*s->scratch));
     if (!s->scratch)
-        goto fail;
+        return AVERROR(ENOMEM);
 
     ff_idctdsp_init(&s->idsp, avctx);
     ff_init_scantable(s->idsp.idct_permutation, &s->scantable,
@@ -327,9 +327,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
                                  avpriv_mjpeg_val_dc);
 
     return 0;
-fail:
-    ljpeg_encode_close(avctx);
-    return AVERROR(ENOMEM);
 }
 
 #define OFFSET(x) offsetof(LJpegEncContext, x)
@@ -360,7 +357,7 @@ AVCodec ff_ljpeg_encoder = {
     .init           = ljpeg_encode_init,
     .encode2        = ljpeg_encode_frame,
     .close          = ljpeg_encode_close,
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]){
         AV_PIX_FMT_BGR24   , AV_PIX_FMT_BGRA    , AV_PIX_FMT_BGR0,
         AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P,

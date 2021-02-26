@@ -5,13 +5,16 @@
 #include "components/autofill/core/browser/autofill_handler.h"
 
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -27,6 +30,10 @@ const size_t kAutofillHandlerMaxFormCacheSize = 100;
 // if not found.
 AutofillField* FindAutofillFillField(const FormStructure& form,
                                      const FormFieldData& field) {
+  for (const auto& f : form) {
+    if (field.unique_renderer_id == f->unique_renderer_id)
+      return f.get();
+  }
   for (const auto& cur_field : form) {
     if (cur_field->SameFieldAs(field)) {
       return cur_field.get();
@@ -79,52 +86,49 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   if (forms.empty())
     return;
 
-  // Parse each of the forms. Because parsing a given FormData may invalidate
-  // and replace a form parsed before it (invalidating any pointers we might
-  // hold) we track the newly created form signatures instead of remembering
-  // the pointer values.
-  std::set<FormSignature> new_form_signatures;
+  std::vector<const FormData*> new_forms;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = AutofillTickClock::NowTicks();
-    FormStructure* cached_form_structure = nullptr;
-    FormStructure* form_structure = nullptr;
-    // Try to find the FormStructure that corresponds to |form| if the form
-    // contains credit card fields only.
-    // |cached_form_structure| may still be nullptr after this call.
-    ignore_result(FindCachedForm(form, &cached_form_structure));
+    FormStructure* cached_form_structure =
+        FindCachedFormByRendererId(form.unique_renderer_id);
+    // Autofill used to ignore cache hits for non-credit-card forms. The
+    // motivation behind this is probably to have credit-card forms preserve
+    // their original signature, whereas non-credit-card forms would use the
+    // most recent form signature. Ignoring cache hits however appears to be
+    // part of breaking profile imports and voting for dynamic forms. See
+    // crbug/1091401#c15 for details.
+    //
+    // Therefore, if the kAutofillKeepInitialFormValuesInCache experiment is
+    // enabled, we do not ignore cache hits, but in those cases where the old
+    // code would have ignored the cache hit we update the FormStructure's
+    // FormSignature.
+    // Otherwise, if the experiment disabled, we just ignore the cache hit.
+    bool update_form_signature = false;
     if (cached_form_structure) {
       for (const FormType& form_type : cached_form_structure->GetFormTypes()) {
         if (form_type != CREDIT_CARD_FORM) {
-          cached_form_structure = nullptr;
+          update_form_signature = true;
           break;
         }
       }
     }
 
-    if (!ParseForm(form, cached_form_structure, &form_structure))
+    FormStructure* form_structure = ParseForm(form, cached_form_structure);
+    if (!form_structure)
       continue;
     DCHECK(form_structure);
-    new_form_signatures.insert(form_structure->form_signature());
+
+    if (update_form_signature)
+      form_structure->set_form_signature(CalculateFormSignature(form));
+
+    new_forms.push_back(&form);
     AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);
   }
 
-  if (new_form_signatures.empty())
+  if (new_forms.empty())
     return;
-
-  // Populate the set of newly created form structures and call the
-  // OnFormsParsed handler.
-  std::vector<FormStructure*> new_form_structures;
-  new_form_structures.reserve(new_form_signatures.size());
-  for (auto signature : new_form_signatures) {
-    FormStructure* form_structure = nullptr;
-    if (FindCachedForm(signature, &form_structure) && form_structure) {
-      new_form_structures.push_back(form_structure);
-    } else {
-      NOTREACHED();
-    }
-  }
-  OnFormsParsed(new_form_structures, timestamp);
+  OnFormsParsed(new_forms, timestamp);
 }
 
 void AutofillHandler::OnTextFieldDidChange(const FormData& form,
@@ -204,8 +208,9 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
                                             FormStructure** form_structure,
                                             AutofillField** autofill_field) {
   // Maybe find an existing FormStructure that corresponds to |form|.
-  FormStructure* cached_form = nullptr;
-  if (FindCachedForm(form, &cached_form)) {
+  FormStructure* cached_form =
+      FindCachedFormByRendererId(form.unique_renderer_id);
+  if (cached_form) {
     DCHECK(cached_form);
     if (!CachedFormNeedsUpdate(form, *cached_form)) {
       // There is no data to return if there are no auto-fillable fields.
@@ -221,7 +226,8 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
 
   // The form is new or updated, parse it and discard |cached_form|.
   // i.e., |cached_form| is no longer valid after this call.
-  if (!ParseForm(form, std::move(cached_form), form_structure))
+  *form_structure = ParseForm(form, cached_form);
+  if (!*form_structure)
     return false;
 
   // Annotate the updated form with its predicted types.
@@ -236,52 +242,40 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
   return *autofill_field != nullptr;
 }
 
-bool AutofillHandler::FindCachedForm(FormSignature form_signature,
-                                     FormStructure** form_structure) const {
-  auto it = form_structures_.find(form_signature);
-  if (it != form_structures_.end()) {
-    *form_structure = it->second.get();
-    return true;
-  }
-  return false;
-}
-
-bool AutofillHandler::FindCachedForm(const FormData& form,
-                                     FormStructure** form_structure) const {
-  // Find the FormStructure that corresponds to |form|.
-  if (FindCachedForm(autofill::CalculateFormSignature(form), form_structure))
-    return true;
-
-  // The form might have been modified by JavaScript which resulted in a change
-  // of form signature. Compare it to all the forms in the cache to look for a
-  // match.
-  for (const auto& it : form_structures_) {
-    if (*it.second == form) {
-      *form_structure = it.second.get();
-      return true;
+size_t AutofillHandler::FindCachedFormsBySignature(
+    FormSignature form_signature,
+    std::vector<FormStructure*>* form_structures) const {
+  size_t hits_num = 0;
+  for (const auto& p : form_structures_) {
+    if (p.second->form_signature() == form_signature) {
+      ++hits_num;
+      if (form_structures)
+        form_structures->push_back(p.second.get());
     }
   }
-
-  *form_structure = nullptr;
-  return false;
+  return hits_num;
 }
 
-bool AutofillHandler::ParseForm(const FormData& form,
-                                const FormStructure* cached_form,
-                                FormStructure** parsed_form_structure) {
-  DCHECK(parsed_form_structure);
+FormStructure* AutofillHandler::FindCachedFormByRendererId(
+    FormRendererId form_renderer_id) const {
+  auto it = form_structures_.find(form_renderer_id);
+  return it != form_structures_.end() ? it->second.get() : nullptr;
+}
+
+FormStructure* AutofillHandler::ParseForm(const FormData& form,
+                                          const FormStructure* cached_form) {
   if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize) {
     if (log_manager_) {
       log_manager_->Log() << LoggingScope::kAbortParsing
                           << LogMessage::kAbortParsingTooManyForms << form;
     }
-    return false;
+    return nullptr;
   }
 
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed(log_manager_))
-    return false;
+    return nullptr;
 
   if (cached_form) {
     // We need to keep the server data if available. We need to use them while
@@ -296,21 +290,27 @@ bool AutofillHandler::ParseForm(const FormData& form,
       value_from_dynamic_change_form_ = true;
   }
 
+  form_structure->set_page_language(GetPageLanguage());
+
   form_structure->DetermineHeuristicTypes(log_manager_);
 
   // Hold the parsed_form_structure we intend to return. We can use this to
   // reference the form_signature when transferring ownership below.
-  *parsed_form_structure = form_structure.get();
+  FormStructure* parsed_form_structure = form_structure.get();
 
   // Ownership is transferred to |form_structures_| which maintains it until
   // the form is parsed again or the AutofillHandler is destroyed.
   //
   // Note that this insert/update takes ownership of the new form structure
   // and also destroys the previously cached form structure.
-  form_structures_[(*parsed_form_structure)->form_signature()] =
+  form_structures_[parsed_form_structure->unique_renderer_id()] =
       std::move(form_structure);
 
-  return true;
+  return parsed_form_structure;
+}
+
+std::string AutofillHandler::GetPageLanguage() const {
+  return std::string();
 }
 
 void AutofillHandler::Reset() {

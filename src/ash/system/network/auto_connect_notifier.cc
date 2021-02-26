@@ -7,7 +7,7 @@
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -162,7 +162,8 @@ void AutoConnectNotifier::DisplayNotification(
       message_center::SystemNotificationWarningLevel::NORMAL);
 
   notification->set_small_image(gfx::Image(network_icon::GetImageForWifiNetwork(
-      notification->accent_color(),
+      notification->accent_color().value_or(
+          ash::kSystemNotificationColorNormal),
       gfx::Size(message_center::kSmallImageSizeMD,
                 message_center::kSmallImageSizeMD))));
 

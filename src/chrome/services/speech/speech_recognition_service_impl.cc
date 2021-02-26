@@ -19,12 +19,51 @@ void SpeechRecognitionServiceImpl::BindContext(
   speech_recognition_contexts_.Add(this, std::move(context));
 }
 
+void SpeechRecognitionServiceImpl::SetUrlLoaderFactory(
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = mojo::Remote<network::mojom::URLLoaderFactory>(
+      std::move(url_loader_factory));
+  url_loader_factory_.set_disconnect_handler(
+      base::BindOnce(&SpeechRecognitionServiceImpl::DisconnectHandler,
+                     base::Unretained(this)));
+}
+
+void SpeechRecognitionServiceImpl::SetSodaPath(
+    const base::FilePath& binary_path,
+    const base::FilePath& config_path) {
+  binary_path_ = binary_path;
+  config_path_ = config_path;
+}
+
+void SpeechRecognitionServiceImpl::BindSpeechRecognitionServiceClient(
+    mojo::PendingRemote<media::mojom::SpeechRecognitionServiceClient> client) {
+  client_ = mojo::Remote<media::mojom::SpeechRecognitionServiceClient>(
+      std::move(client));
+}
+
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+SpeechRecognitionServiceImpl::GetUrlLoaderFactory() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory_remote;
+  url_loader_factory_->Clone(
+      pending_factory_remote.InitWithNewPipeAndPassReceiver());
+
+  return pending_factory_remote;
+}
+
 void SpeechRecognitionServiceImpl::BindRecognizer(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
-    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
-        client) {
-  SpeechRecognitionRecognizerImpl::Create(std::move(receiver),
-                                          std::move(client));
+    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    BindRecognizerCallback callback) {
+  SpeechRecognitionRecognizerImpl::Create(
+      std::move(receiver), std::move(client), weak_factory_.GetWeakPtr(),
+      binary_path_, config_path_);
+  std::move(callback).Run(
+      SpeechRecognitionRecognizerImpl::IsMultichannelSupported());
+}
+
+void SpeechRecognitionServiceImpl::DisconnectHandler() {
+  if (client_.is_bound())
+    client_->OnNetworkServiceDisconnect();
 }
 
 }  // namespace speech

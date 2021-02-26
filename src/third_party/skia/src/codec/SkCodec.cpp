@@ -125,8 +125,10 @@ std::unique_ptr<SkCodec> SkCodec::MakeFromStream(
         }
 
 #ifdef SK_HAS_HEIF_LIBRARY
-        if (SkHeifCodec::IsHeif(buffer, bytesRead)) {
-            return SkHeifCodec::MakeFromStream(std::move(stream), selectionPolicy, outResult);
+        SkEncodedImageFormat format;
+        if (SkHeifCodec::IsSupported(buffer, bytesRead, &format)) {
+            return SkHeifCodec::MakeFromStream(std::move(stream), selectionPolicy,
+                    format, outResult);
         }
 #endif
 
@@ -166,6 +168,25 @@ SkCodec::SkCodec(SkEncodedInfo&& info, XformFormat srcFormat, std::unique_ptr<Sk
 {}
 
 SkCodec::~SkCodec() {}
+
+bool SkCodec::queryYUVAInfo(const SkYUVAPixmapInfo::SupportedDataTypes& supportedDataTypes,
+                            SkYUVAPixmapInfo* yuvaPixmapInfo) const {
+    if (!yuvaPixmapInfo) {
+        return false;
+    }
+    return this->onQueryYUVAInfo(supportedDataTypes, yuvaPixmapInfo) &&
+           yuvaPixmapInfo->isSupported(supportedDataTypes);
+}
+
+SkCodec::Result SkCodec::getYUVAPlanes(const SkYUVAPixmaps& yuvaPixmaps) {
+    if (!yuvaPixmaps.isValid()) {
+        return kInvalidInput;
+    }
+    if (!this->rewindIfNeeded()) {
+        return kCouldNotRewind;
+    }
+    return this->onGetYUVAPlanes(yuvaPixmaps);
+}
 
 bool SkCodec::conversionSupported(const SkImageInfo& dst, bool srcIsOpaque, bool needsColorXform) {
     if (!valid_alpha(dst.alphaType(), srcIsOpaque)) {

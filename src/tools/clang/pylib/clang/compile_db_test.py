@@ -62,12 +62,25 @@ class CompileDbTest(unittest.TestCase):
         _TEST_COMPILE_DB)
 
     # Assert no changes were made.
-    self.assertItemsEqual(processed_compile_db, _TEST_COMPILE_DB)
+    try:
+      # assertItemsEqual is renamed assertCountEqual in Python3.
+      self.assertCountEqual(processed_compile_db, _TEST_COMPILE_DB)
+    except AttributeError:
+      self.assertItemsEqual(processed_compile_db, _TEST_COMPILE_DB)
 
-  def testProcessForWindows(self):
+  def testProcessForWindows_HostPlatformBased(self):
     sys.platform = 'win32'
     processed_compile_db = compile_db.ProcessCompileDatabaseIfNeeded(
         _TEST_COMPILE_DB)
+
+    # Check each entry individually to improve readability of the output.
+    for actual, expected in zip(processed_compile_db, _EXPECTED_COMPILE_DB):
+      self.assertDictEqual(actual, expected)
+
+  def testProcessForWindows_TargetOsBased(self):
+    sys.platform = 'linux2'
+    processed_compile_db = compile_db.ProcessCompileDatabaseIfNeeded(
+        _TEST_COMPILE_DB, target_os='win')
 
     # Check each entry individually to improve readability of the output.
     for actual, expected in zip(processed_compile_db, _EXPECTED_COMPILE_DB):

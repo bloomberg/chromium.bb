@@ -56,7 +56,8 @@ class SharedRingBuffer {
   class Buffer {
    public:
     Buffer() {}
-    Buffer(uint8_t* d, size_t s) : data(d), size(s) {}
+    Buffer(uint8_t* d, size_t s, uint64_t f)
+        : data(d), size(s), bytes_free(f) {}
 
     Buffer(const Buffer&) = delete;
     Buffer& operator=(const Buffer&) = delete;
@@ -64,10 +65,11 @@ class SharedRingBuffer {
     Buffer(Buffer&&) = default;
     Buffer& operator=(Buffer&&) = default;
 
-    operator bool() const { return data != nullptr; }
+    explicit operator bool() const { return data != nullptr; }
 
     uint8_t* data = nullptr;
     size_t size = 0;
+    uint64_t bytes_free = 0;
   };
 
   struct Stats {
@@ -82,6 +84,8 @@ class SharedRingBuffer {
 
     // Fields below get set by GetStats as copies of atomics in MetadataPage.
     uint64_t failed_spinlocks;
+    uint64_t client_spinlock_blocked_us;
+    bool hit_timeout;
   };
 
   static base::Optional<SharedRingBuffer> Create(size_t);
@@ -108,8 +112,13 @@ class SharedRingBuffer {
     Stats stats = meta_->stats;
     stats.failed_spinlocks =
         meta_->failed_spinlocks.load(std::memory_order_relaxed);
+    stats.hit_timeout = meta_->hit_timeout.load(std::memory_order_relaxed);
+    stats.client_spinlock_blocked_us =
+        meta_->client_spinlock_blocked_us.load(std::memory_order_relaxed);
     return stats;
   }
+
+  void SetHitTimeout() { meta_->hit_timeout.store(true); }
 
   // This is used by the caller to be able to hold the SpinLock after
   // BeginWrite has returned. This is so that additional bookkeeping can be
@@ -121,13 +130,41 @@ class SharedRingBuffer {
     return lock;
   }
 
+  void AddClientSpinlockBlockedUs(size_t n) {
+    meta_->client_spinlock_blocked_us.fetch_add(n, std::memory_order_relaxed);
+  }
+
+  uint64_t client_spinlock_blocked_us() {
+    return meta_->client_spinlock_blocked_us;
+  }
+
+  void SetShuttingDown() {
+    meta_->shutting_down.store(true, std::memory_order_relaxed);
+  }
+
+  bool shutting_down() {
+    return meta_->shutting_down.load(std::memory_order_relaxed);
+  }
+
+  void SetReaderPaused() {
+    meta_->reader_paused.store(true, std::memory_order_relaxed);
+  }
+
+  bool GetAndResetReaderPaused() {
+    return meta_->reader_paused.exchange(false, std::memory_order_relaxed);
+  }
+
   // Exposed for fuzzers.
   struct MetadataPage {
     alignas(uint64_t) std::atomic<bool> spinlock;
     std::atomic<uint64_t> read_pos;
     std::atomic<uint64_t> write_pos;
 
+    std::atomic<uint64_t> client_spinlock_blocked_us;
     std::atomic<uint64_t> failed_spinlocks;
+    alignas(uint64_t) std::atomic<bool> hit_timeout;
+    alignas(uint64_t) std::atomic<bool> shutting_down;
+    alignas(uint64_t) std::atomic<bool> reader_paused;
     // For stats that are only accessed by a single thread or under the
     // spinlock, members of this struct are directly modified. Other stats use
     // the atomics above this struct.

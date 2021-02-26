@@ -21,6 +21,13 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_boolean.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_integer.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_integer_optional_integer.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number_list.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number_optional_number.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
@@ -116,7 +123,23 @@ SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
   AddToPropertyMap(target_y_);
 }
 
-void SVGFEConvolveMatrixElement::Trace(Visitor* visitor) {
+SVGAnimatedNumber* SVGFEConvolveMatrixElement::kernelUnitLengthX() {
+  return kernel_unit_length_->FirstNumber();
+}
+
+SVGAnimatedNumber* SVGFEConvolveMatrixElement::kernelUnitLengthY() {
+  return kernel_unit_length_->SecondNumber();
+}
+
+SVGAnimatedInteger* SVGFEConvolveMatrixElement::orderX() const {
+  return order_->FirstInteger();
+}
+
+SVGAnimatedInteger* SVGFEConvolveMatrixElement::orderY() const {
+  return order_->SecondInteger();
+}
+
+void SVGFEConvolveMatrixElement::Trace(Visitor* visitor) const {
   visitor->Trace(bias_);
   visitor->Trace(divisor_);
   visitor->Trace(in1_);
@@ -166,8 +189,7 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEConvolveMatrix* convolve_matrix = static_cast<FEConvolveMatrix*>(effect);
   if (attr_name == svg_names::kEdgeModeAttr)
-    return convolve_matrix->SetEdgeMode(
-        edge_mode_->CurrentValue()->EnumValue());
+    return convolve_matrix->SetEdgeMode(edge_mode_->CurrentEnumValue());
   if (attr_name == svg_names::kDivisorAttr)
     return convolve_matrix->SetDivisor(ComputeDivisor());
   if (attr_name == svg_names::kBiasAttr)
@@ -214,7 +236,7 @@ FilterEffect* SVGFEConvolveMatrixElement::Build(
 
   auto* effect = MakeGarbageCollected<FEConvolveMatrix>(
       filter, MatrixOrder(), ComputeDivisor(), bias_->CurrentValue()->Value(),
-      TargetPoint(), edge_mode_->CurrentValue()->EnumValue(),
+      TargetPoint(), edge_mode_->CurrentEnumValue(),
       preserve_alpha_->CurrentValue()->Value(),
       kernel_matrix_->CurrentValue()->ToFloatVector());
   effect->InputEffects().push_back(input1);

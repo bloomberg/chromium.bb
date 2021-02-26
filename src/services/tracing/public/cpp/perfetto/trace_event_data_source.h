@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
+#include "base/trace_event/typed_macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
@@ -35,7 +36,6 @@ struct TraceEventHandle;
 
 namespace perfetto {
 class TraceWriter;
-class EventContext;
 }
 
 namespace tracing {
@@ -71,12 +71,17 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
       perfetto::protos::pbzero::ChromeMetadataPacket*,
       bool /* privacy_filtering_enabled */)>;
 
+  using PacketGeneratorFunction =
+      base::RepeatingCallback<void(perfetto::protos::pbzero::TracePacket*,
+                                   bool /* privacy_filtering_enabled */)>;
+
   // Any callbacks passed here will be called when tracing. Note that if tracing
   // is enabled while calling this method, the callback may be invoked
   // directly.
   void AddGeneratorFunction(JsonMetadataGeneratorFunction generator);
   // Same as above, but for filling in proto format.
   void AddGeneratorFunction(MetadataGeneratorFunction generator);
+  void AddGeneratorFunction(PacketGeneratorFunction generator);
   // For background tracing, the legacy crash uploader needs
   // metadata fields to be uploaded as POST args in addition to being
   // embedded in the trace. TODO(oysteine): Remove when only the
@@ -102,26 +107,35 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
   void GenerateMetadata(
       std::unique_ptr<std::vector<JsonMetadataGeneratorFunction>>
           json_generators,
-      std::unique_ptr<std::vector<MetadataGeneratorFunction>> proto_generators);
+      std::unique_ptr<std::vector<MetadataGeneratorFunction>> proto_generators,
+      std::unique_ptr<std::vector<PacketGeneratorFunction>> packet_generators);
   void GenerateMetadataFromGenerator(
       const MetadataGeneratorFunction& generator);
   void GenerateJsonMetadataFromGenerator(
       const JsonMetadataGeneratorFunction& generator,
       perfetto::protos::pbzero::ChromeEventBundle* event_bundle);
+  void GenerateMetadataPacket(
+      const TraceEventMetadataSource::PacketGeneratorFunction& generator);
   std::unique_ptr<base::DictionaryValue> GenerateTraceConfigMetadataDict();
 
   // All members are protected by |lock_|.
+  // TODO(crbug.com/1138893): Change annotations to GUARDED_BY
   base::Lock lock_;
-  std::vector<JsonMetadataGeneratorFunction> json_generator_functions_;
-  std::vector<MetadataGeneratorFunction> generator_functions_;
+  std::vector<JsonMetadataGeneratorFunction> json_generator_functions_
+      GUARDED_BY(lock_);
+  std::vector<MetadataGeneratorFunction> generator_functions_ GUARDED_BY(lock_);
+  std::vector<PacketGeneratorFunction> packet_generator_functions_
+      GUARDED_BY(lock_);
 
-  const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_
+      GUARDED_BY_FIXME(lock_);
 
-  std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-  bool privacy_filtering_enabled_ = false;
-  std::string chrome_config_;
-  std::unique_ptr<base::trace_event::TraceConfig> parsed_chrome_config_;
-  bool emit_metadata_at_start_ = false;
+  std::unique_ptr<perfetto::TraceWriter> trace_writer_ GUARDED_BY_FIXME(lock_);
+  bool privacy_filtering_enabled_ GUARDED_BY_FIXME(lock_) = false;
+  std::string chrome_config_ GUARDED_BY(lock_);
+  std::unique_ptr<base::trace_event::TraceConfig> parsed_chrome_config_
+      GUARDED_BY(lock_);
+  bool emit_metadata_at_start_ GUARDED_BY(lock_) = false;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMetadataSource);
 };
@@ -180,26 +194,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   bool IsEnabled();
 
-  static TrackEventThreadLocalEventSink* GetOrPrepareEventSink(
-      bool thread_will_flush);
-
-  template <
-      typename TrackEventArgumentFunction = void (*)(perfetto::EventContext)>
-  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
-                              bool thread_will_flush,
-                              base::trace_event::TraceEventHandle* handle,
-                              const perfetto::Track& track,
-                              TrackEventArgumentFunction func) {
-    auto* thread_local_event_sink = GetOrPrepareEventSink(thread_will_flush);
-    if (thread_local_event_sink) {
-      AutoThreadLocalBoolean thread_is_in_trace_event(
-          GetThreadIsInTraceEventTLS());
-      thread_local_event_sink->AddTraceEvent(trace_event, handle, track, func);
-    }
-  }
-
-  // Registered with base::StatisticsRecorder to receive a callback on every
-  // histogram sample which gets added.
+  // Records trace event for a histogram sample. When histogram_samples category
+  // is enabled, it is registered with base::StatisticsRecorder to monitor the
+  // histograms listed in the trace config. If there are no histograms listed in
+  // the trace config, all the histograms will be monitored.
   static void OnMetricsSampleCallback(const char* histogram_name,
                                       uint64_t name_hash,
                                       base::HistogramBase::Sample sample);
@@ -222,17 +220,21 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
       PerfettoProducer* producer_client,
       const perfetto::DataSourceConfig& data_source_config);
 
-  void RegisterWithTraceLog();
+  void RegisterWithTraceLog(const base::trace_event::TraceConfig& trace_config);
   void OnStopTracingDone();
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriterLocked();
-  TrackEventThreadLocalEventSink* CreateThreadLocalEventSink(
-      bool thread_will_flush);
+  TrackEventThreadLocalEventSink* CreateThreadLocalEventSink();
 
-  // Callback from TraceLog, can be called from any thread.
-  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
-                              bool thread_will_flush,
-                              base::trace_event::TraceEventHandle* handle);
+  static TrackEventThreadLocalEventSink* GetOrPrepareEventSink();
+
+  // Callback from TraceLog / typed macros, can be called from any thread.
+  static void OnAddLegacyTraceEvent(
+      base::trace_event::TraceEvent* trace_event,
+      bool thread_will_flush,
+      base::trace_event::TraceEventHandle* handle);
+  static base::trace_event::TrackEventHandle OnAddTypedTraceEvent(
+      base::trace_event::TraceEvent* trace_event);
   static void OnUpdateDuration(
       const unsigned char* category_group_enabled,
       const char* name,
@@ -242,6 +244,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
       const base::TimeTicks& now,
       const base::ThreadTicks& thread_now,
       base::trace_event::ThreadInstructionCount thread_instruction_now);
+  static base::trace_event::TracePacketHandle OnAddTracePacket();
 
   // Extracts UMA histogram names that should be logged in traces and logs their
   // starting values.
@@ -277,6 +280,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   bool flushing_trace_log_ = false;
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
+  // Stores all histogram names for which OnMetricsSampleCallback was set as an
+  // OnSampleCallback. This is done in order to avoid clearing callbacks for the
+  // other histograms.
+  std::vector<std::string> monitored_histograms_;
   bool privacy_filtering_enabled_ = false;
   std::string process_name_;
   int process_id_ = base::kNullProcessId;

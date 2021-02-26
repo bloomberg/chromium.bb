@@ -65,7 +65,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
 
 ExternalPopupMenu::~ExternalPopupMenu() = default;
 
-void ExternalPopupMenu::Trace(Visitor* visitor) {
+void ExternalPopupMenu::Trace(Visitor* visitor) const {
   visitor->Trace(owner_element_);
   visitor->Trace(local_frame_);
   visitor->Trace(receiver_);
@@ -97,14 +97,12 @@ bool ExternalPopupMenu::ShowInternal() {
     LayoutObject* layout_object = owner_element_->GetLayoutObject();
     if (!layout_object || !layout_object->IsBox())
       return false;
+    auto* box = To<LayoutBox>(layout_object);
     IntRect rect = EnclosingIntRect(
-        ToLayoutBox(layout_object)
-            ->LocalToAbsoluteRect(
-                ToLayoutBox(layout_object)->PhysicalBorderBoxRect()));
+        box->LocalToAbsoluteRect(box->PhysicalBorderBoxRect()));
     IntRect rect_in_viewport = local_frame_->View()->FrameToViewport(rect);
     float scale_for_emulation = WebLocalFrameImpl::FromFrame(local_frame_)
                                     ->LocalRootFrameWidget()
-                                    ->Client()
                                     ->GetEmulatorScale();
 
     gfx::Rect bounds =
@@ -128,7 +126,7 @@ bool ExternalPopupMenu::ShowInternal() {
 void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event &&
       current_event->GetType() == WebInputEvent::Type::kMouseDown) {
@@ -145,8 +143,9 @@ void ExternalPopupMenu::Show() {
 }
 
 void ExternalPopupMenu::DispatchEvent(TimerBase*) {
-  WebLocalFrameImpl::FromFrame(local_frame_->LocalFrameRoot())
-      ->FrameWidgetImpl()
+  static_cast<WebWidget*>(
+      WebLocalFrameImpl::FromFrame(local_frame_->LocalFrameRoot())
+          ->FrameWidgetImpl())
       ->HandleInputEvent(
           blink::WebCoalescedInputEvent(*synthetic_event_, ui::LatencyInfo()));
   synthetic_event_.reset();
@@ -201,7 +200,8 @@ void ExternalPopupMenu::DisconnectClient() {
 }
 
 void ExternalPopupMenu::DidAcceptIndices(const Vector<int32_t>& indices) {
-  local_frame_->NotifyUserActivation();
+  local_frame_->NotifyUserActivation(
+      mojom::blink::UserActivationNotificationType::kInteraction);
 
   // Calling methods on the HTMLSelectElement might lead to this object being
   // derefed. This ensures it does not get deleted while we are running this
@@ -231,8 +231,6 @@ void ExternalPopupMenu::DidAcceptIndices(const Vector<int32_t>& indices) {
 }
 
 void ExternalPopupMenu::DidCancel() {
-  local_frame_->NotifyUserActivation();
-
   if (owner_element_)
     owner_element_->PopupDidHide();
   Reset();
@@ -268,10 +266,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(
     }
     popup_item->enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);
-    popup_item->text_direction =
-        style.Direction() == TextDirection::kLtr
-            ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT;
+    popup_item->text_direction = ToBaseTextDirection(style.Direction());
     popup_item->has_text_direction_override =
         IsOverride(style.GetUnicodeBidi());
     menu_items->push_back(std::move(popup_item));

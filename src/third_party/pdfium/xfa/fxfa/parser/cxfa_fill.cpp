@@ -6,10 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_fill.h"
 
-#include "core/fxge/render_defines.h"
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_color.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_linear.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_pattern.h"
@@ -47,7 +46,9 @@ CXFA_Fill::CXFA_Fill(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Fill,
                 kFillPropertyData,
                 kFillAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Fill::~CXFA_Fill() = default;
 
@@ -86,8 +87,8 @@ XFA_Element CXFA_Fill::GetType() const {
   return XFA_Element::Solid;
 }
 
-void CXFA_Fill::Draw(CXFA_Graphics* pGS,
-                     CXFA_GEPath* fillPath,
+void CXFA_Fill::Draw(CFGAS_GEGraphics* pGS,
+                     CFGAS_GEPath* fillPath,
                      const CFX_RectF& rtWidget,
                      const CFX_Matrix& matrix) {
   pGS->SaveGraphState();
@@ -106,16 +107,17 @@ void CXFA_Fill::Draw(CXFA_Graphics* pGS,
       DrawStipple(pGS, fillPath, rtWidget, matrix);
       break;
     default:
-      pGS->SetFillColor(CXFA_GEColor(GetColor(false)));
-      pGS->FillPath(fillPath, FXFILL_WINDING, &matrix);
+      pGS->SetFillColor(CFGAS_GEColor(GetColor(false)));
+      pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding,
+                    &matrix);
       break;
   }
 
   pGS->RestoreGraphState();
 }
 
-void CXFA_Fill::DrawStipple(CXFA_Graphics* pGS,
-                            CXFA_GEPath* fillPath,
+void CXFA_Fill::DrawStipple(CFGAS_GEGraphics* pGS,
+                            CFGAS_GEPath* fillPath,
                             const CFX_RectF& rtWidget,
                             const CFX_Matrix& matrix) {
   CXFA_Stipple* stipple =
@@ -124,8 +126,8 @@ void CXFA_Fill::DrawStipple(CXFA_Graphics* pGS,
     stipple->Draw(pGS, fillPath, rtWidget, matrix);
 }
 
-void CXFA_Fill::DrawRadial(CXFA_Graphics* pGS,
-                           CXFA_GEPath* fillPath,
+void CXFA_Fill::DrawRadial(CFGAS_GEGraphics* pGS,
+                           CFGAS_GEPath* fillPath,
                            const CFX_RectF& rtWidget,
                            const CFX_Matrix& matrix) {
   CXFA_Radial* radial =
@@ -134,8 +136,8 @@ void CXFA_Fill::DrawRadial(CXFA_Graphics* pGS,
     radial->Draw(pGS, fillPath, GetColor(false), rtWidget, matrix);
 }
 
-void CXFA_Fill::DrawLinear(CXFA_Graphics* pGS,
-                           CXFA_GEPath* fillPath,
+void CXFA_Fill::DrawLinear(CFGAS_GEGraphics* pGS,
+                           CFGAS_GEPath* fillPath,
                            const CFX_RectF& rtWidget,
                            const CFX_Matrix& matrix) {
   CXFA_Linear* linear =
@@ -144,8 +146,8 @@ void CXFA_Fill::DrawLinear(CXFA_Graphics* pGS,
     linear->Draw(pGS, fillPath, GetColor(false), rtWidget, matrix);
 }
 
-void CXFA_Fill::DrawPattern(CXFA_Graphics* pGS,
-                            CXFA_GEPath* fillPath,
+void CXFA_Fill::DrawPattern(CFGAS_GEGraphics* pGS,
+                            CFGAS_GEPath* fillPath,
                             const CFX_RectF& rtWidget,
                             const CFX_Matrix& matrix) {
   CXFA_Pattern* pattern =

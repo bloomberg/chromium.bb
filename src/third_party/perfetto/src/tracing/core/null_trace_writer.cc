@@ -18,16 +18,14 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/utils.h"
-
 #include "perfetto/protozero/message.h"
 
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 
-NullTraceWriter::NullTraceWriter()
-    : delegate_(base::kPageSize), stream_(&delegate_) {
-  cur_packet_.reset(new protos::pbzero::TracePacket());
+NullTraceWriter::NullTraceWriter() : delegate_(4096), stream_(&delegate_) {
+  cur_packet_.reset(new protozero::RootMessage<protos::pbzero::TracePacket>());
   cur_packet_->Finalize();  // To avoid the DCHECK in NewTracePacket().
 }
 

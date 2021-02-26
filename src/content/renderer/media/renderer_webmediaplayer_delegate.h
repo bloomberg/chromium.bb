@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/flat_set.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -50,11 +51,12 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   bool IsFrameClosed() override;
   int AddObserver(Observer* observer) override;
   void RemoveObserver(int player_id) override;
-  void DidPlay(int player_id,
-               bool has_video,
-               bool has_audio,
-               MediaContentType media_content_type) override;
-  void DidPause(int player_id) override;
+  void DidMediaMetadataChange(int player_id,
+                              bool has_audio,
+                              bool has_video,
+                              MediaContentType media_content_type) override;
+  void DidPlay(int player_id) override;
+  void DidPause(int player_id, bool reached_end_of_stream) override;
   void PlayerGone(int player_id) override;
   void SetIdle(int player_id, bool is_idle) override;
   bool IsIdle(int player_id) override;
@@ -70,6 +72,11 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       const media_session::MediaPosition& position) override;
   void DidPictureInPictureAvailabilityChange(int delegate_id,
                                              bool available) override;
+  void DidAudioOutputSinkChange(int delegate_id,
+                                const std::string& hashed_device_id) override;
+  void DidDisableAudioOutputSinkChanges(int delegate_id) override;
+  void DidBufferUnderflow(int player_id) override;
+  void DidSeek(int player_id) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -102,6 +109,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnMediaDelegateEnterPictureInPicture(int player_id);
   void OnMediaDelegateExitPictureInPicture(int player_id);
+  void OnMediaDelegateSetAudioSink(int player_id, std::string sink_id);
   void OnMediaDelegatePowerExperimentState(int player_id, bool state);
 
   // Schedules UpdateTask() to run soon.
@@ -160,10 +168,16 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   base::TimeTicks background_video_start_time_;
 #endif  // OS_ANDROID
 
+  // Keeps track of when the player seek event was sent to the delegate.
+  base::TimeTicks last_seek_update_time_;
+
+  // Players with a video track.
+  base::flat_set<int> players_with_video_;
+
   // The currently playing local videos. Used to determine whether
   // OnMediaDelegatePlay() should allow the videos to play in the background or
   // not.
-  std::set<int> playing_videos_;
+  base::flat_set<int> playing_videos_;
 
   // Determined at construction time based on system information; determines
   // when the idle cleanup timer should be fired more aggressively.

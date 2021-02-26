@@ -19,6 +19,7 @@
 #include <inttypes.h>
 
 #include <algorithm>
+#include <atomic>
 #include <queue>
 
 #include "perfetto/base/logging.h"
@@ -26,6 +27,7 @@
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 
+#include "protos/perfetto/common/builtin_clock.pbzero.h"
 #include "protos/perfetto/trace/clock_snapshot.pbzero.h"
 
 namespace perfetto {
@@ -34,7 +36,8 @@ namespace trace_processor {
 using Clock = protos::pbzero::ClockSnapshot::Clock;
 
 ClockTracker::ClockTracker(TraceProcessorContext* ctx)
-    : context_(ctx), trace_time_clock_id_(Clock::BOOTTIME) {}
+    : context_(ctx),
+      trace_time_clock_id_(protos::pbzero::BUILTIN_CLOCK_BOOTTIME) {}
 
 ClockTracker::~ClockTracker() = default;
 
@@ -42,8 +45,7 @@ void ClockTracker::AddSnapshot(const std::vector<ClockValue>& clocks) {
   const auto snapshot_id = cur_snapshot_id_++;
 
   // Clear the cache
-  static_assert(std::is_trivial<decltype(cache_)>::value, "must be trivial");
-  memset(&cache_[0], 0, sizeof(cache_));
+  cache_.fill({});
 
   // Compute the fingerprint of the snapshot by hashing all clock ids. This is
   // used by the clock pathfinding logic.
@@ -103,19 +105,21 @@ void ClockTracker::AddSnapshot(const std::vector<ClockValue>& clocks) {
                     vect.snapshot_ids.back() < snapshot_id);
 
     if (!vect.timestamps_ns.empty() &&
-        timestamp_ns <= vect.timestamps_ns.back()) {
+        timestamp_ns < vect.timestamps_ns.back()) {
       // Clock is not monotonic.
 
       if (clock_id == trace_time_clock_id_) {
         // The trace clock cannot be non-monotonic.
-        PERFETTO_ELOG(
-            "Clock sync error: the trace clock (id=%" PRIu64
-            ") is not "
-            "monotonic at snapshot %" PRIu32 ". %" PRId64 " not > %" PRId64 ".",
-            clock_id, snapshot_id, timestamp_ns, vect.timestamps_ns.back());
+        PERFETTO_ELOG("Clock sync error: the trace clock (id=%" PRIu64
+                      ") is not monotonic at snapshot %" PRIu32 ". %" PRId64
+                      " not >= %" PRId64 ".",
+                      clock_id, snapshot_id, timestamp_ns,
+                      vect.timestamps_ns.back());
         context_->storage->IncrementStats(stats::invalid_clock_snapshots);
         return;
       }
+
+      PERFETTO_DLOG("Detected non-monotonic clock with ID %" PRIu64, clock_id);
 
       // For the other clocks the best thing we can do is mark it as
       // non-monotonic and refuse to use it as a source clock in the resolution
@@ -206,6 +210,13 @@ base::Optional<int64_t> ClockTracker::ConvertSlowpath(ClockId src_clock_id,
 
   ClockPath path = FindPath(src_clock_id, target_clock_id);
   if (!path.valid()) {
+    // Too many logs maybe emitted when path is invalid.
+    static std::atomic<uint32_t> dlog_count(0);
+    if (dlog_count++ < 10) {
+      PERFETTO_DLOG("No path from clock %" PRIu64 " to %" PRIu64
+                    " at timestamp %" PRId64,
+                    src_clock_id, target_clock_id, src_timestamp);
+    }
     context_->storage->IncrementStats(stats::clock_sync_failure);
     return base::nullopt;
   }
@@ -245,11 +256,18 @@ base::Optional<int64_t> ClockTracker::ConvertSlowpath(ClockId src_clock_id,
     // And use that to retrieve the corresponding time in the next clock domain.
     // The snapshot id must exist in the target clock domain. If it doesn't
     // either the hash logic or the pathfinding logic are bugged.
+    // This can also happen if the checks in AddSnapshot fail and we skip part
+    // of the snapshot.
     const ClockSnapshots& next_snap = next_clock->GetSnapshot(hash);
+
+    // Using std::lower_bound because snapshot_ids is sorted, so we can do
+    // a binary search. std::find would do a linear scan.
     auto next_it = std::lower_bound(next_snap.snapshot_ids.begin(),
                                     next_snap.snapshot_ids.end(), snapshot_id);
-    PERFETTO_DCHECK(next_it != next_snap.snapshot_ids.end() &&
-                    *next_it == snapshot_id);
+    if (next_it == next_snap.snapshot_ids.end() || *next_it != snapshot_id) {
+      PERFETTO_DFATAL("Snapshot does not exist in clock domain.");
+      continue;
+    }
     size_t next_index = static_cast<size_t>(
         std::distance(next_snap.snapshot_ids.begin(), next_it));
     PERFETTO_DCHECK(next_index < next_snap.snapshot_ids.size());

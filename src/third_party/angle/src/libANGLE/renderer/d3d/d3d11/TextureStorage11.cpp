@@ -223,7 +223,7 @@ angle::Result TextureStorage11::getSRVForSampler(const gl::Context *context,
     // Make sure to add the level offset for our tiny compressed texture workaround
     const GLuint effectiveBaseLevel = textureState.getEffectiveBaseLevel();
     const bool swizzleRequired      = textureState.swizzleRequired();
-    const bool mipmapping           = gl::IsMipmapFiltered(sampler);
+    const bool mipmapping           = gl::IsMipmapFiltered(sampler.getMinFilter());
     unsigned int mipLevels =
         mipmapping ? (textureState.getEffectiveMaxLevel() - effectiveBaseLevel + 1) : 1;
 
@@ -533,9 +533,7 @@ angle::Result TextureStorage11::updateSubresourceLevel(const gl::Context *contex
 
     gl::Extents texSize(getLevelWidth(level), getLevelHeight(level), getLevelDepth(level));
 
-    bool fullCopy = copyArea.x == 0 && copyArea.y == 0 && copyArea.z == 0 &&
-                    copyArea.width == texSize.width && copyArea.height == texSize.height &&
-                    copyArea.depth == texSize.depth;
+    bool fullCopy = copyArea.coversSameExtent(texSize);
 
     const TextureHelper11 *dstTexture = nullptr;
 
@@ -661,9 +659,10 @@ angle::Result TextureStorage11::generateMipmap(const gl::Context *context,
     RenderTargetD3D *dest = nullptr;
     ANGLE_TRY(getRenderTarget(context, destIndex, 0, &dest));
 
-    RenderTarget11 *rt11                   = GetAs<RenderTarget11>(source);
-    const d3d11::SharedSRV &sourceSRV      = rt11->getBlitShaderResourceView(context);
-    const d3d11::RenderTargetView &destRTV = rt11->getRenderTargetView();
+    RenderTarget11 *srcRT11                = GetAs<RenderTarget11>(source);
+    RenderTarget11 *dstRT11                = GetAs<RenderTarget11>(dest);
+    const d3d11::SharedSRV &sourceSRV      = srcRT11->getBlitShaderResourceView(context);
+    const d3d11::RenderTargetView &destRTV = dstRT11->getRenderTargetView();
 
     gl::Box sourceArea(0, 0, 0, source->getWidth(), source->getHeight(), source->getDepth());
     gl::Extents sourceSize(source->getWidth(), source->getHeight(), source->getDepth());

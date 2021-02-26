@@ -23,11 +23,11 @@ namespace dawn_native { namespace opengl {
 
     class Device;
 
-    std::string GetBindingName(uint32_t group, uint32_t binding);
+    std::string GetBindingName(BindGroupIndex group, BindingNumber bindingNumber);
 
     struct BindingLocation {
-        uint32_t group;
-        uint32_t binding;
+        BindGroupIndex group;
+        BindingNumber binding;
     };
     bool operator<(const BindingLocation& a, const BindingLocation& b);
 
@@ -38,23 +38,20 @@ namespace dawn_native { namespace opengl {
     };
     bool operator<(const CombinedSampler& a, const CombinedSampler& b);
 
+    using CombinedSamplerInfo = std::vector<CombinedSampler>;
+
     class ShaderModule final : public ShaderModuleBase {
       public:
         static ResultOrError<ShaderModule*> Create(Device* device,
                                                    const ShaderModuleDescriptor* descriptor);
 
-        using CombinedSamplerInfo = std::vector<CombinedSampler>;
-
-        const char* GetSource() const;
-        const CombinedSamplerInfo& GetCombinedSamplerInfo() const;
+        std::string TranslateToGLSL(const char* entryPointName,
+                                    SingleShaderStage stage,
+                                    CombinedSamplerInfo* combinedSamplers) const;
 
       private:
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
-        MaybeError Initialize();
-
-        CombinedSamplerInfo mCombinedInfo;
-        std::string mGlslSource;
     };
 
 }}  // namespace dawn_native::opengl

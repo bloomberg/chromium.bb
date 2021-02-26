@@ -183,6 +183,7 @@ void TaskQueue::ShutdownTaskQueue() {
       internal::TaskQueueImpl::OnTaskStartedHandler());
   impl_->SetOnTaskCompletedHandler(
       internal::TaskQueueImpl::OnTaskCompletedHandler());
+  impl_->SetOnTaskPostedHandler(internal::TaskQueueImpl::OnTaskPostedHandler());
   sequence_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
 }
 
@@ -320,13 +321,6 @@ bool TaskQueue::BlockedByFence() const {
   return impl_->BlockedByFence();
 }
 
-EnqueueOrder TaskQueue::GetEnqueueOrderAtWhichWeBecameUnblocked() const {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  if (!impl_)
-    return EnqueueOrder();
-  return impl_->GetEnqueueOrderAtWhichWeBecameUnblocked();
-}
-
 const char* TaskQueue::GetName() const {
   return name_;
 }
@@ -353,6 +347,30 @@ std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
   base::internal::CheckedAutoLock lock(impl_lock_);
   DCHECK(impl_);
   return std::move(impl_);
+}
+
+void TaskQueue::SetOnTaskStartedHandler(OnTaskStartedHandler handler) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return;
+
+  impl_->SetOnTaskStartedHandler(std::move(handler));
+}
+
+void TaskQueue::SetOnTaskCompletedHandler(OnTaskCompletedHandler handler) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return;
+
+  impl_->SetOnTaskCompletedHandler(std::move(handler));
+}
+
+void TaskQueue::SetOnTaskPostedHandler(OnTaskPostedHandler handler) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return;
+
+  impl_->SetOnTaskPostedHandler(std::move(handler));
 }
 
 }  // namespace sequence_manager

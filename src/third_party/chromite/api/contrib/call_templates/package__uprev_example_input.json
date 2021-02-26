@@ -1,8 +1,0 @@
-{
-  "build_targets": [
-    {
-      "name": "%(build_target)s"
-    }
-  ],
-  "overlay_type": 1
-}

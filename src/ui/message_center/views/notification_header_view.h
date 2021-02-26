@@ -22,7 +22,7 @@ namespace message_center {
 
 class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
  public:
-  explicit NotificationHeaderView(views::ButtonListener* listener);
+  explicit NotificationHeaderView(PressedCallback callback);
   ~NotificationHeaderView() override;
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
@@ -41,9 +41,10 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
 
-  // Set the unified theme color used among the app icon, app name, and expand
-  // button.
-  void SetAccentColor(SkColor color);
+  // Calls UpdateColors() to set the unified theme color used among the app
+  // icon, app name, and expand button. If set to base::nullopt it will use the
+  // NotificationDefaultAccentColor from the native theme.
+  void SetAccentColor(base::Optional<SkColor> color);
 
   // Sets the background color of the notification. This is used to ensure that
   // the accent color has enough contrast against the background.
@@ -57,10 +58,11 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   views::ImageView* expand_button() { return expand_button_; }
 
-  SkColor accent_color_for_testing() { return accent_color_; }
+  base::Optional<SkColor> accent_color_for_testing() { return accent_color_; }
 
   const views::Label* summary_text_for_testing() const {
     return summary_text_view_;
@@ -84,7 +86,9 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
-  SkColor accent_color_ = kNotificationDefaultAccentColor;
+  void UpdateColors();
+
+  base::Optional<SkColor> accent_color_;
 
   // Timer that updates the timestamp over time.
   base::OneShotTimer timestamp_update_timer_;

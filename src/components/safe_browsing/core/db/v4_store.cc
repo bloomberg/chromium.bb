@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -64,43 +65,17 @@ void RecordEnumWithAndWithoutSuffix(const std::string& metric,
                                     int32_t value,
                                     int32_t maximum,
                                     const base::FilePath& file_path) {
-  // The histograms below are an expansion of the UMA_HISTOGRAM_ENUMERATION
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      metric + kResult, 1, maximum, maximum + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram) {
-    histogram->Add(value);
-  }
-
+  base::UmaHistogramExactLinear(metric + kResult, value, maximum);
   std::string suffix = GetUmaSuffixForStore(file_path);
-  base::HistogramBase* histogram_suffix = base::LinearHistogram::FactoryGet(
-      metric + kResult + suffix, 1, maximum, maximum + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram_suffix) {
-    histogram_suffix->Add(value);
-  }
+  base::UmaHistogramExactLinear(metric + kResult + suffix, value, maximum);
 }
 
 void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
                                        bool value,
                                        const base::FilePath& file_path) {
-  // The histograms below are an expansion of the UMA_HISTOGRAM_BOOLEAN
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
-      metric, base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram) {
-    histogram->Add(value);
-  }
-
+  base::UmaHistogramBoolean(metric, value);
   std::string suffix = GetUmaSuffixForStore(file_path);
-  base::HistogramBase* histogram_suffix = base::BooleanHistogram::FactoryGet(
-      metric + suffix, base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram_suffix) {
-    histogram_suffix->Add(value);
-  }
+  base::UmaHistogramBoolean(metric + suffix, value);
 }
 
 void RecordCountWithAndWithoutSuffix(const std::string& metric,
@@ -743,12 +718,12 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
                                    file_format_string.size());
 
   if (file_format_string.size() != written) {
-    base::DeleteFile(new_filename, /*recursive=*/false);
+    base::DeleteFile(new_filename);
     return UNEXPECTED_BYTES_WRITTEN_FAILURE;
   }
 
   if (!base::Move(new_filename, store_path_)) {
-    base::DeleteFile(new_filename, /*recursive=*/false);
+    base::DeleteFile(new_filename);
     return UNABLE_TO_RENAME_FAILURE;
   }
 
@@ -841,14 +816,8 @@ bool V4Store::VerifyChecksum() {
 
 int64_t V4Store::RecordAndReturnFileSize(const std::string& base_metric) {
   std::string suffix = GetUmaSuffixForStore(store_path_);
-  // Histogram properties as in UMA_HISTOGRAM_COUNTS_1M macro.
-  base::HistogramBase* histogram = base::Histogram::FactoryGet(
-      base_metric + suffix, 1, 1000000, 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram) {
-    const int64_t file_size_kilobytes = file_size_ / 1024;
-    histogram->Add(file_size_kilobytes);
-  }
+  const int64_t file_size_kilobytes = file_size_ / 1024;
+  base::UmaHistogramCounts1M(base_metric + suffix, file_size_kilobytes);
   return file_size_;
 }
 

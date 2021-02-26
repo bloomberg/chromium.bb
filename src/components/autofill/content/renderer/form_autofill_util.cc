@@ -26,12 +26,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/renderer/render_frame.h"
@@ -1087,7 +1086,8 @@ void ForEachMatchingFormFieldCommon(
         // string. To tell the difference between the values entered by the user
         // and the site, we'll sanitize the value. If the sanitized value is
         // empty, it means that the site has filled the field, in this case, the
-        // field is not skipped.
+        // field is not skipped. Nevertheless the below condition does not hold
+        // for sites set the |kValue| attribute to the user-input value.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
         element->UserHasEditedTheField() &&
@@ -1470,11 +1470,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormData* form,
     FormFieldData* field) {
   form->url = GetCanonicalOriginForDocument(document);
-  if (IsAutofillFieldMetadataEnabled() && !document.Body().IsNull()) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PasswordManager.ButtonTitlePerformance.NoFormTag");
-    form->button_titles = InferButtonTitlesForForm(document.Body());
-  }
   if (document.GetFrame() && document.GetFrame()->Top()) {
     form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
   } else {
@@ -1514,6 +1509,20 @@ bool ScriptModifiedUsernameAcceptable(
   return field_data_manager->FindMachedValue(value);
 }
 
+// Trim the vector before sending it to the browser process to ensure we
+// don't send too much data through the IPC.
+void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
+  // Limit the size of the vector.
+  if (strings->size() > kMaxListSize)
+    strings->resize(kMaxListSize);
+
+  // Limit the size of the strings in the vector.
+  for (auto& string : *strings) {
+    if (string.length() > kMaxDataLength)
+      string.resize(kMaxDataLength);
+  }
+}
+
 // Helper function that strips any authentication data, as well as query and
 // ref portions of URL.
 GURL StripAuthAndParams(const GURL& gurl) {
@@ -1526,6 +1535,20 @@ GURL StripAuthAndParams(const GURL& gurl) {
 }
 
 }  // namespace
+
+void GetDataListSuggestions(const WebInputElement& element,
+                            std::vector<base::string16>* values,
+                            std::vector<base::string16>* labels) {
+  for (const auto& option : element.FilteredDataListOptions()) {
+    values->push_back(option.Value().Utf16());
+    if (option.Value() != option.Label())
+      labels->push_back(option.Label().Utf16());
+    else
+      labels->push_back(base::string16());
+  }
+  TrimStringVectorForIPC(values);
+  TrimStringVectorForIPC(labels);
+}
 
 bool ExtractFormData(const WebFormElement& form_element,
                      const FieldDataManager& field_data_manager,
@@ -1583,7 +1606,7 @@ GURL GetCanonicalOriginForDocument(const WebDocument& document) {
   return StripAuthAndParams(full_origin);
 }
 
-GURL GetOriginWithoutAuthForDocument(const WebDocument& document) {
+GURL GetDocumentUrlWithoutAuth(const WebDocument& document) {
   GURL::Replacements rep;
   rep.ClearUsername();
   rep.ClearPassword();
@@ -1645,6 +1668,11 @@ base::string16 GetFormIdentifier(const WebFormElement& form) {
     identifier = form.GetAttribute(*kId).Utf16();
 
   return identifier;
+}
+
+FormRendererId GetFormRendererId(const blink::WebFormElement& form) {
+  return form.IsNull() ? FormRendererId()
+                       : FormRendererId(form.UniqueRendererFormId());
 }
 
 base::i18n::TextDirection GetTextDirectionForElement(
@@ -1766,6 +1794,12 @@ void WebFormControlElementToFormField(
       }
     }
   }
+  if (extract_mask & EXTRACT_DATALIST) {
+    if (auto* input = blink::ToWebInputElement(&element)) {
+      GetDataListSuggestions(*input, &field->datalist_values,
+                             &field->datalist_labels);
+    }
+  }
 
   if (!(extract_mask & EXTRACT_VALUE))
     return;
@@ -1834,11 +1868,6 @@ bool WebFormElementToFormData(
   form->action = GetCanonicalActionForForm(form_element);
   form->is_action_empty =
       form_element.Action().IsNull() || form_element.Action().IsEmpty();
-  if (IsAutofillFieldMetadataEnabled()) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PasswordManager.ButtonTitlePerformance.HasFormTag");
-    form->button_titles = InferButtonTitlesForForm(form_element);
-  }
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {
@@ -2179,6 +2208,41 @@ base::string16 FindChildText(const WebNode& node) {
   return FindChildTextWithIgnoreList(node, std::set<WebNode>());
 }
 
+ButtonTitleList GetButtonTitles(const WebFormElement& web_form,
+                                const WebDocument& document,
+                                ButtonTitlesCache* button_titles_cache) {
+  DCHECK(button_titles_cache);
+  if (!IsAutofillFieldMetadataEnabled() && web_form.IsNull())
+    return ButtonTitleList();
+
+  // True if the cache has no entry for |web_form|.
+  bool cache_miss = true;
+  // Iterator pointing to the entry for |web_form| if the entry for |web_form|
+  // is found.
+  ButtonTitlesCache::iterator form_position;
+  std::tie(form_position, cache_miss) = button_titles_cache->emplace(
+      GetFormRendererId(web_form), ButtonTitleList());
+  if (!cache_miss)
+    return form_position->second;
+
+  ButtonTitleList button_titles;
+  DCHECK(!web_form.IsNull() || !document.IsNull());
+  if (web_form.IsNull()) {
+    const WebElement& body = document.Body();
+    if (!body.IsNull()) {
+      SCOPED_UMA_HISTOGRAM_TIMER(
+          "PasswordManager.ButtonTitlePerformance.NoFormTag");
+      button_titles = InferButtonTitlesForForm(body);
+    }
+  } else {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "PasswordManager.ButtonTitlePerformance.HasFormTag");
+    button_titles = InferButtonTitlesForForm(web_form);
+  }
+  form_position->second = std::move(button_titles);
+  return form_position->second;
+}
+
 base::string16 FindChildTextWithIgnoreListForTesting(
     const WebNode& node,
     const std::set<WebNode>& divs_to_skip) {
@@ -2190,10 +2254,6 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source) {
   return InferLabelForElement(element, stop_words, label, label_source);
-}
-
-ButtonTitleList InferButtonTitlesForTesting(const WebElement& form_element) {
-  return InferButtonTitlesForForm(form_element);
 }
 
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,

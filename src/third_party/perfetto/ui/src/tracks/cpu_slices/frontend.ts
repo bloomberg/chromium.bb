@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {search, searchEq} from '../../base/binary_search';
+import {search, searchEq, searchSegment} from '../../base/binary_search';
 import {assertTrue} from '../../base/logging';
 import {Actions} from '../../common/actions';
 import {cropText, drawDoubleHeadedArrow} from '../../common/canvas_utils';
+import {colorForThread} from '../../common/colorizer';
 import {TrackState} from '../../common/state';
 import {timeToString} from '../../common/time';
 import {checkerboardExcept} from '../../frontend/checkerboard';
-import {colorForThread, hueForCpu} from '../../frontend/colorizer';
 import {globals} from '../../frontend/globals';
 import {Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
@@ -28,14 +28,11 @@ import {
   Config,
   CPU_SLICE_TRACK_KIND,
   Data,
-  SliceData,
-  SummaryData
 } from './common';
 
 const MARGIN_TOP = 3;
 const RECT_HEIGHT = 24;
 const TRACK_HEIGHT = MARGIN_TOP * 2 + RECT_HEIGHT;
-const SUMMARY_HEIGHT = TRACK_HEIGHT - MARGIN_TOP;
 
 class CpuSliceTrack extends Track<Config, Data> {
   static readonly kind = CPU_SLICE_TRACK_KIND;
@@ -44,12 +41,10 @@ class CpuSliceTrack extends Track<Config, Data> {
   }
 
   private mouseXpos?: number;
-  private hue: number;
   private utidHoveredInThisTrack = -1;
 
   constructor(trackState: TrackState) {
     super(trackState);
-    this.hue = hueForCpu(this.config.cpu);
   }
 
   getHeight(): number {
@@ -73,40 +68,10 @@ class CpuSliceTrack extends Track<Config, Data> {
         timeScale.timeToPx(data.start),
         timeScale.timeToPx(data.end));
 
-    if (data.kind === 'summary') {
-      this.renderSummary(ctx, data);
-    } else if (data.kind === 'slice') {
-      this.renderSlices(ctx, data);
-    }
+    this.renderSlices(ctx, data);
   }
 
-  renderSummary(ctx: CanvasRenderingContext2D, data: SummaryData): void {
-    const {timeScale, visibleWindowTime} = globals.frontendLocalState;
-    const startPx = Math.floor(timeScale.timeToPx(visibleWindowTime.start));
-    const bottomY = TRACK_HEIGHT;
-
-    let lastX = startPx;
-    let lastY = bottomY;
-
-    ctx.fillStyle = `hsl(${this.hue}, 50%, 60%)`;
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-    for (let i = 0; i < data.utilizations.length; i++) {
-      const utilization = data.utilizations[i];
-      const startTime = i * data.bucketSizeSeconds + data.start;
-
-      lastX = Math.floor(timeScale.timeToPx(startTime));
-
-      ctx.lineTo(lastX, lastY);
-      lastY = MARGIN_TOP + Math.round(SUMMARY_HEIGHT * (1 - utilization));
-      ctx.lineTo(lastX, lastY);
-    }
-    ctx.lineTo(lastX, bottomY);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  renderSlices(ctx: CanvasRenderingContext2D, data: SliceData): void {
+  renderSlices(ctx: CanvasRenderingContext2D, data: Data): void {
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
     assertTrue(data.starts.length === data.ends.length);
     assertTrue(data.starts.length === data.utids.length);
@@ -115,33 +80,24 @@ class CpuSliceTrack extends Track<Config, Data> {
     ctx.font = '12px Roboto Condensed';
     const charWidth = ctx.measureText('dbpqaouk').width / 8;
 
-    for (let i = 0; i < data.starts.length; i++) {
+    const rawStartIdx =
+        data.ends.findIndex(end => end >= visibleWindowTime.start);
+    const startIdx = rawStartIdx === -1 ? 0 : rawStartIdx;
+
+    const [, rawEndIdx] = searchSegment(data.starts, visibleWindowTime.end);
+    const endIdx = rawEndIdx === -1 ? data.starts.length : rawEndIdx;
+
+    for (let i = startIdx; i < endIdx; i++) {
       const tStart = data.starts[i];
       const tEnd = data.ends[i];
       const utid = data.utids[i];
-      if (tEnd <= visibleWindowTime.start || tStart >= visibleWindowTime.end) {
-        continue;
-      }
+
       const rectStart = timeScale.timeToPx(tStart);
       const rectEnd = timeScale.timeToPx(tEnd);
       const rectWidth = Math.max(1, rectEnd - rectStart);
-      const threadInfo = globals.threads.get(utid);
 
-      // TODO: consider de-duplicating this code with the copied one from
-      // chrome_slices/frontend.ts.
-      let title = `[utid:${utid}]`;
-      let subTitle = '';
-      let pid = -1;
-      if (threadInfo) {
-        if (threadInfo.pid) {
-          pid = threadInfo.pid;
-          const procName = threadInfo.procName || '';
-          title = `${procName} [${threadInfo.pid}]`;
-          subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
-        } else {
-          title = `${threadInfo.threadName} [${threadInfo.tid}]`;
-        }
-      }
+      const threadInfo = globals.threads.get(utid);
+      const pid = threadInfo && threadInfo.pid ? threadInfo.pid : -1;
 
       const isHovering = globals.frontendLocalState.hoveredUtid !== -1;
       const isThreadHovered = globals.frontendLocalState.hoveredUtid === utid;
@@ -165,6 +121,22 @@ class CpuSliceTrack extends Track<Config, Data> {
       // Don't render text when we have less than 5px to play with.
       if (rectWidth < 5) continue;
 
+      // TODO: consider de-duplicating this code with the copied one from
+      // chrome_slices/frontend.ts.
+      let title = `[utid:${utid}]`;
+      let subTitle = '';
+      if (threadInfo) {
+        if (threadInfo.pid) {
+          let procName = threadInfo.procName || '';
+          if (procName.startsWith('/')) {  // Remove folder paths from name
+            procName = procName.substring(procName.lastIndexOf('/') + 1);
+          }
+          title = `${procName} [${threadInfo.pid}]`;
+          subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
+        } else {
+          title = `${threadInfo.threadName} [${threadInfo.tid}]`;
+        }
+      }
       title = cropText(title, charWidth, rectWidth);
       subTitle = cropText(subTitle, charWidth, rectWidth);
       const rectXCenter = rectStart + rectWidth / 2;
@@ -254,7 +226,7 @@ class CpuSliceTrack extends Track<Config, Data> {
   onMouseMove({x, y}: {x: number, y: number}) {
     const data = this.data();
     this.mouseXpos = x;
-    if (data === undefined || data.kind === 'summary') return;
+    if (data === undefined) return;
     const {timeScale} = globals.frontendLocalState;
     if (y < MARGIN_TOP || y > MARGIN_TOP + RECT_HEIGHT) {
       this.utidHoveredInThisTrack = -1;
@@ -287,7 +259,7 @@ class CpuSliceTrack extends Track<Config, Data> {
 
   onMouseClick({x}: {x: number}) {
     const data = this.data();
-    if (data === undefined || data.kind === 'summary') return false;
+    if (data === undefined) return false;
     const {timeScale} = globals.frontendLocalState;
     const time = timeScale.pxToTime(x);
     const index = search(data.starts, time);

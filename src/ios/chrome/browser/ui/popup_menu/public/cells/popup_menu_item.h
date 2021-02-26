@@ -35,12 +35,13 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionSettings,
   PopupMenuActionCloseTab,
   PopupMenuActionNavigate,
-  PopupMenuActionPasteAndGo,
   PopupMenuActionVoiceSearch,
   PopupMenuActionSearch,
   PopupMenuActionIncognitoSearch,
   PopupMenuActionQRCodeSearch,
   PopupMenuActionSearchCopiedImage,
+  PopupMenuActionSearchCopiedText,
+  PopupMenuActionVisitCopiedLink,
   // Language selection popup menu
   PopupMenuActionSelectLanguage,
   // Translate option selection popup menu
@@ -54,6 +55,8 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionShowUpdatePasswordOptions,
   PopupMenuActionShowSaveCardOptions,
   PopupMenuActionShowTranslateOptions,
+  // Textual popup menu
+  PopupMenuActionEnterpriseInfoMessage,
 };
 
 // Protocol defining a popup item.

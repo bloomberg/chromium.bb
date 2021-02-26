@@ -9,8 +9,9 @@ import android.app.Activity;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.feedback.ChromeFeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
+import org.chromium.chrome.browser.feedback.ScreenshotTask;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -27,8 +28,9 @@ public final class ChildAccountFeedbackReporter {
             sFeedbackReporter = AppHooks.get().createFeedbackReporter();
         }
 
-        new FeedbackCollector(activity, profile, url, null /* categoryTag */, description, null,
-                true /* takeScreenshot */, null /* feed context */,
+        new ChromeFeedbackCollector(activity, null /* categoryTag */, description,
+                new ScreenshotTask(activity),
+                new ChromeFeedbackCollector.InitParams(profile, url, null),
                 collector -> { sFeedbackReporter.reportFeedback(collector); });
     }
 

@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -116,11 +117,19 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
                                 bool should_report_corb_blocking) {}
 
   // Called when the load completes with an error.
+  // |finish_time| indicating the time in which the response failed.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.
   virtual void DidFail(const WebURLError&,
+                       base::TimeTicks finish_time,
                        int64_t total_encoded_data_length,
                        int64_t total_encoded_body_length,
                        int64_t total_decoded_body_length) {}
+
+  // Called when redirect or upload happens when the page is in
+  // BackForwardCache.
+  // TODO(yuzus): ResponseBodyLoader should implement the eviction logic instead
+  // of client. Move the capability to the loader.
+  virtual void EvictFromBackForwardCache(mojom::RendererEvictionReason) {}
 
   // Value passed to DidFinishLoading when total encoded data length isn't
   // known.

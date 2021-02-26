@@ -253,7 +253,7 @@ int_mv av1_get_ref_mv(const MACROBLOCK *x, int ref_idx) {
     ref_mv_idx += 1;
   }
   return av1_get_ref_mv_from_stack(ref_idx, mbmi->ref_frame, ref_mv_idx,
-                                   x->mbmi_ext);
+                                   &x->mbmi_ext);
 }
 
 void av1_find_best_ref_mvs_from_stack(int allow_hp,

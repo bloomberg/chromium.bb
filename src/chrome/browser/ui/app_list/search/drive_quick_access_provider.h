@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 class Profile;
@@ -24,6 +25,10 @@ class SearchController;
 
 // DriveQuickAccessProvider dispatches queries to extensions and fetches the
 // results from them via chrome.launcherSearchProvider API.
+//
+// TODO(crbug.com/1034842): This is deprecated in favour of
+// DriveZeroStateProvider. This class and related results classes can be
+// deleted.
 class DriveQuickAccessProvider : public SearchProvider,
                                  public drive::DriveIntegrationServiceObserver {
  public:
@@ -34,6 +39,7 @@ class DriveQuickAccessProvider : public SearchProvider,
   // SearchProvider:
   void Start(const base::string16& query) override;
   void AppListShown() override;
+  ash::AppListSearchResultType ResultType() override;
 
   // drive::DriveIntegrationServiceObserver:
   void OnFileSystemMounted() override;
@@ -46,15 +52,24 @@ class DriveQuickAccessProvider : public SearchProvider,
   void SetResultsCache(
       base::OnceCallback<void()> on_done,
       const std::vector<drive::QuickAccessItem>& drive_results);
+  void PublishResults(
+      const std::vector<base::FilePath>& results,
+      std::vector<file_manager::file_tasks::FileTasksNotifier::FileAvailability>
+          availability);
 
   void StartSearchController();
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;
+  file_manager::file_tasks::FileTasksNotifier* const file_tasks_notifier_;
   SearchController* const search_controller_;
 
   // Whether the suggested files experiment is enabled.
   const bool suggested_files_enabled_;
+
+  // Whether we have sent at least one request to ItemSuggest to warm up the
+  // results cache.
+  bool have_warmed_up_cache_ = false;
 
   // Stores the last-returned results from the QuickAccess API.
   std::vector<drive::QuickAccessItem> results_cache_;
@@ -65,7 +80,13 @@ class DriveQuickAccessProvider : public SearchProvider,
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<DriveQuickAccessProvider> weak_factory_{this};
+  // Factory for general use.
+  base::WeakPtrFactory<DriveQuickAccessProvider> weak_ptr_factory_{this};
+  // Factory only for weak pointers for Drive QuickAccess API calls. Using two
+  // factories allows in-flight API calls to be cancelled independently of other
+  // tasks by invalidating only this factory's weak pointers.
+  base::WeakPtrFactory<DriveQuickAccessProvider> quick_access_weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveQuickAccessProvider);
 };

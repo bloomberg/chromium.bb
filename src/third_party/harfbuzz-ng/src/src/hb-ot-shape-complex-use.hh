@@ -49,7 +49,6 @@ enum use_category_t {
   USE_IND	= 3,	/* BASE_IND */
   USE_N		= 4,	/* BASE_NUM */
   USE_GB	= 5,	/* BASE_OTHER */
-  USE_CGJ	= 6,	/* CGJ */
 //  USE_F		= 7,	/* CONS_FINAL */
   USE_FM	= 8,	/* CONS_FINAL_MOD */
 //  USE_M		= 9,	/* CONS_MED */
@@ -65,7 +64,6 @@ enum use_category_t {
   USE_R		= 18,	/* REPHA */
   USE_S		= 19,	/* SYM */
 //  USE_SM	= 20,	/* SYM_MOD */
-  USE_VS	= 21,	/* VARIATION_SELECTOR */
 //  USE_V	= 36,	/* VOWEL */
 //  USE_VM	= 40,	/* VOWEL_MOD */
   USE_CS	= 43,	/* CONS_WITH_STACKER */
@@ -74,6 +72,10 @@ enum use_category_t {
   USE_HVM	= 44,	/* HALANT_OR_VOWEL_MODIFIER */
 
   USE_Sk	= 48,	/* SAKOT */
+  USE_G		= 49,	/* HIEROGLYPH */
+  USE_J		= 50,	/* HIEROGLYPH_JOINER */
+  USE_SB	= 51,	/* HIEROGLYPH_SEGMENT_BEGIN */
+  USE_SE	= 52,	/* HIEROGLYPH_SEGMENT_END */
 
   USE_FAbv	= 24,	/* CONS_FINAL_ABOVE */
   USE_FBlw	= 25,	/* CONS_FINAL_BELOW */

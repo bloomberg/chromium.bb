@@ -49,7 +49,28 @@ constexpr int kRequiredNetworkPacketSize = 256;
 
 // The spec declares RTP timestamps must always have a timebase of 90000 ticks
 // per second for video.
-using kVideoTimebase = std::ratio<1, 90000>;
+constexpr int kRtpVideoTimebase = 90000;
+
+// Minimum resolution is 320x240.
+constexpr int kMinVideoHeight = 240;
+constexpr int kMinVideoWidth = 320;
+
+// The default frame rate for capture options is 30FPS.
+constexpr int kDefaultFrameRate = 30;
+
+// The default audio sample rate is 48kHz, slightly higher than standard
+// consumer audio.
+constexpr int kDefaultAudioSampleRate = 48000;
+
+// The default audio number of channels is set to stereo.
+constexpr int kDefaultAudioChannels = 2;
+
+// Codecs known and understood by cast senders and receivers. Note: receivers
+// are required to implement the following codecs to be Cast V2 compliant: H264,
+// VP8, AAC, Opus. Senders have to implement at least one codec for audio and
+// video to start a session.
+enum class AudioCodec { kAac, kOpus };
+enum class VideoCodec { kH264, kVp8, kHevc, kVp9 };
 
 }  // namespace cast
 }  // namespace openscreen

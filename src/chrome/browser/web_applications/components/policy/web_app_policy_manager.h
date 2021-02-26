@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -22,9 +21,11 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 
-// Tracks the policy that affects Web Apps and also tracks which Web Apps are
-// currently installed based on this policy. Based on these, it decides which
-// apps to install, uninstall, and update, via a PendingAppManager.
+// Policy installation allows enterprise admins to control and manage
+// Web Apps on behalf of their managed users. This class tracks the policy that
+// affects Web Apps and also tracks which Web Apps are currently installed based
+// on this policy. Based on these, it decides which apps to install, uninstall,
+// and update, via a PendingAppManager.
 class WebAppPolicyManager {
  public:
   static constexpr char kInstallResultHistogramName[] =
@@ -34,6 +35,8 @@ class WebAppPolicyManager {
   // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
   // this class.
   explicit WebAppPolicyManager(Profile* profile);
+  WebAppPolicyManager(const WebAppPolicyManager&) = delete;
+  WebAppPolicyManager& operator=(const WebAppPolicyManager&) = delete;
   ~WebAppPolicyManager();
 
   void SetSubsystems(PendingAppManager* pending_app_manager);
@@ -64,7 +67,6 @@ class WebAppPolicyManager {
 
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManager);
 };
 
 }  // namespace web_app

@@ -50,13 +50,13 @@ namespace google_breakpad {
 // Tokenize, but may be treated as a failure if the caller expects an
 // exact, as opposed to maximum, number of tokens.
 
-bool Tokenize(char *line,
-              const char *separators,
+bool Tokenize(char* line,
+              const char* separators,
               int max_tokens,
-              std::vector<char*> *tokens);
+              std::vector<char*>* tokens);
 // For convenience, since you need a char* to pass to Tokenize.
 // You can call StringToVector on a string, and use &vec[0].
-void StringToVector(const string &str, std::vector<char> &vec);
+void StringToVector(const string& str, std::vector<char>& vec);
 
 }  // namespace google_breakpad
 

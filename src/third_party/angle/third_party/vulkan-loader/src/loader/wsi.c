@@ -52,6 +52,9 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
 #ifdef VK_USE_PLATFORM_XLIB_KHR
     ptr_instance->wsi_xlib_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    ptr_instance->wsi_directfb_surface_enabled = false;
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     ptr_instance->wsi_android_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
@@ -61,6 +64,9 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
 #ifdef VK_USE_PLATFORM_IOS_MVK
     ptr_instance->wsi_ios_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_IOS_MVK
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    ptr_instance->wsi_imagepipe_surface_enabled = false;
+#endif  // VK_USE_PLATFORM_FUCHSIA
     ptr_instance->wsi_display_enabled = false;
     ptr_instance->wsi_display_props2_enabled = false;
 #ifdef VK_USE_PLATFORM_METAL_EXT
@@ -96,6 +102,12 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
             continue;
         }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME) == 0) {
+            ptr_instance->wsi_directfb_surface_enabled = true;
+            continue;
+        }
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_ANDROID_SURFACE_EXTENSION_NAME) == 0) {
             ptr_instance->wsi_android_surface_enabled = true;
@@ -114,6 +126,12 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
             continue;
         }
 #endif  // VK_USE_PLATFORM_IOS_MVK
+#ifdef VK_USE_PLATFORM_FUCHSIA
+        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME) == 0) {
+            ptr_instance->wsi_imagepipe_surface_enabled = true;
+            continue;
+        }
+#endif  // VK_USE_PLATFORM_FUCHSIA
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME) == 0) {
             ptr_instance->wsi_headless_surface_enabled = true;
             continue;
@@ -154,6 +172,9 @@ bool wsi_unsupported_instance_extension(const VkExtensionProperties *ext_prop) {
 #ifndef VK_USE_PLATFORM_XLIB_KHR
     if (!strcmp(ext_prop->extensionName, "VK_KHR_xlib_surface")) return true;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifndef VK_USE_PLATFORM_DIRECTFB_EXT
+    if (!strcmp(ext_prop->extensionName, "VK_EXT_directfb_surface")) return true;
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 
     return false;
 }
@@ -941,6 +962,124 @@ VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceXlibPresentationSuppo
     return icd_term->dispatch.GetPhysicalDeviceXlibPresentationSupportKHR(phys_dev_term->phys_dev, queueFamilyIndex, dpy, visualID);
 }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+
+// Functions for the VK_EXT_directfb_surface extension:
+
+// This is the trampoline entrypoint for CreateDirectFBSurfaceEXT
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateDirectFBSurfaceEXT(VkInstance instance,
+                                                                        const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo,
+                                                                        const VkAllocationCallbacks *pAllocator,
+                                                                        VkSurfaceKHR *pSurface) {
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(instance);
+    VkResult res;
+
+    res = disp->CreateDirectFBSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
+    return res;
+}
+
+// This is the instance chain terminator function for CreateDirectFBSurfaceEXT
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateDirectFBSurfaceEXT(VkInstance instance,
+                                                                   const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator,
+                                                                   VkSurfaceKHR *pSurface) {
+    VkResult vkRes = VK_SUCCESS;
+    VkIcdSurface *pIcdSurface = NULL;
+    uint32_t i = 0;
+
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_instance *ptr_instance = loader_get_instance(instance);
+    if (!ptr_instance->wsi_directfb_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_EXT_directfb_surface extension not enabled.  vkCreateDirectFBSurfaceEXT not executed!\n");
+        vkRes = VK_ERROR_EXTENSION_NOT_PRESENT;
+        goto out;
+    }
+
+    // Next, if so, proceed with the implementation of this function:
+    pIcdSurface =
+        AllocateIcdSurfaceStruct(ptr_instance, sizeof(pIcdSurface->directfb_surf.base), sizeof(pIcdSurface->directfb_surf));
+    if (pIcdSurface == NULL) {
+        vkRes = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto out;
+    }
+
+    pIcdSurface->directfb_surf.base.platform = VK_ICD_WSI_PLATFORM_DIRECTFB;
+    pIcdSurface->directfb_surf.dfb = pCreateInfo->dfb;
+    pIcdSurface->directfb_surf.surface = pCreateInfo->surface;
+
+    // Loop through each ICD and determine if they need to create a surface
+    for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
+            if (NULL != icd_term->dispatch.CreateDirectFBSurfaceEXT) {
+                vkRes = icd_term->dispatch.CreateDirectFBSurfaceEXT(icd_term->instance, pCreateInfo, pAllocator,
+                                                                    &pIcdSurface->real_icd_surfaces[i]);
+                if (VK_SUCCESS != vkRes) {
+                    goto out;
+                }
+            }
+        }
+    }
+
+    *pSurface = (VkSurfaceKHR)pIcdSurface;
+
+out:
+
+    if (VK_SUCCESS != vkRes && NULL != pIcdSurface) {
+        if (NULL != pIcdSurface->real_icd_surfaces) {
+            i = 0;
+            for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+                if ((VkSurfaceKHR)NULL != pIcdSurface->real_icd_surfaces[i] && NULL != icd_term->dispatch.DestroySurfaceKHR) {
+                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, pIcdSurface->real_icd_surfaces[i], pAllocator);
+                }
+            }
+            loader_instance_heap_free(ptr_instance, pIcdSurface->real_icd_surfaces);
+        }
+        loader_instance_heap_free(ptr_instance, pIcdSurface);
+    }
+
+    return vkRes;
+}
+
+// This is the trampoline entrypoint for
+// GetPhysicalDeviceDirectFBPresentationSupportEXT
+LOADER_EXPORT VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice,
+                                                                                               uint32_t queueFamilyIndex,
+                                                                                               IDirectFB *dfb) {
+    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(physicalDevice);
+    VkBool32 res = disp->GetPhysicalDeviceDirectFBPresentationSupportEXT(unwrapped_phys_dev, queueFamilyIndex, dfb);
+    return res;
+}
+
+// This is the instance chain terminator function for
+// GetPhysicalDeviceDirectFBPresentationSupportEXT
+VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice,
+                                                                                          uint32_t queueFamilyIndex,
+                                                                                          IDirectFB *dfb) {
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
+    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
+    struct loader_instance *ptr_instance = (struct loader_instance *)icd_term->this_instance;
+    if (!ptr_instance->wsi_directfb_surface_enabled) {
+        loader_log(
+            ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+            "VK_EXT_directfb_surface extension not enabled.  vkGetPhysicalDeviceWaylandPresentationSupportKHR not executed!\n");
+        return VK_SUCCESS;
+    }
+
+    if (NULL == icd_term->dispatch.GetPhysicalDeviceDirectFBPresentationSupportEXT) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "ICD for selected physical device is not exporting vkGetPhysicalDeviceDirectFBPresentationSupportEXT!\n");
+        assert(false && "loader: null GetPhysicalDeviceDirectFBPresentationSupportEXT ICD pointer");
+    }
+
+    return icd_term->dispatch.GetPhysicalDeviceDirectFBPresentationSupportEXT(phys_dev_term->phys_dev, queueFamilyIndex, dfb);
+}
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 
@@ -1806,6 +1945,86 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetDisplayPlaneCapabilities2KHR(VkPhys
                                                              pDisplayPlaneInfo->planeIndex, &pCapabilities->capabilities);
 }
 
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+// This is the trampoline entrypoint for CreateImagePipeSurfaceFUCHSIA
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateImagePipeSurfaceFUCHSIA(VkInstance instance,
+                                                                             const VkImagePipeSurfaceCreateInfoFUCHSIA *pCreateInfo,
+                                                                             const VkAllocationCallbacks *pAllocator,
+                                                                             VkSurfaceKHR *pSurface) {
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(instance);
+    VkResult res;
+
+    res = disp->CreateImagePipeSurfaceFUCHSIA(instance, pCreateInfo, pAllocator, pSurface);
+    return res;
+}
+
+// This is the instance chain terminator function for CreateImagePipeSurfaceFUCHSIA
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateImagePipeSurfaceFUCHSIA(VkInstance instance,
+                                                                        const VkImagePipeSurfaceCreateInfoFUCHSIA *pCreateInfo,
+                                                                        const VkAllocationCallbacks *pAllocator,
+                                                                        VkSurfaceKHR *pSurface) {
+    VkResult vkRes = VK_SUCCESS;
+    VkIcdSurface *pIcdSurface = NULL;
+    uint32_t i = 0;
+
+    // Initialize pSurface to NULL just to be safe.
+    *pSurface = VK_NULL_HANDLE;
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_instance *ptr_instance = loader_get_instance(instance);
+    if (!ptr_instance->wsi_imagepipe_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_FUCHSIA_imagepipe_surface extension not enabled.  "
+                   "vkCreateImagePipeSurfaceFUCHSIA not executed!\n");
+        vkRes = VK_ERROR_EXTENSION_NOT_PRESENT;
+        goto out;
+    }
+
+    // Next, if so, proceed with the implementation of this function:
+    pIcdSurface =
+        AllocateIcdSurfaceStruct(ptr_instance, sizeof(pIcdSurface->imagepipe_surf.base), sizeof(pIcdSurface->imagepipe_surf));
+    if (pIcdSurface == NULL) {
+        vkRes = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto out;
+    }
+
+    pIcdSurface->imagepipe_surf.base.platform = VK_ICD_WSI_PLATFORM_FUCHSIA;
+
+    // Loop through each ICD and determine if they need to create a surface
+    for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
+            if (NULL != icd_term->dispatch.CreateImagePipeSurfaceFUCHSIA) {
+                vkRes = icd_term->dispatch.CreateImagePipeSurfaceFUCHSIA(icd_term->instance, pCreateInfo, pAllocator,
+                                                                         &pIcdSurface->real_icd_surfaces[i]);
+                if (VK_SUCCESS != vkRes) {
+                    goto out;
+                }
+            }
+        }
+    }
+
+    *pSurface = (VkSurfaceKHR)(pIcdSurface);
+
+out:
+
+    if (VK_SUCCESS != vkRes && NULL != pIcdSurface) {
+        if (NULL != pIcdSurface->real_icd_surfaces) {
+            i = 0;
+            for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+                if ((VkSurfaceKHR)NULL != pIcdSurface->real_icd_surfaces[i] && NULL != icd_term->dispatch.DestroySurfaceKHR) {
+                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, pIcdSurface->real_icd_surfaces[i], pAllocator);
+                }
+            }
+            loader_instance_heap_free(ptr_instance, pIcdSurface->real_icd_surfaces);
+        }
+        loader_instance_heap_free(ptr_instance, pIcdSurface);
+    }
+
+    return vkRes;
+}
+#endif  // VK_USE_PLATFORM_FUCHSIA
+
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
 vkGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
                                            VkSurfaceCapabilities2KHR *pSurfaceCapabilities) {
@@ -2094,6 +2313,18 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
         return true;
     }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+
+    // Functions for the VK_EXT_directfb_surface extension:
+    if (!strcmp("vkCreateDirectFBSurfaceEXT", name)) {
+        *addr = ptr_instance->wsi_directfb_surface_enabled ? (void *)vkCreateDirectFBSurfaceEXT : NULL;
+        return true;
+    }
+    if (!strcmp("vkGetPhysicalDeviceDirectFBPresentationSupportEXT", name)) {
+        *addr = ptr_instance->wsi_directfb_surface_enabled ? (void *)vkGetPhysicalDeviceDirectFBPresentationSupportEXT : NULL;
+        return true;
+    }
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 
     // Functions for the VK_KHR_android_surface extension:
@@ -2119,6 +2350,15 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
         return true;
     }
 #endif  // VK_USE_PLATFORM_IOS_MVK
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+    // Functions for the VK_FUCHSIA_imagepipe_surface extension:
+    if (!strcmp("vkCreateImagePipeSurfaceFUCHSIA", name)) {
+        *addr = ptr_instance->wsi_imagepipe_surface_enabled ? (void *)vkCreateImagePipeSurfaceFUCHSIA : NULL;
+        return true;
+    }
+
+#endif  // VK_USE_PLATFORM_FUCHSIA
 
     // Functions for the VK_EXT_headless_surface extension:
     if (!strcmp("vkCreateHeadlessSurfaceEXT", name)) {

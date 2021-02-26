@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,8 +30,8 @@ constexpr int kMaxProfileBucket = 100;
 constexpr base::TimeDelta kLongTimeOfInactivity =
     base::TimeDelta::FromMinutes(30);
 
-int GetMetricsBucketIndex(Profile* profile) {
-  if (profile->IsGuestSession())
+int GetMetricsBucketIndex(const Profile* profile) {
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
     return 0;
 
   ProfileAttributesEntry* entry;
@@ -44,7 +46,7 @@ int GetMetricsBucketIndex(Profile* profile) {
   return entry->GetMetricsBucketIndex();
 }
 
-void RecordProfileSessionDuration(Profile* profile,
+void RecordProfileSessionDuration(const Profile* profile,
                                   base::TimeDelta session_length) {
   if (!profile || session_length.InMinutes() <= 0)
     return;
@@ -59,7 +61,7 @@ void RecordProfileSessionDuration(Profile* profile,
   }
 }
 
-void RecordBrowserActivation(Profile* profile) {
+void RecordBrowserActivation(const Profile* profile) {
   DCHECK(profile);
   int profile_bucket = GetMetricsBucketIndex(profile);
 
@@ -69,7 +71,14 @@ void RecordBrowserActivation(Profile* profile) {
   }
 }
 
-void RecordUserAction(Profile* profile) {
+void RecordProfileSwitch() {
+  int profiles_count =
+      g_browser_process->profile_manager()->GetNumberOfProfiles();
+  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesAtProfileSwitch",
+                           profiles_count);
+}
+
+void RecordUserAction(const Profile* profile) {
   if (!profile)
     return;
 
@@ -87,7 +96,7 @@ void RecordProfilesState() {
       .RecordProfilesState();
 }
 
-void RecordAccountMetrics(Profile* profile) {
+void RecordAccountMetrics(const Profile* profile) {
   DCHECK(profile);
 
   ProfileAttributesEntry* entry;
@@ -122,41 +131,70 @@ void ProfileActivityMetricsRecorder::OnBrowserSetLastActive(Browser* browser) {
   RecordBrowserActivation(active_profile);
   RecordAccountMetrics(active_profile);
 
-  if (last_active_profile_ != active_profile) {
-    // No-op, if starting a new session (|last_active_profile_| is nullptr).
+  if (running_session_profile_ != active_profile) {
+    // No-op, if starting a new session (|running_session_profile_| is nullptr).
     RecordProfileSessionDuration(
-        last_active_profile_, base::TimeTicks::Now() - profile_session_start_);
+        running_session_profile_,
+        base::TimeTicks::Now() - running_session_start_);
 
-    last_active_profile_ = active_profile;
-    profile_session_start_ = base::TimeTicks::Now();
+    running_session_profile_ = active_profile;
+    running_session_start_ = base::TimeTicks::Now();
+    profile_observer_.RemoveAll();
+    profile_observer_.Add(running_session_profile_);
 
-    // Record state at startup (when last_profile_session_end_ is 0) and
-    // whenever the user starts browsing after a longer time of inactivity. Do
-    // it asynchronously because active_time of the just activated profile is
-    // also updated from OnBrowserSetLastActive() in another BrowserListObserver
-    // and we have no guarantee if this happens before or after this function
-    // call.
-    if (last_profile_session_end_.is_null() ||
-        (profile_session_start_ - last_profile_session_end_ >
-         kLongTimeOfInactivity)) {
+    // Record state at startup (when |last_session_end_| is 0) and whenever the
+    // user starts browsing after a longer time of inactivity. Do it
+    // asynchronously because active_time of the just activated profile is also
+    // updated from OnBrowserSetLastActive() in another BrowserListObserver and
+    // we have no guarantee if this happens before or after this function call.
+    if (last_session_end_.is_null() ||
+        (running_session_start_ - last_session_end_ > kLongTimeOfInactivity)) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&RecordProfilesState));
     }
   }
 
+  if (last_active_profile_ != active_profile) {
+    if (last_active_profile_ != nullptr)
+      RecordProfileSwitch();
+    last_active_profile_ = active_profile;
+  }
+
   // This browsing session is still lasting.
-  last_profile_session_end_ = base::TimeTicks::Now();
+  last_session_end_ = base::TimeTicks::Now();
 }
 
 void ProfileActivityMetricsRecorder::OnSessionEnded(
     base::TimeDelta session_length,
     base::TimeTicks session_end) {
+  // If this call is emitted after OnProfileWillBeDestroyed, return
+  // early. We already logged the session duration there.
+  if (!running_session_profile_)
+    return;
+
   // |session_length| can't be used here because it was measured across all
   // profiles.
-  RecordProfileSessionDuration(last_active_profile_,
-                               session_end - profile_session_start_);
+  RecordProfileSessionDuration(running_session_profile_,
+                               session_end - running_session_start_);
+  profile_observer_.Remove(running_session_profile_);
+  running_session_profile_ = nullptr;
+  last_session_end_ = base::TimeTicks::Now();
+}
+
+void ProfileActivityMetricsRecorder::OnProfileWillBeDestroyed(
+    Profile* profile) {
+  DCHECK_EQ(profile, running_session_profile_);
+
+  // The profile may be deleted without an OnSessionEnded call if, for
+  // example, the browser shuts down.
+  //
+  // TODO(crbug.com/1096145): explore having
+  // DesktopSessionDurationTracker call OnSessionEnded() when the
+  // profile is destroyed. Remove this workaround if this is done.
+  profile_observer_.Remove(running_session_profile_);
+  running_session_profile_ = nullptr;
   last_active_profile_ = nullptr;
-  last_profile_session_end_ = base::TimeTicks::Now();
+  last_session_end_ = base::TimeTicks::Now();
 }
 
 ProfileActivityMetricsRecorder::ProfileActivityMetricsRecorder() {
@@ -175,5 +213,5 @@ ProfileActivityMetricsRecorder::~ProfileActivityMetricsRecorder() {
 
 void ProfileActivityMetricsRecorder::OnUserAction(const std::string& action,
                                                   base::TimeTicks action_time) {
-  RecordUserAction(last_active_profile_);
+  RecordUserAction(running_session_profile_);
 }

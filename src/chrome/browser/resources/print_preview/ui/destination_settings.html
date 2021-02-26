@@ -5,12 +5,14 @@
   }
 </if>
 </style>
-<print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
-    cloud-print-disabled="[[cloudPrintDisabled_]]"
-    users="{{users_}}" destination-store="[[destinationStore_]]"
-    invitation-store="[[invitationStore_]]"
-    should-reload-cookies="[[isDialogOpen_]]">
-</print-preview-user-manager>
+<template is="dom-if" if="[[!cloudPrintDisabled_]]">
+  <print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
+      cloud-print-disabled="[[cloudPrintDisabled_]]"
+      users="{{users_}}" destination-store="[[destinationStore_]]"
+      invitation-store="[[invitationStore_]]"
+      should-reload-cookies="[[isDialogOpen_]]">
+  </print-preview-user-manager>
+</template>
 <if expr="not chromeos">
   <print-preview-destination-select id="destinationSelect"
       active-user="[[activeUser_]]" dark="[[dark]]"
@@ -42,7 +44,6 @@
 <cr-lazy-render id="destinationDialog">
   <template>
     <print-preview-destination-dialog
-        cloud-print-disabled="[[cloudPrintDisabled_]]"
         destination-store="[[destinationStore_]]"
         invitation-store="[[invitationStore_]]"
         recent-destination-list="[[recentDestinationList_]]"

@@ -15,12 +15,22 @@
 #include <limits>
 #include <string>
 
+#include "build/build_config.h"
+
+#if defined(ARCH_CPU_X86_64)
 #define ABORT()                                                                \
   {                                                                            \
     asm volatile(                                                              \
         "int3; ud2; push %0;" ::"i"(static_cast<unsigned char>(__COUNTER__))); \
     __builtin_unreachable();                                                   \
   }
+#elif defined(ARCH_CPU_ARM64)
+#define ABORT()                                                             \
+  {                                                                         \
+    asm volatile("udf %0;" ::"i"(static_cast<unsigned char>(__COUNTER__))); \
+    __builtin_unreachable();                                                \
+  }
+#endif
 
 extern "C" {
 void abort_report_np(const char*, ...);

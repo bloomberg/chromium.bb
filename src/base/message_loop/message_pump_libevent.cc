@@ -13,13 +13,14 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/third_party/libevent/event.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -130,7 +131,7 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
   // threadsafe, and your watcher may never be registered.
   DCHECK(watch_file_descriptor_caller_checker_.CalledOnValidThread());
 
-  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+  TRACE_EVENT_WITH_FLOW1("toplevel.flow",
                          "MessagePumpLibevent::WatchFileDescriptor",
                          reinterpret_cast<uintptr_t>(controller) ^ fd,
                          TRACE_EVENT_FLAG_FLOW_OUT, "fd", fd);
@@ -201,7 +202,7 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
   std::unique_ptr<event> timer_event(new event);
 
   for (;;) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
     // Do some work and see if the next task is ready right away.
@@ -212,8 +213,10 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
       break;
 
     // Process native events if any are ready. Do not block waiting for more.
-    delegate->BeforeDoInternalWork();
-    event_base_loop(event_base_, EVLOOP_NONBLOCK);
+    {
+      const auto scoped_do_native_work = delegate->BeginNativeWork();
+      event_base_loop(event_base_, EVLOOP_NONBLOCK);
+    }
 
     bool attempt_more_work = immediate_work_available || processed_io_events_;
     processed_io_events_ = false;
@@ -315,11 +318,10 @@ void MessagePumpLibevent::OnLibeventNotification(int fd,
   FdWatchController* controller = static_cast<FdWatchController*>(context);
   DCHECK(controller);
   TRACE_EVENT0("toplevel", "OnLibevent");
-  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                         "MessagePumpLibevent::OnLibeventNotification",
-                         reinterpret_cast<uintptr_t>(controller) ^ fd,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "fd", fd);
+  TRACE_EVENT_WITH_FLOW1(
+      "toplevel.flow", "MessagePumpLibevent::OnLibeventNotification",
+      reinterpret_cast<uintptr_t>(controller) ^ fd,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "fd", fd);
 
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION heap_profiler_scope(
       controller->created_from_location().file_name());

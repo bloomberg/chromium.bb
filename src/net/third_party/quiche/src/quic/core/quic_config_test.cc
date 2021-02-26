@@ -8,6 +8,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -21,23 +22,6 @@
 namespace quic {
 namespace test {
 namespace {
-
-constexpr uint32_t kMaxPacketSizeForTest = 1234;
-constexpr uint32_t kMaxDatagramFrameSizeForTest = 1333;
-constexpr uint8_t kFakeStatelessResetTokenData[16] = {
-    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
-    0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F};
-constexpr uint64_t kFakeAckDelayExponent = 10;
-constexpr uint64_t kFakeMaxAckDelay = 51;
-constexpr uint64_t kFakeActiveConnectionIdLimit = 52;
-
-// TODO(b/153726130): Consider merging this with methods in
-// transport_parameters_test.cc.
-std::vector<uint8_t> CreateFakeStatelessResetToken() {
-  return std::vector<uint8_t>(
-      kFakeStatelessResetTokenData,
-      kFakeStatelessResetTokenData + sizeof(kFakeStatelessResetTokenData));
-}
 
 class QuicConfigTest : public QuicTestWithParam<ParsedQuicVersion> {
  public:
@@ -71,6 +55,9 @@ TEST_P(QuicConfigTest, SetDefaults) {
   EXPECT_FALSE(config_.HasReceivedInitialMaxStreamDataBytesUnidirectional());
   EXPECT_EQ(kMaxIncomingPacketSize, config_.GetMaxPacketSizeToSend());
   EXPECT_FALSE(config_.HasReceivedMaxPacketSize());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_FALSE(config_.KeyUpdateSupportedLocally());
+  EXPECT_FALSE(config_.KeyUpdateSupportedRemotely());
 }
 
 TEST_P(QuicConfigTest, AutoSetIetfFlowControl) {
@@ -180,12 +167,8 @@ TEST_P(QuicConfigTest, ProcessClientHello) {
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
-  if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
-    EXPECT_TRUE(config_.HasReceivedMaxAckDelayMs());
-    EXPECT_EQ(kTestMaxAckDelayMs, config_.ReceivedMaxAckDelayMs());
-  } else {
-    EXPECT_FALSE(config_.HasReceivedMaxAckDelayMs());
-  }
+  EXPECT_TRUE(config_.HasReceivedMaxAckDelayMs());
+  EXPECT_EQ(kTestMaxAckDelayMs, config_.ReceivedMaxAckDelayMs());
 
   // IETF QUIC stream limits should not be received in QUIC crypto messages.
   EXPECT_FALSE(
@@ -238,12 +221,8 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
   EXPECT_FALSE(config_.HasReceivedIPv6AlternateServerAddress());
   EXPECT_TRUE(config_.HasReceivedStatelessResetToken());
   EXPECT_EQ(kTestResetToken, config_.ReceivedStatelessResetToken());
-  if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
-    EXPECT_TRUE(config_.HasReceivedMaxAckDelayMs());
-    EXPECT_EQ(kTestMaxAckDelayMs, config_.ReceivedMaxAckDelayMs());
-  } else {
-    EXPECT_FALSE(config_.HasReceivedMaxAckDelayMs());
-  }
+  EXPECT_TRUE(config_.HasReceivedMaxAckDelayMs());
+  EXPECT_EQ(kTestMaxAckDelayMs, config_.ReceivedMaxAckDelayMs());
 
   // IETF QUIC stream limits should not be received in QUIC crypto messages.
   EXPECT_FALSE(
@@ -442,15 +421,39 @@ TEST_P(QuicConfigTest, IncomingLargeIdleTimeoutTransportParameter) {
   // Since the received value is above ours, we should then use ours.
   config_.SetIdleNetworkTimeout(quic::QuicTime::Delta::FromSeconds(60));
   TransportParameters params;
-  params.idle_timeout_milliseconds.set_value(120000);
+  params.max_idle_timeout_ms.set_value(120000);
 
   std::string error_details = "foobar";
   EXPECT_THAT(config_.ProcessTransportParameters(
-                  params, SERVER, /* is_resumption = */ false, &error_details),
+                  params, /* is_resumption = */ false, &error_details),
               IsQuicNoError());
   EXPECT_EQ("", error_details);
   EXPECT_EQ(quic::QuicTime::Delta::FromSeconds(60),
             config_.IdleNetworkTimeout());
+}
+
+TEST_P(QuicConfigTest, ReceivedInvalidMinAckDelayInTransportParameter) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  SetQuicReloadableFlag(quic_record_received_min_ack_delay, true);
+  TransportParameters params;
+
+  params.max_ack_delay.set_value(25 /*ms*/);
+  params.min_ack_delay_us.set_value(25 * kNumMicrosPerMilli + 1);
+  std::string error_details = "foobar";
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsError(IETF_QUIC_PROTOCOL_VIOLATION));
+  EXPECT_EQ("MinAckDelay is greater than MaxAckDelay.", error_details);
+
+  params.max_ack_delay.set_value(25 /*ms*/);
+  params.min_ack_delay_us.set_value(25 * kNumMicrosPerMilli);
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+  EXPECT_TRUE(error_details.empty());
 }
 
 TEST_P(QuicConfigTest, FillTransportParams) {
@@ -466,7 +469,12 @@ TEST_P(QuicConfigTest, FillTransportParams) {
       4 * kMinimumFlowControlSendWindow);
   config_.SetMaxPacketSizeToSend(kMaxPacketSizeForTest);
   config_.SetMaxDatagramFrameSizeToSend(kMaxDatagramFrameSizeForTest);
-  config_.SetActiveConnectionIdLimitToSend(kFakeActiveConnectionIdLimit);
+  config_.SetActiveConnectionIdLimitToSend(kActiveConnectionIdLimitForTest);
+
+  config_.SetOriginalConnectionIdToSend(TestConnectionId(0x1111));
+  config_.SetInitialSourceConnectionIdToSend(TestConnectionId(0x2222));
+  config_.SetRetrySourceConnectionIdToSend(TestConnectionId(0x3333));
+  config_.SetMinAckDelayMs(kDefaultMinAckDelayTimeMs);
 
   TransportParameters params;
   config_.FillTransportParameters(&params);
@@ -479,13 +487,28 @@ TEST_P(QuicConfigTest, FillTransportParams) {
             params.initial_max_stream_data_uni.value());
 
   EXPECT_EQ(static_cast<uint64_t>(kMaximumIdleTimeoutSecs * 1000),
-            params.idle_timeout_milliseconds.value());
+            params.max_idle_timeout_ms.value());
 
-  EXPECT_EQ(kMaxPacketSizeForTest, params.max_packet_size.value());
+  EXPECT_EQ(kMaxPacketSizeForTest, params.max_udp_payload_size.value());
   EXPECT_EQ(kMaxDatagramFrameSizeForTest,
             params.max_datagram_frame_size.value());
-  EXPECT_EQ(kFakeActiveConnectionIdLimit,
+  EXPECT_EQ(kActiveConnectionIdLimitForTest,
             params.active_connection_id_limit.value());
+
+  ASSERT_TRUE(params.original_destination_connection_id.has_value());
+  EXPECT_EQ(TestConnectionId(0x1111),
+            params.original_destination_connection_id.value());
+  ASSERT_TRUE(params.initial_source_connection_id.has_value());
+  EXPECT_EQ(TestConnectionId(0x2222),
+            params.initial_source_connection_id.value());
+  ASSERT_TRUE(params.retry_source_connection_id.has_value());
+  EXPECT_EQ(TestConnectionId(0x3333),
+            params.retry_source_connection_id.value());
+
+  EXPECT_EQ(
+      static_cast<uint64_t>(kDefaultMinAckDelayTimeMs) * kNumMicrosPerMilli,
+      params.min_ack_delay_us.value());
+  EXPECT_TRUE(params.key_update_not_yet_supported);
 }
 
 TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
@@ -493,7 +516,6 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
     // TransportParameters are only used for QUIC+TLS.
     return;
   }
-  SetQuicReloadableFlag(quic_negotiate_ack_delay_time, true);
   TransportParameters params;
 
   params.initial_max_stream_data_bidi_local.set_value(
@@ -502,17 +524,21 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
       3 * kMinimumFlowControlSendWindow);
   params.initial_max_stream_data_uni.set_value(4 *
                                                kMinimumFlowControlSendWindow);
-  params.max_packet_size.set_value(kMaxPacketSizeForTest);
+  params.max_udp_payload_size.set_value(kMaxPacketSizeForTest);
   params.max_datagram_frame_size.set_value(kMaxDatagramFrameSizeForTest);
   params.initial_max_streams_bidi.set_value(kDefaultMaxStreamsPerConnection);
-  params.stateless_reset_token = CreateFakeStatelessResetToken();
-  params.max_ack_delay.set_value(kFakeMaxAckDelay);
-  params.ack_delay_exponent.set_value(kFakeAckDelayExponent);
-  params.active_connection_id_limit.set_value(kFakeActiveConnectionIdLimit);
+  params.stateless_reset_token = CreateStatelessResetTokenForTest();
+  params.max_ack_delay.set_value(kMaxAckDelayForTest);
+  params.min_ack_delay_us.set_value(kMinAckDelayUsForTest);
+  params.ack_delay_exponent.set_value(kAckDelayExponentForTest);
+  params.active_connection_id_limit.set_value(kActiveConnectionIdLimitForTest);
+  params.original_destination_connection_id = TestConnectionId(0x1111);
+  params.initial_source_connection_id = TestConnectionId(0x2222);
+  params.retry_source_connection_id = TestConnectionId(0x3333);
 
   std::string error_details;
   EXPECT_THAT(config_.ProcessTransportParameters(
-                  params, SERVER, /* is_resumption = */ true, &error_details),
+                  params, /* is_resumption = */ true, &error_details),
               IsQuicNoError())
       << error_details;
 
@@ -544,11 +570,16 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
             config_.ReceivedMaxBidirectionalStreams());
 
   EXPECT_FALSE(config_.DisableConnectionMigration());
+  EXPECT_FALSE(config_.PeerSupportsHandshakeDone());
 
   // The following config shouldn't be processed because of resumption.
   EXPECT_FALSE(config_.HasReceivedStatelessResetToken());
   EXPECT_FALSE(config_.HasReceivedMaxAckDelayMs());
   EXPECT_FALSE(config_.HasReceivedAckDelayExponent());
+  EXPECT_FALSE(config_.HasReceivedMinAckDelayMs());
+  EXPECT_FALSE(config_.HasReceivedOriginalConnectionId());
+  EXPECT_FALSE(config_.HasReceivedInitialSourceConnectionId());
+  EXPECT_FALSE(config_.HasReceivedRetrySourceConnectionId());
 
   // Let the config process another slightly tweaked transport paramters.
   // Note that the values for flow control and stream limit cannot be smaller
@@ -559,14 +590,15 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
       4 * kMinimumFlowControlSendWindow);
   params.initial_max_stream_data_uni.set_value(5 *
                                                kMinimumFlowControlSendWindow);
-  params.max_packet_size.set_value(2 * kMaxPacketSizeForTest);
+  params.max_udp_payload_size.set_value(2 * kMaxPacketSizeForTest);
   params.max_datagram_frame_size.set_value(2 * kMaxDatagramFrameSizeForTest);
   params.initial_max_streams_bidi.set_value(2 *
                                             kDefaultMaxStreamsPerConnection);
-  params.disable_migration = true;
+  params.disable_active_migration = true;
+  params.support_handshake_done = true;
 
   EXPECT_THAT(config_.ProcessTransportParameters(
-                  params, SERVER, /* is_resumption = */ false, &error_details),
+                  params, /* is_resumption = */ false, &error_details),
               IsQuicNoError())
       << error_details;
 
@@ -598,17 +630,36 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
             config_.ReceivedMaxBidirectionalStreams());
 
   EXPECT_TRUE(config_.DisableConnectionMigration());
+  EXPECT_TRUE(config_.PeerSupportsHandshakeDone());
 
   ASSERT_TRUE(config_.HasReceivedStatelessResetToken());
+
   ASSERT_TRUE(config_.HasReceivedMaxAckDelayMs());
-  EXPECT_EQ(config_.ReceivedMaxAckDelayMs(), kFakeMaxAckDelay);
+  EXPECT_EQ(config_.ReceivedMaxAckDelayMs(), kMaxAckDelayForTest);
+
+  if (GetQuicReloadableFlag(quic_record_received_min_ack_delay)) {
+    ASSERT_TRUE(config_.HasReceivedMinAckDelayMs());
+    EXPECT_EQ(config_.ReceivedMinAckDelayMs(),
+              kMinAckDelayUsForTest / kNumMicrosPerMilli);
+  } else {
+    ASSERT_FALSE(config_.HasReceivedMinAckDelayMs());
+  }
 
   ASSERT_TRUE(config_.HasReceivedAckDelayExponent());
-  EXPECT_EQ(config_.ReceivedAckDelayExponent(), kFakeAckDelayExponent);
+  EXPECT_EQ(config_.ReceivedAckDelayExponent(), kAckDelayExponentForTest);
 
   ASSERT_TRUE(config_.HasReceivedActiveConnectionIdLimit());
   EXPECT_EQ(config_.ReceivedActiveConnectionIdLimit(),
-            kFakeActiveConnectionIdLimit);
+            kActiveConnectionIdLimitForTest);
+
+  ASSERT_TRUE(config_.HasReceivedOriginalConnectionId());
+  EXPECT_EQ(config_.ReceivedOriginalConnectionId(), TestConnectionId(0x1111));
+  ASSERT_TRUE(config_.HasReceivedInitialSourceConnectionId());
+  EXPECT_EQ(config_.ReceivedInitialSourceConnectionId(),
+            TestConnectionId(0x2222));
+  ASSERT_TRUE(config_.HasReceivedRetrySourceConnectionId());
+  EXPECT_EQ(config_.ReceivedRetrySourceConnectionId(),
+            TestConnectionId(0x3333));
 }
 
 TEST_P(QuicConfigTest, DisableMigrationTransportParameter) {
@@ -617,12 +668,89 @@ TEST_P(QuicConfigTest, DisableMigrationTransportParameter) {
     return;
   }
   TransportParameters params;
-  params.disable_migration = true;
+  params.disable_active_migration = true;
   std::string error_details;
   EXPECT_THAT(config_.ProcessTransportParameters(
-                  params, SERVER, /* is_resumption = */ false, &error_details),
+                  params, /* is_resumption = */ false, &error_details),
               IsQuicNoError());
   EXPECT_TRUE(config_.DisableConnectionMigration());
+}
+
+TEST_P(QuicConfigTest, KeyUpdateNotYetSupportedTransportParameterNorLocally) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_FALSE(config_.KeyUpdateSupportedLocally());
+  EXPECT_FALSE(config_.KeyUpdateSupportedRemotely());
+  TransportParameters params;
+  params.key_update_not_yet_supported = true;
+  std::string error_details;
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_FALSE(config_.KeyUpdateSupportedLocally());
+  EXPECT_FALSE(config_.KeyUpdateSupportedRemotely());
+}
+
+TEST_P(QuicConfigTest, KeyUpdateNotYetSupportedTransportParameter) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  config_.SetKeyUpdateSupportedLocally();
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_TRUE(config_.KeyUpdateSupportedLocally());
+
+  TransportParameters params;
+  params.key_update_not_yet_supported = true;
+  std::string error_details;
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_TRUE(config_.KeyUpdateSupportedLocally());
+}
+
+TEST_P(QuicConfigTest, KeyUpdateSupportedRemotelyButNotLocally) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  EXPECT_FALSE(config_.KeyUpdateSupportedLocally());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+
+  TransportParameters params;
+  params.key_update_not_yet_supported = false;
+  std::string error_details;
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_FALSE(config_.KeyUpdateSupportedLocally());
+  EXPECT_TRUE(config_.KeyUpdateSupportedRemotely());
+}
+
+TEST_P(QuicConfigTest, KeyUpdateSupported) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  config_.SetKeyUpdateSupportedLocally();
+  EXPECT_TRUE(config_.KeyUpdateSupportedLocally());
+  EXPECT_FALSE(config_.KeyUpdateSupportedForConnection());
+
+  TransportParameters params;
+  params.key_update_not_yet_supported = false;
+  std::string error_details;
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+  EXPECT_TRUE(config_.KeyUpdateSupportedForConnection());
+  EXPECT_TRUE(config_.KeyUpdateSupportedLocally());
+  EXPECT_TRUE(config_.KeyUpdateSupportedRemotely());
 }
 
 }  // namespace

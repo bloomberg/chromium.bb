@@ -3,6 +3,9 @@
         "benchmarks": {
             "v8.browsing_desktop": {
                 "abridged": false
+            },
+            "rendering.desktop": {
+                "abridged": true
             }
         }
     },

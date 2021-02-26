@@ -233,7 +233,8 @@ class ProgramD3D : public ProgramImpl
                                                            gl::InfoLog *infoLog);
     std::unique_ptr<LinkEvent> link(const gl::Context *context,
                                     const gl::ProgramLinkedResources &resources,
-                                    gl::InfoLog &infoLog) override;
+                                    gl::InfoLog &infoLog,
+                                    const gl::ProgramMergedVaryings &mergedVaryings) override;
     GLboolean validate(const gl::Caps &caps, gl::InfoLog *infoLog) override;
 
     void updateUniformBufferCache(const gl::Caps &caps);
@@ -339,7 +340,7 @@ class ProgramD3D : public ProgramImpl
 
     bool hasShaderStage(gl::ShaderType shaderType) const
     {
-        return mState.getProgramExecutable().getLinkedShaderStages()[shaderType];
+        return mState.getExecutable().getLinkedShaderStages()[shaderType];
     }
 
     void assignImage2DRegisters(unsigned int startImageIndex,

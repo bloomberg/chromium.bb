@@ -42,8 +42,8 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
-  bool IsInstantNTP() const override;
-  bool IsNewTabPage(const GURL& url) const override;
+  bool IsNewTabPage() const override;
+  bool IsNewTabPageURL(const GURL& url) const override;
   bool IsHomePage(const GURL& url) const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   TemplateURLService* GetTemplateURLService() override;
@@ -84,12 +84,6 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
 
   // Helper method that returns the state of URL elision in the omnibox.
   ElisionConfig GetElisionConfig() const;
-
-  // Records ElisionConfig in UMA histogram once for this object.
-  void RecordElisionConfig();
-
-  // Whether elision metrics have already been recorded for this object.
-  bool elision_config_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLocationBarModelDelegate);
 };

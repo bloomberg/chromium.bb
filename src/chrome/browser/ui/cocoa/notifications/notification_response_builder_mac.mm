@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_operation.h"
 
 @implementation NotificationResponseBuilder
 
@@ -27,6 +28,9 @@
   NSString* profileId = [[notification userInfo]
       objectForKey:notification_constants::kNotificationProfileId];
 
+  NSNumber* creatorPid = [[notification userInfo]
+      objectForKey:notification_constants::kNotificationCreatorPid];
+
   DCHECK([[notification userInfo]
       objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [[notification userInfo]
@@ -42,44 +46,37 @@
                 : notification.activationType;
   NotificationOperation operation =
       activationType == NSUserNotificationActivationTypeNone
-          ? NOTIFICATION_CLOSE
-          : NOTIFICATION_CLICK;
+          ? NotificationOperation::NOTIFICATION_CLOSE
+          : NotificationOperation::NOTIFICATION_CLICK;
   int buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
 
   // Determine whether the user clicked on a button, and if they did, whether it
   // was a developer-provided button or the  Settings button.
   if (activationType == NSUserNotificationActivationTypeActionButtonClicked) {
-    NSArray* alternateButtons = @[];
+    int buttonCount = 1;
     if ([notification
             respondsToSelector:@selector(_alternateActionButtonTitles)]) {
-      alternateButtons =
-          [notification valueForKey:@"_alternateActionButtonTitles"];
+      buttonCount =
+          [[notification valueForKey:@"_alternateActionButtonTitles"] count];
+    }
+
+    if (buttonCount > 1) {
+      // There are multiple buttons in the overflow menu. Get the clicked index.
+      buttonIndex =
+          [[notification valueForKey:@"_alternateActionIndex"] intValue];
+    } else {
+      // There was only one button so we know it was clicked.
+      buttonIndex = 0;
+      buttonCount = 1;
     }
 
     BOOL settingsButtonRequired = [hasSettingsButton boolValue];
-    BOOL multipleButtons = (alternateButtons.count > 0);
+    BOOL clickedLastButton = buttonIndex == buttonCount - 1;
 
-    // No developer actions, just the settings button.
-    if (!multipleButtons) {
-      DCHECK(settingsButtonRequired);
-      operation = NOTIFICATION_SETTINGS;
+    // The settings button is always the last button if present.
+    if (clickedLastButton && settingsButtonRequired) {
+      operation = NotificationOperation::NOTIFICATION_SETTINGS;
       buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
-    } else {
-      // 0 based array containing.
-      // Button 1
-      // Button 2 (optional)
-      // Settings (if required)
-      NSNumber* actionIndex =
-          [notification valueForKey:@"_alternateActionIndex"];
-      operation = settingsButtonRequired && (actionIndex.unsignedLongValue ==
-                                             alternateButtons.count - 1)
-                      ? NOTIFICATION_SETTINGS
-                      : NOTIFICATION_CLICK;
-      buttonIndex =
-          settingsButtonRequired &&
-                  (actionIndex.unsignedLongValue == alternateButtons.count - 1)
-              ? notification_constants::kNotificationInvalidButtonIndex
-              : actionIndex.intValue;
     }
   }
 
@@ -88,9 +85,11 @@
     notification_constants::kNotificationId : notificationId,
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
+    notification_constants::kNotificationCreatorPid : creatorPid ? creatorPid
+                                                                 : @0,
     notification_constants::kNotificationType : notificationType,
-    notification_constants::
-    kNotificationOperation : [NSNumber numberWithInt:operation],
+    notification_constants::kNotificationOperation :
+        [NSNumber numberWithInt:static_cast<int>(operation)],
     notification_constants::
     kNotificationButtonIndex : [NSNumber numberWithInt:buttonIndex],
   };

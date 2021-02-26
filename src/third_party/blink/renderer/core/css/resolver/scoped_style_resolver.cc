@@ -58,6 +58,9 @@ ScopedStyleResolver* ScopedStyleResolver::Parent() const {
 }
 
 void ScopedStyleResolver::AddKeyframeRules(const RuleSet& rule_set) {
+  if (RuntimeEnabledFeatures::CSSKeyframesMemoryReductionEnabled())
+    return;
+
   const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
       rule_set.KeyframesRules();
   for (auto rule : keyframes_rules)
@@ -79,8 +82,8 @@ void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
     if (FontFace* font_face = FontFace::Create(&document, font_face_rule))
       css_font_selector->GetFontFaceCache()->Add(font_face_rule, font_face);
   }
-  if (font_face_rules.size() && document.GetStyleResolver())
-    document.GetStyleResolver()->InvalidateMatchedPropertiesCache();
+  if (font_face_rules.size())
+    document.GetStyleResolver().InvalidateMatchedPropertiesCache();
 }
 
 void ScopedStyleResolver::AppendActiveStyleSheets(
@@ -142,8 +145,42 @@ void ScopedStyleResolver::ResetAuthorStyle() {
   needs_append_all_sheets_ = false;
 }
 
+const ActiveStyleSheetVector& ScopedStyleResolver::ActiveAuthorStyleSheets() {
+  StyleSheetCollection* collection =
+      GetTreeScope().GetDocument().GetStyleEngine().StyleSheetCollectionFor(
+          *scope_);
+  DCHECK(collection);
+  return collection->ActiveAuthorStyleSheets();
+}
+
+// static
+StyleRuleKeyframes*
+ScopedStyleResolver::KeyframeStylesForAnimationFromActiveSheets(
+    const AtomicString& name,
+    const ActiveStyleSheetVector& sheets) {
+  // We prefer non-vendor-prefixed over vendor-prefixed rules.
+  StyleRuleKeyframes* vendor_prefixed_result = nullptr;
+  for (auto sheet = sheets.rbegin(); sheet != sheets.rend(); ++sheet) {
+    RuleSet* rule_set = sheet->second;
+    if (!rule_set)
+      continue;
+    if (StyleRuleKeyframes* rule = rule_set->KeyframeStylesForAnimation(name)) {
+      if (!rule->IsVendorPrefixed())
+        return rule;
+      if (!vendor_prefixed_result)
+        vendor_prefixed_result = rule;
+    }
+  }
+  return vendor_prefixed_result;
+}
+
 StyleRuleKeyframes* ScopedStyleResolver::KeyframeStylesForAnimation(
-    const StringImpl* animation_name) {
+    const AtomicString& animation_name) {
+  if (RuntimeEnabledFeatures::CSSKeyframesMemoryReductionEnabled()) {
+    return KeyframeStylesForAnimationFromActiveSheets(
+        animation_name, ActiveAuthorStyleSheets());
+  }
+
   if (keyframes_rule_map_.IsEmpty())
     return nullptr;
 
@@ -155,16 +192,17 @@ StyleRuleKeyframes* ScopedStyleResolver::KeyframeStylesForAnimation(
 }
 
 void ScopedStyleResolver::AddKeyframeStyle(StyleRuleKeyframes* rule) {
-  AtomicString s(rule->GetName());
+  DCHECK(!RuntimeEnabledFeatures::CSSKeyframesMemoryReductionEnabled());
+  AtomicString name = rule->GetName();
 
   if (rule->IsVendorPrefixed()) {
-    KeyframesRuleMap::iterator it = keyframes_rule_map_.find(s.Impl());
+    KeyframesRuleMap::iterator it = keyframes_rule_map_.find(name);
     if (it == keyframes_rule_map_.end())
-      keyframes_rule_map_.Set(s.Impl(), rule);
+      keyframes_rule_map_.Set(name, rule);
     else if (it->value->IsVendorPrefixed())
-      keyframes_rule_map_.Set(s.Impl(), rule);
+      keyframes_rule_map_.Set(name, rule);
   } else {
-    keyframes_rule_map_.Set(s.Impl(), rule);
+    keyframes_rule_map_.Set(name, rule);
   }
 }
 
@@ -288,7 +326,7 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
     collector.MatchPageRules(&sheet->Contents()->GetRuleSet());
 }
 
-void ScopedStyleResolver::Trace(Visitor* visitor) {
+void ScopedStyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(scope_);
   visitor->Trace(author_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
@@ -386,7 +424,7 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
       parent_style_sheet, sheet_index, slotted_rule_set));
 }
 
-void ScopedStyleResolver::RuleSubSet::Trace(Visitor* visitor) {
+void ScopedStyleResolver::RuleSubSet::Trace(Visitor* visitor) const {
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(rule_set_);
 }

@@ -17,12 +17,27 @@
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/unwinder.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/buildflags.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARM64) && \
+    BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#define ANDROID_ARM64_UNWINDING_SUPPORTED 1
+#else
+#define ANDROID_ARM64_UNWINDING_SUPPORTED 0
+#endif
+
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+#define ANDROID_CFI_UNWINDING_SUPPORTED 1
+#else
+#define ANDROID_CFI_UNWINDING_SUPPORTED 0
+#endif
 
 namespace tracing {
 
@@ -150,6 +165,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // Registers the TracingSamplerProfiler as a Perfetto data source
   static void RegisterDataSource();
 
+  // Sets a callback to create auxiliary unwinders on the main thread profiler,
+  // for handling additional, non-native-code unwind scenarios.
+  static void SetAuxUnwinderFactoryOnMainThread(
+      const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+          factory);
+
   // For tests.
   static void SetupStartupTracingForTesting();
   static void DeleteOnChildThreadForTesting();
@@ -160,9 +181,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.
   constexpr static bool IsStackUnwindingSupported() {
-#if defined(OS_MACOSX) || defined(OS_WIN) && defined(_WIN64) ||     \
-    (defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-     defined(OFFICIAL_BUILD))
+#if defined(OS_MAC) || defined(OS_WIN) && defined(_WIN64) || \
+    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
     return true;
 #else
     return false;
@@ -172,6 +192,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   explicit TracingSamplerProfiler(
       base::SamplingProfilerThreadToken sampled_thread_token);
   virtual ~TracingSamplerProfiler();
+
+  // Sets a callback to create auxiliary unwinders, for handling additional,
+  // non-native-code unwind scenarios. Currently used to support
+  // unwinding V8 JavaScript frames.
+  void SetAuxUnwinderFactory(
+      const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+          factory);
 
   // The given callback will be called for every received sample, and can be
   // called on any thread. Must be called before tracing is started.
@@ -184,6 +211,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
 
  private:
   const base::SamplingProfilerThreadToken sampled_thread_token_;
+
+  base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>
+      aux_unwinder_factory_;
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|

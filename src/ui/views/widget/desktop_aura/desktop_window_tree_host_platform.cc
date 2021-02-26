@@ -16,13 +16,14 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/wm/wm_move_loop_handler.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -209,7 +210,6 @@ DesktopWindowTreeHostPlatform::CreateTooltip() {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostPlatform::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-#if !defined(USE_X11)
   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
   std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
       std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
@@ -218,11 +218,6 @@ DesktopWindowTreeHostPlatform::CreateDragDropClient(
   // drop action.
   SetWmDropHandler(platform_window(), drag_drop_client.get());
   return std::move(drag_drop_client);
-#else
-  // TODO(https://crbug.com/990756): Move the X11 initialization of dnd here.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-#endif
 }
 
 void DesktopWindowTreeHostPlatform::Close() {
@@ -252,7 +247,8 @@ void DesktopWindowTreeHostPlatform::CloseNow() {
     return;
 
 #if defined(USE_OZONE)
-  SetWmDropHandler(platform_window(), nullptr);
+  if (features::IsUsingOzonePlatform())
+    SetWmDropHandler(platform_window(), nullptr);
 #endif
 
   platform_window()->PrepareForShutdown();
@@ -551,8 +547,10 @@ void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
   platform_window()->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
-  return ShouldUseNativeFrame() ? new NativeFrameView(GetWidget()) : nullptr;
+std::unique_ptr<NonClientFrameView>
+DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
+  return ShouldUseNativeFrame() ? std::make_unique<NativeFrameView>(GetWidget())
+                                : nullptr;
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
@@ -679,6 +677,8 @@ void DesktopWindowTreeHostPlatform::HideImpl() {
 
 void DesktopWindowTreeHostPlatform::OnClosed() {
   wm::SetWindowMoveClient(window(), nullptr);
+  SetWmDropHandler(platform_window(), nullptr);
+  desktop_native_widget_aura_->OnHostWillClose();
   SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();
 }
@@ -711,6 +711,10 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
   GetWidget()->Close();
+}
+
+void DesktopWindowTreeHostPlatform::OnWillDestroyAcceleratedWidget() {
+  desktop_native_widget_aura_->OnHostWillClose();
 }
 
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
@@ -787,7 +791,7 @@ void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(
 // DesktopWindowTreeHost:
 
 // Linux subclasses this host and adds some Linux specific bits.
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // static
 DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,

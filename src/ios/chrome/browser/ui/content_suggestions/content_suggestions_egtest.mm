@@ -14,6 +14,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -31,12 +32,10 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ContentSuggestionsAppInterface);
 #pragma clang diagnostic pop
-#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -97,19 +96,16 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 #pragma mark - Setup/Teardown
 
-#if defined(CHROME_EARL_GREY_2)
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kDiscoverFeedInNtp);
+  return config;
+}
+
 + (void)setUpForTestCase {
   [super setUpForTestCase];
   [self setUpHelper];
 }
-#elif defined(CHROME_EARL_GREY_1)
-+ (void)setUp {
-  [super setUp];
-  [self setUpHelper];
-}
-#else
-#error Not an EarlGrey Test
-#endif
 
 + (void)setUpHelper {
   [self closeAllTabs];
@@ -141,8 +137,12 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the additional items (when more is pressed) are kept when
 // switching tabs.
 - (void)testAdditionalItemsKept {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Set server up.
-  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
@@ -175,6 +175,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when the page is reloaded using the tools menu, the suggestions
 // are updated.
 - (void)testReloadPage {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Add 2 suggestions, persisted accross page loads.
   [ContentSuggestionsAppInterface addNumberOfSuggestions:2
                                 additionalSuggestionsURL:nil];
@@ -200,8 +203,12 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.
 - (void)testOpenPageAndGoBackWithMoreContent {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   // Set server up.
-  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
@@ -248,6 +255,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the "Learn More" cell is present only if there is a suggestion in
 // the section.
 - (void)testLearnMore {
+  if (IsDiscoverFeedEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Legacy Feed Test.");
+  }
   id<GREYAction> action =
       grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
   [[[EarlGrey
@@ -307,9 +317,10 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Open in new incognito tab.
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::OpenLinkInIncognitoButton(
+                                   [ChromeEarlGrey
+                                       isNativeContextMenusEnabled])]
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -386,24 +397,29 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testMostVisitedLongPress {
   [self setupMostVisitedTileLongPress];
 
-  if (![ChromeEarlGrey isRegularXRegularSizeClass]) {
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];
-  }
-
   // No read later.
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)]
       assertWithMatcher:grey_nil()];
+
+  if ([ChromeEarlGrey isNativeContextMenusEnabled]) {
+    // iOS 13 Context Menus don't have a Cancel action.
+    return;
+  }
+  if (![ChromeEarlGrey isRegularXRegularSizeClass]) {
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];
+  }
 }
 
 #pragma mark - Test utils
 
 // Setup a most visited tile, and open the context menu by long pressing on it.
 - (void)setupMostVisitedTileLongPress {
-  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
   NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);

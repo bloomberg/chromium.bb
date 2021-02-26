@@ -14,6 +14,7 @@ const char kVmCiceroneServiceName[] = "org.chromium.VmCicerone";
 
 // Methods to be called from vm_concierge.
 const char kNotifyVmStartedMethod[] = "NotifyVmStarted";
+const char kNotifyVmStoppingMethod[] = "NotifyVmStopping";
 const char kNotifyVmStoppedMethod[] = "NotifyVmStopped";
 const char kGetContainerTokenMethod[] = "GetContainerToken";
 
@@ -39,6 +40,10 @@ const char kUpgradeContainerMethod[] = "UpgradeContainer";
 const char kCancelUpgradeContainerMethod[] = "CancelUpgradeContainer";
 const char kConfigureForArcSideloadMethod[] = "ConfigureForArcSideload";
 const char kStartLxdMethod[] = "StartLxd";
+const char kAddFileWatchMethod[] = "AddFileWatch";
+const char kRemoveFileWatchMethod[] = "RemoveFileWatch";
+const char kRegisterVshSessionMethod[] = "RegisterVshSession";
+const char kGetVshSessionMethod[] = "GetVshSession";
 
 // Methods to be called from chunneld.
 const char kConnectChunnelMethod[] = "ConnectChunnel";
@@ -63,6 +68,7 @@ const char kApplyAnsiblePlaybookProgressSignal[] =
     "ApplyAnsiblePlaybookProgress";
 const char kUpgradeContainerProgressSignal[] = "UpgradeContainerProgress";
 const char kStartLxdProgressSignal[] = "StartLxdProgress";
+const char kFileWatchTriggeredSignal[] = "FileWatchTriggered";
 
 }  // namespace cicerone
 }  // namespace vm_tools

@@ -58,7 +58,7 @@ XMLHttpRequestOrString::XMLHttpRequestOrString(const XMLHttpRequestOrString&) = 
 XMLHttpRequestOrString::~XMLHttpRequestOrString() = default;
 XMLHttpRequestOrString& XMLHttpRequestOrString::operator=(const XMLHttpRequestOrString&) = default;
 
-void XMLHttpRequestOrString::Trace(Visitor* visitor) {
+void XMLHttpRequestOrString::Trace(Visitor* visitor) const {
   visitor->Trace(xml_http_request_);
 }
 
@@ -81,7 +81,7 @@ void V8XMLHttpRequestOrString::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

@@ -29,21 +29,25 @@ void MemoryManagedPaintCanvas::drawImageRect(
     const SkRect& src,
     const SkRect& dst,
     const cc::PaintFlags* flags,
-    PaintCanvas::SrcRectConstraint constraint) {
+    SkCanvas::SrcRectConstraint constraint) {
   RecordPaintCanvas::drawImageRect(image, src, dst, flags, constraint);
   UpdateMemoryUsage(image);
 }
 
 void MemoryManagedPaintCanvas::UpdateMemoryUsage(const cc::PaintImage& image) {
-  if (cached_image_ids_.contains(image.GetContentIdForFrame(0u)))
+  if (cached_image_ids_.Contains(image.GetContentIdForFrame(0u)))
     return;
 
   cached_image_ids_.insert(image.GetContentIdForFrame(0u));
-  total_stored_image_memory_ +=
-      image.GetSkImage()->imageInfo().computeMinByteSize();
+  total_stored_image_memory_ += image.GetSkImageInfo().computeMinByteSize();
 
   if (total_stored_image_memory_ > kMaxPinnedMemory)
     set_needs_flush_callback_.Run();
+}
+
+bool MemoryManagedPaintCanvas::IsCachingImage(
+    const cc::PaintImage::ContentId content_id) const {
+  return cached_image_ids_.Contains(content_id);
 }
 
 }  // namespace blink

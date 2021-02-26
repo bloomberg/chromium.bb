@@ -5,15 +5,14 @@
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -104,12 +103,9 @@ void BrowserLifetimeHandler::HandleFactoryReset(
   }
 
   // TODO(crbug.com/891905): Centralize powerwash restriction checks.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool allow_powerwash =
-      !connector->IsEnterpriseManaged() &&
+      !webui::IsEnterpriseManaged() &&
       !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser() &&
       !user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 
   if (!allow_powerwash)

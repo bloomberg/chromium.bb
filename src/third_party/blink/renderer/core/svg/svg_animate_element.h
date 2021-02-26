@@ -44,15 +44,16 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;
 
   const QualifiedName& AttributeName() const { return attribute_name_; }
-  AnimatedPropertyType GetAnimatedPropertyType() const;
+  AnimatedPropertyType GetAnimatedPropertyTypeForTesting() const {
+    return type_;
+  }
   bool AnimatedPropertyTypeSupportsAddition() const;
-  bool IsAdditive() const final;
 
  protected:
   void WillChangeAnimationTarget() final;
@@ -60,8 +61,8 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
   bool HasValidAnimation() const override;
 
-  void ResetAnimatedType() final;
-  void ClearAnimatedType() final;
+  SMILAnimationValue CreateAnimationValue() const final;
+  void ClearAnimationValue() final;
 
   bool CalculateToAtEndOfDurationValue(
       const String& to_at_end_of_duration_string) final;
@@ -69,10 +70,10 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
                                 const String& to_string) final;
   bool CalculateFromAndByValues(const String& from_string,
                                 const String& by_string) final;
-  void CalculateAnimatedValue(float percentage,
-                              unsigned repeat_count,
-                              SVGSMILElement* result_element) const final;
-  void ApplyResultsToTarget() final;
+  void CalculateAnimationValue(SMILAnimationValue&,
+                               float percentage,
+                               unsigned repeat_count) const final;
+  void ApplyResultsToTarget(const SMILAnimationValue&) final;
   float CalculateDistance(const String& from_string,
                           const String& to_string) final;
 
@@ -113,7 +114,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   Member<SVGPropertyBase> from_property_;
   Member<SVGPropertyBase> to_property_;
   Member<SVGPropertyBase> to_at_end_of_duration_property_;
-  Member<SVGPropertyBase> animated_value_;
 
  protected:
   Member<SVGAnimatedPropertyBase> target_property_;

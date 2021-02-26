@@ -1,14 +1,12 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Sends notifications after automatic imports (WIP).
+"""Sends notifications after automatic imports from web-platform-tests (WPT).
 
 Automatically file bugs for new failures caused by WPT imports for opted-in
 directories.
 
 Design doc: https://docs.google.com/document/d/1W3V81l94slAC_rPcTKWXgv3YxRxtlSIAxi3yj6NsbBw/edit?usp=sharing
-
-During the implementation phase, we do not open bugs but log everything instead.
 """
 
 from collections import defaultdict
@@ -36,7 +34,7 @@ class ImportNotifier(object):
         self._monorail_api = MonorailAPI
         self.default_port = host.port_factory.get()
         self.finder = PathFinder(host.filesystem)
-        self.owners_extractor = DirectoryOwnersExtractor(host.filesystem)
+        self.owners_extractor = DirectoryOwnersExtractor(host)
         self.new_failures_by_directory = defaultdict(list)
 
     def main(self,
@@ -129,14 +127,30 @@ class ImportNotifier(object):
                             gerrit_url_with_ps=gerrit_url_with_ps))
 
     def more_failures_in_baseline(self, baseline):
+        """Determines if a testharness.js baseline file has new failures.
+
+        The file is assumed to have been modified in the current git checkout,
+        and so has a diff we can parse.
+
+        We recognize two types of failures: FAIL lines, which are output for a
+        specific subtest failing, and harness errors, which indicate an uncaught
+        error in the test. Increasing numbers of either are considered new
+        failures - this includes going from FAIL to error or vice-versa.
+        """
+
         diff = self.git.run(['diff', '-U0', 'origin/master', '--', baseline])
         delta_failures = 0
+        delta_harness_errors = 0
         for line in diff.splitlines():
             if line.startswith('+FAIL'):
                 delta_failures += 1
             if line.startswith('-FAIL'):
                 delta_failures -= 1
-        return delta_failures > 0
+            if line.startswith('+Harness Error.'):
+                delta_harness_errors += 1
+            if line.startswith('-Harness Error.'):
+                delta_harness_errors -= 1
+        return delta_failures > 0 or delta_harness_errors > 0
 
     def examine_new_test_expectations(self, test_expectations):
         """Examines new test expectations to find new failures.
@@ -200,15 +214,26 @@ class ImportNotifier(object):
             for failure in failures:
                 failure_list += str(failure) + '\n'
 
-            epilogue = '\nThis import contains upstream changes from {} to {}:\n'.format(
+            expectations_statement = (
+                '\nExpectations or baseline files [0] have been automatically '
+                'added for the failing results to keep the bots green. Please '
+                'investigate the new failures and triage as appropriate.\n')
+
+            range_statement = '\nThis import contains upstream changes from {} to {}:\n'.format(
                 wpt_revision_start, wpt_revision_end)
             commit_list = self.format_commit_list(imported_commits,
                                                   full_directory)
 
-            description = prologue + failure_list + epilogue + commit_list
+            links_list = '\n[0]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_test_expectations.md\n'
 
-            bug = MonorailIssue.new_chromium_issue(summary, description, cc,
-                                                   components)
+            description = (prologue + failure_list + expectations_statement +
+                           range_statement + commit_list + links_list)
+
+            bug = MonorailIssue.new_chromium_issue(summary,
+                                                   description,
+                                                   cc,
+                                                   components,
+                                                   labels=['Test-WebTest'])
             _log.info(unicode(bug))
 
             if is_wpt_notify_enabled:

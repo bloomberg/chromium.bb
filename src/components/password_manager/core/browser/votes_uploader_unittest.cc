@@ -40,7 +40,6 @@ using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
 using autofill::PASSWORD;
 using autofill::PasswordAttribute;
-using autofill::PasswordForm;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
@@ -82,7 +81,7 @@ class MockAutofillDownloadManager : public AutofillDownloadManager {
   class StubObserver : public AutofillDownloadManager::Observer {
     void OnLoadedServerPredictions(
         std::string response,
-        const std::vector<std::string>& form_signatures) override {}
+        const std::vector<autofill::FormSignature>& form_signatures) override {}
   };
 
   StubObserver fake_observer;

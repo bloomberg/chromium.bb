@@ -46,7 +46,6 @@ class WebDocument;
 class WebElement;
 class WebPlugin;
 class WebString;
-class WebURL;
 class WebURLRequest;
 class WebDOMMessageEvent;
 struct WebRect;
@@ -91,11 +90,6 @@ class WebPluginContainer {
   // Returns the scriptable object associated with the DOM element
   // containing the plugin as a native v8 object.
   virtual v8::Local<v8::Object> V8ObjectForElement() = 0;
-
-  // Executes a "javascript:" URL on behalf of the plugin in the context
-  // of the frame containing the plugin.  Returns the result of script
-  // execution, if any.
-  virtual WebString ExecuteScriptURL(const WebURL&, bool popups_allowed) = 0;
 
   // Loads an URL in the specified frame (or the frame containing this
   // plugin if target is empty).  If notifyNeeded is true, then upon
@@ -153,6 +147,19 @@ class WebPluginContainer {
   virtual void RequestFullscreen() = 0;
   virtual bool IsFullscreenElement() const = 0;
   virtual void CancelFullscreen() = 0;
+
+  // Returns true if this container was the target for the last mouse event.
+  virtual bool WasTargetForLastMouseEvent() = 0;
+
+  // Whether this plugin current has the mouse lock or not.
+  virtual bool IsMouseLocked() = 0;
+
+  // Request to lock the mouse. A subsequent callback on
+  // WebPlugin::DidReceiveMouseLockResult will be called.
+  virtual bool LockMouse(bool request_unadjusted_movement) = 0;
+
+  // Request to unlock a current mouse lock.
+  virtual void UnlockMouse() = 0;
 
  protected:
   ~WebPluginContainer() = default;

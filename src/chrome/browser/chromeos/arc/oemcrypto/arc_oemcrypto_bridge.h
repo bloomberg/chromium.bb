@@ -11,8 +11,9 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/oemcrypto.mojom.h"
-#include "components/arc/mojom/oemcrypto_daemon.mojom.h"
+#include "components/arc/mojom/protected_buffer_manager.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -37,20 +38,15 @@ class ArcOemCryptoBridge : public KeyedService,
   ~ArcOemCryptoBridge() override;
 
   // OemCrypto Mojo host interface
-  void Connect(mojom::OemCryptoServiceRequest request) override;
+  void Connect(
+      mojo::PendingReceiver<mojom::OemCryptoService> receiver) override;
 
  private:
-  void OnBootstrapMojoConnection(mojom::OemCryptoServiceRequest request,
-                                 bool result);
-  void ConnectToDaemon(mojom::OemCryptoServiceRequest request);
-  void FinishConnectingToDaemon(
-      mojom::OemCryptoServiceRequest request,
+  void ConnectToDaemon(
+      mojo::PendingReceiver<mojom::OemCryptoService> receiver,
       mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager);
-  void OnMojoConnectionError();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Remote<arc_oemcrypto::mojom::OemCryptoHostDaemon>
-      oemcrypto_host_daemon_remote_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_{this};

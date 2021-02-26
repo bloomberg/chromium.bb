@@ -65,6 +65,10 @@ class LayerTreeViewDelegate {
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
 
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) = 0;
+
   // Notifies that a compositor frame commit operation is about to start.
   virtual void WillCommitCompositorFrame() = 0;
 
@@ -110,6 +114,9 @@ class LayerTreeViewDelegate {
   // to signal to flow control mechanisms that a frame is beginning, not to
   // perform actual painting work.
   virtual void WillBeginMainFrame() = 0;
+
+  virtual void RunPaintBenchmark(int repeat_count,
+                                 cc::PaintBenchmarkResult& result) {}
 
  protected:
   virtual ~LayerTreeViewDelegate() {}

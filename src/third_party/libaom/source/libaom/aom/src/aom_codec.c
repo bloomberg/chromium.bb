@@ -22,8 +22,6 @@
 #include "aom/aom_integer.h"
 #include "aom/internal/aom_codec_internal.h"
 
-#define SAVE_STATUS(ctx, var) (ctx ? (ctx->err = var) : var)
-
 int aom_codec_version(void) { return VERSION_PACKED; }
 
 const char *aom_codec_version_str(void) { return VERSION_STRING_NOSP; }
@@ -67,53 +65,53 @@ const char *aom_codec_error_detail(aom_codec_ctx_t *ctx) {
 }
 
 aom_codec_err_t aom_codec_destroy(aom_codec_ctx_t *ctx) {
-  aom_codec_err_t res;
-
-  if (!ctx)
-    res = AOM_CODEC_INVALID_PARAM;
-  else if (!ctx->iface || !ctx->priv)
-    res = AOM_CODEC_ERROR;
-  else {
-    ctx->iface->destroy((aom_codec_alg_priv_t *)ctx->priv);
-
-    ctx->iface = NULL;
-    ctx->name = NULL;
-    ctx->priv = NULL;
-    res = AOM_CODEC_OK;
+  if (!ctx) {
+    return AOM_CODEC_INVALID_PARAM;
   }
-
-  return SAVE_STATUS(ctx, res);
+  if (!ctx->iface || !ctx->priv) {
+    ctx->err = AOM_CODEC_ERROR;
+    return AOM_CODEC_ERROR;
+  }
+  ctx->iface->destroy((aom_codec_alg_priv_t *)ctx->priv);
+  ctx->iface = NULL;
+  ctx->name = NULL;
+  ctx->priv = NULL;
+  ctx->err = AOM_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 aom_codec_caps_t aom_codec_get_caps(aom_codec_iface_t *iface) {
   return (iface) ? iface->caps : 0;
 }
 
-aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...) {
-  aom_codec_err_t res;
-
-  if (!ctx || !ctrl_id)
-    res = AOM_CODEC_INVALID_PARAM;
-  else if (!ctx->iface || !ctx->priv || !ctx->iface->ctrl_maps)
-    res = AOM_CODEC_ERROR;
-  else {
-    aom_codec_ctrl_fn_map_t *entry;
-
-    res = AOM_CODEC_ERROR;
-
-    for (entry = ctx->iface->ctrl_maps; entry && entry->fn; entry++) {
-      if (!entry->ctrl_id || entry->ctrl_id == ctrl_id) {
-        va_list ap;
-
-        va_start(ap, ctrl_id);
-        res = entry->fn((aom_codec_alg_priv_t *)ctx->priv, ap);
-        va_end(ap);
-        break;
-      }
-    }
+aom_codec_err_t aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...) {
+  if (!ctx) {
+    return AOM_CODEC_INVALID_PARAM;
+  }
+  // Control ID must be non-zero.
+  if (!ctrl_id) {
+    ctx->err = AOM_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
+  }
+  if (!ctx->iface || !ctx->priv || !ctx->iface->ctrl_maps) {
+    ctx->err = AOM_CODEC_ERROR;
+    return AOM_CODEC_ERROR;
   }
 
-  return SAVE_STATUS(ctx, res);
+  // "ctrl_maps" is an array of (control ID, function pointer) elements,
+  // with CTRL_MAP_END as a sentinel.
+  for (aom_codec_ctrl_fn_map_t *entry = ctx->iface->ctrl_maps;
+       !at_ctrl_map_end(entry); ++entry) {
+    if (entry->ctrl_id == ctrl_id) {
+      va_list ap;
+      va_start(ap, ctrl_id);
+      ctx->err = entry->fn((aom_codec_alg_priv_t *)ctx->priv, ap);
+      va_end(ap);
+      return ctx->err;
+    }
+  }
+  ctx->err = AOM_CODEC_ERROR;
+  return AOM_CODEC_ERROR;
 }
 
 void aom_internal_error(struct aom_internal_error_info *info,

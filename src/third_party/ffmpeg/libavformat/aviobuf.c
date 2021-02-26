@@ -48,9 +48,18 @@ static void *ff_avio_child_next(void *obj, void *prev)
     return prev ? NULL : s->opaque;
 }
 
+#if FF_API_CHILD_CLASS_NEXT
 static const AVClass *ff_avio_child_class_next(const AVClass *prev)
 {
     return prev ? NULL : &ffurl_context_class;
+}
+#endif
+
+static const AVClass *child_class_iterate(void **iter)
+{
+    const AVClass *c = *iter ? NULL : &ffurl_context_class;
+    *iter = (void*)(uintptr_t)c;
+    return c;
 }
 
 #define OFFSET(x) offsetof(AVIOContext,x)
@@ -67,7 +76,10 @@ const AVClass ff_avio_class = {
     .version    = LIBAVUTIL_VERSION_INT,
     .option     = ff_avio_options,
     .child_next = ff_avio_child_next,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = ff_avio_child_class_next,
+#endif
+    .child_class_iterate = child_class_iterate,
 };
 
 static void fill_buffer(AVIOContext *s);
@@ -432,26 +444,6 @@ PUT_STR16(be, 1)
 
 #undef PUT_STR16
 
-int ff_get_v_length(uint64_t val)
-{
-    int i = 1;
-
-    while (val >>= 7)
-        i++;
-
-    return i;
-}
-
-void ff_put_v(AVIOContext *bc, uint64_t val)
-{
-    int i = ff_get_v_length(val);
-
-    while (--i > 0)
-        avio_w8(bc, 128 | (uint8_t)(val >> (7*i)));
-
-    avio_w8(bc, val & 127);
-}
-
 void avio_wl64(AVIOContext *s, uint64_t val)
 {
     avio_wl32(s, (uint32_t)(val & 0xffffffff));
@@ -716,7 +708,7 @@ int avio_read_partial(AVIOContext *s, unsigned char *buf, int size)
     int len;
 
     if (size < 0)
-        return -1;
+        return AVERROR(EINVAL);
 
     if (s->read_packet && s->write_flag) {
         len = read_packet_wrapper(s, buf, size);
@@ -1292,22 +1284,21 @@ typedef struct DynBuffer {
 static int dyn_buf_write(void *opaque, uint8_t *buf, int buf_size)
 {
     DynBuffer *d = opaque;
-    unsigned new_size, new_allocated_size;
+    unsigned new_size;
 
     /* reallocate buffer if needed */
-    new_size = d->pos + buf_size;
-    new_allocated_size = d->allocated_size;
-    if (new_size < d->pos || new_size > INT_MAX/2)
-        return -1;
-    while (new_size > new_allocated_size) {
-        if (!new_allocated_size)
-            new_allocated_size = new_size;
-        else
-            new_allocated_size += new_allocated_size / 2 + 1;
-    }
-
-    if (new_allocated_size > d->allocated_size) {
+    new_size = (unsigned)d->pos + buf_size;
+    if (new_size < d->pos || new_size > INT_MAX)
+        return AVERROR(ERANGE);
+    if (new_size > d->allocated_size) {
+        unsigned new_allocated_size = d->allocated_size ? d->allocated_size
+                                                        : new_size;
         int err;
+        while (new_size > new_allocated_size)
+            new_allocated_size += new_allocated_size / 2 + 1;
+
+        new_allocated_size = FFMIN(new_allocated_size, INT_MAX);
+
         if ((err = av_reallocp(&d->buffer, new_allocated_size)) < 0) {
             d->allocated_size = 0;
             d->size = 0;
@@ -1345,8 +1336,10 @@ static int64_t dyn_buf_seek(void *opaque, int64_t offset, int whence)
         offset += d->pos;
     else if (whence == SEEK_END)
         offset += d->size;
-    if (offset < 0 || offset > 0x7fffffffLL)
-        return -1;
+    if (offset < 0)
+        return AVERROR(EINVAL);
+    if (offset > INT_MAX)
+        return AVERROR(ERANGE);
     d->pos = offset;
     return 0;
 }
@@ -1357,7 +1350,7 @@ static int url_open_dyn_buf_internal(AVIOContext **s, int max_packet_size)
     unsigned io_buffer_size = max_packet_size ? max_packet_size : 1024;
 
     if (sizeof(DynBuffer) + io_buffer_size < io_buffer_size)
-        return -1;
+        return AVERROR(ERANGE);
     d = av_mallocz(sizeof(DynBuffer) + io_buffer_size);
     if (!d)
         return AVERROR(ENOMEM);
@@ -1381,7 +1374,7 @@ int avio_open_dyn_buf(AVIOContext **s)
 int ffio_open_dyn_packet_buf(AVIOContext **s, int max_packet_size)
 {
     if (max_packet_size <= 0)
-        return -1;
+        return AVERROR(EINVAL);
     return url_open_dyn_buf_internal(s, max_packet_size);
 }
 
@@ -1389,13 +1382,13 @@ int avio_get_dyn_buf(AVIOContext *s, uint8_t **pbuffer)
 {
     DynBuffer *d;
 
-    if (!s || s->error) {
+    if (!s) {
         *pbuffer = NULL;
         return 0;
     }
     d = s->opaque;
 
-    if (!d->size) {
+    if (!s->error && !d->size) {
         *pbuffer = d->io_buffer;
         return FFMAX(s->buf_ptr, s->buf_ptr_max) - s->buffer;
     }

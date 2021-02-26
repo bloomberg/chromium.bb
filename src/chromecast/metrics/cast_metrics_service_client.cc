@@ -154,7 +154,6 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 ::metrics::SystemProfileProto::Channel CastMetricsServiceClient::GetChannel() {
-
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   switch (cast_sys_info_->GetBuildType()) {
     case CastSysInfo::BUILD_ENG:
@@ -240,6 +239,14 @@ base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
   return base::TimeDelta::FromMinutes(kStandardUploadIntervalMinutes);
 }
 
+::metrics::MetricsLogStore::StorageLimits
+CastMetricsServiceClient::GetStorageLimits() const {
+  auto limits = ::metrics::MetricsServiceClient::GetStorageLimits();
+  if (delegate_)
+    delegate_->ApplyMetricsStorageLimits(&limits);
+  return limits;
+}
+
 bool CastMetricsServiceClient::IsConsentGiven() const {
   return pref_service_->GetBoolean(prefs::kOptInStats);
 }
@@ -288,10 +295,10 @@ void CastMetricsServiceClient::InitializeMetricsService() {
   DCHECK(!metrics_state_manager_);
   metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(),
-      base::Bind(&CastMetricsServiceClient::StoreClientInfo,
-                 base::Unretained(this)),
-      base::Bind(&CastMetricsServiceClient::LoadClientInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&CastMetricsServiceClient::StoreClientInfo,
+                          base::Unretained(this)),
+      base::BindRepeating(&CastMetricsServiceClient::LoadClientInfo,
+                          base::Unretained(this)));
   metrics_service_.reset(new ::metrics::MetricsService(
       metrics_state_manager_.get(), this, pref_service_));
 

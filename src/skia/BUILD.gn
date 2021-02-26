@@ -13,6 +13,7 @@ import("//testing/test.gni")
 import("//third_party/libgifcodec/libgifcodec.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 import("//third_party/skia/third_party/skcms/skcms.gni")
+import("//tools/grit/grit_rule.gni")
 import("features.gni")
 
 if (current_cpu == "arm") {
@@ -28,7 +29,6 @@ skia_support_skottie = true
 
 declare_args() {
   enable_skia_wuffs_gif = false
-  skia_whitelist_serialized_typefaces = false
 }
 
 # Generate a buildflag header for compile-time checking of Dawn support.
@@ -39,10 +39,12 @@ buildflag_header("buildflags") {
 
 # External-facing config for dependent code.
 config("skia_config") {
+  defines = []
   include_dirs = [ "//third_party/skia" ]
 
   if (!is_ios) {
     if (enable_skia_wuffs_gif) {
+      defines += [ "SK_FAVOR_WUFFS_V_0_3_OVER_V_0_2" ]
       include_dirs += [ "//third_party/wuffs/src/release/c" ]
     } else {
       include_dirs += [ "//third_party/libgifcodec" ]
@@ -53,7 +55,7 @@ config("skia_config") {
     configs = [ "//third_party/vulkan_headers:vulkan_headers_config" ]
   }
 
-  defines = [
+  defines += [
     "SK_CODEC_DECODES_PNG",
     "SK_CODEC_DECODES_WEBP",
     "SK_ENCODE_PNG",
@@ -122,10 +124,6 @@ config("skia_config") {
   if (is_win) {
     defines += [ "GR_GL_FUNCTION_TYPE=__stdcall" ]
   }
-
-  if (skia_whitelist_serialized_typefaces) {
-    defines += [ "SK_WHITELIST_SERIALIZED_TYPEFACES" ]
-  }
 }
 
 # Internal-facing config for Skia library code.
@@ -147,7 +145,7 @@ config("skia_library_config") {
   }
 
   # Settings for text blitting, chosen to approximate the system browser.
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     defines += [
       "SK_GAMMA_EXPONENT=1.2",
       "SK_GAMMA_CONTRAST=0.2",
@@ -222,7 +220,7 @@ source_set("skcms") {
   # LLVM automatically sets the equivalent of GCC's -mfp16-format=ieee on ARM
   # builds by default, while GCC itself does not. We need it to enable support
   # for half-precision floating point data types used by SKCMS on ARM.
-  if (is_linux && !is_clang && current_cpu == "arm") {
+  if ((is_linux || is_chromeos) && !is_clang && current_cpu == "arm") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
@@ -251,6 +249,8 @@ component("skia") {
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/image_operations.h",
+    "ext/legacy_display_globals.cc",
+    "ext/legacy_display_globals.h",
     "ext/opacity_filter_canvas.cc",
     "ext/opacity_filter_canvas.h",
     "ext/recursive_gaussian_convolution.cc",
@@ -263,21 +263,36 @@ component("skia") {
     "ext/skia_trace_memory_dump_impl.h",
     "ext/skia_utils_base.cc",
     "ext/skia_utils_base.h",
-    "ext/skia_utils_ios.h",
-    "ext/skia_utils_ios.mm",
-    "ext/skia_utils_mac.h",
-    "ext/skia_utils_mac.mm",
-    "ext/skia_utils_win.cc",
-    "ext/skia_utils_win.h",
   ]
-
-  if (!is_mac && !is_ios) {
+  if (!is_apple) {
     sources += [
       "ext/fontmgr_default.cc",
       "ext/fontmgr_default.h",
-      "ext/fontmgr_default_android.cc",
-      "ext/fontmgr_default_linux.cc",
+    ]
+  }
+  if (is_android) {
+    sources += [ "ext/fontmgr_default_android.cc" ]
+  }
+  if (is_linux || is_chromeos) {
+    sources += [ "ext/fontmgr_default_linux.cc" ]
+  }
+  if (is_ios) {
+    sources += [
+      "ext/skia_utils_ios.h",
+      "ext/skia_utils_ios.mm",
+    ]
+  }
+  if (is_mac) {
+    sources += [
+      "ext/skia_utils_mac.h",
+      "ext/skia_utils_mac.mm",
+    ]
+  }
+  if (is_win) {
+    sources += [
       "ext/fontmgr_default_win.cc",
+      "ext/skia_utils_win.cc",
+      "ext/skia_utils_win.h",
     ]
   }
 
@@ -312,6 +327,15 @@ component("skia") {
       "ext/raster_handle_allocator_win.cc",
     ]
   }
+
+  # The *_public variables should be added to 'public' not 'sources'.
+  # However, Skia does not export enough *_public variables to make Chromium
+  # 'gn check' clean. Until that can be done add the *_public variables to
+  # 'sources' so that the buildbot 'analyze' step is aware of their existence.
+  sources += skia_core_public
+  sources += skia_utils_public
+  sources += skia_effects_public
+  sources += skia_effects_imagefilter_public
 
   # The imported Skia gni source paths are made absolute by gn.
   defines = skia_core_defines
@@ -430,16 +454,19 @@ component("skia") {
     ]
   }
 
-  if (is_mac || is_ios) {
-    set_sources_assignment_filter([])
+  if (is_apple) {
     sources += [
-      "//third_party/skia/src/ports/SkFontHost_mac.cpp",
-      "//third_party/skia/src/utils/mac/SkStream_mac.cpp",
+      "//third_party/skia/include/ports/SkFontMgr_mac_ct.h",
+      "//third_party/skia/src/ports/SkFontMgr_mac_ct.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_mac_ct_factory.cpp",
+      "//third_party/skia/src/ports/SkScalerContext_mac_ct.cpp",
+      "//third_party/skia/src/ports/SkScalerContext_mac_ct.h",
+      "//third_party/skia/src/ports/SkTypeface_mac_ct.cpp",
+      "//third_party/skia/src/ports/SkTypeface_mac_ct.h",
     ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "//third_party/skia/src/ports/SkFontConfigInterface.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
@@ -448,7 +475,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     sources += [
       # Retain the files for the SkFontMgr_Android on linux to emulate android
       # fonts. See content/zygote/zygote_main_linux.cc
@@ -526,7 +553,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//third_party/expat",
       "//third_party/fontconfig",
@@ -549,7 +576,7 @@ component("skia") {
   if (is_mac) {
     deps += [ ":skia_metal" ]
     defines += [ "SK_METAL" ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
@@ -562,10 +589,7 @@ component("skia") {
     sources += skia_dawn_sources
   }
   if (is_ios) {
-    libs = [ "ImageIO.framework" ]
-    set_sources_assignment_filter([])
-    sources += [ "//third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp" ]
-    set_sources_assignment_filter(sources_assignment_filter)
+    frameworks = [ "ImageIO.framework" ]
   }
 
   if (is_fuchsia) {
@@ -731,6 +755,16 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
     visibility = [ ":skia_opts" ]
   }
+  skia_source_set("skia_opts_skx") {
+    sources = skia_opts.skx_sources
+    if (!is_win) {
+      cflags = [ "-march=skylake-avx512" ]
+    }
+    if (is_win) {
+      cflags = [ "/arch:AVX512" ]
+    }
+    visibility = [ ":skia_opts" ]
+  }
 }
 
 skia_source_set("skia_opts") {
@@ -744,6 +778,7 @@ skia_source_set("skia_opts") {
     deps += [
       ":skia_opts_avx",
       ":skia_opts_hsw",
+      ":skia_opts_skx",
       ":skia_opts_sse3",
       ":skia_opts_sse41",
       ":skia_opts_sse42",
@@ -818,7 +853,7 @@ if (is_fuchsia) {
     outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
   }
 }
-if (is_mac || is_ios) {
+if (is_apple) {
   bundle_data("test_fonts_bundle_data") {
     public_deps = [ "//third_party/test_fonts" ]
 
@@ -835,7 +870,7 @@ group("test_fonts_resources") {
   deps = []
   data_deps = []
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ ":test_fonts_bundle_data" ]
     data_deps += [ ":test_fonts_bundle_data" ]
   } else {
@@ -883,9 +918,13 @@ test("skia_unittests") {
     "ext/platform_canvas_unittest.cc",
     "ext/recursive_gaussian_convolution_unittest.cc",
     "ext/skia_memory_dump_provider_unittest.cc",
-    "ext/skia_utils_ios_unittest.mm",
-    "ext/skia_utils_mac_unittest.mm",
   ]
+  if (is_ios) {
+    sources += [ "ext/skia_utils_ios_unittest.mm" ]
+  }
+  if (is_mac) {
+    sources += [ "ext/skia_utils_mac_unittest.mm" ]
+  }
 
   if (!is_win) {
     sources -= [ "ext/platform_canvas_unittest.cc" ]
@@ -905,10 +944,9 @@ test("skia_unittests") {
   if (!is_ios) {
     sources += [ "public/mojom/test/mojom_traits_unittest.cc" ]
     deps += [
-      # TODO: Fix this test to not depend on cc.
-      "//cc:test_support",
       "//mojo/public/cpp/bindings",
-      "//skia/public/mojom:test_interfaces",
+      "//mojo/public/cpp/test_support:test_utils",
+      "//skia/public/mojom",
     ]
   }
 
@@ -952,4 +990,17 @@ if (!is_ios) {
 
 group("fuzzers") {
   deps = [ "//skia/tools/fuzzers" ]
+}
+
+grit("skia_resources") {
+  source = "skia_resources.grd"
+
+  outputs = [
+    "grit/skia_resources.h",
+    "grit/skia_resources_map.cc",
+    "grit/skia_resources_map.h",
+    "skia_resources.pak",
+  ]
+
+  deps = [ "public/mojom:mojom_js" ]
 }

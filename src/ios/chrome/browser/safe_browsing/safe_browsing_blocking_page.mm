@@ -8,11 +8,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
 #include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/safe_browsing/unsafe_resource_util.h"
 #include "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
 #import "ios/web/public/web_state.h"
@@ -48,6 +51,10 @@ std::unique_ptr<IOSBlockingPageMetricsHelper> CreateMetricsHelper(
 // Returns the default safe browsing error display options.
 BaseSafeBrowsingErrorUI::SBErrorDisplayOptions GetDefaultDisplayOptions(
     const UnsafeResource& resource) {
+  web::WebState* web_state = resource.web_state_getter.Run();
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  PrefService* prefs = browser_state->GetPrefs();
   return BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
       resource.IsMainPageLoadBlocked(),
       /*is_extended_reporting_opt_in_allowed=*/false,
@@ -55,9 +62,11 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions GetDefaultDisplayOptions(
       /*is_extended_reporting=*/false,
       /*is_sber_policy_managed=*/false,
       /*is_enhanced_protection_enabled=*/false,
-      /*is_proceed_anyway_disabled=*/false,
+      prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled),
       /*should_open_links_in_new_tab=*/false,
-      /*always_show_back_to_safety=*/true, "cpn_safe_browsing");
+      /*always_show_back_to_safety=*/true,
+      /*is_enhanced_protection_message_enabled=*/false,
+      /*is_safe_browsing_managed=*/false, "cpn_safe_browsing");
 }
 }  // namespace
 
@@ -136,6 +145,11 @@ void SafeBrowsingBlockingPage::HandleScriptCommand(
   }
 
   error_ui_->HandleCommand(static_cast<SecurityInterstitialCommand>(command));
+  if (command == security_interstitials::CMD_DONT_PROCEED) {
+    // |error_ui_| handles recording PROCEED decisions.
+    client_->metrics_helper()->RecordUserDecision(
+        security_interstitials::MetricsHelper::DONT_PROCEED);
+  }
 }
 
 bool SafeBrowsingBlockingPage::ShouldCreateNewNavigation() const {
@@ -144,7 +158,6 @@ bool SafeBrowsingBlockingPage::ShouldCreateNewNavigation() const {
 
 void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) const {
-  load_time_data->SetBoolean("committed_interstitials_enabled", true);
   load_time_data->SetString("url_to_reload", request_url().spec());
   error_ui_->PopulateStringsForHtml(load_time_data);
 }
@@ -159,7 +172,7 @@ SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
           resource.web_state_getter.Run(),
           CreateMetricsHelper(resource),
           GetApplicationContext()->GetApplicationLocale()),
-      url_(resource.url),
+      url_(SafeBrowsingUrlAllowList::GetDecisionUrl(resource)),
       threat_type_(resource.threat_type) {}
 
 SafeBrowsingBlockingPage::SafeBrowsingControllerClient::

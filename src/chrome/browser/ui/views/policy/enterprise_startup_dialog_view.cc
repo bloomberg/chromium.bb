@@ -31,8 +31,8 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/grid_layout.h"
 
-#if defined(OS_MACOSX)
-#include "base/message_loop/message_loop_current.h"
+#if defined(OS_MAC)
+#include "base/task/current_thread.h"
 #include "chrome/browser/ui/views/policy/enterprise_startup_dialog_mac_util.h"
 #endif
 
@@ -59,7 +59,7 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
   text->SetFontList(gfx::FontList().Derive(kFontSizeDelta, gfx::Font::NORMAL,
                                            gfx::Font::Weight::MEDIUM));
   text->SetEnabledColor(
-      views::style::GetColor(*text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+      views::style::GetColor(*text, views::style::CONTEXT_DIALOG_BODY_TEXT,
                              views::style::STYLE_PRIMARY));
   text->SetLineHeight(kLineHeight);
   return text;
@@ -75,7 +75,7 @@ std::unique_ptr<views::View> CreateLogoView() {
                              ? IDR_PRODUCT_LOGO_ENTERPRISE_WHITE
                              : IDR_PRODUCT_LOGO_ENTERPRISE)
           .AsImageSkia());
-  logo_image->set_tooltip_text(
+  logo_image->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT));
   gfx::Rect logo_bounds = logo_image->GetImageBounds();
   logo_image->SetImageSize(gfx::Size(
@@ -106,7 +106,7 @@ EnterpriseStartupDialogView::EnterpriseStartupDialogView(
                      base::Unretained(this), false));
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&EnterpriseStartupDialogView::StartModalDialog,
                                 weak_factory_.GetWeakPtr()));
@@ -163,14 +163,14 @@ void EnterpriseStartupDialogView::RemoveWidgetObserver(
 }
 
 void EnterpriseStartupDialogView::StartModalDialog() {
-#if defined(OS_MACOSX)
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
+#if defined(OS_MAC)
+  base::CurrentThread::ScopedNestableTaskAllower allow_nested;
   StartModal(GetWidget()->GetNativeWindow());
 #endif
 }
 
 void EnterpriseStartupDialogView::RunDialogCallback(bool was_accepted) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On mac, we need to stop the modal message loop before returning the result
   // to the caller who controls its own run loop.
   StopModal();
@@ -252,6 +252,7 @@ EnterpriseStartupDialogImpl::~EnterpriseStartupDialogImpl() {
     dialog_view_->RemoveWidgetObserver(this);
     dialog_view_->CloseDialog();
   }
+  CHECK(!IsInObserverList());
 }
 
 void EnterpriseStartupDialogImpl::DisplayLaunchingInformationWithThrobber(

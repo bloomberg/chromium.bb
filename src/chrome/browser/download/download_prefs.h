@@ -28,7 +28,7 @@ class DownloadItem;
 }
 
 namespace policy {
-class URLBlacklist;
+class URLBlocklist;
 }
 
 namespace user_prefs {
@@ -86,6 +86,13 @@ class DownloadPrefs {
   // to choose another download location).
   bool PromptForDownload() const;
 
+  // Returns whether to prompt download later dialog to let the user choose
+  // download time.
+  bool PromptDownloadLater() const;
+
+  // Returns whether the download later prompt is ever shown to the user.
+  bool HasDownloadLaterPromptShown() const;
+
   // Returns true if the download path preference is managed.
   bool IsDownloadPathManaged() const;
 
@@ -110,7 +117,8 @@ class DownloadPrefs {
   // Disables auto-open based on file extension.
   void DisableAutoOpenByUserBasedOnExtension(const base::FilePath& file_name);
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   // Store the user preference to disk. If |should_open| is true, also disable
   // the built-in PDF plugin. If |should_open| is false, enable the PDF plugin.
   void SetShouldOpenPdfInSystemReader(bool should_open);
@@ -142,6 +150,7 @@ class DownloadPrefs {
   BooleanPrefMember prompt_for_download_;
 #if defined(OS_ANDROID)
   IntegerPrefMember prompt_for_download_android_;
+  IntegerPrefMember prompt_for_download_later_;
 #endif
 
   FilePathPrefMember download_path_;
@@ -165,9 +174,10 @@ class DownloadPrefs {
   AutoOpenSet auto_open_by_user_;
   AutoOpenSet auto_open_by_policy_;
 
-  std::unique_ptr<policy::URLBlacklist> auto_open_allowed_by_urls_;
+  std::unique_ptr<policy::URLBlocklist> auto_open_allowed_by_urls_;
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
   bool should_open_pdf_in_system_reader_;
 #endif
 

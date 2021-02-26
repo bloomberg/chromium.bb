@@ -21,7 +21,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_function_histogram_value.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -43,7 +43,6 @@ class WebContents;
 
 namespace extensions {
 class ExtensionFunctionDispatcher;
-class QuotaLimitHeuristic;
 }
 
 #ifdef NDEBUG
@@ -74,13 +73,21 @@ class QuotaLimitHeuristic;
 // supply a unique |histogramvalue| used for histograms of extension function
 // invocation (add new ones at the end of the enum in
 // extension_function_histogram_value.h).
-#define DECLARE_EXTENSION_FUNCTION(name, histogramvalue)                     \
- public:                                                                     \
-  static constexpr const char* function_name() { return name; }              \
-                                                                             \
- public:                                                                     \
-  static constexpr extensions::functions::HistogramValue histogram_value() { \
-    return extensions::functions::histogramvalue;                            \
+// TODO(devlin): This would be nicer if instead we defined the constructor
+// for the ExtensionFunction since the histogram value and name should never
+// change. Then, we could get rid of the set_ methods for those values on
+// ExtensionFunction, and there'd be no possibility of having them be
+// "wrong" for a given function. Unfortunately, that would require updating
+// each ExtensionFunction and construction site, which, while possible, is
+// quite costly.
+#define DECLARE_EXTENSION_FUNCTION(name, histogramvalue)               \
+ public:                                                               \
+  static constexpr const char* static_function_name() { return name; } \
+                                                                       \
+ public:                                                               \
+  static constexpr extensions::functions::HistogramValue               \
+  static_histogram_value() {                                           \
+    return extensions::functions::histogramvalue;                      \
   }
 
 // Abstract base class for extension functions the ExtensionFunctionDispatcher
@@ -127,8 +134,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
     virtual bool Apply() = 0;
 
    protected:
-    void SetFunctionResults(ExtensionFunction* function,
-                            std::unique_ptr<base::ListValue> results);
+    void SetFunctionResults(ExtensionFunction* function, base::Value results);
     void SetFunctionError(ExtensionFunction* function, std::string error);
   };
   typedef std::unique_ptr<ResponseValueObject> ResponseValue;
@@ -350,18 +356,21 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // Same as above, but global. Yuck. Do not add any more uses of this.
   static bool ignore_all_did_respond_for_testing_do_not_use;
 
+  // Called when the service worker in the renderer ACKS the function's
+  // response.
+  virtual void OnServiceWorkerAck();
+
  protected:
   // ResponseValues.
   //
   // Success, no arguments to pass to caller.
   ResponseValue NoArguments();
   // Success, a single argument |arg| to pass to caller.
-  ResponseValue OneArgument(std::unique_ptr<base::Value> arg);
+  ResponseValue OneArgument(base::Value arg);
   // Success, two arguments |arg1| and |arg2| to pass to caller.
   // Note that use of this function may imply you
   // should be using the generated Result struct and ArgumentList.
-  ResponseValue TwoArguments(std::unique_ptr<base::Value> arg1,
-                             std::unique_ptr<base::Value> arg2);
+  ResponseValue TwoArguments(base::Value arg1, base::Value arg2);
   // Success, a list of arguments |results| to pass to caller.
   // - a std::unique_ptr<> for convenience, since callers usually get this from
   //   the result of a Create(...) call on the generated Results struct. For
@@ -436,6 +445,10 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // More specifically: call this iff Run() has already executed, it returned
   // RespondLater(), and Respond(...) hasn't already been called.
   void Respond(ResponseValue result);
+
+  // Adds this instance to the set of targets waiting for an ACK from the
+  // renderer.
+  void AddWorkerResponseTarget();
 
   virtual ~ExtensionFunction();
 

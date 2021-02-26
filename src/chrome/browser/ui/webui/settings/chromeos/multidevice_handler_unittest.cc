@@ -7,9 +7,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/android_sms/fake_android_sms_app_manager.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/phonehub/fake_notification_access_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -28,11 +31,13 @@ class TestMultideviceHandler : public MultideviceHandler {
   TestMultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      phonehub::NotificationAccessManager* notification_access_manager,
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
       android_sms::AndroidSmsAppManager* android_sms_app_manager)
       : MultideviceHandler(prefs,
                            multidevice_setup_client,
+                           notification_access_manager,
                            android_sms_pairing_state_tracker,
                            android_sms_app_manager) {}
   ~TestMultideviceHandler() override = default;
@@ -53,6 +58,14 @@ GenerateDefaultFeatureStatesMap() {
       {multidevice_setup::mojom::Feature::kMessages,
        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
       {multidevice_setup::mojom::Feature::kSmartLock,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHub,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHubNotifications,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation,
+       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {multidevice_setup::mojom::Feature::kWifiSync,
        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost}};
 }
 
@@ -94,6 +107,30 @@ void VerifyPageContentDict(
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
   EXPECT_EQ(static_cast<int>(it->second), smart_lock_state);
 
+  int phone_hub_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("phoneHubState", &phone_hub_state));
+  it = feature_states_map.find(multidevice_setup::mojom::Feature::kPhoneHub);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_state);
+
+  int phone_hub_notifications_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("phoneHubNotificationsState",
+                                            &phone_hub_notifications_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kPhoneHubNotifications);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_notifications_state);
+
+  int phone_hub_task_continuation_state;
+  EXPECT_TRUE(page_content_dict->GetInteger(
+      "phoneHubTaskContinuationState", &phone_hub_task_continuation_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation);
+  EXPECT_EQ(static_cast<int>(it->second), phone_hub_task_continuation_state);
+
+  int wifi_sync_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("wifiSyncState", &wifi_sync_state));
+  it = feature_states_map.find(multidevice_setup::mojom::Feature::kWifiSync);
+  EXPECT_EQ(static_cast<int>(it->second), wifi_sync_state);
+
   std::string host_device_name;
   if (expected_host_device) {
     EXPECT_TRUE(
@@ -119,6 +156,10 @@ class MultideviceHandlerTest : public testing::Test {
 
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_notification_access_manager_ =
+        std::make_unique<phonehub::FakeNotificationAccessManager>(
+            phonehub::NotificationAccessManager::AccessStatus::
+                kAvailableButNotGranted);
     fake_android_sms_pairing_state_tracker_ = std::make_unique<
         multidevice_setup::FakeAndroidSmsPairingStateTracker>();
     fake_android_sms_app_manager_ =
@@ -128,11 +169,14 @@ class MultideviceHandlerTest : public testing::Test {
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
+        fake_notification_access_manager_.get(),
         fake_android_sms_pairing_state_tracker_.get(),
         fake_android_sms_app_manager_.get());
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascript();
+
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kPhoneHub}, {});
   }
 
   void CallGetPageContentData() {
@@ -181,6 +225,23 @@ class MultideviceHandlerTest : public testing::Test {
         call_data.arg3()->FindKey("origin")->GetString());
     EXPECT_EQ(expected_enabled,
               call_data.arg3()->FindKey("enabled")->GetBool());
+  }
+
+  void CallAttemptNotificationSetup(bool has_access_been_granted) {
+    fake_notification_access_manager()->SetAccessStatusInternal(
+        has_access_been_granted
+            ? phonehub::NotificationAccessManager::AccessStatus::kAccessGranted
+            : phonehub::NotificationAccessManager::AccessStatus::
+                  kAvailableButNotGranted);
+    base::ListValue empty_args;
+    test_web_ui()->HandleReceivedMessage("attemptNotificationSetup",
+                                         &empty_args);
+  }
+
+  void CallCancelNotificationSetup() {
+    base::ListValue empty_args;
+    test_web_ui()->HandleReceivedMessage("cancelNotificationSetup",
+                                         &empty_args);
   }
 
   void SimulateHostStatusUpdate(
@@ -291,6 +352,37 @@ class MultideviceHandlerTest : public testing::Test {
     return fake_android_sms_app_manager_.get();
   }
 
+  phonehub::FakeNotificationAccessManager* fake_notification_access_manager() {
+    return fake_notification_access_manager_.get();
+  }
+
+  void SimulateNotificationOptInStatusChange(
+      phonehub::NotificationAccessSetupOperation::Status status) {
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    fake_notification_access_manager()->SetNotificationSetupOperationStatus(
+        status);
+
+    bool completed_successfully = status ==
+                                  phonehub::NotificationAccessSetupOperation::
+                                      Status::kCompletedSuccessfully;
+    if (completed_successfully)
+      call_data_count_before_call++;
+
+    EXPECT_EQ(call_data_count_before_call + 1u,
+              test_web_ui()->call_data().size());
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+    EXPECT_EQ("settings.onNotificationAccessSetupStatusChanged",
+              call_data.arg1()->GetString());
+    EXPECT_EQ(call_data.arg2()->GetInt(), static_cast<int32_t>(status));
+  }
+
+  bool IsNotificationAccessSetupOperationInProgress() {
+    return fake_notification_access_manager()->IsSetupOperationInProgress();
+  }
+
   const multidevice::RemoteDeviceRef test_device_;
 
  private:
@@ -305,6 +397,8 @@ class MultideviceHandlerTest : public testing::Test {
   std::unique_ptr<content::TestWebUI> test_web_ui_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
+  std::unique_ptr<phonehub::FakeNotificationAccessManager>
+      fake_notification_access_manager_;
   std::unique_ptr<multidevice_setup::FakeAndroidSmsPairingStateTracker>
       fake_android_sms_pairing_state_tracker_;
 
@@ -317,8 +411,59 @@ class MultideviceHandlerTest : public testing::Test {
 
   std::unique_ptr<TestMultideviceHandler> handler_;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);
 };
+
+TEST_F(MultideviceHandlerTest, NotificationSetupFlow) {
+  using Status = phonehub::NotificationAccessSetupOperation::Status;
+
+  // Simulate success flow.
+  CallAttemptNotificationSetup(/*has_access_been_granted=*/false);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kConnecting);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(
+      Status::kSentMessageToPhoneAndWaitingForResponse);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kCompletedSuccessfully);
+  EXPECT_FALSE(IsNotificationAccessSetupOperationInProgress());
+
+  // Simulate cancel flow.
+  CallAttemptNotificationSetup(/*has_access_been_granted=*/false);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  CallCancelNotificationSetup();
+  EXPECT_FALSE(IsNotificationAccessSetupOperationInProgress());
+
+  // Simulate failure via time-out flow.
+  CallAttemptNotificationSetup(/*has_access_been_granted=*/false);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kConnecting);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kTimedOutConnecting);
+  EXPECT_FALSE(IsNotificationAccessSetupOperationInProgress());
+
+  // Simulate failure via connected then disconnected flow.
+  CallAttemptNotificationSetup(/*has_access_been_granted=*/false);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kConnecting);
+  EXPECT_TRUE(IsNotificationAccessSetupOperationInProgress());
+
+  SimulateNotificationOptInStatusChange(Status::kConnectionDisconnected);
+  EXPECT_FALSE(IsNotificationAccessSetupOperationInProgress());
+
+  // If access has already been granted, a setup operation should not occur.
+  CallAttemptNotificationSetup(/*has_access_been_granted=*/true);
+  EXPECT_FALSE(IsNotificationAccessSetupOperationInProgress());
+}
 
 TEST_F(MultideviceHandlerTest, PageContentData) {
   CallGetPageContentData();

@@ -14,8 +14,9 @@ namespace openscreen {
 
 ScopedWakeLockMac::LockState ScopedWakeLockMac::lock_state_{};
 
-std::unique_ptr<ScopedWakeLock> ScopedWakeLock::Create() {
-  return std::make_unique<ScopedWakeLockMac>();
+SerialDeletePtr<ScopedWakeLock> ScopedWakeLock::Create(
+    TaskRunner* task_runner) {
+  return SerialDeletePtr<ScopedWakeLock>(task_runner, new ScopedWakeLockMac());
 }
 
 namespace {
@@ -31,10 +32,11 @@ TaskRunner* GetTaskRunner() {
 }  // namespace
 
 ScopedWakeLockMac::ScopedWakeLockMac() : ScopedWakeLock() {
-  OSP_DCHECK(GetTaskRunner()->IsRunningOnTaskRunner());
-  if (lock_state_.reference_count++ == 0) {
-    AcquireWakeLock();
-  }
+  GetTaskRunner()->PostTask([] {
+    if (lock_state_.reference_count++ == 0) {
+      AcquireWakeLock();
+    }
+  });
 }
 
 ScopedWakeLockMac::~ScopedWakeLockMac() {

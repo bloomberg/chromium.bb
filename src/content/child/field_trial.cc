@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/embedder/descriptors.h"
 
 namespace content {
 
@@ -34,15 +34,14 @@ void InitializeFieldTrialAndFeatureList() {
 
 // Ensure any field trials in browser are reflected into the child
 // process.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   base::FieldTrialList::CreateTrialsFromCommandLine(
       command_line, switches::kFieldTrialHandle, -1);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On POSIX systems that use the zygote, we get the trials from a shared
   // memory segment backed by an fd instead of the command line.
   base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle,
-      service_manager::kFieldTrialDescriptor);
+      command_line, switches::kFieldTrialHandle, kFieldTrialDescriptor);
 #endif
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);

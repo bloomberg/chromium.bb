@@ -34,6 +34,11 @@ _INCLUDE_ORDER_WARNING = (
     'cppguide.html#Names_and_Order_of_Includes')
 
 
+# Bypass the AUTHORS check for these accounts.
+_KNOWN_ROBOTS = set() | set(
+    '%s@skia-public.iam.gserviceaccount.com' % s for s in ('pdfium-autoroll',))
+
+
 def _CheckUnwantedDependencies(input_api, output_api):
   """Runs checkdeps on #include statements added in this
   change. Breaking - rules is an error, breaking ! rules is a
@@ -246,12 +251,8 @@ def _CheckIncludeOrder(input_api, output_api):
   Each region separated by #if, #elif, #else, #endif, #define and #undef follows
   these rules separately.
   """
-  def FileFilterIncludeOrder(affected_file):
-    black_list = (input_api.DEFAULT_BLACK_LIST)
-    return input_api.FilterSourceFile(affected_file, black_list=black_list)
-
   warnings = []
-  for f in input_api.AffectedFiles(file_filter=FileFilterIncludeOrder):
+  for f in input_api.AffectedFiles(file_filter=input_api.FilterSourceFile):
     if f.LocalPath().endswith(('.cc', '.cpp', '.h', '.mm')):
       changed_linenums = set(line_num for line_num, _ in f.ChangedContents())
       warnings.extend(_CheckIncludeOrderInFile(input_api, f, changed_linenums))
@@ -261,6 +262,7 @@ def _CheckIncludeOrder(input_api, output_api):
     results.append(output_api.PresubmitPromptOrNotify(_INCLUDE_ORDER_WARNING,
                                                       warnings))
   return results
+
 
 def _CheckTestDuplicates(input_api, output_api):
   """Checks that pixel and javascript tests don't contain duplicates.
@@ -309,16 +311,24 @@ def _CheckPNGFormat(input_api, output_api):
 
 def CheckChangeOnUpload(input_api, output_api):
   cpp_source_filter = lambda x: input_api.FilterSourceFile(
-      x, white_list=(r'\.(?:c|cc|cpp|h)$',))
+      x, files_to_check=(r'\.(?:c|cc|cpp|h)$',))
 
   results = []
-  results += _CheckUnwantedDependencies(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
-  results += input_api.canned_checks.CheckChangeLintsClean(
-      input_api, output_api, cpp_source_filter, LINT_FILTERS)
-  results += _CheckIncludeOrder(input_api, output_api)
-  results += _CheckTestDuplicates(input_api, output_api)
-  results += _CheckPNGFormat(input_api, output_api)
+  results.extend(_CheckUnwantedDependencies(input_api, output_api))
+  results.extend(
+      input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
+  results.extend(
+      input_api.canned_checks.CheckChangeLintsClean(input_api, output_api,
+                                                    cpp_source_filter,
+                                                    LINT_FILTERS))
+  results.extend(_CheckIncludeOrder(input_api, output_api))
+  results.extend(_CheckTestDuplicates(input_api, output_api))
+  results.extend(_CheckPNGFormat(input_api, output_api))
+
+  author = input_api.change.author_email
+  if author and author not in _KNOWN_ROBOTS:
+    results.extend(
+        input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
@@ -334,6 +344,6 @@ def CheckChangeOnUpload(input_api, output_api):
                 input_api,
                 output_api,
                 full_path,
-                whitelist=[r'^PRESUBMIT_test\.py$']))
+                files_to_check=[r'^PRESUBMIT_test\.py$']))
 
   return results

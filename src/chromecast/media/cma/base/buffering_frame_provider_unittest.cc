@@ -13,10 +13,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -102,14 +102,13 @@ void BufferingFrameProviderTest::Configure(
 }
 
 void BufferingFrameProviderTest::Start() {
-  frame_consumer_->Start(
-      base::Bind(&BufferingFrameProviderTest::OnTestCompleted,
-                 base::Unretained(this)));
+  frame_consumer_->Start(base::BindOnce(
+      &BufferingFrameProviderTest::OnTestCompleted, base::Unretained(this)));
 }
 
 void BufferingFrameProviderTest::OnTestTimeout() {
   ADD_FAILURE() << "Test timed out";
-  if (base::MessageLoopCurrent::Get())
+  if (base::CurrentThread::Get())
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 

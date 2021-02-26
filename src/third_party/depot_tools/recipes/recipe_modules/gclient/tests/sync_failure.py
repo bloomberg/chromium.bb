@@ -4,10 +4,14 @@
 
 from recipe_engine import post_process
 
-DEPS = ['gclient']
+DEPS = [
+  'recipe_engine/path',
+
+  'gclient',
+]
 
 def RunSteps(api):
-  src_cfg = api.gclient.make_config(CACHE_DIR='[ROOT]/git_cache')
+  src_cfg = api.gclient.make_config(CACHE_DIR=api.path['cache'].join('git'))
   api.gclient.sync(src_cfg)
 
 def GenTests(api):

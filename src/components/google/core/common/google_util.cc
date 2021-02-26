@@ -20,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/branding_buildflags.h"
 #include "components/google/core/common/google_switches.h"
 #include "components/google/core/common/google_tld_list.h"
 #include "components/url_formatter/url_fixer.h"
@@ -28,24 +27,11 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
-// Only use Link Doctor on official builds.  It uses an API key, too, but
-// seems best to just disable it, for more responsive error pages and to reduce
-// server load.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define LINKDOCTOR_SERVER_REQUEST_URL "https://www.googleapis.com/rpc"
-#else
-#define LINKDOCTOR_SERVER_REQUEST_URL ""
-#endif
-
 namespace google_util {
 
 // Helpers --------------------------------------------------------------------
 
 namespace {
-
-bool gUseMockLinkDoctorBaseURLForTesting = false;
-
-bool g_ignore_port_numbers = false;
 
 bool IsPathHomePageBase(base::StringPiece path) {
   return (path == "/") || (path == "/webhp");
@@ -53,7 +39,7 @@ bool IsPathHomePageBase(base::StringPiece path) {
 
 // Removes a single trailing dot if present in |host|.
 void StripTrailingDot(base::StringPiece* host) {
-  if (host->ends_with("."))
+  if (base::EndsWith(*host, "."))
     host->remove_suffix(1);
 }
 
@@ -104,6 +90,9 @@ bool IsValidHostName(base::StringPiece host,
 // is DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
 // port for its scheme (80 for HTTP, 443 for HTTPS).
 bool IsValidURL(const GURL& url, PortPermission port_permission) {
+  static bool g_ignore_port_numbers =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreGooglePortNumbers);
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
          (url.port().empty() || g_ignore_port_numbers ||
           (port_permission == ALLOW_NON_STANDARD_PORTS));
@@ -161,16 +150,6 @@ bool HasGoogleSearchQueryParam(base::StringPiece str) {
       return true;
   }
   return false;
-}
-
-GURL LinkDoctorBaseURL() {
-  if (gUseMockLinkDoctorBaseURLForTesting)
-    return GURL("http://mock.linkdoctor.url/for?testing");
-  return GURL(LINKDOCTOR_SERVER_REQUEST_URL);
-}
-
-void SetMockLinkDoctorBaseURLForTesting() {
-  gUseMockLinkDoctorBaseURLForTesting = true;
 }
 
 std::string GetGoogleLocale(const std::string& application_locale) {
@@ -364,8 +343,42 @@ const std::vector<std::string>& GetGoogleRegistrableDomains() {
   return *kGoogleRegisterableDomains;
 }
 
-void IgnorePortNumbersForGoogleURLChecksForTesting() {
-  g_ignore_port_numbers = true;
+GURL AppendToAsyncQueryParam(const GURL& url,
+                             const std::string& key,
+                             const std::string& value) {
+  const std::string param_name = "async";
+  const std::string key_value = key + ":" + value;
+  bool replaced = false;
+  const std::string input = url.query();
+  url::Component cursor(0, input.size());
+  std::string output;
+  url::Component key_range, value_range;
+  while (url::ExtractQueryKeyValue(input.data(), &cursor, &key_range,
+                                   &value_range)) {
+    const base::StringPiece key(input.data() + key_range.begin, key_range.len);
+    std::string key_value_pair(input, key_range.begin,
+                               value_range.end() - key_range.begin);
+    if (!replaced && key == param_name) {
+      // Check |replaced| as only the first match should be replaced.
+      replaced = true;
+      key_value_pair += "," + key_value;
+    }
+    if (!output.empty()) {
+      output += "&";
+    }
+
+    output += key_value_pair;
+  }
+  if (!replaced) {
+    if (!output.empty()) {
+      output += "&";
+    }
+
+    output += (param_name + "=" + key_value);
+  }
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(output);
+  return url.ReplaceComponents(replacements);
 }
 
 }  // namespace google_util

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -21,15 +22,14 @@
 
 namespace blink {
 
-static bool NoImageSourceSpecified(const Element& element) {
-  return element.FastGetAttribute(html_names::kSrcAttr).IsEmpty();
-}
-
 static bool ElementRepresentsNothing(const Element& element) {
   const auto& html_element = To<HTMLElement>(element);
+  // We source fallback content/alternative text from more than just the 'alt'
+  // attribute, so consider the element to represent text in those cases as
+  // well.
   bool alt_is_set = !html_element.AltText().IsNull();
   bool alt_is_empty = alt_is_set && html_element.AltText().IsEmpty();
-  bool src_is_set = !NoImageSourceSpecified(element);
+  bool src_is_set = !element.getAttribute(html_names::kSrcAttr).IsEmpty();
   if (src_is_set && alt_is_empty)
     return true;
   return !src_is_set && (!alt_is_set || alt_is_empty);
@@ -152,28 +152,37 @@ void HTMLImageFallbackHelper::CustomStyleForAltText(Element& element,
   if (!fallback.HasContentElements())
     return;
 
+  // This method is called during style recalc, and it is generally not allowed
+  // to mark nodes style dirty during recalc. The code below modifies inline
+  // style in the UA shadow tree below based on the computed style for the image
+  // element. As part of that we mark elements in the shadow tree style dirty.
+  // The scope object here is to allow that and avoid DCHECK failures which
+  // would otherwise have been triggered.
+  StyleEngine::AllowMarkStyleDirtyFromRecalcScope scope(
+      element.GetDocument().GetStyleEngine());
+
   if (element.GetDocument().InQuirksMode()) {
     // Mimic the behaviour of the image host by setting symmetric dimensions if
     // only one dimension is specified.
-    if (new_style.Width().IsSpecifiedOrIntrinsic() &&
-        new_style.Height().IsAuto())
+    if (!new_style.Width().IsAuto() && new_style.Height().IsAuto())
       new_style.SetHeight(new_style.Width());
-    else if (new_style.Height().IsSpecifiedOrIntrinsic() &&
-             new_style.Width().IsAuto())
+    else if (!new_style.Height().IsAuto() && new_style.Width().IsAuto())
       new_style.SetWidth(new_style.Height());
-    if (new_style.Width().IsSpecifiedOrIntrinsic() &&
-        new_style.Height().IsSpecifiedOrIntrinsic()) {
+
+    if (!new_style.Width().IsAuto() && !new_style.Height().IsAuto())
       fallback.AlignToBaseline();
-    }
   }
 
-  bool image_has_intrinsic_dimensions =
-      new_style.Width().IsSpecifiedOrIntrinsic() &&
-      new_style.Height().IsSpecifiedOrIntrinsic();
-  bool image_has_no_alt_attribute = To<HTMLElement>(element).AltText().IsNull();
+  bool has_intrinsic_dimensions =
+      !new_style.Width().IsAuto() && !new_style.Height().IsAuto();
+  bool has_dimensions_from_ar =
+      !new_style.AspectRatio().IsAuto() &&
+      (!new_style.Width().IsAuto() || !new_style.Height().IsAuto());
+  bool has_no_alt_attribute =
+      element.getAttribute(html_names::kAltAttr).IsEmpty();
   bool treat_as_replaced =
-      image_has_intrinsic_dimensions &&
-      (element.GetDocument().InQuirksMode() || image_has_no_alt_attribute);
+      (has_intrinsic_dimensions || has_dimensions_from_ar) &&
+      (element.GetDocument().InQuirksMode() || has_no_alt_attribute);
   if (treat_as_replaced) {
     // https://html.spec.whatwg.org/C/#images-3:
     // "If the element does not represent an image, but the element already has
@@ -199,6 +208,8 @@ void HTMLImageFallbackHelper::CustomStyleForAltText(Element& element,
     if (new_style.Display() == EDisplay::kInline) {
       new_style.SetWidth(Length());
       new_style.SetHeight(Length());
+      new_style.SetAspectRatio(
+          ComputedStyleInitialValues::InitialAspectRatio());
     }
     if (ElementRepresentsNothing(element)) {
       // "If the element is an img element that represents nothing and the user

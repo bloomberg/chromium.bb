@@ -107,8 +107,8 @@ class IsolatedAppTest : public ExtensionBrowserTest {
                                     const std::string& cookie) {
     int value_size;
     std::string actual_cookie;
-    ui_test_utils::GetCookies(contents->GetURL(), contents, &value_size,
-                              &actual_cookie);
+    ui_test_utils::GetCookies(contents->GetLastCommittedURL(), contents,
+                              &value_size, &actual_cookie);
     return actual_cookie.find(cookie) != std::string::npos;
   }
 
@@ -363,11 +363,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
 }
 
 // http://crbug.com/174926
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
+#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MAC)
 #define MAYBE_SubresourceCookieIsolation DISABLED_SubresourceCookieIsolation
 #else
 #define MAYBE_SubresourceCookieIsolation SubresourceCookieIsolation
-#endif  // (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
+#endif  // (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MAC)
 
 // Tests that subresource and media requests use the app's cookie store.
 // See http://crbug.com/141172.
@@ -528,12 +528,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
                               ->GetID());
 }
 
-// This test no longer passes, since we don't properly isolate sessionStorage
-// for isolated apps. This was broken as part of the changes for storage
-// partition support for webview tags.
-// TODO(nasko): If isolated apps is no longer developed, this test should be
-// removed. http://crbug.com/159932
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, SessionStorage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));

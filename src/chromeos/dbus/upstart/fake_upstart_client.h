@@ -22,10 +22,6 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) FakeUpstartClient
   FakeUpstartClient();
   ~FakeUpstartClient() override;
 
-  // Adds or removes an observer.
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
-
   // Returns the fake global instance if initialized. May return null.
   static FakeUpstartClient* Get();
 
@@ -46,6 +42,8 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) FakeUpstartClient
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override;
   void StartWilcoDtcService(VoidDBusMethodCallback callback) override;
   void StopWilcoDtcService(VoidDBusMethodCallback callback) override;
+  void StartArcDataSnapshotd(VoidDBusMethodCallback callback) override;
+  void StopArcDataSnapshotd(VoidDBusMethodCallback callback) override;
 
   void set_start_job_cb(const StartStopJobCallback& cb) { start_job_cb_ = cb; }
   void set_stop_job_cb(const StartStopJobCallback& cb) { stop_job_cb_ = cb; }

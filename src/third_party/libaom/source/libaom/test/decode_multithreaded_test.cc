@@ -111,7 +111,7 @@ class AV1DecodeMultiThreadedTest
     cfg_.rc_end_usage = AOM_VBR;
 
     libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 704, 576,
-                                       timebase.den, timebase.num, 0, 5);
+                                       timebase.den, timebase.num, 0, 2);
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 
     const char *md5_single_thread_str = md5_single_thread_.Get();
@@ -157,14 +157,14 @@ TEST_P(AV1DecodeMultiThreadedTestLarge, MD5Match) {
 }
 
 // TODO(ranjit): More tests have to be added using pre-generated MD5.
-AV1_INSTANTIATE_TEST_CASE(AV1DecodeMultiThreadedTest, ::testing::Values(1, 2),
-                          ::testing::Values(1, 2), ::testing::Values(1),
-                          ::testing::Values(3), ::testing::Values(0, 1));
-AV1_INSTANTIATE_TEST_CASE(AV1DecodeMultiThreadedTestLarge,
-                          ::testing::Values(0, 1, 2, 6),
-                          ::testing::Values(0, 1, 2, 6),
-                          ::testing::Values(1, 4), ::testing::Values(0),
-                          ::testing::Values(0, 1));
+AV1_INSTANTIATE_TEST_SUITE(AV1DecodeMultiThreadedTest, ::testing::Values(1, 2),
+                           ::testing::Values(1, 2), ::testing::Values(1),
+                           ::testing::Values(3), ::testing::Values(0, 1));
+AV1_INSTANTIATE_TEST_SUITE(AV1DecodeMultiThreadedTestLarge,
+                           ::testing::Values(0, 1, 2, 6),
+                           ::testing::Values(0, 1, 2, 6),
+                           ::testing::Values(1, 4), ::testing::Values(0),
+                           ::testing::Values(0, 1));
 
 class AV1DecodeMultiThreadedLSTestLarge
     : public AV1DecodeMultiThreadedTestLarge {};
@@ -177,9 +177,9 @@ TEST_P(AV1DecodeMultiThreadedLSTestLarge, MD5Match) {
   DoTest();
 }
 
-AV1_INSTANTIATE_TEST_CASE(AV1DecodeMultiThreadedLSTestLarge,
-                          ::testing::Values(6), ::testing::Values(6),
-                          ::testing::Values(1), ::testing::Values(0, 3),
-                          ::testing::Values(0, 1));
+AV1_INSTANTIATE_TEST_SUITE(AV1DecodeMultiThreadedLSTestLarge,
+                           ::testing::Values(6), ::testing::Values(6),
+                           ::testing::Values(1), ::testing::Values(0, 3),
+                           ::testing::Values(0, 1));
 
 }  // namespace

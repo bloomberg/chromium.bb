@@ -13,12 +13,15 @@
 // limitations under the License.
 
 // TODO: drop the '?' but still generate wuffs_adler32__hasher__initialize?
-pub struct hasher?(
+pub struct hasher? implements base.hasher_u32(
 	state   : base.u32,
 	started : base.bool,
 )
 
-pub func hasher.update!(x: slice base.u8) base.u32 {
+pub func hasher.set_quirk_enabled!(quirk: base.u32, enabled: base.bool) {
+}
+
+pub func hasher.update_u32!(x: slice base.u8) base.u32 {
 	// The Adler-32 checksum's magic 65521 and 5552 numbers are discussed in
 	// this package's README.md.
 
@@ -51,7 +54,7 @@ pub func hasher.update!(x: slice base.u8) base.u32 {
 		s2 %= 65521
 
 		args.x = remaining
-	}
+	} endwhile
 
 	this.state = ((s2 & 0xFFFF) << 16) | (s1 & 0xFFFF)
 	return this.state

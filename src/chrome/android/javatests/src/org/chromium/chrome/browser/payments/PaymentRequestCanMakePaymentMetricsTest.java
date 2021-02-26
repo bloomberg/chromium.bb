@@ -8,7 +8,7 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DECEMB
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_YEAR;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -28,8 +28,11 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.Event;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -53,16 +56,17 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Override
     public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
-                "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "310-310-6000",
-                "jon.doe@gmail.com", "en-US"));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
+                "", "90291", "", "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
     }
 
     public void addCreditCard() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "John Smith", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
+        String billingAddressId = helper.setProfile(
+                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
+                        "John Smith", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                        "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 billingAddressId, "" /* serverId */));
@@ -226,8 +230,10 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled_Complete() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefService prefs = UserPrefs.get(Profile.fromWebContents(
+                    mPaymentRequestTestRule.getActivity().getCurrentWebContents()));
+            prefs.setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
 
         // Install the app so CanMakePayment returns true if it is enabled.

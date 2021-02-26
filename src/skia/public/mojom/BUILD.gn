@@ -23,6 +23,7 @@ component("shared_typemap_traits") {
     "//base",
     "//mojo/public/cpp/base:shared_typemap_traits",
     "//skia",
+    "//skia:skcms",
     "//skia/public/mojom:mojom_shared",
   ]
 }
@@ -37,11 +38,76 @@ mojom("mojom") {
   ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
-}
 
-mojom("test_interfaces") {
-  testonly = true
-  sources = [ "test/traits_test_service.mojom" ]
+  shared_skia_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "skia.mojom.BlurTileMode"
+          cpp = "::SkBlurImageFilter::TileMode"
+        },
+      ]
+      traits_headers = [ "blur_image_filter_tile_mode_mojom_traits.h" ]
+      traits_public_deps = [ "//skia" ]
+    },
+    {
+      types = [
+        {
+          mojom = "skia.mojom.Bitmap"
+          cpp = "::SkBitmap"
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "skia.mojom.UnsafeBitmap"
+          cpp = "::SkBitmap"
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "skia.mojom.InlineBitmap"
+          cpp = "::SkBitmap"
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "bitmap_skbitmap_mojom_traits.h" ]
+      traits_public_deps = [
+        ":shared_typemap_traits",
+        "//skia",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "skia.mojom.SkColor"
+          cpp = "::SkColor"
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_headers = [ "skcolor_mojom_traits.h" ]
+      traits_public_deps = [ "//skia" ]
+    },
+    {
+      types = [
+        {
+          mojom = "skia.mojom.AlphaType"
+          cpp = "::SkAlphaType"
+        },
+        {
+          mojom = "skia.mojom.ColorType"
+          cpp = "::SkColorType"
+        },
+        {
+          mojom = "skia.mojom.ImageInfo"
+          cpp = "::SkImageInfo"
+        },
+      ]
+      traits_headers = [ "image_info_mojom_traits.h" ]
+      traits_public_deps = [
+        ":shared_typemap_traits",
+        "//skia",
+      ]
+    },
+  ]
 
-  public_deps = [ ":mojom" ]
+  cpp_typemaps = shared_skia_cpp_typemaps
+  blink_cpp_typemaps = shared_skia_cpp_typemaps
 }

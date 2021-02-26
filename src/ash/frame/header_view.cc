@@ -6,21 +6,27 @@
 
 #include <memory>
 
-#include "ash/public/cpp/caption_buttons/caption_button_model.h"
-#include "ash/public/cpp/caption_buttons/frame_back_button.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/public/cpp/default_frame_header.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
+#include "chromeos/ui/frame/caption_buttons/frame_back_button.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/default_frame_header.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace ash {
+
+using ::chromeos::DefaultFrameHeader;
+using ::chromeos::kFrameActiveColorKey;
+using ::chromeos::kFrameInactiveColorKey;
 
 // The view used to draw the content (background and title string)
 // of the header. This is a separate view so that it can use
@@ -50,18 +56,22 @@ class HeaderView::HeaderContentView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HeaderContentView);
 };
 
-HeaderView::HeaderView(views::Widget* target_widget)
+HeaderView::HeaderView(views::Widget* target_widget,
+                       views::NonClientFrameView* frame_view)
     : target_widget_(target_widget) {
   header_content_view_ =
       AddChildView(std::make_unique<HeaderContentView>(this));
 
-  caption_button_container_ = AddChildView(
-      std::make_unique<FrameCaptionButtonContainerView>(target_widget_));
+  caption_button_container_ =
+      AddChildView(std::make_unique<chromeos::FrameCaptionButtonContainerView>(
+          target_widget_));
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
 
   aura::Window* window = target_widget->GetNativeWindow();
   frame_header_ = std::make_unique<DefaultFrameHeader>(
-      target_widget, this, caption_button_container_);
+      target_widget,
+      (frame_view ? static_cast<views::View*>(frame_view) : this),
+      caption_button_container_);
 
   UpdateBackButton();
 
@@ -291,13 +301,7 @@ void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
   if (!should_paint_ || !target_widget_)
     return;
 
-  bool paint_as_active =
-      target_widget_->non_client_view()->frame_view()->ShouldPaintAsActive();
-  frame_header_->SetPaintAsActive(paint_as_active);
-
-  FrameHeader::Mode header_mode =
-      paint_as_active ? FrameHeader::MODE_ACTIVE : FrameHeader::MODE_INACTIVE;
-  frame_header_->PaintHeader(canvas, header_mode);
+  frame_header_->PaintHeader(canvas);
 }
 
 void HeaderView::UpdateBackButton() {
@@ -306,7 +310,7 @@ void HeaderView::UpdateBackButton() {
   views::FrameCaptionButton* back_button = frame_header_->GetBackButton();
   if (has_back_button) {
     if (!back_button) {
-      back_button = new FrameBackButton();
+      back_button = new chromeos::FrameBackButton();
       AddChildView(back_button);
       frame_header_->SetBackButton(back_button);
     }
@@ -324,5 +328,8 @@ void HeaderView::UpdateCaptionButtonsVisibility() {
 
   caption_button_container_->SetVisible(should_paint_);
 }
+
+BEGIN_METADATA(HeaderView, views::View)
+END_METADATA
 
 }  // namespace ash

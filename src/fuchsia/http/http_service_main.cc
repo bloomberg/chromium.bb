@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
   // Bind the parent-supplied OutgoingDirectory-request to a directory and
   // publish the HTTP service into it.
   sys::OutgoingDirectory* outgoing_directory =
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get();
+      base::ComponentContextForProcess()->outgoing().get();
   HttpServiceImpl http_service;
   base::fuchsia::ScopedServiceBinding<::fuchsia::net::oldhttp::HttpService>
       binding(outgoing_directory, &http_service);
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   // connected to this service. The system service manager will restart the
   // service on demand as needed.
   binding.SetOnLastClientCallback(
-      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
   run_loop.Run();
 
   return 0;

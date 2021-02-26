@@ -5,8 +5,6 @@
 #import "components/password_manager/ios/js_password_manager.h"
 
 #include "base/check.h"
-#include "base/json/json_writer.h"
-#include "base/json/string_escape.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -18,27 +16,42 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::CreateBoolCallback;
+using autofill::CreateStringCallback;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
+using autofill::kNotSetRendererID;
+using base::SysNSStringToUTF8;
+
+// Converts FormRendererId to int value that can be used in Javascript methods.
+int FormRendererIdToJsParameter(FormRendererId formID) {
+  return formID ? formID.value() : kNotSetRendererID;
+}
+
+// Converts FieldRendererId to int value that can be used in Javascript methods.
+int FieldRendererIdToJsParameter(FieldRendererId fieldID) {
+  return fieldID ? fieldID.value() : kNotSetRendererID;
+}
 
 namespace password_manager {
 
-NSString* SerializeFillData(const GURL& origin,
-                            FormRendererId form_renderer_id,
-                            FieldRendererId username_element,
-                            const base::string16& username_value,
-                            FieldRendererId password_element,
-                            const base::string16& password_value) {
-  base::DictionaryValue rootDict;
-  rootDict.SetString("origin", origin.spec());
-  rootDict.SetInteger("unique_renderer_id", form_renderer_id.value());
+std::unique_ptr<base::Value> SerializeFillData(
+    const GURL& origin,
+    FormRendererId form_renderer_id,
+    FieldRendererId username_element,
+    const base::string16& username_value,
+    FieldRendererId password_element,
+    const base::string16& password_value) {
+  auto rootDict = std::make_unique<base::DictionaryValue>();
+  rootDict->SetString("origin", origin.spec());
+  rootDict->SetInteger("unique_renderer_id",
+                       FormRendererIdToJsParameter(form_renderer_id));
 
   auto fieldList = std::make_unique<base::ListValue>();
 
   auto usernameField = std::make_unique<base::DictionaryValue>();
-  usernameField->SetInteger("unique_renderer_id", username_element
-                                                      ? username_element.value()
-                                                      : kNotSetRendererID);
+  usernameField->SetInteger("unique_renderer_id",
+                            FieldRendererIdToJsParameter(username_element));
   usernameField->SetString("value", username_value);
   fieldList->Append(std::move(usernameField));
 
@@ -47,23 +60,22 @@ NSString* SerializeFillData(const GURL& origin,
   passwordField->SetString("value", password_value);
   fieldList->Append(std::move(passwordField));
 
-  rootDict.Set("fields", std::move(fieldList));
+  rootDict->Set("fields", std::move(fieldList));
 
-  std::string jsonString;
-  base::JSONWriter::Write(rootDict, &jsonString);
-  return base::SysUTF8ToNSString(jsonString);
+  return rootDict;
 }
 
-NSString* SerializePasswordFormFillData(
+std::unique_ptr<base::Value> SerializePasswordFormFillData(
     const autofill::PasswordFormFillData& formData) {
-  return SerializeFillData(formData.origin, formData.form_renderer_id,
+  return SerializeFillData(formData.url, formData.form_renderer_id,
                            formData.username_field.unique_renderer_id,
                            formData.username_field.value,
                            formData.password_field.unique_renderer_id,
                            formData.password_field.value);
 }
 
-NSString* SerializeFillData(const password_manager::FillData& fillData) {
+std::unique_ptr<base::Value> SerializeFillData(
+    const password_manager::FillData& fillData) {
   return SerializeFillData(
       fillData.origin, fillData.form_id, fillData.username_element_id,
       fillData.username_value, fillData.password_element_id,
@@ -72,88 +84,68 @@ NSString* SerializeFillData(const password_manager::FillData& fillData) {
 
 }  // namespace password_manager
 
-namespace {
-// Sanitizes |JSONString| and wraps it in quotes so it can be injected safely in
-// JavaScript.
-NSString* JSONEscape(NSString* JSONString) {
-  return base::SysUTF8ToNSString(
-      base::GetQuotedJSONString(base::SysNSStringToUTF8(JSONString)));
-}
-}  // namespace
+@implementation JsPasswordManager
 
-@implementation JsPasswordManager {
-  // The injection receiver used to evaluate JavaScript.
-  __weak CRWJSInjectionReceiver* _receiver;
-}
-
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
-  DCHECK(receiver);
-  self = [super init];
-  if (self) {
-    _receiver = receiver;
-  }
-  return self;
-}
-
-- (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(NSString*))completionHandler {
+- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
+               completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  [_receiver executeJavaScript:@"__gCrWeb.passwords.findPasswordForms()"
-             completionHandler:^(id result, NSError*) {
-               completionHandler(base::mac::ObjCCastStrict<NSString>(result));
-             }];
+  std::vector<base::Value> parameters;
+  autofill::ExecuteJavaScriptFunction("passwords.findPasswordForms", parameters,
+                                      frame,
+                                      CreateStringCallback(completionHandler));
 }
 
 - (void)extractForm:(FormRendererId)formIdentifier
+              inFrame:(web::WebFrame*)frame
     completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  NSString* extra = [NSString
-      stringWithFormat:@"__gCrWeb.passwords.getPasswordFormDataAsString(%u)",
-                       formIdentifier.value()];
-  [_receiver executeJavaScript:extra
-             completionHandler:^(id result, NSError*) {
-               completionHandler(base::mac::ObjCCastStrict<NSString>(result));
-             }];
+  std::vector<base::Value> parameters;
+  parameters.emplace_back(static_cast<int>(formIdentifier.value()));
+  autofill::ExecuteJavaScriptFunction("passwords.getPasswordFormDataAsString",
+                                      parameters, frame,
+                                      CreateStringCallback(completionHandler));
 }
 
-- (void)fillPasswordForm:(NSString*)JSONString
-            withUsername:(NSString*)username
-                password:(NSString*)password
+- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
+                 inFrame:(web::WebFrame*)frame
+            withUsername:(std::string)username
+                password:(std::string)password
        completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(completionHandler);
-  NSString* script = [NSString
-      stringWithFormat:@"__gCrWeb.passwords.fillPasswordForm(%@, %@, %@)",
-                       JSONString, JSONEscape(username), JSONEscape(password)];
-  [_receiver executeJavaScript:script
-             completionHandler:^(id result, NSError*) {
-               completionHandler([result isEqual:@YES]);
-             }];
+  std::vector<base::Value> parameters;
+  parameters.push_back(std::move(*form));
+  parameters.emplace_back(std::move(username));
+  parameters.emplace_back(std::move(password));
+  autofill::ExecuteJavaScriptFunction("passwords.fillPasswordForm", parameters,
+                                      frame,
+                                      CreateBoolCallback(completionHandler));
 }
 
 - (void)fillPasswordForm:(FormRendererId)formIdentifier
+                      inFrame:(web::WebFrame*)frame
         newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
     confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(void (^)(BOOL))completionHandler {
-  NSString* script = [NSString
-      stringWithFormat:@"__gCrWeb.passwords."
-                       @"fillPasswordFormWithGeneratedPassword(%u, %u, %u, %@)",
-                       formIdentifier.value(), newPasswordIdentifier.value(),
-                       confirmPasswordIdentifier.value(),
-                       JSONEscape(generatedPassword)];
-  [_receiver executeJavaScript:script
-             completionHandler:^(id result, NSError*) {
-               completionHandler([result isEqual:@YES]);
-             }];
+  DCHECK(completionHandler);
+  std::vector<base::Value> parameters;
+  parameters.emplace_back(FormRendererIdToJsParameter(formIdentifier));
+  parameters.emplace_back(FieldRendererIdToJsParameter(newPasswordIdentifier));
+  parameters.emplace_back(
+      FieldRendererIdToJsParameter(confirmPasswordIdentifier));
+  parameters.push_back(base::Value(SysNSStringToUTF8(generatedPassword)));
+  autofill::ExecuteJavaScriptFunction(
+      "passwords.fillPasswordFormWithGeneratedPassword", parameters, frame,
+      CreateBoolCallback(completionHandler));
 }
 
-- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID {
-  NSString* script = [NSString
-      stringWithFormat:@"__gCrWeb.fill.setUpForUniqueIDs(%d)", nextAvailableID];
-  [_receiver executeJavaScript:script
-             completionHandler:^(id result, NSError*) {
-               [result isEqual:@YES];
-             }];
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
+                                  inFrame:(web::WebFrame*)frame {
+  std::vector<base::Value> parameters;
+  parameters.emplace_back(static_cast<int>(nextAvailableID));
+  autofill::ExecuteJavaScriptFunction("fill.setUpForUniqueIDs", parameters,
+                                      frame,
+                                      autofill::JavaScriptResultCallback());
 }
 
 @end

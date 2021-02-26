@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_token_fetcher.h"
@@ -193,10 +193,10 @@ void OAuthMultiloginHelper::StartSettingCookies(
   for (const net::CanonicalCookie& cookie : cookies) {
     if (cookies_to_set_.find(std::make_pair(cookie.Name(), cookie.Domain())) !=
         cookies_to_set_.end()) {
-      base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
-          callback = base::BindOnce(&OAuthMultiloginHelper::OnCookieSet,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    cookie.Name(), cookie.Domain());
+      base::OnceCallback<void(net::CookieAccessResult)> callback =
+          base::BindOnce(&OAuthMultiloginHelper::OnCookieSet,
+                         weak_ptr_factory_.GetWeakPtr(), cookie.Name(),
+                         cookie.Domain());
       net::CookieOptions options;
       options.set_include_httponly();
       // Permit it to set a SameSite cookie if it wants to.
@@ -207,9 +207,8 @@ void OAuthMultiloginHelper::StartSettingCookies(
           options,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               std::move(callback),
-              net::CanonicalCookie::CookieInclusionStatus(
-                  net::CanonicalCookie::CookieInclusionStatus::
-                      EXCLUDE_UNKNOWN_ERROR)));
+              net::CookieAccessResult(net::CookieInclusionStatus(
+                  net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR))));
     } else {
       LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
                  << cookie.Domain();
@@ -217,12 +216,11 @@ void OAuthMultiloginHelper::StartSettingCookies(
   }
 }
 
-void OAuthMultiloginHelper::OnCookieSet(
-    const std::string& cookie_name,
-    const std::string& cookie_domain,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+void OAuthMultiloginHelper::OnCookieSet(const std::string& cookie_name,
+                                        const std::string& cookie_domain,
+                                        net::CookieAccessResult access_result) {
   cookies_to_set_.erase(std::make_pair(cookie_name, cookie_domain));
-  bool success = status.IsInclude();
+  bool success = access_result.status.IsInclude();
   if (!success) {
     LOG(ERROR) << "Failed to set cookie " << cookie_name
                << " for domain=" << cookie_domain << ".";

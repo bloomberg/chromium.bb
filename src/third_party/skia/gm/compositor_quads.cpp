@@ -199,8 +199,6 @@ static void draw_text(SkCanvas* canvas, const char* text) {
 
 class ClipTileRenderer : public SkRefCntBase {
 public:
-    virtual ~ClipTileRenderer() {}
-
     // Draw the base rect, possibly clipped by 'clip' if that is not null. The edges to antialias
     // are specified in 'edgeAA' (to make manipulation easier than an unsigned bitfield). 'tileID'
     // represents the location of rect within the tile grid, 'quadID' is the unique ID of the clip
@@ -540,7 +538,7 @@ private:
         SkASSERT(fMatrices.count() == fMatrixNames.count());
     }
 
-    typedef skiagm::GM INHERITED;
+    using INHERITED = skiagm::GM;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -610,7 +608,7 @@ private:
             : fAAOverride(aa)
             , fEnableAAOverride(enableAAOverrde) {}
 
-    typedef ClipTileRenderer INHERITED;
+    using INHERITED = ClipTileRenderer;
 };
 
 // Tests tmp_drawEdgeAAQuad
@@ -637,7 +635,7 @@ private:
 
     SolidColorRenderer(const SkColor4f& color) : fColor(color) {}
 
-    typedef ClipTileRenderer INHERITED;
+    using INHERITED = ClipTileRenderer;
 };
 
 // Tests drawEdgeAAImageSet(), but can batch the entries together in different ways
@@ -887,7 +885,7 @@ private:
         return 1;
     }
 
-    typedef ClipTileRenderer INHERITED;
+    using INHERITED = ClipTileRenderer;
 };
 
 class YUVTextureSetRenderer : public ClipTileRenderer {
@@ -899,7 +897,8 @@ public:
     int drawTiles(SkCanvas* canvas) override {
         // Refresh the SkImage at the start, so that it's not attempted for every set entry
         if (fYUVData) {
-            fImage = fYUVData->refImage(canvas->getGrContext());
+            fImage = fYUVData->refImage(canvas->recordingContext(),
+                                        sk_gpu_test::LazyYUVImage::Type::kFromPixmaps);
             if (!fImage) {
                 return 0;
             }
@@ -987,7 +986,7 @@ private:
         return 1;
     }
 
-    typedef ClipTileRenderer INHERITED;
+    using INHERITED = ClipTileRenderer;
 };
 
 static SkTArray<sk_sp<ClipTileRenderer>> make_debug_renderers() {

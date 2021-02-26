@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
@@ -37,7 +38,8 @@ import java.util.List;
 /**
  * Common logic for bookmark and folder rows.
  */
-abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements BookmarkUIObserver {
+public abstract class BookmarkRow
+        extends SelectableItemView<BookmarkId> implements BookmarkUIObserver {
     protected ListMenuButton mMoreIcon;
     protected ImageView mDragHandle;
     protected BookmarkDelegate mDelegate;
@@ -141,15 +143,24 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     private ModelList getItems() {
         // Rebuild listItems, cause mLocation may be changed anytime.
         boolean canMove = false;
+        BookmarkItem bookmarkItem = null;
         if (mDelegate != null && mDelegate.getModel() != null) {
-            BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+            bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
             if (bookmarkItem != null) canMove = bookmarkItem.isMovable();
         }
         ModelList listItems = new ModelList();
-        listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
-        listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
-        listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
-        listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
+        if (mBookmarkId.getType() == BookmarkType.READING_LIST) {
+            if (bookmarkItem != null && !bookmarkItem.isRead()) {
+                listItems.add(buildMenuListItem(R.string.reading_list_mark_as_read, 0, 0));
+            }
+            listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
+            listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
+        } else {
+            listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
+            listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
+            listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
+            listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
+        }
 
         if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
             listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
@@ -174,6 +185,9 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
             if (textId == R.string.bookmark_item_select) {
                 setChecked(mDelegate.getSelectionDelegate().toggleSelectionForItem(mBookmarkId));
                 RecordUserAction.record("Android.BookmarkPage.SelectFromMenu");
+                if (mBookmarkId.getType() == BookmarkType.READING_LIST) {
+                    RecordUserAction.record("Android.BookmarkPage.ReadingList.SelectFromMenu");
+                }
             } else if (textId == R.string.bookmark_item_edit) {
                 BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
                 if (bookmarkItem.isFolder()) {
@@ -182,6 +196,11 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
                 } else {
                     BookmarkUtils.startEditActivity(getContext(), bookmarkItem.getId());
                 }
+            } else if (textId == R.string.reading_list_mark_as_read) {
+                BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+                mDelegate.getModel().setReadStatusForReadingList(
+                        bookmarkItem.getUrl(), true /*read*/);
+                RecordUserAction.record("Android.BookmarkPage.ReadingList.MarkAsRead");
             } else if (textId == R.string.bookmark_item_move) {
                 BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(), mBookmarkId);
                 RecordUserAction.record("MobileBookmarkManagerMoveToFolder");
@@ -189,6 +208,9 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
                 if (mDelegate != null && mDelegate.getModel() != null) {
                     mDelegate.getModel().deleteBookmarks(mBookmarkId);
                     RecordUserAction.record("Android.BookmarkPage.RemoveItem");
+                    if (mBookmarkId.getType() == BookmarkType.READING_LIST) {
+                        RecordUserAction.record("Android.BookmarkPage.ReadingList.RemoveItem");
+                    }
                 }
             } else if (textId == R.string.bookmark_show_in_folder) {
                 BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);

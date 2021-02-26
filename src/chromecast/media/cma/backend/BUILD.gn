@@ -44,6 +44,10 @@ cast_source_set("backend") {
     "//chromecast/media/cma/decoder",
   ]
 
+  if (enable_chromium_runtime_cast_renderer) {
+    deps += [ "//chromecast/media/cma/backend/proxy" ]
+  }
+
   if (have_full_mixer) {
     sources += [ "media_pipeline_backend_manager_mixer.cc" ]
     deps += [ "//chromecast/media/audio/mixer_service:control_connection" ]
@@ -139,6 +143,18 @@ cast_source_set("volume_map") {
   ]
 }
 
+cast_source_set("saved_volumes") {
+  sources = [
+    "saved_volumes.cc",
+    "saved_volumes.h",
+  ]
+  deps = [
+    ":cast_audio_json",
+    "//base",
+    "//chromecast/public",
+  ]
+}
+
 cast_source_set("for_mixer_audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
@@ -152,6 +168,7 @@ cast_source_set("for_mixer_audio") {
     ":audio_buildflags",
     ":cast_audio_json",
     ":public",
+    ":saved_volumes",
     ":volume_map",
     "//base",
     "//chromecast/base",

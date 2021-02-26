@@ -30,8 +30,6 @@ namespace dawn_native { namespace d3d12 {
                     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
                 case wgpu::LoadOp::Load:
                     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
-                default:
-                    UNREACHABLE();
             }
         }
 
@@ -41,8 +39,6 @@ namespace dawn_native { namespace d3d12 {
                     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
                 case wgpu::StoreOp::Store:
                     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
-                default:
-                    UNREACHABLE();
             }
         }
 
@@ -67,14 +63,17 @@ namespace dawn_native { namespace d3d12 {
 
             // RESOLVE_MODE_AVERAGE is only valid for non-integer formats.
             // TODO: Investigate and determine how integer format resolves should work in WebGPU.
-            switch (resolveDestination->GetFormat().type) {
-                case Format::Type::Sint:
-                case Format::Type::Uint:
+            switch (resolveDestination->GetFormat().GetAspectInfo(Aspect::Color).baseType) {
+                case wgpu::TextureComponentType::Sint:
+                case wgpu::TextureComponentType::Uint:
                     resolveParameters.ResolveMode = D3D12_RESOLVE_MODE_MAX;
                     break;
-                default:
+                case wgpu::TextureComponentType::Float:
                     resolveParameters.ResolveMode = D3D12_RESOLVE_MODE_AVERAGE;
                     break;
+
+                case wgpu::TextureComponentType::DepthComparison:
+                    UNREACHABLE();
             }
 
             resolveParameters.SubresourceCount = 1;
@@ -86,12 +85,14 @@ namespace dawn_native { namespace d3d12 {
         D3D12EndingAccessResolveSubresourceParameters(TextureView* resolveDestination) {
             D3D12_RENDER_PASS_ENDING_ACCESS_RESOLVE_SUBRESOURCE_PARAMETERS subresourceParameters;
             Texture* resolveDestinationTexture = ToBackend(resolveDestination->GetTexture());
+            ASSERT(resolveDestinationTexture->GetFormat().aspects == Aspect::Color);
 
             subresourceParameters.DstX = 0;
             subresourceParameters.DstY = 0;
             subresourceParameters.SrcSubresource = 0;
             subresourceParameters.DstSubresource = resolveDestinationTexture->GetSubresourceIndex(
-                resolveDestination->GetBaseMipLevel(), resolveDestination->GetBaseArrayLayer());
+                resolveDestination->GetBaseMipLevel(), resolveDestination->GetBaseArrayLayer(),
+                Aspect::Color);
             // Resolving a specified sub-rect is only valid on hardware that supports sample
             // positions. This means even {0, 0, width, height} would be invalid if unsupported. To
             // avoid this, we assume sub-rect resolves never work by setting them to all zeros or
@@ -108,9 +109,9 @@ namespace dawn_native { namespace d3d12 {
         }
     }
 
-    void RenderPassBuilder::SetRenderTargetView(uint32_t attachmentIndex,
+    void RenderPassBuilder::SetRenderTargetView(ColorAttachmentIndex attachmentIndex,
                                                 D3D12_CPU_DESCRIPTOR_HANDLE baseDescriptor) {
-        ASSERT(mColorAttachmentCount < kMaxColorAttachments);
+        ASSERT(mColorAttachmentCount < kMaxColorAttachmentsTyped);
         mRenderTargetViews[attachmentIndex] = baseDescriptor;
         mRenderPassRenderTargetDescriptors[attachmentIndex].cpuDescriptor = baseDescriptor;
         mColorAttachmentCount++;
@@ -120,7 +121,7 @@ namespace dawn_native { namespace d3d12 {
         mRenderPassDepthStencilDesc.cpuDescriptor = baseDescriptor;
     }
 
-    uint32_t RenderPassBuilder::GetColorAttachmentCount() const {
+    ColorAttachmentIndex RenderPassBuilder::GetColorAttachmentCount() const {
         return mColorAttachmentCount;
     }
 
@@ -128,9 +129,9 @@ namespace dawn_native { namespace d3d12 {
         return mHasDepth;
     }
 
-    const D3D12_RENDER_PASS_RENDER_TARGET_DESC*
+    ityp::span<ColorAttachmentIndex, const D3D12_RENDER_PASS_RENDER_TARGET_DESC>
     RenderPassBuilder::GetRenderPassRenderTargetDescriptors() const {
-        return mRenderPassRenderTargetDescriptors.data();
+        return {mRenderPassRenderTargetDescriptors.data(), mColorAttachmentCount};
     }
 
     const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC*
@@ -146,7 +147,7 @@ namespace dawn_native { namespace d3d12 {
         return mRenderTargetViews.data();
     }
 
-    void RenderPassBuilder::SetRenderTargetBeginningAccess(uint32_t attachment,
+    void RenderPassBuilder::SetRenderTargetBeginningAccess(ColorAttachmentIndex attachment,
                                                            wgpu::LoadOp loadOp,
                                                            dawn_native::Color clearColor,
                                                            DXGI_FORMAT format) {
@@ -166,13 +167,13 @@ namespace dawn_native { namespace d3d12 {
         }
     }
 
-    void RenderPassBuilder::SetRenderTargetEndingAccess(uint32_t attachment,
+    void RenderPassBuilder::SetRenderTargetEndingAccess(ColorAttachmentIndex attachment,
                                                         wgpu::StoreOp storeOp) {
         mRenderPassRenderTargetDescriptors[attachment].EndingAccess.Type =
             D3D12EndingAccessType(storeOp);
     }
 
-    void RenderPassBuilder::SetRenderTargetEndingAccessResolve(uint32_t attachment,
+    void RenderPassBuilder::SetRenderTargetEndingAccessResolve(ColorAttachmentIndex attachment,
                                                                wgpu::StoreOp storeOp,
                                                                TextureView* resolveSource,
                                                                TextureView* resolveDestination) {

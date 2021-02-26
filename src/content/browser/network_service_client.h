@@ -54,13 +54,13 @@ class CONTENT_EXPORT NetworkServiceClient
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieStatusList& cookies_with_status,
+      const net::CookieAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override;
   void OnRawResponse(
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieAndLineStatusList& cookies_with_status,
+      const net::CookieAndLineAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override;
   void OnCorsPreflightRequest(int32_t process_id,
@@ -79,8 +79,6 @@ class CONTENT_EXPORT NetworkServiceClient
       int32_t render_frame_id,
       const base::UnguessableToken& devtool_request_id,
       const network::URLLoaderCompletionStatus& status) override;
-  void LogCrossOriginFetchFromContentScript3(
-      const std::string& isolated_world_host) override;
 
   // net::CertDatabase::Observer implementation:
   void OnCertDBChanged() override;

@@ -29,4 +29,11 @@ interface INavigation {
   boolean isDownload() = 9;
 
   boolean wasStopCalled() = 10;
+
+  // @since 86
+  boolean isPageInitiated() = 11;
+  boolean isReload() = 12;
+
+  // @since 88
+  void disableNetworkErrorAutoReload() = 17;
 }

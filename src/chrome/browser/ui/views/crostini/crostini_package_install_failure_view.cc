@@ -32,24 +32,17 @@ void CrostiniPackageInstallFailureView::Show(const std::string& error_message) {
       ->Show();
 }
 
-bool CrostiniPackageInstallFailureView::ShouldShowCloseButton() const {
-  return false;
-}
-
-base::string16 CrostiniPackageInstallFailureView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_TITLE);
-}
-
 gfx::Size CrostiniPackageInstallFailureView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                               views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                            margins().width();
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
 CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
     const std::string& error_message) {
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_TITLE);
   SetButtons(ui::DIALOG_BUTTON_OK);
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -59,16 +52,13 @@ CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
   set_margins(provider->GetDialogInsetsForContentType(
       views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
-  views::StyledLabel* message_label = new views::StyledLabel(
-      l10n_util::GetStringUTF16(
-          IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_MESSAGE),
-      nullptr);
-  AddChildView(message_label);
+  views::StyledLabel* message_label =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  message_label->SetText(l10n_util::GetStringUTF16(
+      IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_MESSAGE));
 
-  views::MessageBoxView::InitParams error_box_init_params(
-      base::UTF8ToUTF16(error_message));
   views::MessageBoxView* error_box =
-      new views::MessageBoxView(error_box_init_params);
+      new views::MessageBoxView(base::UTF8ToUTF16(error_message));
   AddChildView(error_box);
 
   set_close_on_deactivate(true);

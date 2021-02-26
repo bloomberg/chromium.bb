@@ -11,6 +11,8 @@
 
 #include "base/callback.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -83,13 +85,10 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
   void HandleUrl(const std::string& url,
                  const std::string& package_name) override;
 
-  void HandleUrlListDeprecated(std::vector<mojom::UrlWithMimeTypePtr> urls,
-                               mojom::ActivityNamePtr activity,
-                               mojom::ActionType action) override;
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::IntentHelperHost> host_remote) override;
 
-  void InitDeprecated(mojom::IntentHelperHostPtr host_ptr) override;
-
-  void Init(mojom::IntentHelperHostPtr host_ptr,
+  void Init(mojo::PendingRemote<mojom::IntentHelperHost> host_remote,
             InitCallback callback) override;
 
   void OpenFileToReadDeprecated(
@@ -131,6 +130,8 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
                           const std::vector<uint8_t>& data,
                           HandleCameraResultCallback callback) override;
 
+  void RequestDomainVerificationStatusUpdate() override;
+
  private:
   std::vector<Broadcast> broadcasts_;
 
@@ -144,7 +145,7 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.
-  mojom::IntentHelperHostPtr host_;
+  mojo::Remote<mojom::IntentHelperHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIntentHelperInstance);
 };

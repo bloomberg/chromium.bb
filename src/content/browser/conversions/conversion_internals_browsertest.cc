@@ -5,6 +5,7 @@
 #include "content/browser/conversions/conversion_internals_ui.h"
 
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_report.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -39,7 +41,7 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
   // Executing javascript in the WebUI requires using an isolated world in which
   // to execute the script because WebUI has a default CSP policy denying
   // "eval()", which is what EvalJs uses under the hood.
-  bool ExecJsInWebUI(std::string script) {
+  bool ExecJsInWebUI(const std::string& script) {
     return ExecJs(shell()->web_contents()->GetMainFrame(), script,
                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */);
   }
@@ -71,6 +73,9 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(
         ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, title)));
   }
+
+ protected:
+  ConversionDisallowingContentBrowserClient disallowed_browser_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
@@ -109,6 +114,34 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       DisabledByEmbedder_MeasurementConsideredDisabled) {
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&disallowed_browser_client_);
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  OverrideWebUIConversionManager(&manager);
+
+  // Create a mutation observer to wait for the content to render to the dom.
+  // Waiting on calls to TestConversionManager is not sufficient because the
+  // results are returned in promises.
+  std::string wait_script = R"(
+    let status = document.getElementById("feature-status-content");
+    let obs = new MutationObserver(() => {
+      if (status.innerText.trim() === "disabled") {
+        document.title = $1;
+      }
+    });
+    obs.observe(status, {'childList': true, 'characterData': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -279,6 +312,28 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   EXPECT_TRUE(
       ExecJsInWebUI("document.getElementById('send-reports').click();"));
   EXPECT_EQ(kSentTitle, sent_title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       MojoJsBindingsCorrectlyScoped) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  const base::string16 passed_title = base::ASCIIToUTF16("passed");
+
+  {
+    TitleWatcher sent_title_watcher(shell()->web_contents(), passed_title);
+    EXPECT_TRUE(
+        ExecJsInWebUI("document.title = window.Mojo? 'passed' : 'failed';"));
+    EXPECT_EQ(passed_title, sent_title_watcher.WaitAndGetTitle());
+  }
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  {
+    TitleWatcher sent_title_watcher(shell()->web_contents(), passed_title);
+    EXPECT_TRUE(
+        ExecJsInWebUI("document.title = window.Mojo? 'failed' : 'passed';"));
+    EXPECT_EQ(passed_title, sent_title_watcher.WaitAndGetTitle());
+  }
 }
 
 }  // namespace content

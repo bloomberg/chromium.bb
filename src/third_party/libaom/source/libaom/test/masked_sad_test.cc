@@ -86,6 +86,7 @@ class MaskedSADTest : public MaskedSADTestBase,
   MaskedSADFunc maskedSAD_op_;
   MaskedSADFunc ref_maskedSAD_op_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MaskedSADTest);
 
 class MaskedSADx4Test : public MaskedSADTestBase,
                         public ::testing::WithParamInterface<MaskedSADx4Param> {
@@ -109,6 +110,7 @@ class MaskedSADx4Test : public MaskedSADTestBase,
   MaskedSADx4Func maskedSAD_op_;
   MaskedSADx4Func ref_maskedSAD_op_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MaskedSADx4Test);
 
 void MaskedSADTest::runRef(const uint8_t *src_ptr, int src_stride,
                            const uint8_t *ref_ptr[], int ref_stride,
@@ -259,6 +261,8 @@ class HighbdMaskedSADTest
   HighbdMaskedSADFunc maskedSAD_op_;
   HighbdMaskedSADFunc ref_maskedSAD_op_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(HighbdMaskedSADTest);
+
 void HighbdMaskedSADTest::runHighbdMaskedSADTest(int run_times) {
   unsigned int ref_ret = 0, ret = 1;
   ACMRandom rnd(ACMRandom::DeterministicSeed());

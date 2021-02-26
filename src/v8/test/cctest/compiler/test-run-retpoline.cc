@@ -27,8 +27,8 @@ Handle<Code> BuildCallee(Isolate* isolate, CallDescriptor* call_descriptor) {
   int param_count = static_cast<int>(call_descriptor->StackParameterCount());
   TNode<IntPtrT> sum = __ IntPtrConstant(0);
   for (int i = 0; i < param_count; ++i) {
-    TNode<IntPtrT> product =
-        __ Signed(__ IntPtrMul(__ Parameter(i), __ IntPtrConstant(i + 1)));
+    TNode<IntPtrT> product = __ Signed(__ IntPtrMul(
+        __ UncheckedParameter<IntPtrT>(i), __ IntPtrConstant(i + 1)));
     sum = __ IntPtrAdd(sum, product);
   }
   __ Return(sum);
@@ -45,16 +45,15 @@ Handle<Code> BuildCaller(Isolate* isolate, CallDescriptor* call_descriptor,
   // The first parameter is always the callee.
   Handle<Code> callee = BuildCallee(isolate, callee_descriptor);
   // defeat the instruction selector.
-  CodeStubAssembler::Variable target_var(&assembler,
-                                         MachineRepresentation::kTagged);
+  CodeStubAssembler::TVariable<Code> target_var(&assembler);
   CodeStubAssembler::Label t(&assembler), f(&assembler),
       end(&assembler, &target_var);
   __ Branch(__ Int32Constant(0), &t, &f);
   __ BIND(&t);
-  target_var.Bind(__ HeapConstant(callee));
+  target_var = __ HeapConstant(callee);
   __ Goto(&end);
   __ BIND(&f);
-  target_var.Bind(__ HeapConstant(callee));
+  target_var = __ HeapConstant(callee);
   __ Goto(&end);
   __ BIND(&end);
   params.push_back(target_var.value());
@@ -112,17 +111,17 @@ CallDescriptor* CreateDescriptorForStackArguments(Zone* zone,
         i - stack_param_count, MachineType::IntPtr()));
   }
 
-  return new (zone)
-      CallDescriptor(CallDescriptor::kCallCodeObject,  // kind
-                     MachineType::AnyTagged(),         // target MachineType
-                     LinkageLocation::ForAnyRegister(
-                         MachineType::AnyTagged()),  // target location
-                     locations.Build(),              // location_sig
-                     stack_param_count,              // stack_parameter_count
-                     Operator::kNoProperties,        // properties
-                     kNoCalleeSaved,                 // callee-saved registers
-                     kNoCalleeSaved,                 // callee-saved fp
-                     CallDescriptor::kRetpoline);    // flags
+  return zone->New<CallDescriptor>(
+      CallDescriptor::kCallCodeObject,  // kind
+      MachineType::AnyTagged(),         // target MachineType
+      LinkageLocation::ForAnyRegister(
+          MachineType::AnyTagged()),  // target location
+      locations.Build(),              // location_sig
+      stack_param_count,              // stack_parameter_count
+      Operator::kNoProperties,        // properties
+      kNoCalleeSaved,                 // callee-saved registers
+      kNoCalleeSaved,                 // callee-saved fp
+      CallDescriptor::kRetpoline);    // flags
 }
 
 // Test a tail call from a caller with n parameters to a callee with m

@@ -48,8 +48,7 @@ SkBitmap WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
-      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore(),
-      ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
     return {};
 
@@ -101,8 +100,10 @@ SkBitmap WebImage::DecodeSVG(const WebData& data, const WebSize& desired_size) {
     container_size = svg_image->ConcreteObjectSize(FloatSize());
   scoped_refptr<Image> svg_container =
       SVGImageForContainer::Create(svg_image.get(), container_size, 1, KURL());
-  if (PaintImage image = svg_container->PaintImageForCurrentFrame())
-    image.GetSkImage()->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode);
+  if (PaintImage image = svg_container->PaintImageForCurrentFrame()) {
+    image.GetSwSkImage()->asLegacyBitmap(&bitmap,
+                                         SkImage::kRO_LegacyBitmapMode);
+  }
   return bitmap;
 }
 
@@ -114,8 +115,7 @@ WebVector<SkBitmap> WebImage::FramesFromData(const WebData& data) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
-      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore(),
-      ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
     return {};
 
@@ -148,8 +148,7 @@ WebVector<WebImage::AnimationFrame> WebImage::AnimationFromData(
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
-      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore(),
-      ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable() || decoder->FrameCount() == 0)
     return {};
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_USER_INTERACTION_OBSERVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_USER_INTERACTION_OBSERVER_H_
 
+#include "base/time/default_clock.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -43,11 +44,29 @@ enum class DelayedWarningEvent {
   // The page triggered a permission request. It was denied and the warning was
   // shown.
   kWarningShownOnPermissionRequest = 7,
-  kMaxValue = kWarningShownOnPermissionRequest,
+  // The page tried to display a JavaScript dialog (alert/confirm/prompt). It
+  // was blocked and the warning was shown.
+  kWarningShownOnJavaScriptDialog = 8,
+  // The page was denied a password save or autofill request. This doesn't show
+  // an interstitial and is recorded once per navigation.
+  kPasswordSaveOrAutofillDenied = 9,
+  // The page triggered a desktop capture request ("example.com wants to share
+  // the contents of the screen"). It was denied and the warning was shown.
+  kWarningShownOnDesktopCaptureRequest = 10,
+  // User pasted something on the page and the warning was shown.
+  kWarningShownOnPaste = 11,
+  kMaxValue = kWarningShownOnPaste,
 };
 
-// Name of the histogram.
+// Name of the recorded histograms when the user did not disable URL elision via
+// "Always Show Full URLs" menu option or by installing Suspicious Site Reporter
+// extension.
 extern const char kDelayedWarningsHistogram[];
+extern const char kDelayedWarningsTimeOnPageHistogram[];
+
+// Same as above but only recorded if the user disabled URL elision.
+extern const char kDelayedWarningsWithElisionDisabledHistogram[];
+extern const char kDelayedWarningsTimeOnPageWithElisionDisabledHistogram[];
 
 // Observes user interactions and shows an interstitial if necessary.
 // Only created when an interstitial was about to be displayed but was delayed
@@ -87,11 +106,32 @@ class SafeBrowsingUserInteractionObserver
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
+  void OnPaste() override;
 
   // permissions::PermissionRequestManager::Observer methods:
   void OnBubbleAdded() override;
 
+  // Called by the JavaScript dialog manager when the current page is about to
+  // show a JavaScript dialog (alert, confirm or prompt). Shows the
+  // delayed interstitial immediately.
+  void OnJavaScriptDialog();
+  // Called when a password save or autofill request is denied to the current
+  // page. Records a metric once per navigation.
+  void OnPasswordSaveOrAutofillDenied();
+  // Called by the desktop capture access handler when the current page requests
+  // a desktop capture. Shows the delayed interstitial immediately.
+  void OnDesktopCaptureRequest();
+
+  static void SetSuspiciousSiteReporterExtensionIdForTesting(
+      const char* extension_id);
+  static void ResetSuspiciousSiteReporterExtensionIdForTesting();
+
+  void SetClockForTesting(base::Clock* clock);
+  base::Time GetCreationTimeForTesting() const;
+
  private:
+  void RecordUMA(DelayedWarningEvent event);
+
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
 
@@ -107,12 +147,22 @@ class SafeBrowsingUserInteractionObserver
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   bool interstitial_shown_ = false;
   bool mouse_click_with_no_warning_recorded_ = false;
+  bool password_save_or_autofill_denied_metric_recorded_ = false;
   // This will be set to true if the initial navigation that caused this
   // observer to be created has finished. We need this extra bit because
   // observers can only detect download navigations in DidFinishNavigation.
   // However, this hook is also called for the initial navigation, so we ignore
   // it the first time the hook is called.
   bool initial_navigation_finished_ = false;
+
+  // Id of the Suspicious Site Reporter extension. Only set in tests.
+  static const char* suspicious_site_reporter_extension_id_;
+
+  // The time that this observer was created. Used for recording histograms.
+  base::Time creation_time_;
+  // This clock is used to record the delta from |creation_time_| when the
+  // observer is detached, and can be injected by tests.
+  base::Clock* clock_;
 };
 
 }  // namespace safe_browsing

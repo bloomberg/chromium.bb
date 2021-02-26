@@ -1,5 +1,7 @@
 include_rules = [
+  "+services/device/public/mojom",
   "+services/network/public/cpp/constants.h",
+  "+services/network/public/mojom",
   "+services/network/network_service.h",
   "+services/network/public/cpp",
 ]
@@ -9,7 +11,7 @@ specific_include_rules = {
     "+content/common",
   ],
   "simple_url_loader\.cc": [
-    "-content/",
+    "-content",
     "+content/public/common/simple_url_loader\.h",
     "+content/public/common/resource_request\.h",
     "+content/public/common/resource_response\.h",

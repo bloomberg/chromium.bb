@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -185,7 +186,7 @@ HRESULT ValidateAndUnpackCRX(const base::FilePath& from_crx_path,
   if (!zip::Unzip(to_crx_path, to_dir.GetPath()))
     return E_UNEXPECTED;
 
-  LOG_IF(WARNING, !base::DeleteFile(to_crx_path, false));
+  LOG_IF(WARNING, !base::DeleteFile(to_crx_path));
 
   LOG_IF(WARNING, !unpacked_crx_dir->Set(to_dir.Take()));
   return S_OK;
@@ -251,7 +252,7 @@ void DeleteDirectoryFiles(const base::FilePath& directory_path) {
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath current = file_enum.Next(); !current.empty();
        current = file_enum.Next()) {
-    base::DeleteFileRecursively(current);
+    base::DeletePathRecursively(current);
   }
 }
 

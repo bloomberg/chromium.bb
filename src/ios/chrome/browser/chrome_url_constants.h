@@ -12,6 +12,7 @@
 // chrome: URLs (including schemes). Should be kept in sync with the
 // URL components below.
 extern const char kChromeUIChromeURLsURL[];
+extern const char kChromeUICookiesSettingsURL[];
 extern const char kChromeUICreditsURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIHistoryURL[];
@@ -41,6 +42,7 @@ extern const char kChromeUIHistogramHost[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIInspectHost[];
 extern const char kChromeUIIntersitialsHost[];
+extern const char kChromeUIManagementHost[];
 extern const char kChromeUINetExportHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUINTPTilesInternalsHost[];
@@ -111,5 +113,8 @@ extern const char kReadingListReferrerURL[];
 
 // URL used internally by ios/web when loading the NTP.
 extern const char kChromeUIAboutNewTabURL[];
+
+// "Learn more" URL for enterprise management information.
+extern const char kManagementLearnMoreURL[];
 
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_

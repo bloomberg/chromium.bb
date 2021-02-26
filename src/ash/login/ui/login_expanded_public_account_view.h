@@ -16,6 +16,8 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 class ArrowButtonView;
@@ -54,9 +56,6 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
     bool SelectKeyboard(const std::string& ime_id);
     std::vector<LocaleItem> GetLocales();
 
-    void OnAdvancedButtonTap();
-    void OnSubmitButtonTap();
-
    private:
     LoginExpandedPublicAccountView* const view_;
   };
@@ -65,6 +64,8 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   explicit LoginExpandedPublicAccountView(
       const OnPublicSessionViewDismissed& on_dismissed);
   ~LoginExpandedPublicAccountView() override;
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   void ProcessPressedEvent(const ui::LocatedEvent* event);
   void UpdateForUser(const LoginUserInfo& user);

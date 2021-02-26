@@ -21,7 +21,10 @@ namespace dawn_wire { namespace server {
                    const DawnProcTable& procs,
                    CommandSerializer* serializer,
                    MemoryTransferService* memoryTransferService)
-        : mSerializer(serializer), mProcs(procs), mMemoryTransferService(memoryTransferService) {
+        : mSerializer(serializer),
+          mProcs(procs),
+          mMemoryTransferService(memoryTransferService),
+          mIsAlive(std::make_shared<bool>(true)) {
         if (mMemoryTransferService == nullptr) {
             // If a MemoryTransferService is not provided, fallback to inline memory.
             mOwnedMemoryTransferService = CreateInlineMemoryTransferService();
@@ -37,10 +40,6 @@ namespace dawn_wire { namespace server {
 
     Server::~Server() {
         DestroyAllObjects(mProcs);
-    }
-
-    void* Server::GetCmdSpace(size_t size) {
-        return mSerializer->GetCmdSpace(size);
     }
 
     bool Server::InjectTexture(WGPUTexture texture, uint32_t id, uint32_t generation) {

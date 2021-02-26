@@ -265,7 +265,9 @@ webrtc::MdnsResponderInterface* NetworkManager::GetMdnsResponder() const {
 }
 
 NetworkManagerBase::NetworkManagerBase()
-    : enumeration_permission_(NetworkManager::ENUMERATION_ALLOWED) {}
+    : enumeration_permission_(NetworkManager::ENUMERATION_ALLOWED),
+      signal_network_preference_change_(webrtc::field_trial::IsEnabled(
+          "WebRTC-SignalNetworkPreferenceChange")) {}
 
 NetworkManagerBase::~NetworkManagerBase() {
   for (const auto& kv : networks_map_) {
@@ -382,6 +384,12 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
       if (!existing_net->active()) {
         *changed = true;
       }
+      if (net->network_preference() != existing_net->network_preference()) {
+        existing_net->set_network_preference(net->network_preference());
+        if (signal_network_preference_change_) {
+          *changed = true;
+        }
+      }
       RTC_DCHECK(net->active());
       if (existing_net != net) {
         delete net;
@@ -470,12 +478,16 @@ Network* NetworkManagerBase::GetNetworkFromAddress(
   return nullptr;
 }
 
-BasicNetworkManager::BasicNetworkManager()
-    : thread_(nullptr), sent_first_update_(false), start_count_(0) {}
+BasicNetworkManager::BasicNetworkManager() {}
+
+BasicNetworkManager::BasicNetworkManager(
+    NetworkMonitorFactory* network_monitor_factory)
+    : network_monitor_factory_(network_monitor_factory) {}
 
 BasicNetworkManager::~BasicNetworkManager() {}
 
 void BasicNetworkManager::OnNetworksChanged() {
+  RTC_DCHECK_RUN_ON(thread_);
   RTC_LOG(LS_INFO) << "Network change was observed";
   UpdateNetworksOnce();
 }
@@ -532,6 +544,7 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
 
     AdapterType adapter_type = ADAPTER_TYPE_UNKNOWN;
     AdapterType vpn_underlying_adapter_type = ADAPTER_TYPE_UNKNOWN;
+    NetworkPreference network_preference = NetworkPreference::NEUTRAL;
     if (cursor->ifa_flags & IFF_LOOPBACK) {
       adapter_type = ADAPTER_TYPE_LOOPBACK;
     } else {
@@ -539,6 +552,8 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
       // Otherwise, get the adapter type based on a few name matching rules.
       if (network_monitor_) {
         adapter_type = network_monitor_->GetAdapterType(cursor->ifa_name);
+        network_preference =
+            network_monitor_->GetNetworkPreference(cursor->ifa_name);
       }
       if (adapter_type == ADAPTER_TYPE_UNKNOWN) {
         adapter_type = GetAdapterTypeFromName(cursor->ifa_name);
@@ -564,6 +579,7 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
       network->AddIP(ip);
       network->set_ignored(IsIgnoredNetwork(*network));
       network->set_underlying_type_for_vpn(vpn_underlying_adapter_type);
+      network->set_network_preference(network_preference);
       if (include_ignored || !network->ignored()) {
         current_networks[key] = network.get();
         networks->push_back(network.release());
@@ -576,6 +592,7 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
         existing_network->set_underlying_type_for_vpn(
             vpn_underlying_adapter_type);
       }
+      existing_network->set_network_preference(network_preference);
     }
   }
 }
@@ -789,6 +806,11 @@ bool BasicNetworkManager::IsIgnoredNetwork(const Network& network) const {
   }
 #endif
 
+  if (network_monitor_ &&
+      !network_monitor_->IsAdapterAvailable(network.name())) {
+    return true;
+  }
+
   // Ignore any networks with a 0.x.y.z IP
   if (network.prefix().family() == AF_INET) {
     return (network.prefix().v4AddressAsHostOrderInteger() < 0x01000000);
@@ -799,6 +821,8 @@ bool BasicNetworkManager::IsIgnoredNetwork(const Network& network) const {
 
 void BasicNetworkManager::StartUpdating() {
   thread_ = Thread::Current();
+  // Redundant but necessary for thread annotations.
+  RTC_DCHECK_RUN_ON(thread_);
   if (start_count_) {
     // If network interfaces are already discovered and signal is sent,
     // we should trigger network signal immediately for the new clients
@@ -813,7 +837,7 @@ void BasicNetworkManager::StartUpdating() {
 }
 
 void BasicNetworkManager::StopUpdating() {
-  RTC_DCHECK(Thread::Current() == thread_);
+  RTC_DCHECK_RUN_ON(thread_);
   if (!start_count_)
     return;
 
@@ -826,12 +850,11 @@ void BasicNetworkManager::StopUpdating() {
 }
 
 void BasicNetworkManager::StartNetworkMonitor() {
-  NetworkMonitorFactory* factory = NetworkMonitorFactory::GetFactory();
-  if (factory == nullptr) {
+  if (network_monitor_factory_ == nullptr) {
     return;
   }
   if (!network_monitor_) {
-    network_monitor_.reset(factory->CreateNetworkMonitor());
+    network_monitor_.reset(network_monitor_factory_->CreateNetworkMonitor());
     if (!network_monitor_) {
       return;
     }
@@ -849,6 +872,7 @@ void BasicNetworkManager::StopNetworkMonitor() {
 }
 
 void BasicNetworkManager::OnMessage(Message* msg) {
+  RTC_DCHECK_RUN_ON(thread_);
   switch (msg->message_id) {
     case kUpdateNetworksMessage: {
       UpdateNetworksContinually();
@@ -864,7 +888,6 @@ void BasicNetworkManager::OnMessage(Message* msg) {
 }
 
 IPAddress BasicNetworkManager::QueryDefaultLocalAddress(int family) const {
-  RTC_DCHECK(thread_ == Thread::Current());
   RTC_DCHECK(thread_->socketserver() != nullptr);
   RTC_DCHECK(family == AF_INET || family == AF_INET6);
 
@@ -893,8 +916,6 @@ void BasicNetworkManager::UpdateNetworksOnce() {
   if (!start_count_)
     return;
 
-  RTC_DCHECK(Thread::Current() == thread_);
-
   NetworkList list;
   if (!CreateNetworks(false, &list)) {
     SignalError();
@@ -918,6 +939,7 @@ void BasicNetworkManager::UpdateNetworksContinually() {
 }
 
 void BasicNetworkManager::DumpNetworks() {
+  RTC_DCHECK_RUN_ON(thread_);
   NetworkList list;
   GetNetworks(&list);
   RTC_LOG(LS_INFO) << "NetworkManager detected " << list.size() << " networks:";

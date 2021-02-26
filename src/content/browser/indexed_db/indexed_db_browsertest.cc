@@ -21,8 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -183,8 +182,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
                                     per_host_quota_kilobytes, qm));
       return;
     }
@@ -324,10 +323,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CallbackAccounting) {
   SimpleTest(GetTestUrl("indexeddb", "callback_accounting.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, GetAllMaxMessageSize) {
-  SimpleTest(GetTestUrl("indexeddb", "getall_max_message_size.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
@@ -1091,9 +1086,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
                           "pass - part3 - rolled back");
 }
 
-// crbug.com/427529
-// Disable this test for ASAN on Android because it takes too long to run.
-#if defined(ANDROID) && defined(ADDRESS_SANITIZER)
+// Disable this test on Android due to failures. See crbug.com/427529 and
+// crbug.com/1116464 for details.
+#if defined(ANDROID)
 #define MAYBE_ConnectionsClosedOnTabClose DISABLED_ConnectionsClosedOnTabClose
 #else
 #define MAYBE_ConnectionsClosedOnTabClose ConnectionsClosedOnTabClose

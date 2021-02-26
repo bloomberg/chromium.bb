@@ -57,7 +57,7 @@ class AutomationManagerAura : public ui::AXActionHandler,
   // Handles a textual alert.
   void HandleAlert(const std::string& text);
 
-  // AXActionHandler implementation.
+  // AXActionHandlerBase implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.
@@ -80,7 +80,9 @@ class AutomationManagerAura : public ui::AXActionHandler,
  private:
   friend class base::NoDestructor<AutomationManagerAura>;
 
+  FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, ScrollView);
   FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
+  FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, EventFromAction);
 
   AutomationManagerAura();
   ~AutomationManagerAura() override;
@@ -89,7 +91,9 @@ class AutomationManagerAura : public ui::AXActionHandler,
   // serializer to save memory.
   void Reset(bool reset_serializer);
 
-  void PostEvent(int32_t id, ax::mojom::Event event_type);
+  void PostEvent(int32_t id,
+                 ax::mojom::Event event_type,
+                 int action_request_id = -1);
 
   void SendPendingEvents();
 
@@ -113,7 +117,14 @@ class AutomationManagerAura : public ui::AXActionHandler,
 
   bool processing_posted_ = false;
 
-  std::vector<std::pair<int32_t, ax::mojom::Event>> pending_events_;
+  struct Event {
+    int id;
+    ax::mojom::Event event_type;
+    int action_request_id;
+    bool is_performing_action;
+  };
+
+  std::vector<Event> pending_events_;
 
   // The handler for AXEvents (e.g. the extensions subsystem in production, or
   // a fake for tests).
@@ -122,6 +133,8 @@ class AutomationManagerAura : public ui::AXActionHandler,
   std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
 
   std::unique_ptr<views::AXAuraObjCache> cache_;
+
+  bool is_performing_action_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };

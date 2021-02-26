@@ -21,6 +21,7 @@ class Value;
 
 namespace net {
 
+class NetworkIsolationKey;
 class ReportingContext;
 struct ReportingPolicy;
 class URLRequestContext;
@@ -47,6 +48,8 @@ class NET_EXPORT ReportingService {
       std::unique_ptr<ReportingContext> reporting_context);
 
   // Queues a report for delivery. |url| is the URL that originated the report.
+  // |network_isolation_key| is used to restrict what reports can be merged, and
+  // for sending the report.
   // |user_agent| is the User-Agent header that was used for the request.
   // |group| is the endpoint group to which the report should be delivered.
   // |type| is the type of the report. |body| is the body of the report.
@@ -54,6 +57,7 @@ class NET_EXPORT ReportingService {
   // The Reporting system will take ownership of |body|; all other parameters
   // will be copied.
   virtual void QueueReport(const GURL& url,
+                           const NetworkIsolationKey& network_isolation_key,
                            const std::string& user_agent,
                            const std::string& group,
                            const std::string& type,
@@ -63,17 +67,18 @@ class NET_EXPORT ReportingService {
   // Processes a Report-To header. |url| is the URL that originated the header;
   // |header_value| is the normalized value of the Report-To header.
   virtual void ProcessHeader(const GURL& url,
+                             const NetworkIsolationKey& network_isolation_key,
                              const std::string& header_value) = 0;
 
   // Removes browsing data from the Reporting system. See
   // ReportingBrowsingDataRemover for more details.
   virtual void RemoveBrowsingData(
-      int data_type_mask,
+      uint64_t data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
   // Like RemoveBrowsingData except removes data for all origins without a
   // filter.
-  virtual void RemoveAllBrowsingData(int data_type_mask) = 0;
+  virtual void RemoveAllBrowsingData(uint64_t data_type_mask) = 0;
 
   // Shuts down the Reporting service so that no new headers or reports are
   // processed, and pending uploads are cancelled.

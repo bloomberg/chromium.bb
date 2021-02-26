@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/views_export.h"
 #include "ui/views/window/caption_button_types.h"
 
@@ -28,7 +29,7 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   static const char kViewClassName[];
 
-  FrameCaptionButton(views::ButtonListener* listener,
+  FrameCaptionButton(PressedCallback callback,
                      CaptionButtonIcon icon,
                      int hit_test_type);
   ~FrameCaptionButton() override;
@@ -60,7 +61,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   void SetBackgroundColor(SkColor background_color);
 
@@ -73,6 +73,7 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   void set_ink_drop_corner_radius(int ink_drop_corner_radius) {
     ink_drop_corner_radius_ = ink_drop_corner_radius;
   }
+  int ink_drop_corner_radius() const { return ink_drop_corner_radius_; }
 
   CaptionButtonIcon icon() const { return icon_; }
 
@@ -87,6 +88,8 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
+  class HighlightPathGenerator;
+
   // Determines what alpha to use for the icon based on animation and
   // active state.
   int GetAlphaForIcon(int base_alpha) const;

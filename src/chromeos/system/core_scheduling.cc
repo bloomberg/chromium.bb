@@ -12,7 +12,9 @@
 #include "base/metrics/field_trial_params.h"
 
 #ifndef PR_SET_CORE_SCHED
-#define PR_SET_CORE_SCHED 57
+// Setup core-scheduling for the task.
+// TODO(b/152605392): Replace this once upstream interface is known.
+#define PR_SET_CORE_SCHED 0x200
 #endif
 
 namespace chromeos {
@@ -20,7 +22,7 @@ namespace system {
 
 namespace {
 const base::Feature kCoreScheduling{"CoreSchedulingEnabled",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 }
 
 void EnableCoreSchedulingIfAvailable() {

@@ -12,18 +12,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 
-import androidx.core.content.FileProvider;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,17 +34,17 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -57,7 +55,6 @@ import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.Default
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.CachedZeroSuggestionsManager;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -70,15 +67,13 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrl;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -87,9 +82,7 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.url.GURL;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -105,17 +98,12 @@ import java.util.concurrent.TimeoutException;
  *
  *                    + Add microphone tests somehow (vague query + confident query).
  */
-@RunWith(ParameterizedRunner.class)
-@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchActivityTest {
     private static final long OMNIBOX_SHOW_TIMEOUT_MS = 5000L;
     private static final String TEST_PNG_IMAGE_FILE_EXTENSION = ".png";
-
-    @ParameterAnnotations.ClassParameter
-    private static List<ParameterSet> sClassParams =
-            Arrays.asList(new ParameterSet().value(false).name("DisableRecyclerView"),
-                    new ParameterSet().value(true).name("EnableRecyclerView"));
+    private static final int INVALID_INDEX = -1;
 
     private static class TestDelegate
             extends SearchActivityDelegate implements DefaultSearchEnginePromoDialogObserver {
@@ -179,44 +167,19 @@ public class SearchActivityTest {
         }
     }
 
-    // Helper class for clipboard Omnibox test.
-    private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
-        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
-
-        @Override
-        public Uri getContentUriFromFile(File file) {
-            Context appContext = ContextUtils.getApplicationContext();
-            return FileProvider.getUriForFile(
-                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
-        }
-    }
-
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
 
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Mock
     VoiceRecognitionHandler mHandler;
 
     private TestDelegate mTestDelegate;
-    private boolean mEnableRecyclerView;
-
-    public SearchActivityTest(boolean enableRecyclerView) {
-        mEnableRecyclerView = enableRecyclerView;
-    }
 
     @Before
     public void setUp() {
-        if (mEnableRecyclerView) {
-            Features.getInstance().enable(ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW);
-        } else {
-            Features.getInstance().disable(ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW);
-        }
-        Features.ensureCommandLineIsUpToDate();
-
         MockitoAnnotations.initMocks(this);
         doReturn(true).when(mHandler).isVoiceSearchEnabled();
 
@@ -357,7 +320,6 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure(message = "crbug.com/765476")
     public void testEnterUrlBeforeNativeIsLoaded() throws Exception {
         // Wait for the activity to load, but don't let it load the native library.
         mTestDelegate.shouldDelayLoadingNative = true;
@@ -448,7 +410,7 @@ public class SearchActivityTest {
         // Set some text in the search box, then continue startup.
         setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mTestDelegate.onSearchEngineFinalizedCallback.onResult(true));
+                mTestDelegate.onSearchEngineFinalizedCallback.bind(true));
 
         // Let the initialization finish completely.
         Assert.assertEquals(
@@ -530,23 +492,13 @@ public class SearchActivityTest {
         mTestDelegate.shownPromoDialog.dismiss();
 
         // SearchActivity should realize the failure case and prevent the user from using it.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<Activity> activities = ApplicationStatus.getRunningActivities();
-                if (activities.isEmpty()) return true;
+        CriteriaHelper.pollUiThread(() -> {
+            List<Activity> activities = ApplicationStatus.getRunningActivities();
+            if (activities.isEmpty()) return;
 
-                if (activities.size() != 1) {
-                    updateFailureReason("Multiple non-destroyed activities: " + activities);
-                    return false;
-                }
-                if (activities.get(0) != activity) {
-                    updateFailureReason("Remaining activity is not the search activity under test: "
-                            + activities.get(0));
-                }
-                updateFailureReason("Search activity has not called finish()");
-                return activity.isFinishing();
-            }
+            Criteria.checkThat(activities, Matchers.hasSize(1));
+            Criteria.checkThat(activities.get(0), Matchers.is(activity));
+            Criteria.checkThat(activity.isFinishing(), Matchers.is(true));
         });
         Assert.assertEquals(
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
@@ -569,17 +521,16 @@ public class SearchActivityTest {
         Assert.assertEquals(searchActivity, restartedActivity);
 
         // The query should be wiped.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-                return TextUtils.isEmpty(urlBar.getText());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            Criteria.checkThat(
+                    urlBar.getText(), Matchers.hasToString(Matchers.isEmptyOrNullString()));
         });
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1144676")
     @Features.
     EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
     public void testImageSearch() throws InterruptedException, Exception {
@@ -596,25 +547,24 @@ public class SearchActivityTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
         waitForSuggestionType(locationBar, OmniboxSuggestionType.CLIPBOARD_IMAGE);
         OmniboxSuggestionsDropdown suggestionsDropdown =
-                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                        locationBar.getAutocompleteCoordinator());
+                locationBar.getAutocompleteCoordinator().getSuggestionsDropdownForTest();
 
-        int imageSuggestionIndex = -1;
+        int imageSuggestionIndex = INVALID_INDEX;
         // Find the index of the image clipboard suggestion.
-        for (int i = 0; i < suggestionsDropdown.getItemCount(); ++i) {
-            OmniboxSuggestion suggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                    locationBar.getAutocompleteCoordinator(), i);
+        for (int i = 0; i < suggestionsDropdown.getDropdownItemViewCountForTest(); ++i) {
+            OmniboxSuggestion suggestion =
+                    locationBar.getAutocompleteCoordinator().getSuggestionAt(i);
             if (suggestion != null
                     && suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
                 imageSuggestionIndex = i;
                 break;
             }
         }
-        Assert.assertNotEquals(
-                "Cannot find the image clipboard Omnibox suggestion", -1, imageSuggestionIndex);
+        Assert.assertNotEquals("Cannot find the image clipboard Omnibox suggestion", INVALID_INDEX,
+                imageSuggestionIndex);
 
-        OmniboxSuggestion imageSuggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                locationBar.getAutocompleteCoordinator(), imageSuggestionIndex);
+        OmniboxSuggestion imageSuggestion =
+                locationBar.getAutocompleteCoordinator().getSuggestionAt(imageSuggestionIndex);
         Assert.assertNotNull("The image clipboard suggestion should contains post content type.",
                 imageSuggestion.getPostContentType());
         Assert.assertNotEquals(
@@ -626,13 +576,6 @@ public class SearchActivityTest {
                 "The image clipboard suggestion should not contains am empty post data.", 0,
                 imageSuggestion.getPostData().length);
 
-        // Find the index of clipboard suggestion in the dropdown list.
-        final int clipboardSuggestionIndexInDropdown =
-                AutocompleteCoordinatorTestUtils.getIndexForFirstSuggestionOfType(
-                        locationBar.getAutocompleteCoordinator(),
-                        OmniboxSuggestionUiType.CLIPBOARD_SUGGESTION);
-        Assert.assertNotEquals("Cannot find the image clipboard Omnibox suggestion in UI.", -1,
-                clipboardSuggestionIndexInDropdown);
 
         // Make sure the new tab is launched.
         final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
@@ -640,29 +583,28 @@ public class SearchActivityTest {
                 new Callable<Void>() {
                     @Override
                     public Void call() throws InterruptedException {
-                        clickSuggestionAt(suggestionsDropdown, clipboardSuggestionIndexInDropdown);
+                        clickFirstClipboardSuggestion(locationBar);
                         return null;
                     }
                 });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return false;
-                // Make sure tab is in either upload page or result page. cannot only verify one of
-                // them since on fast device tab jump to result page really quick but on slow device
-                // may stay on upload page for a really long time.
-                return tab.getUrlString().equals(imageSuggestion.getUrl().getSpec())
-                        || TemplateUrlServiceFactory.get()
-                                   .isSearchResultsPageFromDefaultSearchProvider(
-                                           tab.getUrlString());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            // Make sure tab is in either upload page or result page. cannot only verify one of
+            // them since on fast device tab jump to result page really quick but on slow device
+            // may stay on upload page for a really long time.
+            boolean isValid = tab.getUrl().equals(imageSuggestion.getUrl())
+                    || TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(
+                            tab.getUrl());
+            Criteria.checkThat(
+                    "Invalid URL: " + tab.getUrl().getSpec(), isValid, Matchers.is(true));
         });
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1144676")
     @Features.
     EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
     public void testImageSearch_OnlyTrustedIntentCanPost() throws InterruptedException, Exception {
@@ -679,25 +621,24 @@ public class SearchActivityTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
         waitForSuggestionType(locationBar, OmniboxSuggestionType.CLIPBOARD_IMAGE);
         OmniboxSuggestionsDropdown suggestionsDropdown =
-                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                        locationBar.getAutocompleteCoordinator());
+                locationBar.getAutocompleteCoordinator().getSuggestionsDropdownForTest();
 
-        int imageSuggestionIndex = -1;
+        int imageSuggestionIndex = INVALID_INDEX;
         // Find the index of the image clipboard suggestion.
-        for (int i = 0; i < suggestionsDropdown.getItemCount(); ++i) {
-            OmniboxSuggestion suggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                    locationBar.getAutocompleteCoordinator(), i);
+        for (int i = 0; i < suggestionsDropdown.getDropdownItemViewCountForTest(); ++i) {
+            OmniboxSuggestion suggestion =
+                    locationBar.getAutocompleteCoordinator().getSuggestionAt(i);
             if (suggestion != null
                     && suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
                 imageSuggestionIndex = i;
                 break;
             }
         }
-        Assert.assertNotEquals(
-                "Cannot find the image clipboard Omnibox suggestion", -1, imageSuggestionIndex);
+        Assert.assertNotEquals("Cannot find the image clipboard Omnibox suggestion", INVALID_INDEX,
+                imageSuggestionIndex);
 
-        OmniboxSuggestion imageSuggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                locationBar.getAutocompleteCoordinator(), imageSuggestionIndex);
+        OmniboxSuggestion imageSuggestion =
+                locationBar.getAutocompleteCoordinator().getSuggestionAt(imageSuggestionIndex);
 
         Intent intent =
                 new Intent(Intent.ACTION_VIEW, Uri.parse(imageSuggestion.getUrl().getSpec()));
@@ -717,13 +658,12 @@ public class SearchActivityTest {
                         });
 
         // Because no POST data, Google wont go to the result page.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = cta.getActivityTab();
-                return !TemplateUrlServiceFactory.get()
-                                .isSearchResultsPageFromDefaultSearchProvider(tab.getUrlString());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat("Unexpected URL: " + tab.getUrl().getSpec(),
+                    TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(
+                            tab.getUrl()),
+                    Matchers.is(false));
         });
     }
 
@@ -738,21 +678,30 @@ public class SearchActivityTest {
         Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
         Clipboard.getInstance().setImage(mTestImageData, TEST_PNG_IMAGE_FILE_EXTENSION);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return Clipboard.getInstance().getImage() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(Clipboard.getInstance().getImage(), Matchers.notNullValue());
         });
     }
 
-    private void clickSuggestionAt(OmniboxSuggestionsDropdown suggestionsDropdown, int index)
+    private void clickFirstClipboardSuggestion(SearchActivityLocationBarLayout locationBar)
             throws InterruptedException {
-        // Wait a bit since the button may not able to click.
-        ViewGroup viewGroup = suggestionsDropdown.getViewGroup();
-        BaseSuggestionView baseSuggestionView = (BaseSuggestionView) viewGroup.getChildAt(index);
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                baseSuggestionView.getDecoratedSuggestionView());
+        CriteriaHelper.pollUiThread(() -> {
+            // Find the index of clipboard suggestion in the dropdown list.
+            final int clipboardSuggestionIndexInDropdown =
+                    OmniboxTestUtils.getIndexForFirstSuggestionOfType(
+                            locationBar, OmniboxSuggestionUiType.CLIPBOARD_SUGGESTION);
+            Criteria.checkThat("Cannot find the clipboard Omnibox suggestion in ModelList.",
+                    clipboardSuggestionIndexInDropdown, Matchers.not(INVALID_INDEX));
+            OmniboxSuggestionsDropdown dropdown =
+                    locationBar.getAutocompleteCoordinator().getSuggestionsDropdownForTest();
+            ViewGroup viewGroup = dropdown.getViewGroup();
+            BaseSuggestionView baseSuggestionView =
+                    (BaseSuggestionView) viewGroup.getChildAt(clipboardSuggestionIndexInDropdown);
+            Criteria.checkThat("Cannot find the clipboard Omnibox suggestion in UI.",
+                    baseSuggestionView, Matchers.notNullValue());
+            TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                    baseSuggestionView.getDecoratedSuggestionView());
+        });
     }
 
     private SearchActivity startSearchActivity() {
@@ -789,49 +738,39 @@ public class SearchActivityTest {
         final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class, trigger);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return null;
-
-                return tab.getUrlString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(expectedUrl));
+        });
     }
 
     private void waitForSuggestionType(final SearchActivityLocationBarLayout locationBar,
             final @OmniboxSuggestionType int type) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OmniboxSuggestionsDropdown suggestionsDropdown =
-                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                                locationBar.getAutocompleteCoordinator());
-                if (suggestionsDropdown == null) return false;
-
-                for (int i = 0; i < suggestionsDropdown.getItemCount(); i++) {
-                    OmniboxSuggestion suggestion =
-                            AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                                    locationBar.getAutocompleteCoordinator(), i);
-                    if (suggestion != null && suggestion.getType() == type) {
-                        return true;
-                    }
-                }
-                return false;
+        CriteriaHelper.pollUiThread(() -> {
+            OmniboxSuggestionsDropdown suggestionsDropdown =
+                    locationBar.getAutocompleteCoordinator().getSuggestionsDropdownForTest();
+            Criteria.checkThat(suggestionsDropdown, Matchers.notNullValue());
+            for (int i = 0; i < suggestionsDropdown.getDropdownItemViewCountForTest(); i++) {
+                OmniboxSuggestion suggestion =
+                        locationBar.getAutocompleteCoordinator().getSuggestionAt(i);
+                if (suggestion != null && suggestion.getType() == type) return;
             }
+            throw new CriteriaNotSatisfiedException("No suggestions of type: " + type);
         });
     }
 
     @SuppressLint("SetTextI18n")
     private void setUrlBarText(final Activity activity, final String url) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
-                if (urlBar.isFocusable() && urlBar.hasFocus()) return true;
+        CriteriaHelper.pollUiThread(() -> {
+            UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
+            try {
+                Criteria.checkThat("UrlBar not focusable", urlBar.isFocusable(), Matchers.is(true));
+                Criteria.checkThat(
+                        "UrlBar does not have focus", urlBar.hasFocus(), Matchers.is(true));
+            } catch (CriteriaNotSatisfiedException ex) {
                 urlBar.requestFocus();
-                return false;
+                throw ex;
             }
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {

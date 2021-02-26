@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-jumbo_static_library("skeleton_generator") {
+static_library("skeleton_generator") {
   sources = [
     "spoof_checks/skeleton_generator.cc",
     "spoof_checks/skeleton_generator.h",
@@ -19,7 +17,7 @@ jumbo_static_library("skeleton_generator") {
   ]
 }
 
-jumbo_static_library("url_formatter") {
+static_library("url_formatter") {
   sources = [
     "elide_url.cc",
     "elide_url.h",
@@ -29,7 +27,6 @@ jumbo_static_library("url_formatter") {
     "url_fixer.h",
     "url_formatter.cc",
     "url_formatter.h",
-    "url_formatter_android.cc",
   ]
 
   configs += [
@@ -43,6 +40,8 @@ jumbo_static_library("url_formatter") {
     "//base",
     "//base:i18n",
     "//components/url_formatter:skeleton_generator",
+    "//components/url_formatter/spoof_checks/common_words:common",
+    "//components/url_formatter/spoof_checks/common_words:common_words_dafsa",
     "//components/url_formatter/spoof_checks/top_domains:common",
     "//components/url_formatter/spoof_checks/top_domains:generate_top_domains_trie",
     "//net",
@@ -54,6 +53,7 @@ jumbo_static_library("url_formatter") {
   public_deps = [ "//third_party/icu" ]
 
   if (is_android) {
+    sources += [ "url_formatter_android.cc" ]
     deps += [
       "android:jni_headers",
       "//url:gurl_android",
@@ -67,7 +67,7 @@ if (is_android) {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "elide_url_unittest.cc",
@@ -87,12 +87,4 @@ jumbo_source_set("unit_tests") {
     "//ui/gfx",
     "//url",
   ]
-
-  if (is_android) {
-    sources += [ "url_formatter_android_unittest.cc" ]
-    deps += [
-      "android:native_j_unittests_jni_headers",
-      "android:native_java_unittests_java",
-    ]
-  }
 }

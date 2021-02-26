@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 ksh{
     Countries{
         001{"de Ääd"}
@@ -299,5 +300,4 @@ ksh{
         CG{"de Republik Konggo"}
         CI{"de Älfebeijnköß"}
     }
-    Version{"37"}
 }

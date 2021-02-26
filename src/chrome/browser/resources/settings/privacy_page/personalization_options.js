@@ -49,21 +49,10 @@ Polymer({
 
     /** @private */
     showRestart_: Boolean,
-
-    /** @private */
-    showRestartToast_: Boolean,
     // </if>
 
     /** @private */
     showSignoutDialog_: Boolean,
-
-    /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
 
     /** @private */
     syncFirstSetupInProgress_: {
@@ -93,6 +82,30 @@ Polymer({
     this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
     this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
     // </if>
+  },
+
+  /**
+   * Returns the autocomplete search suggestions CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getSearchSuggestToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#searchSuggestToggle'));
+  },
+
+  /**
+   * Returns the anonymized URL collection CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getUrlCollectionToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#urlCollectionToggle'));
+  },
+
+  /**
+   * Returns the Drive suggestions CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getDriveSuggestToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#driveSuggestControl'));
   },
 
   // <if expr="_google_chrome and not chromeos">
@@ -176,7 +189,7 @@ Polymer({
       /** @type {!SettingsToggleButtonElement} */ (
           this.$$('#signinAllowedToggle'))
           .sendPrefChange();
-      this.showRestartToast_ = true;
+      this.$.toast.show();
     }
   },
 
@@ -189,7 +202,7 @@ Polymer({
       /** @type {!SettingsToggleButtonElement} */ (
           this.$$('#signinAllowedToggle'))
           .sendPrefChange();
-      this.showRestartToast_ = true;
+      this.$.toast.show();
     }
     this.showSignoutDialog_ = false;
   },

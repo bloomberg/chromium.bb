@@ -14,16 +14,12 @@ config("pgo_instrumentation_flags") {
   # Only add flags when chrome_pgo_phase == 1, so that variables we would use
   # are not required to be defined when we're not actually using PGO.
   if (chrome_pgo_phase == 1 && is_clang && !is_nacl && is_a_target_toolchain) {
-    # TODO(sebmarchand): Add a GN flag that allows setting the PGO profile
-    # name or find a way to remove use {target_name} in the filename?
-    # This uses the "%m" specifier to allow concurrent runs of the
-    # instrumented image.
-    cflags = [ "-fprofile-instr-generate=%m.profraw" ]
+    cflags = [ "-fprofile-generate" ]
     if (!is_win) {
       # Windows directly calls link.exe instead of the compiler driver when
       # linking, and embeds the path to the profile runtime library as
       # dependent library into each object file.
-      ldflags = [ "-fprofile-instr-generate" ]
+      ldflags = [ "-fprofile-generate" ]
     }
   }
 }
@@ -37,14 +33,25 @@ config("pgo_optimization_flags") {
   if (chrome_pgo_phase == 2 && is_clang && !is_nacl && is_a_target_toolchain) {
     _pgo_target = ""
 
+    # There are txt files used by //tools/update_pgo_profiles.py to decide which
+    # profiles to use, adding them as inputs so that analyzer recognizes the
+    # dependencies.
+    inputs = []
+
     if (is_win) {
       if (target_cpu == "x64") {
         _pgo_target = "win64"
+        inputs = [ "//chrome/build/win64.pgo.txt" ]
       } else {
         _pgo_target = "win32"
+        inputs = [ "//chrome/build/win32.pgo.txt" ]
       }
     } else if (is_mac) {
       _pgo_target = "mac"
+      inputs = [ "//chrome/build/mac.pgo.txt" ]
+    } else if (is_linux) {
+      _pgo_target = "linux"
+      inputs = [ "//chrome/build/linux.pgo.txt" ]
     }
 
     if (pgo_data_path == "" && _pgo_target != "") {
@@ -66,7 +73,14 @@ config("pgo_optimization_flags") {
       # and at least some profile data always ends up being considered
       # out of date, so make sure we don't error for those cases.
       "-Wno-profile-instr-unprofiled",
-      "-Wno-error=profile-instr-out-of-date",
+      "-Wno-profile-instr-out-of-date",
+
+      # Some hashing conflict results in a lot of warning like this when doing
+      # a PGO build:
+      #   warning: foo.cc: Function control flow change detected (hash mismatch)
+      #   [-Wbackend-plugin]
+      # See https://crbug.com/978401
+      "-Wno-backend-plugin",
     ]
   }
 }

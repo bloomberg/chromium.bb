@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -18,6 +17,7 @@
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
@@ -60,14 +60,16 @@ class CONTENT_EXPORT RenderAccessibilityManager
   // mojom::RenderAccessibility implementation.
   void SetMode(uint32_t ax_mode) override;
   void FatalError() override;
-  void HitTest(const ui::AXActionData& action_data,
+  void HitTest(const gfx::Point& point,
+               ax::mojom::Event event_to_fire,
+               int request_id,
                mojom::RenderAccessibility::HitTestCallback callback) override;
   void PerformAction(const ui::AXActionData& data) override;
   void Reset(int32_t reset_token) override;
 
   // Communication with the browser process.
   void HandleAccessibilityEvents(
-      const std::vector<AXContentTreeUpdate>& updates,
+      const std::vector<ui::AXTreeUpdate>& updates,
       const std::vector<ui::AXEvent>& events,
       int32_t reset_token,
       mojom::RenderAccessibilityHost::HandleAXEventsCallback callback);

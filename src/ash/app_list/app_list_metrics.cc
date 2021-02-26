@@ -10,6 +10,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/compositor/compositor.h"
@@ -30,10 +31,6 @@ constexpr int kMaxLoggedHistogramValue =
 
 }  // namespace
 
-// The UMA histogram that logs smoothness of folder show/hide animation.
-constexpr char kFolderShowHideAnimationSmoothness[] =
-    "Apps.AppListFolder.ShowHide.AnimationSmoothness";
-
 // The UMA histogram that logs smoothness of pagination animation.
 constexpr char kPaginationTransitionAnimationSmoothness[] =
     "Apps.PaginationTransition.AnimationSmoothness";
@@ -45,6 +42,14 @@ constexpr char kPaginationTransitionAnimationSmoothnessInClamshell[] =
 // The UMA histogram that logs which state search results are opened from.
 constexpr char kAppListSearchResultOpenSourceHistogram[] =
     "Apps.AppListSearchResultOpenedSource";
+
+// The UMA histogram that logs smoothness of cardified animation.
+constexpr char kCardifiedStateAnimationSmoothnessEnter[] =
+    "Apps.AppList.CardifiedStateAnimation.AnimationSmoothness."
+    "EnterCardifiedState";
+constexpr char kCardifiedStateAnimationSmoothnessExit[] =
+    "Apps.AppList.CardifiedStateAnimation.AnimationSmoothness."
+    "ExitCardifiedState";
 
 // The UMA hisotogram that logs the action user performs on zero state
 // search result.
@@ -257,6 +262,12 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     return true;
   }
 
+  // All app menu items in a ShelfApplicationMenuModel are not launches.
+  if (command_id >= CommandId::APP_MENU_ITEM_ID_FIRST &&
+      command_id < CommandId::APP_MENU_ITEM_ID_LAST) {
+    return false;
+  }
+
   switch (command_id) {
     // Used by ShelfContextMenu (shelf).
     case CommandId::MENU_OPEN_NEW:
@@ -304,67 +315,36 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
     case CommandId::COMMAND_ID_COUNT:
+    // Used by ShelfApplicationMenuModel.
+    case CommandId::APP_MENU_ITEM_ID_FIRST:
+    case CommandId::APP_MENU_ITEM_ID_LAST:
       return false;
   }
   NOTREACHED();
   return false;
 }
 
-FolderShowHideAnimationReporter::FolderShowHideAnimationReporter() = default;
+void ReportPaginationSmoothness(bool is_tablet_mode, int smoothness) {
+  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
+                           smoothness);
 
-FolderShowHideAnimationReporter::~FolderShowHideAnimationReporter() = default;
-
-void FolderShowHideAnimationReporter::Report(int value) {
-  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, value);
-}
-
-PaginationTransitionAnimationReporter::PaginationTransitionAnimationReporter() =
-    default;
-
-PaginationTransitionAnimationReporter::
-    ~PaginationTransitionAnimationReporter() = default;
-
-void PaginationTransitionAnimationReporter::Report(int value) {
-  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness, value);
-
-  if (is_tablet_mode_) {
+  if (is_tablet_mode) {
     UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
-                             value);
+                             smoothness);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
-        kPaginationTransitionAnimationSmoothnessInClamshell, value);
+        kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
   }
 }
 
-AppListAnimationMetricsRecorder::AppListAnimationMetricsRecorder(
-    ui::AnimationMetricsReporter* reporter)
-    : ui::AnimationMetricsRecorder(reporter) {}
-
-AppListAnimationMetricsRecorder::~AppListAnimationMetricsRecorder() = default;
-
-void AppListAnimationMetricsRecorder::OnAnimationStart(
-    base::TimeDelta expected_duration,
-    ui::Compositor* compositor) {
-  if (!compositor)
-    return;
-
-  animation_started_ = true;
-  ui::AnimationMetricsRecorder::OnAnimationStart(
-      compositor->activated_frame_count(), base::TimeTicks::Now(),
-      expected_duration);
-}
-
-void AppListAnimationMetricsRecorder::OnAnimationEnd(
-    ui::Compositor* compositor) {
-  if (!animation_started_)
-    return;
-
-  animation_started_ = false;
-
-  if (!compositor)
-    return;
-  ui::AnimationMetricsRecorder::OnAnimationEnd(
-      compositor->activated_frame_count(), compositor->refresh_rate());
+void ReportCardifiedSmoothness(bool is_entering_cardified, int smoothness) {
+  if (is_entering_cardified) {
+    UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessEnter,
+                             smoothness);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessExit,
+                             smoothness);
+  }
 }
 
 }  // namespace ash

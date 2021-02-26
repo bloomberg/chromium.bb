@@ -7,7 +7,7 @@
 
 #include "tools/gpu/gl/GLTestContext.h"
 
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/gpu/gl/GrGLUtil.h"
 #include "tools/gpu/GpuTimer.h"
 
@@ -51,7 +51,7 @@ private:
     GLGetQueryObjectui64vProc   fGLGetQueryObjectui64v;
 
 
-    typedef sk_gpu_test::GpuTimer INHERITED;
+    using INHERITED = sk_gpu_test::GpuTimer;
 };
 
 std::unique_ptr<GLGpuTimer> GLGpuTimer::MakeIfSupported(const sk_gpu_test::GLTestContext* ctx) {
@@ -156,7 +156,8 @@ namespace sk_gpu_test {
 GLTestContext::GLTestContext() : TestContext() {}
 
 GLTestContext::~GLTestContext() {
-    SkASSERT(nullptr == fGL.get());
+    SkASSERT(!fGLInterface);
+    SkASSERT(!fOriginalGLInterface);
 }
 
 bool GLTestContext::isValid() const {
@@ -192,7 +193,8 @@ static bool fence_is_supported(const GLTestContext* ctx) {
 }
 
 void GLTestContext::init(sk_sp<const GrGLInterface> gl) {
-    fGL = std::move(gl);
+    fGLInterface = std::move(gl);
+    fOriginalGLInterface = fGLInterface;
     fFenceSupport = fence_is_supported(this);
     fGpuTimer = GLGpuTimer::MakeIfSupported(this);
 #ifndef SK_GL
@@ -201,65 +203,52 @@ void GLTestContext::init(sk_sp<const GrGLInterface> gl) {
 }
 
 void GLTestContext::teardown() {
-    fGL.reset(nullptr);
+    fGLInterface.reset();
+    fOriginalGLInterface.reset();
     INHERITED::teardown();
 }
 
 void GLTestContext::testAbandon() {
     INHERITED::testAbandon();
 #ifdef SK_GL
-    if (fGL) {
-        fGL->abandon();
+    if (fGLInterface) {
+        fGLInterface->abandon();
+        fOriginalGLInterface->abandon();
     }
 #endif
 }
 
 void GLTestContext::finish() {
 #ifdef SK_GL
-    if (fGL) {
-        GR_GL_CALL(fGL.get(), Finish());
+    if (fGLInterface) {
+        GR_GL_CALL(fGLInterface.get(), Finish());
     }
 #endif
 }
 
-GrGLuint GLTestContext::createTextureRectangle(int width, int height, GrGLenum internalFormat,
-                                               GrGLenum externalFormat, GrGLenum externalType,
-                                               GrGLvoid* data) {
+void GLTestContext::overrideVersion(const char* version, const char* shadingLanguageVersion) {
 #ifdef SK_GL
-    // Should match GrGLCaps check for fRectangleTextureSupport.
-    if (kGL_GrGLStandard != fGL->fStandard ||
-        (GrGLGetVersion(fGL.get()) < GR_GL_VER(3, 1) &&
-         !fGL->fExtensions.has("GL_ARB_texture_rectangle") &&
-         !fGL->fExtensions.has("GL_ANGLE_texture_rectangle"))) {
-        return 0;
-    }
-
-    if  (GrGLGetGLSLVersion(fGL.get()) < GR_GLSL_VER(1, 40)) {
-        return 0;
-    }
-
-    GrGLuint id;
-    GR_GL_CALL(fGL.get(), GenTextures(1, &id));
-    GR_GL_CALL(fGL.get(), BindTexture(GR_GL_TEXTURE_RECTANGLE, id));
-    GR_GL_CALL(fGL.get(), TexParameteri(GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_MAG_FILTER,
-                                        GR_GL_NEAREST));
-    GR_GL_CALL(fGL.get(), TexParameteri(GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_MIN_FILTER,
-                                        GR_GL_NEAREST));
-    GR_GL_CALL(fGL.get(), TexParameteri(GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_WRAP_S,
-                                        GR_GL_CLAMP_TO_EDGE));
-    GR_GL_CALL(fGL.get(), TexParameteri(GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_WRAP_T,
-                                        GR_GL_CLAMP_TO_EDGE));
-    GR_GL_CALL(fGL.get(), TexImage2D(GR_GL_TEXTURE_RECTANGLE, 0, internalFormat, width, height, 0,
-                                     externalFormat, externalType, data));
-    return id;
-#else
-    return 0;
+    // GrGLFunction has both a limited capture size and doesn't call a destructor when it is
+    // initialized with a lambda. So here we're trusting fOriginalGLInterface will be kept alive.
+    auto getString = [wrapped = &fOriginalGLInterface->fFunctions.fGetString,
+                      version,
+                      shadingLanguageVersion](GrGLenum name) {
+        if (name == GR_GL_VERSION) {
+            return reinterpret_cast<const GrGLubyte*>(version);
+        } else if (name == GR_GL_SHADING_LANGUAGE_VERSION) {
+            return reinterpret_cast<const GrGLubyte*>(shadingLanguageVersion);
+        }
+        return (*wrapped)(name);
+    };
+    auto newInterface = sk_make_sp<GrGLInterface>(*fOriginalGLInterface);
+    newInterface->fFunctions.fGetString = getString;
+    fGLInterface = std::move(newInterface);
 #endif
-}
+};
 
-sk_sp<GrContext> GLTestContext::makeGrContext(const GrContextOptions& options) {
+sk_sp<GrDirectContext> GLTestContext::makeContext(const GrContextOptions& options) {
 #ifdef SK_GL
-    return GrContext::MakeGL(fGL, options);
+    return GrDirectContext::MakeGL(fGLInterface, options);
 #else
     return nullptr;
 #endif

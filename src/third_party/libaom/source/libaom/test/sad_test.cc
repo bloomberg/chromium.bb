@@ -31,6 +31,10 @@ typedef unsigned int (*SadMxNFunc)(const uint8_t *src_ptr, int src_stride,
                                    const uint8_t *ref_ptr, int ref_stride);
 typedef std::tuple<int, int, SadMxNFunc, int> SadMxNParam;
 
+typedef unsigned int (*SadSkipMxNFunc)(const uint8_t *src_ptr, int src_stride,
+                                       const uint8_t *ref_ptr, int ref_stride);
+typedef std::tuple<int, int, SadSkipMxNFunc, int> SadSkipMxNParam;
+
 typedef uint32_t (*SadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                   const uint8_t *ref_ptr, int ref_stride,
                                   const uint8_t *second_pred);
@@ -60,6 +64,11 @@ typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
                              uint32_t *sad_array);
 typedef std::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
 
+typedef void (*SadSkipMxNx4Func)(const uint8_t *src_ptr, int src_stride,
+                                 const uint8_t *const ref_ptr[], int ref_stride,
+                                 uint32_t *sad_array);
+typedef std::tuple<int, int, SadSkipMxNx4Func, int> SadSkipMxNx4Param;
+
 typedef void (*SadMxNx4AvgFunc)(const uint8_t *src_ptr, int src_stride,
                                 const uint8_t *const ref_ptr[], int ref_stride,
                                 const uint8_t *second_pred,
@@ -74,7 +83,7 @@ class SADTestBase : public ::testing::Test {
   SADTestBase(int width, int height, int bit_depth)
       : width_(width), height_(height), bd_(bit_depth) {}
 
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
     source_data8_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize));
     reference_data8_ = reinterpret_cast<uint8_t *>(
@@ -97,7 +106,7 @@ class SADTestBase : public ::testing::Test {
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
   }
 
-  static void TearDownTestCase() {
+  static void TearDownTestSuite() {
     aom_free(source_data8_);
     source_data8_ = NULL;
     aom_free(reference_data8_);
@@ -180,6 +189,31 @@ class SADTestBase : public ::testing::Test {
       }
     }
     return sad;
+  }
+
+  // Sum of Absolute Differences Skip rows. Given two blocks,
+  // calculate the absolute  difference between two pixels in the same
+  // relative location every other row; accumulate and double the result at the
+  // end.
+  unsigned int ReferenceSADSkip(int block_idx) {
+    unsigned int sad = 0;
+    const uint8_t *const reference8 = GetReference(block_idx);
+    const uint8_t *const source8 = source_data_;
+    const uint16_t *const reference16 =
+        CONVERT_TO_SHORTPTR(GetReference(block_idx));
+    const uint16_t *const source16 = CONVERT_TO_SHORTPTR(source_data_);
+    for (int h = 0; h < height_; h += 2) {
+      for (int w = 0; w < width_; ++w) {
+        if (!use_high_bit_depth_) {
+          sad += abs(source8[h * source_stride_ + w] -
+                     reference8[h * reference_stride_ + w]);
+        } else {
+          sad += abs(source16[h * source_stride_ + w] -
+                     reference16[h * reference_stride_ + w]);
+        }
+      }
+    }
+    return sad * 2;
   }
 
   // Sum of Absolute Differences Average. Given two blocks, and a prediction
@@ -343,6 +377,50 @@ class SADx4Test : public ::testing::WithParamInterface<SadMxNx4Param>,
       EXPECT_EQ(reference_sad, exp_sad[block]) << "block " << block;
     }
   }
+
+  void SpeedSAD() {
+    int test_count = 2000000;
+    unsigned int exp_sad[4];
+    while (test_count > 0) {
+      SADs(exp_sad);
+      test_count -= 1;
+    }
+  }
+};
+
+class SADSkipx4Test : public ::testing::WithParamInterface<SadMxNx4Param>,
+                      public SADTestBase {
+ public:
+  SADSkipx4Test() : SADTestBase(GET_PARAM(0), GET_PARAM(1), GET_PARAM(3)) {}
+
+ protected:
+  void SADs(unsigned int *results) {
+    const uint8_t *references[] = { GetReference(0), GetReference(1),
+                                    GetReference(2), GetReference(3) };
+
+    ASM_REGISTER_STATE_CHECK(GET_PARAM(2)(
+        source_data_, source_stride_, references, reference_stride_, results));
+  }
+
+  void CheckSADs() {
+    unsigned int reference_sad, exp_sad[4];
+
+    SADs(exp_sad);
+    for (int block = 0; block < 4; ++block) {
+      reference_sad = ReferenceSADSkip(block);
+
+      EXPECT_EQ(reference_sad, exp_sad[block]) << "block " << block;
+    }
+  }
+
+  void SpeedSAD() {
+    int test_count = 2000000;
+    unsigned int exp_sad[4];
+    while (test_count > 0) {
+      SADs(exp_sad);
+      test_count -= 1;
+    }
+  }
 };
 
 class SADx4AvgTest : public ::testing::WithParamInterface<SadMxNx4AvgParam>,
@@ -398,6 +476,37 @@ class SADTest : public ::testing::WithParamInterface<SadMxNParam>,
 
   void CheckSAD() {
     const unsigned int reference_sad = ReferenceSAD(0);
+    const unsigned int exp_sad = SAD(0);
+
+    ASSERT_EQ(reference_sad, exp_sad);
+  }
+
+  void SpeedSAD() {
+    int test_count = 20000000;
+    while (test_count > 0) {
+      SAD(0);
+      test_count -= 1;
+    }
+  }
+};
+
+class SADSkipTest : public ::testing::WithParamInterface<SadMxNParam>,
+                    public SADTestBase {
+ public:
+  SADSkipTest() : SADTestBase(GET_PARAM(0), GET_PARAM(1), GET_PARAM(3)) {}
+
+ protected:
+  unsigned int SAD(int block_idx) {
+    unsigned int ret;
+    const uint8_t *const reference = GetReference(block_idx);
+
+    ASM_REGISTER_STATE_CHECK(ret = GET_PARAM(2)(source_data_, source_stride_,
+                                                reference, reference_stride_));
+    return ret;
+  }
+
+  void CheckSAD() {
+    const unsigned int reference_sad = ReferenceSADSkip(0);
     const unsigned int exp_sad = SAD(0);
 
     ASSERT_EQ(reference_sad, exp_sad);
@@ -501,6 +610,7 @@ class DistWtdSADTest : public ::testing::WithParamInterface<DistWtdSadMxhParam>,
     }
   }
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DistWtdSADTest);
 
 class DistWtdSADavgTest
     : public ::testing::WithParamInterface<DistWtdSadMxNAvgParam>,
@@ -598,6 +708,62 @@ TEST_P(SADTest, ShortSrc) {
 #define SPEED_TEST (0)
 #if SPEED_TEST
 TEST_P(SADTest, Speed) {
+  const int tmp_stride = source_stride_;
+  source_stride_ >>= 1;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(reference_data_, reference_stride_);
+  SpeedSAD();
+  source_stride_ = tmp_stride;
+}
+#endif
+
+TEST_P(SADSkipTest, MaxRef) {
+  FillConstant(source_data_, source_stride_, 0);
+  FillConstant(reference_data_, reference_stride_, mask_);
+  CheckSAD();
+}
+
+TEST_P(SADSkipTest, MaxSrc) {
+  FillConstant(source_data_, source_stride_, mask_);
+  FillConstant(reference_data_, reference_stride_, 0);
+  CheckSAD();
+}
+
+TEST_P(SADSkipTest, ShortRef) {
+  const int tmp_stride = reference_stride_;
+  reference_stride_ >>= 1;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(reference_data_, reference_stride_);
+  CheckSAD();
+  reference_stride_ = tmp_stride;
+}
+
+TEST_P(SADSkipTest, UnalignedRef) {
+  // The reference frame, but not the source frame, may be unaligned for
+  // certain types of searches.
+  const int tmp_stride = reference_stride_;
+  reference_stride_ -= 1;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(reference_data_, reference_stride_);
+  CheckSAD();
+  reference_stride_ = tmp_stride;
+}
+
+TEST_P(SADSkipTest, ShortSrc) {
+  const int tmp_stride = source_stride_;
+  source_stride_ >>= 1;
+  int test_count = 2000;
+  while (test_count > 0) {
+    FillRandom(source_data_, source_stride_);
+    FillRandom(reference_data_, reference_stride_);
+    CheckSAD();
+    test_count -= 1;
+  }
+  source_stride_ = tmp_stride;
+}
+
+#if SPEED_TEST
+TEST_P(SADSkipTest, Speed) {
   const int tmp_stride = source_stride_;
   source_stride_ >>= 1;
   FillRandom(source_data_, source_stride_);
@@ -854,6 +1020,101 @@ TEST_P(SADx4Test, SrcAlignedByWidth) {
   source_data_ = tmp_source_data;
 }
 
+#if SPEED_TEST
+TEST_P(SADx4Test, Speed) {
+  FillRandom(source_data_, source_stride_);
+  FillRandom(GetReference(0), reference_stride_);
+  FillRandom(GetReference(1), reference_stride_);
+  FillRandom(GetReference(2), reference_stride_);
+  FillRandom(GetReference(3), reference_stride_);
+  SpeedSAD();
+}
+#endif
+
+// SADSkipx4
+TEST_P(SADSkipx4Test, MaxRef) {
+  FillConstant(source_data_, source_stride_, 0);
+  FillConstant(GetReference(0), reference_stride_, mask_);
+  FillConstant(GetReference(1), reference_stride_, mask_);
+  FillConstant(GetReference(2), reference_stride_, mask_);
+  FillConstant(GetReference(3), reference_stride_, mask_);
+  CheckSADs();
+}
+
+TEST_P(SADSkipx4Test, MaxSrc) {
+  FillConstant(source_data_, source_stride_, mask_);
+  FillConstant(GetReference(0), reference_stride_, 0);
+  FillConstant(GetReference(1), reference_stride_, 0);
+  FillConstant(GetReference(2), reference_stride_, 0);
+  FillConstant(GetReference(3), reference_stride_, 0);
+  CheckSADs();
+}
+
+TEST_P(SADSkipx4Test, ShortRef) {
+  int tmp_stride = reference_stride_;
+  reference_stride_ >>= 1;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(GetReference(0), reference_stride_);
+  FillRandom(GetReference(1), reference_stride_);
+  FillRandom(GetReference(2), reference_stride_);
+  FillRandom(GetReference(3), reference_stride_);
+  CheckSADs();
+  reference_stride_ = tmp_stride;
+}
+
+TEST_P(SADSkipx4Test, UnalignedRef) {
+  // The reference frame, but not the source frame, may be unaligned for
+  // certain types of searches.
+  int tmp_stride = reference_stride_;
+  reference_stride_ -= 1;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(GetReference(0), reference_stride_);
+  FillRandom(GetReference(1), reference_stride_);
+  FillRandom(GetReference(2), reference_stride_);
+  FillRandom(GetReference(3), reference_stride_);
+  CheckSADs();
+  reference_stride_ = tmp_stride;
+}
+
+TEST_P(SADSkipx4Test, ShortSrc) {
+  int tmp_stride = source_stride_;
+  source_stride_ >>= 1;
+  int test_count = 1000;
+  while (test_count > 0) {
+    FillRandom(source_data_, source_stride_);
+    FillRandom(GetReference(0), reference_stride_);
+    FillRandom(GetReference(1), reference_stride_);
+    FillRandom(GetReference(2), reference_stride_);
+    FillRandom(GetReference(3), reference_stride_);
+    CheckSADs();
+    test_count -= 1;
+  }
+  source_stride_ = tmp_stride;
+}
+
+TEST_P(SADSkipx4Test, SrcAlignedByWidth) {
+  uint8_t *tmp_source_data = source_data_;
+  source_data_ += width_;
+  FillRandom(source_data_, source_stride_);
+  FillRandom(GetReference(0), reference_stride_);
+  FillRandom(GetReference(1), reference_stride_);
+  FillRandom(GetReference(2), reference_stride_);
+  FillRandom(GetReference(3), reference_stride_);
+  CheckSADs();
+  source_data_ = tmp_source_data;
+}
+
+#if SPEED_TEST
+TEST_P(SADSkipx4Test, Speed) {
+  FillRandom(source_data_, source_stride_);
+  FillRandom(GetReference(0), reference_stride_);
+  FillRandom(GetReference(1), reference_stride_);
+  FillRandom(GetReference(2), reference_stride_);
+  FillRandom(GetReference(3), reference_stride_);
+  SpeedSAD();
+}
+#endif
+
 using std::make_tuple;
 
 #if SPEED_TEST
@@ -1020,6 +1281,103 @@ const SadMxNParam c_tests[] = {
 #endif
 };
 INSTANTIATE_TEST_SUITE_P(C, SADTest, ::testing::ValuesIn(c_tests));
+
+const SadSkipMxNParam skip_c_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128_c, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64_c, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128_c, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64_c, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32_c, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64_c, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32_c, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16_c, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32_c, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16_c, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8_c, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16_c, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8_c, -1),
+  make_tuple(8, 4, &aom_sad_skip_8x4_c, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8_c, -1),
+  make_tuple(4, 4, &aom_sad_skip_4x4_c, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16_c, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64_c, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8_c, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32_c, -1),
+  make_tuple(16, 4, &aom_sad_skip_16x4_c, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16_c, -1),
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_c, 8),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_c, 8),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_c, 8),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_c, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_c, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_c, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_c, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_c, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_c, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_c, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_c, 8),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_c, 8),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_c, 8),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4_c, 8),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_c, 8),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4_c, 8),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_c, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_c, 8),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_c, 8),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_c, 8),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4_c, 8),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_c, 8),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_c, 10),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_c, 10),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_c, 10),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_c, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_c, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_c, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_c, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_c, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_c, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_c, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_c, 10),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_c, 10),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_c, 10),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4_c, 10),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_c, 10),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4_c, 10),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_c, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_c, 10),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_c, 10),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_c, 10),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4_c, 10),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_c, 10),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_c, 12),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_c, 12),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_c, 12),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_c, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_c, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_c, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_c, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_c, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_c, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_c, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_c, 12),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_c, 12),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_c, 12),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4_c, 12),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_c, 12),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4_c, 12),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_c, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_c, 12),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_c, 12),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_c, 12),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4_c, 12),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_c, 12),
+#endif
+};
+INSTANTIATE_TEST_SUITE_P(C, SADSkipTest, ::testing::ValuesIn(skip_c_tests));
 
 const SadMxNAvgParam avg_c_tests[] = {
   make_tuple(128, 128, &aom_sad128x128_avg_c, -1),
@@ -1280,6 +1638,101 @@ const SadMxNx4Param x4d_c_tests[] = {
 };
 INSTANTIATE_TEST_SUITE_P(C, SADx4Test, ::testing::ValuesIn(x4d_c_tests));
 
+const SadMxNx4Param skip_x4d_c_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128x4d_c, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64x4d_c, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128x4d_c, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64x4d_c, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32x4d_c, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64x4d_c, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32x4d_c, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16x4d_c, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32x4d_c, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16x4d_c, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8x4d_c, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16x4d_c, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8x4d_c, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8x4d_c, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16x4d_c, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64x4d_c, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8x4d_c, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32x4d_c, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16x4d_c, -1),
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_c, 8),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_c, 8),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_c, 8),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_c, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_c, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_c, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_c, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_c, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_c, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_c, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_c, 8),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_c, 8),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_c, 8),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4x4d_c, 8),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_c, 8),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4x4d_c, 8),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_c, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_c, 8),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_c, 8),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_c, 8),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4x4d_c, 8),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_c, 8),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_c, 10),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_c, 10),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_c, 10),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_c, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_c, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_c, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_c, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_c, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_c, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_c, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_c, 10),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_c, 10),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_c, 10),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4x4d_c, 10),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_c, 10),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4x4d_c, 10),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_c, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_c, 10),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_c, 10),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_c, 10),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4x4d_c, 10),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_c, 10),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_c, 12),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_c, 12),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_c, 12),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_c, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_c, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_c, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_c, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_c, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_c, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_c, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_c, 12),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_c, 12),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_c, 12),
+  make_tuple(8, 4, &aom_highbd_sad_skip_8x4x4d_c, 12),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_c, 12),
+  make_tuple(4, 4, &aom_highbd_sad_skip_4x4x4d_c, 12),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_c, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_c, 12),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_c, 12),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_c, 12),
+  make_tuple(16, 4, &aom_highbd_sad_skip_16x4x4d_c, 12),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_c, 12),
+#endif
+};
+INSTANTIATE_TEST_SUITE_P(C, SADSkipx4Test,
+                         ::testing::ValuesIn(skip_x4d_c_tests));
+
 const SadMxNx4AvgParam x4d_avg_c_tests[] = {
   make_tuple(128, 128, &aom_sad128x128x4d_avg_c, -1),
   make_tuple(128, 64, &aom_sad128x64x4d_avg_c, -1),
@@ -1327,6 +1780,53 @@ const SadMxNx4Param x4d_neon_tests[] = {
   make_tuple(16, 16, &aom_sad16x16x4d_neon, -1),
 };
 INSTANTIATE_TEST_SUITE_P(NEON, SADx4Test, ::testing::ValuesIn(x4d_neon_tests));
+const SadSkipMxNParam skip_neon_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128_neon, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64_neon, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128_neon, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64_neon, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32_neon, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16_neon, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64_neon, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32_neon, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16_neon, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8_neon, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64_neon, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32_neon, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16_neon, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8_neon, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32_neon, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16_neon, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8_neon, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16_neon, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8_neon, -1),
+};
+INSTANTIATE_TEST_SUITE_P(NEON, SADSkipTest,
+                         ::testing::ValuesIn(skip_neon_tests));
+
+const SadSkipMxNx4Param skip_x4d_neon_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128x4d_neon, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64x4d_neon, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128x4d_neon, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64x4d_neon, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32x4d_neon, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16x4d_neon, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64x4d_neon, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32x4d_neon, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16x4d_neon, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8x4d_neon, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64x4d_neon, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32x4d_neon, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16x4d_neon, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8x4d_neon, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8x4d_neon, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16x4d_neon, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32x4d_neon, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8x4d_neon, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16x4d_neon, -1),
+};
+INSTANTIATE_TEST_SUITE_P(NEON, SADSkipx4Test,
+                         ::testing::ValuesIn(skip_x4d_neon_tests));
 #endif  // HAVE_NEON
 
 //------------------------------------------------------------------------------
@@ -1422,6 +1922,83 @@ const SadMxNParam sse2_tests[] = {
 #endif
 };
 INSTANTIATE_TEST_SUITE_P(SSE2, SADTest, ::testing::ValuesIn(sse2_tests));
+
+const SadSkipMxNParam skip_sse2_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128_sse2, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64_sse2, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128_sse2, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64_sse2, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32_sse2, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64_sse2, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32_sse2, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16_sse2, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32_sse2, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16_sse2, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8_sse2, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16_sse2, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8_sse2, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8_sse2, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16_sse2, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64_sse2, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8_sse2, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32_sse2, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16_sse2, -1),
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_sse2, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_sse2, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_sse2, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_sse2, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_sse2, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_sse2, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_sse2, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_sse2, 8),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_sse2, 8),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_sse2, 8),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_sse2, 8),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_sse2, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_sse2, 8),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_sse2, 8),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_sse2, 8),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_sse2, 8),
+
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_sse2, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_sse2, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_sse2, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_sse2, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_sse2, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_sse2, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_sse2, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_sse2, 10),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_sse2, 10),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_sse2, 10),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_sse2, 10),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_sse2, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_sse2, 10),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_sse2, 10),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_sse2, 10),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_sse2, 10),
+
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_sse2, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_sse2, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_sse2, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_sse2, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_sse2, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_sse2, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_sse2, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_sse2, 12),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16_sse2, 12),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8_sse2, 12),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8_sse2, 12),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16_sse2, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_sse2, 12),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8_sse2, 12),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32_sse2, 12),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16_sse2, 12),
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+};
+INSTANTIATE_TEST_SUITE_P(SSE2, SADSkipTest,
+                         ::testing::ValuesIn(skip_sse2_tests));
 
 const SadMxNAvgParam avg_sse2_tests[] = {
   make_tuple(128, 128, &aom_sad128x128_avg_sse2, -1),
@@ -1604,6 +2181,84 @@ const SadMxNx4Param x4d_sse2_tests[] = {
 #endif
 };
 INSTANTIATE_TEST_SUITE_P(SSE2, SADx4Test, ::testing::ValuesIn(x4d_sse2_tests));
+
+const SadSkipMxNx4Param skip_x4d_sse2_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128x4d_sse2, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64x4d_sse2, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128x4d_sse2, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64x4d_sse2, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32x4d_sse2, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64x4d_sse2, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32x4d_sse2, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16x4d_sse2, -1),
+  make_tuple(16, 32, &aom_sad_skip_16x32x4d_sse2, -1),
+  make_tuple(16, 16, &aom_sad_skip_16x16x4d_sse2, -1),
+  make_tuple(16, 8, &aom_sad_skip_16x8x4d_sse2, -1),
+  make_tuple(8, 16, &aom_sad_skip_8x16x4d_sse2, -1),
+  make_tuple(8, 8, &aom_sad_skip_8x8x4d_sse2, -1),
+  make_tuple(4, 8, &aom_sad_skip_4x8x4d_sse2, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16x4d_sse2, -1),
+  make_tuple(16, 64, &aom_sad_skip_16x64x4d_sse2, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8x4d_sse2, -1),
+  make_tuple(8, 32, &aom_sad_skip_8x32x4d_sse2, -1),
+  make_tuple(4, 16, &aom_sad_skip_4x16x4d_sse2, -1),
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_sse2, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_sse2, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_sse2, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_sse2, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_sse2, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_sse2, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_sse2, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_sse2, 8),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_sse2, 8),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_sse2, 8),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_sse2, 8),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_sse2, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_sse2, 8),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_sse2, 8),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_sse2, 8),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_sse2, 8),
+
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_sse2, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_sse2, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_sse2, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_sse2, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_sse2, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_sse2, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_sse2, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_sse2, 10),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_sse2, 10),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_sse2, 10),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_sse2, 10),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_sse2, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_sse2, 10),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_sse2, 10),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_sse2, 10),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_sse2, 10),
+
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_sse2, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_sse2, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_sse2, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_sse2, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_sse2, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_sse2, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_sse2, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_sse2, 12),
+  make_tuple(8, 16, &aom_highbd_sad_skip_8x16x4d_sse2, 12),
+  make_tuple(8, 8, &aom_highbd_sad_skip_8x8x4d_sse2, 12),
+  make_tuple(4, 8, &aom_highbd_sad_skip_4x8x4d_sse2, 12),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_sse2, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_sse2, 12),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_sse2, 12),
+  make_tuple(8, 32, &aom_highbd_sad_skip_8x32x4d_sse2, 12),
+  make_tuple(4, 16, &aom_highbd_sad_skip_4x16x4d_sse2, 12),
+
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+};
+INSTANTIATE_TEST_SUITE_P(SSE2, SADSkipx4Test,
+                         ::testing::ValuesIn(skip_x4d_sse2_tests));
 
 const SadMxNx4AvgParam x4d_avg_sse2_tests[] = {
   make_tuple(128, 128, &aom_sad128x128x4d_avg_sse2, -1),
@@ -1801,6 +2456,59 @@ const SadMxNParam avx2_tests[] = {
 };
 INSTANTIATE_TEST_SUITE_P(AVX2, SADTest, ::testing::ValuesIn(avx2_tests));
 
+const SadSkipMxNParam skip_avx2_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128_avx2, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64_avx2, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128_avx2, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64_avx2, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32_avx2, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64_avx2, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32_avx2, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16_avx2, -1),
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_avx2, 8),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_avx2, 8),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_avx2, 8),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_avx2, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_avx2, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_avx2, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_avx2, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_avx2, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_avx2, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_avx2, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_avx2, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_avx2, 8),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_avx2, 10),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_avx2, 10),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_avx2, 10),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_avx2, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_avx2, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_avx2, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_avx2, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_avx2, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_avx2, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_avx2, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_avx2, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_avx2, 10),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128_avx2, 12),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64_avx2, 12),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128_avx2, 12),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64_avx2, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32_avx2, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64_avx2, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32_avx2, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16_avx2, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64_avx2, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32_avx2, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16_avx2, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8_avx2, 12),
+#endif
+};
+INSTANTIATE_TEST_SUITE_P(AVX2, SADSkipTest,
+                         ::testing::ValuesIn(skip_avx2_tests));
+
 const SadMxNAvgParam avg_avx2_tests[] = {
   make_tuple(64, 128, &aom_sad64x128_avg_avx2, -1),
   make_tuple(128, 64, &aom_sad128x64_avg_avx2, -1),
@@ -1860,6 +2568,67 @@ const SadMxNAvgParam avg_avx2_tests[] = {
 #endif
 };
 INSTANTIATE_TEST_SUITE_P(AVX2, SADavgTest, ::testing::ValuesIn(avg_avx2_tests));
+
+const SadSkipMxNx4Param skip_x4d_avx2_tests[] = {
+  make_tuple(128, 128, &aom_sad_skip_128x128x4d_avx2, -1),
+  make_tuple(128, 64, &aom_sad_skip_128x64x4d_avx2, -1),
+  make_tuple(64, 128, &aom_sad_skip_64x128x4d_avx2, -1),
+  make_tuple(64, 64, &aom_sad_skip_64x64x4d_avx2, -1),
+  make_tuple(64, 32, &aom_sad_skip_64x32x4d_avx2, -1),
+  make_tuple(64, 16, &aom_sad_skip_64x16x4d_avx2, -1),
+  make_tuple(32, 64, &aom_sad_skip_32x64x4d_avx2, -1),
+  make_tuple(32, 32, &aom_sad_skip_32x32x4d_avx2, -1),
+  make_tuple(32, 16, &aom_sad_skip_32x16x4d_avx2, -1),
+  make_tuple(32, 8, &aom_sad_skip_32x8x4d_avx2, -1),
+#if CONFIG_AV1_HIGHBITDEPTH
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_avx2, 8),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_avx2, 8),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_avx2, 8),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_avx2, 8),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_avx2, 8),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_avx2, 8),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_avx2, 8),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_avx2, 8),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_avx2, 8),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_avx2, 8),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_avx2, 8),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_avx2, 8),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_avx2, 8),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_avx2, 8),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_avx2, 10),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_avx2, 10),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_avx2, 10),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_avx2, 10),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_avx2, 10),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_avx2, 10),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_avx2, 10),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_avx2, 10),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_avx2, 10),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_avx2, 10),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_avx2, 10),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_avx2, 10),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_avx2, 10),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_avx2, 10),
+
+  make_tuple(128, 128, &aom_highbd_sad_skip_128x128x4d_avx2, 12),
+  make_tuple(128, 64, &aom_highbd_sad_skip_128x64x4d_avx2, 12),
+  make_tuple(64, 128, &aom_highbd_sad_skip_64x128x4d_avx2, 12),
+  make_tuple(64, 64, &aom_highbd_sad_skip_64x64x4d_avx2, 12),
+  make_tuple(64, 32, &aom_highbd_sad_skip_64x32x4d_avx2, 12),
+  make_tuple(64, 16, &aom_highbd_sad_skip_64x16x4d_avx2, 12),
+  make_tuple(32, 64, &aom_highbd_sad_skip_32x64x4d_avx2, 12),
+  make_tuple(32, 32, &aom_highbd_sad_skip_32x32x4d_avx2, 12),
+  make_tuple(32, 16, &aom_highbd_sad_skip_32x16x4d_avx2, 12),
+  make_tuple(32, 8, &aom_highbd_sad_skip_32x8x4d_avx2, 12),
+  make_tuple(16, 64, &aom_highbd_sad_skip_16x64x4d_avx2, 12),
+  make_tuple(16, 32, &aom_highbd_sad_skip_16x32x4d_avx2, 12),
+  make_tuple(16, 16, &aom_highbd_sad_skip_16x16x4d_avx2, 12),
+  make_tuple(16, 8, &aom_highbd_sad_skip_16x8x4d_avx2, 12),
+#endif
+};
+INSTANTIATE_TEST_SUITE_P(AVX2, SADSkipx4Test,
+                         ::testing::ValuesIn(skip_x4d_avx2_tests));
 
 const SadMxNx4Param x4d_avx2_tests[] = {
   make_tuple(32, 64, &aom_sad32x64x4d_avx2, -1),

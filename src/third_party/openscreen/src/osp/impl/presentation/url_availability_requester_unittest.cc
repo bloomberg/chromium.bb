@@ -4,7 +4,10 @@
 
 #include "osp/impl/presentation/url_availability_requester.h"
 
+#include <chrono>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -16,9 +19,6 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "util/osp_logging.h"
-
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 
 namespace openscreen {
 namespace osp {
@@ -46,8 +46,8 @@ class MockReceiverObserver : public ReceiverObserver {
 class UrlAvailabilityRequesterTest : public Test {
  public:
   UrlAvailabilityRequesterTest() {
-    fake_clock_ =
-        std::make_unique<FakeClock>(Clock::time_point(milliseconds(1298424)));
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::milliseconds(1298424)));
     task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
     quic_bridge_ =
         std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
@@ -546,7 +546,7 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   quic_bridge_->RunTasksUntilIdle();
 
-  fake_clock_->Advance(seconds(60));
+  fake_clock_->Advance(std::chrono::seconds(60));
 
   ExpectStreamMessage(&mock_callback_, &request);
   listener_.RefreshWatches();
@@ -667,7 +667,7 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ((std::vector<std::string>{url2_}), request.urls);
 
-  fake_clock_->Advance(seconds(60));
+  fake_clock_->Advance(std::chrono::seconds(60));
 
   listener_.RefreshWatches();
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _, _)).Times(0);

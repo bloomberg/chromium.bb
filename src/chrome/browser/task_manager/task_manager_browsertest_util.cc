@@ -5,7 +5,7 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -44,7 +44,7 @@ class ResourceChangeObserver {
         title_pattern_(title_pattern),
         column_specifier_(column_specifier),
         min_column_value_(min_column_value) {
-    task_manager_tester_ = TaskManagerTester::Create(base::Bind(
+    task_manager_tester_ = TaskManagerTester::Create(base::BindRepeating(
         &ResourceChangeObserver::OnResourceChange, base::Unretained(this)));
   }
 

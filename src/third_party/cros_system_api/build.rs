@@ -8,7 +8,7 @@
 
 use std::path::Path;
 
-use chromeos_dbus_bindings::{self, generate_module};
+use chromeos_dbus_bindings::{self, generate_module, BindingsType};
 
 // The parent path of system_api.
 const SOURCE_DIR: &str = "..";
@@ -16,18 +16,21 @@ const SOURCE_DIR: &str = "..";
 // (<module name>, <relative path to source xml>)
 // When adding additional bindings, remember to include the source project and subtree in the
 // ebuild. Otherwise, the source files will not be accessible when building system_api-rust.
-const BINDINGS_TO_GENERATE: &[(&str, &str)] = &[
+const BINDINGS_TO_GENERATE: &[(&str, &str, BindingsType)] = &[
     (
         "org_chromium_authpolicy",
         "authpolicy/dbus_bindings/org.chromium.AuthPolicy.xml",
+        BindingsType::Client,
     ),
     (
         "org_chromium_debugd",
         "debugd/dbus_bindings/org.chromium.debugd.xml",
+        BindingsType::Client,
     ),
     (
         "org_chromium_sessionmanagerinterface",
         "login_manager/dbus_bindings/org.chromium.SessionManagerInterface.xml",
+        BindingsType::Client,
     ),
 ];
 

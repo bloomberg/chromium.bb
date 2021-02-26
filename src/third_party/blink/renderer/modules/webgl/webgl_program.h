@@ -71,7 +71,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   bool AttachShader(WebGLShader*);
   bool DetachShader(WebGLShader*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
@@ -93,7 +93,6 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
 
   Member<WebGLShader> vertex_shader_;
   Member<WebGLShader> fragment_shader_;
-  Member<WebGLShader> compute_shader_;
 
   bool info_valid_;
 

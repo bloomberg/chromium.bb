@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
@@ -28,17 +28,17 @@
 
 #if defined(OS_WIN)
 #include <malloc.h>
-static size_t GetAllocatedSize(void* mem) {
+static size_t GetUsableSize(void* mem) {
   return _msize(mem);
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <malloc/malloc.h>
-static size_t GetAllocatedSize(void* mem) {
+static size_t GetUsableSize(void* mem) {
   return malloc_size(mem);
 }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <malloc.h>
-static size_t GetAllocatedSize(void* mem) {
+static size_t GetUsableSize(void* mem) {
   return malloc_usable_size(mem);
 }
 #endif
@@ -61,9 +61,9 @@ constexpr int kFailure = 1;
 class SamplingMallocShimsTest : public base::MultiProcessTest {
  public:
   static void multiprocessTestSetup() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     base::allocator::InitializeAllocatorShim();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
     crash_reporter::InitializeCrashKeys();
     InstallMallocHooks(AllocatorState::kMaxMetadata,
                        AllocatorState::kMaxMetadata, AllocatorState::kMaxSlots,
@@ -167,7 +167,13 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   return kFailure;
 }
 
-TEST_F(SamplingMallocShimsTest, BasicFunctionality) {
+// Flaky on Mac: https://crbug.com/1087372
+#if defined(OS_APPLE)
+#define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
+#else
+#define MAYBE_BasicFunctionality BasicFunctionality
+#endif
+TEST_F(SamplingMallocShimsTest, MAYBE_BasicFunctionality) {
   runTest("BasicFunctionality");
 }
 
@@ -251,7 +257,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     std::unique_ptr<void, decltype(&free)> alloc(malloc(kAllocationSize), free);
     CHECK_NE(alloc.get(), nullptr);
 
-    size_t alloc_sz = GetAllocatedSize(alloc.get());
+    size_t alloc_sz = GetUsableSize(alloc.get());
     if (GetMallocGpaForTesting().PointerIsMine(alloc.get()))
       CHECK_EQ(alloc_sz, kAllocationSize);
     else
@@ -289,7 +295,7 @@ TEST_F(SamplingMallocShimsTest, AlignedRealloc) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     BatchFree,
     SamplingMallocShimsTest::multiprocessTestSetup) {
@@ -317,7 +323,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 TEST_F(SamplingMallocShimsTest, BatchFree) {
   runTest("BatchFree");
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace
 

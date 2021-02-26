@@ -15,7 +15,6 @@
 #include "content/public/common/origin_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_byte_range.h"
-#include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -56,10 +55,14 @@ bool ServiceWorkerUtils::IsMainResourceType(blink::mojom::ResourceType type) {
 }
 
 // static
-bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
-  DCHECK(!scope.has_ref());
-  return base::StartsWith(url.spec(), scope.spec(),
-                          base::CompareCase::SENSITIVE);
+bool ServiceWorkerUtils::IsMainRequestDestination(
+    network::mojom::RequestDestination destination) {
+  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
+  // to be a main resource.
+  if (destination == network::mojom::RequestDestination::kWorker)
+    return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
+  return blink::IsRequestDestinationFrame(destination) ||
+         destination == network::mojom::RequestDestination::kSharedWorker;
 }
 
 // static
@@ -233,61 +236,6 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
   }
   NOTREACHED();
   return ".Unknown";
-}
-
-ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ResourceResponseHeadAndMetadata(
-        network::mojom::URLResponseHeadPtr head,
-        scoped_refptr<net::IOBufferWithSize> metadata)
-    : head(std::move(head)), metadata(std::move(metadata)) {}
-
-ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other) =
-        default;
-
-ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ~ResourceResponseHeadAndMetadata() = default;
-
-ServiceWorkerUtils::ResourceResponseHeadAndMetadata
-ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
-    const net::HttpResponseInfo* http_info,
-    uint32_t options,
-    base::TimeTicks request_start_time,
-    base::TimeTicks response_start_time,
-    int response_data_size) {
-  DCHECK(http_info);
-  DCHECK(http_info->headers);
-
-  auto head = network::mojom::URLResponseHead::New();
-  head->request_start = request_start_time;
-  head->response_start = response_start_time;
-  head->request_time = http_info->request_time;
-  head->response_time = http_info->response_time;
-  head->headers = http_info->headers;
-  head->headers->GetMimeType(&head->mime_type);
-  head->headers->GetCharset(&head->charset);
-  head->content_length = response_data_size;
-  head->was_fetched_via_spdy = http_info->was_fetched_via_spdy;
-  head->was_alpn_negotiated = http_info->was_alpn_negotiated;
-  head->connection_info = http_info->connection_info;
-  head->alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
-  head->remote_endpoint = http_info->remote_endpoint;
-  head->cert_status = http_info->ssl_info.cert_status;
-
-  if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
-    head->ssl_info = http_info->ssl_info;
-
-  return {std::move(head), std::move(http_info->metadata)};
-}
-
-bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
-  if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
-    return false;
-  if (match_.is_empty() || match_.spec().size() < scope.spec().size()) {
-    match_ = scope;
-    return true;
-  }
-  return false;
 }
 
 }  // namespace content

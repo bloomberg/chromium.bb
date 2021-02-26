@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -42,30 +44,46 @@ class ExistingAccountRowViewBinder {
                     -> model.get(ExistingAccountRowProperties.ON_CLICK_LISTENER)
                                .onResult(profileData));
         } else if (propertyKey == ExistingAccountRowProperties.PROFILE_DATA) {
-            ImageView accountImage = view.findViewById(R.id.account_image);
-            accountImage.setImageDrawable(profileData.getImage());
-
-            TextView accountTextPrimary = view.findViewById(R.id.account_text_primary);
-            TextView accountTextSecondary = view.findViewById(R.id.account_text_secondary);
-
-            String fullName = profileData.getFullName();
-            if (!TextUtils.isEmpty(fullName)) {
-                accountTextPrimary.setText(fullName);
-                accountTextSecondary.setText(profileData.getAccountName());
-                accountTextSecondary.setVisibility(View.VISIBLE);
-            } else {
-                // Full name is not available, show the email in the primary TextView.
-                accountTextPrimary.setText(profileData.getAccountName());
-                accountTextSecondary.setVisibility(View.GONE);
-            }
+            bindAccountView(profileData, view);
         } else if (propertyKey == ExistingAccountRowProperties.IS_SELECTED_ACCOUNT) {
             ImageView selectionMark = view.findViewById(R.id.account_selection_mark);
-            selectionMark.setVisibility(model.get(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT)
-                            ? View.VISIBLE
-                            : View.GONE);
+            if (model.get(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT)) {
+                selectionMark.setImageResource(R.drawable.ic_check_googblue_24dp);
+                ImageViewCompat.setImageTintList(selectionMark,
+                        ContextCompat.getColorStateList(
+                                view.getContext(), R.color.default_icon_color_blue));
+                selectionMark.setVisibility(View.VISIBLE);
+            } else {
+                selectionMark.setVisibility(View.GONE);
+            }
         } else {
             throw new IllegalArgumentException(
                     "Cannot update the view for propertyKey: " + propertyKey);
+        }
+    }
+
+    /**
+     * Binds the view with the given profile data.
+     *
+     * @param profileData profile data needs to bind.
+     * @param view A view object inflated from @layout/account_picker_row.
+     */
+    static void bindAccountView(DisplayableProfileData profileData, View view) {
+        ImageView accountImage = view.findViewById(R.id.account_image);
+        accountImage.setImageDrawable(profileData.getImage());
+
+        TextView accountTextPrimary = view.findViewById(R.id.account_text_primary);
+        TextView accountTextSecondary = view.findViewById(R.id.account_text_secondary);
+
+        String fullName = profileData.getFullName();
+        if (!TextUtils.isEmpty(fullName)) {
+            accountTextPrimary.setText(fullName);
+            accountTextSecondary.setText(profileData.getAccountName());
+            accountTextSecondary.setVisibility(View.VISIBLE);
+        } else {
+            // Full name is not available, show the email in the primary TextView.
+            accountTextPrimary.setText(profileData.getAccountName());
+            accountTextSecondary.setVisibility(View.GONE);
         }
     }
 }

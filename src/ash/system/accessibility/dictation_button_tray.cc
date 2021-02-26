@@ -39,7 +39,7 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
   const int horizontal_padding = (kTrayItemSize - icon_image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
-  icon_->set_tooltip_text(
+  icon_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION));
   tray_container()->AddChildView(icon_);
   Shell::Get()->AddShellObserver(this);
@@ -85,6 +85,11 @@ base::string16 DictationButtonTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_DICTATION_BUTTON_ACCESSIBLE_NAME);
 }
 
+void DictationButtonTray::HandleLocaleChange() {
+  icon_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION));
+}
+
 void DictationButtonTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
@@ -107,7 +112,7 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 
 void DictationButtonTray::UpdateVisibility() {
   bool is_visible =
-      Shell::Get()->accessibility_controller()->dictation_enabled();
+      Shell::Get()->accessibility_controller()->dictation().enabled();
   SetVisiblePreferred(is_visible);
 }
 

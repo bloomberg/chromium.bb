@@ -10,13 +10,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
@@ -31,8 +32,10 @@
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -373,22 +376,111 @@ AppCacheStorageReference::AppCacheStorageReference(
     : storage_(std::move(storage)) {}
 AppCacheStorageReference::~AppCacheStorageReference() = default;
 
+// QuotaClientHolder -------
+
+// Lives on the UI thread, manages an AppCacheQuotaClient on the IO thread.
+class AppCacheServiceImpl::QuotaClientHolder
+    : public base::RefCountedDeleteOnSequence<QuotaClientHolder> {
+ public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
+  explicit QuotaClientHolder();
+
+  QuotaClientHolder(QuotaClientHolder&) = delete;
+  QuotaClientHolder& operator=(QuotaClientHolder&) = delete;
+
+  void Initialize(scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+                  base::WeakPtr<AppCacheServiceImpl> appcache_service);
+
+  void NotifyStorageReady();
+
+ private:
+  friend class base::RefCountedDeleteOnSequence<QuotaClientHolder>;
+  friend class base::DeleteHelper<QuotaClientHolder>;
+  ~QuotaClientHolder();
+
+  void InitializeOnIOThread(
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<AppCacheServiceImpl> appcache_service);
+
+  void NotifyStorageReadyOnIOThread();
+
+  // This reference must only be accessed on the IO thread.
+  //
+  // Can be null in tests that don't set up a QuotaManager. Always non-null in
+  // shipping code.
+  scoped_refptr<AppCacheQuotaClient> quota_client_;
+};
+
+AppCacheServiceImpl::QuotaClientHolder::QuotaClientHolder()
+    : base::RefCountedDeleteOnSequence<QuotaClientHolder>(
+          GetIOThreadTaskRunner({})) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+AppCacheServiceImpl::QuotaClientHolder::~QuotaClientHolder() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (quota_client_)
+    quota_client_->NotifyServiceDestroyed();
+}
+
+void AppCacheServiceImpl::QuotaClientHolder::Initialize(
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    base::WeakPtr<AppCacheServiceImpl> appcache_service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&QuotaClientHolder::InitializeOnIOThread,
+                     base::RetainedRef(this), std::move(quota_manager_proxy),
+                     std::move(appcache_service)));
+}
+
+void AppCacheServiceImpl::QuotaClientHolder::NotifyStorageReady() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&QuotaClientHolder::NotifyStorageReadyOnIOThread,
+                     base::RetainedRef(this)));
+}
+
+void AppCacheServiceImpl::QuotaClientHolder::InitializeOnIOThread(
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    base::WeakPtr<AppCacheServiceImpl> appcache_service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Some tests don't set up a QuotaManager.
+  if (!quota_manager_proxy.get())
+    return;
+
+  quota_client_ =
+      base::MakeRefCounted<AppCacheQuotaClient>(std::move(appcache_service));
+  quota_manager_proxy->RegisterClient(quota_client_,
+                                      storage::QuotaClientType::kAppcache,
+                                      {blink::mojom::StorageType::kTemporary});
+}
+
+void AppCacheServiceImpl::QuotaClientHolder::NotifyStorageReadyOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (quota_client_)
+    quota_client_->NotifyStorageReady();
+}
+
 // AppCacheServiceImpl -------
 
 AppCacheServiceImpl::AppCacheServiceImpl(
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
     : db_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
-      quota_manager_proxy_(quota_manager_proxy),
+      quota_manager_proxy_(std::move(quota_manager_proxy)),
       force_keep_session_state_(false),
-      partition_(std::move(partition)) {
-  if (quota_manager_proxy_.get()) {
-    quota_client_ = base::MakeRefCounted<AppCacheQuotaClient>(AsWeakPtr());
-    quota_manager_proxy_->RegisterClient(quota_client_);
-  }
+      partition_(std::move(partition)),
+      quota_client_holder_(base::MakeRefCounted<QuotaClientHolder>()) {
+  quota_client_holder_->Initialize(quota_manager_proxy_, AsWeakPtr());
 }
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
@@ -398,11 +490,6 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
   for (auto& helper : pending_helpers_)
     helper.first->Cancel();
   pending_helpers_.clear();
-  if (quota_client_) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
-                                  std::move(quota_client_)));
-  }
 
   // Destroy storage_ first; ~AppCacheStorageImpl accesses other data members
   // (special_storage_policy_).
@@ -459,6 +546,10 @@ void AppCacheServiceImpl::Reinitialize() {
     observer.OnServiceReinitialized(old_storage_ref.get());
 
   Initialize(cache_directory_);
+}
+
+void AppCacheServiceImpl::NotifyStorageReady() {
+  quota_client_holder_->NotifyStorageReady();
 }
 
 void AppCacheServiceImpl::GetAllAppCacheInfo(
@@ -522,6 +613,7 @@ void AppCacheServiceImpl::RegisterHost(
     const base::UnguessableToken& host_id,
     int32_t render_frame_id,
     int process_id,
+    ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
     mojo::ReportBadMessageCallback bad_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetHost(host_id)) {
@@ -539,6 +631,7 @@ void AppCacheServiceImpl::RegisterHost(
     host->set_frontend(std::move(frontend_remote), render_frame_id);
   } else {
     host = std::make_unique<AppCacheHost>(host_id, process_id, render_frame_id,
+                                          std::move(security_policy_handle),
                                           std::move(frontend_remote), this);
   }
 

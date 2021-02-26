@@ -114,6 +114,11 @@ static const uint16_t kMDnsClassMask = 0x7FFF;
 // to 255 octets or less.
 static const int kMaxNameLength = 255;
 
+// RFC 1035, section 2.3.4: labels 63 octets or less.
+// Section 3.1: Each label is represented as a one octet length field followed
+// by that number of octets.
+const int kMaxLabelLength = 63;
+
 // RFC 1035, section 4.2.1: Messages carried by UDP are restricted to 512
 // bytes (not counting the IP nor UDP headers).
 static const int kMaxUDPSize = 512;
@@ -149,15 +154,11 @@ static const uint16_t kTypeAAAA = 28;
 static const uint16_t kTypeSRV = 33;
 static const uint16_t kTypeOPT = 41;
 static const uint16_t kTypeNSEC = 47;
+static const uint16_t kTypeHttps = 65;
 static const uint16_t kTypeANY = 255;
 
 // Experimental DNS record types pending IANA assignment.
 //
-// Record type proposed for TLS Encrypted Server Name Indication
-// (ESNI, draft 4) records:
-// https://tools.ietf.org/html/draft-ietf-tls-esni-04#section-8.3
-static const uint16_t kExperimentalTypeEsniDraft4 = 65439;
-
 // The INTEGRITY RR type exists purely for measuring how the DNS ecosystem
 // handles new RR types.
 // https://docs.google.com/document/d/14eCqVyT_3MSj7ydqNFl1Yl0yg1fs6g24qmYUUdi5V-k/edit?usp=sharing
@@ -185,6 +186,17 @@ static const uint16_t kFlagResponse = 0x8000;
 static const uint16_t kFlagAA = 0x400;  // Authoritative Answer - response flag.
 static const uint16_t kFlagRD = 0x100;  // Recursion Desired - query flag.
 static const uint16_t kFlagTC = 0x200;  // Truncated - server flag.
+
+// SVCB/HTTPS ServiceParamKey
+//
+// IANA registration pending. Values from draft-ietf-dnsop-svcb-https-02.
+static constexpr uint16_t kHttpsServiceParamKeyMandatory = 0;
+static constexpr uint16_t kHttpsServiceParamKeyAlpn = 1;
+static constexpr uint16_t kHttpsServiceParamKeyNoDefaultAlpn = 2;
+static constexpr uint16_t kHttpsServiceParamKeyPort = 3;
+static constexpr uint16_t kHttpsServiceParamKeyIpv4Hint = 4;
+static constexpr uint16_t kHttpsServiceParamKeyEchConfig = 5;
+static constexpr uint16_t kHttpsServiceParamKeyIpv6Hint = 6;
 
 }  // namespace dns_protocol
 

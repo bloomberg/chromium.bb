@@ -13,7 +13,6 @@ const char kVersionJS[] = "version.js";
 // Message handlers.
 const char kRequestVersionInfo[] = "requestVersionInfo";
 const char kRequestVariationInfo[] = "requestVariationInfo";
-const char kRequestPluginInfo[] = "requestPluginInfo";
 const char kRequestPathInfo[] = "requestPathInfo";
 
 // Named keys used in message handler responses.
@@ -48,14 +47,11 @@ const char kExecutablePathName[] = "executable_path_name";
 #if defined(OS_CHROMEOS)
 const char kFirmwareVersion[] = "firmware_version";
 #endif
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-const char kFlashPlugin[] = "flash_plugin";
-const char kFlashVersion[] = "flash_version";
-#endif
 #if !defined(OS_IOS)
 const char kJSEngine[] = "js_engine";
 const char kJSVersion[] = "js_version";
 #endif
+const char kLogoAltText[] = "logo_alt_text";
 const char kOfficial[] = "official";
 #if !defined(OS_CHROMEOS)
 const char kOSName[] = "os_name";
@@ -81,7 +77,7 @@ const char kUserAgentName[] = "user_agent_name";
 const char kVariationsCmdName[] = "variations_cmd_name";
 const char kVariationsName[] = "variations_name";
 const char kVersion[] = "version";
-const char kVersionBitSize[] = "version_bitsize";
 const char kVersionModifier[] = "version_modifier";
+const char kVersionProcessorVariation[] = "version_processor_variation";
 
 }  // namespace version_ui

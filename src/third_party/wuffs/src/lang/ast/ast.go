@@ -160,7 +160,7 @@ type Node struct {
 	// Assert        keyword       .             lit(reason)   Assert
 	// Assign        operator      .             .             Assign
 	// Const         .             pkg           name          Const
-	// Expr          operator      pkg           literal/ident Expr
+	// Expr          operator      .             literal/ident Expr
 	// Field         .             .             name          Field
 	// File          .             .             .             File
 	// Func          funcName      receiverPkg   receiverName  Func
@@ -236,15 +236,44 @@ func (n *Node) Walk(f func(*Node) error) error {
 	return nil
 }
 
+func dropExprCachedMBounds(n *Node) error {
+	if n.kind == KExpr {
+		n.mBounds = interval.IntRange{nil, nil}
+	}
+	return nil
+}
+
 type Loop interface {
 	AsNode() *Node
 	HasBreak() bool
 	HasContinue() bool
+	Keyword() t.ID
 	Label() t.ID
 	Asserts() []*Node
 	Body() []*Node
 	SetHasBreak()
 	SetHasContinue()
+}
+
+type LoopStack []Loop
+
+// Push returns false if an existing Loop has the same non-zero label.
+func (s *LoopStack) Push(l Loop) (ok bool) {
+	if label := l.Label(); label != 0 {
+		for _, o := range *s {
+			if label == o.Label() {
+				return false
+			}
+		}
+	}
+	*s = append(*s, l)
+	return true
+}
+
+func (s *LoopStack) Pop() Loop {
+	l := (*s)[len(*s)-1]
+	*s = (*s)[:len(*s)-1]
+	return l
 }
 
 type Raw Node
@@ -294,7 +323,6 @@ const MaxExprDepth = 255
 
 // Expr is an expression, such as "i", "+j" or "k + l[m(n, o)].p":
 //  - ID0:   <0|operator|IDOpenParen|IDOpenBracket|IDDotDot|IDDot>
-//  - ID1:   <0|pkg> (for statuses)
 //  - ID2:   <0|literal|ident>
 //  - LHS:   <nil|Expr>
 //  - MHS:   <nil|Expr>
@@ -302,8 +330,7 @@ const MaxExprDepth = 255
 //  - List0: <Arg|Expr> function call args, assoc. op args or list members.
 //
 // A zero ID0 means an identifier or literal in ID2, like `foo`, `42` or a
-// status literal like `"#foo"` or `pkg."$bar"`. For status literals, ID1 is
-// the package.
+// status literal like `"#foo"`.
 //
 // For unary operators, ID0 is the operator and RHS is the operand.
 //
@@ -333,7 +360,6 @@ func (n *Expr) ConstValue() *big.Int       { return n.constValue }
 func (n *Expr) MBounds() interval.IntRange { return n.mBounds }
 func (n *Expr) MType() *TypeExpr           { return n.mType }
 func (n *Expr) Operator() t.ID             { return n.id0 }
-func (n *Expr) StatusQID() t.QID           { return t.QID{n.id1, n.id2} }
 func (n *Expr) Ident() t.ID                { return n.id2 }
 func (n *Expr) LHS() *Node                 { return n.lhs }
 func (n *Expr) MHS() *Node                 { return n.mhs }
@@ -345,7 +371,7 @@ func (n *Expr) SetGlobalIdent()                { n.flags |= FlagsGlobalIdent }
 func (n *Expr) SetMBounds(x interval.IntRange) { n.mBounds = x }
 func (n *Expr) SetMType(x *TypeExpr)           { n.mType = x }
 
-func NewExpr(flags Flags, operator t.ID, statusPkg t.ID, ident t.ID, lhs *Node, mhs *Node, rhs *Node, args []*Node) *Expr {
+func NewExpr(flags Flags, operator t.ID, ident t.ID, lhs *Node, mhs *Node, rhs *Node, args []*Node) *Expr {
 	subExprEffect := Flags(0)
 	if lhs != nil {
 		subExprEffect |= lhs.flags & Flags(effectMask)
@@ -367,7 +393,6 @@ func NewExpr(flags Flags, operator t.ID, statusPkg t.ID, ident t.ID, lhs *Node, 
 		kind:  KExpr,
 		flags: flags,
 		id0:   operator,
-		id1:   statusPkg,
 		id2:   ident,
 		lhs:   lhs,
 		mhs:   mhs,
@@ -378,7 +403,7 @@ func NewExpr(flags Flags, operator t.ID, statusPkg t.ID, ident t.ID, lhs *Node, 
 
 // Assert is "assert RHS via ID2(args)", "pre etc", "inv etc" or "post etc":
 //  - ID0:   <IDAssert|IDPre|IDInv|IDPost>
-//  - ID2:   <string literal> reason
+//  - ID2:   <"-string literal> reason
 //  - RHS:   <Expr>
 //  - List0: <Arg> reason arguments
 type Assert Node
@@ -388,6 +413,8 @@ func (n *Assert) Keyword() t.ID    { return n.id0 }
 func (n *Assert) Reason() t.ID     { return n.id2 }
 func (n *Assert) Condition() *Expr { return n.rhs.AsExpr() }
 func (n *Assert) Args() []*Node    { return n.list0 }
+
+func (n *Assert) DropExprCachedMBounds() error { return n.AsNode().Walk(dropExprCachedMBounds) }
 
 func NewAssert(keyword t.ID, condition *Expr, reason t.ID, args []*Node) *Assert {
 	return &Assert{
@@ -442,6 +469,8 @@ func NewAssign(operator t.ID, lhs *Expr, rhs *Expr) *Assign {
 type Var Node
 
 func (n *Var) AsNode() *Node    { return (*Node)(n) }
+func (n *Var) Filename() string { return n.filename }
+func (n *Var) Line() uint32     { return n.line }
 func (n *Var) Name() t.ID       { return n.id2 }
 func (n *Var) XType() *TypeExpr { return n.lhs.AsTypeExpr() }
 
@@ -513,6 +542,7 @@ type Iterate Node
 func (n *Iterate) AsNode() *Node         { return (*Node)(n) }
 func (n *Iterate) HasBreak() bool        { return n.flags&FlagsHasBreak != 0 }
 func (n *Iterate) HasContinue() bool     { return n.flags&FlagsHasContinue != 0 }
+func (n *Iterate) Keyword() t.ID         { return t.IDIterate }
 func (n *Iterate) Unroll() t.ID          { return n.id0 }
 func (n *Iterate) Label() t.ID           { return n.id1 }
 func (n *Iterate) Length() t.ID          { return n.id2 }
@@ -521,23 +551,23 @@ func (n *Iterate) Assigns() []*Node      { return n.list0 }
 func (n *Iterate) Asserts() []*Node      { return n.list1 }
 func (n *Iterate) Body() []*Node         { return n.list2 }
 
-func (n *Iterate) SetHasBreak()    { n.flags |= FlagsHasBreak }
-func (n *Iterate) SetHasContinue() { n.flags |= FlagsHasContinue }
+func (n *Iterate) SetBody(body []*Node)      { n.list2 = body }
+func (n *Iterate) SetElseIterate(o *Iterate) { n.rhs = o.AsNode() }
+func (n *Iterate) SetHasBreak()              { n.flags |= FlagsHasBreak }
+func (n *Iterate) SetHasContinue()           { n.flags |= FlagsHasContinue }
 
-func NewIterate(label t.ID, assigns []*Node, length t.ID, unroll t.ID, asserts []*Node, body []*Node, elseIterate *Iterate) *Iterate {
+func NewIterate(label t.ID, assigns []*Node, length t.ID, unroll t.ID, asserts []*Node) *Iterate {
 	return &Iterate{
 		kind:  KIterate,
 		id0:   unroll,
 		id1:   label,
 		id2:   length,
-		rhs:   elseIterate.AsNode(),
 		list0: assigns,
 		list1: asserts,
-		list2: body,
 	}
 }
 
-// While is "while.ID1 MHS, List1 { List2 }":
+// While is "while.ID1 MHS, List1 { List2 } endwhile.ID1":
 //  - FlagsHasBreak    is the while has an explicit break
 //  - FlagsHasContinue is the while has an explicit continue
 //  - ID1:   <0|label>
@@ -551,21 +581,27 @@ type While Node
 func (n *While) AsNode() *Node     { return (*Node)(n) }
 func (n *While) HasBreak() bool    { return n.flags&FlagsHasBreak != 0 }
 func (n *While) HasContinue() bool { return n.flags&FlagsHasContinue != 0 }
+func (n *While) Keyword() t.ID     { return t.IDWhile }
 func (n *While) Label() t.ID       { return n.id1 }
 func (n *While) Condition() *Expr  { return n.mhs.AsExpr() }
 func (n *While) Asserts() []*Node  { return n.list1 }
 func (n *While) Body() []*Node     { return n.list2 }
 
-func (n *While) SetHasBreak()    { n.flags |= FlagsHasBreak }
-func (n *While) SetHasContinue() { n.flags |= FlagsHasContinue }
+func (n *While) SetBody(body []*Node) { n.list2 = body }
+func (n *While) SetHasBreak()         { n.flags |= FlagsHasBreak }
+func (n *While) SetHasContinue()      { n.flags |= FlagsHasContinue }
 
-func NewWhile(label t.ID, condition *Expr, asserts []*Node, body []*Node) *While {
+func (n *While) IsWhileTrue() bool {
+	condition := n.mhs.AsExpr()
+	return (condition.Operator() == 0) && (condition.Ident() == t.IDTrue)
+}
+
+func NewWhile(label t.ID, condition *Expr, asserts []*Node) *While {
 	return &While{
 		kind:  KWhile,
 		id1:   label,
 		mhs:   condition.AsNode(),
 		list1: asserts,
-		list2: body,
 	}
 }
 
@@ -700,7 +736,19 @@ func (n *TypeExpr) IsIdeal() bool {
 }
 
 func (n *TypeExpr) IsIOType() bool {
-	return n.id0 == 0 && n.id1 == t.IDBase && (n.id2 == t.IDIOReader || n.id2 == t.IDIOWriter)
+	return n.id0 == 0 && n.id1 == t.IDBase &&
+		(n.id2 == t.IDIOReader || n.id2 == t.IDIOWriter)
+}
+
+func (n *TypeExpr) IsTokenType() bool {
+	return n.id0 == 0 && n.id1 == t.IDBase &&
+		(n.id2 == t.IDTokenReader || n.id2 == t.IDTokenWriter)
+}
+
+func (n *TypeExpr) IsIOTokenType() bool {
+	return n.id0 == 0 && n.id1 == t.IDBase &&
+		(n.id2 == t.IDIOReader || n.id2 == t.IDIOWriter ||
+			n.id2 == t.IDTokenReader || n.id2 == t.IDTokenWriter)
 }
 
 func (n *TypeExpr) IsNullptr() bool {
@@ -796,17 +844,6 @@ const MaxBodyDepth = 255
 //  - RHS:   <Struct> out-parameters
 //  - List1: <Assert> asserts
 //  - List2: <Statement> body
-//
-// Statement means one of:
-//  - Assert
-//  - Assign
-//  - IOBind
-//  - If
-//  - Iterate
-//  - Jump
-//  - Ret
-//  - Var
-//  - While
 type Func Node
 
 func (n *Func) AsNode() *Node    { return (*Node)(n) }
@@ -821,6 +858,14 @@ func (n *Func) In() *Struct      { return n.lhs.AsStruct() }
 func (n *Func) Out() *TypeExpr   { return n.rhs.AsTypeExpr() }
 func (n *Func) Asserts() []*Node { return n.list1 }
 func (n *Func) Body() []*Node    { return n.list2 }
+
+func (n *Func) BodyEndsWithReturn() bool {
+	if len(n.list2) == 0 {
+		return false
+	}
+	end := n.list2[len(n.list2)-1]
+	return (end.kind == KRet) && (end.AsRet().Keyword() == t.IDReturn)
+}
 
 func NewFunc(flags Flags, filename string, line uint32, receiverName t.ID, funcName t.ID, in *Struct, out *TypeExpr, asserts []*Node, body []*Node) *Func {
 	return &Func{
@@ -887,38 +932,45 @@ func NewConst(flags Flags, filename string, line uint32, name t.ID, xType *TypeE
 	}
 }
 
-// Struct is "struct ID2(List0)" or "struct ID2?(List0)":
+// MaxImplements is an advisory limit for the number of interfaces a Struct can
+// implement.
+const MaxImplements = 63
+
+// Struct is "struct ID2? implements List0 (List1)":
 //  - FlagsPublic      is "pub" vs "pri"
 //  - FlagsClassy      is "ID2" vs "ID2?"
 //  - ID1:   <0|pkg> (set by calling SetPackage)
 //  - ID2:   name
-//  - List0: <Field> fields
+//  - List0: <TypeExpr> implements
+//  - List1: <Field> fields
 //
 // The question mark indicates a classy struct - one that supports methods,
 // especially coroutines.
 type Struct Node
 
-func (n *Struct) AsNode() *Node    { return (*Node)(n) }
-func (n *Struct) Classy() bool     { return n.flags&FlagsClassy != 0 }
-func (n *Struct) Public() bool     { return n.flags&FlagsPublic != 0 }
-func (n *Struct) Filename() string { return n.filename }
-func (n *Struct) Line() uint32     { return n.line }
-func (n *Struct) QID() t.QID       { return t.QID{n.id1, n.id2} }
-func (n *Struct) Fields() []*Node  { return n.list0 }
+func (n *Struct) AsNode() *Node       { return (*Node)(n) }
+func (n *Struct) Classy() bool        { return n.flags&FlagsClassy != 0 }
+func (n *Struct) Public() bool        { return n.flags&FlagsPublic != 0 }
+func (n *Struct) Filename() string    { return n.filename }
+func (n *Struct) Line() uint32        { return n.line }
+func (n *Struct) QID() t.QID          { return t.QID{n.id1, n.id2} }
+func (n *Struct) Implements() []*Node { return n.list0 }
+func (n *Struct) Fields() []*Node     { return n.list1 }
 
-func NewStruct(flags Flags, filename string, line uint32, name t.ID, fields []*Node) *Struct {
+func NewStruct(flags Flags, filename string, line uint32, name t.ID, implements []*Node, fields []*Node) *Struct {
 	return &Struct{
 		kind:     KStruct,
 		flags:    flags,
 		filename: filename,
 		line:     line,
 		id2:      name,
-		list0:    fields,
+		list0:    implements,
+		list1:    fields,
 	}
 }
 
 // Use is "use ID2":
-//  - ID2:   <string literal> package path
+//  - ID2:   <"-string literal> package path
 type Use Node
 
 func (n *Use) AsNode() *Node    { return (*Node)(n) }
@@ -949,4 +1001,51 @@ func NewFile(filename string, topLevelDecls []*Node) *File {
 		filename: filename,
 		list0:    topLevelDecls,
 	}
+}
+
+// Statement means one of:
+//  - Assert
+//  - Assign
+//  - IOBind
+//  - If
+//  - Iterate
+//  - Jump
+//  - Ret
+//  - Var
+//  - While
+
+// Terminates returns whether a block of statements terminates. In other words,
+// whether the block is non-empty and its final statement is a "return",
+// "break", "continue", a "while true" that doesn't break or an "if-else" chain
+// where all branches terminate.
+func Terminates(body []*Node) bool {
+	if len(body) == 0 {
+		return false
+	}
+	n := body[len(body)-1]
+	switch n.Kind() {
+	case KIf:
+		n := n.AsIf()
+		for {
+			if !Terminates(n.BodyIfTrue()) {
+				return false
+			}
+			bif := n.BodyIfFalse()
+			if len(bif) > 0 && !Terminates(bif) {
+				return false
+			}
+			n = n.ElseIf()
+			if n == nil {
+				return len(bif) > 0
+			}
+		}
+	case KJump:
+		return true
+	case KRet:
+		return n.AsRet().Keyword() == t.IDReturn
+	case KWhile:
+		n := n.AsWhile()
+		return n.IsWhileTrue() && !n.HasBreak()
+	}
+	return false
 }

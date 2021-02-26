@@ -92,9 +92,7 @@ class CPURegister : public RegisterBase<CPURegister, kRegAfterLast> {
   }
 
   static constexpr CPURegister Create(int code, int size, RegisterType type) {
-#if V8_HAS_CXX14_CONSTEXPR
-    DCHECK(IsValid(code, size, type));
-#endif
+    CONSTEXPR_DCHECK(IsValid(code, size, type));
     return CPURegister{code, size, type};
   }
 
@@ -283,6 +281,7 @@ VectorFormat VectorFormatDoubleLanes(VectorFormat vform);
 VectorFormat VectorFormatHalfLanes(VectorFormat vform);
 VectorFormat ScalarFormatFromLaneSize(int lanesize);
 VectorFormat VectorFormatHalfWidthDoubleLanes(VectorFormat vform);
+VectorFormat VectorFormatFillQ(int laneSize);
 VectorFormat VectorFormatFillQ(VectorFormat vform);
 VectorFormat ScalarFormatFromFormat(VectorFormat vform);
 V8_EXPORT_PRIVATE unsigned RegisterSizeInBitsFromFormat(VectorFormat vform);
@@ -304,9 +303,7 @@ class VRegister : public CPURegister {
   }
 
   static constexpr VRegister Create(int code, int size, int lane_count = 1) {
-#if V8_HAS_CXX14_CONSTEXPR
-    DCHECK(IsValidLaneCount(lane_count));
-#endif
+    CONSTEXPR_DCHECK(IsValidLaneCount(lane_count));
     return VRegister(CPURegister::Create(code, size, CPURegister::kVRegister),
                      lane_count);
   }
@@ -347,6 +344,10 @@ class VRegister : public CPURegister {
   }
   VRegister V1D() const {
     return VRegister::Create(code(), kDRegSizeInBits, 1);
+  }
+
+  VRegister Format(VectorFormat f) const {
+    return VRegister::Create(code(), f);
   }
 
   bool Is8B() const { return (Is64Bits() && (lane_count_ == 8)); }

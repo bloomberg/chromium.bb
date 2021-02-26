@@ -22,7 +22,7 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #error This file must not be included on macOS; Chromium Mac doesn't use Aura.
 #endif
 
@@ -71,7 +71,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(Widget::InitParams params) override;
   void OnWidgetInitDone() override;
-  NonClientFrameView* CreateNonClientFrameView() override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
@@ -137,7 +137,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                     std::unique_ptr<ui::OSExchangeData> data,
                     const gfx::Point& location,
                     int operation,
-                    ui::DragDropTypes::DragEventSource source) override;
+                    ui::mojom::DragEventSource source) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void ScheduleLayout() override;
   void SetCursor(gfx::NativeCursor cursor) override;

@@ -144,10 +144,11 @@ void TurboAssembler::PushCommonFrame(Register marker_reg) {
 void TurboAssembler::PushStandardFrame(Register function_reg) {
   int offset = -StandardFrameConstants::kContextOffset;
   if (function_reg.is_valid()) {
-    Push(ra, fp, cp, function_reg);
-    offset += kPointerSize;
+    Push(ra, fp, cp, function_reg, kJavaScriptCallArgCountRegister);
+    offset += 2 * kPointerSize;
   } else {
-    Push(ra, fp, cp);
+    Push(ra, fp, cp, kJavaScriptCallArgCountRegister);
+    offset += kPointerSize;
   }
   Daddu(fp, sp, Operand(offset));
 }
@@ -2508,11 +2509,15 @@ void TurboAssembler::RoundDouble(FPURegister dst, FPURegister src,
     ctc1(scratch, FCSR);
   } else {
     Label done;
+    if (!IsDoubleZeroRegSet()) {
+      Move(kDoubleRegZero, 0.0);
+    }
     mfhc1(scratch, src);
     Ext(at, scratch, HeapNumber::kExponentShift, HeapNumber::kExponentBits);
     Branch(USE_DELAY_SLOT, &done, hs, at,
            Operand(HeapNumber::kExponentBias + HeapNumber::kMantissaBits));
-    mov_d(dst, src);
+    // Canonicalize the result.
+    sub_d(dst, src, kDoubleRegZero);
     round(this, dst, src);
     dmfc1(at, dst);
     Branch(USE_DELAY_SLOT, &done, ne, at, Operand(zero_reg));
@@ -2568,11 +2573,15 @@ void TurboAssembler::RoundFloat(FPURegister dst, FPURegister src,
     int32_t kFloat32MantissaBits = 23;
     int32_t kFloat32ExponentBits = 8;
     Label done;
+    if (!IsDoubleZeroRegSet()) {
+      Move(kDoubleRegZero, 0.0);
+    }
     mfc1(scratch, src);
     Ext(at, scratch, kFloat32MantissaBits, kFloat32ExponentBits);
     Branch(USE_DELAY_SLOT, &done, hs, at,
            Operand(kFloat32ExponentBias + kFloat32MantissaBits));
-    mov_s(dst, src);
+    // Canonicalize the result.
+    sub_s(dst, src, kDoubleRegZero);
     round(this, dst, src);
     mfc1(at, dst);
     Branch(USE_DELAY_SLOT, &done, ne, at, Operand(zero_reg));
@@ -2610,6 +2619,38 @@ void TurboAssembler::Round_s_s(FPURegister dst, FPURegister src) {
              [](TurboAssembler* tasm, FPURegister dst, FPURegister src) {
                tasm->round_w_s(dst, src);
              });
+}
+
+void TurboAssembler::MSARoundW(MSARegister dst, MSARegister src,
+                               FPURoundingMode mode) {
+  BlockTrampolinePoolScope block_trampoline_pool(this);
+  Register scratch = t8;
+  Register scratch2 = at;
+  cfcmsa(scratch, MSACSR);
+  if (mode == kRoundToNearest) {
+    scratch2 = zero_reg;
+  } else {
+    li(scratch2, Operand(mode));
+  }
+  ctcmsa(MSACSR, scratch2);
+  frint_w(dst, src);
+  ctcmsa(MSACSR, scratch);
+}
+
+void TurboAssembler::MSARoundD(MSARegister dst, MSARegister src,
+                               FPURoundingMode mode) {
+  BlockTrampolinePoolScope block_trampoline_pool(this);
+  Register scratch = t8;
+  Register scratch2 = at;
+  cfcmsa(scratch, MSACSR);
+  if (mode == kRoundToNearest) {
+    scratch2 = zero_reg;
+  } else {
+    li(scratch2, Operand(mode));
+  }
+  ctcmsa(MSACSR, scratch2);
+  frint_d(dst, src);
+  ctcmsa(MSACSR, scratch);
 }
 
 void MacroAssembler::Madd_s(FPURegister fd, FPURegister fr, FPURegister fs,
@@ -4235,6 +4276,7 @@ void TurboAssembler::Call(Register target, Condition cond, Register rs,
     // Emit a nop in the branch delay slot if required.
     if (bd == PROTECT) nop();
   }
+  set_last_call_pc_(pc_);
 }
 
 void MacroAssembler::JumpIfIsInRange(Register value, unsigned lower_limit,
@@ -4376,13 +4418,13 @@ void TurboAssembler::BranchLong(Label* L, BranchDelaySlot bdslot) {
   } else {
     // Generate position independent long branch.
     BlockTrampolinePoolScope block_trampoline_pool(this);
-    int64_t imm64;
-    imm64 = branch_long_offset(L);
+    int64_t imm64 = branch_long_offset(L);
     DCHECK(is_int32(imm64));
+    int32_t imm32 = static_cast<int32_t>(imm64);
     or_(t8, ra, zero_reg);
     nal();                                        // Read PC into ra register.
-    lui(t9, (imm64 & kHiMaskOf32) >> kLuiShift);  // Branch delay slot.
-    ori(t9, t9, (imm64 & kImm16Mask));
+    lui(t9, (imm32 & kHiMaskOf32) >> kLuiShift);  // Branch delay slot.
+    ori(t9, t9, (imm32 & kImm16Mask));
     daddu(t9, ra, t9);
     if (bdslot == USE_DELAY_SLOT) {
       or_(ra, t8, zero_reg);
@@ -4400,12 +4442,12 @@ void TurboAssembler::BranchAndLinkLong(Label* L, BranchDelaySlot bdslot) {
   } else {
     // Generate position independent long branch and link.
     BlockTrampolinePoolScope block_trampoline_pool(this);
-    int64_t imm64;
-    imm64 = branch_long_offset(L);
+    int64_t imm64 = branch_long_offset(L);
     DCHECK(is_int32(imm64));
-    lui(t8, (imm64 & kHiMaskOf32) >> kLuiShift);
+    int32_t imm32 = static_cast<int32_t>(imm64);
+    lui(t8, (imm32 & kHiMaskOf32) >> kLuiShift);
     nal();                              // Read PC into ra register.
-    ori(t8, t8, (imm64 & kImm16Mask));  // Branch delay slot.
+    ori(t8, t8, (imm32 & kImm16Mask));  // Branch delay slot.
     daddu(t8, ra, t8);
     jalr(t8);
     // Emit a nop in the branch delay slot if required.
@@ -4414,9 +4456,19 @@ void TurboAssembler::BranchAndLinkLong(Label* L, BranchDelaySlot bdslot) {
 }
 
 void TurboAssembler::DropAndRet(int drop) {
-  DCHECK(is_int16(drop * kPointerSize));
-  Ret(USE_DELAY_SLOT);
-  daddiu(sp, sp, drop * kPointerSize);
+  int32_t drop_size = drop * kSystemPointerSize;
+  DCHECK(is_int31(drop_size));
+
+  if (is_int16(drop_size)) {
+    Ret(USE_DELAY_SLOT);
+    daddiu(sp, sp, drop_size);
+  } else {
+    UseScratchRegisterScope temps(this);
+    Register scratch = temps.Acquire();
+    li(scratch, drop_size);
+    Ret(USE_DELAY_SLOT);
+    daddu(sp, sp, scratch);
+  }
 }
 
 void TurboAssembler::DropAndRet(int drop, Condition cond, Register r1,
@@ -4485,6 +4537,33 @@ void TurboAssembler::Push(Handle<HeapObject> handle) {
   Register scratch = temps.Acquire();
   li(scratch, Operand(handle));
   push(scratch);
+}
+
+void TurboAssembler::PushArray(Register array, Register size, Register scratch,
+                               Register scratch2, PushArrayOrder order) {
+  DCHECK(!AreAliased(array, size, scratch, scratch2));
+  Label loop, entry;
+  if (order == PushArrayOrder::kReverse) {
+    mov(scratch, zero_reg);
+    jmp(&entry);
+    bind(&loop);
+    Dlsa(scratch2, array, scratch, kPointerSizeLog2);
+    Ld(scratch2, MemOperand(scratch2));
+    push(scratch2);
+    Daddu(scratch, scratch, Operand(1));
+    bind(&entry);
+    Branch(&loop, less, scratch, Operand(size));
+  } else {
+    mov(scratch, size);
+    jmp(&entry);
+    bind(&loop);
+    Dlsa(scratch2, array, scratch, kPointerSizeLog2);
+    Ld(scratch2, MemOperand(scratch2));
+    push(scratch2);
+    bind(&entry);
+    Daddu(scratch, scratch, Operand(-1));
+    Branch(&loop, greater_equal, scratch, Operand(zero_reg));
+  }
 }
 
 void MacroAssembler::MaybeDropFrames() {
@@ -4653,22 +4732,107 @@ void TurboAssembler::PrepareForTailCall(Register callee_args_count,
   mov(sp, dst_reg);
 }
 
+void MacroAssembler::LoadStackLimit(Register destination, StackLimitKind kind) {
+  DCHECK(root_array_available());
+  Isolate* isolate = this->isolate();
+  ExternalReference limit =
+      kind == StackLimitKind::kRealStackLimit
+          ? ExternalReference::address_of_real_jslimit(isolate)
+          : ExternalReference::address_of_jslimit(isolate);
+  DCHECK(TurboAssembler::IsAddressableThroughRootRegister(isolate, limit));
+
+  intptr_t offset =
+      TurboAssembler::RootRegisterOffsetForExternalReference(isolate, limit);
+  CHECK(is_int32(offset));
+  Ld(destination, MemOperand(kRootRegister, static_cast<int32_t>(offset)));
+}
+
+void MacroAssembler::StackOverflowCheck(Register num_args, Register scratch1,
+                                        Register scratch2,
+                                        Label* stack_overflow) {
+  // Check the stack for overflow. We are not trying to catch
+  // interruptions (e.g. debug break and preemption) here, so the "real stack
+  // limit" is checked.
+
+  LoadStackLimit(scratch1, StackLimitKind::kRealStackLimit);
+  // Make scratch1 the space we have left. The stack might already be overflowed
+  // here which will cause scratch1 to become negative.
+  dsubu(scratch1, sp, scratch1);
+  // Check if the arguments will overflow the stack.
+  dsll(scratch2, num_args, kPointerSizeLog2);
+  // Signed comparison.
+  Branch(stack_overflow, le, scratch1, Operand(scratch2));
+}
+
 void MacroAssembler::InvokePrologue(Register expected_parameter_count,
                                     Register actual_parameter_count,
                                     Label* done, InvokeFlag flag) {
   Label regular_invoke;
 
-  // Check whether the expected and actual arguments count match. The registers
-  // are set up according to contract with ArgumentsAdaptorTrampoline:
   //  a0: actual arguments count
   //  a1: function (passed through to callee)
   //  a2: expected arguments count
 
-  // The code below is made a lot easier because the calling code already sets
-  // up actual and expected registers according to the contract.
-
   DCHECK_EQ(actual_parameter_count, a0);
   DCHECK_EQ(expected_parameter_count, a2);
+
+#ifdef V8_NO_ARGUMENTS_ADAPTOR
+  // If the expected parameter count is equal to the adaptor sentinel, no need
+  // to push undefined value as arguments.
+  Branch(&regular_invoke, eq, expected_parameter_count,
+         Operand(kDontAdaptArgumentsSentinel));
+
+  // If overapplication or if the actual argument count is equal to the
+  // formal parameter count, no need to push extra undefined values.
+  Dsubu(expected_parameter_count, expected_parameter_count,
+        actual_parameter_count);
+  Branch(&regular_invoke, le, expected_parameter_count, Operand(zero_reg));
+
+  Label stack_overflow;
+  StackOverflowCheck(expected_parameter_count, t0, t1, &stack_overflow);
+  // Underapplication. Move the arguments already in the stack, including the
+  // receiver and the return address.
+  {
+    Label copy;
+    Register src = a6, dest = a7;
+    mov(src, sp);
+    dsll(t0, expected_parameter_count, kSystemPointerSizeLog2);
+    Dsubu(sp, sp, Operand(t0));
+    // Update stack pointer.
+    mov(dest, sp);
+    mov(t0, actual_parameter_count);
+    bind(&copy);
+    Ld(t1, MemOperand(src, 0));
+    Sd(t1, MemOperand(dest, 0));
+    Dsubu(t0, t0, Operand(1));
+    Daddu(src, src, Operand(kSystemPointerSize));
+    Daddu(dest, dest, Operand(kSystemPointerSize));
+    Branch(&copy, ge, t0, Operand(zero_reg));
+  }
+
+  // Fill remaining expected arguments with undefined values.
+  LoadRoot(t0, RootIndex::kUndefinedValue);
+  {
+    Label loop;
+    bind(&loop);
+    Sd(t0, MemOperand(a7, 0));
+    Dsubu(expected_parameter_count, expected_parameter_count, Operand(1));
+    Daddu(a7, a7, Operand(kSystemPointerSize));
+    Branch(&loop, gt, expected_parameter_count, Operand(zero_reg));
+  }
+  b(&regular_invoke);
+  nop();
+
+  bind(&stack_overflow);
+  {
+    FrameScope frame(this,
+                     has_frame() ? StackFrame::NONE : StackFrame::INTERNAL);
+    CallRuntime(Runtime::kThrowStackOverflow);
+    break_(0xCC);
+  }
+#else
+  // Check whether the expected and actual arguments count match. The registers
+  // are set up according to contract with ArgumentsAdaptorTrampoline:
 
   Branch(&regular_invoke, eq, expected_parameter_count,
          Operand(actual_parameter_count));
@@ -4680,7 +4844,7 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
   } else {
     Jump(adaptor, RelocInfo::CODE_TARGET);
   }
-
+#endif
   bind(&regular_invoke);
 }
 
@@ -4695,8 +4859,8 @@ void MacroAssembler::CheckDebugHook(Register fun, Register new_target,
 
   {
     // Load receiver to pass it later to DebugOnFunctionCall hook.
-    Dlsa(t0, sp, actual_parameter_count, kPointerSizeLog2);
-    Ld(t0, MemOperand(t0));
+    LoadReceiver(t0, actual_parameter_count);
+
     FrameScope frame(this,
                      has_frame() ? StackFrame::NONE : StackFrame::INTERNAL);
     SmiTag(expected_parameter_count);
@@ -5753,7 +5917,7 @@ void TurboAssembler::CallCFunctionHelper(Register function,
 void TurboAssembler::CheckPageFlag(Register object, Register scratch, int mask,
                                    Condition cc, Label* condition_met) {
   And(scratch, object, Operand(~kPageAlignmentMask));
-  Ld(scratch, MemOperand(scratch, MemoryChunk::kFlagsOffset));
+  Ld(scratch, MemOperand(scratch, BasicMemoryChunk::kFlagsOffset));
   And(scratch, scratch, Operand(mask));
   Branch(condition_met, cc, scratch, Operand(zero_reg));
 }
@@ -5803,16 +5967,18 @@ void TurboAssembler::ResetSpeculationPoisonRegister() {
   li(kSpeculationPoisonRegister, -1);
 }
 
-void TurboAssembler::CallForDeoptimization(Address target, int deopt_id,
-                                           Label* exit, DeoptimizeKind kind) {
+void TurboAssembler::CallForDeoptimization(Builtins::Name target, int,
+                                           Label* exit, DeoptimizeKind kind,
+                                           Label*) {
+  BlockTrampolinePoolScope block_trampoline_pool(this);
+  Ld(t9,
+     MemOperand(kRootRegister, IsolateData::builtin_entry_slot_offset(target)));
+  Call(t9);
+  DCHECK_EQ(SizeOfCodeGeneratedSince(exit),
+            (kind == DeoptimizeKind::kLazy)
+                ? Deoptimizer::kLazyDeoptExitSize
+                : Deoptimizer::kNonLazyDeoptExitSize);
   USE(exit, kind);
-  NoRootArrayScope no_root_array(this);
-
-  // Save the deopt id in kRootRegister (we don't need the roots array from now
-  // on).
-  DCHECK_LE(deopt_id, 0xFFFF);
-  li(kRootRegister, deopt_id);
-  Call(target, RelocInfo::RUNTIME_ENTRY);
 }
 
 }  // namespace internal

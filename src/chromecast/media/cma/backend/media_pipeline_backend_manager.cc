@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/chromecast_buildflags.h"
@@ -134,9 +135,8 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
   DCHECK(change == -1 || change == 1) << "bad count change: " << change;
 
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
-  // Volume feedback sounds are only allowed when there are no non-effects
-  // audio streams playing.
-  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+  bool had_playing_primary_streams =
+      (TotalPlayingNoneffectsAudioStreamsCount() > 0);
 
   playing_audio_streams_count_[type] += change;
   DCHECK_GE(playing_audio_streams_count_[type], 0);
@@ -147,7 +147,7 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
   }
 
   HandlePlayingAudioStreamsChange(had_playing_audio_streams,
-                                  prev_allow_feedback);
+                                  had_playing_primary_streams);
 }
 
 void MediaPipelineBackendManager::OnMixerStreamCountChange(int primary_streams,

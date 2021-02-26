@@ -16,13 +16,14 @@
 
 namespace chromeos {
 
-class ScreenManager;
 class MarketingOptInScreenView;
 
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
 class MarketingOptInScreen : public BaseScreen {
  public:
+  using TView = MarketingOptInScreenView;
+
   enum class Result { NEXT, NOT_APPLICABLE };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -54,8 +55,6 @@ class MarketingOptInScreen : public BaseScreen {
                        const ScreenExitCallback& exit_callback);
   ~MarketingOptInScreen() override;
 
-  static MarketingOptInScreen* Get(ScreenManager* manager);
-
   // On "Get Started" button pressed.
   void OnGetStarted(bool chromebook_email_opt_in);
 
@@ -71,7 +70,7 @@ class MarketingOptInScreen : public BaseScreen {
 
  protected:
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
 

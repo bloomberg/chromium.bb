@@ -23,15 +23,16 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/session_manager_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
@@ -41,6 +42,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/button_test_api.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -87,6 +89,7 @@ class PinRequestViewTest : public LoginTestBase,
   void StartView(base::Optional<int> pin_length = 6) {
     PinRequest request;
     request.help_button_enabled = true;
+    request.obscure_pin = false;
     request.pin_length = pin_length;
     request.on_pin_request_done = base::DoNothing::Once<bool>();
     view_ = new PinRequestView(std::move(request), this);
@@ -115,7 +118,7 @@ class PinRequestViewTest : public LoginTestBase,
     PinRequestView::TestApi test_api(view);
     ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), 0, 0);
-    view->ButtonPressed(test_api.back_button(), event);
+    views::test::ButtonTestApi(test_api.back_button()).NotifyClick(event);
   }
 
   void SimulateFailedValidation() {
@@ -129,6 +132,30 @@ class PinRequestViewTest : public LoginTestBase,
     EXPECT_EQ(1, pin_submitted_);
     EXPECT_EQ("012345", last_code_submitted_);
     pin_submitted_ = 0;
+  }
+
+  void PressKeyHelper(ui::KeyboardCode key) {
+    GetEventGenerator()->PressKey(key, ui::EF_NONE);
+    // Wait until the keypress is processed.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void ExpectTextSelection(int start, int end) {
+    PinRequestView::TestApi test_api(view_);
+    ui::AXNodeData ax_node_data;
+    test_api.access_code_view()->GetAccessibleNodeData(&ax_node_data);
+    EXPECT_EQ(start, ax_node_data.GetIntAttribute(
+                         ax::mojom::IntAttribute::kTextSelStart));
+    EXPECT_EQ(end, ax_node_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTextSelEnd));
+  }
+
+  void ExpectTextValue(const std::string& value) {
+    PinRequestView::TestApi test_api(view_);
+    ui::AXNodeData ax_node_data;
+    test_api.access_code_view()->GetAccessibleNodeData(&ax_node_data);
+    EXPECT_EQ(value, ax_node_data.GetStringAttribute(
+                         ax::mojom::StringAttribute::kValue));
   }
 
   std::unique_ptr<MockLoginScreenClient> login_client_;
@@ -195,7 +222,7 @@ TEST_F(PinRequestViewTest, SubmitButton) {
 
   // The submit button on the PIN keyboard shouldn't be shown.
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
-  EXPECT_FALSE(test_pin_keyboard.GetSubmitButton()->parent());
+  EXPECT_FALSE(test_pin_keyboard.GetSubmitButton());
 
   auto* generator = GetEventGenerator();
   // Updating input code (here last digit) should clear error state.
@@ -329,7 +356,7 @@ TEST_F(PinRequestViewTest, Backspace) {
   EXPECT_EQ("012323", last_code_submitted_);
 }
 
-// Tests input with unknown pin length.
+// Tests digit-only input with unknown pin length.
 TEST_F(PinRequestViewTest, FlexCodeInput) {
   StartView(base::nullopt);
   PinRequestView::TestApi test_api(view_);
@@ -352,6 +379,36 @@ TEST_F(PinRequestViewTest, FlexCodeInput) {
   SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   EXPECT_EQ(2, pin_submitted_);
   EXPECT_EQ("0123456", last_code_submitted_);
+}
+
+// Tests non-digit input with unknown pin length.
+TEST_F(PinRequestViewTest, FlexCodeInputCharacters) {
+  StartView(base::nullopt);
+  PinRequestView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  will_authenticate_ = false;
+
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+
+  for (int i = 0; i < 3; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_A + i),
+                        ui::EF_NONE);
+    base::RunLoop().RunUntilIdle();
+  }
+  for (int i = 0; i < 3; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_A + i),
+                        ui::EF_SHIFT_DOWN);
+    base::RunLoop().RunUntilIdle();
+  }
+  generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_ADD),
+                      ui::EF_NONE);
+  generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_SUBTRACT),
+                      ui::EF_NONE);
+
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("abcABC+-", last_code_submitted_);
 }
 
 // Tests input with virtual pin keyboard.
@@ -538,20 +595,103 @@ TEST_F(PinRequestViewTest, VirtualKeyboardHidden) {
   DismissWidget();
 }
 
+// Tests input value and text selection of the virtual text field used by a11y.
+TEST_F(PinRequestViewTest, VirtualTextFieldForA11y) {
+  StartView();
+  PinRequestView::TestApi test_api(view_);
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+
+  // Assert the initial value.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(0 /*start=*/, 0 /*end=*/);
+  ExpectTextValue("      ");
+
+  // Test Insert Digit
+  PressKeyHelper(ui::KeyboardCode::VKEY_0);
+  ExpectTextSelection(1 /*start=*/, 1 /*end=*/);
+  ExpectTextValue("0     ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_1);
+  ExpectTextSelection(2 /*start=*/, 2 /*end=*/);
+  ExpectTextValue("01    ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_2);
+  ExpectTextSelection(3 /*start=*/, 3 /*end=*/);
+  ExpectTextValue("012   ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_3);
+  ExpectTextSelection(4 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0123  ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_4);
+  ExpectTextSelection(5 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("01234 ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_5);
+  // It doesn't matter that start != 6 for the last field, since the focus
+  // will automatically move to "submit" button, and the last digit won't
+  // get read.
+  ExpectTextSelection(5 /*start=*/, 6 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Left Arrow.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(4 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("012345");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(3 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Right Arrow.
+  PressKeyHelper(ui::KeyboardCode::VKEY_RIGHT);
+  ExpectTextSelection(4 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("012345");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_RIGHT);
+  ExpectTextSelection(5 /*start=*/, 6 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Backspace.
+  PressKeyHelper(ui::KeyboardCode::VKEY_BACK);
+  ExpectTextSelection(5 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("01234 ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_BACK);
+  ExpectTextSelection(4 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0123  ");
+
+  // Now the input fields will be [0][1][2][3][|][].
+
+  // Test moving left twice and change value.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  PressKeyHelper(ui::KeyboardCode::VKEY_3);
+  ExpectTextSelection(3 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0133  ");
+
+  // Test Mouse event, mouse click on input field at index 0, then press
+  // keyboard 1.
+  SimulateMouseClickAt(GetEventGenerator(), test_api.GetInputTextField(0));
+  PressKeyHelper(ui::KeyboardCode::VKEY_1);
+  ExpectTextSelection(1 /*start=*/, 2 /*end=*/);
+  ExpectTextValue("1133  ");
+}
+
 // Tests that spoken feedback keycombo starts screen reader.
 TEST_F(PinRequestWidgetTest, SpokenFeedbackKeyCombo) {
   ShowWidget();
 
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->spoken_feedback_enabled());
+  EXPECT_FALSE(controller->spoken_feedback().enabled());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_Z),
                       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(controller->spoken_feedback_enabled());
+  EXPECT_TRUE(controller->spoken_feedback().enabled());
 }
 
 }  // namespace ash

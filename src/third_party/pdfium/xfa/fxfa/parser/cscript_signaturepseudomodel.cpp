@@ -7,13 +7,14 @@
 #include "xfa/fxfa/parser/cscript_signaturepseudomodel.h"
 
 #include "fxjs/xfa/cjx_signaturepseudomodel.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
-CScript_SignaturePseudoModel::CScript_SignaturePseudoModel(
-    CXFA_Document* pDocument)
-    : CXFA_Object(pDocument,
+CScript_SignaturePseudoModel::CScript_SignaturePseudoModel(CXFA_Document* doc)
+    : CXFA_Object(doc,
                   XFA_ObjectType::Object,
                   XFA_Element::SignaturePseudoModel,
-                  pdfium::MakeUnique<CJX_SignaturePseudoModel>(this)) {}
+                  cppgc::MakeGarbageCollected<CJX_SignaturePseudoModel>(
+                      doc->GetHeap()->GetAllocationHandle(),
+                      this)) {}
 
 CScript_SignaturePseudoModel::~CScript_SignaturePseudoModel() = default;

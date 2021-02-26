@@ -5,7 +5,7 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,8 +22,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/offline_pages/buildflags/buildflags.h"
-#include "components/offline_pages/core/offline_page_item.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -41,18 +39,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-
 namespace {
 
 const void* const kOptOutEventKey = 0;
-
-const char kMinStalenessParamName[] = "min_staleness_in_minutes";
-const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
-const int kMinStalenessParamDefaultValue = 5;
-const int kMaxStalenessParamDefaultValue = 1440;
 
 // Adds the preview navigation to the black list.
 void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
@@ -66,10 +55,6 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
     previews_service->previews_ui_service()->AddPreviewNavigation(
         url, type, opt_out, page_id);
   }
-}
-
-void RecordStaleness(PreviewsUITabHelper::PreviewsStalePreviewTimestamp value) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.StalePreviewTimestampShown", value);
 }
 
 void InformPLMOfOptOut(content::WebContents* web_contents) {
@@ -115,78 +100,9 @@ void PreviewsUITabHelper::ShowUIElement(
       ->Add(true);
 }
 
-base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
-  if (previews_freshness_.is_null())
-    return base::string16();
-  if (!base::FeatureList::IsEnabled(
-          previews::features::kStalePreviewsTimestamp)) {
-    return base::string16();
-  }
-
-  int min_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, kMinStalenessParamName,
-      kMinStalenessParamDefaultValue);
-  int max_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, kMaxStalenessParamName,
-      kMaxStalenessParamDefaultValue);
-
-  if (min_staleness_in_minutes <= 0 || max_staleness_in_minutes <= 0) {
-    NOTREACHED();
-    return base::string16();
-  }
-  DCHECK_GE(min_staleness_in_minutes, 2);
-
-  base::Time network_time;
-  if (g_browser_process->network_time_tracker()->GetNetworkTime(&network_time,
-                                                                nullptr) !=
-      network_time::NetworkTimeTracker::NETWORK_TIME_AVAILABLE) {
-    // When network time has not been initialized yet, simply rely on the
-    // machine's current time.
-    network_time = base::Time::Now();
-  }
-
-  if (network_time < previews_freshness_) {
-    RecordStaleness(
-        PreviewsStalePreviewTimestamp::kTimestampNotShownStalenessNegative);
-    return base::string16();
-  }
-
-  int staleness_in_minutes = (network_time - previews_freshness_).InMinutes();
-  if (staleness_in_minutes < min_staleness_in_minutes) {
-    if (is_stale_reload_) {
-      RecordStaleness(PreviewsStalePreviewTimestamp::kTimestampUpdatedNowShown);
-      return l10n_util::GetStringUTF16(
-          IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW);
-    }
-    RecordStaleness(
-        PreviewsStalePreviewTimestamp::kTimestampNotShownPreviewNotStale);
-    return base::string16();
-  }
-  if (staleness_in_minutes > max_staleness_in_minutes) {
-    RecordStaleness(PreviewsStalePreviewTimestamp::
-                        kTimestampNotShownStalenessGreaterThanMax);
-    return base::string16();
-  }
-
-  RecordStaleness(PreviewsStalePreviewTimestamp::kTimestampShown);
-
-  if (staleness_in_minutes < 60) {
-    DCHECK_GE(staleness_in_minutes, 2);
-    return l10n_util::GetStringFUTF16(
-        IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-        base::NumberToString16(staleness_in_minutes));
-  } else if (staleness_in_minutes < 120) {
-    return l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR);
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
-        base::NumberToString16(staleness_in_minutes / 60));
-  }
-}
-
 void PreviewsUITabHelper::ReloadWithoutPreviews() {
-  DCHECK(previews_user_data_);
-  ReloadWithoutPreviews(previews_user_data_->CommittedPreviewsType());
+  DCHECK(GetPreviewsUserData());
+  ReloadWithoutPreviews(GetPreviewsUserData()->CommittedPreviewsType());
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews(
@@ -198,8 +114,6 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
   if (on_dismiss_callback_)
     std::move(on_dismiss_callback_).Run(true);
   switch (previews_type) {
-    case previews::PreviewsType::LITE_PAGE:
-    case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::NOSCRIPT:
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
     case previews::PreviewsType::DEFER_ALL_SCRIPT:
@@ -212,29 +126,25 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
-    case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE:
     case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+    case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_OFFLINE:
       NOTREACHED();
       break;
   }
-}
-
-void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
-    base::Time previews_freshness,
-    bool is_reload) {
-  previews_freshness_ = previews_freshness;
-  is_stale_reload_ = is_reload;
 }
 
 void PreviewsUITabHelper::MaybeRecordPreviewReload(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
     return;
-  if (!previews_user_data_)
+  previews::PreviewsUserData* previews_user_data = GetPreviewsUserData();
+  if (!previews_user_data)
     return;
-  if (!previews_user_data_->HasCommittedPreviewsType())
+  if (!previews_user_data->HasCommittedPreviewsType())
     return;
-  if (previews_user_data_->coin_flip_holdback_result() ==
+  if (previews_user_data->coin_flip_holdback_result() ==
       previews::CoinFlipHoldbackResult::kHoldback) {
     return;
   }
@@ -309,91 +219,39 @@ void PreviewsUITabHelper::DidFinishNavigation(
     std::move(on_dismiss_callback_).Run(false);
   }
 
-  previews_freshness_ = base::Time();
-  previews_user_data_.reset();
 #if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
 #endif
-  previews::PreviewsUserData* user_data =
+  previews::PreviewsUserData* navigation_data =
       GetPreviewsUserData(navigation_handle);
 
-  // Store Previews information for this navigation.
-  if (user_data) {
-    previews_user_data_ =
-        std::make_unique<previews::PreviewsUserData>(*user_data);
+  previews::PreviewsUserData* previews_user_data = nullptr;
+  // If the navigation is served from the back-forward cache, we should use the
+  // previews data from the first time we navigated to the page.
+  if (navigation_handle->IsServedFromBackForwardCache()) {
+    auto* holder =
+        previews::PreviewsUserData::DocumentDataHolder::GetForCurrentDocument(
+            navigation_handle->GetRenderFrameHost());
+    if (holder)
+      previews_user_data = holder->GetPreviewsUserData();
+  } else if (navigation_data) {
+    // Otherwise, we should store Previews information for this navigation.
+    auto* holder = previews::PreviewsUserData::DocumentDataHolder::
+        GetOrCreateForCurrentDocument(navigation_handle->GetRenderFrameHost());
+    holder->SetPreviewsUserData(
+        std::make_unique<previews::PreviewsUserData>(*navigation_data));
+    previews_user_data = holder->GetPreviewsUserData();
   }
 
-  uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
+  uint64_t page_id = (previews_user_data) ? previews_user_data->page_id() : 0;
 
-  // The ui should only be told if the page was a reload if the previous
-  // page displayed a timestamp.
-  is_stale_reload_ =
-      displayed_preview_timestamp_
-          ? navigation_handle->GetReloadType() != content::ReloadType::NONE
-          : false;
   displayed_preview_ui_ = false;
-  displayed_preview_timestamp_ = false;
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageTabHelper* tab_helper =
-      offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
-
-  if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
-    DCHECK_EQ(previews::PreviewsType::OFFLINE,
-              previews_user_data_->CommittedPreviewsType());
-    UMA_HISTOGRAM_BOOLEAN("Previews.Offline.CommittedErrorPage",
-                          navigation_handle->IsErrorPage());
-    if (navigation_handle->IsErrorPage()) {
-      return;
-    }
-    data_reduction_proxy::DataReductionProxySettings*
-        data_reduction_proxy_settings =
-            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-                web_contents()->GetBrowserContext());
-
-    const offline_pages::OfflinePageItem* offline_page =
-        tab_helper->GetOfflinePreviewItem();
-    // From UMA, the median percent of network body bytes loaded out of total
-    // body bytes on a page load. See PageLoad.Experimental.Bytes.Network and
-    // PageLoad.Experimental.Bytes.Total.
-    int64_t uncached_size = offline_page->file_size * 0.55;
-
-    bool data_saver_enabled =
-        data_reduction_proxy_settings->IsDataReductionProxyEnabled();
-
-    data_reduction_proxy_settings->data_reduction_proxy_service()
-        ->UpdateDataUseForHost(0, uncached_size,
-                               navigation_handle->GetRedirectChain()[0].host());
-
-    data_reduction_proxy_settings->data_reduction_proxy_service()
-        ->UpdateContentLengths(0, uncached_size, data_saver_enabled,
-                               data_reduction_proxy::HTTPS, "multipart/related",
-                               true,
-                               data_use_measurement::DataUseUserData::OTHER, 0);
-
-    ShowUIElement(previews::PreviewsType::OFFLINE,
-                  base::BindOnce(&AddPreviewNavigationCallback,
-                                 web_contents()->GetBrowserContext(),
-                                 navigation_handle->GetRedirectChain()[0],
-                                 previews::PreviewsType::OFFLINE, page_id));
-
-    // Don't try to show other UIs if this is an offline preview.
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Check for committed main frame preview.
-  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
+  if (previews_user_data && previews_user_data->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
-        previews_user_data_->CommittedPreviewsType();
+        previews_user_data->CommittedPreviewsType();
     if (main_frame_preview != previews::PreviewsType::NONE) {
-      if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
-        const net::HttpResponseHeaders* headers =
-            navigation_handle->GetResponseHeaders();
-        if (headers)
-          headers->GetDateValue(&previews_freshness_);
-      }
-
       ShowUIElement(main_frame_preview,
                     base::BindOnce(&AddPreviewNavigationCallback,
                                    web_contents()->GetBrowserContext(),
@@ -428,6 +286,13 @@ previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData(
 
 void PreviewsUITabHelper::RemovePreviewsUserData(int64_t navigation_id) {
   inflight_previews_user_datas_.erase(navigation_id);
+}
+
+previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData() const {
+  auto* holder =
+      previews::PreviewsUserData::DocumentDataHolder::GetForCurrentDocument(
+          web_contents()->GetMainFrame());
+  return holder ? holder->GetPreviewsUserData() : nullptr;
 }
 
 // static

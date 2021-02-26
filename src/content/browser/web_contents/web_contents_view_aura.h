@@ -109,7 +109,7 @@ class CONTENT_EXPORT WebContentsViewAura
   ~WebContentsViewAura() override;
 
   void EndDrag(base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
-               blink::WebDragOperationsMask ops);
+               blink::DragOperationsMask ops);
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
@@ -137,7 +137,7 @@ class CONTENT_EXPORT WebContentsViewAura
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetContentNativeView() const override;
   gfx::NativeWindow GetTopLevelNativeWindow() const override;
-  void GetContainerBounds(gfx::Rect* out) const override;
+  gfx::Rect GetContainerBounds() const override;
   void Focus() override;
   void SetInitialFocus() override;
   void StoreFocus() override;
@@ -160,12 +160,12 @@ class CONTENT_EXPORT WebContentsViewAura
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;
   void StartDragging(const DropData& drop_data,
-                     blink::WebDragOperationsMask operations,
+                     blink::DragOperationsMask operations,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& image_offset,
-                     const DragEventSourceInfo& event_info,
+                     const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
-  void UpdateDragCursor(blink::WebDragOperation operation) override;
+  void UpdateDragCursor(blink::DragOperation operation) override;
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
@@ -203,8 +203,8 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowTargetVisibilityChanged(bool visible) override;
-  void OnWindowOcclusionChanged(aura::Window::OcclusionState occlusion_state,
-                                const SkRegion&) override;
+  void OnWindowOcclusionChanged(
+      aura::Window::OcclusionState occlusion_state) override;
   bool HasHitTestMask() const override;
   void GetHitTestMask(SkPath* mask) const override;
 
@@ -290,7 +290,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
-  blink::WebDragOperationsMask current_drag_op_;
+  blink::DragOperationsMask current_drag_op_;
 
   std::unique_ptr<DropData> current_drop_data_;
 

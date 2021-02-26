@@ -33,8 +33,8 @@ class FindIsolate(quest.Quest):
     self._build_tags = collections.OrderedDict()
 
   def __eq__(self, other):
-    return (isinstance(other, type(self)) and self._bucket == other._bucket and
-            self._builder_name == other._builder_name)
+    return (isinstance(other, type(self)) and self._bucket == other._bucket
+            and self._builder_name == other._builder_name)
 
   def __str__(self):
     return 'Build'
@@ -171,6 +171,9 @@ class _FindIsolateExecution(execution.Execution):
     if self._target not in properties[key]:
       raise errors.BuildIsolateNotFound()
 
+    # Cache the isolate information.
+    isolate.Put([(self._builder_name, self._change, self._target,
+                  properties['isolate_server'], properties[key][self._target])])
     result_arguments = {
         'isolate_server': properties['isolate_server'],
         'isolate_hash': properties[key][self._target],
@@ -246,7 +249,13 @@ def RequestBuild(builder_name, change, bucket, build_tags, task=None):
   parameters = {
       'builder_name': builder_name,
       'properties': {
-          'clobber': True,
+          # We're making Pinpoint use incremental builds to amortise the cost
+          # of rebuilding the object files. Clobber builds indicate that a
+          # builder will clean out previous build artifacts instead of re-using
+          # potentially already-built object files from a previous checkout.
+          # Incremental builds will be much faster especially with the help of
+          # goma.
+          'clobber': False,
           'revision': change.base_commit.git_hash,
           'deps_revision_overrides': deps_overrides,
       },

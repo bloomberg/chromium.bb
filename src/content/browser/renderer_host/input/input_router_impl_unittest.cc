@@ -28,7 +28,6 @@
 #include "content/browser/renderer_host/input/mock_input_disposition_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -36,6 +35,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -50,10 +51,14 @@
 #include "ui/display/win/test/scoped_screen_win.h"
 #endif
 
+using blink::SyntheticWebGestureEventBuilder;
+using blink::SyntheticWebMouseEventBuilder;
+using blink::SyntheticWebMouseWheelEventBuilder;
+using blink::SyntheticWebTouchEvent;
 using blink::WebGestureDevice;
 using blink::WebGestureEvent;
-using blink::WebKeyboardEvent;
 using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
@@ -98,7 +103,7 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
 // of InputRouters.
 class MockInputRouterImplClient : public InputRouterImplClient {
  public:
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override {
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override {
     return &widget_input_handler_;
   }
 
@@ -110,11 +115,11 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void SetMouseCapture(bool capture) override {}
 
-  void RequestMouseLock(bool from_user_gesture,
-                        bool privileged,
-                        bool unadjusted_movement,
-                        mojom::WidgetInputHandlerHost::RequestMouseLockCallback
-                            response) override {}
+  void RequestMouseLock(
+      bool from_user_gesture,
+      bool unadjusted_movement,
+      blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
+      override {}
 
   gfx::Size GetRootWidgetViewportSize() override {
     return gfx::Size(1920, 1080);
@@ -171,8 +176,9 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.IsAutoscrollInProgress();
   }
 
-  void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {
-    input_router_client_.OnSetWhiteListedTouchAction(touch_action);
+  void OnSetCompositorAllowedTouchAction(
+      cc::TouchAction touch_action) override {
+    input_router_client_.OnSetCompositorAllowedTouchAction(touch_action);
   }
 
   bool GetAndResetFilterEventCalled() {
@@ -183,8 +189,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.GetAndResetOverscroll();
   }
 
-  cc::TouchAction GetAndResetWhiteListedTouchAction() {
-    return input_router_client_.GetAndResetWhiteListedTouchAction();
+  cc::TouchAction GetAndResetCompositorAllowedTouchAction() {
+    return input_router_client_.GetAndResetCompositorAllowedTouchAction();
   }
 
   void set_input_router(InputRouter* input_router) {
@@ -403,8 +409,12 @@ class InputRouterImplTestBase : public testing::Test {
 
   bool HasPendingEvents() const { return input_router_->HasPendingEvents(); }
 
-  void OnHasTouchEventHandlers(bool has_handlers) {
-    input_router_->OnHasTouchEventHandlers(has_handlers);
+  bool HasTouchEventHandlers(bool has_handlers) { return has_handlers; }
+  bool HasHitTestableScrollbar(bool has_scrollbar) { return has_scrollbar; }
+
+  void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) {
+    input_router_->OnHasTouchEventConsumers(std::move(consumers));
   }
 
   void CancelTouchTimeout() {
@@ -432,9 +442,23 @@ class InputRouterImplTestBase : public testing::Test {
   void PressAndSetTouchActionAuto() {
     PressTouchPoint(1, 1);
     SendTouchEvent();
-    input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+    input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
     GetAndResetDispatchedMessages();
     disposition_handler_->GetAndResetAckCount();
+  }
+
+  void TouchActionSetFromMainNotOverridden() {
+    input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
+    ASSERT_TRUE(input_router_->AllowedTouchAction().has_value());
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::TouchAction::kAuto);
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_),
+        blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+        blink::mojom::InputEventResultState::kNoConsumerExists, nullptr,
+        blink::mojom::TouchActionOptional::New(cc::TouchAction::kPanY));
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::TouchAction::kAuto);
   }
 
   void ActiveTouchSequenceCountTest(
@@ -474,16 +498,19 @@ class InputRouterImplTestBase : public testing::Test {
       blink::mojom::InputEventResultSource source,
       blink::mojom::InputEventResultState ack_state,
       base::Optional<cc::TouchAction> expected_touch_action,
-      base::Optional<cc::TouchAction> expected_white_listed_touch_action) {
-    input_router_->OnHasTouchEventHandlers(true);
+      base::Optional<cc::TouchAction> expected_allowed_touch_action) {
+    auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+        HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+    input_router_->OnHasTouchEventConsumers(std::move(touch_event_consumers));
     EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
     PressTouchPoint(1, 1);
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
                                    source, ack_state);
     EXPECT_EQ(input_router_->AllowedTouchAction(), expected_touch_action);
-    EXPECT_EQ(input_router_->touch_action_filter_.white_listed_touch_action(),
-              expected_white_listed_touch_action.value());
+    EXPECT_EQ(
+        input_router_->touch_action_filter_.compositor_allowed_touch_action(),
+        expected_allowed_touch_action.value());
   }
 
   const float radius_x_ = 20.0f;
@@ -506,8 +533,8 @@ class InputRouterImplTest : public InputRouterImplTestBase {
     return input_router_->touch_action_filter_.allowed_touch_action_;
   }
 
-  cc::TouchAction WhiteListedTouchAction() {
-    return input_router_->touch_action_filter_.white_listed_touch_action_;
+  cc::TouchAction CompositorAllowedTouchAction() {
+    return input_router_->touch_action_filter_.compositor_allowed_touch_action_;
   }
 };
 
@@ -588,10 +615,10 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+          &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(-5, wheel_event->delta_y);
 
@@ -607,9 +634,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(8, wheel_event->delta_x);
   EXPECT_EQ(-10 + -6, wheel_event->delta_y);  // coalesced
 
@@ -622,9 +649,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(9, wheel_event->delta_x);
   EXPECT_EQ(-7, wheel_event->delta_y);
 
@@ -637,9 +664,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(-10, wheel_event->delta_y);
 
@@ -652,9 +679,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(0, wheel_event->delta_y);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
@@ -693,6 +720,12 @@ TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
   ActiveTouchSequenceCountTest(
       blink::mojom::TouchActionOptional::New(cc::TouchAction::kPanY),
       blink::mojom::InputEventResultState::kNoConsumerExists);
+}
+
+// Test that after touch action is set from the main thread, the touch action
+// won't be overridden by the call to TouchEventHandled.
+TEST_F(InputRouterImplTest, TouchActionSetFromMainNotOverridden) {
+  TouchActionSetFromMainNotOverridden();
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
@@ -753,11 +786,13 @@ TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
 
 // Tests that touch-events are sent properly.
 TEST_F(InputRouterImplTest, TouchEventQueue) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   DispatchedMessages touch_start_event = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, touch_start_event.size());
@@ -794,7 +829,9 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 // Tests that the touch-queue is emptied after a page stops listening for touch
 // events and the outstanding ack is received.
 TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_TRUE(TouchEventQueueEmpty());
 
@@ -810,7 +847,9 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
 
   // The page stops listening for touch-events. Note that flushing is deferred
   // until the outstanding ack is received.
-  OnHasTouchEventHandlers(false);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_FALSE(TouchEventQueueEmpty());
 
@@ -845,13 +884,13 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   ASSERT_TRUE(dispatched_messages[2]->ToEvent());
   ASSERT_TRUE(dispatched_messages[3]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollBegin,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
-            dispatched_messages[1]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[1]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[2]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[2]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
-            dispatched_messages[3]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[3]->ToEvent()->Event()->Event().GetType());
 
   // Indicate that the GestureScrollBegin event was consumed.
   dispatched_messages[0]->ToEvent()->CallCallback(
@@ -889,7 +928,9 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 }
 
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   // Only acks for TouchCancel should always be ignored.
   ASSERT_TRUE(ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::Type::kTouchStart)));
@@ -901,7 +942,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   // Precede the TouchCancel with an appropriate TouchStart;
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
@@ -1277,7 +1318,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 
   // TouchAction::kNone (and no other touch-action) should disable the timeout.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   DispatchedMessages touch_press_event2 = GetAndResetDispatchedMessages();
@@ -1295,7 +1338,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kNone);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kNone);
   DispatchedMessages touch_press_event3 = GetAndResetDispatchedMessages();
   ASSERT_EQ(1u, touch_press_event3.size());
   ASSERT_TRUE(touch_press_event3[0]->ToEvent());
@@ -1316,7 +1359,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   PressTouchPoint(1, 1);
   SendTouchEvent();
   ResetTouchAction();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 }
 
@@ -1328,7 +1371,9 @@ TEST_F(InputRouterImplTest,
   const int kMobileTimeoutMs = 2;
   SetUpForTouchAckTimeoutTest(kDesktopTimeoutMs, kMobileTimeoutMs);
   ASSERT_TRUE(TouchEventTimeoutEnabled());
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Start a touch sequence.
   PressTouchPoint(1, 1);
@@ -1388,7 +1433,9 @@ TEST_F(InputRouterImplTest,
 // Test that TouchActionFilter::ResetTouchAction is called before the
 // first touch event for a touch sequence reaches the renderer.
 TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -1474,7 +1521,9 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 // Test that TouchActionFilter::ResetTouchAction is called when a new touch
 // sequence has no consumer.
 TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -1549,7 +1598,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
 // handler is removed.
 TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   // Touch sequence with touch handler.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
@@ -1587,7 +1638,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
   // Sequence without a touch handler. Note that in this case, the view may not
   // necessarily forward touches to the router (as no touch handler exists).
-  OnHasTouchEventHandlers(false);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Ensure touch action has been set to auto, as the touch handler has been
   // removed.
@@ -1605,11 +1658,13 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
 // Tests that async touch-moves are ack'd from the browser side.
 TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::TouchAction::kAuto);
+  input_router_->SetTouchActionFromMain(cc::TouchAction::kAuto);
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
@@ -1620,6 +1675,9 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart,
+            disposition_handler_->ack_event_type());
+
   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
                        blink::WebGestureDevice::kTouchscreen);
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -1628,14 +1686,55 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin,
+            disposition_handler_->ack_event_type());
+
   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(2U, GetAndResetDispatchedMessages().size());
+  dispatched_messages = GetAndResetDispatchedMessages();
+  EXPECT_EQ(2U, dispatched_messages.size());
+  EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_messages[1]->ToEvent()->Event()->Event().GetType());
+  // Ack the GestureScrollUpdate.
+  dispatched_messages[1]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
-  // Now send an async move.
+  // Now since we're scrolling send an async move.
   MoveTouchPoint(0, 5, 5);
   SendTouchEvent();
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
+
+  // To catch crbug/1072364 send another scroll which returns kNoConsumerExists
+  // and ensure we're still async scrolling since we've already started the
+  // scroll.
+  SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
+                       blink::WebGestureDevice::kTouchscreen);
+  EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
+  dispatched_messages = GetAndResetDispatchedMessages();
+  EXPECT_EQ(1U, dispatched_messages.size());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
+  // Ack the GestureScrollUpdate.
+  dispatched_messages[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+
+  // Now since we're scrolling (even with NoConsumerExists) send an async move.
+  MoveTouchPoint(0, 10, 5);
+  SendTouchEvent();
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
+            disposition_handler_->ack_event_type());
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
 }
@@ -1643,7 +1742,9 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 // Test that the double tap gesture depends on the touch action of the first
 // tap.
 TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -1766,7 +1867,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   const WebInputEvent* input_event =
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+      &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   const WebMouseWheelEvent* synthetic_wheel =
       static_cast<const WebMouseWheelEvent*>(input_event);
@@ -1800,7 +1901,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
@@ -1840,7 +1941,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseEnded, synthetic_wheel->phase);
@@ -1870,7 +1971,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_TRUE(synthetic_wheel->GetModifiers() &
@@ -1899,7 +2000,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
@@ -2044,7 +2145,9 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
 // out. See https://crbug.com/581231 for details.
 TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   // Touch sequence with touch handler.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
@@ -2079,7 +2182,9 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
 }
 
 TEST_F(InputRouterImplTest, TouchActionInCallback) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Send a touchstart
   PressTouchPoint(1, 1);
@@ -2094,16 +2199,19 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
       nullptr, blink::mojom::TouchActionOptional::New(cc::TouchAction::kPan));
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   base::Optional<cc::TouchAction> allowed_touch_action = AllowedTouchAction();
-  cc::TouchAction white_listed_touch_action = WhiteListedTouchAction();
+  cc::TouchAction compositor_allowed_touch_action =
+      CompositorAllowedTouchAction();
   EXPECT_FALSE(allowed_touch_action.has_value());
-  EXPECT_EQ(expected_touch_action.value(), white_listed_touch_action);
+  EXPECT_EQ(expected_touch_action.value(), compositor_allowed_touch_action);
 }
 
 // TODO(crbug.com/953547): enable this when the bug is fixed.
 TEST_F(InputRouterImplTest,
        DISABLED_TimeoutMonitorStopWithMainThreadTouchAction) {
   SetUpForTouchAckTimeoutTest(1, 1);
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   StopTimeoutMonitorTest();
 }
 
@@ -2123,7 +2231,7 @@ class InputRouterImplScaleEventTest : public InputRouterImplTestBase {
     EXPECT_EQ(1u, dispatched_messages_.size());
 
     return static_cast<const T*>(
-        dispatched_messages_[0]->ToEvent()->Event()->web_event.get());
+        &dispatched_messages_[0]->ToEvent()->Event()->Event());
   }
 
   template <typename T>
@@ -2417,9 +2525,8 @@ class InputRouterImplScaleGestureEventTest
     ASSERT_EQ(expected_types.size(), dispatched_messages_.size());
     for (size_t i = 0; i < dispatched_messages_.size(); i++) {
       ASSERT_TRUE(dispatched_messages_[i]->ToEvent());
-      ASSERT_EQ(
-          expected_types[i],
-          dispatched_messages_[i]->ToEvent()->Event()->web_event->GetType());
+      ASSERT_EQ(expected_types[i],
+                dispatched_messages_[i]->ToEvent()->Event()->Event().GetType());
       dispatched_messages_[i]->ToEvent()->CallCallback(
           blink::mojom::InputEventResultState::kConsumed);
     }

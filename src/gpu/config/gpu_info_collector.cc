@@ -23,21 +23,26 @@
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"                 // nogncheck
+#include "ui/ozone/public/ozone_platform.h"           // nogncheck
+#include "ui/ozone/public/platform_gl_egl_utility.h"  // nogncheck
+#endif
+
 #if defined(USE_X11)
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
-#include "ui/gfx/switches.h"
-#include "ui/gl/gl_visual_picker_glx.h"
+#include "ui/gl/gl_utils.h"
 #endif
 
 namespace {
@@ -86,8 +91,7 @@ scoped_refptr<gl::GLContext> InitializeGLContext(gl::GLSurface* surface) {
 }
 
 std::string GetGLString(unsigned int pname) {
-  const char* gl_string =
-      reinterpret_cast<const char*>(glGetString(pname));
+  const char* gl_string = reinterpret_cast<const char*>(glGetString(pname));
   if (gl_string)
     return std::string(gl_string);
   return std::string();
@@ -122,8 +126,9 @@ std::string GetVersionFromString(const std::string& version_string) {
 }
 
 // Return the array index of the found name, or return -1.
-int StringContainsName(
-    const std::string& str, const std::string* names, size_t num_names) {
+int StringContainsName(const std::string& str,
+                       const std::string* names,
+                       size_t num_names) {
   std::vector<std::string> tokens = base::SplitString(
       str, " .,()-_", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t ii = 0; ii < tokens.size(); ++ii) {
@@ -144,7 +149,8 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
     return false;
   }
 
-  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(gl_interface));
+  sk_sp<GrDirectContext> gr_context =
+      GrDirectContext::MakeGL(std::move(gl_interface));
   if (gr_context) {
     // TODO(backer): Stash this GrContext for future use. For now, destroy.
     return true;
@@ -212,6 +218,9 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
   std::string use_angle =
       command_line->GetSwitchValueASCII(switches::kUseANGLE);
+  gpu_info->passthrough_cmd_decoder =
+      gl::UsePassthroughCommandDecoder(command_line) &&
+      gl::PassthroughCommandDecoderSupported();
 
   // If GL is disabled then we don't need GPUInfo.
   if (use_gl == gl::kGLImplementationDisabledName) {
@@ -227,29 +236,29 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   if (use_gl == software_gl_impl_name ||
       command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
     // If using the software GL implementation, use fake vendor and
-    // device ids to make sure it never gets blacklisted. It allows us
-    // to proceed with loading the blacklist which may have non-device
+    // device ids to make sure it never gets blocklisted. It allows us
+    // to proceed with loading the blocklist which may have non-device
     // specific entries we want to apply anyways (e.g., OS version
-    // blacklisting).
+    // blocklisting).
     gpu_info->gpu.vendor_id = 0xffff;
     gpu_info->gpu.device_id = 0xffff;
 
     // Also declare the driver_vendor to be <software GL> to be able to
     // specify exceptions based on driver_vendor==<software GL> for some
-    // blacklist rules.
+    // blocklist rules.
     gpu_info->gpu.driver_vendor = software_gl_impl_name.as_string();
 
     return true;
   } else if (use_gl == gl::kGLImplementationANGLEName &&
              use_angle == gl::kANGLEImplementationSwiftShaderName) {
     // Similarly to the above, use fake vendor and device ids
-    // to make sure they never gets blacklisted for SwANGLE as well.
+    // to make sure they never gets blocklisted for SwANGLE as well.
     gpu_info->gpu.vendor_id = 0xffff;
     gpu_info->gpu.device_id = 0xffff;
 
     // Also declare the driver_vendor to be <SwANGLE> to be able to
     // specify exceptions based on driver_vendor==<SwANGLE> for some
-    // blacklist rules.
+    // blocklist rules.
     gpu_info->gpu.driver_vendor = "SwANGLE";
 
     return true;
@@ -344,7 +353,14 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
 
-  IdentifyActiveGPU(gpu_info);
+  bool active_gpu_identified = false;
+#if defined(OS_WIN)
+  active_gpu_identified = IdentifyActiveGPUWithLuid(gpu_info);
+#endif  // OS_WIN
+
+  if (!active_gpu_identified)
+    IdentifyActiveGPU(gpu_info);
+
   return true;
 }
 
@@ -463,7 +479,7 @@ void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
 #endif  // OS_ANDROID
 }
 
-bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
+bool CollectGpuExtraInfo(gfx::GpuExtraInfo* gpu_extra_info,
                          const GpuPreferences& prefs) {
   // Populate the list of ANGLE features by querying the functions exposed by
   // EGL_ANGLE_feature_control if it's available.
@@ -489,37 +505,19 @@ bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
     }
   }
 
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    const auto* const egl_utility =
+        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
+    if (egl_utility)
+      egl_utility->CollectGpuExtraInfo(prefs.enable_native_gpu_memory_buffers,
+                                       *gpu_extra_info);
+    return true;
+  }
+#endif
 #if defined(USE_X11)
-  // Create the GLVisualPickerGLX singleton now while the GbmSupportX11
-  // singleton is busy being created on another thread.
-  gl::GLVisualPickerGLX* visual_picker;
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL)
-    visual_picker = gl::GLVisualPickerGLX::GetInstance();
-
-  // TODO(https://crbug.com/1031269): Enable by default.
-  if (prefs.enable_native_gpu_memory_buffers) {
-    gpu_extra_info->gpu_memory_buffer_support_x11 =
-        ui::GpuMemoryBufferSupportX11::GetInstance()->supported_configs();
-  }
-
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
-    gpu_extra_info->system_visual = visual_picker->system_visual().visualid;
-    gpu_extra_info->rgba_visual = visual_picker->rgba_visual().visualid;
-
-    // With GLX, only BGR(A) buffer formats are supported.  EGL does not have
-    // this restriction.
-    gpu_extra_info->gpu_memory_buffer_support_x11.erase(
-        std::remove_if(gpu_extra_info->gpu_memory_buffer_support_x11.begin(),
-                       gpu_extra_info->gpu_memory_buffer_support_x11.end(),
-                       [&](gfx::BufferUsageAndFormat usage_and_format) {
-                         return !visual_picker->GetFbConfigForFormat(
-                             usage_and_format.format);
-                       }),
-        gpu_extra_info->gpu_memory_buffer_support_x11.end());
-  } else if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-    // ANGLE does not yet support EGL_EXT_image_dma_buf_import[_modifiers].
-    gpu_extra_info->gpu_memory_buffer_support_x11.clear();
-  }
+  gl::CollectX11GpuExtraInfo(prefs.enable_native_gpu_memory_buffers,
+                             *gpu_extra_info);
 #endif
 
   return true;

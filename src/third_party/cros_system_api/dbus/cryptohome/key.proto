@@ -38,8 +38,8 @@ message KeyAuthorizationData {
 
 // Software-enforced privileges.
 message KeyPrivileges {
-  // Allows the key to mount the cryptohome.
-  optional bool mount = 1 [default=true];
+  // Reserving after removing mount privilege flag in the API.
+  reserved 1;
   // Allows new keys to be added.
   optional bool add = 2 [default=true];
   // Allows other existing keys to be removed.

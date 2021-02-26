@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createSession;
@@ -20,8 +19,9 @@ import static org.chromium.chrome.browser.notifications.NotificationConstants.NO
 import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
 
 import android.content.Intent;
-import android.support.test.espresso.Espresso;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.espresso.Espresso;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,24 +33,21 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
-import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
@@ -58,7 +55,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-
 /**
  * Instrumentation tests to make sure the Running in Chrome prompt is shown.
  */
@@ -78,9 +74,31 @@ public class RunningInChromeTest {
     private final CustomTabActivityTestRule mCustomTabActivityTestRule =
             new CustomTabActivityTestRule();
     private final EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
-    private final TestRule mModuleOverridesRule = new ModuleOverridesRule()
-            .setOverride(ChromeActivityCommonsModule.Factory.class,
-                    ChromeActivityCommonsModuleForTest::new);
+    private final MockNotificationManagerProxy mMockNotificationManager =
+            new MockNotificationManagerProxy();
+
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule().setOverride(
+            ChromeActivityCommonsModule.Factory.class,
+            (activity, bottomSheetController, tabModelSelectorSupplier, browserControlsManager,
+                    browserControlsVisibilityManager, browserControlsSizer, fullscreenManager,
+                    layoutManagerSupplier, lifecycleDispatcher, snackbarManagerSupplier,
+                    activityTabProvider, tabContentManager, activityWindowAndroid,
+                    compositorViewHolderSupplier, tabCreatorManager, tabCreatorSupplier,
+                    isPromotableToTabSupplier, statusBarColorController, screenOrientationProvider,
+                    notificationManagerProxySupplier, tabContentManagerSupplier,
+                    compositorViewHolderInitializer) -> {
+                return new ChromeActivityCommonsModule(activity, bottomSheetController,
+                        tabModelSelectorSupplier, browserControlsManager,
+                        browserControlsVisibilityManager, browserControlsSizer, fullscreenManager,
+                        layoutManagerSupplier, lifecycleDispatcher, snackbarManagerSupplier,
+                        activityTabProvider, tabContentManager, activityWindowAndroid,
+                        compositorViewHolderSupplier, tabCreatorManager, tabCreatorSupplier,
+                        isPromotableToTabSupplier, statusBarColorController,
+                        screenOrientationProvider,
+                        ()
+                                -> mMockNotificationManager,
+                        tabContentManagerSupplier, compositorViewHolderInitializer);
+            });
 
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
@@ -88,26 +106,9 @@ public class RunningInChromeTest {
             .around(mEmbeddedTestServerRule)
             .around(mModuleOverridesRule);
 
-    /**
-     * This class causes Dagger to provide our MockNotificationManagerProxy instead of the real one.
-     */
-    class ChromeActivityCommonsModuleForTest extends ChromeActivityCommonsModule {
-        public ChromeActivityCommonsModuleForTest(ChromeActivity<?> activity,
-                ActivityLifecycleDispatcher lifecycleDispatcher) {
-            super(activity, lifecycleDispatcher);
-        }
-
-        @Override
-        public NotificationManagerProxy provideNotificationManagerProxy() {
-            return mMockNotificationManager;
-        }
-    }
-
 
     private String mTestPage;
     private BrowserServicesStore mStore;
-    private final MockNotificationManagerProxy mMockNotificationManager =
-            new MockNotificationManagerProxy();
 
     @Before
     public void setUp() {
@@ -144,7 +145,7 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
     }
 
     @Test
@@ -155,13 +156,11 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() ->
-                assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
 
         mCustomTabActivityTestRule.loadUrl("https://www.example.com/");
 
-        CriteriaHelper.pollUiThread(() ->
-                assertFalse(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> !showingNotification(scope));
     }
 
     @Test
@@ -172,11 +171,11 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
 
         mCustomTabActivityTestRule.getActivity().finish();
 
-        CriteriaHelper.pollUiThread(() -> assertFalse(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> !showingNotification(scope));
     }
 
     private boolean showingNotification(String tag) {

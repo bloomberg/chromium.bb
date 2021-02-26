@@ -20,12 +20,14 @@
 #include "media/base/media_util.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
+#include "third_party/blink/renderer/modules/mediastream/video_renderer_algorithm_wrapper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace base {
 class SingleThreadTaskRunner;
+class WaitableEvent;
 }
 
 namespace gfx {
@@ -41,8 +43,8 @@ class SurfaceId;
 }
 
 namespace blink {
+class MediaStreamDescriptor;
 class WebMediaPlayerMS;
-class WebMediaStream;
 struct WebMediaPlayerMSCompositorTraits;
 
 // This class is designed to handle the work load on compositor thread for
@@ -64,7 +66,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const WebMediaStream& web_stream,
+      MediaStreamDescriptor* media_stream_descriptor,
       std::unique_ptr<WebVideoFrameSubmitter> submitter,
       WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);
@@ -74,7 +76,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
     return update_submission_state_callback_;
   }
 
-  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame, bool is_copy);
 
   // Statistical data
   gfx::Size GetCurrentSize();
@@ -86,7 +88,6 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // submit video frames given by WebMediaPlayerMSCompositor.
   virtual void EnableSubmission(
       const viz::SurfaceId& id,
-      base::TimeTicks local_surface_id_allocation_time,
       media::VideoTransformation transformation,
       bool force_submit);
 
@@ -120,8 +121,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   void SetOnFramePresentedCallback(OnNewFramePresentedCB presented_cb);
 
   // Gets the metadata for the last frame that was presented to the compositor.
-  // Used to populate the VideoFrameMetadata of video.requestAnimationFrame()
-  // callbacks. See https://wicg.github.io/video-raf/.
+  // Used to populate the VideoFrameMetadata of video.requestVideoFrameCallback
+  // callbacks. See https://wicg.github.io/video-rvfc/.
   // Can be called on any thread.
   std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetLastPresentedFrameMetadata();
@@ -140,6 +141,15 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   friend class WebMediaPlayerMSTest;
   friend struct WebMediaPlayerMSCompositorTraits;
 
+  // Struct used to keep information about frames pending in
+  // |rendering_frame_buffer_|.
+  struct PendingFrameInfo {
+    int unique_id;
+    base::TimeDelta timestamp;
+    base::TimeTicks reference_time;
+    bool is_copy;
+  };
+
   ~WebMediaPlayerMSCompositor() override;
 
   // Ran on the |video_frame_compositor_task_runner_| to initialize
@@ -147,7 +157,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   void InitializeSubmitter();
 
   // Signals the VideoFrameSubmitter to stop submitting frames.
-  void SetIsSurfaceVisible(bool);
+  void SetIsSurfaceVisible(bool, base::WaitableEvent*);
 
   // The use of std::vector here is OK because this method is bound into a
   // base::OnceCallback instance, and passed to media::VideoRendererAlgorithm
@@ -166,13 +176,16 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // For algorithm disabled case only: call SetCurrentFrame() with the current
   // frame immediately. |video_frame_provider_client_| gets notified about the
   // new frame with a DidReceiveFrame() call.
-  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame);
+  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame,
+                              bool is_copy);
   void RenderWithoutAlgorithmOnCompositor(
-      scoped_refptr<media::VideoFrame> frame);
+      scoped_refptr<media::VideoFrame> frame,
+      bool is_copy);
 
   // Update |current_frame_| and |dropped_frame_count_|
   void SetCurrentFrame(
       scoped_refptr<media::VideoFrame> frame,
+      bool is_copy,
       base::Optional<base::TimeTicks> expected_presentation_time);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
@@ -222,7 +235,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   // |rendering_frame_buffer_| stores the incoming frames, and provides a frame
   // selection method which returns the best frame for the render interval.
-  std::unique_ptr<media::VideoRendererAlgorithm> rendering_frame_buffer_;
+  std::unique_ptr<VideoRendererAlgorithmWrapper> rendering_frame_buffer_;
 
   // |current_frame_rendered_| is updated on compositor thread only.
   // It's used to track whether |current_frame_| was painted for detecting
@@ -238,6 +251,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   size_t total_frame_count_;
   size_t dropped_frame_count_;
+
+  bool current_frame_is_copy_ = false;
 
   // Used to complete video.requestAnimationFrame() calls. Reported up via
   // GetLastPresentedFrameMetadata().
@@ -264,8 +279,8 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 
-  // TODO(crbug.com/952716): Replace the use of std::map by WTF::HashMap.
-  std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
+  // Extra information about the frames pending in |rendering_frame_buffer_|.
+  WTF::Vector<PendingFrameInfo> pending_frames_info_;
 
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
 

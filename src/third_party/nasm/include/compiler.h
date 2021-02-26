@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------- *
- *   
- *   Copyright 2007-2017 The NASM Authors - All Rights Reserved
+ *
+ *   Copyright 2007-2020 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
  *
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *     
+ *
  *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -56,12 +56,16 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config/config.h"
-#elif defined(_MSC_VER) && (_MSC_VER >= 1310)
-# include "config/msvc.h"
-#elif defined(__WATCOMC__)
-# include "config/watcom.h"
 #else
-# include "config/unknown.h"
+# if defined(_MSC_VER) && (_MSC_VER >= 1310)
+#  include "config/msvc.h"
+# elif defined(__WATCOMC__)
+#  include "config/watcom.h"
+# else
+#  include "config/unknown.h"
+# endif
+/* This unconditionally defines some macros we really want */
+# include "config/unconfig.h"
 #endif /* Configuration file */
 
 /* This is required to get the standard <inttypes.h> macros when compiling
@@ -81,8 +85,14 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <limits.h>
+#include <errno.h>
 
+#ifdef HAVE_STRINGS_H
+# include <strings.h>
+#endif
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -163,7 +173,7 @@ char *strrchrnul(const char *, int);
 # ifdef HAVE_STDBOOL_H
 #  include <stdbool.h>
 # elif defined(HAVE__BOOL)
-#  typedef _Bool bool
+   typedef _Bool bool;
 #  define false 0
 #  define true 1
 # else
@@ -173,10 +183,34 @@ typedef enum bool { false, true } bool;
 # endif
 #endif
 
+/* Create a NULL pointer of the same type as the address of
+   the argument, without actually evaluating said argument. */
+#define nullas(p) (0 ? &(p) : NULL)
+
+/* Convert an offsetted NULL pointer dereference to a size_t offset.
+   Technically non-portable as taking the offset from a NULL pointer
+   is undefined behavior, but... */
+#define null_offset(p) ((size_t)((const char *)&(p) - (const char *)NULL))
+
 /* Provide a substitute for offsetof() if we don't have one.  This
    variant works on most (but not *all*) systems... */
 #ifndef offsetof
-# define offsetof(t,m) ((size_t)&(((t *)0)->m))
+# define offsetof(t,m) null_offset(((t *)NULL)->m)
+#endif
+
+/* If typeof is defined as a macro, assume we have typeof even if
+   HAVE_TYPEOF is not declared (e.g. due to not using autoconf.) */
+#ifdef typeof
+# define HAVE_TYPEOF 1
+#endif
+
+/* This is like offsetof(), but takes an object rather than a type. */
+#ifndef offsetin
+# ifdef HAVE_TYPEOF
+#  define offsetin(p,m) offsetof(typeof(p),m)
+# else
+#  define offsetin(p,m)	null_offset(nullas(p)->m)
+# endif
 #endif
 
 /* The container_of construct: if p is a pointer to member m of
@@ -209,6 +243,13 @@ char *strsep(char **, const char *);
 
 #if !HAVE_DECL_STRNLEN
 size_t strnlen(const char *s, size_t maxlen);
+#endif
+
+#ifndef HAVE_MEMPCPY
+static inline void *mempcpy(void *dst, const void *src, size_t n)
+{
+    return (char *)memcpy(dst, src, n) + n;
+}
 #endif
 
 /*
@@ -259,36 +300,15 @@ size_t strnlen(const char *s, size_t maxlen);
 # define unlikely(x)	(!!(x))
 #endif
 
-/*
- * Hints about malloc-like functions that never return NULL
- */
-#ifdef HAVE_FUNC_ATTRIBUTE_RETURNS_NONNULL
-# define never_null __attribute__((returns_nonnull))
-#else
-# define never_null
-#endif
+#define safe_alloc     never_null     malloc_func
+#define safe_alloc_ptr never_null_ptr malloc_func_ptr
 
-#ifdef HAVE_FUNC_ATTRIBUTE_MALLOC
-# define safe_alloc never_null __attribute__((malloc))
-#else
-# define safe_alloc never_null
-#endif
-
-#ifdef HAVE_FUNC_ATTRIBUTE_ALLOC_SIZE
-# define safe_malloc(s) safe_alloc __attribute__((alloc_size(s)))
-# define safe_malloc2(s1,s2) safe_alloc __attribute__((alloc_size(s1,s2)))
-# define safe_realloc(s) never_null __attribute__((alloc_size(s)))
-#else
-# define safe_malloc(s) safe_alloc
-# define safe_malloc2(s1,s2) safe_alloc
-# define safe_realloc(s) never_null
-#endif
-
-#ifdef HAVE_FUNC_ATTRIBUTE_SENTINEL
-# define end_with_null __attribute__((sentinel))
-#else
-# define end_with_null
-#endif
+#define safe_malloc(s)          safe_alloc     alloc_size_func1(s)
+#define safe_malloc2(s1,s2)     safe_alloc     alloc_size_func2(s1,s2)
+#define safe_realloc(s)         never_null     alloc_size_func1(s)
+#define safe_malloc_ptr(s)      safe_alloc_ptr alloc_size_func1_ptr(s)
+#define safe_malloc2_ptr(s1,s2) safe_alloc_ptr alloc_size_func2_ptr(s1,s2)
+#define safe_realloc_ptr(s)     never_null_ptr alloc_size_func1_ptr(s)
 
 /*
  * How to tell the compiler that a function doesn't return
@@ -296,65 +316,79 @@ size_t strnlen(const char *s, size_t maxlen);
 #ifdef HAVE_STDNORETURN_H
 # include <stdnoreturn.h>
 # define no_return noreturn void
-#elif defined(HAVE_FUNC_ATTRIBUTE_NORETURN)
-# define no_return void __attribute__((noreturn))
 #elif defined(_MSC_VER)
 # define no_return __declspec(noreturn) void
 #else
-# define no_return void
-#endif
-
-/*
- * How to tell the compiler that a function is unlikely to be executed.
- * This differs from unlikely() in that it is applied to a function call,
- * not a boolean condition.
- */
-#ifdef HAVE_FUNC_ATTRIBUTE_COLD
-# define unlikely_func __attribute__((cold))
-#else
-# define unlikely_func
+# define no_return void noreturn_func
 #endif
 
 /*
  * A fatal function is both unlikely and no_return
  */
-#define fatal_func no_return unlikely_func
+#define fatal_func     no_return unlikely_func
+#define fatal_func_ptr no_return unlikely_func_ptr
 
 /*
  * How to tell the compiler that a function takes a printf-like string
  */
-#ifdef HAVE_FUNC_ATTRIBUTE_FORMAT
-# define printf_func(fmt, list) __attribute__((format(printf, fmt, list)))
-#else
-# define printf_func(fmt, list)
-#endif
-
-/*
- * How to tell the compiler that a function is pure arithmetic
- */
-#ifdef HAVE_FUNC_ATTRIBUTE_CONST
-# define const_func __attribute__((const))
-#else
-# define const_func
-#endif
-
-/*
- * This function has no side effects, but depends on its arguments,
- * memory pointed to by its arguments, or global variables.
- * NOTE: functions that return a value by modifying memory pointed to
- * by a pointer argument are *NOT* considered pure.
- */
-#ifdef HAVE_FUNC_ATTRIBUTE_PURE
-# define pure_func __attribute__((pure))
-#else
-# define pure_func
-#endif
+#define printf_func(fmt, list)     format_func3(printf,fmt,list)
+#define printf_func_ptr(fmt, list) format_func3_ptr(printf,fmt,list)
 
 /* Determine probabilistically if something is a compile-time constant */
 #ifdef HAVE___BUILTIN_CONSTANT_P
-# define is_constant(x) __builtin_constant_p(x)
+# if defined(__GNUC__) && (__GNUC__ >= 5)
+#  define is_constant(x) __builtin_constant_p((x))
+# else
+#  define is_constant(x) false
+# endif
 #else
 # define is_constant(x) false
+#endif
+
+/*
+ * If we can guarantee that a particular expression is constant, use it,
+ * otherwise use a different version.
+ */
+#if defined(__GNUC__) && (__GNUC__ >= 3)
+# define not_pedantic_start                             \
+    _Pragma("GCC diagnostic push")                      \
+    _Pragma("GCC diagnostic ignored \"-Wpedantic\"")
+# define not_pedantic_end                       \
+    _Pragma("GCC diagnostic pop")
+#else
+# define not_pedantic_start
+# define not_pedantic_end
+#endif
+
+#ifdef HAVE___BUILTIN_CHOOSE_EXPR
+# define if_constant(x,y) __builtin_choose_expr(is_constant(x),(x),(y))
+#else
+# define if_constant(x,y) (y)
+#endif
+
+/*
+ * The autoconf documentation states:
+ *
+ * `va_copy'
+ *    The C99 standard provides `va_copy' for copying `va_list'
+ *    variables.  It may be available in older environments too, though
+ *    possibly as `__va_copy' (e.g., `gcc' in strict pre-C99 mode).
+ *    These can be tested with `#ifdef'.  A fallback to `memcpy (&dst,
+ *    &src, sizeof (va_list))' gives maximum portability.
+ */
+#ifndef va_copy
+# ifdef __va_copy
+#  define va_copy(dst,src) __va_copy(dst,src)
+# else
+#  define va_copy(dst,src) memcpy(&(dst),&(src),sizeof(va_list))
+# endif
+#endif
+
+/*
+ * If SIZE_MAX is not defined, rely on size_t being unsigned
+ */
+#ifndef SIZE_MAX
+# define SIZE_MAX (((size_t)0) - 1)
 #endif
 
 /* Watcom doesn't handle switch statements with 64-bit types, hack around it */

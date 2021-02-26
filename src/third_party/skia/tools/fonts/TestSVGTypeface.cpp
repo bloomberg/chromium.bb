@@ -9,7 +9,6 @@
 
 #ifdef SK_XML
 
-#include "experimental/svg/model/SkSVGDOM.h"
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
@@ -30,6 +29,7 @@
 #include "include/private/SkTDArray.h"
 #include "include/private/SkTemplates.h"
 #include "include/utils/SkNoDrawCanvas.h"
+#include "modules/svg/include/SkSVGDOM.h"
 #include "src/core/SkAdvancedTypefaceMetrics.h"
 #include "src/core/SkFontDescriptor.h"
 #include "src/core/SkFontPriv.h"
@@ -80,7 +80,7 @@ void TestSVGTypeface::Glyph::withSVG(Fn&& fn) const {
             return;
         }
 
-        sk_sp<SkSVGDOM> svg = SkSVGDOM::MakeFromStream(*stream.get());
+        sk_sp<SkSVGDOM> svg = SkSVGDOM::MakeFromStream(*stream);
         if (!svg) {
             return;
         }
@@ -158,6 +158,8 @@ void TestSVGTypeface::onCharsToGlyphs(const SkUnichar uni[], int count, SkGlyphI
 }
 
 void TestSVGTypeface::onGetFamilyName(SkString* familyName) const { *familyName = fName; }
+
+bool TestSVGTypeface::onGetPostScriptName(SkString*) const { return false; }
 
 SkTypeface::LocalizedStrings* TestSVGTypeface::onCreateFamilyNameIterator() const {
     SkString familyName(fName);
@@ -309,7 +311,7 @@ sk_sp<TestSVGTypeface> TestSVGTypeface::Default() {
     return sk_make_sp<DefaultTypeface>("Emoji",
                                        1000,
                                        metrics,
-                                       SkMakeSpan(glyphs),
+                                       SkSpan(glyphs),
                                        SkFontStyle::Normal());
 }
 
@@ -359,7 +361,7 @@ sk_sp<TestSVGTypeface> TestSVGTypeface::Planets() {
     return sk_make_sp<PlanetTypeface>("Planets",
                                       200,
                                       metrics,
-                                      SkMakeSpan(glyphs),
+                                      SkSpan(glyphs),
                                       SkFontStyle::Normal());
 }
 
@@ -772,7 +774,7 @@ void TestSVGTypeface::exportTtxCbdt(SkWStream* out, SkSpan<unsigned> strikeSizes
                                    -bounds.fTop,
                                    font,
                                    paint);
-            surface->flush();
+            surface->flushAndSubmit();
             sk_sp<SkImage> image = surface->makeImageSnapshot();
             sk_sp<SkData>  data  = image->encodeToData(SkEncodedImageFormat::kPNG, 100);
 
@@ -994,7 +996,7 @@ void TestSVGTypeface::exportTtxSbix(SkWStream* out, SkSpan<unsigned> strikeSizes
                                    -bounds.fTop,
                                    font,
                                    paint);
-            surface->flush();
+            surface->flushAndSubmit();
             sk_sp<SkImage> image = surface->makeImageSnapshot();
             sk_sp<SkData>  data  = image->encodeToData(SkEncodedImageFormat::kPNG, 100);
 

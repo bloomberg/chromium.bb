@@ -5,14 +5,12 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 
 namespace content {
@@ -47,13 +45,39 @@ RenderWidgetHelper::~RenderWidgetHelper() {
 void RenderWidgetHelper::Init(int render_process_id) {
   render_process_id_ = render_process_id;
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&AddWidgetHelper, render_process_id_,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AddWidgetHelper, render_process_id_,
                                 base::WrapRefCounted(this)));
 }
 
 int RenderWidgetHelper::GetNextRoutingID() {
   return next_routing_id_.GetNext() + 1;
+}
+
+bool RenderWidgetHelper::TakeFrameTokensForFrameRoutingID(
+    int32_t routing_id,
+    base::UnguessableToken& frame_token,
+    base::UnguessableToken& devtools_frame_token) {
+  base::AutoLock lock(frame_token_map_lock_);
+  auto iter = frame_token_routing_id_map_.find(routing_id);
+  if (iter == frame_token_routing_id_map_.end())
+    return false;
+  frame_token = iter->second.frame_token;
+  devtools_frame_token = iter->second.devtools_frame_token;
+  frame_token_routing_id_map_.erase(iter);
+  return true;
+}
+
+void RenderWidgetHelper::StoreNextFrameRoutingID(
+    int32_t routing_id,
+    const base::UnguessableToken& frame_token,
+    const base::UnguessableToken& devtools_frame_token) {
+  base::AutoLock lock(frame_token_map_lock_);
+  bool result =
+      frame_token_routing_id_map_
+          .emplace(routing_id, FrameTokens{frame_token, devtools_frame_token})
+          .second;
+  DCHECK(result);
 }
 
 // static

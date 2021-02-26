@@ -7,6 +7,7 @@ from recipe_engine import recipe_api
 import string
 
 class GitClApi(recipe_api.RecipeApi):
+
   def __call__(self, subcmd, args, name=None, **kwargs):
     if not name:
       name = 'git_cl ' + subcmd
@@ -47,4 +48,3 @@ class GitClApi(recipe_api.RecipeApi):
 
   def issue(self, **kwargs):
     return self('issue', [], stdout=self.m.raw_io.output(), **kwargs)
-

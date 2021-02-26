@@ -21,9 +21,9 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
@@ -78,15 +78,6 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
 }
 
 bool ChromeLocationBarModelDelegate::ShouldPreventElision() {
-  // Don't record a histogram or prevent elision if the user is in a state
-  // where the show full URLs pref is enabled but the context menu option is
-  // disabled.
-  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls) &&
-      GetElisionConfig() == ELISION_CONFIG_TURNED_OFF_BY_PREF) {
-    return false;
-  }
-
-  RecordElisionConfig();
   if (GetElisionConfig() != ELISION_CONFIG_DEFAULT) {
     return true;
   }
@@ -195,11 +186,26 @@ bool ChromeLocationBarModelDelegate::IsOfflinePage() const {
 #endif
 }
 
-bool ChromeLocationBarModelDelegate::IsInstantNTP() const {
-  return search::IsInstantNTP(GetActiveWebContents());
+bool ChromeLocationBarModelDelegate::IsNewTabPage() const {
+  content::NavigationEntry* const entry = GetNavigationEntry();
+  if (!entry)
+    return false;
+
+  Profile* const profile = GetProfile();
+  if (!profile)
+    return false;
+
+  if (!search::DefaultSearchProviderIsGoogle(profile))
+    return false;
+
+  GURL ntp_url(base::FeatureList::IsEnabled(ntp_features::kWebUI)
+                   ? chrome::kChromeUINewTabPageURL
+                   : chrome::kChromeSearchLocalNtpUrl);
+  return ntp_url.scheme_piece() == entry->GetURL().scheme_piece() &&
+         ntp_url.host_piece() == entry->GetURL().host_piece();
 }
 
-bool ChromeLocationBarModelDelegate::IsNewTabPage(const GURL& url) const {
+bool ChromeLocationBarModelDelegate::IsNewTabPageURL(const GURL& url) const {
   return url.spec() == chrome::kChromeUINewTabURL;
 }
 
@@ -242,18 +248,6 @@ ChromeLocationBarModelDelegate::GetElisionConfig() const {
   }
 #endif
   return ELISION_CONFIG_DEFAULT;
-}
-
-void ChromeLocationBarModelDelegate::RecordElisionConfig() {
-  Profile* const profile = GetProfile();
-  // Only record metrics once for this object, and only record if the profile
-  // has already been created to avoid false logging of the default config.
-  if (elision_config_recorded_ || !profile) {
-    return;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Omnibox.ElisionConfig", GetElisionConfig(),
-                            ELISION_CONFIG_MAX);
-  elision_config_recorded_ = true;
 }
 
 AutocompleteClassifier*

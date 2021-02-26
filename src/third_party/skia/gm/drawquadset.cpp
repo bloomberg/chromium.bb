@@ -22,10 +22,9 @@
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
 #include "include/effects/SkGradientShader.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/core/SkMatrixProvider.h"
-#include "src/gpu/GrClip.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/SkGr.h"
@@ -51,7 +50,7 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
 
     GrRenderTargetContext* rtc = canvas->internal_private_accessTopLayerRenderTargetContext();
 
-    GrContext* context = canvas->getGrContext();
+    auto context = canvas->recordingContext();
 
     auto gradient = SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kMirror);
     SkPaint paint;
@@ -87,7 +86,7 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
                 SkSimpleMatrixProvider matrixProvider(view);
                 GrPaint grPaint;
                 SkPaintToGrPaint(context, rtc->colorInfo(), paint, matrixProvider, &grPaint);
-                rtc->fillRectWithEdgeAA(GrNoClip(), std::move(grPaint), GrAA::kYes,
+                rtc->fillRectWithEdgeAA(nullptr, std::move(grPaint), GrAA::kYes,
                                         static_cast<GrQuadAAFlags>(aa), view, tile);
             } else {
                 // Fallback to solid color on raster backend since the public API only has color

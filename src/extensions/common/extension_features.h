@@ -25,6 +25,19 @@ extern const base::Feature kForceWebRequestProxyForTest;
 
 extern const base::Feature kAllowWithholdingExtensionPermissionsOnInstall;
 
+extern const base::Feature kContentScriptsMatchOriginAsFallback;
+
+extern const base::Feature kMv3ExtensionsSupported;
+
+extern const base::Feature kReportKeepaliveUkm;
+
+extern const base::Feature kReturnScopesInGetAuthToken;
+
+extern const base::Feature kSelectedUserIdInGetAuthToken;
+
+extern const base::Feature kCorbCorsAllowlist;
+extern const char kCorbCorsAllowlistParamName[];
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

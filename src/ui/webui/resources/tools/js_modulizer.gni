@@ -12,6 +12,7 @@ common_namespace_rewrites = [
   "cr.isAndroid|isAndroid",
   "cr.isChromeOS|isChromeOS",
   "cr.isIOS|isIOS",
+  "cr.isLacros|isLacros",
   "cr.isLinux|isLinux",
   "cr.isMac|isMac",
   "cr.isWindows|isWindows",
@@ -22,6 +23,7 @@ common_namespace_rewrites = [
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
   "cr.ui.FocusRowBehavior|FocusRowBehavior",
   "cr.ui.focusWithoutInk|focusWithoutInk",
+  "cr.ui.KeyboardShortcutList|KeyboardShortcutList",
   "cr.ui.Store|Store",
   "Polymer.dom.flush|flush",
   "Polymer.IronA11yAnnouncer|IronA11yAnnouncer",
@@ -44,6 +46,8 @@ template("js_modulizer") {
           [ "$target_gen_dir/" + get_path_info(_input, "name") + ".m.js" ]
     }
 
+    data = outputs
+
     args = [
              "--in_folder",
              rebase_path(".", root_build_dir),
@@ -55,10 +59,6 @@ template("js_modulizer") {
     args += [ "--namespace_rewrites" ] + common_namespace_rewrites
     if (defined(invoker.namespace_rewrites)) {
       args += invoker.namespace_rewrites
-    }
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
     }
   }
 }

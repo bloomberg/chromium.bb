@@ -8,7 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "components/arc/mojom/cert_store.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/connection_observer.h"
@@ -73,13 +76,33 @@ class ArcCertStoreBridge
                                       net::NSSCertDatabase* database);
   void OnCertificatesListed(ListCertificatesCallback callback,
                             net::ScopedCERTCertificateList cert_list);
+
+  using FilterAllowedCertificatesCallback =
+      base::OnceCallback<void(net::ScopedCERTCertificateList allowed_certs)>;
+
+  void FilterAllowedCertificatesRecursively(
+      FilterAllowedCertificatesCallback callback,
+      base::queue<net::ScopedCERTCertificate> cert_queue,
+      net::ScopedCERTCertificateList allowed_certs) const;
+
+  void FilterAllowedCertificateAndRecurse(
+      FilterAllowedCertificatesCallback callback,
+      base::queue<net::ScopedCERTCertificate> cert_queue,
+      net::ScopedCERTCertificateList allowed_certs,
+      net::ScopedCERTCertificate cert,
+      bool certificate_allowed) const;
+
+  void OnFilteredAllowedCertificates(
+      ListCertificatesCallback callback,
+      net::ScopedCERTCertificateList allowed_certs);
+
   void UpdateFromKeyPermissionsPolicy();
   void UpdateCertificates();
 
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   policy::PolicyService* policy_service_ = nullptr;
-  // Set to true if at least one ARC app is whitelisted by KeyPermissions
+  // Set to true if at least one ARC app is allowlisted by KeyPermissions
   // policy.
   bool channel_enabled_ = false;
 

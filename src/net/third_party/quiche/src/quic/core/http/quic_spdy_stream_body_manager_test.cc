@@ -8,11 +8,11 @@
 #include <numeric>
 #include <string>
 
+#include "absl/base/macros.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -75,7 +75,7 @@ TEST_F(QuicSpdyStreamBodyManagerTest, OnBodyConsumed) {
   };
 
   for (size_t test_case_index = 0;
-       test_case_index < QUICHE_ARRAYSIZE(kOnBodyConsumedTestData);
+       test_case_index < ABSL_ARRAYSIZE(kOnBodyConsumedTestData);
        ++test_case_index) {
     const std::vector<QuicByteCount>& frame_header_lengths =
         kOnBodyConsumedTestData[test_case_index].frame_header_lengths;
@@ -127,8 +127,7 @@ TEST_F(QuicSpdyStreamBodyManagerTest, PeekBody) {
   };
 
   for (size_t test_case_index = 0;
-       test_case_index < QUICHE_ARRAYSIZE(kPeekBodyTestData);
-       ++test_case_index) {
+       test_case_index < ABSL_ARRAYSIZE(kPeekBodyTestData); ++test_case_index) {
     const std::vector<QuicByteCount>& frame_header_lengths =
         kPeekBodyTestData[test_case_index].frame_header_lengths;
     const std::vector<const char*>& frame_payloads =
@@ -154,7 +153,7 @@ TEST_F(QuicSpdyStreamBodyManagerTest, PeekBody) {
               static_cast<size_t>(body_manager.PeekBody(&iovecs[0], iov_len)));
     for (size_t iovec_index = 0; iovec_index < iovs_filled; ++iovec_index) {
       EXPECT_EQ(frame_payloads[iovec_index],
-                quiche::QuicheStringPiece(
+                absl::string_view(
                     static_cast<const char*>(iovecs[iovec_index].iov_base),
                     iovecs[iovec_index].iov_len));
     }
@@ -221,8 +220,7 @@ TEST_F(QuicSpdyStreamBodyManagerTest, ReadBody) {
   };
 
   for (size_t test_case_index = 0;
-       test_case_index < QUICHE_ARRAYSIZE(kReadBodyTestData);
-       ++test_case_index) {
+       test_case_index < ABSL_ARRAYSIZE(kReadBodyTestData); ++test_case_index) {
     const std::vector<QuicByteCount>& frame_header_lengths =
         kReadBodyTestData[test_case_index].frame_header_lengths;
     const std::vector<const char*>& frame_payloads =

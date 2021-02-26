@@ -4,12 +4,16 @@
 
 #import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 
+#import <QuickLook/QuickLook.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -51,9 +55,6 @@ const NSTimeInterval kOverlayViewAnimationDuration = 0.3;
 // Time interval after which the |openInToolbar_| is automatically hidden.
 const NSTimeInterval kOpenInToolbarDisplayDuration = 2.0;
 
-// Text size used for the label indicating a download in progress.
-const CGFloat kLabelTextSize = 22.0;
-
 // Alpha value for the background view of |overlayedView_|.
 const CGFloat kOverlayedViewBackgroundAlpha = 0.6;
 
@@ -69,13 +70,19 @@ void LogOpenInDownloadResult(const OpenInDownloadResult result) {
   UMA_HISTOGRAM_ENUMERATION("IOS.OpenIn.DownloadResult", result);
 }
 
-// Returns true if the file located at |url| is a valid PDF file.
-bool HasValidPdfAtUrl(NSURL* _Nullable url) {
+// Returns true if the file located at |url| is file.
+bool HasValidFileAtUrl(NSURL* _Nullable url) {
   if (!url)
     return false;
-  base::ScopedCFTypeRef<CGPDFDocumentRef> document(
-      CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
-  return document;
+
+  NSString* extension = [[url path] pathExtension];
+  if ([extension isEqualToString:@"pdf"]) {
+    base::ScopedCFTypeRef<CGPDFDocumentRef> document(
+        CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
+    return document;
+  }
+
+  return [QLPreviewController canPreviewItem:url];
 }
 
 }  // anonymous namespace
@@ -315,7 +322,6 @@ class OpenInControllerBridge
 
   OpenInToolbar* openInToolbar = [self openInToolbar];
   if (!_isOpenInToolbarDisplayed) {
-    [openInToolbar updateBottomMarginHeight];
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
                        [openInToolbar setAlpha:1.0];
@@ -339,6 +345,9 @@ class OpenInControllerBridge
 - (void)exportFileWithOpenInMenuAnchoredAt:(UIView*)view {
   DCHECK([view isKindOfClass:[UIView class]]);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+
+  base::RecordAction(base::UserMetricsAction("IOS.OpenIn.Tapped"));
+
   if (!_webState)
     return;
 
@@ -486,7 +495,7 @@ class OpenInControllerBridge
 
   UILabel* label = [[UILabel alloc] init];
   [label setTextColor:[UIColor whiteColor]];
-  [label setFont:GetUIFont(FONT_HELVETICA, true, kLabelTextSize)];
+  [label setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
   [label setNumberOfLines:0];
   [label setShadowColor:[UIColor blackColor]];
   [label setShadowOffset:CGSizeMake(0.0, 1.0)];
@@ -603,7 +612,7 @@ class OpenInControllerBridge
   NSURL* fileURL = nil;
   if (!filePath.empty())
     fileURL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
-  if (!_downloadCanceled && HasValidPdfAtUrl(fileURL)) {
+  if (!_downloadCanceled && HasValidFileAtUrl(fileURL)) {
     LogOpenInDownloadResult(OpenInDownloadResult::kSucceeded);
     [self presentOpenInMenuForFileAtURL:fileURL];
     return;
@@ -663,8 +672,13 @@ class OpenInControllerBridge
   _isOpenInMenuDisplayed = NO;
 }
 
-#pragma mark -
-#pragma mark UIGestureRecognizerDelegate Methods
+#pragma mark - UIGestureRecognizerDelegate Methods
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+    shouldRecognizeSimultaneouslyWithGestureRecognizer:
+        (UIGestureRecognizer*)otherGestureRecognizer {
+  return YES;
+}
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   if ([gestureRecognizer.view isEqual:_overlayedView])

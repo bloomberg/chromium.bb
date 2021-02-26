@@ -34,13 +34,13 @@ class CrostiniUninstallerView : public views::BubbleDialogDelegateView {
   static void Show(Profile* profile);
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   bool Accept() override;
   bool Cancel() override;
-  gfx::Size CalculatePreferredSize() const override;
 
   static CrostiniUninstallerView* GetActiveViewForTesting();
+  void set_destructor_callback_for_testing(base::OnceClosure callback) {
+    destructor_callback_for_testing_.ReplaceClosure(std::move(callback));
+  }
 
  private:
   enum class State {
@@ -62,6 +62,8 @@ class CrostiniUninstallerView : public views::BubbleDialogDelegateView {
 
   bool has_logged_result_ = false;
   Profile* profile_;
+
+  base::ScopedClosureRunner destructor_callback_for_testing_;
 
   base::WeakPtrFactory<CrostiniUninstallerView> weak_ptr_factory_{this};
 

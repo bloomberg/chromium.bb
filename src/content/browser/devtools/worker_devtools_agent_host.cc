@@ -6,8 +6,13 @@
 
 #include "base/bind.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/io_handler.h"
+#include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
+#include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/public/common/child_process_host.h"
 
 namespace content {
@@ -26,7 +31,8 @@ WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
       url_(url),
       name_(name),
       parent_id_(parent_id),
-      destroyed_callback_(std::move(destroyed_callback)) {
+      destroyed_callback_(std::move(destroyed_callback)),
+      devtools_worker_token_(devtools_worker_token) {
   DCHECK(agent_remote);
   DCHECK(!devtools_worker_token.is_empty());
   AddRef();  // Self keep-alive while the worker agent is alive.
@@ -79,15 +85,37 @@ bool WorkerDevToolsAgentHost::Close() {
   return false;
 }
 
-bool WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                            bool acquire_wake_lock) {
+  session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
       GetRendererChannel(), session->GetRootSession()));
+  session->AddHandler(std::make_unique<protocol::NetworkHandler>(
+      GetId(), devtools_worker_token_, GetIOContext(), base::DoNothing()));
   return true;
 }
 
 void WorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
+}
+
+DedicatedWorkerHost* WorkerDevToolsAgentHost::GetDedicatedWorkerHost() {
+  RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(process->GetStoragePartition());
+  auto* service = storage_partition_impl->GetDedicatedWorkerService();
+  return service->GetDedicatedWorkerHostFromToken(
+      blink::DedicatedWorkerToken(devtools_worker_token_));
+}
+
+base::Optional<network::CrossOriginEmbedderPolicy>
+WorkerDevToolsAgentHost::cross_origin_embedder_policy(const std::string&) {
+  DedicatedWorkerHost* host = GetDedicatedWorkerHost();
+  if (!host) {
+    return base::nullopt;
+  }
+  return host->cross_origin_embedder_policy();
 }
 
 }  // namespace content

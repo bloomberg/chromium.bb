@@ -7,27 +7,17 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
-
-#if defined(USE_X11)
-#include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"  // nogncheck
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"  // nogncheck
-#else
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"  // nogncheck
+
+#if defined(USE_DBUS_MENU)
+#include "chrome/browser/ui/views/frame/dbus_appmenu.h"  // nogncheck
 #endif
 
-// TODO(https://crbug.com/990756): Make sure correct
-// DesktopWindowTreeHost is used while the DWTHX11 is being refactored and
-// merged into the DWTHLinux and the DWTHPlatform. Non-Ozone X11 must use
-// the DWTHX11 now, but Ozone must use DWTHLinux. Remove this guard once
-// DWTHX11 is finally merged into DWTHPlatform and DWTHLinux.
-#if defined(USE_X11)
-using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostX11;
-#else
 using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostLinux;
-#endif
 
 class BrowserFrame;
 class BrowserView;
+enum class TabDragKind;
 
 namespace views {
 class DesktopNativeWidgetAura;
@@ -44,8 +34,8 @@ class BrowserDesktopWindowTreeHostLinux
       BrowserFrame* browser_frame);
   ~BrowserDesktopWindowTreeHostLinux() override;
 
-  // Called when the window starts or stops moving because of a tab drag.
-  void TabDraggingStatusChanged(bool is_dragging);
+  // Called when the tab drag status changes for this window.
+  void TabDraggingKindChanged(TabDragKind tab_drag_kind);
 
  private:
   // BrowserDesktopWindowTreeHost:
@@ -63,11 +53,11 @@ class BrowserDesktopWindowTreeHostLinux
   BrowserView* browser_view_ = nullptr;
   BrowserFrame* browser_frame_ = nullptr;
 
-#if defined(USE_X11)
+#if defined(USE_DBUS_MENU)
   // Each browser frame maintains its own menu bar object because the lower
   // level dbus protocol associates a xid to a menu bar; we can't map multiple
   // xids to the same menu bar.
-  std::unique_ptr<GlobalMenuBarX11> global_menu_bar_x11_;
+  std::unique_ptr<DbusAppmenu> dbus_appmenu_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostLinux);

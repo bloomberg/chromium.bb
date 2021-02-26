@@ -41,7 +41,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/host/host_display_client.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -117,6 +117,10 @@ gpu::ContextCreationAttribs GetCompositorContextAttributes(
   } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
     attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
   } else {
+    // We don't support HDR on Android yet, but when we do, this function should
+    // be updated to support it.
+    DCHECK(!display_color_space.IsHDR());
+
     attributes.color_space = gpu::COLOR_SPACE_UNSPECIFIED;
     DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
                    "will be incorrect.";
@@ -251,7 +255,7 @@ CompositorImpl::ReadbackRefImpl::~ReadbackRefImpl() {
 // static
 Compositor* Compositor::Create(CompositorClient* client,
                                gfx::NativeWindow root_window) {
-  return client ? new CompositorImpl(client, root_window) : NULL;
+  return client ? new CompositorImpl(client, root_window) : nullptr;
 }
 
 // static
@@ -281,7 +285,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : frame_sink_id_(AllocateFrameSinkId()),
       resource_manager_(root_window),
-      window_(NULL),
+      window_(nullptr),
       surface_handle_(gpu::kNullSurfaceHandle),
       client_(client),
       needs_animate_(false),
@@ -361,7 +365,7 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   }
 }
 
-void CompositorImpl::SetSurface(jobject surface,
+void CompositorImpl::SetSurface(const base::android::JavaRef<jobject>& surface,
                                 bool can_be_used_with_surface_control) {
   can_be_used_with_surface_control &=
       !root_window_->ApplyDisableSurfaceControlWorkaround();
@@ -374,17 +378,17 @@ void CompositorImpl::SetSurface(jobject surface,
     SetVisible(false);
     tracker->RemoveSurface(surface_handle_);
     ANativeWindow_release(window_);
-    window_ = NULL;
+    window_ = nullptr;
     surface_handle_ = gpu::kNullSurfaceHandle;
   }
 
-  ANativeWindow* window = NULL;
+  ANativeWindow* window = nullptr;
   if (surface) {
     // Note: This ensures that any local references used by
     // ANativeWindow_fromSurface are released immediately. This is needed as a
     // workaround for https://code.google.com/p/android/issues/detail?id=68174
     base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
-    window = ANativeWindow_fromSurface(env, surface);
+    window = ANativeWindow_fromSurface(env, surface.obj());
   }
 
   if (window) {
@@ -517,6 +521,10 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
     display_private_->Resize(size);
 
   root_window_->GetLayer()->SetBounds(size);
+}
+
+const gfx::Size& CompositorImpl::GetWindowBounds() {
+  return size_;
 }
 
 void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
@@ -863,9 +871,9 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       root_window_->GetSupportedRefreshRates());
 }
 
-viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
+viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() {
   local_surface_id_allocator_.GenerateId();
-  return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 void CompositorImpl::OnContextCreationResult(

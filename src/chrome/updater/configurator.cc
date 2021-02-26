@@ -7,6 +7,7 @@
 #include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/crx_downloader_factory.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/patcher.h"
 #include "chrome/updater/prefs.h"
@@ -23,7 +24,7 @@
 #include "chrome/updater/win/net/network.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/updater/mac/net/network.h"
 #endif
 
@@ -37,8 +38,8 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
-Configurator::Configurator()
-    : pref_service_(CreatePrefService()),
+Configurator::Configurator(std::unique_ptr<UpdaterPrefs> prefs)
+    : prefs_(std::move(prefs)),
       external_constants_(CreateExternalConstants()),
       unzip_factory_(base::MakeRefCounted<UnzipperFactory>()),
       patch_factory_(base::MakeRefCounted<PatcherFactory>()) {}
@@ -103,10 +104,18 @@ std::string Configurator::GetDownloadPreference() const {
 
 scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
-  if (!network_fetcher_factory_) {
+  if (!network_fetcher_factory_)
     network_fetcher_factory_ = base::MakeRefCounted<NetworkFetcherFactory>();
-  }
   return network_fetcher_factory_;
+}
+
+scoped_refptr<update_client::CrxDownloaderFactory>
+Configurator::GetCrxDownloaderFactory() {
+  if (!crx_downloader_factory_) {
+    crx_downloader_factory_ =
+        updater::MakeCrxDownloaderFactory(GetNetworkFetcherFactory());
+  }
+  return crx_downloader_factory_;
 }
 
 scoped_refptr<update_client::UnzipperFactory>
@@ -135,7 +144,7 @@ bool Configurator::EnabledCupSigning() const {
 }
 
 PrefService* Configurator::GetPrefService() const {
-  return pref_service_.get();
+  return prefs_->GetPrefService();
 }
 
 update_client::ActivityDataService* Configurator::GetActivityDataService()

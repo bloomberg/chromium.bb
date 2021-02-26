@@ -7,20 +7,20 @@
 
 #if SK_SUPPORT_GPU
 
-#include "include/gpu/GrContext.h"
 #include "include/gpu/GrContextOptions.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/gpu/gl/GrGLInterface.h"
 
 #ifdef SK_GL
 GrContextHolder SkMakeGLContext() {
-    return GrContextHolder(GrContext::MakeGL(nullptr, GrContextOptions()).release());
+    return GrContextHolder(GrDirectContext::MakeGL(nullptr, GrContextOptions()).release());
 }
 #endif
 
-void GrContextRelease::operator()(GrContext* ptr) { SkSafeUnref(ptr); }
+void GrContextRelease::operator()(GrDirectContext* ptr) { SkSafeUnref(ptr); }
 
 #else
 
-void GrContextRelease::operator()(GrContext*) { SkASSERT(false); }
+void GrContextRelease::operator()(GrDirectContext*) { SkDEBUGFAIL(""); }
 
 #endif

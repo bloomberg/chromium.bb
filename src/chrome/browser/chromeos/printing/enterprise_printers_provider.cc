@@ -8,6 +8,7 @@
 
 #include "base/hash/md5.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/calculators_policies_binder.h"
@@ -89,7 +90,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     // Binds policy with recommended printers (deprecated). This method calls
     // indirectly RecalculateCurrentPrintersList() that prepares the first
     // version of final list of printers.
-    BindPref(prefs::kRecommendedNativePrinters,
+    BindPref(prefs::kRecommendedPrinters,
              &EnterprisePrintersProviderImpl::UpdateUserRecommendedPrinters);
   }
 
@@ -127,8 +128,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   // printers. It is called when value of the policy changes.
   void UpdateUserRecommendedPrinters() {
     recommended_printers_.clear();
-    std::vector<std::string> data =
-        FromPrefs(prefs::kRecommendedNativePrinters);
+    std::vector<std::string> data = FromPrefs(prefs::kRecommendedPrinters);
     for (const auto& printer_json : data) {
       base::Optional<base::Value> printer_dictionary = base::JSONReader::Read(
           printer_json, base::JSON_ALLOW_TRAILING_COMMAS);
@@ -173,7 +173,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     user_printers_is_complete_ =
         user_printers_->IsComplete() &&
         (user_printers_->IsDataPolicySet() ||
-         !PolicyWithDataIsSet(policy::key::kNativePrintersBulkConfiguration));
+         !PolicyWithDataIsSet(policy::key::kPrintersBulkConfiguration));
   }
 
   void RecalculateCompleteFlagForDevicePrinters() {
@@ -185,7 +185,8 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     device_printers_is_complete_ =
         device_printers_->IsComplete() &&
         (device_printers_->IsDataPolicySet() ||
-         !PolicyWithDataIsSet(policy::key::kDeviceNativePrinters));
+         (!PolicyWithDataIsSet(policy::key::kDeviceNativePrinters) &&
+          !PolicyWithDataIsSet(policy::key::kDevicePrinters)));
   }
 
   void RecalculateCurrentPrintersList() {
@@ -280,7 +281,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 // static
 void EnterprisePrintersProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kRecommendedNativePrinters);
+  registry->RegisterListPref(prefs::kRecommendedPrinters);
   CalculatorsPoliciesBinder::RegisterProfilePrefs(registry);
 }
 

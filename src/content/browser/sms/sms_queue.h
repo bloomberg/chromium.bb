@@ -20,6 +20,7 @@ class CONTENT_EXPORT SmsQueue {
   SmsQueue();
   ~SmsQueue();
 
+  using FailureType = SmsFetcher::FailureType;
   using Subscriber = SmsFetcher::Subscriber;
 
   void Push(const url::Origin& origin, Subscriber* subscriber);
@@ -27,6 +28,9 @@ class CONTENT_EXPORT SmsQueue {
   void Remove(const url::Origin& origin, Subscriber* subscriber);
   bool HasSubscribers();
   bool HasSubscriber(const url::Origin& origin, const Subscriber* subscriber);
+  // Pops and notifies the first subscriber of an origin iff there's one origin
+  // in the |subscribers_| map. Returns true if the failure is handled.
+  bool NotifyFailure(FailureType failure_type);
 
  private:
   std::map<url::Origin, base::ObserverList<Subscriber>> subscribers_;

@@ -7,10 +7,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
@@ -19,11 +21,10 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_client.h"
@@ -32,8 +33,6 @@
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_media_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_profile_manager_client.h"
 
 namespace bluez {
@@ -46,13 +45,11 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
         BluetoothLEAdvertisingManagerClient::Create());
     bluetooth_agent_manager_client_.reset(
         BluetoothAgentManagerClient::Create());
+    bluetooth_battery_client_.reset(BluetoothBatteryClient::Create());
     bluetooth_debug_manager_client_.reset(
         BluetoothDebugManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
     bluetooth_input_client_.reset(BluetoothInputClient::Create());
-    bluetooth_media_client_.reset(BluetoothMediaClient::Create());
-    bluetooth_media_transport_client_.reset(
-        BluetoothMediaTransportClient::Create());
     bluetooth_profile_manager_client_.reset(
         BluetoothProfileManagerClient::Create());
     bluetooth_gatt_characteristic_client_.reset(
@@ -65,16 +62,17 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
     alternate_bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
     alternate_bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
   } else {
+#if defined(USE_REAL_DBUS_CLIENTS)
+    LOG(FATAL) << "Fakes are unavailable if USE_REAL_DBUS_CLIENTS is defined.";
+#else
     bluetooth_adapter_client_.reset(new FakeBluetoothAdapterClient);
     bluetooth_le_advertising_manager_client_.reset(
         new FakeBluetoothLEAdvertisingManagerClient);
     bluetooth_agent_manager_client_.reset(new FakeBluetoothAgentManagerClient);
+    bluetooth_battery_client_.reset(new FakeBluetoothBatteryClient);
     bluetooth_debug_manager_client_.reset(new FakeBluetoothDebugManagerClient);
     bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
     bluetooth_input_client_.reset(new FakeBluetoothInputClient);
-    bluetooth_media_client_.reset(new FakeBluetoothMediaClient);
-    bluetooth_media_transport_client_.reset(
-        new FakeBluetoothMediaTransportClient);
     bluetooth_profile_manager_client_.reset(
         new FakeBluetoothProfileManagerClient);
     bluetooth_gatt_characteristic_client_.reset(
@@ -86,6 +84,7 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
 
     alternate_bluetooth_adapter_client_.reset(new FakeBluetoothAdapterClient);
     alternate_bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
   }
 }
 

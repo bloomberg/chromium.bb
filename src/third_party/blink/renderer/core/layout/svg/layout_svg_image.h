@@ -36,32 +36,55 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
   explicit LayoutSVGImage(SVGImageElement*);
   ~LayoutSVGImage() override;
 
-  void SetNeedsBoundariesUpdate() override { needs_boundaries_update_ = true; }
-  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
+  void SetNeedsBoundariesUpdate() override { NOT_DESTROYED(); }
+  void SetNeedsTransformUpdate() override {
+    NOT_DESTROYED();
+    needs_transform_update_ = true;
+  }
 
-  LayoutImageResource* ImageResource() { return image_resource_.Get(); }
+  LayoutImageResource* ImageResource() {
+    NOT_DESTROYED();
+    return image_resource_.Get();
+  }
   const LayoutImageResource* ImageResource() const {
+    NOT_DESTROYED();
     return image_resource_.Get();
   }
 
-  FloatRect ObjectBoundingBox() const override { return object_bounding_box_; }
+  FloatRect ObjectBoundingBox() const override {
+    NOT_DESTROYED();
+    return object_bounding_box_;
+  }
   bool IsObjectBoundingBoxValid() const {
+    NOT_DESTROYED();
     return !object_bounding_box_.IsEmpty();
   }
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectSVGImage ||
            LayoutSVGModelObject::IsOfType(type);
   }
 
-  const char* GetName() const override { return "LayoutSVGImage"; }
+  AffineTransform LocalSVGTransform() const override {
+    NOT_DESTROYED();
+    return local_transform_;
+  }
+
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutSVGImage";
+  }
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
  private:
-  FloatRect StrokeBoundingBox() const override { return object_bounding_box_; }
+  FloatRect StrokeBoundingBox() const override {
+    NOT_DESTROYED();
+    return object_bounding_box_;
+  }
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
@@ -75,14 +98,9 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
-  AffineTransform LocalSVGTransform() const override {
-    return local_transform_;
-  }
-
   FloatSize CalculateObjectSize() const;
   bool HasOverriddenIntrinsicSize() const;
 
-  bool needs_boundaries_update_ : 1;
   bool needs_transform_update_ : 1;
   bool transform_uses_reference_box_ : 1;
   AffineTransform local_transform_;
@@ -90,7 +108,12 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
   Persistent<LayoutImageResource> image_resource_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGImage, IsSVGImage());
+template <>
+struct DowncastTraits<LayoutSVGImage> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsSVGImage();
+  }
+};
 
 }  // namespace blink
 

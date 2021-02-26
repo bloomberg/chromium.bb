@@ -5,6 +5,7 @@
 #include "chrome/browser/android/profile_key_util.h"
 
 #include "chrome/browser/android/profile_key_startup_accessor.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
 namespace android {
@@ -22,13 +23,8 @@ ProfileKey* GetLastUsedRegularProfileKey() {
   ProfileKey* key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
   if (!key)
     key = GetProfile()->GetProfileKey();
-  DCHECK(key);
+  DCHECK(key && !key->IsOffTheRecord());
   return key;
-}
-
-// DEPRECATED, use GetLastUsedRegularProfileKey() instead.
-ProfileKey* GetLastUsedProfileKey() {
-  return GetLastUsedRegularProfileKey();
 }
 
 }  // namespace android

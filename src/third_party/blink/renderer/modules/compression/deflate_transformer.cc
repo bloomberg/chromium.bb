@@ -66,7 +66,7 @@ ScriptPromise DeflateTransformer::Transform(
   if (buffer_source.IsArrayBufferView()) {
     const auto* view = buffer_source.GetAsArrayBufferView().View();
     const uint8_t* start = static_cast<const uint8_t*>(view->BaseAddress());
-    size_t length = view->byteLengthAsSizeT();
+    size_t length = view->byteLength();
     if (length > std::numeric_limits<wtf_size_t>::max()) {
       exception_state.ThrowRangeError(
           "Buffer size exceeds maximum heap object size.");
@@ -79,7 +79,7 @@ ScriptPromise DeflateTransformer::Transform(
   DCHECK(buffer_source.IsArrayBuffer());
   const auto* array_buffer = buffer_source.GetAsArrayBuffer();
   const uint8_t* start = static_cast<const uint8_t*>(array_buffer->Data());
-  size_t length = array_buffer->ByteLengthAsSizeT();
+  size_t length = array_buffer->ByteLength();
   if (length > std::numeric_limits<wtf_size_t>::max()) {
     exception_state.ThrowRangeError(
         "Buffer size exceeds maximum heap object size.");
@@ -111,6 +111,10 @@ void DeflateTransformer::Deflate(const uint8_t* start,
   // Zlib treats this pointer as const, so this cast is safe.
   stream_.next_in = const_cast<uint8_t*>(start);
 
+  // enqueue() may execute JavaScript which may invalidate the input buffer. So
+  // accumulate all the output before calling enqueue().
+  HeapVector<Member<DOMUint8Array>, 1u> buffers;
+
   do {
     stream_.avail_out = out_buffer_.size();
     stream_.next_out = out_buffer_.data();
@@ -120,19 +124,24 @@ void DeflateTransformer::Deflate(const uint8_t* start,
 
     wtf_size_t bytes = out_buffer_.size() - stream_.avail_out;
     if (bytes) {
-      controller->enqueue(
-          script_state_,
-          ScriptValue::From(script_state_,
-                            DOMUint8Array::Create(out_buffer_.data(), bytes)),
-          exception_state);
-      if (exception_state.HadException()) {
-        return;
-      }
+      buffers.push_back(DOMUint8Array::Create(out_buffer_.data(), bytes));
     }
   } while (stream_.avail_out == 0);
+
+  DCHECK_EQ(stream_.avail_in, 0u);
+
+  // JavaScript may be executed inside this loop, however it is safe because
+  // |buffers| is a local variable that JavaScript cannot modify.
+  for (DOMUint8Array* buffer : buffers) {
+    controller->enqueue(script_state_, ScriptValue::From(script_state_, buffer),
+                        exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
+  }
 }
 
-void DeflateTransformer::Trace(Visitor* visitor) {
+void DeflateTransformer::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   TransformStreamTransformer::Trace(visitor);
 }

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "components/offline_pages/task/task.h"
@@ -179,7 +179,7 @@ TEST_F(ExploreSitesGetImagesTaskTest, SiteExistsAndHasFavicon) {
   EXPECT_EQ("bytes3", std::string(result3.begin(), result3.end()));
 }
 
-TEST_F(ExploreSitesGetImagesTaskTest, SitesExistAndNotBlacklisted) {
+TEST_F(ExploreSitesGetImagesTaskTest, SitesExistAndNotBlocked) {
   PopulateTestingCatalog();
   GetImagesTask task(store(), 3, 4, StoreResult());
   RunTask(&task);
@@ -191,11 +191,11 @@ TEST_F(ExploreSitesGetImagesTaskTest, SitesExistAndNotBlacklisted) {
   EXPECT_EQ("bytes3", std::string(result2.begin(), result2.end()));
 }
 
-TEST_F(ExploreSitesGetImagesTaskTest, SitesExistAndBlacklisted) {
+TEST_F(ExploreSitesGetImagesTaskTest, SitesExistAndBlocked) {
   PopulateTestingCatalog();
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::Statement insert(db->GetUniqueStatement(R"(
-INSERT INTO site_blacklist
+INSERT INTO site_blocklist
 (url, date_removed)
 VALUES
 ("https://www.example.com/1", 123);)"));

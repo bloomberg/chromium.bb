@@ -46,6 +46,7 @@ const char kIPConfigs[] = "IPConfigs";
 const char kIPConfigTypeDHCP[] = "DHCP";
 const char kIPConfigTypeStatic[] = "Static";
 const char kMacAddress[] = "MacAddress";
+const char kMetered[] = "Metered";
 const char kNameServersConfigType[] = "NameServersConfigType";
 const char kName[] = "Name";
 const char kPriority[] = "Priority";
@@ -222,7 +223,6 @@ const char kBSSID[] = "BSSID";
 const char kEAP[] = "EAP";
 const char kFrequency[] = "Frequency";
 const char kFrequencyList[] = "FrequencyList";
-const char kFTEnabled[] = "FTEnabled";
 const char kHexSSID[] = "HexSSID";
 const char kHiddenSSID[] = "HiddenSSID";
 const char kPassphrase[] = "Passphrase";
@@ -488,7 +488,8 @@ const char kAllowOnlyPolicyNetworksToConnect[] =
     "AllowOnlyPolicyNetworksToConnect";
 const char kAllowOnlyPolicyNetworksToConnectIfAvailable[] =
     "AllowOnlyPolicyNetworksToConnectIfAvailable";
-const char kBlacklistedHexSSIDs[] = "BlacklistedHexSSIDs";
+const char kBlacklistedHexSSIDs[] = "BlacklistedHexSSIDs";  // Deprecated
+const char kBlockedHexSSIDs[] = "BlockedHexSSIDs";
 const char kDisableNetworkTypes[] = "DisableNetworkTypes";
 }  // global_network_config
 

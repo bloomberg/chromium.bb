@@ -19,9 +19,6 @@ source_set("minimal") {
     "nacl_listener.h",
     "nacl_main.cc",
     "nacl_main_platform_delegate.h",
-    "nacl_main_platform_delegate_linux.cc",
-    "nacl_main_platform_delegate_mac.mm",
-    "nacl_main_platform_delegate_win.cc",
     "nacl_trusted_listener.cc",
     "nacl_trusted_listener.h",
     "nacl_validation_db.h",
@@ -44,8 +41,16 @@ source_set("minimal") {
     "//services/service_manager/public/cpp",
   ]
 
-  if (is_linux) {
-    deps += [ "//services/service_manager/zygote" ]
+  if (is_win) {
+    sources += [ "nacl_main_platform_delegate_win.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [ "nacl_main_platform_delegate_mac.mm" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    sources += [ "nacl_main_platform_delegate_linux.cc" ]
   }
 }
 
@@ -56,13 +61,16 @@ source_set("minimal") {
 source_set("minimal_content_dummy") {
   check_includes = false
   sources = [
-    "//content/public/common/common_sandbox_support_linux.h",
     "//content/public/common/main_function_params.h",
     "//content/public/common/sandbox_init.h",
   ]
 
   # Deps required by the above headers.
   deps = [ "//media:media_buildflags" ]
+
+  if (is_linux || is_chromeos) {
+    sources += [ "//content/public/common/zygote/sandbox_support_linux.h" ]
+  }
 }
 
 source_set("loader") {
@@ -110,7 +118,7 @@ test("nacl_loader_unittests") {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   executable("nacl_helper") {
     sources = [
       "nacl_helper_linux.cc",
@@ -127,8 +135,7 @@ if (is_linux) {
       "//ipc",
       "//mojo/core/embedder",
       "//sandbox/linux:sandbox_services",
-      "//services/service_manager/sandbox",
-      "//services/service_manager/zygote",
+      "//sandbox/policy",
       "//url/ipc:url_ipc",
     ]
 
@@ -200,7 +207,7 @@ if (is_win && target_cpu == "x86" && current_cpu == "x64") {
       "//content/public/common:static_switches",
       "//mojo/core/embedder",
       "//sandbox",
-      "//services/service_manager/sandbox:sandbox",
+      "//sandbox/policy",
     ]
   }
 }
@@ -208,7 +215,6 @@ if (is_win && target_cpu == "x86" && current_cpu == "x64") {
 if (is_nacl_nonsfi) {
   executable("nacl_helper_nonsfi_nexe") {
     output_name = "nacl_helper_nonsfi"
-    set_sources_assignment_filter([])
     sources = [
       "nacl_helper_linux.cc",
       "nacl_helper_linux.h",
@@ -239,14 +245,12 @@ if (is_nacl_nonsfi) {
       "//native_client/src/untrusted/nacl",
       "//ppapi/proxy",
       "//sandbox/linux:sandbox",
+      "//sandbox/policy",
       "//services/service_manager/public/cpp",
-      "//services/service_manager/sandbox",
-      "//services/service_manager/zygote:zygote_util",
     ]
   }
 
   source_set("nacl_helper_nonsfi_sandbox") {
-    set_sources_assignment_filter([])
     sources = [
       "nonsfi/nonsfi_sandbox.cc",
       "nonsfi/nonsfi_sandbox.h",

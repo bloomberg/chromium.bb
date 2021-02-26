@@ -5,6 +5,8 @@
 #ifndef DISCOVERY_MDNS_MDNS_SERVICE_IMPL_H_
 #define DISCOVERY_MDNS_MDNS_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "discovery/common/config.h"
 #include "discovery/mdns/mdns_domain_confirmed_provider.h"
 #include "discovery/mdns/mdns_probe_manager.h"
@@ -74,7 +76,7 @@ class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
   MdnsRandom random_delay_;
   MdnsReceiver receiver_;
 
-  // Sockets to send and receive mDNS Data according to RFC 6762.
+  // Sockets to send and receive mDNS data.
   std::unique_ptr<UdpSocket> socket_v4_;
   std::unique_ptr<UdpSocket> socket_v6_;
 

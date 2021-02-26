@@ -7,6 +7,7 @@ syntax = "proto3";
 option optimize_for = LITE_RUNTIME;
 
 package plugin_vm_service;
+option go_package = "plugin_vm_service_proto";
 
 // Content of licensing data emitted by Chrome as a response to the
 // GetLicenseData call in org.chromium.PluginVmService.

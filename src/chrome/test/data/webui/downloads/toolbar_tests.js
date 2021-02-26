@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../mojo_webui_test_support.js';
+
 import {SearchService} from 'chrome://downloads/downloads.js';
+import {createDownload} from 'chrome://test/downloads/test_support.js';
 
 suite('toolbar tests', function() {
   /** @type {!downloads.Toolbar} */
@@ -54,10 +57,38 @@ suite('toolbar tests', function() {
     assertTrue(clearAll.hidden);
   });
 
-  test('toast is shown when clear all button clicked', () => {
+  test('clear all event fired', () => {
     assertFalse(toastManager.isToastOpen);
+    assertFalse(toastManager.slottedHidden);
     toolbar.hasClearableDownloads = true;
     toolbar.$$('#moreActionsMenu button').click();
     assertTrue(toastManager.isToastOpen);
+    assertTrue(toastManager.slottedHidden);
+  });
+
+  test('undo is not shown when removing only dangerous items', () => {
+    toolbar.items = [
+      createDownload({isDangerous: true}),
+      createDownload({isMixedContent: true})
+    ];
+    toastManager.show('', /* hideSlotted= */ false);
+    assertFalse(toastManager.slottedHidden);
+    toolbar.hasClearableDownloads = true;
+    toolbar.$$('#moreActionsMenu button').click();
+    assertTrue(toastManager.isToastOpen);
+    assertTrue(toastManager.slottedHidden);
+  });
+
+  test('undo is shown when removing items', () => {
+    toolbar.items = [
+      createDownload(), createDownload({isDangerous: true}),
+      createDownload({isMixedContent: true})
+    ];
+    toastManager.show('', /* hideSlotted= */ true);
+    assertTrue(toastManager.slottedHidden);
+    toolbar.hasClearableDownloads = true;
+    toolbar.$$('#moreActionsMenu button').click();
+    assertTrue(toastManager.isToastOpen);
+    assertFalse(toastManager.slottedHidden);
   });
 });

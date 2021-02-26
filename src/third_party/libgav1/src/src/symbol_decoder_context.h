@@ -17,10 +17,12 @@
 #ifndef LIBGAV1_SRC_SYMBOL_DECODER_CONTEXT_H_
 #define LIBGAV1_SRC_SYMBOL_DECODER_CONTEXT_H_
 
+#include <cassert>
 #include <cstdint>
 
 #include "src/dsp/constants.h"
 #include "src/utils/constants.h"
+#include "src/utils/memory.h"
 
 namespace libgav1 {
 
@@ -101,7 +103,21 @@ struct SymbolDecoderContext {
 
   // Returns the cdf array index for inter_tx_type or intra_tx_type based on
   // |tx_set|.
-  static int TxTypeIndex(TransformSet tx_set);
+  static int TxTypeIndex(TransformSet tx_set) {
+    assert(tx_set != kTransformSetDctOnly);
+    switch (tx_set) {
+      case kTransformSetInter1:
+      case kTransformSetIntra1:
+        return 0;
+      case kTransformSetInter2:
+      case kTransformSetIntra2:
+        return 1;
+      case kTransformSetInter3:
+        return 2;
+      default:
+        return -1;
+    }
+  }
 
   // Resets the intra_frame_y_mode_cdf array to the default.
   void ResetIntraFrameYModeCdf();
@@ -110,117 +126,175 @@ struct SymbolDecoderContext {
   // the last used element in the innermost dimension of each of the CDF array.
   void ResetCounters();
 
-  uint16_t partition_cdf[kBlockWidthCount][kPartitionContexts]
-                        [kMaxPartitionTypes + 1];
-  uint16_t segment_id_cdf[kSegmentIdContexts][kMaxSegments + 1];
-  uint16_t use_predicted_segment_id_cdf[kUsePredictedSegmentIdContexts]
-                                       [kBooleanFieldCdfSize];
-  uint16_t skip_cdf[kSkipContexts][kBooleanFieldCdfSize];
-  uint16_t skip_mode_cdf[kSkipModeContexts][kBooleanFieldCdfSize];
-  uint16_t delta_q_cdf[kDeltaSymbolCount + 1];
-  uint16_t delta_lf_cdf[kDeltaSymbolCount + 1];
-  uint16_t delta_lf_multi_cdf[kFrameLfCount][kDeltaSymbolCount + 1];
-  uint16_t intra_block_copy_cdf[kBooleanFieldCdfSize];
-  uint16_t intra_frame_y_mode_cdf[kIntraModeContexts][kIntraModeContexts]
-                                 [kIntraPredictionModesY + 1];
-  uint16_t y_mode_cdf[kYModeContexts][kIntraPredictionModesY + 1];
-  uint16_t angle_delta_cdf[kDirectionalIntraModes][kAngleDeltaSymbolCount + 1];
-  uint16_t uv_mode_cdf[kBooleanSymbolCount][kIntraPredictionModesY]
-                      [kIntraPredictionModesUV + 1];
-  uint16_t cfl_alpha_signs_cdf[kCflAlphaSignsSymbolCount + 1];
-  uint16_t cfl_alpha_cdf[kCflAlphaContexts][kCflAlphaSymbolCount + 1];
-  uint16_t use_filter_intra_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
-  uint16_t filter_intra_mode_cdf[kNumFilterIntraPredictors + 1];
-  uint16_t tx_depth_cdf[4][kTxDepthContexts][kMaxTxDepthSymbolCount + 1];
-  uint16_t tx_split_cdf[kTxSplitContexts][kBooleanFieldCdfSize];
-  uint16_t all_zero_cdf[kNumSquareTransformSizes][kAllZeroContexts]
+  // Note kMaxAlignment allows for aligned instructions to be used in the
+  // copies done in Initialize().
+  alignas(kMaxAlignment) uint16_t
+      partition_cdf[kBlockWidthCount][kPartitionContexts]
+                   [kMaxPartitionTypes + 1];
+  alignas(kMaxAlignment) uint16_t
+      segment_id_cdf[kSegmentIdContexts][kMaxSegments + 1];
+  alignas(kMaxAlignment) uint16_t
+      use_predicted_segment_id_cdf[kUsePredictedSegmentIdContexts]
+                                  [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t skip_cdf[kSkipContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      skip_mode_cdf[kSkipModeContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t delta_q_cdf[kDeltaSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t delta_lf_cdf[kDeltaSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      delta_lf_multi_cdf[kFrameLfCount][kDeltaSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t intra_block_copy_cdf[kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      intra_frame_y_mode_cdf[kIntraModeContexts][kIntraModeContexts]
+                            [kIntraPredictionModesY + 1];
+  alignas(kMaxAlignment) uint16_t
+      y_mode_cdf[kYModeContexts][kIntraPredictionModesY + 1];
+  alignas(kMaxAlignment) uint16_t
+      angle_delta_cdf[kDirectionalIntraModes][kAngleDeltaSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      uv_mode_cdf[kBooleanSymbolCount][kIntraPredictionModesY]
+                 [kIntraPredictionModesUV + 1];
+  alignas(kMaxAlignment) uint16_t
+      cfl_alpha_signs_cdf[kCflAlphaSignsSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      cfl_alpha_cdf[kCflAlphaContexts][kCflAlphaSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      use_filter_intra_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      filter_intra_mode_cdf[kNumFilterIntraPredictors + 1];
+  alignas(kMaxAlignment) uint16_t
+      tx_depth_cdf[4][kTxDepthContexts][kMaxTxDepthSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      tx_split_cdf[kTxSplitContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      all_zero_cdf[kNumSquareTransformSizes][kAllZeroContexts]
+                  [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      inter_tx_type_cdf[3][kNumExtendedTransformSizes][kNumTransformTypes + 1];
+  alignas(kMaxAlignment) uint16_t
+      intra_tx_type_cdf[2][kNumExtendedTransformSizes][kIntraPredictionModesY]
+                       [kNumTransformTypes + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_16_cdf[kNumPlaneTypes][kEobPtContexts][kEobPt16SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_32_cdf[kNumPlaneTypes][kEobPtContexts][kEobPt32SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_64_cdf[kNumPlaneTypes][kEobPtContexts][kEobPt64SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_128_cdf[kNumPlaneTypes][kEobPtContexts][kEobPt128SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_256_cdf[kNumPlaneTypes][kEobPtContexts][kEobPt256SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_512_cdf[kNumPlaneTypes][kEobPt512SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_pt_1024_cdf[kNumPlaneTypes][kEobPt1024SymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      eob_extra_cdf[kNumSquareTransformSizes][kNumPlaneTypes][kEobExtraContexts]
+                   [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      coeff_base_eob_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
+                        [kCoeffBaseEobContexts][kCoeffBaseEobSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      coeff_base_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
+                    [kCoeffBaseContexts][kCoeffBaseSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      coeff_base_range_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
+                          [kCoeffBaseRangeContexts]
+                          [kCoeffBaseRangeSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      dc_sign_cdf[kNumPlaneTypes][kDcSignContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      restoration_type_cdf[kRestorationTypeSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t use_wiener_cdf[kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t use_sgrproj_cdf[kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      has_palette_y_cdf[kPaletteBlockSizeContexts][kPaletteYModeContexts]
                        [kBooleanFieldCdfSize];
-  uint16_t inter_tx_type_cdf[3][kNumExtendedTransformSizes]
-                            [kNumTransformTypes + 1];
-  uint16_t intra_tx_type_cdf[2][kNumExtendedTransformSizes]
-                            [kIntraPredictionModesY][kNumTransformTypes + 1];
-  uint16_t eob_pt_16_cdf[kNumPlaneTypes][kEobPtContexts]
-                        [kEobPt16SymbolCount + 1];
-  uint16_t eob_pt_32_cdf[kNumPlaneTypes][kEobPtContexts]
-                        [kEobPt32SymbolCount + 1];
-  uint16_t eob_pt_64_cdf[kNumPlaneTypes][kEobPtContexts]
-                        [kEobPt64SymbolCount + 1];
-  uint16_t eob_pt_128_cdf[kNumPlaneTypes][kEobPtContexts]
-                         [kEobPt128SymbolCount + 1];
-  uint16_t eob_pt_256_cdf[kNumPlaneTypes][kEobPtContexts]
-                         [kEobPt256SymbolCount + 1];
-  uint16_t eob_pt_512_cdf[kNumPlaneTypes][kEobPt512SymbolCount + 1];
-  uint16_t eob_pt_1024_cdf[kNumPlaneTypes][kEobPt1024SymbolCount + 1];
-  uint16_t eob_extra_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
-                        [kEobExtraContexts][kBooleanFieldCdfSize];
-  uint16_t coeff_base_eob_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
-                             [kCoeffBaseEobContexts]
-                             [kCoeffBaseEobSymbolCount + 1];
-  uint16_t coeff_base_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
-                         [kCoeffBaseContexts][kCoeffBaseSymbolCount + 1];
-  uint16_t coeff_base_range_cdf[kNumSquareTransformSizes][kNumPlaneTypes]
-                               [kCoeffBaseRangeContexts]
-                               [kCoeffBaseRangeSymbolCount + 1];
-  uint16_t dc_sign_cdf[kNumPlaneTypes][kDcSignContexts][kBooleanFieldCdfSize];
-  uint16_t restoration_type_cdf[kRestorationTypeSymbolCount + 1];
-  uint16_t use_wiener_cdf[kBooleanFieldCdfSize];
-  uint16_t use_sgrproj_cdf[kBooleanFieldCdfSize];
-  uint16_t has_palette_y_cdf[kPaletteBlockSizeContexts][kPaletteYModeContexts]
-                            [kBooleanFieldCdfSize];
-  uint16_t palette_y_size_cdf[kPaletteBlockSizeContexts]
-                             [kPaletteSizeSymbolCount + 1];
-  uint16_t has_palette_uv_cdf[kPaletteUVModeContexts][kBooleanFieldCdfSize];
-  uint16_t palette_uv_size_cdf[kPaletteBlockSizeContexts]
-                              [kPaletteSizeSymbolCount + 1];
-  uint16_t palette_color_index_cdf[kNumPlaneTypes][kPaletteSizeSymbolCount]
-                                  [kPaletteColorIndexContexts]
-                                  [kPaletteColorIndexSymbolCount + 1];
-  uint16_t is_inter_cdf[kIsInterContexts][kBooleanFieldCdfSize];
-  uint16_t use_compound_reference_cdf[kUseCompoundReferenceContexts]
-                                     [kBooleanFieldCdfSize];
-  uint16_t compound_reference_type_cdf[kCompoundReferenceTypeContexts]
-                                      [kBooleanFieldCdfSize];
-  uint16_t compound_reference_cdf[kNumCompoundReferenceTypes]
-                                 [kReferenceContexts][3][kBooleanFieldCdfSize];
-  uint16_t compound_backward_reference_cdf[kReferenceContexts][2]
-                                          [kBooleanFieldCdfSize];
-  uint16_t single_reference_cdf[kReferenceContexts][6][kBooleanFieldCdfSize];
-  uint16_t compound_prediction_mode_cdf[kCompoundPredictionModeContexts]
-                                       [kNumCompoundInterPredictionModes + 1];
-  uint16_t new_mv_cdf[kNewMvContexts][kBooleanFieldCdfSize];
-  uint16_t zero_mv_cdf[kZeroMvContexts][kBooleanFieldCdfSize];
-  uint16_t reference_mv_cdf[kReferenceMvContexts][kBooleanFieldCdfSize];
-  uint16_t ref_mv_index_cdf[kRefMvIndexContexts][kBooleanFieldCdfSize];
-  uint16_t is_inter_intra_cdf[kInterIntraContexts][kBooleanFieldCdfSize];
-  uint16_t inter_intra_mode_cdf[kInterIntraContexts][kNumInterIntraModes + 1];
-  uint16_t is_wedge_inter_intra_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
-  uint16_t wedge_index_cdf[kMaxBlockSizes][kWedgeIndexSymbolCount + 1];
-  uint16_t use_obmc_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
-  uint16_t motion_mode_cdf[kMaxBlockSizes][kNumMotionModes + 1];
-  uint16_t is_explicit_compound_type_cdf[kIsExplicitCompoundTypeContexts]
-                                        [kBooleanFieldCdfSize];
-  uint16_t is_compound_type_average_cdf[kIsCompoundTypeAverageContexts]
-                                       [kBooleanFieldCdfSize];
-  uint16_t compound_type_cdf[kMaxBlockSizes]
-                            [kNumExplicitCompoundPredictionTypes + 1];
-  uint16_t interpolation_filter_cdf[kInterpolationFilterContexts]
-                                   [kNumExplicitInterpolationFilters + 1];
-  uint16_t mv_joint_cdf[kMvContexts][kNumMvJointTypes + 1];
-  uint16_t mv_sign_cdf[kMvContexts][kNumMvComponents][kBooleanFieldCdfSize];
-  uint16_t mv_class_cdf[kMvContexts][kNumMvComponents][kMvClassSymbolCount + 1];
-  uint16_t mv_class0_bit_cdf[kMvContexts][kNumMvComponents]
-                            [kBooleanFieldCdfSize];
-  uint16_t mv_class0_fraction_cdf[kMvContexts][kNumMvComponents]
-                                 [kBooleanSymbolCount]
-                                 [kMvFractionSymbolCount + 1];
-  uint16_t mv_class0_high_precision_cdf[kMvContexts][kNumMvComponents]
-                                       [kBooleanFieldCdfSize];
-  uint16_t mv_bit_cdf[kMvContexts][kNumMvComponents][kMvBitSymbolCount]
-                     [kBooleanFieldCdfSize];
-  uint16_t mv_fraction_cdf[kMvContexts][kNumMvComponents]
-                          [kMvFractionSymbolCount + 1];
-  uint16_t mv_high_precision_cdf[kMvContexts][kNumMvComponents]
+  alignas(kMaxAlignment) uint16_t
+      palette_y_size_cdf[kPaletteBlockSizeContexts]
+                        [kPaletteSizeSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      has_palette_uv_cdf[kPaletteUVModeContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      palette_uv_size_cdf[kPaletteBlockSizeContexts]
+                         [kPaletteSizeSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      palette_color_index_cdf[kNumPlaneTypes][kPaletteSizeSymbolCount]
+                             [kPaletteColorIndexContexts]
+                             [kPaletteColorIndexSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      is_inter_cdf[kIsInterContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      use_compound_reference_cdf[kUseCompoundReferenceContexts]
                                 [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      compound_reference_type_cdf[kCompoundReferenceTypeContexts]
+                                 [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      compound_reference_cdf[kNumCompoundReferenceTypes][kReferenceContexts][3]
+                            [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      compound_backward_reference_cdf[kReferenceContexts][2]
+                                     [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      single_reference_cdf[kReferenceContexts][6][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      compound_prediction_mode_cdf[kCompoundPredictionModeContexts]
+                                  [kNumCompoundInterPredictionModes + 1];
+  alignas(kMaxAlignment) uint16_t
+      new_mv_cdf[kNewMvContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      zero_mv_cdf[kZeroMvContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      reference_mv_cdf[kReferenceMvContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      ref_mv_index_cdf[kRefMvIndexContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      is_inter_intra_cdf[kInterIntraContexts][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      inter_intra_mode_cdf[kInterIntraContexts][kNumInterIntraModes + 1];
+  alignas(kMaxAlignment) uint16_t
+      is_wedge_inter_intra_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      wedge_index_cdf[kMaxBlockSizes][kWedgeIndexSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      use_obmc_cdf[kMaxBlockSizes][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      motion_mode_cdf[kMaxBlockSizes][kNumMotionModes + 1];
+  alignas(kMaxAlignment) uint16_t
+      is_explicit_compound_type_cdf[kIsExplicitCompoundTypeContexts]
+                                   [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      is_compound_type_average_cdf[kIsCompoundTypeAverageContexts]
+                                  [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      compound_type_cdf[kMaxBlockSizes]
+                       [kNumExplicitCompoundPredictionTypes + 1];
+  alignas(kMaxAlignment) uint16_t
+      interpolation_filter_cdf[kInterpolationFilterContexts]
+                              [kNumExplicitInterpolationFilters + 1];
+  alignas(kMaxAlignment) uint16_t
+      mv_joint_cdf[kMvContexts][kNumMvJointTypes + 1];
+  alignas(kMaxAlignment) uint16_t
+      mv_sign_cdf[kMvContexts][kNumMvComponents][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      mv_class_cdf[kMvContexts][kNumMvComponents][kMvClassSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      mv_class0_bit_cdf[kMvContexts][kNumMvComponents][kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      mv_class0_fraction_cdf[kMvContexts][kNumMvComponents][kBooleanSymbolCount]
+                            [kMvFractionSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      mv_class0_high_precision_cdf[kMvContexts][kNumMvComponents]
+                                  [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t
+      mv_bit_cdf[kMvContexts][kNumMvComponents][kMvBitSymbolCount]
+                [kBooleanFieldCdfSize];
+  alignas(kMaxAlignment) uint16_t mv_fraction_cdf[kMvContexts][kNumMvComponents]
+                                                 [kMvFractionSymbolCount + 1];
+  alignas(kMaxAlignment) uint16_t
+      mv_high_precision_cdf[kMvContexts][kNumMvComponents]
+                           [kBooleanFieldCdfSize];
 };
 
 }  // namespace libgav1

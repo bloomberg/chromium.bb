@@ -14,16 +14,13 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/prefs/pref_service.h"
 
-using autofill::PasswordForm;
-
 namespace password_manager {
 
 PasswordStoreDefault::PasswordStoreDefault(
     std::unique_ptr<LoginDatabase> login_db)
     : login_db_(std::move(login_db)) {}
 
-PasswordStoreDefault::~PasswordStoreDefault() {
-}
+PasswordStoreDefault::~PasswordStoreDefault() = default;
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
   PasswordStore::ShutdownOnUIThread();
@@ -40,6 +37,11 @@ bool PasswordStoreDefault::InitOnBackgroundSequence() {
     // has to be initialized even if database initialization failed.
     success = false;
     LOG(ERROR) << "Could not create/open login database.";
+  }
+  if (success) {
+    login_db_->SetDeletionsHaveSyncedCallback(
+        base::BindRepeating(&PasswordStoreDefault::NotifyDeletionsHaveSynced,
+                            base::Unretained(this)));
   }
   return PasswordStore::InitOnBackgroundSequence() && success;
 }
@@ -102,7 +104,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
     for (const auto& pair : key_to_form_map) {
       PasswordForm* form = pair.second.get();
       PasswordStoreChangeList remove_changes;
-      if (url_filter.Run(form->origin) &&
+      if (url_filter.Run(form->url) &&
           login_db_->RemoveLogin(*form, &remove_changes)) {
         std::move(remove_changes.begin(), remove_changes.end(),
                   std::back_inserter(changes));
@@ -132,8 +134,8 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
 
   std::set<GURL> origins_to_update;
   for (const auto& pair : key_to_form_map) {
-    if (origin_filter.Run(pair.second->origin))
-      origins_to_update.insert(pair.second->origin);
+    if (origin_filter.Run(pair.second->url))
+      origins_to_update.insert(pair.second->url);
   }
 
   std::set<GURL> origins_updated;
@@ -143,7 +145,7 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
   }
 
   for (const auto& pair : key_to_form_map) {
-    if (origins_updated.count(pair.second->origin)) {
+    if (origins_updated.count(pair.second->url)) {
       changes.emplace_back(PasswordStoreChange::UPDATE, *pair.second,
                            /*primary_key=*/pair.first);
     }
@@ -156,9 +158,8 @@ bool PasswordStoreDefault::RemoveStatisticsByOriginAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  return login_db_ &&
-         login_db_->stats_table().RemoveStatsByOriginAndTime(
-             origin_filter, delete_begin, delete_end);
+  return login_db_ && login_db_->stats_table().RemoveStatsByOriginAndTime(
+                          origin_filter, delete_begin, delete_end);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>
@@ -253,17 +254,31 @@ bool PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
 std::vector<CompromisedCredentials>
 PasswordStoreDefault::GetAllCompromisedCredentialsImpl() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  return login_db_ ? login_db_->compromised_credentials_table().GetAllRows()
-                   : std::vector<CompromisedCredentials>();
+  std::vector<CompromisedCredentials> compromised_credentials =
+      login_db_ ? login_db_->compromised_credentials_table().GetAllRows()
+                : std::vector<CompromisedCredentials>();
+  PasswordForm::Store store = IsAccountStore()
+                                  ? PasswordForm::Store::kAccountStore
+                                  : PasswordForm::Store::kProfileStore;
+  for (CompromisedCredentials& cred : compromised_credentials)
+    cred.in_store = store;
+  return compromised_credentials;
 }
 
 std::vector<CompromisedCredentials>
 PasswordStoreDefault::GetMatchingCompromisedCredentialsImpl(
     const std::string& signon_realm) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  return login_db_
-             ? login_db_->compromised_credentials_table().GetRows(signon_realm)
-             : std::vector<CompromisedCredentials>();
+  std::vector<CompromisedCredentials> compromised_credentials =
+      login_db_
+          ? login_db_->compromised_credentials_table().GetRows(signon_realm)
+          : std::vector<CompromisedCredentials>();
+  PasswordForm::Store store = IsAccountStore()
+                                  ? PasswordForm::Store::kAccountStore
+                                  : PasswordForm::Store::kProfileStore;
+  for (CompromisedCredentials& cred : compromised_credentials)
+    cred.in_store = store;
+  return compromised_credentials;
 }
 
 bool PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
@@ -290,6 +305,12 @@ void PasswordStoreDefault::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
                                                      base::Time remove_end) {
   if (login_db_)
     login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
+}
+
+bool PasswordStoreDefault::IsEmpty() {
+  if (!login_db_)
+    return true;
+  return login_db_->IsEmpty();
 }
 
 bool PasswordStoreDefault::BeginTransaction() {
@@ -332,11 +353,11 @@ PasswordStoreSync::MetadataStore* PasswordStoreDefault::GetMetadataStore() {
 }
 
 bool PasswordStoreDefault::IsAccountStore() const {
-  return login_db_->is_account_store();
+  return login_db_ && login_db_->is_account_store();
 }
 
 bool PasswordStoreDefault::DeleteAndRecreateDatabaseFile() {
-  return login_db_->DeleteAndRecreateDatabaseFile();
+  return login_db_ && login_db_->DeleteAndRecreateDatabaseFile();
 }
 
 void PasswordStoreDefault::ResetLoginDB() {

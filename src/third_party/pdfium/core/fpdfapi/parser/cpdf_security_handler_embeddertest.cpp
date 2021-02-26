@@ -134,20 +134,22 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, OwnerPassword) {
   EXPECT_EQ(0xFFFFFFFC, FPDF_GetDocPermissions(document()));
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(CPDFSecurityHandlerEmbedderTest, PasswordAfterGenerateSave) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_PasswordAfterGenerateSave DISABLED_PasswordAfterGenerateSave
+#if defined(OS_WIN)
+  const char kChecksum[] = "06fe5a97341b3e0f0a22ccc242fd9040";
 #else
-#define MAYBE_PasswordAfterGenerateSave PasswordAfterGenerateSave
+  const char kChecksum[] = "169c8e3acea8fba5a40f695bbbc96273";
+#endif  // defined(OS_WIN)
+#else
+#if defined(OS_WIN)
+  const char kChecksum[] = "041c2fb541c8907cc22ce101b686c79e";
+#elif defined(OS_APPLE)
+  const char kChecksum[] = "1ace03eb7c466c132aacf319cb9d69d3";
+#else
+  const char kChecksum[] = "7048dca58e2ed8f93339008b91e4eb4e";
 #endif
-TEST_F(CPDFSecurityHandlerEmbedderTest, MAYBE_PasswordAfterGenerateSave) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
-  const char md5[] = "7048dca58e2ed8f93339008b91e4eb4e";
-#elif defined(OS_MACOSX)
-  const char md5[] = "1ace03eb7c466c132aacf319cb9d69d3";
-#else
-  const char md5[] = "041c2fb541c8907cc22ce101b686c79e";
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   {
     ASSERT_TRUE(OpenDocumentWithOptions("encrypted.pdf", "5678",
                                         LinearizeOption::kMustLinearize,
@@ -160,7 +162,7 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, MAYBE_PasswordAfterGenerateSave) {
     EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
     FPDFPage_InsertObject(page, red_rect);
     ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-    CompareBitmap(bitmap.get(), 612, 792, md5);
+    CompareBitmap(bitmap.get(), 612, 792, kChecksum);
     EXPECT_TRUE(FPDFPage_GenerateContent(page));
     SetWholeFileAvailable();
     EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
@@ -182,7 +184,7 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, MAYBE_PasswordAfterGenerateSave) {
   for (const auto& test : tests) {
     ASSERT_TRUE(OpenSavedDocumentWithPassword(test.password));
     FPDF_PAGE page = LoadSavedPage(0);
-    VerifySavedRendering(page, 612, 792, md5);
+    VerifySavedRendering(page, 612, 792, kChecksum);
     EXPECT_EQ(test.permissions, FPDF_GetDocPermissions(saved_document_));
 
     CloseSavedPage(page);
@@ -664,4 +666,8 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, UserPasswordVersion6Latin1) {
   VerifySavedModifiedHelloWorldDocumentWithPassword(kAgeUTF8);
   VerifySavedModifiedHelloWorldDocumentWithPassword(kHotelLatin1);
   VerifySavedModifiedHelloWorldDocumentWithPassword(kHotelUTF8);
+}
+
+TEST_F(CPDFSecurityHandlerEmbedderTest, BUG_1124998) {
+  OpenAndVerifyHelloWorldDocumentWithPassword("bug_1124998.pdf", "test");
 }

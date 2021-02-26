@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/view_model.h"
 
 namespace {
@@ -81,6 +82,9 @@ void ShelfViewTestAPI::SetAnimationDuration(base::TimeDelta duration) {
 
 void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone(
     views::BoundsAnimator* bounds_animator) {
+  if (!bounds_animator->IsAnimating())
+    return;
+
   std::unique_ptr<TestAPIAnimationObserver> observer(
       new TestAPIAnimationObserver());
 
@@ -114,6 +118,10 @@ bool ShelfViewTestAPI::CloseMenu() {
   return true;
 }
 
+const gfx::Rect& ShelfViewTestAPI::visible_shelf_item_bounds_union() const {
+  return shelf_view_->visible_shelf_item_bounds_union_;
+}
+
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
   return shelf_view_->shelf()->tooltip();
 }
@@ -144,6 +152,14 @@ void ShelfViewTestAPI::SetShelfContextMenuCallback(
     base::RepeatingClosure closure) {
   DCHECK(shelf_view_->context_menu_shown_callback_.is_null());
   shelf_view_->context_menu_shown_callback_ = std::move(closure);
+}
+
+int ShelfViewTestAPI::GetSeparatorIndex() const {
+  return shelf_view_->separator_index_;
+}
+
+bool ShelfViewTestAPI::IsSeparatorVisible() const {
+  return shelf_view_->separator_->GetVisible();
 }
 
 }  // namespace ash

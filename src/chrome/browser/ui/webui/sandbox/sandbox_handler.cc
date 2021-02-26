@@ -8,17 +8,15 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/process_type.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
+#include "sandbox/policy/win/sandbox_win.h"
 
 using content::BrowserChildProcessHostIterator;
 using content::ChildProcessData;
@@ -26,44 +24,6 @@ using content::RenderProcessHost;
 
 namespace sandbox_handler {
 namespace {
-
-// This only includes OS_WIN included SandboxType values.
-std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
-  switch (sandbox_type) {
-    case content::SandboxType::kNoSandbox:
-      return "Unsandboxed";
-    case content::SandboxType::kNoSandboxAndElevatedPrivileges:
-      return "Unsandboxed (Elevated)";
-    case content::SandboxType::kXrCompositing:
-      return "XR Compositing";
-    case content::SandboxType::kRenderer:
-      return "Renderer";
-    case content::SandboxType::kUtility:
-      return "Utility";
-    case content::SandboxType::kGpu:
-      return "GPU";
-    case content::SandboxType::kPpapi:
-      return "PPAPI";
-    case content::SandboxType::kNetwork:
-      return "Network";
-    case content::SandboxType::kCdm:
-      return "CDM";
-    case content::SandboxType::kPrintCompositor:
-      return "Print Compositor";
-    case content::SandboxType::kAudio:
-      return "Audio";
-    case content::SandboxType::kSpeechRecognition:
-      return "Speech Recognition";
-    case content::SandboxType::kProxyResolver:
-      return "Proxy Resolver";
-    case content::SandboxType::kPdfConversion:
-      return "PDF Conversion";
-    case content::SandboxType::kSharingService:
-      return "Sharing";
-    case content::SandboxType::kVideoCapture:
-      return "Video Capture";
-  }
-}
 
 base::Value FetchBrowserChildProcesses() {
   // The |BrowserChildProcessHostIterator| must only be used on the IO thread.
@@ -85,7 +45,8 @@ base::Value FetchBrowserChildProcesses() {
     proc.SetPath("metricsName", base::Value(process_data.metrics_name));
     proc.SetPath(
         "sandboxType",
-        base::Value(GetSandboxTypeInEnglish(process_data.sandbox_type)));
+        base::Value(sandbox::policy::SandboxWin::GetSandboxTypeInEnglish(
+            process_data.sandbox_type)));
     browser_processes.Append(std::move(proc));
   }
 
@@ -136,9 +97,8 @@ void SandboxHandler::HandleRequestSandboxDiagnostics(
 
   AllowJavascript();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&FetchBrowserChildProcesses),
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&FetchBrowserChildProcesses),
       base::BindOnce(&SandboxHandler::FetchBrowserChildProcessesCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -148,7 +108,7 @@ void SandboxHandler::FetchBrowserChildProcessesCompleted(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   browser_processes_ = std::move(browser_processes);
 
-  service_manager::SandboxWin::GetPolicyDiagnostics(
+  sandbox::policy::SandboxWin::GetPolicyDiagnostics(
       base::BindOnce(&SandboxHandler::FetchSandboxDiagnosticsCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -157,8 +117,8 @@ void SandboxHandler::FetchBrowserChildProcessesCompleted(
 void SandboxHandler::FetchSandboxDiagnosticsCompleted(
     base::Value sandbox_policies) {
   sandbox_policies_ = std::move(sandbox_policies);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SandboxHandler::GetRendererProcessesAndFinish,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxHandler::GetRendererProcessesAndFinish,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

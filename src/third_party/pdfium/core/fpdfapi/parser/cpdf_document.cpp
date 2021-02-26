@@ -16,7 +16,6 @@
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fxcodec/jbig2/JBig2_DocumentContext.h"
 #include "core/fxcrt/fx_codepage.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -34,7 +33,7 @@ int CountPages(CPDF_Dictionary* pPages,
   count = 0;
   for (size_t i = 0; i < pKidList->size(); i++) {
     CPDF_Dictionary* pKid = pKidList->GetDictAt(i);
-    if (!pKid || pdfium::ContainsKey(*visited_pages, pKid))
+    if (!pKid || pdfium::Contains(*visited_pages, pKid))
       continue;
     if (pKid->KeyExist("Kids")) {
       // Use |visited_pages| to help detect circular references of pages.
@@ -111,16 +110,18 @@ CPDF_Document::CPDF_Document(std::unique_ptr<RenderDataIface> pRenderData,
   m_pDocPage->SetDocument(this);
 }
 
-CPDF_Document::~CPDF_Document() = default;
+CPDF_Document::~CPDF_Document() {
+  // Be absolutely certain that |m_pExtension| is null before destroying
+  // the extension, to avoid re-entering it while being destroyed. clang
+  // seems to already do this for us, but the C++ standards seem to
+  // indicate the opposite.
+  m_pExtension.reset();
+}
 
 // static
 bool CPDF_Document::IsValidPageObject(const CPDF_Object* obj) {
   const CPDF_Dictionary* dict = ToDictionary(obj);
-  if (!dict)
-    return false;
-
-  const CPDF_Name* name = ToName(dict->GetObjectFor("Type"));
-  return name && name->GetString() == "Page";
+  return dict && dict->GetNameFor("Type") == "Page";
 }
 
 RetainPtr<CPDF_Object> CPDF_Document::ParseIndirectObject(uint32_t objnum) {
@@ -142,7 +143,7 @@ CPDF_Parser::Error CPDF_Document::LoadDoc(
     const RetainPtr<IFX_SeekableReadStream>& pFileAccess,
     const char* password) {
   if (!m_pParser)
-    SetParser(pdfium::MakeUnique<CPDF_Parser>(this));
+    SetParser(std::make_unique<CPDF_Parser>(this));
 
   return HandleLoadResult(m_pParser->StartParse(pFileAccess, password));
 }
@@ -151,7 +152,7 @@ CPDF_Parser::Error CPDF_Document::LoadLinearizedDoc(
     const RetainPtr<CPDF_ReadValidator>& validator,
     const char* password) {
   if (!m_pParser)
-    SetParser(pdfium::MakeUnique<CPDF_Parser>(this));
+    SetParser(std::make_unique<CPDF_Parser>(this));
 
   return HandleLoadResult(m_pParser->StartLinearizedParse(validator, password));
 }
@@ -391,7 +392,7 @@ bool CPDF_Document::InsertDeletePDFPage(CPDF_Dictionary* pPages,
 
   for (size_t i = 0; i < pKidList->size(); i++) {
     CPDF_Dictionary* pKid = pKidList->GetDictAt(i);
-    if (pKid->GetStringFor("Type") == "Page") {
+    if (pKid->GetNameFor("Type") == "Page") {
       if (nPagesToGo != 0) {
         nPagesToGo--;
         continue;
@@ -413,7 +414,7 @@ bool CPDF_Document::InsertDeletePDFPage(CPDF_Dictionary* pPages,
       nPagesToGo -= nPages;
       continue;
     }
-    if (pdfium::ContainsKey(*pVisited, pKid))
+    if (pdfium::Contains(*pVisited, pKid))
       return false;
 
     pdfium::ScopedSetInsertion<CPDF_Dictionary*> insertion(pVisited, pKid);

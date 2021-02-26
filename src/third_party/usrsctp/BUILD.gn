@@ -9,6 +9,12 @@ config("usrsctp_config") {
     "usrsctplib/usrsctplib",
     "usrsctplib/usrsctplib/netinet",
   ]
+
+  # This is part of the public config because it's used both by usrsctp and
+  # the client (WebRTC), to determine if the length field needs populating.
+  if (is_mac || is_ios || target_os == "freebsd") {
+    defines = [ "HAVE_SCONN_LEN" ]
+  }
 }
 
 config("usrsctp_warnings") {
@@ -99,6 +105,7 @@ static_library("usrsctp") {
     "SCTP_PROCESS_LEVEL_LOCKS",
     "SCTP_SIMPLE_ALLOCATOR",
     "SCTP_USE_OPENSSL_SHA1",
+    "SCTP_USE_OPENSSL_RAND",
     "__Userspace__",
 
     # "SCTP_DEBUG", # Uncomment for SCTP debugging.
@@ -121,29 +128,14 @@ static_library("usrsctp") {
     "-UINET6",
   ]
 
-  if (is_linux || is_android) {
-    defines += [
-      "__Userspace_os_Linux",
-      "_GNU_SOURCE",
-    ]
-  } else if (is_mac || is_ios) {
+  if (is_linux || is_chromeos || is_android) {
+    defines += [ "_GNU_SOURCE" ]
+  } else if (is_apple) {
     defines += [
       "HAVE_SA_LEN",
-      "HAVE_SCONN_LEN",
       "__APPLE_USE_RFC_2292",
-      "__Userspace_os_Darwin",
     ]
-    cflags += [ "-U__APPLE__" ]
   }
 
-  if (is_win) {
-    defines += [ "__Userspace_os_Windows" ]
-  } else {
-    defines += [ "NON_WINDOWS_DEFINE" ]
-  }
-
-  if (is_fuchsia) {
-    defines += [ "__Userspace_os_Fuchsia" ]
-  }
   deps = [ "//third_party/boringssl" ]
 }

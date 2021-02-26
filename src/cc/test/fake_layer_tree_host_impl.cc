@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "cc/animation/animation_host.h"
-#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
 
@@ -40,6 +41,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
                         &stats_instrumentation_,
                         task_graph_runner,
                         AnimationHost::CreateForTesting(ThreadInstance::IMPL),
+                        nullptr,
                         0,
                         std::move(image_worker_task_runner),
                         /*scheduling_client=*/nullptr),

@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/activity_services/data/share_to_data_builder.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -59,7 +59,7 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
       web_state->GetNavigationManager()->GetVisibleItem();
   web::UserAgentType userAgent = web::UserAgentType::NONE;
   if (visibleItem)
-    userAgent = visibleItem->GetUserAgentType(web_state->GetView());
+    userAgent = visibleItem->GetUserAgentType();
 
   FindTabHelper* helper = FindTabHelper::FromWebState(web_state);
   BOOL is_page_searchable =
@@ -75,12 +75,28 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
   return [[ShareToData alloc] initWithShareURL:finalURLToShare
                                     visibleURL:web_state->GetVisibleURL()
                                          title:tab_title
+                                additionalText:nil
                                isOriginalTitle:is_original_title
                                isPagePrintable:is_page_printable
                               isPageSearchable:is_page_searchable
                               canSendTabToSelf:can_send_tab_to_self
                                      userAgent:userAgent
                             thumbnailGenerator:thumbnail_generator];
+}
+
+ShareToData* ShareToDataForURL(const GURL& URL,
+                               NSString* title,
+                               NSString* additionalText) {
+  return [[ShareToData alloc] initWithShareURL:URL
+                                    visibleURL:URL
+                                         title:title
+                                additionalText:additionalText
+                               isOriginalTitle:YES
+                               isPagePrintable:NO
+                              isPageSearchable:NO
+                              canSendTabToSelf:NO
+                                     userAgent:web::UserAgentType::NONE
+                            thumbnailGenerator:nil];
 }
 
 }  // namespace activity_services

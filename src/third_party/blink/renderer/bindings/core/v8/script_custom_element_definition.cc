@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_state_restore_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_form_state_restore_mode.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -106,7 +107,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
             .ToChecked());
 }
 
-void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
+void ScriptCustomElementDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(constructor_);
   visitor->Trace(connected_callback_);
@@ -213,6 +214,9 @@ bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
       V8ScriptRunner::ReportException(isolate, exception);
     return false;
   }
+
+  // 8.1.new: set custom element state to kPreCustomized.
+  element.SetCustomElementState(CustomElementState::kPreCustomized);
 
   Element* result = CallConstructor();
 
@@ -344,7 +348,12 @@ void ScriptCustomElementDefinition::RunFormStateRestoreCallback(
     const String& mode) {
   if (!form_state_restore_callback_)
     return;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_CALLBACK_FUNCTION)
+  form_state_restore_callback_->InvokeAndReportException(
+      &element, value, V8FormStateRestoreMode::Create(mode).value());
+#else
   form_state_restore_callback_->InvokeAndReportException(&element, value, mode);
+#endif
 }
 
 }  // namespace blink

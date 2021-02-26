@@ -6,7 +6,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -17,12 +16,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
-
-// Mac OS X 10.6 SDK defines check() macro that interferes with our check()
-// method
-#ifdef check
-#undef check
-#endif
 
 namespace blink {
 
@@ -40,6 +33,8 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   FontFaceSet(ExecutionContext& context)
       : ExecutionContextClient(&context),
         ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext())) {}
+  FontFaceSet(const FontFaceSet&) = delete;
+  FontFaceSet& operator=(const FontFaceSet&) = delete;
   ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading)
@@ -68,7 +63,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   wtf_size_t size() const;
   virtual AtomicString status() const = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   static const int kDefaultFontSize;
@@ -112,7 +107,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
               Member<FontFace>&,
               ExceptionState&) override;
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(font_faces_);
       FontFaceSetIterable::IterationSource::Trace(visitor);
     }
@@ -125,8 +120,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   class LoadFontPromiseResolver final
       : public GarbageCollected<LoadFontPromiseResolver>,
         public FontFace::LoadFontCallback {
-    USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
-
    public:
     LoadFontPromiseResolver(FontFaceArray* faces, ScriptState* script_state)
         : num_loading_(faces->size()),
@@ -141,7 +134,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void NotifyLoaded(FontFace*) override;
     void NotifyError(FontFace*) override;
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     HeapVector<Member<FontFace>> font_faces_;
@@ -157,7 +150,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
 
   void HandlePendingEventsAndPromises();
   void FireLoadingEvent();
-  DISALLOW_COPY_AND_ASSIGN(FontFaceSet);
 };
 
 }  // namespace blink

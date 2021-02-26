@@ -21,7 +21,6 @@
 #include "core/fpdfapi/render/cpdf_docrenderdata.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -37,8 +36,8 @@ class ScopedCPDF_PageModule {
 class CPDF_TestEmptyDocument final : public CPDF_Document {
  public:
   CPDF_TestEmptyDocument()
-      : CPDF_Document(pdfium::MakeUnique<CPDF_DocRenderData>(),
-                      pdfium::MakeUnique<CPDF_DocPageData>()) {}
+      : CPDF_Document(std::make_unique<CPDF_DocRenderData>(),
+                      std::make_unique<CPDF_DocPageData>()) {}
 };
 
 void TestMultiselectFieldDict(RetainPtr<CPDF_Array> opt_array,
@@ -63,7 +62,7 @@ void TestMultiselectFieldDict(RetainPtr<CPDF_Array> opt_array,
   CPDF_FormField form_field(&form, form_dict.Get());
   EXPECT_EQ(expected_use_indices, form_field.UseSelectedIndicesObject());
   for (int i = 0; i < form_field.CountOptions(); i++) {
-    const bool expected_selected = pdfium::ContainsValue(expected_indices, i);
+    const bool expected_selected = pdfium::Contains(expected_indices, i);
     EXPECT_EQ(expected_selected, form_field.IsItemSelected(i));
   }
   for (int i : excluded_indices) {

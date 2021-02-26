@@ -287,6 +287,7 @@ export class AdbSocketConsumerPort extends AdbBaseConsumerPort {
   sendReadBufferResponse() {
     this.sendMessage(this.generateChunkReadResponse(
         this.traceProtoWriter.finish(), /* last */ true));
+    this.traceProtoWriter = protobuf.Writer.create();
   }
 
   bind() {
@@ -321,7 +322,7 @@ export class AdbSocketConsumerPort extends AdbBaseConsumerPort {
   }
 
   handleIncomingFrame(frame: perfetto.protos.IPCFrame) {
-    const requestId = frame.requestId as number;
+    const requestId = frame.requestId;
     switch (frame.msg) {
       case 'msgBindServiceReply': {
         const msgBindServiceReply = frame.msgBindServiceReply;

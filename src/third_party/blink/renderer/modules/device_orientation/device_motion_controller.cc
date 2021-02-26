@@ -65,7 +65,7 @@ void DeviceMotionController::DidAddEventListener(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {
       DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
-          GetWindow().GetFrame(), EventTypeName());
+          *GetWindow().GetFrame(), EventTypeName());
       return;
     }
   }
@@ -81,13 +81,8 @@ bool DeviceMotionController::HasLastData() {
 
 void DeviceMotionController::RegisterWithDispatcher() {
   if (!motion_event_pump_) {
-    LocalFrame* frame = GetWindow().GetFrame();
-    if (!frame)
-      return;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        frame->GetTaskRunner(TaskType::kSensor);
     motion_event_pump_ =
-        MakeGarbageCollected<DeviceMotionEventPump>(task_runner);
+        MakeGarbageCollected<DeviceMotionEventPump>(*GetWindow().GetFrame());
   }
   motion_event_pump_->SetController(this);
 }
@@ -113,7 +108,7 @@ const AtomicString& DeviceMotionController::EventTypeName() const {
   return event_type_names::kDevicemotion;
 }
 
-void DeviceMotionController::Trace(Visitor* visitor) {
+void DeviceMotionController::Trace(Visitor* visitor) const {
   DeviceSingleWindowEventController::Trace(visitor);
   visitor->Trace(motion_event_pump_);
   Supplement<LocalDOMWindow>::Trace(visitor);

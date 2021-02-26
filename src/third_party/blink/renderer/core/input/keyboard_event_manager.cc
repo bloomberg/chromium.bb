@@ -11,19 +11,19 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/input/scroll_manager.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -36,7 +36,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #import <Carbon/Carbon.h>
 #endif
 
@@ -147,7 +147,7 @@ KeyboardEventManager::KeyboardEventManager(LocalFrame& frame,
                                            ScrollManager& scroll_manager)
     : frame_(frame), scroll_manager_(scroll_manager) {}
 
-void KeyboardEventManager::Trace(Visitor* visitor) {
+void KeyboardEventManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(scroll_manager_);
 }
@@ -208,7 +208,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       (initial_key_event.GetType() == WebInputEvent::Type::kKeyDown ||
        initial_key_event.GetType() == WebInputEvent::Type::kRawKeyDown)) {
     LocalFrame::NotifyUserActivation(
-        frame_,
+        frame_, mojom::blink::UserActivationNotificationType::kInteraction,
         RuntimeEnabledFeatures::BrowserVerifiedUserActivationKeyboardEnabled());
   }
 
@@ -321,7 +321,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (!node)
     return WebInputEventResult::kNotHandled;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // According to NSEvents.h, OpenStep reserves the range 0xF700-0xF8FF for
   // function keys. However, some actual private use characters happen to be
   // in this range, e.g. the Apple logo (Option+Shift+K). 0xF7FF is an
@@ -347,10 +347,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 
 void KeyboardEventManager::CapsLockStateMayHaveChanged() {
   if (Element* element = frame_->GetDocument()->FocusedElement()) {
-    if (LayoutObject* r = element->GetLayoutObject()) {
-      if (auto* text_control = DynamicTo<LayoutTextControlSingleLine>(r))
-        text_control->CapsLockStateMayHaveChanged();
-    }
+    if (auto* text_control = DynamicTo<HTMLInputElement>(element))
+      text_control->CapsLockStateMayHaveChanged();
   }
 }
 
@@ -478,7 +476,7 @@ void KeyboardEventManager::DefaultTabEventHandler(KeyboardEvent* event) {
     return;
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Option-Tab is a shortcut based on a system-wide preference on Mac but
   // should be ignored on all other platforms.
   if (event->altKey()) {
@@ -585,7 +583,7 @@ void KeyboardEventManager::SetCurrentCapsLockState(
 bool KeyboardEventManager::CurrentCapsLockState() {
   switch (g_override_caps_lock_state) {
     case OverrideCapsLockState::kDefault:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       return GetCurrentKeyModifiers() & alphaLock;
 #else
       // Caps lock state use is limited to Mac password input
@@ -601,7 +599,7 @@ bool KeyboardEventManager::CurrentCapsLockState() {
 }
 
 WebInputEvent::Modifiers KeyboardEventManager::GetCurrentModifierState() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   unsigned modifiers = 0;
   UInt32 current_modifiers = GetCurrentKeyModifiers();
   if (current_modifiers & ::shiftKey)

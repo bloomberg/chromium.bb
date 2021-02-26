@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/html/html_table_col_element.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 
 namespace blink {
 
@@ -16,39 +17,51 @@ LayoutNGTableColumn::LayoutNGTableColumn(Element* element)
 
 void LayoutNGTableColumn::StyleDidChange(StyleDifference diff,
                                          const ComputedStyle* old_style) {
-  if (diff.NeedsPaintInvalidation() && old_style) {
-    // Could also call SetShouldDoFullPaintInvalidationWithoutGeometryChange?
-    // TODO(atotic+paint_team) Need paint team review.
-    // Is this how to invalidate background only?
+  NOT_DESTROYED();
+  if (diff.HasDifference()) {
     if (LayoutNGTable* table = Table()) {
-      table->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-          PaintInvalidationReason::kBackground);
+      if (old_style && diff.NeedsPaintInvalidation()) {
+        // Regenerate table borders if needed
+        if (!old_style->BorderVisuallyEqual(StyleRef()) ||
+            (diff.TextDecorationOrColorChanged() &&
+             StyleRef().HasBorderColorReferencingCurrentColor())) {
+          table->GridBordersChanged();
+        }
+        // Table paints column background. Tell table to repaint.
+        if (StyleRef().HasBackground() || old_style->HasBackground())
+          table->SetBackgroundNeedsFullPaintInvalidation();
+      }
+      if (diff.NeedsLayout()) {
+        table->SetIntrinsicLogicalWidthsDirty();
+      }
     }
   }
   LayoutBoxModelObject::StyleDidChange(diff, old_style);
 }
 
 void LayoutNGTableColumn::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
-  // TODO(atotic+paint_team) Need paint team review.
-  // LayoutBox::ImageChanged is a lot more sophisticated.
-  // Should I call SetShouldDoFullPaintInvalidationWithoutGeometryChange
-  // instead?
-  if (LayoutNGTable* table = Table())
-    table->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
+  NOT_DESTROYED();
+  if (LayoutNGTable* table = Table()) {
+    table->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        PaintInvalidationReason::kImage);
+  }
 }
 
 bool LayoutNGTableColumn::IsChildAllowed(LayoutObject* child,
                                          const ComputedStyle& style) const {
+  NOT_DESTROYED();
   return child->IsLayoutTableCol() && style.Display() == EDisplay::kTableColumn;
 }
 
 bool LayoutNGTableColumn::CanHaveChildren() const {
+  NOT_DESTROYED();
   // <col> cannot have children.
   return IsColumnGroup();
 }
 
 void LayoutNGTableColumn::ClearNeedsLayoutForChildren() const {
-  LayoutObject* child = FirstChild();
+  NOT_DESTROYED();
+  LayoutObject* child = children_.FirstChild();
   while (child) {
     child->ClearNeedsLayout();
     child = child->NextSibling();
@@ -56,6 +69,7 @@ void LayoutNGTableColumn::ClearNeedsLayoutForChildren() const {
 }
 
 LayoutNGTable* LayoutNGTableColumn::Table() const {
+  NOT_DESTROYED();
   LayoutObject* table = Parent();
   if (table && !table->IsTable())
     table = table->Parent();
@@ -67,6 +81,7 @@ LayoutNGTable* LayoutNGTableColumn::Table() const {
 }
 
 void LayoutNGTableColumn::UpdateFromElement() {
+  NOT_DESTROYED();
   unsigned old_span = span_;
   if (const auto* tc = DynamicTo<HTMLTableColElement>(GetNode())) {
     span_ = tc->span();

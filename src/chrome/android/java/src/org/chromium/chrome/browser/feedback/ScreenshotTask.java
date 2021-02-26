@@ -15,11 +15,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -28,7 +29,7 @@ import org.chromium.ui.base.WindowAndroid;
  * A utility class to take a feedback-formatted screenshot of an {@link Activity}.
  */
 @JNINamespace("chrome::android")
-final class ScreenshotTask implements ScreenshotSource {
+public final class ScreenshotTask implements ScreenshotSource {
     /**
      * Maximum dimension for the screenshot to be sent to the feedback handler.  This size
      * ensures the size of bitmap < 1MB, which is a requirement of the handler.
@@ -94,7 +95,7 @@ final class ScreenshotTask implements ScreenshotSource {
     }
 
     private boolean takeCompositorScreenshot(@Nullable Activity activity) {
-        if (!shouldTakeCompositorScreenshot((activity))) return false;
+        if (activity == null || !shouldTakeCompositorScreenshot((activity))) return false;
 
         Rect rect = new Rect();
         activity.getWindow().getDecorView().getRootView().getWindowVisibleDisplayFrame(rect);
@@ -131,7 +132,9 @@ final class ScreenshotTask implements ScreenshotSource {
         // so that the Android View for the bottom sheet will be captured.
         // TODO(https://crbug.com/835862): When the sheet is partially opened both the compositor
         // and Android views should be captured in the screenshot.
-        if (chromeActivity.getBottomSheetController().isSheetOpen()) return false;
+        if (BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()).isSheetOpen()) {
+            return false;
+        }
 
         // If the start surface or the grid tab switcher are in use, do not use the compositor, it
         // will snapshot the last active tab instead of the current screen if we try to use it.

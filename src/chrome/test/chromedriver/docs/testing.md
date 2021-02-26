@@ -81,6 +81,25 @@ the `run_py_tests.py` command line. This has the following effects:
   then all failed tests are retried at the end.
   This is to prevent flaky tests from causing CQ failures.
 
+### Testing on Android
+
+The Python integration tests can be used to verify ChromeDriver interaction
+with Chrome running on Android devices. This requires the following equipment:
+* A Linux machine to run the Python script and ChromeDriver.
+  (While ChromeDriver can also control Android Chrome from Windows and Mac, the
+  Python integration tests only support controlling Android Chrome from Linux.)
+* An Android device attached to the Linux machine. This device must have
+  [USB debugging enabled](https://developer.android.com/studio/debug/dev-options#enable).
+
+To run the tests, invoke `run_py_tests.py` with `--android-package=package_name`
+option, where `package_name` can be one of the following values:
+* `chrome_stable`: normal in-box Chrome that is installed by the system.
+* `chrome_beta`: Beta build of Chrome.
+* `chromium`: [Open source Chromium build](https://chromium.googlesource.com/chromium/src/+/master/docs/android_build_instructions.md).
+
+There is future plan to [run these tests in the Chromium Commit
+Queue](https://crbug.com/813466).
+
 ## WebDriver Java acceptance tests (`test/run_java_tests.py`)
 
 These are integration tests from the Selenium WebDriver open source project.
@@ -126,7 +145,59 @@ The Web Platform Tests (WPT) project is a W3C-coordinated attempt to build a
 cross-browser testsuit to verify how well browsers conform to web platform
 standards. Here, we will only focus on the WebDriver portion of WPT.
 
-TODO: Add details.
+To run WPT WebDriver tests, first clone the tests from GitHub into an empty
+directory:
+
+```
+git clone https://github.com/web-platform-tests/wpt
+```
+
+If necessary, install Python `virtualenv` module on your system.
+This only needs to be done once. The command for the installation depends on
+your system, but is usually something like:
+
+```
+pip install virtualenv
+```
+
+Now you can change into the WPT repository location,
+and run WPT WebDriver tests with the following command:
+
+```
+./wpt run [options] chrome webdriver
+```
+
+Use `./wpt run --help` to see all available options.
+The following are the most useful options:
+
+* `--webdriver-binary /path/to/chromedriver` specifies the ChromeDriver binary
+  to use. Without this option, the test runner will try to find ChromeDriver on
+  your PATH, or download ChromeDriver if it is not already on the PATH.
+* `--binary /path/to/chrome` specifies the Chrome binary to use.
+* `--webdriver-arg=...` specifies additional arguments to be passed to the
+  ChromeDriver command line. For example, to create a ChromeDriver verbose log,
+  use `--webdriver-arg=--verbose --webdriver-arg=--log-path=/path/to/log
+  --webdriver-arg=--append-log`. Note the following:
+  * Each ChromeDriver switch needs a separate `--webdriver-arg`.
+    Don't concatenate multiple switches together.
+  * Each ChromeDriver switch must be connected with `--webdriver-arg` with
+    an `=` sign.
+  * `--webdriver-arg=--append-log` is recommended.
+    Sometimes the test runner needs to restart ChromeDriver during tests,
+    and this can cause ChromeDriver to overwrite logs without this switch.
+* `--log-wptreport /path/to/report` generates a test report in JSON format.
+  The test runner always displays test failures on the screen, but it is often
+  useful to generate a test log as well. Many log formats are available,
+  see WPT help for all options.
+
+The WPT WebDriver tests are organized into subdirectories, one for each
+WebDriver command defined in the W3C spec. You can select a subset of the tests
+with the last argument on the WPT command line. For example, to run all tests
+for the New Session command, use
+
+```
+./wpt run [options] chrome webdriver/tests/new_session
+```
 
 ## JavaScript Unit Tests
 

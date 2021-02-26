@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_waitable_event.h"
@@ -310,8 +310,8 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, InstantUnblockReportsZero) {
               ElementsAre(std::make_pair(0, 0), std::make_pair(0, 0)));
 }
 
-// Start the jank mid-interval; that interval shouldn't be counted but the last
-// incomplete interval will count.
+// Start the jank mid-interval; that interval should be counted but the last
+// incomplete interval won't count.
 TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank7sMidInterval) {
   task_environment_.FastForwardBy(
       internal::IOJankMonitoringWindow::kIOJankInterval / 3);
@@ -332,8 +332,8 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank7sMidInterval) {
   EXPECT_THAT(reports_, ElementsAre(std::make_pair(7, 7)));
 }
 
-// Start the jank mid-interval; that interval shouldn't be counted but the
-// second one should be despite being incomplete.
+// Start the jank mid-interval; that interval should be counted but the second
+// one won't count.
 TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank1sMidInterval) {
   task_environment_.FastForwardBy(
       internal::IOJankMonitoringWindow::kIOJankInterval / 3);
@@ -352,6 +352,48 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank1sMidInterval) {
       internal::IOJankMonitoringWindow::kMonitoringWindow);
 
   EXPECT_THAT(reports_, ElementsAre(std::make_pair(1, 1)));
+}
+
+// Jank that lasts for 1.3 intervals should be rounded down to 1.
+TEST_F(ScopedBlockingCallIOJankMonitoringTest, JankRoundDown) {
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kIOJankInterval * 0.9);
+
+  constexpr auto kJankTiming =
+      internal::IOJankMonitoringWindow::kIOJankInterval * 1.3;
+  {
+    ScopedBlockingCall blocked_for_1s(FROM_HERE, BlockingType::MAY_BLOCK);
+    task_environment_.FastForwardBy(kJankTiming);
+  }
+
+  // No janks reported before the monitoring window completes.
+  EXPECT_THAT(reports_, ElementsAre());
+
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kMonitoringWindow);
+
+  EXPECT_THAT(reports_, ElementsAre(std::make_pair(1, 1)));
+}
+
+// Jank that lasts for 1.7 intervals should be rounded up to 2.
+TEST_F(ScopedBlockingCallIOJankMonitoringTest, JankRoundUp) {
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kIOJankInterval * 0.5);
+
+  constexpr auto kJankTiming =
+      internal::IOJankMonitoringWindow::kIOJankInterval * 1.7;
+  {
+    ScopedBlockingCall blocked_for_1s(FROM_HERE, BlockingType::MAY_BLOCK);
+    task_environment_.FastForwardBy(kJankTiming);
+  }
+
+  // No janks reported before the monitoring window completes.
+  EXPECT_THAT(reports_, ElementsAre());
+
+  task_environment_.FastForwardBy(
+      internal::IOJankMonitoringWindow::kMonitoringWindow);
+
+  EXPECT_THAT(reports_, ElementsAre(std::make_pair(2, 2)));
 }
 
 // Start mid-interval and perform an operation that overlaps into the next one
@@ -497,7 +539,7 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, MultiThreadedOverlapped) {
 #endif
 TEST_F(ScopedBlockingCallIOJankMonitoringTest,
        MAYBE_MultiThreadedOverlappedWindows) {
-  static const int kNumJankyTasks = 3;
+  constexpr int kNumJankyTasks = 3;
   static_assert(
       kNumJankyTasks <= test::TaskEnvironment::kNumForegroundThreadPoolThreads,
       "");

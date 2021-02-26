@@ -249,6 +249,16 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/blk_sse_sum_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sum_squares_avx2.c")
+  if(NOT CONFIG_AV1_HIGHBITDEPTH)
+    list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_AVX2
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_variance_avx2.c")
+  endif()
+
+  if(CONFIG_REALTIME_ONLY)
+    list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_AVX2
+                     "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c"
+                     "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c")
+  endif()
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_AVX
               "${AOM_ROOT}/aom_dsp/x86/aom_quantize_avx.c")
@@ -275,13 +285,20 @@ if(CONFIG_AV1_ENCODER)
                      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c")
   endif()
 
+  if(CONFIG_REALTIME_ONLY)
+    list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_SSE4_1
+                     "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
+                     "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
+  endif()
+
   list(APPEND AOM_DSP_ENCODER_INTRIN_NEON "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/subpel_variance_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/variance_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
-              "${AOM_ROOT}/aom_dsp/arm/sse_neon.c")
+              "${AOM_ROOT}/aom_dsp/arm/sse_neon.c"
+              "${AOM_ROOT}/aom_dsp/arm/sum_squares_neon.c")
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_MSA "${AOM_ROOT}/aom_dsp/mips/sad_msa.c"
               "${AOM_ROOT}/aom_dsp/mips/subtract_msa.c"
@@ -332,6 +349,9 @@ function(setup_aom_dsp_targets)
     target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_dsp_encoder>)
     if(BUILD_SHARED_LIBS)
       target_sources(aom_static PRIVATE $<TARGET_OBJECTS:aom_dsp_encoder>)
+    endif()
+    if(CONFIG_TUNE_VMAF)
+      target_include_directories(aom_dsp_encoder PRIVATE ${VMAF_INCLUDE_DIRS})
     endif()
   endif()
 

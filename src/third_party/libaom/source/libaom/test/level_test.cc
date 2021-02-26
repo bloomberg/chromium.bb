@@ -93,12 +93,12 @@ TEST_P(LevelTest, TestTargetLevelApi) {
            level != 21 && level != 22 && level != 23) ||
           level == 31 || operating_point > 31) {
         EXPECT_EQ(AOM_CODEC_OK,
-                  aom_codec_control(&enc, AV1E_SET_TARGET_SEQ_LEVEL_IDX,
-                                    target_level));
+                  AOM_CODEC_CONTROL_TYPECHECKED(
+                      &enc, AV1E_SET_TARGET_SEQ_LEVEL_IDX, target_level));
       } else {
         EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-                  aom_codec_control(&enc, AV1E_SET_TARGET_SEQ_LEVEL_IDX,
-                                    target_level));
+                  AOM_CODEC_CONTROL_TYPECHECKED(
+                      &enc, AV1E_SET_TARGET_SEQ_LEVEL_IDX, target_level));
       }
     }
   }
@@ -121,6 +121,7 @@ TEST_P(LevelTest, TestLevelMonitoringLowBitrate) {
                                        30, 1, 0, 40);
     target_level_ = kLevelKeepStats;
     cfg_.rc_target_bitrate = 1000;
+    cfg_.g_limit = 40;
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_EQ(level_[0], 0);
   }
@@ -133,8 +134,9 @@ TEST_P(LevelTest, TestLevelMonitoringHighBitrate) {
                                        30, 1, 0, 40);
     target_level_ = kLevelKeepStats;
     cfg_.rc_target_bitrate = 4000;
+    cfg_.g_limit = 40;
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    ASSERT_EQ(level_[0], 0);
+    ASSERT_EQ(level_[0], 4);
   }
 }
 
@@ -151,7 +153,8 @@ TEST_P(LevelTest, TestTargetLevel0) {
   }
 }
 
-AV1_INSTANTIATE_TEST_CASE(LevelTest,
-                          ::testing::Values(::libaom_test::kTwoPassGood),
-                          ::testing::ValuesIn(kCpuUsedVectors));
+AV1_INSTANTIATE_TEST_SUITE(LevelTest,
+                           ::testing::Values(::libaom_test::kTwoPassGood,
+                                             ::libaom_test::kOnePassGood),
+                           ::testing::ValuesIn(kCpuUsedVectors));
 }  // namespace

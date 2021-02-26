@@ -259,7 +259,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'PaintWorklet': 'IsPaintWorkletGlobalScope',
     'ServiceWorker': 'IsServiceWorkerGlobalScope',
     'SharedWorker': 'IsSharedWorkerGlobalScope',
-    'Window': 'IsDocument',
+    'Window': 'IsWindow',
     'Worker': 'IsWorkerGlobalScope',
     'Worklet': 'IsWorkletGlobalScope',
 }
@@ -327,11 +327,11 @@ def exposed(member, interface):
     well.
 
     EXAMPLE: [Exposed=Window, RuntimeEnabledFeature=Feature1]
-      => context->isDocument()
+      => context->IsWindow()
 
     EXAMPLE: [Exposed(Window Feature1, Window Feature2)]
-      => context->isDocument() && RuntimeEnabledFeatures::Feature1Enabled() ||
-         context->isDocument() && RuntimeEnabledFeatures::Feature2Enabled()
+      => context->IsWindow() && RuntimeEnabledFeatures::Feature1Enabled() ||
+         context->IsWindow() && RuntimeEnabledFeatures::Feature2Enabled()
     """
     exposure_set = ExposureSet(
         extended_attribute_value_as_list(member, 'Exposed'))
@@ -453,6 +453,8 @@ def high_entropy(definition_or_member):
             raise Exception(
                 '%s specified [HighEntropy], but does not include '
                 'either [Measure] or [MeasureAs]' % definition_or_member.name)
+        if extended_attributes['HighEntropy'] == 'Direct':
+            return 'Direct'
         return True
     return False
 
@@ -509,18 +511,18 @@ def runtime_enabled_feature_name(definition_or_member, runtime_features):
         return feature_name
 
 
-# [Unforgeable]
+# [LegacyUnforgeable]
 def is_unforgeable(member):
-    return 'Unforgeable' in member.extended_attributes
+    return 'LegacyUnforgeable' in member.extended_attributes
 
 
-# [Unforgeable], [Global]
+# [LegacyUnforgeable], [Global]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every
     instance object.
 
     The following members must be defined on an instance object.
-    - [Unforgeable] members
+    - [LegacyUnforgeable] members
     - regular members of [Global] interfaces
     """
     if member.is_static:
@@ -537,7 +539,7 @@ def on_instance(interface, member):
         return True
 
     if ('Global' in interface.extended_attributes
-            or 'Unforgeable' in member.extended_attributes):
+            or 'LegacyUnforgeable' in member.extended_attributes):
         return True
     return False
 
@@ -549,7 +551,7 @@ def on_prototype(interface, member):
     Most members are defined on the prototype object.  Exceptions are as
     follows.
     - static members (optional)
-    - [Unforgeable] members
+    - [LegacyUnforgeable] members
     - members of [Global] interfaces
     - named properties of [Global] interfaces
     """
@@ -567,7 +569,7 @@ def on_prototype(interface, member):
         return False
 
     if ('Global' in interface.extended_attributes
-            or 'Unforgeable' in member.extended_attributes):
+            or 'LegacyUnforgeable' in member.extended_attributes):
         return False
     return True
 

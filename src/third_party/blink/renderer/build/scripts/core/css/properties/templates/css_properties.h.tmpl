@@ -40,7 +40,6 @@ namespace {{namespace}} {
   (property.inherited and 'kInherited' or ''),
   (property.visited and 'kVisited' or ''),
   (property.is_internal and 'kInternal' or ''),
-  (property.affected_by_forced_colors and 'kIsAffectedByForcedColors' or ''),
   (property.is_animation_property and 'kAnimation' or ''),
   (property.valid_for_first_letter and 'kValidForFirstLetter' or ''),
   (property.valid_for_cue and 'kValidForCue' or ''),
@@ -50,6 +49,8 @@ namespace {{namespace}} {
   (property.is_background and 'kBackground' or ''),
   (property.is_border and 'kBorder' or ''),
   (property.computed_value_comparable and 'kComputedValueComparable' or ''),
+  (property.tree_scoped_value and 'kTreeScopedValue' or ''),
+  (property.valid_for_highlight and 'kValidForHighlight' or ''),
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}
@@ -104,7 +105,10 @@ class {{class_name}} final : public {{property.superclass}} {
   {% if property.style_builder_declare %}
   void ApplyInitial(StyleResolverState&) const override;
   void ApplyInherit(StyleResolverState&) const override;
-  void ApplyValue(StyleResolverState&, const CSSValue&) const  override;
+  void ApplyValue(StyleResolverState&, const CSSValue&) const override;
+  {% if property.tree_scoped_value %}
+  void ApplyValue(StyleResolverState&, const ScopedCSSValue&) const override;
+  {% endif %}
   {% endif %}
   {% endif %} {# not is_alias #}
 };

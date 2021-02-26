@@ -225,7 +225,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // referred to by |url| and |http_method| and |network_isolation_key|.
   void OnExternalCacheHit(const GURL& url,
                           const std::string& http_method,
-                          const NetworkIsolationKey& network_isolation_key);
+                          const NetworkIsolationKey& network_isolation_key,
+                          bool is_subframe_document_resource);
 
   // Causes all transactions created after this point to simulate lock timeout
   // and effectively bypass the cache lock whenever there is lock contention.
@@ -272,6 +273,18 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Function to generate cache key for testing.
   static std::string GenerateCacheKeyForTest(const HttpRequestInfo* request);
 
+  // Enable split cache feature if not already overridden in the feature list.
+  // Should only be invoked during process initialization before the HTTP
+  // cache is initialized.
+  static void SplitCacheFeatureEnableByDefault();
+
+  // Returns true if split cache is enabled either by default or by other means
+  // like command line or field trials.
+  static bool IsSplitCacheEnabled();
+
+  // Resets g_init_cache and g_enable_split_cache for tests.
+  static void ClearGlobalsForTesting();
+
  private:
   // Types --------------------------------------------------------------------
 
@@ -317,7 +330,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheWithFrameOrigin);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, NonSplitCache);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCache);
-  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheWithRegistrableDomain);
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheUsesRegistrableDomain);
 
   using TransactionList = std::list<Transaction*>;
   using TransactionSet = std::unordered_set<Transaction*>;
@@ -396,7 +409,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
       std::unordered_map<std::string, std::unique_ptr<ActiveEntry>>;
   using PendingOpsMap = std::unordered_map<std::string, PendingOp*>;
   using ActiveEntriesSet = std::map<ActiveEntry*, std::unique_ptr<ActiveEntry>>;
-  using PlaybackCacheMap = std::unordered_map<std::string, int>;
 
   // Methods ------------------------------------------------------------------
 
@@ -441,7 +453,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Dooms the entry associated with a GET for a given url and network
   // isolation key.
   void DoomMainEntryForUrl(const GURL& url,
-                           const NetworkIsolationKey& isolation_key);
+                           const NetworkIsolationKey& isolation_key,
+                           bool is_subframe_document_resource);
 
   // Closes a previously doomed entry.
   void FinalizeDoomedEntry(ActiveEntry* entry);
@@ -639,6 +652,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Used when generating and accessing keys if cache is split.
   static const char kDoubleKeyPrefix[];
   static const char kDoubleKeySeparator[];
+  static const char kSubframeDocumentResourcePrefix[];
 
   // Variables ----------------------------------------------------------------
 
@@ -665,8 +679,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // The set of entries "under construction".
   PendingOpsMap pending_ops_;
-
-  std::unique_ptr<PlaybackCacheMap> playback_cache_map_;
 
   // A clock that can be swapped out for testing.
   base::Clock* clock_;

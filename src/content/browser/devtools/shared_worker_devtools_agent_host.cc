@@ -9,7 +9,9 @@
 
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
+#include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
@@ -19,9 +21,17 @@
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
+
+// static
+SharedWorkerDevToolsAgentHost* SharedWorkerDevToolsAgentHost::GetFor(
+    SharedWorkerHost* worker_host) {
+  return SharedWorkerDevToolsManager::GetInstance()->GetDevToolsHost(
+      worker_host);
+}
 
 SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     SharedWorkerHost* worker_host,
@@ -56,6 +66,10 @@ GURL SharedWorkerDevToolsAgentHost::GetURL() {
   return instance_.url();
 }
 
+url::Origin SharedWorkerDevToolsAgentHost::GetConstructorOrigin() {
+  return instance_.constructor_origin();
+}
+
 bool SharedWorkerDevToolsAgentHost::Activate() {
   return false;
 }
@@ -69,11 +83,18 @@ bool SharedWorkerDevToolsAgentHost::Close() {
   return true;
 }
 
-bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
+                                                  bool acquire_wake_lock) {
+  session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(
       GetId(), devtools_worker_token_, GetIOContext(),
       base::BindRepeating([] {})));
+  // TODO(crbug.com/1143100): support pushing updated loader factories down to
+  // renderer.
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(
+      GetIOContext(),
+      base::BindRepeating([](base::OnceClosure cb) { std::move(cb).Run(); })));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
@@ -122,6 +143,18 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
   worker_host_ = nullptr;
   GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
                                     ChildProcessHost::kInvalidUniqueID);
+}
+
+DevToolsAgentHostImpl::NetworkLoaderFactoryParamsAndInfo
+SharedWorkerDevToolsAgentHost::CreateNetworkFactoryParamsForDevTools() {
+  DCHECK(worker_host_);
+  return {GetConstructorOrigin(), net::SiteForCookies::FromUrl(GetURL()),
+          worker_host_->CreateNetworkFactoryParamsForSubresources()};
+}
+
+RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcessHost() {
+  DCHECK(worker_host_);
+  return worker_host_->GetProcessHost();
 }
 
 }  // namespace content

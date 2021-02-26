@@ -21,13 +21,7 @@
 namespace dawn_native { namespace vulkan { namespace external_semaphore {
 
     Service::Service(Device* device) : mDevice(device) {
-        const VulkanDeviceInfo& deviceInfo = mDevice->GetDeviceInfo();
-        const VulkanGlobalInfo& globalInfo =
-            ToBackend(mDevice->GetAdapter())->GetBackend()->GetGlobalInfo();
-
-        mSupported = globalInfo.getPhysicalDeviceProperties2 &&
-                     globalInfo.externalSemaphoreCapabilities && deviceInfo.externalSemaphore &&
-                     deviceInfo.externalSemaphoreFD;
+        mSupported = device->GetDeviceInfo().HasExt(DeviceExt::ExternalSemaphoreFD);
 
         // Early out before we try using extension functions
         if (!mSupported) {
@@ -50,8 +44,7 @@ namespace dawn_native { namespace vulkan { namespace external_semaphore {
         VkFlags requiredFlags = VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR |
                                 VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR;
         mSupported =
-            mSupported &&
-            ((semaphoreProperties.externalSemaphoreFeatures & requiredFlags) == requiredFlags);
+            mSupported && IsSubset(requiredFlags, semaphoreProperties.externalSemaphoreFeatures);
     }
 
     Service::~Service() = default;

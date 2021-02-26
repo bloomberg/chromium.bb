@@ -11,38 +11,12 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#endif
-
 namespace private_api = extensions::api::networking_private;
 namespace cast_api = extensions::api::networking_cast_private;
 
 namespace extensions {
 
 namespace {
-
-#if defined(OS_CHROMEOS)
-// Parses TDLS status returned by network handler to networking_cast_private
-// TDLS status type.
-cast_api::TDLSStatus ParseTDLSStatus(const std::string& status) {
-  if (status == shill::kTDLSConnectedState)
-    return cast_api::TDLS_STATUS_CONNECTED;
-  if (status == shill::kTDLSNonexistentState)
-    return cast_api::TDLS_STATUS_NONEXISTENT;
-  if (status == shill::kTDLSDisabledState)
-    return cast_api::TDLS_STATUS_DISABLED;
-  if (status == shill::kTDLSDisconnectedState)
-    return cast_api::TDLS_STATUS_DISCONNECTED;
-  if (status == shill::kTDLSUnknownState)
-    return cast_api::TDLS_STATUS_UNKNOWN;
-
-  NOTREACHED() << "Unknown TDLS status " << status;
-  return cast_api::TDLS_STATUS_UNKNOWN;
-}
-#endif
 
 std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> AsCastCredentials(
     api::networking_cast_private::VerificationProperties& properties) {
@@ -70,10 +44,10 @@ NetworkingCastPrivateVerifyDestinationFunction::Run() {
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
   delegate->VerifyDestination(
       AsCastCredentials(params->properties),
-      base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Failure,
-                 this));
+      base::BindOnce(&NetworkingCastPrivateVerifyDestinationFunction::Success,
+                     this),
+      base::BindOnce(&NetworkingCastPrivateVerifyDestinationFunction::Failure,
+                     this));
 
   // VerifyDestination might respond synchronously, e.g. in tests.
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -101,10 +75,10 @@ NetworkingCastPrivateVerifyAndEncryptDataFunction::Run() {
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
   delegate->VerifyAndEncryptData(
       params->data, AsCastCredentials(params->properties),
-      base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Failure,
-                 this));
+      base::BindOnce(
+          &NetworkingCastPrivateVerifyAndEncryptDataFunction::Success, this),
+      base::BindOnce(
+          &NetworkingCastPrivateVerifyAndEncryptDataFunction::Failure, this));
 
   // VerifyAndEncryptData might respond synchronously, e.g. in tests.
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -129,35 +103,8 @@ NetworkingCastPrivateSetWifiTDLSEnabledStateFunction::Run() {
   std::unique_ptr<cast_api::SetWifiTDLSEnabledState::Params> params =
       cast_api::SetWifiTDLSEnabledState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-
-#if defined(OS_CHROMEOS)
-  chromeos::NetworkHandler::Get()->network_device_handler()->SetWifiTDLSEnabled(
-      params->ip_or_mac_address, params->enabled,
-      base::Bind(&NetworkingCastPrivateSetWifiTDLSEnabledStateFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateSetWifiTDLSEnabledStateFunction::Failure,
-                 this));
-
-  // SetWifiTDLSEnabled might respond synchronously, e.g. in tests.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-#else
   return RespondNow(Error("Not supported"));
-#endif
 }
-
-#if defined(OS_CHROMEOS)
-void NetworkingCastPrivateSetWifiTDLSEnabledStateFunction::Success(
-    const std::string& result) {
-  Respond(ArgumentList(cast_api::SetWifiTDLSEnabledState::Results::Create(
-      ParseTDLSStatus(result))));
-}
-
-void NetworkingCastPrivateSetWifiTDLSEnabledStateFunction::Failure(
-    const std::string& error,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  Respond(Error(error));
-}
-#endif
 
 NetworkingCastPrivateGetWifiTDLSStatusFunction::
     ~NetworkingCastPrivateGetWifiTDLSStatusFunction() {}
@@ -167,34 +114,7 @@ NetworkingCastPrivateGetWifiTDLSStatusFunction::Run() {
   std::unique_ptr<cast_api::GetWifiTDLSStatus::Params> params =
       cast_api::GetWifiTDLSStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-
-#if defined(OS_CHROMEOS)
-  chromeos::NetworkHandler::Get()->network_device_handler()->GetWifiTDLSStatus(
-      params->ip_or_mac_address,
-      base::Bind(&NetworkingCastPrivateGetWifiTDLSStatusFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateGetWifiTDLSStatusFunction::Failure,
-                 this));
-
-  // GetWifiTDLSStatus might respond synchronously, e.g. in tests.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-#else
   return RespondNow(Error("Not supported"));
-#endif
 }
-
-#if defined(OS_CHROMEOS)
-void NetworkingCastPrivateGetWifiTDLSStatusFunction::Success(
-    const std::string& result) {
-  Respond(ArgumentList(
-      cast_api::GetWifiTDLSStatus::Results::Create(ParseTDLSStatus(result))));
-}
-
-void NetworkingCastPrivateGetWifiTDLSStatusFunction::Failure(
-    const std::string& error,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  Respond(Error(error));
-}
-#endif
 
 }  // namespace extensions

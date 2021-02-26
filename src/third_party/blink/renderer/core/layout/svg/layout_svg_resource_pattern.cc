@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -53,6 +54,7 @@ LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
       pattern_map_(MakeGarbageCollected<PatternMap>()) {}
 
 void LayoutSVGResourcePattern::RemoveAllClientsFromCache() {
+  NOT_DESTROYED();
   pattern_map_->clear();
   should_collect_pattern_attributes_ = true;
   MarkAllClientsForInvalidation(SVGResourceClient::kPaintInvalidation);
@@ -60,6 +62,7 @@ void LayoutSVGResourcePattern::RemoveAllClientsFromCache() {
 
 bool LayoutSVGResourcePattern::RemoveClientFromCache(
     SVGResourceClient& client) {
+  NOT_DESTROYED();
   auto entry = pattern_map_->find(&client);
   if (entry == pattern_map_->end())
     return false;
@@ -69,6 +72,7 @@ bool LayoutSVGResourcePattern::RemoveClientFromCache(
 
 std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
     const FloatRect& object_bounding_box) {
+  NOT_DESTROYED();
   auto pattern_data = std::make_unique<PatternData>();
 
   DCHECK(GetElement());
@@ -111,7 +115,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
       return pattern_data;
     tile_transform = SVGFitToViewBox::ViewBoxToViewTransform(
         attributes.ViewBox(), attributes.PreserveAspectRatio(),
-        tile_bounds.Width(), tile_bounds.Height());
+        tile_bounds.Size());
   } else {
     // A viewBox overrides patternContentUnits, per spec.
     if (attributes.PatternContentUnits() ==
@@ -132,28 +136,37 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
   return pattern_data;
 }
 
-SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
+bool LayoutSVGResourcePattern::ApplyShader(
     const SVGResourceClient& client,
-    const FloatRect& object_bounding_box) {
+    const FloatRect& reference_box,
+    const AffineTransform* additional_transform,
+    PaintFlags& flags) {
+  NOT_DESTROYED();
   ClearInvalidationMask();
 
   std::unique_ptr<PatternData>& pattern_data =
       pattern_map_->insert(&client, nullptr).stored_value->value;
   if (!pattern_data)
-    pattern_data = BuildPatternData(object_bounding_box);
+    pattern_data = BuildPatternData(reference_box);
 
   if (!pattern_data->pattern)
-    return SVGPaintServer::Invalid();
+    return false;
 
-  return SVGPaintServer(pattern_data->pattern, pattern_data->transform);
+  AffineTransform transform = pattern_data->transform;
+  if (additional_transform)
+    transform = *additional_transform * transform;
+  pattern_data->pattern->ApplyToFlags(flags,
+                                      AffineTransformToSkMatrix(transform));
+  flags.setFilterQuality(kLow_SkFilterQuality);
+  return true;
 }
 
 const LayoutSVGResourceContainer*
 LayoutSVGResourcePattern::ResolveContentElement() const {
+  NOT_DESTROYED();
   DCHECK(Attributes().PatternContentElement());
-  LayoutSVGResourceContainer* expected_layout_object =
-      ToLayoutSVGResourceContainer(
-          Attributes().PatternContentElement()->GetLayoutObject());
+  auto* expected_layout_object = To<LayoutSVGResourceContainer>(
+      Attributes().PatternContentElement()->GetLayoutObject());
   // No content inheritance - avoid walking the inheritance chain.
   if (this == expected_layout_object)
     return this;
@@ -179,6 +192,7 @@ LayoutSVGResourcePattern::ResolveContentElement() const {
 sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
     const FloatSize& size,
     const AffineTransform& tile_transform) const {
+  NOT_DESTROYED();
   DCHECK(!should_collect_pattern_attributes_);
 
   AffineTransform content_transform;

@@ -17,7 +17,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
@@ -120,10 +120,16 @@ void AudioManagerWin::ShutdownOnAudioThread() {
 }
 
 bool AudioManagerWin::HasAudioOutputDevices() {
+  if (CoreAudioUtil::IsSupported())
+    return CoreAudioUtil::NumberOfActiveDevices(eRender) > 0;
+
   return (::waveOutGetNumDevs() != 0);
 }
 
 bool AudioManagerWin::HasAudioInputDevices() {
+  if (CoreAudioUtil::IsSupported())
+    return CoreAudioUtil::NumberOfActiveDevices(eCapture) > 0;
+
   return (::waveInGetNumDevs() != 0);
 }
 

@@ -23,8 +23,6 @@ class Visitor;
 class DOMWindowLaunchQueue final
     : public GarbageCollected<DOMWindowLaunchQueue>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowLaunchQueue);
-
  public:
   static const char kSupplementName[];
 
@@ -36,7 +34,7 @@ class DOMWindowLaunchQueue final
   static void UpdateLaunchFiles(LocalDOMWindow*,
                                 HeapVector<Member<NativeFileSystemHandle>>);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static DOMWindowLaunchQueue* FromState(LocalDOMWindow* window);

@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -14,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/checked_iterators.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,7 +54,8 @@ TEST(SpanTest, DefaultConstructor) {
 }
 
 TEST(SpanTest, ConstructFromDataAndSize) {
-  constexpr span<int> empty_span(nullptr, 0);
+  constexpr int* kNull = nullptr;
+  constexpr span<int> empty_span(kNull, 0);
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
@@ -75,21 +76,45 @@ TEST(SpanTest, ConstructFromDataAndSize) {
     EXPECT_EQ(vector[i], static_span[i]);
 }
 
-TEST(SpanTest, ConstructFromPointerPair) {
-  constexpr span<int> empty_span(nullptr, nullptr);
+TEST(SpanTest, ConstructFromIterAndSize) {
+  constexpr int* kNull = nullptr;
+  constexpr span<int> empty_span(kNull, 0);
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  span<int> dynamic_span(vector.data(), vector.data() + vector.size() / 2);
+  span<int> dynamic_span(vector.begin(), vector.size());
+  EXPECT_EQ(vector.data(), dynamic_span.data());
+  EXPECT_EQ(vector.size(), dynamic_span.size());
+
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(vector[i], dynamic_span[i]);
+
+  span<int, 6> static_span(vector.begin(), vector.size());
+  EXPECT_EQ(vector.data(), static_span.data());
+  EXPECT_EQ(vector.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(vector[i], static_span[i]);
+}
+
+TEST(SpanTest, ConstructFromIterPair) {
+  constexpr int* kNull = nullptr;
+  constexpr span<int> empty_span(kNull, kNull);
+  EXPECT_TRUE(empty_span.empty());
+  EXPECT_EQ(nullptr, empty_span.data());
+
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+
+  span<int> dynamic_span(vector.begin(), vector.begin() + vector.size() / 2);
   EXPECT_EQ(vector.data(), dynamic_span.data());
   EXPECT_EQ(vector.size() / 2, dynamic_span.size());
 
   for (size_t i = 0; i < dynamic_span.size(); ++i)
     EXPECT_EQ(vector[i], dynamic_span[i]);
 
-  span<int, 3> static_span(vector.data(), vector.data() + vector.size() / 2);
+  span<int, 3> static_span(vector.begin(), vector.begin() + vector.size() / 2);
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size() / 2, static_span.size());
 
@@ -1382,7 +1407,7 @@ TEST(SpanTest, Sort) {
   int array[] = {5, 4, 3, 2, 1};
 
   span<int> dynamic_span = array;
-  std::sort(dynamic_span.begin(), dynamic_span.end());
+  ranges::sort(dynamic_span);
   EXPECT_THAT(array, ElementsAre(1, 2, 3, 4, 5));
   std::sort(dynamic_span.rbegin(), dynamic_span.rend());
   EXPECT_THAT(array, ElementsAre(5, 4, 3, 2, 1));
@@ -1390,7 +1415,7 @@ TEST(SpanTest, Sort) {
   span<int, 5> static_span = array;
   std::sort(static_span.rbegin(), static_span.rend(), std::greater<>());
   EXPECT_THAT(array, ElementsAre(1, 2, 3, 4, 5));
-  std::sort(static_span.begin(), static_span.end(), std::greater<>());
+  ranges::sort(static_span, std::greater<>());
   EXPECT_THAT(array, ElementsAre(5, 4, 3, 2, 1));
 }
 
@@ -1423,6 +1448,21 @@ TEST(SpanTest, IteratorConversions) {
   static_assert(!std::is_convertible<span<const int>::iterator,
                                      span<int>::iterator>::value,
                 "Error: const iterator should not be convertible to iterator");
+}
+
+TEST(SpanTest, ExtentMacro) {
+  constexpr size_t kSize = 10;
+  std::array<uint8_t, kSize> array;
+  static_assert(EXTENT(array) == kSize, "EXTENT broken");
+
+  const std::array<uint8_t, kSize>& reference = array;
+  static_assert(EXTENT(reference) == kSize, "EXTENT broken for references");
+
+  const std::array<uint8_t, kSize>* pointer = nullptr;
+  static_assert(EXTENT(*pointer) == kSize, "EXTENT broken for pointers");
+
+  uint8_t plain_array[kSize] = {0};
+  static_assert(EXTENT(plain_array) == kSize, "EXTENT broken for plain arrays");
 }
 
 }  // namespace base

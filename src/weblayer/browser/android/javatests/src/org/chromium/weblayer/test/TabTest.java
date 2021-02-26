@@ -6,18 +6,31 @@ package org.chromium.weblayer.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.support.test.filters.SmallTest;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.ActionModeCallback;
+import org.chromium.weblayer.ActionModeItemType;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -170,5 +183,177 @@ public class TabTest {
             mActivity.destroyFragment();
         });
         callbackHelper.waitForFirst();
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testSetData() {
+        String startupUrl = "about:blank";
+        mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("foo", "bar");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivity.getTab();
+            tab.setData(data);
+            Assert.assertEquals(data.get("foo"), tab.getData().get("foo"));
+
+            tab.setData(new HashMap<>());
+            Assert.assertTrue(tab.getData().isEmpty());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testSetDataMaxSize() {
+        String startupUrl = "about:blank";
+        mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("big", new String(new char[10000]));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                mActivity.getTab().setData(data);
+            } catch (IllegalArgumentException e) {
+                // Expected exception.
+                return;
+            }
+            Assert.fail("Expected IllegalArgumentException.");
+        });
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testCreateTab() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+        CallbackHelper helper = new CallbackHelper();
+        Tab tab = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Browser browser = mActivity.getBrowser();
+            browser.registerTabListCallback(new TabListCallback() {
+                @Override
+                public void onTabAdded(Tab tab) {
+                    helper.notifyCalled();
+                }
+            });
+            Tab newTab = mActivity.getBrowser().createTab();
+            Assert.assertEquals(mActivity.getBrowser().getTabs().size(), 2);
+            Assert.assertNotEquals(newTab, mActivity.getTab());
+            return newTab;
+        });
+        helper.waitForFirst();
+
+        // Make sure the new tab can navigate correctly.
+        mActivityTestRule.navigateAndWait(
+                tab, mActivityTestRule.getTestDataURL("simple_page.html"), false);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86) // New behavior added in 86
+    public void testViewDetachedTabIsInvisible() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+
+        boolean hidden = mActivityTestRule.executeScriptAndExtractBoolean("document.hidden;");
+        Assert.assertFalse(hidden);
+
+        Fragment fragment = mActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            View fragmentView = fragment.getView();
+            ViewGroup parent = (ViewGroup) fragmentView.getParent();
+            parent.removeView(fragmentView);
+        });
+
+        hidden = mActivityTestRule.executeScriptAndExtractBoolean("document.hidden;");
+        Assert.assertTrue(hidden);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(88) // Bug fix in 88.
+    // This is a regression test for https://crbug.com/1075744 .
+    public void testRotationDoesntChangeVisibility() throws Exception {
+        String url = mActivityTestRule.getTestDataURL("rotation.html");
+        mActivity = mActivityTestRule.launchShellWithUrl(url);
+        mActivity.setRetainInstance(true);
+        Assert.assertNotNull(mActivity);
+
+        // Touch to trigger fullscreen and rotation.
+        EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
+
+        // Wait for the page to be told the orientation changed.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return mActivityTestRule.executeScriptAndExtractBoolean("gotOrientationChange", false);
+        });
+
+        // The WebContents should not have been hidden as a result of the rotation.
+        Assert.assertFalse(mActivityTestRule.executeScriptAndExtractBoolean("gotHide", false));
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(88)
+    public void setFloatingActionModeOverride() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity.getBrowser().getActiveTab().setFloatingActionModeOverride(
+                    ActionModeItemType.SHARE, new ActionModeCallback() {
+                        @Override
+                        public void onActionItemClicked(
+                                @ActionModeItemType int item, String selectedText) {}
+                    });
+        });
+
+        // Smoke test. It's not possible to trigger an action mode click in a test.
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(88) // New API added in 88.
+    public void testWillAutomaticallyReloadAfterCrash() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+        Browser browser2 = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Browser browser = mActivity.getBrowser();
+            // Initial tab is foreground, so it won't automatically reload.
+            Tab initialTab = browser.getActiveTab();
+            Assert.assertFalse(initialTab.willAutomaticallyReloadAfterCrash());
+
+            // New tab is background, so it will automatically reload.
+            Tab newTab = browser.createTab();
+            Assert.assertEquals(browser.getTabs().size(), 2);
+            Assert.assertNotEquals(newTab, mActivity.getTab());
+            Assert.assertNotEquals(newTab, browser.getActiveTab());
+            Assert.assertTrue(newTab.willAutomaticallyReloadAfterCrash());
+
+            // New tab is foreground after being made active.
+            browser.setActiveTab(newTab);
+            Assert.assertEquals(newTab, browser.getActiveTab());
+            Assert.assertFalse(newTab.willAutomaticallyReloadAfterCrash());
+            Assert.assertTrue(initialTab.willAutomaticallyReloadAfterCrash());
+
+            // Add a second browser; both browsers can have tabs that think they're foreground.
+            Browser newBrowser =
+                    Browser.fromFragment(mActivity.createBrowserFragment(android.R.id.content));
+            Assert.assertTrue(initialTab.willAutomaticallyReloadAfterCrash());
+            Assert.assertFalse(newTab.willAutomaticallyReloadAfterCrash());
+            Assert.assertFalse(newBrowser.getActiveTab().willAutomaticallyReloadAfterCrash());
+
+            // Moving the activity to the background causes all tabs to be not foreground.
+            mActivity.moveTaskToBack(true);
+            return newBrowser;
+        });
+
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Criteria.checkThat(mActivity.getBrowser()
+                                                      .getActiveTab()
+                                                      .willAutomaticallyReloadAfterCrash(),
+                                Matchers.is(true)));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> Assert.assertTrue(
+                                browser2.getActiveTab().willAutomaticallyReloadAfterCrash()));
     }
 }

@@ -10,7 +10,7 @@
 #include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
@@ -30,16 +30,21 @@ AXTreeID::AXTreeID(const std::string& string) {
     type_ = ax::mojom::AXTreeIDType::kUnknown;
   } else {
     type_ = ax::mojom::AXTreeIDType::kToken;
-    base::Value string_value(string);
-    base::UnguessableToken token;
-    CHECK(base::GetValueAsUnguessableToken(string_value, &token));
-    token_ = token;
+    base::Optional<base::UnguessableToken> token =
+        util::ValueToUnguessableToken(base::Value(string));
+    CHECK(token);
+    token_ = *token;
   }
 }
 
 // static
 AXTreeID AXTreeID::FromString(const std::string& string) {
   return AXTreeID(string);
+}
+
+// static
+AXTreeID AXTreeID::FromToken(const base::UnguessableToken& token) {
+  return AXTreeID(token.ToString());
 }
 
 // static
@@ -54,7 +59,7 @@ std::string AXTreeID::ToString() const {
     case ax::mojom::AXTreeIDType::kUnknown:
       return "";
     case ax::mojom::AXTreeIDType::kToken:
-      return base::CreateUnguessableTokenValue(*token_).GetString();
+      return util::UnguessableTokenToValue(*token_).GetString();
   }
 
   NOTREACHED();

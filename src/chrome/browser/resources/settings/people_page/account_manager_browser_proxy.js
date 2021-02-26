@@ -21,10 +21,10 @@ cr.define('settings', function() {
    *   organization: (string|undefined),
    * }}
    */
-  let Account;
+  /* #export */ let Account;
 
   /** @interface */
-  class AccountManagerBrowserProxy {
+  /* #export */ class AccountManagerBrowserProxy {
     /**
      * Returns a Promise for the list of GAIA accounts held in AccountManager.
      * @return {!Promise<!Array<settings.Account>>}

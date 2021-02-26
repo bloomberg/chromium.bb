@@ -134,10 +134,16 @@ enum MetricEnrollment {
   kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense = 58,
   // Device was not pre-provisioned for Zero-Touch.
   kMetricEnrollmentDeviceNotPreProvisioned = 59,
+  // Enrollment failed: Enterprise account is not eligible to enroll.
+  kMetricEnrollmentRegisterEnterpriseAccountIsNotEligibleToEnroll = 60,
   // Enrollment failed: Enterprise TOS has not been accepted.
   kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted = 61,
+  // Too many requests are uploadede within a short time.
+  kMetricEnrollmentTooManyRequests = 62,
+  // Enrollment failed: illegal account for packaged EDU license.
+  kMetricEnrollmentIllegalAccountForPackagedEDULicense = 63,
   // Max value for use with enumeration histogram UMA functions.
-  kMaxValue = kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted
+  kMaxValue = kMetricEnrollmentIllegalAccountForPackagedEDULicense
 };
 
 // Events related to policy refresh.
@@ -244,11 +250,17 @@ POLICY_EXPORT extern const char kMetricDeviceLocalAccountPolicyInvalidations[];
 POLICY_EXPORT extern const char
     kMetricDeviceLocalAccountPolicyInvalidationsFcm[];
 
+POLICY_EXPORT extern const char kMetricCBCMPolicyRefresh[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyRefreshFcm[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyInvalidationsFcm[];
+
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistration[];
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
 
 POLICY_EXPORT extern const char kMetricUserRemoteCommandInvalidations[];
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandInvalidations[];
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandInvalidations[];
 
 POLICY_EXPORT extern const char
     kMetricRemoteCommandInvalidationsRegistrationResult[];
@@ -264,6 +276,31 @@ POLICY_EXPORT extern const char kMetricDeviceUnsignedRemoteCommandReceived[];
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandExecutedTemplate[];
 POLICY_EXPORT extern const char
     kMetricDeviceUnsignedRemoteCommandExecutedTemplate[];
+
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricCBCMUnsignedRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandExecutedTemplate[];
+POLICY_EXPORT extern const char
+    kMetricCBCMUnsignedRemoteCommandExecutedTemplate[];
+
+// Private set membership UMA histogram names.
+POLICY_EXPORT extern const char kUMAPrivateSetMembershipHashDanceComparison[];
+POLICY_EXPORT extern const char kUMAPrivateSetMembershipSuccessTime[];
+POLICY_EXPORT extern const char kUMAPrivateSetMembershipRequestStatus[];
+
+// DeviceAutoEnrollmentRequest i.e. hash dance request UMA histogram names.
+POLICY_EXPORT extern const char kUMAHashDanceSuccessTime[];
+// The following histogram names where added before private set membership
+// existed. They are only recorded for hash dance.
+POLICY_EXPORT extern const char kUMAHashDanceProtocolTime[];
+POLICY_EXPORT extern const char kUMAHashDanceBucketDownloadTime[];
+POLICY_EXPORT extern const char kUMAHashDanceExtraTime[];
+POLICY_EXPORT extern const char kUMAHashDanceRequestStatus[];
+POLICY_EXPORT extern const char kUMAHashDanceNetworkErrorCode[];
+// Suffix for initial enrollment.
+POLICY_EXPORT extern const char kUMAHashDanceSuffixInitialEnrollment[];
+// Suffix for Forced Re-Enrollment.
+POLICY_EXPORT extern const char kUMAHashDanceSuffixFRE[];
 
 }  // namespace policy
 

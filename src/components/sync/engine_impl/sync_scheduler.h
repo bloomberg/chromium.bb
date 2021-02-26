@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
-#include "components/sync/engine_impl/nudge_source.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace base {
@@ -58,8 +57,8 @@ class SyncScheduler : public SyncCycle::Delegate {
   // All methods of SyncScheduler must be called on the same thread
   // (except for RequestEarlyExit()).
 
-  SyncScheduler();
-  ~SyncScheduler() override;
+  SyncScheduler() = default;
+  ~SyncScheduler() override = default;
 
   // Start the scheduler with the given mode.  If the scheduler is
   // already started, switch to the given mode, although some

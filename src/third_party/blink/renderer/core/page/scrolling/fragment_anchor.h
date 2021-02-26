@@ -32,7 +32,6 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // will be performed, for example, setting/clearing :target and svgView().
   static FragmentAnchor* TryCreate(const KURL& url,
                                    LocalFrame& frame,
-                                   bool same_document_navigation,
                                    bool should_scroll);
 
   FragmentAnchor() = default;
@@ -57,7 +56,7 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // dismissed and can be disposed.
   virtual bool Dismiss() = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef OSP_IMPL_QUIC_TESTING_FAKE_QUIC_CONNECTION_FACTORY_H_
 #define OSP_IMPL_QUIC_TESTING_FAKE_QUIC_CONNECTION_FACTORY_H_
 
+#include <memory>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -17,7 +18,8 @@ namespace osp {
 
 class FakeQuicConnectionFactoryBridge {
  public:
-  FakeQuicConnectionFactoryBridge(const IPEndpoint& controller_endpoint);
+  explicit FakeQuicConnectionFactoryBridge(
+      const IPEndpoint& controller_endpoint);
 
   bool server_idle() const { return server_idle_; }
   bool client_idle() const { return client_idle_; }

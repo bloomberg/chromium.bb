@@ -9,9 +9,9 @@
 #include "xfa/fwl/cfwl_datetimepicker.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 
-CFWL_DateTimePickerTP::CFWL_DateTimePickerTP() {}
+CFWL_DateTimePickerTP::CFWL_DateTimePickerTP() = default;
 
-CFWL_DateTimePickerTP::~CFWL_DateTimePickerTP() {}
+CFWL_DateTimePickerTP::~CFWL_DateTimePickerTP() = default;
 
 void CFWL_DateTimePickerTP::DrawBackground(
     const CFWL_ThemeBackground& pParams) {

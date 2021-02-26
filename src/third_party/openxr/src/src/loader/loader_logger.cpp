@@ -1,6 +1,8 @@
-// Copyright (c) 2017-2019 The Khronos Group Inc.
+// Copyright (c) 2017-2020 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,9 +37,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-std::unique_ptr<LoaderLogger> LoaderLogger::_instance;
-std::once_flag LoaderLogger::_once_flag;
 
 bool LoaderLogRecorder::LogDebugUtilsMessage(XrDebugUtilsMessageSeverityFlagsEXT /*message_severity*/,
                                              XrDebugUtilsMessageTypeFlagsEXT /*message_type*/,
@@ -147,9 +146,30 @@ LoaderLogger::LoaderLogger() {
 
 void LoaderLogger::AddLogRecorder(std::unique_ptr<LoaderLogRecorder>&& recorder) { _recorders.push_back(std::move(recorder)); }
 
+void LoaderLogger::AddLogRecorderForXrInstance(XrInstance instance, std::unique_ptr<LoaderLogRecorder>&& recorder) {
+    _recordersByInstance[instance].insert(recorder->UniqueId());
+    _recorders.emplace_back(std::move(recorder));
+}
+
 void LoaderLogger::RemoveLogRecorder(uint64_t unique_id) {
     vector_remove_if_and_erase(
         _recorders, [=](std::unique_ptr<LoaderLogRecorder> const& recorder) { return recorder->UniqueId() == unique_id; });
+    for (auto& recorders : _recordersByInstance) {
+        auto& messengersForInstance = recorders.second;
+        if (messengersForInstance.count(unique_id) > 0) {
+            messengersForInstance.erase(unique_id);
+        }
+    }
+}
+
+void LoaderLogger::RemoveLogRecordersForXrInstance(XrInstance instance) {
+    if (_recordersByInstance.find(instance) != _recordersByInstance.end()) {
+        auto recorders = _recordersByInstance[instance];
+        vector_remove_if_and_erase(_recorders, [=](std::unique_ptr<LoaderLogRecorder> const& recorder) {
+            return recorders.find(recorder->UniqueId()) != recorders.end();
+        });
+        _recordersByInstance.erase(instance);
+    }
 }
 
 bool LoaderLogger::LogMessage(XrLoaderLogMessageSeverityFlagBits message_severity, XrLoaderLogMessageTypeFlags message_type,

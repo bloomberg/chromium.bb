@@ -22,8 +22,8 @@ constexpr SkColor kCloseIconColor = SK_ColorWHITE;
 
 namespace views {
 
-CloseImageButton::CloseImageButton(ButtonListener* listener)
-    : ImageButton(listener) {
+CloseImageButton::CloseImageButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetSize(gfx::Size(kCloseButtonSize, kCloseButtonSize));
@@ -32,7 +32,6 @@ CloseImageButton::CloseImageButton(ButtonListener* listener)
                                  kCloseIconColor));
 
   // Accessibility.
-  SetFocusForPlatform();
   const base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT));
   SetAccessibleName(close_button_label);

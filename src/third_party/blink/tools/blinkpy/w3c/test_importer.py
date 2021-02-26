@@ -38,16 +38,17 @@ POLL_DELAY_SECONDS = 2 * 60
 TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
-ROTATIONS_URL = 'https://rota-ng.appspot.com/legacy/all_rotations.js'
-TBR_FALLBACK = 'robertma'
+ROTATIONS_URL = 'https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-ecosystem-infra'
+TBR_FALLBACK = 'robertma@google.com'
 
 _log = logging.getLogger(__file__)
 
 
 class TestImporter(object):
-    def __init__(self, host, wpt_github=None):
+    def __init__(self, host, wpt_github=None, wpt_manifests=None):
         self.host = host
         self.wpt_github = wpt_github
+        self.port = host.port_factory.get()
 
         self.executive = host.executive
         self.fs = host.filesystem
@@ -70,6 +71,11 @@ class TestImporter(object):
         self.new_test_expectations = {}
         self.verbose = False
 
+        args = ['--clean-up-affected-tests-only',
+                '--clean-up-test-expectations']
+        self._expectations_updater = WPTExpectationsUpdater(
+            self.host, args, wpt_manifests)
+
     def main(self, argv=None):
         # TODO(robertma): Test this method! Split it to make it easier to test
         # if necessary.
@@ -79,9 +85,10 @@ class TestImporter(object):
         self.verbose = options.verbose
         log_level = logging.DEBUG if self.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
-        if options.verbose:
-            # Print out the full output when executive.run_command fails.
-            self.host.executive.error_output_limit = None
+
+        # Having the full output when executive.run_command fails is useful when
+        # investigating a failed import, as all we have are logs.
+        self.executive.error_output_limit = None
 
         if options.auto_update and options.auto_upload:
             _log.error(
@@ -150,15 +157,15 @@ class TestImporter(object):
         # TODO(robertma): Implement `add --all` in Git (it is different from `commit --all`).
         self.chromium_git.run(['add', '--all', self.dest_path])
 
+        # Remove expectations for tests that were deleted and rename tests
+        # in expectations for renamed tests.
+        self._expectations_updater.cleanup_test_expectations_files()
+
         self._generate_manifest()
 
         # TODO(crbug.com/800570 robertma): Re-enable it once we fix the bug.
         # self._delete_orphaned_baselines()
 
-        _log.info(
-            'Updating TestExpectations for any removed or renamed tests.')
-        self.update_all_test_expectations_files(self._list_deleted_tests(),
-                                                self._list_renamed_tests())
 
         if not self.chromium_git.has_working_directory_changes():
             _log.info('Done: no changes to import.')
@@ -520,7 +527,7 @@ class TestImporter(object):
         """Returns a mapping of email addresses to owners of changed tests."""
         _log.info('Gathering directory owners emails to CC.')
         changed_files = self.chromium_git.changed_files()
-        extractor = DirectoryOwnersExtractor(self.fs)
+        extractor = DirectoryOwnersExtractor(self.host)
         return extractor.list_owners(changed_files)
 
     def _cl_description(self, directory_owners):
@@ -549,7 +556,17 @@ class TestImporter(object):
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')
         description = description.replace('\n\n\n\n', '\n\n')
-        description += 'No-Export: true'
+        description += 'No-Export: true\n'
+
+        # Add the wptrunner MVP tryjobs as blocking trybots, to catch any test
+        # changes or infrastructure changes from upstream.
+        #
+        # If this starts blocking the importer unnecessarily, revert
+        # https://chromium-review.googlesource.com/c/chromium/src/+/2451504
+        description += (
+            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'
+            'linux-wpt-payments-fyi-rel')
+
         return description
 
     @staticmethod
@@ -561,42 +578,34 @@ class TestImporter(object):
         return '\n'.join(message_lines)
 
     def tbr_reviewer(self):
-        """Returns the user name or email address to use as the reviewer.
+        """Returns the email address to use as the reviewer.
 
         This tries to fetch the current ecosystem infra sheriff, but falls back
         in case of error.
-
-        Either a user name (which is assumed to have a chromium.org email
-        address) or a full email address (for other cases) is returned.
         """
-        username = ''
+        email = ''
         try:
-            username = self._fetch_ecosystem_infra_sheriff_username()
+            email = self._fetch_ecosystem_infra_sheriff_email()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
-        if username in ['kyleju']:
-            _log.warning('Cannot TBR by %s: not a committer', username)
-            username = ''
-        return username or TBR_FALLBACK
+        if email in ['kyleju@google.com']:
+            _log.warning('Cannot TBR by %s: not a committer', email)
+            email = ''
+        return email or TBR_FALLBACK
 
-    def _fetch_ecosystem_infra_sheriff_username(self):
+    def _fetch_ecosystem_infra_sheriff_email(self):
         try:
             content = self.host.web.get_binary(ROTATIONS_URL)
         except NetworkTimeout:
             _log.error('Cannot fetch %s', ROTATIONS_URL)
             return ''
         data = json.loads(content)
-        today = datetime.date.fromtimestamp(self.host.time()).isoformat()
-        index = data['rotations'].index('ecosystem_infra')
-        calendar = data['calendar']
-        for entry in calendar:
-            if entry['date'] == today:
-                if not entry['participants'][index]:
-                    _log.info('No sheriff today.')
-                    return ''
-                return entry['participants'][index][0]
-        _log.error('No entry found for date %s in rotations table.', today)
-        return ''
+        if not data.get('emails'):
+            _log.error(
+                'No email found for current sheriff. Retrieved content: %s',
+                content)
+            return ''
+        return data['emails'][0]
 
     def fetch_new_expectations_and_baselines(self):
         """Modifies expectation lines and baselines based on try job results.
@@ -608,91 +617,8 @@ class TestImporter(object):
         This is the same as invoking the `wpt-update-expectations` script.
         """
         _log.info('Adding test expectations lines to TestExpectations.')
-        expectation_updater = WPTExpectationsUpdater(self.host)
-        self.rebaselined_tests, self.new_test_expectations = expectation_updater.update_expectations(
-        )
-
-    def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
-        """Updates all test expectations files for tests that have been deleted or renamed.
-
-        This is only for deleted or renamed tests in the initial import,
-        not for tests that have failures in try jobs.
-        """
-        port = self.host.port_factory.get()
-        for path, file_contents in port.all_expectations_dict().iteritems():
-            self._update_single_test_expectations_file(
-                port, path, file_contents, deleted_tests, renamed_tests)
-
-    def _update_single_test_expectations_file(self, port, path, file_contents,
-                                              deleted_tests, renamed_tests):
-        """Updates a single test expectations file."""
-        test_expectations = TestExpectations(
-            port, expectations_dict={path: file_contents})
-
-        new_lines = []
-        for line in test_expectations.get_updated_lines(path):
-            # if a test is a glob type expectation or empty line or comment then add it to the updated
-            # expectations file without modifications
-            if not line.test or line.is_glob:
-                new_lines.append(line.to_string())
-                continue
-            test_name = line.test
-            if self.finder.is_webdriver_test_path(test_name):
-                root_test_file, subtest_suffix = port.split_webdriver_test_name(
-                    test_name)
-            else:
-                root_test_file = test_name
-            if root_test_file in deleted_tests:
-                continue
-            if root_test_file in renamed_tests:
-                if self.finder.is_webdriver_test_path(root_test_file):
-                    renamed_test = renamed_tests[root_test_file]
-                    test_name = port.add_webdriver_subtest_suffix(
-                        renamed_test, subtest_suffix)
-                else:
-                    test_name = renamed_tests[root_test_file]
-            line.test = test_name
-            new_lines.append(line.to_string())
-        self.host.filesystem.write_text_file(path, '\n'.join(new_lines) + '\n')
-
-    def _list_deleted_tests(self):
-        """List of web tests that have been deleted."""
-        # TODO(robertma): Improve Git.changed_files so that we can use it here.
-        out = self.chromium_git.run([
-            'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'
-        ])
-        deleted_tests = []
-        for path in out.splitlines():
-            test = self._relative_to_web_test_dir(path)
-            if test:
-                deleted_tests.append(test)
-        return deleted_tests
-
-    def _list_renamed_tests(self):
-        """Lists tests that have been renamed.
-
-        Returns a dict mapping source name to destination name.
-        """
-        out = self.chromium_git.run([
-            'diff', 'origin/master', '-M100%', '--diff-filter=R',
-            '--name-status'
-        ])
-        renamed_tests = {}
-        for line in out.splitlines():
-            _, source_path, dest_path = line.split()
-            source_test = self._relative_to_web_test_dir(source_path)
-            dest_test = self._relative_to_web_test_dir(dest_path)
-            if source_test and dest_test:
-                renamed_tests[source_test] = dest_test
-        return renamed_tests
-
-    def _relative_to_web_test_dir(self, path_relative_to_repo_root):
-        """Returns a path that's relative to the web tests directory."""
-        abs_path = self.finder.path_from_chromium_base(
-            path_relative_to_repo_root)
-        if not abs_path.startswith(self.finder.web_tests_dir()):
-            return None
-        return self.fs.relpath(abs_path, self.finder.web_tests_dir())
+        self.rebaselined_tests, self.new_test_expectations = (
+            self._expectations_updater.update_expectations())
 
     def _get_last_imported_wpt_revision(self):
         """Finds the last imported WPT revision."""

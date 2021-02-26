@@ -24,7 +24,7 @@
 // this, the Bazel build breaks on Windows.
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
-    PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #define PERFETTO_HAS_SUBPROCESS() 1
 #else
 #define PERFETTO_HAS_SUBPROCESS() 0
@@ -116,7 +116,8 @@ class Subprocess {
   enum OutputMode {
     kInherit = 0,  // Inherit's the caller process stdout/stderr.
     kDevNull,      // dup() onto /dev/null
-    kBuffer        // dup() onto a pipe and move it into the output() buffer.
+    kBuffer,       // dup() onto a pipe and move it into the output() buffer.
+    kFd,           // dup() onto the passed args.fd.
   };
 
   // Input arguments for configuring the subprocess behavior.
@@ -153,8 +154,22 @@ class Subprocess {
     OutputMode stdout_mode = kInherit;
     OutputMode stderr_mode = kInherit;
 
+    base::ScopedFile out_fd;
+
     // Returns " ".join(exec_cmd), quoting arguments.
     std::string GetCmdString() const;
+  };
+
+  struct ResourceUsage {
+    uint32_t cpu_utime_ms = 0;
+    uint32_t cpu_stime_ms = 0;
+    uint32_t max_rss_kb = 0;
+    uint32_t min_page_faults = 0;
+    uint32_t maj_page_faults = 0;
+    uint32_t vol_ctx_switch = 0;
+    uint32_t invol_ctx_switch = 0;
+
+    uint32_t cpu_time_ms() const { return cpu_utime_ms + cpu_stime_ms; }
   };
 
   explicit Subprocess(std::initializer_list<std::string> exec_cmd = {});
@@ -183,16 +198,22 @@ class Subprocess {
 
   Status Poll();
 
-  // Sends a SIGKILL and wait to see the process termination.
-  void KillAndWaitForTermination();
+  // Sends a signal (SIGKILL if not specified) and wait for process termination.
+  void KillAndWaitForTermination(int sig_num = 0);
 
-  PlatformProcessId pid() const { return pid_; }
-  Status status() const { return status_; }
-  int returncode() const { return returncode_; }
+  PlatformProcessId pid() const { return s_.pid; }
+
+  // The accessors below are updated only after a call to Poll(), Wait() or
+  // KillAndWaitForTermination().
+  // In most cases you want to call Poll() rather than these accessors.
+
+  Status status() const { return s_.status; }
+  int returncode() const { return s_.returncode; }
 
   // This contains both stdout and stderr (if the corresponding _mode ==
   // kBuffer). It's non-const so the caller can std::move() it.
-  std::string& output() { return output_; }
+  std::string& output() { return s_.output; }
+  const ResourceUsage& rusage() const { return *s_.rusage; }
 
   Args args;
 
@@ -205,15 +226,22 @@ class Subprocess {
   void KillAtMostOnce();
   bool PollInternal(int poll_timeout_ms);
 
-  base::Pipe stdin_pipe_;
-  base::Pipe stdouterr_pipe_;
-  base::Pipe exit_status_pipe_;
-  PlatformProcessId pid_;
-  size_t input_written_ = 0;
-  Status status_ = kNotStarted;
-  int returncode_ = -1;
-  std::string output_;  // Stdin+stderr. Only when kBuffer.
-  std::thread waitpid_thread_;
+  // This is to deal robustly with the move operators, without having to
+  // manually maintain member-wise move instructions.
+  struct MovableState {
+    base::Pipe stdin_pipe;
+    base::Pipe stdouterr_pipe;
+    base::Pipe exit_status_pipe;
+    PlatformProcessId pid;
+    size_t input_written = 0;
+    Status status = kNotStarted;
+    int returncode = -1;
+    std::string output;  // Stdin+stderr. Only when kBuffer.
+    std::thread waitpid_thread;
+    std::unique_ptr<ResourceUsage> rusage;
+  };
+
+  MovableState s_;
 };
 
 }  // namespace base

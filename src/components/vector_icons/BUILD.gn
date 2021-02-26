@@ -7,7 +7,7 @@ import("//components/vector_icons/vector_icons.gni")
 aggregate_vector_icons("components_vector_icons") {
   icon_directory = "."
 
-  icons = [
+  sources = [
     "accessibility.icon",
     "ads.icon",
     "back_arrow.icon",
@@ -18,10 +18,10 @@ aggregate_vector_icons("components_vector_icons") {
     "business.icon",
     "call.icon",
     "certificate.icon",
-    "camera_pan_tilt_zoom.icon",
     "check_circle.icon",
     "close.icon",
     "close_rounded.icon",
+    "cloud_download.icon",
     "code.icon",
     "content_paste.icon",
     "cookie.icon",
@@ -37,6 +37,7 @@ aggregate_vector_icons("components_vector_icons") {
     "folder_managed_touch.icon",
     "folder_open.icon",
     "folder_touch.icon",
+    "font_download.icon",
     "forward_arrow.icon",
     "headset.icon",
     "help.icon",
@@ -57,11 +58,13 @@ aggregate_vector_icons("components_vector_icons") {
     "media_seek_forward.icon",
     "mic.icon",
     "midi.icon",
+    "notification_explore.icon",
     "notifications.icon",
     "notifications_off.icon",
     "open_in_new.icon",
     "page_info_content_paste.icon",
     "pause.icon",
+    "person.icon",
     "photo.icon",
     "play_arrow.icon",
     "protected_content.icon",

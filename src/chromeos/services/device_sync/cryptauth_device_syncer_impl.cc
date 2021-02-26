@@ -21,6 +21,7 @@
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
+#include "chromeos/services/device_sync/synced_bluetooth_address_tracker.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 
 namespace chromeos {
@@ -76,17 +77,18 @@ CryptAuthDeviceSyncerImpl::Factory::Create(
     CryptAuthDeviceRegistry* device_registry,
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
+    SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
     PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {
   if (test_factory_) {
-    return test_factory_->CreateInstance(device_registry, key_registry,
-                                         client_factory, pref_service,
-                                         std::move(timer));
+    return test_factory_->CreateInstance(
+        device_registry, key_registry, client_factory,
+        synced_bluetooth_address_tracker, pref_service, std::move(timer));
   }
 
   return base::WrapUnique(new CryptAuthDeviceSyncerImpl(
-      device_registry, key_registry, client_factory, pref_service,
-      std::move(timer)));
+      device_registry, key_registry, client_factory,
+      synced_bluetooth_address_tracker, pref_service, std::move(timer)));
 }
 
 // static
@@ -101,11 +103,13 @@ CryptAuthDeviceSyncerImpl::CryptAuthDeviceSyncerImpl(
     CryptAuthDeviceRegistry* device_registry,
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
+    SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
     PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer)
     : device_registry_(device_registry),
       key_registry_(key_registry),
       client_factory_(client_factory),
+      synced_bluetooth_address_tracker_(synced_bluetooth_address_tracker),
       pref_service_(pref_service),
       timer_(std::move(timer)) {
   DCHECK(device_registry);
@@ -126,9 +130,10 @@ base::Optional<base::TimeDelta> CryptAuthDeviceSyncerImpl::GetTimeoutForState(
     default:
       // Signifies that there should not be a timeout.
       // Note: CryptAuthMetadataSyncerImpl, CryptAuthFeatureStatusGetterImpl,
-      // and CryptAuthGroupPrivateKeySharerImpl guarantee that the callbacks
-      // passed to their public methods are always invoke; in other words, these
-      // implementations handle their relevant timeouts internally.
+      // CryptAuthGroupPrivateKeySharerImpl, and BluetoothAdapter guarantee that
+      // the callbacks passed to their public methods are always invoke; in
+      // other words, these implementations handle their relevant timeouts
+      // internally.
       return base::nullopt;
   }
 }
@@ -218,6 +223,9 @@ void CryptAuthDeviceSyncerImpl::OnTimeout() {
 void CryptAuthDeviceSyncerImpl::AttemptNextStep() {
   switch (state_) {
     case State::kNotStarted:
+      GetBluetoothAddress();
+      return;
+    case State::kWaitingForBluetoothAddress:
       SyncMetadata();
       return;
     case State::kWaitingForMetadataSync:
@@ -245,6 +253,26 @@ void CryptAuthDeviceSyncerImpl::AttemptNextStep() {
       NOTREACHED();
       return;
   }
+}
+
+void CryptAuthDeviceSyncerImpl::GetBluetoothAddress() {
+  DCHECK_EQ(State::kNotStarted, state_);
+  SetState(State::kWaitingForBluetoothAddress);
+  synced_bluetooth_address_tracker_->GetBluetoothAddress(
+      base::BindOnce(&CryptAuthDeviceSyncerImpl::OnBluetoothAddress,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CryptAuthDeviceSyncerImpl::OnBluetoothAddress(
+    const std::string& bluetooth_address) {
+  DCHECK_EQ(State::kWaitingForBluetoothAddress, state_);
+
+  if (!bluetooth_address.empty()) {
+    local_better_together_device_metadata_.set_bluetooth_public_address(
+        bluetooth_address);
+  }
+
+  AttemptNextStep();
 }
 
 void CryptAuthDeviceSyncerImpl::SyncMetadata() {
@@ -356,23 +384,24 @@ void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
     CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK_EQ(State::kWaitingForFeatureStatuses, state_);
 
-  // We require that the local device feature statuses are returned; the local
-  // device is needed in the registry.
-  if (!base::Contains(id_to_device_software_feature_info_map,
-                      request_context_.device_id())) {
-    FinishAttempt(CryptAuthDeviceSyncResult::ResultCode::
-                      kErrorMissingLocalDeviceFeatureStatuses);
-    return;
-  }
-
   switch (CryptAuthDeviceSyncResult::GetResultType(device_sync_result_code)) {
     case CryptAuthDeviceSyncResult::ResultType::kNonFatalError:
       did_non_fatal_error_occur_ = true;
       FALLTHROUGH;
     case CryptAuthDeviceSyncResult::ResultType::kSuccess:
+      // We require that the local device feature statuses are returned; the
+      // local device is needed in the registry.
+      if (!base::Contains(id_to_device_software_feature_info_map,
+                          request_context_.device_id())) {
+        FinishAttempt(CryptAuthDeviceSyncResult::ResultCode::
+                          kErrorMissingLocalDeviceFeatureStatuses);
+        return;
+      }
+
       BuildNewDeviceRegistry(id_to_device_software_feature_info_map);
       AttemptNextStep();
       return;
+
     case CryptAuthDeviceSyncResult::ResultType::kFatalError:
       FinishAttempt(device_sync_result_code);
       return;
@@ -681,6 +710,13 @@ void CryptAuthDeviceSyncerImpl::FinishAttempt(
   encryptor_.reset();
   group_private_key_sharer_.reset();
 
+  CryptAuthDeviceSyncResult::ResultType result_type =
+      CryptAuthDeviceSyncResult::GetResultType(result_code);
+  if (result_type == CryptAuthDeviceSyncResult::ResultType::kSuccess) {
+    synced_bluetooth_address_tracker_->SetLastSyncedBluetoothAddress(
+        local_better_together_device_metadata_.bluetooth_public_address());
+  }
+
   bool did_device_registry_change =
       new_device_registry_map_ &&
       device_registry_->SetRegistry(*new_device_registry_map_);
@@ -694,6 +730,9 @@ std::ostream& operator<<(std::ostream& stream,
   switch (state) {
     case CryptAuthDeviceSyncerImpl::State::kNotStarted:
       stream << "[DeviceSyncer state: Not started]";
+      break;
+    case CryptAuthDeviceSyncerImpl::State::kWaitingForBluetoothAddress:
+      stream << "[DeviceSyncer state: Waiting for Bluetooth address]";
       break;
     case CryptAuthDeviceSyncerImpl::State::kWaitingForMetadataSync:
       stream << "[DeviceSyncer state: Waiting for metadata sync]";

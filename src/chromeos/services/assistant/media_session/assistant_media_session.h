@@ -10,7 +10,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -60,6 +59,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantMediaSession
   void ScrubTo(base::TimeDelta seek_time) override {}
   void EnterPictureInPicture() override {}
   void ExitPictureInPicture() override {}
+  void SetAudioSinkId(const base::Optional<std::string>& sink_id) override {}
 
   // Requests/abandons audio focus to the AudioFocusManager.
   void RequestAudioFocus(media_session::mojom::AudioFocusType audio_focus_type);

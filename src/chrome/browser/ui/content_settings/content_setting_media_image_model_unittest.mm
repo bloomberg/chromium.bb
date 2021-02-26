@@ -9,10 +9,9 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/media_authorization_wrapper_test.h"
 #include "chrome/common/chrome_features.h"
@@ -20,7 +19,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/web_contents_tester.h"
@@ -34,7 +34,7 @@ namespace gfx {
 struct VectorIcon;
 }
 
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 
 namespace {
 
@@ -61,9 +61,9 @@ class ContentSettingMediaImageModelTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    TabSpecificContentSettings::CreateForWebContents(
+    PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
     InfoBarService::CreateForWebContents(web_contents());
   }
@@ -86,12 +86,12 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kMacSystemMediaPermissionsInfoUi);
 
-  TabSpecificContentSettings::CreateForWebContents(
+  PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   auto* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const GURL kTestOrigin("https://www.example.com");
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
@@ -103,8 +103,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   // Camera allowed per site: Test for system level permissions.
   {
     content_settings->OnMediaStreamPermissionSet(
-        kTestOrigin, TabSpecificContentSettings::CAMERA_ACCESSED, std::string(),
-        GetDefaultVideoDevice(), std::string(), std::string());
+        kTestOrigin, PageSpecificContentSettings::CAMERA_ACCESSED,
+        std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
@@ -124,7 +124,7 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   // Microphone allowed per site: Test for system level permissions.
   {
     content_settings->OnMediaStreamPermissionSet(
-        kTestOrigin, TabSpecificContentSettings::MICROPHONE_ACCESSED,
+        kTestOrigin, PageSpecificContentSettings::MICROPHONE_ACCESSED,
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
@@ -146,8 +146,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   {
     content_settings->OnMediaStreamPermissionSet(
         kTestOrigin,
-        (TabSpecificContentSettings::MICROPHONE_ACCESSED |
-         TabSpecificContentSettings::CAMERA_ACCESSED),
+        (PageSpecificContentSettings::MICROPHONE_ACCESSED |
+         PageSpecificContentSettings::CAMERA_ACCESSED),
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
@@ -180,8 +180,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          TabSpecificContentSettings::CAMERA_ACCESSED |
-              TabSpecificContentSettings::CAMERA_BLOCKED,
+          PageSpecificContentSettings::CAMERA_ACCESSED |
+              PageSpecificContentSettings::CAMERA_BLOCKED,
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());
@@ -195,8 +195,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          TabSpecificContentSettings::MICROPHONE_ACCESSED |
-              TabSpecificContentSettings::MICROPHONE_BLOCKED,
+          PageSpecificContentSettings::MICROPHONE_ACCESSED |
+              PageSpecificContentSettings::MICROPHONE_BLOCKED,
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());
@@ -210,10 +210,10 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          TabSpecificContentSettings::CAMERA_ACCESSED |
-              TabSpecificContentSettings::CAMERA_BLOCKED |
-              TabSpecificContentSettings::MICROPHONE_ACCESSED |
-              TabSpecificContentSettings::MICROPHONE_BLOCKED,
+          PageSpecificContentSettings::CAMERA_ACCESSED |
+              PageSpecificContentSettings::CAMERA_BLOCKED |
+              PageSpecificContentSettings::MICROPHONE_ACCESSED |
+              PageSpecificContentSettings::MICROPHONE_BLOCKED,
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());

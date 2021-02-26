@@ -25,7 +25,10 @@ struct AppLaunchParams {
                   apps::mojom::AppLaunchSource source,
                   int64_t display_id = display::kInvalidDisplayId);
 
-  AppLaunchParams(const AppLaunchParams& other);
+  AppLaunchParams(const AppLaunchParams&) = delete;
+  AppLaunchParams& operator=(const AppLaunchParams&) = delete;
+  AppLaunchParams(AppLaunchParams&&);
+  AppLaunchParams& operator=(AppLaunchParams&&);
 
   ~AppLaunchParams();
 
@@ -62,7 +65,13 @@ struct AppLaunchParams {
 
   // Record where the app is launched from for tracking purpose.
   // Different app may have their own enumeration of sources.
+  // TODO(crbug.com/1113502) Remove this in favor of the below field.
   apps::mojom::AppLaunchSource source;
+
+  // Used in the case of SWA installation. We record the launch metrics in a
+  // slightly different place in that case, because the special SWA launch is
+  // also called in code from other places.
+  apps::mojom::LaunchSource launch_source = apps::mojom::LaunchSource::kUnknown;
 
   // The id of the display from which the app is launched.
   // display::kInvalidDisplayId means that the display does not exist or is not
@@ -72,6 +81,10 @@ struct AppLaunchParams {
   // The files the application was launched with. Empty if the application was
   // not launched with files.
   std::vector<base::FilePath> launch_files;
+
+  // The intent the application was launched with. Empty if the application was
+  // not launched with intent.
+  apps::mojom::IntentPtr intent;
 };
 
 }  // namespace apps

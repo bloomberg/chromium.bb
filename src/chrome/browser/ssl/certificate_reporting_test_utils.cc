@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -20,7 +20,6 @@
 #include "components/security_interstitials/content/certificate_error_report.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/report_sender.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
@@ -99,8 +98,8 @@ SSLCertReporterCallback::GetLatestChromeChannelReported() const {
 
 #if !defined(OS_ANDROID)
 void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
-  safe_browsing::SetExtendedReportingPref(browser->profile()->GetPrefs(),
-                                          opt_in == EXTENDED_REPORTING_OPT_IN);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser->profile()->GetPrefs(), opt_in == EXTENDED_REPORTING_OPT_IN);
 }
 #endif
 

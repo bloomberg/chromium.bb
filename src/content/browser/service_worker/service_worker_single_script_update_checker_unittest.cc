@@ -8,9 +8,7 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "base/test/bind.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
@@ -71,13 +69,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   }
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
 
-  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
-
-  void SetUp() override {
-    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    storage()->LazyInitializeForTest();
-  }
-
   size_t TotalBytes(const std::vector<std::string>& data_chunks) {
     size_t bytes = 0;
     for (const auto& data : data_chunks)
@@ -90,9 +81,9 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   CreateSingleScriptUpdateCheckerWithoutHttpCache(
       const char* url,
       const GURL& scope,
-      std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
-      std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      std::unique_ptr<MockServiceWorkerResourceReader> compare_reader,
+      std::unique_ptr<MockServiceWorkerResourceReader> copy_reader,
+      std::unique_ptr<MockServiceWorkerResourceWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     return CreateSingleScriptUpdateChecker(
@@ -101,6 +92,30 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         base::TimeDelta() /* time_since_last_check */,
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         loader_factory, out_check_result);
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> WrapReader(
+      std::unique_ptr<MockServiceWorkerResourceReader> reader) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> remote;
+    MockServiceWorkerResourceReader* raw_reader = reader.get();
+    remote.Bind(raw_reader->BindNewPipeAndPassRemote(base::BindOnce(
+        [](std::unique_ptr<MockServiceWorkerResourceReader>) {
+          // Keep |reader| until mojo connection is destroyed.
+        },
+        std::move(reader))));
+    return remote;
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> WrapWriter(
+      std::unique_ptr<MockServiceWorkerResourceWriter> writer) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> remote;
+    MockServiceWorkerResourceWriter* raw_writer = writer.get();
+    remote.Bind(raw_writer->BindNewPipeAndPassRemote(base::BindOnce(
+        [](std::unique_ptr<MockServiceWorkerResourceWriter>) {
+          // Keep |writer| until mojo connection is destroyed.
+        },
+        std::move(writer))));
+    return remote;
   }
 
   // Note that |loader_factory| should be alive as long as the single script
@@ -113,9 +128,9 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
-      std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
-      std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      std::unique_ptr<MockServiceWorkerResourceReader> compare_reader,
+      std::unique_ptr<MockServiceWorkerResourceReader> copy_reader,
+      std::unique_ptr<MockServiceWorkerResourceWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     auto fetch_client_settings_object =
@@ -131,7 +146,9 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
                             browser_context_.get()),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             loader_factory),
-        std::move(compare_reader), std::move(copy_reader), std::move(writer),
+        WrapReader(std::move(compare_reader)),
+        WrapReader(std::move(copy_reader)), WrapWriter(std::move(writer)),
+        /*writer_resource_id=*/0,
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
                const GURL& script_url,
@@ -167,26 +184,13 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
 
  protected:
   BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSingleScriptUpdateCheckerTest);
 };
 
-class ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest
-    : public ServiceWorkerSingleScriptUpdateCheckerTest,
-      public testing::WithParamInterface<bool> {
- public:
-  static bool IsAsync() { return GetParam(); }
-};
-
-INSTANTIATE_TEST_SUITE_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTestP,
-                         ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
-                         testing::Bool());
-
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
-       Identical_SingleRead) {
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_SingleRead) {
   // Response body from the network.
   const std::string body_from_net("abcdef");
 
@@ -197,12 +201,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -211,19 +215,17 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body.
+  compare_reader_rawptr->CompletePendingRead();
 
   // Complete the comparison of the body. It should be identical.
   base::RunLoop().RunUntilIdle();
@@ -234,8 +236,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
-       Identical_MultipleRead) {
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_MultipleRead) {
   // Response body from the network.
   const std::string body_from_net("abcdef");
 
@@ -246,12 +247,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -260,24 +261,22 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("abc").
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body ("abc").
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("def").
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body ("def").
+  compare_reader_rawptr->CompletePendingRead();
 
   // Complete the comparison of the body. It should be identical.
   base::RunLoop().RunUntilIdle();
@@ -288,7 +287,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest, Identical_Empty) {
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_Empty) {
   // Response body from the network, which is empty.
   const std::string body_from_net("");
 
@@ -299,12 +298,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest, Identical_Empty) {
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -313,16 +312,14 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest, Identical_Empty) {
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header. The initial block of the network body is empty, and
-    // the empty body is passed to the cache writer. It will finish the
-    // comparison immediately.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the header. The initial block of the network body is empty, and
+  // the empty body is passed to the cache writer. It will finish the
+  // comparison immediately.
+  compare_reader_rawptr->CompletePendingRead();
 
   // Both network and storage are empty. The result should be kIdentical.
   base::RunLoop().RunUntilIdle();
@@ -333,7 +330,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest, Identical_Empty) {
   EXPECT_FALSE(check_result.value().paused_state);
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_SingleRead_NetworkIsLonger) {
   // Response body from the network.
   const std::string body_from_net = "abcdef";
@@ -345,12 +342,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -359,25 +356,23 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("abc").
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body ("abc").
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage (""). The cache writer detects the end of
-    // the body from the disk cache.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body from storage (""). The cache writer detects the end of
+  // the body from the disk cache.
+  compare_reader_rawptr->CompletePendingRead();
 
   // Complete the comparison of the body. It should be different.
   base::RunLoop().RunUntilIdle();
@@ -388,7 +383,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_SingleRead_StorageIsLonger) {
   // Response body from the network.
   const std::string body_from_net = "abc";
@@ -400,12 +395,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -414,20 +409,18 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("abc"). At this point, data from the network reaches
-    // the end.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body ("abc"). At this point, data from the network reaches
+  // the end.
+  compare_reader_rawptr->CompletePendingRead();
 
   // Complete the comparison of the body. It should be different.
   base::RunLoop().RunUntilIdle();
@@ -444,7 +437,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
 // Regression test for https://crbug.com/995146.
 // It should detect the update appropriately even when OnComplete() arrives
 // after the end of the body.
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_SingleRead_EndOfTheBodyFirst) {
   // Response body from the network.
   const std::string body_from_net = "abc";
@@ -452,12 +445,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   // Stored data for |kScriptURL|.
   const std::vector<std::string> body_from_storage{"abc", "def"};
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
   base::Optional<CheckResult> check_result;
@@ -497,20 +490,18 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   mojo::BlockingCopyFromString(body_from_net, body_producer);
   body_producer.reset();
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("abc"). At this point, data from the network reaches
-    // the end.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body ("abc"). At this point, data from the network reaches
+  // the end.
+  compare_reader_rawptr->CompletePendingRead();
 
   // Comparison should not finish until OnComplete() is called.
   base::RunLoop().RunUntilIdle();
@@ -530,7 +521,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_FALSE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_SingleRead_DifferentBody) {
   // Response body from the network.
   const std::string body_from_net = "abc";
@@ -542,12 +533,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -556,19 +547,17 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body ("abx").
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body ("abx").
+  compare_reader_rawptr->CompletePendingRead();
 
   // Complete the comparison of the body. It should be different.
   base::RunLoop().RunUntilIdle();
@@ -579,7 +568,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_MultipleRead_NetworkIsLonger) {
   // Response body from the network.
   const std::string body_from_net = "abcdef";
@@ -591,12 +580,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -605,32 +594,30 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("ab"), and then blocked on reading the
-    // body again.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body from storage ("ab"), and then blocked on reading the
+  // body again.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("c"), and then blocked on reading the body
-    // again.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body from storage ("c"), and then blocked on reading the body
+  // again.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage (""). The cache writer detects the end of
-    // the body from the disk cache.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body from storage (""). The cache writer detects the end of
+  // the body from the disk cache.
+  compare_reader_rawptr->CompletePendingRead();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(check_result.has_value());
@@ -640,7 +627,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_MultipleRead_StorageIsLonger) {
   // Response body from the network.
   const std::string body_from_net = "abc";
@@ -652,12 +639,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -666,26 +653,24 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("ab"), and then blocked on reading the
-    // body again.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body from storage ("ab"), and then blocked on reading the
+  // body again.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("c"). At this point, data from the network
-    // reaches the end.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body from storage ("c"). At this point, data from the network
+  // reaches the end.
+  compare_reader_rawptr->CompletePendingRead();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(check_result.has_value());
@@ -698,7 +683,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_FALSE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
        Different_MultipleRead_DifferentBody) {
   // Response body from the network.
   const std::string body_from_net = "abc";
@@ -710,12 +695,12 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kSuccessHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               IsAsync());
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -724,26 +709,24 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
           std::move(copy_reader), std::move(writer), loader_factory.get(),
           &check_result);
 
-  if (IsAsync()) {
-    // Blocked on reading the header.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the header, and then blocked on reading the body.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("ab"), and then blocked on reading the
-    // body again.
-    compare_reader_rawptr->CompletePendingRead();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(check_result.has_value());
+  // Unblock the body from storage ("ab"), and then blocked on reading the
+  // body again.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
 
-    // Unblock the body from storage ("x"), which is different from the body
-    // from the network.
-    compare_reader_rawptr->CompletePendingRead();
-  }
+  // Unblock the body from storage ("x"), which is different from the body
+  // from the network.
+  compare_reader_rawptr->CompletePendingRead();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(check_result.has_value());
@@ -762,12 +745,12 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   const std::vector<std::string> body_from_storage{"ab", "c"};
 
   auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               /*async=*/true);
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -843,9 +826,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_All) {
       CreateSingleScriptUpdateChecker(
           kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
 
   const network::ResourceRequest* request = nullptr;
@@ -857,9 +840,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_All) {
       kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
 
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
@@ -876,9 +859,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_None) {
       CreateSingleScriptUpdateChecker(
           kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
 
   const network::ResourceRequest* request = nullptr;
@@ -890,9 +873,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_None) {
       kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
 
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
@@ -910,9 +893,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_Imports) {
           kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kImports,
           base::TimeDelta(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
 
   const network::ResourceRequest* request = nullptr;
@@ -924,9 +907,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_Imports) {
       kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports, base::TimeDelta(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
 
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
@@ -944,9 +927,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, ForceBypassCache) {
       CreateSingleScriptUpdateChecker(
           kScriptURL, kScriptURL, GURL(kScope), true /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
 
   const network::ResourceRequest* request = nullptr;
@@ -958,9 +941,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, ForceBypassCache) {
       kImportedScriptURL, kScriptURL, GURL(kScope),
       true /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
 
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
@@ -978,9 +961,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MoreThan24Hours) {
           kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll,
           base::TimeDelta::FromDays(1) + base::TimeDelta::FromHours(1),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
 
   const network::ResourceRequest* request = nullptr;
@@ -993,9 +976,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MoreThan24Hours) {
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll,
       base::TimeDelta::FromDays(1) + base::TimeDelta::FromHours(1),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
 
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
@@ -1019,9 +1002,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MimeTypeError) {
         CreateLoaderFactoryWithRespone(GURL(kScriptURL), header, kBodyFromNet,
                                        net::OK);
 
-    auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-    auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-    auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
+    auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+    auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+    auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
 
     base::Optional<CheckResult> check_result;
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -1056,9 +1039,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, PathRestrictionError) {
       CreateLoaderFactoryWithRespone(GURL(kMainScriptURL), kHeader,
                                      kBodyFromNet, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -1097,12 +1080,12 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, PathRestrictionPass) {
       CreateLoaderFactoryWithRespone(GURL(kMainScriptURL), kHeader,
                                      body_from_net, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
-  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
-  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
-                               false /* async */);
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
+  MockServiceWorkerResourceReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage,
+                               TotalBytes(body_from_storage));
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -1112,6 +1095,16 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, PathRestrictionPass) {
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
           std::move(compare_reader), std::move(copy_reader), std::move(writer),
           loader_factory.get(), &check_result);
+
+  // Blocked on reading the header.
+  base::RunLoop().RunUntilIdle();
+
+  // Unblock the header, and then blocked on reading the body.
+  compare_reader_rawptr->CompletePendingRead();
+  base::RunLoop().RunUntilIdle();
+
+  // Unblock the body from the storage ("abcdef"), and the comparison ends.
+  compare_reader_rawptr->CompletePendingRead();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(check_result.has_value());
@@ -1131,9 +1124,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkError) {
       CreateLoaderFactoryWithRespone(GURL(kScriptURL), kFailHeader,
                                      kBodyFromNet, net::OK);
 
-  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
-  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
+  auto compare_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResourceReader>();
+  auto writer = std::make_unique<MockServiceWorkerResourceWriter>();
 
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
@@ -1162,9 +1155,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, RequestSSLInfo) {
       CreateSingleScriptUpdateChecker(
           kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseReader>(),
-          std::make_unique<MockServiceWorkerResponseWriter>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceReader>(),
+          std::make_unique<MockServiceWorkerResourceWriter>(),
           loader_factory.get(), &check_result);
   base::RunLoop().RunUntilIdle();
 
@@ -1182,9 +1175,9 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, RequestSSLInfo) {
       kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseReader>(),
-      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceReader>(),
+      std::make_unique<MockServiceWorkerResourceWriter>(), loader_factory.get(),
       &check_result);
   base::RunLoop().RunUntilIdle();
 

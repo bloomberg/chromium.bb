@@ -9,10 +9,10 @@
 #include <sstream>
 #include <utility>
 
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
-#include "third_party/base/ptr_util.h"
 
 CPWL_Caret::CPWL_Caret(
     const CreateParams& cp,
@@ -48,7 +48,7 @@ void CPWL_Caret::DrawThisAppearance(CFX_RenderDevice* pDevice,
   CFX_GraphStateData gsd;
   gsd.m_LineWidth = m_fWidth;
   pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0, ArgbEncode(255, 0, 0, 0),
-                    FXFILL_ALTERNATE);
+                    CFX_FillRenderOptions::EvenOddOptions());
 }
 
 void CPWL_Caret::OnTimerFired() {
@@ -85,8 +85,8 @@ void CPWL_Caret::SetCaret(bool bVisible,
 
     m_ptHead = ptHead;
     m_ptFoot = ptFoot;
-    m_pTimer = pdfium::MakeUnique<CFX_Timer>(GetTimerHandler(), this,
-                                             kCaretFlashIntervalMs);
+    m_pTimer = std::make_unique<CFX_Timer>(GetTimerHandler(), this,
+                                           kCaretFlashIntervalMs);
 
     if (!CPWL_Wnd::SetVisible(true))
       return;
@@ -109,10 +109,9 @@ void CPWL_Caret::SetCaret(bool bVisible,
   // needs to be done, check the return value of Move().
 }
 
-bool CPWL_Caret::InvalidateRect(CFX_FloatRect* pRect) {
-  if (!pRect) {
+bool CPWL_Caret::InvalidateRect(const CFX_FloatRect* pRect) {
+  if (!pRect)
     return CPWL_Wnd::InvalidateRect(nullptr);
-  }
 
   CFX_FloatRect rcRefresh = *pRect;
   if (!rcRefresh.IsEmpty()) {

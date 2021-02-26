@@ -7,7 +7,6 @@ from __future__ import division
 from __future__ import absolute_import
 
 import json
-
 import mock
 
 from dashboard.api import api_auth
@@ -22,7 +21,6 @@ from dashboard.pinpoint.models import job as job_module
 from dashboard.pinpoint.models import quest as quest_module
 from dashboard.pinpoint.models.change import change_test
 
-
 # All arguments must have string values.
 _BASE_REQUEST = {
     'target': 'telemetry_perf_tests',
@@ -34,7 +32,6 @@ _BASE_REQUEST = {
     'end_git_hash': '3',
     'story': 'speedometer',
 }
-
 
 # TODO: Make this agnostic to the parameters the Quests take.
 _CONFIGURATION_ARGUMENTS = {
@@ -53,7 +50,7 @@ class _NewTest(test.TestCase):
     super(_NewTest, self).setUp()
 
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
-    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_ALLOWLIST[0])
 
     key = namespaced_stored_object.NamespaceKey('bot_configurations',
                                                 datastore_hooks.INTERNAL)
@@ -87,8 +84,8 @@ class NewAuthTest(_NewTest):
     self.assertEqual(result, {'error': 'User authentication error'})
 
 
-@mock.patch('dashboard.services.issue_tracker_service.IssueTrackerService',
-            mock.MagicMock())
+@mock.patch.object(job_module.issue_tracker_service, 'IssueTrackerService',
+                   mock.MagicMock())
 @mock.patch.object(utils, 'ServiceAccountHttp', mock.MagicMock())
 @mock.patch.object(api_auth, 'Authorize', mock.MagicMock())
 @mock.patch.object(utils, 'IsTryjobUser', mock.MagicMock())
@@ -98,9 +95,8 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', _BASE_REQUEST, status=200)
     result = json.loads(response.body)
     self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
+    self.assertEqual(result['jobUrl'],
+                     'https://testbed.example.com/job/%s' % result['jobId'])
 
   def testNoConfiguration(self):
     request = dict(_BASE_REQUEST)
@@ -109,9 +105,8 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', request, status=200)
     result = json.loads(response.body)
     self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
+    self.assertEqual(result['jobUrl'],
+                     'https://testbed.example.com/job/%s' % result['jobId'])
 
   def testBadConfiguration(self):
     request = dict(_BASE_REQUEST)
@@ -266,16 +261,23 @@ class NewTest(_NewTest):
     request = dict(_BASE_REQUEST)
     del request['start_git_hash']
     del request['end_git_hash']
-    request['changes'] = json.dumps([
-        {'commits': [{'repository': 'chromium', 'git_hash': '1'}]},
-        {'commits': [{'repository': 'chromium', 'git_hash': '3'}]}])
+    request['changes'] = json.dumps([{
+        'commits': [{
+            'repository': 'chromium',
+            'git_hash': '1'
+        }]
+    }, {
+        'commits': [{
+            'repository': 'chromium',
+            'git_hash': '3'
+        }]
+    }])
 
     response = self.Post('/api/new', request, status=200)
     result = json.loads(response.body)
     self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
+    self.assertEqual(result['jobUrl'],
+                     'https://testbed.example.com/job/%s' % result['jobId'])
 
   def testWithPatch(self):
     request = dict(_BASE_REQUEST)
@@ -292,6 +294,12 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', request, status=400)
     self.assertIn('error', json.loads(response.body))
 
+  def testEmptyTarget(self):
+    request = dict(_BASE_REQUEST)
+    request['target'] = ''
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
   def testInvalidTestConfig(self):
     request = dict(_BASE_REQUEST)
     del request['configuration']
@@ -302,8 +310,7 @@ class NewTest(_NewTest):
     request = dict(_BASE_REQUEST)
     request['bug_id'] = 'not_an_int'
     response = self.Post('/api/new', request, status=400)
-    self.assertEqual({'error': new._ERROR_BUG_ID},
-                     json.loads(response.body))
+    self.assertEqual({'error': new._ERROR_BUG_ID}, json.loads(response.body))
 
   def testEmptyBug(self):
     request = dict(_BASE_REQUEST)
@@ -345,6 +352,12 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', request, status=400)
     self.assertIn('error', json.loads(response.body))
 
+  def testPriorityIsAString(self):
+    request = dict(_BASE_REQUEST)
+    request['priority'] = '10'
+    response = self.Post('/api/new', request, status=200)
+    self.assertNotIn('error', json.loads(response.body))
+
   def testUserFromParams(self):
     request = dict(_BASE_REQUEST)
     request['user'] = 'foo@example.org'
@@ -374,6 +387,28 @@ class NewTest(_NewTest):
     self.assertEqual('some_chart', job.benchmark_arguments.chart)
     self.assertEqual(None, job.benchmark_arguments.statistic)
 
+  def testNewPostsCreationMessage(self):
+    tracker = mock.MagicMock()
+    tracker.AddBugComment.return_value = None
+    job_module.issue_tracker_service.IssueTrackerService.return_value = tracker
+    request = dict(_BASE_REQUEST)
+    request.update({
+        'chart': 'some_chart',
+        'story': 'some_story',
+        'story_tags': 'some_tag,some_other_tag'
+    })
+    response = self.Post('/api/new', request, status=200)
+    self.assertIsNotNone(
+        job_module.JobFromId(json.loads(response.body)['jobId']))
+    self.ExecuteDeferredTasks('default')
+    self.assertEqual(
+        1, job_module.issue_tracker_service.IssueTrackerService.call_count)
+    tracker.AddBugComment.assert_called_once_with(
+        12345, mock.ANY, project='chromium', send_email=True)
+    args, _ = tracker.AddBugComment.call_args
+    _, message = args
+    self.assertIn('Pinpoint job created and queued.', message)
+
   def testExtraArgsSupported(self):
     request = dict(_BASE_REQUEST)
     request.update({
@@ -385,8 +420,7 @@ class NewTest(_NewTest):
 
     # Validate that the arguments are only the input arguments.
     self.assertEqual(
-        job.arguments.get('extra_test_args'),
-        json.dumps(['--provided-args']))
+        job.arguments.get('extra_test_args'), json.dumps(['--provided-args']))
 
     # And that the RunTest instance has the extra arguments.
     for quest in job.state._quests:

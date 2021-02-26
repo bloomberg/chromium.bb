@@ -4,50 +4,97 @@
 
 #include "ash/assistant/assistant_interaction_controller_impl.h"
 
+#include <algorithm>
+#include <map>
+
+#include "ash/assistant/assistant_suggestions_controller_impl.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_response.h"
+#include "ash/assistant/model/assistant_response_observer.h"
+#include "ash/assistant/model/ui/assistant_error_element.h"
+#include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
+#include "ash/assistant/ui/main_stage/assistant_error_element_view.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/test/fake_android_intent_helper.h"
 #include "base/bind.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AndroidAppInfo;
-using chromeos::assistant::mojom::AndroidAppInfoPtr;
-using chromeos::assistant::mojom::AssistantInteractionMetadata;
-using chromeos::assistant::mojom::AssistantInteractionType;
+using chromeos::assistant::AndroidAppInfo;
+using chromeos::assistant::Assistant;
+using chromeos::assistant::AssistantInteractionMetadata;
+using chromeos::assistant::AssistantInteractionSubscriber;
+using chromeos::assistant::AssistantInteractionType;
+using chromeos::assistant::AssistantQuerySource;
+using chromeos::assistant::AssistantSuggestion;
+using chromeos::assistant::AssistantSuggestionType;
+using chromeos::assistant::MockAssistantInteractionSubscriber;
+using chromeos::assistant::ScopedAssistantInteractionSubscriber;
+
+using ::testing::Invoke;
+using ::testing::Mock;
+using ::testing::Return;
 using ::testing::StrictMock;
 
 constexpr bool kErrorResult = false;
 constexpr bool kSuccessResult = true;
 
-// A simple mock to allow mocking of the callback passed to |OnOpenAppResponse|.
-// Example usage:
-//
-//    OpenAppCallbackMock callback;
-//
-//    EXPECT_CALL(callback, Callback(true));
-//    FunctionTakingACallback(callback.Bind());
-class OpenAppCallbackMock {
- public:
-  MOCK_METHOD(void, Callback, (bool));
+// Mocks -----------------------------------------------------------------------
 
-  auto Bind() {
-    return base::BindOnce(&OpenAppCallbackMock::Callback,
-                          base::Unretained(this));
+class AssistantInteractionSubscriberMock
+    : public chromeos::assistant::AssistantInteractionSubscriber {
+ public:
+  explicit AssistantInteractionSubscriberMock(Assistant* service) {
+    scoped_subscriber_.Add(service);
   }
+
+  ~AssistantInteractionSubscriberMock() override = default;
+
+  MOCK_METHOD(void,
+              OnInteractionStarted,
+              (const AssistantInteractionMetadata&),
+              (override));
+
+ private:
+  chromeos::assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{
+      this};
 };
 
-class AssistantInteractionControllerImplTest : public AssistantAshTestBase {
+// AssistantInteractionControllerImplTest --------------------------------------
+
+class AssistantInteractionControllerImplTest
+    : public AssistantAshTestBase,
+      public testing::WithParamInterface<bool> {
  public:
-  AssistantInteractionControllerImplTest() = default;
+  AssistantInteractionControllerImplTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          chromeos::assistant::features::kAssistantResponseProcessingV2);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          chromeos::assistant::features::kAssistantResponseProcessingV2);
+    }
+  }
 
   AssistantInteractionControllerImpl* interaction_controller() {
     return static_cast<AssistantInteractionControllerImpl*>(
         AssistantInteractionController::Get());
+  }
+
+  AssistantSuggestionsControllerImpl* suggestion_controller() {
+    return static_cast<AssistantSuggestionsControllerImpl*>(
+        AssistantSuggestionsController::Get());
   }
 
   const AssistantInteractionModel* interaction_model() {
@@ -56,86 +103,77 @@ class AssistantInteractionControllerImplTest : public AssistantAshTestBase {
 
   void StartInteraction() {
     interaction_controller()->OnInteractionStarted(
-        AssistantInteractionMetadata::New());
+        AssistantInteractionMetadata());
   }
 
-  AndroidAppInfoPtr CreateAndroidAppInfo(
-      const std::string& app_name = "unknown") {
-    AndroidAppInfoPtr result = AndroidAppInfo::New();
-    result->localized_app_name = app_name;
+  AndroidAppInfo CreateAndroidAppInfo(const std::string& app_name = "unknown") {
+    AndroidAppInfo result;
+    result.localized_app_name = app_name;
     return result;
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 }  // namespace
 
-TEST_F(AssistantInteractionControllerImplTest,
+TEST_P(AssistantInteractionControllerImplTest,
        ShouldBecomeActiveWhenInteractionStarts) {
   EXPECT_EQ(interaction_model()->interaction_state(),
             InteractionState::kInactive);
 
   interaction_controller()->OnInteractionStarted(
-      AssistantInteractionMetadata::New());
+      AssistantInteractionMetadata());
 
   EXPECT_EQ(interaction_model()->interaction_state(),
             InteractionState::kActive);
 }
 
-TEST_F(AssistantInteractionControllerImplTest,
-       ShouldCallCallbackWhenOpenAppIsCalledWhileInactive) {
-  StrictMock<OpenAppCallbackMock> callback;
-
-  EXPECT_CALL(callback, Callback(kErrorResult));
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldReturnErrorWhenOpenAppIsCalledWhileInactive) {
   EXPECT_EQ(interaction_model()->interaction_state(),
             InteractionState::kInactive);
 
-  interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo(),
-                                              callback.Bind());
+  auto result =
+      interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo());
+  EXPECT_EQ(result, kErrorResult);
 }
 
-TEST_F(AssistantInteractionControllerImplTest,
-       ShouldCallCallbackWhenOpenAppIsCalledWithoutAnAndroidIntentHelper) {
-  StrictMock<OpenAppCallbackMock> callback;
-
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldReturnErrorWhenOpenAppIsCalledWithoutAnAndroidIntentHelper) {
   StartInteraction();
-  EXPECT_CALL(callback, Callback(kErrorResult));
 
-  interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo(),
-                                              callback.Bind());
+  auto result =
+      interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo());
+  EXPECT_EQ(result, kErrorResult);
 }
 
-TEST_F(AssistantInteractionControllerImplTest,
-       ShouldCallCallbackWhenOpenAppIsCalledForUnknownAndroidApp) {
-  StrictMock<OpenAppCallbackMock> callback;
-
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldReturnErrorWhenOpenAppIsCalledForUnknownAndroidApp) {
   StartInteraction();
   FakeAndroidIntentHelper fake_helper;
-  EXPECT_CALL(callback, Callback(kErrorResult));
-
-  interaction_controller()->OnOpenAppResponse(
-      CreateAndroidAppInfo("unknown-app-name"), callback.Bind());
+  EXPECT_EQ(kErrorResult, interaction_controller()->OnOpenAppResponse(
+                              CreateAndroidAppInfo("unknown-app-name")));
 }
 
-TEST_F(AssistantInteractionControllerImplTest,
-       ShouldLaunchAppAndCallCallbackWhenOpenAppIsCalled) {
-  StrictMock<OpenAppCallbackMock> callback;
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldLaunchAppAndReturnSuccessWhenOpenAppIsCalled) {
   const std::string app_name = "AppName";
   const std::string intent = "intent://AppName";
 
   StartInteraction();
   FakeAndroidIntentHelper fake_helper;
   fake_helper.AddApp(app_name, intent);
-  EXPECT_CALL(callback, Callback(kSuccessResult));
 
-  interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo(app_name),
-                                              callback.Bind());
+  EXPECT_EQ(kSuccessResult, interaction_controller()->OnOpenAppResponse(
+                                CreateAndroidAppInfo(app_name)));
 
   EXPECT_EQ(intent, fake_helper.last_launched_android_intent());
 }
 
-TEST_F(AssistantInteractionControllerImplTest,
+TEST_P(AssistantInteractionControllerImplTest,
        ShouldAddSchemeToIntentWhenLaunchingAndroidApp) {
-  StrictMock<OpenAppCallbackMock> callback;
   const std::string app_name = "AppName";
   const std::string intent = "#Intent-without-a-scheme";
   const std::string intent_with_scheme = "intent://" + intent;
@@ -143,12 +181,105 @@ TEST_F(AssistantInteractionControllerImplTest,
   StartInteraction();
   FakeAndroidIntentHelper fake_helper;
   fake_helper.AddApp(app_name, intent);
-  EXPECT_CALL(callback, Callback(kSuccessResult));
 
-  interaction_controller()->OnOpenAppResponse(CreateAndroidAppInfo(app_name),
-                                              callback.Bind());
+  EXPECT_EQ(kSuccessResult, interaction_controller()->OnOpenAppResponse(
+                                CreateAndroidAppInfo(app_name)));
 
   EXPECT_EQ(intent_with_scheme, fake_helper.last_launched_android_intent());
 }
 
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldCorrectlyMapSuggestionTypeToQuerySource) {
+  // Mock Assistant interaction subscriber.
+  StrictMock<AssistantInteractionSubscriberMock> mock(assistant_service());
+
+  // Configure the expected mappings between suggestion type and query source.
+  const std::map<AssistantSuggestionType, AssistantQuerySource>
+      types_to_sources = {{AssistantSuggestionType::kConversationStarter,
+                           AssistantQuerySource::kConversationStarter},
+                          {AssistantSuggestionType::kBetterOnboarding,
+                           AssistantQuerySource::kBetterOnboarding},
+                          {AssistantSuggestionType::kUnspecified,
+                           AssistantQuerySource::kSuggestionChip}};
+
+  // Iterate over all expected mappings.
+  for (const auto& type_to_source : types_to_sources) {
+    base::RunLoop run_loop;
+
+    // Confirm subscribers are delivered the expected query source...
+    EXPECT_CALL(mock, OnInteractionStarted)
+        .WillOnce(Invoke([&](const AssistantInteractionMetadata& metadata) {
+          EXPECT_EQ(type_to_source.second, metadata.source);
+          run_loop.QuitClosure().Run();
+        }));
+
+    AssistantSuggestion suggestion{/*id=*/base::UnguessableToken::Create(),
+                                   /*type=*/type_to_source.first,
+                                   /*text=*/""};
+    const_cast<AssistantSuggestionsModel*>(suggestion_controller()->GetModel())
+        ->SetConversationStarters({suggestion});
+
+    // ...when an Assistant suggestion of a given type is pressed.
+    interaction_controller()->OnSuggestionPressed(suggestion.id);
+
+    run_loop.Run();
+  }
+}
+
+TEST_P(AssistantInteractionControllerImplTest, ShouldDisplayGenericErrorOnce) {
+  StartInteraction();
+
+  // Call OnTtsStarted twice to mimic the behavior of libassistant when network
+  // is disconnected.
+  interaction_controller()->OnTtsStarted(/*due_to_error=*/true);
+  interaction_controller()->OnTtsStarted(/*due_to_error=*/true);
+
+  base::RunLoop().RunUntilIdle();
+
+  auto& ui_elements =
+      interaction_controller()->GetModel()->response()->GetUiElements();
+
+  EXPECT_EQ(ui_elements.size(), 1ul);
+  EXPECT_EQ(ui_elements.front()->type(), AssistantUiElementType::kError);
+
+  base::RunLoop().RunUntilIdle();
+
+  interaction_controller()->OnInteractionFinished(
+      chromeos::assistant::AssistantInteractionResolution::kError);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ui_elements.size(), 1ul);
+  EXPECT_EQ(ui_elements.front()->type(), AssistantUiElementType::kError);
+}
+
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldUpdateTimeOfLastInteraction) {
+  MockAssistantInteractionSubscriber mock_subscriber;
+  ScopedAssistantInteractionSubscriber scoped_subscriber{&mock_subscriber};
+  scoped_subscriber.Add(assistant_service());
+
+  base::RunLoop run_loop;
+  base::Time actual_time_of_last_interaction;
+  EXPECT_CALL(mock_subscriber, OnInteractionStarted)
+      .WillOnce(Invoke([&](const AssistantInteractionMetadata& metadata) {
+        actual_time_of_last_interaction = base::Time::Now();
+        run_loop.QuitClosure().Run();
+      }));
+
+  ShowAssistantUi();
+  MockTextInteraction().WithTextResponse("<Any-Text-Response>");
+  run_loop.Run();
+
+  auto actual = interaction_controller()->GetTimeDeltaSinceLastInteraction();
+  auto expected = base::Time::Now() - actual_time_of_last_interaction;
+
+  EXPECT_NEAR(actual.InSeconds(), expected.InSeconds(), 1);
+}
+
+// We parameterize all AssistantInteractionControllerImplTests to verify that
+// they work for both response processing v1 as well as response processing v2.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AssistantInteractionControllerImplTest,
+                         testing::Bool());
 }  // namespace ash

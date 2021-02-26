@@ -85,22 +85,6 @@ class PageInfoUI {
     bool is_first_party;
   };
 
-  // |PermissionInfo| contains information about a single permission |type| for
-  // the current website.
-  struct PermissionInfo {
-    PermissionInfo();
-    // Site permission |type|.
-    ContentSettingsType type;
-    // The current value for the permission |type| (e.g. ALLOW or BLOCK).
-    ContentSetting setting;
-    // The global default settings for this permission |type|.
-    ContentSetting default_setting;
-    // The settings source e.g. user, extensions, policy, ... .
-    content_settings::SettingSource source;
-    // Whether we're in incognito mode.
-    bool is_incognito;
-  };
-
   // |ChosenObjectInfo| contains information about a single |chooser_object| of
   // a chooser |type| that the current website has been granted access to.
   struct ChosenObjectInfo {
@@ -166,7 +150,7 @@ class PageInfoUI {
   };
 
   using CookieInfoList = std::vector<CookieInfo>;
-  using PermissionInfoList = std::vector<PermissionInfo>;
+  using PermissionInfoList = std::vector<PageInfo::PermissionInfo>;
   using ChosenObjectInfoList = std::vector<std::unique_ptr<ChosenObjectInfo>>;
 
   virtual ~PageInfoUI();
@@ -183,13 +167,14 @@ class PageInfoUI {
       ContentSettingsType type,
       ContentSetting setting,
       ContentSetting default_setting,
-      content_settings::SettingSource source);
+      content_settings::SettingSource source,
+      bool is_one_time);
 
   // Returns a string indicating whether the permission was blocked via an
   // extension, enterprise policy, or embargo.
   static base::string16 PermissionDecisionReasonToUIString(
       PageInfoUiDelegate* delegate,
-      const PermissionInfo& permission,
+      const PageInfo::PermissionInfo& permission,
       const GURL& url);
 
   // Returns the color to use for the permission decision reason strings.
@@ -201,12 +186,18 @@ class PageInfoUI {
 
   // Returns the connection icon ID for the given connection |status|.
   static int GetConnectionIconID(PageInfo::SiteConnectionStatus status);
+
+  // Returns the identity icon color ID for the given identity |status|.
+  static int GetIdentityIconColorID(PageInfo::SiteIdentityStatus status);
+
+  // Returns the connection icon color ID for the given connection |status|.
+  static int GetConnectionIconColorID(PageInfo::SiteConnectionStatus status);
 #else  // !defined(OS_ANDROID)
-  // Returns icons for the given PermissionInfo |info|. If |info|'s current
-  // setting is CONTENT_SETTING_DEFAULT, it will return the icon for |info|'s
-  // default setting.
+  // Returns icons for the given PageInfo::PermissionInfo |info|. If |info|'s
+  // current setting is CONTENT_SETTING_DEFAULT, it will return the icon for
+  // |info|'s default setting.
   static const gfx::ImageSkia GetPermissionIcon(
-      const PermissionInfo& info,
+      const PageInfo::PermissionInfo& info,
       const SkColor related_text_color);
 
   // Returns the icon for the given object |info|.

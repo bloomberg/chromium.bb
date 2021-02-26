@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_currencysymbols.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -26,6 +26,8 @@ CXFA_CurrencySymbols::CXFA_CurrencySymbols(CXFA_Document* doc,
                 XFA_Element::CurrencySymbols,
                 kCurrencySymbolsPropertyData,
                 {},
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_CurrencySymbols::~CXFA_CurrencySymbols() = default;

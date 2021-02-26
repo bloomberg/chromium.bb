@@ -22,14 +22,14 @@ namespace {
 
 constexpr size_t kNumPrinters = 5;
 
-constexpr size_t kWhitelistPrinters = 4;
-constexpr std::array<const char*, kWhitelistPrinters> kWhitelistIds = {
+constexpr size_t kAllowlistPrinters = 4;
+constexpr std::array<const char*, kAllowlistPrinters> kAllowlistIds = {
     "First", "Second", "Third", "Fifth"};
 
-constexpr std::array<const char*, 3> kBlacklistIds = {"Second", "Third",
+constexpr std::array<const char*, 3> kBlocklistIds = {"Second", "Third",
                                                       "Fourth"};
-// kNumPrinters - kBlacklistIds.size() = kBlacklistPrinters (2)
-constexpr size_t kBlacklistPrinters = 2;
+// kNumPrinters - kBlocklistIds.size() = kBlocklistPrinters (2)
+constexpr size_t kBlocklistPrinters = 2;
 
 constexpr char kBulkPolicyContentsJson[] = R"json(
 [
@@ -146,7 +146,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsAllAccess) {
   auto calculator = UserCalculator();
 
   // Set prefs to complete computation
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersAccessMode,
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAccessMode,
                         std::make_unique<base::Value>(
                             BulkPrintersCalculator::AccessMode::ALL_ACCESS));
 
@@ -155,59 +155,59 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsAllAccess) {
   EXPECT_EQ(calculator->GetPrinters().size(), kNumPrinters);
 }
 
-TEST_F(CalculatorsPoliciesBinderTest, PrefsWhitelist) {
+TEST_F(CalculatorsPoliciesBinderTest, PrefsAllowlist) {
   auto calculator = UserCalculator();
 
   // Set prefs to complete computation
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
-          BulkPrintersCalculator::AccessMode::WHITELIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,
-                        StringsToList(kWhitelistIds));
+          BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAllowlist,
+                        StringsToList(kAllowlistIds));
 
   env_.RunUntilIdle();
   EXPECT_TRUE(calculator->IsComplete());
-  EXPECT_EQ(calculator->GetPrinters().size(), kWhitelistPrinters);
+  EXPECT_EQ(calculator->GetPrinters().size(), kAllowlistPrinters);
 }
 
-TEST_F(CalculatorsPoliciesBinderTest, PrefsBlacklist) {
+TEST_F(CalculatorsPoliciesBinderTest, PrefsBlocklist) {
   auto calculator = UserCalculator();
 
   // Set prefs to complete computation
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
-          BulkPrintersCalculator::AccessMode::BLACKLIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersBlacklist,
-                        StringsToList(kBlacklistIds));
+          BulkPrintersCalculator::AccessMode::BLOCKLIST_ONLY));
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersBlocklist,
+                        StringsToList(kBlocklistIds));
 
   env_.RunUntilIdle();
   EXPECT_TRUE(calculator->IsComplete());
-  EXPECT_EQ(calculator->GetPrinters().size(), kBlacklistPrinters);
+  EXPECT_EQ(calculator->GetPrinters().size(), kBlocklistPrinters);
 }
 
 TEST_F(CalculatorsPoliciesBinderTest, PrefsBeforeBind) {
   // Verify that if preferences are set before we bind to policies, the
   // calculator is still properly populated.
   prefs_.SetManagedPref(
-      prefs::kRecommendedNativePrintersAccessMode,
+      prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
-          BulkPrintersCalculator::AccessMode::WHITELIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,
-                        StringsToList(kWhitelistIds));
+          BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAllowlist,
+                        StringsToList(kAllowlistIds));
 
   auto calculator = UserCalculator();
 
   env_.RunUntilIdle();
   EXPECT_TRUE(calculator->IsComplete());
-  EXPECT_EQ(calculator->GetPrinters().size(), kWhitelistPrinters);
+  EXPECT_EQ(calculator->GetPrinters().size(), kAllowlistPrinters);
 }
 
 TEST_F(CalculatorsPoliciesBinderTest, SettingsAllAccess) {
   auto calculator = DeviceCalculator();
 
-  SetDeviceSetting(kDeviceNativePrintersAccessMode,
+  SetDeviceSetting(kDevicePrintersAccessMode,
                    base::Value(BulkPrintersCalculator::AccessMode::ALL_ACCESS));
 
   env_.RunUntilIdle();
@@ -215,37 +215,35 @@ TEST_F(CalculatorsPoliciesBinderTest, SettingsAllAccess) {
   EXPECT_EQ(calculator->GetPrinters().size(), kNumPrinters);
 }
 
-TEST_F(CalculatorsPoliciesBinderTest, SettingsWhitelist) {
+TEST_F(CalculatorsPoliciesBinderTest, SettingsAllowlist) {
   auto calculator = DeviceCalculator();
 
   SetDeviceSetting(
-      kDeviceNativePrintersAccessMode,
-      base::Value(BulkPrintersCalculator::AccessMode::WHITELIST_ONLY));
-  SetDeviceSetting(kDeviceNativePrintersWhitelist,
-                   *StringsToList(kWhitelistIds));
+      kDevicePrintersAccessMode,
+      base::Value(BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
+  SetDeviceSetting(kDevicePrintersAllowlist, *StringsToList(kAllowlistIds));
 
   env_.RunUntilIdle();
   EXPECT_TRUE(calculator->IsComplete());
-  EXPECT_EQ(calculator->GetPrinters().size(), kWhitelistPrinters);
+  EXPECT_EQ(calculator->GetPrinters().size(), kAllowlistPrinters);
 }
 
-TEST_F(CalculatorsPoliciesBinderTest, SettingsBlacklist) {
+TEST_F(CalculatorsPoliciesBinderTest, SettingsBlocklist) {
   auto calculator = DeviceCalculator();
 
   SetDeviceSetting(
-      kDeviceNativePrintersAccessMode,
-      base::Value(BulkPrintersCalculator::AccessMode::BLACKLIST_ONLY));
-  SetDeviceSetting(kDeviceNativePrintersBlacklist,
-                   *StringsToList(kBlacklistIds));
+      kDevicePrintersAccessMode,
+      base::Value(BulkPrintersCalculator::AccessMode::BLOCKLIST_ONLY));
+  SetDeviceSetting(kDevicePrintersBlocklist, *StringsToList(kBlocklistIds));
 
   env_.RunUntilIdle();
   EXPECT_TRUE(calculator->IsComplete());
-  EXPECT_EQ(calculator->GetPrinters().size(), kBlacklistPrinters);
+  EXPECT_EQ(calculator->GetPrinters().size(), kBlocklistPrinters);
 }
 
 TEST_F(CalculatorsPoliciesBinderTest, SettingsBeforeBind) {
   // Set policy before binding to the calculator.
-  SetDeviceSetting(kDeviceNativePrintersAccessMode,
+  SetDeviceSetting(kDevicePrintersAccessMode,
                    base::Value(BulkPrintersCalculator::AccessMode::ALL_ACCESS));
 
   auto calculator = DeviceCalculator();

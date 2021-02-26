@@ -13,9 +13,9 @@
 
 class PrefService;
 
-namespace content {
-class WebContents;
-}
+namespace payments {
+class RenderFrameHost;
+}  // namespace payments
 
 namespace payments {
 
@@ -26,10 +26,10 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
  public:
   // This delegate does not own things passed as pointers.
   TestChromePaymentRequestDelegate(
-      content::WebContents* web_contents,
+      content::RenderFrameHost* render_frame_host,
       PaymentRequestDialogView::ObserverForTest* observer,
       PrefService* pref_service,
-      bool is_incognito,
+      bool is_off_the_record,
       bool is_valid_ssl,
       bool is_browser_window_active,
       bool skip_ui_for_basic_card);
@@ -39,8 +39,8 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   }
 
   // ChromePaymentRequestDelegate.
-  void ShowDialog(PaymentRequest* request) override;
-  bool IsIncognito() const override;
+  void ShowDialog(base::WeakPtr<PaymentRequest> request) override;
+  bool IsOffTheRecord() const override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   PrefService* GetPrefService() override;
   bool IsBrowserWindowActive() const override;
@@ -57,7 +57,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
 
   PaymentRequestDialogView::ObserverForTest* observer_;
   PrefService* pref_service_;
-  const bool is_incognito_;
+  const bool is_off_the_record_;
   const bool is_valid_ssl_;
   const bool is_browser_window_active_;
   const bool skip_ui_for_basic_card_;

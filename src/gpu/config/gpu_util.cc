@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -46,7 +47,7 @@
 #if defined(OS_ANDROID)
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
-#include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 #endif  // OS_ANDROID
@@ -105,7 +106,7 @@ inline D3D11FeatureLevel ConvertToHistogramD3D11FeatureLevel(
 #endif  // OS_WIN
 
 GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const GpuPreferences& gpu_preferences) {
 #if !defined(OS_ANDROID)
   return kGpuFeatureStatusDisabled;
@@ -120,17 +121,17 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
   if (!gl::GLSurfaceEGL::IsAndroidNativeFenceSyncSupported())
     return kGpuFeatureStatusDisabled;
 
-  DCHECK(gl::SurfaceControl::IsSupported());
+  DCHECK(gfx::SurfaceControl::IsSupported());
   return kGpuFeatureStatusEnabled;
 #endif
 }
 
 GpuFeatureStatus GetMetalFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const GpuPreferences& gpu_preferences) {
-#if defined(OS_MACOSX)
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_METAL))
-    return kGpuFeatureStatusBlacklisted;
+#if defined(OS_MAC)
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_METAL))
+    return kGpuFeatureStatusBlocklisted;
 
   if (!gpu_preferences.enable_metal)
     return kGpuFeatureStatusDisabled;
@@ -142,13 +143,13 @@ GpuFeatureStatus GetMetalFeatureStatus(
 }
 
 GpuFeatureStatus GetVulkanFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const GpuPreferences& gpu_preferences) {
 #if BUILDFLAG(ENABLE_VULKAN)
-  // Only blacklist native vulkan.
+  // Only blocklist native vulkan.
   if (gpu_preferences.use_vulkan == VulkanImplementationName::kNative &&
-      blacklisted_features.count(GPU_FEATURE_TYPE_VULKAN))
-    return kGpuFeatureStatusBlacklisted;
+      blocklisted_features.count(GPU_FEATURE_TYPE_VULKAN))
+    return kGpuFeatureStatusBlocklisted;
 
   if (gpu_preferences.use_vulkan == VulkanImplementationName::kNone)
     return kGpuFeatureStatusDisabled;
@@ -160,15 +161,24 @@ GpuFeatureStatus GetVulkanFeatureStatus(
 }
 
 GpuFeatureStatus GetGpuRasterizationFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableGpuRasterization))
     return kGpuFeatureStatusDisabled;
   else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
     return kGpuFeatureStatusEnabled;
 
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_GPU_RASTERIZATION))
-    return kGpuFeatureStatusBlacklisted;
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_GPU_RASTERIZATION))
+    return kGpuFeatureStatusBlocklisted;
+
+  // Enable gpu rasterization for vulkan, unless it is overridden by
+  // commandline.
+  if (features::IsUsingVulkan() &&
+      !base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kDefaultEnableGpuRasterization.name,
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
+    return kGpuFeatureStatusEnabled;
+  }
 
   // Gpu Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.
@@ -179,21 +189,14 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 }
 
 GpuFeatureStatus GetOopRasterizationFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const base::CommandLine& command_line,
     const GpuPreferences& gpu_preferences,
     const GPUInfo& gpu_info) {
-#if defined(OS_WIN)
-  // On Windows, using the validating decoder causes a lot of errors.  This
-  // could be fixed independently, but validating decoder is going away.
-  // See: http://crbug.com/949773.
-  if (!gpu_info.passthrough_cmd_decoder)
-    return kGpuFeatureStatusDisabled;
-#endif
-  // OOP rasterization requires GPU rasterization, so if blacklisted or
+  // OOP rasterization requires GPU rasterization, so if blocklisted or
   // disabled, report the same.
   auto status =
-      GetGpuRasterizationFeatureStatus(blacklisted_features, command_line);
+      GetGpuRasterizationFeatureStatus(blocklisted_features, command_line);
   if (status != kGpuFeatureStatusEnabled)
     return status;
 
@@ -207,11 +210,14 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
   else if (gpu_preferences.enable_oop_rasterization)
     return kGpuFeatureStatusEnabled;
 
-  // TODO(enne): Eventually oop rasterization will replace gpu rasterization,
-  // and so we will need to address the underlying bugs or turn of GPU
-  // rasterization for these cases.
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_OOP_RASTERIZATION))
-    return kGpuFeatureStatusBlacklisted;
+  // Enable OOP rasterization for vulkan, unless it is overridden by
+  // commandline.
+  if (features::IsUsingVulkan() &&
+      !base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kDefaultEnableOopRasterization.name,
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
+    return kGpuFeatureStatusEnabled;
+  }
 
   // OOP Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.
@@ -222,108 +228,71 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
 }
 
 GpuFeatureStatus GetWebGLFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
   if (use_swift_shader)
     return kGpuFeatureStatusEnabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
-    return kGpuFeatureStatusBlacklisted;
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
+    return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
 
 GpuFeatureStatus GetWebGL2FeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
   if (use_swift_shader)
     return kGpuFeatureStatusEnabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL2))
-    return kGpuFeatureStatusBlacklisted;
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL2))
+    return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
 
 GpuFeatureStatus Get2DCanvasFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
   if (use_swift_shader) {
     // This is for testing only. Chrome should exercise the GPU accelerated
     // path on top of SwiftShader driver.
     return kGpuFeatureStatusEnabled;
   }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS))
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS))
     return kGpuFeatureStatusSoftware;
   return kGpuFeatureStatusEnabled;
 }
 
-GpuFeatureStatus GetFlash3DFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader) {
-  if (use_swift_shader) {
-    // This is for testing only. Chrome should exercise the GPU accelerated
-    // path on top of SwiftShader driver.
-    return kGpuFeatureStatusEnabled;
-  }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH3D))
-    return kGpuFeatureStatusBlacklisted;
-  return kGpuFeatureStatusEnabled;
-}
-
-GpuFeatureStatus GetFlashStage3DFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader) {
-  if (use_swift_shader) {
-    // This is for testing only. Chrome should exercise the GPU accelerated
-    // path on top of SwiftShader driver.
-    return kGpuFeatureStatusEnabled;
-  }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D))
-    return kGpuFeatureStatusBlacklisted;
-  return kGpuFeatureStatusEnabled;
-}
-
-GpuFeatureStatus GetFlashStage3DBaselineFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader) {
-  if (use_swift_shader) {
-    // This is for testing only. Chrome should exercise the GPU accelerated
-    // path on top of SwiftShader driver.
-    return kGpuFeatureStatusEnabled;
-  }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D) ||
-      blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE))
-    return kGpuFeatureStatusBlacklisted;
-  return kGpuFeatureStatusEnabled;
-}
-
 GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
-  if (use_swift_shader)
-    return kGpuFeatureStatusDisabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
-    return kGpuFeatureStatusBlacklisted;
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
+    return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
 
-GpuFeatureStatus GetGLFeatureStatus(const std::set<int>& blacklisted_features,
+GpuFeatureStatus GetGLFeatureStatus(const std::set<int>& blocklisted_features,
                                     bool use_swift_shader) {
   if (use_swift_shader) {
     // This is for testing only. Chrome should exercise the GPU accelerated
     // path on top of SwiftShader driver.
     return kGpuFeatureStatusEnabled;
   }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_GL))
-    return kGpuFeatureStatusBlacklisted;
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_GL))
+    return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
 
 GpuFeatureStatus GetProtectedVideoDecodeFeatureStatus(
-    const std::set<int>& blacklisted_features,
+    const std::set<int>& blocklisted_features,
     const GPUInfo& gpu_info,
     bool use_swift_shader) {
   if (use_swift_shader)
     return kGpuFeatureStatusDisabled;
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE))
-    return kGpuFeatureStatusBlacklisted;
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE))
+    return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
 
@@ -356,7 +325,7 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
   if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_D3D11) ||
       gpu_feature_info->IsWorkaroundEnabled(DISABLE_ES3_GL_CONTEXT)) {
     gpu_feature_info->status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
-        kGpuFeatureStatusBlacklisted;
+        kGpuFeatureStatusBlocklisted;
   }
 }
 
@@ -420,13 +389,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
@@ -458,13 +421,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
@@ -496,13 +453,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
@@ -556,60 +507,53 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   }
 
   GpuFeatureInfo gpu_feature_info;
-  std::set<int> blacklisted_features;
-  if (!gpu_preferences.ignore_gpu_blacklist &&
+  std::set<int> blocklisted_features;
+  if (!gpu_preferences.ignore_gpu_blocklist &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
     std::unique_ptr<GpuBlocklist> list(GpuBlocklist::Create());
     if (gpu_preferences.log_gpu_control_list_decisions)
-      list->EnableControlListLogging("gpu_blacklist");
+      list->EnableControlListLogging("gpu_blocklist");
     unsigned target_test_group = 0u;
-    if (command_line->HasSwitch(switches::kGpuBlacklistTestGroup)) {
+    if (command_line->HasSwitch(switches::kGpuBlocklistTestGroup)) {
       std::string test_group_string =
-          command_line->GetSwitchValueASCII(switches::kGpuBlacklistTestGroup);
+          command_line->GetSwitchValueASCII(switches::kGpuBlocklistTestGroup);
       if (!base::StringToUint(test_group_string, &target_test_group))
         target_test_group = 0u;
     }
-    blacklisted_features = list->MakeDecision(
+    blocklisted_features = list->MakeDecision(
         GpuControlList::kOsAny, std::string(), gpu_info, target_test_group);
-    gpu_feature_info.applied_gpu_blacklist_entries = list->GetActiveEntries();
+    gpu_feature_info.applied_gpu_blocklist_entries = list->GetActiveEntries();
     if (needs_more_info) {
       *needs_more_info = list->needs_more_info();
     }
   }
 
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
-      GetGpuRasterizationFeatureStatus(blacklisted_features, *command_line);
+      GetGpuRasterizationFeatureStatus(blocklisted_features, *command_line);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
-      GetWebGLFeatureStatus(blacklisted_features, use_swift_shader);
+      GetWebGLFeatureStatus(blocklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
-      GetWebGL2FeatureStatus(blacklisted_features, use_swift_shader);
+      GetWebGL2FeatureStatus(blocklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
-      Get2DCanvasFeatureStatus(blacklisted_features, use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
-      GetFlash3DFeatureStatus(blacklisted_features, use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
-      GetFlashStage3DFeatureStatus(blacklisted_features, use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
-      GetFlashStage3DBaselineFeatureStatus(blacklisted_features,
-                                           use_swift_shader);
+      Get2DCanvasFeatureStatus(blocklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
-      GetAcceleratedVideoDecodeFeatureStatus(blacklisted_features,
+      GetAcceleratedVideoDecodeFeatureStatus(blocklisted_features,
                                              use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
-      GetProtectedVideoDecodeFeatureStatus(blacklisted_features, gpu_info,
+      GetProtectedVideoDecodeFeatureStatus(blocklisted_features, gpu_info,
                                            use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
-      GetOopRasterizationFeatureStatus(blacklisted_features, *command_line,
+      GetOopRasterizationFeatureStatus(blocklisted_features, *command_line,
                                        gpu_preferences, gpu_info);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
-      GetAndroidSurfaceControlFeatureStatus(blacklisted_features,
+      GetAndroidSurfaceControlFeatureStatus(blocklisted_features,
                                             gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
-      GetGLFeatureStatus(blacklisted_features, use_swift_shader);
+      GetGLFeatureStatus(blocklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
-      GetMetalFeatureStatus(blacklisted_features, gpu_preferences);
+      GetMetalFeatureStatus(blocklisted_features, gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
-      GetVulkanFeatureStatus(blacklisted_features, gpu_preferences);
+      GetVulkanFeatureStatus(blocklisted_features, gpu_preferences);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -648,7 +592,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     all_disabled_extensions.insert(driver_bug_disabled_extensions.begin(),
                                    driver_bug_disabled_extensions.end());
 
-    // Disabling WebGL extensions only occurs via the blacklist, so
+    // Disabling WebGL extensions only occurs via the blocklist, so
     // the logic is simpler.
     gfx::ExtensionSet disabled_webgl_extensions;
     std::vector<std::string> disabled_webgl_extension_list =
@@ -698,7 +642,7 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
   crash_keys::gpu_vertex_shader_version.Set(gpu_info.vertex_shader_version);
   crash_keys::gpu_generation_intel.Set(
       base::StringPrintf("%d", GetIntelGpuGeneration(gpu_info)));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   crash_keys::gpu_gl_version.Set(gpu_info.gl_version);
 #elif defined(OS_POSIX)
   crash_keys::gpu_vendor.Set(gpu_info.gl_vendor);
@@ -780,9 +724,9 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
 bool EnableSwiftShaderIfNeeded(base::CommandLine* command_line,
                                const GpuFeatureInfo& gpu_feature_info,
                                bool disable_software_rasterizer,
-                               bool blacklist_needs_more_info) {
+                               bool blocklist_needs_more_info) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-  if (disable_software_rasterizer || blacklist_needs_more_info)
+  if (disable_software_rasterizer || blocklist_needs_more_info)
     return false;
   // Don't overwrite user preference.
   if (command_line->HasSwitch(switches::kUseGL))
@@ -1021,21 +965,4 @@ std::string VulkanVersionToString(uint32_t vulkan_version) {
   }
 }
 #endif  // OS_WIN
-
-VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
-  if (vulkan_version < VK_MAKE_VERSION(1, 0, 0))
-    return VulkanVersion::kVulkanVersionUnknown;
-  else if (vulkan_version < VK_MAKE_VERSION(1, 1, 0))
-    return VulkanVersion::kVulkanVersion_1_0_0;
-  else if (vulkan_version < VK_MAKE_VERSION(1, 2, 0))
-    return VulkanVersion::kVulkanVersion_1_1_0;
-  else if (vulkan_version < VK_MAKE_VERSION(1, 3, 0))
-    return VulkanVersion::kVulkanVersion_1_2_0;
-  else {
-    // Need to add 1.3.0+ to enum VulkanVersion.
-    NOTREACHED();
-    return VulkanVersion::kVulkanVersion_1_2_0;
-  }
-}
-
 }  // namespace gpu

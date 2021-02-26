@@ -13,17 +13,15 @@
 
 GrPaint::GrPaint(const GrPaint& that)
         : fXPFactory(that.fXPFactory)
-        , fColorFragmentProcessors(that.fColorFragmentProcessors.count())
-        , fCoverageFragmentProcessors(that.fCoverageFragmentProcessors.count())
         , fTrivial(that.fTrivial)
         , fColor(that.fColor) {
-    for (int i = 0; i < that.fColorFragmentProcessors.count(); ++i) {
-        fColorFragmentProcessors.push_back(that.fColorFragmentProcessors[i]->clone());
-        SkASSERT(fColorFragmentProcessors[i]);
+    if (that.fColorFragmentProcessor) {
+        fColorFragmentProcessor = that.fColorFragmentProcessor->clone();
+        SkASSERT(fColorFragmentProcessor);
     }
-    for (int i = 0; i < that.fCoverageFragmentProcessors.count(); ++i) {
-        fCoverageFragmentProcessors.push_back(that.fCoverageFragmentProcessors[i]->clone());
-        SkASSERT(fCoverageFragmentProcessors[i]);
+    if (that.fCoverageFragmentProcessor) {
+        fCoverageFragmentProcessor = that.fCoverageFragmentProcessor->clone();
+        SkASSERT(fCoverageFragmentProcessor);
     }
 }
 
@@ -44,7 +42,7 @@ bool GrPaint::isConstantBlendedColor(SkPMColor4f* constantColor) const {
         *constantColor = SK_PMColor4fTRANSPARENT;
         return true;
     }
-    if (this->numColorFragmentProcessors()) {
+    if (this->hasColorFragmentProcessor()) {
         return false;
     }
     if (kSrc == fXPFactory || (!fXPFactory && fColor.isOpaque())) {

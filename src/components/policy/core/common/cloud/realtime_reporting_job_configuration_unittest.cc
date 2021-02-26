@@ -23,6 +23,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/fake_statistics_provider.h"
+#endif
+
 namespace em = enterprise_management;
 
 using testing::_;
@@ -61,13 +65,22 @@ MATCHER_P(MatchDict, expected, "matches DictionaryValue") {
 class RealtimeReportingJobConfigurationTest : public testing::Test {
  public:
   RealtimeReportingJobConfigurationTest()
+#if defined(OS_CHROMEOS)
       : client_(&service_),
-        configuration_(&client_,
-                       DMAuth::FromDMToken(kDummyToken),
-                       base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
-                                      base::Unretained(&callback_observer_))) {}
+        fake_serial_number_(&fake_statistics_provider_)
+#else
+      : client_(&service_)
+#endif
+  {
+  }
 
   void SetUp() override {
+    client_.SetDMToken(kDummyToken);
+    configuration_ = std::make_unique<RealtimeReportingJobConfiguration>(
+        &client_, service_.configuration()->GetRealtimeReportingServerUrl(),
+        /*add_connector_url_params=*/false,
+        base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
+                       base::Unretained(&callback_observer_)));
     base::Value context(base::Value::Type::DICTIONARY);
     context.SetStringPath("browser.userAgent", "dummyAgent");
     base::Value events(base::Value::Type::LIST);
@@ -78,7 +91,7 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
 
     base::Value report = RealtimeReportingJobConfiguration::BuildReport(
         std::move(events), std::move(context));
-    configuration_.AddReport(std::move(report));
+    configuration_->AddReport(std::move(report));
   }
 
  protected:
@@ -142,33 +155,57 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
   MockCloudPolicyClient client_;
   StrictMock<MockCallbackObserver> callback_observer_;
   DeviceManagementService::Job job_;
-  RealtimeReportingJobConfiguration configuration_;
+#if defined(OS_CHROMEOS)
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  class ScopedFakeSerialNumber {
+   public:
+    ScopedFakeSerialNumber(chromeos::system::ScopedFakeStatisticsProvider*
+                               fake_statistics_provider) {
+      // The fake serial number must be set before |configuration_| is
+      // constructed below.
+      fake_statistics_provider->SetMachineStatistic(
+          chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
+    }
+  };
+  ScopedFakeSerialNumber fake_serial_number_;
+#endif
+  std::unique_ptr<RealtimeReportingJobConfiguration> configuration_;
 };
 
 TEST_F(RealtimeReportingJobConfigurationTest, ValidatePayload) {
   base::Optional<base::Value> payload =
-      base::JSONReader::Read(configuration_.GetPayload());
+      base::JSONReader::Read(configuration_->GetPayload());
   EXPECT_TRUE(payload.has_value());
   EXPECT_EQ(kDummyToken, *payload->FindStringPath(
-                             RealtimeReportingJobConfiguration::kDmTokenKey));
-  EXPECT_EQ(client_.client_id(),
-            *payload->FindStringPath(
-                RealtimeReportingJobConfiguration::kClientIdKey));
+                             ReportingJobConfigurationBase::
+                                 DeviceDictionaryBuilder::GetDMTokenPath()));
+  EXPECT_EQ(
+      client_.client_id(),
+      *payload->FindStringPath(ReportingJobConfigurationBase::
+                                   DeviceDictionaryBuilder::GetClientIdPath()));
   EXPECT_EQ(GetOSUsername(),
             *payload->FindStringPath(
-                RealtimeReportingJobConfiguration::kMachineUserKey));
+                ReportingJobConfigurationBase::BrowserDictionaryBuilder::
+                    GetMachineUserPath()));
   EXPECT_EQ(version_info::GetVersionNumber(),
             *payload->FindStringPath(
-                RealtimeReportingJobConfiguration::kChromeVersionKey));
+                ReportingJobConfigurationBase::BrowserDictionaryBuilder::
+                    GetChromeVersionPath()));
   EXPECT_EQ(GetOSPlatform(),
             *payload->FindStringPath(
-                RealtimeReportingJobConfiguration::kOsPlatformKey));
+                ReportingJobConfigurationBase::DeviceDictionaryBuilder::
+                    GetOSPlatformPath()));
   EXPECT_EQ(GetOSVersion(),
             *payload->FindStringPath(
-                RealtimeReportingJobConfiguration::kOsVersionKey));
+                ReportingJobConfigurationBase::DeviceDictionaryBuilder::
+                    GetOSVersionPath()));
+  EXPECT_FALSE(GetDeviceName().empty());
+  EXPECT_EQ(GetDeviceName(), *payload->FindStringPath(
+                                 ReportingJobConfigurationBase::
+                                     DeviceDictionaryBuilder::GetNamePath()));
 
   base::Value* events =
-      payload->FindListKey(RealtimeReportingJobConfiguration::kEventsKey);
+      payload->FindListKey(RealtimeReportingJobConfiguration::kEventListKey);
   EXPECT_EQ(ids.size(), events->GetList().size());
   int i = -1;
   for (const auto& event : events->GetList()) {
@@ -184,9 +221,9 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_Success) {
   EXPECT_CALL(callback_observer_,
               OnURLLoadComplete(&job_, DM_STATUS_SUCCESS, net::OK,
                                 testing::Eq(testing::ByRef(response))));
-  configuration_.OnURLLoadComplete(&job_, net::OK,
-                                   DeviceManagementService::kSuccess,
-                                   CreateResponseString(response));
+  configuration_->OnURLLoadComplete(&job_, net::OK,
+                                    DeviceManagementService::kSuccess,
+                                    CreateResponseString(response));
 }
 
 TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_NetError) {
@@ -194,7 +231,7 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_NetError) {
   EXPECT_CALL(callback_observer_,
               OnURLLoadComplete(&job_, DM_STATUS_REQUEST_FAILED, net_error,
                                 testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(&job_, net_error, 0, "");
+  configuration_->OnURLLoadComplete(&job_, net_error, 0, "");
 }
 
 TEST_F(RealtimeReportingJobConfigurationTest,
@@ -202,7 +239,7 @@ TEST_F(RealtimeReportingJobConfigurationTest,
   EXPECT_CALL(callback_observer_,
               OnURLLoadComplete(&job_, DM_STATUS_REQUEST_INVALID, net::OK,
                                 testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(
+  configuration_->OnURLLoadComplete(
       &job_, net::OK, DeviceManagementService::kInvalidArgument, "");
 }
 
@@ -212,7 +249,7 @@ TEST_F(RealtimeReportingJobConfigurationTest,
       callback_observer_,
       OnURLLoadComplete(&job_, DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID,
                         net::OK, testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(
+  configuration_->OnURLLoadComplete(
       &job_, net::OK, DeviceManagementService::kInvalidAuthCookieOrDMToken, "");
 }
 
@@ -221,7 +258,7 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_NotSupported) {
       callback_observer_,
       OnURLLoadComplete(&job_, DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED,
                         net::OK, testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(
+  configuration_->OnURLLoadComplete(
       &job_, net::OK, DeviceManagementService::kDeviceManagementNotAllowed, "");
 }
 
@@ -229,7 +266,7 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_TempError) {
   EXPECT_CALL(callback_observer_,
               OnURLLoadComplete(&job_, DM_STATUS_TEMPORARY_UNAVAILABLE, net::OK,
                                 testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(
+  configuration_->OnURLLoadComplete(
       &job_, net::OK, DeviceManagementService::kServiceUnavailable, "");
 }
 
@@ -237,14 +274,14 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnURLLoadComplete_UnknownError) {
   EXPECT_CALL(callback_observer_,
               OnURLLoadComplete(&job_, DM_STATUS_HTTP_STATUS_ERROR, net::OK,
                                 testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(&job_, net::OK,
-                                   DeviceManagementService::kInvalidURL, "");
+  configuration_->OnURLLoadComplete(&job_, net::OK,
+                                    DeviceManagementService::kInvalidURL, "");
 }
 
 TEST_F(RealtimeReportingJobConfigurationTest, ShouldRetry_Success) {
   auto response_string =
       CreateResponseString(CreateResponse({ids[0], ids[1], ids[2]}, {}, {}));
-  auto should_retry = configuration_.ShouldRetry(
+  auto should_retry = configuration_->ShouldRetry(
       DeviceManagementService::kSuccess, response_string);
   EXPECT_EQ(DeviceManagementService::Job::NO_RETRY, should_retry);
 }
@@ -253,7 +290,7 @@ TEST_F(RealtimeReportingJobConfigurationTest, ShouldRetry_PartialFalure) {
   // Batch failures are retried
   auto response_string =
       CreateResponseString(CreateResponse({ids[0], ids[1]}, {ids[2]}, {}));
-  auto should_retry = configuration_.ShouldRetry(
+  auto should_retry = configuration_->ShouldRetry(
       DeviceManagementService::kSuccess, response_string);
   EXPECT_EQ(DeviceManagementService::Job::RETRY_WITH_DELAY, should_retry);
 }
@@ -262,17 +299,17 @@ TEST_F(RealtimeReportingJobConfigurationTest, ShouldRetry_PermanentFailure) {
   // Permanent failures are not retried.
   auto response_string =
       CreateResponseString(CreateResponse({ids[0], ids[1]}, {}, {ids[2]}));
-  auto should_retry = configuration_.ShouldRetry(
+  auto should_retry = configuration_->ShouldRetry(
       DeviceManagementService::kSuccess, response_string);
   EXPECT_EQ(DeviceManagementService::Job::NO_RETRY, should_retry);
 }
 
 TEST_F(RealtimeReportingJobConfigurationTest, OnBeforeRetry_HttpFailure) {
   // No change should be made to the payload in this case.
-  auto original_payload = configuration_.GetPayload();
-  configuration_.OnBeforeRetry(DeviceManagementService::kServiceUnavailable,
-                               "");
-  EXPECT_EQ(original_payload, configuration_.GetPayload());
+  auto original_payload = configuration_->GetPayload();
+  configuration_->OnBeforeRetry(DeviceManagementService::kServiceUnavailable,
+                                "");
+  EXPECT_EQ(original_payload, configuration_->GetPayload());
 }
 
 TEST_F(RealtimeReportingJobConfigurationTest, OnBeforeRetry_PartialBatch) {
@@ -280,12 +317,12 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnBeforeRetry_PartialBatch) {
   // after the OnBeforeRetry call.
   auto response_string =
       CreateResponseString(CreateResponse({ids[0]}, {ids[1]}, {ids[2]}));
-  configuration_.OnBeforeRetry(DeviceManagementService::kSuccess,
-                               response_string);
+  configuration_->OnBeforeRetry(DeviceManagementService::kSuccess,
+                                response_string);
   base::Optional<base::Value> payload =
-      base::JSONReader::Read(configuration_.GetPayload());
+      base::JSONReader::Read(configuration_->GetPayload());
   base::Value* events =
-      payload->FindListKey(RealtimeReportingJobConfiguration::kEventsKey);
+      payload->FindListKey(RealtimeReportingJobConfiguration::kEventListKey);
   EXPECT_EQ(1u, events->GetList().size());
   auto& event = events->GetList()[0];
   EXPECT_EQ(ids[1], *event.FindStringKey(kEventId));

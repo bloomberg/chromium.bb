@@ -17,8 +17,6 @@ class Navigator;
 
 class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
                                public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
-
  public:
   static const char kSupplementName[];
 
@@ -29,7 +27,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
   explicit NavigatorBattery(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<BatteryManager> battery_manager_;

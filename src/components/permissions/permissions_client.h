@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -23,6 +24,10 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace content_settings {
+class CookieSettings;
+}
+
 namespace infobars {
 class InfoBar;
 class InfoBarManager;
@@ -30,7 +35,6 @@ class InfoBarManager;
 
 namespace permissions {
 class ChooserContextBase;
-class NotificationPermissionUiSelector;
 class PermissionDecisionAutoBlocker;
 class PermissionManager;
 class PermissionPromptAndroid;
@@ -52,6 +56,15 @@ class PermissionsClient {
   // has the same lifetime as |browser_context|.
   virtual HostContentSettingsMap* GetSettingsMap(
       content::BrowserContext* browser_context) = 0;
+
+  // Retrieves the CookieSettings for this context.
+  virtual scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
+      content::BrowserContext* browser_context) = 0;
+
+  // Retrieves the subresource filter activation from browser website settings.
+  virtual bool IsSubresourceFilterActivated(
+      content::BrowserContext* browser_context,
+      const GURL& url) = 0;
 
   // Retrieves the PermissionDecisionAutoBlocker for this context. The returned
   // pointer has the same lifetime as |browser_context|.
@@ -108,17 +121,38 @@ class PermissionsClient {
   // used.
   virtual PermissionRequest::IconId GetOverrideIconId(ContentSettingsType type);
 
-  // Allows the embedder to provide a selector for chossing the UI to use for
-  // notification permission requests. If the embedder returns null here, the
-  // normal UI will be used.
-  virtual std::unique_ptr<NotificationPermissionUiSelector>
-  CreateNotificationPermissionUiSelector(
+  // Allows the embedder to provide a list of selectors for choosing the UI to
+  // use for notification permission requests. If the embedder returns an empty
+  // list, the normal UI will be used always. Then for each request, if none of
+  // the returned selectors prescribe the quiet UI, the normal UI will be used.
+  // Otherwise the quiet UI will be used. Selectors at lower indices have higher
+  // priority when determining the quiet UI flavor.
+  virtual std::vector<std::unique_ptr<NotificationPermissionUiSelector>>
+  CreateNotificationPermissionUiSelectors(
       content::BrowserContext* browser_context);
 
+  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
   // Called for each request type when a permission prompt is resolved.
   virtual void OnPromptResolved(content::BrowserContext* browser_context,
                                 PermissionRequestType request_type,
-                                PermissionAction action);
+                                PermissionAction action,
+                                const GURL& origin,
+                                base::Optional<QuietUiReason> quiet_ui_reason);
+
+  // Returns true if user has 3 consecutive notifications permission denies,
+  // returns false otherwise.
+  // Returns base::nullopt if the user is not in the adoptive activation quiet
+  // ui dry run experiment group.
+  virtual base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+      content::BrowserContext* browser_context);
+
+  // Returns whether the |permission| has already been auto-revoked due to abuse
+  // at least once for the given |origin|. Returns `nullopt` if permission
+  // auto-revocation is not supported for a given permission type.
+  virtual base::Optional<bool> HasPreviouslyAutoRevokedPermission(
+      content::BrowserContext* browser_context,
+      const GURL& origin,
+      ContentSettingsType permission);
 
   // If the embedder returns an origin here, any requests matching that origin
   // will be approved. Requests that do not match the returned origin will

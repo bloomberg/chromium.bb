@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -28,7 +27,7 @@ class ModuleRecordResolverImplTestModulator final : public DummyModulator {
   ModuleRecordResolverImplTestModulator() {}
   ~ModuleRecordResolverImplTestModulator() override {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetScriptState(ScriptState* script_state) {
     script_state_ = script_state;
@@ -60,7 +59,7 @@ class ModuleRecordResolverImplTestModulator final : public DummyModulator {
   Member<ModuleScript> module_script_;
 };
 
-void ModuleRecordResolverImplTestModulator::Trace(Visitor* visitor) {
+void ModuleRecordResolverImplTestModulator::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(module_script_);
   DummyModulator::Trace(visitor);
@@ -111,6 +110,7 @@ class ModuleRecordResolverImplTest : public testing::Test,
                                      public ParametrizedModuleTest {
  public:
   void SetUp() override;
+  void TearDown() override;
 
   ModuleRecordResolverImplTestModulator* Modulator() {
     return modulator_.Get();
@@ -126,6 +126,10 @@ void ModuleRecordResolverImplTest::SetUp() {
   ParametrizedModuleTest::SetUp();
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   modulator_ = MakeGarbageCollected<ModuleRecordResolverImplTestModulator>();
+}
+
+void ModuleRecordResolverImplTest::TearDown() {
+  ParametrizedModuleTest::TearDown();
 }
 
 TEST_P(ModuleRecordResolverImplTest, RegisterResolveSuccess) {

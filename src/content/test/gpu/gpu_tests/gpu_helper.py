@@ -12,8 +12,11 @@ EXPECTATIONS_DRIVER_TAGS = frozenset([
     'intel_lt_25.20.100.6577',
     'intel_lt_26.20.100.7000',
     'intel_lt_26.20.100.7323',
-    'mesa_eq_18.0.5',
-    'mesa_lt_19.1.2',
+    'intel_lt_26.20.100.7870',
+    'intel_lt_26.20.100.8141',
+    'intel_lt_27.20.100.8280',
+    'mesa_lt_19.1',
+    'mesa_ge_20.1',
 ])
 
 # Driver tag format: VENDOR_OPERATION_VERSION
@@ -95,23 +98,25 @@ def GetGpuDriverVersion(gpu_info):
 
 
 def GetANGLERenderer(gpu_info):
-  retval = 'no_angle'
+  retval = 'angle-disabled'
   if gpu_info and gpu_info.aux_attributes:
     gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
     if gl_renderer and 'ANGLE' in gl_renderer:
       if 'Direct3D11' in gl_renderer:
-        retval = 'd3d11'
+        retval = 'angle-d3d11'
       elif 'Direct3D9' in gl_renderer:
-        retval = 'd3d9'
+        retval = 'angle-d3d9'
       elif 'OpenGL ES' in gl_renderer:
-        retval = 'opengles'
+        retval = 'angle-opengles'
       elif 'OpenGL' in gl_renderer:
-        retval = 'opengl'
+        retval = 'angle-opengl'
+      elif 'Metal' in gl_renderer:
+        retval = 'angle-metal'
       # SwiftShader first because it also contains Vulkan
       elif 'SwiftShader' in gl_renderer:
-        retval = 'swiftshader'
+        retval = 'angle-swiftshader'
       elif 'Vulkan' in gl_renderer:
-        retval = 'vulkan'
+        retval = 'angle-vulkan'
   return retval
 
 
@@ -133,53 +138,40 @@ def GetCommandDecoder(gpu_info):
   return 'no_passthrough'
 
 
-# Used to parse additional options sent to the browser instance via
-# '--extra-browser-args', looking for '--enable-features=UseSkiaRenderer' which
-# may be merged with additional feature flags.
-def GetSkiaRenderer(extra_browser_args):
+def GetSkiaRenderer(gpu_feature_status, extra_browser_args):
+  retval = 'skia-renderer-disabled'
+  skia_renderer_enabled = (
+      gpu_feature_status
+      and gpu_feature_status.get('skia_renderer') == 'enabled_on')
+  if skia_renderer_enabled:
+    if HasDawnSkiaRenderer(extra_browser_args):
+      retval = 'skia-renderer-dawn'
+    elif HasGlSkiaRenderer(extra_browser_args):
+      retval = 'skia-renderer-gl'
+    elif HasVulkanSkiaRenderer(gpu_feature_status):
+      retval = 'skia-renderer-vulkan'
+  return retval
+
+
+# TODO(sgilhuly): Use GPU feature status for Dawn instead of command line.
+def HasDawnSkiaRenderer(extra_browser_args):
   if extra_browser_args:
-    for o in extra_browser_args:
-      if o.startswith('--enable-features') and "UseSkiaRenderer" in o:
-        return 'skia-renderer'
-      if o.startswith('--disable-features') and "UseSkiaRenderer" in o:
-        return 'no-skia-renderer'
-      if "--disable-vulkan-fallback-to-gl-for-testing" in o:
-        return 'skia-renderer'
-  # TODO(kylechar): The feature is enabled/disabled differently depending on
-  # platform and official build status. Find out if SkiaRenderer is enabled
-  # through GPU info instead.
-  return 'no-skia-renderer'
+    for arg in extra_browser_args:
+      if arg.startswith('--enable-features') and 'SkiaDawn' in arg:
+        return True
+  return False
 
 
-# Used to parse additional options sent to the browser instance via
-# '--extra-browser-args', looking for '--use-gl='.
-def GetGL(extra_browser_args):
+def HasGlSkiaRenderer(extra_browser_args):
   if extra_browser_args:
-    for o in extra_browser_args:
-      if "--use-gl=" in o:
-        return 'use-gl'
-  return 'no-use-gl'
+    for arg in extra_browser_args:
+      if '--use-gl=' in arg:
+        return True
+  return False
 
 
-# Used to parse additional options sent to the browser instance via
-# '--extra-browser-args', looking for '--use-vulkan='.
-def GetVulkan(extra_browser_args):
-  if extra_browser_args:
-    for o in extra_browser_args:
-      if "--use-vulkan=" in o:
-        return 'use-vulkan'
-  return 'no-use-vulkan'
-
-
-# Used to parse additional options sent to the browser instance via
-# '--extra-browser-args', looking for '--enable-features=SkiaDawn' which
-# may be merged with additional feature flags.
-def GetSkiaDawn(extra_browser_args):
-  if extra_browser_args:
-    for o in extra_browser_args:
-      if o.startswith('--enable-features') and "SkiaDawn" in o:
-        return 'use-skia-dawn'
-  return 'no-use-skia-dawn'
+def HasVulkanSkiaRenderer(gpu_feature_status):
+  return gpu_feature_status and gpu_feature_status.get('vulkan') == 'enabled_on'
 
 
 # used by unittests to create a mock arguments object
@@ -211,8 +203,9 @@ def MatchDriverTag(tag):
 
 
 # No good way to reduce the number of local variables, particularly since each
-# argument is also considered a local.
-# pylint: disable=too-many-locals
+# argument is also considered a local. Also no good way to reduce the number of
+# branches without harming readability.
+# pylint: disable=too-many-locals,too-many-branches
 def EvaluateVersionComparison(version,
                               operation,
                               ref_version,
@@ -282,7 +275,7 @@ def EvaluateVersionComparison(version,
     raise Exception('Invalid operation: ' + operation)
 
   return operation == 'eq' or operation == 'ge' or operation == 'le'
-# pylint: enable=too-many-locals
+# pylint: enable=too-many-locals,too-many-branches
 
 
 def ExpectationsDriverTags():

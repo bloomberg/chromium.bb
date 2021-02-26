@@ -40,7 +40,8 @@ class Framebuffer9 : public FramebufferD3D
 
     angle::Result syncState(const gl::Context *context,
                             GLenum binding,
-                            const gl::Framebuffer::DirtyBits &dirtyBits) override;
+                            const gl::Framebuffer::DirtyBits &dirtyBits,
+                            gl::Command command) override;
 
     const gl::AttachmentArray<RenderTarget9 *> &getCachedColorRenderTargets() const
     {
@@ -49,7 +50,7 @@ class Framebuffer9 : public FramebufferD3D
 
     const RenderTarget9 *getCachedDepthStencilRenderTarget() const
     {
-        return mRenderTargetCache.getDepthStencil(true);
+        return mRenderTargetCache.getDepthStencil();
     }
 
     const gl::InternalFormat &getImplementationColorReadFormat(
@@ -65,6 +66,7 @@ class Framebuffer9 : public FramebufferD3D
                                  GLenum type,
                                  size_t outputPitch,
                                  const gl::PixelPackState &pack,
+                                 gl::Buffer *packPixels,
                                  uint8_t *pixels) override;
 
     angle::Result blitImpl(const gl::Context *context,

@@ -5,12 +5,8 @@
 #include "components/query_tiles/test/test_utils.h"
 
 #include <algorithm>
-#include <deque>
-#include <map>
 #include <memory>
-#include <sstream>
 #include <utility>
-#include <vector>
 
 namespace query_tiles {
 namespace test {
@@ -19,64 +15,7 @@ namespace {
 
 const char kTimeStr[] = "03/18/20 01:00:00 AM";
 
-void SerializeEntry(const Tile* entry, std::stringstream& out) {
-  if (!entry)
-    return;
-  out << "entry id: " << entry->id << " query text: " << entry->query_text
-      << "  display text: " << entry->display_text
-      << "  accessibility_text: " << entry->accessibility_text << " \n";
-
-  for (const auto& image : entry->image_metadatas)
-    out << "image url: " << image.url.possibly_invalid_spec() << " \n";
-}
-
 }  // namespace
-
-std::string DebugString(const Tile* root) {
-  if (!root)
-    return std::string();
-  std::stringstream out;
-  out << "Entries detail: \n";
-  std::map<std::string, std::vector<std::string>> cache;
-  std::deque<const Tile*> queue;
-  queue.emplace_back(root);
-  while (!queue.empty()) {
-    size_t size = queue.size();
-    for (size_t i = 0; i < size; i++) {
-      auto* parent = queue.front();
-      SerializeEntry(parent, out);
-      queue.pop_front();
-      for (size_t j = 0; j < parent->sub_tiles.size(); j++) {
-        cache[parent->id].emplace_back(parent->sub_tiles[j]->id);
-        queue.emplace_back(parent->sub_tiles[j].get());
-      }
-    }
-  }
-  out << "Tree table: \n";
-  for (auto& pair : cache) {
-    std::string line;
-    line += pair.first + " : [";
-    std::sort(pair.second.begin(), pair.second.end());
-    for (const auto& child : pair.second)
-      line += " " + child;
-    line += " ]\n";
-    out << line;
-  }
-  return out.str();
-}
-
-std::string DebugString(const TileGroup* group) {
-  if (!group)
-    return std::string();
-  std::stringstream out;
-  out << "Group detail: \n";
-  out << "id: " << group->id << " locale: " << group->locale
-      << " last_updated_ts: " << group->last_updated_ts << " \n";
-  for (const auto& tile : group->tiles) {
-    out << DebugString(tile.get());
-  }
-  return out.str();
-}
 
 void ResetTestEntry(Tile* entry) {
   entry->id = "guid-1-1";
@@ -117,6 +56,30 @@ void ResetTestGroup(TileGroup* group) {
   group->tiles.emplace_back(std::move(test_entry_1));
   group->tiles.emplace_back(std::move(test_entry_2));
   group->tiles.emplace_back(std::move(test_entry_3));
+  group->tile_stats["guid-1-1"] = TileStats(group->last_updated_ts, 0.5);
+  group->tile_stats["guid-1-2"] = TileStats(group->last_updated_ts, 0.2);
+  group->tile_stats["guid-1-3"] = TileStats(group->last_updated_ts, 0.7);
+  group->tile_stats["guid-1-4"] = TileStats(group->last_updated_ts, 0.4);
+  group->tile_stats["guid-2-1"] = TileStats(group->last_updated_ts, 0.3);
+  group->tile_stats["guid-2-2"] = TileStats(group->last_updated_ts, 0.6);
+  group->tile_stats["guid-3-1"] = TileStats(group->last_updated_ts, 0.5);
+}
+
+std::vector<std::unique_ptr<Tile>> GetTestTrendingTileList() {
+  auto trending_tile1 = std::make_unique<Tile>();
+  trending_tile1->id = "trending_1";
+
+  auto trending_tile2 = std::make_unique<Tile>();
+  trending_tile2->id = "trending_2";
+
+  auto trending_tile3 = std::make_unique<Tile>();
+  trending_tile3->id = "trending_3";
+
+  std::vector<std::unique_ptr<Tile>> trending_tile_list;
+  trending_tile_list.emplace_back(std::move(trending_tile1));
+  trending_tile_list.emplace_back(std::move(trending_tile2));
+  trending_tile_list.emplace_back(std::move(trending_tile3));
+  return trending_tile_list;
 }
 
 bool AreTileGroupsIdentical(const TileGroup& lhs, const TileGroup& rhs) {
@@ -133,7 +96,7 @@ bool AreTileGroupsIdentical(const TileGroup& lhs, const TileGroup& rhs) {
       return false;
   }
 
-  return true;
+  return lhs.tile_stats == rhs.tile_stats;
 }
 
 bool AreTilesIdentical(const Tile& lhs, const Tile& rhs) {

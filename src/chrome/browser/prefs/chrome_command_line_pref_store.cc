@@ -44,7 +44,7 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
         {switches::kLang, language::prefs::kApplicationLocale},
         {data_reduction_proxy::switches::kDataReductionProxy,
          data_reduction_proxy::prefs::kDataReductionProxy},
-        {switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist},
+        {switches::kAuthServerAllowlist, prefs::kAuthServerAllowlist},
         {switches::kSSLVersionMin, prefs::kSSLVersionMin},
         {switches::kSSLVersionMax, prefs::kSSLVersionMax},
 #if defined(OS_ANDROID)
@@ -67,7 +67,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {switches::kDisable3DAPIs, prefs::kDisable3DAPIs, true},
         {switches::kEnableCloudPrintProxy, prefs::kCloudPrintProxyEnabled,
          true},
-        {switches::kAllowOutdatedPlugins, prefs::kPluginsAllowOutdated, true},
         {switches::kNoPings, prefs::kEnableHyperlinkAuditing, false},
         {switches::kAllowRunningInsecureContent,
          prefs::kWebKitAllowRunningInsecureContent, true},

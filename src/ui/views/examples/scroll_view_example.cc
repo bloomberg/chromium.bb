@@ -20,8 +20,10 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 using l10n_util::GetStringUTF16;
 using l10n_util::GetStringUTF8;
@@ -46,7 +48,8 @@ class ScrollViewExample::ScrollableView : public View {
       container->AddChildView(std::move(view));
     };
     add_child(std::make_unique<LabelButton>(
-        nullptr, GetStringUTF16(IDS_SCROLL_VIEW_BUTTON_LABEL)));
+        Button::PressedCallback(),
+        GetStringUTF16(IDS_SCROLL_VIEW_BUTTON_LABEL)));
     add_child(std::make_unique<RadioButton>(
         GetStringUTF16(IDS_SCROLL_VIEW_RADIO_BUTTON_LABEL), 0));
     layout_manager->SetDefaultFlex(1);
@@ -83,53 +86,57 @@ void ScrollViewExample::CreateExampleView(View* container) {
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
+  container->SetLayoutManager(std::make_unique<FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kVertical);
+
+  auto full_flex = FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                     MaximumFlexSizeRule::kUnbounded)
+                       .WithWeight(1);
 
   // Add scroll view.
-  ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  layout->StartRow(1, 0);
-  scroll_view_ = layout->AddView(std::move(scroll_view));
+  scroll_view_ = container->AddChildView(std::move(scroll_view));
+  scroll_view_->SetProperty(views::kFlexBehaviorKey, full_flex);
 
   // Add control buttons.
-  column_set = layout->AddColumnSet(1);
-  for (size_t i = 0; i < 5; i++) {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  }
-  layout->StartRow(0, 1);
-  wide_ = layout->AddView(std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_SCROLL_VIEW_WIDE_LABEL)));
-  tall_ = layout->AddView(std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_SCROLL_VIEW_TALL_LABEL)));
-  big_square_ = layout->AddView(std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_SCROLL_VIEW_BIG_SQUARE_LABEL)));
-  small_square_ = layout->AddView(std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_SCROLL_VIEW_SMALL_SQUARE_LABEL)));
-  scroll_to_ = layout->AddView(std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_SCROLL_VIEW_SCROLL_TO_LABEL)));
+  auto* button_panel = container->AddChildView(std::make_unique<View>());
+  button_panel->SetLayoutManager(std::make_unique<FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kHorizontal);
+
+  button_panel->AddChildView(std::make_unique<LabelButton>(
+      base::BindRepeating(&ScrollViewExample::ButtonPressed,
+                          base::Unretained(this), gfx::Rect(0, 0, 1000, 100),
+                          SK_ColorYELLOW, SK_ColorCYAN),
+      GetStringUTF16(IDS_SCROLL_VIEW_WIDE_LABEL)));
+  button_panel->AddChildView(std::make_unique<LabelButton>(
+      base::BindRepeating(&ScrollViewExample::ButtonPressed,
+                          base::Unretained(this), gfx::Rect(0, 0, 100, 1000),
+                          SK_ColorRED, SK_ColorCYAN),
+      GetStringUTF16(IDS_SCROLL_VIEW_TALL_LABEL)));
+  button_panel->AddChildView(std::make_unique<LabelButton>(
+      base::BindRepeating(&ScrollViewExample::ButtonPressed,
+                          base::Unretained(this), gfx::Rect(0, 0, 1000, 1000),
+                          SK_ColorRED, SK_ColorGREEN),
+      GetStringUTF16(IDS_SCROLL_VIEW_BIG_SQUARE_LABEL)));
+  button_panel->AddChildView(std::make_unique<LabelButton>(
+      base::BindRepeating(&ScrollViewExample::ButtonPressed,
+                          base::Unretained(this), gfx::Rect(0, 0, 100, 100),
+                          SK_ColorYELLOW, SK_ColorGREEN),
+      GetStringUTF16(IDS_SCROLL_VIEW_SMALL_SQUARE_LABEL)));
+  button_panel->AddChildView(std::make_unique<LabelButton>(
+      base::BindRepeating(&View::ScrollRectToVisible,
+                          base::Unretained(scroll_view_->contents()),
+                          gfx::Rect(20, 500, 1000, 500)),
+      GetStringUTF16(IDS_SCROLL_VIEW_SCROLL_TO_LABEL)));
+
+  for (View* child : button_panel->children())
+    child->SetProperty(views::kFlexBehaviorKey, full_flex);
 }
 
-void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (sender == wide_) {
-    scrollable_->SetBounds(0, 0, 1000, 100);
-    scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
-  } else if (sender == tall_) {
-    scrollable_->SetBounds(0, 0, 100, 1000);
-    scrollable_->SetColor(SK_ColorRED, SK_ColorCYAN);
-  } else if (sender == big_square_) {
-    scrollable_->SetBounds(0, 0, 1000, 1000);
-    scrollable_->SetColor(SK_ColorRED, SK_ColorGREEN);
-  } else if (sender == small_square_) {
-    scrollable_->SetBounds(0, 0, 100, 100);
-    scrollable_->SetColor(SK_ColorYELLOW, SK_ColorGREEN);
-  } else if (sender == scroll_to_) {
-    scroll_view_->contents()->ScrollRectToVisible(
-        gfx::Rect(20, 500, 1000, 500));
-  }
-  scroll_view_->InvalidateLayout();
+void ScrollViewExample::ButtonPressed(gfx::Rect bounds,
+                                      SkColor from,
+                                      SkColor to) {
+  scrollable_->SetBoundsRect(std::move(bounds));
+  scrollable_->SetColor(from, to);
 }
 
 }  // namespace examples

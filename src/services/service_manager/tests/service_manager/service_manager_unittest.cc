@@ -23,8 +23,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -33,7 +33,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_process_launcher.h"
@@ -73,8 +73,8 @@ void OnServicePIDReceivedCallback(std::string* service_name,
 
 class TestService : public Service, public test::mojom::CreateInstanceTest {
  public:
-  explicit TestService(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit TestService(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface<test::mojom::CreateInstanceTest>(
         base::BindRepeating(&TestService::Create, base::Unretained(this)));
   }
@@ -87,7 +87,7 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
     wait_for_target_identity_loop_->Run();
   }
 
-  Connector* connector() { return service_binding_.GetConnector(); }
+  Connector* connector() { return service_receiver_.GetConnector(); }
 
  private:
   // Service:
@@ -97,8 +97,8 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(test::mojom::CreateInstanceTestRequest request) {
-    binding_.Bind(std::move(request));
+  void Create(mojo::PendingReceiver<test::mojom::CreateInstanceTest> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   // test::mojom::CreateInstanceTest:
@@ -110,23 +110,23 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
       wait_for_target_identity_loop_->Quit();
   }
 
-  ServiceBinding service_binding_;
+  ServiceReceiver service_receiver_;
   Identity target_identity_;
   std::unique_ptr<base::RunLoop> wait_for_target_identity_loop_;
 
   BinderRegistry registry_;
-  mojo::Binding<test::mojom::CreateInstanceTest> binding_{this};
+  mojo::Receiver<test::mojom::CreateInstanceTest> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestService);
 };
 
 class SimpleService : public Service {
  public:
-  explicit SimpleService(mojom::ServiceRequest request)
-      : binding_(this, std::move(request)) {}
-  ~SimpleService() override {}
+  explicit SimpleService(mojo::PendingReceiver<mojom::Service> receiver)
+      : receiver_(this, std::move(receiver)) {}
+  ~SimpleService() override = default;
 
-  Connector* connector() { return binding_.GetConnector(); }
+  Connector* connector() { return receiver_.GetConnector(); }
 
   void WaitForDisconnect() {
     base::RunLoop loop;
@@ -142,7 +142,7 @@ class SimpleService : public Service {
     Terminate();
   }
 
-  ServiceBinding binding_;
+  ServiceReceiver receiver_;
   base::OnceClosure connection_lost_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleService);
@@ -268,14 +268,13 @@ class ServiceManagerTest : public testing::Test,
     channel.PrepareToPassRemoteEndpoint(&options, &child_command_line);
 
     mojo::OutgoingInvitation invitation;
-    service_manager::mojom::ServicePtr client =
-        ServiceProcessLauncher::PassServiceRequestOnCommandLine(
-            &invitation, &child_command_line);
+    auto client = ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+        &invitation, &child_command_line);
     mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     connector()->RegisterServiceInstance(
         service_manager::Identity(kTestTargetName, kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        client.PassInterface(), metadata.BindNewPipeAndPassReceiver());
+        std::move(client), metadata.BindNewPipeAndPassReceiver());
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
@@ -537,11 +536,12 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   // Introduce a new service instance for service_manager_unittest_target,
   // which should be allowed because the test service has
   // |can_create_other_service_instances| set to |true| in its manifest.
-  mojom::ServicePtr test_service_proxy1;
-  SimpleService test_service1(mojo::MakeRequest(&test_service_proxy1));
+  mojo::PendingRemote<mojom::Service> test_service_remote1;
+  SimpleService test_service1(
+      test_service_remote1.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::ProcessMetadata> metadata1;
   connector()->RegisterServiceInstance(kInstance1Id,
-                                       test_service_proxy1.PassInterface(),
+                                       std::move(test_service_remote1),
                                        metadata1.BindNewPipeAndPassReceiver());
   metadata1->SetPID(42);
   WaitForInstanceToStart(kInstance1Id);
@@ -550,11 +550,12 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
 
   // Now use the new instance (which does not have client_process capability)
   // to attempt introduction of yet another instance. This should fail.
-  mojom::ServicePtr test_service_proxy2;
-  SimpleService test_service2(mojo::MakeRequest(&test_service_proxy2));
+  mojo::PendingRemote<mojom::Service> test_service_remote2;
+  SimpleService test_service2(
+      test_service_remote2.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::ProcessMetadata> metadata2;
   test_service1.connector()->RegisterServiceInstance(
-      kInstance2Id, test_service_proxy2.PassInterface(),
+      kInstance2Id, std::move(test_service_remote2),
       metadata2.BindNewPipeAndPassReceiver());
   metadata2->SetPID(43);
 

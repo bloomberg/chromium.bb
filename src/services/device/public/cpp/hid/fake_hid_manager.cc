@@ -13,8 +13,23 @@
 
 namespace device {
 
-FakeHidConnection::FakeHidConnection(mojom::HidDeviceInfoPtr device)
-    : device_(std::move(device)) {}
+FakeHidConnection::FakeHidConnection(
+    mojom::HidDeviceInfoPtr device,
+    mojo::PendingReceiver<mojom::HidConnection> receiver,
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher)
+    : receiver_(this, std::move(receiver)),
+      device_(std::move(device)),
+      watcher_(std::move(watcher)) {
+  receiver_.set_disconnect_handler(base::BindOnce(
+      [](FakeHidConnection* self) { delete self; }, base::Unretained(this)));
+  if (watcher_) {
+    watcher_.set_disconnect_handler(base::BindOnce(
+        [](FakeHidConnection* self) { delete self; }, base::Unretained(this)));
+  }
+  if (connection_client)
+    client_.Bind(std::move(connection_client));
+}
 
 FakeHidConnection::~FakeHidConnection() = default;
 
@@ -92,7 +107,7 @@ void FakeHidConnection::SendFeatureReport(uint8_t report_id,
 }
 
 // Implementation of FakeHidManager.
-FakeHidManager::FakeHidManager() {}
+FakeHidManager::FakeHidManager() = default;
 FakeHidManager::~FakeHidManager() = default;
 
 void FakeHidManager::Bind(mojo::PendingReceiver<mojom::HidManager> receiver) {
@@ -100,10 +115,18 @@ void FakeHidManager::Bind(mojo::PendingReceiver<mojom::HidManager> receiver) {
 }
 
 // mojom::HidManager implementation:
+void FakeHidManager::AddReceiver(
+    mojo::PendingReceiver<mojom::HidManager> receiver) {
+  Bind(std::move(receiver));
+}
+
 void FakeHidManager::GetDevicesAndSetClient(
     mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
     GetDevicesCallback callback) {
   GetDevices(std::move(callback));
+
+  if (!client.is_valid())
+    return;
 
   clients_.Add(std::move(client));
 }
@@ -127,9 +150,10 @@ void FakeHidManager::Connect(
   }
 
   mojo::PendingRemote<mojom::HidConnection> connection;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<FakeHidConnection>(devices_[device_guid]->Clone()),
-      connection.InitWithNewPipeAndPassReceiver());
+  // FakeHidConnection is self-owned.
+  new FakeHidConnection(devices_[device_guid]->Clone(),
+                        connection.InitWithNewPipeAndPassReceiver(),
+                        std::move(connection_client), std::move(watcher));
   std::move(callback).Run(std::move(connection));
 }
 
@@ -199,6 +223,11 @@ void FakeHidManager::RemoveDevice(const std::string& guid) {
       client->DeviceRemoved(device_info->Clone());
     devices_.erase(guid);
   }
+}
+
+void FakeHidManager::SimulateConnectionError() {
+  clients_.Clear();
+  receivers_.Clear();
 }
 
 }  // namespace device

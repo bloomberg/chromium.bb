@@ -47,8 +47,6 @@ class WebPluginContainerImpl;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                                           public FrameOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
-
  public:
   ~HTMLFrameOwnerElement() override;
 
@@ -76,7 +74,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return embedded_content_view_;
   }
 
-  void FrameCrossOriginToParentFrameChanged();
+  void SetColorScheme(mojom::ColorScheme);
 
   class PluginDisposeSuspendScope {
     STACK_ALLOCATED();
@@ -120,6 +118,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowFullscreen() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
+  mojom::ColorScheme GetColorScheme() const override;
   AtomicString RequiredCsp() const override { return g_null_atom; }
   bool ShouldLazyLoadChildren() const final;
 
@@ -130,12 +129,10 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  void SetEmbeddingToken(const base::UnguessableToken& token);
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const {
-    return embedding_token_;
-  }
+  // Element overrides:
+  bool IsAdRelated() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
@@ -151,6 +148,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replace_current_item);
   bool IsKeyboardFocusable() const override;
   void FrameOwnerPropertiesChanged() override;
+  void CSPAttributeChanged() override;
 
   void DisposePluginSoon(WebPluginContainerImpl*);
 
@@ -166,17 +164,16 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // Return a feature policy container policy for this frame, based on the
   // frame attributes and the effective origin specified in the frame
   // attributes.
-  virtual ParsedFeaturePolicy ConstructContainerPolicy(
-      Vector<String>* /*  messages */) const = 0;
+  virtual ParsedFeaturePolicy ConstructContainerPolicy() const = 0;
 
   // Update the container policy and notify the frame loader client of any
   // changes.
-  void UpdateContainerPolicy(Vector<String>* messages = nullptr);
+  void UpdateContainerPolicy();
 
   // Return a document policy required policy for this frame, based on the
   // frame attributes.
-  virtual DocumentPolicy::FeatureState ConstructRequiredPolicy() const {
-    return DocumentPolicy::FeatureState{};
+  virtual DocumentPolicyFeatureState ConstructRequiredPolicy() const {
+    return DocumentPolicyFeatureState{};
   }
 
   // Update the required policy and notify the frame loader client of any
@@ -202,12 +199,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return network::mojom::ReferrerPolicy::kDefault;
   }
 
-  bool IsLoadingFrameDefaultEagerEnforced() const;
-
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   FramePolicy frame_policy_;
-  base::Optional<base::UnguessableToken> embedding_token_;
 
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
   bool should_lazy_load_children_;

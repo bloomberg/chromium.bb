@@ -23,14 +23,14 @@ extern const base::FilePath::CharType kBrowserProcessExecutableNameChromium[];
 extern const base::FilePath::CharType kHelperProcessExecutableNameChromium[];
 extern const base::FilePath::CharType kBrowserProcessExecutablePathChromium[];
 extern const base::FilePath::CharType kHelperProcessExecutablePathChromium[];
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // NOTE: if you change the value of kFrameworkName, please don't forget to
 // update components/test/run_all_unittests.cc as well.
 // TODO(tfarina): Remove the comment above, when you fix components to use plist
 // on Mac.
 extern const base::FilePath::CharType kFrameworkName[];
 extern const base::FilePath::CharType kFrameworkExecutableName[];
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];
 extern const base::FilePath::CharType kElfDll[];
@@ -39,6 +39,7 @@ extern const base::FilePath::CharType kStatusTrayWindowClass[];
 
 extern const char kInitialProfile[];
 extern const char kMultiProfileDirPrefix[];
+extern const char kEphemeralGuestProfileDirPrefix[];
 extern const base::FilePath::CharType kGuestProfileDir[];
 extern const base::FilePath::CharType kSystemProfileDir[];
 
@@ -65,6 +66,7 @@ extern const base::FilePath::CharType kOfflinePageRequestQueueDirname[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kPreviewsOptOutDBFilename[];
 extern const base::FilePath::CharType kQueryTileStorageDirname[];
+extern const base::FilePath::CharType kVideoTutorialsStorageDirname[];
 extern const base::FilePath::CharType kReadmeFilename[];
 extern const base::FilePath::CharType kSecurePreferencesFilename[];
 extern const base::FilePath::CharType kServiceStateFileName[];
@@ -80,9 +82,6 @@ extern const base::FilePath::CharType kReportingAndNelStoreFilename[];
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kJumpListIconDirname[];
 #endif
-
-// File name of the Pepper Flash plugin on different platforms.
-extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 
 // directory names
 #if defined(OS_WIN)

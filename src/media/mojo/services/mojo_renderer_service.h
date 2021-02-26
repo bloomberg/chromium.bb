@@ -36,8 +36,8 @@ class Renderer;
 
 // A mojom::Renderer implementation that use a media::Renderer to render
 // media streams.
-class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
-                                              public RendererClient {
+class MEDIA_MOJO_EXPORT MojoRendererService final : public mojom::Renderer,
+                                                    public RendererClient {
  public:
   // Helper function to bind MojoRendererService with a SelfOwendReceiver,
   // which is safely accessible via the returned SelfOwnedReceiverRef.
@@ -64,7 +64,8 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void StartPlayingFrom(base::TimeDelta time_delta) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
-  void SetCdm(int32_t cdm_id, SetCdmCallback callback) final;
+  void SetCdm(const base::Optional<base::UnguessableToken>& cdm_id,
+              SetCdmCallback callback) final;
 
   // TODO(tguilbert): Get rid of |bad_message_cb_|, now that it's no longer
   // needed.

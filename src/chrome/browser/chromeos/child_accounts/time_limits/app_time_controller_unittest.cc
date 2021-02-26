@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/services/app_service/public/cpp/icon_loader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -32,6 +31,7 @@
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/icon_loader.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia.h"
@@ -89,13 +89,17 @@ class AppTimeControllerTest : public testing::Test {
         apps::mojom::AppType app_type,
         const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override {
-      EXPECT_EQ(icon_compression, apps::mojom::IconCompression::kUncompressed);
+      auto expected_icon_type =
+          (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+              ? apps::mojom::IconType::kStandard
+              : apps::mojom::IconType::kUncompressed;
+      EXPECT_EQ(icon_type, expected_icon_type);
       auto iv = apps::mojom::IconValue::New();
-      iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      iv->icon_type = icon_type;
       iv->uncompressed =
           gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
       iv->is_placeholder_icon = false;
@@ -571,7 +575,7 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
   controller()->app_registry()->SaveAppActivity();
   controller()->RecordMetricsOnShutdown();
   DeleteController();
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 1, 1);
 
   InstantiateController();
 
@@ -583,12 +587,12 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
   // metrics.
   histogram_tester.ExpectBucketCount(kBlockedAppsCountMetric, 1, 1);
   histogram_tester.ExpectBucketCount(kAppsWithTimeLimitMetric, 1, 1);
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 1, 1);
 
   controller()->RecordMetricsOnShutdown();
   DeleteController();
   // There was actually no policy update when the controller was reinstantiated.
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 0, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 0, 1);
 }
 
 TEST_F(AppTimeControllerTest, SetLastResetTimeTest) {

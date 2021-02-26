@@ -24,7 +24,7 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
         event => TimelineUIUtils.eventStyle(event).category.name);
     /** @type {?SDK.FilmStripModel.FilmStripModel} */
     this._filmStripModel = null;
-    /** @type {?TimelineModel.TimelineIRModel.TimelineIRModel} */
+    /** @type {!TimelineModel.TimelineIRModel.TimelineIRModel} */
     this._irModel = new TimelineModel.TimelineIRModel.TimelineIRModel();
 
     /** @type {!Window} */
@@ -118,7 +118,8 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
 
     for (const entry of this._extensionTracingModels) {
       entry.model.adjustTime(
-          this._tracingModel.minimumRecordTime() + (entry.timeOffset / 1000) - this._recordStartTime);
+          this._tracingModel.minimumRecordTime() + (entry.timeOffset / 1000) -
+          /** @type {number} */ (this._recordStartTime));
     }
     this._autoWindowTimes();
   }
@@ -133,7 +134,8 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
     if (!this._tracingModel) {
       return;
     }
-    model.adjustTime(this._tracingModel.minimumRecordTime() + (timeOffset / 1000) - this._recordStartTime);
+    model.adjustTime(
+        this._tracingModel.minimumRecordTime() + (timeOffset / 1000) - /** @type {number} */ (this._recordStartTime));
     this.dispatchEventToListeners(Events.ExtensionDataAdded);
   }
 
@@ -212,7 +214,8 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
   filmStripModelFrame(frame) {
     // For idle frames, look at the state at the beginning of the frame.
     const screenshotTime = frame.idle ? frame.startTime : frame.endTime;
-    const filmStripFrame = this._filmStripModel.frameByTimestamp(screenshotTime);
+    const filmStripModel = /** @type {!SDK.FilmStripModel.FilmStripModel} */ (this._filmStripModel);
+    const filmStripFrame = filmStripModel.frameByTimestamp(screenshotTime);
     return filmStripFrame && filmStripFrame.timestamp - frame.endTime < 10 ? filmStripFrame : null;
   }
 
@@ -221,6 +224,9 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Promise<?FileError>}
    */
   save(stream) {
+    if (!this._tracingModel) {
+      throw 'call setTracingModel before accessing PerformanceModel';
+    }
     const backingStorage =
         /** @type {!Bindings.TempFile.TempFileBackingStorage} */ (this._tracingModel.backingStorage());
     return backingStorage.writeToStream(stream);
@@ -244,6 +250,7 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
 
   _autoWindowTimes() {
     const timelineModel = this._timelineModel;
+    /** @type {!Array<!SDK.TracingModel.Event>} */
     let tasks = [];
     for (const track of timelineModel.tracks()) {
       // Deliberately pick up last main frame's track.
@@ -262,28 +269,28 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
      * @return {number}
      */
     function findLowUtilizationRegion(startIndex, stopIndex) {
-      const /** @const */ threshold = 0.1;
+      const threshold = 0.1;
       let cutIndex = startIndex;
-      let cutTime = (tasks[cutIndex].startTime + tasks[cutIndex].endTime) / 2;
+      let cutTime = (tasks[cutIndex].startTime + /** @type {number} */ (tasks[cutIndex].endTime)) / 2;
       let usedTime = 0;
       const step = Math.sign(stopIndex - startIndex);
       for (let i = startIndex; i !== stopIndex; i += step) {
         const task = tasks[i];
-        const taskTime = (task.startTime + task.endTime) / 2;
+        const taskTime = (task.startTime + /** @type {number} */ (task.endTime)) / 2;
         const interval = Math.abs(cutTime - taskTime);
         if (usedTime < threshold * interval) {
           cutIndex = i;
           cutTime = taskTime;
           usedTime = 0;
         }
-        usedTime += task.duration;
+        usedTime += /** @type {number} */ (task.duration);
       }
       return cutIndex;
     }
     const rightIndex = findLowUtilizationRegion(tasks.length - 1, 0);
     const leftIndex = findLowUtilizationRegion(0, rightIndex);
     let leftTime = tasks[leftIndex].startTime;
-    let rightTime = tasks[rightIndex].endTime;
+    let rightTime = /** @type {number} */ (tasks[rightIndex].endTime);
     const span = rightTime - leftTime;
     const totalSpan = timelineModel.maximumRecordTime() - timelineModel.minimumRecordTime();
     if (span < totalSpan * 0.1) {
@@ -306,4 +313,5 @@ export const Events = {
 };
 
 /** @typedef {!{left: number, right: number}} */
+// @ts-ignore typedef
 export let Window;

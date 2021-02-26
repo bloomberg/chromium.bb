@@ -39,16 +39,16 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 
@@ -86,7 +86,7 @@ public class WebApkUpdateManagerUnitTest {
     private static final String PRIMARY_ICON_URL = "/icon.png";
     private static final String PRIMARY_ICON_MURMUR2_HASH = "3";
     private static final @WebDisplayMode int DISPLAY_MODE = WebDisplayMode.UNDEFINED;
-    private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
+    private static final int ORIENTATION = ScreenOrientationLockType.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;
     private static final int DEFAULT_BACKGROUND_COLOR = 3;
@@ -261,7 +261,8 @@ public class WebApkUpdateManagerUnitTest {
     }
 
     private void registerStorageForWebApkPackage(String webApkPackageName) {
-        WebappRegistry.getInstance().register(WebappRegistry.webApkIdForPackage(webApkPackageName),
+        WebappRegistry.getInstance().register(
+                WebappIntentUtils.getIdForWebApkPackage(webApkPackageName),
                 new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
@@ -270,7 +271,7 @@ public class WebApkUpdateManagerUnitTest {
 
     private static WebappDataStorage getStorage(String packageName) {
         return WebappRegistry.getInstance().getWebappDataStorage(
-                WebappRegistry.webApkIdForPackage(packageName));
+                WebappIntentUtils.getIdForWebApkPackage(packageName));
     }
 
     /**
@@ -385,7 +386,7 @@ public class WebApkUpdateManagerUnitTest {
                                 && manifestData.shareTargetEncType.equals(
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts);
-        return WebApkIntentDataProviderFactory.create("", manifestData.scopeUrl,
+        return WebApkIntentDataProviderFactory.create(new Intent(), "", manifestData.scopeUrl,
                 new WebappIcon(manifestData.primaryIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,
@@ -977,10 +978,11 @@ public class WebApkUpdateManagerUnitTest {
      * AND
      * - "best" icon URL for the primary icon did not change.
      * AND
-     * - "best" icon URL for the badge icon did not change.
+     * - "best" icon URL for the monochrome icon did not change.
      */
     @Test
-    public void testIconUrlsChangeShouldNotUpgradeIfPrimaryIconUrlAndBadgeIconUrlDoNotChange() {
+    public void
+    testIconUrlsChangeShouldNotUpgradeIfPrimaryIconUrlAndMonochromeIconUrlDoNotChange() {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.iconUrlToMurmur2HashMap.put("/icon2.png", null);
         assertFalse(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
@@ -998,8 +1000,8 @@ public class WebApkUpdateManagerUnitTest {
     public void testWebManifestSameButBestIconUrlChangedShouldNotUpgrade() {
         String iconUrl1 = "/icon1.png";
         String iconUrl2 = "/icon2.png";
-        String badgeUrl1 = "/badge1.png";
-        String badgeUrl2 = "/badge2.pgn";
+        String monochromeUrl1 = "/monochrome1.png";
+        String monochromeUrl2 = "/monochrome2.png";
         String hash1 = "11";
         String hash2 = "22";
         String hash3 = "33";
@@ -1010,16 +1012,16 @@ public class WebApkUpdateManagerUnitTest {
         androidManifestData.iconUrlToMurmur2HashMap.clear();
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, hash1);
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
-        androidManifestData.iconUrlToMurmur2HashMap.put(badgeUrl1, hash3);
-        androidManifestData.iconUrlToMurmur2HashMap.put(badgeUrl2, hash4);
+        androidManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl1, hash3);
+        androidManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl2, hash4);
 
         ManifestData fetchedManifestData = defaultManifestData();
         fetchedManifestData.primaryIconUrl = iconUrl2;
         fetchedManifestData.iconUrlToMurmur2HashMap.clear();
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, null);
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
-        fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl1, null);
-        fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl2, hash4);
+        fetchedManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl1, null);
+        fetchedManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl2, hash4);
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
     }
@@ -1054,9 +1056,9 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testManifestOrientationChangedShouldUpgrade() {
         ManifestData oldData = defaultManifestData();
-        oldData.orientation = ScreenOrientationValues.LANDSCAPE;
+        oldData.orientation = ScreenOrientationLockType.LANDSCAPE;
         ManifestData fetchedData = defaultManifestData();
-        fetchedData.orientation = ScreenOrientationValues.PORTRAIT;
+        fetchedData.orientation = ScreenOrientationLockType.PORTRAIT;
         assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
     }
 

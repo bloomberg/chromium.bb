@@ -6,9 +6,10 @@
 
 #include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 
+#include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cjx_object.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
+#include "v8/include/cppgc/heap.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutprocessor.h"
 #include "xfa/fxfa/layout/cxfa_viewlayoutprocessor.h"
@@ -26,9 +27,17 @@ CXFA_LayoutProcessor* CXFA_LayoutProcessor::FromDocument(
   return static_cast<CXFA_LayoutProcessor*>(pXFADoc->GetLayoutProcessor());
 }
 
-CXFA_LayoutProcessor::CXFA_LayoutProcessor() = default;
+CXFA_LayoutProcessor::CXFA_LayoutProcessor(cppgc::Heap* pHeap)
+    : m_pHeap(pHeap) {}
 
 CXFA_LayoutProcessor::~CXFA_LayoutProcessor() = default;
+
+void CXFA_LayoutProcessor::Trace(cppgc::Visitor* visitor) const {
+  CXFA_Document::LayoutProcessorIface::Trace(visitor);
+  visitor->Trace(m_pViewLayoutProcessor);
+  visitor->Trace(m_pContentLayoutProcessor);
+  ContainerTrace(visitor, m_rgChangedContainers);
+}
 
 void CXFA_LayoutProcessor::SetForceRelayout(bool bForceRestart) {
   m_bNeedLayout = bForceRestart;
@@ -38,7 +47,7 @@ int32_t CXFA_LayoutProcessor::StartLayout(bool bForceRestart) {
   if (!bForceRestart && !NeedLayout())
     return 100;
 
-  m_pContentLayoutProcessor.reset();
+  m_pContentLayoutProcessor = nullptr;
   m_nProgressCounter = 0;
   CXFA_Node* pFormPacketNode =
       ToNode(GetDocument()->GetXFAObject(XFA_HASHCODE_Form));
@@ -50,16 +59,21 @@ int32_t CXFA_LayoutProcessor::StartLayout(bool bForceRestart) {
   if (!pFormRoot)
     return -1;
 
-  if (!m_pViewLayoutProcessor)
-    m_pViewLayoutProcessor = pdfium::MakeUnique<CXFA_ViewLayoutProcessor>(this);
+  if (!m_pViewLayoutProcessor) {
+    m_pViewLayoutProcessor =
+        cppgc::MakeGarbageCollected<CXFA_ViewLayoutProcessor>(
+            GetHeap()->GetAllocationHandle(), GetHeap(), this);
+  }
   if (!m_pViewLayoutProcessor->InitLayoutPage(pFormRoot))
     return -1;
 
   if (!m_pViewLayoutProcessor->PrepareFirstPage(pFormRoot))
     return -1;
 
-  m_pContentLayoutProcessor = pdfium::MakeUnique<CXFA_ContentLayoutProcessor>(
-      pFormRoot, m_pViewLayoutProcessor.get());
+  m_pContentLayoutProcessor =
+      cppgc::MakeGarbageCollected<CXFA_ContentLayoutProcessor>(
+          GetHeap()->GetAllocationHandle(), GetHeap(), pFormRoot,
+          m_pViewLayoutProcessor);
   m_nProgressCounter = 1;
   return 0;
 }
@@ -81,7 +95,7 @@ int32_t CXFA_LayoutProcessor::DoLayout() {
     if (eStatus != CXFA_ContentLayoutProcessor::Result::kDone)
       m_nProgressCounter++;
 
-    RetainPtr<CXFA_ContentLayoutItem> pLayoutItem =
+    CXFA_ContentLayoutItem* pLayoutItem =
         m_pContentLayoutProcessor->ExtractLayoutItem();
     if (pLayoutItem)
       pLayoutItem->m_sPos = CFX_PointF(fPosX, fPosY);
@@ -124,7 +138,7 @@ CXFA_LayoutItem* CXFA_LayoutProcessor::GetLayoutItem(CXFA_Node* pFormItem) {
 }
 
 void CXFA_LayoutProcessor::AddChangedContainer(CXFA_Node* pContainer) {
-  if (!pdfium::ContainsValue(m_rgChangedContainers, pContainer))
+  if (!pdfium::Contains(m_rgChangedContainers, pContainer))
     m_rgChangedContainers.push_back(pContainer);
 }
 

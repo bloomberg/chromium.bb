@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.firstrun;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,7 +51,6 @@ public class FirstRunUtilsTest {
         private final String mAccountType;
 
         FakeAuthenticationAccountManager(String accountType) {
-            super(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
             mAccountType = accountType;
         }
 

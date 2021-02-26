@@ -74,7 +74,7 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   // Describes if and how the bounds of the host view can be animated as part of
   // layout animations, if the preferred size of the layout changes.
-  enum BoundsAnimationMode {
+  enum class BoundsAnimationMode {
     // Default behavior: the host view will always take the space given to it by
     // its parent view and child views will animate within those bounds. Useful
     // for cases where the layout is in a fixed-size container or dialog, but
@@ -202,11 +202,20 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // widget).
   void EnableAnimationForTesting();
 
+  const ProposedLayout& starting_layout_for_testing() const {
+    return starting_layout_;
+  }
+
+  const ProposedLayout& target_layout_for_testing() const {
+    return target_layout_;
+  }
+
  protected:
   // LayoutManagerBase:
   ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override;
   void OnInstalled(View* host) override;
+  bool OnViewAdded(View* host, View* view) override;
   void OnLayoutChanged() override;
   void LayoutImpl() override;
 

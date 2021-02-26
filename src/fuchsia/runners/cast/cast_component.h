@@ -14,9 +14,10 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_fuchsia.h"
 #include "base/optional.h"
+#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
-#include "fuchsia/runners/cast/named_message_port_connector.h"
+#include "fuchsia/runners/cast/named_message_port_connector_fuchsia.h"
 #include "fuchsia/runners/common/web_component.h"
 
 namespace cr_fuchsia {
@@ -27,7 +28,6 @@ FORWARD_DECLARE_TEST(HeadlessCastRunnerIntegrationTest, Headless);
 
 // A specialization of WebComponent which adds Cast-specific services.
 class CastComponent : public WebComponent,
-                      public fuchsia::web::NavigationEventListener,
                       public base::MessagePumpFuchsia::ZxHandleWatcher {
  public:
   struct Params {
@@ -52,6 +52,8 @@ class CastComponent : public WebComponent,
     // Parameters asynchronously initialized by PendingCastComponent.
     std::unique_ptr<ApiBindingsClient> api_bindings_client;
     chromium::cast::ApplicationConfig application_config;
+    fidl::InterfaceHandle<chromium::cast::ApplicationContext>
+        application_context;
     base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>
         initial_url_rewrite_rules;
     base::Optional<uint64_t> media_session_id;
@@ -64,7 +66,7 @@ class CastComponent : public WebComponent,
 
   // WebComponent overrides.
   void StartComponent() final;
-  void DestroyComponent(int termination_exit_code,
+  void DestroyComponent(int64_t termination_exit_code,
                         fuchsia::sys::TerminationReason reason) final;
 
   const chromium::cast::ApplicationConfig& application_config() {
@@ -89,6 +91,9 @@ class CastComponent : public WebComponent,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
       fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
       final;
+  void CreateViewWithViewRef(zx::eventpair view_token,
+                             fuchsia::ui::views::ViewRefControl control_ref,
+                             fuchsia::ui::views::ViewRef view_ref) final;
 
   // base::MessagePumpFuchsia::ZxHandleWatcher implementation.
   // Called when the headless "view" token is disconnected.
@@ -103,15 +108,13 @@ class CastComponent : public WebComponent,
   std::vector<fuchsia::web::UrlRequestRewriteRule> initial_url_rewrite_rules_;
 
   bool constructor_active_ = false;
-  std::unique_ptr<NamedMessagePortConnector> connector_;
+  std::unique_ptr<NamedMessagePortConnectorFuchsia> connector_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
   std::unique_ptr<ApplicationControllerImpl> application_controller_;
+  chromium::cast::ApplicationContextPtr application_context_;
   uint64_t media_session_id_ = 0;
   zx::eventpair headless_view_token_;
   base::MessagePumpForIO::ZxHandleWatchController headless_disconnect_watch_;
-
-  fidl::Binding<fuchsia::web::NavigationEventListener>
-      navigation_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CastComponent);
 };

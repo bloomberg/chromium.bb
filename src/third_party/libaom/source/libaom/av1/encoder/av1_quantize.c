@@ -586,7 +586,7 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
     const int qrounding_factor = q == 0 ? 64 : 48;
 
     for (i = 0; i < 2; ++i) {
-      int qrounding_factor_fp = 64;
+      const int qrounding_factor_fp = 64;
       // y quantizer with TX scale
       quant_QTX = i == 0 ? av1_dc_quant_QTX(q, y_dc_delta_q, bit_depth)
                          : av1_ac_quant_QTX(q, 0, bit_depth);
@@ -637,7 +637,8 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
       quants->u_zbin[q][i] = quants->u_zbin[q][1];
       quants->u_round[q][i] = quants->u_round[q][1];
       deq->u_dequant_QTX[q][i] = deq->u_dequant_QTX[q][1];
-      quants->v_quant[q][i] = quants->u_quant[q][1];
+
+      quants->v_quant[q][i] = quants->v_quant[q][1];
       quants->v_quant_fp[q][i] = quants->v_quant_fp[q][1];
       quants->v_round_fp[q][i] = quants->v_round_fp[q][1];
       quants->v_quant_shift[q][i] = quants->v_quant_shift[q][1];
@@ -726,12 +727,12 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   memcpy(&xd->plane[2].seg_iqmatrix[segment_id],
          quant_params->giqmatrix[qmlevel_v][2],
          sizeof(quant_params->giqmatrix[qmlevel_v][2]));
-  x->skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
+  x->seg_skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
   x->qindex = qindex;
 
-  MvCostInfo *mv_cost_info = &x->mv_cost_info;
-  av1_set_error_per_bit(mv_cost_info, rdmult);
-  av1_set_sad_per_bit(cpi, mv_cost_info, qindex);
+  MvCosts *mv_costs = &x->mv_costs;
+  av1_set_error_per_bit(mv_costs, rdmult);
+  av1_set_sad_per_bit(cpi, mv_costs, qindex);
 }
 
 void av1_frame_init_quantizer(AV1_COMP *cpi) {
@@ -741,16 +742,26 @@ void av1_frame_init_quantizer(AV1_COMP *cpi) {
 }
 
 void av1_set_quantizer(AV1_COMMON *const cm, int min_qmlevel, int max_qmlevel,
-                       int q) {
+                       int q, int enable_chroma_deltaq) {
   // quantizer has to be reinitialized with av1_init_quantizer() if any
   // delta_q changes.
   CommonQuantParams *quant_params = &cm->quant_params;
   quant_params->base_qindex = AOMMAX(cm->delta_q_info.delta_q_present_flag, q);
+
   quant_params->y_dc_delta_q = 0;
-  quant_params->u_dc_delta_q = 0;
-  quant_params->u_ac_delta_q = 0;
-  quant_params->v_dc_delta_q = 0;
-  quant_params->v_ac_delta_q = 0;
+  if (enable_chroma_deltaq) {
+    // TODO(aomedia:2717): need to design better delta
+    quant_params->u_dc_delta_q = 2;
+    quant_params->u_ac_delta_q = 2;
+    quant_params->v_dc_delta_q = 2;
+    quant_params->v_ac_delta_q = 2;
+  } else {
+    quant_params->u_dc_delta_q = 0;
+    quant_params->u_ac_delta_q = 0;
+    quant_params->v_dc_delta_q = 0;
+    quant_params->v_ac_delta_q = 0;
+  }
+
   quant_params->qmatrix_level_y =
       aom_get_qmlevel(quant_params->base_qindex, min_qmlevel, max_qmlevel);
   quant_params->qmatrix_level_u =

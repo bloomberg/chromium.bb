@@ -8,7 +8,7 @@
 #include "src/objects/allocation-site.h"
 #include "src/objects/fixed-array.h"
 #include "src/objects/js-objects.h"
-#include "torque-generated/field-offsets-tq.h"
+#include "torque-generated/field-offsets.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -30,6 +30,7 @@ class JSArray : public JSObject {
   // is set to a smi. This matches the set function on FixedArray.
   inline void set_length(Smi length);
 
+  static bool MayHaveReadOnlyLength(Map js_array_map);
   static bool HasReadOnlyLength(Handle<JSArray> array);
   static bool WouldChangeReadOnlyLength(Handle<JSArray> array, uint32_t index);
 

@@ -19,6 +19,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 
@@ -56,7 +57,7 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
       case SIGSYS:
         return TERMINATION_STATUS_PROCESS_CRASHED;
       case SIGKILL:
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
         // On ChromeOS, only way a process gets kill by SIGKILL
         // is by oom-killer.
         return TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM;
@@ -76,15 +77,6 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
 }
 
 }  // namespace
-
-#if !defined(OS_NACL_NONSFI)
-bool KillProcessGroup(ProcessHandle process_group_id) {
-  bool result = kill(-1 * process_group_id, SIGKILL) == 0;
-  if (!result)
-    DPLOG(ERROR) << "Unable to terminate process group " << process_group_id;
-  return result;
-}
-#endif  // !defined(OS_NACL_NONSFI)
 
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   return GetTerminationStatusImpl(handle, false /* can_block */, exit_code);
@@ -132,7 +124,7 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
   return exited_cleanly;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 namespace {
 
@@ -168,7 +160,7 @@ void EnsureProcessTerminated(Process process) {
       0, new BackgroundReaper(std::move(process), TimeDelta::FromSeconds(2)));
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 void EnsureProcessGetsReaped(Process process) {
   DCHECK(!process.is_current());
 
@@ -179,9 +171,9 @@ void EnsureProcessGetsReaped(Process process) {
   PlatformThread::CreateNonJoinable(
       0, new BackgroundReaper(std::move(process), TimeDelta()));
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 #endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

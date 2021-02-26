@@ -17,6 +17,7 @@ namespace ui {
 class AtkUtilAuraLinuxTest : public AXPlatformNodeTest {
  public:
   AtkUtilAuraLinuxTest() {
+    AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
     // We need to create a platform node in order to install it as the root
     // ATK node. The ATK bridge will complain if we try to use it without a
     // root node installed.
@@ -65,6 +66,25 @@ TEST_F(AtkUtilAuraLinuxTest, KeySnooping) {
 
   AtkUtilAuraLinux* atk_util = AtkUtilAuraLinux::GetInstance();
   atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // AX mode is enabled and Key snooping works.
+  EXPECT_EQ(keyval_seen, 55);
+
+  TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(GetTree(), GetRootAsAXNode());
+  DCHECK(wrapper);
+  AXMode prev_mode = wrapper->ax_platform_node()->ax_mode_;
+  // Disables AX mode.
+  wrapper->ax_platform_node()->ax_mode_ = 0;
+  keyval_seen = 0;
+  atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // When AX mode is not enabled, Key snooping doesn't work.
+  EXPECT_EQ(keyval_seen, 0);
+
+  // Restores the previous AX mode.
+  wrapper->ax_platform_node()->ax_mode_ = prev_mode;
+  keyval_seen = 0;
+  atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // AX mode is set again, Key snooping works.
   EXPECT_EQ(keyval_seen, 55);
 
   atk_remove_key_event_listener(listener_id);
@@ -73,6 +93,21 @@ TEST_F(AtkUtilAuraLinuxTest, KeySnooping) {
   atk_util->HandleAtkKeyEvent(&atk_key_event);
 
   EXPECT_EQ(keyval_seen, 0);
+}
+
+TEST_F(AtkUtilAuraLinuxTest, AtSpiReady) {
+  AtkUtilAuraLinux* atk_util = AtkUtilAuraLinux::GetInstance();
+
+  EXPECT_FALSE(atk_util->IsAtSpiReady());
+
+  // In a normal browser execution, when a key event listener is added it means
+  // the AT-SPI bridge has done it as part of its initialization, so it is set
+  // as enabled.
+  AtkKeySnoopFunc key_snoop_func =
+      reinterpret_cast<AtkKeySnoopFunc>(+[](AtkKeyEventStruct* key_event) {});
+  atk_add_key_event_listener(key_snoop_func, nullptr);
+
+  EXPECT_TRUE(atk_util->IsAtSpiReady());
 }
 
 }  // namespace ui

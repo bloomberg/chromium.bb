@@ -45,25 +45,34 @@ namespace protobuf_mutator {
 class Mutator {
  public:
   // seed: value to initialize random number generator.
-  explicit Mutator(RandomEngine* random);
+  Mutator() = default;
   virtual ~Mutator() = default;
 
+  // Initialized internal random number generator.
+  void Seed(uint32_t value);
+
   // message: message to mutate.
-  // size_increase_hint: approximate number of bytes which can be added to the
-  // message. Method does not guarantee that real result size increase will be
-  // less than the value. It only changes probabilities of mutations which can
-  // cause size increase. Caller could repeat mutation if result was larger than
-  // requested.
-  void Mutate(protobuf::Message* message, size_t size_increase_hint);
+  // max_size_hint: approximate max ByteSize() of resulting message. Method does
+  // not guarantee that real result will be strictly smaller than value. Caller
+  // could repeat mutation if result was larger than expected.
+  void Mutate(protobuf::Message* message, size_t max_size_hint);
 
-  void CrossOver(const protobuf::Message& message1,
-                 protobuf::Message* message2);
+  void CrossOver(const protobuf::Message& message1, protobuf::Message* message2,
+                 size_t max_size_hint);
 
-  // field: Descriptor of the field to apply the mutation to.
-  // mutation: callback function that applies the mutation.
-  static void RegisterCustomMutation(
-      const protobuf::FieldDescriptor* field,
-      std::function<void(protobuf::Message* message)> mutation);
+  // Makes message initialized and calls post processors to make it valid.
+  void Fix(protobuf::Message* message);
+
+  // Callback to postprocess mutations.
+  // Implementation should use seed to initialize random number generators.
+  using PostProcess =
+      std::function<void(protobuf::Message* message, unsigned int seed)>;
+
+  // Register callback which will be called after every message mutation.
+  // In this callback fuzzer may adjust content of the message or mutate some
+  // fields in some fuzzer specific way.
+  void RegisterPostProcessor(const protobuf::Descriptor* desc,
+                             PostProcess callback);
 
  protected:
   // TODO(vitalybuka): Consider to replace with single mutate (uint8_t*, size).
@@ -76,31 +85,25 @@ class Mutator {
   virtual bool MutateBool(bool value);
   virtual size_t MutateEnum(size_t index, size_t item_count);
   virtual std::string MutateString(const std::string& value,
-                                   size_t size_increase_hint);
+                                   int size_increase_hint);
 
-  // TODO(vitalybuka): Allow user to control proto level mutations:
-  //   * Callbacks to recursive traversal.
-  //   * Callbacks for particular proto level mutations.
-
-  RandomEngine* random() { return random_; }
-
-  static std::unordered_map<
-      const protobuf::FieldDescriptor*,
-      std::vector<std::function<void(protobuf::Message* message)>>>
-      custom_mutations_;
+  RandomEngine* random() { return &random_; }
 
  private:
   friend class FieldMutator;
   friend class TestMutator;
-  void InitializeAndTrim(protobuf::Message* message, int max_depth);
-  void CrossOverImpl(const protobuf::Message& message1,
-                     protobuf::Message* message2);
+  bool MutateImpl(const std::vector<const protobuf::Message*>& sources,
+                  const std::vector<protobuf::Message*>& messages,
+                  bool copy_clone_only, int size_increase_hint);
   std::string MutateUtf8String(const std::string& value,
-                               size_t size_increase_hint);
-  bool ApplyCustomMutations(protobuf::Message* message,
-                            const protobuf::FieldDescriptor* field);
+                               int size_increase_hint);
+  bool IsInitialized(const protobuf::Message& message) const;
   bool keep_initialized_ = true;
-  RandomEngine* random_;
+  size_t random_to_default_ratio_ = 100;
+  RandomEngine random_;
+  using PostProcessors =
+      std::unordered_multimap<const protobuf::Descriptor*, PostProcess>;
+  PostProcessors post_processors_;
 };
 
 }  // namespace protobuf_mutator

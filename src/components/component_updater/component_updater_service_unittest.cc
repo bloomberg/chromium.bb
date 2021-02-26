@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -87,6 +87,10 @@ class MockUpdateClient : public UpdateClient {
                void(const std::string& id,
                     const base::Version& version,
                     int reason,
+                    Callback callback));
+  MOCK_METHOD3(SendRegistrationPing,
+               void(const std::string& id,
+                    const base::Version& version,
                     Callback callback));
 
  private:

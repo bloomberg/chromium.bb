@@ -51,6 +51,27 @@ class VisibleUnitsLineTest : public EditingTestBase {
   static bool LayoutNGEnabled() {
     return RuntimeEnabledFeatures::LayoutNGEnabled();
   }
+
+  std::string TestEndOfLine(const std::string& input) {
+    const Position& caret = SetCaretTextToBody(input);
+    const Position& result =
+        EndOfLine(CreateVisiblePosition(caret)).DeepEquivalent();
+    return GetCaretTextFromBody(result);
+  }
+
+  std::string TestLogicalEndOfLine(const std::string& input) {
+    const Position& caret = SetCaretTextToBody(input);
+    const Position& result =
+        LogicalEndOfLine(CreateVisiblePosition(caret)).DeepEquivalent();
+    return GetCaretTextFromBody(result);
+  }
+
+  std::string TestStartOfLine(const std::string& input) {
+    const Position& caret = SetCaretTextToBody(input);
+    const Position& result =
+        StartOfLine(CreateVisiblePosition(caret)).DeepEquivalent();
+    return GetCaretTextFromBody(result);
+  }
 };
 
 class ParameterizedVisibleUnitsLineTest
@@ -649,6 +670,219 @@ TEST_F(VisibleUnitsLineTest, startOfLine) {
       StartOfLine(CreateVisiblePositionInFlatTree(*seven, 1)).DeepEquivalent());
 }
 
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithBidi) {
+  LoadAhem();
+  InsertStyleElement("p { font: 30px/3 Ahem; }");
+
+  EXPECT_EQ(
+      "<p dir=\"ltr\"><bdo dir=\"ltr\">ab cd ef|</bdo></p>",
+      TestEndOfLine("<p dir=\"ltr\"><bdo dir=\"ltr\">a|b cd ef</bdo></p>"))
+      << "LTR LTR";
+  EXPECT_EQ(
+      "<p dir=\"ltr\"><bdo dir=\"rtl\">ab cd ef|</bdo></p>",
+      TestEndOfLine("<p dir=\"ltr\"><bdo dir=\"rtl\">a|b cd ef</bdo></p>"))
+      << "LTR RTL";
+  EXPECT_EQ(
+      "<p dir=\"rtl\"><bdo dir=\"ltr\">ab cd ef|</bdo></p>",
+      TestEndOfLine("<p dir=\"rtl\"><bdo dir=\"ltr\">a|b cd ef</bdo></p>"))
+      << "RTL LTR";
+  EXPECT_EQ(
+      "<p dir=\"rtl\"><bdo dir=\"rtl\">ab cd ef|</bdo></p>",
+      TestEndOfLine("<p dir=\"rtl\"><bdo dir=\"rtl\">a|b cd ef</bdo></p>"))
+      << "RTL RTL";
+}
+
+// http://crbug.com/1136740
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithHangingSpace) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "font: 30px/3 Ahem;"
+      "overflow-wrap: break-word;"
+      "white-space: pre-wrap;"
+      "width: 4ch;"
+      "}");
+
+  // _____ _=Space
+  // abcd
+  // efgh
+  EXPECT_EQ("<p>     |abcdefgh</p>", TestEndOfLine("<p>|     abcdefgh</p>"));
+  EXPECT_EQ("<p>     |abcdefgh</p>", TestEndOfLine("<p> |    abcdefgh</p>"));
+  EXPECT_EQ("<p>     |abcdefgh</p>", TestEndOfLine("<p>  |   abcdefgh</p>"));
+  EXPECT_EQ("<p>     |abcdefgh</p>", TestEndOfLine("<p>   |  abcdefgh</p>"));
+  EXPECT_EQ("<p>     |abcdefgh</p>", TestEndOfLine("<p>    | abcdefgh</p>"));
+  EXPECT_EQ("<p>     abcd|efgh</p>", TestEndOfLine("<p>     |abcdefgh</p>"));
+  EXPECT_EQ("<p>     abcd|efgh</p>", TestEndOfLine("<p>     a|bcdefgh</p>"));
+
+  // __x__ _=Space
+  // abcd
+  // efgh
+  EXPECT_EQ("<p>  x |abcdefgh</p>", TestEndOfLine("<p>|  x abcdefgh</p>"));
+  EXPECT_EQ("<p>  x |abcdefgh</p>", TestEndOfLine("<p> | x abcdefgh</p>"));
+  EXPECT_EQ("<p>  x |abcdefgh</p>", TestEndOfLine("<p>  x| abcdefgh</p>"));
+  EXPECT_EQ("<p>  x |abcdefgh</p>", TestEndOfLine("<p>  x| abcdefgh</p>"));
+  EXPECT_EQ("<p>  x abcd|efgh</p>", TestEndOfLine("<p>  x |abcdefgh</p>"));
+  EXPECT_EQ("<p>  x abcd|efgh</p>", TestEndOfLine("<p>  x a|bcdefgh</p>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithPositionRelative) {
+  LoadAhem();
+  InsertStyleElement(
+      "b { position:relative; left: 30px; }"
+      "p { font: 30px/3 Ahem; }");
+
+  EXPECT_EQ("<p>ab <b>cd</b> <b>ef|</b></p>",
+            TestEndOfLine("<p>a|b <b>cd</b> <b>ef</b></p>"));
+  // Note: legacy result is wrong. See EndOfLineWithBidi.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? "<p><bdo dir=\"rtl\">ab <b>cd</b> <b>ef|</b></bdo></p>"
+          : "<p><bdo dir=\"rtl\">ab |<b>cd</b> <b>ef</b></bdo></p>",
+      TestEndOfLine("<p><bdo dir=\"rtl\">a|b <b>cd</b> <b>ef</b></bdo></p>"));
+  EXPECT_EQ("<p dir=\"rtl\">ab <b>cd</b> <b>ef|</b></p>",
+            TestEndOfLine("<p dir=\"rtl\">a|b <b>cd</b> <b>ef</b></p>"));
+  // Note: legacy result is wrong. See EndOfLineWithBidi.
+  EXPECT_EQ(
+      LayoutNGEnabled()
+          ? "<p dir=\"rtl\"><bdo dir=\"rtl\">ab <b>cd</b> <b>ef|</b></bdo></p>"
+          : "<p dir=\"rtl\"><bdo dir=\"rtl\">ab |<b>cd</b> <b>ef</b></bdo></p>",
+      TestEndOfLine(
+          "<p dir=\"rtl\"><bdo dir=\"rtl\">a|b <b>cd</b> <b>ef</b></bdo></p>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithSoftLineWrap3) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "font: 10px/1 Ahem; width: 3ch; word-break: break-all; }");
+
+  EXPECT_EQ("<div>abc|def</div>", TestEndOfLine("<div>|abcdef</div>"));
+  EXPECT_EQ(
+      "<div dir=\"rtl\"><bdo dir=\"rtl\">abc|def</bdo></div>",
+      TestEndOfLine("<div dir=\"rtl\"><bdo dir=\"rtl\">|abcdef</bdo></div>"));
+
+  // Note: Both legacy and NG layout don't have text boxes for spaces cause
+  // soft line wrap.
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestEndOfLine("<div>abc |def ghi</div>"));
+
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">|abc def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">ab|c def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc def| ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">abc |def ghi</bdo></div>"));
+
+  // On content editable, caret is after a space.
+  // Note: Legacy layout has text boxes at end of line for space cause soft line
+  // wrap for editable text, e.g.
+  //   LayoutText {#text} at (10,9) size 18x32
+  //     text run at (10,9) width 18: "abc"
+  //     text run at (28,9) width 0: " "
+  //     text run at (10,19) width 18: "def"
+  //     text run at (28,19) width 0: " "
+  //     text run at (10,29) width 18: "ghi"
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithSoftLineWrap4) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/1 Ahem; width: 4ch; }");
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, LogicalEndOfLineWithSoftLineWrap3) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "font: 10px/1 Ahem; width: 3ch; word-break: break-all; }");
+
+  EXPECT_EQ("<div>abc|def</div>", TestLogicalEndOfLine("<div>|abcdef</div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc|def</bdo></div>",
+            TestLogicalEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">|abcdef</bdo></div>"));
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestLogicalEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, LogicalEndOfLineWithSoftLineWrap4) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/1 Ahem; width: 4ch; }");
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestLogicalEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
 TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
   // This test records the InSameLine() results in
   // editing/selection/skip-over-contenteditable.html
@@ -680,9 +914,53 @@ TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineWithMixedEditability) {
   PositionWithAffinity position1(selection.Base());
   PositionWithAffinity position2(selection.Extent());
   // "Same line" is restricted by editability boundaries.
-  // TODO(editing-dev): Make sure this test doesn't fail when we stop wrapping
-  // inline contenteditables with inline blocks.
   EXPECT_FALSE(InSameLine(position1, position2));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, StartOfLineWithBidi) {
+  LoadAhem();
+  InsertStyleElement("p { font: 30px/3 Ahem; }");
+
+  EXPECT_EQ(
+      "<p dir=\"ltr\"><bdo dir=\"ltr\">|abc xyz</bdo></p>",
+      TestStartOfLine("<p dir=\"ltr\"><bdo dir=\"ltr\">abc |xyz</bdo></p>"))
+      << "LTR LTR";
+  EXPECT_EQ(
+      "<p dir=\"ltr\"><bdo dir=\"rtl\">|abc xyz</bdo></p>",
+      TestStartOfLine("<p dir=\"ltr\"><bdo dir=\"rtl\">abc |xyz</bdo></p>"))
+      << "LTR RTL";
+  EXPECT_EQ(
+      "<p dir=\"rtl\"><bdo dir=\"ltr\">|abc xyz</bdo></p>",
+      TestStartOfLine("<p dir=\"rtl\"><bdo dir=\"ltr\">abc |xyz</bdo></p>"))
+      << "RTL LTR";
+  EXPECT_EQ(
+      "<p dir=\"rtl\"><bdo dir=\"rtl\">|abc xyz</bdo></p>",
+      TestStartOfLine("<p dir=\"rtl\"><bdo dir=\"rtl\">abc |xyz</bdo></p>"))
+      << "RTL RTL";
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, StartOfLineWithPositionRelative) {
+  LoadAhem();
+  InsertStyleElement(
+      "b { position:relative; left: -100px; }"
+      "p { font: 30px/3 Ahem; }");
+
+  EXPECT_EQ("<p><b>|abc</b> xyz</p>", TestStartOfLine("<p><b>abc</b> |xyz</p>"))
+      << "LTR-LTR";
+  EXPECT_EQ("<p dir=\"rtl\"><b>|abc</b> xyz</p>",
+            TestStartOfLine("<p dir=\"rtl\"><b>abc</b> |xyz</p>"))
+      << "RTL-LTR";
+  // Legacy results are wrong. See StartOfLineWithBidi
+  EXPECT_EQ(LayoutNGEnabled() ? "<p><bdo dir=\"rtl\"><b>|abc</b> xyz</bdo></p>"
+                              : "<p><bdo dir=\"rtl\"><b>abc|</b> xyz</bdo></p>",
+            TestStartOfLine("<p><bdo dir=\"rtl\"><b>abc</b> |xyz</bdo></p>"))
+      << "LTR-RTL";
+  EXPECT_EQ(LayoutNGEnabled()
+                ? "<p dir=\"rtl\"><bdo dir=\"rtl\"><b>|abc</b> xyz</bdo></p>"
+                : "<p dir=\"rtl\"><bdo dir=\"rtl\"><b>abc|</b> xyz</bdo></p>",
+            TestStartOfLine(
+                "<p dir=\"rtl\"><bdo  dir=\"rtl\"><b>abc</b> |xyz</bdo></p>"))
+      << "RTL-RTL";
 }
 
 // https://crbug.com/947462

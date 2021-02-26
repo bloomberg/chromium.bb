@@ -26,8 +26,8 @@ const RGBA8 kColors[2] = {RGBA8::kGreen, RGBA8::kBlue};
 // tested in all other rendering tests.
 class RenderBundleTest : public DawnTest {
   protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
@@ -53,7 +53,7 @@ class RenderBundleTest : public DawnTest {
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
         descriptor.cVertexState.vertexBufferCount = 1;
         descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
         descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
@@ -196,4 +196,8 @@ TEST_P(RenderBundleTest, BundleAndRenderPassCommands) {
     EXPECT_PIXEL_RGBA8_EQ(kColors[1], renderPass.color, 3, 1);
 }
 
-DAWN_INSTANTIATE_TEST(RenderBundleTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(RenderBundleTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/command_line.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
@@ -43,9 +44,9 @@ constexpr char kNightLight[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kSwitchAccess[] = "SWITCH_ACCESS";
 
 // Returns the settings that are always supported.
-// Does not contain |SWITCH_ACCESS| as that is conditionally supported.
 const std::vector<std::string> kAlwaysSupportedSettings = {
-    kWiFi, kBluetooth, kScreenBrightness, kDoNotDisturb, kNightLight,
+    kWiFi,         kBluetooth,  kScreenBrightness,
+    kDoNotDisturb, kNightLight, kSwitchAccess,
 };
 
 class ScopedDeviceActionsMock : public ScopedDeviceActions {
@@ -58,10 +59,10 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
   MOCK_METHOD(void, SetSwitchAccessEnabled, (bool enabled));
   MOCK_METHOD(bool,
               OpenAndroidApp,
-              (chromeos::assistant::mojom::AndroidAppInfoPtr app_info));
-  MOCK_METHOD(chromeos::assistant::mojom::AppStatus,
+              (const chromeos::assistant::AndroidAppInfo& app_info));
+  MOCK_METHOD(chromeos::assistant::AppStatus,
               GetAndroidAppStatus,
-              (const chromeos::assistant::mojom::AndroidAppInfo& app_info));
+              (const chromeos::assistant::AndroidAppInfo& app_info));
   MOCK_METHOD(void, LaunchAndroidIntent, (const std::string& intent));
   MOCK_METHOD(void,
               AddAppListEventSubscriber,
@@ -72,15 +73,14 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
 };
 
 class AssistantNotificationControllerMock
-    : public ash::mojom::AssistantNotificationController {
+    : public ash::AssistantNotificationController {
  public:
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
-  // ash::mojom::AssistantNotificationController implementation:
+  // ash::AssistantNotificationController implementation:
   MOCK_METHOD(void,
               AddOrUpdateNotification,
-              (AssistantNotificationPtr notification));
+              (AssistantNotification && notification));
   MOCK_METHOD(void,
               RemoveNotificationById,
               (const std::string& id, bool from_server));
@@ -149,20 +149,6 @@ TEST_F(AssistantDeviceSettingsDelegateTest,
     EXPECT_TRUE(delegate()->IsSettingSupported(setting))
         << "Error for " << setting;
   }
-}
-
-TEST_F(AssistantDeviceSettingsDelegateTest,
-       IsSettingSupportedShouldConditionallySupportSwitchAccess) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->RemoveSwitch(
-      ::switches::kEnableExperimentalAccessibilitySwitchAccess);
-  CreateAssistantDeviceSettingsDelegate();
-  EXPECT_FALSE(delegate()->IsSettingSupported(kSwitchAccess));
-
-  command_line->AppendSwitch(
-      ::switches::kEnableExperimentalAccessibilitySwitchAccess);
-  CreateAssistantDeviceSettingsDelegate();
-  EXPECT_TRUE(delegate()->IsSettingSupported(kSwitchAccess));
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest,
@@ -243,9 +229,6 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnQuietModeOnAndOff) {
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnSwitchAccessOnAndOff) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(
-      ::switches::kEnableExperimentalAccessibilitySwitchAccess);
   StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 

@@ -11,6 +11,7 @@
 #include "src/base/bit-field.h"
 #include "src/base/platform/time.h"
 #include "src/common/globals.h"
+#include "src/handles/handles.h"
 #include "src/objects/elements-kind.h"
 #include "src/strings/unicode.h"
 #include "src/utils/allocation.h"
@@ -51,17 +52,19 @@ namespace internal {
   F(TransitionElementsKind, 2, 1)      \
   F(TransitionElementsKindWithKind, 2, 1)
 
-#define FOR_EACH_INTRINSIC_ATOMICS(F, I) \
-  F(AtomicsLoad64, 2, 1)                 \
-  F(AtomicsStore64, 3, 1)                \
-  F(AtomicsAdd, 3, 1)                    \
-  F(AtomicsAnd, 3, 1)                    \
-  F(AtomicsCompareExchange, 4, 1)        \
-  F(AtomicsExchange, 3, 1)               \
-  F(AtomicsNumWaitersForTesting, 2, 1)   \
-  F(AtomicsOr, 3, 1)                     \
-  F(AtomicsSub, 3, 1)                    \
-  F(AtomicsXor, 3, 1)                    \
+#define FOR_EACH_INTRINSIC_ATOMICS(F, I)               \
+  F(AtomicsLoad64, 2, 1)                               \
+  F(AtomicsStore64, 3, 1)                              \
+  F(AtomicsAdd, 3, 1)                                  \
+  F(AtomicsAnd, 3, 1)                                  \
+  F(AtomicsCompareExchange, 4, 1)                      \
+  F(AtomicsExchange, 3, 1)                             \
+  F(AtomicsNumWaitersForTesting, 2, 1)                 \
+  F(AtomicsNumAsyncWaitersForTesting, 0, 1)            \
+  F(AtomicsNumUnresolvedAsyncPromisesForTesting, 2, 1) \
+  F(AtomicsOr, 3, 1)                                   \
+  F(AtomicsSub, 3, 1)                                  \
+  F(AtomicsXor, 3, 1)                                  \
   F(SetAllowAtomicsWait, 1, 1)
 
 #define FOR_EACH_INTRINSIC_BIGINT(F, I) \
@@ -105,7 +108,7 @@ namespace internal {
   F(CompileLazy, 1, 1)                    \
   F(CompileOptimized_Concurrent, 1, 1)    \
   F(CompileOptimized_NotConcurrent, 1, 1) \
-  F(EvictOptimizedCodeSlot, 1, 1)         \
+  F(HealOptimizedCodeSlot, 1, 1)          \
   F(FunctionFirstExecution, 1, 1)         \
   F(InstantiateAsmJs, 4, 1)               \
   F(NotifyDeoptimized, 0, 1)              \
@@ -218,7 +221,8 @@ namespace internal {
   F(GetAndResetRuntimeCallStats, -1 /* <= 2 */, 1)   \
   F(GetTemplateObject, 3, 1)                         \
   F(IncrementUseCounter, 1, 1)                       \
-  F(BytecodeBudgetInterrupt, 1, 1)                   \
+  F(BytecodeBudgetInterruptFromBytecode, 1, 1)       \
+  F(BytecodeBudgetInterruptFromCode, 1, 1)           \
   F(NewError, 2, 1)                                  \
   F(NewReferenceError, 2, 1)                         \
   F(NewSyntaxError, 2, 1)                            \
@@ -272,7 +276,6 @@ namespace internal {
   F(GetHoleNaNLower, 0, 1)               \
   F(GetHoleNaNUpper, 0, 1)               \
   I(IsSmi, 1, 1)                         \
-  F(IsValidSmi, 1, 1)                    \
   F(MaxSmi, 0, 1)                        \
   F(NumberToStringSlow, 1, 1)            \
   F(StringParseFloat, 1, 1)              \
@@ -301,7 +304,7 @@ namespace internal {
   F(GetFunctionName, 1, 1)                                      \
   F(GetOwnPropertyDescriptor, 2, 1)                             \
   F(GetOwnPropertyKeys, 2, 1)                                   \
-  F(GetProperty, 2, 1)                                          \
+  F(GetProperty, -1 /* [2, 3] */, 1)                            \
   F(HasFastPackedElements, 1, 1)                                \
   F(HasInPrototypeChain, 2, 1)                                  \
   I(HasProperty, 2, 1)                                          \
@@ -329,6 +332,7 @@ namespace internal {
   F(SetDataProperties, 2, 1)                                    \
   F(SetKeyedProperty, 3, 1)                                     \
   F(SetNamedProperty, 3, 1)                                     \
+  F(SetOwnPropertyIgnoreAttributes, 4, 1)                       \
   F(StoreDataPropertyInLiteral, 3, 1)                           \
   F(ShrinkPropertyDictionary, 1, 1)                             \
   F(ToFastProperties, 1, 1)                                     \
@@ -337,7 +341,7 @@ namespace internal {
   I(ToNumber, 1, 1)                                             \
   F(ToNumeric, 1, 1)                                            \
   I(ToObject, 1, 1)                                             \
-  I(ToStringRT, 1, 1)                                           \
+  I(ToString, 1, 1)                                             \
   F(TryMigrateInstance, 1, 1)
 
 #define FOR_EACH_INTRINSIC_OPERATORS(F, I) \
@@ -383,6 +387,7 @@ namespace internal {
 #define FOR_EACH_INTRINSIC_REGEXP(F, I)             \
   I(IsRegExp, 1, 1)                                 \
   F(RegExpExec, 4, 1)                               \
+  F(RegExpExperimentalOneshotExec, 4, 1)            \
   F(RegExpExecMultiple, 4, 1)                       \
   F(RegExpInitializeAndCompile, 3, 1)               \
   F(RegExpReplaceRT, 3, 1)                          \
@@ -398,7 +403,6 @@ namespace internal {
   F(DeleteLookupSlot, 1, 1)                 \
   F(LoadLookupSlot, 1, 1)                   \
   F(LoadLookupSlotInsideTypeof, 1, 1)       \
-  F(NewArgumentsElements, 3, 1)             \
                                             \
   F(NewClosure, 2, 1)                       \
   F(NewClosure_Tenured, 2, 1)               \
@@ -453,12 +457,12 @@ namespace internal {
   F(ArraySpeciesProtector, 0, 1)              \
   F(ClearFunctionFeedback, 1, 1)              \
   F(ClearMegamorphicStubCache, 0, 1)          \
-  F(CloneWasmModule, 1, 1)                    \
   F(CompleteInobjectSlackTracking, 1, 1)      \
   F(ConstructConsString, 2, 1)                \
   F(ConstructDouble, 2, 1)                    \
   F(ConstructSlicedString, 2, 1)              \
   F(DebugPrint, 1, 1)                         \
+  F(DebugPrintPtr, 1, 1)                      \
   F(DebugTrace, 0, 1)                         \
   F(DebugTrackRetainingPath, -1, 1)           \
   F(DeoptimizeFunction, 1, 1)                 \
@@ -466,6 +470,7 @@ namespace internal {
   F(DisallowCodegenFromStrings, 1, 1)         \
   F(DisallowWasmCodegen, 1, 1)                \
   F(DisassembleFunction, 1, 1)                \
+  F(DynamicMapChecksEnabled, 0, 1)            \
   F(EnableCodeLoggingForTesting, 0, 1)        \
   F(EnsureFeedbackVectorForFunction, 1, 1)    \
   F(FreezeWasmLazyCompilation, 1, 1)          \
@@ -502,6 +507,7 @@ namespace internal {
   F(HaveSameMap, 2, 1)                        \
   F(HeapObjectVerify, 1, 1)                   \
   F(ICsAreEnabled, 0, 1)                      \
+  F(InLargeObjectSpace, 1, 1)                 \
   F(InYoungGeneration, 1, 1)                  \
   F(IsAsmWasmCode, 1, 1)                      \
   F(IsBeingInterpreted, 0, 1)                 \
@@ -512,6 +518,8 @@ namespace internal {
   F(IsWasmTrapHandlerEnabled, 0, 1)           \
   F(RegexpHasBytecode, 2, 1)                  \
   F(RegexpHasNativeCode, 2, 1)                \
+  F(RegexpTypeTag, 1, 1)                      \
+  F(RegexpIsUnmodified, 1, 1)                 \
   F(MapIteratorProtector, 0, 1)               \
   F(NeverOptimizeFunction, 1, 1)              \
   F(NotifyContextDisposed, 0, 1)              \
@@ -542,6 +550,8 @@ namespace internal {
   F(WasmTierDownModule, 1, 1)                 \
   F(WasmTierUpFunction, 2, 1)                 \
   F(WasmTierUpModule, 1, 1)                   \
+  F(WasmTraceEnter, 0, 1)                     \
+  F(WasmTraceExit, 1, 1)                      \
   F(WasmTraceMemory, 1, 1)                    \
   I(DeoptimizeNow, 0, 1)
 
@@ -561,7 +571,7 @@ namespace internal {
   F(WasmMemoryGrow, 2, 1)             \
   F(WasmStackGuard, 0, 1)             \
   F(WasmThrowCreate, 2, 1)            \
-  F(WasmThrowTypeError, 0, 1)         \
+  F(WasmThrowJSTypeError, 0, 1)       \
   F(WasmRefFunc, 1, 1)                \
   F(WasmFunctionTableGet, 3, 1)       \
   F(WasmFunctionTableSet, 4, 1)       \
@@ -569,11 +579,16 @@ namespace internal {
   F(WasmTableCopy, 6, 1)              \
   F(WasmTableGrow, 3, 1)              \
   F(WasmTableFill, 4, 1)              \
-  F(WasmIsValidFuncRefValue, 1, 1)    \
+  F(WasmIsValidRefValue, 3, 1)        \
   F(WasmCompileLazy, 2, 1)            \
-  F(WasmDebugBreak, 0, 1)
+  F(WasmCompileWrapper, 2, 1)         \
+  F(WasmTriggerTierUp, 1, 1)          \
+  F(WasmDebugBreak, 0, 1)             \
+  F(WasmAllocateRtt, 2, 1)
 
-#define FOR_EACH_INTRINSIC_WEAKREF(F, I) \
+#define FOR_EACH_INTRINSIC_WEAKREF(F, I)                             \
+  F(JSFinalizationRegistryRegisterWeakCellWithUnregisterToken, 4, 1) \
+  F(JSWeakRefAddToKeptObjects, 1, 1)                                 \
   F(ShrinkFinalizationRegistryUnregisterTokenMap, 1, 1)
 
 #define FOR_EACH_INTRINSIC_RETURN_PAIR_IMPL(F, I) \
@@ -593,6 +608,8 @@ namespace internal {
   F(LoadGlobalIC_Slow, 3, 1)                 \
   F(LoadIC_Miss, 4, 1)                       \
   F(LoadNoFeedbackIC_Miss, 4, 1)             \
+  F(LoadWithReceiverIC_Miss, 5, 1)           \
+  F(LoadWithReceiverNoFeedbackIC_Miss, 3, 1) \
   F(LoadPropertyWithInterceptor, 5, 1)       \
   F(StoreCallbackProperty, 5, 1)             \
   F(StoreGlobalIC_Miss, 4, 1)                \
@@ -718,9 +735,9 @@ class Runtime : public AllStatic {
   // allocation.
   static bool MayAllocate(FunctionId id);
 
-  // Check if a runtime function with the given {id} is whitelisted for
+  // Check if a runtime function with the given {id} is allowlisted for
   // using it with fuzzers.
-  static bool IsWhitelistedForFuzzing(FunctionId id);
+  static bool IsAllowListedForFuzzing(FunctionId id);
 
   // Get the intrinsic function with the given name.
   static const Function* FunctionForName(const unsigned char* name, int length);
@@ -743,9 +760,11 @@ class Runtime : public AllStatic {
                     Handle<Object> value, StoreOrigin store_origin,
                     Maybe<ShouldThrow> should_throw = Nothing<ShouldThrow>());
 
+  // When "receiver" is not passed, it defaults to "holder".
   V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static MaybeHandle<Object>
-  GetObjectProperty(Isolate* isolate, Handle<Object> object, Handle<Object> key,
-                    bool* is_found_out = nullptr);
+  GetObjectProperty(Isolate* isolate, Handle<Object> holder, Handle<Object> key,
+                    Handle<Object> receiver = Handle<Object>(),
+                    bool* is_found = nullptr);
 
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> HasProperty(
       Isolate* isolate, Handle<Object> object, Handle<Object> key);

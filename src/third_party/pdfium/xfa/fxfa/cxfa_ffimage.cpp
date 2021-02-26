@@ -17,8 +17,11 @@
 
 CXFA_FFImage::CXFA_FFImage(CXFA_Node* pNode) : CXFA_FFWidget(pNode) {}
 
-CXFA_FFImage::~CXFA_FFImage() {
+CXFA_FFImage::~CXFA_FFImage() = default;
+
+void CXFA_FFImage::PreFinalize() {
   GetNode()->SetImageImage(nullptr);
+  CXFA_FFWidget::PreFinalize();
 }
 
 bool CXFA_FFImage::IsLoaded() {
@@ -26,16 +29,13 @@ bool CXFA_FFImage::IsLoaded() {
 }
 
 bool CXFA_FFImage::LoadWidget() {
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
   if (GetNode()->GetImageImage())
     return true;
 
   return GetNode()->LoadImageImage(GetDoc()) && CXFA_FFWidget::LoadWidget();
 }
 
-void CXFA_FFImage::RenderWidget(CXFA_Graphics* pGS,
+void CXFA_FFImage::RenderWidget(CFGAS_GEGraphics* pGS,
                                 const CFX_Matrix& matrix,
                                 HighlightOption highlight) {
   if (!HasVisibleStatus())

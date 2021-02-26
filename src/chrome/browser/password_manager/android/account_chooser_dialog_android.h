@@ -24,9 +24,10 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
  public:
   AccountChooserDialogAndroid(
       content::WebContents* web_contents,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
-      const ManagePasswordsState::CredentialsCallback& callback);
+      std::vector<std::unique_ptr<password_manager::PasswordForm>>
+          local_credentials,
+      const url::Origin& origin,
+      ManagePasswordsState::CredentialsCallback callback);
 
   ~AccountChooserDialogAndroid() override;
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -55,7 +56,7 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
  private:
   void OnDialogCancel();
 
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
   local_credentials_forms() const;
 
   void ChooseCredential(size_t index,
@@ -64,7 +65,7 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
 
   content::WebContents* web_contents_;
   ManagePasswordsState passwords_data_;
-  GURL origin_;
+  url::Origin origin_;
   base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroid);

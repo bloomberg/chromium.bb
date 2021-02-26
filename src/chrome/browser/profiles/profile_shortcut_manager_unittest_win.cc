@@ -126,7 +126,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
 
     properties.set_app_id(
-        shell_integration::win::GetChromiumModelIdForProfile(profile_1_path_));
+        shell_integration::win::GetAppUserModelIdForBrowser(profile_1_path_));
 
     const base::FilePath shortcut_path(
         profiles::internal::GetShortcutFilenameForProfile(L""));
@@ -192,7 +192,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     base::win::ShortcutProperties expected_properties;
     expected_properties.set_app_id(
-        shell_integration::win::GetChromiumModelIdForProfile(profile_path));
+        shell_integration::win::GetAppUserModelIdForBrowser(profile_path));
     expected_properties.set_target(GetExePath());
     expected_properties.set_description(InstallUtil::GetAppDescription());
     expected_properties.set_dual_mode(false);
@@ -397,6 +397,21 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFlags) {
             profiles::internal::CreateProfileShortcutFlags(profile_path));
 }
 
+// Test ensures that the incognito switch and parent profile are added when
+// creating profile shortcut flags for incognito mode.
+TEST_F(ProfileShortcutManagerTest, IncognitoShortcutFlags) {
+  const base::string16 kProfileName = L"MyProfileX";
+  const base::FilePath profile_path =
+      profile_manager_->profiles_dir().Append(kProfileName);
+  const base::string16 shortcut_flags =
+      profiles::internal::CreateProfileShortcutFlags(profile_path,
+                                                     /*incognito=*/true);
+  EXPECT_NE(
+      shortcut_flags.find(L"--profile-directory=\"" + kProfileName + L"\""),
+      shortcut_flags.size());
+  EXPECT_NE(shortcut_flags.find(L"--incognito"), shortcut_flags.size());
+}
+
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
   SetupDefaultProfileShortcut(FROM_HERE);
   // Validation is done by |ValidateProfileShortcutAtPath()| which is called
@@ -465,7 +480,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithoutShortcut) {
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path));
   ASSERT_FALSE(base::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(base::PathExists(profile_2_shortcut_path));
 
@@ -489,7 +504,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithShortcut) {
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path));
   ASSERT_FALSE(base::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(base::PathExists(profile_2_shortcut_path));
 
@@ -518,8 +533,8 @@ TEST_F(ProfileShortcutManagerTest, DeleteOnlyProfileWithShortcuts) {
       GetDefaultShortcutPathForProfile(profile_3_name_);
 
   // Delete shortcuts for the first two profiles.
-  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path, false));
-  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path, false));
+  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path));
+  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path));
 
   // Only the shortcut to the third profile should exist.
   ASSERT_FALSE(base::PathExists(profile_1_shortcut_path));
@@ -577,7 +592,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcuts) {
                                 profile_2_path_);
 
   // Delete the renamed shortcut and try to create it again, which should work.
-  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path_2, false));
+  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path_2));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path_2));
   profile_shortcut_manager_->CreateProfileShortcut(profile_2_path_);
   task_environment_.RunUntilIdle();
@@ -648,8 +663,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateShortcutWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // a new one without any command-line flags.
-  ASSERT_TRUE(base::DeleteFile(
-      GetDefaultShortcutPathForProfile(base::string16()), false));
+  ASSERT_TRUE(
+      base::DeleteFile(GetDefaultShortcutPathForProfile(base::string16())));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE, InstallUtil::GetShortcutName());
 
@@ -665,8 +680,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // two new ones without any command-line flags.
-  ASSERT_TRUE(base::DeleteFile(
-      GetDefaultShortcutPathForProfile(base::string16()), false));
+  ASSERT_TRUE(
+      base::DeleteFile(GetDefaultShortcutPathForProfile(base::string16())));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE, InstallUtil::GetShortcutName());
   const base::FilePath customized_regular_shortcut_path =
@@ -736,7 +751,7 @@ TEST_F(ProfileShortcutManagerTest, HasProfileShortcuts) {
   // Delete the shortcut and check that the function returns false.
   const base::FilePath profile_2_shortcut_path =
       GetDefaultShortcutPathForProfile(profile_2_name_);
-  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path, false));
+  ASSERT_TRUE(base::DeleteFile(profile_2_shortcut_path));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path));
   profile_shortcut_manager_->HasProfileShortcuts(profile_2_path_, callback);
   task_environment_.RunUntilIdle();
@@ -827,7 +842,7 @@ TEST_F(ProfileShortcutManagerTest,
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::DeleteFile(profile_1_shortcut_path));
   ASSERT_FALSE(base::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(base::PathExists(profile_2_shortcut_path));
 
@@ -855,7 +870,7 @@ TEST_F(ProfileShortcutManagerTest, CreateProfileIcon) {
       profiles::internal::GetProfileIconPath(profile_1_path_);
 
   EXPECT_TRUE(base::PathExists(icon_path));
-  EXPECT_TRUE(base::DeleteFile(icon_path, false));
+  EXPECT_TRUE(base::DeleteFile(icon_path));
   EXPECT_FALSE(base::PathExists(icon_path));
 
   profile_shortcut_manager_->CreateOrUpdateProfileIcon(profile_1_path_);

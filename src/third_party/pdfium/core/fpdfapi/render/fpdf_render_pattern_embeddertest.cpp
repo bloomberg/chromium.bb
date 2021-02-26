@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "public/cpp/fpdf_scopers.h"
 #include "testing/embedder_test.h"
 #include "testing/embedder_test_constants.h"
@@ -13,7 +11,7 @@ class FPDFRenderPatternEmbedderTest : public EmbedderTest {};
 
 TEST_F(FPDFRenderPatternEmbedderTest, LoadError_547706) {
   // Test shading where object is a dictionary instead of a stream.
-  EXPECT_TRUE(OpenDocument("bug_547706.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_547706.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
   ScopedFPDFBitmap bitmap = RenderLoadedPage(page);

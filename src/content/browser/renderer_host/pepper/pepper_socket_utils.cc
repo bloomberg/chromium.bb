@@ -7,11 +7,13 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -109,10 +111,9 @@ bool GetCertificateFields(const net::X509Certificate& cert,
                    std::make_unique<base::Value>(base::JoinString(
                        subject.organization_unit_names, "\n")));
 
-  const std::string& serial_number = cert.serial_number();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER,
-                   base::Value::CreateWithCopiedBuffer(serial_number.data(),
-                                                       serial_number.length()));
+                   base::Value::ToUniquePtrValue(base::Value(
+                       base::as_bytes(base::make_span(cert.serial_number())))));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE,
       std::make_unique<base::Value>(cert.valid_start().ToDoubleT()));
@@ -122,8 +123,8 @@ bool GetCertificateFields(const net::X509Certificate& cert,
   base::StringPiece cert_der =
       net::x509_util::CryptoBufferAsStringPiece(cert.cert_buffer());
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_RAW,
-                   std::make_unique<base::Value>(base::Value::BlobStorage(
-                       cert_der.begin(), cert_der.end())));
+                   base::Value::ToUniquePtrValue(
+                       base::Value(base::as_bytes(base::make_span(cert_der)))));
   return true;
 }
 
@@ -137,7 +138,7 @@ bool GetCertificateFields(const char* der,
   return GetCertificateFields(*cert.get(), fields);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 // The entire IPv4 subnet 127.0.0.0/8 is for loopback. See RFC3330.
@@ -183,7 +184,7 @@ void OpenUDPFirewallHole(const net::IPEndPoint& address,
   OpenFirewallHole(address, chromeos::FirewallHole::PortType::UDP,
                    std::move(callback));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 net::MutableNetworkTrafficAnnotationTag PepperTCPNetworkAnnotationTag() {
   return net::MutableNetworkTrafficAnnotationTag(
@@ -221,8 +222,8 @@ net::MutableNetworkTrafficAnnotationTag PepperTCPNetworkAnnotationTag() {
             }
           }
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }
@@ -265,8 +266,8 @@ net::MutableNetworkTrafficAnnotationTag PepperUDPNetworkAnnotationTag() {
             }
           }
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

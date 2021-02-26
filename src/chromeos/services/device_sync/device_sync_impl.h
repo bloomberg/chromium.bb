@@ -19,13 +19,13 @@
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
+#include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -61,11 +61,14 @@ class SoftwareFeatureManager;
 // starts an initialization flow with the following steps:
 // (1) Check if the primary user is logged in with a valid account ID.
 // (2) If not, wait for IdentityManager to provide the primary account ID.
-// (3) Instantiate classes which communicate with the CryptAuth back-end.
-// (4) Check enrollment state; if not yet enrolled, enroll the device.
-// (5) When enrollment is valid, listen for device sync updates.
+// (3) Register with GCM.
+// (4) Fetch ClientAppMetadata (CryptAuth v2 only).
+// (5) Instantiate classes which communicate with the CryptAuth back-end.
+// (6) Check enrollment state; if not yet enrolled, enroll the device.
+// (7) When enrollment is valid, listen for device sync updates.
 class DeviceSyncImpl : public DeviceSyncBase,
                        public signin::IdentityManager::Observer,
+                       public CryptAuthGCMManager::Observer,
                        public CryptAuthEnrollmentManager::Observer,
                        public RemoteDeviceProvider::Observer {
  public:
@@ -81,7 +84,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer);
-    static void SetFactoryForTesting(Factory* test_factory);
+    static void SetCustomFactory(Factory* custom_factory);
+    static bool IsCustomFactorySet();
 
    protected:
     virtual ~Factory();
@@ -95,10 +99,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
         std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
-    static Factory* test_factory_instance_;
+    static Factory* custom_factory_instance_;
   };
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   ~DeviceSyncImpl() override;
 
@@ -128,6 +130,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
       GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
 
+  // CryptAuthGcmManager::Observer:
+  void OnGCMRegistrationResult(bool success) override;
+
   // CryptAuthEnrollmentManager::Observer:
   void OnEnrollmentFinished(bool success) override;
 
@@ -137,7 +142,14 @@ class DeviceSyncImpl : public DeviceSyncBase,
  private:
   friend class DeviceSyncServiceTest;
 
-  enum class Status { FETCHING_ACCOUNT_INFO, WAITING_FOR_ENROLLMENT, READY };
+  enum class InitializationStatus {
+    kNotStarted,
+    kFetchingAccountInfo,
+    kWaitingForGcmRegistration,
+    kWaitingForClientAppMetadata,
+    kWaitingForEnrollment,
+    kReady
+  };
 
   class PendingSetSoftwareFeatureRequest {
    public:
@@ -210,7 +222,18 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void OnUnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& primary_account_info) override;
 
+  // Initialization functions.
+  void RunNextInitializationStep();
+  void FetchAccountInfo();
   void ProcessPrimaryAccountInfo(const CoreAccountInfo& primary_account_info);
+  void RegisterWithGcm();
+  void FetchClientAppMetadata();
+  void OnClientAppMetadataFetchTimeout();
+  void OnClientAppMetadataFetched(
+      const base::Optional<cryptauthv2::ClientAppMetadata>&
+          client_app_metadata);
+  void OnClientAppMetadataFetchFailure();
+  void WaitForValidEnrollment();
   void InitializeCryptAuthManagementObjects();
   void CompleteInitializationAfterSuccessfulEnrollment();
 
@@ -257,9 +280,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
   ClientAppMetadataProvider* client_app_metadata_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::Clock* clock_;
-  std::unique_ptr<base::OneShotTimer> set_software_feature_timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
-  Status status_;
+  InitializationStatus status_ = InitializationStatus::kNotStarted;
   CoreAccountInfo primary_account_info_;
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetSoftwareFeatureRequest>>
@@ -271,6 +294,13 @@ class DeviceSyncImpl : public DeviceSyncBase,
       pending_notify_devices_callbacks_;
   base::flat_map<base::UnguessableToken, GetDevicesActivityStatusCallback>
       get_devices_activity_status_callbacks_;
+
+  base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
+  size_t num_gcm_registration_failures_ = 0;
+  size_t num_client_app_metadata_fetch_failures_ = 0;
+  base::TimeTicks initialization_start_timestamp_;
+  base::TimeTicks gcm_registration_start_timestamp_;
+  base::TimeTicks client_app_metadata_fetch_start_timestamp_;
 
   std::unique_ptr<CryptAuthGCMManager> cryptauth_gcm_manager_;
   std::unique_ptr<CryptAuthClientFactory> cryptauth_client_factory_;

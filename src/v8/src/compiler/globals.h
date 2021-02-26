@@ -6,10 +6,23 @@
 #define V8_COMPILER_GLOBALS_H_
 
 #include "src/common/globals.h"
+#include "src/flags/flags.h"
 
 namespace v8 {
 namespace internal {
 namespace compiler {
+
+// The nci flag is currently used to experiment with feedback collection in
+// optimized code produced by generic lowering.
+// Considerations:
+// - Should we increment the call count? https://crbug.com/v8/10524
+// - Is feedback already megamorphic in all these cases?
+//
+// TODO(jgruber): Remove once we've made a decision whether to collect feedback
+// unconditionally.
+inline bool CollectFeedbackInGenericLowering() {
+  return FLAG_turbo_collect_feedback_in_generic_lowering;
+}
 
 enum class StackCheckKind {
   kJSFunctionEntry = 0,
@@ -57,5 +70,14 @@ inline std::ostream& operator<<(std::ostream& os,
 }  // namespace compiler
 }  // namespace internal
 }  // namespace v8
+
+// Support for floating point parameters in calls to C.
+// It's currently enabled only for the platforms listed below. We don't plan
+// to add support for IA32, because it has a totally different approach
+// (using FP stack). As support is added to more platforms, please make sure
+// to list them here in order to enable tests of this functionality.
+#if defined(V8_TARGET_ARCH_X64)
+#define V8_ENABLE_FP_PARAMS_IN_C_LINKAGE
+#endif
 
 #endif  // V8_COMPILER_GLOBALS_H_

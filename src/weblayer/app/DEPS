@@ -1,8 +1,12 @@
 include_rules = [
+  "+components/autofill/core/common",
   "+components/startup_metric_utils",
   "+components/version_info",
+  "+components/viz/common",
   "+content/public",
   "+media/base/media_switches.h",
   "+sandbox",
+  "+services/network/public/cpp",
+  "+third_party/blink/public",
   "+ui/base",
 ]

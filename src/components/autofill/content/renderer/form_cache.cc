@@ -14,8 +14,10 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -24,6 +26,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/blink/public/common/metrics/form_element_pii_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -52,107 +55,18 @@ namespace autofill {
 
 namespace {
 
-static const char* kSupportedAutocompleteTypes[] = {"given-name",
-                                                    "additional-name",
-                                                    "family-name",
-                                                    "name",
-                                                    "honorific-suffix",
-                                                    "email",
-                                                    "tel-local",
-                                                    "tel-area-code",
-                                                    "tel-country-code",
-                                                    "tel-national",
-                                                    "tel",
-                                                    "tel-extension",
-                                                    "street-address",
-                                                    "address-line1",
-                                                    "address-line2",
-                                                    "address-line3",
-                                                    "address-level1",
-                                                    "address-level2",
-                                                    "address-level3",
-                                                    "postal-code",
-                                                    "country-name",
-                                                    "cc-name",
-                                                    "cc-given-name",
-                                                    "cc-family-name",
-                                                    "cc-number",
-                                                    "cc-exp-month",
-                                                    "cc-exp-year",
-                                                    "cc-exp",
-                                                    "cc-type",
-                                                    "cc-csc",
-                                                    "organization"};
+blink::FormElementPiiType MapTypePredictionToFormElementPiiType(
+    base::StringPiece type) {
+  if (type == "NO_SERVER_DATA" || type == "UNKNOWN_TYPE" ||
+      type == "EMPTY_TYPE" || type == "") {
+    return blink::FormElementPiiType::kUnknown;
+  }
 
-// For a given |type| (a string representation of enum values), return the
-// appropriate autocomplete value that should be suggested to the website
-// developer.
-const char* MapTypePredictionToAutocomplete(base::StringPiece type) {
-  if (type == "NAME_FIRST")
-    return kSupportedAutocompleteTypes[0];
-  if (type == "NAME_MIDDLE")
-    return kSupportedAutocompleteTypes[1];
-  if (type == "NAME_LAST")
-    return kSupportedAutocompleteTypes[2];
-  if (type == "NAME_FULL")
-    return kSupportedAutocompleteTypes[3];
-  if (type == "NAME_SUFFIX")
-    return kSupportedAutocompleteTypes[4];
-  if (type == "EMAIL_ADDRESS")
-    return kSupportedAutocompleteTypes[5];
-  if (type == "PHONE_HOME_NUMBER")
-    return kSupportedAutocompleteTypes[6];
-  if (type == "PHONE_HOME_CITY_CODE")
-    return kSupportedAutocompleteTypes[7];
-  if (type == "PHONE_HOME_COUNTRY_CODE")
-    return kSupportedAutocompleteTypes[8];
-  if (type == "PHONE_HOME_CITY_AND_NUMBER")
-    return kSupportedAutocompleteTypes[9];
-  if (type == "PHONE_HOME_WHOLE_NUMBER")
-    return kSupportedAutocompleteTypes[10];
-  if (type == "PHONE_HOME_EXTENSION")
-    return kSupportedAutocompleteTypes[11];
-  if (type == "ADDRESS_HOME_STREET_ADDRESS")
-    return kSupportedAutocompleteTypes[12];
-  if (type == "ADDRESS_HOME_LINE1")
-    return kSupportedAutocompleteTypes[13];
-  if (type == "ADDRESS_HOME_LINE2")
-    return kSupportedAutocompleteTypes[14];
-  if (type == "ADDRESS_HOME_LINE3")
-    return kSupportedAutocompleteTypes[15];
-  if (type == "ADDRESS_HOME_STATE")
-    return kSupportedAutocompleteTypes[16];
-  if (type == "ADDRESS_HOME_CITY")
-    return kSupportedAutocompleteTypes[17];
-  if (type == "ADDRESS_HOME_DEPENDENT_LOCALITY")
-    return kSupportedAutocompleteTypes[18];
-  if (type == "ADDRESS_HOME_ZIP")
-    return kSupportedAutocompleteTypes[19];
-  if (type == "ADDRESS_HOME_COUNTRY")
-    return kSupportedAutocompleteTypes[20];
-  if (type == "CREDIT_CARD_NAME_FULL")
-    return kSupportedAutocompleteTypes[21];
-  if (type == "CREDIT_CARD_NAME_FIRST")
-    return kSupportedAutocompleteTypes[22];
-  if (type == "CREDIT_CARD_NAME_LAST")
-    return kSupportedAutocompleteTypes[23];
-  if (type == "CREDIT_CARD_NUMBER")
-    return kSupportedAutocompleteTypes[24];
-  if (type == "CREDIT_CARD_EXP_MONTH")
-    return kSupportedAutocompleteTypes[25];
-  if (type == "CREDIT_CARD_EXP_2_DIGIT_YEAR" ||
-      type == "CREDIT_CARD_EXP_4_DIGIT_YEAR")
-    return kSupportedAutocompleteTypes[26];
-  if (type == "CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR" ||
-      type == "CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR")
-    return kSupportedAutocompleteTypes[27];
-  if (type == "CREDIT_CARD_TYPE")
-    return kSupportedAutocompleteTypes[28];
-  if (type == "CREDIT_CARD_VERIFICATION_CODE")
-    return kSupportedAutocompleteTypes[29];
-  if (type == "COMPANY_NAME")
-    return kSupportedAutocompleteTypes[30];
-  return "";
+  if (base::StartsWith(type, "EMAIL_"))
+    return blink::FormElementPiiType::kEmail;
+  if (base::StartsWith(type, "PHONE_"))
+    return blink::FormElementPiiType::kPhone;
+  return blink::FormElementPiiType::kOthers;
 }
 
 void LogDeprecationMessages(const WebFormControlElement& element) {
@@ -191,9 +105,9 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
   // If there are no autocomplete attributes, the form needs to have at least
   // the required number of editable fields for the prediction routines to be a
   // candidate for autofill.
-  return num_editable_elements >= MinRequiredFieldsForHeuristics() ||
-         num_editable_elements >= MinRequiredFieldsForQuery() ||
-         num_editable_elements >= MinRequiredFieldsForUpload() ||
+  return num_editable_elements >= kMinRequiredFieldsForHeuristics ||
+         num_editable_elements >= kMinRequiredFieldsForQuery ||
+         num_editable_elements >= kMinRequiredFieldsForUpload ||
          (all_fields_are_passwords &&
           num_editable_elements >=
               kRequiredFieldsForFormsWithOnlyPasswordFields);
@@ -420,37 +334,19 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
 
   std::vector<WebFormControlElement> control_elements;
 
-  // First check the synthetic form.
-  bool found_synthetic_form = false;
-  if (form.data.SameFormAs(synthetic_form_)) {
-    found_synthetic_form = true;
+  if (form.data.unique_renderer_id.is_null()) {  // Form is synthetic.
     WebDocument document = frame_->GetDocument();
     control_elements = form_util::GetUnownedAutofillableFormFieldElements(
         document.All(), nullptr);
-  }
-
-  if (!found_synthetic_form) {
-    // Find the real form by searching through the WebDocuments.
-    bool found_form = false;
-
+  } else {
     for (const WebFormElement& form_element : frame_->GetDocument().Forms()) {
-      // To match two forms, we look for the form's name and the number of
-      // fields on that form. (Form names may not be unique.)
-      // Note: WebString() == WebString(string16()) does not evaluate to |true|
-      // -- WebKit distinguishes between a "null" string (lhs) and an "empty"
-      // string (rhs). We don't want that distinction, so forcing to string16.
-      base::string16 element_name = form_util::GetFormIdentifier(form_element);
-      if (element_name == form.data.name) {
-        found_form = true;
+      FormRendererId form_id(form_element.UniqueRendererFormId());
+      if (form_id == form.data.unique_renderer_id) {
         control_elements =
             form_util::ExtractAutofillableElementsInForm(form_element);
-        if (control_elements.size() == form.fields.size())
-          break;
+        break;
       }
     }
-
-    if (!found_form)
-      return false;
   }
 
   if (control_elements.size() != form.fields.size()) {
@@ -464,33 +360,24 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
     WebFormControlElement& element = control_elements[i];
 
     const FormFieldData& field_data = form.data.fields[i];
-    if (element.NameForAutofill().Utf16() != field_data.name) {
-      // Keep things simple.  Don't show predictions for elements whose names
-      // were modified between page load and the server's response to our query.
+    FieldRendererId field_id(element.UniqueRendererFormControlId());
+    if (field_id != field_data.unique_renderer_id)
       continue;
-    }
     const FormFieldDataPredictions& field = form.fields[i];
 
-    // Possibly add a console warning for this field regarding the usage of
-    // autocomplete attributes.
-    const std::string predicted_autocomplete_attribute =
-        MapTypePredictionToAutocomplete(field.overall_type);
-    if (ShouldShowAutocompleteConsoleWarnings(
-            predicted_autocomplete_attribute,
-            element.GetAttribute("autocomplete").Utf8())) {
-      logger.Send(
-          base::StringPrintf("Input elements should have autocomplete "
-                             "attributes (suggested: autocomplete='%s', "
-                             "confirm at https://goo.gl/6KgkJg)",
-                             predicted_autocomplete_attribute.c_str()),
-          PageFormAnalyserLogger::kVerbose, element);
-    }
+    element.SetFormElementPiiType(
+        MapTypePredictionToFormElementPiiType(field.overall_type));
 
     // If the flag is enabled, attach the prediction to the field.
     if (attach_predictions_to_dom) {
       constexpr size_t kMaxLabelSize = 100;
       const base::string16 truncated_label = field_data.label.substr(
           0, std::min(field_data.label.length(), kMaxLabelSize));
+
+      std::string form_id =
+          base::NumberToString(form.data.unique_renderer_id.value());
+      std::string field_id =
+          base::NumberToString(field_data.unique_renderer_id.value());
 
       std::string title =
           base::StrCat({"overall type: ", field.overall_type,             //
@@ -500,7 +387,9 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
                         "\nparseable name: ", field.parseable_name,       //
                         "\nsection: ", field.section,                     //
                         "\nfield signature: ", field.signature,           //
-                        "\nform signature: ", form.signature});
+                        "\nform signature: ", form.signature,             //
+                        "\nform renderer id: ", form_id,                  //
+                        "\nfield renderer id: ", field_id});
 
       // Set this debug string to the title so that a developer can easily debug
       // by hovering the mouse over the input field.
@@ -560,38 +449,6 @@ void FormCache::SaveInitialValues(
       }
     }
   }
-}
-
-bool FormCache::ShouldShowAutocompleteConsoleWarnings(
-    const std::string& predicted_autocomplete,
-    const std::string& actual_autocomplete) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteConsoleWarnings)) {
-    return false;
-  }
-
-  // If we have no better prediction, do not show.
-  if (predicted_autocomplete.empty())
-    return false;
-
-  // We should show a warning if the actual autocomplete attribute is empty,
-  // or we recognize the autocomplete attribute, but we think it's the wrong
-  // one.
-  if (actual_autocomplete.empty())
-    return true;
-
-  // An autocomplete attribute can be multiple strings (e.g. "shipping name").
-  // Look at all the tokens.
-  for (base::StringPiece actual : base::SplitStringPiece(
-           actual_autocomplete, " ", base::WhitespaceHandling::TRIM_WHITESPACE,
-           base::SplitResult::SPLIT_WANT_NONEMPTY)) {
-    // If we recognize the value but it's not correct, show a warning.
-    if (base::Contains(kSupportedAutocompleteTypes, actual) &&
-        actual != predicted_autocomplete) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void FormCache::PruneInitialValueCaches(

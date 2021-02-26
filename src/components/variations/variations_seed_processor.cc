@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
@@ -35,31 +36,60 @@ void RegisterExperimentParams(const Study& study,
     AssociateVariationParams(study.name(), experiment.name(), params);
 }
 
-// If there are variation ids associated with |experiment|, register the
-// variation ids.
+// Returns the IDCollectionKey with which |experiment| should be associated.
+// Returns nullopt when |experiment| doesn't have a Google web or Google web
+// trigger experiment ID.
+base::Optional<IDCollectionKey> GetKeyForWebExperiment(
+    const Study_Experiment& experiment) {
+  bool has_web_experiment_id = experiment.has_google_web_experiment_id();
+  bool has_web_trigger_experiment_id =
+      experiment.has_google_web_trigger_experiment_id();
+
+  if (!has_web_experiment_id && !has_web_trigger_experiment_id)
+    return base::nullopt;
+
+  // An experiment cannot have both |google_web_experiment_id| and
+  // |google_trigger_web_experiment_id|. This is enforced by the variations
+  // server before generating a variations seed.
+  DCHECK(!(has_web_experiment_id && has_web_trigger_experiment_id));
+
+  Study_GoogleWebVisibility visibility = experiment.google_web_visibility();
+  if (visibility == Study_GoogleWebVisibility_FIRST_PARTY) {
+    return has_web_trigger_experiment_id
+               ? GOOGLE_WEB_PROPERTIES_TRIGGER_FIRST_PARTY
+               : GOOGLE_WEB_PROPERTIES_FIRST_PARTY;
+  }
+  return has_web_trigger_experiment_id
+             ? GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT
+             : GOOGLE_WEB_PROPERTIES_ANY_CONTEXT;
+}
+
+// If there are VariationIDs associated with |experiment|, register the
+// VariationIDs.
 void RegisterVariationIds(const Study_Experiment& experiment,
                           const std::string& trial_name) {
-  if (experiment.has_google_web_experiment_id()) {
-    const VariationID variation_id =
-        static_cast<VariationID>(experiment.google_web_experiment_id());
-    AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
-                                    trial_name,
-                                    experiment.name(),
-                                    variation_id);
-  }
-  if (experiment.has_google_web_trigger_experiment_id()) {
-    const VariationID variation_id =
-        static_cast<VariationID>(experiment.google_web_trigger_experiment_id());
-    AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_name,
-                                    experiment.name(), variation_id);
-  }
-
   if (experiment.has_google_app_experiment_id()) {
     const VariationID variation_id =
         static_cast<VariationID>(experiment.google_app_experiment_id());
     AssociateGoogleVariationIDForce(GOOGLE_APP, trial_name, experiment.name(),
                                     variation_id);
   }
+
+  base::Optional<IDCollectionKey> key = GetKeyForWebExperiment(experiment);
+  if (!key.has_value())
+    return;
+
+  // An experiment cannot have both |google_web_experiment_id| and
+  // |google_trigger_web_experiment_id|. See GetKeyForWebExperiment() for more
+  // details.
+  const VariationID variation_id =
+      experiment.has_google_web_trigger_experiment_id()
+          ? static_cast<VariationID>(
+                experiment.google_web_trigger_experiment_id())
+          : static_cast<VariationID>(experiment.google_web_experiment_id());
+
+  AssociateGoogleVariationIDForce(key.value(), trial_name, experiment.name(),
+                                  variation_id);
 }
 
 // Executes |callback| on every override defined by |experiment|.
@@ -167,7 +197,7 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const VariationsSeed& seed,
     const ClientFilterableState& client_state,
     const UIStringOverrideCallback& override_callback,
-    const base::FieldTrial::EntropyProvider* low_entropy_provider,
+    const base::FieldTrial::EntropyProvider& low_entropy_provider,
     base::FeatureList* feature_list) {
   std::vector<ProcessedStudy> filtered_studies;
   FilterAndValidateStudies(seed, client_state, &filtered_studies);
@@ -195,7 +225,7 @@ bool VariationsSeedProcessor::ShouldStudyUseLowEntropy(const Study& study) {
 void VariationsSeedProcessor::CreateTrialFromStudy(
     const ProcessedStudy& processed_study,
     const UIStringOverrideCallback& override_callback,
-    const base::FieldTrial::EntropyProvider* low_entropy_provider,
+    const base::FieldTrial::EntropyProvider& low_entropy_provider,
     base::FeatureList* feature_list) {
   const Study& study = *processed_study.study();
 
@@ -260,7 +290,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
           study.name(), processed_study.total_probability(),
           processed_study.GetDefaultExperimentName(), randomization_type,
           randomization_seed, nullptr,
-          ShouldStudyUseLowEntropy(study) ? low_entropy_provider : nullptr));
+          ShouldStudyUseLowEntropy(study) ? &low_entropy_provider : nullptr));
 
   bool has_overrides = false;
   bool enables_or_disables_features = false;

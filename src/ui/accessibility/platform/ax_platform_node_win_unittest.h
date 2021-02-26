@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
@@ -43,6 +44,36 @@ class TestFragmentRootDelegate : public AXFragmentRootDelegateWin {
   gfx::NativeViewAccessible child_ = nullptr;
   gfx::NativeViewAccessible parent_ = nullptr;
   bool is_control_element_ = true;
+};
+
+class MockIRawElementProviderSimple
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public IRawElementProviderSimple {
+ public:
+  BEGIN_COM_MAP(MockIRawElementProviderSimple)
+  COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+  END_COM_MAP()
+
+  MockIRawElementProviderSimple();
+  ~MockIRawElementProviderSimple();
+
+  static HRESULT CreateMockIRawElementProviderSimple(
+      IRawElementProviderSimple** provider);
+
+  //
+  // IRawElementProviderSimple methods.
+  //
+  IFACEMETHODIMP GetPatternProvider(PATTERNID pattern_id,
+                                    IUnknown** result) override;
+
+  IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
+                                  VARIANT* result) override;
+
+  IFACEMETHODIMP
+  get_ProviderOptions(enum ProviderOptions* ret) override;
+
+  IFACEMETHODIMP
+  get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
 };
 
 class AXPlatformNodeWinTest : public AXPlatformNodeTest {
@@ -98,6 +129,8 @@ class AXPlatformNodeWinTest : public AXPlatformNodeTest {
   std::unique_ptr<AXFragmentRootWin> ax_fragment_root_;
 
   std::unique_ptr<TestFragmentRootDelegate> test_fragment_root_delegate_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace ui

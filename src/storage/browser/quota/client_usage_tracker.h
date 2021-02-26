@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
@@ -43,18 +42,21 @@ enum class InvalidOriginReason {
 // A UsageTracker object will own one ClientUsageTracker instance per client.
 // This class is not thread-safe. All methods other than the constructor must be
 // called on the same sequence.
-class ClientUsageTracker : public SpecialStoragePolicy::Observer,
-                           public base::SupportsWeakPtr<ClientUsageTracker> {
+class ClientUsageTracker : public SpecialStoragePolicy::Observer {
  public:
   using OriginSetByHost = std::map<std::string, std::set<url::Origin>>;
 
-  ClientUsageTracker(UsageTracker* tracker,
-                     scoped_refptr<QuotaClient> client,
-                     blink::mojom::StorageType type,
-                     SpecialStoragePolicy* special_storage_policy);
+  ClientUsageTracker(
+      UsageTracker* tracker,
+      scoped_refptr<QuotaClient> client,
+      blink::mojom::StorageType type,
+      scoped_refptr<SpecialStoragePolicy> special_storage_policy);
+
+  ClientUsageTracker(const ClientUsageTracker&) = delete;
+  ClientUsageTracker& operator=(const ClientUsageTracker&) = delete;
+
   ~ClientUsageTracker() override;
 
-  void GetGlobalLimitedUsage(UsageCallback callback);
   void GetGlobalUsage(GlobalUsageCallback callback);
   void GetHostUsage(const std::string& host, UsageCallback callback);
   void UpdateUsageCache(const url::Origin& origin, int64_t delta);
@@ -69,21 +71,18 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   struct AccumulateInfo;
 
-  void AccumulateLimitedOriginUsage(AccumulateInfo* info,
-                                    UsageCallback callback,
-                                    int64_t usage);
   void DidGetOriginsForGlobalUsage(GlobalUsageCallback callback,
-                                   const std::set<url::Origin>& origins);
+                                   const std::vector<url::Origin>& origins);
   void AccumulateHostUsage(AccumulateInfo* info,
                            GlobalUsageCallback callback,
                            int64_t limited_usage,
                            int64_t unlimited_usage);
 
   void DidGetOriginsForHostUsage(const std::string& host,
-                                 const std::set<url::Origin>& origins);
+                                 const std::vector<url::Origin>& origins);
 
   void GetUsageForOrigins(const std::string& host,
-                          const std::set<url::Origin>& origins);
+                          const std::vector<url::Origin>& origins);
   void AccumulateOriginUsage(AccumulateInfo* info,
                              const std::string& host,
                              const base::Optional<url::Origin>& origin,
@@ -126,11 +125,11 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
       int64_t>
       host_usage_accumulators_;
 
-  scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
+  const scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ClientUsageTracker);
+  base::WeakPtrFactory<ClientUsageTracker> weak_factory_{this};
 };
 
 }  // namespace storage

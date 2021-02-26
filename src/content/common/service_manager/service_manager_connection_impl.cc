@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,8 +23,9 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -50,11 +51,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
       public service_manager::Service {
  public:
-  IOThreadContext(service_manager::mojom::ServiceRequest service_request,
-                  scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-                  mojo::PendingReceiver<service_manager::mojom::Connector>
-                      connector_receiver)
-      : pending_service_request_(std::move(service_request)),
+  IOThreadContext(
+      mojo::PendingReceiver<service_manager::mojom::Service> service_receiver,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      mojo::PendingReceiver<service_manager::mojom::Connector>
+          connector_receiver)
+      : pending_service_receiver_(std::move(service_receiver)),
         io_task_runner_(io_task_runner),
         pending_connector_receiver_(std::move(connector_receiver)) {
     // This will be reattached by any of the IO thread functions on first call.
@@ -114,16 +116,15 @@ class ServiceManagerConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
-  class MessageLoopObserver
-      : public base::MessageLoopCurrent::DestructionObserver {
+  class MessageLoopObserver : public base::CurrentThread::DestructionObserver {
    public:
     explicit MessageLoopObserver(base::WeakPtr<IOThreadContext> context)
         : context_(context) {
-      base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+      base::CurrentThread::Get()->AddDestructionObserver(this);
     }
 
     ~MessageLoopObserver() override {
-      base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+      base::CurrentThread::Get()->RemoveDestructionObserver(this);
     }
 
     void ShutDown() {
@@ -155,18 +156,18 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   static void WrapServiceRequestHandlerNoCallback(
       const ServiceRequestHandler& handler,
-      service_manager::mojom::ServiceRequest request,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
       CreatePackagedServiceInstanceCallback callback) {
-    handler.Run(std::move(request));
+    handler.Run(std::move(receiver));
     std::move(callback).Run(base::GetCurrentProcId());
   }
 
   void StartOnIOThread() {
     // Should bind |io_thread_checker_| to the context's thread.
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    service_binding_ = std::make_unique<service_manager::ServiceBinding>(
-        this, std::move(pending_service_request_));
-    service_binding_->GetConnector()->BindConnectorReceiver(
+    service_receiver_ = std::make_unique<service_manager::ServiceReceiver>(
+        this, std::move(pending_service_receiver_));
+    service_receiver_->GetConnector()->BindConnectorReceiver(
         std::move(pending_connector_receiver_));
 
     // MessageLoopObserver owns itself.
@@ -196,7 +197,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
     // unwinds.
     scoped_refptr<IOThreadContext> keepalive(this);
 
-    service_binding_.reset();
+    service_receiver_.reset();
 
     StopOnIOThread();
   }
@@ -222,20 +223,19 @@ class ServiceManagerConnectionImpl::IOThreadContext
       mojo::PendingReceiver<service_manager::mojom::Service> receiver,
       CreatePackagedServiceInstanceCallback callback) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    service_manager::mojom::ServiceRequest request(std::move(receiver));
     auto it = request_handlers_.find(service_name);
     if (it == request_handlers_.end()) {
       if (default_request_handler_) {
         callback_task_runner_->PostTask(
             FROM_HERE, base::BindOnce(default_request_handler_, service_name,
-                                      std::move(request)));
+                                      std::move(receiver)));
       } else {
         LOG(ERROR) << "Can't create service " << service_name
                    << ". No handler found.";
       }
       std::move(callback).Run(base::nullopt);
     } else {
-      it->second.Run(std::move(request), std::move(callback));
+      it->second.Run(std::move(receiver), std::move(callback));
     }
   }
 
@@ -251,7 +251,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   // Temporary state established on construction and consumed on the IO thread
   // once the connection is started.
-  service_manager::mojom::ServiceRequest pending_service_request_;
+  mojo::PendingReceiver<service_manager::mojom::Service>
+      pending_service_receiver_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   mojo::PendingReceiver<service_manager::mojom::Connector>
       pending_connector_receiver_;
@@ -263,7 +264,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
   // Callback to run if the service is stopped by the service manager.
   base::OnceClosure stop_callback_;
 
-  std::unique_ptr<service_manager::ServiceBinding> service_binding_;
+  std::unique_ptr<service_manager::ServiceReceiver> service_receiver_;
 
   // Not owned.
   MessageLoopObserver* message_loop_observer_ = nullptr;
@@ -321,11 +322,11 @@ void ServiceManagerConnection::SetFactoryForTest(Factory* factory) {
 
 // static
 std::unique_ptr<ServiceManagerConnection> ServiceManagerConnection::Create(
-    service_manager::mojom::ServiceRequest request,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   if (service_manager_connection_factory)
     return service_manager_connection_factory->Run();
-  return std::make_unique<ServiceManagerConnectionImpl>(std::move(request),
+  return std::make_unique<ServiceManagerConnectionImpl>(std::move(receiver),
                                                         io_task_runner);
 }
 
@@ -335,11 +336,11 @@ ServiceManagerConnection::~ServiceManagerConnection() {}
 // ServiceManagerConnectionImpl, public:
 
 ServiceManagerConnectionImpl::ServiceManagerConnectionImpl(
-    service_manager::mojom::ServiceRequest request,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
   connector_ = service_manager::Connector::Create(&connector_receiver);
-  context_ = new IOThreadContext(std::move(request), io_task_runner,
+  context_ = new IOThreadContext(std::move(receiver), io_task_runner,
                                  std::move(connector_receiver));
 }
 

@@ -4,58 +4,58 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/mojom/referrer.mojom";
+import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// These are messages sent from the browser to the renderer in relation to
-// running prerenders.
-interface PrerenderHandleClient {
-  // Signals to launcher that a prerender is running.
+// This interface is used to notify of events about prerendering from the
+// browser process to a renderer process that requested prerendering. This is
+// created per prerender request, for example, when a new <link rel=prerender>
+// element is added, when the element's href is changed, etc.
+interface PrerenderProcessorClient {
+  // Notifies that a prerender started.
   OnPrerenderStart();
 
-  // Signals to launcher that a prerender has stopped loading.
+  // Notifies that a prerender has stopped loading.
   OnPrerenderStopLoading();
 
-  // Signals to launcher that a prerender has had it's 'domcontentloaded' event.
+  // Notifies that a prerender has had it's 'domcontentloaded' event.
   OnPrerenderDomContentLoaded();
 
-  // Signals to a launcher that a prerender is no longer running.
+  // Notifies that a prerender is no longer running.
   OnPrerenderStop();
 };
 
-// A handle to a requested prerender. Dropping a connection to the handle is
-// treated equivalently to calling the Abandon method.
-interface PrerenderHandle {
-  // Notifies on removal of a <link rel=prerender> element from the document.
-  // This method does not trigger an OnPrerenderStop() call.
-  Cancel();
+enum PrerenderRelType {
+  // https://html.spec.whatwg.org/C/#link-type-prerender
+  kPrerender,
 
-  // A prerender is abandoned when it's navigated away from or suspended in the
-  // page cache. This is a weaker signal than Cancel(), since the launcher
-  // hasn't indicated that the prerender isn't wanted, and we may end up using
-  // it after, for instance, a short redirect chain.
-  Abandon();
+  // https://html.spec.whatwg.org/C/#link-type-next
+  kNext,
 };
 
 struct PrerenderAttributes {
   url.mojom.Url url;
-  uint32 rel_types;
+  PrerenderRelType rel_type;
   blink.mojom.Referrer referrer;
-  url.mojom.Origin initiator_origin;
   gfx.mojom.Size view_size;
 };
 
-// Used by a renderer that is loading a web page to process prerender /
-// prefetch requests, that are generally in the form of <link rel> tags that
-// the web page author provided as hints.
+// This interface is used to request prerendering from a renderer process to the
+// browser process. This is created per prerender request, for example, when a
+// new <link rel=prerender> element is added, when the element's href is
+// changed, etc.
 interface PrerenderProcessor {
-  // Called to add a prerender request to the queue for processing. The
-  // |prerender_handle_client| will be notified as the prerendering makes
-  // progress, and |prerender_handle| provides the caller with the ability to
-  // further control the prerender.
-  AddPrerender(PrerenderAttributes prerender_attribute,
-               pending_remote<PrerenderHandleClient> prerender_handle_client,
-               pending_receiver<PrerenderHandle> prerender_handle);
+  // Requests the browesr process to start prerendering with
+  // |prerender_attribute|. |prerender_processor_client| will be notified as the
+  // prerendering makes progress. This must be called only one time before any
+  // other functions.
+  Start(PrerenderAttributes prerender_attribute,
+        pending_remote<PrerenderProcessorClient> prerender_processor_client);
+
+  // Cancels the ongoing prerendering. This is supposed to be called when the
+  // <link rel=prerender> element is removed, the element's href is changed,
+  // etc. This must be called after Start(). This does not trigger
+  // OnPrerenderStop() on PrerenderProcessorClient.
+  Cancel();
 };

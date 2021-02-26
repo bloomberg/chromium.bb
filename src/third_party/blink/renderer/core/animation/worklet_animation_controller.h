@@ -64,7 +64,7 @@ class CORE_EXPORT WorkletAnimationController
   // AnimationWorkletGlobalScope.
   bool IsAnimatorRegistered(const String& animator_name) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   void MutateAnimations();
@@ -76,8 +76,8 @@ class CORE_EXPORT WorkletAnimationController
 
   WTF::HashSet<String> animator_names_;
 
-  // TODO(yigu): The following proxy is needed for platform/ to access this
-  // class. We should bypass it eventually.
+  // TODO(crbug.com/1090515): The following proxy is needed for platform/ to
+  // access this class. We should bypass it eventually.
   std::unique_ptr<MainThreadMutatorClient> main_thread_mutator_client_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 

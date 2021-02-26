@@ -7,6 +7,7 @@ from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import dropbox_login
+from page_sets.login_helpers import facebook_login
 from page_sets.login_helpers import google_login
 
 from page_sets.helpers import override_online
@@ -108,7 +109,7 @@ class LoadEbayStory2018(_LoadingStory):
 ################################################################################
 
 
-class LoadTwitterMoibleStory2019(_LoadingStory):
+class LoadTwitterMobileStory2019(_LoadingStory):
   NAME = 'load:social:twitter:2019'
   URL = 'https://www.twitter.com/nasa'
   TAGS = [story_tags.YEAR_2019]
@@ -290,6 +291,13 @@ class LoadYouTubeStory2018(_LoadingStory):
   ]
 
 
+class LoadYouTubeLivingRoomStory2020(_LoadingStory):
+  NAME = 'load:media:youtubelivingroom:2020'
+  URL = 'https://www.youtube.com/tv#/watch?v=AIyonw6LEOs'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadDailymotionStory2019(_LoadingStory):
   NAME = 'load:media:dailymotion:2019'
   URL = ('https://www.dailymotion.com/video/x7paozv')
@@ -344,6 +352,101 @@ class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
     'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater')
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class _FacebookDesktopStory(_LoadingStory):
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+  # Page event queries.
+  VISUAL_COMPLETION_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:viewable"))
+  '''
+
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'VisuallyComplete(INITIAL_LOAD)': 'telemetry:reported_by_page:viewable',
+    };
+  '''
+
+  # Patch performance.measure to get notified about metrics
+  PERFORMANCE_MEASURE_PATCH = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_measure = window.performance.measure;
+
+      window.performance.measure = function (label, options) {
+        performance_measure.call(window.performance, label, options);
+        if (reported.hasOwnProperty(label)) {
+         performance_measure.call(window.performance, reported[label], options);
+         observed.add(reported[label]);
+        }
+      }
+
+    })();
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(_FacebookDesktopStory, self).__init__(story_set,
+                                                take_memory_measurement)
+    self.script_to_evaluate_on_commit += "\n"
+    self.script_to_evaluate_on_commit += js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_measure}}''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_measure=self.PERFORMANCE_MEASURE_PATCH)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.WaitForJavaScriptCondition(self.VISUAL_COMPLETION_EVENT)
+
+
+class LoadFacebookPhotosDesktopStory2020(_FacebookDesktopStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:desktop:2020'
+  URL = (
+      'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater'
+  )
+  TAGS = [story_tags.YEAR_2020]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithDesktopSite(action_runner, 'facebook4')
+
+
+class LoadFacebookFeedDesktopStory2020(_FacebookDesktopStory):
+  """Load facebook main page"""
+  NAME = 'load:media:facebook_feed:desktop:2020'
+  URL = 'https://www.facebook.com/'
+  TAGS = [story_tags.YEAR_2020]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithDesktopSite(action_runner, 'facebook4')
+
+
+class LoadFacebookPhotosMobileStory2020(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:mobile:2020'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/'
+  )
+  TAGS = [story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook4')
+
+
+class LoadFacebookFeedMobileStory2020(_LoadingStory):
+  """Load a page of national park"""
+  NAME = 'load:media:facebook_feed:mobile:2020'
+  URL = ('https://www.facebook.com/')
+  TAGS = [story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook4')
 
 
 ################################################################################
@@ -457,12 +560,12 @@ class LoadDriveStory2019(_LoadingStory):
 ################################################################################
 
 
-class LoadBubblesStory2019(_LoadingStory):
+class LoadBubblesStory2020(_LoadingStory):
   """Load "smarty bubbles" game on famobi.com"""
-  NAME = 'load:games:bubbles:2019'
+  NAME = 'load:games:bubbles:2020'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.YEAR_2020]
 
 
 class LoadLazorsStory(_LoadingStory):

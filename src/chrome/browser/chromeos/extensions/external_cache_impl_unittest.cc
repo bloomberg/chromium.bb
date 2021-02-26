@@ -38,6 +38,8 @@ const char kTestExtensionId2[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const char kTestExtensionId3[] = "cccccccccccccccccccccccccccccccc";
 const char kTestExtensionId4[] = "dddddddddddddddddddddddddddddddd";
 const char kNonWebstoreUpdateUrl[] = "https://localhost/service/update2/crx";
+const char kExternalCrxPath[] = "/local/path/to/extension.crx";
+const char kExternalCrxVersion[] = "1.2.3.4";
 
 }  // namespace
 
@@ -58,17 +60,18 @@ class ExternalCacheImplTest : public testing::Test,
   }
 
   const base::DictionaryValue* provided_prefs() { return prefs_.get(); }
+  const std::set<extensions::ExtensionId>& deleted_extension_files() const {
+    return deleted_extension_files_;
+  }
 
   // ExternalCacheDelegate:
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override {
     prefs_.reset(prefs->DeepCopy());
   }
-  void OnExtensionLoadedInCache(const std::string& id) override {}
-  void OnExtensionDownloadFailed(const std::string& id) override {}
-  std::string GetInstalledExtensionVersion(const std::string& id) override {
-    std::map<std::string, std::string>::iterator it =
-        installed_extensions_.find(id);
-    return it != installed_extensions_.end() ? it->second : std::string();
+
+  void OnCachedExtensionFileDeleted(
+      const extensions::ExtensionId& id) override {
+    deleted_extension_files_.insert(id);
   }
 
   base::FilePath CreateCacheDir(bool initialized) {
@@ -114,9 +117,13 @@ class ExternalCacheImplTest : public testing::Test,
     return entry;
   }
 
-  void AddInstalledExtension(const std::string& id,
-                             const std::string& version) {
-    installed_extensions_[id] = version;
+  std::unique_ptr<base::DictionaryValue> CreateEntryWithExternalCrx() {
+    auto entry = std::make_unique<base::DictionaryValue>();
+    entry->SetString(extensions::ExternalProviderImpl::kExternalCrx,
+                     kExternalCrxPath);
+    entry->SetString(extensions::ExternalProviderImpl::kExternalVersion,
+                     kExternalCrxVersion);
+    return entry;
   }
 
  private:
@@ -128,7 +135,7 @@ class ExternalCacheImplTest : public testing::Test,
   base::ScopedTempDir cache_dir_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::DictionaryValue> prefs_;
-  std::map<std::string, std::string> installed_extensions_;
+  std::set<extensions::ExtensionId> deleted_extension_files_;
 
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 
@@ -187,7 +194,7 @@ TEST_F(ExternalCacheImplTest, Basic) {
   extensions::CRXFileInfo crx_info(temp_file2,
                                    extensions::GetTestVerifierFormat());
   crx_info.extension_id = kTestExtensionId2;
-  crx_info.expected_version = "2";
+  crx_info.expected_version = base::Version("2");
   external_cache.OnExtensionDownloadFinished(
       crx_info, true, GURL(),
       extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
@@ -217,7 +224,7 @@ TEST_F(ExternalCacheImplTest, Basic) {
     extensions::CRXFileInfo crx_info(temp_file4,
                                      extensions::GetTestVerifierFormat());
     crx_info.extension_id = kTestExtensionId4;
-    crx_info.expected_version = "4";
+    crx_info.expected_version = base::Version("4");
     external_cache.OnExtensionDownloadFinished(
         crx_info, true, GURL(),
         extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
@@ -240,12 +247,15 @@ TEST_F(ExternalCacheImplTest, Basic) {
       base::PathExists(GetExtensionFile(cache_dir, kTestExtensionId4, "4")));
 
   // Damaged file should be removed from disk.
+  EXPECT_EQ(0ul, deleted_extension_files().size());
   external_cache.OnDamagedFileDetected(
       GetExtensionFile(cache_dir, kTestExtensionId2, "2"));
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ(provided_prefs()->size(), 3ul);
+  EXPECT_EQ(3ul, provided_prefs()->size());
   EXPECT_FALSE(
       base::PathExists(GetExtensionFile(cache_dir, kTestExtensionId2, "2")));
+  EXPECT_EQ(1ul, deleted_extension_files().size());
+  EXPECT_EQ(1ul, deleted_extension_files().count(kTestExtensionId2));
 
   // Shutdown with callback OnExtensionListsUpdated that clears prefs.
   std::unique_ptr<base::DictionaryValue> empty(new base::DictionaryValue);
@@ -263,7 +273,7 @@ TEST_F(ExternalCacheImplTest, Basic) {
       base::PathExists(GetExtensionFile(cache_dir, kTestExtensionId4, "4")));
 }
 
-TEST_F(ExternalCacheImplTest, PreserveInstalled) {
+TEST_F(ExternalCacheImplTest, PreserveExternalCrx) {
   base::FilePath cache_dir(CreateCacheDir(false));
   ExternalCacheImpl external_cache(
       cache_dir, url_loader_factory(),
@@ -271,10 +281,8 @@ TEST_F(ExternalCacheImplTest, PreserveInstalled) {
       true, false);
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
-  prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
+  prefs->Set(kTestExtensionId1, CreateEntryWithExternalCrx());
   prefs->Set(kTestExtensionId2, CreateEntryWithUpdateUrl(true));
-
-  AddInstalledExtension(kTestExtensionId1, "1");
 
   external_cache.UpdateExtensionsList(std::move(prefs));
   content::RunAllTasksUntilIdle();
@@ -282,13 +290,16 @@ TEST_F(ExternalCacheImplTest, PreserveInstalled) {
   ASSERT_TRUE(provided_prefs());
   EXPECT_EQ(provided_prefs()->size(), 1ul);
 
-  // File not in cache but extension installed.
+  // Extensions downloaded from update url will only be visible in the provided
+  // prefs once the download of the .crx has finished. Extensions that are
+  // provided as external crx path directly should also be visible in the
+  // provided prefs directly.
   const base::DictionaryValue* entry1 = NULL;
   ASSERT_TRUE(provided_prefs()->GetDictionary(kTestExtensionId1, &entry1));
-  EXPECT_TRUE(
-      entry1->HasKey(extensions::ExternalProviderImpl::kExternalUpdateUrl));
-  EXPECT_FALSE(entry1->HasKey(extensions::ExternalProviderImpl::kExternalCrx));
   EXPECT_FALSE(
+      entry1->HasKey(extensions::ExternalProviderImpl::kExternalUpdateUrl));
+  EXPECT_TRUE(entry1->HasKey(extensions::ExternalProviderImpl::kExternalCrx));
+  EXPECT_TRUE(
       entry1->HasKey(extensions::ExternalProviderImpl::kExternalVersion));
 }
 

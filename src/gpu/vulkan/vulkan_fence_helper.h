@@ -7,8 +7,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanFenceHelper {
   // executed in order they are enqueued.
   void EnqueueCleanupTaskForSubmittedWork(CleanupTask task);
   // Processes CleanupTasks for which a fence has passed.
-  void ProcessCleanupTasks();
+  void ProcessCleanupTasks(uint64_t retired_generation_id = 0);
   // Helpers for common types:
   void EnqueueSemaphoreCleanupForSubmittedWork(VkSemaphore semaphore);
   void EnqueueSemaphoresCleanupForSubmittedWork(

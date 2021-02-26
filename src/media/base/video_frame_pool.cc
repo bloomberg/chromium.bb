@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -93,7 +94,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
                                      natural_size)) {
       frame = pool_frame;
       frame->set_timestamp(timestamp);
-      frame->metadata()->Clear();
+      frame->clear_metadata();
       break;
     }
   }

@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
+// #import {VolumeInfoList} from '../../externs/volume_info_list.m.js';
+// #import {VolumeManager, ExternallyUnmountedEvent} from '../../externs/volume_manager.m.js';
+// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {EntryLocation} from '../../externs/entry_location.m.js';
+// #import * as wrappedVolumeManagerCommon from './volume_manager_types.m.js'; const {VolumeManagerCommon, AllowedPaths} = wrappedVolumeManagerCommon;
+// #import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+// #import {ArrayDataModel} from 'chrome://resources/js/cr/ui/array_data_model.m.js';
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+// clang-format on
+
 /**
  * Implementation of VolumeInfoList for FilteredVolumeManager.
  * In foreground/ we want to enforce this list to be filtered, so we forbid
@@ -12,7 +25,7 @@
  * @final
  * @implements {VolumeInfoList}
  */
-class FilteredVolumeInfoList {
+/* #export */ class FilteredVolumeInfoList {
   /**
    * @param {!cr.ui.ArrayDataModel} list
    */
@@ -60,7 +73,7 @@ class FilteredVolumeInfoList {
  *
  * @implements {VolumeManager}
  */
-class FilteredVolumeManager extends cr.EventTarget {
+/* #export */ class FilteredVolumeManager extends cr.EventTarget {
   /**
    *
    * @param {!AllowedPaths} allowedPaths Which paths are supported in the Files
@@ -117,7 +130,7 @@ class FilteredVolumeManager extends cr.EventTarget {
       case AllowedPaths.ANY_PATH_OR_URL:
         return true;
       case AllowedPaths.NATIVE_PATH:
-        return VolumeManagerCommon.VolumeType.isNative(volumeType);
+        return VolumeManagerCommon.VolumeType.isNative(assert(volumeType));
     }
     return false;
   }
@@ -170,7 +183,7 @@ class FilteredVolumeManager extends cr.EventTarget {
 
     // Cache volumeInfoList.
     const volumeInfoList = [];
-    for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
+    for (let i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
       const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
       // TODO(hidehiko): Filter mounted volumes located on Drive File System.
       if (!this.isAllowedVolume_(volumeInfo)) {
@@ -244,24 +257,24 @@ class FilteredVolumeManager extends cr.EventTarget {
   onVolumeInfoListUpdated_(event) {
     // Filters some volumes.
     let index = event.index;
-    for (var i = 0; i < event.index; i++) {
-      var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
+    for (let i = 0; i < event.index; i++) {
+      const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
       if (!this.isAllowedVolume_(volumeInfo)) {
         index--;
       }
     }
 
     let numRemovedVolumes = 0;
-    for (var i = 0; i < event.removed.length; i++) {
-      var volumeInfo = event.removed[i];
+    for (let i = 0; i < event.removed.length; i++) {
+      const volumeInfo = event.removed[i];
       if (this.isAllowedVolume_(volumeInfo)) {
         numRemovedVolumes++;
       }
     }
 
     const addedVolumes = [];
-    for (var i = 0; i < event.added.length; i++) {
-      var volumeInfo = event.added[i];
+    for (let i = 0; i < event.added.length; i++) {
+      const volumeInfo = event.added[i];
       if (this.isAllowedVolume_(volumeInfo)) {
         addedVolumes.push(volumeInfo);
       }
@@ -292,6 +305,7 @@ class FilteredVolumeManager extends cr.EventTarget {
         type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
         reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
         hasCellularNetworkAccess: false,
+        canPinHostedFiles: false,
       };
     }
 
@@ -386,9 +400,9 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /** @override */
-  async mountArchive(fileUrl) {
+  async mountArchive(fileUrl, password) {
     await this.initialized_;
-    return this.volumeManager_.mountArchive(fileUrl);
+    return this.volumeManager_.mountArchive(fileUrl, password);
   }
 
   /** @override */

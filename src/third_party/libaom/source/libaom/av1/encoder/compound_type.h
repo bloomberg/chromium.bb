@@ -26,6 +26,9 @@ typedef struct {
   int best_compmode_interinter_cost;
 } BEST_COMP_TYPE_STATS;
 
+#define IGNORE_MODE -1
+// Searches for the best inter-intra mode. Returns IGNORE_MODE if no good mode
+// is found, 0 otherwise.
 int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                 BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
                                 HandleInterModeArgs *args, int64_t ref_best_rd,

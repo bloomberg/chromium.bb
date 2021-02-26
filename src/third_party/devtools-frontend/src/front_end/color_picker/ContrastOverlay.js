@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as UI from '../ui/ui.js';
 
 import {ContrastInfo, Events} from './ContrastInfo.js';  // eslint-disable-line no-unused-vars
 
@@ -17,11 +18,13 @@ export class ContrastOverlay {
 
     this._visible = false;
 
-    this._contrastRatioSVG = colorElement.createSVGChild('svg', 'spectrum-contrast-container fill');
-    this._contrastRatioLines = {
-      aa: this._contrastRatioSVG.createSVGChild('path', 'spectrum-contrast-line'),
-      aaa: this._contrastRatioSVG.createSVGChild('path', 'spectrum-contrast-line')
-    };
+    this._contrastRatioSVG = UI.UIUtils.createSVGChild(colorElement, 'svg', 'spectrum-contrast-container fill');
+    /** @type {!Map<string, !Element>} */
+    this._contrastRatioLines = new Map();
+    this._contrastRatioLines.set(
+        'aa', UI.UIUtils.createSVGChild(this._contrastRatioSVG, 'path', 'spectrum-contrast-line'));
+    this._contrastRatioLines.set(
+        'aaa', UI.UIUtils.createSVGChild(this._contrastRatioSVG, 'path', 'spectrum-contrast-line'));
 
     this._width = 0;
     this._height = 0;
@@ -62,12 +65,13 @@ export class ContrastOverlay {
   }
 
   async _drawContrastRatioLines() {
-    for (const level in this._contrastRatioLines) {
-      const path = this._contrastRatioLineBuilder.drawContrastRatioLine(this._width, this._height, level);
+    for (const [level, element] of this._contrastRatioLines) {
+      const path = this._contrastRatioLineBuilder.drawContrastRatioLine(
+          this._width, this._height, /** @type {string} */ (level));
       if (path) {
-        this._contrastRatioLines[level].setAttribute('d', path);
+        element.setAttribute('d', path);
       } else {
-        this._contrastRatioLines[level].removeAttribute('d');
+        element.removeAttribute('d');
       }
     }
   }
@@ -95,7 +99,6 @@ export class ContrastRatioLineBuilder {
     }
 
     const dS = 0.02;
-    const epsilon = 0.0002;
     const H = 0;
     const S = 1;
     const V = 2;
@@ -110,10 +113,10 @@ export class ContrastRatioLineBuilder {
     const fgRGBA = color.rgba();
     const fgHSVA = color.hsva();
     const bgRGBA = bgColor.rgba();
-    const bgLuminance = Common.Color.Color.luminance(bgRGBA);
-    const blendedRGBA = [];
-    Common.Color.Color.blendColors(fgRGBA, bgRGBA, blendedRGBA);
-    const fgLuminance = Common.Color.Color.luminance(blendedRGBA);
+    const bgLuminance = Common.ColorUtils.luminance(bgRGBA);
+    /** @type {!Array<number>} */
+    let blendedRGBA = Common.ColorUtils.blendColors(fgRGBA, bgRGBA);
+    const fgLuminance = Common.ColorUtils.luminance(blendedRGBA);
     const fgIsLighter = fgLuminance > bgLuminance;
     const desiredLuminance = Common.Color.Color.desiredLuminance(bgLuminance, requiredContrast, fgIsLighter);
 
@@ -121,60 +124,10 @@ export class ContrastRatioLineBuilder {
     let currentSlope = 0;
     const candidateHSVA = [fgHSVA[H], 0, 0, fgHSVA[A]];
     let pathBuilder = [];
+    /** @type {!Array<number>} */
     const candidateRGBA = [];
     Common.Color.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-    Common.Color.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
-
-    /**
-     * @param {number} index
-     * @param {number} x
-     */
-    function updateCandidateAndComputeDelta(index, x) {
-      candidateHSVA[index] = x;
-      Common.Color.Color.hsva2rgba(candidateHSVA, candidateRGBA);
-      Common.Color.Color.blendColors(candidateRGBA, bgRGBA, blendedRGBA);
-      return Common.Color.Color.luminance(blendedRGBA) - desiredLuminance;
-    }
-
-    /**
-     * Approach a value of the given component of `candidateHSVA` such that the
-     * calculated luminance of `candidateHSVA` approximates `desiredLuminance`.
-     * @param {number} index The component of `candidateHSVA` to modify.
-     * @return {?number} The new value for the modified component, or `null` if
-     *     no suitable value exists.
-     */
-    function approach(index) {
-      let x = candidateHSVA[index];
-      let multiplier = 1;
-      let dLuminance = updateCandidateAndComputeDelta(index, x);
-      let previousSign = Math.sign(dLuminance);
-
-      for (let guard = 100; guard; guard--) {
-        if (Math.abs(dLuminance) < epsilon) {
-          return x;
-        }
-
-        const sign = Math.sign(dLuminance);
-        if (sign !== previousSign) {
-          // If `x` overshoots the correct value, halve the step size.
-          multiplier /= 2;
-          previousSign = sign;
-        } else if (x < 0 || x > 1) {
-          // If there is no overshoot and `x` is out of bounds, there is no
-          // acceptable value for `x`.
-          return null;
-        }
-
-        // Adjust `x` by a multiple of `dLuminance` to decrease step size as
-        // the computed luminance converges on `desiredLuminance`.
-        x += multiplier * (index === V ? -dLuminance : dLuminance);
-
-        dLuminance = updateCandidateAndComputeDelta(index, x);
-      }
-      // The loop should always converge or go out of bounds on its own.
-      console.error('Loop exited unexpectedly');
-      return null;
-    }
+    blendedRGBA = Common.ColorUtils.blendColors(candidateRGBA, bgRGBA);
 
     // Plot V for values of S such that the computed luminance approximates
     // `desiredLuminance`, until no suitable value for V can be found, or the
@@ -188,7 +141,7 @@ export class ContrastRatioLineBuilder {
       // gradient of the curve.
       candidateHSVA[V] = lastV + currentSlope * dS;
 
-      const v = approach(V);
+      const v = Common.Color.Color.approachColorValue(candidateHSVA, bgRGBA, V, desiredLuminance);
       if (v === null) {
         break;
       }
@@ -207,7 +160,7 @@ export class ContrastRatioLineBuilder {
     if (s < 1 + dS) {
       s -= dS;
       candidateHSVA[V] = 1;
-      s = approach(S);
+      s = Common.Color.Color.approachColorValue(candidateHSVA, bgRGBA, S, desiredLuminance);
       if (s !== null) {
         pathBuilder = pathBuilder.concat(['L', (s * width).toFixed(2), '-0.1']);
       }

@@ -6,7 +6,6 @@
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -194,7 +193,6 @@ class VariationsService
       const char* kEnableGpuBenchmarking,
       const char* kEnableFeatures,
       const char* kDisableFeatures,
-      const std::set<std::string>& unforceable_field_trials,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
@@ -235,8 +233,7 @@ class VariationsService
                          const std::string& country_code,
                          base::Time date_fetched,
                          bool is_delta_compressed,
-                         bool is_gzip_compressed,
-                         bool fetched_insecurely);
+                         bool is_gzip_compressed);
 
   // Create an entropy provider based on low entropy. This is used to create
   // trials for studies that should only depend on low entropy, such as studies

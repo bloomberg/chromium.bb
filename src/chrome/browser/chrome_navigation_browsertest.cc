@@ -6,12 +6,14 @@
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/common/chrome_features.h"
@@ -30,6 +33,8 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_isolation/features.h"
+#include "components/site_isolation/pref_names.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
@@ -48,6 +53,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -59,6 +65,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,6 +104,10 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
   ukm::TestAutoSetUkmRecorder* test_ukm_recorder() {
     return test_ukm_recorder_.get();
   }
+
+ protected:
+  void ExpectHideAndRestoreSadTabWhenNavigationCancels(bool cross_site);
+  void ExpectHideSadTabWhenNavigationCompletes(bool cross_site);
 
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
@@ -179,7 +190,7 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     content::WebContents* new_contents = nullptr;
     {
       content::WebContentsAddedObserver new_tab_observer;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       const char* new_tab_click_script_template =
           "simulateClick(\"%s\", { metaKey: true });";
 #else
@@ -337,36 +348,15 @@ IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInSameProcessTest, SubframeTarget) {
   TestCtrlClick("test-anchor-with-subframe-target");
 }
 
-class ChromeNavigationPortMappedBrowserTest : public InProcessBrowserTest {
- public:
-  ChromeNavigationPortMappedBrowserTest() {}
-  ~ChromeNavigationPortMappedBrowserTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    // Use the command line parameter for the host resolver, so URLs without
-    // explicit port numbers can be mapped under the hood to the port number
-    // the |embedded_test_server| uses. It is required to test with potentially
-    // malformed URLs.
-    std::string port =
-        base::NumberToString(embedded_test_server()->host_port_pair().port());
-    command_line->AppendSwitchASCII(
-        "host-resolver-rules",
-        "MAP * 127.0.0.1:" + port + ", EXCLUDE 127.0.0.1*");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeNavigationPortMappedBrowserTest);
-};
-
 // Test to verify that spoofing a URL via a redirect from a slightly malformed
 // URL doesn't work.  See also https://crbug.com/657720.
-IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
                        ContextMenuNavigationToInvalidUrl) {
   GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   GURL new_tab_url(
       "www.foo.com::/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html");
+  EXPECT_TRUE(new_tab_url.is_valid());
+  EXPECT_EQ("www.foo.com", new_tab_url.scheme());
 
   // Navigate to an initial page, to ensure we have a committed document
   // from which to perform a context menu initiated navigation.
@@ -387,21 +377,41 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
-  // Wait for the new tab to be created and for loading to stop.
+  // Wait for the new tab to be created.
   tab_add.Wait();
   int index_of_new_tab = browser()->tab_strip_model()->count() - 1;
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(index_of_new_tab);
-  EXPECT_TRUE(WaitForLoadStop(new_web_contents));
 
-  // Verify that the final URL after the redirects gets committed.
-  EXPECT_EQ(GURL("http://bar.com/title2.html"),
-            new_web_contents->GetLastCommittedURL());
+  // Verify that the load fails (because of the wrong "scheme" - www.foo.com is
+  // not a real scheme).
+  EXPECT_FALSE(WaitForLoadStop(new_web_contents));
+
+  // Verify that the invalid URL was not committed.
+  content::NavigationController& navigation_controller =
+      new_web_contents->GetController();
+  EXPECT_EQ(nullptr, navigation_controller.GetLastCommittedEntry());
+  EXPECT_EQ(0, navigation_controller.GetEntryCount());
+
+  // Verify that the pending entry is still present, even though the navigation
+  // has failed and didn't commit.  We preserve the pending entry if it is a
+  // valid URL in an unmodified blank tab.
+  content::NavigationEntry* pending_entry =
+      navigation_controller.GetPendingEntry();
+  ASSERT_NE(nullptr, pending_entry);
+  EXPECT_EQ(new_tab_url, pending_entry->GetURL());
+
+  // Verify that the pending entry is not shown anymore, after
+  // WebContentsImpl::DidAccessInitialDocument detects that the initial, empty
+  // document was accessed.
+  EXPECT_EQ(pending_entry, navigation_controller.GetVisibleEntry());
+  EXPECT_TRUE(content::ExecuteScript(new_web_contents, "window.x=3"));
+  EXPECT_NE(pending_entry, navigation_controller.GetVisibleEntry());
 }
 
-// Ensure that a failed navigation in a new tab will not leave an invalid
-// visible URL, which may be formatted in an unsafe way in the omnibox.
-// See https://crbug.com/850824.
+// Ensure that URL transformations do not let a webpage populate the Omnibox
+// with a javascript: URL.  See https://crbug.com/850824 and
+// https://crbug.com/1116280.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
                        ClearInvalidPendingURLOnFail) {
   GURL initial_url = embedded_test_server()->GetURL(
@@ -412,17 +422,43 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WebContents* main_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Simulate a click on the link and wait for the new window.
-  content::WebContentsAddedObserver new_tab_observer;
-  EXPECT_TRUE(ExecuteScript(main_contents, "simulateClick()"));
-  content::WebContents* new_contents = new_tab_observer.GetWebContents();
+  const char* kTestUrls[] = {
+      // https://crbug.com/850824
+      "o.o:@javascript:foo()",
 
-  // The load in the new window should fail.
-  EXPECT_FALSE(WaitForLoadStop(new_contents));
+      // https://crbug.com/1116280
+      "o.o:@javascript::://foo.com%0Aalert(document.domain)"};
+  for (const char* kTestUrl : kTestUrls) {
+    SCOPED_TRACE(testing::Message() << "kTestUrl = " << kTestUrl);
+    GURL test_url(kTestUrl);
+    EXPECT_TRUE(test_url.is_valid());
+    EXPECT_EQ("o.o", test_url.scheme());
 
-  // Ensure that there is no pending entry or visible URL.
-  EXPECT_EQ(nullptr, new_contents->GetController().GetPendingEntry());
-  EXPECT_EQ(GURL(), new_contents->GetVisibleURL());
+    // Set the test URL.
+    const char kUrlSettingTemplate[] = R"(
+        var url = $1;
+        var anchor = document.getElementById('invalid_url_link');
+        anchor.target = 'target_name: ' + url;
+        anchor.href = url;
+    )";
+    EXPECT_TRUE(ExecuteScript(
+        main_contents, content::JsReplace(kUrlSettingTemplate, kTestUrl)));
+
+    // Simulate a click on the link and wait for the new window.
+    content::WebContentsAddedObserver new_tab_observer;
+    EXPECT_TRUE(ExecuteScript(main_contents, "simulateClick()"));
+    content::WebContents* new_contents = new_tab_observer.GetWebContents();
+
+    // The load in the new window should fail.
+    EXPECT_FALSE(WaitForLoadStop(new_contents));
+
+    // Ensure that the omnibox doesn't start with javascript: scheme.
+    EXPECT_EQ(test_url, new_contents->GetVisibleURL());
+    OmniboxView* omnibox_view =
+        browser()->window()->GetLocationBar()->GetOmniboxView();
+    std::string omnibox_text = base::UTF16ToASCII(omnibox_view->GetText());
+    EXPECT_THAT(omnibox_text, testing::Not(testing::StartsWith("javascript:")));
+  }
 }
 
 // A test performing two simultaneous navigations, to ensure code in chrome/,
@@ -1216,6 +1252,35 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
                          ->GetLastCommittedURL());
 }
 
+using ChromeNavigationBrowserTestWithMobileEmulation = DevToolsProtocolTestBase;
+
+// Tests the behavior of navigating to a PDF when mobile emulation is enabled.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTestWithMobileEmulation,
+                       NavigateToPDFWithMobileEmulation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  Attach();
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetIntKey("width", 400);
+  params.SetIntKey("height", 800);
+  params.SetDoubleKey("deviceScaleFactor", 1.0);
+  params.SetBoolKey("mobile", true);
+  SendCommandSync("Emulation.setDeviceMetricsOverride", std::move(params));
+
+  GURL pdf_url = embedded_test_server()->GetURL("/pdf/test.pdf");
+  ui_test_utils::NavigateToURL(browser(), pdf_url);
+
+  EXPECT_EQ(pdf_url, web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(
+      "<head></head>"
+      "<body><!-- no enabled plugin supports this MIME type --></body>",
+      content::EvalJs(web_contents(), "document.documentElement.innerHTML")
+          .ExtractString());
+}
+
 // Check that clicking on a link doesn't carry the transient user activation
 // from the original page to the navigated page (crbug.com/865243).
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
@@ -1274,10 +1339,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_NE(popup, opener);
   EXPECT_TRUE(WaitForLoadStop(popup));
 
-  content::ConsoleObserverDelegate console_observer(
-      opener,
+  content::WebContentsConsoleObserver console_observer(opener);
+  console_observer.SetPattern(
       "Navigating a cross-origin opener to a download (*) is deprecated*");
-  opener->SetDelegate(&console_observer);
   EXPECT_TRUE(content::ExecuteScript(
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
@@ -1457,6 +1521,117 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       test_ukm_recorder()->GetEntriesByName(Entry::kEntryName);
   EXPECT_EQ(1u, ukm_entries.size());
   test_ukm_recorder()->ExpectEntrySourceHasUrl(ukm_entries[0], skippable_url);
+}
+
+// Ensure that starting a navigation out of a sad tab hides the sad tab right
+// away, without waiting for the navigation to commit and restores it again
+// after cancelling.
+void ChromeNavigationBrowserTest::
+    ExpectHideAndRestoreSadTabWhenNavigationCancels(bool cross_site) {
+  // This test only applies when this policy is in place.
+  if (!content::ShouldSkipEarlyCommitPendingForCrashedFrame())
+    return;
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(contents);
+
+  GURL url_start(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_hung =
+      embedded_test_server()->GetURL(cross_site ? "b.com" : "a.com", "/hung");
+  GURL url_succeed = embedded_test_server()->GetURL(
+      cross_site ? "b.com" : "a.com", "/title2.html");
+  ui_test_utils::NavigateToURL(browser(), url_start);
+
+  // No sad tab should be visible after a successful navigation.
+  ASSERT_FALSE(sad_tab_helper->sad_tab());
+
+  // Kill the renderer process.
+  content::RenderProcessHost* process = contents->GetMainFrame()->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(-1);
+  crash_observer.Wait();
+
+  // Make sure the sad tab is shown.
+  ASSERT_TRUE(sad_tab_helper->sad_tab());
+
+  // Start a navigation that will never finish and wait for request start.
+  content::TestNavigationManager manager(contents, url_hung);
+  contents->GetController().LoadURL(url_hung, content::Referrer(),
+                                    ui::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // Ensure that the sad tab is hidden at this point.
+  ASSERT_FALSE(sad_tab_helper->sad_tab());
+
+  // Cancel the pending navigation and ensure that the sad tab returns.
+  chrome::Stop(browser());
+  EXPECT_TRUE(sad_tab_helper->sad_tab());
+  // Ensure that the omnibox URL is the crashed one.
+  OmniboxView* omnibox_view =
+      browser()->window()->GetLocationBar()->GetOmniboxView();
+  std::string omnibox_text = base::UTF16ToASCII(omnibox_view->GetText());
+  EXPECT_EQ(omnibox_text, url_start.spec());
+
+  // Make sure the sad tab goes away when we commit successfully.
+  ui_test_utils::NavigateToURL(browser(), url_succeed);
+  EXPECT_FALSE(sad_tab_helper->sad_tab());
+}
+
+// Ensure that starting a navigation out of a sad tab hides the sad tab right
+// away, without waiting for the navigation to commit and restores it again
+// after cancelling.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       RestoreSadTabWhenNavigationCancels_CrossSite) {
+  ExpectHideAndRestoreSadTabWhenNavigationCancels(/*cross_site=*/true);
+}
+
+// Same-site version of above.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       RestoreSadTabWhenNavigationCancels_SameSite) {
+  ExpectHideAndRestoreSadTabWhenNavigationCancels(/*cross_site=*/false);
+}
+
+// Ensure that completing a navigation from a sad tab will clear the sad tab.
+void ChromeNavigationBrowserTest::ExpectHideSadTabWhenNavigationCompletes(
+    bool cross_site) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(contents);
+
+  GURL url_start(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_succeed = embedded_test_server()->GetURL(
+      cross_site ? "b.com" : "a.com", "/title2.html");
+  ui_test_utils::NavigateToURL(browser(), url_start);
+
+  // No sad tab should be visible after a successful navigation.
+  ASSERT_FALSE(sad_tab_helper->sad_tab());
+
+  // Kill the renderer process.
+  content::RenderProcessHost* process = contents->GetMainFrame()->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(-1);
+  crash_observer.Wait();
+
+  // Make sure the sad tab is shown.
+  ASSERT_TRUE(sad_tab_helper->sad_tab());
+
+  // Make sure the sad tab goes away when we commit successfully.
+  ui_test_utils::NavigateToURL(browser(), url_succeed);
+  EXPECT_FALSE(sad_tab_helper->sad_tab());
+}
+
+// Ensure that completing a navigation from a sad tab will clear the sad tab.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       ClearSadTabWhenNavigationCompletes_CrossSite) {
+  ExpectHideSadTabWhenNavigationCompletes(/*cross_site=*/true);
+}
+
+// Same-site version of above.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       ClearSadTabWhenNavigationCompletes_SameSite) {
+  ExpectHideSadTabWhenNavigationCompletes(/*cross_site=*/false);
 }
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature
@@ -1700,8 +1875,9 @@ class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
  public:
   SiteIsolationForPasswordSitesBrowserTest() {
-    feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
-                                   {features::kSitePerProcess});
+    feature_list_.InitWithFeatures(
+        {site_isolation::features::kSiteIsolationForPasswordSites},
+        {features::kSitePerProcess});
   }
 
   std::vector<std::string> GetSavedIsolatedSites() {
@@ -1710,7 +1886,8 @@ class SiteIsolationForPasswordSitesBrowserTest
 
   std::vector<std::string> GetSavedIsolatedSites(Profile* profile) {
     PrefService* prefs = profile->GetPrefs();
-    auto* list = prefs->GetList(prefs::kUserTriggeredIsolatedOrigins);
+    auto* list =
+        prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins);
     std::vector<std::string> sites;
     for (const base::Value& value : list->GetList())
       sites.push_back(value.GetString());

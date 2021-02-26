@@ -15,17 +15,14 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/common/web_application_info.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
@@ -33,7 +30,7 @@ namespace web_app {
 PendingAppInstallTask::Result::Result(InstallResultCode code,
                                       base::Optional<AppId> app_id)
     : code(code), app_id(std::move(app_id)) {
-  DCHECK_EQ(code == InstallResultCode::kSuccessNewInstall, app_id.has_value());
+  DCHECK_EQ(IsNewInstall(code), app_id.has_value());
 }
 
 PendingAppInstallTask::Result::Result(Result&&) = default;
@@ -46,25 +43,21 @@ void PendingAppInstallTask::CreateTabHelpers(
   InstallableManager::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
-  if (auto* performance_manager_registry =
-          performance_manager::PerformanceManagerRegistry::GetInstance()) {
-    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
-  }
 }
 
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
-    AppShortcutManager* shortcut_manger,
-    FileHandlerManager* file_handler_manager,
+    OsIntegrationManager* os_integration_manager,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
+    InstallManager* install_manager,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
-      shortcut_manager_(shortcut_manger),
-      file_handler_manager_(file_handler_manager),
+      os_integration_manager_(os_integration_manager),
       install_finalizer_(install_finalizer),
+      install_manager_(install_manager),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
@@ -77,23 +70,27 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
 
+  ResultCallback retry_on_failure = base::BindOnce(
+      &PendingAppInstallTask::TryAppInfoFactoryOnFailure,
+      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback));
+
   if (load_url_result == WebAppUrlLoader::Result::kUrlLoaded) {
     // If we are not re-installing a placeholder, then no need to uninstall
     // anything.
     if (!install_options_.reinstall_placeholder) {
-      ContinueWebAppInstall(web_contents, std::move(result_callback));
+      ContinueWebAppInstall(web_contents, std::move(retry_on_failure));
       return;
     }
     // Calling InstallWebAppWithOptions with the same URL used to install a
     // placeholder won't necessarily replace the placeholder app, because the
     // new app might be installed with a new AppId. To avoid this, always
     // uninstall the placeholder app.
-    UninstallPlaceholderApp(web_contents, std::move(result_callback));
+    UninstallPlaceholderApp(web_contents, std::move(retry_on_failure));
     return;
   }
 
   if (install_options_.install_placeholder) {
-    InstallPlaceholder(std::move(result_callback));
+    InstallPlaceholder(std::move(retry_on_failure));
     return;
   }
 
@@ -126,7 +123,23 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(result_callback), Result(code, base::nullopt)));
+      base::BindOnce(std::move(retry_on_failure), Result(code, base::nullopt)));
+}
+
+void PendingAppInstallTask::InstallFromInfo(ResultCallback result_callback) {
+  auto internal_install_source = ConvertExternalInstallSourceToInstallSource(
+      install_options().install_source);
+  auto install_params = ConvertExternalInstallOptionsToParams(install_options_);
+  auto web_app_info = install_options_.app_info_factory.Run();
+  for (std::string& search_term : install_params.additional_search_terms) {
+    web_app_info->additional_search_terms.push_back(std::move(search_term));
+  }
+  install_manager_->InstallWebAppFromInfo(
+      std::move(web_app_info), ForInstallableSite::kYes, install_params,
+      internal_install_source,
+      base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), /* is_placeholder=*/false,
+                     /*offline_install=*/true, std::move(result_callback)));
 }
 
 void PendingAppInstallTask::UninstallPlaceholderApp(
@@ -134,7 +147,7 @@ void PendingAppInstallTask::UninstallPlaceholderApp(
     ResultCallback result_callback) {
   base::Optional<AppId> app_id =
       externally_installed_app_prefs_.LookupPlaceholderAppId(
-          install_options_.url);
+          install_options_.install_url);
 
   // If there is no placeholder app or the app is not installed,
   // then no need to uninstall anything.
@@ -145,7 +158,7 @@ void PendingAppInstallTask::UninstallPlaceholderApp(
 
   // Otherwise, uninstall the placeholder app.
   install_finalizer_->UninstallExternalWebAppByUrl(
-      install_options_.url, install_options_.install_source,
+      install_options_.install_url, install_options_.install_source,
       base::BindOnce(&PendingAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
                      std::move(result_callback)));
@@ -157,7 +170,7 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
     bool uninstalled) {
   if (!uninstalled) {
     LOG(ERROR) << "Failed to uninstall placeholder for: "
-               << install_options_.url;
+               << install_options_.install_url;
     std::move(result_callback)
         .Run(Result(InstallResultCode::kFailedPlaceholderUninstall,
                     base::nullopt));
@@ -169,18 +182,15 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
 void PendingAppInstallTask::ContinueWebAppInstall(
     content::WebContents* web_contents,
     ResultCallback result_callback) {
-  auto* provider = WebAppProviderBase::GetProviderBase(profile_);
-  DCHECK(provider);
-
   auto install_params = ConvertExternalInstallOptionsToParams(install_options_);
   auto install_source = ConvertExternalInstallSourceToInstallSource(
       install_options_.install_source);
 
-  provider->install_manager().InstallWebAppWithParams(
+  install_manager_->InstallWebAppWithParams(
       web_contents, install_params, install_source,
       base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), false /* is_placeholder */,
-                     std::move(result_callback)));
+                     weak_ptr_factory_.GetWeakPtr(), /*is_placeholder=*/false,
+                     /*offline_install=*/false, std::move(result_callback)));
 }
 
 void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
@@ -188,7 +198,7 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
 
   base::Optional<AppId> app_id =
       externally_installed_app_prefs_.LookupPlaceholderAppId(
-          install_options_.url);
+          install_options_.install_url);
   if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
     // No need to install a placeholder app again.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -199,8 +209,8 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   }
 
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::UTF8ToUTF16(install_options_.url.spec());
-  web_app_info.app_url = install_options_.url;
+  web_app_info.title = base::UTF8ToUTF16(install_options_.install_url.spec());
+  web_app_info.start_url = install_options_.install_url;
 
   switch (install_options_.user_display_mode) {
     case DisplayMode::kUndefined:
@@ -210,6 +220,7 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
     case DisplayMode::kMinimalUi:
     case DisplayMode::kStandalone:
     case DisplayMode::kFullscreen:
+    case DisplayMode::kWindowControlsOverlay:
       web_app_info.open_as_window = true;
       break;
   }
@@ -220,68 +231,77 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
       base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), true /* is_placeholder */,
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), /*is_placeholder=*/true,
+                     /*offline_install=*/false, std::move(callback)));
 }
 
 void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
+                                              bool offline_install,
                                               ResultCallback result_callback,
                                               const AppId& app_id,
                                               InstallResultCode code) {
-  if (code != InstallResultCode::kSuccessNewInstall) {
+  if (!IsNewInstall(code)) {
     std::move(result_callback).Run(Result(code, base::nullopt));
     return;
   }
 
-  // If this is the first time the app has been installed, run a migration. This
-  // will not happen again, even if the app is uninstalled and reinstalled.
-  if (!externally_installed_app_prefs_.LookupAppId(install_options_.url)) {
-    ui_manager_->UninstallAndReplace(install_options().uninstall_and_replace,
-                                     app_id);
-  }
+  ui_manager_->UninstallAndReplaceIfExists(
+      install_options().uninstall_and_replace, app_id);
 
-  externally_installed_app_prefs_.Insert(install_options_.url, app_id,
+  externally_installed_app_prefs_.Insert(install_options_.install_url, app_id,
                                          install_options_.install_source);
-  externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
+  externally_installed_app_prefs_.SetIsPlaceholder(install_options_.install_url,
                                                    is_placeholder);
 
+  if (offline_install) {
+    code = install_options().only_use_app_info_factory
+               ? InstallResultCode::kSuccessOfflineOnlyInstall
+               : InstallResultCode::kSuccessOfflineFallbackInstall;
+  }
   base::ScopedClosureRunner scoped_closure(
-      base::BindOnce(std::move(result_callback),
-                     Result(InstallResultCode::kSuccessNewInstall, app_id)));
+      base::BindOnce(std::move(result_callback), Result(code, app_id)));
 
   if (!is_placeholder) {
     return;
   }
+  InstallOsHooksOptions options;
+  options.os_hooks[OsHookType::kShortcuts] =
+      install_options_.add_to_applications_menu;
+  options.os_hooks[OsHookType::kShortcutsMenu] =
+      install_options_.add_to_applications_menu;
+  options.add_to_desktop = install_options_.add_to_desktop;
+  options.add_to_quick_launch_bar = install_options_.add_to_quick_launch_bar;
+  options.os_hooks[OsHookType::kRunOnOsLogin] =
+      install_options_.run_on_os_login;
 
-  // Installation through InstallFinalizer doesn't create shortcuts so create
-  // them here.
-  if (install_options_.add_to_quick_launch_bar &&
-      install_finalizer_->CanAddAppToQuickLaunchBar()) {
-    install_finalizer_->AddAppToQuickLaunchBar(app_id);
-  }
+  // TODO(crbug.com/1087219): Determine if |register_file_handlers| should be
+  // configured from somewhere else rather than always true.
+  options.os_hooks[OsHookType::kFileHandlers] = true;
 
-  // TODO(ortuno): Make adding a shortcut to the applications menu independent
-  // from adding a shortcut to desktop.
-  if (install_options_.add_to_applications_menu &&
-      shortcut_manager_->CanCreateShortcuts()) {
-    shortcut_manager_->CreateShortcuts(
-        app_id, install_options_.add_to_desktop,
-        base::BindOnce(
-            [](base::WeakPtr<PendingAppInstallTask> task, const AppId& app_id,
-               base::ScopedClosureRunner scoped_closure,
-               bool shortcuts_created) {
-              if (task) {
-                task->file_handler_manager_->EnableAndRegisterOsFileHandlers(
-                    app_id);
-              }
+  os_integration_manager_->InstallOsHooks(
+      app_id,
+      base::BindOnce(&PendingAppInstallTask::OnOsHooksCreated,
+                     weak_ptr_factory_.GetWeakPtr(), app_id,
+                     std::move(scoped_closure)),
+      nullptr, options);
+}
 
-              // Even if the shortcuts failed to be created, we consider the
-              // installation successful since an app was created.
-              scoped_closure.RunAndReset();
-            },
-            weak_ptr_factory_.GetWeakPtr(), app_id, std::move(scoped_closure)));
+void PendingAppInstallTask::OnOsHooksCreated(
+    const AppId& app_id,
+    base::ScopedClosureRunner scoped_closure,
+    const OsHooksResults os_hooks_results) {
+  registrar_->NotifyWebAppInstalledWithOsHooks(app_id);
+  scoped_closure.RunAndReset();
+}
+
+void PendingAppInstallTask::TryAppInfoFactoryOnFailure(
+    ResultCallback result_callback,
+    Result result) {
+  if (!IsSuccess(result.code) && install_options().app_info_factory) {
+    InstallFromInfo(std::move(result_callback));
     return;
   }
+  std::move(result_callback).Run(std::move(result));
 }
 
 }  // namespace web_app

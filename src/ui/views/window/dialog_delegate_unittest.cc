@@ -6,7 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
@@ -21,7 +21,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #endif
 
@@ -396,7 +396,7 @@ TEST_F(DialogTest, InitialFocusWithDeactivatedWidget) {
 // If the initially focused View provided is unfocusable, check the next
 // available focusable View is focused.
 TEST_F(DialogTest, UnfocusableInitialFocus) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, make all buttons unfocusable by turning off full keyboard access.
   // This is the more common configuration, and if a dialog has a focusable
   // textfield, tree or table, that should obtain focus instead.
@@ -409,7 +409,7 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   dialog->AddChildView(textfield);
   Widget* dialog_widget = CreateDialogWidget(dialog);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // For non-Mac, turn off focusability on all the dialog's buttons manually.
   // This achieves the same effect as disabling full keyboard access.
   dialog->GetOkButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
@@ -513,6 +513,25 @@ TEST_F(DialogDelegateCloseTest, OldClosePathDoesNotDoubleClose) {
 
   EXPECT_TRUE(accepted);
   EXPECT_FALSE(cancelled);
+}
+
+TEST_F(DialogDelegateCloseTest, CloseParentWidgetDoesNotInvokeCloseCallback) {
+  auto* dialog = new DialogDelegateView();
+  std::unique_ptr<Widget> parent = CreateTestWidget();
+  Widget* widget = DialogDelegate::CreateDialogWidget(dialog, GetContext(),
+                                                      parent->GetNativeView());
+
+  bool closed = false;
+  dialog->SetCloseCallback(
+      base::BindLambdaForTesting([&closed]() { closed = true; }));
+
+  views::test::WidgetDestroyedWaiter parent_waiter(parent.get());
+  views::test::WidgetDestroyedWaiter dialog_waiter(widget);
+  parent->Close();
+  parent_waiter.Wait();
+  dialog_waiter.Wait();
+
+  EXPECT_FALSE(closed);
 }
 
 }  // namespace views

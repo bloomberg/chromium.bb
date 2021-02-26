@@ -41,7 +41,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                                         public CompositorAnimationDelegate,
                                         public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletAnimation);
   USING_PRE_FINALIZER(WorkletAnimation, Dispose);
 
  public:
@@ -140,7 +139,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     running_on_main_thread_ = running_on_main_thread;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Dispose();
 
  private:

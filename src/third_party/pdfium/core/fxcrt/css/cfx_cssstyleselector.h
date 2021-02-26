@@ -28,12 +28,12 @@ class CFX_CSSStyleSelector {
   CFX_CSSStyleSelector();
   ~CFX_CSSStyleSelector();
 
-  void SetDefFontSize(float fFontSize);
+  void SetDefaultFontSize(float fFontSize);
   void SetUAStyleSheet(std::unique_ptr<CFX_CSSStyleSheet> pSheet);
   void UpdateStyleIndex();
 
   RetainPtr<CFX_CSSComputedStyle> CreateComputedStyle(
-      CFX_CSSComputedStyle* pParentStyle);
+      const CFX_CSSComputedStyle* pParentStyle);
 
   // Note, the dest style has to be an out param because the CXFA_TextParser
   // adds non-inherited data from the parent style. Attempting to copy
@@ -75,7 +75,7 @@ class CFX_CSSStyleSelector {
   uint32_t ToTextDecoration(const RetainPtr<CFX_CSSValueList>& pList);
   CFX_CSSFontVariant ToFontVariant(CFX_CSSPropertyValue eValue);
 
-  float m_fDefFontSize;
+  float m_fDefaultFontSize = 12.0f;
   std::unique_ptr<CFX_CSSStyleSheet> m_UAStyles;
   CFX_CSSRuleCollection m_UARules;
 };

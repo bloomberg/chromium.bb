@@ -17,7 +17,9 @@
 
 #include "common/Assert.h"
 #include "common/Compiler.h"
+#include "dawn_wire/WireCmd_autogen.h"
 
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -48,6 +50,7 @@ namespace dawn_wire { namespace client {
         ObjectAndSerial* New(ObjectOwner* owner) {
             uint32_t id = GetNewId();
             auto object = std::make_unique<T>(owner, 1, id);
+            owner->TrackObject(object.get());
 
             if (id >= mObjects.size()) {
                 ASSERT(id == mObjects.size());
@@ -66,6 +69,7 @@ namespace dawn_wire { namespace client {
             return &mObjects[id];
         }
         void Free(T* obj) {
+            ASSERT(obj->IsInList());
             if (DAWN_LIKELY(mObjects[obj->id].generation != std::numeric_limits<uint32_t>::max())) {
                 // Only recycle this ObjectId if the generation won't overflow on the next
                 // allocation.

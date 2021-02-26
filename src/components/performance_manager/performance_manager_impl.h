@@ -17,11 +17,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/worker_node.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "content/public/common/process_type.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
 
@@ -91,7 +93,7 @@ class PerformanceManagerImpl : public PerformanceManager {
       FrameNodeImpl* parent_frame_node,
       int frame_tree_node_id,
       int render_frame_id,
-      const base::UnguessableToken& dev_tools_token,
+      const blink::LocalFrameToken& frame_token,
       int32_t browsing_instance_id,
       int32_t site_instance_id,
       FrameNodeCreationCallback creation_callback =
@@ -110,7 +112,7 @@ class PerformanceManagerImpl : public PerformanceManager {
       const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
-      const base::UnguessableToken& dev_tools_token);
+      const blink::WorkerToken& worker_token);
 
   // Destroys a node returned from the creation functions above. May be called
   // from any sequence.

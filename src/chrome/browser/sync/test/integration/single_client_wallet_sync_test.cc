@@ -63,7 +63,7 @@ using wallet_helper::GetPersonalDataManager;
 using wallet_helper::GetProfileWebDataService;
 using wallet_helper::GetServerAddressesMetadata;
 using wallet_helper::GetServerCardsMetadata;
-using wallet_helper::GetWalletDataModelTypeState;
+using wallet_helper::GetWalletModelTypeState;
 using wallet_helper::kDefaultBillingAddressID;
 using wallet_helper::kDefaultCardID;
 using wallet_helper::kDefaultCreditCardCloudTokenDataID;
@@ -108,62 +108,6 @@ class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
   base::RunLoop run_loop_;
   T result_;
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
-};
-
-class WaitForWalletUpdateChecker : public StatusChangeChecker,
-                                   public syncer::SyncServiceObserver {
- public:
-  WaitForWalletUpdateChecker(base::Time min_required_progress_marker_timestamp,
-                             syncer::SyncService* service)
-      : min_required_progress_marker_timestamp_(
-            min_required_progress_marker_timestamp),
-        service_(service) {
-    scoped_observer_.Add(service);
-  }
-
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    // GetLastCycleSnapshot() returns by value, so make sure to capture it for
-    // iterator use.
-    const syncer::SyncCycleSnapshot snap =
-        service_->GetLastCycleSnapshotForDebugging();
-    const syncer::ProgressMarkerMap& progress_markers =
-        snap.download_progress_markers();
-    auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
-    if (marker_it == progress_markers.end()) {
-      *os << "Waiting for an updated Wallet progress marker timestamp "
-          << min_required_progress_marker_timestamp_
-          << "; actual: no progress marker in last sync cycle";
-      return false;
-    }
-
-    sync_pb::DataTypeProgressMarker progress_marker;
-    bool success = progress_marker.ParseFromString(marker_it->second);
-    DCHECK(success);
-
-    const base::Time actual_timestamp =
-        fake_server::FakeServer::GetWalletProgressMarkerTimestamp(
-            progress_marker);
-
-    *os << "Waiting for an updated Wallet progress marker timestamp "
-        << min_required_progress_marker_timestamp_ << "; actual "
-        << actual_timestamp;
-
-    return actual_timestamp >= min_required_progress_marker_timestamp_;
-  }
-
-  // syncer::SyncServiceObserver implementation.
-  void OnSyncCycleCompleted(syncer::SyncService* sync) override {
-    CheckExitCondition();
-  }
-
- private:
-  const base::Time min_required_progress_marker_timestamp_;
-  const syncer::SyncService* const service_;
-
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      scoped_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForWalletUpdateChecker);
 };
 
 std::vector<std::unique_ptr<CreditCard>> GetServerCards(
@@ -252,12 +196,21 @@ class SingleClientWalletSyncTest : public SyncTest {
     }
   }
 
+  void WaitForCreditCardCloudTokenData(size_t expected_count,
+                                       autofill::PersonalDataManager* pdm) {
+    while (pdm->GetCreditCardCloudTokenData().size() != expected_count) {
+      WaitForOnPersonalDataChanged(pdm);
+    }
+  }
+
   bool TriggerGetUpdatesAndWait() {
     const base::Time now = base::Time::Now();
     // Trigger a sync and wait for the new data to arrive.
     TriggerSyncForModelTypes(
         0, syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-    return WaitForWalletUpdateChecker(now, GetSyncService(0)).Wait();
+    return FullUpdateTypeProgressMarkerChecker(now, GetSyncService(0),
+                                               syncer::AUTOFILL_WALLET_DATA)
+        .Wait();
   }
 
   void AdvanceAutofillClockByOneDay() {
@@ -399,10 +352,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
   ASSERT_TRUE(AwaitQuiescence());
 
   // Make sure the data & metadata is in the DB.
-  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-  ASSERT_EQ(1uL, pdm->GetCreditCardCloudTokenData().size());
+  WaitForNumberOfCards(1, pdm);
+  WaitForNumberOfServerProfiles(1, pdm);
+  WaitForPaymentsCustomerData(kDefaultCustomerID, pdm);
+  WaitForCreditCardCloudTokenData(1, pdm);
 
   // Signout, the data & metadata should be gone.
   GetClient(0)->SignOutPrimaryAccount();
@@ -581,7 +534,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        NewSyncDataShouldReplaceExistingData) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kDefaultBillingAddressID, /*nickname=*/""),
+                            kDefaultBillingAddressID, /*nickname=*/"",
+                            /*instrument_id=*/123),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData(),
        CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-1")});
@@ -593,6 +547,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  EXPECT_EQ(123, cards[0]->instrument_id());
   // When no nickname is returned from Sync server, credit card's nickname is
   // empty.
   EXPECT_TRUE(cards[0]->nickname().empty());
@@ -610,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002",
                             kDefaultBillingAddressID,
-                            /*nickname=*/"Grocery Card"),
+                            /*nickname=*/"Grocery Card", /*instrument_id=*/321),
        CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2"),
        CreateSyncPaymentsCustomerData(/*customer_id=*/"different"),
        CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-2")});
@@ -621,6 +576,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(ASCIIToUTF16("0002"), cards[0]->LastFourDigits());
+  EXPECT_EQ(321, cards[0]->instrument_id());
   EXPECT_EQ(ASCIIToUTF16("Grocery Card"), cards[0]->nickname());
   profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
@@ -660,12 +616,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
   EXPECT_EQ("data-1", cloud_token_data[0]->instrument_token);
 
   // Trigger a sync and wait for the new data to arrive.
-  sync_pb::ModelTypeState state_before = GetWalletDataModelTypeState(0);
+  sync_pb::ModelTypeState state_before =
+      GetWalletModelTypeState(syncer::AUTOFILL_WALLET_DATA, 0);
   ASSERT_TRUE(TriggerGetUpdatesAndWait());
 
   // Check that the new progress marker is stored for empty updates. This is a
   // regression check for crbug.com/924447.
-  sync_pb::ModelTypeState state_after = GetWalletDataModelTypeState(0);
+  sync_pb::ModelTypeState state_after =
+      GetWalletModelTypeState(syncer::AUTOFILL_WALLET_DATA, 0);
   EXPECT_NE(state_before.progress_marker().token(),
             state_after.progress_marker().token());
 
@@ -813,11 +771,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ChangedEntityGetsUpdated) {
 // client even if the cards on the client are unmasked.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        SameUpdatesAreIgnoredWhenLocalCardsUnmasked) {
-// We need to allow storing full server cards for this test to work properly.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableOfferStoreUnmaskedWalletCards);
-#endif
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),

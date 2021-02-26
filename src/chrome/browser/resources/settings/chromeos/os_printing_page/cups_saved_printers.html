@@ -10,6 +10,7 @@
 <link rel="import" href="cups_printers_browser_proxy.html">
 <link rel="import" href="cups_printers_entry_list_behavior.html">
 <link rel="import" href="cups_printers_entry.html">
+<link rel="import" href="cups_printer_dialog_util.html">
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../../settings_shared_css.html">
 
@@ -28,6 +29,7 @@
 
       /** Height of iron list row entry. */
       #show-more-container {
+        align-items: center;
         min-height: var(--settings-row-min-height);
       }
 
@@ -61,7 +63,10 @@
     <iron-list class="list-frame vertical-list flex-auto" id="printerEntryList"
         items="[[filteredPrinters_]]">
       <template>
-        <settings-cups-printers-entry printer-entry="[[item]]">
+        <settings-cups-printers-entry printer-entry="[[item]]"
+            tabindex$="[[tabIndex]]" last-focused="{{lastFocused_}}"
+            list-blurred="{{listBlurred_}}" focus-row-index="[[index]]"
+            iron-list-tab-index="[[tabIndex]]">
         </settings-cups-printers-entry>
       </template>
     </iron-list>

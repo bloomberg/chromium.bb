@@ -19,6 +19,10 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
+namespace base {
+class ElapsedTimer;
+}
+
 namespace device {
 
 class FidoAuthenticator;
@@ -58,6 +62,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,
+      CtapGetAssertionOptions request_options,
       bool allow_skipping_pin_touch,
       CompletionCallback completion_callback);
   ~GetAssertionRequestHandler() override;
@@ -86,10 +91,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
   void HandleResponse(
       FidoAuthenticator* authenticator,
+      CtapGetAssertionRequest request,
+      base::ElapsedTimer request_timer,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response);
   void HandleNextResponse(
       FidoAuthenticator* authenticator,
+      CtapGetAssertionRequest request,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response);
   void CollectPINThenSendRequest(FidoAuthenticator* authenticator);
@@ -100,17 +108,30 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   void OnHavePIN(std::string pin);
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
+  void OnStartUvTokenOrFallback(FidoAuthenticator* authenticator,
+                                CtapDeviceResponseCode status,
+                                base::Optional<pin::RetriesResponse> response);
   void OnUvRetriesResponse(CtapDeviceResponseCode status,
                            base::Optional<pin::RetriesResponse> response);
   void OnHaveUvToken(FidoAuthenticator* authenticator,
                      CtapDeviceResponseCode status,
                      base::Optional<pin::TokenResponse> response);
   void DispatchRequestWithToken(pin::TokenResponse token);
+  void OnGetAssertionSuccess(FidoAuthenticator* authenticator,
+                             CtapGetAssertionRequest request);
+  void OnReadLargeBlobs(
+      FidoAuthenticator* authenticator,
+      CtapDeviceResponseCode status,
+      base::Optional<std::vector<std::pair<LargeBlobKey, std::vector<uint8_t>>>>
+          blobs);
+  void OnWriteLargeBlob(FidoAuthenticator* authenticator,
+                        CtapDeviceResponseCode status);
 
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapGetAssertionRequest request_;
-  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext_;
+  CtapGetAssertionOptions options_;
+  base::Optional<pin::TokenResponse> pin_token_;
   // If true, and if at the time the request is dispatched to the first
   // authenticator no other authenticators are available, the request handler
   // will skip the initial touch that is usually required to select a PIN

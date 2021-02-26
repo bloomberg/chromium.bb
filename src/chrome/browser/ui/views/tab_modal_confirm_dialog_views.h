@@ -18,7 +18,6 @@ class WebContents;
 }
 
 namespace views {
-class Link;
 class MessageBoxView;
 class Widget;
 }
@@ -41,7 +40,6 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
-  void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
  private:
@@ -52,7 +50,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   void CancelTabModalDialog() override;
   void CloseDialog() override;
 
-  void LinkClicked(views::Link* source, int event_flags);
+  void LinkClicked(const ui::Event& event);
 
   views::View* GetInitiallyFocusedView() override;
 

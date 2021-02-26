@@ -61,6 +61,9 @@ def main():
 
 # This file is created by generate_nasm_sources.py. Do not edit manually.
 """
+    # Results in duplicated symbols in nasm.c
+    file_lists['LIBOBJ'].remove('nasmlib/errfile.c')
+
     PrintFileList(out, "ndisasm_sources", file_lists['NDISASM'])
     PrintFileList(out, "nasmlib_sources", file_lists['LIBOBJ'])
     PrintFileList(out, "nasm_sources", file_lists['NASM'])

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -146,7 +147,7 @@ void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
       std::make_unique<AutofillWalletSyncBridge>(
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
-              /*dump_stack=*/base::RepeatingClosure()),
+              /*dump_stack=*/base::DoNothing()),
           web_data_backend));
 }
 
@@ -435,7 +436,7 @@ bool AutofillWalletSyncBridge::SetCreditCardCloudTokenData(
   std::vector<std::unique_ptr<CreditCardCloudTokenData>> existing_data;
   table->GetCreditCardCloudTokenData(&existing_data);
 
-  if (ShouldResetAutofillWalletData(existing_data, cloud_token_data)) {
+  if (AreAnyItemsDifferent(existing_data, cloud_token_data)) {
     table->SetCreditCardCloudTokenData(cloud_token_data);
     return true;
   }
@@ -510,36 +511,6 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
             new_data.size());
 
   return result;
-}
-
-template <class Item>
-bool AutofillWalletSyncBridge::ShouldResetAutofillWalletData(
-    const std::vector<std::unique_ptr<Item>>& old_data,
-    const std::vector<Item>& new_data) {
-  std::vector<const Item*> old_ptrs;
-  old_ptrs.reserve(old_data.size());
-  for (const std::unique_ptr<Item>& old_item : old_data)
-    old_ptrs.push_back(old_item.get());
-  std::vector<const Item*> new_ptrs;
-  new_ptrs.reserve(new_data.size());
-  for (const Item& new_item : new_data)
-    new_ptrs.push_back(&new_item);
-
-  if (old_ptrs.size() != new_ptrs.size())
-    return true;
-
-  // Sort our vectors.
-  auto compare_less = [](const Item* lhs, const Item* rhs) {
-    return lhs->Compare(*rhs) < 0;
-  };
-  std::sort(old_ptrs.begin(), old_ptrs.end(), compare_less);
-  std::sort(new_ptrs.begin(), new_ptrs.end(), compare_less);
-
-  auto compare_equal = [](const Item* lhs, const Item* rhs) {
-    return lhs->Compare(*rhs) == 0;
-  };
-  return !std::equal(old_ptrs.begin(), old_ptrs.end(), new_ptrs.begin(),
-                     compare_equal);
 }
 
 AutofillTable* AutofillWalletSyncBridge::GetAutofillTable() {

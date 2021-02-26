@@ -25,6 +25,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -200,15 +201,15 @@ class DownloadProtectionService {
       download::DownloadItem* item,
       CheckDownloadRepeatingCallback callback,
       DeepScanningRequest::DeepScanTrigger trigger,
-      std::vector<DeepScanningRequest::DeepScanType> allowed_scans);
+      enterprise_connectors::AnalysisSettings analysis_settings);
 
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* browser_context);
 
  private:
   friend class PPAPIDownloadRequest;
   friend class DownloadUrlSBClient;
-  friend class DownloadProtectionServiceTest;
+  friend class DownloadProtectionServiceTestBase;
   friend class DownloadDangerPromptTest;
   friend class CheckClientDownloadRequestBase;
   friend class CheckClientDownloadRequest;

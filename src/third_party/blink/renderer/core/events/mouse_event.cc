@@ -388,7 +388,7 @@ Node* MouseEvent::fromElement() const {
   return target() ? target()->ToNode() : nullptr;
 }
 
-void MouseEvent::Trace(Visitor* visitor) {
+void MouseEvent::Trace(Visitor* visitor) const {
   visitor->Trace(related_target_);
   UIEventWithKeyState::Trace(visitor);
 }
@@ -491,12 +491,17 @@ void MouseEvent::ComputeRelativePosition() {
     FloatPoint local_pos = layout_object->AbsoluteToLocalFloatPoint(
         FloatPoint(AbsoluteLocation()));
 
+    if (layout_object->IsInline()) {
+      UseCounter::Count(
+          target_node->GetDocument(),
+          WebFeature::kMouseEventRelativePositionForInlineElement);
+    }
+
     // Adding this here to address crbug.com/570666. Basically we'd like to
     // find the local coordinates relative to the padding box not the border
     // box.
     if (layout_object->IsBoxModelObject()) {
-      const LayoutBoxModelObject* layout_box =
-          ToLayoutBoxModelObject(layout_object);
+      const auto* layout_box = To<LayoutBoxModelObject>(layout_object);
       local_pos.Move(-layout_box->BorderLeft(), -layout_box->BorderTop());
     }
 

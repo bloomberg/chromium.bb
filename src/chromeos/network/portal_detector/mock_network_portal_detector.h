@@ -21,12 +21,11 @@ class MockNetworkPortalDetector : public NetworkPortalDetector {
                void(chromeos::NetworkPortalDetector::Observer* observer));
   MOCK_METHOD1(AddAndFireObserver,
                void(chromeos::NetworkPortalDetector::Observer* observer));
-  MOCK_METHOD1(GetCaptivePortalState,
-               chromeos::NetworkPortalDetector::CaptivePortalState(
-                   const std::string& service_path));
+  MOCK_METHOD0(GetCaptivePortalStatus,
+               chromeos::NetworkPortalDetector::CaptivePortalStatus());
   MOCK_METHOD0(IsEnabled, bool());
   MOCK_METHOD1(Enable, void(bool start_detection));
-  MOCK_METHOD1(StartPortalDetection, bool(bool force));
+  MOCK_METHOD0(StartPortalDetection, void());
   MOCK_METHOD1(SetStrategy,
                void(chromeos::PortalDetectorStrategy::StrategyId id));
 

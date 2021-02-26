@@ -48,12 +48,12 @@ class PackageDefinition(object):
     """Build a new PackageDefinition.
 
     Args:
-      package_name (str) - the name of the CIPD package
-      package_root (Path) - the path on the current filesystem that all files
+      * package_name (str) - the name of the CIPD package
+      * package_root (Path) - the path on the current filesystem that all files
         will be relative to. e.g. if your root is /.../foo, and you add the
         file /.../foo/bar/baz.json, the final cipd package will contain
         'bar/baz.json'.
-      install_mode (None|'copy'|'symlink') - the mechanism that the cipd client
+      * install_mode (None|'copy'|'symlink') - the mechanism that the cipd client
         should use when installing this package. If None, defaults to the
         platform default ('copy' on windows, 'symlink' on everything else).
     """
@@ -72,23 +72,26 @@ class PackageDefinition(object):
 
   def _rel_path(self, path):
     """Returns a forward-slash-delimited version of `path` which is relative to
-    the package root. Will raise ValueError if path is not inside the root."""
+    the package root.
+
+    Raises ValueError if path is not inside the root.
+    """
     if path == self.package_root:
       return '.'
     if not self.package_root.is_parent_of(path):
       raise ValueError(
           'path %r is not the package root %r and not a child thereof' %
           (path, self.package_root))
-    # we know that root has the same base and some prefix of path
+    # We know that root has the same base and some prefix of path
     return '/'.join(path.pieces[len(self.package_root.pieces):])
 
   def add_dir(self, dir_path, exclusions=None):
-    """Recursively add a directory to the package.
+    """Recursivelys add a directory to the package.
 
     Args:
-      dir_path (Path) - A path on the current filesystem under the
+      * dir_path (Path) - A path on the current filesystem under the
         package_root to a directory which should be recursively included.
-      exclusions (list(str)) - A list of regexps to exclude when scanning the
+      * exclusions (list(str)) - A list of regexps to exclude when scanning the
         given directory. These will be tested against the forward-slash path
         to the file relative to `dir_path`.
 

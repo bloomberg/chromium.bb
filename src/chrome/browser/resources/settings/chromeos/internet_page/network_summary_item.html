@@ -1,16 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="../../settings_page/settings_subpage.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 
 <dom-module id="network-summary-item">
   <template>
@@ -52,7 +52,7 @@
               [[getTitleText_(activeNetworkState)]]
             </div>
             <div id="networkState">
-              [[getNetworkStateText_(activeNetworkState, deviceState)]]
+              [[getNetworkStateText_(activeNetworkState, deviceState.*)]]
             </div>
           </div>
         </div>
@@ -63,16 +63,15 @@
         </template>
 
         <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
-          <cr-policy-indicator
-            icon-aria-label="[[getTitleText_(activeNetworkState)]]"
-            indicator-type="[[getIndicatorTypeForSource(
-                                activeNetworkState.source)]]"
-            on-click="doNothing_">
+          <cr-policy-indicator id="policyIndicator"
+              icon-aria-label="[[getTitleText_(activeNetworkState)]]"
+              indicator-type="[[getPolicyIndicatorType_(activeNetworkState)]]"
+              on-click="doNothing_">
           </cr-policy-indicator>
         </template>
 
-        <template is="dom-if" if="[[showDetailsIsVisible_(activeNetworkState,
-            deviceState, networkStateList)]]">
+        <template is="dom-if" if="[[showArrowButton_(activeNetworkState,
+                                      deviceState, networkStateList)]]">
           <cr-icon-button class="subpage-arrow"
               aria-labelledby="networkTitleText"
               aria-describedby="networkState networkIcon"
@@ -86,6 +85,7 @@
         <cr-toggle id="deviceEnabledButton"
             class="margin-matches-padding"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
+            aria-describedby$="[[getToggleA11yDescribedBy_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"
             on-change="onDeviceEnabledChange_">

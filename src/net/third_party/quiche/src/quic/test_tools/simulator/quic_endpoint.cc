@@ -11,6 +11,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_output.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
@@ -33,10 +34,9 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
       wrong_data_received_(false),
       notifier_(nullptr) {
   connection_ = std::make_unique<QuicConnection>(
-      connection_id, GetAddressFromName(peer_name), simulator,
-      simulator->GetAlarmFactory(), &writer_, false, perspective,
+      connection_id, GetAddressFromName(name), GetAddressFromName(peer_name),
+      simulator, simulator->GetAlarmFactory(), &writer_, false, perspective,
       ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
-  connection_->SetSelfAddress(GetAddressFromName(name));
   connection_->set_visitor(this);
   connection_->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                             std::make_unique<NullEncrypter>(perspective));
@@ -55,6 +55,7 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
     // Skip version negotiation.
     test::QuicConnectionPeer::SetNegotiatedVersion(connection_.get());
   }
+  test::QuicConnectionPeer::SetAddressValidated(connection_.get());
   connection_->SetDataProducer(&producer_);
   connection_->SetSessionNotifier(this);
   notifier_ = std::make_unique<test::SimpleSessionNotifier>(connection_.get());
@@ -74,7 +75,19 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
       peer_hello, perspective == Perspective::IS_CLIENT ? SERVER : CLIENT,
       &error);
   DCHECK_EQ(error_code, QUIC_NO_ERROR) << "Configuration failed: " << error;
+  if (connection_->version().AuthenticatesHandshakeConnectionIds()) {
+    if (connection_->perspective() == Perspective::IS_CLIENT) {
+      test::QuicConfigPeer::SetReceivedOriginalConnectionId(
+          &config, connection_->connection_id());
+      test::QuicConfigPeer::SetReceivedInitialSourceConnectionId(
+          &config, connection_->connection_id());
+    } else {
+      test::QuicConfigPeer::SetReceivedInitialSourceConnectionId(
+          &config, connection_->client_connection_id());
+    }
+  }
   connection_->SetFromConfig(config);
+  connection_->DisableMtuDiscovery();
 }
 
 QuicByteCount QuicEndpoint::bytes_received() const {
@@ -152,9 +165,6 @@ bool QuicEndpoint::WillingAndAbleToWrite() const {
     return notifier_->WillingToWrite();
   }
   return bytes_to_transfer_ != 0;
-}
-bool QuicEndpoint::HasPendingHandshake() const {
-  return false;
 }
 bool QuicEndpoint::ShouldKeepConnectionAlive() const {
   return true;

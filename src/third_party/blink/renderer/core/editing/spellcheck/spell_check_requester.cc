@@ -94,7 +94,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
 
 SpellCheckRequest::~SpellCheckRequest() = default;
 
-void SpellCheckRequest::Trace(Visitor* visitor) {
+void SpellCheckRequest::Trace(Visitor* visitor) const {
   visitor->Trace(requester_);
   visitor->Trace(checking_range_);
   visitor->Trace(root_editable_element_);
@@ -192,13 +192,6 @@ bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
   SpellCheckRequest* request = SpellCheckRequest::Create(range, request_num);
   if (!request)
     return false;
-
-  const base::TimeTicks current_request_time = base::TimeTicks::Now();
-  if (request_num == 0 && last_request_time_ > base::TimeTicks()) {
-    UMA_HISTOGRAM_TIMES("WebCore.SpellChecker.RequestInterval",
-                        current_request_time - last_request_time_);
-  }
-  last_request_time_ = current_request_time;
 
   DCHECK_EQ(request->Sequence(),
             SpellCheckRequest::kUnrequestedTextCheckingSequence);
@@ -314,7 +307,7 @@ void SpellCheckRequester::DidCheckCancel(int sequence) {
   DidCheck(sequence);
 }
 
-void SpellCheckRequester::Trace(Visitor* visitor) {
+void SpellCheckRequester::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   visitor->Trace(processing_request_);
   visitor->Trace(request_queue_);

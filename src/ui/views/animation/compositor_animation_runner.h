@@ -13,32 +13,22 @@
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/animation/animation_container.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
-
-namespace ui {
-class AnimationMetricsRecorder;
-class AnimationMetricsReporter;
-}  // namespace ui
 
 namespace views {
 class Widget;
 
 // An animation runner based on ui::Compositor.
-class CompositorAnimationRunner : public gfx::AnimationRunner,
-                                  public ui::CompositorAnimationObserver,
-                                  public WidgetObserver {
+class VIEWS_EXPORT CompositorAnimationRunner
+    : public gfx::AnimationRunner,
+      public ui::CompositorAnimationObserver,
+      public WidgetObserver {
  public:
   explicit CompositorAnimationRunner(Widget* widget);
   CompositorAnimationRunner(CompositorAnimationRunner&) = delete;
   CompositorAnimationRunner& operator=(CompositorAnimationRunner&) = delete;
   ~CompositorAnimationRunner() override;
-
-  // Set a AnimationMetricsReporter which will record metrics
-  // after an animation is complete. A non zero |expected_duration| is required
-  // for computations.
-  void SetAnimationMetricsReporter(
-      ui::AnimationMetricsReporter* animation_metrics_reporter,
-      base::TimeDelta expected_duration);
 
   // gfx::AnimationRunner:
   void Stop() override;
@@ -70,11 +60,6 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
 
   base::TimeDelta min_interval_ = base::TimeDelta::Max();
   base::TimeTicks last_tick_;
-
-  // Expected duration of an animation. Used for and required to be non zero for
-  // animation metrics recording.
-  base::TimeDelta expected_duration_;
-  std::unique_ptr<ui::AnimationMetricsRecorder> animation_metrics_recorder_;
 };
 
 }  // namespace views

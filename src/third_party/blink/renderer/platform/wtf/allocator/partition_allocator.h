@@ -24,7 +24,7 @@ class WTF_EXPORT PartitionAllocator {
 
   template <typename T>
   static size_t MaxElementCountInBackingStore() {
-    return base::kGenericMaxDirectMapped / sizeof(T);
+    return base::MaxDirectMapped() / sizeof(T);
   }
 
   template <typename T>
@@ -79,12 +79,8 @@ class WTF_EXPORT PartitionAllocator {
   static void TraceBackingStoreIfMarked(const void*) {}
   template <typename T>
   static void BackingWriteBarrier(T**) {}
-  template <typename, typename T>
-  static void BackingWriteBarrierForHashTable(T**) {}
 
   static bool IsAllocationAllowed() { return true; }
-  static bool IsObjectResurrectionForbidden() { return false; }
-  static bool IsSweepForbidden() { return false; }
   static bool IsIncrementalMarking() { return false; }
 
   static void EnterGCForbiddenScope() {}

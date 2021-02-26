@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Adds pre hook to data store queries to hide internal-only data.
 
 Checks if the user has a google.com address, and hides data with the
@@ -45,15 +44,16 @@ def InstallHooks():
   This only needs to be called once, when doing config (currently in
   appengine_config.py).
   """
-  apiproxy_stub_map.apiproxy.GetPreCallHooks().Push(
-      '_DatastorePreHook', _DatastorePreHook, 'datastore_v3')
+  apiproxy_stub_map.apiproxy.GetPreCallHooks().Push('_DatastorePreHook',
+                                                    _DatastorePreHook,
+                                                    'datastore_v3')
 
 
 def SetPrivilegedRequest():
   """Allows the current request to act as a privileged user.
 
   This should ONLY be called for handlers that are restricted from end users
-  by some other mechanism (IP whitelisting, admin-only pages).
+  by some other mechanism (IP allowlist, admin-only pages).
 
   This should be set once per request, before accessing the data store.
   """
@@ -97,9 +97,9 @@ def _IsServicingPrivilegedRequest():
   if request.registry.get('single_privileged', False):
     request.registry['single_privileged'] = False
     return True
-  whitelist = utils.GetIpWhitelist()
-  if whitelist and hasattr(request, 'remote_addr'):
-    return request.remote_addr in whitelist
+  allowlist = utils.GetIpAllowlist()
+  if allowlist and hasattr(request, 'remote_addr'):
+    return request.remote_addr in allowlist
   return False
 
 

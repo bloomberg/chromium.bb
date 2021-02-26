@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -16,7 +17,7 @@ namespace bluetooth = extensions::api::bluetooth;
 using bluetooth::VendorIdSource;
 using device::BluetoothDevice;
 using device::BluetoothDeviceType;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 using device::BluetoothTransport;
 #endif
 
@@ -90,7 +91,7 @@ bool ConvertDeviceTypeToApi(const BluetoothDeviceType& input,
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool ConvertTransportToApi(const BluetoothTransport& input,
                            bluetooth::Transport* output) {
   switch (input) {
@@ -159,14 +160,14 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   else
     out->inquiry_tx_power.reset();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (device.battery_percentage())
     out->battery_percentage.reset(new int(device.battery_percentage().value()));
   else
     out->battery_percentage.reset();
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   ConvertTransportToApi(device.GetType(), &(out->transport));
 #endif
 }
@@ -180,7 +181,7 @@ void PopulateAdapterState(const device::BluetoothAdapter& adapter,
   out->address = adapter.GetAddress();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 device::BluetoothFilterType ToBluetoothDeviceFilterType(FilterType type) {
   switch (type) {
     case FilterType::FILTER_TYPE_NONE:

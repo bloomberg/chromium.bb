@@ -10,7 +10,7 @@
 #include <memory>
 #include <new>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/hash_util.h"
@@ -34,6 +34,10 @@ template <typename S>
 class StructPtr {
  public:
   using Struct = S;
+
+  // Exposing StructPtr<S>::element_type allows gmock's Pointee matcher to
+  // dereference StructPtr's.
+  using element_type = S;
 
   StructPtr() = default;
   StructPtr(std::nullptr_t) {}
@@ -122,6 +126,10 @@ class InlinedStructPtr {
  public:
   using Struct = S;
 
+  // Exposing InlinedStructPtr<S>::element_type allows gmock's Pointee matcher
+  // to dereference InlinedStructPtr's.
+  using element_type = S;
+
   InlinedStructPtr() = default;
   InlinedStructPtr(std::nullptr_t) {}
 
@@ -163,7 +171,11 @@ class InlinedStructPtr {
     DCHECK(state_ == VALID);
     return &value_;
   }
-  Struct* get() const { return &value_; }
+  Struct* get() const {
+    if (state_ == NIL)
+      return nullptr;
+    return &value_;
+  }
 
   void Swap(InlinedStructPtr* other) {
     std::swap(value_, other->value_);

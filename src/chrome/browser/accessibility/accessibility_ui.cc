@@ -10,22 +10,21 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/dev_ui_browser_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +40,7 @@
 #include "net/base/escape.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/inspect/tree_formatter.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if !defined(OS_ANDROID)
@@ -80,6 +80,7 @@ static const char kInternal[] = "internal";
 static const char kLabelImages[] = "labelImages";
 static const char kNative[] = "native";
 static const char kPage[] = "page";
+static const char kPDF[] = "pdf";
 static const char kScreenReader[] = "screenreader";
 static const char kShowOrRefreshTree[] = "showOrRefreshTree";
 static const char kText[] = "text";
@@ -89,6 +90,8 @@ static const char kWeb[] = "web";
 static const char kDisabled[] = "disabled";
 static const char kOff[] = "off";
 static const char kOn[] = "on";
+
+using ui::AXPropertyFilter;
 
 namespace {
 
@@ -177,6 +180,7 @@ void HandleAccessibilityRequestCallback(
   bool text = mode.has_mode(ui::AXMode::kInlineTextBoxes);
   bool screenreader = mode.has_mode(ui::AXMode::kScreenReader);
   bool html = mode.has_mode(ui::AXMode::kHTML);
+  bool pdf = mode.has_mode(ui::AXMode::kPDF);
 
   // The "native" and "web" flags are disabled if
   // --disable-renderer-accessibility is set.
@@ -202,6 +206,9 @@ void HandleAccessibilityRequestCallback(
   data.SetString(kLabelImages, are_accessibility_image_labels_enabled
                                    ? (label_images ? kOn : kOff)
                                    : kDisabled);
+
+  // The "pdf" flag is independent of the others.
+  data.SetString(kPDF, pdf ? kOn : kOff);
 
   bool show_internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
   data.SetString(kInternal, show_internal ? kOn : kOff);
@@ -253,34 +260,10 @@ void HandleAccessibilityRequestCallback(
   std::move(callback).Run(base::RefCountedString::TakeString(&json_string));
 }
 
-bool MatchesPropertyFilters(
-    const std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
-        property_filters,
-    const base::string16& text) {
-  bool allow = false;
-  for (const auto& filter : property_filters) {
-    if (base::MatchPattern(text, filter.match_str)) {
-      switch (filter.type) {
-        case content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY:
-          allow = true;
-          break;
-        case content::AccessibilityTreeFormatter::PropertyFilter::ALLOW:
-          allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
-          break;
-        case content::AccessibilityTreeFormatter::PropertyFilter::DENY:
-          allow = false;
-          break;
-      }
-    }
-  }
-  return allow;
-}
-
 std::string RecursiveDumpAXPlatformNodeAsString(
     ui::AXPlatformNode* node,
     int indent,
-    const std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
-        property_filters) {
+    const std::vector<AXPropertyFilter>& property_filters) {
   if (!node)
     return "";
   std::string str(2 * indent, '+');
@@ -288,8 +271,8 @@ std::string RecursiveDumpAXPlatformNodeAsString(
   std::vector<std::string> attributes = base::SplitString(
       line, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (std::string attribute : attributes) {
-    if (MatchesPropertyFilters(property_filters,
-                               base::UTF8ToUTF16(attribute))) {
+    if (ui::AXTreeFormatter::MatchesPropertyFilters(property_filters, attribute,
+                                                    false)) {
       str += attribute + " ";
     }
   }
@@ -307,16 +290,12 @@ std::string RecursiveDumpAXPlatformNodeAsString(
 // Add property filters to the property_filters vector for the given property
 // filter type. The attributes are passed in as a string with each attribute
 // separated by a space.
-void AddPropertyFilters(
-    std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
-        property_filters,
-    const std::string& attributes,
-    content::AccessibilityTreeFormatter::PropertyFilter::Type type) {
+void AddPropertyFilters(std::vector<AXPropertyFilter>& property_filters,
+                        const std::string& attributes,
+                        AXPropertyFilter::Type type) {
   for (const std::string& attribute : base::SplitString(
            attributes, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    property_filters.push_back(
-        content::AccessibilityTreeFormatter::PropertyFilter(
-            base::ASCIIToUTF16(attribute), type));
+    property_filters.emplace_back(attribute, type);
   }
 }
 
@@ -339,8 +318,8 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);
   html_source->SetRequestFilter(
       base::BindRepeating(&ShouldHandleAccessibilityRequestCallback),
-      base::Bind(&HandleAccessibilityRequestCallback,
-                 web_ui->GetWebContents()->GetBrowserContext()));
+      base::BindRepeating(&HandleAccessibilityRequestCallback,
+                          web_ui->GetWebContents()->GetBrowserContext()));
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
@@ -367,7 +346,14 @@ void AccessibilityUIObserver::AccessibilityEventReceived(
 
 AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() = default;
 
-AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() = default;
+AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() {
+  if (!observer_)
+    return;
+  content::WebContents* web_contents = observer_->web_contents();
+  if (!web_contents)
+    return;
+  StopRecording(web_contents);
+}
 
 void AccessibilityUIMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -448,8 +434,7 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     // accessibility mode buttons are updated.
     AllowJavascript();
     std::unique_ptr<base::DictionaryValue> new_mode(BuildTargetDescriptor(rvh));
-    CallJavascriptFunction("accessibility.showOrRefreshTree",
-                           *(new_mode.get()));
+    FireWebUIListener("showOrRefreshTree", *(new_mode.get()));
   }
 }
 
@@ -524,7 +509,6 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   CHECK(IsValidJSValue(request_type_p));
   std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
-  request_type = "accessibility." + request_type;
 
   const std::string* allow_p = data->FindStringPath("filters.allow");
   CHECK(IsValidJSValue(allow_p));
@@ -544,7 +528,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRoutingIdField, routing_id);
     result->SetString(kErrorField, "Renderer no longer exists.");
-    CallJavascriptFunction(request_type, *(result.get()));
+    FireWebUIListener(request_type, *(result.get()));
     return;
   }
 
@@ -558,24 +542,18 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   // Enable AXMode to access to AX objects.
   ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
 
-  std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
-      property_filters;
-  AddPropertyFilters(
-      property_filters, allow,
-      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW);
-  AddPropertyFilters(
-      property_filters, allow_empty,
-      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY);
-  AddPropertyFilters(property_filters, deny,
-                     content::AccessibilityTreeFormatter::PropertyFilter::DENY);
+  std::vector<AXPropertyFilter> property_filters;
+  AddPropertyFilters(property_filters, allow, AXPropertyFilter::ALLOW);
+  AddPropertyFilters(property_filters, allow_empty,
+                     AXPropertyFilter::ALLOW_EMPTY);
+  AddPropertyFilters(property_filters, deny, AXPropertyFilter::DENY);
 
   PrefService* pref = Profile::FromWebUI(web_ui())->GetPrefs();
   bool internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
-  base::string16 accessibility_contents_utf16 =
+  std::string accessibility_contents =
       web_contents->DumpAccessibilityTree(internal, property_filters);
-  result->SetString(kTreeField,
-                    base::UTF16ToUTF8(accessibility_contents_utf16));
-  CallJavascriptFunction(request_type, *(result.get()));
+  result->SetString(kTreeField, accessibility_contents);
+  FireWebUIListener(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::RequestNativeUITree(
@@ -588,7 +566,6 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   CHECK(IsValidJSValue(request_type_p));
   std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
-  request_type = "accessibility." + request_type;
 
   const std::string* allow_p = data->FindStringPath("filters.allow");
   CHECK(IsValidJSValue(allow_p));
@@ -603,16 +580,11 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   AllowJavascript();
 
 #if !defined(OS_ANDROID)
-  std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
-      property_filters;
-  AddPropertyFilters(
-      property_filters, allow,
-      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW);
-  AddPropertyFilters(
-      property_filters, allow_empty,
-      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY);
-  AddPropertyFilters(property_filters, deny,
-                     content::AccessibilityTreeFormatter::PropertyFilter::DENY);
+  std::vector<AXPropertyFilter> property_filters;
+  AddPropertyFilters(property_filters, allow, AXPropertyFilter::ALLOW);
+  AddPropertyFilters(property_filters, allow_empty,
+                     AXPropertyFilter::ALLOW_EMPTY);
+  AddPropertyFilters(property_filters, deny, AXPropertyFilter::DENY);
 
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->session_id().id() == session_id) {
@@ -624,7 +596,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
       result->SetKey(kTreeField,
                      base::Value(RecursiveDumpAXPlatformNodeAsString(
                          node, 0, property_filters)));
-      CallJavascriptFunction(request_type, *(result.get()));
+      FireWebUIListener(request_type, *(result.get()));
       return;
     }
   }
@@ -634,11 +606,17 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   result->SetInteger(kSessionIdField, session_id);
   result->SetString(kTypeField, kBrowser);
   result->SetString(kErrorField, "Browser no longer exists.");
-  CallJavascriptFunction(request_type, *(result.get()));
+  FireWebUIListener(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::Callback(const std::string& str) {
   event_logs_.push_back(str);
+}
+
+void AccessibilityUIMessageHandler::StopRecording(
+    content::WebContents* web_contents) {
+  web_contents->RecordAccessibilityEvents(false, base::nullopt);
+  observer_.reset(nullptr);
 }
 
 void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
@@ -648,7 +626,7 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
 
   int process_id = *data->FindIntPath(kProcessIdField);
   int routing_id = *data->FindIntPath(kRoutingIdField);
-  bool start = *data->FindBoolPath(kStartField);
+  bool start_recording = *data->FindBoolPath(kStartField);
 
   AllowJavascript();
 
@@ -661,22 +639,17 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
   std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(rvh);
-  if (start) {
+  if (start_recording) {
     if (observer_) {
       return;
     }
     web_contents->RecordAccessibilityEvents(
-        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
-                            base::Unretained(this)),
-        true);
+        true, base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
+                                  base::Unretained(this)));
     observer_ =
         std::make_unique<AccessibilityUIObserver>(web_contents, &event_logs_);
   } else {
-    web_contents->RecordAccessibilityEvents(
-        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
-                            base::Unretained(this)),
-        false);
-    observer_.release();
+    StopRecording(web_contents);
 
     std::string event_logs_str;
     for (std::string log : event_logs_) {
@@ -686,7 +659,7 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
     result->SetString(kEventLogsField, event_logs_str);
     event_logs_.clear();
 
-    CallJavascriptFunction("accessibility.startOrStopEvents", *(result.get()));
+    FireWebUIListener("startOrStopEvents", *(result.get()));
   }
 }
 

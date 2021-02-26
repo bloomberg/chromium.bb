@@ -15,6 +15,9 @@
  */
 
 #include "src/trace_processor/importers/proto/args_table_utils.h"
+#include "protos/perfetto/common/descriptor.pbzero.h"
+#include "src/trace_processor/util/descriptors.h"
+#include "src/trace_processor/util/status_macros.h"
 
 #include "protos/perfetto/common/descriptor.pbzero.h"
 #include "protos/perfetto/trace/interned_data/interned_data.pbzero.h"
@@ -41,7 +44,7 @@ util::Status ProtoToArgsTable::AddProtoFileDescriptor(
 util::Status ProtoToArgsTable::InternProtoFieldsIntoArgsTable(
     const protozero::ConstBytes& cb,
     const std::string& type,
-    const std::vector<uint16_t>& fields,
+    const std::vector<uint16_t>* fields,
     ArgsTracker::BoundInserter* inserter,
     PacketSequenceStateGeneration* sequence_state) {
   auto idx = pool_.FindDescriptorIdx(type);
@@ -51,42 +54,88 @@ util::Status ProtoToArgsTable::InternProtoFieldsIntoArgsTable(
 
   auto descriptor = pool_.descriptors()[*idx];
 
+  std::unordered_map<size_t, int> repeated_field_index;
+
   protozero::ProtoDecoder decoder(cb);
   for (protozero::Field f = decoder.ReadField(); f.valid();
        f = decoder.ReadField()) {
-    auto it = std::find(fields.begin(), fields.end(), f.id());
-    if (it == fields.end()) {
+    auto field_idx = descriptor.FindFieldIdxByTag(f.id());
+    if (!field_idx) {
+      // Unknown field, possibly an unknown extension.
       continue;
     }
-
-    auto field_idx = descriptor.FindFieldIdxByTag(*it);
-    if (!field_idx) {
-      return util::Status("Failed to find proto descriptor");
-    }
     auto field = descriptor.fields()[*field_idx];
-    auto status =
-        InternProtoIntoArgsTable(f.as_bytes(), field.resolved_type_name(),
-                                 inserter, sequence_state, field.name());
 
-    if (!status.ok()) {
-      return status;
+    // If allowlist is not provided, reflect all fields. Otherwise, check if the
+    // current field either an extension or is in allowlist.
+    bool is_allowed =
+        field.is_extension() || fields == nullptr ||
+        std::find(fields->begin(), fields->end(), f.id()) != fields->end();
+
+    if (!is_allowed) {
+      // Field is neither an extension, nor is allowed to be
+      // reflected.
+      continue;
+    }
+    ParsingOverrideState state{context_, sequence_state};
+    RETURN_IF_ERROR(InternFieldIntoArgsTable(
+        field, repeated_field_index[f.id()], state, inserter, f));
+    if (field.is_repeated()) {
+      repeated_field_index[f.id()]++;
     }
   }
 
   return util::OkStatus();
 }
 
-util::Status ProtoToArgsTable::InternProtoIntoArgsTable(
-    const protozero::ConstBytes& cb,
-    const std::string& type,
+util::Status ProtoToArgsTable::InternFieldIntoArgsTable(
+    const FieldDescriptor& field_descriptor,
+    int repeated_field_number,
+    ParsingOverrideState state,
     ArgsTracker::BoundInserter* inserter,
-    PacketSequenceStateGeneration* sequence_state,
-    const std::string& key_prefix) {
-  key_prefix_.assign(key_prefix);
-  flat_key_prefix_.assign(key_prefix);
+    protozero::Field field) {
+  std::string prefix_part = field_descriptor.name();
+  if (field_descriptor.is_repeated()) {
+    std::string number = std::to_string(repeated_field_number);
+    prefix_part.reserve(prefix_part.length() + number.length() + 2);
+    prefix_part.append("[");
+    prefix_part.append(number);
+    prefix_part.append("]");
+  }
 
-  ParsingOverrideState state{context_, sequence_state};
-  return InternProtoIntoArgsTableInternal(cb, type, inserter, state);
+  // In the args table we build up message1.message2.field1 as the column
+  // name. This will append the ".field1" suffix to |key_prefix| and then
+  // remove it when it goes out of scope.
+  ScopedStringAppender scoped_prefix(prefix_part, &key_prefix_);
+  ScopedStringAppender scoped_flat_key_prefix(field_descriptor.name(),
+                                              &flat_key_prefix_);
+
+  // If we have an override parser then use that instead and move onto the
+  // next loop.
+  auto it = FindOverride(key_prefix_);
+  if (it != overrides_.end()) {
+    if (it->second(state, field, inserter)) {
+      return util::OkStatus();
+    }
+  }
+
+  // If this is not a message we can just immediately add the column name and
+  // get the value out of |field|. However if it is a message we need to
+  // recurse into it.
+  if (field_descriptor.type() ==
+      protos::pbzero::FieldDescriptorProto::TYPE_MESSAGE) {
+    return InternProtoIntoArgsTableInternal(
+        field.as_bytes(), field_descriptor.resolved_type_name(), inserter,
+        state);
+  }
+
+  const StringId key_id =
+      state.context->storage->InternString(base::StringView(key_prefix_));
+  const StringId flat_key_id =
+      state.context->storage->InternString(base::StringView(flat_key_prefix_));
+  inserter->AddArg(flat_key_id, key_id,
+                   ConvertProtoTypeToVariadic(field_descriptor, field, state));
+  return util::OkStatus();
 }
 
 util::Status ProtoToArgsTable::InternProtoIntoArgsTableInternal(
@@ -119,52 +168,11 @@ util::Status ProtoToArgsTable::InternProtoIntoArgsTableInternal(
     const auto& field_descriptor =
         proto_descriptor.fields()[*opt_field_descriptor_idx];
 
-    std::string prefix_part = field_descriptor.name();
+    InternFieldIntoArgsTable(field_descriptor,
+                             repeated_field_index[*opt_field_descriptor_idx],
+                             state, inserter, field);
     if (field_descriptor.is_repeated()) {
-      std::string number =
-          std::to_string(repeated_field_index[*opt_field_descriptor_idx]);
-      prefix_part.reserve(prefix_part.length() + number.length() + 2);
-      prefix_part.append("[");
-      prefix_part.append(number);
-      prefix_part.append("]");
       repeated_field_index[*opt_field_descriptor_idx]++;
-    }
-
-    // In the args table we build up message1.message2.field1 as the column
-    // name. This will append the ".field1" suffix to |key_prefix| and then
-    // remove it when it goes out of scope.
-    ScopedStringAppender scoped_prefix(prefix_part, &key_prefix_);
-    ScopedStringAppender scoped_flat_key_prefix(field_descriptor.name(),
-                                                &flat_key_prefix_);
-
-    // If we have an override parser then use that instead and move onto the
-    // next loop.
-    auto it = FindOverride(key_prefix_);
-    if (it != overrides_.end()) {
-      if (it->second(state, field, inserter)) {
-        continue;
-      }
-    }
-
-    // If this is not a message we can just immediately add the column name and
-    // get the value out of |field|. However if it is a message we need to
-    // recurse into it.
-    if (field_descriptor.type() ==
-        protos::pbzero::FieldDescriptorProto::TYPE_MESSAGE) {
-      auto status = InternProtoIntoArgsTableInternal(
-          field.as_bytes(), field_descriptor.resolved_type_name(), inserter,
-          state);
-      if (!status.ok()) {
-        return status;
-      }
-    } else {
-      const StringId key_id =
-          state.context->storage->InternString(base::StringView(key_prefix_));
-      const StringId flat_key_id = state.context->storage->InternString(
-          base::StringView(flat_key_prefix_));
-      inserter->AddArg(
-          flat_key_id, key_id,
-          ConvertProtoTypeToVariadic(field_descriptor, field, state));
     }
   }
   PERFETTO_DCHECK(decoder.bytes_left() == 0);

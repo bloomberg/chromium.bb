@@ -68,11 +68,7 @@ QuicUdpSocketFd CreateNonblockingSocket(int address_family) {
         << strerror(errno);
     return kQuicInvalidSocketFd;
   }
-
-  return fd;
-
 #else
-
   // Create a socket and use fcntl to set it to nonblocking.
   // This implementation is used when building for iOS, OSX and old versions of
   // Linux (< 2.6.27) and old versions of Android (< API 21).
@@ -98,10 +94,10 @@ QuicUdpSocketFd CreateNonblockingSocket(int address_family) {
     close(fd);
     return kQuicInvalidSocketFd;
   }
-
-  return fd;
-
 #endif
+
+  SetGoogleSocketOptions(fd);
+  return fd;
 }  // End CreateNonblockingSocket
 
 void SetV4SelfIpInControlMessage(const QuicIpAddress& self_address,
@@ -239,7 +235,8 @@ bool NextCmsg(msghdr* hdr,
 
 QuicUdpSocketFd QuicUdpSocketApi::Create(int address_family,
                                          int receive_buffer_size,
-                                         int send_buffer_size) {
+                                         int send_buffer_size,
+                                         bool ipv6_only) {
   // DCHECK here so the program exits early(before reading packets) in debug
   // mode. This should have been a static_assert, however it can't be done on
   // ios/osx because CMSG_SPACE isn't a constant expression there.
@@ -250,7 +247,8 @@ QuicUdpSocketFd QuicUdpSocketApi::Create(int address_family,
     return kQuicInvalidSocketFd;
   }
 
-  if (!SetupSocket(fd, address_family, receive_buffer_size, send_buffer_size)) {
+  if (!SetupSocket(fd, address_family, receive_buffer_size, send_buffer_size,
+                   ipv6_only)) {
     Destroy(fd);
     return kQuicInvalidSocketFd;
   }
@@ -261,7 +259,8 @@ QuicUdpSocketFd QuicUdpSocketApi::Create(int address_family,
 bool QuicUdpSocketApi::SetupSocket(QuicUdpSocketFd fd,
                                    int address_family,
                                    int receive_buffer_size,
-                                   int send_buffer_size) {
+                                   int send_buffer_size,
+                                   bool ipv6_only) {
   // Receive buffer size.
   if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &receive_buffer_size,
                  sizeof(receive_buffer_size)) != 0) {
@@ -276,14 +275,20 @@ bool QuicUdpSocketApi::SetupSocket(QuicUdpSocketFd fd,
     return false;
   }
 
-  if (!EnableReceiveSelfIpAddressForV4(fd)) {
-    QUIC_LOG_FIRST_N(ERROR, 100) << "Failed to enable receiving of self v4 ip";
-    return false;
+  if (!(address_family == AF_INET6 && ipv6_only)) {
+    if (!EnableReceiveSelfIpAddressForV4(fd)) {
+      QUIC_LOG_FIRST_N(ERROR, 100)
+          << "Failed to enable receiving of self v4 ip";
+      return false;
+    }
   }
 
-  if (address_family == AF_INET6 && !EnableReceiveSelfIpAddressForV6(fd)) {
-    QUIC_LOG_FIRST_N(ERROR, 100) << "Failed to enable receiving of self v6 ip";
-    return false;
+  if (address_family == AF_INET6) {
+    if (!EnableReceiveSelfIpAddressForV6(fd)) {
+      QUIC_LOG_FIRST_N(ERROR, 100)
+          << "Failed to enable receiving of self v6 ip";
+      return false;
+    }
   }
 
   return true;

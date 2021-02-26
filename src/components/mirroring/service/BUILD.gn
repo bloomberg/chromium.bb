@@ -18,14 +18,14 @@ component("mirroring_service") {
     "mirroring_service.h",
     "receiver_response.cc",
     "receiver_response.h",
+    "receiver_setup_querier.cc",
+    "receiver_setup_querier.h",
     "remoting_sender.cc",
     "remoting_sender.h",
     "rtp_stream.cc",
     "rtp_stream.h",
     "session.cc",
     "session.h",
-    "session_monitor.cc",
-    "session_monitor.h",
     "udp_socket_client.cc",
     "udp_socket_client.h",
     "value_util.cc",
@@ -39,7 +39,10 @@ component("mirroring_service") {
   public_deps = [ "//base" ]
 
   deps = [
+    "//build:chromeos_buildflags",
     "//components/mirroring/mojom:service",
+    "//components/openscreen_platform",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//components/version_info",
     "//crypto",
     "//gpu/config",
@@ -60,10 +63,13 @@ component("mirroring_service") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/viz/public/cpp/gpu",
+    "//third_party/jsoncpp",
+    "//third_party/openscreen/src/cast/streaming:common",
     "//ui/base",
     "//ui/gfx",
   ]
 
+  include_dirs = [ "//third_party/openscreen/src" ]
   defines = [ "IS_MIRRORING_SERVICE_IMPL" ]
 }
 
@@ -78,9 +84,9 @@ source_set("unittests") {
     "media_remoter_unittest.cc",
     "message_dispatcher_unittest.cc",
     "receiver_response_unittest.cc",
+    "receiver_setup_querier_unittest.cc",
     "remoting_sender_unittest.cc",
     "rtp_stream_unittest.cc",
-    "session_monitor_unittest.cc",
     "session_unittest.cc",
     "udp_socket_client_unittest.cc",
     "video_capture_client_unittest.cc",
@@ -92,6 +98,8 @@ source_set("unittests") {
     "//base",
     "//base/test:test_support",
     "//components/mirroring/mojom:service",
+    "//components/openscreen_platform",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
@@ -107,5 +115,8 @@ source_set("unittests") {
     "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/streaming:common",
   ]
+
+  include_dirs = [ "//third_party/openscreen/src" ]
 }

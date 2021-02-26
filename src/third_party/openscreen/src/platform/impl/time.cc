@@ -4,15 +4,14 @@
 
 #include "platform/api/time.h"
 
+#include <chrono>
 #include <ctime>
 #include <ratio>
 
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 
-using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
-using std::chrono::hours;
-using std::chrono::seconds;
 using std::chrono::steady_clock;
 using std::chrono::system_clock;
 
@@ -39,10 +38,10 @@ Clock::time_point Clock::now() noexcept {
   // or significant math actually taking place here.
   if (can_use_steady_clock) {
     return Clock::time_point(
-        duration_cast<Clock::duration>(steady_clock::now().time_since_epoch()));
+        Clock::to_duration(steady_clock::now().time_since_epoch()));
   }
-  return Clock::time_point(duration_cast<Clock::duration>(
-      high_resolution_clock::now().time_since_epoch()));
+  return Clock::time_point(
+      Clock::to_duration(high_resolution_clock::now().time_since_epoch()));
 }
 
 std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept {
@@ -58,7 +57,7 @@ std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept {
   if (sizeof(std::time_t) <= 4) {
     constexpr std::time_t a_year_before_overflow =
         std::numeric_limits<std::time_t>::max() -
-        duration_cast<seconds>(365 * hours(24)).count();
+        to_seconds(365 * hours(24)).count();
     OSP_DCHECK_LE(since_epoch, a_year_before_overflow);
   }
 

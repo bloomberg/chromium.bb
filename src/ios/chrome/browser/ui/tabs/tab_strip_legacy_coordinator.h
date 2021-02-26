@@ -12,6 +12,7 @@
 
 @protocol PopupMenuLongPressDelegate;
 @protocol TabStripPresentation;
+@class ViewRevealingVerticalPanHandler;
 
 // A legacy coordinator that presents the public interface for the tablet tab
 // strip feature.
@@ -28,8 +29,15 @@
 // synchronize animations.
 @property(nonatomic, assign) NSTimeInterval animationWaitDuration;
 
+// Sets the pan gesture handler for the tab strip controller.
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler;
+
 // Hides or shows the TabStrip.
 - (void)hideTabStrip:(BOOL)hidden;
+
+// Force resizing layout of the tab strip.
+- (void)tabStripSizeDidChange;
 
 @end
 

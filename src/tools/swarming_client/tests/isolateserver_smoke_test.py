@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -30,8 +30,8 @@ CONTENTS = {
 
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
-  # This test is touching the live infrastructure. It's a pain if your IP
-  # is not whitelisted so do not run them for now. They should use a local fake
+  # This test is touching the live infrastructure. It's a pain if your IP is
+  # not in allowlist, so do not run them for now. They should use a local fake
   # web service instead.
   no_run = 1
 
@@ -41,8 +41,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     # before being uploaded.
     # TODO(maruel): This should not be leaked to the client. It's a
     # transport/storage detail.
-    self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
-                      + '-gzip')
+    self.namespace = ('temporary' + str(int(time.time())).split('.', 1)[0] +
+                      '-gzip')
     self.tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
     self.rootdir = os.path.join(self.tempdir, 'rootdir')
     self.test_data = os.path.join(self.tempdir, 'test_data')

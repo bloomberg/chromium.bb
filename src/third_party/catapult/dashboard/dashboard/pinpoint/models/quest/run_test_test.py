@@ -15,19 +15,22 @@ import logging
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.quest import run_test
 
-
 DIMENSIONS = [
-    {'key': 'pool', 'value': 'Chrome-perf-pinpoint'},
-    {'key': 'key', 'value': 'value'},
+    {
+        'key': 'pool',
+        'value': 'Chrome-perf-pinpoint'
+    },
+    {
+        'key': 'key',
+        'value': 'value'
+    },
 ]
 _BASE_ARGUMENTS = {
     'swarming_server': 'server',
     'dimensions': DIMENSIONS,
 }
 
-
 _BASE_SWARMING_TAGS = {}
-
 
 FakeJob = collections.namedtuple('Job',
                                  ['job_id', 'url', 'comparison_mode', 'user'])
@@ -36,7 +39,8 @@ FakeJob = collections.namedtuple('Job',
 class StartTest(unittest.TestCase):
 
   def testStart(self):
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
     self.assertEqual(execution._extra_args, ['arg'])
 
@@ -45,7 +49,8 @@ class FromDictTest(unittest.TestCase):
 
   def testMinimumArguments(self):
     quest = run_test.RunTest.FromDict(_BASE_ARGUMENTS)
-    expected = run_test.RunTest('server', DIMENSIONS, [], _BASE_SWARMING_TAGS)
+    expected = run_test.RunTest('server', DIMENSIONS, [], _BASE_SWARMING_TAGS,
+                                None, None)
     self.assertEqual(quest, expected)
 
   def testAllArguments(self):
@@ -55,7 +60,7 @@ class FromDictTest(unittest.TestCase):
 
     extra_args = ['--custom-arg', 'custom value']
     expected = run_test.RunTest('server', DIMENSIONS, extra_args,
-                                _BASE_SWARMING_TAGS)
+                                _BASE_SWARMING_TAGS, None, None)
     self.assertEqual(quest, expected)
 
   def testMissingSwarmingServer(self):
@@ -74,7 +79,8 @@ class FromDictTest(unittest.TestCase):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['dimensions'] = json.dumps(DIMENSIONS)
     quest = run_test.RunTest.FromDict(arguments)
-    expected = run_test.RunTest('server', DIMENSIONS, [], _BASE_SWARMING_TAGS)
+    expected = run_test.RunTest('server', DIMENSIONS, [], _BASE_SWARMING_TAGS,
+                                None, None)
     self.assertEqual(quest, expected)
 
   def testInvalidExtraTestArgs(self):
@@ -90,7 +96,7 @@ class FromDictTest(unittest.TestCase):
 
     extra_args = ['--custom-arg', 'custom value']
     expected = run_test.RunTest('server', DIMENSIONS, extra_args,
-                                _BASE_SWARMING_TAGS)
+                                _BASE_SWARMING_TAGS, None, None)
     self.assertEqual(quest, expected)
 
 
@@ -122,12 +128,9 @@ class _RunTestExecutionTest(unittest.TestCase):
                     'isolated': 'input isolate hash',
                 },
                 'extra_args': ['arg'],
-                'dimensions':
-                    DIMENSIONS,
-                'execution_timeout_secs':
-                    mock.ANY,
-                'io_timeout_secs':
-                    mock.ANY,
+                'dimensions': DIMENSIONS,
+                'execution_timeout_secs': mock.ANY,
+                'io_timeout_secs': mock.ANY,
             }
         },],
     }
@@ -142,7 +145,8 @@ class RunTestFullTest(_RunTestExecutionTest):
     # Goes through a full run of two Executions.
 
     # Call RunTest.Start() to create an Execution.
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
 
     # Propagate a thing that looks like a job.
     quest.PropagateJob(
@@ -186,32 +190,36 @@ class RunTestFullTest(_RunTestExecutionTest):
     self.assertTrue(execution.completed)
     self.assertFalse(execution.failed)
     self.assertEqual(execution.result_values, ())
-    self.assertEqual(execution.result_arguments, {
-        'isolate_server': 'output isolate server',
-        'isolate_hash': 'output isolate hash',
-    })
-    self.assertEqual(execution.AsDict(), {
-        'completed': True,
-        'exception': None,
-        'details': [
-            {
-                'key': 'bot',
-                'value': 'bot id',
-                'url': 'server/bot?id=bot id',
-            },
-            {
-                'key': 'task',
-                'value': 'task id',
-                'url': 'server/task?id=task id',
-            },
-            {
-                'key': 'isolate',
-                'value': 'output isolate hash',
-                'url': 'output isolate server/browse?'
-                       'digest=output isolate hash',
-            },
-        ],
-    })
+    self.assertEqual(
+        execution.result_arguments, {
+            'isolate_server': 'output isolate server',
+            'isolate_hash': 'output isolate hash',
+        })
+    self.assertEqual(
+        execution.AsDict(), {
+            'completed':
+                True,
+            'exception':
+                None,
+            'details': [
+                {
+                    'key': 'bot',
+                    'value': 'bot id',
+                    'url': 'server/bot?id=bot id',
+                },
+                {
+                    'key': 'task',
+                    'value': 'task id',
+                    'url': 'server/task?id=task id',
+                },
+                {
+                    'key': 'isolate',
+                    'value': 'output isolate hash',
+                    'url': 'output isolate server/browse?'
+                           'digest=output isolate hash',
+                },
+            ],
+        })
 
     # Start a second Execution on another Change. It should use the bot_id
     # from the first execution.
@@ -230,7 +238,7 @@ class RunTestFullTest(_RunTestExecutionTest):
     del swarming_task_result
     del swarming_tasks_new
 
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], None)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], None, None, None)
     quest.Start('change_1', 'isolate server', 'input isolate hash')
 
 
@@ -242,7 +250,8 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
     swarming_task_result.return_value = {'state': 'BOT_DIED'}
     swarming_tasks_new.return_value = {'task_id': 'task id'}
 
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution = quest.Start(None, 'isolate server', 'input isolate hash')
     execution.Poll()
     execution.Poll()
@@ -253,8 +262,8 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
     self.assertTrue(last_exception_line.startswith('SwarmingTaskError'))
 
   @mock.patch('dashboard.services.swarming.Task.Stdout')
-  def testTestError(self, swarming_task_stdout,
-                    swarming_task_result, swarming_tasks_new):
+  def testTestError(self, swarming_task_stdout, swarming_task_result,
+                    swarming_tasks_new):
     swarming_task_stdout.return_value = {'output': ''}
     swarming_task_result.return_value = {
         'bot_id': 'bot id',
@@ -268,7 +277,8 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
     }
     swarming_tasks_new.return_value = {'task_id': 'task id'}
 
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution = quest.Start(None, 'isolate server', 'isolate_hash')
     execution.Poll()
     execution.Poll()
@@ -284,21 +294,21 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
 @mock.patch('dashboard.services.swarming.Task.Result')
 class BotIdHandlingTest(_RunTestExecutionTest):
 
-  def testExecutionExpired(
-      self, swarming_task_result, swarming_tasks_new):
+  def testExecutionExpired(self, swarming_task_result, swarming_tasks_new):
     # If the Swarming task expires, the bots are overloaded or the dimensions
     # don't correspond to any bot. Raise an error that's fatal to the Job.
     swarming_tasks_new.return_value = {'task_id': 'task id'}
     swarming_task_result.return_value = {'state': 'EXPIRED'}
 
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution = quest.Start('change_1', 'isolate server', 'input isolate hash')
     execution.Poll()
     with self.assertRaises(errors.SwarmingExpired):
       execution.Poll()
 
-  def testFirstExecutionFailedWithNoBotId(
-      self, swarming_task_result, swarming_tasks_new):
+  def testFirstExecutionFailedWithNoBotId(self, swarming_task_result,
+                                          swarming_tasks_new):
     # If the first Execution fails before it gets a bot ID, it's likely it
     # couldn't find any device to run on. Subsequent Executions probably
     # wouldn't have any better luck, and failing fast is less complex than
@@ -306,7 +316,8 @@ class BotIdHandlingTest(_RunTestExecutionTest):
     swarming_tasks_new.return_value = {'task_id': 'task id'}
     swarming_task_result.return_value = {'state': 'CANCELED'}
 
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution = quest.Start('change_1', 'isolate server', 'input isolate hash')
     execution.Poll()
     execution.Poll()
@@ -331,7 +342,8 @@ class BotIdHandlingTest(_RunTestExecutionTest):
 
   def testSimultaneousExecutions(self, swarming_task_result,
                                  swarming_tasks_new):
-    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
+    quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS,
+                             None, None)
     execution_1 = quest.Start('change_1', 'input isolate server',
                               'input isolate hash')
     execution_2 = quest.Start('change_2', 'input isolate server',

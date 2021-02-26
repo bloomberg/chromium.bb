@@ -13,12 +13,12 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_status.h"
@@ -73,8 +73,8 @@ VideoRendererImpl::VideoRendererImpl(
       have_renderered_frames_(false),
       last_frame_opaque_(false),
       painted_first_frame_(false),
-      min_buffered_frames_(limits::kMaxVideoFrames),
-      max_buffered_frames_(limits::kMaxVideoFrames) {
+      min_buffered_frames_(initial_buffering_size_.value()),
+      max_buffered_frames_(initial_buffering_size_.value()) {
   DCHECK(create_video_decoders_cb_);
 }
 
@@ -132,8 +132,10 @@ void VideoRendererImpl::Flush(base::OnceClosure callback) {
 
   // Reset preroll capacity so seek time is not penalized. |latency_hint_|
   // and |low_delay_| mode disable automatic preroll adjustments.
-  if (!latency_hint_.has_value() && !low_delay_)
-    min_buffered_frames_ = max_buffered_frames_ = limits::kMaxVideoFrames;
+  if (!latency_hint_.has_value() && !low_delay_) {
+    min_buffered_frames_ = max_buffered_frames_ =
+        initial_buffering_size_.value();
+  }
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -346,8 +348,9 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
   // the decoder for an "underflow" that is really just a seek.
   BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
   if (state_ == kPlaying && buffering_state == BUFFERING_HAVE_NOTHING) {
-    reason = demuxer_stream_->IsReadPending() ? DEMUXER_UNDERFLOW
-                                              : DECODER_UNDERFLOW;
+    reason = video_decoder_stream_->is_demuxer_read_pending()
+                 ? DEMUXER_UNDERFLOW
+                 : DECODER_UNDERFLOW;
   }
 
   media_log_->AddEvent<MediaLogEvent::kBufferingStateChanged>(
@@ -432,7 +435,7 @@ void VideoRendererImpl::OnTimeStopped() {
     // |low_delay_| mode disables automatic increases. In these cases the site
     // is expressing a desire to manually control/minimize the buffering
     // threshold for HAVE_ENOUGH.
-    const size_t kMaxUnderflowGrowth = 2 * limits::kMaxVideoFrames;
+    const size_t kMaxUnderflowGrowth = 2 * initial_buffering_size_.value();
     if (!latency_hint_.has_value() && !low_delay_) {
       DCHECK_EQ(min_buffered_frames_, max_buffered_frames_);
 
@@ -470,8 +473,9 @@ void VideoRendererImpl::SetLatencyHint(
 
   if (!latency_hint_.has_value()) {
     // Restore default values.
-    // NOTE kMaxVideoFrames the default max, not the max overall.
-    min_buffered_frames_ = max_buffered_frames_ = limits::kMaxVideoFrames;
+    // NOTE |initial_buffering_size_| the default max, not the max overall.
+    min_buffered_frames_ = max_buffered_frames_ =
+        initial_buffering_size_.value();
     MEDIA_LOG(DEBUG, media_log_)
         << "Video latency hint cleared. Default buffer size ("
         << min_buffered_frames_ << " frames) restored";
@@ -481,18 +485,22 @@ void VideoRendererImpl::SetLatencyHint(
     // to avoid needless churn since the "bare minimum" buffering doesn't
     // fluctuate with changes to FPS.
     min_buffered_frames_ = 1;
-    max_buffered_frames_ = limits::kMaxVideoFrames;
+    max_buffered_frames_ = initial_buffering_size_.value();
     MEDIA_LOG(DEBUG, media_log_)
         << "Video latency hint set:" << *latency_hint << ". "
         << "Effective buffering latency: 1 frame";
   } else {
-    // Non-zero latency hints are set here. This method will also be called
-    // for each frame in case |average_frame_druation| changes, facilitating
-    // re-computation of how many frames we should buffer to achieve the target
-    // latency. |is_latency_hint_media_logged_| ensures that we only MEDIA_LOG
-    // on the first application of this hint.
+    // Non-zero latency hints are set here. Update buffering caps immediately if
+    // we already have an algorithm_. Otherwise, the update will be applied as
+    // frames arrive and duration becomes known. The caps will be recalculated
+    // for each frame in case |average_frame_druation| changes.
+    // |is_latency_hint_media_logged_| ensures that we only MEDIA_LOG on the
+    // first application of this hint.
     is_latency_hint_media_logged_ = false;
-    UpdateLatencyHintBufferingCaps_Locked(algorithm_->average_frame_duration());
+    if (algorithm_) {
+      UpdateLatencyHintBufferingCaps_Locked(
+          algorithm_->average_frame_duration());
+    }
   }
 }
 
@@ -514,8 +522,7 @@ void VideoRendererImpl::UpdateLatencyHintBufferingCaps_Locked(
     return;
 
   int latency_hint_frames =
-      std::round(latency_hint_->InMicrosecondsF() /
-                 average_frame_duration.InMicrosecondsF());
+      base::ClampRound(*latency_hint_ / average_frame_duration);
 
   std::string clamp_string;
   if (latency_hint_frames > kAbsoluteMaxFrames) {
@@ -529,8 +536,8 @@ void VideoRendererImpl::UpdateLatencyHintBufferingCaps_Locked(
   }
 
   // Use initial capacity limit if possible. Increase if needed.
-  max_buffered_frames_ = std::max(min_buffered_frames_,
-                                  static_cast<size_t>(limits::kMaxVideoFrames));
+  max_buffered_frames_ =
+      std::max(min_buffered_frames_, initial_buffering_size_.value());
 
   if (!is_latency_hint_media_logged_) {
     is_latency_hint_media_logged_ = true;
@@ -565,9 +572,9 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
   }
 
   last_frame_ready_time_ = tick_clock_->NowTicks();
+  last_decoder_stream_avg_duration_ = video_decoder_stream_->AverageDuration();
 
-  const bool is_eos =
-      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM);
+  const bool is_eos = frame->metadata()->end_of_stream;
   const bool is_before_start_time = !is_eos && IsBeforeStartTime(*frame);
   const bool cant_read = !video_decoder_stream_->CanReadWithoutStalling();
 
@@ -599,10 +606,8 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
     // RemoveFramesForUnderflowOrBackgroundRendering() below to actually expire
     // this frame if it's too far behind the current media time. Without this,
     // we may resume too soon after a track change in the low delay case.
-    if (!frame->metadata()->HasKey(VideoFrameMetadata::FRAME_DURATION)) {
-      frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                      video_decoder_stream_->AverageDuration());
-    }
+    if (!frame->metadata()->frame_duration.has_value())
+      frame->metadata()->frame_duration = last_decoder_stream_avg_duration_;
 
     AddReadyFrame_Locked(std::move(frame));
   }
@@ -731,16 +736,12 @@ void VideoRendererImpl::TransitionToHaveNothing_Locked() {
 void VideoRendererImpl::AddReadyFrame_Locked(scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
-  DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  DCHECK(!frame->metadata()->end_of_stream);
 
   ++stats_.video_frames_decoded;
 
-  bool power_efficient = false;
-  if (frame->metadata()->GetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                    &power_efficient) &&
-      power_efficient) {
+  if (frame->metadata()->power_efficient)
     ++stats_.video_frames_decoded_power_efficient;
-  }
 
   algorithm_->EnqueueFrame(std::move(frame));
 }
@@ -929,13 +930,8 @@ base::TimeTicks VideoRendererImpl::GetCurrentMediaTimeAsWallClockTime() {
 
 bool VideoRendererImpl::IsBeforeStartTime(const VideoFrame& frame) {
   // Prefer the actual frame duration over the average if available.
-  base::TimeDelta metadata_frame_duration;
-  if (frame.metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                     &metadata_frame_duration)) {
-    return frame.timestamp() + metadata_frame_duration < start_timestamp_;
-  }
-
-  return frame.timestamp() + video_decoder_stream_->AverageDuration() <
+  return frame.timestamp() + frame.metadata()->frame_duration.value_or(
+                                 last_decoder_stream_avg_duration_) <
          start_timestamp_;
 }
 

@@ -49,6 +49,11 @@ class GPU_GLES2_EXPORT TextureOwner
   // whether SurfaceControl is being used or not.
   enum class Mode {
     kAImageReaderInsecure,
+
+    // This mode indicates that the frame is going to be used in multi-threaded
+    // compositor where compositor is running on a different gpu thread and
+    // context than chrome's gpu main thread/context.
+    kAImageReaderInsecureMultithreaded,
     kAImageReaderInsecureSurfaceControl,
     kAImageReaderSecureSurfaceControl,
     kSurfaceTextureInsecure
@@ -83,7 +88,6 @@ class GPU_GLES2_EXPORT TextureOwner
   virtual void EnsureTexImageBound() = 0;
 
   // Transformation matrix if any associated with the texture image.
-  virtual void GetTransformMatrix(float mtx[16]) = 0;
   virtual void ReleaseBackBuffers() = 0;
 
   // Retrieves the AHardwareBuffer from the latest available image data.
@@ -92,10 +96,6 @@ class GPU_GLES2_EXPORT TextureOwner
   virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() = 0;
 
-  // Provides the crop rectangle associated with the most recent image. The
-  // crop rectangle specifies the region of valid pixels in the image.
-  virtual gfx::Rect GetCropRect() = 0;
-
   // Retrieves backing size and visible rect associated with the most recent
   // image. |rotated_visible_size| is the size of the visible region
   // post-transform in pixels and is used for SurfaceTexture case. Transform
@@ -103,7 +103,8 @@ class GPU_GLES2_EXPORT TextureOwner
   // expect to have rotation and MediaPlayer reports rotated size. For
   // MediaCodec we don't expect rotation in ST so visible_size (i.e crop rect
   // from codec) can be used.
-  virtual void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+  // Returns whether call was successful or not.
+  virtual bool GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
                                           gfx::Size* coded_size,
                                           gfx::Rect* visible_rect) = 0;
 

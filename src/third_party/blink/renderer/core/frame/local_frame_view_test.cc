@@ -10,10 +10,12 @@
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -89,6 +91,17 @@ TEST_F(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 
+TEST_F(LocalFrameViewTest,
+       SetPaintInvalidationDuringUpdateLifecyclePhasesToPrePaintClean) {
+  SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
+  GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
+                                                  "color: green");
+  GetAnimationMockChromeClient().has_scheduled_animation_ = false;
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_TRUE(GetAnimationMockChromeClient().has_scheduled_animation_);
+}
+
 TEST_F(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
@@ -98,6 +111,7 @@ TEST_F(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
       ->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(GetAnimationMockChromeClient().has_scheduled_animation_);
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
+  UpdateAllLifecyclePhasesForTest();
   GetDocument()
       .getElementById("a")
       ->GetLayoutObject()
@@ -149,13 +163,12 @@ TEST_F(LocalFrameViewTest,
     <div class='container'><div id='sticky'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
-      GetDocument().getElementById("sticky")->GetLayoutObject());
+  auto* sticky = To<LayoutBoxModelObject>(GetLayoutObjectByElementId("sticky"));
 
   // Deliberately invalidate the ancestor overflow layer. This approximates
   // http://crbug.com/696173, in which the ancestor overflow layer can be null
   // during layout.
-  sticky->Layer()->UpdateAncestorOverflowLayer(nullptr);
+  sticky->Layer()->UpdateAncestorScrollContainerLayer(nullptr);
 
   // This call should not crash.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
@@ -170,9 +183,9 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   ChildDocument().View()->UpdateLifecyclePhasesForPrinting();
 
   // The following checks that the detached frame has been walked for PrePaint.
-  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
             GetDocument().Lifecycle().GetState());
-  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
             ChildDocument().Lifecycle().GetState());
   auto* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
@@ -183,7 +196,8 @@ TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
   EXPECT_FALSE(ChildDocument().View()->CanHaveScrollbars());
 
   ChildDocument().WillChangeFrameOwnerProperties(
-      0, 0, mojom::blink::ScrollbarMode::kAlwaysOn, false);
+      0, 0, mojom::blink::ScrollbarMode::kAlwaysOn, false,
+      mojom::blink::ColorScheme::kLight);
   EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
 }
 
@@ -391,5 +405,227 @@ TEST_F(SimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
   svg_resource.Finish();
 }
 
+TEST_F(LocalFrameViewTest, TogglePaintEligibility) {
+  SetBodyInnerHTML("<iframe><p>Hello</p></iframe>");
+
+  PaintTiming& parent_timing = PaintTiming::From(GetDocument());
+  PaintTiming& child_timing = PaintTiming::From(ChildDocument());
+
+  // Mainframes are unthrottled by default.
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(parent_timing.FirstEligibleToPaint().is_null());
+
+  GetDocument().View()->MarkFirstEligibleToPaint();
+  EXPECT_FALSE(parent_timing.FirstEligibleToPaint().is_null());
+
+  // Subframes are throttled when first loaded.
+  EXPECT_TRUE(ChildDocument().View()->ShouldThrottleRenderingForTest());
+
+  // Toggle paint elgibility to true.
+  ChildDocument().OverrideIsInitialEmptyDocument();
+  ChildDocument().View()->BeginLifecycleUpdates();
+  ChildDocument().View()->MarkFirstEligibleToPaint();
+  EXPECT_FALSE(ChildDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(child_timing.FirstEligibleToPaint().is_null());
+
+  // Toggle paint elgibility to false.
+  ChildDocument().View()->SetLifecycleUpdatesThrottledForTesting(true);
+  ChildDocument().View()->MarkIneligibleToPaint();
+  EXPECT_TRUE(ChildDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(child_timing.FirstEligibleToPaint().is_null());
+}
+
+TEST_F(SimTest, PaintEligibilityNoSubframe) {
+  SimRequest resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+  resource.Complete("<p>Hello</p>");
+
+  PaintTiming& timing = PaintTiming::From(GetDocument());
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(timing.FirstEligibleToPaint().is_null());
+
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(timing.FirstEligibleToPaint().is_null());
+}
+
+TEST_F(SimTest, SameOriginPaintEligibility) {
+  SimRequest resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+  resource.Complete(R"HTML(
+      <iframe id=frame top=4000px left=4000px>
+        <p>Hello</p>
+      </iframe>
+    )HTML");
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  PaintTiming& frame_timing = PaintTiming::From(*frame_document);
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+
+  // Same origin frames are not throttled.
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(frame_timing.FirstEligibleToPaint().is_null());
+
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(frame_timing.FirstEligibleToPaint().is_null());
+}
+
+TEST_F(SimTest, CrossOriginPaintEligibility) {
+  SimRequest resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+  resource.Complete(R"HTML(
+      <iframe id=frame srcdoc ="<p>Hello</p>" sandbox top=4000px left=4000px>
+      </iframe>
+    )HTML");
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  PaintTiming& frame_timing = PaintTiming::From(*frame_document);
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+
+  // Hidden cross origin frames are throttled.
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(frame_timing.FirstEligibleToPaint().is_null());
+
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(frame_timing.FirstEligibleToPaint().is_null());
+}
+
+TEST_F(SimTest, NestedCrossOriginPaintEligibility) {
+  // Create a document with doubly nested iframes.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete("<iframe id=outer src=iframe.html></iframe>");
+  frame_resource.Complete(R"HTML(
+      <iframe id=inner srcdoc ="<p>Hello</p>" sandbox top=4000px left=4000px>
+      </iframe>
+    )HTML");
+
+  auto* outer_frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("outer"));
+  auto* outer_frame_document = outer_frame_element->contentDocument();
+  PaintTiming& outer_frame_timing = PaintTiming::From(*outer_frame_document);
+
+  auto* inner_frame_element =
+      To<HTMLIFrameElement>(outer_frame_document->getElementById("inner"));
+  auto* inner_frame_document = inner_frame_element->contentDocument();
+  PaintTiming& inner_frame_timing = PaintTiming::From(*inner_frame_document);
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(outer_frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(outer_frame_timing.FirstEligibleToPaint().is_null());
+  EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(inner_frame_timing.FirstEligibleToPaint().is_null());
+
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(outer_frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(outer_frame_timing.FirstEligibleToPaint().is_null());
+  EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(inner_frame_timing.FirstEligibleToPaint().is_null());
+}
+
+class TestLifecycleObserver
+    : public GarbageCollected<TestLifecycleObserver>,
+      public LocalFrameView::LifecycleNotificationObserver {
+ public:
+  TestLifecycleObserver() = default;
+
+  void WillStartLifecycleUpdate(const LocalFrameView&) override {
+    ++will_start_lifecycle_count_;
+  }
+  void DidFinishLifecycleUpdate(const LocalFrameView&) override {
+    ++did_finish_lifecycle_count_;
+  }
+
+  int will_start_lifecycle_count() const { return will_start_lifecycle_count_; }
+  int did_finish_lifecycle_count() const { return did_finish_lifecycle_count_; }
+
+  // GC functions.
+  void Trace(Visitor*) const override {}
+
+ private:
+  int will_start_lifecycle_count_ = 0;
+  int did_finish_lifecycle_count_ = 0;
+};
+
+TEST_F(LocalFrameViewTest, LifecycleNotificationsOnlyOnFullLifecycle) {
+  SetBodyInnerHTML("<div></div>");
+  auto* frame_view = GetDocument().View();
+
+  auto* observer = MakeGarbageCollected<TestLifecycleObserver>();
+  frame_view->RegisterForLifecycleNotifications(observer);
+
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 0);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 0);
+
+  frame_view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kTest);
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 0);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 0);
+
+  frame_view->UpdateLifecyclePhasesForPrinting();
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 0);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 0);
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 1);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 1);
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 2);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 2);
+
+  frame_view->UnregisterFromLifecycleNotifications(observer);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(observer->will_start_lifecycle_count(), 2);
+  EXPECT_EQ(observer->did_finish_lifecycle_count(), 2);
+}
+
+TEST_F(LocalFrameViewTest, StartOfLifecycleTaskRunsOnFullLifecycle) {
+  SetBodyInnerHTML("<div></div>");
+  auto* frame_view = GetDocument().View();
+
+  struct TestCallback {
+    void Increment() { ++calls; }
+    int calls = 0;
+  };
+
+  TestCallback callback;
+
+  frame_view->EnqueueStartOfLifecycleTask(
+      base::BindOnce(&TestCallback::Increment, base::Unretained(&callback)));
+  EXPECT_EQ(callback.calls, 0);
+
+  frame_view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kTest);
+  EXPECT_EQ(callback.calls, 0);
+
+  frame_view->UpdateLifecyclePhasesForPrinting();
+  EXPECT_EQ(callback.calls, 0);
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(callback.calls, 1);
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(callback.calls, 1);
+}
 }  // namespace
 }  // namespace blink

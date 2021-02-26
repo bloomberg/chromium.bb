@@ -7,26 +7,16 @@
 namespace switches {
 
 const base::Feature kSyncDoNotCommitBookmarksWithoutFavicon = {
-    "SyncDoNotCommitBookmarksWithoutFavicon",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables updating a BookmarkNode's GUID by replacing the node itself.
-const base::Feature kUpdateBookmarkGUIDWithNodeReplacement{
-    "UpdateGUIDWithNodeReplacement", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the GUID-aware merge algorithm.
-const base::Feature kMergeBookmarksUsingGUIDs{"MergeBookmarksUsingGUIDs",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncDoNotCommitBookmarksWithoutFavicon", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSyncReuploadBookmarkFullTitles{
-    "SyncReuploadBookmarkFullTitles", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSyncProcessBookmarkRestoreAfterDeletion{
-    "SyncProcessBookmarkRestoreAfterDeletion",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncReuploadBookmarkFullTitles", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSyncDeduplicateAllBookmarksWithSameGUID{
     "SyncDeduplicateAllBookmarksWithSameGUID",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSyncIgnoreChangesInTouchIcons{
+    "SyncIgnoreChangesInTouchIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace switches

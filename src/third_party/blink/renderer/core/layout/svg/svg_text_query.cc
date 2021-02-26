@@ -65,7 +65,7 @@ static inline InlineFlowBox* FlowBoxForLayoutObject(
   if (layout_object->IsLayoutInline()) {
     // We're given a LayoutSVGInline or objects that derive from it
     // (LayoutSVGTSpan / LayoutSVGTextPath)
-    LayoutInline* layout_inline = ToLayoutInline(layout_object);
+    auto* layout_inline = To<LayoutInline>(layout_object);
 
     // LayoutSVGInline only ever contains a single line box.
     InlineFlowBox* flow_box = layout_inline->FirstLineBox();
@@ -89,7 +89,7 @@ static void CollectTextBoxesInFlowBox(InlineFlowBox* flow_box,
       if (!child->GetLineLayoutItem().GetNode())
         continue;
 
-      CollectTextBoxesInFlowBox(ToInlineFlowBox(child), text_boxes);
+      CollectTextBoxesInFlowBox(To<InlineFlowBox>(child), text_boxes);
       continue;
     }
 
@@ -161,8 +161,8 @@ static void LogicalQuery(LayoutObject* query_root,
     if (!layout_object->IsSVGInlineText())
       continue;
 
-    LineLayoutSVGInlineText text_line_layout =
-        LineLayoutSVGInlineText(ToLayoutSVGInlineText(layout_object));
+    auto text_line_layout =
+        LineLayoutSVGInlineText(To<LayoutSVGInlineText>(layout_object));
     DCHECK(text_line_layout.Style());
 
     // TODO(fs): Allow filtering the search earlier, since we should be

@@ -16,7 +16,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_path_override.h"
@@ -53,7 +52,7 @@ bool ExtensionPolicyRegistryEntryFound(
     TestRegistryEntry test_entry,
     const std::vector<ExtensionPolicyRegistryEntry>& found_policies) {
   for (const ExtensionPolicyRegistryEntry& policy : found_policies) {
-    base::string16 test_entry_value(test_entry.value);
+    std::wstring test_entry_value(test_entry.value);
     if (policy.extension_id == test_entry_value.substr(0, kExtensionIdLength) &&
         policy.hkey == test_entry.hkey && policy.path == test_entry.path &&
         policy.name == test_entry.name) {
@@ -97,7 +96,7 @@ TEST(ExtensionsUtilTest, RemoveForcelistPolicyExtensions) {
     DCHECK(policy_key.Valid());
     ASSERT_EQ(ERROR_SUCCESS,
               policy_key.WriteValue(policy.name.c_str(), policy.value.c_str()));
-    base::string16 value;
+    std::wstring value;
     policy_key.ReadValue(policy.name.c_str(), &value);
     ASSERT_EQ(value, policy.value);
   }
@@ -107,7 +106,7 @@ TEST(ExtensionsUtilTest, RemoveForcelistPolicyExtensions) {
   GetExtensionForcelistRegistryPolicies(&policies);
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_FORCELIST, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -121,7 +120,7 @@ TEST(ExtensionsUtilTest, RemoveForcelistPolicyExtensions) {
               policy_key.Open(extension.policy_registry_entry->hkey,
                               extension.policy_registry_entry->path.c_str(),
                               KEY_READ));
-    base::string16 value;
+    std::wstring value;
     policy_key.ReadValue(extension.policy_registry_entry->name.c_str(), &value);
     ASSERT_EQ(value, L"");
   }
@@ -166,11 +165,11 @@ TEST(ExtensionsUtilTest, GetNonWhitelistedDefaultExtensions) {
   GetNonWhitelistedDefaultExtensions(&json_parser, &policies, &done);
   ASSERT_TRUE(done.TimedWait(TestTimeouts::action_timeout()));
 
-  const base::string16 expected_extension_ids[] = {kTestExtensionId1,
-                                                   kTestExtensionId2};
+  const std::wstring expected_extension_ids[] = {kTestExtensionId1,
+                                                 kTestExtensionId2};
   ASSERT_EQ(base::size(expected_extension_ids), policies.size());
-  const base::string16 found_extension_ids[] = {policies[0].extension_id,
-                                                policies[1].extension_id};
+  const std::wstring found_extension_ids[] = {policies[0].extension_id,
+                                              policies[1].extension_id};
   EXPECT_THAT(expected_extension_ids,
               ::testing::UnorderedElementsAreArray(found_extension_ids));
 }
@@ -217,7 +216,7 @@ TEST(ExtensionsUtilTest, RemoveNonWhitelistedDefaultExtensions) {
   std::vector<ForceInstalledExtension> extensions;
   for (ExtensionPolicyFile& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         DEFAULT_APPS_EXTENSION, "", "");
     extension.policy_file =
         std::make_shared<ExtensionPolicyFile>(std::move(policy));
@@ -276,10 +275,10 @@ TEST(ExtensionsUtilTest, GetExtensionSettingsForceInstalledExtensions) {
   ASSERT_TRUE(done.TimedWait(TestTimeouts::action_timeout()));
 
   // Check that only the two force installed extensions were found
-  const base::string16 expected_extension_ids[] = {kTestExtensionId4,
-                                                   kTestExtensionId5};
-  const base::string16 found_extension_ids[] = {policies[0].extension_id,
-                                                policies[1].extension_id};
+  const std::wstring expected_extension_ids[] = {kTestExtensionId4,
+                                                 kTestExtensionId5};
+  const std::wstring found_extension_ids[] = {policies[0].extension_id,
+                                              policies[1].extension_id};
   EXPECT_THAT(expected_extension_ids,
               ::testing::UnorderedElementsAreArray(found_extension_ids));
 
@@ -318,7 +317,7 @@ TEST(ExtensionsUtilTest, RemoveExtensionSettingsForceInstalledExtensions) {
   base::Value json_result = policies[0].json->data.Clone();
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_SETTINGS, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -366,7 +365,7 @@ TEST(ExtensionsUtilTest, RemoveSomeExtensionSettingsForceInstalledExtensions) {
   base::Value json_result = policies[0].json->data.Clone();
   for (ExtensionPolicyRegistryEntry& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_EXTENSION_SETTINGS, "", "");
     extension.policy_registry_entry =
         std::make_shared<ExtensionPolicyRegistryEntry>(std::move(policy));
@@ -429,11 +428,11 @@ TEST(ExtensionsUtilTest, GetMasterPreferencesExtensions) {
   GetMasterPreferencesExtensions(&json_parser, &policies, &done);
   ASSERT_TRUE(done.TimedWait(TestTimeouts::action_timeout()));
 
-  const base::string16 expected_extension_ids[] = {kTestExtensionId6,
-                                                   kTestExtensionId7};
+  const std::wstring expected_extension_ids[] = {kTestExtensionId6,
+                                                 kTestExtensionId7};
   ASSERT_EQ(base::size(expected_extension_ids), policies.size());
-  const base::string16 found_extension_ids[] = {policies[0].extension_id,
-                                                policies[1].extension_id};
+  const std::wstring found_extension_ids[] = {policies[0].extension_id,
+                                              policies[1].extension_id};
   EXPECT_THAT(expected_extension_ids,
               ::testing::UnorderedElementsAreArray(found_extension_ids));
 }
@@ -464,7 +463,7 @@ TEST(ExtensionsUtilTest, RemoveMasterPreferencesExtensionsNoneFound) {
   std::vector<ForceInstalledExtension> extensions;
   for (ExtensionPolicyFile& policy : policies) {
     ForceInstalledExtension extension(
-        ExtensionID::Create(base::UTF16ToUTF8(policy.extension_id)).value(),
+        ExtensionID::Create(base::WideToUTF8(policy.extension_id)).value(),
         POLICY_MASTER_PREFERENCES, "", "");
     extension.policy_file =
         std::make_shared<ExtensionPolicyFile>(std::move(policy));

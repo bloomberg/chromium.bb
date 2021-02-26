@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_FAKE_DEVICE_INFO_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_FAKE_DEVICE_INFO_SYNC_SERVICE_H_
 
-#include "components/sync/model/fake_model_type_controller_delegate.h"
+#include "base/callback.h"
+#include "components/sync/test/model/fake_model_type_controller_delegate.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
@@ -21,9 +22,9 @@ class FakeDeviceInfoSyncService : public DeviceInfoSyncService {
   FakeLocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override;
   FakeDeviceInfoTracker* GetDeviceInfoTracker() override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
-  void RefreshLocalDeviceInfo() override;
+  void RefreshLocalDeviceInfo(base::OnceClosure callback) override;
 
-  // Returns number of times RefreshLocalDeviceInfo() has neen called.
+  // Returns number of times RefreshLocalDeviceInfo() has been called.
   int RefreshLocalDeviceInfoCount();
 
  private:

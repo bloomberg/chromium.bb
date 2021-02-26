@@ -24,7 +24,6 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -84,15 +83,27 @@ void BlobURLLoader::CreateAndStart(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     std::unique_ptr<BlobDataHandle> blob_handle) {
-  new BlobURLLoader(std::move(url_loader_receiver), request, std::move(client),
-                    std::move(blob_handle));
+  new BlobURLLoader(std::move(url_loader_receiver), request.method,
+                    request.headers, std::move(client), std::move(blob_handle));
+}
+
+// static
+void BlobURLLoader::CreateAndStart(
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+    std::unique_ptr<BlobDataHandle> blob_handle) {
+  new BlobURLLoader(std::move(url_loader_receiver), method, headers,
+                    std::move(client), std::move(blob_handle));
 }
 
 BlobURLLoader::~BlobURLLoader() = default;
 
 BlobURLLoader::BlobURLLoader(
     mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
-    const network::ResourceRequest& request,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     std::unique_ptr<BlobDataHandle> blob_handle)
     : receiver_(this, std::move(url_loader_receiver)),
@@ -101,10 +112,11 @@ BlobURLLoader::BlobURLLoader(
   // PostTask since it might destruct.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BlobURLLoader::Start,
-                                weak_factory_.GetWeakPtr(), request));
+                                weak_factory_.GetWeakPtr(), method, headers));
 }
 
-void BlobURLLoader::Start(const network::ResourceRequest& request) {
+void BlobURLLoader::Start(const std::string& method,
+                          const net::HttpRequestHeaders& headers) {
   if (!blob_handle_) {
     OnComplete(net::ERR_FILE_NOT_FOUND, 0);
     delete this;
@@ -112,15 +124,14 @@ void BlobURLLoader::Start(const network::ResourceRequest& request) {
   }
 
   // We only support GET request per the spec.
-  if (request.method != "GET") {
+  if (method != "GET") {
     OnComplete(net::ERR_METHOD_NOT_SUPPORTED, 0);
     delete this;
     return;
   }
 
   std::string range_header;
-  if (request.headers.GetHeader(net::HttpRequestHeaders::kRange,
-                                &range_header)) {
+  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
     // We only care about "Range" header here.
     std::vector<net::HttpByteRange> ranges;
     if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
@@ -212,10 +223,10 @@ void BlobURLLoader::HeadersCompleted(
 
   std::string mime_type;
   response->headers->GetMimeType(&mime_type);
-  // Match logic in StreamURLRequestJob::HeadersCompleted.
   if (mime_type.empty())
     mime_type = "text/plain";
   response->mime_type = mime_type;
+  response->headers->GetCharset(&response->charset);
 
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h

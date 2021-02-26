@@ -4,7 +4,10 @@
 
 const {assert} = chai;
 
-import {LiveLocationWithPool, LiveLocationPool} from '../../../../front_end/bindings/LiveLocation.js';
+import * as Bindings from '../../../../front_end/bindings/bindings.js';
+
+const LiveLocationPool = Bindings.LiveLocation.LiveLocationPool;
+const LiveLocationWithPool = Bindings.LiveLocation.LiveLocationWithPool;
 
 describe('LiveLocation', () => {
   it('executes updates atomically', async () => {
@@ -15,7 +18,7 @@ describe('LiveLocation', () => {
     //   2. resolve the blocking promise
     //   3. schedule a third update
     //   4. check that all actions were still executed atomically.
-    let fulfillBlockingPromise = () => {};
+    let fulfillBlockingPromise = (_: unknown) => {};
     const blockingPromise = new Promise(fulfill => {
       fulfillBlockingPromise = fulfill;
     });
@@ -29,7 +32,7 @@ describe('LiveLocation', () => {
 
     liveLocation.update();
     liveLocation.update();
-    fulfillBlockingPromise();
+    fulfillBlockingPromise(undefined);
     await liveLocation.update();
 
     assert.deepEqual(updateDelegateLog, ['enter', 'exit', 'enter', 'exit', 'enter', 'exit']);

@@ -37,13 +37,12 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '99ac9ce7016d701b43b8f0c308dc3463da57d983'
-CLANG_SVN_REVISION = 'n353803'
+# This is the output of `git describe` and is usable as a commit-ish.
+CLANG_REVISION = 'llvmorg-12-init-11462-g418f18c6'
 CLANG_SUB_REVISION = 1
 
-PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
-                                CLANG_SUB_REVISION)
-RELEASE_VERSION = '11.0.0'
+PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
+RELEASE_VERSION = '12.0.0'
 
 
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
@@ -235,7 +234,7 @@ def UpdatePackage(package_name, host_os):
     try:
       GCLIENT_CONFIG = os.path.join(os.path.dirname(CHROMIUM_DIR), '.gclient')
       env = {}
-      execfile(GCLIENT_CONFIG, env, env)
+      exec (open(GCLIENT_CONFIG).read(), env, env)
       target_os = env.get('target_os', target_os)
     except:
       pass

@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -17,12 +19,20 @@
 #include "base/timer/timer.h"
 #include "crypto/hmac.h"
 #include "remoting/base/session_options.h"
+#include "remoting/protocol/peer_connection_controls.h"
 #include "remoting/protocol/session_options_provider.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
+#include "remoting/protocol/webrtc_event_log_data.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+
+namespace base {
+
+class Watchdog;
+
+}  // namespace base
 
 namespace remoting {
 namespace protocol {
@@ -31,7 +41,9 @@ class TransportContext;
 class MessagePipe;
 class WebrtcAudioModule;
 
-class WebrtcTransport : public Transport, public SessionOptionsProvider {
+class WebrtcTransport : public Transport,
+                        public SessionOptionsProvider,
+                        public PeerConnectionControls {
  public:
   class EventHandler {
    public:
@@ -65,6 +77,10 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
     virtual void OnWebrtcTransportMediaStreamRemoved(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
+
+    // Called when the transport route changes (for example, from relayed to
+    // direct connection). Also called on initial connection.
+    virtual void OnWebrtcTransportRouteChanged(const TransportRoute& route) = 0;
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,
@@ -78,6 +94,7 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
     return video_encoder_factory_;
   }
   WebrtcAudioModule* audio_module();
+  WebrtcEventLogData* rtc_event_log() { return &rtc_event_log_; }
 
   // Creates outgoing data channel. The channel is created in CONNECTING state.
   // The caller must wait for OnMessagePipeOpen() notification before sending
@@ -91,6 +108,12 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
 
   // SessionOptionsProvider implementations.
   const SessionOptions& session_options() const override;
+
+  // PeerConnectionControls implementations.
+  void SetPreferredBitrates(base::Optional<int> min_bitrate_bps,
+                            base::Optional<int> max_bitrate_bps) override;
+  void RequestIceRestart() override;
+  void RequestSdpRestart() override;
 
   void Close(ErrorCode error);
 
@@ -117,6 +140,14 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   // or to zero out the interval and prevent hangs due to PostDelayedTask.
   static void SetDataChannelPollingIntervalForTests(
       base::TimeDelta data_channel_state_polling_interval);
+
+  // Replaces the watchdog that monitors the thread join process when the peer
+  // connection is being torn down.
+  void SetThreadJoinWatchdogForTests(std::unique_ptr<base::Watchdog> watchdog);
+
+  // Sets a callback to be executed before disarming the thread join watchdog.
+  // Only used for testing.
+  void SetBeforeDisarmThreadJoinWatchdogCallbackForTests(base::OnceClosure cb);
 
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
@@ -149,22 +180,25 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+  void OnIceSelectedCandidatePairChanged(
+      const cricket::CandidatePairChangeEvent& event);
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
-  // Returns the max bitrate to set for this connection, taking into
-  // account any relay bitrate cap. If the relay status is unknown, this
-  // returns the default maximum bitrate.
-  int MaxBitrateForConnection();
+  // Returns the min (first element) and max (second element) bitrate for this
+  // connection, taking into account any relay bitrate cap and client overrides.
+  // The default range is [0, default max bixrate]. Client overrides that go
+  // beyond this bound or exceed the relay server's max bitrate will be ignored.
+  std::tuple<int, int> BitratesForConnection();
 
   // Sets bitrates on the PeerConnection.
   // Called after SetRemoteDescription(), but also called if the relay status
   // changes.
-  void SetPeerConnectionBitrates(int max_bitrate_bps);
+  void SetPeerConnectionBitrates(int min_bitrate_bps, int max_bitrate_bps);
 
   // Sets bitrates on the (video) sender. Called when the sender is created, but
   // also called if the relay status changes.
-  void SetSenderBitrates(int max_bitrate_bps);
+  void SetSenderBitrates(int min_bitrate_bps, int max_bitrate_bps);
 
   void RequestRtcStats();
   void RequestNegotiation();
@@ -185,6 +219,9 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   // Returns the VideoSender for this connection, or nullptr if it hasn't
   // been created yet.
   rtc::scoped_refptr<webrtc::RtpSenderInterface> GetVideoSender();
+
+  void StartRtcEventLogging();
+  void StopRtcEventLogging();
 
   base::ThreadChecker thread_checker_;
 
@@ -225,6 +262,14 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   // other side of the WebRTC connection.
   rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel_;
   rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel_;
+
+  // Preferred bitrates set by the client. nullopt if the client has not
+  // provided any preferred bitrates.
+  base::Optional<int> preferred_min_bitrate_bps_;
+  base::Optional<int> preferred_max_bitrate_bps_;
+
+  // Stores event log data generated by WebRTC for the PeerConnection.
+  WebrtcEventLogData rtc_event_log_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_{this};
 

@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.feed;
 import static org.mockito.Mockito.when;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,8 +23,8 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -93,7 +94,7 @@ public final class HeaderIphScrollListenerTest {
     private UserEducationHelper mUserEducationHelper;
     private View mFeedRootView;
 
-    private boolean mHasShownMenuIph = false;
+    private boolean mHasShownMenuIph;
 
     @Before
     public void setUp() {

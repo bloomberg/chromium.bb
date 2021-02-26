@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
@@ -70,7 +71,8 @@ void WorkerResourceTimingNotifierImpl::AddResourceTiming(
     DCHECK(inside_execution_context_->IsContextThread());
     GetPerformance(*inside_execution_context_)
         ->AddResourceTiming(std::move(info), initiator_type,
-                            std::move(worker_timing_receiver));
+                            std::move(worker_timing_receiver),
+                            inside_execution_context_);
   } else {
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
@@ -87,16 +89,18 @@ void WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming(
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
         worker_timing_receiver) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!outside_execution_context_ ||
-      outside_execution_context_->IsContextDestroyed())
+  auto outside_execution_context = outside_execution_context_.Lock();
+  if (!outside_execution_context ||
+      outside_execution_context->IsContextDestroyed())
     return;
-  DCHECK(outside_execution_context_->IsContextThread());
-  GetPerformance(*outside_execution_context_)
+  DCHECK(outside_execution_context->IsContextThread());
+  GetPerformance(*outside_execution_context)
       ->AddResourceTiming(std::move(info), AtomicString(initiator_type),
-                          std::move(worker_timing_receiver));
+                          std::move(worker_timing_receiver),
+                          outside_execution_context);
 }
 
-void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) {
+void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) const {
   visitor->Trace(inside_execution_context_);
   WorkerResourceTimingNotifier::Trace(visitor);
 }

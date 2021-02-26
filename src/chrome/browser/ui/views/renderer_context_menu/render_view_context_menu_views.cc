@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string16.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -237,7 +237,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
 #if defined(OS_WIN)
       *accel = ui::Accelerator(ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN);
       return true;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       *accel = ui::Accelerator(ui::VKEY_SPACE,
                                ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
       return true;
@@ -245,6 +245,14 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       return false;
 #endif
 
+    case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
+#if defined(OS_CHROMEOS)
+      *accel = ui::Accelerator(ui::VKEY_V, ui::EF_COMMAND_DOWN);
+      return true;
+#else
+      NOTREACHED();
+      return false;
+#endif
     default:
       return false;
   }
@@ -363,7 +371,7 @@ void RenderViewContextMenuViews::Show() {
   }
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+  base::CurrentThread::ScopedNestableTaskAllower allow;
   RunMenuAt(top_level_widget, screen_point, params().source_type);
 
   auto* submenu_view = static_cast<ToolkitDelegateViews*>(toolkit_delegate())
@@ -392,10 +400,7 @@ aura::Window* RenderViewContextMenuViews::GetActiveNativeView() {
     LOG(ERROR) << "RenderViewContextMenuViews::Show, couldn't find WebContents";
     return NULL;
   }
-  return web_contents->GetFullscreenRenderWidgetHostView()
-             ? web_contents->GetFullscreenRenderWidgetHostView()
-                   ->GetNativeView()
-             : web_contents->GetNativeView();
+  return web_contents->GetNativeView();
 }
 
 void RenderViewContextMenuViews::OnSubmenuViewBoundsChanged(

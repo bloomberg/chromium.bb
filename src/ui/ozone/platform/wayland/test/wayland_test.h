@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
@@ -24,6 +25,7 @@
 
 namespace wl {
 class MockSurface;
+class MockXdgSurface;
 }  // namespace wl
 
 namespace ui {
@@ -47,6 +49,18 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   void Sync();
 
  protected:
+  // Sends configure event for the |xdg_surface|.
+  void SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
+                          int width,
+                          int height,
+                          uint32_t serial,
+                          struct wl_array* states);
+
+  // Sends XDG_TOPLEVEL_STATE_ACTIVATED to the |xdg_surface| with width and
+  // height set to 0, which results in asking the client to set the width and
+  // height of the surface.
+  void ActivateSurface(wl::MockXdgSurface* xdg_surface);
+
   base::test::TaskEnvironment task_environment_;
 
   wl::TestWaylandServerThread server_;
@@ -69,6 +83,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 #endif
 
   std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandTest);
 };

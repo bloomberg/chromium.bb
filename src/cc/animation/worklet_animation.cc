@@ -92,7 +92,8 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   // animations lifecycle. To avoid this we pause the underlying keyframe effect
   // at the local time obtained from the user script - essentially turning each
   // call to |WorkletAnimation::Tick| into a seek in the effect.
-  TickWithLocalTime(local_time_.value());
+  keyframe_effect_->Pause(local_time_.value());
+  keyframe_effect_->Tick(base::TimeTicks());
 }
 
 void WorkletAnimation::UpdateState(bool start_ready_animations,
@@ -162,10 +163,6 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 
   switch (state_) {
     case State::PENDING:
-      // TODO(yigu): cc side WorkletAnimation is only capable of handling single
-      // keyframe effect at the moment. We should pass in the number of effects
-      // once Worklet Group Effect is fully implemented in cc.
-      // https://crbug.com/767043.
       input_state->Add({worklet_animation_id(), name(),
                         current_time->InMillisecondsF(), CloneOptions(),
                         CloneEffectTimings()});
@@ -186,8 +183,6 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 
 void WorkletAnimation::SetOutputState(
     const MutatorOutputState::AnimationState& state) {
-  // TODO(yigu): cc side WorkletAnimation is only capable of handling single
-  // keyframe effect at the moment. https://crbug.com/767043.
   DCHECK_EQ(state.local_times.size(), 1u);
   local_time_ = state.local_times[0];
 }

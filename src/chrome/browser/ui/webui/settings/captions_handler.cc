@@ -5,30 +5,74 @@
 #include "chrome/browser/ui/webui/settings/captions_handler.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "chrome/browser/accessibility/caption_settings_dialog.h"
+#include "base/values.h"
+#include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN) || defined(OS_MAC)
+#include "chrome/browser/accessibility/caption_settings_dialog.h"
+#endif
 
 namespace settings {
 
-CaptionsHandler::CaptionsHandler() {}
+CaptionsHandler::CaptionsHandler(PrefService* prefs) : prefs_(prefs) {}
 
-CaptionsHandler::~CaptionsHandler() {}
+CaptionsHandler::~CaptionsHandler() = default;
 
 void CaptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "openSystemCaptionsDialog",
       base::BindRepeating(&CaptionsHandler::HandleOpenSystemCaptionsDialog,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "captionsSubpageReady",
+      base::BindRepeating(&CaptionsHandler::HandleCaptionsSubpageReady,
+                          base::Unretained(this)));
 }
 
-void CaptionsHandler::OnJavascriptAllowed() {}
+void CaptionsHandler::OnJavascriptAllowed() {
+  speech::SODAInstaller::GetInstance()->AddObserver(this);
+}
 
-void CaptionsHandler::OnJavascriptDisallowed() {}
+void CaptionsHandler::OnJavascriptDisallowed() {
+  speech::SODAInstaller::GetInstance()->RemoveObserver(this);
+}
+
+void CaptionsHandler::HandleCaptionsSubpageReady(const base::ListValue* args) {
+  AllowJavascript();
+}
 
 void CaptionsHandler::HandleOpenSystemCaptionsDialog(
     const base::ListValue* args) {
+#if defined(OS_WIN) || defined(OS_MAC)
   captions::CaptionSettingsDialog::ShowCaptionSettingsDialog();
+#endif
+}
+
+void CaptionsHandler::OnSODAInstalled() {
+  FireWebUIListener("enable-live-caption-subtitle-changed",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_COMPLETE)));
+}
+
+void CaptionsHandler::OnSODAError() {
+  prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
+  FireWebUIListener("enable-live-caption-subtitle-changed",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR)));
+}
+
+void CaptionsHandler::OnSODAProgress(int progress) {
+  FireWebUIListener(
+      "enable-live-caption-subtitle-changed",
+      base::Value(l10n_util::GetStringFUTF16Int(
+          IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_PROGRESS, progress)));
 }
 
 }  // namespace settings

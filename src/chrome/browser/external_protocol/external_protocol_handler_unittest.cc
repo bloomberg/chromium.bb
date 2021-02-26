@@ -4,6 +4,9 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -23,10 +26,9 @@ class FakeExternalProtocolHandlerWorker
     : public shell_integration::DefaultProtocolClientWorker {
  public:
   FakeExternalProtocolHandlerWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol,
       shell_integration::DefaultWebClientState os_state)
-      : shell_integration::DefaultProtocolClientWorker(callback, protocol),
+      : shell_integration::DefaultProtocolClientWorker(protocol),
         os_state_(os_state) {}
 
  private:
@@ -36,8 +38,8 @@ class FakeExternalProtocolHandlerWorker
     return os_state_;
   }
 
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
-    on_finished_callback.Run();
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override {
+    std::move(on_finished_callback).Run();
   }
 
   shell_integration::DefaultWebClientState os_state_;
@@ -49,6 +51,7 @@ class FakeExternalProtocolHandlerDelegate
   explicit FakeExternalProtocolHandlerDelegate(base::OnceClosure on_complete)
       : block_state_(ExternalProtocolHandler::BLOCK),
         os_state_(shell_integration::UNKNOWN_DEFAULT),
+        complete_on_launch_(false),
         has_launched_(false),
         has_prompted_(false),
         has_blocked_(false),
@@ -56,9 +59,8 @@ class FakeExternalProtocolHandlerDelegate
 
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
   CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol) override {
-    return new FakeExternalProtocolHandlerWorker(callback, protocol, os_state_);
+    return new FakeExternalProtocolHandlerWorker(protocol, os_state_);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
@@ -94,6 +96,8 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
     launch_or_prompt_url_ = url;
+    if (complete_on_launch_ && on_complete_)
+      std::move(on_complete_).Run();
   }
 
   void FinishedProcessingCheck() override {
@@ -109,6 +113,11 @@ class FakeExternalProtocolHandlerDelegate
     block_state_ = value;
   }
 
+  // Set this to true if you need the test to be completed upon calling into
+  // LaunchUrlWithoutSecurityCheck which is the case when testing
+  // ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck.
+  void set_complete_on_launch(bool value) { complete_on_launch_ = value; }
+
   bool has_launched() { return has_launched_; }
   bool has_prompted() { return has_prompted_; }
   bool has_blocked() { return has_blocked_; }
@@ -123,6 +132,7 @@ class FakeExternalProtocolHandlerDelegate
  private:
   ExternalProtocolHandler::BlockState block_state_;
   shell_integration::DefaultWebClientState os_state_;
+  bool complete_on_launch_;
   bool has_launched_;
   bool has_prompted_;
   bool has_blocked_;
@@ -179,8 +189,12 @@ class ExternalProtocolHandlerTest : public testing::Test {
     ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    int process_id = web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    int routing_id = web_contents_->GetRenderViewHost()->GetRoutingID();
+    int process_id = web_contents_->GetMainFrame()
+                         ->GetRenderViewHost()
+                         ->GetProcess()
+                         ->GetID();
+    int routing_id =
+        web_contents_->GetMainFrame()->GetRenderViewHost()->GetRoutingID();
     ExternalProtocolHandler::LaunchUrl(url, process_id, routing_id,
                                        ui::PAGE_TRANSITION_LINK, true,
                                        initiating_origin);
@@ -281,6 +295,32 @@ TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
          Action::PROMPT, url, url::Origin::Create(GURL("https://example.test")),
          url::Origin::Create(GURL("https://precursor.test")));
+  // Expect that the "\r\n" has been removed, and all other illegal URL
+  // characters have been escaped.
+  EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",
+            delegate_.launch_or_prompt_url());
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestUrlEscapeNoChecks) {
+  GURL url("alert:test message\" --bad%2B\r\n 文本 \"file");
+
+  EXPECT_FALSE(delegate_.has_prompted());
+  EXPECT_FALSE(delegate_.has_launched());
+  EXPECT_FALSE(delegate_.has_blocked());
+  ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
+  delegate_.set_block_state(ExternalProtocolHandler::DONT_BLOCK);
+  delegate_.set_os_state(shell_integration::NOT_DEFAULT);
+  delegate_.set_complete_on_launch(true);
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url,
+                                                         web_contents_.get());
+  run_loop_.Run();
+  ExternalProtocolHandler::SetDelegateForTesting(nullptr);
+
+  EXPECT_FALSE(delegate_.has_prompted());
+  EXPECT_TRUE(delegate_.has_launched());
+  EXPECT_FALSE(delegate_.has_blocked());
+  EXPECT_FALSE(delegate_.initiating_origin().has_value());
+
   // Expect that the "\r\n" has been removed, and all other illegal URL
   // characters have been escaped.
   EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",

@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task_runner_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/snapshot/snapshot_async.h"
 
@@ -37,6 +37,8 @@ static void MakeAsyncCopyRequest(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           std::move(callback));
   request->set_area(source_rect);
+  request->set_result_task_runner(
+      base::SequencedTaskRunnerHandle::Get());
   layer->RequestCopyOfOutput(std::move(request));
 }
 

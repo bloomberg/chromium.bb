@@ -40,14 +40,6 @@ class ServiceWorkerMetrics {
   };
 
   // Used for UMA. Append-only.
-  enum DeleteAndStartOverResult {
-    DELETE_OK,
-    DELETE_DATABASE_ERROR,
-    DELETE_DISK_CACHE_ERROR,
-    NUM_DELETE_AND_START_OVER_RESULT_TYPES,
-  };
-
-  // Used for UMA. Append-only.
   enum class StopStatus {
     NORMAL,
     DETACH_BY_REGISTRY,
@@ -101,8 +93,9 @@ class ServiceWorkerMetrics {
     BACKGROUND_FETCH_SUCCESS = 32,
     PERIODIC_SYNC = 33,
     CONTENT_DELETE = 34,
+    PUSH_SUBSCRIPTION_CHANGE = 35,
     // Add new events to record here.
-    kMaxValue = CONTENT_DELETE,
+    kMaxValue = PUSH_SUBSCRIPTION_CHANGE,
   };
 
   // Used for UMA. Append only.
@@ -178,14 +171,10 @@ class ServiceWorkerMetrics {
   // If the |url| is not a special site, returns Site::OTHER.
   static Site SiteFromURL(const GURL& url);
 
-  // Used for ServiceWorkerDiskCache.
-  static void CountInitDiskCacheResult(bool result);
+  // Counts the result of reading a service worker script from storage.
   static void CountReadResponseResult(ReadResponseResult result);
+  // Counts the result of writing a service worker script to storage.
   static void CountWriteResponseResult(WriteResponseResult result);
-
-  // Used for ServiceWorkerStorage.
-  static void RecordPurgeResourceResult(int net_error);
-  static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
 
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(Site site,
@@ -213,18 +202,18 @@ class ServiceWorkerMetrics {
 
   static void RecordActivateEventStatus(blink::ServiceWorkerStatusCode status,
                                         bool is_shutdown);
-  static void RecordInstallEventStatus(blink::ServiceWorkerStatusCode status);
+  static void RecordInstallEventStatus(blink::ServiceWorkerStatusCode status,
+                                       uint32_t fetch_count);
 
   // Records the amount of time spent handling an event.
   static void RecordEventDuration(EventType event,
                                   base::TimeDelta time,
-                                  bool was_handled);
+                                  bool was_handled,
+                                  uint32_t fetch_count);
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
                                      blink::ServiceWorkerStatusCode status);
-
-  static void RecordProcessCreated(bool is_new_process);
 
   CONTENT_EXPORT static void RecordStartWorkerTiming(const StartTimes& times,
                                                      StartSituation situation);
@@ -247,9 +236,6 @@ class ServiceWorkerMetrics {
   static void RecordStartServiceWorkerForNavigationHintResult(
       StartServiceWorkerForNavigationHintResult result);
 
-  // Records the number of origins with a registered service worker.
-  static void RecordRegisteredOriginCount(size_t origin_count);
-
   // Records the duration of looking up an existing registration.
   // |status| is the result of lookup. The records for the cases where
   // the registration is found (kOk), not found (kErrorNotFound), or an error
@@ -259,13 +245,7 @@ class ServiceWorkerMetrics {
       blink::ServiceWorkerStatusCode status,
       base::TimeDelta duration);
 
-  // Records the result of byte-for-byte update checking.
-  // |has_found_update| should be true when the update checking finds update of
-  // the script. It's recorded only when |status| is kOk.
-  // This is used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  static void RecordByteForByteUpdateCheckStatus(
-      blink::ServiceWorkerStatusCode status,
-      bool has_found_update);
+  static void RecordGetAllOriginsInfoTime(base::TimeDelta time);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

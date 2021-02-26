@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/BiometricAuthenticatorBridge_jni.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/biometric_authenticator.h"
@@ -31,9 +30,6 @@ using password_manager::UiCredential;
 // static
 std::unique_ptr<ChromeBiometricAuthenticator>
 ChromeBiometricAuthenticator::Create(WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(autofill::features::kAutofillTouchToFill))
-    return nullptr;
-
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kBiometricTouchToFill)) {
     return nullptr;
@@ -66,6 +62,6 @@ void BiometricAuthenticatorAndroid::Authenticate(
     const UiCredential& credential,
     AuthenticateCallback callback) {
   // TODO(crbug.com/1031483): Implement.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), true));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }

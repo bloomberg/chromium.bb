@@ -5,8 +5,10 @@
 #include "components/performance_manager/graph/process_node_impl.h"
 
 #include "base/process/process.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/public/render_process_host_id.h"
+#include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,7 +122,6 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
   MOCK_METHOD1(OnProcessLifetimeChange, void(const ProcessNode*));
   MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
-  MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
   MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
   MOCK_METHOD2(OnPriorityChanged, void(const ProcessNode*, base::TaskPriority));
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
@@ -163,12 +164,6 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   EXPECT_CALL(obs, OnProcessLifetimeChange(_));
   process_node->SetProcessExitStatus(10);
 
-  EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
-  process_node->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
-
   EXPECT_CALL(obs, OnMainThreadTaskLoadIsLow(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
   process_node->SetMainThreadTaskLoadIsLow(true);
@@ -197,7 +192,8 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
 }
 
 TEST_F(ProcessNodeImplTest, ConstructionArguments) {
-  constexpr int kRenderProcessHostId = 0xF0B;
+  constexpr RenderProcessHostId kRenderProcessHostId =
+      RenderProcessHostId(0xF0B);
   auto process_node = CreateNode<ProcessNodeImpl>(
       content::PROCESS_TYPE_GPU,
       RenderProcessHostProxy::CreateForTesting(kRenderProcessHostId));
@@ -254,11 +250,6 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
         return true;
       }));
   EXPECT_EQ(public_frame_nodes, visited_frame_nodes);
-
-  process_node->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(process_node->expected_task_queueing_duration(),
-            public_process_node->GetExpectedTaskQueueingDuration());
 
   process_node->SetMainThreadTaskLoadIsLow(true);
   EXPECT_EQ(process_node->main_thread_task_load_is_low(),

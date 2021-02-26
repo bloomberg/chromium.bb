@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -48,6 +47,7 @@ class OmniboxEditModel {
           const AutocompleteInput& autocomplete_input);
     State(const State& other);
     ~State();
+    State& operator=(const State&) = delete;
 
     bool user_input_in_progress;
     const base::string16 user_text;
@@ -58,14 +58,14 @@ class OmniboxEditModel {
     OmniboxFocusState focus_state;
     OmniboxFocusSource focus_source;
     const AutocompleteInput autocomplete_input;
-   private:
-    DISALLOW_ASSIGN(State);
   };
 
   OmniboxEditModel(OmniboxView* view,
                    OmniboxEditController* controller,
                    std::unique_ptr<OmniboxClient> client);
   virtual ~OmniboxEditModel();
+  OmniboxEditModel(const OmniboxEditModel&) = delete;
+  OmniboxEditModel& operator=(const OmniboxEditModel&) = delete;
 
   // TODO(jdonnelly): Remove this accessor when the AutocompleteController has
   //     completely moved to OmniboxController.
@@ -116,8 +116,7 @@ class OmniboxEditModel {
 
   // Adjusts the copied text before writing it to the clipboard. If the copied
   // text is a URL with the scheme elided, this method reattaches the scheme.
-  // Copied text that looks like a search query, including the Query in Omnibox
-  // case, will not be modified.
+  // Copied text that looks like a search query will not be modified.
   //
   // |sel_min| gives the minimum of the selection, e.g. min(sel_start, sel_end).
   // |text| is the currently selected text, and may be modified by this method.
@@ -176,7 +175,7 @@ class OmniboxEditModel {
   //
   // If the omnibox is not currently displaying elided text, this method will
   // no-op and return false.
-  bool Unelide(bool exit_query_in_omnibox);
+  bool Unelide();
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.
@@ -300,10 +299,11 @@ class OmniboxEditModel {
   // control key is down (at the time we're gaining focus).
   void OnSetFocus(bool control_down);
 
-  // Shows On-Focus Suggestions (ZeroSuggest) if no query is currently running
-  // and the popup is closed. This can be called multiple times without harm,
-  // since it will early-exit if an earlier request is in progress (or done).
-  void ShowOnFocusSuggestionsIfAutocompleteIdle();
+  // Starts a request for zero-prefix suggestions if no query is currently
+  // running and the popup is closed. This can be called multiple times without
+  // harm, since it will early-exit if an earlier request is in progress or
+  // done.
+  void StartZeroSuggestRequest(bool user_clobbered_permanent_text = false);
 
   // Sets the visibility of the caret in the omnibox, if it has focus. The
   // visibility of the caret is reset to visible if either
@@ -356,24 +356,37 @@ class OmniboxEditModel {
 
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
-  // efficiently:
-  //   |text| is either the new temporary text from the user manually selecting
-  //     a different match, or the inline autocomplete text.
-  //   |is_temporary_text| is true if |text| contains the temporary text for
-  //     a match, and is false if |text| contains the inline autocomplete text.
+  // efficiently. Specifically, it's invoked for temporary text, autocompletion,
+  // and keyword changes.
+  //   |temporary_text| is the new temporary text from the user selecting a
+  //   different match. This will be empty when selecting a suggestion
+  //   without a |fill_into_edit| (e.g. FOCUSED_BUTTON_HEADER) and when
+  //   |is_temporary_test| is false.
+  //   |is_temporary_text| is true if invoked because of a temporary text change
+  //     or false if |temporary_text| should be ignored.
+  //   |inline_autocompletion|, |prefix_autocompletion|, and
+  //     |split_autocompletion| are the autocompletion.
   //   |destination_for_temporary_text_change| is NULL (if temporary text should
   //     not change) or the pre-change destination URL (if temporary text should
   //     change) so we can save it off to restore later.
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
-  void OnPopupDataChanged(const base::string16& text,
-                          bool is_temporary_text,
-                          const base::string16& keyword,
-                          bool is_keyword_hint);
+  //   |additional_text| is additional omnibox text to be displayed adjacent to
+  //     the omnibox view.
+  // Virtual to allow testing.
+  virtual void OnPopupDataChanged(
+      const base::string16& temporary_text,
+      bool is_temporary_text,
+      const base::string16& inline_autocompletion,
+      const base::string16& prefix_autocompletion,
+      const SplitAutocompletion& split_autocompletion,
+      const base::string16& keyword,
+      bool is_keyword_hint,
+      const base::string16& additional_text);
 
   // Called by the OmniboxView after something changes, with details about what
-  // state changes occured.  Updates internal state, updates the popup if
+  // state changes occurred.  Updates internal state, updates the popup if
   // necessary, and returns true if any significant changes occurred.  Note that
   // |text_change.text_differs| may be set even if |text_change.old_text| ==
   // |text_change.new_text|, e.g. if we've just committed an IME composition.
@@ -399,6 +412,9 @@ class OmniboxEditModel {
   // Reverts the edit box from a temporary text back to the original user text.
   // Also resets the popup to the initial state.
   void RevertTemporaryTextAndPopup();
+
+  // Returns whether to prevent elision of the display URL.
+  bool ShouldPreventElision() const;
 
  private:
   friend class OmniboxControllerTest;
@@ -504,12 +520,10 @@ class OmniboxEditModel {
   // no input is in progress or the Omnibox is not focused.
   OmniboxFocusSource focus_source_ = OmniboxFocusSource::INVALID;
 
-  // Display-only text representing the current page. This could be any of:
+  // Display-only text representing the current page. This could either:
   //  - The same as |url_for_editing_| if Steady State Elisions is OFF.
   //  - A simplified version of |url_for_editing_| with some destructive
   //    elisions applied. This is the case if Steady State Elisions is ON.
-  //  - The user entered search query, if the user is on the search results
-  //    page of the default search provider and Query in Omnibox is ON.
   //
   // This should not be considered suitable for editing.
   base::string16 display_text_;
@@ -542,6 +556,13 @@ class OmniboxEditModel {
   // there was no focus event.
   bool user_input_since_focus_;
 
+  // Indicates whether the current interaction with the Omnibox resulted in
+  // navigation (true), or user leaving the omnibox without taking any action
+  // (false).
+  // The value is initialized when the Omnibox receives focus and available for
+  // use when the focus is about to be cleared.
+  bool focus_resulted_in_navigation_;
+
   // We keep track of when the user began modifying the omnibox text.
   // This should be valid whenever user_input_in_progress_ is true.
   base::TimeTicks time_user_first_modified_omnibox_;
@@ -564,14 +585,16 @@ class OmniboxEditModel {
   base::string16 url_for_remembered_user_selection_;
 
   // Inline autocomplete is allowed if the user has not just deleted text, and
-  // no temporary text is showing.  In this case, inline_autocomplete_text_ is
+  // no temporary text is showing.  In this case, inline_autocompletion_ is
   // appended to the user_text_ and displayed selected (at least initially).
   //
   // NOTE: When the popup is closed there should never be inline autocomplete
   // text (actions that close the popup should either accept the text, convert
   // it to a normal selection, or change the edit entirely).
   bool just_deleted_text_;
-  base::string16 inline_autocomplete_text_;
+  base::string16 inline_autocompletion_;
+  base::string16 prefix_autocompletion_;
+  SplitAutocompletion split_autocompletion_;
 
   // Used by OnPopupDataChanged to keep track of whether there is currently a
   // temporary text.
@@ -635,8 +658,6 @@ class OmniboxEditModel {
   // autocomplete query is started after a tab switch, it is possible for this
   // |input_| to differ from the one currently stored in AutocompleteController.
   AutocompleteInput input_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxEditModel);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_

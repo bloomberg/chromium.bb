@@ -28,10 +28,8 @@ namespace dawn_native { namespace vulkan {
 
     class Buffer final : public BufferBase {
       public:
-        static ResultOrError<Buffer*> Create(Device* device, const BufferDescriptor* descriptor);
-
-        void OnMapReadCommandSerialFinished(uint32_t mapSerial, const void* data);
-        void OnMapWriteCommandSerialFinished(uint32_t mapSerial, void* data);
+        static ResultOrError<Ref<Buffer>> Create(Device* device,
+                                                 const BufferDescriptor* descriptor);
 
         VkBuffer GetHandle() const;
 
@@ -39,45 +37,36 @@ namespace dawn_native { namespace vulkan {
         // `commands`.
         // TODO(cwallez@chromium.org): coalesce barriers and do them early when possible.
         void TransitionUsageNow(CommandRecordingContext* recordingContext, wgpu::BufferUsage usage);
+        bool TransitionUsageAndGetResourceBarrier(wgpu::BufferUsage usage,
+                                                  VkBufferMemoryBarrier* barrier,
+                                                  VkPipelineStageFlags* srcStages,
+                                                  VkPipelineStageFlags* dstStages);
+
+        void EnsureDataInitialized(CommandRecordingContext* recordingContext);
+        void EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+                                                uint64_t offset,
+                                                uint64_t size);
+        void EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+                                                const CopyTextureToBufferCmd* copy);
 
       private:
         ~Buffer() override;
         using BufferBase::BufferBase;
-        MaybeError Initialize();
+        MaybeError Initialize(bool mappedAtCreation);
+        void InitializeToZero(CommandRecordingContext* recordingContext);
+        void ClearBuffer(CommandRecordingContext* recordingContext, uint32_t clearValue);
 
-        // Dawn API
-        MaybeError MapReadAsyncImpl(uint32_t serial) override;
-        MaybeError MapWriteAsyncImpl(uint32_t serial) override;
+        MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
         void UnmapImpl() override;
         void DestroyImpl() override;
-
-        bool IsMapWritable() const override;
-        MaybeError MapAtCreationImpl(uint8_t** mappedPointer) override;
+        bool IsCPUWritableAtCreation() const override;
+        MaybeError MapAtCreationImpl() override;
+        void* GetMappedPointerImpl() override;
 
         VkBuffer mHandle = VK_NULL_HANDLE;
         ResourceMemoryAllocation mMemoryAllocation;
 
         wgpu::BufferUsage mLastUsage = wgpu::BufferUsage::None;
-    };
-
-    class MapRequestTracker {
-      public:
-        MapRequestTracker(Device* device);
-        ~MapRequestTracker();
-
-        void Track(Buffer* buffer, uint32_t mapSerial, void* data, bool isWrite);
-        void Tick(Serial finishedSerial);
-
-      private:
-        Device* mDevice;
-
-        struct Request {
-            Ref<Buffer> buffer;
-            uint32_t mapSerial;
-            void* data;
-            bool isWrite;
-        };
-        SerialQueue<Request> mInflightRequests;
     };
 
 }}  // namespace dawn_native::vulkan

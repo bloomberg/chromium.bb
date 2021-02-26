@@ -11,7 +11,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
+import {getFakeAccountsList, TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
 
 window.edu_login_signin_tests = {};
 edu_login_signin_tests.suiteName = 'EduLoginSigninTest';
@@ -21,6 +21,7 @@ edu_login_signin_tests.TestNames = {
   Init: 'Initial state',
   WebUICallbacks: 'WebUI callbacks test',
   AuthExtHostCallbacks: 'AuthExtHost callbacks test',
+  GoBackInWebview: 'Going back in the webview test',
 };
 
 const fakeLoginParams = {
@@ -44,6 +45,10 @@ suite(edu_login_signin_tests.suiteName, function() {
       this.loadCalls = 0;
       /** @type {Number} */
       this.resetStatesCalls = 0;
+      /** @type {number} */
+      this.getAccountsResponseCalls = 0;
+      /** @type {Array<string>} */
+      this.getAccountsResponseResult = null;
     }
 
     /**
@@ -58,6 +63,14 @@ suite(edu_login_signin_tests.suiteName, function() {
 
     resetStates() {
       this.resetStatesCalls++;
+    }
+
+    /**
+     * @param {Array<string>} accounts list of emails.
+     */
+    getAccountsResponse(accounts) {
+      this.getAccountsResponseCalls++;
+      this.getAccountsResponseResult = accounts;
     }
   }
 
@@ -80,14 +93,6 @@ suite(edu_login_signin_tests.suiteName, function() {
   });
 
   test(assert(edu_login_signin_tests.TestNames.WebUICallbacks), function() {
-    let goBackCalls = 0;
-    signinComponent.addEventListener('go-back', function() {
-      goBackCalls++;
-    });
-    webUIListenerCallback('navigate-back-in-webview');
-    expectEquals(1, goBackCalls);
-    assertEquals(1, testAuthenticator.resetStatesCalls);
-
     const fakeAuthExtensionData = {
       hl: 'hl',
       gaiaUrl: 'gaiaUrl',
@@ -126,5 +131,39 @@ suite(edu_login_signin_tests.suiteName, function() {
           assertEquals(fakeCredentials, result[0]);
           assertDeepEquals(fakeLoginParams, result[1]);
         });
+
+        testAuthenticator.dispatchEvent(new Event('getAccounts'));
+        assertEquals(1, testBrowserProxy.getCallCount('getAccounts'));
+        testBrowserProxy.whenCalled('getAccounts').then(function() {
+          assertEquals(1, testAuthenticator.getAccountsResponseCalls);
+          assertDeepEquals(
+              getFakeAccountsList(),
+              testAuthenticator.getAccountsResponseResult);
+        });
       });
+
+  test(assert(edu_login_signin_tests.TestNames.GoBackInWebview), function() {
+    const backButton =
+        signinComponent.$$('edu-login-button[button-type="back"]');
+    let backCalls = 0;
+    let backInWebviewCalls = 0;
+    signinComponent.addEventListener('go-back', () => backCalls++);
+    signinComponent.$.signinFrame.back = () => backInWebviewCalls++;
+
+    // If we cannot go back in the webview - we should go back to the previous
+    // screen.
+    signinComponent.$.signinFrame.canGoBack = () => false;
+    backButton.fire('go-back');
+    assertEquals(1, backCalls);
+    assertEquals(0, backInWebviewCalls);
+
+    backCalls = 0;
+    backInWebviewCalls = 0;
+
+    // Go back in the webview if possible.
+    signinComponent.$.signinFrame.canGoBack = () => true;
+    backButton.fire('go-back');
+    assertEquals(0, backCalls);
+    assertEquals(1, backInWebviewCalls);
+  });
 });

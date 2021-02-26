@@ -40,8 +40,6 @@ class SecurityOrigin;
 
 class DatabaseContext final : public GarbageCollected<DatabaseContext>,
                               public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
-
  public:
   friend class DatabaseManager;
 
@@ -49,7 +47,7 @@ class DatabaseContext final : public GarbageCollected<DatabaseContext>,
 
   explicit DatabaseContext(ExecutionContext*);
   ~DatabaseContext();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // For life-cycle management (inherited from
   // ExecutionContextLifecycleObserver):

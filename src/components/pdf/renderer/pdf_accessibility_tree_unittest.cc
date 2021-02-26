@@ -69,6 +69,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 2;
     link.text_run_count = 0;
+    link.index_in_page = 0;
     page_objects.links.push_back(std::move(link));
   }
 
@@ -77,6 +78,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 0;
     link.text_run_count = 1;
+    link.index_in_page = 1;
     page_objects.links.push_back(std::move(link));
   }
 
@@ -98,6 +100,7 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 3;
     link.text_run_count = 0;
+    link.index_in_page = 0;
     page_objects.links.push_back(std::move(link));
   }
 
@@ -168,6 +171,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedHighlightVector) {
     ppapi::PdfAccessibilityHighlightInfo highlight;
     highlight.text_run_index = 2;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects.highlights.push_back(std::move(highlight));
   }
 
@@ -176,6 +180,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedHighlightVector) {
     ppapi::PdfAccessibilityHighlightInfo highlight;
     highlight.text_run_index = 0;
     highlight.text_run_count = 1;
+    highlight.index_in_page = 1;
     page_objects.highlights.push_back(std::move(highlight));
   }
 
@@ -197,9 +202,323 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundHighlight) {
     ppapi::PdfAccessibilityHighlightInfo highlight;
     highlight.text_run_index = 3;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects.highlights.push_back(std::move(highlight));
   }
 
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedTextFieldVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first text field in the vector.
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 2;
+    text_field.index_in_page = 0;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  {
+    // Add second text field in the vector.
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 0;
+    text_field.index_in_page = 1;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundTextField) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 3;
+    text_field.index_in_page = 0;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedChoiceFieldVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first choice field in the vector.
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 2;
+    choice_field.index_in_page = 0;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  {
+    // Add second choice field in the vector.
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 0;
+    choice_field.index_in_page = 1;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundChoiceField) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 3;
+    choice_field.index_in_page = 0;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedButtonVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first button in the vector.
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.text_run_index = 2;
+    button.index_in_page = 0;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  {
+    // Add second button in the vector.
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.text_run_index = 0;
+    button.index_in_page = 1;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundButton) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.text_run_index = 3;
+    button.index_in_page = 0;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundRadioButton) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    button.text_run_index = 0;
+    button.control_index = 1;
+    button.control_count = 2;
+    button.index_in_page = 0;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                          page_objects));
+
+  {
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    button.text_run_index = 0;
+    button.control_index = 3;
+    button.control_count = 2;
+    button.index_in_page = 1;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundCheckBox) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX;
+    button.text_run_index = 0;
+    button.control_index = 1;
+    button.control_count = 2;
+    button.index_in_page = 0;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                          page_objects));
+
+  {
+    ppapi::PdfAccessibilityButtonInfo button;
+    button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX;
+    button.text_run_index = 0;
+    button.control_index = 3;
+    button.control_count = 2;
+    button.index_in_page = 1;
+    page_objects.form_fields.buttons.push_back(std::move(button));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundIndexInPageLink) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first link in the vector.
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.text_run_index = 1;
+    link.text_run_count = 0;
+    link.index_in_page = 1;
+    page_objects.links.push_back(std::move(link));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundIndexInPageHighlight) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityHighlightInfo highlight;
+    highlight.text_run_index = 1;
+    highlight.text_run_count = 0;
+    highlight.index_in_page = 1;
+    page_objects.highlights.push_back(std::move(highlight));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundIndexInPageTextFeild) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityTextFieldInfo text_feild;
+    text_feild.text_run_index = 1;
+    text_feild.index_in_page = 1;
+    page_objects.form_fields.text_fields.push_back(std::move(text_feild));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundIndexInChoiceFeild) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 2;
+    choice_field.index_in_page = 1;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
   EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }

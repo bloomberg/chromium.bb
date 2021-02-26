@@ -51,8 +51,7 @@ void ImageBitmapRenderingContextBase::SetImage(ImageBitmap* image_bitmap) {
     image_bitmap->close();
 }
 
-scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContextBase::GetImage(
-    AccelerationHint) {
+scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContextBase::GetImage() {
   return image_layer_bridge_->GetImage();
 }
 
@@ -84,7 +83,7 @@ bool ImageBitmapRenderingContextBase::IsPaintable() const {
   return !!image_layer_bridge_->GetImage();
 }
 
-void ImageBitmapRenderingContextBase::Trace(Visitor* visitor) {
+void ImageBitmapRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(image_layer_bridge_);
   CanvasRenderingContext::Trace(visitor);
 }

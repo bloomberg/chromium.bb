@@ -18,8 +18,8 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
-using testing::AnyNumber;
 using testing::_;
+using testing::AnyNumber;
 
 namespace password_manager {
 
@@ -33,6 +33,13 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetProfilePasswordStore, PasswordStore*());
+  MOCK_CONST_METHOD0(GetAccountPasswordStore, PasswordStore*());
+
+  MOCK_METHOD4(CheckProtectedPasswordEntry,
+               void(metrics_util::PasswordType,
+                    const std::string&,
+                    const std::vector<MatchingReusedCredential>&,
+                    bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
@@ -139,7 +146,8 @@ TEST_F(PasswordReuseDetectionManagerTest, NoReuseCheckingAfterReuseFound) {
   PasswordReuseDetectionManager manager(&client_);
 
   // Simulate that reuse found.
-  manager.OnReuseFound(0ul, base::nullopt, {{"https://example.com"}}, 0);
+  manager.OnReuseCheckDone(true, 0ul, base::nullopt, {{"https://example.com"}},
+                           0);
 
   // Expect no checking of reuse.
   EXPECT_CALL(*store_, CheckReuse(_, _, _)).Times(0);
@@ -198,6 +206,42 @@ TEST_F(PasswordReuseDetectionManagerTest, CheckReuseCalledOnPaste) {
   }
 }
 
+TEST_F(PasswordReuseDetectionManagerTest,
+       CheckReuseCalledOnPasteTwiceProduceNoDuplicates) {
+  const GURL kURL("https://www.example.com");
+  const base::string16 kInput =
+      base::ASCIIToUTF16("1234567890abcdefghijklmnopqrstuvxyz");
+
+  EXPECT_CALL(client_, GetProfilePasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  PasswordReuseDetectionManager manager(&client_);
+
+  manager.DidNavigateMainFrame(kURL);
+  EXPECT_CALL(*store_, CheckReuse(kInput, kURL.GetOrigin().spec(), &manager))
+      .Times(2);
+  // The user paste the text twice before the store gets to respond.
+  manager.OnPaste(kInput);
+  manager.OnPaste(kInput);
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+
+  std::vector<MatchingReusedCredential> reused_credentials = {
+      {.signon_realm = "www.example2.com",
+       .username = base::ASCIIToUTF16("username1"),
+       .in_store = PasswordForm::Store::kProfileStore}};
+
+  // CheckProtectedPasswordEntry should get called once, and the reused
+  // credentials get used reported once in this call.
+  EXPECT_CALL(client_,
+              CheckProtectedPasswordEntry(_, _, reused_credentials, _));
+  // Simulate 2 responses from the store with the same reused credentials.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           reused_credentials, /*saved_passwords=*/1);
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           reused_credentials, /*saved_passwords=*/1);
+}
+
 #if defined(OS_ANDROID)
 TEST_F(PasswordReuseDetectionManagerTest,
        CheckReusedCalledWithUncommittedText) {
@@ -223,6 +267,152 @@ TEST_F(PasswordReuseDetectionManagerTest,
   manager.OnKeyPressedCommitted(committed_text);
 }
 #endif
+
+class PasswordReuseDetectionManagerWithTwoStoresTest
+    : public PasswordReuseDetectionManagerTest {
+ public:
+  PasswordReuseDetectionManagerWithTwoStoresTest() = default;
+  void SetUp() override {
+    PasswordReuseDetectionManagerTest::SetUp();
+    account_store_ = new testing::StrictMock<MockPasswordStore>;
+    CHECK(account_store_->Init(nullptr));
+  }
+  void TearDown() override {
+    account_store_->ShutdownOnUIThread();
+    account_store_ = nullptr;
+    PasswordReuseDetectionManagerTest::TearDown();
+  }
+
+ protected:
+  scoped_refptr<MockPasswordStore> account_store_;
+};
+
+TEST_F(PasswordReuseDetectionManagerWithTwoStoresTest,
+       CheckReuseCalledOnPasteReuseExistsInBothStores) {
+  const GURL kURL("https://www.example.com");
+  const base::string16 kInput =
+      base::ASCIIToUTF16("1234567890abcdefghijklmnopqrstuvxyz");
+
+  EXPECT_CALL(client_, GetProfilePasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  EXPECT_CALL(client_, GetAccountPasswordStore())
+      .WillRepeatedly(testing::Return(account_store_.get()));
+
+  PasswordReuseDetectionManager manager(&client_);
+
+  manager.DidNavigateMainFrame(kURL);
+  EXPECT_CALL(*store_, CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  EXPECT_CALL(*account_store_,
+              CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  manager.OnPaste(kInput);
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+  testing::Mock::VerifyAndClearExpectations(account_store_.get());
+
+  std::vector<MatchingReusedCredential> profile_reused_credentials = {
+      {.signon_realm = "www.example2.com",
+       .username = base::ASCIIToUTF16("username1"),
+       .in_store = PasswordForm::Store::kProfileStore}};
+  // Simulate response from the profile store.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           profile_reused_credentials, /*saved_passwords=*/1);
+
+  std::vector<MatchingReusedCredential> account_reused_credentials{
+      {.signon_realm = "www.example2.com",
+       .username = base::ASCIIToUTF16("username2"),
+       .in_store = PasswordForm::Store::kAccountStore}};
+
+  // The callback is run only after both stores respond.
+  EXPECT_CALL(client_,
+              CheckProtectedPasswordEntry(
+                  _, _,
+                  testing::UnorderedElementsAre(profile_reused_credentials[0],
+                                                account_reused_credentials[0]),
+                  _));
+  // Simulate response from the account store.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           account_reused_credentials, /*saved_passwords=*/1);
+}
+
+TEST_F(PasswordReuseDetectionManagerWithTwoStoresTest,
+       CheckReuseCalledOnPasteReuseExistsInFirstStoreResponse) {
+  const GURL kURL("https://www.example.com");
+  const base::string16 kInput =
+      base::ASCIIToUTF16("1234567890abcdefghijklmnopqrstuvxyz");
+
+  EXPECT_CALL(client_, GetProfilePasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  EXPECT_CALL(client_, GetAccountPasswordStore())
+      .WillRepeatedly(testing::Return(account_store_.get()));
+
+  PasswordReuseDetectionManager manager(&client_);
+
+  manager.DidNavigateMainFrame(kURL);
+  EXPECT_CALL(*store_, CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  EXPECT_CALL(*account_store_,
+              CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  manager.OnPaste(kInput);
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+  testing::Mock::VerifyAndClearExpectations(account_store_.get());
+
+  std::vector<MatchingReusedCredential> profile_reused_credentials = {
+      {.signon_realm = "www.example2.com",
+       .username = base::ASCIIToUTF16("username1"),
+       .in_store = PasswordForm::Store::kProfileStore}};
+  // Simulate response from the profile store.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           profile_reused_credentials, /*saved_passwords=*/1);
+
+  // The callback is run only after both stores respond.
+  EXPECT_CALL(client_,
+              CheckProtectedPasswordEntry(_, _, profile_reused_credentials, _));
+  // Simulate response from the account store with no reuse found.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/false, /*password_length=*/0,
+                           /*reused_protected_password_hash=*/base::nullopt, {},
+                           /*saved_passwords=*/0);
+}
+
+TEST_F(PasswordReuseDetectionManagerWithTwoStoresTest,
+       CheckReuseCalledOnPasteReuseExistsInSecondStoreResponse) {
+  const GURL kURL("https://www.example.com");
+  const base::string16 kInput =
+      base::ASCIIToUTF16("1234567890abcdefghijklmnopqrstuvxyz");
+
+  EXPECT_CALL(client_, GetProfilePasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  EXPECT_CALL(client_, GetAccountPasswordStore())
+      .WillRepeatedly(testing::Return(account_store_.get()));
+
+  PasswordReuseDetectionManager manager(&client_);
+
+  manager.DidNavigateMainFrame(kURL);
+  EXPECT_CALL(*store_, CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  EXPECT_CALL(*account_store_,
+              CheckReuse(kInput, kURL.GetOrigin().spec(), &manager));
+  manager.OnPaste(kInput);
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+  testing::Mock::VerifyAndClearExpectations(account_store_.get());
+
+  // Simulate response from the account store with no reuse found.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/false, /*password_length=*/0,
+                           /*reused_protected_password_hash=*/base::nullopt, {},
+                           /*saved_passwords=*/0);
+
+  std::vector<MatchingReusedCredential> profile_reused_credentials = {
+      {.signon_realm = "www.example2.com",
+       .username = base::ASCIIToUTF16("username1"),
+       .in_store = PasswordForm::Store::kProfileStore}};
+
+  // The callback is run only after both stores respond.
+  EXPECT_CALL(client_,
+              CheckProtectedPasswordEntry(_, _, profile_reused_credentials, _));
+  // Simulate response from the profile store.
+  manager.OnReuseCheckDone(/*is_reuse_found=*/true, /*password_length=*/10,
+                           /*reused_protected_password_hash=*/base::nullopt,
+                           profile_reused_credentials, /*saved_passwords=*/1);
+}
 
 }  // namespace
 

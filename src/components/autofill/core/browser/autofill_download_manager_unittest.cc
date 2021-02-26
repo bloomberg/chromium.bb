@@ -40,13 +40,11 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -211,7 +209,7 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
   // AutofillDownloadManager::Observer implementation.
   void OnLoadedServerPredictions(
       std::string response_xml,
-      const std::vector<std::string>& form_signatures) override {
+      const std::vector<FormSignature>& form_signatures) override {
     ResponseData response;
     response.response = std::move(response_xml);
     response.type_of_response = QUERY_SUCCESSFULL;
@@ -224,11 +222,11 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
     responses_.push_back(response);
   }
 
-  void OnServerRequestError(const std::string& form_signature,
+  void OnServerRequestError(FormSignature form_signature,
                             AutofillDownloadManager::RequestType request_type,
                             int http_error) override {
     ResponseData response;
-    response.signature = form_signature;
+    response.signature = base::NumberToString(form_signature.value());
     response.error = http_error;
     response.type_of_response =
         request_type == AutofillDownloadManager::REQUEST_QUERY
@@ -525,14 +523,6 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 }
 
 TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled
-      // We want to query the API rather than the legacy server.
-      {features::kAutofillUseApi},
-      // Disabled
-      {});
-
   // Build the form structures that we want to query.
   FormData form;
   FormFieldData field;
@@ -631,14 +621,6 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
 }
 
 TEST_F(AutofillDownloadManagerTest, QueryAPITestWhenTooLongUrl) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled
-      // We want to query the API rather than the legacy server.
-      {features::kAutofillUseApi},
-      // Disabled
-      {});
-
   // Build the form structures that we want to query.
   FormData form;
   FormFieldData field;
@@ -742,8 +724,7 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // Enabled
-      // We want to query the API rather than the legacy server.
-      {features::kAutofillUseApi},
+      {},
       // Disabled
       // We don't want upload throttling for testing purpose.
       {features::kAutofillUploadThrottling});
@@ -1360,7 +1341,7 @@ class AutofillServerCommunicationTest
     driver_ = std::make_unique<TestAutofillDriver>();
     driver_->SetSharedURLLoaderFactory(shared_url_loader_factory_);
     driver_->SetIsolationInfo(net::IsolationInfo::Create(
-        net::IsolationInfo::RedirectMode::kUpdateNothing,
+        net::IsolationInfo::RequestType::kOther,
         url::Origin::Create(GURL("https://abc.com")),
         url::Origin::Create(GURL("https://xyz.com")), net::SiteForCookies()));
 
@@ -1392,16 +1373,16 @@ class AutofillServerCommunicationTest
     if (server_.Started())
       ASSERT_TRUE(server_.ShutdownAndWaitUntilComplete());
 
-    auto* variations_http_header_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
-    if (variations_http_header_provider != nullptr)
-      variations_http_header_provider->ResetForTesting();
+    auto* variations_ids_provider =
+        variations::VariationsIdsProvider::GetInstance();
+    if (variations_ids_provider != nullptr)
+      variations_ids_provider->ResetForTesting();
   }
 
   // AutofillDownloadManager::Observer implementation.
   void OnLoadedServerPredictions(
       std::string /* response_xml */,
-      const std::vector<std::string>& /*form_signatures */) override {
+      const std::vector<FormSignature>& /*form_signatures */) override {
     ASSERT_TRUE(run_loop_);
     run_loop_->QuitWhenIdle();
   }
@@ -1634,10 +1615,10 @@ TEST_P(AutofillQueryTest, SendsExperiment) {
   }
 
   // Add experiment/variation idd from the range reserved for autofill.
-  auto* variations_http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  ASSERT_TRUE(variations_http_header_provider != nullptr);
-  variations_http_header_provider->ForceVariationIds(
+  auto* variations_ids_provider =
+      variations::VariationsIdsProvider::GetInstance();
+  ASSERT_TRUE(variations_ids_provider != nullptr);
+  variations_ids_provider->ForceVariationIds(
       {"t3314883", "t3312923", "t3314885"},  // first two valid, out-of-order
       {});
 
@@ -2007,6 +1988,8 @@ TEST_P(AutofillUploadTest, RichMetadata) {
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
     EXPECT_TRUE(upload.randomized_form_metadata().has_name());
     EXPECT_TRUE(upload.randomized_form_metadata().has_url());
+    ASSERT_TRUE(upload.randomized_form_metadata().url().has_checksum());
+    EXPECT_EQ(upload.randomized_form_metadata().url().checksum(), 3608731642);
     EXPECT_EQ(3, upload.field_size());
     for (const auto& f : upload.field()) {
       ASSERT_TRUE(f.has_randomized_field_metadata());
@@ -2079,8 +2062,7 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
       // Enabled.
       {},
       // Disabled
-      {features::kAutofillUploadThrottling,
-       features::kAutofillEnforceMinRequiredFieldsForUpload});
+      {features::kAutofillUploadThrottling});
 
   FormData form;
   FormData small_form;

@@ -51,8 +51,7 @@ class TestCase(auto_stub.TestCase):
 
   def tearDown(self):
     try:
-      if not self.has_failed():
-        self.assertEqual([], self._requests)
+      self.assertEqual([], self._requests)
     finally:
       super(TestCase, self).tearDown()
 

@@ -17,8 +17,10 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
+import androidx.test.filters.SmallTest;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +28,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -33,7 +36,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,6 +46,7 @@ import java.util.List;
  * Tests that ChannelsUpdater correctly initializes channels on the notification manager.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 @TargetApi(Build.VERSION_CODES.O)
 public class ChannelsUpdaterTest {
     private NotificationManagerProxy mNotificationManagerProxy;
@@ -53,14 +57,11 @@ public class ChannelsUpdaterTest {
     @Rule
     public TestRule processor = new Features.JUnitProcessor();
 
-    @Rule
-    public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     @Before
     public void setUp() {
         // Not initializing the browser process is safe because
         // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         Context context = InstrumentationRegistry.getTargetContext();
         mNotificationManagerProxy = new NotificationManagerProxyImpl(context);
@@ -78,6 +79,13 @@ public class ChannelsUpdaterTest {
                 mNotificationManagerProxy.deleteNotificationChannel(channel.getId());
             }
         }
+    }
+
+    @After
+    public void tearDown() {
+        // TODO(https://crbug.com/1086663): Replace with a SharedPreferencesTestRule when
+        //     implemented.
+        mSharedPreferences.removeKey(ChromePreferenceKeys.NOTIFICATIONS_CHANNELS_VERSION);
     }
 
     @Test

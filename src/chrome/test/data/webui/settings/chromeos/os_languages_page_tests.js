@@ -2,12 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
+// #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
+// #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
+// #import {TestLanguagesMetricsProxy} from './test_os_languages_metrics_proxy.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {fakeDataBind} from '../../test_util.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('os_languages_page_tests', function() {
   /** @enum {string} */
   const TestNames = {
     // The "add languages" dialog is tested by browser settings.
     LanguageMenu: 'language menu',
     InputMethods: 'input methods',
+    RecordMetrics: 'records metrics',
+    DetailsPage: 'details page',
   };
 
   suite('languages page', function() {
@@ -21,6 +38,8 @@ cr.define('os_languages_page_tests', function() {
     let actionMenu = null;
     /** @type {?settings.LanguagesBrowserProxy} */
     let browserProxy = null;
+    /** @type {!settings.LanguagesMetricsProxy} */
+    let metricsProxy;
 
     // Enabled language pref name for the platform.
     const languagesPref = 'settings.language.preferred_languages';
@@ -32,6 +51,7 @@ cr.define('os_languages_page_tests', function() {
       testing.Test.disableAnimationsAndTransitions();
       PolymerTest.clearBody();
       CrSettingsPrefs.deferInitialization = true;
+      loadTimeData.overrideValues({imeOptionsInSettings: true});
     });
 
     setup(async () => {
@@ -44,6 +64,10 @@ cr.define('os_languages_page_tests', function() {
       // Set up test browser proxy.
       browserProxy = new settings.TestLanguagesBrowserProxy();
       settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+
+      // Sets up test metrics proxy.
+      metricsProxy = new settings.TestLanguagesMetricsProxy();
+      settings.LanguagesMetricsProxyImpl.instance_ = metricsProxy;
 
       // Set up fake languageSettingsPrivate API.
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
@@ -75,6 +99,7 @@ cr.define('os_languages_page_tests', function() {
 
     teardown(function() {
       PolymerTest.clearBody();
+      settings.Router.getInstance().resetRouteForTesting();
     });
 
     suite(TestNames.LanguageMenu, function() {
@@ -127,7 +152,7 @@ cr.define('os_languages_page_tests', function() {
        */
       function assertRestartButtonActiveState(shouldBeActive) {
         const activeElement = getActiveElement();
-        isRestartButtonActive =
+        const isRestartButtonActive =
             activeElement && (activeElement.id === 'restartButton');
         assertEquals(isRestartButtonActive, shouldBeActive);
       }
@@ -285,25 +310,148 @@ cr.define('os_languages_page_tests', function() {
       });
     });
 
-    test(TestNames.InputMethods, function() {
-      const inputMethodsList = languagesPage.$.inputMethodsList;
-      assertTrue(!!inputMethodsList);
+    suite(TestNames.InputMethods, function() {
+      test('displays input method list', function() {
+        const inputMethodsList = languagesPage.$.inputMethodsList;
+        assertTrue(!!inputMethodsList);
 
-      // The test input methods should appear.
-      const items =
-          inputMethodsList.querySelectorAll('.list-item .display-name');
-      assertEquals(2, items.length);
-      assertEquals('US keyboard', items[0].textContent.trim());
-      assertEquals('US Dvorak keyboard', items[1].textContent.trim());
+        // The test input methods should appear.
+        const items = inputMethodsList.querySelectorAll('.list-item');
+        assertEquals(3, items.length);  // Two items for input methods and one
+                                        // item for manage input methods.
+        assertEquals(
+            'US keyboard',
+            items[0].querySelector('.display-name').textContent.trim());
+        assertTrue(!!items[0].querySelector('.internal-wrapper'));
+        assertFalse(!!items[0].querySelector('.external-wrapper'));
+        assertEquals(
+            'US Dvorak keyboard',
+            items[1].querySelector('.display-name').textContent.trim());
+        assertTrue(!!items[1].querySelector('.external-wrapper'));
+        assertFalse(!!items[1].querySelector('.internal-wrapper'));
 
-      const manageInputMethodsButton =
-          inputMethodsList.querySelector('#manageInputMethods');
-      assertTrue(!!manageInputMethodsButton);
+        const manageInputMethodsButton =
+            inputMethodsList.querySelector('#manageInputMethods');
+        assertTrue(!!manageInputMethodsButton);
 
-      // settings-manage-input-methods-page is owned by os-languages-section,
-      // not os-languages-page, and hence isn't tested here.
+        // settings-manage-input-methods-page is owned by os-languages-section,
+        // not os-languages-page, and hence isn't tested here.
+      });
+
+      test('navigates to input method options page', function() {
+        const inputMethodsList = languagesPage.$.inputMethodsList;
+        const items = inputMethodsList.querySelectorAll('.list-item');
+        items[0].querySelector('.subpage-arrow').click();
+        const router = settings.Router.getInstance();
+        assertEquals(
+            router.getCurrentRoute().getAbsolutePath(),
+            'chrome://os-settings/osLanguages/inputMethodOptions');
+        assertEquals(
+            router.getQueryParameters().get('id'),
+            '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng');
+      });
+    });
+
+    suite(TestNames.DetailsPage, function() {
+      test('Deep link to show input options in shelf', async () => {
+        loadTimeData.overrideValues({
+          isDeepLinkingEnabled: true,
+        });
+
+        const params = new URLSearchParams;
+        params.append('settingId', '1201');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.OS_LANGUAGES_DETAILS, params);
+
+        Polymer.dom.flush();
+
+        const deepLinkElement =
+            languagesPage.$$('#showImeMenu').$$('cr-toggle');
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Show input options toggle should be focused for settingId=1201.');
+      });
+    });
+
+    suite(TestNames.RecordMetrics, function() {
+      test('when adding languages', async () => {
+        languagesPage.$$('#addLanguages').click();
+        Polymer.dom.flush();
+        await metricsProxy.whenCalled('recordAddLanguages');
+      });
+
+      test('when managing input methods', async () => {
+        languagesPage.$$('#manageInputMethods').click();
+        Polymer.dom.flush();
+        await metricsProxy.whenCalled('recordManageInputMethods');
+      });
+
+      test('when deactivating show ime menu', async () => {
+        languagesPage.setPrefValue(
+            'settings.language.ime_menu_activated', true);
+        languagesPage.$$('#showImeMenu').click();
+        Polymer.dom.flush();
+
+        assertFalse(await metricsProxy.whenCalled(
+            'recordToggleShowInputOptionsOnShelf'));
+      });
+
+      test('when activating show ime menu', async () => {
+        languagesPage.setPrefValue(
+            'settings.language.ime_menu_activated', false);
+        languagesPage.$$('#showImeMenu').click();
+        Polymer.dom.flush();
+
+        assertTrue(await metricsProxy.whenCalled(
+            'recordToggleShowInputOptionsOnShelf'));
+      });
+
+      test(
+          'when switching system language and restarting', async () => {
+            // Adds several languages.
+            for (const language of ['en-CA', 'en-US', 'tk', 'no']) {
+              languageHelper.enableLanguage(language);
+            }
+
+            Polymer.dom.flush();
+
+            const languagesList = languagesPage.$$('#languagesList');
+
+            const menuButtons = languagesList.querySelectorAll(
+                '.list-item cr-icon-button.icon-more-vert');
+
+            // Chooses the second language to switch system language,
+            // as first language is the default language.
+            menuButtons[1].click();
+            const actionMenu = languagesPage.$$('#menu').get();
+            assertTrue(actionMenu.open);
+            const menuItems = actionMenu.querySelectorAll('.dropdown-item');
+            for (const item of menuItems) {
+              if (item.id === 'uiLanguageItem') {
+                assertFalse(item.checked);
+                item.click();
+
+                assertEquals(
+                    settings.LanguagesPageInteraction.SWITCH_SYSTEM_LANGUAGE,
+                    await metricsProxy.whenCalled('recordInteraction'));
+                return;
+              }
+            }
+            actionMenu.close();
+
+            // Chooses restart button after switching system language.
+            const restartButton = languagesPage.$$('#restartButton');
+            assertTrue(!!restartButton);
+            restartButton.click();
+
+            assertEquals(
+                settings.LanguagesPageInteraction.RESTART,
+                await metricsProxy.whenCalled('recordInteraction'));
+          });
     });
   });
 
+  // #cr_define_end
   return {TestNames: TestNames};
 });

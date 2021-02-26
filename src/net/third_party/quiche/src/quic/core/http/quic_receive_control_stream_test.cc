@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/http/http_constants.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
@@ -13,7 +15,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
@@ -24,6 +25,7 @@ namespace test {
 
 namespace {
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::StrictMock;
 
 struct TestParams {
@@ -86,6 +88,7 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
             perspective(),
             SupportedVersions(GetParam().version))),
         session_(connection_) {
+    EXPECT_CALL(session_, OnCongestionWindowChange(_)).Times(AnyNumber());
     session_.Initialize();
     QuicStreamId id = perspective() == Perspective::IS_SERVER
                           ? GetNthClientInitiatedUnidirectionalStreamId(
@@ -94,7 +97,7 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
                                 session_.transport_version(), 3);
     char type[] = {kControlStream};
 
-    QuicStreamFrame data1(id, false, 0, quiche::QuicheStringPiece(type, 1));
+    QuicStreamFrame data1(id, false, 0, absl::string_view(type, 1));
     session_.OnStreamFrame(data1);
 
     receive_control_stream_ =
@@ -154,8 +157,8 @@ TEST_P(QuicReceiveControlStreamTest, ResetControlStream) {
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveSettings) {
   SettingsFrame settings;
-  settings.values[3] = 2;
-  settings.values[SETTINGS_MAX_HEADER_LIST_SIZE] = 5;
+  settings.values[10] = 2;
+  settings.values[SETTINGS_MAX_FIELD_SECTION_SIZE] = 5;
   settings.values[SETTINGS_QPACK_BLOCKED_STREAMS] = 12;
   settings.values[SETTINGS_QPACK_MAX_TABLE_CAPACITY] = 37;
   std::string data = EncodeSettings(settings);
@@ -221,8 +224,8 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsTwice) {
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsFragments) {
   SettingsFrame settings;
-  settings.values[3] = 2;
-  settings.values[SETTINGS_MAX_HEADER_LIST_SIZE] = 5;
+  settings.values[10] = 2;
+  settings.values[SETTINGS_MAX_FIELD_SECTION_SIZE] = 5;
   std::string data = EncodeSettings(settings);
   std::string data1 = data.substr(0, 1);
   std::string data2 = data.substr(1, data.length() - 1);
@@ -282,7 +285,7 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveGoAwayFrame) {
                       settings_frame));
   offset += settings_frame.length();
 
-  GoAwayFrame goaway{/* stream_id = */ 0};
+  GoAwayFrame goaway{/* id = */ 0};
 
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
@@ -290,20 +293,12 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveGoAwayFrame) {
   std::string data = std::string(buffer.get(), header_length);
 
   QuicStreamFrame frame(receive_control_stream_->id(), false, offset, data);
-  EXPECT_FALSE(session_.http3_goaway_received());
+  EXPECT_FALSE(session_.goaway_received());
 
   EXPECT_CALL(debug_visitor, OnGoAwayFrameReceived(goaway));
 
-  if (perspective() == Perspective::IS_SERVER) {
-    EXPECT_CALL(
-        *connection_,
-        CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _));
-  }
-
   receive_control_stream_->OnStreamFrame(frame);
-  if (perspective() == Perspective::IS_CLIENT) {
-    EXPECT_TRUE(session_.http3_goaway_received());
-  }
+  EXPECT_TRUE(session_.goaway_received());
 }
 
 TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
@@ -342,7 +337,7 @@ TEST_P(QuicReceiveControlStreamTest, ConsumeUnknownFrame) {
   EXPECT_EQ(offset, NumBytesConsumed());
 
   // Receive unknown frame.
-  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
+  std::string unknown_frame = absl::HexStringToBytes(
       "21"        // reserved frame type
       "03"        // payload length
       "666f6f");  // payload "foo"
@@ -371,7 +366,7 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveUnknownFrame) {
   offset += settings_frame.length();
 
   // Receive unknown frame.
-  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
+  std::string unknown_frame = absl::HexStringToBytes(
       "21"        // reserved frame type
       "03"        // payload length
       "666f6f");  // payload "foo"
@@ -383,7 +378,7 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveUnknownFrame) {
 }
 
 TEST_P(QuicReceiveControlStreamTest, CancelPushFrameBeforeSettings) {
-  std::string cancel_push_frame = quiche::QuicheTextUtils::HexDecode(
+  std::string cancel_push_frame = absl::HexStringToBytes(
       "03"    // type CANCEL_PUSH
       "01"    // payload length
       "01");  // push ID
@@ -402,7 +397,7 @@ TEST_P(QuicReceiveControlStreamTest, CancelPushFrameBeforeSettings) {
 }
 
 TEST_P(QuicReceiveControlStreamTest, UnknownFrameBeforeSettings) {
-  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
+  std::string unknown_frame = absl::HexStringToBytes(
       "21"        // reserved frame type
       "03"        // payload length
       "666f6f");  // payload "foo"

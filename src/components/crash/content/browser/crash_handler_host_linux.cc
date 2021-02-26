@@ -16,7 +16,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -24,14 +24,13 @@
 #include "base/linux_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -85,9 +84,9 @@ const int kRetryIntervalTranslatingTidInMs = 100;
 void CrashDumpTask(CrashHandlerHostLinux* handler,
                    std::unique_ptr<BreakpadInfo> info) {
   if (handler->IsShuttingDown() && info->upload) {
-    base::DeleteFile(base::FilePath(info->filename), false);
+    base::DeleteFile(base::FilePath(info->filename));
 #if defined(ADDRESS_SANITIZER)
-    base::DeleteFile(base::FilePath(info->log_filename), false);
+    base::DeleteFile(base::FilePath(info->log_filename));
 #endif
     return;
   }
@@ -137,8 +136,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
   process_socket_ = fds[0];
   browser_socket_ = fds[1];
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CrashHandlerHostLinux::Init, base::Unretained(this)));
 }
 
@@ -154,7 +153,7 @@ void CrashHandlerHostLinux::StartUploaderThread() {
 }
 
 void CrashHandlerHostLinux::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
+  base::CurrentIOThread ml = base::CurrentIOThread::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_, true /* persistent */,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &fd_watch_controller_, this));
@@ -526,8 +525,8 @@ CrashHandlerHost* CrashHandlerHost::Get() {
 }
 
 int CrashHandlerHost::GetDeathSignalSocket() {
-  static bool initialized = base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  static bool initialized = content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
   DCHECK(initialized);
 
@@ -559,7 +558,7 @@ CrashHandlerHost::CrashHandlerHost()
 }
 
 void CrashHandlerHost::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
+  base::CurrentIOThread ml = base::CurrentIOThread::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_.get(), /* persistent= */ true,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &fd_watch_controller_, this));

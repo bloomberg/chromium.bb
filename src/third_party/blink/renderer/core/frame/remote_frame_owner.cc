@@ -6,12 +6,12 @@
 
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
-#include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 
@@ -30,11 +30,12 @@ RemoteFrameOwner::RemoteFrameOwner(
       allow_fullscreen_(frame_owner_properties.allow_fullscreen),
       allow_payment_request_(frame_owner_properties.allow_payment_request),
       is_display_none_(frame_owner_properties.is_display_none),
+      color_scheme_(frame_owner_properties.color_scheme),
       needs_occlusion_tracking_(false),
       required_csp_(frame_owner_properties.required_csp),
       frame_owner_element_type_(frame_owner_element_type) {}
 
-void RemoteFrameOwner::Trace(Visitor* visitor) {
+void RemoteFrameOwner::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   FrameOwner::Trace(visitor);
 }

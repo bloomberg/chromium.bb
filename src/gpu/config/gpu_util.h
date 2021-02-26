@@ -59,7 +59,7 @@ GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
 
 #if defined(OS_ANDROID)
 // Check if GL bindings are initialized. If not, initializes GL
-// bindings, create a GL context, collects GPUInfo, make blacklist and
+// bindings, create a GL context, collects GPUInfo, make blocklist and
 // GPU driver bug workaround decisions. This is intended to be called
 // by Android WebView render thread and in-process GPU thread.
 GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
@@ -74,7 +74,7 @@ GPU_EXPORT bool EnableSwiftShaderIfNeeded(
     base::CommandLine* command_line,
     const GpuFeatureInfo& gpu_feature_info,
     bool disable_software_rasterizer,
-    bool blacklist_needs_more_info);
+    bool blocklist_needs_more_info);
 
 GPU_EXPORT IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
                                                     uint32_t device_id);
@@ -96,20 +96,6 @@ GPU_EXPORT void RecordDevicePerfInfoHistograms();
 GPU_EXPORT std::string D3DFeatureLevelToString(uint32_t d3d_feature_level);
 GPU_EXPORT std::string VulkanVersionToString(uint32_t vulkan_version);
 #endif  // OS_WIN
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// This should match enum VulkanVersion in \tools\metrics\histograms\enums.xml
-enum class VulkanVersion {
-  kVulkanVersionUnknown = 0,
-  kVulkanVersion_1_0_0 = 1,
-  kVulkanVersion_1_1_0 = 2,
-  kVulkanVersion_1_2_0 = 3,
-  kMaxValue = kVulkanVersion_1_2_0,
-};
-
-GPU_EXPORT VulkanVersion
-ConvertToHistogramVulkanVersion(uint32_t vulkan_version);
 
 }  // namespace gpu
 

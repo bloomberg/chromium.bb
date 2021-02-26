@@ -21,7 +21,6 @@ class SkScalerContext;
 
 // needs to be != to any valid SkMask::Format
 #define MASK_FORMAT_UNKNOWN         (0xFF)
-#define MASK_FORMAT_JUST_ADVANCE    MASK_FORMAT_UNKNOWN
 
 // A combination of SkGlyphID and sub-pixel position information.
 struct SkPackedGlyphID {
@@ -175,6 +174,60 @@ private:
     uint32_t fID;
 };
 
+class SkGlyphRect;
+namespace skglyph {
+SkGlyphRect rect_union(SkGlyphRect, SkGlyphRect);
+SkGlyphRect rect_intersection(SkGlyphRect, SkGlyphRect);
+}  // namespace skglyph
+
+// SkGlyphRect encodes rectangles with coordinates on [-32767, 32767]. It is specialized for
+// rectangle union and intersection operations.
+class SkGlyphRect {
+public:
+    SkGlyphRect(int16_t left, int16_t top, int16_t right, int16_t bottom)
+            : fRect{left, top, (int16_t)-right, (int16_t)-bottom} {
+        SkDEBUGCODE(const int32_t min = std::numeric_limits<int16_t>::min());
+        SkASSERT(left != min && top != min && right != min && bottom != min);
+    }
+    bool empty() const {
+        return fRect[0] >= -fRect[2] || fRect[1] >= -fRect[3];
+    }
+    SkRect rect() const {
+        return SkRect::MakeLTRB(fRect[0], fRect[1], -fRect[2], -fRect[3]);
+    }
+    SkIRect iRect() const {
+        return SkIRect::MakeLTRB(fRect[0], fRect[1], -fRect[2], -fRect[3]);
+    }
+    SkGlyphRect offset(int16_t x, int16_t y) const {
+        return SkGlyphRect{fRect + Storage{x, y, SkTo<int16_t>(-x), SkTo<int16_t>(-y)}};
+    }
+    skvx::Vec<2, int16_t> topLeft() const { return {fRect[0], fRect[1]}; }
+    friend SkGlyphRect skglyph::rect_union(SkGlyphRect, SkGlyphRect);
+    friend SkGlyphRect skglyph::rect_intersection(SkGlyphRect, SkGlyphRect);
+
+private:
+    using Storage = skvx::Vec<4, int16_t>;
+    SkGlyphRect(Storage rect) : fRect{rect} { }
+    Storage fRect;
+};
+
+namespace skglyph {
+inline SkGlyphRect empty_rect() {
+    constexpr int16_t max = std::numeric_limits<int16_t>::max();
+    return {max,  max, -max, -max};
+}
+inline SkGlyphRect full_rect() {
+    constexpr int16_t max = std::numeric_limits<int16_t>::max();
+    return {-max,  -max, max, max};
+}
+inline SkGlyphRect rect_union(SkGlyphRect a, SkGlyphRect b) {
+    return skvx::min(a.fRect, b.fRect);
+}
+inline SkGlyphRect rect_intersection(SkGlyphRect a, SkGlyphRect b) {
+    return skvx::max(a.fRect, b.fRect);
+}
+}  // namespace skglyph
+
 struct SkGlyphPrototype;
 
 class SkGlyph {
@@ -211,11 +264,10 @@ public:
     bool setImage(SkArenaAlloc* alloc, SkScalerContext* scalerContext);
     bool setImage(SkArenaAlloc* alloc, const void* image);
 
-    // Merge the from glyph into this glyph using alloc to allocate image data. Return true if
-    // image data was allocated. If the image for this glyph has not been initialized, then copy
-    // the width, height, top, left, format, and image into this glyph making a copy of the image
-    // using the alloc.
-    bool setMetricsAndImage(SkArenaAlloc* alloc, const SkGlyph& from);
+    // Merge the from glyph into this glyph using alloc to allocate image data. Return the number
+    // of bytes allocated. Copy the width, height, top, left, format, and image into this glyph
+    // making a copy of the image using the alloc.
+    size_t setMetricsAndImage(SkArenaAlloc* alloc, const SkGlyph& from);
 
     // Returns true if the image has been set.
     bool setImageHasBeenCalled() const {
@@ -259,6 +311,10 @@ public:
     int maxDimension() const { return std::max(fWidth, fHeight); }
     SkIRect iRect() const { return SkIRect::MakeXYWH(fLeft, fTop, fWidth, fHeight); }
     SkRect rect()   const { return SkRect::MakeXYWH(fLeft, fTop, fWidth, fHeight);  }
+    SkGlyphRect glyphRect() const {
+        return {fLeft, fTop,
+                SkTo<int16_t>(fLeft + fWidth), SkTo<int16_t>(fTop + fHeight)};
+    }
     int left()   const { return fLeft;   }
     int top()    const { return fTop;    }
     int width()  const { return fWidth;  }
@@ -284,6 +340,7 @@ private:
     // access to all the fields. Scalers are assumed to maintain all the SkGlyph invariants. The
     // consumer side has a tighter interface.
     friend class RandomScalerContext;
+    friend class RemoteStrike;
     friend class SkScalerContext;
     friend class SkScalerContextProxy;
     friend class SkScalerContext_Empty;
@@ -292,8 +349,7 @@ private:
     friend class SkScalerContext_DW;
     friend class SkScalerContext_GDI;
     friend class SkScalerContext_Mac;
-    friend class SkStrikeClient;
-    friend class SkStrikeServer;
+    friend class SkStrikeClientImpl;
     friend class SkTestScalerContext;
     friend class SkTestSVGScalerContext;
     friend class SkUserScalerContext;

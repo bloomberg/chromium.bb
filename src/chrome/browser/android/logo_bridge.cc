@@ -37,7 +37,7 @@ namespace {
 
 ScopedJavaLocalRef<jobject> JNI_LogoBridge_MakeJavaLogo(
     JNIEnv* env,
-    const SkBitmap* bitmap,
+    const SkBitmap& bitmap,
     const GURL& on_click_url,
     const std::string& alt_text,
     const GURL& animated_url) {
@@ -67,7 +67,7 @@ ScopedJavaLocalRef<jobject> JNI_LogoBridge_ConvertLogoToJavaObject(
     return ScopedJavaLocalRef<jobject>();
 
   return JNI_LogoBridge_MakeJavaLogo(
-      env, &logo->image, GURL(logo->metadata.on_click_url),
+      env, logo->image, GURL(logo->metadata.on_click_url),
       logo->metadata.alt_text, GURL(logo->metadata.animated_url));
 }
 
@@ -93,6 +93,14 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
         JNI_LogoBridge_ConvertLogoToJavaObject(env, logo);
     Java_LogoObserver_onLogoAvailable(env, j_logo_observer_, j_logo,
                                       from_cache);
+  }
+
+  void OnCachedLogoRevalidated() override {
+    if (!logo_bridge_)
+      return;
+
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_LogoObserver_onCachedLogoRevalidated(env, j_logo_observer_);
   }
 
   void OnObserverRemoved() override { delete this; }

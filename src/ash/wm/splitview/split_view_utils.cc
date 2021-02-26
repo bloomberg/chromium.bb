@@ -33,6 +33,8 @@ namespace ash {
 
 namespace {
 
+using ::chromeos::WindowStateType;
+
 // The animation speed at which the highlights fade in or out.
 constexpr base::TimeDelta kHighlightsFadeInOut =
     base::TimeDelta::FromMilliseconds(250);
@@ -67,6 +69,7 @@ void GetAnimationValuesForType(
   *out_preemption_strategy = ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET;
   switch (type) {
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
+    case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
@@ -81,6 +84,7 @@ void GetAnimationValuesForType(
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN:
       *out_delay = kOtherFadeInDelay;
@@ -138,7 +142,7 @@ void ApplyAnimationSettings(
 }
 
 // Returns BubbleDialogDelegateView if |transient_window| is a bubble dialog.
-views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
+views::BubbleDialogDelegate* AsBubbleDialogDelegate(
     aura::Window* transient_window) {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(transient_window);
@@ -173,7 +177,7 @@ void WindowTransformAnimationObserver::OnImplicitAnimationsCompleted() {
        ::wm::TransientWindowManager::GetOrCreate(window_)
            ->transient_children()) {
     // For now we only care about bubble dialog type transient children.
-    views::BubbleDialogDelegateView* bubble_delegate_view =
+    views::BubbleDialogDelegate* bubble_delegate_view =
         AsBubbleDialogDelegate(transient_window);
     if (bubble_delegate_view)
       bubble_delegate_view->OnAnchorBoundsChanged();
@@ -200,11 +204,21 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
       target_opacity = 0.f;
       break;
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
-      target_opacity = kPreviewAreaHighlightOpacity;
+      target_opacity = features::IsDarkLightModeEnabled()
+                           ? kDarkLightPreviewAreaHighlightOpacity
+                           : kPreviewAreaHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
-      target_opacity = kHighlightOpacity;
+      target_opacity = features::IsDarkLightModeEnabled()
+                           ? kDarkLightHighlightOpacity
+                           : kHighlightOpacity;
+      break;
+    case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
+      target_opacity = features::IsDarkLightModeEnabled()
+                           ? kDarkLightHighlightCannotSnapOpacity
+                           : kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
@@ -399,7 +413,7 @@ bool ShouldAllowSplitView() {
 
   // TODO(crubg.com/853588): Disallow window dragging and split screen while
   // ChromeVox is on until they are in a usable state.
-  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+  if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
     return false;
 
   return true;

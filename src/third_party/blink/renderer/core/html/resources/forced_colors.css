@@ -14,9 +14,8 @@
    @namespace "http://www.w3.org/1999/xhtml"
 */
 
-@media forced-colors {
-  body {
-    background-color: Canvas;
+@media ua-forced-colors {
+  html {
     color: CanvasText;
     fill: currentColor;
   }
@@ -44,7 +43,7 @@
 
   input,
   textarea {
-    background: Canvas;
+    background-color: Canvas;
     border-color: ButtonText;
     color: CanvasText;
   }
@@ -112,7 +111,7 @@
   input[type="reset"],
   input[type="file"]::-webkit-file-upload-button {
     border-color: ButtonText;
-    background: ButtonFace;
+    background-color: ButtonFace;
     color: ButtonText;
   }
 
@@ -185,9 +184,13 @@
   }
 
   select {
-    background: Canvas;
+    background-color: Canvas;
     border-color: CanvasText;
     color: CanvasText;
+  }
+
+  select:not(:-internal-list-box) {
+    background-color: Canvas;
   }
 
   select:hover {
@@ -205,28 +208,28 @@
   }
 
   meter::-webkit-meter-bar {
-    background: ButtonFace;
+    background-color: ButtonFace;
     border-color: CanvasText;
   }
 
   meter::-webkit-meter-even-less-good-value,
   meter::-webkit-meter-optimum-value,
   meter::-webkit-meter-suboptimum-value {
-    background: Highlight;
+    background-color: Highlight;
   }
 
   input:-internal-autofill-previewed,
   textarea:-internal-autofill-previewed,
   select:-internal-autofill-previewed {
-    color: WindowText !important;
-    background-color: Window !important;
+    color: CanvasText !important;
+    background-color: Canvas !important;
   }
 
   input:-internal-autofill-selected,
   textarea:-internal-autofill-selected,
   select:-internal-autofill-selected {
-    color: WindowText !important;
-    background-color: Window !important;
+    color: CanvasText !important;
+    background-color: Canvas !important;
   }
 
 }

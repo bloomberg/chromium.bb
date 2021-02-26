@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
+#include "third_party/blink/renderer/core/css/css_counter_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
@@ -29,22 +30,23 @@
 #include "third_party/blink/renderer/core/css/css_namespace_rule.h"
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_rule.h"
+#include "third_party/blink/renderer/core/css/css_scroll_timeline_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
 struct SameSizeAsStyleRuleBase final
     : public GarbageCollected<SameSizeAsStyleRuleBase> {
-  unsigned bitfields;
+  uint8_t field;
 };
 
-static_assert(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase),
-              "StyleRuleBase should stay small");
+ASSERT_SIZE(StyleRuleBase, SameSizeAsStyleRuleBase);
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet) const {
   return CreateCSSOMWrapper(parent_sheet, nullptr);
@@ -54,7 +56,7 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSRule* parent_rule) const {
   return CreateCSSOMWrapper(nullptr, parent_rule);
 }
 
-void StyleRuleBase::Trace(Visitor* visitor) {
+void StyleRuleBase::Trace(Visitor* visitor) const {
   switch (GetType()) {
     case kCharset:
       To<StyleRuleCharset>(this)->TraceAfterDispatch(visitor);
@@ -74,6 +76,9 @@ void StyleRuleBase::Trace(Visitor* visitor) {
     case kMedia:
       To<StyleRuleMedia>(this)->TraceAfterDispatch(visitor);
       return;
+    case kScrollTimeline:
+      To<StyleRuleScrollTimeline>(this)->TraceAfterDispatch(visitor);
+      return;
     case kSupports:
       To<StyleRuleSupports>(this)->TraceAfterDispatch(visitor);
       return;
@@ -91,6 +96,9 @@ void StyleRuleBase::Trace(Visitor* visitor) {
       return;
     case kViewport:
       To<StyleRuleViewport>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kCounterStyle:
+      To<StyleRuleCounterStyle>(this)->TraceAfterDispatch(visitor);
       return;
   }
   NOTREACHED();
@@ -116,6 +124,9 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kMedia:
       To<StyleRuleMedia>(this)->~StyleRuleMedia();
       return;
+    case kScrollTimeline:
+      To<StyleRuleScrollTimeline>(this)->~StyleRuleScrollTimeline();
+      return;
     case kSupports:
       To<StyleRuleSupports>(this)->~StyleRuleSupports();
       return;
@@ -134,6 +145,9 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kViewport:
       To<StyleRuleViewport>(this)->~StyleRuleViewport();
       return;
+    case kCounterStyle:
+      To<StyleRuleCounterStyle>(this)->~StyleRuleCounterStyle();
+      return;
   }
   NOTREACHED();
 }
@@ -150,6 +164,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return To<StyleRuleFontFace>(this)->Copy();
     case kMedia:
       return To<StyleRuleMedia>(this)->Copy();
+    case kScrollTimeline:
+      return To<StyleRuleScrollTimeline>(this)->Copy();
     case kSupports:
       return To<StyleRuleSupports>(this)->Copy();
     case kImport:
@@ -166,6 +182,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
     case kKeyframe:
       NOTREACHED();
       return nullptr;
+    case kCounterStyle:
+      return To<StyleRuleCounterStyle>(this)->Copy();
   }
   NOTREACHED();
   return nullptr;
@@ -196,6 +214,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
       rule = MakeGarbageCollected<CSSMediaRule>(To<StyleRuleMedia>(self),
                                                 parent_sheet);
       break;
+    case kScrollTimeline:
+      rule = MakeGarbageCollected<CSSScrollTimelineRule>(
+          To<StyleRuleScrollTimeline>(self), parent_sheet);
+      break;
     case kSupports:
       rule = MakeGarbageCollected<CSSSupportsRule>(To<StyleRuleSupports>(self),
                                                    parent_sheet);
@@ -211,6 +233,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
     case kNamespace:
       rule = MakeGarbageCollected<CSSNamespaceRule>(
           To<StyleRuleNamespace>(self), parent_sheet);
+      break;
+    case kCounterStyle:
+      rule = MakeGarbageCollected<CSSCounterStyleRule>(
+          To<StyleRuleCounterStyle>(self), parent_sheet);
       break;
     case kKeyframe:
     case kCharset:
@@ -319,6 +345,7 @@ StyleRuleProperty::StyleRuleProperty(const String& name,
 
 StyleRuleProperty::StyleRuleProperty(const StyleRuleProperty& property_rule)
     : StyleRuleBase(property_rule),
+      name_(property_rule.name_),
       properties_(property_rule.properties_->MutableCopy()) {}
 
 StyleRuleProperty::~StyleRuleProperty() = default;
@@ -361,6 +388,31 @@ MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
 
 void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleScrollTimeline::StyleRuleScrollTimeline(
+    const String& name,
+    const CSSPropertyValueSet* properties)
+    : StyleRuleBase(kScrollTimeline),
+      name_(name),
+      source_(properties->GetPropertyCSSValue(CSSPropertyID::kSource)),
+      orientation_(
+          properties->GetPropertyCSSValue(CSSPropertyID::kOrientation)),
+      start_(properties->GetPropertyCSSValue(CSSPropertyID::kStart)),
+      end_(properties->GetPropertyCSSValue(CSSPropertyID::kEnd)),
+      time_range_(properties->GetPropertyCSSValue(CSSPropertyID::kTimeRange)) {}
+
+StyleRuleScrollTimeline::~StyleRuleScrollTimeline() = default;
+
+void StyleRuleScrollTimeline::TraceAfterDispatch(
+    blink::Visitor* visitor) const {
+  visitor->Trace(source_);
+  visitor->Trace(orientation_);
+  visitor->Trace(start_);
+  visitor->Trace(end_);
+  visitor->Trace(time_range_);
+
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
@@ -443,6 +495,43 @@ MutableCSSPropertyValueSet& StyleRuleViewport::MutableProperties() {
 
 void StyleRuleViewport::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleCounterStyle::StyleRuleCounterStyle(const AtomicString& name,
+                                             CSSPropertyValueSet* properties)
+    : StyleRuleBase(kCounterStyle),
+      name_(name),
+      system_(properties->GetPropertyCSSValue(CSSPropertyID::kSystem)),
+      negative_(properties->GetPropertyCSSValue(CSSPropertyID::kNegative)),
+      prefix_(properties->GetPropertyCSSValue(CSSPropertyID::kPrefix)),
+      suffix_(properties->GetPropertyCSSValue(CSSPropertyID::kSuffix)),
+      range_(properties->GetPropertyCSSValue(CSSPropertyID::kRange)),
+      pad_(properties->GetPropertyCSSValue(CSSPropertyID::kPad)),
+      fallback_(properties->GetPropertyCSSValue(CSSPropertyID::kFallback)),
+      symbols_(properties->GetPropertyCSSValue(CSSPropertyID::kSymbols)),
+      additive_symbols_(
+          properties->GetPropertyCSSValue(CSSPropertyID::kAdditiveSymbols)),
+      speak_as_(properties->GetPropertyCSSValue(CSSPropertyID::kSpeakAs)) {
+  DCHECK(properties);
+}
+
+StyleRuleCounterStyle::StyleRuleCounterStyle(const StyleRuleCounterStyle&) =
+    default;
+
+StyleRuleCounterStyle::~StyleRuleCounterStyle() = default;
+
+void StyleRuleCounterStyle::TraceAfterDispatch(blink::Visitor* visitor) const {
+  visitor->Trace(system_);
+  visitor->Trace(negative_);
+  visitor->Trace(prefix_);
+  visitor->Trace(suffix_);
+  visitor->Trace(range_);
+  visitor->Trace(pad_);
+  visitor->Trace(fallback_);
+  visitor->Trace(symbols_);
+  visitor->Trace(additive_symbols_);
+  visitor->Trace(speak_as_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 

@@ -57,16 +57,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) override;
-  void GetSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats) override;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
  private:
   // Simple wrapper to do HANDLE_EINTR(v4l2_->ioctl(fd, ...)).
   int DoIoctl(int fd, int request, void* argp);
 
+  VideoCaptureControlSupport GetControlSupport(int fd);
+  bool GetControlSupport(int fd, int control_id);
   bool HasUsableFormats(int fd, uint32_t capabilities);
   std::vector<float> GetFrameRateList(int fd,
                                       uint32_t fourcc,

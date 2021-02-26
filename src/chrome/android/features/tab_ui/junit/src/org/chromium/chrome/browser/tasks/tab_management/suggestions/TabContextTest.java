@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,11 +19,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -49,6 +52,9 @@ public class TabContextTest {
     private static final int NEW_TAB_1_ID = 3;
     private static final int NEW_TAB_2_ID = 4;
     private static final int LAST_COMMITTED_INDEX = 1;
+    private static final String TAB_CONTEXT_TAB_0_JSON = "[{\"id\":0,\"url\":"
+            + "\"mock_url_tab_0\",\"title\":\"mock_title_tab_0\",\"timestamp\":100,"
+            + "\"referrer\":\"mock_referrer_url_tab_0\"}]";
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -86,10 +92,14 @@ public class TabContextTest {
     }
 
     private static TabImpl mockTab(int id, int rootId, String title, String url, String originalUrl,
-            String referrerUrl, long getTimestampMillis) {
+            String referrerUrl, long timestampMillis) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
-        doReturn(rootId).when(tab).getRootId();
+        UserDataHost userDataHost = new UserDataHost();
+        doReturn(userDataHost).when(tab).getUserDataHost();
+        CriticalPersistedTabData criticalPersistedTabData = mock(CriticalPersistedTabData.class);
+        userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+        doReturn(rootId).when(criticalPersistedTabData).getRootId();
         doReturn(title).when(tab).getTitle();
         doReturn(url).when(tab).getUrlString();
         doReturn(originalUrl).when(tab).getOriginalUrl();
@@ -106,6 +116,7 @@ public class TabContextTest {
                 .when(navigationController)
                 .getEntryAtIndex(eq(LAST_COMMITTED_INDEX));
         doReturn(referrerUrl).when(navigationEntry).getReferrerUrl();
+        doReturn(timestampMillis).when(criticalPersistedTabData).getTimestampMillis();
         return tab;
     }
 
@@ -176,5 +187,35 @@ public class TabContextTest {
         tabContext = TabContext.createCurrentContext(mTabModelSelector);
         Assert.assertEquals(1, tabContext.getTabGroups().size());
         Assert.assertEquals(2, tabContext.getTabGroups().get(0).tabs.size());
+    }
+
+    @Test
+    public void testTabContextJsonSerialization() throws JSONException {
+        doReturn(mTab0).when(mTabModelFilter).getTabAt(eq(TAB_0_ID));
+        doReturn(1).when(mTabModelFilter).getCount();
+        doReturn(Arrays.asList(mTab0)).when(mTabModelFilter).getRelatedTabList(eq(TAB_0_ID));
+        Assert.assertEquals(TAB_CONTEXT_TAB_0_JSON,
+                TabContext.createCurrentContext(mTabModelSelector)
+                        .getUngroupedTabsJson()
+                        .toString());
+    }
+
+    @Test
+    public void testTabContextJsonDeserialization() throws JSONException {
+        List<TabContext.TabInfo> tabs = TabContext.getTabInfoFromJson(TAB_CONTEXT_TAB_0_JSON);
+        Assert.assertEquals(1, tabs.size());
+        TabContext.TabInfo tabInfo = tabs.get(0);
+        Assert.assertNotNull(tabInfo);
+        Assert.assertEquals(mTab0.getId(), tabInfo.id);
+        Assert.assertEquals(mTab0.getUrlString(), tabInfo.url);
+        Assert.assertEquals(
+                CriticalPersistedTabData.from(mTab0).getTimestampMillis(), tabInfo.timestampMillis);
+        Assert.assertEquals(mTab0.getTitle(), tabInfo.title);
+        NavigationEntry lastCommittedEntry =
+                mTab0.getWebContents().getNavigationController().getEntryAtIndex(
+                        mTab0.getWebContents()
+                                .getNavigationController()
+                                .getLastCommittedEntryIndex());
+        Assert.assertEquals(lastCommittedEntry.getReferrerUrl(), tabInfo.referrerUrl);
     }
 }

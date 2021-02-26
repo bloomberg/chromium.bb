@@ -150,13 +150,13 @@ TEST(FontDescriptionTest, ToString) {
 
   scoped_refptr<FontVariationSettings> variation_settings =
       FontVariationSettings::Create();
-  variation_settings->Append(FontVariationAxis{"a", 42});
-  variation_settings->Append(FontVariationAxis{"b", 8118});
+  variation_settings->Append(FontVariationAxis{"aaaa", 42});
+  variation_settings->Append(FontVariationAxis{"bbbb", 8118});
   description.SetVariationSettings(variation_settings);
 
   scoped_refptr<FontFeatureSettings> feature_settings = FontFeatureSettings::Create();
-  feature_settings->Append(FontFeature{"c", 76});
-  feature_settings->Append(FontFeature{"d", 94});
+  feature_settings->Append(FontFeature{"cccc", 76});
+  feature_settings->Append(FontFeature{"dddd", 94});
   description.SetFeatureSettings(feature_settings);
 
   description.SetSpecifiedSize(1.1f);
@@ -173,8 +173,9 @@ TEST(FontDescriptionTest, ToString) {
   description.SetTextRendering(kOptimizeLegibility);
 
   EXPECT_EQ(
-      "family_list=[A,B], feature_settings=[c=76,d=94], "
-      "variation_settings=[a=42,b=8118], locale=no, specified_size=1.100000, "
+      "family_list=[A,B], feature_settings=[cccc=76,dddd=94], "
+      "variation_settings=[aaaa=42,bbbb=8118], locale=no, "
+      "specified_size=1.100000, "
       "computed_size=2.200000, adjusted_size=3.300000, size_adjust=4.400000, "
       "letter_spacing=5.500000, word_spacing=6.600000, "
       "font_selection_request=[weight=32.500000, width=33.500000, "
@@ -247,6 +248,20 @@ TEST(FontDescriptionTest, DefaultHashTrait) {
   EXPECT_FALSE(map.Contains(description1));
   EXPECT_FALSE(map.Contains(description2));
   EXPECT_FALSE(map.Contains(description3));
+}
+
+// https://crbug.com/1081017
+TEST(FontDescriptionTest, NegativeZeroEmFontSize) {
+  // 'font-size: -0.0em' sets the following
+  FontDescription description1;
+  description1.SetSpecifiedSize(-0.0);
+
+  FontDescription description2;
+  description2.SetSpecifiedSize(0.0);
+
+  // Equal font descriptions must have equal hash values
+  EXPECT_EQ(description1, description2);
+  EXPECT_EQ(description1.GetHash(), description2.GetHash());
 }
 
 }  // namespace blink

@@ -30,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -117,7 +118,7 @@ void DeleteTmpFileWithRetry(File tmp_file,
   static constexpr TimeDelta kDeleteFileRetryDelay =
       TimeDelta::FromMilliseconds(250);
 
-  if (!DeleteFile(tmp_file_path, /*recursive=*/false)) {
+  if (!DeleteFile(tmp_file_path)) {
     const auto last_file_error = File::GetLastFileError();
     if (++attempt >= kMaxDeleteAttempts) {
       // All retries have been exhausted; record the final error.
@@ -128,7 +129,11 @@ void DeleteTmpFileWithRetry(File tmp_file,
                !SequencedTaskRunnerHandle::Get()->PostDelayedTask(
                    FROM_HERE,
                    BindOnce(&DeleteTmpFileWithRetry, base::File(),
-                            tmp_file_path, histogram_suffix, attempt),
+                            tmp_file_path,
+                            // Pass the suffix as a std::string rather than a
+                            // StringPiece since the latter references memory
+                            // owned by this function's caller.
+                            std::string(histogram_suffix), attempt),
                    kDeleteFileRetryDelay)) {
       // Retries are not possible, so record the simple delete error.
       UmaHistogramExactLinearWithSuffix("ImportantFile.FileDeleteNoRetryError",
@@ -181,10 +186,8 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
                                                   StringPiece data,
                                                   StringPiece histogram_suffix,
                                                   bool from_instance) {
-#if defined(OS_WIN)
   if (!from_instance)
     ImportantFileWriterCleaner::AddDirectory(path.DirName());
-#endif
 
 #if defined(OS_WIN) && DCHECK_IS_ON()
   // In https://crbug.com/920174, we have cases where CreateTemporaryFileInDir
@@ -258,20 +261,32 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
 
   // The file must be closed for ReplaceFile to do its job, which opens up a
   // race with other software that may open the temp file (e.g., an A/V scanner
-  // doing its job without oplocks). Close as late as possible to improve the
-  // chances that the other software will lose the race.
+  // doing its job without oplocks). Boost a background thread's priority on
+  // Windows and close as late as possible to improve the chances that the other
+  // software will lose the race.
+#if defined(OS_WIN)
+  const auto previous_priority = PlatformThread::GetCurrentThreadPriority();
+  const bool reset_priority = previous_priority <= ThreadPriority::NORMAL;
+  if (reset_priority)
+    PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
+#endif  // defined(OS_WIN)
   tmp_file.Close();
-  if (!ReplaceFile(tmp_file_path, path, &replace_file_error)) {
+  const bool result = ReplaceFile(tmp_file_path, path, &replace_file_error);
+#if defined(OS_WIN)
+  if (reset_priority)
+    PlatformThread::SetCurrentThreadPriority(previous_priority);
+#endif  // defined(OS_WIN)
+
+  if (!result) {
     UmaHistogramExactLinearWithSuffix("ImportantFile.FileRenameError",
                                       histogram_suffix, -replace_file_error,
                                       -File::FILE_ERROR_MAX);
     LogFailure(path, histogram_suffix, FAILED_RENAMING,
                "could not rename temporary file");
     DeleteTmpFileWithRetry(File(), tmp_file_path, histogram_suffix);
-    return false;
   }
 
-  return true;
+  return result;
 }
 
 ImportantFileWriter::ImportantFileWriter(
@@ -294,9 +309,7 @@ ImportantFileWriter::ImportantFileWriter(
       commit_interval_(interval),
       histogram_suffix_(histogram_suffix ? histogram_suffix : "") {
   DCHECK(task_runner_);
-#if defined(OS_WIN)
   ImportantFileWriterCleaner::AddDirectory(path.DirName());
-#endif
 }
 
 ImportantFileWriter::~ImportantFileWriter() {

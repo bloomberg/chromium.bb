@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "components/user_manager/user_type.h"
 
 namespace session_manager {
 class SessionManager;
@@ -35,18 +37,14 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void SetStatusAreaVisible(bool visible) override;
   void StartWizard(chromeos::OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
-  AppLaunchController* GetAppLaunchController() override;
+  KioskLaunchController* GetKioskLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
   void CancelUserAdding() override;
   void StartSignInScreen() override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
-  void StartAppLaunch(const std::string& app_id,
-                      bool diagnostic_mode,
-                      bool is_auto_launch) override;
   void StartDemoAppLaunch() override;
-  void StartArcKiosk(const AccountId& account_id) override;
-  void StartWebKiosk(const AccountId& account_id) override;
+  void StartKiosk(const KioskAppId& kiosk_app_id, bool is_auto_launch) override;
   void CompleteLogin(const chromeos::UserContext& user_context) override;
   void OnGaiaScreenReady() override;
   void SetDisplayEmail(const std::string& email) override;
@@ -54,19 +52,22 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
                               const std::string& given_name) override;
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
-  bool IsUserWhitelisted(const AccountId& account_id) override;
+  bool IsUserAllowlisted(
+      const AccountId& account_id,
+      const base::Optional<user_manager::UserType>& user_type) override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
-  const user_manager::UserList GetUsers() override;
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;
   void ResyncUserData() override;
-  void ShowFeedback() override;
-  void ShowResetScreen() override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
+  bool HasUserPods() override;
+  void AddObserver(LoginDisplayHost::Observer* observer) override;
+  void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 
  private:
   class FakeBaseScreen;

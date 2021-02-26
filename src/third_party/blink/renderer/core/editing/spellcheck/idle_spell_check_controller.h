@@ -31,7 +31,6 @@ class CORE_EXPORT IdleSpellCheckController final
     : public GarbageCollected<IdleSpellCheckController>,
       public ExecutionContextLifecycleObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckController);
-  USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
  public:
   explicit IdleSpellCheckController(LocalDOMWindow&, SpellCheckRequester&);
@@ -60,7 +59,7 @@ class CORE_EXPORT IdleSpellCheckController final
   void SkipColdModeTimerForTesting();
   int IdleCallbackHandle() const { return idle_callback_handle_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class IdleCallback;

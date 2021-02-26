@@ -11,14 +11,14 @@
 
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/android/cfpf_skiafont.h"
 #include "core/fxge/android/cfpf_skiapathfont.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/containers/adapters.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -264,9 +264,9 @@ CFPF_SkiaFont* CFPF_SkiaFontMgr::CreateFont(ByteStringView bsFamilyname,
 
   uint32_t dwFaceName = FPF_SKIANormalizeFontName(bsFamilyname);
   uint32_t dwSubst = FPF_SkiaGetSubstFont(dwFaceName, g_SkiaFontmap,
-                                          FX_ArraySize(g_SkiaFontmap));
+                                          pdfium::size(g_SkiaFontmap));
   uint32_t dwSubstSans = FPF_SkiaGetSubstFont(dwFaceName, g_SkiaSansFontMap,
-                                              FX_ArraySize(g_SkiaSansFontMap));
+                                              pdfium::size(g_SkiaSansFontMap));
   bool bMaybeSymbol = FPF_SkiaMaybeSymbol(bsFamilyname);
   if (uCharset != FX_CHARSET_MSWin_Arabic &&
       FPF_SkiaMaybeArabic(bsFamilyname)) {
@@ -279,27 +279,26 @@ CFPF_SkiaFont* CFPF_SkiaFontMgr::CreateFont(ByteStringView bsFamilyname,
   const CFPF_SkiaPathFont* pBestFont = nullptr;
   int32_t nMax = -1;
   int32_t nGlyphNum = 0;
-  for (auto face_iter = m_FontFaces.rbegin(); face_iter != m_FontFaces.rend();
-       ++face_iter) {
-    const CFPF_SkiaPathFont* pFont = face_iter->get();
-    if (!(pFont->charsets() & FPF_SkiaGetCharset(uCharset)))
+  for (const std::unique_ptr<CFPF_SkiaPathFont>& font :
+       pdfium::base::Reversed(m_FontFaces)) {
+    if (!(font->charsets() & FPF_SkiaGetCharset(uCharset)))
       continue;
     int32_t nFind = 0;
-    uint32_t dwSysFontName = FPF_SKIANormalizeFontName(pFont->family());
+    uint32_t dwSysFontName = FPF_SKIANormalizeFontName(font->family());
     if (dwFaceName == dwSysFontName)
       nFind += FPF_SKIAMATCHWEIGHT_NAME1;
     bool bMatchedName = (nFind == FPF_SKIAMATCHWEIGHT_NAME1);
-    if (FontStyleIsForceBold(dwStyle) == FontStyleIsForceBold(pFont->style()))
+    if (FontStyleIsForceBold(dwStyle) == FontStyleIsForceBold(font->style()))
       nFind += FPF_SKIAMATCHWEIGHT_1;
-    if (FontStyleIsItalic(dwStyle) == FontStyleIsItalic(pFont->style()))
+    if (FontStyleIsItalic(dwStyle) == FontStyleIsItalic(font->style()))
       nFind += FPF_SKIAMATCHWEIGHT_1;
     if (FontStyleIsFixedPitch(dwStyle) ==
-        FontStyleIsFixedPitch(pFont->style())) {
+        FontStyleIsFixedPitch(font->style())) {
       nFind += FPF_SKIAMATCHWEIGHT_2;
     }
-    if (FontStyleIsSerif(dwStyle) == FontStyleIsSerif(pFont->style()))
+    if (FontStyleIsSerif(dwStyle) == FontStyleIsSerif(font->style()))
       nFind += FPF_SKIAMATCHWEIGHT_1;
-    if (FontStyleIsScript(dwStyle) == FontStyleIsScript(pFont->style()))
+    if (FontStyleIsScript(dwStyle) == FontStyleIsScript(font->style()))
       nFind += FPF_SKIAMATCHWEIGHT_2;
     if (dwSubst == dwSysFontName || dwSubstSans == dwSysFontName) {
       nFind += FPF_SKIAMATCHWEIGHT_NAME2;
@@ -308,33 +307,33 @@ CFPF_SkiaFont* CFPF_SkiaFontMgr::CreateFont(ByteStringView bsFamilyname,
     if (uCharset == FX_CHARSET_Default || bMaybeSymbol) {
       if (nFind > nMax && bMatchedName) {
         nMax = nFind;
-        pBestFont = face_iter->get();
+        pBestFont = font.get();
       }
     } else if (FPF_SkiaIsCJK(uCharset)) {
-      if (bMatchedName || pFont->glyph_num() > nGlyphNum) {
-        pBestFont = face_iter->get();
-        nGlyphNum = pFont->glyph_num();
+      if (bMatchedName || font->glyph_num() > nGlyphNum) {
+        pBestFont = font.get();
+        nGlyphNum = font->glyph_num();
       }
     } else if (nFind > nMax) {
       nMax = nFind;
-      pBestFont = face_iter->get();
+      pBestFont = font.get();
     }
     if (nExpectVal <= nFind) {
-      pBestFont = face_iter->get();
+      pBestFont = font.get();
       break;
     }
   }
   if (!pBestFont)
     return nullptr;
 
-  auto pFont =
-      pdfium::MakeUnique<CFPF_SkiaFont>(this, pBestFont, dwStyle, uCharset);
-  if (!pFont->IsValid())
+  auto font =
+      std::make_unique<CFPF_SkiaFont>(this, pBestFont, dwStyle, uCharset);
+  if (!font->IsValid())
     return nullptr;
 
-  CFPF_SkiaFont* pRet = pFont.get();
-  m_FamilyFonts[dwHash] = std::move(pFont);
-  return pRet;
+  CFPF_SkiaFont* ret = font.get();
+  m_FamilyFonts[dwHash] = std::move(font);
+  return ret;
 }
 
 RetainPtr<CFX_Face> CFPF_SkiaFontMgr::GetFontFace(ByteStringView bsFile,
@@ -417,7 +416,7 @@ std::unique_ptr<CFPF_SkiaPathFont> CFPF_SkiaFontMgr::ReportFace(
   if (pOS2 && (pOS2->ulCodePageRange1 & (1 << 31)))
     dwStyle |= FXFONT_SYMBOLIC;
 
-  return pdfium::MakeUnique<CFPF_SkiaPathFont>(
+  return std::make_unique<CFPF_SkiaPathFont>(
       file, FXFT_Get_Face_Family_Name(face->GetRec()), dwStyle,
       face->GetRec()->face_index, FPF_SkiaGetFaceCharset(pOS2),
       face->GetRec()->num_glyphs);

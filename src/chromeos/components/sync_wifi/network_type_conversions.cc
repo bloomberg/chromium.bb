@@ -37,7 +37,6 @@ std::string SecurityTypeStringFromMojo(
       return shill::kSecurityWep;
     default:
       // Only PSK and WEP secured networks are supported by sync.
-      NOTREACHED();
       return "";
   }
 }
@@ -100,8 +99,9 @@ sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration_ProxyOption
 ProxyOptionProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
-  if (!proxy_settings) {
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified) {
+  if (!proxy_settings || is_unspecified) {
     return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_UNSPECIFIED;
   }
@@ -127,9 +127,11 @@ ProxyOptionProtoFromMojo(
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration
 ProxyConfigurationProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified) {
   sync_pb::WifiConfigurationSpecifics_ProxyConfiguration proto;
-  proto.set_proxy_option(ProxyOptionProtoFromMojo(proxy_settings));
+  proto.set_proxy_option(
+      ProxyOptionProtoFromMojo(proxy_settings, is_unspecified));
 
   if (proto.proxy_option() ==
       sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
@@ -143,21 +145,33 @@ ProxyConfigurationProtoFromMojo(
     sync_pb::
         WifiConfigurationSpecifics_ProxyConfiguration_ManualProxyConfiguration*
             manual_settings = proto.mutable_manual_proxy_configuration();
-    manual_settings->set_http_proxy_url(
-        proxy_settings->manual->http_proxy->host->active_value);
-    manual_settings->set_http_proxy_port(
-        proxy_settings->manual->http_proxy->port->active_value);
-    manual_settings->set_secure_http_proxy_url(
-        proxy_settings->manual->secure_http_proxy->host->active_value);
-    manual_settings->set_secure_http_proxy_port(
-        proxy_settings->manual->secure_http_proxy->port->active_value);
-    manual_settings->set_socks_host_url(
-        proxy_settings->manual->socks->host->active_value);
-    manual_settings->set_socks_host_port(
-        proxy_settings->manual->socks->port->active_value);
-    for (const std::string& domain :
-         proxy_settings->exclude_domains->active_value) {
-      manual_settings->add_whitelisted_domains(domain);
+
+    if (proxy_settings->manual->http_proxy) {
+      manual_settings->set_http_proxy_url(
+          proxy_settings->manual->http_proxy->host->active_value);
+      manual_settings->set_http_proxy_port(
+          proxy_settings->manual->http_proxy->port->active_value);
+    }
+
+    if (proxy_settings->manual->secure_http_proxy) {
+      manual_settings->set_secure_http_proxy_url(
+          proxy_settings->manual->secure_http_proxy->host->active_value);
+      manual_settings->set_secure_http_proxy_port(
+          proxy_settings->manual->secure_http_proxy->port->active_value);
+    }
+
+    if (proxy_settings->manual->socks) {
+      manual_settings->set_socks_host_url(
+          proxy_settings->manual->socks->host->active_value);
+      manual_settings->set_socks_host_port(
+          proxy_settings->manual->socks->port->active_value);
+    }
+
+    if (proxy_settings->exclude_domains) {
+      for (const std::string& domain :
+           proxy_settings->exclude_domains->active_value) {
+        manual_settings->add_excluded_domains(domain);
+      }
     }
   }
 
@@ -221,7 +235,7 @@ network_config::mojom::ProxySettingsPtr MojoProxySettingsFromProto(
 
       std::vector<std::string> exclude_domains;
       for (const std::string& domain :
-           synced_manual_configuration.whitelisted_domains()) {
+           synced_manual_configuration.excluded_domains()) {
         exclude_domains.push_back(domain);
       }
       proxy_settings->exclude_domains = std::move(exclude_domains);
@@ -262,7 +276,26 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
           ? 1
           : 0);
 
-  if (specifics.custom_dns().size()) {
+  if (specifics.has_metered() &&
+      specifics.metered() !=
+          sync_pb::
+              WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_UNSPECIFIED &&
+      specifics.metered() !=
+          sync_pb::
+              WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_AUTO) {
+    config->metered = network_config::mojom::MeteredConfig::New(
+        specifics.metered() ==
+        sync_pb::WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_YES);
+  }
+
+  // For backwards compatibility, any available custom nameservers are still
+  // applied when the dns_option is not set.
+  if (specifics.dns_option() ==
+          sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_CUSTOM ||
+      (specifics.dns_option() ==
+           sync_pb::
+               WifiConfigurationSpecifics_DnsOption_DNS_OPTION_UNSPECIFIED &&
+       specifics.custom_dns().size())) {
     auto ip_config = network_config::mojom::IPConfigProperties::New();
     std::vector<std::string> custom_dns;
     for (const std::string& nameserver : specifics.custom_dns()) {
@@ -271,7 +304,9 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     ip_config->name_servers = std::move(custom_dns);
     config->static_ip_config = std::move(ip_config);
     config->name_servers_config_type = onc::network_config::kIPConfigTypeStatic;
-  } else {
+  } else if (specifics.dns_option() ==
+             sync_pb::
+                 WifiConfigurationSpecifics_DnsOption_DNS_OPTION_DEFAULT_DHCP) {
     config->name_servers_config_type = onc::network_config::kIPConfigTypeDHCP;
   }
 

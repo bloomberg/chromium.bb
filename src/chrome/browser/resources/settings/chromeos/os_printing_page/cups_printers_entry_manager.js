@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addWebUIListener, addSingletonGetter, removeWebUIListener} from 'chrome://resources/js/cr.m.js';
+// #import {WebUIListener} from 'chrome://resources/js/cr.m.js';
+// #import {CupsPrintersBrowserProxyImpl, CupsPrintersList, CupsPrinterInfo} from './cups_printers_browser_proxy.m.js';
+// #import {findDifference} from './cups_printer_dialog_util.m.js';
+// #import {PrinterType, PrinterListEntry} from './cups_printer_types.m.js';
+// clang-format on
+
 /**
  * Function which provides the client with metadata about a change
  * to a list of saved printers. The first parameter is the updated list of
@@ -27,7 +35,7 @@ cr.define('settings.printing', function() {
    * printers and notifies observers of any applicable changes to either printer
    * lists.
    */
-  class CupsPrintersEntryManager {
+  /* #export */ class CupsPrintersEntryManager {
     constructor() {
       /** @private {!Array<!PrinterListEntry>} */
       this.savedPrinters_ = [];
@@ -41,22 +49,29 @@ cr.define('settings.printing', function() {
       /** @type {!Array<!PrinterListEntry>} */
       this.printServerPrinters = [];
 
-      /** @type {!Array<PrintersListCallback>} */
+      /** @private {!Array<PrintersListCallback>} */
       this.onNearbyPrintersChangedListeners_ = [];
+
+      /** @private {?WebUIListener} */
+      this.onNearbyPrintersChangedListener_ = null;
     }
 
     addWebUIListeners() {
       // TODO(1005905): Add on-printers-changed listener here once legacy code
       // is removed.
-      cr.addWebUIListener(
+      this.onNearbyPrintersChangedListener_ = cr.addWebUIListener(
           'on-nearby-printers-changed', this.setNearbyPrintersList.bind(this));
+
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .startDiscoveringPrinters();
     }
 
     removeWebUIListeners() {
-      cr.removeWebUIListener('on-nearby-printers-changed');
-      cr.removeWebUIListener('on-print-server-added');
+      if (this.onNearbyPrintersChangedListener_) {
+        cr.removeWebUIListener(/** @type {WebUIListener} */ (
+            this.onNearbyPrintersChangedListener_));
+        this.onNearbyPrintersChangedListener_ = null;
+      }
     }
 
     /** @return {!Array<!PrinterListEntry>} */
@@ -77,7 +92,7 @@ cr.define('settings.printing', function() {
     /** @param {PrintersListWithDeltasCallback} listener */
     removeOnSavedPrintersChangedListener(listener) {
       this.onSavedPrintersChangedListeners_ =
-          this.onSavedPrintersChangedListeners_.filter(lis => lis != listener);
+          this.onSavedPrintersChangedListeners_.filter(lis => lis !== listener);
     }
 
     /** @param {PrintersListCallback} listener */
@@ -88,7 +103,8 @@ cr.define('settings.printing', function() {
     /** @param {PrintersListCallback} listener */
     removeOnNearbyPrintersChangedListener(listener) {
       this.onNearbyPrintersChangedListeners_ =
-          this.onNearbyPrintersChangedListeners_.filter(lis => lis != listener);
+          this.onNearbyPrintersChangedListeners_.filter(
+              lis => lis !== listener);
     }
 
     /**
@@ -158,7 +174,7 @@ cr.define('settings.printing', function() {
       // found printers.
       const newPrinters = foundPrinters.printerList.filter(p1 => {
         return !this.printServerPrinters.some(
-            p2 => p2.printerInfo.printerId == p1.printerId);
+            p2 => p2.printerInfo.printerId === p1.printerId);
       });
 
       for (const printer of newPrinters) {

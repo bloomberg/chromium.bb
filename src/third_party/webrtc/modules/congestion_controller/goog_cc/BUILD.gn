@@ -31,7 +31,6 @@ rtc_library("goog_cc") {
     ":probe_controller",
     ":pushback_controller",
     "../..:module_api",
-    "../../..:webrtc_common",
     "../../../api:network_state_predictor_api",
     "../../../api/rtc_event_log",
     "../../../api/transport:field_trial_based_config",
@@ -45,12 +44,13 @@ rtc_library("goog_cc") {
     "../../../logging:rtc_event_pacing",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
-    "../../../rtc_base:macromagic",
     "../../../rtc_base/experiments:alr_experiment",
     "../../../rtc_base/experiments:field_trial_parser",
     "../../../rtc_base/experiments:rate_control_settings",
     "../../../system_wrappers",
     "../../remote_bitrate_estimator",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -64,8 +64,8 @@ rtc_library("link_capacity_estimator") {
   deps = [
     "../../../api/units:data_rate",
     "../../../rtc_base:safe_minmax",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
 rtc_library("pushback_controller") {
@@ -79,6 +79,8 @@ rtc_library("pushback_controller") {
     "../../../api/units:data_size",
     "../../../rtc_base:checks",
     "../../../rtc_base/experiments:rate_control_settings",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -100,8 +102,8 @@ rtc_library("alr_detector") {
     "../../../rtc_base/experiments:alr_experiment",
     "../../../rtc_base/experiments:field_trial_parser",
     "../../pacing:interval_budget",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 rtc_library("estimators") {
   configs += [ ":bwe_test_logging" ]
@@ -137,6 +139,8 @@ rtc_library("estimators") {
     "../../../rtc_base:safe_minmax",
     "../../../rtc_base/experiments:field_trial_parser",
     "../../remote_bitrate_estimator",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -153,6 +157,7 @@ rtc_library("loss_based_controller") {
   deps = [
     "../../../api/rtc_event_log",
     "../../../api/transport:network_control",
+    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
@@ -163,6 +168,8 @@ rtc_library("loss_based_controller") {
     "../../../system_wrappers:field_trial",
     "../../../system_wrappers:metrics",
     "../../remote_bitrate_estimator",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -189,6 +196,8 @@ rtc_library("delay_based_bwe") {
     "../../../system_wrappers:metrics",
     "../../pacing",
     "../../remote_bitrate_estimator",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -216,6 +225,8 @@ rtc_library("probe_controller") {
     "../../../rtc_base/experiments:field_trial_parser",
     "../../../rtc_base/system:unused",
     "../../../system_wrappers:metrics",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -240,8 +251,8 @@ if (rtc_include_tests) {
       "../../../rtc_base:checks",
       "../../../test/logging:log_writer",
       "../../remote_bitrate_estimator",
-      "//third_party/abseil-cpp/absl/types:optional",
     ]
+    absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
   }
   rtc_library("goog_cc_unittests") {
     testonly = true
@@ -282,6 +293,7 @@ if (rtc_include_tests) {
       "../../../rtc_base:rtc_base_tests_utils",
       "../../../rtc_base/experiments:alr_experiment",
       "../../../system_wrappers",
+      "../../../test:explicit_key_value_config",
       "../../../test:field_trial",
       "../../../test:test_support",
       "../../../test/scenario",

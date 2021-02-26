@@ -14,11 +14,8 @@
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
-#include "base/check.h"
-#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/notreached.h"
+#include "base/dcheck_is_on.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/strings/string_piece_forward.h"
 
@@ -107,6 +104,10 @@
 // E.g., "*/foo/bar/*=2" would change the logging level for all code
 // in source files under a "foo/bar" directory.
 //
+// Note that for a Chromium binary built in release mode (is_debug = false) you
+// must pass "--enable-logging=stderr" in order to see the output of VLOG
+// statements.
+//
 // There's also VLOG_IS_ON(n) "verbose level" condition macro. To be used as
 //
 //   if (VLOG_IS_ON(2)) {
@@ -145,7 +146,7 @@
 // There is the special severity of DFATAL, which logs FATAL in debug mode,
 // ERROR in normal mode.
 //
-// Output is of the format, for example:
+// Output is formatted as per the following example, except on Chrome OS.
 // [3816:3877:0812/234555.406952:VERBOSE1:drm_device_handle.cc(90)] Succeeded
 // authenticating /dev/dri/card0 in 0 ms with 1 attempt(s)
 //
@@ -157,8 +158,14 @@
 // 4. The log level
 // 5. The filename and line number where the log was instantiated
 //
+// Output for Chrome OS can be switched to syslog-like format. See
+// InitWithSyslogPrefix() in logging_chromeos.h for details.
+//
 // Note that the visibility can be changed by setting preferences in
 // SetLogItems()
+//
+// Additional logging-related information can be found here:
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Logging
 
 namespace logging {
 
@@ -209,6 +216,13 @@ enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 // Defaults to APPEND_TO_OLD_LOG_FILE.
 enum OldFileDeletionState { DELETE_OLD_LOG_FILE, APPEND_TO_OLD_LOG_FILE };
 
+#if defined(OS_CHROMEOS)
+// Defines the log message prefix format to use.
+// LOG_FORMAT_SYSLOG indicates syslog-like message prefixes.
+// LOG_FORMAT_CHROME indicates the normal Chrome format.
+enum class BASE_EXPORT LogFormat { LOG_FORMAT_CHROME, LOG_FORMAT_SYSLOG };
+#endif
+
 struct BASE_EXPORT LoggingSettings {
   // Equivalent to logging destination enum, but allows for multiple
   // destinations.
@@ -225,6 +239,8 @@ struct BASE_EXPORT LoggingSettings {
   // of the FILE. If there's an error writing to this file, no fallback paths
   // will be opened.
   FILE* log_file = nullptr;
+  // ChromeOS uses the syslog log format by default.
+  LogFormat log_format = LogFormat::LOG_FORMAT_SYSLOG;
 #endif
 };
 
@@ -319,10 +335,9 @@ using LogAssertHandlerFunction =
 class BASE_EXPORT ScopedLogAssertHandler {
  public:
   explicit ScopedLogAssertHandler(LogAssertHandlerFunction handler);
+  ScopedLogAssertHandler(const ScopedLogAssertHandler&) = delete;
+  ScopedLogAssertHandler& operator=(const ScopedLogAssertHandler&) = delete;
   ~ScopedLogAssertHandler();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedLogAssertHandler);
 };
 
 // Sets the Log Message Handler that gets passed every log message before
@@ -334,40 +349,54 @@ typedef bool (*LogMessageHandlerFunction)(int severity,
 BASE_EXPORT void SetLogMessageHandler(LogMessageHandlerFunction handler);
 BASE_EXPORT LogMessageHandlerFunction GetLogMessageHandler();
 
-
-typedef int LogSeverity;
-const LogSeverity LOG_VERBOSE = -1;  // This is level 1 verbosity
+using LogSeverity = int;
+const LogSeverity LOGGING_VERBOSE = -1;  // This is level 1 verbosity
 // Note: the log severities are used to index into the array of names,
 // see log_severity_names.
-const LogSeverity LOG_INFO = 0;
-const LogSeverity LOG_WARNING = 1;
-const LogSeverity LOG_ERROR = 2;
-const LogSeverity LOG_FATAL = 3;
-const LogSeverity LOG_NUM_SEVERITIES = 4;
+const LogSeverity LOGGING_INFO = 0;
+const LogSeverity LOGGING_WARNING = 1;
+const LogSeverity LOGGING_ERROR = 2;
+const LogSeverity LOGGING_FATAL = 3;
+const LogSeverity LOGGING_NUM_SEVERITIES = 4;
 
-// LOG_DFATAL is LOG_FATAL in debug mode, ERROR in normal mode
+// LOGGING_DFATAL is LOGGING_FATAL in debug mode, ERROR in normal mode
 #if defined(NDEBUG)
-const LogSeverity LOG_DFATAL = LOG_ERROR;
+const LogSeverity LOGGING_DFATAL = LOGGING_ERROR;
 #else
-const LogSeverity LOG_DFATAL = LOG_FATAL;
+const LogSeverity LOGGING_DFATAL = LOGGING_FATAL;
 #endif
+
+// This block duplicates the above entries to facilitate incremental conversion
+// from LOG_FOO to LOGGING_FOO.
+// TODO(thestig): Convert existing users to LOGGING_FOO and remove this block.
+const LogSeverity LOG_VERBOSE = LOGGING_VERBOSE;
+const LogSeverity LOG_INFO = LOGGING_INFO;
+const LogSeverity LOG_WARNING = LOGGING_WARNING;
+const LogSeverity LOG_ERROR = LOGGING_ERROR;
+const LogSeverity LOG_FATAL = LOGGING_FATAL;
+const LogSeverity LOG_DFATAL = LOGGING_DFATAL;
 
 // A few definitions of macros that don't generate much code. These are used
 // by LOG() and LOG_IF, etc. Since these are used all over our code, it's
 // better to have compact code for these operations.
-#define COMPACT_GOOGLE_LOG_EX_INFO(ClassName, ...) \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_INFO, ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...)              \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_WARNING, \
+#define COMPACT_GOOGLE_LOG_EX_INFO(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_INFO, \
                        ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_ERROR(ClassName, ...) \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_ERROR, ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_FATAL(ClassName, ...) \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_FATAL, ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_DFATAL(ClassName, ...) \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_DFATAL, ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
-  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_DCHECK, ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_WARNING, \
+                       ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_ERROR(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_ERROR, \
+                       ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_FATAL(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_FATAL, \
+                       ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_DFATAL(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_DFATAL, \
+                       ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...)                  \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOGGING_DCHECK, \
+                       ##__VA_ARGS__)
 
 #define COMPACT_GOOGLE_LOG_INFO COMPACT_GOOGLE_LOG_EX_INFO(LogMessage)
 #define COMPACT_GOOGLE_LOG_WARNING COMPACT_GOOGLE_LOG_EX_WARNING(LogMessage)
@@ -387,14 +416,14 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
   COMPACT_GOOGLE_LOG_EX_ERROR(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_0 COMPACT_GOOGLE_LOG_ERROR
 // Needed for LOG_IS_ON(ERROR).
-const LogSeverity LOG_0 = LOG_ERROR;
+const LogSeverity LOGGING_0 = LOGGING_ERROR;
 #endif
 
 // As special cases, we can assume that LOG_IS_ON(FATAL) always holds. Also,
 // LOG_IS_ON(DFATAL) always holds in debug mode. In particular, CHECK()s will
 // always fire if they fail.
 #define LOG_IS_ON(severity) \
-  (::logging::ShouldCreateLogMessage(::logging::LOG_##severity))
+  (::logging::ShouldCreateLogMessage(::logging::LOGGING_##severity))
 
 // We don't do any caching tricks with VLOG_IS_ON() like the
 // google-glog version since it increases binary size.  This means
@@ -531,16 +560,16 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
 #if DCHECK_IS_ON()
 
 #if defined(DCHECK_IS_CONFIGURABLE)
-BASE_EXPORT extern LogSeverity LOG_DCHECK;
+BASE_EXPORT extern LogSeverity LOGGING_DCHECK;
 #else
-const LogSeverity LOG_DCHECK = LOG_FATAL;
+const LogSeverity LOGGING_DCHECK = LOGGING_FATAL;
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #else  // DCHECK_IS_ON()
 
-// There may be users of LOG_DCHECK that are enabled independently
+// There may be users of LOGGING_DCHECK that are enabled independently
 // of DCHECK_IS_ON(), so default to FATAL logging for those.
-const LogSeverity LOG_DCHECK = LOG_FATAL;
+const LogSeverity LOGGING_DCHECK = LOGGING_FATAL;
 
 #endif  // DCHECK_IS_ON()
 
@@ -561,9 +590,10 @@ class BASE_EXPORT LogMessage {
   // Used for LOG(severity).
   LogMessage(const char* file, int line, LogSeverity severity);
 
-  // Used for CHECK().  Implied severity = LOG_FATAL.
+  // Used for CHECK().  Implied severity = LOGGING_FATAL.
   LogMessage(const char* file, int line, const char* condition);
-
+  LogMessage(const LogMessage&) = delete;
+  LogMessage& operator=(const LogMessage&) = delete;
   virtual ~LogMessage();
 
   std::ostream& stream() { return stream_; }
@@ -588,7 +618,17 @@ class BASE_EXPORT LogMessage {
   // will have lost the thread error value when the log call returns.
   base::ScopedClearLastError last_error_;
 
-  DISALLOW_COPY_AND_ASSIGN(LogMessage);
+#if defined(OS_CHROMEOS)
+  void InitWithSyslogPrefix(base::StringPiece filename,
+                            int line,
+                            uint64_t tick_count,
+                            const char* log_severity_name_c_str,
+                            const char* log_prefix,
+                            bool enable_process_id,
+                            bool enable_thread_id,
+                            bool enable_timestamp,
+                            bool enable_tickcount);
+#endif
 };
 
 // This class is used to explicitly ignore values in the conditional
@@ -621,14 +661,13 @@ class BASE_EXPORT Win32ErrorLogMessage : public LogMessage {
                        int line,
                        LogSeverity severity,
                        SystemErrorCode err);
-
+  Win32ErrorLogMessage(const Win32ErrorLogMessage&) = delete;
+  Win32ErrorLogMessage& operator=(const Win32ErrorLogMessage&) = delete;
   // Appends the error message before destructing the encapsulated class.
   ~Win32ErrorLogMessage() override;
 
  private:
   SystemErrorCode err_;
-
-  DISALLOW_COPY_AND_ASSIGN(Win32ErrorLogMessage);
 };
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Appends a formatted system message of the errno type
@@ -638,14 +677,13 @@ class BASE_EXPORT ErrnoLogMessage : public LogMessage {
                   int line,
                   LogSeverity severity,
                   SystemErrorCode err);
-
+  ErrnoLogMessage(const ErrnoLogMessage&) = delete;
+  ErrnoLogMessage& operator=(const ErrnoLogMessage&) = delete;
   // Appends the error message before destructing the encapsulated class.
   ~ErrnoLogMessage() override;
 
  private:
   SystemErrorCode err_;
-
-  DISALLOW_COPY_AND_ASSIGN(ErrnoLogMessage);
 };
 #endif  // OS_WIN
 
@@ -667,8 +705,7 @@ BASE_EXPORT FILE* DuplicateLogFILE();
 BASE_EXPORT void RawLog(int level, const char* message);
 
 #define RAW_LOG(level, message) \
-  ::logging::RawLog(::logging::LOG_##level, message)
-
+  ::logging::RawLog(::logging::LOGGING_##level, message)
 
 #if defined(OS_WIN)
 // Returns true if logging to file is enabled.

@@ -7,11 +7,14 @@
  * 'os-settings-privacy-page' is the settings page containing privacy and
  * security settings.
  */
-(function() {
-'use strict';
 
 Polymer({
   is: 'os-settings-privacy-page',
+
+  behaviors: [
+    DeepLinkingBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /**
@@ -21,7 +24,41 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * Whether to show the Suggested Content toggle.
+     * @private
+     */
+    showSuggestedContentToggle_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('suggestedContentToggleEnabled');
+      },
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kVerifiedAccess,
+        chromeos.settings.mojom.Setting.kUsageStatsAndCrashReports,
+      ]),
+    },
   },
 
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.OS_PRIVACY) {
+      return;
+    }
+
+    this.attemptDeepLink();
+  },
 });
-})();

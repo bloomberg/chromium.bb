@@ -38,7 +38,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
   virtual ~GpuDataManagerImplPrivate();
 
-  void BlacklistWebGLForTesting();
+  void BlocklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   bool GpuAccessAllowed(std::string* reason) const;
@@ -62,25 +62,28 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const base::Optional<gpu::GPUInfo>& optional_gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDx12VulkanInfo(
-      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12Info(uint32_t d3d12_feature_level);
+  void UpdateVulkanInfo(uint32_t vulkan_version);
   void UpdateDevicePerfInfo(const gpu::DevicePerfInfo& device_perf_info);
 
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
-  void UpdateDx12VulkanRequestStatus(bool request_continues);
+  void UpdateHDRStatus(bool hdr_enabled);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
-  bool Dx12VulkanRequested() const;
+  void UpdateDx12RequestStatus(bool request_continues);
+  void UpdateVulkanRequestStatus(bool request_continues);
+  bool Dx12Requested() const;
+  bool VulkanRequested() const;
   void OnBrowserThreadsStarted();
   void TerminateInfoCollectionGpuProcess();
 #endif
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
-  void UpdateGpuExtraInfo(const gpu::GpuExtraInfo& process_info);
+  void UpdateGpuExtraInfo(const gfx::GpuExtraInfo& process_info);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
-  gpu::GpuExtraInfo GetGpuExtraInfo() const;
+  gfx::GpuExtraInfo GetGpuExtraInfo() const;
 
   bool IsGpuCompositingDisabled() const;
 
@@ -104,8 +107,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt);
   bool Are3DAPIsBlocked(const GURL& top_origin_url,
-                        int render_process_id,
-                        int render_frame_id,
                         ThreeDAPIType requester);
 
   void DisableDomainBlockingFor3DAPIsForTesting();
@@ -120,12 +121,16 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuMode GetGpuMode() const;
   void FallBackToNextGpuMode();
 
+  bool CanFallback() const { return !fallback_modes_.empty(); }
+
   bool IsGpuProcessUsingHardwareGpu() const;
 
   void SetApplicationVisible(bool is_visible);
 
   void OnDisplayAdded(const display::Display& new_display);
   void OnDisplayRemoved(const display::Display& old_display);
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics);
 
  private:
   friend class GpuDataManagerImplPrivateTest;
@@ -145,7 +150,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   // Indicates the reason that access to a given client API (like
   // WebGL or Pepper 3D) was blocked or not. This state is distinct
-  // from blacklisting of an entire feature.
+  // from blocklisting of an entire feature.
   enum class DomainBlockStatus {
     kBlocked,
     kAllDomainsBlocked,
@@ -194,7 +199,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void NotifyGpuInfoUpdate();
 
   void RequestDxDiagNodeData();
-  void RequestGpuSupportedRuntimeVersion(bool delayed);
+  void RequestGpuSupportedDx12Version(bool delayed);
+  void RequestGpuSupportedVulkanVersion(bool delayed);
 
   void RecordCompositingMode();
 
@@ -206,9 +212,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 #if defined(OS_WIN)
   bool gpu_info_dx_diag_requested_ = false;
   bool gpu_info_dx_diag_request_failed_ = false;
-  bool gpu_info_dx12_vulkan_valid_ = false;
-  bool gpu_info_dx12_vulkan_requested_ = false;
-  bool gpu_info_dx12_vulkan_request_failed_ = false;
+  bool gpu_info_dx12_valid_ = false;
+  bool gpu_info_dx12_requested_ = false;
+  bool gpu_info_dx12_request_failed_ = false;
+  bool gpu_info_vulkan_valid_ = false;
+  bool gpu_info_vulkan_requested_ = false;
+  bool gpu_info_vulkan_request_failed_ = false;
 #endif
 
   // What we would have gotten if we haven't fallen back to SwiftShader or
@@ -216,7 +225,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
   gpu::GPUInfo gpu_info_for_hardware_gpu_;
 
-  gpu::GpuExtraInfo gpu_extra_info_;
+  gfx::GpuExtraInfo gpu_extra_info_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

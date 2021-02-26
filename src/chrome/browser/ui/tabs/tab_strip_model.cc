@@ -11,12 +11,12 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -27,8 +27,10 @@
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
@@ -38,11 +40,10 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/feature_engagement/buildflags.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -54,11 +55,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -130,6 +126,11 @@ class RenderWidgetHostVisibilityTracker
                                       "TabSwitchVisibilityRequest", this);
   }
 
+  RenderWidgetHostVisibilityTracker(const RenderWidgetHostVisibilityTracker&) =
+      delete;
+  RenderWidgetHostVisibilityTracker& operator=(
+      const RenderWidgetHostVisibilityTracker&) = delete;
+
   ~RenderWidgetHostVisibilityTracker() override {
     if (host_)
       host_->RemoveObserver(this);
@@ -157,8 +158,6 @@ class RenderWidgetHostVisibilityTracker
 
   content::RenderWidgetHost* host_ = nullptr;
   base::ElapsedTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityTracker);
 };
 
 }  // namespace
@@ -171,6 +170,8 @@ class RenderWidgetHostVisibilityTracker
 class TabStripModel::WebContentsData : public content::WebContentsObserver {
  public:
   explicit WebContentsData(std::unique_ptr<WebContents> a_contents);
+  WebContentsData(const WebContentsData&) = delete;
+  WebContentsData& operator=(const WebContentsData&) = delete;
 
   // Changes the WebContents that this WebContentsData tracks.
   std::unique_ptr<WebContents> ReplaceWebContents(
@@ -223,17 +224,7 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   bool blocked_ = false;
 
   // The group that contains this tab, if any.
-  // TODO(https://crbug.com/915956): While tab groups are being prototyped
-  // (behind a feature flag), we are tracking group membership in the simplest
-  // possible way. There are some known issues intentionally punted here:
-  //   - Groups are meant to be contiguous, but this data organization doesn't
-  //     help to ensure that they stay contiguous. Any kind of tab movement may
-  //     break that guarantee, with undefined results.
-  //   - The exact shape of the group-related changes to the TabStripModel API
-  //     (and the relevant bits of the extension API) are TBD.
   base::Optional<tab_groups::TabGroupId> group_ = base::nullopt;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
 TabStripModel::WebContentsData::WebContentsData(
@@ -264,6 +255,8 @@ struct TabStripModel::DetachedWebContents {
       : contents(std::move(contents)),
         index_before_any_removals(index_before_any_removals),
         index_at_time_of_removal(index_at_time_of_removal) {}
+  DetachedWebContents(const DetachedWebContents&) = delete;
+  DetachedWebContents& operator=(const DetachedWebContents&) = delete;
   ~DetachedWebContents() = default;
   DetachedWebContents(DetachedWebContents&&) = default;
 
@@ -278,9 +271,6 @@ struct TabStripModel::DetachedWebContents {
   // tabs are being simultaneously removed, the index reflects previously
   // removed tabs in this batch.
   const int index_at_time_of_removal;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachedWebContents);
 };
 
 // Holds all state necessary to send notifications for detached tabs. Will
@@ -292,6 +282,8 @@ struct TabStripModel::DetachNotifications {
       : initially_active_web_contents(initially_active_web_contents),
         selection_model(selection_model),
         will_delete(will_delete) {}
+  DetachNotifications(const DetachNotifications&) = delete;
+  DetachNotifications& operator=(const DetachNotifications&) = delete;
   ~DetachNotifications() = default;
 
   // The WebContents that was active prior to any detaches happening.
@@ -312,9 +304,6 @@ struct TabStripModel::DetachNotifications {
 
   // Whether to delete the WebContents after sending notifications.
   const bool will_delete;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachNotifications);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -469,17 +458,7 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   base::Optional<int> next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index);
 
-  // Here we update the group model manually instead of calling UngroupTab(), so
-  // that the tab isn't prematurely ungrouped. Ungrouping the tab can change its
-  // position while it's still animating closed, which can result in the wrong
-  // view getting removed.
-  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
-  if (group.has_value()) {
-    TabGroup* tab_group = group_model_->GetTabGroup(group.value());
-    tab_group->RemoveTab();
-    if (tab_group->IsEmpty())
-      group_model_->RemoveTabGroup(group.value());
-  }
+  UngroupTab(index);
 
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);
@@ -632,11 +611,7 @@ int TabStripModel::MoveWebContentsAt(int index,
 
   DCHECK(ContainsIndex(index));
 
-  // Ensure pinned and non-pinned tabs do not mix.
-  const int first_non_pinned_tab = IndexOfFirstNonPinnedTab();
-  to_position = IsTabPinned(index)
-                    ? std::min(first_non_pinned_tab - 1, to_position)
-                    : std::max(first_non_pinned_tab, to_position);
+  to_position = ConstrainMoveIndex(to_position, IsTabPinned(index));
 
   if (index == to_position)
     return to_position;
@@ -843,6 +818,17 @@ bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned();
 }
 
+bool TabStripModel::IsTabCollapsed(int index) const {
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
+  return group.has_value() && IsGroupCollapsed(group.value());
+}
+
+bool TabStripModel::IsGroupCollapsed(
+    const tab_groups::TabGroupId& group) const {
+  return group_model()->ContainsTabGroup(group) &&
+         group_model()->GetTabGroup(group)->visual_data()->is_collapsed();
+}
+
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
 }
@@ -850,6 +836,24 @@ bool TabStripModel::IsTabBlocked(int index) const {
 base::Optional<tab_groups::TabGroupId> TabStripModel::GetTabGroupForTab(
     int index) const {
   return ContainsIndex(index) ? contents_data_[index]->group() : base::nullopt;
+}
+
+base::Optional<tab_groups::TabGroupId> TabStripModel::GetSurroundingTabGroup(
+    int index) const {
+  if (!ContainsIndex(index - 1) || !ContainsIndex(index))
+    return base::nullopt;
+
+  // If the tab before is not in a group, a tab inserted at |index|
+  // wouldn't be surrounded by one group.
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index - 1);
+  if (!group)
+    return base::nullopt;
+
+  // If the tab after is in a different (or no) group, a new tab at
+  // |index| isn't surrounded.
+  if (group != GetTabGroupForTab(index))
+    return base::nullopt;
+  return group;
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
@@ -957,7 +961,7 @@ void TabStripModel::AddWebContents(
   if (group.has_value()) {
     auto grouped_tabs = group_model_->GetTabGroup(group.value())->ListTabs();
     if (grouped_tabs.size() > 0) {
-      DCHECK(base::STLIsSorted(grouped_tabs));
+      DCHECK(base::ranges::is_sorted(grouped_tabs));
       index = base::ClampToRange(index, grouped_tabs.front(),
                                  grouped_tabs.back() + 1);
     }
@@ -1002,8 +1006,8 @@ void TabStripModel::AddWebContents(
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      ResizeWebContents(raw_contents,
-                        gfx::Rect(old_contents->GetContainerBounds().size()));
+      raw_contents->Resize(
+          gfx::Rect(old_contents->GetContainerBounds().size()));
     }
   }
 }
@@ -1029,20 +1033,20 @@ void TabStripModel::SelectLastTab(UserGestureDetails detail) {
 }
 
 void TabStripModel::MoveTabNext() {
-  // TODO: this likely needs to be updated for multi-selection.
-  int new_index = std::min(active_index() + 1, count() - 1);
-  MoveWebContentsAt(active_index(), new_index, true);
+  MoveTabRelative(true);
 }
 
 void TabStripModel::MoveTabPrevious() {
-  // TODO: this likely needs to be updated for multi-selection.
-  int new_index = std::max(active_index() - 1, 0);
-  MoveWebContentsAt(active_index(), new_index, true);
+  MoveTabRelative(false);
 }
 
 tab_groups::TabGroupId TabStripModel::AddToNewGroup(
     const std::vector<int>& indices) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+
+  // Ensure that the indices are sorted and unique.
+  DCHECK(base::ranges::is_sorted(indices));
+  DCHECK(std::adjacent_find(indices.begin(), indices.end()) == indices.end());
 
   // The odds of |new_group| colliding with an existing group are astronomically
   // low. If there is a collision, a DCHECK will fail in |AddToNewGroupImpl()|,
@@ -1051,6 +1055,7 @@ tab_groups::TabGroupId TabStripModel::AddToNewGroup(
   const tab_groups::TabGroupId new_group =
       tab_groups::TabGroupId::GenerateNew();
   AddToNewGroupImpl(indices, new_group);
+  OpenTabGroupEditor(new_group);
   return new_group;
 }
 
@@ -1058,12 +1063,17 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
                                        const tab_groups::TabGroupId& group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
+  // Ensure that the indices are sorted and unique.
+  DCHECK(base::ranges::is_sorted(indices));
+  DCHECK(std::adjacent_find(indices.begin(), indices.end()) == indices.end());
+
   AddToExistingGroupImpl(indices, group);
 }
 
-void TabStripModel::MoveTabsAndSetGroup(const std::vector<int>& indices,
-                                        int destination_index,
-                                        const tab_groups::TabGroupId& group) {
+void TabStripModel::MoveTabsAndSetGroup(
+    const std::vector<int>& indices,
+    int destination_index,
+    base::Optional<tab_groups::TabGroupId> group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   MoveTabsAndSetGroupImpl(indices, destination_index, group);
@@ -1128,8 +1138,33 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
   }
 }
 
+bool TabStripModel::IsReadLaterSupportedForAny(const std::vector<int> indices) {
+  ReadingListModel* model =
+      ReadingListModelFactory::GetForBrowserContext(profile_);
+  if (!model || !model->loaded())
+    return false;
+  for (int index : indices) {
+    if (model->IsUrlSupported(
+            chrome::GetURLToBookmark(GetWebContentsAt(index))))
+      return true;
+  }
+  return false;
+}
+
+void TabStripModel::AddToReadLater(const std::vector<int>& indices) {
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+
+  AddToReadLaterImpl(indices);
+}
+
 void TabStripModel::CreateTabGroup(const tab_groups::TabGroupId& group) {
   TabGroupChange change(group, TabGroupChange::kCreated);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::OpenTabGroupEditor(const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kEditorOpened);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1217,6 +1252,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandSendTabToSelfSingleTarget:
       return true;
 
+    case CommandAddToReadLater:
+      return true;
+
     case CommandAddToNewGroup:
       return true;
 
@@ -1250,13 +1288,6 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
       delegate()->AddTabAt(GURL(), context_index + 1, true,
                            GetTabGroupForTab(context_index));
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-      auto* new_tab_tracker =
-          feature_engagement::NewTabTrackerFactory::GetInstance()
-              ->GetForProfile(profile_);
-      new_tab_tracker->OnNewTabOpened();
-      new_tab_tracker->CloseBubble();
-#endif
       break;
     }
 
@@ -1374,6 +1405,11 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
             UserMetricsAction("SoundContentSetting.UnmuteBy.TabStrip"));
       }
       SetSitesMuted(GetIndicesForCommand(context_index), mute);
+      break;
+    }
+
+    case CommandAddToReadLater: {
+      AddToReadLater(GetIndicesForCommand(context_index));
       break;
     }
 
@@ -1510,6 +1546,30 @@ int TabStripModel::GetIndexOfNextWebContentsOpenedBy(const WebContents* opener,
   return kNoTab;
 }
 
+base::Optional<int> TabStripModel::GetNextExpandedActiveTab(
+    int start_index,
+    base::Optional<tab_groups::TabGroupId> collapsing_group) const {
+  // Check tabs from the start_index first.
+  for (int i = start_index + 1; i < count(); ++i) {
+    base::Optional<tab_groups::TabGroupId> current_group = GetTabGroupForTab(i);
+    if (!current_group.has_value() ||
+        (!IsGroupCollapsed(current_group.value()) &&
+         current_group != collapsing_group)) {
+      return i;
+    }
+  }
+  // Then check tabs before start_index, iterating backwards.
+  for (int i = start_index - 1; i >= 0; --i) {
+    base::Optional<tab_groups::TabGroupId> current_group = GetTabGroupForTab(i);
+    if (!current_group.has_value() ||
+        (!IsGroupCollapsed(current_group.value()) &&
+         current_group != collapsing_group)) {
+      return i;
+    }
+  }
+  return base::nullopt;
+}
+
 void TabStripModel::ForgetAllOpeners() {
   for (const auto& data : contents_data_)
     data->set_opener(nullptr);
@@ -1538,14 +1598,21 @@ bool TabStripModel::RunUnloadListenerBeforeClosing(
 
 bool TabStripModel::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  return contents->NeedToFireBeforeUnloadOrUnload() ||
+  return contents->NeedToFireBeforeUnloadOrUnloadEvents() ||
          delegate_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 
-int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) {
+int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) const {
   return pinned_tab
              ? base::ClampToRange(index, 0, IndexOfFirstNonPinnedTab())
              : base::ClampToRange(index, IndexOfFirstNonPinnedTab(), count());
+}
+
+int TabStripModel::ConstrainMoveIndex(int index, bool pinned_tab) const {
+  return pinned_tab
+             ? base::ClampToRange(index, 0, IndexOfFirstNonPinnedTab() - 1)
+             : base::ClampToRange(index, IndexOfFirstNonPinnedTab(),
+                                  count() - 1);
 }
 
 std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
@@ -1792,8 +1859,6 @@ TabStripSelectionChange TabStripModel::SetSelection(
                 !input_event_timestamp.is_null() ? input_event_timestamp : now,
                 resource_coordinator::ResourceCoordinatorTabHelper::IsLoaded(
                     selection.new_contents),
-                resource_coordinator::ResourceCoordinatorTabHelper::IsFrozen(
-                    selection.new_contents),
                 /*show_reason_tab_switching=*/true,
                 /*show_reason_unoccluded=*/false,
                 /*show_reason_bfcache_restore=*/false);
@@ -1815,10 +1880,56 @@ void TabStripModel::SelectRelativeTab(bool next, UserGestureDetails detail) {
   if (contents_data_.empty())
     return;
 
-  int index = active_index();
-  int delta = next ? 1 : -1;
-  index = (index + count() + delta) % count();
+  const int start_index = active_index();
+  base::Optional<tab_groups::TabGroupId> start_group =
+      GetTabGroupForTab(start_index);
+
+  // Ensure the active tab is not in a collapsed group so the while loop can
+  // fallback on activating the active tab.
+  DCHECK(!start_group.has_value() || !IsGroupCollapsed(start_group.value()));
+  const int delta = next ? 1 : -1;
+  int index = (start_index + count() + delta) % count();
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
+  while (group.has_value() && IsGroupCollapsed(group.value())) {
+    index = (index + count() + delta) % count();
+    group = GetTabGroupForTab(index);
+  }
   ActivateTabAt(index, detail);
+}
+
+void TabStripModel::MoveTabRelative(bool forward) {
+  const int offset = forward ? 1 : -1;
+
+  // TODO: this needs to be updated for multi-selection.
+  const int current_index = active_index();
+  base::Optional<tab_groups::TabGroupId> current_group =
+      GetTabGroupForTab(current_index);
+
+  int target_index = std::max(std::min(current_index + offset, count() - 1), 0);
+  base::Optional<tab_groups::TabGroupId> target_group =
+      GetTabGroupForTab(target_index);
+
+  // If the tab is at a group boundary and the group is expanded, instead of
+  // actually moving the tab just change its group membership.
+  if (current_group != target_group) {
+    if (current_group.has_value()) {
+      UngroupTab(current_index);
+      return;
+    } else if (target_group.has_value()) {
+      // If the tab is at a group boundary and the group is collapsed, treat the
+      // collapsed group as a tab and find the next available slot for the tab
+      // to move to.
+      const TabGroup* group = group_model_->GetTabGroup(target_group.value());
+      if (group->visual_data()->is_collapsed()) {
+        const std::vector<int> tabs_in_group = group->ListTabs();
+        target_index = forward ? tabs_in_group.back() : tabs_in_group.front();
+      } else {
+        GroupTab(current_index, target_group.value());
+        return;
+      }
+    }
+  }
+  MoveWebContentsAt(current_index, target_index, true);
 }
 
 void TabStripModel::MoveWebContentsAtImpl(int index,
@@ -1893,25 +2004,34 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
 
   group_model_->AddTabGroup(new_group, base::nullopt);
 
-  // Find a destination for the first tab that's not inside another group. We
-  // will stack the rest of the tabs up to its right.
+  // Find a destination for the first tab that's not pinned or inside another
+  // group. We will stack the rest of the tabs up to its right.
   int destination_index = -1;
   for (int i = indices[0]; i < count(); i++) {
     const int destination_candidate = i + 1;
-    const bool end_of_strip = !ContainsIndex(destination_candidate);
-    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
-        GetTabGroupForTab(destination_candidate) !=
-            GetTabGroupForTab(indices[0])) {
+
+    // Grouping at the end of the tabstrip is always valid.
+    if (!ContainsIndex(destination_candidate)) {
+      destination_index = destination_candidate;
+      break;
+    }
+
+    // Grouping in the middle of pinned tabs is never valid.
+    if (IsTabPinned(destination_candidate))
+      continue;
+
+    // Otherwise, grouping is valid if the destination is not in the middle of a
+    // different group.
+    base::Optional<tab_groups::TabGroupId> destination_group =
+        GetTabGroupForTab(destination_candidate);
+    if (!destination_group.has_value() ||
+        destination_group != GetTabGroupForTab(indices[0])) {
       destination_index = destination_candidate;
       break;
     }
   }
 
-  // Unpin tabs when grouping -- the states should be mutually exclusive.
-  std::vector<int> new_indices = indices;
-  new_indices = SetTabsPinned(new_indices, false);
-
-  MoveTabsAndSetGroupImpl(new_indices, destination_index, new_group);
+  MoveTabsAndSetGroupImpl(indices, destination_index, new_group);
 }
 
 void TabStripModel::AddToExistingGroupImpl(
@@ -1928,26 +2048,23 @@ void TabStripModel::AddToExistingGroupImpl(
   if (!group_model_->ContainsTabGroup(group))
     return;
 
-  // Unpin tabs when grouping -- the states should be mutually exclusive.
-  std::vector<int> new_indices = SetTabsPinned(indices, false);
-
   std::vector<int> tabs_in_group = group_model_->GetTabGroup(group)->ListTabs();
-  DCHECK(base::STLIsSorted(tabs_in_group));
+  DCHECK(base::ranges::is_sorted(tabs_in_group));
 
-  // Split |new_indices| into |tabs_left_of_group| and |tabs_right_of_group| to
+  // Split |indices| into |tabs_left_of_group| and |tabs_right_of_group| to
   // be moved to proper destination index. Directly set the group for indices
   // that are inside the group.
   std::vector<int> tabs_left_of_group;
   std::vector<int> tabs_right_of_group;
-  for (int new_index : new_indices) {
-    if (new_index >= tabs_in_group.front() &&
-        new_index <= tabs_in_group.back()) {
-      GroupTab(new_index, group);
-    } else if (new_index < tabs_in_group.front()) {
-      tabs_left_of_group.push_back(new_index);
+  for (int index : indices) {
+    if (index >= tabs_in_group.front() &&
+        index <= tabs_in_group.back()) {
+      GroupTab(index, group);
+    } else if (index < tabs_in_group.front()) {
+      tabs_left_of_group.push_back(index);
     } else {
-      DCHECK(new_index > tabs_in_group.back());
-      tabs_right_of_group.push_back(new_index);
+      DCHECK(index > tabs_in_group.back());
+      tabs_right_of_group.push_back(index);
     }
   }
 
@@ -1987,15 +2104,43 @@ void TabStripModel::MoveAndSetGroup(
     int index,
     int new_index,
     base::Optional<tab_groups::TabGroupId> new_group) {
-  DCHECK(!IsTabPinned(index));
+  if (new_group.has_value()) {
+    // Unpin tabs when grouping -- the states should be mutually exclusive.
+    // Here we manually unpin the tab to avoid moving the tab twice, which can
+    // potentially cause race conditions.
+    if (IsTabPinned(index)) {
+      contents_data_[index]->set_pinned(false);
+      for (auto& observer : observers_) {
+        observer.TabPinnedStateChanged(
+            this, contents_data_[index]->web_contents(), index);
+      }
+    }
 
-  if (new_group.has_value())
     GroupTab(index, new_group.value());
-  else
+  } else {
     UngroupTab(index);
+  }
 
   if (index != new_index)
     MoveWebContentsAtImpl(index, new_index, false);
+}
+
+void TabStripModel::AddToReadLaterImpl(const std::vector<int>& indices) {
+  ReadingListModel* model =
+      ReadingListModelFactory::GetForBrowserContext(profile_);
+  if (!model || !model->loaded())
+    return;
+
+  for (int index : indices) {
+    WebContents* contents = GetWebContentsAt(index);
+    GURL url;
+    base::string16 title;
+    chrome::GetURLAndTitleToBookmark(contents, &url, &title);
+    if (model->IsUrlSupported(url)) {
+      model->AddEntry(url, base::UTF16ToUTF8(title),
+                      reading_list::EntrySource::ADDED_VIA_CURRENT_APP);
+    }
+  }
 }
 
 base::Optional<tab_groups::TabGroupId> TabStripModel::UngroupTab(int index) {
@@ -2005,8 +2150,10 @@ base::Optional<tab_groups::TabGroupId> TabStripModel::UngroupTab(int index) {
 
   // Update the tab.
   contents_data_[index]->set_group(base::nullopt);
-  for (auto& observer : observers_)
-    observer.TabGroupedStateChanged(base::nullopt, index);
+  for (auto& observer : observers_) {
+    observer.TabGroupedStateChanged(
+        base::nullopt, contents_data_[index]->web_contents(), index);
+  }
 
   // Update the group model.
   TabGroup* tab_group = group_model_->GetTabGroup(group.value());
@@ -2028,8 +2175,10 @@ void TabStripModel::GroupTab(int index, const tab_groups::TabGroupId& group) {
       UngroupTab(index);
   }
   contents_data_[index]->set_group(group);
-  for (auto& observer : observers_)
-    observer.TabGroupedStateChanged(group, index);
+  for (auto& observer : observers_) {
+    observer.TabGroupedStateChanged(
+        group, contents_data_[index]->web_contents(), index);
+  }
 
   group_model_->GetTabGroup(group)->AddTab();
 }
@@ -2110,7 +2259,7 @@ void TabStripModel::SetSitesMuted(const std::vector<int>& indices,
         setting = CONTENT_SETTING_DEFAULT;
       }
       settings->SetContentSettingDefaultScope(
-          url, url, ContentSettingsType::SOUND, std::string(), setting);
+          url, url, ContentSettingsType::SOUND, setting);
     }
   }
 }

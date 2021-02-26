@@ -13,12 +13,14 @@
 #include <vector>
 #include "aom_dsp/aom_dsp_common.h"
 #include "common/tools_common.h"
+#include "av1/encoder/encoder.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
 #include "test/i420_video_source.h"
 #include "test/video_source.h"
 #include "test/util.h"
+#include "test/y4m_video_source.h"
 
 // Enable(1) or Disable(0) writing of the compressed bitstream.
 #define WRITE_COMPRESSED_STREAM 0
@@ -298,7 +300,7 @@ class ResizeInternalTestLarge : public ResizeTest {
 
   virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (frame0_psnr_ == 0.) frame0_psnr_ = pkt->data.psnr.psnr[0];
-    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 3.0);
+    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 4.1);
   }
 
 #if WRITE_COMPRESSED_STREAM
@@ -367,7 +369,9 @@ class ResizeRealtimeTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
  protected:
-  ResizeRealtimeTest() : EncoderTest(GET_PARAM(0)) {}
+  ResizeRealtimeTest()
+      : EncoderTest(GET_PARAM(0)), set_scale_mode_(false),
+        set_scale_mode2_(false) {}
   virtual ~ResizeRealtimeTest() {}
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
@@ -377,8 +381,27 @@ class ResizeRealtimeTest
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
     }
+    if (set_scale_mode_) {
+      struct aom_scaling_mode mode;
+      if (video->frame() <= 20)
+        mode = { AOME_ONETWO, AOME_ONETWO };
+      else if (video->frame() <= 40)
+        mode = { AOME_ONEFOUR, AOME_ONEFOUR };
+      else if (video->frame() > 40)
+        mode = { AOME_NORMAL, AOME_NORMAL };
+      encoder->Control(AOME_SET_SCALEMODE, &mode);
+    } else if (set_scale_mode2_) {
+      struct aom_scaling_mode mode;
+      if (video->frame() <= 20)
+        mode = { AOME_ONEFOUR, AOME_ONEFOUR };
+      else if (video->frame() <= 40)
+        mode = { AOME_ONETWO, AOME_ONETWO };
+      else if (video->frame() > 40)
+        mode = { AOME_THREEFOUR, AOME_THREEFOUR };
+      encoder->Control(AOME_SET_SCALEMODE, &mode);
+    }
 
-    if (change_bitrate_ && video->frame() == 120) {
+    if (change_bitrate_ && video->frame() == frame_change_bitrate_) {
       change_bitrate_ = false;
       cfg_.rc_target_bitrate = 500;
       encoder->Config(&cfg_);
@@ -426,22 +449,135 @@ class ResizeRealtimeTest
     // the width and height of the frame are swapped
     cfg_.g_forced_max_frame_width = cfg_.g_forced_max_frame_height =
         AOMMAX(kInitialWidth, kInitialHeight);
+    if (set_scale_mode_ || set_scale_mode2_) {
+      cfg_.rc_dropframe_thresh = 0;
+      cfg_.g_forced_max_frame_width = 1280;
+      cfg_.g_forced_max_frame_height = 1280;
+    }
   }
 
   std::vector<FrameInfo> frame_info_list_;
   int set_cpu_used_;
   bool change_bitrate_;
+  unsigned int frame_change_bitrate_;
   double mismatch_psnr_;
   int mismatch_nframes_;
+  bool set_scale_mode_;
+  bool set_scale_mode2_;
 };
+
+// Check the AOME_SET_SCALEMODE control by downsizing to
+// 1/2, then 1/4, and then back up to originsal.
+TEST_P(ResizeRealtimeTest, TestInternalResizeSetScaleMode1) {
+  ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
+  cfg_.g_w = 1280;
+  cfg_.g_h = 720;
+  set_scale_mode_ = true;
+  set_scale_mode2_ = false;
+  DefaultConfig();
+  change_bitrate_ = false;
+  mismatch_nframes_ = 0;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
+  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
+       info != frame_info_list_.end(); ++info) {
+    const auto frame = static_cast<unsigned>(info->pts);
+    unsigned int expected_w = 1280 >> 1;
+    unsigned int expected_h = 720 >> 1;
+    if (frame > 40) {
+      expected_w = 1280;
+      expected_h = 720;
+    } else if (frame > 20 && frame <= 40) {
+      expected_w = 1280 >> 2;
+      expected_h = 720 >> 2;
+    }
+    EXPECT_EQ(expected_w, info->w)
+        << "Frame " << frame << " had unexpected width";
+    EXPECT_EQ(expected_h, info->h)
+        << "Frame " << frame << " had unexpected height";
+    EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
+  }
+}
+
+// Check the AOME_SET_SCALEMODE control by downsizing to
+// 1/2, then 1/4, and then back up to originsal.
+TEST_P(ResizeRealtimeTest, TestInternalResizeSetScaleMode1QVGA) {
+  ::libaom_test::I420VideoSource video("desktop1.320_180.yuv", 320, 180, 30, 1,
+                                       0, 80);
+  cfg_.g_w = 320;
+  cfg_.g_h = 180;
+  set_scale_mode_ = true;
+  set_scale_mode2_ = false;
+  DefaultConfig();
+  change_bitrate_ = false;
+  mismatch_nframes_ = 0;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
+  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
+       info != frame_info_list_.end(); ++info) {
+    const auto frame = static_cast<unsigned>(info->pts);
+    unsigned int expected_w = 320 >> 1;
+    unsigned int expected_h = 180 >> 1;
+    if (frame > 40) {
+      expected_w = 320;
+      expected_h = 180;
+    } else if (frame > 20 && frame <= 40) {
+      expected_w = 320 >> 2;
+      expected_h = 180 >> 2;
+    }
+    EXPECT_EQ(expected_w, info->w)
+        << "Frame " << frame << " had unexpected width";
+    EXPECT_EQ(expected_h, info->h)
+        << "Frame " << frame << " had unexpected height";
+    EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
+  }
+}
+
+// Check the AOME_SET_SCALEMODE control by downsizing to
+// 1/4, then 1/2, and then up to 3/4.
+TEST_P(ResizeRealtimeTest, TestInternalResizeSetScaleMode2) {
+  ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
+  cfg_.g_w = 1280;
+  cfg_.g_h = 720;
+  set_scale_mode_ = false;
+  set_scale_mode2_ = true;
+  DefaultConfig();
+  change_bitrate_ = false;
+  mismatch_nframes_ = 0;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
+  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
+       info != frame_info_list_.end(); ++info) {
+    const auto frame = static_cast<unsigned>(info->pts);
+    unsigned int expected_w = 1280 >> 2;
+    unsigned int expected_h = 720 >> 2;
+    if (frame > 40) {
+      expected_w = (3 * 1280) >> 2;
+      expected_h = (3 * 720) >> 2;
+    } else if (frame > 20 && frame <= 40) {
+      expected_w = 1280 >> 1;
+      expected_h = 720 >> 1;
+    }
+    EXPECT_EQ(expected_w, info->w)
+        << "Frame " << frame << " had unexpected width";
+    EXPECT_EQ(expected_h, info->h)
+        << "Frame " << frame << " had unexpected height";
+    EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
+  }
+}
 
 TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
   ResizingVideoSource video;
   video.flag_codec_ = 1;
-  DefaultConfig();
   change_bitrate_ = false;
+  set_scale_mode_ = false;
+  set_scale_mode2_ = false;
   mismatch_psnr_ = 0.0;
   mismatch_nframes_ = 0;
+  DefaultConfig();
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 
   // Check we decoded the same number of frames as we attempted to encode
@@ -465,74 +601,35 @@ TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
 // Verify the dynamic resizer behavior for real time, 1 pass CBR mode.
 // Run at low bitrate, with resize_allowed = 1, and verify that we get
 // one resize down event.
-TEST_P(ResizeRealtimeTest, DISABLED_TestInternalResizeDown) {
-  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 299);
-  DefaultConfig();
-  cfg_.g_w = 352;
-  cfg_.g_h = 288;
+TEST_P(ResizeRealtimeTest, TestInternalResizeDown) {
+  ::libaom_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
+                                       0, 400);
+  cfg_.g_w = 640;
+  cfg_.g_h = 480;
   change_bitrate_ = false;
+  set_scale_mode_ = false;
+  set_scale_mode2_ = false;
   mismatch_psnr_ = 0.0;
   mismatch_nframes_ = 0;
+  DefaultConfig();
+  // Disable dropped frames.
+  cfg_.rc_dropframe_thresh = 0;
+  // Starting bitrate low.
+  cfg_.rc_target_bitrate = 150;
+  cfg_.rc_resize_mode = RESIZE_DYNAMIC;
+  cfg_.g_forced_max_frame_width = 1280;
+  cfg_.g_forced_max_frame_height = 1280;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 
   unsigned int last_w = cfg_.g_w;
   unsigned int last_h = cfg_.g_h;
-  int resize_count = 0;
+  int resize_down_count = 0;
   for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
        info != frame_info_list_.end(); ++info) {
     if (info->w != last_w || info->h != last_h) {
       // Verify that resize down occurs.
-      ASSERT_LT(info->w, last_w);
-      ASSERT_LT(info->h, last_h);
-      last_w = info->w;
-      last_h = info->h;
-      resize_count++;
-    }
-  }
-
-#if CONFIG_AV1_DECODER
-  // Verify that we get 1 resize down event in this test.
-  ASSERT_EQ(1, resize_count) << "Resizing should occur.";
-  EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
-#else
-  printf("Warning: AV1 decoder unavailable, unable to check resize count!\n");
-#endif
-}
-
-// Verify the dynamic resizer behavior for real time, 1 pass CBR mode.
-// Start at low target bitrate, raise the bitrate in the middle of the clip,
-// scaling-up should occur after bitrate changed.
-TEST_P(ResizeRealtimeTest, DISABLED_TestInternalResizeDownUpChangeBitRate) {
-  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 359);
-  DefaultConfig();
-  cfg_.g_w = 352;
-  cfg_.g_h = 288;
-  change_bitrate_ = true;
-  mismatch_psnr_ = 0.0;
-  mismatch_nframes_ = 0;
-  // Disable dropped frames.
-  cfg_.rc_dropframe_thresh = 0;
-  // Starting bitrate low.
-  cfg_.rc_target_bitrate = 80;
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-
-  unsigned int last_w = cfg_.g_w;
-  unsigned int last_h = cfg_.g_h;
-  int resize_count = 0;
-  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
-       info != frame_info_list_.end(); ++info) {
-    if (info->w != last_w || info->h != last_h) {
-      resize_count++;
-      if (resize_count == 1) {
-        // Verify that resize down occurs.
-        ASSERT_LT(info->w, last_w);
-        ASSERT_LT(info->h, last_h);
-      } else if (resize_count == 2) {
-        // Verify that resize up occurs.
-        ASSERT_GT(info->w, last_w);
-        ASSERT_GT(info->h, last_h);
+      if (info->w < last_w && info->h < last_h) {
+        resize_down_count++;
       }
       last_w = info->w;
       last_h = info->h;
@@ -540,8 +637,69 @@ TEST_P(ResizeRealtimeTest, DISABLED_TestInternalResizeDownUpChangeBitRate) {
   }
 
 #if CONFIG_AV1_DECODER
-  // Verify that we get 2 resize events in this test.
-  ASSERT_EQ(resize_count, 2) << "Resizing should occur twice.";
+  // Verify that we get at lease 1 resize down event in this test.
+  ASSERT_GE(resize_down_count, 1) << "Resizing should occur.";
+  EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
+#else
+  printf("Warning: AV1 decoder unavailable, unable to check resize count!\n");
+#endif
+}
+
+// Verify the dynamic resizer behavior for real time, 1 pass CBR mode.
+// Start at low target bitrate, raise the bitrate in the middle of the clip
+// (at frame# = frame_change_bitrate_), scaling-up should occur after bitrate
+// is increased.
+TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
+  ::libaom_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
+                                       0, 400);
+  cfg_.g_w = 640;
+  cfg_.g_h = 480;
+  change_bitrate_ = true;
+  frame_change_bitrate_ = 120;
+  set_scale_mode_ = false;
+  set_scale_mode2_ = false;
+  mismatch_psnr_ = 0.0;
+  mismatch_nframes_ = 0;
+  DefaultConfig();
+  // Disable dropped frames.
+  cfg_.rc_dropframe_thresh = 0;
+  // Starting bitrate low.
+  cfg_.rc_target_bitrate = 150;
+  cfg_.rc_resize_mode = RESIZE_DYNAMIC;
+  cfg_.g_forced_max_frame_width = 1280;
+  cfg_.g_forced_max_frame_height = 1280;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+
+  unsigned int last_w = cfg_.g_w;
+  unsigned int last_h = cfg_.g_h;
+  unsigned int frame_number = 0;
+  int resize_down_count = 0;
+  int resize_up_count = 0;
+  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
+       info != frame_info_list_.end(); ++info) {
+    if (info->w != last_w || info->h != last_h) {
+      if (frame_number < frame_change_bitrate_) {
+        // Verify that resize down occurs, before bitrate is increased.
+        ASSERT_LT(info->w, last_w);
+        ASSERT_LT(info->h, last_h);
+        resize_down_count++;
+      } else {
+        // Verify that resize up occurs, after bitrate is increased.
+        ASSERT_GT(info->w, last_w);
+        ASSERT_GT(info->h, last_h);
+        resize_up_count++;
+      }
+      last_w = info->w;
+      last_h = info->h;
+    }
+    frame_number++;
+  }
+
+#if CONFIG_AV1_DECODER
+  // Verify that we get at least 2 resize events in this test.
+  ASSERT_GE(resize_up_count, 1) << "Resizing up should occur at lease once.";
+  ASSERT_GE(resize_down_count, 1)
+      << "Resizing down should occur at lease once.";
   EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
 #else
   printf("Warning: AV1 decoder unavailable, unable to check resize count!\n");
@@ -632,13 +790,70 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   }
 }
 
-AV1_INSTANTIATE_TEST_CASE(ResizeTest,
-                          ::testing::Values(::libaom_test::kRealTime));
-AV1_INSTANTIATE_TEST_CASE(ResizeInternalTestLarge,
-                          ::testing::Values(::libaom_test::kOnePassGood));
-AV1_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
-                          ::testing::Values(::libaom_test::kRealTime),
-                          ::testing::Range(5, 9));
-AV1_INSTANTIATE_TEST_CASE(ResizeCspTest,
-                          ::testing::Values(::libaom_test::kRealTime));
+// This class is used to check if there are any fatal
+// failures while encoding with resize-mode > 0
+class ResizeModeTestLarge
+    : public ::libaom_test::CodecTestWith5Params<libaom_test::TestMode, int,
+                                                 int, int, int>,
+      public ::libaom_test::EncoderTest {
+ protected:
+  ResizeModeTestLarge()
+      : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)),
+        resize_mode_(GET_PARAM(2)), resize_denominator_(GET_PARAM(3)),
+        resize_kf_denominator_(GET_PARAM(4)), cpu_used_(GET_PARAM(5)) {}
+  virtual ~ResizeModeTestLarge() {}
+
+  virtual void SetUp() {
+    InitializeConfig();
+    SetMode(encoding_mode_);
+    const aom_rational timebase = { 1, 30 };
+    cfg_.g_timebase = timebase;
+    cfg_.rc_end_usage = AOM_VBR;
+    cfg_.g_threads = 1;
+    cfg_.g_lag_in_frames = 35;
+    cfg_.rc_target_bitrate = 1000;
+    cfg_.rc_resize_mode = resize_mode_;
+    cfg_.rc_resize_denominator = resize_denominator_;
+    cfg_.rc_resize_kf_denominator = resize_kf_denominator_;
+    init_flags_ = AOM_CODEC_USE_PSNR;
+  }
+
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
+    if (video->frame() == 0) {
+      encoder->Control(AOME_SET_CPUUSED, cpu_used_);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
+    }
+  }
+
+  ::libaom_test::TestMode encoding_mode_;
+  int resize_mode_;
+  int resize_denominator_;
+  int resize_kf_denominator_;
+  int cpu_used_;
+};
+
+TEST_P(ResizeModeTestLarge, ResizeModeTest) {
+  ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 30);
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+}
+
+AV1_INSTANTIATE_TEST_SUITE(ResizeTest,
+                           ::testing::Values(::libaom_test::kRealTime));
+AV1_INSTANTIATE_TEST_SUITE(ResizeInternalTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood));
+AV1_INSTANTIATE_TEST_SUITE(ResizeRealtimeTest,
+                           ::testing::Values(::libaom_test::kRealTime),
+                           ::testing::Range(5, 10));
+AV1_INSTANTIATE_TEST_SUITE(ResizeCspTest,
+                           ::testing::Values(::libaom_test::kRealTime));
+
+// TODO(anyone): Enable below test once resize issues are fixed
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ResizeModeTestLarge);
+// AV1_INSTANTIATE_TEST_SUITE(
+//    ResizeModeTestLarge,
+//    ::testing::Values(::libaom_test::kOnePassGood,
+//    ::libaom_test::kTwoPassGood),
+//    ::testing::Values(1, 2), ::testing::Values(8, 12, 16),
+//    ::testing::Values(8, 12, 16), ::testing::Range(2, 7));
 }  // namespace

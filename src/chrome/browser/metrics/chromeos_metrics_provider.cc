@@ -30,9 +30,12 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/metrics/cached_metrics_profile.h"
+#include "chrome/browser/metrics/enrollment_status.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features_parser.h"
@@ -44,7 +47,6 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/variations/hashing.h"
-#include "components/variations/service/variations_field_trial_creator.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"
@@ -79,16 +81,6 @@ bool IsFeatureEnabled(
 }
 
 }  // namespace
-
-namespace features {
-
-// Populates hardware class field in system_profile proto with the
-// short hardware class if enabled. If disabled, hardware class will have same
-// value as full hardware class.
-const base::Feature kUmaShortHWClass{"UmaShortHWClass",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace features
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider(
     metrics::MetricsLogUploader::MetricServiceType service_type)
@@ -125,21 +117,17 @@ void ChromeOSMetricsProvider::LogCrash(const std::string& crash_type) {
   g_browser_process->metrics_service()->OnApplicationNotIdle();
 }
 
-ChromeOSMetricsProvider::EnrollmentStatus
-ChromeOSMetricsProvider::GetEnrollmentStatus() {
+EnrollmentStatus ChromeOSMetricsProvider::GetEnrollmentStatus() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector)
-    return ERROR_GETTING_ENROLLMENT_STATUS;
+    return EnrollmentStatus::kErrorGettingStatus;
 
-  return connector->IsEnterpriseManaged() ? MANAGED : NON_MANAGED;
+  return connector->IsEnterpriseManaged() ? EnrollmentStatus::kManaged
+                                          : EnrollmentStatus::kNonManaged;
 }
 
 void ChromeOSMetricsProvider::Init() {
-  if (base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
-    hardware_class_ =
-        variations::VariationsFieldTrialCreator::GetShortHardwareClass();
-  }
   if (profile_provider_ != nullptr)
     profile_provider_->Init();
 }
@@ -188,7 +176,6 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
 
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
-  hardware->set_hardware_class(hardware_class_);
   hardware->set_full_hardware_class(full_hardware_class_);
   display::Display::TouchSupport has_touch =
       ui::GetInternalDisplayTouchSupport();
@@ -209,6 +196,16 @@ void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback.EveryReport",
                         is_spoken_feedback_enabled);
+}
+
+void ChromeOSMetricsProvider::ProvideSuggestedContentMetrics() {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kSuggestedContentToggle)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Apps.AppList.SuggestedContent.Enabled",
+        ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+            chromeos::prefs::kSuggestedContentEnabled));
+  }
 }
 
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(
@@ -237,7 +234,9 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
   // Use current enrollment status for initial stability logs, since it's not
   // likely to change between browser restarts.
   UMA_STABILITY_HISTOGRAM_ENUMERATION(
-      "UMA.EnrollmentStatus", GetEnrollmentStatus(), ENROLLMENT_STATUS_MAX);
+      "UMA.EnrollmentStatus", GetEnrollmentStatus(),
+      // static_cast because we only have macros for stability histograms.
+      static_cast<int>(EnrollmentStatus::kMaxValue) + 1);
 
   // Record ARC-related stability metrics that should be included in initial
   // stability logs and all regular UMA logs.
@@ -247,6 +246,7 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
 void ChromeOSMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ProvideAccessibilityMetrics();
+  ProvideSuggestedContentMetrics();
   ProvideStabilityMetrics(uma_proto->mutable_system_profile());
   std::vector<SampledProfile> sampled_profiles;
   if (profile_provider_->GetSampledProfiles(&sampled_profiles)) {
@@ -312,10 +312,6 @@ void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
 void ChromeOSMetricsProvider::SetFullHardwareClass(
     base::OnceClosure callback,
     std::string full_hardware_class) {
-  if (!base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
-    DCHECK(hardware_class_.empty());
-    hardware_class_ = full_hardware_class;
-  }
   full_hardware_class_ = full_hardware_class;
   std::move(callback).Run();
 }
@@ -332,14 +328,13 @@ void ChromeOSMetricsProvider::OnArcFeaturesParsed(
 }
 
 void ChromeOSMetricsProvider::UpdateUserTypeUMA() {
-  if (user_manager::UserManager::IsInitialized()) {
-    const user_manager::User* primary_user =
-        user_manager::UserManager::Get()->GetPrimaryUser();
-    if (primary_user) {
-      user_manager::UserType user_type = primary_user->GetType();
-      return base::UmaHistogramEnumeration(
-          "UMA.PrimaryUserType", user_type,
-          user_manager::UserType::NUM_USER_TYPES);
-    }
-  }
+  if (!user_manager::UserManager::IsInitialized())
+    return;
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return;
+  user_manager::UserType user_type = primary_user->GetType();
+  base::UmaHistogramEnumeration("UMA.PrimaryUserType", user_type,
+                                user_manager::UserType::NUM_USER_TYPES);
 }

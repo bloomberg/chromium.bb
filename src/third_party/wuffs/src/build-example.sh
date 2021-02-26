@@ -39,14 +39,14 @@ for f in $sources; do
     continue
   fi
 
-  if [ $f = crc32 ]; then
+  if [ $f = imageviewer ]; then
+    # example/imageviewer is unusual in that needs additional libraries.
     echo "Building gen/bin/example-$f"
-    # example/crc32 is unusual in that it's C++, not C.
-    $CXX -O3 example/$f/*.cc -o gen/bin/example-$f
-  elif [ $f = library ]; then
-    # example/library is unusual in that it uses separately compiled libraries
-    # (built by "wuffs genlib", e.g. by running build-all.sh) instead of
-    # directly #include'ing Wuffs' .c files.
+    $CC -O3 example/$f/*.c -lxcb -lxcb-image -o gen/bin/example-$f
+  elif [ $f = "toy-genlib" ]; then
+    # example/toy-genlib is unusual in that it uses separately compiled
+    # libraries (built by "wuffs genlib", e.g. by running build-all.sh) instead
+    # of directly #include'ing Wuffs' .c files.
     if [ -e gen/lib/c/$CC-static/libwuffs.a ]; then
       echo "Building gen/bin/example-$f"
       $CC -O3 -static -I.. example/$f/*.c gen/lib/c/$CC-static/libwuffs.a -o gen/bin/example-$f
@@ -55,6 +55,12 @@ for f in $sources; do
     fi
   elif [ -e example/$f/*.c ]; then
     echo "Building gen/bin/example-$f"
-    $CC -O3 example/$f/*.c -o gen/bin/example-$f
+    $CC  -O3            example/$f/*.c  -o gen/bin/example-$f
+  elif [ $f = "jsonfindptrs" ]; then
+    echo "Building gen/bin/example-$f"
+    $CXX -O3 -std=c++17 example/$f/*.cc -o gen/bin/example-$f
+  elif [ -e example/$f/*.cc ]; then
+    echo "Building gen/bin/example-$f"
+    $CXX -O3            example/$f/*.cc -o gen/bin/example-$f
   fi
 done

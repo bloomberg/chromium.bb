@@ -48,9 +48,9 @@ class MockPersistentNelStore
     // Type of command.
     Type type;
 
-    // The origin of the policy that the command pertains to. (Only applies for
+    // The key of the policy that the command pertains to. (Only applies for
     // add, update, and delete)
-    url::Origin origin;
+    NetworkErrorLoggingService::NelPolicyKey key;
 
     // The supplied callback to be run when loading is complete. (Only applies
     // for load commands).
@@ -93,9 +93,6 @@ class MockPersistentNelStore
   // Returns the total number of policies that would be stored in the store, if
   // this were a real store.
   int StoredPoliciesCount() const { return policy_count_; }
-
-  // Generates a string with the list of commands, for ease of debugging.
-  std::string GetDebugString() const;
 
  private:
   // List of commands that we have received so far.

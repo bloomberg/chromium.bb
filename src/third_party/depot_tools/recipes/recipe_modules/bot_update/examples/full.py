@@ -23,7 +23,7 @@ def RunSteps(api):
   api.gclient.use_mirror = True
   commit = api.buildbucket.build.input.gitiles_commit
 
-  src_cfg = api.gclient.make_config(CACHE_DIR='[GIT_CACHE]')
+  src_cfg = api.gclient.make_config(CACHE_DIR=api.path['cache'].join('git'))
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
@@ -55,8 +55,8 @@ def RunSteps(api):
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
   gerrit_no_rebase_patch_ref = bool(
       api.properties.get('gerrit_no_rebase_patch_ref'))
-  manifest_name = api.properties.get('manifest_name')
   patch_refs = api.properties.get('patch_refs')
+  add_blamelists = api.properties.get('add_blamelists', False)
   set_output_commit = api.properties.get('set_output_commit', True)
 
   step_test_data = None
@@ -74,8 +74,8 @@ def RunSteps(api):
       gerrit_no_reset=gerrit_no_reset,
       gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
       disable_syntax_validation=True,
-      manifest_name=manifest_name,
       patch_refs=patch_refs,
+      add_blamelists=add_blamelists,
       set_output_commit=set_output_commit,
       step_test_data=step_test_data,
     )
@@ -120,31 +120,11 @@ def GenTests(api):
       ci_build(git_repo='https://unrecognized/repo')
   )
   yield (
-      api.test('basic_luci') +
+      api.test('bot_update_failure') +
       ci_build() +
-      api.runtime(is_experimental=False, is_luci=True)
+      api.properties(bot_update_output={'did_run': True})
   )
-  yield (
-      api.test('with_manifest_name') +
-      ci_build() +
-      api.properties(
-          manifest_name='checkout',
-          set_output_commit=False,
-      ) +
-      api.step_data('bot_update (without patch)', api.json.output({
-        'source_manifest': {
-          'directories': {
-            'src': {
-              'git_checkout': {
-                'repo_url': (
-                    'https://chromium.googlesource.com/chromium/src.git'),
-                'revision': 'ea17a292ecfb3dcdaa8dd226e67d6504fc13c15a'
-              },
-            },
-          },
-        },
-      }))
-  )
+
   yield (
       api.test('resolve_chromium_fixed_version') +
       ci_build() +
@@ -197,7 +177,7 @@ def GenTests(api):
   )
   yield (
       api.test('reset_root_solution_revision') +
-      api.properties(root_solution_revision='revision')
+      api.properties(root_solution_revision=api.bot_update.gen_revision('fake-revision'))
   )
   yield (
       api.test('gerrit_no_reset') +
@@ -253,12 +233,34 @@ def GenTests(api):
           ],
       )
   )
+  yield (
+      api.test('origin_master') +
+      ci_build(revision='origin/master')
+  )
+
+  yield (
+      api.test('add_blamelists') +
+      ci_build() +
+      api.properties(
+          add_blamelists=True,
+          revisions={'src/v8': 'HEAD'},
+      )
+  )
+
+  yield (
+      api.test('add_blamelists_bot_update_failure') +
+      ci_build() +
+      api.properties(
+          add_blamelists=True,
+          bot_update_output={'did_run': True},
+          revisions={'src/v8': 'HEAD'},
+      )
+  )
 
   yield (
       api.test('no_cp_checkout_a_specific_commit') +
       ci_build(revision='a' * 40) +
       api.properties(
-          revisions={'got_revision': 'src'},
           bot_update_output={
             'properties': {
               'got_revision': 'a' * 40,
@@ -277,7 +279,6 @@ def GenTests(api):
       api.test('no_cp_checkout_master') +
       ci_build(revision='') +
       api.properties(
-          revisions={'got_revision': 'src'},
           bot_update_output={
             'properties': {
               'got_revision': 'a' * 40,
@@ -296,7 +297,6 @@ def GenTests(api):
       api.test('no_cp_checkout_a_branch_head') +
       ci_build(revision='', git_ref='refs/branch-heads/x') +
       api.properties(
-          revisions={'got_revision': 'src'},
           bot_update_output={
             'properties': {
               'got_revision': 'a' * 40,
@@ -315,7 +315,6 @@ def GenTests(api):
       api.test('no_cp_checkout_HEAD') +
       ci_build(revision='HEAD') +
       api.properties(
-          revisions={'got_revision': 'src'},
           bot_update_output={
             'properties': {
               'got_revision': 'a' * 40,

@@ -382,6 +382,14 @@ TEST(IDBKeyFromValue, SparseArray) {
   V8TestingScope scope;
   auto key = ScriptToKey(scope, "[,1]");
   EXPECT_FALSE(key->IsValid());
+
+  // Ridiculously large sparse array - ensure we check before allocating.
+  key = ScriptToKey(scope, "Object.assign([], {length: 2e9})");
+  EXPECT_FALSE(key->IsValid());
+
+  // Large sparse arrays as subkeys - ensure we check while recursing.
+  key = ScriptToKey(scope, "[Object.assign([], {length: 2e9})]");
+  EXPECT_FALSE(key->IsValid());
 }
 
 TEST(IDBKeyFromValue, ShrinkingArray) {

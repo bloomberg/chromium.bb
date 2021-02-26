@@ -4,7 +4,9 @@
 
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,6 +20,17 @@ class VideoFrameTest : public testing::Test {
       scoped_refptr<media::VideoFrame> media_frame) {
     return MakeGarbageCollected<VideoFrame>(std::move(media_frame));
   }
+  VideoFrame* CreateBlinkVideoFrameFromHandle(
+      scoped_refptr<VideoFrameHandle> handle) {
+    return MakeGarbageCollected<VideoFrame>(std::move(handle));
+  }
+  scoped_refptr<media::VideoFrame> CreateDefaultBlackMediaVideoFrame() {
+    return CreateBlackMediaVideoFrame(base::TimeDelta::FromMicroseconds(1000),
+                                      media::PIXEL_FORMAT_I420,
+                                      gfx::Size(112, 208) /* coded_size */,
+                                      gfx::Size(100, 200) /* visible_size */);
+  }
+
   scoped_refptr<media::VideoFrame> CreateBlackMediaVideoFrame(
       base::TimeDelta timestamp,
       media::VideoPixelFormat format,
@@ -40,21 +53,93 @@ TEST_F(VideoFrameTest, ConstructorAndAttributes) {
       gfx::Size(100, 200) /* visible_size */);
   VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
 
-  EXPECT_EQ(1000u, blink_frame->timestamp());
+  EXPECT_EQ(1000u, blink_frame->timestamp().value());
   EXPECT_EQ(112u, blink_frame->codedWidth());
   EXPECT_EQ(208u, blink_frame->codedHeight());
-  EXPECT_EQ(100u, blink_frame->visibleWidth());
-  EXPECT_EQ(200u, blink_frame->visibleHeight());
+  EXPECT_EQ(100u, blink_frame->cropWidth());
+  EXPECT_EQ(200u, blink_frame->cropHeight());
   EXPECT_EQ(media_frame, blink_frame->frame());
 
-  blink_frame->release();
+  blink_frame->destroy();
 
-  EXPECT_EQ(0u, blink_frame->timestamp());
+  EXPECT_FALSE(blink_frame->timestamp().has_value());
   EXPECT_EQ(0u, blink_frame->codedWidth());
   EXPECT_EQ(0u, blink_frame->codedHeight());
-  EXPECT_EQ(0u, blink_frame->visibleWidth());
-  EXPECT_EQ(0u, blink_frame->visibleHeight());
+  EXPECT_EQ(0u, blink_frame->cropWidth());
+  EXPECT_EQ(0u, blink_frame->cropHeight());
   EXPECT_EQ(nullptr, blink_frame->frame());
+}
+
+TEST_F(VideoFrameTest, FramesSharingHandleDestruction) {
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  VideoFrame* frame_with_shared_handle =
+      CreateBlinkVideoFrameFromHandle(blink_frame->handle());
+
+  // A blink::VideoFrame created from a handle should share the same
+  // media::VideoFrame reference.
+  EXPECT_EQ(media_frame, frame_with_shared_handle->frame());
+
+  // Destroying a frame should invalidate all frames sharing the same handle.
+  blink_frame->destroy();
+  EXPECT_EQ(nullptr, frame_with_shared_handle->frame());
+}
+
+TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  auto new_handle =
+      base::MakeRefCounted<VideoFrameHandle>(blink_frame->frame());
+
+  VideoFrame* frame_with_new_handle =
+      CreateBlinkVideoFrameFromHandle(std::move(new_handle));
+
+  EXPECT_EQ(media_frame, frame_with_new_handle->frame());
+
+  // If a frame was created a new handle reference the same media::VideoFrame,
+  // one frame's destruction should not affect the other.
+  blink_frame->destroy();
+  EXPECT_EQ(media_frame, frame_with_new_handle->frame());
+}
+
+TEST_F(VideoFrameTest, ClonedFrame) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
+
+  // The cloned frame should be referencing the same media::VideoFrame.
+  EXPECT_EQ(blink_frame->frame(), cloned_frame->frame());
+  EXPECT_EQ(media_frame, cloned_frame->frame());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  blink_frame->destroy();
+
+  // Destroying the original frame should not affect the cloned frame.
+  EXPECT_EQ(media_frame, cloned_frame->frame());
+}
+
+TEST_F(VideoFrameTest, CloningDestroyedFrame) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  blink_frame->destroy();
+
+  VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
+
+  // No frame should have been created, and there should be an exception.
+  EXPECT_EQ(nullptr, cloned_frame);
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
 }  // namespace

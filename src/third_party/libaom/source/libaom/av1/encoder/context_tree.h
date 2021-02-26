@@ -32,7 +32,7 @@ typedef struct {
 } PC_TREE_SHARED_BUFFERS;
 
 // Structure to hold snapshot of coding context during the mode picking process
-typedef struct {
+typedef struct PICK_MODE_CONTEXT {
   MB_MODE_INFO mic;
   MB_MODE_INFO_EXT_FRAME mbmi_ext_best;
   uint8_t *color_index_map[2];
@@ -60,10 +60,6 @@ typedef struct {
 
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has
                          // been made.
-
-  // motion vector cache for adaptive motion search control in partition
-  // search loop
-  MV pred_mv[REF_FRAMES];
 } PICK_MODE_CONTEXT;
 
 typedef struct PC_TREE {

@@ -12,10 +12,6 @@
 @class CRWJSInjectionReceiver;
 class GURL;
 
-namespace {
-constexpr int kNotSetRendererID = -1;
-}
-
 namespace base {
 class DictionaryValue;
 }
@@ -66,14 +62,30 @@ bool ExtractFormData(const base::Value& form,
 bool ExtractFormFieldData(const base::DictionaryValue& field,
                           FormFieldData* field_data);
 
+typedef base::OnceCallback<void(const base::Value*)> JavaScriptResultCallback;
+
+// Creates a callback for a string JS function return type.
+JavaScriptResultCallback CreateStringCallback(
+    void (^completionHandler)(NSString*));
+
+// Creates a callback for a bool JS function return type.
+JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL));
+
 // Executes the JavaScript function with the given name and argument.
 // If |callback| is not null, it will be called when the result of the
 // command is received, or immediately if the command cannot be executed.
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               CRWJSInjectionReceiver* js_injection_receiver,
-                               base::OnceCallback<void(NSString*)> callback);
+                               JavaScriptResultCallback callback);
+
+// Extracts a vector of numeric renderer IDs from the JS returned json string.
+bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids);
+
+// Extracts a map of filled renderer IDs and values from the JS returned json
+// string.
+bool ExtractFillingResults(NSString* json_string,
+                           std::map<uint32_t, base::string16>* filling_results);
 
 }  // namespace autofill
 

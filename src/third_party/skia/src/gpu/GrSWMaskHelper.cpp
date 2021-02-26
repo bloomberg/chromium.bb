@@ -7,7 +7,7 @@
 
 #include "src/gpu/GrSWMaskHelper.h"
 
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrCaps.h"
@@ -156,5 +156,5 @@ GrSurfaceProxyView GrSWMaskHelper::toTextureView(GrRecordingContext* context, Sk
     bitmap.setImmutable();
 
     GrBitmapTextureMaker maker(context, bitmap, fit);
-    return maker.view(GrMipMapped::kNo);
+    return maker.view(GrMipmapped::kNo);
 }

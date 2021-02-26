@@ -267,7 +267,7 @@ struct parm_offset {
   char offset;
 };
 struct parm_offset parm_offsets[] = {
-  { "blockSize", offsetof(insp_mi_data, sb_type) },
+  { "blockSize", offsetof(insp_mi_data, bsize) },
   { "transformSize", offsetof(insp_mi_data, tx_size) },
   { "transformType", offsetof(insp_mi_data, tx_type) },
   { "dualFilterType", offsetof(insp_mi_data, dual_filter_type) },
@@ -627,7 +627,7 @@ void inspect(void *pbi, void *data) {
   buf += put_str(buf, "{\n");
   if (layers & BLOCK_SIZE_LAYER) {
     buf += put_block_info(buf, block_size_map, "blockSize",
-                          offsetof(insp_mi_data, sb_type), 0);
+                          offsetof(insp_mi_data, bsize), 0);
   }
   if (layers & TRANSFORM_SIZE_LAYER) {
     buf += put_block_info(buf, tx_size_map, "transformSize",
@@ -759,7 +759,7 @@ int open_file(char *file) {
   if (!decoder) die("Unknown input codec.");
   fprintf(stderr, "Using %s\n", aom_codec_iface_name(decoder));
   if (aom_codec_dec_init(&codec, decoder, NULL, 0))
-    die_codec(&codec, "Failed to initialize decoder.");
+    die("Failed to initialize decoder.");
   ifd_init(&frame_data, info->frame_width, info->frame_height);
   ifd_init_cb();
   return EXIT_SUCCESS;
@@ -792,6 +792,7 @@ int read_frame() {
     }
 
     frame = adr.buf;
+    frame_size = end_frame - frame;
     if (frame == end_frame) have_frame = 0;
   } while (adr.show_existing);
 

@@ -33,29 +33,36 @@ class SerialIoHandler;
 // This class must be constructed and run on IO thread.
 class SerialPortImpl : public mojom::SerialPort {
  public:
-  static void Create(
+  using OpenCallback =
+      base::OnceCallback<void(mojo::PendingRemote<mojom::SerialPort>)>;
+
+  static void Open(
       const base::FilePath& path,
-      mojo::PendingReceiver<mojom::SerialPort> receiver,
+      mojom::SerialConnectionOptionsPtr options,
+      mojo::PendingRemote<mojom::SerialPortClient> client,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      OpenCallback callback);
+
+  static void OpenForTesting(
+      scoped_refptr<SerialIoHandler> io_handler,
+      mojom::SerialConnectionOptionsPtr options,
+      mojo::PendingRemote<mojom::SerialPortClient> client,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
+      OpenCallback callback);
 
  private:
   SerialPortImpl(
-      const base::FilePath& path,
-      mojo::PendingReceiver<mojom::SerialPort> receiver,
-      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<SerialIoHandler> io_handler,
+      mojo::PendingRemote<mojom::SerialPortClient> client,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher);
   ~SerialPortImpl() override;
 
   // mojom::SerialPort methods:
-  void Open(mojom::SerialConnectionOptionsPtr options,
-            mojo::ScopedDataPipeConsumerHandle in_stream,
-            mojo::ScopedDataPipeProducerHandle out_stream,
-            mojo::PendingRemote<mojom::SerialPortClient> client,
-            OpenCallback callback) override;
-  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
-  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
-  void Flush(FlushCallback callback) override;
+  void StartWriting(mojo::ScopedDataPipeConsumerHandle consumer) override;
+  void StartReading(mojo::ScopedDataPipeProducerHandle producer) override;
+  void Flush(mojom::SerialPortFlushMode mode, FlushCallback callback) override;
+  void Drain(DrainCallback callback) override;
   void GetControlSignals(GetControlSignalsCallback callback) override;
   void SetControlSignals(mojom::SerialHostControlSignalsPtr signals,
                          SetControlSignalsCallback callback) override;
@@ -64,7 +71,9 @@ class SerialPortImpl : public mojom::SerialPort {
   void GetPortInfo(GetPortInfoCallback callback) override;
   void Close(CloseCallback callback) override;
 
-  void OnOpenCompleted(OpenCallback callback, bool success);
+  void OpenPort(const mojom::SerialConnectionOptions& options,
+                OpenCallback callback);
+  void PortOpened(OpenCallback callback, bool success);
   void WriteToPort(MojoResult result, const mojo::HandleSignalsState& state);
   void OnWriteToPortCompleted(uint32_t bytes_expected,
                               uint32_t bytes_sent,
@@ -72,8 +81,9 @@ class SerialPortImpl : public mojom::SerialPort {
   void ReadFromPortAndWriteOut(MojoResult result,
                                const mojo::HandleSignalsState& state);
   void WriteToOutStream(uint32_t bytes_read, mojom::SerialReceiveError error);
+  void PortClosed(CloseCallback callback);
 
-  mojo::Receiver<mojom::SerialPort> receiver_;
+  mojo::Receiver<mojom::SerialPort> receiver_{this};
 
   // Underlying connection to the serial port.
   scoped_refptr<SerialIoHandler> io_handler_;
@@ -87,6 +97,12 @@ class SerialPortImpl : public mojom::SerialPort {
   mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;
   mojo::SimpleWatcher out_stream_watcher_;
+
+  // Holds the callback for a flush or drain until pending operations have been
+  // completed.
+  FlushCallback read_flush_callback_;
+  FlushCallback write_flush_callback_;
+  DrainCallback drain_callback_;
 
   base::WeakPtrFactory<SerialPortImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);

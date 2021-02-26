@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
+import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
 import {SourcesView} from './SourcesView.js';
@@ -15,6 +16,7 @@ import {SourcesView} from './SourcesView.js';
 export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
     super();
+    /** @type {!Array<!Formatter.FormatterWorkerPool.OutlineItem>} */
     this._items = [];
     this._active = false;
   }
@@ -114,7 +116,7 @@ export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
    * @return {?Workspace.UISourceCode.UISourceCode}
    */
   _currentUISourceCode() {
-    const sourcesView = self.UI.context.flavor(SourcesView);
+    const sourcesView = UI.Context.Context.instance().flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }

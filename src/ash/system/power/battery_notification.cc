@@ -11,6 +11,7 @@
 #include "ash/system/power/power_status.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/time_formatting.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,10 +49,10 @@ const gfx::VectorIcon& GetBatteryImageMD(
 message_center::SystemNotificationWarningLevel GetWarningLevelMD(
     PowerNotificationController::NotificationState notification_state) {
   if (PowerStatus::Get()->IsUsbChargerConnected()) {
-    return message_center::SystemNotificationWarningLevel::WARNING;
+    return message_center::SystemNotificationWarningLevel::NORMAL;
   } else if (notification_state ==
              PowerNotificationController::NOTIFICATION_LOW_POWER) {
-    return message_center::SystemNotificationWarningLevel::WARNING;
+    return message_center::SystemNotificationWarningLevel::NORMAL;
   } else if (notification_state ==
              PowerNotificationController::NOTIFICATION_CRITICAL) {
     return message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
@@ -102,7 +103,11 @@ std::unique_ptr<Notification> CreateNotification(
       message_center::RichNotificationData(), nullptr,
       GetBatteryImageMD(notification_state),
       GetWarningLevelMD(notification_state));
-  notification->SetSystemPriority();
+  if (notification_state ==
+      PowerNotificationController::NOTIFICATION_CRITICAL) {
+    notification->SetSystemPriority();
+    notification->set_pinned(true);
+  }
   return notification;
 }
 

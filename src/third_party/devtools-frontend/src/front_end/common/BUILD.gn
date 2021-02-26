@@ -2,15 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../third_party/typescript/typescript.gni")
+import("../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../scripts/build/ninja/devtools_module.gni")
 
-ts_library("common") {
+devtools_module("common") {
   sources = [
     "App.js",
     "AppProvider.js",
+    "Base64.js",
     "CharacterIdMap.js",
     "Color.js",
+    "ColorUtils.js",
     "Console.js",
+    "Debouncer.js",
     "EventTarget.js",
     "JavaScriptMetaData.js",
     "Lazy.js",
@@ -24,16 +28,29 @@ ts_library("common") {
     "Runnable.js",
     "SegmentedRange.js",
     "Settings.js",
+    "SimpleHistoryManager.js",
     "StringOutputStream.js",
     "TextDictionary.js",
     "Throttler.js",
     "Trie.js",
+    "WasmDisassembly.js",
     "Worker.js",
-    "common.js",
   ]
 
   deps = [
-    "../platform",
-    "../root",
+    "../platform:bundle",
+    "../root:bundle",
   ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "common.js"
+
+  deps = [ ":common" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "common-legacy.js"
+
+  deps = [ ":bundle" ]
 }

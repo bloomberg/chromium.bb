@@ -11,13 +11,20 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/core/db/util.h"
+#include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
+#include "components/subresource_filter/content/browser/test_ruleset_publisher.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/test/base/android/android_browser_test.h"
+#else
+#include "chrome/test/base/in_process_browser_test.h"
+#endif
 
 namespace proto = url_pattern_index::proto;
 
@@ -31,14 +38,15 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-class SubresourceFilterContentSettingsManager;
 class TestSafeBrowsingDatabaseHelper;
 
 namespace subresource_filter {
 
+class AdsInterventionManager;
+class SubresourceFilterContentSettingsManager;
 class RulesetService;
 
-class SubresourceFilterBrowserTest : public InProcessBrowserTest {
+class SubresourceFilterBrowserTest : public PlatformBrowserTest {
  public:
   SubresourceFilterBrowserTest();
   ~SubresourceFilterBrowserTest() override;
@@ -61,13 +69,17 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
       const GURL& url,
       std::vector<safe_browsing::SubresourceFilterType> filter_types);
 
-  content::WebContents* web_contents() const;
+  content::WebContents* web_contents();
 
   SubresourceFilterContentSettingsManager* settings_manager() const {
-    return settings_manager_;
+    return profile_context_->settings_manager();
   }
 
-  content::RenderFrameHost* FindFrameByName(const std::string& name) const;
+  AdsInterventionManager* ads_intervention_manager() {
+    return profile_context_->ads_intervention_manager();
+  }
+
+  content::RenderFrameHost* FindFrameByName(const std::string& name);
 
   bool WasParsedScriptElementLoaded(content::RenderFrameHost* rfh);
 
@@ -109,12 +121,11 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
 
   TestRulesetCreator ruleset_creator_;
   ScopedSubresourceFilterConfigurator scoped_configuration_;
-  TestRulesetPublisher test_ruleset_publisher_;
 
   std::unique_ptr<TestSafeBrowsingDatabaseHelper> database_helper_;
 
   // Owned by the profile.
-  SubresourceFilterContentSettingsManager* settings_manager_;
+  SubresourceFilterProfileContext* profile_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
 };

@@ -9,6 +9,7 @@ sudo: false
 addons:
   homebrew:
     packages:
+    - clang-format
     - meson
     - ninja
     update: false # do not update homebrew by default
@@ -17,6 +18,7 @@ addons:
     - ubuntu-toolchain-r-test
     - llvm-toolchain-xenial-8
     packages:
+    - clang-format-8
     - clang-8
     - valgrind
 matrix:
@@ -25,7 +27,7 @@ matrix:
   include:
     - name: Mac clang meson static release testing
       os: osx
-      osx_image: xcode10.2
+      osx_image: xcode11
       compiler: clang
       env:
          CXX="clang++"
@@ -60,6 +62,10 @@ matrix:
         BUILD_TYPE=Debug
         LIB_TYPE=shared
         DESTDIR=/tmp/cmake_json_cpp
+      before_install:
+          - pip install --user cpp-coveralls
       script: ./.travis_scripts/cmake_builder.sh
+      after_success:
+          - coveralls --include src/lib_json --include include
 notifications:
   email: false

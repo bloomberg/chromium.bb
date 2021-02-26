@@ -13,7 +13,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/id_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -31,8 +31,6 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
-#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -44,11 +42,12 @@ namespace content {
 namespace {
 
 bool DeleteDir(const base::FilePath& path) {
-  return base::DeleteFileRecursively(path);
+  return base::DeletePathRecursively(path);
 }
 
-void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,
-                              bool rv) {
+void DeleteOriginDidDeleteDir(
+    storage::QuotaClient::DeleteOriginDataCallback callback,
+    bool rv) {
   // On scheduler sequence.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -187,30 +186,30 @@ void ListOriginsAndLastModifiedOnTaskRunner(
   }
 }
 
-std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
-                                              CacheStorageOwner owner) {
+std::vector<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
+                                                 CacheStorageOwner owner) {
   std::vector<StorageUsageInfo> usages;
   ListOriginsAndLastModifiedOnTaskRunner(&usages, root_path, owner);
 
-  std::set<url::Origin> out_origins;
+  std::vector<url::Origin> out_origins;
   for (const StorageUsageInfo& usage : usages)
-    out_origins.insert(usage.origin);
+    out_origins.push_back(usage.origin);
 
   return out_origins;
 }
 
 void GetOriginsForHostDidListOrigins(
     const std::string& host,
-    storage::QuotaClient::GetOriginsCallback callback,
-    const std::set<url::Origin>& origins) {
+    storage::QuotaClient::GetOriginsForTypeCallback callback,
+    const std::vector<url::Origin>& origins) {
   // On scheduler sequence.
-  std::set<url::Origin> out_origins;
+  std::vector<url::Origin> out_origins;
   for (const url::Origin& origin : origins) {
-    if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
-      out_origins.insert(origin);
+    if (host == origin.host())
+      out_origins.push_back(origin);
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), out_origins));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(out_origins)));
 }
 
 void AllOriginSizesReported(
@@ -278,6 +277,7 @@ CacheStorageHandle LegacyCacheStorageManager::OpenCacheStorage(
   // thread.
   if (!memory_pressure_listener_) {
     memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE,
         base::BindRepeating(&LegacyCacheStorageManager::OnMemoryPressure,
                             base::Unretained(this)));
   }
@@ -402,7 +402,7 @@ void LegacyCacheStorageManager::GetAllOriginsUsageGetSizes(
 void LegacyCacheStorageManager::GetOriginUsage(
     const url::Origin& origin,
     CacheStorageOwner owner,
-    storage::QuotaClient::GetUsageCallback callback) {
+    storage::QuotaClient::GetOriginUsageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CacheStorageHandle cache_storage = OpenCacheStorage(origin, owner);
@@ -411,17 +411,17 @@ void LegacyCacheStorageManager::GetOriginUsage(
 
 void LegacyCacheStorageManager::GetOrigins(
     CacheStorageOwner owner,
-    storage::QuotaClient::GetOriginsCallback callback) {
+    storage::QuotaClient::GetOriginsForTypeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsMemoryBacked()) {
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_)
       if (key_value.first.second == owner)
-        origins.insert(key_value.first.first);
+        origins.push_back(key_value.first.first);
 
     scheduler_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
     return;
   }
 
@@ -434,19 +434,19 @@ void LegacyCacheStorageManager::GetOrigins(
 void LegacyCacheStorageManager::GetOriginsForHost(
     const std::string& host,
     CacheStorageOwner owner,
-    storage::QuotaClient::GetOriginsCallback callback) {
+    storage::QuotaClient::GetOriginsForHostCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsMemoryBacked()) {
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_) {
       if (key_value.first.second != owner)
         continue;
-      if (host == net::GetHostOrSpecFromURL(key_value.first.first.GetURL()))
-        origins.insert(key_value.first.first);
+      if (host == key_value.first.first.host())
+        origins.push_back(key_value.first.first);
     }
     scheduler_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
     return;
   }
 
@@ -460,7 +460,7 @@ void LegacyCacheStorageManager::GetOriginsForHost(
 void LegacyCacheStorageManager::DeleteOriginData(
     const url::Origin& origin,
     CacheStorageOwner owner,
-    storage::QuotaClient::DeletionCallback callback) {
+    storage::QuotaClient::DeleteOriginDataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Create the CacheStorage for the origin if it hasn't been loaded yet.
@@ -487,7 +487,7 @@ void LegacyCacheStorageManager::DeleteOriginData(const url::Origin& origin,
 void LegacyCacheStorageManager::DeleteOriginDidClose(
     const url::Origin& origin,
     CacheStorageOwner owner,
-    storage::QuotaClient::DeletionCallback callback,
+    storage::QuotaClient::DeleteOriginDataCallback callback,
     std::unique_ptr<LegacyCacheStorage> cache_storage,
     int64_t origin_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

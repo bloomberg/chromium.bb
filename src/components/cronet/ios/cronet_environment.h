@@ -150,13 +150,13 @@ class CronetEnvironment {
 
   // Runs a closure on the network thread.
   void PostToNetworkThread(const base::Location& from_here,
-                           const base::Closure& task);
+                           base::OnceClosure task);
 
   // Helper methods that start/stop net logging on the network thread.
   void StartNetLogOnNetworkThread(const base::FilePath&, bool log_bytes);
   void StopNetLogOnNetworkThread(base::WaitableEvent* log_stopped_event);
 
-  std::unique_ptr<base::DictionaryValue> GetNetLogInfo() const;
+  base::Value GetNetLogInfo() const;
 
   // Returns the HttpNetworkSession object from the passed in
   // URLRequestContext or NULL if none exists.

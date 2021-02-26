@@ -54,7 +54,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const OriginAccessList* factory_bound_origin_access_list,
       PreflightController* preflight_controller,
       const base::flat_set<std::string>* allowed_exempt_headers,
-      bool allow_any_cors_exempt_header);
+      bool allow_any_cors_exempt_header,
+      const net::IsolationInfo& isolation_info);
 
   ~CorsURLLoader() override;
 
@@ -191,6 +192,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   const bool skip_cors_enabled_scheme_check_;
 
   const bool allow_any_cors_exempt_header_;
+
+  net::IsolationInfo isolation_info_;
+
+  bool has_cors_been_affected_by_isolated_world_origin_ = false;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};

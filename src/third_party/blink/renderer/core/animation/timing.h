@@ -44,6 +44,7 @@ namespace blink {
 
 class EffectTiming;
 class ComputedEffectTiming;
+enum class TimelinePhase;
 
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
@@ -58,7 +59,7 @@ struct CORE_EXPORT Timing {
   };
   // Represents the animation direction from the Web Animations spec, see
   // https://drafts.csswg.org/web-animations-1/#animation-direction.
-  enum AnimationDirection {
+  enum class AnimationDirection {
     kForwards,
     kBackwards,
   };
@@ -81,7 +82,6 @@ struct CORE_EXPORT Timing {
   using FillMode = CompositorKeyframeModel::FillMode;
   using PlaybackDirection = CompositorKeyframeModel::Direction;
 
-  static bool IsNull(double value) { return std::isnan(value); }
   static double NullValue() { return std::numeric_limits<double>::quiet_NaN(); }
 
   static String FillModeString(FillMode);
@@ -174,6 +174,7 @@ struct CORE_EXPORT Timing {
   };
 
   CalculatedTiming CalculateTimings(base::Optional<double> local_time,
+                                    base::Optional<Phase> timeline_phase,
                                     AnimationDirection animation_direction,
                                     bool is_keyframe_effect,
                                     base::Optional<double> playback_rate) const;

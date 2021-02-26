@@ -62,8 +62,9 @@ class ChromeAutofillClientIOS : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
-  std::string GetPageLanguage() const override;
+  const translate::LanguageState* GetLanguageState() override;
   std::string GetVariationConfigCountryCode() const override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
@@ -92,17 +93,14 @@ class ChromeAutofillClientIOS : public AutofillClient {
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
-      const gfx::RectF& element_bounds,
-      base::i18n::TextDirection text_direction,
-      const std::vector<Suggestion>& suggestions,
-      bool /*unused_autoselect_first_suggestion*/,
-      PopupType popup_type,
+      const PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
   base::span<const Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
+  PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
@@ -122,6 +120,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
       base::OnceCallback<void(const std::string&)> callback) override;
 
   LogManager* GetLogManager() const override;
+
+  bool IsQueryIDRelevant(int query_id) override;
 
  private:
   PrefService* pref_service_;

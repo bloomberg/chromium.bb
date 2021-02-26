@@ -14,11 +14,11 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/autofill_keyboard_accessory_adapter.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/android/view_android.h"
@@ -93,9 +93,17 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
     bool is_label_multiline =
         suggestion.frontend_id ==
             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
-        suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
+        suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO ||
+        suggestion.frontend_id == POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
+    // Set the offer title to display as the item tag.
+    ScopedJavaLocalRef<jstring> item_tag =
+        base::android::ConvertUTF16ToJavaString(
+            env, base::FeatureList::IsEnabled(
+                     features::kAutofillEnableOffersInDownstream)
+                     ? suggestion.offer_label
+                     : base::string16());
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
-        env, data_array, i, value, label, android_icon_id,
+        env, data_array, i, value, label, item_tag, android_icon_id,
         /*icon_at_start=*/false, suggestion.frontend_id, is_deletable,
         is_label_multiline, /*isLabelBold*/ false);
   }

@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
@@ -43,7 +46,7 @@ export class ProfileLauncherView extends UI.Widget.VBox {
    */
   constructor(profilesPanel) {
     super();
-    this.registerRequiredCSS('profiler/profileLauncherView.css');
+    this.registerRequiredCSS('profiler/profileLauncherView.css', {enableLegacyPatching: true});
 
     this._panel = profilesPanel;
     this.element.classList.add('profile-launcher-view');
@@ -69,7 +72,7 @@ export class ProfileLauncherView extends UI.Widget.VBox {
     buttonsDiv.appendChild(this._loadButton);
     this._recordButtonEnabled = true;
 
-    /** @type {!Map<string, !HTMLOptionElement>} */
+    /** @type {!Map<string, !HTMLInputElement>} */
     this._typeIdToOptionElement = new Map();
   }
 

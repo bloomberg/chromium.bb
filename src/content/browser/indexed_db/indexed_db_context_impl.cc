@@ -9,11 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
@@ -25,6 +24,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
@@ -41,8 +41,10 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/zlib/google/zip.h"
 #include "url/origin.h"
@@ -107,7 +109,6 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
 
 IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
-    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::Clock* clock,
     mojo::PendingRemote<storage::mojom::BlobStorageContext>
@@ -126,15 +127,17 @@ IndexedDBContextImpl::IndexedDBContextImpl(
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),
       indexed_db_factory_(this),
       force_keep_session_state_(false),
-      special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
       io_task_runner_(io_task_runner),
-      clock_(clock) {
+      clock_(clock),
+      filesystem_proxy_(storage::CreateFilesystemProxy()) {
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
   quota_manager_proxy->RegisterClient(
-      base::MakeRefCounted<IndexedDBQuotaClient>(this));
+      base::MakeRefCounted<IndexedDBQuotaClient>(this),
+      storage::QuotaClientType::kIndexedDatabase,
+      {blink::mojom::StorageType::kTemporary});
 
   // This is safe because the IndexedDBContextImpl must be destructed on the
   // IDBTaskRunner, and this task will always happen before that.
@@ -218,7 +221,8 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin,
           idb_directory);
   bool success = s.ok();
   if (success)
-    success = base::DeleteFileRecursively(GetBlobStorePath(origin));
+    success =
+        filesystem_proxy_->DeletePathRecursively(GetBlobStorePath(origin));
   QueryDiskAndUpdateQuotaUsage(origin);
   if (success) {
     GetOriginSet()->erase(origin);
@@ -425,6 +429,17 @@ void IndexedDBContextImpl::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
 }
 
+void IndexedDBContextImpl::ApplyPolicyUpdates(
+    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr>
+        policy_updates) {
+  for (const auto& update : policy_updates) {
+    if (!update->purge_on_shutdown)
+      origins_to_purge_on_shutdown_.erase(update->origin);
+    else
+      origins_to_purge_on_shutdown_.insert(std::move(update->origin));
+  }
+}
+
 void IndexedDBContextImpl::BindTestInterface(
     mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
@@ -490,6 +505,7 @@ void IndexedDBContextImpl::HasV2SchemaCorruptionForTesting(
   if (is_incognito() || !HasOrigin(origin)) {
     std::move(callback).Run(
         storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
+    return;
   }
 
   if (indexeddb_factory_.get()) {
@@ -689,10 +705,11 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
   }
 
   base::FilePath idb_directory = GetLevelDBPath(origin);
-  base::File::Info file_info;
-  if (!base::GetFileInfo(idb_directory, &file_info))
+  base::Optional<base::File::Info> info =
+      filesystem_proxy_->GetFileInfo(idb_directory);
+  if (!info.has_value())
     return base::Time();
-  return file_info.last_modified;
+  return info->last_modified;
 }
 
 size_t IndexedDBContextImpl::GetConnectionCountSync(const Origin& origin) {
@@ -793,37 +810,32 @@ void IndexedDBContextImpl::Shutdown() {
     return;
 
   // Clear session-only databases.
-  if (special_storage_policy_ &&
-      special_storage_policy_->HasSessionOnlyOrigins()) {
-    IDBTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](const base::FilePath& indexeddb_path,
-               scoped_refptr<IndexedDBContextImpl> context,
-               scoped_refptr<storage::SpecialStoragePolicy>
-                   special_storage_policy) {
-              std::vector<Origin> origins;
-              std::vector<base::FilePath> file_paths;
-              // This function only needs the factory, and not the context, but
-              // the context is used because passing that is thread-safe.
-              IndexedDBFactoryImpl* factory = context->GetIDBFactory();
-              GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
-              DCHECK_EQ(origins.size(), file_paths.size());
-              auto file_path = file_paths.cbegin();
-              auto origin = origins.cbegin();
-              for (; origin != origins.cend(); ++origin, ++file_path) {
-                const GURL origin_url = GURL(origin->Serialize());
-                if (!special_storage_policy->IsStorageSessionOnly(origin_url))
-                  continue;
-                if (special_storage_policy->IsStorageProtected(origin_url))
-                  continue;
-                if (factory)
-                  factory->ForceClose(*origin, false);
-                base::DeleteFileRecursively(*file_path);
-              }
-            },
-            data_path_, base::WrapRefCounted(this), special_storage_policy_));
-  }
+  if (origins_to_purge_on_shutdown_.empty())
+    return;
+
+  IDBTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<IndexedDBContextImpl> context) {
+            std::vector<Origin> origins;
+            std::vector<base::FilePath> file_paths;
+            // This function only needs the factory, and not the context, but
+            // the context is used because passing that is thread-safe.
+            IndexedDBFactoryImpl* factory = context->GetIDBFactory();
+            GetAllOriginsAndPaths(context->data_path_, &origins, &file_paths);
+            DCHECK_EQ(origins.size(), file_paths.size());
+
+            auto file_path = file_paths.cbegin();
+            auto origin = origins.cbegin();
+            for (; origin != origins.cend(); ++origin, ++file_path) {
+              if (context->origins_to_purge_on_shutdown_.find(*origin) ==
+                  context->origins_to_purge_on_shutdown_.end())
+                continue;
+              factory->ForceClose(*origin, false);
+              context->filesystem_proxy_->DeletePathRecursively(*file_path);
+            }
+          },
+          base::WrapRefCounted(this)));
 }
 
 base::FilePath IndexedDBContextImpl::GetBlobStorePath(
@@ -847,7 +859,7 @@ int64_t IndexedDBContextImpl::ReadUsageFromDisk(const Origin& origin) const {
 
   int64_t total_size = 0;
   for (const base::FilePath& path : GetStoragePaths(origin))
-    total_size += base::ComputeDirectorySize(path);
+    total_size += filesystem_proxy_->ComputeDirectorySize(path);
   return total_size;
 }
 

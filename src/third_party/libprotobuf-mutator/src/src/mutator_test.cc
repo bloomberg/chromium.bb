@@ -46,6 +46,17 @@ const char kMessages[] = R"(
     repeated_msg { required_int32: 67 }
     repeated_msg {}
   }
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      optional_msg {}
+      repeated_msg {}
+      any {
+        [type.googleapis.com/protobuf_mutator.Msg3.SubMsg] {
+          optional_int64: -5
+        }
+      }
+    }
+  }
 )";
 
 const char kMessagesProto3[] = R"(
@@ -58,6 +69,17 @@ const char kMessagesProto3[] = R"(
     repeated_msg {}
     repeated_msg { optional_int32: 67 }
     repeated_msg {}
+  }
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      optional_msg {}
+      repeated_msg {}
+      any {
+        [type.googleapis.com/protobuf_mutator.Msg3.SubMsg] {
+          optional_int64: -5
+        }
+      }
+    }
   }
 )";
 
@@ -154,6 +176,18 @@ const char kRequiredNestedFields[] = R"(
   }
 )";
 
+const char kRequiredInAnyFields[] = R"(
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      required_uint32: 14486213
+      required_uint64: 520229415
+      required_sint64: -6057486163525532641
+      required_string: "qwert"
+      required_bytes: "asdf"
+    }
+  }
+)";
+
 const char kOptionalNestedFields[] = R"(
   optional_int32: 123
   optional_msg {
@@ -173,6 +207,18 @@ const char kOptionalNestedFields[] = R"(
     optional_string: "QWERT"
     optional_bytes: "ASDF"
     optional_enum: ENUM_5
+  }
+)";
+
+const char kOptionalInAnyFields[] = R"(
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      optional_uint32: 440
+      optional_uint64: 1559
+      optional_sint32: 440615
+      optional_string: "XYZ"
+      optional_enum: ENUM_4
+    }
   }
 )";
 
@@ -214,17 +260,55 @@ const char kRepeatedNestedFields[] = R"(
   }
 )";
 
+const char kRepeatedInAnyFields[] = R"(
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      repeated_double: 1.931778501556e-31
+      repeated_double: 1.26685288449177e-31
+      repeated_float: 4.739759e-41
+      repeated_float: 5.98038e-39
+      repeated_int32: 400201
+      repeated_int32: 673
+      repeated_int64: 104
+      repeated_int64: 52850685
+    }
+  }
+)";
+
+const char kOptionalInDeepAnyFields[] = R"(
+  any {
+    [type.googleapis.com/protobuf_mutator.Msg] {
+      any {
+        [type.googleapis.com/protobuf_mutator.Msg] {
+          any {
+            [type.googleapis.com/protobuf_mutator.Msg] {
+              optional_double: 1.9317850152856e-314
+              optional_sint64: 1743625000076
+              optional_string: "XYZ"
+            }
+          }
+        }
+      }
+    }
+  }
+)";
+
+const char kUnknownFieldInput[] = R"(
+  optional_bool: true
+  unknown_field: "test unknown field"
+)";
+
+const char kUnknownFieldExpected[] = R"(optional_bool: true
+)";
+
 class TestMutator : public Mutator {
  public:
-  explicit TestMutator(bool keep_initialized) : Mutator(&random_), random_(17) {
+  explicit TestMutator(bool keep_initialized,
+                       size_t random_to_default_ratio = 0) {
+    Seed(17);
+    if (random_to_default_ratio)
+      random_to_default_ratio_ = random_to_default_ratio;
     keep_initialized_ = keep_initialized;
-    custom_mutations_.clear();
-  }
-
-  // Avoids dedup logic for some tests.
-  void NoDeDupCrossOver(const protobuf::Message& message1,
-                        protobuf::Message* message2) {
-    CrossOverImpl(message1, message2);
   }
 
  private:
@@ -233,7 +317,7 @@ class TestMutator : public Mutator {
 
 class ReducedTestMutator : public TestMutator {
  public:
-  ReducedTestMutator() : TestMutator(false) {
+  ReducedTestMutator() : TestMutator(false, 4) {
     for (float i = 1000; i > 0.1; i /= 7) {
       values_.push_back(i);
       values_.push_back(-i);
@@ -255,14 +339,14 @@ class ReducedTestMutator : public TestMutator {
   float MutateFloat(float value) override { return GetRandomValue(); }
   double MutateDouble(double value) override { return GetRandomValue(); }
   std::string MutateString(const std::string& value,
-                           size_t size_increase_hint) override {
-    return strings_[std::uniform_int_distribution<uint8_t>(
+                           int size_increase_hint) override {
+    return strings_[std::uniform_int_distribution<>(
         0, strings_.size() - 1)(*random())];
   }
 
  private:
   float GetRandomValue() {
-    return values_[std::uniform_int_distribution<uint8_t>(
+    return values_[std::uniform_int_distribution<>(
         0, values_.size() - 1)(*random())];
   }
 
@@ -279,7 +363,8 @@ std::vector<std::string> Split(const std::string& str) {
   return result;
 }
 
-using TestParams = std::tuple<const protobuf::Message*, const char*, size_t>;
+using TestParams =
+    std::tuple<const protobuf::Message*, const char*, size_t, std::string>;
 
 template <class T>
 std::vector<TestParams> GetFieldTestParams(
@@ -289,7 +374,8 @@ std::vector<TestParams> GetFieldTestParams(
     auto lines = Split(t);
     for (size_t i = 0; i != lines.size(); ++i) {
       if (lines[i].find(':') != std::string::npos)
-        results.push_back(std::make_tuple(&T::default_instance(), t, i));
+        results.push_back(
+            std::make_tuple(&T::default_instance(), t, i, lines[i]));
     }
   }
   return results;
@@ -303,25 +389,42 @@ std::vector<TestParams> GetMessageTestParams(
     auto lines = Split(t);
     for (size_t i = 0; i != lines.size(); ++i) {
       if (lines[i].find("{}") != std::string::npos)
-        results.push_back(std::make_tuple(&T::default_instance(), t, i));
+        results.push_back(
+            std::make_tuple(&T::default_instance(), t, i, lines[i]));
     }
   }
   return results;
 }
 
-bool Mutate(const protobuf::Message& from, const protobuf::Message& to) {
+bool Mutate(const protobuf::Message& from, const protobuf::Message& to,
+            int iterations = 100000) {
   EXPECT_FALSE(MessageDifferencer::Equals(from, to));
   ReducedTestMutator mutator;
   std::unique_ptr<protobuf::Message> message(from.New());
-  for (int j = 0; j < 1000000; ++j) {
+  EXPECT_FALSE(MessageDifferencer::Equals(from, to));
+  for (int j = 0; j < iterations; ++j) {
     message->CopyFrom(from);
-    mutator.Mutate(message.get(), 1000);
+    mutator.Mutate(message.get(), 1500);
     if (MessageDifferencer::Equals(*message, to)) return true;
   }
 
   ADD_FAILURE() << "Failed to get from:\n"
-                << SaveMessageAsText(from) << "\nto:\n"
-                << SaveMessageAsText(to);
+                << from.DebugString() << "\nto:\n"
+                << to.DebugString();
+  return false;
+}
+
+bool CrossOver(const protobuf::Message& from, const protobuf::Message& with,
+               const protobuf::Message& to, int iterations = 100000) {
+  EXPECT_FALSE(MessageDifferencer::Equals(from, to));
+  ReducedTestMutator mutator;
+  std::unique_ptr<protobuf::Message> message(from.New());
+  EXPECT_FALSE(MessageDifferencer::Equals(from, to));
+  for (int j = 0; j < iterations; ++j) {
+    message->CopyFrom(from);
+    mutator.CrossOver(with, message.get(), 1000);
+    if (MessageDifferencer::Equals(*message, to)) return true;
+  }
   return false;
 }
 
@@ -385,8 +488,10 @@ class MutatorFieldInsDelTest : public MutatorTest {};
 INSTANTIATE_TEST_SUITE_P(Proto2, MutatorFieldInsDelTest,
                          ValuesIn(GetFieldTestParams<Msg>(
                              {kRequiredFields, kOptionalFields, kRepeatedFields,
-                              kRequiredNestedFields, kOptionalNestedFields,
-                              kRepeatedNestedFields})));
+                              kRequiredNestedFields, kRequiredInAnyFields,
+                              kOptionalNestedFields, kOptionalInAnyFields,
+                              kRepeatedNestedFields, kRepeatedInAnyFields,
+                              kOptionalInDeepAnyFields})));
 
 TEST_P(MutatorFieldInsDelTest, DeleteField) {
   LoadMessage(m1_.get());
@@ -394,106 +499,85 @@ TEST_P(MutatorFieldInsDelTest, DeleteField) {
   EXPECT_TRUE(Mutate(*m1_, *m2_));
 }
 
-TEST_P(MutatorFieldInsDelTest, InsertField) {
-  LoadWithoutLine(m1_.get());
-  LoadWithChangedLine(m2_.get(), 0);
-  EXPECT_TRUE(Mutate(*m1_, *m2_));
-}
-
-class MutatorFieldTest : public MutatorTest {
- public:
-  template <class Msg>
-  void TestCopyField();
-};
-INSTANTIATE_TEST_SUITE_P(Proto2, MutatorFieldTest,
+INSTANTIATE_TEST_SUITE_P(Proto2, MutatorTest,
                          ValuesIn(GetFieldTestParams<Msg>(
                              {kRequiredFields, kOptionalFields, kRepeatedFields,
-                              kRequiredNestedFields, kOptionalNestedFields,
-                              kRepeatedNestedFields})));
-INSTANTIATE_TEST_SUITE_P(Proto3, MutatorFieldTest,
+                              kRequiredNestedFields, kRequiredInAnyFields,
+                              kOptionalNestedFields, kOptionalInAnyFields,
+                              kRepeatedNestedFields, kRepeatedInAnyFields,
+                              kOptionalInDeepAnyFields})));
+INSTANTIATE_TEST_SUITE_P(Proto3, MutatorTest,
                          ValuesIn(GetFieldTestParams<Msg3>(
                              {kOptionalFields, kRepeatedFields,
-                              kOptionalNestedFields, kRepeatedNestedFields})));
+                              kOptionalNestedFields, kOptionalInAnyFields,
+                              kRepeatedNestedFields, kRepeatedInAnyFields,
+                              kOptionalInDeepAnyFields})));
 
-TEST_P(MutatorFieldTest, Initialized) {
+TEST_P(MutatorTest, Initialized) {
   LoadWithoutLine(m1_.get());
   TestMutator mutator(true);
   mutator.Mutate(m1_.get(), 1000);
   EXPECT_TRUE(m1_->IsInitialized());
 }
 
-TEST_P(MutatorFieldTest, ChangeField) {
-  LoadWithChangedLine(m1_.get(), 0);
+TEST_P(MutatorTest, InsertField) {
+  LoadWithoutLine(m1_.get());
   LoadWithChangedLine(m2_.get(), 1);
   EXPECT_TRUE(Mutate(*m1_, *m2_));
-  EXPECT_TRUE(Mutate(*m2_, *m1_));
 }
 
-template <class Msg>
-void MutatorFieldTest::TestCopyField() {
-  LoadWithChangedLine(m1_.get(), 7);
-  LoadWithChangedLine(m2_.get(), 0);
-
-  Msg from;
-  from.add_repeated_msg()->CopyFrom(*m1_);
-  from.add_repeated_msg()->CopyFrom(*m2_);
-
-  Msg to;
-  to.add_repeated_msg()->CopyFrom(*m1_);
-  to.add_repeated_msg()->CopyFrom(*m1_);
-  EXPECT_TRUE(Mutate(from, to));
-
-  to.Clear();
-  to.add_repeated_msg()->CopyFrom(*m2_);
-  to.add_repeated_msg()->CopyFrom(*m2_);
-  EXPECT_TRUE(Mutate(from, to));
+TEST_P(MutatorTest, ChangeField) {
+  LoadWithChangedLine(m1_.get(), 0);
+  LoadWithChangedLine(m2_.get(), 1);
+  EXPECT_TRUE(Mutate(*m1_, *m2_, 1000000));
+  EXPECT_TRUE(Mutate(*m2_, *m1_, 1000000));
 }
 
-TEST_P(MutatorFieldTest, CopyField) {
-  if (m1_->GetDescriptor() == Msg::descriptor())
-    TestCopyField<Msg>();
-  else
-    TestCopyField<Msg3>();
-}
-
-class MutatorSingleFieldTest : public MutatorTest {};
-INSTANTIATE_TEST_SUITE_P(Proto2, MutatorSingleFieldTest,
-                         ValuesIn(GetFieldTestParams<Msg>({
-                             kRequiredFields,
-                             kOptionalFields,
-                             kRequiredNestedFields,
-                             kOptionalNestedFields,
-                         })));
-INSTANTIATE_TEST_SUITE_P(Proto3, MutatorSingleFieldTest,
-                         ValuesIn(GetFieldTestParams<Msg3>({
-                             kOptionalFields,
-                             kOptionalNestedFields,
-                         })));
-
-TEST_P(MutatorSingleFieldTest, CrossOver) {
+TEST_P(MutatorTest, CrossOver) {
   LoadWithoutLine(m1_.get());
   LoadMessage(m2_.get());
 
   EXPECT_FALSE(MessageDifferencer::Equals(*m1_, *m2_));
   TestMutator mutator(false);
 
-  int match_m1_ = 0;
-  int match_m2_ = 0;
-  int iterations = 1000;
-  std::unique_ptr<protobuf::Message> message(m1_->New());
-  for (int j = 0; j < iterations; ++j) {
-    message->CopyFrom(*m1_);
-    mutator.NoDeDupCrossOver(*m2_, message.get());
-    if (MessageDifferencer::Equals(*message, *m2_)) ++match_m2_;
-    if (MessageDifferencer::Equals(*message, *m1_)) ++match_m1_;
-  }
-
-  EXPECT_LT(iterations * .4, match_m1_);
-  EXPECT_GE(iterations * .6, match_m1_);
-  EXPECT_LT(iterations * .4, match_m2_);
-  EXPECT_GE(iterations * .6, match_m2_);
+  EXPECT_TRUE(CrossOver(*m1_, *m2_, *m2_));
 }
 
+template <class Msg>
+void RunCrossOver(const protobuf::Message& m1, const protobuf::Message& m2) {
+  Msg from;
+  from.add_repeated_msg()->CopyFrom(m1);
+  from.add_repeated_msg()->CopyFrom(m2);
+  from.mutable_repeated_msg(1)->add_repeated_string("repeated_string");
+
+  Msg to;
+  to.add_repeated_msg()->CopyFrom(m1);
+  to.add_repeated_msg()->CopyFrom(m1);
+  to.mutable_repeated_msg(1)->add_repeated_string("repeated_string");
+  EXPECT_TRUE(CrossOver(from, from, to));
+}
+
+TEST_P(MutatorTest, CopyField) {
+  LoadWithChangedLine(m1_.get(), 7);
+  LoadWithChangedLine(m2_.get(), 0);
+
+  if (m1_->GetDescriptor() == Msg::descriptor())
+    RunCrossOver<Msg>(*m1_, *m2_);
+  else
+    RunCrossOver<Msg3>(*m1_, *m2_);
+}
+
+TEST_P(MutatorTest, CloneField) {
+  LoadWithChangedLine(m1_.get(), 7);
+  LoadWithoutLine(m2_.get());
+
+  if (m1_->GetDescriptor() == Msg::descriptor())
+    RunCrossOver<Msg>(*m1_, *m2_);
+  else
+    RunCrossOver<Msg3>(*m1_, *m2_);
+}
+
+class MutatorSingleFieldTest : public MutatorTest {};
 template <typename T>
 class MutatorTypedTest : public ::testing::Test {
  public:
@@ -501,64 +585,12 @@ class MutatorTypedTest : public ::testing::Test {
 };
 
 using MutatorTypedTestTypes = testing::Types<Msg, Msg3>;
-TYPED_TEST_CASE(MutatorTypedTest, MutatorTypedTestTypes);
-
-TYPED_TEST(MutatorTypedTest, CrossOverRepeated) {
-  typename TestFixture::Message m1;
-  m1.add_repeated_int32(1);
-  m1.add_repeated_int32(2);
-  m1.add_repeated_int32(3);
-
-  typename TestFixture::Message m2;
-  m2.add_repeated_int32(4);
-  m2.add_repeated_int32(5);
-  m2.add_repeated_int32(6);
-
-  int iterations = 10000;
-  std::set<std::set<int>> sets;
-  TestMutator mutator(false);
-  for (int j = 0; j < iterations; ++j) {
-    typename TestFixture::Message message;
-    message.CopyFrom(m1);
-    mutator.NoDeDupCrossOver(m2, &message);
-    sets.insert(
-        {message.repeated_int32().begin(), message.repeated_int32().end()});
-  }
-
-  EXPECT_EQ(1u << 6, sets.size());
-}
-
-TYPED_TEST(MutatorTypedTest, CrossOverRepeatedMessages) {
-  typename TestFixture::Message m1;
-  auto* rm1 = m1.add_repeated_msg();
-  rm1->add_repeated_int32(1);
-  rm1->add_repeated_int32(2);
-
-  typename TestFixture::Message m2;
-  auto* rm2 = m2.add_repeated_msg();
-  rm2->add_repeated_int32(3);
-  rm2->add_repeated_int32(4);
-  rm2->add_repeated_int32(5);
-  rm2->add_repeated_int32(6);
-
-  int iterations = 10000;
-  std::set<std::set<int>> sets;
-  TestMutator mutator(false);
-  for (int j = 0; j < iterations; ++j) {
-    typename TestFixture::Message message;
-    message.CopyFrom(m1);
-    mutator.NoDeDupCrossOver(m2, &message);
-    for (const auto& msg : message.repeated_msg())
-      sets.insert({msg.repeated_int32().begin(), msg.repeated_int32().end()});
-  }
-
-  EXPECT_EQ(1u << 6, sets.size());
-}
+TYPED_TEST_SUITE(MutatorTypedTest, MutatorTypedTestTypes);
 
 TYPED_TEST(MutatorTypedTest, FailedMutations) {
   TestMutator mutator(false);
   size_t crossovers = 0;
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     typename TestFixture::Message messages[2];
     typename TestFixture::Message tmp;
     for (int j = 0; j < 20; ++j) {
@@ -571,7 +603,7 @@ TYPED_TEST(MutatorTypedTest, FailedMutations) {
     }
 
     tmp.CopyFrom(messages[1]);
-    mutator.CrossOver(messages[0], &tmp);
+    mutator.CrossOver(messages[0], &tmp, 1000);
     if (MessageDifferencer::Equals(tmp, messages[1]) ||
         MessageDifferencer::Equals(tmp, messages[0]))
       ++crossovers;
@@ -581,40 +613,49 @@ TYPED_TEST(MutatorTypedTest, FailedMutations) {
   EXPECT_LT(crossovers, 100u);
 }
 
-TYPED_TEST(MutatorTypedTest, FieldMutator) {
-  constexpr char kInitialString[] = " ";
-  constexpr char kIndicatorString[] = "0123456789abcdef";
-  bool custom_mutation = false;
-  bool regular_mutation = false;
-
-  const protobuf::Descriptor* descriptor =
-    (typename TestFixture::Message()).GetDescriptor();
+TYPED_TEST(MutatorTypedTest, RegisterPostProcessor) {
+  std::set<std::string> top_mutations = {"0123456789abcdef",
+                                         "abcdef0123456789"};
   TestMutator mutator(false);
-  TestMutator::RegisterCustomMutation(
-      descriptor->FindFieldByName("optional_string"),
-      [kIndicatorString](protobuf::Message* message){
-        typename TestFixture::Message* test_message =
-            dynamic_cast<typename TestFixture::Message*>(message);
-        test_message->set_optional_string(kIndicatorString);
-      });
+  for (auto& v : top_mutations) {
+    mutator.RegisterPostProcessor(
+        TestFixture::Message::descriptor(),
+        [=](protobuf::Message* message, unsigned int seed) {
+          auto test_message =
+              static_cast<typename TestFixture::Message*>(message);
+          if (seed % 2) test_message->set_optional_string(v);
+        });
+  }
+
+  std::set<int64_t> nested_mutations = {1234567, 567890};
+  for (auto& v : nested_mutations) {
+    mutator.RegisterPostProcessor(
+        TestFixture::Message::SubMsg::descriptor(),
+        [=](protobuf::Message* message, unsigned int seed) {
+          auto test_message =
+              static_cast<typename TestFixture::Message::SubMsg*>(message);
+          if (seed % 2) test_message->set_optional_int64(v);
+        });
+  }
+
+  bool regular_mutation = false;
 
   for (int j = 0; j < 100000; ++j) {
     // Include this field to increase the probability of mutation.
     typename TestFixture::Message message;
-    message.set_optional_string(kInitialString);
+    message.set_optional_string("a");
     mutator.Mutate(&message, 1000);
 
-    if (message.optional_string() == kIndicatorString) {
-      custom_mutation = true;
-    } else if (message.optional_string() != kInitialString) {
-      regular_mutation = true;
-    }
+    top_mutations.erase(message.optional_string());
+    nested_mutations.erase(message.mutable_sub_message()->optional_int64());
+    if (message.optional_string().empty()) regular_mutation = true;
 
-    if (custom_mutation && regular_mutation)
+    if (top_mutations.empty() && nested_mutations.empty() && regular_mutation)
       break;
   }
 
-  EXPECT_TRUE(custom_mutation);
+  EXPECT_TRUE(top_mutations.empty());
+  EXPECT_TRUE(nested_mutations.empty());
   EXPECT_TRUE(regular_mutation);
 }
 
@@ -633,6 +674,66 @@ TYPED_TEST(MutatorTypedTest, Serialization) {
       EXPECT_TRUE(MessageDifferencer::Equals(parsed, message));
     }
   }
+}
+
+TYPED_TEST(MutatorTypedTest, UnknownFieldTextFormat) {
+  typename TestFixture::Message parsed;
+  EXPECT_TRUE(ParseTextMessage(kUnknownFieldInput, &parsed));
+  EXPECT_EQ(SaveMessageAsText(parsed), kUnknownFieldExpected);
+}
+
+TYPED_TEST(MutatorTypedTest, DeepRecursion) {
+  typename TestFixture::Message message;
+  typename TestFixture::Message* last = &message;
+  for (int i = 0; i < 150; ++i) {
+    last = last->mutable_optional_msg();
+    std::string text = SaveMessageAsText(message);
+    std::string binary = SaveMessageAsBinary(message);
+    typename TestFixture::Message parsed;
+    EXPECT_EQ(i < 100, ParseTextMessage(SaveMessageAsText(message), &parsed));
+    EXPECT_EQ(i < 100,
+              ParseBinaryMessage(SaveMessageAsBinary(message), &parsed));
+  }
+}
+
+TYPED_TEST(MutatorTypedTest, EmptyMessage) {
+  typename TestFixture::Message::EmptyMessage message;
+  TestMutator mutator(false);
+  for (int j = 0; j < 10000; ++j) mutator.Mutate(&message, 1000);
+}
+
+TYPED_TEST(MutatorTypedTest, Regressions) {
+  typename TestFixture::Message::RegressionMessage message;
+  TestMutator mutator(false);
+  for (int j = 0; j < 10000; ++j) mutator.Mutate(&message, 1000);
+}
+
+TYPED_TEST(MutatorTypedTest, UsageExample) {
+  typename TestFixture::Message::SmallMessage message;
+  TestMutator mutator(false);
+
+  // Test that we can generate all variation of the message.
+  std::set<std::string> mutations;
+  for (int j = 0; j < 1000; ++j) {
+    mutator.Mutate(&message, 1000);
+    std::string str = SaveMessageAsText(message);
+    mutations.insert(str);
+  }
+
+  if (std::is_same<typename TestFixture::Message, Msg>::value) {
+    // 3 states for boolean and 5 for enum, including missing fields.
+    EXPECT_EQ(3u * 5u, mutations.size());
+  } else {
+    // 2 states for boolean and 4 for enum.
+    EXPECT_EQ(2u * 4u, mutations.size());
+  }
+}
+
+TYPED_TEST(MutatorTypedTest, Maps) {
+  TestMutator mutator(true);
+
+  typename TestFixture::Message::MapMessage message;
+  for (int j = 0; j < 10000; ++j) mutator.Mutate(&message, 1000);
 }
 
 class MutatorMessagesTest : public MutatorTest {};
@@ -654,35 +755,26 @@ TEST_P(MutatorMessagesTest, InsertMessage) {
   EXPECT_TRUE(Mutate(*m1_, *m2_));
 }
 
-// TODO(vitalybuka): Special tests for oneof.
+class MutatorMessagesSizeTest : public TestWithParam<size_t> {};
 
-TEST(MutatorMessagesTest, UsageExample) {
-  SmallMessage message;
+static const size_t kMaxSizes[] = {100, 256, 777, 10101};
+INSTANTIATE_TEST_SUITE_P(Proto, MutatorMessagesSizeTest, ValuesIn(kMaxSizes));
+
+TEST_P(MutatorMessagesSizeTest, MaxSize) {
   TestMutator mutator(false);
-
-  // Test that we can generate all variation of the message.
-  std::set<std::string> mutations;
-  for (int j = 0; j < 1000; ++j) {
-    mutator.Mutate(&message, 1000);
-    std::string str = SaveMessageAsText(message);
-    mutations.insert(str);
+  size_t over_sized_count = 0;
+  Msg message;
+  const size_t kMaxSize = GetParam();
+  const int kIterations = 10000;
+  for (int i = 0; i < kIterations; ++i) {
+    mutator.Mutate(&message, kMaxSize);
+    if (message.ByteSizeLong() > kMaxSize) ++over_sized_count;
+    EXPECT_LT(message.ByteSizeLong(), 1.1 * kMaxSize);
   }
-
-  // 3 states for boolean and 5 for enum, including missing fields.
-  EXPECT_EQ(3u * 5u, mutations.size());
+  EXPECT_LT(over_sized_count, kIterations * .1);
 }
 
-TEST(MutatorMessagesTest, EmptyMessage) {
-  EmptyMessage message;
-  TestMutator mutator(false);
-  for (int j = 0; j < 10000; ++j) mutator.Mutate(&message, 1000);
-}
-
-TEST(MutatorMessagesTest, Regressions) {
-  RegressionMessage message;
-  TestMutator mutator(false);
-  for (int j = 0; j < 10000; ++j) mutator.Mutate(&message, 1000);
-}
+// TODO(vitalybuka): Special tests for oneof.
 
 TEST(MutatorMessagesTest, NeverCopyUnknownEnum) {
   TestMutator mutator(false);

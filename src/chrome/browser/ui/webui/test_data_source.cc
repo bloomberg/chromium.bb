@@ -21,6 +21,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 const char kModuleQuery[] = "module=";
@@ -76,12 +77,19 @@ bool TestDataSource::AllowCaching() {
   return false;
 }
 
-std::string TestDataSource::GetContentSecurityPolicyScriptSrc() {
-  return "script-src chrome://* 'self';";
-}
+std::string TestDataSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+    return "script-src chrome://* 'self';";
+  } else if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
+    return "worker-src blob: 'self';";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    return std::string();
+  }
 
-std::string TestDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 GURL TestDataSource::GetURLForPath(const std::string& path) {
@@ -96,6 +104,20 @@ void TestDataSource::ReadFile(
 
   GURL url = GetURLForPath(path);
   CHECK(url.is_valid());
+  if (url.path() == "/chai.js") {
+    base::FilePath src_root;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+    base::FilePath file_path =
+        src_root.AppendASCII("third_party/chaijs/chai.js")
+            .NormalizePathSeparators();
+    CHECK(base::ReadFileToString(file_path, &content))
+        << url.spec() << "=" << file_path.value();
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&content);
+    std::move(callback).Run(response.get());
+    return;
+  }
+
   if (base::StartsWith(url.query(), kModuleQuery,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     std::string js_path = url.query().substr(strlen(kModuleQuery));

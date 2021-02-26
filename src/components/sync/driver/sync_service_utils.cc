@@ -42,6 +42,7 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
 
   switch (sync_service->GetTransportState()) {
     case SyncService::TransportState::DISABLED:
+    case SyncService::TransportState::PAUSED:
       return UploadState::NOT_ACTIVE;
 
     case SyncService::TransportState::START_DEFERRED:
@@ -68,10 +69,6 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   }
   NOTREACHED();
   return UploadState::NOT_ACTIVE;
-}
-
-void RecordSyncEvent(SyncEventCodes code) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
 }
 
 void RecordKeyRetrievalTrigger(KeyRetrievalTriggerForUMA trigger) {

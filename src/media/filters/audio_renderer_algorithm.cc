@@ -173,6 +173,8 @@ void AudioRendererAlgorithm::OnResamplerRead(int frame_delay,
     DCHECK(reached_end_of_stream_);
     audio_bus->ZeroFramesPartial(read_frames, requested_frames - read_frames);
   }
+
+  resampler_only_has_silence_ = !read_frames;
 }
 
 void AudioRendererAlgorithm::MarkEndOfStream() {
@@ -188,6 +190,14 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
         channels_, playback_rate, SincResampler::kDefaultRequestSize,
         base::BindRepeating(&AudioRendererAlgorithm::OnResamplerRead,
                             base::Unretained(this)));
+  }
+
+  if (reached_end_of_stream_ && resampler_only_has_silence_ &&
+      !audio_buffer_.frames()) {
+    // Previous calls to ResampleAndFill() and OnResamplerRead() have used all
+    // of the available buffers from |audio_buffer_|. We have also played out
+    // all remaining frames, and |resampler_| only contains silence.
+    return 0;
   }
 
   // |resampler_| can request more than |requested_frames|, due to the
@@ -252,15 +262,9 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     return frames_read;
   }
 
-  // WSOLA at playback rates that are close to 1.0 produces noticeable
-  // warbling and stuttering. We prefer resampling the audio at these speeds.
-  // This does results in a noticeable pitch shift.
-  // NOTE: The cutoff values are arbitrary, and picked based off of a tradeoff
-  // between "resample pitch shift" vs "WSOLA distortions".
-  if (kLowerResampleThreshold <= playback_rate &&
-      playback_rate <= kUpperResampleThreshold) {
+  // Use resampling when no pitch adjustments are needed.
+  if (!preserves_pitch_)
     return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
-  }
 
   // Destroy the resampler if it was used before, but it's no longer needed
   // (e.g. before playback rate has changed). This ensures that we don't try to
@@ -272,11 +276,11 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   // chunk of memory. ~56kB for stereo 48kHz, up to ~765kB for 7.1 192kHz.
   if (!ola_window_) {
     ola_window_.reset(new float[ola_window_size_]);
-    internal::GetSymmetricHanningWindow(ola_window_size_, ola_window_.get());
+    internal::GetPeriodicHanningWindow(ola_window_size_, ola_window_.get());
 
     transition_window_.reset(new float[ola_window_size_ * 2]);
-    internal::GetSymmetricHanningWindow(2 * ola_window_size_,
-                                        transition_window_.get());
+    internal::GetPeriodicHanningWindow(2 * ola_window_size_,
+                                       transition_window_.get());
 
     // Initialize for overlap-and-add of the first block.
     wsola_output_ =
@@ -590,6 +594,10 @@ void AudioRendererAlgorithm::CreateSearchWrappers() {
       AudioBus::WrapVector(target_block_->frames(), active_target_channels);
   search_block_wrapper_ =
       AudioBus::WrapVector(search_block_->frames(), active_search_channels);
+}
+
+void AudioRendererAlgorithm::SetPreservesPitch(bool preserves_pitch) {
+  preserves_pitch_ = preserves_pitch;
 }
 
 }  // namespace media

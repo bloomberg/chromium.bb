@@ -45,7 +45,11 @@ def main():
     command.extend(['-jobs', opts.j])
   command.extend(extra_args)
 
-  env = {'WEBKIT_OUTPUTDIR': output_dir}
+  env = {
+    'WEBKIT_OUTPUTDIR': output_dir,
+     # Needed for /bin/mkdir, /usr/bin/copypng, and /usr/sbin/sysctl.
+    'PATH': '/bin:/usr/bin:/usr/sbin',
+  }
   cwd = os.path.dirname(os.path.realpath(__file__))
 
   if opts.clean:
@@ -61,6 +65,10 @@ def main():
      proc.communicate()
      if proc.returncode:
        return proc.returncode
+
+  # Enable rewriting WK_API_AVAILABLE() -> API_AVAILABLE().
+  if opts.ios_simulator:
+    command.append('WK_FRAMEWORK_HEADER_POSTPROCESSING_DISABLED=NO')
 
   proc = subprocess.Popen(command, cwd=cwd, env=env)
   proc.communicate()

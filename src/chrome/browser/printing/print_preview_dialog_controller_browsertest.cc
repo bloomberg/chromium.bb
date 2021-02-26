@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -159,6 +160,12 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     return dialog_controller->GetPrintPreviewForContents(initiator_);
   }
 
+  void PrintPreviewDone() {
+    auto* print_view_manager =
+        printing::PrintViewManager::FromWebContents(initiator());
+    print_view_manager->PrintPreviewDone();
+  }
+
   void SetAlwaysOpenPdfExternallyForTests() {
     PluginPrefs::GetForProfile(browser()->profile())
         ->SetAlwaysOpenPdfExternallyForTests(true);
@@ -166,7 +173,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
 
  private:
   void SetUpOnMainThread() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableModalAnimations);
 #endif
@@ -206,16 +213,10 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogControllerBrowserTest);
 };
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_NavigateFromInitiatorTab DISABLED_NavigateFromInitiatorTab
-#else
-#define MAYBE_NavigateFromInitiatorTab NavigateFromInitiatorTab
-#endif
 // Test to verify that when a initiator navigates, we can create a new preview
 // dialog for the new tab contents.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_NavigateFromInitiatorTab) {
+                       NavigateFromInitiatorTab) {
   // Print for the first time.
   PrintPreview();
 
@@ -225,6 +226,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Check a new print preview dialog got created.
   ASSERT_TRUE(preview_dialog);
   ASSERT_NE(initiator(), preview_dialog);
+
+  PrintPreviewDone();
 
   // Navigate in the initiator tab. Make sure navigating destroys the print
   // preview dialog.
@@ -240,18 +243,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Check a new preview dialog got created.
   EXPECT_TRUE(new_preview_dialog);
+
+  PrintPreviewDone();
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_ReloadInitiatorTab DISABLED_ReloadInitiatorTab
-#else
-#define MAYBE_ReloadInitiatorTab ReloadInitiatorTab
-#endif
 // Test to verify that after reloading the initiator, it creates a new print
 // preview dialog.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_ReloadInitiatorTab) {
+                       ReloadInitiatorTab) {
   // Print for the first time.
   PrintPreview();
 
@@ -261,12 +260,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   ASSERT_TRUE(preview_dialog);
   ASSERT_NE(initiator(), preview_dialog);
 
+  PrintPreviewDone();
+
   // Reload the initiator. Make sure reloading destroys the print preview
   // dialog.
   content::WebContentsDestroyedWatcher watcher(preview_dialog);
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
   // When Widget::Close is called, a task is posted that will destroy the
   // widget. Here the widget is closed when the navigation commits. Load stop
   // may occur right after the commit, before the widget is destroyed.
@@ -280,18 +281,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Create a preview dialog for the initiator tab.
   WebContents* new_preview_dialog = GetPrintPreviewDialog();
   EXPECT_TRUE(new_preview_dialog);
+
+  PrintPreviewDone();
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_PdfPluginDisabled DISABLED_PdfPluginDisabled
-#else
-#define MAYBE_PdfPluginDisabled PdfPluginDisabled
-#endif
 // Test to verify that after print preview works even when the PDF plugin is
 // disabled for webpages.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_PdfPluginDisabled) {
+                       PdfPluginDisabled) {
   // Make sure plugins are loaded.
   {
     base::RunLoop run_loop;
@@ -340,6 +337,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Make sure all the frames in the dialog has access to the PDF plugin.
   preview_dialog->ForEachFrame(
       base::BindRepeating(&CheckPdfPluginForRenderFrame));
+
+  PrintPreviewDone();
 }
 
 namespace {
@@ -355,14 +354,8 @@ const std::vector<task_manager::WebContentsTag*>& GetTrackedTags() {
 
 }  // namespace
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_TaskManagementTest DISABLED_TaskManagementTest
-#else
-#define MAYBE_TaskManagementTest TaskManagementTest
-#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_TaskManagementTest) {
+                       TaskManagementTest) {
   // This test starts with two tabs open.
   EXPECT_EQ(2U, GetTrackedTags().size());
 
@@ -383,6 +376,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
 
+  PrintPreviewDone();
+
   // Navigating away from the current page in the current tab for which a print
   // preview is displayed will cancel the print preview and hence the task
   // manger shouldn't show a printing task.
@@ -401,19 +396,16 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(base::StartsWith(title,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
+  PrintPreviewDone();
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_PrintPreviewPdfAccessibility DISABLED_PrintPreviewPdfAccessibility
-#else
-#define MAYBE_PrintPreviewPdfAccessibility PrintPreviewPdfAccessibility
-#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_PrintPreviewPdfAccessibility) {
+                       PrintPreviewPdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,HelloWorld"));
   PrintPreview();
   WebContents* preview_dialog = GetPrintPreviewDialog();
   WaitForAccessibilityTreeToContainNodeWithName(preview_dialog, "HelloWorld");
+
+  PrintPreviewDone();
 }

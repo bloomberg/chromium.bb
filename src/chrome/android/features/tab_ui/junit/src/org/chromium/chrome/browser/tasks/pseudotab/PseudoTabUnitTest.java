@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.pseudotab;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,12 +20,18 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,25 +53,35 @@ public class PseudoTabUnitTest {
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
+    private static final int TAB4_ID = 159;
 
     @Mock
     TabModelFilter mTabModelFilter;
     @Mock
     TabModelFilter mTabModelFilter2;
     @Mock
+    TabModelSelector mTabModelSelector;
+    @Mock
     TabModelFilterProvider mTabModelFilterProvider;
+
+    @Mock
+    CriticalPersistedTabData mCriticalPersistedTabData;
 
     private TabImpl mTab1;
     private TabImpl mTab2;
     private TabImpl mTab3;
+    private TabImpl mTab1Copy;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mTab1 = prepareTab(TAB1_ID);
-        mTab2 = prepareTab(TAB2_ID);
-        mTab3 = prepareTab(TAB3_ID);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, mCriticalPersistedTabData);
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, mCriticalPersistedTabData);
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, mCriticalPersistedTabData);
+        mTab1Copy = TabUiUnitTestUtils.prepareTab(TAB1_ID, mCriticalPersistedTabData);
+
+        doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
     }
 
     @After
@@ -124,6 +139,14 @@ public class PseudoTabUnitTest {
         PseudoTab tab1prime = PseudoTab.fromTab(mTab1);
         Assert.assertNotEquals(tab1, tab2);
         Assert.assertEquals(tab1, tab1prime);
+    }
+
+    @Test
+    public void fromTab_obsoleteCache() {
+        PseudoTab tab1 = PseudoTab.fromTab(mTab1);
+        PseudoTab tab1copy = PseudoTab.fromTab(mTab1Copy);
+        Assert.assertNotEquals(tab1, tab1copy);
+        Assert.assertEquals(tab1.getId(), tab1copy.getId());
     }
 
     @Test
@@ -253,7 +276,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRootId_real() {
         int rootId = 1337;
-        doReturn(rootId).when(mTab1).getRootId();
+        doReturn(rootId).when(mCriticalPersistedTabData).getRootId();
 
         PseudoTab tab = PseudoTab.fromTabId(TAB1_ID);
         Assert.assertEquals(Tab.INVALID_TAB_ID, tab.getRootId());
@@ -293,8 +316,9 @@ public class PseudoTabUnitTest {
 
     @Test
     public void getTimestampMillis_realTab() {
+        CriticalPersistedTabData criticalPersistedTabaData = CriticalPersistedTabData.from(mTab1);
         long timestamp = 12345;
-        doReturn(timestamp).when(mTab1).getTimestampMillis();
+        doReturn(timestamp).when(criticalPersistedTabaData).getTimestampMillis();
 
         PseudoTab tab = PseudoTab.fromTab(mTab1);
         Assert.assertEquals(timestamp, tab.getTimestampMillis());
@@ -307,20 +331,22 @@ public class PseudoTabUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.INSTANT_START})
     public void getRelatedTabs_noProvider_groupDisabled_single() {
-        doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
+        doReturn(false).when(mTabModelSelector).isTabStateInitialized();
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(1, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.INSTANT_START})
     public void getRelatedTabs_noProvider_groupDisabled_group() {
-        doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
+        doReturn(false).when(mTabModelSelector).isTabStateInitialized();
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, TAB1_ID);
@@ -329,42 +355,42 @@ public class PseudoTabUnitTest {
         PseudoTab tab2 = PseudoTab.fromTabId(TAB2_ID);
         Assert.assertEquals(TAB1_ID, tab2.getRootId());
 
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(1, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID, ChromeFeatureList.INSTANT_START})
     public void getRelatedTabs_noProvider_single() {
-        doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
+        doReturn(false).when(mTabModelSelector).isTabStateInitialized();
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(1, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID, ChromeFeatureList.INSTANT_START})
     public void getRelatedTabs_noProvider_group() {
-        doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
+        doReturn(false).when(mTabModelSelector).isTabStateInitialized();
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, TAB1_ID);
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
         PseudoTab.fromTabId(TAB2_ID);
 
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(2, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID, ChromeFeatureList.INSTANT_START})
     public void getRelatedTabs_noProvider_badGroup() {
-        doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
+        doReturn(false).when(mTabModelSelector).isTabStateInitialized();
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, Tab.INVALID_TAB_ID);
@@ -373,19 +399,20 @@ public class PseudoTabUnitTest {
         PseudoTab.fromTabId(TAB2_ID);
         PseudoTab.fromTabId(TAB3_ID);
 
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(1, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
     }
 
     @Test
     public void getRelatedTabs_provider_normal() {
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getTabModelFilter(eq(false));
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3));
         doReturn(tabs).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(3, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
@@ -394,6 +421,7 @@ public class PseudoTabUnitTest {
 
     @Test
     public void getRelatedTabs_provider_incognito() {
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getTabModelFilter(eq(false));
         List<Tab> empty = new ArrayList<>();
         doReturn(empty).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
@@ -402,15 +430,42 @@ public class PseudoTabUnitTest {
         doReturn(tabs).when(mTabModelFilter2).getRelatedTabList(TAB1_ID);
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
-        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
+        List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelSelector);
         Assert.assertEquals(2, related.size());
         Assert.assertEquals(TAB1_ID, related.get(0).getId());
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
     }
 
-    private TabImpl prepareTab(int id) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
-        return tab;
+    @Test
+    public void testTabDestroyedRootId() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Root ID was not set. Without the isInitialized() check,
+        // pseudoTab.getRootId() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals(Tab.INVALID_TAB_ID, pseudoTab.getRootId());
+    }
+
+    @Test
+    public void testTabDestroyedTitle() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Title was not set. Without the isInitialized() check,
+        // pseudoTab.getTitle() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals("", pseudoTab.getTitle());
+    }
+
+    @Test
+    public void testTabDestroyedUrl() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Url was not set. Without the isInitialized() check,
+        // pseudoTab.getUrl() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals("", pseudoTab.getUrl());
     }
 }

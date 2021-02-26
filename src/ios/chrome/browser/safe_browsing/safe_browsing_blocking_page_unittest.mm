@@ -6,9 +6,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -21,12 +24,16 @@
 
 using safe_browsing::SBThreatType;
 using security_interstitials::IOSSecurityInterstitialPage;
+using security_interstitials::MetricsHelper;
 using security_interstitials::UnsafeResource;
 using security_interstitials::SecurityInterstitialCommand;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kSpinDelaySeconds;
 
 namespace {
+// Name of the metric recorded when a malware interstitial is shown or closed.
+const char kMalwareDecisionMetric[] = "interstitial.malware.decision";
+
 // Creates an UnsafeResource for |web_state| using |url|.
 UnsafeResource CreateResource(web::WebState* web_state, const GURL& url) {
   UnsafeResource resource;
@@ -41,13 +48,16 @@ UnsafeResource CreateResource(web::WebState* web_state, const GURL& url) {
 class SafeBrowsingBlockingPageTest : public PlatformTest {
  public:
   SafeBrowsingBlockingPageTest()
-      : url_("http://www.chromium.test"),
-        resource_(CreateResource(&web_state_, url_)),
-        page_(SafeBrowsingBlockingPage::Create(resource_)) {
+      : browser_state_(TestChromeBrowserState::Builder().Build()),
+        url_("http://www.chromium.test"),
+        resource_(CreateResource(&web_state_, url_)) {
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
         std::make_unique<web::TestNavigationManager>();
+    navigation_manager->SetBrowserState(browser_state_.get());
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
+    web_state_.SetBrowserState(browser_state_.get());
+    page_ = SafeBrowsingBlockingPage::Create(resource_);
     SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
     SafeBrowsingUrlAllowList::FromWebState(&web_state_)
         ->AddPendingUnsafeNavigationDecision(url_, resource_.threat_type);
@@ -64,11 +74,13 @@ class SafeBrowsingBlockingPageTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_{
       web::WebTaskEnvironment::IO_MAINLOOP};
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_ = nullptr;
   GURL url_;
   UnsafeResource resource_;
   std::unique_ptr<IOSSecurityInterstitialPage> page_;
+  base::HistogramTester histogram_tester_;
 };
 
 // Tests that the blocking page generates HTML.
@@ -91,6 +103,13 @@ TEST_F(SafeBrowsingBlockingPageTest, HandleProceedCommand) {
   EXPECT_TRUE(allow_list->AreUnsafeNavigationsAllowed(url_, &allowed_threats));
   EXPECT_NE(allowed_threats.find(resource_.threat_type), allowed_threats.end());
   EXPECT_TRUE(navigation_manager_->ReloadWasCalled());
+
+  // Verify that metrics are recorded correctly.
+  histogram_tester_.ExpectTotalCount(kMalwareDecisionMetric, 2);
+  histogram_tester_.ExpectBucketCount(kMalwareDecisionMetric,
+                                      MetricsHelper::PROCEED, 1);
+  histogram_tester_.ExpectBucketCount(kMalwareDecisionMetric,
+                                      MetricsHelper::SHOW, 1);
 }
 
 // Tests that the blocking page handles the don't proceed command by navigating
@@ -110,6 +129,13 @@ TEST_F(SafeBrowsingBlockingPageTest, HandleDontProceedCommand) {
   // Verify that the NavigationManager has navigated back.
   EXPECT_EQ(0, navigation_manager_->GetLastCommittedItemIndex());
   EXPECT_FALSE(navigation_manager_->CanGoBack());
+
+  // Verify that metrics are recorded correctly.
+  histogram_tester_.ExpectTotalCount(kMalwareDecisionMetric, 2);
+  histogram_tester_.ExpectBucketCount(kMalwareDecisionMetric,
+                                      MetricsHelper::DONT_PROCEED, 1);
+  histogram_tester_.ExpectBucketCount(kMalwareDecisionMetric,
+                                      MetricsHelper::SHOW, 1);
 }
 
 // Tests that the blocking page handles the don't proceed command by closing the

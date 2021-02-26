@@ -11,6 +11,7 @@
 
 #include "common/args.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -18,12 +19,7 @@
 #include "aom/aom_integer.h"
 #include "aom_ports/msvc.h"
 #include "aom/aom_codec.h"
-
-#if defined(__GNUC__) && __GNUC__
-extern void die(const char *fmt, ...) __attribute__((noreturn));
-#else
-extern void die(const char *fmt, ...);
-#endif
+#include "common/tools_common.h"
 
 struct arg arg_init(char **argv) {
   struct arg a;
@@ -147,19 +143,20 @@ int parse_cfg(const char *file, cfg_options_t *config) {
 int arg_match(struct arg *arg_, const struct arg_def *def, char **argv) {
   struct arg arg;
 
+  assert(def->has_val == 0 || def->has_val == 1 || def->has_val == -1);
+
   if (!argv[0] || argv[0][0] != '-') return 0;
 
   arg = arg_init(argv);
 
-  if (def->short_name && strlen(arg.argv[0]) == strlen(def->short_name) + 1 &&
-      !strcmp(arg.argv[0] + 1, def->short_name)) {
+  if (def->short_name && !strcmp(arg.argv[0] + 1, def->short_name)) {
     arg.name = arg.argv[0] + 1;
     arg.val = def->has_val ? arg.argv[1] : NULL;
     arg.argv_step = def->has_val ? 2 : 1;
   } else if (def->long_name) {
     const size_t name_len = strlen(def->long_name);
 
-    if (strlen(arg.argv[0]) >= name_len + 2 && arg.argv[0][1] == '-' &&
+    if (arg.argv[0][1] == '-' &&
         !strncmp(arg.argv[0] + 2, def->long_name, name_len) &&
         (arg.argv[0][name_len + 2] == '=' ||
          arg.argv[0][name_len + 2] == '\0')) {
@@ -169,13 +166,19 @@ int arg_match(struct arg *arg_, const struct arg_def *def, char **argv) {
     }
   }
 
-  if (arg.name && !arg.val && def->has_val)
-    die("Error: option %s requires argument.\n", arg.name);
+  if (arg.name) {
+    if (def->has_val == -1) {
+      arg.def = def;
+      *arg_ = arg;
+      return 1;
+    }
 
-  if (arg.name && arg.val && !def->has_val)
-    die("Error: option %s requires no argument.\n", arg.name);
+    if (!arg.val && def->has_val)
+      die("Error: option %s requires argument.\n", arg.name);
 
-  if (arg.name && (arg.val || !def->has_val)) {
+    if (arg.val && !def->has_val)
+      die("Error: option %s requires no argument.\n", arg.name);
+
     arg.def = def;
     *arg_ = arg;
     return 1;

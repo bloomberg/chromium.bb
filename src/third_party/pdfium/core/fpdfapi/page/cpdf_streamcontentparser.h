@@ -17,6 +17,8 @@
 #include "core/fxcrt/fx_number.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxcrt/unowned_ptr.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_pathdata.h"
 
 class CPDF_AllStates;
@@ -107,7 +109,7 @@ class CPDF_StreamContentParser {
   void ParsePathObject();
   void AddPathPoint(float x, float y, FXPT_TYPE type, bool close);
   void AddPathRect(float x, float y, float w, float h);
-  void AddPathObject(int FillType, bool bStroke);
+  void AddPathObject(CFX_FillRenderOptions::FillType fill_type, bool bStroke);
   CPDF_ImageObject* AddImage(RetainPtr<CPDF_Stream> pStream);
   CPDF_ImageObject* AddImage(uint32_t streamObjNum);
   CPDF_ImageObject* AddImage(const RetainPtr<CPDF_Image>& pImage);
@@ -222,7 +224,8 @@ class CPDF_StreamContentParser {
   float m_PathStartY = 0.0f;
   float m_PathCurrentX = 0.0f;
   float m_PathCurrentY = 0.0f;
-  uint8_t m_PathClipType = 0;
+  CFX_FillRenderOptions::FillType m_PathClipType =
+      CFX_FillRenderOptions::FillType::kNoFill;
   ByteString m_LastImageName;
   RetainPtr<CPDF_Image> m_pLastImage;
   bool m_bColored = false;

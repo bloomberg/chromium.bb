@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/arc/mojom/app.mojom.h"
 
 class GURL;
@@ -46,7 +46,7 @@ class ApkWebAppInstaller {
   // or an empty id if not.
   static void Install(Profile* profile,
                       arc::mojom::WebAppInfoPtr web_app_info,
-                      const std::vector<uint8_t>& icon_png_data,
+                      arc::mojom::RawIconPngDataPtr icon,
                       InstallFinishCallback callback,
                       base::WeakPtr<Owner> weak_owner);
 
@@ -59,14 +59,14 @@ class ApkWebAppInstaller {
 
   // Starts the installation flow by decoding icon data.
   void Start(arc::mojom::WebAppInfoPtr web_app_info,
-             const std::vector<uint8_t>& icon_png_data);
+             arc::mojom::RawIconPngDataPtr icon);
 
   // Calls |callback_| with |id|, and deletes this object. Virtual for testing.
   virtual void CompleteInstallation(const web_app::AppId& id,
                                     web_app::InstallResultCode code);
 
   // Callback method for installation completed response.
-  void OnWebAppCreated(const GURL& app_url,
+  void OnWebAppCreated(const GURL& start_url,
                        const web_app::AppId& app_id,
                        web_app::InstallResultCode code);
 

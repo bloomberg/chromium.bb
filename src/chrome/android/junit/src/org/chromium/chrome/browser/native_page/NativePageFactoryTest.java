@@ -13,9 +13,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.native_page.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePage.NativePageType;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
@@ -87,7 +87,7 @@ public class NativePageFactoryTest {
 
     private static class MockNativePageBuilder extends NativePageFactory.NativePageBuilder {
         private MockNativePageBuilder() {
-            super(null, null);
+            super(null, null, null);
         }
 
         @Override
@@ -161,7 +161,7 @@ public class NativePageFactoryTest {
 
     @Before
     public void setUp() {
-        mNativePageFactory = new NativePageFactory(null);
+        mNativePageFactory = new NativePageFactory(null, null);
         mNativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
     }
 

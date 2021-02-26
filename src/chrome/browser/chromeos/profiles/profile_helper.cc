@@ -54,7 +54,6 @@ namespace {
 const char* kNonRiskyExtensionsIdsHashes[] = {
     "E24F1786D842E91E74C27929B0B3715A4689A473",  // Gnubby component extension
     "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Gnubby app
-    "8EBDF73405D0B84CEABB8C7513C9B9FA9F1DC2CE",  // Genius app (help)
     "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Chrome OS XKB
     "3F50C3A83839D9C76334BCE81CDEC06174F266AF",  // Virtual Keyboard
     "2F47B526FA71F44816618C41EC55E5EE9543FDCC",  // Braille Keyboard
@@ -62,7 +61,8 @@ const char* kNonRiskyExtensionsIdsHashes[] = {
     "1CF709D51B2B96CF79D00447300BD3BFBE401D21",  // Mobile activation
     "40FF1103292F40C34066E023B8BE8CAE18306EAE",  // Chromeos help
     "3C654B3B6682CA194E75AD044CEDE927675DDEE8",  // Easy unlock
-    "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
+    "75C7F4B720314B6CB1B5817CD86089DB95CD2461",  // ChromeVox
+    "4D725C894DA4CF1F4D96C60F0D83BD745EB530CA",  // Switch Access
 };
 
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
@@ -148,7 +148,7 @@ class ProfileHelperImpl : public ProfileHelper,
 
  private:
   // BrowsingDataRemover::Observer implementation:
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
   // OAuth2LoginManager::Observer overrides.
   void OnSessionRestoreStateChanged(
@@ -638,7 +638,7 @@ void ProfileHelperImpl::OnSigninProfileCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, content::BrowsingDataRemover::Observer implementation:
 
-void ProfileHelperImpl::OnBrowsingDataRemoverDone() {
+void ProfileHelperImpl::OnBrowsingDataRemoverDone(uint64_t failed_data_types) {
   LOG_ASSERT(browsing_data_remover_);
   browsing_data_remover_->RemoveObserver(this);
   browsing_data_remover_ = nullptr;

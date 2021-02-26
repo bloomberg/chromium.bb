@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -101,9 +102,6 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   CompositorTaskRunner() = 0;
 
-  // Returns a task runner for handling IPC messages.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() = 0;
-
   // Returns a default task runner. This is basically same as the default task
   // runner, but is explicitly allowed to run JavaScript. We plan to forbid V8
   // execution on per-thread task runners (crbug.com/913912). If you need to
@@ -113,10 +111,17 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   DeprecatedDefaultTaskRunner() = 0;
 
-  // Creates a new PageScheduler for a given Page. Must be called from the
-  // associated WebThread.
-  virtual std::unique_ptr<PageScheduler> CreatePageScheduler(
-      PageScheduler::Delegate*) = 0;
+  // Creates a AgentGroupScheduler implementation. Must be called from the
+  // main thread.
+  virtual std::unique_ptr<scheduler::WebAgentGroupScheduler>
+  CreateAgentGroupScheduler() = 0;
+
+  // The current active AgentGroupScheduler is set when the task gets
+  // started (i.e., OnTaskStarted) and unset when the task gets
+  // finished (i.e., OnTaskCompleted). GetCurrentAgentGroupScheduler()
+  // returns nullptr in task observers.
+  virtual scheduler::WebAgentGroupScheduler*
+  GetCurrentAgentGroupScheduler() = 0;
 
   // Pauses the scheduler. See WebThreadScheduler::PauseRenderer for
   // details. May only be called from the main thread.

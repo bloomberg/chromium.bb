@@ -44,7 +44,7 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
          float scale,
          UnitScaling);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   float Scale() const { return scale_; }
   FloatRect MapLocalRectToAbsoluteRect(const FloatRect&) const;
@@ -54,10 +54,6 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
   float ApplyVerticalScale(float value) const;
 
   FloatPoint3D Resolve3dPoint(const FloatPoint3D&) const;
-
-  FloatRect AbsoluteFilterRegion() const {
-    return MapLocalRectToAbsoluteRect(filter_region_);
-  }
 
   const FloatRect& FilterRegion() const { return filter_region_; }
   const FloatRect& ReferenceBox() const { return reference_box_; }

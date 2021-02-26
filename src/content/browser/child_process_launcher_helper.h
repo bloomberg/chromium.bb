@@ -17,9 +17,9 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 
 #if !defined(OS_FUCHSIA)
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -35,16 +35,16 @@
 #include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "sandbox/policy/fuchsia/sandbox_policy_fuchsia.h"
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif
 
 namespace base {
@@ -88,7 +88,7 @@ class ChildProcessLauncherHelper :
     base::Process process;
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-    service_manager::ZygoteHandle zygote = nullptr;
+    ZygoteHandle zygote = nullptr;
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
   };
 
@@ -238,9 +238,9 @@ class ChildProcessLauncherHelper :
   const mojo::ProcessErrorCallback process_error_callback_;
   const std::map<std::string, base::FilePath> files_to_preload_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::unique_ptr<sandbox::SeatbeltExecClient> seatbelt_exec_client_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;
@@ -250,7 +250,7 @@ class ChildProcessLauncherHelper :
 #endif
 
 #if defined(OS_FUCHSIA)
-  std::unique_ptr<service_manager::SandboxPolicyFuchsia> sandbox_policy_;
+  std::unique_ptr<sandbox::policy::SandboxPolicyFuchsia> sandbox_policy_;
 #endif
 };
 

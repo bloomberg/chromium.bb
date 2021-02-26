@@ -15,12 +15,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
@@ -30,6 +28,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace gpu {
 class GpuChannelHost;
@@ -60,9 +62,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // use.  Safe to call from any thread.
   static std::unique_ptr<GpuVideoAcceleratorFactoriesImpl> Create(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          main_thread_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
@@ -76,13 +77,19 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool IsGpuVideoAcceleratorEnabled() override;
   base::UnguessableToken GetChannelToken() override;
   int32_t GetCommandBufferRouteId() override;
+  Supported IsDecoderConfigSupported(
+      media::VideoDecoderImplementation implementation,
+      const media::VideoDecoderConfig& config) override;
+  bool IsDecoderSupportKnown() override;
+  void NotifyDecoderSupportKnown(base::OnceClosure callback) override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
       media::VideoDecoderImplementation implementation,
       media::RequestOverlayInfoCB request_overlay_info_cb) override;
-  Supported IsDecoderConfigSupported(
-      media::VideoDecoderImplementation implementation,
-      const media::VideoDecoderConfig& config) override;
+  base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
+  GetVideoEncodeAcceleratorSupportedProfiles() override;
+  bool IsEncoderSupportKnown() override;
+  void NotifyEncoderSupportKnown(base::OnceClosure callback) override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
 
@@ -111,10 +118,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // present otherwise.
   void DestroyContext();
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
-
-  base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
-  GetVideoEncodeAcceleratorSupportedProfiles() override;
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() override;
 
   viz::RasterContextProvider* GetMediaContextProvider() override;
 
@@ -128,11 +132,25 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   ~GpuVideoAcceleratorFactoriesImpl() override;
 
  private:
+  class Notifier {
+   public:
+    Notifier();
+    ~Notifier();
+
+    void Register(base::OnceClosure callback);
+    void Notify();
+
+    bool is_notified() { return is_notified_; }
+
+   private:
+    bool is_notified_ = false;
+    std::vector<base::OnceClosure> callbacks_;
+  };
+
   GpuVideoAcceleratorFactoriesImpl(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          main_thread_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
@@ -154,12 +172,15 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   void OnSupportedDecoderConfigs(
       const media::SupportedVideoDecoderConfigMap& supported_configs);
+  void OnDecoderSupportFailed();
+
   void OnGetVideoEncodeAcceleratorSupportedProfiles(
       const media::VideoEncodeAccelerator::SupportedProfiles&
           supported_profiles);
+  void OnEncoderSupportFailed();
 
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   // Shared pointer to a shared context provider. It is initially set on main
@@ -197,11 +218,11 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // are no supported configs.
   base::Optional<media::SupportedVideoDecoderConfigMap>
       supported_decoder_configs_ GUARDED_BY(supported_profiles_lock_);
+  Notifier decoder_support_notifier_ GUARDED_BY(supported_profiles_lock_);
 
   base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
       supported_vea_profiles_ GUARDED_BY(supported_profiles_lock_);
-  // For sending requests to allocate shared memory in the Browser process.
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  Notifier encoder_support_notifier_ GUARDED_BY(supported_profiles_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoAcceleratorFactoriesImpl);
 };

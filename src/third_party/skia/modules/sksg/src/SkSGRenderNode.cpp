@@ -98,7 +98,9 @@ void RenderNode::RenderContext::modulatePaint(const SkMatrix& ctm, SkPaint* pain
     if (fShader) {
         paint->setShader(LocalShader(fShader, fShaderCTM, ctm));
     }
-    paint->setBlendMode(fBlendMode);
+    if (fBlendMode != SkBlendMode::kSrcOver) {
+        paint->setBlendMode(fBlendMode);
+    }
 
     // Only apply the shader mask for regular paints.  Isolation layers require
     // special handling on restore.
@@ -206,13 +208,15 @@ RenderNode::ScopedRenderContext::setIsolation(const SkRect& bounds, const SkMatr
 RenderNode::ScopedRenderContext&&
 RenderNode::ScopedRenderContext::setFilterIsolation(const SkRect& bounds, const SkMatrix& ctm,
                                                     sk_sp<SkImageFilter> filter) {
-    SkPaint layer_paint;
-    fCtx.modulatePaint(ctm, &layer_paint);
+    if (filter) {
+        SkPaint layer_paint;
+        fCtx.modulatePaint(ctm, &layer_paint);
 
-    SkASSERT(!layer_paint.getImageFilter());
-    layer_paint.setImageFilter(std::move(filter));
-    fCanvas->saveLayer(bounds, &layer_paint);
-    fCtx = RenderContext();
+        SkASSERT(!layer_paint.getImageFilter());
+        layer_paint.setImageFilter(std::move(filter));
+        fCanvas->saveLayer(bounds, &layer_paint);
+        fCtx = RenderContext();
+    }
 
     return std::move(*this);
 }

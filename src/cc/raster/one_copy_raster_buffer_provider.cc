@@ -11,10 +11,13 @@
 #include <utility>
 
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -38,6 +41,14 @@ namespace {
 // 4MiB is the size of 4 512x512 tiles, which has proven to be a good
 // default batch size for copy operations.
 const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
+
+// When enabled, OneCopyRasterBufferProvider::RasterBufferImpl::Playback() runs
+// at normal thread priority.
+// TODO(crbug.com/1072756): Cleanup the feature when the Stable experiment is
+// complete, on November 25, 2020.
+const base::Feature kOneCopyRasterBufferPlaybackNormalThreadPriority{
+    "OneCopyRasterBufferPlaybackNormalThreadPriority",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -120,6 +131,16 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
       before_raster_sync_token_, raster_source, raster_full_rect,
       raster_dirty_rect, transform, resource_size_, resource_format_,
       color_space_, playback_settings, previous_content_id_, new_content_id);
+}
+
+bool OneCopyRasterBufferProvider::RasterBufferImpl::
+    SupportsBackgroundThreadPriority() const {
+  // Playback() should not run at background thread priority because it acquires
+  // the GpuChannelHost lock, which is acquired at normal thread priority by
+  // other code. Acquiring it at background thread priority can cause a priority
+  // inversion. https://crbug.com/1072756
+  return !base::FeatureList::IsEnabled(
+      kOneCopyRasterBufferPlaybackNormalThreadPriority);
 }
 
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
@@ -371,16 +392,17 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
         gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_RASTER;
     if (mailbox_texture_is_overlay_candidate)
       usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    *mailbox = sii->CreateSharedImage(resource_format, resource_size,
-                                      color_space, usage);
+    *mailbox = sii->CreateSharedImage(
+        resource_format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, usage, gpu::kNullSurfaceHandle);
   }
 
   // Create staging shared image.
   if (staging_buffer->mailbox.IsZero()) {
     const uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER;
-    staging_buffer->mailbox =
-        sii->CreateSharedImage(staging_buffer->gpu_memory_buffer.get(),
-                               gpu_memory_buffer_manager_, color_space, usage);
+    staging_buffer->mailbox = sii->CreateSharedImage(
+        staging_buffer->gpu_memory_buffer.get(), gpu_memory_buffer_manager_,
+        color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
   } else {
     sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
   }
@@ -403,7 +425,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     query_target = GL_COMMANDS_COMPLETED_CHROMIUM;
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY)
   // TODO(reveman): This avoids a performance problem on ARM ChromeOS devices.
   // https://crbug.com/580166
   query_target = GL_COMMANDS_ISSUED_CHROMIUM;

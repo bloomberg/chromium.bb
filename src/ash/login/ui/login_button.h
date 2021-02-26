@@ -14,7 +14,7 @@ namespace ash {
 // This class adds ripple effects for touch targets in the lockscreen.
 class ASH_EXPORT LoginButton : public views::ImageButton {
  public:
-  explicit LoginButton(views::ButtonListener* listener);
+  explicit LoginButton(PressedCallback callback);
   ~LoginButton() override;
 
   // views::InkDropHost:

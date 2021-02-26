@@ -6,8 +6,16 @@
 #include "third_party/blink/renderer/core/css/parser/css_proto_converter.h"
 
 // TODO(metzman): Figure out how to remove this include and use DCHECK.
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/parser/css.pb.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+// TODO(bikineev): "IN" comes as a macro from <windows.h>. It conflicts with
+// Length::IN from the generated proto file. Change the name in css.proto rather
+// than hacking with directives here.
+#if defined(OS_WIN) && defined(IN)
+#undef IN
+#endif
 
 namespace css_proto_converter {
 
@@ -1006,7 +1014,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "max-block-size",
     "-webkit-animation-play-state",
     "border-image-repeat",
-    "-webkit-font-size-delta",
+    "-internal-font-size-delta",
     "scroll-padding-bottom",
     "border-right-style",
     "border-left-style",
@@ -1517,6 +1525,8 @@ const std::string Converter::kPropertyLookupTable[] = {
     "overscroll-behavior-block",
     "overscroll-behavior-x",
     "overscroll-behavior-y",
+    "animation-timeline",
+    "counter-set",
     "INVALID_PROPERTY",
 };
 

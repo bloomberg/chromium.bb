@@ -49,8 +49,6 @@ void SoftwareOutputSurface::BindFramebuffer() {
   NOTREACHED();
 }
 
-void SoftwareOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
-
 void SoftwareOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,
@@ -149,13 +147,4 @@ void SoftwareOutputSurface::SetNeedsSwapSizeNotifications(
   needs_swap_size_notifications_ = needs_swap_size_notifications;
 }
 #endif
-
-scoped_refptr<gpu::GpuTaskSchedulerHelper>
-SoftwareOutputSurface::GetGpuTaskSchedulerHelper() {
-  return nullptr;
-}
-
-gpu::MemoryTracker* SoftwareOutputSurface::GetMemoryTracker() {
-  return nullptr;
-}
 }  // namespace viz

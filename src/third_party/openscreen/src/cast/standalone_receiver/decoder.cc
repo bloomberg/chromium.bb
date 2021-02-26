@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <sstream>
-#include <thread>  // NOLINT
+#include <thread>
 
 #include "util/osp_logging.h"
 #include "util/trace_logging.h"
@@ -32,7 +32,8 @@ void Decoder::Buffer::Resize(int new_size) {
 }
 
 absl::Span<const uint8_t> Decoder::Buffer::GetSpan() const {
-  return const_cast<Buffer*>(this)->GetSpan();
+  return absl::Span<const uint8_t>(
+      buffer_.data(), buffer_.size() - AV_INPUT_BUFFER_PADDING_SIZE);
 }
 
 absl::Span<uint8_t> Decoder::Buffer::GetSpan() {

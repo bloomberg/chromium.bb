@@ -7,10 +7,11 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
+#include "chrome/browser/extensions/component_extensions_allowlist/allowlist.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
@@ -45,8 +46,7 @@ void ExternalComponentLoader::StartLoading() {
 
   if (media_router::MediaRouterEnabled(profile_) &&
       FeatureSwitch::load_media_router_component_extension()->IsEnabled()) {
-    AddExternalExtension(extension_misc::kMediaRouterStableExtensionId,
-                         prefs.get());
+    AddExternalExtension(extension_misc::kCastExtensionIdRelease, prefs.get());
   }
 
   LoadFinished(std::move(prefs));
@@ -55,7 +55,7 @@ void ExternalComponentLoader::StartLoading() {
 void ExternalComponentLoader::AddExternalExtension(
     const std::string& extension_id,
     base::DictionaryValue* prefs) {
-  if (!IsComponentExtensionWhitelisted(extension_id))
+  if (!IsComponentExtensionAllowlisted(extension_id))
     return;
 
   prefs->SetString(extension_id + ".external_update_url",

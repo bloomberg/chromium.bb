@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_item.h"
 
-#import "base/logging.h"
+#include <ostream>
+
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -91,7 +93,7 @@ const CGFloat kBadgeCornerRadius = 5.0;
   switch (self.badgeType) {
     case BadgeType::kBadgeTypePasswordSave:
     case BadgeType::kBadgeTypePasswordUpdate:
-      badgeImage = [[UIImage imageNamed:@"infobar_passwords_icon"]
+      badgeImage = [[UIImage imageNamed:@"password_key"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       break;
     case BadgeType::kBadgeTypeSaveCard:

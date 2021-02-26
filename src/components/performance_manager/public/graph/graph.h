@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 
@@ -66,9 +67,18 @@ class Graph {
   // For convenience, allows you to pass ownership of an object to the graph.
   // Useful for attaching observers that will live with the graph until it dies.
   // If you can name the object you can also take it back via "TakeFromGraph".
-  virtual void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) = 0;
+  virtual void PassToGraphImpl(std::unique_ptr<GraphOwned> graph_owned) = 0;
   virtual std::unique_ptr<GraphOwned> TakeFromGraph(
       GraphOwned* graph_owned) = 0;
+
+  // Templated PassToGraph helper that also returns a pointer to the object,
+  // which makes it easy to use PassToGraph in constructors.
+  template <typename DerivedType>
+  DerivedType* PassToGraph(std::unique_ptr<DerivedType> graph_owned) {
+    DerivedType* object = graph_owned.get();
+    PassToGraphImpl(std::move(graph_owned));
+    return object;
+  }
 
   // A TakeFromGraph helper for taking back the ownership of a GraphOwned
   // subclass.
@@ -92,8 +102,8 @@ class Graph {
   // registered.
   template <typename DerivedType>
   DerivedType* GetRegisteredObjectAs() {
-    // Be sure to access the TypeId provided GraphRegisteredImpl, in case this
-    // class has other TypeId implementations.
+    // Be sure to access the TypeId provided by GraphRegisteredImpl, in case
+    // this class has other TypeId implementations.
     GraphRegistered* object =
         GetRegisteredObject(GraphRegisteredImpl<DerivedType>::TypeId());
     return static_cast<DerivedType*>(object);
@@ -121,6 +131,13 @@ class Graph {
   virtual uintptr_t GetImplType() const = 0;
   virtual const void* GetImpl() const = 0;
 
+  // Allows code that is not explicitly aware of the Graph sequence to determine
+  // if they are in fact on the right sequence. Prefer to use the
+  // DCHECK_ON_GRAPH_SEQUENCE macro.
+#if DCHECK_IS_ON()
+  virtual bool IsOnGraphSequence() const = 0;
+#endif
+
  private:
   // Retrieves the object with the given |type_id|, returning nullptr if none
   // exists. Clients must use the GetRegisteredObjectAs wrapper instead.
@@ -128,6 +145,13 @@ class Graph {
 
   DISALLOW_COPY_AND_ASSIGN(Graph);
 };
+
+#if DCHECK_IS_ON()
+#define DCHECK_ON_GRAPH_SEQUENCE(graph) DCHECK(graph->IsOnGraphSequence())
+#else
+// Compiles to a nop, and will eat ostream input.
+#define DCHECK_ON_GRAPH_SEQUENCE(graph) DCHECK(true)
+#endif
 
 // Observer interface for the graph.
 class GraphObserver {

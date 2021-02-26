@@ -293,7 +293,7 @@ int main(int argc, char **argv) {
     die("Failed to open %s for reading.", infile_arg);
 
   if (aom_codec_enc_init(&ecodec, encoder, &cfg, flags))
-    die_codec(&ecodec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
 
   // Disable alt_ref.
   if (aom_codec_control(&ecodec, AOME_SET_ENABLEAUTOALTREF, 0))
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
   if (test_decode) {
     aom_codec_iface_t *decoder = get_aom_decoder_by_short_name(codec_arg);
     if (aom_codec_dec_init(&dcodec, decoder, NULL, 0))
-      die_codec(&dcodec, "Failed to initialize decoder.");
+      die("Failed to initialize decoder.");
   }
 
   // Encode frames.

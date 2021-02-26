@@ -17,8 +17,6 @@ class QualifiedName;
 class HTMLIFrameElementPayments final
     : public GarbageCollected<HTMLIFrameElementPayments>,
       public Supplement<HTMLIFrameElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementPayments);
-
  public:
   static const char kSupplementName[];
 
@@ -31,7 +29,7 @@ class HTMLIFrameElementPayments final
   static HTMLIFrameElementPayments& From(HTMLIFrameElement&);
   static bool AllowPaymentRequest(HTMLIFrameElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

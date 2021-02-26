@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([HarfBuzz],
-        [2.6.5],
+        [2.7.2],
         [https://github.com/harfbuzz/harfbuzz/issues/new],
         [harfbuzz],
         [http://harfbuzz.org/])
@@ -46,16 +46,7 @@ AC_SUBST(HB_VERSION)
 # Libtool version
 m4_define([hb_version_int],
 	  m4_eval(hb_version_major*10000 + hb_version_minor*100 + hb_version_micro))
-m4_if(m4_eval(hb_version_minor % 2), [1],
-      dnl for unstable releases
-      [m4_define([hb_libtool_revision], 0)],
-      dnl for stable releases
-      [m4_define([hb_libtool_revision], hb_version_micro)])
-m4_define([hb_libtool_age],
-	  m4_eval(hb_version_int - hb_libtool_revision))
-m4_define([hb_libtool_current],
-	  m4_eval(hb_libtool_age))
-HB_LIBTOOL_VERSION_INFO=hb_libtool_current:hb_libtool_revision:hb_libtool_age
+HB_LIBTOOL_VERSION_INFO=hb_version_int:0:hb_version_int
 AC_SUBST(HB_LIBTOOL_VERSION_INFO)
 
 AC_ARG_WITH([libstdc++],
@@ -77,8 +68,8 @@ GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
 ])
 
 # Functions and headers
-AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty newlocale strtod_l roundf)
-AC_CHECK_HEADERS(unistd.h sys/mman.h xlocale.h stdbool.h)
+AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty)
+AC_CHECK_HEADERS(unistd.h sys/mman.h stdbool.h)
 
 # Compiler flags
 AC_CANONICAL_HOST
@@ -512,6 +503,14 @@ echo
 
 AC_MSG_NOTICE([
 
+Autotools is no longer our supported build system for building the library
+for *nix distributions, please migrate to meson.
+
+])
+
+
+AC_MSG_NOTICE([
+
 Build configuration:
 
 Unicode callbacks (you want at least one):
@@ -526,7 +525,7 @@ Tools used for command-line utilities:
 	Cairo:			${have_cairo}
 	Fontconfig:		${have_fontconfig}
 
-Additional shapers (the more the merrier):
+Additional shapers:
 	Graphite2:		${have_graphite2}
 
 Platform shapers (not normally needed):

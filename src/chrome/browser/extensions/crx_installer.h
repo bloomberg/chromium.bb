@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/preload_check.h"
@@ -42,6 +42,7 @@ namespace extensions {
 class CrxInstallError;
 class ExtensionService;
 class ExtensionUpdaterTest;
+enum class InstallationStage;
 class PreloadCheckGroup;
 
 // This class installs a crx file into a profile.
@@ -76,6 +77,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
  public:
   // A callback to be executed when the install finishes.
   using InstallerResultCallback = ExtensionSystem::InstallUpdateCallback;
+
+  using ExpectationsVerifiedCallback = base::OnceClosure;
 
   // Used in histograms; do not change order.
   enum OffStoreInstallAllowReason {
@@ -161,8 +164,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   const std::string& expected_hash() const { return expected_hash_; }
   void set_expected_hash(const std::string& val) { expected_hash_ = val; }
 
-  bool hash_check_failed() const { return hash_check_failed_; }
-  void set_hash_check_failed(bool val) { hash_check_failed_ = val; }
+  bool verification_check_failed() const { return verification_check_failed_; }
+  void set_verification_check_failed(bool val) {
+    verification_check_failed_ = val;
+  }
 
   // Set the exact version the installed extension should have. If
   // |fail_install_if_unexpected| is true, installation will fail if the actual
@@ -236,6 +241,12 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Virtual for testing.
   virtual void set_installer_callback(InstallerResultCallback callback);
 
+  // Callback to be invoked when the crx file has passed the expectations check
+  // after unpack success and the ownership of the crx file lies with the
+  // installer. The callback is passed the ownership of the crx file.
+  void set_expectations_verified_callback(
+      ExpectationsVerifiedCallback callback);
+
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
   Profile* profile() { return profile_; }
@@ -257,10 +268,14 @@ class CrxInstaller : public SandboxedUnpackerClient {
   ~CrxInstaller() override;
 
   // Converts the source user script to an extension.
-  void ConvertUserScriptOnFileThread();
+  void ConvertUserScriptOnSharedFileThread();
 
   // Converts the source web app to an extension.
-  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
+  void ConvertWebAppOnSharedFileThread(const WebApplicationInfo& web_app);
+
+  // Called after OnUnpackSuccess check to see whether the install expectations
+  // are met and the install process should continue.
+  base::Optional<CrxInstallError> CheckExpectations(const Extension* extension);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
@@ -276,15 +291,16 @@ class CrxInstaller : public SandboxedUnpackerClient {
       scoped_refptr<const Extension> extension,
       base::OnceCallback<void(bool)> callback) override;
   void OnUnpackFailure(const CrxInstallError& error) override;
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_dir,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const Extension* extension,
-      const SkBitmap& install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums) override;
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_dir,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon,
+                       declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override;
+  void OnStageChanged(InstallationStage stage) override;
 
-  // Called on the UI thread to start the requirements, policy and blacklist
+  // Called on the UI thread to start the requirements, policy and blocklist
   // checks on the extension.
   void CheckInstall();
 
@@ -308,10 +324,12 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void ReloadExtensionAfterInstall(const base::FilePath& version_dir);
 
   // Result reporting.
-  void ReportFailureFromFileThread(const CrxInstallError& error);
+  void ReportFailureFromSharedFileThread(const CrxInstallError& error);
   void ReportFailureFromUIThread(const CrxInstallError& error);
-  void ReportSuccessFromFileThread();
+  void ReportSuccessFromSharedFileThread();
   void ReportSuccessFromUIThread();
+  // Always report from the UI thread.
+  void ReportInstallationStage(InstallationStage stage);
   void NotifyCrxInstallBegin();
   void NotifyCrxInstallComplete(const base::Optional<CrxInstallError>& error);
 
@@ -326,12 +344,25 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // and needs additional permissions.
   void ConfirmReEnable();
 
+  // OnUnpackSuccess() gets called on the unpacker sequence. It calls this
+  // method on the shared file sequence, to avoid race conditions.
+  virtual void OnUnpackSuccessOnSharedFileThread(
+      base::FilePath temp_dir,
+      base::FilePath extension_dir,
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      scoped_refptr<const Extension> extension,
+      SkBitmap install_icon,
+      declarative_net_request::RulesetInstallPrefs ruleset_install_prefs);
+
   void set_install_flag(int flag, bool val) {
     if (val)
       install_flags_ |= flag;
     else
       install_flags_ &= ~flag;
   }
+
+  // Returns |unpacker_task_runner_|. Initializes it if it's still nullptr.
+  base::SequencedTaskRunner* GetUnpackerTaskRunner();
 
   // The Profile the extension is being installed in.
   Profile* profile_;
@@ -365,8 +396,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // An expected hash sum for the .crx file.
   std::string expected_hash_;
 
-  // True if installation failed due to a hash sum mismatch.
-  bool hash_check_failed_;
+  // True if installation failed due to a hash sum mismatch or expectations
+  // mismatch.
+  bool verification_check_failed_;
 
   // A parsed copy of the expected manifest, before any transformations like
   // localization have taken place. If |approved_| is true, then the
@@ -470,8 +502,15 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // will continue but the extension will be distabled.
   bool error_on_unsupported_requirements_;
 
-  // Sequenced task runner where file I/O operations will be performed.
-  scoped_refptr<base::SequencedTaskRunner> installer_task_runner_;
+  // Sequenced task runner where most file I/O operations will be performed.
+  scoped_refptr<base::SequencedTaskRunner> shared_file_task_runner_;
+
+  // Sequenced task runner where the SandboxedUnpacker will run. Because the
+  // unpacker uses its own temp dir, it won't hit race conditions, and can use a
+  // separate task runner per instance (for better performance).
+  //
+  // Lazily initialized by GetUnpackerTaskRunner().
+  scoped_refptr<base::SequencedTaskRunner> unpacker_task_runner_ = nullptr;
 
   // Used to show the install dialog.
   ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;
@@ -483,20 +522,23 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // The checksums for the indexed rulesets corresponding to the Declarative Net
-  // Request API.
-  declarative_net_request::RulesetChecksums ruleset_checksums_;
+  // Install prefs needed for the Declarative Net Request API.
+  declarative_net_request::RulesetInstallPrefs ruleset_install_prefs_;
 
   // Checks that may run before installing the extension.
   std::unique_ptr<PreloadCheck> policy_check_;
   std::unique_ptr<PreloadCheck> requirements_check_;
-  std::unique_ptr<PreloadCheck> blacklist_check_;
+  std::unique_ptr<PreloadCheck> blocklist_check_;
 
   // Runs the above checks.
   std::unique_ptr<PreloadCheckGroup> check_group_;
 
   // Invoked when the install is completed.
   InstallerResultCallback installer_callback_;
+
+  // Invoked when the expectations from CRXFileInfo match with the crx file
+  // after unpack success.
+  ExpectationsVerifiedCallback expectations_verified_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

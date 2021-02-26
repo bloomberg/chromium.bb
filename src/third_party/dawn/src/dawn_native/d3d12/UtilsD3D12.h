@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_D3D12_UTILSD3D12_H_
 #define DAWNNATIVE_D3D12_UTILSD3D12_H_
 
+#include "dawn_native/Commands.h"
 #include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/TextureCopySplitter.h"
 #include "dawn_native/d3d12/TextureD3D12.h"
@@ -23,19 +24,45 @@
 
 namespace dawn_native { namespace d3d12 {
 
+    ResultOrError<std::wstring> ConvertStringToWstring(const char* str);
+
     D3D12_COMPARISON_FUNC ToD3D12ComparisonFunc(wgpu::CompareFunction func);
 
     D3D12_TEXTURE_COPY_LOCATION ComputeTextureCopyLocationForTexture(const Texture* texture,
                                                                      uint32_t level,
-                                                                     uint32_t slice);
+                                                                     uint32_t slice,
+                                                                     Aspect aspect);
 
     D3D12_TEXTURE_COPY_LOCATION ComputeBufferLocationForCopyTextureRegion(
         const Texture* texture,
         ID3D12Resource* bufferResource,
         const Extent3D& bufferSize,
         const uint64_t offset,
-        const uint32_t rowPitch);
+        const uint32_t rowPitch,
+        Aspect aspect);
     D3D12_BOX ComputeD3D12BoxFromOffsetAndSize(const Origin3D& offset, const Extent3D& copySize);
+
+    bool IsTypeless(DXGI_FORMAT format);
+
+    void RecordCopyBufferToTextureFromTextureCopySplit(ID3D12GraphicsCommandList* commandList,
+                                                       const Texture2DCopySplit& baseCopySplit,
+                                                       Buffer* buffer,
+                                                       uint64_t baseOffset,
+                                                       uint64_t bufferBytesPerRow,
+                                                       Texture* texture,
+                                                       uint32_t textureMiplevel,
+                                                       uint32_t textureSlice,
+                                                       Aspect aspect);
+
+    void CopyBufferToTextureWithCopySplit(CommandRecordingContext* commandContext,
+                                          const TextureCopy& textureCopy,
+                                          const Extent3D& copySize,
+                                          Texture* texture,
+                                          ID3D12Resource* bufferResource,
+                                          const uint64_t offset,
+                                          const uint32_t bytesPerRow,
+                                          const uint32_t rowsPerImage,
+                                          Aspect aspect);
 
 }}  // namespace dawn_native::d3d12
 

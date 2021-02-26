@@ -50,7 +50,7 @@ TestSafeBrowsingService::GetTestUrlLoaderFactory() {
 
 std::unique_ptr<SafeBrowsingService::StateSubscription>
 TestSafeBrowsingService::RegisterStateCallback(
-    const base::Callback<void(void)>& callback) {
+    const base::RepeatingClosure& callback) {
   // This override is required since TestSafeBrowsingService can be destroyed
   // before CertificateReportingService, which causes a crash due to the
   // leftover callback at destruction time.
@@ -83,6 +83,7 @@ SafeBrowsingUIManager* TestSafeBrowsingService::CreateUIManager() {
 }
 
 void TestSafeBrowsingService::SendSerializedDownloadReport(
+    Profile* profile,
     const std::string& report) {
   serialized_download_report_ = report;
 }
@@ -153,6 +154,13 @@ TestSafeBrowsingService::GetURLLoaderFactory() {
   return SafeBrowsingService::GetURLLoaderFactory();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestSafeBrowsingService::GetURLLoaderFactory(Profile* profile) {
+  if (use_test_url_loader_factory_)
+    return test_shared_loader_factory_;
+  return SafeBrowsingService::GetURLLoaderFactory(profile);
+}
+
 // TestSafeBrowsingServiceFactory functions:
 TestSafeBrowsingServiceFactory::TestSafeBrowsingServiceFactory()
     : test_safe_browsing_service_(nullptr), use_v4_local_db_manager_(false) {}
@@ -207,6 +215,7 @@ void TestSafeBrowsingUIManager::SetSafeBrowsingService(
 }
 
 void TestSafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   details_.push_back(serialized);
 }

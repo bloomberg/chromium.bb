@@ -19,20 +19,20 @@
 #include "core/fxcrt/css/cfx_cssstylesheet.h"
 #include "core/fxcrt/css/cfx_csssyntaxparser.h"
 #include "core/fxcrt/css/cfx_cssvaluelist.h"
-#include "third_party/base/logging.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/containers/adapters.h"
+#include "third_party/base/notreached.h"
 
-CFX_CSSStyleSelector::CFX_CSSStyleSelector() : m_fDefFontSize(12.0f) {}
+CFX_CSSStyleSelector::CFX_CSSStyleSelector() = default;
 
-CFX_CSSStyleSelector::~CFX_CSSStyleSelector() {}
+CFX_CSSStyleSelector::~CFX_CSSStyleSelector() = default;
 
-void CFX_CSSStyleSelector::SetDefFontSize(float fFontSize) {
+void CFX_CSSStyleSelector::SetDefaultFontSize(float fFontSize) {
   ASSERT(fFontSize > 0);
-  m_fDefFontSize = fFontSize;
+  m_fDefaultFontSize = fFontSize;
 }
 
 RetainPtr<CFX_CSSComputedStyle> CFX_CSSStyleSelector::CreateComputedStyle(
-    CFX_CSSComputedStyle* pParentStyle) {
+    const CFX_CSSComputedStyle* pParentStyle) {
   auto pStyle = pdfium::MakeRetain<CFX_CSSComputedStyle>();
   if (pParentStyle)
     pStyle->m_InheritedData = pParentStyle->m_InheritedData;
@@ -71,11 +71,9 @@ bool CFX_CSSStyleSelector::MatchSelector(const WideString& tagname,
   // TODO(dsinclair): The code only supports a single level of selector at this
   // point. None of the code using selectors required the complexity so lets
   // just say we don't support them to simplify the code for now.
-  if (!pSel || pSel->GetNextSelector() ||
-      pSel->GetType() == CFX_CSSSelectorType::Descendant) {
+  if (!pSel || pSel->next_selector() || pSel->is_descendant())
     return false;
-  }
-  return pSel->GetNameHash() == FX_HashCode_GetW(tagname.AsStringView(), true);
+  return pSel->name_hash() == FX_HashCode_GetW(tagname.AsStringView(), true);
 }
 
 void CFX_CSSStyleSelector::ComputeStyle(
@@ -85,7 +83,7 @@ void CFX_CSSStyleSelector::ComputeStyle(
     CFX_CSSComputedStyle* pDest) {
   std::unique_ptr<CFX_CSSDeclaration> pDecl;
   if (!styleString.IsEmpty() || !alignString.IsEmpty()) {
-    pDecl = pdfium::MakeUnique<CFX_CSSDeclaration>();
+    pDecl = std::make_unique<CFX_CSSDeclaration>();
 
     if (!styleString.IsEmpty())
       AppendInlineStyle(pDecl.get(), styleString);
@@ -142,7 +140,7 @@ void CFX_CSSStyleSelector::AppendInlineStyle(CFX_CSSDeclaration* pDecl,
   ASSERT(pDecl);
   ASSERT(!style.IsEmpty());
 
-  auto pSyntax = pdfium::MakeUnique<CFX_CSSSyntaxParser>(style.AsStringView());
+  auto pSyntax = std::make_unique<CFX_CSSSyntaxParser>(style.AsStringView());
   pSyntax->SetParseOnlyDeclarations();
 
   int32_t iLen2 = 0;
@@ -394,16 +392,15 @@ void CFX_CSSStyleSelector::ApplyProperty(CFX_CSSProperty eProperty,
         break;
     }
   } else if (pValue->GetType() == CFX_CSSPrimitiveType::List) {
-    RetainPtr<CFX_CSSValueList> pList = pValue.As<CFX_CSSValueList>();
-    int32_t iCount = pList->CountValues();
-    if (iCount > 0) {
+    RetainPtr<CFX_CSSValueList> value_list = pValue.As<CFX_CSSValueList>();
+    if (!value_list->values().empty()) {
       switch (eProperty) {
         case CFX_CSSProperty::FontFamily:
-          pComputedStyle->m_InheritedData.m_pFontFamily = pList;
+          pComputedStyle->m_InheritedData.m_pFontFamily = std::move(value_list);
           break;
         case CFX_CSSProperty::TextDecoration:
           pComputedStyle->m_NonInheritedData.m_dwTextDecoration =
-              ToTextDecoration(pList);
+              ToTextDecoration(value_list);
           break;
         default:
           break;
@@ -516,19 +513,19 @@ float CFX_CSSStyleSelector::ToFontSize(CFX_CSSPropertyValue eValue,
                                        float fCurFontSize) {
   switch (eValue) {
     case CFX_CSSPropertyValue::XxSmall:
-      return m_fDefFontSize / 1.2f / 1.2f / 1.2f;
+      return m_fDefaultFontSize / 1.2f / 1.2f / 1.2f;
     case CFX_CSSPropertyValue::XSmall:
-      return m_fDefFontSize / 1.2f / 1.2f;
+      return m_fDefaultFontSize / 1.2f / 1.2f;
     case CFX_CSSPropertyValue::Small:
-      return m_fDefFontSize / 1.2f;
+      return m_fDefaultFontSize / 1.2f;
     case CFX_CSSPropertyValue::Medium:
-      return m_fDefFontSize;
+      return m_fDefaultFontSize;
     case CFX_CSSPropertyValue::Large:
-      return m_fDefFontSize * 1.2f;
+      return m_fDefaultFontSize * 1.2f;
     case CFX_CSSPropertyValue::XLarge:
-      return m_fDefFontSize * 1.2f * 1.2f;
+      return m_fDefaultFontSize * 1.2f * 1.2f;
     case CFX_CSSPropertyValue::XxLarge:
-      return m_fDefFontSize * 1.2f * 1.2f * 1.2f;
+      return m_fDefaultFontSize * 1.2f * 1.2f * 1.2f;
     case CFX_CSSPropertyValue::Larger:
       return fCurFontSize * 1.2f;
     case CFX_CSSPropertyValue::Smaller:
@@ -564,12 +561,12 @@ CFX_CSSVerticalAlign CFX_CSSStyleSelector::ToVerticalAlign(
 uint32_t CFX_CSSStyleSelector::ToTextDecoration(
     const RetainPtr<CFX_CSSValueList>& pValue) {
   uint32_t dwDecoration = 0;
-  for (int32_t i = pValue->CountValues() - 1; i >= 0; --i) {
-    const RetainPtr<CFX_CSSValue> pVal = pValue->GetValue(i);
-    if (pVal->GetType() != CFX_CSSPrimitiveType::Enum)
+  for (const RetainPtr<CFX_CSSValue>& val :
+       pdfium::base::Reversed(pValue->values())) {
+    if (val->GetType() != CFX_CSSPrimitiveType::Enum)
       continue;
 
-    switch (pVal.As<CFX_CSSEnumValue>()->Value()) {
+    switch (val.As<CFX_CSSEnumValue>()->Value()) {
       case CFX_CSSPropertyValue::Underline:
         dwDecoration |= CFX_CSSTEXTDECORATION_Underline;
         break;

@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/trace_event/trace_config.h"
@@ -58,30 +58,32 @@ std::string RandomASCII(size_t length) {
   return tmp;
 }
 
-class SaveSystemProducerAndScopedRestore {
+class ClearAndRestoreSystemProducerScope {
  public:
-  SaveSystemProducerAndScopedRestore() {
+  ClearAndRestoreSystemProducerScope() {
+    base::RunLoop setup_loop;
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([this] {
+        FROM_HERE, base::BindLambdaForTesting([this, &setup_loop] {
           saved_producer_ =
               PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
-                  std::make_unique<DummyProducer>(
-                      PerfettoTracedProcess::GetTaskRunner()));
+                  nullptr);
+          setup_loop.Quit();
         }));
+    setup_loop.Run();
   }
 
-  ~SaveSystemProducerAndScopedRestore() {
-    base::RunLoop destroy;
-    PerfettoTracedProcess::GetTaskRunner()
-        ->GetOrCreateTaskRunner()
-        ->PostTaskAndReply(
-            FROM_HERE, base::BindLambdaForTesting([this]() {
+  ~ClearAndRestoreSystemProducerScope() {
+    base::RunLoop destroy_loop;
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindLambdaForTesting(
+            [this, &destroy_loop]() {
               PerfettoTracedProcess::Get()
                   ->SetSystemProducerForTesting(std::move(saved_producer_))
                   .reset();
-            }),
-            destroy.QuitClosure());
-    destroy.Run();
+              destroy_loop.Quit();
+            }));
+    destroy_loop.Run();
   }
 
  private:
@@ -889,18 +891,10 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
 TEST_F(SystemPerfettoTest, EnabledOnDebugBuilds) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kEnablePerfettoSystemTracing);
-  // We have to prevent destroying the system producer because we might have
-  // created it on a different task environment (wrong sequence).
-  SaveSystemProducerAndScopedRestore saved_system_producer;
-  PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
   if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
-    EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->system_producer()
-                     ->IsDummySystemProducerForTesting());
+    EXPECT_TRUE(ShouldSetupSystemTracing());
   } else {
-    EXPECT_TRUE(PerfettoTracedProcess::Get()
-                    ->system_producer()
-                    ->IsDummySystemProducerForTesting());
+    EXPECT_FALSE(ShouldSetupSystemTracing());
   }
 }
 #endif  // defined(OS_ANDROID)
@@ -910,28 +904,114 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
   if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
     // The feature list is ignored on debug android builds so we should have a
     // real system producer so just bail out of this test.
-    EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->system_producer()
-                     ->IsDummySystemProducerForTesting());
+    EXPECT_TRUE(ShouldSetupSystemTracing());
     return;
   }
 #endif  // defined(OS_ANDROID)
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
-    PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
-    EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->system_producer()
-                     ->IsDummySystemProducerForTesting());
+    EXPECT_TRUE(ShouldSetupSystemTracing());
   }
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(features::kEnablePerfettoSystemTracing);
-    PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
-    EXPECT_TRUE(PerfettoTracedProcess::Get()
-                    ->system_producer()
-                    ->IsDummySystemProducerForTesting());
+    EXPECT_FALSE(ShouldSetupSystemTracing());
   }
 }
+
+#if defined(OS_ANDROID)
+TEST_F(SystemPerfettoTest, RespectsFeaturePreAndroidPie) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_P) {
+    return;
+  }
+
+  auto run_test = [this](bool enable_feature) {
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
+
+    base::test::ScopedFeatureList feature_list;
+    if (enable_feature) {
+      feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kEnablePerfettoSystemTracing);
+    }
+
+    std::string data_source_name = "temp_name";
+
+    base::RunLoop data_source_started_runloop;
+    std::unique_ptr<TestDataSource> data_source =
+        TestDataSource::CreateAndRegisterDataSource(data_source_name, 1);
+    data_source->set_start_tracing_callback(
+        data_source_started_runloop.QuitClosure());
+
+    auto system_service = CreateMockSystemService();
+
+    base::RunLoop system_no_more_packets_runloop;
+    MockConsumer system_consumer(
+        {data_source_name}, system_service->GetService(),
+        [&system_no_more_packets_runloop](bool has_more) {
+          if (!has_more) {
+            system_no_more_packets_runloop.Quit();
+          }
+        });
+
+    base::RunLoop system_data_source_enabled_runloop;
+    base::RunLoop system_data_source_disabled_runloop;
+    auto system_producer = CreateMockPosixSystemProducer(
+        system_service.get(),
+        /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
+        &system_data_source_disabled_runloop, /* check_sdk_level = */ true);
+    PerfettoTracedProcess::GetTaskRunner()->PostTask(
+        [&system_producer]() { system_producer->ConnectToSystemService(); });
+
+    if (enable_feature) {
+      system_data_source_enabled_runloop.Run();
+      data_source_started_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStarted();
+    }
+
+    // Post the task to ensure that the data will have been written and
+    // committed if any tracing is being done.
+    base::RunLoop stop_tracing;
+    PerfettoTracedProcess::GetTaskRunner()->PostTask(
+        [&system_consumer, &stop_tracing]() {
+          system_consumer.StopTracing();
+          stop_tracing.Quit();
+        });
+    stop_tracing.Run();
+
+    if (enable_feature) {
+      system_data_source_disabled_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStopped();
+    }
+    system_no_more_packets_runloop.Run();
+
+    PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
+    return system_consumer.received_test_packets();
+  };
+
+  EXPECT_EQ(0u, run_test(/* enable_feature = */ false));
+  EXPECT_EQ(1u, run_test(/* enable_feature = */ true));
+}
+#endif  // defined(OS_ANDROID)
+
+TEST_F(SystemPerfettoTest, SetupSystemTracing) {
+  ClearAndRestoreSystemProducerScope saved_system_producer;
+  EXPECT_FALSE(PerfettoTracedProcess::Get()->system_producer());
+  PerfettoTracedProcess::Get()->SetupSystemTracing();
+  EXPECT_TRUE(PerfettoTracedProcess::Get()->system_producer());
+#if defined(OS_POSIX)
+  EXPECT_FALSE(PerfettoTracedProcess::Get()
+                   ->system_producer()
+                   ->IsDummySystemProducerForTesting());
+#else   // defined(OS_POSIX)
+  EXPECT_TRUE(PerfettoTracedProcess::Get()
+                  ->system_producer()
+                  ->IsDummySystemProducerForTesting());
+#endif  // defined(OS_POSIX)
+}
+
 }  // namespace
 }  // namespace tracing

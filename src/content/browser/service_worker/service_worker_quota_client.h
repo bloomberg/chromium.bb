@@ -5,13 +5,17 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_QUOTA_CLIENT_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_QUOTA_CLIENT_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/origin.h"
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
 class ServiceWorkerContextWrapper;
@@ -22,22 +26,23 @@ class ServiceWorkerQuotaClient : public storage::QuotaClient {
       ServiceWorkerContextWrapper* context);
 
   // QuotaClient method overrides
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
-                      GetUsageCallback callback) override;
+                      GetOriginUsageCallback callback) override;
   void GetOriginsForType(blink::mojom::StorageType type,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForHostCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        DeletionCallback callback) override;
+                        DeleteOriginDataCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
-                             base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
+                             PerformStorageCleanupCallback callback) override;
+
+  static constexpr storage::QuotaClientType kType =
+      storage::QuotaClientType::kServiceWorker;
 
  private:
   friend class ServiceWorkerContextWrapper;

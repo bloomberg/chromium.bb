@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "components/arc/mojom/midis.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
@@ -34,13 +36,14 @@ class ArcMidisBridge : public KeyedService,
   ~ArcMidisBridge() override;
 
   // Midis Mojo host interface
-  void Connect(mojom::MidisServerRequest request,
-               mojom::MidisClientPtr client_ptr) override;
+  void Connect(mojo::PendingReceiver<mojom::MidisServer> receiver,
+               mojo::PendingRemote<mojom::MidisClient> client_remote) override;
 
  private:
-  void OnBootstrapMojoConnection(mojom::MidisServerRequest request,
-                                 mojom::MidisClientPtr client_ptr,
-                                 bool result);
+  void OnBootstrapMojoConnection(
+      mojo::PendingReceiver<mojom::MidisServer> receiver,
+      mojo::PendingRemote<mojom::MidisClient> client_remote,
+      bool result);
   void OnMojoConnectionError();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

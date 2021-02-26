@@ -50,6 +50,7 @@ rtc_library("audio") {
     "../api:transport_api",
     "../api/audio:aec3_factory",
     "../api/audio:audio_frame_api",
+    "../api/audio:audio_frame_processor",
     "../api/audio:audio_mixer_api",
     "../api/audio_codecs:audio_codecs_api",
     "../api/crypto:frame_decryptor_interface",
@@ -67,10 +68,12 @@ rtc_library("audio") {
     "../common_audio:common_audio_c",
     "../logging:rtc_event_audio",
     "../logging:rtc_stream_config",
+    "../modules/async_audio_processing",
     "../modules/audio_coding",
     "../modules/audio_coding:audio_coding_module_typedefs",
     "../modules/audio_coding:audio_encoder_cng",
     "../modules/audio_coding:audio_network_adaptor_config",
+    "../modules/audio_coding:red",
     "../modules/audio_device",
     "../modules/audio_processing",
     "../modules/audio_processing:api",
@@ -89,12 +92,15 @@ rtc_library("audio") {
     "../rtc_base:rtc_task_queue",
     "../rtc_base:safe_minmax",
     "../rtc_base/experiments:field_trial_parser",
+    "../rtc_base/synchronization:mutex",
     "../rtc_base/synchronization:sequence_checker",
     "../rtc_base/task_utils:to_queued_task",
     "../system_wrappers",
     "../system_wrappers:field_trial",
     "../system_wrappers:metrics",
     "utility:audio_frame_operations",
+  ]
+  absl_deps = [
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -202,6 +208,7 @@ if (rtc_include_tests) {
         "../api:network_emulation_manager_api",
         "../api:peer_connection_quality_test_fixture_api",
         "../api:simulated_network_api",
+        "../api:time_controller",
         "../call:simulated_network",
         "../common_audio",
         "../system_wrappers",
@@ -249,7 +256,7 @@ if (rtc_include_tests) {
         data += [ "${root_out_dir}/low_bandwidth_audio_test" ]
       }
 
-      if (is_linux || is_android) {
+      if (is_linux || is_chromeos || is_android) {
         data += [
           "../tools_webrtc/audio_quality/linux/PolqaOem64",
           "../tools_webrtc/audio_quality/linux/pesq",

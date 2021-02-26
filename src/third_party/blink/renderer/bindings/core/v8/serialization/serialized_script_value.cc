@@ -296,6 +296,14 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::NullValue() {
   return Create(reinterpret_cast<const char*>(kNullData), sizeof(kNullData));
 }
 
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::UndefinedValue() {
+  // The format here may fall a bit out of date, because we support
+  // deserializing SSVs written by old browser versions.
+  static const uint8_t kUndefinedData[] = {0xFF, 17, 0xFF, 13, '_', 0x00};
+  return Create(reinterpret_cast<const char*>(kUndefinedData),
+                sizeof(kUndefinedData));
+}
+
 String SerializedScriptValue::ToWireString() const {
   // Add the padding '\0', but don't put it in |data_buffer_|.
   // This requires direct use of uninitialized strings, though.
@@ -444,14 +452,23 @@ void SerializedScriptValue::TransferTransformStreams(
   }
 }
 
-// Creates an entangled pair of channels. Adds one end to |stream_channels_| as
+// Creates an entangled pair of channels. Adds one end to |streams_| as
 // a MessagePortChannel, and returns the other end as a MessagePort.
 MessagePort* SerializedScriptValue::AddStreamChannel(
     ExecutionContext* execution_context) {
+  // Used for both https://streams.spec.whatwg.org/#rs-transfer and
+  // https://streams.spec.whatwg.org/#ws-transfer.
+  // 2. Let port1 be a new MessagePort in the current Realm.
+  // 3. Let port2 be a new MessagePort in the current Realm.
   MessagePortDescriptorPair pipe;
   auto* local_port = MakeGarbageCollected<MessagePort>(*execution_context);
+
+  // 4. Entangle port1 and port2.
   local_port->Entangle(pipe.TakePort0());
-  stream_channels_.push_back(MessagePortChannel(pipe.TakePort1()));
+
+  // 9. Set dataHolder.[[port]] to ! StructuredSerializeWithTransfer(port2,
+  //    « port2 »).
+  streams_.push_back(Stream(pipe.TakePort1()));
   return local_port;
 }
 

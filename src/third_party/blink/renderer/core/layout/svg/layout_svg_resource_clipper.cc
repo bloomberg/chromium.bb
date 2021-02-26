@@ -111,15 +111,17 @@ LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
 LayoutSVGResourceClipper::~LayoutSVGResourceClipper() = default;
 
 void LayoutSVGResourceClipper::RemoveAllClientsFromCache() {
+  NOT_DESTROYED();
   clip_content_path_validity_ = kClipContentPathUnknown;
   clip_content_path_.Clear();
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
-  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
-                                SVGResourceClient::kBoundariesInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
+                                SVGResourceClient::kPaintInvalidation);
 }
 
 base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
+  NOT_DESTROYED();
   if (clip_content_path_validity_ == kClipContentPathValid)
     return base::Optional<Path>(clip_content_path_);
   if (clip_content_path_validity_ == kClipContentPathInvalid)
@@ -170,6 +172,7 @@ base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
 }
 
 sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
+  NOT_DESTROYED();
   DCHECK(GetFrame());
   if (cached_paint_record_)
     return cached_paint_record_;
@@ -201,6 +204,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
 }
 
 void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
+  NOT_DESTROYED();
   // This is a rough heuristic to appraise the clip size and doesn't consider
   // clip on clip.
   for (const SVGElement& child_element :
@@ -214,14 +218,15 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
+  NOT_DESTROYED();
   return To<SVGClipPathElement>(GetElement())
       ->clipPathUnits()
-      ->CurrentValue()
-      ->EnumValue();
+      ->CurrentEnumValue();
 }
 
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
     const FloatRect& reference_box) const {
+  NOT_DESTROYED();
   AffineTransform transform =
       To<SVGClipPathElement>(GetElement())
           ->CalculateTransform(SVGElement::kIncludeMotionTransform);
@@ -235,6 +240,7 @@ AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
 bool LayoutSVGResourceClipper::HitTestClipContent(
     const FloatRect& object_bounding_box,
     const HitTestLocation& location) const {
+  NOT_DESTROYED();
   if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box,
                                             location))
     return false;
@@ -252,7 +258,7 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
     LayoutObject* layout_object = child_element.GetLayoutObject();
 
     DCHECK(!layout_object->IsBoxModelObject() ||
-           !ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer());
+           !To<LayoutBoxModelObject>(layout_object)->HasSelfPaintingLayer());
 
     if (layout_object->NodeAtPoint(result, *local_location, PhysicalOffset(),
                                    kHitTestForeground))
@@ -263,9 +269,8 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
 
 FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
     const FloatRect& reference_box) {
-  // The resource has not been layouted yet. Return the reference box.
-  if (SelfNeedsLayout())
-    return reference_box;
+  NOT_DESTROYED();
+  DCHECK(!NeedsLayout());
 
   if (local_clip_bounds_.IsEmpty())
     CalculateLocalClipBounds();
@@ -275,15 +280,17 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
 
 void LayoutSVGResourceClipper::StyleDidChange(StyleDifference diff,
                                               const ComputedStyle* old_style) {
+  NOT_DESTROYED();
   LayoutSVGResourceContainer::StyleDidChange(diff, old_style);
   if (diff.TransformChanged()) {
-    MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
+    MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
                                   SVGResourceClient::kPaintInvalidation);
   }
 }
 
 void LayoutSVGResourceClipper::WillBeDestroyed() {
-  MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
+  NOT_DESTROYED();
+  MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
                                 SVGResourceClient::kPaintInvalidation);
   LayoutSVGResourceContainer::WillBeDestroyed();
 }

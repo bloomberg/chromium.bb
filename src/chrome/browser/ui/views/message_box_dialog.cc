@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
@@ -28,12 +28,17 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/ui/base/window_properties.h"
+#include "ui/aura/window.h"  // nogncheck
+#endif
+
 #if defined(OS_WIN)
 #include "ui/base/win/message_box_win.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/cocoa/simple_message_box_cocoa.h"
 #endif
 
@@ -108,7 +113,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
 // ResourceBundle is not initialized yet.
 // Fallback to logging with a default response or a Windows MessageBox.
 #if defined(OS_WIN)
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+  if (!base::CurrentUIThread::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
@@ -119,8 +124,8 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
                                 : chrome::MESSAGE_BOX_RESULT_NO);
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
-#elif defined(OS_MACOSX)
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+#elif defined(OS_MAC)
+  if (!base::CurrentUIThread::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     // Even though this function could return a value synchronously here in
@@ -131,7 +136,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #else
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+  if (!base::CurrentUIThread::IsSet() ||
       !ui::ResourceBundle::HasSharedInstance() ||
       !display::Screen::GetScreen()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
@@ -143,7 +148,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
 
   bool is_system_modal = !parent;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac does not support system modals, so never ask MessageBoxDialog to
   // be system modal.
   is_system_modal = false;
@@ -154,7 +159,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
   views::Widget* widget =
       constrained_window::CreateBrowserModalDialogViews(dialog, parent);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac does not support system modal dialogs. If there is no parent window to
   // attach to, move the dialog's widget on top so other windows do not obscure
   // it.
@@ -168,7 +173,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
 }
 
 void MessageBoxDialog::OnDialogAccepted() {
-  if (!message_box_view_->HasCheckBox() ||
+  if (!message_box_view_->HasVisibleCheckBox() ||
       message_box_view_->IsCheckBoxSelected()) {
     Done(chrome::MESSAGE_BOX_RESULT_YES);
   } else {
@@ -178,14 +183,6 @@ void MessageBoxDialog::OnDialogAccepted() {
 
 base::string16 MessageBoxDialog::GetWindowTitle() const {
   return window_title_;
-}
-
-void MessageBoxDialog::DeleteDelegate() {
-  delete this;
-}
-
-ui::ModalType MessageBoxDialog::GetModalType() const {
-  return is_system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW;
 }
 
 views::View* MessageBoxDialog::GetContentsView() {
@@ -198,6 +195,15 @@ bool MessageBoxDialog::ShouldShowCloseButton() const {
 
 void MessageBoxDialog::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
+#if defined(OS_CHROMEOS)
+  if (GetWidget()->GetNativeWindow()->GetProperty(
+          chromeos::kIsShowingInOverviewKey)) {
+    // Prevent this from closing while starting overview mode for better UX.
+    // See crbug.com/972015.
+    return;
+  }
+#endif
+
   if (!active)
     GetWidget()->Close();
 }
@@ -214,9 +220,13 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
                                    bool is_system_modal)
     : window_title_(title),
       type_(type),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(message))),
-      is_system_modal_(is_system_modal) {
+      message_box_view_(new views::MessageBoxView(message)) {
+#if defined(OS_CHROMEOS)
+  SetModalType(is_system_modal ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW);
+#else
+  DCHECK(!is_system_modal);
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+#endif
   SetButtons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
                  ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
                  : ui::DIALOG_BUTTON_OK);
@@ -229,6 +239,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
   SetCloseCallback(base::BindOnce(&MessageBoxDialog::Done,
                                   base::Unretained(this),
                                   chrome::MESSAGE_BOX_RESULT_NO));
+  SetOwnedByWidget(true);
 
   base::string16 ok_text = yes_text;
   if (ok_text.empty()) {
@@ -254,6 +265,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
 
 MessageBoxDialog::~MessageBoxDialog() {
   GetWidget()->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void MessageBoxDialog::Run(MessageBoxResultCallback result_callback) {

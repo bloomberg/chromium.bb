@@ -91,7 +91,7 @@ static void DumpRawStream(Minidump *minidump,
     // in compatibility warnings.
     uint32_t int_remaining = remaining;
     printf("%.*s", int_remaining, &contents[current_offset]);
-    char *next_null = reinterpret_cast<char *>(
+    char *next_null = reinterpret_cast<char*>(
         memchr(&contents[current_offset], 0, remaining));
     if (next_null == NULL)
       break;
@@ -241,7 +241,7 @@ static void
 SetupOptions(int argc, char *argv[], Options *options) {
   int ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "xh")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "xh")) != -1) {
     switch (ch) {
       case 'x':
         options->hexdump = true;

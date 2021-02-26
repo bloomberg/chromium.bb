@@ -44,6 +44,10 @@ class RoboConfiguration:
     self.EnsureHostInfo()
     self.EnsureChromeSrc()
 
+    # Origin side of the merge.  Only needs to change if you're trying to
+    # modify and test robosushi itself.  See robosushi.py for details.
+    self._origin_merge_base = "origin/master"
+
     # Directory where llvm lives.
     self._llvm_path = os.path.join(self.chrome_src(), "third_party",
             "llvm-build", "Release+Asserts", "bin")
@@ -119,6 +123,12 @@ class RoboConfiguration:
 
   def nasm_path(self):
     return self._nasm_path
+
+  def origin_merge_base(self):
+    return self._origin_merge_base
+
+  def override_origin_merge_base(self, new_base):
+    self._origin_merge_base = new_base
 
   def EnsureHostInfo(self):
     """Ensure that the host architecture and platform are set."""

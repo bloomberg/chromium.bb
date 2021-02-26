@@ -15,19 +15,19 @@ class Gitiles(recipe_api.RecipeApi):
              log_limit=None, log_start=None, extract_to=None, **kwargs):
     """Fetches information from Gitiles.
 
-    Arguments:
-      fmt (str): one of ('text', 'json', 'archive'). Instructs the underlying
+    Args:
+      * fmt (str): one of ('text', 'json', 'archive'). Instructs the underlying
         gitiles_client tool how to process the HTTP response.
           * text - implies the response is base64 encoded
           * json - implies the response is JSON
           * archive - implies the response is a compressed tarball; requires
             `extract_to`.
-      extract_to (Path): When fmt=='archive', instructs gitiles_client to
+      * extract_to (Path): When fmt=='archive', instructs gitiles_client to
         extract the archive to this non-existent folder.
-      log_limit: for log URLs, limit number of results. None implies 1 page,
+      * log_limit: for log URLs, limit number of results. None implies 1 page,
         as returned by Gitiles.
-      log_start: for log URLs, the start cursor for paging.
-      add_json_log: if True, will spill out json into log.
+      * log_start: for log URLs, the start cursor for paging.
+      * add_json_log: if True, will spill out json into log.
     """
     assert fmt in ('json', 'text', 'archive')
 
@@ -70,15 +70,15 @@ class Gitiles(recipe_api.RecipeApi):
     """Returns the most recent commits under the given ref with properties.
 
     Args:
-      url (str): URL of the remote repository.
-      ref (str): Name of the desired ref (see Gitiles.refs).
-      limit (int): Number of commits to limit the fetching to.
+      * url (str): URL of the remote repository.
+      * ref (str): Name of the desired ref (see Gitiles.refs).
+      * limit (int): Number of commits to limit the fetching to.
         Gitiles does not return all commits in one call; instead paging is
         used. 0 implies to return whatever first gerrit responds with.
         Otherwise, paging will be used to fetch at least this many
         commits, but all fetched commits will be returned.
-      cursor (str or None): The paging cursor used to fetch the next page.
-      step_name (str): Custom name for this step (optional).
+      * cursor (str or None): The paging cursor used to fetch the next page.
+      * step_name (str): Custom name for this step (optional).
 
     Returns:
       A tuple of (commits, cursor).
@@ -115,10 +115,10 @@ class Gitiles(recipe_api.RecipeApi):
     """Returns: (dict) the Gitiles commit log structure for a given commit.
 
     Args:
-      url (str): The base repository URL.
-      commit (str): The commit hash.
-      step_name (str): If not None, override the step name.
-      attempts (int): Number of times to try the request before failing.
+      * url (str): The base repository URL.
+      * commit (str): The commit hash.
+      * step_name (str): If not None, override the step name.
+      * attempts (int): Number of times to try the request before failing.
     """
     step_name = step_name or 'commit log: %s' % commit
 
@@ -132,11 +132,11 @@ class Gitiles(recipe_api.RecipeApi):
     """Downloads raw file content from a Gitiles repository.
 
     Args:
-      repository_url (str): Full URL to the repository.
-      branch (str): Branch of the repository.
-      file_path (str): Relative path to the file from the repository root.
-      step_name (str): Custom name for this step (optional).
-      attempts (int): Number of times to try the request before failing.
+      * repository_url (str): Full URL to the repository.
+      * branch (str): Branch of the repository.
+      * file_path (str): Relative path to the file from the repository root.
+      * step_name (str): Custom name for this step (optional).
+      * attempts (int): Number of times to try the request before failing.
 
     Returns:
       Raw file content.
@@ -163,10 +163,10 @@ class Gitiles(recipe_api.RecipeApi):
     containing the names of the files that were skipped.
 
     Args:
-      repository_url (str): Full URL to the repository
-      destination (Path): Local path to extract the archive to. Must not exist
+      * repository_url (str): Full URL to the repository
+      * destination (Path): Local path to extract the archive to. Must not exist
         prior to this call.
-      revision (str): The ref or revision in the repo to download. Defaults to
+      * revision (str): The ref or revision in the repo to download. Defaults to
         'refs/heads/master'.
     """
     step_name = 'download %s @ %s' % (repository_url, revision)

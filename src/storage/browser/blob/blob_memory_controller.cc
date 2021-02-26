@@ -9,11 +9,11 @@
 #include <numeric>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/small_map.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -31,6 +31,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
@@ -40,6 +41,13 @@ using base::File;
 using base::FilePath;
 
 namespace storage {
+
+// static
+const base::Feature
+    BlobMemoryController::kInhibitBlobMemoryControllerMemoryPressureResponse{
+        "InhibitBlobMemoryControllerMemoryPressureResponse",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 constexpr int64_t kUnknownDiskAvailability = -1ll;
 constexpr uint64_t kMegabyte = 1024ull * 1024;
@@ -86,7 +94,8 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(
 
   // Don't do specialty configuration for error size (-1).
   if (memory_size > 0) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && defined(ARCH_CPU_64_BITS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) && \
+    defined(ARCH_CPU_64_BITS)
     constexpr size_t kTwoGigabytes = 2ull * 1024 * 1024 * 1024;
     limits.max_blob_in_memory_space = kTwoGigabytes;
 #elif defined(OS_ANDROID)
@@ -103,7 +112,7 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(
 
   // Don't do specialty configuration for error size (-1). Allow no disk.
   if (disk_size >= 0) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 2ll);
 #elif defined(OS_ANDROID)
     limits.desired_max_disk_space = static_cast<uint64_t>(3ll * disk_size / 50);
@@ -127,7 +136,7 @@ void DestructFile(File infos_without_references) {}
 void DeleteFiles(std::vector<FileCreationInfo> files) {
   for (FileCreationInfo& file_info : files) {
     file_info.file.Close();
-    base::DeleteFile(file_info.path, false);
+    base::DeleteFile(file_info.path);
   }
 }
 
@@ -247,7 +256,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
   }
   if (!file.Flush()) {
     file.Close();
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
     creation_info.error = File::FILE_ERROR_FAILED;
     return std::make_pair(std::move(creation_info), free_disk_space);
   }
@@ -535,6 +544,7 @@ BlobMemoryController::BlobMemoryController(
       populated_memory_items_(
           base::MRUCache<uint64_t, ShareableBlobDataItem*>::NO_AUTO_EVICT),
       memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&BlobMemoryController::OnMemoryPressure,
                               base::Unretained(this))) {}
 
@@ -1039,12 +1049,23 @@ void BlobMemoryController::OnEvictionComplete(
 
 void BlobMemoryController::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
-  // ignored.
+  // Under critical memory pressure the system is probably already swapping out
+  // memory and making heavy use of IO. Adding to that is not desirable.
+  // Furthermore, scheduling a task to write files to disk risks paging-in
+  // memory that was already committed to disk which compounds the problem. Do
+  // not take any action on critical memory pressure.
   if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     return;
   }
+
+  if (base::FeatureList::IsEnabled(
+          kInhibitBlobMemoryControllerMemoryPressureResponse)) {
+    return;
+  }
+
+  // TODO(crbug.com/1087530): Run trial to see if we should get rid of this
+  // whole intervention or leave it on for MEMORY_PRESSURE_LEVEL_MODERATE.
 
   auto time_from_last_evicion = base::TimeTicks::Now() - last_eviction_time_;
   if (last_eviction_time_ != base::TimeTicks() &&

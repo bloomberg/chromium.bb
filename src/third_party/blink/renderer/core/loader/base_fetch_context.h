@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -20,6 +21,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class DOMWrapperWorld;
 class DetachableResourceFetcherProperties;
 class KURL;
 class PreviewsResourceLoadingHints;
@@ -37,16 +39,17 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       ReportingDisposition,
-      ResourceRequest::RedirectStatus) const override;
+      const base::Optional<ResourceRequest::RedirectInfo>&) const override;
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      mojom::RequestContextType,
+      mojom::blink::RequestContextType,
       network::mojom::RequestDestination request_destination,
       const KURL&,
       const ResourceLoaderOptions&,
       ReportingDisposition,
+      const KURL& url_before_redirects,
       ResourceRequest::RedirectStatus) const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const DetachableResourceFetcherProperties& GetResourceFetcherProperties()
       const {
@@ -77,10 +80,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   // registration endpoint.
   virtual bool SendConversionRequestInsteadOfRedirecting(
       const KURL& url,
-      ResourceRequest::RedirectStatus redirect_status,
+      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
       ReportingDisposition reporting_disposition) const;
-
-  virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
  protected:
   explicit BaseFetchContext(
@@ -98,11 +99,13 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                        const FetchInitiatorInfo&,
                                        ResourceRequestBlockedReason,
                                        ResourceType) const = 0;
-  virtual bool ShouldBypassMainWorldCSP() const = 0;
+  virtual const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+      const DOMWrapperWorld* world) const = 0;
+
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
       mojom::blink::RequestContextType request_context,
-      ResourceRequest::RedirectStatus redirect_status,
+      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
       const KURL& url,
       ReportingDisposition reporting_disposition,
       const base::Optional<String>& devtools_id) const = 0;
@@ -110,9 +113,14 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;
   virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
+  virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
   // TODO(yhirano): Remove this.
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
+
+  void AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
+      ExecutionContext* context,
+      ResourceRequest& request);
 
  private:
   const Member<const DetachableResourceFetcherProperties> fetcher_properties_;
@@ -127,15 +135,16 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       ReportingDisposition,
-      ResourceRequest::RedirectStatus) const;
+      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const;
 
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequestInternal(
-      mojom::RequestContextType,
+      mojom::blink::RequestContextType,
       network::mojom::RequestDestination request_destination,
       const KURL&,
       const ResourceLoaderOptions&,
       ReportingDisposition,
-      ResourceRequest::RedirectStatus,
+      const KURL& url_before_redirects,
+      ResourceRequest::RedirectStatus redirect_status,
       ContentSecurityPolicy::CheckHeaderType) const;
 };
 

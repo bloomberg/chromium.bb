@@ -10,13 +10,13 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -29,6 +29,10 @@ class TabGroupVisualData;
 
 namespace content {
 class WebContents;
+}
+
+namespace feature_engagement {
+class Tracker;
 }
 
 namespace ui {
@@ -44,6 +48,9 @@ class BrowserTabStripController : public TabStripController,
                             BrowserView* browser_view,
                             std::unique_ptr<TabMenuModelFactory>
                                 menu_model_factory_override = nullptr);
+  BrowserTabStripController(const BrowserTabStripController&) = delete;
+  BrowserTabStripController& operator=(const BrowserTabStripController&) =
+      delete;
   ~BrowserTabStripController() override;
 
   void InitFromModel(TabStrip* tabstrip);
@@ -75,6 +82,9 @@ class BrowserTabStripController : public TabStripController,
   void RemoveTabFromGroup(int model_index) override;
   void MoveTab(int start_index, int final_index) override;
   void MoveGroup(const tab_groups::TabGroupId& group, int final_index) override;
+  bool ToggleTabGroupCollapsedState(
+      const tab_groups::TabGroupId group,
+      ToggleTabGroupCollapsedStateOrigin origin) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;
@@ -92,6 +102,8 @@ class BrowserTabStripController : public TabStripController,
       const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group_id) const override;
+  bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
+
   void SetVisualDataForGroup(
       const tab_groups::TabGroupId& group,
       const tab_groups::TabGroupVisualData& visual_data) override;
@@ -125,6 +137,7 @@ class BrowserTabStripController : public TabStripController,
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
   void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
+                              content::WebContents* contents,
                               int index) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
 
@@ -151,6 +164,8 @@ class BrowserTabStripController : public TabStripController,
 
   BrowserView* browser_view_;
 
+  feature_engagement::Tracker* const feature_engagement_tracker_;
+
   // If non-NULL it means we're showing a menu for the tab.
   std::unique_ptr<TabContextMenuContents> context_menu_contents_;
 
@@ -165,8 +180,6 @@ class BrowserTabStripController : public TabStripController,
   PrefChangeRegistrar local_pref_registrar_;
 
   std::unique_ptr<TabMenuModelFactory> menu_model_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_

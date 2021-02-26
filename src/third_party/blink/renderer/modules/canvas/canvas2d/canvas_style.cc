@@ -52,7 +52,7 @@ enum ColorParseResult {
 
 static ColorParseResult ParseColor(Color& parsed_color,
                                    const String& color_string,
-                                   WebColorScheme color_scheme) {
+                                   mojom::blink::ColorScheme color_scheme) {
   if (EqualIgnoringASCIICase(color_string, "currentcolor"))
     return kParsedCurrentColor;
   const bool kUseStrictParsing = true;
@@ -72,7 +72,7 @@ static Color CurrentColor(HTMLCanvasElement* canvas) {
   return color;
 }
 
-static WebColorScheme ColorScheme(HTMLCanvasElement* canvas) {
+static mojom::blink::ColorScheme ColorScheme(HTMLCanvasElement* canvas) {
   if (canvas && canvas->isConnected()) {
     if (auto* style = canvas->GetComputedStyle())
       return style->UsedColorScheme();
@@ -133,7 +133,7 @@ RGBA32 CanvasStyle::PaintColor() const {
   return Color::kBlack;
 }
 
-void CanvasStyle::Trace(Visitor* visitor) {
+void CanvasStyle::Trace(Visitor* visitor) const {
   visitor->Trace(gradient_);
   visitor->Trace(pattern_);
 }

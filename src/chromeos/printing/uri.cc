@@ -7,9 +7,10 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/containers/flat_map.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-
 #include "chromeos/printing/uri_impl.h"
 
 namespace chromeos {
@@ -102,6 +103,18 @@ bool HasNonASCII(const std::string& str) {
   });
 }
 
+// The map with pairs scheme -> default_port.
+const base::flat_map<std::string, int>& GetDefaultPorts() {
+  static const base::NoDestructor<base::flat_map<std::string, int>>
+      kDefaultPorts({{"ipp", 631},
+                     {"ipps", 443},
+                     {"http", 80},
+                     {"https", 443},
+                     {"lpd", 515},
+                     {"socket", 9100}});
+  return *kDefaultPorts;
+}
+
 }  //  namespace
 
 Uri::Pim::Pim() = default;
@@ -125,11 +138,10 @@ Uri::Uri(const std::string& uri) : pim_(std::make_unique<Pim>()) {
   pim_->parser_error().parsed_chars += prefix_size;
 }
 
+// static
 int Uri::GetDefaultPort(const std::string& scheme) {
-  auto it = Pim::kDefaultPorts.find(scheme);
-  if (it == Pim::kDefaultPorts.end())
-    return -1;
-  return it->second;
+  auto it = GetDefaultPorts().find(scheme);
+  return it != GetDefaultPorts().end() ? it->second : -1;
 }
 
 Uri::Uri(const Uri& uri) : pim_(std::make_unique<Pim>(*uri.pim_)) {}
@@ -163,9 +175,7 @@ const Uri::ParserError& Uri::GetLastParsingError() const {
 std::string Uri::GetNormalized(bool always_print_port) const {
   // Calculates a string representation of the Port number.
   std::string port;
-  if (pim_->port() >= 0 &&
-      (always_print_port || Pim::kDefaultPorts.count(pim_->scheme()) == 0 ||
-       Pim::kDefaultPorts.at(pim_->scheme()) != pim_->port()))
+  if (ShouldPrintPort(always_print_port))
     port = base::NumberToString(pim_->port());
 
   // Output string. Adds Scheme.
@@ -254,6 +264,10 @@ int Uri::GetPort() const {
 
 bool Uri::SetPort(int val) {
   return pim_->SavePort(val);
+}
+
+bool Uri::SetPort(const std::string& port) {
+  return pim_->ParsePort(port.begin(), port.end());
 }
 
 std::string Uri::GetUserinfo() const {
@@ -402,6 +416,20 @@ bool Uri::operator==(const Uri& uri) const {
   if (pim_->query() != uri.pim_->query())
     return false;
   return (pim_->fragment() == uri.pim_->fragment());
+}
+
+bool Uri::ShouldPrintPort(bool always_print_port) const {
+  if (pim_->port() < 0)
+    return false;
+
+  if (always_print_port)
+    return true;
+
+  auto it = GetDefaultPorts().find(pim_->scheme());
+  if (it == GetDefaultPorts().end())
+    return true;
+
+  return it->second != pim_->port();
 }
 
 }  // namespace chromeos

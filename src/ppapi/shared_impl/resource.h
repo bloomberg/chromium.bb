@@ -22,12 +22,9 @@
   F(PPB_Audio_API)                      \
   F(PPB_AudioBuffer_API)                \
   F(PPB_AudioConfig_API)                \
-  F(PPB_AudioEncoder_API)               \
   F(PPB_AudioInput_API)                 \
   F(PPB_AudioOutput_API)                \
   F(PPB_AudioTrusted_API)               \
-  F(PPB_Broker_API)                     \
-  F(PPB_Broker_Instance_API)            \
   F(PPB_BrowserFont_Singleton_API)      \
   F(PPB_BrowserFont_Trusted_API)        \
   F(PPB_Buffer_API)                     \
@@ -40,14 +37,8 @@
   F(PPB_FileRef_API)                    \
   F(PPB_FileSystem_API)                 \
   F(PPB_Find_API)                       \
-  F(PPB_Flash_Clipboard_API)            \
-  F(PPB_Flash_DRM_API)                  \
-  F(PPB_Flash_File_API)                 \
   F(PPB_Flash_FontFile_API)             \
   F(PPB_Flash_Fullscreen_API)           \
-  F(PPB_Flash_Functions_API)            \
-  F(PPB_Flash_Menu_API)                 \
-  F(PPB_Flash_MessageLoop_API)          \
   F(PPB_Gamepad_API)                    \
   F(PPB_Graphics2D_API)                 \
   F(PPB_Graphics3D_API)                 \
@@ -66,8 +57,6 @@
   F(PPB_PDF_API)                        \
   F(PPB_Printing_API)                   \
   F(PPB_Scrollbar_API)                  \
-  F(PPB_TrueTypeFont_API)               \
-  F(PPB_TrueTypeFont_Singleton_API)     \
   F(PPB_TCPServerSocket_Private_API)    \
   F(PPB_TCPSocket_API)                  \
   F(PPB_TCPSocket_Private_API)          \

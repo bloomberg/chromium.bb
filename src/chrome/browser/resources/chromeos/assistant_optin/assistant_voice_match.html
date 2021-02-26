@@ -5,6 +5,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
+
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <dom-module id="assistant-voice-match">
   <template>
     <style include="oobe-dialog-host"></style>
@@ -91,14 +94,14 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+        <oobe-text-button id="skip-button" on-click="onSkipTap_"
             disabled="[[buttonsDisabled]]"
             text-key="assistantOptinNoThanksButton">
         </oobe-text-button>
-        <oobe-text-button id="later-button" on-tap="onSkipTap_"
+        <oobe-text-button id="later-button" on-click="onSkipTap_"
             disabled="[[buttonsDisabled]]" text-key="assistantOptinLaterButton">
         </oobe-text-button>
-        <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
+        <oobe-text-button id="agree-button" inverse on-click="onAgreeTap_"
             disabled="[[buttonsDisabled]]" text-key="assistantOptinAgreeButton">
         </oobe-text-button>
       </div>

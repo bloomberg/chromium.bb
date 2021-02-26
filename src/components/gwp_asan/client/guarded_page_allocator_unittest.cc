@@ -12,7 +12,7 @@
 
 #include "base/bits.h"
 #include "base/process/process_metrics.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
@@ -110,7 +110,7 @@ TEST_P(GuardedPageAllocatorTest, PointerIsMine) {
 TEST_P(GuardedPageAllocatorTest, GetRequestedSize) {
   void* buf = gpa_.Allocate(100);
   EXPECT_EQ(gpa_.GetRequestedSize(buf), 100U);
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   EXPECT_DEATH({ gpa_.GetRequestedSize((char*)buf + 1); }, "");
 #else
   EXPECT_EQ(gpa_.GetRequestedSize((char*)buf + 1), 0U);

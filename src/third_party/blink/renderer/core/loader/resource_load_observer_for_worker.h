@@ -8,20 +8,23 @@
 #include <inttypes.h>
 
 #include "base/containers/span.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 
 namespace blink {
 
 class CoreProbeSink;
 class ResourceFetcherProperties;
-class WebWorkerFetchContext;
+class WorkerFetchContext;
 
 // ResourceLoadObserver implementation associated with a worker or worklet.
 class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
  public:
-  ResourceLoadObserverForWorker(CoreProbeSink& probe,
-                                const ResourceFetcherProperties& properties,
-                                scoped_refptr<WebWorkerFetchContext>);
+  ResourceLoadObserverForWorker(
+      CoreProbeSink& probe,
+      const ResourceFetcherProperties& properties,
+      WorkerFetchContext& worker_fetch_context,
+      const base::UnguessableToken& devtools_worker_token);
   ~ResourceLoadObserverForWorker() override;
 
   // ResourceLoadObserver implementation.
@@ -54,12 +57,15 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
                       const ResourceError&,
                       int64_t encoded_data_length,
                       IsInternalRequest) override;
-  void Trace(Visitor*) override;
+  void EvictFromBackForwardCache(
+      mojom::blink::RendererEvictionReason) override {}
+  void Trace(Visitor*) const override;
 
  private:
   const Member<CoreProbeSink> probe_;
   const Member<const ResourceFetcherProperties> fetcher_properties_;
-  const scoped_refptr<WebWorkerFetchContext> web_context_;
+  const Member<WorkerFetchContext> worker_fetch_context_;
+  const base::UnguessableToken devtools_worker_token_;
 };
 
 }  // namespace blink

@@ -49,7 +49,7 @@ void ShowStoragePressureBubble(const url::Origin origin) {
 
 void StoragePressureBubbleView::ShowBubble(const url::Origin origin) {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
-  if (!browser || !base::FeatureList::IsEnabled(features::kStoragePressureUI))
+  if (!browser)
     return;
 
   StoragePressureBubbleView* bubble = new StoragePressureBubbleView(
@@ -71,6 +71,7 @@ StoragePressureBubbleView::StoragePressureBubbleView(
       origin_(std::move(origin)),
       ignored_(true) {
   SetButtons(ui::DIALOG_BUTTON_OK);
+  SetTitle(IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL));
@@ -83,11 +84,6 @@ StoragePressureBubbleView::~StoragePressureBubbleView() {
   if (ignored_) {
     RecordBubbleHistogramValue(StoragePressureBubbleHistogramValue::kIgnored);
   }
-}
-
-base::string16 StoragePressureBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE);
 }
 
 void StoragePressureBubbleView::OnDialogAccepted() {
@@ -124,8 +120,7 @@ void StoragePressureBubbleView::Init() {
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(
-      provider->GetDistanceMetric(
-          ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+      provider->GetDistanceMetric(views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
       margins().width());
   AddChildView(std::move(text_label));
 }

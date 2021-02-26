@@ -11,6 +11,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -21,7 +24,8 @@
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/url_request/url_request_status.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +43,7 @@ namespace {
 class MockModelLoader : public ModelLoader {
  public:
   MockModelLoader(
-      base::Closure update_renderers_callback,
+      base::RepeatingClosure update_renderers_callback,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string model_name)
       : ModelLoader(update_renderers_callback, url_loader_factory, model_name) {
@@ -58,7 +62,7 @@ class MockModelLoader : public ModelLoader {
 class ModelLoaderTest : public testing::Test {
  protected:
   ModelLoaderTest()
-      : test_shared_loader_factory_(
+      : shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
     scoped_feature_list_.Init();
@@ -104,15 +108,19 @@ class ModelLoaderTest : public testing::Test {
     test_url_loader_factory_.AddResponse(model_url_.spec(), response_data);
   }
 
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory() {
-    return test_shared_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory() {
+    return shared_loader_factory_;
+  }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory_;
   GURL model_url_;
 };
 
@@ -120,10 +128,70 @@ ACTION_P(InvokeClosure, closure) {
   closure.Run();
 }
 
-// Test the reponse to many variations of model responses.
+TEST_F(ModelLoaderTest, FetchModelFromLocalFileTest) {
+  StrictMock<MockModelLoader> loader(base::RepeatingClosure(),
+                                     shared_loader_factory(), "top_model.pb");
+  SetModelUrl(loader);
+
+  // The model fetch tries to read from local file but is empty.
+  {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path", "");
+    loader.StartFetch(/*only_from_cache=*/false);
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from invalid local file.
+  {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path", "invalid-file");
+    loader.StartFetch(/*only_from_cache=*/false);
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from local file with invalid model data.
+  {
+    base::ScopedTempDir test_path;
+    ASSERT_TRUE(test_path.CreateUniqueTempDir());
+    ClientSideModel model;
+    model.set_max_words_per_term(4);
+    ASSERT_TRUE(base::WriteFile(test_path.GetPath().AppendASCII("model.txt"),
+                                model.SerializeAsString()));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path",
+        test_path.GetPath().AppendASCII("model.txt").MaybeAsASCII());
+    loader.StartFetch(/*only_from_cache=*/false);
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from local file with valid model data.
+  {
+    base::ScopedTempDir test_path;
+    ASSERT_TRUE(test_path.CreateUniqueTempDir());
+    base::RunLoop loop;
+    ClientSideModel model;
+    model.set_version(10);
+    model.set_max_words_per_term(4);
+    EXPECT_EQ(static_cast<int>(model.SerializeAsString().size()),
+              base::WriteFile(test_path.GetPath().AppendASCII("model.txt"),
+                              model.SerializeAsString().c_str(),
+                              model.SerializeAsString().size()));
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path",
+        test_path.GetPath().AppendASCII("model.txt").MaybeAsASCII());
+    EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_SUCCESS, _))
+        .WillOnce(InvokeClosure(loop.QuitClosure()));
+    loader.StartFetch(/*only_from_cache=*/false);
+    loop.Run();
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+}
+
+// Test the response to many variations of model responses.
 TEST_F(ModelLoaderTest, FetchModelTest) {
-  StrictMock<MockModelLoader> loader(
-      base::Closure(), test_shared_loader_factory(), "top_model.pb");
+  StrictMock<MockModelLoader> loader(base::RepeatingClosure(),
+                                     shared_loader_factory(), "top_model.pb");
   SetModelUrl(loader);
 
   // The model fetch failed.
@@ -132,7 +200,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse("blamodel", net::ERR_FAILED);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_FETCH_FAILED, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -143,7 +211,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(std::string(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_EMPTY, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -155,7 +223,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
                           net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_TOO_LARGE, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -166,7 +234,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse("Invalid model file", net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_PARSE_ERROR, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -179,7 +247,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializePartialAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_MISSING_FIELDS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -193,7 +261,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializePartialAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_BAD_HASH_IDS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -206,7 +274,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_INVALID_VERSION_NUMBER, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -218,7 +286,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_SUCCESS, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -232,7 +300,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_INVALID_VERSION_NUMBER, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -244,7 +312,7 @@ TEST_F(ModelLoaderTest, FetchModelTest) {
     SetModelFetchResponse(model.SerializeAsString(), net::OK);
     EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_NOT_CHANGED, _))
         .WillOnce(InvokeClosure(loop.QuitClosure()));
-    loader.StartFetch();
+    loader.StartFetch(/*only_from_cache=*/false);
     loop.Run();
     Mock::VerifyAndClearExpectations(&loader);
   }
@@ -264,7 +332,8 @@ TEST_F(ModelLoaderTest, UpdateRenderersTest) {
 
 // Test that a one fetch schedules another fetch.
 TEST_F(ModelLoaderTest, RescheduleFetchTest) {
-  StrictMock<MockModelLoader> loader(base::Closure(), nullptr, "top_model.pb");
+  StrictMock<MockModelLoader> loader(base::RepeatingClosure(), nullptr,
+                                     "top_model.pb");
 
   // Zero max_age.  Uses default.
   base::TimeDelta max_age;
@@ -294,23 +363,23 @@ TEST_F(ModelLoaderTest, ModelNamesTest) {
   EXPECT_EQ(ModelLoader::FillInModelName(false, 5),
             "client_model_v5_variation_5.pb");
 
-  // No Finch setup. Should default to 0.
+  // No Finch setup. Should default to 4.
   std::unique_ptr<ModelLoader> loader;
-  loader.reset(new ModelLoader(base::Closure(), nullptr,
+  loader.reset(new ModelLoader(base::RepeatingClosure(), nullptr,
                                false /* is_extended_reporting */));
-  EXPECT_EQ(loader->name(), "client_model_v5_variation_0.pb");
+  EXPECT_EQ(loader->name(), "client_model_v5_variation_4.pb");
   EXPECT_EQ(loader->url_.spec(),
             "https://ssl.gstatic.com/safebrowsing/csd/"
-            "client_model_v5_variation_0.pb");
+            "client_model_v5_variation_4.pb");
 
   // Model 1, no extended reporting.
   SetFinchModelNumber(1);
-  loader.reset(new ModelLoader(base::Closure(), nullptr, false));
+  loader.reset(new ModelLoader(base::RepeatingClosure(), nullptr, false));
   EXPECT_EQ(loader->name(), "client_model_v5_variation_1.pb");
 
   // Model 2, with extended reporting.
   SetFinchModelNumber(2);
-  loader.reset(new ModelLoader(base::Closure(), nullptr, true));
+  loader.reset(new ModelLoader(base::RepeatingClosure(), nullptr, true));
   EXPECT_EQ(loader->name(), "client_model_v5_ext_variation_2.pb");
 }
 
@@ -349,6 +418,17 @@ TEST_F(ModelLoaderTest, ModelHasValidHashIds) {
 
   rule->set_feature(2, 1);
   EXPECT_TRUE(ModelLoader::ModelHasValidHashIds(model));
+}
+
+TEST_F(ModelLoaderTest, FetchesFromCacheAtStartup) {
+  ModelLoader model_loader(base::DoNothing(), shared_loader_factory(),
+                           /*is_extended_reporting=*/false);
+  ASSERT_NE(test_url_loader_factory()->GetPendingRequest(0), nullptr);
+
+  // Check the request does not use the network
+  int load_flags =
+      test_url_loader_factory()->GetPendingRequest(0)->request.load_flags;
+  EXPECT_NE((load_flags & net::LOAD_ONLY_FROM_CACHE), 0);
 }
 
 }  // namespace safe_browsing

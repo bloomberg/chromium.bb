@@ -7,22 +7,18 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "chromecast/activity/queryable_data_host.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
-#include "chromecast/browser/queryable_data_host_cast.h"
 #include "chromecast/common/mojom/activity_url_filter.mojom.h"
-#include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "chromecast/net/connectivity_checker.h"
@@ -41,6 +37,7 @@
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -53,6 +50,9 @@ namespace {
 // IDs start at 1, since 0 is reserved for the root content window.
 size_t next_tab_id = 1;
 
+// Next id for id()
+size_t next_id = 0;
+
 // Remove the given CastWebContents pointer from the global instance vector.
 void RemoveCastWebContents(CastWebContents* instance) {
   auto& all_cast_web_contents = CastWebContents::GetAll();
@@ -61,24 +61,6 @@ void RemoveCastWebContents(CastWebContents* instance) {
   if (it != all_cast_web_contents.end()) {
     all_cast_web_contents.erase(it);
   }
-}
-
-bool IsOriginWhitelisted(const GURL& url,
-                         const std::vector<std::string>& allowed_origins) {
-  constexpr const char kWildcard[] = "*";
-  url::Origin url_origin = url::Origin::Create(url);
-
-  for (const std::string& allowed_origin : allowed_origins) {
-    if (allowed_origin == kWildcard)
-      return true;
-
-    if (url_origin.IsSameOriginWith(url::Origin::Create(GURL(allowed_origin))))
-      return true;
-
-    // TODO(crbug.com/893236): Add handling for nonstandard origins
-    // (e.g. data: URIs).
-  }
-  return false;
 }
 
 }  // namespace
@@ -147,6 +129,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       activity_url_filter_(std::move(init_params.url_filters)),
       main_process_host_(nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
+      id_(next_id++),
       is_websql_enabled_(init_params.enable_websql),
       is_mixer_audio_enabled_(init_params.enable_mixer_audio),
       main_frame_loaded_(false),
@@ -178,13 +161,6 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       renderer_type_ == content::mojom::RendererType::MOJO_RENDERER) {
     renderer_type_ = content::mojom::RendererType::DEFAULT_RENDERER;
   }
-
-  // Provides QueryableDataHostCast if the new QueryableData bindings is not
-  // enabled.
-  if (init_params.enable_queryable_data_host) {
-    queryable_data_host_ =
-        std::make_unique<QueryableDataHostCast>(web_contents_);
-  }
 }
 
 CastWebContentsImpl::~CastWebContentsImpl() {
@@ -203,6 +179,10 @@ int CastWebContentsImpl::tab_id() const {
   return tab_id_;
 }
 
+int CastWebContentsImpl::id() const {
+  return id_;
+}
+
 content::WebContents* CastWebContentsImpl::web_contents() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return web_contents_;
@@ -211,10 +191,6 @@ content::WebContents* CastWebContentsImpl::web_contents() const {
 CastWebContents::PageState CastWebContentsImpl::page_state() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_state_;
-}
-
-QueryableDataHost* CastWebContentsImpl::queryable_data_host() const {
-  return queryable_data_host_.get();
 }
 
 base::Optional<pid_t> CastWebContentsImpl::GetMainFrameRenderProcessPid()
@@ -345,48 +321,14 @@ void CastWebContentsImpl::ClearRenderWidgetHostView() {
   }
 }
 
-CastWebContentsImpl::OriginScopedScript::OriginScopedScript() = default;
-
-CastWebContentsImpl::OriginScopedScript::OriginScopedScript(
-    const std::vector<std::string>& origins,
-    std::string script)
-    : origins_(std::move(origins)), script_(std::move(script)) {}
-
-CastWebContentsImpl::OriginScopedScript&
-CastWebContentsImpl::OriginScopedScript::operator=(
-    CastWebContentsImpl::OriginScopedScript&& other) {
-  origins_ = std::move(other.origins_);
-  script_ = std::move(other.script_);
-  return *this;
+on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
+CastWebContentsImpl::script_injector() {
+  return &script_injector_;
 }
 
-CastWebContentsImpl::OriginScopedScript::~OriginScopedScript() = default;
-
-void CastWebContentsImpl::AddBeforeLoadJavaScript(
-    base::StringPiece id,
-    const std::vector<std::string>& origins,
-    base::StringPiece script) {
-  DCHECK(!id.empty() && !script.empty() && !origins.empty())
-      << "Invalid empty parameters were passed to AddBeforeLoadJavascript";
-  // If there is no script with the identifier |id|, then create a place for it
-  // at the end of the injection sequence.
-  if (before_load_scripts_.find(id.as_string()) == before_load_scripts_.end()) {
-    before_load_scripts_order_.push_back(id.as_string());
-  }
-  before_load_scripts_[id.as_string()] =
-      OriginScopedScript(origins, script.as_string());
-}
-
-void CastWebContentsImpl::RemoveBeforeLoadJavaScript(base::StringPiece id) {
-  before_load_scripts_.erase(id.as_string());
-
-  for (auto script_id_iter = before_load_scripts_order_.begin();
-       script_id_iter != before_load_scripts_order_.end(); ++script_id_iter) {
-    if (*script_id_iter == id) {
-      before_load_scripts_order_.erase(script_id_iter);
-      return;
-    }
-  }
+void CastWebContentsImpl::InjectScriptsIntoMainFrame() {
+  script_injector_.InjectScriptsForURL(web_contents_->GetURL(),
+                                       web_contents_->GetMainFrame());
 }
 
 void CastWebContentsImpl::PostMessageToMainFrame(
@@ -629,6 +571,26 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
   DCHECK(navigation_handle);
   if (!web_contents_ || closing_ || stopped_)
     return;
+
+  // We want to honor the autoplay feature policy (via allow="autoplay") without
+  // explicit user activation, since media on Cast is extremely likely to have
+  // already been explicitly requested by a user via voice or over the network.
+  // By spoofing the "high media engagement" signal, we can bypass the user
+  // gesture requirement for autoplay.
+  int32_t autoplay_flags = blink::mojom::kAutoplayFlagHighMediaEngagement;
+
+  // Main frames should have autoplay enabled by default, since autoplay
+  // delegation via parent frame doesn't work here.
+  if (navigation_handle->IsInMainFrame())
+    autoplay_flags |= blink::mojom::kAutoplayFlagForceAllow;
+
+  mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&client);
+  auto autoplay_origin = url::Origin::Create(navigation_handle->GetURL());
+  client->AddAutoplayFlags(autoplay_origin, autoplay_flags);
+
   if (!navigation_handle->IsInMainFrame())
     return;
 
@@ -645,32 +607,6 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
   UpdatePageState();
   DCHECK_EQ(page_state_, PageState::LOADING);
   NotifyPageState();
-
-  if (before_load_scripts_.empty())
-    return;
-
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
-    return;
-
-  mojo::AssociatedRemote<chromecast::shell::mojom::OnLoadScriptInjector>
-      before_load_script_injector;
-  navigation_handle->GetRenderFrameHost()
-      ->GetRemoteAssociatedInterfaces()
-      ->GetInterface(&before_load_script_injector);
-
-  // Provision the renderer's ScriptInjector with the scripts scoped to this
-  // page's origin.
-  before_load_script_injector->ClearOnLoadScripts();
-  for (auto script_id : before_load_scripts_order_) {
-    const OriginScopedScript& origin_scoped_script =
-        before_load_scripts_[script_id];
-    if (IsOriginWhitelisted(navigation_handle->GetURL(),
-                            origin_scoped_script.origins())) {
-      before_load_script_injector->AddOnLoadScript(
-          origin_scoped_script.script());
-    }
-  }
 }
 
 void CastWebContentsImpl::DidFinishNavigation(
@@ -877,8 +813,7 @@ void CastWebContentsImpl::ResourceLoadComplete(
   metrics_helper->RecordApplicationEventWithValue(
       "Cast.Platform.ResourceRequestError", net_error);
   LOG(ERROR) << "Resource \"" << resource_load_info.original_url << "\""
-             << " failed to load "
-             << " with net_error=" << net_error
+             << " failed to load with net_error=" << net_error
              << ", description=" << net::ErrorToShortString(net_error);
   shell::CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
   for (auto& observer : observer_list_) {
@@ -931,6 +866,7 @@ void CastWebContentsImpl::WebContentsDestroyed() {
 }
 
 void CastWebContentsImpl::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

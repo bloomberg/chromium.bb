@@ -23,6 +23,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
 class AutocompleteProvider;
@@ -45,6 +46,30 @@ const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
 // A match attribute when a default match's score has been boosted with a higher
 // scoring non-default match.
 const char kACMatchPropertyScoreBoostedFrom[] = "score_boosted_from";
+
+// |SplitAutocompletion| helps track the autocompleted portions of a match's
+// text displayed when it is the default suggestion. It is used when the
+// autocompletions are between the user text; i.e. the user text is split. E.g.
+// given user text 'a c', |SplitAutocompletion| could represent 'a [b ]c'.
+struct SplitAutocompletion {
+  SplitAutocompletion(base::string16 display_text,
+                      std::vector<gfx::Range> selections);
+  SplitAutocompletion();
+  SplitAutocompletion(const SplitAutocompletion& copy);
+  SplitAutocompletion(SplitAutocompletion&&) noexcept;
+  SplitAutocompletion& operator=(const SplitAutocompletion&);
+  SplitAutocompletion& operator=(SplitAutocompletion&&) noexcept;
+
+  ~SplitAutocompletion();
+
+  bool Empty() const;
+  void Clear();
+
+  // The text including both the user input and autocompleted texts.
+  base::string16 display_text;
+  // The locations of the autocompleted texts.
+  std::vector<gfx::Range> selections;
+};
 
 // AutocompleteMatch ----------------------------------------------------------
 
@@ -106,6 +131,15 @@ struct AutocompleteMatch {
     int style;
   };
 
+  // NavsuggestTiles are used specifically with TILE_NAVSUGGEST matches.
+  // This structure should describe only the specific details for individual
+  // tiles; all other properties are considered as shared and should be
+  // extracted from the encompassing AutocompleteMatch object.
+  struct NavsuggestTile {
+    GURL url;
+    base::string16 title;
+  };
+
   typedef std::vector<ACMatchClassification> ACMatchClassifications;
 
   // Type used by providers to attach additional, optional information to
@@ -118,15 +152,6 @@ struct AutocompleteMatch {
   // Null-terminated array of characters that are not valid within |contents|
   // and |description| strings.
   static const base::char16 kInvalidChars[];
-
-  // All IDs should be less than the family size, and family size must be
-  // a power of 2 so that the counter wraps.
-  enum {
-    PEDAL_FAMILY_ID = 1,
-    TAB_SWITCH_FAMILY_ID = 2,
-    FAMILY_SIZE = 1 << 2,
-  };
-  static constexpr size_t FAMILY_SIZE_MASK = ~(FAMILY_SIZE - 1);
 
   // Document subtype, for AutocompleteMatchType::DOCUMENT.
   // Update kDocumentTypeStrings when updating DocumentType.
@@ -245,9 +270,13 @@ struct AutocompleteMatch {
   // usually this surfaces a clock icon to the user.
   static bool IsSearchHistoryType(Type type);
 
-  // If this match is a submatch, returns the parent's type, otherwise this
-  // match's type.
-  Type GetDemotionType() const;
+  // Returns true if matches with given |type| may be attached with a |pedal|.
+  static bool IsPedalCompatibleType(Type type);
+
+  // Convenience function to check if |type| is one of the suggest types we
+  // need to skip for search vs url partitions - url, text or image in the
+  // clipboard or query tile.
+  static bool ShouldBeSkippedForGroupBySearchVsUrl(Type type);
 
   // A static version GetTemplateURL() that takes the match's keyword and
   // match's hostname as parameters.  In short, returns the TemplateURL
@@ -310,17 +339,6 @@ struct AutocompleteMatch {
   static void LogSearchEngineUsed(const AutocompleteMatch& match,
                                   TemplateURLService* template_url_service);
 
-  // There are some suggestions that we would like to follow each other
-  // e.g. pedals, tab switches, possibly keyword provider suggestions.
-  // These functions provide and compare integer groups so that when we
-  // generate these suggestions, they can be given integers in the same
-  // family, which will cause them to be sorted together.
-  static size_t GetNextFamilyID();
-  static bool IsSameFamily(size_t lhs, size_t rhs);
-  // Preferred method to set both fields simultaneously.
-  void SetSubMatch(size_t subrelevance, AutocompleteMatch::Type parent_type);
-  bool IsSubMatch() const;
-
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
   // stores the result in |stripped_destination_url|.  |input| is used for the
   // same purpose as in GURLToStrippedGURL().
@@ -365,14 +383,11 @@ struct AutocompleteMatch {
   // there isn't an image URL, returns an empty GURL (test with is_empty()).
   GURL ImageUrl() const;
 
-  // Returns a new Pedal match suggestion instance derived from this match,
-  // which is considered to be the triggering suggestion.  The new match
-  // will be set to use the given |pedal|.
-  AutocompleteMatch DerivePedalSuggestion(OmniboxPedal* pedal);
-
   // Adds optional information to the |additional_info| dictionary.
   void RecordAdditionalInfo(const std::string& property,
                             const std::string& value);
+  void RecordAdditionalInfo(const std::string& property,
+                            const base::string16& value);
   void RecordAdditionalInfo(const std::string& property, int value);
   void RecordAdditionalInfo(const std::string& property, base::Time value);
 
@@ -444,25 +459,30 @@ struct AutocompleteMatch {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
-  // Not to be confused with |has_tab_match|, this returns true if the match
-  // has a matching tab and will use a switch-to-tab button. It returns false,
-  // for example, when the switch button is not shown because a keyword match
-  // is taking precedence.
-  bool ShouldShowTabMatchButton() const;
-
-  // Returns whether the suggestion is by itself a tab switch suggestion.
-  bool IsTabSwitchSuggestion() const;
-
   // Upgrades this match by absorbing the best properties from
   // |duplicate_match|. For instance: if |duplicate_match| has a higher
   // relevance score, this match's own relevance score will be upgraded.
-  void UpgradeMatchWithPropertiesFrom(const AutocompleteMatch& duplicate_match);
+  void UpgradeMatchWithPropertiesFrom(AutocompleteMatch& duplicate_match);
 
-  // Called for navigation suggestions whose URLs cannot be inline autocompleted
-  // (e.g. because the input is not a prefix of the URL), to check if |title|
-  // can be inline autocompleted instead.
-  void TryAutocompleteWithTitle(const base::string16& title,
-                                const AutocompleteInput& input);
+  // Tries, in order, to:
+  // - Prefix autocomplete |primary_text|,
+  // - Prefix autocomplete |secondary_text|,
+  // - Non-prefix autocomplete |primary_text|, and
+  // - Non-prefix autocomplete |secondary_text|.
+  // Midword and title autocompletion are only attempted if
+  // |OmniboxFieldTrial::RichAutocompletionAutocompleteTitles()| and
+  // |OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix*()| are true
+  // respectively.
+  // Returns false if none of the autocompletions were appropriate (or the
+  // features were disabled).
+  bool TryRichAutocompletion(const base::string16& primary_text,
+                             const base::string16& secondary_text,
+                             const AutocompleteInput& input,
+                             bool shortcut_provider = false);
+
+  // True if |inline_autocompletion|, |prefix_autocompletion|, and
+  // |split_autocompletion| are all empty.
+  bool IsEmptyAutocompletion() const;
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
@@ -473,15 +493,7 @@ struct AutocompleteMatch {
   // returned by various providers. This is used to rank matches among all
   // responding providers, so different providers must be carefully tuned to
   // supply matches with appropriate relevance.
-  //
-  // TODO(pkasting): http://b/1111299 This should be calculated algorithmically,
-  // rather than being a fairly fixed value defined by the table above.
   int relevance = 0;
-
-  // This represents the numeric family that the match is part of. It is only
-  // set for certain paired suggestions. Suggestions within the same group will
-  // have similar subrelevances, and they will sort together.
-  size_t subrelevance = 0;
 
   // How many times this result was typed in / selected from the omnibox.
   // Only set for some providers and result_types.  If it is not set,
@@ -496,10 +508,34 @@ struct AutocompleteMatch {
   // by pressing the arrow keys. This may be different than a URL, for example,
   // for search suggestions, this would just be the search terms.
   base::string16 fill_into_edit;
+  // This string is displayed adjacent to |fill_into_edit|. Will usually be
+  // either the |description| or |content|, whichever isn't represented by
+  // |fill_into_edit|. Always empty if kRichAutocompletionShowTitlesParam is
+  // disabled.
+  base::string16 fill_into_edit_additional_text;
+  // When rich autocompleting titles, |fill_into_edit| &
+  // |fill_into_edit_additional_text| are swapped (i.e. the former contains the
+  // title, and the latter contains the URL). This is consistent with how the
+  // suggestion should be displayed. But the shortcut DB must persist the
+  // original (i.e. URL) |fill_into_edit|; otherwise the shortcut provider may
+  // autocomplete the title even when title autocompletion is inappropriate
+  // (e.g. because the input is too short). Therefore, |swapped_fill_into_edit|
+  // is set to true when rich autocompleting titles.
+  bool swapped_fill_into_edit = false;
 
-  // The inline autocompletion to display after the user's typing in the
+  // The inline autocompletion to display after the user's input in the
   // omnibox, if this match becomes the default match.  It may be empty.
   base::string16 inline_autocompletion;
+  // The inline autocompletion to display before the user's input in the
+  // omnibox, if this match becomes the default match. Always empty if
+  // non-prefix autocompletion is disabled.
+  base::string16 prefix_autocompletion;
+  // A representation of inline autocompletion that supports splitting the
+  // user input. See |SplitAutocompletion|| comments. Always empty if split
+  // autocompletion is disabled.
+  // TODO(manukh) If split rich autocompletion launches, all 3 autocompletions
+  // can be represented by |split_autocompletion|.
+  SplitAutocompletion split_autocompletion;
 
   // If false, the omnibox should prevent this match from being the
   // default match.  Providers should set this to true only if the
@@ -511,15 +547,6 @@ struct AutocompleteMatch {
   // and a navigation to "foo/" (an intranet host) or search for "foo"
   // should set this flag.
   bool allowed_to_be_default_match = false;
-
-  // Set by |TryAutocompleteWithTitle|. If |type| is navigational, then this
-  // field indicates |fill_into_edit| is not the URL but instead looks like
-  // search terms (e.g. `title - URL`). If |type| is non-navigational, then this
-  // is true regardless; i.e., |fill_into_edit| is not a URL. This allows
-  // callees of AutocompleteClassifier::Classify, such as
-  // OmniboxEditModel::AdjustTextForCopy, to treat such navigational matches
-  // differently than typical navigational matches with URL text.
-  bool is_navigational_title_match = false;
 
   // The URL to actually load when the autocomplete item is selected. This URL
   // should be canonical so we can compare URLs with strcmp to avoid dupes.
@@ -559,6 +586,9 @@ struct AutocompleteMatch {
   // The optional suggestion group Id based on the SuggestionGroupIds enum in
   // suggestion_config.proto. Used to look up the header text this match must
   // appear under from ACResult.
+  //
+  // If this value exists, it should always be positive and nonzero. In Java and
+  // JavaScript, -1 is used as a sentinel value, but should never occur in C++.
   base::Optional<int> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields
@@ -578,17 +608,20 @@ struct AutocompleteMatch {
   // Type of this match.
   Type type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 
-  // If a submatch, the type of the parent.
-  Type parent_type;
-
   // True if we saw a tab that matched this suggestion.
   bool has_tab_match = false;
 
   // Used to identify the specific source / type for suggestions by the
-  // suggest server. See |result_subtype_identifier| in omnibox.proto for more
+  // suggest server. See |result_subtypes| in omnibox.proto for more
   // details.
-  // The identifier 0 is reserved for cases where this specific type is unset.
-  int subtype_identifier = 0;
+  // We use flat_set to help us deduplicate repetitive elements.
+  // The order of elements reported back via AQS is irrelevant, and in the case
+  // we have repetitive subtypes (eg. as a result of Chrome enriching the set
+  // with its own metadata) we want to merge these subtypes together.
+  // flat_set uses std::vector as a container, allowing us to reduce memory
+  // overhead of keeping a handful of integers, while offering similar
+  // functionality as std::set.
+  base::flat_set<int> subtypes;
 
   // Set with a keyword provider match if this match can show a keyword hint.
   // For example, if this is a SearchProvider match for "www.amazon.com",
@@ -650,13 +683,12 @@ struct AutocompleteMatch {
   // A list of query tiles to be shown as part of this match.
   std::vector<query_tiles::Tile> query_tiles;
 
+  // A list of navsuggest tiles to be shown as part of this match.
+  // This object is only populated for TILE_NAVSUGGEST AutocompleteMatches.
+  std::vector<NavsuggestTile> navsuggest_tiles;
+
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
   static const char kEllipsis[];
-
-  // A numeric quantity that only increases by the amount FAMILY_SIZE.
-  // It helps guarantee that a match family will have similar, but unique,
-  // numeric values.
-  static size_t next_family_id_;
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.

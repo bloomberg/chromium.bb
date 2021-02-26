@@ -15,7 +15,7 @@ class FPDFFlattenEmbedderTest : public EmbedderTest {};
 }  // namespace
 
 TEST_F(FPDFFlattenEmbedderTest, FlatNothing) {
-  EXPECT_TRUE(OpenDocument("hello_world.pdf"));
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
   EXPECT_TRUE(page);
   EXPECT_EQ(FLATTEN_NOTHINGTODO, FPDFPage_Flatten(page, FLAT_NORMALDISPLAY));
@@ -23,7 +23,7 @@ TEST_F(FPDFFlattenEmbedderTest, FlatNothing) {
 }
 
 TEST_F(FPDFFlattenEmbedderTest, FlatNormal) {
-  EXPECT_TRUE(OpenDocument("annotiter.pdf"));
+  ASSERT_TRUE(OpenDocument("annotiter.pdf"));
   FPDF_PAGE page = LoadPage(0);
   EXPECT_TRUE(page);
   EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_NORMALDISPLAY));
@@ -31,34 +31,38 @@ TEST_F(FPDFFlattenEmbedderTest, FlatNormal) {
 }
 
 TEST_F(FPDFFlattenEmbedderTest, FlatPrint) {
-  EXPECT_TRUE(OpenDocument("annotiter.pdf"));
+  ASSERT_TRUE(OpenDocument("annotiter.pdf"));
   FPDF_PAGE page = LoadPage(0);
   EXPECT_TRUE(page);
   EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_PRINT));
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFFlattenEmbedderTest, BUG_861842) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_BUG_861842 DISABLED_BUG_861842
-#else
-#define MAYBE_BUG_861842 BUG_861842
-#endif
-TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_861842) {
 #if defined(OS_WIN)
-  constexpr char kCheckboxHash[] = "95fba3cb7bce7e0d3c94279f60984e17";
-#elif defined(OS_MACOSX)
-  constexpr char kCheckboxHash[] = "6aafcb2d98da222964bcdbf5aa1f4f1f";
+  constexpr char kCheckboxChecksum[] = "ec7d1600d179aca614f2231c1f77ccb9";
+#elif defined(OS_APPLE)
+  constexpr char kCheckboxChecksum[] = "c7c687f93fb34a4174bdae33535e0627";
 #else
-  constexpr char kCheckboxHash[] = "594265790b81df2d93120d33b72a6ada";
+  constexpr char kCheckboxChecksum[] = "b8aecddfece463096d51596537a20b61";
 #endif
+#else
+#if defined(OS_WIN)
+  constexpr char kCheckboxChecksum[] = "95fba3cb7bce7e0d3c94279f60984e17";
+#elif defined(OS_APPLE)
+  constexpr char kCheckboxChecksum[] = "6aafcb2d98da222964bcdbf5aa1f4f1f";
+#else
+  constexpr char kCheckboxChecksum[] = "594265790b81df2d93120d33b72a6ada";
+#endif
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 
-  EXPECT_TRUE(OpenDocument("bug_861842.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_861842.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
   ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-  CompareBitmap(bitmap.get(), 100, 120, kCheckboxHash);
+  CompareBitmap(bitmap.get(), 100, 120, kCheckboxChecksum);
 
   EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_PRINT));
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
@@ -70,11 +74,17 @@ TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_861842) {
   VerifySavedDocument(100, 120, kBlankPageHash);
 }
 
-TEST_F(FPDFFlattenEmbedderTest, BUG_889099) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_BUG_889099 DISABLED_BUG_889099
+#else
+#define MAYBE_BUG_889099 BUG_889099
+#endif
+TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_889099) {
 #if defined(OS_WIN)
   constexpr char kPageHash[] = "8c6e1dab0a15072f2c9c0ca240fdc739";
   constexpr char kFlattenedPageHash[] = "9fb932ce7f370c0e68eec0a5d4d76271";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   constexpr char kPageHash[] = "d43f54c60b325726392a558f861402a9";
   constexpr char kFlattenedPageHash[] = "627f143efb920a5e7ddd311e963b9c66";
 #else
@@ -82,7 +92,7 @@ TEST_F(FPDFFlattenEmbedderTest, BUG_889099) {
   constexpr char kFlattenedPageHash[] = "ef01f57507662ec9aef7cc7cff92f96c";
 #endif
 
-  EXPECT_TRUE(OpenDocument("bug_889099.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_889099.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
@@ -98,48 +108,44 @@ TEST_F(FPDFFlattenEmbedderTest, BUG_889099) {
   VerifySavedDocument(300, 400, kFlattenedPageHash);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFFlattenEmbedderTest, BUG_890322) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_BUG_890322 DISABLED_BUG_890322
+  constexpr char kChecksum[] = "793689536cf64fe792c2f241888c0cf3";
 #else
-#define MAYBE_BUG_890322 BUG_890322
+  constexpr char kChecksum[] = "6c674642154408e877d88c6c082d67e9";
 #endif
-TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_890322) {
-  constexpr char md5_hash[] = "6c674642154408e877d88c6c082d67e9";
-  EXPECT_TRUE(OpenDocument("bug_890322.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_890322.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
   ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-  CompareBitmap(bitmap.get(), 200, 200, md5_hash);
+  CompareBitmap(bitmap.get(), 200, 200, kChecksum);
 
   EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_PRINT));
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
 
   UnloadPage(page);
 
-  VerifySavedDocument(200, 200, md5_hash);
+  VerifySavedDocument(200, 200, kChecksum);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFFlattenEmbedderTest, BUG_896366) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_BUG_896366 DISABLED_BUG_896366
+  constexpr char kChecksum[] = "c3cccfadc4c5249e6aa0675e511fa4c3";
 #else
-#define MAYBE_BUG_896366 BUG_896366
+  constexpr char kChecksum[] = "f71ab085c52c8445ae785eca3ec858b1";
 #endif
-TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_896366) {
-  constexpr char md5_hash[] = "f71ab085c52c8445ae785eca3ec858b1";
-  EXPECT_TRUE(OpenDocument("bug_896366.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_896366.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
   ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-  CompareBitmap(bitmap.get(), 612, 792, md5_hash);
+  CompareBitmap(bitmap.get(), 612, 792, kChecksum);
 
   EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_PRINT));
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
 
   UnloadPage(page);
 
-  VerifySavedDocument(612, 792, md5_hash);
+  VerifySavedDocument(612, 792, kChecksum);
 }

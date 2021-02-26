@@ -8,13 +8,13 @@
 #include <linux/input.h>
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
-#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 
 namespace ui {
 
@@ -98,10 +98,8 @@ void EventConverterEvdevImpl::SetKeyFilter(bool enable_filter,
   }
 
   blocked_keys_.set();
-  for (const DomCode& it : allowed_keys) {
-    int evdev_code =
-        NativeCodeToEvdevCode(KeycodeConverter::DomCodeToNativeKeycode(it));
-    blocked_keys_.reset(evdev_code);
+  for (const DomCode& code : allowed_keys) {
+    blocked_keys_.reset(KeycodeConverter::DomCodeToEvdevCode(code));
   }
 
   // Release any pressed blocked keys.
@@ -255,10 +253,10 @@ void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
 
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(input_device_.id, EF_NONE, cursor_->GetLocation(),
-                           PointerDetails(EventPointerType::kMouse),
-                           TimeTicksFromInputEvent(input)));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      input_device_.id, EF_NONE, cursor_->GetLocation(),
+      nullptr /* ordinal_delta*/, PointerDetails(EventPointerType::kMouse),
+      TimeTicksFromInputEvent(input)));
 
   x_offset_ = 0;
   y_offset_ = 0;

@@ -99,7 +99,7 @@ namespace dawn_native {
             }
 #endif  // defined(DAWN_USE_X11)
 
-            case wgpu::SType::SurfaceDescriptorFromHTMLCanvasId:
+            case wgpu::SType::SurfaceDescriptorFromCanvasHTMLSelector:
             default:
                 return DAWN_VALIDATION_ERROR("Unsupported sType");
         }
@@ -151,8 +151,8 @@ namespace dawn_native {
         }
     }
 
-    NewSwapChainBase* Surface::GetAttachedSwapChain() const {
-        return mSwapChain;
+    NewSwapChainBase* Surface::GetAttachedSwapChain() {
+        return mSwapChain.Get();
     }
 
     void Surface::SetAttachedSwapChain(NewSwapChainBase* swapChain) {

@@ -212,12 +212,15 @@ endmacro()
 macro(libgav1_set_cxx_flags)
   unset(cxx_flag_lists)
 
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    list(APPEND cxx_flag_lists libgav1_clang_cxx_flags)
-  endif()
-
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     list(APPEND cxx_flag_lists libgav1_base_cxx_flags)
+  endif()
+
+  # Append clang flags after the base set to allow -Wno* overrides to take
+  # effect. Some of the base flags may enable a large set of warnings, e.g.,
+  # -Wall.
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    list(APPEND cxx_flag_lists libgav1_clang_cxx_flags)
   endif()
 
   if(MSVC)

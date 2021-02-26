@@ -71,22 +71,12 @@ source_set("fxfa") {
     "cxfa_fwltheme.h",
     "cxfa_imagerenderer.cpp",
     "cxfa_imagerenderer.h",
-    "cxfa_loadercontext.cpp",
-    "cxfa_loadercontext.h",
-    "cxfa_pieceline.cpp",
-    "cxfa_pieceline.h",
     "cxfa_readynodeiterator.cpp",
     "cxfa_readynodeiterator.h",
-    "cxfa_rendercontext.cpp",
-    "cxfa_rendercontext.h",
     "cxfa_textlayout.cpp",
     "cxfa_textlayout.h",
-    "cxfa_textparsecontext.cpp",
-    "cxfa_textparsecontext.h",
     "cxfa_textparser.cpp",
     "cxfa_textparser.h",
-    "cxfa_textpiece.cpp",
-    "cxfa_textpiece.h",
     "cxfa_textprovider.cpp",
     "cxfa_textprovider.h",
     "cxfa_texttabstopscontext.cpp",
@@ -103,11 +93,12 @@ source_set("fxfa") {
     "../../core/fxge",
     "../../fxbarcode",
     "../../fxjs",
+    "../../fxjs:gc",
     "../fde",
-    "../fgas",
+    "../fgas/font",
+    "../fgas/graphics",
     "../fgas/layout",
     "../fwl",
-    "../fxgraphics",
     "layout",
     "parser",
   ]
@@ -129,6 +120,9 @@ pdfium_unittest_source_set("unittests") {
     "cxfa_textparser_unittest.cpp",
     "fxfa_basic_unittest.cpp",
   ]
-  deps = [ ":fxfa" ]
+  deps = [
+    ":fxfa",
+    "../../fxjs:gc",
+  ]
   pdfium_root_dir = "../../"
 }

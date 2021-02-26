@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -79,9 +79,6 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
        IDS_SETTINGS_COOKIES_CACHE_STORAGE},
       {CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE,
        IDS_SETTINGS_COOKIES_CACHE_STORAGE},
-
-      {CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO,
-       IDS_SETTINGS_COOKIES_FLASH_LSO},
 
       {CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSES,
        IDS_SETTINGS_COOKIES_MEDIA_LICENSE},

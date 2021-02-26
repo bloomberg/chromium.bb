@@ -30,6 +30,8 @@ char kLSanDefaultSuppressions[] =
 
     // Leaks in Nvidia's libGL.
     "leak:libGL.so\n"
+    "leak:libGLX_nvidia.so\n"
+    "leak:libnvidia-glcore.so\n"
 
     // XRandR has several one time leaks.
     "leak:libxrandr\n"
@@ -52,9 +54,6 @@ char kLSanDefaultSuppressions[] =
     // Suppressing the leak is acceptable in some cases when reverting is
     // impossible, i.e. when enabling leak detection for the first time for a
     // test target with pre-existing leaks.
-
-    // http://crbug.com/356306
-    "leak:service_manager::SetProcessTitleFromCommandLine\n"
 
     // https://crbug.com/755670
     "leak:third_party/yasm/\n"

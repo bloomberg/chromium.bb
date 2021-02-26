@@ -18,6 +18,7 @@ namespace features {
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHolding;
+BLINK_COMMON_EXPORT extern const base::Feature kPaintHoldingCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kScriptStreaming;
@@ -25,29 +26,48 @@ BLINK_COMMON_EXPORT extern const base::Feature kSmallScriptStreaming;
 BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezeUserAgent;
+BLINK_COMMON_EXPORT extern const base::Feature kFtpProtocol;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
-BLINK_COMMON_EXPORT extern const base::Feature kCSSOMViewScrollCoordinates;
+BLINK_COMMON_EXPORT extern const base::Feature kInsertKeyToggleMode;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
-BLINK_COMMON_EXPORT extern const base::Feature kMaxOverlapBoundsForFixed;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
+BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kTopLevelAwait;
+BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
+BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGFieldset;
+BLINK_COMMON_EXPORT extern const base::Feature kFragmentItem;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
+BLINK_COMMON_EXPORT extern const base::Feature kParentNodeReplaceChildren;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
+BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPurgeRendererMemoryWhenBackgrounded;
 BLINK_COMMON_EXPORT extern const base::Feature kRawClipboard;
-BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kRTCGetCurrentBrowsingContextMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
+BLINK_COMMON_EXPORT extern const base::Feature kRTCGpuCodecSupportWaiter;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kRTCGpuCodecSupportWaiterTimeoutParam;
 BLINK_COMMON_EXPORT extern const base::Feature kV8OptimizeWorkersForPerformance;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kWebMeasureMemoryViaPerformanceManager;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHideLocalIpsWithMdns;
+
+BLINK_COMMON_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
+BLINK_COMMON_EXPORT extern const char
+    kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[];
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kOptOutZeroTimeoutTimersFromThrottling;
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
@@ -62,12 +82,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kFontAccess;
-BLINK_COMMON_EXPORT extern const base::Feature kNativeFileSystemAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kFontAccessChooser;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kAllowSyncXHRInPageDismissal;
 BLINK_COMMON_EXPORT extern const base::Feature kPrefetchPrivacyChanges;
-
-BLINK_COMMON_EXPORT extern const base::Feature kWebComponentsV0Enabled;
 
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeParamName[];
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeAllPassive[];
@@ -81,10 +99,10 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kAudioWorkletThreadRealtimePriority;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kLightweightNoStatePrefetch_FetchFonts;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSaveDataImgSrcset;
 
@@ -125,9 +143,9 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kDisableForceDeferInChildFrames;
 
-BLINK_COMMON_EXPORT extern const base::Feature kARIAAnnotations;
-
 BLINK_COMMON_EXPORT extern const base::Feature kCompositeCrossOriginIframes;
+
+BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
 
@@ -145,27 +163,52 @@ BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kForceExtraRenderingToTrackStickyFrame;
+BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
 BLINK_COMMON_EXPORT extern const base::Feature
-    kCSSReducedFontLoadingInvalidations;
+    kCSSReducedFontLoadingLayoutInvalidations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kSuppressContentTypeForBeaconMadeWithArrayBufferView;
-
 BLINK_COMMON_EXPORT extern const base::Feature kBlockHTMLParserOnStyleSheets;
+
+BLINK_COMMON_EXPORT extern const base::Feature kLinkDisabledNewSpecBehavior;
 
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
 
-BLINK_COMMON_EXPORT extern const base::Feature kFlexGaps;
-BLINK_COMMON_EXPORT extern const base::Feature kFlexNG;
+BLINK_COMMON_EXPORT extern const base::Feature kFlexAspectRatio;
 
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptExecution;
+enum class DelayAsyncScriptDelayType {
+  kFinishedParsing,
+  kFirstPaintOrFinishedParsing,
+  kUseOptimizationGuide,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
+    kDelayAsyncScriptExecutionDelayParam;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kDelayCompetingLowPriorityRequests;
+enum class DelayCompetingLowPriorityRequestsDelayType {
+  kFirstPaint,
+  kFirstContentfulPaint,
+  kAlways,
+  kUseOptimizationGuide,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    DelayCompetingLowPriorityRequestsDelayType>
+    kDelayCompetingLowPriorityRequestsDelayParam;
+enum class DelayCompetingLowPriorityRequestsThreshold {
+  kMedium,
+  kHigh,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    DelayCompetingLowPriorityRequestsThreshold>
+    kDelayCompetingLowPriorityRequestsThresholdParam;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAppCache;
 BLINK_COMMON_EXPORT extern const base::Feature kAppCacheRequireOriginTrial;
@@ -188,7 +231,24 @@ BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInstallingServiceWorkerOutstandingThrottledLimit;
 
+// Enables storing and loading security policies (for now, referrer policy) in
+// the policy container. The policy container for the current document is
+// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
+BLINK_COMMON_EXPORT extern const base::Feature kPolicyContainer;
+
+// This flag is used to set field parameters to choose predictor we use when
+// kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
+// on finch and also for choosing predictor type for predictedEvents API without
+// enabling resampling. It does not have any effect when the resampling flag is
+// enabled.
+BLINK_COMMON_EXPORT extern const base::Feature kInputPredictorTypeChoice;
+
+// Enables resampling input events on main thread.
+BLINK_COMMON_EXPORT extern const base::Feature kResamplingInputEvents;
+
 // Enables resampling GestureScroll events on compositor thread.
+// Uses the kPredictorName* values in ui_base_features.h as the 'predictor'
+// feature param.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 
 // Enables the device-memory, resource-width, viewport-width and DPR client
@@ -196,24 +256,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 // receiving client hints, regardless of Feature Policy.
 BLINK_COMMON_EXPORT extern const base::Feature kAllowClientHintsToThirdParty;
 
-// The type of scroll predictor to use for the resampling scroll events. These
-// values are used as the 'predictor' feature param for
-// |kResamplingScrollEvents|.
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLsq[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameKalman[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearFirst[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearSecond[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearResampling[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameEmpty[];
-
 // Enables filtering of predicted scroll events on compositor thread.
+// Uses the kFilterName* values in ui_base_features.h as the 'filter' feature
+// param.
 BLINK_COMMON_EXPORT extern const base::Feature kFilteringScrollPrediction;
-
-// The type of filter to use for the filtering scroll events. These
-// values are used as the 'filter' feature param for
-// |kFilteringScrollPrediction|.
-BLINK_COMMON_EXPORT extern const char kFilterNameEmpty[];
-BLINK_COMMON_EXPORT extern const char kFilterNameOneEuro[];
 
 // Enables changing the influence of acceleration based on change of direction.
 BLINK_COMMON_EXPORT extern const base::Feature kKalmanHeuristics;
@@ -245,6 +291,55 @@ BLINK_COMMON_EXPORT
 extern const char
     kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebXrMultiGpu;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kCSSMatchedPropertiesCacheDependencies;
+
+BLINK_COMMON_EXPORT extern const base::Feature kCompressParkableStrings;
+BLINK_COMMON_EXPORT extern const base::Feature kParkableStringsToDisk;
+BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
+
+BLINK_COMMON_EXPORT extern const base::Feature kCrOSAutoSelect;
+
+BLINK_COMMON_EXPORT extern const base::Feature kCompositingOptimizations;
+
+BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;
+
+BLINK_COMMON_EXPORT extern const base::Feature kContentCaptureConstantStreaming;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kContentCaptureUserActivatedDelay;
+
+BLINK_COMMON_EXPORT extern const base::Feature kCheckOfflineCapability;
+enum class CheckOfflineCapabilityMode {
+  kWarnOnly,
+  kEnforce,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<CheckOfflineCapabilityMode>
+    kCheckOfflineCapabilityParam;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBackForwardCacheABExperimentControl;
+BLINK_COMMON_EXPORT
+extern const char kBackForwardCacheABExperimentGroup[];
+
+BLINK_COMMON_EXPORT extern const base::Feature kPreferCompositingToLCDText;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kLogUnexpectedIPCPostedToBackForwardCachedDocuments;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebRtcLibvpxEncodeNV12;
+
+BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
+
+BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kMediaStreamTrackUseConfigMaxFrameRate;
 }  // namespace features
 }  // namespace blink
 

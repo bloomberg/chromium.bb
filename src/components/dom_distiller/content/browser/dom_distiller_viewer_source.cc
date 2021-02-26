@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -38,11 +37,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {
@@ -124,18 +123,6 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
   bool expected_main_view_request = navigation == expected_url_;
   if (navigation_handle->IsSameDocument() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
-    if (expected_main_view_request) {
-      content::RenderFrameHost* render_frame_host =
-          navigation_handle->GetRenderFrameHost();
-      CHECK_EQ(0, render_frame_host->GetEnabledBindings());
-
-      // Tell the renderer that this is currently a distilled page.
-      mojo::Remote<mojom::DistillerPageNotifierService> page_notifier_service;
-      render_frame_host->GetRemoteInterfaces()->GetInterface(
-          page_notifier_service.BindNewPipeAndPassReceiver());
-      DCHECK(page_notifier_service);
-      page_notifier_service->NotifyIsDistillerPage();
-    }
     return;
   }
 
@@ -224,10 +211,10 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
 #if !defined(OS_ANDROID)
   // Don't allow loading of mixed content on Reader Mode pages.
-  content::WebPreferences prefs =
-      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+  blink::web_pref::WebPreferences prefs =
+      web_contents->GetOrCreateWebPreferences();
   prefs.strict_mixed_content_checking = true;
-  web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents->SetWebPreferences(prefs);
 #endif  // !defined(OS_ANDROID)
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
@@ -302,12 +289,21 @@ bool DomDistillerViewerSource::ShouldServiceRequest(
   return url.SchemeIs(scheme_);
 }
 
-std::string DomDistillerViewerSource::GetContentSecurityPolicyStyleSrc() {
-  return "style-src 'self' https://fonts.googleapis.com;";
-}
+std::string DomDistillerViewerSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::StyleSrc) {
+    return "style-src 'self' https://fonts.googleapis.com;";
+  } else if (directive == network::mojom::CSPDirectiveName::ChildSrc) {
+    return "child-src *;";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    // This removes require-trusted-types-for and trusted-types directives
+    // from the CSP header.
+    return std::string();
+  }
 
-std::string DomDistillerViewerSource::GetContentSecurityPolicyChildSrc() {
-  return "child-src *;";
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 }  // namespace dom_distiller

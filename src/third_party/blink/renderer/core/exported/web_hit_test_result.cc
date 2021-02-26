@@ -42,7 +42,7 @@ class WebHitTestResultPrivate final
   WebHitTestResultPrivate(const HitTestResult&);
   WebHitTestResultPrivate(const WebHitTestResultPrivate&);
 
-  void Trace(Visitor* visitor) { visitor->Trace(result_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(result_); }
   const HitTestResult& Result() const { return result_; }
 
  private:
@@ -59,26 +59,6 @@ inline WebHitTestResultPrivate::WebHitTestResultPrivate(
 
 WebNode WebHitTestResult::GetNode() const {
   return WebNode(private_->Result().InnerNode());
-}
-
-gfx::PointF WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
-  FloatPoint local_point = FloatPoint(private_->Result().LocalPoint());
-  LayoutObject* object = private_->Result().GetLayoutObject();
-  if (object->IsBox()) {
-    LayoutBox* box = ToLayoutBox(object);
-    local_point.MoveBy(-FloatPoint(box->PhysicalContentBoxOffset()));
-  }
-  return local_point;
-}
-
-bool WebHitTestResult::ContentBoxContainsPoint() const {
-  LayoutObject* object = private_->Result().GetLayoutObject();
-  DCHECK(object);
-  if (!object->IsBox())
-    return false;
-
-  IntPoint local_point = RoundedIntPoint(private_->Result().LocalPoint());
-  return ToLayoutBox(object)->ComputedCSSContentBoxRect().Contains(local_point);
 }
 
 WebElement WebHitTestResult::UrlElement() const {

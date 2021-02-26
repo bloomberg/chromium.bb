@@ -15,8 +15,22 @@
 #include <gtest/gtest.h>
 
 #include "common/Math.h"
+#include "dawn/EnumClassBitmasks.h"
 
 #include <cmath>
+
+namespace wgpu {
+    enum class TestEnum {
+        A = 0x1,
+        B = 0x2,
+        C = 0x4,
+    };
+}  // namespace wgpu
+
+template <>
+struct wgpu::IsDawnBitmask<wgpu::TestEnum> {
+    static constexpr bool enable = true;
+};
 
 // Tests for ScanForward
 TEST(Math, ScanForward) {
@@ -37,14 +51,61 @@ TEST(Math, Log2) {
     ASSERT_EQ(Log2(0xFFFFFFFFu), 31u);
     ASSERT_EQ(Log2(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)), 63u);
 
+    static_assert(ConstexprLog2(1u) == 0u, "");
+    static_assert(ConstexprLog2(0xFFFFFFFFu) == 31u, "");
+    static_assert(ConstexprLog2(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)) == 63u, "");
+
     // Test boundary between two logs
     ASSERT_EQ(Log2(0x80000000u), 31u);
     ASSERT_EQ(Log2(0x7FFFFFFFu), 30u);
     ASSERT_EQ(Log2(static_cast<uint64_t>(0x8000000000000000)), 63u);
     ASSERT_EQ(Log2(static_cast<uint64_t>(0x7FFFFFFFFFFFFFFF)), 62u);
 
+    static_assert(ConstexprLog2(0x80000000u) == 31u, "");
+    static_assert(ConstexprLog2(0x7FFFFFFFu) == 30u, "");
+    static_assert(ConstexprLog2(static_cast<uint64_t>(0x8000000000000000)) == 63u, "");
+    static_assert(ConstexprLog2(static_cast<uint64_t>(0x7FFFFFFFFFFFFFFF)) == 62u, "");
+
     ASSERT_EQ(Log2(16u), 4u);
     ASSERT_EQ(Log2(15u), 3u);
+
+    static_assert(ConstexprLog2(16u) == 4u, "");
+    static_assert(ConstexprLog2(15u) == 3u, "");
+}
+
+// Tests for Log2Ceil
+TEST(Math, Log2Ceil) {
+    // Test extrema
+    ASSERT_EQ(Log2Ceil(1u), 0u);
+    ASSERT_EQ(Log2Ceil(0xFFFFFFFFu), 32u);
+    ASSERT_EQ(Log2Ceil(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)), 64u);
+
+    static_assert(ConstexprLog2Ceil(1u) == 0u, "");
+    static_assert(ConstexprLog2Ceil(0xFFFFFFFFu) == 32u, "");
+    static_assert(ConstexprLog2Ceil(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)) == 64u, "");
+
+    // Test boundary between two logs
+    ASSERT_EQ(Log2Ceil(0x80000001u), 32u);
+    ASSERT_EQ(Log2Ceil(0x80000000u), 31u);
+    ASSERT_EQ(Log2Ceil(0x7FFFFFFFu), 31u);
+    ASSERT_EQ(Log2Ceil(static_cast<uint64_t>(0x8000000000000001)), 64u);
+    ASSERT_EQ(Log2Ceil(static_cast<uint64_t>(0x8000000000000000)), 63u);
+    ASSERT_EQ(Log2Ceil(static_cast<uint64_t>(0x7FFFFFFFFFFFFFFF)), 63u);
+
+    static_assert(ConstexprLog2Ceil(0x80000001u) == 32u, "");
+    static_assert(ConstexprLog2Ceil(0x80000000u) == 31u, "");
+    static_assert(ConstexprLog2Ceil(0x7FFFFFFFu) == 31u, "");
+    static_assert(ConstexprLog2Ceil(static_cast<uint64_t>(0x8000000000000001)) == 64u, "");
+    static_assert(ConstexprLog2Ceil(static_cast<uint64_t>(0x8000000000000000)) == 63u, "");
+    static_assert(ConstexprLog2Ceil(static_cast<uint64_t>(0x7FFFFFFFFFFFFFFF)) == 63u, "");
+
+    ASSERT_EQ(Log2Ceil(17u), 5u);
+    ASSERT_EQ(Log2Ceil(16u), 4u);
+    ASSERT_EQ(Log2Ceil(15u), 4u);
+
+    static_assert(ConstexprLog2Ceil(17u) == 5u, "");
+    static_assert(ConstexprLog2Ceil(16u) == 4u, "");
+    static_assert(ConstexprLog2Ceil(15u) == 4u, "");
 }
 
 // Tests for IsPowerOfTwo
@@ -89,17 +150,17 @@ TEST(Math, AlignPtr) {
 // Tests for Align
 TEST(Math, Align) {
     // 0 aligns to 0
-    ASSERT_EQ(Align(0, 4), 0u);
-    ASSERT_EQ(Align(0, 256), 0u);
-    ASSERT_EQ(Align(0, 512), 0u);
+    ASSERT_EQ(Align(0u, 4), 0u);
+    ASSERT_EQ(Align(0u, 256), 0u);
+    ASSERT_EQ(Align(0u, 512), 0u);
 
     // Multiples align to self
-    ASSERT_EQ(Align(8, 8), 8u);
-    ASSERT_EQ(Align(16, 8), 16u);
-    ASSERT_EQ(Align(24, 8), 24u);
-    ASSERT_EQ(Align(256, 256), 256u);
-    ASSERT_EQ(Align(512, 256), 512u);
-    ASSERT_EQ(Align(768, 256), 768u);
+    ASSERT_EQ(Align(8u, 8), 8u);
+    ASSERT_EQ(Align(16u, 8), 16u);
+    ASSERT_EQ(Align(24u, 8), 24u);
+    ASSERT_EQ(Align(256u, 256), 256u);
+    ASSERT_EQ(Align(512u, 256), 512u);
+    ASSERT_EQ(Align(768u, 256), 768u);
 
     // Alignment with 1 is self
     for (uint32_t i = 0; i < 128; ++i) {
@@ -110,6 +171,10 @@ TEST(Math, Align) {
     for (uint32_t i = 1; i <= 64; ++i) {
         ASSERT_EQ(Align(64 + i, 64), 128u);
     }
+
+    // Test extrema
+    ASSERT_EQ(Align(static_cast<uint64_t>(0xFFFFFFFF), 4), 0x100000000u);
+    ASSERT_EQ(Align(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF), 1), 0xFFFFFFFFFFFFFFFFull);
 }
 
 // Tests for IsPtrAligned
@@ -208,4 +273,33 @@ TEST(Math, RoundUp) {
     // Test extrema
     ASSERT_EQ(RoundUp(0x7FFFFFFFFFFFFFFFull, 0x8000000000000000ull), 0x8000000000000000ull);
     ASSERT_EQ(RoundUp(1, 1), 1u);
+}
+
+// Tests for IsSubset
+TEST(Math, IsSubset) {
+    // single value is a subset
+    ASSERT_TRUE(IsSubset(0b100, 0b101));
+    ASSERT_FALSE(IsSubset(0b010, 0b101));
+    ASSERT_TRUE(IsSubset(0b001, 0b101));
+
+    // empty set is a subset
+    ASSERT_TRUE(IsSubset(0b000, 0b101));
+
+    // equal-to is a subset
+    ASSERT_TRUE(IsSubset(0b101, 0b101));
+
+    // superset is not a subset
+    ASSERT_FALSE(IsSubset(0b111, 0b101));
+
+    // only empty is a subset of empty
+    ASSERT_FALSE(IsSubset(0b100, 0b000));
+    ASSERT_FALSE(IsSubset(0b010, 0b000));
+    ASSERT_FALSE(IsSubset(0b001, 0b000));
+    ASSERT_TRUE(IsSubset(0b000, 0b000));
+
+    // Test with enums
+    ASSERT_TRUE(IsSubset(wgpu::TestEnum::A, wgpu::TestEnum::A));
+    ASSERT_TRUE(IsSubset(wgpu::TestEnum::A, wgpu::TestEnum::A | wgpu::TestEnum::B));
+    ASSERT_FALSE(IsSubset(wgpu::TestEnum::C, wgpu::TestEnum::A | wgpu::TestEnum::B));
+    ASSERT_FALSE(IsSubset(wgpu::TestEnum::A | wgpu::TestEnum::C, wgpu::TestEnum::A));
 }

@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -36,18 +36,14 @@ CommitResponse::ResponseType BounceType(
 
 class SingleClientUserEventsSyncTest : public SyncTest {
  public:
-  SingleClientUserEventsSyncTest() : SyncTest(SINGLE_CLIENT) {
-    DisableVerifier();
-  }
+  SingleClientUserEventsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  ~SingleClientUserEventsSyncTest() override = default;
 
   bool ExpectUserEvents(std::vector<UserEventSpecifics> expected_specifics) {
     return UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
                                     expected_specifics)
         .Wait();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientUserEventsSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Sanity) {
@@ -72,14 +68,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 
   GetFakeServer()->OverrideResponseType(
-      base::Bind(&BounceType, CommitResponse::TRANSIENT_ERROR));
+      base::BindRepeating(&BounceType, CommitResponse::TRANSIENT_ERROR));
   event_service->RecordUserEvent(specifics1);
 
   // This will block until we hit a TRANSIENT_ERROR, at which point we will
   // regain control and can switch back to SUCCESS.
   EXPECT_TRUE(ExpectUserEvents({specifics1}));
   GetFakeServer()->OverrideResponseType(
-      base::Bind(&BounceType, CommitResponse::SUCCESS));
+      base::BindRepeating(&BounceType, CommitResponse::SUCCESS));
   // Because the fake server records commits even on failure, we are able to
   // verify that the commit for this event reached the server twice.
   EXPECT_TRUE(ExpectUserEvents({specifics1, specifics1}));

@@ -7,29 +7,29 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 #endif
 
-namespace {
-
-const char kMimeTypeApplicationOctetStream[] = "application/octet-stream";
-
-}  // namespace
-
 namespace extensions {
 namespace app_file_handler_util {
+
+const char kMimeTypeApplicationOctetStream[] = "application/octet-stream";
+const char kMimeTypeInodeDirectory[] = "inode/directory";
+
 namespace {
 
 // Detects MIME type by reading initial bytes from the file. If found, then
@@ -41,7 +41,7 @@ void SniffMimeType(const base::FilePath& local_path, std::string* result) {
       base::ReadFile(local_path, &content[0], static_cast<int>(content.size()));
 
   if (bytes_read >= 0) {
-    net::SniffMimeType(&content[0], bytes_read,
+    net::SniffMimeType(base::StringPiece(&content[0], bytes_read),
                        net::FilePathToFileURL(local_path),
                        std::string(),  // type_hint (passes no hint)
                        net::ForceSniffFileUrlsForHtml::kDisabled, result);
@@ -51,15 +51,19 @@ void SniffMimeType(const base::FilePath& local_path, std::string* result) {
       // better match.
       // TODO(amistry): Potentially add other types (i.e. SVG).
       std::string secondary_result;
-      net::SniffMimeTypeFromLocalData(&content[0], bytes_read,
-                                      &secondary_result);
+      net::SniffMimeTypeFromLocalData(
+          base::StringPiece(&content[0], bytes_read), &secondary_result);
       if (!secondary_result.empty())
         *result = secondary_result;
     }
+  } else if (base::DirectoryExists(local_path)) {
+    // XDG defines directories to have mime type inode/directory.
+    // https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45070737701600
+    *result = kMimeTypeInodeDirectory;
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Converts a result passed as a scoped pointer to a dereferenced value passed
 // to |callback|.
 void OnGetMimeTypeFromFileForNonNativeLocalPathCompleted(
@@ -139,7 +143,7 @@ void GetMimeTypeForLocalPath(
     content::BrowserContext* context,
     const base::FilePath& local_path,
     base::OnceCallback<void(const std::string&)> callback) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   NonNativeFileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
   if (delegate && delegate->HasNonNativeMimeTypeProvider(context, local_path)) {

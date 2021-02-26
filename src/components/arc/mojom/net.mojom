@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 // This file defines the mojo interface between the ARC networking stack and
 // Chrome OS. There are three different groups of interactions:
@@ -92,7 +92,8 @@ enum IPAddressType {
   IPV6,
 };
 
-// Layer 3 and proxy configuration information for an IP network.
+// Deprecated. Individual fields added to NetworkConfiguration in version 13 of
+// this file should be used instead.
 struct IPConfiguration {
 
   // Literal representation of the IP address of the ARC gateway.
@@ -126,7 +127,8 @@ enum SecurityType {
   WPA_EAP,
 };
 
-// Tethering state of a |NetworkConfiguration| as a client.
+// Deprecated enum. |is_metered| in NetworkConfiguration should be
+// used instead.
 [Extensible]
 enum TetheringClientState {
   // Tethering state is detected and confirmed.
@@ -189,8 +191,9 @@ struct NetworkConfiguration {
   // A string token that uniquely identifies this network service.
   string guid;
 
-  // IP configuration for the network service inside ARC.
-  array<IPConfiguration>? ip_configs;
+  // Deprecated. Individual fields added to NetworkConfiguration in version 13
+  // of this file should be used instead.
+  array<IPConfiguration>? deprecated_ip_configs;
 
   // Deprecated field unused from ARC P and later.
   string? deprecated_mac_address;
@@ -201,9 +204,8 @@ struct NetworkConfiguration {
   // Additional WiFi properties for WiFi network services.
   WiFi? wifi;
 
-  // Indicates if the physical network is known to have upstream Internet
-  // access through tethering on a metered network.
-  [MinVersion=8] TetheringClientState tethering_client_state;
+  // Deprecated field. Uses |is_metered| instead.
+  [MinVersion=8] TetheringClientState deprecated_tethering_client_state;
 
   // The name of the network interface on the host.
   [MinVersion=10] string? network_interface;
@@ -266,6 +268,10 @@ struct NetworkConfiguration {
   // to ARC and associated with the network service. This can be different
   // from the name of the real physical interface managed by shill.
   [MinVersion=13] string? arc_network_interface;
+
+  // True if the network has been autodetected by the platform as a metered
+  // network or if the user explicitly marked the network as metered in the UI.
+  [MinVersion=14] bool is_metered;
 };
 
 // Describes a Wifi network configuration that ARC has requested the host to
@@ -399,10 +405,10 @@ interface NetHost {
 // ID 2 is missing as it belonged to deprecated method.
 interface NetInstance {
   // DEPRECATED: Please use Init@6 instead.
-  InitDeprecated@0(NetHost host_ptr);
+  InitDeprecated@0(pending_remote<NetHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=8] Init@6(NetHost host_ptr) => ();
+  [MinVersion=8] Init@6(pending_remote<NetHost> host_remote) => ();
 
   // Notifies the instance of a WiFI AP scan being completed.
   [MinVersion=1] ScanCompleted@1();

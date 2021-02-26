@@ -26,7 +26,9 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -83,6 +85,40 @@ void RenderFrameTracker::FrameDeleted(content::RenderFrameHost* host) {
   render_frame_hosts_.erase(host->GetFrameTreeNodeId());
 }
 
+class InnerWebContentsAttachedWaiter : public content::WebContentsObserver {
+ public:
+  explicit InnerWebContentsAttachedWaiter(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+  InnerWebContentsAttachedWaiter(const InnerWebContentsAttachedWaiter&) =
+      delete;
+  InnerWebContentsAttachedWaiter& operator=(
+      const InnerWebContentsAttachedWaiter&) = delete;
+  ~InnerWebContentsAttachedWaiter() override = default;
+
+  // content::WebContentsObserver:
+  void InnerWebContentsAttached(content::WebContents* inner_web_contents,
+                                content::RenderFrameHost* render_frame_host,
+                                bool is_full_page) override;
+
+  void WaitForInnerWebContentsAttached();
+
+ private:
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
+};
+
+void InnerWebContentsAttachedWaiter::InnerWebContentsAttached(
+    content::WebContents* inner_web_contents,
+    content::RenderFrameHost* render_frame_host,
+    bool is_full_page) {
+  run_loop_.Quit();
+}
+
+void InnerWebContentsAttachedWaiter::WaitForInnerWebContentsAttached() {
+  if (web_contents()->GetInnerWebContents().size() > 0u)
+    return;
+  run_loop_.Run();
+}
+
 }  // namespace
 
 class SupervisedUserNavigationThrottleTest
@@ -95,11 +131,11 @@ class SupervisedUserNavigationThrottleTest
   void SetUpOnMainThread() override;
 
   void BlockHost(const std::string& host) {
-    SetManualFilterForHost(host, /* whitelist */ false);
+    SetManualFilterForHost(host, /* allowlist */ false);
   }
 
-  void WhitelistHost(const std::string& host) {
-    SetManualFilterForHost(host, /* whitelist */ true);
+  void AllowlistHost(const std::string& host) {
+    SetManualFilterForHost(host, /* allowlist */ true);
   }
 
   bool IsInterstitialBeingShownInMainFrame(Browser* browser);
@@ -109,7 +145,7 @@ class SupervisedUserNavigationThrottleTest
   }
 
  private:
-  void SetManualFilterForHost(const std::string& host, bool whitelist) {
+  void SetManualFilterForHost(const std::string& host, bool allowlist) {
     Profile* profile = browser()->profile();
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
@@ -134,7 +170,7 @@ class SupervisedUserNavigationThrottleTest
       dict_to_insert = std::make_unique<base::DictionaryValue>();
     }
 
-    dict_to_insert->SetKey(host, base::Value(whitelist));
+    dict_to_insert->SetKey(host, base::Value(allowlist));
     settings_service->SetLocalSetting(
         supervised_users::kContentPackManualBehaviorHosts,
         std::move(dict_to_insert));
@@ -231,6 +267,43 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   bool loaded2 = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(tab, "loaded2()", &loaded2));
   EXPECT_TRUE(loaded2);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+                       AllowEDUCoexistenceInnerWebContents) {
+  BlockHost(kExampleHost2);
+  GURL manually_blocked_url = embedded_test_server()->GetURL(
+      kExampleHost2, "/supervised_user/with_iframes.html");
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(SupervisedUserService::GetEduCoexistenceLoginUrl()));
+  // Get the top level WebContents.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(contents->GetURL(),
+            GURL(SupervisedUserService::GetEduCoexistenceLoginUrl()));
+
+  InnerWebContentsAttachedWaiter web_contents_attached_waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  web_contents_attached_waiter.WaitForInnerWebContentsAttached();
+
+  // Get the inner WebContents.
+  std::vector<content::WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+
+  // There is only one inner web content in EDUCoexistence flow.
+  EXPECT_EQ(inner_web_contents.size(), 1u);
+
+  content::WebContents* webview_element = inner_web_contents[0];
+  NavigationFinishedWaiter waiter(webview_element, manually_blocked_url);
+  webview_element->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(manually_blocked_url));
+  waiter.Wait();
+
+  // Make sure that there is no error page in the inner web content.
+  EXPECT_NE(
+      webview_element->GetController().GetLastCommittedEntry()->GetPageType(),
+      content::PAGE_TYPE_ERROR);
 }
 
 class SupervisedUserIframeFilterTest
@@ -513,8 +586,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
-                       WhitelistedMainFrameBlacklistedIframe) {
-  WhitelistHost(kExampleHost);
+                       AllowlistedMainFrameDenylistedIframe) {
+  AllowlistHost(kExampleHost);
   BlockHost(kIframeHost1);
 
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
@@ -531,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
   BlockHost(kExampleHost);
 
   GURL blocked_url = embedded_test_server()->GetURL(
-      kExampleHost, "/supervised_user/with_frames.html");
+      kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), blocked_url);
   EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
 
@@ -550,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
 
   // Navigate to another allowed url.
   GURL allowed_url = embedded_test_server()->GetURL(
-      kExampleHost2, "/supervised_user/with_frames.html");
+      kExampleHost2, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url);
   EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
@@ -582,6 +655,37 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
                               kExampleHost));
 
   EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
+                       IframesWithSameDomainAsMainFrameAllowed) {
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(browser()->profile());
+  SupervisedUserURLFilter* filter = service->GetURLFilter();
+
+  // Set the default behavior to block.
+  filter->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+
+  // The async checker will make rpc calls to check if the url should be
+  // blocked or not. This may cause flakiness.
+  filter->ClearAsyncURLChecker();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Allows |www.example.com|.
+  AllowlistHost(kExampleHost);
+
+  // |with_frames_same_domain.html| contains subframes with "a.example.com" and
+  // "b.example.com", and "c.example2.com" urls.
+  GURL allowed_url = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/with_iframes_same_domain.html");
+
+  ui_test_utils::NavigateToURL(browser(), allowed_url);
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
+
+  auto blocked_frames = GetBlockedFrames();
+  EXPECT_EQ(blocked_frames.size(), 1u);
+  EXPECT_EQ(GetBlockedFrameURL(blocked_frames[0]).host(), "www.c.example2.com");
 }
 
 class SupervisedUserNavigationThrottleNotSupervisedTest

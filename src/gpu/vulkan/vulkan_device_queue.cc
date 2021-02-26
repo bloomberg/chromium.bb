@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/config/gpu_info.h"  // nogncheck
 #include "gpu/config/vulkan_info.h"
@@ -38,7 +39,8 @@ bool VulkanDeviceQueue::Initialize(
     const std::vector<const char*>& required_extensions,
     const std::vector<const char*>& optional_extensions,
     bool allow_protected_memory,
-    const GetPresentationSupportCallback& get_presentation_support) {
+    const GetPresentationSupportCallback& get_presentation_support,
+    uint32_t heap_memory_limit) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
@@ -75,6 +77,9 @@ bool VulkanDeviceQueue::Initialize(
   for (size_t i = 0; i < info.physical_devices.size(); ++i) {
     const auto& device_info = info.physical_devices[i];
     const auto& device_properties = device_info.properties;
+    if (device_properties.apiVersion < info.used_api_version)
+      continue;
+
     const VkPhysicalDevice& device = device_info.device;
     for (size_t n = 0; n < device_info.queue_families.size(); ++n) {
       if ((device_info.queue_families[n].queueFlags & queue_flags) !=
@@ -172,12 +177,6 @@ bool VulkanDeviceQueue::Initialize(
     }
   }
 
-  if (vk_physical_device_properties_.apiVersion < info.used_api_version) {
-    LOG(ERROR) << "Physical device doesn't support version."
-               << info.used_api_version;
-    return false;
-  }
-
   crash_keys::vulkan_device_api_version.Set(
       VkVersionToString(vk_physical_device_properties_.apiVersion));
   crash_keys::vulkan_device_driver_version.Set(base::StringPrintf(
@@ -268,8 +267,11 @@ bool VulkanDeviceQueue::Initialize(
     vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
   }
 
+  std::vector<VkDeviceSize> heap_size_limit(
+      VK_MAX_MEMORY_HEAPS,
+      heap_memory_limit ? heap_memory_limit : VK_WHOLE_SIZE);
   vma::CreateAllocator(vk_physical_device_, vk_device_, vk_instance_,
-                       &vma_allocator_);
+                       heap_size_limit.data(), &vma_allocator_);
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
 
   allow_protected_memory_ = allow_protected_memory;
@@ -292,6 +294,9 @@ bool VulkanDeviceQueue::InitializeForWebView(
   vk_queue_ = vk_queue;
   vk_queue_index_ = vk_queue_index;
   enabled_extensions_ = std::move(enabled_extensions);
+
+  vma::CreateAllocator(vk_physical_device_, vk_device_, vk_instance_, nullptr,
+                       &vma_allocator_);
 
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
   return true;

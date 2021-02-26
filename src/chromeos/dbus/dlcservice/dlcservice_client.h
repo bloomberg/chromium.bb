@@ -14,6 +14,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -31,6 +32,20 @@ namespace chromeos {
 // https://chromium.git.corp.google.com/chromiumos/platform2/+/HEAD/dlcservice
 class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
  public:
+  // Observer class for objects that need to know the change in the state of
+  // DLCs like UI, etc.
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    // Is called whenever the state of a DLC is changed. Changing the
+    // installation progress of the DLC constitues as a state change.
+    virtual void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) = 0;
+
+   protected:
+    Observer() = default;
+  };
+
   // This object is returned as the result of DLC install success or failure.
   struct InstallResult {
     // The error associated with the install. |dlcservice::kErrorNone| indicates
@@ -68,10 +83,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
       const std::string& err,
       const dlcservice::DlcsWithContent& dlcs_with_content)>;
 
-  // The callback to use for |Install()|, if the caller wants to ignore the
-  // progress updates.
-  static const ProgressCallback IgnoreProgress;
-
   // Installs the DLC passed in while reporting progress through the progress
   // callback and only calls install callback on install success/failure.
   virtual void Install(const std::string& dlc_id,
@@ -99,7 +110,14 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   virtual void GetExistingDlcs(GetExistingDlcsCallback callback) = 0;
 
   // During testing, can be used to mimic signals received back from dlcservice.
-  virtual void OnInstallStatusForTest(dbus::Signal* signal) = 0;
+  virtual void DlcStateChangedForTest(dbus::Signal* signal) = 0;
+
+  // Adds an observer instance to the observers list to listen on changes like
+  // DLC state change, etc.
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Removes an observer from observers list.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Creates and initializes the global instance. |bus| must not be nullptr.
   static void Initialize(dbus::Bus* bus);

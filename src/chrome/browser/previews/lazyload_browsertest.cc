@@ -9,17 +9,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/prerender/prerender_final_status.h"
-#include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_test_utils.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/no_state_prefetch/browser/prerender_handle.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -366,8 +366,6 @@ class LazyLoadPrerenderBrowserTest
  public:
   void SetUpOnMainThread() override {
     prerender::test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
-    prerender::PrerenderManager::SetMode(
-        prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   }
   void EnableDataSaver(bool enabled) {
     data_reduction_proxy::DataReductionProxySettings::

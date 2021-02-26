@@ -11,7 +11,6 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -111,9 +110,11 @@ void ContentPasswordManagerDriver::FillPasswordForm(
       autofill::MaybeClearPasswordValues(form_data));
 }
 
-void ContentPasswordManagerDriver::InformNoSavedCredentials() {
+void ContentPasswordManagerDriver::InformNoSavedCredentials(
+    bool should_show_popup_without_passwords) {
   GetPasswordAutofillManager()->OnNoCredentialsFound();
-  GetPasswordAutofillAgent()->InformNoSavedCredentials();
+  GetPasswordAutofillAgent()->InformNoSavedCredentials(
+      should_show_popup_without_passwords);
 }
 
 void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
@@ -193,11 +194,8 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
 }
 
 bool ContentPasswordManagerDriver::CanShowAutofillUi() const {
-  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
-  return !content::BackForwardCache::EvictIfCached(
-      {render_frame_host_->GetProcess()->GetID(),
-       render_frame_host_->GetRoutingID()},
-      "ContentPasswordManagerDriver::CanShowAutofillUi");
+  // Don't show AutofillUi for non-current RenderFrameHost.
+  return render_frame_host_->IsCurrent();
 }
 
 const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
@@ -210,10 +208,9 @@ void ContentPasswordManagerDriver::AnnotateFieldsWithParsingResult(
 }
 
 void ContentPasswordManagerDriver::GeneratePassword(
-    autofill::mojom::PasswordGenerationAgent::
-        UserTriggeredGeneratePasswordCallback callback) {
-  GetPasswordGenerationAgent()->UserTriggeredGeneratePassword(
-      std::move(callback));
+    autofill::mojom::PasswordGenerationAgent::TriggeredGeneratePasswordCallback
+        callback) {
+  GetPasswordGenerationAgent()->TriggeredGeneratePassword(std::move(callback));
 }
 
 void ContentPasswordManagerDriver::PasswordFormsParsed(
@@ -247,27 +244,25 @@ void ContentPasswordManagerDriver::PasswordFormSubmitted(
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
-void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
+void ContentPasswordManagerDriver::InformAboutUserInput(
     const autofill::FormData& form_data) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           render_frame_host_, form_data.url,
-          BadMessageReason::CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING))
+          BadMessageReason::CPMD_BAD_ORIGIN_UPON_USER_INPUT_CHANGE))
     return;
-  GetPasswordManager()->ShowManualFallbackForSaving(this, form_data);
+  GetPasswordManager()->OnInformAboutUserInput(this, form_data);
 
-  if (client_->IsIsolationForPasswordSitesEnabled()) {
-    // This function signals that the user is typing a password into
-    // password form.  Use this as a heuristic to start site-isolating the
-    // form's site.  This is intended to be used primarily when full site
-    // isolation is not used, such as on Android.
+  if (FormHasNonEmptyPasswordField(form_data) &&
+      client_->IsIsolationForPasswordSitesEnabled()) {
+    // This function signals that a password field has been filled (whether by
+    // the user, JS, autofill, or some other means) or a password form has been
+    // submitted. Use this as a heuristic to start site-isolating the form's
+    // site. This is intended to be used primarily when full site isolation is
+    // not used, such as on Android.
     content::SiteInstance::StartIsolatingSite(
         render_frame_host_->GetSiteInstance()->GetBrowserContext(),
         form_data.url);
   }
-}
-
-void ContentPasswordManagerDriver::HideManualFallbackForSaving() {
-  GetPasswordManager()->HideManualFallbackForSaving();
 }
 
 void ContentPasswordManagerDriver::SameDocumentNavigation(
@@ -275,6 +270,11 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
   GetPasswordManager()->OnPasswordFormSubmittedNoChecks(
       this, submission_indication_event);
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
+}
+
+void ContentPasswordManagerDriver::PasswordFormCleared(
+    const autofill::FormData& form_data) {
+  GetPasswordManager()->OnPasswordFormCleared(this, form_data);
 }
 
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(

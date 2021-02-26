@@ -7,11 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"
@@ -33,74 +32,11 @@ namespace send_tab_to_self {
 
 namespace {
 
-// Status of the result of AddEntry.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class UMAAddEntryStatus {
-  // The add entry call was successful.
-  SUCCESS = 0,
-  // The add entry call failed.
-  FAILURE = 1,
-  // The add entry call was a duplication.
-  DUPLICATE = 2,
-  // Update kMaxValue when new enums are added.
-  kMaxValue = DUPLICATE,
-};
-// Status of if entries target the local device.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class UMANotifyLocalDevice {
-  // The added entry was sent to the local machine.
-  LOCAL = 0,
-  // The added entry was targeted at a different machine.
-  REMOTE = 1,
-  // Update kMaxValue when new enums are added.
-  kMaxValue = REMOTE,
-};
-
-// Status of the result of ApplySyncChanges
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class UMAApplySyncChangesStatus {
-  // The total number of entity changes received.
-  TOTAL = 0,
-  // The number of entity changes that are deletions.
-  DELETE = 1,
-  // The number of entity changes that are invalid.
-  INVALID = 2,
-  // The number of entity changes that are expired.
-  EXPIRED = 3,
-  // The number of entity changes that are sent to clients as deletions.
-  NOTIFY_DELETED = 4,
-  // The number of entity changes that are sent to clients as adds.
-  NOTIFY_ADDED = 5,
-  // The number of entity changes that are sent to clients as opened.
-  NOTIFY_OPENED = 6,
-  // Update kMaxValue when new enums are added.
-  kMaxValue = NOTIFY_OPENED,
-};
-
 using syncer::ModelTypeStore;
 
 const base::TimeDelta kDedupeTime = base::TimeDelta::FromSeconds(5);
 
 const base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(10);
-
-const char kAddEntryStatus[] = "SendTabToSelf.Sync.AddEntryStatus";
-
-const char kNotifyLocalDevice[] = "SendTabToSelf.Sync.NotifyLocalDevice";
-
-const char kApplySyncChangesStatus[] =
-    "SendTabToSelf.Sync.ApplySyncChangesStatus";
-
-// A helper function to log the status of ApplySyncChanges.
-void LogApplySyncChangesStatus(UMAApplySyncChangesStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(kApplySyncChangesStatus, status);
-}
-// A helper function to log the status of filtering for the current device.
-void LogLocalDeviceNotified(UMANotifyLocalDevice status) {
-  UMA_HISTOGRAM_ENUMERATION(kNotifyLocalDevice, status);
-}
 
 // Converts a time field from sync protobufs to a time object.
 base::Time ProtoTimeToTime(int64_t proto_t) {
@@ -204,10 +140,8 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
       store_->CreateWriteBatch();
 
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
-    LogApplySyncChangesStatus(UMAApplySyncChangesStatus::TOTAL);
     const std::string& guid = change->storage_key();
     if (change->type() == syncer::EntityChange::ACTION_DELETE) {
-      LogApplySyncChangesStatus(UMAApplySyncChangesStatus::DELETE);
       if (entries_.find(guid) != entries_.end()) {
         if (mru_entry_ && mru_entry_->GetGUID() == guid) {
           mru_entry_ = nullptr;
@@ -215,8 +149,6 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
         entries_.erase(change->storage_key());
         batch->DeleteData(guid);
         removed.push_back(change->storage_key());
-
-        LogApplySyncChangesStatus(UMAApplySyncChangesStatus::NOTIFY_DELETED);
       }
     } else {
       const sync_pb::SendTabToSelfSpecifics& specifics =
@@ -225,26 +157,19 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
       std::unique_ptr<SendTabToSelfEntry> remote_entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
       if (!remote_entry) {
-        LogApplySyncChangesStatus(UMAApplySyncChangesStatus::INVALID);
         continue;  // Skip invalid entries.
       }
       if (remote_entry->IsExpired(clock_->Now())) {
         // Remove expired data from server.
-
-        LogApplySyncChangesStatus(UMAApplySyncChangesStatus::EXPIRED);
         change_processor()->Delete(guid, batch->GetMetadataChangeList());
       } else {
         SendTabToSelfEntry* local_entry =
             GetMutableEntryByGUID(remote_entry->GetGUID());
         SendTabToSelfLocal remote_entry_pb = remote_entry->AsLocalProto();
-
         if (local_entry == nullptr) {
           // This remote_entry is new. Add it to the model.
-
-          LogApplySyncChangesStatus(UMAApplySyncChangesStatus::NOTIFY_ADDED);
           added.push_back(remote_entry.get());
           if (remote_entry->IsOpened()) {
-            LogApplySyncChangesStatus(UMAApplySyncChangesStatus::NOTIFY_OPENED);
             opened.push_back(remote_entry.get());
           }
           entries_[remote_entry->GetGUID()] = std::move(remote_entry);
@@ -371,12 +296,10 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     const std::string& target_device_cache_guid) {
   if (!change_processor()->IsTrackingMetadata()) {
     // TODO(crbug.com/940512) handle failure case.
-    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, UMAAddEntryStatus::FAILURE);
     return nullptr;
   }
 
   if (!url.is_valid()) {
-    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, UMAAddEntryStatus::FAILURE);
     return nullptr;
   }
 
@@ -387,7 +310,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   if (mru_entry_ && url == mru_entry_->GetURL() &&
       navigation_time == mru_entry_->GetOriginalNavigationTime() &&
       shared_time - mru_entry_->GetSharedTime() < kDedupeTime) {
-    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, UMAAddEntryStatus::DUPLICATE);
     return mru_entry_;
   }
 
@@ -422,7 +344,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   Commit(std::move(batch));
   mru_entry_ = result;
 
-  UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, UMAAddEntryStatus::SUCCESS);
   return result;
 }
 
@@ -447,10 +368,17 @@ void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
     return;
   }
 
+  DCHECK(change_processor()->IsTrackingMetadata());
+
   entry->SetNotificationDismissed(true);
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
+
+  auto entity_data = CopyToEntityData(entry->AsLocalProto().specifics());
+
+  change_processor()->Put(guid, std::move(entity_data),
+                          batch->GetMetadataChangeList());
 
   batch->WriteData(guid, entry->AsLocalProto().SerializeAsString());
   Commit(std::move(batch));
@@ -559,9 +487,6 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
             entry->GetTargetDeviceSyncCacheGuid()) &&
         !entry->GetNotificationDismissed() && !entry->IsOpened()) {
       new_local_entries.push_back(entry);
-      LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
-    } else {
-      LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
     }
   }
 
@@ -695,6 +620,10 @@ void SendTabToSelfBridge::DoGarbageCollection() {
 }
 
 bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
+  if (!device_info_tracker_->IsSyncing()) {
+    return false;
+  }
+
   // The vector should be updated if any of these is true:
   //   * The vector is empty.
   //   * The number of total devices changed.
@@ -707,6 +636,7 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
 }
 
 void SendTabToSelfBridge::SetTargetDeviceInfoList() {
+  DCHECK(device_info_tracker_->IsSyncing());
   // Verify that the current TrackedCacheGuid() is the local GUID without
   // enforcing that tracked cache GUID is set.
   DCHECK(device_info_tracker_->IsRecentLocalCacheGuid(

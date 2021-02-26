@@ -131,23 +131,27 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
     return PaintInvalidationReason::kGeometry;
 
   if (box_.PreviousSize() == box_.Size() &&
-      context_.old_visual_rect == context_.fragment_data->VisualRect())
-    return PaintInvalidationReason::kNone;
-
-  // If either border box changed or bounds changed, and old or new border box
-  // doesn't equal old or new bounds, incremental invalidation is not
-  // applicable. This captures the following cases:
-  // - pixel snapping, or not snapping e.g. for some visual overflowing effects,
-  // - scale, rotate, skew etc. transforms,
-  // - visual (ink) overflows.
-  if (PhysicalRect(context_.old_visual_rect) !=
-          PhysicalRect(context_.old_paint_offset, box_.PreviousSize()) ||
-      PhysicalRect(context_.fragment_data->VisualRect()) !=
-          PhysicalRect(context_.fragment_data->PaintOffset(), box_.Size())) {
-    return PaintInvalidationReason::kGeometry;
+      box_.PreviousPhysicalSelfVisualOverflowRect() ==
+          box_.PhysicalSelfVisualOverflowRect()) {
+    return box_.HasPartialInvalidationRect()
+               ? PaintInvalidationReason::kRectangle
+               : PaintInvalidationReason::kNone;
   }
 
-  DCHECK_NE(box_.PreviousSize(), box_.Size());
+  // Incremental invalidation is not applicable if there is visual overflow.
+  if (box_.PreviousPhysicalSelfVisualOverflowRect().size !=
+          PhysicalSizeToBeNoop(box_.PreviousSize()) ||
+      box_.PhysicalSelfVisualOverflowRect().size !=
+          PhysicalSizeToBeNoop(box_.Size()))
+    return PaintInvalidationReason::kGeometry;
+
+  // Incremental invalidation is not applicable if paint offset or size has
+  // fraction.
+  if (context_.old_paint_offset.HasFraction() ||
+      context_.fragment_data->PaintOffset().HasFraction() ||
+      PhysicalSizeToBeNoop(box_.PreviousSize()).HasFraction() ||
+      PhysicalSizeToBeNoop(box_.Size()).HasFraction())
+    return PaintInvalidationReason::kGeometry;
 
   // Incremental invalidation is not applicable if there is border in the
   // direction of border box size change because we don't know the border
@@ -234,37 +238,46 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
   }
 
   if (background_location_changed ||
-      layout_view.BackgroundNeedsFullPaintInvalidation())
+      layout_view.BackgroundNeedsFullPaintInvalidation() ||
+      (context_.subtree_flags &
+       PaintInvalidatorContext::kSubtreeFullInvalidation)) {
     return BackgroundInvalidationType::kFull;
+  }
 
-  if (Element* document_element = box_.GetDocument().documentElement()) {
-    if (document_element) {
-      if (const auto* document_element_object =
-              document_element->GetLayoutObject()) {
+  if (Element* root_element = box_.GetDocument().documentElement()) {
+    if (const auto* root_object = root_element->GetLayoutObject()) {
+      if (root_object->IsBox()) {
+        const auto* root_box = To<LayoutBox>(root_object);
         // LayoutView's non-fixed-attachment background is positioned in the
-        // document element and needs to invalidate if the size changes.
+        // root element and needs to invalidate if the size changes.
         // See: https://drafts.csswg.org/css-backgrounds-3/#root-background.
-        if (BackgroundGeometryDependsOnLayoutOverflowRect()) {
-          if (document_element_object->IsBox()) {
-            const auto* document_background_box =
-                ToLayoutBox(document_element_object);
-            if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-                    document_background_box
-                        ->PreviousPhysicalLayoutOverflowRect(),
-                    document_background_box->PhysicalLayoutOverflowRect())) {
-              return BackgroundInvalidationType::kFull;
-            }
-          }
+        const auto& background_layers = box_.StyleRef().BackgroundLayers();
+        if (ShouldFullyInvalidateFillLayersOnSizeChange(
+                background_layers,
+                PhysicalSizeToBeNoop(root_box->PreviousSize()),
+                PhysicalSizeToBeNoop(root_box->Size()))) {
+          return BackgroundInvalidationType::kFull;
         }
-
-        // The document background paints with a transform but nevertheless
-        // extended onto an infinite canvas. In cases where it has a transform
-        // we cna't apply incremental invalidation, because the visual rect is
-        // no longer axis-aligned to the LayoutView.
-        if (document_element_object->StyleRef().HasTransform()) {
+        if (BackgroundGeometryDependsOnLayoutOverflowRect() &&
+            ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
+                root_box->PreviousPhysicalLayoutOverflowRect(),
+                root_box->PhysicalLayoutOverflowRect())) {
+          return BackgroundInvalidationType::kFull;
+        }
+        // It also uses the root element's content box in case the background
+        // comes from the root element and positioned in content box.
+        if (background_layers.AnyLayerUsesContentBox() &&
+            root_box->PreviousPhysicalContentBoxRect() !=
+                root_box->PhysicalContentBoxRect()) {
           return BackgroundInvalidationType::kFull;
         }
       }
+      // The view background paints with a transform but nevertheless extended
+      // onto an infinite canvas. In cases where it has a transform we can't
+      // apply incremental invalidation, because the visual rect is no longer
+      // axis-aligned to the LayoutView.
+      if (root_object->StyleRef().HasTransform())
+        return BackgroundInvalidationType::kFull;
     }
   }
 
@@ -277,7 +290,9 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation(
     bool& should_invalidate_all_layers) {
   // If background changed, we may paint the background on different graphics
   // layer, so we need to fully invalidate the background on all layers.
-  if (box_.BackgroundNeedsFullPaintInvalidation()) {
+  if (box_.BackgroundNeedsFullPaintInvalidation() ||
+      (context_.subtree_flags &
+       PaintInvalidatorContext::kSubtreeFullInvalidation)) {
     should_invalidate_all_layers = true;
     return BackgroundInvalidationType::kFull;
   }
@@ -364,25 +379,11 @@ void BoxPaintInvalidator::InvalidatePaint() {
   SavePreviousBoxGeometriesIfNeeded();
 }
 
-bool BoxPaintInvalidator::
-    NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect() {
-  // The LayoutView depends on the document element's layout overflow rect (see:
-  // ComputeViewBackgroundInvalidation) and needs to invalidate before the
-  // document element invalidates. There are few document elements so the
-  // previous layout overflow rect is always saved, rather than duplicating the
-  // logic save-if-needed logic for this special case.
-  if (box_.IsDocumentElement())
-    return true;
-
+bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRect() {
   // Replaced elements are clipped to the content box thus we need to check
   // for its size.
   if (box_.IsLayoutReplaced())
     return true;
-
-  // Don't save old box geometries if the paint rect is empty because we'll
-  // fully invalidate once the paint rect becomes non-empty.
-  if (context_.fragment_data->VisualRect().IsEmpty())
-    return false;
 
   const ComputedStyle& style = box_.StyleRef();
 
@@ -392,8 +393,22 @@ bool BoxPaintInvalidator::
        style.MaskLayers().AnyLayerUsesContentBox()) &&
       box_.ContentSize() != box_.Size())
     return true;
+
+  return false;
+}
+
+bool BoxPaintInvalidator::NeedsToSavePreviousOverflowData() {
+  if (box_.HasVisualOverflow() || box_.HasLayoutOverflow())
+    return true;
+
+  // If we don't have layout overflow, the layout overflow rect is the padding
+  // box rect, and we need to save it if the background depends on it.
+  // We also need to save the rect for the document element because the
+  // LayoutView may depend on the document element's layout overflow rect
+  // (see: ComputeViewBackgroundInvalidation).
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
-       BackgroundPaintsOntoScrollingContentsLayer()) &&
+       BackgroundPaintsOntoScrollingContentsLayer() ||
+       box_.IsDocumentElement()) &&
       box_.LayoutOverflowRect() != box_.BorderBoxRect())
     return true;
 
@@ -401,15 +416,18 @@ bool BoxPaintInvalidator::
 }
 
 void BoxPaintInvalidator::SavePreviousBoxGeometriesIfNeeded() {
-  box_.GetMutableForPainting().SavePreviousSize();
+  auto mutable_box = box_.GetMutableForPainting();
+  mutable_box.SavePreviousSize();
 
-  if (NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect()) {
-    box_.GetMutableForPainting()
-        .SavePreviousContentBoxRectAndLayoutOverflowRect();
-  } else {
-    box_.GetMutableForPainting()
-        .ClearPreviousContentBoxRectAndLayoutOverflowRect();
-  }
+  if (NeedsToSavePreviousOverflowData())
+    mutable_box.SavePreviousOverflowData();
+  else
+    mutable_box.ClearPreviousOverflowData();
+
+  if (NeedsToSavePreviousContentBoxRect())
+    mutable_box.SavePreviousContentBoxRect();
+  else
+    mutable_box.ClearPreviousContentBoxRect();
 }
 
 }  // namespace blink

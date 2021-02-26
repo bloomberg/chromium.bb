@@ -14,6 +14,7 @@
 #include "include/private/SkColorData.h"
 #include "include/private/SkNx.h"
 #include "include/private/SkTFitsIn.h"
+#include "include/private/SkTPin.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkGpuBlurUtils.h"
@@ -24,7 +25,6 @@
 #include "src/core/SkWriteBuffer.h"
 
 #if SK_SUPPORT_GPU
-#include "include/gpu/GrContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #endif
@@ -61,7 +61,7 @@ private:
     SkSize     fSigma;
     SkTileMode fTileMode;
 
-    typedef SkImageFilter_Base INHERITED;
+    using INHERITED = SkImageFilter_Base;
 };
 
 } // end namespace
@@ -104,14 +104,7 @@ sk_sp<SkFlattenable> SkBlurImageFilterImpl::CreateProc(SkReadBuffer& buffer) {
     SK_IMAGEFILTER_UNFLATTEN_COMMON(common, 1);
     SkScalar sigmaX = buffer.readScalar();
     SkScalar sigmaY = buffer.readScalar();
-    SkTileMode tileMode;
-    if (buffer.isVersionLT(SkPicturePriv::kTileModeInBlurImageFilter_Version)) {
-        tileMode = SkTileMode::kDecal;
-    } else if (buffer.isVersionLT(SkPicturePriv::kCleanupImageFilterEnums_Version)) {
-        tileMode = to_sktilemode(buffer.read32LE(SkBlurImageFilter::kLast_TileMode));
-    } else {
-        tileMode = buffer.read32LE(SkTileMode::kLastTileMode);
-    }
+    SkTileMode tileMode = buffer.read32LE(SkTileMode::kLastTileMode);
 
     static_assert(SkBlurImageFilter::kLast_TileMode == 2, "CreateProc");
 
@@ -124,7 +117,6 @@ void SkBlurImageFilterImpl::flatten(SkWriteBuffer& buffer) const {
     buffer.writeScalar(fSigma.fWidth);
     buffer.writeScalar(fSigma.fHeight);
 
-    // Fuzzer sanity checks
     static_assert((int) SkTileMode::kLastTileMode == 3 && SkBlurImageFilter::kLast_TileMode == 2,
                   "SkBlurImageFilterImpl::flatten");
     SkASSERT(fTileMode <= SkTileMode::kLastTileMode);

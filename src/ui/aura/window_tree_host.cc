@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -26,7 +25,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -53,13 +51,11 @@ class ScopedLocalSurfaceIdValidator {
  public:
   explicit ScopedLocalSurfaceIdValidator(Window* window)
       : window_(window),
-        local_surface_id_(
-            window ? window->GetLocalSurfaceIdAllocation().local_surface_id()
-                   : viz::LocalSurfaceId()) {}
+        local_surface_id_(window ? window->GetLocalSurfaceId()
+                                 : viz::LocalSurfaceId()) {}
   ~ScopedLocalSurfaceIdValidator() {
     if (window_) {
-      DCHECK_EQ(local_surface_id_,
-                window_->GetLocalSurfaceIdAllocation().local_surface_id());
+      DCHECK_EQ(local_surface_id_, window_->GetLocalSurfaceId());
     }
   }
 
@@ -194,7 +190,7 @@ void WindowTreeHost::UpdateCompositorScaleAndSize(
   window_->AllocateLocalSurfaceId();
   ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_bounds.size(),
-                               window_->GetLocalSurfaceIdAllocation());
+                               window_->GetLocalSurfaceId());
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
@@ -426,7 +422,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
   compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
-                               window()->GetLocalSurfaceIdAllocation());
+                               window()->GetLocalSurfaceId());
   compositor_->SetRootLayer(window()->layer());
 
   display::Display display =
@@ -504,13 +500,18 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 
 void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
-  if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
-    display::Screen* screen = display::Screen::GetScreen();
-    if (compositor_ &&
-        display.id() == screen->GetDisplayNearestView(window()).id()) {
-      compositor_->SetDisplayColorSpaces(display.color_spaces());
-    }
-  }
+  if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE && compositor_ &&
+      display.id() == GetDisplayId())
+    compositor_->SetDisplayColorSpaces(display.color_spaces());
+
+// Chrome OS is handled in WindowTreeHostManager::OnDisplayMetricsChanged.
+// Chrome OS requires additional handling for the bounds that we do not need to
+// do for other OSes.
+#if !defined(OS_CHROMEOS)
+  if (metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR &&
+      display.id() == GetDisplayId())
+    OnHostResizedInPixels(GetBoundsInPixels().size());
+#endif
 }
 
 gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
@@ -549,15 +550,11 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
 
   dispatcher_->ReleasePointerMoves();
   holding_pointer_moves_ = false;
-  DCHECK(!synchronization_start_time_.is_null());
-  UMA_HISTOGRAM_TIMES("UI.WindowTreeHost.SurfaceSynchronizationDuration",
-                      base::TimeTicks::Now() - synchronization_start_time_);
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
   if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
-  synchronization_start_time_ = base::TimeTicks::Now();
   dispatcher_->HoldPointerMoves();
   holding_pointer_moves_ = true;
 }

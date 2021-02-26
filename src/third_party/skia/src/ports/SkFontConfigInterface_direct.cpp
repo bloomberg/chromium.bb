@@ -25,31 +25,33 @@
 
 namespace {
 
-// Fontconfig is not threadsafe before 2.10.91. Before that, we lock with a global mutex.
-// See https://bug.skia.org/1497 for background.
+// FontConfig was thread antagonistic until 2.10.91 with known thread safety issues until 2.13.93.
+// Before that, lock with a global mutex.
+// See https://bug.skia.org/1497 and cl/339089311 for background.
 static SkMutex& f_c_mutex() {
     static SkMutex& mutex = *(new SkMutex);
     return mutex;
 }
 
 struct FCLocker {
-    // Assume FcGetVersion() has always been thread safe.
+    static constexpr int FontConfigThreadSafeVersion = 21393;
 
+    // Assume FcGetVersion() has always been thread safe.
     FCLocker() {
-        if (FcGetVersion() < 21091) {
+        if (FcGetVersion() < FontConfigThreadSafeVersion) {
             f_c_mutex().acquire();
         }
     }
 
     ~FCLocker() {
         AssertHeld();
-        if (FcGetVersion() < 21091) {
+        if (FcGetVersion() < FontConfigThreadSafeVersion) {
             f_c_mutex().release();
         }
     }
 
     static void AssertHeld() { SkDEBUGCODE(
-        if (FcGetVersion() < 21091) {
+        if (FcGetVersion() < FontConfigThreadSafeVersion) {
             f_c_mutex().assertHeld();
         }
     ) }
@@ -509,8 +511,8 @@ bool SkFontConfigInterfaceDirect::isValidPattern(FcPattern* pattern) {
 #ifdef SK_FONT_CONFIG_INTERFACE_ONLY_ALLOW_SFNT_FONTS
     const char* font_format = get_string(pattern, FC_FONTFORMAT);
     if (font_format
-        && strcmp(font_format, kFontFormatTrueType) != 0
-        && strcmp(font_format, kFontFormatCFF) != 0)
+        && 0 != strcmp(font_format, kFontFormatTrueType)
+        && 0 != strcmp(font_format, kFontFormatCFF))
     {
         return false;
     }

@@ -51,7 +51,7 @@ class StreamProcessorHelper {
     IoPacket(IoPacket&&);
     IoPacket& operator=(IoPacket&&);
 
-    size_t index() const { return index_; }
+    size_t buffer_index() const { return index_; }
     size_t offset() const { return offset_; }
     size_t size() const { return size_; }
     base::TimeDelta timestamp() const { return timestamp_; }
@@ -122,10 +122,11 @@ class StreamProcessorHelper {
   void CompleteInputBuffersAllocation(
       fuchsia::sysmem::BufferCollectionTokenPtr token);
   void CompleteOutputBuffersAllocation(
-      size_t num_buffers_for_client,
-      size_t num_buffers_for_server,
       fuchsia::sysmem::BufferCollectionTokenPtr token);
 
+  // Closes the current stream and starts a new one. After that all packets
+  // passed to Process() will be sent with a new |stream_lifetime_ordinal|
+  // value.
   void Reset();
 
  private:

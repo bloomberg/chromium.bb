@@ -40,29 +40,47 @@ Polymer({
   properties: {
     /**
      * Status of the left hand icon.
-     * {!SafetyCheckParentStatus}
+     * @type {!SafetyCheckIconStatus}
      */
     iconStatus: {
       type: Number,
       value: SafetyCheckIconStatus.RUNNING,
     },
 
-    /**Primary label of the element. */
+    // Primary label of the child.
     label: String,
 
-    /** Secondary label of the element. */
+    // Secondary label of the child.
     subLabel: String,
 
-    /** Text of the right hand button. |null| removes it from the DOM. */
+    // Text of the right hand button. |null| removes it from the DOM.
     buttonLabel: String,
 
-    /** Aria label of the right hand button. */
+    // Aria label of the right hand button.
     buttonAriaLabel: String,
 
-    /** Classes of the right hand button. */
+    // Classes of the right hand button.
     buttonClass: String,
 
-    /** Right hand managed icon. |null| removes it from the DOM. */
+    // Should the entire row be clickable.
+    rowClickable: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    // Is the row directed to external link.
+    external: {
+      type: Boolean,
+      value: false,
+    },
+
+    rowClickableIcon_: {
+      type: String,
+      computed: 'computeRowClickableIcon_(external)',
+    },
+
+    // Right hand managed icon. |null| removes it from the DOM.
     managedIcon: String,
   },
 
@@ -157,4 +175,24 @@ Polymer({
   showManagedIcon_: function() {
     return !!this.managedIcon;
   },
+
+  /**
+   * Return the icon to show when the row is clickable.
+   * @return {string}
+   * @private
+   */
+  computeRowClickableIcon_() {
+    return this.external ? 'cr:open-in-new' : 'cr:arrow-right';
+  },
+
+  /**
+   * Return the subpage role description if the arrow right icon is used.
+   * @return {string}
+   * @private
+   */
+  getRoleDescription_() {
+    return this.rowClickableIcon_ === 'cr:arrow-right' ?
+        this.i18n('subpageArrowRoleDescription') :
+        '';
+  }
 });

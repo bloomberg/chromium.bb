@@ -16,15 +16,14 @@
 namespace chromeos {
 
 class AssistantOptInFlowScreenView;
-class ScreenManager;
 
 class AssistantOptInFlowScreen : public BaseScreen {
  public:
+  using TView = AssistantOptInFlowScreenView;
+
   enum class Result { NEXT, NOT_APPLICABLE };
 
   static std::string GetResultString(Result result);
-
-  static AssistantOptInFlowScreen* Get(ScreenManager* manager);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -48,7 +47,7 @@ class AssistantOptInFlowScreen : public BaseScreen {
 
  protected:
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;

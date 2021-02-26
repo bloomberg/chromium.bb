@@ -39,6 +39,9 @@ nobase_dist_pkgdata_DATA =							\
 dist_noinst_DATA =								\
 	$(sort $(foreach p,$(unstable_protocols),$(dir $p)README))		\
 	$(sort $(foreach p,$(stable_protocols),$(dir $p)README))		\
+	README.md								\
+	GOVERNANCE.md								\
+	MEMBERS.md								\
 	$(NULL)
 
 noarch_pkgconfig_DATA = wayland-protocols.pc

@@ -7,15 +7,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -53,18 +54,28 @@ std::string DangerTypeToThreatType(download::DownloadDangerType danger_type) {
   }
 }
 
-void ReportDangerousDownloadWarning(download::DownloadItem* download) {
+void MaybeReportDangerousDownloadWarning(download::DownloadItem* download) {
+  // If |download| has a deep scanning malware verdict, then it means the
+  // dangerous file has already been reported.
+  auto* scan_result = static_cast<enterprise_connectors::ScanResult*>(
+      download->GetUserData(enterprise_connectors::ScanResult::kKey));
+  if (scan_result &&
+      enterprise_connectors::ContainsMalwareVerdict(scan_result->response)) {
+    return;
+  }
+
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(download);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile) {
     std::string raw_digest_sha256 = download->GetHash();
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnDangerousDownloadWarning(
+        ->OnDangerousDownloadEvent(
             download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
             DangerTypeToThreatType(download->GetDangerType()),
-            download->GetMimeType(), download->GetTotalBytes());
+            download->GetMimeType(), download->GetTotalBytes(),
+            EventResult::WARNED);
   }
 }
 
@@ -85,22 +96,25 @@ void ReportDangerousDownloadWarningBypassed(
   }
 }
 
-void ReportSensitiveDataWarningBypassed(download::DownloadItem* download) {
+void ReportAnalysisConnectorWarningBypassed(download::DownloadItem* download) {
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(download);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile) {
     std::string raw_digest_sha256 = download->GetHash();
-    // TODO(crbug/1069109): Use actual DlpDeepScanningVerdict that triggered the
-    // original warning here.
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnSensitiveDataWarningBypassed(
-            DlpDeepScanningVerdict(), download->GetURL(),
-            download->GetTargetFilePath().AsUTF8Unsafe(),
-            base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-            download->GetMimeType(),
-            extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-            download->GetTotalBytes());
+    enterprise_connectors::ScanResult* stored_result =
+        static_cast<enterprise_connectors::ScanResult*>(
+            download->GetUserData(enterprise_connectors::ScanResult::kKey));
+
+    ReportAnalysisConnectorWarningBypass(
+        profile, download->GetURL(),
+        download->GetTargetFilePath().AsUTF8Unsafe(),
+        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+        download->GetMimeType(),
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        DeepScanAccessPoint::DOWNLOAD, download->GetTotalBytes(),
+        stored_result ? stored_result->response
+                      : enterprise_connectors::ContentAnalysisResponse());
   }
 }
 
@@ -156,7 +170,7 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
 
   if (!DangerTypeIsDangerous(old_danger_type) &&
       DangerTypeIsDangerous(current_danger_type)) {
-    ReportDangerousDownloadWarning(download);
+    MaybeReportDangerousDownloadWarning(download);
   }
 
   if (DangerTypeIsDangerous(old_danger_type) &&
@@ -167,7 +181,7 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
   if (old_danger_type ==
           download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING &&
       current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
-    ReportSensitiveDataWarningBypassed(download);
+    ReportAnalysisConnectorWarningBypassed(download);
   }
 
   danger_types_[download] = current_danger_type;

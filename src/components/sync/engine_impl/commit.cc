@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -21,6 +22,7 @@
 namespace syncer {
 
 namespace {
+
 // The number of random ASCII bytes we'll add to CommitMessage. We choose 256
 // because it is not too large (to hurt performance and compression ratio), but
 // it is not too small to easily be canceled out using statistical analysis.
@@ -36,6 +38,41 @@ std::string RandASCIIString(size_t length) {
   return result;
 }
 
+SyncCommitError GetSyncCommitError(SyncerError syncer_error) {
+  switch (syncer_error.value()) {
+    case SyncerError::UNSET:
+    case SyncerError::CANNOT_DO_WORK:
+    case SyncerError::SYNCER_OK:
+    case SyncerError::DATATYPE_TRIGGERED_RETRY:
+    case SyncerError::SERVER_MORE_TO_DOWNLOAD:
+      NOTREACHED();
+      break;
+    case SyncerError::NETWORK_CONNECTION_UNAVAILABLE:
+    case SyncerError::NETWORK_IO_ERROR:
+      return SyncCommitError::kNetworkError;
+    case SyncerError::SYNC_AUTH_ERROR:
+      return SyncCommitError::kAuthError;
+    case SyncerError::SYNC_SERVER_ERROR:
+    case SyncerError::SERVER_RETURN_UNKNOWN_ERROR:
+    case SyncerError::SERVER_RETURN_THROTTLED:
+    case SyncerError::SERVER_RETURN_TRANSIENT_ERROR:
+    case SyncerError::SERVER_RETURN_MIGRATION_DONE:
+    case SyncerError::SERVER_RETURN_CLEAR_PENDING:
+    case SyncerError::SERVER_RETURN_NOT_MY_BIRTHDAY:
+    case SyncerError::SERVER_RETURN_CONFLICT:
+    case SyncerError::SERVER_RETURN_PARTIAL_FAILURE:
+    case SyncerError::SERVER_RETURN_CLIENT_DATA_OBSOLETE:
+    case SyncerError::SERVER_RETURN_ENCRYPTION_OBSOLETE:
+    case SyncerError::SERVER_RETURN_DISABLED_BY_ADMIN:
+      return SyncCommitError::kServerError;
+    case SyncerError::SERVER_RESPONSE_VALIDATION_FAILED:
+      return SyncCommitError::kBadServerResponse;
+  }
+
+  NOTREACHED();
+  return SyncCommitError::kServerError;
+}
+
 }  // namespace
 
 Commit::Commit(ContributionMap contributions,
@@ -43,12 +80,9 @@ Commit::Commit(ContributionMap contributions,
                ExtensionsActivity::Records extensions_activity_buffer)
     : contributions_(std::move(contributions)),
       message_(message),
-      extensions_activity_buffer_(extensions_activity_buffer),
-      cleaned_up_(false) {}
+      extensions_activity_buffer_(extensions_activity_buffer) {}
 
-Commit::~Commit() {
-  DCHECK(cleaned_up_);
-}
+Commit::~Commit() = default;
 
 // static
 std::unique_ptr<Commit> Commit::Init(ModelTypeSet enabled_types,
@@ -57,6 +91,7 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet enabled_types,
                                      const std::string& cache_guid,
                                      bool cookie_jar_mismatch,
                                      bool cookie_jar_empty,
+                                     bool single_client,
                                      CommitProcessor* commit_processor,
                                      ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
@@ -89,7 +124,7 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet enabled_types,
 
   // Set the client config params.
   commit_util::AddClientConfigParamsToMessage(
-      enabled_types, cookie_jar_mismatch, commit_message);
+      enabled_types, cookie_jar_mismatch, single_client, commit_message);
 
   // Finally, serialize all our contributions.
   for (const auto& contribution : contributions) {
@@ -116,8 +151,8 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   if (cycle->context()->debug_info_getter()) {
-    sync_pb::DebugInfo* debug_info = message_.mutable_debug_info();
-    cycle->context()->debug_info_getter()->GetDebugInfo(debug_info);
+    *message_.mutable_debug_info() =
+        cycle->context()->debug_info_getter()->GetDebugInfo();
   }
 
   DVLOG(1) << "Sending commit message.";
@@ -198,27 +233,16 @@ SyncerError Commit::PostAndProcessResponse(
   return processing_result;
 }
 
-void Commit::CleanUp() {
-  for (ContributionMap::const_iterator it = contributions_.begin();
-       it != contributions_.end(); ++it) {
-    it->second->CleanUp();
+ModelTypeSet Commit::GetContributingDataTypes() const {
+  ModelTypeSet contributed_data_types;
+  for (const auto& model_type_and_contribution : contributions_) {
+    contributed_data_types.Put(model_type_and_contribution.first);
   }
-  cleaned_up_ = true;
+  return contributed_data_types;
 }
 
 void Commit::ReportFullCommitFailure(SyncerError syncer_error) {
-  SyncCommitError commit_error = SyncCommitError::kServerError;
-  switch (syncer_error.value()) {
-    case SyncerError::NETWORK_CONNECTION_UNAVAILABLE:
-    case SyncerError::NETWORK_IO_ERROR:
-      commit_error = SyncCommitError::kNetworkError;
-      break;
-    case SyncerError::SERVER_RESPONSE_VALIDATION_FAILED:
-      commit_error = SyncCommitError::kBadServerResponse;
-      break;
-    default:
-      commit_error = SyncCommitError::kServerError;
-  }
+  const SyncCommitError commit_error = GetSyncCommitError(syncer_error);
   for (auto& model_type_and_contribution : contributions_) {
     model_type_and_contribution.second->ProcessCommitFailure(commit_error);
   }

@@ -2,18 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//ui/display/display.gni")
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
-jumbo_component("display") {
+component("display") {
   sources = [
     "display.cc",
     "display.h",
@@ -36,10 +29,13 @@ jumbo_component("display") {
     "display_switches.h",
     "display_transform.cc",
     "display_transform.h",
+    "scoped_display_for_new_windows.cc",
+    "scoped_display_for_new_windows.h",
     "screen.cc",
     "screen.h",
     "screen_base.cc",
     "screen_base.h",
+    "tablet_state.h",
     "unified_desktop_utils.cc",
     "unified_desktop_utils.h",
   ]
@@ -111,7 +107,7 @@ jumbo_component("display") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",
@@ -137,7 +133,7 @@ component("display_manager_test_api") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/display_matchers.cc",

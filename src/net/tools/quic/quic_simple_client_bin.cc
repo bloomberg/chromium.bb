@@ -59,8 +59,10 @@ class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
   std::unique_ptr<quic::QuicSpdyClientBase> CreateClient(
       std::string host_for_handshake,
       std::string host_for_lookup,
+      int address_family_for_lookup,
       uint16_t port,
       quic::ParsedQuicVersionVector versions,
+      const quic::QuicConfig& config,
       std::unique_ptr<quic::ProofVerifier> verifier) override {
     net::AddressList addresses;
     int rv = net::SynchronousHostResolver::Resolve(host_for_lookup, &addresses);
@@ -85,7 +87,7 @@ class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
 
     quic::QuicServerId server_id(host_for_handshake, port, false);
     return std::make_unique<net::QuicSimpleClient>(
-        quic::QuicSocketAddress(ip_addr, port), server_id, versions,
+        quic::QuicSocketAddress(ip_addr, port), server_id, versions, config,
         std::move(verifier));
   }
 };

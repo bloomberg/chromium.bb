@@ -147,7 +147,7 @@ class AV1SBMultipassTest
 
 TEST_P(AV1SBMultipassTest, TwoPassMatchTest) { DoTest(); }
 
-AV1_INSTANTIATE_TEST_CASE(AV1SBMultipassTest, ::testing::Range(0, 6),
-                          ::testing::Bool());
+AV1_INSTANTIATE_TEST_SUITE(AV1SBMultipassTest, ::testing::Range(4, 6),
+                           ::testing::Bool());
 
 }  // namespace

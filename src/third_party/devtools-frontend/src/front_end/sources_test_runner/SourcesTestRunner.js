@@ -6,6 +6,7 @@
  * @fileoverview using private properties isn't a Closure violation in tests.
  * @suppress {accessControls}
  */
+self.SourcesTestRunner = self.SourcesTestRunner || {};
 
 /**
  * @param {!Sources.NavigatorView} navigatorView
@@ -131,7 +132,9 @@ SourcesTestRunner.testPrettyPrint = function(mimeType, text, mappingQueries, nex
 
 SourcesTestRunner.testJavascriptOutline = function(text) {
   let fulfill;
-  const promise = new Promise(x => fulfill = x);
+  const promise = new Promise(x => {
+    fulfill = x;
+  });
   Formatter.formatterWorkerPool().javaScriptOutline(text, onChunk);
   const items = [];
   return promise;
@@ -161,7 +164,11 @@ SourcesTestRunner.dumpSwatchPositions = function(sourceFrame, bookmarkType) {
 
   for (let i = 0; i < markers.length; i++) {
     const position = markers[i].position();
-    const text = markers[i]._marker.widgetNode.firstChild.textContent;
+    const swatch = markers[i]._marker.widgetNode.firstChild;
+    let text = swatch.textContent;
+    if (swatch.localName === 'devtools-color-swatch') {
+      text = swatch.color.asString(swatch.format);
+    }
     TestRunner.addResult('Line ' + position.startLine + ', Column ' + position.startColumn + ': ' + text);
   }
 };

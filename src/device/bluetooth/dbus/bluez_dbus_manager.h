@@ -26,6 +26,7 @@ namespace bluez {
 // Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
+class BluetoothBatteryClient;
 class BluetoothDebugManagerClient;
 class BluetoothDeviceClient;
 class BluetoothGattCharacteristicClient;
@@ -106,7 +107,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   bool IsObjectManagerSupportKnown() { return object_manager_support_known_; }
 
   // Calls |callback| once we know whether Object Manager is supported or not.
-  void CallWhenObjectManagerSupportIsKnown(base::Closure callback);
+  void CallWhenObjectManagerSupportIsKnown(base::OnceClosure callback);
 
   // Returns true if Object Manager is supported.
   bool IsObjectManagerSupported() { return object_manager_supported_; }
@@ -119,6 +120,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
+  BluetoothBatteryClient* GetBluetoothBatteryClient();
   BluetoothDebugManagerClient* GetBluetoothDebugManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();
   BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();
@@ -165,7 +167,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   std::unique_ptr<BluetoothDBusClientBundle> client_bundle_;
 
-  base::Closure object_manager_support_known_callback_;
+  base::OnceClosure object_manager_support_known_callback_;
 
   bool object_manager_support_known_;
   bool object_manager_supported_;
@@ -187,6 +189,8 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManagerSetter {
       std::unique_ptr<BluetoothLEAdvertisingManagerClient> client);
   void SetBluetoothAgentManagerClient(
       std::unique_ptr<BluetoothAgentManagerClient> client);
+  void SetBluetoothBatteryClient(
+      std::unique_ptr<BluetoothBatteryClient> client);
   void SetBluetoothDebugManagerClient(
       std::unique_ptr<BluetoothDebugManagerClient> client);
   void SetBluetoothDeviceClient(std::unique_ptr<BluetoothDeviceClient> client);

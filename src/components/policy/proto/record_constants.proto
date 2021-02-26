@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package reporting_messaging_layer;
+package reporting;
 
 // |Destination| indicates which handler a |Record| should be delivered to.
 enum Destination {
@@ -14,6 +14,10 @@ enum Destination {
 
   // |UPLOAD_EVENTS| handler sends records to the Eventing pipeline.
   UPLOAD_EVENTS = 1;
+
+  // |MEET_DEVICE_TELEMETRY| handler is for telemetry data sent by Meet
+  // Devices. For more information, see go/reliable-meet-device-telemetry.
+  MEET_DEVICE_TELEMETRY = 2;
 }
 
 // |Priority| is used to determine when items from the queue should be rate
@@ -46,9 +50,19 @@ enum Priority {
   SLOW_BATCH = 3;
 
   // |BACKGROUND_BATCH| queues transfer large amounts of non-immediate data.
-  // These records are the first to be rate limited.
-  // |BACKGROUND_BATCH| records are the first to be shed.
+  // These records will be rate limited before |SLOW_BATCH| records.
+  // |BACKGROUND_BATCH| records are shed before |SLOW_BATCH| records.
   // Log files are a perfect examples of records that need to be
   // |BACKGROUND_BATCH|.
   BACKGROUND_BATCH = 4;
+
+  // |MANUAL_BATCH| queues transfer data only on explicit request.
+  // Note that since a queue can hold records submitted by multiple clients,
+  // one client requesting to transfer data will do so for all collected
+  // records of the same priority, including those enqueued by other clients.
+  // |MANUAL_BATCH| records are the first to be rate limited, and since there
+  // is no automatic transfer, it is important to explicitly flush them often
+  // enough to avoid loss of data.
+  // |MANUAL_BATCH| records are the first to be shed.
+  MANUAL_BATCH = 5;
 }

@@ -17,7 +17,6 @@
 namespace blink {
 
 class LocalDOMWindow;
-class NDEFScanOptions;
 class NDEFReader;
 class NDEFWriter;
 
@@ -26,8 +25,6 @@ class NDEFWriter;
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
                                       public Supplement<LocalDOMWindow>,
                                       public device::mojom::blink::NFCClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
-
  public:
   static const char kSupplementName[];
   static NFCProxy* From(LocalDOMWindow&);
@@ -35,7 +32,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   explicit NFCProxy(LocalDOMWindow&);
   ~NFCProxy() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // There is no matching RemoveWriter() method because writers are
   // automatically removed from the weak hash set when they are garbage
@@ -43,7 +40,6 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   void AddWriter(NDEFWriter*);
 
   void StartReading(NDEFReader*,
-                    const NDEFScanOptions*,
                     device::mojom::blink::NFC::WatchCallback);
   void StopReading(NDEFReader*);
   bool IsReading(const NDEFReader*);

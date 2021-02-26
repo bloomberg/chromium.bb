@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
@@ -19,6 +20,8 @@ namespace ui {
 
 class WaylandBufferManagerGpu;
 
+using BufferId = uint32_t;
+
 // A GLSurface for Wayland Ozone platform that uses surfaceless drawing. Drawing
 // and displaying happens directly through NativePixmap buffers. CC would call
 // into SurfaceFactoryOzone to allocate the buffers and then call
@@ -29,7 +32,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
-  void QueueOverlayPlane(OverlayPlane plane, uint32_t buffer_id);
+  void QueueOverlayPlane(OverlayPlane plane, BufferId buffer_id);
 
   // gl::GLSurface:
   bool ScheduleOverlayPlane(int z_order,
@@ -62,42 +65,52 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
                            GbmSurfacelessWaylandCheckOrderOfCallbacksTest);
+  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
+                           GbmSurfacelessWaylandCommitOverlaysCallbacksTest);
+  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
+                           GbmSurfacelessWaylandGroupOnSubmissionCallbacksTest);
 
   ~GbmSurfacelessWayland() override;
 
   // WaylandSurfaceGpu overrides:
-  void OnSubmission(uint32_t buffer_id,
+  void OnSubmission(BufferId buffer_id,
                     const gfx::SwapResult& swap_result) override;
-  void OnPresentation(uint32_t buffer_id,
+  void OnPresentation(BufferId buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
 
   struct PendingFrame {
     PendingFrame();
     ~PendingFrame();
 
-    bool ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
+    // Queues overlay configs to |planes|.
+    void ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
     void Flush();
 
     bool ready = false;
 
     // The id of the buffer, which represents this frame.
-    uint32_t buffer_id = 0;
+    BufferId buffer_id = 0;
 
     // A region of the updated content in a corresponding frame. It's used to
     // advice Wayland which part of a buffer is going to be updated. Passing {0,
     // 0, 0, 0} results in a whole buffer update on the Wayland compositor side.
     gfx::Rect damage_region_ = gfx::Rect();
+    // TODO(fangzhoug): This should be changed to support Vulkan.
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
+
+    bool schedule_planes_succeeded = false;
+
+    // Maps |buffer_id| to an OverlayPlane, used for committing overlays and
+    // wait for OnSubmission's.
+    base::small_map<std::map<BufferId, OverlayPlane>> planes;
+    base::flat_set<BufferId> pending_presentation_buffers;
+    gfx::SwapResult swap_result = gfx::SwapResult::SWAP_ACK;
+    gfx::PresentationFeedback feedback;
   };
 
-  struct PlaneData {
-    OverlayPlane plane;
-    const uint32_t buffer_id;
-  };
-
-  void SubmitFrame();
+  void MaybeSubmitFrames();
 
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
@@ -106,13 +119,12 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void SetNoGLFlushForTests();
 
   WaylandBufferManagerGpu* const buffer_manager_;
-  std::vector<PlaneData> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
+  std::vector<std::unique_ptr<PendingFrame>> submitted_frames_;
   std::vector<std::unique_ptr<PendingFrame>> pending_presentation_frames_;
-  std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;

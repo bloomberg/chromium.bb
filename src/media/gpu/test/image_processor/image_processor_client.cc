@@ -9,11 +9,12 @@
 
 #include "base/bind.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -62,11 +63,12 @@ std::unique_ptr<ImageProcessorClient> ImageProcessorClient::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     size_t num_buffers,
+    VideoRotation relative_rotation,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto ip_client =
       base::WrapUnique(new ImageProcessorClient(std::move(frame_processors)));
-  if (!ip_client->CreateImageProcessor(input_config, output_config,
-                                       num_buffers)) {
+  if (!ip_client->CreateImageProcessor(input_config, output_config, num_buffers,
+                                       relative_rotation)) {
     LOG(ERROR) << "Failed to create ImageProcessor";
     return nullptr;
   }
@@ -98,7 +100,8 @@ ImageProcessorClient::~ImageProcessorClient() {
 bool ImageProcessorClient::CreateImageProcessor(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
-    size_t num_buffers) {
+    size_t num_buffers,
+    VideoRotation relative_rotation) {
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -108,7 +111,8 @@ bool ImageProcessorClient::CreateImageProcessor(
   image_processor_client_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&ImageProcessorClient::CreateImageProcessorTask,
                                 base::Unretained(this), std::cref(input_config),
-                                std::cref(output_config), num_buffers, &done));
+                                std::cref(output_config), num_buffers,
+                                relative_rotation, &done));
   done.Wait();
   if (!image_processor_) {
     LOG(ERROR) << "Failed to create ImageProcessor";
@@ -121,13 +125,15 @@ void ImageProcessorClient::CreateImageProcessorTask(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     size_t num_buffers,
+    VideoRotation relative_rotation,
     base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_THREAD(image_processor_client_thread_checker_);
   // base::Unretained(this) for ErrorCB is safe here because the callback is
   // executed on |image_processor_client_thread_| which is owned by this class.
   image_processor_ = ImageProcessorFactory::Create(
       input_config, output_config, {ImageProcessor::OutputMode::IMPORT},
-      num_buffers, image_processor_client_thread_.task_runner(),
+      num_buffers, relative_rotation,
+      image_processor_client_thread_.task_runner(),
       base::BindRepeating(&ImageProcessorClient::NotifyError,
                           base::Unretained(this)));
   done->Signal();
@@ -151,7 +157,7 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
                            CreateVideoFrameFromImage(input_image).get(),
                            *input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     ASSERT_TRUE_OR_RETURN_NULLPTR(
         input_storage_type == VideoFrame::STORAGE_DMABUFS ||
         input_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);

@@ -40,6 +40,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
 
+  source->DisableTrustedTypesCSP();
+
   source->AddString("pageSubtitle",
                     ManagementUI::GetManagementPageSubtitle(profile));
 
@@ -50,6 +52,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED},
     {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
     {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
+    {"updateRequiredEolAdminMessageTitle",
+     IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_ADMIN_MESSAGE_TITLE},
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
     {kManagementReportActivityTimes,
      IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},
@@ -59,6 +63,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {kManagementReportCrashReports, IDS_MANAGEMENT_REPORT_DEVICE_CRASH_REPORTS},
+    {kManagementReportAppInfoAndActivity,
+     IDS_MANAGEMENT_REPORT_APP_INFO_AND_ACTIVITY},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
     {kManagementCrostiniContainerConfiguration,
@@ -66,7 +72,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementReportExtensions, IDS_MANAGEMENT_REPORT_EXTENSIONS},
     {kManagementReportAndroidApplications,
      IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS},
-    {kManagementReportProxyServer, IDS_MANAGEMENT_REPORT_PROXY_SERVER},
+    {"proxyServerPrivacyDisclosure",
+     IDS_MANAGEMENT_PROXY_SERVER_PRIVACY_DISCLOSURE},
 #endif  // defined(OS_CHROMEOS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",
@@ -78,7 +85,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"title", IDS_MANAGEMENT_TITLE},
     {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
-    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+    {"clearSearch", IDS_CLEAR_SEARCH},
     {"backButton", IDS_ACCNAME_BACK},
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
@@ -95,17 +102,24 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementExtensionReportUserBrowsingData,
      IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
     {kThreatProtectionTitle, IDS_MANAGEMENT_THREAT_PROTECTION},
-    {kManagementDataLossPreventionName,
-     IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME},
-    {kManagementDataLossPreventionPermissions,
-     IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS},
-    {kManagementMalwareScanningName, IDS_MANAGEMENT_MALWARE_SCANNING_NAME},
-    {kManagementMalwareScanningPermissions,
-     IDS_MANAGEMENT_MALWARE_SCANNING_PERMISSIONS},
-    {kManagementEnterpriseReportingName,
-     IDS_MANAGEMENT_ENTERPRISE_REPORTING_NAME},
-    {kManagementEnterpriseReportingPermissions,
-     IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS},
+    {"connectorEvent", IDS_MANAGEMENT_CONNECTORS_EVENT},
+    {"connectorVisibleData", IDS_MANAGEMENT_CONNECTORS_VISIBLE_DATA},
+    {kManagementEnterpriseReportingEvent,
+     IDS_MANAGEMENT_ENTERPRISE_REPORTING_EVENT},
+    {kManagementEnterpriseReportingVisibleData,
+     IDS_MANAGEMENT_ENTERPRISE_REPORTING_VISIBLE_DATA},
+    {kManagementOnFileAttachedEvent, IDS_MANAGEMENT_FILE_ATTACHED_EVENT},
+    {kManagementOnFileAttachedVisibleData,
+     IDS_MANAGEMENT_FILE_ATTACHED_VISIBLE_DATA},
+    {kManagementOnFileDownloadedEvent, IDS_MANAGEMENT_FILE_DOWNLOADED_EVENT},
+    {kManagementOnFileDownloadedVisibleData,
+     IDS_MANAGEMENT_FILE_DOWNLOADED_VISIBLE_DATA},
+    {kManagementOnBulkDataEntryEvent, IDS_MANAGEMENT_TEXT_ENTERED_EVENT},
+    {kManagementOnBulkDataEntryVisibleData,
+     IDS_MANAGEMENT_TEXT_ENTERED_VISIBLE_DATA},
+    {kManagementOnPageVisitedEvent, IDS_MANAGEMENT_PAGE_VISITED_EVENT},
+    {kManagementOnPageVisitedVisibleData,
+     IDS_MANAGEMENT_PAGE_VISITED_VISIBLE_DATA},
   };
 
   AddLocalizedStringsBulk(source, kLocalizedStrings);
@@ -119,6 +133,10 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     chrome::kLearnMoreEnterpriseURL);
   source->AddString("managementAccountLearnMoreUrl",
                     chrome::kManagedUiLearnMoreUrl);
+  source->AddString("pluginVmDataCollection",
+                    l10n_util::GetStringFUTF16(
+                        IDS_MANAGEMENT_REPORT_PLUGIN_VM,
+                        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)));
 #endif  // defined(OS_CHROMEOS)
 
   source->UseStringsJs();
@@ -153,32 +171,32 @@ base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
                                       l10n_util::GetStringUTF16(device_type));
   }
 
-  std::string display_domain = connector->GetEnterpriseDisplayDomain();
+  std::string account_manager = connector->GetEnterpriseDomainManager();
 
-  if (display_domain.empty())
-    display_domain = connector->GetRealm();
-  if (display_domain.empty())
-    display_domain = ManagementUIHandler::GetAccountDomain(profile);
-  if (display_domain.empty()) {
+  if (account_manager.empty())
+    account_manager = connector->GetRealm();
+  if (account_manager.empty())
+    account_manager = ManagementUIHandler::GetAccountManager(profile);
+  if (account_manager.empty()) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                       l10n_util::GetStringUTF16(device_type));
   }
   return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                     l10n_util::GetStringUTF16(device_type),
-                                    base::UTF8ToUTF16(display_domain));
+                                    base::UTF8ToUTF16(account_manager));
 #else   // defined(OS_CHROMEOS)
-  const auto management_domain = ManagementUIHandler::GetAccountDomain(profile);
+  const auto account_manager = ManagementUIHandler::GetAccountManager(profile);
   const auto managed =
       profile->GetProfilePolicyConnector()->IsManaged() ||
       g_browser_process->browser_policy_connector()->HasMachineLevelPolicies();
-  if (management_domain.empty()) {
+  if (account_manager.empty()) {
     return l10n_util::GetStringUTF16(managed
                                          ? IDS_MANAGEMENT_SUBTITLE
                                          : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE);
   }
   if (managed) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                      base::UTF8ToUTF16(management_domain));
+                                      base::UTF8ToUTF16(account_manager));
   }
   return l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE);
 #endif  // defined(OS_CHROMEOS)

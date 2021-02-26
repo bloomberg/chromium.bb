@@ -76,8 +76,9 @@ TEST_P(EGLX11VisualHintTest, InvalidVisualID)
     static const int gInvalidVisualId = -1;
     auto attributes                   = getDisplayAttributes(gInvalidVisualId);
 
-    EGLDisplay display =
-        eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, attributes.data());
+    EGLDisplay display = eglGetPlatformDisplayEXT(
+        EGL_PLATFORM_ANGLE_ANGLE, reinterpret_cast<_XDisplay *>(EGL_DEFAULT_DISPLAY),
+        attributes.data());
     ASSERT_TRUE(display != EGL_NO_DISPLAY);
 
     ASSERT_TRUE(EGL_FALSE == eglInitialize(display, nullptr, nullptr));
@@ -100,51 +101,53 @@ TEST_P(EGLX11VisualHintTest, ValidVisualIDAndClear)
     ASSERT_NE(0, XGetWindowAttributes(mDisplay, xWindow, &windowAttributes));
     int visualId = windowAttributes.visual->visualid;
 
-    auto attributes = getDisplayAttributes(visualId);
-    EGLDisplay display =
-        eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, attributes.data());
+    auto attributes    = getDisplayAttributes(visualId);
+    EGLDisplay display = eglGetPlatformDisplayEXT(
+        EGL_PLATFORM_ANGLE_ANGLE, reinterpret_cast<_XDisplay *>(EGL_DEFAULT_DISPLAY),
+        attributes.data());
     ASSERT_NE(EGL_NO_DISPLAY, display);
 
     ASSERT_TRUE(EGL_TRUE == eglInitialize(display, nullptr, nullptr));
 
-    // While this is not required by the extension, test that our implementation returns only one
-    // config, with the same native visual Id that we provided.
     int nConfigs = 0;
     ASSERT_TRUE(EGL_TRUE == eglGetConfigs(display, nullptr, 0, &nConfigs));
-    ASSERT_EQ(1, nConfigs);
+    ASSERT_GE(nConfigs, 1);
 
     int nReturnedConfigs = 0;
-    EGLConfig config;
-    ASSERT_TRUE(EGL_TRUE == eglGetConfigs(display, &config, 1, &nReturnedConfigs));
+    std::vector<EGLConfig> configs(nConfigs);
+    ASSERT_TRUE(EGL_TRUE == eglGetConfigs(display, configs.data(), nConfigs, &nReturnedConfigs));
     ASSERT_EQ(nConfigs, nReturnedConfigs);
 
-    EGLint eglNativeId;
-    ASSERT_TRUE(EGL_TRUE ==
-                eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &eglNativeId));
-    ASSERT_EQ(visualId, eglNativeId);
+    for (EGLConfig config : configs)
+    {
+        EGLint eglNativeId;
+        ASSERT_TRUE(EGL_TRUE ==
+                    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &eglNativeId));
+        ASSERT_EQ(visualId, eglNativeId);
 
-    // Finally, try to do a clear on the window.
-    EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-    ASSERT_NE(EGL_NO_CONTEXT, context);
+        // Finally, try to do a clear on the window.
+        EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
+        ASSERT_NE(EGL_NO_CONTEXT, context);
 
-    EGLSurface window = eglCreateWindowSurface(display, config, xWindow, nullptr);
-    ASSERT_EGL_SUCCESS();
+        EGLSurface window = eglCreateWindowSurface(display, config, xWindow, nullptr);
+        ASSERT_EGL_SUCCESS();
 
-    eglMakeCurrent(display, window, window, context);
-    ASSERT_EGL_SUCCESS();
+        eglMakeCurrent(display, window, window, context);
+        ASSERT_EGL_SUCCESS();
 
-    glViewport(0, 0, 500, 500);
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ASSERT_GL_NO_ERROR();
-    EXPECT_PIXEL_EQ(250, 250, 0, 0, 255, 255);
+        glViewport(0, 0, 500, 500);
+        glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ASSERT_GL_NO_ERROR();
+        EXPECT_PIXEL_EQ(250, 250, 0, 0, 255, 255);
 
-    // Teardown
-    eglDestroySurface(display, window);
-    ASSERT_EGL_SUCCESS();
+        // Teardown
+        eglDestroySurface(display, window);
+        ASSERT_EGL_SUCCESS();
 
-    eglDestroyContext(display, context);
-    ASSERT_EGL_SUCCESS();
+        eglDestroyContext(display, context);
+        ASSERT_EGL_SUCCESS();
+    }
 
     OSWindow::Delete(&osWindow);
 
@@ -173,9 +176,10 @@ TEST_P(EGLX11VisualHintTest, InvalidWindowVisualID)
         OSWindow::Delete(&osWindow);
     }
 
-    auto attributes = getDisplayAttributes(visualId);
-    EGLDisplay display =
-        eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, attributes.data());
+    auto attributes    = getDisplayAttributes(visualId);
+    EGLDisplay display = eglGetPlatformDisplayEXT(
+        EGL_PLATFORM_ANGLE_ANGLE, reinterpret_cast<_XDisplay *>(EGL_DEFAULT_DISPLAY),
+        attributes.data());
     ASSERT_NE(EGL_NO_DISPLAY, display);
 
     ASSERT_TRUE(EGL_TRUE == eglInitialize(display, nullptr, nullptr));

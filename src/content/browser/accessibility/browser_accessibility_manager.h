@@ -16,7 +16,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility_position.h"
@@ -49,7 +49,7 @@ class BrowserAccessibilityManagerAndroid;
 class BrowserAccessibilityManagerWin;
 #elif BUILDFLAG(USE_ATK)
 class BrowserAccessibilityManagerAuraLinux;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 class BrowserAccessibilityManagerMac;
 #endif
 
@@ -96,6 +96,12 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible
   AccessibilityGetNativeViewAccessibleForWindow() = 0;
   virtual WebContents* AccessibilityWebContents() = 0;
+  virtual void AccessibilityHitTest(
+      const gfx::Point& point_in_frame_pixels,
+      ax::mojom::Event opt_event_to_fire,
+      int opt_request_id,
+      base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                              int hit_node_id)> opt_callback) = 0;
 
   // Returns true if this delegate represents the main (topmost) frame in a
   // tree of frames.
@@ -146,6 +152,17 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void Initialize(const ui::AXTreeUpdate& initial_tree);
 
   static ui::AXTreeUpdate GetEmptyDocument();
+
+  enum RetargetEventType {
+    RetargetEventTypeGenerated = 0,
+    RetargetEventTypeBlinkGeneral,
+    RetargetEventTypeBlinkHover,
+  };
+
+  // Return |node| by default, but some platforms want to update the target node
+  // based on the event type.
+  virtual BrowserAccessibility* RetargetForEvents(BrowserAccessibility* node,
+                                                  RetargetEventType type) const;
 
   // Subclasses override these methods to send native event notifications.
   virtual void FireFocusEvent(BrowserAccessibility* node);
@@ -202,7 +219,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // WebContentsObserver overrides
   void DidStopLoading() override;
-  void DidActivatePortal(WebContents* predecessor_contents) override;
+  void DidActivatePortal(WebContents* predecessor_contents,
+                         base::TimeTicks activation_time) override;
 
   // Keep track of if this page is hidden by an interstitial, in which case
   // we need to suppress all events.
@@ -328,7 +346,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   BrowserAccessibilityManagerMac* ToBrowserAccessibilityManagerMac();
 #endif
 
@@ -429,6 +447,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
                               ui::AXNode::AXID node_id) const override;
   ui::AXNode* GetNodeFromTree(ui::AXNode::AXID node_id) const override;
+  void AddObserver(ui::AXTreeObserver* observer) override;
+  void RemoveObserver(ui::AXTreeObserver* observer) override;
   AXTreeID GetTreeID() const override;
   AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;
@@ -571,7 +591,16 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   static base::Optional<int32_t> last_focused_node_id_;
   static base::Optional<ui::AXTreeID> last_focused_node_tree_id_;
 
+  // For debug only: True when handling OnAccessibilityEvents.
+#if DCHECK_IS_ON()
+  bool in_on_accessibility_events_ = false;
+#endif  // DCHECK_IS_ON()
+
  private:
+  // Helper that calls AXTree::Unserialize(). On failure it populates crash data
+  // with error information.
+  bool Unserialize(const ui::AXTreeUpdate& tree_update);
+
   // The underlying tree of accessibility objects.
   std::unique_ptr<ui::AXSerializableTree> tree_;
 
@@ -583,7 +612,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // This member needs to be destructed before any observed AXTrees. Since
   // destructors for non-static member fields are called in the reverse order of
   // declaration, do not move this member above other members.
-  ScopedObserver<ui::AXTree, ui::AXTreeObserver> tree_observer_{this};
+  base::ScopedObservation<ui::AXTree, ui::AXTreeObserver> tree_observation_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };

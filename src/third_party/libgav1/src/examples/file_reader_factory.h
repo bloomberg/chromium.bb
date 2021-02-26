@@ -18,8 +18,8 @@
 #define LIBGAV1_EXAMPLES_FILE_READER_FACTORY_H_
 
 #include <memory>
+#include <string>
 
-#include "absl/strings/string_view.h"
 #include "examples/file_reader_interface.h"
 
 namespace libgav1 {
@@ -27,7 +27,7 @@ namespace libgav1 {
 class FileReaderFactory {
  public:
   using OpenFunction = std::unique_ptr<FileReaderInterface> (*)(
-      absl::string_view file_name, bool error_tolerant);
+      const std::string& file_name, bool error_tolerant);
 
   FileReaderFactory() = delete;
   FileReaderFactory(const FileReaderFactory&) = delete;
@@ -43,7 +43,7 @@ class FileReaderFactory {
   // returned. If |error_tolerant| is true and the reader supports it, some
   // format and read errors may be ignored and partial data returned.
   static std::unique_ptr<FileReaderInterface> OpenReader(
-      absl::string_view file_name, bool error_tolerant = false);
+      const std::string& file_name, bool error_tolerant = false);
 };
 
 }  // namespace libgav1

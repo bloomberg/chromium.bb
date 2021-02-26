@@ -49,12 +49,11 @@ class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
   bool HasStyleSheetCandidateNodes() const {
     return !style_sheet_candidate_nodes_.IsEmpty();
   }
-  bool HasStyleSheets() const;
 
   virtual bool IsShadowTreeStyleSheetCollection() const { return false; }
   void UpdateStyleSheetList();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit TreeScopeStyleSheetCollection(TreeScope&);

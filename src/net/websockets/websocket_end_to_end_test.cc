@@ -15,8 +15,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -100,8 +100,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   void OnAddChannelResponse(
       std::unique_ptr<WebSocketHandshakeResponseInfo> response,
       const std::string& selected_subprotocol,
-      const std::string& extensions,
-      int64_t send_flow_control_quota) override;
+      const std::string& extensions) override;
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
@@ -109,7 +108,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   bool HasPendingDataFrames() override { return false; }
 
-  void OnSendFlowControlQuotaAdded(int64_t quota) override;
+  void OnSendDataFrameDone() override;
 
   void OnClosingHandshake() override;
 
@@ -117,7 +116,9 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
                      uint16_t code,
                      const std::string& reason) override;
 
-  void OnFailChannel(const std::string& message) override;
+  void OnFailChannel(const std::string& message,
+                     int net_error,
+                     base::Optional<int> response_code) override;
 
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override;
@@ -170,8 +171,7 @@ std::string ConnectTestingEventInterface::extensions() const {
 void ConnectTestingEventInterface::OnAddChannelResponse(
     std::unique_ptr<WebSocketHandshakeResponseInfo> response,
     const std::string& selected_subprotocol,
-    const std::string& extensions,
-    int64_t send_flow_control_quota) {
+    const std::string& extensions) {
   selected_subprotocol_ = selected_subprotocol;
   extensions_ = extensions;
   QuitNestedEventLoop();
@@ -182,7 +182,7 @@ void ConnectTestingEventInterface::OnDataFrame(bool fin,
                                                base::span<const char> payload) {
 }
 
-void ConnectTestingEventInterface::OnSendFlowControlQuotaAdded(int64_t quota) {}
+void ConnectTestingEventInterface::OnSendDataFrameDone() {}
 
 void ConnectTestingEventInterface::OnClosingHandshake() {}
 
@@ -190,7 +190,10 @@ void ConnectTestingEventInterface::OnDropChannel(bool was_clean,
                                                  uint16_t code,
                                                  const std::string& reason) {}
 
-void ConnectTestingEventInterface::OnFailChannel(const std::string& message) {
+void ConnectTestingEventInterface::OnFailChannel(
+    const std::string& message,
+    int net_error,
+    base::Optional<int> response_code) {
   failed_ = true;
   failure_message_ = message;
   QuitNestedEventLoop();
@@ -294,15 +297,15 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
     url::Origin origin = url::Origin::Create(GURL("http://localhost"));
     net::SiteForCookies site_for_cookies =
         net::SiteForCookies::FromOrigin(origin);
-    IsolationInfo isolation_info = IsolationInfo::Create(
-        IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
-        SiteForCookies::FromOrigin(origin));
+    IsolationInfo isolation_info =
+        IsolationInfo::Create(IsolationInfo::RequestType::kOther, origin,
+                              origin, SiteForCookies::FromOrigin(origin));
     event_interface_ = new ConnectTestingEventInterface();
     channel_ = std::make_unique<WebSocketChannel>(
         base::WrapUnique(event_interface_), &context_);
-    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    site_for_cookies, isolation_info,
-                                    HttpRequestHeaders());
+    channel_->SendAddChannelRequest(
+        GURL(socket_url), sub_protocols_, origin, site_for_cookies,
+        isolation_info, HttpRequestHeaders(), TRAFFIC_ANNOTATION_FOR_TESTS);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }
@@ -439,7 +442,7 @@ std::unique_ptr<HttpResponse> ProxyPacHandler(const HttpRequest& request) {
 // TODO(ricea): Remove this test if --winhttp-proxy-resolver flag is removed.
 // See crbug.com/644030.
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
 #define MAYBE_ProxyPacUsed ProxyPacUsed
 #else
 #define MAYBE_ProxyPacUsed DISABLED_ProxyPacUsed

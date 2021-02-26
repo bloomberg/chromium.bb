@@ -19,7 +19,7 @@ namespace net {
 class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
-class URLRequestJobFactoryImpl;
+class URLRequestJobFactory;
 }  // namespace net
 
 class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
@@ -53,7 +53,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
     // Works asynchronously, however if the |completion| callback is non-null,
     // it will be posted on the UI thread once the removal process completes.
     void ClearNetworkingHistorySince(base::Time time,
-                                     const base::Closure& completion);
+                                     base::OnceClosure completion);
 
    private:
     typedef std::map<base::FilePath,
@@ -113,7 +113,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
   // Works asynchronously, however if the |completion| callback is non-null,
   // it will be posted on the UI thread once the removal process completes.
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
-                                             const base::Closure& completion);
+                                             base::OnceClosure completion);
 
   mutable std::unique_ptr<IOSChromeNetworkDelegate> network_delegate_;
 
@@ -127,7 +127,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
 
   mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
 
-  mutable std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

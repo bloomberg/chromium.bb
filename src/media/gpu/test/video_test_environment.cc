@@ -17,13 +17,18 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace media {
 namespace test {
 
-VideoTestEnvironment::VideoTestEnvironment() {
+VideoTestEnvironment::VideoTestEnvironment() : VideoTestEnvironment({}, {}) {}
+
+VideoTestEnvironment::VideoTestEnvironment(
+    const std::vector<base::Feature>& enabled_features,
+    const std::vector<base::Feature>& disabled_features) {
   // Using shared memory requires mojo to be initialized (crbug.com/849207).
   mojo::core::Init();
 
@@ -41,6 +46,10 @@ VideoTestEnvironment::VideoTestEnvironment() {
   task_environment_ = std::make_unique<base::test::TaskEnvironment>(
       base::test::TaskEnvironment::MainThreadType::UI);
 
+  // Initialize features. Since some of them can be for VA-API, it is necessary
+  // to initialize them before calling VaapiWrapper::PreSandboxInitialization().
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
   // Perform all static initialization that is required when running video
   // decoders in a test environment.
 #if BUILDFLAG(USE_VAAPI)
@@ -50,12 +59,14 @@ VideoTestEnvironment::VideoTestEnvironment() {
 #if defined(USE_OZONE)
   // Initialize Ozone. This is necessary to gain access to the GPU for hardware
   // video decode acceleration.
-  LOG(WARNING) << "Initializing Ozone Platform...\n"
-                  "If this hangs indefinitely please call 'stop ui' first!";
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForUI(params);
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    LOG(WARNING) << "Initializing Ozone Platform...\n"
+                    "If this hangs indefinitely please call 'stop ui' first!";
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForUI(params);
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 }
 

@@ -100,8 +100,8 @@ TEST_P(MotionVectorTestLarge, OverallTest) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
 }
 
-AV1_INSTANTIATE_TEST_CASE(MotionVectorTestLarge,
-                          ::testing::ValuesIn(kEncodingModeVectors),
-                          ::testing::ValuesIn(kCpuUsedVectors),
-                          ::testing::ValuesIn(kMVTestModes));
+AV1_INSTANTIATE_TEST_SUITE(MotionVectorTestLarge,
+                           ::testing::ValuesIn(kEncodingModeVectors),
+                           ::testing::ValuesIn(kCpuUsedVectors),
+                           ::testing::ValuesIn(kMVTestModes));
 }  // namespace

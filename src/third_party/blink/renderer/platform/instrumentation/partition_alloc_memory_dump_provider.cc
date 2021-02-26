@@ -7,6 +7,7 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -71,6 +72,19 @@ void PartitionStatsDumperImpl::PartitionDumpTotals(
                             memory_stats->total_decommittable_bytes);
   allocator_dump->AddScalar("discardable_size", "bytes",
                             memory_stats->total_discardable_bytes);
+  if (memory_stats->has_thread_cache) {
+    const auto& thread_cache_stats = memory_stats->current_thread_cache_stats;
+    auto* thread_cache_dump = memory_dump_->CreateAllocatorDump(
+        dump_name + "/thread_cache/main_thread");
+    base::trace_event::ReportPartitionAllocThreadCacheStats(thread_cache_dump,
+                                                            thread_cache_stats);
+
+    const auto& all_thread_caches_stats = memory_stats->all_thread_caches_stats;
+    auto* all_thread_caches_dump =
+        memory_dump_->CreateAllocatorDump(dump_name + "/thread_cache");
+    base::trace_event::ReportPartitionAllocThreadCacheStats(
+        all_thread_caches_dump, all_thread_caches_stats);
+  }
 }
 
 void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
@@ -79,10 +93,10 @@ void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
   DCHECK(memory_stats->is_valid);
   std::string dump_name = GetPartitionDumpName(partition_name);
   if (memory_stats->is_direct_map) {
-    dump_name.append(base::StringPrintf("/directMap_%" PRIu64, ++uid_));
+    dump_name.append(base::StringPrintf("/buckets/directMap_%" PRIu64, ++uid_));
   } else {
-    dump_name.append(
-        base::StringPrintf("/bucket_%" PRIu32, memory_stats->bucket_slot_size));
+    dump_name.append(base::StringPrintf("/buckets/bucket_%" PRIu32,
+                                        memory_stats->bucket_slot_size));
   }
 
   base::trace_event::MemoryAllocatorDump* allocator_dump =
@@ -96,16 +110,17 @@ void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
                             memory_stats->decommittable_bytes);
   allocator_dump->AddScalar("discardable_size", "bytes",
                             memory_stats->discardable_bytes);
-  allocator_dump->AddScalar("total_pages_size", "bytes",
-                            memory_stats->allocated_page_size);
-  allocator_dump->AddScalar("active_pages", "objects",
-                            memory_stats->num_active_pages);
-  allocator_dump->AddScalar("full_pages", "objects",
-                            memory_stats->num_full_pages);
-  allocator_dump->AddScalar("empty_pages", "objects",
-                            memory_stats->num_empty_pages);
-  allocator_dump->AddScalar("decommitted_pages", "objects",
-                            memory_stats->num_decommitted_pages);
+  // TODO(bartekn): Rename the scalar names.
+  allocator_dump->AddScalar("total_slot_span_size", "bytes",
+                            memory_stats->allocated_slot_span_size);
+  allocator_dump->AddScalar("active_slot_spans", "objects",
+                            memory_stats->num_active_slot_spans);
+  allocator_dump->AddScalar("full_slot_spans", "objects",
+                            memory_stats->num_full_slot_spans);
+  allocator_dump->AddScalar("empty_slot_spans", "objects",
+                            memory_stats->num_empty_slot_spans);
+  allocator_dump->AddScalar("decommitted_slot_spans", "objects",
+                            memory_stats->num_decommitted_slot_spans);
 }
 
 }  // namespace

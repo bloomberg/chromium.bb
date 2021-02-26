@@ -2,6 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/lazy_load.js';
+
+// #import {CupsPrintersBrowserProxyImpl,PrinterSetupResult,CupsPrintersEntryManager,PrintServerResult,PrinterType} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {MojoInterfaceProviderImpl, MojoInterfaceProvider} from '//resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+// #import {TestCupsPrintersBrowserProxy } from './test_cups_printers_browser_proxy.m.js';
+// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {createCupsPrinterInfo,createPrinterListEntry} from './cups_printer_test_utils.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {flushTasks} from '../../test_util.m.js';
+// #import {getPrinterEntries} from './cups_printer_test_utils.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// clang-format on
+
+const arrowUpEvent = new KeyboardEvent(
+    'keydown', {cancelable: true, key: 'ArrowUp', keyCode: 38});
+
+const arrowDownEvent = new KeyboardEvent(
+    'keydown', {cancelable: true, key: 'ArrowDown', keyCode: 40});
+
+const arrowLeftEvent = new KeyboardEvent(
+    'keydown', {cancelable: true, key: 'ArrowLeft', keyCode: 37});
+
+const arrowRightEvent = new KeyboardEvent(
+    'keydown', {cancelable: true, key: 'ArrowRight', keyCode: 39});
+
 /**
  * @param {!HTMLElement} printerEntry
  * @private
@@ -231,33 +259,15 @@ suite('CupsSavedPrintersTests', function() {
   /** @type {?Array<!CupsPrinterInfo>} */
   let printerList = null;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let mojoApi_;
-
-  suiteSetup(function() {
-    mojoApi_ = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
-  });
-
   setup(function() {
-    const mojom = chromeos.networkConfig.mojom;
-
     cupsPrintersBrowserProxy =
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
-    // Simulate internet connection.
-    mojoApi_.resetForTest();
-    mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
-    const wifi1 =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi');
-    wifi1.connectionState = mojom.ConnectionStateType.kConnected;
-    mojoApi_.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
   });
 
   teardown(function() {
-    mojoApi_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     savedPrintersElement = null;
@@ -516,7 +526,7 @@ suite('CupsSavedPrintersTests', function() {
               cups_printer_test_util.getPrinterEntries(savedPrintersElement);
           verifyPrintersList(printerListEntries, printerList);
 
-          searchTerm = 'google';
+          let searchTerm = 'google';
           savedPrintersElement.searchTerm = searchTerm;
           Polymer.dom.flush();
 
@@ -584,7 +594,7 @@ suite('CupsSavedPrintersTests', function() {
               cups_printer_test_util.getPrinterEntries(savedPrintersElement);
           verifyPrintersList(printerListEntries, printerList);
 
-          searchTerm = 'google';
+          let searchTerm = 'google';
           savedPrintersElement.searchTerm = searchTerm;
           Polymer.dom.flush();
 
@@ -615,6 +625,67 @@ suite('CupsSavedPrintersTests', function() {
                   'google', '4', 'id4', PrinterType.SAVED)],
               searchTerm);
         });
+  });
+
+  test('NavigateSavedPrintersList', function() {
+    createCupsPrinterPage([
+      cups_printer_test_util.createCupsPrinterInfo('google', '4', 'id4'),
+      cups_printer_test_util.createCupsPrinterInfo('test1', '1', 'id1'),
+      cups_printer_test_util.createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(async () => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+          const printerEntryList = savedPrintersElement.$$('#printerEntryList');
+          const printerListEntries =
+              cups_printer_test_util.getPrinterEntries(savedPrintersElement);
+          printerEntryList.focus();
+          printerEntryList.dispatchEvent(arrowDownEvent);
+          Polymer.dom.flush();
+          assertEquals(printerListEntries[1], getDeepActiveElement());
+          printerEntryList.dispatchEvent(arrowDownEvent);
+          Polymer.dom.flush();
+          assertEquals(printerListEntries[2], getDeepActiveElement());
+          printerEntryList.dispatchEvent(arrowUpEvent);
+          Polymer.dom.flush();
+          assertEquals(printerListEntries[1], getDeepActiveElement());
+          printerEntryList.dispatchEvent(arrowUpEvent);
+          Polymer.dom.flush();
+          assertEquals(printerListEntries[0], getDeepActiveElement());
+        });
+  });
+
+  test('Deep link to saved printers', async () => {
+    loadTimeData.overrideValues({
+      isDeepLinkingEnabled: true,
+    });
+    createCupsPrinterPage([
+      cups_printer_test_util.createCupsPrinterInfo('google', '4', 'id4'),
+      cups_printer_test_util.createCupsPrinterInfo('test1', '1', 'id1'),
+      cups_printer_test_util.createCupsPrinterInfo('test2', '2', 'id2'),
+      cups_printer_test_util.createCupsPrinterInfo('test3', '3', 'id3'),
+    ]);
+
+    await cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList');
+
+    const params = new URLSearchParams;
+    params.append('settingId', '1401');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CUPS_PRINTERS, params);
+
+    Polymer.dom.flush();
+
+    const savedPrinters = page.$$('settings-cups-saved-printers');
+    const printerEntry =
+        savedPrinters && savedPrinters.$$('settings-cups-printers-entry');
+    const deepLinkElement = printerEntry && printerEntry.$$('#moreActions');
+    await test_util.waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'First saved printer menu button should be focused for settingId=1401.');
   });
 
   test('ShowMoreButtonIsInitiallyHiddenAndANewPrinterIsAdded', function() {
@@ -650,7 +721,7 @@ suite('CupsSavedPrintersTests', function() {
           // top of the list.
           addNewSavedPrinter(cups_printer_test_util.createCupsPrinterInfo(
               'test3', '3', 'id3'));
-          expectedVisiblePrinters = [
+          const expectedVisiblePrinters = [
             cups_printer_test_util.createPrinterListEntry(
                 'test3', '3', 'id3', PrinterType.SAVED),
             cups_printer_test_util.createPrinterListEntry(
@@ -868,7 +939,7 @@ suite('CupsSavedPrintersTests', function() {
           assertTrue(!!savedPrintersElement.$$('#show-more-container'));
 
           // Set search term to 'google' and expect 4 visible printers.
-          searchTerm = 'google';
+          let searchTerm = 'google';
           savedPrintersElement.searchTerm = searchTerm;
           Polymer.dom.flush();
           verifySearchQueryResults(
@@ -1022,13 +1093,9 @@ suite('CupsNearbyPrintersTests', function() {
   /** @type{!HtmlElement} */
   let printerEntryListTestElement = null;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let mojoApi_;
+  /** @type {!chromeos.networkConfig.mojom.NetworkStateProperties|undefined} */
+  let wifi1;
 
-  suiteSetup(function() {
-    mojoApi_ = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
-  });
 
   setup(function() {
     const mojom = chromeos.networkConfig.mojom;
@@ -1038,11 +1105,8 @@ suite('CupsNearbyPrintersTests', function() {
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
 
     // Simulate internet connection.
-    mojoApi_.resetForTest();
-    const wifi1 =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
+    wifi1 = OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
     wifi1.connectionState = mojom.ConnectionStateType.kOnline;
-    mojoApi_.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
@@ -1050,12 +1114,12 @@ suite('CupsNearbyPrintersTests', function() {
     page = document.createElement('settings-cups-printers');
     document.body.appendChild(page);
     assertTrue(!!page);
+    page.onActiveNetworksChanged([wifi1]);
 
     Polymer.dom.flush();
   });
 
   teardown(function() {
-    mojoApi_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     nearbyPrintersElement = null;
@@ -1134,7 +1198,7 @@ suite('CupsNearbyPrintersTests', function() {
 
       Polymer.dom.flush();
 
-      nearbyPrinterEntries =
+      const nearbyPrinterEntries =
           cups_printer_test_util.getPrinterEntries(nearbyPrintersElement);
 
       verifyPrintersList(nearbyPrinterEntries, expectedPrinterList);
@@ -1160,7 +1224,7 @@ suite('CupsNearbyPrintersTests', function() {
 
           // Requery and assert that the newly detected printer automatic
           // printer has the correct button.
-          nearbyPrinterEntries =
+          const nearbyPrinterEntries =
               cups_printer_test_util.getPrinterEntries(nearbyPrintersElement);
           assertEquals(1, nearbyPrinterEntries.length);
           assertTrue(!!nearbyPrinterEntries[0].$$('.save-printer-button'));
@@ -1178,6 +1242,59 @@ suite('CupsNearbyPrintersTests', function() {
               'Added ' + automaticPrinterList[0].printerName;
           verifyErrorToastMessage(expectedToastMessage, page.$$('#errorToast'));
         });
+  });
+
+  test('NavigateNearbyPrinterList', function() {
+    const discoveredPrinterList = [
+      cups_printer_test_util.createCupsPrinterInfo('first', '3', 'id3'),
+      cups_printer_test_util.createCupsPrinterInfo('second', '4', 'id4'),
+      cups_printer_test_util.createCupsPrinterInfo('third', '2', 'id5'),
+    ];
+    return test_util.flushTasks().then(async () => {
+      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+
+      // Block so that FocusRowBehavior.attached can run.
+      await test_util.waitAfterNextRender(nearbyPrintersElement);
+
+      assertTrue(!!nearbyPrintersElement);
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', [], discoveredPrinterList);
+      Polymer.dom.flush();
+
+      // Wait one more time to ensure that async setup in FocusRowBehavior has
+      // executed.
+      await test_util.waitAfterNextRender(nearbyPrintersElement);
+      const nearbyPrinterEntries =
+          cups_printer_test_util.getPrinterEntries(nearbyPrintersElement);
+      const printerEntryList = nearbyPrintersElement.$$('#printerEntryList');
+
+      nearbyPrinterEntries[0].$$('#entry').focus();
+      assertEquals(
+          nearbyPrinterEntries[0].$$('#entry'), getDeepActiveElement());
+      // Ensure that we can navigate through items in a row
+      getDeepActiveElement().dispatchEvent(arrowRightEvent);
+      assertEquals(
+          nearbyPrinterEntries[0].$$('#setupPrinterButton'),
+          getDeepActiveElement());
+      getDeepActiveElement().dispatchEvent(arrowLeftEvent);
+      assertEquals(
+          nearbyPrinterEntries[0].$$('#entry'), getDeepActiveElement());
+
+      // Ensure that we can navigate through printer rows
+      printerEntryList.dispatchEvent(arrowDownEvent);
+      assertEquals(
+          nearbyPrinterEntries[1].$$('#entry'), getDeepActiveElement());
+      printerEntryList.dispatchEvent(arrowDownEvent);
+      assertEquals(
+          nearbyPrinterEntries[2].$$('#entry'), getDeepActiveElement());
+      printerEntryList.dispatchEvent(arrowUpEvent);
+      assertEquals(
+          nearbyPrinterEntries[1].$$('#entry'), getDeepActiveElement());
+      printerEntryList.dispatchEvent(arrowUpEvent);
+      assertEquals(
+          nearbyPrinterEntries[0].$$('#entry'), getDeepActiveElement());
+    });
   });
 
   test('addingDiscoveredPrinterIsSuccessful', function() {
@@ -1201,7 +1318,7 @@ suite('CupsNearbyPrintersTests', function() {
 
           // Requery and assert that a newly detected discovered printer has
           // the correct icon button.
-          nearbyPrinterEntries =
+          const nearbyPrinterEntries =
               cups_printer_test_util.getPrinterEntries(nearbyPrintersElement);
           assertEquals(1, nearbyPrinterEntries.length);
           assertTrue(!!nearbyPrinterEntries[0].$$('#setupPrinterButton'));
@@ -1220,7 +1337,7 @@ suite('CupsNearbyPrintersTests', function() {
         })
         .then(() => {
           Polymer.dom.flush();
-          addDialog = page.$$('#addPrinterDialog');
+          const addDialog = page.$$('#addPrinterDialog');
           manufacturerDialog =
               addDialog.$$('add-printer-manufacturer-model-dialog');
           assertTrue(!!manufacturerDialog);
@@ -1235,7 +1352,7 @@ suite('CupsNearbyPrintersTests', function() {
           // Populate the manufacturer and model fields to enable the Add
           // button.
           manufacturerDialog.$$('#manufacturerDropdown').value = 'make';
-          modelDropdown = manufacturerDialog.$$('#modelDropdown');
+          const modelDropdown = manufacturerDialog.$$('#modelDropdown');
           modelDropdown.value = 'model';
 
           assertTrue(!addButton.disabled);
@@ -1254,9 +1371,11 @@ suite('CupsNearbyPrintersTests', function() {
 
   test('NetworkConnectedButNoInternet', function() {
     // Simulate connecting to a network with no internet connection.
-    mojoApi_.setNetworkConnectionStateForTest(
-        'wifi1_guid',
-        chromeos.networkConfig.mojom.ConnectionStateType.kConnected);
+    wifi1.connectionState =
+        chromeos.networkConfig.mojom.ConnectionStateType.kConnected;
+    page.onActiveNetworksChanged([wifi1]);
+    Polymer.dom.flush();
+
     return test_util.flushTasks().then(() => {
       // We require internet to be able to add a new printer. Connecting to
       // a network without connectivity should be equivalent to not being
@@ -1269,9 +1388,11 @@ suite('CupsNearbyPrintersTests', function() {
 
   test('checkNetworkConnection', function() {
     // Simulate disconnecting from a network.
-    mojoApi_.setNetworkConnectionStateForTest(
-        'wifi1_guid',
-        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected);
+    wifi1.connectionState =
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
+    page.onActiveNetworksChanged([wifi1]);
+    Polymer.dom.flush();
+
     return test_util.flushTasks()
         .then(() => {
           // Expect offline text to show up when no internet is
@@ -1281,9 +1402,11 @@ suite('CupsNearbyPrintersTests', function() {
           assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
 
           // Simulate connecting to a network with connectivity.
-          mojoApi_.setNetworkConnectionStateForTest(
-              'wifi1_guid',
-              chromeos.networkConfig.mojom.ConnectionStateType.kOnline);
+          wifi1.connectionState =
+              chromeos.networkConfig.mojom.ConnectionStateType.kOnline;
+          page.onActiveNetworksChanged([wifi1]);
+          Polymer.dom.flush();
+
           return test_util.flushTasks();
         })
         .then(() => {
@@ -1310,7 +1433,7 @@ suite('CupsNearbyPrintersTests', function() {
               nearbyPrintersElement.$$('#printerEntryList');
           assertTrue(!!printerEntryListTestElement);
 
-          nearbyPrinterEntries =
+          const nearbyPrinterEntries =
               cups_printer_test_util.getPrinterEntries(nearbyPrintersElement);
 
           const expectedPrinterList =
@@ -1352,7 +1475,7 @@ suite('CupsNearbyPrintersTests', function() {
             'test2', 'printerAddress2', 'printerId2', PrinterType.DISCOVERD)
       ]);
 
-      searchTerm = 'google';
+      let searchTerm = 'google';
       nearbyPrintersElement.searchTerm = searchTerm;
       Polymer.dom.flush();
 
@@ -1431,7 +1554,7 @@ suite('CupsNearbyPrintersTests', function() {
 
       Polymer.dom.flush();
 
-      searchTerm = 'google';
+      let searchTerm = 'google';
       nearbyPrintersElement.searchTerm = searchTerm;
       Polymer.dom.flush();
 

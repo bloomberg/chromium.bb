@@ -15,16 +15,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace password_manager {
+
+struct PasswordForm;
 
 class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
  public:
   // This struct mirrors the corresponding affiliation and branding information
-  // related fields from autofill::PasswordForm.
+  // related fields from PasswordForm.
   struct AffiliationAndBrandingInformation {
     std::string affiliated_web_realm;
     std::string app_display_name;
@@ -67,7 +65,8 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       AffiliatedRealmsCallback result_callback) override;
 
   void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
+      std::vector<std::unique_ptr<PasswordForm>> forms,
+      AndroidAffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
       PasswordFormsCallback result_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);

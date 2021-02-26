@@ -229,6 +229,7 @@ class GitWrapper(SCMWrapper):
     if self.out_cb:
       filter_kwargs['predicate'] = self.out_cb
     self.filter = gclient_utils.GitFilter(**filter_kwargs)
+    self._running_under_rosetta = None
 
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
@@ -385,10 +386,11 @@ class GitWrapper(SCMWrapper):
 
     if not target_rev:
       raise gclient_utils.Error('A target revision for the patch must be given')
-    elif target_rev.startswith('refs/heads/'):
-      # If |target_rev| is in refs/heads/**, try first to find the corresponding
-      # remote ref for it, since |target_rev| might point to a local ref which
-      # is not up to date with the corresponding remote ref.
+    elif target_rev.startswith(('refs/heads/', 'refs/branch-heads')):
+      # If |target_rev| is in refs/heads/** or refs/branch-heads/**, try first
+      # to find the corresponding remote ref for it, since |target_rev| might
+      # point to a local ref which is not up to date with the corresponding
+      # remote ref.
       remote_ref = ''.join(scm.GIT.RefToRemoteRef(target_rev, self.remote))
       self.Print('Trying the corresponding remote ref for %r: %r\n' % (
           target_rev, remote_ref))
@@ -586,7 +588,8 @@ class GitWrapper(SCMWrapper):
         subprocess2.capture(
             ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
             cwd=self.checkout_path).strip() != 'False'):
-      self.Print('_____ switching %s to a new upstream' % self.relpath)
+      self.Print('_____ switching %s from %s to new upstream %s' % (
+          self.relpath, current_url, url))
       if not (options.force or options.reset):
         # Make sure it's clean
         self._CheckClean(revision)
@@ -982,9 +985,7 @@ class GitWrapper(SCMWrapper):
     mirror.populate(verbose=options.verbose,
                     bootstrap=not getattr(options, 'no_bootstrap', False),
                     depth=depth,
-                    ignore_lock=getattr(options, 'ignore_locks', False),
                     lock_timeout=getattr(options, 'lock_timeout', 0))
-    mirror.unlock()
 
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.
@@ -1044,6 +1045,14 @@ class GitWrapper(SCMWrapper):
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
+      # TODO(https://github.com/git-for-windows/git/issues/2569): Remove once
+      # fixed.
+      if sys.platform.startswith('win'):
+        try:
+          self._Run(['config', '--unset', 'core.worktree'], options,
+                    cwd=self.checkout_path)
+        except subprocess2.CalledProcessError:
+          pass
     except:
       traceback.print_exc(file=self.out_fh)
       raise
@@ -1329,9 +1338,6 @@ class GitWrapper(SCMWrapper):
       fetch_cmd.append('--quiet')
     self._Run(fetch_cmd, options, show_header=options.verbose, retry=True)
 
-    # Return the revision that was fetched; this will be stored in 'FETCH_HEAD'
-    return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
-
   def _SetFetchConfig(self, options):
     """Adds, and optionally fetches, "branch-heads" and "tags" refspecs
     if requested."""
@@ -1366,13 +1372,42 @@ class GitWrapper(SCMWrapper):
       revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
     return revision
 
+  def _IsRunningUnderRosetta(self):
+    if sys.platform != 'darwin':
+      return False
+    if self._running_under_rosetta is None:
+      # If we are running under Rosetta, platform.machine() is
+      # 'x86_64'; we need to use a sysctl to see if we're being
+      # translated.
+      import ctypes
+      libSystem = ctypes.CDLL("libSystem.dylib")
+      ret = ctypes.c_int(0)
+      size = ctypes.c_size_t(4)
+      e = libSystem.sysctlbyname(ctypes.c_char_p(b'sysctl.proc_translated'),
+                                 ctypes.byref(ret), ctypes.byref(size), None, 0)
+      self._running_under_rosetta = e == 0 and ret.value == 1
+    return self._running_under_rosetta
+
   def _Run(self, args, options, **kwargs):
     # Disable 'unused options' warning | pylint: disable=unused-argument
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('filter_fn', self.filter)
     kwargs.setdefault('show_header', True)
     env = scm.GIT.ApplyEnvVars(kwargs)
+
     cmd = ['git'] + args
+
+    if self._IsRunningUnderRosetta():
+      # We currently only ship an Intel Python binary in depot_tools.
+      # Intel binaries run under Rosetta on ARM Macs, and by default
+      # prefer to run their subprocesses as Intel under Rosetta too.
+      # Intel git running under Rosetta has a bug where it fails to
+      # clone src.git (rdar://7868319), so until we ship a native
+      # ARM python3 binary, explicitly use `arch` to let git run
+      # the native ARM slice instead of the Intel slice.
+      # TODO(thakis): Remove this again once we ship an arm64 python3
+      # binary.
+      cmd = ['arch', '-arch', 'arm64e', '-arch', 'arm64'] + cmd
     gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 

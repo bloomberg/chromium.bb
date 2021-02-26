@@ -5,15 +5,15 @@
 
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
 #include "include/gpu/GrContextOptions.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/gpu/mtl/GrMtlTypes.h"
 
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
-sk_sp<SkSurface> SkMtkViewToSurface(MTKView* mtkView, GrContext* grContext) {
-    if (!grContext ||
+sk_sp<SkSurface> SkMtkViewToSurface(MTKView* mtkView, GrRecordingContext* rContext) {
+    if (!rContext ||
         MTLPixelFormatDepth32Float_Stencil8 != [mtkView depthStencilPixelFormat] ||
         MTLPixelFormatBGRA8Unorm != [mtkView colorPixelFormat]) {
         return nullptr;
@@ -22,18 +22,18 @@ sk_sp<SkSurface> SkMtkViewToSurface(MTKView* mtkView, GrContext* grContext) {
     const SkColorType colorType = kBGRA_8888_SkColorType;  // MTLPixelFormatBGRA8Unorm
     sk_sp<SkColorSpace> colorSpace = nullptr;  // MTLPixelFormatBGRA8Unorm
     const GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin;
-    const SkSurfaceProps surfaceProps(SkSurfaceProps::kLegacyFontHost_InitType);
+    const SkSurfaceProps surfaceProps;
     int sampleCount = (int)[mtkView sampleCount];
 
-    return SkSurface::MakeFromMTKView(grContext, (__bridge GrMTLHandle)mtkView, origin, sampleCount,
+    return SkSurface::MakeFromMTKView(rContext, (__bridge GrMTLHandle)mtkView, origin, sampleCount,
                                       colorType, colorSpace, &surfaceProps);
 }
 
 GrContextHolder SkMetalDeviceToGrContext(id<MTLDevice> device, id<MTLCommandQueue> queue) {
     GrContextOptions grContextOptions;  // set different options here.
-    return GrContextHolder(GrContext::MakeMetal((__bridge void*)device,
-                                                (__bridge void*)queue,
-                                                grContextOptions).release());
+    return GrContextHolder(GrDirectContext::MakeMetal((__bridge void*)device,
+                                                      (__bridge void*)queue,
+                                                      grContextOptions).release());
 }
 
 void SkMtkViewConfigForSkia(MTKView* mtkView) {

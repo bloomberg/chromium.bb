@@ -9,10 +9,11 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,27 +40,12 @@ class ArcKioskAppService : public KeyedService,
                            public arc::ArcKioskBridge::Delegate,
                            public ArcKioskAppLauncher::Delegate,
                            public ArcAppIcon::Observer,
-                           public arc::ArcSessionManager::Observer,
-                           public arc::ArcPolicyBridge::Observer {
+                           public arc::ArcSessionManagerObserver,
+                           public arc::ArcPolicyBridge::Observer,
+                           public KioskAppLauncher {
  public:
-  class Delegate {
-   public:
-    Delegate() = default;
-    virtual void OnAppDataUpdated() = 0;
-    virtual void OnAppStarted() = 0;
-    virtual void OnAppWindowLaunched() = 0;
-
-   protected:
-    virtual ~Delegate() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
   static ArcKioskAppService* Create(Profile* profile);
   static ArcKioskAppService* Get(content::BrowserContext* context);
-
-  void SetDelegate(Delegate* delegate);
 
   // KeyedService overrides
   void Shutdown() override;
@@ -89,13 +75,21 @@ class ArcKioskAppService : public KeyedService,
   // ArcAppIcon::Observer overrides
   void OnIconUpdated(ArcAppIcon* icon) override;
 
-  // ArcSessionManager::Observer overrides
+  // ArcSessionManagerObserver overrides
   void OnArcSessionRestarting() override;
   void OnArcSessionStopped(arc::ArcStopReason reason) override;
 
   // ArcPolicyBridge::Observer overrides
   void OnComplianceReportReceived(
       const base::Value* compliance_report) override;
+
+  // KioskAppLauncher:
+  void Initialize() override;
+  void ContinueWithNetworkReady() override;
+  void RestartLauncher() override;
+  void LaunchApp() override;
+
+  ArcKioskAppLauncher* GetLauncherForTesting() { return app_launcher_.get(); }
 
  private:
   explicit ArcKioskAppService(Profile* profile);
@@ -127,8 +121,6 @@ class ArcKioskAppService : public KeyedService,
   bool compliance_report_received_ = false;
   // Keeps track whether the app is already launched
   std::unique_ptr<ArcKioskAppLauncher> app_launcher_;
-  // Not owning the delegate, delegate removes itself in destructor
-  Delegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcKioskAppService);
 };

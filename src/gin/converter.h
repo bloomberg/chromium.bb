@@ -7,11 +7,13 @@
 
 #include <stdint.h>
 
+#include <ostream>
 #include <string>
 #include <type_traits>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "gin/gin_export.h"

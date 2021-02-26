@@ -19,7 +19,7 @@
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -199,6 +199,9 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   std::unique_ptr<BufferedMessageSender> message_sender_;
 
   DialInternalMessageUtil internal_message_util_;
+
+  // Mojo remote to the logger owned by the Media Router.
+  mojo::Remote<mojom::Logger> logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DialMediaRouteProvider> weak_ptr_factory_{this};

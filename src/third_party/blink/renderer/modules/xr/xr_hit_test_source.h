@@ -34,13 +34,13 @@ class XRHitTestSource : public ScriptWrappable {
   void Update(
       const Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const uint64_t id_;
   Member<XRSession> xr_session_;
 
-  Vector<device::mojom::blink::XRHitResult> last_frame_results_;
+  Vector<device::mojom::blink::XRHitResultPtr> last_frame_results_;
 };
 
 }  // namespace blink

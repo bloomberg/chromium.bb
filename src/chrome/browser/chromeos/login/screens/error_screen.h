@@ -77,7 +77,7 @@ class ErrorScreen : public BaseScreen,
   virtual void SetUIState(NetworkError::UIState ui_state);
 
   // Sets current error screen content according to current UI state,
-  // |error_state|, and |network|.
+  // `error_state`, and `network`.
   virtual void SetErrorState(NetworkError::ErrorState error_state,
                              const std::string& network);
 
@@ -112,6 +112,9 @@ class ErrorScreen : public BaseScreen,
   void DoShow();
   void DoHide();
 
+  void ShowNetworkErrorMessage(NetworkStateInformer::State state,
+                               NetworkError::ErrorReason reason);
+
  protected:
   // BaseScreen:
   void ShowImpl() override;
@@ -123,10 +126,9 @@ class ErrorScreen : public BaseScreen,
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetected() override;
-  void WhiteListCheckFailed(const std::string& email) override;
+  void OnPasswordChangeDetected(const UserContext& user_context) override;
+  void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
-  void SetAuthFlowOffline(bool offline) override;
 
   // NetworkConnectionObserver overrides:
   void ConnectToNetworkRequested(const std::string& service_path) override;

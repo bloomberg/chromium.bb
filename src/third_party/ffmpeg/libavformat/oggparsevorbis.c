@@ -165,7 +165,7 @@ int ff_vorbis_comment(AVFormatContext *as, AVDictionary **m,
                 av_freep(&tt);
                 av_freep(&ct);
                 if (ret > 0)
-                    ret = ff_flac_parse_picture(as, pict, ret);
+                    ret = ff_flac_parse_picture(as, pict, ret, 0);
                 av_freep(&pict);
                 if (ret < 0) {
                     av_log(as, AV_LOG_WARNING, "Failed to parse cover art block.\n");
@@ -287,7 +287,7 @@ static int vorbis_update_metadata(AVFormatContext *s, int idx)
         os->new_metadata = av_packet_pack_dictionary(st->metadata, &os->new_metadata_size);
     /* Send an empty dictionary to indicate that metadata has been cleared. */
     } else {
-        os->new_metadata = av_malloc(1);
+        os->new_metadata = av_mallocz(1);
         os->new_metadata_size = 0;
     }
 
@@ -385,7 +385,12 @@ static int vorbis_header(AVFormatContext *s, int idx)
             }
         }
     } else {
-        int ret = fixup_vorbis_headers(s, priv, &st->codecpar->extradata);
+        int ret;
+
+        if (priv->vp)
+             return AVERROR_INVALIDDATA;
+
+        ret = fixup_vorbis_headers(s, priv, &st->codecpar->extradata);
         if (ret < 0) {
             st->codecpar->extradata_size = 0;
             return ret;

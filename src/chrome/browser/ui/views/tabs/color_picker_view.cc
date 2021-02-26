@@ -36,6 +36,10 @@ namespace {
 class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
  public:
   ColorPickerHighlightPathGenerator() = default;
+  ColorPickerHighlightPathGenerator(const ColorPickerHighlightPathGenerator&) =
+      delete;
+  ColorPickerHighlightPathGenerator& operator=(
+      const ColorPickerHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
@@ -45,24 +49,21 @@ class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
     const gfx::PointF center = bounds.CenterPoint();
     return SkPath().addCircle(center.x(), center.y(), bounds.width() / 2.0f);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ColorPickerHighlightPathGenerator);
 };
 
 }  // namespace
 
 // Represents one of the colors the user can pick from. Displayed as a solid
 // circle of the given color.
-class ColorPickerElementView : public views::Button,
-                               public views::ButtonListener {
+class ColorPickerElementView : public views::Button {
  public:
   ColorPickerElementView(
       base::RepeatingCallback<void(ColorPickerElementView*)> selected_callback,
       const views::BubbleDialogDelegateView* bubble_view,
       tab_groups::TabGroupColorId color_id,
       base::string16 color_name)
-      : Button(this),
+      : Button(base::BindRepeating(&ColorPickerElementView::ButtonPressed,
+                                   base::Unretained(this))),
         selected_callback_(std::move(selected_callback)),
         bubble_view_(bubble_view),
         color_id_(color_id),
@@ -70,7 +71,6 @@ class ColorPickerElementView : public views::Button,
     DCHECK(selected_callback_);
 
     SetAccessibleName(color_name);
-    SetFocusForPlatform();
     SetInstallFocusRingOnFocus(true);
     views::HighlightPathGenerator::Install(
         this, std::make_unique<ColorPickerHighlightPathGenerator>());
@@ -88,7 +88,7 @@ class ColorPickerElementView : public views::Button,
     SetBorder(views::CreateEmptyBorder(insets));
 
     SetInkDropMode(InkDropMode::OFF);
-    set_animate_on_state_change(true);
+    SetAnimateOnStateChange(true);
   }
 
   void SetSelected(bool selected) {
@@ -155,18 +155,6 @@ class ColorPickerElementView : public views::Button,
     PaintSelectionIndicator(canvas);
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override {
-    DCHECK_EQ(this, sender);
-
-    // Pressing this a second time shouldn't do anything.
-    if (!selected_) {
-      selected_ = true;
-      SchedulePaint();
-      selected_callback_.Run(this);
-    }
-  }
-
  private:
   // Paints a ring in our color circle to indicate selection or mouse hover.
   // Does nothing if not selected or hovered.
@@ -189,6 +177,15 @@ class ColorPickerElementView : public views::Button,
     DCHECK(!indicator_bounds.size().IsEmpty());
     canvas->DrawCircle(indicator_bounds.CenterPoint(),
                        indicator_bounds.width() / 2.0f, flags);
+  }
+
+  void ButtonPressed() {
+    // Pressing this a second time shouldn't do anything.
+    if (!selected_) {
+      selected_ = true;
+      SchedulePaint();
+      selected_callback_.Run(this);
+    }
   }
 
   const base::RepeatingCallback<void(ColorPickerElementView*)>

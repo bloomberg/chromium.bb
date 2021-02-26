@@ -7,13 +7,15 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # TODO(mash): Fix. https://crbug.com/854323
   "input_events_blocker\.cc": [
     "+ash/shell.h",
   ],
   # TODO(jdufault): Deprecate. https://crbug.com/792654
   "login_display_host_webui\.cc": [
     "+ash/accessibility/focus_ring_controller.h",
+    "+ash/shell.h",
+  ],
+  "login_display_host_mojo\.cc": [
     "+ash/shell.h",
   ],
 }

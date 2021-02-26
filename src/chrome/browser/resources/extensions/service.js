@@ -106,6 +106,11 @@ export class Service {
     });
   }
 
+  /** @override */
+  recordUserAction(metricName) {
+    chrome.metricsPrivate.recordUserAction(metricName);
+  }
+
   /**
    * Opens a file browser dialog for the user to select a file (or directory).
    * @param {chrome.developerPrivate.SelectType} selectType
@@ -249,6 +254,7 @@ export class Service {
       renderProcessId: view.renderProcessId,
       renderViewId: view.renderViewId,
       incognito: view.incognito,
+      isServiceWorker: view.type === 'EXTENSION_SERVICE_WORKER_BACKGROUND',
     });
   }
 

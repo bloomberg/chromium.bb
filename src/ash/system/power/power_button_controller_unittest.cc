@@ -799,13 +799,14 @@ TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
 
 // Tests the menu items according to the login and screen locked status.
 TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
-  // No sign out, lock screen and feedback items if user is not logged in.
+  // Should have feedback but not sign out and lock screen items if there is no
+  // user signed in.
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   OpenPowerButtonMenu();
   EXPECT_FALSE(power_button_test_api_->MenuHasSignOutItem());
   EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
-  EXPECT_FALSE(power_button_test_api_->MenuHasFeedbackItem());
+  EXPECT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
   TapToDismissPowerButtonMenu();
 
   // Should have sign out and feedback items if in guest mode (or, generally,
@@ -823,7 +824,6 @@ TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
   // and screen is unlocked.
   ClearLogin();
   CreateUserSessions(1);
-  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   OpenPowerButtonMenu();
   EXPECT_FALSE(GetLockedState());
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
@@ -1008,54 +1008,50 @@ TEST_F(PowerButtonControllerTest, ESCDismissMenu) {
 
 // Tests the navigation of the menu.
 TEST_F(PowerButtonControllerTest, MenuNavigation) {
+  ClearLogin();
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
+  OpenPowerButtonMenu();
+  ASSERT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
+  auto* menu_view = power_button_test_api_->GetPowerButtonMenuView();
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(menu_view->power_off_item_for_test()->HasFocus());
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(menu_view->feedback_item_for_test()->HasFocus());
+  TapToDismissPowerButtonMenu();
+
+  ClearLogin();
+  CreateUserSessions(1);
   OpenPowerButtonMenu();
   ASSERT_TRUE(power_button_test_api_->MenuHasSignOutItem());
   ASSERT_TRUE(power_button_test_api_->MenuHasLockScreenItem());
   ASSERT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
+  menu_view = power_button_test_api_->GetPowerButtonMenuView();
   PressKey(ui::VKEY_TAB);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->power_off_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->sign_out_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_DOWN);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->lock_screen_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->lock_screen_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_TAB);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->feedback_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->feedback_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_TAB);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->power_off_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_UP);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->feedback_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->feedback_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_UP);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->lock_screen_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->lock_screen_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_LEFT);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->sign_out_item_for_test()->HasFocus());
 
   PressKey(ui::VKEY_UP);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item_for_test()
-                  ->HasFocus());
+  EXPECT_TRUE(menu_view->power_off_item_for_test()->HasFocus());
 }
 
 // Tests that the partially shown menu will be dismissed by power button up in

@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -61,7 +62,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
     return;
 
   if (devices_.size() == 1) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
@@ -73,11 +74,13 @@ void SharedClipboardContextMenuObserver::InitMenu(
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices_[0]->client_name())),
-        controller_->GetVectorIcon());
+        ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
+                                       /*color_id=*/-1,
+                                       ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   } else {
     BuildSubMenu();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddSubMenu(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
         l10n_util::GetStringUTF16(
@@ -87,7 +90,10 @@ void SharedClipboardContextMenuObserver::InitMenu(
     proxy_->AddSubMenuWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
         IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
-        sub_menu_model_.get(), controller_->GetVectorIcon());
+        sub_menu_model_.get(),
+        ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
+                                       /*color_id=*/-1,
+                                       ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   }
 }
@@ -135,8 +141,8 @@ void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
     int chosen_device_index) {
   if (size_t{chosen_device_index} >= devices_.size())
     return;
-  LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
-                                nullptr /* No suffix */, chosen_device_index);
+  LogSharingSelectedIndex(controller_->GetFeatureMetricsPrefix(),
+                          nullptr /* No suffix */, chosen_device_index);
 
   controller_->OnDeviceSelected(text_, *devices_[chosen_device_index]);
   LogSharedClipboardSelectedTextSize(text_.size());

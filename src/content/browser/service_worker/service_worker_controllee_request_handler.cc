@@ -16,8 +16,8 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -31,7 +31,6 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -68,17 +67,17 @@ bool ShouldFallbackToLoadOfflinePage(
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerContainerHost> container_host,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination destination,
     bool skip_service_worker,
     ServiceWorkerAccessedCallback service_worker_accessed_callback)
     : context_(std::move(context)),
       container_host_(std::move(container_host)),
-      resource_type_(resource_type),
+      destination_(destination),
       skip_service_worker_(skip_service_worker),
       force_update_started_(false),
       service_worker_accessed_callback_(
           std::move(service_worker_accessed_callback)) {
-  DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
+  DCHECK(ServiceWorkerUtils::IsMainRequestDestination(destination));
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerControlleeRequestHandler::"
                          "ServiceWorkerControlleeRequestHandler",
@@ -100,7 +99,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
 
   // For navigations, the update logic is taken care of
   // during navigation and waits for the HintToUpdateServiceWorker message.
-  if (blink::IsResourceTypeFrame(resource_type_))
+  if (blink::IsRequestDestinationFrame(destination_))
     return;
 
   // For shared workers. The renderer doesn't yet send a
@@ -118,7 +117,6 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
 void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     ServiceWorkerLoaderCallback callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback) {
   // InitializeContainerHost() will update the host. This is important to do
@@ -167,7 +165,6 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   fallback_callback_ = std::move(fallback_callback);
   registration_lookup_start_time_ = base::TimeTicks::Now();
   browser_context_ = browser_context;
-  resource_context_ = resource_context;
 
   // Look up a registration.
   context_->registry()->FindRegistrationForClientUrl(
@@ -284,22 +281,11 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   AllowServiceWorkerResult allow_service_worker =
-      AllowServiceWorkerResult::No();
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    allow_service_worker =
-        GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            registration->scope(),
-            container_host_->site_for_cookies().RepresentativeUrl(),
-            container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            browser_context_);
-  } else {
-    allow_service_worker =
-        GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(),
-            container_host_->site_for_cookies().RepresentativeUrl(),
-            container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            resource_context_);
-  }
+      GetContentClient()->browser()->AllowServiceWorker(
+          registration->scope(),
+          container_host_->site_for_cookies().RepresentativeUrl(),
+          container_host_->top_frame_origin(), /*script_url=*/GURL(),
+          browser_context_);
 
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
@@ -317,7 +303,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  if (!container_host_->IsContextSecureForServiceWorker()) {
+  if (!container_host_->IsEligibleForServiceWorkerController()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
     TRACE_EVENT_WITH_FLOW1(
@@ -453,9 +439,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
       active_version->site_for_uma(),
-      resource_type_ == blink::mojom::ResourceType::kMainFrame);
+      destination_ == network::mojom::RequestDestination::kDocument);
 
-  if (blink::IsResourceTypeFrame(resource_type_))
+  if (blink::IsRequestDestinationFrame(destination_))
     container_host_->AddServiceWorkerToUpdate(active_version);
 
   if (active_version->fetch_handler_existence() !=
@@ -471,9 +457,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   }
 
   // Finally, we want to forward to the service worker! Make a
-  // ServiceWorkerNavigationLoader which does that work.
-  loader_wrapper_ = std::make_unique<ServiceWorkerNavigationLoaderWrapper>(
-      std::make_unique<ServiceWorkerNavigationLoader>(
+  // ServiceWorkerMainResourceLoader which does that work.
+  loader_wrapper_ = std::make_unique<ServiceWorkerMainResourceLoaderWrapper>(
+      std::make_unique<ServiceWorkerMainResourceLoader>(
           std::move(fallback_callback_), container_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
@@ -484,7 +470,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
       "Forwarded to the ServiceWorker");
   std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
+      .Run(base::BindOnce(&ServiceWorkerMainResourceLoader::StartRequest,
                           loader_wrapper_->get()->AsWeakPtr()));
 }
 

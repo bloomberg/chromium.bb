@@ -39,7 +39,7 @@ namespace trace_processor {
 
 namespace {
 
-constexpr char kBindAddr[] = "127.0.0.1:9001";
+constexpr char kBindPort[] = "9001";
 
 // 32 MiB payload + 128K for HTTP headers.
 constexpr size_t kMaxRequestSize = (32 * 1024 + 128) * 1024;
@@ -61,13 +61,14 @@ struct HttpRequest {
   base::StringView uri;
   base::StringView origin;
   base::StringView body;
+  int id = 0;
 };
 
 class HttpServer : public base::UnixSocket::EventListener {
  public:
   explicit HttpServer(std::unique_ptr<TraceProcessor>);
   ~HttpServer() override;
-  void Run();
+  void Run(const char*, const char*);
 
  private:
   size_t ParseOneHttpRequest(Client* client);
@@ -81,7 +82,8 @@ class HttpServer : public base::UnixSocket::EventListener {
 
   Rpc trace_processor_rpc_;
   base::UnixTaskRunner task_runner_;
-  std::unique_ptr<base::UnixSocket> sock_;
+  std::unique_ptr<base::UnixSocket> sock4_;
+  std::unique_ptr<base::UnixSocket> sock6_;
   std::vector<Client> clients_;
 };
 
@@ -125,25 +127,42 @@ HttpServer::HttpServer(std::unique_ptr<TraceProcessor> preloaded_instance)
     : trace_processor_rpc_(std::move(preloaded_instance)) {}
 HttpServer::~HttpServer() = default;
 
-void HttpServer::Run() {
-  PERFETTO_ILOG("[HTTP] Starting RPC server on %s", kBindAddr);
-  sock_ = base::UnixSocket::Listen(kBindAddr, this, &task_runner_,
-                                   base::SockFamily::kInet,
-                                   base::SockType::kStream);
+void HttpServer::Run(const char* kBindAddr4, const char* kBindAddr6) {
+  PERFETTO_ILOG("[HTTP] Starting RPC server on %s and %s", kBindAddr4,
+                kBindAddr6);
+
+  sock4_ = base::UnixSocket::Listen(kBindAddr4, this, &task_runner_,
+                                    base::SockFamily::kInet,
+                                    base::SockType::kStream);
+  bool ipv4_listening = sock4_ && sock4_->is_listening();
+  if (!ipv4_listening) {
+    PERFETTO_ILOG("Failed to listen on IPv4 socket");
+  }
+
+  sock6_ = base::UnixSocket::Listen(kBindAddr6, this, &task_runner_,
+                                    base::SockFamily::kInet6,
+                                    base::SockType::kStream);
+  bool ipv6_listening = sock6_ && sock6_->is_listening();
+  if (!ipv6_listening) {
+    PERFETTO_ILOG("Failed to listen on IPv6 socket");
+  }
+
+  PERFETTO_CHECK(ipv4_listening || ipv6_listening);
+
   task_runner_.Run();
 }
 
 void HttpServer::OnNewIncomingConnection(
     base::UnixSocket*,
     std::unique_ptr<base::UnixSocket> sock) {
-  PERFETTO_DLOG("[HTTP] New connection");
+  PERFETTO_LOG("[HTTP] New connection");
   clients_.emplace_back(std::move(sock));
 }
 
 void HttpServer::OnConnect(base::UnixSocket*, bool) {}
 
 void HttpServer::OnDisconnect(base::UnixSocket* sock) {
-  PERFETTO_DLOG("[HTTP] Client disconnected");
+  PERFETTO_LOG("[HTTP] Client disconnected");
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
     if (it->sock.get() == sock) {
       clients_.erase(it);
@@ -224,6 +243,8 @@ size_t HttpServer::ParseOneHttpRequest(Client* client) {
         body_size = static_cast<size_t>(atoi(hdr_value.ToStdString().c_str()));
       } else if (hdr_name.CaseInsensitiveEq("origin")) {
         http_req.origin = hdr_value;
+      } else if (hdr_name.CaseInsensitiveEq("x-seq-id")) {
+        http_req.id = atoi(hdr_value.ToStdString().c_str());
       }
     }
     pos = next + 2;
@@ -241,14 +262,21 @@ size_t HttpServer::ParseOneHttpRequest(Client* client) {
 }
 
 void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
-  PERFETTO_LOG("[HTTP] %s %s (body: %zu bytes)",
+  static int last_req_id = 0;
+  if (req.id) {
+    if (last_req_id && req.id != last_req_id + 1 && req.id != 1)
+      PERFETTO_ELOG("HTTP Request out of order");
+    last_req_id = req.id;
+  }
+
+  PERFETTO_LOG("[HTTP] %04d %s %s (body: %zu bytes)", req.id,
                req.method.ToStdString().c_str(), req.uri.ToStdString().c_str(),
                req.body.size());
   std::string allow_origin_hdr =
       "Access-Control-Allow-Origin: " + req.origin.ToStdString();
   std::initializer_list<const char*> headers = {
       "Connection: Keep-Alive",                //
-      "Access-Control-Expose-Headers: *",      //
+      "Cache-Control: no-cache",               //
       "Keep-Alive: timeout=5, max=1000",       //
       "Content-Type: application/x-protobuf",  //
       allow_origin_hdr.c_str()};
@@ -259,7 +287,7 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
                      {
                          "Access-Control-Allow-Methods: POST, GET, OPTIONS",
                          "Access-Control-Allow-Headers: *",
-                         "Access-Control-Max-Age: 600",
+                         "Access-Control-Max-Age: 86400",
                          allow_origin_hdr.c_str(),
                      });
   }
@@ -278,6 +306,15 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
   if (req.uri == "/restore_initial_tables") {
     trace_processor_rpc_.RestoreInitialTables();
     return HttpReply(client->sock.get(), "200 OK", headers);
+  }
+
+  if (req.uri == "/query") {
+    // TODO(primiano): implement chunking here.
+    PERFETTO_CHECK(req.body.size() > 0u);
+    std::vector<uint8_t> response = trace_processor_rpc_.Query(
+        reinterpret_cast<const uint8_t*>(req.body.data()), req.body.size());
+    return HttpReply(client->sock.get(), "200 OK", headers, response.data(),
+                     response.size());
   }
 
   if (req.uri == "/raw_query") {
@@ -304,14 +341,36 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
                      res.size());
   }
 
+  if (req.uri == "/get_metric_descriptors") {
+    std::vector<uint8_t> res = trace_processor_rpc_.GetMetricDescriptors(
+        reinterpret_cast<const uint8_t*>(req.body.data()), req.body.size());
+    return HttpReply(client->sock.get(), "200 OK", headers, res.data(),
+                     res.size());
+  }
+
+  if (req.uri == "/enable_metatrace") {
+    trace_processor_rpc_.EnableMetatrace();
+    return HttpReply(client->sock.get(), "200 OK", headers);
+  }
+
+  if (req.uri == "/disable_and_read_metatrace") {
+    std::vector<uint8_t> res = trace_processor_rpc_.DisableAndReadMetatrace();
+    return HttpReply(client->sock.get(), "200 OK", headers, res.data(),
+                     res.size());
+  }
+
   return HttpReply(client->sock.get(), "404 Not Found", headers);
 }
 
 }  // namespace
 
-void RunHttpRPCServer(std::unique_ptr<TraceProcessor> preloaded_instance) {
+void RunHttpRPCServer(std::unique_ptr<TraceProcessor> preloaded_instance,
+                      std::string port_number) {
   HttpServer srv(std::move(preloaded_instance));
-  srv.Run();
+  std::string port = port_number.empty() ? kBindPort : port_number;
+  std::string ipv4_addr = "127.0.0.1:" + port;
+  std::string ipv6_addr = "[::1]:" + port;
+  srv.Run(ipv4_addr.c_str(), ipv6_addr.c_str());
 }
 
 }  // namespace trace_processor

@@ -7,9 +7,12 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
+#include "cc/test/cc_test_suite.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
@@ -24,10 +27,17 @@
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
+
+// CompositorMode is declared in the cc namespace, so this function also needs
+// to be in the cc namespace.
+void PrintTo(CompositorMode mode, std::ostream* os) {
+  *os << (mode == CompositorMode::THREADED ? "MultiThreaded"
+                                           : "SingleThreaded");
+}
+
 namespace {
 
-auto CombineWithCompositorModes(
-    const std::vector<LayerTreeTest::RendererType>& types) {
+auto CombineWithCompositorModes(const std::vector<viz::RendererType>& types) {
   return ::testing::Combine(::testing::ValuesIn(types),
                             ::testing::Values(CompositorMode::SINGLE_THREADED,
                                               CompositorMode::THREADED));
@@ -36,11 +46,13 @@ auto CombineWithCompositorModes(
 class LayerTreeHostCopyRequestTest
     : public LayerTreeTest,
       public ::testing::WithParamInterface<
-          ::testing::tuple<LayerTreeTest::RendererType, CompositorMode>> {
+          ::testing::tuple<viz::RendererType, CompositorMode>> {
  public:
   LayerTreeHostCopyRequestTest() : LayerTreeTest(renderer_type()) {}
 
-  RendererType renderer_type() const { return ::testing::get<0>(GetParam()); }
+  viz::RendererType renderer_type() const {
+    return ::testing::get<0>(GetParam());
+  }
 
   CompositorMode compositor_mode() const {
     return ::testing::get<1>(GetParam());
@@ -164,9 +176,8 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestMultipleRequests,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL,
-                                LayerTreeTest::RENDERER_SOFTWARE}));
+    CombineWithCompositorModes(viz::GetRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequests, Test) {
   RunTest(compositor_mode());
@@ -176,8 +187,16 @@ TEST_P(LayerTreeHostCopyRequestTestMultipleRequests, Test) {
 // which causes callbacks for sync queries to be sent in reverse order.
 class LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder
     : public LayerTreeHostCopyRequestTestMultipleRequests {
+  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+  CreateDisplayControllerOnThread() override {
+    // In this implementation, none of the output surface has a real gpu thread,
+    // and there is no overlay support.
+    return nullptr;
+  }
+
   std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread() override {
+  CreateDisplaySkiaOutputSurfaceOnThread(
+      viz::DisplayCompositorMemoryAndTaskController*) override {
     auto skia_output_surface = viz::FakeSkiaOutputSurface::Create3d();
     skia_output_surface->SetOutOfOrderCallbacks(true);
     return skia_output_surface;
@@ -200,8 +219,8 @@ class LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder, Test) {
   RunTest(compositor_mode());
@@ -225,9 +244,7 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
     client_.set_bounds(root_->bounds());
   }
 
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
     int frame = layer_tree_host()->SourceFrameNumber();
@@ -261,8 +278,8 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestCompletionCausesCommit,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestCompletionCausesCommit, Test) {
   RunTest(compositor_mode());
@@ -288,10 +305,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
     client_.set_bounds(root_->bounds());
   }
 
-  void BeginTest() override {
-    callback_count_ = 0;
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
     int frame = layer_tree_host()->SourceFrameNumber();
@@ -302,71 +316,77 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
             viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
             base::BindOnce(
                 &LayerTreeHostCopyRequestTestLayerDestroyed::CopyOutputCallback,
-                base::Unretained(this))));
+                base::Unretained(this), &main_destroyed_event_)));
         impl_destroyed_->RequestCopyOfOutput(std::make_unique<
                                              viz::CopyOutputRequest>(
             viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
             base::BindOnce(
                 &LayerTreeHostCopyRequestTestLayerDestroyed::CopyOutputCallback,
-                base::Unretained(this))));
-        EXPECT_EQ(0, callback_count_);
+                base::Unretained(this), &impl_destroyed_event_)));
+        EXPECT_FALSE(main_destroyed_event_.IsSignaled());
+        EXPECT_FALSE(impl_destroyed_event_.IsSignaled());
 
         // Destroy the main thread layer right away.
         main_destroyed_->RemoveFromParent();
         main_destroyed_.reset();
 
-        // Should callback with a NULL bitmap.
-        EXPECT_EQ(1, callback_count_);
-
         // Prevent drawing so we can't make a copy of the impl_destroyed layer.
-        layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(gfx::Rect(), 1.f,
+                                                   GetCurrentLocalSurfaceId());
         break;
       case 2:
-        // Flush the message loops and make sure the callbacks run.
+        // Flush the message loops.
         layer_tree_host()->SetNeedsCommit();
         break;
       case 3:
-        // No drawing means no readback yet.
-        EXPECT_EQ(1, callback_count_);
+        // There is no timing promise of when we'll get the main callback but if
+        // we wait for it, we should receive it before we destroy the impl and
+        // before the impl callback. The resulting bitmap will be empty because
+        // we destroyed it in the first frame before it got a chance to draw.
+        EXPECT_TRUE(
+            main_destroyed_event_.TimedWait(TestTimeouts::action_timeout()));
+        EXPECT_FALSE(impl_destroyed_event_.IsSignaled());
 
         // Destroy the impl thread layer.
         impl_destroyed_->RemoveFromParent();
         impl_destroyed_.reset();
-
-        // No callback yet because it's on the impl side.
-        EXPECT_EQ(1, callback_count_);
         break;
       case 4:
-        // Flush the message loops and make sure the callbacks run.
+        // Flush the message loops.
         layer_tree_host()->SetNeedsCommit();
         break;
       case 5:
-        // We should get another callback with a NULL bitmap.
-        EXPECT_EQ(2, callback_count_);
+        // There is no timing promise of when we'll get the impl callback but if
+        // we wait for it, we should receive it before the end of the test.
+        // The resulting bitmap will be empty because we called
+        // SetViewportRectAndScale() in the first frame before it got a chance
+        // to draw.
+        EXPECT_TRUE(
+            impl_destroyed_event_.TimedWait(TestTimeouts::action_timeout()));
         EndTest();
         break;
     }
   }
 
-  void CopyOutputCallback(std::unique_ptr<viz::CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
+  void CopyOutputCallback(base::WaitableEvent* event,
+                          std::unique_ptr<viz::CopyOutputResult> result) {
     EXPECT_TRUE(result->IsEmpty());
-    ++callback_count_;
+    event->Signal();
   }
 
-  int callback_count_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
+  base::WaitableEvent main_destroyed_event_;
   scoped_refptr<FakePictureLayer> main_destroyed_;
+  base::WaitableEvent impl_destroyed_event_;
   scoped_refptr<FakePictureLayer> impl_destroyed_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestLayerDestroyed,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestLayerDestroyed, Test) {
   RunTest(compositor_mode());
@@ -471,8 +491,8 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestInHiddenSubtree,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestInHiddenSubtree, Test) {
   RunTest(compositor_mode());
@@ -537,7 +557,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {
+      const viz::AggregatedRenderPassList& render_passes) override {
     EXPECT_TRUE(will_draw_and_swap) << did_swap_;
     if (did_swap_) {
       // TODO(crbug.com/564832): Ignore the extra frame that occurs due to copy
@@ -578,8 +598,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void AfterTest() override { EXPECT_TRUE(did_swap_); }
 
-  viz::RenderPassId parent_render_pass_id = 0;
-  viz::RenderPassId copy_layer_render_pass_id = 0;
+  viz::AggregatedRenderPassId parent_render_pass_id;
+  viz::AggregatedRenderPassId copy_layer_render_pass_id;
   TestLayerTreeFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;
@@ -592,8 +612,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest, Test) {
   RunTest(compositor_mode());
@@ -648,8 +668,8 @@ class LayerTreeHostCopyRequestTestClippedOut
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestClippedOut,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestClippedOut, Test) {
   RunTest(compositor_mode());
@@ -708,8 +728,8 @@ class LayerTreeHostCopyRequestTestScaledLayer
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestScaledLayer,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestScaledLayer, Test) {
   RunTest(compositor_mode());
@@ -746,7 +766,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 
     // Prevent drawing.
     layer_tree_host()->SetViewportRectAndScale(gfx::Rect(0, 0), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
+                                               viz::LocalSurfaceId());
 
     AddCopyRequest(copy_layer_.get());
   }
@@ -762,8 +782,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Allow drawing.
       layer_tree_host()->SetViewportRectAndScale(
-          gfx::Rect(root_->bounds()), 1.f,
-          GetCurrentLocalSurfaceIdAllocation());
+          gfx::Rect(root_->bounds()), 1.f, GetCurrentLocalSurfaceId());
 
       AddCopyRequest(copy_layer_.get());
     }
@@ -803,8 +822,8 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTestAsyncTwoReadbacksWithoutDraw,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw, Test) {
   RunTest(compositor_mode());
@@ -813,8 +832,15 @@ TEST_P(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw, Test) {
 class LayerTreeHostCopyRequestTestDeleteSharedImage
     : public LayerTreeHostCopyRequestTest {
  protected:
+  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+  CreateDisplayControllerOnThread() override {
+    // In this implementation, none of the output surface has a real gpu thread,
+    // and there is no overlay support.
+    return nullptr;
+  }
   std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread() override {
+  CreateDisplaySkiaOutputSurfaceOnThread(
+      viz::DisplayCompositorMemoryAndTaskController*) override {
     display_context_provider_ = viz::TestContextProvider::Create();
     display_context_provider_->BindToCurrentThread();
     return viz::FakeSkiaOutputSurface::Create3d(display_context_provider_);
@@ -946,8 +972,8 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestDeleteSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
   RunTest(compositor_mode());
@@ -956,8 +982,15 @@ TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
 class LayerTreeHostCopyRequestTestCountSharedImages
     : public LayerTreeHostCopyRequestTest {
  protected:
+  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+  CreateDisplayControllerOnThread() override {
+    // In this implementation, none of the output surface has a real gpu thread,
+    // and there is no overlay support.
+    return nullptr;
+  }
   std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread() override {
+  CreateDisplaySkiaOutputSurfaceOnThread(
+      viz::DisplayCompositorMemoryAndTaskController*) override {
     display_context_provider_ = viz::TestContextProvider::Create();
     display_context_provider_->BindToCurrentThread();
     return viz::FakeSkiaOutputSurface::Create3d(display_context_provider_);
@@ -1000,9 +1033,7 @@ class LayerTreeHostCopyRequestTestCountSharedImages
     LayerTreeHostCopyRequestTest::SetupTree();
   }
 
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   virtual void RequestCopy(Layer* layer) = 0;
 
@@ -1091,8 +1122,8 @@ class LayerTreeHostCopyRequestTestCreatesSharedImage
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestCreatesSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestCreatesSharedImage, Test) {
   RunTest(compositor_mode());
@@ -1147,8 +1178,8 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
         // Stop drawing.
-        layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(gfx::Rect(), 1.f,
+                                                   GetCurrentLocalSurfaceId());
         break;
       }
       case 2:
@@ -1161,7 +1192,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
         // Allow us to draw now.
         layer_tree_host()->SetViewportRectAndScale(
             gfx::Rect(layer_tree_host()->root_layer()->bounds()), 1.f,
-            GetCurrentLocalSurfaceIdAllocation());
+            GetCurrentLocalSurfaceId());
         break;
       case 4:
         EXPECT_EQ(1, callback_count_);
@@ -1179,8 +1210,8 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestDestroyBeforeCopy,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestDestroyBeforeCopy, Test) {
   RunTest(compositor_mode());
@@ -1234,8 +1265,8 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
                                base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
-        layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(gfx::Rect(), 1.f,
+                                                   GetCurrentLocalSurfaceId());
         break;
       }
       case 2:
@@ -1262,8 +1293,8 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestShutdownBeforeCopy,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestShutdownBeforeCopy, Test) {
   RunTest(compositor_mode());
@@ -1394,8 +1425,8 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes(viz::GetGpuRendererTypesNoDawn()),
+    PrintTupleToStringParamName());
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest, Test) {
   RunTest(compositor_mode());

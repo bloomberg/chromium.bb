@@ -9,12 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-using autofill::PasswordForm;
 
 namespace password_manager {
 
@@ -35,9 +33,8 @@ UiCredential::UiCredential(const PasswordForm& form,
                            const url::Origin& affiliated_origin)
     : username_(form.username_value),
       password_(form.password_value),
-      origin_(form.is_affiliation_based_match
-                  ? affiliated_origin
-                  : url::Origin::Create(form.origin)),
+      origin_(form.is_affiliation_based_match ? affiliated_origin
+                                              : url::Origin::Create(form.url)),
       is_public_suffix_match_(form.is_public_suffix_match),
       is_affiliation_based_match_(form.is_affiliation_based_match) {}
 

@@ -8,17 +8,19 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_source_parameters.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/modules/media/audio/web_audio_input_ipc_factory.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 
@@ -87,7 +89,10 @@ void PepperPlatformAudioInput::OnStreamCreated(
 #endif
   DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
-  if (base::ThreadTaskRunnerHandle::Get().get() != main_task_runner_.get()) {
+  // If we're not on the main thread then bounce over to it. Don't use
+  // base::ThreadTaskRunnerHandle::Get() as |main_task_runner_| will never
+  // match that. See crbug.com/1150822.
+  if (!main_task_runner_->BelongsToCurrentThread()) {
     // If shutdown has occurred, |client_| will be NULL and the handles will be
     // cleaned up on the main thread.
     main_task_runner_->PostTask(
@@ -123,14 +128,7 @@ PepperPlatformAudioInput::~PepperPlatformAudioInput() {
 }
 
 PepperPlatformAudioInput::PepperPlatformAudioInput()
-    : client_(nullptr),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_task_runner_(ChildProcess::current()->io_task_runner()),
-      render_frame_id_(MSG_ROUTING_NONE),
-      create_stream_sent_(false),
-      pending_open_device_(false),
-      pending_open_device_id_(-1),
-      ipc_startup_state_(kIdle) {}
+    : io_task_runner_(ChildProcess::current()->io_task_runner()) {}
 
 bool PepperPlatformAudioInput::Initialize(
     int render_frame_id,
@@ -138,14 +136,16 @@ bool PepperPlatformAudioInput::Initialize(
     int sample_rate,
     int frames_per_buffer,
     PepperAudioInputHost* client) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id);
   if (!render_frame || !client)
     return false;
 
+  main_task_runner_ =
+      render_frame->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
+
   render_frame_id_ = render_frame_id;
+  render_frame_token_ = render_frame->GetWebFrame()->GetLocalFrameToken();
   client_ = client;
 
   if (!GetMediaDeviceManager())
@@ -175,8 +175,8 @@ void PepperPlatformAudioInput::InitializeOnIOThread(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (ipc_startup_state_ != kStopped)
-    ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(
-        render_frame_id_, media::AudioSourceParameters(session_id));
+    ipc_ = blink::WebAudioInputIPCFactory::GetInstance().CreateAudioInputIPC(
+        render_frame_token_, media::AudioSourceParameters(session_id));
   if (!ipc_)
     return;
 

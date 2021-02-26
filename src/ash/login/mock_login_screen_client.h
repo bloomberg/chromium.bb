@@ -24,13 +24,6 @@ class MockLoginScreenClient : public LoginScreenClient {
                bool authenticated_by_pin,
                base::OnceCallback<void(bool)>& callback));
   MOCK_METHOD(void,
-              AuthenticateUserWithExternalBinary_,
-              (const AccountId& account_id,
-               base::OnceCallback<void(bool)>& callback));
-  MOCK_METHOD(void,
-              EnrollUserWithExternalBinary_,
-              (base::OnceCallback<void(bool)> & callback));
-  MOCK_METHOD(void,
               AuthenticateUserWithChallengeResponse_,
               (const AccountId& account_id,
                base::OnceCallback<void(bool)>& callback));
@@ -41,8 +34,7 @@ class MockLoginScreenClient : public LoginScreenClient {
                base::Time validation_time));
 
   // Set the result that should be passed to |callback| in
-  // |AuthenticateUserWithPasswordOrPin| or
-  // |AuthenticateUserWithExternalBinary|.
+  // |AuthenticateUserWithPasswordOrPin|.
   void set_authenticate_user_callback_result(bool value) {
     authenticate_user_callback_result_ = value;
   }
@@ -59,25 +51,12 @@ class MockLoginScreenClient : public LoginScreenClient {
       base::OnceCallback<void(bool)>* storage) {
     authenticate_user_with_password_or_pin_callback_storage_ = storage;
   }
-  void set_authenticate_user_with_external_binary_storage(
-      base::OnceCallback<void(bool)>* storage) {
-    authenticate_user_with_external_binary_callback_storage_ = storage;
-  }
-  void set_enroll_user_with_external_binary_storage(
-      base::OnceCallback<void(bool)>* storage) {
-    enroll_user_with_external_binary_callback_storage_ = storage;
-  }
 
   // LoginScreenClient:
   void AuthenticateUserWithPasswordOrPin(
       const AccountId& account_id,
       const std::string& password,
       bool authenticated_by_pin,
-      base::OnceCallback<void(bool)> callback) override;
-  void AuthenticateUserWithExternalBinary(
-      const AccountId& account_id,
-      base::OnceCallback<void(bool)> callback) override;
-  void EnrollUserWithExternalBinary(
       base::OnceCallback<void(bool)> callback) override;
   void AuthenticateUserWithChallengeResponse(
       const AccountId& account_id,
@@ -105,7 +84,6 @@ class MockLoginScreenClient : public LoginScreenClient {
               ShowGaiaSignin,
               (const AccountId& prefilled_account),
               (override));
-  MOCK_METHOD(void, HideGaiaSignin, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));
   MOCK_METHOD(void, RemoveUser, (const AccountId& account_id), (override));
   MOCK_METHOD(void,
@@ -118,24 +96,23 @@ class MockLoginScreenClient : public LoginScreenClient {
               RequestPublicSessionKeyboardLayouts,
               (const AccountId& account_id, const std::string& locale),
               (override));
-  MOCK_METHOD(void, ShowFeedback, (), (override));
-  MOCK_METHOD(void, ShowResetScreen, (), (override));
+  MOCK_METHOD(void,
+              HandleAccelerator,
+              (ash::LoginAcceleratorAction action),
+              (override));
   MOCK_METHOD(void, ShowAccountAccessHelpApp, (gfx::NativeWindow), (override));
   MOCK_METHOD(void, ShowParentAccessHelpApp, (gfx::NativeWindow), (override));
   MOCK_METHOD(void, ShowLockScreenNotificationSettings, (), (override));
   MOCK_METHOD(void, FocusOobeDialog, (), (override));
   MOCK_METHOD(void, OnFocusLeavingSystemTray, (bool reverse), (override));
   MOCK_METHOD(void, OnUserActivity, (), (override));
+  MOCK_METHOD(void, OnLoginScreenShown, (), (override));
 
  private:
   bool authenticate_user_callback_result_ = true;
   bool validate_parent_access_code_result_ = true;
   base::OnceCallback<void(bool)>*
       authenticate_user_with_password_or_pin_callback_storage_ = nullptr;
-  base::OnceCallback<void(bool)>*
-      authenticate_user_with_external_binary_callback_storage_ = nullptr;
-  base::OnceCallback<void(bool)>*
-      enroll_user_with_external_binary_callback_storage_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockLoginScreenClient);
 };

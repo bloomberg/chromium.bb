@@ -42,16 +42,6 @@ security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel() const {
   return security_level_;
 }
 
-bool TestLocationBarModel::GetDisplaySearchTerms(base::string16* search_terms) {
-  if (display_search_terms_.empty())
-    return false;
-
-  if (search_terms)
-    *search_terms = display_search_terms_;
-
-  return true;
-}
-
 metrics::OmniboxEventProto::PageClassification
 TestLocationBarModel::GetPageClassification(OmniboxFocusSource focus_source) {
   return metrics::OmniboxEventProto::OTHER;
@@ -75,4 +65,8 @@ bool TestLocationBarModel::ShouldDisplayURL() const {
 
 bool TestLocationBarModel::IsOfflinePage() const {
   return offline_page_;
+}
+
+bool TestLocationBarModel::ShouldPreventElision() const {
+  return should_prevent_elision_;
 }

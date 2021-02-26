@@ -44,8 +44,8 @@ struct NET_EXPORT_PRIVATE DnsResourceRecord {
   DnsResourceRecord& operator=(const DnsResourceRecord& other);
   DnsResourceRecord& operator=(DnsResourceRecord&& other);
 
-  // A helper to set |owned_rdata| that also sets |rdata| to point to it.
-  // See the definition of |owned_rdata| below.
+  // A helper to set |owned_rdata| that also sets |rdata| to point to it. The
+  // |value| must be non-empty. See the definition of |owned_rdata| below.
   void SetOwnedRdata(std::string value);
 
   // NAME (variable length) + TYPE (2 bytes) + CLASS (2 bytes) + TTL (4 bytes) +
@@ -139,7 +139,8 @@ class NET_EXPORT_PRIVATE DnsResponse {
               const std::vector<DnsResourceRecord>& authority_records,
               const std::vector<DnsResourceRecord>& additional_records,
               const base::Optional<DnsQuery>& query,
-              uint8_t rcode = dns_protocol::kRcodeNOERROR);
+              uint8_t rcode = dns_protocol::kRcodeNOERROR,
+              bool validate_answers_match_query = true);
 
   // Constructs a response buffer of given length. Used for TCP transactions.
   explicit DnsResponse(size_t length);
@@ -150,11 +151,16 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // Constructs a response from |data|. Used for testing purposes only!
   DnsResponse(const void* data, size_t length, size_t answer_offset);
 
+  // Move-only.
+  DnsResponse(DnsResponse&& other);
+  DnsResponse& operator=(DnsResponse&& other);
+
   ~DnsResponse();
 
   // Internal buffer accessor into which actual bytes of response will be
   // read.
   IOBuffer* io_buffer() { return io_buffer_.get(); }
+  const IOBuffer* io_buffer() const { return io_buffer_.get(); }
 
   // Size of the internal buffer.
   size_t io_buffer_size() const { return io_buffer_size_; }
@@ -186,6 +192,7 @@ class NET_EXPORT_PRIVATE DnsResponse {
   uint8_t rcode() const;
 
   unsigned answer_count() const;
+  unsigned authority_count() const;
   unsigned additional_answer_count() const;
 
   // Accessors to the question. The qname is unparsed.
@@ -202,17 +209,19 @@ class NET_EXPORT_PRIVATE DnsResponse {
 
   // Extracts an AddressList from this response. Returns SUCCESS if succeeded.
   // Otherwise returns a detailed error number.
-  Result ParseToAddressList(AddressList* addr_list, base::TimeDelta* ttl) const;
+  Result ParseToAddressList(AddressList* out_addr_list,
+                            base::Optional<base::TimeDelta>* out_ttl) const;
 
  private:
   bool WriteHeader(base::BigEndianWriter* writer,
                    const dns_protocol::Header& header);
   bool WriteQuestion(base::BigEndianWriter* writer, const DnsQuery& query);
-  bool WriteRecord(base::BigEndianWriter* wirter,
+  bool WriteRecord(base::BigEndianWriter* writer,
                    const DnsResourceRecord& record);
-  bool WriteAnswer(base::BigEndianWriter* wirter,
+  bool WriteAnswer(base::BigEndianWriter* writer,
                    const DnsResourceRecord& answer,
-                   const base::Optional<DnsQuery>& query);
+                   const base::Optional<DnsQuery>& query,
+                   bool validate_answer_matches_query);
 
   // Convenience for header access.
   const dns_protocol::Header* header() const;
@@ -227,8 +236,6 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // It is never updated afterwards, so can be used in accessors.
   DnsRecordParser parser_;
   bool id_available_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsResponse);
 };
 
 }  // namespace net

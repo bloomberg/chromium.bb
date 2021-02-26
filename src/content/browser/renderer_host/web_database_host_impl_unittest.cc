@@ -8,14 +8,14 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolation_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
-#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,13 +89,7 @@ class WebDatabaseHostImplTest : public ::testing::Test {
     EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForBadMessage());
   }
 
-  void CallRenderProcessHostCleanup() {
-    render_process_host_->Cleanup();
-
-    // Releasing our handle on this object because Cleanup() posts a task
-    // to delete the object and we need to avoid a double delete.
-    render_process_host_.release();
-  }
+  void CallRenderProcessHostCleanup() { render_process_host_.reset(); }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
@@ -103,6 +97,12 @@ class WebDatabaseHostImplTest : public ::testing::Test {
   int process_id() const { return render_process_host_->GetID(); }
   BrowserContext* browser_context() { return &browser_context_; }
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
+
+  void LockProcessToURL(const GURL& url) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->LockProcessForTesting(
+        IsolationContext(BrowsingInstanceId(1), browser_context()),
+        process_id(), url);
+  }
 
  private:
   BrowserTaskEnvironment task_environment_;
@@ -115,8 +115,8 @@ class WebDatabaseHostImplTest : public ::testing::Test {
 };
 
 TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
-  const url::Origin correct_origin =
-      url::Origin::Create(GURL("http://correct.com"));
+  const GURL correct_url("http://correct.com");
+  const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
   const base::string16 db_name(base::ASCIIToUTF16("db_name"));
@@ -128,9 +128,8 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
   security_policy->AddIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
+  LockProcessToURL(correct_url);
 
-  security_policy->LockToOrigin(IsolationContext(browser_context()),
-                                process_id(), correct_origin.GetURL());
   ASSERT_TRUE(
       security_policy->CanAccessDataForOrigin(process_id(), correct_origin));
   ASSERT_FALSE(
@@ -202,8 +201,8 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesInvalid) {
 }
 
 TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
-  const url::Origin correct_origin =
-      url::Origin::Create(GURL("http://correct.com"));
+  const GURL correct_url("http://correct.com");
+  const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
   const base::string16 db_name(base::ASCIIToUTF16("db_name"));
@@ -215,15 +214,14 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
   security_policy->AddIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
-  security_policy->LockToOrigin(IsolationContext(browser_context()),
-                                process_id(), correct_origin.GetURL());
+  LockProcessToURL(correct_url);
 
   bool success_callback_was_called = false;
   auto success_callback = base::BindLambdaForTesting(
       [&](base::File) { success_callback_was_called = true; });
   base::Optional<std::string> error_callback_message;
 
-  mojo::core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+  mojo::SetDefaultProcessErrorHandler(base::BindLambdaForTesting(
       [&](const std::string& message) { error_callback_message = message; }));
 
   // Verify that an error occurs with OpenFile() call before process shutdown.
@@ -269,8 +267,7 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
     EXPECT_FALSE(error_callback_message.has_value());
   }
 
-  mojo::core::SetDefaultProcessErrorCallback(
-      mojo::core::ProcessErrorCallback());
+  mojo::SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 }  // namespace content

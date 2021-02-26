@@ -53,14 +53,48 @@ typedef enum {
 } BPVendorFlagBits;
 typedef VkFlags BPVendorFlags;
 
+enum CALL_STATE {
+    UNCALLED,       // Function has not been called
+    QUERY_COUNT,    // Function called once to query a count
+    QUERY_DETAILS,  // Function called w/ a count to query details
+};
+
+struct PHYSICAL_DEVICE_STATE_BP {
+    // Track the call state and array sizes for various query functions
+    CALL_STATE vkGetPhysicalDeviceQueueFamilyPropertiesState = UNCALLED;
+    CALL_STATE vkGetPhysicalDeviceLayerPropertiesState = UNCALLED;      // Currently unused
+    CALL_STATE vkGetPhysicalDeviceExtensionPropertiesState = UNCALLED;  // Currently unused
+    CALL_STATE vkGetPhysicalDeviceFeaturesState = UNCALLED;
+    CALL_STATE vkGetPhysicalDeviceSurfaceCapabilitiesKHRState = UNCALLED;
+    CALL_STATE vkGetPhysicalDeviceSurfacePresentModesKHRState = UNCALLED;
+    CALL_STATE vkGetPhysicalDeviceSurfaceFormatsKHRState = UNCALLED;
+    CALL_STATE vkGetPhysicalDeviceDisplayPlanePropertiesKHRState = UNCALLED;
+};
+
+struct SWAPCHAIN_STATE_BP {
+    CALL_STATE vkGetSwapchainImagesKHRState = UNCALLED;
+};
+
 // How many small indexed drawcalls in a command buffer before a warning is thrown
 static const uint32_t kMaxSmallIndexedDrawcalls = 10;
 
 // How many indices make a small indexed drawcall
 static const int kSmallIndexedDrawcallIndices = 10;
 
+// Minimum number of vertices/indices to take into account when doing depth pre-pass checks for Arm Mali GPUs
+static const int kDepthPrePassMinDrawCountArm = 500;
+
+// Minimum, number of draw calls in order to trigger depth pre-pass warnings for Arm Mali GPUs
+static const int kDepthPrePassNumDrawCallsArm = 20;
+
 // Maximum sample count for full throughput on Mali GPUs
 static const VkSampleCountFlagBits kMaxEfficientSamplesArm = VK_SAMPLE_COUNT_4_BIT;
+
+// On Arm Mali architectures, it's generally best to align work group dimensions to 4.
+static const uint32_t kThreadGroupDispatchCountAlignmentArm = 4;
+
+// Maximum number of threads which can efficiently be part of a compute workgroup when using thread group barriers.
+static const uint32_t kMaxEfficientWorkGroupThreadCountArm = 64;
 
 class BestPractices : public ValidationStateTracker {
   public:
@@ -72,7 +106,15 @@ class BestPractices : public ValidationStateTracker {
 
     bool ValidateCmdDrawType(VkCommandBuffer cmd_buffer, const char* caller) const;
 
+    void RecordCmdDrawType(VkCommandBuffer cmd_buffer, uint32_t draw_count, const char* caller);
+
+    void RecordCmdDrawTypeArm(VkCommandBuffer cmd_buffer, uint32_t draw_count, const char* caller);
+
     bool ValidateDeprecatedExtensions(const char* api_name, const char* extension_name, uint32_t version, const char* vuid) const;
+
+    bool PreCallValidateCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                                    VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
+                                                    uint32_t stride) const;
 
     bool PreCallValidateCmdDrawIndexedIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                        VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
@@ -130,6 +172,7 @@ class BestPractices : public ValidationStateTracker {
                                                const VkComputePipelineCreateInfo* pCreateInfos,
                                                const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
                                                void* pipe_state) const;
+    bool ValidateCreateComputePipelineArm(const VkComputePipelineCreateInfo& createInfo) const;
 
     bool CheckPipelineStageFlags(std::string api_name, const VkPipelineStageFlags flags) const;
     bool PreCallValidateQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence) const;
@@ -149,6 +192,7 @@ class BestPractices : public ValidationStateTracker {
                                            const VkImageMemoryBarrier* pImageMemoryBarriers) const;
     bool PreCallValidateCmdWriteTimestamp(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage,
                                           VkQueryPool queryPool, uint32_t query) const;
+    void PostCallRecordCmdBindPipeline(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline);
     bool ValidateCmdBeginRenderPass(VkCommandBuffer commandBuffer, RenderPassCreateVersion rp_version,
                                     const VkRenderPassBeginInfo* pRenderPassBegin) const;
     bool PreCallValidateCmdBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
@@ -157,20 +201,37 @@ class BestPractices : public ValidationStateTracker {
                                                const VkSubpassBeginInfoKHR* pSubpassBeginInfo) const;
     bool PreCallValidateCmdBeginRenderPass2(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
                                             const VkSubpassBeginInfoKHR* pSubpassBeginInfo) const;
+    void RecordCmdBeginRenderPass(VkCommandBuffer commandBuffer, RenderPassCreateVersion rp_version,
+                                  const VkRenderPassBeginInfo* pRenderPassBegin);
+    void PostCallRecordCmdBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
+                                          VkSubpassContents contents);
+    void PostCallRecordCmdBeginRenderPass2(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
+                                           const VkSubpassBeginInfo* pSubpassBeginInfo);
+    void PostCallRecordCmdBeginRenderPass2KHR(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
+                                              const VkSubpassBeginInfo* pSubpassBeginInfo);
     bool PreCallValidateCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
                                 uint32_t firstInstance) const;
+    void PostCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
+                               uint32_t firstInstance);
     bool PreCallValidateCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
                                        uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) const;
     bool ValidateIndexBufferArm(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex,
                                 int32_t vertexOffset, uint32_t firstInstance) const;
     void PreCallRecordCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
                                      uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
+    void PostCallRecordCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
+                                      uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
     bool PreCallValidateCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount,
                                         uint32_t stride) const;
+    void PostCallRecordCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
+                                       uint32_t stride);
     bool PreCallValidateCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                uint32_t drawCount, uint32_t stride) const;
+    void PostCallRecordCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
+                                              uint32_t stride);
     bool PreCallValidateCmdDispatch(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY,
                                     uint32_t groupCountZ) const;
+    bool PreCallValidateCmdEndRenderPass(VkCommandBuffer commandBuffer) const;
     bool ValidateGetPhysicalDeviceDisplayPlanePropertiesKHRQuery(VkPhysicalDevice physicalDevice, const char* api_name) const;
     bool PreCallValidateGetDisplayPlaneSupportedDisplaysKHR(VkPhysicalDevice physicalDevice, uint32_t planeIndex,
                                                             uint32_t* pDisplayCount, VkDisplayKHR* pDisplays) const;
@@ -209,9 +270,71 @@ class BestPractices : public ValidationStateTracker {
     bool PreCallValidateCmdResolveImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
                                         VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount,
                                         const VkImageResolve* pRegions) const;
+    bool PreCallValidateCmdResolveImage2KHR(VkCommandBuffer commandBuffer, const VkResolveImageInfo2KHR* pResolveImageInfo) const;
     bool PreCallValidateCreateSampler(VkDevice device, const VkSamplerCreateInfo* pCreateInfo,
                                       const VkAllocationCallbacks* pAllocator, VkSampler* pSampler) const;
     void ManualPostCallRecordQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo, VkResult result);
+    void ManualPostCallRecordCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
+                                                     const VkGraphicsPipelineCreateInfo* pCreateInfos,
+                                                     const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
+                                                     VkResult result, void* cgpl_state_data);
+
+    bool PreCallValidateAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore,
+                                            VkFence fence, uint32_t* pImageIndex) const final;
+
+    void PostCallRecordGetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount,
+                                                              VkQueueFamilyProperties* pQueueFamilyProperties) final;
+
+    void PostCallRecordGetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures) final;
+
+    void PostCallRecordGetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) final;
+
+    void PostCallRecordGetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) final;
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                     VkSurfaceCapabilitiesKHR* pSurfaceCapabilities,
+                                                                     VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice,
+                                                                      const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
+                                                                      VkSurfaceCapabilities2KHR* pSurfaceCapabilities,
+                                                                      VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                      VkSurfaceCapabilities2EXT* pSurfaceCapabilities,
+                                                                      VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                     uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes,
+                                                                     VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats,
+                                                                VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
+                                                                 const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
+                                                                 uint32_t* pSurfaceFormatCount,
+                                                                 VkSurfaceFormat2KHR* pSurfaceFormats, VkResult result);
+
+    void ManualPostCallRecordGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount,
+                                                                        VkDisplayPlanePropertiesKHR* pProperties, VkResult result);
+
+    void ManualPostCallRecordCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo,
+                                                const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain,
+                                                VkResult result);
+
+    void PostCallRecordDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain,
+                                           const VkAllocationCallbacks* pAllocator) final;
+
+    void ManualPostCallRecordGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount,
+                                                   VkImage* pSwapchainImages, VkResult result);
+
+    void ManualPostCallRecordEnumeratePhysicalDevices(VkInstance instance, uint32_t* pPhysicalDeviceCount,
+                                                      VkPhysicalDevice* pPhysicalDevices, VkResult result);
+
+    void ManualPostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo* pCreateInfo,
+                                          const VkAllocationCallbacks* pAllocator, VkDevice* pDevice, VkResult result);
 
 // Include code-generated functions
 #include "best_practices.h"
@@ -244,4 +367,41 @@ class BestPractices : public ValidationStateTracker {
         std::vector<CacheEntry> _entries = {};
         uint32_t iteration = 0;
     };
+
+    struct GraphicsPipelineCIs {
+        const safe_VkPipelineDepthStencilStateCreateInfo* depthStencilStateCI;
+        const safe_VkPipelineColorBlendStateCreateInfo* colorBlendStateCI;
+    };
+
+    // used to track CreateInfos for graphics pipelines
+    std::unordered_map<VkPipeline, GraphicsPipelineCIs> graphicsPipelineCIs = {};
+
+    // used to track state regarding depth pre-pass heuristic checks
+    struct DepthPrePassState {
+        bool depthAttachment = false;
+        bool colorAttachment = false;
+        bool depthOnly = false;
+        bool depthEqualComparison = false;
+        uint32_t numDrawCallsDepthOnly = 0;
+        uint32_t numDrawCallsDepthEqualCompare = 0;
+    };
+
+    // used to track depth pre-pass heuristic data per command buffer
+    std::unordered_map<VkCommandBuffer, DepthPrePassState> cbDepthPrePassStates = {};
+
+    // Used for instance versions of this object
+    std::unordered_map<VkSwapchainKHR, SWAPCHAIN_STATE_BP> swapchain_bp_state_map;
+
+    // Backing data for BP-specific state data
+    std::unordered_map<VkPhysicalDevice, PHYSICAL_DEVICE_STATE_BP> phys_device_bp_state_map;
+    // Physical device state for this instance
+    PHYSICAL_DEVICE_STATE_BP* instance_device_bp_state = nullptr;
+
+    // Get BestPractices-specific state for the given physical devices
+    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP(const VkPhysicalDevice& phys_device);
+    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP(const VkPhysicalDevice& phys_device) const;
+
+    // Get BestPractices-specific for the current instance
+    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP();
+    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP() const;
 };

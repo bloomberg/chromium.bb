@@ -125,7 +125,7 @@ static int webvtt_read_header(AVFormatContext *s)
             break;
 
         /* optional cue settings */
-        p += strcspn(p, "\n\t ");
+        p += strcspn(p, "\n\r\t ");
         while (*p == '\t' || *p == ' ')
             p++;
         settings = p;
@@ -164,6 +164,8 @@ static int webvtt_read_header(AVFormatContext *s)
     ff_subtitles_queue_finalize(s, &webvtt->q);
 
 end:
+    if (res < 0)
+        ff_subtitles_queue_clean(&webvtt->q);
     av_bprint_finalize(&cue,    NULL);
     return res;
 }

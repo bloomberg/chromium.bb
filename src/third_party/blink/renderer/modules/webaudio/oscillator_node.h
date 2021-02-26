@@ -54,6 +54,11 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
     CUSTOM = 4
   };
 
+  // Breakpoints where we deicde to do linear interoplation, 3-point
+  // interpolation or 5-point interpolation.  See DoInterpolation().
+  static constexpr float kInterpolate2Point = 0.3;
+  static constexpr float kInterpolate3Point = 0.16;
+
   static scoped_refptr<OscillatorHandler> Create(AudioNode&,
                                                  float sample_rate,
                                                  const String& oscillator_type,
@@ -85,6 +90,90 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   bool CalculateSampleAccuratePhaseIncrements(uint32_t frames_to_process);
 
   bool PropagatesSilence() const override;
+
+  // Compute the output for k-rate AudioParams
+  double ProcessKRate(int n, float* dest_p, double virtual_read_index) const;
+
+  // Scalar version for the main loop in ProcessKRate().  Returns the updated
+  // virtual_read_index.
+  double ProcessKRateScalar(int start_index,
+                            int n,
+                            float* dest_p,
+                            double virtual_read_index,
+                            float frequency,
+                            float rate_scale) const;
+
+  // Vectorized version (if available) for the main loop in ProcessKRate().
+  // Returns the number of elements processed and the updated
+  // virtual_read_index.
+  std::tuple<int, double> ProcessKRateVector(int n,
+                                             float* dest_p,
+                                             double virtual_read_index,
+                                             float frequency,
+                                             float rate_scale) const;
+
+  // Compute the output for a-rate AudioParams
+  double ProcessARate(int n,
+                      float* dest_p,
+                      double virtual_read_index,
+                      float* phase_increments) const;
+
+  // Scalar version of ProcessARate().  Also handles any values not handled by
+  // the vector version.
+  //
+  //   k
+  //     start index for where to write the result (and read phase_increments)
+  //   n
+  //     total number of frames to process
+  //   destination
+  //     Array where the samples values are written
+  //   virtual_read_index
+  //     index into the wave data tables containing the waveform
+  //   phase_increments
+  //     phase change to use for each frame of output
+  //
+  // Returns the updated virtual_read_index.
+  double ProcessARateScalar(int k,
+                            int n,
+                            float* destination,
+                            double virtual_read_index,
+                            const float* phase_increments) const;
+
+  // Vector version of ProcessARate().  Returns the number of frames processed
+  // and the update virtual_read_index.
+  std::tuple<int, double> ProcessARateVector(
+      int n,
+      float* destination,
+      double virtual_read_index,
+      const float* phase_increments) const;
+
+  // Handles the linear interpolation in ProcessARateVector().
+  //
+  //   destination
+  //     Where the interpolated values are written.
+  //   virtual_read_index
+  //     index into the wave table data
+  //   phase_increments
+  //     phase increments array
+  //   periodic_wave_size
+  //     Length of the periodic wave stored in the wave tables
+  //   lower_wave_data
+  //     Array of the 4 lower wave table arrays
+  //   higher_wave_data
+  //     Array of the 4 higher wave table arrays
+  //   table_interpolation_factor
+  //     Array of linear interpolation factors to use between the lower and
+  //     higher wave tables.
+  //
+  // Returns the updated virtual_read_index
+  double ProcessARateVectorKernel(
+      float* destination,
+      double virtual_read_index,
+      const float* phase_increments,
+      unsigned periodic_wave_size,
+      const float* const lower_wave_data[4],
+      const float* const higher_wave_data[4],
+      const float table_interpolation_factor[4]) const;
 
   // One of the waveform types defined in the enum.
   uint8_t type_;
@@ -125,7 +214,7 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   OscillatorNode(BaseAudioContext&,
                  const String& oscillator_type,
                  PeriodicWave* wave_table);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   String type() const;
   void setType(const String&, ExceptionState&);

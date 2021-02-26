@@ -163,7 +163,7 @@ static int add_tracked_method(RTMPContext *rt, const char *name, int id)
 
     if (rt->nb_tracked_methods + 1 > rt->tracked_methods_size) {
         rt->tracked_methods_size = (rt->nb_tracked_methods + 1) * 2;
-        if ((err = av_reallocp(&rt->tracked_methods, rt->tracked_methods_size *
+        if ((err = av_reallocp_array(&rt->tracked_methods, rt->tracked_methods_size,
                                sizeof(*rt->tracked_methods))) < 0) {
             rt->nb_tracked_methods = 0;
             rt->tracked_methods_size = 0;
@@ -2511,7 +2511,7 @@ static int rtmp_close(URLContext *h)
 
     free_tracked_methods(rt);
     av_freep(&rt->flv_data);
-    ffurl_close(rt->stream);
+    ffurl_closep(&rt->stream);
     return ret;
 }
 
@@ -2824,8 +2824,7 @@ reconnect:
 
     if (rt->do_reconnect) {
         int i;
-        ffurl_close(rt->stream);
-        rt->stream       = NULL;
+        ffurl_closep(&rt->stream);
         rt->do_reconnect = 0;
         rt->nb_invokes   = 0;
         for (i = 0; i < 2; i++)

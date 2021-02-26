@@ -6,14 +6,14 @@
 
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "net/third_party/quiche/src/quic/core/crypto/certificate_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace quic {
 
@@ -34,7 +34,7 @@ void ProofSourceX509::GetProof(
     const std::string& hostname,
     const std::string& server_config,
     QuicTransportVersion /*transport_version*/,
-    quiche::QuicheStringPiece chlo_hash,
+    absl::string_view chlo_hash,
     std::unique_ptr<ProofSource::Callback> callback) {
   QuicCryptoProof proof;
 
@@ -54,9 +54,9 @@ void ProofSourceX509::GetProof(
   }
 
   Certificate* certificate = GetCertificate(hostname);
-  proof.signature = certificate->key.Sign(
-      quiche::QuicheStringPiece(payload.get(), payload_size),
-      SSL_SIGN_RSA_PSS_RSAE_SHA256);
+  proof.signature =
+      certificate->key.Sign(absl::string_view(payload.get(), payload_size),
+                            SSL_SIGN_RSA_PSS_RSAE_SHA256);
   callback->Run(/*ok=*/!proof.signature.empty(), certificate->chain, proof,
                 nullptr);
 }
@@ -73,7 +73,7 @@ void ProofSourceX509::ComputeTlsSignature(
     const QuicSocketAddress& /*client_address*/,
     const std::string& hostname,
     uint16_t signature_algorithm,
-    quiche::QuicheStringPiece in,
+    absl::string_view in,
     std::unique_ptr<ProofSource::SignatureCallback> callback) {
   std::string signature =
       GetCertificate(hostname)->key.Sign(in, signature_algorithm);
@@ -104,12 +104,12 @@ bool ProofSourceX509::AddCertificateChain(
   }
 
   certificates_.push_front(Certificate{
-      .chain = chain,
-      .key = std::move(key),
+      chain,
+      std::move(key),
   });
   Certificate* certificate = &certificates_.front();
 
-  for (quiche::QuicheStringPiece host : leaf->subject_alt_name_domains()) {
+  for (absl::string_view host : leaf->subject_alt_name_domains()) {
     certificate_map_[std::string(host)] = certificate;
   }
   return true;

@@ -12,12 +12,10 @@
 #include <memory>
 #include <numeric>
 #include <set>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -34,12 +32,13 @@
 #include "cc/paint/render_surface_filters.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
-#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -62,7 +61,6 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "media/base/media_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -71,7 +69,7 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/color_space.h"
@@ -80,8 +78,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
+
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
 
 using gpu::gles2::GLES2Interface;
 
@@ -180,15 +183,82 @@ BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
       return BLEND_MODE_COLOR;
     case SkBlendMode::kLuminosity:
       return BLEND_MODE_LUMINOSITY;
+    case SkBlendMode::kSrc:
+      return BLEND_MODE_NONE;
     default:
       NOTREACHED();
       return BLEND_MODE_NONE;
   }
 }
 
+// Adds a timer query that spans all GL calls in its scope. |viz.composite_time|
+// trace category must be enabled for this to work.
+// Note:: Multiple timer queries cannot be nested.
+class ScopedTimerQuery {
+ public:
+  ScopedTimerQuery(bool tracing_enabled,
+                   gpu::gles2::GLES2Interface* gl,
+                   base::queue<std::pair<unsigned, std::string>>* timer_queries,
+                   const std::string& quad_type_str)
+      : gl_(gl) {
+    if (!tracing_enabled) {
+      gl_ = nullptr;
+      return;
+    }
+    unsigned timer_query;
+    gl_->GenQueriesEXT(1, &timer_query);
+    gl_->BeginQueryEXT(GL_TIME_ELAPSED_EXT, timer_query);
+    timer_queries->emplace(timer_query, quad_type_str);
+  }
+
+  ~ScopedTimerQuery() {
+    if (gl_)
+      gl_->EndQueryEXT(GL_TIME_ELAPSED_EXT);
+  }
+
+ private:
+  gpu::gles2::GLES2Interface* gl_;
+};
+
+void AccumulateDrawRects(const gfx::Rect& quad_rect,
+                         const gfx::Transform& target_transform,
+                         std::vector<gfx::Rect>* drawn_rects) {
+  gfx::RectF quad_rect_f(quad_rect);
+
+  // If the transform is not axis aligned then assume the largest possible
+  // bounds the quad can take in the render target. In this case, we take the
+  // sum of 2 sides.
+  if (!target_transform.Preserves2dAxisAlignment()) {
+    // Increase the length of each side to |width + height|.
+    const int total_length = quad_rect.width() + quad_rect.height();
+    quad_rect_f.set_height(total_length);
+    quad_rect_f.set_width(total_length);
+
+    // Ensure that the increase is equally distributed on either sides of the
+    // quad such that the position of the center of the quad does not change.
+    const float delta_x = -(quad_rect.height() / 2.f);
+    const float delta_y = -(quad_rect.width() / 2.f);
+    quad_rect_f.Offset(gfx::Vector2d(delta_x, delta_y));
+
+    // Apply only the scale and translation component.
+    const gfx::Vector2dF& translate = target_transform.To2dTranslation();
+    const gfx::Vector2dF& scale = target_transform.Scale2d();
+    quad_rect_f.Scale(scale.x(), scale.y());
+    quad_rect_f.Offset(translate.x(), translate.y());
+  } else {
+    target_transform.TransformRect(&quad_rect_f);
+  }
+  drawn_rects->push_back(gfx::ToRoundedRect(quad_rect_f));
+}
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
+
+// A dummy timer query ID used to identify the beginning of a frame in the queue
+// of timer queries.
+const unsigned kTimerQueryDummy = 0;
+
 }  // anonymous namespace
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
@@ -197,7 +267,7 @@ static GLint GetActiveTextureUnit(GLES2Interface* gl) {
   return active_unit;
 }
 
-// Parameters needed to draw a RenderPassDrawQuad.
+// Parameters needed to draw a CompositorRenderPassDrawQuad.
 struct GLRenderer::DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
   ~DrawRenderPassDrawQuadParams() {
@@ -206,7 +276,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   }
 
   // Required inputs below.
-  const RenderPassDrawQuad* quad = nullptr;
+  const AggregatedRenderPassDrawQuad* quad = nullptr;
 
   // Either |contents_texture| or |bypass_quad_texture| is populated. The
   // |contents_texture| will be valid if non-null, and when null the
@@ -315,7 +385,9 @@ class GLRenderer::ScopedUseGrContext {
     // is lost.
     // TODO(vmiura,bsalomon): crbug.com/487850 Ensure that
     // ContextProvider::GrContext() does not return NULL.
-    if (renderer->output_surface_->context_provider()->GrContext())
+    GrDirectContext* direct = GrAsDirectContext(
+        renderer->output_surface_->context_provider()->GrContext());
+    if (direct)
       return base::WrapUnique(new ScopedUseGrContext(renderer));
     return nullptr;
   }
@@ -326,7 +398,7 @@ class GLRenderer::ScopedUseGrContext {
     renderer_->RestoreGLStateAfterSkia();
   }
 
-  GrContext* context() const {
+  GrDirectContext* context() const {
     return renderer_->output_surface_->context_provider()->GrContext();
   }
 
@@ -346,11 +418,13 @@ class GLRenderer::ScopedUseGrContext {
 
 GLRenderer::GLRenderer(
     const RendererSettings* settings,
+    const DebugRendererSettings* debug_settings,
     OutputSurface* output_surface,
     DisplayResourceProvider* resource_provider,
     OverlayProcessorInterface* overlay_processor,
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : DirectRenderer(settings,
+                     debug_settings,
                      output_surface,
                      resource_provider,
                      overlay_processor),
@@ -374,10 +448,13 @@ GLRenderer::GLRenderer(
   use_blend_equation_advanced_coherent_ =
       context_caps.blend_equation_advanced_coherent;
   use_occlusion_query_ = context_caps.occlusion_query;
+  use_timer_query_ = context_caps.timer_queries;
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
   prefer_draw_to_copy_ = output_surface_->context_provider()
                              ->GetGpuFeatureInfo()
                              .IsWorkaroundEnabled(gpu::PREFER_DRAW_TO_COPY);
+  use_fast_path_solid_color_quad_ =
+      features::IsUsingFastPathForSolidColorQuad();
   InitializeSharedObjects();
 }
 
@@ -467,6 +544,9 @@ void GLRenderer::PrepareSurfaceForPass(
     gl_->GenQueriesEXT(1, &occlusion_query_);
     gl_->BeginQueryEXT(GL_SAMPLES_PASSED_ARB, occlusion_query_);
   }
+
+  // For each render pass, reset the drawn region.
+  drawn_rects_.clear();
 }
 
 void GLRenderer::ClearFramebuffer() {
@@ -501,6 +581,9 @@ void GLRenderer::BeginDrawingFrame() {
                         ->ClientBecameBusy();
   }
 
+  // Begin batching read of shared images.
+  gl_->BeginBatchReadAccessSharedImageCHROMIUM();
+
   scoped_refptr<ResourceFence> read_lock_fence;
   if (use_sync_query_) {
     read_lock_fence = sync_queries_.StartNewFrame();
@@ -522,6 +605,11 @@ void GLRenderer::BeginDrawingFrame() {
   // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
 
+  // Add a dummy timer query as a fence to identify the beginning of a frame in
+  // the circular queue.
+  if (CompositeTimeTracingEnabled())
+    timer_queries_.emplace(kTimerQueryDummy, "");
+
   num_triangles_drawn_ = 0;
 }
 
@@ -536,6 +624,10 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::Material::kInvalid:
       NOTREACHED();
       break;
+    case DrawQuad::Material::kAggregatedRenderPass:
+      DrawRenderPassQuad(AggregatedRenderPassDrawQuad::MaterialCast(quad),
+                         clip_region);
+      break;
     case DrawQuad::Material::kDebugBorder:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
@@ -543,8 +635,10 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
       // PictureDrawQuad should only be used for resourceless software draws.
       NOTREACHED();
       break;
-    case DrawQuad::Material::kRenderPass:
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), clip_region);
+    case DrawQuad::Material::kCompositorRenderPass:
+      // At this point, RenderPassDrawQuads should be replaced by
+      // AggregatedRenderPassDrawQuad.
+      NOTREACHED();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), clip_region);
@@ -614,8 +708,10 @@ static SkColorType GlFormatToSkFormat(GrGLenum format) {
       return kRGBA_8888_SkColorType;
     case GL_BGRA_EXT:
       return kBGRA_8888_SkColorType;
+    case GL_RGB10_A2_EXT:
+      return kRGBA_1010102_SkColorType;
     default:
-      NOTREACHED();
+      NOTREACHED() << std::hex << std::showbase << format;
       return kN32_SkColorType;
   }
 }
@@ -628,6 +724,8 @@ static GrGLenum SkFormatToGlFormat(SkColorType format) {
       return GL_RGBA8_OES;
     case kBGRA_8888_SkColorType:
       return GL_BGRA8_EXT;
+    case kRGBA_1010102_SkColorType:
+      return GL_RGB10_A2_EXT;
     default:
       NOTREACHED();
       return GL_RGBA8_OES;
@@ -638,7 +736,7 @@ static GrGLenum SkFormatToGlFormat(SkColorType format) {
 static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                   uint32_t target,
                                   const gfx::Size& size,
-                                  GrContext* context,
+                                  GrDirectContext* context,
                                   bool flip_texture,
                                   SkColorType format,
                                   bool adopt_texture) {
@@ -774,7 +872,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   DCHECK(backdrop_filter_bounds);
   DCHECK(unclipped_rect);
 
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   gfx::QuadF scaled_region;
   // |scaled_region| is a quad in [-0.5,0.5] space that represents |clip_region|
   // as a fraction of the space defined by |quad->rect|. If |clip_region| is
@@ -850,8 +948,9 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
          (output_surface_->context_provider()
               ->ContextCapabilities()
               .texture_format_bgra8888 &&
-          format == GL_BGRA_EXT))
-      << format;
+          format == GL_BGRA_EXT) ||
+         format == GL_RGB10_A2_EXT)
+      << std::hex << std::showbase << format;
   return format;
 }
 
@@ -925,7 +1024,8 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
     // CopyTexImage2D requires inernalformat channels to be a subset of
     // the channels of the source texture internalformat.
     DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
-           *internal_format == GL_BGRA_EXT);
+           *internal_format == GL_BGRA_EXT ||
+           *internal_format == GL_RGB10_A2_EXT);
     if (*internal_format == GL_BGRA_EXT)
       *internal_format = GL_RGBA;
     gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),
@@ -959,7 +1059,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
          params->backdrop_filter_quality <= 1.0f);
   DCHECK(!params->filters)
       << "Filters should always be in a separate Effect node";
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   // Check if cached result can be used
@@ -1062,7 +1162,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     if (filter_clip != src_rect) {
       filter_clip = gfx::ScaleToEnclosingRect(filter_clip,
                                               params->backdrop_filter_quality);
-      src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
+      src_image = src_image->makeSubset(RectToSkIRect(filter_clip),
+                                        use_gr_context->context());
       src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
       dest_rect = RectToSkRect(filter_clip);
     }
@@ -1109,8 +1210,9 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   return filtered_image_texture;
 }
 
-const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-#if defined(OS_MACOSX)
+const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(
+    const AggregatedRenderPass* pass) {
+#if defined(OS_APPLE)
   // On Macs, this path can sometimes lead to all black output.
   // TODO(enne): investigate this and remove this hack.
   return nullptr;
@@ -1160,7 +1262,7 @@ const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
 #endif
 }
 
-void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+void GLRenderer::DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   DrawRenderPassDrawQuadParams params;
@@ -1169,6 +1271,8 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kRenderPassDrawQuad");
   if (bypass != render_pass_bypass_quads_.end()) {
     DCHECK(bypass->second->material == DrawQuad::Material::kTiledContent);
     const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(bypass->second);
@@ -1220,12 +1324,16 @@ void GLRenderer::DrawRenderPassQuadInternal(
   ChooseRPDQProgram(params, CurrentRenderPassColorSpace());
   UpdateRPDQUniforms(params);
   DrawRPDQ(*params);
+
+  AccumulateDrawRects(params->quad->visible_rect,
+                      params->quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 }
 
 bool GLRenderer::InitializeRPDQParameters(
     DrawRenderPassDrawQuadParams* params) {
   DCHECK(params);
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
@@ -1300,7 +1408,7 @@ static GLuint GetGLTextureIDFromSkImage(const SkImage* image,
 
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   params->blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(params->blend_mode) ||
@@ -1385,7 +1493,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
 
 bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DrawRenderPassDrawQuadParams* params) {
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   // Apply filters to the contents texture.
   if (params->filters) {
     DCHECK(!params->filters->IsEmpty());
@@ -1690,9 +1798,9 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
 
   SetShaderOpacity(params->quad->shared_quad_state->opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {
-    SetShaderRoundedCorner(
-        params->quad->shared_quad_state->rounded_corner_bounds,
-        params->window_matrix * params->projection_matrix);
+    SetShaderRoundedCorner(params->quad->shared_quad_state->mask_filter_info
+                               .rounded_corner_bounds(),
+                           params->window_matrix * params->projection_matrix);
   }
   SetShaderQuadF(params->surface_quad);
 }
@@ -1936,7 +2044,7 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
 // static
 void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
     const gfx::Transform& device_transform,
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     const gfx::QuadF* aa_quad,
     const gfx::QuadF* clip_region,
     gfx::QuadF* local_quad,
@@ -2016,51 +2124,122 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
     use_aa = ShouldAntialiasQuad(device_layer_quad, clipped, force_aa);
   }
 
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      use_aa ? "kSolidColorAA" : "kSolidColor");
+
   float edge[24];
   const gfx::QuadF* aa_quad = use_aa ? &device_layer_quad : nullptr;
   SetupQuadForClippingAndAntialiasing(device_transform, quad, aa_quad,
                                       clip_region, &local_quad, edge);
 
-  gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
   SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA,
                                        tint_gl_composited_content_,
                                        ShouldApplyRoundedCorner(quad)),
-                quad_color_space, CurrentRenderPassColorSpace());
-  SetShaderColor(color, opacity);
-  if (current_program_->rounded_corner_rect_location() != -1) {
-    SetShaderRoundedCorner(
-        quad->shared_quad_state->rounded_corner_bounds,
-        current_frame()->window_matrix * current_frame()->projection_matrix);
+                CurrentRenderPassColorSpace(), CurrentRenderPassColorSpace());
+
+  gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
+  SkColor4f color_f = SkColor4f::FromColor(color);
+
+  // Apply color transform if the color space or source and target do not match.
+  if (quad_color_space != CurrentRenderPassColorSpace()) {
+    const gfx::ColorTransform* color_transform =
+        GetColorTransform(quad_color_space, CurrentRenderPassColorSpace());
+    gfx::ColorTransform::TriStim col(color_f.fR, color_f.fG, color_f.fB);
+    color_transform->Transform(&col, 1);
+    color_f.fR = col.x();
+    color_f.fG = col.y();
+    color_f.fB = col.z();
+    color = color_f.toSkColor();
   }
 
-  if (current_program_->tint_color_matrix_location() != -1) {
-    auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
-    gl_->UniformMatrix4fv(current_program_->tint_color_matrix_location(), 1,
-                          false, matrix.data());
+  // Apply any color matrix that may be present.
+  if (HasOutputColorMatrix()) {
+    const SkMatrix44& output_color_matrix = output_surface_->color_matrix();
+    const SkVector4 color_v(color_f.fR, color_f.fG, color_f.fB, color_f.fA);
+    const SkVector4 result = output_color_matrix * color_v;
+    std::copy(result.fData, result.fData + 4, color_f.vec());
+    color = color_f.toSkColor();
   }
 
-  if (use_aa) {
-    gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
-  }
+  // Try using glClear to draw the solid color quad if possible. This is much
+  // more performant than executing the shader pipeline.
+  if (CanUseFastSolidColorDraw(quad) && !use_aa) {
+    // Pre-multiply the alpha and opacity to get the correct blending in case of
+    // transparent buffers. glClear does not have any alpha blending stage.
+    Float4 result = PremultipliedColor(color, opacity);
+    SkRGBA4f<kPremul_SkAlphaType> color_f_premul;
+    std::copy(result.data, result.data + 4, color_f_premul.vec());
 
-  // Enable blending when the quad properties require it or if we decided
-  // to use antialiasing.
-  SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
-  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
+    gfx::RectF quad_rect_in_target_f(quad->visible_rect);
 
-  // Antialising requires a normalized quad, but this could lead to floating
-  // point precision errors, so only normalize when antialising is on.
-  if (use_aa) {
-    DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
+    device_transform.TransformRect(&quad_rect_in_target_f);
+    gfx::Rect quad_rect_in_target = gfx::ToRoundedRect(quad_rect_in_target_f);
+
+    // If we are using partial swap, make sure the new scissor rect is within
+    // the partial swap bounds.
+    if (!scissor_rect_.IsEmpty() && is_scissor_enabled_)
+      quad_rect_in_target.Intersect(scissor_rect_);
+
+    gl_->Enable(GL_SCISSOR_TEST);
+    gl_->Scissor(quad_rect_in_target.x(), quad_rect_in_target.y(),
+                 quad_rect_in_target.width(), quad_rect_in_target.height());
+
+    gl_->ClearColor(color_f_premul.fR, color_f_premul.fG, color_f_premul.fB,
+                    color_f_premul.fA);
+    gl_->Clear(GL_COLOR_BUFFER_BIT);
+
+    // Restore GL scissor state.
+    if (is_scissor_enabled_)
+      gl_->Enable(GL_SCISSOR_TEST);
+    else
+      gl_->Disable(GL_SCISSOR_TEST);
+
+    gl_->Scissor(scissor_rect_.x(), scissor_rect_.y(), scissor_rect_.width(),
+                 scissor_rect_.height());
   } else {
-    PrepareGeometry(SHARED_BINDING);
-    SetShaderQuadF(local_quad);
-    SetShaderMatrix(current_frame()->projection_matrix *
-                    quad->shared_quad_state->quad_to_target_transform);
-    gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
-    num_triangles_drawn_ += 2;
+    SetShaderColor(color, opacity);
+    if (current_program_->rounded_corner_rect_location() != -1) {
+      SetShaderRoundedCorner(
+          quad->shared_quad_state->mask_filter_info.rounded_corner_bounds(),
+          current_frame()->window_matrix * current_frame()->projection_matrix);
+    }
+
+    if (current_program_->tint_color_matrix_location() != -1) {
+      auto matrix =
+          cc::DebugColors::TintCompositedContentColorTransformMatrix();
+      gl_->UniformMatrix4fv(current_program_->tint_color_matrix_location(), 1,
+                            false, matrix.data());
+    }
+
+    if (use_aa) {
+      gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
+    }
+
+    // Enable blending when the quad properties require it or if we decided
+    // to use antialiasing.
+    SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
+    ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
+
+    // Antialiasing requires a normalized quad, but this could lead to floating
+    // point precision errors, so only normalize when antialiasing is on.
+    if (use_aa) {
+      DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
+    } else {
+      PrepareGeometry(SHARED_BINDING);
+      SetShaderQuadF(local_quad);
+      SetShaderMatrix(current_frame()->projection_matrix *
+                      quad->shared_quad_state->quad_to_target_transform);
+      gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
+      num_triangles_drawn_ += 2;
+    }
+    RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
   }
-  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
+
+  // Add the quad to the region that has been drawn.
+  AccumulateDrawRects(quad->visible_rect,
+                      quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 }
 
 void GLRenderer::DrawTileQuad(const TileDrawQuad* quad,
@@ -2099,6 +2278,10 @@ void GLRenderer::DrawContentQuad(const ContentDrawQuadBase* quad,
                       clip_region);
   else
     DrawContentQuadNoAA(quad, resource_id, clip_region);
+
+  AccumulateDrawRects(quad->visible_rect,
+                      quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 }
 
 void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
@@ -2108,6 +2291,9 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                                    const gfx::QuadF* clip_region) {
   if (!device_transform.IsInvertible())
     return;
+
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTiledContentAA");
 
   gfx::Rect tile_rect = quad->visible_rect;
 
@@ -2202,7 +2388,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   SetShaderOpacity(quad->shared_quad_state->opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
-        quad->shared_quad_state->rounded_corner_bounds,
+        quad->shared_quad_state->mask_filter_info.rounded_corner_bounds(),
         current_frame()->window_matrix * current_frame()->projection_matrix);
   }
   DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
@@ -2222,6 +2408,9 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   float tex_to_geom_scale_x = quad->rect.width() / quad->tex_coord_rect.width();
   float tex_to_geom_scale_y =
       quad->rect.height() / quad->tex_coord_rect.height();
+
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTiledContent");
 
   bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
   GLenum filter = (scaled || !quad->shared_quad_state->quad_to_target_transform
@@ -2299,7 +2488,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   SetShaderOpacity(quad->shared_quad_state->opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
-        quad->shared_quad_state->rounded_corner_bounds,
+        quad->shared_quad_state->mask_filter_info.rounded_corner_bounds(),
         current_frame()->window_matrix * current_frame()->projection_matrix);
   }
 
@@ -2346,6 +2535,15 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                   const gfx::QuadF* clip_region) {
+  std::string gpu_composite_time_string;
+  if (!clip_region && quad->rect == quad->visible_rect)
+    gpu_composite_time_string = "kYuvVideoContent";
+  else
+    gpu_composite_time_string = "kYuvVideoContentClipped";
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      gpu_composite_time_string);
+
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
@@ -2366,9 +2564,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
 
-  // TODO(ccameron): There are currently three sources of the color space: the
-  // resource, quad->color_space, and quad->video_color_space. Remove two of
-  // them.
+  // TODO(ccameron): There are currently two sources of the color space: the
+  // resource color space and quad->video_color_space. Remove one of them.
   gfx::ColorSpace src_color_space = quad->video_color_space;
   // Invalid or unspecified color spaces should be treated as REC709.
   if (!src_color_space.IsValid())
@@ -2388,7 +2585,9 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // frame as overlay candidate. So it's unnecessary to worry about the
   // compositing-overlay switch here. In addition drawing a HDR video using sRGB
   // can cancel the advantages of HDR.
-  if (supports_dc_layers_ && !src_color_space.IsHDR() &&
+  const bool supports_dc_layers =
+      output_surface_->capabilities().supports_dc_layers;
+  if (supports_dc_layers && !src_color_space.IsHDR() &&
       resource_provider_->IsOverlayCandidate(quad->y_plane_resource_id())) {
     DCHECK(resource_provider_->IsOverlayCandidate(quad->u_plane_resource_id()));
     dst_color_space = gfx::ColorSpace::CreateSRGB();
@@ -2419,7 +2618,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
                            uv_texture_mode, tint_gl_composited_content_,
                            ShouldApplyRoundedCorner(quad)),
-      src_color_space, dst_color_space);
+      src_color_space, dst_color_space, /*adjust_src_white_level=*/true);
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -2429,7 +2628,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
-        quad->shared_quad_state->rounded_corner_bounds,
+        quad->shared_quad_state->mask_filter_info.rounded_corner_bounds(),
         current_frame()->window_matrix * current_frame()->projection_matrix);
   }
 
@@ -2523,10 +2722,24 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
         quad->shared_quad_state->quad_to_target_transform, tile_rect,
         region_quad, uvs);
   }
+
+  // Track the region in the current target surface that has been drawn to.
+  AccumulateDrawRects(quad->visible_rect,
+                      quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 }
 
 void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                      const gfx::QuadF* clip_region) {
+  std::string gpu_composite_time_string;
+  if (!clip_region && quad->rect == quad->visible_rect) {
+    gpu_composite_time_string = "kStreamVideoContent";
+  } else {
+    gpu_composite_time_string = "kStreamVideoContentClipped";
+  }
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      gpu_composite_time_string);
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   DCHECK(output_surface_->context_provider()
@@ -2553,13 +2766,13 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                quad->uv_bottom_right.y() - quad->uv_top_left.y());
   matrix.Translate(quad->uv_top_left.x(), quad->uv_top_left.y());
   ToGLMatrix(&gl_matrix[0], matrix);
-  gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      current_program_->tex_matrix_location(), false, gl_matrix);
+  gl_->UniformMatrix4fv(current_program_->tex_matrix_location(), 1, false,
+                        gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
-        quad->shared_quad_state->rounded_corner_bounds,
+        quad->shared_quad_state->mask_filter_info.rounded_corner_bounds(),
         current_frame()->window_matrix * current_frame()->projection_matrix);
   }
   gfx::Size texture_size = lock.size();
@@ -2589,12 +2802,18 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
         quad->shared_quad_state->quad_to_target_transform, tile_rect,
         region_quad, uvs);
   }
+
+  AccumulateDrawRects(quad->visible_rect,
+                      quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 }
 
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
   if (draw_cache_.is_empty)
     return;
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTextureContentFlush");
 
   PrepareGeometry(flush_binding);
 
@@ -2608,11 +2827,12 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   // Bind the program to the GL state.
   SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
-                CurrentRenderPassColorSpace());
+                CurrentRenderPassColorSpace(),
+                /*adjust_src_white_level=*/draw_cache_.is_video_frame);
 
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
-        draw_cache_.rounded_corner_bounds,
+        draw_cache_.mask_filter_info.rounded_corner_bounds(),
         current_frame()->window_matrix * current_frame()->projection_matrix);
   }
 
@@ -2663,6 +2883,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   DCHECK_LE(draw_cache_.matrix_data.size(),
             static_cast<size_t>(std::numeric_limits<int>::max()) / 6u);
+
   // Draw the quads!
   gl_->DrawElements(GL_TRIANGLES,
                     6 * static_cast<int>(draw_cache_.matrix_data.size()),
@@ -2676,6 +2897,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
   draw_cache_.tex_clamp_rect_data = Float4();
+  draw_cache_.is_video_frame = false;
 
   // If we had a clipped binding, prepare the shared binding for the
   // next inserts.
@@ -2723,9 +2945,10 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
-      draw_cache_.rounded_corner_bounds !=
-          quad->shared_quad_state->rounded_corner_bounds ||
-      draw_cache_.matrix_data.size() >= max_quads) {
+      draw_cache_.mask_filter_info !=
+          quad->shared_quad_state->mask_filter_info ||
+      draw_cache_.matrix_data.size() >= max_quads ||
+      draw_cache_.is_video_frame != quad->is_video_frame) {
     FlushTextureQuadCache(SHARED_BINDING);
     draw_cache_.is_empty = false;
     draw_cache_.program_key = program_key;
@@ -2733,8 +2956,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
-    draw_cache_.rounded_corner_bounds =
-        quad->shared_quad_state->rounded_corner_bounds;
+    draw_cache_.mask_filter_info = quad->shared_quad_state->mask_filter_info;
+    draw_cache_.is_video_frame = quad->is_video_frame;
   }
 
   // Generate the uv-transform
@@ -2778,6 +3001,11 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   Float16 m;
   quad_rect_matrix.matrix().asColMajorf(m.data);
   draw_cache_.matrix_data.push_back(m);
+
+  // Track the region in the current target surface that has been drawn to.
+  AccumulateDrawRects(quad->visible_rect,
+                      quad->shared_quad_state->quad_to_target_transform,
+                      &drawn_rects_);
 
   if (clip_region) {
     DCHECK_EQ(quad->rect, quad->visible_rect);
@@ -2826,8 +3054,13 @@ void GLRenderer::FinishDrawingFrame() {
   ScheduleOutputSurfaceAsOverlay();
 
 #if defined(OS_ANDROID) || defined(USE_OZONE)
-  ScheduleOverlays();
-#elif defined(OS_MACOSX)
+  bool schedule_overlays = true;
+#if defined(USE_X11)
+  schedule_overlays = features::IsUsingOzonePlatform();
+#endif
+  if (schedule_overlays)
+    ScheduleOverlays();
+#elif defined(OS_APPLE)
   ScheduleCALayers();
 #elif defined(OS_WIN)
   ScheduleDCLayers();
@@ -2835,6 +3068,9 @@ void GLRenderer::FinishDrawingFrame() {
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.triangles"), "Triangles Drawn",
                  num_triangles_drawn_);
+
+  // Mark the end of batched read of shared images.
+  gl_->EndBatchReadAccessSharedImageCHROMIUM();
 }
 
 bool GLRenderer::OverdrawTracingEnabled() {
@@ -2849,14 +3085,87 @@ bool GLRenderer::OverdrawTracingEnabled() {
              current_frame()->root_render_pass;
 }
 
+bool GLRenderer::CompositeTimeTracingEnabled() {
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), &tracing_enabled);
+
+  return tracing_enabled && use_timer_query_;
+}
+
+void GLRenderer::AddCompositeTimeTraces(base::TimeTicks ready_timestamp) {
+  DCHECK(CompositeTimeTracingEnabled());
+  DCHECK_EQ(timer_queries_.front().first, kTimerQueryDummy);
+
+  std::size_t count = 0;
+  uint64_t duration = 0;
+
+  // List of queries to delete after their results are retrieved.
+  std::vector<unsigned> queries_to_delete;
+
+  // Queue of durations per draw call. The |second| in the pair represents the
+  // draw call type as string.
+  base::queue<std::pair<uint64_t, std::string>> durations;
+
+  // Pop the fence query as it does not represent a timer query.
+  timer_queries_.pop();
+
+  // Initialize |start_time_ticks| as the end timestamp and walk backwards to
+  // find the actual timestamp.
+  base::TimeTicks start_time_ticks = ready_timestamp;
+
+  while (timer_queries_.size() &&
+         timer_queries_.front().first != kTimerQueryDummy) {
+    count++;
+    gl_->GetQueryObjectui64vEXT(timer_queries_.front().first,
+                                GL_QUERY_RESULT_EXT, &duration);
+    durations.emplace(duration, timer_queries_.front().second);
+    queries_to_delete.push_back(timer_queries_.front().first);
+    timer_queries_.pop();
+    start_time_ticks -= base::TimeDelta::FromNanoseconds(duration);
+  }
+
+  // Delete all timer queries for which results have been retrieved.
+  gl_->DeleteQueriesEXT(count, queries_to_delete.data());
+
+  base::TimeDelta unique_id_delta = ready_timestamp - start_time_ticks;
+  const int trace_unique_id = unique_id_delta.InMilliseconds() * count;
+
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+      TRACE_ID_LOCAL(trace_unique_id), start_time_ticks);
+
+  while (!durations.empty()) {
+    duration = durations.front().first;
+
+    // |duration| may be set to 0 if the timer query result was unavailable in
+    // |GetQueryObjectui64vEXT| function call.
+    if (!duration) {
+      durations.pop();
+      continue;
+    }
+    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+        TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+        TRACE_ID_LOCAL(trace_unique_id), durations.front().second.c_str(),
+        start_time_ticks);
+    start_time_ticks += base::TimeDelta::FromNanoseconds(duration);
+    durations.pop();
+  }
+
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+      TRACE_ID_LOCAL(trace_unique_id), ready_timestamp);
+}
+
 void GLRenderer::FinishDrawingQuadList() {
   FlushTextureQuadCache(SHARED_BINDING);
   if (occlusion_query_) {
     // Use the current surface area as max result. The effect is that overdraw
     // is reported as a percentage of the output surface size. ie. 2x overdraw
     // for the whole screen is reported as 200.
-    const int surface_area = current_surface_size_.GetArea();
-    DCHECK_GT(surface_area, 0);
+    base::CheckedNumeric<int> surface_area =
+        current_surface_size_.GetCheckedArea();
+    DCHECK_GT(static_cast<int>(surface_area.ValueOrDefault(INT_MAX)), 0);
 
     gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
     context_support_->SignalQuery(
@@ -2872,15 +3181,11 @@ void GLRenderer::GenerateMipmap() {
   current_framebuffer_texture_->set_generate_mipmap();
 }
 
-#if defined(OS_WIN)
-void GLRenderer::SetEnableDCLayers(bool enable) {
-  gl_->SetEnableDCLayersCHROMIUM(enable);
-}
-#endif
-
 bool GLRenderer::FlippedFramebuffer() const {
+#if defined(OS_APPLE)
   if (force_drawing_frame_framebuffer_unflipped_)
     return false;
+#endif
   if (current_frame()->current_render_pass != current_frame()->root_render_pass)
     return true;
   return FlippedRootFramebuffer();
@@ -3238,7 +3543,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 void GLRenderer::BindFramebufferToOutputSurface() {
   current_framebuffer_texture_ = nullptr;
   output_surface_->BindFramebuffer();
-  tint_gl_composited_content_ = settings_->tint_gl_composited_content;
+  tint_gl_composited_content_ = debug_settings_->tint_composited_content;
   if (overdraw_feedback_) {
     // Output surfaces that require an external stencil test should not allow
     // overdraw feedback by setting |supports_stencil| to false.
@@ -3253,7 +3558,8 @@ void GLRenderer::BindFramebufferToOutputSurface() {
   }
 }
 
-void GLRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
+void GLRenderer::BindFramebufferToTexture(
+    const AggregatedRenderPassId render_pass_id) {
   tint_gl_composited_content_ = false;
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
 
@@ -3346,26 +3652,25 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
-                               const gfx::ColorSpace& dst_color_space) {
+                               const gfx::ColorSpace& dst_color_space,
+                               bool adjust_src_white_level) {
   DCHECK(dst_color_space.IsValid());
-
-  // If the input color space is PQ, and it did not specify a white level,
-  // override it with the frame's white level.
-  gfx::ColorSpace adjusted_src_color_space =
-      src_color_space.GetWithPQSDRWhiteLevel(
-          current_frame()->display_color_spaces.GetSDRWhiteLevel());
+  gfx::ColorSpace adjusted_src_color_space = src_color_space;
+  if (adjust_src_white_level) {
+    // If the input color space is HDR, and it did not specify a white level,
+    // override it with the frame's white level.
+    adjusted_src_color_space = src_color_space.GetWithSDRWhiteLevel(
+        current_frame()->display_color_spaces.GetSDRWhiteLevel());
+  }
 
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
       GetColorTransform(adjusted_src_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
-  const bool is_root_render_pass =
-      current_frame()->current_render_pass == current_frame()->root_render_pass;
-  const SkMatrix44& output_color_matrix = output_surface_->color_matrix();
-  const bool has_output_color_matrix =
-      is_root_render_pass && !output_color_matrix.isIdentity();
-
+  bool has_output_color_matrix = false;
+  if (program_key.type() != ProgramType::PROGRAM_TYPE_SOLID_COLOR)
+    has_output_color_matrix = HasOutputColorMatrix();
   program_key.set_has_output_color_matrix(has_output_color_matrix);
 
   // Create and set the program if needed.
@@ -3400,7 +3705,7 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
   if (has_output_color_matrix) {
     DCHECK_NE(current_program_->output_color_matrix_location(), -1);
     float matrix[16];
-    output_color_matrix.asColMajorf(matrix);
+    output_surface_->color_matrix().asColMajorf(matrix);
     gl_->UniformMatrix4fv(current_program_->output_color_matrix_location(), 1,
                           false, matrix);
   }
@@ -3500,7 +3805,7 @@ bool GLRenderer::IsContextLost() {
   return gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void GLRenderer::ScheduleCALayers() {
   // The use of OverlayTextures for RenderPasses is only supported on the code
   // paths for |release_overlay_resources_after_gpu_query| at the moment. See
@@ -3528,7 +3833,7 @@ void GLRenderer::ScheduleCALayers() {
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(
-          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<DisplayResourceProvider::ScopedOverlayLockGL>(
               resource_provider_, contents_resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
@@ -3573,7 +3878,7 @@ void GLRenderer::ScheduleCALayers() {
 
   ReduceAvailableOverlayTextures();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 void GLRenderer::ScheduleDCLayers() {
@@ -3585,7 +3890,7 @@ void GLRenderer::ScheduleDCLayers() {
       if (resource_id == kInvalidResourceId)
         break;
       pending_overlay_resources_.push_back(
-          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<DisplayResourceProvider::ScopedOverlayLockGL>(
               resource_provider_, resource_id));
       texture_ids[i] = pending_overlay_resources_.back()->texture_id();
     }
@@ -3624,7 +3929,7 @@ void GLRenderer::ScheduleOverlays() {
   OverlayCandidateList& overlays = current_frame()->overlay_list;
   for (const auto& overlay_candidate : overlays) {
     pending_overlay_resources_.push_back(
-        std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+        std::make_unique<DisplayResourceProvider::ScopedOverlayLockGL>(
             resource_provider_, overlay_candidate.resource_id));
     unsigned texture_id = pending_overlay_resources_.back()->texture_id();
 
@@ -3656,8 +3961,8 @@ void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
       overlay_candidate.enable_blending, overlay_candidate.gpu_fence_id);
 }
 
-#if defined(OS_MACOSX)
-// This function draws the RenderPassDrawQuad into a temporary
+#if defined(OS_APPLE)
+// This function draws the CompositorRenderPassDrawQuad into a temporary
 // texture/framebuffer, and then copies the result into an IOSurface. The
 // inefficient (but simple) way to do this would be to:
 //   1. Allocate a framebuffer the size of the screen.
@@ -3811,12 +4116,13 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 }
 
 std::unique_ptr<GLRenderer::OverlayTexture>
-GLRenderer::FindOrCreateOverlayTexture(const RenderPassId& render_pass_id,
-                                       int width,
-                                       int height,
-                                       const gfx::ColorSpace& color_space) {
-  // First try to use a texture for the same RenderPassId, to keep things more
-  // stable and less likely to clobber each others textures.
+GLRenderer::FindOrCreateOverlayTexture(
+    const AggregatedRenderPassId& render_pass_id,
+    int width,
+    int height,
+    const gfx::ColorSpace& color_space) {
+  // First try to use a texture for the same CompositorRenderPassId, to keep
+  // things more stable and less likely to clobber each others textures.
   auto match_with_id = [&](const std::unique_ptr<OverlayTexture>& overlay) {
     return overlay->render_pass_id == render_pass_id &&
            overlay->texture.size().width() >= width &&
@@ -3930,7 +4236,7 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
                                filter);
   return overlay_texture;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 void GLRenderer::SetupOverdrawFeedback() {
   gl_->StencilFunc(GL_ALWAYS, 1, 0xffffffff);
@@ -3976,12 +4282,13 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   for (const auto& test : stencil_tests) {
     gl_->StencilFunc(test.func, test.ref, 0xffffffff);
     // Transparent color unless color-coding of overdraw is enabled.
-    SetShaderColor(settings_->show_overdraw_feedback ? test.color : 0, 1.f);
+    SetShaderColor(debug_settings_->show_overdraw_feedback ? test.color : 0,
+                   1.f);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
   }
 }
 
-void GLRenderer::ProcessOverdrawFeedback(int surface_area,
+void GLRenderer::ProcessOverdrawFeedback(base::CheckedNumeric<int> surface_area,
                                          unsigned occlusion_query) {
   unsigned result = 0;
   DCHECK(occlusion_query);
@@ -3990,15 +4297,16 @@ void GLRenderer::ProcessOverdrawFeedback(int surface_area,
 
   // Report GPU overdraw as a percentage of |surface_area|.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"), "GPU Overdraw",
-                 (result * 100.0 / surface_area));
+                 (result * 100.0 /
+                  static_cast<int>(surface_area.ValueOrDefault(INT_MAX))));
 }
 
 void GLRenderer::UpdateRenderPassTextures(
-    const RenderPassList& render_passes_in_draw_order,
-    const base::flat_map<RenderPassId, RenderPassRequirements>&
+    const AggregatedRenderPassList& render_passes_in_draw_order,
+    const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
   // Collect RenderPass textures that should be deleted.
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<AggregatedRenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_textures_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
@@ -4037,12 +4345,83 @@ ResourceFormat GLRenderer::CurrentRenderPassResourceFormat() const {
   return PlatformColor::BestSupportedTextureFormat(caps);
 }
 
+bool GLRenderer::HasOutputColorMatrix() const {
+  const bool is_root_render_pass =
+      current_frame()->current_render_pass == current_frame()->root_render_pass;
+  const SkMatrix44& output_color_matrix = output_surface_->color_matrix();
+  return is_root_render_pass && !output_color_matrix.isIdentity();
+}
+
+bool GLRenderer::CanUseFastSolidColorDraw(
+    const SolidColorDrawQuad* quad) const {
+  const SharedQuadState* sqs = quad->shared_quad_state;
+
+  if (!use_fast_path_solid_color_quad_)
+    return false;
+
+  // Mask filters require blending with the background, which is not possible
+  // with the glClear draw method.
+  if (!sqs->mask_filter_info.IsEmpty())
+    return false;
+
+  // 3D transforms need vertex computation in 3D and cannot be handled using
+  // glClear().
+  if (!sqs->quad_to_target_transform.IsFlat())
+    return false;
+
+  // glClear ignores stencil buffer.
+  if (stencil_shadow_)
+    return false;
+
+  // Any non axis aligned transform cannot be handled by glClear.
+  if (!sqs->quad_to_target_transform.Preserves2dAxisAlignment())
+    return false;
+
+  // If no blending is needed for the quad, then fast draw can be safely used.
+  if (!quad->ShouldDrawWithBlending() && SkColorGetA(quad->color) == 255)
+    return true;
+
+  // It is safe to use glClearColor with alpha blending when the render
+  // pass has transparent background because the blending happens against
+  // (0, 0, 0, 0) which is the same as replacing the destination color & alpha.
+  // However, if the render pass does not have a transparent background, using
+  // glClear with a color that has alpha or opacity, would end up punching an
+  // unwanted hole in the frame buffer.
+  if (!current_frame()->current_render_pass->has_transparent_background)
+    return false;
+
+  // If the color has any alpha and blending is needed, ensure the blend mode
+  // allows replacing destination color & alpha.
+  const bool is_translucent =
+      SkColorGetA(quad->color) != 255 || quad->shared_quad_state->opacity < 1.f;
+  if (is_translucent &&
+      !(quad->shared_quad_state->blend_mode == SkBlendMode::kSrc ||
+        quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)) {
+    return false;
+  }
+
+  gfx::RectF quad_rect_in_target(quad->visible_rect);
+  sqs->quad_to_target_transform.TransformRect(&quad_rect_in_target);
+  const gfx::Rect quad_rect_in_target_rounded =
+      gfx::ToRoundedRect(quad_rect_in_target);
+
+  // If the quad does not intersect with any region that has already been drawn
+  // to, then blending is not an issue and fast draw path can be used.
+  for (const auto& rect : drawn_rects_)
+    if (quad_rect_in_target_rounded.Intersects(rect))
+      return false;
+  return true;
+}
+
 void GLRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId& render_pass_id,
+    const AggregatedRenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto contents_texture_it = render_pass_textures_.find(render_pass_id);
-  if (contents_texture_it != render_pass_textures_.end())
+  if (contents_texture_it != render_pass_textures_.end()) {
+    DCHECK(gfx::Rect(contents_texture_it->second.size())
+               .Contains(gfx::Rect(requirements.size)));
     return;
+  }
 
   ScopedRenderPassTexture contents_texture(
       output_surface_->context_provider(), requirements.size,
@@ -4052,16 +4431,19 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
 }
 
 bool GLRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId& render_pass_id) const {
+    const AggregatedRenderPassId& render_pass_id) const {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   return texture_it != render_pass_textures_.end();
 }
 
 gfx::Size GLRenderer::GetRenderPassBackingPixelSize(
-    const RenderPassId& render_pass_id) {
+    const AggregatedRenderPassId& render_pass_id) {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   DCHECK(texture_it != render_pass_textures_.end());
   return texture_it->second.size();
 }
+
+GLRenderer::OverlayTexture::OverlayTexture() = default;
+GLRenderer::OverlayTexture::~OverlayTexture() = default;
 
 }  // namespace viz

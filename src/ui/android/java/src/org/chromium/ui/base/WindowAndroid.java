@@ -10,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.UiModeManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -34,10 +35,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.LifetimeAssert;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.UnownedUserDataHost;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -67,6 +70,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // Arbitrary error margin to account for cases where the display's refresh rate might not
     // exactly match the target rate.
     private static final float MAX_REFRESH_RATE_DELTA = 2.f;
+
+    private final LifetimeAssert mLifetimeAssert;
 
     private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate =
             KeyboardVisibilityDelegate.getInstance();
@@ -140,6 +145,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // List of display modes with the same dimensions as the current mode but varying refresh rate.
     private List<Display.Mode> mSupportedRefreshRateModes;
 
+    // A container for UnownedUserData objects that are not owned by, but can be accessed through
+    // WindowAndroid.
+    private final UnownedUserDataHost mUnownedUserDataHost = new UnownedUserDataHost();
+
     /**
      * An interface to notify listeners that a context menu is closed.
      */
@@ -181,6 +190,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private ObserverList<SelectionHandlesObserver> mSelectionHandlesObservers =
             new ObserverList<>();
 
+    private final boolean mAllowChangeRefreshRate;
+
     /**
      * Gets the view for readback.
      */
@@ -204,12 +215,19 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     @SuppressLint("UseSparseArrays")
     protected WindowAndroid(Context context, DisplayAndroid display) {
+        mLifetimeAssert = LifetimeAssert.create(this);
         // context does not have the same lifetime guarantees as an application context so we can't
         // hold a strong reference to it.
         mContextRef = new ImmutableWeakReference<>(context);
         mIntentErrors = new HashMap<>();
         mDisplayAndroid = display;
         mDisplayAndroid.addObserver(this);
+
+        // Using this setting is gated to Q due to bugs on Razer phones which can freeze the device
+        // if the API is used. See crbug.com/990646.
+        // Disable refresh rate change on TV platforms, as it may cause black screen flicker due to
+        // display mode changes.
+        mAllowChangeRefreshRate = BuildInfo.isAtLeastQ() && !isTv(context);
 
         // Multiple refresh rate support is only available on M+.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) recomputeSupportedRefreshRates();
@@ -232,6 +250,13 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
     }
 
+    private static boolean isTv(Context context) {
+        UiModeManager uiModeManager =
+                (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
+        return uiModeManager != null
+                && uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
+    }
+
     @CalledByNative
     private static long createForTesting() {
         WindowAndroid windowAndroid = new WindowAndroid(ContextUtils.getApplicationContext());
@@ -249,7 +274,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     /**
      * Set the delegate that will handle android permissions requests.
      */
-    @VisibleForTesting
     public void setAndroidPermissionDelegate(AndroidPermissionDelegate delegate) {
         mPermissionDelegate = delegate;
     }
@@ -628,10 +652,13 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * Destroys the c++ WindowAndroid object if one has been created.
      */
     public void destroy() {
+        LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
         if (mNativeWindowAndroid != 0) {
             // Native code clears |mNativeWindowAndroid|.
             WindowAndroidJni.get().destroy(mNativeWindowAndroid, WindowAndroid.this);
         }
+
+        mUnownedUserDataHost.destroy();
 
         if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
 
@@ -719,7 +746,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         return mApplicationBottomInsetProvider;
     }
 
-    @VisibleForTesting
     public void setKeyboardDelegate(KeyboardVisibilityDelegate keyboardDelegate) {
         mKeyboardVisibilityDelegate = keyboardDelegate;
         // TODO(fhorschig): Remove - every caller should use the window to get the delegate.
@@ -928,7 +954,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @TargetApi(Build.VERSION_CODES.M)
     @CalledByNative
     private float[] getSupportedRefreshRates() {
-        if (mSupportedRefreshRateModes == null) return null;
+        if (mSupportedRefreshRateModes == null || !mAllowChangeRefreshRate) return null;
 
         float[] supportedRefreshRates = new float[mSupportedRefreshRateModes.size()];
         for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i) {
@@ -940,12 +966,11 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @SuppressLint("NewApi")
     @CalledByNative
     private void setPreferredRefreshRate(float preferredRefreshRate) {
-        // Using this setting is gated to Q due to bugs on Razer phones which can freeze the device
-        // if the API is used. See crbug.com/990646.
-        if (mSupportedRefreshRateModes == null || !BuildInfo.isAtLeastQ()) return;
+        if (mSupportedRefreshRateModes == null || !mAllowChangeRefreshRate) return;
 
         int preferredModeId = getPreferredModeId(preferredRefreshRate);
         Window window = getWindow();
+        if (window == null) return;
         WindowManager.LayoutParams params = window.getAttributes();
         if (params.preferredDisplayModeId == preferredModeId) return;
 
@@ -982,6 +1007,13 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
 
         return preferredMode.getModeId();
+    }
+
+    /**
+     * @return The {@link UnownedUserDataHost} attached to the current {@link WindowAndroid}.
+     */
+    public UnownedUserDataHost getUnownedUserDataHost() {
+        return mUnownedUserDataHost;
     }
 
     @NativeMethods

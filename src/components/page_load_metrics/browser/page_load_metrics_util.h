@@ -103,6 +103,11 @@ bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadMetricsObserverDelegate& delegate);
 
+bool WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
+    const base::Optional<base::TimeDelta>& event,
+    const PageLoadMetricsObserverDelegate& delegate,
+    size_t index);
+
 // Returns true if:
 // - We have timing information for the event.
 // - The page load started in the background.
@@ -111,6 +116,10 @@ bool WasStartedInForegroundOptionalEventInForeground(
 bool WasStartedInBackgroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadMetricsObserverDelegate& delegate);
+
+// Returns true if |delegate| started in the foreground or became foregrounded
+// at some point in time.
+bool WasInForeground(const PageLoadMetricsObserverDelegate& delegate);
 
 PageAbortInfo GetPageAbortInfo(const PageLoadMetricsObserverDelegate& delegate);
 
@@ -165,6 +174,12 @@ bool QueryContainsComponent(const base::StringPiece query,
                             const base::StringPiece component);
 bool QueryContainsComponentPrefix(const base::StringPiece query,
                                   const base::StringPiece component);
+
+// Adjusts the layout shift score for UKM.
+int64_t LayoutShiftUkmValue(float shift_score);
+
+// Adjusts the layout shift score for UMA.
+int32_t LayoutShiftUmaValue(float shift_score);
 
 }  // namespace page_load_metrics
 

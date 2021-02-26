@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/serial/serial_port_manager.h"
 #include "extensions/common/api/serial.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -159,9 +160,7 @@ ApiResourceManager<SerialConnection>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-SerialConnection::SerialConnection(
-    const std::string& owner_extension_id,
-    mojo::PendingRemote<device::mojom::SerialPort> serial_port)
+SerialConnection::SerialConnection(const std::string& owner_extension_id)
     : ApiResource(owner_extension_id),
       persistent_(false),
       buffer_size_(kDefaultBufferSize),
@@ -170,13 +169,9 @@ SerialConnection::SerialConnection(
       paused_(true),
       read_error_(base::nullopt),
       bytes_written_(0),
-      serial_port_(std::move(serial_port)),
       receive_pipe_watcher_(FROM_HERE,
                             mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       send_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
-  DCHECK(serial_port_);
-  serial_port_.set_disconnect_handler(base::BindOnce(
-      &SerialConnection::OnConnectionError, base::Unretained(this)));
 }
 
 SerialConnection::~SerialConnection() {}
@@ -209,13 +204,8 @@ void SerialConnection::SetPaused(bool paused) {
   } else {
     // If |receive_pipe_| is closed and there is no pending ReceiveError event,
     // try to reconnect the data pipe.
-    if (!receive_pipe_ && !read_error_) {
-      mojo::ScopedDataPipeProducerHandle producer;
-      mojo::ScopedDataPipeConsumerHandle consumer;
-      CreatePipe(&producer, &consumer);
-      SetUpReceiveDataPipe(std::move(consumer));
-      serial_port_->ClearReadError(std::move(producer));
-    }
+    if (!receive_pipe_ && !read_error_)
+      SetUpReceiveDataPipe();
     receive_pipe_watcher_.ArmOrNotify();
     receive_timeout_task_.Cancel();
     SetTimeoutCallback();
@@ -232,9 +222,11 @@ void SerialConnection::SetConnectionErrorHandler(
   connection_error_handler_ = std::move(connection_error_handler);
 }
 
-void SerialConnection::Open(const api::serial::ConnectionOptions& options,
+void SerialConnection::Open(api::SerialPortManager* port_manager,
+                            const std::string& path,
+                            const api::serial::ConnectionOptions& options,
                             OpenCompleteCallback callback) {
-  DCHECK(serial_port_);
+  DCHECK(!serial_port_);
   DCHECK(!send_pipe_);
   DCHECK(!receive_pipe_);
 
@@ -249,24 +241,15 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
 
-  mojo::ScopedDataPipeProducerHandle receive_producer;
-  mojo::ScopedDataPipeConsumerHandle receive_consumer;
-  CreatePipe(&receive_producer, &receive_consumer);
-
-  mojo::ScopedDataPipeProducerHandle send_producer;
-  mojo::ScopedDataPipeConsumerHandle send_consumer;
-  CreatePipe(&send_producer, &send_consumer);
-
   mojo::PendingRemote<device::mojom::SerialPortClient> client;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  serial_port_->Open(
-      device::mojom::SerialConnectionOptions::From(options),
-      std::move(send_consumer), std::move(receive_producer), std::move(client),
+  port_manager->OpenPort(
+      path, device::mojom::SerialConnectionOptions::From(options),
+      std::move(client),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&SerialConnection::OnOpen, weak_factory_.GetWeakPtr(),
-                         std::move(receive_consumer), std::move(send_producer),
                          std::move(client_receiver), std::move(callback)),
-          false));
+          mojo::NullRemote()));
 }
 
 void SerialConnection::CreatePipe(
@@ -281,9 +264,12 @@ void SerialConnection::CreatePipe(
   CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(&options, producer, consumer));
 }
 
-void SerialConnection::SetUpReceiveDataPipe(
-    mojo::ScopedDataPipeConsumerHandle consumer) {
-  receive_pipe_ = std::move(consumer);
+void SerialConnection::SetUpReceiveDataPipe() {
+  mojo::ScopedDataPipeProducerHandle producer;
+  CreatePipe(&producer, &receive_pipe_);
+
+  serial_port_->StartReading(std::move(producer));
+
   receive_pipe_watcher_.Watch(
       receive_pipe_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -292,9 +278,12 @@ void SerialConnection::SetUpReceiveDataPipe(
                           weak_factory_.GetWeakPtr()));
 }
 
-void SerialConnection::SetUpSendDataPipe(
-    mojo::ScopedDataPipeProducerHandle producer) {
-  send_pipe_ = std::move(producer);
+void SerialConnection::SetUpSendDataPipe() {
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  CreatePipe(&send_pipe_, &consumer);
+
+  serial_port_->StartWriting(std::move(consumer));
+
   send_pipe_watcher_.Watch(
       send_pipe_.get(),
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -330,18 +319,20 @@ void SerialConnection::OnSendError(device::mojom::SerialSendError error) {
 }
 
 void SerialConnection::OnOpen(
-    mojo::ScopedDataPipeConsumerHandle consumer,
-    mojo::ScopedDataPipeProducerHandle producer,
     mojo::PendingReceiver<device::mojom::SerialPortClient> client_receiver,
     OpenCompleteCallback callback,
-    bool success) {
-  if (!success) {
+    mojo::PendingRemote<device::mojom::SerialPort> serial_port) {
+  if (!serial_port.is_valid()) {
     std::move(callback).Run(false);
     return;
   }
 
-  SetUpReceiveDataPipe(std::move(consumer));
-  SetUpSendDataPipe(std::move(producer));
+  serial_port_.Bind(std::move(serial_port));
+  serial_port_.set_disconnect_handler(base::BindOnce(
+      &SerialConnection::OnConnectionError, base::Unretained(this)));
+
+  SetUpReceiveDataPipe();
+  SetUpSendDataPipe();
   client_receiver_.Bind(std::move(client_receiver));
   client_receiver_.set_disconnect_handler(base::BindOnce(
       &SerialConnection::OnClientReceiverClosed, weak_factory_.GetWeakPtr()));
@@ -419,13 +410,8 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
   DCHECK(data_to_send_.empty());
   data_to_send_.assign(data.begin(), data.end());
 
-  if (!send_pipe_) {
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    CreatePipe(&producer, &consumer);
-    SetUpSendDataPipe(std::move(producer));
-    serial_port_->ClearSendError(std::move(consumer));
-  }
+  if (!send_pipe_)
+    SetUpSendDataPipe();
   send_pipe_watcher_.ArmOrNotify();
 
   send_timeout_task_.Cancel();
@@ -490,10 +476,11 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
       std::move(resp_callback), nullptr));
 }
 
-void SerialConnection::Flush(FlushCompleteCallback callback) const {
+void SerialConnection::Flush(device::mojom::SerialPortFlushMode mode,
+                             FlushCompleteCallback callback) const {
   DCHECK(serial_port_);
   return serial_port_->Flush(
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
+      mode, mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback)));
 }
 
 void SerialConnection::GetControlSignals(
@@ -532,6 +519,10 @@ void SerialConnection::Close(base::OnceClosure callback) {
   DCHECK(serial_port_);
   serial_port_->Close(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback)));
+}
+
+void SerialConnection::InitSerialPortForTesting() {
+  ignore_result(serial_port_.BindNewPipeAndPassReceiver());
 }
 
 void SerialConnection::SetTimeoutCallback() {

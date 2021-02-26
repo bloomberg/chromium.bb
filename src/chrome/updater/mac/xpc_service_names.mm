@@ -12,48 +12,61 @@
 
 namespace updater {
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName() {
-  return base::ScopedCFTypeRef<CFStringRef>(
-      base::SysUTF8ToCFStringRef(base::StrCat({
-          MAC_BUNDLE_IDENTIFIER_STRING,
-          ".check",
-      })),
-      base::scoped_policy::RETAIN);
+const char kControlLaunchdName[] =
+    MAC_BUNDLE_IDENTIFIER_STRING ".control." UPDATER_VERSION_STRING;
+const char kUpdateLaunchdName[] = MAC_BUNDLE_IDENTIFIER_STRING ".service";
+
+base::ScopedCFTypeRef<CFStringRef> CopyServiceLaunchdName() {
+  return base::SysUTF8ToCFStringRef(kUpdateLaunchdName);
 }
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
-  return base::ScopedCFTypeRef<CFStringRef>(
-      base::SysUTF8ToCFStringRef(base::StrCat({
-          MAC_BUNDLE_IDENTIFIER_STRING,
-          ".service",
-      })),
-      base::scoped_policy::RETAIN);
+base::ScopedCFTypeRef<CFStringRef> CopyWakeLaunchdName() {
+  return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING
+                                    ".wake." UPDATER_VERSION_STRING);
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel() {
+base::ScopedCFTypeRef<CFStringRef> CopyControlLaunchdName() {
+  return base::SysUTF8ToCFStringRef(kControlLaunchdName);
+}
+
+base::scoped_nsobject<NSString> GetServiceLaunchdLabel() {
   return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
+      base::mac::CFToNSCast(CopyServiceLaunchdName().release()));
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
+base::scoped_nsobject<NSString> GetWakeLaunchdLabel() {
   return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
+      base::mac::CFToNSCast(CopyWakeLaunchdName().release()));
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name) {
+base::scoped_nsobject<NSString> GetControlLaunchdLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyControlLaunchdName().release()));
+}
+
+base::scoped_nsobject<NSString> GetServiceMachName(
+    base::scoped_nsobject<NSString> name) {
   return base::scoped_nsobject<NSString>(
       [name stringByAppendingFormat:@".%lu", [name hash]],
       base::scoped_policy::RETAIN);
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName() {
-  base::scoped_nsobject<NSString> name(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
-  return base::scoped_nsobject<NSString>(
-      [name
-          stringByAppendingFormat:@".%lu",
-                                  [GetGoogleUpdateServiceLaunchDLabel() hash]],
+base::scoped_nsobject<NSString> GetServiceMachName() {
+  return GetServiceMachName(GetServiceLaunchdLabel());
+}
+
+base::scoped_nsobject<NSString> GetVersionedServiceMachName() {
+  base::scoped_nsobject<NSString> serviceLaunchdLabel(
+      GetServiceLaunchdLabel(), base::scoped_policy::RETAIN);
+  base::scoped_nsobject<NSString> updaterVersionString(
+      base::SysUTF8ToNSString(UPDATER_VERSION_STRING),
       base::scoped_policy::RETAIN);
+
+  base::scoped_nsobject<NSString> name(
+      [NSString stringWithFormat:@"%@.%@", serviceLaunchdLabel.get(),
+                                 updaterVersionString.get()],
+      base::scoped_policy::RETAIN);
+  return GetServiceMachName(name);
 }
 
 }  // namespace updater

@@ -93,7 +93,7 @@ bool LoadingPredictor::PrepareForPageLoad(
                                                                &prediction);
   }
   if (active_hints_.find(url) != active_hints_.end() &&
-      has_local_preconnect_prediction) {
+      has_local_preconnect_prediction && !preconnect_prediction) {
     // We are currently preconnecting using the local preconnect prediction. Do
     // not proceed further.
     return true;
@@ -108,14 +108,14 @@ bool LoadingPredictor::PrepareForPageLoad(
     AddInitialUrlToPreconnectPrediction(url, &prediction);
   }
 
-  // Return early if we do not have any preconnect requests.
-  if (prediction.requests.empty())
+  // Return early if we do not have any requests.
+  if (prediction.requests.empty() && prediction.prefetch_requests.empty())
     return false;
 
   ++total_hints_activated_;
   active_hints_.emplace(url, base::TimeTicks::Now());
   if (IsPreconnectAllowed(profile_))
-    MaybeAddPreconnect(url, std::move(prediction.requests), origin);
+    MaybeAddPreconnect(url, std::move(prediction), origin);
   return has_local_preconnect_prediction || preconnect_prediction;
 }
 
@@ -153,6 +153,21 @@ PreconnectManager* LoadingPredictor::preconnect_manager() {
   return preconnect_manager_.get();
 }
 
+PrefetchManager* LoadingPredictor::prefetch_manager() {
+  if (!base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch))
+    return nullptr;
+
+  if (shutdown_ || !IsPreconnectFeatureEnabled())
+    return nullptr;
+
+  if (!prefetch_manager_) {
+    prefetch_manager_ =
+        std::make_unique<PrefetchManager>(GetWeakPtr(), profile_);
+  }
+
+  return prefetch_manager_.get();
+}
+
 void LoadingPredictor::Shutdown() {
   DCHECK(!shutdown_);
   resource_prefetch_predictor_->Shutdown();
@@ -166,6 +181,8 @@ bool LoadingPredictor::OnNavigationStarted(const NavigationID& navigation_id) {
   loading_data_collector()->RecordStartNavigation(navigation_id);
   CleanupAbandonedHintsAndNavigations(navigation_id);
   active_navigations_.emplace(navigation_id);
+  active_urls_to_navigations_[navigation_id.main_frame_url].insert(
+      navigation_id);
   return PrepareForPageLoad(navigation_id.main_frame_url,
                             HintOrigin::NAVIGATION);
 }
@@ -179,6 +196,14 @@ void LoadingPredictor::OnNavigationFinished(
 
   loading_data_collector()->RecordFinishNavigation(
       old_navigation_id, new_navigation_id, is_error_page);
+  if (active_urls_to_navigations_.find(old_navigation_id.main_frame_url) !=
+      active_urls_to_navigations_.end()) {
+    active_urls_to_navigations_[old_navigation_id.main_frame_url].erase(
+        old_navigation_id);
+    if (active_urls_to_navigations_[old_navigation_id.main_frame_url].empty()) {
+      active_urls_to_navigations_.erase(old_navigation_id.main_frame_url);
+    }
+  }
   active_navigations_.erase(old_navigation_id);
   CancelPageLoadHint(old_navigation_id.main_frame_url);
 }
@@ -224,20 +249,24 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
   }
 }
 
-void LoadingPredictor::MaybeAddPreconnect(
-    const GURL& url,
-    std::vector<PreconnectRequest> requests,
-    HintOrigin origin) {
+void LoadingPredictor::MaybeAddPreconnect(const GURL& url,
+                                          PreconnectPrediction prediction,
+                                          HintOrigin origin) {
   DCHECK(!shutdown_);
-  preconnect_manager()->Start(url, std::move(requests));
+  if (!prediction.prefetch_requests.empty()) {
+    DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
+    prefetch_manager()->Start(url, std::move(prediction.prefetch_requests));
+  }
+  if (!prediction.requests.empty())
+    preconnect_manager()->Start(url, std::move(prediction.requests));
 }
 
 void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
   DCHECK(!shutdown_);
-  if (!preconnect_manager_)
-    return;
-
-  preconnect_manager_->Stop(url);
+  if (preconnect_manager_)
+    preconnect_manager_->Stop(url);
+  if (prefetch_manager_)
+    prefetch_manager_->Stop(url);
 }
 
 void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
@@ -266,6 +295,20 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   }
 }
 
+void LoadingPredictor::PreconnectInitiated(const GURL& url,
+                                           const GURL& preconnect_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (shutdown_)
+    return;
+
+  auto nav_id_set_it = active_urls_to_navigations_.find(url);
+  if (nav_id_set_it == active_urls_to_navigations_.end())
+    return;
+
+  for (const auto& nav_id : nav_id_set_it->second)
+    loading_data_collector_->RecordPreconnectInitiated(nav_id, preconnect_url);
+}
+
 void LoadingPredictor::PreconnectFinished(
     std::unique_ptr<PreconnectStats> stats) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -275,6 +318,28 @@ void LoadingPredictor::PreconnectFinished(
   DCHECK(stats);
   active_hints_.erase(stats->url);
   stats_collector_->RecordPreconnectStats(std::move(stats));
+}
+
+void LoadingPredictor::PrefetchInitiated(const GURL& url,
+                                         const GURL& prefetch_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (shutdown_)
+    return;
+
+  auto nav_id_set_it = active_urls_to_navigations_.find(url);
+  if (nav_id_set_it == active_urls_to_navigations_.end())
+    return;
+
+  for (const auto& nav_id : nav_id_set_it->second)
+    loading_data_collector_->RecordPrefetchInitiated(nav_id, prefetch_url);
+}
+
+void LoadingPredictor::PrefetchFinished(std::unique_ptr<PrefetchStats> stats) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (shutdown_)
+    return;
+
+  active_hints_.erase(stats->url);
 }
 
 void LoadingPredictor::PreconnectURLIfAllowed(

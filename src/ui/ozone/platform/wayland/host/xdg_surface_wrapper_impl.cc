@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
+#include <xdg-decoration-unstable-v1-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
@@ -119,6 +120,8 @@ void XDGSurfaceWrapperImpl::AckConfigure() {
     zxdg_surface_v6_ack_configure(zxdg_surface_v6_.get(),
                                   pending_configure_serial_);
   }
+  connection_->wayland_window_manager()->NotifyWindowConfigured(
+      wayland_window_);
 }
 
 void XDGSurfaceWrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {
@@ -201,6 +204,16 @@ void XDGSurfaceWrapperImpl::CloseTopLevelStable(
   surface->wayland_window_->OnCloseRequest();
 }
 
+void XDGSurfaceWrapperImpl::SetTopLevelDecorationMode(
+    zxdg_toplevel_decoration_v1_mode requested_mode) {
+  if (requested_mode == decoration_mode_)
+    return;
+
+  decoration_mode_ = requested_mode;
+  zxdg_toplevel_decoration_v1_set_mode(zxdg_toplevel_decoration_.get(),
+                                       requested_mode);
+}
+
 // static
 void XDGSurfaceWrapperImpl::ConfigureV6(void* data,
                                         struct zxdg_surface_v6* zxdg_surface_v6,
@@ -252,6 +265,17 @@ xdg_surface* XDGSurfaceWrapperImpl::xdg_surface() const {
   return xdg_surface_.get();
 }
 
+// static
+void XDGSurfaceWrapperImpl::ConfigureDecoration(
+    void* data,
+    struct zxdg_toplevel_decoration_v1* decoration,
+    uint32_t mode) {
+  auto* surface = static_cast<XDGSurfaceWrapperImpl*>(data);
+  DCHECK(surface);
+  surface->SetTopLevelDecorationMode(
+      static_cast<zxdg_toplevel_decoration_v1_mode>(mode));
+}
+
 bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
   static const xdg_surface_listener xdg_surface_listener = {
       &XDGSurfaceWrapperImpl::ConfigureStable,
@@ -265,8 +289,8 @@ bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
   // configuration acknowledgement on each configure event.
   surface_for_popup_ = !with_toplevel;
 
-  xdg_surface_.reset(xdg_wm_base_get_xdg_surface(connection_->shell(),
-                                                 wayland_window_->surface()));
+  xdg_surface_.reset(xdg_wm_base_get_xdg_surface(
+      connection_->shell(), wayland_window_->root_surface()->surface()));
   if (!xdg_surface_) {
     LOG(ERROR) << "Failed to create xdg_surface";
     return false;
@@ -284,9 +308,12 @@ bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
     LOG(ERROR) << "Failed to create xdg_toplevel";
     return false;
   }
-  xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
-  wl_surface_commit(wayland_window_->surface());
 
+  xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
+
+  InitializeXdgDecoration();
+
+  wayland_window_->root_surface()->Commit();
   connection_->ScheduleFlush();
   return true;
 }
@@ -305,7 +332,7 @@ bool XDGSurfaceWrapperImpl::InitializeV6(bool with_toplevel) {
   surface_for_popup_ = !with_toplevel;
 
   zxdg_surface_v6_.reset(zxdg_shell_v6_get_xdg_surface(
-      connection_->shell_v6(), wayland_window_->surface()));
+      connection_->shell_v6(), wayland_window_->root_surface()->surface()));
   if (!zxdg_surface_v6_) {
     LOG(ERROR) << "Failed to create zxdg_surface";
     return false;
@@ -326,10 +353,24 @@ bool XDGSurfaceWrapperImpl::InitializeV6(bool with_toplevel) {
   }
   zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
                                 &zxdg_toplevel_v6_listener, this);
-  wl_surface_commit(wayland_window_->surface());
 
+  wayland_window_->root_surface()->Commit();
   connection_->ScheduleFlush();
   return true;
+}
+
+void XDGSurfaceWrapperImpl::InitializeXdgDecoration() {
+  if (connection_->xdg_decoration_manager_v1()) {
+    DCHECK(!zxdg_toplevel_decoration_);
+    static const zxdg_toplevel_decoration_v1_listener decoration_listener = {
+        &XDGSurfaceWrapperImpl::ConfigureDecoration,
+    };
+    zxdg_toplevel_decoration_.reset(
+        zxdg_decoration_manager_v1_get_toplevel_decoration(
+            connection_->xdg_decoration_manager_v1(), xdg_toplevel_.get()));
+    zxdg_toplevel_decoration_v1_add_listener(zxdg_toplevel_decoration_.get(),
+                                             &decoration_listener, this);
+  }
 }
 
 }  // namespace ui

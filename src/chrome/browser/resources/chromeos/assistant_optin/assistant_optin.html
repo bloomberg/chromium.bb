@@ -9,6 +9,7 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
@@ -18,8 +19,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 
-<include src="../login/components/common_styles.html">
-<include src="../login/components/hd-iron-icon.html">
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <include src="../login/components/oobe_buttons.html">
 <include src="../login/components/oobe_dialog.html">
 <include src="assistant_optin_flow.html">
@@ -35,6 +38,7 @@
 
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://resources/js/assert.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="strings.js"></script>
 <script src="assistant_optin.js"></script>
@@ -43,7 +47,8 @@
 
 <assistant-optin-flow id="assistant-optin-flow-card"></assistant-optin-flow>
 
-<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_template_no_process.js"></script>
+<script src="chrome://resources/js/i18n_template_process.js"></script>
 
 </body>
 </html>

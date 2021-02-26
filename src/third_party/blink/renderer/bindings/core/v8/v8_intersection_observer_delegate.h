@@ -19,7 +19,6 @@ class V8IntersectionObserverCallback;
 class V8IntersectionObserverDelegate final
     : public IntersectionObserverDelegate,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(V8IntersectionObserverDelegate);
 
  public:
   CORE_EXPORT V8IntersectionObserverDelegate(V8IntersectionObserverCallback*,
@@ -28,7 +27,11 @@ class V8IntersectionObserverDelegate final
 
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
+
+  LocalFrameUkmAggregator::MetricId GetUkmMetricId() const override {
+    return LocalFrameUkmAggregator::kJavascriptIntersectionObserver;
+  }
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
     return IntersectionObserver::kPostTaskToDeliver;

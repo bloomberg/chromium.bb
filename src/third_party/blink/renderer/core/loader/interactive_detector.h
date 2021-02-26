@@ -43,8 +43,6 @@ class CORE_EXPORT InteractiveDetector
       public Supplement<Document>,
       public ExecutionContextLifecycleObserver,
       public LongTaskObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
-
  public:
   static const char kSupplementName[];
 
@@ -88,6 +86,9 @@ class CORE_EXPORT InteractiveDetector
   // pointer down followed by a pointer up.
   base::Optional<base::TimeDelta> GetFirstInputDelay() const;
 
+  WTF::Vector<base::Optional<base::TimeDelta>>
+  GetFirstInputDelaysAfterBackForwardCacheRestore() const;
+
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
   base::Optional<base::TimeTicks> GetFirstInputTimestamp() const;
 
@@ -100,6 +101,15 @@ class CORE_EXPORT InteractiveDetector
   // GetLongestInputDelay().
   base::Optional<base::TimeTicks> GetLongestInputTimestamp() const;
 
+  // The duration of event handlers processing the first input event.
+  base::Optional<base::TimeDelta> GetFirstInputProcessingTime() const;
+
+  // The duration between the user's first scroll and display update.
+  base::Optional<base::TimeTicks> GetFirstScrollTimestamp() const;
+
+  // The hardware timestamp of the first scroll after a navigation.
+  base::Optional<base::TimeDelta> GetFirstScrollDelay() const;
+
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
   void HandleForInputDelay(const Event&,
@@ -109,7 +119,7 @@ class CORE_EXPORT InteractiveDetector
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing);
@@ -119,6 +129,16 @@ class CORE_EXPORT InteractiveDetector
   ukm::UkmRecorder* GetUkmRecorder() const;
 
   void SetUkmRecorderForTesting(ukm::UkmRecorder* test_ukm_recorder);
+
+  void RecordInputEventTimingUKM(const Event& event,
+                                 base::TimeTicks event_timestamp,
+                                 base::TimeTicks processing_start,
+                                 base::TimeTicks processing_end);
+
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+                                  base::TimeTicks first_scroll_timestamp);
+
+  void OnRestoredFromBackForwardCache();
 
  private:
   friend class InteractiveDetectorTest;
@@ -142,6 +162,12 @@ class CORE_EXPORT InteractiveDetector
     base::Optional<base::TimeDelta> longest_input_delay;
     base::Optional<base::TimeTicks> first_input_timestamp;
     base::Optional<base::TimeTicks> longest_input_timestamp;
+    base::Optional<base::TimeDelta> first_input_processing_time;
+    base::Optional<base::TimeTicks> first_scroll_timestamp;
+    base::Optional<base::TimeDelta> frist_scroll_delay;
+
+    WTF::Vector<base::Optional<base::TimeDelta>>
+        first_input_delays_after_back_forward_cache_restore;
   } page_event_times_;
 
   struct VisibilityChangeEvent {
@@ -201,6 +227,10 @@ class CORE_EXPORT InteractiveDetector
   // LongTaskObserver implementation
   void OnLongTaskDetected(base::TimeTicks start_time,
                           base::TimeTicks end_time) override;
+
+  // The duration of event handlers processing the event for the previous
+  // pointer down.
+  base::Optional<base::TimeDelta> pending_pointerdown_processing_time_;
 
   // The duration between the hardware timestamp and when we received the event
   // for the previous pointer down. Only non-zero if we've received a pointer

@@ -21,6 +21,8 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
  public:
   using List = std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>;
 
+  static SharedWorkerDevToolsAgentHost* GetFor(SharedWorkerHost* worker_host);
+
   SharedWorkerDevToolsAgentHost(
       SharedWorkerHost* worker_host,
       const base::UnguessableToken& devtools_worker_token);
@@ -33,6 +35,12 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Activate() override;
   void Reload() override;
   bool Close() override;
+
+  NetworkLoaderFactoryParamsAndInfo CreateNetworkFactoryParamsForDevTools()
+      override;
+  RenderProcessHost* GetProcessHost() override;
+
+  url::Origin GetConstructorOrigin();
 
   bool Matches(SharedWorkerHost* worker_host);
   void WorkerReadyForInspection(
@@ -50,7 +58,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   ~SharedWorkerDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.
-  bool AttachSession(DevToolsSession* session) override;
+  bool AttachSession(DevToolsSession* session, bool acquire_wake_lock) override;
   void DetachSession(DevToolsSession* session) override;
 
   enum WorkerState {

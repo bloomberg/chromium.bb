@@ -94,7 +94,8 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
-  if (devinfo.HasTouchpad() || devinfo.HasMouse()) {
+  if (devinfo.HasTouchpad() || devinfo.HasMouse() ||
+      devinfo.HasPointingStick()) {
     std::unique_ptr<GestureInterpreterLibevdevCros> gesture_interp =
         std::make_unique<GestureInterpreterLibevdevCros>(
             params.id, params.cursor, params.gesture_property_provider,
@@ -107,12 +108,9 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
-    std::unique_ptr<TouchEventConverterEvdev> converter(
-        new TouchEventConverterEvdev(std::move(fd), params.path, params.id,
-                                     devinfo, params.shared_palm_state,
-                                     params.dispatcher));
-    converter->Initialize(devinfo);
-    return std::move(converter);
+    return TouchEventConverterEvdev::Create(
+        std::move(fd), params.path, params.id, devinfo,
+        params.shared_palm_state, params.dispatcher);
   }
 
   // Graphics tablet
@@ -169,8 +167,8 @@ std::unique_ptr<EventConverterEvdev> OpenInputDevice(
 
 bool IsUncategorizedDevice(const EventConverterEvdev& converter) {
   return !converter.HasTouchscreen() && !converter.HasKeyboard() &&
-         !converter.HasMouse() && !converter.HasTouchpad() &&
-         !converter.HasGamepad();
+         !converter.HasMouse() && !converter.HasPointingStick() &&
+         !converter.HasTouchpad() && !converter.HasGamepad();
 }
 
 }  // namespace
@@ -344,21 +342,8 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   SetBoolPropertyForOneType(DT_MULTITOUCH, "Australian Scrolling",
                             input_device_settings_.natural_scroll_enabled);
 
-  SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity",
-                           input_device_settings_.mouse_sensitivity);
-  SetIntPropertyForOneType(DT_MOUSE, "Mouse Scroll Sensitivity",
-                           input_device_settings_.mouse_scroll_sensitivity);
-  SetBoolPropertyForOneType(DT_MOUSE, "Pointer Acceleration",
-                            input_device_settings_.mouse_acceleration_enabled);
-  SetBoolPropertyForOneType(
-      DT_MOUSE, "Mouse Scroll Acceleration",
-      input_device_settings_.mouse_scroll_acceleration_enabled);
-  SetBoolPropertyForOneType(
-      DT_MOUSE, "Mouse Reverse Scrolling",
-      input_device_settings_.mouse_reverse_scroll_enabled);
-  SetBoolPropertyForOneType(
-      DT_MOUSE, "Mouse High Resolution Scrolling",
-      base::FeatureList::IsEnabled(ui::kEnableHighResolutionMouseScrolling));
+  ApplyRelativePointingDeviceSettings(DT_MOUSE);
+  ApplyRelativePointingDeviceSettings(DT_POINTING_STICK);
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);
@@ -390,10 +375,48 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   NotifyDevicesUpdated();
 }
 
+void InputDeviceFactoryEvdev::ApplyRelativePointingDeviceSettings(
+    EventDeviceType type) {
+  SetIntPropertyForOneType(type, "Pointer Sensitivity",
+                           input_device_settings_.mouse_sensitivity);
+  SetIntPropertyForOneType(type, "Mouse Scroll Sensitivity",
+                           input_device_settings_.mouse_scroll_sensitivity);
+  SetBoolPropertyForOneType(type, "Pointer Acceleration",
+                            input_device_settings_.mouse_acceleration_enabled);
+  SetBoolPropertyForOneType(
+      type, "Mouse Scroll Acceleration",
+      input_device_settings_.mouse_scroll_acceleration_enabled);
+  SetBoolPropertyForOneType(
+      type, "Mouse Reverse Scrolling",
+      input_device_settings_.mouse_reverse_scroll_enabled);
+  SetBoolPropertyForOneType(type, "Mouse High Resolution Scrolling", true);
+  SetBoolPropertyForOneType(type, "Output Mouse Wheel Gestures", true);
+}
+
 void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
   for (const auto& it : converters_) {
     EventConverterEvdev* converter = it.second.get();
     converter->SetCapsLockLed(caps_lock_led_enabled_);
+  }
+}
+
+void InputDeviceFactoryEvdev::PlayVibrationEffect(int id,
+                                                  uint8_t amplitude,
+                                                  uint16_t duration_millis) {
+  for (const auto& it : converters_) {
+    if (it.second->id() == id) {
+      it.second->PlayVibrationEffect(amplitude, duration_millis);
+      return;
+    }
+  }
+}
+
+void InputDeviceFactoryEvdev::StopVibration(int id) {
+  for (const auto& it : converters_) {
+    if (it.second->id() == id) {
+      it.second->StopVibration();
+      return;
+    }
   }
 }
 
@@ -424,7 +447,7 @@ void InputDeviceFactoryEvdev::UpdateDirtyFlags(
   if (converter->HasKeyboard())
     keyboard_list_dirty_ = true;
 
-  if (converter->HasMouse())
+  if (converter->HasMouse() || converter->HasPointingStick())
     mouse_list_dirty_ = true;
 
   if (converter->HasTouchpad())
@@ -490,13 +513,18 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
 
 void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
   std::vector<InputDevice> mice;
+  bool has_mouse = false, has_pointing_stick = false;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasMouse()) {
       mice.push_back(it->second->input_device());
+      has_mouse = true;
+    } else if (it->second->HasPointingStick()) {
+      mice.push_back(it->second->input_device());
+      has_pointing_stick = true;
     }
   }
 
-  dispatcher_->DispatchMouseDevicesUpdated(mice);
+  dispatcher_->DispatchMouseDevicesUpdated(mice, has_mouse, has_pointing_stick);
 }
 
 void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
@@ -515,7 +543,8 @@ void InputDeviceFactoryEvdev::NotifyGamepadDevicesUpdated() {
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasGamepad()) {
       gamepads.emplace_back(it->second->input_device(),
-                            it->second->GetGamepadAxes());
+                            it->second->GetGamepadAxes(),
+                            it->second->GetGamepadRumbleCapability());
     }
   }
 

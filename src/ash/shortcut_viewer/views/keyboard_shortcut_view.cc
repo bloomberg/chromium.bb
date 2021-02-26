@@ -16,9 +16,10 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/search_box/search_box_view_base.h"
 #include "ash/shell.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
-#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
+#include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
 #include "ash/shortcut_viewer/views/keyboard_shortcut_item_view.h"
@@ -31,6 +32,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -38,7 +40,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
-#include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -64,16 +65,13 @@ KeyboardShortcutView* g_ksv_view = nullptr;
 
 constexpr base::nullopt_t kAllCategories = base::nullopt;
 
-// Setups the illustration views for search states, including an icon and a
-// descriptive text.
-void SetupSearchIllustrationView(views::View* illustration_view,
-                                 const gfx::VectorIcon& icon,
-                                 int message_id) {
+// Creates the no search result view.
+std::unique_ptr<views::View> CreateNoSearchResultView() {
   constexpr int kSearchIllustrationIconSize = 150;
   constexpr SkColor kSearchIllustrationIconColor =
       SkColorSetARGB(0xFF, 0xDA, 0xDC, 0xE0);
 
-  illustration_view->set_owned_by_client();
+  auto illustration_view = std::make_unique<views::View>();
   constexpr int kTopPadding = 98;
   views::BoxLayout* layout =
       illustration_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -81,22 +79,23 @@ void SetupSearchIllustrationView(views::View* illustration_view,
           gfx::Insets(kTopPadding, 0, 0, 0)));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetImage(
-      gfx::CreateVectorIcon(icon, kSearchIllustrationIconColor));
+  image_view->SetImage(gfx::CreateVectorIcon(kKsvSearchNoResultIcon,
+                                             kSearchIllustrationIconColor));
   image_view->SetImageSize(
       gfx::Size(kSearchIllustrationIconSize, kSearchIllustrationIconSize));
   illustration_view->AddChildView(std::move(image_view));
 
   constexpr SkColor kSearchIllustrationTextColor =
       SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
-  auto text =
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(message_id));
+  auto text = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_KSV_SEARCH_NO_RESULT));
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
   illustration_view->AddChildView(std::move(text));
+  return illustration_view;
 }
 
 class ShortcutsListScrollView : public views::ScrollView {
@@ -186,8 +185,8 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();
-    window->SetProperty(ash::kFrameActiveColorKey, SK_ColorWHITE);
-    window->SetProperty(ash::kFrameInactiveColorKey, SK_ColorWHITE);
+    window->SetProperty(chromeos::kFrameActiveColorKey, SK_ColorWHITE);
+    window->SetProperty(chromeos::kFrameInactiveColorKey, SK_ColorWHITE);
 
     // Set shelf icon.
     const ash::ShelfID shelf_id(ash::kInternalAppIdKeyboardShortcutViewer);
@@ -309,7 +308,7 @@ void KeyboardShortcutView::OnPaint(gfx::Canvas* canvas) {
                                 weak_factory_.GetWeakPtr(), kAllCategories));
 }
 
-void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
+void KeyboardShortcutView::QueryChanged(ash::SearchBoxViewBase* sender) {
   const bool query_empty = sender->IsSearchBoxTrimmedQueryEmpty();
   if (is_search_box_empty_ != query_empty) {
     is_search_box_empty_ = query_empty;
@@ -335,11 +334,9 @@ void KeyboardShortcutView::BackButtonPressed() {
   search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }
 
-void KeyboardShortcutView::ActiveChanged(
-    search_box::SearchBoxViewBase* sender) {
+void KeyboardShortcutView::ActiveChanged(ash::SearchBoxViewBase* sender) {
   const bool is_search_box_active = sender->is_search_box_active();
   is_search_box_empty_ = sender->IsSearchBoxTrimmedQueryEmpty();
-  sender->ShowBackOrGoogleIcon(is_search_box_active);
   if (is_search_box_active) {
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.Search"));
@@ -351,6 +348,7 @@ KeyboardShortcutView::KeyboardShortcutView() {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 
+  SetCanMinimize(true);
   SetShowTitle(false);
 
   // Default background is transparent.
@@ -366,9 +364,8 @@ void KeyboardShortcutView::InitViews() {
   AddChildView(search_box_view_.get());
 
   // Init no search result illustration view.
-  search_no_result_view_ = std::make_unique<views::View>();
-  SetupSearchIllustrationView(search_no_result_view_.get(),
-                              kKsvSearchNoResultIcon, IDS_KSV_SEARCH_NO_RESULT);
+  search_no_result_view_ = CreateNoSearchResultView();
+  search_no_result_view_->set_owned_by_client();
 
   // Init search results container view.
   search_results_container_ = AddChildView(std::make_unique<views::View>());
@@ -385,7 +382,7 @@ void KeyboardShortcutView::InitViews() {
       continue;
 
     for (auto category : item.categories) {
-      shortcut_views_.emplace_back(
+      shortcut_views_.push_back(
           std::make_unique<KeyboardShortcutItemView>(item, category));
       shortcut_views_.back()->set_owned_by_client();
     }
@@ -474,7 +471,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     // Clear any styles used to highlight matched search query in search mode.
     description_label_view->ClearStyleRanges();
     item_list_view->AddChildView(item_view.get());
-    shortcut_items.emplace_back(item_view.get());
+    shortcut_items.push_back(item_view.get());
     // Remove the search query highlight.
     description_label_view->InvalidateLayout();
   }
@@ -559,7 +556,7 @@ void KeyboardShortcutView::ShowSearchResults(
       }
 
       found_items_list_view->AddChildView(item_view.get());
-      found_shortcut_items_.emplace_back(item_view.get());
+      found_shortcut_items_.push_back(item_view.get());
     }
   }
 
@@ -567,7 +564,7 @@ void KeyboardShortcutView::ShowSearchResults(
   const int number_search_results = found_shortcut_items_.size();
   if (!found_items_list_view->children().empty()) {
     UpdateAXNodeDataPosition(found_shortcut_items_);
-    replacement_strings.emplace_back(
+    replacement_strings.push_back(
         base::NumberToString16(number_search_results));
 
     // To offset the padding between the bottom of the |search_box_view_| and
@@ -579,7 +576,7 @@ void KeyboardShortcutView::ShowSearchResults(
     search_container_content_view =
         CreateScrollView(std::move(found_items_list_view)).release();
   }
-  replacement_strings.emplace_back(search_query);
+  replacement_strings.push_back(search_query);
   search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(
       number_search_results == 0
           ? IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITHOUT_RESULTS
@@ -587,18 +584,6 @@ void KeyboardShortcutView::ShowSearchResults(
       replacement_strings, nullptr));
   search_results_container_->AddChildView(search_container_content_view);
   InvalidateLayout();
-}
-
-bool KeyboardShortcutView::CanMaximize() const {
-  return false;
-}
-
-bool KeyboardShortcutView::CanMinimize() const {
-  return true;
-}
-
-bool KeyboardShortcutView::CanResize() const {
-  return false;
 }
 
 views::ClientView* KeyboardShortcutView::CreateClientView(

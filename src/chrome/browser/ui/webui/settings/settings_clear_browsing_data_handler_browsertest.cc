@@ -41,7 +41,7 @@ class ClearBrowsingDataHandlerBrowserTest
     : public web_app::WebAppControllerBrowserTest {
  public:
   ClearBrowsingDataHandlerBrowserTest() = default;
-  ~ClearBrowsingDataHandlerBrowserTest() = default;
+  ~ClearBrowsingDataHandlerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     WebAppControllerBrowserTest::SetUpOnMainThread();
@@ -78,8 +78,8 @@ class ClearBrowsingDataHandlerBrowserTest
   content::TestWebUI web_ui_;
 };
 
-IN_PROC_BROWSER_TEST_P(ClearBrowsingDataHandlerBrowserTest, GetInstalledApps) {
-  GURL url(https_server()->GetURL("/"));
+IN_PROC_BROWSER_TEST_F(ClearBrowsingDataHandlerBrowserTest, GetInstalledApps) {
+  GURL url(https_server()->GetURL("/title1.html"));
   InstallAndLaunchApp(url);
   base::ListValue args;
   args.AppendString(kWebUiFunctionName);
@@ -97,14 +97,5 @@ IN_PROC_BROWSER_TEST_P(ClearBrowsingDataHandlerBrowserTest, GetInstalledApps) {
   auto& installed_app = result.back();
   ASSERT_EQ(url.host(), *(installed_app.FindStringKey("registerableDomain")));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ClearBrowsingDataHandlerBrowserTest,
-    ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
 
 }  // namespace settings

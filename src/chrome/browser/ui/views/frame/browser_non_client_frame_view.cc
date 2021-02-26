@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
@@ -39,15 +39,13 @@
 // static
 constexpr int BrowserNonClientFrameView::kMinimumDragHeight;
 
-// metric name for reporting taskbar update result
-#if defined(OS_WIN)
-constexpr const char* kTaskbarMetricName =
-    "Profile.UpdateTaskbarDecoration.Win.Result";
-#endif
 
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame), browser_view_(browser_view) {
+  DCHECK(frame_);
+  DCHECK(browser_view_);
+
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     g_browser_process->profile_manager()->
@@ -93,12 +91,12 @@ bool BrowserNonClientFrameView::CanUserExitFullscreen() const {
 }
 
 bool BrowserNonClientFrameView::IsFrameCondensed() const {
-  return frame_ && (frame_->IsMaximized() || frame_->IsFullscreen());
+  return frame_->IsMaximized() || frame_->IsFullscreen();
 }
 
 bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
     BrowserFrameActiveState active_state) const {
-  DCHECK(browser_view_->IsTabStripVisible());
+  DCHECK(browser_view_->CanSupportTabStrip());
 
   TabStrip* const tab_strip = browser_view_->tabstrip();
 
@@ -143,8 +141,9 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 }
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
-  // Web apps should not draw strokes, as they don't have a tab strip.
-  return !browser_view_->browser()->app_controller();
+  // Web apps should not draw strokes if they don't have a tab strip.
+  return !browser_view_->browser()->app_controller() ||
+         browser_view_->browser()->app_controller()->has_tab_strip();
 }
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
@@ -242,6 +241,18 @@ void BrowserNonClientFrameView::ResetWindowControls() {
     web_app_frame_toolbar_->UpdateStatusIconsVisibility();
 }
 
+void BrowserNonClientFrameView::PaintAsActiveChanged() {
+  // The toolbar top separator color (used as the stroke around the tabs and
+  // the new tab button) needs to be recalculated.
+  browser_view_->tab_strip_region_view()->FrameColorsChanged();
+
+  if (web_app_frame_toolbar_)
+    web_app_frame_toolbar_->SetPaintAsActive(ShouldPaintAsActive());
+
+  // Changing the activation state may change the visible frame color.
+  SchedulePaint();
+}
+
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
     BrowserFrameActiveState active_state) const {
   return (active_state == BrowserFrameActiveState::kUseCurrent)
@@ -255,8 +266,8 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
                                  : IDR_THEME_FRAME_INACTIVE;
-  return frame_->ShouldUseTheme() && (tp->HasCustomImage(frame_image_id) ||
-                                      tp->HasCustomImage(IDR_THEME_FRAME))
+  return (tp->HasCustomImage(frame_image_id) ||
+          tp->HasCustomImage(IDR_THEME_FRAME))
              ? *tp->GetImageSkiaNamed(frame_image_id)
              : gfx::ImageSkia();
 }
@@ -278,18 +289,6 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
   if (browser_view()->initialized() && child == web_app_frame_toolbar_)
     Layout();
-}
-
-void BrowserNonClientFrameView::PaintAsActiveChanged(bool active) {
-  // The toolbar top separator color (used as the stroke around the tabs and
-  // the new tab button) needs to be recalculated.
-  browser_view_->tabstrip()->FrameColorsChanged();
-
-  if (web_app_frame_toolbar_)
-    web_app_frame_toolbar_->SetPaintAsActive(active);
-
-  // Changing the activation state may change the visible frame color.
-  SchedulePaint();
 }
 
 bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
@@ -323,24 +322,29 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
   if (!frame_->client_view()->HitTestRect(rect_in_client_view_coords))
     return true;
 
-  // Otherwise, claim |rect| only if it is above the bottom of the tabstrip in
-  // a non-tab portion.
-  TabStrip* tabstrip = browser_view_->tabstrip();
-  // The tabstrip may not be in a Widget (e.g. when switching into immersive
-  // reveal).
-  if (tabstrip->GetWidget()) {
-    gfx::RectF rect_in_tabstrip_coords_f(rect);
-    View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
-    gfx::Rect rect_in_tabstrip_coords =
-        gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
-    if (rect_in_tabstrip_coords.y() >= tabstrip->GetLocalBounds().bottom()) {
-      // |rect| is below the tabstrip.
+  // Otherwise, claim |rect| only if it is above the bottom of the tab strip
+  // region view in a non-tab portion.
+  TabStripRegionView* tab_strip_region_view =
+      browser_view_->tab_strip_region_view();
+
+  // The |tab_strip_region_view| may not be in a Widget (e.g. when switching
+  // into immersive reveal the BrowserView's TopContainerView is reparented).
+  if (tab_strip_region_view->GetWidget()) {
+    gfx::RectF rect_in_region_view_coords_f(rect);
+    View::ConvertRectToTarget(this, tab_strip_region_view,
+                              &rect_in_region_view_coords_f);
+    gfx::Rect rect_in_region_view_coords =
+        gfx::ToEnclosingRect(rect_in_region_view_coords_f);
+    if (rect_in_region_view_coords.y() >=
+        tab_strip_region_view->GetLocalBounds().bottom()) {
+      // |rect| is below the tab_strip_region_view.
       return false;
     }
 
-    if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
+    if (tab_strip_region_view->HitTestRect(rect_in_region_view_coords)) {
       // Claim |rect| if it is in a non-tab portion of the tabstrip.
-      return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
+      return tab_strip_region_view->IsRectInWindowCaption(
+          rect_in_region_view_coords);
     }
   }
 
@@ -364,8 +368,7 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
 #if defined(OS_WIN)
   taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
-                                   frame_->GetNativeWindow(),
-                                   kTaskbarMetricName);
+                                   frame_->GetNativeWindow());
 #endif
 }
 
@@ -373,8 +376,7 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
 #if defined(OS_WIN)
   taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
-                                   frame_->GetNativeWindow(),
-                                   kTaskbarMetricName);
+                                   frame_->GetNativeWindow());
 #endif
 }
 
@@ -382,7 +384,9 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
 int BrowserNonClientFrameView::GetSystemMenuY() const {
   if (!browser_view()->IsTabStripVisible())
     return GetTopInset(false);
-  return GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom() -
+  return GetBoundsForTabStripRegion(
+             browser_view()->tab_strip_region_view()->GetMinimumSize())
+             .bottom() -
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 #endif

@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace cc {
 namespace {
@@ -57,7 +58,8 @@ class GpuImageDecodeCachePerfTest
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
     cache_ = std::make_unique<GpuImageDecodeCache>(
         context_provider_.get(), UseTransferCache(), kRGBA_8888_SkColorType,
-        kCacheSize, MaxTextureSize(), PaintImage::kDefaultGeneratorClientId);
+        kCacheSize, MaxTextureSize(), PaintImage::kDefaultGeneratorClientId,
+        nullptr);
   }
 
  protected:
@@ -113,7 +115,7 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
             .set_id(PaintImage::GetNextId())
             .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
             .TakePaintImage(),
-        SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
+        false, SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
         CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
         gfx::ColorSpace::CreateXYZD50());
 
@@ -146,7 +148,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
             .set_id(PaintImage::GetNextId())
             .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
             .TakePaintImage(),
-        SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
+        false, SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
         CreateMatrix(SkSize::Make(0.6f, 0.6f)), 0u, gfx::ColorSpace());
 
     DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
@@ -157,7 +159,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       surface->getCanvas()->drawImageRect(decoded_image.image().get(),
                                           SkRect::MakeWH(1024, 2048),
                                           SkRect::MakeWH(614, 1229), &paint);
-      surface->flush();
+      surface->flushAndSubmit();
     }
 
     cache_->DrawWithImageFinished(image, decoded_image);
@@ -175,7 +177,7 @@ TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
           .set_id(PaintImage::GetNextId())
           .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
           .TakePaintImage(),
-      SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
+      false, SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
       CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
       gfx::ColorSpace::CreateXYZD50());
 

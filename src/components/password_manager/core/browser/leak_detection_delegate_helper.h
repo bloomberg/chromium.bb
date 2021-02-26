@@ -23,10 +23,11 @@ class PasswordStore;
 class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
  public:
   // Type alias for |callback_|.
-  using LeakTypeReply =
-      base::OnceCallback<void(IsSaved, IsReused, GURL, base::string16)>;
+  using LeakTypeReply = base::OnceCallback<
+      void(IsSaved, IsReused, GURL, base::string16, CompromisedSitesCount)>;
 
-  LeakDetectionDelegateHelper(scoped_refptr<PasswordStore> store,
+  LeakDetectionDelegateHelper(scoped_refptr<PasswordStore> profile_store,
+                              scoped_refptr<PasswordStore> account_store,
                               LeakTypeReply callback);
   ~LeakDetectionDelegateHelper() override;
 
@@ -44,13 +45,17 @@ class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
   // All the saved credentials with the same username and password are stored to
   // the database.
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+      std::vector<std::unique_ptr<PasswordForm>> results) override;
 
-  scoped_refptr<password_manager::PasswordStore> store_;
+  scoped_refptr<PasswordStore> profile_store_;
+  scoped_refptr<PasswordStore> account_store_;
   LeakTypeReply callback_;
   GURL url_;
   base::string16 username_;
   base::string16 password_;
+
+  int wait_counter_ = 0;
+  std::vector<std::unique_ptr<PasswordForm>> partial_results_;
 
   // Instances should be neither copyable nor assignable.
   DISALLOW_COPY_AND_ASSIGN(LeakDetectionDelegateHelper);

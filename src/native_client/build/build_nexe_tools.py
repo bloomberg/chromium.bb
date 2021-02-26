@@ -87,7 +87,7 @@ class CommandRunner(object):
         try:
           RemoveFile(out)
           return
-        except WindowsError, inst:
+        except WindowsError as inst:
           # When the errno is errno.ENOENT, we consider the output file
           # has been already removed somewhere.
           if inst.errno == errno.ENOENT:

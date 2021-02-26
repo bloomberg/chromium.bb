@@ -198,7 +198,7 @@ void CaptureGetActiveAttrib_length(const State &glState,
                                    GLchar *name,
                                    ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLsizei);
 }
 
 void CaptureGetActiveAttrib_size(const State &glState,
@@ -212,7 +212,7 @@ void CaptureGetActiveAttrib_size(const State &glState,
                                  GLchar *name,
                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLint);
 }
 
 void CaptureGetActiveAttrib_type(const State &glState,
@@ -226,7 +226,7 @@ void CaptureGetActiveAttrib_type(const State &glState,
                                  GLchar *name,
                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLenum);
 }
 
 void CaptureGetActiveAttrib_name(const State &glState,
@@ -307,7 +307,7 @@ void CaptureGetAttachedShaders_count(const State &glState,
                                      ShaderProgramID *shaders,
                                      ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLsizei);
 }
 
 void CaptureGetAttachedShaders_shadersPacked(const State &glState,
@@ -318,7 +318,7 @@ void CaptureGetAttachedShaders_shadersPacked(const State &glState,
                                              ShaderProgramID *shaders,
                                              ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(ShaderProgramID) * maxCount;
 }
 
 void CaptureGetAttribLocation_name(const State &glState,
@@ -346,7 +346,7 @@ void CaptureGetBufferParameteriv_params(const State &glState,
                                         GLint *params,
                                         ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = 8;
 }
 
 void CaptureGetFloatv_data(const State &glState,
@@ -398,7 +398,7 @@ void CaptureGetProgramInfoLog_infoLog(const State &glState,
                                       GLchar *infoLog,
                                       ParamCapture *paramCapture)
 {
-    gl::Program *programObj = GetLinkedProgramForCapture(glState, program);
+    gl::Program *programObj = GetProgramForCapture(glState, program);
     ASSERT(programObj);
     paramCapture->readBufferSizeBytes = programObj->getExecutable().getInfoLogLength() + 1;
 }
@@ -423,7 +423,7 @@ void CaptureGetRenderbufferParameteriv_params(const State &glState,
                                               GLint *params,
                                               ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLint);
 }
 
 void CaptureGetShaderInfoLog_length(const State &glState,
@@ -446,7 +446,7 @@ void CaptureGetShaderInfoLog_infoLog(const State &glState,
                                      ParamCapture *paramCapture)
 {
     gl::Shader *shaderObj = glState.getShaderProgramManagerForCapture().getShader(shader);
-    ASSERT(shaderObj && shaderObj->isCompiled());
+    ASSERT(shaderObj);
     paramCapture->readBufferSizeBytes = shaderObj->getInfoLogLength() + 1;
 }
 
@@ -515,7 +515,9 @@ void CaptureGetTexParameterfv_params(const State &glState,
                                      GLfloat *params,
                                      ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    // page 190 https://www.khronos.org/registry/OpenGL/specs/es/3.2/es_spec_3.2.pdf
+    // TEXTURE_BORDER_COLOR: 4 floats, ints, uints
+    paramCapture->readBufferSizeBytes = sizeof(GLfloat) * 4;
 }
 
 void CaptureGetTexParameteriv_params(const State &glState,
@@ -525,10 +527,9 @@ void CaptureGetTexParameteriv_params(const State &glState,
                                      GLint *params,
                                      ParamCapture *paramCapture)
 {
-    if (params)
-    {
-        paramCapture->readBufferSizeBytes = sizeof(GLint);
-    }
+    // page 190 https://www.khronos.org/registry/OpenGL/specs/es/3.2/es_spec_3.2.pdf
+    // TEXTURE_BORDER_COLOR: 4 floats, ints, uints
+    paramCapture->readBufferSizeBytes = sizeof(GLint) * 4;
 }
 
 void CaptureGetUniformLocation_name(const State &glState,
@@ -547,7 +548,8 @@ void CaptureGetUniformfv_params(const State &glState,
                                 GLfloat *params,
                                 ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    // the value returned cannot have size larger than a mat4 of floats
+    paramCapture->readBufferSizeBytes = 64;
 }
 
 void CaptureGetUniformiv_params(const State &glState,
@@ -557,7 +559,8 @@ void CaptureGetUniformiv_params(const State &glState,
                                 GLint *params,
                                 ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    // the value returned cannot have size larger than a mat4 of ints
+    paramCapture->readBufferSizeBytes = 64;
 }
 
 void CaptureGetVertexAttribPointerv_pointer(const State &glState,
@@ -603,6 +606,12 @@ void CaptureReadPixels_pixels(const State &glState,
                               void *pixels,
                               ParamCapture *paramCapture)
 {
+    if (glState.getTargetBuffer(gl::BufferBinding::PixelPack))
+    {
+        // If a pixel pack buffer is bound, this is an offset, not a pointer
+        paramCapture->value.voidPointerVal = pixels;
+        return;
+    }
     // Use a conservative upper bound instead of an exact size to be simple.
     static constexpr GLsizei kMaxPixelSize = 32;
     paramCapture->readBufferSizeBytes      = kMaxPixelSize * width * height;
@@ -661,10 +670,7 @@ void CaptureShaderSource_length(const State &glState,
     if (!length)
         return;
 
-    for (GLsizei index = 0; index < count; ++index)
-    {
-        CaptureMemory(&length[index], sizeof(GLint), paramCapture);
-    }
+    CaptureMemory(length, count * sizeof(GLint), paramCapture);
 }
 
 void CaptureTexImage2D_pixels(const State &glState,
@@ -714,7 +720,7 @@ void CaptureTexParameterfv_params(const State &glState,
                                   const GLfloat *params,
                                   ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureTextureAndSamplerParameter_params<GLfloat>(pname, params, paramCapture);
 }
 
 void CaptureTexParameteriv_params(const State &glState,
@@ -724,7 +730,7 @@ void CaptureTexParameteriv_params(const State &glState,
                                   const GLint *params,
                                   ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureTextureAndSamplerParameter_params<GLint>(pname, params, paramCapture);
 }
 
 void CaptureTexSubImage2D_pixels(const State &glState,

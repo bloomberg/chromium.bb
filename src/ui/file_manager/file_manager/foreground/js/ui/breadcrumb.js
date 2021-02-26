@@ -148,7 +148,7 @@ const breadCrumbTemplate = `
       font-family: 'Roboto';
       font-size: 13px;
       min-width: 192px;  /* menu width */
-      max-width: 288px;
+      max-width: min(288px, 40vw);
       padding: 0 16px;
       text-align: start;
     }
@@ -267,7 +267,7 @@ class BreadCrumb extends HTMLElement {
       }
 
       buttons[i].removeAttribute('has-tooltip');
-      buttons[i].textContent = text;
+      buttons[i].textContent = window.unescape(text);
       buttons[i].hidden = !text;
       buttons[i].disabled = false;
       !!text && enabled.push(i);
@@ -310,7 +310,7 @@ class BreadCrumb extends HTMLElement {
     let elidedParts = '';
     for (let i = 1; i < parts.length - 2; ++i) {
       elidedParts += `<button class='dropdown-item'>${
-          parts[i]}<paper-ripple></paper-ripple></button>`;
+          window.unescape(parts[i])}<paper-ripple></paper-ripple></button>`;
     }
 
     const menu = this.shadowRoot.querySelector('cr-action-menu');
@@ -450,7 +450,7 @@ class BreadCrumb extends HTMLElement {
 
     // Show drop-down below the elider button.
     const menu = this.shadowRoot.querySelector('cr-action-menu');
-    const top = elider.offsetTop + elider.offsetHeight + 4;
+    const top = elider.offsetTop + elider.offsetHeight + 8;
     !window.UNIT_TEST && menu.showAt(elider, {top: top});
 
     // Style drop-down and horizontal position.

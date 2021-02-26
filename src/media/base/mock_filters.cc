@@ -72,21 +72,60 @@ void MockDemuxerStream::set_liveness(DemuxerStream::Liveness liveness) {
   liveness_ = liveness;
 }
 
-MockVideoDecoder::MockVideoDecoder(const std::string& decoder_name)
-    : decoder_name_(decoder_name) {
+MockVideoDecoder::MockVideoDecoder() : MockVideoDecoder("MockVideoDecoder") {}
+
+MockVideoDecoder::MockVideoDecoder(std::string decoder_name)
+    : MockVideoDecoder(false, false, std::move(decoder_name)) {}
+
+MockVideoDecoder::MockVideoDecoder(bool is_platform_decoder,
+                                   bool supports_decryption,
+                                   std::string decoder_name)
+    : is_platform_decoder_(is_platform_decoder),
+      supports_decryption_(supports_decryption),
+      decoder_name_(std::move(decoder_name)) {
   ON_CALL(*this, CanReadWithoutStalling()).WillByDefault(Return(true));
 }
 
 MockVideoDecoder::~MockVideoDecoder() = default;
 
+bool MockVideoDecoder::IsPlatformDecoder() const {
+  return is_platform_decoder_;
+}
+
+bool MockVideoDecoder::SupportsDecryption() const {
+  return supports_decryption_;
+}
+
 std::string MockVideoDecoder::GetDisplayName() const {
   return decoder_name_;
 }
 
-MockAudioDecoder::MockAudioDecoder(const std::string& decoder_name)
-    : decoder_name_(decoder_name) {}
+MockVideoEncoder::MockVideoEncoder() = default;
+MockVideoEncoder::~MockVideoEncoder() {
+  Dtor();
+}
+
+MockAudioDecoder::MockAudioDecoder() : MockAudioDecoder("MockAudioDecoder") {}
+
+MockAudioDecoder::MockAudioDecoder(std::string decoder_name)
+    : MockAudioDecoder(false, false, std::move(decoder_name)) {}
+
+MockAudioDecoder::MockAudioDecoder(bool is_platform_decoder,
+                                   bool supports_decryption,
+                                   std::string decoder_name)
+    : is_platform_decoder_(is_platform_decoder),
+      supports_decryption_(supports_decryption),
+      decoder_name_(decoder_name) {}
 
 MockAudioDecoder::~MockAudioDecoder() = default;
+
+bool MockAudioDecoder::IsPlatformDecoder() const {
+  return is_platform_decoder_;
+}
+
+bool MockAudioDecoder::SupportsDecryption() const {
+  return supports_decryption_;
+}
 
 std::string MockAudioDecoder::GetDisplayName() const {
   return decoder_name_;
@@ -132,12 +171,12 @@ MockCdmContext::MockCdmContext() = default;
 
 MockCdmContext::~MockCdmContext() = default;
 
-int MockCdmContext::GetCdmId() const {
+base::Optional<base::UnguessableToken> MockCdmContext::GetCdmId() const {
   return cdm_id_;
 }
 
-void MockCdmContext::set_cdm_id(int cdm_id) {
-  cdm_id_ = cdm_id;
+void MockCdmContext::set_cdm_id(const base::UnguessableToken* cdm_id) {
+  cdm_id_ = (cdm_id) ? base::make_optional(*cdm_id) : base::nullopt;
 }
 
 MockCdmPromise::MockCdmPromise(bool expect_success) {
@@ -171,14 +210,29 @@ MockCdmSessionPromise::~MockCdmSessionPromise() {
   MarkPromiseSettled();
 }
 
+MockCdmKeyStatusPromise::MockCdmKeyStatusPromise(
+    bool expect_success,
+    CdmKeyInformation::KeyStatus* key_status) {
+  if (expect_success) {
+    EXPECT_CALL(*this, resolve(_)).WillOnce(SaveArg<0>(key_status));
+    EXPECT_CALL(*this, reject(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*this, resolve(_)).Times(0);
+    EXPECT_CALL(*this, reject(_, _, NotEmpty()));
+  }
+}
+
+MockCdmKeyStatusPromise::~MockCdmKeyStatusPromise() {
+  // The EXPECT calls will verify that the promise is in fact fulfilled.
+  MarkPromiseSettled();
+}
+
 MockCdm::MockCdm(const std::string& key_system,
-                 const url::Origin& security_origin,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : key_system_(key_system),
-      security_origin_(security_origin),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
@@ -214,7 +268,6 @@ MockCdmFactory::~MockCdmFactory() = default;
 
 void MockCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& /* cdm_config */,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -236,8 +289,8 @@ void MockCdmFactory::Create(
   // get the MockCdm via MockCdmFactory::GetCreatedCdm() and explicitly specify
   // expectations using EXPECT_CALL.
   scoped_refptr<MockCdm> cdm = new NiceMock<MockCdm>(
-      key_system, security_origin, session_message_cb, session_closed_cb,
-      session_keys_change_cb, session_expiration_update_cb);
+      key_system, session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb);
   created_cdm_ = cdm.get();
   std::move(cdm_created_cb).Run(std::move(cdm), "");
 }

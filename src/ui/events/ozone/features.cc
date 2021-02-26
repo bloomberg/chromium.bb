@@ -9,14 +9,15 @@ namespace ui {
 const base::Feature kEnableHeuristicPalmDetectionFilter{
     "EnableHeuristicPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableHighResolutionMouseScrolling{
-    "EnableHighResolutionMouseScrolling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableNeuralPalmDetectionFilter{
     "EnableNeuralPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableNeuralStylusReportFilter{
     "EnableNeuralStylusReportFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// TODO(b/171249701): Remove this flag when we can support this in all cases.
+const base::Feature kEnableOrdinalMotion{"EnableOrdinalMotion",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnablePalmOnMaxTouchMajor{
     "EnablePalmOnMaxTouchMajor", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -40,5 +41,10 @@ const base::FeatureParam<double> kHeuristicHoldThresholdSeconds{
 
 const base::FeatureParam<int> kHeuristicStrokeCount{
     &kEnableHeuristicPalmDetectionFilter, "heuristic_palm_stroke_count", 0};
+
+constexpr char kOzoneNNPalmSwitchName[] = "ozone-nnpalm-properties";
+
+constexpr char kOzoneNNPalmTouchCompatibleProperty[] = "touch-compatible";
+constexpr char kOzoneNNPalmRadiusPolynomialProperty[] = "radius-polynomial";
 
 }  // namespace ui

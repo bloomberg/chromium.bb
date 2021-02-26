@@ -128,7 +128,8 @@ ScopedJavaLocalRef<jobject> NativeToJavaCandidatePairChange(
       env, NativeToJavaCandidate(env, selected_pair.local_candidate()),
       NativeToJavaCandidate(env, selected_pair.remote_candidate()),
       static_cast<int>(event.last_data_received_ms),
-      NativeToJavaString(env, event.reason));
+      NativeToJavaString(env, event.reason),
+      static_cast<int>(event.estimated_disconnected_time_ms));
 }
 
 }  // namespace
@@ -264,11 +265,6 @@ void JavaToNativeRTCConfiguration(
   rtc_config->sdp_semantics = JavaToNativeSdpSemantics(jni, j_sdp_semantics);
   rtc_config->active_reset_srtp_params =
       Java_RTCConfiguration_getActiveResetSrtpParams(jni, j_rtc_config);
-  rtc_config->use_media_transport =
-      Java_RTCConfiguration_getUseMediaTransport(jni, j_rtc_config);
-  rtc_config->use_media_transport_for_data_channels =
-      Java_RTCConfiguration_getUseMediaTransportForDataChannels(jni,
-                                                                j_rtc_config);
   rtc_config->crypto_options =
       JavaToNativeOptionalCryptoOptions(jni, j_crypto_options);
 
@@ -483,17 +479,39 @@ static jlong JNI_PeerConnection_GetNativePeerConnection(
 static ScopedJavaLocalRef<jobject> JNI_PeerConnection_GetLocalDescription(
     JNIEnv* jni,
     const JavaParamRef<jobject>& j_pc) {
-  const SessionDescriptionInterface* sdp =
-      ExtractNativePC(jni, j_pc)->local_description();
-  return sdp ? NativeToJavaSessionDescription(jni, sdp) : nullptr;
+  PeerConnectionInterface* pc = ExtractNativePC(jni, j_pc);
+  // It's only safe to operate on SessionDescriptionInterface on the
+  // signaling thread, but |jni| may only be used on the current thread, so we
+  // must do this odd dance.
+  std::string sdp;
+  std::string type;
+  pc->signaling_thread()->Invoke<void>(RTC_FROM_HERE, [pc, &sdp, &type] {
+    const SessionDescriptionInterface* desc = pc->local_description();
+    if (desc) {
+      RTC_CHECK(desc->ToString(&sdp)) << "got so far: " << sdp;
+      type = desc->type();
+    }
+  });
+  return sdp.empty() ? nullptr : NativeToJavaSessionDescription(jni, sdp, type);
 }
 
 static ScopedJavaLocalRef<jobject> JNI_PeerConnection_GetRemoteDescription(
     JNIEnv* jni,
     const JavaParamRef<jobject>& j_pc) {
-  const SessionDescriptionInterface* sdp =
-      ExtractNativePC(jni, j_pc)->remote_description();
-  return sdp ? NativeToJavaSessionDescription(jni, sdp) : nullptr;
+  PeerConnectionInterface* pc = ExtractNativePC(jni, j_pc);
+  // It's only safe to operate on SessionDescriptionInterface on the
+  // signaling thread, but |jni| may only be used on the current thread, so we
+  // must do this odd dance.
+  std::string sdp;
+  std::string type;
+  pc->signaling_thread()->Invoke<void>(RTC_FROM_HERE, [pc, &sdp, &type] {
+    const SessionDescriptionInterface* desc = pc->remote_description();
+    if (desc) {
+      RTC_CHECK(desc->ToString(&sdp)) << "got so far: " << sdp;
+      type = desc->type();
+    }
+  });
+  return sdp.empty() ? nullptr : NativeToJavaSessionDescription(jni, sdp, type);
 }
 
 static ScopedJavaLocalRef<jobject> JNI_PeerConnection_GetCertificate(
@@ -763,9 +781,9 @@ static jboolean JNI_PeerConnection_SetBitrate(
     const JavaParamRef<jobject>& j_min,
     const JavaParamRef<jobject>& j_current,
     const JavaParamRef<jobject>& j_max) {
-  PeerConnectionInterface::BitrateParameters params;
+  BitrateSettings params;
   params.min_bitrate_bps = JavaToNativeOptionalInt(jni, j_min);
-  params.current_bitrate_bps = JavaToNativeOptionalInt(jni, j_current);
+  params.start_bitrate_bps = JavaToNativeOptionalInt(jni, j_current);
   params.max_bitrate_bps = JavaToNativeOptionalInt(jni, j_max);
   return ExtractNativePC(jni, j_pc)->SetBitrate(params).ok();
 }

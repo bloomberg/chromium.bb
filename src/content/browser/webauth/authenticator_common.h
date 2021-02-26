@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -28,6 +29,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_request_handler.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/origin.h"
 
@@ -38,6 +40,7 @@ class OneShotTimer;
 namespace device {
 
 class FidoRequestHandlerBase;
+class FidoDiscoveryFactory;
 
 enum class FidoReturnCode : uint8_t;
 
@@ -64,12 +67,12 @@ CONTENT_EXPORT extern const char kCreateType[];
 CONTENT_EXPORT extern const char kGetType[];
 }  // namespace client_data
 
+enum class RequestExtension;
+
 // Common code for any WebAuthn Authenticator interfaces.
 class CONTENT_EXPORT AuthenticatorCommon {
  public:
-  // Permits setting timer for testing.
-  AuthenticatorCommon(RenderFrameHost* render_frame_host,
-                      std::unique_ptr<base::OneShotTimer>);
+  explicit AuthenticatorCommon(RenderFrameHost* render_frame_host);
   virtual ~AuthenticatorCommon();
 
   // This is not-quite an implementation of blink::mojom::Authenticator. The
@@ -115,6 +118,17 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void StartGetAssertionRequest(bool allow_skipping_pin_touch);
 
   bool IsFocused() const;
+
+  // Callback to handle the large blob being compressed before attempting to
+  // start a request.
+  void OnLargeBlobCompressed(
+      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
+
+  // Callback to handle the large blob being uncompressed before completing a
+  // request.
+  void OnLargeBlobUncompressed(
+      device::AuthenticatorGetAssertionResponse response,
+      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
 
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
@@ -168,14 +182,22 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   BrowserContext* browser_context() const;
 
+  // Returns the FidoDiscoveryFactory for the current request. This may be a
+  // real instance, or one injected by the Virtual Authenticator environment, or
+  // a unit testing fake. InitDiscoveryFactory() must be called before this
+  // accessor. It gets reset at the end of each request by Cleanup().
+  device::FidoDiscoveryFactory* discovery_factory();
+  void InitDiscoveryFactory();
+
   RenderFrameHost* const render_frame_host_;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+  device::FidoDiscoveryFactory* discovery_factory_testing_override_ = nullptr;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;
   blink::mojom::Authenticator::GetAssertionCallback
       get_assertion_response_callback_;
   std::string client_data_json_;
-  bool attestation_requested_;
   // empty_allow_list_ is true iff a GetAssertion is currently pending and the
   // request did not list any credential IDs in the allow list.
   bool empty_allow_list_ = false;
@@ -183,20 +205,23 @@ class CONTENT_EXPORT AuthenticatorCommon {
   url::Origin caller_origin_;
   std::string relying_party_id_;
   scoped_refptr<WebAuthRequestSecurityChecker> security_checker_;
-  std::unique_ptr<base::OneShotTimer> timer_;
-  base::Optional<device::AuthenticatorSelectionCriteria>
-      authenticator_selection_criteria_;
+  std::unique_ptr<base::OneShotTimer> timer_ =
+      std::make_unique<base::OneShotTimer>();
   base::Optional<std::string> app_id_;
   base::Optional<device::CtapMakeCredentialRequest>
       ctap_make_credential_request_;
   base::Optional<device::MakeCredentialRequestHandler::Options>
       make_credential_options_;
   base::Optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
+  base::Optional<device::CtapGetAssertionOptions> ctap_get_assertion_options_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
   blink::mojom::AuthenticatorStatus error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+  data_decoder::DataDecoder data_decoder_;
+
+  base::flat_set<RequestExtension> requested_extensions_;
 
   base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
 

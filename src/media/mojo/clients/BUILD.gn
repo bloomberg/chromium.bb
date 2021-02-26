@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
-
 # Implementations of media C++ interfaces using corresponding mojo services.
-jumbo_source_set("clients") {
+source_set("clients") {
   visibility = [
     "//chromecast/*",
 
@@ -23,10 +21,14 @@ jumbo_source_set("clients") {
 
     "//chrome/browser:*",
 
+    "//chrome/browser/thumbnail/generator",
+
     "//content/gpu:*",
 
     # TODO(liberato): can we avoid this?
     "//content/test/*",
+
+    "//third_party/blink/renderer/modules/webcodecs",
   ]
 
   sources = [

@@ -21,7 +21,6 @@
 namespace openscreen {
 namespace osp {
 
-using std::chrono::seconds;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -77,8 +76,8 @@ class MockRequestDelegate final : public RequestDelegate {
 class ControllerTest : public ::testing::Test {
  public:
   ControllerTest() {
-    fake_clock_ =
-        std::make_unique<FakeClock>(Clock::time_point(seconds(11111)));
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::seconds(11111)));
     task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
     quic_bridge_ =
         std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);

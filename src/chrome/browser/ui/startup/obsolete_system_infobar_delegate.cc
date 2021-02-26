@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 
+#include <memory>
+
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "components/infobars/core/infobar.h"
@@ -19,9 +21,6 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
 
 ObsoleteSystemInfoBarDelegate::ObsoleteSystemInfoBarDelegate()
     : ConfirmInfoBarDelegate() {
-}
-
-ObsoleteSystemInfoBarDelegate::~ObsoleteSystemInfoBarDelegate() {
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -43,4 +42,12 @@ base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
 
 int ObsoleteSystemInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
+}
+
+bool ObsoleteSystemInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  // Since the obsolete system infobar communicates critical state ("your system
+  // is no longer receiving updates") it should persist until explicitly
+  // dismissed.
+  return false;
 }

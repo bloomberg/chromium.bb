@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -49,11 +50,13 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
     <iframe id="iframe" style="display:none"></iframe>
   )HTML");
 
-  UpdateAllLifecyclePhasesForTest();
-
   auto* iframe = To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
   Document* frame_doc = iframe->contentDocument();
   ASSERT_TRUE(frame_doc);
+  frame_doc->OverrideIsInitialEmptyDocument();
+  frame_doc->View()->BeginLifecycleUpdates();
+  UpdateAllLifecyclePhasesForTest();
+
   LayoutObject* view = frame_doc->GetLayoutView();
   ASSERT_TRUE(view);
   EXPECT_FALSE(view->CanHaveChildren());
@@ -121,7 +124,7 @@ TEST_F(LayoutViewTest, NamedPages) {
 
 struct HitTestConfig {
   bool layout_ng;
-  EditingBehaviorType editing_behavior;
+  mojom::EditingBehavior editing_behavior;
 };
 
 class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
@@ -135,12 +138,10 @@ class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
  protected:
   bool LayoutNG() { return RuntimeEnabledFeatures::LayoutNGEnabled(); }
   bool IsAndroidOrWindowsEditingBehavior() {
-    // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
-    // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().
-    if (LayoutNG())
-      return true;
-    return GetParam().editing_behavior == kEditingAndroidBehavior ||
-           GetParam().editing_behavior == kEditingWindowsBehavior;
+    return GetParam().editing_behavior ==
+               mojom::EditingBehavior::kEditingAndroidBehavior ||
+           GetParam().editing_behavior ==
+               mojom::EditingBehavior::kEditingWindowsBehavior;
   }
 
   void SetUp() override {
@@ -150,19 +151,22 @@ class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         LayoutViewHitTestTest,
-                         ::testing::Values(
-                             // Legacy
-                             HitTestConfig{false, kEditingMacBehavior},
-                             HitTestConfig{false, kEditingWindowsBehavior},
-                             HitTestConfig{false, kEditingUnixBehavior},
-                             HitTestConfig{false, kEditingAndroidBehavior},
-                             // LayoutNG
-                             HitTestConfig{true, kEditingMacBehavior},
-                             HitTestConfig{true, kEditingWindowsBehavior},
-                             HitTestConfig{true, kEditingUnixBehavior},
-                             HitTestConfig{true, kEditingAndroidBehavior}));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    LayoutViewHitTestTest,
+    ::testing::Values(
+        // Legacy
+        HitTestConfig{false, mojom::EditingBehavior::kEditingMacBehavior},
+        HitTestConfig{false, mojom::EditingBehavior::kEditingWindowsBehavior},
+        HitTestConfig{false, mojom::EditingBehavior::kEditingUnixBehavior},
+        HitTestConfig{false, mojom::EditingBehavior::kEditingAndroidBehavior},
+        HitTestConfig{false, mojom::EditingBehavior::kEditingChromeOSBehavior},
+        // LayoutNG
+        HitTestConfig{true, mojom::EditingBehavior::kEditingMacBehavior},
+        HitTestConfig{true, mojom::EditingBehavior::kEditingWindowsBehavior},
+        HitTestConfig{true, mojom::EditingBehavior::kEditingUnixBehavior},
+        HitTestConfig{true, mojom::EditingBehavior::kEditingAndroidBehavior},
+        HitTestConfig{true, mojom::EditingBehavior::kEditingChromeOSBehavior}));
 
 TEST_P(LayoutViewHitTestTest, HitTestHorizontal) {
   LoadAhem();
@@ -274,7 +278,10 @@ TEST_P(LayoutViewHitTestTest, HitTestHorizontal) {
   result = HitTestResult();
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(101, 131)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(PhysicalOffset(51, 1), result.LocalPoint());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_EQ(PhysicalOffset(51, 31), result.LocalPoint());
+  else
+    EXPECT_EQ(PhysicalOffset(51, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 }
@@ -384,7 +391,10 @@ TEST_P(LayoutViewHitTestTest, HitTestVerticalLR) {
   result = HitTestResult();
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(81, 151)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(PhysicalOffset(1, 51), result.LocalPoint());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_EQ(PhysicalOffset(31, 51), result.LocalPoint());
+  else
+    EXPECT_EQ(PhysicalOffset(1, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 }
@@ -507,7 +517,10 @@ TEST_P(LayoutViewHitTestTest, HitTestVerticalRL) {
   result = HitTestResult();
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(219, 151)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(PhysicalOffset(199, 51), result.LocalPoint());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_EQ(PhysicalOffset(169, 51), result.LocalPoint());
+  else
+    EXPECT_EQ(PhysicalOffset(199, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 }

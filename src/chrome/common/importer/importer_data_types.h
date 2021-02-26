@@ -48,7 +48,7 @@ struct SourceProfile {
   // The application locale. Stored because we can only access it from the UI
   // thread on the browser process. This is only used by the Firefox importer.
   std::string locale;
-  std::string profile;
+  base::string16 profile;
 };
 
 // Contains information needed for importing search engine urls.
@@ -76,6 +76,33 @@ struct ImporterIE7PasswordInfo {
 
   // When the login was imported.
   base::Time date_created;
+};
+
+// Represents information about an imported password form.
+struct ImportedPasswordForm {
+  // Enum to differentiate between HTML form based authentication, and dialogs
+  // using basic or digest schemes. Default is kHtml.
+  enum class Scheme {
+    kHtml,
+    kBasic,
+  };
+
+  ImportedPasswordForm();
+  ImportedPasswordForm(const ImportedPasswordForm& other);
+  ImportedPasswordForm(ImportedPasswordForm&& other) noexcept;
+  ImportedPasswordForm& operator=(const ImportedPasswordForm& other);
+  ImportedPasswordForm& operator=(ImportedPasswordForm&& other);
+  ~ImportedPasswordForm();
+
+  Scheme scheme = Scheme::kHtml;
+  std::string signon_realm;
+  GURL url;
+  GURL action;
+  base::string16 username_element;
+  base::string16 username_value;
+  base::string16 password_element;
+  base::string16 password_value;
+  bool blocked_by_user = false;
 };
 
 // Mapped to history::VisitSource after import in the browser.

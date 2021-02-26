@@ -29,9 +29,9 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
-import org.chromium.chrome.browser.ui.favicon.IconType;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.favicon.IconType;
+import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.ViewUtils;
@@ -243,7 +243,7 @@ public class TileRenderer {
             return;
         }
         mIconGenerator.setBackgroundColor(fallbackColor);
-        Bitmap icon = mIconGenerator.generateIconForUrl(tile.getUrl());
+        Bitmap icon = mIconGenerator.generateIconForUrl(tile.getUrl().getSpec());
         tile.setIcon(new BitmapDrawable(mResources, icon));
         tile.setType(
                 isFallbackColorDefault ? TileVisualType.ICON_DEFAULT : TileVisualType.ICON_COLOR);

@@ -52,6 +52,7 @@ enum IndexedDBBackingStoreErrorSource {
   GET_BLOB_INFO_FOR_RECORD = 29,
   UPGRADING_SCHEMA_CORRUPTED_BLOBS = 30,
   REVERT_SCHEMA_TO_V2 = 31,
+  CREATE_ITERATOR = 32,
   INTERNAL_ERROR_MAX,
 };
 
@@ -117,26 +118,6 @@ void ReportLevelDBError(const std::string& histogram_name,
 #define INTERNAL_CONSISTENCY_ERROR(location) \
   REPORT_ERROR("Consistency", location)
 #define INTERNAL_WRITE_ERROR(location) REPORT_ERROR("Write", location)
-
-// Use to signal conditions that usually indicate developer error, but
-// could be caused by data corruption.  A macro is used instead of an
-// inline function so that the assert and log report the line number.
-// TODO(cmumford): Improve test coverage so that all error conditions are
-// "tested" and then delete this macro.
-#define REPORT_ERROR_UNTESTED(type, location)             \
-  do {                                                    \
-    LOG(ERROR) << "IndexedDB " type " Error: " #location; \
-    NOTREACHED();                                         \
-    ::content::indexed_db::ReportInternalError(           \
-        type, ::content::indexed_db::location);           \
-  } while (0)
-
-#define INTERNAL_READ_ERROR_UNTESTED(location) \
-  REPORT_ERROR_UNTESTED("Read", location)
-#define INTERNAL_CONSISTENCY_ERROR_UNTESTED(location) \
-  REPORT_ERROR_UNTESTED("Consistency", location)
-#define INTERNAL_WRITE_ERROR_UNTESTED(location) \
-  REPORT_ERROR_UNTESTED("Write", location)
 
 }  // namespace indexed_db
 }  // namespace content

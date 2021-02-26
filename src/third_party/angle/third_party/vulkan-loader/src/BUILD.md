@@ -10,6 +10,7 @@ Instructions for building this repository on Linux, Windows, and MacOS.
 1. [Windows Build](#building-on-windows)
 1. [Linux Build](#building-on-linux)
 1. [MacOS build](#building-on-macos)
+1. [Fuchsia build](#building-on-fuchsia)
 
 ## Contributing to the Repository
 
@@ -70,15 +71,6 @@ building this repository. The Vulkan-Headers repository is required because it
 contains the Vulkan API definition files (registry) that are required to build
 the loader. You must also take note of the headers install directory and pass
 it on the CMake command line for building this repository, as described below.
-
-#### Windows Driver Kit (WDK)
-
-On Windows builds, the loader needs to have a WDK installed. Microsoft provides
-[WDK releases](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk),
-including several old releases. The installed WDK must be at least version 1709.
-Take note of the fact that the latest WDK release generally requires the latest
-version of Visual Studio. It may be necessary to use an older WDK with an older
-Visual Studio.
 
 #### Google Test
 
@@ -179,9 +171,11 @@ on/off options currently supported by this repository:
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the loader with the XCB entry points enabled. Without this, the XCB headers should not be needed, but the extension `VK_KHR_xcb_surface` won't be available. |
 | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the loader with the Xlib entry points enabled. Without this, the X11 headers should not be needed, but the extension `VK_KHR_xlib_surface` won't be available. |
 | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the loader with the Wayland entry points enabled. Without this, the Wayland headers should not be needed, but the extension `VK_KHR_wayland_surface` won't be available. |
-| ENABLE_STATIC_LOADER | Windows | `OFF` | By default, the loader is built as a dynamic library. This allows it to be built as a static library, instead. |
+| BUILD_WSI_DIRECTFB_SUPPORT | Linux | `OFF` | Build the loader with the DirectFB entry points enabled. Without this, the DirectFB headers should not be needed, but the extension `VK_EXT_directfb_surface` won't be available. |
 | ENABLE_WIN10_ONECORE | Windows | `OFF` | Link the loader to the [OneCore](https://msdn.microsoft.com/en-us/library/windows/desktop/mt654039.aspx) umbrella library, instead of the standard Win32 ones. |
 | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
+| USE_MASM | Windows | `ON` | Controls whether to build assembly files with MS assembler, else fallback to C code |
+| BUILD_STATIC_LOADER | macOS | `OFF` | This allows the loader to be built as a static library on macOS. Not tested, use at your own risk. |
 
 The following is a table of all string options currently supported by this repository:
 
@@ -207,7 +201,6 @@ CMake to generate the native platform files.
     - [2019](https://www.visualstudio.com/vs/downloads/)
   - The Community Edition of each of the above versions is sufficient, as
     well as any more capable edition.
-- [Windows Driver Kit](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk) 1803 or later
 - [CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-win64-x64.zip) is recommended.
   - Use the installer option to add CMake to the system PATH
 - Git Client Support
@@ -241,12 +234,7 @@ configuration of the solution.
 
 Note that if you do not wish to use a developer command prompt, you may either
 run either `vcvars64.bat` or `vcvars32.bat` to set the required environment
-variables. You may also define a `WDK_FULL_PATH` variable when first invoking CMake
-like:
-
-    cmake -A x64 --DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir -DWDK_BASE="C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0" ..
-
-See below for the details.
+variables.
 
 #### Use `CMake` to Create the Visual Studio Project Files
 
@@ -691,3 +679,12 @@ To run the loader test script, change to the `build/tests` directory in your
 Vulkan-Loader repository, and run:
 
     ./vk_loader_validation_tests
+
+## Building on Fuchsia
+
+Fuchsia uses the project's GN build system to integrate with the Fuchsia platform build.
+
+### SDK Symbols
+
+The Vulkan Loader is a component of the Fuchsia SDK, so it must explicitly declare its exported symbols in
+the file vulkan.symbols.api; see [SDK](https://fuchsia.dev/fuchsia-src/development/sdk).

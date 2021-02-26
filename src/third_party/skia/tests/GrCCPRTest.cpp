@@ -9,12 +9,14 @@
 #include "tests/Test.h"
 
 #include "include/core/SkMatrix.h"
+#include "include/core/SkPathBuilder.h"
 #include "include/core/SkRect.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/gpu/mock/GrMockTypes.h"
-#include "include/private/GrRecordingContext.h"
 #include "src/core/SkPathPriv.h"
 #include "src/gpu/GrClip.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrPathRenderer.h"
@@ -39,15 +41,16 @@ public:
     CCPRClip(GrCoverageCountingPathRenderer* ccpr, const SkPath& path) : fCCPR(ccpr), fPath(path) {}
 
 private:
-    bool apply(GrRecordingContext* context, GrRenderTargetContext* rtc, bool useHWAA,
-               bool hasUserStencilSettings, GrAppliedClip* out, SkRect* bounds) const override {
-        out->addCoverageFP(fCCPR->makeClipProcessor(rtc->priv().testingOnly_getOpsTaskID(), fPath,
+    SkIRect getConservativeBounds() const final { return fPath.getBounds().roundOut(); }
+    Effect apply(GrRecordingContext* context, GrRenderTargetContext* rtc, GrAAType,
+                 bool hasUserStencilSettings, GrAppliedClip* out,
+                 SkRect* bounds) const override {
+        out->addCoverageFP(fCCPR->makeClipProcessor(/*inputFP=*/nullptr,
+                                                    rtc->priv().testingOnly_getOpsTaskID(), fPath,
                                                     SkIRect::MakeWH(rtc->width(), rtc->height()),
                                                     *context->priv().caps()));
-        return true;
+        return Effect::kClipped;
     }
-    bool quickContains(const SkRect&) const final { return false; }
-    bool isRRect(const SkRect& rtBounds, SkRRect* rr, GrAA*) const final { return false; }
 
     GrCoverageCountingPathRenderer* const fCCPR;
     const SkPath fPath;
@@ -55,32 +58,31 @@ private:
 
 class CCPRPathDrawer {
 public:
-    CCPRPathDrawer(sk_sp<GrContext> ctx, skiatest::Reporter* reporter, DoStroke doStroke)
-            : fCtx(ctx)
-            , fCCPR(fCtx->priv().drawingManager()->getCoverageCountingPathRenderer())
+    CCPRPathDrawer(sk_sp<GrDirectContext> dContext, skiatest::Reporter* reporter, DoStroke doStroke)
+            : fDContext(dContext)
+            , fCCPR(fDContext->priv().drawingManager()->getCoverageCountingPathRenderer())
             , fRTC(GrRenderTargetContext::Make(
-                      fCtx.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
+                      fDContext.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
                       {kCanvasSize, kCanvasSize}))
             , fDoStroke(DoStroke::kYes == doStroke) {
         if (!fCCPR) {
-            ERRORF(reporter, "ccpr not enabled in GrContext for ccpr tests");
+            ERRORF(reporter, "ccpr not enabled in GrDirectContext for ccpr tests");
         }
         if (!fRTC) {
             ERRORF(reporter, "failed to create GrRenderTargetContext for ccpr tests");
         }
     }
 
-    GrContext* ctx() const { return fCtx.get(); }
+    GrDirectContext* dContext() const { return fDContext.get(); }
     GrCoverageCountingPathRenderer* ccpr() const { return fCCPR; }
 
     bool valid() const { return fCCPR && fRTC; }
-    void clear() const { fRTC->clear(nullptr, SK_PMColor4fTRANSPARENT,
-                                     GrRenderTargetContext::CanClearFullscreen::kYes); }
+    void clear() const { fRTC->clear(SK_PMColor4fTRANSPARENT); }
     void destroyGrContext() {
-        SkASSERT(fCtx->unique());
+        SkASSERT(fDContext->unique());
         fRTC.reset();
         fCCPR = nullptr;
-        fCtx.reset();
+        fDContext.reset();
     }
 
     void drawPath(const SkPath& path, const SkMatrix& matrix = SkMatrix::I()) const {
@@ -89,7 +91,6 @@ public:
         GrPaint paint;
         paint.setColor4f({ 0, 1, 0, 1 });
 
-        GrNoClip noClip;
         SkIRect clipBounds = SkIRect::MakeWH(kCanvasSize, kCanvasSize);
 
         GrStyledShape shape;
@@ -105,8 +106,8 @@ public:
         }
 
         fCCPR->testingOnly_drawPathDirectly({
-                fCtx.get(), std::move(paint), &GrUserStencilSettings::kUnused, fRTC.get(), &noClip,
-                &clipBounds, &matrix, &shape, GrAAType::kCoverage, false});
+                fDContext.get(), std::move(paint), &GrUserStencilSettings::kUnused, fRTC.get(),
+                nullptr, &clipBounds, &matrix, &shape, GrAAType::kCoverage, false});
     }
 
     void clipFullscreenRect(SkPath clipPath, SkPMColor4f color = { 0, 1, 0, 1 }) {
@@ -115,17 +116,18 @@ public:
         GrPaint paint;
         paint.setColor4f(color);
 
-        fRTC->drawRect(CCPRClip(fCCPR, clipPath), std::move(paint), GrAA::kYes, SkMatrix::I(),
+        CCPRClip clip(fCCPR, clipPath);
+        fRTC->drawRect(&clip, std::move(paint), GrAA::kYes, SkMatrix::I(),
                        SkRect::MakeIWH(kCanvasSize, kCanvasSize));
     }
 
     void flush() const {
         SkASSERT(this->valid());
-        fCtx->flush();
+        fDContext->flushAndSubmit();
     }
 
 private:
-    sk_sp<GrContext> fCtx;
+    sk_sp<GrDirectContext> fDContext;
     GrCoverageCountingPathRenderer* fCCPR;
     std::unique_ptr<GrRenderTargetContext> fRTC;
     const bool fDoStroke;
@@ -155,7 +157,7 @@ public:
 
         this->customizeOptions(&mockOptions, &ctxOptions);
 
-        sk_sp<GrContext> mockContext = GrContext::MakeMock(&mockOptions, ctxOptions);
+        sk_sp<GrDirectContext> mockContext = GrDirectContext::MakeMock(&mockOptions, ctxOptions);
         if (!mockContext) {
             ERRORF(reporter, "could not create mock context");
             return;
@@ -232,7 +234,7 @@ class CCPR_cleanupWithTexAllocFail : public CCPR_cleanup {
         mockOptions->fFailTextureAllocations = true;
     }
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr) override {
-        ((GrRecordingContext*)ccpr.ctx())->priv().incrSuppressWarningMessages();
+        ((GrRecordingContext*)ccpr.dContext())->priv().incrSuppressWarningMessages();
         this->CCPR_cleanup::onRun(reporter, ccpr);
     }
 };
@@ -265,10 +267,11 @@ class CCPR_parseEmptyPath : public CCPRTest {
 
         // Make a path large enough that ccpr chooses to crop it by the RT bounds, and ends up with
         // an empty path.
-        SkPath largeOutsidePath;
-        largeOutsidePath.moveTo(-1e30f, -1e30f);
-        largeOutsidePath.lineTo(-1e30f, +1e30f);
-        largeOutsidePath.lineTo(-1e10f, +1e30f);
+        SkPath largeOutsidePath = SkPath::Polygon({
+            {-1e30f, -1e30f},
+            {-1e30f, +1e30f},
+            {-1e10f, +1e30f},
+        }, false);
         ccpr.drawPath(largeOutsidePath);
 
         // Normally an empty path is culled before reaching ccpr, however we use a back door for
@@ -320,8 +323,7 @@ protected:
         int lastCopyAtlasID() const { return fLastCopyAtlasID; }
         int lastRenderedAtlasID() const { return fLastRenderedAtlasID; }
 
-        void preFlush(GrOnFlushResourceProvider*, const uint32_t* opsTaskIDs,
-                      int numOpsTaskIDs) override {
+        void preFlush(GrOnFlushResourceProvider*, SkSpan<const uint32_t>) override {
             fLastRenderedAtlasID = fLastCopyAtlasID = 0;
 
             const GrCCPerFlushResources* resources = fCCPR->testingOnly_getCurrentFlushResources();
@@ -337,7 +339,7 @@ protected:
             }
         }
 
-        void postFlush(GrDeferredUploadToken, const uint32_t*, int) override {}
+        void postFlush(GrDeferredUploadToken, SkSpan<const uint32_t>) override {}
 
     private:
         sk_sp<GrCoverageCountingPathRenderer> fCCPR;
@@ -391,11 +393,11 @@ private:
 
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr) final {
         RecordLastMockAtlasIDs atlasIDRecorder(sk_ref_sp(ccpr.ccpr()));
-        ccpr.ctx()->priv().addOnFlushCallbackObject(&atlasIDRecorder);
+        ccpr.dContext()->priv().addOnFlushCallbackObject(&atlasIDRecorder);
 
         this->onRun(reporter, ccpr, atlasIDRecorder);
 
-        ccpr.ctx()->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&atlasIDRecorder);
+        ccpr.dContext()->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&atlasIDRecorder);
     }
 
     virtual void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
@@ -409,7 +411,7 @@ protected:
 class CCPR_cache_animationAtlasReuse : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
-        SkMatrix m = SkMatrix::MakeTrans(kCanvasSize/2, kCanvasSize/2);
+        SkMatrix m = SkMatrix::Translate(kCanvasSize/2, kCanvasSize/2);
         m.preScale(80, 80);
         m.preTranslate(-.5,-.5);
         this->drawPathsAndFlush(ccpr, m);
@@ -454,7 +456,7 @@ DEF_CCPR_TEST(CCPR_cache_animationAtlasReuse)
 class CCPR_cache_recycleEntries : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
-        SkMatrix m = SkMatrix::MakeTrans(kCanvasSize/2, kCanvasSize/2);
+        SkMatrix m = SkMatrix::Translate(kCanvasSize/2, kCanvasSize/2);
         m.preScale(80, 80);
         m.preTranslate(-.5,-.5);
 
@@ -499,9 +501,9 @@ class CCPR_cache_mostlyVisible : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
         SkMatrix matrices[3] = {
-            SkMatrix::MakeScale(kCanvasSize/2, kCanvasSize/2), // Fully visible.
-            SkMatrix::MakeScale(kCanvasSize * 1.25, kCanvasSize * 1.25), // Mostly visible.
-            SkMatrix::MakeScale(kCanvasSize * 1.5, kCanvasSize * 1.5), // Mostly NOT visible.
+            SkMatrix::Scale(kCanvasSize/2, kCanvasSize/2), // Fully visible.
+            SkMatrix::Scale(kCanvasSize * 1.25, kCanvasSize * 1.25), // Mostly visible.
+            SkMatrix::Scale(kCanvasSize * 1.5, kCanvasSize * 1.5), // Mostly NOT visible.
         };
 
         for (int i = 0; i < 10; ++i) {
@@ -549,11 +551,11 @@ class CCPR_cache_mostlyVisible : public CCPRCacheTest {
 };
 DEF_CCPR_TEST(CCPR_cache_mostlyVisible)
 
-// Ensures GrContext::performDeferredCleanup works.
+// Ensures GrDirectContext::performDeferredCleanup works.
 class CCPR_cache_deferredCleanup : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
-        SkMatrix m = SkMatrix::MakeScale(20, 20);
+        SkMatrix m = SkMatrix::Scale(20, 20);
         int lastRenderedAtlasID = 0;
 
         for (int i = 0; i < 5; ++i) {
@@ -579,7 +581,7 @@ class CCPR_cache_deferredCleanup : public CCPRCacheTest {
                 REPORTER_ASSERT(reporter, 0 == atlasIDRecorder.lastRenderedAtlasID());
             }
 
-            ccpr.ctx()->performDeferredCleanup(std::chrono::milliseconds(0));
+            ccpr.dContext()->performDeferredCleanup(std::chrono::milliseconds(0));
         }
     }
 };
@@ -590,7 +592,7 @@ class CCPR_cache_hashTable : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
         using CoverageType = GrCCAtlas::CoverageType;
-        SkMatrix m = SkMatrix::MakeScale(20, 20);
+        SkMatrix m = SkMatrix::Scale(20, 20);
 
         for (int i = 0; i < 5; ++i) {
             this->drawPathsAndFlush(ccpr, m);
@@ -688,7 +690,7 @@ class CCPR_cache_multiTileCache : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
         // Make sure a path drawn over 9 tiles gets cached (1 tile out of 9 is >10% visibility).
-        const SkMatrix m0 = SkMatrix::MakeScale(kCanvasSize*3, kCanvasSize*3);
+        const SkMatrix m0 = SkMatrix::Scale(kCanvasSize*3, kCanvasSize*3);
         const SkPath p0 = fPaths[0];
         for (int i = 0; i < 9; ++i) {
             static constexpr int kRowOrder[9] = {0,1,1,0,2,2,2,1,0};
@@ -711,7 +713,7 @@ class CCPR_cache_multiTileCache : public CCPRCacheTest {
         }
 
         // Now make sure paths don't get cached when visibility is <10% for every draw (12 tiles).
-        const SkMatrix m1 = SkMatrix::MakeScale(kCanvasSize*4, kCanvasSize*3);
+        const SkMatrix m1 = SkMatrix::Scale(kCanvasSize*4, kCanvasSize*3);
         const SkPath p1 = fPaths[1];
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 4; ++col) {
@@ -751,8 +753,8 @@ class CCPR_cache_partialInvalidate : public CCPRCacheTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr,
                const RecordLastMockAtlasIDs& atlasIDRecorder) override {
         SkMatrix matrices[2] = {
-            SkMatrix::MakeTrans(5, 5),
-            SkMatrix::MakeTrans(kCanvasSize - kPathSize - 5, kCanvasSize - kPathSize - 5)
+            SkMatrix::Translate(5, 5),
+            SkMatrix::Translate(kCanvasSize - kPathSize - 5, kCanvasSize - kPathSize - 5)
         };
         matrices[0].preScale(kPathSize, kPathSize);
         matrices[1].preScale(kPathSize, kPathSize);
@@ -860,13 +862,13 @@ DEF_CCPR_TEST(CCPR_unrefPerOpsTaskPathsBeforeOps)
 
 class CCPRRenderingTest {
 public:
-    void run(skiatest::Reporter* reporter, GrContext* ctx, DoStroke doStroke) const {
-        if (auto ccpr = ctx->priv().drawingManager()->getCoverageCountingPathRenderer()) {
+    void run(skiatest::Reporter* reporter, GrDirectContext* dContext, DoStroke doStroke) const {
+        if (auto ccpr = dContext->priv().drawingManager()->getCoverageCountingPathRenderer()) {
             if (DoStroke::kYes == doStroke &&
                 GrCCAtlas::CoverageType::kA8_Multisample == ccpr->coverageType()) {
                 return;  // Stroking is not yet supported for multisample.
             }
-            CCPRPathDrawer drawer(sk_ref_sp(ctx), reporter, doStroke);
+            CCPRPathDrawer drawer(sk_ref_sp(dContext), reporter, doStroke);
             if (!drawer.valid()) {
                 return;
             }
@@ -883,22 +885,22 @@ protected:
 #define DEF_CCPR_RENDERING_TEST(name) \
     DEF_GPUTEST_FOR_RENDERING_CONTEXTS(name, reporter, ctxInfo) { \
         name test; \
-        test.run(reporter, ctxInfo.grContext(), DoStroke::kNo); \
-        test.run(reporter, ctxInfo.grContext(), DoStroke::kYes); \
+        test.run(reporter, ctxInfo.directContext(), DoStroke::kNo); \
+        test.run(reporter, ctxInfo.directContext(), DoStroke::kYes); \
     }
 
 class CCPR_busyPath : public CCPRRenderingTest {
     void onRun(skiatest::Reporter* reporter, const CCPRPathDrawer& ccpr) const override {
         static constexpr int kNumBusyVerbs = 1 << 17;
         ccpr.clear();
-        SkPath busyPath;
+        SkPathBuilder busyPath;
         busyPath.moveTo(0, 0); // top left
         busyPath.lineTo(kCanvasSize, kCanvasSize); // bottom right
         for (int i = 2; i < kNumBusyVerbs; ++i) {
             float offset = i * ((float)kCanvasSize / kNumBusyVerbs);
             busyPath.lineTo(kCanvasSize - offset, kCanvasSize + offset); // offscreen
         }
-        ccpr.drawPath(busyPath);
+        ccpr.drawPath(busyPath.detach());
 
         ccpr.flush(); // If this doesn't crash, the test passed.
                       // If it does, maybe fiddle with fMaxInstancesPerDrawArraysWithoutCrashing in
@@ -906,3 +908,38 @@ class CCPR_busyPath : public CCPRRenderingTest {
     }
 };
 DEF_CCPR_RENDERING_TEST(CCPR_busyPath)
+
+// https://bugs.chromium.org/p/chromium/issues/detail?id=1102117
+class CCPR_evictCacheEntryForPendingDrawOp : public CCPRRenderingTest {
+    void onRun(skiatest::Reporter* reporter, const CCPRPathDrawer& ccpr) const override {
+        static constexpr SkRect kRect = SkRect::MakeWH(50, 50);
+        ccpr.clear();
+
+        // make sure path is cached.
+        for (int i = 0; i < 2; i++) {
+            SkPath path;
+            path.addRect(kRect);
+
+            ccpr.drawPath(path);
+            ccpr.flush();
+        }
+
+        // make enough cached draws to make DoCopies happen.
+        for (int i = 0; i <= GrCoverageCountingPathRenderer::kDoCopiesThreshold; i++) {
+            SkPath path;
+            path.addRect(kRect);
+            ccpr.drawPath(path);
+        }
+
+        // now draw the path in an incompatible matrix. Previous draw's cached atlas should
+        // not be invalidated. otherwise, this flush would render more paths than allocated for.
+        auto m = SkMatrix::Translate(0.1f, 0.1f);
+        SkPath path;
+        path.addRect(kRect);
+        ccpr.drawPath(path, m);
+        ccpr.flush();
+
+        // if this test does not crash, it is passed.
+    }
+};
+DEF_CCPR_RENDERING_TEST(CCPR_evictCacheEntryForPendingDrawOp)

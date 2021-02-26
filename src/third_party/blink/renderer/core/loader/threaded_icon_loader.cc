@@ -32,13 +32,14 @@ void ThreadedIconLoader::Start(
   DCHECK(!stopped_);
   DCHECK(resource_request.Url().IsValid());
   DCHECK_EQ(resource_request.GetRequestContext(),
-            mojom::RequestContextType::IMAGE);
+            mojom::blink::RequestContextType::IMAGE);
   DCHECK(!icon_callback_);
 
   icon_callback_ = std::move(callback);
   resize_dimensions_ = resize_dimensions;
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      execution_context->GetCurrentWorld());
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 
@@ -103,8 +104,7 @@ void ThreadedIconLoader::DecodeAndResizeImageOnBackgroundThread(
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       std::move(data), /* data_complete= */ true,
       ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
-      ColorBehavior::TransformToSRGB(),
-      ImageDecoder::OverrideAllowDecodeToYuv::kDeny);
+      ColorBehavior::TransformToSRGB());
 
   if (!decoder) {
     notify_complete(-1.0);
@@ -178,7 +178,7 @@ void ThreadedIconLoader::DidFailRedirectCheck() {
   std::move(icon_callback_).Run(SkBitmap(), -1);
 }
 
-void ThreadedIconLoader::Trace(Visitor* visitor) {
+void ThreadedIconLoader::Trace(Visitor* visitor) const {
   visitor->Trace(threadable_loader_);
   ThreadableLoaderClient::Trace(visitor);
 }

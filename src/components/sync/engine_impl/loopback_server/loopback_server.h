@@ -39,7 +39,7 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
     // Called after the server has processed a successful commit. The types
     // updated as part of the commit are passed in |committed_model_types|.
-    virtual void OnCommit(const std::string& committer_id,
+    virtual void OnCommit(const std::string& committer_invalidator_client_id,
                           syncer::ModelTypeSet committed_model_types) = 0;
 
     // Called when a page URL is committed via SESSIONS and the user has
@@ -81,6 +81,10 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
   void AddNewKeystoreKeyForTesting();
 
+  void SetThrottledTypesForTesting(ModelTypeSet model_types) {
+    throttled_types_ = model_types;
+  }
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
@@ -108,7 +112,8 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
   // Processes a Commit call.
   bool HandleCommitRequest(const sync_pb::CommitMessage& message,
                            const std::string& invalidator_client_id,
-                           sync_pb::CommitResponse* response);
+                           sync_pb::CommitResponse* response,
+                           ModelTypeSet* throttled_datatypes_in_request);
 
   void ClearServerData();
 
@@ -118,10 +123,6 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
   // Inserts the default permanent items in |entities_|.
   bool CreateDefaultPermanentItems();
-
-  // Returns an empty string if no top-level permanent item of the given type
-  // was created.
-  std::string GetTopLevelPermanentItemId(syncer::ModelType model_type);
 
   // Returns generated key which may contain any bytes (not necessarily UTF-8).
   std::vector<uint8_t> GenerateNewKeystoreKey() const;
@@ -233,6 +234,8 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
   int64_t store_birthday_;
 
+  ModelTypeSet throttled_types_;
+
   base::Optional<sync_pb::ChipBag> bag_of_chips_;
 
   std::map<ModelType, int> migration_versions_;
@@ -240,7 +243,6 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
   int max_get_updates_batch_size_ = 1000000;
 
   EntityMap entities_;
-  std::map<ModelType, std::string> top_level_permanent_item_ids_;
   std::vector<std::vector<uint8_t>> keystore_keys_;
 
   // The file used to store the local sync data.

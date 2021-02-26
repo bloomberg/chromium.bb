@@ -9,13 +9,13 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/local_ntp_resources.h"
+#include "components/search/ntp_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "url/gurl.h"
 
 namespace {
@@ -109,7 +109,7 @@ void MostVisitedIframeSource::StartDataRequest(
   } else if (path == kLocalNTPUtilsJSPath) {
     SendResource(IDR_LOCAL_NTP_UTILS_JS, std::move(callback));
   } else if (path == kAssertJsPath) {
-    SendResource(IDR_WEBUI_JS_ASSERT, std::move(callback));
+    SendResource(IDR_WEBUI_JS_ASSERT_JS, std::move(callback));
   } else {
     std::move(callback).Run(nullptr);
   }

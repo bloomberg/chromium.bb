@@ -75,9 +75,9 @@ class V8TestObject {
       v8::Local<v8::Function> interface_object,
       v8::Local<v8::FunctionTemplate> interface_template);
 
-  static void InstallFeatureName(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void InstallFeatureName(ScriptState*, v8::Local<v8::Object> instance);
-  static void InstallFeatureName(ScriptState*);
+  static void InstallOriginTrialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void InstallOriginTrialFeature(ScriptState*, v8::Local<v8::Object> instance);
+  static void InstallOriginTrialFeature(ScriptState*);
 
   // Callback functions
   CORE_EXPORT static void HighEntropyConstantConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
@@ -361,6 +361,9 @@ class V8TestObject {
   CORE_EXPORT static void HighEntropyAttributeWithMeasureAsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyAttributeWithMeasureAsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyReadonlyAttributeWithMeasureAsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectUnsignedLongAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectDomStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectArrayDomStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void TestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void SizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -539,6 +542,7 @@ class V8TestObject {
   CORE_EXPORT static void MeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyMethodWithMeasureMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyMethodWithMeasureAsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectBooleanMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CeReactionsNotOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CeReactionsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void DeprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

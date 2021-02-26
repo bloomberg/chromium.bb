@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: safeBrowsingPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.safeBrowsingPrivate = {};
 
 /**
@@ -93,8 +91,8 @@ chrome.safeBrowsingPrivate.ReferrerChainEntry;
 /**
  * Gets referrer chain for the specified tab.
  * @param {number} tabId Id of the tab from which to retrieve the referrer.
- * @param {function(!Array<!chrome.safeBrowsingPrivate.ReferrerChainEntry>):void} callbac
- *     k Called with the list of referrer chain entries.
+ * @param {function(!Array<!chrome.safeBrowsingPrivate.ReferrerChainEntry>): void}
+ *     callback Called with the list of referrer chain entries.
  */
 chrome.safeBrowsingPrivate.getReferrerChain = function(tabId, callback) {};
 

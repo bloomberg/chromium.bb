@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -51,7 +49,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "url/gurl.h"
@@ -84,6 +84,9 @@ class TabRestoreTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
     active_browser_list_ = BrowserList::GetInstance();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
   Browser* GetBrowser(int index) {
@@ -175,6 +178,14 @@ class TabRestoreTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
+  void GoForward(Browser* browser) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::GoForward(browser, WindowOpenDisposition::CURRENT_TAB);
+    observer.Wait();
+  }
+
   void EnsureTabFinishedRestoring(content::WebContents* tab) {
     content::NavigationController* controller = &tab->GetController();
     if (!controller->NeedsReload() && !controller->GetPendingEntry() &&
@@ -185,6 +196,13 @@ class TabRestoreTest : public InProcessBrowserTest {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<content::NavigationController>(controller));
     observer.Wait();
+  }
+
+  void EnableSessionService(
+      SessionStartupPref::Type type = SessionStartupPref::Type::DEFAULT) {
+    SessionStartupPref pref(type);
+    Profile* profile = browser()->profile();
+    SessionStartupPref::SetStartupPref(profile, pref);
   }
 
   GURL url1_;
@@ -692,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
 // Mac10.13 Tests (dbg) and PASS/FAIL flakiness on Linux Chromium OS ASan LSan
 // Tests (1) bot.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || (defined(OS_MACOSX) && !defined(NDEBUG))
+    defined(OS_WIN) || (defined(OS_MAC) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURL DISABLED_RestoreTabWithSpecialURL
 #else
 #define MAYBE_RestoreTabWithSpecialURL RestoreTabWithSpecialURL
@@ -726,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
 // https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) and
 // Mac10.13 Tests (dbg) bots.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    ((defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG))
+    ((defined(OS_WIN) || defined(OS_MAC)) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
 #else
 #define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack
@@ -907,20 +925,30 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
 
-class TabRestoreTestWithTabGroupsEnabled : public TabRestoreTest {
- public:
-  TabRestoreTestWithTabGroupsEnabled() {
-    feature_list_.InitAndEnableFeature(features::kTabGroups);
-  }
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithName) {
+  AddSomeTabs(browser(), 1);
+  browser()->SetWindowUserTitle("foobar");
 
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+  // Create a second browser.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  EXPECT_EQ(2u, active_browser_list_->size());
+
+  // Close the first browser.
+  CloseBrowserSynchronously(browser());
+  EXPECT_EQ(1u, active_browser_list_->size());
+
+  // Restore the first browser.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 1));
+  Browser* browser = GetBrowser(1);
+  EXPECT_EQ("foobar", browser->user_title());
+}
 
 // Closing the last tab in a group then restoring will place the group back with
 // its metadata.
-IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
-                       RestoreSingleGroupedTab) {
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreSingleGroupedTab) {
   const int tab_count = AddSomeTabs(browser(), 1);
   ASSERT_LE(2, tab_count);
 
@@ -950,10 +978,82 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   EXPECT_EQ(data->color(), visual_data.color());
 }
 
+// Closing the last tab in a collapsed group then restoring will place the group
+// back expanded with its metadata.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreCollapsedGroupTab_ExpandsGroup) {
+  const int tab_count = AddSomeTabs(browser(), 1);
+  ASSERT_LE(2, tab_count);
+
+  const int grouped_tab_index = tab_count - 1;
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan, true);
+
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+  ASSERT_TRUE(group);
+  group->SetVisualData(visual_data);
+
+  CloseTab(grouped_tab_index);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, grouped_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(grouped_tab_index)
+                          .value());
+  const tab_groups::TabGroupVisualData* data = browser()
+                                                   ->tab_strip_model()
+                                                   ->group_model()
+                                                   ->GetTabGroup(group_id)
+                                                   ->visual_data();
+  ASSERT_TRUE(data);
+  EXPECT_EQ(data->title(), visual_data.title());
+  EXPECT_EQ(data->color(), visual_data.color());
+  EXPECT_FALSE(data->is_collapsed());
+}
+
+// Closing a tab in a collapsed group then restoring the tab will expand the
+// group upon restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       RestoreTabIntoCollapsedGroup_ExpandsGroup) {
+  const int tab_count = AddSomeTabs(browser(), 2);
+  ASSERT_LE(3, tab_count);
+
+  const int closed_tab_index = 1;
+
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan, true);
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+  group->SetVisualData(visual_data);
+
+  CloseTab(closed_tab_index);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(closed_tab_index)
+                          .value());
+  const tab_groups::TabGroupVisualData* data = browser()
+                                                   ->tab_strip_model()
+                                                   ->group_model()
+                                                   ->GetTabGroup(group_id)
+                                                   ->visual_data();
+  EXPECT_EQ(data->title(), visual_data.title());
+  EXPECT_EQ(data->color(), visual_data.color());
+  EXPECT_FALSE(data->is_collapsed());
+}
+
 // Closing a tab in a group then updating the metadata before restoring will
 // place the group back without updating the metadata.
-IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
-                       RestoreTabIntoGroup) {
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabIntoGroup) {
   const int tab_count = AddSomeTabs(browser(), 2);
   ASSERT_LE(3, tab_count);
 
@@ -984,8 +1084,31 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   EXPECT_EQ(data->color(), visual_data_2.color());
 }
 
-IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
-                       RestoreWindowWithGroupedTabs) {
+// Closing a tab in a group then moving the group to a new window before
+// restoring will place the tab in the group in the new window.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabIntoGroupInNewWindow) {
+  const int tab_count = AddSomeTabs(browser(), 3);
+  ASSERT_LE(4, tab_count);
+
+  const int closed_tab_index = 1;
+
+  tab_groups::TabGroupId group =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+
+  CloseTab(closed_tab_index);
+  chrome::MoveTabsToNewWindow(browser(), {0}, group);
+
+  // Expect the tab to be restored to the new window, inside the group.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(1, closed_tab_index));
+  Browser* new_browser = active_browser_list_->get(1);
+  ASSERT_EQ(2u, new_browser->tab_strip_model()
+                    ->group_model()
+                    ->GetTabGroup(group)
+                    ->ListTabs()
+                    .size());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_WINDOW,
@@ -1033,34 +1156,351 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
             *restored_group_model->GetTabGroup(group2)->visual_data());
 }
 
-// Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
-// Regression test for crbug.com/983962.
-//
-// NOTE: This test is currently disabled because it fundamentally relies on
-// manipulating the FeatureList state mid-test, which is NOT safe and not
-// allowed by the FeatureList API.
-IN_PROC_BROWSER_TEST_F(TabRestoreTest,
-                       DISABLED_GroupsNotRestoredWhenFeatureDisabled) {
-  auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
-  feature_override->InitAndEnableFeature(features::kTabGroups);
+// Ensure a tab is not restored between tabs of another group.
+// Regression test for https://crbug.com/1109368.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, DoesNotRestoreIntoOtherGroup) {
+  TabStripModel* const tabstrip = browser()->tab_strip_model();
 
+  tabstrip->AddToNewGroup({0});
+  const tab_groups::TabGroupId group1 = tabstrip->GetTabGroupForTab(0).value();
+
+  AddSomeTabs(browser(), 1);
+  tabstrip->AddToNewGroup({1});
+  const tab_groups::TabGroupId group2 = tabstrip->GetTabGroupForTab(1).value();
+
+  CloseTab(1);
+
+  ASSERT_EQ(1, tabstrip->count());
+  EXPECT_EQ(group1, tabstrip->GetTabGroupForTab(0));
+
+  AddSomeTabs(browser(), 1);
+  tabstrip->AddToExistingGroup({1}, group1);
+
+  // The restored tab of |group2| should be placed to the right of |group1|.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 2));
+  EXPECT_EQ(group1, tabstrip->GetTabGroupForTab(0));
+  EXPECT_EQ(group1, tabstrip->GetTabGroupForTab(1));
+  EXPECT_EQ(group2, tabstrip->GetTabGroupForTab(2));
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, DoesNotRestoreReaderModePages) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+  EXPECT_EQ(GURL("chrome-distiller://any"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Close it. Restoring restores the tab which came before.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DoesNotRestoreReaderModePageBehindInHistory) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate to some random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example1.com"));
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+
+  // Navigate to another random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example2.com"));
+
+  // Close it. Restoring restores example2 site.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(GURL("https://www.example2.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Going back should bring us to example1, Reader Mode has been omitted.
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  GoBack(browser());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  GoBack(browser());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DoesNotRestoreReaderModePageAheadInHistory) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate to some random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example1.com"));
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+
+  // Navigate to another random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example2.com"));
+
+  // Go back to the example1.
+  GoBack(browser());
+  GoBack(browser());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Close it. Restoring restores example1 site.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Going forward should bring us to example2, Reader Mode has been omitted.
+  ASSERT_TRUE(chrome::CanGoForward(browser()));
+  GoForward(browser());
+  EXPECT_EQ(GURL("https://www.example2.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  GoBack(browser());
+  GoBack(browser());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+// Check that TabManager.TimeSinceTabClosedUntilRestored histogram is recorded
+// on tab restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, TimeSinceTabClosedRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceTabClosedUntilRestored[] =
+      "TabManager.TimeSinceTabClosedUntilRestored";
+
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  AddSomeTabs(browser(), 3);
+
+  // Close the tab in the middle.
+  int closed_tab_index = starting_tab_count + 1;
+  CloseTab(closed_tab_index);
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+
+  RestoreTab(0, closed_tab_index);
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      1U);
+}
+
+// Check that TabManager.TimeSinceWindowClosedUntilRestored histogram is
+// recorded on window restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, TimeSinceWindowClosedRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceWindowClosedUntilRestored[] =
+      "TabManager.TimeSinceWindowClosedUntilRestored";
+
+  // Create a new window.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  ASSERT_EQ(2u, active_browser_list_->size());
 
-  browser()->tab_strip_model()->AddToNewGroup({0});
+  // Create two more tabs, one with url1, the other url2.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Close the window.
   CloseBrowserSynchronously(browser());
-  ASSERT_EQ(1u, active_browser_list_->size());
 
-  feature_override = std::make_unique<base::test::ScopedFeatureList>();
-  feature_override->InitAndDisableFeature(features::kTabGroups);
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            0U);
 
-  chrome::RestoreTab(GetBrowser(0));
-  ASSERT_EQ(2u, active_browser_list_->size());
+  // Restore the window.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(active_browser_list_->get(0));
 
-  Browser* restored_window = GetBrowser(1);
-  ASSERT_EQ(base::nullopt,
-            restored_window->tab_strip_model()->GetTabGroupForTab(0));
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            1U);
+}
+
+// Check that TabManager.TimeSinceTablosedUntilRestored histogram is not
+// recorded on window restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       TimeSinceTabClosedNotRecordedOnWindowRestore) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceTabClosedUntilRestored[] =
+      "TabManager.TimeSinceTabClosedUntilRestored";
+
+  // Create a new window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  // Create two more tabs, one with url1, the other url2.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Close the window.
+  CloseBrowserSynchronously(browser());
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+
+  // Restore the window.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(active_browser_list_->get(0));
+
+  // Check that TabManager.TimeSinceTablosedUntilRestored was not recorded.
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_PRE_RestoreAfterMultipleRestarts) {
+  // Enable session service in default mode.
+  EnableSessionService();
+
+  // Navigate to url1 in the current tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_RestoreAfterMultipleRestarts) {
+  // Enable session service in default mode.
+  EnableSessionService();
+
+  // Navigate to url2 in the current tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+}
+
+// Verifies restoring tabs from previous sessions.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreAfterMultipleRestarts) {
+  // Enable session service in default mode.
+  EnableSessionService();
+
+  // Restore url2 from one session ago.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
+  EXPECT_EQ(url2_, browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
+
+  // Restore url1 from two sessions ago.
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 2));
+  EXPECT_EQ(url1_, browser()->tab_strip_model()->GetWebContentsAt(2)->GetURL());
+}
+
+// Test that it is possible to navigate back to a restored about:blank history
+// entry with a non-null initiator origin.  This test cases covers
+// https://crbug.com/1116320 - a scenario where the restore type is different
+// from LAST_SESSION_EXITED_CLEANLY (e.g. the test below uses CURRENT_SESSION).
+//
+// See also MultiOriginSessionRestoreTest.BackToAboutBlank1
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, BackToAboutBlank) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL initial_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
+  url::Origin initial_origin = url::Origin::Create(initial_url);
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  // Open about:blank in a new tab.
+  content::WebContents* old_popup = nullptr;
+  {
+    EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+    content::WebContents* tab1 =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebContentsAddedObserver popup_observer;
+    ASSERT_TRUE(ExecJs(tab1, "window.open('about:blank')"));
+    old_popup = popup_observer.GetWebContents();
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+    EXPECT_EQ(GURL(url::kAboutBlankURL),
+              old_popup->GetMainFrame()->GetLastCommittedURL());
+    EXPECT_EQ(initial_origin,
+              old_popup->GetMainFrame()->GetLastCommittedOrigin());
+  }
+
+  // Navigate the popup to another site.
+  GURL other_url = embedded_test_server()->GetURL("bar.com", "/title1.html");
+  url::Origin other_origin = url::Origin::Create(other_url);
+  {
+    content::TestNavigationObserver nav_observer(old_popup);
+    ASSERT_TRUE(content::ExecJs(
+        old_popup, content::JsReplace("location = $1", other_url)));
+    nav_observer.Wait();
+  }
+  EXPECT_EQ(other_url, old_popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(other_origin, old_popup->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_TRUE(old_popup->GetController().CanGoBack());
+
+  // Close the popup.
+  int closed_tab_index = browser()->tab_strip_model()->active_index();
+  EXPECT_EQ(1, closed_tab_index);
+  CloseTab(closed_tab_index);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Reopen the popup.
+  content::WebContents* new_popup = nullptr;
+  {
+    content::WebContentsAddedObserver restored_tab_observer;
+    RestoreTab(0, closed_tab_index);
+    EXPECT_EQ(2, browser()->tab_strip_model()->count());
+    new_popup = restored_tab_observer.GetWebContents();
+  }
+  EXPECT_EQ(other_url, new_popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(other_origin, new_popup->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_TRUE(new_popup->GetController().CanGoBack());
+  int reopened_tab_index = browser()->tab_strip_model()->active_index();
+  EXPECT_EQ(1, reopened_tab_index);
+
+  // Navigate the popup back to about:blank.
+  GoBack(browser());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            new_popup->GetMainFrame()->GetLastCommittedURL());
+  // TODO(lukasza): https://crbug.com/888079: The browser process should tell
+  // the renderer which (initiator-based) origin to commit.  Right now, Blink
+  // just falls back to an opaque origin.
+  EXPECT_TRUE(new_popup->GetMainFrame()->GetLastCommittedOrigin().opaque());
 }

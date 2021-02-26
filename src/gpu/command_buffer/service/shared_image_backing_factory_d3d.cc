@@ -4,7 +4,10 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
 
+#include <d3d11_1.h>
+
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image_backing_d3d.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -110,6 +113,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
     size_t buffer_index,
@@ -139,13 +144,9 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
       return nullptr;
     }
   } else if (shared_handle.IsValid()) {
-    const HRESULT hr = d3d11_texture.As(&dxgi_keyed_mutex);
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "Unable to QueryInterface for IDXGIKeyedMutex on texture "
-                     "with shared handle "
-                  << std::hex;
-      return nullptr;
-    }
+    // Keyed mutexes are required for Dawn interop but are not used
+    // for XR composition where fences are used instead.
+    d3d11_texture.As(&dxgi_keyed_mutex);
   }
   DCHECK(d3d11_texture);
 
@@ -175,8 +176,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
   texture->SetEstimatedSize(texture_memory_size);
 
   return std::make_unique<SharedImageBackingD3D>(
-      mailbox, format, size, color_space, usage, std::move(swap_chain),
-      std::move(texture), std::move(image), buffer_index,
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(swap_chain), std::move(texture), std::move(image), buffer_index,
       std::move(d3d11_texture), std::move(shared_handle),
       std::move(dxgi_keyed_mutex));
 }
@@ -188,6 +189,8 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return {nullptr, nullptr};
@@ -260,19 +263,21 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   if (!ClearBackBuffer(swap_chain, d3d11_device_))
     return {nullptr, nullptr};
 
-  auto back_buffer_backing =
-      MakeBacking(back_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 0 /* buffer_index */, nullptr /* d3d11_texture */,
-                  base::win::ScopedHandle());
+  auto back_buffer_backing = MakeBacking(
+      back_buffer_mailbox, format, size, color_space, surface_origin,
+      alpha_type, usage, swap_chain, 0 /* buffer_index */,
+      nullptr /* d3d11_texture */, base::win::ScopedHandle());
   if (!back_buffer_backing)
     return {nullptr, nullptr};
+  back_buffer_backing->SetCleared();
 
-  auto front_buffer_backing =
-      MakeBacking(front_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 1 /* buffer_index */, nullptr /* d3d11_texture */,
-                  base::win::ScopedHandle());
+  auto front_buffer_backing = MakeBacking(
+      front_buffer_mailbox, format, size, color_space, surface_origin,
+      alpha_type, usage, swap_chain, 1 /* buffer_index */,
+      nullptr /* d3d11_texture */, base::win::ScopedHandle());
   if (!front_buffer_backing)
     return {nullptr, nullptr};
+  front_buffer_backing->SetCleared();
 
   return {std::move(front_buffer_backing), std::move(back_buffer_backing)};
 }
@@ -284,6 +289,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
@@ -343,8 +350,9 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   // ensure we do not leak it.
   base::win::ScopedHandle scoped_shared_handle(shared_handle);
 
-  return MakeBacking(mailbox, format, size, color_space, usage, nullptr, 0,
-                     std::move(d3d11_texture), std::move(scoped_shared_handle));
+  return MakeBacking(mailbox, format, size, color_space, surface_origin,
+                     alpha_type, usage, nullptr, 0, std::move(d3d11_texture),
+                     std::move(scoped_shared_handle));
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -353,6 +361,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   NOTIMPLEMENTED();
@@ -368,16 +378,65 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO: Add support for shared memory GMBs.
+  DCHECK_EQ(handle.type, gfx::DXGI_SHARED_HANDLE);
+  if (!handle.dxgi_handle.IsValid()) {
+    DLOG(ERROR) << "Invalid handle type passed to CreateSharedImage";
+    return nullptr;
+  }
+
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
+    DLOG(ERROR) << "Invalid image size " << size.ToString() << " for "
+                << gfx::BufferFormatToString(format);
+    return nullptr;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11Device1> d3d11_device1;
+  HRESULT hr = d3d11_device_.As(&d3d11_device1);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to query for ID3D11Device1. Error: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
+  hr = d3d11_device1->OpenSharedResource1(handle.dxgi_handle.Get(),
+                                          IID_PPV_ARGS(&d3d11_texture));
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Unable to open shared resource from DXGI handle. Error: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  D3D11_TEXTURE2D_DESC desc;
+  d3d11_texture->GetDesc(&desc);
+
+  // TODO: Add checks for device specific limits.
+  if (desc.Width != static_cast<UINT>(size.width()) ||
+      desc.Height != static_cast<UINT>(size.height())) {
+    DLOG(ERROR)
+        << "Size passed to CreateSharedImage must match texture being opened";
+    return nullptr;
+  }
+
+  auto backing =
+      MakeBacking(mailbox, viz::GetResourceFormat(format), size, color_space,
+                  surface_origin, alpha_type, usage, /*swap_chain=*/nullptr,
+                  /*buffer_index=*/0, std::move(d3d11_texture),
+                  std::move(handle.dxgi_handle));
+  if (backing)
+    backing->SetCleared();
+  return backing;
 }
 
 // Returns true if the specified GpuMemoryBufferType can be imported using
 // this factory.
 bool SharedImageBackingFactoryD3D::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
-  return false;
+  return (memory_buffer_type == gfx::DXGI_SHARED_HANDLE);
 }
 
 }  // namespace gpu

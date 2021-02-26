@@ -25,6 +25,9 @@ export class ConsoleFilter {
    * @return {!Object<string, boolean>}
    */
   static allLevelsFilterValue() {
+    /**
+     * @type {!Object<string, boolean>}
+     */
     const result = {};
     for (const name of Object.values(SDK.ConsoleModel.MessageLevel)) {
       result[name] = true;
@@ -46,6 +49,9 @@ export class ConsoleFilter {
    * @return {!Object<string, boolean>}
    */
   static singleLevelMask(level) {
+    /**
+     * @type {!Object<string, boolean>}
+     */
     const result = {};
     result[level] = true;
     return result;

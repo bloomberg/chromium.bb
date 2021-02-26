@@ -10,13 +10,11 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace autofill {
-struct PasswordForm;
-}
 
 namespace network {
 namespace mojom {
@@ -25,6 +23,7 @@ class NetworkContext;
 }  // namespace network
 
 namespace password_manager {
+class CredentialsCleanerRunner;
 class PasswordManagerDriver;
 class PasswordManagerClient;
 }  // namespace password_manager
@@ -38,7 +37,7 @@ class PrefService;
 namespace password_manager_util {
 
 // Update |credential| to reflect usage.
-void UpdateMetadataForUsage(autofill::PasswordForm* credential);
+void UpdateMetadataForUsage(password_manager::PasswordForm* credential);
 
 // Reports whether and how passwords are currently synced. In particular, for a
 // null |sync_service| returns NOT_SYNCING.
@@ -52,7 +51,8 @@ bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* android_credentials);
+    std::vector<std::unique_ptr<password_manager::PasswordForm>>*
+        android_credentials);
 
 // A convenience function for testing that |client| has a non-null LogManager
 // and that that LogManager returns true for IsLoggingActive. This function can
@@ -89,9 +89,10 @@ void UserTriggeredManualGenerationFromContextMenu(
 // HSTS query is not supported. |network_context_getter| is always null for iOS
 // and it can also be null for some unittests.
 void RemoveUselessCredentials(
+    password_manager::CredentialsCleanerRunner* cleaning_tasks_runner,
     scoped_refptr<password_manager::PasswordStore> store,
     PrefService* prefs,
-    int delay_in_seconds,
+    base::TimeDelta delay,
     base::RepeatingCallback<network::mojom::NetworkContext*()>
         network_context_getter);
 
@@ -101,7 +102,7 @@ void RemoveUselessCredentials(
 // excluding protocol it becomes "www.google.com/".
 // This assumes that the |form|'s host is a substring of the signon_realm.
 base::StringPiece GetSignonRealmWithProtocolExcluded(
-    const autofill::PasswordForm& form);
+    const password_manager::PasswordForm& form);
 
 // Given all non-blacklisted |non_federated_matches|, finds and populates
 // |non_federated_same_scheme|, |best_matches|, and |preferred_match|
@@ -110,16 +111,18 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
 // matches. In case of tie, an arbitrary credential from the tied ones is chosen
 // for |best_matches| and |preferred_match|.
 void FindBestMatches(
-    const std::vector<const autofill::PasswordForm*>& non_federated_matches,
-    autofill::PasswordForm::Scheme scheme,
-    std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
-    std::vector<const autofill::PasswordForm*>* best_matches,
-    const autofill::PasswordForm** preferred_match);
+    const std::vector<const password_manager::PasswordForm*>&
+        non_federated_matches,
+    password_manager::PasswordForm::Scheme scheme,
+    std::vector<const password_manager::PasswordForm*>*
+        non_federated_same_scheme,
+    std::vector<const password_manager::PasswordForm*>* best_matches,
+    const password_manager::PasswordForm** preferred_match);
 
 // Returns a form with the given |username_value| from |forms|, or nullptr if
 // none exists. If multiple matches exist, returns the first one.
-const autofill::PasswordForm* FindFormByUsername(
-    const std::vector<const autofill::PasswordForm*>& forms,
+const password_manager::PasswordForm* FindFormByUsername(
+    const std::vector<const password_manager::PasswordForm*>& forms,
     const base::string16& username_value);
 
 // If the user submits a form, they may have used existing credentials, new
@@ -130,16 +133,16 @@ const autofill::PasswordForm* FindFormByUsername(
 // |submitted_form| is the form being submitted.
 // |credentials| are all the credentials relevant for the current site including
 // PSL and Android matches.
-const autofill::PasswordForm* GetMatchForUpdating(
-    const autofill::PasswordForm& submitted_form,
-    const std::vector<const autofill::PasswordForm*>& credentials);
+const password_manager::PasswordForm* GetMatchForUpdating(
+    const password_manager::PasswordForm& submitted_form,
+    const std::vector<const password_manager::PasswordForm*>& credentials);
 
 // This method creates a blacklisted form with |digests|'s scheme, signon_realm
 // and origin. This is done to avoid storing PII and to have a normalized unique
 // key. Furthermore it attempts to normalize the origin by stripping path
 // components. In case this fails (e.g. for non-standard origins like Android
 // credentials), the original origin is kept.
-autofill::PasswordForm MakeNormalizedBlacklistedForm(
+password_manager::PasswordForm MakeNormalizedBlacklistedForm(
     password_manager::PasswordStore::FormDigest digest);
 
 }  // namespace password_manager_util

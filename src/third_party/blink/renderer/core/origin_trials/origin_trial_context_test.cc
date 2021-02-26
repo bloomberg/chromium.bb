@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
@@ -30,6 +31,7 @@ namespace {
 const char kFrobulateTrialName[] = "Frobulate";
 const char kFrobulateDeprecationTrialName[] = "FrobulateDeprecation";
 const char kFrobulateNavigationTrialName[] = "FrobulateNavigation";
+const char kFrobulateThirdPartyTrialName[] = "FrobulateThirdParty";
 const char kFrobulateEnabledOrigin[] = "https://www.example.com";
 const char kFrobulateEnabledOriginUnsecure[] = "http://www.example.com";
 
@@ -52,14 +54,22 @@ class MockTokenValidator : public TrialTokenValidator {
     call_count_++;
     return response_;
   }
+  TrialTokenResult ValidateToken(base::StringPiece token,
+                                 const url::Origin& origin,
+                                 const url::Origin* script_origin,
+                                 base::Time current_time) const override {
+    return ValidateToken(token, origin, current_time);
+  }
 
   // Useful methods for controlling the validator
   void SetResponse(OriginTrialTokenStatus status,
                    const std::string& feature,
-                   base::Time expiry = base::Time()) {
+                   base::Time expiry = base::Time(),
+                   bool is_third_party = false) {
     response_.status = status;
     response_.feature_name = feature;
     response_.expiry_time = expiry;
+    response_.is_third_party = is_third_party;
   }
   int CallCount() { return call_count_; }
 
@@ -77,10 +87,12 @@ class OriginTrialContextTest : public testing::Test {
  protected:
   OriginTrialContextTest()
       : token_validator_(new MockTokenValidator),
-        execution_context_(MakeGarbageCollected<NullExecutionContext>(
-            MakeGarbageCollected<OriginTrialContext>(
-                std::unique_ptr<MockTokenValidator>(token_validator_)))),
-        histogram_tester_(new HistogramTester()) {}
+        execution_context_(MakeGarbageCollected<NullExecutionContext>()),
+        histogram_tester_(new HistogramTester()) {
+    execution_context_->GetOriginTrialContext()
+        ->SetTrialTokenValidatorForTesting(
+            std::unique_ptr<MockTokenValidator>(token_validator_));
+  }
 
   MockTokenValidator* TokenValidator() { return token_validator_; }
 
@@ -89,10 +101,6 @@ class OriginTrialContextTest : public testing::Test {
     scoped_refptr<SecurityOrigin> page_origin =
         SecurityOrigin::Create(page_url);
     execution_context_->GetSecurityContext().SetSecurityOrigin(page_origin);
-    execution_context_->GetSecurityContext().SetSecureContextModeForTesting(
-        SecurityOrigin::IsSecure(page_url)
-            ? SecureContextMode::kSecureContext
-            : SecureContextMode::kInsecureContext);
   }
 
   bool IsFeatureEnabled(const String& origin, OriginTrialFeature feature) {
@@ -103,6 +111,20 @@ class OriginTrialContextTest : public testing::Test {
   bool IsFeatureEnabled(OriginTrialFeature feature) {
     // Need at least one token to ensure the token validator is called.
     execution_context_->GetOriginTrialContext()->AddToken(kTokenPlaceholder);
+    return execution_context_->GetOriginTrialContext()->IsFeatureEnabled(
+        feature);
+  }
+
+  bool IsFeatureEnabledForThirdPartyOrigin(const String& origin,
+                                           const String& script_origin,
+                                           OriginTrialFeature feature) {
+    UpdateSecurityOrigin(origin);
+    KURL script_url(script_origin);
+    scoped_refptr<const SecurityOrigin> script_security_origin =
+        SecurityOrigin::Create(script_url);
+    // Need at least one token to ensure the token validator is called.
+    execution_context_->GetOriginTrialContext()->AddTokenFromExternalScript(
+        kTokenPlaceholder, script_security_origin.get());
     return execution_context_->GetOriginTrialContext()->IsFeatureEnabled(
         feature);
   }
@@ -239,6 +261,91 @@ TEST_F(OriginTrialContextTest,
   EXPECT_FALSE(is_origin_enabled);
 }
 
+// The feature should not be enabled if token is valid and enabled for third
+// party origin but trial is not enabled for third party origin.
+TEST_F(OriginTrialContextTest, EnabledNonThirdPartyTrialWithThirdPartyToken) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateTrialName, base::Time(), true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPI);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kFeatureDisabled, 1);
+}
+
+// The feature should not be enabled if token is enabled for third
+// party origin but it's not injected by external script.
+TEST_F(OriginTrialContextTest, ThirdPartyTokenNotFromExternalScript) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kWrongOrigin,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kWrongOrigin, 1);
+}
+
+// The feature should not be enabled if token is injected from insecure external
+// script even if document origin is secure.
+TEST_F(OriginTrialContextTest, ThirdPartyTokenFromInsecureExternalScript) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOrigin, kFrobulateEnabledOriginUnsecure,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
+}
+
+// The feature should not be enabled if token is injected from insecure external
+// script when the document origin is also insecure.
+TEST_F(OriginTrialContextTest,
+       ThirdPartyTokenFromInsecureExternalScriptOnInsecureDocument) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOriginUnsecure, kFrobulateEnabledOriginUnsecure,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
+}
+
+// The feature should not be enabled if token is injected from secure external
+// script when the document is insecure.
+TEST_F(OriginTrialContextTest, ThirdPartyTokenOnInsecureDocument) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOriginUnsecure, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
+}
+
+// The feature should be enabled if 1) token is valid for third party origin
+// 2) token is enabled for third party origin and 3) trial is enabled for
+// third party origin.
+TEST_F(OriginTrialContextTest, EnabledThirdPartyTrialWithThirdPartyToken) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_TRUE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kSuccess, 1);
+}
+
 TEST_F(OriginTrialContextTest, ParseHeaderValue) {
   std::unique_ptr<Vector<String>> tokens;
   ASSERT_TRUE(tokens = OriginTrialContext::ParseHeaderValue(" foo\t "));
@@ -298,10 +405,10 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
 }
 
 TEST_F(OriginTrialContextTest, FeaturePolicy) {
-  // Create a dummy document with an OriginTrialContext.
+  // Create a dummy window/document with an OriginTrialContext.
   auto dummy = std::make_unique<DummyPageHolder>();
-  Document* document = &dummy->GetDocument();
-  OriginTrialContext* context = document->GetOriginTrialContext();
+  LocalDOMWindow* window = dummy->GetFrame().DomWindow();
+  OriginTrialContext* context = window->GetOriginTrialContext();
 
   // Enable the sample origin trial API ("Frobulate").
   context->AddFeature(OriginTrialFeature::kOriginTrialsSampleAPI);
@@ -316,11 +423,12 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
   // feature policy is successfully enabled via the origin trial.
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
-  Vector<String> messages;
+
+  PolicyParserMessageBuffer logger;
   ParsedFeaturePolicy result;
-  result = FeaturePolicyParser::Parse("frobulate", security_origin, nullptr,
-                                      &messages, feature_map, document);
-  EXPECT_TRUE(messages.IsEmpty());
+  result = FeaturePolicyParser::ParseFeaturePolicyForTest(
+      "frobulate", security_origin, nullptr, logger, feature_map, window);
+  EXPECT_TRUE(logger.GetMessages().IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);
 }

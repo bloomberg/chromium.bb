@@ -5,9 +5,7 @@
 #include "ash/system/unified/custom_shape_button.h"
 
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -36,12 +34,11 @@ class CustomShapeButtonHighlightPathGenerator
 
 namespace ash {
 
-CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
-    : ImageButton(listener) {
+CustomShapeButton::CustomShapeButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<CustomShapeButtonHighlightPathGenerator>());
-  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
 
 CustomShapeButton::~CustomShapeButton() = default;
@@ -59,28 +56,30 @@ std::unique_ptr<views::InkDropRipple> CustomShapeButton::CreateInkDropRipple()
     const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(),
-      UnifiedSystemTrayView::GetBackgroundColor());
+      GetInkDropCenterBasedOnLastEvent());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 CustomShapeButton::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      UnifiedSystemTrayView::GetBackgroundColor());
+  return TrayPopupUtils::CreateInkDropHighlight(this);
 }
 
 const char* CustomShapeButton::GetClassName() const {
   return "CustomShapeButton";
 }
 
+void CustomShapeButton::OnThemeChanged() {
+  ImageButton::OnThemeChanged();
+  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kFocusRingColor));
+  SchedulePaint();
+}
+
 void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  const SkColor button_color =
-      AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-          kUnifiedMenuButtonColor);
+  const SkColor button_color = AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
   flags.setColor(GetEnabled()
                      ? button_color
                      : AshColorProvider::GetDisabledColor(button_color));

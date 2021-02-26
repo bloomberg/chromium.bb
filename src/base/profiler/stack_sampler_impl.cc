@@ -4,11 +4,11 @@
 
 #include "base/profiler/stack_sampler_impl.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/profiler/metadata_recorder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
@@ -16,6 +16,7 @@
 #include "base/profiler/stack_copier.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/profiler/unwinder.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
@@ -65,20 +66,43 @@ class StackCopierDelegate : public StackCopier::Delegate {
 }  // namespace
 
 StackSamplerImpl::StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
-                                   std::unique_ptr<Unwinder> native_unwinder,
+                                   UnwindersFactory core_unwinders_factory,
                                    ModuleCache* module_cache,
+                                   RepeatingClosure record_sample_callback,
                                    StackSamplerTestDelegate* test_delegate)
     : stack_copier_(std::move(stack_copier)),
+      unwinders_factory_(std::move(core_unwinders_factory)),
       module_cache_(module_cache),
+      record_sample_callback_(std::move(record_sample_callback)),
       test_delegate_(test_delegate) {
-  DCHECK(native_unwinder);
-  unwinders_.push_front(std::move(native_unwinder));
+  DCHECK(unwinders_factory_);
 }
 
 StackSamplerImpl::~StackSamplerImpl() = default;
 
+void StackSamplerImpl::Initialize() {
+  std::vector<std::unique_ptr<Unwinder>> unwinders =
+      std::move(unwinders_factory_).Run();
+
+  // |unwinders| is iterated backward since |unwinders_factory_| generates
+  // unwinders in increasing priority order. |unwinders_| is stored in
+  // decreasing priority order for ease of use within the class.
+  unwinders_.insert(unwinders_.end(),
+                    std::make_move_iterator(unwinders.rbegin()),
+                    std::make_move_iterator(unwinders.rend()));
+
+  for (const auto& unwinder : unwinders_)
+    unwinder->AddInitialModules(module_cache_);
+
+  was_initialized_ = true;
+}
+
 void StackSamplerImpl::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
-  unwinder->AddInitialModules(module_cache_);
+  // Initialize() invokes AddInitialModules() on the unwinders that are present
+  // at the time. If it hasn't occurred yet, we allow it to add the initial
+  // modules, otherwise we do it here.
+  if (was_initialized_)
+    unwinder->AddInitialModules(module_cache_);
   unwinders_.push_front(std::move(unwinder));
 }
 
@@ -86,9 +110,14 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
                                          ProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
 
+  if (record_sample_callback_)
+    record_sample_callback_.Run();
+
   RegisterContext thread_context;
   uintptr_t stack_top;
   TimeTicks timestamp;
+
+  bool copy_stack_succeeded;
   {
     // Make this scope as small as possible because |metadata_provider| is
     // holding a lock.
@@ -96,11 +125,15 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
         GetSampleMetadataRecorder());
     StackCopierDelegate delegate(&unwinders_, profile_builder,
                                  &metadata_provider);
-    bool success = stack_copier_->CopyStack(
+    copy_stack_succeeded = stack_copier_->CopyStack(
         stack_buffer, &stack_top, &timestamp, &thread_context, &delegate);
-    if (!success)
-      return;
   }
+  if (!copy_stack_succeeded) {
+    profile_builder->OnSampleCompleted(
+        {}, timestamp.is_null() ? TimeTicks::Now() : timestamp);
+    return;
+  }
+
   for (const auto& unwinder : unwinders_)
     unwinder->UpdateModules(module_cache_);
 
@@ -143,11 +176,10 @@ std::vector<Frame> StackSamplerImpl::WalkStack(
   do {
     // Choose an authoritative unwinder for the current module. Use the first
     // unwinder that thinks it can unwind from the current frame.
-    auto unwinder =
-        std::find_if(unwinders.begin(), unwinders.end(),
-                     [&stack](const std::unique_ptr<Unwinder>& unwinder) {
-                       return unwinder->CanUnwindFrom(stack.back());
-                     });
+    auto unwinder = ranges::find_if(
+        unwinders, [&stack](const std::unique_ptr<Unwinder>& unwinder) {
+          return unwinder->CanUnwindFrom(stack.back());
+        });
     if (unwinder == unwinders.end())
       return stack;
 
@@ -155,8 +187,8 @@ std::vector<Frame> StackSamplerImpl::WalkStack(
     result = unwinder->get()->TryUnwind(thread_context, stack_top, module_cache,
                                         &stack);
 
-    // The native unwinder should be the only one that returns COMPLETED
-    // since the stack starts in native code.
+    // The unwinder with the lowest priority should be the only one that returns
+    // COMPLETED since the stack starts in native code.
     DCHECK(result != UnwindResult::COMPLETED ||
            unwinder->get() == unwinders.back().get());
   } while (result != UnwindResult::ABORTED &&

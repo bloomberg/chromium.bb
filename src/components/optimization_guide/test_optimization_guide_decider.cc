@@ -11,22 +11,20 @@ namespace optimization_guide {
 TestOptimizationGuideDecider::TestOptimizationGuideDecider() = default;
 TestOptimizationGuideDecider::~TestOptimizationGuideDecider() = default;
 
-void TestOptimizationGuideDecider::RegisterOptimizationTypesAndTargets(
-    const std::vector<proto::OptimizationType>& optimization_types,
+void TestOptimizationGuideDecider::RegisterOptimizationTargets(
     const std::vector<proto::OptimizationTarget>& optimization_targets) {}
 
-OptimizationGuideDecision TestOptimizationGuideDecider::ShouldTargetNavigation(
+void TestOptimizationGuideDecider::ShouldTargetNavigationAsync(
     content::NavigationHandle* navigation_handle,
-    proto::OptimizationTarget optimization_target) {
-  return OptimizationGuideDecision::kFalse;
+    proto::OptimizationTarget optimization_target,
+    const base::flat_map<proto::ClientModelFeature, float>&
+        client_model_feature_values,
+    OptimizationGuideTargetDecisionCallback callback) {
+  std::move(callback).Run(OptimizationGuideDecision::kFalse);
 }
 
-OptimizationGuideDecision TestOptimizationGuideDecider::CanApplyOptimization(
-    content::NavigationHandle* navigation_handle,
-    proto::OptimizationType optimization_type,
-    OptimizationMetadata* optimization_metadata) {
-  return OptimizationGuideDecision::kFalse;
-}
+void TestOptimizationGuideDecider::RegisterOptimizationTypes(
+    const std::vector<proto::OptimizationType>& optimization_types) {}
 
 void TestOptimizationGuideDecider::CanApplyOptimizationAsync(
     content::NavigationHandle* navigation_handle,
@@ -34,6 +32,13 @@ void TestOptimizationGuideDecider::CanApplyOptimizationAsync(
     OptimizationGuideDecisionCallback callback) {
   std::move(callback).Run(OptimizationGuideDecision::kFalse,
                           /*optimization_metadata=*/{});
+}
+
+OptimizationGuideDecision TestOptimizationGuideDecider::CanApplyOptimization(
+    const GURL& url,
+    proto::OptimizationType optimization_type,
+    OptimizationMetadata* optimization_metadata) {
+  return OptimizationGuideDecision::kFalse;
 }
 
 }  // namespace optimization_guide

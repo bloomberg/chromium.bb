@@ -74,16 +74,14 @@ class IdleRequestCallbackWrapper
 
 }  // namespace internal
 
-ScriptedIdleTaskController::V8IdleTask::V8IdleTask(
-    V8IdleRequestCallback* callback)
-    : callback_(callback) {}
+V8IdleTask::V8IdleTask(V8IdleRequestCallback* callback) : callback_(callback) {}
 
-void ScriptedIdleTaskController::V8IdleTask::Trace(Visitor* visitor) {
+void V8IdleTask::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
-  ScriptedIdleTaskController::IdleTask::Trace(visitor);
+  IdleTask::Trace(visitor);
 }
 
-void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
+void V8IdleTask::invoke(IdleDeadline* deadline) {
   callback_->InvokeAndReportException(nullptr, deadline);
 }
 
@@ -96,7 +94,7 @@ ScriptedIdleTaskController::ScriptedIdleTaskController(
 
 ScriptedIdleTaskController::~ScriptedIdleTaskController() = default;
 
-void ScriptedIdleTaskController::Trace(Visitor* visitor) {
+void ScriptedIdleTaskController::Trace(Visitor* visitor) const {
   visitor->Trace(idle_tasks_);
   ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
@@ -241,12 +239,19 @@ void ScriptedIdleTaskController::ContextUnpaused() {
   DCHECK(paused_);
   paused_ = false;
 
-  // Run any pending timeouts.
-  Vector<CallbackId> pending_timeouts;
-  pending_timeouts_.swap(pending_timeouts);
-  for (auto& id : pending_timeouts)
-    RunCallback(id, base::TimeTicks::Now(),
-                IdleDeadline::CallbackType::kCalledByTimeout);
+  // Run any pending timeouts as separate tasks, since it's not allowed to
+  // execute script from lifecycle callbacks.
+  for (auto& id : pending_timeouts_) {
+    scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper =
+        internal::IdleRequestCallbackWrapper::Create(id, this);
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kIdleTask)
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,
+                      callback_wrapper));
+  }
+  pending_timeouts_.clear();
 
   // Repost idle tasks for any remaining callbacks.
   for (auto& idle_task : idle_tasks_) {

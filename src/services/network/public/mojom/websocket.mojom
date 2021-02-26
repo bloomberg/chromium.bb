@@ -60,6 +60,15 @@ interface WebSocketHandshakeClient {
   // Notify the renderer that the browser has started an opening handshake.
   OnOpeningHandshakeStarted(WebSocketHandshakeRequest request);
 
+  // Called when the WebSocket connection has failed.
+  // |message| may contain a human-readable explanation of the error, but may be
+  // empty.
+  // |net_error| contains a network error code, which will be |ERR_FAILED| for
+  // WebSocket-level protocol errors that do not have their own error code.
+  // |response_code| contains the HTTP status code that caused the failure, if
+  // it was caused by an unexpected status code, or else is -1.
+  OnFailure(string message, int32 net_error, int32 response_code);
+
   // Called when the connection is established.
   // |response| may contain cookie-related headers when the client has
   // an access to raw cookie information.
@@ -94,12 +103,6 @@ interface WebSocketClient {
               WebSocketMessageType type,
               uint64 data_length);
 
-  // Add |quota| bytes of send quota. |quota| must be positive. Initial quota
-  // is 0. The renderer will wait for an AddSendFlowControlQuota() message
-  // before forwarding any messages to the browser. Total quota must never
-  // exceed 0x7FFFFFFFFFFFFFFF bytes.
-  AddSendFlowControlQuota(int64 quota);
-
   // Drop the channel.
   //
   // When sent by the renderer, this will cause a Close message will be sent and
@@ -128,19 +131,6 @@ interface WebSocket {
   // service side:
   const uint32 kInsufficientResources = 1;
   const uint32 kInternalFailure = 2;
-
-  // Send a non-control frame to the remote server.
-  // - |fin| indicates that this frame is the last in the current message.
-  // - |type| is the type of the message. On the first frame of a message, it
-  //   must be set to either WebSocketMessageType.TEXT or
-  //   WebSocketMessageType.BINARY. On subsequent frames, it must be set to
-  //   WebSocketMessageType.CONTINUATION, and the type is the same as that of
-  //   the first message. If |type| is WebSocketMessageType.TEXT, then the
-  //   concatenation of the |data| from every frame in the message must be valid
-  //   UTF-8. If |fin| is not set, |data| must be non-empty.
-  SendFrame(bool fin,
-            WebSocketMessageType type,
-            mojo_base.mojom.ReadOnlyBuffer data);
 
   // Sends a message via mojo datapipe to the remote server.
   // - |type| is the type of the message. It must be set to either

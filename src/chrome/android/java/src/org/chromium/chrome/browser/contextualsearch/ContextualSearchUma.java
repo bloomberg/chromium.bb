@@ -4,23 +4,26 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Centralizes UMA data collection for Contextual Search. All calls must be made from the UI thread.
@@ -29,6 +32,9 @@ public class ContextualSearchUma {
     // Constants to use for the original selection gesture
     private static final boolean LONG_PRESS = false;
     private static final boolean TAP = true;
+
+    /** A pattern to determine if text contains any whitespace. */
+    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     // Constants used to log UMA "enum" histograms about the Contextual Search's preference state.
     @IntDef({Preference.UNINITIALIZED, Preference.ENABLED, Preference.DISABLED})
@@ -325,6 +331,22 @@ public class ContextualSearchUma {
         int SINGLE = 1;
         int MULTIPLE = 2;
         int NUM_ENTRIES = 3;
+    }
+
+    // Constants for user permissions histogram.
+    @IntDef({
+            Permissions.SEND_NOTHING,
+            Permissions.SEND_URL,
+            Permissions.SEND_CONTENT,
+            Permissions.SEND_URL_AND_CONTENT,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface Permissions {
+        int SEND_NOTHING = 0;
+        int SEND_URL = 1;
+        int SEND_CONTENT = 2;
+        int SEND_URL_AND_CONTENT = 3;
+        int NUM_ENTRIES = 4;
     }
 
     /**
@@ -771,6 +793,26 @@ public class ContextualSearchUma {
      */
     public static void logTapIPH(boolean wasIPHShown) {
         RecordHistogram.recordBooleanHistogram("Search.ContextualSearchTapIPHShown", wasIPHShown);
+    }
+
+    /**
+     * Logs whether we have ever shown an In-Product Help for Translations suggesting that the user
+     * Opt-in.
+     * @param wasIPHShown Whether In-Product help was shown.
+     */
+    public static void logTranslationsOptInIPHShown(boolean wasIPHShown) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.TranslationsOptInIPHShown", wasIPHShown);
+    }
+
+    /**
+     * Logs whether the user actually did opt-in after seeing the In-Product Help for Translations
+     * suggesting that the user should Opt-in.
+     * @param didOptIn Whether the user did opt-in.
+     */
+    public static void logTranslationsOptInIPHWorked(boolean didOptIn) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.TranslationsOptInIPHWorked", didOptIn);
     }
 
     /**
@@ -1234,6 +1276,70 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs that the user established a new selection when Contextual Search is active.
+     */
+    public static void logSelectionEstablished() {
+        RecordUserAction.record("ContextualSearch.SelectionEstablished");
+    }
+
+    /**
+     * Logs that the user manually adjusted a selection when Contextual Search is active.
+     * @param selection The new selection.
+     */
+    public static void logSelectionAdjusted(@Nullable String selection) {
+        if (TextUtils.isEmpty(selection)) return;
+
+        boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(selection.trim()).find();
+        if (isSingleWord) {
+            RecordUserAction.record("ContextualSearch.ManualRefineSingleWord");
+        } else {
+            RecordUserAction.record("ContextualSearch.ManualRefineMultiWord");
+        }
+    }
+
+    /**
+     * Logs that the system automatically expanded the selection when a user triggered
+     * Contextual Search on a multiword phrase that could be identified by the server.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logSelectionExpanded(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.SelectionExpanded", fromTapGesture);
+    }
+
+    /**
+     * Logs that the system sent a server request to resolve the search term.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logResolveRequested(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.ResolveRequested", fromTapGesture);
+    }
+
+    /**
+     * Logs that the system received a server response from a resolve request.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logResolveReceived(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.ResolveReceived", fromTapGesture);
+    }
+
+    /**
+     * Logs that the user needs a translation of the selection. The user may or may not actually
+     * see a translation - this only logs that it's needed.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logTranslationNeeded(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.TranslationNeeded", fromTapGesture);
+    }
+
+    /**
      * Logs how a state was exited for the first time within a Contextual Search.
      * @param fromState The state to transition from.
      * @param toState The state to transition to.
@@ -1522,6 +1628,43 @@ public class ContextualSearchUma {
     static void logUnifiedConsentThrottleEligible(boolean isThrottleEligible) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.UnifiedConsent.ThrottleEligible", isThrottleEligible);
+    }
+
+    /**
+     * Logs a histogram indicating which privacy permissions are available that Related Searches
+     * cares about. This ignores any language constraint.
+     * <p>This can be called multiple times for each user from any part of the code that's freqently
+     * executed.
+     * @param canSendUrl Whether this user has allowed sending page URL info to Google.
+     * @param canSendContent Whether the user can send page content to Google (has accepted the
+     *        Contextual Search opt-in).
+     */
+    static void logRelatedSearchesPermissionsForAllUsers(
+            boolean canSendUrl, boolean canSendContent) {
+        @Permissions
+        int permissionsEnum;
+        if (canSendUrl) {
+            permissionsEnum =
+                    canSendContent ? Permissions.SEND_URL_AND_CONTENT : Permissions.SEND_URL;
+        } else {
+            permissionsEnum = canSendContent ? Permissions.SEND_CONTENT : Permissions.SEND_NOTHING;
+        }
+        RecordHistogram.recordEnumeratedHistogram("Search.RelatedSearches.AllUserPermissions",
+                permissionsEnum, Permissions.NUM_ENTRIES);
+    }
+
+    /**
+     * Logs a histogram indicating that a user is qualified for the Related Searches experiment
+     * regardless of whether that feature is enabled. This uses a boolean histogram but always
+     * logs true in order to get a raw bucket count (without using a user action, as suggested
+     * in the User Action Guidelines doc).
+     * <p>We use this to gauge whether each group has a balanced number of qualified users.
+     * Can be logged multiple times since we'll just look at the user-count of this histogram.
+     * This should be called any time a gesture is detected that could trigger a Related Search
+     * if the feature were enabled.
+     */
+    static void logRelatedSearchesQualifiedUsers() {
+        RecordHistogram.recordBooleanHistogram("Search.RelatedSearches.QualifiedUsers", true);
     }
 
     /**

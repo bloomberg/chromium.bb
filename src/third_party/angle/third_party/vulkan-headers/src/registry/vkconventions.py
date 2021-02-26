@@ -2,17 +2,7 @@
 #
 # Copyright (c) 2013-2020 The Khronos Group Inc.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 # Working-group-specific style conventions,
 # used in generation.
@@ -131,11 +121,6 @@ class VulkanConventions(ConventionsBase):
             return None
 
     @property
-    def xml_supported_name_of_api(self):
-        """Return the supported= attribute used in API XML"""
-        return 'vulkan'
-
-    @property
     def api_prefix(self):
         """Return API token prefix"""
         return 'VK_'
@@ -193,9 +178,15 @@ class VulkanConventions(ConventionsBase):
         return '{generated}/meta'
 
     @property
+    def special_use_section_anchor(self):
+        """Return asciidoctor anchor name in the API Specification of the
+        section describing extension special uses in detail."""
+        return 'extendingvulkan-compatibility-specialuse'
+
+    @property
     def extra_refpage_headers(self):
         """Return any extra text to add to refpage headers."""
-        return 'include::../config/attribs.txt[]'
+        return 'include::{config}/attribs.txt[]'
 
     @property
     def extension_index_prefixes(self):

@@ -423,6 +423,11 @@ GLint GL_APIENTRY GLES2GetAttribLocation(GLuint program, const char* name) {
 void GL_APIENTRY GLES2GetBooleanv(GLenum pname, GLboolean* params) {
   gles2::GetGLContext()->GetBooleanv(pname, params);
 }
+void GL_APIENTRY GLES2GetBooleani_v(GLenum pname,
+                                    GLuint index,
+                                    GLboolean* data) {
+  gles2::GetGLContext()->GetBooleani_v(pname, index, data);
+}
 void GL_APIENTRY GLES2GetBufferParameteri64v(GLenum target,
                                              GLenum pname,
                                              GLint64* params) {
@@ -1719,23 +1724,6 @@ void GL_APIENTRY GLES2BindFragDataLocationEXT(GLuint program,
 GLint GL_APIENTRY GLES2GetFragDataIndexEXT(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetFragDataIndexEXT(program, name);
 }
-void GL_APIENTRY
-GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
-                                                 GLboolean transpose,
-                                                 const GLfloat* transform) {
-  gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      location, transpose, transform);
-}
-void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
-                                                   GLboolean promotion_hint,
-                                                   GLint display_x,
-                                                   GLint display_y,
-                                                   GLint display_width,
-                                                   GLint display_height) {
-  gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(
-      texture, promotion_hint, display_x, display_y, display_width,
-      display_height);
-}
 void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
                                                     GLsizei count,
                                                     const GLint* rects,
@@ -1831,6 +1819,41 @@ void GL_APIENTRY GLES2BeginBatchReadAccessSharedImageCHROMIUM() {
 }
 void GL_APIENTRY GLES2EndBatchReadAccessSharedImageCHROMIUM() {
   gles2::GetGLContext()->EndBatchReadAccessSharedImageCHROMIUM();
+}
+void GL_APIENTRY GLES2EnableiOES(GLenum target, GLuint index) {
+  gles2::GetGLContext()->EnableiOES(target, index);
+}
+void GL_APIENTRY GLES2DisableiOES(GLenum target, GLuint index) {
+  gles2::GetGLContext()->DisableiOES(target, index);
+}
+void GL_APIENTRY GLES2BlendEquationiOES(GLuint buf, GLenum mode) {
+  gles2::GetGLContext()->BlendEquationiOES(buf, mode);
+}
+void GL_APIENTRY GLES2BlendEquationSeparateiOES(GLuint buf,
+                                                GLenum modeRGB,
+                                                GLenum modeAlpha) {
+  gles2::GetGLContext()->BlendEquationSeparateiOES(buf, modeRGB, modeAlpha);
+}
+void GL_APIENTRY GLES2BlendFunciOES(GLuint buf, GLenum src, GLenum dst) {
+  gles2::GetGLContext()->BlendFunciOES(buf, src, dst);
+}
+void GL_APIENTRY GLES2BlendFuncSeparateiOES(GLuint buf,
+                                            GLenum srcRGB,
+                                            GLenum dstRGB,
+                                            GLenum srcAlpha,
+                                            GLenum dstAlpha) {
+  gles2::GetGLContext()->BlendFuncSeparateiOES(buf, srcRGB, dstRGB, srcAlpha,
+                                               dstAlpha);
+}
+void GL_APIENTRY GLES2ColorMaskiOES(GLuint buf,
+                                    GLboolean r,
+                                    GLboolean g,
+                                    GLboolean b,
+                                    GLboolean a) {
+  gles2::GetGLContext()->ColorMaskiOES(buf, r, g, b, a);
+}
+GLboolean GL_APIENTRY GLES2IsEnablediOES(GLenum target, GLuint index) {
+  return gles2::GetGLContext()->IsEnablediOES(target, index);
 }
 
 namespace gles2 {
@@ -2167,6 +2190,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetBooleanv",
         reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv),
+    },
+    {
+        "glGetBooleani_v",
+        reinterpret_cast<GLES2FunctionPointer>(glGetBooleani_v),
     },
     {
         "glGetBufferParameteri64v",
@@ -3169,15 +3196,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glGetFragDataIndexEXT),
     },
     {
-        "glUniformMatrix4fvStreamTextureMatrixCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glUniformMatrix4fvStreamTextureMatrixCHROMIUM),
-    },
-    {
-        "glOverlayPromotionHintCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glOverlayPromotionHintCHROMIUM),
-    },
-    {
         "glSwapBuffersWithBoundsCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glSwapBuffersWithBoundsCHROMIUM),
     },
@@ -3275,6 +3293,38 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glEndBatchReadAccessSharedImageCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glEndBatchReadAccessSharedImageCHROMIUM),
+    },
+    {
+        "glEnableiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glEnableiOES),
+    },
+    {
+        "glDisableiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glDisableiOES),
+    },
+    {
+        "glBlendEquationiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glBlendEquationiOES),
+    },
+    {
+        "glBlendEquationSeparateiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glBlendEquationSeparateiOES),
+    },
+    {
+        "glBlendFunciOES",
+        reinterpret_cast<GLES2FunctionPointer>(glBlendFunciOES),
+    },
+    {
+        "glBlendFuncSeparateiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glBlendFuncSeparateiOES),
+    },
+    {
+        "glColorMaskiOES",
+        reinterpret_cast<GLES2FunctionPointer>(glColorMaskiOES),
+    },
+    {
+        "glIsEnablediOES",
+        reinterpret_cast<GLES2FunctionPointer>(glIsEnablediOES),
     },
     {
         nullptr,

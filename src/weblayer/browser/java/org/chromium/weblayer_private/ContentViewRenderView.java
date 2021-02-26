@@ -5,9 +5,13 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.os.SystemClock;
+import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,14 +24,17 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.lang.annotation.Retention;
@@ -42,12 +49,15 @@ import java.util.ArrayList;
  * visually seamless.
  */
 @JNINamespace("weblayer")
-public class ContentViewRenderView extends RelativeLayout {
+public class ContentViewRenderView
+        extends RelativeLayout implements WindowAndroid.SelectionHandlesObserver {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({MODE_SURFACE_VIEW, MODE_SURFACE_VIEW})
+    @IntDef({MODE_SURFACE_VIEW, MODE_TEXTURE_VIEW})
     public @interface Mode {}
     public static final int MODE_SURFACE_VIEW = 0;
     public static final int MODE_TEXTURE_VIEW = 1;
+
+    private static final int CONFIG_TIMEOUT_MS = 1000;
 
     // A child view of this class. Parent of SurfaceView/TextureView.
     // Needed to support not resizing the surface when soft keyboard is showing.
@@ -61,6 +71,9 @@ public class ContentViewRenderView extends RelativeLayout {
 
     // The native side of this object.
     private long mNativeContentViewRenderView;
+
+    // An invisible view that notifies observers of changes to window insets and safe area.
+    private InsetObserverView mInsetObserverView;
 
     private WindowAndroid mWindowAndroid;
     private WebContents mWebContents;
@@ -79,6 +92,15 @@ public class ContentViewRenderView extends RelativeLayout {
 
     private boolean mCompositorHasSurface;
 
+    private DisplayAndroid.DisplayAndroidObserver mDisplayAndroidObserver;
+
+    private boolean mSelectionHandlesActive;
+
+    // The time stamp when a configuration was detected (if any).
+    // This is used along with a timeout to determine if a resize surface resize
+    // is due to screen rotation.
+    private long mConfigurationChangedTimestamp;
+
     // Common interface to listen to surface related events.
     private interface SurfaceEventListener {
         void surfaceCreated();
@@ -86,6 +108,7 @@ public class ContentViewRenderView extends RelativeLayout {
                 int width, int height);
         // |cacheBackBuffer| will delay destroying the EGLSurface until after the next swap.
         void surfaceDestroyed(boolean cacheBackBuffer);
+        void surfaceRedrawNeededAsync(Runnable drawingFinished);
     }
 
     private final ArrayList<TrackedRunnable> mPendingRunnables = new ArrayList<>();
@@ -146,10 +169,7 @@ public class ContentViewRenderView extends RelativeLayout {
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
                     canBeUsedWithSurfaceControl, format, width, height, surface);
             mCompositorHasSurface = surface != null;
-            if (mWebContents != null) {
-                ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
-                        mNativeContentViewRenderView, mWebContents, width, height);
-            }
+            maybeUpdatePhysicalBackingSize(width, height);
         }
 
         @Override
@@ -159,6 +179,11 @@ public class ContentViewRenderView extends RelativeLayout {
             ContentViewRenderViewJni.get().surfaceDestroyed(
                     mNativeContentViewRenderView, cacheBackBuffer);
             mCompositorHasSurface = false;
+        }
+
+        @Override
+        public void surfaceRedrawNeededAsync(Runnable drawingFinished) {
+            assert false; // NOTREACHED.
         }
     }
 
@@ -184,6 +209,7 @@ public class ContentViewRenderView extends RelativeLayout {
         private final int mMode;
         private final SurfaceEventListener mListener;
         private final FrameLayout mParent;
+        private final boolean mAllowSurfaceControl;
         private final Runnable mEvict;
 
         private boolean mRanCallbacks;
@@ -220,12 +246,14 @@ public class ContentViewRenderView extends RelativeLayout {
         private final TextureViewSurfaceTextureListener mSurfaceTextureListener;
 
         private final ArrayList<ValueCallback<Boolean>> mModeCallbacks = new ArrayList<>();
+        private ArrayList<Runnable> mSurfaceRedrawNeededCallbacks;
 
         public SurfaceData(@Mode int mode, FrameLayout parent, SurfaceEventListener listener,
-                int backgroundColor, Runnable evict) {
+                int backgroundColor, boolean allowSurfaceControl, Runnable evict) {
             mMode = mode;
             mListener = listener;
             mParent = parent;
+            mAllowSurfaceControl = allowSurfaceControl;
             mEvict = evict;
             if (mode == MODE_SURFACE_VIEW) {
                 mSurfaceView = new SurfaceView(parent.getContext());
@@ -282,6 +310,10 @@ public class ContentViewRenderView extends RelativeLayout {
             return mMode;
         }
 
+        public boolean getAllowSurfaceControl() {
+            return mAllowSurfaceControl;
+        }
+
         public void addCallback(ValueCallback<Boolean> callback) {
             assert !mMarkedForDestroy;
             mModeCallbacks.add(callback);
@@ -302,6 +334,7 @@ public class ContentViewRenderView extends RelativeLayout {
                 mListener.surfaceDestroyed(mCachedSurfaceNeedsEviction);
                 mNeedsOnSurfaceDestroyed = false;
             }
+            runSurfaceRedrawNeededCallbacks();
 
             if (mMode == MODE_SURFACE_VIEW) {
                 mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
@@ -403,6 +436,19 @@ public class ContentViewRenderView extends RelativeLayout {
             return false;
         }
 
+        public void runSurfaceRedrawNeededCallbacks() {
+            ArrayList<Runnable> callbacks = mSurfaceRedrawNeededCallbacks;
+            mSurfaceRedrawNeededCallbacks = null;
+            if (callbacks == null) return;
+            for (Runnable r : callbacks) {
+                r.run();
+            }
+        }
+
+        public View getView() {
+            return mMode == MODE_SURFACE_VIEW ? mSurfaceView : mTextureView;
+        }
+
         private void destroyPreviousData() {
             if (mPrevSurfaceDataNeedsDestroy != null) {
                 mPrevSurfaceDataNeedsDestroy.destroy();
@@ -435,7 +481,9 @@ public class ContentViewRenderView extends RelativeLayout {
         public void surfaceChanged(Surface surface, boolean canBeUsedWithSurfaceControl, int format,
                 int width, int height) {
             if (mMarkedForDestroy) return;
-            mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl, format, width, height);
+            // Selection magnifier does not work with surface control enabled.
+            mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl && mAllowSurfaceControl,
+                    format, width, height);
             mNumSurfaceViewSwapsUntilVisible = 2;
         }
 
@@ -445,6 +493,22 @@ public class ContentViewRenderView extends RelativeLayout {
             assert mNeedsOnSurfaceDestroyed;
             mListener.surfaceDestroyed(cacheBackBuffer);
             mNeedsOnSurfaceDestroyed = false;
+            runSurfaceRedrawNeededCallbacks();
+        }
+
+        @Override
+        public void surfaceRedrawNeededAsync(Runnable drawingFinished) {
+            if (mMarkedForDestroy) {
+                drawingFinished.run();
+                return;
+            }
+            assert mNativeContentViewRenderView != 0;
+            assert this == ContentViewRenderView.this.mCurrent;
+            if (mSurfaceRedrawNeededCallbacks == null) {
+                mSurfaceRedrawNeededCallbacks = new ArrayList<>();
+            }
+            mSurfaceRedrawNeededCallbacks.add(drawingFinished);
+            ContentViewRenderViewJni.get().setNeedsRedraw(mNativeContentViewRenderView);
         }
 
         private void runCallbacks() {
@@ -470,7 +534,7 @@ public class ContentViewRenderView extends RelativeLayout {
     }
 
     // Adapter for SurfaceHoolder.Callback.
-    private static class SurfaceHolderCallback implements SurfaceHolder.Callback {
+    private static class SurfaceHolderCallback implements SurfaceHolder.Callback2 {
         private final SurfaceEventListener mListener;
 
         public SurfaceHolderCallback(SurfaceEventListener listener) {
@@ -490,6 +554,16 @@ public class ContentViewRenderView extends RelativeLayout {
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             mListener.surfaceDestroyed(false /* cacheBackBuffer */);
+        }
+
+        @Override
+        public void surfaceRedrawNeeded(SurfaceHolder holder) {
+            // Intentionally not implemented.
+        }
+
+        @Override
+        public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished) {
+            mListener.surfaceRedrawNeededAsync(drawingFinished);
         }
     }
 
@@ -567,13 +641,30 @@ public class ContentViewRenderView extends RelativeLayout {
      * hierarchy before the first draw to avoid a black flash that is seen every time a
      * {@link SurfaceView} is added.
      * @param context The context used to create this.
+     * @param recreateForConfigurationChange indicates that views are recreated after BrowserImpl
+     *                                       is retained, but Activity is recreated, for a
+     *                                       configuration change.
      */
-    public ContentViewRenderView(Context context) {
+    public ContentViewRenderView(Context context, boolean recreateForConfigurationChange) {
         super(context);
         mSurfaceParent = new SurfaceParent(context);
         addView(mSurfaceParent,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        setBackgroundColor(Color.WHITE);
+
+        mInsetObserverView = InsetObserverView.create(context);
+        addView(mInsetObserverView);
+        mInsetObserverView.addObserver(new InsetObserverView.WindowInsetObserver() {
+            @Override
+            public void onInsetChanged(int left, int top, int right, int bottom) {
+                if (mWebContents != null && mWebContents.isFullscreenForCurrentTab()) {
+                    updateWebContentsSize();
+                }
+            }
+
+            @Override
+            public void onSafeAreaChanged(Rect area) {}
+        });
+        if (recreateForConfigurationChange) updateConfigChangeTimeStamp();
     }
 
     /**
@@ -587,13 +678,24 @@ public class ContentViewRenderView extends RelativeLayout {
                 ContentViewRenderViewJni.get().init(ContentViewRenderView.this, rootWindow);
         assert mNativeContentViewRenderView != 0;
         mWindowAndroid = rootWindow;
-        requestMode(mode, (Boolean result) -> {});
+        requestMode(mode, null);
+        mDisplayAndroidObserver = new DisplayAndroid.DisplayAndroidObserver() {
+            @Override
+            public void onRotationChanged(int rotation) {
+                updateConfigChangeTimeStamp();
+            }
+        };
+        mWindowAndroid.getDisplay().addObserver(mDisplayAndroidObserver);
+        mWindowAndroid.addSelectionHandlesObserver(this);
+        updateBackgroundColor();
     }
 
-    public void requestMode(@Mode int mode, ValueCallback<Boolean> callback) {
+    public void requestMode(@Mode int mode, @Nullable ValueCallback<Boolean> callback) {
+        boolean allowSurfaceControl = !mSelectionHandlesActive;
         assert mode == MODE_SURFACE_VIEW || mode == MODE_TEXTURE_VIEW;
-        assert callback != null;
-        if (mRequested != null && mRequested.getMode() != mode) {
+        if (mRequested != null
+                && (mRequested.getMode() != mode
+                        || mRequested.getAllowSurfaceControl() != allowSurfaceControl)) {
             if (mRequested != mCurrent) {
                 mRequested.markForDestroy(false /* hasNextSurface */);
                 mRequested.destroy();
@@ -603,12 +705,12 @@ public class ContentViewRenderView extends RelativeLayout {
 
         if (mRequested == null) {
             SurfaceEventListenerImpl listener = new SurfaceEventListenerImpl();
-            mRequested = new SurfaceData(
-                    mode, mSurfaceParent, listener, mBackgroundColor, this::evictCachedSurface);
+            mRequested = new SurfaceData(mode, mSurfaceParent, listener, mBackgroundColor,
+                    allowSurfaceControl, this::evictCachedSurface);
             listener.setRequestData(mRequested);
         }
         assert mRequested.getMode() == mode;
-        mRequested.addCallback(callback);
+        if (callback != null) mRequested.addCallback(callback);
     }
 
     /**
@@ -620,9 +722,31 @@ public class ContentViewRenderView extends RelativeLayout {
         updateWebContentsSize();
     }
 
+    /**
+     * Return the view used for selection magnifier readback.
+     */
+    public View getViewForMagnifierReadback() {
+        if (mCurrent == null) return null;
+        return mCurrent.getView();
+    }
+
     private void updateWebContentsSize() {
         if (mWebContents == null) return;
-        mWebContents.setSize(getWidth(), getHeight() - mWebContentsHeightDelta);
+        Size size = getViewportSize();
+        mWebContents.setSize(size.getWidth(), size.getHeight() - mWebContentsHeightDelta);
+    }
+
+    /** {@link CompositorViewHolder#getViewportSize()} for explanation. */
+    private Size getViewportSize() {
+        if (mWebContents.isFullscreenForCurrentTab()
+                && mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(getContext(), this)) {
+            Rect visibleRect = new Rect();
+            getWindowVisibleDisplayFrame(visibleRect);
+            return new Size(Math.min(visibleRect.width(), getWidth()),
+                    Math.min(visibleRect.height(), getHeight()));
+        }
+
+        return new Size(getWidth(), getHeight());
     }
 
     @Override
@@ -646,6 +770,12 @@ public class ContentViewRenderView extends RelativeLayout {
         }
     }
 
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateBackgroundColor();
+    }
+
     /**
      * Sets the background color of the surface / texture view.  This method is necessary because
      * the background color of ContentViewRenderView itself is covered by the background of
@@ -662,6 +792,24 @@ public class ContentViewRenderView extends RelativeLayout {
         if (mCurrent != null) {
             mCurrent.setBackgroundColor(color);
         }
+        ContentViewRenderViewJni.get().updateBackgroundColor(mNativeContentViewRenderView);
+    }
+
+    // SelectionHandlesObserver overrides
+    @Override
+    public void onSelectionHandlesStateChanged(boolean active) {
+        if (mSelectionHandlesActive == active) return;
+        mSelectionHandlesActive = active;
+        if (mCurrent == null) return;
+        if (mCurrent.getMode() == MODE_TEXTURE_VIEW) return;
+
+        // requestMode will take into account the updated |mSelectionHandlesActive|
+        // and respond appropriately, even if mode is the same.
+        requestMode(mCurrent.getMode(), null);
+    }
+
+    public InsetObserverView getInsetObserverView() {
+        return mInsetObserverView;
     }
 
     /**
@@ -680,6 +828,11 @@ public class ContentViewRenderView extends RelativeLayout {
         mRequested = null;
         mCurrent = null;
 
+        if (mDisplayAndroidObserver != null) {
+            mWindowAndroid.getDisplay().removeObserver(mDisplayAndroidObserver);
+            mDisplayAndroidObserver = null;
+        }
+        mWindowAndroid.removeSelectionHandlesObserver(this);
         mWindowAndroid = null;
 
         while (!mPendingRunnables.isEmpty()) {
@@ -696,10 +849,9 @@ public class ContentViewRenderView extends RelativeLayout {
         assert mNativeContentViewRenderView != 0;
         mWebContents = webContents;
 
-        if (webContents != null) {
+        if (webContents != null && getWidth() != 0 && getHeight() != 0) {
             updateWebContentsSize();
-            ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
-                    mNativeContentViewRenderView, webContents, mPhysicalWidth, mPhysicalHeight);
+            maybeUpdatePhysicalBackingSize(mPhysicalWidth, mPhysicalHeight);
         }
         ContentViewRenderViewJni.get().setCurrentWebContents(
                 mNativeContentViewRenderView, webContents);
@@ -719,6 +871,13 @@ public class ContentViewRenderView extends RelativeLayout {
         return mCurrent.didSwapFrame();
     }
 
+    @CalledByNative
+    private void didSwapBuffers(boolean sizeMatches) {
+        assert mCurrent != null;
+        if (!sizeMatches) return;
+        mCurrent.runSurfaceRedrawNeededCallbacks();
+    }
+
     private void evictCachedSurface() {
         if (mNativeContentViewRenderView == 0) return;
         ContentViewRenderViewJni.get().evictCachedSurface(mNativeContentViewRenderView);
@@ -726,6 +885,18 @@ public class ContentViewRenderView extends RelativeLayout {
 
     public long getNativeHandle() {
         return mNativeContentViewRenderView;
+    }
+
+    private void updateBackgroundColor() {
+        int uiMode = getContext().getResources().getConfiguration().uiMode;
+        boolean darkThemeEnabled =
+                (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        setBackgroundColor(darkThemeEnabled ? Color.BLACK : Color.WHITE);
+    }
+
+    @CalledByNative
+    private int getBackgroundColor() {
+        return mBackgroundColor;
     }
 
     private boolean shouldAvoidSurfaceResizeForSoftKeyboard() {
@@ -741,18 +912,32 @@ public class ContentViewRenderView extends RelativeLayout {
         return inputMethodManager.isActive();
     }
 
+    private void updateConfigChangeTimeStamp() {
+        mConfigurationChangedTimestamp = SystemClock.uptimeMillis();
+    }
+
+    private void maybeUpdatePhysicalBackingSize(int width, int height) {
+        if (mWebContents == null) return;
+        boolean forConfigChange =
+                SystemClock.uptimeMillis() - mConfigurationChangedTimestamp < CONFIG_TIMEOUT_MS;
+        ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
+                mNativeContentViewRenderView, mWebContents, width, height, forConfigChange);
+    }
+
     @NativeMethods
     interface Natives {
         long init(ContentViewRenderView caller, WindowAndroid rootWindow);
         void destroy(long nativeContentViewRenderView);
         void setCurrentWebContents(long nativeContentViewRenderView, WebContents webContents);
-        void onPhysicalBackingSizeChanged(
-                long nativeContentViewRenderView, WebContents webContents, int width, int height);
+        void onPhysicalBackingSizeChanged(long nativeContentViewRenderView, WebContents webContents,
+                int width, int height, boolean forConfigChange);
         void surfaceCreated(long nativeContentViewRenderView);
         void surfaceDestroyed(long nativeContentViewRenderView, boolean cacheBackBuffer);
         void surfaceChanged(long nativeContentViewRenderView, boolean canBeUsedWithSurfaceControl,
                 int format, int width, int height, Surface surface);
+        void setNeedsRedraw(long nativeContentViewRenderView);
         void evictCachedSurface(long nativeContentViewRenderView);
         ResourceManager getResourceManager(long nativeContentViewRenderView);
+        void updateBackgroundColor(long nativeContentViewRenderView);
     }
 }

@@ -40,9 +40,7 @@ import {Cookie} from './Cookie.js';                  // eslint-disable-line no-u
 import {PageLoad} from './NetworkLog.js';            // eslint-disable-line no-unused-vars
 import {NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+
 export class HARLog {
   /**
    * @param {!NetworkRequest} request
@@ -127,9 +125,7 @@ export class HARLog {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Entry {
   /**
    * @param {!NetworkRequest} request
@@ -290,12 +286,12 @@ export class Entry {
    */
   _buildContent() {
     /** @type {!Content} */
-    const content = {
+    const content = /** @type {!Content} */ ({
       size: this._request.resourceSize,
       mimeType: this._request.mimeType || 'x-unknown',
       compression: undefined,
       // text: this._request.content // TODO: pull out into a boolean flag, as content can be huge (and needs to be requested with an async call)
-    };
+    });
     const compression = this.responseCompression;
     if (typeof compression === 'number') {
       content.compression = compression;
@@ -531,6 +527,8 @@ export let Parameter;
   size: number,
   mimeType: string,
   compression: (number|undefined),
+  text: (string|undefined),
+  encoding: (string|undefined),
 }} */
 // @ts-ignore typedef
 export let Content;

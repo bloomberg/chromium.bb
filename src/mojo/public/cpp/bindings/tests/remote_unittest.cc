@@ -7,19 +7,21 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/core/test/mojo_test_base.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -1003,14 +1005,13 @@ TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
   SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote),
                                                    bound_task_runner);
   bound_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](mojo::PendingReceiver<mojom::SharedRemoteSyncTest> receiver) {
-            mojo::MakeSelfOwnedReceiver(
-                std::make_unique<SharedRemoteSyncTestImpl>(),
-                std::move(receiver));
-          },
-          std::move(receiver)));
+      FROM_HERE, base::BindOnce(
+                     [](PendingReceiver<mojom::SharedRemoteSyncTest> receiver) {
+                       MakeSelfOwnedReceiver(
+                           std::make_unique<SharedRemoteSyncTestImpl>(),
+                           std::move(receiver));
+                     },
+                     std::move(receiver)));
 
   int32_t value = 0;
   remote->Fetch(&value);
@@ -1022,6 +1023,70 @@ TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
   // to signal a connection error and trigger the self-owned Receiver's
   // destruction. This ensures that the task will run, avoiding leaks.
   task_environment()->RunUntilIdle();
+}
+
+TEST_P(RemoteTest, SharedRemoteSyncCallsFromOffBoundConstructionSequence) {
+  // Regression test for https://crbug.com/1102921. Verifies that when
+  // bound to its construction sequence, a SharedRemote doesn't try blocking
+  // that sequence when a sync call is made from another sequence.
+
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::WithBaseSyncPrimitives()});
+
+  // Ensure waiting on the main thread is not allowed so that blocking attempts
+  // will break the test.
+  base::DisallowBaseSyncPrimitives();
+
+  PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
+  SharedRemoteSyncTestImpl impl;
+  Receiver<mojom::SharedRemoteSyncTest> receiver(
+      &impl, pending_remote.InitWithNewPipeAndPassReceiver());
+
+  int32_t value = 0;
+  base::RunLoop loop;
+  base::OnceClosure quit = loop.QuitClosure();
+  SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote));
+  background_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([remote, &value, &quit] {
+        EXPECT_TRUE(remote->Fetch(&value));
+        EXPECT_EQ(kMagicNumber, value);
+        std::move(quit).Run();
+      }));
+
+  loop.Run();
+
+  // TaskEnvironment teardown wants to block the main thread.
+  base::internal::ResetThreadRestrictionsForTesting();
+}
+
+TEST_P(RemoteTest, SharedRemoteSyncCallsFromBoundNonConstructionSequence) {
+  // Regression test for https://crbug.com/1102921. Verifies that when
+  // bound to some sequence other than that which constructed it, a SharedRemote
+  // properly blocks when making sync calls from the bound sequence.
+
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::WithBaseSyncPrimitives()});
+
+  PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
+  SharedRemoteSyncTestImpl impl;
+  Receiver<mojom::SharedRemoteSyncTest> receiver(
+      &impl, pending_remote.InitWithNewPipeAndPassReceiver());
+
+  int32_t value = 0;
+  base::RunLoop loop;
+  base::OnceClosure quit = loop.QuitClosure();
+  SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote),
+                                                   background_task_runner);
+  background_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([remote, &value, &quit] {
+        EXPECT_TRUE(remote->Fetch(&value));
+        EXPECT_EQ(kMagicNumber, value);
+        std::move(quit).Run();
+      }));
+
+  loop.Run();
 }
 
 TEST_P(RemoteTest, RemoteSet) {
@@ -1108,6 +1173,82 @@ TEST_P(RemoteTest, RemoteSet) {
   }
 
   EXPECT_TRUE(remotes.empty());
+}
+
+bool* dump_without_crashing_flag;
+extern "C" void HandleDumpWithoutCrashing() {
+  *dump_without_crashing_flag = true;
+}
+
+class LargeMessageTestImpl : public mojom::LargeMessageTest {
+ public:
+  explicit LargeMessageTestImpl(
+      PendingReceiver<mojom::LargeMessageTest> receiver)
+      : receiver_(this, std::move(receiver)) {}
+  ~LargeMessageTestImpl() override = default;
+
+  // mojom::LargeMessageTest implementation:
+  void ProcessData(const std::vector<uint8_t>& data,
+                   ProcessDataCallback callback) override {
+    std::move(callback).Run(data.size());
+  }
+
+  void ProcessLotsOfData(const std::vector<uint8_t>& data,
+                         ProcessLotsOfDataCallback callback) override {
+    std::move(callback).Run(data.size());
+  }
+
+  void GetLotsOfData(uint64_t data_size,
+                     GetLotsOfDataCallback callback) override {
+    std::move(callback).Run(std::vector<uint8_t>(data_size));
+  }
+
+ private:
+  Receiver<mojom::LargeMessageTest> receiver_;
+};
+
+TEST_P(RemoteTest, SendVeryLargeMessages) {
+  Remote<mojom::LargeMessageTest> remote;
+  LargeMessageTestImpl impl(remote.BindNewPipeAndPassReceiver());
+
+  bool did_dump_without_crashing = false;
+  dump_without_crashing_flag = &did_dump_without_crashing;
+  base::debug::SetDumpWithoutCrashingFunction(&HandleDumpWithoutCrashing);
+
+  // The test runner configures Mojo to cap message size at
+  // `kMaxMessageSizeInTests`, so we test with data that's double that size.
+  constexpr size_t kBigDataSize =
+      core::test::MojoTestBase::kMaxMessageSizeInTests * 2;
+  std::vector<uint8_t> lots_of_data(kBigDataSize);
+  uint64_t data_size = 0;
+  ASSERT_TRUE(remote->ProcessData(lots_of_data, &data_size));
+  EXPECT_EQ(kBigDataSize, data_size);
+
+  if (GetParam() == BindingsTestSerializationMode::kNeverSerialize) {
+    // If the message is never serialized, there won't be a crash report even
+    // without the [UnlimitedSize] attribute.
+    EXPECT_FALSE(did_dump_without_crashing);
+  } else {
+    EXPECT_TRUE(did_dump_without_crashing);
+  }
+
+  did_dump_without_crashing = false;
+  data_size = 0;
+  ASSERT_TRUE(remote->ProcessLotsOfData(lots_of_data, &data_size));
+  EXPECT_EQ(kBigDataSize, data_size);
+
+  // Serialized or not, this message won't generate a crash report because it's
+  // explicitly marked with [UnlimitedSize].
+  EXPECT_FALSE(did_dump_without_crashing);
+
+  // [UnlimitedSize] also allows replies to be large.
+  did_dump_without_crashing = false;
+  lots_of_data.clear();
+  ASSERT_TRUE(remote->GetLotsOfData(kBigDataSize, &lots_of_data));
+  EXPECT_EQ(kBigDataSize, lots_of_data.size());
+  EXPECT_FALSE(did_dump_without_crashing);
+
+  base::debug::SetDumpWithoutCrashingFunction(nullptr);
 }
 
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RemoteTest);

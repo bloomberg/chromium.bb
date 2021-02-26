@@ -18,6 +18,7 @@ class Label;
 namespace ash {
 
 class AssistantTextElement;
+class ElementAnimator;
 
 // AssistantTextElementView is the visual representation of an
 // AssistantTextElement. It is a child view of UiElementContainerView.
@@ -25,6 +26,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTextElementView
     : public AssistantUiElementView {
  public:
   explicit AssistantTextElementView(const AssistantTextElement* text_element);
+
+  explicit AssistantTextElementView(const std::string& text);
+
   ~AssistantTextElementView() override;
 
   // AssistantUiElementView:
@@ -32,9 +36,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTextElementView
   ui::Layer* GetLayerForAnimating() override;
   std::string ToStringForTesting() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  std::unique_ptr<ElementAnimator> CreateAnimator() override;
 
  private:
-  void InitLayout(const AssistantTextElement* text_element);
+  void InitLayout(const std::string& text);
 
   views::Label* label_;  // Owned by view hierarchy.
 

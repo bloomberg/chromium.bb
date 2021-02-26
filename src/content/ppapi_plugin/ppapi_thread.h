@@ -19,7 +19,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -51,24 +50,11 @@ class PpapiThread : public ChildThreadImpl,
                     public ppapi::proxy::PluginProxyDelegate {
  public:
   PpapiThread(base::RepeatingClosure quit_closure,
-              const base::CommandLine& command_line,
-              bool is_broker);
+              const base::CommandLine& command_line);
   ~PpapiThread() override;
   void Shutdown() override;
 
  private:
-  // Make sure the enum list in tools/histogram/histograms.xml is updated with
-  // any change in this list.
-  enum LoadResult {
-    LOAD_SUCCESS,
-    LOAD_FAILED,
-    ENTRY_POINT_MISSING,
-    INIT_FAILED,
-    FILE_MISSING,
-    // NOTE: Add new values only immediately above this line.
-    LOAD_RESULT_MAX  // Boundary value for UMA_HISTOGRAM_ENUMERATION.
-  };
-
   // ChildThread overrides.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
@@ -96,7 +82,6 @@ class PpapiThread : public ChildThreadImpl,
   // long as the main PpapiThread outlives it.
   IPC::Sender* GetBrowserSender() override;
   std::string GetUILanguage() override;
-  void PreCacheFontForFlash(const void* logfontw) override;
   void SetActiveURL(const std::string& url) override;
   PP_Resource CreateBrowserFont(ppapi::proxy::Connection connection,
                                 PP_Instance instance,
@@ -125,19 +110,6 @@ class PpapiThread : public ChildThreadImpl,
   // Sets up the name of the plugin for logging using the given path.
   void SavePluginName(const base::FilePath& path);
 
-  void ReportLoadResult(const base::FilePath& path, LoadResult result);
-
-  // Reports |error| to UMA when plugin load fails.
-  void ReportLoadErrorCode(const base::FilePath& path,
-                           const base::NativeLibraryLoadError* error);
-
-  // Reports time to load the plugin.
-  void ReportLoadTime(const base::FilePath& path,
-                      const base::TimeDelta load_time);
-
-  // True if running in a broker process rather than a normal plugin process.
-  bool is_broker_;
-
   base::ScopedNativeLibrary library_;
 
   ppapi::PpapiPermissions permissions_;
@@ -147,10 +119,6 @@ class PpapiThread : public ChildThreadImpl,
 
   // Storage for plugin entry points.
   PepperPluginInfo::EntryPoints plugin_entry_points_;
-
-  // Callback to call when a new instance connects to the broker.
-  // Used only when is_broker_.
-  PP_ConnectInstance_Func connect_instance_func_;
 
   // Local concept of the module ID. Some functions take this. It's necessary
   // for the in-process PPAPI to handle this properly, but for proxied it's
@@ -170,12 +138,7 @@ class PpapiThread : public ChildThreadImpl,
   // The BlinkPlatformImpl implementation.
   std::unique_ptr<PpapiBlinkPlatformImpl> blink_platform_impl_;
 
-#if defined(OS_WIN)
-  // Caches the handle to the peer process if this is a broker.
-  base::win::ScopedHandle peer_handle_;
-#endif
-
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+  scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);

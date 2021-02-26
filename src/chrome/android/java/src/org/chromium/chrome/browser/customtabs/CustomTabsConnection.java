@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+
 import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -57,19 +59,18 @@ import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -197,7 +198,7 @@ public class CustomTabsConnection {
 
     private final HiddenTabHolder mHiddenTabHolder = new HiddenTabHolder();
     protected final SessionDataHolder mSessionDataHolder;
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     final ClientManager mClientManager;
     protected final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
@@ -773,6 +774,22 @@ public class CustomTabsConnection {
         return null;
     }
 
+    /**
+     * Returns whether an intent is first-party with respect to its session, that is if the
+     * application linked to the session has a relation with the provided origin.
+     *
+     * @param intent The intent to verify.
+     */
+    public boolean isFirstPartyOriginForIntent(Intent intent) {
+        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        if (session == null) return false;
+
+        Origin origin = Origin.create(intent.getData());
+        if (origin == null) return false;
+
+        return mClientManager.isFirstPartyOriginForSession(session, origin);
+    }
+
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
@@ -955,7 +972,9 @@ public class CustomTabsConnection {
                 intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, ReferrerPolicy.DEFAULT);
         if (url == null) return ParallelRequestStatus.FAILURE_INVALID_URL;
         if (referrer == null) return ParallelRequestStatus.FAILURE_INVALID_REFERRER;
-        if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
+        if (policy < ReferrerPolicy.MIN_VALUE || policy > ReferrerPolicy.MAX_VALUE) {
+            policy = ReferrerPolicy.DEFAULT;
+        }
 
         if (url.toString().equals("") || !isValid(url)) {
             return ParallelRequestStatus.FAILURE_INVALID_URL;
@@ -996,7 +1015,7 @@ public class CustomTabsConnection {
                 intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, ReferrerPolicy.DEFAULT);
 
         if (resourceList == null || referrer == null) return 0;
-        if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
+        if (policy < 0 || policy > ReferrerPolicy.MAX_VALUE) policy = ReferrerPolicy.DEFAULT;
         Origin origin = Origin.create(referrer);
         if (origin == null) return 0;
         if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return 0;
@@ -1033,11 +1052,6 @@ public class CustomTabsConnection {
         return mClientManager.isFirstPartyOriginForSession(session, origin);
     }
 
-    /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
-    public Referrer getReferrerForSession(CustomTabsSessionToken session) {
-        return mClientManager.getReferrerForSession(session);
-    }
-
     /** @see ClientManager#shouldHideDomainForSession(CustomTabsSessionToken) */
     public boolean shouldHideDomainForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldHideDomainForSession(session);
@@ -1067,10 +1081,9 @@ public class CustomTabsConnection {
     public boolean isSessionFirstParty(CustomTabsSessionToken session) {
         String packageName = getClientPackageNameForSession(session);
         if (packageName == null) return false;
-        return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
+        return AppHooks.get().getExternalAuthUtils().isGoogleSigned(packageName);
     }
 
-    @VisibleForTesting
     void setIgnoreUrlFragmentsForSession(CustomTabsSessionToken session, boolean value) {
         mClientManager.setIgnoreFragmentsForSession(session, value);
     }
@@ -1414,10 +1427,10 @@ public class CustomTabsConnection {
         return false;
     }
 
-    @VisibleForTesting
-    void cleanupAll() {
+    void cleanupAllForTesting() {
         ThreadUtils.assertOnUiThread();
         mClientManager.cleanupAll();
+        mHiddenTabHolder.destroyHiddenTab(null);
     }
 
     /**
@@ -1447,7 +1460,8 @@ public class CustomTabsConnection {
         if (!DeviceClassManager.enablePrerendering()) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS;
         }
-        if (PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
+        if (UserPrefs.get(Profile.getLastUsedRegularProfile()).getInteger(COOKIE_CONTROLS_MODE)
+                == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES;
         }
         // TODO(yusufo): The check for prerender in PrivacyPreferencesManager now checks for the
@@ -1526,23 +1540,10 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Get any referrer that has been explicitly set.
-     *
-     * Inspects the two possible sources for the referrer:
-     * - A session for which the referrer might have been set.
-     * - An intent for a navigation that contains a referer in the headers.
-     *
-     * @param session session to inspect for referrer settings.
-     * @param intent intent to inspect for referrer header.
-     * @return referrer URL as a string if any was found, empty string otherwise.
+     * @return The referrer that is associated with the client owning the given session.
      */
-    public String getReferrer(CustomTabsSessionToken session, Intent intent) {
-        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
-        if (referrer == null && getReferrerForSession(session) != null) {
-            referrer = getReferrerForSession(session).getUrl();
-        }
-        if (referrer == null) referrer = "";
-        return referrer;
+    public Referrer getDefaultReferrerForSession(CustomTabsSessionToken session) {
+        return mClientManager.getDefaultReferrerForSession(session);
     }
 
     /**
@@ -1606,6 +1607,11 @@ public class CustomTabsConnection {
             CustomTabsSessionToken sessionToken, Uri uri, int purpose, Bundle extras) {
         return ChromeApplication.getComponent().resolveCustomTabsFileProcessor().processFile(
                 sessionToken, uri, purpose, extras);
+    }
+
+    @VisibleForTesting
+    public static void setInstanceForTesting(CustomTabsConnection connection) {
+        sInstance = connection;
     }
 
     @NativeMethods

@@ -7,9 +7,8 @@
 #include "core/fpdfapi/parser/cpdf_null.h"
 
 #include "core/fxcrt/fx_stream.h"
-#include "third_party/base/ptr_util.h"
 
-CPDF_Null::CPDF_Null() {}
+CPDF_Null::CPDF_Null() = default;
 
 CPDF_Object::Type CPDF_Null::GetType() const {
   return kNullobj;

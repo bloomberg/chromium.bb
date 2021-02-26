@@ -30,15 +30,50 @@ RELEASE_CONF="-Oz --closure 1 --llvm-lto 1 -DSK_RELEASE --pre-js $BASE_DIR/relea
 EXTRA_CFLAGS="\"-DSK_RELEASE\", \"-DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0\",\"-DSK_DISABLE_TRACING\""
 IS_OFFICIAL_BUILD="true"
 
+if [[ $@ == *full-build* ]]; then
+  # Full Skottie with all bells and whistles.
+  BUILD_TYPE="full"
+  BUILD_CFG="\
+    skia_enable_fontmgr_custom_embedded=true \
+    skia_enable_fontmgr_custom_empty=false \
+    skia_use_freetype=true \
+    skia_use_libgifcodec=true \
+    skia_use_harfbuzz=true \
+    skia_use_icu=true \
+    skia_use_libpng_decode=true \
+    skia_use_wuffs=true \
+    skia_use_zlib=true \
+    \
+    skia_use_system_freetype2=false \
+    skia_use_system_harfbuzz=false \
+    skia_use_system_icu=false \
+    skia_use_system_libpng=false \
+    skia_use_system_zlib=false\
+  "
+else
+  # Smallest usable Skottie.
+  BUILD_TYPE="minimal"
+  BUILD_CFG="\
+    skia_enable_fontmgr_custom_embedded=false \
+    skia_enable_fontmgr_custom_empty=true \
+    skia_use_freetype=false \
+    skia_use_libgifcodec=false \
+    skia_use_harfbuzz=false \
+    skia_use_icu=false \
+    skia_use_libpng_decode=false \
+    skia_use_wuffs=false \
+    skia_use_zlib=false \
+  "
+fi
 
 if [[ $@ == *debug* ]]; then
-  echo "Building a Debug build"
+  echo "Building a *${BUILD_TYPE}* Debug build"
   EXTRA_CFLAGS="\"-DSK_DEBUG\""
   RELEASE_CONF="-O0 --js-opts 0 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s GL_ASSERTIONS=1 -g4 \
                 --source-map-base /bin/ -DSK_DEBUG --pre-js $BASE_DIR/debug.js"
   BUILD_DIR=${BUILD_DIR:="out/skottiekit_debug"}
 elif [[ $@ == *profiling* ]]; then
-  echo "Building a build for profiling"
+  echo "Building a *${BUILD_TYPE}* build for profiling"
   RELEASE_CONF+=" --profiling-funcs --closure 0"
   BUILD_DIR=${BUILD_DIR:="out/skottiekit_profile"}
 else
@@ -52,7 +87,7 @@ rm -f $BUILD_DIR/*.a
 
 GN_GPU="skia_enable_gpu=true skia_gl_standard = \"webgl\""
 GN_GPU_FLAGS="\"-DSK_DISABLE_LEGACY_SHADERCONTEXT\","
-WASM_GPU="-lEGL -lGLESv2 -DSK_SUPPORT_GPU=1 -DSK_GL \
+WASM_GPU="-lEGL -lGL -lGLESv2 -DSK_SUPPORT_GPU=1 -DSK_GL \
           -DSK_DISABLE_LEGACY_SHADERCONTEXT --pre-js $BASE_DIR/cpu.js --pre-js $BASE_DIR/gpu.js\
           -s USE_WEBGL2=1"
 if [[ $@ == *cpu* ]]; then
@@ -61,10 +96,6 @@ if [[ $@ == *cpu* ]]; then
   GN_GPU_FLAGS=""
   WASM_GPU="-DSK_SUPPORT_GPU=0 --pre-js $BASE_DIR/cpu.js -s USE_WEBGL2=0"
 fi
-
-# Trim some skp-related code
-EXTRA_CFLAGS+=",\"-DSK_DISABLE_READBUFFER\""
-RELEASE_CONF+=" -DSK_DISABLE_READBUFFER"
 
 SKOTTIE_LIB="$BUILD_DIR/libskottie.a \
              $BUILD_DIR/libsksg.a"
@@ -111,19 +142,15 @@ echo "Compiling bitcode"
   werror=true \
   target_cpu=\"wasm\" \
   \
+  ${BUILD_CFG} \
   skia_use_angle=false \
   skia_use_dng_sdk=false \
   skia_use_egl=true \
   skia_use_expat=false \
   skia_use_fontconfig=false \
-  skia_use_freetype=false \
-  skia_use_harfbuzz=false \
-  skia_use_icu=false \
-  skia_use_libgifcodec=false \
   skia_use_libheif=false \
   skia_use_libjpeg_turbo_decode=true \
   skia_use_libjpeg_turbo_encode=false \
-  skia_use_libpng_decode=false \
   skia_use_libpng_encode=false \
   skia_use_libwebp_decode=false \
   skia_use_libwebp_encode=false \
@@ -131,10 +158,7 @@ echo "Compiling bitcode"
   skia_use_piex=false \
   skia_use_system_libjpeg_turbo=false \
   skia_use_vulkan=false \
-  skia_use_wuffs=false \
-  skia_use_zlib=false \
-  skia_enable_fontmgr_empty=true \
-  skia_enable_fontmgr_custom_empty=false \
+  skia_enable_fontmgr_custom_directory=false \
   skia_enable_sksl_interpreter=false \
   \
   ${GN_GPU} \
@@ -163,11 +187,11 @@ ${EMCXX} \
     $WASM_GPU \
     -std=c++17 \
     --bind \
+    --no-entry \
     --pre-js $BASE_DIR/preamble.js \
     --pre-js $BASE_DIR/helper.js \
     --pre-js $BASE_DIR/interface.js \
     --pre-js $BASE_DIR/postamble.js \
-    --post-js $BASE_DIR/ready.js \
     $BASE_DIR/skottiekit_bindings.cpp \
     modules/skresources/src/SkResources.cpp \
     $MANAGED_SKOTTIE_BINDINGS \
@@ -182,7 +206,7 @@ ${EMCXX} \
     -s MODULARIZE=1 \
     -s NO_EXIT_RUNTIME=1 \
     -s STRICT=1 \
-    -s TOTAL_MEMORY=128MB \
+    -s INITIAL_MEMORY=128MB \
     -s WARN_UNALIGNED=1 \
     -s WASM=1 \
     -o $BUILD_DIR/skottiekit.js

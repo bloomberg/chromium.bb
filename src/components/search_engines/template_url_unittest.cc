@@ -736,18 +736,19 @@ TEST_F(TemplateURLTest, ReplaceInputType) {
 TEST_F(TemplateURLTest, ReplaceOmniboxFocusType) {
   struct TestData {
     const base::string16 search_term;
-    TemplateURLRef::SearchTermsArgs::OmniboxFocusType omnibox_focus_type;
+    OmniboxFocusType focus_type;
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-      {ASCIIToUTF16("foo"),
-       TemplateURLRef::SearchTermsArgs::OmniboxFocusType::DEFAULT,
+      {ASCIIToUTF16("foo"), OmniboxFocusType::DEFAULT,
        "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
        "http://www.google.com/?foo&"},
-      {ASCIIToUTF16("foo"),
-       TemplateURLRef::SearchTermsArgs::OmniboxFocusType::ON_FOCUS,
+      {ASCIIToUTF16("foo"), OmniboxFocusType::ON_FOCUS,
        "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
        "http://www.google.com/?foo&oft=1&"},
+      {ASCIIToUTF16("foo"), OmniboxFocusType::DELETED_PERMANENT_TEXT,
+       "{google:baseURL}?{searchTerms}&{google:omniboxFocusType}",
+       "http://www.google.com/?foo&oft=2&"},
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
@@ -757,7 +758,7 @@ TEST_F(TemplateURLTest, ReplaceOmniboxFocusType) {
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
-    search_terms_args.omnibox_focus_type = test_data[i].omnibox_focus_type;
+    search_terms_args.focus_type = test_data[i].focus_type;
     GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                  search_terms_data_));
     ASSERT_TRUE(result.is_valid());
@@ -890,7 +891,7 @@ TEST_F(TemplateURLTest, RLZFromAppList) {
   EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
   ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
   TemplateURLRef::SearchTermsArgs args(ASCIIToUTF16("x"));
-  args.from_app_list = true;
+  args.request_source = TemplateURLRef::CROS_APP_LIST;
   GURL result(url.url_ref().ReplaceSearchTerms(args, search_terms_data_));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://bar/?rlz=" + base::UTF16ToUTF8(rlz_string) + "&x",
@@ -1123,6 +1124,42 @@ TEST_F(TemplateURLTest, SearchClient) {
                                                  search_terms_data_));
   ASSERT_TRUE(result_2.is_valid());
   EXPECT_EQ("http://google.com/?foobar&client=search_client&", result_2.spec());
+}
+
+TEST_F(TemplateURLTest, SuggestClient) {
+  const std::string base_url_str("http://google.com/?");
+  const std::string query_params_str("client={google:suggestClient}");
+  const std::string full_url_str = base_url_str + query_params_str;
+  search_terms_data_.set_google_base_url(base_url_str);
+
+  TemplateURLData data;
+  data.SetURL(full_url_str);
+  TemplateURL url(data);
+  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+  ASSERT_FALSE(url.url_ref().SupportsReplacement(search_terms_data_));
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+
+  // Check that the URL is correct when a client is not present.
+  GURL result(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?client=", result.spec());
+
+  // Check that the URL is correct when a client is present.
+  search_terms_data_.set_suggest_client("suggest_client");
+  GURL result_2(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result_2.is_valid());
+  EXPECT_EQ("http://google.com/?client=suggest_client", result_2.spec());
+
+  // Check that the URL is correct when a suggest request is made from a
+  // non-searchbox NTP surface.
+  search_terms_args.request_source = TemplateURLRef::NON_SEARCHBOX_NTP;
+  GURL result_3(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result_3.is_valid());
+  EXPECT_EQ("http://google.com/?client=suggest_client_from_ntp",
+            result_3.spec());
 }
 
 TEST_F(TemplateURLTest, GetURLNoSuggestionsURL) {
@@ -1741,7 +1778,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the current common case, which uses no home country or previous
   // event.
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      2, 1, std::string(), 0, 0, false, std::string(), std::string());
+      2, 1, std::string(), 0, 0, false, std::string(), std::string(),
+      std::string(), std::string());
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1754,7 +1792,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the home country and non-zero event data case.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 2, "CH", 1657713458, 5, false, std::string(), std::string());
+          2, 2, "CH", 1657713458, 5, false, std::string(), std::string(),
+          std::string(), std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
 
@@ -1770,7 +1809,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test exact-search.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 1, std::string(), 0, 0, true, std::string(), std::string());
+          2, 1, std::string(), 0, 0, true, std::string(), std::string(),
+          std::string(), std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
   // Find our param.
@@ -1780,7 +1820,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test source and target languages.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 1, std::string(), 0, 0, true, "es", "de");
+          2, 1, std::string(), 0, 0, true, "es", "de", std::string(),
+          std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
   // Find our params.
@@ -1788,19 +1829,46 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   EXPECT_NE(source_pos, std::string::npos);
   size_t target_pos = result.find("tlitetl=de");
   EXPECT_NE(target_pos, std::string::npos);
+
+  // Test fluent languages.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 1, std::string(), 0, 0, true, std::string(), std::string(),
+          "es,de", std::string());
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+  // Find our param.  These may actually be URL encoded.
+  size_t fluent_pos = result.find("&ctxs_fls=es,de");
+  EXPECT_NE(fluent_pos, std::string::npos);
+
+  // Test Related Searches.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 1, std::string(), 0, 0, true, std::string(), std::string(),
+          std::string(), "1RbCu");
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+  // Find our param.
+  size_t ctxsl_rs_pos = result.find("&ctxsl_rs=1RbCu");
+  EXPECT_NE(ctxsl_rs_pos, std::string::npos);
 }
 
 TEST_F(TemplateURLTest, GenerateKeyword) {
   ASSERT_EQ(ASCIIToUTF16("foo"),
             TemplateURL::GenerateKeyword(GURL("http://foo")));
-  // www. should be stripped.
-  ASSERT_EQ(ASCIIToUTF16("foo"),
+  ASSERT_EQ(ASCIIToUTF16("foo."),
+            TemplateURL::GenerateKeyword(GURL("http://foo.")));
+  // www. should be stripped for a public hostname but not a private/intranet
+  // hostname.
+  ASSERT_EQ(ASCIIToUTF16("google.com"),
+            TemplateURL::GenerateKeyword(GURL("http://www.google.com")));
+  ASSERT_EQ(ASCIIToUTF16("www.foo"),
             TemplateURL::GenerateKeyword(GURL("http://www.foo")));
   // Make sure we don't get a trailing '/'.
   ASSERT_EQ(ASCIIToUTF16("blah"),
             TemplateURL::GenerateKeyword(GURL("http://blah/")));
   // Don't generate the empty string.
-  ASSERT_EQ(ASCIIToUTF16("www"),
+  ASSERT_EQ(ASCIIToUTF16("www."),
             TemplateURL::GenerateKeyword(GURL("http://www.")));
   ASSERT_EQ(
       base::UTF8ToUTF16("\xd0\xb0\xd0\xb1\xd0\xb2"),

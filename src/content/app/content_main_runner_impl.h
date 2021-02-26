@@ -13,6 +13,7 @@
 #include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/startup_data_impl.h"
+#include "content/common/content_export.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/main_function_params.h"
@@ -20,7 +21,7 @@
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif  // OS_WIN
 
@@ -33,13 +34,14 @@ class DiscardableSharedMemoryManager;
 }
 
 namespace content {
+class ContentClient;
 class ContentMainDelegate;
-struct ContentMainParams;
 class ServiceManagerEnvironment;
+struct ContentMainParams;
 
 class ContentMainRunnerImpl : public ContentMainRunner {
  public:
-  static ContentMainRunnerImpl* Create();
+  static std::unique_ptr<ContentMainRunnerImpl> Create();
 
   ContentMainRunnerImpl();
   ~ContentMainRunnerImpl() override;
@@ -81,7 +83,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
 #endif
 
@@ -91,6 +93,16 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };
+
+// The BrowserTestBase on Android does not call ContentMain(). It tries instead
+// to reproduce it more or less accurately. This requires to use
+// GetContentMainDelegateForTesting() and GetContentClientForTesting().
+// BrowserTestBase is implemented in content/public and GetContentClient() is
+// only available to the implementation of content. Hence these functions.
+CONTENT_EXPORT ContentClient* GetContentClientForTesting();
+#if defined(OS_ANDROID)
+CONTENT_EXPORT ContentMainDelegate* GetContentMainDelegateForTesting();
+#endif
 
 }  // namespace content
 

@@ -61,13 +61,14 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
       override;
   void OnStoreAccessCode(const std::string& access_code,
                                  base::TimeDelta access_code_lifetime) override;
-  void OnNatPolicyChanged(bool nat_traversal_enabled) override;
+  void OnNatPoliciesChanged(bool nat_traversal_enabled,
+                            bool relay_connections_allowed) override;
   void OnStateChanged(It2MeHostState state,
                       protocol::ErrorCode error_code) override;
 
   // Set a callback to be called when a policy error notification has been
   // processed.
-  void SetPolicyErrorClosureForTesting(const base::Closure& closure);
+  void SetPolicyErrorClosureForTesting(base::OnceClosure closure);
 
   static std::string HostStateToString(It2MeHostState host_state);
 
@@ -115,12 +116,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   std::unique_ptr<SignalStrategy> CreateDelegatedSignalStrategy(
       const base::DictionaryValue* message);
 
-  // Creates a FtlSignalStrategy from the values stored in |message| along
-  // with |user_name|.  Returns nullptr on failure.
-  std::unique_ptr<SignalStrategy> CreateFtlSignalStrategy(
-      const std::string& user_name,
-      const std::string& access_token);
-
   // Extracts OAuth access token from the message passed from the client.
   std::string ExtractAccessToken(const base::DictionaryValue* message);
 
@@ -164,9 +159,9 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // is completed.  Rather than just failing, we thunk the connection call so
   // it can be executed after at least one successful policy read. This
   // variable contains the thunk if it is necessary.
-  base::Closure pending_connect_;
+  base::OnceClosure pending_connect_;
 
-  base::Closure policy_error_closure_for_testing_;
+  base::OnceClosure policy_error_closure_for_testing_;
 
   base::WeakPtr<It2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_{this};

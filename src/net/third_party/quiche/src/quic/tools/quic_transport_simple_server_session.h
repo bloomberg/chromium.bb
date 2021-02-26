@@ -34,6 +34,13 @@ class QuicTransportSimpleServerSession
     // a server-initiated unidirectional stream that is sent as soon as a FIN is
     // received on the incoming stream.
     ECHO,
+    // In OUTGOING_BIDIRECTIONAL mode, a server-originated bidirectional stream
+    // is created on receipt of a unidirectional stream. The contents of the
+    // unidirectional stream are disregarded. The bidirectional stream initially
+    // sends "hello", then any received data is echoed back.
+    // TODO(ricea): Maybe this should be replaced by a more general mechanism
+    // where commands on the unidirectional stream trigger different behaviour?
+    OUTGOING_BIDIRECTIONAL,
   };
 
   QuicTransportSimpleServerSession(
@@ -51,7 +58,7 @@ class QuicTransportSimpleServerSession
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
   bool CheckOrigin(url::Origin origin) override;
   bool ProcessPath(const GURL& url) override;
-  void OnMessageReceived(quiche::QuicheStringPiece message) override;
+  void OnMessageReceived(absl::string_view message) override;
 
   void EchoStreamBack(const std::string& data) {
     streams_to_echo_back_.push_back(data);
@@ -60,8 +67,10 @@ class QuicTransportSimpleServerSession
 
  private:
   void MaybeEchoStreamsBack();
+  void MaybeCreateOutgoingBidirectionalStream();
 
   const bool owns_connection_;
+  size_t pending_outgoing_bidirectional_streams_ = 0u;
   Mode mode_;
   std::vector<url::Origin> accepted_origins_;
   QuicCircularDeque<std::string> streams_to_echo_back_;

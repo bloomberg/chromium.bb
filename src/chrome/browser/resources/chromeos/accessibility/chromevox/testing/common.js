@@ -43,27 +43,62 @@ class TestUtils {
   }
 
   /**
-   * Creates a data url for a document.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @return {string}
+   * Create a mock event object.
+   * @param {number} keyCode
+   * @param {{altGraphKey: boolean=,
+   *         altKey: boolean=,
+   *         ctrlKey: boolean=,
+   *         metaKey: boolean=,
+   *         searchKeyHeld: boolean=,
+   *         shiftKey: boolean=,
+   *         stickyMode: boolean=,
+   *         prefixKey: boolean=}=} opt_modifiers
+   * @return {Object} The mock event.
    */
-  static createUrlForDoc(doc) {
-    const docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
-    return 'data:text/html,<!doctype html>' +
-        encodeURIComponent(TestUtils.collapseWhitespace(
-            docString.replace(/[\n\r]/g, '').trim()));
+  static createMockKeyEvent(keyCode, opt_modifiers) {
+    const modifiers = opt_modifiers === undefined ? {} : opt_modifiers;
+    const keyEvent = {};
+    keyEvent.keyCode = keyCode;
+    for (const key in modifiers) {
+      keyEvent[key] = modifiers[key];
+    }
+    keyEvent.preventDefault = _ => {};
+    keyEvent.stopPropagation = _ => {};
+    return keyEvent;
   }
 
   /**
-   * Collapses inner whitespace.
-   * @param {string} str
-   * @return {string}
+   * Returns a promise which gets resolved when ChromeVox speaks the given
+   * string.
+   * @param {string} textStringToWaitFor
+   * @return {!Promise}
    */
-  static collapseWhitespace(str) {
-    return str.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+  static waitForSpeech(textStringToWaitFor) {
+    return new Promise(resolve => {
+      ChromeVox.tts.speak = (textString) => {
+        if (textString === textStringToWaitFor) {
+          resolve();
+        }
+      };
+    });
+  }
+
+  /**
+   * Waits for the specified event on the given node.
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {chrome.automation.EventType} eventType
+   * @return {!Promise}
+   */
+  static waitForEvent(node, eventType) {
+    return new Promise(resolve => {
+      const listener = () => {
+        node.removeEventListener(eventType, listener);
+        resolve();
+      };
+      node.addEventListener(eventType, listener);
+    });
   }
 }
-
 
 /**
  * Similar to |TEST_F|. Generates a test for the given |testFixture|,

@@ -10,13 +10,16 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -25,10 +28,9 @@
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "printing/pdf_metafile_cg_mac.h"
 #endif
 
@@ -73,27 +75,28 @@ struct MetafileSkiaData {
 
   std::vector<Page> pages;
   std::unique_ptr<SkStreamAsset> data_stream;
-  ContentToProxyIdMap subframe_content_info;
+  ContentToProxyTokenMap subframe_content_info;
   std::map<uint32_t, sk_sp<SkPicture>> subframe_pics;
   int document_cookie = 0;
+  ContentProxySet* typeface_content_info = nullptr;
 
   // The scale factor is used because Blink occasionally calls
   // PaintCanvas::getTotalMatrix() even though the total matrix is not as
   // meaningful for a vector canvas as for a raster canvas.
   float scale_factor;
   SkSize size;
-  SkiaDocumentType type;
+  mojom::SkiaDocumentType type;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PdfMetafileCg pdf_cg;
 #endif
 };
 
 MetafileSkia::MetafileSkia() : data_(std::make_unique<MetafileSkiaData>()) {
-  data_->type = SkiaDocumentType::PDF;
+  data_->type = mojom::SkiaDocumentType::kPDF;
 }
 
-MetafileSkia::MetafileSkia(SkiaDocumentType type, int document_cookie)
+MetafileSkia::MetafileSkia(mojom::SkiaDocumentType type, int document_cookie)
     : data_(std::make_unique<MetafileSkiaData>()) {
   data_->type = type;
   data_->document_cookie = document_cookie;
@@ -103,6 +106,11 @@ MetafileSkia::~MetafileSkia() = default;
 
 bool MetafileSkia::Init() {
   return true;
+}
+
+void MetafileSkia::UtilizeTypefaceContext(
+    ContentProxySet* typeface_content_info) {
+  data_->typeface_content_info = typeface_content_info;
 }
 
 // TODO(halcanary): Create a Metafile class that only stores data.
@@ -116,7 +124,12 @@ bool MetafileSkia::InitFromData(base::span<const uint8_t> data) {
 
 void MetafileSkia::StartPage(const gfx::Size& page_size,
                              const gfx::Rect& content_area,
-                             float scale_factor) {
+                             float scale_factor,
+                             mojom::PageOrientation page_orientation) {
+  gfx::Size physical_page_size = page_size;
+  if (page_orientation != mojom::PageOrientation::kUpright)
+    physical_page_size.SetSize(page_size.height(), page_size.width());
+
   DCHECK_GT(page_size.width(), 0);
   DCHECK_GT(page_size.height(), 0);
   DCHECK_GT(scale_factor, 0.0f);
@@ -126,17 +139,26 @@ void MetafileSkia::StartPage(const gfx::Size& page_size,
 
   float inverse_scale = 1.0 / scale_factor;
   cc::PaintCanvas* canvas = data_->recorder.beginRecording(
-      inverse_scale * page_size.width(), inverse_scale * page_size.height());
+      inverse_scale * physical_page_size.width(),
+      inverse_scale * physical_page_size.height());
   // Recording canvas is owned by the |data_->recorder|.  No ref() necessary.
-  if (content_area != gfx::Rect(page_size)) {
+  if (content_area != gfx::Rect(page_size) ||
+      page_orientation != mojom::PageOrientation::kUpright) {
     canvas->scale(inverse_scale, inverse_scale);
+    if (page_orientation == mojom::PageOrientation::kRotateLeft) {
+      canvas->translate(0, physical_page_size.height());
+      canvas->rotate(-90);
+    } else if (page_orientation == mojom::PageOrientation::kRotateRight) {
+      canvas->translate(physical_page_size.width(), 0);
+      canvas->rotate(90);
+    }
     SkRect sk_content_area = gfx::RectToSkRect(content_area);
     canvas->clipRect(sk_content_area);
     canvas->translate(sk_content_area.x(), sk_content_area.y());
     canvas->scale(scale_factor, scale_factor);
   }
 
-  data_->size = gfx::SizeFToSkSize(gfx::SizeF(page_size));
+  data_->size = gfx::SizeFToSkSize(gfx::SizeF(physical_page_size));
   data_->scale_factor = scale_factor;
   // We scale the recording canvas's size so that
   // canvas->getTotalMatrix() returns a value that ignores the scale
@@ -147,8 +169,9 @@ void MetafileSkia::StartPage(const gfx::Size& page_size,
 cc::PaintCanvas* MetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
-    float scale_factor) {
-  StartPage(page_size, content_area, scale_factor);
+    float scale_factor,
+    mojom::PageOrientation page_orientation) {
+  StartPage(page_size, content_area, scale_factor, page_orientation);
   return data_->recorder.getRecordingCanvas();
 }
 
@@ -180,11 +203,12 @@ bool MetafileSkia::FinishDocument() {
   sk_sp<SkDocument> doc;
   cc::PlaybackParams::CustomDataRasterCallback custom_callback;
   switch (data_->type) {
-    case SkiaDocumentType::PDF:
+    case mojom::SkiaDocumentType::kPDF:
       doc = MakePdfDocument(printing::GetAgent(), accessibility_tree_, &stream);
       break;
-    case SkiaDocumentType::MSKP:
-      SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);
+    case mojom::SkiaDocumentType::kMSKP:
+      SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
+                                               data_->typeface_content_info);
       doc = SkMakeMultiPictureDocument(&stream, &procs);
       // It is safe to use base::Unretained(this) because the callback
       // is only used by |canvas| in the following loop which has shorter
@@ -211,7 +235,7 @@ void MetafileSkia::FinishFrameContent() {
   // content.
   DCHECK_EQ(data_->pages.size(), 1u);
   // Also make sure it is in skia multi-picture document format.
-  DCHECK_EQ(data_->type, SkiaDocumentType::MSKP);
+  DCHECK_EQ(data_->type, mojom::SkiaDocumentType::kMSKP);
   DCHECK(!data_->data_stream);
 
   cc::PlaybackParams::CustomDataRasterCallback custom_callback =
@@ -220,7 +244,8 @@ void MetafileSkia::FinishFrameContent() {
   sk_sp<SkPicture> pic = ToSkPicture(data_->pages[0].content,
                                      SkRect::MakeSize(data_->pages[0].size),
                                      nullptr, custom_callback);
-  SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);
+  SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
+                                           data_->typeface_content_info);
   SkDynamicMemoryWStream stream;
   pic->serialize(&stream, &procs);
   data_->data_stream = stream.detachAsStream();
@@ -242,8 +267,8 @@ bool MetafileSkia::GetData(void* dst_buffer, uint32_t dst_buffer_size) const {
 gfx::Rect MetafileSkia::GetPageBounds(unsigned int page_number) const {
   if (page_number < data_->pages.size()) {
     SkSize size = data_->pages[page_number].size;
-    return gfx::Rect(gfx::ToRoundedInt(size.width()),
-                     gfx::ToRoundedInt(size.height()));
+    return gfx::Rect(base::ClampRound(size.width()),
+                     base::ClampRound(size.height()));
   }
   return gfx::Rect();
 }
@@ -269,7 +294,7 @@ bool MetafileSkia::SafePlayback(printing::NativeDrawingContext hdc) const {
   return false;
 }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 /* TODO(caryclark): The set up of PluginInstance::PrintPDFOutput may result in
    rasterized output.  Even if that flow uses PdfMetafileCg::RenderPage,
    the drawing of the PDF into the canvas may result in a rasterized output.
@@ -344,7 +369,7 @@ bool MetafileSkia::SaveTo(base::File* file) const {
 #endif  // defined(OS_ANDROID)
 
 std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
-    SkiaDocumentType type) {
+    mojom::SkiaDocumentType type) {
   // If we only ever need the metafile for the last page, should we
   // only keep a handle on one PaintRecord?
   auto metafile = std::make_unique<MetafileSkia>(type, data_->document_cookie);
@@ -357,6 +382,7 @@ std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
   metafile->data_->pages.push_back(data_->pages.back());
   metafile->data_->subframe_content_info = data_->subframe_content_info;
   metafile->data_->subframe_pics = data_->subframe_pics;
+  metafile->data_->typeface_content_info = data_->typeface_content_info;
 
   if (!metafile->FinishDocument())  // Generate PDF.
     metafile.reset();
@@ -364,8 +390,9 @@ std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
   return metafile;
 }
 
-uint32_t MetafileSkia::CreateContentForRemoteFrame(const gfx::Rect& rect,
-                                                   int render_proxy_id) {
+uint32_t MetafileSkia::CreateContentForRemoteFrame(
+    const gfx::Rect& rect,
+    const base::UnguessableToken& render_proxy_token) {
   // Create a place holder picture.
   sk_sp<SkPicture> pic = SkPicture::MakePlaceholder(
       SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()));
@@ -373,7 +400,7 @@ uint32_t MetafileSkia::CreateContentForRemoteFrame(const gfx::Rect& rect,
   // Store the map between content id and the proxy id.
   uint32_t content_id = pic->uniqueID();
   DCHECK(!base::Contains(data_->subframe_content_info, content_id));
-  data_->subframe_content_info[content_id] = render_proxy_id;
+  data_->subframe_content_info[content_id] = render_proxy_token;
 
   // Store the picture content.
   data_->subframe_pics[content_id] = pic;
@@ -384,7 +411,7 @@ int MetafileSkia::GetDocumentCookie() const {
   return data_->document_cookie;
 }
 
-const ContentToProxyIdMap& MetafileSkia::GetSubframeContentInfo() const {
+const ContentToProxyTokenMap& MetafileSkia::GetSubframeContentInfo() const {
   return data_->subframe_content_info;
 }
 
@@ -394,9 +421,9 @@ void MetafileSkia::AppendPage(const SkSize& page_size,
 }
 
 void MetafileSkia::AppendSubframeInfo(uint32_t content_id,
-                                      int proxy_id,
+                                      const base::UnguessableToken& proxy_token,
                                       sk_sp<SkPicture> pic_holder) {
-  data_->subframe_content_info[content_id] = proxy_id;
+  data_->subframe_content_info[content_id] = proxy_token;
   data_->subframe_pics[content_id] = pic_holder;
 }
 
@@ -416,7 +443,7 @@ void MetafileSkia::CustomDataToSkPictureCallback(SkCanvas* canvas,
   // Found the picture, draw it on canvas.
   sk_sp<SkPicture> pic = it->second;
   SkRect rect = pic->cullRect();
-  SkMatrix matrix = SkMatrix::MakeTrans(rect.x(), rect.y());
+  SkMatrix matrix = SkMatrix::Translate(rect.x(), rect.y());
   canvas->drawPicture(it->second, &matrix, nullptr);
 }
 

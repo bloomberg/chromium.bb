@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -36,13 +38,6 @@ const int64_t kFullHashExpiryTimeInMinutes = 60;
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
 
-// The list of the name of any store files that are no longer used and can be
-// safely deleted from the disk. There's no overlap allowed between the files
-// on this list and the list returned by GetListInfos().
-const char* const kStoreFileNamesToDelete[] = {
-    "AnyIpMalware.store", "ChromeFilenameClientIncident.store",
-    "UrlSuspiciousSiteId.store"};
-
 ListInfos GetListInfos() {
 // NOTE(vakh): When adding a store here, add the corresponding store-specific
 // histograms also.
@@ -54,48 +49,51 @@ ListInfos GetListInfos() {
 //   hash checks. For instance: GetChromeUrlApiId()
 
 #if defined(OS_IOS)
-  const bool kSyncOnlyOnChromeBuilds = false;
-  const bool kSyncOnlyOnDesktopBuilds = false;
-#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  const bool kSyncOnlyOnChromeBuilds = true;
-  const bool kSyncOnlyOnDesktopBuilds = true;
+  const bool kSyncOnIos = true;
 #else
-  const bool kSyncOnlyOnChromeBuilds = false;
-  const bool kSyncOnlyOnDesktopBuilds = true;
+  const bool kSyncOnIos = false;
 #endif
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  const bool kIsChromeBranded = true;
+#else
+  const bool kIsChromeBranded = false;
+#endif
+
+  const bool kSyncOnDesktopBuilds = !kSyncOnIos;
+  const bool kSyncOnChromeDesktopBuilds = kIsChromeBranded && kSyncOnDesktopBuilds;
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
   return ListInfos({
-      ListInfo(kSyncOnlyOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
+      ListInfo(kSyncOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncAlways, "UrlSoceng.store", GetUrlSocEngId(),
                SB_THREAT_TYPE_URL_PHISHING),
       ListInfo(kSyncAlways, "UrlMalware.store", GetUrlMalwareId(),
                SB_THREAT_TYPE_URL_MALWARE),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "UrlUws.store", GetUrlUwsId(),
+      ListInfo(kSyncOnDesktopBuilds, "UrlUws.store", GetUrlUwsId(),
                SB_THREAT_TYPE_URL_UNWANTED),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
+      ListInfo(kSyncOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
                SB_THREAT_TYPE_URL_BINARY_MALWARE),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "ChromeExtMalware.store",
+      ListInfo(kSyncOnDesktopBuilds, "ChromeExtMalware.store",
                GetChromeExtMalwareId(), SB_THREAT_TYPE_EXTENSION),
-      ListInfo(kSyncOnlyOnChromeBuilds, "CertCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "CertCsdDownloadWhitelist.store",
                GetCertCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "ChromeUrlClientIncident.store",
                GetChromeUrlClientIncidentId(),
                SB_THREAT_TYPE_BLACKLISTED_RESOURCE),
       ListInfo(kSyncAlways, "UrlBilling.store", GetUrlBillingId(),
                SB_THREAT_TYPE_BILLING),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdDownloadWhitelist.store",
                GetUrlCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdWhitelist.store",
                GetUrlCsdWhitelistId(), SB_THREAT_TYPE_CSD_WHITELIST),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSubresourceFilter.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlSubresourceFilter.store",
                GetUrlSubresourceFilterId(), SB_THREAT_TYPE_SUBRESOURCE_FILTER),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlHighConfidenceAllowlist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds || kSyncOnIos, "UrlHighConfidenceAllowlist.store",
                GetUrlHighConfidenceAllowlistId(),
                SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });
@@ -107,6 +105,7 @@ ListInfos GetListInfos() {
 std::vector<CommandLineSwitchAndThreatType> GetSwitchAndThreatTypes() {
   static const std::vector<CommandLineSwitchAndThreatType>
       command_line_switch_and_threat_type = {
+          {"mark_as_allowlisted_for_real_time", HIGH_CONFIDENCE_ALLOWLIST},
           {"mark_as_phishing", SOCIAL_ENGINEERING},
           {"mark_as_malware", MALWARE_THREAT},
           {"mark_as_uws", UNWANTED_SOFTWARE}};
@@ -287,11 +286,6 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
-
-  DeleteUnusedStoreFiles();
-
-  DVLOG(1) << "V4LocalDatabaseManager::V4LocalDatabaseManager: "
-           << "base_path_: " << base_path_.AsUTF8Unsafe();
 }
 
 V4LocalDatabaseManager::~V4LocalDatabaseManager() {
@@ -421,12 +415,17 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   StoresToCheck stores_to_check({GetUrlHighConfidenceAllowlistId()});
+  bool all_stores_available = AreAllStoresAvailableNow(stores_to_check);
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.AllStoresAvailable",
+                        all_stores_available);
   if (!enabled_ || !CanCheckUrl(url) ||
-      !AreAllStoresAvailableNow(stores_to_check)) {
+      (!all_stores_available &&
+       artificially_marked_store_and_hash_prefixes_.empty())) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
     // navigation URL, or if the allowlist isn't ready yet, return MATCH.
     // The full URL check won't be performed, but hash-based check will still
-    // be done.
+    // be done. If any artificial matches are present, consider the allowlist
+    // as ready.
     return AsyncMatch::MATCH;
   }
 
@@ -634,33 +633,6 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
   }
 }
 
-void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
-  for (auto* const store_filename_to_delete : kStoreFileNamesToDelete) {
-    // Is the file marked for deletion also being used for a valid V4Store?
-    auto it = std::find_if(std::begin(list_infos_), std::end(list_infos_),
-                           [&store_filename_to_delete](ListInfo const& li) {
-                             return li.filename() == store_filename_to_delete;
-                           });
-    if (list_infos_.end() == it) {
-      const base::FilePath store_path =
-          base_path_.AppendASCII(store_filename_to_delete);
-      bool path_exists = base::PathExists(store_path);
-      base::UmaHistogramBoolean("SafeBrowsing.V4UnusedStoreFileExists" +
-                                    GetUmaSuffixForStore(store_path),
-                                path_exists);
-      if (!path_exists) {
-        continue;
-      }
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                    store_path, false /* recursive */));
-    } else {
-      NOTREACHED() << "Trying to delete a store file that's in use: "
-                   << store_filename_to_delete;
-    }
-  }
-}
-
 void V4LocalDatabaseManager::GetArtificialPrefixMatches(
     const std::unique_ptr<PendingCheck>& check) {
   if (artificially_marked_store_and_hash_prefixes_.empty()) {
@@ -672,7 +644,9 @@ void V4LocalDatabaseManager::GetArtificialPrefixMatches(
       FullHash artificial_full_hash =
           artificial_store_and_hash_prefix.hash_prefix;
       DCHECK_EQ(crypto::kSHA256Length, artificial_full_hash.size());
-      if (artificial_full_hash == full_hash) {
+      if (artificial_full_hash == full_hash &&
+          base::Contains(check->stores_to_check,
+                         artificial_store_and_hash_prefix.list_id)) {
         (check->artificial_full_hash_to_store_and_hash_prefixes)[full_hash] = {
             artificial_store_and_hash_prefix};
       }
@@ -759,7 +733,10 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // The caller should have already checked that the DB is ready.
   DCHECK(v4_database_);
 
-  if (!GetPrefixMatches(check)) {
+  GetPrefixMatches(check);
+  GetArtificialPrefixMatches(check);
+  if (check->full_hash_to_store_and_hash_prefixes.empty() &&
+      check->artificial_full_hash_to_store_and_hash_prefixes.empty()) {
     return AsyncMatch::NO_MATCH;
   }
 

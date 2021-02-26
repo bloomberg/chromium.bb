@@ -26,6 +26,12 @@
 #   define ELF #
 #endif
 
+#ifdef __MACH__
+#   define MACH
+#else
+#   define MACH #
+#endif
+
 #if HAVE_AS_FUNC
 #   define FUNC
 #else
@@ -47,6 +53,9 @@ FUNC    .endfunc
     .if \export
         .global EXTERN_ASM\name
 ELF     .type   EXTERN_ASM\name, %function
+// Chromium patch to ensure symbols are correctly hidden.
+ELF     .hidden EXTERN_ASM\name
+MACH    .private_extern EXTERN_ASM\name
 FUNC    .func   EXTERN_ASM\name
 EXTERN_ASM\name:
     .else
@@ -112,3 +121,6 @@ ELF     .size   \name, . - \name
 #define GLUE(a, b) a ## b
 #define JOIN(a, b) GLUE(a, b)
 #define X(s) JOIN(EXTERN_ASM, s)
+
+#define x18 do_not_use_x18
+#define w18 do_not_use_w18

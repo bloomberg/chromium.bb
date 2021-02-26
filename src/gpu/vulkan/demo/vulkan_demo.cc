@@ -9,15 +9,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window.h"
@@ -57,6 +59,9 @@ void VulkanDemo::Initialize() {
 }
 
 void VulkanDemo::Destroy() {
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+  vkDeviceWaitIdle(device);
   vulkan_surface_->Destroy();
 }
 
@@ -110,16 +115,18 @@ void VulkanDemo::CreateSkSurface() {
 
   if (!sk_surface) {
     SkSurfaceProps surface_props =
-        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+        skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+
     GrVkImageInfo vk_image_info;
     vk_image_info.fImage = scoped_write_->image();
-    vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
     vk_image_info.fImageLayout = scoped_write_->image_layout();
     vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
     vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    vk_image_info.fImageUsageFlags = scoped_write_->image_usage();
+    vk_image_info.fSampleCount = 1;
     vk_image_info.fLevelCount = 1;
     const auto& size = vulkan_surface_->image_size();
-    GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
+    GrBackendRenderTarget render_target(size.width(), size.height(), 0,
                                         vk_image_info);
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
         vulkan_context_provider_->GetGrContext(), render_target,
@@ -132,8 +139,9 @@ void VulkanDemo::CreateSkSurface() {
   }
   sk_surface_ = sk_surface;
   GrBackendSemaphore semaphore;
-  semaphore.initVulkan(scoped_write_->TakeBeginSemaphore());
-  auto result = sk_surface_->wait(1, &semaphore);
+  semaphore.initVulkan(scoped_write_->begin_semaphore());
+  auto result =
+      sk_surface_->wait(1, &semaphore, /*deleteSemaphoresAfterWait=*/false);
   DCHECK(result);
 }
 
@@ -197,19 +205,23 @@ void VulkanDemo::RenderFrame() {
   CreateSkSurface();
   Draw(sk_surface_->getCanvas(), 0.7);
   GrBackendSemaphore semaphore;
-  semaphore.initVulkan(scoped_write_->GetEndSemaphore());
+  semaphore.initVulkan(scoped_write_->end_semaphore());
   GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = 1,
       .fSignalSemaphores = &semaphore,
   };
-  sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+  auto queue_index =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueueIndex();
+  GrBackendSurfaceMutableState state(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                     queue_index);
+  sk_surface_->flush(flush_info, &state);
+  sk_surface_->recordingContext()->asDirectContext()->submit();
   auto backend = sk_surface_->getBackendRenderTarget(
       SkSurface::kFlushRead_BackendHandleAccess);
   GrVkImageInfo vk_image_info;
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get image info";
-  scoped_write_->set_image_layout(vk_image_info.fImageLayout);
+  DCHECK_EQ(vk_image_info.fImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   scoped_write_.reset();
   vulkan_surface_->SwapBuffers();
 

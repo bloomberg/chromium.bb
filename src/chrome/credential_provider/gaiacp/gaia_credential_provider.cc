@@ -19,6 +19,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
+#include "chrome/credential_provider/gaiacp/device_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -208,7 +209,8 @@ unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
                         "credentials";
     }
 
-    event_handler->UpdateCredentialsIfNeeded(user_access_changed);
+    if (GetGlobalFlagOrDefault(kRegUpdateCredentialsOnChange, 0))
+      event_handler->UpdateCredentialsIfNeeded(user_access_changed);
   }
 
   return 0;
@@ -616,7 +618,15 @@ bool CGaiaCredentialProvider::CanNewUsersBeCreated(
   if (cpus == CPUS_UNLOCK_WORKSTATION)
     return false;
 
-  return GetGlobalFlagOrDefault(kRegMdmSupportsMultiUser, 1) ||
+  bool enable_multi_user_login =
+      GetGlobalFlagOrDefault(kRegMdmSupportsMultiUser, 1) != 0;
+  if (DevicePoliciesManager::Get()->CloudPoliciesEnabled()) {
+    DevicePolicies policies;
+    DevicePoliciesManager::Get()->GetDevicePolicies(&policies);
+    enable_multi_user_login = policies.enable_multi_user_login;
+  }
+
+  return enable_multi_user_login ||
          !AssociatedUserValidator::Get()->GetAssociatedUsersCount();
 }
 

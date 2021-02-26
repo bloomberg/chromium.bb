@@ -8,7 +8,8 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/url_request/url_request.h"
+#include "net/cookies/site_for_cookies.h"
+#include "net/url_request/referrer_policy.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -17,6 +18,15 @@ namespace net {
 // request that change. This struct must be kept in sync with
 // content/common/resource_messages.h.
 struct NET_EXPORT RedirectInfo {
+  // First-party URL redirect policy: During server redirects, the first-party
+  // URL for cookies normally doesn't change. However, if the request is a
+  // top-level first-party request, the first-party URL should be updated to the
+  // URL on every redirect.
+  enum class FirstPartyURLPolicy {
+    NEVER_CHANGE_URL,
+    UPDATE_URL_ON_REDIRECT,
+  };
+
   RedirectInfo();
   RedirectInfo(const RedirectInfo& other);
   ~RedirectInfo();
@@ -28,8 +38,8 @@ struct NET_EXPORT RedirectInfo {
       const std::string& original_method,
       const GURL& original_url,
       const SiteForCookies& original_site_for_cookies,
-      URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
-      URLRequest::ReferrerPolicy original_referrer_policy,
+      FirstPartyURLPolicy original_first_party_url_policy,
+      ReferrerPolicy original_referrer_policy,
       const std::string& original_referrer,
       // The HTTP status code of the redirect response.
       int http_status_code,
@@ -74,7 +84,7 @@ struct NET_EXPORT RedirectInfo {
 
   // The new referrer policy that should be obeyed if there are
   // subsequent redirects.
-  URLRequest::ReferrerPolicy new_referrer_policy;
+  ReferrerPolicy new_referrer_policy;
 };
 
 }  // namespace net

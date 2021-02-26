@@ -7,7 +7,7 @@
 #ifndef FXBARCODE_BC_WRITER_H_
 #define FXBARCODE_BC_WRITER_H_
 
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "fxbarcode/BC_Library.h"
 
 class CBC_Writer {
@@ -34,7 +34,7 @@ class CBC_Writer {
   int32_t m_ModuleWidth = 1;
   int32_t m_Height = 320;
   int32_t m_Width = 640;
-  FXDIB_Format m_colorSpace = FXDIB_Argb;
+  FXDIB_Format m_colorSpace = FXDIB_Format::kArgb;
 };
 
 #endif  // FXBARCODE_BC_WRITER_H_

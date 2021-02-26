@@ -9,6 +9,7 @@
 #include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 #define LOAD_FUNCTION(lib, func)                            \
   do {                                                      \
@@ -33,9 +34,7 @@ bool AndroidImageReader::IsSupported() {
   return is_supported_;
 }
 
-AndroidImageReader::AndroidImageReader() {
-  is_supported_ = LoadFunctions();
-}
+AndroidImageReader::AndroidImageReader() : is_supported_(LoadFunctions()) {}
 
 bool AndroidImageReader::LoadFunctions() {
   // If the Chromium build requires __ANDROID_API__ >= 26 at some

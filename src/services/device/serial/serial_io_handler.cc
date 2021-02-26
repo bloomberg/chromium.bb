@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
@@ -16,10 +16,12 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "components/device_event_log/device_event_log.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 namespace device {
 
@@ -49,7 +51,7 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // Note: dbus clients are destroyed in PostDestroyThreads so passing |client|
   // as unretained is safe.
   auto* client = chromeos::PermissionBrokerClient::Get();
@@ -71,10 +73,10 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SerialIoHandler::StartOpen, this,
                      base::ThreadTaskRunnerHandle::Get()));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 
 void SerialIoHandler::OnPathOpened(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
@@ -98,8 +100,8 @@ void SerialIoHandler::ReportPathOpenError(const std::string& error_name,
                                           const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(open_complete_);
-  LOG(ERROR) << "Permission broker failed to open '" << port_
-             << "': " << error_name << ": " << error_message;
+  SERIAL_LOG(ERROR) << "Permission broker failed to open '" << port_
+                    << "': " << error_name << ": " << error_message;
   std::move(open_complete_).Run(false);
 }
 
@@ -143,8 +145,8 @@ void SerialIoHandler::FinishOpen(base::File file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(open_complete_);
   if (!file.IsValid()) {
-    LOG(ERROR) << "Failed to open serial port: "
-               << base::File::ErrorToString(file.error_details());
+    SERIAL_LOG(ERROR) << "Failed to open serial port: "
+                      << base::File::ErrorToString(file.error_details());
     std::move(open_complete_).Run(false);
     return;
   }
@@ -174,6 +176,8 @@ void SerialIoHandler::Close(base::OnceClosure callback) {
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&SerialIoHandler::DoClose, std::move(file_)),
         std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
 }
 

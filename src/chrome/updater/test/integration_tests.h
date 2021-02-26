@@ -5,6 +5,12 @@
 #ifndef CHROME_UPDATER_TEST_INTEGRATION_TESTS_H_
 #define CHROME_UPDATER_TEST_INTEGRATION_TESTS_H_
 
+namespace base {
+class CommandLine;
+class FilePath;
+class Version;
+}  // namespace base
+
 namespace updater {
 
 namespace test {
@@ -14,28 +20,69 @@ namespace test {
 // the test left the updater in an installed or partially installed state.
 void Clean();
 
-// Expect that the system is in a clean state, i.e. no updater is installed and
+// Expects that the system is in a clean state, i.e. no updater is installed and
 // no traces of an updater exist. Should be run at the start and end of each
 // test.
 void ExpectClean();
 
-// Expect that the updater is installed on the system.
+// Places the updater into test mode (use local servers and disable CUP).
+void EnterTestMode();
+
+// Sleeps for the given number of seconds. This should be avoided, but in some
+// cases surrounding uninstall it is necessary since the processes can exit
+// prior to completing the actual uninstallation.
+void SleepFor(int seconds);
+
+// Returns the path to the updater data dir.
+base::FilePath GetDataDirPath();
+
+// Expects that the updater is installed on the system.
 void ExpectInstalled();
 
-// Install the updater.
+// Installs the updater.
 void Install();
 
-// Expect that the updater is installed on the system and the launchd tasks are
-// updated correctly.
-void ExpectSwapped();
+// Expects that the updater is installed on the system and the launchd tasks
+// are updated correctly.
+void ExpectActive();
 
-// Finish up setup.
-void Swap();
-
-// Uninstall the updater. If the updater was installed during the test, it
+// Uninstalls the updater. If the updater was installed during the test, it
 // should be uninstalled before the end of the test to avoid having an actual
 // live updater on the machine that ran the test.
 void Uninstall();
+
+// Runs the wake client and wait for it to exit. Assert that it exits with
+// |exit_code|. The server should exit a few seconds after.
+void RunWake(int exit_code);
+
+// Registers the test app. As a result, the bundled updater is installed,
+// promoted and registered.
+void RegisterTestApp();
+
+// Runs the command and waits for it to exit or time out.
+bool Run(base::CommandLine command_line, int* exit_code);
+
+// Returns the path of the Updater executable.
+base::FilePath GetInstalledExecutablePath();
+
+// Returns the folder path under which the executable for the fake updater
+// should reside.
+base::FilePath GetFakeUpdaterInstallFolderPath(const base::Version& version);
+
+// Creates Prefs with the fake updater version set as active.
+void SetupFakeUpdaterPrefs(const base::Version& version);
+
+// Creates an install folder on the system with the fake updater version.
+void SetupFakeUpdaterInstallFolder(const base::Version& version);
+
+// Sets up a fake updater on the system at a version lower than the test.
+void SetupFakeUpdaterLowerVersion();
+
+// Sets up a fake updater on the system at a version higher than the test.
+void SetupFakeUpdaterHigherVersion();
+
+// Expects that this version of updater is uninstalled from the system.
+void ExpectCandidateUninstalled();
 
 }  // namespace test
 

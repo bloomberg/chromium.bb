@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-// Disable all tests in this file on Mac for flake (crbug.com/1079249)
-#if !defined(OS_MACOSX)
 
 #include <string>
 #include <tuple>
@@ -14,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
@@ -25,15 +22,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -55,9 +50,11 @@
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -80,7 +77,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -96,7 +92,7 @@ namespace autofill {
 namespace {
 
 static const char kTestShippingFormString[] =
-    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<form action=\"https://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\"><br>"
     "<label for=\"lastname\">Last name:</label>"
@@ -126,7 +122,7 @@ static const char kTestShippingFormString[] =
     "</form>";
 
 static const char kTestBillingFormString[] =
-    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<form action=\"https://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname_billing\">First name:</label>"
     " <input type=\"text\" id=\"firstname_billing\"><br>"
     "<label for=\"lastname_billing\">Last name:</label>"
@@ -176,7 +172,7 @@ static const char kTestEventFormString[] =
     "var selectchange = false;"
     "var selectblur = false;"
     "</script>"
-    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<form action=\"https://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\"><br>"
     "<label for=\"lastname\">Last name:</label>"
@@ -216,7 +212,7 @@ static const char kTestEventFormString[] =
     "</form>";
 
 static const char kTestShippingFormWithCompanyString[] =
-    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<form action=\"https://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\"><br>"
     "<label for=\"lastname\">Last name:</label>"
@@ -271,7 +267,13 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   AutofillInteractiveTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  ~AutofillInteractiveTestBase() override {}
+ public:
+  AutofillInteractiveTestBase(const AutofillInteractiveTestBase&) = delete;
+  AutofillInteractiveTestBase& operator=(const AutofillInteractiveTestBase&) =
+      delete;
+
+ protected:
+  ~AutofillInteractiveTestBase() override = default;
 
   // InProcessBrowserTest:
   void SetUp() override {
@@ -308,6 +310,11 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     LOG(ERROR)
         << "crbug/967588: embedded_test_server started accepting connections";
 
+    // Load the MatchingPattern definitions.
+    base::RunLoop run_loop;
+    field_type_parsing::PopulateFromResourceBundle(run_loop.QuitClosure());
+    run_loop.Run();
+
     // By default, all SSL cert checks are valid. Can be overriden in tests if
     // needed.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
@@ -340,14 +347,6 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     response->set_content_type("text/html;charset=utf-8");
     response->set_content(test_url_content_);
     return std::move(response);
-  }
-
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  content::RenderViewHost* GetRenderViewHost() {
-    return GetWebContents()->GetRenderViewHost();
   }
 
   void CreateTestProfile() {
@@ -394,7 +393,8 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         GetWebContents(),
         "window.domAutomationController.send("
-        "    document.getElementById('" + field_name + "').value);",
+        "    document.getElementById('" +
+            field_name + "').value);",
         &value));
     EXPECT_EQ(expected_value, value) << "for field " << field_name;
   }
@@ -417,7 +417,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         GetWebContents(),
         "window.domAutomationController.send("
         "    document.defaultView.getComputedStyle(document.getElementById('" +
-        field_name + "')).backgroundColor);",
+            field_name + "')).backgroundColor);",
         color));
   }
 
@@ -699,15 +699,11 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   // with it.
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_http_response_;
 
   // The response to return for queries to |kTestUrlPath|
   std::string test_url_content_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTestBase);
 };
 
 const char AutofillInteractiveTestBase::kTestUrlPath[] =
@@ -788,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
   TryBasicFormFill();
   LOG(ERROR) << "crbug/967588: Basic form filling completed";
 
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   // Assert that the network isolation key is populated for 2 requests:
   // - Navigation: /internal/test_url_path
   // - Autofill query: https://clients1.google.com/tbproxy/af/query?...
@@ -918,12 +914,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
       "document.getElementById('phone').value = '15142223344';"
       "</script>";
 
+  CreateTestProfile();
+
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kPrefillScript}));
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
-
-  CreateTestProfile();
 
   // We need to delete the prefilled value and then trigger the autofill.
   FocusFirstNameField();
@@ -1178,29 +1174,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
   ExpectFilledTestForm();
 }
 
-// Test params:
-//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
-//        is enabled for testing.
-//  - bool company_name_enabled_: whether feature AutofillEnableCompanyName
-//        is enabled for testing.
 class AutofillCompanyInteractiveTest
     : public AutofillInteractiveTestBase,
       public testing::WithParamInterface<bool> {
  protected:
-  AutofillCompanyInteractiveTest()
-      : AutofillInteractiveTestBase(), company_name_enabled_(GetParam()) {}
+  AutofillCompanyInteractiveTest() = default;
   ~AutofillCompanyInteractiveTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kAutofillEnableCompanyName, company_name_enabled_);
     AutofillInteractiveTestBase::SetUp();
   }
-
-  const bool company_name_enabled_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Makes sure that the first click does or does not activate the autofill popup
@@ -1257,6 +1240,35 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   EXPECT_TRUE(test_delegate()->Wait());
 }
 
+// Makes sure that clicking a field while there is no enough height in the
+// content area for at least one suggestion, won't show the autofill popup. This
+// is a regression test for crbug.com/1108181
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DontAutofillShowPopupWhenNoEnoughHeightInContentArea) {
+  // This firstname field starts at y=-100px and has a height of 5120px. There
+  // is no enough space to show at least one row of the autofill popup and hence
+  // the autofill shouldn't be shown.
+  static const char kTestFormWithLargeInputField[] =
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
+      "<label for=\"firstname\">First name:</label>"
+      " <input type=\"text\" id=\"firstname\" style=\"position:fixed; "
+      "top:-100px;height:5120px\"><br>"
+      "<label for=\"lastname\">Last name:</label>"
+      " <input type=\"text\" id=\"lastname\"><br>"
+      "<label for=\"city\">City:</label>"
+      " <input type=\"text\" id=\"city\"><br>"
+      "</form>";
+
+  CreateTestProfile();
+  SetTestUrlResponse(kTestFormWithLargeInputField);
+
+  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
+
+  FocusFirstNameField();
+  SendKeyToPage(GetWebContents(), ui::DomKey::ARROW_DOWN);
+  ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
+}
+
 // Test that a field is still autofillable after the previously autofilled
 // value is deleted.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
@@ -1294,7 +1306,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
 // background color when choosing an option from the datalist suggestion list.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnSelectOptionFromDatalist) {
   static const char kTestForm[] =
-      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
       "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
       "  <datalist id=\"dl\">"
       "  <option value=\"Adam\"></option>"
@@ -1331,7 +1343,7 @@ IN_PROC_BROWSER_TEST_F(
     AutofillInteractiveTest,
     OnSelectOptionFromDatalistTurningToPasswordFieldAndBack) {
   static const char kTestForm[] =
-      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
       "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
       "  <datalist id=\"dl\">"
       "  <option value=\"Adam\"></option>"
@@ -1617,7 +1629,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // JavaScript, with only one actually visible at any given time.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillFormWithRepeatedField) {
   static const char kForm[] =
-      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
       "<label for=\"firstname\">First name:</label>"
       " <input type=\"text\" id=\"firstname\""
       "        onfocus=\"domAutomationController.send(true)\"><br>"
@@ -1666,7 +1678,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillFormWithRepeatedField) {
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        AutofillFormWithNonAutofillableField) {
   static const char kForm[] =
-      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
       "<label for=\"firstname\">First name:</label>"
       " <input type=\"text\" id=\"firstname\""
       "        onfocus=\"domAutomationController.send(true)\"><br>"
@@ -1712,7 +1724,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // Test that we can Autofill dynamically generated forms.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicFormFill) {
   static const char kDynamicForm[] =
-      "<form id=\"form\" action=\"http://www.example.com/\""
+      "<form id=\"form\" action=\"https://www.example.com/\""
       "      method=\"POST\"></form>"
       "<script>"
       "function AddElement(name, label) {"
@@ -1812,7 +1824,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   // Reload the page.
   content::WebContents* web_contents = GetWebContents();
   web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -1932,7 +1944,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   CreateTestProfile();
 
   static const char kForm[] =
-      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<form action=\"https://www.example.com/\" method=\"POST\">"
       "<label for=\"fn\">なまえ</label>"
       " <input type=\"text\" id=\"fn\""
       "        onfocus=\"domAutomationController.send(true)\""
@@ -2054,7 +2066,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
 }
 
 // Test that Autofill does not fill in Company Name if disabled
-IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest,
                        NoAutofillForCompanyName) {
   std::string addr_line1("1234 H St.");
   std::string company_name("Company X");
@@ -2077,11 +2089,11 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
   PopulateForm("firstname");
 
   ExpectFieldValue("address", addr_line1);
-  ExpectFieldValue("company", company_name_enabled_ ? company_name : "");
+  ExpectFieldValue("company", company_name);
 }
 
 // Test that Autofill does not fill in Company Name if disabled
-IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest,
                        NoAutofillSugggestionForCompanyName) {
   CreateTestProfile();
 
@@ -2100,12 +2112,8 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
                                    base::TimeDelta::FromSeconds(3));
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("company"));
 
-  bool found = test_delegate()->Wait();
+  test_delegate()->Wait();
 
-  if (!company_name_enabled_) {
-    EXPECT_FALSE(found);
-    return;
-  }
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
@@ -2157,7 +2165,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
   PopulateForm("NAME_FIRST");
 
   ASSERT_TRUE(content::ExecuteScript(
-       GetWebContents(), "document.getElementById('testform').reset()"));
+      GetWebContents(), "document.getElementById('testform').reset()"));
 
   PopulateForm("NAME_FIRST");
 
@@ -2182,7 +2190,17 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
-  ExpectFieldValue("NAME_MIDDLE", "C");
+  // In the legacy implementation for names, the initial is always created
+  // without a trailing dot even if the user explicitely used a dot.
+  // For structured names, we leave the choice to the user.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    ExpectFieldValue("NAME_MIDDLE", "C.");
+  } else {
+    ExpectFieldValue("NAME_MIDDLE", "C");
+  }
 }
 
 // Test forms with multiple email addresses are filled properly.
@@ -2456,7 +2474,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
+IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest, FieldsChangeName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2476,7 +2494,7 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -2484,6 +2502,14 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
 class AutofillCreditCardInteractiveTest : public AutofillInteractiveTestBase {
  protected:
   AutofillCreditCardInteractiveTest() = default;
+
+ public:
+  AutofillCreditCardInteractiveTest(const AutofillCreditCardInteractiveTest&) =
+      delete;
+  AutofillCreditCardInteractiveTest& operator=(
+      const AutofillCreditCardInteractiveTest&) = delete;
+
+ protected:
   ~AutofillCreditCardInteractiveTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2498,9 +2524,6 @@ class AutofillCreditCardInteractiveTest : public AutofillInteractiveTestBase {
   // we won't be able to encrypt the cc number. There will be a crash while
   // encrypting the cc number.
   void TearDownOnMainThread() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardInteractiveTest);
 };
 
 // Test that credit card autofill works.
@@ -2527,25 +2550,17 @@ IN_PROC_BROWSER_TEST_F(AutofillCreditCardInteractiveTest, FillLocalCreditCard) {
 //        restricted to checkout related pages.
 class AutofillRestrictUnownedFieldsTest
     : public AutofillInteractiveTestBase,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<bool> {
  protected:
-  AutofillRestrictUnownedFieldsTest()
-      : restrict_unowned_fields_(std::get<0>(GetParam())),
-        autofill_enable_company_name_(std::get<1>(GetParam())) {
+  AutofillRestrictUnownedFieldsTest() : restrict_unowned_fields_(GetParam()) {
     std::vector<base::Feature> enabled;
-    std::vector<base::Feature> disabled = {
-        features::kAutofillEnforceMinRequiredFieldsForHeuristics,
-        features::kAutofillEnforceMinRequiredFieldsForQuery,
-        features::kAutofillEnforceMinRequiredFieldsForUpload};
+    std::vector<base::Feature> disabled;
     (restrict_unowned_fields_ ? enabled : disabled)
         .push_back(features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-    (autofill_enable_company_name_ ? enabled : disabled)
-        .push_back(features::kAutofillEnableCompanyName);
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
   const bool restrict_unowned_fields_;
-  const bool autofill_enable_company_name_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2566,7 +2581,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, NoAutocomplete) {
 
   // Of unowned forms are restricted, then there are no forms detected.
   if (restrict_unowned_fields_) {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     // We should only have samples saying that some elements were filtered.
     auto buckets =
         histogram.GetAllSamples("Autofill.UnownedFieldsWereFiltered");
@@ -2589,7 +2604,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, NoAutocomplete) {
                                                    "hasFilled()", &has_filled));
   EXPECT_EQ(has_filled, !restrict_unowned_fields_);
 
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If only some form fields are tagged with autocomplete types, then the
   // number of input elements will not match the number of fields when autofill
@@ -2601,7 +2616,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, NoAutocomplete) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -2631,7 +2646,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
                                                    "hasFilled()", &has_filled));
   EXPECT_EQ(has_filled, !restrict_unowned_fields_);
 
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If only some form fields are tagged with autocomplete types, then the
   // number of input elements will not match the number of fields when autofill
@@ -2663,7 +2678,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
     ExpectFieldValue("address", "4120 Freidrich Lane");
     ExpectFieldValue("state", "TX");
     ExpectFieldValue("city", "Austin");
-    ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
+    ExpectFieldValue("company", "Initech");
     ExpectFieldValue("email", "red.swingline@initech.com");
     ExpectFieldValue("phone", "15125551234");
   }
@@ -2671,7 +2686,8 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
+IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest,
+                       DISABLED_AllAutocomplete) {
   SCOPED_TRACE(base::StringPrintf("restrict_unowned_fields_ = %d",
                                   restrict_unowned_fields_));
   CreateTestProfile();
@@ -2691,7 +2707,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
                                                    "hasFilled()", &has_filled));
   EXPECT_TRUE(has_filled);
 
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If all form fields are tagged with autocomplete types, we make them all
   // available to be filled.
@@ -2709,16 +2725,12 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // An extension of the test fixture for tests with site isolation.
-//
-// Test params:
-//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
-//        is enabled for testing.
 class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
  protected:
   AutofillInteractiveIsolationTest() = default;
@@ -2867,34 +2879,23 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_FALSE(IsPopupShown());
 }
 
-// Test params:
-//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
-//        is enabled for testing.
-class AutofillDynamicFormInteractiveTest
-    : public AutofillInteractiveTestBase,
-      public testing::WithParamInterface<bool> {
+class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
+ public:
+  AutofillDynamicFormInteractiveTest(
+      const AutofillDynamicFormInteractiveTest&) = delete;
+  AutofillDynamicFormInteractiveTest& operator=(
+      const AutofillDynamicFormInteractiveTest&) = delete;
+
  protected:
-  AutofillDynamicFormInteractiveTest()
-      : AutofillInteractiveTestBase(), company_name_enabled_(GetParam()) {
+  AutofillDynamicFormInteractiveTest() {
     // Setup that the test expects a re-fill to happen.
     test_delegate()->SetIsExpectingDynamicRefill(true);
   }
+
   ~AutofillDynamicFormInteractiveTest() override = default;
 
   // AutofillInteractiveTestBase:
-  void SetUp() override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-
-    if (company_name_enabled_) {
-      enabled_features.push_back(features::kAutofillEnableCompanyName);
-    } else {
-      disabled_features.push_back(features::kAutofillEnableCompanyName);
-    }
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-    AutofillInteractiveTestBase::SetUp();
-  }
+  void SetUp() override { AutofillInteractiveTestBase::SetUp(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     AutofillInteractiveTestBase::SetUpCommandLine(command_line);
@@ -2902,23 +2903,37 @@ class AutofillDynamicFormInteractiveTest
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
+};
 
-  const bool company_name_enabled_;
+class AutofillDynamicFormReplacementInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
+ public:
+  AutofillDynamicFormReplacementInteractiveTest()
+      : refill_with_renderer_ids_(GetParam()) {
+    scoped_feature_.InitWithFeatureState(
+        features::kAutofillRefillWithRendererIds, refill_with_renderer_ids_);
+  }
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillDynamicFormInteractiveTest);
+ protected:
+  bool refill_with_renderer_ids_;
+  base::test::ScopedFeatureList scoped_feature_;
 };
 
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
                        DynamicChangingFormFill) {
   CreateTestProfile();
 
   GURL url =
       embedded_test_server()->GetURL("a.com", "/autofill/dynamic_form.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   TriggerFormFill("firstname");
 
@@ -2933,12 +2948,12 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company_form1", "Initech");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
                        TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
@@ -2948,6 +2963,12 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   GURL url = embedded_test_server()->GetURL("a.com",
                                             "/autofill/two_dynamic_forms.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   TriggerFormFill("firstname_form1");
 
@@ -2962,7 +2983,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company_form1", "Initech");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 
@@ -2979,19 +3000,25 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form2", "4120 Freidrich Lane");
   ExpectFieldValue("state_form2", "TX");
   ExpectFieldValue("city_form2", "Austin");
-  ExpectFieldValue("company_form2", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company_form2", "Initech");
   ExpectFieldValue("email_form2", "red.swingline@initech.com");
   ExpectFieldValue("phone_form2", "15125551234");
 }
 
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
                        DynamicChangingFormFill_SecondChange) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/double_dynamic_form.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   TriggerFormFill("firstname");
 
@@ -3012,7 +3039,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
 
@@ -3039,13 +3066,19 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_new_field_types.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   TriggerFormFill("firstname");
 
@@ -3073,7 +3106,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change select fields to text
 // fields by changing the visibilities.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_SelectToText) {
   CreateTestProfile();
 
@@ -3092,14 +3125,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state_us", "Texas");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the visibility of a
 // field after it's autofilled.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_VisibilitySwitch) {
   CreateTestProfile();
 
@@ -3120,14 +3153,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("state_first", "Texas");
   ExpectFieldValue("state_second", "Texas");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappears) {
   CreateTestProfile();
 
@@ -3146,14 +3179,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
 
@@ -3172,7 +3205,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -3180,7 +3213,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     AutofillDynamicFormInteractiveTest,
     DynamicFormFill_FirstElementDisappearsMultipleBadNameForms) {
   CreateTestProfile();
@@ -3213,7 +3246,7 @@ IN_PROC_BROWSER_TEST_P(
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
   CreateTestProfile();
 
@@ -3243,7 +3276,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with no name.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     AutofillDynamicFormInteractiveTest,
     DynamicFormFill_FirstElementDisappearsMultipleNoNameForms) {
   CreateTestProfile();
@@ -3275,7 +3308,7 @@ IN_PROC_BROWSER_TEST_P(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
 
@@ -3294,20 +3327,26 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
-// Test that credit card fields are never re-filled.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       DynamicChangingFormFill_NotForCreditCard) {
+// Test that credit card fields are re-filled.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
+                       DynamicChangingFormFill_AlsoForCreditCard) {
   CreateTestCreditCart();
 
   // Navigate to the page.
   GURL url = https_server()->GetURL("a.com",
                                     "/autofill/dynamic_form_credit_card.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   // Trigger the initial fill.
   FocusFieldByName("cc-name");
@@ -3321,19 +3360,19 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   bool has_refilled = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetWebContents(), "hasRefilled()", &has_refilled));
-  ASSERT_FALSE(has_refilled);
+  ASSERT_TRUE(has_refilled);
 
   // There should be no values in the fields.
-  ExpectFieldValue("cc-name", "");
-  ExpectFieldValue("cc-num", "");
-  ExpectFieldValue("cc-exp-month", "01");   // Default value.
-  ExpectFieldValue("cc-exp-year", "2010");  // Default value.
+  ExpectFieldValue("cc-name", "Milton Waddams");
+  ExpectFieldValue("cc-num", "4111111111111111");
+  ExpectFieldValue("cc-exp-month", "09");
+  ExpectFieldValue("cc-exp-year", "2999");
   ExpectFieldValue("cc-csc", "");
 }
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
 
@@ -3354,14 +3393,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
 
@@ -3380,22 +3419,28 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   // The fields that were initially filled and not reset should still be filled.
   ExpectFieldValue("firstname", "");  // That field value was reset dynamically.
   ExpectFieldValue("address1", "4120 Freidrich Lane");
-  ExpectFieldValue("state", "CA");   // Default value.
+  ExpectFieldValue("state", "CA");  // Default value.
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically generated forms with no name if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
                        DynamicChangingFormFill_FormWithoutName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_no_name.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // TODO(crbug/896689): Cleanup feature, also in JS code.
+  if (refill_with_renderer_ids_) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
+  }
 
   TriggerFormFill("firstname");
 
@@ -3410,7 +3455,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company_form1", "Initech");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 }
@@ -3418,7 +3463,7 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
 
@@ -3440,14 +3485,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
 
@@ -3468,15 +3513,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_syntheticform1", "4120 Freidrich Lane");
   ExpectFieldValue("state_syntheticform1", "TX");
   ExpectFieldValue("city_syntheticform1", "Austin");
-  ExpectFieldValue("company_syntheticform1",
-                   company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company_syntheticform1", "Initech");
   ExpectFieldValue("email_syntheticform1", "red.swingline@initech.com");
   ExpectFieldValue("phone_syntheticform1", "15125551234");
 }
 
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();
 
@@ -3497,20 +3541,16 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
+  ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
-INSTANTIATE_TEST_SUITE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
-
 INSTANTIATE_TEST_SUITE_P(All,
-                         AutofillDynamicFormInteractiveTest,
+                         AutofillDynamicFormReplacementInteractiveTest,
                          testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(All,
                          AutofillRestrictUnownedFieldsTest,
-                         testing::Combine(testing::Bool(), testing::Bool()));
+                         testing::Bool());
 }  // namespace autofill
-
-#endif  // !defined(OS_MACOSX)

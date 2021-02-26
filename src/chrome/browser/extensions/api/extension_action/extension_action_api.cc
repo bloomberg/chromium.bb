@@ -11,13 +11,13 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -149,8 +150,6 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
     case ActionInfo::TYPE_ACTION:
-      // TODO(https://crbug.com/893373): Add testing for this API (currently
-      // restricted to trunk).
       histogram_value = events::ACTION_ON_CLICKED;
       event_name = "action.onClicked";
       break;
@@ -240,11 +239,10 @@ void ExtensionActionAPI::Shutdown() {
 //
 
 ExtensionActionFunction::ExtensionActionFunction()
-    : details_(NULL),
+    : details_(nullptr),
       tab_id_(ExtensionAction::kDefaultTabId),
-      contents_(NULL),
-      extension_action_(NULL) {
-}
+      contents_(nullptr),
+      extension_action_(nullptr) {}
 
 ExtensionActionFunction::~ExtensionActionFunction() {
 }
@@ -356,7 +354,26 @@ void ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
 
 ExtensionFunction::ResponseAction
 ExtensionActionSetIconFunction::RunExtensionAction() {
-  EXTENSION_FUNCTION_VALIDATE(details_);
+  // TODO(devlin): Temporary logging to track down https://crbug.com/1087948.
+  // Remove this (and the redundant `if (!x) { VALIDATE(x); }`) checks after
+  // the bug is fixed.
+  // Don't reorder or remove values.
+  enum class FailureType {
+    kFailedToParseDetails = 0,
+    kFailedToDecodeCanvas = 1,
+    kFailedToUnpickleCanvas = 2,
+    kNoImageDataOrIconIndex = 3,
+    kMaxValue = kNoImageDataOrIconIndex,
+  };
+
+  auto log_set_icon_failure = [](FailureType type) {
+    base::UmaHistogramEnumeration("Extensions.ActionSetIconFailureType", type);
+  };
+
+  if (!details_) {
+    log_set_icon_failure(FailureType::kFailedToParseDetails);
+    EXTENSION_FUNCTION_VALIDATE(details_);
+  }
 
   // setIcon can take a variant argument: either a dictionary of canvas
   // ImageData, or an icon index.
@@ -365,8 +382,23 @@ ExtensionActionSetIconFunction::RunExtensionAction() {
   if (details_->GetDictionary("imageData", &canvas_set)) {
     gfx::ImageSkia icon;
 
-    EXTENSION_FUNCTION_VALIDATE(
-        ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon));
+    ExtensionAction::IconParseResult parse_result =
+        ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon);
+
+    if (parse_result != ExtensionAction::IconParseResult::kSuccess) {
+      switch (parse_result) {
+        case ExtensionAction::IconParseResult::kDecodeFailure:
+          log_set_icon_failure(FailureType::kFailedToDecodeCanvas);
+          break;
+        case ExtensionAction::IconParseResult::kUnpickleFailure:
+          log_set_icon_failure(FailureType::kFailedToUnpickleCanvas);
+          break;
+        case ExtensionAction::IconParseResult::kSuccess:
+          NOTREACHED();
+          break;
+      }
+      EXTENSION_FUNCTION_VALIDATE(false);
+    }
 
     if (icon.isNull())
       return RespondNow(Error("Icon invalid."));
@@ -391,6 +423,7 @@ ExtensionActionSetIconFunction::RunExtensionAction() {
     // Obsolete argument: ignore it.
     return RespondNow(NoArguments());
   } else {
+    log_set_icon_failure(FailureType::kNoImageDataOrIconIndex);
     EXTENSION_FUNCTION_VALIDATE(false);
   }
   NotifyChange();
@@ -468,31 +501,30 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetTitleFunction::RunExtensionAction() {
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(extension_action_->GetTitle(tab_id_))));
+  return RespondNow(
+      OneArgument(base::Value(extension_action_->GetTitle(tab_id_))));
 }
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetPopupFunction::RunExtensionAction() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      extension_action_->GetPopupUrl(tab_id_).spec())));
+  return RespondNow(
+      OneArgument(base::Value(extension_action_->GetPopupUrl(tab_id_).spec())));
 }
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  // Return a placeholder value if the extension has called
-  // setActionCountAsBadgeText(true) and the badge count shown for this tab is
-  // the number of actions matched.
+  // Return a placeholder value if the extension has enabled using
+  // declarativeNetRequest action count as badge text and the badge count shown
+  // for this tab is the number of actions matched.
   std::string badge_text =
       extension_action_->UseDNRActionCountAsBadgeText(tab_id_)
           ? declarative_net_request::kActionCountPlaceholderBadgeText
           : extension_action_->GetExplicitlySetBadgeText(tab_id_);
 
   // TODO(crbug.com/990224): Document this behavior once
-  // chrome.declarativeNetRequest.setActionCountAsBadgeText is promoted to beta
+  // chrome.declarativeNetRequest.setExtensionActionOptions is promoted to beta
   // from trunk.
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(std::move(badge_text))));
+  return RespondNow(OneArgument(base::Value(std::move(badge_text))));
 }
 
 ExtensionFunction::ResponseAction
@@ -503,7 +535,8 @@ ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   list->AppendInteger(static_cast<int>(SkColorGetG(color)));
   list->AppendInteger(static_cast<int>(SkColorGetB(color)));
   list->AppendInteger(static_cast<int>(SkColorGetA(color)));
-  return RespondNow(OneArgument(std::move(list)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
 }
 
 BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction() = default;
@@ -518,9 +551,9 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   // extension can operate incognito, then check the last active incognito, too.
   if ((!browser || !browser->window()->IsActive()) &&
       util::IsIncognitoEnabled(extension()->id(), profile) &&
-      profile->HasOffTheRecordProfile()) {
+      profile->HasPrimaryOTRProfile()) {
     browser =
-        chrome::FindLastActiveWithProfile(profile->GetOffTheRecordProfile());
+        chrome::FindLastActiveWithProfile(profile->GetPrimaryOTRProfile());
   }
 
   // If there's no active browser, or the Toolbar isn't visible, abort.

@@ -987,7 +987,7 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
         [scrollbar_painter_controller_ verticalScrollerImp];
     ScrollbarPainter new_vertical_painter = [NSClassFromString(@"NSScrollerImp")
         scrollerImpWithStyle:new_style
-                 controlSize:(NSControlSize)vertical_scrollbar->GetControlSize()
+                 controlSize:NSRegularControlSize
                   horizontal:NO
         replacingScrollerImp:old_vertical_painter];
     [old_vertical_painter setDelegate:nil];
@@ -1002,7 +1002,7 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
     // offset
     // and length are properly updated.
     int thickness =
-        mac_theme->ScrollbarThickness(vertical_scrollbar->GetControlSize());
+        mac_theme->ScrollbarThickness(vertical_scrollbar->ScaleFromDIP());
     vertical_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 
@@ -1015,8 +1015,7 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
     ScrollbarPainter new_horizontal_painter =
         [NSClassFromString(@"NSScrollerImp")
             scrollerImpWithStyle:new_style
-                     controlSize:(NSControlSize)
-                                     horizontal_scrollbar->GetControlSize()
+                     controlSize:NSRegularControlSize
                       horizontal:YES
             replacingScrollerImp:old_horizontal_painter];
     [old_horizontal_painter setDelegate:nil];
@@ -1032,7 +1031,7 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
     // offset
     // and length are properly updated.
     int thickness =
-        mac_theme->ScrollbarThickness(horizontal_scrollbar->GetControlSize());
+        mac_theme->ScrollbarThickness(horizontal_scrollbar->ScaleFromDIP());
     horizontal_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 

@@ -88,6 +88,18 @@ if {$addstatic} {
 #endif}
 }
 
+# Examine the parse.c file.  If it contains lines of the form:
+#
+#    "#ifndef SQLITE_ENABLE_UPDATE_LIMIT
+# 
+# then set the SQLITE_UDL_CAPABLE_PARSER flag in the amalgamation.
+#
+set in [open tsrc/parse.c]
+if {[regexp {ifndef SQLITE_ENABLE_UPDATE_DELETE_LIMIT} [read $in]]} {
+  puts $out "#define SQLITE_UDL_CAPABLE_PARSER 1"
+}
+close $in
+
 # These are the header files used by SQLite.  The first time any of these
 # files are seen in a #include statement in the C code, include the complete
 # text of the file in-line.  The file only needs to be included once.
@@ -183,7 +195,7 @@ proc copy_file {filename} {
   }
   set declpattern ^$declpattern\$
   while {![eof $in]} {
-    set line [gets $in]
+    set line [string trimright [gets $in]]
     incr ln
     if {[regexp {^\s*#\s*include\s+["<]([^">]+)[">]} $line all hdr]} {
       if {[info exists available_hdr($hdr)]} {

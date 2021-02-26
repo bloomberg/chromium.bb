@@ -41,8 +41,6 @@ namespace blink {
 // |SelectionModifier| class.
 class SelectionEditor final : public GarbageCollected<SelectionEditor>,
                               public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
-
  public:
   explicit SelectionEditor(LocalFrame&);
   virtual ~SelectionEditor();
@@ -64,7 +62,7 @@ class SelectionEditor final : public GarbageCollected<SelectionEditor>,
 
   void MarkCacheDirty();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Document& GetDocument() const;

@@ -86,7 +86,7 @@ AXObject* AXMenuListOption::ComputeParent() const {
     return select_ax_object;
 
   if (menu_list->HasChildren()) {
-    const auto& child_objects = menu_list->Children();
+    const auto& child_objects = menu_list->ChildrenIncludingIgnored();
     if (child_objects.IsEmpty())
       return nullptr;
     DCHECK_EQ(child_objects.size(), 1UL);
@@ -113,21 +113,6 @@ bool AXMenuListOption::IsOffScreen() const {
   return !IsVisible();
 }
 
-int AXMenuListOption::PosInSet() const {
-  // Value should be 1-based. 0 means not supported.
-  return SetSize() ? element_->index() + 1 : 0;
-}
-
-int AXMenuListOption::SetSize() const {
-  // Return 0 if not supported.
-  if (!element_)
-    return 0;
-  HTMLSelectElement* select = element_->OwnerSelectElement();
-  if (!select)
-    return 0;
-  return select->length();
-}
-
 AccessibilitySelectedState AXMenuListOption::IsSelected() const {
   if (!GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
@@ -145,14 +130,16 @@ bool AXMenuListOption::OnNativeClickAction() {
   if (!element_)
     return false;
 
-  // Clicking on an option within a menu list should first select that item,
-  // then toggle whether the menu list is showing.
-  element_->SetSelected(true);
+  if (IsA<AXMenuListPopup>(ParentObject())) {
+    // Clicking on an option within a menu list should first select that item
+    // (which should include firing `input` and `change` events), then toggle
+    // whether the menu list is showing.
+    static_cast<HTMLElement*>(element_)->AccessKeyAction(true);
 
-  // Calling OnNativeClickAction on the parent select element will toggle
-  // it open or closed.
-  if (IsA<AXMenuListPopup>(ParentObject()))
+    // Calling OnNativeClickAction on the parent select element will toggle
+    // it open or closed.
     return ParentObject()->OnNativeClickAction();
+  }
 
   return AXNodeObject::OnNativeClickAction();
 }
@@ -167,6 +154,16 @@ bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
 
 bool AXMenuListOption::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
+  if (IsInertOrAriaHidden()) {
+    if (ignored_reasons)
+      ComputeIsInertOrAriaHidden(ignored_reasons);
+    return true;
+  }
+
+  if (DynamicTo<HTMLOptionElement>(GetNode())->FastHasAttribute(
+          html_names::kHiddenAttr))
+    return true;
+
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
@@ -234,7 +231,7 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
   return nullptr;
 }
 
-void AXMenuListOption::Trace(Visitor* visitor) {
+void AXMenuListOption::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   AXNodeObject::Trace(visitor);
 }

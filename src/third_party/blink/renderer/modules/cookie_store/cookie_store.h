@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
+#include "services/network/public/mojom/cookie_manager.mojom-blink-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -21,11 +22,9 @@
 
 namespace blink {
 
-class CanonicalCookie;
+class CookieInit;
 class CookieStoreDeleteOptions;
 class CookieStoreGetOptions;
-class CookieStoreSetOptions;
-class CookieStoreSetExtraOptions;
 class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -34,7 +33,6 @@ class CookieStore final : public EventTargetWithInlineData,
                           public ExecutionContextLifecycleObserver,
                           public network::mojom::blink::CookieChangeListener {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
 
  public:
   CookieStore(
@@ -54,20 +52,17 @@ class CookieStore final : public EventTargetWithInlineData,
                     ExceptionState&);
 
   ScriptPromise set(ScriptState*,
-                    const CookieStoreSetExtraOptions*,
-                    ExceptionState&);
-  ScriptPromise set(ScriptState*,
                     const String& name,
                     const String& value,
-                    const CookieStoreSetOptions*,
                     ExceptionState&);
+  ScriptPromise set(ScriptState*, const CookieInit*, ExceptionState&);
   ScriptPromise Delete(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise Delete(ScriptState*,
                        const CookieStoreDeleteOptions*,
                        ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
@@ -78,7 +73,7 @@ class CookieStore final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   void RemoveAllEventListeners() override;
 
-  // RestrictedCookieChangeListener
+  // network::mojom::blink::CookieChangeListener
   void OnCookieChange(
       network::mojom::blink::CookieChangeInfoPtr change) override;
 
@@ -90,8 +85,9 @@ class CookieStore final : public EventTargetWithInlineData,
                             const RegisteredEventListener&) final;
 
  private:
-  using DoReadBackendResultConverter = void (*)(ScriptPromiseResolver*,
-                                                const Vector<CanonicalCookie>&);
+  using DoReadBackendResultConverter =
+      void (*)(ScriptPromiseResolver*,
+               const Vector<network::mojom::blink::CookieWithAccessResultPtr>);
 
   // Common code in CookieStore::{get,getAll}.
   //
@@ -108,18 +104,18 @@ class CookieStore final : public EventTargetWithInlineData,
   // the promise result expected by CookieStore.getAll.
   static void GetAllForUrlToGetAllResult(
       ScriptPromiseResolver*,
-      const Vector<CanonicalCookie>& backend_result);
+      const Vector<network::mojom::blink::CookieWithAccessResultPtr>
+          backend_result);
 
   // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
   // the promise result expected by CookieStore.get.
   static void GetAllForUrlToGetResult(
       ScriptPromiseResolver*,
-      const Vector<CanonicalCookie>& backend_result);
+      const Vector<network::mojom::blink::CookieWithAccessResultPtr>
+          backend_result);
 
   // Common code in CookieStore::delete and CookieStore::set.
-  ScriptPromise DoWrite(ScriptState*,
-                        const CookieStoreSetExtraOptions*,
-                        ExceptionState&);
+  ScriptPromise DoWrite(ScriptState*, const CookieInit*, ExceptionState&);
 
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,
                                          bool backend_result);

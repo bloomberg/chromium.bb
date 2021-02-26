@@ -57,11 +57,8 @@ class EmailInputType final : public BaseTextInputType {
   String ConvertFromVisibleValue(const String&) const override;
   String VisibleValue() const override;
 
-  ScriptRegexp& EnsureEmailRegexp() const;
   String ConvertEmailAddressToUnicode(const String&) const;
   String FindInvalidAddress(const String&) const;
-
-  mutable std::unique_ptr<ScriptRegexp> email_regexp_;
 };
 
 }  // namespace blink

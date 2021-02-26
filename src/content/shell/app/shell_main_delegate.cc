@@ -24,17 +24,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/web_test/web_test_browser_main_runner.h"
-#include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
-#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
 #include "ipc/ipc_buildflags.h"
 #include "net/cookies/cookie_monster.h"
-#include "services/service_manager/embedder/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -42,6 +38,12 @@
 #include "content/public/common/content_ipc_logging.h"
 #define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
     content::RegisterIPCLogger(msg_id, logger)
+#endif
+
+#if !defined(OS_ANDROID)
+#include "content/web_test/browser/web_test_browser_main_runner.h"  // nogncheck
+#include "content/web_test/browser/web_test_content_browser_client.h"  // nogncheck
+#include "content/web_test/renderer/web_test_content_renderer_client.h"  // nogncheck
 #endif
 
 #if defined(OS_ANDROID)
@@ -55,10 +57,10 @@
 #include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/app/shell_main_delegate_mac.h"
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -68,7 +70,7 @@
 #include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #endif
 
@@ -156,7 +158,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   v8_crashpad_support::SetUp();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Needs to happen before InitializeResourceBundle().
   OverrideFrameworkBundlePath();
   OverrideOuterBundlePath();
@@ -164,10 +166,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   OverrideSourceRootPath();
   EnsureCorrectResolutionSettings();
   OverrideBundleID();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   InitLogging(command_line);
 
+#if !defined(OS_ANDROID)
   if (switches::IsRunWebTestsSwitchPresent()) {
     const bool browser_process =
         command_line.GetSwitchValueASCII(switches::kProcessType).empty();
@@ -176,12 +179,14 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       web_test_runner_->Initialize();
     }
   }
+#endif
 
   return false;
 }
 
 void ShellMainDelegate::PreSandboxStartup() {
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
   base::CPU cpu_info;
@@ -198,9 +203,9 @@ void ShellMainDelegate::PreSandboxStartup() {
             switches::kProcessType);
     crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
     // Reporting for sub-processes will be initialized in ZygoteForked.
-    if (process_type != service_manager::switches::kZygoteProcess) {
+    if (process_type != switches::kZygoteProcess) {
       crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       crash_reporter::SetFirstChanceExceptionHandler(
           v8::TryHandleWebAssemblyTrapPosix);
 #endif
@@ -224,6 +229,7 @@ int ShellMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
+#if !defined(OS_ANDROID)
   if (switches::IsRunWebTestsSwitchPresent()) {
     // Web tests implement their own BrowserMain() replacement.
     web_test_runner_->RunBrowserMain(main_function_params);
@@ -234,7 +240,6 @@ int ShellMainDelegate::RunProcess(
     return 0;
   }
 
-#if !defined(OS_ANDROID)
   // On non-Android, we can return -1 and have the caller run BrowserMain()
   // normally.
   return -1;
@@ -258,7 +263,7 @@ int ShellMainDelegate::RunProcess(
 #endif
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 void ShellMainDelegate::ZygoteForked() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
@@ -270,7 +275,7 @@ void ShellMainDelegate::ZygoteForked() {
         v8::TryHandleWebAssemblyTrapPosix);
   }
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 void ShellMainDelegate::InitializeResourceBundle() {
 #if defined(OS_ANDROID)
@@ -303,7 +308,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
                                                           pak_region);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
       base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ui::ResourceBundle::InitSharedInstanceWithPakPath(GetResourcesPakFilePath());
 #else
   base::FilePath pak_file;
@@ -315,7 +320,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 void ShellMainDelegate::PreCreateMainMessageLoop() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   RegisterShellCrApp();
 #endif
 }
@@ -326,10 +331,13 @@ ContentClient* ShellMainDelegate::CreateContentClient() {
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  if (switches::IsRunWebTestsSwitchPresent())
+#if !defined(OS_ANDROID)
+  if (switches::IsRunWebTestsSwitchPresent()) {
     browser_client_ = std::make_unique<WebTestContentBrowserClient>();
-  else
-    browser_client_ = std::make_unique<ShellContentBrowserClient>();
+    return browser_client_.get();
+  }
+#endif
+  browser_client_ = std::make_unique<ShellContentBrowserClient>();
   return browser_client_.get();
 }
 
@@ -339,10 +347,13 @@ ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  if (switches::IsRunWebTestsSwitchPresent())
+#if !defined(OS_ANDROID)
+  if (switches::IsRunWebTestsSwitchPresent()) {
     renderer_client_ = std::make_unique<WebTestContentRendererClient>();
-  else
-    renderer_client_ = std::make_unique<ShellContentRendererClient>();
+    return renderer_client_.get();
+  }
+#endif
+  renderer_client_ = std::make_unique<ShellContentRendererClient>();
   return renderer_client_.get();
 }
 

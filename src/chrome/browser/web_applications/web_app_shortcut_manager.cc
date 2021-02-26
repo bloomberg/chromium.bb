@@ -47,14 +47,21 @@ void WebAppShortcutManager::GetShortcutInfoForApp(
     const AppId& app_id,
     GetShortcutInfoCallback callback) {
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
-  DCHECK(app);
+
+  // app could be nullptr if registry profile is being deleted.
+  if (!app) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
   // Build a common intersection between desired and downloaded icons.
   auto icon_sizes_in_px = base::STLSetIntersection<std::vector<SquareSizePx>>(
-      app->downloaded_icon_sizes(), GetDesiredIconSizesForShortcut());
+      app->downloaded_icon_sizes(IconPurpose::ANY),
+      GetDesiredIconSizesForShortcut());
 
+  DCHECK(icon_manager_);
   if (!icon_sizes_in_px.empty()) {
-    icon_manager_->ReadIcons(app_id, icon_sizes_in_px,
+    icon_manager_->ReadIcons(app_id, IconPurpose::ANY, icon_sizes_in_px,
                              base::BindOnce(&WebAppShortcutManager::OnIconsRead,
                                             weak_ptr_factory_.GetWeakPtr(),
                                             app_id, std::move(callback)));
@@ -65,25 +72,18 @@ void WebAppShortcutManager::GetShortcutInfoForApp(
   // get.
   SquareSizePx desired_icon_size = GetDesiredIconSizesForShortcut().back();
 
-  if (icon_manager_->HasIconToResize(app_id, desired_icon_size)) {
-    icon_manager_->ReadIconAndResize(
-        app_id, desired_icon_size,
-        base::BindOnce(&WebAppShortcutManager::OnIconsRead,
-                       weak_ptr_factory_.GetWeakPtr(), app_id,
-                       std::move(callback)));
-  } else {
-    // No icon found. Create shortcut info with the standard application icon
-    // anyway.
-    OnIconsRead(app_id, std::move(callback),
-                std::map<SquareSizePx, SkBitmap>());
-  }
+  icon_manager_->ReadIconAndResize(
+      app_id, IconPurpose::ANY, desired_icon_size,
+      base::BindOnce(&WebAppShortcutManager::OnIconsRead,
+                     weak_ptr_factory_.GetWeakPtr(), app_id,
+                     std::move(callback)));
 }
 
 void WebAppShortcutManager::OnIconsRead(
     const AppId& app_id,
     GetShortcutInfoCallback callback,
     std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
-  // |icon_bitmaps| can be empty here.
+  // |icon_bitmaps| can be empty here if no icon found.
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   if (!app) {
     std::move(callback).Run(nullptr);
@@ -114,12 +114,13 @@ std::unique_ptr<ShortcutInfo> WebAppShortcutManager::BuildShortcutInfoForWebApp(
   auto shortcut_info = std::make_unique<ShortcutInfo>();
 
   shortcut_info->extension_id = app->app_id();
-  shortcut_info->url = app->launch_url();
+  shortcut_info->url = app->start_url();
   shortcut_info->title = base::UTF8ToUTF16(app->name());
   shortcut_info->description = base::UTF8ToUTF16(app->description());
   shortcut_info->profile_path = profile()->GetPath();
   shortcut_info->profile_name =
       profile()->GetPrefs()->GetString(prefs::kProfileName);
+  shortcut_info->is_multi_profile = true;
 
   if (const apps::FileHandlers* file_handlers =
           file_handler_manager_->GetEnabledFileHandlers(app->app_id())) {

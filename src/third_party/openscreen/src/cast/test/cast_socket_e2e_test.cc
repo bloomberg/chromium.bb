@@ -16,9 +16,10 @@
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
-#include "cast/receiver/channel/testing/device_auth_test_helpers.h"
+#include "cast/receiver/channel/static_credentials.h"
 #include "cast/receiver/public/receiver_socket_factory.h"
 #include "cast/sender/public/sender_socket_factory.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/serial_delete_ptr.h"
 #include "platform/api/tls_connection_factory.h"
@@ -28,22 +29,27 @@
 #include "platform/impl/logging.h"
 #include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
+#include "testing/util/task_util.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {
+namespace {
 
-using std::chrono::milliseconds;
+using ::testing::_;
+using ::testing::StrictMock;
 
-constexpr auto kCertificateDuration = std::chrono::hours(24);
+constexpr char kLogDecorator[] = "--- ";
 
-class SenderSocketsClient final
-    : public SenderSocketFactory::Client,
-      public VirtualConnectionRouter::SocketErrorHandler {
+}  // namespace
+
+class SenderSocketsClient : public SenderSocketFactory::Client,
+                            public VirtualConnectionRouter::SocketErrorHandler {
  public:
-  SenderSocketsClient(VirtualConnectionRouter* router) : router_(router) {}
-  ~SenderSocketsClient() = default;
+  explicit SenderSocketsClient(VirtualConnectionRouter* router)  // NOLINT
+      : router_(router) {}
+  virtual ~SenderSocketsClient() = default;
 
   CastSocket* socket() const { return socket_; }
 
@@ -52,7 +58,8 @@ class SenderSocketsClient final
                    const IPEndpoint& endpoint,
                    std::unique_ptr<CastSocket> socket) {
     OSP_CHECK(!socket_);
-    OSP_LOG_INFO << "\tSender connected to endpoint: " << endpoint;
+    OSP_LOG_INFO << kLogDecorator
+                 << "Sender connected to endpoint: " << endpoint;
     socket_ = socket.get();
     router_->TakeSocket(this, std::move(socket));
   }
@@ -64,23 +71,30 @@ class SenderSocketsClient final
   }
 
   // VirtualConnectionRouter::SocketErrorHandler overrides.
-  void OnClose(CastSocket* socket) override {}
-  void OnError(CastSocket* socket, Error error) override {
-    OSP_NOTREACHED() << error;
+  void OnClose(CastSocket* socket) override {
+    socket_ = nullptr;
+    OnCloseMock(socket);
   }
+  void OnError(CastSocket* socket, Error error) override {
+    socket_ = nullptr;
+    OnErrorMock(socket, std::move(error));
+  }
+
+  MOCK_METHOD(void, OnCloseMock, (CastSocket * socket), ());
+  MOCK_METHOD(void, OnErrorMock, (CastSocket * socket, Error error), ());
 
  private:
   VirtualConnectionRouter* const router_;
   std::atomic<CastSocket*> socket_{nullptr};
 };
 
-class ReceiverSocketsClient final
+class ReceiverSocketsClient
     : public ReceiverSocketFactory::Client,
       public VirtualConnectionRouter::SocketErrorHandler {
  public:
   explicit ReceiverSocketsClient(VirtualConnectionRouter* router)
       : router_(router) {}
-  ~ReceiverSocketsClient() = default;
+  virtual ~ReceiverSocketsClient() = default;
 
   const IPEndpoint& endpoint() const { return endpoint_; }
   CastSocket* socket() const { return socket_; }
@@ -90,7 +104,8 @@ class ReceiverSocketsClient final
                    const IPEndpoint& endpoint,
                    std::unique_ptr<CastSocket> socket) override {
     OSP_CHECK(!socket_);
-    OSP_LOG_INFO << "\tReceiver got connection from endpoint: " << endpoint;
+    OSP_LOG_INFO << kLogDecorator
+                 << "Receiver got connection from endpoint: " << endpoint;
     endpoint_ = endpoint;
     socket_ = socket.get();
     router_->TakeSocket(this, std::move(socket));
@@ -101,10 +116,17 @@ class ReceiverSocketsClient final
   }
 
   // VirtualConnectionRouter::SocketErrorHandler overrides.
-  void OnClose(CastSocket* socket) override {}
-  void OnError(CastSocket* socket, Error error) override {
-    OSP_NOTREACHED() << error;
+  void OnClose(CastSocket* socket) override {
+    socket_ = nullptr;
+    OnCloseMock(socket);
   }
+  void OnError(CastSocket* socket, Error error) override {
+    socket_ = nullptr;
+    OnErrorMock(socket, std::move(error));
+  }
+
+  MOCK_METHOD(void, OnCloseMock, (CastSocket * socket), ());
+  MOCK_METHOD(void, OnErrorMock, (CastSocket * socket, Error error), ());
 
  private:
   VirtualConnectionRouter* router_;
@@ -115,13 +137,14 @@ class ReceiverSocketsClient final
 class CastSocketE2ETest : public ::testing::Test {
  public:
   void SetUp() override {
-    PlatformClientPosix::Create(milliseconds{10}, Clock::duration{0});
+    PlatformClientPosix::Create(std::chrono::milliseconds(10),
+                                std::chrono::milliseconds(0));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
 
     sender_router_ = MakeSerialDelete<VirtualConnectionRouter>(
         task_runner_, &sender_vc_manager_);
     sender_client_ =
-        std::make_unique<SenderSocketsClient>(sender_router_.get());
+        std::make_unique<StrictMock<SenderSocketsClient>>(sender_router_.get());
     sender_factory_ = MakeSerialDelete<SenderSocketFactory>(
         task_runner_, sender_client_.get(), task_runner_);
     sender_tls_factory_ = SerialDeletePtr<TlsConnectionFactory>(
@@ -130,106 +153,20 @@ class CastSocketE2ETest : public ::testing::Test {
             .release());
     sender_factory_->set_factory(sender_tls_factory_.get());
 
-    // NOTE: Device cert chain generation.
-    bssl::UniquePtr<EVP_PKEY> root_key = GenerateRsaKeyPair();
-    bssl::UniquePtr<EVP_PKEY> intermediate_key = GenerateRsaKeyPair();
-    bssl::UniquePtr<EVP_PKEY> device_key = GenerateRsaKeyPair();
-    ASSERT_TRUE(root_key);
-    ASSERT_TRUE(intermediate_key);
-    ASSERT_TRUE(device_key);
+    ErrorOr<GeneratedCredentials> creds =
+        GenerateCredentialsForTesting("Device ID");
+    ASSERT_TRUE(creds.is_value());
+    credentials_ = std::move(creds.value());
 
-    ErrorOr<bssl::UniquePtr<X509>> root_cert_or_error =
-        CreateSelfSignedX509CertificateForTest(
-            "Cast Root CA", kCertificateDuration, *root_key,
-            GetWallTimeSinceUnixEpoch(), true);
-    ASSERT_TRUE(root_cert_or_error);
-    bssl::UniquePtr<X509> root_cert = std::move(root_cert_or_error.value());
-
-    ErrorOr<bssl::UniquePtr<X509>> intermediate_cert_or_error =
-        CreateSelfSignedX509CertificateForTest(
-            "Cast Intermediate", kCertificateDuration, *intermediate_key,
-            GetWallTimeSinceUnixEpoch(), true, root_cert.get(), root_key.get());
-    ASSERT_TRUE(intermediate_cert_or_error);
-    bssl::UniquePtr<X509> intermediate_cert =
-        std::move(intermediate_cert_or_error.value());
-
-    ErrorOr<bssl::UniquePtr<X509>> device_cert_or_error =
-        CreateSelfSignedX509CertificateForTest(
-            "Test Device", kCertificateDuration, *device_key,
-            GetWallTimeSinceUnixEpoch(), false, intermediate_cert.get(),
-            intermediate_key.get());
-    ASSERT_TRUE(device_cert_or_error);
-    bssl::UniquePtr<X509> device_cert = std::move(device_cert_or_error.value());
-
-    // NOTE: Device cert chain plumbing + serialization.
-    receiver_creds_provider_.device_creds.private_key = std::move(device_key);
-
-    int cert_length = i2d_X509(device_cert.get(), nullptr);
-    std::string cert_serial(cert_length, 0);
-    uint8_t* out = reinterpret_cast<uint8_t*>(&cert_serial[0]);
-    i2d_X509(device_cert.get(), &out);
-    receiver_creds_provider_.device_creds.certs.emplace_back(
-        std::move(cert_serial));
-
-    cert_length = i2d_X509(intermediate_cert.get(), nullptr);
-    cert_serial.resize(cert_length);
-    out = reinterpret_cast<uint8_t*>(&cert_serial[0]);
-    i2d_X509(intermediate_cert.get(), &out);
-    receiver_creds_provider_.device_creds.certs.emplace_back(
-        std::move(cert_serial));
-
-    cert_length = i2d_X509(root_cert.get(), nullptr);
-    std::vector<uint8_t> trust_anchor_der(cert_length);
-    out = &trust_anchor_der[0];
-    i2d_X509(root_cert.get(), &out);
-    CastTrustStore::CreateInstanceForTest(trust_anchor_der);
-
-    // NOTE: TLS key pair + certificate generation.
-    bssl::UniquePtr<EVP_PKEY> tls_key = GenerateRsaKeyPair();
-    ASSERT_EQ(EVP_PKEY_id(tls_key.get()), EVP_PKEY_RSA);
-    ErrorOr<bssl::UniquePtr<X509>> tls_cert_or_error =
-        CreateSelfSignedX509Certificate("Test Device TLS", kCertificateDuration,
-                                        *tls_key, GetWallTimeSinceUnixEpoch());
-    ASSERT_TRUE(tls_cert_or_error);
-    bssl::UniquePtr<X509> tls_cert = std::move(tls_cert_or_error.value());
-
-    // NOTE: TLS private key serialization.
-    RSA* rsa_key = EVP_PKEY_get0_RSA(tls_key.get());
-    size_t pkey_len = 0;
-    uint8_t* pkey_bytes = nullptr;
-    ASSERT_TRUE(RSA_private_key_to_bytes(&pkey_bytes, &pkey_len, rsa_key));
-    ASSERT_GT(pkey_len, 0u);
-    std::vector<uint8_t> tls_key_serial(pkey_bytes, pkey_bytes + pkey_len);
-    OPENSSL_free(pkey_bytes);
-    receiver_tls_creds_.der_rsa_private_key = std::move(tls_key_serial);
-
-    // NOTE: TLS public key serialization.
-    pkey_len = 0;
-    pkey_bytes = nullptr;
-    ASSERT_TRUE(RSA_public_key_to_bytes(&pkey_bytes, &pkey_len, rsa_key));
-    ASSERT_GT(pkey_len, 0u);
-    std::vector<uint8_t> tls_pub_serial(pkey_bytes, pkey_bytes + pkey_len);
-    OPENSSL_free(pkey_bytes);
-    receiver_tls_creds_.der_rsa_public_key = std::move(tls_pub_serial);
-
-    // NOTE: TLS cert serialization.
-    cert_length = 0;
-    cert_length = i2d_X509(tls_cert.get(), nullptr);
-    ASSERT_GT(cert_length, 0);
-    std::vector<uint8_t> tls_cert_serial(cert_length);
-    out = &tls_cert_serial[0];
-    i2d_X509(tls_cert.get(), &out);
-    receiver_creds_provider_.tls_cert_der = tls_cert_serial;
-    receiver_tls_creds_.der_x509_cert = std::move(tls_cert_serial);
-
+    CastTrustStore::CreateInstanceForTest(credentials_.root_cert_der);
     auth_handler_ = MakeSerialDelete<DeviceAuthNamespaceHandler>(
-        task_runner_, &receiver_creds_provider_);
+        task_runner_, credentials_.provider.get());
     receiver_router_ = MakeSerialDelete<VirtualConnectionRouter>(
         task_runner_, &receiver_vc_manager_);
     receiver_router_->AddHandlerForLocalId(kPlatformReceiverId,
                                            auth_handler_.get());
-    receiver_client_ =
-        std::make_unique<ReceiverSocketsClient>(receiver_router_.get());
+    receiver_client_ = std::make_unique<StrictMock<ReceiverSocketsClient>>(
+        receiver_router_.get());
     receiver_factory_ = MakeSerialDelete<ReceiverSocketFactory>(
         task_runner_, receiver_client_.get(), receiver_router_.get());
 
@@ -268,39 +205,54 @@ class CastSocketE2ETest : public ::testing::Test {
     return address;
   }
 
-  void WaitForCastSocket() {
-    int attempts = 1;
-    constexpr int kMaxAttempts = 8;
-    constexpr std::chrono::milliseconds kSocketWaitDelay(250);
-    do {
-      OSP_LOG_INFO << "\tChecking for CastSocket, attempt " << attempts << "/"
-                   << kMaxAttempts;
-      if (sender_client_->socket()) {
-        break;
-      }
-      std::this_thread::sleep_for(kSocketWaitDelay);
-    } while (attempts++ < kMaxAttempts);
-    ASSERT_TRUE(sender_client_->socket());
-  }
-
   void Connect(const IPAddress& address) {
     uint16_t port = 65321;
-    OSP_LOG_INFO << "\tStarting socket factories";
+    OSP_LOG_INFO << kLogDecorator << "Starting socket factories";
     task_runner_->PostTask([this, &address, port]() {
-      OSP_LOG_INFO << "\tReceiver TLS factory Listen()";
-      receiver_tls_factory_->SetListenCredentials(receiver_tls_creds_);
+      OSP_LOG_INFO << kLogDecorator << "Receiver TLS factory Listen()";
+      receiver_tls_factory_->SetListenCredentials(credentials_.tls_credentials);
       receiver_tls_factory_->Listen(IPEndpoint{address, port},
                                     TlsListenOptions{1u});
     });
 
     task_runner_->PostTask([this, &address, port]() {
-      OSP_LOG_INFO << "\tSender CastSocket factory Connect()";
+      OSP_LOG_INFO << kLogDecorator << "Sender CastSocket factory Connect()";
       sender_factory_->Connect(IPEndpoint{address, port},
                                SenderSocketFactory::DeviceMediaPolicy::kNone,
                                sender_router_.get());
     });
 
-    WaitForCastSocket();
+    WaitForCondition([this]() { return sender_client_->socket(); });
+  }
+
+  void ConnectSocketsV4() {
+    OSP_LOG_INFO << "Getting loopback IPv4 address";
+    IPAddress loopback_address = GetLoopbackV4Address();
+    OSP_LOG_INFO << "Connecting CastSockets";
+    Connect(loopback_address);
+  }
+
+  template <typename SocketClient, typename PeerSocketClient>
+  void CloseSocketsFromOneEnd(VirtualConnectionRouter* router,
+                              SocketClient* client,
+                              PeerSocketClient* peer_client) {
+    // TODO(issuetracker.google.com/169967989): Would like to have a symmetric
+    // OnClose check.
+    EXPECT_CALL(*client, OnCloseMock(client->socket()));
+    EXPECT_CALL(*peer_client, OnErrorMock(peer_client->socket(), _))
+        .WillOnce([](CastSocket* socket, Error error) {
+          EXPECT_EQ(error.code(), Error::Code::kSocketClosedFailure);
+        });
+    int32_t id = client->socket()->socket_id();
+    std::atomic_bool did_run{false};
+    task_runner_->PostTask([id, router, &did_run]() {
+      router->CloseSocket(id);
+      did_run = true;
+    });
+    OSP_LOG_INFO << "Waiting for socket to close";
+    WaitForCondition([&did_run]() { return did_run.load(); });
+    EXPECT_FALSE(sender_client_->socket());
+    EXPECT_FALSE(receiver_client_->socket());
   }
 
   TaskRunner* task_runner_;
@@ -308,18 +260,17 @@ class CastSocketE2ETest : public ::testing::Test {
   // NOTE: Sender components.
   VirtualConnectionManager sender_vc_manager_;
   SerialDeletePtr<VirtualConnectionRouter> sender_router_;
-  std::unique_ptr<SenderSocketsClient> sender_client_;
+  std::unique_ptr<StrictMock<SenderSocketsClient>> sender_client_;
   SerialDeletePtr<SenderSocketFactory> sender_factory_;
   SerialDeletePtr<TlsConnectionFactory> sender_tls_factory_;
 
   // NOTE: Receiver components.
   VirtualConnectionManager receiver_vc_manager_;
   SerialDeletePtr<VirtualConnectionRouter> receiver_router_;
-  StaticCredentialsProvider receiver_creds_provider_;
+  GeneratedCredentials credentials_;
   SerialDeletePtr<DeviceAuthNamespaceHandler> auth_handler_;
-  std::unique_ptr<ReceiverSocketsClient> receiver_client_;
+  std::unique_ptr<StrictMock<ReceiverSocketsClient>> receiver_client_;
   SerialDeletePtr<ReceiverSocketFactory> receiver_factory_;
-  TlsCredentials receiver_tls_creds_;
   SerialDeletePtr<TlsConnectionFactory> receiver_tls_factory_;
 };
 
@@ -328,10 +279,7 @@ class CastSocketE2ETest : public ::testing::Test {
 // TLS connection to a known port over the loopback device, and checking device
 // authentication.
 TEST_F(CastSocketE2ETest, ConnectV4) {
-  OSP_LOG_INFO << "Getting loopback IPv4 address";
-  IPAddress loopback_address = GetLoopbackV4Address();
-  OSP_LOG_INFO << "Connecting CastSockets";
-  Connect(loopback_address);
+  ConnectSocketsV4();
 }
 
 TEST_F(CastSocketE2ETest, ConnectV6) {
@@ -343,6 +291,20 @@ TEST_F(CastSocketE2ETest, ConnectV6) {
   } else {
     OSP_LOG_WARN << "Test skipped due to missing IPv6 loopback address";
   }
+}
+
+TEST_F(CastSocketE2ETest, SenderClose) {
+  ConnectSocketsV4();
+
+  CloseSocketsFromOneEnd(sender_router_.get(), sender_client_.get(),
+                         receiver_client_.get());
+}
+
+TEST_F(CastSocketE2ETest, ReceiverClose) {
+  ConnectSocketsV4();
+
+  CloseSocketsFromOneEnd(receiver_router_.get(), receiver_client_.get(),
+                         sender_client_.get());
 }
 
 }  // namespace cast

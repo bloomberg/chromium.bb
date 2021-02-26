@@ -1497,7 +1497,7 @@ void AutofillControllerJsTest::TestExtractNewForms(
 
   NSString* actual = ExecuteJavaScriptWithFormat(
       @"var forms = __gCrWeb.autofill.extractNewForms(%" PRIuS ", true); %@",
-      autofill::MinRequiredFieldsForHeuristics(),
+      autofill::kMinRequiredFieldsForHeuristics,
       [verifying_javascripts componentsJoinedByString:@"&&"]);
 
   EXPECT_NSEQ(@YES, actual) << base::SysNSStringToUTF8([NSString
@@ -1506,7 +1506,7 @@ void AutofillControllerJsTest::TestExtractNewForms(
                        ExecuteJavaScriptWithFormat(
                            @"var forms = __gCrWeb.autofill.extractNewForms("
                             "%" PRIuS ", true); __gCrWeb.stringify(forms)",
-                           autofill::MinRequiredFieldsForHeuristics()),
+                           autofill::kMinRequiredFieldsForHeuristics),
                        verifying_javascripts]);
 }
 
@@ -1731,7 +1731,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
 
   NSString* result =
       ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu, true)",
-                                  autofill::MinRequiredFieldsForHeuristics());
+                                  autofill::kMinRequiredFieldsForHeuristics);
   NSArray* resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
@@ -1748,7 +1748,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   result = ExecuteJavaScriptWithFormat(
       @"Object.prototype.toJSON=function(){return 'abcde';};"
        "__gCrWeb.autofill.extractForms(%zu, true)",
-      autofill::MinRequiredFieldsForHeuristics());
+      autofill::kMinRequiredFieldsForHeuristics);
   resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
@@ -1764,7 +1764,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   result = ExecuteJavaScriptWithFormat(
       @"Array.prototype.toJSON=function(){return 'abcde';};"
        "__gCrWeb.autofill.extractForms(%zu, true)",
-      autofill::MinRequiredFieldsForHeuristics());
+      autofill::kMinRequiredFieldsForHeuristics);
   resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
@@ -1777,6 +1777,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   }];
 }
 
+// TODO(crbug/1131038): Remove once using renderer IDs is launched.
 TEST_F(AutofillControllerJsTest, FillActiveFormField) {
   LoadHtml(kHTMLForTestingElements);
 
@@ -1802,6 +1803,39 @@ TEST_F(AutofillControllerJsTest, FillActiveFormField) {
                          "__gCrWeb.autofill.fillActiveFormField(data);"
                          "element.value === oldValue",
                         newValue))
+      << "A non-form element's value should changed.";
+}
+
+TEST_F(AutofillControllerJsTest, FillActiveFormFieldUsingRendererIDs) {
+  LoadHtml(kHTMLForTestingElements);
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Simulate form parsing to set renderer IDs.
+  ExecuteJavaScript(@"__gCrWeb.autofill.extractForms(0, true)");
+
+  NSString* newValue = @"new value";
+  EXPECT_NSEQ(
+      newValue,
+      ExecuteJavaScriptWithFormat(
+          @"var element=document.getElementsByName('lastname')[0];"
+           "element.focus();"
+           "var "
+           "data={\"name\":\"lastname\",\"value\":\"%@\","
+           "\"identifier\":\"lastname\",\"unique_renderer_id\":2};"
+           "__gCrWeb.autofill.fillActiveFormFieldUsingRendererIDs(data);"
+           "element.value",
+          newValue));
+
+  EXPECT_NSEQ(
+      @YES, ExecuteJavaScriptWithFormat(
+                @"var element=document.getElementsByName('gl')[0];"
+                 "element.focus();"
+                 "var oldValue = element.value;"
+                 "var "
+                 "data={\"name\":\"lastname\",\"value\":\"%@\","
+                 "\"identifier\":\"lastname\",\"unique_renderer_id\":2};"
+                 "__gCrWeb.autofill.fillActiveFormFieldUsingRendererIDs(data);"
+                 "element.value === oldValue",
+                newValue))
       << "A non-form element's value should changed.";
 }
 
@@ -1849,7 +1883,7 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
 
     NSString* result = ExecuteJavaScriptWithFormat(
         @"__gCrWeb.autofill.extractForms(%zu, true)",
-        autofill::MinRequiredFieldsForHeuristics());
+        autofill::kMinRequiredFieldsForHeuristics);
     NSArray* resultArray = [NSJSONSerialization
         JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                    options:0

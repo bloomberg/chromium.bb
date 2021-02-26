@@ -12,8 +12,8 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pdf_util.h"
@@ -22,6 +22,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -40,7 +41,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -61,7 +61,6 @@ using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
-using UMAType = extensions::MimeHandlerViewUMATypes::Type;
 
 namespace {
 constexpr char kTestExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
@@ -151,7 +150,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
       const GURL& url,
       std::string* view_id) {
     *view_id = base::GenerateGUID();
-    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
     transferrable_loader->url = url;
     transferrable_loader->head = network::mojom::URLResponseHead::New();
     transferrable_loader->head->mime_type = "application/pdf";
@@ -174,87 +173,6 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
       delete;
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMA_SameOriginResource) {
-  auto url = embedded_test_server()->GetURL("a.com", "/testPostMessageUMA.csv");
-  auto page_url = embedded_test_server()->GetURL(
-      "a.com",
-      base::StringPrintf("/test_postmessage_uma.html?%s", url.spec().c_str()));
-  InitializeTestPage(page_url);
-  EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
-  const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kCreateFrameContainer, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kAccessibleInvalid, 1},
-                    {UMAType::kAccessibleSelectAll, 1},
-                    {UMAType::kAccessibleGetSelectedText, 1},
-                    {UMAType::kAccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
-  base::HistogramTester histogram_tester;
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  for (const auto& pair : kTestCases) {
-    histogram_tester.ExpectBucketCount(
-        extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMA_CrossOriginResource) {
-  auto url = embedded_test_server()->GetURL("b.com", "/testPostMessageUMA.csv");
-  auto page_url = embedded_test_server()->GetURL(
-      "a.com",
-      base::StringPrintf("/test_postmessage_uma.html?%s", url.spec().c_str()));
-  InitializeTestPage(page_url);
-  EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
-  const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kCreateFrameContainer, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kInaccessibleInvalid, 1},
-                    {UMAType::kInaccessibleSelectAll, 1},
-                    {UMAType::kInaccessibleGetSelectedText, 1},
-                    {UMAType::kInaccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
-  base::HistogramTester histogram_tester;
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  for (const auto& pair : kTestCases) {
-    histogram_tester.ExpectBucketCount(
-        extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMAPDFLoadStatsFullPage) {
-  base::HistogramTester histogram_tester;
-  GURL data_url("data:application/pdf,foo");
-  ui_test_utils::NavigateToURL(browser(), data_url);
-  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
-  while (guest->IsLoading()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectBucketCount(
-      "PDF.LoadStatus", PDFLoadStatus::kLoadedFullPagePdfWithPdfium, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMAPDFLoadStatsEmbedded) {
-  base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  ASSERT_TRUE(content::ExecJs(
-      browser()->tab_strip_model()->GetWebContentsAt(0),
-      "document.write('<iframe></iframe>');"
-      "document.querySelector('iframe').src = 'data:application/pdf, foo';"));
-  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
-  while (guest->IsLoading()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectBucketCount(
-      "PDF.LoadStatus", PDFLoadStatus::kLoadedEmbeddedPdfWithPdfium, 1);
-}
-
 namespace {
 
 // A DevToolsAgentHostClient implementation doing nothing.
@@ -269,8 +187,8 @@ class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
 
 }  // namespace
 
-// Flaky on ChromeOS (https://crbug.com/1033009)
-#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS and Lacros (https://crbug.com/1033009)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 #define MAYBE_GuestDevToolsReloadsEmbedder DISABLED_GuestDevToolsReloadsEmbedder
 #else
 #define MAYBE_GuestDevToolsReloadsEmbedder GuestDevToolsReloadsEmbedder

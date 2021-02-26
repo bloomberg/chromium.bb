@@ -118,7 +118,8 @@ DEF_TEST(Skottie_Properties, reporter) {
                                                     "f": "test_font",
                                                     "s": 100,
                                                     "t": "inline_text",
-                                                    "lh": 120
+                                                    "lh": 120,
+                                                    "ls": 12
                                                   }
                                                 }
                                              ]
@@ -317,13 +318,16 @@ DEF_TEST(Skottie_Properties, reporter) {
       100,
       0,
       120,
+      12,
       0,
       SkTextUtils::kLeft_Align,
       Shaper::VAlign::kTopBaseline,
       Shaper::ResizePolicy::kNone,
+      Shaper::LinebreakPolicy::kExplicit,
       SkRect::MakeEmpty(),
       SK_ColorTRANSPARENT,
       SK_ColorTRANSPARENT,
+      TextPaintOrder::kFillStroke,
       false,
       false
     }));
@@ -382,6 +386,9 @@ DEF_TEST(Skottie_Annotations, reporter) {
             .make(&stream);
 
     REPORTER_ASSERT(reporter, animation);
+    REPORTER_ASSERT(reporter, animation->duration() == 10);
+    REPORTER_ASSERT(reporter, animation->inPoint()  == 0.0);
+    REPORTER_ASSERT(reporter, animation->outPoint() == 100.0);
 
     REPORTER_ASSERT(reporter, observer->fMarkers.size() == 2ul);
     REPORTER_ASSERT(reporter, std::get<0>(observer->fMarkers[0]) == "marker_1");
@@ -464,14 +471,16 @@ DEF_TEST(Skottie_Shaper_HAlign, reporter) {
                 tsize.text_size,
                 tsize.text_size,
                 0,
+                0,
                 talign.align,
-                skottie::Shaper::VAlign::kTopBaseline,
-                skottie::Shaper::ResizePolicy::kNone,
+                Shaper::VAlign::kTopBaseline,
+                Shaper::ResizePolicy::kNone,
+                Shaper::LinebreakPolicy::kExplicit,
                 Shaper::Flags::kNone
             };
 
-            const auto shape_result = skottie::Shaper::Shape(text, desc, text_point,
-                                                             SkFontMgr::RefDefault());
+            const auto shape_result = Shaper::Shape(text, desc, text_point,
+                                                    SkFontMgr::RefDefault());
             REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
             REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
 
@@ -530,14 +539,15 @@ DEF_TEST(Skottie_Shaper_VAlign, reporter) {
                 tsize.text_size,
                 tsize.text_size,
                 0,
+                0,
                 SkTextUtils::Align::kCenter_Align,
                 talign.align,
-                skottie::Shaper::ResizePolicy::kNone,
+                Shaper::ResizePolicy::kNone,
+                Shaper::LinebreakPolicy::kParagraph,
                 Shaper::Flags::kNone
             };
 
-            const auto shape_result = skottie::Shaper::Shape(text, desc, text_box,
-                                                             SkFontMgr::RefDefault());
+            const auto shape_result = Shaper::Shape(text, desc, text_box, SkFontMgr::RefDefault());
             REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
             REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
 
@@ -567,9 +577,11 @@ DEF_TEST(Skottie_Shaper_FragmentGlyphs, reporter) {
         18,
         18,
          0,
+         0,
         SkTextUtils::Align::kCenter_Align,
         Shaper::VAlign::kTop,
-        skottie::Shaper::ResizePolicy::kNone,
+        Shaper::ResizePolicy::kNone,
+        Shaper::LinebreakPolicy::kParagraph,
         Shaper::Flags::kNone
     };
 
@@ -577,8 +589,7 @@ DEF_TEST(Skottie_Shaper_FragmentGlyphs, reporter) {
     const auto text_box = SkRect::MakeWH(100, 100);
 
     {
-        const auto shape_result = skottie::Shaper::Shape(text, desc, text_box,
-                                                         SkFontMgr::RefDefault());
+        const auto shape_result = Shaper::Shape(text, desc, text_box, SkFontMgr::RefDefault());
         // Default/consolidated mode => single blob result.
         REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
         REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
@@ -662,17 +673,18 @@ DEF_TEST(Skottie_Shaper_ExplicitFontMgr, reporter) {
         18,
         18,
          0,
+         0,
         SkTextUtils::Align::kCenter_Align,
         Shaper::VAlign::kTop,
         Shaper::ResizePolicy::kNone,
+        Shaper::LinebreakPolicy::kParagraph,
         Shaper::Flags::kNone
     };
 
     const auto text_box = SkRect::MakeWH(100, 100);
 
     {
-        const auto shape_result = skottie::Shaper::Shape(SkString("foo bar"),
-                                                         desc, text_box, fontmgr);
+        const auto shape_result = Shaper::Shape(SkString("foo bar"), desc, text_box, fontmgr);
 
         REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
         REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
@@ -705,7 +717,7 @@ DEF_TEST(Skottie_Image_Loading, reporter) {
     private:
         sk_sp<ImageAsset> loadImageAsset(const char path[],
                                          const char name[],
-                                         const char id[]) const {
+                                         const char id[]) const override {
             return strcmp(id, "single_frame")
                     ? fMultiFrameAsset
                     : fSingleFrameAsset;

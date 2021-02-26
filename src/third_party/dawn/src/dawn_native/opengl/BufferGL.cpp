@@ -14,17 +14,50 @@
 
 #include "dawn_native/opengl/BufferGL.h"
 
+#include "dawn_native/CommandBuffer.h"
 #include "dawn_native/opengl/DeviceGL.h"
 
 namespace dawn_native { namespace opengl {
 
     // Buffer
 
+    // static
+    ResultOrError<Ref<Buffer>> Buffer::CreateInternalBuffer(Device* device,
+                                                            const BufferDescriptor* descriptor,
+                                                            bool shouldLazyClear) {
+        Ref<Buffer> buffer = AcquireRef(new Buffer(device, descriptor, shouldLazyClear));
+        if (descriptor->mappedAtCreation) {
+            DAWN_TRY(buffer->MapAtCreationInternal());
+        }
+
+        return std::move(buffer);
+    }
+
     Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
         : BufferBase(device, descriptor) {
+        // TODO(cwallez@chromium.org): Have a global "zero" buffer instead of creating a new 4-byte
+        // buffer?
+        uint64_t size = GetAppliedSize();
+
         device->gl.GenBuffers(1, &mBuffer);
         device->gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
-        device->gl.BufferData(GL_ARRAY_BUFFER, GetSize(), nullptr, GL_STATIC_DRAW);
+
+        // The buffers with mappedAtCreation == true will be initialized in
+        // BufferBase::MapAtCreation().
+        if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting) &&
+            !descriptor->mappedAtCreation) {
+            std::vector<uint8_t> clearValues(size, 1u);
+            device->gl.BufferData(GL_ARRAY_BUFFER, size, clearValues.data(), GL_STATIC_DRAW);
+        } else {
+            device->gl.BufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
+        }
+    }
+
+    Buffer::Buffer(Device* device, const BufferDescriptor* descriptor, bool shouldLazyClear)
+        : Buffer(device, descriptor) {
+        if (!shouldLazyClear) {
+            SetIsDataInitialized();
+        }
     }
 
     Buffer::~Buffer() {
@@ -35,49 +68,109 @@ namespace dawn_native { namespace opengl {
         return mBuffer;
     }
 
-    bool Buffer::IsMapWritable() const {
+    uint64_t Buffer::GetAppliedSize() const {
+        // TODO(cwallez@chromium.org): Have a global "zero" buffer instead of creating a new 4-byte
+        // buffer?
+        return std::max(GetSize(), uint64_t(4u));
+    }
+
+    void Buffer::EnsureDataInitialized() {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        InitializeToZero();
+    }
+
+    void Buffer::EnsureDataInitializedAsDestination(uint64_t offset, uint64_t size) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferRange(offset, size)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero();
+        }
+    }
+
+    void Buffer::EnsureDataInitializedAsDestination(const CopyTextureToBufferCmd* copy) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero();
+        }
+    }
+
+    void Buffer::InitializeToZero() {
+        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
+        ASSERT(!IsDataInitialized());
+
+        const uint64_t size = GetAppliedSize();
+        Device* device = ToBackend(GetDevice());
+
+        const std::vector<uint8_t> clearValues(size, 0u);
+        device->gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
+        device->gl.BufferSubData(GL_ARRAY_BUFFER, 0, size, clearValues.data());
+        device->IncrementLazyClearCountForTesting();
+
+        SetIsDataInitialized();
+    }
+
+    bool Buffer::IsCPUWritableAtCreation() const {
         // TODO(enga): All buffers in GL can be mapped. Investigate if mapping them will cause the
         // driver to migrate it to shared memory.
         return true;
     }
 
-    MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
+    MaybeError Buffer::MapAtCreationImpl() {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
-
         gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
-        void* data = gl.MapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        *mappedPointer = reinterpret_cast<uint8_t*>(data);
+        mMappedData = gl.MapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         return {};
     }
 
-    MaybeError Buffer::SetSubDataImpl(uint32_t start, uint32_t count, const void* data) {
+    MaybeError Buffer::MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
 
-        gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
-        gl.BufferSubData(GL_ARRAY_BUFFER, start, count, data);
-        return {};
-    }
+        // It is an error to map an empty range in OpenGL. We always have at least a 4-byte buffer
+        // so we extend the range to be 4 bytes.
+        if (size == 0) {
+            if (offset != 0) {
+                offset -= 4;
+            }
+            size = 4;
+        }
 
-    MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
-        const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
+        EnsureDataInitialized();
 
         // TODO(cwallez@chromium.org): this does GPU->CPU synchronization, we could require a high
         // version of OpenGL that would let us map the buffer unsynchronized.
         gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
-        void* data = gl.MapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-        CallMapReadCallback(serial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
+        void* mappedData = nullptr;
+        if (mode & wgpu::MapMode::Read) {
+            mappedData = gl.MapBufferRange(GL_ARRAY_BUFFER, offset, size, GL_MAP_READ_BIT);
+        } else {
+            ASSERT(mode & wgpu::MapMode::Write);
+            mappedData = gl.MapBufferRange(GL_ARRAY_BUFFER, offset, size, GL_MAP_WRITE_BIT);
+        }
+
+        // The frontend asks that the pointer returned by GetMappedPointerImpl is from the start of
+        // the resource but OpenGL gives us the pointer at offset. Remove the offset.
+        mMappedData = static_cast<uint8_t*>(mappedData) - offset;
         return {};
     }
 
-    MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
-        const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
-
-        // TODO(cwallez@chromium.org): this does GPU->CPU synchronization, we could require a high
-        // version of OpenGL that would let us map the buffer unsynchronized.
-        gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
-        void* data = gl.MapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        CallMapWriteCallback(serial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
-        return {};
+    void* Buffer::GetMappedPointerImpl() {
+        // The mapping offset has already been removed.
+        return mMappedData;
     }
 
     void Buffer::UnmapImpl() {
@@ -85,6 +178,7 @@ namespace dawn_native { namespace opengl {
 
         gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
         gl.UnmapBuffer(GL_ARRAY_BUFFER);
+        mMappedData = nullptr;
     }
 
     void Buffer::DestroyImpl() {

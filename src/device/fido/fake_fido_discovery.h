@@ -64,7 +64,6 @@ class FakeFidoDiscovery : public FidoDeviceDiscovery,
 
   explicit FakeFidoDiscovery(FidoTransportProtocol transport,
                              StartMode mode = StartMode::kManual);
-  ~FakeFidoDiscovery() override;
 
   // Blocks until start is requested.
   void WaitForCallToStart();
@@ -112,7 +111,7 @@ class FakeFidoDiscoveryFactory : public device::FidoDiscoveryFactory {
       StartMode mode = StartMode::kManual);
 
   // device::FidoDiscoveryFactory:
-  std::unique_ptr<FidoDiscoveryBase> Create(
+  std::vector<std::unique_ptr<FidoDiscoveryBase>> Create(
       FidoTransportProtocol transport) override;
 
  private:

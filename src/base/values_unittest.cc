@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -35,80 +36,23 @@ namespace base {
 // This test is only enabled when NDEBUG is defined. This way the test will not
 // fail in debug builds that sometimes contain larger versions of the standard
 // containers used inside base::Value.
-#if defined(NDEBUG)
-
-static size_t AlignSizeTo(size_t size, size_t alignment) {
-  EXPECT_TRUE((alignment & (alignment - 1)) == 0)
-      << "Alignment " << alignment << " is not a power of 2!";
-  return (size + (alignment - 1u)) & ~(alignment - 1u);
-}
-
 TEST(ValuesTest, SizeOfValue) {
-#define INNER_TYPES_LIST(X)              \
-  X(bool, bool_value_)                   \
-  X(int, int_value_)                     \
-  X(Value::DoubleStorage, double_value_) \
-  X(std::string, string_value_)          \
-  X(Value::BlobStorage, binary_value_)   \
-  X(Value::ListStorage, list_)           \
-  X(Value::DictStorage, dict_)
+  static_assert(
+      std::max({alignof(size_t), alignof(bool), alignof(int),
+                alignof(Value::DoubleStorage), alignof(std::string),
+                alignof(Value::BlobStorage), alignof(Value::ListStorage),
+                alignof(Value::DictStorage)}) == alignof(Value),
+      "Value does not have smallest possible alignof");
 
-#define INNER_FIELD_ALIGNMENT(type, value) alignof(type),
-
-  // The maximum alignment of each inner struct value field inside base::Value
-  size_t max_inner_value_alignment =
-      std::max({INNER_TYPES_LIST(INNER_FIELD_ALIGNMENT)});
-
-  // Check that base::Value has the smallest alignment possible. This would
-  // fail if the header would contain something that has a larger alignment
-  // than necessary.
-  EXPECT_EQ(max_inner_value_alignment, alignof(Value));
-
-  // Find the offset of each inner value. Which should normally not be
-  // larger than 4. Note that we use std::max(4, ...) because bool_value_
-  // could be stored just after the |bool_type_| field, with an offset of
-  // 1, and that would be ok.
-#define INNER_VALUE_START_OFFSET(type, value) offsetof(Value, value),
-
-  size_t min_inner_value_offset =
-      std::min({INNER_TYPES_LIST(INNER_VALUE_START_OFFSET)});
-
-  // Inner fields may contain pointers, which have an alignment of 8
-  // on most 64-bit platforms.
-  size_t expected_min_offset = alignof(void*);
-
-  EXPECT_EQ(expected_min_offset, min_inner_value_offset);
-
-  // Ensure that base::Value is not larger than necessary, i.e. that there is
-  // no un-necessary padding after the structs due to alignment constraints of
-  // one of the inner fields.
-#define INNER_STRUCT_END_OFFSET(type, value) \
-  offsetof(Value, value) + sizeof(type),
-
-  // The maximum size in bytes of each inner struct inside base::Value,
-  size_t max_inner_struct_end_offset =
-      std::max({INNER_TYPES_LIST(INNER_STRUCT_END_OFFSET)});
-
-  // The expected value size.
-  size_t expected_value_size =
-      AlignSizeTo(max_inner_struct_end_offset, alignof(Value));
-
-  EXPECT_EQ(expected_value_size, sizeof(Value));
-  if (min_inner_value_offset != expected_min_offset ||
-      expected_value_size != sizeof(Value)) {
-    // The following are useful to understand what's wrong when the EXPECT_EQ()
-    // above actually fail.
-#define PRINT_INNER_FIELD_INFO(x, y)                           \
-  LOG(INFO) << #y " type=" #x " offset=" << offsetof(Value, y) \
-            << " size=" << sizeof(x) << " align=" << alignof(x);
-
-    LOG(INFO) << "Value size=" << sizeof(Value) << " align=" << alignof(Value);
-    INNER_TYPES_LIST(PRINT_INNER_FIELD_INFO)
-    LOG(INFO) << "max_inner_struct_end_offset=" << max_inner_struct_end_offset;
-  }
+  static_assert(
+      sizeof(size_t) +
+              std::max({sizeof(bool), sizeof(int), sizeof(Value::DoubleStorage),
+                        sizeof(std::string), sizeof(Value::BlobStorage),
+                        sizeof(Value::ListStorage),
+                        sizeof(Value::DictStorage)}) ==
+          sizeof(Value),
+      "Value does not have smallest possible sizeof");
 }
-
-#endif  // NDEBUG
 
 TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_move_constructible<Value>::value,
@@ -202,17 +146,17 @@ TEST(ValuesTest, ConstructDict) {
 
 TEST(ValuesTest, ConstructDictFromStorage) {
   Value::DictStorage storage;
-  storage.emplace("foo", std::make_unique<Value>("bar"));
+  storage.emplace("foo", "bar");
   {
-    DictionaryValue value(storage);
+    Value value(storage);
     EXPECT_EQ(Value::Type::DICTIONARY, value.type());
     EXPECT_EQ(Value::Type::STRING, value.FindKey("foo")->type());
     EXPECT_EQ("bar", value.FindKey("foo")->GetString());
   }
 
-  *storage["foo"] = base::Value("baz");
+  storage["foo"] = base::Value("baz");
   {
-    DictionaryValue value(std::move(storage));
+    Value value(std::move(storage));
     EXPECT_EQ(Value::Type::DICTIONARY, value.type());
     EXPECT_EQ(Value::Type::STRING, value.FindKey("foo")->type());
     EXPECT_EQ("baz", value.FindKey("foo")->GetString());
@@ -243,6 +187,18 @@ TEST(ValuesTest, ConstructListFromStorage) {
     EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
     EXPECT_EQ("bar", value.GetList()[0].GetString());
   }
+}
+
+TEST(ValuesTest, HardenTests) {
+  Value value;
+  ASSERT_EQ(value.type(), Value::Type::NONE);
+  EXPECT_DEATH_IF_SUPPORTED(value.GetBool(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetInt(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetDouble(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetString(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetBlob(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.DictItems(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetList(), "");
 }
 
 // Group of tests for the copy constructors and copy-assigmnent. For equality
@@ -324,7 +280,7 @@ TEST(ValuesTest, CopyBinary) {
 
 TEST(ValuesTest, CopyDictionary) {
   Value::DictStorage storage;
-  storage.emplace("Int", std::make_unique<Value>(123));
+  storage.emplace("Int", 123);
   Value value(std::move(storage));
 
   Value copied_value(value.Clone());
@@ -426,7 +382,7 @@ TEST(ValuesTest, MoveBinary) {
 
 TEST(ValuesTest, MoveConstructDictionary) {
   Value::DictStorage storage;
-  storage.emplace("Int", std::make_unique<Value>(123));
+  storage.emplace("Int", 123);
 
   Value value(std::move(storage));
   Value moved_value(std::move(value));
@@ -436,12 +392,41 @@ TEST(ValuesTest, MoveConstructDictionary) {
 
 TEST(ValuesTest, MoveAssignDictionary) {
   Value::DictStorage storage;
-  storage.emplace("Int", std::make_unique<Value>(123));
+  storage.emplace("Int", 123);
 
   Value blank;
   blank = Value(std::move(storage));
   EXPECT_EQ(Value::Type::DICTIONARY, blank.type());
   EXPECT_EQ(123, blank.FindKey("Int")->GetInt());
+}
+
+TEST(ValuesTest, TakeDict) {
+  // Prepare a dict with a value of each type.
+  Value::DictStorage storage;
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
+  Value value(std::move(storage));
+
+  // Take ownership of the dict and make sure its contents are what we expect.
+  auto dict = value.TakeDict();
+  EXPECT_EQ(8u, dict.size());
+  EXPECT_TRUE(dict["null"].is_none());
+  EXPECT_TRUE(dict["bool"].is_bool());
+  EXPECT_TRUE(dict["int"].is_int());
+  EXPECT_TRUE(dict["double"].is_double());
+  EXPECT_TRUE(dict["string"].is_string());
+  EXPECT_TRUE(dict["blob"].is_blob());
+  EXPECT_TRUE(dict["list"].is_list());
+  EXPECT_TRUE(dict["dict"].is_dict());
+
+  // Validate that |value| no longer contains values.
+  EXPECT_TRUE(value.DictEmpty());
 }
 
 TEST(ValuesTest, MoveList) {
@@ -462,10 +447,10 @@ TEST(ValuesTest, TakeList) {
   // Prepare a list with a value of each type.
   ListValue value;
   value.Append(Value(Value::Type::NONE));
-  value.Append(Value(Value::Type::BOOLEAN));
-  value.Append(Value(Value::Type::INTEGER));
-  value.Append(Value(Value::Type::DOUBLE));
-  value.Append(Value(Value::Type::STRING));
+  value.Append(Value(true));
+  value.Append(Value(123));
+  value.Append(Value(123.456));
+  value.Append(Value("string"));
   value.Append(Value(Value::Type::BINARY));
   value.Append(Value(Value::Type::LIST));
   value.Append(Value(Value::Type::DICTIONARY));
@@ -616,7 +601,7 @@ TEST(ValuesTest, ClearList) {
 
 TEST(ValuesTest, FindKey) {
   Value::DictStorage storage;
-  storage.emplace("foo", std::make_unique<Value>("bar"));
+  storage.emplace("foo", "bar");
   Value dict(std::move(storage));
   EXPECT_NE(nullptr, dict.FindKey("foo"));
   EXPECT_EQ(nullptr, dict.FindKey("baz"));
@@ -628,7 +613,7 @@ TEST(ValuesTest, FindKey) {
 
 TEST(ValuesTest, FindKeyChangeValue) {
   Value::DictStorage storage;
-  storage.emplace("foo", std::make_unique<Value>("bar"));
+  storage.emplace("foo", "bar");
   Value dict(std::move(storage));
   Value* found = dict.FindKey("foo");
   EXPECT_NE(nullptr, found);
@@ -640,7 +625,7 @@ TEST(ValuesTest, FindKeyChangeValue) {
 
 TEST(ValuesTest, FindKeyConst) {
   Value::DictStorage storage;
-  storage.emplace("foo", std::make_unique<Value>("bar"));
+  storage.emplace("foo", "bar");
   const Value dict(std::move(storage));
   EXPECT_NE(nullptr, dict.FindKey("foo"));
   EXPECT_EQ(nullptr, dict.FindKey("baz"));
@@ -648,14 +633,14 @@ TEST(ValuesTest, FindKeyConst) {
 
 TEST(ValuesTest, FindKeyOfType) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   Value dict(std::move(storage));
   EXPECT_NE(nullptr, dict.FindKeyOfType("null", Value::Type::NONE));
@@ -733,14 +718,14 @@ TEST(ValuesTest, FindKeyOfType) {
 
 TEST(ValuesTest, FindKeyOfTypeConst) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_NE(nullptr, dict.FindKeyOfType("null", Value::Type::NONE));
@@ -818,14 +803,14 @@ TEST(ValuesTest, FindKeyOfTypeConst) {
 
 TEST(ValuesTest, FindBoolKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(base::nullopt, dict.FindBoolKey("null"));
@@ -840,14 +825,14 @@ TEST(ValuesTest, FindBoolKey) {
 
 TEST(ValuesTest, FindIntKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(base::nullopt, dict.FindIntKey("null"));
@@ -862,14 +847,14 @@ TEST(ValuesTest, FindIntKey) {
 
 TEST(ValuesTest, FindDoubleKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(base::nullopt, dict.FindDoubleKey("null"));
@@ -884,14 +869,14 @@ TEST(ValuesTest, FindDoubleKey) {
 
 TEST(ValuesTest, FindStringKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(nullptr, dict.FindStringKey("null"));
@@ -906,13 +891,13 @@ TEST(ValuesTest, FindStringKey) {
 
 TEST(ValuesTest, MutableFindStringKey) {
   Value::DictStorage storage;
-  storage.emplace("string", std::make_unique<Value>("foo"));
+  storage.emplace("string", "foo");
   Value dict(std::move(storage));
 
   *(dict.FindStringKey("string")) = "bar";
 
   Value::DictStorage expected_storage;
-  expected_storage.emplace("string", std::make_unique<Value>("bar"));
+  expected_storage.emplace("string", "bar");
   Value expected_dict(std::move(expected_storage));
 
   EXPECT_EQ(expected_dict, dict);
@@ -920,14 +905,14 @@ TEST(ValuesTest, MutableFindStringKey) {
 
 TEST(ValuesTest, FindDictKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(nullptr, dict.FindDictKey("null"));
@@ -942,14 +927,14 @@ TEST(ValuesTest, FindDictKey) {
 
 TEST(ValuesTest, FindListKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(nullptr, dict.FindListKey("null"));
@@ -964,14 +949,14 @@ TEST(ValuesTest, FindListKey) {
 
 TEST(ValuesTest, FindBlobKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   const Value dict(std::move(storage));
   EXPECT_EQ(nullptr, dict.FindBlobKey("null"));
@@ -986,14 +971,14 @@ TEST(ValuesTest, FindBlobKey) {
 
 TEST(ValuesTest, SetKey) {
   Value::DictStorage storage;
-  storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
-  storage.emplace("bool", std::make_unique<Value>(Value::Type::BOOLEAN));
-  storage.emplace("int", std::make_unique<Value>(Value::Type::INTEGER));
-  storage.emplace("double", std::make_unique<Value>(Value::Type::DOUBLE));
-  storage.emplace("string", std::make_unique<Value>(Value::Type::STRING));
-  storage.emplace("blob", std::make_unique<Value>(Value::Type::BINARY));
-  storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
-  storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
+  storage.emplace("null", Value::Type::NONE);
+  storage.emplace("bool", Value::Type::BOOLEAN);
+  storage.emplace("int", Value::Type::INTEGER);
+  storage.emplace("double", Value::Type::DOUBLE);
+  storage.emplace("string", Value::Type::STRING);
+  storage.emplace("blob", Value::Type::BINARY);
+  storage.emplace("list", Value::Type::LIST);
+  storage.emplace("dict", Value::Type::DICTIONARY);
 
   Value dict(Value::Type::DICTIONARY);
   dict.SetKey(StringPiece("null"), Value(Value::Type::NONE));
@@ -1406,29 +1391,26 @@ TEST(ValuesTest, List) {
 
 TEST(ValuesTest, BinaryValue) {
   // Default constructor creates a BinaryValue with a buffer of size 0.
-  auto binary = std::make_unique<Value>(Value::Type::BINARY);
-  ASSERT_TRUE(binary.get());
-  ASSERT_TRUE(binary->GetBlob().empty());
+  Value binary(Value::Type::BINARY);
+  ASSERT_TRUE(binary.GetBlob().empty());
 
   // Test the common case of a non-empty buffer
   Value::BlobStorage buffer(15);
   uint8_t* original_buffer = buffer.data();
-  binary.reset(new Value(std::move(buffer)));
-  ASSERT_TRUE(binary.get());
-  ASSERT_TRUE(binary->GetBlob().data());
-  ASSERT_EQ(original_buffer, binary->GetBlob().data());
-  ASSERT_EQ(15U, binary->GetBlob().size());
+  binary = Value(std::move(buffer));
+  ASSERT_TRUE(binary.GetBlob().data());
+  ASSERT_EQ(original_buffer, binary.GetBlob().data());
+  ASSERT_EQ(15U, binary.GetBlob().size());
 
   char stack_buffer[42];
   memset(stack_buffer, '!', 42);
-  binary = Value::CreateWithCopiedBuffer(stack_buffer, 42);
-  ASSERT_TRUE(binary.get());
-  ASSERT_TRUE(binary->GetBlob().data());
+  binary = Value(Value::BlobStorage(stack_buffer, stack_buffer + 42));
+  ASSERT_TRUE(binary.GetBlob().data());
   ASSERT_NE(stack_buffer,
-            reinterpret_cast<const char*>(binary->GetBlob().data()));
-  ASSERT_EQ(42U, binary->GetBlob().size());
-  ASSERT_EQ(0, memcmp(stack_buffer, binary->GetBlob().data(),
-                      binary->GetBlob().size()));
+            reinterpret_cast<const char*>(binary.GetBlob().data()));
+  ASSERT_EQ(42U, binary.GetBlob().size());
+  ASSERT_EQ(0, memcmp(stack_buffer, binary.GetBlob().data(),
+                      binary.GetBlob().size()));
 }
 
 TEST(ValuesTest, StringValue) {
@@ -1479,8 +1461,8 @@ TEST(ValuesTest, ListRemoval) {
     ListValue list;
     list.Append(std::make_unique<Value>());
     EXPECT_EQ(1U, list.GetSize());
-    EXPECT_FALSE(list.Remove(std::numeric_limits<size_t>::max(),
-                             &removed_item));
+    EXPECT_FALSE(
+        list.Remove(std::numeric_limits<size_t>::max(), &removed_item));
     EXPECT_FALSE(list.Remove(1, &removed_item));
     EXPECT_TRUE(list.Remove(0, &removed_item));
     ASSERT_TRUE(removed_item);
@@ -1514,7 +1496,7 @@ TEST(ValuesTest, DictionaryDeletion) {
   EXPECT_FALSE(dict.empty());
   EXPECT_FALSE(dict.DictEmpty());
   EXPECT_EQ(1U, dict.DictSize());
-  dict.Clear();
+  dict.DictClear();
   EXPECT_TRUE(dict.empty());
   EXPECT_TRUE(dict.DictEmpty());
   EXPECT_EQ(0U, dict.DictSize());
@@ -2085,7 +2067,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(3U, root->size());
 
-    ListValue* inner_value, *inner_value2;
+    ListValue *inner_value, *inner_value2;
     EXPECT_TRUE(root->GetList("list_with_empty_children", &inner_value));
     EXPECT_EQ(1U, inner_value->GetSize());  // Dictionary was pruned.
     EXPECT_TRUE(inner_value->GetList(0, &inner_value2));
@@ -2116,27 +2098,27 @@ TEST(ValuesTest, MergeDictionary) {
   EXPECT_EQ(4U, base->size());
   std::string base_key_value;
   EXPECT_TRUE(base->GetString("base_key", &base_key_value));
-  EXPECT_EQ("base_key_value_base", base_key_value); // Base value preserved.
+  EXPECT_EQ("base_key_value_base", base_key_value);  // Base value preserved.
   std::string collide_key_value;
   EXPECT_TRUE(base->GetString("collide_key", &collide_key_value));
-  EXPECT_EQ("collide_key_value_merge", collide_key_value); // Replaced.
+  EXPECT_EQ("collide_key_value_merge", collide_key_value);  // Replaced.
   std::string merge_key_value;
   EXPECT_TRUE(base->GetString("merge_key", &merge_key_value));
-  EXPECT_EQ("merge_key_value_merge", merge_key_value); // Merged in.
+  EXPECT_EQ("merge_key_value_merge", merge_key_value);  // Merged in.
 
   DictionaryValue* res_sub_dict;
   EXPECT_TRUE(base->GetDictionary("sub_dict_key", &res_sub_dict));
   EXPECT_EQ(3U, res_sub_dict->size());
   std::string sub_base_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_base_key", &sub_base_key_value));
-  EXPECT_EQ("sub_base_key_value_base", sub_base_key_value); // Preserved.
+  EXPECT_EQ("sub_base_key_value_base", sub_base_key_value);  // Preserved.
   std::string sub_collide_key_value;
-  EXPECT_TRUE(res_sub_dict->GetString("sub_collide_key",
-                                      &sub_collide_key_value));
-  EXPECT_EQ("sub_collide_key_value_merge", sub_collide_key_value); // Replaced.
+  EXPECT_TRUE(
+      res_sub_dict->GetString("sub_collide_key", &sub_collide_key_value));
+  EXPECT_EQ("sub_collide_key_value_merge", sub_collide_key_value);  // Replaced.
   std::string sub_merge_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_merge_key", &sub_merge_key_value));
-  EXPECT_EQ("sub_merge_key_value_merge", sub_merge_key_value); // Merged in.
+  EXPECT_EQ("sub_merge_key_value_merge", sub_merge_key_value);  // Merged in.
 }
 
 TEST(ValuesTest, MergeDictionaryDeepCopy) {

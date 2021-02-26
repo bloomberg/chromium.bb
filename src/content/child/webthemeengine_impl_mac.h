@@ -5,16 +5,32 @@
 #ifndef CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 #define CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 
-#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "content/child/webthemeengine_impl_default.h"
 
 namespace content {
 
-class WebThemeEngineMac : public blink::WebThemeEngine {
+class WebThemeEngineMac : public WebThemeEngineDefault {
  public:
   ~WebThemeEngineMac() override {}
 
   blink::ForcedColors GetForcedColors() const override;
   void SetForcedColors(const blink::ForcedColors forced_colors) override;
+
+  void Paint(cc::PaintCanvas* canvas,
+             blink::WebThemeEngine::Part part,
+             blink::WebThemeEngine::State state,
+             const gfx::Rect& rect,
+             const blink::WebThemeEngine::ExtraParams* extra_params,
+             blink::mojom::ColorScheme color_scheme) override;
+
+  static bool IsScrollbarPart(WebThemeEngine::Part part);
+  static void PaintMacScrollBarParts(
+      cc::PaintCanvas* canvas,
+      WebThemeEngine::Part part,
+      WebThemeEngine::State state,
+      const gfx::Rect& rect,
+      const WebThemeEngine::ExtraParams* extra_params,
+      blink::mojom::ColorScheme color_scheme);
 
  private:
   blink::ForcedColors forced_colors_ = blink::ForcedColors::kNone;

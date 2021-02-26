@@ -18,6 +18,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {Data} from './data.js';
+import {PageHandlerInterface} from './downloads.mojom-webui.js';
 import {SearchService} from './search_service.js';
 
 Polymer({
@@ -32,13 +34,19 @@ Polymer({
       observer: 'updateClearAll_',
     },
 
+    /** @type {!Array<!Data>} */
+    items: {
+      type: Array,
+      value: Array,
+    },
+
     spinnerActive: {
       type: Boolean,
       notify: true,
     },
   },
 
-  /** @private {?downloads.mojom.PageHandlerInterface} */
+  /** @private {?PageHandlerInterface} */
   mojoHandler_: null,
 
   /** @override */
@@ -80,10 +88,10 @@ Polymer({
     assert(this.canClearAll());
     this.mojoHandler_.clearAll();
     this.$.moreActionsMenu.close();
-    getToastManager().show(loadTimeData.getString('toastClearedAll'));
-    this.fire('iron-announce', {
-      text: loadTimeData.getString('undoDescription'),
-    });
+    const canUndo =
+        this.items.some(data => !data.isDangerous && !data.isMixedContent);
+    getToastManager().show(loadTimeData.getString('toastClearedAll'),
+        /* hideSlotted= */ !canUndo);
   },
 
   /** @private */

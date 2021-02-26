@@ -83,7 +83,7 @@ void ConvertResponseToUTF16(const std::string& charset,
     // Guess the charset by looking at the BOM.
     base::StringPiece bytes_str(bytes);
     for (const auto& bom : kBomMappings) {
-      if (bytes_str.starts_with(bom.prefix)) {
+      if (base::StartsWith(bytes_str, bom.prefix)) {
         return ConvertResponseToUTF16(
             bom.charset,
             // Strip the BOM in the converted response.
@@ -174,6 +174,8 @@ int PacFileFetcherImpl::Fetch(
   // requests, PAC requests are aren't blocked on them.
   cur_request_ = url_request_context_->CreateRequest(url, MAXIMUM_PRIORITY,
                                                      this, traffic_annotation);
+
+  cur_request_->set_isolation_info(isolation_info_);
 
   // Make sure that the PAC script is downloaded using a direct connection,
   // to avoid circular dependencies (fetching is a part of proxy resolution).
@@ -316,6 +318,7 @@ void PacFileFetcherImpl::OnReadCompleted(URLRequest* request, int num_bytes) {
 
 PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context)
     : url_request_context_(url_request_context),
+      isolation_info_(IsolationInfo::CreateTransient()),
       buf_(base::MakeRefCounted<IOBuffer>(kBufSize)),
       next_id_(0),
       cur_request_id_(0),

@@ -147,7 +147,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
         return Error::Code::kParseError;
       }
 
-      OSP_LOG << "Got an initiation request for: " << request.url;
+      OSP_LOG_INFO << "Got an initiation request for: " << request.url;
 
       PresentationID presentation_id(std::move(request.presentation_id));
       if (!presentation_id) {
@@ -278,7 +278,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       }
 
       PresentationID presentation_id(std::move(request.presentation_id));
-      OSP_LOG << "Got termination request for: " << presentation_id;
+      OSP_LOG_INFO << "Got termination request for: " << presentation_id;
 
       auto presentation_entry = started_presentations_.find(presentation_id);
       if (presentation_id &&

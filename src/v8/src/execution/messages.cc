@@ -311,18 +311,18 @@ MaybeHandle<String> FormatEvalOrigin(Isolate* isolate, Handle<Script> script) {
 
 }  // namespace
 
-Handle<Object> StackFrameBase::GetEvalOrigin() {
+Handle<PrimitiveHeapObject> StackFrameBase::GetEvalOrigin() {
   if (!HasScript() || !IsEval()) return isolate_->factory()->undefined_value();
   return FormatEvalOrigin(isolate_, GetScript()).ToHandleChecked();
 }
 
-Handle<Object> StackFrameBase::GetWasmModuleName() {
+Handle<PrimitiveHeapObject> StackFrameBase::GetWasmModuleName() {
   return isolate_->factory()->undefined_value();
 }
 
 int StackFrameBase::GetWasmFunctionIndex() { return StackFrameBase::kNone; }
 
-Handle<Object> StackFrameBase::GetWasmInstance() {
+Handle<HeapObject> StackFrameBase::GetWasmInstance() {
   return isolate_->factory()->undefined_value();
 }
 
@@ -351,6 +351,7 @@ void JSStackFrame::FromFrameArray(Isolate* isolate, Handle<FrameArray> array,
   is_strict_ = (flags & FrameArray::kIsStrict) != 0;
   is_async_ = (flags & FrameArray::kIsAsync) != 0;
   is_promise_all_ = (flags & FrameArray::kIsPromiseAll) != 0;
+  is_promise_any_ = (flags & FrameArray::kIsPromiseAny) != 0;
 }
 
 JSStackFrame::JSStackFrame(Isolate* isolate, Handle<Object> receiver,
@@ -375,7 +376,7 @@ Handle<Object> JSStackFrame::GetFileName() {
   return handle(GetScript()->name(), isolate_);
 }
 
-Handle<Object> JSStackFrame::GetFunctionName() {
+Handle<PrimitiveHeapObject> JSStackFrame::GetFunctionName() {
   Handle<String> result = JSFunction::GetDebugName(function_);
   if (result->length() != 0) return result;
 
@@ -418,7 +419,7 @@ Handle<Object> JSStackFrame::GetScriptNameOrSourceUrl() {
   return ScriptNameOrSourceUrl(GetScript(), isolate_);
 }
 
-Handle<Object> JSStackFrame::GetMethodName() {
+Handle<PrimitiveHeapObject> JSStackFrame::GetMethodName() {
   if (receiver_->IsNullOrUndefined(isolate_)) {
     return isolate_->factory()->null_value();
   }
@@ -452,7 +453,7 @@ Handle<Object> JSStackFrame::GetMethodName() {
   }
 
   HandleScope outer_scope(isolate_);
-  Handle<Object> result;
+  Handle<PrimitiveHeapObject> result;
   for (PrototypeIterator iter(isolate_, receiver, kStartAtReceiver);
        !iter.IsAtEnd(); iter.Advance()) {
     Handle<Object> current = PrototypeIterator::GetCurrent(iter);
@@ -478,7 +479,7 @@ Handle<Object> JSStackFrame::GetMethodName() {
   return isolate_->factory()->null_value();
 }
 
-Handle<Object> JSStackFrame::GetTypeName() {
+Handle<PrimitiveHeapObject> JSStackFrame::GetTypeName() {
   // TODO(jgruber): Check for strict/constructor here as in
   // CallSitePrototypeGetThis.
 
@@ -514,7 +515,7 @@ int JSStackFrame::GetColumnNumber() {
 }
 
 int JSStackFrame::GetPromiseIndex() const {
-  return is_promise_all_ ? offset_ : kNone;
+  return (is_promise_all_ || is_promise_any_) ? offset_ : kNone;
 }
 
 bool JSStackFrame::IsNative() {
@@ -564,8 +565,8 @@ Handle<Object> WasmStackFrame::GetFunction() const {
   return handle(Smi::FromInt(wasm_func_index_), isolate_);
 }
 
-Handle<Object> WasmStackFrame::GetFunctionName() {
-  Handle<Object> name;
+Handle<PrimitiveHeapObject> WasmStackFrame::GetFunctionName() {
+  Handle<PrimitiveHeapObject> name;
   Handle<WasmModuleObject> module_object(wasm_instance_->module_object(),
                                          isolate_);
   if (!WasmModuleObject::GetFunctionNameOrNull(isolate_, module_object,
@@ -582,8 +583,8 @@ Handle<Object> WasmStackFrame::GetScriptNameOrSourceUrl() {
   return ScriptNameOrSourceUrl(script, isolate_);
 }
 
-Handle<Object> WasmStackFrame::GetWasmModuleName() {
-  Handle<Object> module_name;
+Handle<PrimitiveHeapObject> WasmStackFrame::GetWasmModuleName() {
+  Handle<PrimitiveHeapObject> module_name;
   Handle<WasmModuleObject> module_object(wasm_instance_->module_object(),
                                          isolate_);
   if (!WasmModuleObject::GetModuleNameOrNull(isolate_, module_object)
@@ -593,7 +594,7 @@ Handle<Object> WasmStackFrame::GetWasmModuleName() {
   return module_name;
 }
 
-Handle<Object> WasmStackFrame::GetWasmInstance() { return wasm_instance_; }
+Handle<HeapObject> WasmStackFrame::GetWasmInstance() { return wasm_instance_; }
 
 int WasmStackFrame::GetPosition() const {
   return IsInterpreted() ? offset_ : code_->GetSourcePositionBefore(offset_);
@@ -607,7 +608,9 @@ int WasmStackFrame::GetModuleOffset() const {
   return function_offset + GetPosition();
 }
 
-Handle<Object> WasmStackFrame::Null() const {
+Handle<Object> WasmStackFrame::GetFileName() { return Null(); }
+
+Handle<PrimitiveHeapObject> WasmStackFrame::Null() const {
   return isolate_->factory()->null_value();
 }
 
@@ -1231,7 +1234,18 @@ Handle<String> BuildDefaultCallSite(Isolate* isolate, Handle<Object> object) {
   builder.AppendString(Object::TypeOf(isolate, object));
   if (object->IsString()) {
     builder.AppendCString(" \"");
-    builder.AppendString(Handle<String>::cast(object));
+    Handle<String> string = Handle<String>::cast(object);
+    // This threshold must be sufficiently far below String::kMaxLength that
+    // the {builder}'s result can never exceed that limit.
+    constexpr int kMaxPrintedStringLength = 100;
+    if (string->length() <= kMaxPrintedStringLength) {
+      builder.AppendString(string);
+    } else {
+      string = isolate->factory()->NewProperSubString(string, 0,
+                                                      kMaxPrintedStringLength);
+      builder.AppendString(string);
+      builder.AppendCString("<...>");
+    }
     builder.AppendCString("\"");
   } else if (object->IsNull(isolate)) {
     builder.AppendCString(" ");
@@ -1258,14 +1272,13 @@ Handle<String> RenderCallSite(Isolate* isolate, Handle<Object> object,
         isolate, *location->shared());
     UnoptimizedCompileState compile_state(isolate);
     ParseInfo info(isolate, flags, &compile_state);
-    if (parsing::ParseAny(&info, location->shared(), isolate)) {
+    if (parsing::ParseAny(&info, location->shared(), isolate,
+                          parsing::ReportStatisticsMode::kNo)) {
       info.ast_value_factory()->Internalize(isolate);
       CallPrinter printer(isolate, location->shared()->IsUserJavaScript());
       Handle<String> str = printer.Print(info.literal(), location->start_pos());
       *hint = printer.GetErrorHint();
       if (str->length() > 0) return str;
-    } else {
-      isolate->clear_pending_exception();
     }
   }
   return BuildDefaultCallSite(isolate, object);
@@ -1289,13 +1302,12 @@ MessageTemplate UpdateErrorTemplate(CallPrinter::ErrorHint hint,
     case CallPrinter::ErrorHint::kNone:
       return default_id;
   }
-  return default_id;
 }
 
 }  // namespace
 
-Handle<Object> ErrorUtils::NewIteratorError(Isolate* isolate,
-                                            Handle<Object> source) {
+Handle<JSObject> ErrorUtils::NewIteratorError(Isolate* isolate,
+                                              Handle<Object> source) {
   MessageLocation location;
   CallPrinter::ErrorHint hint = CallPrinter::kNone;
   Handle<String> callsite = RenderCallSite(isolate, source, &location, &hint);
@@ -1319,7 +1331,8 @@ Object ErrorUtils::ThrowSpreadArgError(Isolate* isolate, MessageTemplate id,
         isolate, *location.shared());
     UnoptimizedCompileState compile_state(isolate);
     ParseInfo info(isolate, flags, &compile_state);
-    if (parsing::ParseAny(&info, location.shared(), isolate)) {
+    if (parsing::ParseAny(&info, location.shared(), isolate,
+                          parsing::ReportStatisticsMode::kNo)) {
       info.ast_value_factory()->Internalize(isolate);
       CallPrinter printer(isolate, location.shared()->IsUserJavaScript(),
                           CallPrinter::SpreadErrorInArgsHint::kErrorInArgs);
@@ -1334,18 +1347,17 @@ Object ErrorUtils::ThrowSpreadArgError(Isolate* isolate, MessageTemplate id,
             MessageLocation(location.script(), pos, pos + 1, location.shared());
       }
     } else {
-      isolate->clear_pending_exception();
       callsite = BuildDefaultCallSite(isolate, object);
     }
   }
 
-  Handle<Object> exception =
-      isolate->factory()->NewTypeError(id, callsite, object);
-  return isolate->Throw(*exception, &location);
+  isolate->ThrowAt(isolate->factory()->NewTypeError(id, callsite, object),
+                   &location);
+  return ReadOnlyRoots(isolate).exception();
 }
 
-Handle<Object> ErrorUtils::NewCalledNonCallableError(Isolate* isolate,
-                                                     Handle<Object> source) {
+Handle<JSObject> ErrorUtils::NewCalledNonCallableError(Isolate* isolate,
+                                                       Handle<Object> source) {
   MessageLocation location;
   CallPrinter::ErrorHint hint = CallPrinter::kNone;
   Handle<String> callsite = RenderCallSite(isolate, source, &location, &hint);
@@ -1354,7 +1366,7 @@ Handle<Object> ErrorUtils::NewCalledNonCallableError(Isolate* isolate,
   return isolate->factory()->NewTypeError(id, callsite);
 }
 
-Handle<Object> ErrorUtils::NewConstructedNonConstructable(
+Handle<JSObject> ErrorUtils::NewConstructedNonConstructable(
     Isolate* isolate, Handle<Object> source) {
   MessageLocation location;
   CallPrinter::ErrorHint hint = CallPrinter::kNone;
@@ -1363,10 +1375,6 @@ Handle<Object> ErrorUtils::NewConstructedNonConstructable(
   return isolate->factory()->NewTypeError(id, callsite);
 }
 
-Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
-                                                Handle<Object> object) {
-  return ThrowLoadFromNullOrUndefined(isolate, object, MaybeHandle<Object>());
-}
 Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
                                                 Handle<Object> object,
                                                 MaybeHandle<Object> key) {
@@ -1396,7 +1404,8 @@ Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
         isolate, *location.shared());
     UnoptimizedCompileState compile_state(isolate);
     ParseInfo info(isolate, flags, &compile_state);
-    if (parsing::ParseAny(&info, location.shared(), isolate)) {
+    if (parsing::ParseAny(&info, location.shared(), isolate,
+                          parsing::ReportStatisticsMode::kNo)) {
       info.ast_value_factory()->Internalize(isolate);
       CallPrinter printer(isolate, location.shared()->IsUserJavaScript());
       Handle<String> str = printer.Print(info.literal(), location.start_pos());
@@ -1431,8 +1440,6 @@ Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
       }
 
       if (str->length() > 0) callsite = str;
-    } else {
-      isolate->clear_pending_exception();
     }
   }
 
@@ -1440,7 +1447,7 @@ Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
     callsite = BuildDefaultCallSite(isolate, object);
   }
 
-  Handle<Object> error;
+  Handle<JSObject> error;
   Handle<String> property_name;
   if (is_destructuring) {
     if (maybe_property_name.ToHandle(&property_name)) {
@@ -1464,7 +1471,12 @@ Object ErrorUtils::ThrowLoadFromNullOrUndefined(Isolate* isolate,
     }
   }
 
-  return isolate->Throw(*error, location_computed ? &location : nullptr);
+  if (location_computed) {
+    isolate->ThrowAt(error, &location);
+  } else {
+    isolate->Throw(*error);
+  }
+  return ReadOnlyRoots(isolate).exception();
 }
 
 }  // namespace internal

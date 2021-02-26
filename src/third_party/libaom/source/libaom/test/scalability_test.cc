@@ -75,7 +75,7 @@ TEST_P(ScalabilityTest, TestNoMismatch2SpatialLayers) { DoTest(2); }
 
 TEST_P(ScalabilityTest, TestNoMismatch3SpatialLayers) { DoTest(3); }
 
-AV1_INSTANTIATE_TEST_CASE(ScalabilityTest,
-                          ::testing::Values(::libaom_test::kRealTime));
+AV1_INSTANTIATE_TEST_SUITE(ScalabilityTest,
+                           ::testing::Values(::libaom_test::kRealTime));
 
 }  // namespace

@@ -193,12 +193,12 @@ class DownloadFileTest : public testing::Test {
     download_file_->StreamActive(stream, MOJO_RESULT_OK);
   }
 
-  void SetInterruptReasonCallback(const base::Closure& closure,
+  void SetInterruptReasonCallback(base::OnceClosure closure,
                                   DownloadInterruptReason* reason_p,
                                   DownloadInterruptReason reason,
                                   int64_t bytes_wasted) {
     *reason_p = reason;
-    closure.Run();
+    std::move(closure).Run();
   }
 
   bool CreateDownloadFile(bool calculate_hash) {
@@ -499,7 +499,7 @@ class DownloadFileTest : public testing::Test {
   std::string expected_data_;
 
  private:
-  void SetRenameResult(const base::Closure& closure,
+  void SetRenameResult(base::OnceClosure closure,
                        DownloadInterruptReason* reason_p,
                        base::FilePath* result_path_p,
                        DownloadInterruptReason reason,
@@ -508,7 +508,7 @@ class DownloadFileTest : public testing::Test {
       *reason_p = reason;
     if (result_path_p)
       *result_path_p = result_path;
-    closure.Run();
+    std::move(closure).Run();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -744,13 +744,13 @@ TEST_P(DownloadFileTestWithRename, RenameError) {
 
 namespace {
 
-void TestRenameCompletionCallback(const base::Closure& closure,
+void TestRenameCompletionCallback(base::OnceClosure closure,
                                   bool* did_run_callback,
                                   DownloadInterruptReason interrupt_reason,
                                   const base::FilePath& new_path) {
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
   *did_run_callback = true;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 }  // namespace
@@ -762,7 +762,7 @@ void TestRenameCompletionCallback(const base::Closure& closure,
 // succeed.
 //
 // Note that there is only one queue of tasks to run, and that is in the tests'
-// base::MessageLoopCurrent::Get(). Each RunLoop processes that queue until it
+// base::CurrentThread::Get(). Each RunLoop processes that queue until it
 // sees a QuitClosure() targeted at itself, at which point it stops processing.
 TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
   ASSERT_TRUE(CreateDownloadFile(true));
@@ -802,7 +802,7 @@ TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
     // the completion callback.
     InvokeRenameMethod(
         GetParam(), target_path,
-        base::Bind(&TestRenameCompletionCallback, succeeding_run.QuitClosure(),
+        base::BindOnce(&TestRenameCompletionCallback, succeeding_run.QuitClosure(),
                    &did_run_callback));
     EXPECT_FALSE(did_run_callback);
 

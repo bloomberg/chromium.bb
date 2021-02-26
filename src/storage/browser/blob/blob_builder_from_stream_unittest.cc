@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -15,7 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -416,8 +416,7 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
   mojo::AssociatedRemote<blink::mojom::ProgressClient> progress_client_remote;
   mojo::AssociatedReceiver<blink::mojom::ProgressClient> progress_receiver(
       &progress_client,
-      progress_client_remote
-          .BindNewEndpointAndPassDedicatedReceiverForTesting());
+      progress_client_remote.BindNewEndpointAndPassDedicatedReceiver());
 
   mojo::DataPipe pipe;
   base::RunLoop loop;

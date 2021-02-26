@@ -33,7 +33,7 @@ using testing::ReturnRef;
 // Arbitrary policy names used for testing.
 const char kTestPolicy1[] = "Test Policy 1";
 const char kTestPolicy2[] = "Test Policy 2";
-const char* kTestPolicy3 = key::kExtensionInstallBlacklist;
+const char* kTestPolicy3 = key::kExtensionInstallBlocklist;
 
 const int kTestPolicy1Id = 42;
 const int kTestPolicy2Id = 123;
@@ -45,7 +45,7 @@ const char kTestChromeSchema[] =
     "  \"properties\": {"
     "    \"Test Policy 1\": { \"type\": \"string\" },"
     "    \"Test Policy 2\": { \"type\": \"string\" },"
-    "    \"ExtensionInstallBlacklist\": { \"type\": \"string\" },"
+    "    \"ExtensionInstallBlocklist\": { \"type\": \"string\" },"
     "  }"
     "}";
 
@@ -116,8 +116,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   void SetPolicy(const std::string& name) {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-                    nullptr);
+                    POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   }
 
   void SetPolicyIgnoredByAtomicGroup(const std::string& name) {

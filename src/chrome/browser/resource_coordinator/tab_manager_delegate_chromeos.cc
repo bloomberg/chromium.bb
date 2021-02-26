@@ -25,11 +25,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
-#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -38,6 +36,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/memory/pressure/pressure.h"
+#include "chromeos/memory/pressure/system_memory_pressure_evaluator.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -49,7 +49,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_constants.h"
-#include "services/service_manager/zygote/zygote_host_linux.h"
 #include "ui/wm/public/activation_client.h"
 
 using base::ProcessHandle;
@@ -217,38 +216,26 @@ class TabManagerDelegate::FocusedProcess {
 
 // TabManagerDelegate::MemoryStat implementation.
 
-// static
-int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
-  constexpr int kDefaultLowMemoryMarginMb = 50;
-
-  // A margin file can contain multiple values but the first one
-  // represents the critical memory threshold.
-  std::vector<int> margin_parts =
-      util::chromeos::SystemMemoryPressureEvaluator::GetMarginFileParts();
-  if (!margin_parts.empty()) {
-    return margin_parts[0] * 1024;
-  }
-
-  return kDefaultLowMemoryMarginMb * 1024;
-}
-
 // Target memory to free is the amount which brings available
 // memory back to the margin.
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
-  uint64_t available_mem_mb;
-  auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
-  if (monitor) {
-    available_mem_mb = monitor->GetAvailableMemoryKB();
+  if (chromeos::memory::SystemMemoryPressureEvaluator::Get()) {
+    // The first output of GetMemoryMarginsKB() is the critical memory
+    // threshold. Low memory condition is reported if available memory is under
+    // the number.
+    return chromeos::memory::pressure::GetMemoryMarginsKB().first -
+           chromeos::memory::pressure::GetAvailableMemoryKB();
   } else {
     // When TabManager::DiscardTab(LifecycleUnitDiscardReason::EXTERNAL) is
-    // called by a test or an extension, TabManagerDelegate might be used
-    // without chromeos SystemMemoryPressureEvaluator, e.g. the browser test
-    // DiscardTabsWithMinimizedWindow.
+    // called by an integration test, TabManagerDelegate might be used without
+    // chromeos SystemMemoryPressureEvaluator, e.g. the browser test
+    // DiscardTabsWithMinimizedWindow. Return 50 MB to force discarding a tab to
+    // pass the test.
+    // TODO(vovoy): Remove this code path and modify the related browser tests.
     LOG(WARNING) << "SystemMemoryPressureEvaluator is not available";
-    available_mem_mb = 0;
+    constexpr int kDefaultLowMemoryMarginKb = 50 * 1024;
+    return kDefaultLowMemoryMarginKb;
   }
-
-  return LowMemoryMarginKB() - available_mem_mb;
 }
 
 int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
@@ -443,7 +430,7 @@ void TabManagerDelegate::Observe(int type,
       // on top. So the longer the cleanup phase takes, the more tabs will
       // get discarded in parallel.
 
-      auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
+      auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
       if (monitor) {
         monitor->ScheduleEarlyCheck();
       }
@@ -528,46 +515,6 @@ TabManagerDelegate::GetSortedCandidates(
   return candidates;
 }
 
-void TabManagerDelegate::LogAndMaybeSortLifecycleUnitWithTabRanker(
-    std::vector<Candidate>* candidates,
-    LifecycleUnitSorter sorter) {
-  const uint32_t num_of_tab_to_score = GetNumOldestTabsToScoreWithTabRanker();
-  if (num_of_tab_to_score <= 1)
-    return;
-
-  const ProcessType process_type =
-      static_cast<ProcessType>(GetProcessTypeToScoreWithTabRanker());
-
-  // Put the oldest num_of_tab_to_score lifecycle units into a vector.
-  LifecycleUnitVector oldest_lifecycle_units;
-  for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
-    auto& candidate = *it;
-    if (oldest_lifecycle_units.size() == num_of_tab_to_score ||
-        candidate.process_type() < process_type)
-      break;
-    if (candidate.lifecycle_unit()) {
-      oldest_lifecycle_units.push_back(candidate.lifecycle_unit());
-    }
-  }
-
-  // log and possibly Re-sort them with TabRanker.
-  std::move(sorter).Run(&oldest_lifecycle_units);
-
-  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
-    // Put the sorted lifecycle units back to their original vacancies.
-    for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
-      const auto& candidate = *it;
-      if (oldest_lifecycle_units.empty() ||
-          candidate.process_type() < process_type)
-        break;
-      if (candidate.lifecycle_unit()) {
-        *it = Candidate(oldest_lifecycle_units.back());
-        oldest_lifecycle_units.pop_back();
-      }
-    }
-  }
-}
-
 bool TabManagerDelegate::IsRecentlyKilledArcProcess(
     const std::string& process_name,
     const TimeTicks& now) {
@@ -618,21 +565,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
   std::vector<Candidate> candidates =
       GetSortedCandidates(GetLifecycleUnits(), arc_processes);
 
-  // Log and Re-order oldest N LifecycleUnits if TabRanker is enabled; otherwise
-  // only log N LifecycleUnits and the candidates will be unchanged.
-  LogAndMaybeSortLifecycleUnitWithTabRanker(
-      &candidates,
-      base::BindOnce(
-          &TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker,
-          base::Unretained(TabActivityWatcher::GetInstance())));
-
-  // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
-  // I/O and if it is, move to I/O thread (crbug.com/778703).
-  int target_memory_to_free_kb = 0;
-  {
-    base::ScopedAllowBlocking allow_blocking;
-    target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
-  }
+  int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
 
   MEMORY_LOG(ERROR) << "List of low memory kill candidates "
                        "(sorted from low priority to high priority):";
@@ -716,7 +649,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
   if (!first_kill_time.is_null()) {
     TimeDelta delta = first_kill_time - start_time;
     MEMORY_LOG(ERROR) << "Time to first kill " << delta;
-    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.LowMemoryKiller.FirstKillLatency", delta);
+    UMA_HISTOGRAM_MEDIUM_TIMES("Memory.LowMemoryKiller.FirstKillLatency",
+                               delta);
   }
 
   // tab_discard_done runs when it goes out of the scope.

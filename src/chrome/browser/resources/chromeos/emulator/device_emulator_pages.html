@@ -12,8 +12,8 @@
       }
 
       iron-pages > * {
-        @apply --shadow-elevation-2dp;
         background-color: white;
+        box-shadow: var(--cr-card-shadow);
         display: block;
         margin: 20px;
         padding: 0 20px 20px 20px;
@@ -50,6 +50,7 @@
 
     <cr-toolbar page-name="Device Emulator"
         clear-label="clear"
+        autofocus
         search-prompt="Search not working..."
         on-cr-toolbar-menu-tap="onMenuButtonClick_"
         menu-label="Device Emulator"

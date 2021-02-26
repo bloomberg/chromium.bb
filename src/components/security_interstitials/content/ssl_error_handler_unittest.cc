@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -46,7 +45,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,9 +122,10 @@ const char kCertWithoutOrganizationOrCommonName[] =
 // Runs |quit_closure| on the UI thread once a URL request has been
 // seen. Returns a request that hangs.
 std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     const net::test_server::HttpRequest& request) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               std::move(quit_closure));
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -172,7 +171,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
   void SendSuggestedUrlCheckResult(
       const CommonNameMismatchHandler::SuggestedUrlCheckResult& result,
       const GURL& suggested_url) {
-    suggested_url_callback_.Run(result, suggested_url);
+    std::move(suggested_url_callback_).Run(result, suggested_url);
   }
 
   int captive_portal_checked() const { return captive_portal_checked_; }
@@ -261,10 +260,10 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
   void CheckSuggestedUrl(
       const GURL& suggested_url,
-      const CommonNameMismatchHandler::CheckUrlCallback& callback) override {
+      CommonNameMismatchHandler::CheckUrlCallback callback) override {
     DCHECK(suggested_url_callback_.is_null());
     suggested_url_checked_ = true;
-    suggested_url_callback_ = callback;
+    suggested_url_callback_ = std::move(callback);
   }
 
   void NavigateToSuggestedURL(const GURL& suggested_url) override {
@@ -645,8 +644,8 @@ class SSLErrorHandlerDateInvalidTest
     base::RunLoop run_loop;
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(CreateURLLoaderFactory, &pending_url_loader_factory),
         run_loop.QuitClosure());
     run_loop.Run();
@@ -1094,7 +1093,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
 }
 
 // Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989128
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 #define MAYBE_TimeQueryStarted DISABLED_TimeQueryStarted
 #else
 #define MAYBE_TimeQueryStarted TimeQueryStarted
@@ -1111,7 +1110,7 @@ TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryStarted) {
   // Enable network time queries and handle the error. A bad clock interstitial
   // should be shown.
   test_server()->RegisterRequestHandler(
-      base::Bind(&network_time::GoodTimeResponseHandler));
+      base::BindRepeating(&network_time::GoodTimeResponseHandler));
   EXPECT_TRUE(test_server()->Start());
   tracker()->SetTimeServerURLForTesting(test_server()->GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(
@@ -1132,7 +1131,7 @@ TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryStarted) {
 // clock can't be determined because network time is unavailable.
 
 // Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989225
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 #define MAYBE_NoTimeQueries DISABLED_NoTimeQueries
 #else
 #define MAYBE_NoTimeQueries NoTimeQueries
@@ -1159,7 +1158,7 @@ TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_NoTimeQueries) {
 // the system clock times out (e.g. because a network time query hangs).
 
 // Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989289
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 #define MAYBE_TimeQueryHangs DISABLED_TimeQueryHangs
 #else
 #define MAYBE_TimeQueryHangs TimeQueryHangs
@@ -1175,8 +1174,8 @@ TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryHangs) {
   // network time cannot be determined before the timer elapses, an SSL
   // interstitial should be shown.
   base::RunLoop wait_for_time_query_loop;
-  test_server()->RegisterRequestHandler(
-      base::Bind(&WaitForRequest, wait_for_time_query_loop.QuitClosure()));
+  test_server()->RegisterRequestHandler(base::BindRepeating(
+      &WaitForRequest, wait_for_time_query_loop.QuitClosure()));
   EXPECT_TRUE(test_server()->Start());
   tracker()->SetTimeServerURLForTesting(test_server()->GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(

@@ -13,11 +13,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/data_model_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
+
+using structured_address::VerificationStatus;
+
 namespace {
 
 // Returns the region code for this phone number, which is an ISO 3166 2-letter
@@ -79,8 +84,9 @@ base::string16 PhoneNumber::GetRawInfo(ServerFieldType type) const {
   return base::string16();
 }
 
-void PhoneNumber::SetRawInfo(ServerFieldType type,
-                             const base::string16& value) {
+void PhoneNumber::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                   const base::string16& value,
+                                                   VerificationStatus status) {
   DCHECK_EQ(PHONE_HOME, AutofillType(type).group());
   if (type != PHONE_HOME_CITY_AND_NUMBER && type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
@@ -133,6 +139,18 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
       if (normalized_number == whole_number)
         matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
     }
+  }
+
+  // |PHONE_HOME_COUNTRY_CODE| is added to the set of the |matching_types| when
+  // the digits extracted from the |stripped_text| match the |country_code|.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAugmentedPhoneCountryCode)) {
+    base::string16 candidate =
+        data_util::FindPossiblePhoneCountryCode(stripped_text);
+    base::string16 country_code =
+        GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), app_locale);
+    if (candidate.size() > 0 && candidate == country_code)
+      matching_types->insert(PHONE_HOME_COUNTRY_CODE);
   }
 }
 
@@ -194,10 +212,12 @@ base::string16 PhoneNumber::GetInfoImpl(const AutofillType& type,
   }
 }
 
-bool PhoneNumber::SetInfoImpl(const AutofillType& type,
-                              const base::string16& value,
-                              const std::string& app_locale) {
-  SetRawInfo(type.GetStorableType(), value);
+bool PhoneNumber::SetInfoWithVerificationStatusImpl(
+    const AutofillType& type,
+    const base::string16& value,
+    const std::string& app_locale,
+    VerificationStatus status) {
+  SetRawInfoWithVerificationStatus(type.GetStorableType(), value, status);
 
   if (number_.empty())
     return true;

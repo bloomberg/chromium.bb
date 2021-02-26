@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">vysvetlivka</translation>
 <translation id="1281252709823657822">dialóg</translation>
 <translation id="1306460908038601864">vypnuté</translation>
+<translation id="1311894908970423688">Hodnota musí byť <ph name="VALUE_DATE_OR_TIME" />.</translation>
 <translation id="1335095011850992622">titulky</translation>
 <translation id="1342835525016946179">článok</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="145015347812617860">Počet položiek: <ph name="COUNT" /></translation>
+<translation id="1480676835519562650">s viacerými výbermi, vybrané: <ph name="SELECTED" /> z <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">oblasť</translation>
 <translation id="1591562245178063882">Tento mesiac</translation>
 <translation id="1637811476055996098">Vybrať súbory</translation>
 <translation id="1650423536718072820">obsiahnutý citát</translation>
+<translation id="1681022320378710418">aktuálny čas</translation>
+<translation id="1727839386348365796">Kvapkadlo</translation>
 <translation id="1727886345390570319">skryť ponuku skrytých titulkov</translation>
 <translation id="1729654308190250600">Zadajte e-mailovú adresu, ktorá nie je prázdna hodnota.</translation>
 <translation id="1758486001363313524">Iné...</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">dialóg_upozornenia</translation>
 <translation id="1821985195704844674">stromová mriežka</translation>
 <translation id="1822429046913737220">AM / PM</translation>
+<translation id="1823704031293214298">päta stránky</translation>
 <translation id="1832974991323546415">prehrať na vzdialenom zariadení</translation>
 <translation id="190587075670221089">odstránenie</translation>
 <translation id="1907737156431278478">príklad</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />. týždeň, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Skladba <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">začiarkavacie políčko</translation>
+<translation id="2307576640803031502">v zozname, <ph name="INDEX" />. položka z <ph name="COUNT" /></translation>
 <translation id="2311842470354187719">zlom strany</translation>
 <translation id="2335594187091864976">výber dátumu a času</translation>
 <translation id="2393030564806080191">Hodnota farby v šestnástkovej sústave</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">Deň</translation>
 <translation id="2507943997699731163">Vyplňte toto pole.</translation>
 <translation id="2508569020611168319">zoznam kariet</translation>
+<translation id="2530182415807757784">s viacerými výbermi, žiadne vybrané</translation>
 <translation id="2561842179657104141">zobraziť ďalšie ovládacie prvky médií</translation>
 <translation id="2572483411312390101">prehrať</translation>
 <translation id="2613802280814924224">Zadajte platnú hodnotu. Najbližšia platná hodnota je <ph name="VALID_VALUE" />.</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">Zadajte webovú adresu.</translation>
 <translation id="3175736971608411871">časovač</translation>
 <translation id="3199563858620722075">pole s výberom</translation>
+<translation id="3220661731597678625">aktuálny krok</translation>
 <translation id="3329013043687509092">Sýtosť</translation>
 <translation id="3450233048674729344">Hodnota musí byť menšia alebo rovná hodnote <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definícia</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">Zobraziť predchádzajúci mesiac</translation>
 <translation id="421884353938374759">výber farieb</translation>
 <translation id="4248100235867064564">panel s ponukami</translation>
+<translation id="4293574643247337246">hlavička stránky</translation>
 <translation id="4360991593054037559">Zadajte platnú hodnotu. Najbližšie platné hodnoty sú <ph name="VALID_VALUE_LOW" /> a <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4384249794467006333">Tento obrázok nie je označený štítkom. Popisy obrázkov nájdete po otvorení ponuky Ďalšie možnosti vpravo hore.</translation>
 <translation id="4384583879834880242">Otázky a odpovede</translation>
-<translation id="4413860115965805769">tlačidlo ponuky</translation>
 <translation id="4444765639179266822">Zrejme znamená: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">glosárový termín</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
+<translation id="4576178047100686001">Tento obrázok nie je označený štítkom. Popisy obrázkov nájdete po otvorení ponuky Ďalšie možnosti vľavo hore.</translation>
 <translation id="4597532268155981612">formulár</translation>
 <translation id="4661075872484491155">strom</translation>
 <translation id="4664250907885839816">Časť za znakom <ph name="ATSIGN" /> by nemala obsahovať symbol <ph name="INVALIDCHARACTER" />.</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadajte číslo.</translation>
+<translation id="4912200001568447310">aktuálna položka</translation>
 <translation id="4912536737030637138">bibliografický záznam</translation>
 <translation id="4915360478455618802">Zobraziť výber času</translation>
 <translation id="492244087561876220">komentár</translation>
@@ -140,6 +152,7 @@
 <translation id="5334352251556557839">Nepodarilo sa prehrať médiá.</translation>
 <translation id="537648784377940524">Minimálny dátum (<ph name="MIN_DATE_OR_TIME" />) musí byť pred maximálnym dátumom (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">hodnota</translation>
+<translation id="5425179576310518467">aktuálny dátum</translation>
 <translation id="5453733299334684579">položka stromu</translation>
 <translation id="5466621249238537318">Vyberte jeden alebo viac súborov.</translation>
 <translation id="5468998798572797635">ukončiť režim celej obrazovky</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">ďalšie možnosti</translation>
 <translation id="576709008726043716">úvod</translation>
 <translation id="57838592816432529">Vypnúť zvuk</translation>
+<translation id="5860033963881614850">Vypnuté</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5888666972993069672">Prenáša sa do zariadenia <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">vyhľadávacie pole</translation>
+<translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5966707198760109579">Týždeň</translation>
 <translation id="5987525920412732405">tlačidlo otáčania</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">doslov</translation>
 <translation id="6209276755895393898">Zrejme to bude: <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">aktuálna stránka</translation>
 <translation id="6213469881011901533">glosár</translation>
 <translation id="6281588256137006900">Svetlosť</translation>
 <translation id="6281763101136022427">Webová adresa</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="668171684555832681">Iný...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709093583001123835">Hodnota musí byť <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Nízka kvalita prehrávania</translation>
 <translation id="6755330956360078551">popis</translation>
 <translation id="6790428901817661496">Prehrať</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">Predĺžte tento text aspoň na <ph name="MIN_CHARACTERS" /> alebo viac znakov (momentálne používate jeden znak).</translation>
 <translation id="7034405885550056553">návrh</translation>
 <translation id="709897737746224366">Zadajte hodnotu zodpovedajúcu požadovanému formátu.</translation>
+<translation id="7102274145889307184">aktuálna poloha</translation>
 <translation id="7118469954320184356">Nie je k dispozícii žiadny popis.</translation>
 <translation id="7139483182332611405">predslov</translation>
 <translation id="7214187073215825913">informácie o obsahu</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" /> začínajúci <ph name="WEEK_START_DATE" /></translation>
 <translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="9168329111483466115">poznámka pod čiarou</translation>
+<translation id="945780513535800434">Čiastočne začiarknuté</translation>
 <translation id="954003015749068518">zapnúť obraz v obraze</translation>
 <translation id="966787709310836684">ponuka</translation>
 </translationbundle>

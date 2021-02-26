@@ -28,11 +28,14 @@ class DragSourceWin;
 
 namespace views {
 class DesktopDropTargetWin;
+class DesktopWindowTreeHostWin;
 
 class VIEWS_EXPORT DesktopDragDropClientWin
     : public aura::client::DragDropClient {
  public:
-  DesktopDragDropClientWin(aura::Window* root_window, HWND window);
+  DesktopDragDropClientWin(aura::Window* root_window,
+                           HWND window,
+                           DesktopWindowTreeHostWin* desktop_host);
   ~DesktopDragDropClientWin() override;
 
   // Overridden from aura::client::DragDropClient:
@@ -41,7 +44,7 @@ class VIEWS_EXPORT DesktopDragDropClientWin
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
                        int operation,
-                       ui::DragDropTypes::DragEventSource source) override;
+                       ui::mojom::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
@@ -57,6 +60,11 @@ class VIEWS_EXPORT DesktopDragDropClientWin
   Microsoft::WRL::ComPtr<ui::DragSourceWin> drag_source_;
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
+
+  // |this| will get deleted DesktopNativeWidgetAura is notified that the
+  // DesktopWindowTreeHost is being destroyed. So desktop_host_ should outlive
+  // |this|.
+  DesktopWindowTreeHostWin* desktop_host_ = nullptr;
 
   base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_{this};
 

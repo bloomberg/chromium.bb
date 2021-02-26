@@ -65,7 +65,7 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope,
              mojom::blink::FeaturePolicyFeature::kMagnetometer})) {
-      LogToConsolePolicyFeaturesDisabled(GetWindow().GetFrame(),
+      LogToConsolePolicyFeaturesDisabled(*GetWindow().GetFrame(),
                                          EventTypeName());
       return;
     }
@@ -78,7 +78,7 @@ const AtomicString& DeviceOrientationAbsoluteController::EventTypeName() const {
   return event_type_names::kDeviceorientationabsolute;
 }
 
-void DeviceOrientationAbsoluteController::Trace(Visitor* visitor) {
+void DeviceOrientationAbsoluteController::Trace(Visitor* visitor) const {
   DeviceOrientationController::Trace(visitor);
 }
 

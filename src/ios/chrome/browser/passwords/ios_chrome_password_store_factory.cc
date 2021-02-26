@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
@@ -16,9 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -27,6 +24,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/passwords/credentials_cleaner_runner_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -102,8 +100,9 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
   password_manager_util::RemoveUselessCredentials(
-      store, ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
-      base::NullCallback());
+      CredentialsCleanerRunnerFactory::GetForBrowserState(context), store,
+      ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
+      base::TimeDelta::FromSeconds(60), base::NullCallback());
   return store;
 }
 

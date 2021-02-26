@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/password_form.h"
 
 namespace content {
 class WebContents;
@@ -22,12 +22,16 @@ namespace password_manager {
 class PasswordFormManagerForUI;
 }
 
+namespace url {
+class Origin;
+}
+
 // An interface for ChromePasswordManagerClient implemented by
 // ManagePasswordsUIController. Allows to push a new state for the tab.
 class PasswordsClientUIDelegate {
  public:
   // Called when the user submits a form containing login information, so the
-  // later requests to save or blacklist can be handled.
+  // later requests to save or blocklist can be handled.
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to save the password.
   virtual void OnPasswordSubmitted(
@@ -60,15 +64,17 @@ class PasswordsClientUIDelegate {
   // a decision. If the UI isn't shown the method returns false and doesn't call
   // |callback|.
   virtual bool OnChooseCredentials(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      const GURL& origin,
-      const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>>
+          local_credentials,
+      const url::Origin& origin,
+      base::OnceCallback<void(const password_manager::PasswordForm*)>
+          callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
   // the credential returned to the site. |origin| is a URL of the site.
   virtual void OnAutoSignin(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) = 0;
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
+      const url::Origin& origin) = 0;
 
   // Called when it's the right time to enable autosign-in explicitly.
   virtual void OnPromptEnableAutoSignin() = 0;
@@ -85,9 +91,10 @@ class PasswordsClientUIDelegate {
   // the manage password icon. |federated_matches| contain the matching stored
   // federated credentials to display in the UI.
   virtual void OnPasswordAutofilled(
-      const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches) = 0;
+      const std::vector<const password_manager::PasswordForm*>& password_forms,
+      const url::Origin& origin,
+      const std::vector<const password_manager::PasswordForm*>*
+          federated_matches) = 0;
 
   // Called when user credentials were leaked. This triggers the UI to prompt
   // the user whether they would like to check their passwords.

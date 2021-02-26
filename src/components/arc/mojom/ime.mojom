@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 13
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -43,7 +43,20 @@ struct CompositionSegment {
   bool emphasized;
 };
 
-// Next method ID: 6
+// Represents the information of a key event.
+struct KeyEventData {
+  // Whether the event is a press event or a release event.
+  bool pressed;
+  // The key touched in the event represented in |ui::KeyboardCode|.
+  int32 key_code;
+  // The flags for modifiers state.
+  bool is_shift_down;
+  bool is_control_down;
+  bool is_alt_down;
+  bool is_capslock_on;
+};
+
+// Next method ID: 8
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   // Each bit of the bitmask |flags| corresponds to TEXT_INPUT_FLAG_*.
@@ -92,15 +105,22 @@ interface ImeHost {
   // Requests Chrome to hide the virtual keyboard.
   // However, hiding can be canceled if a text field gets focus.
   [MinVersion=9] RequestHideImeDeprecated@5();
+
+  // Asks Chrome whether the proxy IME should send a key event to the host IME.
+  [MinVersion=13] ShouldEnableKeyEventForwarding@6() => (bool should_forward);
+
+  // Sends a key event to Chrome to pass it to the Chrome OS IME.
+  [MinVersion=14] SendKeyEvent@7(KeyEventData key_event_data)
+      => (bool is_consumed);
 };
 
-// Next method ID: 8
+// Next method ID: 9
 interface ImeInstance {
   // DEPRECATED: Please use Init@6 instead.
-  InitDeprecated@0(ImeHost host_ptr);
+  InitDeprecated@0(pending_remote<ImeHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=6] Init@6(ImeHost host_ptr) => ();
+  [MinVersion=6] Init@6(pending_remote<ImeHost> host_remote) => ();
 
   // Sets composition text and attributes requested by the host IME.
   SetCompositionText@1(string text, array<CompositionSegment> segments);
@@ -125,4 +145,7 @@ interface ImeInstance {
   // Deletes current selection plus the specified number of char16 values
   // before and after selection or caret.
   [MinVersion=4] ExtendSelectionAndDelete@5(uint64 before, uint64 after);
+
+  // Sets composing region requested by the host IME.
+  [MinVersion=15] SetComposingRegion@8(Range range);
 };

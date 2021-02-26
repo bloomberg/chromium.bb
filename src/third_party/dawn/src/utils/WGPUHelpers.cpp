@@ -14,7 +14,6 @@
 
 #include "utils/WGPUHelpers.h"
 
-#include "common/Assert.h"
 #include "common/Constants.h"
 #include "common/Log.h"
 
@@ -22,6 +21,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 
 namespace utils {
@@ -141,6 +141,14 @@ namespace utils {
         return CreateShaderModuleFromResult(device, result);
     }
 
+    wgpu::ShaderModule CreateShaderModuleFromWGSL(const wgpu::Device& device, const char* source) {
+        wgpu::ShaderModuleWGSLDescriptor wgslDesc;
+        wgslDesc.source = source;
+        wgpu::ShaderModuleDescriptor descriptor;
+        descriptor.nextInChain = &wgslDesc;
+        return device.CreateShaderModule(&descriptor);
+    }
+
     std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source) {
         shaderc_shader_kind kind = ShadercShaderKind(stage);
 
@@ -160,9 +168,9 @@ namespace utils {
         wgpu::BufferDescriptor descriptor;
         descriptor.size = size;
         descriptor.usage = usage | wgpu::BufferUsage::CopyDst;
-
         wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
-        buffer.SetSubData(0, size, data);
+
+        device.GetDefaultQueue().WriteBuffer(buffer, 0, data, size);
         return buffer;
     }
 
@@ -251,11 +259,10 @@ namespace utils {
         descriptor.size.width = width;
         descriptor.size.height = height;
         descriptor.size.depth = 1;
-        descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
         descriptor.format = BasicRenderPass::kDefaultColorFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+        descriptor.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         wgpu::Texture color = device.CreateTexture(&descriptor);
 
         return BasicRenderPass(width, height, color);
@@ -265,26 +272,35 @@ namespace utils {
                                               uint64_t offset,
                                               uint32_t bytesPerRow,
                                               uint32_t rowsPerImage) {
-        wgpu::BufferCopyView bufferCopyView;
+        wgpu::BufferCopyView bufferCopyView = {};
         bufferCopyView.buffer = buffer;
-        bufferCopyView.offset = offset;
-        bufferCopyView.bytesPerRow = bytesPerRow;
-        bufferCopyView.rowsPerImage = rowsPerImage;
+        bufferCopyView.layout = CreateTextureDataLayout(offset, bytesPerRow, rowsPerImage);
 
         return bufferCopyView;
     }
 
     wgpu::TextureCopyView CreateTextureCopyView(wgpu::Texture texture,
                                                 uint32_t mipLevel,
-                                                uint32_t arrayLayer,
-                                                wgpu::Origin3D origin) {
+                                                wgpu::Origin3D origin,
+                                                wgpu::TextureAspect aspect) {
         wgpu::TextureCopyView textureCopyView;
         textureCopyView.texture = texture;
         textureCopyView.mipLevel = mipLevel;
-        textureCopyView.arrayLayer = arrayLayer;
         textureCopyView.origin = origin;
+        textureCopyView.aspect = aspect;
 
         return textureCopyView;
+    }
+
+    wgpu::TextureDataLayout CreateTextureDataLayout(uint64_t offset,
+                                                    uint32_t bytesPerRow,
+                                                    uint32_t rowsPerImage) {
+        wgpu::TextureDataLayout textureDataLayout;
+        textureDataLayout.offset = offset;
+        textureDataLayout.bytesPerRow = bytesPerRow;
+        textureDataLayout.rowsPerImage = rowsPerImage;
+
+        return textureDataLayout;
     }
 
     wgpu::SamplerDescriptor GetDefaultSamplerDescriptor() {

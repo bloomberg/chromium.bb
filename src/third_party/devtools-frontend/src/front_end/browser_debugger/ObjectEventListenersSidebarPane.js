@@ -18,7 +18,8 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
     this._refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._refreshClick, this);
     this._refreshButton.setEnabled(false);
 
-    this._eventListenersView = new EventListeners.EventListenersView.EventListenersView(this.update.bind(this));
+    this._eventListenersView = new EventListeners.EventListenersView.EventListenersView(
+        this.update.bind(this), /* enableDefaultTreeFocus */ true);
     this._eventListenersView.show(this.element);
     this.setDefaultFocusedChild(this._eventListenersView);
   }
@@ -36,7 +37,7 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
       this._lastRequestedContext.runtimeModel.releaseObjectGroup(objectGroupName);
       delete this._lastRequestedContext;
     }
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       this._eventListenersView.reset();
       this._eventListenersView.addEmptyHolderIfNeeded();
@@ -52,7 +53,7 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
    */
   wasShown() {
     super.wasShown();
-    self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
     this._refreshButton.setEnabled(true);
     this.update();
   }
@@ -62,7 +63,7 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
    */
   willHide() {
     super.willHide();
-    self.UI.context.removeFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
+    UI.Context.Context.instance().removeFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
     this._refreshButton.setEnabled(false);
   }
 
@@ -79,11 +80,21 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
               includeCommandLineAPI: false,
               silent: true,
               returnByValue: false,
-              generatePreview: false
+              generatePreview: false,
+              timeout: undefined,
+              throwOnSideEffect: undefined,
+              disableBreaks: undefined,
+              replMode: undefined,
+              allowUnsafeEvalBlockedByCSP: undefined,
             },
             /* userGesture */ false,
             /* awaitPromise */ false)
-        .then(result => result.object && !result.exceptionDetails ? result.object : null);
+        .then(result => {
+          if ('error' in result || result.exceptionDetails) {
+            return null;
+          }
+          return result.object;
+        });
   }
 
   /**

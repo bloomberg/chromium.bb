@@ -8,12 +8,12 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
@@ -161,6 +161,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     gfx::Transform scale_transform;
     scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);
     layer->draw_properties().screen_space_transform = scale_transform;
+    layer->draw_properties().target_space_transform = scale_transform;
     layer->set_contributes_to_drawn_render_surface(true);
     DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
     layer->layer_tree_impl()->property_trees()->SetAnimationScalesForTesting(
@@ -702,7 +703,13 @@ TEST_F(LegacySWPictureLayerImplTest, ZoomOutCrash) {
   EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
   SetContentsScaleOnBothLayers(32.0f, 1.0f, 32.0f, 1.0f, 0.f, false);
   EXPECT_EQ(32.f, active_layer()->HighResTiling()->contents_scale_key());
-  host_impl()->PinchGestureBegin();
+
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
   SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, 0.f, false);
   SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, 0.f, false);
   EXPECT_EQ(active_layer()->tilings()->NumHighResTilings(), 1);
@@ -759,8 +766,13 @@ TEST_F(LegacySWPictureLayerImplTest, PinchGestureTilings) {
   // Ensure UpdateTiles won't remove any tilings.
   active_layer()->MarkAllTilingsUsed();
 
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
   // Start a pinch gesture.
-  host_impl()->PinchGestureBegin();
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   // Zoom out by a small amount. We should create a tiling at half
   // the scale (2/kMaxScaleRatioDuringPinch).
@@ -802,7 +814,7 @@ TEST_F(LegacySWPictureLayerImplTest, PinchGestureTilings) {
   EXPECT_NE(LOW_RESOLUTION, low_res_tiling->resolution());
 
   // Stop a pinch gesture.
-  host_impl()->PinchGestureEnd(gfx::Point(), false);
+  host_impl()->GetInputHandler().PinchGestureEnd(gfx::Point(), false);
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer()->MarkAllTilingsUsed();
@@ -834,13 +846,18 @@ TEST_F(LegacySWPictureLayerImplTest, SnappedTilingDuringZoom) {
   EXPECT_FLOAT_EQ(
       0.24f, active_layer()->tilings()->tiling_at(0)->contents_scale_key());
   EXPECT_FLOAT_EQ(
-      0.0625f, active_layer()->tilings()->tiling_at(1)->contents_scale_key());
+      0.06f, active_layer()->tilings()->tiling_at(1)->contents_scale_key());
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer()->MarkAllTilingsUsed();
 
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
   // Start a pinch gesture.
-  host_impl()->PinchGestureBegin();
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   // Zoom out by a small amount. We should create a tiling at half
   // the scale (1/kMaxScaleRatioDuringPinch).
@@ -851,7 +868,7 @@ TEST_F(LegacySWPictureLayerImplTest, SnappedTilingDuringZoom) {
   EXPECT_FLOAT_EQ(
       0.12f, active_layer()->tilings()->tiling_at(1)->contents_scale_key());
   EXPECT_FLOAT_EQ(
-      0.0625, active_layer()->tilings()->tiling_at(2)->contents_scale_key());
+      0.06f, active_layer()->tilings()->tiling_at(2)->contents_scale_key());
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer()->MarkAllTilingsUsed();
@@ -861,10 +878,12 @@ TEST_F(LegacySWPictureLayerImplTest, SnappedTilingDuringZoom) {
   SetContentsScaleOnBothLayers(0.1f, 1.0f, 0.1f, 1.0f, 0.f, false);
   ASSERT_EQ(3u, active_layer()->tilings()->num_tilings());
 
-  // Zoom in. 0.25(desired_scale) should be snapped to 0.24 during zoom-in
-  // because 0.25(desired_scale) is within the ratio(1.2).
-  SetContentsScaleOnBothLayers(0.25f, 1.0f, 0.25f, 1.0f, 0.f, false);
+  // Zoom in. 0.22(desired_scale) should be snapped to 0.24 during zoom-in
+  // because 0.22(desired_scale) is within the ratio(1.2).
+  SetContentsScaleOnBothLayers(0.22f, 1.0f, 0.22f, 1.0f, 0.f, false);
   ASSERT_EQ(3u, active_layer()->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(
+      0.24f, active_layer()->tilings()->tiling_at(0)->contents_scale_key());
 
   // Zoom in a lot. Since we move in factors of two, we should get a scale that
   // is a power of 2 times 0.24.
@@ -886,7 +905,7 @@ TEST_F(LegacySWPictureLayerImplTest, CleanUpTilings) {
   float page_scale = 1.f;
 
   SetupDefaultTrees(layer_bounds);
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
   EXPECT_FLOAT_EQ(2u, active_layer()->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(
       1.f, active_layer()->tilings()->tiling_at(0)->contents_scale_key());
@@ -909,7 +928,12 @@ TEST_F(LegacySWPictureLayerImplTest, CleanUpTilings) {
       1.f * low_res_factor,
       active_layer()->tilings()->tiling_at(1)->contents_scale_key());
 
-  host_impl()->PinchGestureBegin();
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   // Changing the ideal but not creating new tilings.
   scale = 1.5f;
@@ -932,7 +956,7 @@ TEST_F(LegacySWPictureLayerImplTest, CleanUpTilings) {
       1.f * low_res_factor,
       active_layer()->tilings()->tiling_at(1)->contents_scale_key());
 
-  host_impl()->PinchGestureEnd(gfx::Point(), false);
+  host_impl()->GetInputHandler().PinchGestureEnd(gfx::Point(), false);
 
   // Create a 1.2 scale tiling. Now we have 1.0 and 1.2 tilings. Ideal = 1.2.
   scale = 1.2f;
@@ -1064,7 +1088,7 @@ TEST_F(LegacySWPictureLayerImplTest, DontAddLowResDuringAnimation) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = true;
 
   ResetTilingsAndRasterScales();
@@ -1132,7 +1156,7 @@ TEST_F(LegacySWPictureLayerImplTest, DontAddLowResForSmallLayers) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   // Contents exactly fit on one tile at scale 1, no low res.
@@ -1298,8 +1322,7 @@ TEST_F(LegacySWPictureLayerImplTest, HugeBackdropFilterMasksGetScaledDown) {
 
   // Resize even larger, so that the scale would be smaller than the minimum
   // contents scale. Then the layer should no longer have any tiling.
-  float min_contents_scale = host_impl()->settings().minimum_contents_scale;
-  gfx::Size extra_huge_bounds(max_texture_size / min_contents_scale + 1, 10);
+  gfx::Size extra_huge_bounds(max_texture_size * 10 + 1, 10);
   scoped_refptr<FakeRasterSource> extra_huge_raster_source =
       FakeRasterSource::CreateFilled(extra_huge_bounds);
 
@@ -1533,7 +1556,7 @@ TEST_F(LegacySWPictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, DisallowTileDrawQuads) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1300, 1900);
   gfx::Rect layer_rect(layer_bounds);
@@ -1561,7 +1584,7 @@ TEST_F(LegacySWPictureLayerImplTest, DisallowTileDrawQuads) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, ResourcelessPartialRecording) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(700, 650);
   gfx::Rect layer_rect(layer_bounds);
@@ -1598,7 +1621,7 @@ TEST_F(LegacySWPictureLayerImplTest, ResourcelessPartialRecording) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, ResourcelessEmptyRecording) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(700, 650);
   scoped_refptr<FakeRasterSource> active_raster_source =
@@ -1619,7 +1642,7 @@ TEST_F(LegacySWPictureLayerImplTest, ResourcelessEmptyRecording) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, FarScrolledQuadsShifted) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1000, 10000);
   scoped_refptr<FakeRasterSource> active_raster_source =
@@ -1696,7 +1719,7 @@ TEST_F(LegacySWPictureLayerImplTest, FarScrolledQuadsShifted) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, FarScrolledSolidColorQuadsShifted) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1000, 10000);
   scoped_refptr<FakeRasterSource> active_raster_source =
@@ -1774,7 +1797,7 @@ TEST_F(LegacySWPictureLayerImplTest, FarScrolledSolidColorQuadsShifted) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1500, 1500);
   gfx::Rect visible_rect(250, 250, 1000, 1000);
@@ -1924,7 +1947,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   ActivateTree();
   active_layer()->draw_properties().visible_layer_rect = visible_layer_rect;
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -1953,7 +1976,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTileIsComplete) {
       active_layer()->tilings()->tiling_at(0)->AllTilesForTesting();
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -1977,7 +2000,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTileIsIncomplete) {
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ActivateTree();
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -2005,7 +2028,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
       low_tiles);
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -2041,7 +2064,7 @@ TEST_F(LegacySWPictureLayerImplTest, LowResTileIsIncomplete) {
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
       low_tiles);
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -2066,7 +2089,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetInitialDeviceScaleFactor(2.f);
 
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
 
   // One ideal tile exists, this will get used when drawing.
   std::vector<Tile*> ideal_tiles;
@@ -2096,7 +2119,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
       high_tiles);
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -2132,7 +2155,7 @@ TEST_F(LegacySWPictureLayerImplTest, AppendQuadsDataForCheckerboard) {
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ActivateTree();
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -2627,9 +2650,14 @@ TEST_F(LegacySWPictureLayerImplTest, FirstTilingDuringPinch) {
   // We start with a tiling at scale 1.
   EXPECT_EQ(1.f, pending_layer()->HighResTiling()->contents_scale_key());
 
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
   // When we page scale up by 2.3, we get a new tiling that is a power of 2, in
   // this case 4.
-  host_impl()->PinchGestureBegin();
+  host_impl()->GetInputHandler().PinchGestureBegin();
   float high_res_scale = 2.3f;
   SetContentsScaleOnBothLayers(high_res_scale, 1.f, high_res_scale, 1.f, 0.f,
                                false);
@@ -2642,7 +2670,12 @@ TEST_F(LegacySWPictureLayerImplTest, PinchingTooSmall) {
   // We start with a tiling at scale 1.
   EXPECT_EQ(1.f, pending_layer()->HighResTiling()->contents_scale_key());
 
-  host_impl()->PinchGestureBegin();
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
   float high_res_scale = 0.0001f;
   EXPECT_LT(high_res_scale, pending_layer()->MinimumContentsScale());
 
@@ -2664,7 +2697,12 @@ TEST_F(LegacySWPictureLayerImplTest, PinchingTooSmallWithContentsScale) {
   EXPECT_FLOAT_EQ(contents_scale,
                   pending_layer()->HighResTiling()->contents_scale_key());
 
-  host_impl()->PinchGestureBegin();
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   float page_scale = 0.0001f;
   EXPECT_LT(page_scale * contents_scale,
@@ -2708,8 +2746,8 @@ TEST_F(LegacySWPictureLayerImplTest,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
 
-  // Starting animation scale greater than maximum animation scale
-  // Bounds at starting scale within the viewport
+  // Starting animation scale greater than maximum animation scale.
+  // Bounds at starting scale within the viewport.
   animating_transform = true;
   starting_animation_scale = 5.f;
 
@@ -2725,15 +2763,15 @@ TEST_F(LegacySWPictureLayerImplTest,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
 
-  // Starting Animation scale greater than maximum animation scale
-  // Bounds at starting scale outisde the viewport
+  // Starting Animation scale greater than maximum animation scale.
+  // Bounds at starting scale outside the viewport.
   animating_transform = true;
   starting_animation_scale = 11.f;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 3.f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 10.f);
 }
 
 TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
@@ -2747,7 +2785,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
@@ -2781,17 +2819,16 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 4.f);
 
-  // When animating with an unknown maximum animation scale factor, a new
-  // high-res tiling should be created at a source scale of 1.
+  // When animating with an unknown animation scale factors, a new high-res
+  // tiling should be created at the current contents scale.
   animating_transform = true;
   contents_scale = 2.f;
-  maximum_animation_scale = 0.f;
+  maximum_animation_scale = kNotScaled;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 page_scale * device_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
 
   // Further changes to scale during the animation should not cause a new
   // high-res tiling to get created.
@@ -2800,8 +2837,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 page_scale * device_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
@@ -2814,8 +2850,8 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
 
   // When animating with a maxmium animation scale factor that is so large
   // that the layer grows larger than the viewport at this scale, a new
-  // high-res tiling should get created at a source scale of 1, not at its
-  // maximum scale.
+  // high-res tiling should get created at a source scale that the rasterized
+  // layer will not be larger than the viewport, not at its maximum scale.
   animating_transform = true;
   contents_scale = 2.f;
   maximum_animation_scale = 11.f;
@@ -2823,8 +2859,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 page_scale * device_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 10.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
@@ -2838,7 +2873,8 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   // When animating with a maxmium animation scale factor that is so large
   // that the layer grows larger than the viewport at this scale, and where
   // the intial source scale is < 1, a new high-res tiling should get created
-  // at source scale 1.
+  // at a source scale that the rasterized layer will not be larger than the
+  // viewport.
   animating_transform = true;
   contents_scale = 0.1f;
   maximum_animation_scale = 11.f;
@@ -2846,8 +2882,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 device_scale * page_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 10.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
@@ -2860,7 +2895,8 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
 
   // When animating toward a smaller scale, but that is still so large that the
   // layer grows larger than the viewport at this scale, a new high-res tiling
-  // should get created at source scale 1.
+  // should get created at a source scale that the rasterized layer is not
+  // larger than the viewport.
   animating_transform = true;
   contents_scale = 11.f;
   maximum_animation_scale = 11.f;
@@ -2868,8 +2904,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 device_scale * page_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 10.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
@@ -2879,6 +2914,19 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 11.f);
+
+  // When animating with an unknown animation scale factors, a new high-res
+  // tiling should be created at the native scale if the current contents
+  // scale is smaller.
+  animating_transform = true;
+  contents_scale = 0.5f;
+  maximum_animation_scale = kNotScaled;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
+                 page_scale * device_scale);
 }
 
 TEST_F(LegacySWPictureLayerImplTest,
@@ -2893,13 +2941,13 @@ TEST_F(LegacySWPictureLayerImplTest,
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
 
-  active_layer()->SetHasWillChangeTransformHint(true);
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
 
   // Starting an animation should cause tiling resolution to get set to the
   // maximum animation scale factor.
@@ -2952,7 +3000,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimationAspectRatio) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
@@ -2981,13 +3029,14 @@ TEST_F(LegacySWPictureLayerImplTest,
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
 
   // The maximum animation scale exceeds the squared size of the maximum
-  // viewport dimension, so raster scale should fall back to 1.
+  // viewport dimension, so raster scale should be shrunk to make the
+  // rasterized layer not larger than the viewport.
   animating_transform = true;
   contents_scale = 2.f;
   maximum_animation_scale = 21.f;
@@ -2995,8 +3044,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
-                 page_scale * device_scale);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 20.f);
 }
 
 TEST_F(LegacySWPictureLayerImplTest, TilingSetRasterQueue) {
@@ -3442,7 +3490,7 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   float device_scale = 1.5f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
+  float starting_animation_scale = kNotScaled;
   bool animating_transform = false;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
@@ -3469,8 +3517,8 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   // If we change the layer contents scale after setting will change
   // will, then it will be updated if it's below the minimum scale (page scale *
   // device scale).
-  active_layer()->SetHasWillChangeTransformHint(true);
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
 
   contents_scale = 0.75f;
 
@@ -3489,10 +3537,18 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.5f);
 
+  // Ditto.
+  contents_scale = 20.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.5f);
+
   // Disabling the will-change hint will once again make the raster scale update
   // with the ideal scale.
-  active_layer()->SetHasWillChangeTransformHint(false);
-  pending_layer()->SetHasWillChangeTransformHint(false);
+  GetTransformNode(active_layer())->will_change_transform = false;
+  GetTransformNode(pending_layer())->will_change_transform = false;
 
   contents_scale = 3.f;
 
@@ -3500,6 +3556,62 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 3.f);
+}
+
+TEST_F(LegacySWPictureLayerImplTest, TinyRasterScale) {
+  gfx::Size tile_size(host_impl()->settings().default_tile_size);
+  SetupDefaultTrees(tile_size);
+
+  ResetTilingsAndRasterScales();
+
+  float contents_scale = 0.01f;
+  float device_scale = 1.5f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 1.f;
+  float starting_animation_scale = kNotScaled;
+  bool animating_transform = false;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.01f);
+
+  // If we change the layer contents scale after setting will change
+  // will, then it will be updated if it's below the minimum scale (page scale *
+  // device scale).
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  // The scale is clamped to the native scale.
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.01f);
+
+  // Further changes to the source scale will no longer be reflected in the
+  // contents scale.
+  contents_scale = 0.02f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.01f);
+
+  // ... unless the difference is very big.
+  contents_scale = 0.12f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.12f);
+
+  // Bigger scale will be clamped to the native scale.
+  contents_scale = 0.5f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.5f);
 }
 
 TEST_F(LegacySWPictureLayerImplTest,
@@ -3756,7 +3868,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   float page_scale = 1.f;
   float scale = 1.f;
 
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
   ResetTilingsAndRasterScales();
 
   SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, 0.f,
@@ -3773,7 +3885,12 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   active_layer()->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(1u, active_layer()->tilings()->num_tilings());
 
-  host_impl()->PinchGestureBegin();
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   // Changing the ideal but not creating new tilings.
   scale *= 1.5f;
@@ -3787,7 +3904,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   active_layer()->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(1u, active_layer()->tilings()->num_tilings());
 
-  host_impl()->PinchGestureEnd(gfx::Point(), false);
+  host_impl()->GetInputHandler().PinchGestureEnd(gfx::Point(), false);
 
   // Create a 1.2 scale tiling. Now we have 1.0 and 1.2 tilings. Ideal = 1.2.
   scale /= 4.f;
@@ -3884,7 +4001,7 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseTileResources) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1000, 2000);
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(10000, 20000));
@@ -3964,7 +4081,7 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   host_impl()->SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   host_impl()->PrepareTiles();
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_HARDWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -4031,6 +4148,8 @@ class OcclusionTrackingPictureLayerImplTest
     EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count)
         << "line: " << source_line;
   }
+
+  void TestOcclusionForScale(float scale, int expected_occluded_count);
 };
 
 TEST_F(OcclusionTrackingPictureLayerImplTest,
@@ -4240,7 +4359,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   }
 }
 
-TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
+void OcclusionTrackingPictureLayerImplTest::TestOcclusionForScale(
+    float scale,
+    int expected_occluded_count) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size tile_size(102, 102);
@@ -4254,42 +4375,38 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
-  ASSERT_TRUE(pending_layer()->CanHaveTilings());
 
-  LayerImpl* layer1 = AddLayer<LayerImpl>(host_impl()->pending_tree());
+  ActivateTree();
+
+  LayerImpl* layer1 = AddLayer<LayerImpl>(host_impl()->active_tree());
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
-  CopyProperties(pending_layer(), layer1);
+  CopyProperties(active_layer(), layer1);
   layer1->SetOffsetToTransformParent(occluding_layer_position);
 
-  pending_layer()->tilings()->RemoveAllTilings();
+  ASSERT_TRUE(active_layer()->CanHaveTilings());
+  active_layer()->SetContentsScaleForTesting(scale);
+  active_layer()->tilings()->RemoveAllTilings();
   float low_res_factor = host_impl()->settings().low_res_contents_scale_factor;
-  pending_layer()
+  active_layer()
       ->AddTiling(gfx::AxisTransform2d(low_res_factor, gfx::Vector2dF()))
       ->set_resolution(LOW_RESOLUTION);
-  pending_layer()
-      ->AddTiling(gfx::AxisTransform2d(0.3f, gfx::Vector2dF()))
+  active_layer()
+      ->AddTiling(gfx::AxisTransform2d(scale, gfx::Vector2dF()))
       ->set_resolution(HIGH_RESOLUTION);
-  pending_layer()
-      ->AddTiling(gfx::AxisTransform2d(0.7f, gfx::Vector2dF()))
-      ->set_resolution(HIGH_RESOLUTION);
-  pending_layer()
-      ->AddTiling(gfx::AxisTransform2d(1.0f, gfx::Vector2dF()))
-      ->set_resolution(HIGH_RESOLUTION);
-  pending_layer()
-      ->AddTiling(gfx::AxisTransform2d(2.0f, gfx::Vector2dF()))
-      ->set_resolution(HIGH_RESOLUTION);
+
+  ASSERT_EQ(2u, active_layer()->num_tilings());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   // UpdateDrawProperties with the occluding layer.
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdateDrawProperties(host_impl()->active_tree());
 
-  EXPECT_EQ(5u, pending_layer()->num_tilings());
+  ASSERT_EQ(2u, active_layer()->num_tilings());
 
   int occluded_tile_count = 0;
-  for (size_t i = 0; i < pending_layer()->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = pending_layer()->tilings()->tiling_at(i);
+  for (size_t i = 0; i < active_layer()->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer()->tilings()->tiling_at(i);
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     std::vector<Tile*> tiles = tiling->AllTilesForTesting();
@@ -4304,24 +4421,30 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
       }
     }
 
-    switch (i) {
-      case 0:
-        EXPECT_EQ(occluded_tile_count, 30);
-        break;
-      case 1:
-        EXPECT_EQ(occluded_tile_count, 5);
-        break;
-      case 2:
-        EXPECT_EQ(occluded_tile_count, 4);
-        break;
-      case 4:
-      case 3:
-        EXPECT_EQ(occluded_tile_count, 2);
-        break;
-      default:
-        NOTREACHED();
+    if (i == 0) {
+      EXPECT_EQ(scale, tiling->contents_scale_key());
+      EXPECT_EQ(occluded_tile_count, expected_occluded_count);
+    } else {
+      ASSERT_EQ(1u, i);
+      EXPECT_EQ(occluded_tile_count, 2);
     }
   }
+}
+
+TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForScale0_3) {
+  TestOcclusionForScale(0.3f, 2);
+}
+
+TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForScale0_7) {
+  TestOcclusionForScale(0.7f, 4);
+}
+
+TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForScale1) {
+  TestOcclusionForScale(1.0f, 5);
+}
+
+TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForScale2) {
+  TestOcclusionForScale(2.0f, 30);
 }
 
 TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
@@ -4603,15 +4726,11 @@ void GetClientDataAndUpdateInvalidation(RecordingSource* recording_source,
                                         gfx::Size layer_bounds) {
   gfx::Rect new_recorded_viewport = client->PaintableRegion();
   scoped_refptr<DisplayItemList> display_list =
-      client->PaintContentsToDisplayList(
-          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
-  size_t painter_reported_memory_usage =
-      client->GetApproximateUnsharedMemoryUsage();
+      client->PaintContentsToDisplayList();
 
   recording_source->UpdateAndExpandInvalidation(&invalidation, layer_bounds,
                                                 new_recorded_viewport);
   recording_source->UpdateDisplayItemList(display_list,
-                                          painter_reported_memory_usage,
                                           1.f /** recording_scale_factor */);
 }
 
@@ -4678,7 +4797,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid,
         resource_tiles);
   }
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -4877,6 +4996,51 @@ TEST_F(LegacySWPictureLayerImplTest, CloneMissingRecordings) {
   EXPECT_EQ(tile22, active_tiling->TileAt(2, 2)->id());
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       DirectlyCompositedImageRasterSourceCoverage) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakeRasterSource> filled_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  scoped_refptr<FakeRasterSource> partial_raster_source =
+      FakeRasterSource::CreatePartiallyFilled(layer_bounds,
+                                              gfx::Rect(150, 150, 100, 100));
+
+  SetupPendingTreeWithFixedTileSize(filled_raster_source, tile_size, Region());
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
+  ActivateTree();
+
+  PictureLayerTiling* pending_tiling = old_pending_layer()->HighResTiling();
+  PictureLayerTiling* active_tiling = active_layer()->HighResTiling();
+
+  // We should have all tiles on active, and none on pending.
+  EXPECT_EQ(0u, pending_tiling->AllTilesForTesting().size());
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+
+  // Now put a partially-recorded raster source on the pending tree (and
+  // invalidate everything, since the main thread recording will invalidate
+  // dropped recordings). Because the layer is a directly composited image, all
+  // tiles should be created.
+  SetupPendingTreeWithFixedTileSize(partial_raster_source, tile_size,
+                                    Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+
+  // Activate the tree. The same tiles should have been moved to active tree.
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+  Tile::Id tile00 = pending_tiling->TileAt(0, 0)->id();
+  Tile::Id tile11 = pending_tiling->TileAt(1, 1)->id();
+  Tile::Id tile22 = pending_tiling->TileAt(2, 2)->id();
+
+  // Activate the tree. The tiles are moved to the active tree.
+  ActivateTree();
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+  EXPECT_EQ(tile00, active_tiling->TileAt(0, 0)->id());
+  EXPECT_EQ(tile11, active_tiling->TileAt(1, 1)->id());
+  EXPECT_EQ(tile22, active_tiling->TileAt(2, 2)->id());
+}
+
 TEST_F(LegacySWPictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
@@ -4954,35 +5118,80 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
                                 .ToString());
 }
 
-TEST_F(LegacySWPictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
-  host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-
-  gfx::Size tile_size(102, 102);
+TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
   gfx::Size layer_bounds(100, 100);
-  gfx::Size viewport_size(100, 100);
-
-  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
-  SetInitialDeviceScaleFactor(1.f);
-
-  scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilledLCD(layer_bounds);
-  SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(layer_bounds));
 
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
+  for (Tile* tile : tiles)
+    EXPECT_TRUE(tile->can_use_lcd_text());
 
   pending_layer()->SetContentsOpaque(false);
-  pending_layer()->UpdateCanUseLCDTextAfterCommit();
+  pending_layer()->UpdateTiles();
 
   EXPECT_FALSE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
-  std::vector<Tile*> new_tiles =
-      pending_layer()->HighResTiling()->AllTilesForTesting();
-  ASSERT_EQ(tiles.size(), new_tiles.size());
-  for (size_t i = 0; i < tiles.size(); ++i)
-    EXPECT_NE(tiles[i], new_tiles[i]);
+  for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  // Change of the specific LCD text disallowed reason should not invalidate
+  // tilings.
+  pending_layer()->SetContentsOpaque(true);
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetFilter(pending_layer(), blur_filter);
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  SetFilter(pending_layer(), FilterOperations());
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_TRUE(tile->can_use_lcd_text());
+}
+
+TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
+  float page_scale = 4.f;
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
+                                    page_scale, 1.0f, 0.f, false);
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_TRUE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  std::vector<Tile*> tiles =
+      active_layer()->HighResTiling()->AllTilesForTesting();
+  for (Tile* tile : tiles)
+    EXPECT_TRUE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
+                                    page_scale, 1.0f, 0.f, false);
+  pending_layer()->SetContentsOpaque(false);
+  pending_layer()->UpdateTiles();
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_FALSE(pending_layer()->HighResTiling()->can_use_lcd_text());
+  ActivateTree();
+
+  EXPECT_FALSE(active_layer()->can_use_lcd_text());
+  ASSERT_EQ(2u, active_layer()->tilings()->num_tilings());
+  ASSERT_TRUE(active_layer()->HighResTiling()->has_tiles());
+  for (Tile* tile : active_layer()->HighResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
+  for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
+    EXPECT_FALSE(tile->can_use_lcd_text());
 }
 
 TEST_F(LegacySWPictureLayerImplTest, TilingAllTilesDone) {
@@ -5171,7 +5380,12 @@ TEST_F(NoLowResPictureLayerImplTest, LowResWasHighResCollision) {
   EXPECT_BOTH_EQ(num_tilings(), 1u);
   EXPECT_BOTH_EQ(tilings()->tiling_at(0)->contents_scale_key(), page_scale);
 
-  host_impl()->PinchGestureBegin();
+  // Since this test simulates a pinch it needs an input handler.
+  // TODO(bokan): This is a raster unit test, it shouldn't be using a real
+  // input handler.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl()));
+
+  host_impl()->GetInputHandler().PinchGestureBegin();
 
   // Zoom out to exactly the low res factor so that the previous high res
   // would be equal to the current low res (if it were possible to have one).
@@ -5321,7 +5535,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
       active_layer->tilings()->tiling_at(0)->AllTilesForTesting());
 
   // Draw.
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   active_layer->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer->AppendQuads(render_pass.get(), &data);
@@ -5508,216 +5722,13 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
                                ->contents_scale_key());
 }
 
-TEST_F(LegacySWPictureLayerImplTest, CompositedImageHistograms) {
-  base::HistogramTester histogram_tester;
-
-  gfx::Size layer_bounds(5, 5);
-  scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilled(layer_bounds);
-
-  SetupPendingTree(pending_raster_source);
-
-  // Set the image and bounds to values that make the layer not eligible for
-  // direct compositing. This must be reflected by a |contents_scale_key()| of
-  // 0.2f (matching the ideal source scale).
-  gfx::Size image_size(300, 300);
-  pending_layer()->SetDirectlyCompositedImageSize(image_size);
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  EXPECT_FLOAT_EQ(0.2f, pending_layer()
-                            ->picture_layer_tiling_set()
-                            ->FindTilingWithResolution(HIGH_RESOLUTION)
-                            ->contents_scale_key());
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      false, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      true, 0);
-
-  // At ideal scale of 1, we save 270000 pixels for a 600x600 layer directly
-  // compositing a 300x300 image.
-  pending_layer()->SetBounds(gfx::Size(600, 600));
-  pending_layer()->SetDirectlyCompositedImageSize(image_size);
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaSaved",
-      270000, 1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaSaved",
-      1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaAdded",
-      0);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      true, 0);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      false, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      true, 1);
-
-  // Matching bounds should log TileAreaMatches.
-  pending_layer()->SetDirectlyCompositedImageSize(gfx::Size(600, 600));
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      true, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      false, 1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaSaved",
-      1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaAdded",
-      0);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      true, 2);
-
-  // Changing the bounds to be smaller than the image should add a TileAreaAdded
-  // histogram bucket count.
-  pending_layer()->SetBounds(gfx::Size(300, 300));
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaAdded",
-      270000, 1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaSaved",
-      1);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaAdded",
-      1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      true, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      false, 2);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      true, 3);
-
-  // So far we haven't avoided any re-raster (as sizes have been updated at
-  // every stage of the test). Similarly, just updating tiles with no scale
-  // changes should not result in those histograms being logged.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      false, 0);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      true, 0);
-
-  // Reduce the ideal scale - directly composited image should not re-raster.
-  // Neither will-change:transform or active transformation so the 'false'
-  // bucket should get an entry.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.5f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      false, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      true, 0);
-
-  // Set will-change:transform and update tiles with a different ideal scale.
-  pending_layer()->SetHasWillChangeTransformHint(true);
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.6f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      false, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "AvoidRasterAdjustmentWithTransformTrigger",
-      true, 1);
-
-  // None of the operations past the first one should have incremented this
-  // histogram.
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      false, 1);
-}
-
-TEST_F(LegacySWPictureLayerImplTest, CompositedImageHistogramsOverflow) {
-  base::HistogramTester histogram_tester;
-
-  constexpr int kLargeDimension = std::numeric_limits<int>::max() / 2;
-  gfx::Size layer_bounds(kLargeDimension, kLargeDimension);
-  scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilled(layer_bounds);
-
-  // Overflow the area calculation for the histograms - we should still get
-  // the correct high res scale key, but no histograms should be logged.
-  SetupPendingTree(pending_raster_source);
-  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
-  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
-                                    false);
-  EXPECT_FLOAT_EQ(1.f, pending_layer()
-                           ->picture_layer_tiling_set()
-                           ->FindTilingWithResolution(HIGH_RESOLUTION)
-                           ->contents_scale_key());
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaSaved",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaAdded",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "TileAreaMatches",
-      0);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      true, 1);
-  histogram_tester.ExpectBucketCount(
-      "Compositing.Renderer.DirectlyCompositedImage."
-      "RasterScaleDirectlyComposited",
-      false, 0);
-}
-
 TEST_F(LegacySWPictureLayerImplTest,
        ChangeRasterTranslationNukePendingLayerTiles) {
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
-  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  pending_layer()->SetUseTransformedRasterization(true);
+  auto raster_source = FakeRasterSource::CreateFilledWithText(layer_bounds);
+  SetupTreesWithFixedTileSize(raster_source, raster_source, tile_size,
+                              Region());
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5).
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -5739,8 +5750,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   }
 
   // Change to scale & translation of * 2.25 + (0.75, 0.25).
-  // Verifies there is a hysteresis that simple layer movement doesn't update
-  // raster translation.
+  // Verifies that layer movement updates raster translation.
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
   gfx::Transform translate2;
   translate2.Translate(0.75f, 0.25f);
@@ -5752,19 +5762,15 @@ TEST_F(LegacySWPictureLayerImplTest,
   ASSERT_EQ(1u, pending_layer()->tilings()->num_tilings());
   {
     PictureLayerTiling* tiling = pending_layer()->tilings()->tiling_at(0);
-    EXPECT_EQ(gfx::AxisTransform2d(2.25f, gfx::Vector2dF(0.25f, 0.5f)),
+    EXPECT_EQ(gfx::AxisTransform2d(2.25f, gfx::Vector2dF(0.75f, 0.25f)),
               tiling->raster_transform());
     EXPECT_EQ(4u, tiling->AllTilesForTesting().size());
     for (auto* tile : tiling->AllTilesForTesting())
       EXPECT_EQ(tile->raster_transform(), tiling->raster_transform());
   }
 
-  // Now change the device scale factor but keep the same total scale.
-  // Our policy recomputes raster translation only if raster scale is
-  // recomputed. Even if the recomputed scale remains the same, we still
-  // updates to new translation value. Old tiles with the same scale but
-  // different translation would become non-ideal and deleted on pending
-  // layers (in fact, delete ahead due to slot conflict with the new tiling).
+  // Now change the device scale factor but keep the same total scale. Old tiles
+  // with the same scale would become non-ideal and deleted on pending layers.
   SetupDrawProperties(pending_layer(), 2.25f, 1.0f, 1.f, 2.25f, 2.25f, false);
   pending_layer()->draw_properties().screen_space_transform.ConcatTransform(
       translate2);
@@ -5786,9 +5792,9 @@ TEST_F(LegacySWPictureLayerImplTest,
        ChangeRasterTranslationNukeActiveLayerTiles) {
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
-  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  active_layer()->SetUseTransformedRasterization(true);
-  pending_layer()->SetUseTransformedRasterization(true);
+  auto raster_source = FakeRasterSource::CreateFilledWithText(layer_bounds);
+  SetupTreesWithFixedTileSize(raster_source, raster_source, tile_size,
+                              Region());
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5) on the active layer.
   SetupDrawProperties(active_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -5952,7 +5958,7 @@ TEST_F(LegacySWPictureLayerImplTest, PaintWorkletInputs) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, NoTilingsUsesScaleOne) {
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
 
   gfx::Size layer_bounds(1000, 10000);
   scoped_refptr<FakeRasterSource> active_raster_source =
@@ -5981,5 +5987,385 @@ TEST_F(LegacySWPictureLayerImplTest, NoTilingsUsesScaleOne) {
   EXPECT_RECT_EQ(gfx::Rect(1000, 10000), shared_quad_state->quad_layer_rect);
   EXPECT_TRUE(shared_quad_state->quad_to_target_transform.IsIdentity());
 }
+
+TEST_F(LegacySWPictureLayerImplTest,
+       TransformedRasterizationAndContentsOpaqueAndLCDText) {
+  auto raster_source =
+      FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200));
+  SetupTreesWithInvalidation(raster_source, raster_source, Region());
+
+  pending_layer()->SetBackgroundColor(SK_ColorWHITE);
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNone,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+
+  // Adding will-change:transform will keep the current raster translation.
+  SetWillChangeTransform(pending_layer(), true);
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kWillChangeTransform,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+
+  // We should not update raster translation when there is
+  // will-change:transform.
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.4, 0.5));
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kWillChangeTransform,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+
+  // Removing will-change:transform will update raster translation.
+  SetWillChangeTransform(pending_layer(), false);
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNone,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.4, 0.5),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+}
+
+TEST_F(LegacySWPictureLayerImplTest,
+       TransformedRasterizationAndLCDTextWithoutText) {
+  auto raster_source = FakeRasterSource::CreateFilled(gfx::Size(200, 200));
+  SetupTreesWithInvalidation(raster_source, raster_source, Region());
+
+  pending_layer()->SetBackgroundColor(SK_ColorWHITE);
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNoText,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+}
+
+enum {
+  kCanUseLCDText = 1 << 0,
+  kLayersAlwaysAllowedLCDText = 1 << 1,
+};
+
+class LCDTextTest : public PictureLayerImplTest,
+                    public testing::WithParamInterface<unsigned> {
+ protected:
+  LayerTreeSettings CreateSettings() override {
+    auto settings = PictureLayerImplTest::CreateSettings();
+    settings.can_use_lcd_text = GetParam() & kCanUseLCDText;
+    settings.layers_always_allowed_lcd_text =
+        GetParam() & kLayersAlwaysAllowedLCDText;
+    return settings;
+  }
+
+  void SetUp() override {
+    PictureLayerImplTest::SetUp();
+
+    auto raster_source =
+        FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200));
+    SetupPendingTree(raster_source);
+
+    tree_ = host_impl()->pending_tree();
+    layer_ = pending_layer();
+    descendant_ = AddLayer<PictureLayerImpl>(tree_);
+
+    layer_->SetContentsOpaque(true);
+    layer_->SetDrawsContent(true);
+    layer_->SetBounds(gfx::Size(200, 200));
+    ASSERT_TRUE(layer_->CanHaveTilings());
+
+    descendant_->SetContentsOpaque(true);
+    descendant_->SetDrawsContent(true);
+    descendant_->SetBounds(gfx::Size(200, 200));
+    Region invalidation;
+    descendant_->UpdateRasterSource(raster_source, &invalidation, nullptr,
+                                    nullptr);
+    ASSERT_TRUE(layer_->CanHaveTilings());
+
+    CreateTransformNode(layer_);
+    CreateEffectNode(layer_);
+    CopyProperties(layer_, descendant_);
+    CreateTransformNode(descendant_);
+    CreateEffectNode(descendant_);
+  }
+
+  void CheckCanUseLCDText(LCDTextDisallowedReason expected_disallowed_reason,
+                          const char* description,
+                          PictureLayerImpl* layer = nullptr) {
+    UpdateDrawProperties(tree_);
+
+    if (GetParam() & kLayersAlwaysAllowedLCDText)
+      expected_disallowed_reason = LCDTextDisallowedReason::kNone;
+    else if (!(GetParam() & kCanUseLCDText))
+      expected_disallowed_reason = LCDTextDisallowedReason::kSetting;
+
+    SCOPED_TRACE(description);
+    if (layer) {
+      EXPECT_EQ(expected_disallowed_reason,
+                layer->ComputeLCDTextDisallowedReasonForTesting());
+    } else {
+      EXPECT_EQ(expected_disallowed_reason,
+                layer_->ComputeLCDTextDisallowedReasonForTesting());
+      EXPECT_EQ(expected_disallowed_reason,
+                descendant_->ComputeLCDTextDisallowedReasonForTesting());
+    }
+  }
+
+  LayerTreeImpl* tree_ = nullptr;
+  PictureLayerImpl* layer_ = nullptr;
+  PictureLayerImpl* descendant_ = nullptr;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         LCDTextTest,
+                         testing::Values(0,
+                                         kCanUseLCDText,
+                                         kLayersAlwaysAllowedLCDText,
+                                         kCanUseLCDText |
+                                             kLayersAlwaysAllowedLCDText));
+
+TEST_P(LCDTextTest, IdentityTransform) {
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, IntegralTransform) {
+  gfx::Transform integral_translation;
+  integral_translation.Translate(1.0, 2.0);
+  SetTransform(layer_, integral_translation);
+
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "integral transform");
+}
+
+TEST_P(LCDTextTest, NonIntegralTranslation) {
+  // Non-integral translation.
+  gfx::Transform non_integral_translation;
+  non_integral_translation.Translate(1.5, 2.5);
+  SetTransform(layer_, non_integral_translation);
+  // We can use LCD-text as raster translation can align the text to physical
+  // pixels for fragtional transform in the render target.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "non-integeral translation");
+
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, NonIntegralTranslationAboveRenderTarget) {
+  // Non-integral translation above render target.
+  gfx::Transform non_integral_translation;
+  non_integral_translation.Translate(1.5, 2.5);
+  SetTransform(layer_, non_integral_translation);
+  SetRenderSurfaceReason(layer_, RenderSurfaceReason::kTest);
+  // Raster translation can't handle fractional transform above the render
+  // target, so LCD text is not allowed.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "non-integeral translation above render target");
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, NonTranslation) {
+  // Rotation.
+  gfx::Transform rotation;
+  rotation.Rotate(10.0);
+  SetTransform(layer_, rotation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "Rotation transform");
+
+  // Scale. LCD text is allowed.
+  gfx::Transform scale;
+  scale.Scale(2.0, 2.0);
+  SetTransform(layer_, scale);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "Scale transform");
+
+  // Skew.
+  gfx::Transform skew;
+  skew.Skew(10.0, 0.0);
+  SetTransform(layer_, skew);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "Skew transform");
+
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, NonTranslationAboveRenderTarget) {
+  SetRenderSurfaceReason(layer_, RenderSurfaceReason::kTest);
+
+  // Rotation.
+  gfx::Transform rotation;
+  rotation.Rotate(10.0);
+  SetTransform(layer_, rotation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "rotation transform above render target");
+
+  // Scale. LCD-text is allowed.
+  gfx::Transform scale;
+  scale.Scale(2.0, 2.0);
+  // Apply perspective to prevent the scale from applying to the layers below
+  // the render target.
+  scale.ApplyPerspectiveDepth(10);
+  SetTransform(layer_, scale);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "scale transform above render target");
+
+  // Skew.
+  gfx::Transform skew;
+  skew.Skew(10.0, 0.0);
+  SetTransform(layer_, skew);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "skew transform above render target");
+
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, Opacity) {
+  // LCD-text is allowed with opacity paint property.
+  SetOpacity(layer_, 0.5f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "opacity: 0.5");
+  SetOpacity(layer_, 1.f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "opacity: 1.0");
+}
+
+TEST_P(LCDTextTest, ContentsNotOpaque) {
+  // Non-opaque content and opaque background.
+  layer_->SetContentsOpaque(false);
+  layer_->SetBackgroundColor(SK_ColorGREEN);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque,
+                     "contents not opaque", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "descedant of contents not opaque", descendant_);
+
+  // Non-opaque content and non-opaque background.
+  layer_->SetBackgroundColor(SkColorSetARGB(128, 255, 255, 255));
+  CheckCanUseLCDText(LCDTextDisallowedReason::kBackgroundColorNotOpaque,
+                     "background not opaque", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "descendant of contents not opaque", descendant_);
+
+  layer_->SetContentsOpaque(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "contents opaque");
+}
+
+TEST_P(LCDTextTest, WillChangeTransform) {
+  SetWillChangeTransform(layer_, true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform,
+                     "will-change:transform");
+
+  SetWillChangeTransform(layer_, false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "no will-change: transform");
+}
+
+TEST_P(LCDTextTest, Filter) {
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetFilter(layer_, blur_filter);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect, "filter");
+
+  SetFilter(layer_, FilterOperations());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no filter");
+}
+
+TEST_P(LCDTextTest, FilterAnimation) {
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetFilter(layer_, blur_filter);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect, "filter");
+
+  GetEffectNode(layer_)->has_potential_filter_animation = true;
+  SetFilter(layer_, FilterOperations());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect,
+                     "filter animation");
+
+  GetEffectNode(layer_)->has_potential_filter_animation = false;
+  SetFilter(layer_, FilterOperations());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no filter");
+}
+
+TEST_P(LCDTextTest, BackdropFilter) {
+  FilterOperations backdrop_filter;
+  backdrop_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetBackdropFilter(descendant_, backdrop_filter);
+  UpdateDrawProperties(host_impl()->active_tree());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect,
+                     "backdrop-filter", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "backdrop-filter",
+                     descendant_);
+
+  SetBackdropFilter(descendant_, FilterOperations());
+  UpdateDrawProperties(host_impl()->active_tree());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no backdrop-filter",
+                     layer_);
+}
+
+TEST_P(LCDTextTest, BackdropFilterAnimation) {
+  FilterOperations backdrop_filter;
+  backdrop_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetBackdropFilter(descendant_, backdrop_filter);
+  UpdateDrawProperties(host_impl()->active_tree());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect,
+                     "backdrop-filter", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "backdrop-filter",
+                     descendant_);
+
+  GetEffectNode(descendant_)->has_potential_backdrop_filter_animation = true;
+  SetBackdropFilter(descendant_, FilterOperations());
+  UpdateDrawProperties(host_impl()->active_tree());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect,
+                     "backdrop-filter animation", layer_);
+
+  GetEffectNode(descendant_)->has_potential_backdrop_filter_animation = false;
+  UpdateDrawProperties(host_impl()->active_tree());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no backdrop-filter",
+                     layer_);
+}
+
+TEST_P(LCDTextTest, ContentsOpaqueForText) {
+  layer_->SetContentsOpaque(false);
+  layer_->SetBackgroundColor(SK_ColorGREEN);
+  layer_->SetContentsOpaqueForText(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "contents opaque for text",
+                     layer_);
+
+  layer_->SetContentsOpaqueForText(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque,
+                     "contents not opaque for text", layer_);
+}
+
+TEST_P(LCDTextTest, TransformAnimation) {
+  GetTransformNode(layer_)->has_potential_animation = true;
+  SetLocalTransformChanged(layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kTransformAnimation,
+                     "transform animation");
+
+  GetTransformNode(layer_)->has_potential_animation = false;
+  SetLocalTransformChanged(layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no transform animation");
+}
+
 }  // namespace
 }  // namespace cc

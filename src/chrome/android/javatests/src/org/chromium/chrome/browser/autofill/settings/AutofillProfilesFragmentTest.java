@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.autofill.settings;
 
-import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.widget.EditText;
 
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,15 +18,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
@@ -47,20 +47,20 @@ public class AutofillProfilesFragmentTest {
     @Before
     public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Seb Doe", "Google",
-                "111 First St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000",
-                "first@gmail.com", "en-US"));
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "John Doe", "Google",
-                "111 Second St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000",
-                "second@gmail.com", "en-US"));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "Seb Doe", "Google", "111 First St", "CA", "Los Angeles",
+                "", "90291", "", "US", "650-253-0000", "first@gmail.com", "en-US"));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "John Doe", "Google", "111 Second St", "CA",
+                "Los Angeles", "", "90291", "", "US", "650-253-0000", "second@gmail.com", "en-US"));
         // Invalid state should not cause a crash on the state dropdown list.
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Bill Doe", "Google",
-                "111 Third St", "XXXYYY", "Los Angeles", "", "90291", "", "US", "650-253-0000",
-                "third@gmail.com", "en-US"));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "Bill Doe", "Google", "111 Third St", "XXXYYY",
+                "Los Angeles", "", "90291", "", "US", "650-253-0000", "third@gmail.com", "en-US"));
         // Full value for state should show up correctly on the dropdown list.
-        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Bob Doe", "Google",
-                "111 Fourth St", "California", "Los Angeles", "", "90291", "", "US", "650-253-0000",
-                "fourth@gmail.com", "en-US"));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "Bob Doe", "Google", "111 Fourth St", "California",
+                "Los Angeles", "", "90291", "", "US", "650-253-0000", "fourth@gmail.com", "en-US"));
     }
 
     @Test
@@ -81,19 +81,10 @@ public class AutofillProfilesFragmentTest {
         Assert.assertNotNull(addProfile);
 
         // Add a profile.
-        // TODO(jeffreycohen): Change this test into a parameterized test that exercises
-        // both branches of this if statement.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
-            updatePreferencesAndWait(autofillProfileFragment, addProfile,
-                    new String[] {"Alice Doe", "Google", "111 Added St", "Los Angeles", "CA",
-                            "90291", "650-253-0000", "add@profile.com"},
-                    R.id.editor_dialog_done_button, false);
-        } else {
-            updatePreferencesAndWait(autofillProfileFragment, addProfile,
-                    new String[] {"Alice Doe", "111 Added St", "Los Angeles", "CA", "90291",
-                            "650-253-0000", "add@profile.com"},
-                    R.id.editor_dialog_done_button, false);
-        }
+        updatePreferencesAndWait(autofillProfileFragment, addProfile,
+                new String[] {"Alice Doe", "Google", "111 Added St", "Los Angeles", "CA", "90291",
+                        "650-253-0000", "add@profile.com"},
+                R.id.editor_dialog_done_button, false);
 
         Assert.assertEquals(7 /* One toggle + one add button + five profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
@@ -177,17 +168,10 @@ public class AutofillProfilesFragmentTest {
         Assert.assertEquals("John Doe", johnProfile.getTitle());
 
         // Edit a profile.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
-            updatePreferencesAndWait(autofillProfileFragment, johnProfile,
-                    new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles", "CA",
-                            "90291", "650-253-0000", "edit@profile.com"},
-                    R.id.editor_dialog_done_button, false);
-        } else {
-            updatePreferencesAndWait(autofillProfileFragment, johnProfile,
-                    new String[] {"Emily Doe", "111 Edited St", "Los Angeles", "CA", "90291",
-                            "650-253-0000", "edit@profile.com"},
-                    R.id.editor_dialog_done_button, false);
-        }
+        updatePreferencesAndWait(autofillProfileFragment, johnProfile,
+                new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles", "CA", "90291",
+                        "650-253-0000", "edit@profile.com"},
+                R.id.editor_dialog_done_button, false);
         // Check if the preferences are updated correctly.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
@@ -292,15 +276,11 @@ public class AutofillProfilesFragmentTest {
 
     private void waitForKeyboardStatus(
             final boolean keyboardVisible, final SettingsActivity activity) {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Keyboard was not " + (keyboardVisible ? "shown." : "hidden.")) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return keyboardVisible
-                                == KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                                        activity, activity.findViewById(android.R.id.content));
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
+                                       activity, activity.findViewById(android.R.id.content)),
+                    Matchers.is(keyboardVisible));
+        });
     }
 
     private void updatePreferencesAndWait(AutofillProfilesFragment profileFragment,

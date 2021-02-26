@@ -116,10 +116,13 @@ void CertificateSelector::CertificateTableModel::SetObserver(
 CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
                                          content::WebContents* web_contents)
     : web_contents_(web_contents) {
+  SetCanResize(true);
   CHECK(web_contents_);
 
-  view_cert_button_ = SetExtraView(views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
+  view_cert_button_ = SetExtraView(std::make_unique<views::MdTextButton>(
+      base::BindRepeating(&CertificateSelector::ViewCertButtonPressed,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
@@ -265,16 +268,12 @@ bool CertificateSelector::Accept() {
   return true;
 }
 
-bool CertificateSelector::CanResize() const {
-  return true;
-}
-
 base::string16 CertificateSelector::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CLIENT_CERT_DIALOG_TITLE);
 }
 
 bool CertificateSelector::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return button != ui::DIALOG_BUTTON_OK || GetSelectedCert() != nullptr;
+  return button != ui::DIALOG_BUTTON_OK || GetSelectedCert();
 }
 
 views::View* CertificateSelector::GetInitiallyFocusedView() {
@@ -286,16 +285,12 @@ ui::ModalType CertificateSelector::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-void CertificateSelector::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
-  if (sender == view_cert_button_) {
-    net::ClientCertIdentity* const cert = GetSelectedCert();
-    if (cert) {
-      ShowCertificateViewer(web_contents_,
-                            web_contents_->GetTopLevelNativeWindow(),
-                            cert->certificate());
-    }
-  }
+void CertificateSelector::ViewCertButtonPressed() {
+  net::ClientCertIdentity* const cert = GetSelectedCert();
+  if (!cert)
+    return;
+  ShowCertificateViewer(web_contents_, web_contents_->GetTopLevelNativeWindow(),
+                        cert->certificate());
 }
 
 void CertificateSelector::OnSelectionChanged() {

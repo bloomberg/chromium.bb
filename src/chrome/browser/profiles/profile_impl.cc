@@ -13,12 +13,11 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
-#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -44,7 +43,6 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/background_sync/background_sync_controller_factory.h"
-#include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -64,6 +62,8 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
+#include "chrome/browser/federated_learning/floc_id_provider.h"
+#include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
@@ -75,11 +75,11 @@
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_builder.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
@@ -96,7 +96,6 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
@@ -108,7 +107,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -116,6 +114,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/background_sync/background_sync_controller_impl.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -139,6 +138,7 @@
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -161,7 +161,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -722,7 +721,7 @@ void ProfileImpl::DoFinalInit() {
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
-  SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
+  site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 
   InitializeDataReductionProxy();
 
@@ -746,6 +745,10 @@ void ProfileImpl::DoFinalInit() {
   // Ensure that the SharingService is initialized now that io_data_ is
   // initialized. https://crbug.com/171406
   SharingServiceFactory::GetForBrowserContext(this);
+
+  // The creation of FlocIdProvider should align with the start of a browser
+  // profile session, so initialize it here.
+  federated_learning::FlocIdProviderFactory::GetForProfile(this);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
@@ -785,7 +788,7 @@ ProfileImpl::~ProfileImpl() {
   bool primary_otr_available = false;
 
   // Get a list of existing OTR profiles since |off_the_record_profile_| might
-  // be modified after the call to |DestroyOffTheRecordProfileNow|.
+  // be modified after the call to |DestroyProfileNow|.
   for (auto& otr_profile : otr_profiles_) {
     raw_otr_profiles.push_back(otr_profile.second.get());
     primary_otr_available |= (otr_profile.first == OTRProfileID::PrimaryID());
@@ -833,10 +836,6 @@ std::string ProfileImpl::GetProfileUserName() const {
     return identity_manager->GetPrimaryAccountInfo().email;
 
   return std::string();
-}
-
-Profile::ProfileType ProfileImpl::GetProfileType() const {
-  return REGULAR_PROFILE;
 }
 
 #if !defined(OS_ANDROID)
@@ -1086,14 +1085,14 @@ void ProfileImpl::SetExitType(ExitType exit_type) {
   }
 }
 
-Profile::ExitType ProfileImpl::GetLastSessionExitType() {
+Profile::ExitType ProfileImpl::GetLastSessionExitType() const {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exit_type_;
 }
 
-bool ProfileImpl::ShouldRestoreOldSessionCookies() {
+bool ProfileImpl::ShouldRestoreOldSessionCookies() const {
 #if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
       SessionStartupPref::GetDefaultStartupType();
@@ -1107,7 +1106,7 @@ bool ProfileImpl::ShouldRestoreOldSessionCookies() {
          startup_pref_type == SessionStartupPref::LAST;
 }
 
-bool ProfileImpl::ShouldPersistSessionCookies() {
+bool ProfileImpl::ShouldPersistSessionCookies() const {
   return true;
 }
 
@@ -1129,8 +1128,8 @@ ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
 #endif  // !defined(OS_ANDROID)
 
 PrefService* ProfileImpl::GetOffTheRecordPrefs() {
-  if (HasOffTheRecordProfile()) {
-    return GetOffTheRecordProfile()->GetPrefs();
+  if (HasPrimaryOTRProfile()) {
+    return GetPrimaryOTRProfile()->GetPrefs();
   } else {
     // The extensions preference API and many tests call this method even when
     // there's no OTR profile, in order to figure out what a pref value would
@@ -1286,13 +1285,13 @@ void ProfileImpl::SetCorsOriginAccessListForOrigin(
                                 base::RetainedRef(profile_setter.get())));
 
   // Keep incognito storage partitions' NetworkContexts synchronized.
-  if (HasOffTheRecordProfile()) {
+  if (HasPrimaryOTRProfile()) {
     auto off_the_record_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
         source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
         CorsOriginPatternSetter::ClonePatterns(block_patterns),
         barrier_closure);
     ForEachStoragePartition(
-        GetOffTheRecordProfile(),
+        GetPrimaryOTRProfile(),
         base::BindRepeating(&CorsOriginPatternSetter::SetLists,
                             base::RetainedRef(off_the_record_setter.get())));
   } else {
@@ -1313,23 +1312,6 @@ ProfileImpl::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
 }
 
-bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
-  // Obtains the applied policy at most one time per profile, and reuse the
-  // same value for the whole session so that CORS implementations distributed
-  // in multi-processes work consistently. Profile-bound renderers and
-  // NetworkContexts will be initialized based on this returned mode.
-  if (!cors_legacy_mode_enabled_.has_value()) {
-    cors_legacy_mode_enabled_ =
-        base::FeatureList::IsEnabled(
-            features::kHideCorsLegacyModeEnabledPolicySupport)
-            ? false
-            : GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
-  }
-  if (cors_legacy_mode_enabled_.value())
-    return false;
-  return base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
-}
-
 std::string ProfileImpl::GetMediaDeviceIDSalt() {
   return media_device_id_salt_->GetSalt();
 }
@@ -1344,10 +1326,7 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
   return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
-bool ProfileImpl::IsSameProfile(Profile* profile) {
-  if (profile == static_cast<Profile*>(this))
-    return true;
-
+bool ProfileImpl::IsSameOrParent(Profile* profile) {
   return profile && profile->GetOriginalProfile() == this;
 }
 
@@ -1403,6 +1382,13 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     case APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN: {
       if (!pref_locale.empty()) {
         DCHECK(LocaleNotChanged(pref_locale, new_locale));
+
+        if (!locale_change_guard_) {
+          locale_change_guard_ =
+              std::make_unique<chromeos::LocaleChangeGuard>(this);
+        }
+        locale_change_guard_->set_locale_changed_during_login(true);
+
         std::string accepted_locale =
             GetPrefs()->GetString(prefs::kApplicationLocaleAccepted);
         if (accepted_locale == new_locale) {
@@ -1415,8 +1401,6 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
           // Back up locale of login screen.
           std::string cur_locale = g_browser_process->GetApplicationLocale();
           GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
-          if (locale_change_guard_ == NULL)
-            locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
           locale_change_guard_->PrepareChangingLocale(cur_locale, new_locale);
         }
       } else {
@@ -1462,8 +1446,8 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
 }
 
 void ProfileImpl::OnLogin() {
-  if (locale_change_guard_ == NULL)
-    locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+  if (!locale_change_guard_)
+    locale_change_guard_ = std::make_unique<chromeos::LocaleChangeGuard>(this);
   locale_change_guard_->OnLogin();
 }
 

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,13 +22,11 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
-import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabbedModeTabDelegateFactory;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -46,12 +45,10 @@ import java.util.concurrent.ExecutionException;
  * Tests for Tab-related histogram collection.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TabUmaTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
@@ -75,8 +72,13 @@ public class TabUmaTest {
     private TabbedModeTabDelegateFactory createTabDelegateFactory() {
         BrowserControlsVisibilityDelegate visibilityDelegate =
                 new BrowserControlsVisibilityDelegate(BrowserControlsState.BOTH) {};
+        // clang-format off
         return new TabbedModeTabDelegateFactory(mActivityTestRule.getActivity(), visibilityDelegate,
-                new ObservableSupplierImpl<ShareDelegate>(), null);
+                new ObservableSupplierImpl<ShareDelegate>(), null,
+                () -> {}, mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getBottomSheetController());
+        // clang-format on
     }
 
     private Tab createLazilyLoadedTab(boolean show) throws ExecutionException {
@@ -252,7 +254,7 @@ public class TabUmaTest {
 
             TabState state = new TabState();
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                state.contentsState = new TabState.WebContentsState(
+                state.contentsState = new WebContentsState(
                         fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY,
                                 fileInputStream.getChannel().position(), file.length()));
                 state.contentsState.setVersion(2);

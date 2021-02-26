@@ -8,6 +8,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cache_query_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_resource.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_record.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache.h"
@@ -179,7 +182,7 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     bool match_all) {
   DCHECK(script_state);
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.MatchCalledFromDocumentScope",
-                        ExecutionContext::From(script_state)->IsDocument());
+                        LocalDOMWindow::From(script_state));
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.MatchCalledWhenFetchIsIncomplete",
                         result_ == mojom::BackgroundFetchResult::UNSET);
 
@@ -233,7 +236,7 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
 
   for (auto& fetch : settled_fetches) {
     Request* request =
-        Request::Create(script_state, *(fetch->request),
+        Request::Create(script_state, std::move(fetch->request),
                         Request::ForServiceWorkerFetchEvent::kFalse);
     auto* record =
         MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
@@ -335,6 +338,15 @@ const String BackgroundFetchRegistration::result() const {
 }
 
 const String BackgroundFetchRegistration::failureReason() const {
+  blink::IdentifiabilityMetricBuilder(GetExecutionContext()->UkmSourceID())
+      .Set(
+          blink::IdentifiableSurface::FromTypeAndToken(
+              blink::IdentifiableSurface::Type::kWebFeature,
+              WebFeature::
+                  kV8BackgroundFetchRegistration_FailureReason_AttributeGetter),
+          failure_reason_ ==
+              mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED)
+      .Record(GetExecutionContext()->UkmRecorder());
   switch (failure_reason_) {
     case mojom::BackgroundFetchFailureReason::NONE:
       return "";
@@ -352,10 +364,6 @@ const String BackgroundFetchRegistration::failureReason() const {
       return "download-total-exceeded";
   }
   NOTREACHED();
-}
-
-void BackgroundFetchRegistration::Dispose() {
-  observer_receiver_.reset();
 }
 
 bool BackgroundFetchRegistration::HasPendingActivity() const {
@@ -376,7 +384,7 @@ void BackgroundFetchRegistration::UpdateUI(
   registration_service_->UpdateUI(in_title, in_icon, std::move(callback));
 }
 
-void BackgroundFetchRegistration::Trace(Visitor* visitor) {
+void BackgroundFetchRegistration::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(observers_);
   visitor->Trace(observer_receiver_);

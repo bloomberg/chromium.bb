@@ -10,7 +10,7 @@
 #ifndef LIBANGLE_RENDERER_VULKAN_VK_MEM_ALLOC_WRAPPER_H_
 #define LIBANGLE_RENDERER_VULKAN_VK_MEM_ALLOC_WRAPPER_H_
 
-#include "libANGLE/renderer/vulkan/vk_headers.h"
+#include "common/vulkan/vk_headers.h"
 
 VK_DEFINE_HANDLE(VmaAllocator)
 VK_DEFINE_HANDLE(VmaAllocation)
@@ -20,6 +20,8 @@ namespace vma
 VkResult InitAllocator(VkPhysicalDevice physicalDevice,
                        VkDevice device,
                        VkInstance instance,
+                       uint32_t apiVersion,
+                       VkDeviceSize preferredLargeHeapBlockSize,
                        VmaAllocator *pAllocator);
 
 void DestroyAllocator(VmaAllocator allocator);
@@ -34,6 +36,13 @@ VkResult CreateBuffer(VmaAllocator allocator,
                       uint32_t *pMemoryTypeIndexOut,
                       VkBuffer *pBuffer,
                       VmaAllocation *pAllocation);
+
+VkResult FindMemoryTypeIndexForBufferInfo(VmaAllocator allocator,
+                                          const VkBufferCreateInfo *pBufferCreateInfo,
+                                          VkMemoryPropertyFlags requiredFlags,
+                                          VkMemoryPropertyFlags preferredFlags,
+                                          bool persistentlyMappedBuffers,
+                                          uint32_t *pMemoryTypeIndexOut);
 
 void GetMemoryTypeProperties(VmaAllocator allocator,
                              uint32_t memoryTypeIndex,
@@ -52,6 +61,9 @@ void InvalidateAllocation(VmaAllocator allocator,
                           VmaAllocation allocation,
                           VkDeviceSize offset,
                           VkDeviceSize size);
+
+void BuildStatsString(VmaAllocator allocator, char **statsString, VkBool32 detailedMap);
+void FreeStatsString(VmaAllocator allocator, char *statsString);
 
 }  // namespace vma
 

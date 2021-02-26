@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/launch.h"
@@ -193,19 +193,10 @@ std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
 }
 
 void CameraHalDelegate::GetSupportedFormats(
-    const VideoCaptureDeviceDescriptor& device_descriptor,
+    int camera_id,
     VideoCaptureFormats* supported_formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!UpdateBuiltInCameraInfo()) {
-    return;
-  }
-  base::AutoLock lock(camera_info_lock_);
-  int camera_id = GetCameraIdFromDeviceId(device_descriptor.device_id);
-  if (camera_id == -1 || camera_info_[camera_id].is_null()) {
-    LOG(ERROR) << "Invalid camera device: " << device_descriptor.device_id;
-    return;
-  }
   const cros::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
 
   base::flat_set<int32_t> candidate_fps_set =
@@ -250,8 +241,13 @@ void CameraHalDelegate::GetSupportedFormats(
     }
     float max_fps = 1.0 * 1000000000LL / duration;
 
+    // There's no consumer information here to determine the buffer usage, so
+    // hard-code the usage that all the clients should be using.
+    constexpr gfx::BufferUsage kClientBufferUsage =
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
     const ChromiumPixelFormat cr_format =
-        camera_buffer_factory_->ResolveStreamBufferFormat(hal_format);
+        camera_buffer_factory_->ResolveStreamBufferFormat(hal_format,
+                                                          kClientBufferUsage);
     if (cr_format.video_format == PIXEL_FORMAT_UNKNOWN) {
       continue;
     }
@@ -269,11 +265,12 @@ void CameraHalDelegate::GetSupportedFormats(
   }
 }
 
-void CameraHalDelegate::GetDeviceDescriptors(
-    VideoCaptureDeviceDescriptors* device_descriptors) {
+void CameraHalDelegate::GetDevicesInfo(
+    VideoCaptureDeviceFactory::GetDevicesInfoCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!UpdateBuiltInCameraInfo()) {
+    std::move(callback).Run({});
     return;
   }
 
@@ -285,69 +282,115 @@ void CameraHalDelegate::GetDeviceDescriptors(
     has_camera_connected_.TimedWait(kEventWaitTimeoutSecs);
   }
 
-  base::AutoLock info_lock(camera_info_lock_);
-  base::AutoLock id_map_lock(device_id_to_camera_id_lock_);
-  for (const auto& it : camera_info_) {
-    int camera_id = it.first;
-    const cros::mojom::CameraInfoPtr& camera_info = it.second;
-    if (!camera_info) {
-      continue;
-    }
-    VideoCaptureDeviceDescriptor desc;
-    desc.capture_api = VideoCaptureApi::ANDROID_API2_LIMITED;
-    desc.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
-    switch (camera_info->facing) {
-      case cros::mojom::CameraFacing::CAMERA_FACING_BACK:
-        desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
-        desc.device_id = base::NumberToString(camera_id);
-        desc.set_display_name("Back Camera");
-        break;
-      case cros::mojom::CameraFacing::CAMERA_FACING_FRONT:
-        desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
-        desc.device_id = base::NumberToString(camera_id);
-        desc.set_display_name("Front Camera");
-        break;
-      case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL: {
-        desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+  std::vector<VideoCaptureDeviceInfo> devices_info;
 
-        auto get_vendor_string = [&](const std::string& key) -> const char* {
-          const VendorTagInfo* info =
-              vendor_tag_ops_delegate_.GetInfoByName(key);
-          if (info == nullptr) {
-            return nullptr;
-          }
-          auto val = GetMetadataEntryAsSpan<char>(
-              camera_info->static_camera_characteristics, info->tag);
-          return val.empty() ? nullptr : val.data();
-        };
-
-        // The webcam_private api expects that |device_id| to be set as the
-        // corresponding device path for external cameras used in GVC system.
-        auto* path = get_vendor_string("com.google.usb.devicePath");
-        desc.device_id =
-            path != nullptr ? path : base::NumberToString(camera_id);
-
-        auto* name = get_vendor_string("com.google.usb.modelName");
-        desc.set_display_name(name != nullptr ? name : "External Camera");
-
-        auto* vid = get_vendor_string("com.google.usb.vendorId");
-        auto* pid = get_vendor_string("com.google.usb.productId");
-        if (vid != nullptr && pid != nullptr) {
-          desc.model_id = base::StrCat({vid, ":", pid});
-        }
-        break;
-        // Mojo validates the input parameters for us so we don't need to worry
-        // about malformed values.
+  {
+    base::AutoLock info_lock(camera_info_lock_);
+    base::AutoLock id_map_lock(device_id_to_camera_id_lock_);
+    for (const auto& it : camera_info_) {
+      int camera_id = it.first;
+      const cros::mojom::CameraInfoPtr& camera_info = it.second;
+      if (!camera_info) {
+        continue;
       }
+
+      auto get_vendor_string = [&](const std::string& key) -> const char* {
+        const VendorTagInfo* info = vendor_tag_ops_delegate_.GetInfoByName(key);
+        if (info == nullptr) {
+          return nullptr;
+        }
+        auto val = GetMetadataEntryAsSpan<char>(
+            camera_info->static_camera_characteristics, info->tag);
+        return val.empty() ? nullptr : val.data();
+      };
+
+      VideoCaptureDeviceDescriptor desc;
+      desc.capture_api = VideoCaptureApi::ANDROID_API2_LIMITED;
+      desc.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
+      switch (camera_info->facing) {
+        case cros::mojom::CameraFacing::CAMERA_FACING_BACK:
+          desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
+          desc.device_id = base::NumberToString(camera_id);
+          desc.set_display_name("Back Camera");
+          break;
+        case cros::mojom::CameraFacing::CAMERA_FACING_FRONT:
+          desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
+          desc.device_id = base::NumberToString(camera_id);
+          desc.set_display_name("Front Camera");
+          break;
+        case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL: {
+          desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+
+          // The webcam_private api expects that |device_id| to be set as the
+          // corresponding device path for external cameras used in GVC system.
+          auto* path = get_vendor_string("com.google.usb.devicePath");
+          desc.device_id =
+              path != nullptr ? path : base::NumberToString(camera_id);
+
+          auto* name = get_vendor_string("com.google.usb.modelName");
+          desc.set_display_name(name != nullptr ? name : "External Camera");
+
+          break;
+          // Mojo validates the input parameters for us so we don't need to
+          // worry about malformed values.
+        }
+      }
+      auto* vid = get_vendor_string("com.google.usb.vendorId");
+      auto* pid = get_vendor_string("com.google.usb.productId");
+      if (vid != nullptr && pid != nullptr) {
+        desc.model_id = base::StrCat({vid, ":", pid});
+      }
+      desc.set_control_support(GetControlSupport(camera_info));
+      device_id_to_camera_id_[desc.device_id] = camera_id;
+      devices_info.emplace_back(desc);
+      GetSupportedFormats(camera_id, &devices_info.back().supported_formats);
     }
-    device_id_to_camera_id_[desc.device_id] = camera_id;
-    device_descriptors->push_back(desc);
   }
+
   // TODO(shik): Report external camera first when lid is closed.
   // TODO(jcliang): Remove this after JS API supports query camera facing
   // (http://crbug.com/543997).
-  std::sort(device_descriptors->begin(), device_descriptors->end());
-  DVLOG(1) << "Number of device descriptors: " << device_descriptors->size();
+  std::sort(
+      devices_info.begin(), devices_info.end(),
+      [](const VideoCaptureDeviceInfo& a, const VideoCaptureDeviceInfo& b) {
+        return a.descriptor < b.descriptor;
+      });
+  DVLOG(1) << "Number of devices: " << devices_info.size();
+
+  std::move(callback).Run(std::move(devices_info));
+}
+
+VideoCaptureControlSupport CameraHalDelegate::GetControlSupport(
+    const cros::mojom::CameraInfoPtr& camera_info) {
+  VideoCaptureControlSupport control_support;
+
+  auto is_vendor_range_valid = [&](const std::string& key) -> bool {
+    const VendorTagInfo* info = vendor_tag_ops_delegate_.GetInfoByName(key);
+    if (info == nullptr)
+      return false;
+    auto range = GetMetadataEntryAsSpan<int32_t>(
+        camera_info->static_camera_characteristics, info->tag);
+    return range.size() == 3 && range[0] < range[1];
+  };
+
+  if (is_vendor_range_valid("com.google.control.panRange"))
+    control_support.pan = true;
+
+  if (is_vendor_range_valid("com.google.control.tiltRange"))
+    control_support.tilt = true;
+
+  if (is_vendor_range_valid("com.google.control.zoomRange"))
+    control_support.zoom = true;
+
+  auto max_digital_zoom = GetMetadataEntryAsSpan<float>(
+      camera_info->static_camera_characteristics,
+      cros::mojom::CameraMetadataTag::
+          ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+  if (max_digital_zoom.size() == 1 && max_digital_zoom[0] > 1) {
+    control_support.zoom = true;
+  }
+
+  return control_support;
 }
 
 cros::mojom::CameraInfoPtr CameraHalDelegate::GetCameraInfoFromDeviceId(
@@ -362,6 +405,11 @@ cros::mojom::CameraInfoPtr CameraHalDelegate::GetCameraInfoFromDeviceId(
     return {};
   }
   return it->second.Clone();
+}
+
+const VendorTagInfo* CameraHalDelegate::GetVendorTagInfoByName(
+    const std::string& full_name) {
+  return vendor_tag_ops_delegate_.GetInfoByName(full_name);
 }
 
 void CameraHalDelegate::OpenDevice(

@@ -81,9 +81,10 @@ JS_PROTOCOL_PATH = path.join(ROOT_PATH, 'v8', 'include', 'js_protocol.pdl')
 DEVTOOLS_FRONTEND_PATH = path.join(DEVTOOLS_PATH, 'front_end')
 GLOBAL_EXTERNS_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'externs.js'))
 DEFAULT_PROTOCOL_EXTERNS_FILE = path.join(DEVTOOLS_FRONTEND_PATH, 'protocol_externs.js')
-WASM_SOURCE_MAP_FILE = path.join(DEVTOOLS_FRONTEND_PATH, 'sdk', 'wasm_source_map', 'types.js')
-RUNTIME_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'RuntimeInstantiator.js'))
-ROOT_MODULE_FILE = to_platform_path(path.join(DEVTOOLS_FRONTEND_PATH, 'root.js'))
+RUNTIME_FILE = to_platform_path(
+    path.join(DEVTOOLS_FRONTEND_PATH, 'startup', 'RuntimeInstantiator.js'))
+ROOT_MODULE_FILE = to_platform_path(
+    path.join(DEVTOOLS_FRONTEND_PATH, 'startup', 'startup.js'))
 
 CLOSURE_COMPILER_JAR = to_platform_path(path.join(SCRIPTS_PATH, 'closure', 'compiler.jar'))
 CLOSURE_RUNNER_JAR = to_platform_path(path.join(SCRIPTS_PATH, 'closure', 'closure_runner', 'closure_runner.jar'))
@@ -117,7 +118,6 @@ APPLICATION_DESCRIPTORS = [
     'inspector',
     'toolbox',
     'integration_test_runner',
-    'formatter_worker_entrypoint',
     'heap_snapshot_worker_entrypoint',
 ]
 
@@ -177,9 +177,15 @@ class JSDocChecker:
         known_css = {}
         match = re.search(INVALID_TYPE_REGEX, line)
         if match:
-            print_error('Type "%s" nullability not marked explicitly with "?" (nullable) or "!" (non-nullable)' % match.group(1),
-                        match.start(1))
-            self._error_found = True
+            problematic_type = match.group(1)
+            start_line = match.start(1)
+            # `typeof Type` is allowed and should not be marked with nulllable
+            match = re.search(re.compile('typeof %s' % problematic_type), line)
+            if not match:
+                print_error(
+                    'Type "%s" nullability not marked explicitly with "?" (nullable) or "!" (non-nullable)'
+                    % problematic_type, start_line)
+                self._error_found = True
 
         match = re.search(INVALID_NON_OBJECT_TYPE_REGEX, line)
         if match:
@@ -284,12 +290,19 @@ common_closure_args = [
     '--warning_level',
     'VERBOSE',
     '--language_in=ECMASCRIPT_NEXT',
-    '--language_out=ES5_STRICT',
+    '--language_out=ECMASCRIPT_NEXT',
     '--extra_annotation_name',
     'suppressReceiverCheck',
     '--extra_annotation_name',
     'suppressGlobalPropertiesCheck',
     '--checks-only',
+    # Bounded Generics should be supported (https://github.com/google/closure-compiler/wiki/Generic-Types#declaring-a-bounded-generic-type)
+    # however, when running it against the source code it throws an error. Here
+    # we switch off compilation of bounded generics for Closure Compiler (though
+    # TypeScript Compiler understands them, which is handy) and hide warnings for
+    # files which make use of them.
+    '--jscomp_off',
+    'boundedGenerics',
 ]
 
 
@@ -309,7 +322,6 @@ def check_conditional_dependencies(modules_by_name):
 def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_externs_path, protocol_externs_file):
     temp_frontend_path = path.join(temp_devtools_path, 'front_end')
     checker = dependency_preprocessor.DependencyPreprocessor(descriptors, temp_frontend_path, DEVTOOLS_FRONTEND_PATH)
-    checker.enforce_dependencies()
 
     command = common_closure_args + [
         '--externs',
@@ -322,10 +334,22 @@ def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_
         ROOT_MODULE_FILE,
     ]
 
-    all_files = descriptors.all_compiled_files() + [WASM_SOURCE_MAP_FILE]
+    all_files = descriptors.all_compiled_files()
     args = []
-    for file in all_files:
 
+    # Closure Compiler currently doesn't understand Bounded Generics (see common
+    # args comment above), and the files listed below make use of them so we hide
+    # warnings for those files.
+    bounded_generics = [
+        'SourceMapManager.js',
+        'CSSWorkspaceBinding.js',
+        'SASSSourceMapping.js',
+    ]
+
+    for file in bounded_generics:
+        args.extend(['--hide_warnings_for', file])
+
+    for file in all_files:
         args.extend(['--js', file])
         if 'InspectorBackend.js' in file:
             args.extend(['--js', protocol_externs_file])
@@ -342,6 +366,20 @@ def prepare_closure_frontend_compile(temp_devtools_path, descriptors, namespace_
         generated_file = path.normpath(path.join(temp_frontend_path, file))
         if not generated_file in args:
             modular_build.write_file(generated_file, '')
+            if os.path.basename(generated_file) in [
+                    'acorn-logical-assignment.mjs',
+                    'acorn-loose.mjs',
+                    'acorn-numeric-separator.mjs',
+                    'acorn.mjs',
+                    'ClientVariations.js',
+                    'i18n.js',
+                    'marked.esm.js',
+                    'wasm_source_map.js',
+            ]:
+                with open(
+                        generated_file.replace('.js', '_types.js').replace(
+                            '.mjs', '_types.mjs')) as f:
+                    modular_build.write_file(generated_file, f.read())
             args.extend(['--js', generated_file])
 
     command += args

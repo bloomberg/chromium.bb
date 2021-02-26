@@ -6,29 +6,38 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -48,6 +57,8 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private final ThemeColorProvider mThemeColorProvider;
     private final TabGroupUiToolbarView mToolbarView;
     private final ViewGroup mTabListContainerView;
+    private final ScrimCoordinator mScrimCoordinator;
+    private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
     private PropertyModelChangeProcessor mModelChangeProcessor;
     private TabGridDialogCoordinator mTabGridDialogCoordinator;
     private TabListCoordinator mTabStripCoordinator;
@@ -58,9 +69,13 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     /**
      * Creates a new {@link TabGroupUiCoordinator}
      */
-    public TabGroupUiCoordinator(ViewGroup parentView, ThemeColorProvider themeColorProvider) {
+    public TabGroupUiCoordinator(ViewGroup parentView, ThemeColorProvider themeColorProvider,
+            ScrimCoordinator scrimCoordinator,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
         mContext = parentView.getContext();
         mThemeColorProvider = themeColorProvider;
+        mScrimCoordinator = scrimCoordinator;
+        mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
         mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(mContext).inflate(
                 R.layout.bottom_tab_strip_toolbar, parentView, false);
@@ -72,7 +87,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
      * Handle any initialization that occurs once native has been loaded.
      */
     @Override
-    public void initializeWithNative(ChromeActivity activity,
+    public void initializeWithNative(Activity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
@@ -80,9 +95,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
                     "Downloaded_Enabled");
         }
         assert activity instanceof ChromeTabbedActivity;
-        mActivity = activity;
-        TabModelSelector tabModelSelector = activity.getTabModelSelector();
-        TabContentManager tabContentManager = activity.getTabContentManager();
+        mActivity = (ChromeActivity) activity;
+        TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
+        TabContentManager tabContentManager = mActivity.getTabContentManager();
 
         boolean actionOnAllRelatedTabs = TabUiFeatureUtilities.isConditionalTabStripEnabled();
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
@@ -99,28 +114,30 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
         //  and the dialog here.
         TabGridDialogMediator.DialogController dialogController = null;
-        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled() && mScrimCoordinator != null) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
-                    tabContentManager, activity, activity.getCompositorViewHolder(), null, null,
-                    null, mActivity.getShareDelegateSupplier());
+                    tabContentManager, /* tabCreatorManager= */ mActivity,
+                    activity.findViewById(R.id.coordinator), null, null, null,
+                    mActivity.getShareDelegateSupplier(), mScrimCoordinator);
             mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager,
                     mTabStripCoordinator.getTabGroupTitleEditor());
             dialogController = mTabGridDialogCoordinator.getDialogController();
         }
 
         mMediator = new TabGroupUiMediator(activity, visibilityController, this, mModel,
-                tabModelSelector, activity,
-                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider,
-                dialogController, activity.getLifecycleDispatcher(), activity);
+                tabModelSelector, /* tabCreatorManager= */ mActivity,
+                mActivity.getOverviewModeBehaviorSupplier(), mThemeColorProvider, dialogController,
+                mActivity.getLifecycleDispatcher(), /* snackbarManageable= */ mActivity,
+                mOmniboxFocusStateSupplier);
 
         TabGroupUtils.startObservingForCreationIPH();
 
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) return;
 
-        mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
+        mActivityLifecycleDispatcher = mActivity.getLifecycleDispatcher();
         mActivityLifecycleDispatcher.register(this);
 
-
+        // TODO(meiliang): Potential leak if the observer is added after restoreCompleted. Fix it.
         // Record the group count after all tabs are being restored. This only happen once per life
         // cycle, therefore remove the observer after recording. We only focus on normal tab model
         // because we don't restore tabs in incognito tab model.
@@ -135,13 +152,29 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     }
 
     /**
-     * Handles a reset event originated from {@link TabGroupUiMediator}
-     * when the bottom sheet is collapsed or the dialog is hidden.
+     * @return {@link Supplier} that provides dialog visibility.
+     */
+    @Override
+    public Supplier<Boolean> getTabGridDialogVisibilitySupplier() {
+        return mTabGridDialogCoordinator::isVisible;
+    }
+
+    /**
+     * Handles a reset event originated from {@link TabGroupUiMediator} to reset the tab strip.
      *
      * @param tabs List of Tabs to reset.
      */
     @Override
     public void resetStripWithListOfTabs(List<Tab> tabs) {
+        BottomSheetController bottomSheetController =
+                BottomSheetControllerProvider.from(mActivity.getWindowAndroid());
+        if (tabs != null && tabs.size() > 1
+                && bottomSheetController.getSheetState()
+                        == BottomSheetController.SheetState.HIDDEN) {
+            TabGroupUtils.maybeShowIPH(FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
+                    mTabStripCoordinator.getContainerView(),
+                    TabUiFeatureUtilities.isLaunchBugFixEnabled() ? bottomSheetController : null);
+        }
         mTabStripCoordinator.resetWithListOfTabs(tabs);
     }
 
@@ -200,6 +233,22 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private void recordTabGroupCount() {
         TabModelFilterProvider provider =
                 mActivity.getTabModelSelector().getTabModelFilterProvider();
+
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            TabModelFilter normalTabModelFilter = provider.getTabModelFilter(false);
+
+            if (!(normalTabModelFilter instanceof TabGroupModelFilter)) {
+                String actualType = normalTabModelFilter == null
+                        ? "null"
+                        : normalTabModelFilter.getClass().getName();
+                assert false
+                    : "Please file bug, this is unexpected. Expected TabGroupModelFilter, but was "
+                      + actualType;
+
+                return;
+            }
+        }
+
         TabGroupModelFilter normalFilter = (TabGroupModelFilter) provider.getTabModelFilter(false);
         TabGroupModelFilter incognitoFilter =
                 (TabGroupModelFilter) provider.getTabModelFilter(true);
@@ -208,13 +257,13 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             int namedGroupCount = 0;
             for (int i = 0; i < normalFilter.getTabGroupCount(); i++) {
-                int rootId = ((TabImpl) normalFilter.getTabAt(i)).getRootId();
+                int rootId = CriticalPersistedTabData.from(normalFilter.getTabAt(i)).getRootId();
                 if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }
             }
             for (int i = 0; i < incognitoFilter.getTabGroupCount(); i++) {
-                int rootId = ((TabImpl) incognitoFilter.getTabAt(i)).getRootId();
+                int rootId = CriticalPersistedTabData.from(incognitoFilter.getTabAt(i)).getRootId();
                 if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }
@@ -224,8 +273,27 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     }
 
     private void recordSessionCount() {
-        if (mActivity.getOverviewModeBehavior() != null
-                && mActivity.getOverviewModeBehavior().overviewVisible()) {
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            TabModelFilter normalTabModelFilter =
+                    mActivity.getTabModelSelector().getTabModelFilterProvider().getTabModelFilter(
+                            false);
+
+            if (!(normalTabModelFilter instanceof TabGroupModelFilter)) {
+                String actualType = normalTabModelFilter == null
+                        ? "null"
+                        : normalTabModelFilter.getClass().getName();
+                assert false
+                    : "Please file bug, this is unexpected. Expected TabGroupModelFilter, but was "
+                      + actualType;
+
+                return;
+            }
+        }
+
+        OverviewModeBehavior overviewModeBehavior =
+                (OverviewModeBehavior) mActivity.getOverviewModeBehaviorSupplier().get();
+
+        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
             return;
         }
 

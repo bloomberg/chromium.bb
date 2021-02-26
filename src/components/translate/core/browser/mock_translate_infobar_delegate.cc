@@ -55,6 +55,15 @@ MockTranslateInfoBarDelegateFactory::MockTranslateInfoBarDelegateFactory(
 
 MockTranslateInfoBarDelegateFactory::~MockTranslateInfoBarDelegateFactory() {}
 
+// static
+std::unique_ptr<MockTranslateInfoBarDelegate>
+MockTranslateInfoBarDelegateFactory::CreateMockTranslateInfoBarDelegate(
+    translate::TranslateStep step) {
+  return std::make_unique<MockTranslateInfoBarDelegate>(
+      manager_->GetWeakPtr(), false, step, "fr", "en",
+      translate::TranslateErrors::Type::NONE, false);
+}
+
 }  // namespace testing
 
 }  // namespace translate

@@ -117,17 +117,19 @@ def AddGdbTest(name, is_broken=False, is_thread_test=False):
 AddGdbTest('complete')
 AddGdbTest('detach')
 AddGdbTest('disconnect')
+
+using_clang = env.Bit('bitcode') or env.Bit('nacl_clang')
+
 # https://code.google.com/p/nativeclient/issues/detail?id=4059
 AddGdbTest('invalid_memory',
-           is_broken = (env.Bit('nacl_clang') and not env.UsingEmulator()))
+           is_broken = (using_clang and not env.UsingEmulator()))
 AddGdbTest('kill')
-AddGdbTest('remote_get')
+# TODO(crbug.com/1101347): This fails on ARM bots.
+AddGdbTest('remote_get', is_broken=env.Bit('build_arm') and not env.UsingEmulator())
 
 # Single-stepping does work reliably with ARM and MIPS in qemu due to the code
 # cache not being flushable.
 AddGdbTest('stepi_after_break', is_broken=env.UsingEmulator())
-
-using_clang = env.Bit('bitcode') or env.Bit('nacl_clang')
 
 # This fails on ARM+PNaCl. The set_global_var function appears to be
 # getting the wrong argument value (68K vs 1), so the value of

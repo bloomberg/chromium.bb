@@ -19,8 +19,12 @@ const ConfirmationState = {
 Polymer({
   is: 'settings-crostini-subpage',
 
-  behaviors:
-      [PrefsBehavior, WebUIListenerBehavior, settings.RouteOriginBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    PrefsBehavior,
+    settings.RouteOriginBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -105,17 +109,6 @@ Polymer({
       value: false,
     },
 
-    /**
-     * Whether the toggle to share the mic with Crostini should be shown.
-     * @private {boolean}
-     */
-    showCrostiniMic_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('showCrostiniMic');
-      },
-    },
-
     /*
      * Whether the installer is showing.
      * @private {boolean}
@@ -186,6 +179,20 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kUninstallCrostini,
+        chromeos.settings.mojom.Setting.kCrostiniDiskResize,
+        chromeos.settings.mojom.Setting.kCrostiniMicAccess,
+        chromeos.settings.mojom.Setting.kCrostiniContainerUpgrade,
+      ]),
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -240,10 +247,23 @@ Polymer({
         r.CROSTINI_PORT_FORWARDING, '#crostini-port-forwarding');
   },
 
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.CROSTINI_DETAILS) {
+      return;
+    }
+
+    this.attemptDeepLink();
+  },
+
   /** @private */
   onCrostiniEnabledChanged_(enabled) {
     if (!enabled &&
-        settings.Router.getInstance().getCurrentRoute() ==
+        settings.Router.getInstance().getCurrentRoute() ===
             settings.routes.CROSTINI_DETAILS) {
       settings.Router.getInstance().navigateToPreviousRoute();
     }

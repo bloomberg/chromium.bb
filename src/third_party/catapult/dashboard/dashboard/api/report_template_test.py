@@ -24,25 +24,34 @@ class ReportTemplateTest(testing_common.TestCase):
     self.SetUpApp([
         ('/api/report/template', api_report_template.ReportTemplateHandler),
     ])
-    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_ALLOWLIST[0])
 
   def _Post(self, **params):
     return json.loads(self.Post('/api/report/template', params).body)
 
   def testUnprivileged(self):
-    self.Post('/api/report/template', dict(
-        owners=testing_common.INTERNAL_USER.email(),
-        name='Test:New',
-        template=json.dumps({'rows': []})), status=403)
+    self.Post(
+        '/api/report/template',
+        dict(
+            owners=testing_common.INTERNAL_USER.email(),
+            name='Test:New',
+            template=json.dumps({'rows': []})),
+        status=403)
 
   def testInvalid(self):
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
-    self.Post('/api/report/template', dict(
-        template=json.dumps({'rows': []})), status=400)
-    self.Post('/api/report/template', dict(
-        name='name', template=json.dumps({'rows': []})), status=400)
-    self.Post('/api/report/template', dict(
-        owners='o', template=json.dumps({'rows': []})), status=400)
+    self.Post(
+        '/api/report/template',
+        dict(template=json.dumps({'rows': []})),
+        status=400)
+    self.Post(
+        '/api/report/template',
+        dict(name='name', template=json.dumps({'rows': []})),
+        status=400)
+    self.Post(
+        '/api/report/template',
+        dict(owners='o', template=json.dumps({'rows': []})),
+        status=400)
 
   def testInternal_PutTemplate(self):
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
@@ -74,8 +83,10 @@ class ReportTemplateTest(testing_common.TestCase):
 
   def testAnonymous_PutTemplate(self):
     self.SetCurrentUserOAuth(None)
-    self.Post('/api/report/template', dict(
-        template=json.dumps({'rows': []}), name='n', owners='o'), status=401)
+    self.Post(
+        '/api/report/template',
+        dict(template=json.dumps({'rows': []}), name='n', owners='o'),
+        status=401)
 
 
 if __name__ == '__main__':

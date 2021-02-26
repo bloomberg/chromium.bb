@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
@@ -22,23 +23,29 @@ ClickAction::ClickAction(ActionDelegate* delegate, const ActionProto& proto)
     // default: TAP
     click_type_ = ClickType::TAP;
   }
+  on_top_ = proto.click().on_top();
+  if (on_top_ == STEP_UNSPECIFIED) {
+    on_top_ = SKIP_STEP;
+  }
 }
 
 ClickAction::~ClickAction() {}
 
 void ClickAction::InternalProcessAction(ProcessActionCallback callback) {
-  Selector selector =
-      Selector(proto_.click().element_to_click()).MustBeVisible();
+  Selector selector = Selector(proto_.click().element_to_click());
   if (selector.empty()) {
     VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate_->ShortWaitForElement(selector,
-                                 base::BindOnce(&ClickAction::OnWaitForElement,
-                                                weak_ptr_factory_.GetWeakPtr(),
-                                                std::move(callback), selector));
+
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&ClickAction::OnWaitForElementTimed,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               base::BindOnce(&ClickAction::OnWaitForElement,
+                                              weak_ptr_factory_.GetWeakPtr(),
+                                              std::move(callback), selector)));
 }
 
 void ClickAction::OnWaitForElement(ProcessActionCallback callback,
@@ -50,8 +57,8 @@ void ClickAction::OnWaitForElement(ProcessActionCallback callback,
     return;
   }
 
-  delegate_->ClickOrTapElement(
-      selector, click_type_,
+  action_delegate_util::ClickOrTapElement(
+      delegate_, selector, click_type_, on_top_,
       base::BindOnce(&::autofill_assistant::ClickAction::OnClick,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

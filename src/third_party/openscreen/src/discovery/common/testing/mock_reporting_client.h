@@ -12,6 +12,7 @@ namespace openscreen {
 namespace discovery {
 
 class MockReportingClient : public ReportingClient {
+ public:
   MOCK_METHOD1(OnFatalError, void(Error error));
   MOCK_METHOD1(OnRecoverableError, void(Error error));
 };

@@ -62,11 +62,9 @@ class PluginParameters {
 class CORE_EXPORT HTMLPlugInElement
     : public HTMLFrameOwnerElement,
       public ActiveScriptWrappable<HTMLPlugInElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLPlugInElement);
-
  public:
   ~HTMLPlugInElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsPlugin() const final { return true; }
 
@@ -99,8 +97,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   bool ShouldAccelerate() const;
 
-  ParsedFeaturePolicy ConstructContainerPolicy(
-      Vector<String>* /* messages */) const override;
+  ParsedFeaturePolicy ConstructContainerPolicy() const override;
 
   bool IsImageType() const;
   HTMLImageLoader* ImageLoader() const { return image_loader_.Get(); }

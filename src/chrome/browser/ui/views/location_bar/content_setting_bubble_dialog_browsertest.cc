@@ -8,10 +8,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -24,7 +23,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request_manager.h"
@@ -99,15 +99,15 @@ void ContentSettingBubbleDialogTest::ApplyMediastreamSettings(
     bool camera_accessed) {
   const int mic_setting =
       mic_accessed
-          ? content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED
+          ? content_settings::PageSpecificContentSettings::MICROPHONE_ACCESSED
           : 0;
   const int camera_setting =
       camera_accessed
-          ? content_settings::TabSpecificContentSettings::CAMERA_ACCESSED
+          ? content_settings::PageSpecificContentSettings::CAMERA_ACCESSED
           : 0;
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          browser()->tab_strip_model()->GetActiveWebContents());
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   content_settings->OnMediaStreamPermissionSet(
       GURL("https://example.com/"), mic_setting | camera_setting, std::string(),
       std::string(), std::string(), std::string());
@@ -117,9 +117,9 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
     ContentSettingsType content_type) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents);
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
+          web_contents->GetMainFrame());
   switch (content_type) {
     case ContentSettingsType::AUTOMATIC_DOWNLOADS: {
       // Automatic downloads are handled by DownloadRequestLimiter.
@@ -132,25 +132,19 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }
-    case ContentSettingsType::GEOLOCATION:
-      content_settings->OnGeolocationPermissionSet(GURL("https://example.com/"),
-                                                   false);
-      break;
-    case ContentSettingsType::MIDI_SYSEX:
-      content_settings->OnMidiSysExAccessBlocked(GURL("https://example.com/"));
-      break;
     case ContentSettingsType::POPUPS: {
       ui_test_utils::NavigateToURL(
           browser(),
           embedded_test_server()->GetURL("/popup_blocker/popup-many-10.html"));
       EXPECT_TRUE(content::ExecuteScript(web_contents, std::string()));
-      auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
+      auto* helper =
+          blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
       // popup-many-10.html should generate 10 blocked popups.
       EXPECT_EQ(10u, helper->GetBlockedPopupsCount());
       break;
     }
     case ContentSettingsType::PROTOCOL_HANDLERS:
-      chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents)
+      chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents)
           ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
               "mailto", GURL("https://example.com/")));
       break;
@@ -178,7 +172,8 @@ void ContentSettingBubbleDialogTest::TriggerQuietNotificationPermissionRequest(
       "notifications",
       permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       GURL("https://example.com"));
-  permission_request_manager->AddRequest(&*notification_permission_request_);
+  permission_request_manager->AddRequest(web_contents->GetMainFrame(),
+                                         &*notification_permission_request_);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -213,6 +208,10 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
       reason = QuietUiReason::kTriggeredByCrowdDeny;
     else if (name == "notifications_quiet_abusive")
       reason = QuietUiReason::kTriggeredDueToAbusiveRequests;
+    else if (name == "notifications_quiet_abusive_content")
+      reason = QuietUiReason::kTriggeredDueToAbusiveContent;
+    else if (name == "notifications_quiet_predicted_very_unlikely")
+      reason = QuietUiReason::kPredictedVeryUnlikelyGrant;
     TriggerQuietNotificationPermissionRequest(reason);
     ShowDialogBubble(ImageType::NOTIFICATIONS_QUIET_PROMPT);
     return;
@@ -328,5 +327,15 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
                        InvokeUi_notifications_quiet_abusive) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
+                       InvokeUi_notifications_quiet_abusive_content) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
+                       InvokeUi_notifications_quiet_predicted_very_unlikely) {
   ShowAndVerifyUi();
 }

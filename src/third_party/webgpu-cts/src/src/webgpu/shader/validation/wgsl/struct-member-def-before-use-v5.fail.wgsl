@@ -1,13 +1,13 @@
 # v-0006 - Fails because struct `foo` does not have a member `b`however `f.b` is
 # used.
 
-type goo = struct {
+struct goo {
   b : f32;
-}
+};
 
-type foo = struct {
+struct foo {
   a : f32;
-}
+};
 
 fn main() -> void {
   var f : foo;

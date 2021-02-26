@@ -19,12 +19,16 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -33,6 +37,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -60,7 +65,6 @@ const CGFloat kSpinnerButtonPadding = 18;
 @interface SyncEncryptionPassphraseTableViewController () <
     IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol> {
-  ChromeBrowserState* _browserState;
   // Whether the decryption progress is currently being shown.
   BOOL _isDecryptionProgressShown;
   NSString* _savedTitle;
@@ -69,28 +73,36 @@ const CGFloat kSpinnerButtonPadding = 18;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   UITextField* _passphrase;
+  std::unique_ptr<ScopedUIBlocker> _uiBlocker;
 }
+
+@property(nonatomic, assign, readonly) Browser* browser;
 
 @end
 
 @implementation SyncEncryptionPassphraseTableViewController
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+@synthesize browser = _browser;
+
+- (instancetype)initWithBrowser:(Browser*)browser {
+  DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithStyle:style];
   if (self) {
+    _browser = browser;
+    ChromeBrowserState* browserState = self.browser->GetBrowserState();
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENTER_PASSPHRASE_TITLE);
     self.shouldHideDoneButton = YES;
-    _browserState = browserState;
+    AuthenticationService* authenticationService =
+        AuthenticationServiceFactory::GetForBrowserState(browserState);
+    authenticationService->WaitUntilCacheIsPopulated();
     NSString* userEmail =
-        [AuthenticationServiceFactory::GetForBrowserState(_browserState)
-                ->GetAuthenticatedIdentity() userEmail];
+        authenticationService->GetAuthenticatedIdentity().userEmail;
     DCHECK(userEmail);
     syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(browserState);
     if (service->IsEngineInitialized() &&
         service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
       base::Time passphrase_time =
@@ -115,7 +127,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
     _identityManagerObserver =
         std::make_unique<signin::IdentityManagerObserverBridge>(
-            IdentityManagerFactory::GetForBrowserState(_browserState), self);
+            IdentityManagerFactory::GetForBrowserState(browserState), self);
   }
   return self;
 }
@@ -127,8 +139,9 @@ const CGFloat kSpinnerButtonPadding = 18;
 - (NSString*)syncErrorMessage {
   if (_syncErrorMessage)
     return _syncErrorMessage;
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   SyncSetupService* service =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+      SyncSetupServiceFactory::GetForBrowserState(browserState);
   DCHECK(service);
   SyncSetupService::SyncServiceState syncServiceState =
       service->GetSyncServiceState();
@@ -137,7 +150,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if (syncServiceState == SyncSetupService::kSyncServiceNeedsPassphrase)
     return nil;
 
-  return GetSyncErrorMessageForBrowserState(_browserState);
+  return GetSyncErrorMessageForBrowserState(browserState);
 }
 
 #pragma mark - View lifecycle
@@ -146,6 +159,11 @@ const CGFloat kSpinnerButtonPadding = 18;
   [super viewDidLoad];
   [self loadModel];
   [self setRightNavBarItem];
+  if (IsSceneStartupSupported()) {
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+    _uiBlocker = std::make_unique<ScopedUIBlocker>(sceneState);
+  }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -165,6 +183,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if ([self isMovingFromParentViewController]) {
     [self unregisterTextField:self.passphrase];
   }
+  _uiBlocker.reset();
 }
 
 #pragma mark - SettingsRootTableViewController
@@ -279,17 +298,18 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (void)signInPressed {
   DCHECK([_passphrase text].length);
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
 
   if (!_syncObserver.get()) {
     _syncObserver.reset(new SyncObserverBridge(
-        self, ProfileSyncServiceFactory::GetForBrowserState(_browserState)));
+        self, ProfileSyncServiceFactory::GetForBrowserState(browserState)));
   }
 
   // Clear out the error message.
   self.syncErrorMessage = nil;
 
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(browserState);
   DCHECK(service);
   // It is possible for a race condition to happen where a user is allowed
   // to call the backend with the passphrase before the backend is
@@ -310,7 +330,6 @@ const CGFloat kSpinnerButtonPadding = 18;
       [self hideDecryptionProgress];
     }
   } else {
-    service->GetUserSettings()->EnableEncryptEverything();
     service->GetUserSettings()->SetEncryptionPassphrase(passphrase);
   }
   [self reloadData];
@@ -468,8 +487,9 @@ const CGFloat kSpinnerButtonPadding = 18;
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(browserState);
 
   if (!service->IsEngineInitialized()) {
     return;
@@ -498,7 +518,8 @@ const CGFloat kSpinnerButtonPadding = 18;
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
-  if (AuthenticationServiceFactory::GetForBrowserState(_browserState)
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  if (AuthenticationServiceFactory::GetForBrowserState(browserState)
           ->IsAuthenticated()) {
     return;
   }
@@ -513,6 +534,10 @@ const CGFloat kSpinnerButtonPadding = 18;
   // an infobar.
   base::RecordAction(
       base::UserMetricsAction("MobileSyncPassphraseSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  NOTREACHED();
 }
 
 - (void)settingsWillBeDismissed {

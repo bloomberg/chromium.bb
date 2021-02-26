@@ -24,6 +24,8 @@
 
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {
@@ -34,6 +36,7 @@ LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGSVGElement* node)
       needs_transform_update_(true) {}
 
 void LayoutSVGViewportContainer::UpdateLayout() {
+  NOT_DESTROYED();
   DCHECK(NeedsLayout());
 
   const auto* svg = To<SVGSVGElement>(GetElement());
@@ -57,6 +60,7 @@ void LayoutSVGViewportContainer::UpdateLayout() {
 }
 
 void LayoutSVGViewportContainer::SetNeedsTransformUpdate() {
+  NOT_DESTROYED();
   // The transform paint property relies on the SVG transform being up-to-date
   // (see: PaintPropertyTreeBuilder::updateTransformForNonRootSVG).
   SetNeedsPaintPropertyUpdate();
@@ -65,6 +69,7 @@ void LayoutSVGViewportContainer::SetNeedsTransformUpdate() {
 
 SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform(
     bool bounds_changed) {
+  NOT_DESTROYED();
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 
@@ -72,7 +77,7 @@ SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform(
   SVGTransformChangeDetector change_detector(local_to_parent_transform_);
   local_to_parent_transform_ =
       AffineTransform::Translation(viewport_.X(), viewport_.Y()) *
-      svg->ViewBoxToViewTransform(viewport_.Width(), viewport_.Height());
+      svg->ViewBoxToViewTransform(viewport_.Size());
   needs_transform_update_ = false;
   return change_detector.ComputeChange(local_to_parent_transform_);
 }
@@ -82,6 +87,7 @@ bool LayoutSVGViewportContainer::NodeAtPoint(
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
+  NOT_DESTROYED();
   // Respect the viewport clip which is in parent coordinates.
   if (SVGLayoutSupport::IsOverflowHidden(*this)) {
     if (!hit_test_location.Intersects(viewport_))
@@ -94,6 +100,7 @@ bool LayoutSVGViewportContainer::NodeAtPoint(
 void LayoutSVGViewportContainer::StyleDidChange(
     StyleDifference diff,
     const ComputedStyle* old_style) {
+  NOT_DESTROYED();
   LayoutSVGContainer::StyleDidChange(diff, old_style);
 
   if (old_style && (SVGLayoutSupport::IsOverflowHidden(*old_style) !=

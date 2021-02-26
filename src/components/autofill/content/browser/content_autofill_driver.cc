@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -15,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -50,16 +53,12 @@ ContentAutofillDriver::ContentAutofillDriver(
   if (provider) {
     SetAutofillProvider(provider);
   } else {
-    autofill_handler_ = std::make_unique<AutofillManager>(
-        this, client, app_locale, enable_download_manager);
-    autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
-    autofill_external_delegate_ =
-        std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
-    autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+    SetAutofillManager(std::make_unique<AutofillManager>(
+        this, client, app_locale, enable_download_manager));
   }
 }
 
-ContentAutofillDriver::~ContentAutofillDriver() {}
+ContentAutofillDriver::~ContentAutofillDriver() = default;
 
 // static
 ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
@@ -86,11 +85,10 @@ bool ContentAutofillDriver::IsInMainFrame() const {
 }
 
 bool ContentAutofillDriver::CanShowAutofillUi() const {
-  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
-  return !content::BackForwardCache::EvictIfCached(
-      {render_frame_host_->GetProcess()->GetID(),
-       render_frame_host_->GetRoutingID()},
-      "ContentAutofillDriver::CanShowAutofillUi");
+  // Don't show AutofillUi for non-current RenderFrameHost. Here it is safe to
+  // ignore the calls from inactive RFH as the renderer is not expecting a reply
+  // and it doesn't lead to browser-renderer consistency issues.
+  return render_frame_host_->IsCurrent();
 }
 
 ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
@@ -110,7 +108,8 @@ bool ContentAutofillDriver::RendererIsAvailable() {
 
 InternalAuthenticator*
 ContentAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
-  if (!authenticator_impl_) {
+  if (!authenticator_impl_ && autofill_manager_ &&
+      autofill_manager_->client()) {
     authenticator_impl_ =
         autofill_manager_->client()->CreateCreditCardInternalAuthenticator(
             render_frame_host_);
@@ -142,7 +141,7 @@ void ContentAutofillDriver::PropagateAutofillPredictions(
 }
 
 void ContentAutofillDriver::HandleParsedForms(
-    const std::vector<FormStructure*>& forms) {
+    const std::vector<const FormData*>& forms) {
   // No op.
 }
 
@@ -225,9 +224,32 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
   autofill_handler_->OnFormsSeen(forms, timestamp);
 }
 
+void ContentAutofillDriver::SetFormToBeProbablySubmitted(
+    const base::Optional<FormData>& form) {
+  potentially_submitted_form_ = form;
+}
+
+void ContentAutofillDriver::ProbablyFormSubmitted() {
+  if (potentially_submitted_form_.has_value()) {
+    FormSubmitted(potentially_submitted_form_.value(), false,
+                  mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED);
+  }
+}
+
 void ContentAutofillDriver::FormSubmitted(const FormData& form,
                                           bool known_success,
                                           mojom::SubmissionSource source) {
+  // Omit duplicate form submissions. It may be reasonable to take |source|
+  // into account here as well.
+  // TODO(crbug/1117451): Clean up experiment code.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillProbableFormSubmissionInBrowser) &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillAllowDuplicateFormSubmissions) &&
+      !submitted_forms_.insert(form.unique_renderer_id).second) {
+    return;
+  }
+
   autofill_handler_->OnFormSubmitted(form, known_success, source);
 }
 
@@ -265,8 +287,8 @@ void ContentAutofillDriver::HidePopup() {
   autofill_handler_->OnHidePopup();
 }
 
-void ContentAutofillDriver::FocusNoLongerOnForm() {
-  autofill_handler_->OnFocusNoLongerOnForm();
+void ContentAutofillDriver::FocusNoLongerOnForm(bool had_interacted_form) {
+  autofill_handler_->OnFocusNoLongerOnForm(had_interacted_form);
 }
 
 void ContentAutofillDriver::FocusOnFormField(const FormData& form,
@@ -288,31 +310,40 @@ void ContentAutofillDriver::DidEndTextFieldEditing() {
   autofill_handler_->OnDidEndTextFieldEditing();
 }
 
-void ContentAutofillDriver::SetDataList(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  autofill_handler_->OnSetDataList(values, labels);
-}
-
 void ContentAutofillDriver::SelectFieldOptionsDidChange(const FormData& form) {
   autofill_handler_->SelectFieldOptionsDidChange(form);
 }
 
-void ContentAutofillDriver::DidNavigateMainFrame(
+void ContentAutofillDriver::DidNavigateFrame(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
+  if (navigation_handle->IsSameDocument()) {
+    // On page refresh, reset the rate limiter for fetching authentication
+    // details for credit card unmasking.
+    if (autofill_manager_) {
+      autofill_manager_->credit_card_access_manager()
+          ->SignalCanFetchUnmaskDetails();
+    }
     return;
+  }
 
+  submitted_forms_.clear();
   autofill_handler_->Reset();
 }
 
 void ContentAutofillDriver::SetAutofillManager(
     std::unique_ptr<AutofillManager> manager) {
-  CHECK(autofill_manager_);
   autofill_handler_ = std::move(manager);
   autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
+  autofill_external_delegate_ =
+      std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
+
+ContentAutofillDriver::ContentAutofillDriver()
+    : render_frame_host_(nullptr),
+      autofill_manager_(nullptr),
+      key_press_handler_manager_(this),
+      log_manager_(nullptr) {}
 
 const mojo::AssociatedRemote<mojom::AutofillAgent>&
 ContentAutofillDriver::GetAutofillAgent() {
@@ -359,9 +390,48 @@ void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
   GetAutofillAgent()->SetQueryPasswordSuggestion(true);
 }
 
+bool ContentAutofillDriver::DocumentUsedWebOTP() const {
+  return render_frame_host_->DocumentUsedWebOTP();
+}
+
+void ContentAutofillDriver::MaybeReportAutofillWebOTPMetrics() {
+  // In tests, the autofill_manager_ may be unset or destroyed before |this|.
+  if (!autofill_manager_)
+    return;
+  // It's possible that a frame without any form uses WebOTP. e.g. a server may
+  // send the verification code to a phone number that was collected beforehand
+  // and uses the WebOTP API for authentication purpose without user manually
+  // entering the code.
+  if (!autofill_manager_->has_parsed_forms() && !DocumentUsedWebOTP())
+    return;
+
+  ReportAutofillWebOTPMetrics(DocumentUsedWebOTP());
+}
+
+void ContentAutofillDriver::ReportAutofillWebOTPMetrics(
+    bool document_used_webotp) {
+  if (autofill_manager_->has_observed_phone_number_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kPhoneCollected;
+  if (autofill_manager_->has_observed_one_time_code_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kOTCUsed;
+  if (document_used_webotp)
+    phone_collection_metric_state_ |= phone_collection_metric::kWebOTPUsed;
+
+  ukm::UkmRecorder* recorder = autofill_manager_->client()->GetUkmRecorder();
+  ukm::SourceId source_id = autofill_manager_->client()->GetUkmSourceId();
+  AutofillMetrics::LogWebOTPPhoneCollectionMetricStateUkm(
+      recorder, source_id, phone_collection_metric_state_);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+      static_cast<PhoneCollectionMetricState>(phone_collection_metric_state_));
+}
+
 void ContentAutofillDriver::SetAutofillProviderForTesting(
     AutofillProvider* provider) {
   SetAutofillProvider(provider);
+  // AutofillManager isn't used if provider is valid.
+  autofill_manager_ = nullptr;
 }
 
 }  // namespace autofill

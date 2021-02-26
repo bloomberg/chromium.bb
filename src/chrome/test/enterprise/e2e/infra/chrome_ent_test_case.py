@@ -24,6 +24,23 @@ flags.DEFINE_string(
 
 class ChromeEnterpriseTestCase(EnterpriseTestCase):
   """Base class for Chrome enterprise test cases."""
+  # dc is the domain controller host
+  win_2012_config = {
+      'client': 'client2012',
+      'dc': 'win2012-dc',
+  }
+
+  win_2016_config = {
+      'client': 'client2016',
+      'dc': 'win2016-dc',
+  }
+
+  win_2019_config = {
+      'client': 'client2019',
+      'dc': 'win2019-dc',
+  }
+  # Current Win Server version for testing
+  win_config = win_2016_config
 
   def InstallChrome(self, instance_name):
     """Installs chrome.
@@ -186,7 +203,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
     self.InstallChocolateyPackage(instance_name, 'chocolatey_core_extension',
                                   '1.3.3')
     self.InstallChocolateyPackageLatest(instance_name, 'sysinternals')
-    self.InstallPipPackagesLatest(instance_name, ['pywinauto', 'requests'])
+    self.InstallPipPackagesLatest(instance_name,
+                                  ['pywinauto', 'pyperclip', 'requests'])
 
     password = self._generatePassword()
     user_name = 'ui_user'

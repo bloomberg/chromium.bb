@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -406,8 +407,7 @@ class AnimatedContentSamplerParameterizedTest
       return;
     }
     const double expected_sampling_ratio =
-        GetParam().content_period.InSecondsF() /
-        ComputeExpectedSamplingPeriod().InSecondsF();
+        GetParam().content_period / ComputeExpectedSamplingPeriod();
     const int total_frames = count_dropped_frames_ + count_sampled_frames_;
     EXPECT_NEAR(total_frames * expected_sampling_ratio, count_sampled_frames_,
                 1.5);
@@ -606,12 +606,12 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
   // display_counts[2] == 10.  Quit early if any one frame was obviously
   // repeated too many times.
   const int64_t max_expected_repeats_per_frame =
-      1 + ComputeExpectedSamplingPeriod() / GetParam().vsync_interval;
+      1 + ComputeExpectedSamplingPeriod().IntDiv(GetParam().vsync_interval);
   std::vector<size_t> display_counts(max_expected_repeats_per_frame + 1, 0);
   base::TimeTicks last_present_time = frame_timestamps.front();
   for (Timestamps::const_iterator i = frame_timestamps.begin() + 1;
        i != frame_timestamps.end(); ++i) {
-    const size_t num_vsync_intervals = static_cast<size_t>(
+    const size_t num_vsync_intervals = base::ClampFloor<size_t>(
         (*i - last_present_time) / GetParam().vsync_interval);
     ASSERT_LT(0u, num_vsync_intervals);
     ASSERT_GT(display_counts.size(), num_vsync_intervals);  // Quit early.

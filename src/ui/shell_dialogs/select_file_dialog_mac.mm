@@ -37,7 +37,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
 }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 void SelectFileDialogImpl::FileWasSelected(
@@ -135,6 +135,8 @@ void SelectFileDialogImpl::SelectFileImpl(
     mojo_file_types->extension_description_overrides =
         file_types->extension_description_overrides;
     mojo_file_types->include_all_files = file_types->include_all_files;
+    mojo_file_types->keep_extension_visible =
+        file_types->keep_extension_visible;
   }
 
   auto callback = base::BindOnce(&SelectFileDialogImpl::FileWasSelected,

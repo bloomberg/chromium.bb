@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
@@ -86,9 +86,6 @@ CreditCardSaveManager::CreditCardSaveManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager) {
-  // This is to initialize StrikeDatabase is if it hasn't been already, so that
-  // its cache would be loaded and ready to use when the first CCSM is created.
-  client_->GetStrikeDatabase();
 }
 
 CreditCardSaveManager::~CreditCardSaveManager() {}
@@ -255,8 +252,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       (should_request_expiration_date_from_user_ &&
        personal_data_manager_->GetSyncSigninState() ==
            AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kAutofillUpstreamEditableExpirationDate));
     LogCardUploadDecisions(upload_decision_metrics_);
     pending_upload_request_origin_ = url::Origin();
     return;
@@ -491,6 +486,8 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   // should not display the offer-to-save infobar at all.
   if (!is_mobile_build || show_save_prompt_.value_or(true)) {
     user_did_accept_upload_prompt_ = false;
+    if (observer_for_testing_)
+      observer_for_testing_->OnOfferUploadSave();
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, legal_message_lines_,
         AutofillClient::SaveCreditCardOptions()
@@ -731,43 +728,39 @@ int CreditCardSaveManager::GetDetectedValues() const {
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamEditableExpirationDate)) {
-    // If expiration date month or expiration year are missing, signal that
-    // expiration date will be explicitly requested in the offer-to-save bubble.
-    if (!upload_request_.card
-             .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
-             .empty()) {
-      detected_values |= DetectedValue::CARD_EXPIRATION_MONTH;
-    }
-    if (!(upload_request_.card
-              .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
-              .empty())) {
-      detected_values |= DetectedValue::CARD_EXPIRATION_YEAR;
-    }
+  // If expiration date month or expiration year are missing, signal that
+  // expiration date will be explicitly requested in the offer-to-save bubble.
+  if (!upload_request_.card
+           .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
+           .empty()) {
+    detected_values |= DetectedValue::CARD_EXPIRATION_MONTH;
+  }
+  if (!(upload_request_.card
+            .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
+            .empty())) {
+    detected_values |= DetectedValue::CARD_EXPIRATION_YEAR;
+  }
 
-    // Set |USER_PROVIDED_EXPIRATION_DATE| if expiration date is detected as
-    // expired or missing.
-    if (detected_values & DetectedValue::CARD_EXPIRATION_MONTH &&
-        detected_values & DetectedValue::CARD_EXPIRATION_YEAR) {
-      int month_value = 0, year_value = 0;
-      bool parsable =
-          base::StringToInt(
-              upload_request_.card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
-                                           app_locale_),
-              &month_value) &&
-          base::StringToInt(
-              upload_request_.card.GetInfo(
-                  AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_),
-              &year_value);
-      DCHECK(parsable);
-      if (!IsValidCreditCardExpirationDate(year_value, month_value,
-                                           AutofillClock::Now())) {
-        detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
-      }
-    } else {
+  // Set |USER_PROVIDED_EXPIRATION_DATE| if expiration date is detected as
+  // expired or missing.
+  if (detected_values & DetectedValue::CARD_EXPIRATION_MONTH &&
+      detected_values & DetectedValue::CARD_EXPIRATION_YEAR) {
+    int month_value = 0, year_value = 0;
+    bool parsable =
+        base::StringToInt(upload_request_.card.GetInfo(
+                              AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_),
+                          &month_value) &&
+        base::StringToInt(
+            upload_request_.card.GetInfo(
+                AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_),
+            &year_value);
+    DCHECK(parsable);
+    if (!IsValidCreditCardExpirationDate(year_value, month_value,
+                                         AutofillClock::Now())) {
       detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
     }
+  } else {
+    detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
   }
 
   // If cardholder name is conflicting/missing and the user does NOT have a

@@ -56,6 +56,7 @@ struct GpuPreferences;
 struct SyncToken;
 class GpuChannel;
 class GpuChannelManagerDelegate;
+class GpuMemoryAblationExperiment;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 class ImageDecodeAcceleratorWorker;
@@ -205,7 +206,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   class GPU_IPC_SERVICE_EXPORT GpuPeakMemoryMonitor
       : public MemoryTracker::Observer {
    public:
-    GpuPeakMemoryMonitor();
+    GpuPeakMemoryMonitor(
+        GpuChannelManager* channel_manager,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~GpuPeakMemoryMonitor() override;
 
     base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(
@@ -253,6 +256,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
     base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
         current_memory_per_source_;
 
+    std::unique_ptr<GpuMemoryAblationExperiment> ablation_experiment_;
     base::WeakPtrFactory<GpuPeakMemoryMonitor> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(GpuPeakMemoryMonitor);
   };

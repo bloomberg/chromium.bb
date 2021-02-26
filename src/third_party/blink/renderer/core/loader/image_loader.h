@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -39,6 +40,7 @@
 namespace blink {
 
 class ContainerNode;
+class DOMWrapperWorld;
 class Element;
 class ExceptionState;
 class IncrementLoadEventDelayCount;
@@ -53,7 +55,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   explicit ImageLoader(Element*);
   ~ImageLoader() override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   enum UpdateFromElementBehavior {
     // This should be the update behavior when the element is attached to a
@@ -71,11 +73,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
     // This force the image to refetch and reload the image source, even if it
     // has not changed.
     kUpdateForcedReload
-  };
-
-  enum BypassMainWorldBehavior {
-    kBypassMainWorldCSP,
-    kDoNotBypassMainWorldCSP
   };
 
   void UpdateFromElement(UpdateFromElementBehavior = kUpdateNormal,
@@ -138,7 +135,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
 
   bool HadError() const { return !failed_load_url_.IsEmpty(); }
 
-  bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
+  bool GetImageAnimationPolicy(mojom::blink::ImageAnimationPolicy&) final;
 
   ScriptPromise Decode(ScriptState*, ExceptionState&);
 
@@ -169,7 +166,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
 
   // Called from the task or from updateFromElement to initiate the load.
   void DoUpdateFromElement(
-      BypassMainWorldBehavior,
+      scoped_refptr<const DOMWrapperWorld> world,
       UpdateFromElementBehavior,
       network::mojom::ReferrerPolicy = network::mojom::ReferrerPolicy::kDefault,
       UpdateType = UpdateType::kAsync);
@@ -282,7 +279,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
     DecodeRequest(ImageLoader*, ScriptPromiseResolver*);
     ~DecodeRequest() = default;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     uint64_t request_id() const { return request_id_; }
     State state() const { return state_; }

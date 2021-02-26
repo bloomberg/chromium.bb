@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -113,7 +117,10 @@ SystemTrayClient::SystemTrayClient()
       update_notification_style_(ash::NotificationStyle::kDefault) {
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
-  g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
+  chromeos::system::SystemClock* clock =
+      g_browser_process->platform_part()->GetSystemClock();
+  clock->AddObserver(this);
+  system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
 
   // If an upgrade is available at startup then tell ash about it.
   if (UpgradeDetector::GetInstance()->notify_upgrade())
@@ -126,7 +133,7 @@ SystemTrayClient::SystemTrayClient()
       policy_connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->AddObserver(this);
-  UpdateEnterpriseDisplayDomain();
+  UpdateEnterpriseDomainInfo();
 
   system_tray_->SetClient(this);
 
@@ -249,13 +256,22 @@ void SystemTrayClient::ShowChromeSlow() {
 
 void SystemTrayClient::ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(
-      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath);
+  const std::string path =
+      base::FeatureList::IsEnabled(
+          ::chromeos::features::kLanguageSettingsUpdate)
+          ? chromeos::settings::mojom::kInputSubpagePath
+          : chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath;
+  ShowSettingsSubPageForActiveUser(path);
 }
 
 void SystemTrayClient::ShowConnectedDevicesSettings() {
   ShowSettingsSubPageForActiveUser(
       chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath);
+}
+
+void SystemTrayClient::ShowTetherNetworkSettings() {
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kMobileDataNetworksSubpagePath);
 }
 
 void SystemTrayClient::ShowAboutChromeOS() {
@@ -284,11 +300,17 @@ void SystemTrayClient::ShowAccessibilitySettings() {
 }
 
 void SystemTrayClient::ShowGestureEducationHelp() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
   base::RecordAction(base::UserMetricsAction("ShowGestureEducationHelp"));
-  ShowSingletonTab(displayer.browser(),
-                   GURL(chrome::kChromeOSGestureEducationHelpURL));
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (!profile)
+    return;
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile);
+  proxy->LaunchAppWithUrl(
+      chromeos::default_web_apps::kHelpAppId, ui::EventFlags::EF_NONE,
+      GURL(chrome::kChromeOSGestureEducationHelpURL),
+      apps::mojom::LaunchSource::kFromOtherApp, display::kDefaultDisplayId);
 }
 
 void SystemTrayClient::ShowPaletteHelp() {
@@ -507,26 +529,26 @@ void SystemTrayClient::OnUpgradeRecommended() {
 ////////////////////////////////////////////////////////////////////////////////
 // policy::CloudPolicyStore::Observer
 void SystemTrayClient::OnStoreLoaded(policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDisplayDomain();
+  UpdateEnterpriseDomainInfo();
 }
 
 void SystemTrayClient::OnStoreError(policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDisplayDomain();
+  UpdateEnterpriseDomainInfo();
 }
 
-void SystemTrayClient::UpdateEnterpriseDisplayDomain() {
+void SystemTrayClient::UpdateEnterpriseDomainInfo() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  const std::string enterprise_display_domain =
-      connector->GetEnterpriseDisplayDomain();
+  const std::string enterprise_domain_manager =
+      connector->GetEnterpriseDomainManager();
   const bool active_directory_managed = connector->IsActiveDirectoryManaged();
-  if (enterprise_display_domain == last_enterprise_display_domain_ &&
+  if (enterprise_domain_manager == last_enterprise_domain_manager_ &&
       active_directory_managed == last_active_directory_managed_) {
     return;
   }
   // Send to ash, which will add an item to the system tray.
-  system_tray_->SetEnterpriseDisplayDomain(enterprise_display_domain,
-                                           active_directory_managed);
-  last_enterprise_display_domain_ = enterprise_display_domain;
+  system_tray_->SetEnterpriseDomainInfo(enterprise_domain_manager,
+                                        active_directory_managed);
+  last_enterprise_domain_manager_ = enterprise_domain_manager;
   last_active_directory_managed_ = active_directory_managed;
 }

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -89,6 +89,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
       {"logTypeHidText", IDS_DEVICE_LOG_TYPE_HID},
       {"logTypePrinterText", IDS_DEVICE_LOG_TYPE_PRINTER},
       {"logTypeFidoText", IDS_DEVICE_LOG_TYPE_FIDO},
+      {"logTypeSerialText", IDS_DEVICE_LOG_TYPE_SERIAL},
       {"logEntryFormat", IDS_DEVICE_LOG_ENTRY},
   };
   AddLocalizedStringsBulk(html, kStrings);

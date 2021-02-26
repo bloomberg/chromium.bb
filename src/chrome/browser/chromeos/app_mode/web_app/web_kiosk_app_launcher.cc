@@ -5,7 +5,6 @@
 #include <chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_launcher.h>
 #include <memory>
 
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
+#include "chromeos/ui/base/window_pin_type.h"
 #include "components/account_id/account_id.h"
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
@@ -27,21 +27,23 @@ namespace chromeos {
 
 WebKioskAppLauncher::WebKioskAppLauncher(
     Profile* profile,
-    WebKioskAppLauncher::Delegate* delegate)
-    : profile_(profile),
-      delegate_(delegate),
+    WebKioskAppLauncher::Delegate* delegate,
+    const AccountId& account_id)
+    : KioskAppLauncher(delegate),
+      profile_(profile),
+      account_id_(account_id),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       data_retriever_factory_(base::BindRepeating(
           &std::make_unique<web_app::WebAppDataRetriever>)) {}
 
 WebKioskAppLauncher::~WebKioskAppLauncher() = default;
 
-void WebKioskAppLauncher::Initialize(const AccountId& account_id) {
-  account_id_ = account_id;
+void WebKioskAppLauncher::Initialize() {
   const WebKioskAppData* app =
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
   DCHECK(app);
-  if (app->status() == WebKioskAppData::STATUS_INSTALLED) {
+  if (app->status() == WebKioskAppData::STATUS_INSTALLED ||
+      delegate_->ShouldSkipAppInstallation()) {
     delegate_->OnAppPrepared();
     return;
   }
@@ -50,12 +52,12 @@ void WebKioskAppLauncher::Initialize(const AccountId& account_id) {
 }
 
 void WebKioskAppLauncher::ContinueWithNetworkReady() {
-  delegate_->OnAppStartedInstalling();
+  delegate_->OnAppInstalling();
   DCHECK(!is_installed_);
   install_task_.reset(new web_app::WebAppInstallTask(
-      profile_, /*registrar=*/nullptr, /*shortcut_manager=*/nullptr,
-      /*file_handler_manager=*/nullptr, /*install_finalizer=*/nullptr,
-      data_retriever_factory_.Run()));
+      profile_, /*os_integration_manager=*/nullptr,
+      /*install_finalizer=*/nullptr, data_retriever_factory_.Run(),
+      /*registrar=*/nullptr));
   install_task_->LoadAndRetrieveWebApplicationInfoWithIcons(
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_)->install_url(),
       url_loader_.get(),
@@ -74,16 +76,16 @@ void WebKioskAppLauncher::OnAppDataObtained(
     std::unique_ptr<WebApplicationInfo> app_info) {
   if (!app_info) {
     // Notify about failed installation, let the controller decide what to do.
-    delegate_->OnAppInstallFailed();
+    delegate_->OnLaunchFailed(KioskAppLaunchError::UNABLE_TO_INSTALL);
     return;
   }
 
-  // When received |app_info->app_url| origin does not match the origin of
+  // When received |app_info->start_url| origin does not match the origin of
   // |install_url|, fail.
   if (url::Origin::Create(GetCurrentApp()->install_url()) !=
-      url::Origin::Create(app_info->app_url)) {
+      url::Origin::Create(app_info->start_url)) {
     VLOG(1) << "Origin of the app does not match the origin of install url";
-    delegate_->OnAppLaunchFailed();
+    delegate_->OnLaunchFailed(KioskAppLaunchError::UNABLE_TO_LAUNCH);
     return;
   }
 
@@ -117,11 +119,14 @@ void WebKioskAppLauncher::LaunchApp() {
 
   WebKioskAppManager::Get()->InitSession(browser_);
   delegate_->OnAppLaunched();
+  delegate_->OnAppWindowCreated();
 }
 
-void WebKioskAppLauncher::CancelCurrentInstallation() {
+void WebKioskAppLauncher::RestartLauncher() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   install_task_.reset();
+
+  Initialize();
 }
 
 void WebKioskAppLauncher::SetDataRetrieverFactoryForTesting(

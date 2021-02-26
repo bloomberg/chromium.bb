@@ -6,6 +6,21 @@
 
 namespace notification_constants {
 
+// Applicable to NotificationBuilderBase -> NotificationBuilder,
+// UNNotificationBuilder
+NSString* const kNotificationTitle = @"title";
+NSString* const kNotificationSubTitle = @"subtitle";
+NSString* const kNotificationInformativeText = @"informativeText";
+NSString* const kNotificationIcon = @"icon";
+NSString* const kNotificationIconPath = @"iconPath";
+NSString* const kNotificationButtonOne = @"buttonOne";
+NSString* const kNotificationButtonTwo = @"buttonTwo";
+NSString* const kNotificationTag = @"tag";
+NSString* const kNotificationCloseButtonTag = @"closeButton";
+NSString* const kNotificationOptionsButtonTag = @"optionsButton";
+NSString* const kNotificationSettingsButtonTag = @"settingsButton";
+NSString* const kNotificationCategoryIdentifier = @"categoryIdentifier";
+
 // Applicable to NotificationBuilder and NotificationResponseBuilder
 NSString* const kNotificationOrigin = @"notificationOrigin";
 NSString* const kNotificationId = @"notificationId";
@@ -14,6 +29,7 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 NSString* const kNotificationType = @"notificationType";
 NSString* const kNotificationHasSettingsButton =
     @"notificationHasSettingsButton";
+NSString* const kNotificationCreatorPid = @"notificationCreatorPid";
 
 // Only applicable to the NotificationResponseBuilder
 NSString* const kNotificationOperation = @"notificationOperation";

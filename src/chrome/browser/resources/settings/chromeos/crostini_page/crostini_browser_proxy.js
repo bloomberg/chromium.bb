@@ -28,7 +28,8 @@ let CrostiniSharedPath;
 /**
  * @typedef {{label: string,
  *            guid: string,
- *            shared: boolean}}
+ *            shared: boolean,
+ *            shareWillReassign: boolean}}
  */
 let CrostiniSharedUsbDevice;
 
@@ -74,10 +75,8 @@ cr.define('settings', function() {
      */
     getCrostiniSharedPathsDisplayText(paths) {}
 
-    /**
-     * @return {!Promise<!Array<CrostiniSharedUsbDevice>>}
-     */
-    getCrostiniSharedUsbDevices() {}
+    /** Called when page is ready. */
+    notifyCrostiniSharedUsbDevicesPageReady() {}
 
     /**
      * @param {string} guid Unique device identifier.
@@ -116,6 +115,9 @@ cr.define('settings', function() {
 
     /** Queries the current status of ARC ADB Sideloading. */
     requestArcAdbSideloadStatus() {}
+
+    /** Queries whether the user is allowed to enable ARC ADB Sideloading. */
+    getCanChangeArcAdbSideloading() {}
 
     /** Initiates the flow to enable ARC ADB Sideloading. */
     enableArcAdbSideload() {}
@@ -265,8 +267,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getCrostiniSharedUsbDevices() {
-      return cr.sendWithPromise('getCrostiniSharedUsbDevices');
+    notifyCrostiniSharedUsbDevicesPageReady() {
+      return cr.sendWithPromise('notifyCrostiniSharedUsbDevicesPageReady');
     }
 
     /** @override */
@@ -302,6 +304,11 @@ cr.define('settings', function() {
     /** @override */
     requestArcAdbSideloadStatus() {
       chrome.send('requestArcAdbSideloadStatus');
+    }
+
+    /** @override */
+    getCanChangeArcAdbSideloading() {
+      chrome.send('getCanChangeArcAdbSideloading');
     }
 
     /** @override */

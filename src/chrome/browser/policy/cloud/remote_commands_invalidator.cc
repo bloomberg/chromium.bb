@@ -19,7 +19,8 @@
 
 namespace policy {
 
-RemoteCommandsInvalidator::RemoteCommandsInvalidator() {}
+RemoteCommandsInvalidator::RemoteCommandsInvalidator(std::string owner_name)
+    : owner_name_(std::move(owner_name)) {}
 
 RemoteCommandsInvalidator::~RemoteCommandsInvalidator() {
   DCHECK_EQ(SHUT_DOWN, state_);
@@ -100,7 +101,7 @@ void RemoteCommandsInvalidator::OnIncomingInvalidation(
 }
 
 std::string RemoteCommandsInvalidator::GetOwnerName() const {
-  return "RemoteCommands";
+  return owner_name_;
 }
 
 bool RemoteCommandsInvalidator::IsPublicTopic(

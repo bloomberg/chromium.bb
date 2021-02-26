@@ -20,11 +20,28 @@
 #include <tuple>
 
 #include "perfetto/ext/base/string_view.h"
+#include "src/trace_processor/importers/common/args_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 
 namespace perfetto {
 namespace trace_processor {
+
+// Thread names can come from different sources, and we don't always want to
+// overwrite the previously set name. This enum determines the priority of
+// different sources.
+enum class ThreadNamePriority {
+  kOther = 0,
+  kFtrace = 1,
+  kProcessTree = 2,
+  kTrackDescriptorThreadType = 3,
+  kTrackDescriptor = 4,
+
+  // Priority when trace processor hardcodes a name for a process (e.g. calling
+  // the idle thread "swapper" when parsing ftrace).
+  // Keep this last.
+  kTraceProcessorConstant = 5,
+};
 
 class ProcessTracker {
  public:
@@ -48,9 +65,7 @@ class ProcessTracker {
 
   // Called when a task_newtask is observed. This force the tracker to start
   // a new UTID for the thread, which is needed for TID-recycling resolution.
-  UniqueTid StartNewThread(base::Optional<int64_t> timestamp,
-                           uint32_t tid,
-                           StringId thread_name_id);
+  UniqueTid StartNewThread(base::Optional<int64_t> timestamp, uint32_t tid);
 
   // Returns whether a thread is considered alive by the process tracker.
   bool IsThreadAlive(UniqueTid utid);
@@ -65,14 +80,17 @@ class ProcessTracker {
   // Returns the thread utid (or creates a new entry if not present)
   UniqueTid GetOrCreateThread(uint32_t tid);
 
-  // Called when a sched switch event is seen in the trace. Retrieves the
-  // UniqueTid that matches the tid or assigns a new UniqueTid and stores
-  // the thread_name_id.
-  virtual UniqueTid UpdateThreadName(uint32_t tid, StringId thread_name_id);
+  // Assigns the given name to the thread if the new name has a higher priority
+  // than the existing one. Returns the utid of the thread.
+  virtual UniqueTid UpdateThreadName(uint32_t tid,
+                                     StringId thread_name_id,
+                                     ThreadNamePriority priority);
 
-  // Assigns the given name to the thread identified |utid| if it does not
-  // have a name yet.
-  virtual void SetThreadNameIfUnset(UniqueTid utid, StringId thread_name_id);
+  // Assigns the given name to the thread if the new name has a higher priority
+  // than the existing one. The thread is identified by utid.
+  virtual void UpdateThreadNameByUtid(UniqueTid utid,
+                                      StringId thread_name_id,
+                                      ThreadNamePriority priority);
 
   // Called when a thread is seen the process tree. Retrieves the matching utid
   // for the tid and the matching upid for the tgid and stores both.
@@ -91,7 +109,8 @@ class ProcessTracker {
   // Virtual for testing.
   virtual UniquePid SetProcessMetadata(uint32_t pid,
                                        base::Optional<uint32_t> ppid,
-                                       base::StringView name);
+                                       base::StringView name,
+                                       base::StringView cmdline);
 
   // Sets the process user id.
   void SetProcessUid(UniquePid upid, uint32_t uid);
@@ -133,6 +152,14 @@ class ProcessTracker {
   // traces, we always have the "swapper" (idle) process having tid/pid 0.
   void SetPidZeroIgnoredForIdleProcess();
 
+  // Returns a BoundInserter to add arguments to the arg set of a process.
+  // Arguments are flushed into trace storage only after the trace was loaded in
+  // its entirety.
+  ArgsTracker::BoundInserter AddArgsTo(UniquePid upid);
+
+  // Called when the trace was fully loaded.
+  void NotifyEndOfFile();
+
  private:
   // Returns the utid of a thread having |tid| and |pid| as the parent process.
   // pid == base::nullopt matches all processes.
@@ -145,7 +172,13 @@ class ProcessTracker {
   // other threads associated to the passed thread.
   void ResolvePendingAssociations(UniqueTid, UniquePid);
 
+  // Writes the association that the passed thread belongs to the passed
+  // process.
+  void AssociateThreadToProcess(UniqueTid, UniquePid);
+
   TraceProcessorContext* const context_;
+
+  ArgsTracker args_tracker_;
 
   // Each tid can have multiple UniqueTid entries, a new UniqueTid is assigned
   // each time a thread is seen in the trace.
@@ -165,6 +198,9 @@ class ProcessTracker {
   // in this vector is: we know that A created process B but we don't know the
   // process of A. That is, we don't know the parent *process* of B.
   std::vector<std::pair<UniqueTid, UniquePid>> pending_parent_assocs_;
+
+  // A mapping from utid to the priority of a thread name source.
+  std::vector<ThreadNamePriority> thread_name_priorities_;
 };
 
 }  // namespace trace_processor

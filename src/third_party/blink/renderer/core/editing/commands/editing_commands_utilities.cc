@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -77,10 +78,6 @@ Node* HighestNodeToRemoveInPruning(Node* node, const Node* exclude_node) {
     previous_node = node;
   }
   return nullptr;
-}
-
-Element* EnclosingTableCell(const Position& p) {
-  return To<Element>(EnclosingNodeOfType(p, IsTableCell));
 }
 
 bool IsTableStructureNode(const Node* node) {
@@ -158,11 +155,10 @@ static bool IsSpecialHTMLElement(const Node& n) {
   if (!layout_object)
     return false;
 
-  if (layout_object->Style()->Display() == EDisplay::kTable ||
-      layout_object->Style()->Display() == EDisplay::kInlineTable)
+  if (layout_object->Style()->IsDisplayTableBox())
     return true;
 
-  if (layout_object->Style()->IsFloating())
+  if (layout_object->IsFloating())
     return true;
 
   return false;
@@ -387,9 +383,9 @@ Node* EnclosingListChild(const Node* node) {
   // instead of node->parentNode()
   for (Node* n = const_cast<Node*>(node); n && n->parentNode();
        n = n->parentNode()) {
-    if (IsA<HTMLLIElement>(*n) ||
-        (IsHTMLListElement(n->parentNode()) && n != root))
+    if ((IsListItemTag(n) || IsListElementTag(n->parentNode())) && n != root) {
       return n;
+    }
     if (n == root || IsTableCell(n))
       return nullptr;
   }

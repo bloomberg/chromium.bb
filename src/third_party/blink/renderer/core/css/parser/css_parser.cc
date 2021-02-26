@@ -10,15 +10,17 @@
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -89,10 +91,12 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     CSSPropertyID unresolved_property,
     const String& string,
     bool important,
-    SecureContextMode secure_context_mode) {
-  return ParseValue(declaration, unresolved_property, string, important,
-                    secure_context_mode,
-                    static_cast<StyleSheetContents*>(nullptr));
+    const ExecutionContext* execution_context) {
+  return ParseValue(
+      declaration, unresolved_property, string, important,
+      execution_context ? execution_context->GetSecureContextMode()
+                        : SecureContextMode::kInsecureContext,
+      static_cast<StyleSheetContents*>(nullptr), execution_context);
 }
 
 MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
@@ -101,7 +105,8 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     const String& string,
     bool important,
     SecureContextMode secure_context_mode,
-    StyleSheetContents* style_sheet) {
+    StyleSheetContents* style_sheet,
+    const ExecutionContext* execution_context) {
   if (string.IsEmpty()) {
     bool did_parse = false;
     bool did_change = false;
@@ -115,13 +120,19 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
   if (value) {
     bool did_parse = true;
     bool did_change = declaration->SetProperty(CSSPropertyValue(
-        CSSProperty::Get(resolved_property), *value, important));
+        CSSPropertyName(resolved_property), *value, important));
     return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
   CSSParserContext* context;
   if (style_sheet) {
     context =
         MakeGarbageCollected<CSSParserContext>(style_sheet->ParserContext());
+    context->SetMode(parser_mode);
+  } else if (IsA<LocalDOMWindow>(execution_context)) {
+    // Create parser context using document if it exists so it can check for
+    // origin trial enabled property/value.
+    context = MakeGarbageCollected<CSSParserContext>(
+        *To<LocalDOMWindow>(execution_context)->document());
     context->SetMode(parser_mode);
   } else {
     context = MakeGarbageCollected<CSSParserContext>(parser_mode,
@@ -210,15 +221,29 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
   return To<StyleRuleKeyframe>(keyframe);
 }
 
-bool CSSParser::ParseSupportsCondition(const String& condition,
-                                       SecureContextMode secure_context_mode) {
-  CSSTokenizer tokenizer(condition);
-  const auto tokens = tokenizer.TokenizeToEOF();
-  CSSParserImpl parser(StrictCSSParserContext(secure_context_mode));
-  return CSSSupportsParser::SupportsCondition(
-             CSSParserTokenRange(tokens), parser,
-             CSSSupportsParser::Mode::kForWindowCSS) ==
-         CSSSupportsParser::Result::kSupported;
+bool CSSParser::ParseSupportsCondition(
+    const String& condition,
+    const ExecutionContext* execution_context) {
+  // window.CSS.supports requires to parse as-if it was wrapped in parenthesis.
+  String wrapped_condition = "(" + condition + ")";
+  CSSTokenizer tokenizer(wrapped_condition);
+  CSSParserTokenStream stream(tokenizer);
+  DCHECK(execution_context);
+  // Create parser context using document so it can check for origin trial
+  // enabled property/value.
+  CSSParserContext* context = MakeGarbageCollected<CSSParserContext>(
+      *To<LocalDOMWindow>(execution_context)->document());
+  // Override the parser mode interpreted from the document as the spec
+  // https://quirks.spec.whatwg.org/#css requires quirky values and colors
+  // must not be supported in CSS.supports() method.
+  context->SetMode(kHTMLStandardMode);
+  CSSParserImpl parser(context);
+  CSSSupportsParser::Result result =
+      CSSSupportsParser::ConsumeSupportsCondition(stream, parser);
+  if (!stream.AtEnd())
+    result = CSSSupportsParser::Result::kParseFailure;
+
+  return result == CSSSupportsParser::Result::kSupported;
 }
 
 bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
@@ -255,7 +280,7 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
 
 bool CSSParser::ParseSystemColor(Color& color,
                                  const String& color_string,
-                                 WebColorScheme color_scheme) {
+                                 mojom::blink::ColorScheme color_scheme) {
   CSSValueID id = CssValueKeywordID(color_string);
   if (!StyleColor::IsSystemColor(id))
     return false;
@@ -284,8 +309,26 @@ CSSPrimitiveValue* CSSParser::ParseLengthPercentage(
   CSSTokenizer tokenizer(string);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
-  return css_property_parser_helpers::ConsumeLengthOrPercent(range, *context,
-                                                             kValueRangeAll);
+  return css_parsing_utils::ConsumeLengthOrPercent(range, *context,
+                                                   kValueRangeAll);
+}
+
+MutableCSSPropertyValueSet* CSSParser::ParseFont(
+    const String& string,
+    const ExecutionContext* execution_context) {
+  auto* set =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+  ParseValue(set, CSSPropertyID::kFont, string, true /* important */,
+             execution_context);
+  if (set->IsEmpty())
+    return nullptr;
+  const CSSValue* font_size =
+      set->GetPropertyCSSValue(CSSPropertyID::kFontSize);
+  if (!font_size || font_size->IsCSSWideKeyword())
+    return nullptr;
+  if (font_size->IsPendingSubstitutionValue())
+    return nullptr;
+  return set;
 }
 
 }  // namespace blink

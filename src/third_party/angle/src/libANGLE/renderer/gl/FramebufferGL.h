@@ -62,6 +62,8 @@ class FramebufferGL : public FramebufferImpl
                              const gl::Rectangle &area,
                              GLenum format,
                              GLenum type,
+                             const gl::PixelPackState &pack,
+                             gl::Buffer *packBuffer,
                              void *pixels) override;
 
     angle::Result blit(const gl::Context *context,
@@ -81,7 +83,8 @@ class FramebufferGL : public FramebufferImpl
 
     angle::Result syncState(const gl::Context *context,
                             GLenum binding,
-                            const gl::Framebuffer::DirtyBits &dirtyBits) override;
+                            const gl::Framebuffer::DirtyBits &dirtyBits,
+                            gl::Command command) override;
 
     GLuint getFramebufferID() const;
     bool isDefault() const;

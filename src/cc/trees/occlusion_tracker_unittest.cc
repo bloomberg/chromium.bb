@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
@@ -99,6 +102,7 @@ class OcclusionTrackerTest : public testing::Test {
                                         animation_host_.get(),
                                         LayerListSettings())),
         next_layer_impl_id_(1) {
+    host_->CreateFakeLayerTreeHostImpl();
     host_->host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get());
   }
 
@@ -920,8 +924,8 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     GetEffectNode(opacity_layer)->filters = filters;
 
-    CreateEffectNode(rounded_corner_layer).rounded_corner_bounds =
-        gfx::RRectF(1, 2, 3, 4, 5, 6);
+    CreateEffectNode(rounded_corner_layer).mask_filter_info =
+        gfx::MaskFilterInfo(gfx::RRectF(1, 2, 3, 4, 5, 6));
 
     this->CalcDrawEtc();
     EXPECT_TRUE(rounded_corner_layer->contributes_to_drawn_render_surface());

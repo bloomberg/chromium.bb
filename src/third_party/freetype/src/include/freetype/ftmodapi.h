@@ -20,8 +20,7 @@
 #define FTMODAPI_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -46,10 +45,12 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   The definitions below are used to manage modules within FreeType.
-   *   Modules can be added, upgraded, and removed at runtime.  Additionally,
-   *   some module properties can be controlled also.
+   *   Internal and external modules can be added, upgraded, and removed at
+   *   runtime.  For example, an alternative renderer or proprietary font
+   *   driver can be registered and prioritized.  Additionally, some module
+   *   properties can also be controlled.
    *
-   *   Here is a list of possible values of the `module_name` field in the
+   *   Here is a list of existing values of the `module_name` field in the
    *   @FT_Module_Class structure.
    *
    *   ```
@@ -486,7 +487,7 @@ FT_BEGIN_HEADER
    *
    *   ```
    *     FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                         cff:no-stem-darkening=1 \
+   *                         cff:no-stem-darkening=0 \
    *                         autofitter:warping=1
    *   ```
    *

@@ -4,9 +4,12 @@
 
 #include "third_party/blink/renderer/core/frame/frame.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -50,21 +53,25 @@ class FrameTest : public PageTestBase {
 
 TEST_F(FrameTest, NoGesture) {
   // A nullptr LocalFrame* will not set user gesture state.
-  LocalFrame::NotifyUserActivation(nullptr);
+  LocalFrame::NotifyUserActivation(
+      nullptr, mojom::UserActivationNotificationType::kTest);
   EXPECT_FALSE(GetDocument().GetFrame()->HasStickyUserActivation());
 }
 
 TEST_F(FrameTest, PossiblyExisting) {
   // A non-null LocalFrame* will set state, but a subsequent nullptr Document*
   // token will not override it.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
-  LocalFrame::NotifyUserActivation(nullptr);
+  LocalFrame::NotifyUserActivation(
+      nullptr, mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
 }
 
 TEST_F(FrameTest, NavigateDifferentDomain) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -78,7 +85,8 @@ TEST_F(FrameTest, NavigateDifferentDomain) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -113,7 +121,8 @@ TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -150,7 +159,8 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
   EXPECT_FALSE(
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   // Now both sticky and transient bits are true, hence consumable.
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
@@ -164,6 +174,92 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
   EXPECT_FALSE(
       LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame()));
+}
+
+TEST_F(FrameTest, UserActivationTriggerHistograms) {
+  base::HistogramTester histograms;
+
+  // Without user activation, all counts are zero.
+  GetDocument().GetFrame()->HasStickyUserActivation();
+  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
+  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 0);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 0);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 0);
+
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
+
+  // With user activation but without any status-check calls, all counts remain
+  // zero.
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 0);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 0);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 0);
+
+  // A call to check the sticky state is counted.
+  GetDocument().GetFrame()->HasStickyUserActivation();
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForSticky", 9, 1);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 1);
+
+  // A call to check the transient state is counted.
+  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForTransient", 9,
+                               1);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 1);
+
+  // A call to consume is counted also as a transient state check.
+  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForTransient", 9,
+                               2);
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForConsuming", 9,
+                               1);
+
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 2);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 1);
+
+  // Post-consumption status-checks affect only the sticky count.
+  GetDocument().GetFrame()->HasStickyUserActivation();
+  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
+  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 1);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 2);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 2);
+
+  // After a new user activation of a different trigger-type, status-check calls
+  // are counted in a different bucket for the transient and consuming cases,
+  // but in the same old bucket for the sticky case.
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kInteraction);
+  GetDocument().GetFrame()->HasStickyUserActivation();
+  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
+  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForConsuming", 1,
+                               1);
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForSticky", 9, 3);
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForTransient", 1,
+                               2);
+
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 2);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 3);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 4);
+
+  // After a activation-state-reset plus a new user activation of a different
+  // trigger-type, the sticky case is counted in the new bucket.
+  GetDocument().GetFrame()->ClearUserActivation();
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kInteraction);
+  GetDocument().GetFrame()->HasStickyUserActivation();
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForConsuming", 1,
+                               1);
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForSticky", 1, 1);
+  histograms.ExpectBucketCount("Event.UserActivation.TriggerForTransient", 1,
+                               2);
+
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForConsuming", 2);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForSticky", 4);
+  histograms.ExpectTotalCount("Event.UserActivation.TriggerForTransient", 4);
 }
 
 }  // namespace blink

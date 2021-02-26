@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 
 source_set("hid") {
@@ -10,8 +11,6 @@ source_set("hid") {
   assert(!is_android)
 
   sources = [
-    "fake_input_service_linux.cc",
-    "fake_input_service_linux.h",
     "hid_collection.cc",
     "hid_collection.h",
     "hid_device_filter.cc",
@@ -32,6 +31,13 @@ source_set("hid") {
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_ash) {
+    sources += [
+      "fake_input_service_linux.cc",
+      "fake_input_service_linux.h",
+    ]
+  }
 }
 
 static_library("test_support") {

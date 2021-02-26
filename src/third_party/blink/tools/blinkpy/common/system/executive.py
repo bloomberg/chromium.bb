@@ -110,7 +110,7 @@ class Executive(object):
 
         if kill_tree is True, the whole process group will be killed.
 
-        Will fail silently if pid does not exist or insufficient permissions.
+        Will fail silently if pid does not exist.
         """
         if sys.platform == 'win32':
             # Workaround for race condition that occurs when the browser is
@@ -126,7 +126,10 @@ class Executive(object):
                 NtSuspendProcess(process_handle)
                 CloseHandle(process_handle)
 
-            command = ['taskkill.exe', '/f', '/t', '/pid', pid]
+            command = ['taskkill.exe', '/f']
+            if kill_tree:
+                command.append('/t')
+            command += ['/pid', pid]
             # taskkill will exit 128 if the process is not found. We should log.
             self.run_command(command, error_handler=self.log_error)
             return
@@ -136,7 +139,9 @@ class Executive(object):
                 os.killpg(os.getpgid(pid), signal.SIGKILL)
             else:
                 os.kill(pid, signal.SIGKILL)
-            os.waitpid(pid, os.WNOHANG)
+            # At this point if no exception has been raised, the kill has
+            # succeeded, so we can safely use a blocking wait.
+            os.waitpid(pid, 0)
         except OSError as error:
             if error.errno == errno.ESRCH:
                 _log.debug("PID %s does not exist.", pid)
@@ -144,6 +149,13 @@ class Executive(object):
             if error.errno == errno.ECHILD:
                 # Can't wait on a non-child process, but the kill worked.
                 return
+            if error.errno == errno.EPERM and \
+                    kill_tree and sys.platform == 'darwin':
+                # Calling killpg on a process group whose leader is defunct
+                # causes a permission error on macOS, in which case we try to
+                # collect the defunct process.
+                if os.waitpid(pid, os.WNOHANG) == (0, 0):
+                    return
             raise
 
     def _win32_check_running_pid(self, pid):

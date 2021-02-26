@@ -7,6 +7,8 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -14,11 +16,18 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/color_tracking_icon_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -26,6 +35,150 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+
+constexpr int kImageSize = 48;
+
+// An image source that adds a circular border and an optional circular
+// background to the given image.
+class BackgroundBorderAdderImageSource : public gfx::CanvasImageSource {
+ public:
+  BackgroundBorderAdderImageSource(const gfx::ImageSkia& image,
+                                   bool add_background,
+                                   base::Optional<SkColor> background_color,
+                                   SkColor border_color,
+                                   int radius)
+      : gfx::CanvasImageSource(gfx::Size(radius, radius)),
+        image_(image),
+        add_background_(add_background),
+        background_color_(background_color),
+        border_color_(border_color) {}
+  ~BackgroundBorderAdderImageSource() override = default;
+
+  void Draw(gfx::Canvas* canvas) override;
+
+ private:
+  const gfx::ImageSkia image_;
+  const bool add_background_;
+  const base::Optional<SkColor> background_color_;
+  const SkColor border_color_;
+};
+
+void BackgroundBorderAdderImageSource::Draw(gfx::Canvas* canvas) {
+  constexpr int kBorderThickness = 1;
+  float radius = size().width() / 2.0f;
+  float half_thickness = kBorderThickness / 2.0f;
+  gfx::SizeF size_f(size());
+  gfx::RectF bounds(size_f);
+  bounds.Inset(half_thickness, half_thickness);
+  // Draw the background
+  if (add_background_) {
+    DCHECK(background_color_);
+    cc::PaintFlags background_flags;
+    background_flags.setStyle(cc::PaintFlags::kFill_Style);
+    background_flags.setAntiAlias(true);
+    background_flags.setColor(background_color_.value());
+    canvas->DrawRoundRect(bounds, radius, background_flags);
+  }
+  // Draw the image
+  canvas->DrawImageInt(image_, (size().width() - image_.width()) / 2,
+                       (size().height() - image_.height()) / 2);
+  // Draw the border
+  cc::PaintFlags border_flags;
+  border_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  border_flags.setAntiAlias(true);
+  border_flags.setColor(border_color_);
+  canvas->DrawRoundRect(bounds, radius, border_flags);
+}
+
+// A class represting an image with a badge. By default, the image is the globe
+// icon. However, badge could be updated via the UpdateBadge() method.
+class ImageWithBadge : public views::ImageView {
+ public:
+  // Constructs a View hierarchy with the a badge positioned in the bottom-right
+  // corner of |main_image|. In RTL mode the badge is positioned in the
+  // bottom-left corner.
+  explicit ImageWithBadge(const gfx::ImageSkia& main_image);
+  explicit ImageWithBadge(const gfx::VectorIcon& main_image);
+  ~ImageWithBadge() override = default;
+
+  // views::ImageView:
+  void OnThemeChanged() override;
+
+  void UpdateBadge(const gfx::ImageSkia& badge_image);
+
+ private:
+  gfx::ImageSkia GetMainImage();
+  gfx::ImageSkia GetBadge();
+  void Render();
+
+  const gfx::VectorIcon* main_vector_icon_ = nullptr;
+  base::Optional<gfx::ImageSkia> main_image_skia_;
+  base::Optional<gfx::ImageSkia> badge_image_skia_;
+};
+
+ImageWithBadge::ImageWithBadge(const gfx::ImageSkia& main_image)
+    : main_image_skia_(main_image) {}
+
+ImageWithBadge::ImageWithBadge(const gfx::VectorIcon& main_image)
+    : main_vector_icon_(&main_image) {}
+
+void ImageWithBadge::OnThemeChanged() {
+  ImageView::OnThemeChanged();
+  Render();
+}
+
+void ImageWithBadge::UpdateBadge(const gfx::ImageSkia& badge_image) {
+  badge_image_skia_ = badge_image;
+  Render();
+}
+
+gfx::ImageSkia ImageWithBadge::GetMainImage() {
+  if (main_image_skia_)
+    return main_image_skia_.value();
+  DCHECK(main_vector_icon_);
+  const SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+  return gfx::CreateVectorIcon(*main_vector_icon_, kImageSize, color);
+}
+
+gfx::ImageSkia ImageWithBadge::GetBadge() {
+  if (badge_image_skia_)
+    return badge_image_skia_.value();
+  // If there is no badge set, fallback to the default globe icon.
+  const SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+  return gfx::CreateVectorIcon(kGlobeIcon, gfx::kFaviconSize, color);
+}
+
+void ImageWithBadge::Render() {
+  constexpr int kBadgePadding = 6;
+  const SkColor kBackgroundColor = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
+  // Make the border color a softer version of the icon color.
+  const SkColor kBorderColor =
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_DefaultIconColor),
+                  96);
+
+  gfx::Image rounded_badge = profiles::GetSizedAvatarIcon(
+      gfx::Image(GetBadge()),
+      /*is_rectangle=*/true, /*width=*/gfx::kFaviconSize,
+      /*height=*/gfx::kFaviconSize, profiles::SHAPE_CIRCLE);
+
+  gfx::ImageSkia rounded_badge_with_background_and_border =
+      gfx::CanvasImageSource::MakeImageSkia<BackgroundBorderAdderImageSource>(
+          *rounded_badge.ToImageSkia(), /*add_background=*/true,
+          kBackgroundColor, kBorderColor, gfx::kFaviconSize + kBadgePadding);
+
+  gfx::ImageSkia main_image_with_border =
+      gfx::CanvasImageSource::MakeImageSkia<BackgroundBorderAdderImageSource>(
+          GetMainImage(), /*add_background=*/false,
+          /*background_color=*/base::nullopt, kBorderColor, kImageSize);
+
+  gfx::ImageSkia badged_image = gfx::ImageSkiaOperations::CreateIconWithBadge(
+      main_image_with_border, rounded_badge_with_background_and_border);
+  SetImage(badged_image);
+}
 
 std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   auto image_view = std::make_unique<NonAccessibleImageView>();
@@ -36,7 +189,7 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
     preferred_size = gfx::ScaleToRoundedSize(
         preferred_size,
         static_cast<float>(ChromeLayoutProvider::Get()->GetDistanceMetric(
-            DISTANCE_BUBBLE_PREFERRED_WIDTH)) /
+            views::DISTANCE_BUBBLE_PREFERRED_WIDTH)) /
             preferred_size.width());
     image_view->SetImageSize(preferred_size);
   }
@@ -46,13 +199,59 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
 std::unique_ptr<views::Label> CreateDescription() {
   auto description = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_HINT),
-      ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_HINT);
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_HINT);
   description->SetMultiLine(true);
   description->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return description;
 }
 
 }  // namespace
+
+// A view that holds two badged images with an arrow between them to illustrate
+// that a password is being moved from the device to the account.
+class MoveToAccountStoreBubbleView::MovingBannerView : public views::View {
+ public:
+  MovingBannerView(std::unique_ptr<ImageWithBadge> from_image,
+                   std::unique_ptr<ImageWithBadge> to_image);
+  ~MovingBannerView() override = default;
+
+  // Updates the badge in both from and to views to be |favicon|.
+  void UpdateFavicon(const gfx::ImageSkia& favicon);
+
+ private:
+  ImageWithBadge* from_view;
+  ImageWithBadge* to_view;
+};
+
+MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
+    std::unique_ptr<ImageWithBadge> from_image,
+    std::unique_ptr<ImageWithBadge> to_image) {
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets(
+              /*vertical=*/0,
+              /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
+                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+
+  from_view = AddChildView(std::move(from_image));
+
+  auto arrow_view = std::make_unique<views::ColorTrackingIconView>(
+      kChevronRightIcon, gfx::kFaviconSize);
+  arrow_view->SetFlipCanvasOnPaintForRTLUI(true);
+  AddChildView(std::move(arrow_view));
+
+  to_view = AddChildView(std::move(to_image));
+}
+
+void MoveToAccountStoreBubbleView::MovingBannerView::UpdateFavicon(
+    const gfx::ImageSkia& favicon) {
+  from_view->UpdateBadge(favicon);
+  to_view->UpdateBadge(favicon);
+}
 
 MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
     content::WebContents* web_contents,
@@ -61,6 +260,9 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
                              anchor_view,
                              /*auto_dismissable=*/false),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
+  DCHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage));
+
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
@@ -79,15 +281,34 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
               /*horizontal=*/0));
 
   AddChildView(CreateDescription());
-  // TODO(crbug.com/1060128): Add images indicating "site"->"account" move.
 
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON));
+  auto computer_view =
+      std::make_unique<ImageWithBadge>(kHardwareComputerSmallIcon);
+  auto avatar_view = std::make_unique<ImageWithBadge>(
+      *controller_.GetProfileIcon(kImageSize).ToImageSkia());
+
+  moving_banner_ = AddChildView(std::make_unique<MovingBannerView>(
+      /*from_view=*/std::move(computer_view),
+      /*to_view=*/std::move(avatar_view)));
+
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUBBLE_OK_BUTTON));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                 l10n_util::GetStringUTF16(IDS_DECLINE_RECOVERY));
+                 l10n_util::GetStringUTF16(
+                     IDS_PASSWORD_MANAGER_MOVE_BUBBLE_CANCEL_BUTTON));
   SetAcceptCallback(
       base::BindOnce(&MoveToAccountStoreBubbleController::AcceptMove,
                      base::Unretained(&controller_)));
+  SetCancelCallback(
+      base::BindOnce(&MoveToAccountStoreBubbleController::RejectMove,
+                     base::Unretained(&controller_)));
+
+  // The request is cancelled when the |controller_| is destructed.
+  // |controller_| has the same life time as |this| and hence it's safe to use
+  // base::Unretained(this).
+  controller_.RequestFavicon(base::BindOnce(
+      &MoveToAccountStoreBubbleView::OnFaviconReady, base::Unretained(this)));
 }
 
 MoveToAccountStoreBubbleView::~MoveToAccountStoreBubbleView() = default;
@@ -101,19 +322,8 @@ void MoveToAccountStoreBubbleView::OnThemeChanged() {
   PasswordBubbleViewBase::OnThemeChanged();
   GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(
       color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor())
-          ? IDR_SAVE_PASSWORD_DARK
-          : IDR_SAVE_PASSWORD));
-}
-
-gfx::Size MoveToAccountStoreBubbleView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-bool MoveToAccountStoreBubbleView::ShouldShowCloseButton() const {
-  return true;
+          ? IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK
+          : IDR_SAVE_PASSWORD_MULTI_DEVICE));
 }
 
 MoveToAccountStoreBubbleController*
@@ -124,4 +334,10 @@ MoveToAccountStoreBubbleView::GetController() {
 const MoveToAccountStoreBubbleController*
 MoveToAccountStoreBubbleView::GetController() const {
   return &controller_;
+}
+
+void MoveToAccountStoreBubbleView::OnFaviconReady(const gfx::Image& favicon) {
+  if (!favicon.IsEmpty()) {
+    moving_banner_->UpdateFavicon(*favicon.ToImageSkia());
+  }
 }

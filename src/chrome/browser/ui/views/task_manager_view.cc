@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -86,7 +86,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   // process.
   if (browser) {
     ui::win::SetAppIdForWindow(
-        shell_integration::win::GetChromiumModelIdForProfile(
+        shell_integration::win::GetAppUserModelIdForBrowser(
             browser->profile()->GetPath()),
         views::HWNDForWidget(g_task_manager_view->GetWidget()));
   }
@@ -161,24 +161,8 @@ views::View* TaskManagerView::GetInitiallyFocusedView() {
   return nullptr;
 }
 
-bool TaskManagerView::CanResize() const {
-  return true;
-}
-
-bool TaskManagerView::CanMaximize() const {
-  return true;
-}
-
-bool TaskManagerView::CanMinimize() const {
-  return true;
-}
-
 bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
   return false;
-}
-
-base::string16 TaskManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
 }
 
 gfx::ImageSkia TaskManagerView::GetWindowIcon() {
@@ -289,6 +273,8 @@ TaskManagerView::TaskManagerView()
   SetButtons(ui::DIALOG_BUTTON_OK);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+  SetHasWindowSizeControls(true);
+  SetTitle(IDS_TASK_MANAGER_TITLE);
 
   // Avoid calling Accept() when closing the dialog, since Accept() here means
   // "kill task" (!).
@@ -386,7 +372,7 @@ void TaskManagerView::RetrieveSavedAlwaysOnTopState() {
 
 namespace chrome {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // These are used by the Mac versions of |ShowTaskManager| and |HideTaskManager|
 // if they decide to show the Views task manager instead of the Cocoa one.
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -41,15 +41,15 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     cross_site_app_id_ = InstallPWA(cross_site_frame_url);
 
     // Note: The url for the cross site frame is embedded in the query string.
-    GURL app_url = https_server()->GetURL(
+    GURL start_url = https_server()->GetURL(
         "/web_app_badging/badging_with_frames_and_workers.html?url=" +
         cross_site_frame_url.spec());
-    main_app_id_ = InstallPWA(app_url);
+    main_app_id_ = InstallPWA(start_url);
 
-    GURL sub_app_url = https_server()->GetURL("/web_app_badging/blank.html");
+    GURL sub_start_url = https_server()->GetURL("/web_app_badging/blank.html");
     auto sub_app_info = std::make_unique<WebApplicationInfo>();
-    sub_app_info->app_url = sub_app_url;
-    sub_app_info->scope = sub_app_url;
+    sub_app_info->start_url = sub_start_url;
+    sub_app_info->scope = sub_start_url;
     sub_app_info->open_as_window = true;
     sub_app_id_ = InstallWebApp(std::move(sub_app_info));
 
@@ -64,7 +64,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
     main_frame_ = web_contents->GetMainFrame();
     for (auto* frame : frames) {
-      if (frame->GetLastCommittedURL() == sub_app_url) {
+      if (frame->GetLastCommittedURL() == sub_start_url) {
         sub_app_frame_ = frame;
       } else if (url::IsSameOriginWith(frame->GetLastCommittedURL(),
                                        main_frame_->GetLastCommittedURL())) {
@@ -83,12 +83,12 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     // 1) A service worker with a scope that applies to both the main app and
     // the sub app.
     // 2) A service worker with a scope that applies to the sub app only.
-    app_service_worker_scope_ = app_url.GetWithoutFilename();
+    app_service_worker_scope_ = start_url.GetWithoutFilename();
     const std::string register_app_service_worker_script = content::JsReplace(
         kRegisterServiceWorkerScript, app_service_worker_scope_.spec());
     ASSERT_EQ("OK", EvalJs(main_frame_, register_app_service_worker_script));
 
-    sub_app_service_worker_scope_ = sub_app_url;
+    sub_app_service_worker_scope_ = sub_start_url;
     const std::string register_sub_app_service_worker_script =
         content::JsReplace(kRegisterServiceWorkerScript,
                            sub_app_service_worker_scope_.spec());
@@ -270,7 +270,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
 // Tests that the badge for the main frame is not affected by changing the badge
 // of a cross site subframe.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        CrossSiteFrameCannotChangeMainFrameBadge) {
   // Clearing from cross site frame should affect only the cross site app.
   ExecuteScriptAndWaitForBadgeChange("navigator.clearAppBadge()",
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 
 // Tests that setting the badge to an integer will be propagated across
 // processes.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge(99)", main_frame_);
   BadgeChange badge_change;
   ASSERT_NO_FATAL_FAILURE(GetBadgeChange(main_app_id(), &badge_change));
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
 }
 
 // Tests that calls to |Badge.clear| are propagated across processes.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        BadgeCanBeClearedWithClearMethod) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge(55)", main_frame_);
   BadgeChange badge_change;
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 
 // Tests that calling Badge.set(0) is equivalent to calling |Badge.clear| and
 // that it propagates across processes.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge(0)", main_frame_);
   BadgeChange badge_change;
   ASSERT_NO_FATAL_FAILURE(GetBadgeChange(main_app_id(), &badge_change));
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
 }
 
 // Tests that setting the badge without content is propagated across processes.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge()", main_frame_);
   BadgeChange badge_change;
   ASSERT_NO_FATAL_FAILURE(GetBadgeChange(main_app_id(), &badge_change));
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
 }
 
 // Tests that the badge can be set and cleared from an in scope frame.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        BadgeCanBeSetAndClearedFromInScopeFrame) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge()",
                                      in_scope_frame_);
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 
 // Tests that changing the badge of a subframe with an app affects the
 // subframe's app.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, SubFrameBadgeAffectsSubApp) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, SubFrameBadgeAffectsSubApp) {
   ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge()", sub_app_frame_);
   BadgeChange badge_change;
   ASSERT_NO_FATAL_FAILURE(GetBadgeChange(sub_app_id(), &badge_change));
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, SubFrameBadgeAffectsSubApp) {
 
 // Tests that setting a badge on a subframe with an app only effects the sub
 // app.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaNavigator) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, BadgeSubFrameAppViaNavigator) {
   ExecuteScriptAndWaitForBadgeChange(
       "window['sub-app'].navigator.setAppBadge()", main_frame_);
   BadgeChange badge_change;
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaNavigator) {
 
 // Tests that setting a badge on a subframe via call() craziness sets the
 // subframe app's badge.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaCall) {
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, BadgeSubFrameAppViaCall) {
   ExecuteScriptAndWaitForBadgeChange(
       "const promise = "
       "  window.navigator.setAppBadge"
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaCall) {
 // Test that badging through a service worker scoped to the sub app updates
 // badges for the sub app only.  These badge updates must not affect the main
 // app.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        SubAppServiceWorkerBadgeAffectsSubApp) {
   const uint64_t badge_value = 1u;
   SetBadgeInServiceWorkerAndWaitForChanges(sub_app_service_worker_scope_,
@@ -431,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 // Test that badging through a service worker scoped to the main app updates
 // badges for both the main app and the sub app.  Each service worker badge
 // function call must generate 2 badge changes.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        AppServiceWorkerBadgeAffectsMultipleApps) {
   SetBadgeInServiceWorkerAndWaitForChanges(app_service_worker_scope_,
                                            base::nullopt,
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 }
 
 // Tests that badging incognito windows does not cause a crash.
-IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
                        BadgingIncognitoWindowsDoesNotCrash) {
   Browser* incognito_browser =
       OpenURLOffTheRecord(profile(), main_frame_->GetLastCommittedURL());
@@ -490,13 +490,5 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
       app_service_worker_scope_.spec());
   ASSERT_EQ("OK", EvalJs(incognito_frame, clear_badge_script));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppBadgingBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
 
 }  // namespace web_app

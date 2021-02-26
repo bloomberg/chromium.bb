@@ -17,7 +17,6 @@ import sheriff_pb2
 import validator
 from utils import LRUCacheWithTTL, Translate
 
-
 # The path which we will look for in projects.
 SHERIFF_CONFIG_PATH = 'chromeperf-sheriffs.cfg'
 
@@ -156,30 +155,31 @@ def CompilePattern(pattern):
     # matchers; for now we'll skip the new patterns we don't handle yet.
     return None
 
-def CompileRules(rules):
+
+def CompilePatterns(patterns):
   compiled = []
-  for pattern in rules.match:
+  for pattern in patterns:
     c = CompilePattern(pattern)
     if c:
       compiled.append(c)
   return lambda s: any(c.match(s) for c in compiled)
 
 
+def CompileRules(rules):
+  match = CompilePatterns(rules.match)
+  exclude = CompilePatterns(rules.exclude)
+  return lambda s: match(s) and not exclude(s)
+
+
 class Matcher(object):
 
   def __init__(self, subscription):
-    # TODO(fancl): Remove after all patterns move to rules
-    rules = sheriff_pb2.Rules()
-    rules.CopyFrom(subscription.rules)
-    for pattern in subscription.patterns:
-      rules.match.append(pattern)
-    self._match_subscription = CompileRules(rules)
+    self._match_subscription = CompileRules(subscription.rules)
 
     if subscription.auto_triage.enable:
       self._match_auto_triage = lambda s: True
     else:
-      self._match_auto_triage = CompileRules(
-          subscription.auto_triage.rules)
+      self._match_auto_triage = CompileRules(subscription.auto_triage.rules)
 
     if subscription.auto_bisection.enable:
       self._match_auto_bisection = lambda s: True
@@ -204,8 +204,8 @@ def GetMatcher(revision, subscription):
   if cached and cached.revision == revision:
     return cached.matcher
 
-  cached_tuple = collections.namedtuple(
-      'CachedMatcher', ['revision', 'matcher'])
+  cached_tuple = collections.namedtuple('CachedMatcher',
+                                        ['revision', 'matcher'])
   matcher = Matcher(subscription)
   GetMatcher.cache[subscription.name] = cached_tuple(revision, matcher)
   return matcher
@@ -248,20 +248,17 @@ def FindMatchingConfigs(client, request):
   for config_set, revision, subscription in ListAllConfigs(client):
     matcher = GetMatcher(revision, subscription)
     if matcher.MatchSubscription(request.path):
-      subscription.auto_triage.enable = matcher.MatchAutoTriage(
-          request.path)
+      subscription.auto_triage.enable = matcher.MatchAutoTriage(request.path)
       subscription.auto_bisection.enable = (
-          subscription.auto_triage.enable and
-          matcher.MatchAutoBisection(request.path)
-      )
+          subscription.auto_triage.enable
+          and matcher.MatchAutoBisection(request.path))
       yield (config_set, revision, subscription)
 
 
 def CopyNormalizedSubscription(src, dst):
   dst.CopyFrom(src)
-  # We shouldn't use patterns outside the sheriff-config in any case.
+  # We shouldn't use rules outside the sheriff-config in any case.
   # Maybe allow being explicitily requsted for debug usage later.
-  del dst.patterns[:]
   dst.rules.Clear()
 
   auto_triage_enable = dst.auto_triage.enable

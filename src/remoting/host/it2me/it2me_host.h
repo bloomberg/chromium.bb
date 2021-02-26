@@ -58,12 +58,26 @@ enum It2MeHostState {
 class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                   public HostStatusObserver {
  public:
+  struct DeferredConnectContext {
+    DeferredConnectContext();
+    ~DeferredConnectContext();
+
+    std::unique_ptr<LogToServer> log_to_server;
+    std::unique_ptr<RegisterSupportHostRequest> register_request;
+    std::unique_ptr<SignalStrategy> signal_strategy;
+  };
+
+  using CreateDeferredConnectContext =
+      base::OnceCallback<std::unique_ptr<DeferredConnectContext>(
+          ChromotingHostContext*)>;
+
   class Observer {
    public:
     virtual void OnClientAuthenticated(const std::string& client_username) = 0;
     virtual void OnStoreAccessCode(const std::string& access_code,
                                    base::TimeDelta access_code_lifetime) = 0;
-    virtual void OnNatPolicyChanged(bool nat_traversal_enabled) = 0;
+    virtual void OnNatPoliciesChanged(bool nat_traversal_enabled,
+                                      bool relay_connections_allowed) = 0;
     virtual void OnStateChanged(It2MeHostState state,
                                 protocol::ErrorCode error_code) = 0;
   };
@@ -94,10 +108,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       std::unique_ptr<ChromotingHostContext> context,
       std::unique_ptr<base::DictionaryValue> policies,
       std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-      std::unique_ptr<RegisterSupportHostRequest> register_request,
-      std::unique_ptr<LogToServer> log_to_server,
       base::WeakPtr<It2MeHost::Observer> observer,
-      std::unique_ptr<SignalStrategy> signal_strategy,
+      CreateDeferredConnectContext create_context,
       const std::string& username,
       const protocol::IceConfig& ice_config);
 
@@ -146,10 +158,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       It2MeConfirmationDialog::Result result);
 
   // Task posted to the network thread from Connect().
-  void ConnectOnNetworkThread(
-      const std::string& username,
-      const protocol::IceConfig& ice_config,
-      std::unique_ptr<RegisterSupportHostRequest> register_request);
+  void ConnectOnNetworkThread(const std::string& username,
+                              const protocol::IceConfig& ice_config,
+                              CreateDeferredConnectContext create_context);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,
@@ -157,7 +168,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                            protocol::ErrorCode error_code);
 
   // Handlers for NAT traversal and domain policies.
-  void UpdateNatPolicy(bool nat_traversal_enabled);
+  void UpdateNatPolicies(bool nat_policy_value, bool relay_policy_value);
   void UpdateHostDomainListPolicy(std::vector<std::string> host_domain_list);
   void UpdateClientDomainListPolicy(
       std::vector<std::string> client_domain_list);
@@ -191,8 +202,11 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
   std::unique_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
-  // Host the current nat traversal policy setting.
+  // Stores the current nat traversal policy value.
   bool nat_traversal_enabled_ = false;
+
+  // Stores the current relay connections allowed policy value.
+  bool relay_connections_allowed_ = false;
 
   // The client and host domain policy setting.
   std::vector<std::string> required_client_domain_list_;

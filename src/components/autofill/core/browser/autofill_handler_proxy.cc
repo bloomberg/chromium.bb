@@ -71,11 +71,11 @@ bool AutofillHandlerProxy::ShouldParseForms(const std::vector<FormData>& forms,
 }
 
 void AutofillHandlerProxy::OnFormsParsed(
-    const std::vector<FormStructure*>& form_structures,
+    const std::vector<const FormData*>& form_structures,
     const base::TimeTicks timestamp) {}
 
-void AutofillHandlerProxy::OnFocusNoLongerOnForm() {
-  provider_->OnFocusNoLongerOnForm(this);
+void AutofillHandlerProxy::OnFocusNoLongerOnForm(bool had_interacted_form) {
+  provider_->OnFocusNoLongerOnForm(this, had_interacted_form);
 }
 
 void AutofillHandlerProxy::OnDidFillAutofillFormData(
@@ -88,11 +88,9 @@ void AutofillHandlerProxy::OnDidPreviewAutofillFormData() {}
 
 void AutofillHandlerProxy::OnDidEndTextFieldEditing() {}
 
-void AutofillHandlerProxy::OnHidePopup() {}
-
-void AutofillHandlerProxy::OnSetDataList(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {}
+void AutofillHandlerProxy::OnHidePopup() {
+  provider_->OnHidePopup(this);
+}
 
 void AutofillHandlerProxy::SelectFieldOptionsDidChange(const FormData& form) {}
 

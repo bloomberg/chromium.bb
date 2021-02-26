@@ -11,7 +11,7 @@ class GitApi(recipe_api.RecipeApi):
   _GIT_HASH_RE = re.compile('[0-9a-f]{40}', re.IGNORECASE)
 
   def __call__(self, *args, **kwargs):
-    """Return a git command step."""
+    """Returns a git command step."""
     name = kwargs.pop('name', 'git ' + args[0])
 
     infra_step = kwargs.pop('infra_step', True)
@@ -49,9 +49,9 @@ class GitApi(recipe_api.RecipeApi):
     """Returns `git count-objects` result as a dict.
 
     Args:
-      previous_result (dict): the result of previous count_objects call.
+      * previous_result (dict): the result of previous count_objects call.
         If passed, delta is reported in the log and step text.
-      can_fail_build (bool): if True, may fail the build and/or raise an
+      * can_fail_build (bool): if True, may fail the build and/or raise an
         exception. Defaults to False.
 
     Returns:
@@ -120,28 +120,28 @@ class GitApi(recipe_api.RecipeApi):
     """Performs a full git checkout and returns sha1 of checked out revision.
 
     Args:
-      url (str): url of remote repo to use as upstream
-      ref (str): ref to fetch and check out
-      dir_path (Path): optional directory to clone into
-      recursive (bool): whether to recursively fetch submodules or not
-      submodules (bool): whether to sync and update submodules or not
-      submodule_update_force (bool): whether to update submodules with --force
-      keep_paths (iterable of strings): paths to ignore during git-clean;
+      * url (str): url of remote repo to use as upstream
+      * ref (str): ref to fetch and check out
+      * dir_path (Path): optional directory to clone into
+      * recursive (bool): whether to recursively fetch submodules or not
+      * submodules (bool): whether to sync and update submodules or not
+      * submodule_update_force (bool): whether to update submodules with --force
+      * keep_paths (iterable of strings): paths to ignore during git-clean;
           paths are gitignore-style patterns relative to checkout_path.
-      step_suffix (str): suffix to add to a each step name
-      curl_trace_file (Path): if not None, dump GIT_CURL_VERBOSE=1 trace to that
+      * step_suffix (str): suffix to add to a each step name
+      * curl_trace_file (Path): if not None, dump GIT_CURL_VERBOSE=1 trace to that
           file. Useful for debugging git issue reproducible only on bots. It has
           a side effect of all stderr output of 'git fetch' going to that file.
-      can_fail_build (bool): if False, ignore errors during fetch or checkout.
-      set_got_revision (bool): if True, resolves HEAD and sets got_revision
+      * can_fail_build (bool): if False, ignore errors during fetch or checkout.
+      * set_got_revision (bool): if True, resolves HEAD and sets got_revision
           property.
-      remote_name (str): name of the git remote to use
-      display_fetch_size (bool): if True, run `git count-objects` before and
+      * remote_name (str): name of the git remote to use
+      * display_fetch_size (bool): if True, run `git count-objects` before and
         after fetch and display delta. Adds two more steps. Defaults to False.
-      file_name (str): optional path to a single file to checkout.
-      submodule_update_recursive (bool): if True, updates submodules
+      * file_name (str): optional path to a single file to checkout.
+      * submodule_update_recursive (bool): if True, updates submodules
           recursively.
-      use_git_cache (bool): if True, git cache will be used for this checkout.
+      * use_git_cache (bool): if True, git cache will be used for this checkout.
           WARNING, this is EXPERIMENTAL!!! This wasn't tested with:
            * submodules
            * since origin url is modified
@@ -149,7 +149,7 @@ class GitApi(recipe_api.RecipeApi):
              "git fetch origin" or "git push origin".
            * arbitrary refs such refs/whatever/not-fetched-by-default-to-cache
        progress (bool): whether to show progress for fetch or not
-      tags (bool): Also fetch tags.
+      * tags (bool): Also fetch tags.
 
     Returns: If the checkout was successful, this returns the commit hash of
       the checked-out-repo. Otherwise this returns None.
@@ -195,12 +195,12 @@ class GitApi(recipe_api.RecipeApi):
       if use_git_cache:
         with self.m.context(env={'PATH': path}):
           self('cache', 'populate', '-c',
-               self.m.infra_paths.default_git_cache_dir, url,
+               self.m.path['cache'].join('git'), url,
                name='populate cache',
                can_fail_build=can_fail_build)
           dir_cmd = self(
               'cache', 'exists', '--quiet',
-              '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
+              '--cache-dir', self.m.path['cache'].join('git'), url,
               can_fail_build=can_fail_build,
               stdout=self.m.raw_io.output(),
               step_test_data=lambda:
@@ -327,12 +327,13 @@ class GitApi(recipe_api.RecipeApi):
 
   def rebase(self, name_prefix, branch, dir_path, remote_name=None,
              **kwargs):
-    """Run rebase HEAD onto branch
+    """Runs rebase HEAD onto branch
+
     Args:
-    name_prefix (str): a prefix used for the step names
-    branch (str): a branch name or a hash to rebase onto
-    dir_path (Path): directory to clone into
-    remote_name (str): the remote name to rebase from if not origin
+      * name_prefix (str): a prefix used for the step names
+      * branch (str): a branch name or a hash to rebase onto
+      * dir_path (Path): directory to clone into
+      * remote_name (str): the remote name to rebase from if not origin
     """
     remote_name = remote_name or 'origin'
     with self.m.context(cwd=dir_path):
@@ -345,11 +346,13 @@ class GitApi(recipe_api.RecipeApi):
         raise
 
   def config_get(self, prop_name, **kwargs):
-    """Returns: (str) The Git config output, or None if no output was generated.
+    """Returns git config output.
 
     Args:
-      prop_name: (str) The name of the config property to query.
-      kwargs: Forwarded to '__call__'.
+      * prop_name: (str) The name of the config property to query.
+      * kwargs: Forwarded to '__call__'.
+
+    Returns: (str) The Git config output, or None if no output was generated.
     """
     kwargs['name'] = kwargs.get('name', 'git config %s' % (prop_name,))
     result = self('config', '--get', prop_name, stdout=self.m.raw_io.output(),
@@ -362,36 +365,39 @@ class GitApi(recipe_api.RecipeApi):
     return value
 
   def get_remote_url(self, remote_name=None, **kwargs):
-    """Returns: (str) The URL of the remote Git repository, or None.
+    """Returns the remote Git repository URL, or None.
 
     Args:
-      remote_name: (str) The name of the remote to query, defaults to 'origin'.
-      kwargs: Forwarded to '__call__'.
+      * remote_name: (str) The name of the remote to query, defaults to 'origin'.
+      * kwargs: Forwarded to '__call__'.
+
+    Returns: (str) The URL of the remote Git repository, or None.
     """
     remote_name = remote_name or 'origin'
     return self.config_get('remote.%s.url' % (remote_name,), **kwargs)
 
   def bundle_create(self, bundle_path, rev_list_args=None, **kwargs):
-    """Run 'git bundle create' on a Git repository.
+    """Runs 'git bundle create' on a Git repository.
 
     Args:
-      bundle_path (Path): The path of the output bundle.
-      refs (list): The list of refs to include in the bundle. If None, all
+      * bundle_path (Path): The path of the output bundle.
+      * refs (list): The list of refs to include in the bundle. If None, all
           refs in the Git checkout will be bundled.
-      kwargs: Forwarded to '__call__'.
+      * kwargs: Forwarded to '__call__'.
     """
     if not rev_list_args:
       rev_list_args = ['--all']
     self('bundle', 'create', bundle_path, *rev_list_args, **kwargs)
 
   def new_branch(self, branch, name=None, upstream=None, **kwargs):
-    """Runs git new-branch on a Git repository, to be used before git cl upload.
+    """Runs git new-branch on a Git repository, to be used before git cl
+    upload.
 
     Args:
-      branch (str): new branch name, which must not yet exist.
-      name (str): step name.
-      upstream (str): to origin/master.
-      kwargs: Forwarded to '__call__'.
+      * branch (str): new branch name, which must not yet exist.
+      * name (str): step name.
+      * upstream (str): to origin/master.
+      * kwargs: Forwarded to '__call__'.
     """
     env = self.m.context.env
     env['PATH'] = self.m.path.pathsep.join([

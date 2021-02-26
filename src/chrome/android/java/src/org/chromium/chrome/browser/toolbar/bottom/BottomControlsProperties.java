@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -16,9 +16,6 @@ class BottomControlsProperties {
     static final WritableIntPropertyKey BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX =
             new WritableIntPropertyKey();
 
-    /** The height of the bottom toolbar view in px. */
-    static final WritableIntPropertyKey BOTTOM_CONTROLS_HEIGHT_PX = new WritableIntPropertyKey();
-
     /** The Y offset of the view in px. */
     static final WritableIntPropertyKey Y_OFFSET = new WritableIntPropertyKey();
 
@@ -29,15 +26,15 @@ class BottomControlsProperties {
     static final WritableBooleanPropertyKey COMPOSITED_VIEW_VISIBLE =
             new WritableBooleanPropertyKey();
 
-    /** A {@link LayoutManager} to attach overlays to. */
-    static final WritableObjectPropertyKey<LayoutManager> LAYOUT_MANAGER =
+    /** A {@link LayoutManagerImpl} to attach overlays to. */
+    static final WritableObjectPropertyKey<LayoutManagerImpl> LAYOUT_MANAGER =
             new WritableObjectPropertyKey<>();
 
     /** A {@link ResourceManager} for loading textures into the compositor. */
     static final WritableObjectPropertyKey<ResourceManager> RESOURCE_MANAGER =
             new WritableObjectPropertyKey<>();
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX,
-            BOTTOM_CONTROLS_HEIGHT_PX, Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE,
-            LAYOUT_MANAGER, RESOURCE_MANAGER};
+    static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX, Y_OFFSET, ANDROID_VIEW_VISIBLE,
+                    COMPOSITED_VIEW_VISIBLE, LAYOUT_MANAGER, RESOURCE_MANAGER};
 }

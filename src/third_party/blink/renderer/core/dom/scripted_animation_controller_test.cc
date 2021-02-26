@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -154,8 +155,7 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueTaskAndEvent) {
 
 namespace {
 
-class RunTaskCallback final
-    : public FrameRequestCallbackCollection::FrameCallback {
+class RunTaskCallback final : public FrameCallback {
  public:
   RunTaskCallback(base::RepeatingClosure task) : task_(std::move(task)) {}
   void Invoke(double) override { task_.Run(); }

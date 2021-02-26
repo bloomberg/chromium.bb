@@ -6,7 +6,6 @@
  */
 
 #include "dawn/webgpu_cpp.h"
-#include "dawn_native/DawnNative.h"
 #include "tools/gpu/dawn/DawnTestContext.h"
 
 #ifdef SK_BUILD_FOR_UNIX
@@ -22,7 +21,7 @@
 #ifdef SK_DAWN
 #include "dawn/webgpu.h"
 #include "dawn/dawn_proc.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "tools/AutoreleasePool.h"
 #if USE_OPENGL_BACKEND
 #include "dawn_native/OpenGLBackend.h"
@@ -78,6 +77,10 @@ private:
 ProcGetter* ProcGetter::fInstance;
 #endif
 
+static void PrintDeviceError(WGPUErrorType, const char* message, void*) {
+    SkDebugf("Device error: %s\n", message);
+}
+
 class DawnTestContextImpl : public sk_gpu_test::DawnTestContext {
 public:
     static wgpu::Device createDevice(const dawn_native::Instance& instance,
@@ -88,7 +91,7 @@ public:
         std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
         for (dawn_native::Adapter adapter : adapters) {
             if (adapter.GetBackendType() == type) {
-                return adapter.CreateDevice();
+                return wgpu::Device::Acquire(adapter.CreateDevice());
             }
         }
         return nullptr;
@@ -125,6 +128,7 @@ public:
 #endif
 #endif
             device = createDevice(*instance, type);
+            device.SetUncapturedErrorCallback(PrintDeviceError, 0);
         }
         if (!device) {
             return nullptr;
@@ -138,8 +142,8 @@ public:
 
     void finish() override {}
 
-    sk_sp<GrContext> makeGrContext(const GrContextOptions& options) override {
-        return GrContext::MakeDawn(fDevice, options);
+    sk_sp<GrDirectContext> makeContext(const GrContextOptions& options) override {
+        return GrDirectContext::MakeDawn(fDevice, options);
     }
 
 protected:
@@ -150,17 +154,15 @@ protected:
 private:
     DawnTestContextImpl(std::unique_ptr<dawn_native::Instance> instance,
                         const wgpu::Device& device)
-            : DawnTestContext(device)
-            , fInstance(std::move(instance)) {
+            : DawnTestContext(std::move(instance), device) {
         fFenceSupport = true;
     }
 
     void onPlatformMakeNotCurrent() const override {}
     void onPlatformMakeCurrent() const override {}
     std::function<void()> onPlatformGetAutoContextRestore() const override  { return nullptr; }
-    std::unique_ptr<dawn_native::Instance> fInstance;
 
-    typedef sk_gpu_test::DawnTestContext INHERITED;
+    using INHERITED = sk_gpu_test::DawnTestContext;
 };
 }  // anonymous namespace
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import atexit
 import copy
 import logging
 import optparse
@@ -18,6 +19,7 @@ from telemetry.core import util
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
 from telemetry.internal.browser import profile_types
+from telemetry.internal.platform import android_device
 from telemetry.internal.platform import device_finder
 from telemetry.internal.platform import remote_platform_options
 from telemetry.internal.util import binary_manager
@@ -30,6 +32,8 @@ def _IsWin():
 
 class BrowserFinderOptions(optparse.Values):
   """Options to be used for discovering a browser."""
+
+  emulator_environment = None
 
   def __init__(self, browser_type=None):
     optparse.Values.__init__(self)
@@ -53,7 +57,7 @@ class BrowserFinderOptions(optparse.Values):
 
     self.remote_platform_options = None
 
-    self.full_performance_mode = True
+    self.performance_mode = None
 
     # TODO(crbug.com/798703): remove this
     self.no_performance_mode = False
@@ -66,6 +70,7 @@ class BrowserFinderOptions(optparse.Values):
 
     self.experimental_system_tracing = False
     self.experimental_system_data_sources = False
+    self.force_sideload_perfetto = False
 
   def __repr__(self):
     return str(sorted(self.__dict__.items()))
@@ -152,6 +157,11 @@ class BrowserFinderOptions(optparse.Values):
         '--experimental-system-data-sources',
         action='store_true',
         help='Use Perfetto tracing to collect power and CPU usage data.')
+    parser.add_option(
+        '--force-sideload-perfetto',
+        action='store_true',
+        help='Sideload perfetto binaries from the cloud even if the device '
+             'already has Perfetto installed.')
     identity = None
     testing_rsa = os.path.join(
         util.GetTelemetryThirdPartyDir(), 'chromite', 'ssh_keys', 'testing_rsa')
@@ -193,11 +203,21 @@ class BrowserFinderOptions(optparse.Values):
     # Platform options
     group = optparse.OptionGroup(parser, 'Platform options')
     group.add_option(
-        '--no-performance-mode', action='store_true',
+        '--performance-mode',
+        choices=[android_device.HIGH_PERFORMANCE_MODE,
+                 android_device.NORMAL_PERFORMANCE_MODE,
+                 android_device.LITTLE_ONLY_PERFORMANCE_MODE,
+                 android_device.KEEP_PERFORMANCE_MODE],
+        default=android_device.HIGH_PERFORMANCE_MODE,
         help='Some platforms run on "full performance mode" where the '
         'test is executed at maximum CPU speed in order to minimize noise '
         '(specially important for dashboards / continuous builds). '
-        'This option prevents Telemetry from tweaking such platform settings.')
+        'This option allows to choose performance mode. '
+        'Available choices: '
+        'high (default): high performance mode; '
+        'normal: normal performance mode; '
+        'little-only: execute the benchmark on little cores only; '
+        'keep: don\'t touch the device performance settings.')
     # TODO(crbug.com/1025207): Rename this to --support-apk
     group.add_option(
         '--webview-embedder-apk',
@@ -210,8 +230,8 @@ class BrowserFinderOptions(optparse.Values):
 
     # Remote platform options
     group = optparse.OptionGroup(parser, 'Remote platform options')
-    group.add_option('--android-blacklist-file',
-                     help='Device blacklist JSON file.')
+    group.add_option('--android-denylist-file',
+                     help='Device denylist JSON file.')
     group.add_option(
         '--device',
         help='The device ID to use. '
@@ -225,22 +245,35 @@ class BrowserFinderOptions(optparse.Values):
         default=[],
         help='Specify Android App Bundle modules to install in addition to the '
         'base module. Ignored on Non-Android platforms.')
+    group.add_option(
+        '--compile-apk',
+        action='store_true',
+        help='Will compile the APK under test using dex2oat in speed mode. '
+        'Ignored on non-Android platforms.')
+    group.add_option(
+        '--avd-config',
+        default=None,
+        help='A path to an AVD configuration to use for starting an Android '
+        'emulator.'
+    )
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Fuchsia platform options')
     group.add_option(
-        '--fuchsia-ssh-config-dir',
+        '--fuchsia-ssh-config',
         default='out/Release',
-        help='Specify directory of the ssh_config file for the Fuchsia OS.')
+        help='Specify the ssh_config file used to connect to the Fuchsia OS.')
+    group.add_option(
+        '--fuchsia-device-address',
+        help='The IP of the target Fuchsia device. Optional.')
     group.add_option(
         '--fuchsia-ssh-port',
-        default=None,
+        type=int,
         help='The port on the host to which the ssh service running on the '
         'Fuchsia device was forwarded. Will skip using the device-finder tool '
         'if specified.')
     group.add_option(
         '--fuchsia-system-log-file',
-        default=None,
         help='The file where Fuchsia system logs will be stored.')
     group.add_option(
         '--fuchsia-repo',
@@ -304,6 +337,9 @@ class BrowserFinderOptions(optparse.Values):
 
       if self.chromium_output_dir:
         os.environ['CHROMIUM_OUTPUT_DIR'] = self.chromium_output_dir
+
+      # Set up Android emulator if necessary.
+      self.ParseAndroidEmulatorOptions()
 
       # Parse remote platform options.
       self.BuildRemotePlatformOptions()
@@ -394,19 +430,88 @@ class BrowserFinderOptions(optparse.Values):
     """Determines if the browser_type is a bundle browser_type."""
     return self.browser_type and self.browser_type.endswith('-bundle')
 
+  def _NoOpFunctionForTesting(self):
+    """No-op function that can be overridden for unittests."""
+    pass
+
+  def ParseAndroidEmulatorOptions(self):
+    """Parses Android emulator args, and if necessary, starts an emulator.
+
+    No-ops if --avd-config is not specified or if an emulator is already
+    started.
+
+    Performing this setup during argument parsing isn't ideal, but we need to
+    set up the emulator sometime between arg parsing and browser finding.
+    """
+    if not self.avd_config:
+      return
+    if BrowserFinderOptions.emulator_environment:
+      return
+    build_android_dir = os.path.join(
+        util.GetChromiumSrcDir(), 'build', 'android')
+    if not os.path.exists(build_android_dir):
+      raise RuntimeError(
+          '--avd-config specified, but Chromium //build/android directory not '
+          'available')
+    # Everything after this point only works if //build/android is actually
+    # available, which we can't rely on, so use this to exit early in unittests.
+    self._NoOpFunctionForTesting()
+    sys.path.append(build_android_dir)
+    # pylint: disable=import-error
+    from pylib import constants as pylib_constants
+    from pylib.local.emulator import local_emulator_environment
+    # pylint: enable=import-error
+
+    # We need to call this so that the Chromium output directory is set if it
+    # is not explicitly specified via the command line argument/environment
+    # variable.
+    pylib_constants.CheckOutputDirectory()
+
+    class AvdArgs(object):
+      """A class to stand in for the AVD argparse.ArgumentParser object.
+
+      Chromium's Android emulator code expects quite a few arguments from
+      //build/android/test_runner.py, but the only one we actually care about
+      here is avd_config. So, use a stand-in class with some sane defaults.
+      """
+      def __init__(self, avd_config):
+        self.avd_config = avd_config
+        self.emulator_count = 1
+        self.emulator_window = False
+        self.use_webview_provider = False
+        self.replace_system_package = False
+        self.denylist_file = None
+        self.test_devices = []
+        self.enable_concurrent_adb = False
+        self.logcat_output_dir = None
+        self.logcat_output_file = None
+        self.num_retries = 1
+        self.recover_devices = False
+        self.skip_clear_data = True
+        self.tool = None
+        self.adb_path = None
+        self.enable_device_cache = True
+
+    avd_args = AvdArgs(self.avd_config)
+    BrowserFinderOptions.emulator_environment =\
+        local_emulator_environment.LocalEmulatorEnvironment(
+            avd_args, None, None)
+    BrowserFinderOptions.emulator_environment.SetUp()
+    atexit.register(BrowserFinderOptions.emulator_environment.TearDown)
+
   # TODO(eakuefner): Factor this out into OptionBuilder pattern
   def BuildRemotePlatformOptions(self):
-    if self.device or self.android_blacklist_file:
+    if self.device or self.android_denylist_file:
       self.remote_platform_options = (
           remote_platform_options.AndroidPlatformOptions(
-              self.device, self.android_blacklist_file))
+              self.device, self.android_denylist_file))
 
       # We delete these options because they should live solely in the
       # AndroidPlatformOptions instance belonging to this class.
       if self.device:
         del self.device
-      if self.android_blacklist_file:
-        del self.android_blacklist_file
+      if self.android_denylist_file:
+        del self.android_denylist_file
     else:
       self.remote_platform_options = (
           remote_platform_options.AndroidPlatformOptions())

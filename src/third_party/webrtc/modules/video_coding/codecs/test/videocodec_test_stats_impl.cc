@@ -179,20 +179,20 @@ VideoStatistics VideoCodecTestStatsImpl::SliceAndCalcVideoStatistic(
   VideoStatistics video_stat;
 
   float buffer_level_bits = 0.0f;
-  RunningStatistics<float> buffer_level_sec;
+  webrtc_impl::RunningStatistics<float> buffer_level_sec;
 
-  RunningStatistics<size_t> key_frame_size_bytes;
-  RunningStatistics<size_t> delta_frame_size_bytes;
+  webrtc_impl::RunningStatistics<size_t> key_frame_size_bytes;
+  webrtc_impl::RunningStatistics<size_t> delta_frame_size_bytes;
 
-  RunningStatistics<size_t> frame_encoding_time_us;
-  RunningStatistics<size_t> frame_decoding_time_us;
+  webrtc_impl::RunningStatistics<size_t> frame_encoding_time_us;
+  webrtc_impl::RunningStatistics<size_t> frame_decoding_time_us;
 
-  RunningStatistics<float> psnr_y;
-  RunningStatistics<float> psnr_u;
-  RunningStatistics<float> psnr_v;
-  RunningStatistics<float> psnr;
-  RunningStatistics<float> ssim;
-  RunningStatistics<int> qp;
+  webrtc_impl::RunningStatistics<float> psnr_y;
+  webrtc_impl::RunningStatistics<float> psnr_u;
+  webrtc_impl::RunningStatistics<float> psnr_v;
+  webrtc_impl::RunningStatistics<float> psnr;
+  webrtc_impl::RunningStatistics<float> ssim;
+  webrtc_impl::RunningStatistics<int> qp;
 
   size_t rtp_timestamp_first_frame = 0;
   size_t rtp_timestamp_prev_frame = 0;
@@ -252,12 +252,6 @@ VideoStatistics VideoCodecTestStatsImpl::SliceAndCalcVideoStatistic(
       video_stat.height =
           std::max(video_stat.height, frame_stat.decoded_height);
 
-      psnr_y.AddSample(frame_stat.psnr_y);
-      psnr_u.AddSample(frame_stat.psnr_u);
-      psnr_v.AddSample(frame_stat.psnr_v);
-      psnr.AddSample(frame_stat.psnr);
-      ssim.AddSample(frame_stat.ssim);
-
       if (video_stat.num_decoded_frames > 1) {
         if (last_successfully_decoded_frame.decoded_width !=
                 frame_stat.decoded_width ||
@@ -269,6 +263,14 @@ VideoStatistics VideoCodecTestStatsImpl::SliceAndCalcVideoStatistic(
 
       frame_decoding_time_us.AddSample(frame_stat.decode_time_us);
       last_successfully_decoded_frame = frame_stat;
+    }
+
+    if (frame_stat.quality_analysis_successful) {
+      psnr_y.AddSample(frame_stat.psnr_y);
+      psnr_u.AddSample(frame_stat.psnr_u);
+      psnr_v.AddSample(frame_stat.psnr_v);
+      psnr.AddSample(frame_stat.psnr);
+      ssim.AddSample(frame_stat.ssim);
     }
 
     if (video_stat.num_input_frames > 0) {
@@ -329,10 +331,10 @@ VideoStatistics VideoCodecTestStatsImpl::SliceAndCalcVideoStatistic(
                                  ? 1000000.0f / mean_decode_time_us
                                  : std::numeric_limits<float>::max();
 
-  auto MaxDelaySec =
-      [target_bitrate_kbps](const RunningStatistics<size_t>& stats) {
-        return 8 * stats.GetMax().value_or(0) / 1000 / target_bitrate_kbps;
-      };
+  auto MaxDelaySec = [target_bitrate_kbps](
+                         const webrtc_impl::RunningStatistics<size_t>& stats) {
+    return 8 * stats.GetMax().value_or(0) / 1000 / target_bitrate_kbps;
+  };
 
   video_stat.avg_delay_sec = buffer_level_sec.GetMean().value_or(0);
   video_stat.max_key_frame_delay_sec = MaxDelaySec(key_frame_size_bytes);

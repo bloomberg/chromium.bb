@@ -53,8 +53,7 @@ std::unique_ptr<KeyedService> BuildHistoryService(
   base::FilePath history_path(profile->GetPath().Append("history"));
 
   // Delete the file before creating the service.
-  if (!base::DeleteFile(history_path, false) ||
-      base::PathExists(history_path)) {
+  if (!base::DeleteFile(history_path) || base::PathExists(history_path)) {
     ADD_FAILURE() << "failed to delete history db file "
                   << history_path.value();
     return nullptr;
@@ -88,10 +87,6 @@ class TestSearchResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
-  void InvokeAction(int action_index, int event_flags) override {}
-  ash::SearchResultType GetSearchResultType() const override {
-    return ash::SEARCH_RESULT_TYPE_BOUNDARY;
-  }
 
  private:
   static int instantiation_count;

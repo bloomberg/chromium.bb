@@ -14,8 +14,9 @@
 #include "src/core/SkTLazy.h"
 
 #if SK_SUPPORT_GPU
+#include "src/gpu/text/GrSDFMaskFilter.h"
+#include "src/gpu/text/GrSDFTOptions.h"
 #include "src/gpu/text/GrStrikeCache.h"
-#include "src/gpu/text/GrTextContext.h"
 #endif
 
 SkStrikeSpec SkStrikeSpec::MakeMask(const SkFont& font, const SkPaint& paint,
@@ -101,7 +102,7 @@ SkStrikeSpec SkStrikeSpec::MakeCanonicalized(const SkFont& font, const SkPaint* 
 
     storage.commonSetup(*canonicalizedFont,
                         canonicalizedPaint,
-                        SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType),
+                        SkSurfaceProps(),
                         kFakeGammaAndBoostContrast,
                         SkMatrix::I());
     return storage;
@@ -117,7 +118,7 @@ SkStrikeSpec SkStrikeSpec::MakeWithNoDevice(const SkFont& font, const SkPaint* p
 
     storage.commonSetup(font,
                         setupPaint,
-                        SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType),
+                        SkSurfaceProps(),
                         kFakeGammaAndBoostContrast,
                         SkMatrix::I());
 
@@ -146,7 +147,7 @@ bool SkStrikeSpec::ShouldDrawAsPath(
     SkMatrix textMatrix = SkFontPriv::MakeTextMatrix(font);
     textMatrix.postConcat(viewMatrix);
 
-    // we have a self-imposed maximum, just for memory-usage sanity
+    // we have a self-imposed maximum, just to limit memory-usage
     SkScalar limit = std::min(SkGraphics::GetFontCachePointSizeLimit(), 1024);
     SkScalar maxSizeSquared = limit * limit;
 
@@ -186,20 +187,19 @@ SkStrikeSpec SkStrikeSpec::MakePDFVector(const SkTypeface& typeface, int* size) 
 std::tuple<SkStrikeSpec, SkScalar, SkScalar>
 SkStrikeSpec::MakeSDFT(const SkFont& font, const SkPaint& paint,
                        const SkSurfaceProps& surfaceProps, const SkMatrix& deviceMatrix,
-                       const GrTextContext::Options& options) {
+                       const GrSDFTOptions& options) {
     SkStrikeSpec storage;
 
-    SkPaint dfPaint = GrTextContext::InitDistanceFieldPaint(paint);
-    SkFont dfFont = GrTextContext::InitDistanceFieldFont(
-            font, deviceMatrix, options, &storage.fStrikeToSourceRatio);
+    SkPaint dfPaint{paint};
+    dfPaint.setMaskFilter(GrSDFMaskFilter::Make());
+    SkFont dfFont = options.getSDFFont(font, deviceMatrix, &storage.fStrikeToSourceRatio);
 
     // Fake-gamma and subpixel antialiasing are applied in the shader, so we ignore the
     // passed-in scaler context flags. (It's only used when we fall-back to bitmap text).
     SkScalerContextFlags flags = SkScalerContextFlags::kNone;
 
     SkScalar minScale, maxScale;
-    std::tie(minScale, maxScale) = GrTextContext::InitDistanceFieldMinMaxScale(
-            font.getSize(), deviceMatrix, options);
+    std::tie(minScale, maxScale) = options.computeSDFMinMaxScale(font.getSize(), deviceMatrix);
 
     storage.commonSetup(dfFont, dfPaint, surfaceProps, flags, SkMatrix::I());
 

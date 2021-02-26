@@ -28,6 +28,7 @@
 #include "libavcodec/mpegaudio.h"
 #include "libavcodec/mpegaudiodata.h"
 #include "libavcodec/mpegaudiodecheader.h"
+#include "libavcodec/packet_internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
@@ -45,6 +46,7 @@ static int id3v1_set_string(AVFormatContext *s, const char *key,
     return !!tag;
 }
 
+// refer to: http://id3.org/ID3v1
 static int id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
 {
     AVDictionaryEntry *tag;
@@ -58,7 +60,17 @@ static int id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
     count += id3v1_set_string(s, "TIT2",    buf +  3, 30 + 1);       //title
     count += id3v1_set_string(s, "TPE1",    buf + 33, 30 + 1);       //author|artist
     count += id3v1_set_string(s, "TALB",    buf + 63, 30 + 1);       //album
-    count += id3v1_set_string(s, "TDRC",    buf + 93,  4 + 1);       //date
+    if ((tag = av_dict_get(s->metadata, "TYER", NULL, 0))) {         //year
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    } else if ((tag = av_dict_get(s->metadata, "TDRC", NULL, 0))) {
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    } else if ((tag = av_dict_get(s->metadata, "TDAT", NULL, 0))) {
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    }
+
     count += id3v1_set_string(s, "comment", buf + 97, 30 + 1);
     if ((tag = av_dict_get(s->metadata, "TRCK", NULL, 0))) { //track
         buf[125] = 0;
@@ -343,7 +355,7 @@ static int mp3_write_audio_packet(AVFormatContext *s, AVPacket *pkt)
 
         if (mp3->xing_offset) {
             uint8_t *side_data = NULL;
-            int side_data_size = 0;
+            int side_data_size;
 
             mp3_xing_add_frame(mp3, pkt);
             mp3->audio_size += pkt->size;
@@ -376,7 +388,7 @@ static int mp3_queue_flush(AVFormatContext *s)
     mp3_write_xing(s);
 
     while (mp3->queue) {
-        ff_packet_list_get(&mp3->queue, &mp3->queue_end, &pkt);
+        avpriv_packet_list_get(&mp3->queue, &mp3->queue_end, &pkt);
         if (write && (ret = mp3_write_audio_packet(s, &pkt)) < 0)
             write = 0;
         av_packet_unref(&pkt);
@@ -511,7 +523,7 @@ static int mp3_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt->stream_index == mp3->audio_stream_idx) {
         if (mp3->pics_to_write) {
             /* buffer audio packets until we get all the pictures */
-            int ret = ff_packet_list_put(&mp3->queue, &mp3->queue_end, pkt, FF_PACKETLIST_FLAG_REF_PACKET);
+            int ret = avpriv_packet_list_put(&mp3->queue, &mp3->queue_end, pkt, av_packet_ref, 0);
 
             if (ret < 0) {
                 av_log(s, AV_LOG_WARNING, "Not enough memory to buffer audio. Skipping picture streams\n");
@@ -619,7 +631,7 @@ static void mp3_deinit(struct AVFormatContext *s)
 {
     MP3Context *mp3 = s->priv_data;
 
-    ff_packet_list_free(&mp3->queue, &mp3->queue_end);
+    avpriv_packet_list_free(&mp3->queue, &mp3->queue_end);
     av_freep(&mp3->xing_frame);
 }
 

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/buildflags.h"
+#include "components/omnibox/browser/omnibox_pedal_concepts.h"
 #include "url/gurl.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
@@ -21,6 +22,7 @@ struct VectorIcon;
 }
 #endif
 
+class AutocompleteInput;
 class AutocompleteProviderClient;
 class OmniboxEditController;
 class OmniboxClient;
@@ -37,10 +39,18 @@ class OmniboxPedal {
   typedef std::vector<int> Tokens;
 
   struct LabelStrings {
-    LabelStrings(int id_hint, int id_hint_short, int id_suggestion_contents);
+    LabelStrings(int id_hint,
+                 int id_hint_short,
+                 int id_suggestion_contents,
+                 int id_accessibility_suffix,
+                 int id_accessibility_hint);
+    LabelStrings(const LabelStrings&);
+    ~LabelStrings();
     const base::string16 hint;
     const base::string16 hint_short;
     const base::string16 suggestion_contents;
+    const int id_accessibility_suffix;
+    const base::string16 accessibility_hint;
   };
 
   class SynonymGroup {
@@ -54,6 +64,8 @@ class OmniboxPedal {
     SynonymGroup(bool required, bool match_once, size_t reserve_size);
     SynonymGroup(SynonymGroup&&);
     ~SynonymGroup();
+    SynonymGroup(const SynonymGroup&) = delete;
+    SynonymGroup& operator=(const SynonymGroup&) = delete;
     SynonymGroup& operator=(SynonymGroup&&);
 
     // Removes one or more matching synonyms from given |remaining| sequence if
@@ -85,8 +97,6 @@ class OmniboxPedal {
     // language, they are considered equivalent within the context of intention
     // to perform this Pedal's action.
     std::vector<Tokens> synonyms_;
-
-    DISALLOW_COPY_AND_ASSIGN(SynonymGroup);
   };
 
   // ExecutionContext provides the necessary structure for Pedal
@@ -111,7 +121,7 @@ class OmniboxPedal {
     base::TimeTicks match_selection_timestamp_;
   };
 
-  OmniboxPedal(LabelStrings strings, GURL url);
+  OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url);
   virtual ~OmniboxPedal();
 
   // Provides read access to labels associated with this Pedal.
@@ -130,7 +140,8 @@ class OmniboxPedal {
   // Returns true if this Pedal is ready to be used now, or false if
   // it does not apply under current conditions. (Example: the UpdateChrome
   // Pedal may not be ready to trigger if no update is available.)
-  virtual bool IsReadyToTrigger(const AutocompleteProviderClient& client) const;
+  virtual bool IsReadyToTrigger(const AutocompleteInput& input,
+                                const AutocompleteProviderClient& client) const;
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   // Returns the vector icon to represent this Pedal's action in suggestion.
@@ -144,6 +155,8 @@ class OmniboxPedal {
 
   // Move a synonym group into this Pedal's collection.
   void AddSynonymGroup(SynonymGroup&& group);
+
+  OmniboxPedalId id() { return id_; }
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
@@ -160,6 +173,8 @@ class OmniboxPedal {
 
   // Use this for the common case of navigating to a URL.
   void OpenURL(ExecutionContext& context, const GURL& url) const;
+
+  OmniboxPedalId id_;
 
   std::vector<SynonymGroup> synonym_groups_;
   LabelStrings strings_;

@@ -10,9 +10,9 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
- * Provides a ContextualSearchHeuristic for CTR Recording, logging, and eventually suppression.
+ * Provides a ContextualSearchHeuristic for click-through rate Recording, logging, and eventually
+ * suppression.
  * Records impressions and CTR when the Bar is dismissed.
- * TODO(donnd): add suppression logic.
  * Logs "impressions" and "CTR" per user in UMA for the previous week and 28-day period.
  * An impression is a view of our UX (the Bar) and CTR is the "click-through rate" (user opens of
  * the Bar).
@@ -21,8 +21,6 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
  */
 public class CtrSuppression extends ContextualSearchHeuristic {
     private long mNativePointer;
-
-    private static Integer sCurrentWeekNumberCache;
 
     private final SharedPreferencesManager mPreferenceManager;
 
@@ -122,6 +120,15 @@ public class CtrSuppression extends ContextualSearchHeuristic {
                     ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_CTR_PERCENT,
                     previous28DayCtr);
         }
+    }
+
+    /** @return the CTR from the previous 28 days, or 0 if no data. */
+    int getPrevious28DayCtr() {
+        if (!CtrSuppressionJni.get().hasPrevious28DayData(mNativePointer, CtrSuppression.this)) {
+            return 0;
+        }
+        return (int) (100
+                * CtrSuppressionJni.get().getPrevious28DayCtr(mNativePointer, CtrSuppression.this));
     }
 
     // ============================================================================================

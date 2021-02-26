@@ -7,18 +7,19 @@
 #include <text-input-unstable-v1-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+#include <xkbcommon/xkbcommon.h>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/display.h"
 #include "components/exo/text_input.h"
 #include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/server_util.h"
+#include "components/exo/xkb_tracker.h"
+#include "ui/base/ime/utf_offset.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
-#endif
 
 namespace exo {
 namespace wayland {
@@ -31,8 +32,11 @@ namespace {
 class WaylandTextInputDelegate : public TextInput::Delegate {
  public:
   WaylandTextInputDelegate(wl_resource* text_input,
+                           const XkbTracker* xkb_tracker,
                            SerialTracker* serial_tracker)
-      : text_input_(text_input), serial_tracker_(serial_tracker) {}
+      : text_input_(text_input),
+        xkb_tracker_(xkb_tracker),
+        serial_tracker_(serial_tracker) {}
   ~WaylandTextInputDelegate() override = default;
 
   void set_surface(wl_resource* surface) { surface_ = surface; }
@@ -71,20 +75,26 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
           style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_SELECTION;
           break;
         case ui::ImeTextSpan::Type::kMisspellingSuggestion:
+        case ui::ImeTextSpan::Type::kAutocorrect:
           style = ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT;
           break;
       }
-      const size_t start =
-          OffsetFromUTF16Offset(composition.text, span.start_offset);
-      const size_t end =
-          OffsetFromUTF16Offset(composition.text, span.end_offset);
-      zwp_text_input_v1_send_preedit_styling(text_input_, start, end - start,
+      const auto start =
+          ui::Utf8OffsetFromUtf16Offset(composition.text, span.start_offset);
+      if (!start)
+        continue;
+      const auto end =
+          ui::Utf8OffsetFromUtf16Offset(composition.text, span.end_offset);
+      if (!end)
+        continue;
+      zwp_text_input_v1_send_preedit_styling(text_input_, *start, *end - *start,
                                              style);
     }
 
-    const size_t pos =
-        OffsetFromUTF16Offset(composition.text, composition.selection.start());
-    zwp_text_input_v1_send_preedit_cursor(text_input_, pos);
+    const auto pos = ui::Utf8OffsetFromUtf16Offset(
+        composition.text, composition.selection.start());
+    if (pos)
+      zwp_text_input_v1_send_preedit_cursor(text_input_, *pos);
 
     const std::string utf8 = base::UTF16ToUTF8(composition.text);
     zwp_text_input_v1_send_preedit_string(
@@ -114,7 +124,8 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   }
 
   void SendKey(const ui::KeyEvent& event) override {
-    uint32_t code = ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
+    uint32_t keysym = xkb_tracker_->GetKeysym(
+        ui::KeycodeConverter::DomCodeToNativeKeycode(event.code()));
     bool pressed = (event.type() == ui::ET_KEY_PRESSED);
     // TODO(mukai): consolidate the definition of this modifiers_mask with other
     // similar ones in components/exo/keyboard.cc or arc_ime_service.cc.
@@ -128,7 +139,7 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     zwp_text_input_v1_send_keysym(
         text_input_, TimeTicksToMilliseconds(event.time_stamp()),
         serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
-        code,
+        keysym,
         pressed ? WL_KEYBOARD_KEY_STATE_PRESSED
                 : WL_KEYBOARD_KEY_STATE_RELEASED,
         modifiers);
@@ -157,10 +168,12 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   wl_resource* text_input_;
   wl_resource* surface_ = nullptr;
 
+  // Owned by Seat, which is updated before calling the callbacks of this
+  // class.
+  const XkbTracker* const xkb_tracker_;
+
   // Owned by Server, which always outlives this delegate.
   SerialTracker* const serial_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandTextInputDelegate);
 };
 
 void text_input_activate(wl_client* client,
@@ -218,9 +231,14 @@ void text_input_set_surrounding_text(wl_client* client,
                                      uint32_t cursor,
                                      uint32_t anchor) {
   TextInput* text_input = GetUserDataAs<TextInput>(resource);
-  text_input->SetSurroundingText(base::UTF8ToUTF16(text),
-                                 OffsetFromUTF8Offset(text, cursor),
-                                 OffsetFromUTF8Offset(text, anchor));
+  auto utf16_cursor = ui::Utf16OffsetFromUtf8Offset(text, cursor);
+  if (!utf16_cursor)
+    return;
+  auto utf16_anchor = ui::Utf16OffsetFromUtf8Offset(text, anchor);
+  if (!utf16_anchor)
+    return;
+  text_input->SetSurroundingText(base::UTF8ToUTF16(text), *utf16_cursor,
+                                 *utf16_anchor);
 }
 
 void text_input_set_content_type(wl_client* client,
@@ -354,7 +372,7 @@ void text_input_manager_create_text_input(wl_client* client,
   SetImplementation(
       text_input_resource, &text_input_v1_implementation,
       std::make_unique<TextInput>(std::make_unique<WaylandTextInputDelegate>(
-          text_input_resource, data->serial_tracker)));
+          text_input_resource, data->xkb_tracker, data->serial_tracker)));
 }
 
 const struct zwp_text_input_manager_v1_interface

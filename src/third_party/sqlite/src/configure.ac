@@ -155,11 +155,6 @@ AC_SUBST(VERSION)
 RELEASE=`cat $srcdir/VERSION`
 AC_MSG_NOTICE(Release set to $RELEASE)
 AC_SUBST(RELEASE)
-VERSION_NUMBER=[`cat $srcdir/VERSION \
-                           | sed 's/[^0-9]/ /g' \
-                | awk '{printf "%d%03d%03d",$1,$2,$3}'`]
-AC_MSG_NOTICE(Version number set to $VERSION_NUMBER)
-AC_SUBST(VERSION_NUMBER)
 
 #########
 # Locate a compiler for the build machine.  This compiler should
@@ -569,7 +564,7 @@ AC_SUBST(TARGET_DEBUG)
 # See whether we should use the amalgamation to build
 AC_ARG_ENABLE(amalgamation, AC_HELP_STRING([--disable-amalgamation],
       [Disable the amalgamation and instead build all files separately]))
-if test "${enable_amalgamation}" == "no" ; then
+if test "${enable_amalgamation}" = "no" ; then
   USE_AMALGAMATION=0
 fi
 AC_SUBST(USE_AMALGAMATION)
@@ -651,7 +646,7 @@ fi
 # statements.
 AC_ARG_ENABLE(update-limit, AC_HELP_STRING([--enable-update-limit],
       [Enable the UPDATE/DELETE LIMIT clause]))
-if test "${enable_udlimit}" = "yes" ; then
+if test "${enable_update_limit}" = "yes" ; then
   OPT_FEATURE_FLAGS="${OPT_FEATURE_FLAGS} -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT"
 fi
 

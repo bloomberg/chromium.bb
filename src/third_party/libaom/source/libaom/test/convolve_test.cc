@@ -268,7 +268,7 @@ void highbd_filter_average_block2d_8_c(
 
 class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
  public:
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
     // Force input_ to be unaligned, output to be 16 byte aligned.
     input_ = reinterpret_cast<uint8_t *>(
                  aom_memalign(kDataAlignment, kInputBufferSize + 1)) +
@@ -292,7 +292,7 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
-  static void TearDownTestCase() {
+  static void TearDownTestSuite() {
     aom_free(input_ - 1);
     input_ = NULL;
     aom_free(ref8_);

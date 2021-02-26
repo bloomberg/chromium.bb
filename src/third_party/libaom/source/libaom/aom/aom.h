@@ -43,20 +43,10 @@ extern "C" {
  * The set of macros define the control functions of AOM interface
  */
 enum aom_com_control_id {
-  /*!\brief pass in an external frame into decoder to be used as reference frame
-   */
-  AOM_SET_DBG_COLOR_REF_FRAME = 4, /**< set the reference frames to color for
-                                      each macroblock, int parameter */
-  AOM_SET_DBG_COLOR_MB_MODES =
-      5, /**< set which macro block modes to color, int parameter */
-  AOM_SET_DBG_COLOR_B_MODES =
-      6, /**< set which blocks modes to color, int parameter */
-  AOM_SET_DBG_DISPLAY_MV =
-      7, /**< set which motion vector modes to draw, int parameter */
-
-  /* TODO(jkoleszar): The encoder incorrectly reuses some of these values (5+)
-   * for its control ids. These should be migrated to something like the
-   * AOM_DECODER_CTRL_ID_START range next time we're ready to break the ABI.
+  /* TODO(https://crbug.com/aomedia/2671): The encoder overlaps the range of
+   * these values for its control ids, see the NOTEs in aom/aomcx.h. These
+   * should be migrated to something like the AOM_DECODER_CTRL_ID_START range
+   * next time we're ready to break the ABI.
    */
   AV1_GET_REFERENCE = 128,  /**< get a pointer to a reference frame,
                                av1_ref_frame_t* parameter */
@@ -87,24 +77,25 @@ typedef struct av1_ref_frame {
 /*!\cond */
 /*!\brief aom decoder control function parameter type
  *
- * defines the data type for each of AOM decoder control function requires
+ * Defines the data type for each of AOM decoder control function requires.
+ *
+ * \note For each control ID "X", a macro-define of
+ * AOM_CTRL_X is provided. It is used at compile time to determine
+ * if the control ID is supported by the libaom library available,
+ * when the libaom version cannot be controlled.
  */
-AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_REF_FRAME, int)
-#define AOM_CTRL_AOM_SET_DBG_COLOR_REF_FRAME
-AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_MB_MODES, int)
-#define AOM_CTRL_AOM_SET_DBG_COLOR_MB_MODES
-AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_B_MODES, int)
-#define AOM_CTRL_AOM_SET_DBG_COLOR_B_MODES
-AOM_CTRL_USE_TYPE(AOM_SET_DBG_DISPLAY_MV, int)
-#define AOM_CTRL_AOM_SET_DBG_DISPLAY_MV
 AOM_CTRL_USE_TYPE(AV1_GET_REFERENCE, av1_ref_frame_t *)
 #define AOM_CTRL_AV1_GET_REFERENCE
+
 AOM_CTRL_USE_TYPE(AV1_SET_REFERENCE, av1_ref_frame_t *)
 #define AOM_CTRL_AV1_SET_REFERENCE
+
 AOM_CTRL_USE_TYPE(AV1_COPY_REFERENCE, av1_ref_frame_t *)
 #define AOM_CTRL_AV1_COPY_REFERENCE
+
 AOM_CTRL_USE_TYPE(AV1_GET_NEW_FRAME_IMAGE, aom_image_t *)
 #define AOM_CTRL_AV1_GET_NEW_FRAME_IMAGE
+
 AOM_CTRL_USE_TYPE(AV1_COPY_NEW_FRAME_IMAGE, aom_image_t *)
 #define AOM_CTRL_AV1_COPY_NEW_FRAME_IMAGE
 

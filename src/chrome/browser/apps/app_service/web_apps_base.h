@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -15,11 +16,11 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -57,6 +58,9 @@ class WebAppsBase : public apps::PublisherBase,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppLastLaunchTimeChanged(
+      const std::string& app_id,
+      const base::Time& last_launch_time) override;
 
   apps::mojom::AppPtr ConvertImpl(const web_app::WebApp* web_app,
                                   apps::mojom::Readiness readiness);
@@ -88,14 +92,15 @@ class WebAppsBase : public apps::PublisherBase,
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
-  const web_app::WebAppRegistrar& GetRegistrar() const;
+  // Can return nullptr in tests.
+  const web_app::WebAppRegistrar* GetRegistrar() const;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override;
@@ -120,22 +125,20 @@ class WebAppsBase : public apps::PublisherBase,
   // content_settings::Observer overrides.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
+  void OnWebAppManifestUpdated(const web_app::AppId& app_id,
+                               base::StringPiece old_name) override;
   void OnAppRegistrarDestroyed() override;
   void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
                                             bool is_locally_installed) override;
-  // TODO(loyso): Implement app->last_launch_time field for the new system.
 
   void SetShowInFields(apps::mojom::AppPtr& app,
                        const web_app::WebApp* web_app);
   void PopulatePermissions(const web_app::WebApp* web_app,
                            std::vector<mojom::PermissionPtr>* target);
-  void PopulateIntentFilters(const base::Optional<GURL>& app_scope,
-                             std::vector<mojom::IntentFilterPtr>* target);
   virtual apps::mojom::AppPtr Convert(const web_app::WebApp* web_app,
                                       apps::mojom::Readiness readiness) = 0;
   void ConvertWebApps(apps::mojom::Readiness readiness,
@@ -166,6 +169,9 @@ class WebAppsBase : public apps::PublisherBase,
 
   base::WeakPtrFactory<WebAppsBase> weak_ptr_factory_{this};
 };
+
+void PopulateIntentFilters(const web_app::WebApp& web_app,
+                           std::vector<mojom::IntentFilterPtr>& target);
 
 }  // namespace apps
 

@@ -278,13 +278,6 @@ jboolean ProfileSyncServiceAndroid::IsEncryptEverythingEnabled(
   return sync_service_->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 
-void ProfileSyncServiceAndroid::EnableEncryptEverything(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->GetUserSettings()->EnableEncryptEverything();
-}
-
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForPreferredDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -360,22 +353,14 @@ jlong ProfileSyncServiceAndroid::GetExplicitPassphraseTime(
   return passphrase_time.ToJavaTime();
 }
 
-void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env,
-                                               const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->FlushDirectory();
-}
-
 void ProfileSyncServiceAndroid::GetAllNodes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> java_callback;
   java_callback.Reset(env, callback);
-
-  base::Callback<void(std::unique_ptr<base::ListValue>)> native_callback =
-      base::Bind(&NativeGetAllNodesCallback, java_callback);
-  sync_service_->GetAllNodesForDebugging(native_callback);
+  sync_service_->GetAllNodesForDebugging(
+      base::BindOnce(&NativeGetAllNodesCallback, java_callback));
 }
 
 jint ProfileSyncServiceAndroid::GetAuthError(JNIEnv* env,
@@ -396,6 +381,27 @@ jboolean ProfileSyncServiceAndroid::RequiresClientUpgrade(
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->RequiresClientUpgrade();
+}
+
+void ProfileSyncServiceAndroid::SetDecoupledFromAndroidMasterSync(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  sync_service_->SetDecoupledFromAndroidMasterSync();
+}
+
+jboolean ProfileSyncServiceAndroid::GetDecoupledFromAndroidMasterSync(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetDecoupledFromAndroidMasterSync();
+}
+
+jboolean ProfileSyncServiceAndroid::IsAuthenticatedAccountPrimary(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->IsAuthenticatedAccountPrimary();
 }
 
 jboolean ProfileSyncServiceAndroid::IsPassphrasePrompted(

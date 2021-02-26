@@ -27,11 +27,14 @@ namespace libgav1 {
 // Returns the number of elements between begin (inclusive) and end (inclusive).
 constexpr int EnumRangeLength(int begin, int end) { return end - begin + 1; }
 
-#if defined(ENABLE_DEBLOCK_BIT_MASK)
-constexpr bool kDeblockFilterBitMask = true;
+enum {
+// Maximum number of threads that the library will ever create.
+#if defined(LIBGAV1_MAX_THREADS) && LIBGAV1_MAX_THREADS > 0
+  kMaxThreads = LIBGAV1_MAX_THREADS
 #else
-constexpr bool kDeblockFilterBitMask = false;
-#endif  // defined(ENABLE_DEBLOCK_BIT_MASK)
+  kMaxThreads = 128
+#endif
+};  // anonymous enum
 
 enum {
   kInvalidMvValue = -32768,
@@ -44,7 +47,6 @@ enum {
   kFrameLfCount = 4,
   kMaxLoopFilterValue = 63,
   kNum4x4In64x64 = 256,
-  kNumLoopFilterMasks = 4,
   kMaxAngleDelta = 3,
   kDirectionalIntraModes = 8,
   kMaxSuperBlockSizeLog2 = 7,
@@ -55,7 +57,12 @@ enum {
   kRestorationTypeSymbolCount = 3,
   kSgrProjParamsBits = 4,
   kSgrProjPrecisionBits = 7,
-  kRestorationBorder = 3,      // Padding on each side of a restoration block.
+  // Padding on left and right side of a restoration block.
+  // 3 is enough, but padding to 4 is more efficient, and makes the temporary
+  // source buffer 8-pixel aligned.
+  kRestorationHorizontalBorder = 4,
+  // Padding on top and bottom side of a restoration block.
+  kRestorationVerticalBorder = 2,
   kCdefBorder = 2,             // Padding on each side of a cdef block.
   kConvolveBorderLeftTop = 3,  // Left/top padding of a convolve block.
   // Right/bottom padding of a convolve block. This needs to be 4 at minimum,
@@ -65,6 +72,7 @@ enum {
   kConvolveBorderBottom = 4,
   kSubPixelTaps = 8,
   kWienerFilterBits = 7,
+  kWienerFilterTaps = 7,
   kMaxPaletteSize = 8,
   kMinPaletteSize = 2,
   kMaxPaletteSquare = 64,
@@ -97,32 +105,32 @@ enum {
   kMaxSuperBlockSizeInPixels = 128,
   kMaxScaledSuperBlockSizeInPixels = 128 * 2,
   kMaxSuperBlockSizeSquareInPixels = 128 * 128,
-  kNum4x4InLoopFilterMaskUnit = 16,
+  kNum4x4InLoopFilterUnit = 16,
+  kNum4x4InLoopRestorationUnit = 16,
   kProjectionMvClamp = (1 << 14) - 1,  // == 16383
   kProjectionMvMaxHorizontalOffset = 8,
+  kCdefUnitSize = 64,
+  kCdefUnitSizeWithBorders = kCdefUnitSize + 2 * kCdefBorder,
   kRestorationUnitOffset = 8,
-  // 2 pixel padding for 5x5 box sum on each side.
-  kRestorationPadding = 4,
   // Loop restoration's processing unit size is fixed as 64x64.
-  kRestorationProcessingUnitSize = 64,
-  kRestorationProcessingUnitSizeWithBorders =
-      kRestorationProcessingUnitSize + 2 * kRestorationBorder,
-  // The max size of a box filter process output buffer.
-  kMaxBoxFilterProcessOutputPixels = kRestorationProcessingUnitSize *
-                                     kRestorationProcessingUnitSize,  // == 4096
-  // The max size of a box filter process intermediate buffer.
-  kBoxFilterProcessIntermediatePixels =
-      (kRestorationProcessingUnitSizeWithBorders + kRestorationPadding) *
-      (kRestorationProcessingUnitSizeWithBorders +
-       kRestorationPadding),  // == 5476
+  kRestorationUnitHeight = 64,
+  kRestorationUnitWidth = 256,
+  kRestorationUnitHeightWithBorders =
+      kRestorationUnitHeight + 2 * kRestorationVerticalBorder,
+  kRestorationUnitWidthWithBorders =
+      kRestorationUnitWidth + 2 * kRestorationHorizontalBorder,
   kSuperResFilterBits = 6,
   kSuperResFilterShifts = 1 << kSuperResFilterBits,
   kSuperResFilterTaps = 8,
   kSuperResScaleBits = 14,
   kSuperResExtraBits = kSuperResScaleBits - kSuperResFilterBits,
   kSuperResScaleMask = (1 << 14) - 1,
-  kSuperResHorizontalBorder = 8,
+  kSuperResHorizontalBorder = 4,
   kSuperResVerticalBorder = 1,
+  // The SIMD implementations of superres calculate up to 15 extra upscaled
+  // pixels which will over-read up to 15 downscaled pixels in the end of each
+  // row. Set the padding to 16 for alignment purposes.
+  kSuperResHorizontalPadding = 16,
   // TODO(chengchen): consider merging these constants:
   // kFilterBits, kWienerFilterBits, and kSgrProjPrecisionBits, which are all 7,
   // They are designed to match AV1 convolution, which increases coeff
@@ -134,6 +142,7 @@ enum {
   // integer pixel. Sub pixel values are interpolated using adjacent integer
   // pixel values. The interpolation is a filtering process.
   kSubPixelBits = 4,
+  kSubPixelMask = (1 << kSubPixelBits) - 1,
   // Precision bits when computing inter prediction locations.
   kScaleSubPixelBits = 10,
   kWarpParamRoundingBits = 6,
@@ -148,14 +157,14 @@ enum {
   kMaxFrameDistance = 31,
   kReferenceFrameScalePrecision = 14,
   kNumWienerCoefficients = 3,
-  // Maximum number of threads that the library will ever use at any given time.
-  kMaxThreads = 32,
   kLoopFilterMaxModeDeltas = 2,
   kMaxCdefStrengths = 8,
   kCdefLargeValue = 0x4000,  // Used to indicate where CDEF is not available.
   kMaxTileColumns = 64,
   kMaxTileRows = 64,
   kMaxOperatingPoints = 32,
+  // There can be a maximum of 4 spatial layers and 8 temporal layers.
+  kMaxLayers = 32,
   // The cache line size should ideally be queried at run time. 64 is a common
   // cache line size of x86 CPUs. Web searches showed the cache line size of ARM
   // CPUs is 32 or 64 bytes. So aligning to 64-byte boundary will work for all
@@ -510,14 +519,6 @@ enum ObuType : int8_t {
   kObuRedundantFrameHeader = 7,
   kObuTileList = 8,
   kObuPadding = 15,
-};
-
-// Enum to track the processing state of a superblock.
-enum SuperBlockState : uint8_t {
-  kSuperBlockStateNone,       // Not yet parsed or decoded.
-  kSuperBlockStateParsed,     // Parsed but not yet decoded.
-  kSuperBlockStateScheduled,  // Scheduled for decoding.
-  kSuperBlockStateDecoded     // Parsed and decoded.
 };
 
 //------------------------------------------------------------------------------

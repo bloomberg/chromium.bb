@@ -10,7 +10,9 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 
 namespace blink {
@@ -49,13 +51,13 @@ void SVGForeignObjectPainter::PaintLayer(const PaintInfo& paint_info) {
 }
 
 void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
+  // ScopedSVGPaintState only applies masks (and clips-within-clips) here.
   ScopedSVGPaintState paint_state(layout_svg_foreign_object_, paint_info);
-  // ScopedSVGPaintState only applies masks (and clips-within-clips)
-  // here and thus does not mutate PaintInfo, so we can use the passed
-  // in PaintInfo below.
-  if (paint_info.phase == PaintPhase::kForeground &&
-      !paint_state.ApplyEffects())
-    return;
+
+  PaintTiming& timing = PaintTiming::From(
+      layout_svg_foreign_object_.GetElement()->GetDocument().TopDocument());
+  timing.MarkFirstContentfulPaint();
+
   BlockPainter(layout_svg_foreign_object_).Paint(paint_info);
 }
 

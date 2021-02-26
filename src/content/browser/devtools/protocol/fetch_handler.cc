@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_io_context.h"
@@ -249,7 +249,7 @@ void FetchHandler::ContinueRequest(
     const String& requestId,
     Maybe<String> url,
     Maybe<String> method,
-    Maybe<String> postData,
+    Maybe<protocol::Binary> postData,
     Maybe<Array<Fetch::HeaderEntry>> headers,
     std::unique_ptr<ContinueRequestCallback> callback) {
   if (!interceptor_) {

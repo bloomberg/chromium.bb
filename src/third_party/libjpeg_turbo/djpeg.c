@@ -504,7 +504,11 @@ print_text_marker(j_decompress_ptr cinfo)
  */
 
 int
+#ifdef GTEST
+djpeg(int argc, char **argv)
+#else
 main(int argc, char **argv)
+#endif
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -516,7 +520,9 @@ main(int argc, char **argv)
   FILE *input_file;
   FILE *output_file;
   unsigned char *inbuffer = NULL;
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
   unsigned long insize = 0;
+#endif
   JDIMENSION num_scanlines;
 
   /* On Mac, fetch a command line. */
@@ -583,7 +589,7 @@ main(int argc, char **argv)
   if (file_index < argc) {
     if ((input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
   } else {
     /* default input file is stdin */
@@ -594,7 +600,7 @@ main(int argc, char **argv)
   if (outfilename != NULL) {
     if ((output_file = fopen(outfilename, WRITE_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, outfilename);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
   } else {
     /* default output file is stdout */
@@ -613,7 +619,7 @@ main(int argc, char **argv)
       inbuffer = (unsigned char *)realloc(inbuffer, insize + INPUT_BUF_SIZE);
       if (inbuffer == NULL) {
         fprintf(stderr, "%s: memory allocation failure\n", progname);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
       nbytes = JFREAD(input_file, &inbuffer[insize], INPUT_BUF_SIZE);
       if (nbytes < INPUT_BUF_SIZE && ferror(input_file)) {
@@ -689,7 +695,7 @@ main(int argc, char **argv)
     if (skip_end > cinfo.output_height - 1) {
       fprintf(stderr, "%s: skip region exceeds image height %d\n", progname,
               cinfo.output_height);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
 
     /* Write output file header.  This is a hack to ensure that the destination
@@ -724,7 +730,7 @@ main(int argc, char **argv)
         crop_y + crop_height > cinfo.output_height) {
       fprintf(stderr, "%s: crop dimensions exceed image dimensions %d x %d\n",
               progname, cinfo.output_width, cinfo.output_height);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
 
     jpeg_crop_scanline(&cinfo, &crop_x, &crop_width);
@@ -777,7 +783,7 @@ main(int argc, char **argv)
 
     if ((icc_file = fopen(icc_filename, WRITE_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, icc_filename);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
     if (jpeg_read_icc_profile(&cinfo, &icc_profile, &icc_len)) {
       if (fwrite(icc_profile, icc_len, 1, icc_file) < 1) {
@@ -785,7 +791,7 @@ main(int argc, char **argv)
                 icc_filename);
         free(icc_profile);
         fclose(icc_file);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
       free(icc_profile);
       fclose(icc_file);
@@ -811,10 +817,9 @@ main(int argc, char **argv)
   end_progress_monitor((j_common_ptr)&cinfo);
 #endif
 
-  if (memsrc && inbuffer != NULL)
+  if (memsrc)
     free(inbuffer);
 
   /* All done. */
-  exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
-  return 0;                     /* suppress no-return-value warnings */
+  return (jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
 }

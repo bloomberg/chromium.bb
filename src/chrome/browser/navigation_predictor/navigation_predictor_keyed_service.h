@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_KEYED_SERVICE_H_
 #define CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_KEYED_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -19,6 +20,8 @@ namespace content {
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
+class NavigationPredictorRendererWarmupClient;
 
 // Keyed service that can be used to receive notifications about the URLs for
 // the next predicted navigation.
@@ -37,7 +40,7 @@ class NavigationPredictorKeyedService : public KeyedService {
   // Stores the next set of URLs that the user is expected to navigate to.
   class Prediction {
    public:
-    Prediction(const content::WebContents* web_contents,
+    Prediction(content::WebContents* web_contents,
                const base::Optional<GURL>& source_document_url,
                const base::Optional<std::vector<std::string>>&
                    external_app_packages_name,
@@ -53,13 +56,13 @@ class NavigationPredictorKeyedService : public KeyedService {
     const std::vector<GURL>& sorted_predicted_urls() const;
 
     // Null if the prediction source is kExternalAndroidApp.
-    const content::WebContents* web_contents() const;
+    content::WebContents* web_contents() const;
 
    private:
     // The WebContents from where the navigation may happen. Do not use this
     // pointer outside the observer's call stack unless its destruction is also
     // observed.
-    const content::WebContents* web_contents_;
+    content::WebContents* web_contents_;
 
     // Current URL of the document from where the navigtion may happen.
     base::Optional<GURL> source_document_url_;
@@ -110,7 +113,7 @@ class NavigationPredictorKeyedService : public KeyedService {
   SearchEnginePreconnector* search_engine_preconnector();
 
   // |document_url| may be invalid. Called by navigation predictor.
-  void OnPredictionUpdated(const content::WebContents* web_contents,
+  void OnPredictionUpdated(content::WebContents* web_contents,
                            const GURL& document_url,
                            PredictionSource prediction_source,
                            const std::vector<GURL>& sorted_predicted_urls);
@@ -143,6 +146,10 @@ class NavigationPredictorKeyedService : public KeyedService {
 
   // Manages preconnecting to the user's default search engine.
   SearchEnginePreconnector search_engine_preconnector_;
+
+  // Manages warming up a spare renderer based on predictions.
+  std::unique_ptr<NavigationPredictorRendererWarmupClient>
+      renderer_warmup_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorKeyedService);
 };

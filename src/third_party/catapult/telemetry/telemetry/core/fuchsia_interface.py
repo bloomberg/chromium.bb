@@ -32,7 +32,10 @@ class CommandRunner(object):
     self._port = port
 
   def _GetSshCommandLinePrefix(self):
-    return ['ssh', '-F', self._config_path, self._host, '-p', str(self._port)]
+    prefix_cmd = ['ssh', '-F', self._config_path, self._host]
+    if self._port:
+      prefix_cmd += ['-p', str(self._port)]
+    return prefix_cmd
 
   def RunCommandPiped(self, command=None, ssh_args=None, **kwargs):
     """Executes an SSH command on the remote host and returns a process object
@@ -56,6 +59,13 @@ class CommandRunner(object):
     ssh_command = self._GetSshCommandLinePrefix() + ssh_args + ['--'] + command
     logging.debug(' '.join(ssh_command))
     return subprocess.Popen(ssh_command, **kwargs)
+
+  def RunCommand(self, command=None, ssh_args=None, **kwargs):
+    """Executes an SSH command on the remote host and returns stdout, stderr,
+    and return code of the command. Blocks."""
+    cmd_proc = self.RunCommandPiped(command, ssh_args, **kwargs)
+    stdout, stderr = cmd_proc.communicate()
+    return cmd_proc.returncode, stdout, stderr
 
 
 def StartSymbolizerForProcessIfPossible(input_file, output_file, build_id_file):

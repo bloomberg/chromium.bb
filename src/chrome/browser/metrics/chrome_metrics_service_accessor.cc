@@ -67,24 +67,6 @@ bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       g_browser_process->metrics_service(), trial_name, group_name);
 }
 
-// static
-bool ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
-    base::StringPiece trial_name,
-    const std::vector<uint32_t>& group_name_hashes) {
-  return metrics::MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
-      g_browser_process->metrics_service(), trial_name, group_name_hashes);
-}
-
-// static
-bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
-    uint32_t trial_name_hash,
-    base::StringPiece group_name) {
-  return metrics::MetricsServiceAccessor::
-      RegisterSyntheticFieldTrialWithNameHash(
-          g_browser_process->metrics_service(), trial_name_hash, group_name);
-}
-
-// static
 void ChromeMetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
     bool value) {
   metrics::MetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(

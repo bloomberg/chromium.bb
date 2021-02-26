@@ -15,6 +15,8 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <utility>
+#include <vector>
 
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
@@ -62,6 +64,9 @@ TlsConnectionFactoryPosix::TlsConnectionFactoryPosix(
 
 TlsConnectionFactoryPosix::~TlsConnectionFactoryPosix() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+  if (platform_client_) {
+    platform_client_->tls_data_router()->DeregisterAcceptObserver(this);
+  }
 }
 
 // TODO(rwkeane): Add support for resuming sessions.
@@ -131,7 +136,7 @@ void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
     TRACE_SET_RESULT(Error::Code::kSocketListenFailure);
     return;
   }
-  OSP_DCHECK(socket->state() == SocketState::kNotConnected);
+  OSP_DCHECK(socket->state() == SocketState::kListening);
 
   OSP_DCHECK(platform_client_);
   if (platform_client_) {

@@ -42,9 +42,6 @@ enum OverviewAnimationType {
   // Used to fade in the label which tells users they are in overview mode with
   // no window in and out.
   OVERVIEW_ANIMATION_NO_RECENTS_FADE,
-  // Used to animate the overview highlight which is activated by using tab or
-  // the arrow keys.
-  OVERVIEW_ANIMATION_FRAME_HEADER_CLIP,
   // Used to fade in all windows when window drag starts or during window drag.
   OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG,
 };
@@ -61,19 +58,6 @@ enum class OverviewEnterExitType {
   // bounds. Window(s) that are not visible to the user do not get animated.
   // This should always be the type when in clamshell mode.
   kNormal,
-  // Slide all windows in to enter overview. This can happen when going from
-  // a state which all window(s) are minimized.
-  kSlideInEnter,
-  // Slide all windows out to exit overview. This can happen when going to
-  // a state which all window(s) are minimized. This will minimize windows on
-  // exit if needed, so that we do not need to add a delayed observer to
-  // handle minimizing the windows after overview exit animations are
-  // finished.
-  kSlideOutExit,
-  // Overview can be closed by swiping up from the shelf. In this mode, the
-  // call site will handle shifting the bounds of the windows, so overview
-  // code does not need to handle any animations. This is an exit only type.
-  kSwipeFromShelf,
   // Used only when it's desired to enter overview mode immediately without
   // animations. It's used when entering overview by dragging a window from
   // the top of the screen or from the shelf, or by long pressing the overview

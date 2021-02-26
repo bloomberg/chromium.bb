@@ -12,9 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
-#include "ppapi/cpp/point.h"
-#include "ppapi/cpp/rect.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chrome_pdf {
 
@@ -28,8 +28,9 @@ std::string WideStringToString(FPDF_WIDESTRING wide_string) {
 
 }  // namespace
 
-PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
-    : engine_(engine) {
+PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine,
+                                   ScriptOption script_option)
+    : engine_(engine), script_option_(script_option) {
   // Initialize FPDF_FORMFILLINFO member variables.  Deriving from this struct
   // allows the static callbacks to be able to cast the FPDF_FORMFILLINFO in
   // callbacks to ourself instead of maintaining a map of them to
@@ -53,24 +54,6 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_OnFocusChange = Form_OnFocusChange;
   FPDF_FORMFILLINFO::FFI_DoURIActionWithKeyboardModifier =
       Form_DoURIActionWithKeyboardModifier;
-#if defined(PDF_ENABLE_XFA)
-  FPDF_FORMFILLINFO::xfa_disabled = false;
-  FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
-  FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
-  FPDF_FORMFILLINFO::FFI_SetCurrentPage = Form_SetCurrentPage;
-  FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
-  FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
-  FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
-  FPDF_FORMFILLINFO::FFI_PageEvent = Form_PageEvent;
-  FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
-  FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
-  FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
-  FPDF_FORMFILLINFO::FFI_UploadTo = Form_UploadTo;
-  FPDF_FORMFILLINFO::FFI_DownloadFromURL = Form_DownloadFromURL;
-  FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
-  FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
-  FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
-#else
   FPDF_FORMFILLINFO::xfa_disabled = true;
   FPDF_FORMFILLINFO::FFI_EmailTo = nullptr;
   FPDF_FORMFILLINFO::FFI_DisplayCaret = nullptr;
@@ -87,9 +70,10 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_OpenFile = nullptr;
   FPDF_FORMFILLINFO::FFI_GotoURL = nullptr;
   FPDF_FORMFILLINFO::FFI_GetLanguage = nullptr;
-#endif  // defined(PDF_ENABLE_XFA)
+  FPDF_FORMFILLINFO::m_pJsPlatform = nullptr;
 
-  if (enable_javascript) {
+#if defined(PDF_ENABLE_V8)
+  if (script_option != ScriptOption::kNoJavaScript) {
     FPDF_FORMFILLINFO::m_pJsPlatform = this;
     IPDF_JSPLATFORM::version = 3;
     IPDF_JSPLATFORM::app_alert = Form_Alert;
@@ -101,9 +85,28 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
     IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
     IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
     IPDF_JSPLATFORM::Field_browse = nullptr;
-  } else {
-    FPDF_FORMFILLINFO::m_pJsPlatform = nullptr;
   }
+#if defined(PDF_ENABLE_XFA)
+  if (script_option == ScriptOption::kJavaScriptAndXFA) {
+    FPDF_FORMFILLINFO::xfa_disabled = false;
+    FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
+    FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
+    FPDF_FORMFILLINFO::FFI_SetCurrentPage = Form_SetCurrentPage;
+    FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
+    FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
+    FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
+    FPDF_FORMFILLINFO::FFI_PageEvent = Form_PageEvent;
+    FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
+    FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
+    FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
+    FPDF_FORMFILLINFO::FFI_UploadTo = Form_UploadTo;
+    FPDF_FORMFILLINFO::FFI_DownloadFromURL = Form_DownloadFromURL;
+    FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
+    FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
+    FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
+  }
+#endif  // defined(PDF_ENABLE_XFA)
+#endif  // defined(PDF_ENABLE_V8)
 }
 
 PDFiumFormFiller::~PDFiumFormFiller() = default;
@@ -123,9 +126,9 @@ void PDFiumFormFiller::Form_Invalidate(FPDF_FORMFILLINFO* param,
     return;
   }
 
-  pp::Rect rect = engine->pages_[page_index]->PageToScreen(
-      engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.options().default_page_orientation());
+  gfx::Rect rect = engine->pages_[page_index]->PageToScreen(
+      engine->GetVisibleRect().origin(), engine->current_zoom_, left, top,
+      right, bottom, engine->layout_.options().default_page_orientation());
   engine->client_->Invalidate(rect);
 }
 
@@ -142,9 +145,9 @@ void PDFiumFormFiller::Form_OutputSelectedRect(FPDF_FORMFILLINFO* param,
     NOTREACHED();
     return;
   }
-  pp::Rect rect = engine->pages_[page_index]->PageToScreen(
-      engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.options().default_page_orientation());
+  gfx::Rect rect = engine->pages_[page_index]->PageToScreen(
+      engine->GetVisibleRect().origin(), engine->current_zoom_, left, top,
+      right, bottom, engine->layout_.options().default_page_orientation());
   if (rect.IsEmpty())
     return;
 
@@ -194,7 +197,7 @@ FPDF_SYSTEMTIME PDFiumFormFiller::Form_GetLocalTime(FPDF_FORMFILLINFO* param) {
 // static
 void PDFiumFormFiller::Form_OnChange(FPDF_FORMFILLINFO* param) {
   PDFiumEngine* engine = GetEngine(param);
-  engine->SetEditMode(true);
+  engine->EnteredEditMode();
 }
 
 // static
@@ -285,17 +288,8 @@ void PDFiumFormFiller::Form_OnFocusChange(FPDF_FORMFILLINFO* param,
 
   // Maintain viewport if we are updating focus. This is to ensure that we don't
   // scroll the focused annotation into view when focus is regained.
-  if (!engine->updating_focus_) {
-    FS_RECTF annot_rect;
-    if (!FPDFAnnot_GetRect(annot, &annot_rect))
-      return;
-
-    pp::Rect screen_rect = engine->pages_[page_index]->PageToScreen(
-        pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
-        annot_rect.right, annot_rect.bottom,
-        engine->layout_.options().default_page_orientation());
-    engine->ScrollIntoView(screen_rect);
-  }
+  if (!engine->updating_focus_)
+    engine->ScrollAnnotationIntoView(annot, page_index);
 
   engine->OnFocusedAnnotationUpdated(annot, page_index);
 }
@@ -324,11 +318,11 @@ void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
     FPDF_BYTESTRING uri,
     int modifiers) {
   PDFiumEngine* engine = GetEngine(param);
-  bool middle_button = !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
-  bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
-  bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
-  bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
-  bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+  bool middle_button = !!(modifiers & kInputEventModifierMiddleButtonDown);
+  bool alt_key = !!(modifiers & kInputEventModifierAltKey);
+  bool ctrl_key = !!(modifiers & kInputEventModifierControlKey);
+  bool meta_key = !!(modifiers & kInputEventModifierMetaKey);
+  bool shift_key = !!(modifiers & kInputEventModifierShiftKey);
 
   WindowOpenDisposition disposition = ui::DispositionFromClick(
       middle_button, alt_key, ctrl_key, meta_key, shift_key);
@@ -336,6 +330,7 @@ void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
   engine->client_->NavigateTo(std::string(uri), disposition);
 }
 
+#if defined(PDF_ENABLE_V8)
 #if defined(PDF_ENABLE_XFA)
 
 // static
@@ -397,7 +392,7 @@ void PDFiumFormFiller::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
     return;
   }
 
-  pp::Rect page_view_rect = engine->GetPageContentsRect(page_index);
+  gfx::Rect page_view_rect = engine->GetPageContentsRect(page_index);
 
   float toolbar_height_in_screen_coords =
       engine->GetToolbarHeightInScreenCoords();
@@ -681,6 +676,8 @@ void PDFiumFormFiller::Form_GotoPage(IPDF_JSPLATFORM* param, int page_number) {
   PDFiumEngine* engine = GetEngine(param);
   engine->ScrollToPage(page_number);
 }
+
+#endif  // defined(PDF_ENABLE_V8)
 
 // static
 PDFiumEngine* PDFiumFormFiller::GetEngine(FPDF_FORMFILLINFO* info) {

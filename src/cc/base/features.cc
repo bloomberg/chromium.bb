@@ -12,19 +12,24 @@ namespace features {
 const base::Feature kImpulseScrollAnimations = {
     "ImpulseScrollAnimations", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled BeginMainFrame does not wait for activation in the compositor
-// thread for texture layers (crbug.com/1046463)
-const base::Feature kTextureLayerSkipWaitForActivation{
-    "TextureLayerSkipWaitForActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+// Whether the compositor should attempt to sync with the scroll handlers before
+// submitting a frame.
+const base::Feature kSynchronizedScrolling = {
+    "SynchronizedScrolling",
+#if defined(OS_ANDROID)
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 #if !defined(OS_ANDROID)
 // Enables latency recovery on the impl thread.
 const base::Feature kImplLatencyRecovery = {"ImplLatencyRecovery",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables latency recovery on the main thread.
 const base::Feature kMainLatencyRecovery = {"MainLatencyRecovery",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 bool IsImplLatencyRecoveryEnabled() {
@@ -50,4 +55,9 @@ bool IsMainLatencyRecoveryEnabled() {
 const base::Feature kScrollUnification{"ScrollUnification",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSchedulerSmoothnessForAnimatedScrolls{
+    "SmoothnessModeForAnimatedScrolls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWheelEventRegions{"WheelEventRegions",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features

@@ -5,8 +5,9 @@
 #ifndef ASH_SHELF_SHELF_NAVIGATION_WIDGET_H_
 #define ASH_SHELF_SHELF_NAVIGATION_WIDGET_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_component.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
@@ -20,13 +21,10 @@ namespace views {
 class BoundsAnimator;
 }
 
-namespace ui {
-class AnimationMetricsReporter;
-}
-
 namespace ash {
 class BackButton;
 class HomeButton;
+enum class HotseatState;
 class NavigationButtonAnimationMetricsReporter;
 class Shelf;
 class ShelfView;
@@ -34,7 +32,6 @@ class ShelfView;
 // The shelf navigation widget holds the home button and (when in tablet mode)
 // the back button.
 class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
-                                         public ShelfConfig::Observer,
                                          public views::Widget {
  public:
   class TestApi {
@@ -60,10 +57,6 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   // Initializes the widget, sets its contents view and basic properties.
   void Initialize(aura::Window* container);
 
-  // Returns the size that this widget would like to have depending on whether
-  // tablet mode is on.
-  gfx::Size GetIdealSize() const;
-
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -82,14 +75,25 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   // focused when activating this widget.
   void SetDefaultLastFocusableChild(bool default_last_focusable_child);
 
-  // ShelfConfig::Observer:
-  void OnShelfConfigUpdated() override;
-
   // ShelfComponent:
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
+
+  // Returns the visible part's bounds in screen coordinates.
+  gfx::Rect GetVisibleBounds() const;
+
+  // Do preparations before setting focus on the navigation widget.
+  void PrepareForGettingFocus(bool last_element);
+
+  // Called when shelf layout manager detects a locale change. Reloads the
+  // home and back button tooltips and accessibility name strings.
+  void HandleLocaleChange();
+
+  const views::BoundsAnimator* bounds_animator_for_test() const {
+    return bounds_animator_.get();
+  }
 
  private:
   class Delegate;
@@ -98,11 +102,29 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
       views::View* button,
       bool visible,
       bool animate,
-      ui::AnimationMetricsReporter* animation_metrics_reporter);
+      NavigationButtonAnimationMetricsReporter* metrics_reporter,
+      HotseatState target_hotseat_state);
+
+  // Returns the clip rectangle.
+  gfx::Rect CalculateClipRect() const;
+
+  // Returns the ideal size of the whole widget or the visible area only when
+  // |only_visible_area| is true.
+  gfx::Size CalculateIdealSize(bool only_visible_area) const;
+
+  // Returns the number of visible control buttons.
+  int CalculateButtonCount() const;
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;
+
+  // In tablet mode with hotseat enabled, |clip_rect_| is used to hide the
+  // invisible widget part.
+  gfx::Rect clip_rect_;
+
+  // The target widget bounds in screen coordinates.
   gfx::Rect target_bounds_;
+
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   // Animation metrics reporter for back button animations. Owned by the

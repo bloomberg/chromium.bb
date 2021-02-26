@@ -11,10 +11,10 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
@@ -227,7 +227,7 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
 
   void set_spdy_state(SpdyState v);
 
-  void SetSpdyErrorAndNotify(SpdyFramerError error);
+  void SetSpdyErrorAndNotify(SpdyFramerError error, std::string detailed_error);
 
   const Http2FrameHeader& frame_header() const;
 
@@ -269,7 +269,7 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
 
   // Amount of trailing padding. Currently used just as an indicator of whether
   // OnPadLength has been called.
-  quiche::QuicheOptional<size_t> opt_pad_length_;
+  absl::optional<size_t> opt_pad_length_;
 
   // Temporary buffers for the AltSvc fields.
   std::string alt_svc_origin_;
@@ -369,7 +369,8 @@ class QUICHE_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual ~SpdyFramerVisitorInterface() {}
 
   // Called if an error is detected in the SpdyFrame protocol.
-  virtual void OnError(http2::Http2DecoderAdapter::SpdyFramerError error) = 0;
+  virtual void OnError(http2::Http2DecoderAdapter::SpdyFramerError error,
+                       std::string detailed_error) = 0;
 
   // Called when the common header for a frame is received. Validating the
   // common header occurs in later processing.
@@ -493,7 +494,7 @@ class QUICHE_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when an ALTSVC frame has been parsed.
   virtual void OnAltSvc(
       SpdyStreamId /*stream_id*/,
-      quiche::QuicheStringPiece /*origin*/,
+      absl::string_view /*origin*/,
       const SpdyAltSvcWireFormat::AlternativeServiceVector& /*altsvc_vector*/) {
   }
 

@@ -14,6 +14,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
@@ -60,12 +61,12 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
 
     @Override
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
-        mHandler.post(() -> callback.onResult(null));
+        mHandler.post(callback.bind(null));
     }
 
     @Override
     public void getAllItems(Callback<ArrayList<OfflineItem>> callback) {
-        mHandler.post(() -> callback.onResult(mItems));
+        mHandler.post(callback.bind(mItems));
     }
 
     @Override
@@ -106,10 +107,13 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
     public void resumeDownload(ContentId id, boolean hasUserGesture) {}
 
     @Override
+    public void changeSchedule(final ContentId id, final OfflineItemSchedule schedule) {}
+
+    @Override
     public void cancelDownload(ContentId id) {}
 
     @Override
     public void renameItem(ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
-        mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
+        mHandler.post(callback.bind(RenameResult.SUCCESS));
     }
 }

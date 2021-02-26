@@ -6,19 +6,28 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "components/no_state_prefetch/browser/prerender_contents.h"
+#include "components/no_state_prefetch/browser/prerender_processor_impl.h"
+#include "components/no_state_prefetch/common/prerender_canceler.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
+#include "weblayer/browser/no_state_prefetch/prerender_processor_impl_delegate_impl.h"
+#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/webui/weblayer_internals.mojom.h"
 #include "weblayer/browser/webui/weblayer_internals_ui.h"
 
 #if defined(OS_ANDROID)
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #endif
 
 namespace weblayer {
@@ -35,11 +44,6 @@ void BindContentTranslateDriver(
 
   auto* contents = content::WebContents::FromRenderFrameHost(host);
   if (!contents)
-    return;
-
-  // TODO(crbug.com/1072334): Resolve incorporation of translate in incognito
-  // mode.
-  if (contents->GetBrowserContext()->IsOffTheRecord())
     return;
 
   TranslateClientImpl* const translate_client =
@@ -68,6 +72,27 @@ void BindPageHandler(
   concrete_controller->BindInterface(std::move(receiver));
 }
 
+void BindPrerenderProcessor(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver) {
+  prerender::PrerenderProcessorImpl::Create(
+      frame_host, std::move(receiver),
+      std::make_unique<PrerenderProcessorImplDelegateImpl>());
+}
+
+void BindPrerenderCanceler(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<prerender::mojom::PrerenderCanceler> receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
+  auto* prerender_contents = PrerenderContentsFromWebContents(web_contents);
+  if (!prerender_contents)
+    return;
+  prerender_contents->AddPrerenderCancelerReceiver(std::move(receiver));
+}
+
 #if defined(OS_ANDROID)
 // TODO(https://crbug.com/1037884): Remove this.
 class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
@@ -90,6 +115,15 @@ class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
                                 std::move(receiver));
   }
 };
+
+template <typename Interface>
+void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
+                              mojo::PendingReceiver<Interface> receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  if (contents)
+    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
 #endif
 
 }  // namespace
@@ -103,10 +137,20 @@ void PopulateWebLayerFrameBinders(
   map->Add<translate::mojom::ContentTranslateDriver>(
       base::BindRepeating(&BindContentTranslateDriver));
 
+  // When Prerender2 is enabled, the content layer already added a binder.
+  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2)) {
+    map->Add<blink::mojom::PrerenderProcessor>(
+        base::BindRepeating(&BindPrerenderProcessor));
+  }
+  map->Add<prerender::mojom::PrerenderCanceler>(
+      base::BindRepeating(&BindPrerenderCanceler));
+
 #if defined(OS_ANDROID)
   // TODO(https://crbug.com/1037884): Remove this.
   map->Add<blink::mojom::InstalledAppProvider>(
       base::BindRepeating(&StubInstalledAppProvider::Create));
+  map->Add<blink::mojom::ShareService>(base::BindRepeating(
+      &ForwardToJavaWebContents<blink::mojom::ShareService>));
 #endif
 }
 

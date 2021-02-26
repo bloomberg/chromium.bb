@@ -9,14 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,8 +74,8 @@ TEST_F(PipeReaderTest, SmallData) {
   base::Optional<std::string> output;
   base::ScopedFD write_fd =
       reader->StartIO(base::BindOnce(&CopyResult, &run_loop, &output));
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(&WriteData, std::move(write_fd), kSmallData));
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(&WriteData, std::move(write_fd), kSmallData));
   run_loop.Run();
   EXPECT_EQ(std::string(kSmallData), output);
 }
@@ -89,8 +89,8 @@ TEST_F(PipeReaderTest, LargeData) {
   base::Optional<std::string> output;
   base::ScopedFD write_fd =
       reader->StartIO(base::BindOnce(&CopyResult, &run_loop, &output));
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(&WriteData, std::move(write_fd), large_data));
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(&WriteData, std::move(write_fd), large_data));
   run_loop.Run();
   EXPECT_EQ(large_data, output);
 }

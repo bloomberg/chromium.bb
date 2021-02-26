@@ -16,6 +16,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -40,10 +41,10 @@ class RemoveCookieTester {
                  const std::string& value);
 
  private:
-  void GetCookieListCallback(const net::CookieStatusList& cookies,
-                             const net::CookieStatusList& excluded_cookies);
-  void SetCanonicalCookieCallback(
-      net::CanonicalCookie::CookieInclusionStatus result);
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookies,
+      const net::CookieAccessResultList& excluded_cookies);
+  void SetCanonicalCookieCallback(net::CookieAccessResult result);
 
   void BlockUntilNotified();
   void Notify();
@@ -99,7 +100,8 @@ void RemoveCookieTester::AddCookie(const std::string& host,
   net::CanonicalCookie cookie(
       name, value, host, "/", base::Time(), base::Time(), base::Time(),
       true /* secure*/, false /* http only*/,
-      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM);
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM,
+      false /* same_party */);
   cookie_manager_->SetCanonicalCookie(
       cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"), options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
@@ -108,15 +110,15 @@ void RemoveCookieTester::AddCookie(const std::string& host,
 }
 
 void RemoveCookieTester::GetCookieListCallback(
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
-  last_cookies_ = net::cookie_util::StripStatuses(cookies);
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
+  last_cookies_ = net::cookie_util::StripAccessResults(cookies);
   Notify();
 }
 
 void RemoveCookieTester::SetCanonicalCookieCallback(
-    net::CanonicalCookie::CookieInclusionStatus result) {
-  ASSERT_TRUE(result.IsInclude());
+    net::CookieAccessResult result) {
+  ASSERT_TRUE(result.status.IsInclude());
   Notify();
 }
 

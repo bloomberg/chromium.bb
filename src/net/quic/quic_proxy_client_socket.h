@@ -10,7 +10,6 @@
 #include <string>
 
 #include "net/base/completion_once_callback.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/proxy_server.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -99,7 +98,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
 
   // Callback for stream_->ReadInitialHeaders()
   void OnReadResponseHeadersComplete(int result);
-  int ProcessResponseHeaders(const spdy::SpdyHeaderBlock& headers);
+  int ProcessResponseHeaders(const spdy::Http2HeaderBlock& headers);
 
   int DoLoop(int last_io_result);
   int DoGenerateAuthToken();
@@ -108,8 +107,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   int DoSendRequestComplete(int result);
   int DoReadReply();
   int DoReadReplyComplete(int result);
-
-  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   State next_state_;
 
@@ -134,7 +131,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   HttpRequestInfo request_;
   HttpResponseInfo response_;
 
-  spdy::SpdyHeaderBlock response_header_block_;
+  spdy::Http2HeaderBlock response_header_block_;
 
   // The hostname and port of the endpoint.  This is not necessarily the one
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.
@@ -147,9 +144,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   ProxyDelegate* const proxy_delegate_;
 
   std::string user_agent_;
-
-  // Session connect timing info.
-  LoadTimingInfo::ConnectTiming connect_timing_;
 
   const NetLogWithSource net_log_;
 

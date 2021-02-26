@@ -23,8 +23,11 @@
 #include "extensions/browser/updater/request_queue.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace crx_file {
@@ -40,16 +43,13 @@ struct AccessTokenInfo;
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
-namespace mojom {
-class URLLoaderFactory;
-}
 struct ResourceRequest;
 }  // namespace network
 
 namespace extensions {
 
-using ManifestInvalidErrorList =
-    std::vector<std::pair<ExtensionId, ManifestInvalidError>>;
+using ManifestInvalidFailureDataList = std::vector<
+    std::pair<ExtensionId, ExtensionDownloaderDelegate::FailureData>>;
 struct UpdateDetails {
   UpdateDetails(const std::string& id, const base::Version& version);
   ~UpdateDetails();
@@ -144,6 +144,11 @@ class ExtensionDownloader {
     ping_enabled_domain_ = domain;
   }
 
+  // Set backoff policy for manifest queue for testing with less initial delay
+  // so the tests do not timeout on retries.
+  void SetBackoffPolicyForTesting(
+      const net::BackoffEntry::Policy* backoff_policy);
+
   // Sets a test delegate to use by any instances of this class. The |delegate|
   // should outlive all instances.
   static void set_test_delegate(ExtensionDownloaderTestDelegate* delegate);
@@ -195,14 +200,16 @@ class ExtensionDownloader {
                    const GURL& url,
                    const std::string& package_hash,
                    const std::string& version,
-                   const std::set<int>& request_ids);
+                   const std::set<int>& request_ids,
+                   ManifestFetchData::FetchPriority fetch_priority);
     ~ExtensionFetch();
 
-    std::string id;
+    ExtensionId id;
     GURL url;
     std::string package_hash;
-    std::string version;
+    base::Version version;
     std::set<int> request_ids;
+    ManifestFetchData::FetchPriority fetch_priority;
 
     enum CredentialsMode {
       CREDENTIALS_NONE = 0,
@@ -227,6 +234,28 @@ class ExtensionDownloader {
     bool is_corrupt_reinstall;
 
     ExtraParams();
+  };
+
+  // We limit the number of extensions grouped together in one batch to avoid
+  // running into the limits on the length of http GET requests, this represents
+  // the key for grouping these extensions.
+  struct FetchDataGroupKey {
+    FetchDataGroupKey();
+    FetchDataGroupKey(const FetchDataGroupKey& other);
+    FetchDataGroupKey(const int request_id,
+                      const GURL& update_url,
+                      const bool is_force_installed);
+    ~FetchDataGroupKey();
+
+    bool operator<(const FetchDataGroupKey& other) const;
+
+    int request_id{0};
+    GURL update_url;
+    // The extensions in current ManifestFetchData are all force installed
+    // (Manifest::Location::EXTERNAL_POLICY_DOWNLOAD) or not. In a
+    // ManifestFetchData we would have either all the extensions as force
+    // installed or we would none extensions as force installed.
+    bool is_force_installed{false};
   };
 
   enum class UpdateAvailability {
@@ -258,6 +287,34 @@ class ExtensionDownloader {
   // Called by RequestQueue when a new manifest load request is started.
   void CreateManifestLoader();
 
+  // Retries the active request with some backoff delay.
+  void RetryManifestFetchRequest();
+
+  // Reports failures if we failed to fetch the manifest or the fetched manifest
+  // was invalid.
+  void ReportManifestFetchFailure(
+      ManifestFetchData* fetch_data,
+      ExtensionDownloaderDelegate::Error error,
+      const ExtensionDownloaderDelegate::FailureData& data);
+
+  // Tries fetching the extension from cache if manifest fetch is failed for
+  // force installed extensions, and notifies the failure reason for remaining
+  // extensions.
+  void TryFetchingExtensionsFromCache(
+      ManifestFetchData* fetch_data,
+      ExtensionDownloaderDelegate::Error error,
+      const int net_error,
+      const int response_code,
+      const base::Optional<ManifestInvalidFailureDataList>&
+          manifest_invalid_errors);
+
+  // Makes a retry attempt, reports failure by calling
+  // AddFailureDataOnManifestFetchFailed when fetching of update manifest
+  // failed.
+  void RetryRequestOrHandleFailureOnManifestFetchFailure(
+      const network::SimpleURLLoader* loader,
+      const int response_code);
+
   // Handles the result of a manifest fetch.
   void OnManifestLoadComplete(std::unique_ptr<std::string> response_body);
 
@@ -280,15 +337,21 @@ class ExtensionDownloader {
                         const UpdateManifestResults& possible_updates,
                         std::vector<UpdateManifestResult*>* to_update,
                         std::set<std::string>* no_updates,
-                        ManifestInvalidErrorList* errors);
+                        ManifestInvalidFailureDataList* errors);
 
   // Checks whether extension is presented in cache. If yes, return path to its
-  // cached CRX, base::nullopt otherwise.
+  // cached CRX, base::nullopt otherwise. |manifest_fetch_failed| flag indicates
+  // whether the lookup in cache is performed after the manifest is fetched or
+  // due to failure while fetching or parsing manifest.
   base::Optional<base::FilePath> GetCachedExtension(
-      const ExtensionFetch& fetch_data);
+      const ExtensionFetch& fetch_data,
+      bool manifest_fetch_failed);
 
-  // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data);
+  // Begins (or queues up) download of an updated extension. |info| represents
+  // additional information about the extension update from the info field in
+  // the update manifest.
+  void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data,
+                             base::Optional<std::string> info);
 
   // Called by RequestQueue when a new extension load request is started.
   void CreateExtensionLoader();
@@ -301,7 +364,7 @@ class ExtensionDownloader {
       std::vector<UpdateManifestResult> results);
 
   void NotifyExtensionsManifestInvalidFailure(
-      const ManifestInvalidErrorList& errors,
+      const ManifestInvalidFailureDataList& errors,
       const std::set<int>& request_ids);
 
   // Invokes OnExtensionDownloadStageChanged() on the |delegate_| for each
@@ -309,12 +372,12 @@ class ExtensionDownloader {
   // arguments because there is no guarantee that callback won't indirectly
   // change source of IDs.
   void NotifyExtensionsDownloadStageChanged(
-      std::set<std::string> extension_ids,
+      ExtensionIdSet extension_ids,
       ExtensionDownloaderDelegate::Stage stage);
 
   // Calls NotifyExtensionsDownloadFailedWithFailureData with empty failure
   // data.
-  void NotifyExtensionsDownloadFailed(std::set<std::string> id_set,
+  void NotifyExtensionsDownloadFailed(ExtensionIdSet id_set,
                                       std::set<int> request_ids,
                                       ExtensionDownloaderDelegate::Error error);
 
@@ -323,7 +386,7 @@ class ExtensionDownloader {
   // a copy of arguments because there is no guarantee that callback won't
   // indirectly change source of IDs.
   void NotifyExtensionsDownloadFailedWithFailureData(
-      std::set<std::string> extension_ids,
+      ExtensionIdSet extension_ids,
       std::set<int> request_ids,
       ExtensionDownloaderDelegate::Error error,
       const ExtensionDownloaderDelegate::FailureData& data);
@@ -380,7 +443,7 @@ class ExtensionDownloader {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The URL loader factory exclusively used to load file:// URLs.
-  std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> file_url_loader_factory_;
 
   // The profile path used to load file:// URLs. It can be invalid.
   base::FilePath profile_path_for_url_loader_factory_;
@@ -388,13 +451,11 @@ class ExtensionDownloader {
   // Collects UMA samples that are reported when ReportStats() is called.
   URLStats url_stats_;
 
-  // List of data on fetches we're going to do. We limit the number of
-  // extensions grouped together in one batch to avoid running into the limits
-  // on the length of http GET requests, so there might be multiple
-  // ManifestFetchData* objects with the same base_url.
-  using FetchMap = std::map<std::pair<int, GURL>,
-                            std::vector<std::unique_ptr<ManifestFetchData>>>;
-  FetchMap fetches_preparing_;
+  // We limit the number of extensions grouped together in one batch to avoid
+  // running into the limits on the length of http GET requests, so there might
+  // be multiple ManifestFetchData* objects with the same update_url.
+  std::map<FetchDataGroupKey, std::vector<std::unique_ptr<ManifestFetchData>>>
+      fetches_preparing_;
 
   // Outstanding url loader requests for manifests and updates.
   std::unique_ptr<network::SimpleURLLoader> manifest_loader_;
@@ -407,7 +468,7 @@ class ExtensionDownloader {
   RequestQueue<ExtensionFetch> extensions_queue_;
 
   // Maps an extension-id to its PingResult data.
-  std::map<std::string, ExtensionDownloaderDelegate::PingResult> ping_results_;
+  std::map<ExtensionId, ExtensionDownloaderDelegate::PingResult> ping_results_;
 
   // Cache for .crx files.
   ExtensionCache* extension_cache_;

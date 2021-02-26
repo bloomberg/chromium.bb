@@ -4,14 +4,20 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import android.annotation.TargetApi;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 import android.content.Intent;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.assertion.ViewAssertions;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,17 +27,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -39,13 +42,10 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests for ManageSpaceActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@TargetApi(Build.VERSION_CODES.KITKAT)
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManageSpaceActivityTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private EmbeddedTestServer mTestServer;
 
@@ -72,12 +72,7 @@ public class ManageSpaceActivityTest {
     }
 
     public void waitForClearButtonEnabled(final ManageSpaceActivity activity) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.getClearUnimportantButton().isEnabled();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> activity.getClearUnimportantButton().isEnabled());
     }
 
     public Runnable getClickClearRunnable(final ManageSpaceActivity activity) {
@@ -90,12 +85,7 @@ public class ManageSpaceActivityTest {
     }
 
     public void waitForDialogShowing(final ManageSpaceActivity activity) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.getUnimportantConfirmDialog().isShowing();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> activity.getUnimportantConfirmDialog().isShowing());
     }
 
     public Runnable getPressClearRunnable(final AlertDialog dialog) {
@@ -109,14 +99,12 @@ public class ManageSpaceActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testLaunchActivity() {
         startManageSpaceActivity();
     }
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @Feature({"SiteEngagement"})
     @DisabledTest(message = "https://crbug.com/1060975")
     public void testClearUnimportantOnly() throws Exception {
@@ -165,6 +153,17 @@ public class ManageSpaceActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 getPressClearRunnable(manageSpaceActivity.getUnimportantConfirmDialog()));
         waitForClearButtonEnabled(manageSpaceActivity);
+        manageSpaceActivity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"SiteEngagement"})
+    public void testManageSiteStorage() {
+        ManageSpaceActivity manageSpaceActivity = startManageSpaceActivity();
+        waitForClearButtonEnabled(manageSpaceActivity);
+        onView(withId(R.id.manage_site_data_storage)).perform(click());
+        Espresso.onView(withText("Data stored")).check(ViewAssertions.matches(isDisplayed()));
         manageSpaceActivity.finish();
     }
 

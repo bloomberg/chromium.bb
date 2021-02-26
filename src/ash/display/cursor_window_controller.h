@@ -15,10 +15,7 @@
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
-
-namespace cursor {
-class CursorView;
-}
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
 
@@ -39,6 +36,7 @@ class ASH_EXPORT CursorWindowController {
   }
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
+  void SetCursorColor(SkColor cursor_color);
 
   // If at least one of the features that use cursor compositing is enabled, it
   // should not be disabled. Future features that require cursor compositing
@@ -82,6 +80,9 @@ class ASH_EXPORT CursorWindowController {
   // Updates cursor view based on current cursor state.
   void UpdateCursorView();
 
+  // Gets the bitmap representing the cursor, adjusting as needed for color.
+  SkBitmap GetAdjustedBitmap(const gfx::ImageSkiaRep& image_rep) const;
+
   const gfx::ImageSkia& GetCursorImageForTest() const;
 
   aura::Window* container_ = nullptr;
@@ -105,6 +106,7 @@ class ASH_EXPORT CursorWindowController {
   gfx::Point hot_point_;
 
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
+  SkColor cursor_color_ = kDefaultCursorColor;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.
@@ -112,7 +114,7 @@ class ASH_EXPORT CursorWindowController {
 
   std::unique_ptr<aura::Window> cursor_window_;
   std::unique_ptr<CursorWindowDelegate> delegate_;
-  std::unique_ptr<cursor::CursorView> cursor_view_;
+  views::UniqueWidgetPtr cursor_view_widget_;
 
   const bool is_cursor_motion_blur_enabled_;
 

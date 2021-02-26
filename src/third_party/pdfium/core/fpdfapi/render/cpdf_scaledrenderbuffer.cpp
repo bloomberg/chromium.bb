@@ -10,7 +10,6 @@
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -18,9 +17,9 @@ constexpr size_t kImageSizeLimitBytes = 30 * 1024 * 1024;
 
 }  // namespace
 
-CPDF_ScaledRenderBuffer::CPDF_ScaledRenderBuffer() {}
+CPDF_ScaledRenderBuffer::CPDF_ScaledRenderBuffer() = default;
 
-CPDF_ScaledRenderBuffer::~CPDF_ScaledRenderBuffer() {}
+CPDF_ScaledRenderBuffer::~CPDF_ScaledRenderBuffer() = default;
 
 bool CPDF_ScaledRenderBuffer::Initialize(CPDF_RenderContext* pContext,
                                          CFX_RenderDevice* pDevice,
@@ -37,24 +36,23 @@ bool CPDF_ScaledRenderBuffer::Initialize(CPDF_RenderContext* pContext,
   m_pObject = pObj;
   m_Matrix = CPDF_DeviceBuffer::CalculateMatrix(pDevice, rect, max_dpi,
                                                 /*scale=*/true);
-  m_pBitmapDevice = pdfium::MakeUnique<CFX_DefaultRenderDevice>();
+  m_pBitmapDevice = std::make_unique<CFX_DefaultRenderDevice>();
   bool bIsAlpha =
       !!(m_pDevice->GetDeviceCaps(FXDC_RENDER_CAPS) & FXRC_ALPHA_OUTPUT);
-  FXDIB_Format dibFormat = bIsAlpha ? FXDIB_Argb : FXDIB_Rgb;
+  FXDIB_Format dibFormat = bIsAlpha ? FXDIB_Format::kArgb : FXDIB_Format::kRgb;
   while (1) {
     FX_RECT bitmap_rect =
         m_Matrix.TransformRect(CFX_FloatRect(rect)).GetOuterRect();
     int32_t width = bitmap_rect.Width();
     int32_t height = bitmap_rect.Height();
     // Set to 0 to make CalculatePitchAndSize() calculate it.
-    uint32_t pitch = 0;
-    uint32_t size;
-    if (!CFX_DIBitmap::CalculatePitchAndSize(width, height, dibFormat, &pitch,
-                                             &size)) {
+    constexpr uint32_t kNoPitch = 0;
+    Optional<CFX_DIBitmap::PitchAndSize> pitch_size =
+        CFX_DIBitmap::CalculatePitchAndSize(width, height, dibFormat, kNoPitch);
+    if (!pitch_size.has_value())
       return false;
-    }
 
-    if (size <= kImageSizeLimitBytes &&
+    if (pitch_size.value().size <= kImageSizeLimitBytes &&
         m_pBitmapDevice->Create(width, height, dibFormat, nullptr)) {
       break;
     }

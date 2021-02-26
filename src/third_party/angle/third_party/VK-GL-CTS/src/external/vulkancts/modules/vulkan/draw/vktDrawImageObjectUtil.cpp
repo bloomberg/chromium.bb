@@ -188,6 +188,25 @@ tcu::ConstPixelBufferAccess Image::readSurface (vk::VkQueue					queue,
 	return tcu::ConstPixelBufferAccess(vk::mapVkFormat(m_format), width, height, 1, m_pixelAccessData.data());
 }
 
+tcu::ConstPixelBufferAccess Image::readDepth (vk::VkQueue				queue,
+											  vk::Allocator&			allocator,
+											  vk::VkImageLayout			layout,
+											  vk::VkOffset3D			offset,
+											  int						width,
+											  int						height,
+											  vk::VkImageAspectFlagBits	aspect,
+											  unsigned int				mipLevel,
+											  unsigned int				arrayElement)
+{
+	DE_ASSERT(aspect == vk::VK_IMAGE_ASPECT_DEPTH_BIT);
+	tcu::TextureFormat tcuFormat = (m_format == vk::VK_FORMAT_D32_SFLOAT_S8_UINT) ? tcu::TextureFormat(tcu::TextureFormat::D, tcu::TextureFormat::FLOAT) : vk::mapVkFormat(m_format);
+	m_pixelAccessData.resize(width * height * tcuFormat.getPixelSize());
+	deMemset(m_pixelAccessData.data(), 0, m_pixelAccessData.size());
+
+	readUsingBuffer(queue, allocator, layout, offset, width, height, 1, mipLevel, arrayElement, aspect, m_pixelAccessData.data());
+	return tcu::ConstPixelBufferAccess(tcuFormat, width, height, 1, m_pixelAccessData.data());
+}
+
 tcu::ConstPixelBufferAccess Image::readVolume (vk::VkQueue					queue,
 											   vk::Allocator&				allocator,
 											   vk::VkImageLayout			layout,
@@ -280,6 +299,7 @@ void Image::readUsingBuffer (vk::VkQueue				queue,
 	if (!isCombinedType)
 		bufferSize = vk::mapVkFormat(m_format).getPixelSize() * width * height * depth;
 
+	deUint32 pixelMask = 0xffffffff;
 	if (isCombinedType)
 	{
 		int pixelSize = 0;
@@ -293,7 +313,9 @@ void Image::readUsingBuffer (vk::VkQueue				queue,
 				break;
 			case vk::VK_FORMAT_X8_D24_UNORM_PACK32:
 			case vk::VK_FORMAT_D24_UNORM_S8_UINT:
-				pixelSize = (aspect == vk::VK_IMAGE_ASPECT_DEPTH_BIT) ? 3 : 1;
+				// vkCmdCopyBufferToImage copies D24 data to 32-bit pixels.
+				pixelSize = (aspect == vk::VK_IMAGE_ASPECT_DEPTH_BIT) ? 4 : 1;
+				pixelMask = 0x00ffffff;
 				break;
 
 			default:
@@ -348,6 +370,24 @@ void Image::readUsingBuffer (vk::VkQueue				queue,
 		};
 
 		m_vk.cmdCopyImageToBuffer(*copyCmdBuffer, object(), layout, stagingResource->object(), 1, &region);
+
+		// pipeline barrier for accessing the staging buffer from HOST
+		{
+			const vk::VkBufferMemoryBarrier memoryBarrier =
+			{
+				vk::VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+				DE_NULL,
+				vk::VK_ACCESS_TRANSFER_WRITE_BIT,
+				vk::VK_ACCESS_HOST_READ_BIT,
+				VK_QUEUE_FAMILY_IGNORED,
+				VK_QUEUE_FAMILY_IGNORED,
+				stagingResource->object(),
+				0u,
+				VK_WHOLE_SIZE
+			};
+			m_vk.cmdPipelineBarrier(*copyCmdBuffer, vk::VK_PIPELINE_STAGE_TRANSFER_BIT, vk::VK_PIPELINE_STAGE_HOST_BIT, 0u, 0u, DE_NULL, 1u, &memoryBarrier, 0u, DE_NULL);
+		}
+
 		endCommandBuffer(m_vk, *copyCmdBuffer);
 
 		submitCommandsAndWait(m_vk, m_device, queue, copyCmdBuffer.get());
@@ -359,6 +399,16 @@ void Image::readUsingBuffer (vk::VkQueue				queue,
 
 	deUint8* destPtr = reinterpret_cast<deUint8*>(stagingResource->getBoundMemory().getHostPtr());
 	deMemcpy(data, destPtr, static_cast<size_t>(bufferSize));
+	if (pixelMask != 0xffffffff) {
+		/* data copied to or from the depth aspect of a
+           VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D24_UNORM_S8_UINT format
+           is packed with one 32-bit word per texel with the D24 value in the
+           LSBs of the word, and *undefined* values in the eight MSBs. */
+		deUint32* const data32 = static_cast<deUint32*>(data);
+		const vk::VkDeviceSize data32Count = bufferSize / sizeof(deUint32);
+		for(vk::VkDeviceSize i = 0; i < data32Count; ++i)
+			data32[i] &= pixelMask;
+	}
 }
 
 tcu::ConstPixelBufferAccess Image::readSurfaceLinear (vk::VkOffset3D				offset,
@@ -437,6 +487,31 @@ de::SharedPtr<Image> Image::copyToLinearImage (vk::VkQueue					queue,
 		vk::VkImageCopy region = { { (vk::VkImageAspectFlags)aspect, mipLevel, arrayElement, 1}, offset, { (vk::VkImageAspectFlags)aspect, 0, 0, 1}, zeroOffset, {(deUint32)width, (deUint32)height, (deUint32)depth} };
 
 		m_vk.cmdCopyImage(*copyCmdBuffer, object(), layout, stagingResource->object(), vk::VK_IMAGE_LAYOUT_GENERAL, 1, &region);
+
+		// pipeline barrier for accessing the staging image from HOST
+		{
+			const vk::VkImageMemoryBarrier memoryBarrier =
+			{
+				vk::VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				DE_NULL,
+				vk::VK_ACCESS_TRANSFER_WRITE_BIT,
+				vk::VK_ACCESS_HOST_READ_BIT,
+				vk::VK_IMAGE_LAYOUT_GENERAL,
+				vk::VK_IMAGE_LAYOUT_GENERAL,
+				VK_QUEUE_FAMILY_IGNORED,
+				VK_QUEUE_FAMILY_IGNORED,
+				stagingResource->object(),
+				{
+					static_cast<vk::VkImageAspectFlags>(aspect),
+					0u,
+					1u,
+					0u,
+					1u
+				}
+			};
+			m_vk.cmdPipelineBarrier(*copyCmdBuffer, vk::VK_PIPELINE_STAGE_TRANSFER_BIT, vk::VK_PIPELINE_STAGE_HOST_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &memoryBarrier);
+		}
+
 		endCommandBuffer(m_vk, *copyCmdBuffer);
 
 		submitCommandsAndWait(m_vk, m_device, queue, copyCmdBuffer.get());

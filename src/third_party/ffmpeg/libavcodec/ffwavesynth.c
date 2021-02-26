@@ -323,13 +323,11 @@ static av_cold int wavesynth_init(AVCodecContext *avc)
     r = wavesynth_parse_extradata(avc);
     if (r < 0) {
         av_log(avc, AV_LOG_ERROR, "Invalid intervals definitions.\n");
-        goto fail;
+        return r;
     }
     ws->sin = av_malloc(sizeof(*ws->sin) << SIN_BITS);
-    if (!ws->sin) {
-        r = AVERROR(ENOMEM);
-        goto fail;
-    }
+    if (!ws->sin)
+        return AVERROR(ENOMEM);
     for (i = 0; i < 1 << SIN_BITS; i++)
         ws->sin[i] = floor(32767 * sin(2 * M_PI * i / (1 << SIN_BITS)));
     ws->dither_state = MKTAG('D','I','T','H');
@@ -340,11 +338,6 @@ static av_cold int wavesynth_init(AVCodecContext *avc)
     wavesynth_seek(ws, 0);
     avc->sample_fmt = AV_SAMPLE_FMT_S16;
     return 0;
-
-fail:
-    av_freep(&ws->inter);
-    av_freep(&ws->sin);
-    return r;
 }
 
 static void wavesynth_synth_sample(struct wavesynth_context *ws, int64_t ts,
@@ -373,7 +366,7 @@ static void wavesynth_synth_sample(struct wavesynth_context *ws, int64_t ts,
         in->amp  += in->damp;
         switch (in->type) {
             case WS_SINE:
-                val = amp * ws->sin[in->phi >> (64 - SIN_BITS)];
+                val = amp * (unsigned)ws->sin[in->phi >> (64 - SIN_BITS)];
                 in->phi  += in->dphi;
                 in->dphi += in->ddphi;
                 break;
@@ -444,7 +437,7 @@ static int wavesynth_decode(AVCodecContext *avc, void *rframe, int *rgot_frame,
     if (r < 0)
         return r;
     pcm = (int16_t *)frame->data[0];
-    for (s = 0; s < duration; s++, ts++) {
+    for (s = 0; s < duration; s++, ts+=(uint64_t)1) {
         memset(channels, 0, avc->channels * sizeof(*channels));
         if (ts >= ws->next_ts)
             wavesynth_enter_intervals(ws, ts);
@@ -452,7 +445,7 @@ static int wavesynth_decode(AVCodecContext *avc, void *rframe, int *rgot_frame,
         for (c = 0; c < avc->channels; c++)
             *(pcm++) = channels[c] >> 16;
     }
-    ws->cur_ts += duration;
+    ws->cur_ts += (uint64_t)duration;
     *rgot_frame = 1;
     return packet->size;
 }
@@ -476,4 +469,5 @@ AVCodec ff_ffwavesynth_decoder = {
     .close          = wavesynth_close,
     .decode         = wavesynth_decode,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

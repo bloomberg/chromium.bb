@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -82,6 +83,8 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate,
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
 
+  views::View* GetWebDialogView();
+
  private:
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
@@ -90,7 +93,6 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate,
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
-  bool CanResizeDialog() const override;
   std::string GetDialogArgs() const override;
   // NOTE: This function starts cleanup sequence that would call FinishCleanup
   // and delete this object in the end.
@@ -131,7 +133,7 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate,
   ScopedObserver<CaptivePortalWindowProxy, CaptivePortalWindowProxy::Observer>
       captive_portal_observer_{this};
 
-  std::map<ui::Accelerator, std::string> accel_map_;
+  std::map<ui::Accelerator, ash::LoginAcceleratorAction> accel_map_;
   ash::OobeDialogState state_ = ash::OobeDialogState::HIDDEN;
 
   // Whether the captive portal screen should be shown the next time the Gaia

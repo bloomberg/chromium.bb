@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/jumbo.gni")
+import("//build/config/ozone.gni")
+import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
-import("//ui/ozone/ozone.gni")
 
 assert(use_ozone)
 
@@ -22,6 +22,10 @@ ozone_platform_deps = ozone_external_platform_deps
 # Extra dependencies to pull into ozone_unittests for built platforms.
 ozone_platform_test_deps = ozone_external_platform_test_deps
 
+# Extra dependencies to pull into ui_test_support for built platforms.
+ozone_platform_ui_test_support_deps =
+    ozone_external_platform_ui_test_support_deps
+
 if (ozone_platform_windows) {
   ozone_platforms += [ "windows" ]
   ozone_platform_deps += [ "platform/windows" ]
@@ -32,8 +36,8 @@ if (ozone_platform_headless) {
   ozone_platform_deps += [ "platform/headless" ]
 }
 
-if (ozone_platform_gbm) {
-  ozone_platforms += [ "gbm" ]
+if (ozone_platform_drm) {
+  ozone_platforms += [ "drm" ]
   ozone_platform_deps += [ "platform/drm:gbm" ]
   ozone_platform_test_deps += [ "platform/drm:gbm_unittests" ]
 }
@@ -52,6 +56,7 @@ if (ozone_platform_wayland) {
 if (ozone_platform_x11) {
   ozone_platforms += [ "x11" ]
   ozone_platform_deps += [ "platform/x11" ]
+  ozone_platform_ui_test_support_deps += [ "platform/x11:test_support" ]
 }
 
 if (ozone_platform_scenic) {
@@ -64,10 +69,10 @@ platform_list_h_file = "$target_gen_dir/platform_list.h"
 platform_list_txt_file = "$target_gen_dir/platform_list.txt"
 constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 
-jumbo_component("ozone_base") {
+test_constructor_list_cc_file = "$target_gen_dir/test_constructor_list.cc"
+
+component("ozone_base") {
   sources = [
-    "public/cursor_factory_ozone.cc",
-    "public/cursor_factory_ozone.h",
     "public/gl_ozone.h",
     "public/gpu_platform_support_host.cc",
     "public/gpu_platform_support_host.h",
@@ -86,8 +91,12 @@ jumbo_component("ozone_base") {
     "public/ozone_switches.h",
     "public/platform_clipboard.h",
     "public/platform_gl_egl_utility.h",
+    "public/platform_menu_utils.cc",
+    "public/platform_menu_utils.h",
     "public/platform_screen.cc",
     "public/platform_screen.h",
+    "public/platform_user_input_monitor.cc",
+    "public/platform_user_input_monitor.h",
     "public/platform_window_surface.h",
     "public/surface_factory_ozone.cc",
     "public/surface_factory_ozone.h",
@@ -105,7 +114,6 @@ jumbo_component("ozone_base") {
     "//ipc",
     "//skia",
     "//ui/base/clipboard:clipboard_types",
-    "//ui/base/cursor/mojom:cursor_type",
     "//ui/display",
     "//ui/display/types",
     "//ui/display/util",
@@ -125,16 +133,19 @@ jumbo_component("ozone_base") {
     public_deps += [ "//gpu/vulkan" ]
   }
 
+  if (is_fuchsia) {
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.images" ]
+  }
+
   visibility += [
     # Everyone should depend on //ui/ozone instead except a handful of
     # things that would otherwise create a cycle.
-    "//ui/base",
-    "//ui/base/cursor",
+    "//chromeos/system:system",
+    "//ui/base/ime/chromeos/*",
     "//ui/events/ozone/*",
     "//ui/ozone/common/*",
-    "//ui/ozone/public/mojom",
     "//ui/ozone/platform/*",
-    "//ui/base/ime/chromeos/*",
+    "//ui/ozone/public/mojom",
   ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]
@@ -148,7 +159,6 @@ source_set("platform") {
     "common/stub_client_native_pixmap_factory.cc",
     "common/stub_client_native_pixmap_factory.h",
     "platform_constructor_list.h",
-    "platform_object.h",
     "platform_object_internal.h",
     "platform_selection.cc",
     "platform_selection.h",
@@ -161,6 +171,7 @@ source_set("platform") {
   ]
 
   public = [
+    "platform_object.h",
     "public/client_native_pixmap_factory_ozone.h",
     "public/ozone_gpu_test_helper.h",
     "public/ozone_platform.h",
@@ -200,7 +211,7 @@ source_set("platform") {
   visibility += ozone_external_platform_visibility
 }
 
-jumbo_component("ozone") {
+component("ozone") {
   visibility = []
   visibility = [ "*" ]
   public_deps = [
@@ -210,7 +221,7 @@ jumbo_component("ozone") {
   ]
 }
 
-jumbo_source_set("test_support_internal") {
+source_set("test_support_internal") {
   testonly = true
 
   sources = [
@@ -233,7 +244,41 @@ jumbo_source_set("test_support_internal") {
   public_deps = [ "//base/test:test_support" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("ui_test_support") {
+  visibility = []
+  visibility = [ "//ui/views:test_support" ]
+
+  testonly = true
+
+  sources = [
+    "common/test/stub_ozone_ui_controls_test_helper.cc",
+    "common/test/stub_ozone_ui_controls_test_helper.h",
+    "public/ozone_ui_controls_test_helper.cc",
+    test_constructor_list_cc_file,
+  ]
+
+  public = [ "public/ozone_ui_controls_test_helper.h" ]
+
+  deps = [
+    ":generate_test_support_constructor_list",
+    ":ozone",
+    "//ui/base:test_support",
+    "//ui/events:events_base",
+  ]
+
+  deps += ozone_platform_ui_test_support_deps
+
+  allow_circular_includes_from = ozone_platform_ui_test_support_deps
+}
+
+static_library("test_support") {
+  visibility = []
+  visibility = [
+    ":*",
+    "platform/wayland:wayland_unittests",
+    "platform/x11:x11_unittests",
+  ]
+
   testonly = true
   public_deps = [ ":test_support_internal" ]
 }
@@ -277,6 +322,24 @@ action("generate_constructor_list") {
   deps = [ ":generate_ozone_platform_list" ]
 }
 
+action("generate_test_support_constructor_list") {
+  script = "generate_constructor_list.py"
+
+  inputs = [ platform_list_txt_file ]
+  outputs = [ test_constructor_list_cc_file ]
+
+  args = [
+    "--platform_list=" + rebase_path(platform_list_txt_file, root_build_dir),
+    "--output_cc=" + rebase_path(test_constructor_list_cc_file, root_build_dir),
+    "--namespace=ui",
+    "--typename=OzoneUIControlsTestHelper",
+    "--include=\"ui/ozone/public/ozone_ui_controls_test_helper.h\"",
+    "--include=\"ui/ozone/public/ozone_platform.h\"",
+  ]
+
+  deps = [ ":generate_ozone_platform_list" ]
+}
+
 test("ozone_unittests") {
   deps = [ ":test_support" ]
 
@@ -294,6 +357,8 @@ test("ozone_unittests") {
 # backend.
 if (ozone_platform_x11) {
   test("ozone_x11_unittests") {
+    use_xvfb = true
+
     deps = [ ":test_support" ]
 
     deps += [ "platform/x11:x11_unittests" ]
@@ -307,4 +372,23 @@ if (ozone_platform_x11) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [ "OZONE_PLATFORM_X11=$ozone_platform_x11" ]
+  visibility += [ "//ui/gl:gl" ]
+}
+
+group("unittests") {
+  testonly = true
+
+  visibility += [ "*" ]
+
+  deps = [
+    ":ozone_unittests",
+    "//ui/ozone/gl:ozone_gl_unittests",
+  ]
+
+  if (ozone_platform_x11) {
+    deps += [
+      "//ui/ozone:ozone_x11_unittests",
+      "//ui/platform_window/x11:x11_unittests",
+    ]
+  }
 }

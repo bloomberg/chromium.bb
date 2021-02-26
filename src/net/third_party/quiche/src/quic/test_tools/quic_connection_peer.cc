@@ -4,13 +4,13 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_received_packet_manager.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
@@ -51,10 +51,7 @@ QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
 // static
 QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
     QuicConnection* connection) {
-  if (connection->use_idle_network_detector_) {
-    return connection->idle_network_detector_.idle_network_timeout_;
-  }
-  return connection->idle_network_timeout_;
+  return connection->idle_network_detector_.idle_network_timeout_;
 }
 
 // static
@@ -97,9 +94,8 @@ void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
 }
 
 // static
-void QuicConnectionPeer::SetCurrentPacket(
-    QuicConnection* connection,
-    quiche::QuicheStringPiece current_packet) {
+void QuicConnectionPeer::SetCurrentPacket(QuicConnection* connection,
+                                          absl::string_view current_packet) {
   connection->current_packet_data_ = current_packet.data();
   connection->last_size_ = current_packet.size();
 }
@@ -143,11 +139,6 @@ QuicAlarm* QuicConnectionPeer::GetSendAlarm(QuicConnection* connection) {
 }
 
 // static
-QuicAlarm* QuicConnectionPeer::GetTimeoutAlarm(QuicConnection* connection) {
-  return connection->timeout_alarm_.get();
-}
-
-// static
 QuicAlarm* QuicConnectionPeer::GetMtuDiscoveryAlarm(
     QuicConnection* connection) {
   return connection->mtu_discovery_alarm_.get();
@@ -157,6 +148,12 @@ QuicAlarm* QuicConnectionPeer::GetMtuDiscoveryAlarm(
 QuicAlarm* QuicConnectionPeer::GetProcessUndecryptablePacketsAlarm(
     QuicConnection* connection) {
   return connection->process_undecryptable_packets_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetDiscardPreviousOneRttKeysAlarm(
+    QuicConnection* connection) {
+  return connection->discard_previous_one_rtt_keys_alarm_.get();
 }
 
 // static
@@ -215,26 +212,6 @@ void QuicConnectionPeer::ReInitializeMtuDiscoverer(
     QuicPacketNumber next_probe_at) {
   connection->mtu_discoverer_ =
       QuicConnectionMtuDiscoverer(packets_between_probes_base, next_probe_at);
-}
-
-// static
-void QuicConnectionPeer::SetAckMode(QuicConnection* connection,
-                                    AckMode ack_mode) {
-  for (auto& received_packet_manager :
-       connection->uber_received_packet_manager_.received_packet_managers_) {
-    received_packet_manager.ack_mode_ = ack_mode;
-  }
-}
-
-// static
-void QuicConnectionPeer::SetFastAckAfterQuiescence(
-    QuicConnection* connection,
-    bool fast_ack_after_quiescence) {
-  for (auto& received_packet_manager :
-       connection->uber_received_packet_manager_.received_packet_managers_) {
-    received_packet_manager.fast_ack_after_quiescence_ =
-        fast_ack_after_quiescence;
-  }
 }
 
 // static
@@ -320,6 +297,12 @@ void QuicConnectionPeer::SetAddressValidated(QuicConnection* connection) {
 }
 
 // static
+void QuicConnectionPeer::SetEnableAeadLimits(QuicConnection* connection,
+                                             bool enabled) {
+  connection->enable_aead_limits_ = enabled;
+}
+
+// static
 void QuicConnectionPeer::SendConnectionClosePacket(QuicConnection* connection,
                                                    QuicErrorCode error,
                                                    const std::string& details) {
@@ -364,9 +347,27 @@ QuicTime QuicConnectionPeer::GetBlackholeDetectionDeadline(
 }
 
 // static
+QuicTime QuicConnectionPeer::GetPathMtuReductionDetectionDeadline(
+    QuicConnection* connection) {
+  return connection->blackhole_detector_.path_mtu_reduction_deadline_;
+}
+
+// static
+QuicTime QuicConnectionPeer::GetIdleNetworkDeadline(
+    QuicConnection* connection) {
+  return connection->idle_network_detector_.GetIdleNetworkDeadline();
+}
+
+// static
 QuicAlarm* QuicConnectionPeer::GetIdleNetworkDetectorAlarm(
     QuicConnection* connection) {
   return connection->idle_network_detector_.alarm_.get();
+}
+
+// static
+QuicIdleNetworkDetector& QuicConnectionPeer::GetIdleNetworkDetector(
+    QuicConnection* connection) {
+  return connection->idle_network_detector_;
 }
 
 // static
@@ -375,6 +376,27 @@ void QuicConnectionPeer::SetServerConnectionId(
     const QuicConnectionId& server_connection_id) {
   connection->server_connection_id_ = server_connection_id;
   connection->InstallInitialCrypters(server_connection_id);
+}
+
+// static
+size_t QuicConnectionPeer::NumUndecryptablePackets(QuicConnection* connection) {
+  return connection->undecryptable_packets_.size();
+}
+
+// static
+const QuicCircularDeque<std::pair<QuicPathFrameBuffer, QuicSocketAddress>>&
+QuicConnectionPeer::pending_path_challenge_payloads(
+    QuicConnection* connection) {
+  return connection->pending_path_challenge_payloads_;
+}
+
+void QuicConnectionPeer::SetConnectionClose(QuicConnection* connection) {
+  connection->connected_ = false;
+}
+
+// static
+void QuicConnectionPeer::SendPing(QuicConnection* connection) {
+  connection->SendPingAtLevel(connection->encryption_level());
 }
 
 }  // namespace test

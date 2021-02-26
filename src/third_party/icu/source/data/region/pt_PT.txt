@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 pt_PT{
     Countries{
         009{"Oceânia"}
@@ -30,7 +31,6 @@ pt_PT{
         EH{"Sara Ocidental"}
         EZ{"Zona Euro"}
         FK{"Ilhas Falkland (Malvinas)"}
-        FO{"Ilhas Faroé"}
         GG{"Guernesey"}
         GL{"Gronelândia"}
         GU{"Guame"}
@@ -44,7 +44,6 @@ pt_PT{
         LK{"Sri Lanca"}
         LV{"Letónia"}
         MC{"Mónaco"}
-        MD{"Moldávia"}
         MG{"Madagáscar"}
         MK{"Macedónia do Norte"}
         MS{"Monserrate"}
@@ -53,7 +52,7 @@ pt_PT{
         NC{"Nova Caledónia"}
         NU{"Niuê"}
         PL{"Polónia"}
-        PS{"Territórios palestinianos"}
+        PS{"Palestina"}
         QO{"Oceânia Insular"}
         RO{"Roménia"}
         SI{"Eslovénia"}
@@ -83,5 +82,4 @@ pt_PT{
         CI{"Costa do Marfim"}
         CZ{"República Checa"}
     }
-    Version{"37"}
 }

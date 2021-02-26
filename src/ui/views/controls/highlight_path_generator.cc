@@ -51,8 +51,11 @@ base::Optional<gfx::RRectF> HighlightPathGenerator::GetRoundRect(
 
 base::Optional<gfx::RRectF> HighlightPathGenerator::GetRoundRect(
     const View* view) {
-  gfx::Rect bounds(view->GetLocalBounds());
+  gfx::Rect bounds =
+      use_contents_bounds_ ? view->GetContentsBounds() : view->GetLocalBounds();
   bounds.Inset(insets_);
+  if (use_mirrored_rect_)
+    bounds = view->GetMirroredRect(bounds);
   return GetRoundRect(gfx::RectF(bounds));
 }
 
@@ -99,13 +102,11 @@ void InstallCircleHighlightPathGenerator(View* view,
       view, std::make_unique<CircleHighlightPathGenerator>(insets));
 }
 
-SkPath PillHighlightPathGenerator::GetHighlightPath(const View* view) {
-  const SkRect rect = gfx::RectToSkRect(view->GetLocalBounds());
-  const SkScalar corner_radius =
-      SkScalarHalf(std::min(rect.width(), rect.height()));
-
-  return SkPath().addRoundRect(gfx::RectToSkRect(view->GetLocalBounds()),
-                               corner_radius, corner_radius);
+base::Optional<gfx::RRectF> PillHighlightPathGenerator::GetRoundRect(
+    const gfx::RectF& rect) {
+  gfx::RectF bounds = rect;
+  const float corner_radius = std::min(bounds.width(), bounds.height()) / 2.f;
+  return gfx::RRectF(bounds, corner_radius);
 }
 
 void InstallPillHighlightPathGenerator(View* view) {

@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -27,7 +29,7 @@ namespace {
 
 // Make sure GetNetConstants doesn't crash.
 TEST(NetLogUtil, GetNetConstants) {
-  std::unique_ptr<base::Value> constants(GetNetConstants());
+  base::Value constants(GetNetConstants());
 }
 
 // Make sure GetNetInfo doesn't crash when called on contexts with and without
@@ -40,21 +42,49 @@ TEST(NetLogUtil, GetNetInfo) {
 
   // Get NetInfo when there's no cache backend (It's only created on first use).
   EXPECT_FALSE(http_cache->GetCurrentBackend());
-  std::unique_ptr<base::DictionaryValue> net_info_without_cache(
-      GetNetInfo(&context, NET_INFO_ALL_SOURCES));
+  base::Value net_info_without_cache(GetNetInfo(&context));
   EXPECT_FALSE(http_cache->GetCurrentBackend());
-  EXPECT_GT(net_info_without_cache->size(), 0u);
+  EXPECT_GT(net_info_without_cache.DictSize(), 0u);
 
-  // Fore creation of a cache backend, and get NetInfo again.
+  // Force creation of a cache backend, and get NetInfo again.
   disk_cache::Backend* backend = nullptr;
   EXPECT_EQ(OK, context.http_transaction_factory()->GetCache()->GetBackend(
                     &backend, TestCompletionCallback().callback()));
   EXPECT_TRUE(http_cache->GetCurrentBackend());
-  std::unique_ptr<base::DictionaryValue> net_info_with_cache(
-      GetNetInfo(&context, NET_INFO_ALL_SOURCES));
-  EXPECT_GT(net_info_with_cache->size(), 0u);
+  base::Value net_info_with_cache = GetNetInfo(&context);
+  EXPECT_GT(net_info_with_cache.DictSize(), 0u);
 
-  EXPECT_EQ(net_info_without_cache->size(), net_info_with_cache->size());
+  EXPECT_EQ(net_info_without_cache.DictSize(), net_info_with_cache.DictSize());
+}
+
+// Verify that active Field Trials are reflected.
+TEST(NetLogUtil, GetNetInfoIncludesFieldTrials) {
+  base::test::TaskEnvironment task_environment;
+
+  // Clear all Field Trials.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(
+      std::make_unique<base::FeatureList>());
+
+  // Add and activate a new Field Trial.
+  base::FieldTrial* field_trial = base::FieldTrialList::FactoryGetFieldTrial(
+      "NewFieldTrial", 100, "Default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+      nullptr);
+  field_trial->AppendGroup("Active", 100);
+  EXPECT_EQ(field_trial->group_name(), "Active");
+
+  TestURLRequestContext context;
+  base::Value net_info(GetNetInfo(&context));
+
+  // Verify that the returned information reflects the new trial.
+  ASSERT_TRUE(net_info.is_dict());
+  base::Value* trials = net_info.FindListPath("activeFieldTrialGroups");
+  ASSERT_NE(nullptr, trials);
+  const auto& trial_list = trials->GetList();
+  EXPECT_EQ(1u, trial_list.size());
+  std::string result;
+  EXPECT_TRUE(trial_list[0].GetAsString(&result));
+  EXPECT_EQ("NewFieldTrial:Active", result);
 }
 
 // Make sure CreateNetLogEntriesForActiveObjects works for requests from a

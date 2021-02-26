@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -42,6 +44,11 @@ enum TrustedTypeViolationKind {
   kScriptExecution,
   kScriptExecutionAndDefaultPolicyFailed,
 };
+
+const char kFunctionConstructorFailureConsoleMessage[] =
+    "The JavaScript Function constructor does not accept TrustedString "
+    "arguments. See https://github.com/w3c/webappsec-trusted-types/wiki/"
+    "Trusted-Types-for-function-constructor for more information.";
 
 const char* GetMessage(TrustedTypeViolationKind kind) {
   switch (kind) {
@@ -99,8 +106,16 @@ String GetSamplePrefix(const ExceptionState& exception_state) {
   // If we don't have the required values being passed in, just leave the
   // sample empty.
   StringBuilder sample_prefix;
-  if (interface_name && strcmp("eval", interface_name) == 0) {
+  if (!interface_name) {
+    // No interface name? Then we have no prefix to use.
+  } else if (strcmp("eval", interface_name) == 0) {
     sample_prefix.Append("eval");
+  } else if ((strcmp("Worker", interface_name) == 0 ||
+              strcmp("SharedWorker", interface_name) == 0) &&
+             !property_name) {
+    // Worker/SharedWorker constructor has nullptr as property_name.
+    sample_prefix.Append(interface_name);
+    sample_prefix.Append(" constructor");
   } else if (interface_name && property_name) {
     sample_prefix.Append(interface_name);
     sample_prefix.Append(" ");
@@ -147,16 +162,39 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (!execution_context)
     return true;
 
-  // Test case docs (MakeGarbageCollected<Document>()) might not have a window
+  // Test case docs (Document::CreateForTest()) might not have a window
   // and hence no TrustedTypesPolicyFactory.
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 
+  const char* kAnonymousPrefix = "(function anonymous";
+  String prefix = GetSamplePrefix(exception_state);
+  if (prefix == "eval" && value.StartsWith(kAnonymousPrefix)) {
+    prefix = "Function";
+  }
   bool allow =
-      execution_context->GetSecurityContext()
-          .GetContentSecurityPolicy()
-          ->AllowTrustedTypeAssignmentFailure(GetMessage(kind), value,
-                                              GetSamplePrefix(exception_state));
+      execution_context->GetContentSecurityPolicy()
+          ->AllowTrustedTypeAssignmentFailure(
+              GetMessage(kind),
+              prefix == "Function" ? value.Substring(strlen(kAnonymousPrefix))
+                                   : value,
+              prefix);
+
+  // TODO(1087743): Add a console message for Trusted Type-related Function
+  // constructor failures, to warn the developer of the outstanding issues
+  // with TT and Function  constructors. This should be removed once the
+  // underlying issue has been fixed.
+  if (prefix == "Function" && !allow) {
+    DCHECK(kind == kTrustedScriptAssignment ||
+           kind == kTrustedScriptAssignmentAndDefaultPolicyFailed ||
+           kind == kTrustedScriptAssignmentAndNoDefaultPolicyExisted);
+    execution_context->GetContentSecurityPolicy()->LogToConsole(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kRecommendation,
+            mojom::blink::ConsoleMessageLevel::kInfo,
+            kFunctionConstructorFailureConsoleMessage));
+  }
+
   if (!allow) {
     exception_state.ThrowTypeError(GetMessage(kind));
   }
@@ -176,7 +214,7 @@ TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
 // and has a number of additional parameters to enable proper error reporting
 // for each case.
 String GetStringFromScriptHelper(
-    const String& script,
+    String script,
     ExecutionContext* context,
 
     // Parameters to customize error messages:
@@ -247,7 +285,7 @@ bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
          !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context);
 }
 
-String TrustedTypesCheckForHTML(const String& html,
+String TrustedTypesCheckForHTML(String html,
                                 const ExecutionContext* execution_context,
                                 ExceptionState& exception_state) {
   bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
@@ -272,6 +310,9 @@ String TrustedTypesCheckForHTML(const String& html,
       return html;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedHTML* result = default_policy->CreateHTML(
       execution_context->GetIsolate(), html,
       GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedHTML",
@@ -293,7 +334,7 @@ String TrustedTypesCheckForHTML(const String& html,
   return result->toString();
 }
 
-String TrustedTypesCheckForScript(const String& script,
+String TrustedTypesCheckForScript(String script,
                                   const ExecutionContext* execution_context,
                                   ExceptionState& exception_state) {
   bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
@@ -318,6 +359,9 @@ String TrustedTypesCheckForScript(const String& script,
       return script;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedScript* result = default_policy->CreateScript(
       execution_context->GetIsolate(), script,
       GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedScript",
@@ -340,7 +384,7 @@ String TrustedTypesCheckForScript(const String& script,
   return result->toString();
 }
 
-String TrustedTypesCheckForScriptURL(const String& script_url,
+String TrustedTypesCheckForScriptURL(String script_url,
                                      const ExecutionContext* execution_context,
                                      ExceptionState& exception_state) {
   bool require_trusted_type =
@@ -367,6 +411,9 @@ String TrustedTypesCheckForScriptURL(const String& script_url,
       return script_url;
     }
   }
+  // TODO(ajwong): This can be optimized to avoid a AddRef in the
+  // StringCache::CreateStringAndInsertIntoCache() also, but it's a hard mess.
+  // Punt for now.
   TrustedScriptURL* result = default_policy->CreateScriptURL(
       execution_context->GetIsolate(), script_url,
       GetDefaultCallbackArgs(execution_context->GetIsolate(),
@@ -416,7 +463,8 @@ String TrustedTypesCheckFor(
   }
 
   // In all other cases: run the full check against the string value.
-  return TrustedTypesCheckFor(type, value, execution_context, exception_state);
+  return TrustedTypesCheckFor(type, std::move(value), execution_context,
+                              exception_state);
 }
 
 String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
@@ -438,41 +486,41 @@ String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
 }
 
 String TrustedTypesCheckFor(SpecificTrustedType type,
-                            const String& trusted,
+                            String trusted,
                             const ExecutionContext* execution_context,
                             ExceptionState& exception_state) {
   switch (type) {
     case SpecificTrustedType::kHTML:
-      return TrustedTypesCheckForHTML(trusted, execution_context,
+      return TrustedTypesCheckForHTML(std::move(trusted), execution_context,
                                       exception_state);
     case SpecificTrustedType::kScript:
-      return TrustedTypesCheckForScript(trusted, execution_context,
+      return TrustedTypesCheckForScript(std::move(trusted), execution_context,
                                         exception_state);
     case SpecificTrustedType::kScriptURL:
-      return TrustedTypesCheckForScriptURL(trusted, execution_context,
-                                           exception_state);
+      return TrustedTypesCheckForScriptURL(std::move(trusted),
+                                           execution_context, exception_state);
     case SpecificTrustedType::kNone:
       return trusted;
   }
   NOTREACHED();
-  return "";
+  return g_empty_string;
 }
 
 String CORE_EXPORT
-GetStringForScriptExecution(const String& script,
+GetStringForScriptExecution(String script,
                             const ScriptElementBase::Type type,
                             ExecutionContext* context) {
-  return GetStringFromScriptHelper(script, context, GetElementName(type),
-                                   "text", kScriptExecution,
-                                   kScriptExecutionAndDefaultPolicyFailed);
+  return GetStringFromScriptHelper(
+      std::move(script), context, GetElementName(type), "text",
+      kScriptExecution, kScriptExecutionAndDefaultPolicyFailed);
 }
 
 String TrustedTypesCheckForJavascriptURLinNavigation(
-    const String& javascript_url,
+    String javascript_url,
     ExecutionContext* context) {
   return GetStringFromScriptHelper(
-      javascript_url, context, "Location", "href", kNavigateToJavascriptURL,
-      kNavigateToJavascriptURLAndDefaultPolicyFailed);
+      std::move(javascript_url), context, "Location", "href",
+      kNavigateToJavascriptURL, kNavigateToJavascriptURLAndDefaultPolicyFailed);
 }
 
 }  // namespace blink

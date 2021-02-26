@@ -501,7 +501,11 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
  */
 
 int
+#ifdef GTEST
+cjpeg(int argc, char **argv)
+#else
 main(int argc, char **argv)
+#endif
 {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -583,7 +587,7 @@ main(int argc, char **argv)
   if (file_index < argc) {
     if ((input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
   } else {
     /* default input file is stdin */
@@ -594,7 +598,7 @@ main(int argc, char **argv)
   if (outfilename != NULL) {
     if ((output_file = fopen(outfilename, WRITE_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, outfilename);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
   } else if (!memdst) {
     /* default output file is stdout */
@@ -604,26 +608,26 @@ main(int argc, char **argv)
   if (icc_filename != NULL) {
     if ((icc_file = fopen(icc_filename, READ_BINARY)) == NULL) {
       fprintf(stderr, "%s: can't open %s\n", progname, icc_filename);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
     if (fseek(icc_file, 0, SEEK_END) < 0 ||
         (icc_len = ftell(icc_file)) < 1 ||
         fseek(icc_file, 0, SEEK_SET) < 0) {
       fprintf(stderr, "%s: can't determine size of %s\n", progname,
               icc_filename);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
     if ((icc_profile = (JOCTET *)malloc(icc_len)) == NULL) {
       fprintf(stderr, "%s: can't allocate memory for ICC profile\n", progname);
       fclose(icc_file);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
     if (fread(icc_profile, icc_len, 1, icc_file) < 1) {
       fprintf(stderr, "%s: can't read ICC profile from %s\n", progname,
               icc_filename);
       free(icc_profile);
       fclose(icc_file);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
     fclose(icc_file);
   }
@@ -682,14 +686,11 @@ main(int argc, char **argv)
 
   if (memdst) {
     fprintf(stderr, "Compressed size:  %lu bytes\n", outsize);
-    if (outbuffer != NULL)
-      free(outbuffer);
+    free(outbuffer);
   }
 
-  if (icc_profile != NULL)
-    free(icc_profile);
+  free(icc_profile);
 
   /* All done. */
-  exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
-  return 0;                     /* suppress no-return-value warnings */
+  return (jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
 }

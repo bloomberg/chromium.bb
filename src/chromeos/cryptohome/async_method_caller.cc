@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -29,103 +30,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
 
   ~AsyncMethodCallerImpl() override {
     CryptohomeClient::Get()->RemoveObserver(this);
-  }
-
-  void AsyncTpmAttestationCreateEnrollRequest(
-      chromeos::attestation::PrivacyCAType pca_type,
-      DataCallback callback) override {
-    CryptohomeClient::Get()->AsyncTpmAttestationCreateEnrollRequest(
-        pca_type,
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       "Couldn't initiate async attestation enroll request."));
-  }
-
-  void AsyncTpmAttestationEnroll(chromeos::attestation::PrivacyCAType pca_type,
-                                 const std::string& pca_response,
-                                 Callback callback) override {
-    CryptohomeClient::Get()->AsyncTpmAttestationEnroll(
-        pca_type, pca_response,
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       "Couldn't initiate async attestation enroll."));
-  }
-
-  void AsyncTpmAttestationCreateCertRequest(
-      chromeos::attestation::PrivacyCAType pca_type,
-      chromeos::attestation::AttestationCertificateProfile certificate_profile,
-      const Identification& cryptohome_id,
-      const std::string& request_origin,
-      DataCallback callback) override {
-    CryptohomeClient::Get()->AsyncTpmAttestationCreateCertRequest(
-        pca_type, certificate_profile,
-        CreateAccountIdentifierFromIdentification(cryptohome_id),
-        request_origin,
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       "Couldn't initiate async attestation cert request."));
-  }
-
-  void AsyncTpmAttestationFinishCertRequest(
-      const std::string& pca_response,
-      chromeos::attestation::AttestationKeyType key_type,
-      const Identification& cryptohome_id,
-      const std::string& key_name,
-      DataCallback callback) override {
-    CryptohomeClient::Get()->AsyncTpmAttestationFinishCertRequest(
-        pca_response, key_type,
-        CreateAccountIdentifierFromIdentification(cryptohome_id), key_name,
-        base::BindOnce(
-            &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-            "Couldn't initiate async attestation finish cert request."));
-  }
-
-  void TpmAttestationRegisterKey(
-      chromeos::attestation::AttestationKeyType key_type,
-      const Identification& cryptohome_id,
-      const std::string& key_name,
-      Callback callback) override {
-    CryptohomeClient::Get()->TpmAttestationRegisterKey(
-        key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
-        key_name,
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       "Couldn't initiate async attestation register key."));
-  }
-
-  void TpmAttestationSignEnterpriseChallenge(
-      chromeos::attestation::AttestationKeyType key_type,
-      const Identification& cryptohome_id,
-      const std::string& key_name,
-      const std::string& domain,
-      const std::string& device_id,
-      chromeos::attestation::AttestationChallengeOptions options,
-      const std::string& challenge,
-      const std::string& key_name_for_spkac,
-      DataCallback callback) override {
-    CryptohomeClient::Get()->TpmAttestationSignEnterpriseChallenge(
-        key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
-        key_name, domain, device_id, options, challenge, key_name_for_spkac,
-        base::BindOnce(
-            &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-            "Couldn't initiate async attestation enterprise challenge."));
-  }
-
-  void TpmAttestationSignSimpleChallenge(
-      chromeos::attestation::AttestationKeyType key_type,
-      const Identification& cryptohome_id,
-      const std::string& key_name,
-      const std::string& challenge,
-      DataCallback callback) override {
-    CryptohomeClient::Get()->TpmAttestationSignSimpleChallenge(
-        key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
-        key_name, challenge,
-        base::BindOnce(
-            &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-            "Couldn't initiate async attestation simple challenge."));
   }
 
  private:

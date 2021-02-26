@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "remoting/codec/webrtc_video_encoder.h"
-#include "third_party/webrtc/common_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace webrtc {
@@ -35,6 +34,8 @@ namespace remoting {
 // 6. If the encoder failed, go back to 3 with the failed DesktopFrame.
 //
 // Selector will return nullptr if there is no more codec supporting |profile_|.
+// Calling SetPreferredCodec() again will reset the cycle, so that the next call
+// to CreateEncoder() will start with the codec from SDP.
 class WebrtcVideoEncoderSelector final {
  public:
   struct Profile {

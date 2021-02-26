@@ -10,6 +10,7 @@
 
 #include "anglebase/no_destructor.h"
 #include "common/mathutil.h"
+#include "gpu_info_util/SystemInfo.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Framebuffer.h"
 
@@ -138,15 +139,6 @@ static bool RequireExtOrExtOrExt(const Version &, const Extensions &extensions)
     return extensions.*bool1 || extensions.*bool2 || extensions.*bool3;
 }
 
-static bool UnsizedHalfFloatOESRGBATextureAttachmentSupport(const Version &clientVersion,
-                                                            const Extensions &extensions)
-{
-    // dEQP requires ES3 + EXT_color_buffer_half_float for rendering to RGB[A] + HALF_FLOAT_OES
-    // textures but WebGL allows it with just ES 2.0
-    return (clientVersion.major >= 3 || extensions.webglCompatibility) &&
-           extensions.colorBufferHalfFloat;
-}
-
 // R8, RG8
 static bool SizedRGSupport(const Version &clientVersion, const Extensions &extensions)
 {
@@ -186,7 +178,9 @@ static bool SizedHalfFloatRGTextureAttachmentSupport(const Version &clientVersio
     // HALF_FLOAT
     if (clientVersion >= Version(3, 0))
     {
-        return extensions.colorBufferFloat;
+        // WebGL 2 supports EXT_color_buffer_half_float.
+        return extensions.colorBufferFloat ||
+               (extensions.webglCompatibility && extensions.colorBufferHalfFloat);
     }
     // HALF_FLOAT_OES
     else
@@ -253,7 +247,8 @@ static bool SizedHalfFloatRGBTextureAttachmentSupport(const Version &clientVersi
         // It is unclear how EXT_color_buffer_half_float applies to ES3.0 and above, however,
         // dEQP GLES3 es3fFboColorbufferTests.cpp verifies that texture attachment of GL_RGB16F
         // is possible, so assume that all GLES implementations support it.
-        return extensions.colorBufferHalfFloat;
+        // The WebGL version of the extension explicitly forbids RGB formats.
+        return extensions.colorBufferHalfFloat && !extensions.webglCompatibility;
     }
     // HALF_FLOAT_OES
     else
@@ -265,8 +260,9 @@ static bool SizedHalfFloatRGBTextureAttachmentSupport(const Version &clientVersi
 static bool SizedHalfFloatRGBRenderbufferSupport(const Version &clientVersion,
                                                  const Extensions &extensions)
 {
-    return (clientVersion >= Version(3, 0) || extensions.textureHalfFloat) &&
-           extensions.colorBufferHalfFloat;
+    return !extensions.webglCompatibility &&
+           ((clientVersion >= Version(3, 0) || extensions.textureHalfFloat) &&
+            extensions.colorBufferHalfFloat);
 }
 
 static bool SizedHalfFloatRGBATextureAttachmentSupport(const Version &clientVersion,
@@ -275,7 +271,9 @@ static bool SizedHalfFloatRGBATextureAttachmentSupport(const Version &clientVers
     // HALF_FLOAT
     if (clientVersion >= Version(3, 0))
     {
-        return extensions.colorBufferFloat;
+        // WebGL 2 supports EXT_color_buffer_half_float.
+        return extensions.colorBufferFloat ||
+               (extensions.webglCompatibility && extensions.colorBufferHalfFloat);
     }
     // HALF_FLOAT_OES
     else
@@ -324,7 +322,9 @@ static bool SizedFloatRGBARenderableSupport(const Version &clientVersion,
 
 static bool Float32BlendableSupport(const Version &clientVersion, const Extensions &extensions)
 {
-    return extensions.colorBufferFloat && extensions.floatBlend;
+    // EXT_float_blend may be exposed on ES2 client contexts. Ensure that RGBA32F is renderable.
+    return (extensions.colorBufferFloatRGBA || extensions.colorBufferFloat) &&
+           extensions.floatBlend;
 }
 
 InternalFormat::InternalFormat()
@@ -352,10 +352,13 @@ InternalFormat::InternalFormat()
       textureSupport(NeverSupported),
       filterSupport(NeverSupported),
       textureAttachmentSupport(NeverSupported),
-      renderbufferSupport(NeverSupported)
+      renderbufferSupport(NeverSupported),
+      blendSupport(NeverSupported)
 {}
 
 InternalFormat::InternalFormat(const InternalFormat &other) = default;
+
+InternalFormat &InternalFormat::operator=(const InternalFormat &other) = default;
 
 bool InternalFormat::isLUMA() const
 {
@@ -823,6 +826,7 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     // Special format which is not really supported, so always false for all supports.
     AddRGBAFormat(&map, GL_BGRX8_ANGLEX,      true,  8,  8,  8,  0, 0, GL_BGRA_EXT,     GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
     AddRGBAFormat(&map, GL_BGR565_ANGLEX,     true,  5,  6,  5,  1, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_5_6_5,           GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
+    AddRGBAFormat(&map, GL_BGR10_A2_ANGLEX,   true, 10, 10, 10,  2, 0, GL_BGRA_EXT,     GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
 
     // Floating point formats
     //                 | Internal format |sized| R | G | B | A |S | Format | Type             | Component type | SRGB | Texture supported         | Filterable                                    | Texture attachment                          | Renderbuffer                            | Blend
@@ -964,24 +968,24 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
 
     // From GL_IMG_texture_compression_pvrtc
     //                       | Internal format                       | W | H | D | BS |CC| SRGB | Texture supported                                 | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,      1,  1,  1,   1, 3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,      1,  1,  1,   1, 3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,     1,  1,  1,   1, 4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG,     1,  1,  1,   1, 4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,      4,  4,  1,  64,  3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,      8,  4,  1,  64,  3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,     4,  4,  1,  64,  4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG,     8,  4,  1,  64,  4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_EXT_pvrtc_sRGB
     //                       | Internal format                             | W | H | D | BS |CC| SRGB | Texture supported                                     | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT,           1,  1,  1,   1, 3,  true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT,           1,  1,  1,   1, 3,  true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT,     1,  1,  1,   1, 4,  true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT,     1,  1,  1,   1, 4,  true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT,           8,  4,  1,  64,  3, true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT,           4,  4,  1,  64,  3, true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT,     8,  4,  1,  64,  4, true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT,     4,  4,  1,  64,  4, true, RequireExt<&Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // For STENCIL_INDEX8 we chose a normalized component type for the following reasons:
     // - Multisampled buffer are disallowed for non-normalized integer component types and we want to support it for STENCIL_INDEX8
     // - All other stencil formats (all depth-stencil) are either float or normalized
     // - It affects only validation of internalformat in RenderbufferStorageMultisample.
-    //                         | Internal format  |sized|D |S |X | Format    | Type            | Component type        | Texture supported | Filterable    | Texture attachment | Renderbuffer   | Blend
-    AddDepthStencilFormat(&map, GL_STENCIL_INDEX8, true, 0, 8, 0, GL_STENCIL, GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, RequireES<1, 0>,    NeverSupported, RequireES<1, 0>,     RequireES<1, 0>, RequireES<1, 0>);
+    //                         | Internal format  |sized|D |S |X | Format          | Type            | Component type        | Texture supported                               | Filterable    | Texture attachment                              | Renderbuffer   | Blend
+    AddDepthStencilFormat(&map, GL_STENCIL_INDEX8, true, 0, 8, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, RequireESOrExt<1, 0, &Extensions::stencilIndex8>, NeverSupported, RequireESOrExt<1, 0, &Extensions::stencilIndex8>, RequireES<1, 0>, RequireES<1, 0>);
 
     // From GL_ANGLE_lossy_etc_decode
     //                       | Internal format                                                |W |H |D |BS |CC| SRGB | Texture supported                      | Filterable     | Texture attachment | Renderbuffer  | Blend
@@ -1026,8 +1030,21 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddRGBAFormat(&map, GL_RGBA,           false,  8,  8,  8,  8, 0, GL_RGBA,           GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                   NeverSupported,  NeverSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_SRGB,           false,  8,  8,  8,  0, 0, GL_SRGB,           GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGB>,                    AlwaysSupported, NeverSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_SRGB_ALPHA_EXT, false,  8,  8,  8,  8, 0, GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGB>,                    AlwaysSupported, RequireExt<&Extensions::sRGB>,                  NeverSupported, NeverSupported);
-#if defined(ANGLE_PLATFORM_IOS) && !defined(ANGLE_PLATFORM_MACCATALYST)
-    AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireES<2, 0>,                                  AlwaysSupported, RequireES<2, 0>,                                NeverSupported, NeverSupported);
+#if (defined(ANGLE_PLATFORM_IOS) && !defined(ANGLE_PLATFORM_MACCATALYST)) || (defined(ANGLE_PLATFORM_MACCATALYST) && defined(ANGLE_CPU_ARM64))
+    angle::SystemInfo info;
+    if (angle::GetSystemInfo(&info))
+    {
+        if (info.isiOSAppOnMac)
+        {
+            // Using OpenGLES.framework.
+            AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireES<2, 0>,                                  AlwaysSupported, RequireES<2, 0>,                                NeverSupported, NeverSupported);
+        }
+        else
+        {
+            // Using OpenGL.framework.
+            AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>, NeverSupported, NeverSupported);
+        }
+    }
 #else
     AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>, NeverSupported, NeverSupported);
 #endif
@@ -1068,8 +1085,8 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT,                   GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RED,          false, 16,  0,  0,  0, 0, GL_RED,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloat, &Extensions::textureRG>,    RequireExt<&Extensions::textureHalfFloatLinear>, AlwaysSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RG,           false, 16, 16,  0,  0, 0, GL_RG,   GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloat, &Extensions::textureRG>,    RequireExt<&Extensions::textureHalfFloatLinear>, AlwaysSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RGB,          false, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, UnsizedHalfFloatOESRGBATextureAttachmentSupport, NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, UnsizedHalfFloatOESRGBATextureAttachmentSupport, NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RGB,          false, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, RequireExt<&Extensions::colorBufferHalfFloat>,   NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, RequireExt<&Extensions::colorBufferHalfFloat>,   NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RED,          false, 32,  0,  0,  0, 0, GL_RED,  GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRG>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RG,           false, 32, 32,  0,  0, 0, GL_RG,   GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRG>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGB,          false, 32, 32, 32,  0, 0, GL_RGB,  GL_FLOAT,                        GL_FLOAT, false, RequireExt<&Extensions::textureFloatOES>,                                   RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,                                  NeverSupported, NeverSupported);
@@ -1109,6 +1126,32 @@ const InternalFormatInfoMap &GetInternalFormatMap()
     static const angle::base::NoDestructor<InternalFormatInfoMap> formatMap(
         BuildInternalFormatInfoMap());
     return *formatMap;
+}
+
+int GetAndroidHardwareBufferFormatFromChannelSizes(const egl::AttributeMap &attribMap)
+{
+    // Retrieve channel size from attribute map. The default value should be 0, per spec.
+    GLuint redSize   = static_cast<GLuint>(attribMap.getAsInt(EGL_RED_SIZE, 0));
+    GLuint greenSize = static_cast<GLuint>(attribMap.getAsInt(EGL_GREEN_SIZE, 0));
+    GLuint blueSize  = static_cast<GLuint>(attribMap.getAsInt(EGL_BLUE_SIZE, 0));
+    GLuint alphaSize = static_cast<GLuint>(attribMap.getAsInt(EGL_ALPHA_SIZE, 0));
+
+    GLenum glInternalFormat = 0;
+    for (GLenum sizedInternalFormat : angle::android::kSupportedSizedInternalFormats)
+    {
+        const gl::InternalFormat &internalFormat = GetSizedInternalFormatInfo(sizedInternalFormat);
+        ASSERT(internalFormat.internalFormat != GL_NONE && internalFormat.sized);
+
+        if (internalFormat.isChannelSizeCompatible(redSize, greenSize, blueSize, alphaSize))
+        {
+            glInternalFormat = sizedInternalFormat;
+            break;
+        }
+    }
+
+    return (glInternalFormat != 0)
+               ? angle::android::GLInternalFormatToNativePixelFormat(glInternalFormat)
+               : 0;
 }
 
 static FormatSet BuildAllSizedInternalFormatSet()
@@ -1242,6 +1285,36 @@ GLuint InternalFormat::computePixelBytes(GLenum formatType) const
     return components * typeInfo.bytes;
 }
 
+bool InternalFormat::computeBufferRowLength(uint32_t width, uint32_t *resultOut) const
+{
+    CheckedNumeric<GLuint> checkedWidth(width);
+
+    if (compressed)
+    {
+        angle::CheckedNumeric<uint32_t> checkedRowLength =
+            rx::CheckedRoundUp<uint32_t>(width, compressedBlockWidth);
+
+        return CheckedMathResult(checkedRowLength, resultOut);
+    }
+
+    return CheckedMathResult(checkedWidth, resultOut);
+}
+
+bool InternalFormat::computeBufferImageHeight(uint32_t height, uint32_t *resultOut) const
+{
+    CheckedNumeric<GLuint> checkedHeight(height);
+
+    if (compressed)
+    {
+        angle::CheckedNumeric<uint32_t> checkedImageHeight =
+            rx::CheckedRoundUp<uint32_t>(height, compressedBlockHeight);
+
+        return CheckedMathResult(checkedImageHeight, resultOut);
+    }
+
+    return CheckedMathResult(checkedHeight, resultOut);
+}
+
 bool InternalFormat::computeRowPitch(GLenum formatType,
                                      GLsizei width,
                                      GLint alignment,
@@ -1311,12 +1384,49 @@ bool InternalFormat::computeCompressedImageSize(const Extents &size, GLuint *res
     CheckedNumeric<GLuint> checkedDepth(size.depth);
     CheckedNumeric<GLuint> checkedBlockWidth(compressedBlockWidth);
     CheckedNumeric<GLuint> checkedBlockHeight(compressedBlockHeight);
+    GLuint minBlockWidth, minBlockHeight;
+    std::tie(minBlockWidth, minBlockHeight) = getCompressedImageMinBlocks();
 
     ASSERT(compressed);
     auto numBlocksWide = (checkedWidth + checkedBlockWidth - 1u) / checkedBlockWidth;
     auto numBlocksHigh = (checkedHeight + checkedBlockHeight - 1u) / checkedBlockHeight;
-    auto bytes         = numBlocksWide * numBlocksHigh * pixelBytes * checkedDepth;
+    if (numBlocksWide.IsValid() && numBlocksWide.ValueOrDie() < minBlockWidth)
+        numBlocksWide = minBlockWidth;
+    if (numBlocksHigh.IsValid() && numBlocksHigh.ValueOrDie() < minBlockHeight)
+        numBlocksHigh = minBlockHeight;
+    auto bytes = numBlocksWide * numBlocksHigh * pixelBytes * checkedDepth;
     return CheckedMathResult(bytes, resultOut);
+}
+
+std::pair<GLuint, GLuint> InternalFormat::getCompressedImageMinBlocks() const
+{
+    GLuint minBlockWidth  = 0;
+    GLuint minBlockHeight = 0;
+
+    // Per the specification, a PVRTC block needs information from the 3 nearest blocks.
+    // GL_IMG_texture_compression_pvrtc specifies the minimum size requirement in pixels, but
+    // ANGLE's texture tables are written in terms of blocks. The 4BPP formats use 4x4 blocks, and
+    // the 2BPP formats, 8x4 blocks. Therefore, both kinds of formats require a minimum of 2x2
+    // blocks.
+    switch (internalFormat)
+    {
+        case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+        case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+        case GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:
+        case GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:
+        case GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:
+        case GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:
+            minBlockWidth  = 2;
+            minBlockHeight = 2;
+            break;
+
+        default:
+            break;
+    }
+
+    return std::make_pair(minBlockWidth, minBlockHeight);
 }
 
 bool InternalFormat::computeSkipBytes(GLenum formatType,
@@ -1425,6 +1535,22 @@ bool CompressedFormatRequiresWholeImage(GLenum internalFormat)
 
         default:
             return false;
+    }
+}
+
+void MaybeOverrideLuminance(GLenum &format, GLenum &type, GLenum actualFormat, GLenum actualType)
+{
+    gl::InternalFormat internalFormat = gl::GetInternalFormatInfo(format, type);
+    if (internalFormat.isLUMA())
+    {
+        // Ensure the format and type are compatible
+        ASSERT(internalFormat.pixelBytes ==
+               gl::GetInternalFormatInfo(actualFormat, actualType).pixelBytes);
+
+        // For Luminance formats, override with the internal format. Since this is not
+        // renderable, our pixel pack routines don't handle it correctly.
+        format = actualFormat;
+        type   = actualType;
     }
 }
 

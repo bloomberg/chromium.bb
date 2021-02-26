@@ -90,7 +90,11 @@ void OfflineAudioDestinationHandler::Uninitialize() {
   if (!IsInitialized())
     return;
 
-  render_thread_.reset();
+  // See https://crbug.com/1110035 and https://crbug.com/1080821. Resetting the
+  // thread unique pointer multiple times or not-resetting at all causes a
+  // mysterious CHECK failure or a crash.
+  if (render_thread_)
+    render_thread_.reset();
 
   AudioHandler::Uninitialize();
 }
@@ -384,7 +388,7 @@ OfflineAudioDestinationNode* OfflineAudioDestinationNode::Create(
       *context, number_of_channels, frames_to_process, sample_rate);
 }
 
-void OfflineAudioDestinationNode::Trace(Visitor* visitor) {
+void OfflineAudioDestinationNode::Trace(Visitor* visitor) const {
   visitor->Trace(destination_buffer_);
   AudioDestinationNode::Trace(visitor);
 }

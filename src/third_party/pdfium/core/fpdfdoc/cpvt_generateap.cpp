@@ -34,7 +34,6 @@
 #include "core/fpdfdoc/cpvt_fontmap.h"
 #include "core/fpdfdoc/cpvt_word.h"
 #include "core/fxge/cfx_renderdevice.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -47,7 +46,7 @@ struct CPVT_Dash {
   int32_t nPhase;
 };
 
-enum class PaintOperation { STROKE, FILL };
+enum class PaintOperation { kStroke, kFill };
 
 ByteString GetPDFWordString(IPVT_FontMap* pFontMap,
                             int32_t nFontIndex,
@@ -182,18 +181,18 @@ ByteString GenerateColorAP(const CFX_Color& color, PaintOperation nOperation) {
     case CFX_Color::kRGB:
       sColorStream << color.fColor1 << " " << color.fColor2 << " "
                    << color.fColor3 << " "
-                   << (nOperation == PaintOperation::STROKE ? "RG" : "rg")
+                   << (nOperation == PaintOperation::kStroke ? "RG" : "rg")
                    << "\n";
       break;
     case CFX_Color::kGray:
       sColorStream << color.fColor1 << " "
-                   << (nOperation == PaintOperation::STROKE ? "G" : "g")
+                   << (nOperation == PaintOperation::kStroke ? "G" : "g")
                    << "\n";
       break;
     case CFX_Color::kCMYK:
       sColorStream << color.fColor1 << " " << color.fColor2 << " "
                    << color.fColor3 << " " << color.fColor4 << " "
-                   << (nOperation == PaintOperation::STROKE ? "K" : "k")
+                   << (nOperation == PaintOperation::kStroke ? "K" : "k")
                    << "\n";
       break;
     case CFX_Color::kTransparent:
@@ -219,8 +218,8 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
     float fHalfWidth = fWidth / 2.0f;
     switch (nStyle) {
       default:
-      case BorderStyle::SOLID:
-        sColor = GenerateColorAP(color, PaintOperation::FILL);
+      case BorderStyle::kSolid:
+        sColor = GenerateColorAP(color, PaintOperation::kFill);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fLeft << " " << fBottom << " " << fRight - fLeft << " "
@@ -231,8 +230,8 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
           sAppStream << "f*\n";
         }
         break;
-      case BorderStyle::DASH:
-        sColor = GenerateColorAP(color, PaintOperation::STROKE);
+      case BorderStyle::kDash:
+        sColor = GenerateColorAP(color, PaintOperation::kStroke);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fWidth << " w"
@@ -250,9 +249,9 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
                      << " l S\n";
         }
         break;
-      case BorderStyle::BEVELED:
-      case BorderStyle::INSET:
-        sColor = GenerateColorAP(crLeftTop, PaintOperation::FILL);
+      case BorderStyle::kBeveled:
+      case BorderStyle::kInset:
+        sColor = GenerateColorAP(crLeftTop, PaintOperation::kFill);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fLeft + fHalfWidth << " " << fBottom + fHalfWidth
@@ -268,7 +267,7 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
           sAppStream << fLeft + fHalfWidth * 2 << " "
                      << fBottom + fHalfWidth * 2 << " l f\n";
         }
-        sColor = GenerateColorAP(crRightBottom, PaintOperation::FILL);
+        sColor = GenerateColorAP(crRightBottom, PaintOperation::kFill);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fRight - fHalfWidth << " " << fTop - fHalfWidth
@@ -284,7 +283,7 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
           sAppStream << fRight - fHalfWidth * 2 << " " << fTop - fHalfWidth * 2
                      << " l f\n";
         }
-        sColor = GenerateColorAP(color, PaintOperation::FILL);
+        sColor = GenerateColorAP(color, PaintOperation::kFill);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fLeft << " " << fBottom << " " << fRight - fLeft << " "
@@ -294,8 +293,8 @@ ByteString GenerateBorderAP(const CFX_FloatRect& rect,
                      << fTop - fBottom - fHalfWidth * 2 << " re f*\n";
         }
         break;
-      case BorderStyle::UNDERLINE:
-        sColor = GenerateColorAP(color, PaintOperation::STROKE);
+      case BorderStyle::kUnderline:
+        sColor = GenerateColorAP(color, PaintOperation::kStroke);
         if (sColor.GetLength() > 0) {
           sAppStream << sColor;
           sAppStream << fWidth << " w\n";
@@ -396,7 +395,7 @@ ByteString GetPopupContentsString(CPDF_Document* pDoc,
   std::ostringstream sAppStream;
   sAppStream << "BT\n"
              << GenerateColorAP(CFX_Color(CFX_Color::kRGB, 0, 0, 0),
-                                PaintOperation::FILL)
+                                PaintOperation::kFill)
              << sContent << "ET\n"
              << "Q\n";
   return ByteString(sAppStream);
@@ -426,9 +425,9 @@ ByteString GetPaintOperatorString(bool bIsStrokeRect, bool bIsFillRect) {
 ByteString GenerateTextSymbolAP(const CFX_FloatRect& rect) {
   std::ostringstream sAppStream;
   sAppStream << GenerateColorAP(CFX_Color(CFX_Color::kRGB, 1, 1, 0),
-                                PaintOperation::FILL);
+                                PaintOperation::kFill);
   sAppStream << GenerateColorAP(CFX_Color(CFX_Color::kRGB, 0, 0, 0),
-                                PaintOperation::STROKE);
+                                PaintOperation::kStroke);
 
   const float fBorderWidth = 1;
   sAppStream << fBorderWidth << " w\n";
@@ -539,12 +538,13 @@ bool GenerateCircleAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
   sAppStream << "/" << sExtGSDictName << " gs ";
 
   CPDF_Array* pInteriorColor = pAnnotDict->GetArrayFor("IC");
-  sAppStream << GetColorStringWithDefault(
-      pInteriorColor, CFX_Color(CFX_Color::kTransparent), PaintOperation::FILL);
+  sAppStream << GetColorStringWithDefault(pInteriorColor,
+                                          CFX_Color(CFX_Color::kTransparent),
+                                          PaintOperation::kFill);
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   float fBorderWidth = GetBorderWidth(*pAnnotDict);
   bool bIsStrokeRect = fBorderWidth > 0;
@@ -612,7 +612,7 @@ bool GenerateHighlightAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 1, 1, 0), PaintOperation::FILL);
+      CFX_Color(CFX_Color::kRGB, 1, 1, 0), PaintOperation::kFill);
 
   CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
   if (pArray) {
@@ -654,7 +654,7 @@ bool GenerateInkAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   sAppStream << fBorderWidth << " w ";
   sAppStream << GetDashPatternString(*pAnnotDict);
@@ -719,7 +719,7 @@ bool GenerateUnderlineAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
   if (pArray) {
@@ -749,9 +749,9 @@ bool GeneratePopupAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
   sAppStream << "/" << sExtGSDictName << " gs\n";
 
   sAppStream << GenerateColorAP(CFX_Color(CFX_Color::kRGB, 1, 1, 0),
-                                PaintOperation::FILL);
+                                PaintOperation::kFill);
   sAppStream << GenerateColorAP(CFX_Color(CFX_Color::kRGB, 0, 0, 0),
-                                PaintOperation::STROKE);
+                                PaintOperation::kStroke);
 
   const float fBorderWidth = 1;
   sAppStream << fBorderWidth << " w\n";
@@ -789,12 +789,13 @@ bool GenerateSquareAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
   sAppStream << "/" << sExtGSDictName << " gs ";
 
   CPDF_Array* pInteriorColor = pAnnotDict->GetArrayFor("IC");
-  sAppStream << GetColorStringWithDefault(
-      pInteriorColor, CFX_Color(CFX_Color::kTransparent), PaintOperation::FILL);
+  sAppStream << GetColorStringWithDefault(pInteriorColor,
+                                          CFX_Color(CFX_Color::kTransparent),
+                                          PaintOperation::kFill);
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   float fBorderWidth = GetBorderWidth(*pAnnotDict);
   bool bIsStrokeRect = fBorderWidth > 0;
@@ -836,7 +837,7 @@ bool GenerateSquigglyAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
   if (pArray) {
@@ -886,7 +887,7 @@ bool GenerateStrikeOutAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
 
   sAppStream << GetColorStringWithDefault(
       pAnnotDict->GetArrayFor(pdfium::annotation::kC),
-      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::STROKE);
+      CFX_Color(CFX_Color::kRGB, 0, 0, 0), PaintOperation::kStroke);
 
   CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
   if (pArray) {
@@ -994,7 +995,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
       break;
   }
 
-  BorderStyle nBorderStyle = BorderStyle::SOLID;
+  BorderStyle nBorderStyle = BorderStyle::kSolid;
   float fBorderWidth = 1;
   CPVT_Dash dsBorder(3, 0, 0);
   CFX_Color crLeftTop;
@@ -1010,25 +1011,25 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
     if (pBSDict->GetStringFor("S").GetLength()) {
       switch (pBSDict->GetStringFor("S")[0]) {
         case 'S':
-          nBorderStyle = BorderStyle::SOLID;
+          nBorderStyle = BorderStyle::kSolid;
           break;
         case 'D':
-          nBorderStyle = BorderStyle::DASH;
+          nBorderStyle = BorderStyle::kDash;
           break;
         case 'B':
-          nBorderStyle = BorderStyle::BEVELED;
+          nBorderStyle = BorderStyle::kBeveled;
           fBorderWidth *= 2;
           crLeftTop = CFX_Color(CFX_Color::kGray, 1);
           crRightBottom = CFX_Color(CFX_Color::kGray, 0.5);
           break;
         case 'I':
-          nBorderStyle = BorderStyle::INSET;
+          nBorderStyle = BorderStyle::kInset;
           fBorderWidth *= 2;
           crLeftTop = CFX_Color(CFX_Color::kGray, 0.5);
           crRightBottom = CFX_Color(CFX_Color::kGray, 0.75);
           break;
         case 'U':
-          nBorderStyle = BorderStyle::UNDERLINE;
+          nBorderStyle = BorderStyle::kUnderline;
           break;
       }
     }
@@ -1042,7 +1043,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
       crBG = fpdfdoc::CFXColorFromArray(*pArray);
   }
   std::ostringstream sAppStream;
-  ByteString sBG = GenerateColorAP(crBG, PaintOperation::FILL);
+  ByteString sBG = GenerateColorAP(crBG, PaintOperation::kFill);
   if (sBG.GetLength() > 0) {
     sAppStream << "q\n"
                << sBG << rcBBox.left << " " << rcBBox.bottom << " "
@@ -1153,7 +1154,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
                      << " re\nW\nn\n";
         }
         sAppStream << "BT\n"
-                   << GenerateColorAP(crText, PaintOperation::FILL) << sBody
+                   << GenerateColorAP(crText, PaintOperation::kFill) << sBody
                    << "ET\n"
                    << "Q\nEMC\n";
       }
@@ -1195,14 +1196,14 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
         sAppStream << rcEdit.left << " " << rcEdit.bottom << " "
                    << rcEdit.Width() << " " << rcEdit.Height() << " re\nW\nn\n";
         sAppStream << "BT\n"
-                   << GenerateColorAP(crText, PaintOperation::FILL) << sEdit
+                   << GenerateColorAP(crText, PaintOperation::kFill) << sEdit
                    << "ET\n"
                    << "Q\nEMC\n";
       }
       ByteString sButton =
           GenerateColorAP(CFX_Color(CFX_Color::kRGB, 220.0f / 255.0f,
                                     220.0f / 255.0f, 220.0f / 255.0f),
-                          PaintOperation::FILL);
+                          PaintOperation::kFill);
       if (sButton.GetLength() > 0 && !rcButton.IsEmpty()) {
         sAppStream << "q\n" << sButton;
         sAppStream << rcButton.left << " " << rcButton.bottom << " "
@@ -1211,7 +1212,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
         ByteString sButtonBorder = GenerateBorderAP(
             rcButton, 2, CFX_Color(CFX_Color::kGray, 0),
             CFX_Color(CFX_Color::kGray, 1), CFX_Color(CFX_Color::kGray, 0.5),
-            BorderStyle::BEVELED, CPVT_Dash(3, 0, 0));
+            BorderStyle::kBeveled, CPVT_Dash(3, 0, 0));
         if (sButtonBorder.GetLength() > 0)
           sAppStream << "q\n" << sButtonBorder << "Q\n";
 
@@ -1284,19 +1285,19 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
                     << GenerateColorAP(
                            CFX_Color(CFX_Color::kRGB, 0, 51.0f / 255.0f,
                                      113.0f / 255.0f),
-                           PaintOperation::FILL)
+                           PaintOperation::kFill)
                     << rcItem.left << " " << rcItem.bottom << " "
                     << rcItem.Width() << " " << rcItem.Height() << " re f\n"
                     << "Q\n";
               sBody << "BT\n"
                     << GenerateColorAP(CFX_Color(CFX_Color::kGray, 1),
-                                       PaintOperation::FILL)
+                                       PaintOperation::kFill)
                     << GenerateEditAP(&map, vt.GetIterator(),
                                       CFX_PointF(0.0f, fy), true, 0)
                     << "ET\n";
             } else {
               sBody << "BT\n"
-                    << GenerateColorAP(crText, PaintOperation::FILL)
+                    << GenerateColorAP(crText, PaintOperation::kFill)
                     << GenerateEditAP(&map, vt.GetIterator(),
                                       CFX_PointF(0.0f, fy), true, 0)
                     << "ET\n";

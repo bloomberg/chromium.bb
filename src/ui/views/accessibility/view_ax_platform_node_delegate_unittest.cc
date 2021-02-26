@@ -34,10 +34,32 @@ namespace {
 
 class TestButton : public Button {
  public:
-  TestButton() : Button(nullptr) {}
+  TestButton() : Button(Button::PressedCallback()) {}
   TestButton(const TestButton&) = delete;
   TestButton& operator=(const TestButton&) = delete;
   ~TestButton() override = default;
+};
+
+class TestAXEventObserver : public AXEventObserver {
+ public:
+  explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
+    AXEventManager::Get()->AddObserver(this);
+  }
+  TestAXEventObserver(const TestAXEventObserver&) = delete;
+  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
+  ~TestAXEventObserver() override {
+    AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // AXEventObserver:
+  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
+    std::vector<AXAuraObjWrapper*> out_children;
+    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
+    ax_obj->GetChildren(&out_children);
+  }
+
+ private:
+  AXAuraObjCache* cache_;
 };
 
 }  // namespace
@@ -178,7 +200,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, LabelIsChildOfButton) {
   button_->SetInstallFocusRingOnFocus(false);
 
   // |button_| is focusable, so |label_| (as its child) should be ignored.
-  EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, button_->GetFocusBehavior());
+  EXPECT_NE(View::FocusBehavior::NEVER, button_->GetFocusBehavior());
   EXPECT_EQ(1, button_accessibility()->GetChildCount());
   EXPECT_EQ(button_->GetNativeViewAccessible(),
             label_accessibility()->GetParent());
@@ -412,33 +434,11 @@ class DerivedTestView : public View {
   void OnBlur() override { SetVisible(false); }
 };
 
-class TestAXEventObserver : public AXEventObserver {
- public:
-  explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
-    AXEventManager::Get()->AddObserver(this);
-  }
-  TestAXEventObserver(const TestAXEventObserver&) = delete;
-  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
-  ~TestAXEventObserver() override {
-    AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  // AXEventObserver:
-  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
-    std::vector<AXAuraObjWrapper*> out_children;
-    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
-    ax_obj->GetChildren(&out_children);
-  }
-
- private:
-  AXAuraObjCache* cache_;
-};
-
-using ViewAccessibilityTest = ViewsTestBase;
+using AXViewTest = ViewsTestBase;
 
 // Check if the destruction of the widget ends successfully if |view|'s
 // visibility changed during destruction.
-TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
+TEST_F(AXViewTest, LayoutCalledInvalidateRootView) {
   // TODO(jamescook): Construct a real AutomationManagerAura rather than using
   // this observer to simulate it.
   AXAuraObjCache cache;

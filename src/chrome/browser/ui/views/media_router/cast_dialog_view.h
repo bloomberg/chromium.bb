@@ -16,7 +16,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 class Browser;
@@ -36,7 +35,6 @@ struct UIMediaSink;
 // to devices. The list of devices used to populate the dialog is supplied by
 // CastDialogModel.
 class CastDialogView : public views::BubbleDialogDelegateView,
-                       public views::ButtonListener,
                        public CastDialogController::Observer,
                        public ui::SimpleMenuModel::Delegate {
  public:
@@ -83,9 +81,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Returns nullptr if the dialog is currently not shown.
   static views::Widget* GetCurrentDialogWidget();
 
-  // views::WidgetDelegateView:
-  bool ShouldShowCloseButton() const override;
-
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
 
@@ -93,11 +88,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void OnModelUpdated(const CastDialogModel& model) override;
   void OnControllerInvalidated() override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  // views::BubbleDialogDelegateView:
   void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::SimpleMenuModel::Delegate:

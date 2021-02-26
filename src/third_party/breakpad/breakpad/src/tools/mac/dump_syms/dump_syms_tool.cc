@@ -106,7 +106,7 @@ static void CopyCFIDataBetweenModules(Module* to_module,
   }
 }
 
-static bool Start(const Options &options) {
+static bool Start(const Options& options) {
   SymbolData symbol_data = options.cfi ? ALL_SYMBOL_DATA : NO_CFI;
   DumpSymbols dump_symbols(symbol_data, options.handle_inter_cu_refs);
 
@@ -210,7 +210,7 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   signed char ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "ia:g:chr?")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "ia:g:chr?")) != -1) {
     switch (ch) {
       case 'i':
         options->header_only = true;

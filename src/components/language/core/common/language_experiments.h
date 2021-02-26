@@ -36,17 +36,20 @@ extern const base::Feature kNotifySyncOnLanguageDetermined;
 // This feature uses the existing UI for translate bubble.
 extern const base::Feature kUseButtonTranslateBubbleUi;
 
+// This feature enables setting the application language on Android.
+extern const base::Feature kDetailedLanguageSettings;
+
+// This feature enables providing Translate data to Assistant.
+extern const base::Feature kTranslateAssistContent;
+
+// This feature enables an intent that starts translating the foreground tab.
+extern const base::Feature kTranslateIntent;
+
 enum class OverrideLanguageModel {
   DEFAULT,
   FLUENT,
   HEURISTIC,
   GEO,
-};
-
-// Options for the translate desktop UI experiment.
-enum class TranslateUIBubbleModel {
-  DEFAULT,
-  TAB,
 };
 
 // Returns which language model to use depending on the state of all Language
@@ -68,10 +71,6 @@ bool ShouldPreventRankerEnforcementInIndia(int force_trigger_count);
 // because of kOverrideTranslateTriggerInIndia often enough that the experiment
 // should stop being taken into account.
 bool IsForceTriggerBackoffThresholdReached(int force_trigger_count);
-
-// Returns which translate bubble UI to use depending on selection in
-// kTranslateUIBubbleKey.
-TranslateUIBubbleModel GetTranslateUiBubbleModel();
 }  // namespace language
 
 #endif  // COMPONENTS_LANGUAGE_CORE_COMMON_LANGUAGE_EXPERIMENTS_H_

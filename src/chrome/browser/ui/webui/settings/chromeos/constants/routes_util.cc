@@ -37,15 +37,16 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kMultiDeviceSectionPath,
       chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath,
       chromeos::settings::mojom::kSmartLockSubpagePath,
+      chromeos::settings::mojom::kNearbyShareSubpagePath,
 
       // People section.
       chromeos::settings::mojom::kPeopleSectionPath,
       chromeos::settings::mojom::kMyAccountsSubpagePath,
       chromeos::settings::mojom::kSyncSubpagePath,
       chromeos::settings::mojom::kSecurityAndSignInSubpagePath,
-      chromeos::settings::mojom::kFingerprintSubpathPath,
+      chromeos::settings::mojom::kFingerprintSubpagePath,
       chromeos::settings::mojom::kManageOtherPeopleSubpagePath,
-      chromeos::settings::mojom::kKerberosSubpagePath,
+      chromeos::settings::mojom::kKerberosAccountsSubpagePath,
 
       // Device section.
       chromeos::settings::mojom::kDeviceSectionPath,
@@ -55,7 +56,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kDisplaySubpagePath,
       chromeos::settings::mojom::kStorageSubpagePath,
       chromeos::settings::mojom::kExternalStorageSubpagePath,
-      chromeos::settings::mojom::kDlcSubpagePath,
       chromeos::settings::mojom::kPowerSubpagePath,
 
       // Personalization section.
@@ -82,7 +82,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath,
       chromeos::settings::mojom::kCrostiniDevelopAndroidAppsSubpagePath,
       chromeos::settings::mojom::kCrostiniPortForwardingSubpagePath,
-      chromeos::settings::mojom::kCrostiniDiskResizeSubpagePath,
 
       // Date and Time section.
       chromeos::settings::mojom::kDateAndTimeSectionPath,
@@ -95,7 +94,11 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kLanguagesAndInputSectionPath,
       chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath,
       chromeos::settings::mojom::kManageInputMethodsSubpagePath,
-      chromeos::settings::mojom::kSmartInputsSubagePath,
+      chromeos::settings::mojom::kSmartInputsSubpagePath,
+      chromeos::settings::mojom::kInputMethodOptionsSubpagePath,
+      chromeos::settings::mojom::kLanguagesSubpagePath,
+      chromeos::settings::mojom::kInputSubpagePath,
+      chromeos::settings::mojom::kEditDictionarySubpagePath,
 
       // Files section.
       chromeos::settings::mojom::kFilesSectionPath,
@@ -119,6 +122,10 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kAboutChromeOsSectionPath,
       chromeos::settings::mojom::kAboutChromeOsDetailsSubpagePath,
       chromeos::settings::mojom::kDetailedBuildInfoSubpagePath,
+
+      // Kerberos section.
+      chromeos::settings::mojom::kKerberosSectionPath,
+      chromeos::settings::mojom::kKerberosAccountsV2SubpagePath,
   };
 
   // Sub-pages may have query parameters, e.g. networkDetail?guid=123456.

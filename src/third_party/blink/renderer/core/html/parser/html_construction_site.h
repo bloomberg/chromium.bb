@@ -53,7 +53,7 @@ struct HTMLConstructionSiteTask {
   explicit HTMLConstructionSiteTask(Operation op)
       : operation(op), self_closing(false) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(parent);
     visitor->Trace(next_child);
     visitor->Trace(child);
@@ -112,7 +112,7 @@ class HTMLConstructionSite final {
                        Document&,
                        ParserContentPolicy);
   ~HTMLConstructionSite();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void InitFragmentParsing(DocumentFragment*, Element* context_element);
 
@@ -149,9 +149,7 @@ class HTMLConstructionSite final {
   void InsertCommentOnDocument(AtomicHTMLToken*);
   void InsertCommentOnHTMLHtmlElement(AtomicHTMLToken*);
   void InsertHTMLElement(AtomicHTMLToken*);
-  void InsertHTMLTemplateElement(
-      AtomicHTMLToken*,
-      DeclarativeShadowRootType declarative_shadow_root_type);
+  void InsertHTMLTemplateElement(AtomicHTMLToken*, DeclarativeShadowRootType);
   void InsertSelfClosingHTMLElementDestroyingToken(AtomicHTMLToken*);
   void InsertFormattingElement(AtomicHTMLToken*);
   void InsertHTMLHeadElement(AtomicHTMLToken*);
@@ -328,7 +326,7 @@ class HTMLConstructionSite final {
       return string_builder.IsEmpty();
     }
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Member<ContainerNode> parent;
     Member<Node> next_child;

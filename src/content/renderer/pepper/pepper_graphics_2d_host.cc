@@ -27,7 +27,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -48,6 +47,7 @@
 #include "ppapi/thunk/enter.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -60,7 +60,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
@@ -199,7 +199,10 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
       offscreen_flush_pending_(false),
       is_always_opaque_(false),
       scale_(1.0f),
-      is_running_in_process_(host->IsRunningInProcess()) {}
+      is_running_in_process_(host->IsRunningInProcess()),
+      enable_gpu_memory_buffer_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              blink::switches::kEnableGpuMemoryBufferCompositorResources)) {}
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
   // Delete textures owned by PepperGraphics2DHost, but not those sent to the
@@ -650,9 +653,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     const viz::ResourceFormat format =
         upload_bgra ? viz::BGRA_8888 : viz::RGBA_8888;
 
-    RenderThreadImpl* rti = RenderThreadImpl::current();
     bool overlays_supported =
-        rti->IsGpuMemoryBufferCompositorResourcesEnabled() &&
+        enable_gpu_memory_buffer_ &&
         main_thread_context_->ContextCapabilities().texture_storage_image;
     uint32_t texture_target = GL_TEXTURE_2D;
     if (overlays_supported) {
@@ -682,8 +684,9 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
           gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY;
       if (overlays_supported)
         usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-      gpu_mailbox =
-          sii->CreateSharedImage(format, size, gfx::ColorSpace(), usage);
+      gpu_mailbox = sii->CreateSharedImage(
+          format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, usage, gpu::kNullSurfaceHandle);
       in_sync_token = sii->GenUnverifiedSyncToken();
     }
 
@@ -849,11 +852,6 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
     ScheduleOffscreenFlushAck();
   } else {
     need_flush_ack_ = true;
-  }
-
-  if (bound_instance_ && bound_instance_->throttler() &&
-      bound_instance_->throttler()->needs_representative_keyframe()) {
-    bound_instance_->throttler()->OnImageFlush(image_data_->GetMappedBitmap());
   }
 
   return PP_OK_COMPLETIONPENDING;

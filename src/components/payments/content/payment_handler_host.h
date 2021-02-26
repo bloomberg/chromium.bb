@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
@@ -27,7 +28,8 @@ using ChangePaymentRequestDetailsCallback =
 
 // Handles the communication from the payment handler renderer process to the
 // merchant renderer process.
-class PaymentHandlerHost : public mojom::PaymentHandlerHost {
+class PaymentHandlerHost : public mojom::PaymentHandlerHost,
+                           public content::WebContentsObserver {
  public:
   // The interface to be implemented by the object that can communicate to the
   // merchant's renderer process.
@@ -56,7 +58,8 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // is accomplished by the |delegate| owning this object. The |web_contents| is
   // used for developer tools logging and should be from the same browser
   // context as the payment handler.
-  PaymentHandlerHost(content::WebContents* web_contents, Delegate* delegate);
+  PaymentHandlerHost(content::WebContents* web_contents,
+                     base::WeakPtr<Delegate> delegate);
   ~PaymentHandlerHost() override;
 
   // Sets the origin of the payment handler / service worker registration scope.
@@ -127,11 +130,9 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // browser process.
   mojo::Receiver<mojom::PaymentHandlerHost> receiver_{this};
 
-  // The merchant page that invoked the Payment Request API.
-  content::WebContents* web_contents_;
-
-  // Not null and outlives this object. Owns this object.
-  Delegate* delegate_;
+  // Not null and outlives this object. Either owns this object or is owned by
+  // the owner of this object.
+  base::WeakPtr<Delegate> delegate_;
 
   // The origin of the payment handler / service worker registration scope. Used
   // for developer tools logging.

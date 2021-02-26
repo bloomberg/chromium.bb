@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chromeos/components/account_manager/account_manager.h"
+#include "components/account_manager_core/account.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -44,6 +45,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
+  void UpdateAuthErrorInternal(const CoreAccountId& account_id,
+                               const GoogleServiceAuthError& error,
+                               bool fire_auth_error_changed = true);
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
   std::vector<CoreAccountId> GetAccounts() const override;
@@ -57,10 +61,8 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   const net::BackoffEntry* BackoffEntry() const override;
 
   // |chromeos::AccountManager::Observer| overrides.
-  void OnTokenUpserted(
-      const chromeos::AccountManager::Account& account) override;
-  void OnAccountRemoved(
-      const chromeos::AccountManager::Account& account) override;
+  void OnTokenUpserted(const account_manager::Account& account) override;
+  void OnAccountRemoved(const account_manager::Account& account) override;
 
   // |NetworkConnectionTracker::NetworkConnectionObserver| overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -78,8 +80,11 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   };
 
   // Callback handler for |chromeos::AccountManager::GetAccounts|.
-  void OnGetAccounts(
-      const std::vector<chromeos::AccountManager::Account>& accounts);
+  void OnGetAccounts(const std::vector<account_manager::Account>& accounts);
+
+  // Callback handler for |chromeos::AccountManager::HasDummyGaiaToken|.
+  void ContinueTokenUpsertProcessing(const CoreAccountId& account_id,
+                                     bool has_dummy_token);
 
   // Non-owning pointers.
   AccountTrackerService* const account_tracker_service_;
@@ -87,7 +92,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   chromeos::AccountManager* const account_manager_;
 
   // A cache of AccountKeys.
-  std::set<chromeos::AccountManager::AccountKey> account_keys_;
+  std::set<account_manager::AccountKey> account_keys_;
 
   // A map from account id to the last seen error for that account.
   std::map<CoreAccountId, AccountErrorStatus> errors_;

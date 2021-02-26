@@ -125,7 +125,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
   aom_fixed_buf_t stats = { NULL, 0 };
 
   if (aom_codec_enc_init(&codec, encoder, cfg, 0))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
 
   // Calculate frame statistics.
   while (aom_img_read(raw, infile) && frame_count < limit) {
@@ -159,7 +159,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   if (!writer) die("Failed to open %s for writing", outfile_name);
 
   if (aom_codec_enc_init(&codec, encoder, cfg, 0))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
 
   if (aom_codec_control(&codec, AOME_SET_CPUUSED, 2))
     die_codec(&codec, "Failed to set cpu-used");

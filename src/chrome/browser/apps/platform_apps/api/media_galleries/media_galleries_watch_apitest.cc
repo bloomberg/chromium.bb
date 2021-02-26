@@ -4,7 +4,7 @@
 //
 // MediaGalleries gallery watch API browser tests.
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
@@ -74,7 +74,7 @@ const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
  public:
   MediaGalleriesGalleryWatchApiTest()
-      : extension_(NULL), background_host_(NULL) {}
+      : extension_(nullptr), background_host_(nullptr) {}
   ~MediaGalleriesGalleryWatchApiTest() override {}
 
  protected:
@@ -82,7 +82,7 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
+        extensions::switches::kAllowlistedExtensionID, kTestExtensionId);
   }
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
@@ -93,8 +93,8 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
     FetchMediaGalleriesList();
   }
   void TearDownOnMainThread() override {
-    extension_ = NULL;
-    background_host_ = NULL;
+    extension_ = nullptr;
+    background_host_ = nullptr;
     ensure_media_directories_exists_.reset();
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }

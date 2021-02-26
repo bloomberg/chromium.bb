@@ -5,7 +5,7 @@
 #include "extensions/browser/service_worker_manager.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -27,7 +27,7 @@ void ServiceWorkerManager::OnExtensionUnloaded(
     UnloadedExtensionReason reason) {
   util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
       ->GetServiceWorkerContext()
-      ->StopAllServiceWorkersForOrigin(extension->url());
+      ->StopAllServiceWorkersForOrigin(extension->origin());
 }
 
 void ServiceWorkerManager::OnExtensionUninstalled(
@@ -40,7 +40,7 @@ void ServiceWorkerManager::OnExtensionUninstalled(
   // c) Check for any orphaned workers.
   util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
       ->GetServiceWorkerContext()
-      ->DeleteForOrigin(extension->url(), base::DoNothing());
+      ->DeleteForOrigin(extension->origin(), base::DoNothing());
 }
 
 }  // namespace extensions

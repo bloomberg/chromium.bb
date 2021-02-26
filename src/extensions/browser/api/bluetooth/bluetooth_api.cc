@@ -9,9 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "build/chromeos_buildflags.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -21,7 +22,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/bluetooth.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #endif
 
@@ -140,7 +141,7 @@ void BluetoothGetDevicesFunction::DoWork(
   std::unique_ptr<base::ListValue> device_list(new base::ListValue);
 
   BluetoothAdapter::DeviceList devices;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Default filter values.
   bluetooth_api::FilterType filter_type =
       bluetooth_api::FilterType::FILTER_TYPE_ALL;
@@ -169,7 +170,7 @@ void BluetoothGetDevicesFunction::DoWork(
     device_list->Append(extension_device.ToValue());
   }
 
-  Respond(OneArgument(std::move(device_list)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(device_list))));
 }
 
 BluetoothGetDeviceFunction::BluetoothGetDeviceFunction() = default;
@@ -189,7 +190,8 @@ void BluetoothGetDeviceFunction::DoWork(
   if (device) {
     bluetooth_api::Device extension_device;
     bluetooth_api::BluetoothDeviceToApiDevice(*device, &extension_device);
-    Respond(OneArgument(extension_device.ToValue()));
+    Respond(OneArgument(
+        base::Value::FromUniquePtrValue(extension_device.ToValue())));
   } else {
     Respond(Error(kInvalidDevice));
   }

@@ -10,16 +10,20 @@
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> დრე იყენებდა Chrome-ს</translation>
 <translation id="1097330777386562916">ქუქი-ჩანაწერებისა და საიტების მონაცემების გასუფთავება Chrome-იდან გასვლისას</translation>
 <translation id="110877069173485804">ეს არის თქვენი Chrome</translation>
+<translation id="1125124144982679672">ვინ იყენებს Chrome-ს?</translation>
 <translation id="1142745911746664600">Chrome-ის განახლება ვერ მოხერხდა</translation>
 <translation id="1154147086299354128">Chrome-ში &amp;გახსნა</translation>
 <translation id="123620459398936149">Chrome OS-მა ვერ დაასინქრონა თქვენი მონაცემები. განაახლეთ სინქრონიზაციის საიდუმლო ფრაზა.</translation>
 <translation id="1302523850133262269">დაელოდეთ, სანამ Chrome დააინსტალირებს სისტემის უახლეს განახლებებს.</translation>
+<translation id="1355000804395496115">გამოიყენეთ სხვადასხვა პროფილი Chrome-ში, რომ განაცალკევოთ პირადი და სამსახურის ან ამ მოწყობილობის რამდენიმე მომხმარებლის დათვალიერების მონაცემები</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">ამ კომპიუტერს უკვე აქვს Google Chrom-ის უფრო ახალი ვერსია. იმ შემთხვევაში, თუ პროგრამა არ მუშაობს, გთხოვთ, განახორციელეთ Google Chrome-ის დეინსტალაცია და სცადეთ ისევ.</translation>
 <translation id="1434626383986940139">Chrome Canary პროგრამები</translation>
+<translation id="1513277449617685876">პირადი და <ph name="NEW_USER" />-ის დათვალიერების მონაცემები რომ განაცალკევოთ, შექმენით ახალი პროფილი Chrome-ში</translation>
 <translation id="1553358976309200471">Chrome-ის განახლება</translation>
 <translation id="1587223624401073077">Google Chrome იყენებს თქვენს კამერას.</translation>
 <translation id="1587325591171447154">Chrome-მა დაბლოკა <ph name="FILE_NAME" />, რადგან ის სახიფათოა.</translation>
+<translation id="1597911401261118146"><ph name="BEGIN_LINK" />შედით Chrome-ში<ph name="END_LINK" />, რომ შეამოწმოთ, შეეხო თუ არა პერსონალურ მონაცემთა გაჟონვის შემთხვევები და უსაფრთხოებასთან დაკავშირებული პრობლემები თქვენს პაროლებს.</translation>
 <translation id="1619887657840448962">Chrome-ის უსაფრთხოების გასაძლიერებლად, ჩვენ გავთიშეთ შემდეგი გაფართოება, რომელიც არ არის ხელმისაწვდომი <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-ში და, შესაძლოა, თქვენი თანხმობის გარეშე დაემატა.</translation>
 <translation id="162629503687514352">Chrome OS-მა ვერ მოახერხა თქვენი პაროლების სინქრონიზაცია.</translation>
 <translation id="1628000112320670027">Chrome-თან დაკავშირებული დახმარების მიღება</translation>
@@ -34,12 +38,12 @@
 <translation id="1734234790201236882">Chrome შეინახავს ამ პაროლს თქვენს Google ანგარიშში. მისი დამახსოვრება აუცილებელი არ არის.</translation>
 <translation id="174539241580958092">შესვლის დროს დაშვებული შეცდომის გამო Google Chrome-მა ვერ მოახდინა თქვენი მონაცემების სინქრონიზაცია.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1786003790898721085">დარწმუნდით, რომ თქვენს <ph name="TARGET_DEVICE_NAME" />-ზე შესული ხართ Chrome-ში, შემდეგ კი ხელახლა ცადეთ გაგზავნა.</translation>
 <translation id="1812689907177901597">ამ პარამეტრის გამორთვის შემთხვევაში, Google-ის საიტებში (მაგალითად, Gmail-ში) შესვლას შეძლებთ Chrome-ში შესვლის გარეშე</translation>
 <translation id="1860536484129686729">Chrome საჭიროებს თქვენს კამერაზე წვდომის ნებართვას ამ საიტისთვის</translation>
 <translation id="1873233029667955273">Google Chrome არ არის თქვენი ნაგულისხმევი ბრაუზერი</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome მოძველებულია</translation>
-<translation id="1900795423379050516">თუ პარამეტრი ამ გვერდზე არ გამოჩნდება, ცადეთ მისი პოვნა <ph name="LINK_BEGIN" />Chrome ბრაუზერის პარამეტრებში<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Chrome-ში შესვლის დაშვება</translation>
 <translation id="2063848847527508675">განახლების მისასადაგებლად, Chrome OS უნდა გადაიტვირთოს.</translation>
 <translation id="2094919256425865063">მაინც გსურთ Chrome-იდან გასვლა?</translation>
@@ -58,7 +62,6 @@
 <translation id="2534507159460261402">Google Pay (Chrome-ში კოპირებული)</translation>
 <translation id="2580411288591421699">შეუძლებელია იმავე Google Chrome-ის ვერსიის დაყენება, რომელიც ამჟამად გაშვებულია. დახურეთ Google Chrome და ხელახლა სცადეთ.</translation>
 <translation id="2586406160782125153">ეს მოქმედება წაშლის თქვენს დათვალიერების მონაცემებს ამ მოწყობილობიდან. თქვენი მონაცემების მოგვიანებით მისაღებად, შედით Chrome-ში, როგორც <ph name="USER_EMAIL" />.</translation>
-<translation id="2588322182880276190">Chrome-ის ლოგო</translation>
 <translation id="2622559029861875898">Chrome ვერ ახერხებს განახლებების შემოწმებას. შეამოწმეთ კავშირი ინტერნეტთან.</translation>
 <translation id="2644798301485385923">Chrome OS სისტემა</translation>
 <translation id="2652691236519827073">ბმულის გახსნა Chrome-ის ახალ ჩა&amp;ნართში</translation>
@@ -71,14 +74,18 @@
 <translation id="2847461019998147611">Google Chrome-ის ამ ენაზე ჩვენება</translation>
 <translation id="2857540653560290388">მიმდინარეობს Chrome-ის გაშვება…</translation>
 <translation id="2871893339301912279">თქვენ შესული ხართ Chrome-ში!</translation>
+<translation id="2885378588091291677">ამოცანების მმართველი</translation>
 <translation id="2888126860611144412">Chrome-ის შესახებ</translation>
+<translation id="2926676257163822632">სუსტი პაროლები ადვილი გამოსაცნობია, ამიტომ მიეცით საშუალება Chrome-ს, <ph name="BEGIN_LINK" />თქვენთვის შექმნას და დაიმახსოვროს ძლიერი პაროლები<ph name="END_LINK" />.</translation>
 <translation id="2929907241665500097">Chrome-ის განახლება ვერ მოხერხდა შეფერხების გამო. <ph name="BEGIN_LINK" />შეასწორეთ Chrome-ის განახლებასთან დაკავშირებული პრობლემები და განუხორციელებელი განახლებები.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> — ქსელში შესვლა — Chrome</translation>
+<translation id="298099161970687941">შეკითხვა Chrome-ის გახსნისას</translation>
 <translation id="3037838751736561277">Google Chrome ფონურ რეჟიმშია.</translation>
 <translation id="3059710691562604940">Safe Browsing გამორთულია. Chrome გირჩევთ მის ჩართვას.</translation>
 <translation id="3065168410429928842">Chrome-ის ჩანართი</translation>
 <translation id="3080151273017101988">გაგრძელება გაშვებული ფონური პროგრამებით Google Chrome-ის დახურვისას</translation>
 <translation id="3089968997497233615">ხელმისაწვდომია Google Chrome-ის უფრო ახალი და უსაფრთხო ვერსია.</translation>
+<translation id="3114643501466072395"><ph name="BEGIN_LINK" />შედით Chrome-ში<ph name="END_LINK" />, რომ შეამოწმოთ, შეეხო თუ არა პერსონალურ მონაცემთა გაჟონვის შემთხვევები და უსაფრთხოებასთან დაკავშირებული პრობლემები თქვენს სხვა პაროლებს.</translation>
 <translation id="3127818369811890733">Chrome OS-მა ვერ მოახერხა თქვენი მონაცემების სინქრონიზაცია.</translation>
 <translation id="3149510190863420837">Chrome-ის პროგრამები</translation>
 <translation id="3360895254066713204">Chrome-ის დამხმარე</translation>
@@ -99,6 +106,7 @@
 <translation id="3622797965165704966">ადვილი გახდა თქვენი Google-ის ანგარიშის მეშვეობით Chrome-ის გამოყენება და საერთო მოხმარების კომპიუტერებზეც.</translation>
 <translation id="3718181793972440140">ეს მოქმედება წაშლის 1 ერთეულს ამ მოწყობილობიდან. თქვენი მონაცემების მოგვიანებით მისაღებად, შედით Chrome-ში, როგორც <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">გაფართოებამ „<ph name="EXTENSION_NAME" />“ თქვენ მიერ Chrome-ის გაშვებისას ნაჩვენები გვერდი შეცვალა.</translation>
+<translation id="3779473566290487688">Google Chrome-ის მომავალი განახლებების მისაღებად დაგჭირდებათ OS X 10.11 ან უფრო ახალი ვერსია. ეს კომპიუტერი იყენებს OS X 10.10-ს.</translation>
 <translation id="3780814664026482060">Chrome — <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">დახურეთ Google Chrome-ის ყველა ფანჯარა და ხელახლა სცადეთ.</translation>
 <translation id="3865754807470779944">დაინსტალირებულია Chrome-ის ვერსია <ph name="PRODUCT_VERSION" /></translation>
@@ -106,6 +114,7 @@
 <translation id="3889417619312448367">Google Chrome-ის დეინსტალაცია</translation>
 <translation id="4050175100176540509">უსაფრთხოების მნიშვნელოვანი გაუმჯობესება და ახალი თვისებები ხელმისაწვდომია უახლეს ვერსიაში.</translation>
 <translation id="4053720452172726777">Google Chrome-ის მორგება და კონტროლი</translation>
+<translation id="4110895483821904099">შექმენით ახალი Chrome პროფილი</translation>
 <translation id="4143243756087420366">სახელი და სურათი Chrome-ში</translation>
 <translation id="4147555960264124640">თქვენ სისტემაში შედიხართ მართული ანგარიშზით და მის ადმინისტრატორს აძლევთ თქვენი Google Chrome-ის პროფილის კონტროლის შესაძლებლობას. თქვენი Chrome მონაცემები, როგორიცაა თქვენი პროგრამები, სანიშნეები, ისტორია, პაროლები, და სხვა პარამეტრები გახდება მუდმივად <ph name="USER_NAME" />-თან მიბმული. თქვენ შეძლებთ ამ მონაცემების წაშლას Google Accounts Dashboard-ის მეშვეობით, მაგრამ თქვენ ვერ შეძლებთ ამ მონაცემების დაკავშირებას სხვა ანგარიშთან. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ინსტალაციის პროგრამამ ვერ ამოიღო ფაილები არქივიდან. ხელახლა ჩამოტვირთეთ Google Chrome.</translation>
@@ -115,6 +124,7 @@
 <translation id="4251615635259297716">მივამაგროთ Chrome-ის მონაცემები ამ ანგარიშზე?</translation>
 <translation id="4281844954008187215">მომსახურების პირობები</translation>
 <translation id="4293420128516039005">შედით სისტემაში, რათა მოახდინოთ Chrome-ის სინქრონიზაცია და პერსონალიზება თქვენს ყველა მოწყობილობას შორის</translation>
+<translation id="4325083532956419387">Chrome OS-ის ვერსია</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome დაგიცავთ პერსონალურ მონაცემთა გაჟონვის შემთხვევებისგან, არასათანადო გაფართოებებისა და სხვა უსიამოვნებისგან</translation>
@@ -183,6 +193,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="6368958679917195344">Chrome OS არსებობს დამატებითი <ph name="BEGIN_LINK_CROS_OSS" />ღია წყაროს პროგრამული უზრუნველყოფის<ph name="END_LINK_CROS_OSS" /> წყალობით.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> — Google Chrome Dev</translation>
 <translation id="6566149418543181476">მიმდინარეობს Google Chrome-ის განახლება (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6650333065969705433">დაცული მედიის დასაკრავად Rosetta-ს გამოსაყენებლად საჭიროა Chrome-ის გადატვირთვა.</translation>
 <translation id="6676384891291319759">წვდომა ინტერნეტზე</translation>
 <translation id="6679975945624592337">Google Chrome-ისთვის ფონურ რეჟიმში მუშაობის დაშვება</translation>
 <translation id="6750954913813541382">მართლწერის შეცდომების შესასწორებლად Chrome უგზავნის Google-ს თქვენ მიერ ბრაუზერში აკრეფილ ტექსტს</translation>
@@ -193,6 +204,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="6967962315388095737">შემომავალი წესი Google Chrome Beta-სთვის mDNS ტრაფიკის დასაშვებად.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> მოითხოვს, რომ წაიკითხოთ დაეთანხმოთ შემდეგ წესებს და პირობებს ამ მოწყობილობის გამოყენებამდე. ეს წესები არ წარმოადგენს Google Chrome OS-ის წესების დამატებას, არ ცვლის და არ ზღუდავს მათ.</translation>
 <translation id="6989339256997917931">Google Chrome განახლდა, მაგრამ თქვენ არ იყენებდით მას მინიმუმ 30 დღის განმავლობაში.</translation>
+<translation id="7054640471403081847">ეს კომპიუტერი მალე შეწყვეტს Google Chrome-ის განახლებების მიღებას, რადგან მისი აპარატურა აღარ არის მხარდაჭერილი.</translation>
 <translation id="7062128746136194023">თქვენმა მშობელმა გამორთო „ნებართვები საიტებისთვის, აპებისა და გაფართოებებისთვის“ Chrome-ისთვის. ეს <ph name="EXTENSION_TYPE_PARAMETER" /> ვერ დაემატება.</translation>
 <translation id="7098166902387133879">Google Chrome იყენებს თქვენს მიკროფონს.</translation>
 <translation id="7106741999175697885">ამოცანათა მმართველი - Google Chrome</translation>
@@ -206,10 +218,10 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="7398801000654795464">თქვენ შესული ხართ Chrome ში როგორც <ph name="USER_EMAIL_ADDRESS" />. შემდეგი შესვლისთვისაც გთხოვთ იგივე ანგარიში გამოიყენოთ.</translation>
 <translation id="7408085963519505752">Chrome OS ტერმინები</translation>
 <translation id="7419046106786626209">Chrome OS ის საშუალებით ვერ მოხერხდა თქვენი მონაცემების სინქრონიზაცია, რადგნა თქვენს დომენზე სინქრონ. შეუძლებელია.</translation>
+<translation id="7423733001651488593">ეს მოქმედება სამუდამოდ წაშლის თქვენს დათვალიერების მონაცემებს ამ მოწყობილობიდან. მონაცემების აღსადგენად შედით Chrome-ში, როგორც</translation>
 <translation id="7486227612705979895">Chrome-ს ექნება წვდომა თქვენს Drive-ზე მისამართთა ზოლში შემოთავაზებების უზრუნველსაყოფად</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">თქვენი მოწყობილობის განახლების სტატუსის სანახავად გადადით <ph name="LINK_BEGIN" />Chrome OS-ის პარამეტრებზე<ph name="LINK_END" /></translation>
-<translation id="7589360514048265910">ეს კომპიუტერი აღარ მიიღებს Google Chrome-ის განახლებებს, რადგან Mac OS X 10.9 აღარ არის მხარდაჭერილი.</translation>
 <translation id="7592736734348559088">Google Chrome-მა ვერ დაასინქრონა თქვენი მონაცემები, რადგან თქვენი ანგარიშზე შესვლის დეტალები მოძველდა.</translation>
 <translation id="7626032353295482388">მოგესალმებათ Chrome!</translation>
 <translation id="7629695634924605473">Chrome გაცნობებთ, თუ თქვენს პაროლებს ვინმე გატეხავს</translation>
@@ -239,10 +251,12 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="8342675569599923794">Chrome-მა დაბლოკა ეს ფაილი, რადგან ის სახიფათოა.</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" />, Google LLC. ყველა უფლება დაცულია.</translation>
 <translation id="840084489713044809">Google Chrome ითხოვს თქვენი პაროლების ექსპორტირებას.</translation>
+<translation id="8433638294851456451">აქედან თქვენს Android ტელეფონზე ნომრის გასაგზავნად შედით Chrome-ში ორივე მოწყობილობაზე.</translation>
 <translation id="8498858610309223613">Google Chrome-ს ეს-ესაა მიესადაგა უსაფრთხოების საგანგებო განახლება. გადატვირთეთ ის ახლავე და თქვენი ჩანართებიც აღდგება.</translation>
 <translation id="8521348052903287641">შემომავალი წესი Google Chrome Dev-ისთვის mDNS ტრაფიკის დასაშვებად.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">ხელმისაწვდომია Google Chrome-ის უფრო ახალი ვერსია, რომელიც უფრო სწრაფია.</translation>
+<translation id="861359755029082151">Rosetta საშუალებას მისცემს Chrome-ს, ამ გვერდზე დაცული მედია დაუკრას.</translation>
 <translation id="8614913330719544658">Google Chrome არ პასუხობს. გავუშვათ ხელახლა?</translation>
 <translation id="861702415419836452">Chrome საჭიროებს თქვენს კამერაზე წვდომის ნებართვას, თქვენი გარემოს 3-განზომილებიანი რუკის შექმნა რომ შეძლოს</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome ხელახლა გაეშვება 1 წუთში}other{Chrome ხელახლა გაეშვება # წუთში}}</translation>
@@ -251,11 +265,14 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="8679801911857917785">იგი, ასევე, აკონტროლებს, თუ რომელი გვერდი გამოჩნდება Chrome-ის გაშვებისას.</translation>
 <translation id="870251953148363156">&amp;Google Chrome-ის განახლება</translation>
 <translation id="873133009373065397">Google Chrome ნაგულისხმევ ბრაუზერს ვერ საზღვრავს, ან ვერ აყენებს</translation>
+<translation id="8748242232968346981">გსურთ, შექმნათ საკუთარი პროფილი Chrome-ში?</translation>
 <translation id="8823341990149967727">Chrome მოძველებულია</translation>
 <translation id="8834965163890861871">Google Chrome ცდილობს პაროლების რედაქტირებას. აღნიშნულის დასაშვებად აკრიფეთ თქვენი Windows-ის პაროლი ამის დასაშვებად.</translation>
 <translation id="884296878221830158">ასევე აკონტროლებს, თუ რომელი გვერდი გამოჩნდება Chrome-ის გაშვებისას ან როცა დააწკაპუნებთ ღილაკზე „საწყისი“.</translation>
 <translation id="8862326446509486874">თქვენ არ გაქვთ შესაბამისი უფლებები სისტემის დონეზე ინსტალაციისთვის. სცადეთ ინსტალაციის პროგრამის ხელახლა გაშვება ადმინისტრატორის სტატუსით.</translation>
+<translation id="8907709077090383765">Chrome-მა დაცული მედია რომ დაუკრას, საჭიროა Rosetta-ს ინსტალაცია. გსურთ მისი ახლავე ინსტალაცია?</translation>
 <translation id="8914504000324227558">Chrome-ის ხელახლა გაშვება</translation>
+<translation id="8922193594870374009"><ph name="ORIGIN" />-დან თქვენს Android ტელეფონზე ნომრის გასაგზავნად შედით Chrome-ში ორივე მოწყობილობაზე.</translation>
 <translation id="8999208279178790196">{0,plural, =0{ხელმისაწვდომია Chrome-ის განახლება}=1{ხელმისაწვდომია Chrome-ის განახლება}other{უკვე # დღეა, რაც ხელმისაწვდომია Chrome-ის განახლება}}</translation>
 <translation id="9026991721384951619">Chrome OS-მა ვერ დაასინქრონა თქვენი მონაცემები, რადგან თქვენი ანგარიშის შესვლის დეტალები მოძველდა.</translation>
 <translation id="9067395829937117663">Google Chrome-ის მუშაობისთვის საჭიროა Windows 7 ან უფრო ახალი ვერსია.</translation>

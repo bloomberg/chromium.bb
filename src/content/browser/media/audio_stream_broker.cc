@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "content/browser/media/audio_input_stream_broker.h"
 #include "content/browser/media/audio_loopback_stream_broker.h"
 #include "content/browser/media/audio_output_stream_broker.h"
@@ -34,7 +33,7 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) final {
     return std::make_unique<AudioInputStreamBroker>(
         render_process_id, render_frame_id, device_id, params,
@@ -50,7 +49,7 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) final {
     return std::make_unique<AudioLoopbackStreamBroker>(
         render_process_id, render_frame_id, source, params, shared_memory_count,
@@ -93,8 +92,8 @@ void AudioStreamBroker::NotifyProcessHostOfStartedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamAdded();
   };
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(impl, render_process_id));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      base::BindOnce(impl, render_process_id));
 }
 
 // static
@@ -104,8 +103,8 @@ void AudioStreamBroker::NotifyProcessHostOfStoppedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamRemoved();
   };
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(impl, render_process_id));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      base::BindOnce(impl, render_process_id));
 }
 
 AudioStreamBrokerFactory::AudioStreamBrokerFactory() {}

@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -33,6 +33,8 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -101,79 +103,13 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
   DISALLOW_COPY_AND_ASSIGN(TestingUserActivityUkmLogger);
 };
 
-// Testing smart dim model.
-class FakeSmartDimModel : public SmartDimModel {
- public:
-  explicit FakeSmartDimModel(
-      const scoped_refptr<base::SequencedTaskRunner> runner)
-      : task_runner_(runner) {}
-  ~FakeSmartDimModel() override = default;
-
-  void set_inactivity_score(const int inactivity_score) {
-    inactivity_score_ = inactivity_score;
-  }
-
-  void set_decision_threshold(const int decision_threshold) {
-    decision_threshold_ = decision_threshold;
-  }
-
-  UserActivityEvent::ModelPrediction ShouldDim(
-      const UserActivityEvent::Features& input_features) {
-    UserActivityEvent::ModelPrediction model_prediction;
-    // If either of these two values are set outside of the legal range [0,100],
-    // return an error code.
-    // The |model_applied| field is not filled by the model but by
-    // UserActivityManager.
-    if (inactivity_score_ < 0 || inactivity_score_ > 100 ||
-        decision_threshold_ < 0 || decision_threshold_ > 100) {
-      model_prediction.set_response(
-          UserActivityEvent::ModelPrediction::MODEL_ERROR);
-    } else {
-      model_prediction.set_decision_threshold(decision_threshold_);
-      model_prediction.set_inactivity_score(inactivity_score_);
-      if (inactivity_score_ < decision_threshold_) {
-        model_prediction.set_response(
-            UserActivityEvent::ModelPrediction::NO_DIM);
-      } else {
-        model_prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
-      }
-    }
-    return model_prediction;
-  }
-
-  // SmartDimModel overrides:
-  void RequestDimDecision(const UserActivityEvent::Features& features,
-                          DimDecisionCallback dim_callback) override {
-    // Cancel previously assigned callbacks and set it to the new callback.
-    cancelable_callback_.Reset(std::move(dim_callback));
-    base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
-        base::BindOnce(&FakeSmartDimModel::ShouldDim, base::Unretained(this),
-                       features),
-        base::BindOnce(cancelable_callback_.callback()));
-  }
-
-  // TODO(crbug.com/893425): Add unit tests that test this API.
-  void CancelPreviousRequest() override { cancelable_callback_.Cancel(); }
-
- private:
-  int inactivity_score_ = -1;
-  int decision_threshold_ = -1;
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::CancelableOnceCallback<void(UserActivityEvent::ModelPrediction)>
-      cancelable_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSmartDimModel);
-};
-
 class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   UserActivityManagerTest()
       : ChromeRenderViewHostTestHarness(
             base::test::TaskEnvironment::MainThreadType::UI,
             base::test::TaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
-        model_(task_environment()->GetMainThreadTaskRunner()) {}
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   ~UserActivityManagerTest() override = default;
 
@@ -186,7 +122,10 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, &user_activity_detector_, PowerManagerClient::Get(),
         &session_manager_, observer.InitWithNewPipeAndPassReceiver(),
-        &fake_user_manager_, &model_);
+        &fake_user_manager_);
+
+    machine_learning::ServiceConnection::UseFakeServiceConnectionForTesting(
+        &fake_service_connection_);
   }
 
   void TearDown() override {
@@ -270,9 +209,9 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
                                              bool is_focused,
                                              bool is_incognito = false) {
     Profile* const original_profile = profile();
-    Profile* const used_profile =
-        is_incognito ? original_profile->GetOffTheRecordProfile()
-                     : original_profile;
+    Profile* const used_profile = is_incognito
+                                      ? original_profile->GetPrimaryOTRProfile()
+                                      : original_profile;
     Browser::CreateParams params(used_profile, true);
 
     auto dummy_window = std::make_unique<aura::Window>(nullptr);
@@ -320,11 +259,11 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   TestingUserActivityUkmLogger delegate_;
-  FakeSmartDimModel model_;
   chromeos::FakeChromeUserManager fake_user_manager_;
   // Only used to get SourceIds for URLs.
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
   TabActivitySimulator tab_activity_simulator_;
+  machine_learning::FakeServiceConnectionImpl fake_service_connection_;
 
   const GURL url1_ = GURL("https://example1.com/");
   const GURL url2_ = GURL("https://example2.com/");
@@ -975,11 +914,13 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
 
-  model_.set_inactivity_score(60);
-  model_.set_decision_threshold(65);
+  // sigmoid(0.43) * 100 = 60
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{0.43});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
@@ -988,8 +929,10 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
   ReportUserActivity(nullptr);
   EXPECT_TRUE(should_defer);
 
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 1);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -1016,11 +959,13 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
 
-  model_.set_inactivity_score(60);
-  model_.set_decision_threshold(65);
+  // sigmoid(0.43) * 100 = 60
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{0.43});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
@@ -1028,8 +973,10 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(should_defer);
 
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 1);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   EXPECT_TRUE(events.empty());
@@ -1042,11 +989,13 @@ TEST_F(UserActivityManagerTest, ScreenDimRequestCanceled) {
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
 
-  model_.set_inactivity_score(60);
-  model_.set_decision_threshold(65);
+  // sigmoid(0.43) * 100 = 60
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{0.43});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
@@ -1057,10 +1006,12 @@ TEST_F(UserActivityManagerTest, ScreenDimRequestCanceled) {
   task_environment()->RunUntilIdle();
   EXPECT_FALSE(should_defer);
 
-  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(hist_complete, 0);
-  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
-  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 0);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCanceledDuration", 1);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     1);
 
   // Since the pending SmartDim decision request was canceled, we shouldn't
   // have any UserActivityEvent generated.
@@ -1075,11 +1026,13 @@ TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
 
-  model_.set_inactivity_score(60);
-  model_.set_decision_threshold(65);
+  // sigmoid(0.43) * 100 = 60
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{0.43});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer_1 = false;
@@ -1090,10 +1043,12 @@ TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
   ReportUserActivity(nullptr);
   EXPECT_NE(should_defer_1, should_defer_2);
 
-  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(hist_complete, 1);
-  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
-  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCanceledDuration", 1);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     2);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -1118,13 +1073,15 @@ TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
 TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
   base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
-      {"dim_threshold", base::NumberToString(0.5)}};
+      {"dim_threshold", base::NumberToString(0.0)}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
 
-  model_.set_inactivity_score(60);
-  model_.set_decision_threshold(50);
+  // sigmoid(0.43) * 100 = 60
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{0.43});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
@@ -1133,8 +1090,10 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
   ReportUserActivity(nullptr);
   EXPECT_FALSE(should_defer);
 
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 1);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 1);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -1151,14 +1110,16 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
   base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
-      {"dim_threshold", base::NumberToString(0.5)}};
+      {"dim_threshold", base::NumberToString(0.0)}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
-  model_.set_decision_threshold(50);
 
   // 1st ScreenDimImminent gets deferred
-  model_.set_inactivity_score(40);
+  // sigmoid(-0.4) * 100 = 40
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{-0.4});
 
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
@@ -1171,14 +1132,18 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
                 base::TimeDelta::FromSeconds(3));
 
   // 2nd ScreenDimImminent is not deferred despite model score says so.
-  model_.set_inactivity_score(20);
+  // sigmoid(-1.35) * 100 = 20
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{-1.35});
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ReportIdleEvent(data, &should_defer);
   task_environment()->RunUntilIdle();
   EXPECT_FALSE(should_defer);
 
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 2);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 2);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     2);
 
   // Log when a SuspendImminent is received
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(20));
@@ -1227,14 +1192,16 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
-      {"dim_threshold", base::NumberToString(0.5)}};
+      {"dim_threshold", base::NumberToString(0.0)}};
   base::test::ScopedFeatureList scoped_feature_list;
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kUserActivityPrediction, params);
-  model_.set_decision_threshold(50);
 
   // 1st ScreenDimImminent gets deferred
-  model_.set_inactivity_score(40);
+  // sigmoid(-0.4) * 100 = 40
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{-0.4});
   const IdleEventNotifier::ActivityData data;
   bool should_defer = false;
   ReportIdleEvent(data, &should_defer);
@@ -1242,14 +1209,18 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   EXPECT_TRUE(should_defer);
 
   // 2nd ScreenDimImminent is not deferred despite model score says so.
-  model_.set_inactivity_score(20);
+  // sigmoid(-1.35) * 100 = 20
+  fake_service_connection_.SetOutputValue(std::vector<int64_t>{1L},
+                                          std::vector<double>{-1.35});
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ReportIdleEvent(data, &should_defer);
   task_environment()->RunUntilIdle();
   EXPECT_FALSE(should_defer);
 
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 2);
+  histogram_tester.ExpectTotalCount(
+      "PowerML.SmartDimModel.RequestCompleteDuration", 2);
+  histogram_tester.ExpectBucketCount("PowerML.SmartDimComponent.WorkerType", 0,
+                                     2);
 
   // Log when a SuspendImminent is received
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(20));
@@ -1288,47 +1259,6 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   expected_prediction2.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
 
   EqualModelPrediction(expected_prediction2, events[0].model_prediction());
-}
-
-TEST_F(UserActivityManagerTest, ModelError) {
-  base::HistogramTester histogram_tester;
-  const std::map<std::string, std::string> params = {
-      {"dim_threshold", "0.651"}};
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kUserActivityPrediction, params);
-
-  // This value will trigger a model error.
-  model_.set_inactivity_score(160);
-  model_.set_decision_threshold(65);
-
-  const IdleEventNotifier::ActivityData data;
-  bool should_defer = false;
-  ReportIdleEvent(data, &should_defer);
-  task_environment()->RunUntilIdle();
-  ReportUserActivity(nullptr);
-  EXPECT_FALSE(should_defer);
-
-  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
-  histogram_tester.ExpectTotalCount(histogram, 1);
-
-  const std::vector<UserActivityEvent>& events = delegate_.events();
-  ASSERT_EQ(1U, events.size());
-
-  UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
-  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
-  expected_event.set_log_duration_sec(0);
-  expected_event.set_screen_dim_occurred(false);
-  expected_event.set_screen_off_occurred(false);
-  expected_event.set_screen_lock_occurred(false);
-  EqualEvent(expected_event, events[0].event());
-
-  UserActivityEvent::ModelPrediction expected_prediction;
-  expected_prediction.set_model_applied(false);
-  expected_prediction.set_response(
-      UserActivityEvent::ModelPrediction::MODEL_ERROR);
-  EqualModelPrediction(expected_prediction, events[0].model_prediction());
 }
 
 // Test is flaky. See https://crbug.com/938055.

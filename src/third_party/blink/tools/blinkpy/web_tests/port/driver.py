@@ -451,7 +451,7 @@ class Driver(object):
             deadline = time.time() + DRIVER_START_TIMEOUT_SECS
             if not self._wait_for_server_process_output(
                     self._server_process, deadline, '#READY'):
-                _log.error('content_shell took too long to startup.')
+                _log.error('%s took too long to startup.' % server_name)
 
     def _wait_for_server_process_output(self, server_process, deadline, text):
         output = ''
@@ -512,14 +512,6 @@ class Driver(object):
         cmd.extend(self._port.additional_driver_flags())
         if self._port.get_option('enable_leak_detection'):
             cmd.append('--enable-leak-detection')
-
-        # Run tests with the new SameSite cookie behavior by default.
-        # By appending the features to --enable-features, they will be enabled if
-        # they are not also explicitly disabled (as base::FeatureList disables a
-        # feature that appears in both --disable-features and --enable-features).
-        cmd.append(
-            '--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure'
-        )
 
         cmd.extend(per_test_args)
         cmd = coalesce_repeated_switches(cmd)

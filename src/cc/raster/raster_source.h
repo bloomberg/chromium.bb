@@ -26,6 +26,7 @@ namespace cc {
 class DisplayItemList;
 class DrawImage;
 class ImageProvider;
+class PictureLayerTilingClient;
 
 class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
@@ -47,32 +48,22 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   RasterSource(const RasterSource&) = delete;
   RasterSource& operator=(const RasterSource&) = delete;
 
-  // Helper function to apply a few common operations before passing the canvas
-  // to the shorter version. This is useful for rastering into tiles.
-  // canvas is expected to be backed by a tile, with a default state.
-  // raster_transform will be applied to the display list, rastering the list
-  // into the "content space".
-  // canvas_bitmap_rect defines the extent of the tile in the content space,
+  // This is useful for rastering into tiles. |canvas| is expected to be backed
+  // by a tile, with a default state. |raster_transform| will be applied to the
+  // display list, rastering the list into the "content space".
+  // |canvas_bitmap_rect| defines the extent of the tile in the content space,
   // i.e. contents in the rect will be cropped and translated onto the canvas.
-  // canvas_playback_rect can be used to replay only part of the recording in,
+  // |canvas_playback_rect| can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
+  //
+  // Note that this should only be called after the image decode controller has
+  // been set, which happens during commit.
   void PlaybackToCanvas(SkCanvas* canvas,
                         const gfx::Size& content_size,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
                         const gfx::AxisTransform2d& raster_transform,
                         const PlaybackSettings& settings) const;
-
-  // Raster this RasterSource into the given canvas. Canvas states such as
-  // CTM and clip region will be respected. This function will replace pixels
-  // in the clip region without blending.
-  //
-  // Virtual for testing.
-  //
-  // Note that this should only be called after the image decode controller has
-  // been set, which happens during commit.
-  virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                ImageProvider* image_provider) const;
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.
@@ -98,7 +89,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Return true iff this raster source can raster the given rect in layer
   // space.
-  bool CoversRect(const gfx::Rect& layer_rect) const;
+  bool CoversRect(const gfx::Rect& layer_rect,
+                  const PictureLayerTilingClient& client) const;
 
   // Returns true if this raster source has anything to rasterize.
   bool HasRecordings() const;
@@ -109,7 +101,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Tracing functionality.
   void DidBeginTracing();
   void AsValueInto(base::trace_event::TracedValue* array) const;
-  size_t GetMemoryUsage() const;
 
   const scoped_refptr<DisplayItemList>& GetDisplayItemList() const {
     return display_list_;
@@ -135,9 +126,18 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual ~RasterSource();
 
   void ClearForOpaqueRaster(SkCanvas* raster_canvas,
+                            const gfx::AxisTransform2d& raster_transform,
                             const gfx::Size& content_size,
                             const gfx::Rect& canvas_bitmap_rect,
                             const gfx::Rect& canvas_playback_rect) const;
+
+  // Raster the display list of this raster source into the given canvas.
+  // Canvas states such as CTM and clip region will be respected.
+  // This function will replace pixels in the clip region without blending.
+  //
+  // Virtual for testing.
+  virtual void PlaybackDisplayListToCanvas(SkCanvas* canvas,
+                                           ImageProvider* image_provider) const;
 
   // The serialized size for the largest op in this RasterSource. This is
   // accessed only on the raster threads with the context lock acquired.
@@ -147,7 +147,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
   const scoped_refptr<DisplayItemList> display_list_;
-  const size_t painter_reported_memory_usage_;
   const SkColor background_color_;
   const bool requires_clear_;
   const bool is_solid_color_;

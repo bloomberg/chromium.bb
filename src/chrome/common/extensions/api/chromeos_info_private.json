@@ -26,8 +26,9 @@
                  "a11yFocusHighlightEnabled",
                  "a11ySelectToSpeakEnabled",
                  "a11ySwitchAccessEnabled",
-                 "sendFunctionKeys",
-                 "cameraMediaConsolidated"],
+                 "a11yCursorColorEnabled",
+                 "a11yDockedMagnifierEnabled",
+                 "sendFunctionKeys"],
         "description": "Chrome OS system property name"
       },
       {
@@ -107,10 +108,16 @@
                   "a11ySpokenFeedbackEnabled" : {"type": "boolean", "optional": true, "description": "If enabled, ChromeOS text-to-speech feature is turned on."},
                   "a11yHighContrastEnabled" : {"type": "boolean", "optional": true, "description": "If true, all displays have high contrast mode turned on."},
                   "a11yScreenMagnifierEnabled" : {"type": "boolean", "optional": true, "description": "If true, all displays have screen magnifier turned on."},
-                  "a11yAutoClickEnabled" : {"type": "boolean", "optional": true, "description": "If true, auto mouse click accessibility feature is turned on."},
+                  "a11yAutoClickEnabled" : {"type": "boolean", "optional": true, "description": "If true, autoclick accessibility feature is turned on."},
                   "a11yVirtualKeyboardEnabled" : {"type": "boolean", "optional": true, "description": "If true, virtual keyboard will be enabled."},
+                  "a11yCaretHighlightEnabled" : {"type": "boolean", "optional": true, "description": "If true, caret highlighting will be enabled."},
+                  "a11yCursorHighlightEnabled" : {"type": "boolean", "optional": true, "description": "If true, cursor highlighting will be enabled."},
+                  "a11yFocusHighlightEnabled" : {"type": "boolean", "optional": true, "description": "If true, focus highlighting will be enabled."},
+                  "a11ySelectToSpeakEnabled" : {"type": "boolean", "optional": true, "description": "If true, select to speak will be enabled."},
+                  "a11ySwitchAccessEnabled" : {"type": "boolean", "optional": true, "description": "If true, switch access will be enabled."},
+                  "a11yCursorColorEnabled" : {"type": "boolean", "optional": true, "description": "If true, colorized cursor will be enabled."},
+                  "a11yDockedMagnifierEnabled" : {"type": "boolean", "optional": true, "description": "If true, docked magnifier will be enabled."},
                   "sendFunctionKeys" : {"type": "boolean", "optional": true, "description": "If true, the ChromeOS top row keys send function keys."},
-                  "cameraMediaConsolidated" : {"type": "boolean", "optional": true, "description": "True if camera photos and videos have been consolidated to one place."},
                   "supportedTimezones" : {
                     "type": "array",
                     "items": {
@@ -140,6 +147,24 @@
             "name": "propertyValue",
             "type": "any",
             "description": "Chrome OS system property value"
+          }
+        ]
+      },
+      {
+        "name": "isTabletModeEnabled",
+        "type": "function",
+        "description": "Called to request tablet mode enabled status from the Chrome OS system.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Returns tablet mode enabled status as a boolean.",
+            "parameters": [
+              {
+                "name": "tabletModeEnabled",
+                "type": "boolean"
+              }
+            ]
           }
         ]
       }

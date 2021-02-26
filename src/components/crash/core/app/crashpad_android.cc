@@ -35,8 +35,8 @@
 #include "build/build_config.h"
 #include "components/crash/android/jni_headers/PackagePaths_jni.h"
 #include "components/crash/core/app/crash_reporter_client.h"
+#include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
-#include "services/service_manager/embedder/descriptors.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/client_argv_handling.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
@@ -52,56 +52,59 @@
 namespace crashpad {
 namespace {
 
-class MemoryRangeWhitelist {
+class AllowedMemoryRanges {
  public:
-  MemoryRangeWhitelist() {
-    whitelist_.entries = 0;
-    whitelist_.size = 0;
+  AllowedMemoryRanges() {
+    allowed_memory_ranges_.entries = 0;
+    allowed_memory_ranges_.size = 0;
   }
 
   void AddEntry(VMAddress base, VMSize length) {
-    SanitizationMemoryRangeWhitelist::Range new_entry;
+    SanitizationAllowedMemoryRanges::Range new_entry;
     new_entry.base = base;
     new_entry.length = length;
 
     base::AutoLock lock(lock_);
-    std::vector<SanitizationMemoryRangeWhitelist::Range> new_array(array_);
+    std::vector<SanitizationAllowedMemoryRanges::Range> new_array(array_);
     new_array.push_back(new_entry);
-    whitelist_.entries = FromPointerCast<VMAddress>(new_array.data());
-    whitelist_.size += 1;
+    allowed_memory_ranges_.entries =
+        FromPointerCast<VMAddress>(new_array.data());
+    allowed_memory_ranges_.size += 1;
     array_ = std::move(new_array);
   }
 
-  SanitizationMemoryRangeWhitelist* GetSanitizationAddress() {
-    return &whitelist_;
+  SanitizationAllowedMemoryRanges* GetSanitizationAddress() {
+    return &allowed_memory_ranges_;
   }
 
-  static MemoryRangeWhitelist* Singleton() {
-    static base::NoDestructor<MemoryRangeWhitelist> singleton;
+  static AllowedMemoryRanges* Singleton() {
+    static base::NoDestructor<AllowedMemoryRanges> singleton;
     return singleton.get();
   }
 
  private:
   base::Lock lock_;
-  SanitizationMemoryRangeWhitelist whitelist_;
-  std::vector<SanitizationMemoryRangeWhitelist::Range> array_;
+  SanitizationAllowedMemoryRanges allowed_memory_ranges_;
+  std::vector<SanitizationAllowedMemoryRanges::Range> array_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryRangeWhitelist);
+  DISALLOW_COPY_AND_ASSIGN(AllowedMemoryRanges);
 };
 
 bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
                          SanitizationInformation* info) {
-  const char* const* whitelist = nullptr;
+  const char* const* allowed_annotations = nullptr;
   void* target_module = nullptr;
   bool sanitize_stacks = false;
-  client->GetSanitizationInformation(&whitelist, &target_module,
+  client->GetSanitizationInformation(&allowed_annotations, &target_module,
                                      &sanitize_stacks);
-  info->annotations_whitelist_address = FromPointerCast<VMAddress>(whitelist);
+  info->allowed_annotations_address =
+      FromPointerCast<VMAddress>(allowed_annotations);
   info->target_module_address = FromPointerCast<VMAddress>(target_module);
-  info->memory_range_whitelist_address = FromPointerCast<VMAddress>(
-      MemoryRangeWhitelist::Singleton()->GetSanitizationAddress());
+  info->allowed_memory_ranges_address = FromPointerCast<VMAddress>(
+      AllowedMemoryRanges::Singleton()->GetSanitizationAddress());
   info->sanitize_stacks = sanitize_stacks;
-  return whitelist != nullptr || target_module != nullptr || sanitize_stacks;
+  return allowed_annotations != nullptr || target_module != nullptr ||
+         sanitize_stacks;
 }
 
 void SetExceptionInformation(siginfo_t* siginfo,
@@ -139,8 +142,7 @@ class SandboxedHandler {
 
     SetSanitizationInfo(crash_reporter::GetCrashReporterClient(),
                         &sanitization_);
-    server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
-        service_manager::kCrashDumpSignal);
+    server_fd_ = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
 
     // Android's debuggerd handler on JB MR2 until OREO displays a dialog which
     // is a bad user experience for child process crashes. Disable the debuggerd
@@ -153,7 +155,11 @@ class SandboxedHandler {
         strcmp(build_info->build_type(), "eng") == 0 ||
         strcmp(build_info->build_type(), "userdebug") == 0;
 
-    return Signals::InstallCrashHandlers(HandleCrash, 0, &old_actions_);
+    bool signal_stack_initialized =
+        CrashpadClient::InitializeSignalStackForThread();
+    DCHECK(signal_stack_initialized);
+    return Signals::InstallCrashHandlers(HandleCrash, SA_ONSTACK,
+                                         &old_actions_);
   }
 
   void HandleCrashNonFatal(int signo, siginfo_t* siginfo, void* context) {
@@ -515,6 +521,11 @@ class HandlerStarter {
       process_annotations["ptype"] = browser_ptype;
     }
 
+    // Don't handle SIGQUIT in the browser process on Android; the system masks
+    // this and uses it for generating ART stack traces, and if it gets unmasked
+    // (e.g. by a WebView app) we don't want to treat this as a crash.
+    GetCrashpadClient().SetUnhandledSignals({SIGQUIT});
+
     if (!base::PathExists(handler_path)) {
       use_java_handler_ =
           !GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
@@ -689,8 +700,8 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
   return handler_client.RequestCrashDump(info) == 0;
 }
 
-void WhitelistMemoryRange(void* begin, size_t length) {
-  crashpad::MemoryRangeWhitelist::Singleton()->AddEntry(
+void AllowMemoryRange(void* begin, size_t length) {
+  crashpad::AllowedMemoryRanges::Singleton()->AddEntry(
       crashpad::FromPointerCast<crashpad::VMAddress>(begin),
       static_cast<crashpad::VMSize>(length));
 }

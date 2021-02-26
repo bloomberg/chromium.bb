@@ -4,24 +4,26 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.contrib.PickerActions.setDate;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.PickerActions.setDate;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
+import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -38,11 +40,10 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.core.deps.guava.collect.Iterables;
-import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.filters.MediumTest;
 import android.widget.DatePicker;
+
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -57,6 +58,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClickType;
@@ -66,11 +68,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResul
 import org.chromium.chrome.browser.autofill_assistant.proto.ContactDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateTimeRangeProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.DropdownSelectStrategy;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementConditionProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
 import org.chromium.chrome.browser.autofill_assistant.proto.KeyboardValueFillStrategy;
 import org.chromium.chrome.browser.autofill_assistant.proto.ModelProto.ModelValue;
@@ -79,6 +80,9 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowCastProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
@@ -88,9 +92,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto.RequiredField;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.VisibilityRequirement;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
@@ -124,9 +126,10 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
     @Before
     public void setUp() throws Exception {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
+        mTestRule.startCustomTabActivityWithIntent(
+                AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
+                        mTestRule.getTestServer().getURL(TEST_PAGE),
+                        /* startImmediately = */ true));
         mHelper = new AutofillAssistantCollectUserDataTestHelper();
     }
 
@@ -156,29 +159,49 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         RequiredField fallbackTextField =
                 (RequiredField) RequiredField.newBuilder()
-                        .setValueExpression("57")
-                        .setElement(
-                                ElementReferenceProto.newBuilder().addSelectors("#fallback_entry"))
+                        .setForced(true) // Make sure we do actual work.
+                        .setValueExpression("${57}")
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#fallback_entry")))
                         .setFillStrategy(KeyboardValueFillStrategy.SIMULATE_KEY_PRESSES)
+                        .build();
+        RequiredField fallbackDropdownField =
+                (RequiredField) RequiredField.newBuilder()
+                        .setForced(true) // Make sure we do actual work.
+                        .setValueExpression("${-2}")
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#fallback_dropdown")))
+                        .setSelectStrategy(DropdownSelectStrategy.VALUE_MATCH)
                         .build();
         RequiredField fallbackJsDropdownField =
                 (RequiredField) RequiredField.newBuilder()
-                        .setValueExpression("55")
-                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
-                                "#js_dropdown_value"))
-                        .setOptionElementToClick(ElementReferenceProto.newBuilder().addSelectors(
-                                "#js_dropdown_options li"))
+                        .setValueExpression("${55}")
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#js_dropdown_value")))
+                        .setOptionElementToClick(
+                                SelectorProto.newBuilder()
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                                        "#js_dropdown_options li"))
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setBoundingBox(
+                                                        SelectorProto.BoundingBoxFilter
+                                                                .getDefaultInstance())))
                         .setClickType(ClickType.TAP)
                         .build();
-        list.add(
-                (ActionProto) ActionProto.newBuilder()
-                        .setUseCard(UseCreditCardProto.newBuilder()
-                                            .setFormFieldElement(
-                                                    ElementReferenceProto.newBuilder().addSelectors(
-                                                            "#card_number"))
-                                            .addRequiredFields(fallbackTextField)
-                                            .addRequiredFields(fallbackJsDropdownField))
-                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setUseCard(
+                                 UseCreditCardProto.newBuilder()
+                                         .setFormFieldElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#card_number")))
+                                         .addRequiredFields(fallbackTextField)
+                                         .addRequiredFields(fallbackDropdownField)
+                                         .addRequiredFields(fallbackJsDropdownField))
+                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
@@ -205,40 +228,27 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
         onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
+        waitUntilViewMatchesCondition(
+                withId(R.id.positive_button), allOf(isDisplayed(), isEnabled()));
         onView(withId(R.id.positive_button)).perform(click());
-        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed(), 6000L);
         assertThat(getElementValue(getWebContents(), "name"), is("John Doe"));
         assertThat(getElementValue(getWebContents(), "card_number"), is("4111111111111111"));
         assertThat(getElementValue(getWebContents(), "cv2_number"), is("123"));
         assertThat(getElementValue(getWebContents(), "exp_month"), is("12"));
         assertThat(getElementValue(getWebContents(), "exp_year"), is("2050"));
         assertThat(getElementValue(getWebContents(), "fallback_entry"), is("12/2050"));
+        assertThat(getElementValue(getWebContents(), "fallback_dropdown"), is("visa"));
         assertThat(getElementValue(getWebContents(), "js_dropdown_value"), is("2050"));
     }
 
-    /**
-     * Showcasts an element of the webpage and checks that it can be interacted with.
-     */
     @Test
     @MediumTest
-    public void testTermsAndConditionsWithFocusElement() throws Exception {
+    public void testFailingAutofillSendsProperError() throws Exception {
         String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
         mHelper.addDummyCreditCard(profileId);
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add(
-                (ActionProto) ActionProto.newBuilder()
-                        .setFocusElement(
-                                FocusElementProto.newBuilder()
-                                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
-                                                "div.terms"))
-                                        .setTouchableElementArea(
-                                                ElementAreaProto.newBuilder().addTouchable(
-                                                        Rectangle.newBuilder().addElements(
-                                                                ElementReferenceProto.newBuilder()
-                                                                        .addSelectors(
-                                                                                "div.terms")))))
-                        .build());
         list.add(
                 (ActionProto) ActionProto.newBuilder()
                         .setCollectUserData(CollectUserDataProto.newBuilder()
@@ -252,14 +262,118 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                     .setTermsAndConditionsState(
                                                             TermsAndConditionsState.ACCEPTED))
                         .build());
+
+        RequiredField fallbackTextField =
+                (RequiredField) RequiredField.newBuilder()
+                        .setForced(true) // Make sure we fail here while trying to fill the field.
+                        .setValueExpression("${-99}") // Use non-existent key to force an error.
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#fallback_entry")))
+                        .setFillStrategy(KeyboardValueFillStrategy.SIMULATE_KEY_PRESSES)
+                        .build();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setUseCard(
+                                 UseCreditCardProto.newBuilder()
+                                         .setFormFieldElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#card_number")))
+                                         .addRequiredFields(fallbackTextField))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        testService.setNextActions(new ArrayList<>());
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
+        onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
+        onView(withId(R.id.positive_button)).perform(click());
+        testService.waitUntilGetNextActions(1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(2));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        ProcessedActionProto processedUseCard = processedActions.get(1);
+        assertThat(
+                processedUseCard.getStatus(), is(ProcessedActionStatusProto.AUTOFILL_INCOMPLETE));
+        assertThat(processedUseCard.hasStatusDetails(), is(true));
+        assertThat(processedUseCard.getStatusDetails().hasAutofillErrorInfo(), is(true));
+        assertThat(processedUseCard.getStatusDetails()
+                           .getAutofillErrorInfo()
+                           .getAutofillFieldErrorList(),
+                iterableWithSize(1));
+        assertThat(processedUseCard.getStatusDetails()
+                           .getAutofillErrorInfo()
+                           .getAutofillFieldError(0)
+                           .getNoFallbackValue(),
+                is(true));
+    }
+
+    /**
+     * Showcasts an element of the webpage and checks that it can be interacted with.
+     */
+    @Test
+    @MediumTest
+    public void testTermsAndConditionsWithShowCast() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setShowCast(
+                                ShowCastProto.newBuilder()
+                                        .setElementToPresent(SelectorProto.newBuilder().addFilters(
+                                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                                        "div.terms")))
+                                        .setTouchableElementArea(ElementAreaProto.newBuilder().addTouchable(
+                                                Rectangle.newBuilder().addElements(
+                                                        SelectorProto.newBuilder().addFilters(
+                                                                SelectorProto.Filter.newBuilder()
+                                                                        .setCssSelector(
+                                                                                "div.terms"))))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setRequestPaymentMethod(true)
+                                         .setBillingAddressName("billing_address")
+                                         .addSupportedBasicCardNetworks("visa")
+                                         .setPrivacyNoticeText("3rd party privacy text")
+                                         .setShowTermsAsCheckbox(true)
+                                         .setRequestTermsAndConditions(true)
+                                         .setAcceptTermsAndConditionsText("accept terms")
+                                         .setTermsAndConditionsState(
+                                                 TermsAndConditionsState.ACCEPTED)
+                                         .setConfirmChip(
+                                                 ChipProto.newBuilder()
+                                                         .setText("Custom text")
+                                                         .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                         .setIcon(ChipIcon.ICON_REFRESH)))
+                         .build());
         Choice toggle_chip =
                 Choice.newBuilder()
                         .setChip(ChipProto.newBuilder().setText("Toggle"))
                         .setShowOnlyWhen(ElementConditionProto.newBuilder().setMatch(
-                                ElementReferenceProto.newBuilder()
-                                        .addSelectors("div#toggle_on")
-                                        .setVisibilityRequirement(
-                                                VisibilityRequirement.MUST_BE_VISIBLE)))
+                                SelectorProto.newBuilder()
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                                        "div#toggle_on"))
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setBoundingBox(
+                                                        SelectorProto.BoundingBoxFilter
+                                                                .getDefaultInstance()))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
@@ -280,9 +394,9 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                 new AutofillAssistantTestService(Collections.singletonList(script));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Continue"), isDisplayed());
+        waitUntilViewMatchesCondition(withText("Custom text"), isDisplayed());
         tapElement(mTestRule, "button");
-        onView(withText("Continue")).perform(click());
+        onView(withText("Custom text")).perform(click());
         waitUntilViewMatchesCondition(withText("Toggle"), isDisplayed());
 
         // Verify that in the next step the touchable window is not present anymore.
@@ -398,8 +512,8 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
     public void testIncompleteAddressOnCompleteCard() throws Exception {
         PersonalDataManager.AutofillProfile mockProfile = new PersonalDataManager.AutofillProfile(
                 /* guid= */ "",
-                /* origin= */ "https://www.example.com", "John Doe", /* companyName= */ "",
-                "Somestreet",
+                /* origin= */ "https://www.example.com", /* honorificPrefix= */ "", "John Doe",
+                /* companyName= */ "", "Somestreet",
                 /* region= */ "", "Switzerland", "", /* postalCode= */ "", /* sortingCode= */ "",
                 "CH", "+41 79 123 45 67", "johndoe@google.com", /* languageCode= */ "");
         String profileId = mHelper.setProfile(mockProfile);
@@ -753,11 +867,12 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         testService.waitUntilGetNextActions(numNextActionsCalled + 1);
 
         List<ProcessedActionProto> processedActions = testService.getProcessedActions();
-        ViewMatchers.assertThat(Iterables.getOnlyElement(processedActions).getStatus(),
+        assertThat(processedActions.size(), equalTo(1));
+        ViewMatchers.assertThat(processedActions.get(0).getStatus(),
                 CoreMatchers.is(ProcessedActionStatusProto.ACTION_APPLIED));
-        CollectUserDataResultProto result =
-                Iterables.getOnlyElement(processedActions).getCollectUserDataResult();
-        assertThat(Iterables.getOnlyElement(result.getAdditionalSectionsValuesList()),
+        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
+        assertThat(result.getAdditionalSectionsValuesList().size(), equalTo(1));
+        assertThat(result.getAdditionalSectionsValuesList().get(0),
                 equalTo(ModelValue.newBuilder()
                                 .setIdentifier("field_1")
                                 .setValue(ValueProto.newBuilder().setStrings(
@@ -799,5 +914,56 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         waitUntilViewMatchesCondition(withText("Delivery address"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(withText("Custom info"), isCompletelyDisplayed());
+    }
+
+    /**
+     * Asks for the user email (but not the name) and then shows the details. Tests that only the
+     * requested info is surfaced in the details.
+     */
+    @Test
+    @MediumTest
+    public void showContactDetailsAfterCollectingEmailOnly() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setContactDetails(
+                                                 ContactDetailsProto.newBuilder()
+                                                         .setContactDetailsName("contact_details")
+                                                         .setRequestPayerName(false)
+                                                         .setRequestPayerEmail(true))
+                                         .setShowTermsAsCheckbox(true)
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowDetails(
+                                 ShowDetailsProto.newBuilder().setContactDetails("contact_details"))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), allOf(isDisplayed(), isEnabled()));
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed(), 6000L);
+        onView(withText("John Doe")).check(doesNotExist());
+        onView(allOf(withText("johndoe@gmail.com"), hasSibling(withId(R.id.details_title))))
+                .check(matches(isDisplayed()));
     }
 }

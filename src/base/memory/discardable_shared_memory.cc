@@ -17,8 +17,7 @@
 #include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/process_memory_dump.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -40,6 +39,11 @@
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
 #endif
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/trace_event/memory_allocator_dump.h"  // no-presubmit-check
+#include "base/trace_event/process_memory_dump.h"    // no-presubmit-check
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 namespace {
@@ -274,7 +278,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   // Ensure that the platform won't discard the required pages.
   return LockPages(shared_memory_region_,
                    AlignToPageSize(sizeof(SharedState)) + offset, length);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // On macOS, there is no mechanism to lock pages. However, we do need to call
   // madvise(MADV_FREE_REUSE) in order to correctly update accounting for memory
   // footprint via task_info().
@@ -396,9 +400,9 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
 // Linux and Android provide MADV_REMOVE which is preferred as it has a
 // behavior that can be verified in tests. Other POSIX flavors (MacOSX, BSDs),
 // provide MADV_FREE which has the same result but memory is purged lazily.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #define MADV_PURGE_ARGUMENT MADV_REMOVE
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // MADV_FREE_REUSABLE is similar to MADV_FREE, but also marks the pages with the
 // reusable bit, which allows both Activity Monitor and memory-infra to
 // correctly track the pages.
@@ -483,6 +487,8 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     trace_event::MemoryAllocatorDump* local_segment_dump,
     trace_event::ProcessMemoryDump* pmd,
     bool is_owned) const {
+// Memory dumps are only supported when tracing support is enabled,.
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   auto* shared_memory_dump = SharedMemoryTracker::GetOrCreateSharedMemoryDump(
       shared_memory_mapping_, pmd);
   // TODO(ssid): Clean this by a new api to inherit size of parent dump once the
@@ -512,6 +518,7 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     pmd->CreateSharedMemoryOwnershipEdge(local_segment_dump->guid(),
                                          shared_memory_guid, kImportance);
   }
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 // static

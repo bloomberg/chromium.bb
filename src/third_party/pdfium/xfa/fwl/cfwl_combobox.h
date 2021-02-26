@@ -7,17 +7,14 @@
 #ifndef XFA_FWL_CFWL_COMBOBOX_H_
 #define XFA_FWL_CFWL_COMBOBOX_H_
 
-#include <memory>
-
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fwl/cfwl_comboedit.h"
 #include "xfa/fwl/cfwl_combolist.h"
 #include "xfa/fwl/cfwl_listbox.h"
-#include "xfa/fxgraphics/cxfa_graphics.h"
+#include "xfa/fwl/cfwl_widget.h"
 
-class CFWL_WidgetProperties;
 class CFWL_ComboBox;
 class CFWL_ListBox;
-class CFWL_Widget;
 
 #define FWL_STYLEEXT_CMB_DropDown (1L << 0)
 #define FWL_STYLEEXT_CMB_Sort (1L << 1)
@@ -37,10 +34,11 @@ class CFWL_Widget;
 
 class CFWL_ComboBox final : public CFWL_Widget {
  public:
-  explicit CFWL_ComboBox(const CFWL_App* pApp);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_ComboBox() override;
 
   // CFWL_Widget
+  void Trace(cppgc::Visitor* visitor) const override;
   FWL_Type GetClassID() const override;
   void ModifyStylesEx(uint32_t dwStylesExAdded,
                       uint32_t dwStylesExRemoved) override;
@@ -48,11 +46,11 @@ class CFWL_ComboBox final : public CFWL_Widget {
   void RemoveStates(uint32_t dwStates) override;
   void Update() override;
   FWL_WidgetHit HitTest(const CFX_PointF& point) override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
-  void SetThemeProvider(IFWL_ThemeProvider* pThemeProvider) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessMessage(CFWL_Message* pMessage) override;
   void OnProcessEvent(CFWL_Event* pEvent) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
   WideString GetTextByIndex(int32_t iIndex) const;
@@ -90,19 +88,20 @@ class CFWL_ComboBox final : public CFWL_Widget {
   void EditModifyStylesEx(uint32_t dwStylesExAdded, uint32_t dwStylesExRemoved);
   void ShowDropList(bool bActivate);
 
-  CFWL_ComboEdit* GetComboEdit() const { return m_pEdit.get(); }
+  CFWL_ComboEdit* GetComboEdit() const { return m_pEdit; }
 
   void ProcessSelChanged(bool bLButtonUp);
   int32_t GetCurrentSelection() const { return m_iCurSel; }
 
  private:
+  explicit CFWL_ComboBox(CFWL_App* pApp);
+
   bool IsDropDownStyle() const {
-    return !!(m_pProperties->m_dwStyleExes & FWL_STYLEEXT_CMB_DropDown);
+    return !!(m_Properties.m_dwStyleExes & FWL_STYLEEXT_CMB_DropDown);
   }
   void MatchEditText();
   void SyncEditText(int32_t iListItem);
   void Layout();
-  void ResetTheme();
   void ResetEditAlignment();
   void ResetListItemAlignment();
   void GetPopupPos(float fMinHeight,
@@ -110,9 +109,6 @@ class CFWL_ComboBox final : public CFWL_Widget {
                    const CFX_RectF& rtAnchor,
                    CFX_RectF* pPopupRect);
   void OnLButtonUp(CFWL_MessageMouse* pMsg);
-
-  void InitComboList();
-  void InitComboEdit();
   bool IsDropListVisible() const { return m_pListBox->IsVisible(); }
   void OnLButtonDown(CFWL_MessageMouse* pMsg);
   void OnFocusChanged(CFWL_Message* pMsg, bool bSet);
@@ -121,8 +117,8 @@ class CFWL_ComboBox final : public CFWL_Widget {
   CFX_RectF m_ClientRect;
   CFX_RectF m_ContentRect;
   CFX_RectF m_BtnRect;
-  std::unique_ptr<CFWL_ComboEdit> m_pEdit;
-  std::unique_ptr<CFWL_ComboList> m_pListBox;
+  cppgc::Member<CFWL_ComboEdit> const m_pEdit;
+  cppgc::Member<CFWL_ComboList> const m_pListBox;
   int32_t m_iCurSel = -1;
   int32_t m_iBtnState = CFWL_PartState_Normal;
 };

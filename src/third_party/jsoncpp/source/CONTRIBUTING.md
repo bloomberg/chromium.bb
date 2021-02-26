@@ -11,7 +11,7 @@ An example of a common Meson/Ninja environment is described next.
 Thanks to David Seifert (@SoapGentoo), we (the maintainers) now use
 [meson](http://mesonbuild.com/) and [ninja](https://ninja-build.org/) to build
 for debugging, as well as for continuous integration (see
-[`./travis_scripts/meson_builder.sh`](./travis_scripts/meson_builder.sh) ). Other systems may work, but minor
+[`./.travis_scripts/meson_builder.sh`](./.travis_scripts/meson_builder.sh) ). Other systems may work, but minor
 things like version strings might break.
 
 First, install both meson (which requires Python3) and ninja.
@@ -26,10 +26,14 @@ Then,
     LIB_TYPE=shared
     #LIB_TYPE=static
     meson --buildtype ${BUILD_TYPE} --default-library ${LIB_TYPE} . build-${LIB_TYPE}
-    #ninja -v -C build-${LIB_TYPE} test # This stopped working on my Mac.
     ninja -v -C build-${LIB_TYPE}
-    cd build-${LIB_TYPE}
-    meson test --no-rebuild --print-errorlogs
+
+    ninja -C build-static/ test
+
+    # Or
+    #cd build-${LIB_TYPE}
+    #meson test --no-rebuild --print-errorlogs
+
     sudo ninja install
 
 ## Building and testing with other build systems

@@ -15,6 +15,7 @@
 #include "dawn_native/vulkan/BindGroupVk.h"
 
 #include "common/BitSetIterator.h"
+#include "common/ityp_stack_vec.h"
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
 #include "dawn_native/vulkan/BufferVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
@@ -38,11 +39,15 @@ namespace dawn_native { namespace vulkan {
           mDescriptorSetAllocation(descriptorSetAllocation) {
         // Now do a write of a single descriptor set with all possible chained data allocated on the
         // stack.
-        uint32_t numWrites = 0;
-        std::array<VkWriteDescriptorSet, kMaxBindingsPerGroup> writes;
-        std::array<VkDescriptorBufferInfo, kMaxBindingsPerGroup> writeBufferInfo;
-        std::array<VkDescriptorImageInfo, kMaxBindingsPerGroup> writeImageInfo;
+        const uint32_t bindingCount = static_cast<uint32_t>((GetLayout()->GetBindingCount()));
+        ityp::stack_vec<uint32_t, VkWriteDescriptorSet, kMaxOptimalBindingsPerGroup> writes(
+            bindingCount);
+        ityp::stack_vec<uint32_t, VkDescriptorBufferInfo, kMaxOptimalBindingsPerGroup>
+            writeBufferInfo(bindingCount);
+        ityp::stack_vec<uint32_t, VkDescriptorImageInfo, kMaxOptimalBindingsPerGroup>
+            writeImageInfo(bindingCount);
 
+        uint32_t numWrites = 0;
         for (const auto& it : GetLayout()->GetBindingMap()) {
             BindingNumber bindingNumber = it.first;
             BindingIndex bindingIndex = it.second;
@@ -52,7 +57,7 @@ namespace dawn_native { namespace vulkan {
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.pNext = nullptr;
             write.dstSet = GetHandle();
-            write.dstBinding = bindingNumber;
+            write.dstBinding = static_cast<uint32_t>(bindingNumber);
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
             write.descriptorType =
@@ -79,7 +84,8 @@ namespace dawn_native { namespace vulkan {
                     break;
                 }
 
-                case wgpu::BindingType::SampledTexture: {
+                case wgpu::BindingType::SampledTexture:
+                case wgpu::BindingType::MultisampledTexture: {
                     TextureView* view = ToBackend(GetBindingAsTextureView(bindingIndex));
 
                     writeImageInfo[numWrites].imageView = view->GetHandle();
@@ -102,8 +108,6 @@ namespace dawn_native { namespace vulkan {
                     write.pImageInfo = &writeImageInfo[numWrites];
                     break;
                 }
-                default:
-                    UNREACHABLE();
             }
 
             numWrites++;

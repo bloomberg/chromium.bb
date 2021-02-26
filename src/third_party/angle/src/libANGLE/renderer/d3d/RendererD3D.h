@@ -141,6 +141,7 @@ class BufferFactoryD3D : angle::NonCopyable
                                                  const gl::VertexBinding &binding,
                                                  size_t count,
                                                  GLsizei instances,
+                                                 GLuint baseInstance,
                                                  unsigned int *bytesRequiredOut) const = 0;
 };
 
@@ -192,6 +193,8 @@ class RendererD3D : public BufferFactoryD3D
                                            const egl::AttributeMap &attribs) const = 0;
 
     virtual int getMajorShaderModel() const = 0;
+
+    virtual void setGlobalDebugAnnotator() = 0;
 
     const angle::FeaturesD3D &getFeatures() const;
 
@@ -439,6 +442,11 @@ class RendererD3D : public BufferFactoryD3D
 unsigned int GetBlendSampleMask(const gl::State &glState, int samples);
 bool InstancedPointSpritesActive(ProgramD3D *programD3D, gl::PrimitiveMode mode);
 GLenum DefaultGLErrorCode(HRESULT hr);
+
+// Define stubs so we don't need to include D3D9/D3D11 headers directly.
+RendererD3D *CreateRenderer11(egl::Display *display);
+RendererD3D *CreateRenderer9(egl::Display *display);
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_D3D_RENDERERD3D_H_

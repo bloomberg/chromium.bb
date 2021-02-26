@@ -23,7 +23,9 @@ class CredentialLeakControllerAndroid {
  public:
   CredentialLeakControllerAndroid(
       password_manager::CredentialLeakType leak_type,
+      password_manager::CompromisedSitesCount saved_sites,
       const GURL& origin,
+      const base::string16& username,
       ui::WindowAndroid* window_android);
   ~CredentialLeakControllerAndroid();
 
@@ -58,14 +60,22 @@ class CredentialLeakControllerAndroid {
   // Checks whether the dialog should show the option to check passwords.
   bool ShouldCheckPasswords() const;
 
+  // Checks whether the change password button should be shown.
+  // |ShouldShowChangePasswordButton()| and |ShouldCheckPasswords()| are not
+  // both true at the same time.
+  bool ShouldShowChangePasswordButton() const;
+
   // Checks whether the cancel button should be shown.
   bool ShouldShowCancelButton() const;
 
  private:
   // Used to customize the UI.
   const password_manager::CredentialLeakType leak_type_;
+  const password_manager::CompromisedSitesCount saved_sites_;
 
   const GURL origin_;
+
+  const base::string16 username_;
 
   ui::WindowAndroid* window_android_;
 

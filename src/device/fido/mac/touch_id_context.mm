@@ -79,7 +79,9 @@ bool CanCreateSecureEnclaveKeyPair() {
   // bindings. Instead, attempt to create an ephemeral key pair in the secure
   // enclave.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> params(
-      CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
   CFDictionarySetValue(params, kSecAttrKeyType,
                        kSecAttrKeyTypeECSECPrimeRandom);
   CFDictionarySetValue(params, kSecAttrKeySizeInBits, @256);
@@ -129,9 +131,9 @@ bool TouchIdContext::TouchIdAvailableImpl(const AuthenticatorConfig& config) {
   }
 
   base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  base::scoped_nsobject<NSError> nserr;
+  NSError* nserr;
   if (![context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
-                            error:nserr.InitializeInto()]) {
+                            error:&nserr]) {
     FIDO_LOG(DEBUG) << "canEvaluatePolicy failed: " << nserr;
     return false;
   }

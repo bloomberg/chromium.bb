@@ -5,14 +5,28 @@
 import * as UI from '../ui/ui.js';
 
 /**
+ * @type {!InspectedPagePlaceholder}
+ */
+let inspectedPagePlaceholderInstance;
+
+/**
  * @unrestricted
  */
 export class InspectedPagePlaceholder extends UI.Widget.Widget {
   constructor() {
     super(true);
-    this.registerRequiredCSS('emulation/inspectedPagePlaceholder.css');
+    this.registerRequiredCSS('emulation/inspectedPagePlaceholder.css', {enableLegacyPatching: true});
     UI.ZoomManager.ZoomManager.instance().addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
     this.restoreMinimumSize();
+  }
+
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!inspectedPagePlaceholderInstance || forceNew) {
+      inspectedPagePlaceholderInstance = new InspectedPagePlaceholder();
+    }
+
+    return inspectedPagePlaceholderInstance;
   }
 
   /**
@@ -67,13 +81,6 @@ export class InspectedPagePlaceholder extends UI.Widget.Widget {
     this.dispatchEventToListeners(Events.Update, bounds);
   }
 }
-
-/**
- * @return {!InspectedPagePlaceholder}
- */
-export const instance = function() {
-  return self.singleton(InspectedPagePlaceholder);
-};
 
 /** @enum {symbol} */
 export const Events = {

@@ -66,15 +66,11 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // from the CookieManager.
   void HandleCompleteLoginMessageWithCookies(
       const base::ListValue& args,
-      const net::CookieStatusList& cookies,
-      const net::CookieStatusList& excluded_cookies);
+      const net::CookieAccessResultList& cookies,
+      const net::CookieAccessResultList& excluded_cookies);
 
   // JS callback to switch the UI from a constrainted dialog to a full tab.
   void HandleSwitchToFullTabMessage(const base::ListValue* args);
-
-  // Handles the web ui message sent when the navigation button is clicked by
-  // the user, requesting either a back navigation or closing the dialog.
-  void HandleNavigationButtonClicked(const base::ListValue* args);
 
   // Handles the web ui message sent when the window is closed from javascript.
   virtual void HandleDialogClose(const base::ListValue* args);

@@ -127,12 +127,6 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(func is not None)
     self.assertTrue(func['nocompile'])
 
-  def testNoDefine(self):
-    schema = self.idl_basics
-    func = getFunction(schema, 'function31')
-    self.assertTrue(func is not None)
-    self.assertTrue(func['nodefine'])
-
   def testNoDocOnEnum(self):
     schema = self.idl_basics
     enum_with_nodoc = getType(schema, 'EnumTypeWithNoDoc')
@@ -387,6 +381,23 @@ class IdlSchemaTest(unittest.TestCase):
 
     self.assertEquals(expected, union_type)
 
+  def testSerializableFunctionType(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+    object_type = getType(schema, 'SerializableFunctionObject')
+    expected = {
+                 'type': 'object',
+                 'id': 'SerializableFunctionObject',
+                 'properties': {
+                   'func': {
+                     'name': 'func',
+                     'serializableFunction': True,
+                     'type': 'function',
+                     'parameters': []
+                   }
+                 }
+               }
+    self.assertEquals(expected, object_type)
+
   def testUnionsWithFunctions(self):
     schema = idl_schema.Load('test/idl_function_types.idl')[0]
 
@@ -455,6 +466,22 @@ class IdlSchemaTest(unittest.TestCase):
         ('type', 'integer'),
       ])),
     ]), schema.get('properties'))
+
+  def testManifestKeys(self):
+    schema = self.idl_basics
+    self.assertEquals(
+        OrderedDict([('key_str',
+                      OrderedDict([('description', 'String manifest key.'),
+                                   ('jsexterns', None), ('name', 'key_str'),
+                                   ('type', 'string')])),
+                     ('key_ref',
+                      OrderedDict([('name', 'key_ref'),
+                                   ('$ref', 'MyType2')]))]),
+        schema.get('manifest_keys'))
+
+  def testNoManifestKeys(self):
+    schema = idl_schema.Load('test/idl_properties.idl')[0]
+    self.assertIsNone(schema.get('manifest_keys'))
 
 
 if __name__ == '__main__':

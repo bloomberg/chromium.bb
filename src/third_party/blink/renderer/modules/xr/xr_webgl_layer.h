@@ -6,11 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_webgl_layer_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -40,11 +41,10 @@ class XRWebGLLayer final : public XRLayer {
                bool ignore_depth_values);
   ~XRWebGLLayer() override;
 
-  static XRWebGLLayer* Create(
-      XRSession*,
-      const WebGLRenderingContextOrWebGL2RenderingContext&,
-      const XRWebGLLayerInit*,
-      ExceptionState&);
+  static XRWebGLLayer* Create(XRSession*,
+                              const XRWebGLRenderingContext&,
+                              const XRWebGLLayerInit*,
+                              ExceptionState&);
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }
 
@@ -64,8 +64,12 @@ class XRWebGLLayer final : public XRLayer {
   void UpdateViewports();
 
   HTMLCanvasElement* output_canvas() const;
+  uint32_t CameraImageTextureId() const;
+  base::Optional<gpu::MailboxHolder> CameraImageMailboxHolder() const;
 
-  void OnFrameStart(const base::Optional<gpu::MailboxHolder>&);
+  void OnFrameStart(
+      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder,
+      const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder);
   void OnFrameEnd();
   void OnResize();
 
@@ -75,9 +79,15 @@ class XRWebGLLayer final : public XRLayer {
 
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
+  uint32_t GetBufferTextureId(
+      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder);
+
+  void BindBufferTexture(
+      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder);
+
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
 
@@ -91,6 +101,9 @@ class XRWebGLLayer final : public XRLayer {
   bool ignore_depth_values_ = false;
 
   uint32_t clean_frame_count = 0;
+
+  uint32_t camera_image_texture_id_;
+  base::Optional<gpu::MailboxHolder> camera_image_mailbox_holder_;
 };
 
 }  // namespace blink

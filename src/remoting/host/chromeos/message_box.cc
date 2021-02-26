@@ -65,10 +65,9 @@ MessageBox::Core::Core(const base::string16& title_label,
                        ResultCallback result_callback,
                        MessageBox* message_box)
     : title_label_(title_label),
-      result_callback_(result_callback),
+      result_callback_(std::move(result_callback)),
       message_box_(message_box),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(message_label))) {
+      message_box_view_(new views::MessageBoxView(message_label)) {
   DCHECK(message_box_);
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_label);
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_label);
@@ -146,7 +145,7 @@ MessageBox::MessageBox(const base::string16& title_label,
                      message_label,
                      ok_label,
                      cancel_label,
-                     result_callback,
+                     std::move(result_callback),
                      this)) {
   core_->Show();
 }

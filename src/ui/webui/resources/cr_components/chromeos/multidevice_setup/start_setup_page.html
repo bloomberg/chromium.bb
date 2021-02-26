@@ -1,11 +1,11 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="../../../html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/icons.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup_shared_css.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/ui_page.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/ui_page_container_behavior.html">
-<link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="icons.html">
+<link rel="import" href="multidevice_setup_shared_css.html">
+<link rel="import" href="ui_page.html">
+<link rel="import" href="ui_page_container_behavior.html">
+<link rel="import" href="../../../html/cr.html">
+<link rel="import" href="../../../html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="start-setup-page">
@@ -153,6 +153,24 @@
                       locale, 'startSetupPageFeatureListAwm')]]">
               </span>
             </div>
+            <template is="dom-if" if="[[phoneHubEnabled_]]">
+              <div class="feature-detail">
+                <iron-icon icon="multidevice-setup-icons-20:notifications">
+                </iron-icon>
+                <span>
+                  [[i18nDynamic(locale, 'startSetupPageFeatureMirrorPhoneNotifications')]]
+                </span>
+              </div>
+            </template>
+            <template is="dom-if" if="[[wifiSyncEnabled_]]">
+              <div class="feature-detail">
+                <iron-icon icon="multidevice-setup-icons-20:wifi">
+                </iron-icon>
+                <span>
+                  [[i18nDynamic(locale, 'startSetupPageFeatureWifiSync')]]
+                </span>
+              </div>
+            </template>
             <div class="feature-detail">
               <iron-icon icon="multidevice-setup-icons-20:downloads">
               </iron-icon>
@@ -171,6 +189,6 @@
       </div>
     </ui-page>
   </template>
-  <script src="chrome://resources/cr_components/chromeos/multidevice_setup/start_setup_page.js">
+  <script src="start_setup_page.js">
   </script>
 </dom-module>

@@ -8,32 +8,35 @@ import * as UI from '../ui/ui.js';
 export class RadioSetting {
   /**
    * @param {!Array<!{value: string, label: string}>} options
-   * @param {!Common.Settings.Setting} setting
+   * @param {!Common.Settings.Setting<string>} setting
    * @param {string} description
    */
   constructor(options, setting, description) {
     this._setting = setting;
     this._options = options;
 
-    this.element = createElement('div');
-    this.element.title = description;
+    this.element = document.createElement('div');
     UI.ARIAUtils.setDescription(this.element, description);
     UI.ARIAUtils.markAsRadioGroup(this.element);
 
+    /**
+     * @type {!Array<!HTMLInputElement>}
+     */
     this._radioElements = [];
     for (const option of this._options) {
       const fragment = UI.Fragment.Fragment.build`
         <label $="label" class="lighthouse-radio">
           <input $="input" type="radio" value=${option.value} name=${setting.name}>
-          <span class="lighthouse-radio-text">${option.label}</span>
+          <span $="span" class="lighthouse-radio-text">${option.label}</span>
         </label>
       `;
 
       this.element.appendChild(fragment.element());
-      if (option.title) {
-        UI.Tooltip.Tooltip.install(fragment.$('label'), option.title);
+      if (description) {
+        UI.Tooltip.Tooltip.install(fragment.$('input'), description);
+        UI.Tooltip.Tooltip.install(fragment.$('span'), description);
       }
-      const radioElement = fragment.$('input');
+      const radioElement = /** @type {!HTMLInputElement} */ (fragment.$('input'));
       radioElement.addEventListener('change', this._valueChanged.bind(this));
       this._radioElements.push(radioElement);
     }
@@ -66,6 +69,9 @@ export class RadioSetting {
     }
 
     const selectedRadio = this._radioElements.find(radio => radio.checked);
+    if (!selectedRadio) {
+      return;
+    }
     this._setting.set(selectedRadio.value);
   }
 }

@@ -79,7 +79,7 @@ Polymer({
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
       this.async(() => {
-        if (this.countryCode_ == this.address.countryCode) {
+        if (this.countryCode_ === this.address.countryCode) {
           this.updateAddressWrapper_();
         } else {
           this.countryCode_ = this.address.countryCode;
@@ -212,6 +212,29 @@ Polymer({
         /** @type {!HTMLSelectElement} */ (this.$$('select'));
     this.countryCode_ = countrySelect.value;
   },
+
+  /**
+   * Propagates focus to the <select> when country row is focused
+   * (e.g. using tab navigation).
+   * @private
+   */
+  onCountryRowFocus_() {
+    const countrySelect =
+        /** @type {!HTMLSelectElement} */ (this.$$('select'));
+    countrySelect.focus();
+  },
+
+  /**
+   * Prevents clicking random spaces within country row but outside of <select>
+   * from triggering focus.
+   * @param {!Event} e
+   * @private
+   */
+  onCountryRowPointerDown_(e) {
+    if (e.path[0].tagName !== 'SELECT') {
+      e.preventDefault();
+    }
+  },
 });
 
 /**
@@ -234,7 +257,7 @@ class AddressComponentUI {
     this.address_ = address;
     this.component = component;
     this.isTextArea =
-        component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
+        component.field === chrome.autofillPrivate.AddressField.ADDRESS_LINES;
   }
 
   /**

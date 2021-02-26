@@ -69,11 +69,12 @@ class CORE_EXPORT FilterOperations {
 
   bool HasFilterThatAffectsOpacity() const;
   bool HasFilterThatMovesPixels() const;
+  bool HasReferenceFilter() const;
 
   void AddClient(SVGResourceClient&) const;
   void RemoveClient(SVGResourceClient&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FilterOperationVector operations_;
@@ -89,7 +90,7 @@ class FilterOperationsWrapper
 
   const FilterOperations& Operations() const { return operations_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(operations_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(operations_); }
 
  private:
   FilterOperations operations_;

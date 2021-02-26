@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
@@ -119,7 +119,11 @@ void DynamicStoreCallback(SCDynamicStoreRef /* store */,
 
 class NetworkConfigWatcherMacThread : public base::Thread {
  public:
-  NetworkConfigWatcherMacThread(NetworkConfigWatcherMac::Delegate* delegate);
+  explicit NetworkConfigWatcherMacThread(
+      NetworkConfigWatcherMac::Delegate* delegate);
+  NetworkConfigWatcherMacThread(const NetworkConfigWatcherMacThread&) = delete;
+  NetworkConfigWatcherMacThread& operator=(
+      const NetworkConfigWatcherMacThread&) = delete;
   ~NetworkConfigWatcherMacThread() override;
 
  protected:
@@ -141,8 +145,6 @@ class NetworkConfigWatcherMacThread : public base::Thread {
   int num_retry_;
 #endif  // !defined(OS_IOS)
   base::WeakPtrFactory<NetworkConfigWatcherMacThread> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkConfigWatcherMacThread);
 };
 
 NetworkConfigWatcherMacThread::NetworkConfigWatcherMacThread(
@@ -264,7 +266,7 @@ NetworkConfigWatcherMac::NetworkConfigWatcherMac(Delegate* delegate)
     : notifier_thread_(new NetworkConfigWatcherMacThread(delegate)) {
   // We create this notifier thread because the notification implementation
   // needs a thread with a CFRunLoop, and there's no guarantee that
-  // MessageLoopCurrent::Get() meets that criterion.
+  // CurrentThread::Get() meets that criterion.
   base::Thread::Options thread_options(base::MessagePumpType::UI, 0);
   notifier_thread_->StartWithOptions(thread_options);
 }

@@ -9,10 +9,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "components/payments/content/payment_credential.h"
 #include "components/payments/content/payment_request.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/payments/payment_credential.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace content {
@@ -24,6 +28,7 @@ class WebContents;
 namespace payments {
 
 class ContentPaymentRequestDelegate;
+class PaymentManifestWebDataService;
 
 // This class owns the PaymentRequest associated with a given WebContents.
 //
@@ -44,21 +49,28 @@ class PaymentRequestWebContentsManager
   static PaymentRequestWebContentsManager* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
-  // Creates the PaymentRequest that will interact with this |render_frame_host|
-  // and the associated |web_contents|.
+  // Creates the PaymentRequest that will interact with this `render_frame_host`
+  // and the associated `web_contents`.
   void CreatePaymentRequest(
       content::RenderFrameHost* render_frame_host,
-      content::WebContents* web_contents,
       std::unique_ptr<ContentPaymentRequestDelegate> delegate,
       mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
       PaymentRequest::ObserverForTest* observer_for_testing);
 
-  // Destroys the given |request|.
-  void DestroyRequest(PaymentRequest* request);
+  // Destroys the given `request`.
+  void DestroyRequest(base::WeakPtr<PaymentRequest> request);
+
+  // Creates the mojo IPC endpoint that will receive requests from the renderer
+  // to store payment credential in user's profile.
+  void CreatePaymentCredential(
+      content::GlobalFrameRoutingId initiator_frame_routing_id,
+      scoped_refptr<PaymentManifestWebDataService> web_data_sevice,
+      mojo::PendingReceiver<payments::mojom::PaymentCredential> receiver);
 
   // WebContentsObserver::
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
  private:
   explicit PaymentRequestWebContentsManager(content::WebContents* web_contents);
@@ -70,6 +82,8 @@ class PaymentRequestWebContentsManager
   // these requests only get destroyed when the WebContents goes away, or when
   // the requests themselves call DestroyRequest().
   std::map<PaymentRequest*, std::unique_ptr<PaymentRequest>> payment_requests_;
+
+  std::unique_ptr<PaymentCredential> payment_credential_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

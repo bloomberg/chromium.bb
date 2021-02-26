@@ -40,7 +40,7 @@ bool ArcDataRemover::IsScheduledForTesting() const {
 void ArcDataRemover::Run(RunCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!pref_.GetValue()) {
-    // Data removal is not scheduled.
+    VLOG(1) << "Data removal is not scheduled, skip.";
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -57,9 +57,8 @@ void ArcDataRemover::Run(RunCallback callback) {
           .account_id();
   upstart_client->StartJob(
       kArcRemoveDataUpstartJob, {"CHROMEOS_USER=" + account_id},
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&ArcDataRemover::OnDataRemoved,
-                         weak_factory_.GetWeakPtr(), std::move(callback))));
+      base::BindOnce(&ArcDataRemover::OnDataRemoved, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void ArcDataRemover::OnDataRemoved(RunCallback callback, bool success) {

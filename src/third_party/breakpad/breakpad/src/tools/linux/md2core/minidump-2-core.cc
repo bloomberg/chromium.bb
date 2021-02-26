@@ -149,7 +149,7 @@ SetupOptions(int argc, const char* argv[], Options* options) {
   options->use_filename = false;
   options->inc_guid = false;
 
-  while ((ch = getopt(argc, (char * const *)argv, "fhio:S:v")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "fhio:S:v")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv);
@@ -224,7 +224,7 @@ writea(int fd, const void* idata, size_t length) {
  */
 static inline int sex() {
   int probe = 1;
-  return !*(char *)&probe;
+  return !*(char*)&probe;
 }
 
 typedef struct elf_timeval {    /* Time value with microsecond resolution    */
@@ -660,10 +660,10 @@ ParseSystemInfo(const Options& options, CrashedProcess* crashinfo,
         sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_AMD64) {
       fputs("Vendor id: ", stderr);
       const char *nul =
-        (const char *)memchr(sysinfo->cpu.x86_cpu_info.vendor_id, 0,
+        (const char*)memchr(sysinfo->cpu.x86_cpu_info.vendor_id, 0,
                              sizeof(sysinfo->cpu.x86_cpu_info.vendor_id));
       fwrite(sysinfo->cpu.x86_cpu_info.vendor_id,
-             nul ? nul - (const char *)&sysinfo->cpu.x86_cpu_info.vendor_id[0]
+             nul ? nul - (const char*)&sysinfo->cpu.x86_cpu_info.vendor_id[0]
              : sizeof(sysinfo->cpu.x86_cpu_info.vendor_id), 1, stderr);
       fputs("\n", stderr);
     }
@@ -759,7 +759,7 @@ ParseEnvironment(const Options& options, CrashedProcess* crashinfo,
     memcpy(env, range.data(), range.length());
     int nul_count = 0;
     for (char *ptr = env;;) {
-      ptr = (char *)memchr(ptr, '\000', range.length() - (ptr - env));
+      ptr = (char*)memchr(ptr, '\000', range.length() - (ptr - env));
       if (!ptr) {
         break;
       }
@@ -1076,7 +1076,7 @@ AugmentMappings(const Options& options, CrashedProcess* crashinfo,
   for (unsigned i = 0; i < crashinfo->threads.size(); ++i) {
     const CrashedProcess::Thread& thread = crashinfo->threads[i];
     AddDataToMapping(crashinfo,
-                     string((char *)thread.stack, thread.stack_length),
+                     string((char*)thread.stack, thread.stack_length),
                      thread.stack_addr);
   }
 

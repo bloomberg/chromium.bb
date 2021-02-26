@@ -48,7 +48,7 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document,
                                            DateTimeField type)
     : HTMLSpanElement(document), field_owner_(&field_owner), type_(type) {}
 
-void DateTimeFieldElement::Trace(Visitor* visitor) {
+void DateTimeFieldElement::Trace(Visitor* visitor) const {
   visitor->Trace(field_owner_);
   HTMLSpanElement::Trace(visitor);
 }
@@ -159,6 +159,12 @@ void DateTimeFieldElement::FocusOnNextField() {
   if (!field_owner_)
     return;
   field_owner_->FocusOnNextField(*this);
+}
+
+void DateTimeFieldElement::HandleAmPmRollover(FieldRolloverType type) {
+  if (!field_owner_)
+    return;
+  field_owner_->HandleAmPmRollover(type);
 }
 
 void DateTimeFieldElement::Initialize(const AtomicString& pseudo,

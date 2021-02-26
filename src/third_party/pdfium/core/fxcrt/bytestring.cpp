@@ -188,7 +188,7 @@ ByteString::ByteString(const std::ostringstream& outStream) {
     m_pData.Reset(StringData::Create(str.c_str(), str.length()));
 }
 
-ByteString::~ByteString() {}
+ByteString::~ByteString() = default;
 
 ByteString& ByteString::operator=(const char* str) {
   if (!str || !str[0])
@@ -215,7 +215,7 @@ ByteString& ByteString::operator=(const ByteString& that) {
   return *this;
 }
 
-ByteString& ByteString::operator=(ByteString&& that) {
+ByteString& ByteString::operator=(ByteString&& that) noexcept {
   if (m_pData != that.m_pData)
     m_pData = std::move(that.m_pData);
 

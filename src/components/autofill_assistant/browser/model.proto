@@ -33,13 +33,15 @@ message ValueProto {
     ProfileList profiles = 8;
     LoginOptionList login_options = 9;
     CreditCardResponseProto credit_card_response = 10;
-    LoginOptionResponseProto login_option_response = 11;
+    bytes server_payload = 12;
   }
   // If set to true, this value will not be sent to the backend. This flag is
   // mostly used internally, to prevent certain values from leaving the device.
   // Note that values derived from client_side_only values will inherit this
   // property.
   optional bool is_client_side_only = 6;
+
+  reserved 11;
 }
 
 message ValueReferenceProto {
@@ -192,6 +194,17 @@ enum ProcessedActionStatusProto {
   // ProcessedActionStatusProto.AutofillErrorInfoProto contains more details.
   AUTOFILL_INCOMPLETE = 24;
 
+  // Evaluating a selector required considering too many candidates. Please
+  // generate more specific selectors. See SelectorProto::ProximityFilter.
+  TOO_MANY_CANDIDATES = 25;
+
+  // Evaluating the element did report an unexpected mismatch in either value
+  // or text.
+  ELEMENT_MISMATCH = 26;
+
+  // Another element covered the targeted element, when trying to click.
+  ELEMENT_NOT_ON_TOP = 27;
+
   reserved 15, 23;
 }
 
@@ -245,20 +258,29 @@ enum ChipType {
   // HIGHLIGHTED_ACTION.
   DONE_ACTION = 6;
 
+  // A "Send feedback" chip, which will show the feedback form when clicked.
+  //
+  // Note that when this is used inside a script, we will continue the script
+  // normally once the user has clicked the chip.
+  FEEDBACK_ACTION = 7;
+
   reserved 2;
 }
 
 enum ChipIcon {
   NO_ICON = 0;
 
-  // https://icons.googleplex.com/#icon=ic_clear
+  // https://icons.googleplex.com/#icon=clear
   ICON_CLEAR = 1;
 
-  // https://icons.googleplex.com/#icon=ic_done
+  // https://icons.googleplex.com/#icon=done
   ICON_DONE = 2;
 
-  // https://icons.googleplex.com/#icon=ic_refresh
+  // https://icons.googleplex.com/#icon=refresh
   ICON_REFRESH = 3;
+
+  // https://icons.googleplex.com/#icon=more_vert
+  ICON_OVERFLOW = 4;
 }
 
 // Defines a mapping to an Android Q direct action.
@@ -336,8 +358,4 @@ message LoginOptionProto {
   optional string label = 1;
   optional string sublabel = 2;
   optional bytes payload = 3;
-}
-
-message LoginOptionResponseProto {
-  optional bytes payload = 1;
 }

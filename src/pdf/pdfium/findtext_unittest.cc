@@ -9,8 +9,8 @@
 #include "pdf/test/test_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::InSequence;
 using testing::_;
+using testing::InSequence;
 
 namespace chrome_pdf {
 
@@ -19,11 +19,13 @@ namespace {
 class FindTextTestClient : public TestClient {
  public:
   FindTextTestClient() = default;
+  FindTextTestClient(const FindTextTestClient&) = delete;
+  FindTextTestClient& operator=(const FindTextTestClient&) = delete;
   ~FindTextTestClient() override = default;
 
   // PDFEngine::Client:
-  MOCK_METHOD2(NotifyNumberOfFindResultsChanged, void(int, bool));
-  MOCK_METHOD1(NotifySelectedFindResultChanged, void((int)));
+  MOCK_METHOD(void, NotifyNumberOfFindResultsChanged, (int, bool), (override));
+  MOCK_METHOD(void, NotifySelectedFindResultChanged, (int), (override));
 
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
@@ -48,9 +50,6 @@ class FindTextTestClient : public TestClient {
     }
     return results;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FindTextTestClient);
 };
 
 }  // namespace

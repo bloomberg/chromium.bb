@@ -8,9 +8,9 @@
  */
 
 Polymer({
-  is: 'app-downloading',
+  is: 'app-downloading-element',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     numOfApps: Number,
@@ -22,15 +22,49 @@ Polymer({
     },
   },
 
-  focus() {
-    this.$['app-downloading-dialog'].focus();
+  ready() {
+    this.initializeLoginScreen('AppDownloadingScreen', {
+      resetAllowed: true,
+    });
+  },
+
+  /** Initial UI State for screen */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.ONBOARDING;
+  },
+
+  /**
+   * Returns the control which should receive initial focus.
+   */
+  get defaultControl() {
+    return this.$['app-downloading-dialog'];
+  },
+
+  /*
+   * Executed on language change.
+   */
+  updateLocalizedContent() {
+    this.i18nUpdateLocale();
+  },
+
+  /** Called when dialog is shown */
+  onBeforeShow(data) {
+    this.numOfApps = data.numOfApps;
+    if (this.$.video) {
+      this.$.video.play();
+    }
+  },
+
+  /** Called when dialog is hidden */
+  onBeforeHide() {
+    if (this.$.video) {
+      this.$.video.pause();
+    }
   },
 
   /** @private */
   onContinue_() {
-    chrome.send(
-        'login.AppDownloadingScreen.userActed',
-        ['appDownloadingContinueSetup']);
+    this.userActed('appDownloadingContinueSetup');
   },
 
   /** @private */

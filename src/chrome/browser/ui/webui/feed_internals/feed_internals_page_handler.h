@@ -46,6 +46,8 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
   void GetFeedHistograms(GetFeedHistogramsCallback) override;
   void OverrideFeedHost(const GURL& host) override;
+  void OverrideActionUploadEndpoint(const GURL& endpoint_url) override;
+  void OverrideFeedStreamData(const std::vector<uint8_t>& data) override;
 
  private:
   mojo::Receiver<feed_internals::mojom::PageHandler> receiver_;

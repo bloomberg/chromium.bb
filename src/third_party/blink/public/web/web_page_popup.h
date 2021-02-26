@@ -41,13 +41,13 @@ namespace blink {
 
 class WebWidgetClient;
 class WebDocument;
+class WebView;
 
 class WebPagePopupClient : public WebWidgetClient {
  public:
-  // Called when the window for this popup widget should be closed. The
-  // WebWidget will be closed asynchronously as a result of this
-  // request.
-  virtual void ClosePopupWidgetSoon() = 0;
+  // Request to destroy the WebPagePopupClient immediately given that the
+  // browser has closed the associated mojom connection.
+  virtual void BrowserClosedIpcChannelForPopupWidget() = 0;
 };
 
 class WebPagePopup : public WebWidget {
@@ -56,15 +56,21 @@ class WebPagePopup : public WebWidget {
   // be released when the popup is closed via Close().
   BLINK_EXPORT static WebPagePopup* Create(
       WebPagePopupClient*,
+      CrossVariantMojoAssociatedRemote<mojom::PopupWidgetHostInterfaceBase>
+          popup_widget_host,
       CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
           widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
-  virtual gfx::Point PositionRelativeToOwner() = 0;
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The popup's accessibility tree is connected to the main document's
   // accessibility tree. Access to the popup document is needed to ensure the
   // popup's layout is clean before serializing the combined tree.
   virtual WebDocument GetDocument() = 0;
+
+  // Initialization is typically done after creation inside blink, but some
+  // content tests call Create directly so we expose an initialization.
+  virtual void InitializeForTesting(WebView* view) = 0;
 
   // Web tests require access to the client for a WebPagePopup in order
   // to synchronously composite.

@@ -8,23 +8,26 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/base/features.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -37,9 +40,8 @@ namespace cc {
 namespace {
 
 // Measured in seconds.
-const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
-
-unsigned int nextBeginFrameId = 0;
+constexpr auto kSmoothnessTakesPriorityExpirationDelay =
+    base::TimeDelta::FromMilliseconds(250);
 
 }  // namespace
 
@@ -68,20 +70,16 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
           task_runner_provider->ImplThreadTaskRunner(),
           base::BindRepeating(&ProxyImpl::RenewTreePriority,
                               base::Unretained(this)),
-          base::TimeDelta::FromSecondsD(
-              kSmoothnessTakesPriorityExpirationDelay)),
+          kSmoothnessTakesPriorityExpirationDelay),
       proxy_main_weak_ptr_(proxy_main_weak_ptr) {
   TRACE_EVENT0("cc", "ProxyImpl::ProxyImpl");
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
 
-  // Double checking we set this correctly since double->int truncations are
-  // silent and have been done mistakenly: crbug.com/568120.
-  DCHECK(!smoothness_priority_expiration_notifier_.delay().is_zero());
-
   host_impl_ = layer_tree_host->CreateLayerTreeHostImpl(this);
   const LayerTreeSettings& settings = layer_tree_host->GetSettings();
   send_compositor_frame_ack_ = settings.send_compositor_frame_ack;
+  last_raster_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
 
   SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
 
@@ -248,6 +246,10 @@ void ProxyImpl::RequestBeginMainFrameNotExpected(bool new_state) {
   scheduler_->SetMainThreadWantsBeginMainFrameNotExpected(new_state);
 }
 
+bool ProxyImpl::IsInSynchronousComposite() const {
+  return false;
+}
+
 void ProxyImpl::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
     LayerTreeHost* layer_tree_host,
@@ -271,7 +273,8 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   // But, we can avoid a PostTask in here.
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
 
-  host_impl_->ReadyToCommit(commit_args);
+  auto begin_main_frame_metrics = layer_tree_host->begin_main_frame_metrics();
+  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get());
 
   commit_completion_event_ =
       std::make_unique<ScopedCompletionEvent>(completion);
@@ -286,7 +289,7 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
 
   // Extract metrics data from the layer tree host and send them to the
   // scheduler to pass them to the compositor_timing_history object.
-  scheduler_->NotifyReadyToCommit(layer_tree_host->begin_main_frame_metrics());
+  scheduler_->NotifyReadyToCommit(std::move(begin_main_frame_metrics));
 }
 
 void ProxyImpl::DidLoseLayerTreeFrameSinkOnImplThread() {
@@ -370,24 +373,8 @@ void ProxyImpl::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
     scheduler_->SetVideoNeedsBeginFrames(needs_begin_frames);
 }
 
-size_t ProxyImpl::CompositedAnimationsCount() const {
-  return host_impl_->mutator_host()->CompositedAnimationsCount();
-}
-
-size_t ProxyImpl::MainThreadAnimationsCount() const {
-  return host_impl_->mutator_host()->MainThreadAnimationsCount();
-}
-
 bool ProxyImpl::HasCustomPropertyAnimations() const {
   return host_impl_->mutator_host()->HasCustomPropertyAnimations();
-}
-
-bool ProxyImpl::CurrentFrameHadRAF() const {
-  return host_impl_->mutator_host()->CurrentFrameHadRAF();
-}
-
-bool ProxyImpl::NextFrameHasPendingRAF() const {
-  return host_impl_->mutator_host()->NextFrameHasPendingRAF();
 }
 
 bool ProxyImpl::IsInsideDraw() {
@@ -404,10 +391,28 @@ bool ProxyImpl::IsBeginMainFrameExpected() {
 
 void ProxyImpl::RenewTreePriority() {
   DCHECK(IsImplThread());
-  const bool user_interaction_in_progress =
-      host_impl_->pinch_gesture_active() ||
-      host_impl_->page_scale_animation_active() ||
-      host_impl_->IsActivelyPrecisionScrolling();
+
+  bool scroll_type_considered_interaction = false;
+  bool non_scroll_interaction_in_progress =
+      host_impl_->IsPinchGestureActive() ||
+      host_impl_->page_scale_animation_active();
+
+  ActivelyScrollingType actively_scrolling_type =
+      host_impl_->GetActivelyScrollingType();
+
+  switch (actively_scrolling_type) {
+    case ActivelyScrollingType::kNone:
+      break;
+    case ActivelyScrollingType::kPrecise:
+      scroll_type_considered_interaction = true;
+      break;
+    case ActivelyScrollingType::kAnimated:
+      scroll_type_considered_interaction = base::FeatureList::IsEnabled(
+          features::kSchedulerSmoothnessForAnimatedScrolls);
+  }
+
+  bool user_interaction_in_progress =
+      non_scroll_interaction_in_progress || scroll_type_considered_interaction;
 
   if (host_impl_->ukm_manager()) {
     host_impl_->ukm_manager()->SetUserInteractionInProgress(
@@ -419,11 +424,19 @@ void ProxyImpl::RenewTreePriority() {
     smoothness_priority_expiration_notifier_.Schedule();
 
   // We use the same priority for both trees by default.
-  TreePriority tree_priority = SAME_PRIORITY_FOR_BOTH_TREES;
+  TreePriority scheduler_tree_priority = SAME_PRIORITY_FOR_BOTH_TREES;
+  TreePriority raster_tree_priority = SAME_PRIORITY_FOR_BOTH_TREES;
 
   // Smoothness takes priority if we have an expiration for it scheduled.
-  if (smoothness_priority_expiration_notifier_.HasPendingNotification())
-    tree_priority = SMOOTHNESS_TAKES_PRIORITY;
+  if (smoothness_priority_expiration_notifier_.HasPendingNotification()) {
+    scheduler_tree_priority = SMOOTHNESS_TAKES_PRIORITY;
+    if (non_scroll_interaction_in_progress ||
+        actively_scrolling_type == ActivelyScrollingType::kPrecise ||
+        last_raster_priority_ == SMOOTHNESS_TAKES_PRIORITY)
+      raster_tree_priority = SMOOTHNESS_TAKES_PRIORITY;
+  }
+
+  last_raster_priority_ = raster_tree_priority;
 
   // New content always takes priority when ui resources have been evicted.
   if (host_impl_->active_tree()->GetDeviceViewport().size().IsEmpty() ||
@@ -432,20 +445,20 @@ void ProxyImpl::RenewTreePriority() {
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.
     host_impl_->SetRequiresHighResToDraw();
-    tree_priority = NEW_CONTENT_TAKES_PRIORITY;
+    scheduler_tree_priority = raster_tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   }
 
-  host_impl_->SetTreePriority(tree_priority);
+  host_impl_->SetTreePriority(raster_tree_priority);
 
   // Only put the scheduler in impl latency prioritization mode if we don't
   // have a scroll listener. This gives the scroll listener a better chance of
   // handling scroll updates within the same frame. The tree itself is still
   // kept in prefer smoothness mode to allow checkerboarding.
   ScrollHandlerState scroll_handler_state =
-      host_impl_->scroll_affects_scroll_handler()
+      host_impl_->ScrollAffectsScrollHandler()
           ? ScrollHandlerState::SCROLL_AFFECTS_SCROLL_HANDLER
           : ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER;
-  scheduler_->SetTreePrioritiesAndScrollState(tree_priority,
+  scheduler_->SetTreePrioritiesAndScrollState(scheduler_tree_priority,
                                               scroll_handler_state);
 }
 
@@ -542,14 +555,25 @@ void ProxyImpl::NotifyThroughputTrackerResults(CustomTrackerResults results) {
                                 proxy_main_weak_ptr_, std::move(results)));
 }
 
+void ProxyImpl::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::DidObserveFirstScrollDelay,
+                                proxy_main_weak_ptr_, first_scroll_delay,
+                                first_scroll_timestamp));
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);
 }
 
-void ProxyImpl::DidFinishImplFrame() {
+void ProxyImpl::DidFinishImplFrame(
+    const viz::BeginFrameArgs& last_activated_args) {
   DCHECK(IsImplThread());
-  host_impl_->DidFinishImplFrame(scheduler_->last_activate_origin_frame_args());
+  host_impl_->DidFinishImplFrame(last_activated_args);
 }
 
 void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
@@ -566,14 +590,13 @@ void ProxyImpl::WillNotReceiveBeginFrame() {
 void ProxyImpl::ScheduledActionSendBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
-  unsigned int begin_frame_id = nextBeginFrameId++;
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
-      benchmark_instrumentation::kSendBeginFrame, begin_frame_id);
+      benchmark_instrumentation::kSendBeginFrame,
+      args.frame_id.sequence_number);
   std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
-  begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->begin_frame_args = args;
-  begin_main_frame_state->scroll_info = host_impl_->ProcessScrollDeltas();
+  begin_main_frame_state->commit_data = host_impl_->ProcessCompositorDeltas();
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();
@@ -703,9 +726,6 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
 
   base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
-  if (host_impl_->pending_tree())
-    host_impl_->pending_tree()->UpdateDrawProperties();
-
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its
   // request completes, and we signal completion here. If CanDraw() is false, we
@@ -756,6 +776,12 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
                                   proxy_main_weak_ptr_));
   }
 
+  // The tile visibility/priority of the pending tree needs to be updated so
+  // that it doesn't get activated before the raster is complete. But this needs
+  // to happen after the draw, off of the critical path to draw.
+  if (host_impl_->pending_tree())
+    host_impl_->pending_tree()->UpdateDrawProperties();
+
   DCHECK_NE(INVALID_RESULT, result);
   return result;
 }
@@ -782,6 +808,12 @@ void ProxyImpl::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
   host_impl_->SetActiveURL(url, source_id);
 }
 
+void ProxyImpl::SetUkmSmoothnessDestination(
+    base::WritableSharedMemoryMapping ukm_smoothness_data) {
+  DCHECK(IsImplThread());
+  host_impl_->SetUkmSmoothnessDestination(std::move(ukm_smoothness_data));
+}
+
 void ProxyImpl::ClearHistory() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
@@ -791,6 +823,11 @@ void ProxyImpl::ClearHistory() {
 void ProxyImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   host_impl_->SetRenderFrameObserver(std::move(observer));
+}
+
+void ProxyImpl::SetEnableFrameRateThrottling(
+    bool enable_frame_rate_throttling) {
+  host_impl_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
 }
 
 }  // namespace cc

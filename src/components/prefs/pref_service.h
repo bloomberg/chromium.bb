@@ -27,15 +27,23 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/prefs_export.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 class PrefNotifier;
 class PrefNotifierImpl;
 class PrefObserver;
 class PrefRegistry;
 class PrefStore;
+#if defined(OS_ANDROID)
+class PrefServiceAndroid;
+#endif
 
 namespace base {
 class FilePath;
@@ -298,8 +306,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // If INCLUDE_DEFAULTS is requested, preferences set to their default values
   // will be included. Otherwise, these will be omitted from the returned
   // dictionary.
-  std::unique_ptr<base::DictionaryValue> GetPreferenceValues(
-      IncludeDefaults include_defaults) const;
+  base::Value GetPreferenceValues(IncludeDefaults include_defaults) const;
 
   bool ReadOnly() const;
 
@@ -369,6 +376,10 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // observation.
   void AddPrefObserverAllPrefs(PrefObserver* obs);
   void RemovePrefObserverAllPrefs(PrefObserver* obs);
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+#endif
 
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
@@ -461,6 +472,12 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
   mutable PreferenceMap prefs_map_;
+
+#if defined(OS_ANDROID)
+  // Manage and fetch the java object that wraps this PrefService on
+  // android.
+  std::unique_ptr<PrefServiceAndroid> pref_service_android_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

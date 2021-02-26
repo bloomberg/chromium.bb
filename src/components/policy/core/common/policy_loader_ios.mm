@@ -110,17 +110,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   NSDictionary* configuration = [[NSUserDefaults standardUserDefaults]
       dictionaryForKey:kPolicyLoaderIOSConfigurationKey];
-
-  // Policies are ignored entirely unless kPolicyLoaderIOSLoadPolicyKey is
-  // present and evaluates to true. This speed bump will prevent any existing
-  // policy configurations from taking effect unless a domain administrator
-  // explicitly opts in, minimizing end-user surprise as new policies are added
-  // on iOS.
-  NSNumber* loadPolicy = base::mac::ObjCCast<NSNumber>(
-      configuration[kPolicyLoaderIOSLoadPolicyKey]);
-  if (loadPolicy && [loadPolicy boolValue] == YES) {
-    LoadNSDictionaryToPolicyBundle(configuration, bundle.get());
-  }
+  LoadNSDictionaryToPolicyBundle(configuration, bundle.get());
 
   const PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, std::string());
   size_t count = bundle->Get(chrome_ns).size();
@@ -150,10 +140,6 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
       PropertyToValue((__bridge CFPropertyListRef)(dictionary));
   base::DictionaryValue* dict = NULL;
   if (value && value->GetAsDictionary(&dict)) {
-    // Remove kPolicyLoaderIOSLoadPolicyKey before loading policies.
-    DCHECK(dict);
-    dict->RemoveKey(base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey));
-
     PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
     for (const auto& it : dict->DictItems()) {
       map.Set(it.first, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -163,13 +149,13 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
   }
 }
 
-std::unique_ptr<base::Value> PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
+base::Value PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
     const std::string& key,
     const base::Value& value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);
 
   if (!schema.valid()) {
-    return value.CreateDeepCopy();
+    return value.Clone();
   }
 
   // Handle the case of a JSON-encoded string for a dict policy.
@@ -177,12 +163,12 @@ std::unique_ptr<base::Value> PolicyLoaderIOS::ConvertPolicyDataIfNecessary(
     base::Optional<base::Value> decoded_value = base::JSONReader::Read(
         value.GetString(), base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
     if (decoded_value.has_value()) {
-      return base::Value::ToUniquePtrValue(std::move(decoded_value.value()));
+      return std::move(decoded_value.value());
     }
   }
 
   // Otherwise return an unchanged value.
-  return value.CreateDeepCopy();
+  return value.Clone();
 }
 
 }  // namespace policy

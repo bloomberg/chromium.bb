@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,7 +61,7 @@ void ServiceWorkerHelper::StartFetching(FetchCallback callback) {
           std::move(callback)));
 }
 
-void ServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
+void ServiceWorkerHelper::DeleteServiceWorkers(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
@@ -79,7 +78,8 @@ void ServiceWorkerHelper::FetchServiceWorkerUsageInfoOnCoreThread(
       &GetAllOriginsInfoForServiceWorkerCallback, std::move(callback)));
 }
 
-void ServiceWorkerHelper::DeleteServiceWorkersOnCoreThread(const GURL& origin) {
+void ServiceWorkerHelper::DeleteServiceWorkersOnCoreThread(
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   service_worker_context_->DeleteForOrigin(origin, base::DoNothing());
 }
@@ -121,12 +121,13 @@ void CannedServiceWorkerHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-void CannedServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
-  pending_origins_.erase(url::Origin::Create(origin));
+void CannedServiceWorkerHelper::DeleteServiceWorkers(
+    const url::Origin& origin) {
+  pending_origins_.erase(origin);
   ServiceWorkerHelper::DeleteServiceWorkers(origin);
 }
 

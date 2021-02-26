@@ -34,6 +34,7 @@ class PrefRegistrySyncable;
 
 namespace device {
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 }
 
 class ChromeAuthenticatorRequestDelegate
@@ -41,20 +42,25 @@ class ChromeAuthenticatorRequestDelegate
       public AuthenticatorRequestDialogModel::Observer {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
       Profile* profile);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
       override;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
+
+#if defined(OS_CHROMEOS)
+  ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
+      content::RenderFrameHost* render_frame_host) override;
+#endif  // defined(OS_CHROMEOS)
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
@@ -76,14 +82,13 @@ class ChromeAuthenticatorRequestDelegate
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
       const device::FidoAuthenticator* authenticator,
+      bool is_enterprise_attestation,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
-  bool ShouldPermitCableExtension(const url::Origin& origin) override;
-  bool SetCableTransportInfo(
-      bool cable_extension_provided,
-      bool has_paired_phones,
-      base::Optional<device::QRGeneratorKey> qr_generator_key) override;
-  std::vector<device::CableDiscoveryData> GetCablePairings() override;
+  void ConfigureCable(
+      const url::Origin& origin,
+      base::span<const device::CableDiscoveryData> pairings_from_extension,
+      device::FidoDiscoveryFactory* discovery_factory) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -119,10 +124,6 @@ class ChromeAuthenticatorRequestDelegate
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
 
- protected:
-  void CustomizeDiscoveryFactory(
-      device::FidoDiscoveryFactory* discovery_factory) override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
                            TestTransportPrefType);
@@ -135,8 +136,18 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
+
+  // ShouldPermitCableExtension returns true if the given |origin| may set a
+  // caBLE extension. This extension contains website-chosen BLE pairing
+  // information that will be broadcast by the device.
+  bool ShouldPermitCableExtension(const url::Origin& origin);
+
+  // GetCablePairings returns any known caBLE pairing data.
+  virtual std::vector<std::unique_ptr<device::cablev2::Pairing>>
+  GetCablePairings();
+
   void StoreNewCablePairingInPrefs(
-      std::unique_ptr<device::CableDiscoveryData> discovery_data);
+      std::unique_ptr<device::cablev2::Pairing> pairing);
 
   content::RenderFrameHost* const render_frame_host_;
   // Holds ownership of AuthenticatorRequestDialogModel until

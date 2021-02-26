@@ -5,8 +5,6 @@
 #include "testing/fuzzers/pdfium_fuzzer_helper.h"
 
 #include <assert.h>
-#include <limits.h>
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,6 +21,7 @@
 #include "public/fpdf_dataavail.h"
 #include "public/fpdf_ext.h"
 #include "public/fpdf_text.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
 
 namespace {

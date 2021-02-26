@@ -8,9 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -72,14 +71,24 @@ void AppCacheHelper::StartFetching(FetchCallback callback) {
   scoped_refptr<content::AppCacheInfoCollection> info_collection =
       new content::AppCacheInfoCollection();
 
-  appcache_service_->GetAllAppCacheInfo(
-      info_collection.get(),
-      base::BindOnce(&OnAppCacheInfoFetchComplete, std::move(callback),
-                     info_collection));
+  auto complete_callback = base::BindOnce(&OnAppCacheInfoFetchComplete,
+                                          std::move(callback), info_collection);
+  if (appcache_service_) {
+    appcache_service_->GetAllAppCacheInfo(info_collection.get(),
+                                          std::move(complete_callback));
+  } else {
+    // Post this task so that StartFetching consistently does not run the
+    // callback immediately.
+    const int kArbitraryRV = 0;
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(complete_callback), kArbitraryRV));
+  }
 }
 
 void AppCacheHelper::DeleteAppCaches(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!appcache_service_)
+    return;
   appcache_service_->DeleteAppCachesForOrigin(origin,
                                               net::CompletionOnceCallback());
 }
@@ -120,8 +129,8 @@ void CannedAppCacheHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedAppCacheHelper::DeleteAppCaches(const url::Origin& origin) {

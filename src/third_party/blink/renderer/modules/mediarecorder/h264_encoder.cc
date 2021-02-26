@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/mediarecorder/h264_encoder.h"
+#include "build/chromeos_buildflags.h"
 
 #include "media/base/video_frame.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -37,7 +38,7 @@ void H264Encoder::ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
 H264Encoder::H264Encoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     int32_t bits_per_second,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : Encoder(on_encoded_video_cb, bits_per_second, std::move(task_runner)) {
   DCHECK(encoding_thread_);
 }
@@ -53,7 +54,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks capture_timestamp) {
   TRACE_EVENT0("media", "H264Encoder::EncodeOnEncodingTaskRunner");
-  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
+  DCHECK(encoding_task_runner_->RunsTasksInCurrentSequence());
 
   if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER)
     frame = ConvertToI420ForSoftwareEncoder(frame);
@@ -117,7 +118,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   TRACE_EVENT0("media", "H264Encoder::ConfigureEncoderOnEncodingTaskRunner");
-  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
+  DCHECK(encoding_task_runner_->RunsTasksInCurrentSequence());
   ISVCEncoder* temp_encoder = nullptr;
   if (WelsCreateSVCEncoder(&temp_encoder) != 0) {
     NOTREACHED() << "Failed to create OpenH264 encoder";
@@ -153,7 +154,7 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
     init_params.iRCMode = RC_OFF_MODE;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   init_params.iMultipleThreadIdc = 0;
 #else
   // Threading model: Set to 1 due to https://crbug.com/583348.

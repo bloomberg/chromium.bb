@@ -31,6 +31,7 @@ class TraceProcessorContext;
 class SliceTracker {
  public:
   using SetArgsCallback = std::function<void(ArgsTracker::BoundInserter*)>;
+  using OnSliceBeginCallback = std::function<void(TrackId, SliceId)>;
 
   explicit SliceTracker(TraceProcessorContext*);
   virtual ~SliceTracker();
@@ -42,6 +43,15 @@ class SliceTracker {
       StringId category,
       StringId name,
       SetArgsCallback args_callback = SetArgsCallback());
+
+  // Unnestable slices are slices which do not have any concept of nesting so
+  // starting a new slice when a slice already exists leads to no new slice
+  // being added. The number of times a begin event is seen is tracked as well
+  // as the latest time we saw a begin event. For legacy Android use only. See
+  // the comment in SystraceParser::ParseSystracePoint for information on why
+  // this method exists.
+  void BeginLegacyUnnestable(tables::SliceTable::Row row,
+                             SetArgsCallback args_callback);
 
   void BeginGpu(tables::GpuSliceTable::Row row,
                 SetArgsCallback args_callback = SetArgsCallback());
@@ -61,8 +71,8 @@ class SliceTracker {
   void ScopedGpu(const tables::GpuSliceTable::Row& row,
                  SetArgsCallback args_callback = SetArgsCallback());
 
-  void ScopedFrameEvent(const tables::GraphicsFrameSliceTable::Row& row,
-                        SetArgsCallback args_callback = SetArgsCallback());
+  SliceId ScopedFrameEvent(const tables::GraphicsFrameSliceTable::Row& row,
+                           SetArgsCallback args_callback = SetArgsCallback());
 
   // virtual for testing
   virtual base::Optional<uint32_t> End(
@@ -75,10 +85,10 @@ class SliceTracker {
   // Usually args should be added in the Begin or End args_callback but this
   // method is for the situation where new args need to be added to an
   // in-progress slice.
-  void AddArgs(TrackId track_id,
-               StringId category,
-               StringId name,
-               SetArgsCallback args_callback);
+  base::Optional<uint32_t> AddArgs(TrackId track_id,
+                                   StringId category,
+                                   StringId name,
+                                   SetArgsCallback args_callback);
 
   // TODO(lalitm): eventually this method should become End and End should
   // be renamed EndChrome.
@@ -94,9 +104,26 @@ class SliceTracker {
 
   void FlushPendingSlices();
 
+  void SetOnSliceBeginCallback(OnSliceBeginCallback callback);
+
+  base::Optional<SliceId> GetTopmostSliceOnTrack(TrackId track_id) const;
+
  private:
-  using SlicesStack = std::vector<std::pair<uint32_t /* row */, ArgsTracker>>;
-  using StackMap = std::unordered_map<TrackId, SlicesStack>;
+  struct SliceInfo {
+    uint32_t row;
+    ArgsTracker args_tracker;
+  };
+  using SlicesStack = std::vector<SliceInfo>;
+
+  struct TrackInfo {
+    SlicesStack slice_stack;
+
+    // These field is only valid for legacy unnestable slices.
+    bool is_legacy_unnestable = false;
+    uint32_t legacy_unnestable_begin_count = 0;
+    int64_t legacy_unnestable_last_begin_ts = 0;
+  };
+  using StackMap = std::unordered_map<TrackId, TrackInfo>;
 
   base::Optional<uint32_t> StartSlice(int64_t timestamp,
                                       TrackId track_id,
@@ -109,17 +136,27 @@ class SliceTracker {
       SetArgsCallback args_callback,
       std::function<base::Optional<uint32_t>(const SlicesStack&)> finder);
 
-  void MaybeCloseStack(int64_t end_ts, SlicesStack*);
+  void MaybeCloseStack(int64_t end_ts, SlicesStack*, TrackId track_id);
 
   base::Optional<uint32_t> MatchingIncompleteSliceIndex(
       const SlicesStack& stack,
       StringId name,
       StringId category);
+
   int64_t GetStackHash(const SlicesStack&);
+
+  void StackPop(TrackId track_id);
+  void StackPush(TrackId track_id, uint32_t slice_idx);
+  void FlowTrackerUpdate(TrackId track_id);
+
+  OnSliceBeginCallback on_slice_begin_callback_;
 
   // Timestamp of the previous event. Used to discard events arriving out
   // of order.
   int64_t prev_timestamp_ = 0;
+
+  const StringId legacy_unnestable_begin_count_string_id_;
+  const StringId legacy_unnestable_last_begin_ts_string_id_;
 
   TraceProcessorContext* const context_;
   StackMap stacks_;

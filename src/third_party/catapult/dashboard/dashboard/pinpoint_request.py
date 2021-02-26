@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint containing server-side functionality for pinpoint jobs."""
 from __future__ import print_function
 from __future__ import division
@@ -17,20 +16,16 @@ from dashboard.common import descriptor
 from dashboard.common import math_utils
 from dashboard.common import request_handler
 from dashboard.common import utils
+from dashboard.models import anomaly
 from dashboard.models import anomaly_config
 from dashboard.models import graph_data
 from dashboard.services import crrev_service
 from dashboard.services import pinpoint_service
 
 _NON_CHROME_TARGETS = ['v8']
-# TODO(simonhatch): Find a more official way to lookup isolate targets for
-# suites; crbug.com/950165
-_ISOLATE_TARGETS = [
-    'angle_perftests', 'base_perftests', 'cc_perftests', 'gpu_perftests',
-    'load_library_perf_tests', 'media_perftests', 'net_perftests',
-    'performance_browser_tests', 'tracing_perftests']
 _SUITE_CRREV_CONFIGS = {
     'v8': ['chromium', 'v8/v8'],
+    'webrtc_perf_tests': ['webrtc', 'src'],
 }
 
 
@@ -39,12 +34,14 @@ class InvalidParamsError(Exception):
 
 
 class PinpointNewPrefillRequestHandler(request_handler.RequestHandler):
+
   def post(self):
     t = utils.TestKey(self.request.get('test_path')).get()
     self.response.write(json.dumps({'story_filter': t.unescaped_story_name}))
 
 
 class PinpointNewBisectRequestHandler(request_handler.RequestHandler):
+
   def post(self):
     job_params = dict(
         (a, self.request.get(a)) for a in self.request.arguments())
@@ -75,6 +72,7 @@ def NewPinpointBisect(job_params):
 
 
 class PinpointNewPerfTryRequestHandler(request_handler.RequestHandler):
+
   def post(self):
     job_params = dict(
         (a, self.request.get(a)) for a in self.request.arguments())
@@ -94,8 +92,8 @@ def _GitHashToCommitPosition(commit_position):
   except ValueError:
     result = crrev_service.GetCommit(commit_position)
     if 'error' in result:
-      raise InvalidParamsError(
-          'Error retrieving commit info: %s' % result['error'].get('message'))
+      raise InvalidParamsError('Error retrieving commit info: %s' %
+                               result['error'].get('message'))
     commit_position = int(result['number'])
   return commit_position
 
@@ -107,10 +105,10 @@ def FindMagnitudeBetweenCommits(test_key, start_commit, end_commit):
   test = test_key.get()
   num_points = anomaly_config.GetAnomalyConfigDict(test).get(
       'min_segment_size', find_change_points.MIN_SEGMENT_SIZE)
-  start_rows = graph_data.GetRowsForTestBeforeAfterRev(
-      test_key, start_commit, num_points, 0)
-  end_rows = graph_data.GetRowsForTestBeforeAfterRev(
-      test_key, end_commit, 0, num_points)
+  start_rows = graph_data.GetRowsForTestBeforeAfterRev(test_key, start_commit,
+                                                       num_points, 0)
+  end_rows = graph_data.GetRowsForTestBeforeAfterRev(test_key, end_commit, 0,
+                                                     num_points)
 
   if not start_rows or not end_rows:
     return None
@@ -121,22 +119,23 @@ def FindMagnitudeBetweenCommits(test_key, start_commit, end_commit):
   return median_after - median_before
 
 
-def ResolveToGitHash(commit_position, suite):
+def ResolveToGitHash(commit_position, suite, crrev=None):
+  crrev = crrev or crrev_service
   try:
     int(commit_position)
     if suite in _SUITE_CRREV_CONFIGS:
       project, repo = _SUITE_CRREV_CONFIGS[suite]
     else:
       project, repo = 'chromium', 'chromium/src'
-    result = crrev_service.GetNumbering(
+    result = crrev.GetNumbering(
         number=commit_position,
         numbering_identifier='refs/heads/master',
         numbering_type='COMMIT_POSITION',
         project=project,
         repo=repo)
     if 'error' in result:
-      raise InvalidParamsError(
-          'Error retrieving commit info: %s' % result['error'].get('message'))
+      raise InvalidParamsError('Error retrieving commit info: %s' %
+                               result['error'].get('message'))
     return result['git_sha']
   except ValueError:
     pass
@@ -145,33 +144,21 @@ def ResolveToGitHash(commit_position, suite):
   return commit_position
 
 
-def _GetIsolateTarget(bot_name, suite, start_commit,
-                      end_commit, only_telemetry=False):
+def GetIsolateTarget(bot_name, suite):
   if suite in _NON_CHROME_TARGETS:
     return ''
-
-  if suite in _ISOLATE_TARGETS:
-    if only_telemetry:
-      raise InvalidParamsError('Only telemetry is supported at the moment.')
-    return suite
 
   # ChromeVR
   if suite.startswith('xr.'):
     return 'vr_perf_tests'
 
-  try:
-    # TODO: Remove this code path in 2019.
-    average_commit = (int(start_commit) + int(end_commit)) / 2
-    if 'android' in bot_name and average_commit < 572268:
-      if 'webview' in bot_name.lower():
-        return 'telemetry_perf_webview_tests'
-      return 'telemetry_perf_tests'
+  # WebRTC perf tests
+  if suite == 'webrtc_perf_tests':
+    return 'webrtc_perf_tests'
 
-    if 'win' in bot_name and average_commit < 571917:
-      return 'telemetry_perf_tests'
-  except ValueError:
-    pass
-
+  # This is a special-case for webview, which we probably don't need to handle
+  # in the Dashboard (instead should just support in Pinpoint through
+  # configuration).
   if 'webview' in bot_name.lower():
     return 'performance_webview_test_suite'
   return 'performance_test_suite'
@@ -236,11 +223,10 @@ def PinpointParamsFromPerfTryParams(params):
 
   # Pinpoint also requires you specify which isolate target to run the
   # test, so we derive that from the suite name. Eventually, this would
-  # ideally be stored in a SparesDiagnostic but for now we can guess.
-  target = _GetIsolateTarget(bot_name, suite, start_commit,
-                             end_commit, only_telemetry=True)
+  # ideally be stored in a SparseDiagnostic but for now we can guess.
+  target = GetIsolateTarget(bot_name, suite)
 
-  extra_test_args = params['extra_test_args']
+  extra_test_args = params.get('extra_test_args')
 
   email = utils.GetEmail()
   job_name = 'Try job on %s/%s' % (bot_name, suite)
@@ -274,6 +260,7 @@ def PinpointParamsFromBisectParams(params):
         'start_git_hash': Git hash of earlier revision.
         'end_git_hash': Git hash of later revision.
         'bug_id': Associated bug.
+        'project_id': Associated Monorail project.
     }
 
   Returns:
@@ -288,21 +275,12 @@ def PinpointParamsFromBisectParams(params):
   test_path_parts = test_path.split('/')
   bot_name = test_path_parts[1]
   suite = test_path_parts[2]
-  story_filter = params['story_filter']
-  pin = params.get('pin')
 
   # If functional bisects are speciied, Pinpoint expects these parameters to be
   # empty.
   bisect_mode = params['bisect_mode']
   if bisect_mode != 'performance' and bisect_mode != 'functional':
     raise InvalidParamsError('Invalid bisect mode %s specified.' % bisect_mode)
-
-  grouping_label = ''
-  chart_name = ''
-  trace_name = ''
-  if bisect_mode == 'performance':
-    grouping_label, chart_name, trace_name = (
-        ParseGroupingLabelChartNameAndTraceName(test_path))
 
   start_commit = params['start_commit']
   end_commit = params['end_commit']
@@ -312,13 +290,10 @@ def PinpointParamsFromBisectParams(params):
   # Pinpoint also requires you specify which isolate target to run the
   # test, so we derive that from the suite name. Eventually, this would
   # ideally be stored in a SparesDiagnostic but for now we can guess.
-  target = _GetIsolateTarget(bot_name, suite, start_commit, end_commit)
+  target = GetIsolateTarget(bot_name, suite)
 
   email = utils.GetEmail()
   job_name = '%s bisect on %s/%s' % (bisect_mode.capitalize(), bot_name, suite)
-
-  # Histogram names don't include the statistic, so split these
-  chart_name, statistic_name = ParseStatisticNameFromChart(chart_name)
 
   alert_key = ''
   if params.get('alerts'):
@@ -335,34 +310,27 @@ def PinpointParamsFromBisectParams(params):
     alert_magnitude = FindMagnitudeBetweenCommits(
         utils.TestKey(test_path), start_commit, end_commit)
 
-  pinpoint_params = {
-      'configuration': bot_name,
-      'benchmark': suite,
-      'chart': chart_name,
-      'start_git_hash': start_git_hash,
-      'end_git_hash': end_git_hash,
-      'bug_id': params['bug_id'],
-      'comparison_mode': bisect_mode,
-      'target': target,
-      'user': email,
-      'name': job_name,
-      'tags': json.dumps({
+  if isinstance(params['bug_id'], int):
+    issue_id = params['bug_id'] if params['bug_id'] > 0 else None
+  else:
+    issue_id = int(params['bug_id']) if params['bug_id'].isdigit() else None
+  issue = anomaly.Issue(
+      project_id=params.get('project_id', 'chromium'), issue_id=issue_id)
+
+  return pinpoint_service.MakeBisectionRequest(
+      test=utils.TestKey(test_path).get(),
+      commit_range=pinpoint_service.CommitRange(
+          start=start_git_hash, end=end_git_hash),
+      issue=issue,
+      comparison_mode=bisect_mode,
+      target=target,
+      comparison_magnitude=alert_magnitude,
+      user=email,
+      name=job_name,
+      story_filter=params['story_filter'],
+      pin=params.get('pin'),
+      tags={
           'test_path': test_path,
-          'alert': alert_key
-      }),
-  }
-
-  if alert_magnitude:
-    pinpoint_params['comparison_magnitude'] = alert_magnitude
-  if pin:
-    pinpoint_params['pin'] = pin
-  if statistic_name:
-    pinpoint_params['statistic'] = statistic_name
-  if story_filter:
-    pinpoint_params['story'] = story_filter
-  if grouping_label:
-    pinpoint_params['grouping_label'] = grouping_label
-  if trace_name:
-    pinpoint_params['trace'] = trace_name
-
-  return pinpoint_params
+          'alert': alert_key,
+      },
+  )

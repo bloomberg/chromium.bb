@@ -7,6 +7,8 @@
 
 #include "src/gpu/ccpr/GrCCAtlas.h"
 
+#include "include/private/SkTPin.h"
+#include "src/core/SkIPoint16.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
 
@@ -59,7 +61,7 @@ void GrCCAtlas::setEndStencilResolveInstance(int idx) {
 
 static uint32_t next_atlas_unique_id() {
     static std::atomic<uint32_t> nextID;
-    return nextID++;
+    return nextID.fetch_add(1, std::memory_order_relaxed);
 }
 
 sk_sp<GrCCCachedAtlas> GrCCAtlas::refOrMakeCachedAtlas(GrOnFlushResourceProvider* onFlushRP) {
@@ -84,13 +86,16 @@ sk_sp<GrCCCachedAtlas> GrCCAtlas::refOrMakeCachedAtlas(GrOnFlushResourceProvider
 
 GrCCAtlas* GrCCAtlasStack::addRect(const SkIRect& devIBounds, SkIVector* devToAtlasOffset) {
     GrCCAtlas* retiredAtlas = nullptr;
-    if (fAtlases.empty() || !fAtlases.back().addRect(devIBounds, devToAtlasOffset)) {
+    SkIPoint16 location;
+    if (fAtlases.empty() ||
+        !fAtlases.back().addRect(devIBounds.width(), devIBounds.height(), &location)) {
         // The retired atlas is out of room and can't grow any bigger.
         retiredAtlas = !fAtlases.empty() ? &fAtlases.back() : nullptr;
         fAtlases.emplace_back(fCoverageType, fSpecs, *fCaps);
         SkASSERT(devIBounds.width() <= fSpecs.fMinWidth);
         SkASSERT(devIBounds.height() <= fSpecs.fMinHeight);
-        SkAssertResult(fAtlases.back().addRect(devIBounds, devToAtlasOffset));
+        SkAssertResult(fAtlases.back().addRect(devIBounds.width(), devIBounds.height(), &location));
     }
+    devToAtlasOffset->set(location.x() - devIBounds.left(), location.y() - devIBounds.top());
     return retiredAtlas;
 }

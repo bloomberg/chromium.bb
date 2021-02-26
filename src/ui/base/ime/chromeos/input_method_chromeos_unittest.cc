@@ -14,17 +14,17 @@
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -48,7 +48,7 @@ typedef IMEEngineHandlerInterface::KeyEventDoneCallback KeyEventCallback;
 uint32_t GetOffsetInUTF16(const base::string16& utf16_string,
                           uint32_t utf8_offset) {
   DCHECK_LT(utf8_offset, utf16_string.size());
-  base::i18n::UTF16CharIterator char_iterator(&utf16_string);
+  base::i18n::UTF16CharIterator char_iterator(utf16_string);
   for (size_t i = 0; i < utf8_offset; ++i)
     char_iterator.Advance();
   return char_iterator.array_pos();
@@ -269,7 +269,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void SetCompositionText(const CompositionText& composition) override {
     composition_text_ = composition;
   }
-  void ConfirmCompositionText(bool keep_selection) override {
+  uint32_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -277,6 +277,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     }
     confirmed_text_ = composition_text_;
     composition_text_ = CompositionText();
+    return confirmed_text_.text.length();
   }
   void ClearCompositionText() override {
     composition_text_ = CompositionText();
@@ -414,6 +415,17 @@ TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
   ime_->SetFocusedTextInputClient(this);
   ime_->OnTextInputTypeChanged(this);
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
+}
+
+TEST_F(InputMethodChromeOSTest,
+       OnWillChangeFocusedClientClearAutocorrectRange) {
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->SetFocusedTextInputClient(this);
+  ime_->SetAutocorrectRange(base::UTF8ToUTF16("text"), 0, 5);
+  EXPECT_EQ(gfx::Range(0, 5), this->GetAutocorrectRange());
+
+  ime_->SetFocusedTextInputClient(nullptr);
+  EXPECT_EQ(gfx::Range(), this->GetAutocorrectRange());
 }
 
 // Confirm that IBusClient::FocusIn is called on "connected" if input_type_ is
@@ -556,9 +568,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
   CompositionText chromeos_composition_text;
   chromeos_composition_text.text = kSampleAsciiText;
 
-  CompositionText composition_text;
-  ime_->ExtractCompositionText(
-      chromeos_composition_text, kCursorPos, &composition_text);
+  CompositionText composition_text =
+      ime_->ExtractCompositionText(chromeos_composition_text, kCursorPos);
   EXPECT_EQ(kSampleAsciiText, composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
@@ -585,9 +596,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
                         SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text2.selection.start());
@@ -618,9 +628,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
                         SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text2.selection.start());
@@ -652,9 +661,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
   underline.underline_color = SK_ColorRED;
   composition_text.ime_text_spans.push_back(underline);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   EXPECT_EQ(kCursorPos, composition_text2.selection.start());
   EXPECT_EQ(kCursorPos, composition_text2.selection.end());
@@ -678,9 +686,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
   composition_text.selection.set_start(1UL);
   composition_text.selection.set_end(4UL);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   EXPECT_EQ(kCursorPos, composition_text2.selection.start());
   EXPECT_EQ(kCursorPos, composition_text2.selection.end());
@@ -707,9 +714,8 @@ TEST_F(InputMethodChromeOSTest,
   composition_text.selection.set_start(kCursorPos);
   composition_text.selection.set_end(4UL);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
@@ -740,9 +746,8 @@ TEST_F(InputMethodChromeOSTest,
   composition_text.selection.set_start(1UL);
   composition_text.selection.set_end(kCursorPos);
 
-  CompositionText composition_text2;
-  ime_->ExtractCompositionText(composition_text, kCursorPos,
-                               &composition_text2);
+  CompositionText composition_text2 =
+      ime_->ExtractCompositionText(composition_text, kCursorPos);
   EXPECT_EQ(kSampleText, composition_text2.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.

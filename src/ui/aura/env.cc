@@ -25,6 +25,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/gfx/switches.h"
+#endif
+
 namespace aura {
 
 namespace {
@@ -205,21 +209,30 @@ bool Env::initial_throttle_input_on_resize_ = true;
 Env::Env()
     : env_controller_(std::make_unique<EnvInputStateController>(this)),
       gesture_recognizer_(std::make_unique<ui::GestureRecognizerImpl>()),
-      input_state_lookup_(InputStateLookup::Create()) {}
+      input_state_lookup_(InputStateLookup::Create()) {
+#if defined(USE_X11)
+  // In Ozone/X11, the cursor factory is initialized by the platform
+  // initialization code.
+  if (!features::IsUsingOzonePlatform() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+    cursor_factory_ = std::make_unique<ui::X11CursorFactory>();
+#endif
+}
 
 void Env::Init() {
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source. If running inside mus
   // let the mus process initialize ozone instead.
-  ui::OzonePlatform::InitParams params;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  // TODO(kylechar): Pass in single process information to Env::CreateInstance()
-  // instead of checking flags here.
-  params.single_process = command_line->HasSwitch("single-process") ||
-                          command_line->HasSwitch("in-process-gpu");
-
-  ui::OzonePlatform::InitializeForUI(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    // TODO(kylechar): Pass in single process information to
+    // Env::CreateInstance() instead of checking flags here.
+    params.single_process = command_line->HasSwitch("single-process") ||
+                            command_line->HasSwitch("in-process-gpu");
+    ui::OzonePlatform::InitializeForUI(params);
+  }
 #endif
   if (!ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();

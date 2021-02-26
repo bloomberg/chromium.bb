@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include "cppgc/internal/finalizer-trait.h"
+#include "cppgc/internal/name-trait.h"
+#include "cppgc/trace-trait.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 namespace cppgc {
@@ -18,7 +20,8 @@ using GCInfoIndex = uint16_t;
 class V8_EXPORT RegisteredGCInfoIndex final {
  public:
   RegisteredGCInfoIndex(FinalizationCallback finalization_callback,
-                        bool has_v_table);
+                        TraceCallback trace_callback,
+                        NameCallback name_callback, bool has_v_table);
   GCInfoIndex GetIndex() const { return index_; }
 
  private:
@@ -32,7 +35,8 @@ struct GCInfoTrait {
   static GCInfoIndex Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const RegisteredGCInfoIndex registered_index(
-        FinalizerTrait<T>::kCallback, std::is_polymorphic<T>::value);
+        FinalizerTrait<T>::kCallback, TraceTrait<T>::Trace,
+        NameTrait<T>::GetName, std::is_polymorphic<T>::value);
     return registered_index.GetIndex();
   }
 };

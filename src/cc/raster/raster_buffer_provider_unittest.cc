@@ -10,12 +10,13 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/check.h"
 #include "base/location.h"
@@ -28,6 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/paint/draw_image.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
@@ -80,7 +82,9 @@ class TestRasterTaskImpl : public TileTask {
                      unsigned id,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
-      : TileTask(true, dependencies),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes,
+                 dependencies),
         completion_handler_(completion_handler),
         id_(id),
         raster_buffer_(std::move(raster_buffer)),
@@ -660,7 +664,7 @@ TEST_P(RasterBufferProviderTest, MeasureGpuRasterDuration) {
   base::HistogramBase::Count expected_delay_histogram_all_tiles_count = 0;
   base::HistogramBase::Count expected_delay_histogram_jpeg_tiles_count = 0;
   base::HistogramBase::Count expected_delay_histogram_webp_tiles_count = 0;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_GPU_OOPR) {
     expected_delay_histogram_all_tiles_count = 5;
     expected_delay_histogram_jpeg_tiles_count = 3;

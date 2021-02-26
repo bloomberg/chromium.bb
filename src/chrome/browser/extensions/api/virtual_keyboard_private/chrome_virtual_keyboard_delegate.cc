@@ -34,8 +34,8 @@
 #include "media/audio/audio_system.h"
 #include "ui/aura/event_injector.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/constants.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_features.h"
@@ -252,10 +252,29 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   if (keyboard_client->is_keyboard_enabled())
     keyboard_client->HideKeyboard(ash::HideReason::kUser);
 
-  base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
+  base::RecordAction(
+      base::UserMetricsAction("VirtualKeyboard.OpenLanguageSettings"));
+  const std::string path =
+      base::FeatureList::IsEnabled(
+          ::chromeos::features::kLanguageSettingsUpdate)
+          ? chromeos::settings::mojom::kInputSubpagePath
+          : chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath;
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), path);
+  return true;
+}
+
+bool ChromeVirtualKeyboardDelegate::ShowSuggestionSettings() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled())
+    keyboard_client->HideKeyboard(ash::HideReason::kUser);
+
+  base::RecordAction(
+      base::UserMetricsAction("VirtualKeyboard.OpenSuggestionSettings"));
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(),
-      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath);
+      chromeos::settings::mojom::kSmartInputsSubpagePath);
   return true;
 }
 
@@ -345,7 +364,7 @@ bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   return true;
 }
 
-bool ChromeVirtualKeyboardDelegate::IsLanguageSettingsEnabled() {
+bool ChromeVirtualKeyboardDelegate::IsSettingsEnabled() {
   return (user_manager::UserManager::Get()->IsUserLoggedIn() &&
           !chromeos::UserAddingScreen::Get()->IsRunning() &&
           !(chromeos::ScreenLocker::default_screen_locker() &&
@@ -369,15 +388,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   results->SetBoolean("hotrodmode", g_hotrod_keyboard_enabled);
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
-  // TODO(https://crbug.com/880659): Cleanup these flags after removing these
-  // flags from IME extension.
-  features->AppendString(GenerateFeatureFlag("floatingkeyboard", true));
-  features->AppendString(GenerateFeatureFlag("gesturetyping", true));
-  // TODO(https://crbug.com/890134): Implement gesture editing.
-  features->AppendString(GenerateFeatureFlag("gestureediting", false));
-  features->AppendString(GenerateFeatureFlag("fullscreenhandwriting", false));
-  features->AppendString(GenerateFeatureFlag("virtualkeyboardmdui", true));
-
   keyboard::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
@@ -392,40 +402,43 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
+  features->AppendString(
+      GenerateFeatureFlag("handwritinggestureediting",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kHandwritingGestureEditing)));
   features->AppendString(GenerateFeatureFlag(
       "floatingkeyboarddefault",
       base::FeatureList::IsEnabled(
           chromeos::features::kVirtualKeyboardFloatingDefault)));
+
+  // Flag used to enable system built-in IME decoder instead of NaCl.
+  bool mojoDecoder =
+      base::FeatureList::IsEnabled(chromeos::features::kImeMojoDecoder);
+  features->AppendString(GenerateFeatureFlag("usemojodecoder", mojoDecoder));
+  // Enabling MojoDecoder implies the 2 previous flags are auto-enabled.
+  //   * fstinputlogic
+  //   * hmminputlogic
+  // TODO(b/171846787): Remove the 3 flags after they are removed from clients.
+  features->AppendString(GenerateFeatureFlag("fstinputlogic", mojoDecoder));
+  features->AppendString(GenerateFeatureFlag("hmminputlogic", mojoDecoder));
   features->AppendString(GenerateFeatureFlag(
       "imemozcproto",
       base::FeatureList::IsEnabled(chromeos::features::kImeMozcProto)));
-  // 3 flags below are used to enable IME new APIs on each decoder.
-  features->AppendString(GenerateFeatureFlag(
-      "fstinputlogic",
-      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
-  features->AppendString(GenerateFeatureFlag(
-      "hmminputlogic",
-      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
-  features->AppendString(GenerateFeatureFlag(
-      "mozcinputlogic",
-      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicMozc)));
-  // Flag used to enable decoder Mojo APIs instead of NaCl APIs.
-  features->AppendString(GenerateFeatureFlag(
-      "usemojodecoder", base::FeatureList::IsEnabled(
-                            chromeos::features::kImeDecoderWithSandbox)));
+
   features->AppendString(GenerateFeatureFlag(
       "borderedkey", base::FeatureList::IsEnabled(
                          chromeos::features::kVirtualKeyboardBorderedKey)));
   features->AppendString(GenerateFeatureFlag(
-      "resizablefloatingkeyboard",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kVirtualKeyboardFloatingResizable)));
-  features->AppendString(GenerateFeatureFlag(
       "assistiveAutoCorrect",
       base::FeatureList::IsEnabled(chromeos::features::kAssistAutoCorrect)));
-  features->AppendString(GenerateFeatureFlag(
-      "nativerulebased", base::FeatureList::IsEnabled(
-                             chromeos::features::kNativeRuleBasedTyping)));
+  features->AppendString(
+      GenerateFeatureFlag("systemlatinphysicaltyping",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kSystemLatinPhysicalTyping)));
+  features->AppendString(
+      GenerateFeatureFlag("languagesettingsupdate",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kLanguageSettingsUpdate)));
 
   results->Set("features", std::move(features));
 

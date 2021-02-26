@@ -7,8 +7,9 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class BoxLayout;
@@ -23,17 +24,17 @@ class AssistantViewDelegate;
 // View representing a suggestion chip.
 class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
-  static constexpr char kClassName[] = "SuggestionChipView";
+  METADATA_HEADER(SuggestionChipView);
 
   SuggestionChipView(AssistantViewDelegate* delegate,
-                     const AssistantSuggestion* suggestion,
-                     views::ButtonListener* listener);
+                     const AssistantSuggestion& suggestion);
+  SuggestionChipView(const SuggestionChipView&) = delete;
+  SuggestionChipView& operator=(const SuggestionChipView&) = delete;
   ~SuggestionChipView() override;
 
   // views::View:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;
@@ -43,25 +44,25 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   void SetIcon(const gfx::ImageSkia& icon);
+  const gfx::ImageSkia& GetIcon() const;
 
   void SetText(const base::string16& text);
   const base::string16& GetText() const;
 
-  const AssistantSuggestion* suggestion() const { return suggestion_; }
+  const base::UnguessableToken& suggestion_id() const { return suggestion_id_; }
 
  private:
-  void InitLayout();
+  void InitLayout(const AssistantSuggestion& suggestion);
 
   AssistantViewDelegate* const delegate_;
-  const AssistantSuggestion* const suggestion_;
+
+  const base::UnguessableToken suggestion_id_;
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
   views::ImageView* icon_view_;       // Owned by view hierarchy.
   views::Label* text_view_;           // Owned by view hierarchy.
 
   base::WeakPtrFactory<SuggestionChipView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };
 
 }  // namespace ash

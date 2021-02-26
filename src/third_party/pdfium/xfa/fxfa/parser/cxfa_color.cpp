@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_color.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -33,7 +33,9 @@ CXFA_Color::CXFA_Color(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Color,
                 kColorPropertyData,
                 kColorAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Color::~CXFA_Color() = default;
 
@@ -54,5 +56,5 @@ void CXFA_Color::SetValue(FX_ARGB color) {
   int b;
   std::tie(a, r, g, b) = ArgbDecode(color);
   JSObject()->SetCData(XFA_Attribute::Value,
-                       WideString::Format(L"%d,%d,%d", r, g, b), false, false);
+                       WideString::Format(L"%d,%d,%d", r, g, b));
 }

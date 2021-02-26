@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
@@ -67,8 +66,8 @@ MojoChromePromptIPC::~MojoChromePromptIPC() {
 
 void MojoChromePromptIPC::PostPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
-    const std::vector<base::string16>& registry_keys,
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& registry_keys,
+    const std::vector<std::wstring>& extension_ids,
     PromptUserCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
@@ -79,7 +78,7 @@ void MojoChromePromptIPC::PostPromptUserTask(
 }
 
 void MojoChromePromptIPC::PostDisableExtensionsTask(
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& extension_ids,
     DisableExtensionsCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
@@ -159,8 +158,8 @@ void MojoChromePromptIPC::InitializeChromePromptPtr() {
 
 void MojoChromePromptIPC::PromptUserCheckVersion(
     const std::vector<base::FilePath>& files_to_delete,
-    const std::vector<base::string16>& registry_keys,
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& registry_keys,
+    const std::vector<std::wstring>& extension_ids,
     mojom::ChromePrompt::PromptUserCallback callback,
     uint32_t version) {
   if (version >= 3) {
@@ -179,8 +178,8 @@ void MojoChromePromptIPC::PromptUserCheckVersion(
 
 void MojoChromePromptIPC::RunPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
-    const std::vector<base::string16>& registry_keys,
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& registry_keys,
+    const std::vector<std::wstring>& extension_ids,
     PromptUserCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(chrome_prompt_service_);
@@ -212,7 +211,7 @@ void MojoChromePromptIPC::RunPromptUserTask(
 }
 
 void MojoChromePromptIPC::RunDisableExtensionsTask(
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& extension_ids,
     DisableExtensionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(chrome_prompt_service_);

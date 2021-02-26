@@ -69,17 +69,31 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 
 // ---------------- Golden Tests
 
-golden_test adler32_midsummer_gt = {
-    .src_filename = "test/data/midsummer.txt",  //
+golden_test g_adler32_midsummer_gt = {
+    .src_filename = "test/data/midsummer.txt",
 };
 
-golden_test adler32_pi_gt = {
-    .src_filename = "test/data/pi.txt",  //
+golden_test g_adler32_pi_gt = {
+    .src_filename = "test/data/pi.txt",
 };
 
 // ---------------- Adler32 Tests
 
-const char* test_wuffs_adler32_golden() {
+const char*  //
+test_wuffs_adler32_interface() {
+  CHECK_FOCUS(__func__);
+  wuffs_adler32__hasher h;
+  CHECK_STATUS("initialize",
+               wuffs_adler32__hasher__initialize(
+                   &h, sizeof h, WUFFS_VERSION,
+                   WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED));
+  return do_test__wuffs_base__hasher_u32(
+      wuffs_adler32__hasher__upcast_as__wuffs_base__hasher_u32(&h),
+      "test/data/hat.lossy.webp", 0, SIZE_MAX, 0xF1BB258D);
+}
+
+const char*  //
+test_wuffs_adler32_golden() {
   CHECK_FOCUS(__func__);
 
   struct {
@@ -117,27 +131,22 @@ const char* test_wuffs_adler32_golden() {
       },
   };
 
-  int i;
-  for (i = 0; i < WUFFS_TESTLIB_ARRAY_SIZE(test_cases); i++) {
+  int tc;
+  for (tc = 0; tc < WUFFS_TESTLIB_ARRAY_SIZE(test_cases); tc++) {
     wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
-        .data = global_src_slice,
+        .data = g_src_slice_u8,
     });
-    const char* status = read_file(&src, test_cases[i].filename);
-    if (status) {
-      return status;
-    }
+    CHECK_STRING(read_file(&src, test_cases[tc].filename));
 
     int j;
     for (j = 0; j < 2; j++) {
       wuffs_adler32__hasher checksum;
-      status = wuffs_adler32__hasher__initialize(
-          &checksum, sizeof checksum, WUFFS_VERSION,
-          WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED);
-      if (status) {
-        RETURN_FAIL("initialize: \"%s\"", status);
-      }
+      CHECK_STATUS("initialize",
+                   wuffs_adler32__hasher__initialize(
+                       &checksum, sizeof checksum, WUFFS_VERSION,
+                       WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED));
 
-      uint32_t got = 0;
+      uint32_t have = 0;
       size_t num_fragments = 0;
       size_t num_bytes = 0;
       do {
@@ -149,22 +158,23 @@ const char* test_wuffs_adler32_golden() {
         if ((j > 0) && (data.len > limit)) {
           data.len = limit;
         }
-        got = wuffs_adler32__hasher__update(&checksum, data);
+        have = wuffs_adler32__hasher__update_u32(&checksum, data);
         num_fragments++;
         num_bytes += data.len;
       } while (num_bytes < src.meta.wi);
 
-      if (got != test_cases[i].want) {
-        RETURN_FAIL("i=%d, j=%d, filename=\"%s\": got 0x%08" PRIX32
+      if (have != test_cases[tc].want) {
+        RETURN_FAIL("tc=%d, j=%d, filename=\"%s\": have 0x%08" PRIX32
                     ", want 0x%08" PRIX32 "\n",
-                    i, j, test_cases[i].filename, got, test_cases[i].want);
+                    tc, j, test_cases[tc].filename, have, test_cases[tc].want);
       }
     }
   }
   return NULL;
 }
 
-const char* test_wuffs_adler32_pi() {
+const char*  //
+test_wuffs_adler32_pi() {
   CHECK_FOCUS(__func__);
 
   const char* digits =
@@ -172,7 +182,7 @@ const char* test_wuffs_adler32_pi() {
       "141592653589793238462643383279502884197169399375105820974944592307816406"
       "2862089986280348253421170";
   if (strlen(digits) != 99) {
-    RETURN_FAIL("strlen(digits): got %d, want 99", (int)(strlen(digits)));
+    RETURN_FAIL("strlen(digits): have %d, want 99", (int)(strlen(digits)));
   }
 
   // The want values are determined by script/checksum.go.
@@ -201,19 +211,17 @@ const char* test_wuffs_adler32_pi() {
   int i;
   for (i = 0; i < 100; i++) {
     wuffs_adler32__hasher checksum;
-    const char* status = wuffs_adler32__hasher__initialize(
-        &checksum, sizeof checksum, WUFFS_VERSION,
-        WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED);
-    if (status) {
-      RETURN_FAIL("initialize: \"%s\"", status);
-    }
-    uint32_t got =
-        wuffs_adler32__hasher__update(&checksum, ((wuffs_base__slice_u8){
-                                                     .ptr = (uint8_t*)(digits),
-                                                     .len = i,
-                                                 }));
-    if (got != wants[i]) {
-      RETURN_FAIL("i=%d: got 0x%08" PRIX32 ", want 0x%08" PRIX32, i, got,
+    CHECK_STATUS("initialize",
+                 wuffs_adler32__hasher__initialize(
+                     &checksum, sizeof checksum, WUFFS_VERSION,
+                     WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED));
+    uint32_t have = wuffs_adler32__hasher__update_u32(
+        &checksum, ((wuffs_base__slice_u8){
+                       .ptr = (uint8_t*)(digits),
+                       .len = i,
+                   }));
+    if (have != wants[i]) {
+      RETURN_FAIL("i=%d: have 0x%08" PRIX32 ", want 0x%08" PRIX32, i, have,
                   wants[i]);
     }
   }
@@ -222,24 +230,23 @@ const char* test_wuffs_adler32_pi() {
 
 // ---------------- Adler32 Benches
 
-uint32_t global_wuffs_adler32_unused_u32;
+uint32_t g_wuffs_adler32_unused_u32;
 
-const char* wuffs_bench_adler32(wuffs_base__io_buffer* dst,
-                                wuffs_base__io_buffer* src,
-                                uint32_t wuffs_initialize_flags,
-                                uint64_t wlimit,
-                                uint64_t rlimit) {
+const char*  //
+wuffs_bench_adler32(wuffs_base__io_buffer* dst,
+                    wuffs_base__io_buffer* src,
+                    uint32_t wuffs_initialize_flags,
+                    uint64_t wlimit,
+                    uint64_t rlimit) {
   uint64_t len = src->meta.wi - src->meta.ri;
   if (rlimit) {
     len = wuffs_base__u64__min(len, rlimit);
   }
   wuffs_adler32__hasher checksum;
-  const char* status = wuffs_adler32__hasher__initialize(
-      &checksum, sizeof checksum, WUFFS_VERSION, wuffs_initialize_flags);
-  if (status) {
-    return status;
-  }
-  global_wuffs_adler32_unused_u32 = wuffs_adler32__hasher__update(
+  CHECK_STATUS("initialize", wuffs_adler32__hasher__initialize(
+                                 &checksum, sizeof checksum, WUFFS_VERSION,
+                                 wuffs_initialize_flags));
+  g_wuffs_adler32_unused_u32 = wuffs_adler32__hasher__update_u32(
       &checksum, ((wuffs_base__slice_u8){
                      .ptr = src->data.ptr + src->meta.ri,
                      .len = len,
@@ -248,37 +255,41 @@ const char* wuffs_bench_adler32(wuffs_base__io_buffer* dst,
   return NULL;
 }
 
-const char* bench_wuffs_adler32_10k() {
+const char*  //
+bench_wuffs_adler32_10k() {
   CHECK_FOCUS(__func__);
   return do_bench_io_buffers(
       wuffs_bench_adler32,
-      WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED, tc_src,
-      &adler32_midsummer_gt, UINT64_MAX, UINT64_MAX, 1500);
+      WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED, tcounter_src,
+      &g_adler32_midsummer_gt, UINT64_MAX, UINT64_MAX, 1500);
 }
 
-const char* bench_wuffs_adler32_100k() {
+const char*  //
+bench_wuffs_adler32_100k() {
   CHECK_FOCUS(__func__);
   return do_bench_io_buffers(
       wuffs_bench_adler32,
-      WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED, tc_src,
-      &adler32_pi_gt, UINT64_MAX, UINT64_MAX, 150);
+      WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED, tcounter_src,
+      &g_adler32_pi_gt, UINT64_MAX, UINT64_MAX, 150);
 }
 
-  // ---------------- Mimic Benches
+// ---------------- Mimic Benches
 
 #ifdef WUFFS_MIMIC
 
-const char* bench_mimic_adler32_10k() {
+const char*  //
+bench_mimic_adler32_10k() {
   CHECK_FOCUS(__func__);
-  return do_bench_io_buffers(mimic_bench_adler32, 0, tc_src,
-                             &adler32_midsummer_gt, UINT64_MAX, UINT64_MAX,
+  return do_bench_io_buffers(mimic_bench_adler32, 0, tcounter_src,
+                             &g_adler32_midsummer_gt, UINT64_MAX, UINT64_MAX,
                              1500);
 }
 
-const char* bench_mimic_adler32_100k() {
+const char*  //
+bench_mimic_adler32_100k() {
   CHECK_FOCUS(__func__);
-  return do_bench_io_buffers(mimic_bench_adler32, 0, tc_src, &adler32_pi_gt,
-                             UINT64_MAX, UINT64_MAX, 150);
+  return do_bench_io_buffers(mimic_bench_adler32, 0, tcounter_src,
+                             &g_adler32_pi_gt, UINT64_MAX, UINT64_MAX, 150);
 }
 
 #endif  // WUFFS_MIMIC
@@ -288,32 +299,32 @@ const char* bench_mimic_adler32_100k() {
 // Note that the adler32 mimic tests and benches don't work with
 // WUFFS_MIMICLIB_USE_MINIZ_INSTEAD_OF_ZLIB.
 
-// The empty comments forces clang-format to place one element per line.
-proc tests[] = {
+proc g_tests[] = {
 
-    test_wuffs_adler32_golden,  //
-    test_wuffs_adler32_pi,      //
+    test_wuffs_adler32_golden,
+    test_wuffs_adler32_interface,
+    test_wuffs_adler32_pi,
 
     NULL,
 };
 
-// The empty comments forces clang-format to place one element per line.
-proc benches[] = {
+proc g_benches[] = {
 
-    bench_wuffs_adler32_10k,   //
-    bench_wuffs_adler32_100k,  //
+    bench_wuffs_adler32_10k,
+    bench_wuffs_adler32_100k,
 
 #ifdef WUFFS_MIMIC
 
-    bench_mimic_adler32_10k,   //
-    bench_mimic_adler32_100k,  //
+    bench_mimic_adler32_10k,
+    bench_mimic_adler32_100k,
 
 #endif  // WUFFS_MIMIC
 
     NULL,
 };
 
-int main(int argc, char** argv) {
-  proc_package_name = "std/adler32";
-  return test_main(argc, argv, tests, benches);
+int  //
+main(int argc, char** argv) {
+  g_proc_package_name = "std/adler32";
+  return test_main(argc, argv, g_tests, g_benches);
 }

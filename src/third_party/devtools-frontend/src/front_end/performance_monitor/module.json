@@ -15,11 +15,11 @@
     "sdk",
     "ui"
   ],
-  "scripts": [],
   "modules": [
-    "performance_monitor.js",
-    "performance_monitor-legacy.js",
-    "PerformanceMonitor.js"
+    "performance_monitor-legacy.js"
+  ],
+  "skip_compilation": [
+    "performance_monitor-legacy.js"
   ],
   "resources": [
     "performanceMonitor.css"

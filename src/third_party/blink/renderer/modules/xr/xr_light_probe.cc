@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 #include "third_party/blink/renderer/modules/xr/xr_light_estimate.h"
+#include "third_party/blink/renderer/modules/xr/xr_light_probe_init.h"
+#include "third_party/blink/renderer/modules/xr/xr_object_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -21,7 +23,31 @@ const double kReflectionChangeDelta = 1000.0;
 
 }  // namespace
 
-XRLightProbe::XRLightProbe(XRSession* session) : session_(session) {}
+XRLightProbe::XRLightProbe(XRSession* session, XRLightProbeInit* options)
+    : session_(session) {
+  if (options->reflectionFormat() == "rgba16f") {
+    reflection_format_ = kReflectionFormatRGBA16F;
+  } else {
+    reflection_format_ = kReflectionFormatSRGBA8;
+  }
+}
+
+XRSpace* XRLightProbe::probeSpace() const {
+  if (!probe_space_) {
+    probe_space_ =
+        MakeGarbageCollected<XRObjectSpace<XRLightProbe>>(session_, this);
+  }
+
+  return probe_space_;
+}
+
+base::Optional<TransformationMatrix> XRLightProbe::MojoFromObject() const {
+  // For the moment we're making an assumption that the lighting estimations
+  // are always generated from the local space origin. This is the case for
+  // ARCore, but will need to be made more flexible as other runtimes or methods
+  // of light estimation are added.
+  return session_->GetMojoFrom(device::mojom::XRReferenceSpaceType::kLocal);
+}
 
 void XRLightProbe::ProcessLightEstimationData(
     const device::mojom::blink::XRLightEstimationData* data,
@@ -67,8 +93,9 @@ const AtomicString& XRLightProbe::InterfaceName() const {
   return event_target_names::kXRLightProbe;
 }
 
-void XRLightProbe::Trace(Visitor* visitor) {
+void XRLightProbe::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
+  visitor->Trace(probe_space_);
   visitor->Trace(light_estimate_);
   ScriptWrappable::Trace(visitor);
 }

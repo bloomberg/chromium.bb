@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
@@ -64,8 +64,10 @@ base::Optional<media::VideoFrameLayout> CreateVideoFrameLayout(
 }  // namespace
 
 GpuArcVideoEncodeAccelerator::GpuArcVideoEncodeAccelerator(
-    const gpu::GpuPreferences& gpu_preferences)
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds)
     : gpu_preferences_(gpu_preferences),
+      gpu_workarounds_(gpu_workarounds),
       input_storage_type_(
           media::VideoEncodeAccelerator::Config::StorageType::kShmem),
       bitstream_buffer_serial_(0) {}
@@ -109,12 +111,12 @@ void GpuArcVideoEncodeAccelerator::GetSupportedProfiles(
     GetSupportedProfilesCallback callback) {
   std::move(callback).Run(
       media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-          gpu_preferences_));
+          gpu_preferences_, gpu_workarounds_));
 }
 
 void GpuArcVideoEncodeAccelerator::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client,
+    mojo::PendingRemote<mojom::VideoEncodeClient> client,
     InitializeCallback callback) {
   auto result = InitializeTask(config, std::move(client));
   std::move(callback).Run(result);
@@ -122,7 +124,7 @@ void GpuArcVideoEncodeAccelerator::Initialize(
 
 void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client,
+    mojo::PendingRemote<mojom::VideoEncodeClient> client,
     InitializeDeprecatedCallback callback) {
   auto result = InitializeTask(config, std::move(client));
   std::move(callback).Run(result ==
@@ -132,7 +134,7 @@ void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
 mojom::VideoEncodeAccelerator::Result
 GpuArcVideoEncodeAccelerator::InitializeTask(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client) {
+    mojo::PendingRemote<mojom::VideoEncodeClient> client) {
   DVLOGF(2) << config.AsHumanReadableString();
   if (!config.storage_type.has_value()) {
     DLOG(ERROR) << "storage type must be specified";
@@ -142,12 +144,12 @@ GpuArcVideoEncodeAccelerator::InitializeTask(
   input_storage_type_ = *config.storage_type;
   visible_size_ = config.input_visible_size;
   accelerator_ = media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
-      config, this, gpu_preferences_);
+      config, this, gpu_preferences_, gpu_workarounds_);
   if (accelerator_ == nullptr) {
     DLOG(ERROR) << "Failed to create a VideoEncodeAccelerator.";
     return mojom::VideoEncodeAccelerator::Result::kPlatformFailureError;
   }
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   return mojom::VideoEncodeAccelerator::Result::kSuccess;
 }

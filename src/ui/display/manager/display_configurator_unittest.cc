@@ -11,9 +11,11 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_features.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
@@ -119,7 +121,7 @@ class TestObserver : public DisplayConfigurator::Observer {
 class TestStateController : public DisplayConfigurator::StateController {
  public:
   TestStateController() : state_(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {}
-  ~TestStateController() override {}
+  ~TestStateController() override = default;
 
   void set_state(MultipleDisplayState state) { state_ = state; }
 
@@ -144,7 +146,7 @@ class TestMirroringController
     : public DisplayConfigurator::SoftwareMirroringController {
  public:
   TestMirroringController() : software_mirroring_enabled_(false) {}
-  ~TestMirroringController() override {}
+  ~TestMirroringController() override = default;
 
   void SetSoftwareMirroring(bool enabled) override {
     software_mirroring_enabled_ = enabled;
@@ -217,6 +219,12 @@ class DisplayConfiguratorTest : public testing::Test {
 
   void SetUp() override {
     log_ = std::make_unique<ActionLogger>();
+
+    // TODO(crbug.com/1161556): |kEnableHardwareMirrorMode| is disabled by
+    // default. We enable it here to maintain test coverage for hardware mirror
+    // mode until it is permanently removed.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableHardwareMirrorMode);
 
     // Force system compositor mode to simulate on-device configurator behavior.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -330,6 +338,7 @@ class DisplayConfiguratorTest : public testing::Test {
   TestNativeDisplayDelegate* native_display_delegate_;  // not owned
   DisplayConfigurator::TestApi test_api_{&configurator_};
   ConfigurationWaiter config_waiter_{&test_api_};
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   static constexpr size_t kNumOutputs = 3;
   std::unique_ptr<DisplaySnapshot> outputs_[kNumOutputs];
@@ -349,8 +358,9 @@ class DisplayConfiguratorTest : public testing::Test {
                               Modes... modes) {
     static_assert(I < kNumOutputs, "More expected modes than outputs");
 
-    std::string action = GetCrtcAction(
-        *outputs_[I], config == DisplayConfig::kOff ? nullptr : mode, origin);
+    std::string action =
+        GetCrtcAction({outputs_[I]->display_id(), origin,
+                       config == DisplayConfig::kOff ? nullptr : mode});
 
     if (mode && config != DisplayConfig::kMirror)
       origin += {0, mode->size().height() + DisplayConfigurator::kVerticalGap};
@@ -822,12 +832,27 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   EXPECT_EQ(2, observer_.num_failures());
 }
 
-TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForMirroredDisplays) {
+TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForHWMirroredDisplays) {
   UpdateOutputs(2, false);
   Init(false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
   configurator_.ForceInitialConfigure();
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR, configurator_.display_state());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
+}
+
+TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForSWMirroredDisplays) {
+  // Disable hardware mirroring.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kEnableHardwareMirrorMode);
+  UpdateOutputs(2, false);
+  Init(false);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
+  configurator_.ForceInitialConfigure();
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
+            configurator_.display_state());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
 }
 
 TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
@@ -947,13 +972,17 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
   UpdateOutputs(1, true);
 
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[0], modes[2].get(), gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[0].get()})
+                            .c_str(),
+                        GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[3].get()})
+                            .c_str(),
+                        GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[2].get()})
+                            .c_str(),
+                        nullptr),
+            log_->GetActionsAndClear());
 
   outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
@@ -976,26 +1005,40 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 
   EXPECT_EQ(
       JoinActions(
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[0].get()})
+              .c_str(),
           // Then attempt to configure crtc1 with the first mode.
-          GetCrtcAction(*outputs_[1], modes[0].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[1]->display_id(), gfx::Point(0, 0), modes[0].get()})
+              .c_str(),
           // First mode tried is expected to fail and it will
           // retry wil the 4th mode in the list.
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[3].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
+          GetCrtcAction(
+              {outputs_[1]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
           // Since it was requested to go into mirror mode
           // and the configured modes were different, it
           // should now try and setup a valid configurable
           // extended mode.
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[0].get(),
-                        gfx::Point(0, modes[0]->size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[0].get()})
               .c_str(),
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[3].get(),
-                        gfx::Point(0, modes[0]->size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         modes[0].get()})
+              .c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         modes[3].get()})
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
@@ -1213,9 +1256,11 @@ TEST_F(DisplayConfiguratorTest,
   EXPECT_EQ(
       JoinActions(
           GetCrtcActions(&small_mode_, &big_mode_).c_str(),
-          GetCrtcAction(*outputs_[1], &small_mode_,
-                        gfx::Point(0, small_mode_.size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcActions(&small_mode_).c_str(),
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, small_mode_.size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         &small_mode_})
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
@@ -1431,63 +1476,6 @@ TEST_F(DisplayConfiguratorTest, PowerStateChange) {
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, observer_.latest_power_state());
 }
 
-TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnSupportedEmbeddedDisplay) {
-  outputs_[0] = FakeDisplaySnapshot::Builder()
-                    .SetId(kDisplayIds[0])
-                    .SetNativeMode(small_mode_.Clone())
-                    .SetCurrentMode(small_mode_.Clone())
-                    .AddMode(big_mode_.Clone())
-                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
-                    .SetIsAspectPerservingScaling(true)
-                    .SetPrivacyScreen(kDisabled)
-                    .Build();
-
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
-  InitWithOutputs(&small_mode_);
-  observer_.Reset();
-
-  EXPECT_TRUE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
-  EXPECT_EQ(SetPrivacyScreenAction(kDisplayIds[0], true),
-            log_->GetActionsAndClear());
-}
-
-TEST_F(DisplayConfiguratorTest,
-       EnablePrivacyScreenOnUnsupportedEmbeddedDisplay) {
-  outputs_[0] = FakeDisplaySnapshot::Builder()
-                    .SetId(kDisplayIds[0])
-                    .SetNativeMode(big_mode_.Clone())
-                    .SetCurrentMode(big_mode_.Clone())
-                    .AddMode(small_mode_.Clone())
-                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
-                    .SetIsAspectPerservingScaling(true)
-                    .SetPrivacyScreen(kNotSupported)
-                    .Build();
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
-  InitWithOutputs(&big_mode_);
-  observer_.Reset();
-
-  EXPECT_FALSE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
-  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-}
-
-TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnExternalDisplay) {
-  outputs_[0] = FakeDisplaySnapshot::Builder()
-                    .SetId(kDisplayIds[0])
-                    .SetNativeMode(small_mode_.Clone())
-                    .SetCurrentMode(small_mode_.Clone())
-                    .SetType(DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
-                    .SetIsAspectPerservingScaling(true)
-                    .SetPrivacyScreen(kNotSupported)
-                    .Build();
-
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
-  InitWithOutputs(&small_mode_);
-  observer_.Reset();
-
-  EXPECT_FALSE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
-  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-}
-
 class DisplayConfiguratorMultiMirroringTest : public DisplayConfiguratorTest {
  public:
   DisplayConfiguratorMultiMirroringTest() = default;
@@ -1592,7 +1580,7 @@ TEST_F(DisplayConfiguratorMultiMirroringTest,
   // Initialize with 3 external displays.
   outputs_[0] =
       FakeDisplaySnapshot::Builder()
-          .SetId(kDisplayIds[1])
+          .SetId(kDisplayIds[0])
           .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
           .SetNativeMode(MakeDisplayMode(1920, 1200, true, 60.0))
           .AddMode(MakeDisplayMode(1920, 1200, true, 60.0))  // same AR
@@ -1601,7 +1589,7 @@ TEST_F(DisplayConfiguratorMultiMirroringTest,
           .Build();
   outputs_[1] =
       FakeDisplaySnapshot::Builder()
-          .SetId(kDisplayIds[2])
+          .SetId(kDisplayIds[1])
           .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
           .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
           .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
@@ -1624,7 +1612,7 @@ TEST_F(DisplayConfiguratorMultiMirroringTest,
   // Find an exactly matching mirror mode while not preserving aspect.
   outputs_[2] =
       FakeDisplaySnapshot::Builder()
-          .SetId(kDisplayIds[0])
+          .SetId(kDisplayIds[2])
           .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
           .SetNativeMode(MakeDisplayMode(1920, 1600, false, 60.0))
           .AddMode(MakeDisplayMode(1920, 1600, false, 60.0))  // same AR
@@ -1636,7 +1624,7 @@ TEST_F(DisplayConfiguratorMultiMirroringTest,
   // Cannot find a matching mirror mode, so enable software mirroring.
   outputs_[2] =
       FakeDisplaySnapshot::Builder()
-          .SetId(kDisplayIds[0])
+          .SetId(kDisplayIds[2])
           .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
           .SetNativeMode(MakeDisplayMode(1920, 1600, false, 60.0))
           .AddMode(MakeDisplayMode(1920, 1600, false, 60.0))  // same AR

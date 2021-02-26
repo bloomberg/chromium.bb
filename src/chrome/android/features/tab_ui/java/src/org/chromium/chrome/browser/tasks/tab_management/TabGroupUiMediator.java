@@ -14,9 +14,12 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
+import org.chromium.base.CallbackController;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
@@ -38,8 +41,8 @@ import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.FeatureStatus;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.ReasonToShow;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -101,8 +104,6 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
     private final ResetHandler mResetHandler;
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
-    private final OverviewModeBehavior mOverviewModeBehavior;
-    private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
     private final BottomControlsCoordinator
             .BottomControlsVisibilityController mVisibilityController;
     private final ThemeColorProvider mThemeColorProvider;
@@ -113,9 +114,16 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final SnackbarManager.SnackbarManageable mSnackbarManageable;
     private final Snackbar mUndoClosureSnackBar;
+    private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
+
+    private CallbackController mCallbackController = new CallbackController();
+    private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+    private OverviewModeBehavior mOverviewModeBehavior;
+
     private TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
     private PauseResumeWithNativeObserver mPauseResumeWithNativeObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private Callback<Boolean> mOmniboxFocusObserver;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
     private boolean mActivatedButNotShown;
@@ -123,22 +131,24 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
     TabGroupUiMediator(Context context,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
-            TabCreatorManager tabCreatorManager, OverviewModeBehavior overviewModeBehavior,
+            TabCreatorManager tabCreatorManager,
+            OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ThemeColorProvider themeColorProvider,
             @Nullable TabGridDialogMediator.DialogController dialogController,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            SnackbarManager.SnackbarManageable snackbarManageable) {
+            SnackbarManager.SnackbarManageable snackbarManageable,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
         mContext = context;
         mResetHandler = resetHandler;
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
-        mOverviewModeBehavior = overviewModeBehavior;
         mVisibilityController = visibilityController;
         mThemeColorProvider = themeColorProvider;
         mTabGridDialogController = dialogController;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mSnackbarManageable = snackbarManageable;
+        mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
         mUndoClosureSnackBar =
                 Snackbar.make(context.getString(R.string.undo_tab_strip_closure_message), this,
                                 Snackbar.TYPE_ACTION,
@@ -222,7 +232,11 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
                 // Do not try to show tab strip when there is no current tab or we are not in tab
                 // page when restore completed.
-                if (currentTab == null || overviewModeBehavior.overviewVisible()) return;
+                if (currentTab == null
+                        || (mOverviewModeBehavior != null
+                                && mOverviewModeBehavior.overviewVisible())) {
+                    return;
+                }
                 resetTabStripWithRelatedTabsForId(currentTab.getId());
                 RecordUserAction.record("TabStrip.SessionVisibility."
                         + (mIsTabGroupUiVisible ? "Visible" : "Hidden"));
@@ -325,13 +339,30 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
             mActivityLifecycleDispatcher.register(mPauseResumeWithNativeObserver);
         }
 
+        if (TabUiFeatureUtilities.isLaunchBugFixEnabled()) {
+            mOmniboxFocusObserver = isFocus -> {
+                // Hide tab strip when omnibox gains focus and try to re-show it when omnibox loses
+                // focus.
+                int tabId = (isFocus == null || !isFocus) ? mTabModelSelector.getCurrentTabId()
+                                                          : Tab.INVALID_TAB_ID;
+                resetTabStripWithRelatedTabsForId(tabId);
+            };
+            mOmniboxFocusStateSupplier.addObserver(mOmniboxFocusObserver);
+        }
+
         mThemeColorObserver =
                 (color, shouldAnimate) -> mModel.set(TabGroupUiProperties.PRIMARY_COLOR, color);
         mTintObserver = (tint, useLight) -> mModel.set(TabGroupUiProperties.TINT, tint);
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
-        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+
+        overviewModeBehaviorSupplier.onAvailable(
+                mCallbackController.makeCancelable((overviewModeBehavior) -> {
+                    mOverviewModeBehavior = overviewModeBehavior;
+                    mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+                }));
+
         mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.addTintObserver(mTintObserver);
 
@@ -443,11 +474,6 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
                 ConditionalTabStripUtils.updateLastShownTimeStamp();
             }
         }
-        boolean isDuetTabStripIntegrationEnabled =
-                TabUiFeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
-                && BottomToolbarConfiguration.isBottomToolbarEnabled();
-        assert (mVisibilityController == null) == isDuetTabStripIntegrationEnabled;
-        if (isDuetTabStripIntegrationEnabled) return;
         if (mIsTabGroupUiVisible) {
             // Post to make sure that the recyclerView already knows how many visible items it has.
             // This is to make sure that we can scroll to a state where the selected tab is in the
@@ -508,7 +534,16 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
         }
-        mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        }
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
+        if (mOmniboxFocusObserver != null) {
+            mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
+        }
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.removeTintObserver(mTintObserver);
     }

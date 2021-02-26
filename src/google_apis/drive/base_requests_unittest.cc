@@ -26,6 +26,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,10 +40,10 @@ const char kInvalidJsonString[] = "$$$";
 class FakeUrlFetchRequest : public UrlFetchRequestBase {
  public:
   FakeUrlFetchRequest(RequestSender* sender,
-                      const EntryActionCallback& callback,
+                      EntryActionCallback callback,
                       const GURL& url)
       : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()),
-        callback_(callback),
+        callback_(std::move(callback)),
         url_(url) {}
 
   ~FakeUrlFetchRequest() override {}
@@ -53,10 +54,10 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
       const network::mojom::URLResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override {
-    callback_.Run(GetErrorCode());
+    std::move(callback_).Run(GetErrorCode());
   }
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
-    callback_.Run(code);
+    std::move(callback_).Run(code);
   }
 
   EntryActionCallback callback_;
@@ -118,6 +119,10 @@ class BaseRequestsTest : public testing::Test {
         network_service_remote.BindNewPipeAndPassReceiver());
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_service_remote->CreateNetworkContext(
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
@@ -149,8 +154,8 @@ class BaseRequestsTest : public testing::Test {
                                     std::string(), /* custom user agent */
                                     TRAFFIC_ANNOTATION_FOR_TESTS));
 
-    test_server_.RegisterRequestHandler(
-        base::Bind(&BaseRequestsTest::HandleRequest, base::Unretained(this)));
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &BaseRequestsTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
   }
 

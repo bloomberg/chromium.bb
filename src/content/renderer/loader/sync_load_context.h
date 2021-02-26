@@ -29,12 +29,12 @@ struct ResourceRequest;
 }
 
 namespace blink {
+class ResourceLoadInfoNotifierWrapper;
 class URLLoaderThrottle;
+struct SyncLoadResponse;
 }
 
 namespace content {
-
-struct SyncLoadResponse;
 
 // This class owns the context necessary to perform an asynchronous request
 // while the main thread is blocked so that it appears to be synchronous.
@@ -51,8 +51,13 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   // and |response| will be populated with the response data. |abort_event|
   // will be signalled from the main thread to abort the sync request on a
   // worker thread when the worker thread is being terminated.
-  // If |download_to_blob_registry| is not null, it is used to redirect the
-  // download to a blob, with the resulting blob populated in |response|.
+  // The pointer whose address is `context_for_redirect` is held by the caller
+  // that is blocked on this method, so it will remain valid until the operation
+  // completes. If there are redirects, `context_for_redirect` will point to the
+  // callee context.
+  // If |download_to_blob_registry| is not null, it is used to
+  // redirect the download to a blob, with the resulting blob populated in
+  // |response|.
   static void StartAsyncWithWaitableEvent(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
@@ -62,12 +67,15 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
-      SyncLoadResponse* response,
+      blink::SyncLoadResponse* response,
+      SyncLoadContext** context_for_redirect,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
-      mojo::PendingRemote<blink::mojom::BlobRegistry>
-          download_to_blob_registry);
+      mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
+      const std::vector<std::string>& cors_exempt_header_list,
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper);
 
   ~SyncLoadContext() override;
 
@@ -81,12 +89,14 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       network::ResourceRequest* request,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           url_loader_factory,
-      SyncLoadResponse* response,
+      blink::SyncLoadResponse* response,
+      SyncLoadContext** context_for_redirect,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
       mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::vector<std::string>& cors_exempt_header_list);
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
@@ -98,7 +108,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
-  scoped_refptr<base::TaskRunner> GetTaskRunner() override;
+  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
 
   void OnFinishCreatingBlob(blink::mojom::SerializedBlobPtr blob);
 
@@ -113,7 +123,13 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   // This raw pointer will remain valid for the lifetime of this object because
   // it remains on the stack until |event_| is signaled.
   // Set to null after CompleteRequest() is called.
-  SyncLoadResponse* response_;
+  blink::SyncLoadResponse* response_;
+
+  // This raw pointer will be set to `this` when receiving redirects on
+  // independent thread and set to nullptr in `FollowRedirect()` or
+  // `CancelRedirect()` on the same thread after `redirect_or_response_event_`
+  // is signaled, which protects it against race condition.
+  SyncLoadContext** context_for_redirect_;
 
   enum class Mode { kInitial, kDataPipe, kBlob };
   Mode mode_ = Mode::kInitial;

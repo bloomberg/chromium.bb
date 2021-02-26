@@ -47,6 +47,7 @@ class InternalAuthenticatorAndroid : public autofill::InternalAuthenticator {
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback)
       override;
   void Cancel() override;
+  content::RenderFrameHost* GetRenderFrameHost() override;
 
   void InvokeMakeCredentialResponse(
       JNIEnv* env,
@@ -61,7 +62,12 @@ class InternalAuthenticatorAndroid : public autofill::InternalAuthenticator {
       jboolean is_uvpaa);
 
  private:
-  JavaObjectWeakGlobalRef java_authenticator_impl_ref_;
+  // Returns the associated AuthenticatorImpl Java object. Initializes new
+  // instance if not done so already in order to avoid possibility of any null
+  // pointer issues.
+  base::android::JavaRef<jobject>& GetJavaObject();
+
+  base::android::ScopedJavaGlobalRef<jobject> java_authenticator_impl_ref_;
   content::RenderFrameHost* render_frame_host_;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;

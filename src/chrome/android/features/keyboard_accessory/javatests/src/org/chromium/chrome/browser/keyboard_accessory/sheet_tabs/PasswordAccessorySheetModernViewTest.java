@@ -4,18 +4,18 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.filters.MediumTest;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +23,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,7 +32,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -42,8 +46,6 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessoryS
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.widget.ChipView;
 
@@ -88,7 +90,7 @@ public class PasswordAccessorySheetModernViewTest {
                             R.dimen.keyboard_accessory_sheet_height));
             accessorySheet.show();
         });
-        CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mView.get() != null));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get(), notNullValue()));
     }
 
     @After
@@ -106,7 +108,7 @@ public class PasswordAccessorySheetModernViewTest {
                     new AccessorySheetDataPiece("Passwords", AccessorySheetDataPiece.Type.TITLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         View title = mView.get().findViewById(R.id.tab_title);
         assertThat(title, is(not(nullValue())));
         assertThat(title, instanceOf(TextView.class));
@@ -129,7 +131,7 @@ public class PasswordAccessorySheetModernViewTest {
                     testInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
 
         assertThat(getNameSuggestion().getPrimaryTextView().getText(), is("Name Suggestion"));
         assertThat(
@@ -165,7 +167,7 @@ public class PasswordAccessorySheetModernViewTest {
                     pslOriginInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(2)));
 
         assertThat(getUserInfoAt(0).getTitle().isShown(), is(false));
         assertThat(getUserInfoAt(1).getTitle().isShown(), is(true));
@@ -177,13 +179,13 @@ public class PasswordAccessorySheetModernViewTest {
     public void testOptionToggleRenderedIfNotEmpty() throws ExecutionException {
         assertThat(mView.get().getChildCount(), is(0));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OptionToggle toggle =
-                    new OptionToggle("Save passwords for this site", false, result -> {});
+            OptionToggle toggle = new OptionToggle("Save passwords for this site", false,
+                    AccessoryAction.TOGGLE_SAVE_PASSWORDS, result -> {});
             mModel.add(new AccessorySheetDataPiece(
                     toggle, AccessorySheetDataPiece.Type.OPTION_TOGGLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         View title = mView.get().findViewById(R.id.option_toggle_title);
         assertThat(title, is(not(nullValue())));
         assertThat(title, instanceOf(TextView.class));
@@ -205,13 +207,13 @@ public class PasswordAccessorySheetModernViewTest {
     public void testClickingDisabledToggleInvokesCallbackToEnable() throws ExecutionException {
         AtomicReference<Boolean> toggleEnabled = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OptionToggle toggle =
-                    new OptionToggle("Save passwords for this site", false, toggleEnabled::set);
+            OptionToggle toggle = new OptionToggle("Save passwords for this site", false,
+                    AccessoryAction.TOGGLE_SAVE_PASSWORDS, toggleEnabled::set);
             mModel.add(new AccessorySheetDataPiece(
                     toggle, AccessorySheetDataPiece.Type.OPTION_TOGGLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         TestThreadUtils.runOnUiThreadBlocking(
                 mView.get().findViewById(R.id.option_toggle)::performClick);
         assertTrue(toggleEnabled.get());
@@ -222,13 +224,13 @@ public class PasswordAccessorySheetModernViewTest {
     public void testClickingEnabledToggleInvokesCallbackToDisable() throws ExecutionException {
         AtomicReference<Boolean> toggleEnabled = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OptionToggle toggle =
-                    new OptionToggle("Save passwords for this site", true, toggleEnabled::set);
+            OptionToggle toggle = new OptionToggle("Save passwords for this site", true,
+                    AccessoryAction.TOGGLE_SAVE_PASSWORDS, toggleEnabled::set);
             mModel.add(new AccessorySheetDataPiece(
                     toggle, AccessorySheetDataPiece.Type.OPTION_TOGGLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         TestThreadUtils.runOnUiThreadBlocking(
                 mView.get().findViewById(R.id.option_toggle)::performClick);
 

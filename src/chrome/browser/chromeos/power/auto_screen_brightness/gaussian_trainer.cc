@@ -201,7 +201,8 @@ void LogModelCurveError(double error, bool model_updated) {
   const std::string histogram_name =
       std::string("AutoScreenBrightness.ModelTraining.Inaccuracy.") +
       (model_updated ? "Update" : "NoUpdate");
-  base::UmaHistogramPercentage(histogram_name, std::round(error));
+  base::UmaHistogramPercentageObsoleteDoNotUse(histogram_name,
+                                               std::round(error));
   VLOG(1) << "ABTrainer model error " << (model_updated ? "with " : "without ")
           << "model updated: " << FormatToPrint(error);
 }
@@ -425,12 +426,18 @@ TrainingResult GaussianTrainer::Train(
     return TrainingResult(base::nullopt, error);
   }
 
-  current_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
+  need_to_update_curve_ = false;
+
+  const auto new_curve = MonotoneCubicSpline::CreateMonotoneCubicSpline(
       ambient_log_lux_, brightness_);
-  DCHECK(current_curve_);
+  if (!new_curve) {
+    VLOG(1) << "ABTrainer training finished with new invalid curve";
+    return TrainingResult(base::nullopt, 0 /* error */);
+  }
+
+  current_curve_ = new_curve;
   VLOG(1) << "ABTrainer training finished with new curve: \n"
           << current_curve_->ToString();
-  need_to_update_curve_ = false;
 
   const double error = CalculateCurveError(data);
   LogModelCurveError(error, true /* model_updated */);

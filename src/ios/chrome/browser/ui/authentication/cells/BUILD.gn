@@ -38,7 +38,7 @@ source_set("cells") {
     "//ui/base",
   ]
   public_deps = [ ":constants" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {
@@ -70,11 +70,11 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/test:test_support",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test",
@@ -90,5 +90,5 @@ source_set("constants") {
     "signin_promo_view_constants.h",
     "signin_promo_view_constants.mm",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

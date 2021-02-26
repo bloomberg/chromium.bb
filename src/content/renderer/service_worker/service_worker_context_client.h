@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-forward.h"
-#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
@@ -36,6 +35,8 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
@@ -48,6 +49,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
+class ChildURLLoaderFactoryBundle;
 class WebServiceWorkerContextProxy;
 class WebURLResponse;
 struct WebServiceWorkerInstalledScriptsManagerParams;
@@ -55,7 +57,6 @@ struct WebServiceWorkerInstalledScriptsManagerParams;
 
 namespace content {
 
-class ChildURLLoaderFactoryBundle;
 class EmbeddedWorkerInstanceClientImpl;
 class WebServiceWorkerFetchContext;
 
@@ -93,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& service_worker_scope,
       const GURL& script_url,
       bool is_starting_installed_worker,
-      blink::mojom::RendererPreferencesPtr renderer_preferences,
+      const blink::RendererPreferences& renderer_preferences,
       mojo::PendingReceiver<blink::mojom::ServiceWorker>
           service_worker_receiver,
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
@@ -110,7 +111,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
           subresource_loader_updater,
       const GURL& script_url_to_skip_throttling,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
-      int32_t service_worker_route_id);
+      int32_t service_worker_route_id,
+      const std::vector<std::string>& cors_exempt_header_list);
   // Called on the initiator thread.
   ~ServiceWorkerContextClient() override;
 
@@ -119,17 +121,22 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<blink::WebEmbeddedWorker> worker,
       std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data,
       std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>,
-      mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle cache_storage,
-      mojo::ScopedMessagePipeHandle browser_interface_broker);
+      mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+          content_settings,
+      mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker);
 
   // Called on the initiator thread.
   blink::WebEmbeddedWorker& worker();
 
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspectionOnInitiatorThread(
-      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
-      mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
+      blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
+          devtools_agent_remote,
+      blink::CrossVariantMojoReceiver<
+          blink::mojom::DevToolsAgentHostInterfaceBase>
+          devtools_agent_host_receiver) override;
   void FailedToFetchClassicScript() override;
   void FailedToFetchModuleScript() override;
   void WorkerScriptLoadedOnWorkerThread() override;
@@ -215,7 +222,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // See comments in EmbeddedWorkerStartParams::script_url_to_skip_throttling.
   const GURL script_url_to_skip_throttling_;
 
-  blink::mojom::RendererPreferencesPtr renderer_preferences_;
+  blink::RendererPreferences renderer_preferences_;
   // Passed on creation of ServiceWorkerFetchContext.
   mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
       preference_watcher_receiver_;
@@ -239,7 +246,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       instance_host_;
 
   // This holds blink.mojom.ServiceWorkerContainer(Host) connections to the
-  // browser-side ServiceWorkerProviderHost to keep it alive there.
+  // browser-side ServiceWorkerHost to keep it alive there.
   // Note: |service_worker_provider_info_->script_loader_factory_remote| is
   // moved to WebServiceWorkerNetworkProviderImpl when
   // CreateServiceWorkerNetworkProvider is called.
@@ -248,8 +255,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Must be accessed on the initiator thread only.
   EmbeddedWorkerInstanceClientImpl* owner_;
-
-  mojo::Remote<blink::mojom::BlobRegistry> blob_registry_;
 
   // Initialized on the worker thread in WorkerContextStarted and
   // destructed on the worker thread in WillDestroyWorkerContext.
@@ -268,7 +273,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::mojom::EmbeddedWorkerStartTimingPtr start_timing_;
 
   // A URLLoaderFactory instance used for subresource loading.
-  scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
+  scoped_refptr<blink::ChildURLLoaderFactoryBundle> loader_factories_;
 
   // Out-of-process NetworkService:
   // Detects disconnection from the network service.
@@ -278,6 +283,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;
 
   int32_t service_worker_route_id_;
+
+  std::vector<std::string> cors_exempt_header_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

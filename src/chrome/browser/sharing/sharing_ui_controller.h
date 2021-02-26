@@ -24,7 +24,6 @@
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "url/origin.h"
 
 class SharingDialog;
@@ -67,8 +66,6 @@ class SharingUiController {
 
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
-  // Called by the SharingDialogView when the help text got clicked.
-  virtual void OnHelpTextClicked(SharingDialogType dialog_type);
   // Called when a new dialog is shown.
   virtual void OnDialogShown(bool has_devices, bool has_apps);
 

@@ -9,10 +9,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/buildflag.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/cursor/cursor_theme_manager_linux.h"
+#include "ui/base/cursor/cursor_theme_manager.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/animation/animation_settings_provider_linux.h"
@@ -55,7 +54,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::SkiaFontDelegate,
                              public ui::ShellDialogLinux,
                              public ui::TextEditKeyBindingsDelegateAuraLinux,
-                             public ui::CursorThemeManagerLinux,
+                             public ui::CursorThemeManager,
                              public gfx::AnimationSettingsProviderLinux {
  public:
   using UseSystemThemeCallback =
@@ -78,6 +77,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
     kRightClick,
   };
 
+  LinuxUI(const LinuxUI&) = delete;
+  LinuxUI& operator=(const LinuxUI&) = delete;
   ~LinuxUI() override;
 
   // Sets the dynamically loaded singleton that draws the desktop native UI.
@@ -178,9 +179,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
  protected:
   LinuxUI();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LinuxUI);
 };
 
 }  // namespace views

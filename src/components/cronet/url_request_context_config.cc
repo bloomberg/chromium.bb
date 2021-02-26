@@ -31,11 +31,11 @@
 #include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/nqe/network_quality_estimator_params.h"
-#include "net/quic/quic_utils_chromium.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -90,7 +90,9 @@ const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
 const char kQuicVersion[] = "quic_version";
+const char kQuicObsoleteVersionsAllowed[] = "obsolete_versions_allowed";
 const char kQuicFlags[] = "set_quic_flags";
+const char kQuicIOSNetworkServiceType[] = "ios_network_service_type";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -316,6 +318,27 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
         quic::ParsedQuicVersionVector supported_versions =
             quic::ParseQuicVersionVectorString(quic_version_string);
+        bool obsolete_versions_allowed = false;
+        if (!quic_args->GetBoolean(kQuicObsoleteVersionsAllowed,
+                                   &obsolete_versions_allowed) ||
+            !obsolete_versions_allowed) {
+          quic::ParsedQuicVersionVector filtered_versions;
+          quic::ParsedQuicVersionVector obsolete_versions =
+              net::ObsoleteQuicVersions();
+          for (const quic::ParsedQuicVersion& version : supported_versions) {
+            if (version == quic::ParsedQuicVersion::Q043()) {
+              // TODO(dschinazi) Remove this special-casing of Q043 once we no
+              // longer have cronet applications that require it.
+              filtered_versions.push_back(version);
+              continue;
+            }
+            if (std::find(obsolete_versions.begin(), obsolete_versions.end(),
+                          version) == obsolete_versions.end()) {
+              filtered_versions.push_back(version);
+            }
+          }
+          supported_versions = filtered_versions;
+        }
         if (!supported_versions.empty())
           quic_params->supported_versions = supported_versions;
       }
@@ -324,14 +347,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetString(kQuicConnectionOptions,
                                &quic_connection_options)) {
         quic_params->connection_options =
-            net::ParseQuicConnectionOptions(quic_connection_options);
+            quic::ParseQuicTagVector(quic_connection_options);
       }
 
       std::string quic_client_connection_options;
       if (quic_args->GetString(kQuicClientConnectionOptions,
                                &quic_client_connection_options)) {
         quic_params->client_connection_options =
-            net::ParseQuicConnectionOptions(quic_client_connection_options);
+            quic::ParseQuicTagVector(quic_client_connection_options);
       }
 
       // TODO(rtenneti): Delete this option after apps stop using it.
@@ -523,6 +546,12 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             continue;
           SetQuicFlagByName(tokens[0], tokens[1]);
         }
+      }
+
+      int quic_ios_network_service_type;
+      if (quic_args->GetInteger(kQuicIOSNetworkServiceType,
+                                &quic_ios_network_service_type)) {
+        quic_params->ios_network_service_type = quic_ios_network_service_type;
       }
 
     } else if (it.key() == kAsyncDnsFieldTrialName) {

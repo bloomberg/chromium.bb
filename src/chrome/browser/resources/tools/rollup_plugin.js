@@ -9,17 +9,8 @@ const path = require('path');
 
 const chromeResourcesUrl = 'chrome://resources/';
 const polymerUrl = 'chrome://resources/polymer/v3_0/';
-
-// TODO: Determine whether it is worth maintaining this list vs always checking
-// both directories for the existence of a file.
-const nonGeneratedFiles = [
-  'action_link.js',
-  'certificate_manager_types.js',
-  'certificate_provisioning_browser_proxy.js',
-  'certificates_browser_proxy.js',
-  'cr.m.js',
-  'cr_splitter.js',
-];
+const schemeRelativeResourcesUrl = '//resources/';
+const schemeRelativePolymerUrl = '//resources/polymer/v3_0/';
 
 function normalizeSlashes(filepath) {
   return filepath.replace(/\\/gi, '/');
@@ -47,10 +38,10 @@ function combinePaths(origin, source) {
 }
 
 export default function plugin(srcPath, genPath, rootPath, host, excludes) {
-  const resourcesSrcPath = joinPaths(srcPath, 'ui/webui/resources/');
   const polymerSrcPath =
       joinPaths(srcPath, 'third_party/polymer/v3_0/components-chromium/');
-  const resourcesGenPath = joinPaths(genPath, 'ui/webui/resources/');
+  const resourcesPreprocessedPath =
+      joinPaths(genPath, 'ui/webui/resources/preprocessed/');
   const rootUrl = 'chrome://' + host + '/';
 
   return {
@@ -66,6 +57,8 @@ export default function plugin(srcPath, genPath, rootPath, host, excludes) {
       let pathFromPolymer = '';
       if (source.startsWith(polymerUrl)) {
         pathFromPolymer = source.slice(polymerUrl.length);
+      } else if (source.startsWith(schemeRelativePolymerUrl)) {
+        pathFromPolymer = source.slice(schemeRelativePolymerUrl.length);
       } else if (!!origin && origin.startsWith(polymerSrcPath)) {
         pathFromPolymer =
             combinePaths(relativePath(polymerSrcPath, origin), source);
@@ -82,12 +75,11 @@ export default function plugin(srcPath, genPath, rootPath, host, excludes) {
       let pathFromResources = '';
       if (source.startsWith(chromeResourcesUrl)) {
         pathFromResources = source.slice(chromeResourcesUrl.length);
-      } else if (!!origin && origin.startsWith(resourcesSrcPath)) {
-        pathFromResources =
-            combinePaths(relativePath(resourcesSrcPath, origin), source);
-      } else if (!!origin && origin.startsWith(resourcesGenPath)) {
-        pathFromResources =
-            combinePaths(relativePath(resourcesGenPath, origin), source);
+      } else if (source.startsWith(schemeRelativeResourcesUrl)) {
+        pathFromResources = source.slice(schemeRelativeResourcesUrl.length);
+      } else if (!!origin && origin.startsWith(resourcesPreprocessedPath)) {
+        pathFromResources = combinePaths(
+            relativePath(resourcesPreprocessedPath, origin), source);
       }
 
       // Add prefix
@@ -97,10 +89,7 @@ export default function plugin(srcPath, genPath, rootPath, host, excludes) {
           return {id: fullPath, external: true};
         }
         const filename = path.basename(source);
-        return joinPaths(
-            nonGeneratedFiles.includes(filename) ? resourcesSrcPath :
-                                                   resourcesGenPath,
-            pathFromResources);
+        return joinPaths(resourcesPreprocessedPath, pathFromResources);
       }
 
       // Not a resources or polymer path -> should be in the root directory.

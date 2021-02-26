@@ -22,7 +22,6 @@
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,6 +39,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -87,9 +87,6 @@ constexpr base::TimeDelta kAnimationDuration =
 constexpr base::TimeDelta kNextMediaDelay =
     base::TimeDelta::FromMilliseconds(2500);
 
-constexpr const char kLockScreenMediaControlsViewName[] =
-    "LockScreenMediaControlsView";
-
 // Scales |size| to fit |view_size| while preserving proportions.
 gfx::Size ScaleSizeToFitView(const gfx::Size& size,
                              const gfx::Size& view_size) {
@@ -130,6 +127,7 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kScrubTo:
     case MediaSessionAction::kEnterPictureInPicture:
     case MediaSessionAction::kExitPictureInPicture:
+    case MediaSessionAction::kSwitchAudioDevice:
       NOTREACHED();
       break;
   }
@@ -141,14 +139,22 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
 // MediaActionButton is an image button with a custom ink drop mask.
 class MediaActionButton : public views::ImageButton {
  public:
-  MediaActionButton(views::ButtonListener* listener,
+  MediaActionButton(LockScreenMediaControlsView* view,
                     int icon_size,
                     MediaSessionAction action,
                     const base::string16& accessible_name)
-      : views::ImageButton(listener),
+      : views::ImageButton(base::BindRepeating(
+            // Handle dynamically-updated button tags without rebinding.
+            [](LockScreenMediaControlsView* controls,
+               MediaActionButton* button) {
+              controls->ButtonPressed(
+                  media_message_center::GetActionFromButtonTag(*button));
+            },
+            view,
+            this)),
         icon_size_(icon_size) {
     SetInkDropMode(views::Button::InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
+    SetHasInkDropActionOnClick(true);
     SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
     SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
     SetBorder(
@@ -176,8 +182,7 @@ class MediaActionButton : public views::ImageButton {
     views::SetImageFromVectorIcon(
         this, GetVectorIconForMediaAction(action), icon_size_,
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconPrimary,
-            AshColorProvider::AshColorMode::kDark));
+            AshColorProvider::ContentLayerType::kIconColorPrimary));
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -210,9 +215,7 @@ LockScreenMediaControlsView::Callbacks::~Callbacks() = default;
 
 LockScreenMediaControlsView::LockScreenMediaControlsView(
     const Callbacks& callbacks)
-    : hide_controls_timer_(new base::OneShotTimer()),
-      hide_artwork_timer_(new base::OneShotTimer()),
-      media_controls_enabled_(callbacks.media_controls_enabled),
+    : media_controls_enabled_(callbacks.media_controls_enabled),
       hide_media_controls_(callbacks.hide_media_controls),
       show_media_controls_(callbacks.show_media_controls) {
   DCHECK(callbacks.media_controls_enabled);
@@ -232,18 +235,14 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
 
-  middle_spacing_ = std::make_unique<NonAccessibleView>();
-  middle_spacing_->set_owned_by_client();
-
-  set_notify_enter_exit_on_child(true);
+  SetNotifyEnterExitOnChild(true);
 
   contents_view_ = AddChildView(std::make_unique<views::View>());
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, kMediaControlsInsets));
   contents_view_->SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent80,
-          AshColorProvider::AshColorMode::kDark),
+          AshColorProvider::BaseLayerType::kTransparent80),
       kMediaControlsCornerRadius));
 
   contents_view_->SetPaintToLayer();  // Needed for opacity animation.
@@ -252,7 +251,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   // |header_row_| contains the app icon and source title of the current media
   // session. It also contains the close button.
   header_row_ = contents_view_->AddChildView(
-      std::make_unique<MediaControlsHeaderView>(base::BindOnce(
+      std::make_unique<MediaControlsHeaderView>(base::BindRepeating(
           &LockScreenMediaControlsView::Dismiss, base::Unretained(this))));
 
   // |artwork_row| contains the session artwork, artist and track info.
@@ -288,8 +287,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   title_label->SetFontList(base_font_list.Derive(
       2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
   title_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
-      AshColorProvider::AshColorMode::kDark));
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetElideBehavior(gfx::ELIDE_TAIL);
   title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -299,8 +297,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   artist_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
   artist_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextSecondary,
-      AshColorProvider::AshColorMode::kDark));
+      AshColorProvider::ContentLayerType::kTextColorSecondary));
   artist_label->SetAutoColorReadabilityEnabled(false);
   artist_label->SetElideBehavior(gfx::ELIDE_TAIL);
   artist_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -407,7 +404,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   SetArtwork(base::nullopt);
 
   // |service| can be null in tests.
-  media_session::mojom::MediaSessionService* service =
+  media_session::MediaSessionService* service =
       Shell::Get()->shell_delegate()->GetMediaSessionService();
   if (!service)
     return;
@@ -443,15 +440,15 @@ LockScreenMediaControlsView::~LockScreenMediaControlsView() {
     if (!hide_reason_ && !Shell::Get()->session_controller()->IsScreenLocked())
       hide_reason_ = HideReason::kUnlocked;
 
-    base::UmaHistogramEnumeration(kMediaControlsHideHistogramName,
-                                  *hide_reason_);
+    // Only record hide reason if there is one. The value could be missing
+    // when ash shuts down with the media controls.
+    if (hide_reason_) {
+      base::UmaHistogramEnumeration(kMediaControlsHideHistogramName,
+                                    *hide_reason_);
+    }
   }
 
   base::PowerMonitor::RemoveObserver(this);
-}
-
-const char* LockScreenMediaControlsView::GetClassName() const {
-  return kLockScreenMediaControlsViewName;
 }
 
 gfx::Size LockScreenMediaControlsView::CalculatePreferredSize() const {
@@ -486,10 +483,6 @@ void LockScreenMediaControlsView::OnMouseExited(const ui::MouseEvent& event) {
     return;
 
   header_row_->SetCloseButtonVisibility(false);
-}
-
-views::View* LockScreenMediaControlsView::GetMiddleSpacingView() {
-  return middle_spacing_.get();
 }
 
 void LockScreenMediaControlsView::MediaSessionInfoChanged(
@@ -649,21 +642,6 @@ void LockScreenMediaControlsView::OnImplicitAnimationsCompleted() {
   Dismiss();
 }
 
-void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
-                                                const ui::Event& event) {
-  if (!base::Contains(enabled_actions_,
-                      media_message_center::GetActionFromButtonTag(*sender)) ||
-      !media_session_id_.has_value()) {
-    return;
-  }
-
-  auto action = media_message_center::GetActionFromButtonTag(*sender);
-
-  base::UmaHistogramEnumeration(kMediaControlsUserActionHistogramName, action);
-
-  media_session::PerformMediaSessionAction(action, media_controller_remote_);
-}
-
 void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
   gfx::Point point_in_screen = event->location();
   ConvertPointToScreen(this, &point_in_screen);
@@ -700,6 +678,16 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
 
 void LockScreenMediaControlsView::OnSuspend() {
   Hide(HideReason::kDeviceSleep);
+}
+
+void LockScreenMediaControlsView::ButtonPressed(
+    media_session::mojom::MediaSessionAction action) {
+  if (base::Contains(enabled_actions_, action) &&
+      media_session_id_.has_value()) {
+    base::UmaHistogramEnumeration(kMediaControlsUserActionHistogramName,
+                                  action);
+    media_session::PerformMediaSessionAction(action, media_controller_remote_);
+  }
 }
 
 void LockScreenMediaControlsView::FlushForTesting() {
@@ -887,5 +875,8 @@ void LockScreenMediaControlsView::RunResetControlsAnimation() {
   contents_view_->layer()->SetTransform(gfx::Transform());
   contents_view_->layer()->SetOpacity(1);
 }
+
+BEGIN_METADATA(LockScreenMediaControlsView, views::View)
+END_METADATA
 
 }  // namespace ash

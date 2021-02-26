@@ -4,350 +4,239 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 
-#include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/hit_test.h"
+#include <viewporter-client-protocol.h>
+
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/wayland/host/shell_object_factory.h"
-#include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
-#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
-#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
 
-WaylandSurface::WaylandSurface(PlatformWindowDelegate* delegate,
-                               WaylandConnection* connection)
-    : WaylandWindow(delegate, connection),
-      state_(PlatformWindowState::kNormal) {
-  // Set a class property key, which allows |this| to be used for interactive
-  // events, e.g. move or resize.
-  SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
+WaylandSurface::WaylandSurface(WaylandConnection* connection,
+                               WaylandWindow* root_window)
+    : connection_(connection),
+      root_window_(root_window),
+      surface_(connection->CreateSurface()) {}
 
-  // Set a class property key, which allows |this| to be used for drag action.
-  SetWmDragHandler(this, this);
+WaylandSurface::~WaylandSurface() = default;
+
+uint32_t WaylandSurface::GetSurfaceId() const {
+  if (!surface_)
+    return 0u;
+  return surface_.id();
 }
 
-WaylandSurface::~WaylandSurface() {
-  if (drag_closed_callback_) {
-    std::move(drag_closed_callback_)
-        .Run(DragDropTypes::DragOperation::DRAG_NONE);
-  }
+gfx::AcceleratedWidget WaylandSurface::GetWidget() const {
+  return root_window_ ? root_window_->GetWidget() : gfx::kNullAcceleratedWidget;
 }
 
-bool WaylandSurface::CreateShellSurface() {
-  ShellObjectFactory factory;
-  shell_surface_ = factory.CreateShellSurfaceWrapper(connection(), this);
-  if (!shell_surface_) {
-    LOG(ERROR) << "Failed to create a ShellSurface.";
+bool WaylandSurface::Initialize() {
+  if (!surface_)
     return false;
+
+  static struct wl_surface_listener surface_listener = {
+      &WaylandSurface::Enter,
+      &WaylandSurface::Leave,
+  };
+  wl_surface_add_listener(surface_.get(), &surface_listener, this);
+
+  if (connection_->viewporter()) {
+    viewport_.reset(
+        wp_viewporter_get_viewport(connection_->viewporter(), surface()));
+    if (!viewport_) {
+      LOG(ERROR) << "Failed to create wp_viewport";
+      return false;
+    }
   }
 
-  shell_surface_->SetAppId(app_id_);
-  shell_surface_->SetTitle(window_title_);
-  SetSizeConstraints();
-  TriggerStateChanges();
   return true;
 }
 
-void WaylandSurface::ApplyPendingBounds() {
-  if (pending_bounds_dip_.IsEmpty())
-    return;
-  DCHECK(shell_surface_);
-
-  SetBoundsDip(pending_bounds_dip_);
-  shell_surface_->SetWindowGeometry(pending_bounds_dip_);
-  pending_bounds_dip_ = gfx::Rect();
-  connection()->ScheduleFlush();
+void WaylandSurface::UnsetRootWindow() {
+  DCHECK(surface_);
+  root_window_ = nullptr;
 }
 
-void WaylandSurface::DispatchHostWindowDragMovement(
-    int hittest,
-    const gfx::Point& pointer_location_in_px) {
-  DCHECK(shell_surface_);
-
-  connection()->event_source()->ResetPointerFlags();
-  if (hittest == HTCAPTION)
-    shell_surface_->SurfaceMove(connection());
-  else
-    shell_surface_->SurfaceResize(connection(), hittest);
-
-  connection()->ScheduleFlush();
+void WaylandSurface::AttachBuffer(wl_buffer* buffer) {
+  // The logic in DamageBuffer currently relies on attachment coordinates of
+  // (0, 0). If this changes, then the calculation in DamageBuffer will also
+  // need to be updated.
+  wl_surface_attach(surface_.get(), buffer, 0, 0);
+  connection_->ScheduleFlush();
 }
 
-void WaylandSurface::StartDrag(const ui::OSExchangeData& data,
-                               int operation,
-                               gfx::NativeCursor cursor,
-                               base::OnceCallback<void(int)> callback) {
-  DCHECK(!drag_closed_callback_);
-  drag_closed_callback_ = std::move(callback);
-  connection()->StartDrag(data, operation);
-}
-
-void WaylandSurface::Show(bool inactive) {
-  if (shell_surface_)
-    return;
-
-  if (!CreateShellSurface()) {
-    Close();
-    return;
+void WaylandSurface::UpdateBufferDamageRegion(
+    const gfx::Rect& pending_damage_region,
+    const gfx::Size& buffer_size) {
+  // Buffer-local coordinates are in pixels, surface coordinates are in DIP.
+  // The coordinate transformations from buffer pixel coordinates up to
+  // the surface-local coordinates happen in the following order:
+  //   1. buffer_transform (wl_surface.set_buffer_transform)
+  //   2. buffer_scale (wl_surface.set_buffer_scale)
+  //   3. crop and scale (wp_viewport.set*)
+  // Apply buffer_transform (wl_surface.set_buffer_transform).
+  gfx::Size bounds = wl::ApplyWaylandTransform(
+      buffer_size, wl::ToWaylandTransform(buffer_transform_));
+  // Apply buffer_scale (wl_surface.set_buffer_scale).
+  bounds = gfx::ScaleToCeiledSize(bounds, 1.f / buffer_scale_);
+  // Apply crop (wp_viewport.set_source).
+  gfx::Rect viewport_src = gfx::Rect(bounds);
+  if (!crop_rect_.IsEmpty()) {
+    viewport_src = gfx::ToEnclosedRect(
+        gfx::ScaleRect(crop_rect_, bounds.width(), bounds.height()));
+    wp_viewport_set_source(viewport(), wl_fixed_from_int(viewport_src.x()),
+                           wl_fixed_from_int(viewport_src.y()),
+                           wl_fixed_from_int(viewport_src.width()),
+                           wl_fixed_from_int(viewport_src.height()));
+  }
+  // Apply viewport scale (wp_viewport.set_destination).
+  gfx::Size viewport_dst = bounds;
+  if (!display_size_px_.IsEmpty()) {
+    viewport_dst =
+        gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
   }
 
-  UpdateBufferScale(false);
-}
-
-void WaylandSurface::Hide() {
-  if (!shell_surface_)
-    return;
-
-  if (child_window()) {
-    child_window()->Hide();
-    set_child_window(nullptr);
-  }
-
-  shell_surface_.reset();
-  connection()->ScheduleFlush();
-
-  // Detach buffer from surface in order to completely shutdown menus and
-  // tooltips, and release resources.
-  connection()->buffer_manager_host()->ResetSurfaceContents(GetWidget());
-}
-
-bool WaylandSurface::IsVisible() const {
-  // X and Windows return true if the window is minimized. For consistency, do
-  // the same.
-  return !!shell_surface_ || state_ == PlatformWindowState::kMinimized;
-}
-
-void WaylandSurface::SetTitle(const base::string16& title) {
-  if (window_title_ == title)
-    return;
-
-  window_title_ = title;
-
-  if (shell_surface_) {
-    shell_surface_->SetTitle(title);
-    connection()->ScheduleFlush();
-  }
-}
-
-void WaylandSurface::ToggleFullscreen() {
-  // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
-  // if xdg_toplevel_set_fullscreen() is not provided with wl_output, it's up
-  // to the compositor to choose which display will be used to map this surface.
-
-  // We must track the previous state to correctly say our state as long as it
-  // can be the maximized instead of normal one.
-  PlatformWindowState new_state = PlatformWindowState::kUnknown;
-  if (state_ == PlatformWindowState::kFullScreen) {
-    if (previous_state_ == PlatformWindowState::kMaximized)
-      new_state = previous_state_;
-    else
-      new_state = PlatformWindowState::kNormal;
+  if (connection_->compositor_version() >=
+      WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
+    // wl_surface_damage_buffer relies on compositor API version 4. See
+    // https://bit.ly/2u00lv6 for details.
+    // We don't need to apply any scaling because pending_damage_region is
+    // already in buffer coordinates.
+    wl_surface_damage_buffer(
+        surface_.get(), pending_damage_region.x(), pending_damage_region.y(),
+        pending_damage_region.width(), pending_damage_region.height());
   } else {
-    new_state = PlatformWindowState::kFullScreen;
+    // Calculate the damage region in surface coordinates.
+    // The calculation for damage region relies on the assumption: The buffer is
+    // always attached at surface location (0, 0).
+    // It's possible to write logic that accounts for attaching buffer at other
+    // locations, but it's currently unnecessary.
+
+    // Apply buffer_transform (wl_surface.set_buffer_transform).
+    gfx::Rect damage =
+        wl::ApplyWaylandTransform(pending_damage_region, buffer_size,
+                                  wl::ToWaylandTransform(buffer_transform_));
+    // Apply buffer_scale (wl_surface.set_buffer_scale).
+    damage = gfx::ScaleToEnclosingRect(damage, 1.f / buffer_scale_);
+    // Adjust coordinates to |viewport_src| (wp_viewport.set_source).
+    damage = wl::TranslateBoundsToParentCoordinates(damage, viewport_src);
+    // Apply viewport scale (wp_viewport.set_destination).
+    damage = gfx::ScaleToEnclosingRect(
+        damage, static_cast<float>(viewport_dst.width()) / viewport_src.width(),
+        static_cast<float>(viewport_dst.height()) / viewport_src.height());
+
+    wl_surface_damage(surface_.get(), damage.x(), damage.y(), damage.width(),
+                      damage.height());
   }
 
-  SetWindowState(new_state);
+  connection_->ScheduleFlush();
 }
 
-void WaylandSurface::Maximize() {
-  SetWindowState(PlatformWindowState::kMaximized);
+void WaylandSurface::Commit() {
+  wl_surface_commit(surface_.get());
+  connection_->ScheduleFlush();
 }
 
-void WaylandSurface::Minimize() {
-  SetWindowState(PlatformWindowState::kMinimized);
-}
-
-void WaylandSurface::Restore() {
-  DCHECK(shell_surface_);
-  SetWindowState(PlatformWindowState::kNormal);
-}
-
-PlatformWindowState WaylandSurface::GetPlatformWindowState() const {
-  return state_;
-}
-
-void WaylandSurface::SizeConstraintsChanged() {
-  // Size constraints only make sense for normal windows.
-  if (!shell_surface_)
+void WaylandSurface::SetBufferTransform(gfx::OverlayTransform transform) {
+  DCHECK(transform != gfx::OVERLAY_TRANSFORM_INVALID);
+  if (buffer_transform_ == transform)
     return;
 
-  DCHECK(delegate());
-  min_size_ = delegate()->GetMinimumSizeForWindow();
-  max_size_ = delegate()->GetMaximumSizeForWindow();
-  SetSizeConstraints();
+  buffer_transform_ = transform;
+  wl_output_transform wl_transform = wl::ToWaylandTransform(buffer_transform_);
+  wl_surface_set_buffer_transform(surface_.get(), wl_transform);
 }
 
-void WaylandSurface::HandleSurfaceConfigure(int32_t width,
-                                            int32_t height,
-                                            bool is_maximized,
-                                            bool is_fullscreen,
-                                            bool is_activated) {
-  // Store the old state to propagte state changes if Wayland decides to change
-  // the state to something else.
-  PlatformWindowState old_state = state_;
-  if (state_ == PlatformWindowState::kMinimized && !is_activated) {
-    state_ = PlatformWindowState::kMinimized;
-  } else if (is_fullscreen) {
-    state_ = PlatformWindowState::kFullScreen;
-  } else if (is_maximized) {
-    state_ = PlatformWindowState::kMaximized;
-  } else {
-    state_ = PlatformWindowState::kNormal;
+void WaylandSurface::SetBufferScale(int32_t new_scale, bool update_bounds) {
+  DCHECK_GT(new_scale, 0);
+
+  if (new_scale == buffer_scale_)
+    return;
+
+  buffer_scale_ = new_scale;
+  wl_surface_set_buffer_scale(surface_.get(), buffer_scale_);
+
+  if (!display_size_px_.IsEmpty()) {
+    gfx::Size viewport_dst =
+        gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
+    wp_viewport_set_destination(viewport(), viewport_dst.width(),
+                                viewport_dst.height());
   }
 
-  const bool state_changed = old_state != state_;
-  const bool is_normal = state_ == PlatformWindowState::kNormal;
+  connection_->ScheduleFlush();
+}
 
-  // Update state before notifying delegate.
-  const bool did_active_change = is_active_ != is_activated;
-  is_active_ = is_activated;
+void WaylandSurface::SetOpaqueRegion(const gfx::Rect& region_px) {
+  // It's important to set opaque region for opaque windows (provides
+  // optimization hint for the Wayland compositor).
+  if (!root_window_ || !root_window_->IsOpaqueWindow())
+    return;
 
-  // Rather than call SetBounds here for every configure event, just save the
-  // most recent bounds, and have WaylandConnection call ApplyPendingBounds
-  // when it has finished processing events. We may get many configure events
-  // in a row during an interactive resize, and only the last one matters.
-  //
-  // Width or height set to 0 means that we should decide on width and height by
-  // ourselves, but we don't want to set them to anything else. Use restored
-  // bounds size or the current bounds iff the current state is normal (neither
-  // maximized nor fullscreen).
-  //
-  // Note: if the browser was started with --start-fullscreen and a user exits
-  // the fullscreen mode, wayland may set the width and height to be 1. Instead,
-  // explicitly set the bounds to the current desired ones or the previous
-  // bounds.
-  if (width > 1 && height > 1) {
-    pending_bounds_dip_ = gfx::Rect(0, 0, width, height);
-  } else if (is_normal) {
-    pending_bounds_dip_.set_size(
-        gfx::ScaleToRoundedSize(GetRestoredBoundsInPixels().IsEmpty()
-                                    ? GetBounds().size()
-                                    : GetRestoredBoundsInPixels().size(),
+  wl::Object<wl_region> region(
+      wl_compositor_create_region(connection_->compositor()));
+  gfx::Rect region_dip =
+      gfx::ScaleToEnclosingRect(region_px, 1.f / buffer_scale_);
+  wl_region_add(region.get(), region_dip.x(), region_dip.y(),
+                region_dip.width(), region_dip.height());
 
-                                1.0 / buffer_scale()));
+  wl_surface_set_opaque_region(surface_.get(), region.get());
+
+  connection_->ScheduleFlush();
+}
+
+void WaylandSurface::SetViewportSource(const gfx::RectF& src_rect) {
+  if (src_rect == crop_rect_) {
+    return;
+  } else if (src_rect.IsEmpty() || src_rect == gfx::RectF{0.f, 0.f, 1.f, 1.f}) {
+    wp_viewport_set_source(viewport(), wl_fixed_from_int(-1),
+                           wl_fixed_from_int(-1), wl_fixed_from_int(-1),
+                           wl_fixed_from_int(-1));
+    return;
   }
 
-  // Store the restored bounds of current state differs from the normal state.
-  // It can be client or compositor side change from normal to something else.
-  // Thus, we must store previous bounds to restore later.
-  SetOrResetRestoredBounds();
-  ApplyPendingBounds();
-
-  if (state_changed)
-    delegate()->OnWindowStateChanged(state_);
-
-  if (did_active_change)
-    delegate()->OnActivationChanged(is_active_);
+  crop_rect_ = src_rect;
 }
 
-void WaylandSurface::OnDragEnter(const gfx::PointF& point,
-                                 std::unique_ptr<OSExchangeData> data,
-                                 int operation) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
+void WaylandSurface::SetViewportDestination(const gfx::Size& dest_size_px) {
+  if (dest_size_px == display_size_px_) {
     return;
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
-  drop_handler->OnDragEnter(
-      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), std::move(data),
-      operation);
-}
-
-int WaylandSurface::OnDragMotion(const gfx::PointF& point,
-                                 uint32_t time,
-                                 int operation) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return 0;
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
-  return drop_handler->OnDragMotion(
-      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), operation);
-}
-
-void WaylandSurface::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return;
-  drop_handler->OnDragDrop(std::move(data));
-}
-
-void WaylandSurface::OnDragLeave() {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return;
-  drop_handler->OnDragLeave();
-}
-
-void WaylandSurface::OnDragSessionClose(uint32_t dnd_action) {
-  std::move(drag_closed_callback_).Run(dnd_action);
-  connection()->event_source()->ResetPointerFlags();
-}
-
-bool WaylandSurface::OnInitialize(PlatformWindowInitProperties properties) {
-  app_id_ = properties.wm_class_class;
-  return true;
-}
-
-void WaylandSurface::TriggerStateChanges() {
-  if (!shell_surface_)
-    return;
-
-  if (state_ == PlatformWindowState::kFullScreen)
-    shell_surface_->SetFullscreen();
-  else
-    shell_surface_->UnSetFullscreen();
-
-  // Call UnSetMaximized only if current state is normal. Otherwise, if the
-  // current state is fullscreen and the previous is maximized, calling
-  // UnSetMaximized may result in wrong restored window position that clients
-  // are not allowed to know about.
-  if (state_ == PlatformWindowState::kMaximized)
-    shell_surface_->SetMaximized();
-  else if (state_ == PlatformWindowState::kNormal)
-    shell_surface_->UnSetMaximized();
-
-  if (state_ == PlatformWindowState::kMinimized)
-    shell_surface_->SetMinimized();
-
-  connection()->ScheduleFlush();
-}
-
-void WaylandSurface::SetWindowState(PlatformWindowState state) {
-  previous_state_ = state_;
-  state_ = state;
-  TriggerStateChanges();
-}
-
-WmMoveResizeHandler* WaylandSurface::AsWmMoveResizeHandler() {
-  return static_cast<WmMoveResizeHandler*>(this);
-}
-
-void WaylandSurface::SetSizeConstraints() {
-  if (min_size_.has_value())
-    shell_surface_->SetMinSize(min_size_->width(), min_size_->height());
-  if (max_size_.has_value())
-    shell_surface_->SetMaxSize(max_size_->width(), max_size_->height());
-
-  connection()->ScheduleFlush();
-}
-
-void WaylandSurface::SetOrResetRestoredBounds() {
-  // The |restored_bounds_| are used when the window gets back to normal
-  // state after it went maximized or fullscreen.  So we reset these if the
-  // window has just become normal and store the current bounds if it is
-  // either going out of normal state or simply changes the state and we don't
-  // have any meaningful value stored.
-  if (GetPlatformWindowState() == PlatformWindowState::kNormal) {
-    SetRestoredBoundsInPixels({});
-  } else if (GetRestoredBoundsInPixels().IsEmpty()) {
-    SetRestoredBoundsInPixels(GetBounds());
+  } else if (dest_size_px.IsEmpty()) {
+    wp_viewport_set_destination(viewport(), -1, -1);
   }
+  display_size_px_ = dest_size_px;
+  gfx::Size viewport_dst =
+      gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
+  wp_viewport_set_destination(viewport(), viewport_dst.width(),
+                              viewport_dst.height());
+}
+
+wl::Object<wl_subsurface> WaylandSurface::CreateSubsurface(
+    WaylandSurface* parent) {
+  DCHECK(parent);
+  wl_subcompositor* subcompositor = connection_->subcompositor();
+  DCHECK(subcompositor);
+  wl::Object<wl_subsurface> subsurface(wl_subcompositor_get_subsurface(
+      subcompositor, surface_.get(), parent->surface_.get()));
+  return subsurface;
+}
+
+// static
+void WaylandSurface::Enter(void* data,
+                           struct wl_surface* wl_surface,
+                           struct wl_output* output) {
+  if (auto* root_window = static_cast<WaylandSurface*>(data)->root_window_)
+    root_window->AddEnteredOutputId(output);
+}
+
+// static
+void WaylandSurface::Leave(void* data,
+                           struct wl_surface* wl_surface,
+                           struct wl_output* output) {
+  if (auto* root_window = static_cast<WaylandSurface*>(data)->root_window_)
+    root_window->RemoveEnteredOutputId(output);
 }
 
 }  // namespace ui

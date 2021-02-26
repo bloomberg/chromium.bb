@@ -17,8 +17,6 @@ class MediaControlsImpl;
 // buttons and sliders.
 class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
                                                 public MediaControlElementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
-
  public:
   static bool ShouldRecordDisplayStates(const HTMLMediaElement&);
 
@@ -31,7 +29,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void SetOverflowElementIsWanted(bool) final;
   void MaybeRecordDisplayed() final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   MediaControlInputElement* OverflowElementForTests() const {
     return overflow_element_;

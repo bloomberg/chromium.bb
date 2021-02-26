@@ -11,7 +11,9 @@
 #include "base/trace_event/trace_event.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -27,6 +29,44 @@ void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
       removed_headers_A->emplace_back(std::move(header));
   }
 }
+
+#if DCHECK_IS_ON()
+void CheckThrottleWillNotCauseCorsPreflight(
+    const std::set<std::string>& initial_headers,
+    const std::set<std::string>& initial_cors_exempt_headers,
+    const net::HttpRequestHeaders& headers,
+    const net::HttpRequestHeaders& cors_exempt_headers,
+    const std::vector<std::string> cors_exempt_header_list) {
+  base::flat_set<std::string> cors_exempt_header_flat_set(
+      cors_exempt_header_list);
+  for (auto& header : headers.GetHeaderVector()) {
+    if (initial_headers.find(header.key) == initial_headers.end() &&
+        !network::cors::IsCorsSafelistedHeader(header.key, header.value)) {
+      bool is_cors_exempt = cors_exempt_header_flat_set.count(header.key);
+      NOTREACHED()
+          << "Throttle added cors unsafe header " << header.key
+          << (is_cors_exempt
+                  ? " . Header is cors exempt so should have "
+                    "been added to RequestHeaders::cors_exempt_headers "
+                    "instead of "
+                    "of RequestHeaders::cors_exempt_headers."
+                  : "");
+    }
+  }
+
+  for (auto& header : cors_exempt_headers.GetHeaderVector()) {
+    if (cors_exempt_header_flat_set.count(header.key) == 0 &&
+        initial_cors_exempt_headers.find(header.key) ==
+            initial_cors_exempt_headers.end()) {
+      NOTREACHED()
+          << "Throttle added cors exempt header " << header.key
+          << " but it wasn't configured as cors exempt by the browser. See "
+             "content::StoragePartitionImpl::InitNetworkContext() and "
+             "content::ContentBrowserClient::ConfigureNetworkContextParams().";
+    }
+  }
+}
+#endif
 
 }  // namespace
 
@@ -133,6 +173,23 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->RestartWithURLResetAndFlags(additional_load_flags);
   }
 
+  void RestartWithURLResetAndFlagsNow(int additional_load_flags) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithURLResetAndFlagsNow(additional_load_flags);
+  }
+
+  void RestartWithModifiedHeadersNow(
+      const net::HttpRequestHeaders& modified_headers) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithModifiedHeadersNow(modified_headers);
+  }
+
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -173,13 +230,16 @@ ThrottlingURLLoader::StartInfo::StartInfo(
     int32_t in_request_id,
     uint32_t in_options,
     network::ResourceRequest* in_url_request,
-    scoped_refptr<base::SingleThreadTaskRunner> in_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> in_task_runner,
+    base::Optional<std::vector<std::string>> in_cors_exempt_header_list)
     : url_loader_factory(std::move(in_url_loader_factory)),
       routing_id(in_routing_id),
       request_id(in_request_id),
       options(in_options),
       url_request(*in_url_request),
-      task_runner(std::move(in_task_runner)) {}
+      task_runner(std::move(in_task_runner)) {
+  cors_exempt_header_list = std::move(in_cors_exempt_header_list);
+}
 
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
@@ -212,11 +272,14 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     network::ResourceRequest* url_request,
     network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::Optional<std::vector<std::string>> cors_exempt_header_list) {
+  DCHECK(url_request);
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
   loader->Start(std::move(factory), routing_id, request_id, options,
-                url_request, std::move(task_runner));
+                url_request, std::move(task_runner),
+                std::move(cors_exempt_header_list));
   return loader;
 }
 
@@ -224,7 +287,7 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
   if (inside_delegate_calls_ > 0) {
     // A throttle is calling into this object. In this case, delay destruction
     // of the throttles, so that throttles don't need to worry about any
-    // delegate calls may destory them synchronously.
+    // delegate calls may destroy them synchronously.
     for (auto& entry : throttles_)
       entry.delegate->Detach();
 
@@ -351,7 +414,8 @@ void ThrottlingURLLoader::Start(
     int32_t request_id,
     uint32_t options,
     network::ResourceRequest* url_request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::Optional<std::vector<std::string>> cors_exempt_header_list) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
 
@@ -362,7 +426,28 @@ void ThrottlingURLLoader::Start(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
+
+#if DCHECK_IS_ON()
+      std::set<std::string> initial_headers, initial_cors_exempt_headers;
+      if (cors_exempt_header_list) {
+        for (auto& header : url_request->headers.GetHeaderVector())
+          initial_headers.insert(header.key);
+
+        for (auto& header : url_request->cors_exempt_headers.GetHeaderVector())
+          initial_cors_exempt_headers.insert(header.key);
+      }
+#endif
+
       throttle->WillStartRequest(url_request, &throttle_deferred);
+
+#if DCHECK_IS_ON()
+      if (cors_exempt_header_list) {
+        CheckThrottleWillNotCauseCorsPreflight(
+            initial_headers, initial_cors_exempt_headers, url_request->headers,
+            url_request->cors_exempt_headers, *cors_exempt_header_list);
+      }
+#endif
+
       if (original_url_ != url_request->url) {
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
@@ -384,9 +469,9 @@ void ThrottlingURLLoader::Start(
     }
   }
 
-  start_info_ =
-      std::make_unique<StartInfo>(factory, routing_id, request_id, options,
-                                  url_request, std::move(task_runner));
+  start_info_ = std::make_unique<StartInfo>(
+      factory, routing_id, request_id, options, url_request,
+      std::move(task_runner), std::move(cors_exempt_header_list));
   if (deferred)
     deferred_stage_ = DEFERRED_START;
   else
@@ -402,10 +487,8 @@ void ThrottlingURLLoader::StartNow() {
   if (!throttle_will_start_redirect_url_.is_empty()) {
     auto first_party_url_policy =
         start_info_->url_request.update_first_party_url_on_redirect
-            ? net::URLRequest::FirstPartyURLPolicy::
-                  UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-            : net::URLRequest::FirstPartyURLPolicy::
-                  NEVER_CHANGE_FIRST_PARTY_URL;
+            ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+            : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
 
     net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         start_info_->url_request.method, start_info_->url_request.url,
@@ -436,23 +519,6 @@ void ThrottlingURLLoader::StartNow() {
         net::HTTP_TEMPORARY_REDIRECT,
         throttle_will_start_redirect_url_.spec().c_str());
 
-    // This is only needed when CORS is running in the renderer.
-    // TODO(crbug.com/1001450): Remove following code once OOR-CORS is fully
-    // enabled.
-    std::string http_origin;
-    if (start_info_->url_request.headers.GetHeader("Origin", &http_origin)) {
-      // If this redirect is used in a cross-origin request, add CORS headers
-      // to make sure that the redirect gets through. Note that the
-      // destination URL is still subject to the usual CORS policy, i.e. the
-      // resource will only be available to web pages if the server serves the
-      // response with the required CORS response headers.
-      header_string += base::StringPrintf(
-          "\n"
-          "Access-Control-Allow-Origin: %s\n"
-          "Access-Control-Allow-Credentials: true",
-          http_origin.c_str());
-    }
-
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(header_string));
     response_head->encoded_data_length = header_string.size();
@@ -466,8 +532,9 @@ void ThrottlingURLLoader::StartNow() {
 
   DCHECK(start_info_->url_loader_factory);
   start_info_->url_loader_factory->CreateLoaderAndStart(
-      url_loader_.BindNewPipeAndPassReceiver(), start_info_->routing_id,
-      start_info_->request_id, start_info_->options, start_info_->url_request,
+      url_loader_.BindNewPipeAndPassReceiver(start_info_->task_runner),
+      start_info_->routing_id, start_info_->request_id, start_info_->options,
+      start_info_->url_request,
       client_receiver_.BindNewPipeAndPassRemote(start_info_->task_runner),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
 
@@ -534,6 +601,21 @@ void ThrottlingURLLoader::RestartWithURLResetAndFlags(
   has_pending_restart_ = true;
 }
 
+void ThrottlingURLLoader::RestartWithURLResetAndFlagsNow(
+    int additional_load_flags) {
+  RestartWithURLResetAndFlags(additional_load_flags);
+  if (!did_receive_response_)
+    RestartWithFlagsNow();
+}
+
+void ThrottlingURLLoader::RestartWithModifiedHeadersNow(
+    const net::HttpRequestHeaders& modified_headers) {
+  modified_headers_.MergeFrom(modified_headers);
+  // While not actually redirecting, the mechanism here is very similar to an
+  // internal redirect to the same url.
+  FollowRedirectForcingRestart();
+}
+
 void ThrottlingURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
@@ -541,6 +623,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
   DCHECK(deferring_throttles_.empty());
   TRACE_EVENT1("loading", "ThrottlingURLLoader::OnReceiveResponse", "url",
                response_url_.possibly_invalid_spec());
+  did_receive_response_ = true;
 
   // Dispatch BeforeWillProcessResponse().
   if (!throttles_.empty()) {
@@ -611,6 +694,19 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       throttle->WillRedirectRequest(
           &redirect_info_copy, *response_head, &throttle_deferred,
           &removed_headers, &modified_headers, &modified_cors_exempt_headers);
+
+      if (!weak_ptr)
+        return;
+
+#if DCHECK_IS_ON()
+      if (start_info_->cors_exempt_header_list) {
+        CheckThrottleWillNotCauseCorsPreflight(
+            std::set<std::string>(), std::set<std::string>(), modified_headers,
+            modified_cors_exempt_headers,
+            *start_info_->cors_exempt_header_list);
+      }
+#endif
+
       if (redirect_info_copy.new_url != redirect_info.new_url) {
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
@@ -618,8 +714,6 @@ void ThrottlingURLLoader::OnReceiveRedirect(
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
       }
 
-      if (!weak_ptr)
-        return;
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
 
@@ -865,8 +959,10 @@ void ThrottlingURLLoader::InterceptResponse(
         original_client_receiver) {
   response_intercepted_ = true;
 
-  if (original_loader)
+  if (original_loader) {
+    url_loader_->ResumeReadingBodyFromNet();
     *original_loader = url_loader_.Unbind();
+  }
   url_loader_.Bind(std::move(new_loader));
 
   if (original_client_receiver)

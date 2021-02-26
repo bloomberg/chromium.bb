@@ -8,7 +8,10 @@
 #ifndef GrRecordingContextPriv_DEFINED
 #define GrRecordingContextPriv_DEFINED
 
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
+#include "src/gpu/text/GrSDFTOptions.h"
+
+class SkDeferredDisplayList;
 
 /** Class that exposes methods to GrRecordingContext that are only intended for use internal to
     Skia. This class is purely a privileged window into GrRecordingContext. It should never have
@@ -27,13 +30,10 @@ public:
 
     GrImageContext* asImageContext() { return fContext->asImageContext(); }
     GrRecordingContext* asRecordingContext() { return fContext->asRecordingContext(); }
-    GrContext* asDirectContext() { return fContext->asDirectContext(); }
 
     // from GrImageContext
     GrProxyProvider* proxyProvider() { return fContext->proxyProvider(); }
     const GrProxyProvider* proxyProvider() const { return fContext->proxyProvider(); }
-
-    bool abandoned() const { return fContext->abandoned(); }
 
     /** This is only useful for debug purposes */
     SkDEBUGCODE(GrSingleOwner* singleOwner() const { return fContext->singleOwner(); } )
@@ -41,7 +41,7 @@ public:
     // from GrRecordingContext
     GrDrawingManager* drawingManager() { return fContext->drawingManager(); }
 
-    GrOpMemoryPool* opMemoryPool() { return fContext->arenas().opMemoryPool(); }
+    GrMemoryPool* opMemoryPool() { return fContext->arenas().opMemoryPool(); }
     SkArenaAlloc* recordTimeAllocator() { return fContext->arenas().recordTimeAllocator(); }
     GrRecordingContext::Arenas arenas() { return fContext->arenas(); }
 
@@ -57,6 +57,10 @@ public:
 
     GrTextBlobCache* getTextBlobCache() { return fContext->getTextBlobCache(); }
 
+    GrThreadSafeCache* threadSafeCache() { return fContext->threadSafeCache(); }
+
+    void moveRenderTasksToDDL(SkDeferredDisplayList*);
+
     /**
      * Registers an object for flush-related callbacks. (See GrOnFlushCallbackObject.)
      *
@@ -66,10 +70,6 @@ public:
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
     GrAuditTrail* auditTrail() { return fContext->auditTrail(); }
-
-    // CONTEXT TODO: remove this backdoor
-    // In order to make progress we temporarily need a way to break CL impasses.
-    GrContext* backdoor();
 
 #if GR_TEST_UTILS
     // Used by tests that intentionally exercise codepaths that print warning messages, in order to
@@ -102,10 +102,19 @@ public:
         return &fContext->fStats;
     }
 
+    GrSDFTOptions SDFTOptions() const {
+        return {this->options().fMinDistanceFieldFontSize, this->options().fGlyphsAsPathsFontSize};
+    }
+
+    /**
+     * Create a GrRecordingContext without a resource cache
+     */
+    static sk_sp<GrRecordingContext> MakeDDL(sk_sp<GrContextThreadSafeProxy>);
+
 private:
     explicit GrRecordingContextPriv(GrRecordingContext* context) : fContext(context) {}
-    GrRecordingContextPriv(const GrRecordingContextPriv&); // unimpl
-    GrRecordingContextPriv& operator=(const GrRecordingContextPriv&); // unimpl
+    GrRecordingContextPriv(const GrRecordingContextPriv&) = delete;
+    GrRecordingContextPriv& operator=(const GrRecordingContextPriv&) = delete;
 
     // No taking addresses of this type.
     const GrRecordingContextPriv* operator&() const;
@@ -118,7 +127,7 @@ private:
 
 inline GrRecordingContextPriv GrRecordingContext::priv() { return GrRecordingContextPriv(this); }
 
-inline const GrRecordingContextPriv GrRecordingContext::priv () const {
+inline const GrRecordingContextPriv GrRecordingContext::priv () const {  // NOLINT(readability-const-return-type)
     return GrRecordingContextPriv(const_cast<GrRecordingContext*>(this));
 }
 

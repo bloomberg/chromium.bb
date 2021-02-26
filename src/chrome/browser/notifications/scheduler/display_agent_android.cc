@@ -26,7 +26,7 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 notifications::UserActionHandler* GetUserActionHandler() {
-  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedRegularProfileKey();
   DCHECK(profile_key);
   auto* service = NotificationScheduleServiceFactory::GetForKey(profile_key);
   DCHECK(service);
@@ -83,7 +83,7 @@ void DisplayAgentAndroid::ShowNotification(
   for (const auto& icon : notification_data->icons) {
     Java_DisplayAgent_addIcon(env, java_notification_data,
                               static_cast<int>(icon.first /*IconType*/),
-                              gfx::ConvertToJavaBitmap(&icon.second.bitmap),
+                              gfx::ConvertToJavaBitmap(icon.second.bitmap),
                               static_cast<jint>(icon.second.resource_id));
   }
 

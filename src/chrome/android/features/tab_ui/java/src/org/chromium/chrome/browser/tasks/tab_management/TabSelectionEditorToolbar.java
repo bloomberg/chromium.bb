@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.widget.Button;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.PluralsRes;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.tab_ui.R;
@@ -26,6 +27,7 @@ import java.util.List;
 class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
     private static final List<Integer> sEmptyIntegerList = Collections.emptyList();
     private Button mGroupButton;
+    private Integer mActionButtonDescriptionResourceId;
     @ColorInt
     private int mBackgroundColor;
     private int mActionButtonEnablingThreshold = 2;
@@ -51,13 +53,25 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
         navigationIconDrawable.setTint(lightIconColorList);
 
         setNavigationIcon(navigationIconDrawable);
-        setNavigationContentDescription(R.string.close);
+        setNavigationContentDescription(TabUiFeatureUtilities.isLaunchPolishEnabled()
+                        ? R.string.accessibility_tab_selection_editor_back_button
+                        : R.string.close);
     }
 
     @Override
     public void onSelectionStateChange(List<Integer> selectedItems) {
         super.onSelectionStateChange(selectedItems);
-        mGroupButton.setEnabled(selectedItems.size() >= mActionButtonEnablingThreshold);
+        int selectedItemsSize = selectedItems.size();
+        boolean enabled = selectedItemsSize >= mActionButtonEnablingThreshold;
+        mGroupButton.setEnabled(enabled);
+
+        String contentDescription = null;
+        if (enabled && mActionButtonDescriptionResourceId != null) {
+            contentDescription = getContext().getResources().getQuantityString(
+                    mActionButtonDescriptionResourceId, selectedItemsSize, selectedItemsSize);
+        }
+
+        mGroupButton.setContentDescription(contentDescription);
     }
 
     @Override
@@ -127,5 +141,18 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
      */
     public void setActionButtonEnablingThreshold(int threshold) {
         mActionButtonEnablingThreshold = threshold;
+    }
+
+    /**
+     * Set ContentDescription template for action button.
+     * @param template The template to use.
+     */
+    public void setActionButtonDescriptionResourceId(@PluralsRes int template) {
+        String expectedResourceTypeName = "plurals";
+        assert expectedResourceTypeName.equals(
+                getContext().getResources().getResourceTypeName(template))
+            : "Quantity strings (plurals) with one integer format argument is needed";
+
+        mActionButtonDescriptionResourceId = template;
     }
 }

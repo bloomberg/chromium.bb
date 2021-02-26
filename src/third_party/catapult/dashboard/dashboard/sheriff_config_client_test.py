@@ -22,12 +22,11 @@ _SAMPLE_LAYOUT = ('{ "my_test_suite/my_test": ["Foreground", '
                   '"Pretty Name 1"],"my_test_suite/my_other_test": '
                   ' ["Foreground", "Pretty Name 2"]}')
 
-
 RECENT_REV = speed_releasing.CHROMIUM_MILESTONES[
     speed_releasing.CURRENT_MILESTONE][0] + 42
 
 
-@mock.patch.object(sheriff_config_client.SheriffConfigClient, '__init__',
+@mock.patch.object(sheriff_config_client.SheriffConfigClient, '_InitSession',
                    mock.MagicMock(return_value=None))
 class SheriffConfigClientTest(testing_common.TestCase):
 
@@ -69,6 +68,7 @@ class SheriffConfigClientTest(testing_common.TestCase):
             "name": "Public Team1",
             "rotation_url": "https://some/url",
             "notification_email": "public@mail.com",
+            "monorail_project_id": "non-chromium",
             "bug_labels": [
               "Lable1",
               "Lable2"
@@ -76,15 +76,7 @@ class SheriffConfigClientTest(testing_common.TestCase):
             "bug_components": [
               "foo>bar"
             ],
-            "visibility": "PUBLIC",
-            "patterns": [
-              {
-                "glob": "Foo2/*/Bar2/*"
-              },
-              {
-                "regex": ".*"
-              }
-            ]
+            "visibility": "PUBLIC"
           }
         }
       ]
@@ -101,6 +93,8 @@ class SheriffConfigClientTest(testing_common.TestCase):
             bug_labels=['Lable1', 'Lable2'],
             bug_components=['foo>bar'],
             auto_triage_enable=False,
+            auto_bisect_enable=False,
+            monorail_project_id='non-chromium',
         ),
     ]
     self.assertEqual(clt.Match('Foo2/a/Bar2/b'), (expected, None))
@@ -116,6 +110,7 @@ class SheriffConfigClientTest(testing_common.TestCase):
           "subscription": {
             "name": "Public Team1",
             "rotation_url": "https://some/url",
+            "monorail_project_id": "non-chromium",
             "notification_email": "public@mail.com",
             "bug_labels": [
               "Lable1",
@@ -124,15 +119,7 @@ class SheriffConfigClientTest(testing_common.TestCase):
             "bug_components": [
               "foo>bar"
             ],
-            "visibility": "PUBLIC",
-            "patterns": [
-              {
-                "glob": "Foo2/*/Bar2/*"
-              },
-              {
-                "regex": ".*"
-              }
-            ]
+            "visibility": "PUBLIC"
           }
         }
       ]
@@ -149,6 +136,8 @@ class SheriffConfigClientTest(testing_common.TestCase):
             bug_labels=['Lable1', 'Lable2'],
             bug_components=['foo>bar'],
             auto_triage_enable=False,
+            auto_bisect_enable=False,
+            monorail_project_id='non-chromium',
         ),
     ]
     self.assertEqual(clt.List(), (expected, None))

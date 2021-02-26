@@ -46,7 +46,7 @@ class EnrollmentScreenView {
                                            const std::string& location) = 0;
   };
 
-  constexpr static StaticOobeScreenId kScreenId{"oauth-enrollment"};
+  constexpr static StaticOobeScreenId kScreenId{"enterprise-enrollment"};
 
   virtual ~EnrollmentScreenView() {}
 
@@ -54,10 +54,9 @@ class EnrollmentScreenView {
   virtual void SetEnrollmentConfig(Controller* controller,
                                    const policy::EnrollmentConfig& config) = 0;
 
-  // Sets the enterprise domain and the device type to be shown for the user.
-  virtual void SetEnterpriseDomainAndDeviceType(
-      const std::string& domain,
-      const base::string16& device_type) = 0;
+  // Sets the enterprise manager and the device type to be shown for the user.
+  virtual void SetEnterpriseDomainInfo(const std::string& manager,
+                                       const base::string16& device_type) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;
@@ -90,7 +89,7 @@ class EnrollmentScreenView {
   // Show non-authentication error.
   virtual void ShowOtherError(EnterpriseEnrollmentHelper::OtherError error) = 0;
 
-  // Update the UI to report the |status| of the enrollment procedure.
+  // Update the UI to report the `status` of the enrollment procedure.
   virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) = 0;
 };
 

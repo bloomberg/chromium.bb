@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
@@ -39,6 +39,10 @@ R AbortCallback(base::WeakPtr<IndexedDBTransaction> transaction) {
   return R::Struct::NewErrorResult(
       blink::mojom::IDBError::New(error.code(), error.message()));
 }
+
+template <>
+mojo::PendingReceiver<blink::mojom::IDBDatabaseGetAllResultSink> AbortCallback(
+    base::WeakPtr<IndexedDBTransaction> transaction);
 
 template <typename R>
 base::OnceCallback<R()> CreateAbortCallback(

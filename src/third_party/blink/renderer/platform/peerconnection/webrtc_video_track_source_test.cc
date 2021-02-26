@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "media/base/video_frame.h"
@@ -40,9 +40,16 @@ class WebRtcVideoTrackSourceTest
   WebRtcVideoTrackSourceTest()
       : track_source_(new rtc::RefCountedObject<WebRtcVideoTrackSource>(
             /*is_screencast=*/false,
-            /*needs_denoising=*/absl::nullopt)) {
+            /*needs_denoising=*/absl::nullopt,
+            base::BindRepeating(&WebRtcVideoTrackSourceTest::ProcessFeedback,
+                                base::Unretained(this)))) {
     track_source_->AddOrUpdateSink(&mock_sink_, rtc::VideoSinkWants());
   }
+
+  void ProcessFeedback(const media::VideoFrameFeedback& feedback) {
+    feedback_ = feedback;
+  }
+
   ~WebRtcVideoTrackSourceTest() override {
     track_source_->RemoveSink(&mock_sink_);
   }
@@ -56,6 +63,20 @@ class WebRtcVideoTrackSourceTest
     track_source_->OnFrameCaptured(frame);
   }
 
+  void SendTestFrameAndVerifyFeedback(
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      media::VideoFrame::StorageType storage_type,
+      int max_pixels,
+      float max_framerate) {
+    scoped_refptr<media::VideoFrame> frame =
+        CreateTestFrame(coded_size, visible_rect, natural_size, storage_type);
+    track_source_->OnFrameCaptured(frame);
+    EXPECT_EQ(feedback_.max_pixels, max_pixels);
+    EXPECT_EQ(feedback_.max_framerate_fps, max_framerate);
+  }
+
   void SendTestFrameWithUpdateRect(
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -65,10 +86,8 @@ class WebRtcVideoTrackSourceTest
       media::VideoFrame::StorageType storage_type) {
     scoped_refptr<media::VideoFrame> frame =
         CreateTestFrame(coded_size, visible_rect, natural_size, storage_type);
-    frame->metadata()->SetInteger(media::VideoFrameMetadata::CAPTURE_COUNTER,
-                                  capture_counter);
-    frame->metadata()->SetRect(media::VideoFrameMetadata::CAPTURE_UPDATE_RECT,
-                               update_rect);
+    frame->metadata()->capture_counter = capture_counter;
+    frame->metadata()->capture_update_rect = update_rect;
     track_source_->OnFrameCaptured(frame);
   }
 
@@ -114,6 +133,7 @@ class WebRtcVideoTrackSourceTest
  protected:
   MockVideoSink mock_sink_;
   scoped_refptr<WebRtcVideoTrackSource> track_source_;
+  media::VideoFrameFeedback feedback_;
 };
 
 TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo640360) {
@@ -130,6 +150,24 @@ TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo640360) {
         EXPECT_EQ(kNaturalSize.height(), frame.height());
       }));
   SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type);
+}
+
+TEST_P(WebRtcVideoTrackSourceTest, SetsFeedback) {
+  const gfx::Size kCodedSize(640, 480);
+  const gfx::Rect kVisibleRect(0, 60, 640, 360);
+  const gfx::Size kNaturalSize(640, 360);
+  const gfx::Size kScaleToSize = gfx::Size(320, 180);
+  const float k5Fps = 5.0;
+  const media::VideoFrame::StorageType storage_type = GetParam();
+
+  rtc::VideoSinkWants sink_wants;
+  sink_wants.max_pixel_count = kScaleToSize.GetArea();
+  sink_wants.max_framerate_fps = static_cast<int>(k5Fps);
+  track_source_->SetSinkWantsForTesting(sink_wants);
+
+  EXPECT_CALL(mock_sink_, OnFrame(_));
+  SendTestFrameAndVerifyFeedback(kCodedSize, kVisibleRect, kNaturalSize,
+                                 storage_type, kScaleToSize.GetArea(), k5Fps);
 }
 
 TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo320320) {

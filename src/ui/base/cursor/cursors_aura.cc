@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -22,6 +23,7 @@
 #endif
 
 namespace ui {
+
 namespace {
 
 struct HotPoint {
@@ -40,8 +42,6 @@ struct CursorSizeData {
   const CursorSize id;
   const CursorData* cursors;
   const int length;
-  const CursorData* animated_cursors;
-  const int animated_length;
 };
 
 const CursorData kNormalCursors[] = {
@@ -125,6 +125,8 @@ const CursorData kNormalCursors[] = {
      {24, 23}},
     {mojom::CursorType::kGrab, IDR_AURA_CURSOR_GRAB, {8, 5}, {16, 10}},
     {mojom::CursorType::kGrabbing, IDR_AURA_CURSOR_GRABBING, {9, 9}, {18, 18}},
+    {mojom::CursorType::kWait, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
+    {mojom::CursorType::kProgress, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
 };
 
 const CursorData kLargeCursors[] = {
@@ -231,20 +233,12 @@ const CursorData kLargeCursors[] = {
      IDR_AURA_CURSOR_BIG_GRABBING,
      {20, 12},
      {40, 24}},
-};
-
-const CursorData kAnimatedCursors[] = {
-    {mojom::CursorType::kWait, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
-    {mojom::CursorType::kProgress, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
+    // TODO(https://crbug.com/336867): create IDR_AURA_CURSOR_BIG_THROBBER.
 };
 
 const CursorSizeData kCursorSizes[] = {
-    {CursorSize::kNormal, kNormalCursors, base::size(kNormalCursors),
-     kAnimatedCursors, base::size(kAnimatedCursors)},
-    {CursorSize::kLarge, kLargeCursors, base::size(kLargeCursors),
-     // TODO(yoshiki): Replace animated cursors with big assets.
-     // crbug.com/247254
-     kAnimatedCursors, base::size(kAnimatedCursors)},
+    {CursorSize::kNormal, kNormalCursors, base::size(kNormalCursors)},
+    {CursorSize::kLarge, kLargeCursors, base::size(kLargeCursors)},
 };
 
 const CursorSizeData* GetCursorSizeByType(CursorSize cursor_size) {
@@ -282,120 +276,6 @@ bool SearchTable(const CursorData* table,
 
 }  // namespace
 
-const char* CursorCssNameFromId(mojom::CursorType id) {
-  switch (id) {
-    case mojom::CursorType::kMiddlePanning:
-      return "all-scroll";
-    case mojom::CursorType::kMiddlePanningVertical:
-      return "v-scroll";
-    case mojom::CursorType::kMiddlePanningHorizontal:
-      return "h-scroll";
-    case mojom::CursorType::kEastPanning:
-      return "e-resize";
-    case mojom::CursorType::kNorthPanning:
-      return "n-resize";
-    case mojom::CursorType::kNorthEastPanning:
-      return "ne-resize";
-    case mojom::CursorType::kNorthWestPanning:
-      return "nw-resize";
-    case mojom::CursorType::kSouthPanning:
-      return "s-resize";
-    case mojom::CursorType::kSouthEastPanning:
-      return "se-resize";
-    case mojom::CursorType::kSouthWestPanning:
-      return "sw-resize";
-    case mojom::CursorType::kWestPanning:
-      return "w-resize";
-    case mojom::CursorType::kNone:
-      return "none";
-    case mojom::CursorType::kGrab:
-      return "grab";
-    case mojom::CursorType::kGrabbing:
-      return "grabbing";
-    case mojom::CursorType::kNull:
-      return "left_ptr";
-    case mojom::CursorType::kPointer:
-      return "left_ptr";
-    case mojom::CursorType::kMove:
-      // Returning "move" is the correct thing here, but Blink doesn't
-      // make a distinction between move and all-scroll.  Other
-      // platforms use a cursor more consistent with all-scroll, so
-      // use that.
-      return "all-scroll";
-    case mojom::CursorType::kCross:
-      return "crosshair";
-    case mojom::CursorType::kHand:
-      return "pointer";
-    case mojom::CursorType::kIBeam:
-      return "text";
-    case mojom::CursorType::kProgress:
-      return "progress";
-    case mojom::CursorType::kWait:
-      return "wait";
-    case mojom::CursorType::kHelp:
-      return "help";
-    case mojom::CursorType::kEastResize:
-      return "e-resize";
-    case mojom::CursorType::kNorthResize:
-      return "n-resize";
-    case mojom::CursorType::kNorthEastResize:
-      return "ne-resize";
-    case mojom::CursorType::kNorthWestResize:
-      return "nw-resize";
-    case mojom::CursorType::kSouthResize:
-      return "s-resize";
-    case mojom::CursorType::kSouthEastResize:
-      return "se-resize";
-    case mojom::CursorType::kSouthWestResize:
-      return "sw-resize";
-    case mojom::CursorType::kWestResize:
-      return "w-resize";
-    case mojom::CursorType::kNorthSouthResize:
-      return "ns-resize";
-    case mojom::CursorType::kEastWestResize:
-      return "ew-resize";
-    case mojom::CursorType::kColumnResize:
-      return "col-resize";
-    case mojom::CursorType::kRowResize:
-      return "row-resize";
-    case mojom::CursorType::kNorthEastSouthWestResize:
-      return "nesw-resize";
-    case mojom::CursorType::kNorthWestSouthEastResize:
-      return "nwse-resize";
-    case mojom::CursorType::kVerticalText:
-      return "vertical-text";
-    case mojom::CursorType::kZoomIn:
-      return "zoom-in";
-    case mojom::CursorType::kZoomOut:
-      return "zoom-out";
-    case mojom::CursorType::kCell:
-      return "cell";
-    case mojom::CursorType::kContextMenu:
-      return "context-menu";
-    case mojom::CursorType::kAlias:
-      return "alias";
-    case mojom::CursorType::kNoDrop:
-      return "no-drop";
-    case mojom::CursorType::kCopy:
-      return "copy";
-    case mojom::CursorType::kNotAllowed:
-      return "not-allowed";
-    case mojom::CursorType::kDndNone:
-      return "dnd-none";
-    case mojom::CursorType::kDndMove:
-      return "dnd-move";
-    case mojom::CursorType::kDndCopy:
-      return "dnd-copy";
-    case mojom::CursorType::kDndLink:
-      return "dnd-link";
-    case mojom::CursorType::kCustom:
-      NOTREACHED();
-      return "left_ptr";
-  }
-  NOTREACHED() << "Case not handled for " << static_cast<int>(id);
-  return "left_ptr";
-}
-
 bool GetCursorDataFor(CursorSize cursor_size,
                       mojom::CursorType id,
                       float scale_factor,
@@ -412,25 +292,6 @@ bool GetCursorDataFor(CursorSize cursor_size,
   DCHECK(cursor_set);
   return SearchTable(cursor_set->cursors, cursor_set->length, id, scale_factor,
                      resource_id, point);
-}
-
-bool GetAnimatedCursorDataFor(CursorSize cursor_size,
-                              mojom::CursorType id,
-                              float scale_factor,
-                              int* resource_id,
-                              gfx::Point* point) {
-  const CursorSizeData* cursor_set = GetCursorSizeByType(cursor_size);
-  if (cursor_set &&
-      SearchTable(cursor_set->animated_cursors, cursor_set->animated_length, id,
-                  scale_factor, resource_id, point)) {
-    return true;
-  }
-
-  // Falls back to the default cursor set.
-  cursor_set = GetCursorSizeByType(ui::CursorSize::kNormal);
-  DCHECK(cursor_set);
-  return SearchTable(cursor_set->animated_cursors, cursor_set->animated_length,
-                     id, scale_factor, resource_id, point);
 }
 
 SkBitmap GetDefaultBitmap(const Cursor& cursor) {

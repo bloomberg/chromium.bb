@@ -116,11 +116,10 @@ static int vaapi_encode_h265_add_nal(AVCodecContext *avctx,
                                      CodedBitstreamFragment *au,
                                      void *nal_unit)
 {
-    VAAPIEncodeH265Context *priv = avctx->priv_data;
     H265RawNALUnitHeader *header = nal_unit;
     int err;
 
-    err = ff_cbs_insert_unit_content(priv->cbc, au, -1,
+    err = ff_cbs_insert_unit_content(au, -1,
                                      header->nal_unit_type, nal_unit, NULL);
     if (err < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to add NAL unit: "
@@ -159,7 +158,7 @@ static int vaapi_encode_h265_write_sequence_header(AVCodecContext *avctx,
 
     err = vaapi_encode_h265_write_access_unit(avctx, data, data_len, au);
 fail:
-    ff_cbs_fragment_reset(priv->cbc, au);
+    ff_cbs_fragment_reset(au);
     return err;
 }
 
@@ -185,7 +184,7 @@ static int vaapi_encode_h265_write_slice_header(AVCodecContext *avctx,
 
     err = vaapi_encode_h265_write_access_unit(avctx, data, data_len, au);
 fail:
-    ff_cbs_fragment_reset(priv->cbc, au);
+    ff_cbs_fragment_reset(au);
     return err;
 }
 
@@ -242,7 +241,7 @@ static int vaapi_encode_h265_write_extra_header(AVCodecContext *avctx,
         if (err < 0)
             goto fail;
 
-        ff_cbs_fragment_reset(priv->cbc, au);
+        ff_cbs_fragment_reset(au);
 
         *type = VAEncPackedHeaderRawData;
         return 0;
@@ -251,7 +250,7 @@ static int vaapi_encode_h265_write_extra_header(AVCodecContext *avctx,
     }
 
 fail:
-    ff_cbs_fragment_reset(priv->cbc, au);
+    ff_cbs_fragment_reset(au);
     return err;
 }
 
@@ -345,7 +344,7 @@ static int vaapi_encode_h265_init_sequence_params(AVCodecContext *avctx)
 
         level = ff_h265_guess_level(ptl, avctx->bit_rate,
                                     ctx->surface_width, ctx->surface_height,
-                                    ctx->nb_slices, 1, 1,
+                                    ctx->nb_slices, ctx->tile_rows, ctx->tile_cols,
                                     (ctx->b_per_p > 0) + 1);
         if (level) {
             av_log(avctx, AV_LOG_VERBOSE, "Using level %s.\n", level->name);
@@ -556,8 +555,41 @@ static int vaapi_encode_h265_init_sequence_params(AVCodecContext *avctx)
     pps->cu_qp_delta_enabled_flag = (ctx->va_rc_mode != VA_RC_CQP);
     pps->diff_cu_qp_delta_depth   = 0;
 
-    pps->pps_loop_filter_across_slices_enabled_flag = 1;
+    if (ctx->tile_rows && ctx->tile_cols) {
+        int uniform_spacing;
 
+        pps->tiles_enabled_flag      = 1;
+        pps->num_tile_columns_minus1 = ctx->tile_cols - 1;
+        pps->num_tile_rows_minus1    = ctx->tile_rows - 1;
+
+        // Test whether the spacing provided matches the H.265 uniform
+        // spacing, and set the flag if it does.
+        uniform_spacing = 1;
+        for (i = 0; i <= pps->num_tile_columns_minus1 &&
+                    uniform_spacing; i++) {
+            if (ctx->col_width[i] !=
+                (i + 1) * ctx->slice_block_cols / ctx->tile_cols -
+                 i      * ctx->slice_block_cols / ctx->tile_cols)
+                uniform_spacing = 0;
+        }
+        for (i = 0; i <= pps->num_tile_rows_minus1 &&
+                    uniform_spacing; i++) {
+            if (ctx->row_height[i] !=
+                (i + 1) * ctx->slice_block_rows / ctx->tile_rows -
+                 i      * ctx->slice_block_rows / ctx->tile_rows)
+                uniform_spacing = 0;
+        }
+        pps->uniform_spacing_flag = uniform_spacing;
+
+        for (i = 0; i <= pps->num_tile_columns_minus1; i++)
+            pps->column_width_minus1[i] = ctx->col_width[i] - 1;
+        for (i = 0; i <= pps->num_tile_rows_minus1; i++)
+            pps->row_height_minus1[i]   = ctx->row_height[i] - 1;
+
+        pps->loop_filter_across_tiles_enabled_flag = 1;
+    }
+
+    pps->pps_loop_filter_across_slices_enabled_flag = 1;
 
     // Fill VAAPI parameter buffers.
 
@@ -665,6 +697,13 @@ static int vaapi_encode_h265_init_sequence_params(AVCodecContext *avctx)
             .no_output_of_prior_pics_flag   = 0,
         },
     };
+
+    if (pps->tiles_enabled_flag) {
+        for (i = 0; i <= vpic->num_tile_rows_minus1; i++)
+            vpic->row_height_minus1[i]   = pps->row_height_minus1[i];
+        for (i = 0; i <= vpic->num_tile_columns_minus1; i++)
+            vpic->column_width_minus1[i] = pps->column_width_minus1[i];
+    }
 
     return 0;
 }
@@ -1114,6 +1153,10 @@ static const VAAPIEncodeProfile vaapi_encode_h265_profiles[] = {
     { FF_PROFILE_HEVC_MAIN_10, 10, 3, 1, 1, VAProfileHEVCMain10     },
     { FF_PROFILE_HEVC_REXT,    10, 3, 1, 1, VAProfileHEVCMain10     },
 #endif
+#if VA_CHECK_VERSION(1, 2, 0)
+    { FF_PROFILE_HEVC_REXT,     8, 3, 1, 0, VAProfileHEVCMain422_10 },
+    { FF_PROFILE_HEVC_REXT,    10, 3, 1, 0, VAProfileHEVCMain422_10 },
+#endif
     { FF_PROFILE_UNKNOWN }
 };
 
@@ -1188,7 +1231,7 @@ static av_cold int vaapi_encode_h265_close(AVCodecContext *avctx)
 {
     VAAPIEncodeH265Context *priv = avctx->priv_data;
 
-    ff_cbs_fragment_free(priv->cbc, &priv->current_access_unit);
+    ff_cbs_fragment_free(&priv->current_access_unit);
     ff_cbs_close(&priv->cbc);
 
     return ff_vaapi_encode_close(avctx);
@@ -1257,6 +1300,10 @@ static const AVOption vaapi_encode_h265_options[] = {
       { .i64 = SEI_MASTERING_DISPLAY | SEI_CONTENT_LIGHT_LEVEL },
       INT_MIN, INT_MAX, FLAGS, "sei" },
 
+    { "tiles", "Tile columns x rows",
+      OFFSET(common.tile_cols), AV_OPT_TYPE_IMAGE_SIZE,
+      { .str = NULL }, 0, 0, FLAGS },
+
     { NULL },
 };
 
@@ -1287,11 +1334,11 @@ AVCodec ff_hevc_vaapi_encoder = {
     .id             = AV_CODEC_ID_HEVC,
     .priv_data_size = sizeof(VAAPIEncodeH265Context),
     .init           = &vaapi_encode_h265_init,
-    .send_frame     = &ff_vaapi_encode_send_frame,
     .receive_packet = &ff_vaapi_encode_receive_packet,
     .close          = &vaapi_encode_h265_close,
     .priv_class     = &vaapi_encode_h265_class,
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .defaults       = vaapi_encode_h265_defaults,
     .pix_fmts = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_VAAPI,

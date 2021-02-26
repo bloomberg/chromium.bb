@@ -4,7 +4,9 @@
 
 const {assert} = chai;
 
-import * as Color from '../../../../front_end/common/Color.js';
+import * as Common from '../../../../front_end/common/common.js';
+
+const Color = Common.Color;
 
 describe('Color', () => {
   it('can be instantiated without issues', () => {
@@ -41,16 +43,6 @@ describe('Color', () => {
     assert.deepEqual(hsva, [0, 0, 0.5, 0.5], 'HSVA was not calculated correctly');
   });
 
-  it('is able to return the luminance of an RGBA value with the RGB values more than 0.03928', () => {
-    const lum = Color.Color.luminance([0.5, 0.5, 0.5, 0.5]);
-    assert.strictEqual(lum, 0.21404114048223255, 'luminance was not calculated correctly');
-  });
-
-  it('is able to return the luminance of an RGBA value with the RGB values less than 0.03928', () => {
-    const lum = Color.Color.luminance([0.03927, 0.03927, 0.03927, 0.5]);
-    assert.strictEqual(lum, 0.003039473684210526, 'luminance was not calculated correctly');
-  });
-
   it('is able to return a lighter luminance according to a given contrast value', () => {
     const result = Color.Color.desiredLuminance(0.2, 2, true);
     assert.strictEqual(result, 0.45, 'luminance was not calculated correctly');
@@ -70,21 +62,6 @@ describe('Color', () => {
     const color = new Color.Color([0.5, 0.5, 0.5, 0.5], 'testFormat', 'testColor');
     const result = color.canonicalHSLA();
     assert.deepEqual(result, [0, 0, 50, 0.5], 'canonical HSLA was not calculated correctly');
-  });
-
-  it('is able to calculate the contrast ratio between two colors', () => {
-    const firstColor = [1, 0, 0, 1];
-    const secondColor = [0, 0, 1, 1];
-    const contrastRatio = Color.Color.calculateContrastRatio(firstColor, secondColor);
-    assert.strictEqual(contrastRatio, 2.148936170212766, 'contrast ratio was not calculated correctly');
-  });
-
-  it('is able to blend two colors according to alpha blending', () => {
-    const firstColor = [1, 0, 0, 1];
-    const secondColor = [0, 0, 1, 1];
-    const result: number[] = [];
-    Color.Color.blendColors(firstColor, secondColor, result);
-    assert.deepEqual(result, [1, 0, 0, 1], 'colors were not blended successfully');
   });
 
   it('parses hex values', () => {
@@ -292,6 +269,60 @@ describe('Color', () => {
     const color = new Color.Color([1, 0, 0, 1], 'rgb');
     color.setFormat('hsl');
     assert.strictEqual(color.asString(), 'hsl(0deg 100% 50%)', 'format was not set correctly');
+  });
+
+  it('suggests colors with good contrast', () => {
+    const colors = [
+      {
+        bgColor: 'salmon',
+        fgColor: 'white',
+        contrast: 4.5,
+        result: 'hsl(0deg 0% 23%)',
+      },
+      {
+        bgColor: 'Lightblue',
+        fgColor: 'white',
+        contrast: 4.5,
+        result: 'hsl(0deg 0% 35%)',
+      },
+      {
+        bgColor: 'white',
+        fgColor: 'hsl(0 53% 52% / 87%)',
+        contrast: 7.0,
+        result: 'hsl(0deg 49% 32% / 87%)',
+      },
+      {
+        bgColor: 'white',
+        fgColor: 'white',
+        contrast: 7.0,
+        result: 'hsl(0deg 0% 35%)',
+      },
+      {
+        bgColor: 'black',
+        fgColor: 'black',
+        contrast: 7.05,
+        result: 'hsl(0deg 0% 59%)',
+      },
+      {
+        bgColor: 'white',
+        fgColor: '#00FF00',
+        contrast: 7.05,
+        result: 'hsl(120deg 100% 20%)',
+      },
+      {
+        bgColor: 'black',
+        fgColor: '#b114ff',
+        contrast: 7.05,
+        result: 'hsl(280deg 100% 71%)',
+      },
+    ];
+    for (const {fgColor, bgColor, contrast, result} of colors) {
+      const suggestedColor =
+          Color.Color.findFgColorForContrast(Color.Color.parse(fgColor)!, Color.Color.parse(bgColor)!, contrast);
+      assert.strictEqual(
+          suggestedColor!.asString(), result,
+          `incorrect color suggestion for ${fgColor}/${bgColor} with contrast ${contrast}`);
+    }
   });
 });
 

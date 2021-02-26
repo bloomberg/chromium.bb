@@ -80,7 +80,7 @@ def make_tree(out, contents):
         # pylint: disable=no-member
         flags |= os.O_BINARY
       with os.fdopen(os.open(filepath, flags, mode), 'wb') as f:
-        f.write(content)
+        f.write(six.ensure_binary(content))
 
 
 def setup():

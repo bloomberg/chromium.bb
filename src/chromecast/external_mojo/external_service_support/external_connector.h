@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -44,17 +45,31 @@ class ExternalConnector {
   // started, and this object is valid. Note that some prior messages may be
   // lost.
   virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
-  AddConnectionErrorCallback(base::RepeatingClosure callback) = 0;
+  AddConnectionErrorCallback(base::RepeatingClosure callback)
+      WARN_UNUSED_RESULT = 0;
 
   // Registers a service that other Mojo processes/services can bind to. Others
   // can call BindInterface(|service_name|, interface_name) to bind to this
   // |service|.
+  // If registering multiple services, consider using RegisterServices().
   virtual void RegisterService(const std::string& service_name,
                                ExternalService* service) = 0;
   virtual void RegisterService(
       const std::string& service_name,
       mojo::PendingRemote<external_mojo::mojom::ExternalService>
           service_remote) = 0;
+
+  // Registers multiple services that other Mojo processes/services can bind to.
+  // Others can call BindInterface(|service_names[i]|, interface_name) to bind
+  // to this |service[i]|.
+  // This function is more efficient than using multiple times RegisterService()
+  // because it only does a single Mojo call.
+  virtual void RegisterServices(
+      const std::vector<std::string>& service_names,
+      const std::vector<ExternalService*>& services) = 0;
+  virtual void RegisterServices(
+      std::vector<chromecast::external_mojo::mojom::ServiceInstanceInfoPtr>
+          service_instances_info) = 0;
 
   // Asks the Mojo broker to bind to a matching interface on the service with
   // the given |service_name|. If the service does not yet exist, the binding

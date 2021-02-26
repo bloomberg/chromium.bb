@@ -62,6 +62,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsRegularOrGuestSession() const override { return true; }
   bool IsMaximized() const override { return maximized_; }
   bool IsMinimized() const override { return false; }
+  bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
   int GetTabStripHeight() const override {
     return IsTabStripVisible() ? GetLayoutConstant(TAB_HEIGHT) : 0;
@@ -138,17 +139,19 @@ class OpaqueBrowserFrameViewLayoutTest
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id,
                                               const gfx::Size& size) {
-    views::ImageButton* button = new views::ImageButton(nullptr);
+    auto button = std::make_unique<views::ImageButton>();
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::Button::STATE_NORMAL, &image);
     button->SetID(view_id);
-    root_view_->AddChildView(button);
-    return button;
+
+    // OpaqueBrowserFrameViewLayout requires the id of a view is set before
+    // attaching it to a parent.
+    return root_view_->AddChildView(std::move(button));
   }
 
   void AddWindowTitleIcons() {
-    tab_icon_view_ = new TabIconView(nullptr, nullptr);
+    tab_icon_view_ = new TabIconView(nullptr, views::Button::PressedCallback());
     tab_icon_view_->set_is_light(true);
     tab_icon_view_->SetID(VIEW_ID_WINDOW_ICON);
     root_view_->AddChildView(tab_icon_view_);

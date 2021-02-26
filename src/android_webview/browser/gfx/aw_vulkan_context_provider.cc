@@ -10,21 +10,24 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/native_library.h"
+#include "gpu/config/skia_limits.h"
+#include "gpu/vulkan/init/gr_vk_memory_allocator_impl.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_util.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 
 namespace android_webview {
 
-namespace {
+AwVulkanContextProvider::Globals* AwVulkanContextProvider::g_globals = nullptr;
 
-AwVulkanContextProvider* g_vulkan_context_provider = nullptr;
+namespace {
 
 bool InitVulkanForWebView(VkInstance instance,
                           VkPhysicalDevice physical_device,
@@ -67,68 +70,39 @@ bool InitVulkanForWebView(VkInstance instance,
 }  // namespace
 
 // static
-scoped_refptr<AwVulkanContextProvider>
-AwVulkanContextProvider::GetOrCreateInstance(AwDrawFn_InitVkParams* params) {
-  if (g_vulkan_context_provider) {
-    DCHECK(!params || params->device == g_vulkan_context_provider->device());
-    DCHECK(!params || params->queue == g_vulkan_context_provider->queue());
-    return base::WrapRefCounted(g_vulkan_context_provider);
+scoped_refptr<AwVulkanContextProvider::Globals>
+AwVulkanContextProvider::Globals::GetOrCreateInstance(
+    AwDrawFn_InitVkParams* params) {
+  if (g_globals) {
+    DCHECK(params->device == g_globals->device_queue->GetVulkanDevice());
+    DCHECK(params->queue == g_globals->device_queue->GetVulkanQueue());
+    return base::WrapRefCounted(g_globals);
   }
-
-  auto provider = base::WrapRefCounted(new AwVulkanContextProvider);
-  if (!provider->Initialize(params))
+  auto globals = base::MakeRefCounted<AwVulkanContextProvider::Globals>();
+  if (!globals->Initialize(params))
     return nullptr;
-
-  return provider;
+  return globals;
 }
 
-AwVulkanContextProvider::AwVulkanContextProvider() {
-  DCHECK_EQ(nullptr, g_vulkan_context_provider);
-  g_vulkan_context_provider = this;
+AwVulkanContextProvider::Globals::Globals() {
+  DCHECK_EQ(nullptr, g_globals);
+  g_globals = this;
 }
 
-AwVulkanContextProvider::~AwVulkanContextProvider() {
-  DCHECK_EQ(g_vulkan_context_provider, this);
-  g_vulkan_context_provider = nullptr;
-  device_queue_->Destroy();
-  device_queue_ = nullptr;
+AwVulkanContextProvider::Globals::~Globals() {
+  DCHECK_EQ(g_globals, this);
+  g_globals = nullptr;
+
+  gr_context.reset();
+  device_queue->Destroy();
+  device_queue = nullptr;
 }
 
-gpu::VulkanImplementation* AwVulkanContextProvider::GetVulkanImplementation() {
-  return implementation_.get();
-}
-
-gpu::VulkanDeviceQueue* AwVulkanContextProvider::GetDeviceQueue() {
-  return device_queue_.get();
-}
-
-GrContext* AwVulkanContextProvider::GetGrContext() {
-  return gr_context_.get();
-}
-
-GrVkSecondaryCBDrawContext*
-AwVulkanContextProvider::GetGrSecondaryCBDrawContext() {
-  return draw_context_.get();
-}
-
-void AwVulkanContextProvider::EnqueueSecondaryCBSemaphores(
-    std::vector<VkSemaphore> semaphores) {
-  post_submit_semaphores_.reserve(post_submit_semaphores_.size() +
-                                  semaphores.size());
-  std::copy(semaphores.begin(), semaphores.end(),
-            std::back_inserter(post_submit_semaphores_));
-}
-
-void AwVulkanContextProvider::EnqueueSecondaryCBPostSubmitTask(
-    base::OnceClosure closure) {
-  post_submit_tasks_.push_back(std::move(closure));
-}
-
-bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
-  DCHECK(params);
+bool AwVulkanContextProvider::Globals::Initialize(
+    AwDrawFn_InitVkParams* params) {
   // Don't call init on implementation. Instead call InitVulkanForWebView,
   // which avoids creating a new instance.
-  implementation_ = gpu::CreateVulkanImplementation();
+  implementation = gpu::CreateVulkanImplementation();
 
   gfx::ExtensionSet instance_extensions;
   for (uint32_t i = 0; i < params->enabled_instance_extension_names_length; ++i)
@@ -145,8 +119,8 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
     return false;
   }
 
-  device_queue_ = std::make_unique<gpu::VulkanDeviceQueue>(params->instance);
-  device_queue_->InitializeForWebView(
+  device_queue = std::make_unique<gpu::VulkanDeviceQueue>(params->instance);
+  device_queue->InitializeForWebView(
       params->physical_device, params->device, params->queue,
       params->graphics_queue_index, std::move(device_extensions));
 
@@ -172,16 +146,85 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
       .fVkExtensions = &vk_extensions,
       .fDeviceFeatures = params->device_features,
       .fDeviceFeatures2 = params->device_features_2,
-      .fMemoryAllocator = nullptr,
+      .fMemoryAllocator = gpu::CreateGrVkMemoryAllocator(device_queue.get()),
       .fGetProc = get_proc,
       .fOwnsInstanceAndDevice = false,
   };
-  gr_context_ = GrContext::MakeVulkan(backend_context);
-  if (!gr_context_) {
+  gr_context = GrDirectContext::MakeVulkan(backend_context);
+  if (!gr_context) {
     LOG(ERROR) << "Unable to initialize GrContext.";
     return false;
   }
+  size_t max_resource_cache_bytes;
+  size_t glyph_cache_max_texture_bytes;
+  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
+  gr_context->setResourceCacheLimit(max_resource_cache_bytes);
   return true;
+}
+
+// static
+scoped_refptr<AwVulkanContextProvider> AwVulkanContextProvider::Create(
+    AwDrawFn_InitVkParams* params) {
+  auto provider = base::WrapRefCounted(new AwVulkanContextProvider);
+  if (!provider->Initialize(params))
+    return nullptr;
+
+  return provider;
+}
+
+AwVulkanContextProvider::AwVulkanContextProvider() = default;
+
+AwVulkanContextProvider::~AwVulkanContextProvider() {
+  draw_context_.reset();
+}
+
+gpu::VulkanImplementation* AwVulkanContextProvider::GetVulkanImplementation() {
+  return globals_->implementation.get();
+}
+
+gpu::VulkanDeviceQueue* AwVulkanContextProvider::GetDeviceQueue() {
+  return globals_->device_queue.get();
+}
+
+GrDirectContext* AwVulkanContextProvider::GetGrContext() {
+  return globals_->gr_context.get();
+}
+
+GrVkSecondaryCBDrawContext*
+AwVulkanContextProvider::GetGrSecondaryCBDrawContext() {
+  return draw_context_.get();
+}
+
+void AwVulkanContextProvider::EnqueueSecondaryCBSemaphores(
+    std::vector<VkSemaphore> semaphores) {
+  post_submit_semaphores_.reserve(post_submit_semaphores_.size() +
+                                  semaphores.size());
+  std::copy(semaphores.begin(), semaphores.end(),
+            std::back_inserter(post_submit_semaphores_));
+}
+
+void AwVulkanContextProvider::EnqueueSecondaryCBPostSubmitTask(
+    base::OnceClosure closure) {
+  post_submit_tasks_.push_back(std::move(closure));
+}
+
+base::Optional<uint32_t> AwVulkanContextProvider::GetSyncCpuMemoryLimit()
+    const {
+  return base::Optional<uint32_t>();
+}
+
+bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
+  DCHECK(params);
+  globals_ = Globals::GetOrCreateInstance(params);
+  return !!globals_;
+}
+
+bool AwVulkanContextProvider::InitializeGrContext(
+    const GrContextOptions& context_options) {
+  // GrContext is created in Globals, so nothing to do here besides DCHECK.
+  DCHECK(globals_);
+  return globals_->gr_context.get() != nullptr;
 }
 
 void AwVulkanContextProvider::SecondaryCBDrawBegin(
@@ -196,7 +239,7 @@ void AwVulkanContextProvider::SecondaryCMBDrawSubmitted() {
   DCHECK(draw_context_);
   auto draw_context = std::move(draw_context_);
 
-  auto* fence_helper = device_queue_->GetFenceHelper();
+  auto* fence_helper = globals_->device_queue->GetFenceHelper();
   VkFence vk_fence = VK_NULL_HANDLE;
   auto result = fence_helper->GetFence(&vk_fence);
   DCHECK(result == VK_SUCCESS);

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -25,16 +26,12 @@ namespace content {
 // Helper class to intercept URLLoaderFactory calls for tests.
 // This intercepts:
 //   -frame requests (which start from the browser)
-//   -subresource requests from pages and dedicad workers and shared workers.
-//     -at ResourceMessageFilter for non network-service code path
-//     -by sending renderer an intermediate URLLoaderFactory for network-service
-//      code path, as that normally routes directly to the network process
+//   -subresource requests from pages, dedicated workers, and shared workers
+//     -by sending the renderer an intermediate URLLoaderFactory
 //   -subresource requests from service workers and requests of non-installed
 //    service worker scripts
-//     -at ResourceMessageFilter for non network-service code path
-//     -at EmbeddedWorkerInstance for network-service code path.
+//     -at EmbeddedWorkerInstance
 //   -requests by the browser
-//
 //   -http(s)://mock.failed.request/foo URLs internally, copying the behavior
 //    of net::URLRequestFailedJob
 //
@@ -53,10 +50,9 @@ namespace content {
 //  -the callback is called on the UI or IO threads depending on the factory
 //   that was hooked
 //    -this is done to avoid changing message order
-//  -intercepting resource requests for subresources when the network service is
-//   enabled changes message order by definition (since they would normally go
-//   directly from renderer->network process, but now they're routed through the
-//   browser).
+//  -intercepting resource requests for subresources changes message order by
+//   definition (since they would normally go directly from renderer->network
+//   service, but now they're routed through the browser).
 class URLLoaderInterceptor {
  public:
   struct RequestParams {
@@ -103,11 +99,19 @@ class URLLoaderInterceptor {
 
   ~URLLoaderInterceptor();
 
+  // Serves static data, similar to net::test::EmbeddedTestServer, for
+  // cases where you need a static origin, such as tests with origin trials.
+  // Optional callback will notify callers for any accessed urls.
+  static std::unique_ptr<URLLoaderInterceptor> ServeFilesFromDirectoryAtOrigin(
+      const std::string& relative_base_path,
+      const GURL& origin,
+      base::RepeatingCallback<void(const GURL&)> callback = base::DoNothing());
+
   // Helper methods for use when intercepting.
   // Writes the given response body, header, and SSL Info to |client|.
   static void WriteResponse(
-      const std::string& headers,
-      const std::string& body,
+      base::StringPiece headers,
+      base::StringPiece body,
       network::mojom::URLLoaderClient* client,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);
 
@@ -131,6 +135,11 @@ class URLLoaderInterceptor {
       network::mojom::URLLoaderClient* client,
       const std::string* headers = nullptr,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+
+  // Attempts to write |body| to |client| and complete the load with status OK.
+  // client->OnReceiveResponse() must have been called prior to this.
+  static MojoResult WriteResponseBody(base::StringPiece body,
+                                      network::mojom::URLLoaderClient* client);
 
   // Returns an interceptor that (as long as it says alive) will intercept
   // requests to |url| and fail them using the provided |error|.
@@ -162,21 +171,8 @@ class URLLoaderInterceptor {
   GetURLLoaderFactoryForBrowserProcess(
       mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
-  // Callback on IO thread whenever a NavigationURLLoaderImpl is loading a frame
-  // request through ResourceDispatcherHost (i.e. when the network service is
-  // disabled).
-  bool BeginNavigationCallback(
-      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& url_request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-
   // Callback on UI thread whenever NavigationURLLoaderImpl needs a
-  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
-  // for a non-network-service scheme.
+  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
   void InterceptNavigationRequestCallback(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver);
 

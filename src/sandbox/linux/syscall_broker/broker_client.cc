@@ -93,7 +93,7 @@ int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) const {
   RAW_CHECK(message.AddIntToMessage(COMMAND_READLINK));
   RAW_CHECK(message.AddStringToMessage(path));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len =
       message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
@@ -112,11 +112,14 @@ int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) const {
     return -ENOMEM;
   if (return_length < 0)
     return -ENOMEM;
+  // Sanity check that our broker is behaving correctly.
+  RAW_CHECK(return_length == static_cast<size_t>(return_value));
 
-  if (static_cast<size_t>(return_length) > bufsize)
-    return -ENAMETOOLONG;
+  if (return_length > bufsize) {
+    return_length = bufsize;
+  }
   memcpy(buf, return_data, return_length);
-  return return_value;
+  return return_length;
 }
 
 int BrokerClient::Rename(const char* oldpath, const char* newpath) const {
@@ -134,7 +137,7 @@ int BrokerClient::Rename(const char* oldpath, const char* newpath) const {
   RAW_CHECK(message.AddStringToMessage(oldpath));
   RAW_CHECK(message.AddStringToMessage(newpath));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len =
       message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
@@ -209,7 +212,7 @@ int BrokerClient::PathOnlySyscall(BrokerCommand syscall_type,
   RAW_CHECK(message.AddIntToMessage(syscall_type));
   RAW_CHECK(message.AddStringToMessage(pathname));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len =
       message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
@@ -236,7 +239,7 @@ int BrokerClient::PathAndFlagsSyscall(BrokerCommand syscall_type,
   RAW_CHECK(message.AddStringToMessage(pathname));
   RAW_CHECK(message.AddIntToMessage(flags));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len =
       message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
@@ -277,7 +280,7 @@ int BrokerClient::PathAndFlagsSyscallReturningFD(BrokerCommand syscall_type,
   RAW_CHECK(message.AddStringToMessage(pathname));
   RAW_CHECK(message.AddIntToMessage(flags));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len = message.SendRecvMsgWithFlags(
       ipc_channel_.get(), recvmsg_flags, &returned_fd, &reply);
@@ -292,8 +295,8 @@ int BrokerClient::PathAndFlagsSyscallReturningFD(BrokerCommand syscall_type,
     return return_value;
 
   // We have a real file descriptor to return.
-  RAW_CHECK(returned_fd >= 0);
-  return returned_fd;
+  RAW_CHECK(returned_fd.is_valid());
+  return returned_fd.release();
 }
 
 // Make a remote system call over IPC for syscalls that take a path
@@ -310,7 +313,7 @@ int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
   RAW_CHECK(message.AddStringToMessage(pathname));
   RAW_CHECK(message.AddIntToMessage(static_cast<int>(follow_links)));
 
-  int returned_fd = -1;
+  base::ScopedFD returned_fd;
   BrokerSimpleMessage reply;
   ssize_t msg_len =
       message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
@@ -332,6 +335,14 @@ int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
     return -ENOMEM;
   memcpy(result_ptr, return_data, expected_result_size);
   return return_value;
+}
+
+// static
+intptr_t BrokerClient::SIGSYS_Handler(const arch_seccomp_data& args,
+                                      void* aux_broker_client) {
+  RAW_CHECK(aux_broker_client);
+  auto* broker_client = static_cast<BrokerClient*>(aux_broker_client);
+  return broker_client->DispatchSyscall(args);
 }
 
 }  // namespace syscall_broker

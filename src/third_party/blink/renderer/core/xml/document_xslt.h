@@ -17,21 +17,10 @@ class ProcessingInstruction;
 
 class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
                            public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
-
  public:
   static const char kSupplementName[];
 
-  Document* TransformSourceDocument() {
-    return transform_source_document_.Get();
-  }
-
-  void SetTransformSourceDocument(Document* document) {
-    DCHECK(document);
-    transform_source_document_ = document;
-  }
-
-  static DocumentXSLT& From(Document&);
+  static void SetHasTransformSource(Document&);
 
   // The following static methods don't use any instance of DocumentXSLT.
   // They are just using DocumentXSLT namespace.
@@ -45,10 +34,9 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   static bool HasTransformSourceDocument(Document&);
 
   explicit DocumentXSLT(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
-  Member<Document> transform_source_document_;
   DISALLOW_COPY_AND_ASSIGN(DocumentXSLT);
 };
 

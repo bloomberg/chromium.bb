@@ -1,11 +1,8 @@
-// tslint:disable: no-console
-
 import { promises as fs } from 'fs';
 
-import { listing } from '../../webgpu/listing.js';
-import { generateMinimalQueryList } from '../framework/generate_minimal_query_list.js';
-import { TestSuiteListingEntry } from '../framework/listing.js';
-import { TestLoader } from '../framework/loader.js';
+import { DefaultTestFileLoader } from '../framework/file_loader.js';
+import { TestQueryMultiTest, TestQueryMultiFile } from '../framework/query/query.js';
+import { assert } from '../framework/util/util.js';
 
 function printUsageAndExit(rc: number): void {
   console.error(`\
@@ -48,11 +45,11 @@ const [
 
 (async () => {
   if (process.argv.length === 4) {
-    const entries = (await listing) as TestSuiteListingEntry[];
+    const entries = await (await import('../../webgpu/listing.js')).listing;
     const lines = entries
       // Exclude READMEs.
-      .filter(l => l.path.length !== 0 && !l.path.endsWith('/'))
-      .map(l => '?q=webgpu:' + l.path);
+      .filter(l => !('readme' in l))
+      .map(l => '?q=' + new TestQueryMultiTest('webgpu', l.file, []).toString());
     await generateFile(lines);
   } else {
     // Prefixes sorted from longest to shortest
@@ -60,9 +57,9 @@ const [
       .split('\n')
       .filter(a => a.length)
       .sort((a, b) => b.length - a.length);
-    const expectationLines = (await fs.readFile(expectationsFile, 'utf8'))
-      .split('\n')
-      .filter(l => l.length);
+    const expectationLines = new Set(
+      (await fs.readFile(expectationsFile, 'utf8')).split('\n').filter(l => l.length)
+    );
 
     const expectations: Map<string, string[]> = new Map();
     for (const prefix of argsPrefixes) {
@@ -78,17 +75,28 @@ const [
           continue expLoop;
         }
       }
-      throw new Error('All input lines must start with one of the prefixes. ' + exp);
+      console.log('note: ignored expectation: ' + exp);
     }
 
-    const loader = new TestLoader();
-    const files = Array.from(await loader.loadTestsFromCmdLine([suite + ':']));
-
-    const lines = [];
+    const loader = new DefaultTestFileLoader();
+    const lines: Array<string | undefined> = [];
     for (const prefix of argsPrefixes) {
-      lines.push(undefined);
-      for (const q of await generateMinimalQueryList(files, expectations.get(prefix)!)) {
-        lines.push(prefix + q);
+      const rootQuery = new TestQueryMultiFile(suite, []);
+      const tree = await loader.loadTree(rootQuery, expectations.get(prefix)!);
+
+      lines.push(undefined); // output blank line between prefixes
+      for (const q of tree.iterateCollapsedQueries()) {
+        const urlQueryString = prefix + q.toString(); // "?worker=0&q=..."
+        // Check for a safe-ish path length limit. Filename must be <= 255, and on Windows the whole
+        // path must be <= 259. Leave room for e.g.:
+        // 'c:\b\s\w\xxxxxxxx\layout-test-results\external\wpt\webgpu\cts_worker=0_q=...-actual.txt'
+        assert(
+          urlQueryString.length < 185,
+          'Generated test variant would produce too-long -actual.txt filename. \
+Try broadening suppressions to avoid long test variant names. ' +
+            urlQueryString
+        );
+        lines.push(urlQueryString);
       }
     }
     await generateFile(lines);

@@ -7,13 +7,18 @@ import("//testing/test.gni")
 
 test("gcp_unittests") {
   sources = [
+    "../extension/service_unittests.cc",
+    "../extension/task_manager_unittests.cc",
     "../gaiacp/associated_user_validator_unittests.cc",
+    "../gaiacp/device_policies_manager_unittests.cc",
     "../gaiacp/gaia_credential_base_unittests.cc",
     "../gaiacp/gaia_credential_other_user_unittests.cc",
     "../gaiacp/gaia_credential_provider_unittests.cc",
     "../gaiacp/gaia_credential_unittests.cc",
     "../gaiacp/gcp_utils_unittests.cc",
+    "../gaiacp/gem_device_details_manager_unittests.cc",
     "../gaiacp/reauth_credential_unittests.cc",
+    "../gaiacp/user_policies_manager_unittests.cc",
     "../gaiacp/win_http_url_fetcher_unittests.cc",
     "com_fakes.cc",
     "com_fakes.h",
@@ -29,12 +34,22 @@ test("gcp_unittests") {
   ]
 
   deps = [
+    "../extension:common",
+    "../extension:extension_lib",
     "../gaiacp:common",
+    "../gaiacp:gaia_credential_provider_idl",
     "../gaiacp:gaiacp_lib",
+    "../gaiacp:policies",
+    "../gaiacp:string_resources",
+    "../gaiacp:util",
     "../gaiacp:version",
     "../setup:common",
     "//base",
+    "//chrome/common:non_code_constants",
+    "//chrome/common:version_header",
     "//chrome/test:credential_provider_test_utils",
+    "//content/public/browser",
+    "//google_apis",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -42,6 +57,7 @@ test("gcp_unittests") {
 
   data_deps = [
     "../eventlog:gcp_eventlog_provider",
+    "../extension:gcpw_extension",
     "../gaiacp:gaia1_0",
     "../setup:gcp_setup",
   ]

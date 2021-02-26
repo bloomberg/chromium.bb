@@ -15,7 +15,6 @@
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -38,13 +38,13 @@
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/escape.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "url/gurl.h"
 
 namespace {
 constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
 constexpr char kTestImageRelease[] = "testimage-channel";
-constexpr char kDriveFSPrefix[] = "drivefs-";
 }  // namespace
 
 namespace arc {
@@ -102,44 +102,15 @@ void GetFileSizeOnIOThread(scoped_refptr<storage::FileSystemContext> context,
                 file_info.size >= 0) {
               size = file_info.size;
             }
-            base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(callback), size));
+            content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE, base::BindOnce(std::move(callback), size));
           },
           base::Passed(&callback)));
 }
 
-// Decodes a percent-encoded URL to the drivefs path in the filesystem.
-base::FilePath GetDriveFSPathFromURL(Profile* const profile, const GURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If DriveFS is not mounted, return an empty base::FilePath().
-  if (!drive::util::GetIntegrationServiceByProfile(profile) ||
-      !drive::util::GetIntegrationServiceByProfile(profile)->GetDriveFsHost()) {
-    return base::FilePath();
-  }
-  base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(url);
-  std::vector<base::FilePath::StringType> virtual_path_components;
-  virtual_path.GetComponents(&virtual_path_components);
-
-  // If the path is not DriveFS prefixed, then it might be FSP/MTP.
-  if (virtual_path_components.empty() ||
-      !base::StartsWith(virtual_path_components[0], kDriveFSPrefix,
-                        base::CompareCase::SENSITIVE)) {
-    return base::FilePath();
-  }
-
-  // Construct the path.
-  base::FilePath drivefs_path =
-      drive::util::GetIntegrationServiceByProfile(profile)->GetMountPointPath();
-  DCHECK(!drivefs_path.empty());
-  for (size_t i = 1; i < virtual_path_components.size(); i++) {
-    drivefs_path = drivefs_path.Append(virtual_path_components[i]);
-  }
-  return drivefs_path;
-}
-
 // TODO(risan): Write test.
-// Open DriveFS file from the fuse filesystem.
-mojo::ScopedHandle OpenDriveFSFileToRead(const base::FilePath& fs_path) {
+// Open a file from a VFS (vs Chrome-only) filesystem.
+mojo::ScopedHandle OpenVFSFileToRead(const base::FilePath& fs_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   // Open the file and wrap the fd to be returned through mojo.
@@ -245,12 +216,18 @@ void ArcFileSystemBridge::GetFileSize(const std::string& url,
     std::move(callback).Run(-1);
     return;
   }
+
+  GetFileSizeInternal(url_decoded, std::move(callback));
+}
+
+void ArcFileSystemBridge::GetFileSizeInternal(const GURL& url_decoded,
+                                              GetFileSizeCallback callback) {
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url_decoded);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetFileSizeOnIOThread, std::move(context),
                      file_system_url_and_handle.url, std::move(callback)));
   // TODO(https://crbug.com/963027): This is currently leaking the isolated
@@ -298,6 +275,24 @@ void ArcFileSystemBridge::OnRootsChanged() {
     observer.OnRootsChanged();
 }
 
+void ArcFileSystemBridge::GetVirtualFileId(const std::string& url,
+                                           GetVirtualFileIdCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GURL url_decoded = DecodeFromChromeContentProviderUrl(GURL(url));
+  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded)) {
+    LOG(ERROR) << "Invalid URL: " << url << " " << url_decoded;
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  GetVirtualFileIdInternal(url_decoded, std::move(callback));
+}
+
+void ArcFileSystemBridge::HandleIdReleased(const std::string& id,
+                                           HandleIdReleasedCallback callback) {
+  std::move(callback).Run(HandleIdReleased(id));
+}
+
 void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
                                          OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -308,22 +303,30 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
     return;
   }
 
-  // TODO(risan): Remove the fallback path in M75+ after DriveFS is always
-  // enabled.
-  base::FilePath fs_path = GetDriveFSPathFromURL(profile_, url_decoded);
-  // If either DriveFS is not enabled/not mounted, or the URL doesn't represent
-  // drivefs file (e.g., FSP, MTP), use VirtualFileProvider instead.
+  base::FilePath fs_path =
+      GetLinuxVFSPathFromExternalFileURL(profile_, url_decoded);
+  // If the URL represents a file on a virtual (Chrome-only, e.g., FSP,
+  // MTP) filesystem, use VirtualFileProvider instead.
   if (fs_path.empty()) {
-    GetFileSize(url, base::BindOnce(
-                         &ArcFileSystemBridge::OpenFileToReadAfterGetFileSize,
-                         weak_ptr_factory_.GetWeakPtr(), url_decoded,
-                         std::move(callback)));
+    GetVirtualFileIdInternal(
+        url_decoded, base::BindOnce(&ArcFileSystemBridge::OpenFileById,
+                                    weak_ptr_factory_.GetWeakPtr(), url_decoded,
+                                    std::move(callback)));
     return;
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&OpenDriveFSFileToRead, fs_path), std::move(callback));
+      base::BindOnce(&OpenVFSFileToRead, fs_path), std::move(callback));
+}
+
+void ArcFileSystemBridge::GetVirtualFileIdInternal(
+    const GURL& url_decoded,
+    GetVirtualFileIdCallback callback) {
+  GetFileSizeInternal(
+      url_decoded, base::BindOnce(&ArcFileSystemBridge::GenerateVirtualFileId,
+                                  weak_ptr_factory_.GetWeakPtr(), url_decoded,
+                                  std::move(callback)));
 }
 
 void ArcFileSystemBridge::SelectFiles(mojom::SelectFilesRequestPtr request,
@@ -353,39 +356,73 @@ void ArcFileSystemBridge::GetFileSelectorElements(
                                                           std::move(callback));
 }
 
-void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(
+void ArcFileSystemBridge::GenerateVirtualFileId(
     const GURL& url_decoded,
-    OpenFileToReadCallback callback,
+    GenerateVirtualFileIdCallback callback,
     int64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (size < 0) {
     LOG(ERROR) << "Failed to get file size " << url_decoded;
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  chromeos::DBusThreadManager::Get()
+      ->GetVirtualFileProviderClient()
+      ->GenerateVirtualFileId(
+          size, base::BindOnce(&ArcFileSystemBridge::OnGenerateVirtualFileId,
+                               weak_ptr_factory_.GetWeakPtr(), url_decoded,
+                               std::move(callback)));
+}
+
+void ArcFileSystemBridge::OnGenerateVirtualFileId(
+    const GURL& url_decoded,
+    GenerateVirtualFileIdCallback callback,
+    const base::Optional<std::string>& id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(id.has_value());
+  DCHECK_EQ(id_to_url_.count(id.value()), 0u);
+  id_to_url_[id.value()] = url_decoded;
+
+  std::move(callback).Run(std::move(id));
+}
+
+void ArcFileSystemBridge::OpenFileById(const GURL& url_decoded,
+                                       OpenFileToReadCallback callback,
+                                       const base::Optional<std::string>& id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!id.has_value()) {
+    LOG(ERROR) << "Missing ID";
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  chromeos::DBusThreadManager::Get()->GetVirtualFileProviderClient()->OpenFile(
-      size, base::BindOnce(&ArcFileSystemBridge::OnOpenFile,
-                           weak_ptr_factory_.GetWeakPtr(), url_decoded,
-                           std::move(callback)));
+
+  chromeos::DBusThreadManager::Get()
+      ->GetVirtualFileProviderClient()
+      ->OpenFileById(id.value(),
+                     base::BindOnce(&ArcFileSystemBridge::OnOpenFileById,
+                                    weak_ptr_factory_.GetWeakPtr(), url_decoded,
+                                    std::move(callback), id.value()));
 }
 
-void ArcFileSystemBridge::OnOpenFile(const GURL& url_decoded,
-                                     OpenFileToReadCallback callback,
-                                     const std::string& id,
-                                     base::ScopedFD fd) {
+void ArcFileSystemBridge::OnOpenFileById(const GURL& url_decoded,
+                                         OpenFileToReadCallback callback,
+                                         const std::string& id,
+                                         base::ScopedFD fd) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!fd.is_valid()) {
     LOG(ERROR) << "Invalid FD";
+    if (!HandleIdReleased(id))
+      LOG(ERROR) << "Cannot release ID: " << id;
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  DCHECK_EQ(id_to_url_.count(id), 0u);
-  id_to_url_[id] = url_decoded;
 
   mojo::ScopedHandle wrapped_handle =
       mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
   if (!wrapped_handle.is_valid()) {
     LOG(ERROR) << "Failed to wrap handle";
+    if (!HandleIdReleased(id))
+      LOG(ERROR) << "Cannot release ID: " << id;
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
@@ -444,6 +481,59 @@ void ArcFileSystemBridge::OnConnectionClosed() {
   LOG(WARNING) << "FileSystem connection has been closed. "
                << "Closing SelectFileDialogs owned by ARC apps, if any.";
   select_files_handlers_manager_->DeleteAllHandlers();
+}
+
+base::FilePath ArcFileSystemBridge::GetLinuxVFSPathFromExternalFileURL(
+    Profile* const profile,
+    const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(url);
+
+  std::string mount_name, cracked_id;
+  storage::FileSystemType file_system_type;
+  base::FilePath absolute_path;
+  storage::FileSystemMountOption mount_option;
+
+  if (!storage::ExternalMountPoints::GetSystemInstance()->CrackVirtualPath(
+          virtual_path, &mount_name, &file_system_type, &cracked_id,
+          &absolute_path, &mount_option)) {
+    LOG(WARNING) << "Couldn't find mount point for: " << url;
+    return base::FilePath();
+  }
+
+  return GetLinuxVFSPathForPathOnFileSystemType(profile, absolute_path,
+                                                file_system_type);
+}
+
+base::FilePath ArcFileSystemBridge::GetLinuxVFSPathForPathOnFileSystemType(
+    Profile* const profile,
+    const base::FilePath& path,
+    storage::FileSystemType file_system_type) {
+  switch (file_system_type) {
+    case storage::FileSystemType::kFileSystemTypeDriveFs:
+    case storage::FileSystemType::kFileSystemTypeSmbFs:
+      return path;
+    case storage::FileSystemType::kFileSystemTypeNativeLocal: {
+      base::FilePath crostini_mount_path =
+          file_manager::util::GetCrostiniMountDirectory(profile);
+      if (crostini_mount_path == path || crostini_mount_path.IsParent(path))
+        return path;
+
+      // fuse-zip, rar2fs.
+      base::FilePath archive_mount_path =
+          base::FilePath(file_manager::util::kArchiveMountPath);
+      if (archive_mount_path.IsParent(path))
+        return path;
+
+      break;
+    }
+    default:
+      break;
+  }
+
+  // The path is not representable on the Linux VFS.
+  return base::FilePath();
 }
 
 }  // namespace arc

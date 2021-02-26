@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 using testing::ElementsAre;
 
@@ -31,12 +32,6 @@ class NGFragmentItemTest : public NGLayoutTest,
 
   LayoutBlockFlow* GetLayoutBlockFlowByElementId(const char* id) {
     return To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
-  }
-
-  const NGFragmentItems* GetFragmentItemsByElementId(const char* id) {
-    const auto* block_flow =
-        To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
-    return block_flow->FragmentItems();
   }
 
   Vector<NGInlineCursorPosition> GetLines(NGInlineCursor* cursor) {
@@ -59,11 +54,13 @@ class NGFragmentItemTest : public NGLayoutTest,
 
   void TestFirstDirtyLineIndex(const char* id, wtf_size_t expected_index) {
     LayoutBlockFlow* block_flow = GetLayoutBlockFlowByElementId(id);
-    const NGFragmentItems* items = block_flow->FragmentItems();
-    items->DirtyLinesFromNeedsLayout(block_flow);
-    const NGFragmentItem* end_reusable_item = items->EndOfReusableItems();
+    const NGPhysicalBoxFragment* fragment = block_flow->GetPhysicalFragment(0);
+    const NGFragmentItems* items = fragment->Items();
+    NGFragmentItems::DirtyLinesFromNeedsLayout(*block_flow);
+    const NGFragmentItem* end_reusable_item =
+        items->EndOfReusableItems(*fragment);
 
-    NGInlineCursor cursor(*items);
+    NGInlineCursor cursor(*fragment, *items);
     const auto lines = GetLines(&cursor);
     EXPECT_EQ(IndexOf(lines, end_reusable_item), expected_index);
   }
@@ -82,6 +79,66 @@ class NGFragmentItemTest : public NGLayoutTest,
     return list;
   }
 };
+
+TEST_F(NGFragmentItemTest, CopyMove) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font-size: 20px;
+      line-height: 10px;
+    }
+    </style>
+    <div id="container">
+      1234567
+    </div>
+  )HTML");
+  LayoutBlockFlow* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  NGInlineCursor cursor(*container);
+
+  // Test copying a line item.
+  cursor.MoveToFirstLine();
+  const NGFragmentItem* line_item = cursor.Current().Item();
+  EXPECT_EQ(line_item->Type(), NGFragmentItem::kLine);
+  EXPECT_NE(line_item->LineBoxFragment(), nullptr);
+  NGFragmentItem copy_of_line(*line_item);
+  EXPECT_EQ(copy_of_line.LineBoxFragment(), line_item->LineBoxFragment());
+  EXPECT_TRUE(copy_of_line.IsInkOverflowComputed());
+
+  // Test moving a line item.
+  NGFragmentItem move_of_line(std::move(copy_of_line));
+  EXPECT_EQ(move_of_line.LineBoxFragment(), line_item->LineBoxFragment());
+  // After the move, the source fragment should be released.
+  EXPECT_EQ(copy_of_line.LineBoxFragment(), nullptr);
+  EXPECT_TRUE(move_of_line.IsInkOverflowComputed());
+
+  // To test moving ink overflow, add an ink overflow to |move_of_line|.
+  PhysicalRect not_small_ink_overflow_rect(0, 0, 5000, 100);
+  move_of_line.ink_overflow_type_ = move_of_line.ink_overflow_.SetContents(
+      move_of_line.InkOverflowType(), not_small_ink_overflow_rect,
+      line_item->Size());
+  EXPECT_EQ(move_of_line.InkOverflowType(), NGInkOverflow::kContents);
+  NGFragmentItem move_of_line2(std::move(move_of_line));
+  EXPECT_EQ(move_of_line2.InkOverflowType(), NGInkOverflow::kContents);
+  EXPECT_EQ(move_of_line2.InkOverflow(), not_small_ink_overflow_rect);
+
+  // Test copying a text item.
+  cursor.MoveToFirstChild();
+  const NGFragmentItem* text_item = cursor.Current().Item();
+  EXPECT_EQ(text_item->Type(), NGFragmentItem::kText);
+  EXPECT_NE(text_item->TextShapeResult(), nullptr);
+  NGFragmentItem copy_of_text(*text_item);
+  EXPECT_EQ(copy_of_text.TextShapeResult(), text_item->TextShapeResult());
+  // Ink overflow is copied for text items. See |NGFragmentItem| copy ctor.
+  EXPECT_TRUE(copy_of_text.IsInkOverflowComputed());
+
+  // Test moving a text item.
+  NGFragmentItem move_of_text(std::move(copy_of_text));
+  EXPECT_EQ(move_of_text.TextShapeResult(), text_item->TextShapeResult());
+  // After the move, the source ShapeResult should be released.
+  EXPECT_EQ(copy_of_text.TextShapeResult(), nullptr);
+  EXPECT_TRUE(move_of_text.IsInkOverflowComputed());
+}
 
 TEST_F(NGFragmentItemTest, BasicText) {
   LoadAhem();
@@ -102,10 +159,10 @@ TEST_F(NGFragmentItemTest, BasicText) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* container =
+  auto* container =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
-  LayoutText* layout_text = ToLayoutText(container->FirstChild());
-  const NGPhysicalBoxFragment* box = container->CurrentFragment();
+  auto* layout_text = To<LayoutText>(container->FirstChild());
+  const NGPhysicalBoxFragment* box = container->GetPhysicalFragment(0);
   EXPECT_NE(box, nullptr);
   const NGFragmentItems* items = box->Items();
   EXPECT_NE(items, nullptr);
@@ -128,9 +185,6 @@ TEST_F(NGFragmentItemTest, BasicText) {
   EXPECT_EQ(text2.OffsetInContainerBlock(), PhysicalOffset(0, 10));
   EXPECT_FALSE(text2.IsFirstForNode());
   EXPECT_TRUE(text2.IsLastForNode());
-
-  EXPECT_EQ(IntRect(0, 0, 70, 20),
-            layout_text->FragmentsVisualRectBoundingBox());
 }
 
 TEST_F(NGFragmentItemTest, RtlText) {
@@ -151,11 +205,11 @@ TEST_F(NGFragmentItemTest, RtlText) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* container =
+  auto* container =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   LayoutObject* span = GetLayoutObjectByElementId("span");
-  LayoutText* layout_text = ToLayoutText(span->SlowFirstChild());
-  const NGPhysicalBoxFragment* box = container->CurrentFragment();
+  auto* layout_text = To<LayoutText>(span->SlowFirstChild());
+  const NGPhysicalBoxFragment* box = container->GetPhysicalFragment(0);
   EXPECT_NE(box, nullptr);
   const NGFragmentItems* items = box->Items();
   EXPECT_NE(items, nullptr);
@@ -225,20 +279,27 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
   ASSERT_NE(span1, nullptr);
   Vector<const NGFragmentItem*> items_for_span1 = ItemsForAsVector(*span1);
   EXPECT_EQ(items_for_span1.size(), 2u);
-  EXPECT_EQ(IntRect(0, 0, 80, 20), span1->FragmentsVisualRectBoundingBox());
   EXPECT_TRUE(items_for_span1[0]->IsFirstForNode());
   EXPECT_FALSE(items_for_span1[0]->IsLastForNode());
+  EXPECT_EQ(PhysicalOffset(40, 0),
+            items_for_span1[0]->OffsetInContainerBlock());
+  EXPECT_EQ(PhysicalRect(0, 0, 40, 10), items_for_span1[0]->InkOverflow());
   EXPECT_FALSE(items_for_span1[1]->IsFirstForNode());
   EXPECT_TRUE(items_for_span1[1]->IsLastForNode());
+  EXPECT_EQ(PhysicalOffset(0, 10),
+            items_for_span1[1]->OffsetInContainerBlock());
+  EXPECT_EQ(PhysicalRect(0, 0, 40, 10), items_for_span1[1]->InkOverflow());
 
   // "span2" doesn't wrap, produces only one fragment.
   const LayoutObject* span2 = GetLayoutObjectByElementId("span2");
   ASSERT_NE(span2, nullptr);
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
   EXPECT_EQ(items_for_span2.size(), 1u);
-  EXPECT_EQ(IntRect(0, 20, 80, 10), span2->FragmentsVisualRectBoundingBox());
   EXPECT_TRUE(items_for_span2[0]->IsFirstForNode());
   EXPECT_TRUE(items_for_span2[0]->IsLastForNode());
+  EXPECT_EQ(PhysicalOffset(0, 20),
+            items_for_span2[0]->OffsetInContainerBlock());
+  EXPECT_EQ(PhysicalRect(0, 0, 80, 10), items_for_span2[0]->InkOverflow());
 }
 
 // Same as |BasicInlineBox| but `<span>`s do not have background.
@@ -279,6 +340,35 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
   EXPECT_EQ(items_for_span2.size(), 0u);
   EXPECT_EQ(IntRect(0, 20, 80, 10), span2->AbsoluteBoundingBoxRect());
+}
+
+TEST_F(NGFragmentItemTest, SelfPaintingInlineBox) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #self_painting_inline_box {
+      opacity: .2;
+    }
+    </style>
+    <div>
+      <span id="self_painting_inline_box">self painting inline box</span>
+    </div>
+  )HTML");
+
+  // Invalidate the ink overflow of a child in `#self_painting_inline_box`.
+  auto* self_painting_inline_box =
+      To<LayoutInline>(GetLayoutObjectByElementId("self_painting_inline_box"));
+  ASSERT_TRUE(self_painting_inline_box->HasSelfPaintingLayer());
+  auto* text = To<LayoutText>(self_painting_inline_box->FirstChild());
+  text->InvalidateVisualOverflow();
+
+  // Mark the |PaintLayer| to need to recalc visual overflow.
+  self_painting_inline_box->Layer()->SetNeedsVisualOverflowRecalc();
+  RunDocumentLifecycle();
+
+  // Test if it recalculated the ink overflow.
+  NGInlineCursor cursor;
+  for (cursor.MoveTo(*text); cursor; cursor.MoveToNextForSameLayoutObject())
+    EXPECT_TRUE(cursor.Current()->IsInkOverflowComputed());
 }
 
 // Various nodes/elements to test insertions.

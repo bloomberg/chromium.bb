@@ -1,0 +1,237 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module nearby_share.mojom;
+
+import "chromeos/services/nearby/public/mojom/nearby_share_target_types.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// Describes a nearby device that is able to receive data via Nearby Share.
+struct ShareTarget {
+  // Unique identifier during the current discovery session. The same physical
+  // device might have a different value each time StartDiscovery() is called.
+  mojo_base.mojom.UnguessableToken id;
+  // User defined name of this share target.
+  string name;
+  // Device type of this share target.
+  ShareTargetType type;
+};
+
+// Result of selecting a share target.
+enum SelectShareTargetResult {
+  // Successfully selected share target. Transfer will continue from here.
+  kOk,
+  // Unknown error while selecting the share target.
+  kError,
+  // Could not find the selected share target. It may have been lost in the
+  // mean time.
+  kInvalidShareTarget,
+};
+
+// Interface to be notified about nearby devices. The same ShareTarget might be
+// discovered multiple times but will have the same id during one session. This
+// is implemented in UI surfaces and called from the browser process.
+interface ShareTargetListener {
+  // Reports a nearby device found via Nearby Share.
+  OnShareTargetDiscovered(ShareTarget share_target);
+
+  // Reports that a previously discovered device is no longer available.
+  OnShareTargetLost(ShareTarget share_target);
+};
+
+// Status of the current transfer. This mirrors the Status enum at
+// chrome/browser/nearby_sharing/transfer_metadata.h, but drops the unused
+// statuses kMediaDownloading and kExternalProviderLaunched.
+enum TransferStatus {
+  kUnknown,
+  // A remote device is connecting.
+  kConnecting,
+  // The user of the local device needs to accept or reject the transfer. This
+  // involves showing a token on both devices to be compared by the user.
+  kAwaitingLocalConfirmation,
+  // The remote device needs to accept the transfer. We still need to show the
+  // token on this device so the other user can compare it.
+  kAwaitingRemoteAcceptance,
+  // The connection was lost before the remote accepted/rejected.
+  kAwaitingRemoteAcceptanceFailed,
+  // The current transfer is now in progress after both users accepted the
+  // transfer on their devices.
+  kInProgress,
+  // The current transfer is complete and successful.
+  kComplete,
+  // The current transfer failed.
+  kFailed,
+  // The remote device rejected the transfer.
+  kRejected,
+  // The remote device cancelled the transfer.
+  kCancelled,
+  // The connection to a remote device timed out.
+  kTimedOut,
+  // The attachment could not be found, or the payload could not be created.
+  kMediaUnavailable,
+  // Not enough disk space to store the payload.
+  kNotEnoughSpace,
+  // The file type is not supported for sharing.
+  kUnsupportedAttachmentType,
+};
+
+// Metadata associated with the current transfer.
+struct TransferMetadata {
+  // Status of the current transfer.
+  TransferStatus status;
+  // Represents transfer progress as a percentage.
+  float progress;
+  // Represents the UKey2 token from Nearby Connections. Null if no
+  // UKey2 comparison is needed for this transfer.
+  string? token;
+  // Indicates whether this metadata has been seen before.
+  bool is_original;
+  // Indicates whether this is the last status for this transfer.
+  bool is_final_status;
+};
+
+// Interface to be notified about transfer updates. Includes an optional token
+// that needs to be shown to the user to confirm with the remote device. The
+// token verification can be skipped for trusted devices in the contacts list
+// but must be shown when sending to unknown devices. This interface is
+// implemented in UI surfaces and called from the browser process.
+interface TransferUpdateListener {
+  // Called when the status of the current transfer changes.
+  OnTransferUpdate(TransferStatus status, string? token);
+};
+
+// This enum combines both text and file share attachment types into a single
+// enum that more directly maps to what is shown to user for preview.
+enum ShareType {
+  // A generic non-file text share.
+  kText,
+  // A text share representing a url, opened in browser.
+  kUrl,
+  // A text share representing a phone number, opened in dialer.
+  kPhone,
+  // A text share representing an address, opened in browser.
+  kAddress,
+  // Multiple files are being shared, we don't capture the specific types.
+  kMultipleFiles,
+  // Single file attachment with a mime type of 'image/*'.
+  kImageFile,
+  // Single file attachment with a mime type of 'video/*'.
+  kVideoFile,
+  // Single file attachment with a mime type of 'audio/*'.
+  kAudioFile,
+  // Single file attachment with a mime type of 'application/pdf'.
+  kPdfFile,
+  // Single file attachment with a mime type of
+  // 'application/vnd.google-apps.document'.
+  kGoogleDocsFile,
+  // Single file attachment with a mime type of
+  // 'application/vnd.google-apps.spreadsheet'.
+  kGoogleSheetsFile,
+  // Single file attachment with a mime type of
+  // 'application/vnd.google-apps.presentation'.
+  kGoogleSlidesFile,
+  // Single file attachment with un-matched mime type.
+  kUnknownFile,
+};
+
+// Contains the minimum amount of information needed to show the user a preview
+// of their share when they are confirming a send to a share target.
+struct SendPreview {
+  // A description that is different for each sharing case:
+  // 1) For a text share this is a limited/redacted preview of the full text.
+  // 2) For a single file share this is the file name.
+  // 3) For a multiple file share this contains the first file name. This will
+  //    be used in a translation template like this 'file.ext and N other files'
+  string description;
+  // 0 for a direct text share, or the number of files being shared.
+  int32 file_count;
+  // The type of share so the UI knows how to preview it.
+  ShareType share_type;
+};
+
+// Manager interface for nearby device discovery. Implemented on the browser
+// process and used by UI surfaces. The discovery manager is also responsible
+// for previewing the current share with GetSendPreview() so the user can verify
+// the attachments being sent before calling SelectShareTarget().
+interface DiscoveryManager {
+  // Starts discovering nearby devices. The passed |listener| will be called
+  // with any discovered devices.
+  StartDiscovery(pending_remote<ShareTargetListener> listener)
+      => (bool success);
+
+  // Select a previously discovered |share_target_id| to send data to. On
+  // success this will return valid ConfirmationManager and
+  // TransferUpdateListener interfaces to be used to show an additional
+  // confirmation screen to accept or reject the transfer.
+  SelectShareTarget(mojo_base.mojom.UnguessableToken share_target_id)
+      => (SelectShareTargetResult result,
+          pending_receiver<TransferUpdateListener>? transfer_update_listener,
+          pending_remote<ConfirmationManager>? confirmation_manager);
+
+  // Gets the SendPreview so the UI can show the user what they are about to
+  // share.
+  GetSendPreview() => (SendPreview send_preview);
+};
+
+// Manager interface for the Nearby Share confirmation screen. Implemented on
+// the browser process and used by UI surfaces.
+interface ConfirmationManager {
+  // Accepts a connection to the current Share Target.
+  Accept() => (bool success);
+
+  // Rejects a connection to the current Share Target.
+  Reject() => (bool success);
+
+  // Cancels a connection to the current Share Target.
+  Cancel() => (bool success);
+};
+
+// Observer interface to receive updates when high visibility has changed
+// and when an incoming share is requested and the user must confirm.
+//
+// This interface is implement in Javascript in the chrome://os-settings WebUI.
+interface ReceiveObserver {
+  // Called when high visibility receive state (foreground receive) has
+  // changed and the new value is provided.
+  OnHighVisibilityChanged(bool in_high_visibility);
+
+  // Called when the status of the current transfer changes.
+  OnTransferUpdate(ShareTarget share_target, TransferMetadata metadata);
+};
+
+// Allows the caller to observe changes to or query high visibility, or
+// register/unregister a foreground receive surface, which will cause high
+// visibility to start/stop respectively. Once in high visibility, the caller
+// may observe incoming shares and accept or reject them.
+//
+// This interface runs in the browser process and is bound by os-settings which
+// hosts the ui surface and implements the |ReceiveObserver|.
+interface ReceiveManager {
+  // Allows the caller to observe ReceiveManager events.
+  AddReceiveObserver(pending_remote<ReceiveObserver> observer);
+
+  // Determine if the user is currently in high visibility.
+  IsInHighVisibility() => (bool in_high_visibility);
+
+  // Attempt to register the receive manager as a foreground receive surface.
+  // If |success| is true, then the surface has been registered; otherwise it
+  // has not been registered. The foreground surface receives incoming
+  // shares, and once one is registered, high visibility will become active
+  // after a short while. Calling multiple times will have no additional effect.
+  RegisterForegroundReceiveSurface() => (bool success);
+
+  // Attempt to unregister the receive manager as a foreground receive surface.
+  // If |success| is true, then the surface is no longer registered; otherwise,
+  // it is still registered. The foreground surface receives incoming shares,
+  // and once it is no longer registered, high visibility will no longer be
+  // active after a short while. Calling unregister before register will have
+  // no effect.
+  UnregisterForegroundReceiveSurface() => (bool success);
+
+  // Accept the incoming share request by the share target id.
+  Accept(mojo_base.mojom.UnguessableToken share_target_id) => (bool success);
+
+  // Reject the incoming share request by the share target id.
+  Reject(mojo_base.mojom.UnguessableToken share_target_id) => (bool success);
+};

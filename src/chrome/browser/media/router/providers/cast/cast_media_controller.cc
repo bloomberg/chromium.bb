@@ -4,12 +4,13 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/app_activity.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/enum_table.h"
 
 using cast_channel::V2MessageType;
@@ -17,6 +18,9 @@ using cast_channel::V2MessageType;
 namespace media_router {
 
 namespace {
+
+constexpr int kQueuePrevJumpValue = -1;
+constexpr int kQueueNextJumpValue = 1;
 
 void SetIfValid(std::string* out, const base::Value* value) {
   if (value && value->is_string())
@@ -40,14 +44,19 @@ void SetIfValid(bool* out, const base::Value* value) {
     *out = value->GetBool();
 }
 void SetIfValid(base::TimeDelta* out, const base::Value* value) {
-  if (value && value->is_double())
-    *out = base::TimeDelta::FromSeconds(value->GetDouble());
+  if (!value)
+    return;
+  if (value->is_double()) {
+    *out = base::TimeDelta::FromSecondsD(value->GetDouble());
+  } else if (value->is_int()) {
+    *out = base::TimeDelta::FromSeconds(value->GetInt());
+  }
 }
 
 // If |value| has "width" and "height" fields with positive values, it gets
 // converted into gfx::Size. Otherwise base::nullopt is returned.
 base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
-  if (!value)
+  if (!value || !value->is_dict())
     return base::nullopt;
   int width = 0;
   int height = 0;
@@ -61,7 +70,7 @@ base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
 }  // namespace
 
 CastMediaController::CastMediaController(
-    CastActivityRecord* activity,
+    AppActivity* activity,
     mojo::PendingReceiver<mojom::MediaController> receiver,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer)
     : sender_id_("sender-" + base::NumberToString(base::RandUint64())),
@@ -119,15 +128,23 @@ void CastMediaController::Seek(base::TimeDelta time) {
 void CastMediaController::NextTrack() {
   if (session_id_.empty())
     return;
-  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
-      CreateMediaRequest(V2MessageType::kQueueNext)));
+  // We do not use |kQueueNext| because not all receiver apps support it.
+  // See crbug.com/1078601.
+  base::Value request = CreateMediaRequest(V2MessageType::kQueueUpdate);
+  request.SetIntPath("message.jump", kQueueNextJumpValue);
+  activity_->SendMediaRequestToReceiver(
+      *CastInternalMessage::From(std::move(request)));
 }
 
 void CastMediaController::PreviousTrack() {
   if (session_id_.empty())
     return;
-  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
-      CreateMediaRequest(V2MessageType::kQueuePrev)));
+  // We do not use |kQueuePrev| because not all receiver apps support it.
+  // See crbug.com/1078601.
+  base::Value request = CreateMediaRequest(V2MessageType::kQueueUpdate);
+  request.SetIntPath("message.jump", kQueuePrevJumpValue);
+  activity_->SendMediaRequestToReceiver(
+      *CastInternalMessage::From(std::move(request)));
 }
 
 void CastMediaController::SetSession(const CastSession& session) {
@@ -199,6 +216,8 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   if (images && images->is_list()) {
     media_status_.images.clear();
     for (const base::Value& image_value : images->GetList()) {
+      if (!image_value.is_dict())
+        continue;
       const std::string* url_string = image_value.FindStringKey("url");
       if (!url_string)
         continue;

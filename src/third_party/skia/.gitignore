@@ -13,7 +13,6 @@
 TAGS
 bower_components
 imgui.ini
-infra/bots/README.recipes.md
 infra/bots/gen_tasks_aux.go
 infra/bots/tools/luci-go/linux64/cipd
 infra/bots/tools/luci-go/linux64/isolate
@@ -26,6 +25,7 @@ platform_tools/android/apps/build
 platform_tools/android/apps/*.properties
 platform_tools/android/apps/*/build
 platform_tools/android/apps/*/src/main/libs
+platform_tools/android/apps/*/*/src/main/libs
 platform_tools/android/apps/*.hprof
 platform_tools/android/apps/*/.externalNativeBuild
 
@@ -45,3 +45,5 @@ bin/clang-format.exe
 
 node_modules
 tools/lottiecap/filmstrip.png
+
+bazel-*

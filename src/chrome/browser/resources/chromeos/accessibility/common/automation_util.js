@@ -39,13 +39,13 @@ AutomationUtil = class {
       return cur;
     }
 
-    let child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
+    let child = dir === Dir.BACKWARD ? cur.lastChild : cur.firstChild;
     while (child) {
       const ret = AutomationUtil.findNodePre(child, dir, pred);
       if (ret) {
         return ret;
       }
-      child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
+      child = dir === Dir.BACKWARD ? child.previousSibling : child.nextSibling;
     }
     return null;
   }
@@ -65,13 +65,13 @@ AutomationUtil = class {
       return null;
     }
 
-    let child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
+    let child = dir === Dir.BACKWARD ? cur.lastChild : cur.firstChild;
     while (child) {
       const ret = AutomationUtil.findNodePost(child, dir, pred);
       if (ret) {
         return ret;
       }
-      child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
+      child = dir === Dir.BACKWARD ? child.previousSibling : child.nextSibling;
     }
 
     if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur)) {
@@ -172,6 +172,21 @@ AutomationUtil = class {
   }
 
   /**
+   * Finds the lowest ancestor with a given role.
+   * @param {!AutomationNode} node
+   * @param {!RoleType} role
+   */
+  static getFirstAncestorWithRole(node, role) {
+    if (!node.parent) {
+      return null;
+    }
+    if (node.parent.role === role) {
+      return node.parent;
+    }
+    return AutomationUtil.getFirstAncestorWithRole(node.parent, role);
+  }
+
+  /**
    * Gets the first index where the two input arrays differ. Returns -1 if they
    * do not.
    * @param {!Array<AutomationNode>} ancestorsA
@@ -184,7 +199,7 @@ AutomationUtil = class {
         return i;
       }
     }
-    if (ancestorsA.length == ancestorsB.length) {
+    if (ancestorsA.length === ancestorsB.length) {
       return -1;
     }
     return ancestorsA.length;
@@ -216,7 +231,7 @@ AutomationUtil = class {
     const divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
 
     // Default to Dir.FORWARD.
-    if (divergence == -1) {
+    if (divergence === -1) {
       return Dir.FORWARD;
     }
 
@@ -257,7 +272,7 @@ AutomationUtil = class {
 
     // Given two non-desktop roots, consider them in the "same" tree.
     return a.root === b.root ||
-        (a.root.role == b.root.role && a.root.role == RoleType.ROOT_WEB_AREA);
+        (a.root.role === b.root.role && a.root.role === RoleType.ROOT_WEB_AREA);
   }
 
   /**
@@ -314,12 +329,12 @@ AutomationUtil = class {
    */
   static getTopLevelRoot(node) {
     let root = node.root;
-    if (!root || root.role == RoleType.DESKTOP) {
+    if (!root || root.role === RoleType.DESKTOP) {
       return null;
     }
 
     while (root && root.parent && root.parent.root &&
-           root.parent.root.role != RoleType.DESKTOP) {
+           root.parent.root.role !== RoleType.DESKTOP) {
       root = root.parent.root;
     }
     return root;
@@ -331,7 +346,7 @@ AutomationUtil = class {
    * @return {AutomationNode}
    */
   static getLeastCommonAncestor(prevNode, node) {
-    if (prevNode == node) {
+    if (prevNode === node) {
       return node;
     }
 
@@ -408,7 +423,7 @@ AutomationUtil = class {
       let walker = node;
       let shallowest = null;
       while (walker) {
-        if (walker == root) {
+        if (walker === root) {
           break;
         }
 

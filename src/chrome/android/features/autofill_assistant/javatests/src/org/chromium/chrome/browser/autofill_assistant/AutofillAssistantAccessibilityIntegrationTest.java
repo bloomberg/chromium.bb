@@ -4,17 +4,17 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -28,9 +28,8 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.matcher.ViewMatchers.Visibility;
-import android.support.test.filters.MediumTest;
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto.
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowCastProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
@@ -56,9 +56,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.Input
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -94,15 +93,24 @@ public class AutofillAssistantAccessibilityIntegrationTest {
     @Before
     public void setUp() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
+        mTestRule.startCustomTabActivityWithIntent(
+                AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
+                        mTestRule.getTestServer().getURL(TEST_PAGE),
+                        /* startImmediately = */ true));
+        mTestRule.getActivity()
+                .getRootUiCoordinatorForTesting()
+                .getScrimCoordinator()
+                .disableAnimationForTesting(true);
+    }
+
+    private void setAccessibilityEnabledForTesting(Boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(value));
     }
 
     @After
     public void tearDown() {
-        AccessibilityUtil.setAccessibilityEnabledForTesting(null);
+        setAccessibilityEnabledForTesting(null);
     }
 
     @Test
@@ -111,20 +119,23 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that should not be covered by the bottom sheet.
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_one")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                ElementReferenceProto.newBuilder().addSelectors(
-                                        "#touch_area_four")))
+                                SelectorProto.newBuilder().addFilters(
+                                        SelectorProto.Filter.newBuilder().setCssSelector(
+                                                "#touch_area_four"))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setFocusElement(FocusElementProto.newBuilder()
-                                                  .setElement(element)
-                                                  .setTouchableElementArea(elementArea))
+                         .setShowCast(ShowCastProto.newBuilder()
+                                              .setElementToPresent(element)
+                                              .setTouchableElementArea(elementArea))
                          .build());
 
         // Create enough additional sections to fill up more than the height of the screen.
@@ -155,7 +166,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                         .build(),
                 list);
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         runScript(script);
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
 
@@ -180,24 +191,28 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky test.  crbug.com/1114867")
     public void testBottomSheetListensToAccessibilityChanges() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that may or may not be covered by the bottom sheet.
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_one")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                ElementReferenceProto.newBuilder().addSelectors(
-                                        "#touch_area_four")))
+                                SelectorProto.newBuilder().addFilters(
+                                        SelectorProto.Filter.newBuilder().setCssSelector(
+                                                "#touch_area_four"))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setFocusElement(FocusElementProto.newBuilder()
-                                                  .setElement(element)
-                                                  .setTouchableElementArea(elementArea))
+                         .setShowCast(ShowCastProto.newBuilder()
+                                              .setElementToPresent(element)
+                                              .setTouchableElementArea(elementArea))
                          .build());
 
         // Create enough additional sections to fill up more than the height of the screen.
@@ -237,32 +252,32 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         onView(withText("Title 1")).check(matches(isDisplayed()));
         onView(withText("Title 20")).check(matches(not(isDisplayed())));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
-        onView(withId(R.id.bottom_sheet_content))
+        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content))
                 .check(matches(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
 
         // Enabling accessibility restricts the height, the element can now be tapped and will be
         // removed.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(true));
+        setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
         tapElement(mTestRule, "touch_area_one");
         waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_one"));
 
         // Disabling accessibility again removes the height restriction so the bottom sheet will
         // fill the entire screen again, preventing the tap on the element.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(false));
+        setAccessibilityEnabledForTesting(false);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four")));
 
         // Enabling accessibility again to make sure element can actually be removed.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(true));
+        setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four"))));
         tapElement(mTestRule, "touch_area_four");
         waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_four"));

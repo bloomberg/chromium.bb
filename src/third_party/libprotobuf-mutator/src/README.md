@@ -1,10 +1,12 @@
 # libprotobuf-mutator
 
+[![TravisCI Build Status](https://travis-ci.org/google/libprotobuf-mutator.svg?branch=master)](https://travis-ci.org/google/libprotobuf-mutator)
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/libprotobuf-mutator.svg)](https://oss-fuzz-build-logs.storage.googleapis.com/index.html#libprotobuf-mutator)
+
 ## Overview
 libprotobuf-mutator is a library to randomly mutate
 [protobuffers](https://github.com/google/protobuf). <BR>
-It could be used together with guided
-fuzzing engines, such as [libFuzzer](http://libfuzzer.info).
+It could be used together with guided fuzzing engines, such as [libFuzzer](http://libfuzzer.info).
 
 ## Quick start on Debian/Ubuntu
 
@@ -12,7 +14,8 @@ Install prerequisites:
 
 ```
 sudo apt-get update
-sudo apt-get install binutils cmake ninja-build liblzma-dev libz-dev pkg-config
+sudo apt-get install protobuf-compiler libprotobuf-dev binutils cmake \
+  ninja-build liblzma-dev libz-dev pkg-config autoconf libtool
 ```
 
 Compile and test everything:
@@ -59,11 +62,11 @@ To apply one mutation to a protobuf object do the following:
 ```
 class MyProtobufMutator : public protobuf_mutator::Mutator {
  public:
-  MyProtobufMutator(uint32_t seed) : protobuf_mutator::Mutator(seed) {}
   // Optionally redefine the Mutate* methods to perform more sophisticated mutations.
 }
 void Mutate(MyMessage* message) {
-  MyProtobufMutator mutator(my_random_seed);
+  MyProtobufMutator mutator;
+  mutator.Seed(my_random_seed);
   mutator.Mutate(message, 200);
 }
 ```
@@ -85,6 +88,54 @@ DEFINE_PROTO_FUZZER(const MyMessageType& input) {
 
 Please see [libfuzzer_example.cc](/examples/libfuzzer/libfuzzer_example.cc) as an example.
 
+### Mutation post-processing (experimental)
+Sometimes it's necessary to keep particular values in some fields without which the proto
+is going to be rejected by fuzzed code. E.g. code may expect consistency between some fields
+or it may use some fields as checksums. Such constraints are going to be significant bottleneck
+for fuzzer even if it's capable of inserting acceptable values with time.
+
+PostProcessorRegistration can be used to avoid such issue and guide your fuzzer towards interesting
+code. It registers callback which will be called for each message of particular type after each mutation.
+
+```
+static protobuf_mutator::libfuzzer::PostProcessorRegistration<MyMessageType> reg = {
+    [](MyMessageType* message, unsigned int seed) {
+      TweakMyMessage(message, seed);
+    }};
+
+DEFINE_PROTO_FUZZER(const MyMessageType& input) {
+  // Code which needs to be fuzzed.
+  ConsumeMyMessageType(input);
+}
+```
+Optional: Use seed if callback uses random numbers. It may help later with debugging.
+
+Important: Callbacks should be deterministic and avoid modifying good messages.
+Callbacks are called for both: mutator generated and user provided inputs, like
+corpus or bug reproducer. So if callback performs unnecessary transformation it
+may corrupt the reproducer so it stops triggering the bug.
+
+Note: You can add callback for any nested message and you can add multiple callbacks for
+the same message type.
+```
+DEFINE_PROTO_FUZZER(const MyMessageType& input) {
+  static PostProcessorRegistration reg1 = {
+      [](MyMessageType* message, unsigned int seed) {
+        TweakMyMessage(message, seed);
+      }};
+  static PostProcessorRegistration reg2 = {
+      [](MyMessageType* message, unsigned int seed) {
+        DifferentTweakMyMessage(message, seed);
+      }};
+  static PostProcessorRegistration reg_nested = {
+      [](MyMessageType::Nested* message, unsigned int seed) {
+        TweakMyNestedMessage(message, seed);
+      }};
+
+  // Code which needs to be fuzzed.
+  ConsumeMyMessageType(input);
+}
+```
 ## UTF-8 strings
 "proto2" and "proto3" handle invalid UTF-8 strings differently. In both cases
 string should be UTF-8, however only "proto3" enforces that. So if fuzzer is
@@ -111,3 +162,4 @@ invalid UTF-8. If it's a "proto3" message type, only valid UTF-8 will be used.
 ## Related materials
 * [Attacking Chrome IPC: Reliably finding bugs to escape the Chrome sandbox](https://media.ccc.de/v/35c3-9579-attacking_chrome_ipc)
 * [Structure-aware fuzzing for Clang and LLVM with libprotobuf-mutator](https://www.youtube.com/watch?v=U60hC16HEDY)
+* [Structure-Aware Fuzzing with libFuzzer](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/structure-aware-fuzzing.md)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,6 +20,7 @@ the full revision, e.g. 9A235.
 
 from __future__ import print_function
 
+import argparse
 import os
 import pkg_resources
 import platform
@@ -27,16 +29,15 @@ import shutil
 import subprocess
 import sys
 
-
-# This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
-# 11B53). To build this package, see comments in build/xcode_binaries.yaml
+# This contains binaries from Xcode 12.2 12B45b, along with the macOS 11 SDK.
+# To build these packages, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
-MAC_BINARIES_TAG = 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC'
+MAC_BINARIES_TAG = 'Uez8drOxhQfCBsViLtHwcbwmi3VzShwUKE_WyBI4lzEC'
 
-# The toolchain will not be downloaded if the minimum OS version is not met.
-# 17 is the major version number for macOS 10.13.
-# 9E145 (Xcode 9.3) only runs on 10.13.2 and newer.
-MAC_MINIMUM_OS_VERSION = 17
+# The toolchain will not be downloaded if the minimum OS version is not met. 19
+# is the major version number for macOS 10.15. 12B5044c (Xcode 12.2rc) only runs
+# on 10.15.4 and newer.
+MAC_MINIMUM_OS_VERSION = [19, 4]
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLCHAIN_ROOT = os.path.join(BASE_DIR, 'mac_files')
@@ -49,9 +50,13 @@ TOOLCHAIN_BUILD_DIR = os.path.join(TOOLCHAIN_ROOT, 'Xcode.app')
 # Note the trailing \n!
 PARANOID_MODE = '$ParanoidMode CheckIntegrity\n'
 
+
 def PlatformMeetsHermeticXcodeRequirements():
-  major_version = int(platform.release().split('.')[0])
-  return major_version >= MAC_MINIMUM_OS_VERSION
+  if sys.platform != 'darwin':
+    return True
+  needed = MAC_MINIMUM_OS_VERSION
+  major_version = [int(v) for v in platform.release().split('.')[:len(needed)]]
+  return major_version >= needed
 
 
 def _UseHermeticToolchain():
@@ -90,7 +95,7 @@ def PrintError(message):
   sys.stderr.flush()
 
 
-def InstallXcodeBinaries():
+def InstallXcodeBinaries(binaries_root=None):
   """Installs the Xcode binaries needed to build Chrome and accepts the license.
 
   This is the replacement for InstallXcode that installs a trimmed down version
@@ -98,42 +103,38 @@ def InstallXcodeBinaries():
   """
   # First make sure the directory exists. It will serve as the cipd root. This
   # also ensures that there will be no conflicts of cipd root.
-  binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
+  if binaries_root is None:
+    binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
   if not os.path.exists(binaries_root):
     os.makedirs(binaries_root)
 
   # 'cipd ensure' is idempotent.
-  args = [
-      'cipd', 'ensure', '-root', binaries_root, '-ensure-file', '-'
-  ]
+  args = ['cipd', 'ensure', '-root', binaries_root, '-ensure-file', '-']
 
-  # Buildbot slaves need to use explicit credentials. LUCI bots should NOT set
-  # this variable. This is temporary code used to make official Xcode bots
-  # happy. https://crbug.com/986488
-  creds = os.environ.get('MAC_TOOLCHAIN_CREDS')
-  if creds:
-    args.extend(['--service-account-json', creds])
-
-  p = subprocess.Popen(
-      args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE)
-  stdout, stderr = p.communicate(
-      input=PARANOID_MODE + MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
+  p = subprocess.Popen(args,
+                       stdin=subprocess.PIPE,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+  stdout, stderr = p.communicate(input=PARANOID_MODE + MAC_BINARIES_LABEL +
+                                 ' ' + MAC_BINARIES_TAG)
   if p.returncode != 0:
     print(stdout)
     print(stderr)
     RequestCipdAuthentication()
     return 1
 
+  if sys.platform != 'darwin':
+    return 0
+
   # Accept the license for this version of Xcode if it's newer than the
   # currently accepted version.
-  cipd_xcode_version_plist_path = os.path.join(
-      binaries_root, 'Contents/version.plist')
+  cipd_xcode_version_plist_path = os.path.join(binaries_root,
+                                               'Contents/version.plist')
   cipd_xcode_version_plist = plistlib.readPlist(cipd_xcode_version_plist_path)
   cipd_xcode_version = cipd_xcode_version_plist['CFBundleShortVersionString']
 
-  cipd_license_path = os.path.join(
-      binaries_root, 'Contents/Resources/LicenseInfo.plist')
+  cipd_license_path = os.path.join(binaries_root,
+                                   'Contents/Resources/LicenseInfo.plist')
   cipd_license_plist = plistlib.readPlist(cipd_license_path)
   cipd_license_version = cipd_license_plist['licenseID']
 
@@ -141,9 +142,10 @@ def InstallXcodeBinaries():
   current_license_path = '/Library/Preferences/com.apple.dt.Xcode.plist'
   if os.path.exists(current_license_path):
     current_license_plist = plistlib.readPlist(current_license_path)
-    xcode_version = current_license_plist['IDEXcodeVersionForAgreedToGMLicense']
-    if (pkg_resources.parse_version(xcode_version) >=
-        pkg_resources.parse_version(cipd_xcode_version)):
+    xcode_version = current_license_plist.get(
+        'IDEXcodeVersionForAgreedToGMLicense')
+    if (xcode_version is not None and pkg_resources.parse_version(xcode_version)
+        >= pkg_resources.parse_version(cipd_xcode_version)):
       should_overwrite_license = False
 
   if not should_overwrite_license:
@@ -152,19 +154,25 @@ def InstallXcodeBinaries():
   # Use puppet's sudoers script to accept the license if its available.
   license_accept_script = '/usr/local/bin/xcode_accept_license.py'
   if os.path.exists(license_accept_script):
-    args = ['sudo', license_accept_script, '--xcode-version',
-            cipd_xcode_version, '--license-version', cipd_license_version]
+    args = [
+        'sudo', license_accept_script, '--xcode-version', cipd_xcode_version,
+        '--license-version', cipd_license_version
+    ]
     subprocess.check_call(args)
     return 0
 
   # Otherwise manually accept the license. This will prompt for sudo.
   print('Accepting new Xcode license. Requires sudo.')
   sys.stdout.flush()
-  args = ['sudo', 'defaults', 'write', current_license_path,
-          'IDEXcodeVersionForAgreedToGMLicense', cipd_xcode_version]
+  args = [
+      'sudo', 'defaults', 'write', current_license_path,
+      'IDEXcodeVersionForAgreedToGMLicense', cipd_xcode_version
+  ]
   subprocess.check_call(args)
-  args = ['sudo', 'defaults', 'write', current_license_path,
-          'IDELastGMLicenseAgreedTo', cipd_license_version]
+  args = [
+      'sudo', 'defaults', 'write', current_license_path,
+      'IDELastGMLicenseAgreedTo', cipd_license_version
+  ]
   subprocess.check_call(args)
   args = ['sudo', 'plutil', '-convert', 'xml1', current_license_path]
   subprocess.check_call(args)
@@ -173,25 +181,25 @@ def InstallXcodeBinaries():
 
 
 def main():
-  if sys.platform != 'darwin':
-    return 0
-
   if not _UseHermeticToolchain():
     print('Skipping Mac toolchain installation for mac')
     return 0
 
+  parser = argparse.ArgumentParser(description='Download hermetic Xcode.')
+  parser.add_argument('--xcode-version', help='deprecated, do not use')
+  args = parser.parse_args()
+
+  # Users in other repositories (v8, pdfium, webrtc) borrow Chromium's toolchain
+  # and depend on this script. Tolerate --xcode-version until all dependents are
+  # weaned.
+  if args.xcode_version is not None:
+    PrintError(
+        '%s: warning: --xcode-version is deprecated and will be removed' %
+        os.path.basename(__file__))
+
   if not PlatformMeetsHermeticXcodeRequirements():
     print('OS version does not support toolchain.')
     return 0
-
-  # Delete obsolete hermetic full Xcode folder, the build now uses
-  # build/mac_files/xcode_binaries instead.
-  if os.path.exists(TOOLCHAIN_BUILD_DIR):
-    # TODO(thakis): Remove this after it's been here for a few months.
-    print('Deleting obsolete build/mac_files/Xcode.app...', end='')
-    sys.stdout.flush()
-    shutil.rmtree(TOOLCHAIN_BUILD_DIR)
-    print('done')
 
   return InstallXcodeBinaries()
 

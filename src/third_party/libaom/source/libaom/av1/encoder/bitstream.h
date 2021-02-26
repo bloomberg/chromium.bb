@@ -35,6 +35,11 @@ uint32_t av1_write_obu_header(AV1LevelParams *const level_params,
 int av1_write_uleb_obu_size(size_t obu_header_size, size_t obu_payload_size,
                             uint8_t *dest);
 
+/*!\brief Pack the bitstream for one frame
+ *
+ * \ingroup high_level_algo
+ * \callgraph
+ */
 int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
                        int *const largest_tile_id);
 

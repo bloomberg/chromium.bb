@@ -1,3 +1,17 @@
+// Copyright 2020 The Abseil Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #ifndef ABSL_STRINGS_INTERNAL_STR_FORMAT_ARG_H_
 #define ABSL_STRINGS_INTERNAL_STR_FORMAT_ARG_H_
 
@@ -25,6 +39,10 @@ class Cord;
 class FormatCountCapture;
 class FormatSink;
 
+template <absl::FormatConversionCharSet C>
+struct FormatConvertResult;
+class FormatConversionSpec;
+
 namespace str_format_internal {
 
 template <typename T, typename = void>
@@ -37,12 +55,35 @@ struct HasUserDefinedConvert<T, void_t<decltype(AbslFormatConvert(
                                     std::declval<FormatSink*>()))>>
     : std::true_type {};
 
+void AbslFormatConvert();  // Stops the lexical name lookup
+template <typename T>
+auto FormatConvertImpl(const T& v, FormatConversionSpecImpl conv,
+                       FormatSinkImpl* sink)
+    -> decltype(AbslFormatConvert(v,
+                                  std::declval<const FormatConversionSpec&>(),
+                                  std::declval<FormatSink*>())) {
+  using FormatConversionSpecT =
+      absl::enable_if_t<sizeof(const T& (*)()) != 0, FormatConversionSpec>;
+  using FormatSinkT =
+      absl::enable_if_t<sizeof(const T& (*)()) != 0, FormatSink>;
+  auto fcs = conv.Wrap<FormatConversionSpecT>();
+  auto fs = sink->Wrap<FormatSinkT>();
+  return AbslFormatConvert(v, fcs, &fs);
+}
+
 template <typename T>
 class StreamedWrapper;
 
 // If 'v' can be converted (in the printf sense) according to 'conv',
 // then convert it, appending to `sink` and return `true`.
 // Otherwise fail and return `false`.
+
+// AbslFormatConvert(v, conv, sink) is intended to be found by ADL on 'v'
+// as an extension mechanism. These FormatConvertImpl functions are the default
+// implementations.
+// The ADL search is augmented via the 'Sink*' parameter, which also
+// serves as a disambiguator to reject possible unintended 'AbslFormatConvert'
+// functions in the namespaces associated with 'v'.
 
 // Raw pointers.
 struct VoidPtr {
@@ -58,6 +99,11 @@ template <FormatConversionCharSet C>
 struct ArgConvertResult {
   bool value;
 };
+
+template <FormatConversionCharSet C>
+constexpr FormatConversionCharSet ExtractCharSet(FormatConvertResult<C>) {
+  return C;
+}
 
 template <FormatConversionCharSet C>
 constexpr FormatConversionCharSet ExtractCharSet(ArgConvertResult<C>) {

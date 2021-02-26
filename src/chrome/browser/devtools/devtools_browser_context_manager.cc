@@ -5,7 +5,7 @@
 #include "chrome/browser/devtools/devtools_browser_context_manager.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,7 +35,7 @@ content::BrowserContext* DevToolsBrowserContextManager::CreateBrowserContext() {
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 
   Profile* otr_profile = original_profile->GetOffTheRecordProfile(
-      Profile::OTRProfileID::CreateUnique("Devtools::BrowserContext"));
+      Profile::OTRProfileID::CreateUniqueForDevTools());
   const std::string& context_id = otr_profile->UniqueId();
   otr_profiles_[context_id] = otr_profile;
   otr_profile->AddObserver(this);

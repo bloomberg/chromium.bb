@@ -19,16 +19,12 @@ class PlatformEventController;
 class MODULES_EXPORT DeviceOrientationEventPump
     : public GarbageCollected<DeviceOrientationEventPump>,
       public DeviceSensorEventPump {
-  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationEventPump);
-
  public:
   // Angle threshold beyond which two orientation events are considered
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  explicit DeviceOrientationEventPump(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool absolute);
+  explicit DeviceOrientationEventPump(LocalFrame&, bool absolute);
   ~DeviceOrientationEventPump() override;
 
   void SetController(PlatformEventController*);
@@ -37,10 +33,10 @@ class MODULES_EXPORT DeviceOrientationEventPump
   // Note that the returned object is owned by this class.
   DeviceOrientationData* LatestDeviceOrientationData();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // DeviceSensorEventPump:
-  void SendStartMessage(LocalFrame* frame) override;
+  void SendStartMessage(LocalFrame& frame) override;
   void SendStopMessage() override;
 
  protected:
@@ -55,8 +51,6 @@ class MODULES_EXPORT DeviceOrientationEventPump
   friend class DeviceOrientationEventPumpTest;
   friend class DeviceAbsoluteOrientationEventPumpTest;
 
-  void StartListening(LocalFrame*);
-  void StopListening();
   void NotifyController();
 
   // DeviceSensorEventPump:
@@ -67,8 +61,9 @@ class MODULES_EXPORT DeviceOrientationEventPump
   bool ShouldFireEvent(const DeviceOrientationData* data) const;
 
   bool absolute_;
-  bool fall_back_to_absolute_orientation_sensor_;
-  bool should_suspend_absolute_orientation_sensor_ = false;
+  // If relative_orientation_sensor_ is requested but fails to initialize then
+  // attempt to fall back to absolute_orientation_sensor_ once.
+  bool attempted_to_fall_back_to_absolute_orientation_sensor_;
   Member<DeviceOrientationData> data_;
   Member<PlatformEventController> controller_;
 

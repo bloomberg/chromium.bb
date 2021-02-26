@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -12,21 +13,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 namespace views {
+class View;
 class Widget;
 }
 
 namespace captions {
 
 class CaptionBubble;
-
-struct CaptionText {
-  std::string final_text;
-  std::string partial_text;
-
-  bool empty() { return final_text.empty() && partial_text.empty(); }
-
-  std::string full_text() { return final_text + partial_text; }
-};
+class CaptionBubbleModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble Controller for Views
@@ -36,20 +30,31 @@ struct CaptionText {
 class CaptionBubbleControllerViews : public CaptionBubbleController,
                                      public TabStripModelObserver {
  public:
+  static views::View* GetCaptionBubbleAccessiblePane(Browser* browser);
+
   explicit CaptionBubbleControllerViews(Browser* browser);
   ~CaptionBubbleControllerViews() override;
   CaptionBubbleControllerViews(const CaptionBubbleControllerViews&) = delete;
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
       delete;
 
-  // Called when a transcription is received from the service.
-  void OnTranscription(
+  // Called when a transcription is received from the service. Returns whether
+  // the transcription result was set on the caption bubble successfully.
+  // Transcriptions will halt if this returns false.
+  bool OnTranscription(
       const chrome::mojom::TranscriptionResultPtr& transcription_result,
       content::WebContents* web_contents) override;
+
+  // Called when the speech service has an error.
+  void OnError(content::WebContents* web_contents) override;
 
   // Called when the caption style changes.
   void UpdateCaptionStyle(
       base::Optional<ui::CaptionStyle> caption_style) override;
+
+  // Returns the view of the caption bubble which should receive focus, if one
+  // exists.
+  views::View* GetFocusableCaptionBubble();
 
  private:
   friend class CaptionBubbleControllerViewsTest;
@@ -64,8 +69,12 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // CaptionBubble is destroyed.
   void OnCaptionBubbleDestroyed();
 
-  // Sets the caption bubble text to the text belonging to the active tab.
-  void SetCaptionBubbleText();
+  // Sets the active contents to the given web contents, and creates a new
+  // CaptionBubbleModel for that contents if one does not already exist.
+  void SetActiveContents(content::WebContents* contents);
+
+  bool IsWidgetVisibleForTesting() override;
+  std::string GetBubbleLabelTextForTesting() override;
 
   CaptionBubble* caption_bubble_;
   views::Widget* caption_widget_;
@@ -74,14 +83,12 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // The web contents corresponding to the active tab.
   content::WebContents* active_contents_;
 
-  // Stores web contents that have received transcription, mapped to their
-  // corresponding caption bubble texts. Store the partial texts as well as the
-  // final texts in order to show the latest partial text to a user when they
-  // switch back to the tab in case the speech service has not sent a final
-  // transcription in a while.
-  std::unordered_map<content::WebContents*, CaptionText> caption_texts_;
+  // A map of web contents and their corresponding CaptionBubbleModel. New
+  // entries are added to this map when a previously un-activated web contents
+  // is activated.
+  std::unordered_map<content::WebContents*, std::unique_ptr<CaptionBubbleModel>>
+      caption_bubble_models_;
 };
-
 }  // namespace captions
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_

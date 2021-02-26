@@ -26,7 +26,6 @@ using NDEFMessageSource = StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
 class NDEFWriter : public ScriptWrappable, public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NDEFWriter);
 
  public:
   static NDEFWriter* Create(ExecutionContext*);
@@ -34,7 +33,7 @@ class NDEFWriter : public ScriptWrappable, public ExecutionContextClient {
   explicit NDEFWriter(ExecutionContext*);
   ~NDEFWriter() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Write NDEFMessageSource asynchronously to NFC tag.
   ScriptPromise write(ScriptState*,

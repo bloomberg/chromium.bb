@@ -66,7 +66,9 @@ bool IsSyncDisabledForSharing(syncer::SyncService* sync_service) {
     return false;
 
   if (sync_service->GetTransportState() ==
-      syncer::SyncService::TransportState::DISABLED) {
+          syncer::SyncService::TransportState::DISABLED ||
+      sync_service->GetTransportState() ==
+          syncer::SyncService::TransportState::PAUSED) {
     return true;
   }
 
@@ -117,7 +119,7 @@ SharingDevicePlatform GetDevicePlatform(const syncer::DeviceInfo& device_info) {
       return SharingDevicePlatform::kWindows;
     case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
     case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-      if (device_info.hardware_info().manufacturer == "Apple Inc.")
+      if (device_info.manufacturer_name() == "Apple Inc.")
         return SharingDevicePlatform::kIOS;
       return SharingDevicePlatform::kAndroid;
     case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:

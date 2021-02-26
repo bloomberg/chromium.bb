@@ -5,6 +5,7 @@
 #include "components/javascript_dialogs/views/app_modal_dialog_view_views.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,16 +22,14 @@ namespace javascript_dialogs {
 AppModalDialogViewViews::AppModalDialogViewViews(
     AppModalDialogController* controller)
     : controller_(controller) {
-  int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
-  if (controller->javascript_dialog_type() ==
-      content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
-    options |= views::MessageBoxView::HAS_PROMPT_FIELD;
+  SetOwnedByWidget(true);
+  message_box_view_ = new views::MessageBoxView(
+      controller->message_text(), /* detect_directionality = */ true);
 
-  views::MessageBoxView::InitParams params(controller->message_text());
-  params.options = options;
-  params.default_prompt = controller->default_prompt_text();
-  message_box_view_ = new views::MessageBoxView(params);
-  DCHECK(message_box_view_);
+  if (controller->javascript_dialog_type() ==
+      content::JAVASCRIPT_DIALOG_TYPE_PROMPT) {
+    message_box_view_->SetPromptField(controller->default_prompt_text());
+  }
 
   message_box_view_->AddAccelerator(
       ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
@@ -107,12 +106,14 @@ base::string16 AppModalDialogViewViews::GetWindowTitle() const {
   return controller_->title();
 }
 
-void AppModalDialogViewViews::DeleteDelegate() {
-  delete this;
-}
-
 ui::ModalType AppModalDialogViewViews::GetModalType() const {
+#if defined(OS_CHROMEOS)
+  // TODO(https://crbug.com/1127133): Remove this hack. This works around the
+  // linked bug. This dialog should be window-modal on ChromeOS as well.
   return ui::MODAL_TYPE_SYSTEM;
+#else
+  return ui::MODAL_TYPE_WINDOW;
+#endif
 }
 
 views::View* AppModalDialogViewViews::GetContentsView() {
@@ -120,8 +121,8 @@ views::View* AppModalDialogViewViews::GetContentsView() {
 }
 
 views::View* AppModalDialogViewViews::GetInitiallyFocusedView() {
-  if (message_box_view_->text_box())
-    return message_box_view_->text_box();
+  if (message_box_view_->GetVisiblePromptField())
+    return message_box_view_->GetVisiblePromptField();
   return views::DialogDelegate::GetInitiallyFocusedView();
 }
 

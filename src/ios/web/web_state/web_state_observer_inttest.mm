@@ -83,6 +83,7 @@ CRWSessionStorage* GetTestSessionStorage(const GURL& testUrl) {
   CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
   [item setURL:testUrl];
   [result setItemStorages:@[ item ]];
+  result.userAgentType = UserAgentType::MOBILE;
   return result;
 }
 
@@ -1960,13 +1961,9 @@ TEST_F(WebStateObserverTest, DownloadNavigation) {
 }
 
 // Tests failed load after the navigation is sucessfully finished.
-// TODO(crbug.com/954232): this test is flaky on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FailedLoad FailedLoad
-#else
-#define MAYBE_FailedLoad FLAKY_FailedLoad
-#endif
-TEST_F(WebStateObserverTest, MAYBE_FailedLoad) {
+// TODO(crbug.com/954232): this test is flaky on device, and as of iOS14
+// simulator as well.
+TEST_F(WebStateObserverTest, FLAKY_FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
@@ -2031,7 +2028,16 @@ TEST_F(WebStateObserverTest, FailedSslConnection) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  // TODO(crbug.com/921916): DidFinishNavigation is not called for SSL errors.
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  // First, a placeholder navigation starts and finishes.
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+
+  // Finally, the error page itself is loaded.
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
   test::LoadUrl(web_state(), url);
@@ -2079,19 +2085,11 @@ TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
           WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error)));
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
-  // TODO(crbug.com/1071117): DidStartNavigation is over-triggered when
-  // |web::features::kUseJSForErrorPage| is enabled.
-  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_,
-              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
 
   GURL url = test_server_->GetURL("/echo");
   test::LoadUrl(web_state(), url);
@@ -2323,8 +2321,9 @@ TEST_F(WebStateObserverTest, StopFinishedNavigation) {
 
 // Tests that iframe navigation triggers DidChangeBackForwardState.
 TEST_F(WebStateObserverTest, IframeNavigation) {
-  // TODO(crbug.com/1076233): Test is failing when running on iOS 13.4.
-  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
+  // This test fails in iOS 13.4 but is fixed in iOS 14. See crbug.com//1076233.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0) &&
+      !base::ios::IsRunningOnIOS14OrLater()) {
     return;
   }
 

@@ -5,13 +5,12 @@
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 
 #include "base/check_op.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
-
-using autofill::PasswordForm;
 
 using Logger = autofill::SavePasswordProgressLogger;
 
@@ -38,20 +37,28 @@ void MultiStoreFormFetcher::Fetch() {
     need_to_refetch_ = true;
     return;
   }
-  // Issue a fetch from the profile password store using the base class
-  // FormFetcherImpl.
-  FormFetcherImpl::Fetch();
-  if (state_ == State::WAITING) {
-    // Fetching from the profile password store is in progress.
-    wait_counter_++;
-  }
 
-  // Issue a fetch from the account password store if available.
   PasswordStore* account_password_store = client_->GetAccountPasswordStore();
-  if (account_password_store) {
-    account_password_store->GetLogins(form_digest_, this);
-    state_ = State::WAITING;
+
+  // Issue a fetch from the profile store and, if it exists, also from the
+  // account store.
+  // Set up |wait_counter_| *before* triggering any of the fetches. This ensures
+  // that things work correctly (i.e. we don't notify of completion too early)
+  // even if the fetches return synchronously (which is the case in tests).
+  wait_counter_++;
+  if (account_password_store)
     wait_counter_++;
+
+  // Let the base class handle the fetch from the profile store.
+  FormFetcherImpl::Fetch();
+  if (account_password_store) {
+    state_ = State::WAITING;
+    account_password_store->GetLogins(form_digest_, this);
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+    // The desktop bubble needs this information.
+    account_password_store->GetMatchingCompromisedCredentials(
+        form_digest_.signon_realm, this);
+#endif
   }
 }
 
@@ -67,8 +74,8 @@ bool MultiStoreFormFetcher::IsBlacklisted() const {
 bool MultiStoreFormFetcher::IsMovingBlocked(
     const autofill::GaiaIdHash& destination,
     const base::string16& username) const {
-  for (const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-           matches_vector : {&federated_, &non_federated_}) {
+  for (const std::vector<std::unique_ptr<PasswordForm>>* matches_vector :
+       {&federated_, &non_federated_}) {
     for (const auto& form : *matches_vector) {
       // Only local entries can be moved to the account store (though
       // account store matches should never have |moving_blocked_for_list|
@@ -98,9 +105,32 @@ std::unique_ptr<FormFetcher> MultiStoreFormFetcher::Clone() {
 
 void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
+  // This class overrides OnGetPasswordStoreResultsFrom() (the version of this
+  // method that also receives the originating store), so the store-less version
+  // never gets called.
+  NOTREACHED();
+}
+
+void MultiStoreFormFetcher::OnGetPasswordStoreResultsFrom(
+    PasswordStore* store,
+    std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   DCHECK_GT(wait_counter_, 0);
 
+  if (should_migrate_http_passwords_ && results.empty() &&
+      form_digest_.url.SchemeIs(url::kHttpsScheme)) {
+    http_migrators_[store] = std::make_unique<HttpPasswordStoreMigrator>(
+        url::Origin::Create(form_digest_.url), store,
+        client_->GetNetworkContext(), this);
+    // The migrator will call us back at ProcessMigratedForms().
+    return;
+  }
+
+  AggregatePasswordStoreResults(std::move(results));
+}
+
+void MultiStoreFormFetcher::AggregatePasswordStoreResults(
+    std::vector<std::unique_ptr<PasswordForm>> results) {
   // Store the results.
   for (auto& form : results)
     partial_results_.push_back(std::move(form));
@@ -125,6 +155,21 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
   ProcessPasswordStoreResults(std::move(partial_results_));
 }
 
+void MultiStoreFormFetcher::ProcessMigratedForms(
+    std::vector<std::unique_ptr<PasswordForm>> forms) {
+  // The migration from HTTP to HTTPS (within the profile store) was finished.
+  // Continue processing with the migrated results.
+  AggregatePasswordStoreResults(std::move(forms));
+}
+
+void MultiStoreFormFetcher::OnGetCompromisedCredentials(
+    std::vector<CompromisedCredentials> compromised_credentials) {
+  // Both the profile and account store has been queried. Therefore, append the
+  // received credentials to the existing ones.
+  base::ranges::move(compromised_credentials,
+                     std::back_inserter(compromised_credentials_));
+}
+
 void MultiStoreFormFetcher::SplitResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   // Compute the |is_blacklisted_in_profile_store_| and
@@ -133,7 +178,7 @@ void MultiStoreFormFetcher::SplitResults(
   is_blacklisted_in_profile_store_ = false;
   is_blacklisted_in_account_store_ = false;
   for (auto& result : results) {
-    if (!result->blacklisted_by_user)
+    if (!result->blocked_by_user)
       continue;
     // Ignore PSL matches for blacklisted entries.
     if (result->is_public_suffix_match)

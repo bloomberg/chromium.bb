@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-jumbo_component("wm") {
+component("wm") {
   sources = [
     "core/accelerator_delegate.h",
     "core/accelerator_filter.cc",
@@ -69,7 +68,7 @@ jumbo_component("wm") {
     "//skia",
     "//ui/aura",
     "//ui/base",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/compositor",
@@ -94,7 +93,7 @@ jumbo_component("wm") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/testing_cursor_client_observer.cc",
@@ -103,7 +102,7 @@ jumbo_static_library("test_support") {
     "test/wm_test_helper.h",
   ]
 
-  public_deps = [ "//ui/base/cursor" ]
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
 
   deps = [
     ":wm",
@@ -119,6 +118,8 @@ jumbo_static_library("test_support") {
 }
 
 test("wm_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "core/capture_controller_unittest.cc",
     "core/compound_event_filter_unittest.cc",
@@ -144,7 +145,7 @@ test("wm_unittests") {
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/base:test_support",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/compositor:test_support",

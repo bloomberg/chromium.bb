@@ -93,7 +93,7 @@ class MockDwarf2Handler: public Dwarf2Handler {
   MOCK_METHOD5(ProcessAttributeBuffer, void(uint64_t offset,
                                             enum DwarfAttribute attr,
                                             enum DwarfForm form,
-                                            const uint8_t *data,
+                                            const uint8_t* data,
                                             uint64_t len));
   MOCK_METHOD4(ProcessAttributeString, void(uint64_t offset,
                                             enum DwarfAttribute attr,
@@ -128,17 +128,17 @@ struct DIEFixture {
   // to |info|, and whose .debug_abbrev section refers to |abbrevs|. This
   // function returns a reference to the same SectionMap each time; new
   // calls wipe out maps established by earlier calls.
-  const SectionMap &MakeSectionMap() {
+  const SectionMap& MakeSectionMap() {
     // Copy the sections' contents into strings that will live as long as
     // the map itself.
     assert(info.GetContents(&info_contents));
     assert(abbrevs.GetContents(&abbrevs_contents));
     section_map.clear();
     section_map[".debug_info"].first
-      = reinterpret_cast<const uint8_t *>(info_contents.data());
+      = reinterpret_cast<const uint8_t*>(info_contents.data());
     section_map[".debug_info"].second = info_contents.size();
     section_map[".debug_abbrev"].first
-      = reinterpret_cast<const uint8_t *>(abbrevs_contents.data());
+      = reinterpret_cast<const uint8_t*>(abbrevs_contents.data());
     section_map[".debug_abbrev"].second = abbrevs_contents.size();
     return section_map;
   }
@@ -218,6 +218,8 @@ INSTANTIATE_TEST_CASE_P(
                       DwarfHeaderParams(kLittleEndian, 8, 3, 8),
                       DwarfHeaderParams(kLittleEndian, 8, 4, 4),
                       DwarfHeaderParams(kLittleEndian, 8, 4, 8),
+                      DwarfHeaderParams(kLittleEndian, 8, 5, 4),
+                      DwarfHeaderParams(kLittleEndian, 8, 5, 8),
                       DwarfHeaderParams(kBigEndian,    4, 2, 4),
                       DwarfHeaderParams(kBigEndian,    4, 2, 8),
                       DwarfHeaderParams(kBigEndian,    4, 3, 4),
@@ -229,14 +231,16 @@ INSTANTIATE_TEST_CASE_P(
                       DwarfHeaderParams(kBigEndian,    8, 3, 4),
                       DwarfHeaderParams(kBigEndian,    8, 3, 8),
                       DwarfHeaderParams(kBigEndian,    8, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 8)));
+                      DwarfHeaderParams(kBigEndian,    8, 4, 8),
+                      DwarfHeaderParams(kBigEndian,    8, 5, 4),
+                      DwarfHeaderParams(kBigEndian,    8, 5, 8)));
 
 struct DwarfFormsFixture: public DIEFixture {
   // Start a compilation unit, as directed by |params|, containing one
   // childless DIE of the given tag, with one attribute of the given name
   // and form. The 'info' fixture member is left just after the abbrev
   // code, waiting for the attribute value to be appended.
-  void StartSingleAttributeDIE(const DwarfHeaderParams &params,
+  void StartSingleAttributeDIE(const DwarfHeaderParams& params,
                                DwarfTag tag, DwarfAttribute name,
                                DwarfForm form) {
     // Create the abbreviation table.
@@ -256,7 +260,7 @@ struct DwarfFormsFixture: public DIEFixture {
   // Set up handler to expect a compilation unit matching |params|,
   // containing one childless DIE of the given tag, in the sequence s. Stop
   // just before the expectations.
-  void ExpectBeginCompilationUnit(const DwarfHeaderParams &params,
+  void ExpectBeginCompilationUnit(const DwarfHeaderParams& params,
                                   DwarfTag tag, uint64_t offset=0) {
     EXPECT_CALL(handler,
                 StartCompilationUnit(offset, params.address_size,
@@ -275,7 +279,7 @@ struct DwarfFormsFixture: public DIEFixture {
         .WillOnce(Return());
   }
 
-  void ParseCompilationUnit(const DwarfHeaderParams &params,
+  void ParseCompilationUnit(const DwarfHeaderParams& params,
                             uint64_t offset=0) {
     ByteReader byte_reader(params.endianness == kLittleEndian ?
                            ENDIANNESS_LITTLE : ENDIANNESS_BIG);

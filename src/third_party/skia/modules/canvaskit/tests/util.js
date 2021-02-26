@@ -18,7 +18,7 @@ const _commonGM = (it, pause, name, callback, assetsToFetchOrPromisesToWaitOn) =
     }
     it('draws gm '+name, (done) => {
         const surface = CanvasKit.MakeCanvasSurface('test');
-        expect(surface).toBeTruthy('Could not make surface')
+        expect(surface).toBeTruthy('Could not make surface');
         if (!surface) {
             done();
             return;
@@ -27,13 +27,16 @@ const _commonGM = (it, pause, name, callback, assetsToFetchOrPromisesToWaitOn) =
         // resolve right away and just call the callback.
         Promise.all(fetchPromises).then((values) => {
             try {
-                callback(surface.getCanvas(), values);
+                // If callback returns a promise, the chained .then
+                // will wait for it.
+                return callback(surface.getCanvas(), values);
             } catch (e) {
                 console.log(`gm ${name} failed with error`, e);
                 expect(e).toBeFalsy();
                 debugger;
                 done();
             }
+        }).then(() => {
             surface.flush();
             if (pause) {
                 reportSurface(surface, name, null);
@@ -52,7 +55,7 @@ const _commonGM = (it, pause, name, callback, assetsToFetchOrPromisesToWaitOn) =
  * Takes a name, a callback, and any number of assets or promises. It executes the
  * callback (presumably, the test) and reports the resulting surface to Gold.
  * @param name {string}
- * @param callback {Function}, has two params, the first is a CanvasKit.SkCanvas
+ * @param callback {Function}, has two params, the first is a CanvasKit.Canvas
  *    and the second is an array of results from the passed in assets or promises.
  *    If a given assetOrPromise was a string, the result will be an ArrayBuffer.
  * @param assetsToFetchOrPromisesToWaitOn {string|Promise}. If a string, it will
@@ -134,10 +137,10 @@ const _commonMultipleCanvasGM = (it, pause, name, callback) => {
 
 /**
  * Takes a name and a callback. It executes the callback (presumably, the test)
- * for both a CanvasKit.SkCanvas and a native Canvas2D. The result of both will be
+ * for both a CanvasKit.Canvas and a native Canvas2D. The result of both will be
  * uploaded to Gold.
  * @param name {string}
- * @param callback {Function}, has one param, either a CanvasKit.SkCanvas or a native
+ * @param callback {Function}, has one param, either a CanvasKit.Canvas or a native
  *    Canvas2D object.
  */
 const multipleCanvasGM = (name, callback) => {
@@ -183,7 +186,16 @@ function reportSurface(surface, testname, done) {
     // data. So, we copy it out and draw it to a normal canvas to take a picture.
     // To be consistent across CPU and GPU, we just do it for all configurations
     // (even though the CPU canvas shows up after flush just fine).
-    let pixels = surface.getCanvas().readPixels(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    let pixels = surface.getCanvas().readPixels(0, 0, {
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        colorType: CanvasKit.ColorType.RGBA_8888,
+        alphaType: CanvasKit.AlphaType.Unpremul,
+        colorSpace: CanvasKit.ColorSpace.SRGB,
+    });
+    if (!pixels) {
+        throw 'Could not get pixels for test '+testname;
+    }
     pixels = new Uint8ClampedArray(pixels.buffer);
     const imageData = new ImageData(pixels, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -197,7 +209,7 @@ function reportSurface(surface, testname, done) {
 
 
 function starPath(CanvasKit, X=128, Y=128, R=116) {
-    const p = new CanvasKit.SkPath();
+    const p = new CanvasKit.Path();
     p.moveTo(X + R, Y);
     for (let i = 1; i < 8; i++) {
       let a = 2.6927937 * i;

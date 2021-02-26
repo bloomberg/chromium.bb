@@ -36,6 +36,7 @@
 #include "base/profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -81,7 +82,7 @@ Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
   return Response::Success();
 }
 
-void InspectorMemoryAgent::Trace(Visitor* visitor) {
+void InspectorMemoryAgent::Trace(Visitor* visitor) const {
   visitor->Trace(frames_);
   InspectorBaseAgent::Trace(visitor);
 }
@@ -185,7 +186,7 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
 
 Vector<String> InspectorMemoryAgent::Symbolize(
     const WebVector<void*>& addresses) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // TODO(alph): Move symbolization to the client.
   Vector<void*> addresses_to_symbolize;
   for (size_t i = 0; i < addresses.size(); i++) {

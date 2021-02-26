@@ -4,27 +4,25 @@
 
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/ios/ios_util.h"
-#include "ios/chrome/browser/ui/util/multi_window_buildflags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 bool IsMultiwindowSupported() {
-#if BUILDFLAG(IOS_MULTIWINDOW_ENABLED)
-  return base::ios::IsRunningOnIOS13OrLater();
-#else
-  return false;
-#endif
+  return base::ios::IsMultiwindowSupported();
 }
 
 bool IsSceneStartupSupported() {
-  if (IsMultiwindowSupported())
-    return true;
-#if BUILDFLAG(IOS_SCENE_STARTUP_ENABLED)
-  return base::ios::IsRunningOnIOS13OrLater();
-#else
+  return base::ios::IsSceneStartupSupported();
+}
+
+bool IsMultipleScenesSupported() {
+  if (@available(iOS 13, *)) {
+    return UIApplication.sharedApplication.supportsMultipleScenes;
+  }
   return false;
-#endif
 }

@@ -43,13 +43,11 @@ class CrostiniPortForwarder : public KeyedService {
   struct PortRuleKey {
     uint16_t port_number;
     Protocol protocol_type;
-    std::string input_ifname;
     ContainerId container_id;
 
     bool operator==(const PortRuleKey& other) const {
       return port_number == other.port_number &&
-             protocol_type == other.protocol_type &&
-             input_ifname == other.input_ifname;
+             protocol_type == other.protocol_type;
     }
   };
 
@@ -58,8 +56,7 @@ class CrostiniPortForwarder : public KeyedService {
     std::size_t operator()(const PortRuleKey& k) const {
       return ((std::hash<uint16_t>()(k.port_number) ^
                (std::hash<Protocol>()(k.protocol_type) << 1)) >>
-              1) ^
-             (std::hash<std::string>()(k.input_ifname) << 1);
+              1);
     }
   };
 
@@ -110,6 +107,7 @@ class CrostiniPortForwarder : public KeyedService {
   size_t GetNumberOfForwardedPortsForTesting();
   base::Optional<base::Value> ReadPortPreferenceForTesting(
       const PortRuleKey& key);
+  void ActiveNetworksChanged(const std::string& interface);
 
   static CrostiniPortForwarder* GetForProfile(Profile* profile);
 
@@ -129,9 +127,9 @@ class CrostiniPortForwarder : public KeyedService {
   bool RemovePortPreference(const PortRuleKey& key);
   base::Optional<base::Value> ReadPortPreference(const PortRuleKey& key);
 
-  void OnAddOrActivatePortCompleted(ResultCallback result_callback,
-                                    PortRuleKey key,
-                                    bool success);
+  void OnActivatePortCompleted(ResultCallback result_callback,
+                               PortRuleKey key,
+                               bool success);
   void OnRemoveOrDeactivatePortCompleted(ResultCallback result_callback,
                                          PortRuleKey key,
                                          bool success);
@@ -141,11 +139,15 @@ class CrostiniPortForwarder : public KeyedService {
   void TryActivatePort(const PortRuleKey& key,
                        const ContainerId& container_id,
                        base::OnceCallback<void(bool)> result_callback);
+  void UpdateActivePortInterfaces();
 
   // For each port rule (protocol, port, interface), keep track of the fd which
   // requested it so we can release it on removal / deactivate.
   std::unordered_map<PortRuleKey, base::ScopedFD, PortRuleKeyHasher>
       forwarded_ports_;
+
+  // Current interface to forward ports on.
+  std::string current_interface_;
 
   base::ObserverList<Observer> observers_;
 

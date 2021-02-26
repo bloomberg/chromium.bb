@@ -9,18 +9,19 @@ import * as UI from '../ui/ui.js';
  */
 export class AnimationScreenshotPopover extends UI.Widget.VBox {
   /**
-   * @param {!Array.<!Image>} images
+   * @param {!Array.<!HTMLImageElement>} images
    */
   constructor(images) {
     super(true);
-    console.assert(images.length);
-    this.registerRequiredCSS('animation/animationScreenshotPopover.css');
+    console.assert(images.length > 0);
+    this.registerRequiredCSS('animation/animationScreenshotPopover.css', {enableLegacyPatching: true});
     this.contentElement.classList.add('animation-screenshot-popover');
     this._frames = images;
     for (const image of images) {
       this.contentElement.appendChild(image);
       image.style.display = 'none';
     }
+    this._rafId = 0;
     this._currentFrame = 0;
     this._frames[0].style.display = 'block';
     this._progressBar = this.contentElement.createChild('div', 'animation-progress');

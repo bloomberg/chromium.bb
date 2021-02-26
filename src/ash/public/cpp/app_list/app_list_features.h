@@ -18,20 +18,11 @@ namespace app_list_features {
 // Please keep these features sorted.
 // TODO(newcomer|weidongg): Sort these features.
 
-// Enables the answer card in the app list.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAnswerCard;
-
-// Enables the Play Store app search.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
-
 // Enables in-app data search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
 
 // Enables the Settings shortcut search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
-
-// Enables the feature to display zero state suggestions.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
@@ -67,9 +58,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
-// Enables using the aggregated Ml model to rank suggested apps.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlAppRanking;
-
 // Enables using the fuzzy search algorithm for app search provider.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableFuzzyAppSearch;
 
@@ -88,11 +76,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
 // apps grid pages are scaled down and shown a background card.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewDragSpecInLauncher;
 
-bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
-bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
+// Enables rich entity formatting for Omnibox results in the launcher.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableOmniboxRichEntities;
+
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAppRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
@@ -103,12 +91,12 @@ bool ASH_PUBLIC_EXPORT IsSuggestedFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
-bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsExactMatchForNonLatinLocaleEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSettingsSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsNewDragSpecInLauncherEnabled();
+bool ASH_PUBLIC_EXPORT IsOmniboxRichEntitiesEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

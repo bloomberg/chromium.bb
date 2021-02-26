@@ -8,11 +8,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 import android.util.Base64;
 import android.view.Menu;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,9 +24,10 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -32,12 +35,10 @@ import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabTestUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
@@ -55,8 +56,8 @@ public class CustomTabFromChromeExternalNavigationTest {
     public CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
 
     @Rule
-    public ChromeActivityTestRule mChromeActivityTestRule =
-            new ChromeActivityTestRule(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mChromeActivityTestRule =
+            new ChromeTabbedActivityTestRule();
 
     public EmbeddedTestServerRule mServerRule = new EmbeddedTestServerRule();
 
@@ -141,9 +142,10 @@ public class CustomTabFromChromeExternalNavigationTest {
             return true;
         }, "Navigation delegate never initialized.");
 
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        navigationDelegate.get()::getLastOverrideUrlLoadingResultForTests));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(navigationDelegate.get().getLastOverrideUrlLoadingResultForTests(),
+                    Matchers.is(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT));
+        });
 
         CriteriaHelper.pollUiThread(() -> {
             int state = ApplicationStatus.getStateForActivity(mActivityRule.getActivity());

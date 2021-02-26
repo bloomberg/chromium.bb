@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_features.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -49,7 +48,8 @@ using content::BrowsingDataRemover;
 namespace {
 
 void OnBrowsingDataRemoverDone(
-    JavaObjectWeakGlobalRef weak_chrome_native_preferences) {
+    JavaObjectWeakGlobalRef weak_chrome_native_preferences,
+    uint64_t failed_data_types) {
   JNIEnv* env = AttachCurrentThread();
   auto java_obj = weak_chrome_native_preferences.get(env);
   if (java_obj.is_null())
@@ -94,7 +94,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
 
-  int remove_mask = 0;
+  uint64_t remove_mask = 0;
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
       case browsing_data::BrowsingDataType::HISTORY:
@@ -110,6 +110,8 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
         break;
       case browsing_data::BrowsingDataType::PASSWORDS:
         remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+        remove_mask |=
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_ACCOUNT_PASSWORDS;
         break;
       case browsing_data::BrowsingDataType::FORM_DATA:
         remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
@@ -145,7 +147,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
                                          &ignoring_domain_reasons);
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
       content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::BLACKLIST));
+          content::BrowsingDataFilterBuilder::Mode::kPreserve));
   for (const std::string& domain : excluding_domains) {
     filter_builder->AddRegisterableDomain(domain);
   }
@@ -156,7 +158,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
         ignoring_domain_reasons);
   }
 
-  base::OnceClosure callback = base::BindOnce(
+  base::OnceCallback<void(uint64_t)> callback = base::BindOnce(
       &OnBrowsingDataRemoverDone, JavaObjectWeakGlobalRef(env, obj));
 
   browsing_data::TimePeriod period =

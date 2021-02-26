@@ -21,6 +21,8 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/dialog_model.h"
+#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
@@ -44,66 +46,33 @@ constexpr int kMaxIgnored = 50;
 // The number of buckets we want the NumLaterPerReinstall histogram to use.
 constexpr int kNumIgnoredBuckets = 5;
 
-// The currently showing bubble.
-OutdatedUpgradeBubbleView* g_upgrade_bubble = nullptr;
+bool g_upgrade_bubble_is_showing = false;
 
 // The number of times the user ignored the bubble before finally choosing to
 // reinstall.
 int g_num_ignored_bubbles = 0;
 
-}  // namespace
+void OnWindowClosing() {
+  g_upgrade_bubble_is_showing = false;
 
-// OutdatedUpgradeBubbleView ---------------------------------------------------
-
-// static
-void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
-                                           content::PageNavigator* navigator,
-                                           bool auto_update_enabled) {
-  if (g_upgrade_bubble)
-    return;
-  g_upgrade_bubble = new OutdatedUpgradeBubbleView(anchor_view, navigator,
-                                                   auto_update_enabled);
-  views::BubbleDialogDelegateView::CreateBubble(g_upgrade_bubble)->Show();
-  base::RecordAction(
-      auto_update_enabled
-          ? base::UserMetricsAction("OutdatedUpgradeBubble.Show")
-          : base::UserMetricsAction("OutdatedUpgradeBubble.ShowNoAU"));
-}
-
-OutdatedUpgradeBubbleView::~OutdatedUpgradeBubbleView() {
   // Increment the ignored bubble count (if this bubble wasn't ignored, this
-  // increment is offset by a decrement in Accept()).
+  // increment is offset by a decrement in OnDialogAccepted()).
   if (g_num_ignored_bubbles < kMaxIgnored)
     ++g_num_ignored_bubbles;
 }
 
-void OutdatedUpgradeBubbleView::WindowClosing() {
-  // Reset |g_upgrade_bubble| here, not in destructor, because destruction is
-  // asynchronous and ShowBubble may be called before full destruction and
-  // would attempt to show a bubble that is closing.
-  DCHECK_EQ(g_upgrade_bubble, this);
-  g_upgrade_bubble = nullptr;
-}
-
-base::string16 OutdatedUpgradeBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE);
-}
-
-bool OutdatedUpgradeBubbleView::ShouldShowCloseButton() const {
-  return true;
-}
-
-void OutdatedUpgradeBubbleView::OnDialogAccepted() {
-  // Offset the +1 in the dtor.
+void OnDialogAccepted(content::PageNavigator* navigator,
+                      bool auto_update_enabled) {
+  // Offset the +1 in OnWindowClosing().
   --g_num_ignored_bubbles;
-  if (auto_update_enabled_) {
+  if (auto_update_enabled) {
     DCHECK(UpgradeDetector::GetInstance()->is_outdated_install());
     UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerReinstall",
                                 g_num_ignored_bubbles, 1, kMaxIgnored,
                                 kNumIgnoredBuckets);
     base::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
-    navigator_->OpenURL(
+    navigator->OpenURL(
         content::OpenURLParams(GURL(kDownloadChromeUrl), content::Referrer(),
                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                ui::PAGE_TRANSITION_LINK, false));
@@ -131,37 +100,43 @@ void OutdatedUpgradeBubbleView::OnDialogAccepted() {
   }
 }
 
-void OutdatedUpgradeBubbleView::Init() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-  auto text_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-      views::style::STYLE_SECONDARY);
-  text_label->SetMultiLine(true);
-  text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label->SizeToFit(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-      margins().width());
-  AddChildView(std::move(text_label));
-}
+}  // namespace
 
-OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
-    views::View* anchor_view,
-    content::PageNavigator* navigator,
-    bool auto_update_enabled)
-    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      auto_update_enabled_(auto_update_enabled),
-      navigator_(navigator) {
-  SetButtons(ui::DIALOG_BUTTON_OK);
-  SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(auto_update_enabled_ ? IDS_REINSTALL_APP
-                                                     : IDS_REENABLE_UPDATES));
-  SetAcceptCallback(base::BindOnce(&OutdatedUpgradeBubbleView::OnDialogAccepted,
-                                   base::Unretained(this)));
-  SetCloseCallback(
-      base::BindOnce(&base::RecordAction,
-                     base::UserMetricsAction("OutdatedUpgradeBubble.Later")));
+// OutdatedUpgradeBubbleView ---------------------------------------------------
+
+// static
+void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
+                                           content::PageNavigator* navigator,
+                                           bool auto_update_enabled) {
+  if (g_upgrade_bubble_is_showing)
+    return;
+
+  g_upgrade_bubble_is_showing = true;
+
+  auto dialog_model =
+      ui::DialogModel::Builder()
+          .SetTitle(l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE))
+          .AddOkButton(
+              base::BindOnce(&OnDialogAccepted, navigator, auto_update_enabled),
+              l10n_util::GetStringUTF16(auto_update_enabled
+                                            ? IDS_REINSTALL_APP
+                                            : IDS_REENABLE_UPDATES))
+          .AddBodyText(
+              ui::DialogModelLabel(IDS_UPGRADE_BUBBLE_TEXT).set_is_secondary())
+          .SetWindowClosingCallback(base::BindOnce(&OnWindowClosing))
+          .SetCloseCallback(base::BindOnce(
+              &base::RecordAction,
+              base::UserMetricsAction("OutdatedUpgradeBubble.Later")))
+          .Build();
+
+  auto bubble = std::make_unique<views::BubbleDialogModelHost>(
+      std::move(dialog_model), anchor_view, views::BubbleBorder::TOP_RIGHT);
+  views::BubbleDialogDelegateView::CreateBubble(std::move(bubble))->Show();
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::OUTDATED_UPGRADE);
+
+  base::RecordAction(
+      auto_update_enabled
+          ? base::UserMetricsAction("OutdatedUpgradeBubble.Show")
+          : base::UserMetricsAction("OutdatedUpgradeBubble.ShowNoAU"));
 }

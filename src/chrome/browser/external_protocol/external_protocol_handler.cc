@@ -5,6 +5,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -13,13 +14,16 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
@@ -76,13 +80,12 @@ constexpr const char* kAllowedSchemes[] = {
 // Functions enabling unit testing. Using a NULL delegate will use the default
 // behavior; if a delegate is provided it will be used instead.
 scoped_refptr<shell_integration::DefaultProtocolClientWorker> CreateShellWorker(
-    const shell_integration::DefaultWebClientWorkerCallback& callback,
     const std::string& protocol,
     ExternalProtocolHandler::Delegate* delegate) {
   if (delegate)
-    return delegate->CreateShellWorker(callback, protocol);
+    return delegate->CreateShellWorker(protocol);
   return base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      callback, protocol);
+      protocol);
 }
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
@@ -109,6 +112,19 @@ void RunExternalProtocolDialogWithDelegate(
                                         has_user_gesture, initiating_origin);
     return;
   }
+
+#if defined(OS_MAC) || defined(OS_WIN)
+  // If the Shell does not have a registered name for the protocol,
+  // attempting to invoke the protocol will fail.
+  if (shell_integration::GetApplicationNameForProtocol(url).empty()) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Failed to launch '" + url.possibly_invalid_spec() +
+            "' because the scheme does not have a registered handler.");
+    return;
+  }
+#endif
+
   ExternalProtocolHandler::RunExternalProtocolDialog(
       url, web_contents, page_transition, has_user_gesture, initiating_origin);
 }
@@ -126,6 +142,10 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
   // that the external protocol request came from the main frame.
   if (!web_contents)
     return;
+
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kInfo,
+      "Launched external handler for '" + url.possibly_invalid_spec() + "'.");
 
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
@@ -209,6 +229,42 @@ void OnDefaultProtocolClientWorkerFinished(
                                             delegate);
 }
 
+bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
+                                       const url::Origin* initiating_origin,
+                                       PrefService* prefs) {
+  if (!initiating_origin)
+    return false;
+
+  const base::ListValue* exempted_protocols =
+      prefs->GetList(prefs::kAutoLaunchProtocolsFromOrigins);
+  if (!exempted_protocols)
+    return false;
+
+  const base::Value* origin_patterns = nullptr;
+  for (const base::Value& entry : exempted_protocols->GetList()) {
+    const base::DictionaryValue& protocol_origins_map =
+        base::Value::AsDictionaryValue(entry);
+    const std::string* protocol = protocol_origins_map.FindStringKey(
+        policy::AutoLaunchProtocolsPolicyHandler::kProtocolNameKey);
+    DCHECK(protocol);
+    if (*protocol == scheme) {
+      origin_patterns = protocol_origins_map.FindListKey(
+          policy::AutoLaunchProtocolsPolicyHandler::kOriginListKey);
+      break;
+    }
+  }
+  if (!origin_patterns)
+    return false;
+
+  url_matcher::URLMatcher matcher;
+  url_matcher::URLMatcherConditionSet::ID id(0);
+  policy::url_util::AddFilters(&matcher, true /* allowed */, &id,
+                               &base::Value::AsListValue(*origin_patterns));
+
+  auto matching_set = matcher.MatchURL(initiating_origin->GetURL());
+  return !matching_set.empty();
+}
+
 }  // namespace
 
 const char ExternalProtocolHandler::kHandleStateMetric[] =
@@ -257,6 +313,11 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs) {  // May be NULL during testing.
+    if (IsSchemeOriginPairAllowedByPolicy(scheme, initiating_origin,
+                                          profile_prefs)) {
+      return DONT_BLOCK;
+    }
+
     if (MayRememberAllowDecisionsForThisOrigin(initiating_origin)) {
       // Check if there is a matching {Origin+Protocol} pair exemption:
       const base::DictionaryValue* allowed_origin_protocol_pairs =
@@ -350,6 +411,11 @@ void ExternalProtocolHandler::LaunchUrl(
       escaped_url.scheme(), base::OptionalOrNullptr(initiating_origin),
       g_external_protocol_handler_delegate, profile);
   if (block_state == BLOCK) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Not allowed to launch '" + url.possibly_invalid_spec() + "'" +
+            (g_accept_requests ? "." : " because a user gesture is required."));
+
     if (g_external_protocol_handler_delegate)
       g_external_protocol_handler_delegate->BlockRequest();
     return;
@@ -373,7 +439,7 @@ void ExternalProtocolHandler::LaunchUrl(
 
   // The worker creates tasks with references to itself and puts them into
   // message loops.
-  shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
+  shell_integration::DefaultWebClientWorkerCallback callback = base::BindOnce(
       &OnDefaultProtocolClientWorkerFinished, escaped_url,
       render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
       page_transition, has_user_gesture, initiating_origin_or_precursor,
@@ -382,17 +448,26 @@ void ExternalProtocolHandler::LaunchUrl(
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to
   // OnDefaultProtocolClientWorkerFinished().
-  CreateShellWorker(callback, escaped_url.scheme(),
-                    g_external_protocol_handler_delegate)
-      ->StartCheckIsDefault();
+  CreateShellWorker(escaped_url.scheme(), g_external_protocol_handler_delegate)
+      ->StartCheckIsDefault(std::move(callback));
 }
 
 // static
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
     const GURL& url,
     content::WebContents* web_contents) {
+  // Escape the input scheme to be sure that the command does not
+  // have parameters unexpected by the external program. The url passed in the
+  // |url| parameter might already be escaped but the EscapeExternalHandlerValue
+  // is idempotent so it is safe to apply it again.
+  // TODO(788244): This essentially amounts to "remove illegal characters from
+  // the URL", something that probably should be done by the GURL constructor
+  // itself.
+  std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
+  GURL escaped_url(escaped_url_string);
+
   LaunchUrlWithoutSecurityCheckWithDelegate(
-      url, web_contents, g_external_protocol_handler_delegate);
+      escaped_url, web_contents, g_external_protocol_handler_delegate);
 }
 
 // static
@@ -427,6 +502,8 @@ void ExternalProtocolHandler::RecordHandleStateMetrics(bool checkbox_selected,
 void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(
       prefs::kProtocolHandlerPerOriginAllowedProtocols);
+
+  registry->RegisterListPref(prefs::kAutoLaunchProtocolsFromOrigins);
 }
 
 // static

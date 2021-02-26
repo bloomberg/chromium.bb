@@ -9,7 +9,7 @@
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_observer.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
@@ -54,8 +54,6 @@ class ASH_EXPORT AccessibilityDetailedView : public TrayDetailedView {
 
   // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
-  void HandleButtonPressed(views::Button* sender,
-                           const ui::Event& event) override;
   void CreateExtraTitleRowButtons() override;
 
   // Launches the WebUI settings in a browser and closes the system menu.

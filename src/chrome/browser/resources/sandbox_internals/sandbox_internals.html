@@ -12,6 +12,7 @@
       #sandbox-status td {
         border: 1px solid gray;
         padding: 3px;
+        vertical-align: top;
       }
       #evaluation {
         font-weight: bold;
@@ -28,12 +29,23 @@
       .info {
         background-color: rgb(169, 217, 239);
       }
+<if expr="is_win">
+      .expander {
+        display: inline;
+        padding-right: 1em;
+      }
+      .mitigations {
+        display: inline;
+        font-family: monospace;
+      }
+</if>
     </style>
     <script src="chrome://resources/js/cr.js"></script>
 <if expr="is_linux">
     <script src="chrome://resources/js/load_time_data.js"></script>
     <script src="chrome://sandbox/strings.js"></script>
 </if>
+    <script src="chrome://resources/js/assert.js"></script>
 <if expr="is_win">
     <script src="chrome://resources/js/promise_resolver.js"></script>
 </if>

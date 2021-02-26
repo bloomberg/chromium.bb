@@ -204,6 +204,14 @@ class TraceBuffer {
   // batch of patches for the chunk or there is more.
   // If |other_patches_pending| == false, the chunk is marked as ready to be
   // consumed. If true, the state of the chunk is not altered.
+  //
+  // Note: If the producer is batching commits (see shared_memory_arbiter.h), it
+  // will also attempt to do patching locally. Namely, if nested messages are
+  // completed while the chunk on which they started is being batched (i.e.
+  // before it has been committed to the service), the producer will apply the
+  // respective patches to the batched chunk. These patches will not be sent to
+  // the service - i.e. only the patches that the producer did not manage to
+  // apply before committing the chunk will be applied here.
   bool TryPatchChunkContents(ProducerID,
                              WriterID,
                              ChunkID,
@@ -649,7 +657,7 @@ class TraceBuffer {
   // When true disable some DCHECKs that have been put in place to detect
   // bugs in the producers. This is for tests that feed malicious inputs and
   // hence mimic a buggy producer.
-  bool suppress_sanity_dchecks_for_testing_ = false;
+  bool suppress_client_dchecks_for_testing_ = false;
 };
 
 }  // namespace perfetto

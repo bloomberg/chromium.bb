@@ -7,6 +7,7 @@
 
 #include <unordered_set>
 
+#include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
@@ -16,6 +17,10 @@
 struct SkRect;
 struct SkIRect;
 class SkRRect;
+
+namespace gpu {
+struct Mailbox;
+}
 
 namespace cc {
 
@@ -64,16 +69,20 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const sk_sp<SkTextBlob>& blob);
   void Write(SkColorType color_type);
   void Write(SkYUVColorSpace yuv_color_space);
+  void Write(const gpu::Mailbox& mailbox);
 
   void Write(SkClipOp op) { Write(static_cast<uint8_t>(op)); }
   void Write(PaintCanvas::AnnotationType type) {
     Write(static_cast<uint8_t>(type));
   }
-  void Write(PaintCanvas::SrcRectConstraint constraint) {
+  void Write(SkCanvas::SrcRectConstraint constraint) {
     Write(static_cast<uint8_t>(constraint));
   }
   void Write(SkFilterQuality filter_quality) {
     Write(static_cast<uint8_t>(filter_quality));
+  }
+  void Write(SkBlendMode blend_mode) {
+    Write(static_cast<uint8_t>(blend_mode));
   }
   void Write(bool data) { Write(static_cast<uint8_t>(data)); }
 
@@ -103,7 +112,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // image.
   void Write(const DrawImage& draw_image, SkSize* scale_adjustment);
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
   // Serializes the given |skottie| vector graphic.
   void Write(scoped_refptr<SkottieWrapper> skottie);
 #endif
@@ -144,7 +153,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
              const gfx::SizeF& post_scale,
              const SkMatrix& post_matrix_for_analysis);
   void Write(const SkRegion& region);
+  void WriteImage(const DecodedDrawImage& decoded_draw_image);
   void WriteImage(uint32_t transfer_cache_entry_id, bool needs_mips);
+  void WriteImage(const gpu::Mailbox& mailbox);
 
   void EnsureBytes(size_t required_bytes);
   sk_sp<PaintShader> TransformShaderIfNecessary(
@@ -152,7 +163,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
       SkFilterQuality quality,
       uint32_t* paint_image_transfer_cache_entry_id,
       gfx::SizeF* paint_record_post_scale,
-      bool* paint_image_needs_mips);
+      bool* paint_image_needs_mips,
+      gpu::Mailbox* mailbox_out);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;

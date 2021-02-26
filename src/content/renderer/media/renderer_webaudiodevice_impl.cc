@@ -16,17 +16,18 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
 #include "media/base/silent_sink_suspender.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
+#include "third_party/blink/public/web/modules/media/audio/web_audio_device_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
 using blink::WebAudioDevice;
+using blink::WebAudioDeviceFactory;
 using blink::WebAudioLatencyHint;
 using blink::WebLocalFrame;
 using blink::WebVector;
@@ -83,26 +84,23 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
   return 0;
 }
 
-int FrameIdFromCurrentContext() {
-  // Assumption: This method is being invoked within a V8 call stack.  CHECKs
+blink::LocalFrameToken FrameTokenFromCurrentContext() {
+  // Assumption: This method is being invoked within a V8 call stack. CHECKs
   // will fail in the call to frameForCurrentContext() otherwise.
   //
   // Therefore, we can perform look-ups to determine which RenderView is
   // starting the audio device.  The reason for all this is because the creator
   // of the WebAudio objects might not be the actual source of the audio (e.g.,
   // an extension creates a object that is passed and used within a page).
-  blink::WebLocalFrame* const web_frame =
-      blink::WebLocalFrame::FrameForCurrentContext();
-  RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
-  return render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
+  return blink::WebLocalFrame::FrameForCurrentContext()->GetLocalFrameToken();
 }
 
 media::AudioParameters GetOutputDeviceParameters(
-    int frame_id,
+    const blink::LocalFrameToken& frame_token,
     const base::UnguessableToken& session_id,
     const std::string& device_id) {
-  return AudioDeviceFactory::GetOutputDeviceInfo(frame_id,
-                                                 {session_id, device_id})
+  return WebAudioDeviceFactory::GetOutputDeviceInfo(frame_token,
+                                                    {session_id, device_id})
       .output_params();
 }
 
@@ -118,7 +116,7 @@ std::unique_ptr<RendererWebAudioDeviceImpl> RendererWebAudioDeviceImpl::Create(
       new RendererWebAudioDeviceImpl(
           layout, channels, latency_hint, callback, session_id,
           base::BindOnce(&GetOutputDeviceParameters),
-          base::BindOnce(&FrameIdFromCurrentContext)));
+          base::BindOnce(&FrameTokenFromCurrentContext)));
 }
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
@@ -128,16 +126,16 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     WebAudioDevice::RenderCallback* callback,
     const base::UnguessableToken& session_id,
     OutputDeviceParamsCallback device_params_cb,
-    RenderFrameIdCallback render_frame_id_cb)
+    RenderFrameTokenCallback render_frame_token_cb)
     : latency_hint_(latency_hint),
       client_callback_(callback),
       session_id_(session_id),
-      frame_id_(std::move(render_frame_id_cb).Run()) {
+      frame_token_(std::move(render_frame_token_cb).Run()) {
   DCHECK(client_callback_);
-  DCHECK(session_id.is_empty() || frame_id_ != MSG_ROUTING_NONE);
 
   media::AudioParameters hardware_params(
-      std::move(device_params_cb).Run(frame_id_, session_id_, std::string()));
+      std::move(device_params_cb)
+          .Run(frame_token_, session_id_, std::string()));
 
   // On systems without audio hardware the returned parameters may be invalid.
   // In which case just choose whatever we want for the fake device.
@@ -147,7 +145,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
   }
 
   const media::AudioLatency::LatencyType latency =
-      AudioDeviceFactory::GetSourceLatencyType(
+      WebAudioDeviceFactory::GetSourceLatencyType(
           GetLatencyHintSourceType(latency_hint_.Category()));
 
   const int output_buffer_size =
@@ -163,6 +161,9 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
 
   // Specify the latency info to be passed to the browser side.
   sink_params_.set_latency_tag(latency);
+
+  web_audio_dest_data_ =
+      blink::WebVector<float*>(static_cast<size_t>(sink_params_.channels()));
 }
 
 RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
@@ -175,8 +176,8 @@ void RendererWebAudioDeviceImpl::Start() {
   if (sink_)
     return;  // Already started.
 
-  sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
+  sink_ = WebAudioDeviceFactory::NewAudioRendererSink(
+      GetLatencyHintSourceType(latency_hint_.Category()), frame_token_,
       media::AudioSinkParameters(session_id_, std::string()));
 
   // Use a task runner instead of the render thread for fake Render() calls
@@ -236,9 +237,9 @@ int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
                                        int prior_frames_skipped,
                                        media::AudioBus* dest) {
   // Wrap the output pointers using WebVector.
-  WebVector<float*> web_audio_dest_data(static_cast<size_t>(dest->channels()));
+  CHECK_EQ(dest->channels(), sink_params_.channels());
   for (int i = 0; i < dest->channels(); ++i)
-    web_audio_dest_data[i] = dest->channel(i);
+    web_audio_dest_data_[i] = dest->channel(i);
 
   if (!delay.is_zero()) {  // Zero values are send at the first call.
     // Substruct the bus duration to get hardware delay.
@@ -248,7 +249,7 @@ int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
   DCHECK_GE(delay, base::TimeDelta());
 
   client_callback_->Render(
-      web_audio_dest_data, dest->frames(), delay.InSecondsF(),
+      web_audio_dest_data_, dest->frames(), delay.InSecondsF(),
       (delay_timestamp - base::TimeTicks()).InSecondsF(), prior_frames_skipped);
 
   return dest->frames();

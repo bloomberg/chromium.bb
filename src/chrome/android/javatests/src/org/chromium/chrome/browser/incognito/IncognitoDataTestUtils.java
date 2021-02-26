@@ -5,23 +5,34 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
+
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This class provides helper methods for launching any Urls in CCT or Tabs.
@@ -43,12 +54,12 @@ public class IncognitoDataTestUtils {
             this.cct = cct;
         }
 
-        public Tab launchUrl(ChromeActivityTestRule chromeActivityRule,
+        public Tab launchUrl(ChromeTabbedActivityTestRule chromeTabbedActivityRule,
                 CustomTabActivityTestRule customTabActivityTestRule, String url) {
             if (cct) {
                 return launchUrlInCCT(customTabActivityTestRule, url, incognito);
             } else {
-                return launchUrlInTab(chromeActivityRule, url, incognito);
+                return launchUrlInTab(chromeTabbedActivityRule, url, incognito);
             }
         }
     }
@@ -120,16 +131,25 @@ public class IncognitoDataTestUtils {
         }
     }
 
+    private static boolean isChromeTabbedActivityRunningOnTop() {
+        Activity topActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (topActivity == null) return false;
+        return (topActivity instanceof ChromeTabbedActivity);
+    }
+
     private static Tab launchUrlInTab(
-            ChromeActivityTestRule testRule, String url, boolean incognito) {
+            ChromeTabbedActivityTestRule testRule, String url, boolean incognito) {
         // This helps to bring back the "existing" chrome tabbed activity to foreground
         // in case the custom tab activity was launched before.
-        testRule.startMainActivityOnBlankPage();
+        if (!isChromeTabbedActivityRunningOnTop()) {
+            testRule.startMainActivityOnBlankPage();
+        }
 
         Tab tab = testRule.loadUrlInNewTab(url, incognito);
 
         // Giving time to the WebContents to be ready.
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
 
         assertEquals(incognito, tab.getWebContents().isIncognito());
         return tab;
@@ -149,7 +169,8 @@ public class IncognitoDataTestUtils {
         Tab tab = testRule.getActivity().getActivityTab();
 
         // Giving time to the WebContents to be ready.
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
 
         assertEquals(incognito, tab.getWebContents().isIncognito());
         return tab;
@@ -160,5 +181,29 @@ public class IncognitoDataTestUtils {
         if (activity == null) return;
         activity.getTabModelSelector().getModel(false).closeAllTabs();
         activity.getTabModelSelector().getModel(true).closeAllTabs();
+    }
+
+    // Warming up CCT so that the native is initialized before we access the CCT_INCOGNITO
+    // feature flag.
+    public static void fireAndWaitForCctWarmup() throws TimeoutException {
+        CallbackHelper startUpCallback = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowserStartupController.getInstance().addStartupCompletedObserver(
+                    new BrowserStartupController.StartupCallback() {
+                        @Override
+                        public void onSuccess() {
+                            startUpCallback.notifyCalled();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            // Need a successful startup for test.
+                            assert false;
+                        }
+                    });
+        });
+
+        CustomTabsConnection.getInstance().warmup(0);
+        startUpCallback.waitForCallback(0);
     }
 }

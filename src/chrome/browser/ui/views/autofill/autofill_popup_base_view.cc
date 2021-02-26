@@ -17,13 +17,15 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
-#include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/focus/focus_manager.h"
@@ -82,6 +84,8 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 
     RemoveWidgetObservers();
   }
+
+  CHECK(!IsInObserverList());
 }
 
 void AutofillPopupBaseView::DoShow() {
@@ -114,7 +118,11 @@ void AutofillPopupBaseView::DoShow() {
   }
 
   GetWidget()->GetRootView()->SetBorder(CreateBorder());
-  DoUpdateBoundsAndRedrawPopup();
+  bool enough_height = DoUpdateBoundsAndRedrawPopup();
+  // If there is insufficient height, DoUpdateBoundsAndRedrawPopup() hides and
+  // thus deletes |this|. Hence, there is nothing else to do.
+  if (!enough_height)
+    return;
   GetWidget()->Show();
 
   // Showing the widget can change native focus (which would result in an
@@ -125,7 +133,7 @@ void AutofillPopupBaseView::DoShow() {
 
 void AutofillPopupBaseView::DoHide() {
   // The controller is no longer valid after it hides us.
-  delegate_ = NULL;
+  delegate_ = nullptr;
 
   RemoveWidgetObservers();
 
@@ -138,6 +146,37 @@ void AutofillPopupBaseView::DoHide() {
   } else {
     delete this;
   }
+}
+
+void AutofillPopupBaseView::VisibilityChanged(View* starting_from,
+                                              bool is_visible) {
+  if (!is_visible) {
+    if (is_ax_menu_start_event_fired_) {
+      // Fire menu end event.
+      // The menu start event is delayed until the user
+      // navigates into the menu, otherwise some screen readers will ignore
+      // any focus events outside of the menu, including a focus event on
+      // the form control itself.
+      NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+      GetViewAccessibility().EndPopupFocusOverride();
+    }
+    is_ax_menu_start_event_fired_ = false;
+  }
+}
+
+void AutofillPopupBaseView::NotifyAXSelection(View* selected_view) {
+  DCHECK(selected_view);
+  if (!is_ax_menu_start_event_fired_) {
+    // Fire the menu start event once, right before the first item is selected.
+    // By firing these and the matching kMenuEnd events, we are telling screen
+    // readers that the focus is only changing temporarily, and the screen
+    // reader will restore the focus back to the appropriate textfield when the
+    // menu closes.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    is_ax_menu_start_event_fired_ = true;
+  }
+  selected_view->GetViewAccessibility().SetPopupFocusOverride();
+  selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
@@ -184,31 +223,47 @@ void AutofillPopupBaseView::UpdateClipPath() {
 }
 
 gfx::Rect AutofillPopupBaseView::GetWindowBounds() const {
-// The call to FindBrowserWithWindow will fail on Android, so we use
-// platform-specific calls.
-#if defined(OS_ANDROID)
-  return delegate()->container_view()->GetWindowAndroid()->bounds();
-#else
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
       delegate()->container_view());
   if (widget)
     return widget->GetWindowBoundsInScreen();
 
-  // If the browser is null, simply return an empty rect. The most common reason
+  // If the widget is null, simply return an empty rect. The most common reason
   // to end up here is that the NativeView has been destroyed externally, which
   // can happen at any time. This happens fairly commonly on Windows (e.g., at
   // shutdown) in particular.
   return gfx::Rect();
-#endif
 }
 
-void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
+gfx::Rect AutofillPopupBaseView::GetContentAreaBounds() const {
+  content::WebContents* web_contents = delegate()->GetWebContents();
+  if (web_contents)
+    return web_contents->GetContainerBounds();
+
+  // If the |web_contents| is null, simply return an empty rect. The most common
+  // reason to end up here is that the |web_contents| has been destroyed
+  // externally, which can happen at any time. This happens fairly commonly on
+  // Windows (e.g., at shutdown) in particular.
+  return gfx::Rect();
+}
+
+bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   gfx::Size preferred_size = GetPreferredSize();
 
   // When a bubble border is shown, the contents area (inside the shadow) is
   // supposed to be aligned with input element boundaries.
   gfx::Rect element_bounds = gfx::ToEnclosingRect(delegate()->element_bounds());
   element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
+
+  // At least one row of the popup should be shown in the bounds of the content
+  // area so that the user notices the presence of the popup.
+  int item_height =
+      children().size() > 0 ? children()[0]->GetPreferredSize().height() : 0;
+  if (!HasEnoughHeightForOneRow(item_height, GetContentAreaBounds(),
+                                element_bounds)) {
+    HideController(PopupHidingReason::kInsufficientSpace);
+    return false;
+  }
 
   gfx::Rect popup_bounds = CalculatePopupBounds(
       preferred_size, GetWindowBounds(), element_bounds, delegate()->IsRTL());
@@ -219,6 +274,7 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   Layout();
   UpdateClipPath();
   SchedulePaint();
+  return true;
 }
 
 void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {

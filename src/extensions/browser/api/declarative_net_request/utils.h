@@ -99,11 +99,49 @@ std::string GetPublicRulesetID(const Extension& extension,
 std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
                                              const CompositeMatcher& matcher);
 
+// Returns the number of rules that an extension can specify across its enabled
+// static rulesets that will not count towards the global total.
+int GetStaticGuaranteedMinimumRuleCount();
+
+// Returns the maximum amount of static rules in the global rule pool for a
+// single profile.
+int GetGlobalStaticRuleLimit();
+
+// Returns the maximum number of static rules an extension can enable. Only
+// valid if global rules are disabled.
+int GetStaticRuleLimit();
+
+// Returns the maximum number of rules a valid static ruleset can have. This is
+// also the maximum number of static rules an extension can enable at any point.
+int GetMaximumRulesPerRuleset();
+
+// Returns the per-extension dynamic rule limit.
+int GetDynamicRuleLimit();
+
+// Returns the per-extension regex rules limit. This is enforced separately for
+// static and dynamic rulesets.
+int GetRegexRuleLimit();
+
+// Test helpers to override the various rule limits until the returned value is
+// in scope.
+using ScopedRuleLimitOverride = base::AutoReset<int>;
+ScopedRuleLimitOverride CreateScopedStaticGuaranteedMinimumOverrideForTesting(
+    int minimum);
+ScopedRuleLimitOverride CreateScopedStaticRuleLimitOverrideForTesting(
+    int limit);
+ScopedRuleLimitOverride CreateScopedGlobalStaticRuleLimitOverrideForTesting(
+    int limit);
+ScopedRuleLimitOverride CreateScopedRegexRuleLimitOverrideForTesting(int limit);
+
 // Helper to convert a flatbufffers::String to a string-like object with type T.
 template <typename T>
 T CreateString(const flatbuffers::String& str) {
   return T(str.c_str(), str.size());
 }
+
+// Returns the number of static rules enabled for the specified
+// |composite_matcher|.
+size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

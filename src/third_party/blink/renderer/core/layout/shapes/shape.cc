@@ -242,8 +242,7 @@ static bool ExtractImageData(Image* image,
   CanvasColorParams color_params;
   SkImageInfo info = SkImageInfo::Make(
       image_size.Width(), image_size.Height(), color_params.GetSkColorType(),
-      color_params.GetSkAlphaType(),
-      color_params.GetSkColorSpaceForSkSurfaces());
+      color_params.GetSkAlphaType(), color_params.GetSkColorSpace());
   sk_sp<SkSurface> surface =
       SkSurface::MakeRaster(info, color_params.GetSkSurfaceProps());
 
@@ -289,13 +288,13 @@ static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
     const IntRect& image_rect,
     const IntRect& margin_rect) {
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-  DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
-      array_buffer, 0, array_buffer->ByteLengthAsSizeT());
+  DOMUint8ClampedArray* pixel_array =
+      DOMUint8ClampedArray::Create(array_buffer, 0, array_buffer->ByteLength());
 
   unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
   uint8_t alpha_pixel_threshold = threshold * 255;
 
-  DCHECK_EQ(image_rect.Size().Area() * 4, pixel_array->lengthAsSizeT());
+  DCHECK_EQ(image_rect.Size().Area() * 4, pixel_array->length());
 
   int min_buffer_y = std::max(0, margin_rect.Y() - image_rect.Y());
   int max_buffer_y =

@@ -4,12 +4,15 @@
 
 package org.chromium.content.browser.framehost;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink.mojom.AuthenticatorStatus;
+import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceProvider;
@@ -73,6 +76,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
+    @Nullable
     public String getLastCommittedURL() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
         return RenderFrameHostImplJni.get().getLastCommittedURL(
@@ -80,6 +84,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
+    @Nullable
     public Origin getLastCommittedOrigin() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
         return RenderFrameHostImplJni.get().getLastCommittedOrigin(
@@ -97,10 +102,10 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public boolean isPaymentFeaturePolicyEnabled() {
+    public boolean isFeatureEnabled(@FeaturePolicyFeature int feature) {
         return mNativeRenderFrameHostAndroid != 0
-                && RenderFrameHostImplJni.get().isPaymentFeaturePolicyEnabled(
-                        mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+                && RenderFrameHostImplJni.get().isFeatureEnabled(
+                        mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, feature);
     }
 
     @Override
@@ -133,6 +138,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     /**
      * Return the AndroidOverlay routing token for this RenderFrameHostImpl.
      */
+    @Nullable
     public UnguessableToken getAndroidOverlayRoutingToken() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
         return RenderFrameHostImplJni.get().getAndroidOverlayRoutingToken(
@@ -171,8 +177,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid,
                 RenderFrameHostImpl caller, Callback<String> callback);
-        boolean isPaymentFeaturePolicyEnabled(
-                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        boolean isFeatureEnabled(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller,
+                @FeaturePolicyFeature int feature);
         UnguessableToken getAndroidOverlayRoutingToken(
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void notifyUserActivation(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);

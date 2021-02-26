@@ -91,7 +91,7 @@ interface CoreProbes {
   void ApplyUserAgentMetadataOverride(CoreProbeSink*, base::Optional<blink::UserAgentMetadata>* ua_metadata_override);
   void DidBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
   void DidChangeResourcePriority(LocalFrame*, DocumentLoader*, uint64_t identifier, ResourceLoadPriority load_priority);
-  void PrepareRequest(CoreProbeSink*, DocumentLoader*, ResourceRequest&, const FetchInitiatorInfo&, ResourceType);
+  void PrepareRequest(CoreProbeSink*, DocumentLoader*, ResourceRequest&, ResourceLoaderOptions&, ResourceType);
   void WillSendRequest(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const KURL& fetch_context_url, const ResourceRequest&, const ResourceResponse& redirect_response, const FetchInitiatorInfo&, ResourceType);
   void WillSendNavigationRequest(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
   void MarkResourceAsCached(LocalFrame*, DocumentLoader*, uint64_t identifier);
@@ -101,7 +101,7 @@ interface CoreProbes {
   void DidReceiveEncodedDataLength(CoreProbeSink*, DocumentLoader* loader, uint64_t identifier, size_t encoded_data_length);
   void DidFinishLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, base::TimeTicks finish_time, int64_t encoded_data_length, int64_t decoded_body_length, bool should_report_corb_blocking);
   void DidReceiveCorsRedirectResponse(ExecutionContext*, uint64_t identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void DidFailLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&);
+  void DidFailLoading([Keep] CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&, const base::UnguessableToken&);
   void WillSendEventSourceRequest(ExecutionContext*);
   void WillDispatchEventSourceEvent(ExecutionContext*, uint64_t identifier, const AtomicString& event_name, const AtomicString& event_id, const String& data);
   void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool include_credentials);
@@ -112,7 +112,7 @@ interface CoreProbes {
   void DomContentLoadedEventFired([Keep] LocalFrame*);
   void LoadEventFired([Keep] LocalFrame*);
   void FrameAttachedToParent([Keep] LocalFrame*);
-  void FrameDetachedFromParent([Keep] LocalFrame*);
+  void FrameDetachedFromParent([Keep] LocalFrame*, FrameDetachType);
   void DidStartProvisionalLoad([Keep] LocalFrame*);
   void DidFailProvisionalLoad([Keep] LocalFrame*);
   void WillCommitLoad([Keep] LocalFrame*, DocumentLoader*);
@@ -142,9 +142,9 @@ interface CoreProbes {
   void PseudoElementDestroyed([Keep] PseudoElement*);
   void DidCreateAnimation(Document*, unsigned);
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
-  void WindowOpen([Keep] Document*, const String& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
+  void WindowOpen(ExecutionContext*, const KURL& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
   void ConsoleMessageAdded(ExecutionContext*, ConsoleMessage*);
-  void InspectorIssueAdded(ExecutionContext*, InspectorIssue*);
+  void InspectorIssueAdded(CoreProbeSink*, InspectorIssue*);
   void WillRunJavaScriptDialog(LocalFrame* frame);
   void DidRunJavaScriptDialog(LocalFrame* frame);
   void DocumentWriteFetchScript([Keep] Document*);
@@ -152,7 +152,7 @@ interface CoreProbes {
   void BreakableLocation(ExecutionContext* context, const char* name);
   RecalculateStyle(Document* document);
   UpdateLayout(Document* document);
-  ExecuteScript([Keep] ExecutionContext* context, const String& script_url);
+  ExecuteScript([Keep] ExecutionContext* context, const String& script_url, int script_id);
   CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
   UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomic_name, bool recurring, EventTarget* event_target = nullptr);
   V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);
@@ -170,7 +170,7 @@ interface CoreProbes {
   void DidCloseAudioContext(Document*);
   void DidResumeAudioContext(Document*);
   void DidSuspendAudioContext(Document*);
-  void ProduceCompilationCache(LocalFrame*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
+  void ProduceCompilationCache(CoreProbeSink*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
   void ConsumeCompilationCache(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data);
   void NodeCreated([Keep] Node* node);
   void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
@@ -180,5 +180,9 @@ interface CoreProbes {
   void PlayerMessagesLogged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerMessage>& messages);
   void PlayerPropertiesChanged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerProperty>& properties);
   void PlayersCreated(ExecutionContext* context, const Vector<WebString>& players);
-  void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request);
+  void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request, const FetchInitiatorInfo&);
+  void DidMutateStyleSheet(Document*, CSSStyleSheet* style_sheet);
+  void LocalFontsEnabled(ExecutionContext*, bool* result);
+  void DidUpdateComputedStyle([Keep] Element*, const ComputedStyle* old_style, const ComputedStyle* new_style);
+  void GetDisabledImageTypes(ExecutionContext*, HashSet<String>* result);
 }

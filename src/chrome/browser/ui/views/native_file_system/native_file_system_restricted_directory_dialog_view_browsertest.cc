@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view.h"
 
 #include "base/files/file_path.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,7 +22,7 @@ class NativeFileSystemRestrictedDirectoryDialogViewTest
   void ShowUi(const std::string& name) override {
     widget_ = NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
         kTestOrigin, base::FilePath(FILE_PATH_LITERAL("/foo/bar")),
-        /*is_directory=*/true,
+        content::NativeFileSystemPermissionContext::HandleType::kDirectory,
         base::BindLambdaForTesting([&](SensitiveDirectoryResult result) {
           callback_called_ = true;
           callback_result_ = result;

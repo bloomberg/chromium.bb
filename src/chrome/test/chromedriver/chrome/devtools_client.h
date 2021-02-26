@@ -34,6 +34,8 @@ class DevToolsClient {
   // Connect to DevTools if the DevToolsClient is disconnected.
   virtual Status ConnectIfNecessary() = 0;
 
+  virtual Status SetUpDevTools() = 0;
+
   virtual Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) = 0;
@@ -85,6 +87,10 @@ class DevToolsClient {
 
   // Set the owning WebViewImpl, if any.
   virtual void SetOwner(WebViewImpl* owner) = 0;
+
+  virtual DevToolsClient* GetRootClient() = 0;
+
+  virtual bool IsMainPage();
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_H_

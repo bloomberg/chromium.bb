@@ -7,7 +7,6 @@
 
 #include <bitset>
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -41,6 +40,8 @@ class UseCounterPageLoadMetricsObserver
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo&
           failed_provisional_load_info) override;
+  ObservePolicy OnEnterBackForwardCache(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy ShouldObserveMimeType(

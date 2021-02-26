@@ -232,12 +232,41 @@ void USER_MANAGER_EXPORT SetIsEnterpriseManaged(const AccountId& account_id,
 
 bool USER_MANAGER_EXPORT GetIsEnterpriseManaged(const AccountId& account_id);
 
+void USER_MANAGER_EXPORT SetAccountManager(const AccountId& account_id,
+                                           const std::string& manager);
+bool USER_MANAGER_EXPORT GetAccountManager(const AccountId& account_id,
+                                           std::string* manager);
 void USER_MANAGER_EXPORT
-SetUserLastInputMethod(const AccountId& account_id,
-                       const std::string& input_method);
+SetUserLastLoginInputMethod(const AccountId& account_id,
+                            const std::string& input_method);
 
 bool USER_MANAGER_EXPORT GetUserLastInputMethod(const AccountId& account_id,
                                                 std::string* input_method);
+
+// Exposes the user's PIN length in local state for PIN auto submit.
+void USER_MANAGER_EXPORT SetUserPinLength(const AccountId& account_id,
+                                          int pin_length);
+
+// Returns the user's PIN length if available, otherwise 0.
+int USER_MANAGER_EXPORT GetUserPinLength(const AccountId& account_id);
+
+// Whether the user needs to have their pin auto submit preferences backfilled.
+// TODO(crbug.com/1104164) - Remove this once most users have their
+// preferences backfilled.
+bool USER_MANAGER_EXPORT
+PinAutosubmitIsBackfillNeeded(const AccountId& account_id);
+void USER_MANAGER_EXPORT
+PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id);
+void USER_MANAGER_EXPORT
+PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id);
+
+// Setter and getter for password sync token used for syncing SAML passwords
+// across multiple user devices.
+void USER_MANAGER_EXPORT SetPasswordSyncToken(const AccountId& account_id,
+                                              const std::string& token);
+
+std::string USER_MANAGER_EXPORT
+GetPasswordSyncToken(const AccountId& account_id);
 
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component

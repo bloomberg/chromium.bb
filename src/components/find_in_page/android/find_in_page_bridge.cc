@@ -36,7 +36,8 @@ void FindInPageBridge::StartFinding(JNIEnv* env,
   find_in_page::FindTabHelper::FromWebContents(web_contents_)
       ->StartFinding(
           base::android::ConvertJavaStringToUTF16(env, search_string),
-          forward_direction, case_sensitive);
+          forward_direction, case_sensitive,
+          true /* find_match */);
 }
 
 void FindInPageBridge::StopFinding(JNIEnv* env,

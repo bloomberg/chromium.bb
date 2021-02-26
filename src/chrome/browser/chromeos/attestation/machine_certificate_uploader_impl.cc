@@ -8,19 +8,18 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/attestation/attestation_client.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
@@ -43,51 +42,6 @@ const int kExpiryThresholdInDays = 30;
 const int kRetryDelay = 5;  // Seconds.
 const int kRetryLimit = 100;
 
-// A dbus callback which handles a boolean result.
-//
-// Parameters
-//   on_true - Called when status=success and value=true.
-//   on_false - Called when status=success and value=false.
-//   status - The dbus operation status.
-//   result - The value returned by the dbus operation.
-void DBusBoolRedirectCallback(const base::RepeatingClosure& on_true,
-                              const base::RepeatingClosure& on_false,
-                              const base::RepeatingClosure& on_failure,
-                              const base::Location& from_here,
-                              base::Optional<bool> result) {
-  if (!result.has_value()) {
-    LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString();
-    if (!on_failure.is_null())
-      on_failure.Run();
-    return;
-  }
-  const base::RepeatingClosure& task = result.value() ? on_true : on_false;
-  if (!task.is_null())
-    task.Run();
-}
-
-// A dbus callback which handles a string result.
-//
-// Parameters
-//   on_success - Called when status=success and result=true.
-//   status - The dbus operation status.
-//   result - The result returned by the dbus operation.
-//   data - The data returned by the dbus operation.
-void DBusStringCallback(
-    const base::RepeatingCallback<void(const std::string&)> on_success,
-    const base::RepeatingClosure& on_failure,
-    const base::Location& from_here,
-    base::Optional<chromeos::CryptohomeClient::TpmAttestationDataResult>
-        result) {
-  if (!result.has_value() || !result->success) {
-    LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString();
-    if (!on_failure.is_null())
-      on_failure.Run();
-    return;
-  }
-  on_success.Run(result->data);
-}
-
 void DBusPrivacyCACallback(
     const base::RepeatingCallback<void(const std::string&)> on_success,
     const base::RepeatingCallback<
@@ -99,7 +53,7 @@ void DBusPrivacyCACallback(
     on_success.Run(data);
     return;
   }
-  LOG(ERROR) << "Cryptohome DBus method or server called failed with status:"
+  LOG(ERROR) << "Attestation DBus method or server called failed with status:"
              << status << ": " << from_here.ToString();
   if (!on_failure.is_null())
     on_failure.Run(status);
@@ -113,7 +67,6 @@ namespace attestation {
 MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
     : policy_client_(policy_client),
-      cryptohome_client_(nullptr),
       attestation_flow_(nullptr),
       num_retries_(0),
       retry_limit_(kRetryLimit),
@@ -123,10 +76,8 @@ MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
 
 MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client,
-    CryptohomeClient* cryptohome_client,
     AttestationFlow* attestation_flow)
     : policy_client_(policy_client),
-      cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
       num_retries_(0),
       retry_delay_(kRetryDelay) {
@@ -140,7 +91,7 @@ MachineCertificateUploaderImpl::~MachineCertificateUploaderImpl() {
 void MachineCertificateUploaderImpl::UploadCertificateIfNeeded(
     UploadCallback callback) {
   refresh_certificate_ = false;
-  callback_ = std::move(callback);
+  callbacks_.push_back(std::move(callback));
   num_retries_ = 0;
   Start();
 }
@@ -148,7 +99,7 @@ void MachineCertificateUploaderImpl::UploadCertificateIfNeeded(
 void MachineCertificateUploaderImpl::RefreshAndUploadCertificate(
     UploadCallback callback) {
   refresh_certificate_ = true;
-  callback_ = std::move(callback);
+  callbacks_.push_back(std::move(callback));
   num_retries_ = 0;
   Start();
 }
@@ -157,18 +108,16 @@ void MachineCertificateUploaderImpl::Start() {
   // We expect a registered CloudPolicyClient.
   if (!policy_client_->is_registered()) {
     LOG(ERROR) << "MachineCertificateUploaderImpl: Invalid CloudPolicyClient.";
+    certificate_uploaded_ = false;
+    RunCallbacks(certificate_uploaded_.value());
     return;
   }
-
-  if (!cryptohome_client_)
-    cryptohome_client_ = CryptohomeClient::Get();
 
   if (!attestation_flow_) {
     std::unique_ptr<ServerProxy> attestation_ca_client(
         new AttestationCAClient());
-    default_attestation_flow_.reset(new AttestationFlow(
-        cryptohome::AsyncMethodCaller::GetInstance(), cryptohome_client_,
-        std::move(attestation_ca_client)));
+    default_attestation_flow_.reset(
+        new AttestationFlow(std::move(attestation_ca_client)));
     attestation_flow_ = default_attestation_flow_.get();
   }
 
@@ -178,22 +127,13 @@ void MachineCertificateUploaderImpl::Start() {
     return;
   }
 
-  // Start a dbus call to check if an Enterprise Machine Key already exists.
-  base::RepeatingClosure on_does_not_exist =
-      base::BindRepeating(&MachineCertificateUploaderImpl::GetNewCertificate,
-                          weak_factory_.GetWeakPtr());
-  base::RepeatingClosure on_does_exist = base::BindRepeating(
-      &MachineCertificateUploaderImpl::GetExistingCertificate,
-      weak_factory_.GetWeakPtr());
-  cryptohome_client_->TpmAttestationDoesKeyExist(
-      KEY_DEVICE,
-      cryptohome::AccountIdentifier(),  // Not used.
-      kEnterpriseMachineKey,
-      base::BindOnce(
-          DBusBoolRedirectCallback, on_does_exist, on_does_not_exist,
-          base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
-                              weak_factory_.GetWeakPtr()),
-          FROM_HERE));
+  ::attestation::GetKeyInfoRequest request;
+  request.set_username("");
+  request.set_key_label(kEnterpriseMachineKey);
+  AttestationClient::Get()->GetKeyInfo(
+      request,
+      base::BindOnce(&MachineCertificateUploaderImpl::OnGetExistingCertificate,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MachineCertificateUploaderImpl::GetNewCertificate() {
@@ -221,23 +161,26 @@ void MachineCertificateUploaderImpl::GetNewCertificate() {
           FROM_HERE));
 }
 
-void MachineCertificateUploaderImpl::GetExistingCertificate() {
-  cryptohome_client_->TpmAttestationGetCertificate(
-      KEY_DEVICE,
-      cryptohome::AccountIdentifier(),  // Not used.
-      kEnterpriseMachineKey,
-      base::BindOnce(
-          DBusStringCallback,
-          base::BindRepeating(
-              &MachineCertificateUploaderImpl::CheckCertificateExpiry,
-              weak_factory_.GetWeakPtr()),
-          base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
-                              weak_factory_.GetWeakPtr()),
-          FROM_HERE));
+void MachineCertificateUploaderImpl::OnGetExistingCertificate(
+    const ::attestation::GetKeyInfoReply& reply) {
+  if (reply.status() != ::attestation::STATUS_SUCCESS &&
+      reply.status() != ::attestation::STATUS_INVALID_PARAMETER) {
+    LOG(ERROR) << "Error getting the existing certificate; status: "
+               << reply.status();
+    Reschedule();
+    return;
+  }
+  // Get a new certificate if not exists.
+  if (reply.status() == ::attestation::STATUS_INVALID_PARAMETER) {
+    GetNewCertificate();
+    return;
+  }
+  CheckCertificateExpiry(reply);
 }
 
 void MachineCertificateUploaderImpl::CheckCertificateExpiry(
-    const std::string& pem_certificate_chain) {
+    const ::attestation::GetKeyInfoReply& reply) {
+  const std::string& pem_certificate_chain = reply.certificate();
   int num_certificates = 0;
   net::PEMTokenizer pem_tokenizer(pem_certificate_chain, {"CERTIFICATE"});
   while (pem_tokenizer.GetNext()) {
@@ -267,16 +210,12 @@ void MachineCertificateUploaderImpl::CheckCertificateExpiry(
   if (num_certificates == 0) {
     LOG(WARNING) << "Failed to parse certificate chain, cannot check expiry.";
   }
-  // Get the payload and check if the certificate has already been uploaded.
-  GetKeyPayload(
-      base::BindRepeating(&MachineCertificateUploaderImpl::CheckIfUploaded,
-                          weak_factory_.GetWeakPtr(), pem_certificate_chain),
-      base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
-                          weak_factory_.GetWeakPtr()));
+  CheckIfUploaded(reply);
 }
 
 void MachineCertificateUploaderImpl::UploadCertificate(
     const std::string& pem_certificate_chain) {
+  certificate_uploaded_.reset();
   policy_client_->UploadEnterpriseMachineCertificate(
       pem_certificate_chain,
       base::BindOnce(&MachineCertificateUploaderImpl::OnUploadComplete,
@@ -284,75 +223,105 @@ void MachineCertificateUploaderImpl::UploadCertificate(
 }
 
 void MachineCertificateUploaderImpl::CheckIfUploaded(
-    const std::string& pem_certificate_chain,
-    const std::string& key_payload) {
-  AttestationKeyPayload payload_pb;
-  if (!key_payload.empty() && payload_pb.ParseFromString(key_payload) &&
-      payload_pb.is_certificate_uploaded()) {
-    // Already uploaded... nothing more to do.
+    const ::attestation::GetKeyInfoReply& reply) {
+  // The caller in the entire flow should have checked the reply status already.
+  if (reply.status() != ::attestation::STATUS_SUCCESS) {
+    LOG(DFATAL) << "Checking key payload in a bad reply from attestation "
+                   "service; status: "
+                << reply.status();
+    Reschedule();
     return;
   }
-  UploadCertificate(pem_certificate_chain);
-}
 
-void MachineCertificateUploaderImpl::GetKeyPayload(
-    base::RepeatingCallback<void(const std::string&)> callback,
-    base::RepeatingCallback<void()> on_failure) {
-  cryptohome_client_->TpmAttestationGetKeyPayload(
-      KEY_DEVICE,
-      cryptohome::AccountIdentifier(),  // Not used.
-      kEnterpriseMachineKey,
-      base::BindOnce(DBusStringCallback, callback, on_failure, FROM_HERE));
+  AttestationKeyPayload payload_pb;
+  if (!reply.payload().empty() && payload_pb.ParseFromString(reply.payload()) &&
+      payload_pb.is_certificate_uploaded()) {
+    // Already uploaded... nothing more to do.
+    certificate_uploaded_ = true;
+    RunCallbacks(certificate_uploaded_.value());
+    return;
+  }
+  UploadCertificate(reply.certificate());
 }
 
 void MachineCertificateUploaderImpl::OnUploadComplete(bool status) {
   if (status) {
     VLOG(1) << "Enterprise Machine Certificate uploaded to DMServer.";
-    GetKeyPayload(
-        base::BindRepeating(&MachineCertificateUploaderImpl::MarkAsUploaded,
-                            weak_factory_.GetWeakPtr()),
-        base::DoNothing());
+    ::attestation::GetKeyInfoRequest request;
+    request.set_username("");
+    request.set_key_label(kEnterpriseMachineKey);
+    AttestationClient::Get()->GetKeyInfo(
+        request, base::BindOnce(&MachineCertificateUploaderImpl::MarkAsUploaded,
+                                weak_factory_.GetWeakPtr()));
   }
-  std::move(callback_).Run(status);
+  certificate_uploaded_ = status;
+  RunCallbacks(certificate_uploaded_.value());
+}
+
+void MachineCertificateUploaderImpl::WaitForUploadComplete(
+    UploadCallback callback) {
+  if (certificate_uploaded_.has_value()) {
+    std::move(callback).Run(certificate_uploaded_.value());
+    return;
+  }
+
+  callbacks_.push_back(std::move(callback));
 }
 
 void MachineCertificateUploaderImpl::MarkAsUploaded(
-    const std::string& key_payload) {
+    const ::attestation::GetKeyInfoReply& reply) {
+  if (reply.status() != ::attestation::STATUS_SUCCESS) {
+    LOG(WARNING) << "Failed to get existing payload.";
+    return;
+  }
   AttestationKeyPayload payload_pb;
-  if (!key_payload.empty())
-    payload_pb.ParseFromString(key_payload);
+  if (!reply.payload().empty())
+    payload_pb.ParseFromString(reply.payload());
   payload_pb.set_is_certificate_uploaded(true);
   std::string new_payload;
   if (!payload_pb.SerializeToString(&new_payload)) {
     LOG(WARNING) << "Failed to serialize key payload.";
     return;
   }
-  cryptohome_client_->TpmAttestationSetKeyPayload(
-      KEY_DEVICE,
-      cryptohome::AccountIdentifier(),  // Not used.
-      kEnterpriseMachineKey, new_payload,
-      base::BindOnce(DBusBoolRedirectCallback, base::RepeatingClosure(),
-                     base::RepeatingClosure(), base::RepeatingClosure(),
-                     FROM_HERE));
+  ::attestation::SetKeyPayloadRequest request;
+  request.set_username("");
+  request.set_key_label(kEnterpriseMachineKey);
+  request.set_payload(new_payload);
+  AttestationClient::Get()->SetKeyPayload(request, base::DoNothing());
 }
 
 void MachineCertificateUploaderImpl::HandleGetCertificateFailure(
     AttestationStatus status) {
-  if (status != ATTESTATION_SERVER_BAD_REQUEST_FAILURE)
+  if (status != ATTESTATION_SERVER_BAD_REQUEST_FAILURE) {
     Reschedule();
-  else
-    std::move(callback_).Run(false);
+  } else {
+    certificate_uploaded_ = false;
+    RunCallbacks(certificate_uploaded_.value());
+  }
 }
 
 void MachineCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                          base::BindOnce(&MachineCertificateUploaderImpl::Start,
-                                         weak_factory_.GetWeakPtr()),
-                          base::TimeDelta::FromSeconds(retry_delay_));
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&MachineCertificateUploaderImpl::Start,
+                       weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(retry_delay_));
   } else {
     LOG(WARNING) << "MachineCertificateUploaderImpl: Retry limit exceeded.";
-    std::move(callback_).Run(false);
+    certificate_uploaded_ = false;
+    RunCallbacks(certificate_uploaded_.value());
+  }
+}
+
+void MachineCertificateUploaderImpl::RunCallbacks(bool status) {
+  while (!callbacks_.empty()) {
+    auto callbacks = std::move(callbacks_);
+    callbacks_.clear();
+
+    for (UploadCallback& callback : callbacks) {
+      std::move(callback).Run(status);
+    }
   }
 }
 

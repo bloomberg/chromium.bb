@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -17,9 +18,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -77,6 +80,18 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
+  std::vector<int> rule_ids_to_remove;
+  if (params->options.remove_rule_ids)
+    rule_ids_to_remove = std::move(*params->options.remove_rule_ids);
+
+  std::vector<api::declarative_net_request::Rule> rules_to_add;
+  if (params->options.add_rules)
+    rules_to_add = std::move(*params->options.add_rules);
+
+  // Early return if there is nothing to do.
+  if (rule_ids_to_remove.empty() && rules_to_add.empty())
+    return RespondNow(NoArguments());
+
   auto* rules_monitor_service =
       declarative_net_request::RulesMonitorService::Get(browser_context());
   DCHECK(rules_monitor_service);
@@ -85,10 +100,9 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
   auto callback = base::BindOnce(
       &DeclarativeNetRequestUpdateDynamicRulesFunction::OnDynamicRulesUpdated,
       this);
-
   rules_monitor_service->UpdateDynamicRules(
-      *extension(), std::move(params->rule_ids_to_remove),
-      std::move(params->rules_to_add), std::move(callback));
+      *extension(), std::move(rule_ids_to_remove), std::move(rules_to_add),
+      std::move(callback));
   return RespondLater();
 }
 
@@ -163,43 +177,51 @@ DeclarativeNetRequestUpdateEnabledRulesetsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
-  auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(browser_context());
-  DCHECK(rules_monitor_service);
-  DCHECK(extension());
-
   std::set<RulesetID> ids_to_disable;
   std::set<RulesetID> ids_to_enable;
   const DNRManifestData::ManifestIDToRulesetMap& public_id_map =
       DNRManifestData::GetManifestIDToRulesetMap(*extension());
 
-  for (const std::string& public_id_to_enable : params->ruleset_ids_to_enable) {
-    auto it = public_id_map.find(public_id_to_enable);
-    if (it == public_id_map.end()) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          declarative_net_request::kInvalidRulesetIDError,
-          public_id_to_enable)));
-    }
+  if (params->options.enable_ruleset_ids) {
+    for (const std::string& public_id_to_enable :
+         *params->options.enable_ruleset_ids) {
+      auto it = public_id_map.find(public_id_to_enable);
+      if (it == public_id_map.end()) {
+        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+            declarative_net_request::kInvalidRulesetIDError,
+            public_id_to_enable)));
+      }
 
-    ids_to_enable.insert(it->second->id);
+      ids_to_enable.insert(it->second->id);
+    }
   }
 
-  for (const std::string& public_id_to_disable :
-       params->ruleset_ids_to_disable) {
-    auto it = public_id_map.find(public_id_to_disable);
-    if (it == public_id_map.end()) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          declarative_net_request::kInvalidRulesetIDError,
-          public_id_to_disable)));
+  if (params->options.disable_ruleset_ids) {
+    for (const std::string& public_id_to_disable :
+         *params->options.disable_ruleset_ids) {
+      auto it = public_id_map.find(public_id_to_disable);
+      if (it == public_id_map.end()) {
+        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+            declarative_net_request::kInvalidRulesetIDError,
+            public_id_to_disable)));
+      }
+
+      // |ruleset_ids_to_enable| takes priority over |ruleset_ids_to_disable|.
+      RulesetID id = it->second->id;
+      if (base::Contains(ids_to_enable, id))
+        continue;
+
+      ids_to_disable.insert(id);
     }
-
-    // |ruleset_ids_to_enable| takes priority over |ruleset_ids_to_disable|.
-    RulesetID id = it->second->id;
-    if (base::Contains(ids_to_enable, id))
-      continue;
-
-    ids_to_disable.insert(id);
   }
+
+  if (ids_to_enable.empty() && ids_to_disable.empty())
+    return RespondNow(NoArguments());
+
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+  DCHECK(extension());
 
   rules_monitor_service->UpdateEnabledStaticRulesets(
       *extension(), std::move(ids_to_disable), std::move(ids_to_enable),
@@ -313,31 +335,35 @@ bool DeclarativeNetRequestGetMatchedRulesFunction::ShouldSkipQuotaLimiting()
   return user_gesture() || disable_throttling_for_test_;
 }
 
-DeclarativeNetRequestSetActionCountAsBadgeTextFunction::
-    DeclarativeNetRequestSetActionCountAsBadgeTextFunction() = default;
-DeclarativeNetRequestSetActionCountAsBadgeTextFunction::
-    ~DeclarativeNetRequestSetActionCountAsBadgeTextFunction() = default;
+DeclarativeNetRequestSetExtensionActionOptionsFunction::
+    DeclarativeNetRequestSetExtensionActionOptionsFunction() = default;
+DeclarativeNetRequestSetExtensionActionOptionsFunction::
+    ~DeclarativeNetRequestSetExtensionActionOptionsFunction() = default;
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
-  using Params = dnr_api::SetActionCountAsBadgeText::Params;
+DeclarativeNetRequestSetExtensionActionOptionsFunction::Run() {
+  using Params = dnr_api::SetExtensionActionOptions::Params;
 
   base::string16 error;
   std::unique_ptr<Params> params(Params::Create(*args_, &error));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
+  bool use_action_count_as_badge_text =
+      params->options.display_action_count_as_badge_text;
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
-  if (params->enable == prefs->GetDNRUseActionCountAsBadgeText(extension_id()))
+  if (use_action_count_as_badge_text ==
+      prefs->GetDNRUseActionCountAsBadgeText(extension_id()))
     return RespondNow(NoArguments());
 
-  prefs->SetDNRUseActionCountAsBadgeText(extension_id(), params->enable);
+  prefs->SetDNRUseActionCountAsBadgeText(extension_id(),
+                                         use_action_count_as_badge_text);
 
   // If the preference is switched on, update the extension's badge text with
   // the number of actions matched for this extension. Otherwise, clear the
   // action count for the extension's icon and show the default badge text if
   // set.
-  if (params->enable) {
+  if (use_action_count_as_badge_text) {
     declarative_net_request::RulesMonitorService* rules_monitor_service =
         declarative_net_request::RulesMonitorService::Get(browser_context());
     DCHECK(rules_monitor_service);
@@ -352,6 +378,105 @@ DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
   }
 
   return RespondNow(NoArguments());
+}
+
+DeclarativeNetRequestIsRegexSupportedFunction::
+    DeclarativeNetRequestIsRegexSupportedFunction() = default;
+DeclarativeNetRequestIsRegexSupportedFunction::
+    ~DeclarativeNetRequestIsRegexSupportedFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestIsRegexSupportedFunction::Run() {
+  using Params = dnr_api::IsRegexSupported::Params;
+
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  bool is_case_sensitive = params->regex_options.is_case_sensitive
+                               ? *params->regex_options.is_case_sensitive
+                               : true;
+  bool require_capturing = params->regex_options.require_capturing
+                               ? *params->regex_options.require_capturing
+                               : false;
+  re2::RE2 regex(params->regex_options.regex,
+                 declarative_net_request::CreateRE2Options(is_case_sensitive,
+                                                           require_capturing));
+
+  dnr_api::IsRegexSupportedResult result;
+  if (regex.ok()) {
+    result.is_supported = true;
+  } else {
+    result.is_supported = false;
+    result.reason = regex.error_code() == re2::RE2::ErrorPatternTooLarge
+                        ? dnr_api::UNSUPPORTED_REGEX_REASON_MEMORYLIMITEXCEEDED
+                        : dnr_api::UNSUPPORTED_REGEX_REASON_SYNTAXERROR;
+  }
+
+  return RespondNow(
+      ArgumentList(dnr_api::IsRegexSupported::Results::Create(result)));
+}
+
+DeclarativeNetRequestGetAvailableStaticRuleCountFunction::
+    DeclarativeNetRequestGetAvailableStaticRuleCountFunction() = default;
+DeclarativeNetRequestGetAvailableStaticRuleCountFunction::
+    ~DeclarativeNetRequestGetAvailableStaticRuleCountFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestGetAvailableStaticRuleCountFunction::Run() {
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+
+  declarative_net_request::CompositeMatcher* composite_matcher =
+      rules_monitor_service->ruleset_manager()->GetMatcherForExtension(
+          extension_id());
+
+  // First get the total enabled static rule count for the extension.
+  size_t enabled_static_rule_count =
+      GetEnabledStaticRuleCount(composite_matcher);
+  size_t static_rule_limit =
+      static_cast<size_t>(declarative_net_request::GetMaximumRulesPerRuleset());
+  DCHECK_LE(enabled_static_rule_count, static_rule_limit);
+
+  size_t available_static_rule_count = 0;
+  if (!base::FeatureList::IsEnabled(
+          declarative_net_request::kDeclarativeNetRequestGlobalRules)) {
+    available_static_rule_count = static_rule_limit - enabled_static_rule_count;
+    DCHECK_GE(static_rule_limit, available_static_rule_count);
+
+    return RespondNow(OneArgument(
+        base::Value(static_cast<int>(available_static_rule_count))));
+  }
+
+  const declarative_net_request::GlobalRulesTracker& global_rules_tracker =
+      rules_monitor_service->global_rules_tracker();
+
+  size_t available_allocation =
+      global_rules_tracker.GetAvailableAllocation(extension_id());
+  size_t guaranteed_static_minimum =
+      declarative_net_request::GetStaticGuaranteedMinimumRuleCount();
+
+  // If an extension's rule count is below the guaranteed minimum, include the
+  // difference.
+  if (enabled_static_rule_count < guaranteed_static_minimum) {
+    available_static_rule_count =
+        (guaranteed_static_minimum - enabled_static_rule_count) +
+        available_allocation;
+  } else {
+    size_t used_global_allocation =
+        enabled_static_rule_count - guaranteed_static_minimum;
+    DCHECK_GE(available_allocation, used_global_allocation);
+
+    available_static_rule_count = available_allocation - used_global_allocation;
+  }
+
+  // Ensure conversion to int below doesn't underflow.
+  DCHECK_LE(available_static_rule_count,
+            static_cast<size_t>(std::numeric_limits<int>::max()));
+  return RespondNow(
+      OneArgument(base::Value(static_cast<int>(available_static_rule_count))));
 }
 
 }  // namespace extensions

@@ -29,9 +29,10 @@ interface CallsiteInfoWidth {
   width: number;
 }
 
-const NODE_HEIGHT_DEFAULT = 15;
+// Height of one 'row' on the flame chart including 1px of whitespace
+// below the box.
+const NODE_HEIGHT = 18;
 
-export const HEAP_PROFILE_COLOR = 'hsl(224, 45%, 70%)';
 export const HEAP_PROFILE_HOVERED_COLOR = 'hsl(224, 45%, 55%)';
 
 export function findRootSize(data: CallsiteInfo[]) {
@@ -50,12 +51,15 @@ export interface NodeRendering {
 }
 
 export class Flamegraph {
-  private isThumbnail = false;
   private nodeRendering: NodeRendering = {};
   private flamegraphData: CallsiteInfo[];
+  private highlightSomeNodes = false;
   private maxDepth = -1;
   private totalSize = -1;
-  private textSize = 12;
+  // Initialised on first draw() call
+  private labelCharWidth = 0;
+  private labelFontStyle = '12px Roboto Mono';
+  private rolloverFontStyle = '12px Roboto Condensed';
   // Key for the map is depth followed by x coordinate - `depth;x`
   private graphData: Map<string, CallsiteInfoWidth> = new Map();
   private xStartsPerDepth: Map<number, number[]> = new Map();
@@ -76,31 +80,36 @@ export class Flamegraph {
     this.maxDepth = Math.max(...this.flamegraphData.map(value => value.depth));
   }
 
-  hash(s: string): number {
-    let hash = 0x811c9dc5 & 0xfffffff;
-    for (let i = 0; i < s.length; i++) {
-      hash ^= s.charCodeAt(i);
-      hash = (hash * 16777619) & 0xffffffff;
-    }
-    return hash & 0xff;
+  // Instead of highlighting the interesting nodes, we actually want to
+  // de-emphasize the non-highlighted nodes. Returns true if there
+  // are any highlighted nodes in the flamegraph.
+  private highlightingExists() {
+    this.highlightSomeNodes = this.flamegraphData.some((e) => e.highlighted);
   }
 
-  generateColor(name: string, isGreyedOut = false): string {
-    if (this.isThumbnail) {
-      return HEAP_PROFILE_COLOR;
-    }
+  generateColor(name: string, isGreyedOut = false, highlighted: boolean):
+      string {
     if (isGreyedOut) {
       return '#d9d9d9';
     }
     if (name === 'unknown' || name === 'root') {
       return '#c0c0c0';
     }
-    const hue = this.hash(name);
-    return `hsl(${hue}, 50%, 65%)`;
+    let x = 0;
+    for (let i = 0; i < name.length; i += 1) {
+      x += name.charCodeAt(i) % 64;
+    }
+    x = x % 360;
+    let l = '76';
+    // Make non-highlighted node lighter.
+    if (this.highlightSomeNodes && !highlighted) {
+      l = '90';
+    }
+    return `hsl(${x}deg, 45%, ${l}%)`;
   }
 
   /**
-   * Caller will have to call draw method ater updating data to have updated
+   * Caller will have to call draw method after updating data to have updated
    * graph.
    */
   updateDataIfChanged(
@@ -114,6 +123,7 @@ export class Flamegraph {
     this.flamegraphData = flamegraphData;
     this.clickedCallsite = clickedCallsite;
     this.findMaxDepth();
+    this.highlightingExists();
     // Finding total size of roots.
     this.totalSize = findRootSize(flamegraphData);
   }
@@ -121,15 +131,19 @@ export class Flamegraph {
   draw(
       ctx: CanvasRenderingContext2D, width: number, height: number, x = 0,
       y = 0, unit = 'B') {
-    // TODO(taylori): Instead of pesimistic approach improve displaying text.
-    const name = '____MMMMMMQQwwZZZZZZzzzzzznnnnnnwwwwwwWWWWWqq$$mmmmmm__';
-    const charWidth = ctx.measureText(name).width / name.length;
-    const nodeHeight = this.getNodeHeight();
-    this.startingY = y;
 
     if (this.flamegraphData === undefined) {
       return;
     }
+
+    ctx.font = this.labelFontStyle;
+    ctx.textBaseline = 'middle';
+    if (this.labelCharWidth === 0) {
+      this.labelCharWidth = ctx.measureText('_').width;
+    }
+
+    this.startingY = y;
+
     // For each node, we use this map to get information about it's parent
     // (total size of it, width and where it starts in graph) so we can
     // calculate it's own position in graph.
@@ -137,24 +151,26 @@ export class Flamegraph {
     let currentY = y;
     nodesMap.set(-1, {width, nextXForChildren: x, size: this.totalSize, x});
 
-    // Initialize data needed for click/hover behaivior.
+    // Initialize data needed for click/hover behavior.
     this.graphData = new Map();
     this.xStartsPerDepth = new Map();
 
     // Draw root node.
-    ctx.fillStyle = this.generateColor('root', false);
-    ctx.fillRect(x, currentY, width, nodeHeight);
-    ctx.font = `${this.textSize}px Roboto Condensed`;
+    ctx.fillStyle = this.generateColor('root', false, false);
+    ctx.fillRect(x, currentY, width, NODE_HEIGHT - 1);
     const text = cropText(
         `root: ${
             this.displaySize(
                 this.totalSize, unit, unit === 'B' ? 1024 : 1000)}`,
-        charWidth,
+        this.labelCharWidth,
         width - 2);
     ctx.fillStyle = 'black';
-    ctx.fillText(text, x + 5, currentY + nodeHeight - 4);
-    currentY += nodeHeight;
+    ctx.fillText(text, x + 5, currentY + (NODE_HEIGHT - 1) / 2);
+    currentY += NODE_HEIGHT;
 
+    // Set style for borders.
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 0.5;
 
     for (let i = 0; i < this.flamegraphData.length; i++) {
       if (currentY > height) {
@@ -166,7 +182,7 @@ export class Flamegraph {
         continue;
       }
 
-      const isClicked = !this.isThumbnail && this.clickedCallsite !== undefined;
+      const isClicked = this.clickedCallsite !== undefined;
       const isFullWidth =
           isClicked && value.depth <= this.clickedCallsite!.depth;
       const isGreyedOut =
@@ -179,12 +195,12 @@ export class Flamegraph {
           (isFullWidth ? 1 : value.totalSize / parentSize) * parentNode.width;
 
       const currentX = parentNode.nextXForChildren;
-      currentY = y + nodeHeight * (value.depth + 1);
+      currentY = y + NODE_HEIGHT * (value.depth + 1);
 
       // Draw node.
       const name = this.getCallsiteName(value);
-      ctx.fillStyle = this.generateColor(name, isGreyedOut);
-      ctx.fillRect(currentX, currentY, width, nodeHeight);
+      ctx.fillStyle = this.generateColor(name, isGreyedOut, value.highlighted);
+      ctx.fillRect(currentX, currentY, width, NODE_HEIGHT - 1);
 
       // Set current node's data in map for children to use.
       nodesMap.set(value.id, {
@@ -201,27 +217,26 @@ export class Flamegraph {
         x: parentNode.x
       });
 
-      // Thumbnail mode doesn't have name on nodes and click/hover behaviour.
-      if (this.isThumbnail) {
-        continue;
-      }
-
       // Draw name.
-      ctx.font = `${this.textSize}px Roboto Condensed`;
-      const text = cropText(name, charWidth, width - 2);
+      const labelPaddingPx = 5;
+      const maxLabelWidth = width - labelPaddingPx * 2;
+      let text = cropText(name, this.labelCharWidth, maxLabelWidth);
+      // If cropped text and the original text are within 20% we keep the
+      // original text and just squish it a bit.
+      if (text.length * 1.2 > name.length) {
+        text = name;
+      }
       ctx.fillStyle = 'black';
-      ctx.fillText(text, currentX + 5, currentY + nodeHeight - 4);
+      ctx.fillText(
+          text,
+          currentX + labelPaddingPx,
+          currentY + (NODE_HEIGHT - 1) / 2,
+          maxLabelWidth);
 
-      // Draw border around node.
-      ctx.strokeStyle = 'white';
+      // Draw border on the right of node.
       ctx.beginPath();
-      ctx.moveTo(currentX, currentY);
-      ctx.lineTo(currentX, currentY + nodeHeight);
-      ctx.lineTo(currentX + width, currentY + nodeHeight);
-      ctx.lineTo(currentX + width, currentY);
-      ctx.moveTo(currentX, currentY);
-      ctx.lineWidth = 1;
-      ctx.closePath();
+      ctx.moveTo(currentX + width, currentY);
+      ctx.lineTo(currentX + width, currentY + NODE_HEIGHT);
       ctx.stroke();
 
       // Add this node for recognizing in click/hover.
@@ -238,13 +253,25 @@ export class Flamegraph {
       }
     }
 
+    // Draw the tooltip.
     if (this.hoveredX > -1 && this.hoveredY > -1 && this.hoveredCallsite) {
-      // Draw the tooltip.
+      // Must set these before measureText below.
+      ctx.font = this.rolloverFontStyle;
+      ctx.textBaseline = 'top';
+
+      // Size in px of the border around the text and the edge of the rollover
+      // background.
+      const paddingPx = 8;
+      // Size in px of the x and y offset between the mouse and the top left
+      // corner of the rollover box.
+      const offsetPx = 4;
+
       const lines: string[] = [];
       let lineSplitter: LineSplitter;
       const nameText = this.getCallsiteName(this.hoveredCallsite);
+      const nameTextSize = ctx.measureText(nameText);
       lineSplitter =
-          splitIfTooBig(nameText, width, ctx.measureText(nameText).width);
+          splitIfTooBig(nameText, width - paddingPx, nameTextSize.width);
       let textWidth = lineSplitter.lineWidth;
       lines.push(...lineSplitter.lines);
 
@@ -283,23 +310,36 @@ export class Flamegraph {
         lines.push(...lineSplitter.lines);
       }
 
-      const rectWidth = textWidth + 16;
-      const rectXStart = this.hoveredX + 8 + rectWidth > width ?
-          width - rectWidth - 8 :
-          this.hoveredX + 8;
-      const rectHeight = nodeHeight * (lines.length + 1);
-      const rectYStart = this.hoveredY + 4 + rectHeight > height ?
-          height - rectHeight - 8 :
-          this.hoveredY + 4;
+      // Compute a line height as the bounding box height + 50%:
+      const heightSample = ctx.measureText(
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+      const lineHeight =
+          Math.round(heightSample.actualBoundingBoxDescent * 1.5);
 
-      ctx.font = '12px Roboto Condensed';
+      const rectWidth = textWidth + 2 * paddingPx;
+      const rectHeight = lineHeight * lines.length + 2 * paddingPx;
+
+      let rectXStart = this.hoveredX + offsetPx;
+      let rectYStart = this.hoveredY + offsetPx;
+
+      if (rectXStart + rectWidth > width) {
+        rectXStart = width - rectWidth;
+      }
+
+      if (rectYStart + rectHeight > height) {
+        rectYStart = height - rectHeight;
+      }
+
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.fillRect(rectXStart, rectYStart, rectWidth, rectHeight);
       ctx.fillStyle = 'hsl(200, 50%, 40%)';
       ctx.textAlign = 'left';
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        ctx.fillText(line, rectXStart + 4, rectYStart + (i + 1) * 18);
+        ctx.fillText(
+            line,
+            rectXStart + paddingPx,
+            rectYStart + paddingPx + i * lineHeight);
       }
     }
   }
@@ -345,9 +385,6 @@ export class Flamegraph {
   }
 
   onMouseClick({x, y}: {x: number, y: number}): CallsiteInfo|undefined {
-    if (this.isThumbnail) {
-      return undefined;
-    }
     const clickedCallsite = this.findSelectedCallsite(x, y);
     // TODO(b/148596659): Allow to expand [merged] callsites. Currently,
     // this expands to the biggest of the nodes that were merged, which
@@ -359,8 +396,8 @@ export class Flamegraph {
   }
 
   private findSelectedCallsite(x: number, y: number): CallsiteInfo|undefined {
-    const depth = Math.trunc((y - this.startingY) / this.getNodeHeight()) -
-        1;  // at 0 is root
+    const depth =
+        Math.trunc((y - this.startingY) / NODE_HEIGHT) - 1;  // at 0 is root
     if (depth >= 0 && this.xStartsPerDepth.has(depth)) {
       const startX = this.searchSmallest(this.xStartsPerDepth.get(depth)!, x);
       const result = this.graphData.get(`${depth};${startX}`);
@@ -379,17 +416,8 @@ export class Flamegraph {
   }
 
   getHeight(): number {
-    return this.flamegraphData.length === 0 ?
-        0 :
-        (this.maxDepth + 2) * this.getNodeHeight();
-  }
-
-  getNodeHeight() {
-    return this.isThumbnail ? 1 : NODE_HEIGHT_DEFAULT;
-  }
-
-  enableThumbnail(isThumbnail: boolean) {
-    this.isThumbnail = isThumbnail;
+    return this.flamegraphData.length === 0 ? 0 :
+                                              (this.maxDepth + 2) * NODE_HEIGHT;
   }
 }
 
@@ -409,6 +437,6 @@ export function splitIfTooBig(
     lines.push(line.slice(0, maxLineLen));
     line = line.slice(maxLineLen);
   }
-  lineWidth = Math.min(maxWidth, lineWidth);
+  lineWidth = Math.min(maxLineLen * charWidth, lineWidth);
   return {lineWidth, lines};
 }

@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -54,10 +54,10 @@
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
@@ -266,11 +266,9 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
 void AppendCommandLineSwitches() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 120
-  // seconds after chrome starts.
-  command_line->AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+  // Always disable the unsandbox GPU process for DX12 Info collection to avoid
+  // interference. This GPU process is launched 120 seconds after chrome starts.
+  command_line->AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 }
 
 }  // namespace
@@ -325,12 +323,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 #endif
 
 #if defined(OS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
   InitializeSandboxInfo(&sandbox_info);
 
   params.instance = GetModuleHandle(NULL);
   params.sandbox_info = &sandbox_info;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
       sandbox::SeatbeltExecServer::CreateFromArguments(
           command_line->GetProgram().value().c_str(), argc, argv);

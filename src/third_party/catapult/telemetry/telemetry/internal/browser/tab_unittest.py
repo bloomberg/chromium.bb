@@ -34,6 +34,15 @@ class TabTest(tab_test_case.TabTestCase):
     self.assertRaises(exceptions.DevtoolsTargetCrashException,
                       lambda: self._tab.Navigate('chrome://crash',
                                                  timeout=30))
+    # This is expected to produce a single minidump, so ignore it so that the
+    # post-test cleanup doesn't complain about unsymbolized minidumps.
+    minidumps = self._tab.browser.GetAllMinidumpPaths()
+    if len(minidumps) == 1:
+      # If we don't have a minidump, no need to do anything. If we have more
+      # than one, then we should leave them alone and let the cleanup fail,
+      # as that implies that something went wrong and we currently don't have
+      # a good way to distinguish the expected minidump from unexpected ones.
+      self._tab.browser.IgnoreMinidump(minidumps[0])
 
   def testTimeoutExceptionIncludeConsoleMessage(self):
     self._tab.EvaluateJavaScript("""
@@ -133,14 +142,20 @@ class ServiceWorkerTabTest(tab_test_case.TabTestCase):
   def testClearDataForOrigin(self):
     self._tab.Navigate(self.UrlOfUnittestFile('blank.html'))
     self._tab.ExecuteJavaScript(
-        'var isServiceWorkerRegisteredForThisOrigin = false; \
-         navigator.serviceWorker.register("{{ @scriptURL }}");',
+        'var asyncOperationDone = false; \
+         var isServiceWorkerRegisteredForThisOrigin = false; \
+         navigator.serviceWorker.register("{{ @scriptURL }}").then(_ => { \
+             asyncOperationDone = true; });',
         scriptURL=self.UrlOfUnittestFile('blank.js'))
-    check_registration = 'isServiceWorkerRegisteredForThisOrigin = false; \
+    self._tab.WaitForJavaScriptCondition('asyncOperationDone')
+    check_registration = 'asyncOperationDone = false; \
+        isServiceWorkerRegisteredForThisOrigin = false; \
         navigator.serviceWorker.getRegistration().then( \
             (reg) => { \
+                asyncOperationDone = true; \
                 isServiceWorkerRegisteredForThisOrigin = reg ? true : false;});'
     self._tab.ExecuteJavaScript(check_registration)
+    self._tab.WaitForJavaScriptCondition('asyncOperationDone')
     self.assertTrue(self._tab.EvaluateJavaScript(
         'isServiceWorkerRegisteredForThisOrigin;'))
     py_utils.WaitFor(self._tab.IsServiceWorkerActivatedOrNotRegistered,
@@ -148,5 +163,6 @@ class ServiceWorkerTabTest(tab_test_case.TabTestCase):
     self._tab.ClearDataForOrigin(self.UrlOfUnittestFile(''))
     time.sleep(1)
     self._tab.ExecuteJavaScript(check_registration)
+    self._tab.WaitForJavaScriptCondition('asyncOperationDone')
     self.assertFalse(self._tab.EvaluateJavaScript(
         'isServiceWorkerRegisteredForThisOrigin;'))

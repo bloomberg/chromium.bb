@@ -265,11 +265,8 @@ const uint64_t* YetAnotherBitVector::Select(int* pos) const {
   return &bits_.as_integer;
 }
 
-// These are declared here to placate old buggy compilers that insist static
-// constexpr members have storage (against the C++14 spec), and this confuses
-// the linker.
-//
-// TODO(crbug.com/openscreen/40): Remove these once toolchains are upgraded.
+// NOTE: These declarations can be removed when C++17 compliance is mandatory
+// for all embedders, as static constexpr members can be declared inline.
 constexpr int YetAnotherBitVector::kBitsPerInteger;
 constexpr uint64_t YetAnotherBitVector::kAllBitsSet;
 constexpr uint64_t YetAnotherBitVector::kNoBitsSet;

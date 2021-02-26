@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/slew_volume.h"
+#include "chromecast/media/cma/backend/mixer/post_processor_registry.h"
 
 namespace chromecast {
 namespace media {
@@ -50,15 +51,12 @@ const AudioPostProcessor2::Status& SaturatedGain::GetStatus() {
   return status_;
 }
 
-void SaturatedGain::ProcessFrames(float* data,
-                                  int frames,
-                                  float volume,
-                                  float volume_dbfs) {
+void SaturatedGain::ProcessFrames(float* data, int frames, Metadata* metadata) {
   DCHECK(data);
 
   status_.output_buffer = data;
-  if (volume_dbfs != last_volume_dbfs_) {
-    last_volume_dbfs_ = volume_dbfs;
+  if (metadata->volume_dbfs != last_volume_dbfs_) {
+    last_volume_dbfs_ = metadata->volume_dbfs;
     // Don't apply more gain than attenuation.
     float effective_gain = std::min(DbFsToScale(-last_volume_dbfs_), gain_);
     slew_volume_.SetVolume(effective_gain);
@@ -70,6 +68,8 @@ void SaturatedGain::ProcessFrames(float* data,
 bool SaturatedGain::UpdateParameters(const std::string& message) {
   return false;
 }
+
+REGISTER_POSTPROCESSOR(SaturatedGain, "libcast_saturated_gain_2.0.so");
 
 }  // namespace media
 }  // namespace chromecast

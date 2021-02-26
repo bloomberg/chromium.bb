@@ -46,8 +46,7 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
-#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -99,7 +98,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
  public:
   DataListIndicatorElement(Document& document) : HTMLDivElement(document) {
     SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-    setAttribute(html_names::kIdAttr, shadow_element_names::PickerIndicator());
+    setAttribute(html_names::kIdAttr, shadow_element_names::kIdPickerIndicator);
   }
 };
 
@@ -108,7 +107,7 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 
 TextFieldInputType::~TextFieldInputType() = default;
 
-void TextFieldInputType::Trace(Visitor* visitor) {
+void TextFieldInputType::Trace(Visitor* visitor) const {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }
@@ -123,7 +122,7 @@ InputType::ValueMode TextFieldInputType::GetValueMode() const {
 
 SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
   auto* element = GetElement().UserAgentShadowRoot()->getElementById(
-      shadow_element_names::SpinButton());
+      shadow_element_names::kIdSpinButton);
   CHECK(!element || IsA<SpinButtonElement>(element));
   return To<SpinButtonElement>(element);
 }
@@ -239,8 +238,6 @@ void TextFieldInputType::ForwardEvent(Event& event) {
        event.HasInterface(event_interface_names::kWheelEvent) ||
        event.type() == event_type_names::kBlur ||
        event.type() == event_type_names::kFocus)) {
-    auto* layout_text_control =
-        To<LayoutTextControlSingleLine>(GetElement().GetLayoutObject());
     if (event.type() == event_type_names::kBlur) {
       if (LayoutBox* inner_editor_layout_object =
               GetElement().InnerEditorElement()->GetLayoutBox()) {
@@ -253,10 +250,6 @@ void TextFieldInputType::ForwardEvent(Event& event) {
           }
         }
       }
-
-      layout_text_control->CapsLockStateMayHaveChanged();
-    } else if (event.type() == event_type_names::kFocus) {
-      layout_text_control->CapsLockStateMayHaveChanged();
     }
 
     GetElement().ForwardEvent(event);
@@ -284,18 +277,18 @@ void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
 }
 
 bool TextFieldInputType::TypeShouldForceLegacyLayout() const {
+  if (RuntimeEnabledFeatures::LayoutNGTextControlEnabled())
+    return false;
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByTextControl);
   return true;
 }
 
-LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
-                                                     LegacyLayout) const {
-  UseCounter::Count(GetElement().GetDocument(),
-                    WebFeature::kLegacyLayoutByTextControl);
-  return new LayoutTextControlSingleLine(&GetElement());
-}
-
-bool TextFieldInputType::ShouldHaveSpinButton() const {
-  return LayoutTheme::GetTheme().ShouldHaveSpinButton(&GetElement());
+LayoutObject* TextFieldInputType::CreateLayoutObject(
+    const ComputedStyle& style,
+    LegacyLayout legacy) const {
+  return LayoutObjectFactory::CreateTextControlSingleLine(GetElement(), style,
+                                                          legacy);
 }
 
 void TextFieldInputType::CreateShadowSubtree() {
@@ -303,8 +296,7 @@ void TextFieldInputType::CreateShadowSubtree() {
   ShadowRoot* shadow_root = GetElement().UserAgentShadowRoot();
   DCHECK(!shadow_root->HasChildren());
 
-  Document& document = GetElement().GetDocument();
-  bool should_have_spin_button = ShouldHaveSpinButton();
+  bool should_have_spin_button = GetElement().IsSteppable();
   bool should_have_data_list_indicator = GetElement().HasValidDataListOptions();
   bool creates_container = should_have_spin_button ||
                            should_have_data_list_indicator || NeedsContainer();
@@ -315,10 +307,11 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
+  Document& document = GetElement().GetDocument();
   auto* container = MakeGarbageCollected<HTMLDivElement>(document);
-  container->SetIdAttribute(shadow_element_names::TextFieldContainer());
+  container->SetIdAttribute(shadow_element_names::kIdTextFieldContainer);
   container->SetShadowPseudoId(
-      AtomicString("-webkit-textfield-decoration-container"));
+      shadow_element_names::kPseudoTextFieldDecorationContainer);
   shadow_root->AppendChild(container);
 
   auto* editing_view_port =
@@ -345,7 +338,7 @@ void TextFieldInputType::CreateShadowSubtree() {
 
 Element* TextFieldInputType::ContainerElement() const {
   return GetElement().UserAgentShadowRoot()->getElementById(
-      shadow_element_names::TextFieldContainer());
+      shadow_element_names::kIdTextFieldContainer);
 }
 
 void TextFieldInputType::DestroyShadowSubtree() {
@@ -358,7 +351,7 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   if (ChromeClient* chrome_client = GetChromeClient())
     chrome_client->TextFieldDataListChanged(GetElement());
   Element* picker = GetElement().UserAgentShadowRoot()->getElementById(
-      shadow_element_names::PickerIndicator());
+      shadow_element_names::kIdPickerIndicator);
   bool did_have_picker_indicator = picker;
   bool will_have_picker_indicator = GetElement().HasValidDataListOptions();
   if (did_have_picker_indicator == will_have_picker_indicator)
@@ -375,9 +368,9 @@ void TextFieldInputType::ListAttributeTargetChanged() {
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
       auto* rp_container = MakeGarbageCollected<HTMLDivElement>(document);
-      rp_container->SetIdAttribute(shadow_element_names::TextFieldContainer());
+      rp_container->SetIdAttribute(shadow_element_names::kIdTextFieldContainer);
       rp_container->SetShadowPseudoId(
-          AtomicString("-webkit-textfield-decoration-container"));
+          shadow_element_names::kPseudoTextFieldDecorationContainer);
       Element* inner_editor = GetElement().InnerEditorElement();
       inner_editor->parentNode()->ReplaceChild(rp_container, inner_editor);
       auto* editing_view_port =
@@ -505,14 +498,15 @@ void TextFieldInputType::UpdatePlaceholderText() {
     auto* new_element =
         MakeGarbageCollected<HTMLDivElement>(GetElement().GetDocument());
     placeholder = new_element;
-    placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
+    placeholder->SetShadowPseudoId(
+        shadow_element_names::kPseudoInputPlaceholder);
     placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,
                                         GetElement().IsPlaceholderVisible()
                                             ? CSSValueID::kBlock
                                             : CSSValueID::kNone,
                                         true);
     placeholder->setAttribute(html_names::kIdAttr,
-                              shadow_element_names::Placeholder());
+                              shadow_element_names::kIdPlaceholder);
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();
     previous->parentNode()->InsertBefore(placeholder, previous);
@@ -594,10 +588,6 @@ void TextFieldInputType::SpinButtonDidReleaseMouseCapture(
     SpinButtonElement::EventDispatch event_dispatch) {
   if (event_dispatch == SpinButtonElement::kEventDispatchAllowed)
     GetElement().DispatchFormControlChangeEvent();
-}
-
-String TextFieldInputType::RawValue() const {
-  return GetElement().InnerEditorElement()->innerText();
 }
 
 }  // namespace blink

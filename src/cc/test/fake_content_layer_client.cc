@@ -4,7 +4,8 @@
 
 #include "cc/test/fake_content_layer_client.h"
 
-#include <stddef.h>
+#include <algorithm>
+#include <cstddef>
 
 #include "cc/paint/paint_op_buffer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -36,8 +37,7 @@ gfx::Rect FakeContentLayerClient::PaintableRegion() {
 }
 
 scoped_refptr<DisplayItemList>
-FakeContentLayerClient::PaintContentsToDisplayList(
-    PaintingControlSetting painting_control) {
+FakeContentLayerClient::PaintContentsToDisplayList() {
   auto display_list = base::MakeRefCounted<DisplayItemList>();
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
@@ -110,14 +110,17 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     display_list->EndPaintOfUnpaired(PaintableRegion());
   }
 
+  if (has_draw_text_op_) {
+    display_list->StartPaint();
+    display_list->push<DrawTextBlobOp>(
+        SkTextBlob::MakeFromString("any", SkFont()), 0, 0, PaintFlags());
+    display_list->EndPaintOfUnpaired(PaintableRegion());
+  }
+
   display_list->Finalize();
   return display_list;
 }
 
 bool FakeContentLayerClient::FillsBoundsCompletely() const { return false; }
-
-size_t FakeContentLayerClient::GetApproximateUnsharedMemoryUsage() const {
-  return reported_memory_usage_;
-}
 
 }  // namespace cc

@@ -23,6 +23,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/file_transfer/file_transfer_message_handler.h"
+#include "remoting/host/file_transfer/rtc_log_file_operations.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/keyboard_layout_monitor.h"
@@ -36,10 +37,15 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/peer_connection_controls.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_frame_pump.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+
+namespace {
+constexpr char kRtcLogTransferDataChannelPrefix[] = "rtc-log-transfer-";
+}  // namespace
 
 namespace remoting {
 
@@ -180,8 +186,15 @@ void ClientSession::SetCapabilities(
   if (HasCapability(capabilities_, protocol::kFileTransferCapability)) {
     data_channel_manager_.RegisterCreateHandlerCallback(
         kFileTransferDataChannelPrefix,
-        base::Bind(&ClientSession::CreateFileTransferMessageHandler,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClientSession::CreateFileTransferMessageHandler,
+                            base::Unretained(this)));
+  }
+
+  if (HasCapability(capabilities_, protocol::kRtcLogTransferCapability)) {
+    data_channel_manager_.RegisterCreateHandlerCallback(
+        kRtcLogTransferDataChannelPrefix,
+        base::BindRepeating(&ClientSession::CreateRtcLogTransferMessageHandler,
+                            base::Unretained(this)));
   }
 
   std::vector<ActionRequest::Action> supported_actions;
@@ -285,6 +298,36 @@ void ClientSession::SelectDesktopDisplay(
   }
 }
 
+void ClientSession::ControlPeerConnection(
+    const protocol::PeerConnectionParameters& parameters) {
+  if (!connection_->peer_connection_controls()) {
+    return;
+  }
+  base::Optional<int> min_bitrate_bps;
+  base::Optional<int> max_bitrate_bps;
+  bool set_preferred_bitrates = false;
+  if (parameters.has_preferred_min_bitrate_bps()) {
+    min_bitrate_bps = parameters.preferred_min_bitrate_bps();
+    set_preferred_bitrates = true;
+  }
+  if (parameters.has_preferred_max_bitrate_bps()) {
+    max_bitrate_bps = parameters.preferred_max_bitrate_bps();
+    set_preferred_bitrates = true;
+  }
+  if (set_preferred_bitrates) {
+    connection_->peer_connection_controls()->SetPreferredBitrates(
+        min_bitrate_bps, max_bitrate_bps);
+  }
+
+  if (parameters.request_ice_restart()) {
+    connection_->peer_connection_controls()->RequestIceRestart();
+  }
+
+  if (parameters.request_sdp_restart()) {
+    connection_->peer_connection_controls()->RequestSdpRestart();
+  }
+}
+
 void ClientSession::OnConnectionAuthenticating() {
   event_handler_->OnSessionAuthenticating(this);
 }
@@ -335,6 +378,11 @@ void ClientSession::OnConnectionAuthenticated() {
   if (!host_capabilities_.empty())
     host_capabilities_.append(" ");
   host_capabilities_.append(extension_manager_->GetCapabilities());
+  if (!host_capabilities_.empty())
+    host_capabilities_.append(" ");
+  host_capabilities_.append(protocol::kRtcLogTransferCapability);
+  host_capabilities_.append(" ");
+  host_capabilities_.append(protocol::kWebrtcIceSdpRestartAction);
 
   // Create the object that controls the screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();
@@ -582,7 +630,7 @@ void ClientSession::SetMouseClampingFilter(const DisplaySize& size) {
       break;
 
     case protocol::SessionConfig::Protocol::WEBRTC: {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       mouse_clamping_filter_.set_input_size(size.WidthAsPixels(),
                                             size.HeightAsPixels());
 #else
@@ -591,7 +639,7 @@ void ClientSession::SetMouseClampingFilter(const DisplaySize& size) {
       // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
       mouse_clamping_filter_.set_input_size(size.WidthAsDips(),
                                             size.HeightAsDips());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
     }
   }
 }
@@ -705,7 +753,7 @@ void ClientSession::OnDesktopDisplayChanged(
   // display configuration supports capturing the entire desktop.
   LOG(INFO) << "    Webrtc desktop size " << default_webrtc_desktop_size_;
   if (show_display_id_ == webrtc::kInvalidScreenId) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On MacOS, there are situations where webrtc cannot capture the entire
     // desktop (e.g, when there are displays with different DPIs). We detect
     // this situation by comparing the full desktop size (calculated above
@@ -723,7 +771,7 @@ void ClientSession::OnDesktopDisplayChanged(
 #else
     // Windows/Linux can capture full desktop if multiple displays.
     can_capture_full_desktop_ = true;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
   }
 
   // Generate and send VideoLayout message.
@@ -799,6 +847,14 @@ void ClientSession::CreateFileTransferMessageHandler(
   // up.
   new FileTransferMessageHandler(channel_name, std::move(pipe),
                                  desktop_environment_->CreateFileOperations());
+}
+
+void ClientSession::CreateRtcLogTransferMessageHandler(
+    const std::string& channel_name,
+    std::unique_ptr<protocol::MessagePipe> pipe) {
+  new FileTransferMessageHandler(
+      channel_name, std::move(pipe),
+      std::make_unique<RtcLogFileOperations>(connection_.get()));
 }
 
 void ClientSession::CreateActionMessageHandler(

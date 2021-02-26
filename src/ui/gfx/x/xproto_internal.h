@@ -6,29 +6,23 @@
 #define UI_GFX_X_XPROTO_INTERNAL_H_
 
 #ifndef IS_X11_IMPL
-#error "This file should only be included by generated xprotos"
+#error "This file should only be included by //ui/gfx/x:xprotos"
 #endif
 
-#include <X11/Xlib-xcb.h>
-#include <stdint.h>
-#include <string.h>
-#include <xcb/xcb.h>
-#include <xcb/xcbext.h>
-
 #include <bitset>
-#include <limits>
 #include <type_traits>
 
 #include "base/component_export.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto_types.h"
 
 namespace x11 {
 
 template <class Reply>
 class Future;
-
-using WriteBuffer = std::vector<uint8_t>;
 
 template <typename T, typename Enable = void>
 struct EnumBase {
@@ -43,33 +37,87 @@ struct EnumBase<T, typename std::enable_if_t<std::is_enum<T>::value>> {
 template <typename T>
 using EnumBaseType = typename EnumBase<T>::type;
 
-struct ReadBuffer {
-  const uint8_t* data = nullptr;
-  size_t offset = 0;
+template <typename T>
+void ReadError(T* error, ReadBuffer* buf);
+
+// Calls free() on the underlying data when the count drops to 0.
+class COMPONENT_EXPORT(X11) MallocedRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  explicit MallocedRefCountedMemory(void* data);
+
+  MallocedRefCountedMemory(const MallocedRefCountedMemory&) = delete;
+  MallocedRefCountedMemory& operator=(const MallocedRefCountedMemory&) = delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~MallocedRefCountedMemory() override;
+
+  uint8_t* const data_;
 };
 
-template <typename T>
-void Write(const T* t, WriteBuffer* buf) {
-  static_assert(std::is_trivially_copyable<T>::value, "");
-  // On the wire, X11 types are always aligned to their size.  This is a sanity
-  // check to ensure padding etc are working properly.
-  DCHECK_EQ(buf->size() % sizeof(*t), 0UL);
-  const uint8_t* start = reinterpret_cast<const uint8_t*>(t);
-  std::copy(start, start + sizeof(*t), std::back_inserter(*buf));
-}
+// Wraps another RefCountedMemory, giving a view into it.  Similar to
+// base::StringPiece, the data is some contiguous subarray, but unlike
+// StringPiece, a counted reference is kept on the underlying memory.
+class COMPONENT_EXPORT(X11) OffsetRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  OffsetRefCountedMemory(scoped_refptr<base::RefCountedMemory> memory,
+                         size_t offset,
+                         size_t size);
+
+  OffsetRefCountedMemory(const OffsetRefCountedMemory&) = delete;
+  OffsetRefCountedMemory& operator=(const OffsetRefCountedMemory&) = delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~OffsetRefCountedMemory() override;
+
+  scoped_refptr<base::RefCountedMemory> memory_;
+  size_t offset_;
+  size_t size_;
+};
+
+// Wraps a bare pointer and does not take any action when the reference count
+// reaches 0.  This is used to wrap stack-alloctaed or persistent data so we can
+// pass those to Read/ReadEvent/ReadReply which expect RefCountedMemory.
+class COMPONENT_EXPORT(X11) UnretainedRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  explicit UnretainedRefCountedMemory(const void* data);
+
+  UnretainedRefCountedMemory(const UnretainedRefCountedMemory&) = delete;
+  UnretainedRefCountedMemory& operator=(const UnretainedRefCountedMemory&) =
+      delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~UnretainedRefCountedMemory() override;
+
+  const uint8_t* const data_;
+};
 
 template <typename T>
 void Read(T* t, ReadBuffer* buf) {
   static_assert(std::is_trivially_copyable<T>::value, "");
-  // On the wire, X11 types are always aligned to their size.  This is a sanity
-  // check to ensure padding etc are working properly.
-  DCHECK_EQ(buf->offset % sizeof(*t), 0UL);
-  memcpy(t, buf->data + buf->offset, sizeof(*t));
+  detail::VerifyAlignment(t, buf->offset);
+  memcpy(t, buf->data->data() + buf->offset, sizeof(*t));
   buf->offset += sizeof(*t);
 }
 
 inline void Pad(WriteBuffer* buf, size_t amount) {
-  buf->resize(buf->size() + amount, '\0');
+  uint8_t zero = 0;
+  for (size_t i = 0; i < amount; i++)
+    buf->Write(&zero);
 }
 
 inline void Pad(ReadBuffer* buf, size_t amount) {
@@ -77,47 +125,27 @@ inline void Pad(ReadBuffer* buf, size_t amount) {
 }
 
 inline void Align(WriteBuffer* buf, size_t align) {
-  Pad(buf, (align - (buf->size() % align)) % align);
+  Pad(buf, (align - (buf->offset() % align)) % align);
 }
 
 inline void Align(ReadBuffer* buf, size_t align) {
   Pad(buf, (align - (buf->offset % align)) % align);
 }
 
+base::Optional<unsigned int> SendRequestImpl(x11::Connection* connection,
+                                             WriteBuffer* buf,
+                                             bool is_void,
+                                             bool reply_has_fds);
+
 template <typename Reply>
-Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
-  // Clang crashes when the value of |is_void| is inlined below,
-  // so keep this variable outside of |xpr|.
-  constexpr bool is_void = std::is_void<Reply>::value;
-  xcb_protocol_request_t xpr{
-      .count = 1,
-      .ext = nullptr,
-      .isvoid = is_void,
-  };
-
-  struct RequestHeader {
-    uint8_t major_opcode;
-    uint8_t minor_opcode;
-    uint16_t length;
-  };
-
-  auto* header = reinterpret_cast<RequestHeader*>(buf->data());
-  // Requests are always a multiple of 4 bytes on the wire.  Because of this,
-  // the length field represents the size in chunks of 4 bytes.
-  DCHECK_EQ(buf->size() % 4, 0UL);
-  DCHECK_LE(buf->size() / 4, std::numeric_limits<uint16_t>::max());
-  header->length = buf->size() / 4;
-
-  struct iovec io[3];
-  io[2].iov_base = buf->data();
-  io[2].iov_len = buf->size();
-  auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;
-
-  xcb_connection_t* conn = XGetXCBConnection(display);
-  auto sequence = xcb_send_request(conn, flags, &io[2], &xpr);
-  if (xcb_connection_has_error(conn))
-    return {nullptr, base::nullopt};
-  return {display, sequence};
+Future<Reply> SendRequest(x11::Connection* connection,
+                          WriteBuffer* buf,
+                          bool reply_has_fds,
+                          const char* request_name) {
+  auto sequence = SendRequestImpl(connection, buf, std::is_void<Reply>::value,
+                                  reply_has_fds);
+  return {sequence ? connection : nullptr, sequence,
+          sequence ? request_name : nullptr};
 }
 
 // Helper function for xcbproto popcount.  Given an integral type, returns the
@@ -143,17 +171,49 @@ bool CaseEq(T t, S s) {
   return t == static_cast<decltype(t)>(s);
 }
 
-// Helper function for xcbproto bitcase and & expressions.  Checks if the
-// bitmasks |t| and |s| have any intersection.
+// Helper function for xcbproto bitcase expressions.  Checks if the bitmasks |t|
+// and |s| have any intersection.
 template <typename T, typename S>
-bool BitAnd(T t, S s) {
+bool CaseAnd(T t, S s) {
   return static_cast<EnumBaseType<T>>(t) & static_cast<EnumBaseType<T>>(s);
 }
 
-// Helper function for ~ expressions.
+// Helper function for xcbproto & expressions.  Computes |t| & |s|.
+template <typename T, typename S>
+auto BitAnd(T t, S s) {
+  return static_cast<EnumBaseType<T>>(t) & static_cast<EnumBaseType<T>>(s);
+}
+
+// Helper function for xcbproto ~ expressions.
 template <typename T>
-bool BitNot(T t) {
+auto BitNot(T t) {
   return ~static_cast<EnumBaseType<T>>(t);
+}
+
+// Helper function for generating switch values.  |switch_var| is the value to
+// modify.  |enum_val| is the value to set |switch_var| to if this is a regular
+// case, or the bit to be set in |switch_var| if this is a bit case.  This
+// function is a no-op when |condition| is false.
+template <typename T>
+auto SwitchVar(T enum_val, bool condition, bool is_bitcase, T* switch_var) {
+  using EnumInt = EnumBaseType<T>;
+  if (!condition)
+    return;
+  EnumInt switch_int = static_cast<EnumInt>(*switch_var);
+  if (is_bitcase) {
+    *switch_var = static_cast<T>(switch_int | static_cast<EnumInt>(enum_val));
+  } else {
+    DCHECK(!switch_int);
+    *switch_var = enum_val;
+  }
+}
+
+template <typename T>
+std::unique_ptr<T> MakeExtension(Connection* connection,
+                                 Future<QueryExtensionReply> future) {
+  auto reply = future.Sync();
+  return std::make_unique<T>(connection,
+                             reply ? *reply.reply : QueryExtensionReply{});
 }
 
 }  // namespace x11

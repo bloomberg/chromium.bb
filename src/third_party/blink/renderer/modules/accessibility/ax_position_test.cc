@@ -95,7 +95,7 @@ TEST_F(AccessibilityTest, PositionInText) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -118,7 +118,7 @@ TEST_F(AccessibilityTest, PositionBeforeText) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -141,7 +141,7 @@ TEST_F(AccessibilityTest, PositionBeforeTextWithFirstLetterCSSRule) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -165,7 +165,7 @@ TEST_F(AccessibilityTest, PositionAfterText) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -208,7 +208,8 @@ TEST_F(AccessibilityTest, PositionAfterLineBreak) {
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
   ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
-  const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
+  const AXObject* ax_static_text =
+      GetAXRootObject()->DeepestLastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -233,7 +234,8 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainer) {
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
-  const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
+  const AXObject* ax_static_text =
+      GetAXRootObject()->DeepestFirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -278,7 +280,8 @@ TEST_F(AccessibilityTest, FirstPositionInTextContainer) {
   const Node* text = GetElementById("div")->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
-  const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("div")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -298,7 +301,8 @@ TEST_F(AccessibilityTest, LastPositionInTextContainer) {
   const Node* text = GetElementById("div")->lastChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
-  const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("div")->LastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -322,7 +326,7 @@ TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
   SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
                    <p id="paragraph">hello<br>there</p>)HTML");
 
-  const AXObject* body = GetAXRootObject()->FirstChild();
+  const AXObject* body = GetAXBodyObject();
   ASSERT_NE(nullptr, body);
   const auto root_first = AXPosition::CreateFirstPositionInObject(*body);
   const auto root_last = AXPosition::CreateLastPositionInObject(*body);
@@ -334,16 +338,16 @@ TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
 
   const AXObject* paragraph = GetAXObjectByElementId("paragraph");
   ASSERT_NE(nullptr, paragraph);
-  ASSERT_NE(nullptr, paragraph->FirstChild());
-  ASSERT_NE(nullptr, paragraph->LastChild());
-  const auto paragraph_before =
-      AXPosition::CreatePositionBeforeObject(*paragraph->FirstChild());
-  const auto paragraph_after =
-      AXPosition::CreatePositionAfterObject(*paragraph->LastChild());
-  const auto paragraph_start =
-      AXPosition::CreatePositionInTextObject(*paragraph->FirstChild(), 0);
-  const auto paragraph_end =
-      AXPosition::CreatePositionInTextObject(*paragraph->LastChild(), 5);
+  ASSERT_NE(nullptr, paragraph->FirstChildIncludingIgnored());
+  ASSERT_NE(nullptr, paragraph->LastChildIncludingIgnored());
+  const auto paragraph_before = AXPosition::CreatePositionBeforeObject(
+      *paragraph->FirstChildIncludingIgnored());
+  const auto paragraph_after = AXPosition::CreatePositionAfterObject(
+      *paragraph->LastChildIncludingIgnored());
+  const auto paragraph_start = AXPosition::CreatePositionInTextObject(
+      *paragraph->FirstChildIncludingIgnored(), 0);
+  const auto paragraph_end = AXPosition::CreatePositionInTextObject(
+      *paragraph->LastChildIncludingIgnored(), 5);
 
   EXPECT_TRUE(root_first == root_first);
   EXPECT_TRUE(root_last == root_last);
@@ -394,7 +398,7 @@ TEST_F(AccessibilityTest, PositionInTextWithWhiteSpace) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -415,7 +419,7 @@ TEST_F(AccessibilityTest, PositionBeforeTextWithWhiteSpace) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -436,7 +440,7 @@ TEST_F(AccessibilityTest, PositionAfterTextWithWhiteSpace) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->LastChild();
+      GetAXObjectByElementId("paragraph")->LastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -479,7 +483,8 @@ TEST_F(AccessibilityTest, PositionAfterLineBreakWithWhiteSpace) {
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
   ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
-  const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
+  const AXObject* ax_static_text =
+      GetAXRootObject()->DeepestLastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -505,7 +510,8 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainerWithWhiteSpace) {
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
-  const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
+  const AXObject* ax_static_text =
+      GetAXRootObject()->DeepestFirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -551,7 +557,8 @@ TEST_F(AccessibilityTest, FirstPositionInTextContainerWithWhiteSpace) {
   const Node* text = GetElementById("div")->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
-  const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("div")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -572,7 +579,8 @@ TEST_F(AccessibilityTest, LastPositionInTextContainerWithWhiteSpace) {
   const Node* text = GetElementById("div")->lastChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
-  const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("div")->LastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -595,7 +603,8 @@ TEST_F(AccessibilityTest, AXPositionFromDOMPositionWithWhiteSpace) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   ASSERT_EQ(15U, text->textContent().length());
-  const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("div")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -642,7 +651,7 @@ TEST_F(AccessibilityTest, PositionInTextWithAffinity) {
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
-      GetAXObjectByElementId("paragraph")->FirstChild();
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
@@ -680,7 +689,7 @@ TEST_F(AccessibilityTest, PositionInHTMLLabel) {
   const Node* paragraph = GetElementById("paragraph");
   ASSERT_NE(nullptr, paragraph);
 
-  const AXObject* ax_body = GetAXRootObject()->FirstChild();
+  const AXObject* ax_body = GetAXBodyObject();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
 
@@ -735,12 +744,17 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const AXObject* ax_root = GetAXRootObject();
   ASSERT_NE(nullptr, ax_root);
   ASSERT_EQ(ax::mojom::Role::kRootWebArea, ax_root->RoleValue());
-  ASSERT_EQ(1, ax_root->ChildCount());
+  ASSERT_EQ(1, ax_root->ChildCountIncludingIgnored());
 
-  const AXObject* ax_body = ax_root->FirstChild();
+  const AXObject* ax_html = ax_root->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_html);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_html->RoleValue());
+  ASSERT_EQ(1, ax_html->ChildCountIncludingIgnored());
+
+  const AXObject* ax_body = GetAXBodyObject();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
-  ASSERT_EQ(2, ax_body->ChildCount());
+  ASSERT_EQ(2, ax_body->ChildCountIncludingIgnored());
 
   const AXObject* ax_hidden = GetAXObjectByElementId("hidden");
   ASSERT_NE(nullptr, ax_hidden);
@@ -773,16 +787,17 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const auto ax_position_first =
       AXPosition::CreateFirstPositionInObject(*ax_root);
   const auto position_first = ax_position_first.ToPositionWithAffinity();
-  EXPECT_EQ(GetDocument().body()->parentElement(), position_first.AnchorNode());
-  EXPECT_FALSE(position_first.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(1, position_first.GetPosition().OffsetInContainerNode());
-  EXPECT_EQ(GetDocument().body(),
+  EXPECT_EQ(GetDocument(), position_first.AnchorNode());
+  EXPECT_TRUE(position_first.GetPosition().IsBeforeChildren());
+
+  EXPECT_EQ(GetDocument().documentElement(),
             position_first.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_first_from_dom =
       AXPosition::FromPosition(position_first);
   EXPECT_EQ(ax_position_first, ax_position_first_from_dom);
-  EXPECT_EQ(ax_body, ax_position_first_from_dom.ChildAfterTreePosition());
+
+  EXPECT_EQ(ax_html, ax_position_first_from_dom.ChildAfterTreePosition());
 
   // A DOM position before |hidden| should convert to an accessibility position
   // before |hidden| because the node is ignored but included in the tree.
@@ -844,17 +859,17 @@ TEST_F(AccessibilityTest, BeforePositionInARIAHiddenShouldNotSkipARIAHidden) {
   EXPECT_EQ(ax_hidden, ax_position_from_dom.ChildAfterTreePosition());
 }
 
-TEST_F(AccessibilityTest, PreviousPositionAfterARIAHiddenShouldSkipARIAHidden) {
+TEST_F(AccessibilityTest,
+       PreviousPositionAfterARIAHiddenShouldNotSkipARIAHidden) {
   SetBodyInnerHTML(R"HTML(
       <p id="before">Before aria-hidden.</p>
       <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
       <p id="after">After aria-hidden.</p>
       )HTML");
 
-  const Node* before = GetElementById("before");
-  ASSERT_NE(nullptr, before);
-  ASSERT_NE(nullptr, before->firstChild());
-  ASSERT_TRUE(before->firstChild()->IsTextNode());
+  const Node* hidden = GetElementById("ariaHidden");
+  ASSERT_NE(nullptr, hidden);
+  ASSERT_NE(nullptr, hidden->firstChild());
   const Node* after = GetElementById("after");
   ASSERT_NE(nullptr, after);
 
@@ -876,8 +891,8 @@ TEST_F(AccessibilityTest, PreviousPositionAfterARIAHiddenShouldSkipARIAHidden) {
 
   const auto ax_position_previous = ax_position.CreatePreviousPosition();
   const auto position_previous = ax_position_previous.ToPositionWithAffinity();
-  EXPECT_EQ(before->firstChild(), position_previous.AnchorNode());
-  EXPECT_EQ(19, position_previous.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(hidden->firstChild(), position_previous.AnchorNode());
+  EXPECT_EQ(12, position_previous.GetPosition().OffsetInContainerNode());
   EXPECT_EQ(nullptr,
             position_previous.GetPosition().ComputeNodeAfterPosition());
 
@@ -902,36 +917,39 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   const AXObject* ax_container = GetAXObjectByElementId("container");
   ASSERT_NE(nullptr, ax_container);
   ASSERT_EQ(ax::mojom::Role::kMain, ax_container->RoleValue());
-  ASSERT_EQ(3, ax_container->ChildCount());
+  ASSERT_EQ(3, ax_container->ChildCountIncludingIgnored());
   const AXObject* ax_before = GetAXObjectByElementId("before");
   ASSERT_NE(nullptr, ax_before);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
-  ASSERT_NE(nullptr, GetAXObjectByElementId("ariaHidden"));
   const AXObject* ax_hidden = GetAXObjectByElementId("ariaHidden");
+  ASSERT_NE(nullptr, ax_hidden);
   ASSERT_TRUE(ax_hidden->AccessibilityIsIgnored());
 
   const auto position_first = Position::FirstPositionInNode(*hidden);
+  // Since "ax_hidden" has a static text child, the AXPosition should move to an
+  // equivalent position on the static text child.
   auto ax_position_left =
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_TRUE(ax_position_left.IsValid());
   EXPECT_TRUE(ax_position_left.IsTextPosition());
-  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_left.ContainerObject());
+  EXPECT_EQ(ax_hidden->FirstChildIncludingIgnored(),
+            ax_position_left.ContainerObject());
   EXPECT_EQ(0, ax_position_left.TextOffset());
-  // This is an "after children" position.
-  EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
+  // In this case, the adjustment behavior should not affect the outcome because
+  // there is an equivalent AXPosition in the static text child.
   auto ax_position_right =
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
   EXPECT_TRUE(ax_position_right.IsValid());
   EXPECT_TRUE(ax_position_right.IsTextPosition());
-  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_right.ContainerObject());
+  EXPECT_EQ(ax_hidden->FirstChildIncludingIgnored(),
+            ax_position_right.ContainerObject());
   EXPECT_EQ(0, ax_position_right.TextOffset());
-  EXPECT_EQ(nullptr, ax_position_right.ChildAfterTreePosition());
 
   const auto position_before = Position::BeforeNode(*hidden);
   ax_position_left =
@@ -941,9 +959,11 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_FALSE(ax_position_left.IsTextPosition());
   EXPECT_EQ(ax_container, ax_position_left.ContainerObject());
   EXPECT_EQ(1, ax_position_left.ChildIndex());
-  // This is an "after children" position.
   EXPECT_EQ(ax_hidden, ax_position_left.ChildAfterTreePosition());
 
+  // Since an AXPosition before "ax_hidden" is valid, i.e. it does not need to
+  // be adjusted, then adjustment behavior should not make a difference in the
+  // outcome.
   ax_position_right =
       AXPosition::FromPosition(position_before, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
@@ -953,16 +973,17 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_EQ(1, ax_position_right.ChildIndex());
   EXPECT_EQ(ax_hidden, ax_position_right.ChildAfterTreePosition());
 
+  // The DOM node right after "hidden" is accessibility ignored, so we should
+  // see an adjustment in the relevant direction.
   const auto position_after = Position::AfterNode(*hidden);
   ax_position_left =
       AXPosition::FromPosition(position_after, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_TRUE(ax_position_left.IsValid());
-  EXPECT_FALSE(ax_position_left.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(1, ax_position_left.ChildIndex());
-  // This is an "after children" position.
-  EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
+  EXPECT_TRUE(ax_position_left.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChildIncludingIgnored(),
+            ax_position_left.ContainerObject());
+  EXPECT_EQ(12, ax_position_left.TextOffset());
 
   ax_position_right =
       AXPosition::FromPosition(position_after, TextAffinity::kDownstream,
@@ -1000,7 +1021,7 @@ TEST_F(AccessibilityTest, PositionInCanvas) {
   const AXObject* ax_canvas_1 = GetAXObjectByElementId("canvas1");
   ASSERT_NE(nullptr, ax_canvas_1);
   ASSERT_EQ(ax::mojom::Role::kCanvas, ax_canvas_1->RoleValue());
-  const AXObject* ax_text = ax_canvas_1->FirstChild();
+  const AXObject* ax_text = ax_canvas_1->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
   const AXObject* ax_canvas_2 = GetAXObjectByElementId("canvas2");
@@ -1093,8 +1114,8 @@ TEST_F(AccessibilityTest, PositionBeforeListMarker) {
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
   ASSERT_EQ(ax::mojom::Role::kListItem, ax_item->RoleValue());
-  ASSERT_EQ(2, ax_item->ChildCount());
-  const AXObject* ax_marker = ax_item->FirstChild();
+  ASSERT_EQ(2, ax_item->ChildCountIncludingIgnored());
+  const AXObject* ax_marker = ax_item->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_marker);
   ASSERT_EQ(ax::mojom::Role::kListMarker, ax_marker->RoleValue());
 
@@ -1173,11 +1194,11 @@ TEST_F(AccessibilityTest, PositionAfterListMarker) {
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
   ASSERT_EQ(ax::mojom::Role::kListItem, ax_item->RoleValue());
-  ASSERT_EQ(2, ax_item->ChildCount());
-  const AXObject* ax_marker = ax_item->FirstChild();
+  ASSERT_EQ(2, ax_item->ChildCountIncludingIgnored());
+  const AXObject* ax_marker = ax_item->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_marker);
   ASSERT_EQ(ax::mojom::Role::kListMarker, ax_marker->RoleValue());
-  const AXObject* ax_text = ax_item->LastChild();
+  const AXObject* ax_text = ax_item->LastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
 
@@ -1207,15 +1228,17 @@ TEST_F(AccessibilityTest, PositionInCSSContent) {
 
   const AXObject* ax_quote = GetAXObjectByElementId("quote");
   ASSERT_NE(nullptr, ax_quote);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_quote->RoleValue());
-  ASSERT_EQ(3, ax_quote->ChildCount());
-  const AXObject* ax_css_before = ax_quote->FirstChild();
+  ASSERT_TRUE(ax_quote->AccessibilityIsIgnored());
+  const AXObject* ax_quote_parent = ax_quote->ParentObjectUnignored();
+  ASSERT_NE(nullptr, ax_quote_parent);
+  ASSERT_EQ(4, ax_quote_parent->UnignoredChildCount());
+  const AXObject* ax_css_before = ax_quote_parent->UnignoredChildAt(0);
   ASSERT_NE(nullptr, ax_css_before);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_css_before->RoleValue());
-  const AXObject* ax_text = *(ax_quote->Children().begin() + 1);
+  const AXObject* ax_text = ax_quote_parent->UnignoredChildAt(1);
   ASSERT_NE(nullptr, ax_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
-  const AXObject* ax_css_after = ax_quote->LastChild();
+  const AXObject* ax_css_after = ax_quote_parent->UnignoredChildAt(2);
   ASSERT_NE(nullptr, ax_css_after);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_css_after->RoleValue());
 
@@ -1256,9 +1279,9 @@ TEST_F(AccessibilityTest, PositionInCSSImageContent) {
   const AXObject* ax_heading = GetAXObjectByElementId("heading");
   ASSERT_NE(nullptr, ax_heading);
   ASSERT_EQ(ax::mojom::Role::kHeading, ax_heading->RoleValue());
-  ASSERT_EQ(2, ax_heading->ChildCount());
+  ASSERT_EQ(2, ax_heading->ChildCountIncludingIgnored());
 
-  const AXObject* ax_css_before = ax_heading->FirstChild();
+  const AXObject* ax_css_before = ax_heading->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_css_before);
   ASSERT_EQ(ax::mojom::Role::kImage, ax_css_before->RoleValue());
 
@@ -1314,14 +1337,16 @@ TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {
   ASSERT_NE(nullptr, ax_last_header_cell);
   ASSERT_EQ(ax::mojom::Role::kColumnHeader, ax_last_header_cell->RoleValue());
 
-  ASSERT_EQ(3, ax_first_header_cell->ChildCount());
-  AXObject* const ax_first_cell_css_before = ax_first_header_cell->FirstChild();
+  ASSERT_EQ(3, ax_first_header_cell->ChildCountIncludingIgnored());
+  AXObject* const ax_first_cell_css_before =
+      ax_first_header_cell->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_first_cell_css_before);
   ASSERT_EQ(ax::mojom::Role::kStaticText,
             ax_first_cell_css_before->RoleValue());
 
-  ASSERT_EQ(3, ax_last_header_cell->ChildCount());
-  AXObject* const ax_last_cell_css_after = ax_last_header_cell->LastChild();
+  ASSERT_EQ(3, ax_last_header_cell->ChildCountIncludingIgnored());
+  AXObject* const ax_last_cell_css_after =
+      ax_last_header_cell->LastChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_last_cell_css_after);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_last_cell_css_after->RoleValue());
 
@@ -1352,9 +1377,9 @@ TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {
   // Same situation as above, but now create a text position inside the inline
   // text box representing the CSS content after the last header cell.
   ax_first_cell_css_before->LoadInlineTextBoxes();
-  ASSERT_NE(nullptr, ax_first_cell_css_before->FirstChild());
+  ASSERT_NE(nullptr, ax_first_cell_css_before->FirstChildIncludingIgnored());
   ax_position_before = AXPosition::CreateFirstPositionInObject(
-      *ax_first_cell_css_before->FirstChild());
+      *ax_first_cell_css_before->FirstChildIncludingIgnored());
   EXPECT_TRUE(ax_position_before.IsTextPosition());
   EXPECT_EQ(0, ax_position_before.TextOffset());
   position_before = ax_position_before.ToPositionWithAffinity(
@@ -1388,9 +1413,9 @@ TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {
   // Same situation as above, but now create a text position inside the inline
   // text box representing the CSS content after the last header cell.
   ax_last_cell_css_after->LoadInlineTextBoxes();
-  ASSERT_NE(nullptr, ax_last_cell_css_after->FirstChild());
+  ASSERT_NE(nullptr, ax_last_cell_css_after->FirstChildIncludingIgnored());
   ax_position_after = AXPosition::CreateLastPositionInObject(
-      *ax_last_cell_css_after->FirstChild());
+      *ax_last_cell_css_after->FirstChildIncludingIgnored());
   EXPECT_TRUE(ax_position_after.IsTextPosition());
   EXPECT_EQ(1, ax_position_after.TextOffset());
   position_after = ax_position_after.ToPositionWithAffinity(
@@ -1593,8 +1618,8 @@ TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
   const AXObject* ax_parent = GetAXObjectByElementId("aomParent");
   ASSERT_NE(nullptr, ax_parent);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_parent->RoleValue());
-  ASSERT_EQ(1, ax_parent->ChildCount());
-  const AXObject* ax_button = ax_parent->FirstChild();
+  ASSERT_EQ(1, ax_parent->ChildCountIncludingIgnored());
+  const AXObject* ax_button = ax_parent->FirstChildIncludingIgnored();
   ASSERT_NE(nullptr, ax_button);
   ASSERT_EQ(ax::mojom::Role::kButton, ax_button->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
@@ -1656,29 +1681,38 @@ TEST_F(AccessibilityTest, PositionInInvalidMapLayout) {
 
 TEST_P(ParameterizedAccessibilityTest,
        ToPositionWithAffinityWithMultipleInlineTextBoxes) {
+  // This test expects the starting offset of the last InlineTextBox object to
+  // equate the sum of the previous inline text boxes' length, without the
+  // collapsed white-spaces.
+  //
   // "&#10" is a Line Feed ("\n").
   SetBodyInnerHTML(
       R"HTML(<style>p { white-space: pre-line; }</style>
       <p id="paragraph">Hello &#10; world</p>)HTML");
+
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
-  AXObject* ax_static_text = GetAXObjectByElementId("paragraph")->FirstChild();
+  AXObject* ax_static_text =
+      GetAXObjectByElementId("paragraph")->FirstChildIncludingIgnored();
 
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   ax_static_text->LoadInlineTextBoxes();
-  ASSERT_EQ(3, ax_static_text->ChildCount());
+  ASSERT_EQ(3, ax_static_text->UnignoredChildCount());
 
-  // This test expects the starting offset of the last InlineTextBox object to
-  // equates the sum of the previous inline text boxes length, without the
-  // collapsed white-spaces.
+  // The last inline text box should be:
+  // "InlineTextBox" name="world"
+  const AXObject* ax_last_inline_box =
+      ax_static_text->LastChildIncludingIgnored();
   const auto ax_position =
-      AXPosition::CreatePositionBeforeObject(*(ax_static_text->LastChild()));
+      AXPosition::CreatePositionBeforeObject(*ax_last_inline_box);
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(LayoutNGEnabled() ? 7 : 6,
-            position.GetPosition().OffsetInContainerNode());
+  // The resulting DOM position should be:
+  // DOM position #text "Hello \n world"@offsetInAnchor[8]
+  ASSERT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(8, position.GetPosition().OffsetInContainerNode());
 }
 
 }  // namespace test

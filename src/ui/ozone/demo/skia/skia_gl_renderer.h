@@ -16,12 +16,11 @@
 #include "base/threading/simple_thread.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
 namespace gfx {
-class GpuFence;
 struct PresentationFeedback;
 }  // namespace gfx
 
@@ -47,20 +46,19 @@ class SkiaGlRenderer : public RendererBase,
 
  protected:
   virtual void RenderFrame();
-  virtual void PostRenderFrameTask(gfx::SwapResult result,
-                                   std::unique_ptr<gfx::GpuFence>);
+  virtual void PostRenderFrameTask(gfx::SwapCompletionResult result);
 
   void Draw(SkCanvas* canvas, float fraction);
   void StartDDLRenderThreadIfNecessary(SkSurface* sk_surface);
   void StopDDLRenderThread();
-  std::unique_ptr<SkDeferredDisplayList> GetDDL();
+  sk_sp<SkDeferredDisplayList> GetDDL();
 
   std::unique_ptr<PlatformWindowSurface> window_surface_;
 
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;
 
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
   const bool use_ddl_;
 
  private:
@@ -82,7 +80,7 @@ class SkiaGlRenderer : public RendererBase,
   base::ConditionVariable condition_variable_;
 
   SkSurfaceCharacterization surface_charaterization_;
-  base::queue<std::unique_ptr<SkDeferredDisplayList>> ddls_;
+  base::queue<sk_sp<SkDeferredDisplayList>> ddls_;
 
   base::WeakPtrFactory<SkiaGlRenderer> weak_ptr_factory_{this};
 

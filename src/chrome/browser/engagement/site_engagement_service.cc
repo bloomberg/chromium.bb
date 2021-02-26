@@ -13,7 +13,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -73,8 +72,7 @@ class StoppedClock : public base::Clock {
 ContentSettingsForOneType GetContentSettingsFromMap(HostContentSettingsMap* map,
                                                     ContentSettingsType type) {
   ContentSettingsForOneType content_settings;
-  map->GetSettingsForOneType(type, content_settings::ResourceIdentifier(),
-                             &content_settings);
+  map->GetSettingsForOneType(type, &content_settings);
   return content_settings;
 }
 
@@ -202,8 +200,8 @@ SiteEngagementService::GetAllDetailsInBackground(
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(&SiteEngagementService::AfterStartupTask,
                                 weak_factory_.GetWeakPtr()));
 
@@ -472,8 +470,7 @@ void SiteEngagementService::CleanupEngagementScores(
 
     // This origin has a score of 0. Wipe it from content settings.
     settings_map->SetWebsiteSettingDefaultScope(
-        origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-        content_settings::ResourceIdentifier(), nullptr);
+        origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT, nullptr);
   }
 
   // Set the last engagement time to be consistent with the scores. This will
@@ -735,8 +732,7 @@ void SiteEngagementService::UpdateEngagementScores(
     // Remove origins that have no urls left.
     if (remaining == 0) {
       settings_map->SetWebsiteSettingDefaultScope(
-          origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-          content_settings::ResourceIdentifier(), nullptr);
+          origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT, nullptr);
       continue;
     }
 

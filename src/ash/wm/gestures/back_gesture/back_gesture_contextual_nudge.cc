@@ -5,8 +5,13 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
+#include "ash/style/default_colors.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/timer/timer.h"
@@ -30,20 +35,11 @@ constexpr int kBackgroundWidth = 320;
 // Radius of the circle in the middle of the contextual nudge.
 constexpr int kCircleRadius = 20;
 
-// Color of the circle in the middle of the contextual nudge.
-constexpr SkColor kCircleColor = SK_ColorWHITE;
-
 // Width of the circle that inside the screen at the beginning.
 constexpr int kCircleInsideScreenWidth = 12;
 
 // Padding between the circle and the label.
 constexpr int kPaddingBetweenCircleAndLabel = 8;
-
-// Color of the label.
-constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
-
-// Color of the label background.
-constexpr SkColor kLabelBackgroundColor = SkColorSetA(SK_ColorBLACK, 0xDE);
 
 // Line height of the label.
 constexpr int kLabelLineHeight = 18;
@@ -124,7 +120,7 @@ class BackGestureContextualNudge::ContextualNudgeView
     : public views::View,
       public ui::ImplicitAnimationObserver {
  public:
-  explicit ContextualNudgeView(base::OnceClosure callback)
+  explicit ContextualNudgeView(base::OnceCallback<void(bool)> callback)
       : callback_(std::move(callback)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -151,7 +147,7 @@ class BackGestureContextualNudge::ContextualNudgeView
       animation_stage_ = AnimationStage::kWaitingCancelled;
       DCHECK(show_timer_.IsRunning());
       show_timer_.AbandonAndStop();
-      std::move(callback_).Run();
+      std::move(callback_).Run(/*animation_completed=*/false);
     } else if (animation_stage_ == AnimationStage::kSlidingIn ||
                animation_stage_ == AnimationStage::kBouncing ||
                animation_stage_ == AnimationStage::kSlidingOut) {
@@ -163,6 +159,8 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->FadeOutForDismiss();
     }
   }
+
+  void SetNudgeShownForTesting() { SetNudgeCountsAsShown(); }
 
   bool count_as_shown() const { return count_as_shown_; }
 
@@ -189,7 +187,8 @@ class BackGestureContextualNudge::ContextualNudgeView
 
       label_ = AddChildView(std::make_unique<views::Label>());
       label_->SetBackgroundColor(SK_ColorTRANSPARENT);
-      label_->SetEnabledColor(kLabelColor);
+      label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPrimary));
       label_->SetText(l10n_util::GetStringUTF16(
           base::i18n::IsRTL() ? IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE_RTL
                               : IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
@@ -251,7 +250,8 @@ class BackGestureContextualNudge::ContextualNudgeView
       cc::PaintFlags circle_flags;
       circle_flags.setAntiAlias(true);
       circle_flags.setStyle(cc::PaintFlags::kFill_Style);
-      circle_flags.setColor(kCircleColor);
+      circle_flags.setColor(DeprecatedGetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kOpaque, kCircleColor));
       gfx::ShadowValues shadows;
       shadows.push_back(gfx::ShadowValue(
           gfx::Vector2d(0, kBackNudgeShadowOffsetY1),
@@ -276,7 +276,8 @@ class BackGestureContextualNudge::ContextualNudgeView
       cc::PaintFlags round_rect_flags;
       round_rect_flags.setStyle(cc::PaintFlags::kFill_Style);
       round_rect_flags.setAntiAlias(true);
-      round_rect_flags.setColor(kLabelBackgroundColor);
+      round_rect_flags.setColor(DeprecatedGetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kOpaque, kLabelBackgroundColor));
       gfx::Rect label_bounds(label_->GetMirroredBounds());
       label_bounds.Inset(/*horizontal=*/-kLabelCornerRadius,
                          /*vertical=*/-kLabelTopBottomInset);
@@ -330,6 +331,14 @@ class BackGestureContextualNudge::ContextualNudgeView
     layer()->SetTransform(transform);
   }
 
+  void SetNudgeCountsAsShown() {
+    count_as_shown_ = true;
+    // Log nudge metrics right after it's shown.
+    contextual_tooltip::HandleNudgeShown(
+        Shell::Get()->session_controller()->GetActivePrefService(),
+        contextual_tooltip::TooltipType::kBackGesture);
+  }
+
   // views::View:
   void Layout() override { suggestion_view_->SetBoundsRect(GetLocalBounds()); }
 
@@ -339,13 +348,16 @@ class BackGestureContextualNudge::ContextualNudgeView
         (animation_stage_ == AnimationStage::kSlidingOut &&
          !WasAnimationAbortedForProperty(
              ui::LayerAnimationElement::TRANSFORM))) {
-      std::move(callback_).Run();
+      std::move(callback_).Run(/*animation_completed=*/animation_stage_ ==
+                               AnimationStage::kSlidingOut);
       return;
     }
 
     if (animation_stage_ == AnimationStage::kSlidingIn &&
         !WasAnimationAbortedForProperty(ui::LayerAnimationElement::TRANSFORM)) {
-      count_as_shown_ = true;
+      // Only after the back nudge finishes sliding in animation, it counts as
+      // a successful shown.
+      SetNudgeCountsAsShown();
       animation_stage_ = AnimationStage::kBouncing;
       suggestion_view_->ScheduleBounceAnimation();
     }
@@ -366,15 +378,15 @@ class BackGestureContextualNudge::ContextualNudgeView
   bool count_as_shown_ = false;
 
   // Callback function to be called after animation is cancelled or completed.
-  // Count the nudge as shown successfully if |success| is true.
-  base::OnceClosure callback_;
+  // Count the nudge as shown successfully if |count_as_shown_| is true.
+  base::OnceCallback<void(bool)> callback_;
 };
 
 BackGestureContextualNudge::BackGestureContextualNudge(
-    base::OnceClosure callback) {
+    base::OnceCallback<void(bool)> callback) {
   widget_ = CreateWidget();
-  nudge_view_ = new ContextualNudgeView(std::move(callback));
-  widget_->SetContentsView(nudge_view_);
+  nudge_view_ = widget_->SetContentsView(
+      std::make_unique<ContextualNudgeView>(std::move(callback)));
   widget_->Show();
 }
 
@@ -386,6 +398,10 @@ void BackGestureContextualNudge::CancelAnimationOrFadeOutToHide() {
 
 bool BackGestureContextualNudge::ShouldNudgeCountAsShown() const {
   return nudge_view_->count_as_shown();
+}
+
+void BackGestureContextualNudge::SetNudgeShownForTesting() {
+  nudge_view_->SetNudgeShownForTesting();
 }
 
 }  // namespace ash

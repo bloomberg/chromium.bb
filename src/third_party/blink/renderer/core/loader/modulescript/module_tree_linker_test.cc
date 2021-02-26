@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
@@ -34,7 +36,7 @@ class TestModuleTreeClient final : public ModuleTreeClient {
  public:
   TestModuleTreeClient() = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(module_script_);
     ModuleTreeClient::Trace(visitor);
   }
@@ -60,7 +62,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleTreeLinkerTestModulator() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   enum class ResolveResult { kFailure, kSuccess };
 
@@ -162,17 +164,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
       v8::Local<v8::Module> module_record) override {
     ScriptState::Scope scope(script_state_);
-    Vector<String> specifiers =
-        ModuleRecord::ModuleRequests(script_state_, module_record);
-    Vector<TextPosition> positions =
-        ModuleRecord::ModuleRequestPositions(script_state_, module_record);
-    DCHECK_EQ(specifiers.size(), positions.size());
-    Vector<ModuleRequest> requests;
-    requests.ReserveInitialCapacity(specifiers.size());
-    for (wtf_size_t i = 0; i < specifiers.size(); ++i) {
-      requests.emplace_back(specifiers[i], positions[i]);
-    }
-    return requests;
+    return ModuleRecord::ModuleRequests(script_state_, module_record);
   }
 
   Member<ScriptState> script_state_;
@@ -182,7 +174,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   bool instantiate_should_fail_ = false;
 };
 
-void ModuleTreeLinkerTestModulator::Trace(Visitor* visitor) {
+void ModuleTreeLinkerTestModulator::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);
@@ -216,7 +208,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -239,7 +231,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -266,7 +258,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -294,7 +286,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -335,7 +327,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -395,7 +387,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
   KURL url("http://example.com/depth1.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
@@ -422,7 +414,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
   KURL url("http://example.com/a.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
-      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      url, GetDocument().Fetcher(), mojom::blink::RequestContextType::SCRIPT,
       network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
       GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 

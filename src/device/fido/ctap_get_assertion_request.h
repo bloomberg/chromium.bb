@@ -19,6 +19,8 @@
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/client_data.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/large_blob.h"
+#include "device/fido/pin.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
 namespace cbor {
@@ -26,6 +28,37 @@ class Value;
 }
 
 namespace device {
+
+// CtapGetAssertionOptions contains values that are pertinent to a
+// |GetAssertionTask|, but are not specific to an individual
+// authenticatorGetAssertion command, i.e. would not be directly serialised into
+// the CBOR.
+struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionOptions {
+  CtapGetAssertionOptions();
+  CtapGetAssertionOptions(const CtapGetAssertionOptions&);
+  CtapGetAssertionOptions(CtapGetAssertionOptions&&);
+  ~CtapGetAssertionOptions();
+
+  // PRFInput contains salts for the hmac_secret extension, potentially specific
+  // to a given credential ID.
+  struct COMPONENT_EXPORT(DEVICE_FIDO) PRFInput {
+    PRFInput();
+    PRFInput(const PRFInput&);
+    PRFInput(PRFInput&&);
+    ~PRFInput();
+
+    base::Optional<std::vector<uint8_t>> credential_id;
+    std::array<uint8_t, 32> salt1;
+    base::Optional<std::array<uint8_t, 32>> salt2;
+  };
+
+  base::Optional<pin::KeyAgreementResponse> pin_key_agreement;
+
+  // prf_inputs may contain a default PRFInput without a |credential_id|. If so,
+  // it will be the first element and all others will have |credential_id|s.
+  // Elements are sorted by |credential_id|s, where present.
+  std::vector<PRFInput> prf_inputs;
+};
 
 // Object that encapsulates request parameters for AuthenticatorGetAssertion as
 // specified in the CTAP spec.
@@ -38,6 +71,21 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   struct ParseOpts {
     // reject_all_extensions makes parsing fail if any extensions are present.
     bool reject_all_extensions = false;
+  };
+
+  // HMACSecret contains the inputs to the hmac-secret extension:
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#sctn-hmac-secret-extension
+  struct HMACSecret {
+    HMACSecret(base::span<const uint8_t, kP256X962Length> public_key_x962,
+               base::span<const uint8_t> encrypted_salts,
+               base::span<const uint8_t> salts_auth);
+    HMACSecret(const HMACSecret&);
+    ~HMACSecret();
+    HMACSecret& operator=(const HMACSecret&);
+
+    std::array<uint8_t, kP256X962Length> public_key_x962;
+    std::vector<uint8_t> encrypted_salts;
+    std::vector<uint8_t> salts_auth;
   };
 
   // Decodes a CTAP2 authenticatorGetAssertion request message. The request's
@@ -68,11 +116,15 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 
   std::vector<PublicKeyCredentialDescriptor> allow_list;
   base::Optional<std::vector<uint8_t>> pin_auth;
-  base::Optional<uint8_t> pin_protocol;
+  base::Optional<PINUVAuthProtocol> pin_protocol;
   base::Optional<std::vector<CableDiscoveryData>> cable_extension;
   base::Optional<std::string> app_id;
   base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter;
+  base::Optional<HMACSecret> hmac_secret;
+  bool large_blob_key = false;
+  bool large_blob_read = false;
+  base::Optional<std::vector<uint8_t>> large_blob_write;
 
   bool is_incognito_mode = false;
   bool is_u2f_only = false;

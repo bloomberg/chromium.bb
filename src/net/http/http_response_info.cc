@@ -8,7 +8,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp.h"
@@ -162,6 +161,9 @@ HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
     case CONNECTION_INFO_QUIC_999:
     case CONNECTION_INFO_QUIC_DRAFT_25:
     case CONNECTION_INFO_QUIC_DRAFT_27:
+    case CONNECTION_INFO_QUIC_DRAFT_28:
+    case CONNECTION_INFO_QUIC_DRAFT_29:
+    case CONNECTION_INFO_QUIC_T051:
       return CONNECTION_INFO_COARSE_QUIC;
 
     case CONNECTION_INFO_UNKNOWN:
@@ -497,6 +499,9 @@ bool HttpResponseInfo::DidUseQuic() const {
     case CONNECTION_INFO_QUIC_999:
     case CONNECTION_INFO_QUIC_DRAFT_25:
     case CONNECTION_INFO_QUIC_DRAFT_27:
+    case CONNECTION_INFO_QUIC_DRAFT_28:
+    case CONNECTION_INFO_QUIC_DRAFT_29:
+    case CONNECTION_INFO_QUIC_T051:
       return true;
     case NUM_OF_CONNECTION_INFOS:
       NOTREACHED();
@@ -579,6 +584,10 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "h3-25";
     case CONNECTION_INFO_QUIC_DRAFT_27:
       return "h3-27";
+    case CONNECTION_INFO_QUIC_DRAFT_28:
+      return "h3-28";
+    case CONNECTION_INFO_QUIC_DRAFT_29:
+      return "h3-29";
     case CONNECTION_INFO_QUIC_T099:
       return "h3-T099";
     case CONNECTION_INFO_HTTP0_9:
@@ -587,6 +596,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "http/1.0";
     case CONNECTION_INFO_QUIC_999:
       return "http2+quic/999";
+    case CONNECTION_INFO_QUIC_T051:
+      return "h3-T051";
     case NUM_OF_CONNECTION_INFOS:
       break;
   }

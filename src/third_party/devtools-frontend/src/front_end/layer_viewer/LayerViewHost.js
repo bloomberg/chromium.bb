@@ -43,7 +43,7 @@ export class Selection {
 
   /**
    * @param {?Selection} a
-   * @param {?LayerViewer.LayerView.Selection} b
+   * @param {?Selection} b
    * @return {boolean}
    */
   static isEqual(a, b) {
@@ -90,7 +90,7 @@ export class LayerSelection extends Selection {
    * @param {!SDK.LayerTreeBase.Layer} layer
    */
   constructor(layer) {
-    console.assert(layer, 'LayerSelection with empty layer');
+    console.assert(!!layer, 'LayerSelection with empty layer');
     super(Type.Layer, layer);
   }
 
@@ -124,7 +124,7 @@ export class ScrollRectSelection extends Selection {
    */
   _isEqual(other) {
     return other._type === Type.ScrollRect && this.layer().id() === other.layer().id() &&
-        this.scrollRectIndex === other.scrollRectIndex;
+        this.scrollRectIndex === /** @type {!ScrollRectSelection} */ (other).scrollRectIndex;
   }
 }
 
@@ -148,7 +148,7 @@ export class SnapshotSelection extends Selection {
    */
   _isEqual(other) {
     return other._type === Type.Snapshot && this.layer().id() === other.layer().id() &&
-        this._snapshot === other._snapshot;
+        this._snapshot === /** @type {!SnapshotSelection} */ (other)._snapshot;
   }
 
   /**
@@ -170,6 +170,8 @@ export class LayerViewHost {
     this._hoveredObject = null;
     this._showInternalLayersSetting =
         Common.Settings.Settings.instance().createSetting('layersShowInternalLayers', false);
+    /** @type {!Map<!SDK.LayerTreeBase.Layer, !SnapshotSelection>} */
+    this._snapshotLayers = new Map();
   }
 
   /**
@@ -197,6 +199,9 @@ export class LayerViewHost {
    * @param {?SDK.LayerTreeBase.LayerTreeBase} layerTree
    */
   setLayerTree(layerTree) {
+    if (!layerTree) {
+      return;
+    }
     this._target = layerTree.target();
     const selectedLayer = this._selectedObject && this._selectedObject.layer();
     if (selectedLayer && (!layerTree || !layerTree.layerById(selectedLayer.id()))) {
@@ -262,7 +267,7 @@ export class LayerViewHost {
   }
 
   /**
-   * @return {!Common.Settings.Setting}
+   * @return {!Common.Settings.Setting<*>}
    */
   showInternalLayersSetting() {
     return this._showInternalLayersSetting;

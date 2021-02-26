@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/android/android_image_reader_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -48,11 +47,9 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrent(
 }
 
 TextureOwner::Mode GetTextureOwnerMode() {
-  const bool a_image_reader_supported =
-      base::android::AndroidImageReader::GetInstance().IsSupported();
-
-  return a_image_reader_supported ? TextureOwner::Mode::kAImageReaderInsecure
-                                  : TextureOwner::Mode::kSurfaceTextureInsecure;
+  return features::IsAImageReaderEnabled()
+             ? TextureOwner::Mode::kAImageReaderInsecure
+             : TextureOwner::Mode::kSurfaceTextureInsecure;
 }
 
 }  // namespace
@@ -126,17 +123,6 @@ void StreamTexture::ReleaseChannel() {
   sync_point_client_state_->Destroy();
   sync_point_client_state_ = nullptr;
   channel_ = nullptr;
-}
-
-// gpu::gles2::GLStreamTextureMatrix implementation
-void StreamTexture::GetTextureMatrix(float xform[16]) {
-  static constexpr float kIdentity[16]{
-      1, 0, 0, 0,  //
-      0, 1, 0, 0,  //
-      0, 0, 1, 0,  //
-      0, 0, 0, 1   //
-  };
-  memcpy(xform, kIdentity, sizeof(kIdentity));
 }
 
 bool StreamTexture::IsUsingGpuMemory() const {
@@ -224,7 +210,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 void StreamTexture::OnFrameAvailable() {
   has_pending_frame_ = true;
 
-  if (!has_listener_ || !channel_)
+  if (!has_listener_ || !channel_ || !texture_owner_)
     return;
 
   // We haven't received size for first time yet from the MediaPlayer we will
@@ -236,8 +222,12 @@ void StreamTexture::OnFrameAvailable() {
 
   gfx::Rect visible_rect;
   gfx::Size coded_size;
-  texture_owner_->GetCodedSizeAndVisibleRect(rotated_visible_size_, &coded_size,
-                                             &visible_rect);
+  if (!texture_owner_->GetCodedSizeAndVisibleRect(rotated_visible_size_,
+                                                  &coded_size, &visible_rect)) {
+    // if we failed to get right size fallback to visible size.
+    coded_size = rotated_visible_size_;
+    visible_rect = gfx::Rect(coded_size);
+  }
 
   if (coded_size != coded_size_ || visible_rect != visible_rect_) {
     coded_size_ = coded_size;
@@ -318,7 +308,8 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
   // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
   // colorspace and wire it here.
   auto shared_image = std::make_unique<SharedImageVideo>(
-      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(), this,
+      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, this,
       std::move(legacy_mailbox_texture), context_state_, false);
   channel_->shared_image_stub()->factory()->RegisterBacking(
       std::move(shared_image), true /* allow_legacy_mailbox */);
@@ -375,14 +366,6 @@ bool StreamTexture::ScheduleOverlayPlane(
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   NOTREACHED();
   return false;
-}
-
-void StreamTexture::NotifyPromotionHint(bool promotion_hint,
-                                        int display_x,
-                                        int display_y,
-                                        int display_width,
-                                        int display_height) {
-  NOTREACHED();
 }
 
 void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

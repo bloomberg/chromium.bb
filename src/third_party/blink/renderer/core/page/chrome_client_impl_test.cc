@@ -42,6 +42,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
@@ -53,7 +54,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/testing/stub_graphics_layer_client.h"
 
 namespace blink {
 
@@ -65,8 +65,9 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicy::FeatureState&,
-                      const SessionStorageNamespaceId&) override {
+                      const FeaturePolicyFeatureState&,
+                      const SessionStorageNamespaceId&,
+                      bool& consumed_user_gesture) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
 
@@ -93,13 +94,15 @@ class CreateWindowTest : public testing::Test {
 TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   ScopedPagePauser pauser;
   LocalFrame* frame = To<WebLocalFrameImpl>(main_frame_)->GetFrame();
-  FrameLoadRequest request(frame->GetDocument(), ResourceRequest());
+  FrameLoadRequest request(frame->DomWindow(), ResourceRequest());
   request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
-  EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
-                         frame, request, "", features,
-                         network::mojom::blink::WebSandboxFlags::kNone,
-                         FeaturePolicy::FeatureState(), ""));
+  bool consumed_user_gesture = false;
+  EXPECT_EQ(nullptr,
+            chrome_client_impl_->CreateWindow(
+                frame, request, "", features,
+                network::mojom::blink::WebSandboxFlags::kNone,
+                FeaturePolicyFeatureState(), "", consumed_user_gesture));
 }
 
 class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
@@ -109,12 +112,10 @@ class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
       : owner_element_(owner_element) {}
   ~FakeColorChooserClient() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
     ColorChooserClient::Trace(visitor);
   }
-
-  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient);
 
   // ColorChooserClient
   void DidChooseColor(const Color& color) override {}
@@ -139,12 +140,10 @@ class FakeDateTimeChooserClient
       : owner_element_(owner_element) {}
   ~FakeDateTimeChooserClient() override = default;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
     DateTimeChooserClient::Trace(visitor);
   }
-
-  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient);
 
   // DateTimeChooserClient
   Element& OwnerElement() const override { return *owner_element_; }
@@ -236,11 +235,9 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 // A FileChooserClient which makes FileChooser::OpenFileChooser() success.
 class MockFileChooserClient : public GarbageCollected<MockFileChooserClient>,
                               public FileChooserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockFileChooserClient);
-
  public:
   explicit MockFileChooserClient(LocalFrame* frame) : frame_(frame) {}
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(frame_);
     FileChooserClient::Trace(visitor);
   }

@@ -19,8 +19,6 @@ const VPNConfigType = {
   OPEN_VPN: 'OpenVPN',
 };
 
-(function() {
-
 // Note: This pattern does not work for elements that are stamped on initial
 // load because chromeos.networkConfig is not defined yet. <network-config>
 // however is always embedded in a <cr-dialog> so it is not stamped immediately.
@@ -597,10 +595,9 @@ Polymer({
     if (this.mojoType_ === mojom.NetworkType.kVPN) {
       let saveCredentials = false;
       const vpn = managedProperties.typeProperties.vpn;
-      const vpnType = vpn.type && vpn.type.value;
-      if (vpnType === mojom.VpnType.kOpenVPN) {
+      if (vpn.type === mojom.VpnType.kOpenVPN) {
         saveCredentials = this.getActiveBoolean_(vpn.openVpn.saveCredentials);
-      } else if (vpnType === mojom.VpnType.kL2TPIPsec) {
+      } else if (vpn.type === mojom.VpnType.kL2TPIPsec) {
         saveCredentials = this.getActiveBoolean_(vpn.ipSec.saveCredentials) ||
             this.getActiveBoolean_(vpn.l2tp.saveCredentials);
       }
@@ -1548,14 +1545,6 @@ Polymer({
   },
 
   /**
-   * @return {string}
-   * @private
-   */
-  getRuntimeError_() {
-    return (chrome.runtime.lastError && chrome.runtime.lastError.message) || '';
-  },
-
-  /**
    * @param {boolean} success
    * @param {string} errorMessage
    * @param {boolean} connect If true, connect after save.
@@ -1748,4 +1737,3 @@ Polymer({
     return undefined;
   },
 });
-})();

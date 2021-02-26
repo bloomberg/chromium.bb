@@ -40,12 +40,25 @@ class SVGForeignObjectElement;
 // content also has to be aware of CSS objects.
 // See http://www.w3.org/TR/html5/syntax.html#elements-0 with the rules for
 // 'foreign elements'. TODO(jchaffraix): Find a better place for this paragraph.
+//
+// The coordinate space for the descendants of the foreignObject does not
+// include the effective zoom (it is baked into any lengths as usual). The
+// transform that defines the userspace of the element is:
+//
+//   [CSS transform] * [inverse effective zoom] (* ['x' and 'y' translation])
+//
+// Because of this, the frame rect and visual rect includes effective zoom. The
+// object bounding box (ObjectBoundingBox method) is however not zoomed to be
+// compatible with the expectations of the getBBox() DOM interface.
 class LayoutSVGForeignObject final : public LayoutSVGBlock {
  public:
   explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
   ~LayoutSVGForeignObject() override;
 
-  const char* GetName() const override { return "LayoutSVGForeignObject"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutSVGForeignObject";
+  }
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
@@ -54,13 +67,21 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   void UpdateLayout() override;
 
   FloatRect ObjectBoundingBox() const override {
-    return FloatRect(FrameRect());
+    NOT_DESTROYED();
+    return viewport_;
   }
-  FloatRect StrokeBoundingBox() const override { return ObjectBoundingBox(); }
-  FloatRect VisualRectInLocalSVGCoordinates() const override {
+  FloatRect StrokeBoundingBox() const override {
+    NOT_DESTROYED();
     return ObjectBoundingBox();
   }
-  bool IsObjectBoundingBoxValid() const { return !FrameRect().IsEmpty(); }
+  FloatRect VisualRectInLocalSVGCoordinates() const override {
+    NOT_DESTROYED();
+    return FloatRect(FrameRect());
+  }
+  bool IsObjectBoundingBoxValid() const {
+    NOT_DESTROYED();
+    return !viewport_.IsEmpty();
+  }
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
@@ -77,32 +98,31 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
                           HitTestAction);
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectSVGForeignObject ||
            LayoutSVGBlock::IsOfType(type);
   }
 
-  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
-
   PaintLayerType LayerTypeRequired() const override;
 
   bool CreatesNewFormattingContext() const final {
+    NOT_DESTROYED();
     // This is the root of a foreign object. Don't let anything inside it escape
     // to our ancestors.
     return true;
   }
 
  private:
-  LayoutUnit ElementX() const;
-  LayoutUnit ElementY() const;
-  LayoutUnit ElementWidth() const;
-  LayoutUnit ElementHeight() const;
   void UpdateLogicalWidth() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  AffineTransform LocalToSVGParentTransform() const override;
 
-  bool needs_transform_update_;
+  // The resolved viewport in the regular SVG coordinate space (after any
+  // 'transform' has been applied but without zoom-adjustment).
+  FloatRect viewport_;
 };
 
 template <>

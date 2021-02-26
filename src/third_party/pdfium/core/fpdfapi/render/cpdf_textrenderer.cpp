@@ -15,6 +15,7 @@
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
+#include "core/fxge/cfx_textrenderoptions.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/text_char_pos.h"
 
@@ -24,21 +25,41 @@ CFX_Font* GetFont(CPDF_Font* pFont, int32_t position) {
   return position == -1 ? pFont->GetFont() : pFont->GetFontFallback(position);
 }
 
+CFX_TextRenderOptions GetTextRenderOptionsHelper(
+    const CPDF_Font* pFont,
+    const CPDF_RenderOptions& options) {
+  CFX_TextRenderOptions text_options;
+
+  if (pFont->IsCIDFont())
+    text_options.font_is_cid = true;
+
+  if (options.GetOptions().bNoTextSmooth)
+    text_options.aliasing_type = CFX_TextRenderOptions::kAliasing;
+  else if (options.GetOptions().bClearType)
+    text_options.aliasing_type = CFX_TextRenderOptions::kLcd;
+
+  if (options.GetOptions().bNoNativeText)
+    text_options.native_text = false;
+
+  return text_options;
+}
+
 }  // namespace
 
 // static
-bool CPDF_TextRenderer::DrawTextPath(CFX_RenderDevice* pDevice,
-                                     pdfium::span<const uint32_t> char_codes,
-                                     pdfium::span<const float> char_pos,
-                                     CPDF_Font* pFont,
-                                     float font_size,
-                                     const CFX_Matrix& mtText2User,
-                                     const CFX_Matrix* pUser2Device,
-                                     const CFX_GraphStateData* pGraphState,
-                                     FX_ARGB fill_argb,
-                                     FX_ARGB stroke_argb,
-                                     CFX_PathData* pClippingPath,
-                                     int nFlag) {
+bool CPDF_TextRenderer::DrawTextPath(
+    CFX_RenderDevice* pDevice,
+    pdfium::span<const uint32_t> char_codes,
+    pdfium::span<const float> char_pos,
+    CPDF_Font* pFont,
+    float font_size,
+    const CFX_Matrix& mtText2User,
+    const CFX_Matrix* pUser2Device,
+    const CFX_GraphStateData* pGraphState,
+    FX_ARGB fill_argb,
+    FX_ARGB stroke_argb,
+    CFX_PathData* pClippingPath,
+    const CFX_FillRenderOptions& fill_options) {
   std::vector<TextCharPos> pos =
       GetCharPosList(char_codes, char_pos, pFont, font_size);
   if (pos.empty())
@@ -56,7 +77,7 @@ bool CPDF_TextRenderer::DrawTextPath(CFX_RenderDevice* pDevice,
     if (!pDevice->DrawTextPath(i - startIndex, &pos[startIndex], font,
                                font_size, mtText2User, pUser2Device,
                                pGraphState, fill_argb, stroke_argb,
-                               pClippingPath, nFlag)) {
+                               pClippingPath, fill_options)) {
       bDraw = false;
     }
     fontPosition = curFontPosition;
@@ -65,7 +86,8 @@ bool CPDF_TextRenderer::DrawTextPath(CFX_RenderDevice* pDevice,
   CFX_Font* font = GetFont(pFont, fontPosition);
   if (!pDevice->DrawTextPath(pos.size() - startIndex, &pos[startIndex], font,
                              font_size, mtText2User, pUser2Device, pGraphState,
-                             fill_argb, stroke_argb, pClippingPath, nFlag)) {
+                             fill_argb, stroke_argb, pClippingPath,
+                             fill_options)) {
     bDraw = false;
   }
   return bDraw;
@@ -121,24 +143,8 @@ bool CPDF_TextRenderer::DrawNormalText(CFX_RenderDevice* pDevice,
   if (pos.empty())
     return true;
 
-  int fxge_flags = 0;
-  if (options.GetOptions().bClearType) {
-    fxge_flags |= FXTEXT_CLEARTYPE;
-    if (options.GetOptions().bBGRStripe)
-      fxge_flags |= FXTEXT_BGR_STRIPE;
-  }
-  if (options.GetOptions().bNoTextSmooth)
-    fxge_flags |= FXTEXT_NOSMOOTH;
-  if (options.GetOptions().bPrintGraphicText)
-    fxge_flags |= FXTEXT_PRINTGRAPHICTEXT;
-  if (options.GetOptions().bNoNativeText)
-    fxge_flags |= FXTEXT_NO_NATIVETEXT;
-  if (options.GetOptions().bPrintImageText)
-    fxge_flags |= FXTEXT_PRINTIMAGETEXT;
-
-  if (pFont->IsCIDFont())
-    fxge_flags |= FXFONT_CIDFONT;
-
+  CFX_TextRenderOptions text_options =
+      GetTextRenderOptionsHelper(pFont, options);
   bool bDraw = true;
   int32_t fontPosition = pos[0].m_FallbackFontPosition;
   size_t startIndex = 0;
@@ -150,7 +156,7 @@ bool CPDF_TextRenderer::DrawNormalText(CFX_RenderDevice* pDevice,
     CFX_Font* font = GetFont(pFont, fontPosition);
     if (!pDevice->DrawNormalText(i - startIndex, &pos[startIndex], font,
                                  font_size, mtText2Device, fill_argb,
-                                 fxge_flags)) {
+                                 text_options)) {
       bDraw = false;
     }
     fontPosition = curFontPosition;
@@ -159,7 +165,7 @@ bool CPDF_TextRenderer::DrawNormalText(CFX_RenderDevice* pDevice,
   CFX_Font* font = GetFont(pFont, fontPosition);
   if (!pDevice->DrawNormalText(pos.size() - startIndex, &pos[startIndex], font,
                                font_size, mtText2Device, fill_argb,
-                               fxge_flags)) {
+                               text_options)) {
     bDraw = false;
   }
   return bDraw;

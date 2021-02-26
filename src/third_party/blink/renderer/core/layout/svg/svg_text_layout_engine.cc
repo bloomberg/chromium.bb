@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_text_chunk_builder.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine_baseline.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine_spacing.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
@@ -185,8 +186,7 @@ void SVGTextLayoutEngine::BeginTextPathLayout(SVGInlineFlowBox* flow_box) {
   if (SVGTextContentElement* text_content_element =
           SVGTextContentElement::ElementFromLineLayoutItem(text_path)) {
     SVGLengthContext length_context(text_content_element);
-    length_adjust =
-        text_content_element->lengthAdjust()->CurrentValue()->EnumValue();
+    length_adjust = text_content_element->lengthAdjust()->CurrentEnumValue();
     if (text_content_element->TextLengthIsSpecifiedByUser())
       desired_text_length =
           text_content_element->textLength()->CurrentValue()->Value(
@@ -252,7 +252,7 @@ static bool DefinesTextLengthWithSpacing(const InlineFlowBox* start) {
       SVGTextContentElement::ElementFromLineLayoutItem(
           start->GetLineLayoutItem());
   return text_content_element &&
-         text_content_element->lengthAdjust()->CurrentValue()->EnumValue() ==
+         text_content_element->lengthAdjust()->CurrentEnumValue() ==
              kSVGLengthAdjustSpacing &&
          text_content_element->TextLengthIsSpecifiedByUser();
 }

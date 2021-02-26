@@ -69,7 +69,6 @@ class IsolateFormatTest(auto_stub.TestCase):
           'variables': {
             'files': ['c', 'd', 'touched_a', 'x'],
             'command': ['echo', 'Hello World'],
-            'read_only': 2,
           },
         }],
         ['OS=="amiga" or OS=="coleco" or OS=="dendy"', {
@@ -81,7 +80,6 @@ class IsolateFormatTest(auto_stub.TestCase):
         ['OS=="amiga"', {
           'variables': {
             'files': ['g'],
-            'read_only': 1,
           },
         }],
         ['OS=="amiga" or OS=="atari" or OS=="dendy"', {
@@ -99,13 +97,11 @@ class IsolateFormatTest(auto_stub.TestCase):
         'files': ['a', 'b', 'e', 'f', 'g', 'h', 'touched', 'touched_e', 'x'],
         'command': ['echo', 'You should get an Atari'],
         'isolate_dir': FAKE_DIR,
-        'read_only': 1,
       },
       ('atari',): {
         'files': ['a', 'b', 'c', 'd', 'h', 'touched', 'touched_a', 'x'],
         'command': ['echo', 'Hello World'],
         'isolate_dir': FAKE_DIR,
-        'read_only': 2,
       },
       ('coleco',): {
         'files': ['a', 'b', 'e', 'f', 'touched', 'touched_e', 'x'],
@@ -146,7 +142,6 @@ class IsolateFormatTest(auto_stub.TestCase):
       'variables': {
         'command': ['echo', 'You should get an Atari'],
         'files': ['a', 'b', 'touched'],
-        'read_only': 1,
       },
     }
     # The key is the empty tuple, since there is no variable to bind to.
@@ -155,7 +150,6 @@ class IsolateFormatTest(auto_stub.TestCase):
         'command': ['echo', 'You should get an Atari'],
         'files': ['a', 'b', 'touched'],
         'isolate_dir': FAKE_DIR,
-        'read_only': 1,
       },
     }
     self.assertEqual(
@@ -434,7 +428,6 @@ class IsolateFormatTest(auto_stub.TestCase):
                             'file4',
                         ],
                         'command': ['python', '-c', 'print("H\\i\'")'],
-                        'read_only': 2,
                     },
                 }
             ],
@@ -466,7 +459,6 @@ class IsolateFormatTest(auto_stub.TestCase):
                 b"          'file3',\n"
                 b"          'file4',\n"
                 b"        ],\n"
-                b"        'read_only': 2,\n"
                 b"      },\n"
                 b"    }],\n"
                 b"    ['OS==\"bar\"', {\n"
@@ -545,7 +537,6 @@ class IsolateFormatTest(auto_stub.TestCase):
             'files': [
               'file_linux',
             ],
-            'read_only': 1,
           },
         }],
         ['OS=="mac" or OS=="win"', {
@@ -553,7 +544,6 @@ class IsolateFormatTest(auto_stub.TestCase):
             'files': [
               'file_non_linux',
             ],
-            'read_only': 0,
           },
         }],
       ],
@@ -570,21 +560,18 @@ class IsolateFormatTest(auto_stub.TestCase):
           'file_linux',
         ],
         'isolate_dir': FAKE_DIR,
-        'read_only': 1,
       },
       ('mac',): {
         'files': [
           'file_non_linux',
         ],
         'isolate_dir': FAKE_DIR,
-        'read_only': 0,
       },
       ('win',): {
         'files': [
           'file_non_linux',
         ],
         'isolate_dir': FAKE_DIR,
-        'read_only': 0,
       },
     }
     actual = isolate_format.load_isolate_as_config(FAKE_DIR, values, None)
@@ -624,10 +611,10 @@ class IsolateFormatTest(auto_stub.TestCase):
     }
     variables = {'use_x11': 1, 'OS': 'linux', 'chromeos': 0}
     config = isolate_format.load_isolate_for_config('/', str(b), variables)
-    self.assertEqual((['foo', 'x11=1'], [], None, '/'), config)
+    self.assertEqual((['foo', 'x11=1'], [], '/'), config)
     variables = {'use_x11': 0, 'OS': 'linux', 'chromeos': 0}
     config = isolate_format.load_isolate_for_config('/', str(b), variables)
-    self.assertEqual(([], [], None, '/'), config)
+    self.assertEqual(([], [], '/'), config)
 
 
 class IsolateFormatTmpDirTest(unittest.TestCase):
@@ -654,7 +641,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'files': [
               'file_linux',
             ],
-            'read_only': 1,
           },
         }],
         ['OS=="mac" or OS=="win"', {
@@ -662,7 +648,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'files': [
               'file_non_linux',
             ],
-            'read_only': 0,
           },
         }],
       ],
@@ -682,7 +667,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'files': [
               'file_mac',
             ],
-            'read_only': 2,
           },
         }],
       ],
@@ -702,7 +686,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_linux',
         ],
         'isolate_dir': self.tempdir,
-        'read_only': 1,
       },
       ('mac',): {
         'files': [
@@ -710,14 +693,12 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_non_linux',
         ],
         'isolate_dir': self.tempdir,
-        'read_only': 2,
       },
       ('win',): {
         'files': [
           'file_non_linux',
         ],
         'isolate_dir': self.tempdir,
-        'read_only': 0,
       },
     }
     self.assertEqual(expected, actual.flatten())

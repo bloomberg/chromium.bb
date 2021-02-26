@@ -20,39 +20,51 @@ import shutil
 import sys
 
 import common
+import wpt_common
 
-BLINK_TOOLS_DIR = os.path.join(common.SRC_DIR, 'third_party', 'blink', 'tools')
-WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
-WPT_METADATA_DIR = "../../wpt_expectations_metadata/"
+# The checked-in manifest is copied to a temporary working directory so it can
+# be mutated by wptrunner
+WPT_CHECKED_IN_MANIFEST = (
+    "../../third_party/blink/web_tests/external/WPT_BASE_MANIFEST_8.json")
+WPT_WORKING_COPY_MANIFEST = "../../out/{}/MANIFEST.json"
+
+WPT_CHECKED_IN_METADATA_DIR = "../../third_party/blink/web_tests/external/wpt"
+WPT_METADATA_OUTPUT_DIR = "../../out/{}/wpt_expectations_metadata/"
 WPT_OVERRIDE_EXPECTATIONS_PATH = (
     "../../third_party/blink/web_tests/WPTOverrideExpectations")
 
-class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
+CHROME_BINARY = "../../out/{}/chrome"
+CHROMEDRIVER_BINARY = "../../out/{}/chromedriver"
 
-    def generate_test_output_args(self, output):
-        return ['--log-chromium', output]
+DEFAULT_ISOLATED_SCRIPT_TEST_OUTPUT = "../../out/{}/results.json"
+MOJO_JS_PATH = "../../out/{}/gen/"
 
-    def generate_sharding_args(self, total_shards, shard_index):
-        return ['--total-chunks=%d' % total_shards,
-                # shard_index is 0-based but WPT's this-chunk to be 1-based
-                '--this-chunk=%d' % (shard_index + 1)]
+class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
 
     @property
     def rest_args(self):
         rest_args = super(WPTTestAdapter, self).rest_args
+
+        # Update the output directory to the default if it's not set.
+        self.maybe_set_default_isolated_script_test_output()
+
         # Here we add all of the arguments required to run WPT tests on Chrome.
         rest_args.extend([
             "../../third_party/blink/web_tests/external/wpt/wpt",
             "--venv=../../",
             "--skip-venv-setup",
             "run",
-            "chrome",
-            "--binary=../../out/Release/chrome",
+            "chrome"
+        ] + self.options.test_list + [
+            "--binary=" + CHROME_BINARY.format(self.options.target),
             "--binary-arg=--host-resolver-rules="
                 "MAP nonexistent.*.test ~NOTFOUND, MAP *.test 127.0.0.1",
             "--binary-arg=--enable-experimental-web-platform-features",
+            "--binary-arg=--enable-blink-test-features",
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
-            "--webdriver-binary=../../out/Release/chromedriver",
+            "--webdriver-binary=" + CHROMEDRIVER_BINARY.format(
+                self.options.target),
+            "--webdriver-arg=--enable-chrome-logs",
             "--headless",
             "--no-capture-stdio",
             "--no-manifest-download",
@@ -65,8 +77,7 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # it uses the exit code to determine which shards to retry (ie:
             # those that had non-zero exit codes).
             #"--no-fail-on-unexpected",
-            "--metadata",
-            WPT_METADATA_DIR,
+            "--metadata", WPT_METADATA_OUTPUT_DIR.format(self.options.target),
             # By specifying metadata above, WPT will try to find manifest in the
             # metadata directory. So here we point it back to the correct path
             # for the manifest.
@@ -76,51 +87,58 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # a lengthy import/export cycle to refresh. So we allow WPT to
             # update the manifest in cast it's stale.
             #"--no-manifest-update",
-            "--manifest=../../third_party/blink/web_tests/external/"
-                "WPT_BASE_MANIFEST_8.json",
+            "--manifest", WPT_WORKING_COPY_MANIFEST.format(self.options.target),
             # (crbug.com/1023835) The flags below are temporary to aid debugging
             "--log-mach=-",
             "--log-mach-verbose",
             # See if multi-processing affects timeouts.
             # TODO(lpz): Consider removing --processes and compute automatically
             # from multiprocessing.cpu_count()
-            #"--processes=5",
+            "--processes=" + self.options.child_processes,
+            "--mojojs-path=" + MOJO_JS_PATH.format(self.options.target),
         ])
         return rest_args
 
-    def do_post_test_run_tasks(self):
-        # Move json results into layout-test-results directory
-        results_dir = os.path.dirname(self.options.isolated_script_test_output)
-        layout_test_results = os.path.join(results_dir, 'layout-test-results')
-        if os.path.exists(layout_test_results):
-            shutil.rmtree(layout_test_results)
-        os.mkdir(layout_test_results)
-        shutil.copyfile(self.options.isolated_script_test_output,
-                        os.path.join(layout_test_results, 'full_results.json'))
-        # create full_results_jsonp.js file which is used to
-        # load results into the results viewer
-        with open(self.options.isolated_script_test_output, 'r') \
-                 as full_results, \
-             open(os.path.join(
-                  layout_test_results, 'full_results_jsonp.js'), 'w') \
-                 as json_js:
-          json_js.write('ADD_FULL_RESULTS(%s);' % full_results.read())
-        # copy layout test results viewer to layout-test-results directory
-        shutil.copyfile(
-            os.path.join(WEB_TESTS_DIR, 'fast', 'harness', 'results.html'),
-            os.path.join(layout_test_results, 'results.html'))
+    def add_extra_arguments(self, parser):
+        target_help = "Specify the target build subdirectory under src/out/"
+        parser.add_argument("-t", "--target", dest="target", default="Release",
+                            help=target_help)
+        child_processes_help = "Number of drivers to run in parallel"
+        parser.add_argument("-j", "--child-processes", dest="child_processes",
+                            default="1", help=child_processes_help)
+        parser.add_argument("test_list", nargs="*",
+                            help="List of tests or test directories to run")
+
+    def maybe_set_default_isolated_script_test_output(self):
+        if self.options.isolated_script_test_output:
+            return
+        default_value = DEFAULT_ISOLATED_SCRIPT_TEST_OUTPUT.format(
+            self.options.target)
+        print("--isolated-script-test-output not set, defaulting to %s" %
+              default_value)
+        self.options.isolated_script_test_output = default_value
+
+    def do_pre_test_run_tasks(self):
+        # Copy the checked-in manifest to the temporary working directory
+        shutil.copy(WPT_CHECKED_IN_MANIFEST,
+                    WPT_WORKING_COPY_MANIFEST.format(self.options.target))
+
+        # Generate WPT metadata files.
+        common.run_command([
+            sys.executable,
+            os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+            "--metadata-output-dir",
+            WPT_METADATA_OUTPUT_DIR.format(self.options.target),
+            "--additional-expectations",
+            WPT_OVERRIDE_EXPECTATIONS_PATH,
+            "--checked-in-metadata-dir",
+            WPT_CHECKED_IN_METADATA_DIR,
+            "--no-process-baselines",
+            "--no-handle-annotations"
+        ])
+
 
 def main():
-    # First, generate WPT metadata files.
-    common.run_command([
-        sys.executable,
-        os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
-        "--metadata-output-dir",
-        WPT_METADATA_DIR,
-        "--additional-expectations",
-        WPT_OVERRIDE_EXPECTATIONS_PATH
-    ])
-
     adapter = WPTTestAdapter()
     return adapter.run_test()
 

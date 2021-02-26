@@ -16,14 +16,26 @@
 namespace views {
 namespace metadata {
 
-enum class PropertyFlags {
+enum class PropertyFlags : uint32_t {
   // By default, properties are read/write. This flag indicates that the given
   // property metadata instance needs no special attention.
   kEmpty = 0x00,
   // Property metadata instance should be treated as read-only. Calling
   // SetValueAsString() will trigger a NOTREACHED() error under debug.
   kReadOnly = 0x01,
+  // Property metadata can be serialized to or from a string. Needs to make sure
+  // this flag is set to have meaningful SetValueAsString() and
+  // GetValueFromString().
+  kSerializable = 0x100,
 };
+
+VIEWS_EXPORT extern PropertyFlags operator|(PropertyFlags op1,
+                                            PropertyFlags op2);
+VIEWS_EXPORT extern PropertyFlags operator&(PropertyFlags op1,
+                                            PropertyFlags op2);
+VIEWS_EXPORT extern PropertyFlags operator^(PropertyFlags op1,
+                                            PropertyFlags op2);
+VIEWS_EXPORT extern bool operator!(PropertyFlags op);
 
 // Interface for classes that provide ClassMetaData (via macros in
 // metadata_header_macros.h). GetClassMetaData() is automatically overridden and
@@ -44,6 +56,8 @@ class VIEWS_EXPORT ClassMetaData {
  public:
   ClassMetaData();
   ClassMetaData(std::string file, int line);
+  ClassMetaData(const ClassMetaData&) = delete;
+  ClassMetaData& operator=(const ClassMetaData&) = delete;
   virtual ~ClassMetaData();
 
   const std::string& type_name() const { return type_name_; }
@@ -119,8 +133,6 @@ class VIEWS_EXPORT ClassMetaData {
   ClassMetaData* parent_class_meta_data_ = nullptr;
   std::string file_;
   const int line_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ClassMetaData);
 };
 
 // Abstract base class to represent meta data about class members.
@@ -128,7 +140,11 @@ class VIEWS_EXPORT ClassMetaData {
 // accessors to get/set the value of the member on an object.
 class VIEWS_EXPORT MemberMetaDataBase {
  public:
-  MemberMetaDataBase() = default;
+  MemberMetaDataBase(const std::string& member_name,
+                     const std::string& member_type)
+      : member_name_(member_name), member_type_(member_type) {}
+  MemberMetaDataBase(const MemberMetaDataBase&) = delete;
+  MemberMetaDataBase& operator=(const MemberMetaDataBase&) = delete;
   virtual ~MemberMetaDataBase() = default;
 
   // Access the value of this member and return it as a string.
@@ -144,16 +160,12 @@ class VIEWS_EXPORT MemberMetaDataBase {
   // Return various information flags about the property.
   virtual PropertyFlags GetPropertyFlags() const = 0;
 
-  void SetMemberName(const char* name) { member_name_ = name; }
-  void SetMemberType(const char* type) { member_type_ = type; }
   const std::string& member_name() const { return member_name_; }
   const std::string& member_type() const { return member_type_; }
 
  private:
   std::string member_name_;
   std::string member_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemberMetaDataBase);
 };  // class MemberMetaDataBase
 
 }  // namespace metadata

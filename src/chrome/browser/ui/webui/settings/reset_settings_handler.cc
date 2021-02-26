@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
@@ -225,7 +225,7 @@ void ResetSettingsHandler::OnHideResetProfileBanner(
 void ResetSettingsHandler::OnSettingsFetched() {
   DCHECK(config_fetcher_);
   DCHECK(!config_fetcher_->IsActive());
-  // The master prefs is fetched. We are waiting for user pressing 'Reset'.
+  // The initial prefs is fetched. We are waiting for user pressing 'Reset'.
 }
 
 void ResetSettingsHandler::ResetProfile(

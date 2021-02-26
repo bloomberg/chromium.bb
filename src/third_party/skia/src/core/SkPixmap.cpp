@@ -15,6 +15,7 @@
 #include "include/private/SkHalf.h"
 #include "include/private/SkImageInfoPriv.h"
 #include "include/private/SkNx.h"
+#include "include/private/SkTPin.h"
 #include "include/private/SkTemplates.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkConvertPixels.h"
@@ -232,7 +233,6 @@ bool SkPixmap::scalePixels(const SkPixmap& actualDst, SkFilterQuality quality) c
         return false;
     }
     bitmap.setImmutable();        // Don't copy when we create an image.
-    bitmap.setIsVolatile(true);   // Disable any caching.
 
     SkMatrix scale = SkMatrix::MakeRectToRect(SkRect::Make(src.bounds()),
                                               SkRect::Make(dst.bounds()),
@@ -243,6 +243,7 @@ bool SkPixmap::scalePixels(const SkPixmap& actualDst, SkFilterQuality quality) c
                                                  SkTileMode::kClamp,
                                                  SkTileMode::kClamp,
                                                  &scale,
+                                                 (SkImageShader::FilterEnum)quality,
                                                  clampAsIfUnpremul);
 
     sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(dst.info(),
@@ -567,7 +568,7 @@ static bool draw_orientation(const SkPixmap& dst, const SkPixmap& src, SkEncoded
     SkBitmap bm;
     bm.installPixels(src);
 
-    SkMatrix m = SkEncodedOriginToMatrix(origin, src.width(), src.height());
+    SkMatrix m = SkEncodedOriginToMatrix(origin, dst.width(), dst.height());
 
     SkPaint p;
     p.setBlendMode(SkBlendMode::kSrc);

@@ -33,9 +33,12 @@
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/ime/cached_text_input_info.h"
 #include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
+#include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -51,8 +54,6 @@ enum class TypingContinuation;
 class CORE_EXPORT InputMethodController final
     : public GarbageCollected<InputMethodController>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
-
  public:
   enum ConfirmCompositionBehavior {
     kDoNotKeepSelection,
@@ -61,7 +62,7 @@ class CORE_EXPORT InputMethodController final
 
   explicit InputMethodController(LocalDOMWindow&, LocalFrame&);
   virtual ~InputMethodController();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // international text input composition
   bool HasComposition() const;
@@ -72,6 +73,12 @@ class CORE_EXPORT InputMethodController final
   void SetCompositionFromExistingText(const Vector<ImeTextSpan>& ime_text_spans,
                                       unsigned composition_start,
                                       unsigned composition_end);
+  void AddImeTextSpansToExistingText(const Vector<ImeTextSpan>& ime_text_spans,
+                                     unsigned text_start,
+                                     unsigned text_end);
+  void ClearImeTextSpansByType(ImeTextSpan::Type type,
+                               unsigned text_start,
+                               unsigned text_end);
 
   // Deletes ongoing composing text if any, inserts specified text, and
   // changes the selection according to relativeCaretPosition, which is
@@ -104,6 +111,11 @@ class CORE_EXPORT InputMethodController final
                                          size_t text_length) const;
   void DeleteSurroundingText(int before, int after);
   void DeleteSurroundingTextInCodePoints(int before, int after);
+
+  void DidLayoutSubtree(const LayoutObject& layout_object);
+  void DidUpdateLayout(const LayoutObject& layout_object);
+  void LayoutObjectWillBeDestroyed(const LayoutObject& layout_object);
+
   WebTextInputInfo TextInputInfo() const;
   // For finding NEXT/PREVIOUS everytime during frame update is a costly
   // operation, so making it specific whenever needed by splitting from
@@ -124,6 +136,20 @@ class CORE_EXPORT InputMethodController final
   // EditContext's control and selection bounds if available.
   void GetLayoutBounds(WebRect* control_bounds, WebRect* selection_bounds);
 
+  // Sets the state of the VK show()/hide() calls from virtualkeyboard.
+  void SetVirtualKeyboardVisibilityRequest(
+      ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request);
+
+  // Returns whether show()/hide() API is called from virtualkeyboard or not.
+  ui::mojom::VirtualKeyboardVisibilityRequest
+  GetLastVirtualKeyboardVisibilityRequest() const {
+    return last_vk_visibility_request_;
+  }
+
+  CachedTextInputInfo& GetCachedTextInputInfoForTesting() {
+    return cached_text_input_info_;
+  }
+
  private:
   friend class InputMethodControllerTest;
 
@@ -131,9 +157,12 @@ class CORE_EXPORT InputMethodController final
   bool IsAvailable() const;
 
   Member<LocalFrame> frame_;
+  // Root editable text content cache for |TextInputInfo()|.
+  CachedTextInputInfo cached_text_input_info_;
   Member<Range> composition_range_;
   Member<EditContext> active_edit_context_;
   bool has_composition_;
+  ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request_;
 
   Editor& GetEditor() const;
   LocalFrame& GetFrame() const;
@@ -187,6 +216,8 @@ class CORE_EXPORT InputMethodController final
   int TextInputFlags() const;
   ui::TextInputAction InputActionOfFocusedElement() const;
   WebTextInputMode InputModeOfFocusedElement() const;
+  ui::mojom::VirtualKeyboardPolicy VirtualKeyboardPolicyOfFocusedElement()
+      const;
 
   // Implements |ExecutionContextLifecycleObserver|.
   void ContextDestroyed() final;
@@ -207,8 +238,25 @@ class CORE_EXPORT InputMethodController final
   //   3) SetComposingText() (SetComposition())
   void RemoveSuggestionMarkerInCompositionRange();
 
+  void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text);
+  void DispatchBeforeInputFromComposition(EventTarget* target,
+                                          InputEvent::InputType input_type,
+                                          const String& data);
+  void InsertTextDuringCompositionWithEvents(
+      LocalFrame& frame,
+      const String& text,
+      TypingCommand::Options options,
+      TypingCommand::TextCompositionType composition_type);
+  void DispatchCompositionEndEvent(LocalFrame& frame, const String& text);
+
+  // Gets ime text spans of interest at the cursor position.
+  WebVector<ui::ImeTextSpan> GetImeTextSpansAroundPosition(
+      const Position& position) const;
+
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);
+  FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
+                           VirtualKeyboardPolicyOfFocusedElement);
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodController);
 };

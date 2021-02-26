@@ -12,6 +12,7 @@
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
+#include "third_party/base/notreached.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
@@ -30,7 +31,7 @@ CJX_InstanceManager::CJX_InstanceManager(CXFA_InstanceManager* mgr)
   DefineMethods(MethodSpecs);
 }
 
-CJX_InstanceManager::~CJX_InstanceManager() {}
+CJX_InstanceManager::~CJX_InstanceManager() = default;
 
 bool CJX_InstanceManager::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
@@ -248,12 +249,9 @@ CJS_Result CJX_InstanceManager::addInstance(
         ToNode(GetDocument()->GetXFAObject(XFA_HASHCODE_Form)));
   }
 
-  CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-          pNewInstance);
-
   return CJS_Result::Success(
-      value->DirectGetValue().Get(runtime->GetIsolate()));
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pNewInstance));
 }
 
 CJS_Result CJX_InstanceManager::insertInstance(
@@ -293,15 +291,13 @@ CJS_Result CJX_InstanceManager::insertInstance(
         ToNode(GetDocument()->GetXFAObject(XFA_HASHCODE_Form)));
   }
 
-  CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-          pNewInstance);
-
   return CJS_Result::Success(
-      value->DirectGetValue().Get(runtime->GetIsolate()));
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pNewInstance));
 }
 
-void CJX_InstanceManager::max(CFXJSE_Value* pValue,
+void CJX_InstanceManager::max(v8::Isolate* pIsolate,
+                              CFXJSE_Value* pValue,
                               bool bSetting,
                               XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -309,10 +305,12 @@ void CJX_InstanceManager::max(CFXJSE_Value* pValue,
     return;
   }
   CXFA_Occur* occur = GetXFANode()->GetOccurIfExists();
-  pValue->SetInteger(occur ? occur->GetMax() : CXFA_Occur::kDefaultMax);
+  pValue->SetInteger(pIsolate,
+                     occur ? occur->GetMax() : CXFA_Occur::kDefaultMax);
 }
 
-void CJX_InstanceManager::min(CFXJSE_Value* pValue,
+void CJX_InstanceManager::min(v8::Isolate* pIsolate,
+                              CFXJSE_Value* pValue,
                               bool bSetting,
                               XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -320,15 +318,17 @@ void CJX_InstanceManager::min(CFXJSE_Value* pValue,
     return;
   }
   CXFA_Occur* occur = GetXFANode()->GetOccurIfExists();
-  pValue->SetInteger(occur ? occur->GetMin() : CXFA_Occur::kDefaultMin);
+  pValue->SetInteger(pIsolate,
+                     occur ? occur->GetMin() : CXFA_Occur::kDefaultMin);
 }
 
-void CJX_InstanceManager::count(CFXJSE_Value* pValue,
+void CJX_InstanceManager::count(v8::Isolate* pIsolate,
+                                CFXJSE_Value* pValue,
                                 bool bSetting,
                                 XFA_Attribute eAttribute) {
   if (bSetting) {
-    SetInstances(pValue->ToInteger());
+    SetInstances(pValue->ToInteger(pIsolate));
     return;
   }
-  pValue->SetInteger(GetXFANode()->GetCount());
+  pValue->SetInteger(pIsolate, GetXFANode()->GetCount());
 }

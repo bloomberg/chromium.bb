@@ -1,12 +1,12 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint to add new histograms to the datastore."""
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import itertools
 import json
 import logging
 import sys
@@ -26,6 +26,7 @@ from dashboard.common import utils
 from dashboard.models import anomaly
 from dashboard.models import graph_data
 from dashboard.models import histogram
+from dashboard.models import upload_completion_token
 from tracing.value import histogram as histogram_module
 from tracing.value import histogram_set
 from tracing.value.diagnostics import diagnostic
@@ -33,20 +34,33 @@ from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import reserved_infos
 
 DIAGNOSTIC_NAMES_TO_ANNOTATION_NAMES = {
-    reserved_infos.CHROMIUM_COMMIT_POSITIONS.name: 'r_commit_pos',
-    reserved_infos.V8_COMMIT_POSITIONS.name: 'r_v8_commit_pos',
-    reserved_infos.CHROMIUM_REVISIONS.name: 'r_chromium',
-    reserved_infos.V8_REVISIONS.name: 'r_v8_rev',
+    reserved_infos.CHROMIUM_COMMIT_POSITIONS.name:
+        'r_commit_pos',
+    reserved_infos.V8_COMMIT_POSITIONS.name:
+        'r_v8_commit_pos',
+    reserved_infos.CHROMIUM_REVISIONS.name:
+        'r_chromium',
+    reserved_infos.V8_REVISIONS.name:
+        'r_v8_rev',
     # TODO(#3545): Add r_catapult_git to Dashboard revision_info map.
-    reserved_infos.CATAPULT_REVISIONS.name: 'r_catapult_git',
-    reserved_infos.ANGLE_REVISIONS.name: 'r_angle_git',
-    reserved_infos.WEBRTC_REVISIONS.name: 'r_webrtc_git',
-    reserved_infos.WEBRTC_INTERNAL_REVISIONS.name: 'r_webrtc_internal_cl',
-    reserved_infos.FUCHSIA_GARNET_REVISIONS.name: 'r_fuchsia_garnet_git',
-    reserved_infos.FUCHSIA_PERIDOT_REVISIONS.name: 'r_fuchsia_peridot_git',
-    reserved_infos.FUCHSIA_TOPAZ_REVISIONS.name: 'r_fuchsia_topaz_git',
-    reserved_infos.FUCHSIA_ZIRCON_REVISIONS.name: 'r_fuchsia_zircon_git',
-    reserved_infos.REVISION_TIMESTAMPS.name: 'r_revision_timestamp',
+    reserved_infos.CATAPULT_REVISIONS.name:
+        'r_catapult_git',
+    reserved_infos.ANGLE_REVISIONS.name:
+        'r_angle_git',
+    reserved_infos.WEBRTC_REVISIONS.name:
+        'r_webrtc_git',
+    reserved_infos.WEBRTC_INTERNAL_REVISIONS.name:
+        'r_webrtc_internal_cl',
+    reserved_infos.FUCHSIA_GARNET_REVISIONS.name:
+        'r_fuchsia_garnet_git',
+    reserved_infos.FUCHSIA_PERIDOT_REVISIONS.name:
+        'r_fuchsia_peridot_git',
+    reserved_infos.FUCHSIA_TOPAZ_REVISIONS.name:
+        'r_fuchsia_topaz_git',
+    reserved_infos.FUCHSIA_ZIRCON_REVISIONS.name:
+        'r_fuchsia_zircon_git',
+    reserved_infos.REVISION_TIMESTAMPS.name:
+        'r_revision_timestamp',
 }
 
 
@@ -75,7 +89,7 @@ class AddHistogramsQueueHandler(request_handler.RequestHandler):
     The |data| request parameter can be either a histogram or a sparse shared
     diagnostic; the set of diagnostics that are considered sparse (meaning that
     they don't normally change on every upload for a given benchmark from a
-    given bot) is shown in add_histograms.SPARSE_DIAGNOSTIC_TYPES.
+    given bot) is shown in histogram_helpers.SPARSE_DIAGNOSTIC_TYPES.
 
     See https://goo.gl/lHzea6 for detailed information on the JSON format for
     histograms and diagnostics.
@@ -95,12 +109,37 @@ class AddHistogramsQueueHandler(request_handler.RequestHandler):
     # Roughly, the processing of histograms and the processing of rows can be
     # done in parallel since there are no dependencies.
 
-    futures = []
+    histogram_futures = []
+    token_state_futures = []
 
-    for p in params:
-      futures.extend(_ProcessRowAndHistogram(p))
+    try:
+      for p in params:
+        histogram_futures.append((p, _ProcessRowAndHistogram(p)))
+    except Exception as e:  # pylint: disable=broad-except
+      for param, futures_info in itertools.izip_longest(params,
+                                                        histogram_futures):
+        if futures_info is not None:
+          continue
+        token_state_futures.append(
+            upload_completion_token.Measurement.UpdateStateByPathAsync(
+                param.get('test_path'), param.get('token'),
+                upload_completion_token.State.FAILED, e.message))
+      ndb.Future.wait_all(token_state_futures)
+      raise
 
-    ndb.Future.wait_all(futures)
+    for info, futures in histogram_futures:
+      operation_state = upload_completion_token.State.COMPLETED
+      error_message = None
+      for f in futures:
+        exception = f.get_exception()
+        if exception is not None:
+          operation_state = upload_completion_token.State.FAILED
+          error_message = exception.message
+      token_state_futures.append(
+          upload_completion_token.Measurement.UpdateStateByPathAsync(
+              info.get('test_path'), info.get('token'), operation_state,
+              error_message))
+    ndb.Future.wait_all(token_state_futures)
 
 
 def _GetStoryFromDiagnosticsDict(diagnostics):
@@ -165,9 +204,13 @@ def _ProcessRowAndHistogram(params):
   unescaped_story_name = _GetStoryFromDiagnosticsDict(params.get('diagnostics'))
 
   parent_test = add_point_queue.GetOrCreateAncestors(
-      master, bot, full_test_name, internal_only=internal_only,
+      master,
+      bot,
+      full_test_name,
+      internal_only=internal_only,
       unescaped_story_name=unescaped_story_name,
-      benchmark_description=benchmark_description, **extra_args)
+      benchmark_description=benchmark_description,
+      **extra_args)
   test_key = parent_test.key
 
   statistics_scalars = hist.statistics_scalars
@@ -178,21 +221,25 @@ def _ProcessRowAndHistogram(params):
     statistics_scalars = {}
 
   for stat_name, scalar in statistics_scalars.items():
-    if histogram_helpers.ShouldFilterStatistic(
-        histogram_name, benchmark_name, stat_name):
+    if histogram_helpers.ShouldFilterStatistic(histogram_name, benchmark_name,
+                                               stat_name):
       continue
     extra_args = GetUnitArgs(scalar.unit)
-    suffixed_name = '%s/%s_%s' % (
-        benchmark_name, histogram_name, stat_name)
+    suffixed_name = '%s/%s_%s' % (benchmark_name, histogram_name, stat_name)
     if rest is not None:
       suffixed_name += '/' + rest
     legacy_parent_tests[stat_name] = add_point_queue.GetOrCreateAncestors(
-        master, bot, suffixed_name, internal_only=internal_only,
-        unescaped_story_name=unescaped_story_name, **extra_args)
+        master,
+        bot,
+        suffixed_name,
+        internal_only=internal_only,
+        unescaped_story_name=unescaped_story_name,
+        **extra_args)
 
   return [
       _AddRowsFromData(params, revision, parent_test, legacy_parent_tests),
-      _AddHistogramFromData(params, revision, test_key, internal_only)]
+      _AddHistogramFromData(params, revision, test_key, internal_only)
+  ]
 
 
 @ndb.tasklet
@@ -200,10 +247,9 @@ def _AddRowsFromData(params, revision, parent_test, legacy_parent_tests):
   data_dict = params['data']
   test_key = parent_test.key
 
-  stat_names_to_test_keys = {k: v.key for k, v in
-                             legacy_parent_tests.items()}
-  rows = CreateRowEntities(
-      data_dict, test_key, stat_names_to_test_keys, revision)
+  stat_names_to_test_keys = {k: v.key for k, v in legacy_parent_tests.items()}
+  rows = CreateRowEntities(data_dict, test_key, stat_names_to_test_keys,
+                           revision)
   if not rows:
     raise ndb.Return()
 
@@ -212,8 +258,8 @@ def _AddRowsFromData(params, revision, parent_test, legacy_parent_tests):
 
   def IsMonitored(client, test):
     reason = []
-    subscriptions, _ = client.Match(test.test_path, check=True)
-    if not subscriptions:
+    has_subscribers = utils.IsMonitored(client, test.test_path)
+    if not has_subscribers:
       reason.append('subscriptions')
     if not test.has_rows:
       reason.append('has_rows')
@@ -232,14 +278,14 @@ def _AddRowsFromData(params, revision, parent_test, legacy_parent_tests):
     if IsMonitored(client, legacy_parent_test):
       tests_keys.append(legacy_parent_test.key)
 
-  tests_keys = [
-      k for k in tests_keys if not add_point_queue.IsRefBuild(k)]
+  tests_keys = [k for k in tests_keys if not add_point_queue.IsRefBuild(k)]
 
   # Updating of the cached graph revisions should happen after put because
   # it requires the new row to have a timestamp, which happens upon put.
   futures = [
       graph_revisions.AddRowsToCacheAsync(rows),
-      find_anomalies.ProcessTestsAsync(tests_keys)]
+      find_anomalies.ProcessTestsAsync(tests_keys)
+  ]
   yield futures
 
 
@@ -252,17 +298,25 @@ def _AddHistogramFromData(params, revision, test_key, internal_only):
 
   hs = histogram_set.HistogramSet()
   hs.ImportDicts([data_dict])
-  for new_guid, existing_diagnostic in (
-      iter(new_guids_to_existing_diagnostics.items())):
+  for new_guid, existing_diagnostic in (iter(
+      new_guids_to_existing_diagnostics.items())):
     hs.ReplaceSharedDiagnostic(
-        new_guid, diagnostic_ref.DiagnosticRef(
-            existing_diagnostic['guid']))
+        new_guid, diagnostic_ref.DiagnosticRef(existing_diagnostic['guid']))
   data = hs.GetFirstHistogram().AsDict()
 
   entity = histogram.Histogram(
-      id=str(uuid.uuid4()), data=data, test=test_key, revision=revision,
+      id=str(uuid.uuid4()),
+      data=data,
+      test=test_key,
+      revision=revision,
       internal_only=internal_only)
   yield entity.put_async()
+
+  measurement = upload_completion_token.Measurement.GetByPath(
+      params.get('test_path'), params.get('token'))
+  if measurement is not None:
+    measurement.histogram = entity.key
+    measurement.put()
 
 
 @ndb.tasklet
@@ -273,10 +327,15 @@ def ProcessDiagnostics(diagnostic_data, revision, test_key, internal_only):
   diagnostic_entities = []
   for name, diagnostic_datum in diagnostic_data.items():
     guid = diagnostic_datum['guid']
-    diagnostic_entities.append(histogram.SparseDiagnostic(
-        id=guid, name=name, data=diagnostic_datum, test=test_key,
-        start_revision=revision, end_revision=sys.maxsize,
-        internal_only=internal_only))
+    diagnostic_entities.append(
+        histogram.SparseDiagnostic(
+            id=guid,
+            name=name,
+            data=diagnostic_datum,
+            test=test_key,
+            start_revision=revision,
+            end_revision=sys.maxsize,
+            internal_only=internal_only))
 
   suite_key = utils.TestKey('/'.join(test_key.id().split('/')[:3]))
   last_added = yield histogram.HistogramRevisionRecord.GetLatest(suite_key)
@@ -290,9 +349,7 @@ def ProcessDiagnostics(diagnostic_data, revision, test_key, internal_only):
 
 
 def GetUnitArgs(unit):
-  unit_args = {
-      'units': unit
-  }
+  unit_args = {'units': unit}
   histogram_improvement_direction = unit.split('_')[-1]
   if histogram_improvement_direction == 'biggerIsBetter':
     unit_args['improvement_direction'] = anomaly.UP
@@ -303,8 +360,8 @@ def GetUnitArgs(unit):
   return unit_args
 
 
-def CreateRowEntities(
-    histogram_dict, test_metadata_key, stat_names_to_test_keys, revision):
+def CreateRowEntities(histogram_dict, test_metadata_key,
+                      stat_names_to_test_keys, revision):
   h = histogram_module.Histogram.FromDict(histogram_dict)
   # TODO(#3564): Move this check into _PopulateNumericalFields once we
   # know that it's okay to put rows that don't have a value/error.
@@ -314,19 +371,22 @@ def CreateRowEntities(
   rows = []
 
   row_dict = _MakeRowDict(revision, test_metadata_key.id(), h)
-  properties = add_point.GetAndValidateRowProperties(row_dict)
-  test_container_key = utils.GetTestContainerKey(test_metadata_key)
-  rows.append(graph_data.Row(id=revision, parent=test_container_key,
-                             **properties))
+  rows.append(
+      graph_data.Row(
+          id=revision,
+          parent=utils.GetTestContainerKey(test_metadata_key),
+          **add_point.GetAndValidateRowProperties(row_dict)))
 
   for stat_name, suffixed_key in stat_names_to_test_keys.items():
     row_dict = _MakeRowDict(revision, suffixed_key.id(), h, stat_name=stat_name)
-    properties = add_point.GetAndValidateRowProperties(row_dict)
-    test_container_key = utils.GetTestContainerKey(suffixed_key)
-    rows.append(graph_data.Row(
-        id=revision, parent=suffixed_key, **properties))
+    rows.append(
+        graph_data.Row(
+            id=revision,
+            parent=utils.GetTestContainerKey(suffixed_key),
+            **add_point.GetAndValidateRowProperties(row_dict)))
 
   return rows
+
 
 def _MakeRowDict(revision, test_path, tracing_histogram, stat_name=None):
   d = {}

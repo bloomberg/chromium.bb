@@ -30,15 +30,18 @@ def RunSconsTests(status, context):
   flags_build = ['do_not_run_tests=1']
   flags_run = []
 
-  # This file is run 3 different ways for ARM builds. The qemu-only trybot does
-  # a normal build-and-run with the emulator just like the x86 bots. The panda
-  # build side runs on an x86 machines with skip_run, and then packs up the
-  # result and triggers an ARM hardware tester that run with skip_build
+  # This file is run 3 different ways for ARM builds:
+  # (1) A qemu-only trybot does a normal build-and-run with the emulator just
+  # like the x86 bots.
+  # (2) A builder that runs on an x86 machine with skip_run. It cross-compiles
+  # everything for ARM, packs up the result and triggers:
+  # (3) An ARM hardware tester that runs with skip_build. It downloads the
+  # compiled sources coming from (2) and runs all tests.
   if arch != 'arm':
     # Unlike their arm counterparts we do not run trusted tests on x86 bots.
     # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
     # We make the assumption here that there are no "exotic tests" which
-    # are trusted in nature but are somehow depedent on the untrusted TC.
+    # are trusted in nature but are somehow dependent on the untrusted TC.
     flags_build.append('skip_trusted_tests=1')
     flags_run.append('skip_trusted_tests=1')
 

@@ -2,10 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import 'chrome://new-tab-page/lazy_load.js';
+import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
-import {assertStyle, createTestProxy} from './test_support.js';
+import {assertNotStyle, assertStyle, createTestProxy, keydown} from './test_support.js';
+
+/** @typedef {newTabPage.mojom.VoiceSearchAction} */
+const Action = newTabPage.mojom.VoiceSearchAction;
+
+/** @typedef {newTabPage.mojom.VoiceSearchError} */
+const Error = newTabPage.mojom.VoiceSearchError;
+
+function createResults(n) {
+  return {
+    results: Array.from(Array(n)).map(() => {
+      return {
+        isFinal: false,
+        0: {
+          transcript: 'foo',
+          confidence: 1,
+        },
+      };
+    }),
+    resultIndex: 0,
+  };
+}
 
 class MockSpeechRecognition {
   constructor() {
@@ -99,27 +121,13 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
   test('on result received shows recognized text', () => {
     // Arrange.
     testProxy.setResultFor('random', 0.5);
+    const result = createResults(2);
+    result.results[1][0].confidence = 0;
+    result.results[0][0].transcript = 'hello';
+    result.results[1][0].transcript = 'world';
 
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: false,
-          0: {
-            transcript: 'hello',
-            confidence: 1,
-          },
-        },
-        {
-          isFinal: false,
-          0: {
-            transcript: 'world',
-            confidence: 0,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
 
     // Assert.
     const [intermediateResult, finalResult] =
@@ -139,20 +147,12 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     const googleBaseUrl = 'https://google.com';
     loadTimeData.overrideValues({googleBaseUrl: googleBaseUrl});
     testProxy.setResultFor('random', 0);
+    const result = createResults(1);
+    result.results[0].isFinal = true;
+    result.results[0][0].transcript = 'hello world';
 
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: true,
-          0: {
-            transcript: 'hello world',
-            confidence: 1,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
 
     // Assert.
     const href = await testProxy.whenCalled('navigate');
@@ -162,22 +162,50 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     assertFalse(
         voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
     assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+    assertEquals(
+        Action.kQuerySubmitted,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 
-  test('on error received shows error text', () => {
-    // Act.
-    mockSpeechRecognition.onerror({error: 'audio-capture'});
+  [['no-speech', 'no-speech', 'learn-more', Error.kNoSpeech],
+   ['audio-capture', 'audio-capture', 'learn-more', Error.kAudioCapture],
+   ['network', 'network', 'none', Error.kNetwork],
+   ['not-allowed', 'not-allowed', 'details', Error.kNotAllowed],
+   ['service-not-allowed', 'not-allowed', 'details', Error.kServiceNotAllowed],
+   [
+     'language-not-supported', 'language-not-supported', 'none',
+     Error.kLanguageNotSupported
+   ],
+   ['aborted', 'other', 'none', Error.kAborted],
+   ['bad-grammar', 'other', 'none', Error.kBadGrammar],
+   ['foo', 'other', 'none', Error.kOther],
+   ['no-match', 'no-match', 'try-again', Error.kNoMatch],
+  ].forEach(([error, text, link, logError]) => {
+    test(`on '${error}' received shows error text`, async () => {
+      // Act.
+      if (error === 'no-match') {
+        mockSpeechRecognition.onnomatch();
+      } else {
+        mockSpeechRecognition.onerror({error});
+      }
 
-    // Assert.
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#errors *[error="2"]')));
-    assertFalse(
-        voiceSearchOverlay.$.micContainer.classList.contains('listening'));
-    assertFalse(
-        voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
-    assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+      // Assert.
+      assertTrue(isVisible(
+          voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
+      assertTrue(isVisible(voiceSearchOverlay.shadowRoot.querySelector(
+          `#errors *[error="${text}"]`)));
+      assertNotStyle(
+          voiceSearchOverlay.shadowRoot.querySelector(
+              `#errorLinks *[link="${link}"]`),
+          'display', 'none');
+      assertFalse(
+          voiceSearchOverlay.$.micContainer.classList.contains('listening'));
+      assertFalse(
+          voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
+      assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+      assertEquals(
+          logError, await testProxy.handler.whenCalled('onVoiceSearchError'));
+    });
   });
 
   test('on end received shows error text if no final result', () => {
@@ -187,24 +215,17 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     // Assert.
     assertTrue(isVisible(
         voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#errors *[error="2"]')));
+    assertTrue(isVisible(voiceSearchOverlay.shadowRoot.querySelector(
+        '#errors *[error="audio-capture"]')));
   });
 
   test('on end received shows result text if final result', () => {
+    // Arrange.
+    const result = createResults(1);
+    result.results[0].isFinal = true;
+
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: true,
-          0: {
-            transcript: 'hello world',
-            confidence: 1,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
     mockSpeechRecognition.onend();
 
     // Assert.
@@ -223,18 +244,7 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     },
     {
       functionName: 'onresult',
-      arguments: [{
-        results: [
-          {
-            isFinal: false,
-            0: {
-              transcript: 'hello',
-              confidence: 1,
-            },
-          },
-        ],
-        resultIndex: 0,
-      }],
+      arguments: [createResults(1)],
     },
     {
       functionName: 'onend',
@@ -299,28 +309,101 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     assertTrue(mockSpeechRecognition.abortCalled);
   });
 
-  const retryTestParams = [
-    {
-      name: 'retry link',
-      element: 'retryLink',
-    },
-    {
-      name: 'mic button',
-      element: 'micButton',
-    }
-  ];
-
-  retryTestParams.forEach(param => {
-    test(`${param.name} click starts voice search if in retry state`, () => {
+  [['#retryLink', Action.kTryAgainLink],
+   ['#micButton', Action.kTryAgainMicButton],
+  ].forEach(([id, action]) => {
+    test(`clicking '${id}' starts voice search if in retry state`, async () => {
       // Arrange.
       mockSpeechRecognition.onnomatch();
       mockSpeechRecognition.startCalled = false;
 
       // Act.
-      voiceSearchOverlay.shadowRoot.querySelector(`#${param.element}`).click();
+      $$(voiceSearchOverlay, id).click();
 
       // Assert.
       assertTrue(mockSpeechRecognition.startCalled);
+      assertEquals(
+          action, await testProxy.handler.whenCalled('onVoiceSearchAction'));
     });
+  });
+
+  [' ', 'Enter'].forEach(key => {
+    test(`'${key}' submits query if result`, () => {
+      // Arrange.
+      mockSpeechRecognition.onresult(createResults(1));
+      assertEquals(0, testProxy.getCallCount('navigate'));
+
+      // Act.
+      keydown(voiceSearchOverlay.shadowRoot.activeElement, key);
+
+      // Assert.
+      assertEquals(1, testProxy.getCallCount('navigate'));
+      assertTrue(voiceSearchOverlay.$.dialog.open);
+    });
+
+    test(`'${key}' does not submit query if no result`, () => {
+      // Act.
+      keydown(voiceSearchOverlay.shadowRoot.activeElement, key);
+
+      // Assert.
+      assertEquals(0, testProxy.getCallCount('navigate'));
+      assertTrue(voiceSearchOverlay.$.dialog.open);
+    });
+
+    test(`'${key}' triggers link`, () => {
+      // Arrange.
+      mockSpeechRecognition.onerror({error: 'audio-capture'});
+      const link = $$(voiceSearchOverlay, '[link=learn-more]');
+      link.href = '#';
+      link.target = '_self';
+      let clicked = false;
+      link.addEventListener('click', () => clicked = true);
+
+      // Act.
+      keydown(link, key);
+
+      // Assert.
+      assertTrue(clicked);
+      assertEquals(0, testProxy.getCallCount('navigate'));
+      assertFalse(voiceSearchOverlay.$.dialog.open);
+    });
+  });
+
+  test('\'Escape\' closes overlay', async () => {
+    // Act.
+    keydown(voiceSearchOverlay.shadowRoot.activeElement, 'Escape');
+
+    // Assert.
+    assertFalse(voiceSearchOverlay.$.dialog.open);
+    assertEquals(
+        Action.kCloseOverlay,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+  });
+
+  test('Click closes overlay', async () => {
+    // Act.
+    voiceSearchOverlay.$.dialog.click();
+
+    // Assert.
+    assertFalse(voiceSearchOverlay.$.dialog.open);
+    assertEquals(
+        Action.kCloseOverlay,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+  });
+
+  test('Clicking learn more logs action', async () => {
+    // Arrange.
+    mockSpeechRecognition.onerror({error: 'audio-capture'});
+    const link = $$(voiceSearchOverlay, '[link=learn-more]');
+    link.href = '#';
+    link.target = '_self';
+
+    // Act.
+    link.click();
+
+    // Assert.
+    assertEquals(
+        Action.kSupportLinkClicked,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 });

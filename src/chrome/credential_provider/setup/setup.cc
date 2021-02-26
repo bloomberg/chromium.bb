@@ -35,10 +35,10 @@
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/setup/gcp_installer_crash_reporting.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
+#include "chrome/credential_provider/setup/setup_utils.h"
 #include "components/crash/core/app/crash_switches.h"
 #include "components/crash/core/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
@@ -110,7 +110,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
         cmdline->GetSwitchValueASCII(switches::kLoggingLevel);
     int level = 0;
     if (base::StringToInt(log_level, &level) && level >= 0 &&
-        level < logging::LOG_NUM_SEVERITIES) {
+        level < logging::LOGGING_NUM_SEVERITIES) {
       logging::SetMinLogLevel(level);
     } else {
       LOGFN(WARNING) << "Bad log level: " << log_level;
@@ -178,6 +178,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
       cmdline->GetSwitchValuePath(credential_provider::switches::kInstallPath);
   std::string parent_handle_str = cmdline->GetSwitchValueASCII(
       credential_provider::switches::kParentHandle);
+
+  credential_provider::StandaloneInstallerConfigurator::Get()
+      ->ConfigureInstallationType(*cmdline);
 
   if (is_uninstall) {
     // If this is a user invoked uninstall, copy the exe to the temp directory

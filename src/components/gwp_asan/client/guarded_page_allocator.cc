@@ -10,6 +10,7 @@
 
 #include "base/bits.h"
 #include "base/debug/stack_trace.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
@@ -25,7 +26,7 @@
 #include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <pthread.h>
 #endif
 
@@ -53,7 +54,7 @@ size_t GetStackTrace(void** trace, size_t count) {
 // Report a tid that matches what crashpad collects which may differ from what
 // base::PlatformThread::CurrentId() returns.
 uint64_t ReportTid() {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   return base::PlatformThread::CurrentId();
 #else
   uint64_t tid = base::kInvalidThreadId;
@@ -188,11 +189,11 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
 
 #if defined(OS_ANDROID)
-  // Explicitly whitelist memory ranges the crash_handler needs to reads. This
-  // is required for WebView because it has a stricter set of privacy
-  // constraints on what it reads from the crashing process.
+  // Explicitly allow memory ranges the crash_handler needs to read. This is
+  // required for WebView because it has a stricter set of privacy constraints
+  // on what it reads from the crashing process.
   for (auto& region : GetInternalMemoryRegions())
-    crash_reporter::WhitelistMemoryRange(region.first, region.second);
+    crash_reporter::AllowMemoryRange(region.first, region.second);
 #endif
 }
 
@@ -319,7 +320,7 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   CHECK_LT(metadata_idx, state_.num_metadata);
   CHECK_EQ(addr, metadata_[metadata_idx].alloc_ptr);
 #else

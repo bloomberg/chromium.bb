@@ -40,18 +40,16 @@ source_set("activities") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/send_tab_to_self",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/activity_services/data",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {
@@ -59,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bookmark_activity_unittest.mm",
+    "copy_activity_unittest.mm",
     "find_in_page_activity_unittest.mm",
     "generate_qr_code_activity_unittest.mm",
     "print_activity_unittest.mm",
@@ -74,10 +73,10 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/policy:feature_flags",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/activity_services/data",
     "//ios/chrome/browser/ui/bookmarks:test_support",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/util",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",

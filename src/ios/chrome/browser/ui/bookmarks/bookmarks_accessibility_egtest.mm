@@ -14,7 +14,7 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -25,9 +25,10 @@
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
+using chrome_test_util::MoveButton;
 
 // Bookmark accessibility tests for Chrome.
-@interface BookmarksAccessibilityTestCase : ChromeTestCase
+@interface BookmarksAccessibilityTestCase : WebHttpServerChromeTestCase
 @end
 
 @implementation BookmarksAccessibilityTestCase
@@ -76,9 +77,12 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+  id<GREYMatcher> editFolderMatcher =
+      [ChromeEarlGrey isNativeContextMenusEnabled]
+          ? chrome_test_util::BookmarksContextMenuEditButton()
+          : ButtonWithAccessibilityLabelId(
+                IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER);
+  [[EarlGrey selectElementWithMatcher:editFolderMatcher]
       performAction:grey_tap()];
 
   // Verify that the editor is present.
@@ -91,12 +95,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
-  }
-#endif
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -106,8 +104,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_longPress()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          BookmarksContextMenuEditButton()]
       performAction:grey_tap()];
 
   // Wait until screen appears.
@@ -138,9 +136,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:MoveButton()] performAction:grey_tap()];
 
   // Wait until screen appears.
   id<GREYMatcher> screenTitleMatcher = grey_accessibilityLabel(
@@ -171,9 +167,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:MoveButton()] performAction:grey_tap()];
 
   // Tap on "Create New Folder."
   [[EarlGrey
@@ -186,12 +180,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
-  }
-#endif
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];

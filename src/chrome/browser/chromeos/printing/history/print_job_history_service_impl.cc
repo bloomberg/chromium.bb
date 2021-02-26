@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_impl.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -87,7 +87,6 @@ void PrintJobHistoryServiceImpl::OnPrintJobDatabaseInitialized(bool success) {
 void PrintJobHistoryServiceImpl::OnPrintJobSaved(
     const printing::proto::PrintJobInfo& print_job_info,
     bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.PrintJobDatabasePrintJobSaved", success);
   for (auto& observer : observers_) {
     observer.OnPrintJobFinished(print_job_info);
   }

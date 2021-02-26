@@ -12,8 +12,10 @@ Polymer({
 
   behaviors: [
     app_management.StoreClient,
+    DeepLinkingBehavior,
     I18nBehavior,
     PrefsBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -74,10 +76,35 @@ Polymer({
      * @private
      */
     app_: Object,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kManageAndroidPreferences,
+        chromeos.settings.mojom.Setting.kTurnOnPlayStore,
+      ]),
+    },
   },
 
   attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.APPS) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -115,7 +142,7 @@ Polymer({
    * @private
    */
   isEnforced_(pref) {
-    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+    return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /** @private */
@@ -132,7 +159,7 @@ Polymer({
    */
   onManageAndroidAppsTap_(event) {
     // |event.detail| is the click count. Keyboard events will have 0 clicks.
-    const isKeyboardAction = event.detail == 0;
+    const isKeyboardAction = event.detail === 0;
     settings.AndroidAppsBrowserProxyImpl.getInstance().showAndroidAppsSettings(
         isKeyboardAction);
   },

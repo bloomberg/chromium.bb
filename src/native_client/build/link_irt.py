@@ -65,7 +65,7 @@ class IRTLinker(CommandRunner):
     # other language and/or character set.
     env = dict(os.environ)
     env['LC_ALL'] = 'C'
-    segment_info = self.Run(cmd_line, get_output=True, env=env)
+    segment_info = self.Run(cmd_line, get_output=True, env=env).decode('utf8')
     lines = segment_info.splitlines()
     ph_start = -1
     for i, line in enumerate(lines):

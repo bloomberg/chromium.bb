@@ -12,46 +12,6 @@
 #include "src/gpu/gl/GrGLUtil.h"
 #include <stdio.h>
 
-void GrGLClearErr(const GrGLInterface* gl) {
-    while (GR_GL_NO_ERROR != gl->fFunctions.fGetError()) {}
-}
-
-namespace {
-const char *get_error_string(uint32_t err) {
-    switch (err) {
-    case GR_GL_NO_ERROR:
-        return "";
-    case GR_GL_INVALID_ENUM:
-        return "Invalid Enum";
-    case GR_GL_INVALID_VALUE:
-        return "Invalid Value";
-    case GR_GL_INVALID_OPERATION:
-        return "Invalid Operation";
-    case GR_GL_OUT_OF_MEMORY:
-        return "Out of Memory";
-    case GR_GL_CONTEXT_LOST:
-        return "Context Lost";
-    }
-    return "Unknown";
-}
-}
-
-void GrGLCheckErr(const GrGLInterface* gl,
-                  const char* location,
-                  const char* call) {
-    uint32_t err = GR_GL_GET_ERROR(gl);
-    if (GR_GL_NO_ERROR != err) {
-        SkDebugf("---- glGetError 0x%x(%s)", err, get_error_string(err));
-        if (location) {
-            SkDebugf(" at\n\t%s", location);
-        }
-        if (call) {
-            SkDebugf("\n\t\t%s", call);
-        }
-        SkDebugf("\n");
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #if GR_GL_LOG_CALLS
@@ -322,7 +282,7 @@ GrGLVendor GrGLGetVendorFromString(const char* vendorString) {
         if (0 == strncmp(vendorString, "Intel ", 6) || 0 == strcmp(vendorString, "Intel")) {
             return kIntel_GrGLVendor;
         }
-        if (0 == strcmp(vendorString, "Qualcomm")) {
+        if (0 == strcmp(vendorString, "Qualcomm") || 0 == strcmp(vendorString, "freedreno")) {
             return kQualcomm_GrGLVendor;
         }
         if (0 == strcmp(vendorString, "NVIDIA Corporation")) {
@@ -381,6 +341,10 @@ GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
         }
         int adrenoNumber;
         n = sscanf(rendererString, "Adreno (TM) %d", &adrenoNumber);
+        if (n < 1) {
+            // retry with freedreno driver
+            n = sscanf(rendererString, "FD%d", &adrenoNumber);
+        }
         if (1 == n) {
             if (adrenoNumber >= 300) {
                 if (adrenoNumber < 400) {
@@ -480,33 +444,38 @@ GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
         static constexpr char kRadeonStr[] = "Radeon ";
         if (const char* amdString = strstr(rendererString, kRadeonStr)) {
             amdString += strlen(kRadeonStr);
-            char amdGeneration, amdTier, amdRevision;
             // Sometimes there is a (TM) and sometimes not.
             static constexpr char kTMStr[] = "(TM) ";
             if (!strncmp(amdString, kTMStr, strlen(kTMStr))) {
                 amdString += strlen(kTMStr);
             }
-            n = sscanf(amdString, "R9 M%c%c%c", &amdGeneration, &amdTier, &amdRevision);
-            if (3 == n) {
-                if ('3' == amdGeneration) {
-                    return kAMDRadeonR9M3xx_GrGLRenderer;
-                } else if ('4' == amdGeneration) {
-                    return kAMDRadeonR9M4xx_GrGLRenderer;
-                }
-            }
 
             char amd0, amd1, amd2;
+            int amdModel;
+            n = sscanf(amdString, "R9 M3%c%c", &amd0, &amd1);
+            if (2 == n && isdigit(amd0) && isdigit(amd1)) {
+                return kAMDRadeonR9M3xx_GrGLRenderer;
+            }
+
+            n = sscanf(amdString, "R9 M4%c%c", &amd0, &amd1);
+            if (2 == n && isdigit(amd0) && isdigit(amd1)) {
+                return kAMDRadeonR9M4xx_GrGLRenderer;
+            }
+
             n = sscanf(amdString, "HD 7%c%c%c Series", &amd0, &amd1, &amd2);
-            if (3 == n) {
+            if (3 == n && isdigit(amd0) && isdigit(amd1) && isdigit(amd2)) {
                 return kAMDRadeonHD7xxx_GrGLRenderer;
             }
 
-            int amdVegaModel=0;
-            n = sscanf(amdString, "Pro Vega %i", &amdVegaModel);
+            n = sscanf(amdString, "Pro 5%c%c%c", &amd0, &amd1, &amd2);
+            if (3 == n && isdigit(amd0) && isdigit(amd1) && isdigit(amd2)) {
+                return kAMDRadeonPro5xxx_GrGLRenderer;
+            }
+
+            n = sscanf(amdString, "Pro Vega %i", &amdModel);
             if (1 == n) {
                 return kAMDRadeonProVegaxx_GrGLRenderer;
             }
-
         }
 
         if (strstr(rendererString, "llvmpipe")) {
@@ -579,6 +548,8 @@ std::tuple<GrGLANGLEBackend, GrGLANGLEVendor, GrGLANGLERenderer> GrGLGetANGLEInf
         }
     } else if (strstr(rendererString, "NVIDIA")) {
         vendor = GrGLANGLEVendor::kNVIDIA;
+    } else if (strstr(rendererString, "Radeon")) {
+        vendor = GrGLANGLEVendor::kAMD;
     }
     if (strstr(rendererString, "Direct3D11")) {
         backend = GrGLANGLEBackend::kD3D11;
@@ -672,42 +643,11 @@ bool GrGLFormatIsCompressed(GrGLFormat format) {
         case GrGLFormat::kRG16:
         case GrGLFormat::kRGBA16:
         case GrGLFormat::kRG16F:
+        case GrGLFormat::kSTENCIL_INDEX8:
+        case GrGLFormat::kSTENCIL_INDEX16:
+        case GrGLFormat::kDEPTH24_STENCIL8:
         case GrGLFormat::kUnknown:
             return false;
-    }
-    SkUNREACHABLE;
-}
-
-SkImage::CompressionType GrGLFormatToCompressionType(GrGLFormat format) {
-    switch (format) {
-        case GrGLFormat::kCOMPRESSED_ETC1_RGB8:
-        case GrGLFormat::kCOMPRESSED_RGB8_ETC2:
-            return SkImage::CompressionType::kETC2_RGB8_UNORM;
-        case GrGLFormat::kCOMPRESSED_RGB8_BC1:
-            return SkImage::CompressionType::kBC1_RGB8_UNORM;
-        case GrGLFormat::kCOMPRESSED_RGBA8_BC1:
-            return SkImage::CompressionType::kBC1_RGBA8_UNORM;
-
-        case GrGLFormat::kRGBA8:
-        case GrGLFormat::kR8:
-        case GrGLFormat::kALPHA8:
-        case GrGLFormat::kLUMINANCE8:
-        case GrGLFormat::kBGRA8:
-        case GrGLFormat::kRGB565:
-        case GrGLFormat::kRGBA16F:
-        case GrGLFormat::kR16F:
-        case GrGLFormat::kLUMINANCE16F:
-        case GrGLFormat::kRGB8:
-        case GrGLFormat::kRG8:
-        case GrGLFormat::kRGB10_A2:
-        case GrGLFormat::kRGBA4:
-        case GrGLFormat::kSRGB8_ALPHA8:
-        case GrGLFormat::kR16:
-        case GrGLFormat::kRG16:
-        case GrGLFormat::kRGBA16:
-        case GrGLFormat::kRG16F:
-        case GrGLFormat::kUnknown:
-            return SkImage::CompressionType::kNone;
     }
     SkUNREACHABLE;
 }

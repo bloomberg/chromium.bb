@@ -7,6 +7,7 @@
 
 #include "base/time/time_override.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
 
 namespace blink {
 
@@ -87,12 +88,19 @@ namespace blink {
 //   https://docs.google.com/document/d/1XL3vCedkqL65ueaGVD-kfB5RnnrnTaxLc7kmU91oerg
 class BLINK_COMMON_EXPORT UserActivationState {
  public:
-  void Activate();
+  UserActivationState();
+
+  // Marks the user activation state as active, which sets the sticky state to
+  // true and updates the transient state timestamp to "now".
+  //
+  // The |notification_type| parameter is used for histograms only.
+  void Activate(mojom::UserActivationNotificationType notification_type);
+
   void Clear();
 
   // Returns the sticky activation state, which is |true| if the frame has ever
   // seen an activation.
-  bool HasBeenActive() const { return has_been_active_; }
+  bool HasBeenActive() const;
 
   // Returns the transient activation state, which is |true| if the frame has
   // recently been activated and the transient state hasn't been consumed yet.
@@ -102,19 +110,28 @@ class BLINK_COMMON_EXPORT UserActivationState {
   // successfully consumed.
   bool ConsumeIfActive();
 
-  // Transfers user activation state from |other| into |this|:
-  // - The sticky bit in |this| gets set if the bit in |other| is set.
-  // - The transient expiry time in |this| becomes the max of the expiry times
-  //   in |this| and |other|.
-  // - The state in |other| is cleared.
-  void TransferFrom(UserActivationState& other);
+  // Records UMA stats related to consumption.  Must be called:
+  // - before |ConsumeIfActive()| to record correct stats, and
+  // - only once during consumption propagation to suppress over-counting.
+  void RecordPreconsumptionUma() const;
 
  private:
   void ActivateTransientState();
   void DeactivateTransientState();
 
+  bool IsActiveInternal() const;
+
+  mojom::UserActivationNotificationType EffectiveNotificationType() const;
+
   bool has_been_active_ = false;
   base::TimeTicks transient_state_expiry_time_;
+
+  // Tracks the expiry of |kInteraction| notification for UMA data.
+  base::TimeTicks transient_state_expiry_time_for_interaction_;
+
+  // Tracks the type of notification for UMA data.
+  mojom::UserActivationNotificationType first_notification_type_;
+  mojom::UserActivationNotificationType last_notification_type_;
 };
 
 }  // namespace blink

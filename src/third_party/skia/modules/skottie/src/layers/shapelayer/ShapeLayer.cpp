@@ -12,16 +12,14 @@
 #include "modules/skottie/src/SkottiePriv.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGDraw.h"
-#include "modules/sksg/include/SkSGGeometryTransform.h"
+#include "modules/sksg/include/SkSGGeometryEffect.h"
 #include "modules/sksg/include/SkSGGroup.h"
 #include "modules/sksg/include/SkSGMerge.h"
 #include "modules/sksg/include/SkSGPaint.h"
 #include "modules/sksg/include/SkSGPath.h"
 #include "modules/sksg/include/SkSGRect.h"
 #include "modules/sksg/include/SkSGRenderEffect.h"
-#include "modules/sksg/include/SkSGRoundEffect.h"
 #include "modules/sksg/include/SkSGTransform.h"
-#include "modules/sksg/include/SkSGTrimEffect.h"
 #include "src/utils/SkJSON.h"
 
 #include <algorithm>
@@ -49,6 +47,8 @@ static constexpr GeometryEffectAttacherT gGeometryEffectAttachers[] = {
     ShapeBuilder::AttachMergeGeometryEffect,
     ShapeBuilder::AttachTrimGeometryEffect,
     ShapeBuilder::AttachRoundGeometryEffect,
+    ShapeBuilder::AttachOffsetGeometryEffect,
+    ShapeBuilder::AttachPuckerBloatGeometryEffect,
 };
 
 using PaintAttacherT = sk_sp<sksg::PaintNode> (*)(const skjson::ObjectValue&,
@@ -87,28 +87,36 @@ enum class ShapeType {
     kDrawEffect,
 };
 
+enum ShapeFlags : uint16_t {
+    kNone          = 0x00,
+    kSuppressDraws = 0x01,
+};
+
 struct ShapeInfo {
     const char* fTypeString;
     ShapeType   fShapeType;
-    uint32_t    fAttacherIndex; // index into respective attacher tables
+    uint16_t    fAttacherIndex; // index into respective attacher tables
+    uint16_t    fFlags;
 };
 
 const ShapeInfo* FindShapeInfo(const skjson::ObjectValue& jshape) {
     static constexpr ShapeInfo gShapeInfo[] = {
-        { "el", ShapeType::kGeometry      , 2 }, // ellipse   -> AttachEllipseGeometry
-        { "fl", ShapeType::kPaint         , 0 }, // fill      -> AttachColorFill
-        { "gf", ShapeType::kPaint         , 2 }, // gfill     -> AttachGradientFill
-        { "gr", ShapeType::kGroup         , 0 }, // group     -> Inline handler
-        { "gs", ShapeType::kPaint         , 3 }, // gstroke   -> AttachGradientStroke
-        { "mm", ShapeType::kGeometryEffect, 0 }, // merge     -> AttachMergeGeometryEffect
-        { "rc", ShapeType::kGeometry      , 1 }, // rrect     -> AttachRRectGeometry
-        { "rd", ShapeType::kGeometryEffect, 2 }, // round     -> AttachRoundGeometryEffect
-        { "rp", ShapeType::kDrawEffect    , 0 }, // repeater  -> AttachRepeaterDrawEffect
-        { "sh", ShapeType::kGeometry      , 0 }, // shape     -> AttachPathGeometry
-        { "sr", ShapeType::kGeometry      , 3 }, // polystar  -> AttachPolyStarGeometry
-        { "st", ShapeType::kPaint         , 1 }, // stroke    -> AttachColorStroke
-        { "tm", ShapeType::kGeometryEffect, 1 }, // trim      -> AttachTrimGeometryEffect
-        { "tr", ShapeType::kTransform     , 0 }, // transform -> Inline handler
+        { "el", ShapeType::kGeometry      , 2, kNone          }, // ellipse
+        { "fl", ShapeType::kPaint         , 0, kNone          }, // fill
+        { "gf", ShapeType::kPaint         , 2, kNone          }, // gfill
+        { "gr", ShapeType::kGroup         , 0, kNone          }, // group
+        { "gs", ShapeType::kPaint         , 3, kNone          }, // gstroke
+        { "mm", ShapeType::kGeometryEffect, 0, kSuppressDraws }, // merge
+        { "op", ShapeType::kGeometryEffect, 3, kNone          }, // offset
+        { "pb", ShapeType::kGeometryEffect, 4, kNone          }, // pucker/bloat
+        { "rc", ShapeType::kGeometry      , 1, kNone          }, // rrect
+        { "rd", ShapeType::kGeometryEffect, 2, kNone          }, // round
+        { "rp", ShapeType::kDrawEffect    , 0, kNone          }, // repeater
+        { "sh", ShapeType::kGeometry      , 0, kNone          }, // shape
+        { "sr", ShapeType::kGeometry      , 3, kNone          }, // polystar
+        { "st", ShapeType::kPaint         , 1, kNone          }, // stroke
+        { "tm", ShapeType::kGeometryEffect, 1, kNone          }, // trim
+        { "tr", ShapeType::kTransform     , 0, kNone          }, // transform
     };
 
     const skjson::StringValue* type = jshape["ty"];
@@ -154,7 +162,8 @@ struct AnimationBuilder::AttachShapeContext {
 };
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachShape(const skjson::ArrayValue* jshape,
-                                                      AttachShapeContext* ctx) const {
+                                                      AttachShapeContext* ctx,
+                                                      bool suppress_draws) const {
     if (!jshape)
         return nullptr;
 
@@ -165,6 +174,7 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachShape(const skjson::ArrayValue* 
     struct ShapeRec {
         const skjson::ObjectValue& fJson;
         const ShapeInfo&           fInfo;
+        bool                       fSuppressed;
     };
 
     // First pass (bottom->top):
@@ -189,7 +199,10 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachShape(const skjson::ArrayValue* 
             continue;
         }
 
-        recs.push_back({ *shape, *info });
+        recs.push_back({ *shape, *info, suppress_draws });
+
+        // Some effects (merge) suppress any paints above them.
+        suppress_draws |= (info->fFlags & kSuppressDraws) != 0;
 
         switch (info->fShapeType) {
         case ShapeType::kTransform:
@@ -247,7 +260,8 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachShape(const skjson::ArrayValue* 
             AttachShapeContext groupShapeCtx(&geos,
                                              ctx->fGeometryEffectStack,
                                              ctx->fCommittedAnimators);
-            if (auto subgroup = this->attachShape(rec->fJson["it"], &groupShapeCtx)) {
+            if (auto subgroup =
+                this->attachShape(rec->fJson["it"], &groupShapeCtx, rec->fSuppressed)) {
                 add_draw(std::move(subgroup), *rec);
                 SkASSERT(groupShapeCtx.fCommittedAnimators >= ctx->fCommittedAnimators);
                 ctx->fCommittedAnimators = groupShapeCtx.fCommittedAnimators;
@@ -256,7 +270,7 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachShape(const skjson::ArrayValue* 
         case ShapeType::kPaint: {
             SkASSERT(rec->fInfo.fAttacherIndex < SK_ARRAY_COUNT(gPaintAttachers));
             auto paint = gPaintAttachers[rec->fInfo.fAttacherIndex](rec->fJson, this);
-            if (!paint || geos.empty())
+            if (!paint || geos.empty() || rec->fSuppressed)
                 break;
 
             auto drawGeos = geos;

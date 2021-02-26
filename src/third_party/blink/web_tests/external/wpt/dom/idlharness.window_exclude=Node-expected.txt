@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1249 tests; 1215 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1252 tests; 1232 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Window: original interface defined
@@ -261,7 +261,7 @@ PASS Document interface object length
 PASS Document interface object name
 PASS Document interface: existence and properties of interface prototype object
 PASS Document interface: existence and properties of interface prototype object's "constructor" property
-FAIL Document interface: existence and properties of interface prototype object's @@unscopables property assert_false: Document.prototype[Symbol.unscopables] should not be writable expected false got true
+FAIL Document interface: existence and properties of interface prototype object's @@unscopables property assert_not_equals: Document.prototype[Symbol.unscopables] has unexpected property "fullscreen" got disallowed value -1
 PASS Document interface: attribute implementation
 PASS Document interface: attribute URL
 PASS Document interface: attribute documentURI
@@ -297,7 +297,7 @@ PASS Document interface: attribute lastElementChild
 PASS Document interface: attribute childElementCount
 PASS Document interface: operation prepend((Node or DOMString)...)
 PASS Document interface: operation append((Node or DOMString)...)
-FAIL Document interface: operation replaceChildren((Node or DOMString)...) assert_own_property: interface prototype object missing non-static operation expected property "replaceChildren" missing
+PASS Document interface: operation replaceChildren((Node or DOMString)...)
 PASS Document interface: operation querySelector(DOMString)
 PASS Document interface: operation querySelectorAll(DOMString)
 PASS Document interface: operation createExpression(DOMString, optional XPathNSResolver?)
@@ -359,8 +359,8 @@ PASS Document interface: new Document() must inherit property "prepend((Node or 
 PASS Document interface: calling prepend((Node or DOMString)...) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "append((Node or DOMString)...)" with the proper type
 PASS Document interface: calling append((Node or DOMString)...) on new Document() with too few arguments must throw TypeError
-FAIL Document interface: new Document() must inherit property "replaceChildren((Node or DOMString)...)" with the proper type assert_inherits: property "replaceChildren" not found in prototype chain
-FAIL Document interface: calling replaceChildren((Node or DOMString)...) on new Document() with too few arguments must throw TypeError assert_inherits: property "replaceChildren" not found in prototype chain
+PASS Document interface: new Document() must inherit property "replaceChildren((Node or DOMString)...)" with the proper type
+PASS Document interface: calling replaceChildren((Node or DOMString)...) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "querySelector(DOMString)" with the proper type
 PASS Document interface: calling querySelector(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "querySelectorAll(DOMString)" with the proper type
@@ -439,8 +439,8 @@ PASS Document interface: xmlDoc must inherit property "prepend((Node or DOMStrin
 PASS Document interface: calling prepend((Node or DOMString)...) on xmlDoc with too few arguments must throw TypeError
 PASS Document interface: xmlDoc must inherit property "append((Node or DOMString)...)" with the proper type
 PASS Document interface: calling append((Node or DOMString)...) on xmlDoc with too few arguments must throw TypeError
-FAIL Document interface: xmlDoc must inherit property "replaceChildren((Node or DOMString)...)" with the proper type assert_inherits: property "replaceChildren" not found in prototype chain
-FAIL Document interface: calling replaceChildren((Node or DOMString)...) on xmlDoc with too few arguments must throw TypeError assert_inherits: property "replaceChildren" not found in prototype chain
+PASS Document interface: xmlDoc must inherit property "replaceChildren((Node or DOMString)...)" with the proper type
+PASS Document interface: calling replaceChildren((Node or DOMString)...) on xmlDoc with too few arguments must throw TypeError
 PASS Document interface: xmlDoc must inherit property "querySelector(DOMString)" with the proper type
 PASS Document interface: calling querySelector(DOMString) on xmlDoc with too few arguments must throw TypeError
 PASS Document interface: xmlDoc must inherit property "querySelectorAll(DOMString)" with the proper type
@@ -481,7 +481,7 @@ PASS DocumentType interface object length
 PASS DocumentType interface object name
 PASS DocumentType interface: existence and properties of interface prototype object
 PASS DocumentType interface: existence and properties of interface prototype object's "constructor" property
-FAIL DocumentType interface: existence and properties of interface prototype object's @@unscopables property assert_false: DocumentType.prototype[Symbol.unscopables] should not be writable expected false got true
+PASS DocumentType interface: existence and properties of interface prototype object's @@unscopables property
 PASS DocumentType interface: attribute name
 PASS DocumentType interface: attribute publicId
 PASS DocumentType interface: attribute systemId
@@ -512,7 +512,7 @@ PASS DocumentFragment interface object length
 PASS DocumentFragment interface object name
 PASS DocumentFragment interface: existence and properties of interface prototype object
 PASS DocumentFragment interface: existence and properties of interface prototype object's "constructor" property
-FAIL DocumentFragment interface: existence and properties of interface prototype object's @@unscopables property assert_false: DocumentFragment.prototype[Symbol.unscopables] should not be writable expected false got true
+PASS DocumentFragment interface: existence and properties of interface prototype object's @@unscopables property
 PASS DocumentFragment interface: operation getElementById(DOMString)
 PASS DocumentFragment interface: attribute children
 PASS DocumentFragment interface: attribute firstElementChild
@@ -520,7 +520,7 @@ PASS DocumentFragment interface: attribute lastElementChild
 PASS DocumentFragment interface: attribute childElementCount
 PASS DocumentFragment interface: operation prepend((Node or DOMString)...)
 PASS DocumentFragment interface: operation append((Node or DOMString)...)
-FAIL DocumentFragment interface: operation replaceChildren((Node or DOMString)...) assert_own_property: interface prototype object missing non-static operation expected property "replaceChildren" missing
+PASS DocumentFragment interface: operation replaceChildren((Node or DOMString)...)
 PASS DocumentFragment interface: operation querySelector(DOMString)
 PASS DocumentFragment interface: operation querySelectorAll(DOMString)
 PASS DocumentFragment must be primary interface of document.createDocumentFragment()
@@ -535,8 +535,8 @@ PASS DocumentFragment interface: document.createDocumentFragment() must inherit 
 PASS DocumentFragment interface: calling prepend((Node or DOMString)...) on document.createDocumentFragment() with too few arguments must throw TypeError
 PASS DocumentFragment interface: document.createDocumentFragment() must inherit property "append((Node or DOMString)...)" with the proper type
 PASS DocumentFragment interface: calling append((Node or DOMString)...) on document.createDocumentFragment() with too few arguments must throw TypeError
-FAIL DocumentFragment interface: document.createDocumentFragment() must inherit property "replaceChildren((Node or DOMString)...)" with the proper type assert_inherits: property "replaceChildren" not found in prototype chain
-FAIL DocumentFragment interface: calling replaceChildren((Node or DOMString)...) on document.createDocumentFragment() with too few arguments must throw TypeError assert_inherits: property "replaceChildren" not found in prototype chain
+PASS DocumentFragment interface: document.createDocumentFragment() must inherit property "replaceChildren((Node or DOMString)...)" with the proper type
+PASS DocumentFragment interface: calling replaceChildren((Node or DOMString)...) on document.createDocumentFragment() with too few arguments must throw TypeError
 PASS DocumentFragment interface: document.createDocumentFragment() must inherit property "querySelector(DOMString)" with the proper type
 PASS DocumentFragment interface: calling querySelector(DOMString) on document.createDocumentFragment() with too few arguments must throw TypeError
 PASS DocumentFragment interface: document.createDocumentFragment() must inherit property "querySelectorAll(DOMString)" with the proper type
@@ -561,7 +561,7 @@ PASS Element interface object length
 PASS Element interface object name
 PASS Element interface: existence and properties of interface prototype object
 PASS Element interface: existence and properties of interface prototype object's "constructor" property
-FAIL Element interface: existence and properties of interface prototype object's @@unscopables property assert_false: Element.prototype[Symbol.unscopables] should not be writable expected false got true
+PASS Element interface: existence and properties of interface prototype object's @@unscopables property
 PASS Element interface: attribute namespaceURI
 PASS Element interface: attribute prefix
 PASS Element interface: attribute localName
@@ -603,7 +603,7 @@ PASS Element interface: attribute lastElementChild
 PASS Element interface: attribute childElementCount
 PASS Element interface: operation prepend((Node or DOMString)...)
 PASS Element interface: operation append((Node or DOMString)...)
-FAIL Element interface: operation replaceChildren((Node or DOMString)...) assert_own_property: interface prototype object missing non-static operation expected property "replaceChildren" missing
+PASS Element interface: operation replaceChildren((Node or DOMString)...)
 PASS Element interface: operation querySelector(DOMString)
 PASS Element interface: operation querySelectorAll(DOMString)
 PASS Element interface: attribute previousElementSibling
@@ -681,8 +681,8 @@ PASS Element interface: element must inherit property "prepend((Node or DOMStrin
 PASS Element interface: calling prepend((Node or DOMString)...) on element with too few arguments must throw TypeError
 PASS Element interface: element must inherit property "append((Node or DOMString)...)" with the proper type
 PASS Element interface: calling append((Node or DOMString)...) on element with too few arguments must throw TypeError
-FAIL Element interface: element must inherit property "replaceChildren((Node or DOMString)...)" with the proper type assert_inherits: property "replaceChildren" not found in prototype chain
-FAIL Element interface: calling replaceChildren((Node or DOMString)...) on element with too few arguments must throw TypeError assert_inherits: property "replaceChildren" not found in prototype chain
+PASS Element interface: element must inherit property "replaceChildren((Node or DOMString)...)" with the proper type
+PASS Element interface: calling replaceChildren((Node or DOMString)...) on element with too few arguments must throw TypeError
 PASS Element interface: element must inherit property "querySelector(DOMString)" with the proper type
 PASS Element interface: calling querySelector(DOMString) on element with too few arguments must throw TypeError
 PASS Element interface: element must inherit property "querySelectorAll(DOMString)" with the proper type
@@ -750,7 +750,7 @@ PASS CharacterData interface object length
 PASS CharacterData interface object name
 PASS CharacterData interface: existence and properties of interface prototype object
 PASS CharacterData interface: existence and properties of interface prototype object's "constructor" property
-FAIL CharacterData interface: existence and properties of interface prototype object's @@unscopables property assert_false: CharacterData.prototype[Symbol.unscopables] should not be writable expected false got true
+PASS CharacterData interface: existence and properties of interface prototype object's @@unscopables property
 PASS CharacterData interface: attribute data
 PASS CharacterData interface: attribute length
 PASS CharacterData interface: operation substringData(unsigned long, unsigned long)
@@ -1231,6 +1231,11 @@ PASS XPathNSResolver interface: existence and properties of interface prototype 
 PASS XPathNSResolver interface: existence and properties of interface prototype object's "constructor" property
 PASS XPathNSResolver interface: existence and properties of interface prototype object's @@unscopables property
 PASS XPathNSResolver interface: operation lookupNamespaceURI(DOMString?)
+PASS Stringification of document.createNSResolver(document.body)
+PASS XPathNSResolver interface: document.createNSResolver(document.body) must inherit property "lookupNamespaceURI(DOMString?)" with the proper type
+FAIL XPathNSResolver interface: calling lookupNamespaceURI(DOMString?) on document.createNSResolver(document.body) with too few arguments must throw TypeError assert_throws_js: Called with 0 arguments function "function() {
+            fn.apply(obj, args);
+        }" did not throw
 PASS XPathEvaluator interface: existence and properties of interface object
 PASS XPathEvaluator interface object length
 PASS XPathEvaluator interface object name

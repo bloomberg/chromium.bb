@@ -43,7 +43,7 @@ export class ImageView extends UI.View.SimpleView {
    */
   constructor(mimeType, contentProvider) {
     super(Common.UIString.UIString('Image'));
-    this.registerRequiredCSS('source_frame/imageView.css');
+    this.registerRequiredCSS('source_frame/imageView.css', {enableLegacyPatching: true});
     this.element.tabIndex = -1;
     this.element.classList.add('image-view');
     this._url = contentProvider.contentURL();
@@ -64,9 +64,10 @@ export class ImageView extends UI.View.SimpleView {
     this._dimensionsLabel = new UI.Toolbar.ToolbarText();
     this._mimeTypeLabel = new UI.Toolbar.ToolbarText(mimeType);
     this._container = this.element.createChild('div', 'image');
-    this._imagePreviewElement = this._container.createChild('img', 'resource-image-view');
+    /** @type {!HTMLImageElement} */
+    this._imagePreviewElement =
+        /** @type {!HTMLImageElement} */ (this._container.createChild('img', 'resource-image-view'));
     this._imagePreviewElement.addEventListener('contextmenu', this._contextMenu.bind(this), true);
-    this._imagePreviewElement.alt = ls`Image from ${this._url}`;
   }
 
   /**
@@ -74,6 +75,7 @@ export class ImageView extends UI.View.SimpleView {
    * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
   async toolbarItems() {
+    await this._updateContentIfNeeded();
     return [
       this._sizeLabel, new UI.Toolbar.ToolbarSeparator(), this._dimensionsLabel, new UI.Toolbar.ToolbarSeparator(),
       this._mimeTypeLabel
@@ -108,13 +110,19 @@ export class ImageView extends UI.View.SimpleView {
     }
 
     const contentEncoded = await this._contentProvider.contentEncoded();
+    /** @type {?string} */
     this._cachedContent = content;
     let imageSrc = TextUtils.ContentProvider.contentAsDataURL(content, this._mimeType, contentEncoded);
     if (content === null) {
       imageSrc = this._url;
     }
-    const loadPromise = new Promise(x => this._imagePreviewElement.onload = x);
-    this._imagePreviewElement.src = imageSrc;
+    const loadPromise = new Promise(x => {
+      this._imagePreviewElement.onload = x;
+    });
+    if (imageSrc) {
+      this._imagePreviewElement.src = imageSrc;
+    }
+    this._imagePreviewElement.alt = ls`Image from ${this._url}`;
     const size = content && !contentEncoded ? content.length : base64ToSize(content);
     this._sizeLabel.setText(Platform.NumberUtilities.bytesToString(size));
     await loadPromise;
@@ -122,6 +130,9 @@ export class ImageView extends UI.View.SimpleView {
         '%d × %d', this._imagePreviewElement.naturalWidth, this._imagePreviewElement.naturalHeight));
   }
 
+  /**
+   * @param {!Event} event
+   */
   _contextMenu(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     if (!this._parsedURL.isDataURL()) {
@@ -148,7 +159,7 @@ export class ImageView extends UI.View.SimpleView {
   }
 
   _saveImage() {
-    const link = createElement('a');
+    const link = document.createElement('a');
     link.download = this._parsedURL.displayName;
     link.href = this._url;
     link.click();
@@ -169,7 +180,10 @@ export class ImageView extends UI.View.SimpleView {
 
     const entry = items[0].webkitGetAsEntry();
     const encoded = !entry.name.endsWith('.svg');
-    entry.file(file => {
+    /**
+     * @param {!Blob} file
+     */
+    const fileCallback = file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         let result;
@@ -179,7 +193,7 @@ export class ImageView extends UI.View.SimpleView {
           result = null;
           console.error('Can\'t read file: ' + e);
         }
-        if (typeof result !== 'string') {
+        if (typeof result !== 'string' || !this._uiSourceCode) {
           return;
         }
         this._uiSourceCode.setContent(encoded ? btoa(result) : result, encoded);
@@ -189,6 +203,7 @@ export class ImageView extends UI.View.SimpleView {
       } else {
         reader.readAsText(file);
       }
-    });
+    };
+    entry.file(fileCallback);
   }
 }

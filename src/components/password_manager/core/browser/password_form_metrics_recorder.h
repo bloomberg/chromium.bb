@@ -15,13 +15,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace autofill {
 struct FormData;
@@ -50,7 +53,8 @@ class PasswordFormMetricsRecorder
   // Records UKM metrics and reports them on destruction. The |source_id| is
   // the ID of the WebContents document that the forms belong to.
   PasswordFormMetricsRecorder(bool is_main_frame_secure,
-                              ukm::SourceId source_id);
+                              ukm::SourceId source_id,
+                              PrefService* pref_service);
 
   // ManagerAction - What does the PasswordFormManager do with this form? Either
   // it fills it, or it doesn't. If it doesn't fill it, that's either
@@ -65,11 +69,15 @@ class PasswordFormMetricsRecorder
   };
 
   // Result - What happens to the form?
-  enum SubmitResult {
-    kSubmitResultNotSubmitted = 0,
-    kSubmitResultFailed,
-    kSubmitResultPassed,
-    kSubmitResultMax
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordFormSubmissionResult in enums.xml.
+  enum class SubmitResult {
+    kNotSubmitted = 0,
+    kFailed = 1,
+    kPassed = 2,
   };
 
   // Whether the password manager filled a credential on a form.
@@ -85,37 +93,51 @@ class PasswordFormMetricsRecorder
     kManagerFillEventAutofilled
   };
 
-  // What the form is used for. kSubmittedFormTypeUnspecified is only set before
-  // the SetSubmittedFormType() is called, and should never be actually
+  // What the form is used for. SubmittedFormType::kUnspecified is only set
+  // before the SetSubmittedFormType() is called, and should never be actually
   // uploaded.
-  enum SubmittedFormType {
-    kSubmittedFormTypeLogin,
-    kSubmittedFormTypeLoginNoUsername,
-    kSubmittedFormTypeChangePasswordEnabled,
-    kSubmittedFormTypeChangePasswordDisabled,
-    kSubmittedFormTypeChangePasswordNoUsername,
-    kSubmittedFormTypeSignup,
-    kSubmittedFormTypeSignupNoUsername,
-    kSubmittedFormTypeLoginAndSignup,
-    kSubmittedFormTypeUnspecified,
-    kSubmittedFormTypeMax
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordFormType in enums.xml.
+  enum class SubmittedFormType {
+    kLogin = 0,
+    kLoginNoUsername = 1,
+    kChangePasswordEnabled = 2,
+    kChangePasswordDisabled = 3,
+    kChangePasswordNoUsername = 4,
+    kSignup = 5,
+    kSignupNoUsername = 6,
+    kLoginAndSignup = 7,
+    kUnspecified = 8,
+    kCount = 9,
   };
 
   // The reason why a password bubble was shown on the screen.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordBubbleTrigger in enums.xml.
   enum class BubbleTrigger {
     kUnknown = 0,
     // The password manager suggests the user to save a password and asks for
     // confirmation.
-    kPasswordManagerSuggestionAutomatic,
-    kPasswordManagerSuggestionManual,
+    kPasswordManagerSuggestionAutomatic = 1,
+    kPasswordManagerSuggestionManual = 2,
     // The site asked the user to save a password via the credential management
     // API.
-    kCredentialManagementAPIAutomatic,
-    kCredentialManagementAPIManual,
-    kMax,
+    kCredentialManagementAPIAutomatic = 3,
+    kCredentialManagementAPIManual = 4,
   };
 
   // The reason why a password bubble was dismissed.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordBubbleDismissalReason in enums.xml.
   enum class BubbleDismissalReason {
     kUnknown = 0,
     kAccepted = 1,
@@ -138,36 +160,17 @@ class PasswordFormMetricsRecorder
     kCorrectedUsernameInForm = 200,
   };
 
-  // Result of comparing of the old and new form parsing for filling.
-  enum class ParsingComparisonResult {
-    kSame,
-    kDifferent,
-    // Old and new parsers use different identification mechanism for unnamed
-    // fields, so the difference in parsing of anonymous fields is expected.
-    kAnonymousFields,
-    kMax
-  };
-
-  // Result of comparing of the old and new form parsing for saving. Multiple
-  // values are meant to be combined and reported in a single number as a
-  // bitmask.
-  enum class ParsingOnSavingDifference {
-    // Different fields were identified for username or password.
-    kFields = 1 << 0,
-    // Signon_realms are different.
-    kSignonRealm = 1 << 1,
-    // One password form manager wants to update, the other to save as new.
-    kNewLoginStatus = 1 << 2,
-    // One password form manager thinks the password is generated, the other
-    // does not.
-    kGenerated = 1 << 3,
-  };
-
   // Indicator whether the user has seen a password generation popup and why.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordGenerationPopupShown in enums.xml.
   enum class PasswordGenerationPopupShown {
     kNotShown = 0,
     kShownAutomatically = 1,
     kShownManually = 2,
+    kMaxValue = kShownManually,
   };
 
   // Metric: PasswordGeneration.UserDecision
@@ -202,6 +205,9 @@ class PasswordFormMetricsRecorder
   // credentials on page load but to wait for the user to confirm the credential
   // to be filled. This decision is only recorded for the first time, the
   // browser informs the renderer about credentials for a given form.
+  //
+  // Needs to stay in sync with PasswordManagerFirstWaitForUsernameReason in
+  // enums.xml.
   enum class WaitForUsernameReason {
     // Credentials may be filled on page load.
     kDontWait = 0,
@@ -219,7 +225,11 @@ class PasswordFormMetricsRecorder
     kTouchToFill = 5,
     // Show suggestion on account selection feature is enabled.
     kFoasFeature = 6,
-    kMaxValue = kFoasFeature,
+    // Re-authenticaion for filling passwords is required.
+    kReauthRequired = 7,
+    // Password is already filled
+    kPasswordPrefilled = 8,
+    kMaxValue = kPasswordPrefilled,
   };
 
   // This metric records the user experience with the passwords filling. The
@@ -365,9 +375,9 @@ class PasswordFormMetricsRecorder
   // the successful submission is detected.
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form,
-      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+      const std::set<std::pair<base::string16, PasswordForm::Store>>&
           saved_usernames,
-      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+      const std::set<std::pair<base::string16, PasswordForm::Store>>&
           saved_passwords,
       bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats,
@@ -394,6 +404,8 @@ class PasswordFormMetricsRecorder
     username_updated_in_bubble_ = value;
   }
 
+  void set_clock_for_testing(base::Clock* clock) { clock_ = clock; }
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -412,7 +424,11 @@ class PasswordFormMetricsRecorder
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
 
-  // True if the main frame's visible URL, at the time this PasswordFormManager
+  // Not owned. Points to base::DefaultClock::GetInstance() by default, but can
+  // be overridden for testing.
+  base::Clock* clock_;
+
+  // True if the main frame's committed URL, at the time PasswordFormManager
   // was created, is secure.
   const bool is_main_frame_secure_;
 
@@ -441,18 +457,20 @@ class PasswordFormMetricsRecorder
   // the user with this form, and the result. They are combined and
   // recorded in UMA when the PasswordFormMetricsRecorder is destroyed.
   ManagerAction manager_action_ = kManagerActionNone;
-  SubmitResult submit_result_ = kSubmitResultNotSubmitted;
+  SubmitResult submit_result_ = SubmitResult::kNotSubmitted;
 
   // Form type of the form that the PasswordFormManager is managing. Set after
   // submission as the classification of the form can change depending on what
   // data the user has entered.
-  SubmittedFormType submitted_form_type_ = kSubmittedFormTypeUnspecified;
+  SubmittedFormType submitted_form_type_ = SubmittedFormType::kUnspecified;
 
   // The UKM SourceId of the document the form belongs to.
   ukm::SourceId source_id_;
 
   // Holds URL keyed metrics (UKMs) to be recorded on destruction.
   ukm::builders::PasswordForm ukm_entry_builder_;
+
+  PrefService* const pref_service_;
 
   // Counter for DetailedUserActions observed during the lifetime of a
   // PasswordFormManager. Reported upon destruction.

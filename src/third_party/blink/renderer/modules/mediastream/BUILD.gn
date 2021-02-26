@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
@@ -12,11 +11,14 @@ blink_modules_sources("mediastream") {
     "apply_constraints_request.cc",
     "apply_constraints_request.h",
     "dom_window_media_stream.h",
-    "encoded_frame.h",
+    "identifiability_metrics.cc",
+    "identifiability_metrics.h",
     "input_device_info.cc",
     "input_device_info.h",
     "local_media_stream_audio_source.cc",
     "local_media_stream_audio_source.h",
+    "low_latency_video_renderer_algorithm.cc",
+    "low_latency_video_renderer_algorithm.h",
     "media_constraints_impl.cc",
     "media_constraints_impl.h",
     "media_device_info.cc",
@@ -45,13 +47,17 @@ blink_modules_sources("mediastream") {
     "media_stream_event.h",
     "media_stream_local_frame_wrapper.cc",
     "media_stream_local_frame_wrapper.h",
-    "media_stream_renderer_factory_impl.cc",
-    "media_stream_renderer_factory_impl.h",
+    "media_stream_renderer_factory.cc",
+    "media_stream_renderer_factory.h",
     "media_stream_track.cc",
     "media_stream_track.h",
     "media_stream_track_content_hint.h",
     "media_stream_track_event.cc",
     "media_stream_track_event.h",
+    "media_stream_track_generator.cc",
+    "media_stream_track_generator.h",
+    "media_stream_track_processor.cc",
+    "media_stream_track_processor.h",
     "media_stream_utils.cc",
     "media_stream_utils.h",
     "media_stream_video_capturer_source.cc",
@@ -61,14 +67,19 @@ blink_modules_sources("mediastream") {
     "media_stream_video_sink.cc",
     "media_stream_video_source.cc",
     "media_stream_video_track.cc",
+    "media_stream_video_track.h",
+    "media_stream_video_track_underlying_sink.cc",
+    "media_stream_video_track_underlying_sink.h",
+    "media_stream_video_track_underlying_source.cc",
+    "media_stream_video_track_underlying_source.h",
     "navigator_media_stream.cc",
     "navigator_media_stream.h",
-    "navigator_user_media.cc",
-    "navigator_user_media.h",
     "overconstrained_error.cc",
     "overconstrained_error.h",
     "processed_local_audio_source.cc",
     "processed_local_audio_source.h",
+    "pushable_media_stream_video_source.cc",
+    "pushable_media_stream_video_source.h",
     "remote_media_stream_track_adapter.cc",
     "remote_media_stream_track_adapter.h",
     "track_audio_renderer.cc",
@@ -81,6 +92,8 @@ blink_modules_sources("mediastream") {
     "user_media_processor.h",
     "user_media_request.cc",
     "user_media_request.h",
+    "video_renderer_algorithm_wrapper.cc",
+    "video_renderer_algorithm_wrapper.h",
     "video_track_adapter.cc",
     "video_track_adapter.h",
     "video_track_adapter_settings.cc",
@@ -95,12 +108,20 @@ blink_modules_sources("mediastream") {
   ]
   deps = [
     "//build:chromecast_buildflags",
+    "//build:chromeos_buildflags",
     "//media/capture/mojom:image_capture_blink",
     "//media/webrtc",
+    "//services/viz/public/cpp/gpu:gpu",
+    "//third_party/blink/renderer/modules/imagecapture:imagecapture",
+    "//third_party/libyuv:libyuv",
   ]
+  allow_circular_includes_from =
+      [ "//third_party/blink/renderer/modules/imagecapture:imagecapture" ]
+
+  public_deps = [ "//media/capture:capture_lib" ]
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
@@ -124,6 +145,11 @@ jumbo_source_set("test_support") {
     "//testing/gmock",
     "//third_party/blink/public:test_headers",
     "//third_party/blink/public/mojom:mojom_platform_blink_headers",
+    "//third_party/blink/renderer/modules:modules",
     "//third_party/webrtc_overrides:webrtc_component",
   ]
+
+  public_deps = [ "//third_party/blink/renderer/platform:test_support" ]
+
+  configs += [ "//third_party/blink/renderer:inside_blink" ]
 }

@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -28,7 +29,9 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "net/http/http_status_code.h"
@@ -37,7 +40,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -83,31 +86,43 @@ std::vector<base::FilePath> GetTestFiles() {
   }
   std::sort(files.begin(), files.end());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ClearAmIBundledCache();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   return files;
 }
 
 std::string FormStructuresToString(
-    const AutofillManager::FormStructureMap& forms) {
-  std::map<base::TimeTicks, const FormStructure*> sorted_forms;
-  for (const auto& form_kv : forms) {
-    const auto* form = form_kv.second.get();
-    EXPECT_TRUE(
-        sorted_forms.emplace(form->form_parsed_timestamp(), form).second);
-  }
-
+    const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
   std::string forms_string;
-  for (const auto& kv : sorted_forms) {
-    const auto* form = kv.second;
+  // The forms are sorted by renderer ID, which should make the order
+  // deterministic.
+  for (const auto& kv : forms) {
+    const auto* form = kv.second.get();
+    std::map<std::string, int> section_to_index;
     for (const auto& field : *form) {
-      forms_string += field->Type().ToString();
-      forms_string += " | " + base::UTF16ToUTF8(field->name);
-      forms_string += " | " + base::UTF16ToUTF8(field->label);
-      forms_string += " | " + base::UTF16ToUTF8(field->value);
-      forms_string += " | " + field->section;
+      // Normalize the section by replacing the unique but platform-dependent
+      // integers in |field->section| with consecutive unique integers.
+      std::string section = field->section;
+      size_t last_underscore = section.find_last_of('_');
+      size_t next_dash = section.find_first_of('-', last_underscore);
+      int new_section_index = static_cast<int>(section_to_index.size() + 1);
+      int section_index =
+          section_to_index.insert(std::make_pair(section, new_section_index))
+              .first->second;
+      if (last_underscore != std::string::npos &&
+          next_dash != std::string::npos) {
+        section = base::StringPrintf(
+            "%s%d%s", section.substr(0, last_underscore + 1).c_str(),
+            section_index, section.substr(next_dash).c_str());
+      }
+
+      forms_string += base::JoinString(
+          {field->Type().ToString(), base::UTF16ToUTF8(field->name),
+           base::UTF16ToUTF8(field->label), base::UTF16ToUTF8(field->value),
+           section},
+          base::StringPiece(" | "));
       forms_string += "\n";
     }
   }
@@ -153,16 +168,19 @@ FormStructureBrowserTest::FormStructureBrowserTest()
     : DataDrivenTest(GetTestDataDir()) {
   feature_list_.InitWithFeatures(
       // Enabled
-      {},
+      {// TODO(crbug.com/1098943): Remove once experiment is over.
+       autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+       // TODO(crbug.com/1125978): Remove once launched.
+       autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
+       // TODO(crbug.com/896689): Remove once launched.
+       autofill::features::kAutofillNameSectionsWithRendererIds,
+       // TODO(crbug.com/1076175) Remove once launched.
+       autofill::features::kAutofillUseNewSectioningMethod},
       // Disabled
-      {autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics,
-       autofill::features::kAutofillEnforceMinRequiredFieldsForQuery,
-       autofill::features::kAutofillEnforceMinRequiredFieldsForUpload,
-       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+      {autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 }
 
-FormStructureBrowserTest::~FormStructureBrowserTest() {
-}
+FormStructureBrowserTest::~FormStructureBrowserTest() {}
 
 void FormStructureBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
@@ -174,6 +192,11 @@ void FormStructureBrowserTest::SetUpCommandLine(
 
 void FormStructureBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
+
+  // Load the MatchingPattern definitions.
+  base::RunLoop run_loop;
+  field_type_parsing::PopulateFromResourceBundle(run_loop.QuitClosure());
+  run_loop.Run();
 
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &FormStructureBrowserTest::HandleRequest, base::Unretained(this)));

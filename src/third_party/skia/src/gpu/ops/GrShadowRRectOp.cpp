@@ -7,7 +7,7 @@
 
 #include "src/gpu/ops/GrShadowRRectOp.h"
 
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkRRectPriv.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrDrawOpTest.h"
@@ -16,6 +16,7 @@
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrThreadSafeCache.h"
 #include "src/gpu/effects/GrShadowGeoProc.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
@@ -238,23 +239,6 @@ public:
     }
 
     const char* name() const override { return "ShadowCircularRRectOp"; }
-
-#ifdef SK_DEBUG
-    SkString dumpInfo() const override {
-        SkString string;
-        for (int i = 0; i < fGeoData.count(); ++i) {
-            string.appendf(
-                    "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f],"
-                    "OuterRad: %.2f, Umbra: %.2f, InnerRad: %.2f, BlurRad: %.2f\n",
-                    fGeoData[i].fColor, fGeoData[i].fDevBounds.fLeft, fGeoData[i].fDevBounds.fTop,
-                    fGeoData[i].fDevBounds.fRight, fGeoData[i].fDevBounds.fBottom,
-                    fGeoData[i].fOuterRadius, fGeoData[i].fUmbraInset,
-                    fGeoData[i].fInnerRadius, fGeoData[i].fBlurRadius);
-        }
-        string.append(INHERITED::dumpInfo());
-        return string;
-    }
-#endif
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
@@ -546,7 +530,8 @@ private:
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView* writeView,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView) override {
+                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             GrXferBarrierFlags renderPassXferBarriers) override {
         GrGeometryProcessor* gp = GrRRectShadowGeoProc::Make(arena, fFalloffView);
         SkASSERT(sizeof(CircleVertex) == gp->vertexStride());
 
@@ -555,6 +540,7 @@ private:
                                                                    dstProxyView, gp,
                                                                    GrProcessorSet::MakeEmptySet(),
                                                                    GrPrimitiveType::kTriangles,
+                                                                   renderPassXferBarriers,
                                                                    GrPipeline::InputFlags::kNone,
                                                                    &GrUserStencilSettings::kUnused);
     }
@@ -628,8 +614,7 @@ private:
         flushState->drawMesh(*fMesh);
     }
 
-    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*,
-                                      const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, SkArenaAlloc*, const GrCaps& caps) override {
         ShadowCircularRRectOp* that = t->cast<ShadowCircularRRectOp>();
         fGeoData.push_back_n(that->fGeoData.count(), that->fGeoData.begin());
         fVertCount += that->fVertCount;
@@ -637,8 +622,24 @@ private:
         return CombineResult::kMerged;
     }
 
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override {
+        SkString string;
+        for (int i = 0; i < fGeoData.count(); ++i) {
+            string.appendf(
+                    "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f],"
+                    "OuterRad: %.2f, Umbra: %.2f, InnerRad: %.2f, BlurRad: %.2f\n",
+                    fGeoData[i].fColor, fGeoData[i].fDevBounds.fLeft, fGeoData[i].fDevBounds.fTop,
+                    fGeoData[i].fDevBounds.fRight, fGeoData[i].fDevBounds.fBottom,
+                    fGeoData[i].fOuterRadius, fGeoData[i].fUmbraInset,
+                    fGeoData[i].fInnerRadius, fGeoData[i].fBlurRadius);
+        }
+        return string;
+    }
+#endif
+
     void visitProxies(const VisitProxyFunc& func) const override {
-        func(fFalloffView.proxy(), GrMipMapped(false));
+        func(fFalloffView.proxy(), GrMipmapped(false));
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         }
@@ -652,7 +653,7 @@ private:
     GrSimpleMesh*      fMesh = nullptr;
     GrProgramInfo*     fProgramInfo = nullptr;
 
-    typedef GrMeshDrawOp INHERITED;
+    using INHERITED = GrMeshDrawOp;
 };
 
 }  // anonymous namespace
@@ -661,18 +662,18 @@ private:
 
 namespace GrShadowRRectOp {
 
-static GrSurfaceProxyView create_falloff_texture(GrRecordingContext* context) {
+static GrSurfaceProxyView create_falloff_texture(GrRecordingContext* rContext) {
     static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
     GrUniqueKey key;
     GrUniqueKey::Builder builder(&key, kDomain, 0, "Shadow Gaussian Falloff");
     builder.finish();
 
-    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
+    auto threadSafeCache = rContext->priv().threadSafeCache();
 
-    if (sk_sp<GrTextureProxy> falloffTexture = proxyProvider->findOrCreateProxyByUniqueKey(key)) {
-        GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(falloffTexture->backendFormat(),
-                                                                   GrColorType::kAlpha_8);
-        return {std::move(falloffTexture), kTopLeft_GrSurfaceOrigin, swizzle};
+    GrSurfaceProxyView view = threadSafeCache->find(key);
+    if (view) {
+        SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
+        return view;
     }
 
     static const int kWidth = 128;
@@ -689,23 +690,24 @@ static GrSurfaceProxyView create_falloff_texture(GrRecordingContext* context) {
     }
     bitmap.setImmutable();
 
-    GrBitmapTextureMaker maker(context, bitmap, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-    auto view = maker.view(GrMipMapped::kNo);
-    SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
-
-    if (view) {
-        proxyProvider->assignUniqueKeyToProxy(key, view.asTextureProxy());
+    GrBitmapTextureMaker maker(rContext, bitmap, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
+    view = maker.view(GrMipmapped::kNo);
+    if (!view) {
+        return {};
     }
+
+    view = threadSafeCache->add(key, view);
+    SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
     return view;
 }
 
 
-std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
-                               GrColor color,
-                               const SkMatrix& viewMatrix,
-                               const SkRRect& rrect,
-                               SkScalar blurWidth,
-                               SkScalar insetWidth) {
+GrOp::Owner Make(GrRecordingContext* context,
+                 GrColor color,
+                 const SkMatrix& viewMatrix,
+                 const SkRRect& rrect,
+                 SkScalar blurWidth,
+                 SkScalar insetWidth) {
     // Shadow rrect ops only handle simple circular rrects.
     SkASSERT(viewMatrix.isSimilarity() && SkRRectPriv::EqualRadii(rrect));
 
@@ -729,16 +731,16 @@ std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
         return nullptr;
     }
 
-    GrOpMemoryPool* pool = context->priv().opMemoryPool();
-
-    return pool->allocate<ShadowCircularRRectOp>(color, bounds,
-                                                 scaledRadius,
-                                                 rrect.isOval(),
-                                                 blurWidth,
-                                                 scaledInsetWidth,
-                                                 std::move(falloffView));
+    return GrOp::Make<ShadowCircularRRectOp>(context,
+                                             color,
+                                             bounds,
+                                             scaledRadius,
+                                             rrect.isOval(),
+                                             blurWidth,
+                                             scaledInsetWidth,
+                                             std::move(falloffView));
 }
-}
+}  // namespace GrShadowRRectOp
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/prefs/pref_service.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
@@ -102,6 +103,7 @@ class AutofillAgentTests : public PlatformTest {
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill::prefs::SetAutofillProfileEnabled(prefs_.get(), true);
     autofill::prefs::SetAutofillCreditCardEnabled(prefs_.get(), true);
+    UniqueIDDataTabHelper::CreateForWebState(&test_web_state_);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                           webState:&test_web_state_];
@@ -123,7 +125,14 @@ class AutofillAgentTests : public PlatformTest {
 // Tests that form's name and fields' identifiers, values, and whether they are
 // autofilled are sent to the JS. Fields with empty values and those that are
 // not autofilled are skipped.
+// TODO(crbug/1131038): Remove once using only renderer IDs is launched.
 TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> disabled_features;
+  disabled_features.push_back(
+      autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+  scoped_feature_list.InitWithFeatures({}, disabled_features);
+
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,
@@ -133,6 +142,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
   form.name = base::ASCIIToUTF16("CC form");
+  form.unique_renderer_id = FormRendererId(0);
 
   autofill::FormFieldData field;
   field.form_control_type = "text";
@@ -143,6 +153,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("number_value");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(1);
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Name on Card");
   field.name = base::ASCIIToUTF16("name");
@@ -151,6 +162,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("name_value");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Expiry Month");
   field.name = base::ASCIIToUTF16("expiry_month");
@@ -159,6 +171,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("01");
   field.is_autofilled = false;
+  field.unique_renderer_id = FieldRendererId(3);
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Unknown field");
   field.name = base::ASCIIToUTF16("unknown");
@@ -167,6 +180,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(4);
   form.fields.push_back(field);
   [autofill_agent_
       fillFormData:form
@@ -176,14 +190,21 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
       "__gCrWeb.autofill.fillForm({\"fields\":{\"name\":{\"section\":\"\","
       "\"value\":\"name_value\"},"
       "\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
-      "\"formName\":\"CC form\"}, \"\");",
+      "\"formName\":\"CC form\",\"formRendererID\":0}, \"\", -1, false);",
       fake_main_frame_->GetLastJavaScriptCall());
 }
 
-// Tests that in the case of conflict in fields' identifiers, the last seen
-// value of a given field is used.
+// Tests that form's name and fields' identifiers, values, and whether they are
+// autofilled are sent to the JS. Fields with empty values and those that are
+// not autofilled are skipped. Tests logic based on renderer ids usage.
 TEST_F(AutofillAgentTests,
-       OnFormDataFilledWithNameCollisionTestFrameMessaging) {
+       OnFormDataFilledTestWithFrameMessagingUsingRendererIDs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> enabled_features;
+  enabled_features.push_back(
+      autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+  scoped_feature_list.InitWithFeatures(enabled_features, {});
+
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,
@@ -192,6 +213,78 @@ TEST_F(AutofillAgentTests,
   autofill::FormData form;
   form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
+  form.name = base::ASCIIToUTF16("CC form");
+  form.unique_renderer_id = FormRendererId(0);
+
+  autofill::FormFieldData field;
+  field.form_control_type = "text";
+  field.label = base::ASCIIToUTF16("Card number");
+  field.name = base::ASCIIToUTF16("number");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("number");
+  field.unique_id = field.id_attribute;
+  field.value = base::ASCIIToUTF16("number_value");
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(1);
+  form.fields.push_back(field);
+  field.label = base::ASCIIToUTF16("Name on Card");
+  field.name = base::ASCIIToUTF16("name");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("name");
+  field.unique_id = field.id_attribute;
+  field.value = base::ASCIIToUTF16("name_value");
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
+  form.fields.push_back(field);
+  field.label = base::ASCIIToUTF16("Expiry Month");
+  field.name = base::ASCIIToUTF16("expiry_month");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("expiry_month");
+  field.unique_id = field.id_attribute;
+  field.value = base::ASCIIToUTF16("01");
+  field.is_autofilled = false;
+  field.unique_renderer_id = FieldRendererId(3);
+  form.fields.push_back(field);
+  field.label = base::ASCIIToUTF16("Unknown field");
+  field.name = base::ASCIIToUTF16("unknown");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("unknown");
+  field.unique_id = field.id_attribute;
+  field.value = base::ASCIIToUTF16("");
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(4);
+  form.fields.push_back(field);
+  [autofill_agent_
+      fillFormData:form
+           inFrame:test_web_state_.GetWebFramesManager()->GetMainWebFrame()];
+  test_web_state_.WasShown();
+  EXPECT_EQ("__gCrWeb.autofill.fillForm({\"fields\":{\"1\":{\"section\":\"\","
+            "\"value\":\"number_value\"},"
+            "\"2\":{\"section\":\"\",\"value\":\"name_value\"}},"
+            "\"formName\":\"CC form\",\"formRendererID\":0}, \"\", -1, true);",
+            fake_main_frame_->GetLastJavaScriptCall());
+}
+
+// Tests that in the case of conflict in fields' identifiers, the last seen
+// value of a given field is used.
+// TODO(crbug/1131038): Remove once using only renderer IDs is launched.
+TEST_F(AutofillAgentTests,
+       OnFormDataFilledWithNameCollisionTestFrameMessaging) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> disabled_features;
+  disabled_features.push_back(
+      autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+  scoped_feature_list.InitWithFeatures({}, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
+  autofill::FormData form;
+  form.url = GURL("https://myform.com");
+  form.action = GURL("https://myform.com/submit");
+  form.unique_renderer_id = FormRendererId(0);
 
   autofill::FormFieldData field;
   field.form_control_type = "text";
@@ -202,6 +295,7 @@ TEST_F(AutofillAgentTests,
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("California");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(1);
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
@@ -210,6 +304,7 @@ TEST_F(AutofillAgentTests,
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 1");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
@@ -218,6 +313,7 @@ TEST_F(AutofillAgentTests,
   field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 2");
   field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(3);
   form.fields.push_back(field);
   // Fields are in alphabetical order.
   [autofill_agent_
@@ -227,7 +323,7 @@ TEST_F(AutofillAgentTests,
   EXPECT_EQ("__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
             "\"\",\"value\":\"value "
             "2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
-            "\"formName\":\"\"}, \"\");",
+            "\"formName\":\"\",\"formRendererID\":0}, \"\", -1, false);",
             fake_main_frame_->GetLastJavaScriptCall());
 }
 

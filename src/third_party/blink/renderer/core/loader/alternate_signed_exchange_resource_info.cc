@@ -33,7 +33,7 @@ const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 
 const char* ImageAcceptHeader() {
   static constexpr char kImageAcceptHeaderWithAvif[] =
-      "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+      "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
   static constexpr size_t kOffset = sizeof("image/avif,") - 1;
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   static const char* header = base::FeatureList::IsEnabled(features::kAVIF)
@@ -156,12 +156,12 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
 AlternateSignedExchangeResourceInfo::Entry*
 AlternateSignedExchangeResourceInfo::FindMatchingEntry(
     const KURL& url,
-    mojom::RequestContextType request_context,
+    mojom::blink::RequestContextType request_context,
     const Vector<String>& languages) const {
   const char* accept_header = kDefaultAcceptHeader;
-  if (request_context == mojom::RequestContextType::STYLE) {
+  if (request_context == mojom::blink::RequestContextType::STYLE) {
     accept_header = kStylesheetAcceptHeader;
-  } else if (request_context == mojom::RequestContextType::IMAGE) {
+  } else if (request_context == mojom::blink::RequestContextType::IMAGE) {
     accept_header = ImageAcceptHeader();
   }
   return FindMatchingEntry(url, accept_header, languages);

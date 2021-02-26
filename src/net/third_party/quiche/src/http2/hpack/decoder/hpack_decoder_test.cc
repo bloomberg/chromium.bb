@@ -11,8 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
@@ -26,6 +24,7 @@
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/quiche/src/http2/tools/random_util.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
@@ -68,11 +67,13 @@ class MockHpackDecoderListener : public HpackDecoderListener {
   MOCK_METHOD2(OnHeader,
                void(const HpackString& name, const HpackString& value));
   MOCK_METHOD0(OnHeaderListEnd, void());
-  MOCK_METHOD1(OnHeaderErrorDetected,
-               void(quiche::QuicheStringPiece error_message));
+  MOCK_METHOD(void,
+              OnHeaderErrorDetected,
+              (absl::string_view error_message),
+              (override));
 };
 
-class HpackDecoderTest : public ::testing::TestWithParam<bool>,
+class HpackDecoderTest : public QuicheTestWithParam<bool>,
                          public HpackDecoderListener {
  protected:
   // Note that we initialize the random number generator with the same seed
@@ -114,7 +115,7 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool>,
 
   // OnHeaderErrorDetected is called if an error is detected while decoding.
   // error_message may be used in a GOAWAY frame as the Opaque Data.
-  void OnHeaderErrorDetected(quiche::QuicheStringPiece error_message) override {
+  void OnHeaderErrorDetected(absl::string_view error_message) override {
     ASSERT_TRUE(saw_start_);
     error_messages_.push_back(std::string(error_message));
     // No further callbacks should be made at this point, so replace 'this' as
@@ -124,7 +125,7 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool>,
         HpackDecoderPeer::GetDecoderState(&decoder_), &mock_listener_);
   }
 
-  AssertionResult DecodeBlock(quiche::QuicheStringPiece block) {
+  AssertionResult DecodeBlock(absl::string_view block) {
     HTTP2_VLOG(1) << "HpackDecoderTest::DecodeBlock";
 
     VERIFY_FALSE(decoder_.DetectError());

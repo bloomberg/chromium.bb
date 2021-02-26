@@ -30,11 +30,11 @@
 
 namespace blink {
 
-CounterNode::CounterNode(LayoutObject& o, bool has_reset_type, int value)
-    : has_reset_type_(has_reset_type),
+CounterNode::CounterNode(LayoutObject& o, unsigned type_mask, int value)
+    : type_mask_(type_mask),
       value_(value),
       count_in_parent_(0),
-      owner_(o),
+      owner_(&o),
       root_layout_object_(nullptr),
       parent_(nullptr),
       previous_sibling_(nullptr),
@@ -93,9 +93,9 @@ CounterNode::~CounterNode() {
 }
 
 scoped_refptr<CounterNode> CounterNode::Create(LayoutObject& owner,
-                                               bool has_reset_type,
+                                               unsigned type_mask,
                                                int value) {
-  return base::AdoptRef(new CounterNode(owner, has_reset_type, value));
+  return base::AdoptRef(new CounterNode(owner, type_mask, value));
 }
 
 CounterNode* CounterNode::NextInPreOrderAfterChildren(
@@ -146,6 +146,14 @@ int CounterNode::ComputeCountInParent() const {
   // According to the spec, if an increment would overflow or underflow the
   // counter, we are allowed to ignore the increment.
   // https://drafts.csswg.org/css-lists-3/#valdef-counter-reset-custom-ident-integer
+
+  // If we have a set type, then we override parent value altogether, so the
+  // result is just our value.
+  if (HasSetType())
+    return value_;
+
+  // If we act as a reset, then we don't add anything on top of the parent count
+  // (and we don't override it as we would with a set type).
   int increment = ActsAsReset() ? 0 : value_;
   if (previous_sibling_) {
     return base::CheckAdd(previous_sibling_->count_in_parent_, increment)
@@ -218,6 +226,31 @@ void CounterNode::ResetLayoutObjects() {
   }
 }
 
+// static
+CounterNode* CounterNode::AncestorNodeAcrossStyleContainment(
+    const LayoutObject& starting_object,
+    const AtomicString& identifier) {
+  bool crossed_style_containment = false;
+  for (auto* ancestor = starting_object.Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    crossed_style_containment |= ancestor->ShouldApplyStyleContainment();
+    if (!crossed_style_containment)
+      continue;
+    if (CounterMap* node_map = LayoutCounter::GetCounterMap(ancestor)) {
+      if (CounterNode* node = node_map->at(identifier))
+        return node;
+    }
+  }
+  return nullptr;
+}
+
+CounterNode* CounterNode::ParentCrossingStyleContainment(
+    const AtomicString& identifier) const {
+  if (parent_)
+    return parent_;
+  return AncestorNodeAcrossStyleContainment(Owner(), identifier);
+}
+
 void CounterNode::ResetThisAndDescendantsLayoutObjects() {
   CounterNode* node = this;
   do {
@@ -251,7 +284,7 @@ void CounterNode::InsertAfter(CounterNode* new_child,
   if (ref_child && ref_child->parent_ != this)
     return;
 
-  if (new_child->has_reset_type_) {
+  if (new_child->HasResetType()) {
     while (last_child_ != ref_child)
       LayoutCounter::DestroyCounterNode(last_child_->Owner(), identifier);
   }
@@ -278,7 +311,7 @@ void CounterNode::InsertAfter(CounterNode* new_child,
     last_child_ = new_child;
   }
 
-  if (!new_child->first_child_ || new_child->has_reset_type_) {
+  if (!new_child->first_child_ || new_child->HasResetType()) {
     new_child->count_in_parent_ = new_child->ComputeCountInParent();
     new_child->ResetThisAndDescendantsLayoutObjects();
     if (next)

@@ -12,12 +12,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/cras/audio_manager_cras.h"
+#include "media/audio/cras/audio_manager_cras_base.h"
 
 namespace media {
 
 CrasInputStream::CrasInputStream(const AudioParameters& params,
-                                 AudioManagerCras* manager,
+                                 AudioManagerCrasBase* manager,
                                  const std::string& device_id)
     : audio_manager_(manager),
       bytes_per_frame_(0),
@@ -210,7 +210,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   }
 
   cras_client_stream_params_set_client_type(stream_params,
-                                            CRAS_CLIENT_TYPE_CHROME);
+                                            audio_manager_->GetClientType());
 
   if (UseCrasAec())
     cras_client_stream_params_enable_aec(stream_params);

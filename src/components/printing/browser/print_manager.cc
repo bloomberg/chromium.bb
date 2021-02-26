@@ -18,16 +18,12 @@ struct PrintManager::FrameDispatchHelper {
 
   bool Send(IPC::Message* msg) { return render_frame_host->Send(msg); }
 
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
-    manager->OnGetDefaultPrintSettings(render_frame_host, reply_msg);
-  }
-
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& scripted_params,
+  void OnScriptedPrint(const mojom::ScriptedPrintParams& scripted_params,
                        IPC::Message* reply_msg) {
     manager->OnScriptedPrint(render_frame_host, scripted_params, reply_msg);
   }
 
-  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params,
+  void OnDidPrintDocument(const mojom::DidPrintDocumentParams& params,
                           IPC::Message* reply_msg) {
     // If DidPrintDocument message was received then need to transition from
     // a variable allocated on stack (which has efficient memory management
@@ -74,7 +70,8 @@ void PrintManager::DelayedFrameDispatchHelper::RenderFrameDeleted(
 }
 
 PrintManager::PrintManager(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {}
+    : content::WebContentsObserver(contents),
+      print_manager_host_receivers_(contents, this) {}
 
 PrintManager::~PrintManager() = default;
 
@@ -84,19 +81,10 @@ bool PrintManager::OnMessageReceived(
   FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintManager, message)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
-                        OnDidGetPrintedPagesCount)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDocumentCookie,
-                        OnDidGetDocumentCookie)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(
-        PrintHostMsg_GetDefaultPrintSettings, &helper,
-        FrameDispatchHelper::OnGetDefaultPrintSettings)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_ScriptedPrint, &helper,
                                     FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_DidPrintDocument, &helper,
                                     FrameDispatchHelper::OnDidPrintDocument);
-
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -107,18 +95,36 @@ void PrintManager::RenderFrameDeleted(
   print_render_frames_.erase(render_frame_host);
 }
 
-void PrintManager::OnDidGetPrintedPagesCount(int cookie,
-                                             int number_pages) {
+void PrintManager::DidGetPrintedPagesCount(int32_t cookie,
+                                           uint32_t number_pages) {
   DCHECK_GT(cookie, 0);
-  DCHECK_GT(number_pages, 0);
+  DCHECK_GT(number_pages, 0u);
   number_pages_ = number_pages;
 }
 
-void PrintManager::OnDidGetDocumentCookie(int cookie) {
+void PrintManager::DidGetDocumentCookie(int32_t cookie) {
   cookie_ = cookie;
 }
 
-void PrintManager::OnPrintingFailed(int cookie) {
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+void PrintManager::SetAccessibilityTree(
+    int32_t cookie,
+    const ui::AXTreeUpdate& accessibility_tree) {}
+#endif
+
+void PrintManager::UpdatePrintSettings(int32_t cookie,
+                                       base::Value job_settings,
+                                       UpdatePrintSettingsCallback callback) {
+  auto params = mojom::PrintPagesParams::New();
+  params->params = mojom::PrintParams::New();
+  std::move(callback).Run(std::move(params), false);
+}
+
+void PrintManager::DidShowPrintDialog() {}
+
+void PrintManager::ShowInvalidPrinterSettingsError() {}
+
+void PrintManager::PrintingFailed(int32_t cookie) {
   if (cookie != cookie_) {
     NOTREACHED();
     return;
@@ -126,6 +132,14 @@ void PrintManager::OnPrintingFailed(int cookie) {
 #if defined(OS_ANDROID)
   PdfWritingDone(0);
 #endif
+}
+
+bool PrintManager::IsPrintRenderFrameConnected(content::RenderFrameHost* rfh) {
+  auto it = print_render_frames_.find(rfh);
+  if (it == print_render_frames_.end())
+    return false;
+
+  return it->second.is_bound() && it->second.is_connected();
 }
 
 const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&

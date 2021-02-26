@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------- *
- *   
+ *
  *   Copyright 1996-2009 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *     
+ *
  *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -37,11 +37,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "nctype.h"
 #include <errno.h>
 
 #include "insns.h"
@@ -69,12 +65,19 @@ static const char *help =
 static void output_ins(uint64_t, uint8_t *, int, char *);
 static void skip(uint32_t dist, FILE * fp);
 
-static void ndisasm_verror(int severity, const char *fmt, va_list va)
+void nasm_verror(errflags severity, const char *fmt, va_list val)
 {
-    vfprintf(stderr, fmt, va);
+    severity &= ERR_MASK;
 
-    if (severity & ERR_FATAL)
-	exit(1);
+    vfprintf(stderr, fmt, val);
+    if (severity >= ERR_FATAL)
+        exit(severity - ERR_FATAL + 1);
+}
+
+fatal_func nasm_verror_critical(errflags severity, const char *fmt, va_list val)
+{
+    nasm_verror(severity, fmt, val);
+    abort();
 }
 
 int main(int argc, char **argv)
@@ -94,8 +97,7 @@ int main(int argc, char **argv)
     int64_t offset;
     FILE *fp;
 
-    tolower_init();
-    nasm_set_verror(ndisasm_verror);
+    nasm_ctype_init();
     iflag_clear_all(&prefer);
 
     offset = 0;
@@ -278,8 +280,10 @@ int main(int argc, char **argv)
                     pname, filename, strerror(errno));
             return 1;
         }
-    } else
+    } else {
+        nasm_set_binary_mode(stdin);
         fp = stdin;
+    }
 
     if (initskip > 0)
         skip(initskip, fp);

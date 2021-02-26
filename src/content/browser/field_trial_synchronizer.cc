@@ -36,7 +36,7 @@ FieldTrialSynchronizer::FieldTrialSynchronizer() {
   // Ensure the observer was actually registered.
   DCHECK(success);
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->AddObserver(this);
+  variations::VariationsIdsProvider::GetInstance()->AddObserver(this);
   NotifyAllRenderersOfVariationsHeader();
 }
 
@@ -110,15 +110,14 @@ void FieldTrialSynchronizer::UpdateRendererVariationsHeader(
       host->GetBrowserContext()->GetVariationsClient();
 
   // |client| might be null in tests.
-  if (!client || client->IsIncognito())
+  if (!client || client->IsOffTheRecord())
     return;
 
   mojo::AssociatedRemote<mojom::RendererVariationsConfiguration>
       renderer_variations_configuration;
   channel->GetRemoteAssociatedInterface(&renderer_variations_configuration);
-
-  renderer_variations_configuration->SetVariationsHeader(
-      client->GetVariationsHeader());
+  renderer_variations_configuration->SetVariationsHeaders(
+      client->GetVariationsHeaders());
 }
 
 void FieldTrialSynchronizer::VariationIdsHeaderUpdated() {
@@ -131,7 +130,7 @@ void FieldTrialSynchronizer::VariationIdsHeaderUpdated() {
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {
   base::FieldTrialList::RemoveObserver(this);
-  variations::VariationsHttpHeaderProvider::GetInstance()->RemoveObserver(this);
+  variations::VariationsIdsProvider::GetInstance()->RemoveObserver(this);
 }
 
 }  // namespace content

@@ -12,7 +12,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -79,8 +78,8 @@ void CrostiniStartupStatus::ShowProgressAtInterval() {
     PrintProgress();
   }
   ++spinner_index_;
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&CrostiniStartupStatus::ShowProgressAtInterval,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(300));
@@ -101,9 +100,6 @@ void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
           {InstallerState::kInstallImageLoader,
            l10n_util::GetStringUTF8(
                IDS_CROSTINI_TERMINAL_STATUS_INSTALL_IMAGE_LOADER)},
-          {InstallerState::kStartConcierge,
-           l10n_util::GetStringUTF8(
-               IDS_CROSTINI_TERMINAL_STATUS_START_CONCIERGE)},
           {InstallerState::kCreateDiskImage,
            l10n_util::GetStringUTF8(
                IDS_CROSTINI_TERMINAL_STATUS_CREATE_DISK_IMAGE)},

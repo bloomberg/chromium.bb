@@ -44,6 +44,7 @@
 #include "libavutil/random_seed.h"
 #include "libavutil/timecode.h"
 #include "libavutil/avassert.h"
+#include "libavutil/mastering_display_metadata.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/time_internal.h"
 #include "libavcodec/bytestream.h"
@@ -52,7 +53,6 @@
 #include "libavcodec/h264_ps.h"
 #include "libavcodec/golomb.h"
 #include "libavcodec/internal.h"
-#include "audiointerleave.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
@@ -66,11 +66,6 @@ extern AVOutputFormat ff_mxf_opatom_muxer;
 #define EDIT_UNITS_PER_BODY 250
 #define KAG_SIZE 512
 
-typedef struct MXFLocalTagPair {
-    int local_tag;
-    UID uid;
-} MXFLocalTagPair;
-
 typedef struct MXFIndexEntry {
     uint64_t offset;
     unsigned slice_offset; ///< offset of audio slice
@@ -79,7 +74,7 @@ typedef struct MXFIndexEntry {
 } MXFIndexEntry;
 
 typedef struct MXFStreamContext {
-    AudioInterleaveContext aic;
+    int64_t pkt_cnt;         ///< pkt counter for muxed packets
     UID track_essence_element_key;
     int index;               ///< index in mxf_essence_container_uls table
     const UID *codec_ul;
@@ -511,6 +506,7 @@ static void mxf_write_primer_pack(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     int local_tag_number, i = 0;
     int avc_tags_count = 0;
+    int mastering_tags_count = 0;
 
     local_tag_number = FF_ARRAY_ELEMS(mxf_local_tag_batch);
     local_tag_number += mxf->store_user_comments * FF_ARRAY_ELEMS(mxf_user_comments_local_tag);
@@ -519,9 +515,14 @@ static void mxf_write_primer_pack(AVFormatContext *s)
         MXFStreamContext *sc = s->streams[i]->priv_data;
         if (s->streams[i]->codecpar->codec_id == AV_CODEC_ID_H264 && !sc->avc_intra) {
             avc_tags_count = FF_ARRAY_ELEMS(mxf_avc_subdescriptor_local_tags);
-            local_tag_number += avc_tags_count;
+        }
+        if (av_stream_get_side_data(s->streams[i], AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL)) {
+            mastering_tags_count = FF_ARRAY_ELEMS(ff_mxf_mastering_display_local_tags);
         }
     }
+
+    local_tag_number += avc_tags_count;
+    local_tag_number += mastering_tags_count;
 
     avio_write(pb, primer_pack_key, 16);
     klv_encode_ber_length(pb, local_tag_number * 18 + 8);
@@ -540,6 +541,8 @@ static void mxf_write_primer_pack(AVFormatContext *s)
         }
     if (avc_tags_count > 0)
         mxf_write_local_tags(pb, mxf_avc_subdescriptor_local_tags, avc_tags_count);
+    if (mastering_tags_count > 0)
+        mxf_write_local_tags(pb, ff_mxf_mastering_display_local_tags, mastering_tags_count);
 }
 
 static void mxf_write_local_tag(AVIOContext *pb, int size, int tag)
@@ -554,11 +557,10 @@ static void mxf_write_metadata_key(AVIOContext *pb, unsigned int value)
     avio_wb24(pb, value);
 }
 
-static const MXFCodecUL *mxf_get_data_definition_ul(int type)
+static const MXFCodecUL *mxf_get_codec_ul_by_id(const MXFCodecUL *uls, int id)
 {
-    const MXFCodecUL *uls = ff_mxf_data_definition_uls;
     while (uls->uid[0]) {
-        if (type == uls->id)
+        if (id == uls->id)
             break;
         uls++;
     }
@@ -848,7 +850,7 @@ static void mxf_write_common_fields(AVFormatContext *s, AVStream *st)
     if (st == mxf->timecode_track)
         avio_write(pb, smpte_12m_timecode_track_data_ul, 16);
     else {
-        const MXFCodecUL *data_def_ul = mxf_get_data_definition_ul(st->codecpar->codec_type);
+        const MXFCodecUL *data_def_ul = mxf_get_codec_ul_by_id(ff_mxf_data_definition_uls, st->codecpar->codec_type);
         avio_write(pb, data_def_ul->uid, 16);
     }
 
@@ -1050,32 +1052,14 @@ static const UID mxf_generic_sound_descriptor_key = { 0x06,0x0E,0x2B,0x34,0x02,0
 
 static const UID mxf_avc_subdescriptor_key = { 0x06,0x0E,0x2B,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x6E,0x00 };
 
-static int get_trc(UID ul, enum AVColorTransferCharacteristic trc)
+static inline uint16_t rescale_mastering_chroma(AVRational q)
 {
-    switch (trc){
-    case AVCOL_TRC_GAMMA28   :
-    case AVCOL_TRC_GAMMA22   :
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x04,0x01,0x01,0x01,0x01,0x01,0x00,0x00}), 16);
-        return 0;
-    case AVCOL_TRC_BT709     :
-    case AVCOL_TRC_SMPTE170M :
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x04,0x01,0x01,0x01,0x01,0x02,0x00,0x00}), 16);
-        return 0;
-    case AVCOL_TRC_SMPTE240M :
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x04,0x01,0x01,0x01,0x01,0x03,0x00,0x00}), 16);
-        return 0;
-    case AVCOL_TRC_BT1361_ECG:
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x06,0x04,0x01,0x01,0x01,0x01,0x05,0x00,0x00}), 16);
-        return 0;
-    case AVCOL_TRC_LINEAR    :
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x06,0x04,0x01,0x01,0x01,0x01,0x06,0x00,0x00}), 16);
-        return 0;
-    case AVCOL_TRC_SMPTE428  :
-        memcpy(ul, ((UID){0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x08,0x04,0x01,0x01,0x01,0x01,0x07,0x00,0x00}), 16);
-        return 0;
-    default:
-        return -1;
-    }
+    return av_clip_uint16(av_rescale(q.num, FF_MXF_MASTERING_CHROMA_DEN, q.den));
+}
+
+static inline uint32_t rescale_mastering_luma(AVRational q)
+{
+    return av_rescale(q.num, FF_MXF_MASTERING_LUMA_DEN, q.den);
 }
 
 static int64_t mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID key)
@@ -1086,10 +1070,15 @@ static int64_t mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID
     int stored_height = (st->codecpar->height+15)/16*16;
     int display_height;
     int f1, f2;
-    UID transfer_ul = {0};
+    const MXFCodecUL *color_primaries_ul;
+    const MXFCodecUL *color_trc_ul;
+    const MXFCodecUL *color_space_ul;
     int64_t pos = mxf_write_generic_desc(s, st, key);
+    uint8_t *side_data;
 
-    get_trc(transfer_ul, st->codecpar->color_trc);
+    color_primaries_ul = mxf_get_codec_ul_by_id(ff_mxf_color_primaries_uls, st->codecpar->color_primaries);
+    color_trc_ul       = mxf_get_codec_ul_by_id(ff_mxf_color_trc_uls, st->codecpar->color_trc);
+    color_space_ul     = mxf_get_codec_ul_by_id(ff_mxf_color_space_uls, st->codecpar->color_space);
 
     if (st->codecpar->codec_id == AV_CODEC_ID_DVVIDEO) {
         if (st->codecpar->height == 1080)
@@ -1186,7 +1175,7 @@ static int64_t mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID
     if (st->codecpar->color_range != AVCOL_RANGE_UNSPECIFIED) {
         int black = 0,
             white = (1<<sc->component_depth) - 1,
-            color = (1<<sc->component_depth) - 1;
+            color = (1<<sc->component_depth);
         if (st->codecpar->color_range == AVCOL_RANGE_MPEG) {
             black = 1   << (sc->component_depth - 4);
             white = 235 << (sc->component_depth - 8);
@@ -1236,14 +1225,51 @@ static int64_t mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID
     avio_wb32(pb, sc->aspect_ratio.num);
     avio_wb32(pb, sc->aspect_ratio.den);
 
-    //Transfer characteristic
-    if (transfer_ul[0]) {
+    if (color_primaries_ul->uid[0]) {
+        mxf_write_local_tag(pb, 16, 0x3219);
+        avio_write(pb, color_primaries_ul->uid, 16);
+    };
+
+    if (color_trc_ul->uid[0]) {
         mxf_write_local_tag(pb, 16, 0x3210);
-        avio_write(pb, transfer_ul, 16);
+        avio_write(pb, color_trc_ul->uid, 16);
+    };
+
+    if (color_space_ul->uid[0]) {
+        mxf_write_local_tag(pb, 16, 0x321A);
+        avio_write(pb, color_space_ul->uid, 16);
     };
 
     mxf_write_local_tag(pb, 16, 0x3201);
     avio_write(pb, *sc->codec_ul, 16);
+
+    // Mastering Display metadata
+    side_data = av_stream_get_side_data(st, AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL);
+    if (side_data) {
+        const AVMasteringDisplayMetadata *metadata = (const AVMasteringDisplayMetadata*)side_data;
+        if (metadata->has_primaries) {
+            mxf_write_local_tag(pb, 12, ff_mxf_mastering_display_local_tags[0].local_tag);
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[0][0]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[0][1]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[1][0]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[1][1]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[2][0]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->display_primaries[2][1]));
+            mxf_write_local_tag(pb, 4, ff_mxf_mastering_display_local_tags[1].local_tag);
+            avio_wb16(pb, rescale_mastering_chroma(metadata->white_point[0]));
+            avio_wb16(pb, rescale_mastering_chroma(metadata->white_point[1]));
+        } else {
+            av_log(NULL, AV_LOG_VERBOSE, "Not writing mastering display primaries. Missing data.\n");
+        }
+        if (metadata->has_luminance) {
+            mxf_write_local_tag(pb, 4, ff_mxf_mastering_display_local_tags[2].local_tag);
+            avio_wb32(pb, rescale_mastering_luma(metadata->max_luminance));
+            mxf_write_local_tag(pb, 4, ff_mxf_mastering_display_local_tags[3].local_tag);
+            avio_wb32(pb, rescale_mastering_luma(metadata->min_luminance));
+        } else {
+            av_log(NULL, AV_LOG_VERBOSE, "Not writing mastering display luminances. Missing data.\n");
+        }
+    }
 
     if (sc->interlaced && sc->field_dominance) {
         mxf_write_local_tag(pb, 1, 0x3212);
@@ -2172,14 +2198,14 @@ static int mxf_parse_h264_frame(AVFormatContext *s, AVStream *st,
 {
     MXFContext *mxf = s->priv_data;
     MXFStreamContext *sc = st->priv_data;
-    H264SequenceParameterSet *sps = NULL;
+    H264SPS seq, *const sps = &seq;
     GetBitContext gb;
     const uint8_t *buf = pkt->data;
     const uint8_t *buf_end = pkt->data + pkt->size;
     const uint8_t *nal_end;
     uint32_t state = -1;
     int extra_size = 512; // support AVC Intra files without SPS/PPS header
-    int i, frame_size, slice_type, intra_only = 0;
+    int i, frame_size, slice_type, has_sps = 0, intra_only = 0, ret;
 
     for (;;) {
         buf = avpriv_find_start_code(buf, buf_end, &state);
@@ -2194,11 +2220,12 @@ static int mxf_parse_h264_frame(AVFormatContext *s, AVStream *st,
                 break;
 
             nal_end = ff_avc_find_startcode(buf, buf_end);
-            sps = ff_avc_decode_sps(buf, nal_end - buf);
-            if (!sps) {
+            ret = ff_avc_decode_sps(sps, buf, nal_end - buf);
+            if (ret < 0) {
                 av_log(s, AV_LOG_ERROR, "error parsing sps\n");
                 return 0;
             }
+            has_sps = 1;
 
             sc->aspect_ratio.num = st->codecpar->width * sps->sar.num;
             sc->aspect_ratio.den = st->codecpar->height * sps->sar.den;
@@ -2244,7 +2271,7 @@ static int mxf_parse_h264_frame(AVFormatContext *s, AVStream *st,
     if (mxf->header_written)
         return 1;
 
-    if (!sps)
+    if (!has_sps)
         sc->interlaced = st->codecpar->field_order != AV_FIELD_PROGRESSIVE ? 1 : 0;
     sc->codec_ul = NULL;
     frame_size = pkt->size + extra_size;
@@ -2261,7 +2288,7 @@ static int mxf_parse_h264_frame(AVFormatContext *s, AVStream *st,
             if (sc->interlaced)
                 sc->field_dominance = 1; // top field first is mandatory for AVC Intra
             break;
-        } else if (sps && mxf_h264_codec_uls[i].frame_size == 0 &&
+        } else if (has_sps && mxf_h264_codec_uls[i].frame_size == 0 &&
                    mxf_h264_codec_uls[i].profile == sps->profile_idc &&
                    (mxf_h264_codec_uls[i].intra_only < 0 ||
                     mxf_h264_codec_uls[i].intra_only == intra_only)) {
@@ -2271,8 +2298,6 @@ static int mxf_parse_h264_frame(AVFormatContext *s, AVStream *st,
             // continue to check for avc intra
         }
     }
-
-    av_free(sps);
 
     if (!sc->codec_ul) {
         av_log(s, AV_LOG_ERROR, "h264 profile not supported\n");
@@ -2538,6 +2563,7 @@ static int mxf_write_header(AVFormatContext *s)
             if (mxf->signal_standard >= 0)
                 sc->signal_standard = mxf->signal_standard;
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            char bsf_arg[32];
             if (st->codecpar->sample_rate != 48000) {
                 av_log(s, AV_LOG_ERROR, "only 48khz is implemented\n");
                 return -1;
@@ -2580,6 +2606,10 @@ static int mxf_write_header(AVFormatContext *s)
                                  av_rescale_rnd(st->codecpar->sample_rate, mxf->time_base.num, mxf->time_base.den, AV_ROUND_UP) *
                                  av_get_bits_per_sample(st->codecpar->codec_id) / 8;
             }
+            snprintf(bsf_arg, sizeof(bsf_arg), "r=%d/%d", mxf->tc.rate.num, mxf->tc.rate.den);
+            ret = ff_stream_add_bitstream_filter(st, "pcm_rechunk", bsf_arg);
+            if (ret < 0)
+                return ret;
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA) {
             AVDictionaryEntry *e = av_dict_get(st->metadata, "data_type", NULL, 0);
             if (e && !strcmp(e->value, "vbi_vanc_smpte_436M")) {
@@ -2645,9 +2675,6 @@ static int mxf_write_header(AVFormatContext *s)
     if (!mxf->timecode_track->priv_data)
         return AVERROR(ENOMEM);
     mxf->timecode_track->index = -1;
-
-    if (ff_audio_interleave_init(s, 0, av_inv_q(mxf->tc.rate)) < 0)
-        return -1;
 
     return 0;
 }
@@ -3010,8 +3037,6 @@ static void mxf_deinit(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
 
-    ff_audio_interleave_close(s);
-
     av_freep(&mxf->index_entries);
     av_freep(&mxf->body_partition_offset);
     if (mxf->timecode_track) {
@@ -3086,8 +3111,14 @@ static int mxf_compare_timestamps(AVFormatContext *s, const AVPacket *next,
 
 static int mxf_interleave(AVFormatContext *s, AVPacket *out, AVPacket *pkt, int flush)
 {
-    return ff_audio_rechunk_interleave(s, out, pkt, flush,
-                               mxf_interleave_get_packet, mxf_compare_timestamps);
+    int ret;
+    if (pkt) {
+        MXFStreamContext *sc = s->streams[pkt->stream_index]->priv_data;
+        pkt->pts = pkt->dts = sc->pkt_cnt++;
+        if ((ret = ff_interleave_add_packet(s, pkt, mxf_compare_timestamps)) < 0)
+            return ret;
+    }
+    return mxf_interleave_get_packet(s, out, NULL, flush);
 }
 
 #define MXF_COMMON_OPTIONS \

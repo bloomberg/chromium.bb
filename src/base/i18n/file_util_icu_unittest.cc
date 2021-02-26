@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -21,7 +22,7 @@ namespace i18n {
 class FileUtilICUTest : public PlatformTest {
 };
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
 
 // On linux, file path is parsed and filtered as UTF-8.
 static const struct GoodBadPairLinux {
@@ -84,7 +85,7 @@ static const struct goodbad_pair {
     {L".    ", L"-   -"}
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_POSIX)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_POSIX)
 
 TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
   for (auto i : kIllegalCharacterCases) {

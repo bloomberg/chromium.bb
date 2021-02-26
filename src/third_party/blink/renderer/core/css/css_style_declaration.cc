@@ -151,7 +151,7 @@ CSSPropertyID CssPropertyInfo(const ExecutionContext* execution_context,
 
 }  // namespace
 
-void CSSStyleDeclaration::Trace(Visitor* visitor) {
+void CSSStyleDeclaration::Trace(Visitor* visitor) const {
   ExecutionContextClient::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -194,6 +194,13 @@ NamedPropertySetterResult CSSStyleDeclaration::AnonymousNamedSetter(
   if (exception_state.HadException())
     return NamedPropertySetterResult::kIntercepted;
   return NamedPropertySetterResult::kIntercepted;
+}
+
+NamedPropertyDeleterResult CSSStyleDeclaration::AnonymousNamedDeleter(
+    const AtomicString& name) {
+  // Pretend to be deleted since web author can define their own property with
+  // the same name.
+  return NamedPropertyDeleterResult::kDeleted;
 }
 
 void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,

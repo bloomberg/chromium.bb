@@ -5,6 +5,7 @@
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
@@ -27,9 +28,6 @@ FakeUpstartClient::~FakeUpstartClient() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
 }
-
-void FakeUpstartClient::AddObserver(Observer* observer) {}
-void FakeUpstartClient::RemoveObserver(Observer* observer) {}
 
 // static
 FakeUpstartClient* FakeUpstartClient::Get() {
@@ -102,6 +100,16 @@ void FakeUpstartClient::StartWilcoDtcService(VoidDBusMethodCallback callback) {
 }
 
 void FakeUpstartClient::StopWilcoDtcService(VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeUpstartClient::StartArcDataSnapshotd(VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeUpstartClient::StopArcDataSnapshotd(VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

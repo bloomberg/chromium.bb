@@ -5,8 +5,10 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_MANAGED_DEVICE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_MANAGED_DEVICE_VIEW_H_
 
-#include "ash/session/session_observer.h"
+#include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -19,11 +21,11 @@ namespace ash {
 
 // Row in the unified system tray bubble shown when the device is currently
 // managed by an administrator (by a domain admin or FamilyLink).
-class ASH_EXPORT UnifiedManagedDeviceView : public views::View,
+class ASH_EXPORT UnifiedManagedDeviceView : public views::Button,
                                             public SessionObserver,
                                             public EnterpriseDomainObserver {
  public:
-  UnifiedManagedDeviceView();
+  explicit UnifiedManagedDeviceView(UnifiedSystemTrayController* controller);
   ~UnifiedManagedDeviceView() override;
 
   // SessionObserver:
@@ -32,8 +34,9 @@ class ASH_EXPORT UnifiedManagedDeviceView : public views::View,
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
 
-  // views::TrayItemView:
+  // views::Button:
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
  private:
   void Update();

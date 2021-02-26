@@ -18,8 +18,7 @@
 #include "core/fxcrt/css/cfx_cssvaluelist.h"
 #include "core/fxcrt/css/cfx_cssvaluelistparser.h"
 #include "core/fxcrt/fx_extension.h"
-#include "third_party/base/logging.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 
 namespace {
 
@@ -138,9 +137,9 @@ bool CFX_CSSDeclaration::ParseCSSColor(const wchar_t* pszValue,
   return true;
 }
 
-CFX_CSSDeclaration::CFX_CSSDeclaration() {}
+CFX_CSSDeclaration::CFX_CSSDeclaration() = default;
 
-CFX_CSSDeclaration::~CFX_CSSDeclaration() {}
+CFX_CSSDeclaration::~CFX_CSSDeclaration() = default;
 
 RetainPtr<CFX_CSSValue> CFX_CSSDeclaration::GetProperty(
     CFX_CSSProperty eProperty,
@@ -157,7 +156,7 @@ RetainPtr<CFX_CSSValue> CFX_CSSDeclaration::GetProperty(
 void CFX_CSSDeclaration::AddPropertyHolder(CFX_CSSProperty eProperty,
                                            RetainPtr<CFX_CSSValue> pValue,
                                            bool bImportant) {
-  auto pHolder = pdfium::MakeUnique<CFX_CSSPropertyHolder>();
+  auto pHolder = std::make_unique<CFX_CSSPropertyHolder>();
   pHolder->bImportant = bImportant;
   pHolder->eProperty = eProperty;
   pHolder->pValue = pValue;
@@ -282,7 +281,7 @@ void CFX_CSSDeclaration::AddProperty(const CFX_CSSData::Property* property,
 void CFX_CSSDeclaration::AddProperty(const WideString& prop,
                                      const WideString& value) {
   custom_properties_.push_back(
-      pdfium::MakeUnique<CFX_CSSCustomProperty>(prop, value));
+      std::make_unique<CFX_CSSCustomProperty>(prop, value));
 }
 
 RetainPtr<CFX_CSSValue> CFX_CSSDeclaration::ParseNumber(const wchar_t* pszValue,
@@ -402,8 +401,8 @@ void CFX_CSSDeclaration::ParseValueListProperty(
                          CFX_CSSProperty::PaddingBottom);
       return;
     default: {
-      auto pList = pdfium::MakeRetain<CFX_CSSValueList>(list);
-      AddPropertyHolder(pProperty->eName, pList, bImportant);
+      auto value_list = pdfium::MakeRetain<CFX_CSSValueList>(std::move(list));
+      AddPropertyHolder(pProperty->eName, value_list, bImportant);
       return;
     }
   }
@@ -510,7 +509,7 @@ void CFX_CSSDeclaration::ParseFontProperty(const wchar_t* pszValue,
   RetainPtr<CFX_CSSValue> pWeight;
   RetainPtr<CFX_CSSValue> pFontSize;
   RetainPtr<CFX_CSSValue> pLineHeight;
-  std::vector<RetainPtr<CFX_CSSValue>> familyList;
+  std::vector<RetainPtr<CFX_CSSValue>> family_list;
   CFX_CSSPrimitiveType eType;
   while (parser.NextValue(&eType, &pszValue, &iValueLen)) {
     switch (eType) {
@@ -565,7 +564,7 @@ void CFX_CSSDeclaration::ParseFontProperty(const wchar_t* pszValue,
           }
         }
         if (pFontSize) {
-          familyList.push_back(pdfium::MakeRetain<CFX_CSSStringValue>(
+          family_list.push_back(pdfium::MakeRetain<CFX_CSSStringValue>(
               WideString(pszValue, iValueLen)));
         }
         parser.UseCommaSeparator();
@@ -630,9 +629,10 @@ void CFX_CSSDeclaration::ParseFontProperty(const wchar_t* pszValue,
   AddPropertyHolder(CFX_CSSProperty::FontWeight, pWeight, bImportant);
   AddPropertyHolder(CFX_CSSProperty::FontSize, pFontSize, bImportant);
   AddPropertyHolder(CFX_CSSProperty::LineHeight, pLineHeight, bImportant);
-  if (!familyList.empty()) {
-    auto pList = pdfium::MakeRetain<CFX_CSSValueList>(familyList);
-    AddPropertyHolder(CFX_CSSProperty::FontFamily, pList, bImportant);
+  if (!family_list.empty()) {
+    auto value_list =
+        pdfium::MakeRetain<CFX_CSSValueList>(std::move(family_list));
+    AddPropertyHolder(CFX_CSSProperty::FontFamily, value_list, bImportant);
   }
 }
 

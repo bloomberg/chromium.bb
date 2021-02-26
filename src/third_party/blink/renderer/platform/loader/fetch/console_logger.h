@@ -41,8 +41,6 @@ class PLATFORM_EXPORT ConsoleLogger : public GarbageCollectedMixin {
 class PLATFORM_EXPORT DetachableConsoleLogger final
     : public GarbageCollected<DetachableConsoleLogger>,
       public ConsoleLogger {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachableConsoleLogger);
-
  public:
   DetachableConsoleLogger() : DetachableConsoleLogger(nullptr) {}
   DetachableConsoleLogger(ConsoleLogger* logger) : logger_(logger) {}
@@ -51,7 +49,7 @@ class PLATFORM_EXPORT DetachableConsoleLogger final
   // be no-op.
   void Detach() { logger_ = nullptr; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(logger_);
     ConsoleLogger::Trace(visitor);
   }

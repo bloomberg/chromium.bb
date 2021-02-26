@@ -167,11 +167,11 @@ void InternalSettings::setViewportStyle(const String& style,
                                         ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
   if (EqualIgnoringASCIICase(style, "default"))
-    GetSettings()->SetViewportStyle(WebViewportStyle::kDefault);
+    GetSettings()->SetViewportStyle(mojom::blink::ViewportStyle::kDefault);
   else if (EqualIgnoringASCIICase(style, "mobile"))
-    GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
+    GetSettings()->SetViewportStyle(mojom::blink::ViewportStyle::kMobile);
   else if (EqualIgnoringASCIICase(style, "television"))
-    GetSettings()->SetViewportStyle(WebViewportStyle::kTelevision);
+    GetSettings()->SetViewportStyle(mojom::blink::ViewportStyle::kTelevision);
   else
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -314,18 +314,26 @@ void InternalSettings::setAccessibilityFontScaleFactor(
 void InternalSettings::setEditingBehavior(const String& editing_behavior,
                                           ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  if (EqualIgnoringASCIICase(editing_behavior, "win"))
-    GetSettings()->SetEditingBehaviorType(kEditingWindowsBehavior);
-  else if (EqualIgnoringASCIICase(editing_behavior, "mac"))
-    GetSettings()->SetEditingBehaviorType(kEditingMacBehavior);
-  else if (EqualIgnoringASCIICase(editing_behavior, "unix"))
-    GetSettings()->SetEditingBehaviorType(kEditingUnixBehavior);
-  else if (EqualIgnoringASCIICase(editing_behavior, "android"))
-    GetSettings()->SetEditingBehaviorType(kEditingAndroidBehavior);
-  else
+  if (EqualIgnoringASCIICase(editing_behavior, "win")) {
+    GetSettings()->SetEditingBehaviorType(
+        mojom::EditingBehavior::kEditingWindowsBehavior);
+  } else if (EqualIgnoringASCIICase(editing_behavior, "mac")) {
+    GetSettings()->SetEditingBehaviorType(
+        mojom::EditingBehavior::kEditingMacBehavior);
+  } else if (EqualIgnoringASCIICase(editing_behavior, "unix")) {
+    GetSettings()->SetEditingBehaviorType(
+        mojom::EditingBehavior::kEditingUnixBehavior);
+  } else if (EqualIgnoringASCIICase(editing_behavior, "android")) {
+    GetSettings()->SetEditingBehaviorType(
+        mojom::EditingBehavior::kEditingAndroidBehavior);
+  } else if (EqualIgnoringASCIICase(editing_behavior, "chromeos")) {
+    GetSettings()->SetEditingBehaviorType(
+        mojom::EditingBehavior::kEditingChromeOSBehavior);
+  } else {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The editing behavior type provided ('" +
                                           editing_behavior + "') is invalid.");
+  }
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled) {
@@ -345,7 +353,7 @@ void InternalSettings::setDefaultVideoPosterURL(
   GetSettings()->SetDefaultVideoPosterURL(url);
 }
 
-void InternalSettings::Trace(Visitor* visitor) {
+void InternalSettings::Trace(Visitor* visitor) const {
   InternalSettingsGenerated::Trace(visitor);
   Supplement<Page>::Trace(visitor);
 }
@@ -365,11 +373,11 @@ void InternalSettings::setAvailablePointerTypes(
     String token = split_token.StripWhiteSpace();
 
     if (token == "coarse") {
-      pointer_types |= kPointerTypeCoarse;
+      pointer_types |= ui::POINTER_TYPE_COARSE;
     } else if (token == "fine") {
-      pointer_types |= kPointerTypeFine;
+      pointer_types |= ui::POINTER_TYPE_FINE;
     } else if (token == "none") {
-      pointer_types |= kPointerTypeNone;
+      pointer_types |= ui::POINTER_TYPE_NONE;
     } else {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -410,13 +418,13 @@ void InternalSettings::setPrimaryPointerType(const String& pointer,
   InternalSettingsGuardForSettings();
   String token = pointer.StripWhiteSpace();
 
-  PointerType type = kPointerTypeNone;
+  ui::PointerType type = ui::POINTER_TYPE_NONE;
   if (token == "coarse") {
-    type = kPointerTypeCoarse;
+    type = ui::POINTER_TYPE_COARSE;
   } else if (token == "fine") {
-    type = kPointerTypeFine;
+    type = ui::POINTER_TYPE_FINE;
   } else if (token == "none") {
-    type = kPointerTypeNone;
+    type = ui::POINTER_TYPE_NONE;
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -440,9 +448,9 @@ void InternalSettings::setAvailableHoverTypes(const String& types,
   for (const String& split_token : tokens) {
     String token = split_token.StripWhiteSpace();
     if (token == "none") {
-      hover_types |= kHoverTypeNone;
+      hover_types |= ui::HOVER_TYPE_NONE;
     } else if (token == "hover") {
-      hover_types |= kHoverTypeHover;
+      hover_types |= ui::HOVER_TYPE_HOVER;
     } else {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -459,11 +467,11 @@ void InternalSettings::setPrimaryHoverType(const String& type,
   InternalSettingsGuardForSettings();
   String token = type.StripWhiteSpace();
 
-  HoverType hover_type = kHoverTypeNone;
+  ui::HoverType hover_type = ui::HOVER_TYPE_NONE;
   if (token == "none") {
-    hover_type = kHoverTypeNone;
+    hover_type = ui::HOVER_TYPE_NONE;
   } else if (token == "hover") {
-    hover_type = kHoverTypeHover;
+    hover_type = ui::HOVER_TYPE_HOVER;
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -479,11 +487,14 @@ void InternalSettings::setImageAnimationPolicy(
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
   if (EqualIgnoringASCIICase(policy, "allowed")) {
-    GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAllowed);
+    GetSettings()->SetImageAnimationPolicy(
+        mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAllowed);
   } else if (EqualIgnoringASCIICase(policy, "once")) {
-    GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAnimateOnce);
+    GetSettings()->SetImageAnimationPolicy(
+        mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAnimateOnce);
   } else if (EqualIgnoringASCIICase(policy, "none")) {
-    GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyNoAnimation);
+    GetSettings()->SetImageAnimationPolicy(
+        mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyNoAnimation);
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,

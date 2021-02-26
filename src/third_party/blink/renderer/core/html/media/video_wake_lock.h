@@ -33,14 +33,12 @@ class CORE_EXPORT VideoWakeLock final
       public PageVisibilityObserver,
       public RemotePlaybackObserver,
       public ExecutionContextLifecycleStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock);
-
  public:
   explicit VideoWakeLock(HTMLVideoElement&);
 
   void ElementDidMoveToNewDocument();
 
-  void Trace(Visitor*) final;
+  void Trace(Visitor*) const final;
 
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) final;

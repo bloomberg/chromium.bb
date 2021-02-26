@@ -50,6 +50,9 @@ const char kStartArcTimerMethod[] = "StartArcTimer";
 const char kDeleteArcTimersMethod[] = "DeleteArcTimers";
 const char kHasAmbientColorDeviceMethod[] = "HasAmbientColorDevice";
 const char kChangeWifiRegDomainMethod[] = "ChangeWifiRegDomain";
+// TODO(b/166543531): Remove after migrating to BlueZ Battery Provider API.
+const char kRefreshBluetoothBatteryMethod[] = "RefreshBluetoothBattery";
+const char kGetThermalStateMethod[] = "GetThermalState";
 
 // Signals emitted by powerd.
 const char kScreenBrightnessChangedSignal[] = "ScreenBrightnessChanged";
@@ -68,6 +71,7 @@ const char kAmbientColorTemperatureChangedSignal[] =
     "AmbientColorTemperatureChanged";
 const char kLidClosedSignal[] = "LidClosed";
 const char kLidOpenedSignal[] = "LidOpened";
+const char kThermalEventSignal[] = "ThermalEvent";
 
 // Values
 const int kBrightnessTransitionGradual = 1;

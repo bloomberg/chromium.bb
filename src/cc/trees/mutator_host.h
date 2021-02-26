@@ -160,11 +160,12 @@ class MutatorHost {
   // the scroller. Otherwise returns an invalid ElementId.
   virtual ElementId ImplOnlyScrollAnimatingElement() const = 0;
 
-  virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool HasCustomPropertyAnimations() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
   virtual bool NextFrameHasPendingRAF() const = 0;
+  virtual bool HasCanvasInvalidation() const = 0;
+  virtual bool HasJSAnimation() const = 0;
 
   using TrackedAnimationSequenceId = size_t;
   struct PendingThroughputTrackerInfo {

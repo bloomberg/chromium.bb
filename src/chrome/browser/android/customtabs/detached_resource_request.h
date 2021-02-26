@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/time/time.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -39,7 +39,7 @@ namespace customtabs {
 // This is a UI thread class.
 class DetachedResourceRequest {
  public:
-  static constexpr int kMaxResponseSize = 100 * 1024;
+  static constexpr int kMaxResponseSize = 500 * 1024;
 
   // The motivation of the resource request, used for histograms reporting.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.customtabs
@@ -56,7 +56,7 @@ class DetachedResourceRequest {
   static void CreateAndStart(content::BrowserContext* browser_context,
                              const GURL& url,
                              const GURL& first_party_for_cookies,
-                             net::URLRequest::ReferrerPolicy referer_policy,
+                             net::ReferrerPolicy referer_policy,
                              Motivation motivation,
                              const std::string& package_name,
                              OnResultCallback cb = base::DoNothing());
@@ -64,7 +64,7 @@ class DetachedResourceRequest {
  private:
   DetachedResourceRequest(const GURL& url,
                           const GURL& site_for_cookies,
-                          net::URLRequest::ReferrerPolicy referer_policy,
+                          net::ReferrerPolicy referer_policy,
                           Motivation motivation,
                           const std::string& package_name,
                           OnResultCallback cb);

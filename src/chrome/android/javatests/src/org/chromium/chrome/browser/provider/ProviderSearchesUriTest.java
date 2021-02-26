@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.provider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -56,7 +56,6 @@ public class ProviderSearchesUriTest {
     @Test
     @MediumTest
     @Feature({"Android-ContentProvider"})
-    @RetryOnFailure
     public void testAddSearchTerm() {
         long searchTime = System.currentTimeMillis();
         String searchTerm = "chrome";
@@ -119,7 +118,6 @@ public class ProviderSearchesUriTest {
     @Test
     @MediumTest
     @Feature({"Android-ContentProvider"})
-    @RetryOnFailure
     public void testDeleteSearchTerm() {
         long[] searchTime = { System.currentTimeMillis(), System.currentTimeMillis() - 1000 };
         String[] searchTerm = {"chrome", "chromium"};
@@ -165,7 +163,6 @@ public class ProviderSearchesUriTest {
     @Test
     @MediumTest
     @Feature({"Android-ContentProvider"})
-    @RetryOnFailure
     public void testSearchesTable() {
         final int idIndex = 0;
         String insertSearch = "search_insert";

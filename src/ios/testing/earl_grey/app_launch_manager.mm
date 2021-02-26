@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,12 +19,27 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(AppLaunchManagerAppInterface)
-#endif  // defined(CHROME_EARL_GREY_2)
 
-#if defined(CHROME_EARL_GREY_2)  // avoid unused function warning in EG1
 namespace {
+// Returns the list of extra app launch args from test command line args.
+NSArray<NSString*>* ExtraAppArgsFromTestSwitch() {
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+    return [NSArray array];
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Multiple extra app launch arguments can be passed through this switch. The
+  // args should be in raw format, separated by commas if more than one.
+  const char kExtraAppArgsSwitch[] = "extra-app-args";
+  if (!command_line->HasSwitch(kExtraAppArgsSwitch)) {
+    return [NSArray array];
+  }
+
+  return [base::SysUTF8ToNSString(command_line->GetSwitchValueASCII(
+      kExtraAppArgsSwitch)) componentsSeparatedByString:@","];
+}
+
 // Checks if two pairs of launch arguments are equivalent.
 bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
                              NSArray<NSString*>* args2) {
@@ -36,7 +52,6 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   return [args1 isEqualToArray:args2];
 }
 }  // namespace
-#endif
 
 @interface AppLaunchManager ()
 // List of observers to be notified of actions performed by the app launch
@@ -78,7 +93,6 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 // In EG1, this method is a no-op.
 - (void)ensureAppLaunchedWithArgs:(NSArray<NSString*>*)arguments
                    relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1067821): ForceRelaunchByCleanShutdown doesn't compile on
 // real devices.
 #if TARGET_IPHONE_SIMULATOR
@@ -122,6 +136,10 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
     }
   }
 
+  // Extend extra app launch args from test switch to arguments.
+  arguments =
+      [arguments arrayByAddingObjectsFromArray:ExtraAppArgsFromTestSwitch()];
+
   bool appNeedsLaunching =
       forceRestart || !appIsRunning || appPIDChanged ||
       !LaunchArgumentsAreEqual(arguments, self.currentLaunchArgs);
@@ -154,7 +172,6 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   self.runningApplicationProcessIdentifier =
       [AppLaunchManagerAppInterface processIdentifier];
   self.currentLaunchArgs = arguments;
-#endif  // defined(CHROME_EARL_GREY_2)
 }
 
 - (void)ensureAppLaunchedWithConfiguration:
@@ -224,11 +241,9 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 }
 
 - (void)backgroundAndForegroundApp {
-#if defined(CHROME_EARL_GREY_2)
   GREYAssertTrue([EarlGrey backgroundApplication],
                  @"Failed to background application.");
   [self.runningApplication activate];
-#endif
 }
 
 - (void)addObserver:(id<AppLaunchManagerObserver>)observer {

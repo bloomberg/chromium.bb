@@ -15,6 +15,7 @@
 #ifndef DAWNWIRE_SERVER_SERVER_H_
 #define DAWNWIRE_SERVER_SERVER_H_
 
+#include "dawn_wire/ChunkedCommandSerializer.h"
 #include "dawn_wire/server/ServerBase_autogen.h"
 
 namespace dawn_wire { namespace server {
@@ -25,8 +26,11 @@ namespace dawn_wire { namespace server {
     struct MapUserdata {
         Server* server;
         ObjectHandle buffer;
+        WGPUBuffer bufferObj;
         uint32_t requestSerial;
+        uint64_t offset;
         uint64_t size;
+        WGPUMapModeFlags mode;
         // TODO(enga): Use a tagged pointer to save space.
         std::unique_ptr<MemoryTransferService::ReadHandle> readHandle = nullptr;
         std::unique_ptr<MemoryTransferService::WriteHandle> writeHandle = nullptr;
@@ -45,34 +49,61 @@ namespace dawn_wire { namespace server {
         uint64_t value;
     };
 
+    struct FenceOnCompletionUserdata {
+        Server* server;
+        ObjectHandle fence;
+        uint64_t requestSerial;
+    };
+
+    struct CreateReadyPipelineUserData {
+        std::weak_ptr<bool> isServerAlive;
+        Server* server;
+        uint64_t requestSerial;
+        ObjectId pipelineObjectID;
+    };
+
     class Server : public ServerBase {
       public:
         Server(WGPUDevice device,
                const DawnProcTable& procs,
                CommandSerializer* serializer,
                MemoryTransferService* memoryTransferService);
-        ~Server();
+        ~Server() override;
 
-        const volatile char* HandleCommands(const volatile char* commands, size_t size);
+        // ChunkedCommandHandler implementation
+        const volatile char* HandleCommandsImpl(const volatile char* commands,
+                                                size_t size) override;
 
         bool InjectTexture(WGPUTexture texture, uint32_t id, uint32_t generation);
 
       private:
-        void* GetCmdSpace(size_t size);
+        template <typename Cmd>
+        void SerializeCommand(const Cmd& cmd) {
+            mSerializer.SerializeCommand(cmd);
+        }
+
+        template <typename Cmd, typename ExtraSizeSerializeFn>
+        void SerializeCommand(const Cmd& cmd,
+                              size_t extraSize,
+                              ExtraSizeSerializeFn&& SerializeExtraSize) {
+            mSerializer.SerializeCommand(cmd, extraSize, SerializeExtraSize);
+        }
 
         // Forwarding callbacks
         static void ForwardUncapturedError(WGPUErrorType type, const char* message, void* userdata);
         static void ForwardDeviceLost(const char* message, void* userdata);
         static void ForwardPopErrorScope(WGPUErrorType type, const char* message, void* userdata);
-        static void ForwardBufferMapReadAsync(WGPUBufferMapAsyncStatus status,
-                                              const void* ptr,
-                                              uint64_t dataLength,
-                                              void* userdata);
-        static void ForwardBufferMapWriteAsync(WGPUBufferMapAsyncStatus status,
-                                               void* ptr,
-                                               uint64_t dataLength,
-                                               void* userdata);
+        static void ForwardBufferMapAsync(WGPUBufferMapAsyncStatus status, void* userdata);
         static void ForwardFenceCompletedValue(WGPUFenceCompletionStatus status, void* userdata);
+        static void ForwardFenceOnCompletion(WGPUFenceCompletionStatus status, void* userdata);
+        static void ForwardCreateReadyComputePipeline(WGPUCreateReadyPipelineStatus status,
+                                                      WGPUComputePipeline pipeline,
+                                                      const char* message,
+                                                      void* userdata);
+        static void ForwardCreateReadyRenderPipeline(WGPUCreateReadyPipelineStatus status,
+                                                     WGPURenderPipeline pipeline,
+                                                     const char* message,
+                                                     void* userdata);
 
         // Error callbacks
         void OnUncapturedError(WGPUErrorType type, const char* message);
@@ -80,24 +111,29 @@ namespace dawn_wire { namespace server {
         void OnDevicePopErrorScope(WGPUErrorType type,
                                    const char* message,
                                    ErrorScopeUserdata* userdata);
-        void OnBufferMapReadAsyncCallback(WGPUBufferMapAsyncStatus status,
-                                          const void* ptr,
-                                          uint64_t dataLength,
-                                          MapUserdata* userdata);
-        void OnBufferMapWriteAsyncCallback(WGPUBufferMapAsyncStatus status,
-                                           void* ptr,
-                                           uint64_t dataLength,
-                                           MapUserdata* userdata);
+        void OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus status, MapUserdata* userdata);
         void OnFenceCompletedValueUpdated(WGPUFenceCompletionStatus status,
                                           FenceCompletionUserdata* userdata);
+        void OnFenceOnCompletion(WGPUFenceCompletionStatus status,
+                                 FenceOnCompletionUserdata* userdata);
+        void OnCreateReadyComputePipelineCallback(WGPUCreateReadyPipelineStatus status,
+                                                  WGPUComputePipeline pipeline,
+                                                  const char* message,
+                                                  CreateReadyPipelineUserData* userdata);
+        void OnCreateReadyRenderPipelineCallback(WGPUCreateReadyPipelineStatus status,
+                                                 WGPURenderPipeline pipeline,
+                                                 const char* message,
+                                                 CreateReadyPipelineUserData* userdata);
 
 #include "dawn_wire/server/ServerPrototypes_autogen.inc"
 
-        CommandSerializer* mSerializer = nullptr;
         WireDeserializeAllocator mAllocator;
+        ChunkedCommandSerializer mSerializer;
         DawnProcTable mProcs;
         std::unique_ptr<MemoryTransferService> mOwnedMemoryTransferService = nullptr;
         MemoryTransferService* mMemoryTransferService = nullptr;
+
+        std::shared_ptr<bool> mIsAlive;
     };
 
     std::unique_ptr<MemoryTransferService> CreateInlineMemoryTransferService();

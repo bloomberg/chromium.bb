@@ -18,6 +18,8 @@
 #include <dawn/webgpu.h>
 #include <dawn_wire/Wire.h>
 
+#include "common/LinkedList.h"
+#include "dawn_wire/ChunkedCommandSerializer.h"
 #include "dawn_wire/WireClient.h"
 #include "dawn_wire/WireCmd_autogen.h"
 #include "dawn_wire/WireDeserializeAllocator.h"
@@ -31,7 +33,11 @@ namespace dawn_wire { namespace client {
     class Client : public ClientBase {
       public:
         Client(CommandSerializer* serializer, MemoryTransferService* memoryTransferService);
-        ~Client();
+        ~Client() override;
+
+        // ChunkedCommandHandler implementation
+        const volatile char* HandleCommandsImpl(const volatile char* commands,
+                                                size_t size) override;
 
         WGPUDevice GetDevice();
 
@@ -39,27 +45,39 @@ namespace dawn_wire { namespace client {
             return mMemoryTransferService;
         }
 
-        const volatile char* HandleCommands(const volatile char* commands, size_t size);
         ReservedTexture ReserveTexture(WGPUDevice device);
 
-        void* GetCmdSpace(size_t size);
+        template <typename Cmd>
+        void SerializeCommand(const Cmd& cmd) {
+            mSerializer.SerializeCommand(cmd, *this);
+        }
+
+        template <typename Cmd, typename ExtraSizeSerializeFn>
+        void SerializeCommand(const Cmd& cmd,
+                              size_t extraSize,
+                              ExtraSizeSerializeFn&& SerializeExtraSize) {
+            mSerializer.SerializeCommand(cmd, *this, extraSize, SerializeExtraSize);
+        }
 
         void Disconnect();
+        bool IsDisconnected() const;
+
+        void TrackObject(Device* device);
 
       private:
+        void DestroyAllObjects();
+
 #include "dawn_wire/client/ClientPrototypes_autogen.inc"
 
         Device* mDevice = nullptr;
-        CommandSerializer* mSerializer = nullptr;
+        ChunkedCommandSerializer mSerializer;
         WireDeserializeAllocator mAllocator;
         MemoryTransferService* mMemoryTransferService = nullptr;
         std::unique_ptr<MemoryTransferService> mOwnedMemoryTransferService = nullptr;
 
-        std::vector<char> mDummyCmdSpace;
-        bool mIsDisconnected = false;
+        LinkedList<ObjectBase> mDevices;
+        bool mDisconnected = false;
     };
-
-    DawnProcTable GetProcs();
 
     std::unique_ptr<MemoryTransferService> CreateInlineMemoryTransferService();
 

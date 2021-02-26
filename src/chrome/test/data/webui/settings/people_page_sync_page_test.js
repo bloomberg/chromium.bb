@@ -55,8 +55,7 @@ suite('SyncSettingsTests', function() {
   }
 
   suiteSetup(function() {
-    loadTimeData.overrideValues(
-        {syncSetupFriendlySettings: true, signinAllowed: true});
+    loadTimeData.overrideValues({signinAllowed: true});
   });
 
   setup(function() {
@@ -137,7 +136,8 @@ suite('SyncSettingsTests', function() {
     assertFalse(syncSection.hidden);
     assertTrue(syncPage.$$('#sync-separator').hidden);
     assertTrue(otherItems.classList.contains('list-frame'));
-    assertEquals(otherItems.querySelectorAll(':scope > .list-item').length, 1);
+    assertEquals(
+        otherItems.querySelectorAll(':scope > cr-expand-button').length, 1);
     assertEquals(otherItems.querySelectorAll(':scope > cr-link-row').length, 3);
 
     // Test sync paused state.
@@ -215,6 +215,12 @@ suite('SyncSettingsTests', function() {
     // No encryption with custom passphrase.
     assertFalse(encryptionCollapse.opened);
     encryptionDescription.click();
+    assertTrue(encryptionCollapse.opened);
+
+    // Push sync prefs with |prefs.encryptAllData| unchanged. The encryption
+    // menu should not collapse.
+    webUIListenerCallback('sync-prefs-changed', getSyncAllPrefs());
+    flush();
     assertTrue(encryptionCollapse.opened);
 
     encryptionDescription.click();
@@ -329,8 +335,6 @@ suite('SyncSettingsTests', function() {
 
     assertFalse(passphraseInput.invalid);
     assertTrue(passphraseConfirmationInput.invalid);
-
-    assertFalse(syncPage.syncPrefs.encryptAllData);
   });
 
   test('CreatingPassphraseValidPassphrase', function() {
@@ -348,15 +352,15 @@ suite('SyncSettingsTests', function() {
     passphraseConfirmationInput.value = 'foo';
     saveNewPassphrase.click();
 
-    function verifyPrefs(prefs) {
-      const expected = getSyncAllPrefs();
-      expected.setNewPassphrase = true;
-      expected.passphrase = 'foo';
-      expected.encryptAllData = true;
-      assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
+    function verifySetSyncEncryption(args) {
+      assertTrue(args.setNewPassphrase);
+      assertEquals('foo', args.passphrase);
 
-      expected.fullEncryptionBody = 'Encrypted with custom passphrase';
-      webUIListenerCallback('sync-prefs-changed', expected);
+      // Fake backend response.
+      const newPrefs = getSyncAllPrefs();
+      newPrefs.fullEncryptionBody = 'Encrypted with custom passphrase';
+      newPrefs.encryptAllData = true;
+      webUIListenerCallback('sync-prefs-changed', newPrefs);
 
       flush();
 
@@ -372,7 +376,8 @@ suite('SyncSettingsTests', function() {
         assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
       });
     }
-    return browserProxy.whenCalled('setSyncEncryption').then(verifyPrefs);
+    return browserProxy.whenCalled('setSyncEncryption')
+        .then(verifySetSyncEncryption);
   });
 
   test('RadioBoxesHiddenWhenPassphraseRequired', function() {
@@ -426,16 +431,10 @@ suite('SyncSettingsTests', function() {
     assertTrue(!!submitExistingPassphrase);
     submitExistingPassphrase.click();
 
-    return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-      const expected = getSyncAllPrefs();
-      expected.setNewPassphrase = false;
-      expected.passphrase = 'wrong';
-      expected.encryptAllData = true;
-      expected.passphraseRequired = true;
-      assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
-
-      flush();
-
+    return browserProxy.whenCalled('setSyncEncryption').then(function(args) {
+      assertFalse(args.setNewPassphrase);
+      assertEquals('wrong', args.passphrase);
+      assertTrue(args.passphraseRequired);
       assertTrue(existingPassphraseInput.invalid);
     });
   });
@@ -456,14 +455,12 @@ suite('SyncSettingsTests', function() {
     assertTrue(!!submitExistingPassphrase);
     submitExistingPassphrase.click();
 
-    return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-      const expected = getSyncAllPrefs();
-      expected.setNewPassphrase = false;
-      expected.passphrase = 'right';
-      expected.encryptAllData = true;
-      expected.passphraseRequired = true;
-      assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
+    return browserProxy.whenCalled('setSyncEncryption').then(function(args) {
+      assertFalse(args.setNewPassphrase);
+      assertEquals('right', args.passphrase);
+      assertTrue(args.passphraseRequired);
 
+      // Fake backend response.
       const newPrefs = getSyncAllPrefs();
       newPrefs.encryptAllData = true;
       webUIListenerCallback('sync-prefs-changed', newPrefs);

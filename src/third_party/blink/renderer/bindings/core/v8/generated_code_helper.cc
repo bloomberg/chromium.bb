@@ -6,14 +6,18 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_css_style_declaration.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 
 namespace blink {
@@ -131,7 +135,7 @@ void V8SetReflectedDOMStringAttribute(
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = info[0];
+  V8StringResource<> cpp_value{info[0]};
   if (!cpp_value.Prepare())
     return;
 
@@ -147,7 +151,7 @@ void V8SetReflectedNullableDOMStringAttribute(
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value = info[0];
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value{info[0]};
   if (!cpp_value.Prepare())
     return;
 
@@ -155,6 +159,49 @@ void V8SetReflectedNullableDOMStringAttribute(
 }
 
 namespace bindings {
+
+void SetupIDLInterfaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::ObjectTemplate> instance_template,
+    v8::Local<v8::ObjectTemplate> prototype_template,
+    v8::Local<v8::FunctionTemplate> interface_template,
+    v8::Local<v8::FunctionTemplate> parent_interface_template) {
+  v8::Local<v8::String> class_string =
+      V8AtomicString(isolate, wrapper_type_info->interface_name);
+
+  if (!parent_interface_template.IsEmpty())
+    interface_template->Inherit(parent_interface_template);
+  interface_template->ReadOnlyPrototype();
+  interface_template->SetClassName(class_string);
+
+  prototype_template->Set(
+      v8::Symbol::GetToStringTag(isolate), class_string,
+      static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+
+  instance_template->SetInternalFieldCount(kV8DefaultWrapperInternalFieldCount);
+}
+
+void SetupIDLNamespaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::ObjectTemplate> interface_template) {
+  v8::Local<v8::String> class_string =
+      V8AtomicString(isolate, wrapper_type_info->interface_name);
+
+  interface_template->Set(
+      v8::Symbol::GetToStringTag(isolate), class_string,
+      static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
+}
+
+void SetupIDLCallbackInterfaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::FunctionTemplate> interface_template) {
+  interface_template->RemovePrototype();
+  interface_template->SetClassName(
+      V8AtomicString(isolate, wrapper_type_info->interface_name));
+}
 
 base::Optional<size_t> FindIndexInEnumStringTable(
     v8::Isolate* isolate,
@@ -186,6 +233,25 @@ base::Optional<size_t> FindIndexInEnumStringTable(
       return i;
   }
   return base::nullopt;
+}
+
+void ReportInvalidEnumSetToAttribute(v8::Isolate* isolate,
+                                     const String& value,
+                                     const String& enum_type_name,
+                                     ExceptionState& exception_state) {
+  ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  exception_state.ThrowTypeError("The provided value '" + value +
+                                 "' is not a valid enum value of type " +
+                                 enum_type_name + ".");
+  String message = exception_state.Message();
+  exception_state.ClearException();
+
+  execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kJavaScript,
+      mojom::blink::ConsoleMessageLevel::kWarning, message,
+      SourceLocation::Capture(execution_context)));
 }
 
 bool IsEsIterableObject(v8::Isolate* isolate,
@@ -228,11 +294,10 @@ ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {
 }
 
 ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
-  return parser->GetDocument() ? parser->GetDocument()->GetExecutionContext()
-                               : nullptr;
+  return parser->GetWindow();
 }
 
-v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
+v8::MaybeLocal<v8::Value> CreateNamedConstructorFunction(
     ScriptState* script_state,
     v8::FunctionCallback callback,
     const char* func_name,
@@ -243,31 +308,33 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
   V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
   const void* callback_key = reinterpret_cast<const void*>(callback);
 
-  // Named constructors are not interface objcets (despite that they're
-  // pretending so), but we reuse the cache of interface objects, which just
-  // works because both are V8 function template.
+  if (!script_state->ContextIsValid()) {
+    return v8::Undefined(isolate);
+  }
+
   v8::Local<v8::FunctionTemplate> function_template =
-      per_isolate_data->FindInterfaceTemplate(world, callback_key);
+      per_isolate_data->FindV8Template(world, callback_key)
+          .As<v8::FunctionTemplate>();
   if (function_template.IsEmpty()) {
     function_template = v8::FunctionTemplate::New(
         isolate, callback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(),
         func_length, v8::ConstructorBehavior::kAllow,
         v8::SideEffectType::kHasSideEffect);
     v8::Local<v8::FunctionTemplate> interface_template =
-        wrapper_type_info->DomTemplate(isolate, world);
+        wrapper_type_info->GetV8ClassTemplate(isolate, world)
+            .As<v8::FunctionTemplate>();
     function_template->Inherit(interface_template);
     function_template->SetClassName(V8AtomicString(isolate, func_name));
     function_template->InstanceTemplate()->SetInternalFieldCount(
         kV8DefaultWrapperInternalFieldCount);
-    per_isolate_data->SetInterfaceTemplate(world, callback_key,
-                                           function_template);
+    per_isolate_data->AddV8Template(world, callback_key, function_template);
   }
 
   v8::Local<v8::Context> context = script_state->GetContext();
   V8PerContextData* per_context_data = V8PerContextData::From(context);
   v8::Local<v8::Function> function;
   if (!function_template->GetFunction(context).ToLocal(&function)) {
-    return v8::MaybeLocal<v8::Function>();
+    return v8::MaybeLocal<v8::Value>();
   }
   v8::Local<v8::Object> prototype_object =
       per_context_data->PrototypeForType(wrapper_type_info);
@@ -278,7 +345,7 @@ v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
                static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum |
                                                   v8::DontDelete))
            .To(&did_define)) {
-    return v8::MaybeLocal<v8::Function>();
+    return v8::MaybeLocal<v8::Value>();
   }
   CHECK(did_define);
   return function;
@@ -323,6 +390,157 @@ v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
     elements.UncheckedAppend(v8::Integer::New(isolate, i));
   return v8::Array::New(isolate, elements.data(), elements.size());
 }
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+
+void InstallCSSPropertyAttributes(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Template> instance_template,
+    v8::Local<v8::Template> prototype_template,
+    v8::Local<v8::Template> interface_template,
+    v8::Local<v8::Signature> signature,
+    base::span<const char* const> css_property_names) {
+  const String kGetPrefix = "get ";
+  const String kSetPrefix = "set ";
+  for (const char* const property_name : css_property_names) {
+    v8::Local<v8::Value> v8_property_name = v8::External::New(
+        isolate,
+        const_cast<void*>(reinterpret_cast<const void*>(property_name)));
+    v8::Local<v8::FunctionTemplate> get_func = v8::FunctionTemplate::New(
+        isolate, CSSPropertyAttributeGet, v8_property_name, signature, 0,
+        v8::ConstructorBehavior::kThrow, v8::SideEffectType::kHasNoSideEffect);
+    v8::Local<v8::FunctionTemplate> set_func = v8::FunctionTemplate::New(
+        isolate, CSSPropertyAttributeSet, v8_property_name, signature, 1,
+        v8::ConstructorBehavior::kThrow, v8::SideEffectType::kHasSideEffect);
+    get_func->RemovePrototype();
+    set_func->RemovePrototype();
+    get_func->SetAcceptAnyReceiver(false);
+    set_func->SetAcceptAnyReceiver(false);
+    get_func->SetClassName(
+        V8AtomicString(isolate, String(kGetPrefix + property_name)));
+    set_func->SetClassName(
+        V8AtomicString(isolate, String(kSetPrefix + property_name)));
+    prototype_template->SetAccessorProperty(
+        V8AtomicString(isolate, property_name), get_func, set_func);
+  }
+}
+
+void CSSPropertyAttributeGet(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  CSSStyleDeclaration* blink_receiver =
+      V8CSSStyleDeclaration::ToWrappableUnsafe(info.This());
+  const char* property_name =
+      reinterpret_cast<const char*>(info.Data().As<v8::External>()->Value());
+  // TODO(andruud): AnonymousNamedGetter is not the best function.  Change the
+  // function to a more appropriate one.
+  auto&& return_value = blink_receiver->AnonymousNamedGetter(property_name);
+  bindings::V8SetReturnValue(info, return_value, info.GetIsolate(),
+                             bindings::V8ReturnValue::kNonNullable);
+}
+
+void CSSPropertyAttributeSet(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  const char* const class_like_name = "CSSStyleDeclaration";
+  const char* property_name =
+      reinterpret_cast<const char*>(info.Data().As<v8::External>()->Value());
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
+                                 class_like_name, property_name);
+
+  // [CEReactions]
+  CEReactionsScope ce_reactions_scope;
+
+  v8::Local<v8::Object> v8_receiver = info.This();
+  CSSStyleDeclaration* blink_receiver =
+      V8CSSStyleDeclaration::ToWrappableUnsafe(v8_receiver);
+  v8::Local<v8::Value> v8_property_value = info[0];
+  auto&& arg1_value =
+      NativeValueTraits<IDLStringTreatNullAsEmptyStringV2>::NativeValue(
+          isolate, v8_property_value, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+  v8::Local<v8::Context> receiver_context = v8_receiver->CreationContext();
+  ScriptState* receiver_script_state = ScriptState::From(receiver_context);
+  // TODO(andruud): AnonymousNamedSetter is not the best function.  Change the
+  // function to a more appropriate one.  It's better to pass |exception_state|
+  // as the implementation of AnonymousNamedSetter needs it.
+  blink_receiver->AnonymousNamedSetter(receiver_script_state, property_name,
+                                       arg1_value);
+}
+
+template <typename IDLType,
+          typename ArgType,
+          void (Element::*MemFunc)(const QualifiedName&, ArgType)>
+void PerformAttributeSetCEReactionsReflect(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
+                                 interface_name, attribute_name);
+  if (UNLIKELY(info.Length() < 1)) {
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  // [Reflect]
+  V0CustomElementProcessingStack::CallbackDeliveryScope v0_custom_element_scope;
+  // [CEReactions]
+  CEReactionsScope ce_reactions_scope;
+
+  Element* blink_receiver = V8Element::ToWrappableUnsafe(info.This());
+  auto&& arg_value = NativeValueTraits<IDLType>::NativeValue(isolate, info[0],
+                                                             exception_state);
+  if (exception_state.HadException())
+    return;
+
+  (blink_receiver->*MemFunc)(content_attribute, arg_value);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeBoolean(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLBoolean, bool,
+                                        &Element::SetBooleanAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLStringV2, const AtomicString&,
+                                        &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeStringLegacyNullToEmptyString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLStringTreatNullAsEmptyStringV2,
+                                        const AtomicString&,
+                                        &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeStringOrNull(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<
+      IDLNullable<IDLStringV2>, const AtomicString&, &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 
 }  // namespace bindings
 

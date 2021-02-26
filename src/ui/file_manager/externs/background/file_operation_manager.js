@@ -50,11 +50,28 @@ class FileOperationManager extends EventTarget {
   paste(sourceEntries, targetEntry, isMove, opt_taskId) {}
 
   /**
+   * Returns true if all entries will use trash for delete.
+   *
+   * @param {!VolumeManager} volumeManager
+   * @param {!Array<!Entry>} entries The entries.
+   * @return {boolean}
+   */
+  willUseTrash(volumeManager, entries) {}
+
+  /**
    * Schedules the files deletion.
    *
-   * @param {Array<Entry>} entries The entries.
+   * @param {!Array<!Entry>} entries The entries.
    */
   deleteEntries(entries) {}
+
+  /**
+   * Restores files from trash.
+   *
+   * @param {Array<!{name: string, filesEntry: !Entry, infoEntry: !FileEntry}>}
+   *     trashItems The trash items.
+   */
+  restoreDeleted(trashItems) {}
 
   /**
    * Creates a zip file for the selection of files.

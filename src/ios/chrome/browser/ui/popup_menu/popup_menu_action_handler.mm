@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
@@ -24,6 +25,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,6 +33,12 @@
 
 using base::RecordAction;
 using base::UserMetricsAction;
+
+namespace {
+
+const char kManagementPageURL[] = "chrome://management";
+
+}  // namespace
 
 @implementation PopupMenuActionHandler
 
@@ -70,7 +78,7 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionPageBookmark:
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
-      [self.dispatcher bookmarkPage];
+      [self.dispatcher bookmarkCurrentPage];
       break;
     case PopupMenuActionTranslate:
       base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
@@ -101,7 +109,8 @@ using base::UserMetricsAction;
     case PopupMenuActionReportIssue:
       RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
       [self.dispatcher
-          showReportAnIssueFromViewController:self.baseViewController];
+          showReportAnIssueFromViewController:self.baseViewController
+                                       sender:UserFeedbackSender::ToolsMenu];
       // Dismisses the popup menu without animation to allow the snapshot to be
       // taken without the menu presented.
       [self.dispatcher dismissPopupMenuAnimated:NO];
@@ -125,7 +134,9 @@ using base::UserMetricsAction;
       break;
 #endif  // !defined(NDEBUG)
     case PopupMenuActionOpenNewWindow:
-      [self.dispatcher openNewWindowWithActivity:ActivityToOpenNewTab(false)];
+      [self.dispatcher openNewWindowWithActivity:ActivityToLoadURL(
+                                                     WindowActivityToolsOrigin,
+                                                     GURL(kChromeUINewTabURL))];
       break;
     case PopupMenuActionBookmarks:
       RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
@@ -155,21 +166,6 @@ using base::UserMetricsAction;
       // No metrics for this item.
       [self.commandHandler navigateToPageForItem:item];
       break;
-    case PopupMenuActionPasteAndGo: {
-      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
-      NSString* query;
-      ClipboardRecentContent* clipboardRecentContent =
-          ClipboardRecentContent::GetInstance();
-      if (base::Optional<GURL> optional_url =
-              clipboardRecentContent->GetRecentURLFromClipboard()) {
-        query = base::SysUTF8ToNSString(optional_url.value().spec());
-      } else if (base::Optional<base::string16> optional_text =
-                     clipboardRecentContent->GetRecentTextFromClipboard()) {
-        query = base::SysUTF16ToNSString(optional_text.value());
-      }
-      [self.dispatcher loadQuery:query immediately:YES];
-      break;
-    }
     case PopupMenuActionVoiceSearch:
       RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
       [self.dispatcher startVoiceSearch];
@@ -202,6 +198,41 @@ using base::UserMetricsAction;
           }));
       break;
     }
+    case PopupMenuActionSearchCopiedText: {
+      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      clipboardRecentContent->GetRecentTextFromClipboard(
+          base::BindOnce(^(base::Optional<base::string16> optional_text) {
+            if (!optional_text) {
+              return;
+            }
+            [self.dispatcher
+                  loadQuery:base::SysUTF16ToNSString(optional_text.value())
+                immediately:YES];
+          }));
+      break;
+    }
+    case PopupMenuActionVisitCopiedLink: {
+      RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      clipboardRecentContent->GetRecentURLFromClipboard(
+          base::BindOnce(^(base::Optional<GURL> optional_url) {
+            if (!optional_url) {
+              return;
+            }
+            [self.dispatcher
+                  loadQuery:base::SysUTF8ToNSString(optional_url.value().spec())
+                immediately:YES];
+          }));
+      break;
+    }
+    case PopupMenuActionEnterpriseInfoMessage:
+      [self.dispatcher
+          openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:
+                                                 GURL(kManagementPageURL)]];
+      break;
     default:
       NOTREACHED() << "Unexpected identifier";
       break;

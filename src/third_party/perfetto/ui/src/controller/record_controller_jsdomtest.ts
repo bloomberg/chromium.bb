@@ -24,14 +24,16 @@ import {genConfigProto, RecordController, toPbtxt} from './record_controller';
 test('encodeConfig', () => {
   const config = createEmptyRecordConfig();
   config.durationSeconds = 10;
-  const result = TraceConfig.decode(genConfigProto(config));
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
   expect(result.durationMs).toBe(10000);
 });
 
 test('SysConfig', () => {
   const config = createEmptyRecordConfig();
   config.cpuSyscall = true;
-  const result = TraceConfig.decode(genConfigProto(config));
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
   const sources = assertExists(result.dataSources);
   const srcConfig = assertExists(sources[0].config);
   const ftraceConfig = assertExists(srcConfig.ftraceConfig);
@@ -108,7 +110,8 @@ test('ChromeConfig', () => {
   config.ipcFlows = true;
   config.jsExecution = true;
   config.mode = 'STOP_WHEN_FULL';
-  const result = TraceConfig.decode(genConfigProto(config));
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
   const sources = assertExists(result.dataSources);
 
   const traceConfigSource = assertExists(sources[0].config);
@@ -123,7 +126,33 @@ test('ChromeConfig', () => {
 
   const expectedTraceConfig = '{"record_mode":"record-until-full",' +
       '"included_categories":' +
-      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"]}';
+      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"],' +
+      '"memory_dump_config":{}}';
+  expect(traceConfigM).toEqual(expectedTraceConfig);
+  expect(traceConfig).toEqual(expectedTraceConfig);
+});
+
+test('ChromeMemoryConfig', () => {
+  const config = createEmptyRecordConfig();
+  config.chromeCategoriesSelected = ['disabled-by-default-memory-infra'];
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
+  const sources = assertExists(result.dataSources);
+
+  const traceConfigSource = assertExists(sources[0].config);
+  expect(traceConfigSource.name).toBe('org.chromium.trace_event');
+  const chromeConfig = assertExists(traceConfigSource.chromeConfig);
+  const traceConfig = assertExists(chromeConfig.traceConfig);
+
+  const metadataConfigSource = assertExists(sources[1].config);
+  expect(metadataConfigSource.name).toBe('org.chromium.trace_metadata');
+  const chromeConfigM = assertExists(metadataConfigSource.chromeConfig);
+  const traceConfigM = assertExists(chromeConfigM.traceConfig);
+
+  const expectedTraceConfig = '{"record_mode":"record-until-full",' +
+      '"included_categories":["disabled-by-default-memory-infra"],' +
+      '"memory_dump_config":{"triggers":' +
+      '[{"mode":"detailed","periodic_interval_ms":10000}]}}';
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
 });
@@ -133,7 +162,8 @@ test('ChromeConfigRingBuffer', () => {
   config.ipcFlows = true;
   config.jsExecution = true;
   config.mode = 'RING_BUFFER';
-  const result = TraceConfig.decode(genConfigProto(config));
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
   const sources = assertExists(result.dataSources);
 
   const traceConfigSource = assertExists(sources[0].config);
@@ -148,7 +178,8 @@ test('ChromeConfigRingBuffer', () => {
 
   const expectedTraceConfig = '{"record_mode":"record-continuously",' +
       '"included_categories":' +
-      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"]}';
+      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"],' +
+      '"memory_dump_config":{}}';
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
 });
@@ -159,7 +190,8 @@ test('ChromeConfigLongTrace', () => {
   config.ipcFlows = true;
   config.jsExecution = true;
   config.mode = 'RING_BUFFER';
-  const result = TraceConfig.decode(genConfigProto(config));
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
   const sources = assertExists(result.dataSources);
 
   const traceConfigSource = assertExists(sources[0].config);
@@ -174,7 +206,8 @@ test('ChromeConfigLongTrace', () => {
 
   const expectedTraceConfig = '{"record_mode":"record-continuously",' +
       '"included_categories":' +
-      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"]}';
+      '["toplevel","disabled-by-default-ipc.flow","mojom","v8"],' +
+      '"memory_dump_config":{}}';
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
 });

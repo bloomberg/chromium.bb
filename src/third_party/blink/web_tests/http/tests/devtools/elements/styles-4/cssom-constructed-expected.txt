@@ -4,11 +4,12 @@ Tests that constructed stylesheets appear properly.
 element.style { ()
 
 [expanded] 
-div { ()
+div { (constructed stylesheet)
     color: red;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+StyleSheetChanged triggered
 

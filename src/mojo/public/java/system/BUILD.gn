@@ -72,6 +72,7 @@ android_library("test_support_java") {
   sources = [ "javatests/src/org/chromium/mojo/MojoTestRule.java" ]
   deps = [
     "//base:base_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/junit",
   ]
 }
@@ -169,6 +170,4 @@ instrumentation_test_apk("mojo_test_apk") {
   shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"
   android_manifest = "javatests/AndroidManifest.xml"
-  target_sdk_version = 21
-  enable_multidex = false
 }

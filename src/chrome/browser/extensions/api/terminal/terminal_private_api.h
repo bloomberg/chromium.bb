@@ -59,13 +59,24 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
       std::unique_ptr<std::vector<std::string>> args);
 
  private:
-  // Callback for when starting crostini is complete.
   void OnCrostiniRestarted(
       std::unique_ptr<CrostiniStartupStatus> startup_status,
       const std::string& user_id_hash,
-      int tab_id,
-      const std::vector<std::string>& arguments,
+      base::CommandLine cmdline,
       crostini::CrostiniResult result);
+
+  void OpenVmshellProcess(const std::string& user_id_hash,
+                          base::CommandLine cmdline);
+
+  void OnGetVshSession(const std::string& user_id_hash,
+                       base::CommandLine cmdline,
+                       int32_t vsh_pid,
+                       bool success,
+                       const std::string& failure_reason,
+                       int32_t container_shell_pid);
+
+  void OpenProcess(const std::string& user_id_hash,
+                   base::CommandLine cmdline);
 
   using ProcessOutputCallback =
       base::Callback<void(const std::string& terminal_id,
@@ -73,13 +84,9 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
                           const std::string& output)>;
   using OpenProcessCallback =
       base::Callback<void(bool success, const std::string& terminal_id)>;
-
-  void OpenProcess(const std::string& user_id_hash,
-                   int tab_id,
-                   const std::vector<std::string>& arguments);
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
                                 const OpenProcessCallback& callback,
-                                const std::vector<std::string>& arguments,
+                                base::CommandLine cmdline,
                                 const std::string& user_id_hash);
   void RespondOnUIThread(bool success, const std::string& terminal_id);
 };
@@ -183,22 +190,6 @@ class TerminalPrivateOpenOptionsPageFunction : public ExtensionFunction {
   ~TerminalPrivateOpenOptionsPageFunction() override;
 
   ExtensionFunction::ResponseAction Run() override;
-};
-
-// TODO(crbug.com/1019021): Remove this function after M-83.
-// Be sure to first remove the callsite in the terminal system app.
-class TerminalPrivateGetCroshSettingsFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getCroshSettings",
-                             TERMINALPRIVATE_GETCROSHSETTINGS)
-
- protected:
-  ~TerminalPrivateGetCroshSettingsFunction() override;
-
-  ExtensionFunction::ResponseAction Run() override;
-
- private:
-  void AsyncRunWithStorage(ValueStore* storage);
 };
 
 class TerminalPrivateGetSettingsFunction : public ExtensionFunction {

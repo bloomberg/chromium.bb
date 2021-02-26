@@ -5,7 +5,9 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
@@ -26,6 +28,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "pdf/document_loader_impl.h"
+#include "pdf/pdf_features.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
@@ -89,6 +92,20 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeFindRequestManagerTest);
 };
 
+class ChromeFindRequestManagerTestWithPdfPartialLoading
+    : public ChromeFindRequestManagerTest {
+ public:
+  ChromeFindRequestManagerTestWithPdfPartialLoading() {
+    feature_list_.InitWithFeatures(
+        {chrome_pdf::features::kPdfIncrementalLoading,
+         chrome_pdf::features::kPdfPartialLoading},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests searching in a full-page PDF.
 // Flaky on Windows ASAN: crbug.com/1030368.
 #if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
@@ -106,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   delegate()->MarkNextReply();
   delegate()->WaitForNextReply();
 
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   delegate()->MarkNextReply();
   delegate()->WaitForNextReply();
@@ -129,7 +146,7 @@ void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
     ASSERT_NE(response->http_request()->headers.end(), it);
     base::StringPiece range_header = it->second;
     base::StringPiece kBytesPrefix = "bytes=";
-    ASSERT_TRUE(range_header.starts_with(kBytesPrefix));
+    ASSERT_TRUE(base::StartsWith(range_header, kBytesPrefix));
     range_header.remove_prefix(kBytesPrefix.size());
     auto dash_pos = range_header.find('-');
     ASSERT_NE(std::string::npos, dash_pos);
@@ -156,7 +173,8 @@ void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
 
 // Tests searching in a PDF received in chunks via range-requests.  See also
 // https://crbug.com/1027173.
-IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
+IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTestWithPdfPartialLoading,
+                       FindInChunkedPDF) {
   constexpr uint32_t kStalledResponseSize =
       chrome_pdf::DocumentLoaderImpl::kDefaultRequestSize + 123;
 
@@ -234,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
   // Verify that find-in-page works fine.
   auto options = blink::mojom::FindOptions::New();
   Find("FXCMAP_CMap", options.Clone());
-  options->find_next = true;
+  options->new_session = false;
   Find("FXCMAP_CMap", options.Clone());
   Find("FXCMAP_CMap", options.Clone());
   delegate()->WaitForFinalReply();
@@ -259,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   auto options = blink::mojom::FindOptions::New();
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   options->forward = false;
   Find("result", options.Clone());

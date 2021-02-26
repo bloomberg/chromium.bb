@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -46,7 +45,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #endif
 
@@ -223,7 +222,7 @@ void RPHReferenceManager::RPHObserver::RemoveWebContentsObserver(
 
 void RPHReferenceManager::RPHObserver::RenderProcessHostDestroyed(
     RenderProcessHost* host) {
-  host_ = NULL;
+  host_ = nullptr;
   manager_->OnRenderProcessHostDestroyed(host);
 }
 
@@ -303,7 +302,7 @@ class ExtensionGalleriesHost
   // system objects to the |callback|.
   void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
                            const MediaGalleriesPrefInfoMap& galleries_info,
-                           const MediaFileSystemsCallback& callback) {
+                           MediaFileSystemsCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Extract all the device ids so we can make sure they are attached.
@@ -317,7 +316,7 @@ class ExtensionGalleriesHost
         base::BindOnce(
             &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices,
             this, base::Owned(device_ids), galleries, galleries_info,
-            callback));
+            std::move(callback)));
   }
 
   // Checks if |gallery| is attached and if so, registers the file system and
@@ -373,14 +372,14 @@ class ExtensionGalleriesHost
       const MediaStorageUtil::DeviceIdSet* attached_devices,
       const MediaGalleryPrefIdSet& galleries,
       const MediaGalleriesPrefInfoMap& galleries_info,
-      const MediaFileSystemsCallback& callback) {
+      MediaFileSystemsCallback callback) {
     std::vector<MediaFileSystemInfo> result;
 
     if (rph_refs_.empty()) {
       // We're actually in the middle of shutdown, and Filter...() lagging
       // which can invoke this method interleaved in the destruction callback
       // sequence and re-populate pref_id_map_.
-      callback.Run(result);
+      std::move(callback).Run(result);
       return;
     }
 
@@ -427,7 +426,7 @@ class ExtensionGalleriesHost
     }
 
     DCHECK_EQ(pref_id_map_.size(), result.size());
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void RegisterAttachedMediaFileSystem(
@@ -466,8 +465,8 @@ class ExtensionGalleriesHost
       rph_refs_.Reset();
       CleanUp();
     }
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(callback), result));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -519,7 +518,7 @@ class ExtensionGalleriesHost
 void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     content::WebContents* contents,
     const extensions::Extension* extension,
-    const MediaFileSystemsCallback& callback) {
+    MediaFileSystemsCallback callback) {
   // TODO(tommycli): Change to DCHECK after fixing http://crbug.com/374330.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -529,7 +528,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
       preferences->GalleriesForExtension(*extension);
 
   if (galleries.empty()) {
-    callback.Run(std::vector<MediaFileSystemInfo>());
+    std::move(callback).Run(std::vector<MediaFileSystemInfo>());
     return;
   }
 
@@ -541,7 +540,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   extension_host->ReferenceFromWebContents(contents);
 
   extension_host->GetMediaFileSystems(galleries, preferences->known_galleries(),
-                                      callback);
+                                      std::move(callback));
 }
 
 void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
@@ -560,8 +559,8 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
 
   if (gallery == preferences->known_galleries().end() ||
       !base::Contains(permitted_galleries, pref_id)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
@@ -667,9 +666,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   void RevokeFileSystem(const std::string& fs_name) override {
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
                        base::Unretained(MTPDeviceMapService::GetInstance()),
                        fs_name));
@@ -706,7 +705,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMTPDevice(const std::string& device_id,
                                       const std::string fs_name,
                                       const base::FilePath& path) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
@@ -718,8 +717,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         storage::FileSystemMountOption(),
         path);
     CHECK(result);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RegisterMTPFileSystem,
                        base::Unretained(MTPDeviceMapService::GetInstance()),
                        path.value(), fs_name, true /* read only */));

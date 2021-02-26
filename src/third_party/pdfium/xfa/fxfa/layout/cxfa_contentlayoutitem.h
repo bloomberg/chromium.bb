@@ -7,22 +7,20 @@
 #ifndef XFA_FXFA_LAYOUT_CXFA_CONTENTLAYOUTITEM_H_
 #define XFA_FXFA_LAYOUT_CXFA_CONTENTLAYOUTITEM_H_
 
-#include <memory>
-
-#include "core/fxcrt/retain_ptr.h"
-#include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/fx_coordinates.h"
+#include "v8/include/cppgc/persistent.h"
 #include "xfa/fxfa/layout/cxfa_layoutitem.h"
 
 class CXFA_FFWidget;
 
-class CXFA_ContentLayoutItem : public CXFA_LayoutItem {
+class CXFA_ContentLayoutItem final : public CXFA_LayoutItem {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
-
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_ContentLayoutItem() override;
 
-  CXFA_FFWidget* GetFFWidget() { return m_pFFWidget.get(); }
+  void Trace(cppgc::Visitor* visitor) const override;
+
+  CXFA_FFWidget* GetFFWidget() { return m_pFFWidget; }
 
   CXFA_ContentLayoutItem* GetFirst();
   CXFA_ContentLayoutItem* GetLast();
@@ -43,15 +41,13 @@ class CXFA_ContentLayoutItem : public CXFA_LayoutItem {
   CFX_SizeF m_sSize;
 
  private:
-  CXFA_ContentLayoutItem(CXFA_Node* pNode,
-                         std::unique_ptr<CXFA_FFWidget> pFFWidget);
-
+  CXFA_ContentLayoutItem(CXFA_Node* pNode, CXFA_FFWidget* pFFWidget);
   void RemoveSelf();
 
   mutable uint32_t m_dwStatus = 0;
-  UnownedPtr<CXFA_ContentLayoutItem> m_pPrev;
-  UnownedPtr<CXFA_ContentLayoutItem> m_pNext;
-  std::unique_ptr<CXFA_FFWidget> const m_pFFWidget;
+  cppgc::Member<CXFA_ContentLayoutItem> m_pPrev;
+  cppgc::Member<CXFA_ContentLayoutItem> m_pNext;
+  cppgc::Member<CXFA_FFWidget> const m_pFFWidget;
 };
 
 inline CXFA_FFWidget* GetFFWidget(CXFA_ContentLayoutItem* item) {

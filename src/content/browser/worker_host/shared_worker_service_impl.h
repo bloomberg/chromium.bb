@@ -19,8 +19,10 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
@@ -53,6 +55,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   bool TerminateWorker(const GURL& url,
                        const std::string& name,
                        const url::Origin& constructor_origin) override;
+  void Shutdown() override;
 
   // Uses |url_loader_factory| to load workers' scripts instead of
   // StoragePartition's URLLoaderFactoryGetter.
@@ -66,18 +69,20 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      ukm::SourceId client_ukm_source_id);
 
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);
 
-  void NotifyWorkerStarted(SharedWorkerId shared_worker_id,
+  void NotifyWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                            int worker_process_id,
                            const base::UnguessableToken& dev_tools_token);
-  void NotifyWorkerTerminating(SharedWorkerId shared_worker_id);
-  void NotifyClientAdded(SharedWorkerId shared_worker_id,
+  void NotifyBeforeWorkerDestroyed(
+      const blink::SharedWorkerToken& shared_worker_token);
+  void NotifyClientAdded(const blink::SharedWorkerToken& shared_worker_token,
                          GlobalFrameRoutingId render_frame_host_id);
-  void NotifyClientRemoved(SharedWorkerId shared_worker_id,
+  void NotifyClientRemoved(const blink::SharedWorkerToken& shared_worker_token,
                            GlobalFrameRoutingId render_frame_host_id);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
@@ -86,15 +91,15 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class SharedWorkerHostTest;
   friend class SharedWorkerServiceImplTest;
   friend class TestSharedWorkerServiceImpl;
+  friend class WorkerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkServiceRestartBrowserTest, SharedWorker);
 
   // Creates a new worker in the creator's renderer process.
   SharedWorkerHost* CreateWorker(
-      SharedWorkerId shared_worker_id,
+      RenderFrameHostImpl& creator,
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      GlobalFrameRoutingId creator_render_frame_host_id,
       const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
@@ -123,15 +128,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       const std::string& error_message);
 
-  // Generates IDs for new shared workers.
-  SharedWorkerId::Generator shared_worker_id_generator_;
-
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;
 
   // |storage_partition_| owns |this|.
   StoragePartitionImpl* const storage_partition_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  // |appcache_service_| may be null.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
 
@@ -139,7 +142,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // duplicate OnClientAdded() notifications if the same frame connects multiple
   // times to the same shared worker. Note that this is a situation unique to
   // shared worker and cannot happen with dedicated workers and service workers.
-  base::flat_map<std::pair<SharedWorkerId, GlobalFrameRoutingId>, int>
+  base::flat_map<std::pair<blink::SharedWorkerToken, GlobalFrameRoutingId>, int>
       shared_worker_client_counts_;
 
   base::ObserverList<Observer> observers_;

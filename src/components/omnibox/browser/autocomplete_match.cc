@@ -28,9 +28,10 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/search_engine_utils.h"
 #include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "inline_autocompletion_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -77,6 +78,32 @@ bool WordMatchesURLContent(
 
 }  // namespace
 
+SplitAutocompletion::SplitAutocompletion(base::string16 display_text,
+                                         std::vector<gfx::Range> selections)
+    : display_text(display_text), selections(selections) {}
+
+SplitAutocompletion::SplitAutocompletion() = default;
+SplitAutocompletion::SplitAutocompletion(const SplitAutocompletion& copy) =
+    default;
+SplitAutocompletion::SplitAutocompletion(SplitAutocompletion&& other) noexcept =
+    default;
+SplitAutocompletion& SplitAutocompletion::operator=(
+    const SplitAutocompletion&) = default;
+SplitAutocompletion& SplitAutocompletion::operator=(
+    SplitAutocompletion&&) noexcept = default;
+
+SplitAutocompletion::~SplitAutocompletion() = default;
+
+bool SplitAutocompletion::Empty() const {
+  return selections.empty();
+}
+
+void SplitAutocompletion::Clear() {
+  selections.clear();
+}
+
+// AutocompleteMatch ----------------------------------------------------------
+
 // static
 const char* const AutocompleteMatch::kDocumentTypeStrings[]{
     "none",        "drive_docs", "drive_forms", "drive_sheets", "drive_slides",
@@ -93,8 +120,6 @@ const char* AutocompleteMatch::DocumentTypeString(DocumentType type) {
   return kDocumentTypeStrings[static_cast<int>(type)];
 }
 
-// AutocompleteMatch ----------------------------------------------------------
-
 // static
 const base::char16 AutocompleteMatch::kInvalidChars[] = {
   '\n', '\r', '\t',
@@ -105,9 +130,6 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
 
 // static
 const char AutocompleteMatch::kEllipsis[] = "... ";
-
-// static
-size_t AutocompleteMatch::next_family_id_;
 
 AutocompleteMatch::AutocompleteMatch()
     : transition(ui::PAGE_TRANSITION_GENERATED) {}
@@ -125,13 +147,15 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
       relevance(match.relevance),
-      subrelevance(match.subrelevance),
       typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
+      fill_into_edit_additional_text(match.fill_into_edit_additional_text),
+      swapped_fill_into_edit(match.swapped_fill_into_edit),
       inline_autocompletion(match.inline_autocompletion),
+      prefix_autocompletion(match.prefix_autocompletion),
+      split_autocompletion(match.split_autocompletion),
       allowed_to_be_default_match(match.allowed_to_be_default_match),
-      is_navigational_title_match(match.is_navigational_title_match),
       destination_url(match.destination_url),
       stripped_destination_url(match.stripped_destination_url),
       image_dominant_color(match.image_dominant_color),
@@ -149,9 +173,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(match.answer),
       transition(match.transition),
       type(match.type),
-      parent_type(match.parent_type),
       has_tab_match(match.has_tab_match),
-      subtype_identifier(match.subtype_identifier),
+      subtypes(match.subtypes),
       associated_keyword(match.associated_keyword
                              ? new AutocompleteMatch(*match.associated_keyword)
                              : nullptr),
@@ -168,7 +191,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                        : nullptr),
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches),
-      query_tiles(match.query_tiles) {}
+      query_tiles(match.query_tiles),
+      navsuggest_tiles(match.navsuggest_tiles) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept =
     default;
@@ -183,13 +207,15 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
   provider = match.provider;
   relevance = match.relevance;
-  subrelevance = match.subrelevance;
   typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
+  fill_into_edit_additional_text = match.fill_into_edit_additional_text;
+  swapped_fill_into_edit = match.swapped_fill_into_edit;
   inline_autocompletion = match.inline_autocompletion;
+  prefix_autocompletion = match.prefix_autocompletion;
+  split_autocompletion = match.split_autocompletion;
   allowed_to_be_default_match = match.allowed_to_be_default_match;
-  is_navigational_title_match = match.is_navigational_title_match;
   destination_url = match.destination_url;
   stripped_destination_url = match.stripped_destination_url;
   image_dominant_color = match.image_dominant_color;
@@ -207,9 +233,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = match.answer;
   transition = match.transition;
   type = match.type;
-  parent_type = match.parent_type;
   has_tab_match = match.has_tab_match;
-  subtype_identifier = match.subtype_identifier;
+  subtypes = match.subtypes;
   associated_keyword.reset(
       match.associated_keyword
           ? new AutocompleteMatch(*match.associated_keyword)
@@ -228,6 +253,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
   query_tiles = match.query_tiles;
+  navsuggest_tiles = match.navsuggest_tiles;
   return *this;
 }
 
@@ -249,10 +275,16 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
+    case Type::TILE_NAVSUGGEST:
       return omnibox::kPageIcon;
 
+    case Type::SEARCH_SUGGEST: {
+      if (subtypes.contains(/*SUBTYPE_TRENDS=*/143))
+        return omnibox::kTrendingUpIcon;
+      return vector_icons::kSearchIcon;
+    }
+
     case Type::SEARCH_WHAT_YOU_TYPED:
-    case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
     case Type::SEARCH_SUGGEST_PROFILE:
     case Type::SEARCH_OTHER_ENGINE:
@@ -306,10 +338,14 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return (pedal ? pedal->GetVectorIcon() : omnibox::kPedalIcon);
 
     case Type::NUM_TYPES:
-      NOTREACHED();
-      static const gfx::VectorIcon dummy = {};
-      return dummy;
+      // TODO(https://crbug.com/1024114): Replace with NOTREACHED() once fixed.
+      CHECK(false);
+      return vector_icons::kErrorIcon;
   }
+
+  // TODO(https://crbug.com/1024114): Replace with NOTREACHED() once fixed.
+  CHECK(false);
+  return vector_icons::kErrorIcon;
 }
 #endif
 
@@ -394,8 +430,9 @@ base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
-    case Type::NUM_TYPES:
     case Type::TILE_SUGGESTION:
+    case Type::TILE_NAVSUGGEST:
+    case Type::NUM_TYPES:
       NOTREACHED();
       return base::string16();
   }
@@ -631,11 +668,19 @@ bool AutocompleteMatch::IsSearchHistoryType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
 }
 
-AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {
-  if (!IsSubMatch())
-    return type;
-  else
-    return parent_type;
+// static
+bool AutocompleteMatch::IsPedalCompatibleType(Type type) {
+  // Note: There is a PEDAL type, but it is deprecated because Pedals always
+  // attach to matches of other types instead of creating dedicated matches.
+  return type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+}
+
+// static
+bool AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(Type type) {
+  return type == AutocompleteMatchType::CLIPBOARD_URL ||
+         type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         type == AutocompleteMatchType::CLIPBOARD_IMAGE ||
+         type == AutocompleteMatchType::TILE_SUGGESTION;
 }
 
 // static
@@ -806,35 +851,11 @@ void AutocompleteMatch::LogSearchEngineUsed(
   if (template_url) {
     SearchEngineType search_engine_type =
         match.destination_url.is_valid()
-            ? TemplateURLPrepopulateData::GetEngineType(match.destination_url)
+            ? SearchEngineUtils::GetEngineType(match.destination_url)
             : SEARCH_ENGINE_OTHER;
     UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
                               SEARCH_ENGINE_MAX);
   }
-}
-
-// static
-size_t AutocompleteMatch::GetNextFamilyID() {
-  next_family_id_ += FAMILY_SIZE;
-  // Avoid the default value. 0 means "no submatch", so no family can use it.
-  if (next_family_id_ == 0)
-    next_family_id_ += FAMILY_SIZE;
-  return next_family_id_;
-}
-
-// static
-bool AutocompleteMatch::IsSameFamily(size_t lhs, size_t rhs) {
-  return (lhs & FAMILY_SIZE_MASK) == (rhs & FAMILY_SIZE_MASK);
-}
-
-void AutocompleteMatch::SetSubMatch(size_t subrelevance,
-                                    AutocompleteMatch::Type parent_type) {
-  this->subrelevance = subrelevance;
-  this->parent_type = parent_type;
-}
-
-bool AutocompleteMatch::IsSubMatch() const {
-  return subrelevance & ~FAMILY_SIZE_MASK;
 }
 
 void AutocompleteMatch::ComputeStrippedDestinationURL(
@@ -887,41 +908,15 @@ GURL AutocompleteMatch::ImageUrl() const {
   return answer ? answer->image_url() : image_url;
 }
 
-AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
-    OmniboxPedal* pedal) {
-  AutocompleteMatch copy(*this);
-  copy.pedal = pedal;
-  if (subrelevance == 0)
-    subrelevance = GetNextFamilyID();
-  copy.SetSubMatch(subrelevance + PEDAL_FAMILY_ID, copy.type);
-  DCHECK(IsSameFamily(subrelevance, copy.subrelevance));
-
-  copy.type = Type::PEDAL;
-  copy.destination_url = copy.pedal->GetNavigationUrl();
-
-  // Normally this is computed by the match using a TemplateURLService
-  // but Pedal URLs are not typical and unknown, and we don't want them to
-  // be deduped, e.g. after stripping a query parameter that may do something
-  // meaningful like indicate the viewable scope of a settings page.  So here
-  // we keep the URL exactly as the Pedal specifies it.
-  copy.stripped_destination_url = copy.destination_url;
-
-  // Note: Always use empty classifications for empty text and non-empty
-  // classifications for non-empty text.
-  const auto& labels = copy.pedal->GetLabelStrings();
-  copy.contents = labels.suggestion_contents;
-  copy.contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
-  copy.description = labels.hint;
-  copy.description_class = {
-      ACMatchClassification(0, ACMatchClassification::NONE)};
-
-  return copy;
-}
-
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const std::string& value) {
   DCHECK(!property.empty());
   additional_info[property] = value;
+}
+
+void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
+                                             const base::string16& value) {
+  RecordAdditionalInfo(property, base::UTF16ToUTF8(value));
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
@@ -995,6 +990,10 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
       return OmniboxEventProto::Suggestion::CLIPBOARD_TEXT;
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return OmniboxEventProto::Suggestion::CLIPBOARD_IMAGE;
+    case AutocompleteMatchType::TILE_SUGGESTION:
+      return OmniboxEventProto::Suggestion::TILE_SUGGESTION;
+    case AutocompleteMatchType::TILE_NAVSUGGEST:
+      return OmniboxEventProto::Suggestion::NAVSUGGEST;
     case AutocompleteMatchType::VOICE_SUGGEST:
       // VOICE_SUGGEST matches are only used in Java and are not logged,
       // so we should never reach this case.
@@ -1002,7 +1001,6 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-    case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }
@@ -1031,7 +1029,7 @@ bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
   const bool from_on_device_provider =
       (provider &&
        provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD);
-  return from_on_device_provider && subtype_identifier == 271;
+  return from_on_device_provider && subtypes.contains(271);
 }
 
 bool AutocompleteMatch::IsTrivialAutocompletion() const {
@@ -1041,15 +1039,9 @@ bool AutocompleteMatch::IsTrivialAutocompletion() const {
 }
 
 bool AutocompleteMatch::SupportsDeletion() const {
-  if (deletable)
-    return true;
-
-  for (auto it(duplicate_matches.begin()); it != duplicate_matches.end();
-       ++it) {
-    if (it->deletable)
-      return true;
-  }
-  return false;
+  return deletable ||
+         std::any_of(duplicate_matches.begin(), duplicate_matches.end(),
+                     [](auto m) { return m.deletable; });
 }
 
 AutocompleteMatch
@@ -1067,7 +1059,7 @@ AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
 }
 
 void AutocompleteMatch::SetAllowedToBeDefault(const AutocompleteInput& input) {
-  if (inline_autocompletion.empty())
+  if (IsEmptyAutocompletion())
     allowed_to_be_default_match = true;
   else if (input.prevent_inline_autocomplete())
     allowed_to_be_default_match = false;
@@ -1119,7 +1111,9 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   size_t res = 0;
 
   res += base::trace_event::EstimateMemoryUsage(fill_into_edit);
+  res += base::trace_event::EstimateMemoryUsage(fill_into_edit_additional_text);
   res += base::trace_event::EstimateMemoryUsage(inline_autocompletion);
+  res += base::trace_event::EstimateMemoryUsage(prefix_autocompletion);
   res += base::trace_event::EstimateMemoryUsage(destination_url);
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
   res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
@@ -1146,29 +1140,18 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
-bool AutocompleteMatch::ShouldShowTabMatchButton() const {
-  // TODO(pkasting): This kind of presentational logic does not belong on
-  // AutocompleteMatch and should be e.g. a static method in
-  // OmniboxMatchCellView that takes an AutocompleteMatch.
-  return has_tab_match && !associated_keyword &&
-         !OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled();
-}
-
-bool AutocompleteMatch::IsTabSwitchSuggestion() const {
-  return (subrelevance & ~FAMILY_SIZE_MASK) == TAB_SWITCH_FAMILY_ID;
-}
-
 void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
-    const AutocompleteMatch& duplicate_match) {
+    AutocompleteMatch& duplicate_match) {
   // For Entity Matches, absorb the duplicate match's |allowed_to_be_default|
-  // and |inline_autocomplete| properties.
+  // and |inline_autocompletion| properties.
   if (type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
       fill_into_edit == duplicate_match.fill_into_edit &&
       duplicate_match.allowed_to_be_default_match) {
     allowed_to_be_default_match = true;
-    if (inline_autocompletion.empty()) {
+    if (IsEmptyAutocompletion()) {
       inline_autocompletion = duplicate_match.inline_autocompletion;
-      is_navigational_title_match = duplicate_match.is_navigational_title_match;
+      prefix_autocompletion = duplicate_match.prefix_autocompletion;
+      split_autocompletion = duplicate_match.split_autocompletion;
     }
   }
 
@@ -1186,36 +1169,158 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom, relevance);
     relevance = duplicate_match.relevance;
   }
+
+  // Take the |pedal|, if any, so that it will be presented instead of buried.
+  if (!pedal && duplicate_match.pedal &&
+      AutocompleteMatch::IsPedalCompatibleType(type)) {
+    pedal = duplicate_match.pedal;
+    duplicate_match.pedal = nullptr;
+  }
 }
 
-void AutocompleteMatch::TryAutocompleteWithTitle(
-    const base::string16& title,
-    const AutocompleteInput& input) {
-  if (!base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles))
-    return;
+bool AutocompleteMatch::TryRichAutocompletion(
+    const base::string16& primary_text,
+    const base::string16& secondary_text,
+    const AutocompleteInput& input,
+    bool shortcut_provider) {
+  if (!OmniboxFieldTrial::IsRichAutocompletionEnabled())
+    return false;
 
-  const base::string16 lower_text{base::i18n::ToLower(title)};
-  const base::string16 lower_input_text{base::i18n::ToLower(input.text())};
+  // If the appropriate param is enabled, titles should be shown in the omnibox
+  // regardless of whether the suggestion can be the default. By default,
+  // secondary text should be displayed unless we autocomplete the secondary
+  // text, in which case |fill_into_edit_additional_text| will be overridden.
+  if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+    fill_into_edit_additional_text = secondary_text;
 
-  if (!base::StartsWith(lower_text, lower_input_text,
-                        base::CompareCase::SENSITIVE)) {
-    return;
+  if (input.prevent_inline_autocomplete())
+    return false;
+
+  const base::string16 primary_text_lower{base::i18n::ToLower(primary_text)};
+  const base::string16 secondary_text_lower{
+      base::i18n::ToLower(secondary_text)};
+  const base::string16 input_text_lower{base::i18n::ToLower(input.text())};
+
+  // Try matching the prefix of |primary_text|.
+  if (base::StartsWith(primary_text_lower, input_text_lower,
+                       base::CompareCase::SENSITIVE)) {
+    // |fill_into_edit| should already be set to |primary_text|.
+    inline_autocompletion = primary_text.substr(input_text_lower.length());
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "primary & prefix");
+    return true;
   }
 
-  // For exact matches, promote the relevance to out-score verbatim
-  // search-what-you-typed matches.
-  if (lower_text == lower_input_text) {
-    relevance =
-        std::max(relevance, SearchProvider::kNonURLVerbatimRelevance + 10);
-    RecordAdditionalInfo("title match", "full");
-  } else
-    RecordAdditionalInfo("title match", "prefix");
+  const bool can_autocomplete_titles =
+      OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
+      input.text().size() >=
+          OmniboxFieldTrial::RichAutocompletionAutocompleteTitlesMinChar();
 
-  fill_into_edit = title;
-  inline_autocompletion = fill_into_edit.substr(lower_input_text.length());
-  allowed_to_be_default_match =
-      inline_autocompletion.empty() || !input.prevent_inline_autocomplete();
-  is_navigational_title_match = true;
+  // Try matching the prefix of |secondary_text|.
+  if (can_autocomplete_titles &&
+      base::StartsWith(secondary_text_lower, input_text_lower,
+                       base::CompareCase::SENSITIVE)) {
+    fill_into_edit = secondary_text;
+    fill_into_edit_additional_text = primary_text;
+    swapped_fill_into_edit = true;
+    inline_autocompletion = secondary_text.substr(input_text_lower.length());
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "secondary & prefix");
+    return true;
+  }
+
+  // Check if non-prefix autocompletion is possible. I.e., these 2 conditions
+  // must be truthy:
+  // 1) Non-prefix autocompletion must be enabled through either param:
+  //   - EITHER |...NonPrefixAll|
+  //   - OR, for shortcut provider suggestions, |...NonPrefixShortcutProvider|
+  // 2) AND input must be longer than the threshold |...NonPrefixMinChar|
+  const bool can_autocomplete_non_prefix =
+      (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixAll() ||
+       (shortcut_provider &&
+        OmniboxFieldTrial::
+            RichAutocompletionAutocompleteNonPrefixShortcutProvider())) &&
+      input.text().size() >=
+          OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixMinChar();
+
+  // Try matching a non-prefix of |primary_text|.
+  size_t find_index;
+  if (can_autocomplete_non_prefix &&
+      (find_index = FindAtWordbreak(primary_text_lower, input_text_lower)) !=
+          base::string16::npos) {
+    // |fill_into_edit| should already be set to |primary_text|.
+    inline_autocompletion =
+        primary_text.substr(find_index + input_text_lower.length());
+    prefix_autocompletion = primary_text.substr(0, find_index);
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "primary & non-prefix");
+    return true;
+  }
+
+  // Try matching a non-prefix of |secondary_text|.
+  if (can_autocomplete_non_prefix && can_autocomplete_titles &&
+      (find_index = FindAtWordbreak(secondary_text_lower, input_text_lower)) !=
+          base::string16::npos) {
+    fill_into_edit = secondary_text;
+    fill_into_edit_additional_text = primary_text;
+    swapped_fill_into_edit = true;
+    inline_autocompletion =
+        secondary_text.substr(find_index + input_text_lower.length());
+    prefix_autocompletion = secondary_text.substr(0, find_index);
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "secondary & non-prefix");
+    return true;
+  }
+
+  const bool can_autocomplete_split_url =
+      OmniboxFieldTrial::RichAutocompletionSplitUrlCompletion() &&
+      input.text().size() >=
+          OmniboxFieldTrial::RichAutocompletionSplitCompletionMinChar();
+
+  // Try split matching (see comments for |split_autocompletion|) with
+  // |primary_text|.
+  std::vector<std::pair<size_t, size_t>> input_words;
+  if (can_autocomplete_split_url &&
+      !(input_words = FindWordsSequentiallyAtWordbreak(primary_text_lower,
+                                                       input_text_lower))
+           .empty()) {
+    // |fill_into_edit| should already be set to |primary_text|.
+    split_autocompletion = SplitAutocompletion(
+        primary_text_lower,
+        InvertAndReverseRanges(primary_text_lower.length(), input_words));
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "primary & split");
+    return true;
+  }
+
+  // Try split matching (see comments for |split_autocompletion|) with
+  // |secondary_text|.
+  const bool can_autocomplete_split_title =
+      OmniboxFieldTrial::RichAutocompletionSplitTitleCompletion() &&
+      input.text().size() >=
+          OmniboxFieldTrial::RichAutocompletionSplitCompletionMinChar();
+
+  if (can_autocomplete_split_title &&
+      !(input_words = FindWordsSequentiallyAtWordbreak(secondary_text_lower,
+                                                       input_text_lower))
+           .empty()) {
+    fill_into_edit = secondary_text;
+    fill_into_edit_additional_text = primary_text;
+    swapped_fill_into_edit = true;
+    split_autocompletion = SplitAutocompletion(
+        secondary_text_lower,
+        InvertAndReverseRanges(secondary_text_lower.length(), input_words));
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "secondary & split");
+    return true;
+  }
+
+  return false;
+}
+
+bool AutocompleteMatch::IsEmptyAutocompletion() const {
+  return inline_autocompletion.empty() && prefix_autocompletion.empty() &&
+         split_autocompletion.Empty();
 }
 
 #if DCHECK_IS_ON()

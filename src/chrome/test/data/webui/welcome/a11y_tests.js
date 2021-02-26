@@ -27,6 +27,7 @@ WelcomeA11y = class extends PolymerTest {
     return [
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
+      '//ui/webui/resources/js/assert.js',
       '//ui/webui/resources/js/util.js',
     ];
   }
@@ -53,7 +54,12 @@ AccessibilityTest.define('WelcomeA11y', {
   tests: {
     'Landing Page': function() {
       // Make sure we're in the right page.
-      assertEquals('Make Chrome your own', getDeepActiveElement().textContent);
+      assertEquals(
+          'Make Chrome your own',
+          document.body.querySelector('welcome-app')
+              .$$('landing-view')
+              .$$('h1')
+              .textContent);
     },
   },
 });

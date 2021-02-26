@@ -36,7 +36,6 @@ public abstract class CommandLine {
      *  Returns true if this command line contains the given switch.
      *  (Switch names ARE case-sensitive).
      */
-    @VisibleForTesting
     public abstract boolean hasSwitch(String switchString);
 
     /**
@@ -68,7 +67,6 @@ public abstract class CommandLine {
      * this action happens before the switch is needed.
      * @param switchString the switch to add.  It should NOT start with '--' !
      */
-    @VisibleForTesting
     public abstract void appendSwitch(String switchString);
 
     /**
@@ -126,7 +124,6 @@ public abstract class CommandLine {
     }
 
     // Equivalent to CommandLine::ForCurrentProcess in C++.
-    @VisibleForTesting
     public static CommandLine getInstance() {
         CommandLine commandLine = sCommandLine.get();
         assert commandLine != null;
@@ -415,7 +412,7 @@ public abstract class CommandLine {
 
         @Override
         public void appendSwitchWithValue(String switchString, String value) {
-            CommandLineJni.get().appendSwitchWithValue(switchString, value);
+            CommandLineJni.get().appendSwitchWithValue(switchString, value == null ? "" : value);
         }
 
         @Override

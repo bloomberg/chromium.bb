@@ -16,6 +16,7 @@
 #include "common/Platform.h"
 #include "dawn/dawn_proc.h"
 #include "dawn_native/DawnNative.h"
+#include "tests/DawnTest.h"
 #include "utils/GLFWUtils.h"
 
 #include <gtest/gtest.h>
@@ -47,10 +48,9 @@ class WindowSurfaceInstanceTests : public testing::Test {
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
         });
-        glfwInit();
+        DAWN_SKIP_TEST_IF(!glfwInit());
 
-        DawnProcTable procs = dawn_native::GetProcs();
-        dawnProcSetProcs(&procs);
+        dawnProcSetProcs(&dawn_native::GetProcs());
 
         mInstance = wgpu::CreateInstance();
     }
@@ -114,8 +114,8 @@ TEST_F(WindowSurfaceInstanceTests, BadChainedDescriptors) {
 
 // Test that a chained descriptor with HTMLCanvas produces an error.
 TEST_F(WindowSurfaceInstanceTests, HTMLCanvasDescriptor) {
-    wgpu::SurfaceDescriptorFromHTMLCanvasId chainedDescriptor;
-    chainedDescriptor.id = "myCanvas";
+    wgpu::SurfaceDescriptorFromCanvasHTMLSelector chainedDescriptor;
+    chainedDescriptor.selector = "#myCanvas";
 
     wgpu::SurfaceDescriptor descriptor;
     descriptor.nextInChain = &chainedDescriptor;

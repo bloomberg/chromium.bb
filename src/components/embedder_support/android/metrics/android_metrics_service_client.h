@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -22,8 +24,14 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace metrics {
 class MetricsStateManager;
+
+extern const char kCrashpadHistogramAllocatorName[];
 
 // AndroidMetricsServiceClient is a singleton which manages metrics collection
 // intended for use by WebView & WebLayer.
@@ -79,6 +87,9 @@ class MetricsStateManager;
 // the client ID (generating a new ID if there was none). If this client is in
 // the sample, it then calls MetricsService::Start(). If consent was not
 // granted, MaybeStartMetrics() instead clears the client ID, if any.
+//
+// To match chrome on other platforms (including android), the MetricsService is
+// always created.
 class AndroidMetricsServiceClient : public MetricsServiceClient,
                                     public EnabledStateProvider,
                                     public content::NotificationObserver {
@@ -99,6 +110,16 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateLowEntropyProvider();
 
+  // Updates the state of whether UKM is enabled or not by calling back into
+  // IsUkmAllowedForAllProfiles(). If |must_purge| is true then currently
+  // collected data will be purged.
+  void UpdateUkm(bool must_purge);
+
+  // Updates the state of the UKM service if it's running. This should be called
+  // when a BrowserContext is created or destroyed which would change the value
+  // of IsOffTheRecordSessionActive().
+  void UpdateUkmService();
+
   // Whether or not consent state has been determined, regardless of whether
   // it is positive or negative.
   bool IsConsentDetermined() const;
@@ -107,8 +128,13 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   bool IsConsentGiven() const override;
   bool IsReportingEnabled() const override;
 
+  // Returns the MetricService only if it has been started (which means consent
+  // was given).
+  MetricsService* GetMetricsServiceIfStarted();
+
   // MetricsServiceClient
   MetricsService* GetMetricsService() override;
+  ukm::UkmService* GetUkmService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   std::string GetApplicationLocale() override;
   bool GetBrand(std::string* brand_code) override;
@@ -123,6 +149,7 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
       MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
+  bool IsUkmAllowedForAllProfiles() override;
   bool ShouldStartUpFastForTesting() const override;
 
   // Gets the embedding app's package name if it's OK to log. Otherwise, this
@@ -133,6 +160,14 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // Runs |closure| when CollectFinalMetricsForLog() is called, when we begin
+  // collecting final metrics.
+  void SetCollectFinalMetricsForLogClosureForTesting(base::OnceClosure closure);
+
+  // Runs |listener| after all final metrics have been collected.
+  void SetOnFinalMetricsCollectedListenerForTesting(
+      base::RepeatingClosure listener);
 
   metrics::MetricsStateManager* metrics_state_manager() const {
     return metrics_state_manager_.get();
@@ -149,20 +184,20 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // per mille value, so this integer must always be in the inclusive range [0,
   // 1000]. A value of 0 will always be out-of-sample, and a value of 1000 is
   // always in-sample.
-  virtual int GetSampleRatePerMille() = 0;
+  virtual int GetSampleRatePerMille() const = 0;
 
   // Returns a value in the inclusive range [0, 999], to be compared against a
   // per mille sample rate. This value will be based on a persisted value, so it
   // should be consistent across restarts. This value should also be mostly
   // consistent across upgrades, to avoid significantly impacting IsInSample()
   // and IsInPackageNameSample(). Virtual for testing.
-  virtual int GetSampleBucketValue();
+  virtual int GetSampleBucketValue() const;
 
   // Determines if the client is within the random sample of clients for which
   // we log metrics. If this returns false, MetricsServiceClient should
   // indicate reporting is disabled. Sampling is due to storage/bandwidth
   // considerations.
-  bool IsInSample();
+  bool IsInSample() const;
 
   // Determines if the embedder app is the type of app for which we may log the
   // package name. If this returns false, GetAppPackageName() must return empty
@@ -189,6 +224,12 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // for testing.
   virtual std::string GetAppPackageNameInternal();
 
+  // Returns whether there are any OffTheRecord browsers/tabs open.
+  virtual bool IsOffTheRecordSessionActive();
+
+  // Returns a URLLoaderFactory when the system uploader isn't used.
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
   void EnsureOnValidSequence() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -199,25 +240,28 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   void MaybeStartMetrics();
   void RegisterForNotifications();
 
-  std::unique_ptr<MetricsService> CreateMetricsService(
-      MetricsStateManager* state_manager,
-      AndroidMetricsServiceClient* client,
-      PrefService* prefs);
+  void RegisterMetricsProvidersAndInitState();
+  void CreateUkmService();
 
   std::unique_ptr<MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<MetricsService> metrics_service_;
+  std::unique_ptr<ukm::UkmService> ukm_service_;
   content::NotificationRegistrar registrar_;
   PrefService* pref_service_ = nullptr;
   bool init_finished_ = false;
   bool set_consent_finished_ = false;
   bool user_consent_ = false;
   bool app_consent_ = false;
-  bool is_in_sample_ = false;
+  bool is_client_id_forced_ = false;
   bool fast_startup_for_testing_ = false;
+  bool did_start_metrics_ = false;
 
   // When non-zero, this overrides the default value in
   // GetStandardUploadInterval().
   base::TimeDelta overridden_upload_interval_;
+
+  base::OnceClosure collect_final_metrics_for_log_closure_;
+  base::RepeatingClosure on_final_metrics_collected_listener_;
 
   // MetricsServiceClient may be created before the UI thread is promoted to
   // BrowserThread::UI. Use |sequence_checker_| to enforce that the

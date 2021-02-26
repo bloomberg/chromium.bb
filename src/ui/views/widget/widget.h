@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -62,6 +63,8 @@ class NativeWidgetPrivate;
 class RootView;
 }  // namespace internal
 
+enum class CloseRequestResult { kCanClose, kCannotClose };
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
 //
@@ -94,6 +97,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
  public:
   using Widgets = std::set<Widget*>;
   using ShapeRects = std::vector<gfx::Rect>;
+  using PaintAsActiveCallbackList = base::RepeatingClosureList;
 
   enum class FrameType {
     kDefault,      // Use whatever the default would be.
@@ -140,14 +144,16 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // reason for menu or for the main Chrome browser, as we have no reason to
   // specifically differentiate those yet.
   //
-  // Add additional values as needed.
+  // Add additional values as needed. Do not change any existing values, as this
+  // enum is logged to UMA.
   enum class ClosedReason {
-    kUnspecified = 0,      // No reason was given for the widget closing.
-    kEscKeyPressed,        // The ESC key was pressed to cancel the widget.
-    kCloseButtonClicked,   // The [X] button was explicitly clicked.
-    kLostFocus,            // The widget destroyed itself when it lost focus.
-    kCancelButtonClicked,  // The widget's cancel button was clicked.
-    kAcceptButtonClicked   // The widget's done/accept button was clicked.
+    kUnspecified = 0,         // No reason was given for the widget closing.
+    kEscKeyPressed = 1,       // The ESC key was pressed to cancel the widget.
+    kCloseButtonClicked = 2,  // The [X] button was explicitly clicked.
+    kLostFocus = 3,           // The widget destroyed itself when it lost focus.
+    kCancelButtonClicked = 4,  // The widget's cancel button was clicked.
+    kAcceptButtonClicked = 5,  // The widget's done/accept button was clicked.
+    kMaxValue = kAcceptButtonClicked
   };
 
   struct VIEWS_EXPORT InitParams {
@@ -390,16 +396,26 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Creates a decorated window Widget with the specified properties. The
   // returned Widget is owned by its NativeWidget; see Widget class comment for
   // details.
+  // The std::unique_ptr variant requires that delegate->owned_by_widget().
   static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
                                         gfx::NativeView parent,
                                         const gfx::Rect& bounds = gfx::Rect());
+  static Widget* CreateWindowWithParent(
+      std::unique_ptr<WidgetDelegate> delegate,
+      gfx::NativeView parent,
+      const gfx::Rect& bounds = gfx::Rect());
 
   // Creates a decorated window Widget in the same desktop context as |context|.
   // The returned Widget is owned by its NativeWidget; see Widget class comment
   // for details.
+  // The std::unique_ptr variant requires that delegate->owned_by_widget().
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
                                          gfx::NativeWindow context,
                                          const gfx::Rect& bounds = gfx::Rect());
+  static Widget* CreateWindowWithContext(
+      std::unique_ptr<WidgetDelegate> delegate,
+      gfx::NativeWindow context,
+      const gfx::Rect& bounds = gfx::Rect());
 
   // Closes all Widgets that aren't identified as "secondary widgets". Called
   // during application shutdown when the last non-secondary widget is closed.
@@ -609,7 +625,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Hides the widget.
   void Hide();
 
-  // Like Show(), but does not activate the window.
+  // Like Show(), but does not activate the window. Tests may be flaky on Mac:
+  // Mac browsertests do not have an activation policy so the widget may be
+  // activated.
   void ShowInactive();
 
   // Activates the widget, assuming it already exists and is visible.
@@ -714,7 +732,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                     std::unique_ptr<ui::OSExchangeData> data,
                     const gfx::Point& location,
                     int operation,
-                    ui::DragDropTypes::DragEventSource source);
+                    ui::mojom::DragEventSource source);
 
   // Returns the view that requested the current drag operation via
   // RunShellDrag(), or NULL if there is no such view or drag operation.
@@ -778,7 +796,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // WidgetDelegate is given the first opportunity to create one, followed by
   // the NativeWidget implementation. If both return NULL, a default one is
   // created.
-  virtual NonClientFrameView* CreateNonClientFrameView();
+  virtual std::unique_ptr<NonClientFrameView> CreateNonClientFrameView();
 
   // Whether we should be using a native frame.
   bool ShouldUseNativeFrame() const;
@@ -870,6 +888,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     focus_on_creation_ = focus_on_creation;
   }
 
+  // Returns the parent of this widget. Note that a top-level widget is not
+  // necessarily a root widget and can have a parent.
+  Widget* parent() { return parent_; }
+  const Widget* parent() const { return parent_; }
+
   // True if the widget is considered top level widget. Top level widget
   // is a widget of TYPE_WINDOW, TYPE_PANEL, TYPE_WINDOW_FRAMELESS, BUBBLE,
   // POPUP or MENU, and has a focus manager and input method object associated
@@ -905,6 +928,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the internal name for this Widget and NativeWidget.
   std::string GetName() const;
+
+  // Registers |callback| to be called whenever the "paint as active" state
+  // changes.
+  std::unique_ptr<PaintAsActiveCallbackList::Subscription>
+  RegisterPaintAsActiveChangedCallback(
+      PaintAsActiveCallbackList::CallbackType callback);
 
   // Prevents the widget from being rendered as inactive during the lifetime of
   // the returned lock. Multiple locks can exist with disjoint lifetimes. The
@@ -1025,9 +1054,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Undoes LockPaintAsActive(). Called by PaintAsActiveLock destructor.
   void UnlockPaintAsActive();
 
-  // Notifies the window frame that the active rendering state has changed.
-  void UpdatePaintAsActiveState(bool paint_as_active);
-
   // If a descendent of |root_view_| is focused, then clear the focus.
   void ClearFocusFromWidget();
 
@@ -1039,9 +1065,16 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   base::ObserverList<WidgetRemovalsObserver>::Unchecked removals_observers_;
 
+  PaintAsActiveCallbackList paint_as_active_callbacks_;
+
   // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.
   WidgetDelegate* widget_delegate_ = nullptr;
+
+  // The parent of this widget. This is the widget that associates with the
+  // |params.parent| supplied to Init(). If no parent is given or the native
+  // view parent has no associating Widget, this value will be nullptr.
+  Widget* parent_ = nullptr;
 
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with

@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_versioncontrol.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -32,6 +32,8 @@ CXFA_VersionControl::CXFA_VersionControl(CXFA_Document* doc,
                 XFA_Element::VersionControl,
                 {},
                 kVersionControlAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_VersionControl::~CXFA_VersionControl() = default;

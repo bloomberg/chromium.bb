@@ -8,6 +8,25 @@ import * as UI from '../ui/ui.js';
 import {DataDisplayDelegate, Events as ProfileHeaderEvents, ProfileHeader} from './ProfileHeader.js';  // eslint-disable-line no-unused-vars
 
 /**
+ * @type {?HTMLInputElement}
+ */
+let sharedFileSelectorElement = null;
+
+/**
+ * @return {?HTMLInputElement}
+ */
+function getSharedFileSelectorElement() {
+  return sharedFileSelectorElement;
+}
+
+/**
+ * @param {!HTMLInputElement} element
+ */
+export function setSharedFileSelectorElement(element) {
+  sharedFileSelectorElement = element;
+}
+
+/**
  * @unrestricted
  */
 export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
@@ -46,6 +65,9 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     this._saveLinkElement.addEventListener('click', this._saveProfile.bind(this), false);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _onProfileReceived(event) {
     this._createSaveLink();
   }
@@ -60,6 +82,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
       this._titlesElement.classList.toggle('no-subtitle', !statusUpdate.subtitle);
     }
     if (typeof statusUpdate.wait === 'boolean' && this.listItemElement) {
+      this._iconElement.classList.toggle('spinner', statusUpdate.wait);
       this.listItemElement.classList.toggle('wait', statusUpdate.wait);
     }
   }
@@ -134,7 +157,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     if (this._small) {
       this.listItemElement.classList.add('small');
     }
-    this.listItemElement.appendChildren(this._iconElement, this._titlesElement);
+    this.listItemElement.append(this._iconElement, this._titlesElement);
     this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
 
     UI.ARIAUtils.setDescription(this.listItemElement, ls`${this.profile.profileType().name}`);
@@ -147,9 +170,12 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     const profile = this.profile;
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     // FIXME: use context menu provider
+    const sharedFileSelectorElement = getSharedFileSelectorElement();
+    if (!sharedFileSelectorElement) {
+      throw new Error('File selector element shared by ProfilePanel instances is missing');
+    }
     contextMenu.headerSection().appendItem(
-        Common.UIString.UIString('Load…'),
-        self.Profiler.ProfilesPanel._fileSelectorElement.click.bind(self.Profiler.ProfilesPanel._fileSelectorElement));
+        Common.UIString.UIString('Load…'), sharedFileSelectorElement.click.bind(sharedFileSelectorElement));
     if (profile.canSaveToFile()) {
       contextMenu.saveSection().appendItem(Common.UIString.UIString('Save…'), profile.saveToFile.bind(profile));
     }
@@ -157,6 +183,9 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     contextMenu.show();
   }
 
+  /**
+   * @param {!Event} event
+   */
   _saveProfile(event) {
     this.profile.saveToFile();
   }

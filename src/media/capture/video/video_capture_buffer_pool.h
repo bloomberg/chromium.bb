@@ -88,6 +88,15 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   // of ReserveForProducer().
   virtual void RelinquishProducerReservation(int buffer_id) = 0;
 
+  // Reserve a buffer id to use for a buffer specified by |handle| (which was
+  // allocated by some external source). This call cannot fail (no allocation is
+  // done). It may return a new id, or may reuse an existing id, if the buffer
+  // represented by |handle| is already being tracked. The behavior of
+  // |buffer_id_to_drop| is the same as ReserveForProducer.
+  virtual int ReserveIdForExternalBuffer(
+      const gfx::GpuMemoryBufferHandle& handle,
+      int* buffer_id_to_drop) = 0;
+
   // Returns a snapshot of the current number of buffers in-use divided by the
   // maximum |count_|.
   virtual double GetBufferPoolUtilization() const = 0;

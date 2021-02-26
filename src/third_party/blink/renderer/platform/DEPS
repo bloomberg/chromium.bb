@@ -1,10 +1,10 @@
 include_rules = [
-    # To whitelist base/ stuff Blink is allowed to include, we list up all
+    # To only allow a subset of base/ in Blink, we explicitly list all
     # directories and files instead of writing 'base/'.
     "+base/allocator/partition_allocator",
     "+base/atomic_ref_count.h",
     "+base/bind.h",
-    "+base/bind_helpers.h",
+    "+base/callback_helpers.h",
     "+base/bit_cast.h",
     "+base/command_line.h",
     "+base/compiler_specific.h",
@@ -19,6 +19,7 @@ include_rules = [
     "+base/mac/mac_util.h",
     "+base/memory",
     "+base/observer_list.h",
+    "+base/observer_list_threadsafe.h",
     "+base/memory/shared_memory.h",
     "+base/message_loop/message_loop.h",
     "+base/metrics/histogram.h",
@@ -42,6 +43,7 @@ include_rules = [
     "+base/test",
     "+base/test/fuzzed_data_provider.h",
     "+base/threading/thread_task_runner_handle.h",
+    "+base/threading/thread_restrictions.h",
     "+base/time",
     "+base/timer",
     "+base/trace_event",
@@ -72,6 +74,7 @@ include_rules = [
     "+third_party/khronos",
     "+third_party/skia",
     "+ui/base/cursor/cursor.h",
+    "+ui/base/prediction",
     "+ui/base/resource/scale_factor.h",
     "+ui/gfx",
     "+url",
@@ -88,10 +91,17 @@ specific_include_rules = {
         "+crypto",
         "+third_party/boringssl/src/include",
     ],
+    "platform.cc": [
+        "+components/viz/common/gpu/raster_context_provider.h",
+        "+gpu/ipc/client/gpu_channel_host.h",
+    ],
     "web_url_error\.cc": [
         "+net/base/net_errors.h"
     ],
     "ukm_time_aggregator_test.cc" : [
         "+components/ukm/test_ukm_recorder.h"
+    ],
+    "search_engine_utils.cc": [
+        "+components/search_engines/search_engine_utils.h"
     ],
 }

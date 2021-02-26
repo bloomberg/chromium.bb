@@ -44,8 +44,8 @@ class SysmemBufferWriter::Buffer {
     size_t bytes_to_map = base::bits::Align(offset + size, base::GetPageSize());
     uintptr_t addr;
     zx_status_t status = zx::vmar::root_self()->map(
-        /*vmar_offset=*/0, vmo, /*vmo_offset=*/0, bytes_to_map,
-        ZX_VM_PERM_READ | ZX_VM_PERM_WRITE, &addr);
+        ZX_VM_PERM_READ | ZX_VM_PERM_WRITE, /*vmar_offset=*/0, vmo,
+        /*vmo_offset=*/0, bytes_to_map, &addr);
     if (status != ZX_OK) {
       ZX_DLOG(ERROR, status) << "zx_vmar_map";
       return false;
@@ -70,14 +70,28 @@ class SysmemBufferWriter::Buffer {
     size_t bytes_to_fill = std::min(size_, data.size());
     memcpy(base_address_ + offset_, data.data(), bytes_to_fill);
 
-    // Flush CPU cache if StreamProcessor reads from RAM.
-    if (coherency_domain_ == fuchsia::sysmem::CoherencyDomain::RAM) {
-      zx_status_t status = zx_cache_flush(base_address_ + offset_,
-                                          bytes_to_fill, ZX_CACHE_FLUSH_DATA);
-      ZX_DCHECK(status == ZX_OK, status) << "zx_cache_flush";
-    }
+    FlushBuffer(0, bytes_to_fill);
 
     return bytes_to_fill;
+  }
+
+  base::span<uint8_t> ReserveAndMapBuffer() {
+    DCHECK(!is_used_);
+    is_used_ = true;
+    return base::make_span(base_address_ + offset_, size_);
+  }
+
+  void FlushBuffer(size_t flush_offset, size_t flush_size) {
+    DCHECK(is_used_);
+    DCHECK_LE(flush_size, size_ - flush_offset);
+
+    if (coherency_domain_ != fuchsia::sysmem::CoherencyDomain::RAM)
+      return;
+
+    uint8_t* address = base_address_ + offset_ + flush_offset;
+    zx_status_t status =
+        zx_cache_flush(address, flush_size, ZX_CACHE_FLUSH_DATA);
+    ZX_DCHECK(status == ZX_OK, status) << "zx_cache_flush";
   }
 
   void Release() { is_used_ = false; }
@@ -154,16 +168,9 @@ std::unique_ptr<SysmemBufferWriter> SysmemBufferWriter::Create(
 
 // static
 base::Optional<fuchsia::sysmem::BufferCollectionConstraints>
-SysmemBufferWriter::GetRecommendedConstraints(
-    const fuchsia::media::StreamBufferConstraints& stream_constraints) {
+SysmemBufferWriter::GetRecommendedConstraints(size_t min_buffer_count,
+                                              size_t min_buffer_size) {
   fuchsia::sysmem::BufferCollectionConstraints buffer_constraints;
-
-  if (!stream_constraints.has_default_settings() ||
-      !stream_constraints.default_settings().has_packet_count_for_client()) {
-    DLOG(ERROR)
-        << "Received StreamBufferConstaints with missing required fields.";
-    return base::nullopt;
-  }
 
   // Currently we have to map buffers VMOs to write to them (see ZX-4854) and
   // memory cannot be mapped as write-only (see ZX-4872), so request RW access
@@ -171,20 +178,25 @@ SysmemBufferWriter::GetRecommendedConstraints(
   buffer_constraints.usage.cpu =
       fuchsia::sysmem::cpuUsageRead | fuchsia::sysmem::cpuUsageWrite;
 
-  buffer_constraints.min_buffer_count_for_camping =
-      stream_constraints.default_settings().packet_count_for_client();
+  buffer_constraints.min_buffer_count = min_buffer_count;
   buffer_constraints.has_buffer_memory_constraints = true;
-
-  const int kDefaultPacketSize = 512 * 1024;
-  buffer_constraints.buffer_memory_constraints.min_size_bytes =
-      stream_constraints.has_per_packet_buffer_bytes_recommended()
-          ? stream_constraints.per_packet_buffer_bytes_recommended()
-          : kDefaultPacketSize;
-
+  buffer_constraints.buffer_memory_constraints.min_size_bytes = min_buffer_size;
   buffer_constraints.buffer_memory_constraints.ram_domain_supported = true;
   buffer_constraints.buffer_memory_constraints.cpu_domain_supported = true;
 
   return buffer_constraints;
+}
+
+base::span<uint8_t> SysmemBufferWriter::ReserveAndMapBuffer(size_t index) {
+  DCHECK_LT(index, buffers_.size());
+  return buffers_[index].ReserveAndMapBuffer();
+}
+
+void SysmemBufferWriter::FlushBuffer(size_t index,
+                                     size_t flush_offset,
+                                     size_t flush_size) {
+  DCHECK_LT(index, buffers_.size());
+  return buffers_[index].FlushBuffer(flush_offset, flush_size);
 }
 
 }  // namespace media

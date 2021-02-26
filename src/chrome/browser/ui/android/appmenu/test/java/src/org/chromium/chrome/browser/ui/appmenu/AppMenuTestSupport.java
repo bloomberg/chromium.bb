@@ -15,11 +15,6 @@ import org.chromium.chrome.browser.ui.appmenu.internal.R;
 
 /**
  * Utility methods for performing operations on the app menu needed for testing.
- *
- * TODO(https://crbug.com/956260): This will live in a support/ package once app menu code
- * is migrated to have its own build target. For now it lives here so this class may access package
- * protected appmenu classes while still allowing classes in chrome_java_test_support may access
- * AppMenuTestSupport.
  */
 public class AppMenuTestSupport {
     /**
@@ -69,16 +64,15 @@ public class AppMenuTestSupport {
      *         dragging down on the menu button, this should be true. Note that if
      *         anchorView is null, this must be false since we no longer support
      *         hardware menu button dragging.
-     * @param showFromBottom Whether the menu should be shown from the bottom up.
      * @return True, if the menu is shown, false, if menu is not shown, example
      *         reasons: the menu is not yet available to be shown, or the menu is
      *         already showing.
      */
-    public static boolean showAppMenu(AppMenuCoordinator coordinator, View anchorView,
-            boolean startDragging, boolean showFromBottom) {
+    public static boolean showAppMenu(
+            AppMenuCoordinator coordinator, View anchorView, boolean startDragging) {
         return ((AppMenuCoordinatorImpl) coordinator)
                 .getAppMenuHandlerImplForTesting()
-                .showAppMenu(anchorView, startDragging, showFromBottom);
+                .showAppMenu(anchorView, startDragging);
     }
 
     /**

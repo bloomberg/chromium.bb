@@ -4,6 +4,8 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+
 import android.os.Bundle;
 
 import androidx.preference.Preference;
@@ -11,7 +13,9 @@ import androidx.preference.Preference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory.Type;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * The main Site Settings screen, which shows all the site settings categories: All sites, Location,
@@ -96,9 +100,8 @@ public class SiteSettings
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
             } else if (Type.COOKIES == prefCategory && checked
-                    && getSiteSettingsClient()
-                               .getSiteSettingsPrefClient()
-                               .getBlockThirdPartyCookies()) {
+                    && UserPrefs.get(browserContextHandle).getInteger(COOKIE_CONTROLS_MODE)
+                            == CookieControlsMode.BLOCK_THIRD_PARTY) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (Type.DEVICE_LOCATION == prefCategory && checked
                     && WebsitePreferenceBridge.isLocationAllowedByPolicy(browserContextHandle)) {

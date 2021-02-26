@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_form_database_service.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
@@ -79,7 +79,7 @@ bool AwFormDatabaseService::HasFormData() {
   has_form_data_result_ = false;
   has_form_data_completion_.Reset();
   using awds = autofill::AutofillWebDataService;
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),

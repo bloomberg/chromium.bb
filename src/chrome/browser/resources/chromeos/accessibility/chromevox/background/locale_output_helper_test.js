@@ -4,7 +4,6 @@
 
 // Include test fixture.
 GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
-GEN_INCLUDE(['../testing/mock_feedback.js']);
 
 /**
  * Test fixture for LocaleOutputHelper.
@@ -42,28 +41,6 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
         {'lang': 'es-ES'}, {'lang': 'it-IT'}, {'lang': 'ja-JP'},
         {'lang': 'ko-KR'}, {'lang': 'zh-TW'}, {'lang': 'ast'}, {'lang': 'pt'}
       ]);
-    };
-  }
-
-  /**
-   * @return {!MockFeedback}
-   */
-  createMockFeedback() {
-    const mockFeedback =
-        new MockFeedback(this.newCallback(), this.newCallback.bind(this));
-
-    mockFeedback.install();
-    return mockFeedback;
-  }
-
-  /**
-   * Create a function which performs the command |cmd|.
-   * @param {string} cmd
-   * @return {function(): void}
-   */
-  doCmd(cmd) {
-    return function() {
-      CommandHandler.onCommand(cmd);
     };
   }
 
@@ -185,20 +162,16 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
   get chineseDoc() {
     return `
       <p lang="en-us">United States</p>
-      <p lang="zh">Chinese</p>
       <p lang="zh-hans">Simplified Chinese</p>
       <p lang="zh-hant">Traditional Chinese</p>
-      <p lang="zh">Chinese</p>
     `;
   }
 
   get portugueseDoc() {
     return `
       <p lang="en-us">United States</p>
-      <p lang="pt">Portuguese</p>
       <p lang="pt-br">Brazil</p>
       <p lang="pt-pt">Portugal</p>
-      <p lang="pt">Portuguese</p>
     `;
   }
 };
@@ -231,7 +204,7 @@ TEST_F(
         this.setAvailableVoices();
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLocale(
-                'en', 'English: In the morning, I sometimes eat breakfast.');
+                'en', 'In the morning, I sometimes eat breakfast.');
         mockFeedback.call(doCmd('nextLine'))
             .expectSpeechWithLocale(
                 'fr', 'français: Dans l\'apres-midi, je dejeune.');
@@ -326,7 +299,7 @@ TEST_F(
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLocale(
                 'en',
-                'English: This entire object should be read in English, even' +
+                'This entire object should be read in English, even' +
                     ' the following French passage: ' +
                     'salut mon ami! Ca va? Bien, et toi? It\'s hard to' +
                     ' differentiate between latin-based languages.');
@@ -480,18 +453,24 @@ TEST_F('ChromeVoxLocaleOutputHelperTest', 'WordNavigationTest', function() {
     this.setAvailableVoices();
     mockFeedback.call(doCmd('jumpToTop'))
         .expectSpeechWithLocale(
-            'en', 'English: In the morning, I sometimes eat breakfast.')
+            'en', 'In the morning, I sometimes eat breakfast.')
         .call(doCmd('nextLine'))
         .expectSpeechWithLocale(
             'fr', 'français: Dans l\'apres-midi, je dejeune.')
         .call(doCmd('nextWord'))
         .expectSpeechWithLocale('fr', `l'apres`)
         .call(doCmd('nextWord'))
+        .expectSpeechWithLocale('fr', `-`)
+        .call(doCmd('nextWord'))
         .expectSpeechWithLocale('fr', `midi`)
+        .call(doCmd('nextWord'))
+        .expectSpeechWithLocale('fr', `,`)
         .call(doCmd('nextWord'))
         .expectSpeechWithLocale('fr', `je`)
         .call(doCmd('nextWord'))
         .expectSpeechWithLocale('fr', `dejeune`)
+        .call(doCmd('nextWord'))
+        .expectSpeechWithLocale('fr', `.`)
         .call(doCmd('nextWord'))
         .expectSpeechWithLocale('en', `English: Hello`)
         .call(doCmd('nextWord'))
@@ -507,9 +486,13 @@ TEST_F('ChromeVoxLocaleOutputHelperTest', 'WordNavigationTest', function() {
         .call(doCmd('nextWord'))
         .expectSpeechWithLocale('en', `you`)
         .call(doCmd('nextWord'))
+        .expectSpeechWithLocale('en', `.`)
+        .call(doCmd('nextWord'))
         .expectSpeechWithLocale('fr', `français: Comment`)
         .call(doCmd('previousWord'))
-        .expectSpeechWithLocale('en', `English: you`)
+        .expectSpeechWithLocale('en', `English: .`)
+        .call(doCmd('previousWord'))
+        .expectSpeechWithLocale('en', `you`)
         .replay();
   });
 });
@@ -522,7 +505,7 @@ TEST_F(
         this.setAvailableVoices();
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLocale(
-                'en', 'English: In the morning, I sometimes eat breakfast.')
+                'en', 'In the morning, I sometimes eat breakfast.')
             .call(doCmd('nextLine'))
             .expectSpeechWithLocale(
                 'fr', 'français: Dans l\'apres-midi, je dejeune.')
@@ -569,15 +552,11 @@ TEST_F(
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLocale('en-us', 'United States')
             .call(doCmd('nextLine'))
-            .expectSpeechWithLocale('zh', '中文: Chinese')
-            .call(doCmd('nextLine'))
             .expectSpeechWithLocale(
                 'zh-hans', '中文（简体）: Simplified Chinese')
             .call(doCmd('nextLine'))
             .expectSpeechWithLocale(
-                'zh-hant', '中文（繁體）: Traditional Chinese')
-            .call(doCmd('nextLine'))
-            .expectSpeechWithLocale('zh', '中文: Chinese');
+                'zh-hant', '中文（繁體）: Traditional Chinese');
         mockFeedback.replay();
       });
     });
@@ -592,13 +571,38 @@ TEST_F(
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLocale('en-us', 'United States')
             .call(doCmd('nextLine'))
-            .expectSpeechWithLocale('pt', 'português: Portuguese')
-            .call(doCmd('nextLine'))
             .expectSpeechWithLocale('pt-br', 'português (Brasil): Brazil')
             .call(doCmd('nextLine'))
-            .expectSpeechWithLocale('pt-pt', 'português (Portugal): Portugal')
-            .call(doCmd('nextLine'))
-            .expectSpeechWithLocale('pt', 'português: Portuguese');
+            .expectSpeechWithLocale('pt-pt', 'português (Portugal): Portugal');
         mockFeedback.replay();
       });
     });
+
+// Tests logic in shouldAnnounceLocale_(). We only announce the locale once when
+// transitioning to more specific locales, e.g. 'en' -> 'en-us'. Transitions to
+// less specific locales, e.g. 'en-us' -> 'en' should not be announced. Finally,
+// subsequent transitions to the same locale, e.g. 'en' -> 'en-us' should not be
+// announced.
+TEST_F('ChromeVoxLocaleOutputHelperTest', 'MaybeAnnounceLocale', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+  <p lang="en">Start</p>
+  <p lang="en-ca">Middle</p>
+  <p lang="en">Penultimate</p>
+  <p lang="en-ca">End</p>
+  `,
+      function() {
+        localStorage['languageSwitching'] = 'true';
+        this.setAvailableVoices();
+        mockFeedback.call(doCmd('jumpToTop'))
+            .expectSpeechWithLocale('en', 'Start')
+            .call(doCmd('nextObject'))
+            .expectSpeechWithLocale('en-ca', 'English (Canada): Middle')
+            .call(doCmd('nextObject'))
+            .expectSpeechWithLocale('en', 'Penultimate')
+            .call(doCmd('nextObject'))
+            .expectSpeechWithLocale('en-ca', 'End')
+            .replay();
+      });
+});

@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../os_route.html">
@@ -16,13 +17,21 @@
 <dom-module id="settings-multidevice-feature-item">
   <template>
     <style include="settings-shared">
+      :host([is-sub-feature]) #feature-icon {
+        display: none;
+      }
+
+      :host([is-sub-feature]) .settings-box .middle {
+        padding-inline-start: 64px;
+      }
+
       #card {
         border-top: var(--cr-separator-line);
         border-top-style: var(--feature-item-border-top-style, solid);
         padding: var(--feature-item-row-padding);
       }
 
-      iron-icon {
+      #feature-icon {
         padding: 2px;
       }
 
@@ -31,34 +40,43 @@
       }
     </style>
     <div id="card" class="settings-box two-line no-padding">
-      <div class="link-wrapper" actionable
-           actionable$="[[hasSubpageClickHandler_(
+      <div id="linkWrapper" class="link-wrapper"
+           actionable$="[[isRowClickable_(
                feature, pageContentData, subpageRoute)]]"
            on-click="handleItemClick_">
         <slot name="icon">
-          <iron-icon icon="[[getIconName(feature)]]"></iron-icon>
+          <iron-icon id="feature-icon" icon="[[getIconName(feature)]]">
+          </iron-icon>
         </slot>
         <div id="item-text-container" class="middle">
           <div id="featureName">[[getFeatureName(feature)]]</div>
-          <settings-localized-link
-              class="secondary"
-              id="featureSecondary"
-              localized-string="[[getFeatureSummaryHtml(feature)]]">
-          </settings-localized-link>
+          <slot name="feature-summary">
+            <settings-localized-link
+                class="secondary"
+                id="featureSecondary"
+                localized-string="[[getFeatureSummaryHtml(feature)]]">
+            </settings-localized-link>
+          </slot>
         </div>
         <template is="dom-if"
-                  if="[[hasSubpageClickHandler_(
-              feature, pageContentData, subpageRoute)]]"
+            if="[[hasSubpageClickHandler_(feature, pageContentData,
+                      subpageRoute)]]"
                   restamp>
           <cr-icon-button id="subpageButton" class="subpage-arrow"
               aria-labelledby="featureName" aria-describedby="featureSecondary"
               aria-roledescription="$i18n{subpageArrowRoleDescription}">
           </cr-icon-button>
         </template>
+        <template is="dom-if" if="[[infoTooltip]]" restamp>
+          <iron-icon id="help-icon" icon="cr:help-outline"></iron-icon>
+          <paper-tooltip for="help-icon" position="top" fit-to-visible-bounds>
+            [[infoTooltip]]
+          </paper-tooltip>
+        </template>
       </div>
       <template is="dom-if"
-                if="[[hasSubpageClickHandler_(
-              feature, pageContentData, subpageRoute)]]"
+          if="[[shouldShowSeparator_(
+                    feature, pageContentData, subpageRoute)]]"
                 restamp>
         <div class="separator"></div>
       </template>

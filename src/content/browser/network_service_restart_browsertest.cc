@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_environment_variable_override.h"
@@ -17,9 +17,9 @@
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/network_service_instance_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -41,6 +41,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/io_thread_shared_url_loader_factory_owner.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -69,6 +70,8 @@ mojo::PendingRemote<network::mojom::NetworkContext> CreateNetworkContext() {
   mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
+  context_params->cert_verifier_params =
+      GetCertVerifierParams(network::mojom::CertVerifierCreationParams::New());
   GetNetworkService()->CreateNetworkContext(
       network_context.InitWithNewPipeAndPassReceiver(),
       std::move(context_params));
@@ -1135,8 +1138,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
   ASSERT_TRUE(NavigateToURL(web_contents,
                             embedded_test_server()->GetURL("/title1.html")));
 
-  // Load the test plugin (see ppapi::RegisterFlashTestPlugin and
-  // ppapi/tests/power_saver_test_plugin.cc).
+  // Load the test plugin (see ppapi::RegisterCorbTestPlugin).
   const char kLoadingScript[] = R"(
       var obj = document.createElement('object');
       obj.id = 'plugin';
@@ -1218,6 +1220,65 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   // Sync call should be fine, even though network process is still starting up.
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   network_service_test->AddRules({});
+}
+
+// Tests handling of a NetworkService crash that happens after a navigation
+// triggers sending a Commit IPC to the renderer process, but before a DidCommit
+// IPC from the renderer process is handled.  See also
+// https://crbug.com/1056949#c75.
+//
+// TODO(lukasza): https://crbug.com/1129592: Flaky on Android.  No flakiness
+// observed whatsoever on Windows, Linux or CrOS.
+#if defined(OS_ANDROID)
+#define MAYBE_BetweenCommitNavigationAndDidCommit \
+  DISABLED_BetweenCommitNavigationAndDidCommit
+#else
+#define MAYBE_BetweenCommitNavigationAndDidCommit \
+  BetweenCommitNavigationAndDidCommit
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       MAYBE_BetweenCommitNavigationAndDidCommit) {
+  if (IsInProcessNetworkService())
+    return;
+
+  GURL initial_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Crash the NetworkService while CommitNavigation IPC is in-flight and before
+  // DidCommit IPC is handled.  This tests how RenderFrameHostImpl recreates the
+  // URLLoaderFactory after NetworkService crash.  In particular,
+  // RenderFrameHostImpl::UpdateSubresourceLoaderFactories needs to use the
+  // |request_initiator_origin_lock| associated with the in-flight IPC (because
+  // the |RFHI::last_committed_origin_| won't be updated until DidCommit IPC is
+  // handled).
+  auto pre_did_commit_lambda = [&](RenderFrameHost* frame) {
+    // Crash the NetworkService process. Existing interfaces should receive
+    // error notifications at some point.
+    SimulateNetworkServiceCrash();
+
+    // Flush the interface to make sure the error notification was received.
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(browser_context()));
+    partition->FlushNetworkInterfaceForTesting();
+  };
+  CommitMessageDelayer::DidCommitCallback pre_did_commit_callback =
+      base::BindLambdaForTesting(std::move(pre_did_commit_lambda));
+  GURL final_page_url(
+      embedded_test_server()->GetURL("bar.com", "/title2.html"));
+  CommitMessageDelayer did_commit_delayer(shell()->web_contents(),
+                                          final_page_url,
+                                          std::move(pre_did_commit_callback));
+  ASSERT_TRUE(ExecJs(shell(), JsReplace("location = $1", final_page_url)));
+  did_commit_delayer.Wait();
+
+  // Test if subresources requests work fine (e.g. if |request_initiator|
+  // matches |request_initiator_origin_lock|).
+  GURL final_resource_url(
+      embedded_test_server()->GetURL("bar.com", "/site_isolation/json.txt"));
+  EXPECT_EQ(
+      "{ \"name\" : \"chromium\" }\n",
+      EvalJs(shell(), JsReplace("fetch($1).then(response => response.text())",
+                                final_resource_url)));
 }
 
 }  // namespace content

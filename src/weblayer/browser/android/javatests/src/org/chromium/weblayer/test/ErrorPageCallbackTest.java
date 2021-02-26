@@ -4,8 +4,11 @@
 
 package org.chromium.weblayer.test;
 
+import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+
 import android.net.Uri;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,7 +21,10 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.weblayer.ErrorPage;
 import org.chromium.weblayer.ErrorPageCallback;
+import org.chromium.weblayer.Navigation;
+import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -41,6 +47,7 @@ public class ErrorPageCallbackTest {
     private static class Callback extends ErrorPageCallback {
         public boolean mSignaled;
         public String mSafetyPage;
+        public ErrorPage mErrorPage;
         public Tab mTab;
 
         public Callback(Tab tab) {
@@ -56,6 +63,11 @@ public class ErrorPageCallbackTest {
 
             mTab.getNavigationController().navigate(Uri.parse(mSafetyPage));
             return true;
+        }
+
+        @Override
+        public ErrorPage getErrorPage(Navigation navigation) {
+            return mErrorPage;
         }
     }
 
@@ -133,5 +145,23 @@ public class ErrorPageCallbackTest {
                 "window.certificateErrorPageController.dontProceed();", false);
         navigationWaiter.waitForNavigation();
         Assert.assertTrue(mCallback.mSignaled);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86)
+    public void testOverrideErrorPage() throws Throwable {
+        mCallback.mErrorPage = new ErrorPage("<html><head><title>test error</title>");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivity.getTab().setErrorPageCallback(mCallback); });
+        String errorPageUrl = "http://localhost:7/non_existent";
+        mActivityTestRule.navigateAndWaitForFailure(errorPageUrl);
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController =
+                    mActivity.getTab().getNavigationController();
+            Assert.assertEquals("test error",
+                    navigationController.getNavigationEntryTitle(
+                            navigationController.getNavigationListCurrentIndex()));
+        });
     }
 }

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -333,9 +333,12 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutofillProfile profile1("6141084B-72D7-4B73-90CF-3D6AC154673B",
                            std::string());
   profile1.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Abe"));
+  profile1.FinalizeAfterImport();
+
   AutofillProfile profile2("087151C8-6AB1-487C-9095-28E80BE5DA15",
                            std::string());
   profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Alice"));
+  profile2.FinalizeAfterImport();
 
   EXPECT_CALL(observer_, AutofillProfileChanged(_))
       .WillOnce(DoDefault())

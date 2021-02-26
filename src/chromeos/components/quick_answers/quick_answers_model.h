@@ -17,7 +17,7 @@ namespace chromeos {
 namespace quick_answers {
 
 // Interaction with the consent-view (used for logging).
-enum class ConsentInteractionType {
+enum class NoticeInteractionType {
   // When user clicks on the "grant-consent" button.
   kAccept = 0,
   // When user clicks on the "manage-settings" button.
@@ -51,11 +51,15 @@ enum class ResultType {
 };
 
 // The predicted intent of the request.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Note: Enums labels are at |QuickAnswersIntentType|.
 enum class IntentType {
   kUnknown = 0,
   kUnit = 1,
   kDictionary = 2,
-  kTranslation = 3
+  kTranslation = 3,
+  kMaxValue = kTranslation
 };
 
 enum class QuickAnswerUiElementType {
@@ -120,6 +124,30 @@ struct QuickAnswer {
 struct DeviceProperties {
   // Device language code.
   std::string language;
+
+  // List (separated by comma) of user preferred languages.
+  std::string preferred_languages;
+};
+
+struct IntentInfo {
+  IntentInfo();
+  IntentInfo(const IntentInfo& other);
+  IntentInfo(const std::string& intent_text,
+             IntentType intent_type,
+             const std::string& source_language = std::string(),
+             const std::string& target_language = std::string());
+  ~IntentInfo();
+
+  // The text extracted from the selected_text associated with the intent.
+  std::string intent_text;
+
+  // Predicted intent.
+  IntentType intent_type = IntentType::kUnknown;
+
+  // Source and target language for translation query.
+  // These fields should only be used for translation intents.
+  std::string source_language;
+  std::string target_language;
 };
 
 // Extract information generated from |QuickAnswersRequest|.
@@ -128,11 +156,7 @@ struct PreprocessedOutput {
   PreprocessedOutput(const PreprocessedOutput& other);
   ~PreprocessedOutput();
 
-  // Predicted intent.
-  IntentType intent_type = IntentType::kUnknown;
-
-  // The text extracted from the selected_text associated with the intent.
-  std::string intent_text;
+  IntentInfo intent_info;
 
   // Rewritten query based on |intent_type| and |intent_text|.
   std::string query;
@@ -163,8 +187,8 @@ struct QuickAnswersRequest {
   // Context information.
   Context context;
 
-  // TODO(llin): Add context and other targeted objects (e.g: images, links,
-  // etc).
+  // TODO(b/169346016): Add context and other targeted objects (e.g: images,
+  // links, etc).
 };
 
 }  // namespace quick_answers

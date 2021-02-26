@@ -24,6 +24,7 @@ class ServiceKey {
   // NOTE: The record provided must have valid service domain labels.
   explicit ServiceKey(const MdnsRecord& record);
   explicit ServiceKey(const DomainName& domain);
+  virtual ~ServiceKey() = default;
 
   // NOTE: The provided service and domain labels must be valid.
   ServiceKey(absl::string_view service, absl::string_view domain);
@@ -32,6 +33,8 @@ class ServiceKey {
 
   ServiceKey& operator=(const ServiceKey& rhs);
   ServiceKey& operator=(ServiceKey&& rhs);
+
+  virtual DomainName GetName() const;
 
   const std::string& service_id() const { return service_id_; }
   const std::string& domain_id() const { return domain_id_; }

@@ -9,6 +9,9 @@
 const EXAMPLE_URL_1 = 'https://example.com/feed.json';
 
 GEN('#include "base/run_loop.h"');
+GEN('#include "base/strings/utf_string_conversions.h"');
+GEN('#include "chrome/browser/media/feeds/media_feeds_service.h"');
+GEN('#include "chrome/browser/media/feeds/media_feeds_service_factory.h"');
 GEN('#include "chrome/browser/media/history/media_history_keyed_service.h"');
 GEN('#include "chrome/browser/media/history/media_history_test_utils.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
@@ -30,14 +33,17 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('auto* service =');
     GEN('  media_history::MediaHistoryKeyedService::Get(');
     GEN('    browser()->profile());');
-    GEN('service->DiscoverMediaFeed(GURL("' + EXAMPLE_URL_1 + '"));');
+    GEN('auto* feeds_service =');
+    GEN('  media_feeds::MediaFeedsService::Get(browser()->profile());');
+    GEN('feeds_service->DiscoverMediaFeed(GURL("' + EXAMPLE_URL_1 + '"));');
     GEN('auto items = std::vector<media_feeds::mojom::MediaFeedItemPtr>();');
     GEN('auto item = media_feeds::mojom::MediaFeedItem::New();');
     GEN('item->name = base::ASCIIToUTF16("The Movie");');
     GEN('item->type = media_feeds::mojom::MediaFeedItemType::kMovie;');
     GEN('item->date_published = base::Time::FromDeltaSinceWindowsEpoch(');
     GEN('  base::TimeDelta::FromMinutes(10));');
-    GEN('item->is_family_friendly = true;');
+    GEN('item->is_family_friendly = ');
+    GEN('  media_feeds::mojom::IsFamilyFriendly::kYes;');
     GEN('item->action_status =');
     GEN('  media_feeds::mojom::MediaFeedItemActionStatus::kPotential;');
     GEN('item->genre.push_back("test");');
@@ -136,10 +142,7 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('result.status = media_feeds::mojom::FetchResult::kSuccess;');
     GEN('result.logos = std::move(logos);');
     GEN('result.display_name = "Test Feed";');
-    GEN('result.associated_origins = {');
-    GEN('  url::Origin::Create(GURL("https://www.google1.com")),');
-    GEN('  url::Origin::Create(GURL("https://www.google2.com"))');
-    GEN('};');
+    GEN('result.cookie_name_filter = "TEST";');
     GEN('result.reset_token = ');
     GEN('  media_history::test::GetResetTokenSync(service, 1);');
     GEN('auto user_identifier = media_feeds::mojom::UserIdentifier::New();');
@@ -178,8 +181,8 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
           'User Status', 'User ID', 'Last Fetch Result', 'Fetch Failed Count',
           'Last Fetch Time (not cache hit)', 'Last Fetch Item Count',
           'Last Fetch Play Next Count', 'Last Fetch Content Types',
-          'Last Display Time', 'Reset Reason', 'Associated Origins', 'Logos',
-          'Actions'
+          'Last Display Time', 'Reset Reason', 'Cookie Name Filter',
+          'Safe Search Result', 'Logos', 'Actions'
         ],
         feedsHeaders.map(x => x.textContent.trim()));
 
@@ -203,18 +206,17 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertEquals('Movie', feedsContents.childNodes[12].textContent.trim());
     assertNotEquals('', feedsContents.childNodes[13].textContent.trim());
     assertEquals('None', feedsContents.childNodes[14].textContent.trim());
-    assertEquals(
-        'https://example.com, https://www.google1.com, https://www.google2.com',
-        feedsContents.childNodes[15].textContent.trim());
+    assertEquals('TEST', feedsContents.childNodes[15].textContent.trim());
+    assertEquals('Unknown', feedsContents.childNodes[16].textContent.trim());
     assertEquals(
         'https://www.example.org/logo1.pngContentAttributes=HasTitle, ForLightBackgroundhttps://www.example.org/logo2.pngContentAttributes=NoTitle, ForDarkBackground',
-        feedsContents.childNodes[16].textContent.trim());
+        feedsContents.childNodes[17].textContent.trim());
     assertEquals(
         'Show ContentsFetch Feed',
-        feedsContents.childNodes[17].textContent.trim());
+        feedsContents.childNodes[18].textContent.trim());
 
     // Click on the show contents button.
-    feedsContents.childNodes[17].firstChild.click();
+    feedsContents.childNodes[18].firstChild.click();
 
     return whenFeedTableIsPopulatedForTest().then(() => {
       assertEquals(
@@ -301,7 +303,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
     return whenConfigTableIsPopulatedForTest();
   });
 
-  test('check config table is loaded', function() {
+  test('check safe search toggle sets safe search pref', function() {
     const configRows =
         Array.from(document.querySelectorAll('#config-table-body td'));
 
@@ -312,12 +314,13 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
           'Safe Search Enabled (pref)',
           'Disabled (Toggle)',
         ],
-        configRows.map(x => x.textContent.trim()));
+        configRows.slice(0, 4).map(x => x.textContent.trim()));
 
-    const toggle = document.querySelector('#config-table-body a');
-    toggle.click();
+    const toggle =
+        Array.from(document.querySelectorAll('#config-table-body a'));
+    toggle[0].click();
 
-    return whenConfigTableIsUpdatedForTest().then(() => {
+    return whenConfigTableSafeSearchPrefIsUpdatedForTest().then(() => {
       const configRows =
           Array.from(document.querySelectorAll('#config-table-body td'));
 
@@ -328,9 +331,44 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
             'Safe Search Enabled (pref)',
             'Enabled (Toggle)',
           ],
-          configRows.map(x => x.textContent.trim()));
+          configRows.slice(0, 4).map(x => x.textContent.trim()));
     });
   });
+
+  test(
+      'check background fetching toggle sets background fetch pref',
+      function() {
+        const configRows =
+            Array.from(document.querySelectorAll('#config-table-body td'));
+
+        assertDeepEquals(
+            [
+              'Background Fetching Enabled (value)',
+              'Enabled',
+              'Background Fetching Enabled (pref)',
+              'Disabled (Toggle)',
+            ],
+            configRows.slice(4, 8).map(x => x.textContent.trim()));
+
+        const toggle =
+            Array.from(document.querySelectorAll('#config-table-body a'));
+        toggle[1].click();
+
+        return whenConfigTableBackgroundFetchingPrefIsUpdatedForTest().then(
+            () => {
+              const configRows = Array.from(
+                  document.querySelectorAll('#config-table-body td'));
+
+              assertDeepEquals(
+                  [
+                    'Background Fetching Enabled (value)',
+                    'Enabled',
+                    'Background Fetching Enabled (pref)',
+                    'Enabled (Toggle)',
+                  ],
+                  configRows.slice(4, 8).map(x => x.textContent.trim()));
+            });
+      });
 
   mocha.run();
 });

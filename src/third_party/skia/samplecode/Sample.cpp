@@ -10,9 +10,9 @@
 #include "samplecode/Sample.h"
 
 #if SK_SUPPORT_GPU
-#   include "include/gpu/GrContext.h"
+#   include "include/gpu/GrDirectContext.h"
 #else
-class GrContext;
+class GrDirectContext;
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,9 +49,9 @@ void Sample::draw(SkCanvas* canvas) {
         SkAutoCanvasRestore acr(canvas, true);
         this->onDrawContent(canvas);
 #if SK_SUPPORT_GPU
-        // Ensure the GrContext doesn't combine GrDrawOps across draw loops.
-        if (GrContext* context = canvas->getGrContext()) {
-            context->flush();
+        // Ensure the context doesn't combine GrDrawOps across draw loops.
+        if (auto direct = GrAsDirectContext(canvas->recordingContext())) {
+            direct->flushAndSubmit();
         }
 #endif
 

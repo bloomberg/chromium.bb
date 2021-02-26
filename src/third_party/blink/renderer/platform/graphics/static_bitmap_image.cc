@@ -15,7 +15,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -23,7 +22,7 @@ namespace blink {
 scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     PaintImage image,
     ImageOrientation orientation) {
-  DCHECK(!image.GetSkImage()->isTextureBacked());
+  DCHECK(!image.IsTextureBacked());
   return UnacceleratedStaticBitmapImage::Create(std::move(image), orientation);
 }
 
@@ -36,7 +35,7 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
       orientation);
 }
 
-IntSize StaticBitmapImage::SizeRespectingOrientation() const {
+IntSize StaticBitmapImage::PreferredDisplaySize() const {
   if (orientation_.UsesWidthAsHeight())
     return Size().TransposedSize();
   else
@@ -59,7 +58,7 @@ void StaticBitmapImage::DrawHelper(
 
   cc::PaintCanvasAutoRestore auto_restore(canvas, false);
   FloatRect adjusted_dst_rect = dst_rect;
-  if (respect_orientation && orientation_ != kDefaultImageOrientation) {
+  if (respect_orientation && orientation_ != ImageOrientationEnum::kDefault) {
     canvas->save();
 
     // ImageOrientation expects the origin to be at (0, 0)
@@ -117,17 +116,18 @@ bool StaticBitmapImage::CopyToByteArray(
       (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
           ? kRGBA_F16_SkColorType
           : kRGBA_8888_SkColorType;
-  SkImageInfo info = SkImageInfo::Make(
-      rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
-      color_params.GetSkColorSpaceForSkSurfaces());
-  sk_sp<SkImage> sk_image = src_image->PaintImageForCurrentFrame().GetSkImage();
-  if (!sk_image)
-    return false;
-  bool read_pixels_successful = sk_image->readPixels(
-      info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
+  SkImageInfo info =
+      SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
+                        kUnpremul_SkAlphaType, color_params.GetSkColorSpace());
+  bool read_pixels_successful =
+      src_image->PaintImageForCurrentFrame().readPixels(
+          info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
   DCHECK(read_pixels_successful ||
-         !sk_image->bounds().intersect(SkIRect::MakeXYWH(
-             rect.X(), rect.Y(), info.width(), info.height())));
+         !src_image->PaintImageForCurrentFrame()
+              .GetSkImageInfo()
+              .bounds()
+              .intersect(SkIRect::MakeXYWH(rect.X(), rect.Y(), info.width(),
+                                           info.height())));
   return true;
 }
 

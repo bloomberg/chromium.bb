@@ -47,7 +47,6 @@ android_resources("chrome_tabs_client_example_apk_resources") {
     "src/res/values/strings.xml",
   ]
   android_manifest = "src/AndroidManifest.xml"
-  custom_package = "org.chromium.customtabsclient"
   deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
 }
 
@@ -64,7 +63,6 @@ android_apk("custom_tabs_client_example_apk") {
   ]
 
   android_manifest = "src/AndroidManifest.xml"
-  min_sdk_version = 19
   target_sdk_version = 21
   apk_name = "CustomTabsClientExample"
 

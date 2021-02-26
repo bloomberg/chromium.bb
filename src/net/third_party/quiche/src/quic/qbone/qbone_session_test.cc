@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
@@ -22,7 +23,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
@@ -77,7 +77,7 @@ class IndirectionProofSource : public ProofSource {
                 const std::string& hostname,
                 const std::string& server_config,
                 QuicTransportVersion transport_version,
-                quiche::QuicheStringPiece chlo_hash,
+                absl::string_view chlo_hash,
                 std::unique_ptr<Callback> callback) override {
     if (!proof_source_) {
       QuicReferenceCountedPointer<ProofSource::Chain> chain =
@@ -107,7 +107,7 @@ class IndirectionProofSource : public ProofSource {
       const QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      quiche::QuicheStringPiece in,
+      absl::string_view in,
       std::unique_ptr<SignatureCallback> callback) override {
     if (!proof_source_) {
       callback->Run(/*ok=*/true, "Signature", /*details=*/nullptr);
@@ -141,7 +141,7 @@ class IndirectionProofVerifier : public ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       QuicTransportVersion transport_version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -167,13 +167,14 @@ class IndirectionProofVerifier : public ProofVerifier {
       const ProofVerifyContext* context,
       std::string* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
+      uint8_t* out_alert,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     if (!proof_verifier_) {
       return QUIC_FAILURE;
     }
     return proof_verifier_->VerifyCertChain(
         hostname, port, certs, ocsp_response, cert_sct, context, error_details,
-        details, std::move(callback));
+        details, out_alert, std::move(callback));
   }
 
   std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
@@ -318,9 +319,9 @@ class QboneSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
 
     {
       client_connection_ = new QuicConnection(
-          TestConnectionId(), server_address, &helper_, alarm_factory_.get(),
-          new NiceMock<MockPacketWriter>(), true, Perspective::IS_CLIENT,
-          supported_versions_);
+          TestConnectionId(), client_address, server_address, &helper_,
+          alarm_factory_.get(), new NiceMock<MockPacketWriter>(), true,
+          Perspective::IS_CLIENT, supported_versions_);
       client_connection_->SetSelfAddress(client_address);
       QuicConfig config;
       client_crypto_config_ = std::make_unique<QuicCryptoClientConfig>(
@@ -337,9 +338,9 @@ class QboneSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
 
     {
       server_connection_ = new QuicConnection(
-          TestConnectionId(), client_address, &helper_, alarm_factory_.get(),
-          new NiceMock<MockPacketWriter>(), true, Perspective::IS_SERVER,
-          supported_versions_);
+          TestConnectionId(), server_address, client_address, &helper_,
+          alarm_factory_.get(), new NiceMock<MockPacketWriter>(), true,
+          Perspective::IS_SERVER, supported_versions_);
       server_connection_->SetSelfAddress(server_address);
       QuicConfig config;
       server_crypto_config_ = std::make_unique<QuicCryptoServerConfig>(
@@ -416,7 +417,7 @@ class QboneSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
 
     std::string expected;
     CreateIcmpPacket(header->ip6_dst, header->ip6_src, icmp_header, packet,
-                     [&expected](quiche::QuicheStringPiece icmp_packet) {
+                     [&expected](absl::string_view icmp_packet) {
                        expected = std::string(icmp_packet);
                      });
 

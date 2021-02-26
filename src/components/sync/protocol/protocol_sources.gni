@@ -8,6 +8,7 @@ sync_protocol_bases = [
   "app_specifics",
   "app_list_specifics",
   "arc_package_specifics",
+  "autofill_offer_specifics",
   "autofill_specifics",
   "bookmark_model_metadata",
   "bookmark_specifics",
@@ -51,6 +52,7 @@ sync_protocol_bases = [
   "sharing_message_specifics",
   "sync",
   "sync_enums",
+  "sync_invalidations_payload",
   "synced_notification_app_info_specifics",
   "synced_notification_specifics",
   "test",
@@ -60,6 +62,7 @@ sync_protocol_bases = [
   "user_consent_specifics",
   "user_consent_types",
   "user_event_specifics",
+  "vault",
   "web_app_specifics",
   "wifi_configuration_specifics",
 ]

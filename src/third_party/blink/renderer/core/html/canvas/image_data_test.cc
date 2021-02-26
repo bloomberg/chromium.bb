@@ -133,7 +133,6 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
       CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kLinearRGB,
       CanvasColorSpace::kRec2020,
       CanvasColorSpace::kP3,
   };
@@ -144,17 +143,17 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
       kFloat32ArrayStorageFormat,
   };
 
-  unsigned num_canvas_color_settings = 4;
+  unsigned num_canvas_color_settings = 3;
   CanvasColorSpace canvas_color_spaces[] = {
-      CanvasColorSpace::kSRGB,      CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kLinearRGB, CanvasColorSpace::kRec2020,
+      CanvasColorSpace::kSRGB,
+      CanvasColorSpace::kSRGB,
+      CanvasColorSpace::kRec2020,
       CanvasColorSpace::kP3,
   };
 
   CanvasPixelFormat canvas_pixel_formats[] = {
       CanvasPixelFormat::kRGBA8, CanvasPixelFormat::kF16,
       CanvasPixelFormat::kF16,   CanvasPixelFormat::kF16,
-      CanvasPixelFormat::kF16,
   };
 
   // As cross checking the output of Skia color space covnersion API is not in
@@ -184,15 +183,15 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   NotShared<DOMUint8ClampedArray> data_u8(
       DOMUint8ClampedArray::Create(u8_pixels, data_length));
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_u8->length());
   NotShared<DOMUint16Array> data_u16(
       DOMUint16Array::Create(u16_pixels, data_length));
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_u16->length());
   NotShared<DOMFloat32Array> data_f32(
       DOMFloat32Array::Create(f32_pixels, data_length));
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
   ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
@@ -431,15 +430,15 @@ TEST_F(ImageDataTest, TestCropRect) {
   NotShared<DOMUint8ClampedArray> data_u8(
       DOMUint8ClampedArray::Create(u8_pixels, data_length));
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_u8->length());
   NotShared<DOMUint16Array> data_u16(
       DOMUint16Array::Create(u16_pixels, data_length));
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_u16->length());
   NotShared<DOMFloat32Array> data_f32(
       DOMFloat32Array::Create(f32_pixels, data_length));
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->lengthAsSizeT());
+  EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
   ImageData* cropped_image_data = nullptr;
@@ -489,13 +488,15 @@ TEST_F(ImageDataTest, TestCropRect) {
 
             if (image_data_storage_formats[i] ==
                 kUint8ClampedArrayStorageFormat) {
-              if (cropped_image_data->data()->Data()[index] != expected_value) {
+              if (cropped_image_data->data()
+                      .GetAsUint8ClampedArray()
+                      ->Data()[index] != expected_value) {
                 test_passed = false;
                 break;
               }
             } else if (image_data_storage_formats[i] ==
                        kUint16ArrayStorageFormat) {
-              if (cropped_image_data->dataUnion()
+              if (cropped_image_data->data()
                       .GetAsUint16Array()
                       .View()
                       ->Data()[index] != expected_value) {
@@ -503,7 +504,7 @@ TEST_F(ImageDataTest, TestCropRect) {
                 break;
               }
             } else {
-              if (cropped_image_data->dataUnion()
+              if (cropped_image_data->data()
                       .GetAsFloat32Array()
                       .View()
                       ->Data()[index] != fexpected_value) {

@@ -10,6 +10,8 @@ import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.style.StyleSpan;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
@@ -17,13 +19,14 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
+import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,6 +38,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final int mDesiredFaviconWidthPx;
+    private final int mDecorationImageSizePx;
     private int mSuggestionSizePx;
     private @BaseSuggestionViewProperties.Density int mDensity =
             BaseSuggestionViewProperties.Density.COMFORTABLE;
@@ -48,6 +52,8 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         mSuggestionHost = host;
         mDesiredFaviconWidthPx = mContext.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
+        mDecorationImageSizePx = context.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_decoration_image_size);
         mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_comfortable_height);
     }
@@ -59,11 +65,12 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         return mDesiredFaviconWidthPx;
     }
 
-    @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {}
+    /**
+     * @return The size of suggestion decoration images in pixels.
+     */
+    protected int getDecorationImageSize() {
+        return mDecorationImageSizePx;
+    }
 
     @Override
     public void onNativeInitialized() {
@@ -80,9 +87,6 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
             }
         }
     }
-
-    @Override
-    public void onSuggestionsReceived() {}
 
     @Override
     public int getMinimumViewHeight() {
@@ -103,40 +107,75 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      * Specify SuggestionDrawableState for action button.
      *
      * @param model Property model to update.
-     * @param drawable SuggestionDrawableState object defining decoration for the action button.
-     * @param callback Runnable to invoke when user presses the action icon.
+     * @param actions List of actions for the suggestion.
      */
-    protected void setCustomAction(
-            PropertyModel model, SuggestionDrawableState drawable, Runnable callback) {
-        model.set(BaseSuggestionViewProperties.ACTION_ICON, drawable);
-        model.set(BaseSuggestionViewProperties.ACTION_CALLBACK, callback);
+    protected void setCustomActions(PropertyModel model, List<Action> actions) {
+        model.set(BaseSuggestionViewProperties.ACTIONS, actions);
     }
 
     /**
-     * Specify data for Refine action.
+     * Setup action icon base on the suggestion, either show query build arrow or switch to tab.
      *
      * @param model Property model to update.
-     * @param refineText Text to update Omnibox with when Refine button is pressed.
-     * @param isSearchQuery Whether refineText is an URL or Search query.
+     * @param suggestion Suggestion associated with the action button.
+     * @param position The position of the button in the list.
      */
-    protected void setRefineAction(PropertyModel model, OmniboxSuggestion suggestion) {
-        setCustomAction(model,
-                SuggestionDrawableState.Builder
-                        .forDrawableRes(mContext, R.drawable.btn_suggestion_refine)
-                        .setLarge(true)
-                        .setAllowTint(true)
-                        .build(),
-                () -> { mSuggestionHost.onRefineSuggestion(suggestion); });
+    protected void setTabSwitchOrRefineAction(
+            PropertyModel model, OmniboxSuggestion suggestion, int position) {
+        @DrawableRes
+        int icon = 0;
+        String iconString = null;
+        Runnable action = null;
+        if (suggestion.hasTabMatch()) {
+            icon = R.drawable.switch_to_tab;
+            iconString =
+                    mContext.getResources().getString(R.string.accessibility_omnibox_switch_to_tab);
+            action = () -> mSuggestionHost.onSwitchToTab(suggestion, position);
+        } else {
+            icon = R.drawable.btn_suggestion_refine;
+            iconString = mContext.getResources().getString(
+                    R.string.accessibility_omnibox_btn_refine, suggestion.getFillIntoEdit());
+            action = () -> mSuggestionHost.onRefineSuggestion(suggestion);
+        }
+        setCustomActions(model,
+                Arrays.asList(
+                        new Action(SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
+                                           .setLarge(true)
+                                           .setAllowTint(true)
+                                           .build(),
+                                iconString, action)));
+    }
+
+    /**
+     * Process the click event.
+     *
+     * @param suggestion Selected suggestion.
+     * @param position Position of the suggestion on the list.
+     */
+    protected void onSuggestionClicked(@NonNull OmniboxSuggestion suggestion, int position) {
+        mSuggestionHost.onSuggestionClicked(suggestion, position, suggestion.getUrl());
+    }
+
+    /**
+     * Process the long-click event.
+     *
+     * @param suggestion Selected suggestion.
+     * @param position Position of the suggestion on the list.
+     */
+    protected void onSuggestionLongClicked(@NonNull OmniboxSuggestion suggestion, int position) {
+        mSuggestionHost.onSuggestionLongClicked(suggestion, position);
     }
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        SuggestionViewDelegate delegate =
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
-
-        model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
+        model.set(BaseSuggestionViewProperties.ON_CLICK,
+                () -> onSuggestionClicked(suggestion, position));
+        model.set(BaseSuggestionViewProperties.ON_LONG_CLICK,
+                () -> onSuggestionLongClicked(suggestion, position));
+        model.set(BaseSuggestionViewProperties.ON_FOCUS_VIA_SELECTION,
+                () -> mSuggestionHost.setOmniboxEditingText(suggestion.getFillIntoEdit()));
         model.set(BaseSuggestionViewProperties.DENSITY, mDensity);
-        setCustomAction(model, null, null);
+        setCustomActions(model, null);
     }
 
     /**
@@ -199,5 +238,12 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                         onIconFetched.run();
                     }
                 });
+    }
+
+    /**
+     * @return Current context.
+     */
+    protected Context getContext() {
+        return mContext;
     }
 }

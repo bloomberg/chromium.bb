@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 class PrefService;
 
@@ -32,11 +33,11 @@ class LanguagePrefs {
   LanguagePrefs(PrefService* user_prefs);
 
   // Return true iff the user is fluent in the given |language|.
-  bool IsFluent(const std::string& language) const;
+  bool IsFluent(base::StringPiece language) const;
   // Mark that the user is fluent in the given |language|.
-  void SetFluent(const std::string& language);
+  void SetFluent(base::StringPiece language);
   // Remove the given |language| from the user's fluent languages.
-  void ClearFluent(const std::string& language);
+  void ClearFluent(base::StringPiece language);
   // Reset the fluent languages to their defaults.
   void ResetFluentLanguagesToDefaults();
   // Get the default fluent languages for the user.
@@ -57,6 +58,9 @@ class LanguagePrefs {
 };
 
 void ResetLanguagePrefs(PrefService* prefs);
+
+// Given a comma separated list of locales, return the first.
+std::string GetFirstLanguage(base::StringPiece language_list);
 
 }  // namespace language
 

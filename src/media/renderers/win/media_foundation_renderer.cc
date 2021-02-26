@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
@@ -21,6 +20,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/win/mf_helpers.h"
 
@@ -117,6 +117,7 @@ void MediaFoundationRenderer::Initialize(MediaResource* media_resource,
     DLOG(ERROR) << "Failed to create media engine: " << PrintHr(hr);
     std::move(init_cb).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
   } else {
+    SetVolume(volume_);
     std::move(init_cb).Run(PIPELINE_OK);
   }
 }
@@ -144,9 +145,9 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnPlaybackEnded, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnBufferingStateChanged, weak_this)),
+          &MediaFoundationRenderer::OnBufferingStateChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnVideoNaturalSizeChanged, weak_this)),
+          &MediaFoundationRenderer::OnVideoNaturalSizeChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnTimeUpdate, weak_this))));
 
@@ -190,13 +191,8 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
     return E_INVALIDARG;
   }
 
-  if (!playback_element_id_) {
-    DLOG(ERROR) << "Invalid playback_element_id_.";
-    return HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
-  }
-
   RETURN_IF_FAILED(MakeAndInitialize<MediaFoundationSourceWrapper>(
-      &mf_source_, playback_element_id_, media_resource, task_runner_));
+      &mf_source_, media_resource, task_runner_));
 
   if (force_dcomp_mode_for_testing_)
     SetDCompMode(true, base::DoNothing());
@@ -330,8 +326,8 @@ void MediaFoundationRenderer::SetLatencyHint(
   NOTIMPLEMENTED() << "We do not use the latency hint today";
 }
 
-// TODO(frankli): Use ComPtr<> for |cdm|.
-void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
+void MediaFoundationRenderer::OnCdmProxyReceived(
+    ComPtr<IMFCdmProxy> cdm_proxy) {
   DVLOG_FUNC(1);
 
   if (!waiting_for_mf_cdm_ || !content_protection_manager_) {
@@ -342,8 +338,6 @@ void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
 
   waiting_for_mf_cdm_ = false;
 
-  ComPtr<IMFCdmProxy> cdm_proxy;
-  cdm_proxy.Attach(cdm);
   content_protection_manager_->SetCdmProxy(cdm_proxy.Get());
   mf_source_->SetCdmProxy(cdm_proxy.Get());
   HRESULT hr = SetSourceOnMediaEngine();
@@ -445,13 +439,6 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
   }
 }
 
-void MediaFoundationRenderer::SetPlaybackElementId(
-    uint64_t playback_element_id) {
-  DVLOG_FUNC(1) << "playback_element_id=" << playback_element_id;
-
-  playback_element_id_ = playback_element_id;
-}
-
 void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {
   DVLOG_FUNC(2);
 
@@ -514,7 +501,7 @@ void MediaFoundationRenderer::SendStatistics() {
   PipelineStatistics new_stats = {};
   HRESULT hr = PopulateStatistics(new_stats);
   if (FAILED(hr)) {
-    DVLOG(3) << "Failed to populate pipeline stats: " << PrintHr(hr);
+    DVLOG(3) << "Unable to populate pipeline stats: " << PrintHr(hr);
     return;
   }
 
@@ -539,18 +526,22 @@ void MediaFoundationRenderer::SetVolume(float volume) {
   volume_ = volume;
   float set_volume = muted_ ? 0 : volume_;
   DVLOG_FUNC(2) << "set_volume=" << set_volume;
+  if (!mf_media_engine_)
+    return;
 
   HRESULT hr = mf_media_engine_->SetVolume(set_volume);
   DVLOG_IF(1, FAILED(hr)) << "Failed to set volume: " << PrintHr(hr);
 }
 
 base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
-// GetCurrentTime is expaned as GetTickCount in base/win/windows_types.h
+// GetCurrentTime is expanded as GetTickCount in base/win/windows_types.h
 #undef GetCurrentTime
   double current_time = mf_media_engine_->GetCurrentTime();
 // Restore macro definition.
 #define GetCurrentTime() GetTickCount()
-  return base::TimeDelta::FromSecondsD(current_time);
+  auto media_time = base::TimeDelta::FromSecondsD(current_time);
+  DVLOG_FUNC(3) << "media_time=" << media_time;
+  return media_time;
 }
 
 void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status) {
@@ -567,7 +558,7 @@ void MediaFoundationRenderer::OnPlaybackEnded() {
   StopSendingStatistics();
 }
 
-void MediaFoundationRenderer::OnBufferingStateChanged(
+void MediaFoundationRenderer::OnBufferingStateChange(
     BufferingState state,
     BufferingStateChangeReason reason) {
   DVLOG_FUNC(2);
@@ -583,10 +574,11 @@ void MediaFoundationRenderer::OnBufferingStateChanged(
     return;
   }
 
+  DVLOG_FUNC(2) << "state=" << state << ", reason=" << reason;
   renderer_client_->OnBufferingStateChange(state, reason);
 }
 
-void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
+void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
   DVLOG_FUNC(2);
 
   const bool has_video = mf_media_engine_->HasVideo();
@@ -634,8 +626,6 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
   return;
 }
 
-void MediaFoundationRenderer::OnTimeUpdate() {
-  DVLOG_FUNC(3) << "media_time=" << GetMediaTime();
-}
+void MediaFoundationRenderer::OnTimeUpdate() {}
 
 }  // namespace media

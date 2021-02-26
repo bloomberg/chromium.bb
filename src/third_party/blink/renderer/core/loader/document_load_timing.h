@@ -49,10 +49,12 @@ class CORE_EXPORT DocumentLoadTiming final {
   explicit DocumentLoadTiming(DocumentLoader&);
 
   base::TimeDelta MonotonicTimeToZeroBasedDocumentTime(base::TimeTicks) const;
+  int64_t ZeroBasedDocumentTimeToMonotonicTime(double dom_event_time) const;
   base::TimeDelta MonotonicTimeToPseudoWallTime(base::TimeTicks) const;
 
   void MarkNavigationStart();
   void SetNavigationStart(base::TimeTicks);
+  void MarkBackForwardCacheRestoreNavigationStart(base::TimeTicks);
 
   void SetInputStart(base::TimeTicks);
 
@@ -81,6 +83,10 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   base::TimeTicks InputStart() const { return input_start_; }
   base::TimeTicks NavigationStart() const { return navigation_start_; }
+  const WTF::Vector<base::TimeTicks>& BackForwardCacheRestoreNavigationStarts()
+      const {
+    return bfcache_restore_navigation_starts_;
+  }
   base::TimeTicks UnloadEventStart() const { return unload_event_start_; }
   base::TimeTicks UnloadEventEnd() const { return unload_event_end_; }
   base::TimeTicks RedirectStart() const { return redirect_start_; }
@@ -99,7 +105,7 @@ class CORE_EXPORT DocumentLoadTiming final {
     return reference_monotonic_time_;
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
   void SetClockForTesting(const base::Clock* clock);
@@ -115,6 +121,7 @@ class CORE_EXPORT DocumentLoadTiming final {
   base::TimeDelta reference_wall_time_;
   base::TimeTicks input_start_;
   base::TimeTicks navigation_start_;
+  WTF::Vector<base::TimeTicks> bfcache_restore_navigation_starts_;
   base::TimeTicks unload_event_start_;
   base::TimeTicks unload_event_end_;
   base::TimeTicks redirect_start_;

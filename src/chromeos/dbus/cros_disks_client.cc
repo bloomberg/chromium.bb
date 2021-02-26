@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -114,6 +115,8 @@ MountError CrosDisksMountErrorToChromeMountError(
     case cros_disks::MOUNT_ERROR_UNSUPPORTED_ARCHIVE:
       // TODO(amistry): Add MOUNT_ERROR_UNSUPPORTED_ARCHIVE.
       return MOUNT_ERROR_UNKNOWN;
+    case cros_disks::MOUNT_ERROR_NEED_PASSWORD:
+      return MOUNT_ERROR_NEED_PASSWORD;
     default:
       NOTREACHED() << "Unrecognised mount error code " << mount_error;
       return MOUNT_ERROR_UNKNOWN;
@@ -234,6 +237,20 @@ class CrosDisksClientImpl : public CrosDisksClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrosDisksClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  // CrosDisksClient override.
+  void SinglePartitionFormat(const std::string& device_path,
+                             PartitionCallback callback) override {
+    dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
+                                 cros_disks::kSinglePartitionFormat);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(device_path);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrosDisksClientImpl::OnPartitionCompleted,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -492,6 +509,23 @@ class CrosDisksClientImpl : public CrosDisksClient {
       observer.OnFormatCompleted(static_cast<FormatError>(error_code),
                                  device_path);
     }
+  }
+
+  void OnPartitionCompleted(PartitionCallback callback,
+                            dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(PARTITION_ERROR_UNKNOWN);
+      return;
+    }
+    uint32_t status = PARTITION_ERROR_UNKNOWN;
+    dbus::MessageReader reader(response);
+    if (!reader.PopUint32(&status)) {
+      LOG(ERROR) << "Error reading SinglePartitionFormat response: "
+                 << response->ToString();
+      std::move(callback).Run(PARTITION_ERROR_UNKNOWN);
+      return;
+    }
+    std::move(callback).Run(static_cast<PartitionError>(status));
   }
 
   // Handles RenameCompleted signal and notifies observers.

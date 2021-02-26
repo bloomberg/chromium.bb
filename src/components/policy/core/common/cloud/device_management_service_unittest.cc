@@ -454,13 +454,27 @@ INSTANTIATE_TEST_SUITE_P(
             417,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
+            net::OK,
+            905,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
             DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED,
             net::OK,
             906,
             PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE,
+            net::OK,
+            907,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(DM_STATUS_REQUEST_TOO_LARGE,
                             net::OK,
                             413,
+                            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(DM_STATUS_SERVICE_TOO_MANY_REQUESTS,
+                            net::OK,
+                            429,
                             PROTO_STRING(kResponseEmpty))));
 
 // Simple query parameter parser for testing.

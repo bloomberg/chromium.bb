@@ -5,16 +5,20 @@
 #ifndef ASH_LOGIN_UI_LOCK_SCREEN_H_
 #define ASH_LOGIN_UI_LOCK_SCREEN_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/tray_action/tray_action_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -32,6 +36,7 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
     ~TestApi();
 
     LockContentsView* contents_view() const;
+    void AddOnShownCallback(base::OnceClosure on_shown);
 
    private:
     LockScreen* const lock_screen_;
@@ -71,10 +76,17 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLockStateChanged(bool locked) override;
+  void OnChromeTerminating() override;
 
  private:
   explicit LockScreen(ScreenType type);
   ~LockScreen() override;
+
+  std::unique_ptr<views::View> MakeContentsView();
+
+  // Shows the lock screen widget, unless the global instance was already
+  // destroyed. Called after the first wallpaper becomes ready.
+  static void ShowWidgetUponWallpaperReady();
 
   // The type of screen shown. Controls how the screen is dismissed.
   const ScreenType type_;
@@ -91,6 +103,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_{this};
   ScopedSessionObserver session_observer_{this};
+
+  std::vector<base::OnceClosure> on_shown_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreen);
 };

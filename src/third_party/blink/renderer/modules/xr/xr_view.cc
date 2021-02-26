@@ -4,15 +4,26 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
+#include "base/numerics/ranges.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
-#include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
 
-XRView::XRView(XRSession* session, const XRViewData& view_data)
-    : eye_(view_data.Eye()), session_(session) {
+namespace {
+
+// Arbitrary minimum size multiplier for dynamic viewport scaling,
+// where 1.0 is full framebuffer size (which may in turn be adjusted
+// by framebufferScaleFactor). TODO(klausw): a value around 0.2 would
+// be more reasonable. Intentionally allow extreme viewport scaling
+// to make the effect more obvious in initial testing.
+constexpr double kMinViewportScale = 0.05;
+
+}  // namespace
+
+XRView::XRView(XRFrame* frame, XRViewData* view_data)
+    : eye_(view_data->Eye()), frame_(frame), view_data_(view_data) {
   switch (eye_) {
     case kEyeLeft:
       eye_string_ = "left";
@@ -24,13 +35,17 @@ XRView::XRView(XRSession* session, const XRViewData& view_data)
       eye_string_ = "none";
   }
   ref_space_from_eye_ =
-      MakeGarbageCollected<XRRigidTransform>(view_data.Transform());
+      MakeGarbageCollected<XRRigidTransform>(view_data->Transform());
   projection_matrix_ =
-      transformationMatrixToDOMFloat32Array(view_data.ProjectionMatrix());
+      transformationMatrixToDOMFloat32Array(view_data->ProjectionMatrix());
+}
+
+XRFrame* XRView::frame() const {
+  return frame_;
 }
 
 XRSession* XRView::session() const {
-  return session_;
+  return frame_->session();
 }
 
 DOMFloat32Array* XRView::projectionMatrix() const {
@@ -141,11 +156,32 @@ XRRigidTransform* XRView::transform() const {
   return ref_space_from_eye_;
 }
 
-void XRView::Trace(Visitor* visitor) {
-  visitor->Trace(session_);
+base::Optional<double> XRView::recommendedViewportScale() const {
+  return view_data_->recommendedViewportScale();
+}
+
+void XRView::requestViewportScale(base::Optional<double> scale) {
+  view_data_->requestViewportScale(scale);
+}
+
+void XRView::Trace(Visitor* visitor) const {
+  visitor->Trace(frame_);
   visitor->Trace(projection_matrix_);
   visitor->Trace(ref_space_from_eye_);
+  visitor->Trace(view_data_);
   ScriptWrappable::Trace(visitor);
+}
+
+base::Optional<double> XRViewData::recommendedViewportScale() const {
+  return recommended_viewport_scale_;
+}
+
+void XRViewData::requestViewportScale(base::Optional<double> scale) {
+  if (!scale)
+    return;
+
+  requested_viewport_scale_ =
+      base::ClampToRange(*scale, kMinViewportScale, 1.0);
 }
 
 }  // namespace blink

@@ -2,7 +2,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Download files from Google Storage based on SHA1 sums."""
 
 from __future__ import print_function
@@ -130,7 +129,7 @@ class Gsutil(object):
 
   def check_call_with_retries(self, *args):
     delay = self.RETRY_BASE_DELAY
-    for i in xrange(self.MAX_TRIES):
+    for i in range(self.MAX_TRIES):
       code, out, err = self.check_call(*args)
       if not code or i == self.MAX_TRIES - 1:
         break

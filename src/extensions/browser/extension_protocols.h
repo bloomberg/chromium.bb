@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace base {
@@ -45,15 +46,16 @@ void SetExtensionProtocolTestHandler(ExtensionProtocolTestHandler* handler);
 
 // Creates a new network::mojom::URLLoaderFactory implementation suitable for
 // handling navigation requests to extension URLs.
-std::unique_ptr<network::mojom::URLLoaderFactory>
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateExtensionNavigationURLLoaderFactory(
     content::BrowserContext* browser_context,
+    ukm::SourceIdObj ukm_source_id,
     bool is_web_view_request);
 
 // Creates a new network::mojom::URLLoaderFactory implementation suitable for
 // handling dedicated/shared worker main script requests initiated by the
 // browser process to extension URLs.
-std::unique_ptr<network::mojom::URLLoaderFactory>
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateExtensionWorkerMainResourceURLLoaderFactory(
     content::BrowserContext* browser_context);
 
@@ -61,7 +63,7 @@ CreateExtensionWorkerMainResourceURLLoaderFactory(
 // handling service worker main/imported script requests initiated by the
 // browser process to extension URLs during service worker update check when
 // ServiceWorkerImportedScriptUpdateCheck is enabled.
-std::unique_ptr<network::mojom::URLLoaderFactory>
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateExtensionServiceWorkerScriptURLLoaderFactory(
     content::BrowserContext* browser_context);
 
@@ -72,8 +74,10 @@ CreateExtensionServiceWorkerScriptURLLoaderFactory(
 // requests to extension URLs, such as for the service worker script when
 // starting a service worker. In that case, render_frame_id will be
 // MSG_ROUTING_NONE.
-std::unique_ptr<network::mojom::URLLoaderFactory>
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateExtensionURLLoaderFactory(int render_process_id, int render_frame_id);
+
+void EnsureExtensionURLLoaderFactoryShutdownNotifierFactoryBuilt();
 
 }  // namespace extensions
 

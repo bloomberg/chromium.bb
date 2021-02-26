@@ -64,6 +64,8 @@ intent = None
 perf_control = None
 # pylint: enable=invalid-name
 
+_sanitize_android_tag = lambda t: t.replace('_', '-')
+
 # product constants used by the wpt runner.
 ANDROID_WEBLAYER = 'android_weblayer'
 ANDROID_WEBVIEW = 'android_webview'
@@ -78,22 +80,24 @@ PRODUCTS_TO_STEPNAMES = {
 }
 
 PRODUCTS_TO_BROWSER_TAGS = {
-    ANDROID_WEBLAYER: 'weblayer',
-    ANDROID_WEBVIEW: 'webview',
-    CHROME_ANDROID: 'chrome',
-}
+    product: _sanitize_android_tag(product)
+    for product in PRODUCTS}
 
 # Android web tests directory, which contains override expectation files
 ANDROID_WEB_TESTS_DIR = os.path.join(get_blink_dir(), 'web_tests', 'android')
 
 PRODUCTS_TO_EXPECTATION_FILE_PATHS = {
     ANDROID_WEBLAYER: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTExpectations'),
     ANDROID_WEBVIEW: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WebviewWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'WebviewWPTExpectations'),
     CHROME_ANDROID: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'ClankWPTOverrideExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'ChromiumWPTExpectations'),
 }
+
+# Disabled WPT tests on Android
+ANDROID_DISABLED_TESTS = os.path.join(
+    ANDROID_WEB_TESTS_DIR, 'AndroidWPTNeverFixTests')
 
 _friendly_browser_names = {
     'weblayershell': 'weblayer',
@@ -297,19 +301,19 @@ class AndroidPort(base.Port):
 
     BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
 
-    def __init__(self, host, port_name='', apk='', options=None, **kwargs):
+    def __init__(self, host, port_name='', apk='', product='', options=None, **kwargs):
         super(AndroidPort, self).__init__(
             host, port_name, options=options, **kwargs)
         self._operating_system = 'android'
         self._version = 'kitkat'
         fs = host.filesystem
         self._local_port = factory.PortFactory(host).get(**kwargs)
-
-        if apk:
+        if apk or product:
             self._driver_details = DriverDetails(apk)
             browser_type = fs.splitext(fs.basename(apk))[0].lower()
             self._browser_type = _friendly_browser_names.get(
                 browser_type, browser_type)
+            self._wpt_product_arg = product
         else:
             # The legacy test runner will be used to run web tests on Android.
             # So we need to initialize several port member variables.
@@ -318,6 +322,7 @@ class AndroidPort(base.Port):
             self._browser_type = 'content_shell'
             self._debug_logging = self.get_option('android_logging')
             self.server_process_constructor = self._android_server_process_constructor
+            self._wpt_product_arg = ''
 
             if not self.get_option('disable_breakpad'):
                 self._dump_reader = DumpReaderAndroid(host, self._build_path())
@@ -349,10 +354,14 @@ class AndroidPort(base.Port):
         # TODO(rmhasan) Add bot expectations to WPT metadata.
         return {}
 
+    def expected_test(self, _):
+        return
+
     def get_platform_tags(self):
-        _sanitize_tag = lambda t: t.replace('_', '-').replace(' ', '-')
-        return frozenset(
-            ['android', 'android-' + _sanitize_tag(self._browser_type)])
+        tags = {'android'}
+        if self._wpt_product_arg:
+            tags.add(_sanitize_android_tag(self._wpt_product_arg))
+        return frozenset(tags)
 
     def default_smoke_test_only(self):
         return True
@@ -361,11 +370,11 @@ class AndroidPort(base.Port):
         return super(AndroidPort, self).additional_driver_flags() + \
             self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
-    def default_timeout_ms(self):
+    def _default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
         # Using 10 seconds allows us to pass most slow tests which are not
         # marked as slow tests on desktop platforms.
-        return 10 * 1000
+        return 10000
 
     def driver_stop_timeout(self):
         # The driver doesn't respond to closing stdin, so we might as well stop the driver immediately.

@@ -5,9 +5,11 @@
 #ifndef DISCOVERY_MDNS_MDNS_READER_H_
 #define DISCOVERY_MDNS_MDNS_READER_H_
 
+#include <utility>
 #include <vector>
 
 #include "discovery/mdns/mdns_records.h"
+#include "platform/base/error.h"
 #include "util/big_endian.h"
 
 namespace openscreen {
@@ -34,14 +36,16 @@ class MdnsReader : public BigEndianReader {
   bool Read(PtrRecordRdata* out);
   bool Read(TxtRecordRdata* out);
   bool Read(NsecRecordRdata* out);
+
   // Reads a DNS resource record with its RDATA.
   // The correct type of RDATA to be read is determined by the type
   // specified in the record.
   bool Read(MdnsRecord* out);
   bool Read(MdnsQuestion* out);
+
   // Reads multiple mDNS questions and records that are a part of
   // a mDNS message being read.
-  bool Read(MdnsMessage* out);
+  ErrorOr<MdnsMessage> Read();
 
  private:
   struct NsecBitMapField {

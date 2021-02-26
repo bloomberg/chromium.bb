@@ -16,9 +16,9 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
@@ -55,6 +55,7 @@ class WebAppsChromeOs : public WebAppsBase,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id) override;
   void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
                  bool clear_site_data,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
@@ -63,6 +64,10 @@ class WebAppsChromeOs : public WebAppsBase,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
+  void ExecuteContextMenuCommand(const std::string& app_id,
+                                 int command_id,
+                                 const std::string& shortcut_id,
+                                 int64_t display_id) override;
 
   // web_app::AppRegistrarObserver:
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
@@ -86,7 +91,7 @@ class WebAppsChromeOs : public WebAppsBase,
   void OnNotificationDisplayServiceDestroyed(
       NotificationDisplayService* service) override;
 
-  void MaybeAddNotification(const std::string& app_id,
+  bool MaybeAddNotification(const std::string& app_id,
                             const std::string& notification_id);
   void MaybeAddWebPageNotifications(
       const message_center::Notification& notification,

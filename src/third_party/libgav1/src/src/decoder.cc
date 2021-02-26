@@ -37,6 +37,8 @@ Libgav1StatusCode Libgav1DecoderCreate(const Libgav1DecoderSettings* settings,
   cxx_settings.release_frame_buffer = settings->release_frame_buffer;
   cxx_settings.release_input_buffer = settings->release_input_buffer;
   cxx_settings.callback_private_data = settings->callback_private_data;
+  cxx_settings.output_all_layers = settings->output_all_layers != 0;
+  cxx_settings.operating_point = settings->operating_point;
   cxx_settings.post_filter_mask = settings->post_filter_mask;
 
   const Libgav1StatusCode status = cxx_decoder->Init(&cxx_settings);
@@ -69,11 +71,6 @@ Libgav1StatusCode Libgav1DecoderDequeueFrame(
 Libgav1StatusCode Libgav1DecoderSignalEOS(Libgav1Decoder* decoder) {
   auto* cxx_decoder = reinterpret_cast<libgav1::Decoder*>(decoder);
   return cxx_decoder->SignalEOS();
-}
-
-int Libgav1DecoderGetMaxAllowedFrames(const Libgav1Decoder* decoder) {
-  const auto* cxx_decoder = reinterpret_cast<const libgav1::Decoder*>(decoder);
-  return cxx_decoder->GetMaxAllowedFrames();
 }
 
 int Libgav1DecoderGetMaxBitdepth() {
@@ -114,11 +111,6 @@ StatusCode Decoder::SignalEOS() {
   // existing references are released and the state is cleared.
   impl_ = nullptr;
   return DecoderImpl::Create(&settings_, &impl_);
-}
-
-int Decoder::GetMaxAllowedFrames() const {
-  if (impl_ == nullptr) return 1;
-  return impl_->GetMaxAllowedFrames();
 }
 
 // static.

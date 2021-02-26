@@ -32,7 +32,8 @@ void sqlite3OpenTable(
 ){
   Vdbe *v;
   assert( !IsVirtual(pTab) );
-  v = sqlite3GetVdbe(pParse);
+  assert( pParse->pVdbe!=0 );
+  v = pParse->pVdbe;
   assert( opcode==OP_OpenWrite || opcode==OP_OpenRead );
   sqlite3TableLock(pParse, iDb, pTab->tnum, 
                    (opcode==OP_OpenWrite)?1:0, pTab->zName);
@@ -180,7 +181,7 @@ static int readsTable(Parse *p, int iDb, Table *pTab){
     assert( pOp!=0 );
     if( pOp->opcode==OP_OpenRead && pOp->p3==iDb ){
       Index *pIndex;
-      int tnum = pOp->p2;
+      Pgno tnum = pOp->p2;
       if( tnum==pTab->tnum ){
         return 1;
       }
@@ -1531,7 +1532,7 @@ void sqlite3GenerateConstraintChecks(
 
   isUpdate = regOldData!=0;
   db = pParse->db;
-  v = sqlite3GetVdbe(pParse);
+  v = pParse->pVdbe;
   assert( v!=0 );
   assert( pTab->pSelect==0 );  /* This table is not a VIEW */
   nCol = pTab->nCol;
@@ -1612,7 +1613,7 @@ void sqlite3GenerateConstraintChecks(
           }
           case OE_Abort:
             sqlite3MayAbort(pParse);
-            /* Fall through */
+            /* no break */ deliberate_fall_through
           case OE_Rollback:
           case OE_Fail: {
             char *zMsg = sqlite3MPrintf(db, "%s.%s", pTab->zName,
@@ -1685,7 +1686,7 @@ void sqlite3GenerateConstraintChecks(
         sqlite3VdbeGoto(v, ignoreDest);
       }else{
         char *zName = pCheck->a[i].zEName;
-        if( zName==0 ) zName = pTab->zName;
+        assert( zName!=0 || pParse->db->mallocFailed );
         if( onError==OE_Replace ) onError = OE_Abort; /* IMP: R-26383-51744 */
         sqlite3HaltConstraint(pParse, SQLITE_CONSTRAINT_CHECK,
                               onError, zName, P4_TRANSIENT,
@@ -1840,7 +1841,7 @@ void sqlite3GenerateConstraintChecks(
     switch( onError ){
       default: {
         onError = OE_Abort;
-        /* Fall thru into the next case */
+        /* no break */ deliberate_fall_through
       }
       case OE_Rollback:
       case OE_Abort:
@@ -1901,7 +1902,7 @@ void sqlite3GenerateConstraintChecks(
 #ifndef SQLITE_OMIT_UPSERT
       case OE_Update: {
         sqlite3UpsertDoUpdate(pParse, pUpsert, pTab, 0, iDataCur);
-        /* Fall through */
+        /* no break */ deliberate_fall_through
       }
 #endif
       case OE_Ignore: {
@@ -2122,7 +2123,7 @@ void sqlite3GenerateConstraintChecks(
 #ifndef SQLITE_OMIT_UPSERT
       case OE_Update: {
         sqlite3UpsertDoUpdate(pParse, pUpsert, pTab, pIdx, iIdxCur+ix);
-        /* Fall through */
+        /* no break */ deliberate_fall_through
       }
 #endif
       case OE_Ignore: {
@@ -2304,7 +2305,7 @@ void sqlite3CompleteInsertion(
        || update_flags==(OPFLAG_ISUPDATE|OPFLAG_SAVEPOSITION)
   );
 
-  v = sqlite3GetVdbe(pParse);
+  v = pParse->pVdbe;
   assert( v!=0 );
   assert( pTab->pSelect==0 );  /* This table is not a VIEW */
   for(i=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, i++){
@@ -2405,7 +2406,7 @@ int sqlite3OpenTableAndIndices(
     return 0;
   }
   iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
-  v = sqlite3GetVdbe(pParse);
+  v = pParse->pVdbe;
   assert( v!=0 );
   if( iBase<0 ) iBase = pParse->nTab;
   iDataCur = iBase++;
@@ -2610,7 +2611,7 @@ static int xferOptimization(
     return 0;   /* FROM clause does not contain a real table */
   }
   if( pSrc->tnum==pDest->tnum && pSrc->pSchema==pDest->pSchema ){
-    testcase( pSrc!=pDest ); /* Possible due to bad sqlite_master.rootpage */
+    testcase( pSrc!=pDest ); /* Possible due to bad sqlite_schema.rootpage */
     return 0;   /* tab1 and tab2 may not be the same table */
   }
   if( HasRowid(pDest)!=HasRowid(pSrc) ){

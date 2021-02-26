@@ -36,6 +36,12 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   static int GetCornerRadius();
 
+  // views::View:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+
+  // Notify accessibility that an item has been selected.
+  void NotifyAXSelection(View*);
+
   // Get colors used throughout various popup UIs, based on the current native
   // theme.
   SkColor GetBackgroundColor();
@@ -64,8 +70,13 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // Returns the bounds of the containing window in screen space.
   gfx::Rect GetWindowBounds() const;
 
-  // Update size of popup and paint (virtual for testing).
-  virtual void DoUpdateBoundsAndRedrawPopup();
+  // Returns the bounds of the content area in screen space.
+  gfx::Rect GetContentAreaBounds() const;
+
+  // Update size of popup and paint. If there is insufficient height to draw the
+  // popup, it hides and thus deletes |this| and returns false. (virtual for
+  // testing).
+  virtual bool DoUpdateBoundsAndRedrawPopup();
 
   const AutofillPopupViewDelegate* delegate() const { return delegate_; }
 
@@ -104,6 +115,9 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // The time when the popup was shown.
   base::Time show_time_;
+
+  // Ensures that the menu start event is not fired redundantly.
+  bool is_ax_menu_start_event_fired_ = false;
 
   base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_{this};
 

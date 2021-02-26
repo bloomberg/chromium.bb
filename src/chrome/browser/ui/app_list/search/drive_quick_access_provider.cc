@@ -26,6 +26,9 @@
 namespace app_list {
 namespace {
 
+using FileAvailability =
+    file_manager::file_tasks::FileTasksNotifier::FileAvailability;
+
 constexpr int kMaxItems = 5;
 
 // Error codes returned by the Drive QuickAccess API call. These values persist
@@ -60,9 +63,14 @@ void LogFileError(FileError error) {
                             error);
 }
 
-void LogDriveFSMounted(bool mounted) {
+void LogDriveFSMounted(const bool mounted) {
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.DriveFSMounted",
                         mounted);
+}
+
+void LogCacheWarmed(const bool warmed) {
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.CacheWarmed",
+                        warmed);
 }
 
 // Given an absolute path representing a file in the user's Drive, returns a
@@ -100,6 +108,8 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(
     : profile_(profile),
       drive_service_(
           drive::DriveIntegrationServiceFactory::GetForProfile(profile)),
+      file_tasks_notifier_(
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile)),
       search_controller_(search_controller),
       suggested_files_enabled_(app_list_features::IsSuggestedFilesEnabled()) {
   DCHECK(profile_);
@@ -108,12 +118,20 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  // Observe the drive integration service to warm the results cache once
-  // drivefs is mounted. This is necessary only if the suggested files
+  // Warm the results cache if or when drivefs is mounted by fetching from the
+  // Drive QuickAccess API. This is necessary only if the suggested files
   // experiment is enabled, so that results are ready for display in the
   // suggested chips on the first launcher open after login.
-  if (suggested_files_enabled_ && drive_service_)
-    drive_service_->AddObserver(this);
+  if (suggested_files_enabled_ && drive_service_) {
+    if (drive_service_->IsMounted()) {
+      // Drivefs is mounted, so we can fetch results immediately.
+      OnFileSystemMounted();
+    } else {
+      // Wait for DriveFS to be mounted, then fetch results. This happens in
+      // OnFileSystemMounted.
+      drive_service_->AddObserver(this);
+    }
+  }
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() {
@@ -122,17 +140,22 @@ DriveQuickAccessProvider::~DriveQuickAccessProvider() {
 }
 
 void DriveQuickAccessProvider::OnFileSystemMounted() {
-  // Warm up the result cache by fetching results from the Drive QuickAccess API
-  // as soon as DriveFS is mounted. This ensures the first use of the launcher
-  // displays Drive results. This is called on login, and when resuming from
-  // sleep.
+  LogCacheWarmed(have_warmed_up_cache_);
+  if (have_warmed_up_cache_)
+    return;
+  have_warmed_up_cache_ = true;
+
   GetQuickAccessItems(
       base::BindOnce(&DriveQuickAccessProvider::StartSearchController,
-                     weak_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveQuickAccessProvider::StartSearchController() {
   search_controller_->Start(base::string16());
+}
+
+ash::AppListSearchResultType DriveQuickAccessProvider::ResultType() {
+  return ash::AppListSearchResultType::kDriveQuickAccess;
 }
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {
@@ -146,40 +169,73 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
       "Apps.AppList.DriveQuickAccessProvider.TimeFromFetchToZeroStateStart",
       base::TimeTicks::Now() - latest_fetch_start_time_);
 
-  // Results are launched via DriveFS, so DriveFS must be mounted.
+  // Results are launched via DriveFS, so DriveFS must be mounted. We must also
+  // have a FileTasksNotifier instance to check file availability.
   bool drive_fs_mounted = drive_service_ && drive_service_->IsMounted();
   LogDriveFSMounted(drive_fs_mounted);
-  if (!drive_fs_mounted)
+  if (!drive_fs_mounted || !file_tasks_notifier_)
     return;
 
-  // If there are no items in the cache, the previous call may have failed so
-  // retry. We return no results in this case, because waiting for the new
-  // results would introduce too much latency.
+  // If there are no items in the cache, return no results, because waiting for
+  // new results would introduce too much latency.
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.CacheEmpty",
                         results_cache_.empty());
-  if (results_cache_.empty()) {
-    GetQuickAccessItems(base::DoNothing());
+  if (results_cache_.empty())
     return;
+
+  // Copy the results vector to ensure the QueryFileAvailability and SetResults
+  // calls operate on the same set of results, because |results_cache_| could be
+  // updated at any time.
+  std::vector<base::FilePath> result_paths;
+  for (const auto& result : results_cache_) {
+    result_paths.emplace_back(
+        ReparentToDriveMount(result.path, drive_service_));
   }
 
-  SearchProvider::Results results;
-  for (const auto& result : results_cache_) {
-    const auto& path = ReparentToDriveMount(result.path, drive_service_);
+  file_tasks_notifier_->QueryFileAvailability(
+      result_paths,
+      base::BindOnce(&DriveQuickAccessProvider::PublishResults,
+                     weak_ptr_factory_.GetWeakPtr(), result_paths));
+}
 
-    results.emplace_back(std::make_unique<DriveQuickAccessResult>(
-        path, result.confidence, profile_));
-    // Add suggestion chip file results
+void DriveQuickAccessProvider::PublishResults(
+    const std::vector<base::FilePath>& results,
+    std::vector<file_manager::file_tasks::FileTasksNotifier::FileAvailability>
+        availability) {
+  DCHECK_EQ(results.size(), availability.size());
+
+  // Assign scores to results by simply using their position in the results
+  // list. The confidence scores returned by the QuickAccess API are not
+  // reliable, but the ordering of the results is: the first result is
+  // better than the second, etc. Resulting scores are in [0, 1].
+  int item_index = 0;
+  const double total_items = static_cast<double>(results.size());
+  SearchProvider::Results provider_results;
+  for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+    if (availability[i] != FileAvailability::kOk)
+      continue;
+
+    const double score = 1.0 - (item_index / total_items);
+    ++item_index;
+
+    provider_results.emplace_back(
+        std::make_unique<DriveQuickAccessResult>(results[i], score, profile_));
     if (suggested_files_enabled_) {
-      results.emplace_back(std::make_unique<DriveQuickAccessChipResult>(
-          path, result.confidence, profile_));
+      provider_results.emplace_back(
+          std::make_unique<DriveQuickAccessChipResult>(results[i], score,
+                                                       profile_));
     }
   }
+
+  SwapResults(&provider_results);
   UMA_HISTOGRAM_TIMES("Apps.AppList.DriveQuickAccessProvider.Latency",
                       base::TimeTicks::Now() - query_start_time_);
-  SwapResults(&results);
 }
 
 void DriveQuickAccessProvider::AppListShown() {
+  // TODO(crbug.com/1034842): This call is triggered every time the app list is
+  // shown, and sends a query to the backend. We should consider adding
+  // rate-limiting here.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetQuickAccessItems(base::DoNothing());
 }
@@ -191,13 +247,14 @@ void DriveQuickAccessProvider::GetQuickAccessItems(
     return;
 
   // Invalidate weak pointers for existing callbacks to the Quick Access API.
-  weak_factory_.InvalidateWeakPtrs();
+  quick_access_weak_ptr_factory_.InvalidateWeakPtrs();
   latest_fetch_start_time_ = base::TimeTicks::Now();
 
   drive_service_->GetQuickAccessItems(
       kMaxItems,
       base::BindOnce(&DriveQuickAccessProvider::OnGetQuickAccessItems,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     quick_access_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(on_done)));
 }
 
 void DriveQuickAccessProvider::OnGetQuickAccessItems(
@@ -231,25 +288,14 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
         task_runner_.get(), FROM_HERE,
         base::BindOnce(&FilterResults, drive_service_, drive_results),
         base::BindOnce(&DriveQuickAccessProvider::SetResultsCache,
-                       weak_factory_.GetWeakPtr(), std::move(on_done)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(on_done)));
   }
 }
 
 void DriveQuickAccessProvider::SetResultsCache(
     base::OnceCallback<void()> on_done,
     const std::vector<drive::QuickAccessItem>& drive_results) {
-  results_cache_.clear();
-
-  // Assign scores to results by simply using their position in the results
-  // list. The confidence scores returned by the QuickAccess API are not
-  // reliable, but the ordering of the results is: the first result is
-  // better than the second, etc. Resulting scores are in [0, 1].
-  const double max_score = static_cast<double>(drive_results.size());
-  for (int i = 0; i < static_cast<int>(drive_results.size()); ++i) {
-    results_cache_.push_back(
-        {drive_results[i].path, 1.0 - (static_cast<double>(i) / max_score)});
-  }
-
+  results_cache_ = std::move(drive_results);
   std::move(on_done).Run();
 }
 

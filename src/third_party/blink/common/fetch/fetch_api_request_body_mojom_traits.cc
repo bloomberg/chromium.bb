@@ -26,11 +26,11 @@ bool StructTraits<
     blink::mojom::FetchAPIDataElementDataView,
     network::DataElement>::Read(blink::mojom::FetchAPIDataElementDataView data,
                                 network::DataElement* out) {
-  if (!data.ReadPath(&out->path_) || !data.ReadFile(&out->file_) ||
-      !data.ReadBlobUuid(&out->blob_uuid_) ||
+  if (!data.ReadPath(&out->path_) ||
       !data.ReadExpectedModificationTime(&out->expected_modification_time_)) {
     return false;
   }
+
   if (data.type() == network::mojom::DataElementType::kBytes) {
     if (!data.ReadBuf(&out->buf_))
       return false;

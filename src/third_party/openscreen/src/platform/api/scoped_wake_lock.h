@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include "platform/api/serial_delete_ptr.h"
+#include "platform/api/task_runner.h"
+
 namespace openscreen {
 
 // Ensures that the device does not got to sleep. This is used, for example,
@@ -20,7 +23,7 @@ namespace openscreen {
 // instances have been destroyed.
 class ScopedWakeLock {
  public:
-  static std::unique_ptr<ScopedWakeLock> Create();
+  static SerialDeletePtr<ScopedWakeLock> Create(TaskRunner* task_runner);
 
   // Instances are not copied nor moved.
   ScopedWakeLock(const ScopedWakeLock&) = delete;

@@ -25,7 +25,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -64,19 +63,6 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   return overlay_layout;
 }
 
-std::unique_ptr<views::Checkbox> CreateSaveCheckbox(bool start_state) {
-  auto storage_checkbox =
-      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-  storage_checkbox->SetChecked(start_state);
-  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
-      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY));
-
-  return storage_checkbox;
-}
-
 }  // namespace
 
 CardUnmaskPromptViews::CardUnmaskPromptViews(
@@ -84,12 +70,11 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
-  if (controller_->CanStoreLocally()) {
-    storage_checkbox_ = SetFootnoteView(
-        CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
-  }
-
   UpdateButtons();
+
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
@@ -157,7 +142,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
       // The label of the overlay will now show the error in red.
       auto error_label = std::make_unique<views::Label>(error_message);
       const SkColor warning_text_color = views::style::GetColor(
-          *error_label, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
+          *error_label, ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
+          STYLE_RED);
       error_label->SetEnabledColor(warning_text_color);
       error_label->SetMultiLine(true);
 
@@ -215,7 +201,7 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 
   auto new_card_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link->set_callback(base::BindRepeating(
+  new_card_link->SetCallback(base::BindRepeating(
       &CardUnmaskPromptViews::LinkClicked, base::Unretained(this)));
   new_card_link_ = input_row_->AddChildView(std::move(new_card_link));
 }
@@ -223,16 +209,6 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 views::View* CardUnmaskPromptViews::GetContentsView() {
   InitIfNecessary();
   return this;
-}
-
-gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
-  // If the margins width is not discounted here, the bubble border will be
-  // taken into consideration in the frame width size. Because of that, the
-  // dialog width will be snapped to a larger size when Harmony is enabled.
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void CardUnmaskPromptViews::AddedToWidget() {
@@ -247,10 +223,6 @@ void CardUnmaskPromptViews::OnThemeChanged() {
   overlay_->SetBackground(views::CreateSolidBackground(bg_color));
   if (overlay_label_)
     overlay_label_->SetBackgroundColor(bg_color);
-}
-
-ui::ModalType CardUnmaskPromptViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 base::string16 CardUnmaskPromptViews::GetWindowTitle() const {
@@ -312,7 +284,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   DialogModelChanged();
 }
 
-void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
+void CardUnmaskPromptViews::DateChanged() {
   if (ExpirationDateIsValid()) {
     if (month_input_->GetInvalid()) {
       month_input_->SetInvalid(false);
@@ -357,7 +329,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   auto instructions =
       std::make_unique<views::Label>(controller_->GetInstructionsMessage());
   instructions->SetEnabledColor(views::style::GetColor(
-      *instructions.get(), ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+      *instructions.get(), views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY));
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -378,12 +350,14 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // Add the month and year comboboxes if the expiration date is needed.
   auto month_input = std::make_unique<views::Combobox>(&month_combobox_model_);
-  month_input->set_listener(this);
+  month_input->SetCallback(base::BindRepeating(
+      &CardUnmaskPromptViews::DateChanged, base::Unretained(this)));
   month_input->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_MONTH));
   month_input_ = input_row->AddChildView(std::move(month_input));
   auto year_input = std::make_unique<views::Combobox>(&year_combobox_model_);
-  year_input->set_listener(this);
+  year_input->SetCallback(base::BindRepeating(
+      &CardUnmaskPromptViews::DateChanged, base::Unretained(this)));
   year_input->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_YEAR));
   year_input_ = input_row->AddChildView(std::move(year_input));
@@ -398,7 +372,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   auto cvc_image = std::make_unique<views::ImageView>();
   cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
-  cvc_image->set_tooltip_text(l10n_util::GetStringUTF16(
+  cvc_image->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
   input_row->AddChildView(std::move(cvc_image));
   input_row_ = input_container->AddChildView(std::move(input_row));
@@ -414,7 +388,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   const SkColor warning_text_color = views::style::GetColor(
-      *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
+      *instructions_, ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
+      STYLE_RED);
   auto error_icon = std::make_unique<views::ImageView>();
   error_icon->SetImage(
       gfx::CreateVectorIcon(kBrowserToolsErrorIcon, warning_text_color));

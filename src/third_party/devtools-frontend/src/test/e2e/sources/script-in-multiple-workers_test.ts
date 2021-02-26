@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {click, getBrowserAndPages, resourcesPath, step, waitFor} from '../../shared/helper.js';
+import {$$, click, getBrowserAndPages, goToResource, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {addBreakpointForLine, createSelectorsForWorkerFile, getBreakpointDecorators, getExecutionLine, getOpenSources, openNestedWorkerFile, PAUSE_BUTTON, RESUME_BUTTON} from '../helpers/sources-helpers.js';
 
 async function validateSourceTabs() {
   await step('Validate exactly one source file is open', async () => {
-    assert.deepEqual(await getOpenSources(), ['multi-workers.js']);
+    const openSources = await waitForFunction(async () => {
+      const sources = await getOpenSources();
+      return sources.length === 1 ? sources : undefined;
+    });
+    assert.deepEqual(openSources, ['multi-workers.js']);
   });
 }
 
@@ -22,15 +26,14 @@ describe('Multi-Workers', async function() {
 
   [false, true].forEach(sourceMaps => {
     const withOrWithout = sourceMaps ? 'with source maps' : 'without source maps';
-    const targetPage = sourceMaps ? `${resourcesPath}/sources/multi-workers-sourcemap.html` :
-                                    `${resourcesPath}/sources/multi-workers.html`;
+    const targetPage = sourceMaps ? 'sources/multi-workers-sourcemap.html' : 'sources/multi-workers.html';
     const scriptFile = sourceMaps ? 'multi-workers.min.js' : 'multi-workers.js';
     function workerFileSelectors(workerIndex: number) {
       return createSelectorsForWorkerFile(scriptFile, 'test/e2e/resources/sources', 'multi-workers.js', workerIndex);
     }
 
     async function validateNavigationTree() {
-      await step('Ensure 10 works exist', async () => {
+      await step('Ensure 10 workers exist', async () => {
         await waitFor(workerFileSelectors(10).rootSelector);
       });
     }
@@ -41,10 +44,8 @@ describe('Multi-Workers', async function() {
     }
 
     it(`loads scripts exactly once on reload ${withOrWithout}`, async () => {
-      const {target} = getBrowserAndPages();
-
       // Have the target load the page.
-      await target.goto(targetPage);
+      await goToResource(targetPage);
 
       await click('#tab-sources');
       await validateNavigationTree();
@@ -54,7 +55,7 @@ describe('Multi-Workers', async function() {
       await validateSourceTabs();
 
       // Reload page
-      await target.goto(targetPage);
+      await goToResource(targetPage);
 
       // Check workers again
       await validateNavigationTree();
@@ -63,11 +64,12 @@ describe('Multi-Workers', async function() {
       await validateSourceTabs();
     });
 
-    it(`loads scripts exactly once on break ${withOrWithout}`, async () => {
+    // Flaky test
+    it.skip(`[crbug.com/1073406]: loads scripts exactly once on break ${withOrWithout}`, async () => {
       const {target} = getBrowserAndPages();
 
       // Have the target load the page.
-      await target.goto(targetPage);
+      await goToResource(targetPage);
 
       await click('#tab-sources');
 
@@ -98,67 +100,101 @@ describe('Multi-Workers', async function() {
       await validateSourceTabs();
     });
 
+    it(`shows exactly one breakpoint ${withOrWithout}`, async () => {
+      const {frontend} = getBrowserAndPages();
+      // Have the target load the page.
+      await goToResource(targetPage);
+
+      await click('#tab-sources');
+      // Wait for all workers to load
+      await validateNavigationTree();
+      // Open file from second worker
+      await openNestedWorkerFile(workerFileSelectors(2));
+      // Set a breakpoint
+      await addBreakpointForLine(frontend, 6);
+
+      await waitFor('.breakpoint-entry');
+      const breakpoints = (await $$('.breakpoint-entry')).length;
+      assert.strictEqual(breakpoints, 1);
+    });
+
     describe(`copies breakpoints between workers ${withOrWithout}`, () => {
       beforeEach(async () => {
-        const {target, frontend} = getBrowserAndPages();
+        const {frontend} = getBrowserAndPages();
         // Have the target load the page.
-        await target.goto(targetPage);
+        await goToResource(targetPage);
 
         await click('#tab-sources');
         // Wait for all workers to load
         await validateNavigationTree();
-        // Open file from second worker
-        await openNestedWorkerFile(workerFileSelectors(2));
-        // Set two breakpoints
-        await addBreakpointForLine(frontend, 6);
-        // Disable first breakpoint
-        const bpEntry = await waitFor('.breakpoint-entry');
-        const bpCheckbox = await waitFor('input', bpEntry);
-        if (!bpCheckbox) {
-          assert.fail('Could not find checkbox to disable breakpoint');
-          return;
-        }
-        await bpCheckbox.evaluate(n => (n as HTMLElement).click());
-        await frontend.waitFor('.cm-breakpoint-disabled');
-        // Add another breakpoint
-        await addBreakpointForLine(frontend, 12);
 
-        // Check breakpoints
-        await validateBreakpoints(frontend);
+        await step('Open file from second worker', async () => {
+          await openNestedWorkerFile(workerFileSelectors(2));
+        });
 
-        // Close tab
-        await click('[aria-label="Close multi-workers.js"]');
+        await step('Set two breakpoints', async () => {
+          await addBreakpointForLine(frontend, 6);
+        });
+
+        await step('Disable first breakpoint', async () => {
+          const bpEntry = await waitFor('.breakpoint-entry');
+          const bpCheckbox = await waitFor('input', bpEntry);
+          await bpCheckbox.evaluate(n => (n as HTMLElement).click());
+          await frontend.waitForSelector('.cm-breakpoint-disabled');
+        });
+
+        await step('Add another breakpoint', async () => {
+          await addBreakpointForLine(frontend, 12);
+        });
+
+        await step('Check breakpoints', async () => {
+          await validateBreakpoints(frontend);
+        });
+
+        await step('Close tab', async () => {
+          await click('[aria-label="Close multi-workers.js"]');
+        });
       });
 
       it('when opening different file in editor', async () => {
         const {frontend} = getBrowserAndPages();
 
         // Open different worker
-        await openNestedWorkerFile(workerFileSelectors(3));
+        await step('Open different worker', async () => {
+          await openNestedWorkerFile(workerFileSelectors(3));
+        });
 
-        // Check breakpoints
-        await validateBreakpoints(frontend);
+        await step('Check breakpoints', async () => {
+          await validateBreakpoints(frontend);
+        });
       });
 
       it('after reloading', async () => {
         const {target, frontend} = getBrowserAndPages();
 
-        await target.reload();
+        await step('Reload page', async () => {
+          await target.reload();
+        });
 
-        // Open different worker
-        await openNestedWorkerFile(workerFileSelectors(4));
+        // FIXME(crbug/1112692): Refactor test to remove the timeout.
+        await timeout(100);
 
-        // Check breakpoints
-        await validateBreakpoints(frontend);
+        await step('Open different worker', async () => {
+          await openNestedWorkerFile(workerFileSelectors(4));
+        });
+
+        await step('Check breakpoints', async () => {
+          await validateBreakpoints(frontend);
+        });
       });
     });
 
     describe(`hits breakpoints added to workers ${withOrWithout}`, () => {
       beforeEach(async () => {
-        const {target, frontend} = getBrowserAndPages();
+        const {frontend} = getBrowserAndPages();
 
         // Have the target load the page.
-        await target.goto(targetPage);
+        await goToResource(targetPage);
 
         await step('Open sources panel', async () => {
           await click('#tab-sources');
@@ -175,7 +211,8 @@ describe('Multi-Workers', async function() {
         });
       });
 
-      it('for pre-loaded workers', async () => {
+      // Flaky test
+      it.skip('[crbug.com/1073406]: for pre-loaded workers', async () => {
         const {target} = getBrowserAndPages();
         // Send message to a worker to trigger break
         await target.evaluate('workers[5].postMessage({});');

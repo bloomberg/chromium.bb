@@ -29,6 +29,15 @@ Polymer({
     icon: String,
 
     /**
+     * If set to true, toggling the permission item will not set the permission
+     * in the backend. Call `syncPermission()` to set the permission to reflect
+     * the current UI state.
+     *
+     * @type {boolean}
+     */
+    syncPermissionManually: Boolean,
+
+    /**
      * @type {App}
      */
     app_: Object,
@@ -113,6 +122,11 @@ Polymer({
     return app_management.util.getPermissionValueBool(app, permissionType);
   },
 
+  resetToggle() {
+    const currentValue = this.getValue_(this.app_, this.permissionType);
+    this.$$('#toggle-row').setToggle(currentValue);
+  },
+
   /**
    * @private
    */
@@ -124,6 +138,16 @@ Polymer({
    * @private
    */
   togglePermission_() {
+    if (!this.syncPermissionManually) {
+      this.syncPermission();
+    }
+  },
+
+  /**
+   * Set the permission to match the current UI state. This only needs to be
+   * called when `syncPermissionManually` is set.
+   */
+  syncPermission() {
     assert(this.app_);
 
     /** @type {!Permission} */
@@ -135,12 +159,12 @@ Polymer({
                 .valueType) {
       case PermissionValueType.kBool:
         newPermission =
-            this.getNewPermissionBoolean_(this.app_, this.permissionType);
+            this.getUIPermissionBoolean_(this.app_, this.permissionType);
         newBoolState = newPermission.value === Bool.kTrue;
         break;
       case PermissionValueType.kTriState:
         newPermission =
-            this.getNewPermissionTriState_(this.app_, this.permissionType);
+            this.getUIPermissionTriState_(this.app_, this.permissionType);
         newBoolState = newPermission.value === TriState.kAllow;
         break;
       default:
@@ -158,12 +182,14 @@ Polymer({
   },
 
   /**
+   * Gets the permission boolean based on the toggle's UI state.
+   *
    * @param {App} app
    * @param {string} permissionType
    * @return {!Permission}
    * @private
    */
-  getNewPermissionBoolean_(app, permissionType) {
+  getUIPermissionBoolean_(app, permissionType) {
     let newPermissionValue;
     const currentPermission =
         app_management.util.getPermission(app, permissionType);
@@ -187,12 +213,14 @@ Polymer({
   },
 
   /**
+   * Gets the permission tristate based on the toggle's UI state.
+   *
    * @param {App} app
    * @param {string} permissionType
    * @return {!Permission}
    * @private
    */
-  getNewPermissionTriState_(app, permissionType) {
+  getUIPermissionTriState_(app, permissionType) {
     let newPermissionValue;
     const currentPermission =
         app_management.util.getPermission(app, permissionType);

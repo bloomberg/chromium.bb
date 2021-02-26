@@ -81,6 +81,10 @@ elif env.Bit('host_linux'):
 if env.Bit('asan') and env.Bit('host_mac'):
   cputime_test_enabled = False
 
+# TODO(crbug.com/1101347): This test causes a bot timeout on ARM bots.
+if env.Bit('build_arm') and not env.UsingEmulator():
+  cputime_test_enabled = False
+
 node = env.CommandSelLdrTestNacl(
     'clock_test.out',
     clock_test_nexe,

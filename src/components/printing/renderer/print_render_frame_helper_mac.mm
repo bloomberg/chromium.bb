@@ -15,22 +15,21 @@
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
-#include "printing/page_size_margins.h"
+#include "printing/mojom/print.mojom.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace printing {
 
-void PrintRenderFrameHelper::PrintPageInternal(
-    const PrintMsg_Print_Params& params,
-    int page_number,
-    int page_count,
-    double scale_factor,
-    blink::WebLocalFrame* frame,
-    MetafileSkia* metafile,
-    gfx::Size* page_size_in_dpi,
-    gfx::Rect* content_rect_in_dpi) {
+void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
+                                               uint32_t page_number,
+                                               uint32_t page_count,
+                                               double scale_factor,
+                                               blink::WebLocalFrame* frame,
+                                               MetafileSkia* metafile,
+                                               gfx::Size* page_size_in_dpi,
+                                               gfx::Rect* content_rect_in_dpi) {
   double css_scale_factor = scale_factor;
-  PageSizeMargins page_layout_in_points;
+  mojom::PageSizeMargins page_layout_in_points;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);
@@ -53,7 +52,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
   float final_scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
   cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-      page_size, canvas_area, final_scale_factor);
+      page_size, canvas_area, final_scale_factor, params.page_orientation);
   if (!canvas)
     return;
 

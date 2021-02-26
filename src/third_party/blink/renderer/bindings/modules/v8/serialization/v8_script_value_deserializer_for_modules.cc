@@ -5,23 +5,25 @@
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/file_system_access/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
+#include "third_party/blink/renderer/modules/file_system_access/native_file_system_directory_handle.h"
+#include "third_party/blink/renderer/modules/file_system_access/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_attachment.h"
 
 namespace blink {
 
@@ -73,6 +75,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       return ReadRTCEncodedAudioFrame();
     case kRTCEncodedVideoFrameTag:
       return ReadRTCEncodedVideoFrame();
+    case kVideoFrameTag:
+      return ReadVideoFrame();
     default:
       break;
   }
@@ -310,7 +314,7 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
 NativeFileSystemHandle*
 V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
     SerializationTag tag) {
-  if (!RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+  if (!RuntimeEnabledFeatures::NativeFileSystemEnabled(
           ExecutionContext::From(GetScriptState()))) {
     return nullptr;
   }
@@ -379,11 +383,6 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
 
 RTCEncodedAudioFrame*
 V8ScriptValueDeserializerForModules::ReadRTCEncodedAudioFrame() {
-  if (!RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
-          ExecutionContext::From(GetScriptState()))) {
-    return nullptr;
-  }
-
   uint32_t index;
   if (!ReadUint32(&index))
     return nullptr;
@@ -403,11 +402,6 @@ V8ScriptValueDeserializerForModules::ReadRTCEncodedAudioFrame() {
 
 RTCEncodedVideoFrame*
 V8ScriptValueDeserializerForModules::ReadRTCEncodedVideoFrame() {
-  if (!RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
-          ExecutionContext::From(GetScriptState()))) {
-    return nullptr;
-  }
-
   uint32_t index;
   if (!ReadUint32(&index))
     return nullptr;
@@ -423,6 +417,28 @@ V8ScriptValueDeserializerForModules::ReadRTCEncodedVideoFrame() {
     return nullptr;
 
   return MakeGarbageCollected<RTCEncodedVideoFrame>(frames[index]);
+}
+
+VideoFrame* V8ScriptValueDeserializerForModules::ReadVideoFrame() {
+  if (!RuntimeEnabledFeatures::WebCodecsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  uint32_t index;
+  if (!ReadUint32(&index))
+    return nullptr;
+
+  const auto* attachment =
+      GetSerializedScriptValue()->GetAttachmentIfExists<VideoFrameAttachment>();
+  if (!attachment)
+    return nullptr;
+
+  const auto& handles = attachment->Handles();
+  if (index >= attachment->size())
+    return nullptr;
+
+  return MakeGarbageCollected<VideoFrame>(handles[index]);
 }
 
 }  // namespace blink

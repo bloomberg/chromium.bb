@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "third_party/libpng/png.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,13 +40,12 @@ class PngDecoderState {
   PngDecoderState(PNGCodec::ColorFormat ofmt, std::vector<unsigned char>* o)
       : output_format(ofmt),
         output_channels(0),
-        bitmap(NULL),
+        bitmap(nullptr),
         is_opaque(true),
         output(o),
         width(0),
         height(0),
-        done(false) {
-  }
+        done(false) {}
 
   // Output is an SkBitmap.
   explicit PngDecoderState(SkBitmap* skbitmap)
@@ -53,11 +53,10 @@ class PngDecoderState {
         output_channels(0),
         bitmap(skbitmap),
         is_opaque(true),
-        output(NULL),
+        output(nullptr),
         width(0),
         height(0),
-        done(false) {
-  }
+        done(false) {}
 
   PNGCodec::ColorFormat output_format;
   int output_channels;

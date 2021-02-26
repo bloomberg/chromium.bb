@@ -70,8 +70,6 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService {
                                     const std::string& app_id,
                                     Clock::time_point now) const;
 
-  uint32_t GetNextAvailabilityQueryId();
-
   void RemoveAvailabilityCallback(uint32_t id) override;
 
   std::map<std::string, ServiceInfo> receivers_by_id_;
@@ -81,8 +79,7 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService {
   std::map<std::string, std::vector<AvailabilityCallbackEntry>> avail_queries_;
 
   // Callback ID tracking.
-  uint32_t next_avail_query_id_;
-  std::vector<uint32_t> free_query_ids_;
+  uint32_t next_avail_query_id_ = 1U;
 
   CastPlatformClient* const platform_client_;
 

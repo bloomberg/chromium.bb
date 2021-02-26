@@ -38,9 +38,10 @@ export class ConsoleContextSelector {
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this._frameNavigated,
         this);
 
-    self.UI.context.addFlavorChangeListener(
+    UI.Context.Context.instance().addFlavorChangeListener(
         SDK.RuntimeModel.ExecutionContext, this._executionContextChangedExternally, this);
-    self.UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameSelectedInUI, this);
+    UI.Context.Context.instance().addFlavorChangeListener(
+        SDK.DebuggerModel.CallFrame, this._callFrameSelectedInUI, this);
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.RuntimeModel.RuntimeModel, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.CallFrameSelected, this._callFrameSelectedInModel,
@@ -64,9 +65,9 @@ export class ConsoleContextSelector {
   highlightedItemChanged(from, to, fromElement, toElement) {
     SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     if (to && to.frameId) {
-      const overlayModel = to.target().model(SDK.OverlayModel.OverlayModel);
-      if (overlayModel) {
-        overlayModel.highlightFrame(to.frameId);
+      const frame = SDK.FrameManager.FrameManager.instance().getFrame(to.frameId);
+      if (frame && !frame.isTopFrame()) {
+        frame.highlight();
       }
     }
     if (fromElement) {
@@ -84,7 +85,8 @@ export class ConsoleContextSelector {
    */
   titleFor(executionContext) {
     const target = executionContext.target();
-    let label = executionContext.label() ? target.decorateLabel(executionContext.label()) : '';
+    const maybeLabel = executionContext.label();
+    let label = maybeLabel ? target.decorateLabel(maybeLabel) : '';
     if (executionContext.frameId) {
       const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       const frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
@@ -108,10 +110,9 @@ export class ConsoleContextSelector {
       depth++;
     }
     if (executionContext.frameId) {
-      const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-      let frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
+      let frame = SDK.FrameManager.FrameManager.instance().getFrame(executionContext.frameId);
       while (frame) {
-        frame = frame.parentFrame || frame.crossTargetParentFrame();
+        frame = frame.parentFrame();
         if (frame) {
           depth++;
           target = frame.resourceTreeModel().target();
@@ -119,10 +120,12 @@ export class ConsoleContextSelector {
       }
     }
     let targetDepth = 0;
+    let parentTarget = target.parentTarget();
     // Special casing service workers to be top-level.
-    while (target.parentTarget() && target.type() !== SDK.SDKModel.Type.ServiceWorker) {
+    while (parentTarget && target.type() !== SDK.SDKModel.Type.ServiceWorker) {
       targetDepth++;
-      target = target.parentTarget();
+      target = parentTarget;
+      parentTarget = target.parentTarget();
     }
     depth += targetDepth;
     return depth;
@@ -134,7 +137,7 @@ export class ConsoleContextSelector {
   _executionContextCreated(executionContext) {
     this._items.insertWithComparator(executionContext, executionContext.runtimeModel.executionContextComparator());
 
-    if (executionContext === self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext)) {
+    if (executionContext === UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext)) {
       this._dropDown.selectItem(executionContext);
     }
   }
@@ -237,11 +240,13 @@ export class ConsoleContextSelector {
    */
   createElementForItem(item) {
     const element = document.createElement('div');
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, 'console/consoleContextSelector.css');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        element,
+        {cssFile: 'console/consoleContextSelector.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const title = shadowRoot.createChild('div', 'title');
-    title.createTextChild(this.titleFor(item).trimEndWithMaxLength(100));
+    UI.UIUtils.createTextChild(title, this.titleFor(item).trimEndWithMaxLength(100));
     const subTitle = shadowRoot.createChild('div', 'subtitle');
-    subTitle.createTextChild(this._subtitleFor(item));
+    UI.UIUtils.createTextChild(subTitle, this._subtitleFor(item));
     element.style.paddingLeft = (8 + this._depthFor(item) * 15) + 'px';
     return element;
   }
@@ -252,7 +257,8 @@ export class ConsoleContextSelector {
    */
   _subtitleFor(executionContext) {
     const target = executionContext.target();
-    let frame;
+    /** @type {?SDK.ResourceTreeModel.ResourceTreeFrame} */
+    let frame = null;
     if (executionContext.frameId) {
       const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
@@ -260,7 +266,8 @@ export class ConsoleContextSelector {
     if (executionContext.origin.startsWith('chrome-extension://')) {
       return Common.UIString.UIString('Extension');
     }
-    if (!frame || !frame.parentFrame || frame.parentFrame.securityOrigin !== executionContext.origin) {
+    const sameTargetParentFrame = frame && frame.sameTargetParentFrame();
+    if (!frame || !sameTargetParentFrame || sameTargetParentFrame.securityOrigin !== executionContext.origin) {
       const url = Common.ParsedURL.ParsedURL.fromString(executionContext.origin);
       if (url) {
         return url.domain();
@@ -296,14 +303,14 @@ export class ConsoleContextSelector {
     this._toolbarItem.element.classList.toggle('warning', !this._isTopContext(item) && this._hasTopContext());
     const title = item ? ls`JavaScript context: ${this.titleFor(item)}` : ls`JavaScript context: Not selected`;
     this._toolbarItem.setTitle(title);
-    self.UI.context.setFlavor(SDK.RuntimeModel.ExecutionContext, item);
+    UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, item);
   }
 
   _callFrameSelectedInUI() {
-    const callFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     const callFrameContext = callFrame && callFrame.script.executionContext();
     if (callFrameContext) {
-      self.UI.context.setFlavor(SDK.RuntimeModel.ExecutionContext, callFrameContext);
+      UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, callFrameContext);
     }
   }
 

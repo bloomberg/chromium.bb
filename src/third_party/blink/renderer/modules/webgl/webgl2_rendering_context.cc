@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/modules/webgl/ext_color_buffer_float.h"
+#include "third_party/blink/renderer/modules/webgl/ext_color_buffer_half_float.h"
 #include "third_party/blink/renderer/modules/webgl/ext_disjoint_timer_query_webgl2.h"
 #include "third_party/blink/renderer/modules/webgl/ext_float_blend.h"
 #include "third_party/blink/renderer/modules/webgl/ext_texture_compression_bptc.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/renderer/modules/webgl/ext_texture_filter_anisotropic.h"
 #include "third_party/blink/renderer/modules/webgl/ext_texture_norm_16.h"
 #include "third_party/blink/renderer/modules/webgl/khr_parallel_shader_compile.h"
+#include "third_party/blink/renderer/modules/webgl/oes_draw_buffers_indexed.h"
 #include "third_party/blink/renderer/modules/webgl/oes_texture_float_linear.h"
 #include "third_party/blink/renderer/modules/webgl/ovr_multiview_2.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_astc.h"
@@ -70,15 +72,31 @@ static bool ShouldCreateContext(WebGraphicsContext3DProvider* context_provider,
 CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
+  // Create a copy of attrs so flags can be modified if needed before passing
+  // into the WebGL2RenderingContext constructor.
+  CanvasContextCreationAttributesCore attribs = attrs;
+
+  // The xr_compatible attribute needs to be handled before creating the context
+  // because the GPU process may potentially be restarted in order to be XR
+  // compatible. This scenario occurs if the GPU process is not using the GPU
+  // that the VR headset is plugged into. If the GPU process is restarted, the
+  // WebGraphicsContext3DProvider must be created using the new one.
+  if (attribs.xr_compatible &&
+      !WebGLRenderingContextBase::MakeXrCompatibleSync(host)) {
+    // If xr compatibility is requested and we can't be xr compatible, return a
+    // context with the flag set to false.
+    attribs.xr_compatible = false;
+  }
+
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
       CreateWebGraphicsContext3DProvider(
-          host, attrs, Platform::kWebGL2ContextType, &using_gpu_compositing));
+          host, attribs, Platform::kWebGL2ContextType, &using_gpu_compositing));
   if (!ShouldCreateContext(context_provider.get(), host))
     return nullptr;
   WebGL2RenderingContext* rendering_context =
       MakeGarbageCollected<WebGL2RenderingContext>(
-          host, std::move(context_provider), using_gpu_compositing, attrs);
+          host, std::move(context_provider), using_gpu_compositing, attribs);
 
   if (!rendering_context->GetDrawingBuffer()) {
     host->HostDispatchEvent(
@@ -89,7 +107,8 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
 
   rendering_context->InitializeNewContext();
   rendering_context->RegisterContextExtensions();
-
+  rendering_context->RecordUKMCanvasRenderingAPI(
+      CanvasRenderingContext::CanvasRenderingAPI::kWebgl2);
   return rendering_context;
 }
 
@@ -128,13 +147,15 @@ ImageBitmap* WebGL2RenderingContext::TransferToImageBitmap(
 void WebGL2RenderingContext::RegisterContextExtensions() {
   // Register extensions.
   RegisterExtension(ext_color_buffer_float_);
+  RegisterExtension(ext_color_buffer_half_float_);
   RegisterExtension(ext_disjoint_timer_query_web_gl2_);
   RegisterExtension(ext_float_blend_);
   RegisterExtension(ext_texture_compression_bptc_);
   RegisterExtension(ext_texture_compression_rgtc_);
   RegisterExtension(ext_texture_filter_anisotropic_);
-  RegisterExtension(ext_texture_norm16_, kDraftExtension);
+  RegisterExtension(ext_texture_norm16_);
   RegisterExtension(khr_parallel_shader_compile_);
+  RegisterExtension(oes_draw_buffers_indexed_, kDraftExtension);
   RegisterExtension(oes_texture_float_linear_);
   RegisterExtension(webgl_compressed_texture_astc_);
   RegisterExtension(webgl_compressed_texture_etc_);
@@ -147,15 +168,16 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension(webgl_draw_instanced_base_vertex_base_instance_,
                     kDraftExtension);
   RegisterExtension(webgl_lose_context_);
-  RegisterExtension(webgl_multi_draw_, kDraftExtension);
+  RegisterExtension(webgl_multi_draw_);
   RegisterExtension(webgl_multi_draw_instanced_base_vertex_base_instance_,
                     kDraftExtension);
   RegisterExtension(webgl_video_texture_, kDraftExtension);
   RegisterExtension(ovr_multiview2_);
 }
 
-void WebGL2RenderingContext::Trace(Visitor* visitor) {
+void WebGL2RenderingContext::Trace(Visitor* visitor) const {
   visitor->Trace(ext_color_buffer_float_);
+  visitor->Trace(ext_color_buffer_half_float_);
   visitor->Trace(ext_disjoint_timer_query_web_gl2_);
   visitor->Trace(ext_float_blend_);
   visitor->Trace(ext_texture_compression_bptc_);
@@ -163,6 +185,7 @@ void WebGL2RenderingContext::Trace(Visitor* visitor) {
   visitor->Trace(ext_texture_filter_anisotropic_);
   visitor->Trace(ext_texture_norm16_);
   visitor->Trace(khr_parallel_shader_compile_);
+  visitor->Trace(oes_draw_buffers_indexed_);
   visitor->Trace(oes_texture_float_linear_);
   visitor->Trace(ovr_multiview2_);
   visitor->Trace(webgl_compressed_texture_astc_);

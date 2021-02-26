@@ -80,7 +80,7 @@ RenderWidgetHostDelegate::GetRenderWidgetHostWithPageFocus() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
+bool RenderWidgetHostDelegate::IsFullscreen() {
   return false;
 }
 
@@ -122,11 +122,6 @@ RenderViewHostDelegateView* RenderWidgetHostDelegate::GetDelegateView() {
   return nullptr;
 }
 
-RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFullscreenRenderWidgetHost()
-    const {
-  return nullptr;
-}
-
 bool RenderWidgetHostDelegate::OnUpdateDragCursor() {
   return false;
 }
@@ -160,6 +155,10 @@ RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
 
 bool RenderWidgetHostDelegate::IsPortal() {
   return false;
+}
+
+FrameTree* RenderWidgetHostDelegate::GetFrameTree() {
+  return nullptr;
 }
 
 }  // namespace content

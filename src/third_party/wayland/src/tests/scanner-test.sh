@@ -36,6 +36,20 @@ generate_and_compare() {
 		fail "$2 -> $3"
 }
 
+verify_error() {
+	echo
+	echo "Checking that reading $1 gives an error on line $3"
+
+	[ -f "$TEST_DATA_DIR/$1" ] || hard_fail "$1 not present"
+
+	# Confirm failure error code
+	"$WAYLAND_SCANNER" server-header < "$TEST_DATA_DIR/$1" >/dev/null 2>"$TEST_OUTPUT_DIR/$2" && \
+		fail "$1 return code check"
+
+	# Verify that an error is produced at the correct line
+	grep -q "<stdin>:$3: error:" "$TEST_OUTPUT_DIR/$2" && echo "$1 PASS" || fail "$1 line number check"
+}
+
 generate_and_compare "code" "example.xml" "example-code.c"
 generate_and_compare "client-header" "example.xml" "example-client.h"
 generate_and_compare "server-header" "example.xml" "example-server.h"
@@ -52,4 +66,13 @@ generate_and_compare "-c server-header" "small.xml" "small-server-core.h"
 generate_and_compare "code" "small.xml" "small-code.c"
 generate_and_compare "public-code" "small.xml" "small-code.c"
 generate_and_compare "private-code" "small.xml" "small-private-code.c"
+
+verify_error "bad-identifier-arg.xml" "bad-identifier-arg.log" 7
+verify_error "bad-identifier-entry.xml" "bad-identifier-entry.log" 8
+verify_error "bad-identifier-enum.xml" "bad-identifier-enum.log" 6
+verify_error "bad-identifier-event.xml" "bad-identifier-event.log" 6
+verify_error "bad-identifier-interface.xml" "bad-identifier-interface.log" 3
+verify_error "bad-identifier-protocol.xml" "bad-identifier-protocol.log" 2
+verify_error "bad-identifier-request.xml" "bad-identifier-request.log" 6
+
 exit $RETCODE

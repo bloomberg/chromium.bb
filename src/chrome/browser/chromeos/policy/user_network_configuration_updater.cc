@@ -7,10 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -131,10 +129,9 @@ void UserNetworkConfigurationUpdater::Observe(
   Profile* profile = content::Source<Profile>(source).ptr();
 
   GetNSSCertDatabaseForProfile(
-      profile, base::AdaptCallbackForRepeating(
-                   base::BindOnce(&UserNetworkConfigurationUpdater::
-                                      CreateAndSetClientCertificateImporter,
-                                  weak_factory_.GetWeakPtr())));
+      profile, base::BindOnce(&UserNetworkConfigurationUpdater::
+                                  CreateAndSetClientCertificateImporter,
+                              weak_factory_.GetWeakPtr()));
 }
 
 void UserNetworkConfigurationUpdater::CreateAndSetClientCertificateImporter(
@@ -142,8 +139,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetClientCertificateImporter(
   DCHECK(database);
   SetClientCertificateImporter(
       std::make_unique<chromeos::onc::CertificateImporterImpl>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-          database));
+          content::GetIOThreadTaskRunner({}), database));
 }
 
 void UserNetworkConfigurationUpdater::SetClientCertificateImporter(

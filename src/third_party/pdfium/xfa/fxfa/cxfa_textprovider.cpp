@@ -6,15 +6,12 @@
 
 #include "xfa/fxfa/cxfa_textprovider.h"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
-
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlnode.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "third_party/base/check.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
@@ -35,6 +32,18 @@
 #include "xfa/fxfa/parser/cxfa_value.h"
 #include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
+
+CXFA_TextProvider::CXFA_TextProvider(CXFA_Node* pNode,
+                                     XFA_TEXTPROVIDERTYPE eType)
+    : m_pNode(pNode), m_eType(eType) {
+  DCHECK(m_pNode);
+}
+
+CXFA_TextProvider::~CXFA_TextProvider() = default;
+
+void CXFA_TextProvider::Trace(cppgc::Visitor* visitor) const {
+  visitor->Trace(m_pNode);
+}
 
 CXFA_Node* CXFA_TextProvider::GetTextNode(bool* bRichText) {
   *bRichText = false;

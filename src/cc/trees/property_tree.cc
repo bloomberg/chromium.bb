@@ -4,18 +4,22 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/trees/clip_node.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -80,10 +84,12 @@ void PropertyTree<T>::clear() {
 #endif
 }
 
+#if DCHECK_IS_ON()
 template <typename T>
 bool PropertyTree<T>::operator==(const PropertyTree<T>& other) const {
   return nodes_ == other.nodes() && needs_update_ == other.needs_update();
 }
+#endif
 
 template <typename T>
 void PropertyTree<T>::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -120,7 +126,9 @@ void TransformTree::clear() {
   cached_data_.push_back(TransformCachedNodeData());
   sticky_position_data_.clear();
 
+#if DCHECK_IS_ON()
   DCHECK(TransformTree() == *this);
+#endif
 }
 
 void TransformTree::set_needs_update(bool needs_update) {
@@ -173,9 +181,9 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateScreenSpaceTransform(node, parent_node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
-  UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
   UpdateTransformChanged(node, parent_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
+  UpdateNodeOrAncestorsWillChangeTransform(node, parent_node);
 
   DCHECK(!node->needs_local_transform_update);
 }
@@ -336,6 +344,11 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box !=
       TransformTree::kInvalidNodeId) {
+    // TODO(crbug.com/1128479): Investigate why there would be an invalid index
+    // passed in. Early return for now.
+    if (sticky_data->nearest_node_shifting_sticky_box >=
+        static_cast<int>(property_trees()->transform_tree.size()))
+      return gfx::Vector2dF();
     const StickyPositionNodeData* ancestor_sticky_data =
         GetStickyPositionData(sticky_data->nearest_node_shifting_sticky_box);
     DCHECK(ancestor_sticky_data);
@@ -346,6 +359,11 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
   gfx::Vector2dF ancestor_containing_block_offset;
   if (sticky_data->nearest_node_shifting_containing_block !=
       TransformTree::kInvalidNodeId) {
+    // TODO(crbug.com/1128479): Investigate why there would be an invalid index
+    // passed in. Early return for now.
+    if (sticky_data->nearest_node_shifting_containing_block >=
+        static_cast<int>(property_trees()->transform_tree.size()))
+      return gfx::Vector2dF();
     const StickyPositionNodeData* ancestor_sticky_data = GetStickyPositionData(
         sticky_data->nearest_node_shifting_containing_block);
     DCHECK(ancestor_sticky_data);
@@ -493,24 +511,27 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   // rounded, then what we're after is the scroll delta X, where ST * X = ST'.
   // I.e., we want a transform that will realize our snap. It follows that
   // X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
-  gfx::Transform rounded = ToScreen(node->id);
-  rounded.RoundTranslationComponents();
-  gfx::Transform delta = FromScreen(node->id);
-  delta *= rounded;
+  DCHECK_LT(node->id, static_cast<int>(cached_data_.size()));
+  gfx::Transform& to_screen = cached_data_[node->id].to_screen;
+  to_screen.RoundTranslationComponents();
+  gfx::Transform& from_screen = cached_data_[node->id].from_screen;
+  gfx::Transform delta = from_screen;
+  delta *= to_screen;
 
-  DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToScalar(1e-4)))
+  constexpr float kTolerance = 1e-4f;
+  DCHECK(delta.IsApproximatelyIdentityOrTranslation(kTolerance))
       << delta.ToString();
 
   gfx::Vector2dF translation = delta.To2dTranslation();
-
-  // Now that we have our delta, we must apply it to each of our combined,
-  // to/from matrices.
-  SetToScreen(node->id, rounded);
-  node->to_parent.Translate(translation.x(), translation.y());
-  gfx::Transform from_screen = FromScreen(node->id);
-  from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
-  SetFromScreen(node->id, from_screen);
   node->snap_amount = translation;
+  if (translation.IsZero())
+    return;
+
+  from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
+  node->to_parent.Translate(translation.x(), translation.y());
+  // Avoid accumulation of errors in to_parent.
+  if (node->to_parent.IsApproximatelyIdentityOrIntegerTranslation(kTolerance))
+    node->to_parent.RoundTranslationComponents();
 }
 
 void TransformTree::UpdateTransformChanged(TransformNode* node,
@@ -536,6 +557,16 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
     is_invertible = false;
   node->node_and_ancestors_are_animated_or_invertible =
       node->has_potential_animation || is_invertible;
+}
+
+void TransformTree::UpdateNodeOrAncestorsWillChangeTransform(
+    TransformNode* node,
+    TransformNode* parent_node) {
+  node->node_or_ancestors_will_change_transform = node->will_change_transform;
+  if (parent_node) {
+    node->node_or_ancestors_will_change_transform |=
+        parent_node->node_or_ancestors_will_change_transform;
+  }
 }
 
 void TransformTree::SetRootScaleAndTransform(
@@ -622,6 +653,7 @@ void TransformTree::SetToScreen(int node_id, const gfx::Transform& transform) {
   cached_data_[node_id].is_showing_backface = transform.IsBackFaceVisible();
 }
 
+#if DCHECK_IS_ON()
 bool TransformTree::operator==(const TransformTree& other) const {
   return PropertyTree::operator==(other) &&
          page_scale_factor_ == other.page_scale_factor() &&
@@ -632,6 +664,7 @@ bool TransformTree::operator==(const TransformTree& other) const {
              other.nodes_affected_by_outer_viewport_bounds_delta() &&
          cached_data_ == other.cached_data();
 }
+#endif
 
 StickyPositionNodeData* TransformTree::MutableStickyPositionData(int node_id) {
   const TransformNode* node = Node(node_id);
@@ -719,6 +752,15 @@ void EffectTree::UpdateEffectChanged(EffectNode* node,
   }
 }
 
+void EffectTree::UpdateHasFilters(EffectNode* node, EffectNode* parent_node) {
+  node->node_or_ancestor_has_filters =
+      !node->filters.IsEmpty() || node->has_potential_filter_animation;
+  if (parent_node) {
+    node->node_or_ancestor_has_filters |=
+        parent_node->node_or_ancestor_has_filters;
+  }
+}
+
 void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
                                           EffectNode* parent_node) {
   if (parent_node && parent_node->hidden_by_backface_visibility) {
@@ -742,6 +784,17 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   node->has_masking_child = false;
   if (node->blend_mode == SkBlendMode::kDstIn) {
     parent_node->has_masking_child = true;
+  }
+}
+
+void EffectTree::UpdateOnlyDrawsVisibleContent(EffectNode* node,
+                                               EffectNode* parent_node) {
+  node->only_draws_visible_content = !node->has_copy_request;
+  if (parent_node)
+    node->only_draws_visible_content &= parent_node->only_draws_visible_content;
+  if (!node->backdrop_filters.IsEmpty()) {
+    node->only_draws_visible_content &=
+        !node->backdrop_filters.HasFilterOfType(FilterOperation::ZOOM);
   }
 }
 
@@ -827,8 +880,10 @@ void EffectTree::UpdateEffects(int id) {
   UpdateSubtreeHidden(node, parent_node);
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
+  UpdateHasFilters(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
+  UpdateOnlyDrawsVisibleContent(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 
@@ -934,8 +989,8 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
                  .AssignIfValid(&scale_to_y)) {
           continue;
         }
-        int scale_from_x = gfx::ToRoundedInt(scale_from_x_f);
-        int scale_from_y = gfx::ToRoundedInt(scale_from_y_f);
+        int scale_from_x = base::ClampRound(scale_from_x_f);
+        int scale_from_y = base::ClampRound(scale_from_y_f);
         if (scale_from_x <= 0 || scale_from_y <= 0 || scale_to_x <= 0 ||
             scale_to_y <= 0) {
           // Transformed scaling ratio became illegal. Drop the request to
@@ -1092,20 +1147,11 @@ bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
   const EffectNode* effect_node = Node(effect_id);
   for (; effect_node->id != kContentsRootNodeId;
        effect_node = Node(effect_node->parent_id)) {
-    if (!effect_node->rounded_corner_bounds.IsEmpty() ||
+    if (!effect_node->mask_filter_info.IsEmpty() ||
         effect_node->has_masking_child)
       return true;
   }
   return false;
-}
-
-void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
-    TransformNode* node,
-    TransformNode* parent_node) {
-  DCHECK(parent_node);
-  node->node_and_ancestors_have_only_integer_translation =
-      node->to_parent.IsIdentityOrIntegerTranslation() &&
-      parent_node->node_and_ancestors_have_only_integer_translation;
 }
 
 void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
@@ -1119,14 +1165,16 @@ void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
 }
 
 gfx::RectF ClipTree::ViewportClip() const {
-  const unsigned long min_size = 1;
+  const size_t min_size = 1;
   DCHECK_GT(size(), min_size);
   return Node(kViewportNodeId)->clip;
 }
 
+#if DCHECK_IS_ON()
 bool ClipTree::operator==(const ClipTree& other) const {
   return PropertyTree::operator==(other);
 }
+#endif
 
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
@@ -1137,9 +1185,11 @@ EffectTree& EffectTree::operator=(const EffectTree& from) {
   return *this;
 }
 
+#if DCHECK_IS_ON()
 bool EffectTree::operator==(const EffectTree& other) const {
   return PropertyTree::operator==(other);
 }
+#endif
 
 ScrollTree::ScrollTree()
     : currently_scrolling_node_id_(kInvalidNodeId),
@@ -1159,6 +1209,7 @@ ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   return *this;
 }
 
+#if DCHECK_IS_ON()
 bool ScrollTree::operator==(const ScrollTree& other) const {
   if (scroll_offset_map_ != other.scroll_offset_map_)
     return false;
@@ -1173,14 +1224,13 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
   return PropertyTree::operator==(other) && is_currently_scrolling_node_equal;
 }
 
-#if DCHECK_IS_ON()
 void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
   currently_scrolling_node_id_ = other.currently_scrolling_node_id_;
   scroll_offset_map_ = other.scroll_offset_map_;
   synced_scroll_offset_map_ = other.synced_scroll_offset_map_;
   callbacks_ = other.callbacks_;
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) {
   if (!id)
@@ -1273,6 +1323,8 @@ void ScrollTree::OnScrollOffsetAnimated(ElementId id,
   if (!property_trees()->is_active)
     return;
 
+  TRACE_EVENT2("cc", "ScrollTree::OnScrollOffsetAnimated", "x",
+               scroll_offset.x(), "y", scroll_offset.y());
   ScrollNode* scroll_node = Node(scroll_tree_index);
   if (SetScrollOffset(id,
                       ClampScrollOffsetToLimits(scroll_offset, *scroll_node)))
@@ -1436,7 +1488,7 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
 }
 
 void ScrollTree::CollectScrollDeltas(
-    ScrollAndScaleSet* scroll_info,
+    CompositorCommitData* commit_data,
     ElementId inner_viewport_scroll_element_id,
     bool use_fractional_deltas,
     const base::flat_set<ElementId>& snapped_elements) {
@@ -1466,13 +1518,13 @@ void ScrollTree::CollectScrollDeltas(
       TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
                            TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
                            scroll_delta.y());
-      ScrollAndScaleSet::ScrollUpdateInfo update(id, scroll_delta,
-                                                 snap_target_ids);
+      CompositorCommitData::ScrollUpdateInfo update(id, scroll_delta,
+                                                    snap_target_ids);
       if (id == inner_viewport_scroll_element_id) {
         // Inner (visual) viewport is stored separately.
-        scroll_info->inner_viewport_scroll = std::move(update);
+        commit_data->inner_viewport_scroll = std::move(update);
       } else {
-        scroll_info->scrolls.push_back(std::move(update));
+        commit_data->scrolls.push_back(std::move(update));
       }
     }
   }
@@ -1570,6 +1622,9 @@ void ScrollTree::SetBaseScrollOffset(ElementId id,
 
 bool ScrollTree::SetScrollOffset(ElementId id,
                                  const gfx::ScrollOffset& scroll_offset) {
+  // TODO(crbug.com/1087088): Remove TRACE_EVENT call when the bug is fixed
+  TRACE_EVENT2("cc", "ScrollTree::SetScrollOffset", "x", scroll_offset.x(), "y",
+               scroll_offset.y());
   if (property_trees()->is_main_thread) {
     if (scroll_offset_map_[id] == scroll_offset)
       return false;
@@ -1695,6 +1750,7 @@ PropertyTrees::PropertyTrees()
 
 PropertyTrees::~PropertyTrees() = default;
 
+#if DCHECK_IS_ON()
 bool PropertyTrees::operator==(const PropertyTrees& other) const {
   return transform_tree == other.transform_tree &&
          effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
@@ -1711,6 +1767,7 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          is_active == other.is_active &&
          sequence_number == other.sequence_number;
 }
+#endif
 
 PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   transform_tree = from.transform_tree;

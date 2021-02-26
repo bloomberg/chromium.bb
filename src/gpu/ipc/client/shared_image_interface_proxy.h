@@ -23,16 +23,29 @@ class SharedImageInterfaceProxy {
   Mailbox CreateSharedImage(viz::ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage);
   Mailbox CreateSharedImage(viz::ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage,
                             base::span<const uint8_t> pixel_data);
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage);
+
+#if defined(OS_ANDROID)
+  Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
+                                   uint32_t usage,
+                                   const SyncToken& sync_token);
+#endif
+
   void UpdateSharedImage(const SyncToken& sync_token, const Mailbox& mailbox);
   void UpdateSharedImage(const SyncToken& sync_token,
                          std::unique_ptr<gfx::GpuFence> acquire_fence,
@@ -41,24 +54,31 @@ class SharedImageInterfaceProxy {
   void DestroySharedImage(const SyncToken& sync_token, const Mailbox& mailbox);
   SyncToken GenVerifiedSyncToken();
   SyncToken GenUnverifiedSyncToken();
+  void WaitSyncToken(const SyncToken& sync_token);
   void Flush();
 
   SharedImageInterface::SwapChainMailboxes CreateSwapChain(
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage);
   void PresentSwapChain(const SyncToken& sync_token, const Mailbox& mailbox);
 
 #if defined(OS_FUCHSIA)
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                      zx::channel token);
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage,
+                                      bool register_with_image_pipe);
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 #endif  // defined(OS_FUCHSIA)
 
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(const gpu::Mailbox& mailbox);
 
   uint32_t UsageForMailbox(const Mailbox& mailbox);
+  void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage);
 
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,

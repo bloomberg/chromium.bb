@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/macros.h"
@@ -21,6 +22,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -29,6 +31,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -175,7 +178,12 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
                ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN);
   if ((key_code == ui::VKEY_TAB && flags == ui::EF_NONE) ||
       (key_code == ui::VKEY_TAB && flags == ui::EF_SHIFT_DOWN) ||
-      (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE)) {
+      (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE) ||
+      // Do not dismiss the bubble immediately when a user triggers a feedback
+      // report; if they're reporting an issue with the bubble we want the
+      // screenshot to contain it.
+      (key_code == ui::VKEY_I &&
+       flags == (ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN))) {
     // Make TrayBubbleView activatable as the following Widget::OnKeyEvent might
     // try to activate it.
     tray_bubble_view_->SetCanActivate(true);
@@ -210,17 +218,14 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       preferred_width_(init_params.preferred_width),
       bubble_border_(new BubbleBorder(
           arrow(),
-          // Note: for legacy reasons, a shadow is rendered even if |has_shadow|
-          // is false. This is fixed with the
-          // IsUnifiedMessageCenterRefactorEnabled feature flag.
-          init_params.has_shadow ||
-                  features::IsUnifiedMessageCenterRefactorEnabled()
-              ? BubbleBorder::NO_ASSETS
-              : BubbleBorder::BIG_SHADOW,
+          BubbleBorder::NO_ASSETS,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  // Bubbles that use transparent colors should not paint their ClientViews to a
+  // layer as doing so could result in visual artifacts.
+  SetPaintClientToLayer(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   DCHECK(delegate_);
   DCHECK(params_.parent_window);
@@ -233,7 +238,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   bubble_border_->set_avoid_shadow_overlap(true);
   set_parent_window(params_.parent_window);
   SetCanActivate(false);
-  set_notify_enter_exit_on_child(true);
+  SetNotifyEnterExitOnChild(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
 
@@ -244,16 +249,14 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
 
     layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
-    layer()->SetColor(UnifiedSystemTrayView::GetBackgroundColor());
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetIsFastRoundedCorner(true);
-    if (features::IsBackgroundBlurEnabled())
-      layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+    layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
   } else {
     // Create a layer so that the layer for FocusRing stays in this view's
     // layer. Without it, the layer for FocusRing goes above the
     // NativeViewHost and may steal events.
-    SetPaintToLayer();
+    SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
@@ -391,10 +394,11 @@ ui::LayerType TrayBubbleView::GetLayerType() const {
   return ui::LAYER_TEXTURED;
 }
 
-NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
-  BubbleFrameView* frame = static_cast<BubbleFrameView*>(
-      BubbleDialogDelegateView::CreateNonClientFrameView(widget));
-  frame->SetBubbleBorder(std::move(owned_bubble_border_));
+std::unique_ptr<NonClientFrameView> TrayBubbleView::CreateNonClientFrameView(
+    Widget* widget) {
+  auto frame = BubbleDialogDelegateView::CreateNonClientFrameView(widget);
+  static_cast<BubbleFrameView*>(frame.get())
+      ->SetBubbleBorder(std::move(owned_bubble_border_));
   return frame;
 }
 
@@ -460,8 +464,13 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
-const char* TrayBubbleView::GetClassName() const {
-  return "TrayBubbleView";
+void TrayBubbleView::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
+  DCHECK(layer());
+  if (layer()->type() != ui::LAYER_SOLID_COLOR)
+    return;
+  layer()->SetColor(AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80));
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {
@@ -486,5 +495,8 @@ void TrayBubbleView::CloseBubbleView() {
 
   delegate_->HideBubble(this);
 }
+
+BEGIN_METADATA(TrayBubbleView, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace ash

@@ -6,9 +6,11 @@
 #define QUICHE_QUIC_CORE_FRAMES_QUIC_FRAME_H_
 
 #include <ostream>
+#include <type_traits>
 #include <vector>
 
 #include "net/third_party/quiche/src/quic/core/frames/quic_ack_frame.h"
+#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_blocked_frame.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_connection_close_frame.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_crypto_frame.h"
@@ -33,6 +35,14 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+
+#ifndef QUIC_FRAME_DEBUG
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+#define QUIC_FRAME_DEBUG 1
+#else  // !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+#define QUIC_FRAME_DEBUG 0
+#endif  // !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+#endif  // QUIC_FRAME_DEBUG
 
 namespace quic {
 
@@ -62,6 +72,7 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicStopSendingFrame* frame);
   explicit QuicFrame(QuicMessageFrame* message_frame);
   explicit QuicFrame(QuicCryptoFrame* crypto_frame);
+  explicit QuicFrame(QuicAckFrequencyFrame* ack_frequency_frame);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
@@ -84,6 +95,10 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     struct {
       QuicFrameType type;
 
+#if QUIC_FRAME_DEBUG
+      bool delete_forbidden = false;
+#endif  // QUIC_FRAME_DEBUG
+
       // TODO(wub): These frames can also be inlined without increasing the size
       // of QuicFrame: QuicRstStreamFrame, QuicWindowUpdateFrame,
       // QuicBlockedFrame, QuicPathResponseFrame, QuicPathChallengeFrame and
@@ -102,12 +117,15 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
         QuicStopSendingFrame* stop_sending_frame;
         QuicMessageFrame* message_frame;
         QuicCryptoFrame* crypto_frame;
+        QuicAckFrequencyFrame* ack_frequency_frame;
         QuicNewTokenFrame* new_token_frame;
       };
     };
   };
 };
 
+static_assert(std::is_standard_layout<QuicFrame>::value,
+              "QuicFrame must have a standard layout");
 static_assert(sizeof(QuicFrame) <= 24,
               "Frames larger than 24 bytes should be referenced by pointer.");
 static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
@@ -115,7 +133,7 @@ static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
 
 // A inline size of 1 is chosen to optimize the typical use case of
 // 1-stream-frame in QuicTransmissionInfo.retransmittable_frames.
-typedef QuicInlinedVector<QuicFrame, 1> QuicFrames;
+using QuicFrames = QuicInlinedVector<QuicFrame, 1>;
 
 // Deletes all the sub-frames contained in |frames|.
 QUIC_EXPORT_PRIVATE void DeleteFrames(QuicFrames* frames);

@@ -41,6 +41,9 @@ class WebKioskAppData : public KioskAppDataBase {
   // Loads the locally cached data. Returns true on success.
   bool LoadFromCache();
 
+  // Updates |icon_| from either |KioskAppDataBase::icon_path_| or |icon_url_|.
+  void LoadIcon();
+
   // KioskAppDataBase overrides:
   void OnIconLoadSuccess(const gfx::ImageSkia& icon) override;
   void OnIconLoadFailure() override;
@@ -54,15 +57,25 @@ class WebKioskAppData : public KioskAppDataBase {
   const GURL& launch_url() const { return launch_url_; }
 
  private:
+  class IconFetcher;
+  void OnDidDownloadIcon(const SkBitmap& icon);
+
   bool LoadLaunchUrlFromDictionary(const base::Value& dict);
 
-  const KioskAppDataDelegate* delegate_;  // not owned.
+  // Returns the icon url of the icon that was being provided during previous
+  // session.
+  GURL GetLastIconUrl(const base::Value& dict) const;
+
+  KioskAppDataDelegate* delegate_;  // not owned.
   Status status_;
   const GURL install_url_;  // installation url.
   GURL launch_url_;         // app launch url.
 
-  // TODO(crbug.com/1066496): Start fetching the icon when kiosk menu is opened.
-  const GURL icon_url_;  // Url of the icon in case nothing is cached.
+  GURL icon_url_;  // Url of the icon in case nothing is cached.
+  // Used to download icon from |icon_url_|.
+  std::unique_ptr<IconFetcher> icon_fetcher_;
+
+  base::WeakPtrFactory<WebKioskAppData> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebKioskAppData);
 };

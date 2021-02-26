@@ -45,18 +45,14 @@ base::Optional<cc::TouchAction> MockInputRouter::ActiveTouchAction() {
   return cc::TouchAction::kAuto;
 }
 
-mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
 MockInputRouter::BindNewHost() {
   return mojo::NullRemote();
 }
 
-mojo::PendingRemote<mojom::WidgetInputHandlerHost>
-MockInputRouter::BindNewFrameHost() {
-  return mojo::NullRemote();
-}
-
-void MockInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
-  has_handlers_ = has_handlers;
+void MockInputRouter::OnHasTouchEventConsumers(
+    blink::mojom::TouchEventConsumersPtr consumers) {
+  has_handlers_ = consumers->has_touch_event_handlers;
 }
 
 }  // namespace content

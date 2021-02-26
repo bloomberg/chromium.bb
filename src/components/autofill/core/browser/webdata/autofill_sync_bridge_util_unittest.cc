@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
@@ -235,6 +237,114 @@ TEST_F(AutofillSyncBridgeUtilTest,
   // Make sure the use stats from disk were kept
   EXPECT_EQ(3U, wallet_cards.back().use_count());
   EXPECT_EQ(disk_time, wallet_cards.back().use_date());
+}
+
+// Test to ensure the an AutofillOfferData is correctly converted to an
+// AutofillOfferSpecifics.
+TEST_F(AutofillSyncBridgeUtilTest, OfferSpecificsFromOfferData) {
+  sync_pb::AutofillOfferSpecifics offer_specifics;
+  AutofillOfferData offer_data = test::GetCardLinkedOfferData1();
+  SetAutofillOfferSpecificsFromOfferData(offer_data, &offer_specifics);
+
+  EXPECT_EQ(offer_specifics.id(), offer_data.offer_id);
+  EXPECT_EQ(offer_specifics.offer_details_url(), offer_data.offer_details_url);
+  EXPECT_EQ(offer_specifics.offer_expiry_date(),
+            (offer_data.expiry - base::Time::UnixEpoch()).InSeconds());
+  EXPECT_TRUE(offer_specifics.percentage_reward().percentage() ==
+                  offer_data.offer_reward_amount ||
+              offer_specifics.fixed_amount_reward().amount() ==
+                  offer_data.offer_reward_amount);
+  EXPECT_EQ(offer_specifics.merchant_domain().size(),
+            (int)offer_data.merchant_domain.size());
+  for (int i = 0; i < offer_specifics.merchant_domain().size(); i++) {
+    EXPECT_EQ(offer_specifics.merchant_domain(i),
+              offer_data.merchant_domain[i].GetOrigin().spec());
+  }
+  EXPECT_EQ(offer_specifics.card_linked_offer_data().instrument_id().size(),
+            (int)offer_data.eligible_instrument_id.size());
+  for (int i = 0;
+       i < offer_specifics.card_linked_offer_data().instrument_id().size();
+       i++) {
+    EXPECT_EQ(offer_specifics.card_linked_offer_data().instrument_id(i),
+              offer_data.eligible_instrument_id[i]);
+  }
+}
+
+// Ensures that the ShouldResetAutofillWalletData function works correctly, if
+// the two given data sets have the same size.
+TEST_F(AutofillSyncBridgeUtilTest,
+       ShouldResetAutofillWalletData_SameDataSetSize) {
+  std::vector<std::unique_ptr<AutofillOfferData>> old_offer_data;
+  std::vector<AutofillOfferData> new_offer_data;
+
+  AutofillOfferData data1 = test::GetCardLinkedOfferData1();
+  AutofillOfferData data2 = test::GetCardLinkedOfferData2();
+  old_offer_data.push_back(std::make_unique<AutofillOfferData>(data1));
+  new_offer_data.push_back(data2);
+  old_offer_data.push_back(std::make_unique<AutofillOfferData>(data2));
+  new_offer_data.push_back(data1);
+  EXPECT_FALSE(AreAnyItemsDifferent(old_offer_data, new_offer_data));
+
+  new_offer_data.at(0).offer_id += 456;
+  EXPECT_TRUE(AreAnyItemsDifferent(old_offer_data, new_offer_data));
+}
+
+// Ensures that the ShouldResetAutofillWalletData function works correctly, if
+// the two given data sets have different size.
+TEST_F(AutofillSyncBridgeUtilTest,
+       ShouldResetAutofillWalletData_DifferentDataSetSize) {
+  std::vector<std::unique_ptr<AutofillOfferData>> old_offer_data;
+  std::vector<AutofillOfferData> new_offer_data;
+
+  AutofillOfferData data1 = test::GetCardLinkedOfferData1();
+  AutofillOfferData data2 = test::GetCardLinkedOfferData2();
+  old_offer_data.push_back(std::make_unique<AutofillOfferData>(data1));
+  new_offer_data.push_back(data2);
+  new_offer_data.push_back(data1);
+  EXPECT_TRUE(AreAnyItemsDifferent(old_offer_data, new_offer_data));
+}
+
+// Ensures that function IsOfferSpecificsValid is working correctly.
+TEST_F(AutofillSyncBridgeUtilTest, IsOfferSpecificsValid) {
+  sync_pb::AutofillOfferSpecifics specifics;
+  SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData1(),
+                                         &specifics);
+  // Expects default specifics is valid.
+  EXPECT_TRUE(IsOfferSpecificsValid(specifics));
+
+  specifics.clear_id();
+  // Expects specifics without id to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+
+  SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData1(),
+                                         &specifics);
+  specifics.clear_merchant_domain();
+  // Expects specifics without merchant domain to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+  specifics.add_merchant_domain("invalid url");
+  // Expects specifics with an invalid merchant_domain to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+
+  SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData1(),
+                                         &specifics);
+  specifics.mutable_card_linked_offer_data()->clear_instrument_id();
+  // Expects specifics without linked card instrument id to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+  specifics.clear_card_linked_offer_data();
+  // Expects specifics without card linked offer data to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+
+  SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData1(),
+                                         &specifics);
+  specifics.mutable_percentage_reward()->set_percentage("5");
+  // Expects specifics without correct reward text to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+  specifics.clear_percentage_reward();
+  // Expects specifics without reward text to be invalid.
+  EXPECT_FALSE(IsOfferSpecificsValid(specifics));
+  specifics.mutable_fixed_amount_reward()->set_amount("$5");
+  // Expects specifics with only fixed amount reward text to be valid.
+  EXPECT_TRUE(IsOfferSpecificsValid(specifics));
 }
 
 }  // namespace

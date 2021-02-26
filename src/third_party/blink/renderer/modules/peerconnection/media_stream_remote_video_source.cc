@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -258,6 +258,15 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
           elapsed_timestamp);
       break;
     }
+    case webrtc::VideoFrameBuffer::Type::kNV12: {
+      const webrtc::NV12BufferInterface* nv12_buffer = buffer->GetNV12();
+      video_frame = media::VideoFrame::WrapExternalYuvData(
+          media::PIXEL_FORMAT_NV12, size, gfx::Rect(size), size,
+          nv12_buffer->StrideY(), nv12_buffer->StrideUV(),
+          const_cast<uint8_t*>(nv12_buffer->DataY()),
+          const_cast<uint8_t*>(nv12_buffer->DataUV()), elapsed_timestamp);
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -275,9 +284,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   // Rotation may be explicitly set sometimes.
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
-    video_frame->metadata()->SetRotation(
-        media::VideoFrameMetadata::ROTATION,
-        WebRtcToMediaVideoRotation(incoming_frame.rotation()));
+    video_frame->metadata()->rotation =
+        WebRtcToMediaVideoRotation(incoming_frame.rotation());
   }
 
   if (incoming_frame.color_space()) {
@@ -288,24 +296,26 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   // Run render smoothness algorithm only when we don't have to render
   // immediately.
-  if (!render_immediately) {
-    video_frame->metadata()->SetTimeTicks(
-        media::VideoFrameMetadata::REFERENCE_TIME, render_time);
+  if (!render_immediately)
+    video_frame->metadata()->reference_time = render_time;
+
+  if (incoming_frame.max_composition_delay_in_frames()) {
+    video_frame->metadata()->maximum_composition_delay_in_frames =
+        *incoming_frame.max_composition_delay_in_frames();
   }
-  video_frame->metadata()->SetTimeTicks(
-      media::VideoFrameMetadata::DECODE_END_TIME, current_time);
+
+  video_frame->metadata()->decode_end_time = current_time;
 
   // RTP_TIMESTAMP, PROCESSING_TIME, and CAPTURE_BEGIN_TIME are all exposed
-  // through the JavaScript callback mechanism video.requestAnimationFrame().
-  video_frame->metadata()->SetDouble(
-      media::VideoFrameMetadata::RTP_TIMESTAMP,
-      static_cast<double>(incoming_frame.timestamp()));
+  // through the JavaScript callback mechanism
+  // video.requestVideoFrameCallback().
+  video_frame->metadata()->rtp_timestamp =
+      static_cast<double>(incoming_frame.timestamp());
 
   if (incoming_frame.processing_time()) {
-    video_frame->metadata()->SetTimeDelta(
-        media::VideoFrameMetadata::PROCESSING_TIME,
+    video_frame->metadata()->processing_time =
         base::TimeDelta::FromMicroseconds(
-            incoming_frame.processing_time()->Elapsed().us()));
+            incoming_frame.processing_time()->Elapsed().us());
   }
 
   // Set capture time to the NTP time, which is the estimated capture time
@@ -316,8 +326,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
         base::TimeDelta::FromMilliseconds(incoming_frame.ntp_time_ms() +
                                           ntp_offset_) +
         time_diff_;
-    video_frame->metadata()->SetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_time);
+    video_frame->metadata()->capture_begin_time = capture_time;
   }
 
   // Set receive time to arrival of last packet.
@@ -333,8 +342,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const base::TimeTicks receive_time =
         base::TimeTicks() +
         base::TimeDelta::FromMilliseconds(last_packet_arrival_ms) + time_diff_;
-    video_frame->metadata()->SetTimeTicks(
-        media::VideoFrameMetadata::RECEIVE_TIME, receive_time);
+    video_frame->metadata()->receive_time = receive_time;
   }
 
   // Use our computed render time as estimated capture time. If timestamp_us()

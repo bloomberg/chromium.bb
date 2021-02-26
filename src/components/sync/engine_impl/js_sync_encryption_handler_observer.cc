@@ -29,15 +29,12 @@ void JsSyncEncryptionHandlerObserver::SetJsEventHandler(
 }
 
 void JsSyncEncryptionHandlerObserver::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
     const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  base::DictionaryValue details;
-  details.SetString("reason", PassphraseRequiredReasonToString(reason));
-  HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
+  HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails());
 }
 
 void JsSyncEncryptionHandlerObserver::OnPassphraseAccepted() {
@@ -88,14 +85,6 @@ void JsSyncEncryptionHandlerObserver::OnEncryptedTypesChanged(
   details.Set("encryptedTypes", ModelTypeSetToValue(encrypted_types));
   details.SetBoolean("encryptEverything", encrypt_everything);
   HandleJsEvent(FROM_HERE, "onEncryptedTypesChanged", JsEventDetails(&details));
-}
-
-void JsSyncEncryptionHandlerObserver::OnEncryptionComplete() {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  base::DictionaryValue details;
-  HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails());
 }
 
 void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(

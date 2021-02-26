@@ -48,13 +48,11 @@ class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptedAnimationController);
-
  public:
   explicit ScriptedAnimationController(LocalDOMWindow*);
   ~ScriptedAnimationController() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedAnimationController";
   }
@@ -67,15 +65,10 @@ class CORE_EXPORT ScriptedAnimationController
 
   // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
-  CallbackId RegisterFrameCallback(
-      FrameRequestCallbackCollection::FrameCallback*);
+  CallbackId RegisterFrameCallback(FrameCallback*);
   void CancelFrameCallback(CallbackId);
   // Returns true if any callback is currently registered.
   bool HasFrameCallback() const;
-
-  CallbackId RegisterPostFrameCallback(
-      FrameRequestCallbackCollection::FrameCallback*);
-  void CancelPostFrameCallback(CallbackId);
 
   // Queues up the execution of video.requestVideoFrameCallback() callbacks for
   // a specific HTMLVideoELement, as part of the next rendering steps.
@@ -95,7 +88,6 @@ class CORE_EXPORT ScriptedAnimationController
   // Invokes callbacks, dispatches events, etc. The order is defined by HTML:
   // https://html.spec.whatwg.org/C/#event-loop-processing-model
   void ServiceScriptedAnimations(base::TimeTicks monotonic_time_now);
-  void RunPostFrameCallbacks();
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}

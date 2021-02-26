@@ -21,6 +21,7 @@ const states: {[key: string]: string} = {
   'X': 'Exit (Dead)',
   'Z': 'Exit (Zombie)',
   'x': 'Task Dead',
+  'I': 'Task Dead',
   'K': 'Wake Kill',
   'W': 'Waking',
   'P': 'Parked',
@@ -28,15 +29,24 @@ const states: {[key: string]: string} = {
   '+': '(Preempted)'
 };
 
-export function translateState(state: string|undefined) {
+export function translateState(
+    state: string|undefined, ioWait: boolean|undefined = undefined) {
   if (state === undefined) return '';
-  if (state === 'Running' || state === 'Various states') {
+  if (state === 'Running') {
     return state;
   }
   let result = states[state[0]];
+  if (ioWait === true) {
+    result += ' (IO)';
+  } else if (ioWait === false) {
+    result += ' (non-IO)';
+  }
   for (let i = 1; i < state.length; i++) {
     result += state[i] === '+' ? ' ' : ' + ';
     result += states[state[i]];
   }
+  // state is some string we don't know how to translate.
+  if (result === undefined) return state;
+
   return result;
 }

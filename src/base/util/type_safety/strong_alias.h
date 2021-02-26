@@ -63,12 +63,15 @@ namespace util {
 //   using StrongAlias<Tag, bool> instead of a bare bool.
 // - util::IdType<...> which provides helpers for specializing
 //   StrongAlias to be used as an id.
+// - util::TokenType<...> which provides helpers for specializing StrongAlias
+//   to be used as a wrapper of base::UnguessableToken.
 template <typename TagType, typename UnderlyingType>
 class StrongAlias {
  public:
   constexpr StrongAlias() = default;
   constexpr explicit StrongAlias(const UnderlyingType& v) : value_(v) {}
-  constexpr explicit StrongAlias(UnderlyingType&& v) : value_(std::move(v)) {}
+  constexpr explicit StrongAlias(UnderlyingType&& v) noexcept
+      : value_(std::move(v)) {}
 
   constexpr UnderlyingType& value() & { return value_; }
   constexpr const UnderlyingType& value() const& { return value_; }

@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
 #include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
@@ -62,7 +62,7 @@ class MetricsRenderFrameObserver
                         int request_id,
                         const network::mojom::URLResponseHead& response_head,
                         network::mojom::RequestDestination request_destination,
-                        content::PreviewsState previews_state) override;
+                        blink::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;
   void DidCompleteResponse(
@@ -74,16 +74,21 @@ class MetricsRenderFrameObserver
                                       int64_t encoded_body_length,
                                       const std::string& mime_type,
                                       bool from_archive) override;
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override;
+  void DidSetPageLifecycleState() override;
+
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
+  void DidCreateDocumentElement() override;
   void OnDestruct() override;
 
   // Invoked when a frame is going away. This is our last chance to send IPCs
   // before being destroyed.
-  void FrameDetached() override;
+  void WillDetach() override;
 
   // Set the ad resource tracker that |this| observes.
   void SetAdResourceTracker(
@@ -93,8 +98,12 @@ class MetricsRenderFrameObserver
   void OnAdResourceTrackerGoingAway() override;
   void OnAdResourceObserved(int request_id) override;
 
-  void OnMainFrameDocumentIntersectionChanged(
-      const blink::WebRect& main_frame_document_intersection) override;
+  void OnMainFrameIntersectionChanged(
+      const blink::WebRect& main_frame_intersection) override;
+  void OnMobileFriendlinessChanged(const blink::MobileFriendliness&) override;
+
+  bool SetUpSmoothnessReporting(
+      base::ReadOnlySharedMemoryRegion& shared_memory) override;
 
  protected:
   // The relative and monotonic page load timings.
@@ -125,8 +134,13 @@ class MetricsRenderFrameObserver
   void SendMetrics();
   virtual Timing GetTiming() const;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
-  virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender();
+  virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender(
+      bool limited_sending_mode);
   virtual bool HasNoRenderFrame() const;
+
+  // Whether the initial about:blank document loaded into every frame was
+  // observed.
+  bool first_document_observed_ = false;
 
   // Collects the data use of the frame request for a provisional load until the
   // load is committed. We want to collect data use for completed navigations in
@@ -137,15 +151,18 @@ class MetricsRenderFrameObserver
   std::unique_ptr<PageResourceDataUse> provisional_frame_resource_data_use_;
   int provisional_frame_resource_id_ = 0;
 
-  ScopedObserver<subresource_filter::AdResourceTracker,
-                 subresource_filter::AdResourceTracker::Observer>
-      scoped_ad_resource_observer_;
+  base::ScopedObservation<subresource_filter::AdResourceTracker,
+                          subresource_filter::AdResourceTracker::Observer>
+      scoped_ad_resource_observation_{this};
 
   // Set containing all request ids that were reported as ads from the renderer.
   std::set<int> ad_request_ids_;
 
   // Set containing all request ids that were reported as completing before FCP.
   std::set<int> before_fcp_request_ids_;
+
+  // Handle to the shared memory for transporting smoothness related ukm data.
+  base::ReadOnlySharedMemoryRegion ukm_smoothness_data_;
 
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;

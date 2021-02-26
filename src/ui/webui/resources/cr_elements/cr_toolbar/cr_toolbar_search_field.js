@@ -21,6 +21,12 @@ Polymer({
       reflectToAttribute: true
     },
 
+    autofocus: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     // Prompt text to display in the search field.
     label: String,
 
@@ -64,6 +70,11 @@ Polymer({
   onSearchTermInput() {
     CrSearchFieldBehavior.onSearchTermInput.call(this);
     this.showingSearch = this.hasSearchText || this.isSearchFocused();
+  },
+
+  /** @private */
+  onSearchIconClicked_() {
+    this.fire('search-icon-clicked');
   },
 
   /** @private */

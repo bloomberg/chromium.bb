@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -11,7 +12,7 @@
 
 #if defined(OS_ANDROID)
 #include "device/bluetooth/test/bluetooth_test_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
@@ -74,7 +75,7 @@ using BluetoothRemoteGattDescriptorTestWinrtOnly =
     BluetoothRemoteGattDescriptorTest;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetIdentifier GetIdentifier
 #else
 #define MAYBE_GetIdentifier DISABLED_GetIdentifier
@@ -167,7 +168,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
   EXPECT_NE(desc5->GetIdentifier(), desc6->GetIdentifier());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetUUID GetUUID
 #else
 #define MAYBE_GetUUID DISABLED_GetUUID
@@ -222,7 +223,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
   EXPECT_EQ(uuid2, descriptor2->GetUUID());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor_Empty ReadRemoteDescriptor_Empty
 #else
 #define MAYBE_ReadRemoteDescriptor_Empty DISABLED_ReadRemoteDescriptor_Empty
@@ -254,7 +255,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Empty) {
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor_Empty WriteRemoteDescriptor_Empty
 #else
 #define MAYBE_WriteRemoteDescriptor_Empty DISABLED_WriteRemoteDescriptor_Empty
@@ -348,7 +349,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_TRUE("Did not crash!");
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor ReadRemoteDescriptor
 #else
 #define MAYBE_ReadRemoteDescriptor DISABLED_ReadRemoteDescriptor
@@ -383,7 +384,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor) {
   EXPECT_EQ(test_vector, descriptor1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor WriteRemoteDescriptor
 #else
 #define MAYBE_WriteRemoteDescriptor DISABLED_WriteRemoteDescriptor
@@ -412,7 +413,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor) {
   EXPECT_EQ(test_vector, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor_Twice ReadRemoteDescriptor_Twice
 #else
 #define MAYBE_ReadRemoteDescriptor_Twice DISABLED_ReadRemoteDescriptor_Twice
@@ -456,7 +457,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Twice) {
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor_Twice WriteRemoteDescriptor_Twice
 #else
 #define MAYBE_WriteRemoteDescriptor_Twice DISABLED_WriteRemoteDescriptor_Twice
@@ -499,7 +500,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Twice) {
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor_MultipleDescriptors \
   ReadRemoteDescriptor_MultipleDescriptors
 #else
@@ -546,7 +547,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(test_vector2, descriptor2_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor_MultipleDescriptors \
   WriteRemoteDescriptor_MultipleDescriptors
 #else
@@ -591,7 +592,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadError ReadError
 #else
 #define MAYBE_ReadError DISABLED_ReadError
@@ -619,7 +620,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadError) {
             last_gatt_error_code_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteError WriteError
 #else
 #define MAYBE_WriteError DISABLED_WriteError
@@ -725,7 +726,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteSynchronousError) {
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor_ReadPending ReadRemoteDescriptor_ReadPending
 #else
 #define MAYBE_ReadRemoteDescriptor_ReadPending \
@@ -766,7 +767,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor_WritePending \
   WriteRemoteDescriptor_WritePending
 #else
@@ -809,7 +810,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteDescriptor_WritePending \
   ReadRemoteDescriptor_WritePending
 #else
@@ -851,7 +852,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteDescriptor_ReadPending \
   WriteRemoteDescriptor_ReadPending
 #else
@@ -948,7 +949,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteDuringDisconnect) {
   // TODO(crbug.com/621901): Test that an error was returned.
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Tests NSString for descriptor value for macOS.
 // https://developer.apple.com/reference/corebluetooth/cbdescriptor
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSString) {
@@ -993,13 +994,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSNumber) {
   EXPECT_EQ(test_vector, last_read_value_);
   EXPECT_EQ(test_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(
     All,
     BluetoothRemoteGattDescriptorTestWinrtOnly,
-    ::testing::Values(true));
+    ::testing::ValuesIn(kBluetoothTestWinrtParamWinrtOnly));
 #endif  // defined(OS_WIN)
 
 }  // namespace device

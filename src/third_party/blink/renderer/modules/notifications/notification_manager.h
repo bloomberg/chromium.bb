@@ -28,8 +28,6 @@ class ScriptState;
 // TODO(peter): Make the NotificationManager responsible for resource loading.
 class NotificationManager final : public GarbageCollected<NotificationManager>,
                                   public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(NotificationManager);
-
  public:
   static const char kSupplementName[];
 
@@ -80,7 +78,7 @@ class NotificationManager final : public GarbageCollected<NotificationManager>,
                         bool include_triggered,
                         ScriptPromiseResolver* resolver);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   void DidDisplayPersistentNotification(

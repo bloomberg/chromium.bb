@@ -28,8 +28,7 @@ namespace {
                                     wgpu::TextureUsage usage) {
             wgpu::TextureDescriptor texDesc;
             texDesc.dimension = wgpu::TextureDimension::e2D;
-            texDesc.size = {kSize, kSize, 1};
-            texDesc.arrayLayerCount = arrayLayerCount;
+            texDesc.size = {kSize, kSize, arrayLayerCount};
             texDesc.sampleCount = 1;
             texDesc.mipLevelCount = mipLevelCount;
             texDesc.usage = usage;
@@ -76,7 +75,7 @@ namespace {
                 wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
                     device,
                     {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageTexture,
-                      false, false, wgpu::TextureViewDimension::Undefined,
+                      false, 0, false, wgpu::TextureViewDimension::Undefined,
                       wgpu::TextureComponentType::Float, kFormat}});
 
                 wgpu::BindGroup bindGroup1 = utils::MakeBindGroup(device, bgl1, {{0, samplerView}});
@@ -107,7 +106,7 @@ namespace {
                 wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
                     device,
                     {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::WriteonlyStorageTexture,
-                      false, false, wgpu::TextureViewDimension::Undefined,
+                      false, 0, false, wgpu::TextureViewDimension::Undefined,
                       wgpu::TextureComponentType::Float, kFormat}});
                 wgpu::BindGroup bindGroup1 = utils::MakeBindGroup(device, bgl1, {{0, samplerView}});
 
@@ -130,7 +129,7 @@ namespace {
         // Create texture with 2 mipmap levels and 1 layer
         wgpu::Texture texture =
             CreateTexture(2, 1,
-                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment |
+                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
                               wgpu::TextureUsage::Storage);
 
         // Create two views on different mipmap levels.
@@ -144,7 +143,7 @@ namespace {
         // Create texture with 1 mipmap level and 2 layers
         wgpu::Texture texture =
             CreateTexture(1, 2,
-                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::OutputAttachment |
+                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
                               wgpu::TextureUsage::Storage);
 
         // Create two views on different layers.

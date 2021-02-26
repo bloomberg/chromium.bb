@@ -4,6 +4,8 @@
 
 #include "discovery/mdns/mdns_receiver.h"
 
+#include <utility>
+
 #include "discovery/mdns/mdns_reader.h"
 #include "util/trace_logging.h"
 
@@ -64,23 +66,29 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
 
   TRACE_SCOPED(TraceCategory::kMdns, "MdnsReceiver::OnRead");
   MdnsReader reader(config_, packet.data(), packet.size());
-  MdnsMessage message;
-  if (!reader.Read(&message)) {
+  const ErrorOr<MdnsMessage> message = reader.Read();
+  if (message.is_error()) {
+    if (message.error().code() == Error::Code::kMdnsNonConformingFailure) {
+      OSP_DVLOG << "mDNS message dropped due to invalid rcode or opcode...";
+    } else {
+      OSP_DVLOG << "mDNS message failed to parse...";
+    }
     return;
   }
 
-  if (message.type() == MessageType::Response) {
+  if (message.value().type() == MessageType::Response) {
     for (ResponseClient* client : response_clients_) {
-      client->OnMessageReceived(message);
+      client->OnMessageReceived(message.value());
     }
     if (response_clients_.empty()) {
-      OSP_DVLOG << "Response message dropped. No response client registered...";
+      OSP_DVLOG
+          << "mDNS response message dropped. No response client registered...";
     }
   } else {
     if (query_callback_) {
-      query_callback_(message, packet.source());
+      query_callback_(message.value(), packet.source());
     } else {
-      OSP_DVLOG << "Query message dropped. No query client registered...";
+      OSP_DVLOG << "mDNS query message dropped. No query client registered...";
     }
   }
 }

@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/native_drawing_context.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
@@ -45,6 +46,8 @@ class PRINTING_EXPORT PrintingContext {
     FAILED,
   };
 
+  PrintingContext(const PrintingContext&) = delete;
+  PrintingContext& operator=(const PrintingContext&) = delete;
   virtual ~PrintingContext();
 
   // Callback of AskUserForSettings, used to notify the PrintJobWorker when
@@ -84,7 +87,7 @@ class PRINTING_EXPORT PrintingContext {
   // settings information.
   Result UpdatePrintSettings(base::Value job_settings);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // Updates Print Settings.
   Result UpdatePrintSettingsFromPOD(
       std::unique_ptr<PrintSettings> job_settings);
@@ -122,7 +125,7 @@ class PRINTING_EXPORT PrintingContext {
   // implement this method to create an object of their implementation.
   static std::unique_ptr<PrintingContext> Create(Delegate* delegate);
 
-  void set_margin_type(MarginType type);
+  void set_margin_type(mojom::MarginType type);
   void set_is_modifiable(bool is_modifiable);
 
   const PrintSettings& settings() const;
@@ -154,9 +157,6 @@ class PRINTING_EXPORT PrintingContext {
 
   // The job id for the current job. The value is 0 if no jobs are active.
   int job_id_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
 
 }  // namespace printing

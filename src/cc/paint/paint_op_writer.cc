@@ -4,6 +4,8 @@
 
 #include "cc/paint/paint_op_writer.h"
 
+#include <memory>
+
 #include "base/bits.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
@@ -13,23 +15,20 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 #include "cc/paint/skottie_transfer_cache_entry.h"
 #endif
 
 namespace cc {
 namespace {
-const size_t kSkiaAlignment = 4u;
-
-size_t RoundDownToAlignment(size_t bytes, size_t alignment) {
-  return base::bits::AlignDown(bytes, alignment);
-}
+constexpr size_t kSkiaAlignment = 4u;
 
 SkIRect MakeSrcRect(const PaintImage& image) {
   if (!image)
@@ -124,7 +123,7 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
     return;
 
   size_t bytes_written = val->serialize(
-      memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
+      memory_, base::bits::AlignDown(remaining_bytes_, kSkiaAlignment));
   if (bytes_written == 0u) {
     valid_ = false;
     return;
@@ -175,7 +174,8 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 
 void PaintOpWriter::Write(const SkPath& path) {
   auto id = path.getGenerationID();
-  Write(id);
+  if (!options_.for_identifiability_study)
+    Write(id);
 
   if (options_.paint_cache->Get(PaintCacheDataType::kPath, id)) {
     Write(static_cast<uint32_t>(PaintCacheEntryState::kCached));
@@ -243,7 +243,7 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   // Security constrained serialization inlines the image bitmap.
   if (enable_security_constraints_) {
     SkBitmap bm;
-    if (!draw_image.paint_image().GetSkImage()->asLegacyBitmap(&bm)) {
+    if (!draw_image.paint_image().GetSwSkImage()->asLegacyBitmap(&bm)) {
       Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
       return;
     }
@@ -267,16 +267,14 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   DCHECK(decoded_draw_image.src_rect_offset().isEmpty())
       << "We shouldn't ask for image subsets";
 
-  base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
   *scale_adjustment = decoded_draw_image.scale_adjustment();
-  // In the case of a decode failure, id may not be set. Send an invalid ID.
-  WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
-             decoded_draw_image.transfer_cache_entry_needs_mips());
+
+  WriteImage(decoded_draw_image);
 }
 
 // Android does not use skottie. Remove below section to keep binary size to a
 // minimum.
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   uint32_t id = skottie->id();
   Write(id);
@@ -301,7 +299,19 @@ void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
+
+void PaintOpWriter::WriteImage(const DecodedDrawImage& decoded_draw_image) {
+  if (!decoded_draw_image.mailbox().IsZero()) {
+    WriteImage(decoded_draw_image.mailbox());
+    return;
+  }
+
+  base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
+  // In the case of a decode failure, id may not be set. Send an invalid ID.
+  WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
+             decoded_draw_image.transfer_cache_entry_needs_mips());
+}
 
 void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
                                bool needs_mips) {
@@ -314,6 +324,20 @@ void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   Write(transfer_cache_entry_id);
   Write(needs_mips);
+}
+
+void PaintOpWriter::WriteImage(const gpu::Mailbox& mailbox) {
+  DCHECK(!mailbox.IsZero());
+
+  Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kMailbox));
+
+  EnsureBytes(sizeof(mailbox.name));
+  if (!valid_)
+    return;
+
+  memcpy(memory_, mailbox.name, sizeof(mailbox.name));
+  memory_ += sizeof(mailbox.name);
+  remaining_bytes_ -= sizeof(mailbox.name);
 }
 
 void PaintOpWriter::Write(const sk_sp<SkData>& data) {
@@ -371,7 +395,7 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   procs.fTypefaceCtx = options_.strike_server;
 
   size_t bytes_written = blob->serialize(
-      procs, memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
+      procs, memory_, base::bits::AlignDown(remaining_bytes_, kSkiaAlignment));
   if (bytes_written == 0u) {
     valid_ = false;
     return;
@@ -389,7 +413,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     SkFilterQuality quality,
     uint32_t* paint_image_transfer_cache_entry_id,
     gfx::SizeF* paint_record_post_scale,
-    bool* paint_image_needs_mips) {
+    bool* paint_image_needs_mips,
+    gpu::Mailbox* mailbox_out) {
   DCHECK(!enable_security_constraints_);
 
   const auto type = original->shader_type();
@@ -399,7 +424,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     if (!original->paint_image().IsPaintWorklet()) {
       return original->CreateDecodedImage(ctm, quality, options_.image_provider,
                                           paint_image_transfer_cache_entry_id,
-                                          &quality, paint_image_needs_mips);
+                                          &quality, paint_image_needs_mips,
+                                          mailbox_out);
     }
     sk_sp<PaintShader> record_shader =
         original->CreatePaintWorkletRecord(options_.image_provider);
@@ -428,11 +454,12 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
   gfx::SizeF paint_record_post_scale(1.f, 1.f);
   bool paint_image_needs_mips = false;
+  gpu::Mailbox mailbox;
 
   if (!enable_security_constraints_ && shader) {
     transformed_shader = TransformShaderIfNecessary(
         shader, quality, &paint_image_transfer_cache_id,
-        &paint_record_post_scale, &paint_image_needs_mips);
+        &paint_record_post_scale, &paint_image_needs_mips, &mailbox);
     shader = transformed_shader.get();
   }
 
@@ -469,20 +496,24 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->end_degrees_);
 
   if (enable_security_constraints_) {
-    DrawImage draw_image(shader->image_, MakeSrcRect(shader->image_), quality,
-                         SkMatrix::I());
+    DrawImage draw_image(shader->image_, false, MakeSrcRect(shader->image_),
+                         quality, SkMatrix::I());
     SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
     Write(draw_image, &scale_adjustment);
     DCHECK_EQ(scale_adjustment.width(), 1.f);
     DCHECK_EQ(scale_adjustment.height(), 1.f);
   } else {
-    WriteImage(paint_image_transfer_cache_id, paint_image_needs_mips);
+    if (!mailbox.IsZero())
+      WriteImage(mailbox);
+    else
+      WriteImage(paint_image_transfer_cache_id, paint_image_needs_mips);
   }
 
   if (shader->record_) {
     Write(true);
     DCHECK_NE(shader->id_, PaintShader::kInvalidRecordShaderId);
-    Write(shader->id_);
+    if (!options_.for_identifiability_study)
+      Write(shader->id_);
     const gfx::Rect playback_rect(
         gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
 
@@ -712,7 +743,7 @@ void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter) {
 
 void PaintOpWriter::Write(const ImagePaintFilter& filter) {
   DrawImage draw_image(
-      filter.image(),
+      filter.image(), false,
       SkIRect::MakeWH(filter.image().width(), filter.image().height()),
       filter.filter_quality(), SkMatrix::I());
   SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
@@ -741,7 +772,7 @@ void PaintOpWriter::Write(const RecordPaintFilter& filter) {
   SkMatrix mat = options_.canvas->getTotalMatrix();
   SkSize scale;
   if (!mat.isScaleTranslate() && mat.decomposeScale(&scale))
-    mat = SkMatrix::MakeScale(scale.width(), scale.height());
+    mat = SkMatrix::Scale(scale.width(), scale.height());
   Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f), mat);
 }
 

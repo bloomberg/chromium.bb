@@ -19,7 +19,7 @@
 #include "common/angleutils.h"
 #include "common/system_utils.h"
 #include "common/vector_utils.h"
-#include "platform/Platform.h"
+#include "platform/PlatformMethods.h"
 #include "util/EGLWindow.h"
 #include "util/shader_utils.h"
 #include "util/util_gl.h"
@@ -94,6 +94,30 @@ struct GLColorRGB
     static const GLColorRGB yellow;
 };
 
+struct GLColorRG
+{
+    constexpr GLColorRG() : R(0), G(0) {}
+    constexpr GLColorRG(GLubyte r, GLubyte g) : R(r), G(g) {}
+    GLColorRG(const angle::Vector2 &floatColor);
+
+    const GLubyte *data() const { return &R; }
+    GLubyte *data() { return &R; }
+
+    GLubyte R, G;
+};
+
+struct GLColorR
+{
+    constexpr GLColorR() : R(0) {}
+    constexpr GLColorR(GLubyte r) : R(r) {}
+    GLColorR(const float floatColor);
+
+    const GLubyte *data() const { return &R; }
+    GLubyte *data() { return &R; }
+
+    GLubyte R;
+};
+
 struct GLColor
 {
     constexpr GLColor() : R(0), G(0), B(0), A(0) {}
@@ -142,6 +166,7 @@ struct GLColor32F
     GLfloat R, G, B, A;
 };
 
+static constexpr GLColor32F kFloatBlack = {0.0f, 0.0f, 0.0f, 1.0f};
 static constexpr GLColor32F kFloatRed   = {1.0f, 0.0f, 0.0f, 1.0f};
 static constexpr GLColor32F kFloatGreen = {0.0f, 1.0f, 0.0f, 1.0f};
 static constexpr GLColor32F kFloatBlue  = {0.0f, 0.0f, 1.0f, 1.0f};
@@ -213,9 +238,9 @@ void LoadEntryPointsWithUtilLoader(angle::GLESDriverType driver);
 #define EXPECT_PIXEL_RECT_EQ(x, y, width, height, color)                                           \
     do                                                                                             \
     {                                                                                              \
-        std::vector<GLColor> actualColors(width *height);                                          \
+        std::vector<GLColor> actualColors((width) * (height));                                     \
         glReadPixels((x), (y), (width), (height), GL_RGBA, GL_UNSIGNED_BYTE, actualColors.data()); \
-        std::vector<GLColor> expectedColors(width *height, color);                                 \
+        std::vector<GLColor> expectedColors((width) * (height), color);                            \
         EXPECT_EQ(expectedColors, actualColors);                                                   \
     } while (0)
 
@@ -437,7 +462,7 @@ class ANGLETestBase
     EGLWindow *getEGLWindow() const;
     int getWindowWidth() const;
     int getWindowHeight() const;
-    bool isMultisampleEnabled() const;
+    bool isEmulatedPrerotation() const;
 
     EGLint getPlatformRenderer() const;
 
@@ -485,6 +510,11 @@ class ANGLETestBase
     {
         return mCurrentParams->getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
                mCurrentParams->isSwiftshader();
+    }
+
+    bool isAsyncCommandQueueFeatureEnabled() const
+    {
+        return mCurrentParams->eglParameters.asyncCommandQueueFeatureVulkan == EGL_TRUE;
     }
 
     bool platformSupportsMultithreading() const;

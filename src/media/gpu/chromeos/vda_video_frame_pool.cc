@@ -34,9 +34,15 @@ base::Optional<GpuBufferLayout> VdaVideoFramePool::Initialize(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    size_t max_num_frames) {
+    size_t max_num_frames,
+    bool use_protected) {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(parent_sequence_checker_);
+
+  if (use_protected) {
+    LOG(ERROR) << "Cannot allocated protected buffers for VDA";
+    return base::nullopt;
+  }
 
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
@@ -46,6 +52,12 @@ base::Optional<GpuBufferLayout> VdaVideoFramePool::Initialize(
     DVLOGF(3) << "Arguments related to frame layout are not changed, skip.";
     return layout_;
   }
+
+  // Invalidate weak pointers so the re-import callbacks of the frames we are
+  // about to stop managing do not run and add them back to us.
+  weak_this_factory_.InvalidateWeakPtrs();
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+
   max_num_frames_ = max_num_frames;
   fourcc_ = fourcc;
   coded_size_ = coded_size;
@@ -110,7 +122,8 @@ void VdaVideoFramePool::ImportFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(parent_sequence_checker_);
 
   if (!layout_ || layout_->fourcc().ToVideoPixelFormat() != frame->format() ||
-      layout_->size() != frame->coded_size()) {
+      layout_->size() != frame->coded_size() ||
+      layout_->modifier() != frame->layout().modifier()) {
     return;
   }
 

@@ -63,7 +63,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
         resolve_type_(type),
         callback_(std::move(callback)) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(observer_);
     ScriptFunction::Trace(visitor);
   }
@@ -93,12 +93,13 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
       event_loop->EnqueueMicrotask(
           WTF::Bind(&WaitUntilObserver::OnPromiseRejected,
                     WrapPersistent(observer_.Get())));
-      value = ScriptPromise::Reject(GetScriptState(), value).GetScriptValue();
-    } else {
-      event_loop->EnqueueMicrotask(
-          WTF::Bind(&WaitUntilObserver::OnPromiseFulfilled,
-                    WrapPersistent(observer_.Get())));
+      observer_ = nullptr;
+      return ScriptPromise::Reject(GetScriptState(), value).GetScriptValue();
     }
+
+    event_loop->EnqueueMicrotask(
+        WTF::Bind(&WaitUntilObserver::OnPromiseFulfilled,
+                  WrapPersistent(observer_.Get())));
     observer_ = nullptr;
     return value;
   }
@@ -334,7 +335,7 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
     context->ConsumeWindowInteraction();
 }
 
-void WaitUntilObserver::Trace(Visitor* visitor) {
+void WaitUntilObserver::Trace(Visitor* visitor) const {
   ExecutionContextClient::Trace(visitor);
 }
 

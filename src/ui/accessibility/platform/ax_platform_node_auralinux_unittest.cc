@@ -8,9 +8,30 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
+
+namespace {
+
+// ATK window activated event will be held until AT-SPI bridge is ready. For
+// those tests using this event, we work that around by faking the state of the
+// AT-SPI bridge. Creating an instance of this class will set it to true during
+// the test and set it back to its default state when the test ends, so it
+// doesn't affect other tests run in the same batch.
+class ScopedAtSpiReady final {
+ public:
+  explicit ScopedAtSpiReady() {
+    ui::AtkUtilAuraLinux::GetInstance()->SetAtSpiReady(true);
+  }
+
+  ~ScopedAtSpiReady() {
+    ui::AtkUtilAuraLinux::GetInstance()->SetAtSpiReady(false);
+  }
+};
+
+}  // namespace
 
 namespace ui {
 
@@ -145,9 +166,7 @@ static void TestAtkObjectStringAttribute(
   EnsureAtkObjectDoesNotHaveAttribute(atk_object, attribute_name);
 
   const char* tests[] = {
-      "",
-      "a string with spaces"
-      "a string with , a comma",
+      "", "a string with spaces", "a string with , a comma",
       "\xE2\x98\xBA",  // The smiley emoji.
   };
 
@@ -201,6 +220,7 @@ static bool AtkObjectHasState(AtkObject* atk_object, AtkStateType state) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
   AXNodeData root;
   root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.SetName("Name");
   Init(root);
 
@@ -231,6 +251,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectName) {
   AXNodeData root;
   root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.SetName("Name");
   Init(root);
 
@@ -659,12 +680,14 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
 
   AXNodeData node1;
   node1.id = 2;
+  node1.role = ax::mojom::Role::kGenericContainer;
   node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
   root.child_ids.push_back(node1.id);
 
   AXNodeData node2;
   node2.id = 3;
+  node2.role = ax::mojom::Role::kGenericContainer;
   node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
   node2.SetName("Name2");
   root.child_ids.push_back(node2.id);
@@ -1584,6 +1607,8 @@ class ActivationTester {
 //
 //
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
+  ScopedAtSpiReady enable_at_spi;
+
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kWindow;
@@ -1640,6 +1665,74 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
     EXPECT_FALSE(tester.IsActivatedInStateSet());
     EXPECT_FALSE(saw_active_focus_state_change);
   }
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestPostponedAtkWindowActive) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  Init(root);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AtkUtilAuraLinux* atk_util = ui::AtkUtilAuraLinux::GetInstance();
+
+  {
+    ActivationTester tester(root_atk_object);
+    EXPECT_FALSE(tester.IsActivatedInStateSet());
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+
+    // ATK window activated event will be held until AT-SPI bridge is ready.
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+
+    // We force the AT-SPI ready flag to flush any held events.
+    atk_util->SetAtSpiReady(true);
+    EXPECT_TRUE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+    EXPECT_TRUE(tester.IsActivatedInStateSet());
+  }
+
+  {
+    ActivationTester tester(root_atk_object);
+
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_TRUE(tester.saw_deactivate_);
+    EXPECT_FALSE(tester.IsActivatedInStateSet());
+  }
+
+  {
+    atk_util->SetAtSpiReady(false);
+
+    ActivationTester tester(root_atk_object);
+
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+
+    // Window deactivated will cancel the previously held activated event.
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+
+    // We force the AT-SPI ready flag to flush any held events.
+    atk_util->SetAtSpiReady(true);
+
+    // No events seen because they cancelled each other.
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+  }
+
+  // Set AtSpiReady state back to its default state, so it doesn't affect other
+  // tests run in the same batch.
+  atk_util->SetAtSpiReady(false);
 
   g_object_unref(root_atk_object);
 }
@@ -1745,6 +1838,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
+  ScopedAtSpiReady enable_at_spi;
+
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kApplication;
@@ -1820,23 +1915,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   {
     ActivationTester tester(menu_atk_node);
     GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
-        ax::mojom::Event::kMenuPopupHide);
+        ax::mojom::Event::kMenuPopupEnd);
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_TRUE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
-    EXPECT_EQ(focus_events_on_original_node, 0);
-  }
-
-  {
-    ActivationTester tester(menu_atk_node);
-    GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
-        ax::mojom::Event::kMenuPopupEnd);
-    EXPECT_FALSE(tester.saw_activate_);
-    EXPECT_FALSE(tester.saw_deactivate_);
-    EXPECT_FALSE(tester.IsActivatedInStateSet());
-
-    // The menu has closed so the original node should have received focus
-    // again.
     EXPECT_EQ(focus_events_on_original_node, 1);
   }
 
@@ -2563,6 +2645,83 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestDialogActiveWhenChildFocused) {
       ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
   EXPECT_TRUE(saw_active_state_change);
   EXPECT_FALSE(AtkObjectHasState(dialog_obj, ATK_STATE_ACTIVE));
+}
+
+// Tests if kActiveDescendantChanged on unfocused node triggers a focused event.
+TEST_F(AXPlatformNodeAuraLinuxTest,
+       TestActiveDescendantChangedOnUnfocusedNode) {
+  AXNodeData menu;
+  menu.id = 1;
+  menu.role = ax::mojom::Role::kMenu;
+  menu.AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId, 4);
+  menu.child_ids = {2, 3};
+
+  AXNodeData input;
+  input.id = 2;
+  input.role = ax::mojom::Role::kTextField;
+  input.AddState(ax::mojom::State::kFocusable);
+  input.AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId, 4);
+
+  AXNodeData container;
+  container.id = 3;
+  container.role = ax::mojom::Role::kGenericContainer;
+  container.child_ids = {4, 5};
+
+  AXNodeData menu_item_1;
+  menu_item_1.id = 4;
+  menu_item_1.role = ax::mojom::Role::kMenuItemCheckBox;
+
+  AXNodeData menu_item_2;
+  menu_item_2.id = 5;
+  menu_item_2.role = ax::mojom::Role::kMenuItemCheckBox;
+
+  Init(menu, input, container, menu_item_1, menu_item_2);
+  TestAXNodeWrapper::SetGlobalIsWebContent(true);
+
+  // Creates TestAXNodeWrapper for the first menu item to keep the current
+  // active descendant.
+  AtkObjectFromNode(GetRootAsAXNode()->children()[1]->children()[0]);
+
+  // Sets focus to the input node.
+  AXNode* input_node = GetRootAsAXNode()->children()[0];
+  GetPlatformNode(input_node)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+
+  bool saw_active_focus_state_change = false;
+  AtkObject* menu_2_atk_object =
+      AtkObjectFromNode(GetRootAsAXNode()->children()[1]->children()[1]);
+  EXPECT_TRUE(ATK_IS_OBJECT(menu_2_atk_object));
+  g_object_ref(menu_2_atk_object);
+  // Registers callback to get focus event on |menu_2_atk_object|.
+  g_signal_connect(menu_2_atk_object, "state-change",
+                   G_CALLBACK(+[](AtkObject* atkobject, gchar* state_changed,
+                                  gboolean new_value, bool* flag) {
+                     if (!g_strcmp0(state_changed, "focused") && new_value)
+                       *flag = true;
+                   }),
+                   &saw_active_focus_state_change);
+
+  // Updates the active descendant node from the node id 4 to the node id 5;
+  AXNode* menu_node = GetRootAsAXNode();
+  AXNodeData menu_new_data(menu);
+  menu_new_data.AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                5);
+  menu_node->SetData(menu_new_data);
+
+  AXNodeData input_new_data(input);
+  input_new_data.AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                 5);
+  input_node->SetData(input_new_data);
+
+  // Notifies active descendant is changed.
+  GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
+      ax::mojom::Event::kActiveDescendantChanged);
+  // The current active descendant node, |menu_2_atk_object|, should get the
+  // focused event.
+  EXPECT_TRUE(saw_active_focus_state_change);
+
+  TestAXNodeWrapper::SetGlobalIsWebContent(false);
+  g_object_unref(menu_2_atk_object);
 }
 
 }  // namespace ui

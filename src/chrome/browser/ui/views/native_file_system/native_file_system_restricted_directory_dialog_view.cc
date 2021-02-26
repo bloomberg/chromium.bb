@@ -16,6 +16,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
+using HandleType = content::NativeFileSystemPermissionContext::HandleType;
+
 NativeFileSystemRestrictedDirectoryDialogView::
     ~NativeFileSystemRestrictedDirectoryDialogView() {
   // Make sure the dialog ends up calling the callback no matter what.
@@ -27,53 +29,31 @@ NativeFileSystemRestrictedDirectoryDialogView::
 views::Widget* NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    content::NativeFileSystemPermissionContext::HandleType handle_type,
     base::OnceCallback<void(SensitiveDirectoryResult)> callback,
     content::WebContents* web_contents) {
   auto delegate =
       base::WrapUnique(new NativeFileSystemRestrictedDirectoryDialogView(
-          origin, path, is_directory, std::move(callback)));
+          origin, path, handle_type, std::move(callback)));
   return constrained_window::ShowWebModalDialogViews(delegate.release(),
                                                      web_contents);
-}
-
-base::string16 NativeFileSystemRestrictedDirectoryDialogView::GetWindowTitle()
-    const {
-  return l10n_util::GetStringUTF16(
-      is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE
-                    : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE);
-}
-
-bool NativeFileSystemRestrictedDirectoryDialogView::ShouldShowCloseButton()
-    const {
-  return false;
-}
-
-gfx::Size
-NativeFileSystemRestrictedDirectoryDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-ui::ModalType NativeFileSystemRestrictedDirectoryDialogView::GetModalType()
-    const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 NativeFileSystemRestrictedDirectoryDialogView::
     NativeFileSystemRestrictedDirectoryDialogView(
         const url::Origin& origin,
         const base::FilePath& path,
-        bool is_directory,
+        content::NativeFileSystemPermissionContext::HandleType handle_type,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback)
-    : is_directory_(is_directory), callback_(std::move(callback)) {
-  SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
-                        : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON));
+    : handle_type_(handle_type), callback_(std::move(callback)) {
+  SetTitle(handle_type_ == HandleType::kDirectory
+               ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE
+               : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     handle_type_ == HandleType::kDirectory
+                         ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
+                         : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON));
 
   auto run_callback = [](NativeFileSystemRestrictedDirectoryDialogView* dialog,
                          SensitiveDirectoryResult result) {
@@ -88,20 +68,26 @@ NativeFileSystemRestrictedDirectoryDialogView::
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+
   AddChildView(native_file_system_ui_helper::CreateOriginLabel(
-      is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT
-                    : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TEXT,
-      origin, CONTEXT_BODY_TEXT_LARGE, /*show_emphasis=*/true));
+      handle_type_ == HandleType::kDirectory
+          ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT
+          : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TEXT,
+      origin, views::style::CONTEXT_DIALOG_BODY_TEXT, /*show_emphasis=*/true));
 }
 
 void ShowNativeFileSystemRestrictedDirectoryDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    content::NativeFileSystemPermissionContext::HandleType handle_type,
     base::OnceCallback<void(
         content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback,
     content::WebContents* web_contents) {
   NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
-      origin, path, is_directory, std::move(callback), web_contents);
+      origin, path, handle_type, std::move(callback), web_contents);
 }

@@ -7,11 +7,11 @@
 #include <memory>
 #include <set>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -106,7 +106,7 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
       &pref_service_, primary_account_info.account_id));
   EXPECT_EQ(password_manager::features_util::GetDefaultPasswordStore(
                 &pref_service_, &sync_service_),
-            autofill::PasswordForm::Store::kAccountStore);
+            password_manager::PasswordForm::Store::kAccountStore);
   EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
       &pref_service_, &sync_service_));
 }

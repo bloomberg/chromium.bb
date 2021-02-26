@@ -15,6 +15,15 @@ from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
 
+SYSTEM_HEALTH_BENCHMARK_UMA = [
+    'Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin2',
+    'Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2',
+    'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
+    'Memory.GPU.PeakMemoryUsage.Scroll',
+    'Memory.GPU.PeakMemoryUsage.PageLoad',
+]
+
+
 class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Chrome Common System Health Benchmark.
 
@@ -30,7 +39,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        filter_string='rail,toplevel')
+        filter_string='rail,toplevel,uma')
     cat_filter.AddIncludedCategory('accessibility')
     # Needed for the metric reported by page.
     cat_filter.AddIncludedCategory('blink.user_timing')
@@ -40,18 +49,30 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
+    options.config.chrome_trace_config.EnableUMAHistograms(
+        *SYSTEM_HEALTH_BENCHMARK_UMA)
     options.SetTimelineBasedMetrics([
         'accessibilityMetric',
         'consoleErrorMetric',
         'cpuTimeMetric',
         'limitedCpuTimeMetric',
         'reportedByPageMetric',
-        'tracingMetric'
+        'tracingMetric',
+        'umaMetric',
+        # Unless --experimentatil-tbmv3-metric flag is used, the following tbmv3
+        # metrics do nothing.
+        'tbmv3:accessibility_metric',
+        'tbmv3:cpu_time_metric',
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.
     options.AddTimelineBasedMetric('expectedQueueingTimeMetric')
     return options
+
+  def SetExtraBrowserOptions(self, options):
+    # Using the software fallback can skew the rendering related metrics. So
+    # disable that.
+    options.AppendExtraBrowserArgs('--disable-software-compositing-fallback')
 
   def CreateStorySet(self, options):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM)
@@ -100,6 +121,13 @@ class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   def Name(cls):
     return 'system_health.common_mobile'
 
+  def SetExtraBrowserOptions(self, options):
+    super(MobileCommonSystemHealth, self).SetExtraBrowserOptions(options)
+    # Force online state for the offline indicator so it doesn't show and affect
+    # the benchmarks on bots, which are offline by default.
+    options.AppendExtraBrowserArgs(
+        '--force-online-connection-state-for-indicator')
+
 
 class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Chrome Memory System Health Benchmark.
@@ -132,9 +160,13 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
                                           take_memory_measurement=True)
 
 
-@benchmark.Info(
-    emails=['pasko@chromium.org', 'chrome-android-perf-status@chromium.org'],
-    documentation_url='https://bit.ly/system-health-benchmarks')
+MEMORY_DEBUGGING_BLURB = "See https://bit.ly/2CpMhze for more information" \
+                         " on debugging memory metrics."
+
+
+@benchmark.Info(emails=['pasko@chromium.org', 'lizeb@chromium.org'],
+                documentation_url='https://bit.ly/system-health-benchmarks',
+                info_blurb=MEMORY_DEBUGGING_BLURB)
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   PLATFORM = 'desktop'
@@ -149,9 +181,9 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
     return 'system_health.memory_desktop'
 
 
-@benchmark.Info(
-    emails=['pasko@chromium.org', 'chrome-android-perf-status@chromium.org'],
-    documentation_url='https://bit.ly/system-health-benchmarks')
+@benchmark.Info(emails=['pasko@chromium.org', 'lizeb@chromium.org'],
+                documentation_url='https://bit.ly/system-health-benchmarks',
+                info_blurb=MEMORY_DEBUGGING_BLURB)
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
   PLATFORM = 'mobile'
@@ -169,6 +201,10 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     # each time before Chrome starts so we effect even the first story
     # - avoiding the bug.
     options.flush_os_page_caches_on_start = True
+    # Force online state for the offline indicator so it doesn't show and affect
+    # the benchmarks on bots, which are offline by default.
+    options.AppendExtraBrowserArgs(
+        '--force-online-connection-state-for-indicator')
 
   @classmethod
   def Name(cls):
@@ -208,3 +244,30 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'system_health.webview_startup'
+
+
+@benchmark.Info(emails=['cduvall@chromium.org', 'weblayer-team@chromium.org'],
+                component='Internals>WebLayer',
+                documentation_url='https://bit.ly/36XBtpn')
+class WebLayerStartupSystemHealthBenchmark(WebviewStartupSystemHealthBenchmark):
+  """WebLayer startup time benchmark
+
+  Benchmark that measures how long WebLayer takes to start up
+  and load a blank page.
+  """
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  # TODO(crbug.com/1137468): Add WEBLAYER to telemetry platforms.
+  SUPPORTED_PLATFORM_TAGS = [platforms.MOBILE]
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    options = super(WebLayerStartupSystemHealthBenchmark,
+                    self).CreateCoreTimelineBasedMeasurementOptions()
+    options.config.atrace_config.app_name = 'org.chromium.weblayer.shell'
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'system_health.weblayer_startup'

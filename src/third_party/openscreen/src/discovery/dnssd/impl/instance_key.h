@@ -41,6 +41,8 @@ class InstanceKey : public ServiceKey {
   InstanceKey& operator=(const InstanceKey& rhs);
   InstanceKey& operator=(InstanceKey&& rhs);
 
+  DomainName GetName() const override;
+
   const std::string& instance_id() const { return instance_id_; }
 
  private:

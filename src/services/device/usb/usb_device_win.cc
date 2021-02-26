@@ -24,17 +24,17 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 }  // namespace
 
-UsbDeviceWin::UsbDeviceWin(const base::string16& device_path,
-                           const base::string16& hub_path,
+UsbDeviceWin::UsbDeviceWin(const std::wstring& device_path,
+                           const std::wstring& hub_path,
                            const base::flat_map<int, FunctionInfo>& functions,
                            uint32_t bus_number,
                            uint32_t port_number,
-                           const base::string16& driver_name)
+                           DriverType driver_type)
     : UsbDevice(bus_number, port_number),
       device_path_(device_path),
       hub_path_(hub_path),
       functions_(functions),
-      driver_name_(driver_name) {}
+      driver_type_(driver_type) {}
 
 UsbDeviceWin::~UsbDeviceWin() {}
 
@@ -42,16 +42,13 @@ void UsbDeviceWin::Open(OpenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   scoped_refptr<UsbDeviceHandle> device_handle;
-  if (base::EqualsCaseInsensitiveASCII(driver_name_, L"winusb") ||
-      base::EqualsCaseInsensitiveASCII(driver_name_, L"usbccgp")) {
+  if (driver_type_ != DriverType::kUnsupported) {
     device_handle = new UsbDeviceHandleWin(this);
+    handles().push_back(device_handle.get());
   }
 
-  if (device_handle)
-    handles().push_back(device_handle.get());
-
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), device_handle));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(device_handle)));
 }
 
 void UsbDeviceWin::ReadDescriptors(base::OnceCallback<void(bool)> callback) {
@@ -111,11 +108,11 @@ void UsbDeviceWin::OnReadDescriptors(
 
   auto string_map = std::make_unique<std::map<uint8_t, base::string16>>();
   if (descriptor->i_manufacturer)
-    (*string_map)[descriptor->i_manufacturer] = base::string16();
+    (*string_map)[descriptor->i_manufacturer];
   if (descriptor->i_product)
-    (*string_map)[descriptor->i_product] = base::string16();
+    (*string_map)[descriptor->i_product];
   if (descriptor->i_serial_number)
-    (*string_map)[descriptor->i_serial_number] = base::string16();
+    (*string_map)[descriptor->i_serial_number];
 
   ReadUsbStringDescriptors(
       device_handle, std::move(string_map),

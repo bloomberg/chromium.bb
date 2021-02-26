@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "extensions/browser/extension_function.h"
 
 namespace net {
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
-}  // net
+}  // namespace net
 
 namespace extensions {
 namespace platform_keys {
@@ -21,14 +23,15 @@ namespace platform_keys {
 extern const char kErrorInvalidToken[];
 extern const char kErrorInvalidX509Cert[];
 
-// Returns whether |token_id| references a known Token.
-bool ValidateToken(const std::string& token_id,
-                   std::string* platform_keys_token_id);
+// Returns a known token if |token_id| is valid and returns nullopt for both
+// empty or unknown |token_id|.
+base::Optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
+    const std::string& token_id);
 
 // Converts a token id from ::chromeos::platform_keys to the platformKeys API
 // token id.
 std::string PlatformKeysTokenIdToApiId(
-    const std::string& platform_keys_token_id);
+    chromeos::platform_keys::TokenId platform_keys_token_id);
 
 }  // namespace platform_keys
 
@@ -39,9 +42,9 @@ class PlatformKeysInternalSelectClientCertificatesFunction
   ResponseAction Run() override;
 
   // Called when the certificates were selected. If an error occurred, |certs|
-  // will be null and instead |error_message| be set.
+  // will be null.
   void OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
-                              const std::string& error_message);
+                              chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",
                              PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES)
@@ -56,14 +59,25 @@ class PlatformKeysInternalGetPublicKeyFunction : public ExtensionFunction {
                              PLATFORMKEYSINTERNAL_GETPUBLICKEY)
 };
 
+class PlatformKeysInternalGetPublicKeyBySpkiFunction
+    : public ExtensionFunction {
+ private:
+  ~PlatformKeysInternalGetPublicKeyBySpkiFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKeyBySpki",
+                             PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI)
+};
+
 class PlatformKeysInternalSignFunction : public ExtensionFunction {
  private:
   ~PlatformKeysInternalSignFunction() override;
   ResponseAction Run() override;
 
   // Called when the signature was generated. If an error occurred,
-  // |signature| will be empty and instead |error_message| be set.
-  void OnSigned(const std::string& signature, const std::string& error_message);
+  // |signature| will be empty.
+  void OnSigned(const std::string& signature,
+                chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
                              PLATFORMKEYSINTERNAL_SIGN)

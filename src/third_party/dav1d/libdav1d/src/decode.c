@@ -773,10 +773,10 @@ static int decode_b(Dav1dTileContext *const t,
                                signabs(t->warpmv.matrix[3]),
                                signabs(t->warpmv.matrix[4]),
                                signabs(t->warpmv.matrix[5]),
-                               signabs(t->warpmv.alpha),
-                               signabs(t->warpmv.beta),
-                               signabs(t->warpmv.gamma),
-                               signabs(t->warpmv.delta),
+                               signabs(t->warpmv.u.p.alpha),
+                               signabs(t->warpmv.u.p.beta),
+                               signabs(t->warpmv.u.p.gamma),
+                               signabs(t->warpmv.u.p.delta),
                                b->mv2d.y, b->mv2d.x);
 #undef signabs
                 }
@@ -1843,10 +1843,10 @@ static int decode_b(Dav1dTileContext *const t,
                                signabs(t->warpmv.matrix[3]),
                                signabs(t->warpmv.matrix[4]),
                                signabs(t->warpmv.matrix[5]),
-                               signabs(t->warpmv.alpha),
-                               signabs(t->warpmv.beta),
-                               signabs(t->warpmv.gamma),
-                               signabs(t->warpmv.delta),
+                               signabs(t->warpmv.u.p.alpha),
+                               signabs(t->warpmv.u.p.beta),
+                               signabs(t->warpmv.u.p.gamma),
+                               signabs(t->warpmv.u.p.delta),
                                b->mv[0].y, b->mv[0].x);
 #undef signabs
                     if (f->frame_thread.pass) {
@@ -3302,7 +3302,7 @@ int dav1d_submit_frame(Dav1dContext *const c) {
 #define assign_bitdepth_case(bd) \
             dav1d_cdef_dsp_init_##bd##bpc(&dsp->cdef); \
             dav1d_intra_pred_dsp_init_##bd##bpc(&dsp->ipred); \
-            dav1d_itx_dsp_init_##bd##bpc(&dsp->itx); \
+            dav1d_itx_dsp_init_##bd##bpc(&dsp->itx, bpc); \
             dav1d_loop_filter_dsp_init_##bd##bpc(&dsp->lf); \
             dav1d_loop_restoration_dsp_init_##bd##bpc(&dsp->lr, bpc); \
             dav1d_mc_dsp_init_##bd##bpc(&dsp->mc); \

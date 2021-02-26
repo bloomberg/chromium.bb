@@ -11,14 +11,13 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/shortcut_viewer",
-   "+ash/shortcut_viewer/strings/grit/ash_components_strings.h",
+   "+ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h",
    "+ash/keyboard/ui",
    "+ash/public",
    "+ash/assistant/ui/assistant_ui_constants.h",
    "+ash/assistant/ui/main_stage/assistant_ui_element_view.h",
    "+ui/message_center/message_center.h",
   ],
-  # AshShellInit supports classic (non-mash) mode so allow ash/ includes.
   "ash_shell_init\.cc": [
     "+ash",
   ],
@@ -40,6 +39,9 @@ specific_include_rules = {
   "chrome_browser_main_extra_parts_ash\.cc": [
     "+ash/shell.h",
   ],
+  "chrome_capture_mode_delegate.cc": [
+    "+ash/services/recording/public/mojom/recording_service.mojom.h",
+  ],
   # https://crbug.com/124222
   "chrome_new_window_client\.cc": [
     "+ash/content/keyboard_overlay/keyboard_overlay_view.h",
@@ -56,13 +58,8 @@ specific_include_rules = {
     # https://crbug.com/665064
     "+ash/shell_delegate.h",
   ],
-  # Only used in !mash
   "screen_orientation_delegate_chromeos.cc": [
     "+ash/display/screen_orientation_controller.h",
-    "+ash/shell.h",
-  ],
-  # For ash::Shell::GetContainer (!mash)
-  "system_tray_client\.cc": [
     "+ash/shell.h",
   ],
   "system_tray_tray_cast_browsertest_media_router_chromeos\.cc": [

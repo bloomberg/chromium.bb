@@ -5,6 +5,8 @@
 #ifndef UTIL_ALARM_H_
 #define UTIL_ALARM_H_
 
+#include <utility>
+
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 
@@ -37,8 +39,8 @@ class Alarm {
   // The design requires that Alarm instances not be copied or moved.
   Alarm(const Alarm&) = delete;
   Alarm& operator=(const Alarm&) = delete;
-  Alarm(Alarm&&) noexcept = delete;
-  Alarm& operator=(Alarm&&) noexcept = delete;
+  Alarm(Alarm&&) = delete;
+  Alarm& operator=(Alarm&&) = delete;
 
   // Schedule the |functor| to be invoked at |alarm_time|. If this Alarm was
   // already scheduled, the prior scheduling is canceled. The Functor can be any

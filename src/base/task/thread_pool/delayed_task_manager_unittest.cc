@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -46,6 +46,12 @@ Task ConstructMockedTask(testing::StrictMock<MockTask>& mock_task,
 }
 
 class ThreadPoolDelayedTaskManagerTest : public testing::Test {
+ public:
+  ThreadPoolDelayedTaskManagerTest(const ThreadPoolDelayedTaskManagerTest&) =
+      delete;
+  ThreadPoolDelayedTaskManagerTest& operator=(
+      const ThreadPoolDelayedTaskManagerTest&) = delete;
+
  protected:
   ThreadPoolDelayedTaskManagerTest() = default;
   ~ThreadPoolDelayedTaskManagerTest() override = default;
@@ -58,9 +64,6 @@ class ThreadPoolDelayedTaskManagerTest : public testing::Test {
   Task task_{ConstructMockedTask(mock_task_,
                                  service_thread_task_runner_->NowTicks(),
                                  kLongDelay)};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolDelayedTaskManagerTest);
 };
 
 }  // namespace

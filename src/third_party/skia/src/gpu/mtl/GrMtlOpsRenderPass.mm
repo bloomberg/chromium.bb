@@ -7,9 +7,9 @@
 
 #include "src/gpu/mtl/GrMtlOpsRenderPass.h"
 
+#include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrColor.h"
-#include "src/gpu/GrFixedClip.h"
-#include "src/gpu/GrRenderTargetPriv.h"
+#include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/mtl/GrMtlCommandBuffer.h"
 #include "src/gpu/mtl/GrMtlPipelineState.h"
 #include "src/gpu/mtl/GrMtlPipelineStateBuilder.h"
@@ -123,7 +123,10 @@ bool GrMtlOpsRenderPass::onBindTextures(const GrPrimitiveProcessor& primProc,
     return true;
 }
 
-void GrMtlOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& color) {
+void GrMtlOpsRenderPass::onClear(const GrScissorState& scissor, const SkPMColor4f& color) {
+    // Partial clears are not supported
+    SkASSERT(!scissor.enabled());
+
     // Ideally we should never end up here since all clears should either be done as draws or
     // load ops in metal. However, if a client inserts a wait op we need to handle it.
     fRenderPassDesc.colorAttachments[0].clearColor =
@@ -135,14 +138,15 @@ void GrMtlOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& col
             fGpu->commandBuffer()->getRenderCommandEncoder(fRenderPassDesc, nullptr, this);
 }
 
-void GrMtlOpsRenderPass::onClearStencilClip(const GrFixedClip& clip, bool insideStencilMask) {
-    SkASSERT(!clip.hasWindowRectangles());
+void GrMtlOpsRenderPass::onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) {
+    // Partial clears are not supported
+    SkASSERT(!scissor.enabled());
 
-    GrStencilAttachment* sb = fRenderTarget->renderTargetPriv().getStencilAttachment();
+    GrAttachment* sb = fRenderTarget->getStencilAttachment();
     // this should only be called internally when we know we have a
     // stencil buffer.
     SkASSERT(sb);
-    int stencilBitCount = sb->bits();
+    int stencilBitCount = GrBackendFormatStencilBits(sb->backendFormat());
 
     // The contract with the callers does not guarantee that we preserve all bits in the stencil
     // during this clear. Thus we will clear the entire stencil to the desired value.
@@ -216,10 +220,9 @@ void GrMtlOpsRenderPass::setupRenderPass(
     renderPassDesc.colorAttachments[0].storeAction =
             mtlStoreAction[static_cast<int>(colorInfo.fStoreOp)];
 
-    const GrMtlStencilAttachment* stencil = static_cast<GrMtlStencilAttachment*>(
-            fRenderTarget->renderTargetPriv().getStencilAttachment());
+    auto* stencil = static_cast<GrMtlAttachment*>(fRenderTarget->getStencilAttachment());
     if (stencil) {
-        renderPassDesc.stencilAttachment.texture = stencil->stencilView();
+        renderPassDesc.stencilAttachment.texture = stencil->view();
     }
     renderPassDesc.stencilAttachment.clearStencil = 0;
     renderPassDesc.stencilAttachment.loadAction =
@@ -251,26 +254,31 @@ void GrMtlOpsRenderPass::setupRenderPass(
     fActiveRenderCmdEncoder = nil;
 }
 
-void GrMtlOpsRenderPass::onBindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
-                                       const GrBuffer* vertexBuffer,
+void GrMtlOpsRenderPass::onBindBuffers(sk_sp<const GrBuffer> indexBuffer,
+                                       sk_sp<const GrBuffer> instanceBuffer,
+                                       sk_sp<const GrBuffer> vertexBuffer,
                                        GrPrimitiveRestart primRestart) {
     SkASSERT(GrPrimitiveRestart::kNo == primRestart);
     int inputBufferIndex = 0;
     if (vertexBuffer) {
         SkASSERT(!vertexBuffer->isCpuBuffer());
-        SkASSERT(!static_cast<const GrGpuBuffer*>(vertexBuffer)->isMapped());
-        fActiveVertexBuffer = sk_ref_sp(static_cast<const GrMtlBuffer*>(vertexBuffer));
+        SkASSERT(!static_cast<const GrGpuBuffer*>(vertexBuffer.get())->isMapped());
+        fActiveVertexBuffer = std::move(vertexBuffer);
+        fGpu->commandBuffer()->addGrBuffer(fActiveVertexBuffer);
         ++inputBufferIndex;
     }
     if (instanceBuffer) {
         SkASSERT(!instanceBuffer->isCpuBuffer());
-        SkASSERT(!static_cast<const GrGpuBuffer*>(instanceBuffer)->isMapped());
-        this->setVertexBuffer(fActiveRenderCmdEncoder, instanceBuffer, 0, inputBufferIndex++);
+        SkASSERT(!static_cast<const GrGpuBuffer*>(instanceBuffer.get())->isMapped());
+        this->setVertexBuffer(fActiveRenderCmdEncoder, instanceBuffer.get(), 0, inputBufferIndex++);
+        fActiveInstanceBuffer = std::move(instanceBuffer);
+        fGpu->commandBuffer()->addGrBuffer(fActiveInstanceBuffer);
     }
     if (indexBuffer) {
         SkASSERT(!indexBuffer->isCpuBuffer());
-        SkASSERT(!static_cast<const GrGpuBuffer*>(indexBuffer)->isMapped());
-        fActiveIndexBuffer = sk_ref_sp(static_cast<const GrMtlBuffer*>(indexBuffer));
+        SkASSERT(!static_cast<const GrGpuBuffer*>(indexBuffer.get())->isMapped());
+        fActiveIndexBuffer = std::move(indexBuffer);
+        fGpu->commandBuffer()->addGrBuffer(fActiveIndexBuffer);
     }
 }
 
@@ -369,9 +377,8 @@ void GrMtlOpsRenderPass::setVertexBuffer(id<MTLRenderCommandEncoder> encoder,
             [encoder setVertexBufferOffset: offset
                                    atIndex: index];
         } else {
-            [encoder setVertexBuffer: mtlVertexBuffer
-                              offset: offset
-                             atIndex: index];
+            // We only support iOS 9.0+, so we should never hit this
+            SK_ABORT("Missing interface. Skia only supports Metal on iOS 9.0 and higher");
         }
         fBufferBindings[index].fOffset = offset;
     }

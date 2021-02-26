@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <libgen.h>
 #include <mach-o/dyld.h>
 #endif
@@ -22,13 +22,13 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include <sys/mman.h>
 #endif
 
 namespace memory_instrumentation {
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace {
 const char kTestSmaps1[] =
     "00400000-004be000 r-xp 00000000 fc:01 1234              /file/1\n"
@@ -128,7 +128,7 @@ void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
 }
 
 }  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 TEST(OSMetricsTest, GivesNonZeroResults) {
   base::ProcessId pid = base::kNullProcessId;
@@ -136,16 +136,17 @@ TEST(OSMetricsTest, GivesNonZeroResults) {
   dump.platform_private_footprint = mojom::PlatformPrivateFootprint::New();
   EXPECT_TRUE(OSMetrics::FillOSMemoryDump(pid, &dump));
   EXPECT_TRUE(dump.platform_private_footprint);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_FUCHSIA)
   EXPECT_GT(dump.platform_private_footprint->rss_anon_bytes, 0u);
 #elif defined(OS_WIN)
   EXPECT_GT(dump.platform_private_footprint->private_bytes, 0u);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   EXPECT_GT(dump.platform_private_footprint->internal_bytes, 0u);
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 TEST(OSMetricsTest, ParseProcSmaps) {
   const uint32_t kProtR = mojom::VmRegion::kProtectionFlagsRead;
   const uint32_t kProtW = mojom::VmRegion::kProtectionFlagsWrite;
@@ -252,7 +253,7 @@ TEST(OSMetricsTest, GetMappedAndResidentPages) {
   EXPECT_EQ(pages == accessed_pages_set, true);
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 void DummyFunction() {}
@@ -305,7 +306,7 @@ TEST(OSMetricsTest, TestWinModuleReading) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 namespace {
 
 void CheckMachORegions(const std::vector<mojom::VmRegionPtr>& maps) {
@@ -346,6 +347,6 @@ TEST(OSMetricsTest, DISABLED_TestMachOReading) {
   maps = OSMetrics::GetProcessModules(base::kNullProcessId);
   CheckMachORegions(maps);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 }  // namespace memory_instrumentation

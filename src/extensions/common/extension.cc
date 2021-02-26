@@ -12,6 +12,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
@@ -32,6 +33,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -82,9 +84,18 @@ bool IsManifestSupported(int manifest_version,
                          Manifest::Type type,
                          int creation_flags,
                          std::string* warning) {
-  static constexpr int kMaximumSupportedManifestVersion = 2;
+  static constexpr int kMaximumSupportedManifestVersion = 3;
   static_assert(kMaximumSupportedManifestVersion >= kModernManifestVersion,
                 "The modern manifest version must be supported.");
+
+  // The ultimate short-circuit: If the feature for MV3 is disabled, it's not
+  // supported.
+  if (manifest_version == 3 &&
+      !base::FeatureList::IsEnabled(
+          extensions_features::kMv3ExtensionsSupported)) {
+    return false;
+  }
+
   // Modern is always safe.
   if (manifest_version >= kModernManifestVersion &&
       manifest_version <= kMaximumSupportedManifestVersion) {
@@ -92,10 +103,16 @@ bool IsManifestSupported(int manifest_version,
   }
 
   if (manifest_version > kMaximumSupportedManifestVersion) {
-    *warning = ErrorUtils::FormatErrorMessage(
-        manifest_errors::kManifestVersionTooHighWarning,
-        base::NumberToString(kMaximumSupportedManifestVersion),
-        base::NumberToString(manifest_version));
+    // Silence future manifest error with flag.
+    bool allow_future_manifest_version =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowFutureManifestVersion);
+    if (!allow_future_manifest_version) {
+      *warning = ErrorUtils::FormatErrorMessage(
+          manifest_errors::kManifestVersionTooHighWarning,
+          base::NumberToString(kMaximumSupportedManifestVersion),
+          base::NumberToString(manifest_version));
+    }
     return true;
   }
 

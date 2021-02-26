@@ -20,6 +20,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "net/cookies/site_for_cookies.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy.h"
 
 namespace content {
 
@@ -28,8 +31,12 @@ class BrowserContext;
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
+  // Returns DevToolsAgentHost with a given |id| or nullptr of it doesn't exist.
+  static scoped_refptr<DevToolsAgentHostImpl> GetForId(const std::string& id);
+
   // DevToolsAgentHost implementation.
   bool AttachClient(DevToolsAgentHostClient* client) override;
+  bool AttachClientWithoutWakeLock(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;
   void DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                base::span<const uint8_t> message) override;
@@ -40,6 +47,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
       scoped_refptr<base::RefCountedMemory> data) override;
   std::string GetParentId() override;
   std::string GetOpenerId() override;
+  std::string GetOpenerFrameId() override;
+  bool CanAccessOpener() override;
   std::string GetDescription() override;
   GURL GetFaviconURL() override;
   std::string GetFrontendURL() override;
@@ -48,6 +57,24 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   WebContents* GetWebContents() override;
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
+  RenderProcessHost* GetProcessHost() override;
+
+  struct NetworkLoaderFactoryParamsAndInfo {
+    NetworkLoaderFactoryParamsAndInfo();
+    NetworkLoaderFactoryParamsAndInfo(
+        url::Origin,
+        net::SiteForCookies,
+        network::mojom::URLLoaderFactoryParamsPtr);
+    NetworkLoaderFactoryParamsAndInfo(NetworkLoaderFactoryParamsAndInfo&&);
+    ~NetworkLoaderFactoryParamsAndInfo();
+    url::Origin origin;
+    net::SiteForCookies site_for_cookies;
+    network::mojom::URLLoaderFactoryParamsPtr factory_params;
+  };
+  // Creates network factory parameters for devtools-initiated subresource
+  // requests.
+  virtual NetworkLoaderFactoryParamsAndInfo
+  CreateNetworkFactoryParamsForDevTools();
 
   bool Inspect();
 
@@ -64,14 +91,19 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
     return result;
   }
 
+  virtual base::Optional<network::CrossOriginEmbedderPolicy>
+  cross_origin_embedder_policy(const std::string& id);
+  virtual base::Optional<network::CrossOriginOpenerPolicy>
+  cross_origin_opener_policy(const std::string& id);
+
  protected:
-  DevToolsAgentHostImpl(const std::string& id);
+  explicit DevToolsAgentHostImpl(const std::string& id);
   ~DevToolsAgentHostImpl() override;
 
   static bool ShouldForceCreation();
 
   // Returning |false| will block the attach.
-  virtual bool AttachSession(DevToolsSession* session);
+  virtual bool AttachSession(DevToolsSession* session, bool acquire_wake_lock);
   virtual void DetachSession(DevToolsSession* session);
   virtual void UpdateRendererChannel(bool force);
 
@@ -92,6 +124,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   friend class DevToolsRendererChannel;
 
   bool AttachInternal(std::unique_ptr<DevToolsSession> session);
+  bool AttachInternal(std::unique_ptr<DevToolsSession> session,
+                      bool acquire_wake_lock);
   void DetachInternal(DevToolsSession* session);
   void NotifyAttached();
   void NotifyDetached();

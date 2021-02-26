@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_ps.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -34,6 +34,8 @@ CXFA_Ps::CXFA_Ps(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Ps,
                 kPsPropertyData,
                 kPsAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Ps::~CXFA_Ps() = default;

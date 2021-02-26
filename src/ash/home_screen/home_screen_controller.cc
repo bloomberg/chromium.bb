@@ -12,7 +12,7 @@
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
@@ -28,11 +28,13 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -140,37 +142,6 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool split_view_active = split_view_controller->InSplitViewMode();
-
-  if (!features::IsDragFromShelfToHomeOrOverviewEnabled()) {
-    if (home_launcher_gesture_handler_->ShowHomeLauncher(
-            Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
-      return true;
-    }
-
-    if (overview_controller->InOverviewSession()) {
-      // End overview mode.
-      overview_controller->EndOverview(OverviewEnterExitType::kSlideOutExit);
-      return true;
-    }
-
-    if (split_view_active) {
-      // End split view mode.
-      split_view_controller->EndSplitView(
-          SplitViewController::EndReason::kHomeLauncherPressed);
-      return true;
-    }
-
-    // The home screen opens for the current active desk, there's no need to
-    // minimize windows in the inactive desks.
-    if (MinimizeAllWindows(
-            Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
-                kActiveDesk),
-            {} /*windows_to_ignore*/)) {
-      return true;
-    }
-
-    return false;
-  }
 
   // The home screen opens for the current active desk, there's no need to
   // minimize windows in the inactive desks.
@@ -302,16 +273,18 @@ void HomeScreenController::StartTrackingAnimationSmoothness(
     int64_t display_id) {
   auto* root_window = Shell::GetRootWindowForDisplayId(display_id);
   auto* compositor = root_window->layer()->GetCompositor();
-  fps_counter_ = std::make_unique<FpsCounter>(compositor);
+  smoothness_tracker_ = compositor->RequestNewThroughputTracker();
+  smoothness_tracker_->Start(
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        UMA_HISTOGRAM_PERCENTAGE(kHomescreenAnimationHistogram, smoothness);
+      })));
 }
 
 void HomeScreenController::RecordAnimationSmoothness() {
-  if (!fps_counter_)
+  if (!smoothness_tracker_)
     return;
-  int smoothness = fps_counter_->ComputeSmoothness();
-  if (smoothness >= 0)
-    UMA_HISTOGRAM_PERCENTAGE(kHomescreenAnimationHistogram, smoothness);
-  fps_counter_.reset();
+  smoothness_tracker_->Stop();
+  smoothness_tracker_.reset();
 }
 
 void HomeScreenController::OnAppListViewShown() {
@@ -339,17 +312,10 @@ void HomeScreenController::OnOverviewModeStarting() {
 
   const bool animate =
       IsHomeScreenVisible() &&
-      (overview_enter_type == OverviewEnterExitType::kSlideInEnter ||
-       overview_enter_type == OverviewEnterExitType::kFadeInEnter);
-  const bool use_scale_transition =
-      overview_enter_type == OverviewEnterExitType::kFadeInEnter ||
-      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-       overview_enter_type != OverviewEnterExitType::kSlideInEnter);
-  const HomeScreenPresenter::TransitionType transition =
-      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeOut
-                           : HomeScreenPresenter::TransitionType::kSlideHomeOut;
+      overview_enter_type == OverviewEnterExitType::kFadeInEnter;
 
-  home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
+  home_screen_presenter_.ScheduleOverviewModeAnimation(
+      HomeScreenPresenter::TransitionType::kScaleHomeOut, animate);
 }
 
 void HomeScreenController::OnOverviewModeEnding(
@@ -386,18 +352,11 @@ void HomeScreenController::OnOverviewModeEndingAnimationComplete(
   }
 
   const bool animate =
-      *overview_exit_type_ == OverviewEnterExitType::kSlideOutExit ||
       *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit;
-  const bool use_scale_transition =
-      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit ||
-      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-       *overview_exit_type_ != OverviewEnterExitType::kSlideOutExit);
-  const HomeScreenPresenter::TransitionType transition =
-      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeIn
-                           : HomeScreenPresenter::TransitionType::kSlideHomeIn;
   overview_exit_type_ = base::nullopt;
 
-  home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
+  home_screen_presenter_.ScheduleOverviewModeAnimation(
+      HomeScreenPresenter::TransitionType::kScaleHomeIn, animate);
 
   // Make sure the window visibility is updated, in case it was previously
   // hidden due to overview being shown.
@@ -429,15 +388,20 @@ void HomeScreenController::UpdateVisibility() {
 }
 
 bool HomeScreenController::ShouldShowHomeScreen() const {
-  const bool in_tablet_mode =
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
-  const bool in_overview =
-      Shell::Get()->overview_controller()->InOverviewSession();
-  const bool in_split_view =
-      SplitViewController::Get(delegate_->GetHomeScreenWindow())
-          ->InSplitViewMode();
-  return in_tablet_mode && !in_overview && !in_wallpaper_preview_ &&
-         !in_window_dragging_ && !in_split_view;
+  if (in_window_dragging_ || in_wallpaper_preview_)
+    return false;
+
+  auto* window = delegate_->GetHomeScreenWindow();
+  if (!window)
+    return false;
+
+  auto* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+  if (shell->overview_controller()->InOverviewSession())
+    return false;
+
+  return !SplitViewController::Get(window)->InSplitViewMode();
 }
 
 }  // namespace ash

@@ -11,6 +11,7 @@
 goog.provide('KeySequence');
 
 goog.require('ChromeVox');
+goog.require('KeyCode');
 
 
 /**
@@ -57,7 +58,7 @@ KeySequence = class {
     /** @type {boolean} */
     this.skipStripping = !!opt_skipStripping;
 
-    if (opt_cvoxModifier == undefined) {
+    if (opt_cvoxModifier === undefined) {
       this.cvoxModifier = this.isCVoxModifierActive(originalEvent);
     } else {
       this.cvoxModifier = opt_cvoxModifier;
@@ -138,7 +139,7 @@ KeySequence = class {
       return false;
     }
 
-    if (this.doubleTap != rhs.doubleTap) {
+    if (this.doubleTap !== rhs.doubleTap) {
       return false;
     }
 
@@ -174,15 +175,15 @@ KeySequence = class {
    */
   extractKey_(keyEvent) {
     for (const prop in this.keys) {
-      if (prop == 'keyCode') {
+      if (prop === 'keyCode') {
         let keyCode;
         // TODO (rshearer): This is temporary until we find a library that can
         // convert between ASCII charcodes and keycodes.
-        if (keyEvent.type == 'keypress' && keyEvent[prop] >= 97 &&
+        if (keyEvent.type === 'keypress' && keyEvent[prop] >= 97 &&
             keyEvent[prop] <= 122) {
           // Alphabetic keypress. Convert to the upper case ASCII code.
           keyCode = keyEvent[prop] - 32;
-        } else if (keyEvent.type == 'keypress') {
+        } else if (keyEvent.type === 'keypress') {
           keyCode = KeySequence.KEY_PRESS_CODE[keyEvent[prop]];
         }
         this.keys[prop].push(keyCode || keyEvent[prop]);
@@ -221,23 +222,23 @@ KeySequence = class {
 
     const index = this.keys.keyCode.length - 1;
     // For each modifier that is part of the CVox modifier, remove it from keys.
-    if (modifierKeyCombo.indexOf('Ctrl') != -1) {
+    if (modifierKeyCombo.indexOf('Ctrl') !== -1) {
       this.keys.ctrlKey[index] = false;
     }
-    if (modifierKeyCombo.indexOf('Alt') != -1) {
+    if (modifierKeyCombo.indexOf('Alt') !== -1) {
       this.keys.altKey[index] = false;
     }
-    if (modifierKeyCombo.indexOf('Shift') != -1) {
+    if (modifierKeyCombo.indexOf('Shift') !== -1) {
       this.keys.shiftKey[index] = false;
     }
     const metaKeyName = this.getMetaKeyName_();
-    if (modifierKeyCombo.indexOf(metaKeyName) != -1) {
-      if (metaKeyName == 'Search') {
+    if (modifierKeyCombo.indexOf(metaKeyName) !== -1) {
+      if (metaKeyName === 'Search') {
         this.keys.searchKeyHeld[index] = false;
         // TODO(dmazzoni): http://crbug.com/404763 Get rid of the code that
         // tracks the search key and just use meta everywhere.
         this.keys.metaKey[index] = false;
-      } else if (metaKeyName == 'Cmd' || metaKeyName == 'Win') {
+      } else if (metaKeyName === 'Cmd' || metaKeyName === 'Win') {
         this.keys.metaKey[index] = false;
       }
     }
@@ -298,8 +299,9 @@ KeySequence = class {
    */
   isModifierKey(keyCode) {
     // Shift, Ctrl, Alt, Search/LWin
-    return keyCode == 16 || keyCode == 17 || keyCode == 18 || keyCode == 91 ||
-        keyCode == 93;
+    return keyCode === KeyCode.SHIFT || keyCode === KeyCode.CONTROL ||
+        keyCode === KeyCode.ALT || keyCode === KeyCode.SEARCH ||
+        keyCode === KeyCode.APPS;
   }
 
   /**
@@ -317,27 +319,27 @@ KeySequence = class {
     // If the combo string becomes empty, then the user has activated the combo.
     if (this.isKeyModifierActive(keyEvent, 'ctrlKey')) {
       modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-        return modifier != 'Ctrl';
+        return modifier !== 'Ctrl';
       });
     }
     if (this.isKeyModifierActive(keyEvent, 'altKey')) {
       modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-        return modifier != 'Alt';
+        return modifier !== 'Alt';
       });
     }
     if (this.isKeyModifierActive(keyEvent, 'shiftKey')) {
       modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-        return modifier != 'Shift';
+        return modifier !== 'Shift';
       });
     }
     if (this.isKeyModifierActive(keyEvent, 'metaKey') ||
         this.isKeyModifierActive(keyEvent, 'searchKeyHeld')) {
       const metaKeyName = this.getMetaKeyName_();
       modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-        return modifier != metaKeyName;
+        return modifier !== metaKeyName;
       });
     }
-    return (modifierKeyCombo.length == 0);
+    return (modifierKeyCombo.length === 0);
   }
 
   /**
@@ -355,19 +357,19 @@ KeySequence = class {
     // This bug filed as crbug.com/74044
     switch (modifier) {
       case 'ctrlKey':
-        return (keyEvent.ctrlKey || keyEvent.keyCode == 17);
+        return (keyEvent.ctrlKey || keyEvent.keyCode === KeyCode.CONTROL);
         break;
       case 'altKey':
-        return (keyEvent.altKey || (keyEvent.keyCode == 18));
+        return (keyEvent.altKey || (keyEvent.keyCode === KeyCode.ALT));
         break;
       case 'shiftKey':
-        return (keyEvent.shiftKey || (keyEvent.keyCode == 16));
+        return (keyEvent.shiftKey || (keyEvent.keyCode === KeyCode.SHIFT));
         break;
       case 'metaKey':
-        return (keyEvent.metaKey || (keyEvent.keyCode == 91));
+        return (keyEvent.metaKey || (keyEvent.keyCode === KeyCode.SEARCH));
         break;
       case 'searchKeyHeld':
-        return keyEvent.keyCode == 91 || keyEvent['searchKeyHeld'];
+        return keyEvent.keyCode === KeyCode.SEARCH || keyEvent['searchKeyHeld'];
         break;
     }
     return false;
@@ -380,7 +382,7 @@ KeySequence = class {
   isAnyModifierActive() {
     for (const modifierType in this.keys) {
       for (let i = 0; i < this.length(); i++) {
-        if (this.keys[modifierType][i] && modifierType != 'keyCode') {
+        if (this.keys[modifierType][i] && modifierType !== 'keyCode') {
           return true;
         }
       }
@@ -391,15 +393,15 @@ KeySequence = class {
   /**
    * Creates a KeySequence event from a generic object.
    * @param {Object} sequenceObject The object.
-   * @return {KeySequence} The created KeySequence object.
+   * @return {!KeySequence} The created KeySequence object.
    */
   static deserialize(sequenceObject) {
     const firstSequenceEvent = {};
 
     firstSequenceEvent['stickyMode'] =
-        (sequenceObject.stickyMode == undefined) ? false :
-                                                   sequenceObject.stickyMode;
-    firstSequenceEvent['prefixKey'] = (sequenceObject.prefixKey == undefined) ?
+        (sequenceObject.stickyMode === undefined) ? false :
+                                                    sequenceObject.stickyMode;
+    firstSequenceEvent['prefixKey'] = (sequenceObject.prefixKey === undefined) ?
         false :
         sequenceObject.prefixKey;
 
@@ -444,7 +446,7 @@ KeySequence = class {
     const secondSequenceEvent = {};
 
     let secondKeyPressed;
-    if (keyStr.indexOf('>') == -1) {
+    if (keyStr.indexOf('>') === -1) {
       secondKeyPressed = false;
     } else {
       secondKeyPressed = true;
@@ -458,7 +460,7 @@ KeySequence = class {
     for (let i = 0; i < tokens.length; i++) {
       const seqs = tokens[i].split('>');
       for (let j = 0; j < seqs.length; j++) {
-        if (seqs[j].charAt(0) == '#') {
+        if (seqs[j].charAt(0) === '#') {
           const keyCode = parseInt(seqs[j].substr(1), 10);
           if (j > 0) {
             secondSequenceEvent['keyCode'] = keyCode;
@@ -467,7 +469,7 @@ KeySequence = class {
           }
         }
         const keyName = seqs[j];
-        if (seqs[j].length == 1) {
+        if (seqs[j].length === 1) {
           // Key is A/B/C...1/2/3 and we don't need to worry about setting
           // modifiers.
           if (j > 0) {
@@ -479,12 +481,12 @@ KeySequence = class {
           // Key is a modifier key
           if (j > 0) {
             KeySequence.setModifiersOnEvent_(keyName, secondSequenceEvent);
-            if (keyName == 'Cvox') {
+            if (keyName === 'Cvox') {
               cvoxPressed = true;
             }
           } else {
             KeySequence.setModifiersOnEvent_(keyName, sequenceEvent);
-            if (keyName == 'Cvox') {
+            if (keyName === 'Cvox') {
               cvoxPressed = true;
             }
           }
@@ -506,26 +508,26 @@ KeySequence = class {
    * @private
    */
   static setModifiersOnEvent_(keyName, seqEvent) {
-    if (keyName == 'Ctrl') {
+    if (keyName === 'Ctrl') {
       seqEvent['ctrlKey'] = true;
-      seqEvent['keyCode'] = 17;
-    } else if (keyName == 'Alt') {
+      seqEvent['keyCode'] = KeyCode.CONTROL;
+    } else if (keyName === 'Alt') {
       seqEvent['altKey'] = true;
-      seqEvent['keyCode'] = 18;
-    } else if (keyName == 'Shift') {
+      seqEvent['keyCode'] = KeyCode.ALT;
+    } else if (keyName === 'Shift') {
       seqEvent['shiftKey'] = true;
-      seqEvent['keyCode'] = 16;
-    } else if (keyName == 'Search') {
+      seqEvent['keyCode'] = KeyCode.SHIFT;
+    } else if (keyName === 'Search') {
       seqEvent['searchKeyHeld'] = true;
-      seqEvent['keyCode'] = 91;
-    } else if (keyName == 'Cmd') {
+      seqEvent['keyCode'] = KeyCode.SEARCH;
+    } else if (keyName === 'Cmd') {
       seqEvent['metaKey'] = true;
-      seqEvent['keyCode'] = 91;
-    } else if (keyName == 'Win') {
+      seqEvent['keyCode'] = KeyCode.SEARCH;
+    } else if (keyName === 'Win') {
       seqEvent['metaKey'] = true;
-      seqEvent['keyCode'] = 91;
-    } else if (keyName == 'Insert') {
-      seqEvent['keyCode'] = 45;
+      seqEvent['keyCode'] = KeyCode.SEARCH;
+    } else if (keyName === 'Insert') {
+      seqEvent['keyCode'] = KeyCode.INSERT;
     }
   }
 };

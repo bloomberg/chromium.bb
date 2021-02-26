@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
@@ -71,8 +72,7 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
     const LayoutBox& box,
     const NGBoxStrut& container_border_scrollbar,
     const NGBoxFragmentBuilder* container_builder) {
-  const LayoutBoxModelObject* css_container =
-      ToLayoutBoxModelObject(box.Container());
+  const auto* css_container = To<LayoutBoxModelObject>(box.Container());
   const TextDirection parent_direction = box.Parent()->StyleRef().Direction();
 
   // These two values represent the available-size for the OOF-positioned
@@ -139,7 +139,7 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
                      box.StyleRef().GetWritingMode());
 
   const LayoutBox* container = css_container->IsBox()
-                                   ? ToLayoutBox(css_container)
+                                   ? To<LayoutBox>(css_container)
                                    : box.ContainingBlock();
   const WritingMode container_writing_mode =
       container->StyleRef().GetWritingMode();
@@ -152,10 +152,10 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
   // why we use |TextDirection::kLtr| for the first conversion.
   logical_static_position =
       logical_static_position
-          .ConvertToPhysical(container_writing_mode, TextDirection::kLtr,
-                             container_size)
-          .ConvertToLogical(container_writing_mode, container_direction,
-                            container_size);
+          .ConvertToPhysical(
+              {{container_writing_mode, TextDirection::kLtr}, container_size})
+          .ConvertToLogical(
+              {{container_writing_mode, container_direction}, container_size});
 
   // Finally we shift the static-position from being relative to the
   // padding-box, to the border-box.
@@ -168,6 +168,35 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
 bool LayoutBoxUtils::SkipContainingBlockForPercentHeightCalculation(
     const LayoutBlock* cb) {
   return LayoutBox::SkipContainingBlockForPercentHeightCalculation(cb);
+}
+
+LayoutUnit LayoutBoxUtils::TotalBlockSize(const LayoutBox& box) {
+  wtf_size_t num_fragments = box.PhysicalFragmentCount();
+  DCHECK_GT(num_fragments, 0u);
+
+  // Calculate the total block size by looking at the last two block fragments
+  // with a non-zero block-size.
+  LayoutUnit total_block_size;
+  while (num_fragments > 0) {
+    LayoutUnit block_size =
+        box.GetPhysicalFragment(num_fragments - 1)
+            ->Size()
+            .ConvertToLogical(box.StyleRef().GetWritingMode())
+            .block_size;
+    if (block_size > LayoutUnit()) {
+      total_block_size += block_size;
+      break;
+    }
+    num_fragments--;
+  }
+
+  if (num_fragments > 1) {
+    total_block_size +=
+        To<NGBlockBreakToken>(
+            box.GetPhysicalFragment(num_fragments - 2)->BreakToken())
+            ->ConsumedBlockSize();
+  }
+  return total_block_size;
 }
 
 }  // namespace blink

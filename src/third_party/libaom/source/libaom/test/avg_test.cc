@@ -176,7 +176,37 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
     ASM_REGISTER_STATE_CHECK(c_func_(hbuf_c_, source_data_, 0, height_));
     ASM_REGISTER_STATE_CHECK(asm_func_(hbuf_asm_, source_data_, 0, height_));
     EXPECT_EQ(0, memcmp(hbuf_c_, hbuf_asm_, sizeof(*hbuf_c_) * 16))
-        << "Output mismatch";
+        << "Output mismatch\n";
+  }
+
+  void RunSpeedTest() {
+    const int numIter = 5000000;
+    printf("Height = %d number of iteration is %d \n", height_, numIter);
+    aom_usec_timer c_timer_;
+    aom_usec_timer_start(&c_timer_);
+    for (int i = 0; i < numIter; i++) {
+      c_func_(hbuf_c_, source_data_, 0, height_);
+    }
+    aom_usec_timer_mark(&c_timer_);
+
+    aom_usec_timer asm_timer_;
+    aom_usec_timer_start(&asm_timer_);
+
+    for (int i = 0; i < numIter; i++) {
+      asm_func_(hbuf_asm_, source_data_, 0, height_);
+    }
+    aom_usec_timer_mark(&asm_timer_);
+
+    const int c_sum_time = static_cast<int>(aom_usec_timer_elapsed(&c_timer_));
+    const int asm_sum_time =
+        static_cast<int>(aom_usec_timer_elapsed(&asm_timer_));
+
+    printf("c_time = %d \t simd_time = %d \t Gain = %4.2f \n", c_sum_time,
+           asm_sum_time,
+           (static_cast<float>(c_sum_time) / static_cast<float>(asm_sum_time)));
+
+    EXPECT_EQ(0, memcmp(hbuf_c_, hbuf_asm_, sizeof(*hbuf_c_) * 16))
+        << "Output mismatch\n";
   }
 
  private:
@@ -185,6 +215,7 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
   int16_t *hbuf_asm_;
   int16_t *hbuf_c_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(IntProRowTest);
 
 typedef int16_t (*IntProColFunc)(uint8_t const *ref, const int width);
 
@@ -205,6 +236,34 @@ class IntProColTest : public AverageTestBase<uint8_t>,
     ASM_REGISTER_STATE_CHECK(sum_asm_ = asm_func_(source_data_, width_));
     EXPECT_EQ(sum_c_, sum_asm_) << "Output mismatch";
   }
+  void RunSpeedTest() {
+    const int numIter = 5000000;
+    printf("Width = %d number of iteration is %d \n", width_, numIter);
+    aom_usec_timer c_timer_;
+    aom_usec_timer_start(&c_timer_);
+    for (int i = 0; i < numIter; i++) {
+      sum_c_ = c_func_(source_data_, width_);
+    }
+    aom_usec_timer_mark(&c_timer_);
+
+    aom_usec_timer asm_timer_;
+    aom_usec_timer_start(&asm_timer_);
+
+    for (int i = 0; i < numIter; i++) {
+      sum_asm_ = asm_func_(source_data_, width_);
+    }
+    aom_usec_timer_mark(&asm_timer_);
+
+    const int c_sum_time = static_cast<int>(aom_usec_timer_elapsed(&c_timer_));
+    const int asm_sum_time =
+        static_cast<int>(aom_usec_timer_elapsed(&asm_timer_));
+
+    printf("c_time = %d \t simd_time = %d \t Gain = %4.2f \n", c_sum_time,
+           asm_sum_time,
+           (static_cast<float>(c_sum_time) / static_cast<float>(asm_sum_time)));
+
+    EXPECT_EQ(sum_c_, sum_asm_) << "Output mismatch \n";
+  }
 
  private:
   IntProColFunc asm_func_;
@@ -212,6 +271,7 @@ class IntProColTest : public AverageTestBase<uint8_t>,
   int16_t sum_asm_;
   int16_t sum_c_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(IntProColTest);
 
 TEST_P(IntProRowTest, MinValue) {
   FillConstant(0);
@@ -228,6 +288,11 @@ TEST_P(IntProRowTest, Random) {
   RunComparison();
 }
 
+TEST_P(IntProRowTest, DISABLED_Speed) {
+  FillRandom();
+  RunSpeedTest();
+}
+
 TEST_P(IntProColTest, MinValue) {
   FillConstant(0);
   RunComparison();
@@ -241,6 +306,161 @@ TEST_P(IntProColTest, MaxValue) {
 TEST_P(IntProColTest, Random) {
   FillRandom();
   RunComparison();
+}
+
+TEST_P(IntProColTest, DISABLED_Speed) {
+  FillRandom();
+  RunSpeedTest();
+}
+class VectorVarTestBase : public ::testing::Test {
+ public:
+  explicit VectorVarTestBase(int bwl) { m_bwl = bwl; }
+  VectorVarTestBase() {}
+  ~VectorVarTestBase() {}
+
+ protected:
+  static const int kDataAlignment = 16;
+
+  virtual void SetUp() {
+    width = 4 << m_bwl;
+
+    ref_vector = static_cast<int16_t *>(
+        aom_memalign(kDataAlignment, width * sizeof(ref_vector[0])));
+    ASSERT_TRUE(ref_vector != NULL);
+    src_vector = static_cast<int16_t *>(
+        aom_memalign(kDataAlignment, width * sizeof(src_vector[0])));
+    ASSERT_TRUE(src_vector != NULL);
+
+    rnd_.Reset(ACMRandom::DeterministicSeed());
+  }
+  virtual void TearDown() {
+    aom_free(ref_vector);
+    ref_vector = NULL;
+    aom_free(src_vector);
+    src_vector = NULL;
+    libaom_test::ClearSystemState();
+  }
+
+  void FillConstant(int16_t fill_constant_ref, int16_t fill_constant_src) {
+    for (int i = 0; i < width; ++i) {
+      ref_vector[i] = fill_constant_ref;
+      src_vector[i] = fill_constant_src;
+    }
+  }
+
+  void FillRandom() {
+    for (int i = 0; i < width; ++i) {
+      ref_vector[i] =
+          rnd_.Rand16() % max_range;  // acc. aom_vector_var_c brief.
+      src_vector[i] = rnd_.Rand16() % max_range;
+    }
+  }
+
+  int width;
+  int m_bwl;
+  int16_t *ref_vector;
+  int16_t *src_vector;
+  ACMRandom rnd_;
+
+  static const int max_range = 510;
+  static const int num_random_cmp = 50;
+};
+
+typedef int (*VectorVarFunc)(const int16_t *ref, const int16_t *src,
+                             const int bwl);
+
+typedef std::tuple<int, VectorVarFunc, VectorVarFunc> VecVarFunc;
+
+class VectorVarTest : public VectorVarTestBase,
+                      public ::testing::WithParamInterface<VecVarFunc> {
+ public:
+  VectorVarTest()
+      : VectorVarTestBase(GET_PARAM(0)), c_func(GET_PARAM(1)),
+        simd_func(GET_PARAM(2)) {}
+
+ protected:
+  int calcVarC() { return c_func(ref_vector, src_vector, m_bwl); }
+  int calcVarSIMD() { return simd_func(ref_vector, src_vector, m_bwl); }
+
+  VectorVarFunc c_func;
+  VectorVarFunc simd_func;
+};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VectorVarTest);
+
+TEST_P(VectorVarTest, MaxVar) {
+  FillConstant(0, max_range);
+  int c_var = calcVarC();
+  int simd_var = calcVarSIMD();
+  ASSERT_EQ(c_var, simd_var);
+}
+TEST_P(VectorVarTest, MaxVarRev) {
+  FillConstant(max_range, 0);
+  int c_var = calcVarC();
+  int simd_var = calcVarSIMD();
+  ASSERT_EQ(c_var, simd_var);
+}
+TEST_P(VectorVarTest, ZeroDiff) {
+  FillConstant(0, 0);
+  int c_var = calcVarC();
+  int simd_var = calcVarSIMD();
+  ASSERT_EQ(c_var, simd_var);
+}
+TEST_P(VectorVarTest, ZeroDiff2) {
+  FillConstant(max_range, max_range);
+  int c_var = calcVarC();
+  int simd_var = calcVarSIMD();
+  ASSERT_EQ(c_var, simd_var);
+}
+TEST_P(VectorVarTest, Constant) {
+  FillConstant(30, 90);
+  int c_var = calcVarC();
+  int simd_var = calcVarSIMD();
+  ASSERT_EQ(c_var, simd_var);
+}
+TEST_P(VectorVarTest, Random) {
+  for (size_t i = 0; i < num_random_cmp; i++) {
+    FillRandom();
+    int c_var = calcVarC();
+    int simd_var = calcVarSIMD();
+    ASSERT_EQ(c_var, simd_var);
+  }
+}
+TEST_P(VectorVarTest, DISABLED_Speed) {
+  FillRandom();
+  const int numIter = 50000;
+  printf("Width = %d number of iteration is %d \n", width, numIter);
+
+  int sum_c_var = 0;
+  int c_var = 0;
+
+  aom_usec_timer c_timer_;
+  aom_usec_timer_start(&c_timer_);
+  for (size_t i = 0; i < numIter; i++) {
+    c_var = calcVarC();
+    sum_c_var += c_var;
+  }
+  aom_usec_timer_mark(&c_timer_);
+
+  int simd_var = 0;
+  int sum_simd_var = 0;
+  aom_usec_timer simd_timer_;
+  aom_usec_timer_start(&simd_timer_);
+  for (size_t i = 0; i < numIter; i++) {
+    simd_var = calcVarSIMD();
+    sum_simd_var += simd_var;
+  }
+  aom_usec_timer_mark(&simd_timer_);
+
+  const int c_sum_time = static_cast<int>(aom_usec_timer_elapsed(&c_timer_));
+  const int simd_sum_time =
+      static_cast<int>(aom_usec_timer_elapsed(&simd_timer_));
+
+  printf("c_time = %d \t simd_time = %d \t Gain = %4.2f \n", c_sum_time,
+         simd_sum_time,
+         (static_cast<float>(c_sum_time) / static_cast<float>(simd_sum_time)));
+
+  EXPECT_EQ(c_var, simd_var) << "Output mismatch \n";
+  EXPECT_EQ(sum_c_var, sum_simd_var) << "Output mismatch \n";
 }
 
 using std::make_tuple;
@@ -286,6 +506,158 @@ INSTANTIATE_TEST_SUITE_P(
                       make_tuple(16, 16, 0, 4, &aom_avg_4x4_neon),
                       make_tuple(16, 16, 5, 4, &aom_avg_4x4_neon),
                       make_tuple(32, 32, 15, 4, &aom_avg_4x4_neon)));
+INSTANTIATE_TEST_SUITE_P(
+    NEON, IntProRowTest,
+    ::testing::Values(make_tuple(16, &aom_int_pro_row_neon, &aom_int_pro_row_c),
+                      make_tuple(32, &aom_int_pro_row_neon, &aom_int_pro_row_c),
+                      make_tuple(64, &aom_int_pro_row_neon, &aom_int_pro_row_c),
+                      make_tuple(128, &aom_int_pro_row_neon,
+                                 &aom_int_pro_row_c)));
+
+INSTANTIATE_TEST_SUITE_P(
+    NEON, IntProColTest,
+    ::testing::Values(make_tuple(16, &aom_int_pro_col_neon, &aom_int_pro_col_c),
+                      make_tuple(32, &aom_int_pro_col_neon, &aom_int_pro_col_c),
+                      make_tuple(64, &aom_int_pro_col_neon, &aom_int_pro_col_c),
+                      make_tuple(128, &aom_int_pro_col_neon,
+                                 &aom_int_pro_col_c)));
+#endif
+
+typedef int (*SatdFunc)(const tran_low_t *coeffs, int length);
+typedef ::testing::tuple<int, SatdFunc, SatdFunc> SatdTestParam;
+class SatdTest : public ::testing::Test,
+                 public ::testing::WithParamInterface<SatdTestParam> {
+ protected:
+  virtual void SetUp() {
+    satd_size_ = GET_PARAM(0);
+    satd_func_ref_ = GET_PARAM(1);
+    satd_func_simd_ = GET_PARAM(2);
+
+    rnd_.Reset(ACMRandom::DeterministicSeed());
+    src_ = reinterpret_cast<tran_low_t *>(
+        aom_memalign(32, sizeof(*src_) * satd_size_));
+    ASSERT_TRUE(src_ != NULL);
+  }
+  virtual void TearDown() {
+    libaom_test::ClearSystemState();
+    aom_free(src_);
+  }
+  void FillConstant(const tran_low_t val) {
+    for (int i = 0; i < satd_size_; ++i) src_[i] = val;
+  }
+  void FillRandom() {
+    for (int i = 0; i < satd_size_; ++i) {
+      src_[i] = static_cast<int16_t>(rnd_.Rand16());
+    }
+  }
+  void Check(int expected) {
+    int total_ref;
+    ASM_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
+    EXPECT_EQ(expected, total_ref);
+
+    int total_simd;
+    ASM_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
+    EXPECT_EQ(expected, total_simd);
+  }
+  void RunComparison() {
+    int total_ref;
+    ASM_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
+
+    int total_simd;
+    ASM_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
+
+    EXPECT_EQ(total_ref, total_simd);
+  }
+  void RunSpeedTest() {
+    const int numIter = 500000;
+    printf("size = %d number of iteration is %d \n", satd_size_, numIter);
+
+    int total_ref;
+    aom_usec_timer c_timer_;
+    aom_usec_timer_start(&c_timer_);
+    for (int i = 0; i < numIter; i++) {
+      total_ref = satd_func_ref_(src_, satd_size_);
+    }
+    aom_usec_timer_mark(&c_timer_);
+
+    int total_simd;
+    aom_usec_timer simd_timer_;
+    aom_usec_timer_start(&simd_timer_);
+
+    for (int i = 0; i < numIter; i++) {
+      total_simd = satd_func_simd_(src_, satd_size_);
+    }
+    aom_usec_timer_mark(&simd_timer_);
+
+    const int c_sum_time = static_cast<int>(aom_usec_timer_elapsed(&c_timer_));
+    const int simd_sum_time =
+        static_cast<int>(aom_usec_timer_elapsed(&simd_timer_));
+
+    printf(
+        "c_time = %d \t simd_time = %d \t Gain = %4.2f \n", c_sum_time,
+        simd_sum_time,
+        (static_cast<float>(c_sum_time) / static_cast<float>(simd_sum_time)));
+
+    EXPECT_EQ(total_ref, total_simd) << "Output mismatch \n";
+  }
+  int satd_size_;
+
+ private:
+  tran_low_t *src_;
+  SatdFunc satd_func_ref_;
+  SatdFunc satd_func_simd_;
+  ACMRandom rnd_;
+};
+
+TEST_P(SatdTest, MinValue) {
+  const int kMin = -32640;
+  const int expected = -kMin * satd_size_;
+  FillConstant(kMin);
+  Check(expected);
+}
+TEST_P(SatdTest, MaxValue) {
+  const int kMax = 32640;
+  const int expected = kMax * satd_size_;
+  FillConstant(kMax);
+  Check(expected);
+}
+TEST_P(SatdTest, Random) {
+  int expected;
+  switch (satd_size_) {
+    case 16: expected = 205298; break;
+    case 64: expected = 1113950; break;
+    case 256: expected = 4268415; break;
+    case 1024: expected = 16954082; break;
+    default:
+      FAIL() << "Invalid satd size (" << satd_size_
+             << ") valid: 16/64/256/1024";
+  }
+  FillRandom();
+  Check(expected);
+}
+TEST_P(SatdTest, Match) {
+  FillRandom();
+  RunComparison();
+}
+TEST_P(SatdTest, DISABLED_Speed) {
+  FillRandom();
+  RunSpeedTest();
+}
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SatdTest);
+
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(
+    NEON, SatdTest,
+    ::testing::Values(make_tuple(16, &aom_satd_c, &aom_satd_neon),
+                      make_tuple(64, &aom_satd_c, &aom_satd_neon),
+                      make_tuple(256, &aom_satd_c, &aom_satd_neon),
+                      make_tuple(1024, &aom_satd_c, &aom_satd_neon)));
+INSTANTIATE_TEST_SUITE_P(
+    NEON, VectorVarTest,
+    ::testing::Values(make_tuple(2, &aom_vector_var_c, &aom_vector_var_neon),
+                      make_tuple(3, &aom_vector_var_c, &aom_vector_var_neon),
+                      make_tuple(4, &aom_vector_var_c, &aom_vector_var_neon),
+                      make_tuple(5, &aom_vector_var_c, &aom_vector_var_neon)));
 #endif
 
 }  // namespace

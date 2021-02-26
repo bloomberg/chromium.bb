@@ -6,7 +6,6 @@
 
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 
-#include <map>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -14,7 +13,6 @@
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 #include "public/fpdf_fwlevent.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -40,7 +38,7 @@ class CPWL_MsgControl final : public Observable {
   }
 
   bool IsWndCaptureMouse(const CPWL_Wnd* pWnd) const {
-    return pWnd && pdfium::ContainsValue(m_aMousePath, pWnd);
+    return pWnd && pdfium::Contains(m_aMousePath, pWnd);
   }
 
   bool IsMainCaptureKeyboard(const CPWL_Wnd* pWnd) const {
@@ -48,7 +46,7 @@ class CPWL_MsgControl final : public Observable {
   }
 
   bool IsWndCaptureKeyboard(const CPWL_Wnd* pWnd) const {
-    return pWnd && pdfium::ContainsValue(m_aKeyboardPath, pWnd);
+    return pWnd && pdfium::Contains(m_aKeyboardPath, pWnd);
   }
 
   void SetFocus(CPWL_Wnd* pWnd) {
@@ -251,7 +249,7 @@ void CPWL_Wnd::DrawChildAppearance(CFX_RenderDevice* pDevice,
   }
 }
 
-bool CPWL_Wnd::InvalidateRect(CFX_FloatRect* pRect) {
+bool CPWL_Wnd::InvalidateRect(const CFX_FloatRect* pRect) {
   if (!IsValid())
     return true;
 
@@ -335,6 +333,10 @@ WideString CPWL_Wnd::GetSelectedText() {
 }
 
 void CPWL_Wnd::ReplaceSelection(const WideString& text) {}
+
+bool CPWL_Wnd::SelectAllText() {
+  return false;
+}
 
 bool CPWL_Wnd::CanUndo() {
   return false;
@@ -490,7 +492,7 @@ void CPWL_Wnd::CreateVScrollBar(const CreateParams& cp) {
   scp.nTransparency = PWL_SCROLLBAR_TRANSPARENCY;
 
   auto pBar =
-      pdfium::MakeUnique<CPWL_ScrollBar>(scp, CloneAttachedData(), SBT_VSCROLL);
+      std::make_unique<CPWL_ScrollBar>(scp, CloneAttachedData(), SBT_VSCROLL);
   m_pVScrollBar = pBar.get();
   AddChild(std::move(pBar));
   m_pVScrollBar->Realize();
@@ -659,9 +661,9 @@ void CPWL_Wnd::SetFontSize(float fFontSize) {
 
 CFX_Color CPWL_Wnd::GetBorderLeftTopColor(BorderStyle nBorderStyle) const {
   switch (nBorderStyle) {
-    case BorderStyle::BEVELED:
+    case BorderStyle::kBeveled:
       return CFX_Color(CFX_Color::kGray, 1);
-    case BorderStyle::INSET:
+    case BorderStyle::kInset:
       return CFX_Color(CFX_Color::kGray, 0.5f);
     default:
       return CFX_Color();
@@ -670,9 +672,9 @@ CFX_Color CPWL_Wnd::GetBorderLeftTopColor(BorderStyle nBorderStyle) const {
 
 CFX_Color CPWL_Wnd::GetBorderRightBottomColor(BorderStyle nBorderStyle) const {
   switch (nBorderStyle) {
-    case BorderStyle::BEVELED:
+    case BorderStyle::kBeveled:
       return GetBackgroundColor() / 2.0f;
-    case BorderStyle::INSET:
+    case BorderStyle::kInset:
       return CFX_Color(CFX_Color::kGray, 0.75f);
     default:
       return CFX_Color();

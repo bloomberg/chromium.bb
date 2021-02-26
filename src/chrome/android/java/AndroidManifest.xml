@@ -13,6 +13,10 @@ by a child template that "extends" this file.
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="{{ manifest_package }}"
+    {% set definitions_in_split = definitions_in_split|default(0) == 'true' %}
+    {% if definitions_in_split %}
+    android:isolatedSplits="true"
+    {% endif %}
     tools:ignore="MissingVersion">
     <!-- android:versionCode and android:versionName is set through gyp. See build/common.gypi -->
 
@@ -39,6 +43,7 @@ by a child template that "extends" this file.
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     {% if target_sdk_version|int > 27 or target_sdk_version == "Q" %}
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -48,6 +53,7 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
@@ -87,8 +93,9 @@ by a child template that "extends" this file.
         android:protectionLevel="signature" />
     <permission android:name="{{ manifest_package }}.permission.DEBUG"
                 android:label="Debug web pages"
-                android:permissionGroup="android.permission-group.DEVELOPMENT_TOOLS"
                 android:protectionLevel="signature" />
+    <permission android:name="{{ manifest_package }}.permission.TRANSLATE"
+        android:protectionLevel="signature" />
 
     <uses-permission android:name="{{ manifest_package }}.permission.C2D_MESSAGE" />
     <uses-permission android:name="{{ manifest_package }}.permission.READ_WRITE_BOOKMARK_FOLDERS" />
@@ -123,9 +130,36 @@ by a child template that "extends" this file.
     {% block extra_keyset_definitions %}
     {% endblock %}
 
+    {% if channel in ['default'] %}
+      <!--
+        Android 11 (R) restricts querying for installed packages. WebXR uses
+        ARCore and/or GVR, and needs to be able to check their installation
+        status so that it can show install/update infobars if necessary.
+        Official builds (stable, beta, dev, canary) handle this differently,
+        this setting is for locally deployed ToT builds only.
+
+        TODO(https://crbug.com/1122210): remove if this is replaced by an
+        alternate mechanism.
+      -->
+      <queries>
+        {% if include_arcore_manifest_flag == 'true' %}
+          <package android:name="com.google.ar.core" />
+        {% endif %}
+        {% if enable_vr == "true" %}
+          <package android:name="com.google.vr.vrcore" />
+        {% endif %}
+      </queries>
+    {% endif %}
+
     <!-- Set android:largeHeap to "true" to allow more than the default
          Java heap limit (32Mb on Nexus S, 48Mb on Xoom). -->
-    <application android:name="{% block application_name %}org.chromium.chrome.browser.ChromeApplication{% endblock %}"
+      <application android:name="{% block application_name %}
+          {%- if definitions_in_split -%}
+          org.chromium.chrome.browser.base.SplitChromeApplication
+          {%- else -%}
+          org.chromium.chrome.browser.ChromeApplication
+          {%- endif -%}
+          {% endblock %}"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher_round"
         android:label="{% block application_label %}@string/app_name{% endblock %}"
@@ -142,48 +176,13 @@ by a child template that "extends" this file.
         android:allowBackup="false"
         {% endif %}
         android:networkSecurityConfig="@xml/network_security_config"
+        android:allowAudioPlaybackCapture="false"
+        {% if definitions_in_split %}
+        android:appComponentFactory="org.chromium.chrome.browser.base.SplitCompatAppComponentFactory"
+        {% endif %}
         {% block extra_application_attributes %}{% endblock %}>
 
-       <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true" />
-
-        <!-- Samsung MultiWindow Support -->
-        <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
-            android:value="true" />
-
-        {% if min_sdk_version|int < 24 %}
-        <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
-            android:value="true" />
-        <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.launchmode"
-            android:value="singleTask" />
-        {% endif %}
-
-        <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
-            android:value="true"/>
-
-        {% if backup_key is defined %}
-        <!-- Backup keys are channel dependent -->
-        <meta-data android:name="com.google.android.backup.api_key"
-            android:value="{{ backup_key }}" />
-        {% endif %}
-
-        {% if channel in ['dev', 'canary', 'default'] %}
-        <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
-        {% endif %}
-        <meta-data android:name="android.content.APP_RESTRICTIONS"
-            android:resource="@xml/app_restrictions"/>
-
-        {% if include_arcore_manifest_flag == 'true' %}
-        <!-- ARCore APK integration -->
-        <!-- This tag indicates that this application optionally uses ARCore. -->
-        <meta-data android:name="com.google.ar.core" android:value="optional" />
-        {% endif %}
-
-        <!-- Cast support -->
-        <meta-data
-            android:name=
-            "com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="org.chromium.chrome.browser.media.router.caf.CastOptionsProvider"/>
-
+      {% macro application_definitions() %}
         <!-- Note: All activities directly or indirectly derived from ChromeActivity
              must specify android:hardwareAccelerated="false".
 
@@ -196,17 +195,6 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density">
-            <!-- TODO(mthiesse, b/72214458): This is a duplication of the icon metadata below.
-                 Daydream will actually ignore the metadata here, and use the metadata on the
-                 activity-alias. However, play store apk validation fails to find the icons on the
-                 alias, so we need to include them here to pass validation. -->
-            {% if enable_vr == "true" %}
-            <meta-data android:name="com.google.android.vr.icon"
-                android:resource="@drawable/daydream_icon_foreground" />
-            <meta-data android:name="com.google.android.vr.icon_background"
-                android:resource="@drawable/daydream_icon_background" />
-            {% endif %}
-            {{ self.supports_vr() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
@@ -214,9 +202,6 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
             </intent-filter>
             <!-- Matches the common case of intents with no MIME type.
                  Make sure to keep in sync with the next filter.  -->
@@ -224,20 +209,17 @@ by a child template that "extends" this file.
                 {% block common_view_intent_shared_filter_body %}
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
                 {% if channel in ['stable', 'default'] %}<data android:scheme="googlechrome" />{% endif %}
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:scheme="about" />
                 <data android:scheme="javascript" />
                 {% endblock %}
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <!-- Same filter as above but with MIME types.  Intents that
                  do not specify a MIME type won't match. -->
-            <intent-filter>
+            <intent-filter tools:ignore="AppLinkUrlError">
                 {{ self.common_view_intent_shared_filter_body() }}
                 <data android:scheme="content" />
                 <data android:mimeType="text/html"/>
@@ -248,7 +230,13 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="file"/>
+                <data android:mimeType="multipart/related"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="content"/>
                 <data android:mimeType="multipart/related"/>
             </intent-filter>
@@ -264,14 +252,12 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
                 <data android:scheme="file"/>
-                <data android:scheme="content"/>
                 <data android:host="*" />
-                <data android:pathPattern="/.*\\.mhtml"/>
-                <data android:pathPattern="/.*\\.mht"/>
+                {% for i in range(10) %}
+                <data android:pathPattern="/.*{{ '\\\\..*' * i }}\\.mhtml" />
+                <data android:pathPattern="/.*{{ '\\\\..*' * i }}\\.mht" />
+                {% endfor %}
                 {% endblock %}
             </intent-filter>
             <!-- Same filter as above but with mimeType="*/*". Used for
@@ -283,21 +269,24 @@ by a child template that "extends" this file.
             <!-- Web Bundles (.wbn) support -->
             {% if channel in ['dev', 'canary', 'default'] %}
             <intent-filter>
+                {% block wbn_view_intent_shared_filter_body %}
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="file" />
-                <data android:scheme="content" />
-                <data android:mimeType="*/*" />
                 <data android:host="*" />
                 {% for i in range(10) %}
                 <data android:pathPattern="/.*{{ '\\\\..*' * i }}\\.wbn" />
                 {% endfor %}
+                {% endblock %}
             </intent-filter>
             <intent-filter>
+                {{ self.wbn_view_intent_shared_filter_body() }}
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+            <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" />
                 <data android:mimeType="application/webbundle" />
             </intent-filter>
@@ -324,12 +313,17 @@ by a child template that "extends" this file.
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
-            {% if enable_vr == "true" %}
-            <meta-data android:name="com.google.android.vr.icon"
-                android:resource="@drawable/daydream_icon_foreground" />
-            <meta-data android:name="com.google.android.vr.icon_background"
-                android:resource="@drawable/daydream_icon_background" />
-            {% endif %}
+        </activity-alias>
+        <activity-alias android:name="com.google.android.apps.chrome.TranslateDispatcher"
+            android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
+            android:exported="true"
+            {% if channel == 'stable' %}
+            android:permission="{{ manifest_package }}.permission.TRANSLATE"
+            {% endif %} >
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.translate.TRANSLATE_TAB" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity-alias>
 
         <activity android:name="org.chromium.chrome.browser.media.MediaLauncherActivity"
@@ -598,7 +592,8 @@ by a child template that "extends" this file.
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:exported="true">
             <intent-filter>
                 <action android:name="{{ manifest_package }}.ADDBOOKMARK" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -624,12 +619,29 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
 
+        <!-- Activities for video tutorials. -->
+        <activity android:name="org.chromium.chrome.browser.app.video_tutorials.VideoTutorialListActivity"
+            android:theme="@style/Theme.Chromium.Activity.Fullscreen"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:exported="false">
+        </activity>
+
         <!-- Activities for downloads. -->
         <activity android:name="org.chromium.chrome.browser.download.DownloadActivity"
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+        </activity>
+
+        <!-- Activities for video tutorials. -->
+        <activity android:name="org.chromium.chrome.browser.app.video_tutorials.VideoPlayerActivity"
+            android:theme="@style/Theme.Chromium.Activity.Fullscreen"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity">
+            <!-- We want to explicitly disallow landscape UI for video tutorials. -->
         </activity>
 
         <!-- Activities for history. -->
@@ -649,7 +661,8 @@ by a child template that "extends" this file.
         <activity android:name="org.chromium.chrome.browser.webapps.WebappLauncherActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:taskAffinity=""
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -712,7 +725,7 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
-        <activity android:name="org.chromium.chrome.browser.media.router.caf.remoting.CafExpandedControllerActivity"
+        <activity android:name="org.chromium.components.media_router.caf.remoting.CafExpandedControllerActivity"
             android:theme="@style/Theme.Chromium.Activity"
             android:label="Chrome.CafExpandedControllerActivity"
             android:hardwareAccelerated="true"
@@ -734,7 +747,7 @@ by a child template that "extends" this file.
         <!-- This activity is to expose the print option via the generic Android share action. -->
         <activity
             android:name="org.chromium.chrome.browser.printing.PrintShareActivity"
-            android:icon="@drawable/print"
+            android:icon="@drawable/sharing_print"
             android:label="@string/print_share_activity_title"
             android:enabled="false"
             android:excludeFromRecents="true"
@@ -749,9 +762,9 @@ by a child template that "extends" this file.
                 <data android:mimeType="multipart/related" />
                 <data android:mimeType="message/rfc822" />
             </intent-filter>
-          </activity>
+        </activity>
 
-         <activity
+        <activity
             android:name="org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity"
             android:icon="@drawable/ic_launcher"
             android:label="@string/send_tab_to_self_share_activity_title"
@@ -766,9 +779,9 @@ by a child template that "extends" this file.
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
-          </activity>
+        </activity>
 
-          <activity
+        <activity
             android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity"
             android:icon="@drawable/ic_devices_48dp"
             android:label="@string/shared_clipboard_share_activity_title"
@@ -783,24 +796,7 @@ by a child template that "extends" this file.
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
-          </activity>
-
-          <activity
-            android:name="org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity"
-            android:icon="@drawable/ic_launcher"
-            android:label="@string/qr_code_share_icon_label"
-            android:enabled="false"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:noHistory="true"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-          </activity>
+        </activity>
 
         <!-- Activity for dispatching intents to Instant Apps. -->
         <activity
@@ -859,8 +855,14 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        <activity android:name="org.chromium.chrome.browser.webauth.authenticator.CableAuthenticatorActivity"
+            android:theme="@style/Theme.Chromium.Activity.Fullscreen"
+            android:label="@string/cablev2_activity_title"
+            android:exported="false">
+        </activity>
+
         <receiver
-            android:name="org.chromium.chrome.browser.browserservices.trustedwebactivityui.DisclosureAcceptanceBroadcastReceiver"
+            android:name="org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.DisclosureAcceptanceBroadcastReceiver"
             android:exported="false" />
 
         <!-- Service for decoding images in a sandboxed process. -->
@@ -907,7 +909,8 @@ by a child template that "extends" this file.
         </service>
 
         <!-- Broadcast receiver that will be notified of account changes -->
-        <receiver android:name="org.chromium.chrome.browser.services.AccountsChangedReceiver">
+        <receiver android:name="org.chromium.chrome.browser.services.AccountsChangedReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED" />
             </intent-filter>
@@ -925,7 +928,8 @@ by a child template that "extends" this file.
 
         <!-- Bookmarks widget -->
         <receiver android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider"
-            android:label="@string/bookmark_widget_title">
+            android:label="@string/bookmark_widget_title"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name=".BOOKMARK_APPWIDGET_UPDATE" />
@@ -943,7 +947,8 @@ by a child template that "extends" this file.
         <!-- Search widget -->
         <receiver
                 android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider"
-                android:label="@string/search_widget_title">
+                android:label="@string/search_widget_title"
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -984,19 +989,12 @@ by a child template that "extends" this file.
                <category android:name="{{ manifest_package }}"/>
             </intent-filter>
         </receiver>
-        <!-- GcmTaskService for registration for Invalidations. -->
+        <!-- GcmTaskService for registration for Invalidations. Not actually implemented anymore. -->
         <service android:name="com.google.ipc.invalidation.ticl.android2.channel.GcmRegistrationTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE" >
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
-            </intent-filter>
-        </service>
-        <!-- InstanceIDListenerService for token refresh events from GCM. -->
-        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidInstanceIDListenerService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID"/>
             </intent-filter>
         </service>
         <!-- GcmListenerService for messages from GCM. -->
@@ -1008,25 +1006,15 @@ by a child template that "extends" this file.
         </service>
         <service android:name="org.chromium.chrome.browser.services.gcm.GCMBackgroundService"
             android:exported="false"/>
-        <meta-data android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
-            android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender" />
         <service android:name="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"
-            android:exported="false"/>
-
-        <!-- Notification service for sync. -->
-        <service android:name="com.google.ipc.invalidation.ticl.android2.TiclService"
-            android:exported="false"/>
-        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"
-            android:exported="false"/>
-        <receiver android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"
-            android:exported="false"/>
-        <receiver android:name="com.google.ipc.invalidation.external.client.contrib.AndroidListener$AlarmReceiver"
             android:exported="false"/>
 
         <!-- Android Notification service listener -->
         <service android:name="org.chromium.chrome.browser.notifications.NotificationService"
             android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationService$Receiver"
+            android:exported="false"/>
+        <receiver android:name="org.chromium.chrome.browser.notifications.NotificationServiceImpl$Receiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="org.chromium.chrome.browser.notifications.CLICK_NOTIFICATION" />
@@ -1074,12 +1062,14 @@ by a child template that "extends" this file.
             tools:ignore="ExportedService">
             <intent-filter>
               <action android:name="android.support.customtabs.action.CustomTabsService" />
+              <category android:name="androidx.browser.customtabs.category.ColorSchemeCustomization"/>
+              <category android:name="androidx.browser.customtabs.category.NavBarColorCustomization"/>
+              <category android:name="androidx.browser.trusted.category.ImmersiveMode"/>
+              <category android:name="androidx.browser.trusted.category.LaunchSiteSettings" />
+              <category android:name="androidx.browser.trusted.category.LaunchWebApkSiteSettings"/>
               <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
               <category android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
-              <category android:name="androidx.browser.customtabs.category.NavBarColorCustomization"/>
-              <category android:name="androidx.browser.customtabs.category.ColorSchemeCustomization"/>
               <category android:name="androidx.browser.trusted.category.WebShareTargetV2"/>
-              <category android:name="androidx.browser.trusted.category.ImmersiveMode"/>
             </intent-filter>
         </service>
         <service android:name="androidx.browser.customtabs.PostMessageService" />
@@ -1096,43 +1086,12 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
             android:exported="false"/>
 
-        <!-- The following service entries exist in order to allow us to
-             start more than one sandboxed process. -->
-
-        <!-- NOTE: If you change the value of "android:process" for the below services,
-             you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
-        {% set num_sandboxed_services = 40 %}
-        <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
-            android:value="{{ num_sandboxed_services }}"/>
-
-        {% for i in range(num_sandboxed_services) %}
-        <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
-            android:process=":sandboxed_process{{ i }}"
-            android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
-            android:isolatedProcess="true"
-            android:exported="{{sandboxed_service_exported|default(false)}}"
-            {% if (i == 0) %}
-            android:useAppZygote="true"
-            {% endif %}
-            {% if (sandboxed_service_exported|default(false)) == 'true' %}
-            android:externalService="true"
-            tools:ignore="ExportedService"
-            android:visibleToInstantApps="true"
-            {% endif %} />
-        {% endfor %}
-
-        {% set num_privileged_services = 5 %}
-        <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
-            android:value="{{ num_privileged_services }}"/>
-
-        {% for i in range(num_privileged_services) %}
-        {% set privileged_process_name = ':privileged_process%d' % i %}
-        <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
-            android:process="{{ privileged_process_name }}"
-            android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
-            android:isolatedProcess="false"
-            android:exported="false" />
-        {% endfor %}
+        <!-- service used by payment apps to notify the browser about changes in user selected
+             payment method, shipping address, or shipping option -->
+        <service
+            android:name="org.chromium.components.payments.PaymentDetailsUpdateService"
+            android:exported="true"
+            tools:ignore="ExportedService"/>
 
         <receiver android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"
             android:exported="false"/>
@@ -1143,11 +1102,10 @@ by a child template that "extends" this file.
         <receiver android:name="org.chromium.chrome.browser.notifications.scheduler.DisplayAgent$Receiver"
             android:exported="false"/>
 
-        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$SendTabToSelfNotificationReceiver"
+        <receiver android:name="org.chromium.chrome.browser.app.send_tab_to_self.SendTabToSelfNotificationReceiver"
             android:exported="false"/>
 
-        <!-- Save image notification receiver -->
-        <receiver android:name="org.chromium.chrome.browser.share.SaveImageNotificationManager$TapReceiver"
+        <receiver android:name="org.chromium.chrome.browser.customtabs.CustomTabsShareBroadcastReceiver"
             android:exported="false"/>
 
         <receiver android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"
@@ -1169,42 +1127,24 @@ by a child template that "extends" this file.
 
         <service android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"
             android:exported="false"/>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerServices$PlaybackListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerServices$PresentationListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerServices$CastListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-
-
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastMediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-
 
         <service android:name="org.chromium.chrome.browser.tracing.TracingNotificationService"
             android:exported="false"/>
@@ -1227,21 +1167,99 @@ by a child template that "extends" this file.
         {% endif %}
 
         {% block extra_application_definitions %}
-
-        <!-- Media route controllers to use for remote playback (cast).
-             This is here, rather than in code, since it varies between upstream and downstream,
-             yet we need this list of classes in the notification service, which belongs upstream
-             and doesn't run the downstream startup code. The Cast code will, for each media element,
-             choose the first MediaRouteController that can play it, so the order of the list can be important.
-             The most specific MediaRouteControllers should be listed first, followed by more generic ones.
-             The downstream manifest replaces this block, and hence replaces the list of media route
-             controllers with its own list. -->
-        <meta-data android:name="org.chromium.content.browser.REMOTE_MEDIA_PLAYERS"
-            android:value="org.chromium.chrome.browser.media.remote.DefaultMediaRouteController"/>
-
         {% endblock %}
-        {% block extra_application_definitions_for_test %}
-        {% endblock %}
+      {% endmacro %}
+      {% if not definitions_in_split %}
+      {{ application_definitions() }}
+      {% endif %}
+
+      <!-- The following service entries exist in order to allow us to
+           start more than one sandboxed process. -->
+
+      <!-- NOTE: If you change the value of "android:process" for the below services,
+           you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
+      {% set num_sandboxed_services = 40 %}
+      <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
+          android:value="{{ num_sandboxed_services }}"/>
+
+      {% for i in range(num_sandboxed_services) %}
+      <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
+          android:process=":sandboxed_process{{ i }}"
+          android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
+          android:isolatedProcess="true"
+          android:exported="{{sandboxed_service_exported|default(false)}}"
+          {% if (i == 0) %}
+          android:useAppZygote="true"
+          {% endif %}
+          {% if (sandboxed_service_exported|default(false)) == 'true' %}
+          android:externalService="true"
+          tools:ignore="ExportedService"
+          android:visibleToInstantApps="true"
+          {% endif %} />
+      {% endfor %}
+
+      {% set num_privileged_services = 5 %}
+      <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
+          android:value="{{ num_privileged_services }}"/>
+
+      {% for i in range(num_privileged_services) %}
+      {% set privileged_process_name = ':privileged_process%d' % i %}
+      <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
+          android:process="{{ privileged_process_name }}"
+          android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
+          android:isolatedProcess="false"
+          android:exported="false" />
+
+      {% endfor %}
+
+      <!-- Downloads Google Sans from GMS Core -->
+      <meta-data android:name="preloaded_fonts"
+          android:resource="@array/chrome_preloaded_google_sans_fonts" />
+
+      <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true" />
+
+      <!-- Samsung MultiWindow Support -->
+      <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
+          android:value="true" />
+
+      {% if min_sdk_version|int < 24 %}
+      <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
+          android:value="true" />
+      <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.launchmode"
+          android:value="singleTask" />
+      {% endif %}
+
+      <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
+          android:value="true"/>
+
+      {% if backup_key is defined %}
+      <!-- Backup keys are channel dependent -->
+      <meta-data android:name="com.google.android.backup.api_key"
+          android:value="{{ backup_key }}" />
+      {% endif %}
+
+      {% if channel in ['dev', 'canary', 'default'] %}
+      <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
+      {% endif %}
+      <meta-data android:name="android.content.APP_RESTRICTIONS"
+          android:resource="@xml/app_restrictions"/>
+
+      {% if include_arcore_manifest_flag == 'true' %}
+      <!-- ARCore APK integration -->
+      <!-- This tag indicates that this application optionally uses ARCore. -->
+      <meta-data android:name="com.google.ar.core" android:value="optional" />
+      {% endif %}
+
+      <!-- Cast support -->
+      <meta-data
+          android:name=
+          "com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+          android:value="org.chromium.components.media_router.caf.CastOptionsProvider"/>
+
+      {% block base_application_definitions %}
+      {% endblock %}
+      {% block extra_application_definitions_for_test %}
+      {% endblock %}
     </application>
     {% block extra_root_definitions %}
     {% endblock %}

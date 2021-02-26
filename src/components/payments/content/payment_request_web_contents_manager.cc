@@ -8,8 +8,10 @@
 
 #include "base/check.h"
 #include "components/payments/content/content_payment_request_delegate.h"
+#include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_display_manager.h"
+#include "components/payments/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -28,12 +30,11 @@ PaymentRequestWebContentsManager::GetOrCreateForWebContents(
 
 void PaymentRequestWebContentsManager::CreatePaymentRequest(
     content::RenderFrameHost* render_frame_host,
-    content::WebContents* web_contents,
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
     PaymentRequest::ObserverForTest* observer_for_testing) {
   auto new_request = std::make_unique<PaymentRequest>(
-      render_frame_host, web_contents, std::move(delegate), this,
+      render_frame_host, std::move(delegate), /*manager=*/this,
       delegate->GetDisplayManager(), std::move(receiver), observer_for_testing);
   PaymentRequest* request_ptr = new_request.get();
   payment_requests_.insert(std::make_pair(request_ptr, std::move(new_request)));
@@ -54,11 +55,41 @@ void PaymentRequestWebContentsManager::DidStartNavigation(
     it.second->DidStartMainFrameNavigationToDifferentDocument(
         !navigation_handle->IsRendererInitiated());
   }
+  payment_credential_ = nullptr;
 }
 
-void PaymentRequestWebContentsManager::DestroyRequest(PaymentRequest* request) {
+void PaymentRequestWebContentsManager::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  // Two passes to avoid modifying the |payment_requests_| map while iterating
+  // over it.
+  std::vector<PaymentRequest*> obsolete;
+  for (auto& it : payment_requests_) {
+    if (content::RenderFrameHost::FromID(
+            it.second->initiator_frame_routing_id()) == render_frame_host) {
+      obsolete.push_back(it.first);
+    }
+  }
+  for (auto* request : obsolete) {
+    request->RenderFrameDeleted(render_frame_host);
+  }
+}
+
+void PaymentRequestWebContentsManager::DestroyRequest(
+    base::WeakPtr<PaymentRequest> request) {
+  if (!request)
+    return;
+
   request->HideIfNecessary();
-  payment_requests_.erase(request);
+  payment_requests_.erase(request.get());
+}
+
+void PaymentRequestWebContentsManager::CreatePaymentCredential(
+    content::GlobalFrameRoutingId initiator_frame_routing_id,
+    scoped_refptr<PaymentManifestWebDataService> web_data_sevice,
+    mojo::PendingReceiver<payments::mojom::PaymentCredential> receiver) {
+  payment_credential_ = std::make_unique<PaymentCredential>(
+      web_contents(), initiator_frame_routing_id, web_data_sevice,
+      std::move(receiver));
 }
 
 PaymentRequestWebContentsManager::PaymentRequestWebContentsManager(

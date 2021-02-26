@@ -12,7 +12,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 
 namespace mojo {
 
@@ -55,21 +55,11 @@ struct BLINK_COMMON_EXPORT
       const network::DataElement& element) {
     return element.type_;
   }
-  static std::vector<uint8_t> buf(const network::DataElement& element) {
-    if (element.bytes_) {
-      return std::vector<uint8_t>(element.bytes_,
-                                  element.bytes_ + element.length_);
-    }
-    return std::move(element.buf_);
+  static const std::vector<uint8_t>& buf(const network::DataElement& element) {
+    return element.buf_;
   }
   static const base::FilePath& path(const network::DataElement& element) {
     return element.path_;
-  }
-  static base::File file(const network::DataElement& element) {
-    return std::move(const_cast<network::DataElement&>(element).file_);
-  }
-  static const std::string& blob_uuid(const network::DataElement& element) {
-    return element.blob_uuid_;
   }
   static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
       const network::DataElement& element) {
@@ -79,7 +69,7 @@ struct BLINK_COMMON_EXPORT
   }
   static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
   chunked_data_pipe_getter(const network::DataElement& element) {
-    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
+    if (element.type_ != network::mojom::DataElementType::kReadOnceStream)
       return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();

@@ -178,8 +178,18 @@ class WebStateImpl;
 - (void)takeSnapshotWithRect:(CGRect)rect
                   completion:(void (^)(UIImage* snapshot))completion;
 
+// Creates PDF representation of the web page and invokes the |completion| with
+// the NSData of the PDF or nil if a PDF couldn't be generated.
+- (void)createFullPagePDFWithCompletion:
+    (void (^)(NSData* PDFDocumentData))completion;
+
 // Creates a web view if it's not yet created. Returns the web view.
 - (WKWebView*)ensureWebViewCreated;
+
+// Removes the webView from the view hierarchy.
+- (void)removeWebViewFromViewHierarchy;
+// Adds the webView back in the view hierarchy.
+- (void)addWebViewToViewHierarchy;
 
 @end
 

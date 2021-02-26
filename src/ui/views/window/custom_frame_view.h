@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/frame_buttons.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -32,13 +33,10 @@ class Widget;
 //  rendering the non-standard window caption, border, and controls.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
-                                     public ButtonListener {
+class VIEWS_EXPORT CustomFrameView : public NonClientFrameView {
  public:
-  CustomFrameView();
+  explicit CustomFrameView(Widget* frame);
   ~CustomFrameView() override;
-
-  void Init(Widget* frame);
 
   // Overridden from NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -50,7 +48,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged(bool active) override;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -58,9 +55,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-
-  // Overridden from ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Returns the font list to use in the window's title bar.
   // TODO(https://crbug.com/968860): Move this into the typography provider.
@@ -126,7 +120,8 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
 
   // Creates, adds and returns a new window caption button (e.g, minimize,
   // maximize, restore).
-  ImageButton* InitWindowCaptionButton(int accessibility_string_id,
+  ImageButton* InitWindowCaptionButton(Button::PressedCallback callback,
+                                       int accessibility_string_id,
                                        int normal_image_id,
                                        int hot_image_id,
                                        int pushed_image_id);
@@ -142,16 +137,16 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   gfx::Rect title_bounds_;
 
   // Not owned.
-  Widget* frame_ = nullptr;
+  Widget* const frame_;
 
   // The icon of this window. May be NULL.
   ImageButton* window_icon_ = nullptr;
 
   // Window caption buttons.
-  ImageButton* minimize_button_ = nullptr;
-  ImageButton* maximize_button_ = nullptr;
-  ImageButton* restore_button_ = nullptr;
-  ImageButton* close_button_ = nullptr;
+  ImageButton* minimize_button_;
+  ImageButton* maximize_button_;
+  ImageButton* restore_button_;
+  ImageButton* close_button_;
 
   // Background painter for the window frame.
   std::unique_ptr<FrameBackground> frame_background_;
@@ -160,6 +155,12 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   // by the space used by the leading and trailing buttons.
   int minimum_title_bar_x_ = 0;
   int maximum_title_bar_x_ = -1;
+
+  std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_ =
+          frame_->RegisterPaintAsActiveChangedCallback(
+              base::BindRepeating(&CustomFrameView::SchedulePaint,
+                                  base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };

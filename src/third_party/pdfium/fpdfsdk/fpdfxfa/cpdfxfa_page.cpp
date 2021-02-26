@@ -14,13 +14,20 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_widget.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fxfa/cxfa_ffdocview.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/cxfa_ffwidgethandler.h"
-#include "xfa/fxfa/cxfa_rendercontext.h"
-#include "xfa/fxgraphics/cxfa_graphics.h"
+
+namespace {
+
+constexpr uint32_t kIteratorFilter = XFA_WidgetStatus_Visible |
+                                     XFA_WidgetStatus_Viewable |
+                                     XFA_WidgetStatus_Focused;
+
+}  // namespace
 
 CPDFXFA_Page::CPDFXFA_Page(CPDF_Document* pDocument, int page_index)
     : m_pDocument(pDocument), m_iPageIndex(page_index) {
@@ -78,7 +85,7 @@ void CPDFXFA_Page::LoadPDFPageFromDict(CPDF_Dictionary* pPageDict) {
   ASSERT(pPageDict);
   m_pPDFPage = pdfium::MakeRetain<CPDF_Page>(GetDocument(), pPageDict);
   m_pPDFPage->SetRenderCache(
-      pdfium::MakeUnique<CPDF_PageRenderCache>(m_pPDFPage.Get()));
+      std::make_unique<CPDF_PageRenderCache>(m_pPDFPage.Get()));
   m_pPDFPage->ParseContent();
 }
 
@@ -180,12 +187,14 @@ CPDFSDK_Annot* CPDFXFA_Page::GetNextXFAAnnot(CPDFSDK_Annot* pSDKAnnot,
   if (!pXFAWidget)
     return nullptr;
 
+  CXFA_FFPageView* xfa_page_view = GetXFAPageView();
+  if (!xfa_page_view)
+    return nullptr;
+
   ObservedPtr<CPDFSDK_Annot> pObservedAnnot(pSDKAnnot);
   CPDFSDK_PageView* pPageView = pSDKAnnot->GetPageView();
-  std::unique_ptr<IXFA_WidgetIterator> pWidgetIterator =
-      GetXFAPageView()->CreateTraverseWidgetIterator(XFA_WidgetStatus_Visible |
-                                                     XFA_WidgetStatus_Viewable |
-                                                     XFA_WidgetStatus_Focused);
+  IXFA_WidgetIterator* pWidgetIterator =
+      xfa_page_view->CreateGCedTraverseWidgetIterator(kIteratorFilter);
 
   // Check |pSDKAnnot| again because JS may have destroyed it
   if (!pObservedAnnot)
@@ -209,10 +218,8 @@ CPDFSDK_Annot* CPDFXFA_Page::GetFirstOrLastXFAAnnot(CPDFSDK_PageView* page_view,
     return nullptr;
 
   ObservedPtr<CPDFSDK_PageView> watched_page_view(page_view);
-  std::unique_ptr<IXFA_WidgetIterator> it =
-      xfa_page_view->CreateTraverseWidgetIterator(XFA_WidgetStatus_Visible |
-                                                  XFA_WidgetStatus_Viewable |
-                                                  XFA_WidgetStatus_Focused);
+  IXFA_WidgetIterator* it =
+      xfa_page_view->CreateGCedTraverseWidgetIterator(kIteratorFilter);
   if (!watched_page_view)
     return nullptr;
 
@@ -233,8 +240,8 @@ int CPDFXFA_Page::HasFormFieldAtPoint(const CFX_PointF& point) const {
   if (!pWidgetHandler)
     return -1;
 
-  std::unique_ptr<IXFA_WidgetIterator> pWidgetIterator =
-      pPageView->CreateFormWidgetIterator(XFA_WidgetStatus_Viewable);
+  IXFA_WidgetIterator* pWidgetIterator =
+      pPageView->CreateGCedFormWidgetIterator(XFA_WidgetStatus_Viewable);
 
   CXFA_FFWidget* pXFAAnnot;
   while ((pXFAAnnot = pWidgetIterator->MoveToNext()) != nullptr) {
@@ -255,12 +262,24 @@ void CPDFXFA_Page::DrawFocusAnnot(CFX_RenderDevice* pDevice,
                                   const CFX_Matrix& mtUser2Device,
                                   const FX_RECT& rtClip) {
   CFX_RectF rectClip(rtClip);
-  CXFA_Graphics gs(pDevice);
+  CFGAS_GEGraphics gs(pDevice);
   gs.SetClipRect(rectClip);
 
   CXFA_FFPageView* xfaView = GetXFAPageView();
-  CXFA_RenderContext renderContext(xfaView, rectClip, mtUser2Device);
-  renderContext.DoRender(&gs);
+  IXFA_WidgetIterator* pWidgetIterator = xfaView->CreateGCedFormWidgetIterator(
+      XFA_WidgetStatus_Visible | XFA_WidgetStatus_Viewable);
+
+  while (1) {
+    CXFA_FFWidget* pWidget = pWidgetIterator->MoveToNext();
+    if (!pWidget)
+      break;
+
+    CFX_RectF rtWidgetBox = pWidget->GetBBox(CXFA_FFWidget::kDoNotDrawFocus);
+    ++rtWidgetBox.width;
+    ++rtWidgetBox.height;
+    if (rtWidgetBox.IntersectWith(rectClip))
+      pWidget->RenderWidget(&gs, mtUser2Device, CXFA_FFWidget::kHighlight);
+  }
 
   CPDFXFA_Widget* pXFAWidget = ToXFAWidget(pAnnot);
   if (!pXFAWidget)

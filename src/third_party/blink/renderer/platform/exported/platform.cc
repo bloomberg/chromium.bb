@@ -38,20 +38,22 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
-#include "third_party/blink/renderer/platform/bindings/blink_isolate/blink_isolate.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
@@ -132,7 +134,7 @@ namespace {
 
 class SimpleMainThread : public Thread {
  public:
-  SimpleMainThread() : isolate_(WebIsolate::Create()) {}
+  SimpleMainThread() = default;
 
   // We rely on base::ThreadTaskRunnerHandle for tasks posted on the main
   // thread. The task runner handle may not be available on Blink's startup
@@ -167,7 +169,6 @@ class SimpleMainThread : public Thread {
  private:
   bool IsSimpleMainThread() const override { return true; }
 
-  std::unique_ptr<WebIsolate> isolate_;
   scheduler::SimpleThreadScheduler scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_task_runner_for_testing_;
@@ -237,8 +238,10 @@ void Platform::InitializeMainThreadCommon(Platform* platform,
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       ParkableStringManagerDumpProvider::Instance(), "ParkableStrings",
       base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      CanvasMemoryDumpProvider::Instance(), "Canvas",
+      base::ThreadTaskRunnerHandle::Get());
 
-  RendererResourceCoordinator::MaybeInitialize();
   // Use a delayed idle task as this is low priority work that should stop when
   // the main thread is not doing any work.
   WTF::Partitions::StartPeriodicReclaim(
@@ -310,6 +313,20 @@ Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
 std::unique_ptr<WebGraphicsContext3DProvider>
 Platform::CreateWebGPUGraphicsContext3DProvider(
     const WebURL& top_document_url) {
+  return nullptr;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+Platform::SharedMainThreadContextProvider() {
+  return nullptr;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+Platform::SharedCompositorWorkerContextProvider() {
+  return nullptr;
+}
+
+scoped_refptr<gpu::GpuChannelHost> Platform::EstablishGpuChannelSync() {
   return nullptr;
 }
 

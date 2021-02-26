@@ -24,7 +24,6 @@ class SkImage;
 class SkPath;
 class SkPicture;
 class SkRasterPipeline;
-class GrContext;
 class GrFragmentProcessor;
 
 /** \class SkShader
@@ -131,7 +130,7 @@ private:
     SkShader() = default;
     friend class SkShaderBase;
 
-    typedef SkFlattenable INHERITED;
+    using INHERITED = SkFlattenable;
 };
 
 class SK_API SkShaders {

@@ -35,14 +35,16 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   """
   def __init__(self, desktop_platform_backend, browser_options,
                browser_directory, profile_directory,
-               executable, flash_path, is_content_shell):
+               executable, flash_path, is_content_shell,
+               build_dir=None):
     super(DesktopBrowserBackend, self).__init__(
         desktop_platform_backend,
         browser_options=browser_options,
         browser_directory=browser_directory,
         profile_directory=profile_directory,
         supports_extensions=not is_content_shell,
-        supports_tab_control=not is_content_shell)
+        supports_tab_control=not is_content_shell,
+        build_dir=build_dir)
     self._executable = executable
     self._flash_path = flash_path
     self._is_content_shell = is_content_shell
@@ -237,7 +239,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     dump_symbolizer = desktop_minidump_symbolizer.DesktopMinidumpSymbolizer(
         self.browser.platform.GetOSName(),
         self.browser.platform.GetArchName(),
-        self._dump_finder, self.browser_directory, symbols_dir=symbols_dir)
+        self._dump_finder, self.build_dir, symbols_dir=symbols_dir)
     return dump_symbolizer.SymbolizeMinidump(minidump)
 
   def _CreateExecutableUniqueDirectory(self, prefix):
@@ -312,7 +314,13 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         try:
           # Use a long timeout to handle slow Windows debug
           # (see crbug.com/815004)
-          py_utils.WaitFor(lambda: not self.IsBrowserRunning(), timeout=15)
+          # Allow specifying a custom shutdown timeout via the
+          # 'CHROME_SHUTDOWN_TIMEOUT' environment variable.
+          # TODO(sebmarchand): Remove this now that there's an option to shut
+          # down Chrome via Devtools.
+          py_utils.WaitFor(lambda: not self.IsBrowserRunning(),
+                           timeout=int(os.getenv('CHROME_SHUTDOWN_TIMEOUT', 15))
+                          )
           logging.info('Successfully shut down browser cooperatively')
         except py_utils.TimeoutException as e:
           logging.warning('Failed to cooperatively shutdown. ' +
@@ -335,7 +343,9 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     if self.IsBrowserRunning() and self.browser.platform.GetOSName() != 'win':
       self._proc.send_signal(signal.SIGINT)
       try:
-        py_utils.WaitFor(lambda: not self.IsBrowserRunning(), timeout=5)
+        py_utils.WaitFor(lambda: not self.IsBrowserRunning(),
+                         timeout=int(os.getenv('CHROME_SHUTDOWN_TIMEOUT', 5))
+                        )
         self._proc = None
       except py_utils.TimeoutException:
         logging.warning('Failed to gracefully shutdown.')

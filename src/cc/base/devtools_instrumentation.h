@@ -38,6 +38,7 @@ CC_BASE_EXPORT extern const char kBeginFrame[];
 CC_BASE_EXPORT extern const char kNeedsBeginFrameChanged[];
 CC_BASE_EXPORT extern const char kActivateLayerTree[];
 CC_BASE_EXPORT extern const char kRequestMainThreadFrame[];
+CC_BASE_EXPORT extern const char kDroppedFrame[];
 CC_BASE_EXPORT extern const char kBeginMainThreadFrame[];
 CC_BASE_EXPORT extern const char kDrawFrame[];
 CC_BASE_EXPORT extern const char kCompositeLayers[];
@@ -66,9 +67,9 @@ class CC_BASE_EXPORT ScopedLayerTask {
 
 class CC_BASE_EXPORT ScopedImageTask {
  public:
-  enum ImageType { kWebP, kJpeg, kOther };
+  enum ImageType { kAvif, kBmp, kGif, kIco, kJpeg, kPng, kWebP, kOther };
 
-  ScopedImageTask(ImageType image_type)
+  explicit ScopedImageTask(ImageType image_type)
       : image_type_(image_type), start_time_(base::TimeTicks::Now()) {}
   ScopedImageTask(const ScopedImageTask&) = delete;
   ~ScopedImageTask() = default;
@@ -190,6 +191,15 @@ inline void CC_BASE_EXPORT DidRequestMainThreadFrame(int layer_tree_host_id) {
   TRACE_EVENT_INSTANT1(
       internal::CategoryName::kTimelineFrame, internal::kRequestMainThreadFrame,
       TRACE_EVENT_SCOPE_THREAD, internal::kLayerTreeId, layer_tree_host_id);
+}
+
+inline void CC_BASE_EXPORT
+DidDropSmoothnessFrame(int layer_tree_host_id,
+                       base::TimeTicks dropped_frame_timestamp) {
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      internal::CategoryName::kTimelineFrame, internal::kDroppedFrame,
+      TRACE_EVENT_SCOPE_THREAD, dropped_frame_timestamp, internal::kLayerTreeId,
+      layer_tree_host_id);
 }
 
 inline std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

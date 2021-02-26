@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/common/password_form.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 
@@ -80,18 +80,18 @@ struct FirefoxRawPasswordInfo {
 
 namespace {
 
-autofill::PasswordForm CreateBlacklistPasswordForm(
-    const std::string& blacklist_host) {
+importer::ImportedPasswordForm CreateBlockedPasswordForm(
+    const std::string& blocked_host) {
   GURL::Replacements rep;
   rep.ClearQuery();
   rep.ClearRef();
   rep.ClearUsername();
   rep.ClearPassword();
 
-  autofill::PasswordForm form;
-  form.origin = GURL(blacklist_host).ReplaceComponents(rep);
-  form.signon_realm = form.origin.GetOrigin().spec();
-  form.blacklisted_by_user = true;
+  importer::ImportedPasswordForm form;
+  form.url = GURL(blocked_host).ReplaceComponents(rep);
+  form.signon_realm = form.url.GetOrigin().spec();
+  form.blocked_by_user = true;
   return form;
 }
 
@@ -124,7 +124,7 @@ base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
         const_cast<char*>(decoded_data.data()));
     request.len = static_cast<unsigned int>(decoded_data.size());
     SECItem reply;
-    reply.data = NULL;
+    reply.data = nullptr;
     reply.len = 0;
 #if defined(USE_NSS_CERTS)
     result = PK11SDR_DecryptWithSlot(slot, &request, &reply, NULL);
@@ -151,8 +151,9 @@ base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
 // http://kb.mozillazine.org/Signons.txt
 // http://kb.mozillazine.org/Signons2.txt
 // http://kb.mozillazine.org/Signons3.txt
-void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
-                                std::vector<autofill::PasswordForm>* forms) {
+void NSSDecryptor::ParseSignons(
+    const base::FilePath& signon_file,
+    std::vector<importer::ImportedPasswordForm>* forms) {
   forms->clear();
 
   std::string content;
@@ -178,7 +179,7 @@ void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
   // Reads never-saved list. Domains are stored one per line.
   size_t i;
   for (i = 1; i < lines.size() && lines[i].compare(".") != 0; ++i)
-    forms->push_back(CreateBlacklistPasswordForm(lines[i]));
+    forms->push_back(CreateBlockedPasswordForm(lines[i]));
   ++i;
 
   // Reads saved passwords. The information is stored in blocks
@@ -242,7 +243,7 @@ void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
       if (version == 3)
         ++begin;
 
-      autofill::PasswordForm form;
+      importer::ImportedPasswordForm form;
       if (CreatePasswordFormFromRawInfo(raw_password_info, &form))
         forms->push_back(form);
     }
@@ -251,7 +252,7 @@ void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
 
 bool NSSDecryptor::ReadAndParseSignons(
     const base::FilePath& sqlite_file,
-    std::vector<autofill::PasswordForm>* forms) {
+    std::vector<importer::ImportedPasswordForm>* forms) {
   sql::Database db;
   if (!db.Open(sqlite_file))
     return false;
@@ -263,7 +264,7 @@ bool NSSDecryptor::ReadAndParseSignons(
 
   // Read domains for which passwords are never saved.
   while (s.Step())
-    forms->push_back(CreateBlacklistPasswordForm(s.ColumnString(0)));
+    forms->push_back(CreateBlockedPasswordForm(s.ColumnString(0)));
 
   const char query2[] = "SELECT hostname, httpRealm, formSubmitURL, "
                         "usernameField, passwordField, encryptedUsername, "
@@ -283,7 +284,7 @@ bool NSSDecryptor::ReadAndParseSignons(
     raw_password_info.password_element = s2.ColumnString16(4);
     raw_password_info.encrypted_password = s2.ColumnString(6);
     raw_password_info.form_action = s2.ColumnString(2);
-    autofill::PasswordForm form;
+    importer::ImportedPasswordForm form;
     if (CreatePasswordFormFromRawInfo(raw_password_info, &form))
       forms->push_back(form);
   }
@@ -292,7 +293,7 @@ bool NSSDecryptor::ReadAndParseSignons(
 
 bool NSSDecryptor::ReadAndParseLogins(
     const base::FilePath& json_file,
-    std::vector<autofill::PasswordForm>* forms) {
+    std::vector<importer::ImportedPasswordForm>* forms) {
   std::string json_content;
   base::ReadFileToString(json_file, &json_content);
   base::Optional<base::Value> parsed_json =
@@ -306,7 +307,7 @@ bool NSSDecryptor::ReadAndParseLogins(
     for (const auto& value : blacklist_domains->GetList()) {
       if (!value.is_string())
         continue;
-      forms->push_back(CreateBlacklistPasswordForm(value.GetString()));
+      forms->push_back(CreateBlockedPasswordForm(value.GetString()));
     }
   }
 
@@ -341,7 +342,7 @@ bool NSSDecryptor::ReadAndParseLogins(
       if (const std::string* realm = value.FindStringKey("httpRealm"))
         raw_password_info.realm = *realm;
 
-      autofill::PasswordForm form;
+      importer::ImportedPasswordForm form;
       if (CreatePasswordFormFromRawInfo(raw_password_info, &form))
         forms->push_back(form);
     }
@@ -352,7 +353,7 @@ bool NSSDecryptor::ReadAndParseLogins(
 
 bool NSSDecryptor::CreatePasswordFormFromRawInfo(
     const FirefoxRawPasswordInfo& raw_password_info,
-    autofill::PasswordForm* form) {
+    importer::ImportedPasswordForm* form) {
   GURL::Replacements rep;
   rep.ClearQuery();
   rep.ClearRef();
@@ -371,14 +372,14 @@ bool NSSDecryptor::CreatePasswordFormFromRawInfo(
   if (!url.is_valid())
     return false;
 
-  form->origin = url.ReplaceComponents(rep);
-  form->signon_realm = form->origin.GetOrigin().spec();
+  form->url = url.ReplaceComponents(rep);
+  form->signon_realm = form->url.GetOrigin().spec();
   if (!raw_password_info.realm.empty()) {
     form->signon_realm += raw_password_info.realm;
     // Non-empty realm indicates that it's not html form authentication entry.
     // Extracted data doesn't allow us to distinguish basic_auth entry from
     // digest_auth entry, so let's assume basic_auth.
-    form->scheme = autofill::PasswordForm::Scheme::kBasic;
+    form->scheme = importer::ImportedPasswordForm::Scheme::kBasic;
   }
   form->username_element = raw_password_info.username_element;
   form->username_value = Decrypt(raw_password_info.encrypted_username);

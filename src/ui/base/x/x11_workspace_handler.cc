@@ -15,11 +15,10 @@ namespace ui {
 
 namespace {
 
-x11::Future<x11::XProto::GetPropertyReply> GetWorkspace() {
+x11::Future<x11::GetPropertyReply> GetWorkspace() {
   auto* connection = x11::Connection::Get();
-  return connection->GetProperty({
-      .window =
-          static_cast<x11::Window>(XDefaultRootWindow(connection->display())),
+  return connection->GetProperty(x11::GetPropertyRequest{
+      .window = connection->default_screen().root,
       .property = static_cast<x11::Atom>(gfx::GetAtom("_NET_CURRENT_DESKTOP")),
       .type = static_cast<x11::Atom>(gfx::GetAtom("CARDINAL")),
       .long_length = 1,
@@ -29,15 +28,13 @@ x11::Future<x11::XProto::GetPropertyReply> GetWorkspace() {
 }  // namespace
 
 X11WorkspaceHandler::X11WorkspaceHandler(Delegate* delegate)
-    : xdisplay_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(xdisplay_)),
-      delegate_(delegate) {
+    : x_root_window_(ui::GetX11RootWindow()), delegate_(delegate) {
   DCHECK(delegate_);
   if (ui::X11EventSource::HasInstance())
     ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
 
   x_root_window_events_ = std::make_unique<ui::XScopedEventSelector>(
-      x_root_window_, PropertyChangeMask);
+      x_root_window_, x11::EventMask::PropertyChange);
 }
 
 X11WorkspaceHandler::~X11WorkspaceHandler() {
@@ -51,35 +48,27 @@ std::string X11WorkspaceHandler::GetCurrentWorkspace() {
   return workspace_;
 }
 
-bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
-  if (event->type != PropertyNotify ||
-      event->xproperty.window != x_root_window_) {
-    return false;
+bool X11WorkspaceHandler::DispatchXEvent(x11::Event* xev) {
+  auto* prop = xev->As<x11::PropertyNotifyEvent>();
+  if (prop && prop->window == x_root_window_ &&
+      prop->atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
+    GetWorkspace().OnResponse(base::BindOnce(
+        &X11WorkspaceHandler::OnWorkspaceResponse, weak_factory_.GetWeakPtr()));
+    return true;
   }
-  switch (event->type) {
-    case PropertyNotify: {
-      if (event->xproperty.atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
-        GetWorkspace().OnResponse(
-            base::BindOnce(&X11WorkspaceHandler::OnWorkspaceResponse,
-                           weak_factory_.GetWeakPtr()));
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+
   return false;
 }
 
 void X11WorkspaceHandler::OnWorkspaceResponse(
-    x11::XProto::GetPropertyResponse response) {
-  if (!response || response->format != 32 || response->value.size() < 4)
+    x11::GetPropertyResponse response) {
+  if (!response || response->format != 32 || response->value->size() < 4)
     return;
   DCHECK_EQ(response->bytes_after, 0U);
   DCHECK_EQ(response->type, static_cast<x11::Atom>(gfx::GetAtom("CARDINAL")));
 
   uint32_t workspace;
-  memcpy(&workspace, response->value.data(), 4);
+  memcpy(&workspace, response->value->data(), 4);
   workspace_ = base::NumberToString(workspace);
   delegate_->OnCurrentWorkspaceChanged(workspace_);
 }

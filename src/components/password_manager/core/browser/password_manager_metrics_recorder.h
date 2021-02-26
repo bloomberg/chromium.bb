@@ -43,8 +43,6 @@ class PasswordManagerMetricsRecorder {
     NO_MATCHING_FORM,
     // FormFetcher of PasswordFormManager is still loading.
     MATCHING_NOT_COMPLETE,
-    // Form is blacklisted for saving. Obsolete since M47.
-    FORM_BLACKLISTED,
     // <unknown purpose>. Obsolete since M48.
     INVALID_FORM,
     // A Google credential cannot be saved by policy because it is the Chrome
@@ -85,20 +83,16 @@ class PasswordManagerMetricsRecorder {
   // about the current navigation.
   class NavigationMetricRecorderDelegate {
    public:
-    // Called the first time the user focuses on a password field.
-    virtual void OnUserFocusedPasswordFieldFirstTime(
-        const GURL& main_frame_url) = 0;
-    // Called the first time the user types into a password field.
-    virtual void OnUserModifiedPasswordFieldFirstTime(
-        const GURL& main_frame_url) = 0;
-
     virtual ~NavigationMetricRecorderDelegate() = default;
+    // Called the first time the user focuses on a password field.
+    virtual void OnUserFocusedPasswordFieldFirstTime() = 0;
+    // Called the first time the user types into a password field.
+    virtual void OnUserModifiedPasswordFieldFirstTime() = 0;
   };
 
   // Records UKM metrics and reports them on destruction.
   PasswordManagerMetricsRecorder(
       ukm::SourceId source_id,
-      const GURL& main_frame_url,
       std::unique_ptr<NavigationMetricRecorderDelegate>
           navigation_metric_recorder);
 
@@ -130,9 +124,6 @@ class PasswordManagerMetricsRecorder {
   void RecordPageLevelUserAction(PageLevelUserAction action);
 
  private:
-  // URL for which UKMs are reported.
-  GURL main_frame_url_;
-
   // Records URL keyed metrics (UKMs) and submits them on its destruction.
   std::unique_ptr<ukm::builders::PageWithPassword> ukm_entry_builder_;
 

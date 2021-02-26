@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -271,8 +271,9 @@ void CastTransportImpl::ResendPackets(
 }
 
 PacketReceiverCallback CastTransportImpl::PacketReceiverForTesting() {
-  return base::Bind(base::IgnoreResult(&CastTransportImpl::OnReceivedPacket),
-                    weak_factory_.GetWeakPtr());
+  return base::BindRepeating(
+      base::IgnoreResult(&CastTransportImpl::OnReceivedPacket),
+      weak_factory_.GetWeakPtr());
 }
 
 void CastTransportImpl::SendRawEvents() {

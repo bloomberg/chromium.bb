@@ -33,14 +33,29 @@ const opts = [
     description: 'The Lottie JSON file to process.'
   },
   {
+    name: 'input_skp',
+    typeLabel: '{underline file}',
+    description: 'The SKP file to process.'
+  },
+  {
     name: 'assets',
     typeLabel: '{underline file}',
-    description: 'Any assets needed by the lottie file (e.g. images/fonts).'
+    description: 'A directory containing any assets needed by lottie files or tests (e.g. images/fonts).'
   },
   {
     name: 'output',
     typeLabel: '{underline file}',
     description: 'The perf file to write. Defaults to perf.json',
+  },
+  {
+    name: 'chromium_executable_path',
+    typeLabel: '{underline file}',
+    description: 'The chromium executable to be used by puppeteer to run tests',
+  },
+  {
+    name: 'merge_output_as',
+    typeLabel: String,
+    description: 'Overwrites a json property in an existing output file.',
   },
   {
     name: 'use_gpu',
@@ -54,15 +69,32 @@ const opts = [
     type: String,
   },
   {
+    name: 'enable_simd',
+    description: 'enable execution of wasm SIMD operations in chromium',
+    type: Boolean
+  },
+  {
     name: 'port',
     description: 'The port number to use, defaults to 8081.',
     type: Number,
+  },
+  {
+    name: 'query_params',
+    description: 'The query params to be added to the testing page URL. Useful for passing' +
+      'options to the perf html page.',
+    type: String,
+    multiple: true
   },
   {
     name: 'help',
     alias: 'h',
     type: Boolean,
     description: 'Print this usage guide.'
+  },
+  {
+    name: 'timeout',
+    description: 'Number of seconds to allow test to run.',
+    type: Number,
   },
 ];
 
@@ -85,6 +117,9 @@ if (!options.output) {
 }
 if (!options.port) {
   options.port = 8081;
+}
+if (!options.timeout) {
+  options.timeout = 60;
 }
 
 if (options.help) {
@@ -115,9 +150,14 @@ if (!options.canvaskit_wasm) {
   console.log(commandLineUsage(usage));
   process.exit(1);
 }
+
+const benchmarkJS = fs.readFileSync('benchmark.js', 'utf8');
+const canvasPerfJS = fs.readFileSync('canvas_perf.js', 'utf8');
 const canvasKitJS = fs.readFileSync(options.canvaskit_js, 'utf8');
 const canvasKitWASM = fs.readFileSync(options.canvaskit_wasm, 'binary');
 
+app.get('/static/benchmark.js', (req, res) => res.send(benchmarkJS));
+app.get('/static/canvas_perf.js', (req, res) => res.send(canvasPerfJS));
 app.get('/static/canvaskit.js', (req, res) => res.send(canvasKitJS));
 app.get('/static/canvaskit.wasm', function(req, res) {
   // Set the MIME type so it can be streamed efficiently.
@@ -130,6 +170,12 @@ if (options.input_lottie) {
   const lottieJSON = fs.readFileSync(options.input_lottie, 'utf8');
   app.get('/static/lottie.json', (req, res) => res.send(lottieJSON));
 }
+if (options.input_skp) {
+  const skpBytes = fs.readFileSync(options.input_skp, 'binary');
+  app.get('/static/test.skp', (req, res) => {
+    res.send(new Buffer(skpBytes, 'binary'));
+  });
+}
 if (options.assets) {
   app.use('/static/assets/', express.static(options.assets));
   console.log('assets served from', options.assets);
@@ -141,7 +187,13 @@ let hash = "#cpu";
 if (options.use_gpu) {
   hash = "#gpu";
 }
-const targetURL = `http://localhost:${options.port}/${hash}`;
+let query_param_string = '?';
+if (options.query_params) {
+  for (const string of options.query_params) {
+    query_param_string += string + '&';
+  }
+}
+const targetURL = `http://localhost:${options.port}/${query_param_string}${hash}`;
 const viewPort = {width: 1000, height: 1000};
 
 // Drive chrome to load the web page from the server we have running.
@@ -154,7 +206,15 @@ async function driveBrowser() {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--window-size=' + viewPort.width + ',' + viewPort.height,
+      // The following two params allow Chrome to run at an unlimited fps. Note, if there is
+      // already a chrome instance running, these arguments will have NO EFFECT, as the existing
+      // Chrome instance will be used instead of puppeteer spinning up a new one.
+      '--disable-frame-rate-limit',
+      '--disable-gpu-vsync',
   ];
+  if (options.enable_simd) {
+    browser_args.push('--enable-features=WebAssemblySimd');
+  }
   if (options.use_gpu) {
     browser_args.push('--ignore-gpu-blacklist');
     browser_args.push('--ignore-gpu-blocklist');
@@ -162,7 +222,11 @@ async function driveBrowser() {
   }
   console.log("Running with headless: " + headless + " args: " + browser_args);
   try {
-    browser = await puppeteer.launch({headless: headless, args: browser_args});
+    browser = await puppeteer.launch({
+      headless: headless,
+      args: browser_args,
+      executablePath: options.chromium_executable_path
+    });
     page = await browser.newPage();
     await page.setViewport(viewPort);
   } catch (e) {
@@ -203,9 +267,9 @@ async function driveBrowser() {
     // debugging easier).
     await page.click('#start_bench');
 
-    console.log('Waiting 60s for run to be done');
+    console.log(`Waiting ${options.timeout}s for run to be done`);
     await page.waitForFunction(`(window._perfDone === true) || window._error`, {
-      timeout: 60000,
+      timeout: options.timeout*1000,
     });
 
     err = await page.evaluate('window._error');
@@ -220,7 +284,19 @@ async function driveBrowser() {
     } else {
       const perfResults = await page.evaluate('window._perfData');
       console.debug('Perf results: ', perfResults);
-      fs.writeFileSync(options.output, JSON.stringify(perfResults));
+
+      if (options.merge_output_as) {
+        const existing_output_file_contents = fs.readFileSync(options.output, 'utf8');
+        let existing_dataset = {};
+        try {
+          existing_dataset = JSON.parse(existing_output_file_contents);
+        } catch (e) {}
+
+        existing_dataset[options.merge_output_as] = perfResults;
+        fs.writeFileSync(options.output, JSON.stringify(existing_dataset));
+      } else {
+        fs.writeFileSync(options.output, JSON.stringify(perfResults));
+      }
     }
 
   } catch(e) {

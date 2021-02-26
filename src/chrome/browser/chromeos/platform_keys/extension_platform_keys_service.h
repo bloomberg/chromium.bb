@@ -13,7 +13,8 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -73,7 +74,7 @@ class ExtensionPlatformKeysService : public KeyedService {
 
   // Stores registration information in |state_store|, i.e. for each extension
   // the list of public keys that are valid to be used for signing. See
-  // |KeyPermissions| for details.
+  // |ExtensionKeyPermissionsService| for more details.
   // |browser_context| and |state_store| must not be null and outlive this
   // object.
   explicit ExtensionPlatformKeysService(
@@ -90,49 +91,57 @@ class ExtensionPlatformKeysService : public KeyedService {
   void SetSelectDelegate(std::unique_ptr<SelectDelegate> delegate);
 
   // If the generation was successful, |public_key_spki_der| will contain the
-  // DER encoding of the SubjectPublicKeyInfo of the generated key and
-  // |error_message| will be empty. If it failed, |public_key_spki_der| will be
-  // empty and |error_message| contain an error message.
+  // DER encoding of the SubjectPublicKeyInfo of the generated key. If it
+  // failed, |public_key_spki_der| will be empty.
   using GenerateKeyCallback =
       base::Callback<void(const std::string& public_key_spki_der,
-                          const std::string& error_message)>;
+                          platform_keys::Status status)>;
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id|
-  // specifies the token to store the key pair on. |callback| will be invoked
-  // with the resulting public key or an error. Will only call back during the
-  // lifetime of this object.
-  void GenerateRSAKey(const std::string& token_id,
+  // specifies the token to store the key pair on. If the generation was
+  // successful, |callback| will be invoked with the resulting public key. If it
+  // failed, the resulting public key will be empty. Will only call back during
+  // the lifetime of this object.
+  void GenerateRSAKey(platform_keys::TokenId token_id,
                       unsigned int modulus_length_bits,
                       const std::string& extension_id,
                       const GenerateKeyCallback& callback);
 
   // Generates an EC key pair with |named_curve| and registers the key to allow
   // a single sign operation by the given extension. |token_id| specifies the
-  // token to store the key pair on. |callback| will be invoked with the
-  // resulting public key or an error. Will only call back during the lifetime
+  // token to store the key pair on. If the generation was successful,
+  // |callback| will be invoked with the resulting public key. If it failed, the
+  // resulting public key will be empty. Will only call back during the lifetime
   // of this object.
-  void GenerateECKey(const std::string& token_id,
+  void GenerateECKey(platform_keys::TokenId token_id,
                      const std::string& named_curve,
                      const std::string& extension_id,
                      const GenerateKeyCallback& callback);
 
-  // If signing was successful, |signature| will be contain the signature and
-  // |error_message| will be empty. If it failed, |signature| will be empty and
-  // |error_message| contain an error message.
+  // Gets the current profile using the BrowserContext object and returns
+  // whether the current profile is a sign in profile with
+  // ProfileHelper::IsSigninProfile.
+  bool IsUsingSigninProfile();
+
+  // If signing was successful, |signature| will contain the signature. If it
+  // failed, |signature| will be empty.
   using SignCallback = base::Callback<void(const std::string& signature,
-                                           const std::string& error_message)>;
+                                           platform_keys::Status status)>;
 
   // Digests |data|, applies PKCS1 padding if specified by |hash_algorithm| and
   // chooses the signature algorithm according to |key_type| and signs the data
-  // with the private key matching |public_key_spki_der|. If a non empty token
-  // id is provided and the key is not found in that token, the operation
-  // aborts. If the extension does not have permissions for signing with this
-  // key, the operation aborts. In case of a one time permission (granted after
+  // with the private key matching |public_key_spki_der|. If a |token_id|
+  // is provided and the key is not found in that token, the operation aborts.
+  // If |token_id| is not provided (nullopt), all tokens available to the caller
+  // will be considered while searching for the key.
+  // If the extension does not have permissions for signing with this key, the
+  // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts. |callback| will be invoked with the signature or
-  // an error message. Will only call back during the lifetime of this object.
-  void SignDigest(const std::string& token_id,
+  // future signing attempts. If signing was successful, |callback| will be
+  // invoked with the signature. If it failed, the resulting signature will be
+  // empty. Will only call back during the lifetime of this object.
+  void SignDigest(base::Optional<platform_keys::TokenId> token_id,
                   const std::string& data,
                   const std::string& public_key_spki_der,
                   platform_keys::KeyType key_type,
@@ -141,30 +150,29 @@ class ExtensionPlatformKeysService : public KeyedService {
                   const SignCallback& callback);
 
   // Applies PKCS1 padding and afterwards signs the data with the private key
-  // matching |public_key_spki_der|. |data| is not digested. If a non empty
-  // token id is provided and the key is not found in that token, the operation
-  // aborts.
-  // The size of |data| (number of octets) must be smaller than k - 11, where k
-  // is the key size in octets.
+  // matching |public_key_spki_der|. |data| is not digested. If a |token_id|
+  // is provided and the key is not found in that token, the operation aborts.
+  // If |token_id| is not provided (nullopt), all available tokens to the caller
+  // will be considered while searching for the key. The size of |data| (number
+  // of octets) must be smaller than k - 11, where k is the key size in octets.
   // If the extension does not have permissions for signing with this key, the
   // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts.
-  // |callback| will be invoked with the signature or an error message.
-  // Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Raw(const std::string& token_id,
+  // future signing attempts. If signing was successful, |callback| will be
+  // invoked with the signature. If it failed, the resulting signature will be
+  // empty. Will only call back during the lifetime of this object.
+  void SignRSAPKCS1Raw(base::Optional<platform_keys::TokenId> token_id,
                        const std::string& data,
                        const std::string& public_key_spki_der,
                        const std::string& extension_id,
                        const SignCallback& callback);
 
   // If the certificate request could be processed successfully, |matches| will
-  // contain the list of matching certificates (maybe empty) and |error_message|
-  // will be empty. If an error occurred, |matches| will be null and
-  // |error_message| contain an error message.
+  // contain the list of matching certificates (maybe empty). If an error
+  // occurred, |matches| will be null.
   using SelectCertificatesCallback =
       base::Callback<void(std::unique_ptr<net::CertificateList> matches,
-                          const std::string& error_message)>;
+                          platform_keys::Status status)>;
 
   // Returns a list of certificates matching |request|.
   // 1) all certificates that match the request (like being rooted in one of the
@@ -176,9 +184,10 @@ class ExtensionPlatformKeysService : public KeyedService {
   // which will the extension will also be granted access to.
   // 4) only certificates, that the extension has unlimited sign permission for,
   // will be returned.
-  // |callback| will be invoked with these certificates or an error message.
-  // Will only call back during the lifetime of this object. |web_contents| must
-  // not be null.
+  // If selection was successful, |callback| will be invoked with these
+  // certificates. If it failed, the resulting certificate list will be empty
+  // and an error status will be returned. Will only call back during the
+  // lifetime of this object. |web_contents| must not be null.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
       std::unique_ptr<net::CertificateList> client_certificates,
@@ -208,16 +217,17 @@ class ExtensionPlatformKeysService : public KeyedService {
   // Callback used by |GenerateRSAKey|.
   // If the key generation was successful, registers the generated public key
   // for the given extension. If any error occurs during key generation or
-  // registration, calls |callback| with an error. Otherwise, on success, calls
-  // |callback| with the public key.
+  // registration, calls |callback| with an error status. Otherwise, on success,
+  // calls |callback| with the public key.
   void GeneratedKey(const std::string& extension_id,
                     const GenerateKeyCallback& callback,
                     const std::string& public_key_spki_der,
-                    const std::string& error_message);
+                    platform_keys::Status status);
 
   content::BrowserContext* const browser_context_ = nullptr;
   platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;
-  KeyPermissions key_permissions_;
+  platform_keys::KeyPermissionsService* const key_permissions_service_ =
+      nullptr;
   std::unique_ptr<SelectDelegate> select_delegate_;
   base::queue<std::unique_ptr<Task>> tasks_;
   base::WeakPtrFactory<ExtensionPlatformKeysService> weak_factory_{this};

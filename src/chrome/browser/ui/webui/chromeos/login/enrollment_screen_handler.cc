@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -27,10 +27,11 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/cookie_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
@@ -64,7 +65,9 @@ const char kEnrollmentModeUIRecovery[] = "recovery";
 constexpr char kActiveDirectoryJoinHistogram[] =
     "Enterprise.ActiveDirectoryJoin";
 
-// Converts |mode| to a mode identifier for the UI.
+constexpr char kOAUTHCodeCookie[] = "oauth_code";
+
+// Converts `mode` to a mode identifier for the UI.
 std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
   switch (mode) {
     case policy::EnrollmentConfig::MODE_NONE:
@@ -336,10 +339,10 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
   ShowStep(kEnrollmentStepWorking);
 }
 
-void EnrollmentScreenHandler::SetEnterpriseDomainAndDeviceType(
-    const std::string& domain,
+void EnrollmentScreenHandler::SetEnterpriseDomainInfo(
+    const std::string& manager,
     const base::string16& device_type) {
-  CallJS("login.OAuthEnrollmentScreen.setEnterpriseDomainAndDeviceType", domain,
+  CallJS("login.OAuthEnrollmentScreen.setEnterpriseDomainInfo", manager,
          device_type);
 }
 
@@ -412,9 +415,20 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
               IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
               true);
           break;
+        case policy::
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL:
+          ShowError(
+              IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
+              true);
+          break;
         case policy::DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED:
           ShowError(
               IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED,
+              true);
+          break;
+        case policy::DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE:
+          ShowError(
+              IDS_ENTERPRISE_ENROLLMENT_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE,
               true);
           break;
         default:
@@ -708,7 +722,7 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
     error_screen_->SetParentScreen(kScreenId);
     error_screen_->SetHideCallback(base::BindOnce(
         &EnrollmentScreenHandler::DoShow, weak_ptr_factory_.GetWeakPtr()));
-    error_screen_->Show();
+    error_screen_->Show(nullptr);
     histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
   }
 }
@@ -726,6 +740,7 @@ void EnrollmentScreenHandler::HandleToggleFakeEnrollment() {
   VLOG(1) << "HandleToggleFakeEnrollment";
   policy::PolicyOAuth2TokenFetcher::UseFakeTokensForTesting();
   WizardController::SkipEnrollmentPromptsForTesting();
+  use_fake_login_for_testing_ = true;
 }
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
@@ -763,7 +778,41 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
   content::StoragePartition* partition =
       signin_partition_manager->GetCurrentStoragePartition();
 
-  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+  // Validity check that partition did not change during enrollment flow.
+  DCHECK_EQ(signin_partition_manager->GetCurrentStoragePartitionName(),
+            signin_partition_name_);
+
+  network::mojom::CookieManager* cookie_manager =
+      partition->GetCookieManagerForBrowserProcess();
+  if (!oauth_code_waiter_) {
+    // Set listener before requesting the cookies to avoid race conditions.
+    oauth_code_waiter_ = std::make_unique<CookieWaiter>(
+        cookie_manager, kOAUTHCodeCookie,
+        base::BindRepeating(&EnrollmentScreenHandler::
+                                ContinueAuthenticationWhenCookiesAvailable,
+                            weak_ptr_factory_.GetWeakPtr(), user),
+        base::BindOnce(&EnrollmentScreenHandler::OnCookieWaitTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  ContinueAuthenticationWhenCookiesAvailable(user);
+}
+
+void EnrollmentScreenHandler::ContinueAuthenticationWhenCookiesAvailable(
+    const std::string& user) {
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  content::StoragePartition* partition =
+      signin_partition_manager->GetCurrentStoragePartition();
+
+  // Validity check that partition did not change during enrollment flow.
+  DCHECK_EQ(signin_partition_manager->GetCurrentStoragePartitionName(),
+            signin_partition_name_);
+
+  network::mojom::CookieManager* cookie_manager =
+      partition->GetCookieManagerForBrowserProcess();
+  cookie_manager->GetCookieList(
       GaiaUrls::GetInstance()->gaia_url(),
       net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&EnrollmentScreenHandler::OnGetCookiesForCompleteLogin,
@@ -772,20 +821,32 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
 
 void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
     const std::string& user,
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   std::string auth_code;
-  for (const auto& cookie_with_status : cookies) {
-    if (cookie_with_status.cookie.Name() == "oauth_code") {
-      auth_code = cookie_with_status.cookie.Value();
+  for (const auto& cookie_with_access_result : cookies) {
+    if (cookie_with_access_result.cookie.Name() == kOAUTHCodeCookie) {
+      auth_code = cookie_with_access_result.cookie.Value();
       break;
     }
   }
 
-  DCHECK(!auth_code.empty());
+  // Allow testing to continue without a oauth cookie.
+  if (auth_code.empty() && !use_fake_login_for_testing_) {
+    // Will try again from oauth_code_waiter callback.
+    VLOG(1) << "OAuth cookie empty, still waiting";
+    return;
+  }
 
+  oauth_code_waiter_.reset();
   DCHECK(controller_);
   controller_->OnLoginDone(gaia::SanitizeEmail(user), auth_code);
+}
+
+void EnrollmentScreenHandler::OnCookieWaitTimeout() {
+  LOG(ERROR) << "Timeout waiting for OAuth cookie";
+  oauth_code_waiter_.reset();
+  ShowError(IDS_LOGIN_FATAL_ERROR_NO_AUTH_TOKEN, true);
 }
 
 void EnrollmentScreenHandler::HandleAdCompleteLogin(
@@ -868,7 +929,10 @@ void EnrollmentScreenHandler::DoShow() {
 void EnrollmentScreenHandler::DoShowWithPartition(
     const std::string& partition_name) {
   base::DictionaryValue screen_data;
+
   screen_data.SetString("webviewPartitionName", partition_name);
+  signin_partition_name_ = partition_name;
+
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetString("clientId",
                         GaiaUrls::GetInstance()->oauth2_chrome_client_id());
@@ -882,11 +946,7 @@ void EnrollmentScreenHandler::DoShowWithPartition(
   if (!app_locale.empty())
     screen_data.SetString("hl", app_locale);
 
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  const bool cfm = policy_manager && policy_manager->IsRemoraRequisition();
+  const bool cfm = policy::EnrollmentRequisitionManager::IsRemoraRequisition();
   screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
 
   ShowScreenWithData(EnrollmentScreenView::kScreenId, &screen_data);

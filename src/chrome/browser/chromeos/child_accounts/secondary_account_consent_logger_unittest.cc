@@ -19,7 +19,6 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -42,7 +41,7 @@ constexpr char kRequestBodyTemplate[] = R"({
    },
    "person_id": "me"
 })";
-constexpr char kConsentScreenTextVersion[] = "v2210660";
+constexpr char kConsentScreenTextVersion[] = "v2353089";
 
 std::string GetTestRequestBody(
     const std::string& chrome_os_unicorn_edu_coexistence_id,

@@ -63,7 +63,9 @@ static uint64_t get_time_nanos(void) {
     QueryPerformanceFrequency(&frequency);
     LARGE_INTEGER t;
     QueryPerformanceCounter(&t);
-    return 1000000000 * t.QuadPart / frequency.QuadPart;
+    uint64_t seconds = t.QuadPart / frequency.QuadPart;
+    uint64_t fractions = t.QuadPart % frequency.QuadPart;
+    return 1000000000 * seconds + 1000000000 * fractions / frequency.QuadPart;
 #elif defined(HAVE_CLOCK_GETTIME)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -122,11 +124,15 @@ static void print_stats(const int istty, const unsigned n, const unsigned num,
     else
         b += snprintf(b, end - b, "Decoded %u/%u frames (%.1lf%%)",
                       n, num, 100.0 * n / num);
-    if (i_fps && b < end) {
+    if (b < end) {
         const double d_fps = 1e9 * n / elapsed;
-        const double speed = d_fps / i_fps;
-        b += snprintf(b, end - b, " - %.2lf/%.2lf fps (%.2lfx)",
-                      d_fps, i_fps, speed);
+        if (i_fps) {
+            const double speed = d_fps / i_fps;
+            b += snprintf(b, end - b, " - %.2lf/%.2lf fps (%.2lfx)",
+                          d_fps, i_fps, speed);
+        } else {
+            b += snprintf(b, end - b, " - %.2lf fps", d_fps);
+        }
     }
     if (!istty)
         strcpy(b > end - 2 ? end - 2 : b, "\n");
@@ -245,7 +251,7 @@ int main(const int argc, char *const *const argv) {
             if ((res = output_write(out, &p)) < 0)
                 break;
             n_out++;
-            if (nspf) {
+            if (nspf || !cli_settings.quiet) {
                 synchronize(cli_settings.realtime, cli_settings.realtime_cache,
                             n_out, nspf, tfirst, &elapsed, frametimes);
             }
@@ -282,7 +288,7 @@ int main(const int argc, char *const *const argv) {
             if ((res = output_write(out, &p)) < 0)
                 break;
             n_out++;
-            if (nspf) {
+            if (nspf || !cli_settings.quiet) {
                 synchronize(cli_settings.realtime, cli_settings.realtime_cache,
                             n_out, nspf, tfirst, &elapsed, frametimes);
             }

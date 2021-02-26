@@ -4,7 +4,7 @@ Initial state:
 Application
   Manifest (selected)
   Service Workers
-  Clear storage
+  Storage
 Storage
   Local Storage
     http://127.0.0.1:8000
@@ -26,12 +26,15 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 Found: true
 Database created state:
 Application
   Manifest
   Service Workers
-  Clear storage
+  Storage
 Storage
   Local Storage
     http://127.0.0.1:8000
@@ -54,11 +57,14 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 Table added:
 Application
   Manifest
   Service Workers
-  Clear storage
+  Storage
 Storage
   Local Storage
     http://127.0.0.1:8000
@@ -82,4 +88,7 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 

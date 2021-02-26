@@ -5,6 +5,7 @@
 #include "ui/views/views_features.h"
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 
 namespace views {
 namespace features {
@@ -29,10 +30,14 @@ const base::Feature kEnableViewPaintOptimization{
     "EnableViewPaintOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Change views::Textfield to take focus on a completed tap, rather than
-// immediately on tap down. This only affects touch input. See
-// https://crbug.com/1069634.
+// immediately on tap down. This only affects touch input.
 const base::Feature kTextfieldFocusOnTapUp{"TextfieldFocusOnTapUp",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows a "New" badge to be displayed on menu items that provide access to new
+// features.
+const base::Feature kEnableNewBadgeOnMenuItems{
+    "EnableNewBadgeOnMenuItems", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace views

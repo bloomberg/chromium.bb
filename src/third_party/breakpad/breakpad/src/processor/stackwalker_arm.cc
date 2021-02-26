@@ -78,7 +78,7 @@ StackFrame* StackwalkerARM::GetContextFrame() {
 }
 
 StackFrameARM* StackwalkerARM::GetCallerByCFIFrameInfo(
-    const vector<StackFrame*> &frames,
+    const vector<StackFrame*>& frames,
     CFIFrameInfo* cfi_frame_info) {
   StackFrameARM* last_frame = static_cast<StackFrameARM*>(frames.back());
 
@@ -162,7 +162,7 @@ StackFrameARM* StackwalkerARM::GetCallerByCFIFrameInfo(
 }
 
 StackFrameARM* StackwalkerARM::GetCallerByStackScan(
-    const vector<StackFrame*> &frames) {
+    const vector<StackFrame*>& frames) {
   StackFrameARM* last_frame = static_cast<StackFrameARM*>(frames.back());
   uint32_t last_sp = last_frame->context.iregs[MD_CONTEXT_ARM_REG_SP];
   uint32_t caller_sp, caller_pc;
@@ -193,7 +193,7 @@ StackFrameARM* StackwalkerARM::GetCallerByStackScan(
 }
 
 StackFrameARM* StackwalkerARM::GetCallerByFramePointer(
-    const vector<StackFrame*> &frames) {
+    const vector<StackFrame*>& frames) {
   StackFrameARM* last_frame = static_cast<StackFrameARM*>(frames.back());
 
   if (!(last_frame->context_validity &
@@ -245,7 +245,7 @@ StackFrame* StackwalkerARM::GetCallerFrame(const CallStack* stack,
     return NULL;
   }
 
-  const vector<StackFrame*> &frames = *stack->frames();
+  const vector<StackFrame*>& frames = *stack->frames();
   StackFrameARM* last_frame = static_cast<StackFrameARM*>(frames.back());
   scoped_ptr<StackFrameARM> frame;
 

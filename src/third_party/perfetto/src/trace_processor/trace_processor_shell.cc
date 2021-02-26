@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -36,7 +37,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/trace_processor/read_trace.h"
 #include "perfetto/trace_processor/trace_processor.h"
-#include "src/trace_processor/metrics/custom_options.descriptor.h"
+#include "src/trace_processor/metrics/chrome/all_chrome_metrics.descriptor.h"
 #include "src/trace_processor/metrics/metrics.descriptor.h"
 #include "src/trace_processor/util/proto_to_json.h"
 #include "src/trace_processor/util/status_macros.h"
@@ -45,16 +46,13 @@
 #include "src/trace_processor/rpc/httpd.h"
 #endif
 
+#include "src/profiling/symbolizer/local_symbolizer.h"
 #include "src/profiling/symbolizer/symbolize_database.h"
 #include "src/profiling/symbolizer/symbolizer.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)
-#include "src/profiling/symbolizer/local_symbolizer.h"
-#endif
-
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
-    PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #define PERFETTO_HAS_SIGNAL_H() 1
 #else
 #define PERFETTO_HAS_SIGNAL_H() 0
@@ -147,7 +145,17 @@ struct LineDeleter {
 using ScopedLine = std::unique_ptr<char, LineDeleter>;
 
 ScopedLine GetLine(const char* prompt) {
-  return ScopedLine(linenoise(prompt));
+  errno = 0;
+  auto line = ScopedLine(linenoise(prompt));
+  // linenoise returns a nullptr both for CTRL-C and CTRL-D, however in the
+  // former case it sets errno to EAGAIN.
+  // If the user press CTRL-C return "" instead of nullptr. We don't want the
+  // main loop to quit in that case as that is inconsistent with the behavior
+  // "CTRL-C interrupts the current query" and frustrating when hitting that
+  // a split second after the query is done.
+  if (!line && errno == EAGAIN)
+    return ScopedLine(strdup(""));
+  return line;
 }
 
 #else
@@ -342,28 +350,11 @@ util::Status ExtendMetricsProto(const std::string& extend_metrics_proto,
   google::protobuf::compiler::Parser parser;
   parser.Parse(&tokenizer, file_desc);
 
-  // Go through all the imports (dependencies) and make the import
-  // paths relative to the Perfetto root. This allows trace processor embedders
-  // to have paths relative to their own root for imports when using metric
-  // proto extensions.
-  for (int i = 0; i < file_desc->dependency_size(); ++i) {
-    static constexpr char kPrefix[] = "protos/perfetto/metrics/";
-    auto* dep = file_desc->mutable_dependency(i);
-
-    // If the file being imported contains kPrefix, it is probably an import of
-    // a Perfetto metrics proto. Strip anything before kPrefix to ensure that
-    // we resolve the paths correctly.
-    size_t idx = dep->find(kPrefix);
-    if (idx != std::string::npos) {
-      *dep = dep->substr(idx);
-    }
-  }
-
   file_desc->set_name(BaseName(extend_metrics_proto));
   pool->BuildFile(*file_desc);
 
   std::vector<uint8_t> metric_proto;
-  metric_proto.resize(static_cast<size_t>(desc_set.ByteSize()));
+  metric_proto.resize(desc_set.ByteSizeLong());
   desc_set.SerializeToArray(metric_proto.data(),
                             static_cast<int>(metric_proto.size()));
 
@@ -426,7 +417,7 @@ util::Status RunMetrics(const std::vector<std::string>& metric_names,
   return util::OkStatus();
 }
 
-void PrintQueryResultInteractively(TraceProcessor::Iterator* it,
+void PrintQueryResultInteractively(Iterator* it,
                                    base::TimeNanos t_start,
                                    uint32_t column_width) {
   base::TimeNanos t_end = t_start;
@@ -483,54 +474,11 @@ void PrintQueryResultInteractively(TraceProcessor::Iterator* it,
   if (!status.ok()) {
     PERFETTO_ELOG("SQLite error: %s", status.c_message());
   }
-  printf("\nQuery executed in %.3f ms\n\n", (t_end - t_start).count() / 1E6);
+  printf("\nQuery executed in %.3f ms\n\n",
+         static_cast<double>((t_end - t_start).count()) / 1E6);
 }
 
-void PrintShellUsage() {
-  PERFETTO_ELOG(
-      "Available commands:\n"
-      ".quit, .q    Exit the shell.\n"
-      ".help        This text.\n"
-      ".dump FILE   Export the trace as a sqlite database.\n"
-      ".reset       Destroys all tables/view created by the user.\n");
-}
-
-util::Status StartInteractiveShell(uint32_t column_width) {
-  SetupLineEditor();
-
-  for (;;) {
-    ScopedLine line = GetLine("> ");
-    if (!line)
-      break;
-    if (strcmp(line.get(), "") == 0)
-      continue;
-    if (line.get()[0] == '.') {
-      char command[32] = {};
-      char arg[1024] = {};
-      sscanf(line.get() + 1, "%31s %1023s", command, arg);
-      if (strcmp(command, "quit") == 0 || strcmp(command, "q") == 0) {
-        break;
-      } else if (strcmp(command, "help") == 0) {
-        PrintShellUsage();
-      } else if (strcmp(command, "dump") == 0 && strlen(arg)) {
-        if (!ExportTraceToDatabase(arg).ok())
-          PERFETTO_ELOG("Database export failed");
-      } else if (strcmp(command, "reset") == 0) {
-        g_tp->RestoreInitialTables();
-      } else {
-        PrintShellUsage();
-      }
-      continue;
-    }
-
-    base::TimeNanos t_start = base::GetWallTimeNs();
-    auto it = g_tp->ExecuteQuery(line.get());
-    PrintQueryResultInteractively(&it, t_start, column_width);
-  }
-  return util::OkStatus();
-}
-
-util::Status PrintQueryResultAsCsv(TraceProcessor::Iterator* it, FILE* output) {
+util::Status PrintQueryResultAsCsv(Iterator* it, FILE* output) {
   for (uint32_t c = 0; c < it->ColumnCount(); c++) {
     if (c > 0)
       fprintf(output, ",");
@@ -585,7 +533,7 @@ util::Status LoadQueries(FILE* input, std::vector<std::string>* output) {
   while (!feof(input) && !ferror(input)) {
     std::string sql_query;
     while (fgets(buffer, sizeof(buffer), input)) {
-      std::string line = buffer;
+      std::string line = base::TrimLeading(buffer);
       if (IsBlankLine(line))
         break;
 
@@ -614,10 +562,22 @@ util::Status LoadQueries(FILE* input, std::vector<std::string>* output) {
   return util::OkStatus();
 }
 
-util::Status RunQueryAndPrintResult(const std::vector<std::string>& queries,
-                                    FILE* output) {
+util::Status RunQueriesWithoutOutput(const std::vector<std::string>& queries) {
+  for (const auto& sql_query : queries) {
+    PERFETTO_DLOG("Executing query: %s", sql_query.c_str());
+
+    auto it = g_tp->ExecuteQuery(sql_query);
+    RETURN_IF_ERROR(it.Status());
+    if (it.Next()) {
+      return util::ErrStatus("Unexpected result from a query.");
+    }
+  }
+  return util::OkStatus();
+}
+
+util::Status RunQueriesAndPrintResult(const std::vector<std::string>& queries,
+                                      FILE* output) {
   bool is_first_query = true;
-  bool is_query_error = false;
   bool has_output = false;
   for (const auto& sql_query : queries) {
     // Add an extra newline separator between query results.
@@ -628,36 +588,40 @@ util::Status RunQueryAndPrintResult(const std::vector<std::string>& queries,
     PERFETTO_ILOG("Executing query: %s", sql_query.c_str());
 
     auto it = g_tp->ExecuteQuery(sql_query);
-    util::Status status = it.Status();
-    if (!status.ok()) {
-      PERFETTO_ELOG("SQLite error: %s", status.c_message());
-      is_query_error = true;
-      break;
-    }
+    RETURN_IF_ERROR(it.Status());
     if (it.ColumnCount() == 0) {
       bool it_has_more = it.Next();
       PERFETTO_DCHECK(!it_has_more);
       continue;
     }
 
-    if (has_output) {
-      PERFETTO_ELOG(
-          "More than one query generated result rows. This is "
-          "unsupported.");
-      is_query_error = true;
-      break;
-    }
-    status = PrintQueryResultAsCsv(&it, output);
-    has_output = true;
+    // If we have a single column with the name |suppress_query_output| that's
+    // a hint to shell that it should not treat the query as having real
+    // meaning.
+    if (it.ColumnCount() == 1 &&
+        it.GetColumnName(0) == "suppress_query_output") {
+      // We should only see a single null value as this feature is usually used
+      // as SELECT RUN_METRIC(<metric file>) as suppress_query_output and
+      // RUN_METRIC returns a single null.
+      bool has_next = it.Next();
+      RETURN_IF_ERROR(it.Status());
+      PERFETTO_DCHECK(has_next);
+      PERFETTO_DCHECK(it.Get(0).is_null());
 
-    if (!status.ok()) {
-      PERFETTO_ELOG("SQLite error: %s", status.c_message());
-      is_query_error = true;
+      has_next = it.Next();
+      RETURN_IF_ERROR(it.Status());
+      PERFETTO_DCHECK(!has_next);
+      continue;
     }
+
+    if (has_output) {
+      return util::ErrStatus(
+          "More than one query generated result rows. This is unsupported.");
+    }
+    has_output = true;
+    RETURN_IF_ERROR(PrintQueryResultAsCsv(&it, output));
   }
-  return is_query_error
-             ? util::ErrStatus("Encountered errors while running queries")
-             : util::OkStatus();
+  return util::OkStatus();
 }
 
 util::Status PrintPerfFile(const std::string& perf_file_path,
@@ -682,14 +646,17 @@ util::Status PrintPerfFile(const std::string& perf_file_path,
 struct CommandLineOptions {
   std::string perf_file_path;
   std::string query_file_path;
+  std::string pre_metrics_path;
   std::string sqlite_file_path;
   std::string metric_names;
   std::string metric_output;
   std::string trace_file_path;
+  std::string port_number;
   bool launch_shell = false;
   bool enable_httpd = false;
   bool wide = false;
   bool force_full_sort = false;
+  std::string metatrace_path;
 };
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
@@ -703,6 +670,9 @@ Options:
                                       If used with --run-metrics, the query is
                                       executed after the selected metrics and
                                       the metrics output is suppressed.
+ --pre-metrics FILE                   Read and execute an SQL query from a file.
+                                      This query is executed before the selected
+                                      metrics and can't output any results.
  --run-metrics x,y,z                  Runs a comma separated list of metrics and
                                       prints the result as a TraceMetrics proto
                                       to stdout. The specified can either be
@@ -726,6 +696,8 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
   for (int i = 1; i < argc - 1; i += 2) {
     if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--query-file") == 0) {
       command_line_options.query_file_path = argv[i + 1];
+    } else if (strcmp(argv[i], "--pre-metrics") == 0) {
+      command_line_options.pre_metrics_path = argv[i + 1];
     } else if (strcmp(argv[i], "--run-metrics") == 0) {
       command_line_options.metric_names = argv[i + 1];
     } else if (strcmp(argv[i], "--metrics-output") == 0) {
@@ -764,7 +736,11 @@ Options:
                                       If used with --run-metrics, the query is
                                       executed after the selected metrics and
                                       the metrics output is suppressed.
+ --pre-metrics FILE                   Read and execute an SQL query from a file.
+                                      This query is executed before the selected
+                                      metrics and can't output any results.
  -D, --httpd                          Enables the HTTP RPC server.
+ --http-port PORT                     Specify what port to run HTTP RPC server.
  -i, --interactive                    Starts interactive mode even after a query
                                       file is specified with -q or
                                       --run-metrics.
@@ -780,6 +756,8 @@ Options:
                                       specified in either proto binary, proto
                                       text format or JSON format (default: proto
                                       text).
+ -m, --metatrace FILE                 Enables metatracing of trace processor
+                                      writing the resulting trace into FILE.
  --full-sort                          Forces the trace processor into performing
                                       a full sort ignoring any windowing
                                       logic.)",
@@ -790,8 +768,10 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
   CommandLineOptions command_line_options;
   enum LongOption {
     OPT_RUN_METRICS = 1000,
+    OPT_PRE_METRICS,
     OPT_METRICS_OUTPUT,
     OPT_FORCE_FULL_SORT,
+    OPT_HTTP_PORT,
   };
 
   static const struct option long_options[] = {
@@ -804,16 +784,19 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       {"perf-file", required_argument, nullptr, 'p'},
       {"query-file", required_argument, nullptr, 'q'},
       {"export", required_argument, nullptr, 'e'},
+      {"metatrace", required_argument, nullptr, 'm'},
       {"run-metrics", required_argument, nullptr, OPT_RUN_METRICS},
+      {"pre-metrics", required_argument, nullptr, OPT_PRE_METRICS},
       {"metrics-output", required_argument, nullptr, OPT_METRICS_OUTPUT},
       {"full-sort", no_argument, nullptr, OPT_FORCE_FULL_SORT},
+      {"http-port", required_argument, nullptr, OPT_HTTP_PORT},
       {nullptr, 0, nullptr, 0}};
 
   bool explicit_interactive = false;
   int option_index = 0;
   for (;;) {
     int option =
-        getopt_long(argc, argv, "hvWiDdp:q:e:", long_options, &option_index);
+        getopt_long(argc, argv, "hvWiDdm:p:q:e:", long_options, &option_index);
 
     if (option == -1)
       break;  // EOF.
@@ -862,6 +845,16 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       continue;
     }
 
+    if (option == 'm') {
+      command_line_options.metatrace_path = optarg;
+      continue;
+    }
+
+    if (option == OPT_PRE_METRICS) {
+      command_line_options.pre_metrics_path = optarg;
+      continue;
+    }
+
     if (option == OPT_RUN_METRICS) {
       command_line_options.metric_names = optarg;
       continue;
@@ -877,12 +870,18 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       continue;
     }
 
+    if (option == OPT_HTTP_PORT) {
+      command_line_options.port_number = optarg;
+      continue;
+    }
+
     PrintUsage(argv);
     exit(option == 'h' ? 0 : 1);
   }
 
   command_line_options.launch_shell =
-      explicit_interactive || (command_line_options.metric_names.empty() &&
+      explicit_interactive || (command_line_options.pre_metrics_path.empty() &&
+                               command_line_options.metric_names.empty() &&
                                command_line_options.query_file_path.empty() &&
                                command_line_options.sqlite_file_path.empty());
 
@@ -920,7 +919,7 @@ void ExtendPoolWithBinaryDescriptor(google::protobuf::DescriptorPool& pool,
 util::Status LoadTrace(const std::string& trace_file_path, double* size_mb) {
   util::Status read_status =
       ReadTrace(g_tp, trace_file_path.c_str(), [&size_mb](size_t parsed_size) {
-        *size_mb = parsed_size / 1E6;
+        *size_mb = static_cast<double>(parsed_size) / 1E6;
         fprintf(stderr, "\rLoading trace: %.2f MB\r", *size_mb);
       });
   if (!read_status.ok()) {
@@ -928,15 +927,9 @@ util::Status LoadTrace(const std::string& trace_file_path, double* size_mb) {
                            trace_file_path.c_str(), read_status.c_message());
   }
 
-  std::unique_ptr<profiling::Symbolizer> symbolizer;
-  auto binary_path = profiling::GetPerfettoBinaryPath();
-  if (!binary_path.empty()) {
-#if PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)
-      symbolizer.reset(new profiling::LocalSymbolizer(std::move(binary_path)));
-#else
-      PERFETTO_FATAL("This build does not support local symbolization.");
-#endif
-  }
+  std::unique_ptr<profiling::Symbolizer> symbolizer =
+      profiling::LocalSymbolizerOrDie(profiling::GetPerfettoBinaryPath(),
+                                      getenv("PERFETTO_SYMBOLIZER_MODE"));
 
   if (symbolizer) {
     profiling::SymbolizeDatabase(
@@ -955,15 +948,27 @@ util::Status LoadTrace(const std::string& trace_file_path, double* size_mb) {
   return util::OkStatus();
 }
 
-util::Status RunQueries(const CommandLineOptions& options) {
+util::Status RunQueries(const std::string& query_file_path,
+                        bool expect_output) {
   std::vector<std::string> queries;
-  base::ScopedFstream file(fopen(options.query_file_path.c_str(), "r"));
+  base::ScopedFstream file(fopen(query_file_path.c_str(), "r"));
   if (!file) {
     return util::ErrStatus("Could not open query file (path: %s)",
-                           options.query_file_path.c_str());
+                           query_file_path.c_str());
   }
   RETURN_IF_ERROR(LoadQueries(file.get(), &queries));
-  return RunQueryAndPrintResult(queries, stdout);
+
+  util::Status status;
+  if (expect_output) {
+    status = RunQueriesAndPrintResult(queries, stdout);
+  } else {
+    status = RunQueriesWithoutOutput(queries);
+  }
+  if (!status.ok()) {
+    return util::ErrStatus("Encountered error while running queries: %s",
+                           status.c_message());
+  }
+  return util::OkStatus();
 }
 
 util::Status RunMetrics(const CommandLineOptions& options) {
@@ -974,8 +979,8 @@ util::Status RunMetrics(const CommandLineOptions& options) {
       google::protobuf::DescriptorPool::generated_pool());
   ExtendPoolWithBinaryDescriptor(pool, kMetricsDescriptor.data(),
                                  kMetricsDescriptor.size());
-  ExtendPoolWithBinaryDescriptor(pool, kCustomOptionsDescriptor.data(),
-                                 kCustomOptionsDescriptor.size());
+  ExtendPoolWithBinaryDescriptor(pool, kAllChromeMetricsDescriptor.data(),
+                                 kAllChromeMetricsDescriptor.size());
 
   std::vector<std::string> metrics;
   for (base::StringSplitter ss(options.metric_names, ','); ss.Next();) {
@@ -993,15 +998,17 @@ util::Status RunMetrics(const CommandLineOptions& options) {
       continue;
 
     std::string no_ext_name = metric_or_path.substr(0, ext_idx);
-    util::Status status = RegisterMetric(no_ext_name + ".sql");
+
+    // The proto must be extended before registering the metric.
+    util::Status status = ExtendMetricsProto(no_ext_name + ".proto", &pool);
     if (!status.ok()) {
-      return util::ErrStatus("Unable to register metric %s: %s",
+      return util::ErrStatus("Unable to extend metrics proto %s: %s",
                              metric_or_path.c_str(), status.c_message());
     }
 
-    status = ExtendMetricsProto(no_ext_name + ".proto", &pool);
+    status = RegisterMetric(no_ext_name + ".sql");
     if (!status.ok()) {
-      return util::ErrStatus("Unable to extend metrics proto %s: %s",
+      return util::ErrStatus("Unable to register metric %s: %s",
                              metric_or_path.c_str(), status.c_message());
     }
 
@@ -1021,6 +1028,58 @@ util::Status RunMetrics(const CommandLineOptions& options) {
   return RunMetrics(std::move(metrics), format, pool);
 }
 
+void PrintShellUsage() {
+  PERFETTO_ELOG(
+      "Available commands:\n"
+      ".quit, .q    Exit the shell.\n"
+      ".help        This text.\n"
+      ".dump FILE   Export the trace as a sqlite database.\n"
+      ".read FILE   Executes the queries in the FILE.\n"
+      ".reset       Destroys all tables/view created by the user.\n");
+}
+
+util::Status StartInteractiveShell(uint32_t column_width) {
+  SetupLineEditor();
+
+  for (;;) {
+    ScopedLine line = GetLine("> ");
+    if (!line)
+      break;
+    if (strcmp(line.get(), "") == 0) {
+      printf("If you want to quit either type .q or press CTRL-D (EOF)\n");
+      continue;
+    }
+    if (line.get()[0] == '.') {
+      char command[32] = {};
+      char arg[1024] = {};
+      sscanf(line.get() + 1, "%31s %1023s", command, arg);
+      if (strcmp(command, "quit") == 0 || strcmp(command, "q") == 0) {
+        break;
+      } else if (strcmp(command, "help") == 0) {
+        PrintShellUsage();
+      } else if (strcmp(command, "dump") == 0 && strlen(arg)) {
+        if (!ExportTraceToDatabase(arg).ok())
+          PERFETTO_ELOG("Database export failed");
+      } else if (strcmp(command, "reset") == 0) {
+        g_tp->RestoreInitialTables();
+      } else if (strcmp(command, "read") == 0 && strlen(arg)) {
+        util::Status status = RunQueries(arg, true);
+        if (!status.ok()) {
+          PERFETTO_ELOG("%s", status.c_message());
+        }
+      } else {
+        PrintShellUsage();
+      }
+      continue;
+    }
+
+    base::TimeNanos t_start = base::GetWallTimeNs();
+    auto it = g_tp->ExecuteQuery(line.get());
+    PrintQueryResultInteractively(&it, t_start, column_width);
+  }
+  return util::OkStatus();
+}
+
 util::Status TraceProcessorMain(int argc, char** argv) {
   CommandLineOptions options = ParseCommandLineOptions(argc, argv);
 
@@ -1030,6 +1089,11 @@ util::Status TraceProcessorMain(int argc, char** argv) {
   std::unique_ptr<TraceProcessor> tp = TraceProcessor::CreateInstance(config);
   g_tp = tp.get();
 
+  // Enable metatracing as soon as possible.
+  if (!options.metatrace_path.empty()) {
+    tp->EnableMetatrace();
+  }
+
   base::TimeNanos t_load{};
   if (!options.trace_file_path.empty()) {
     base::TimeNanos t_load_start = base::GetWallTimeNs();
@@ -1037,7 +1101,7 @@ util::Status TraceProcessorMain(int argc, char** argv) {
     RETURN_IF_ERROR(LoadTrace(options.trace_file_path, &size_mb));
     t_load = base::GetWallTimeNs() - t_load_start;
 
-    double t_load_s = t_load.count() / 1E9;
+    double t_load_s = static_cast<double>(t_load.count()) / 1E9;
     PERFETTO_ILOG("Trace loaded: %.2f MB (%.1f MB/s)", size_mb,
                   size_mb / t_load_s);
 
@@ -1046,7 +1110,7 @@ util::Status TraceProcessorMain(int argc, char** argv) {
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_HTTPD)
   if (options.enable_httpd) {
-    RunHttpRPCServer(std::move(tp));
+    RunHttpRPCServer(std::move(tp), options.port_number);
     PERFETTO_FATAL("Should never return");
   }
 #endif
@@ -1056,12 +1120,16 @@ util::Status TraceProcessorMain(int argc, char** argv) {
 #endif
 
   base::TimeNanos t_query_start = base::GetWallTimeNs();
+  if (!options.pre_metrics_path.empty()) {
+    RETURN_IF_ERROR(RunQueries(options.pre_metrics_path, false));
+  }
+
   if (!options.metric_names.empty()) {
     RETURN_IF_ERROR(RunMetrics(options));
   }
 
   if (!options.query_file_path.empty()) {
-    RETURN_IF_ERROR(RunQueries(options));
+    RETURN_IF_ERROR(RunQueries(options.query_file_path, true));
   }
   base::TimeNanos t_query = base::GetWallTimeNs() - t_query_start;
 
@@ -1074,6 +1142,23 @@ util::Status TraceProcessorMain(int argc, char** argv) {
   } else if (!options.perf_file_path.empty()) {
     RETURN_IF_ERROR(PrintPerfFile(options.perf_file_path, t_load, t_query));
   }
+
+  if (!options.metatrace_path.empty()) {
+    std::vector<uint8_t> serialized;
+    util::Status status = g_tp->DisableAndReadMetatrace(&serialized);
+    if (!status.ok())
+      return status;
+
+    auto file =
+        base::OpenFile(options.metatrace_path, O_CREAT | O_RDWR | O_TRUNC);
+    if (!file)
+      return util::ErrStatus("Unable to open metatrace file");
+
+    ssize_t res = base::WriteAll(*file, serialized.data(), serialized.size());
+    if (res < 0)
+      return util::ErrStatus("Error while writing metatrace file");
+  }
+
   return util::OkStatus();
 }
 

@@ -48,6 +48,7 @@ class HorverTest : public ::testing::TestWithParam<HorverTestParam> {
   ACMRandom rng_;
   int16_t *data_buf_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(HorverTest);
 
 void HorverTest::RunHorverTest(void) {
   for (int block_size = 0; block_size < BLOCK_SIZES_ALL; block_size++) {
@@ -139,6 +140,11 @@ INSTANTIATE_TEST_SUITE_P(
     SSE4_1, HorverTest,
     ::testing::Values(av1_get_horver_correlation_full_sse4_1));
 #endif  // HAVE_SSE4_1
+
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(
+    NEON, HorverTest, ::testing::Values(av1_get_horver_correlation_full_neon));
+#endif  // HAVE_NEON
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(

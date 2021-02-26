@@ -24,18 +24,27 @@ class TabCloseButton : public views::ImageButton,
   // middle clicks to be handled by the parent.
   //
   // See note on SetTabColor.
-  TabCloseButton(views::ButtonListener* listener,
+  TabCloseButton(PressedCallback pressed_callback,
                  MouseEventCallback mouse_event_callback);
+  TabCloseButton(const TabCloseButton&) = delete;
+  TabCloseButton& operator=(const TabCloseButton&) = delete;
   ~TabCloseButton() override;
 
-  // Returns the width of the tab close button.
-  static int GetWidth();
+  // Returns the width/height of the tab close button, sans insets/padding.
+  static int GetGlyphSize();
 
   // This function must be called before the tab is painted so it knows what
   // colors to use. It must also be called when the background color of the tab
   // changes (this class does not track tab activation state), and when the
   // theme changes.
   void SetIconColors(SkColor foreground_color, SkColor background_color);
+
+  // Sets the desired padding around the icon. Only the icon is a target for
+  // mouse clicks, but the entire button is a target for touch events, since the
+  // button itself is small. Note that this is cheaper than, for example,
+  // installing a new EmptyBorder every time we want to change the padding
+  // around the icon.
+  void SetButtonPadding(const gfx::Insets& padding);
 
   // views::ImageButton:
   const char* GetClassName() const override;
@@ -44,7 +53,7 @@ class TabCloseButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  gfx::Insets GetInsets() const override;
 
  protected:
   // views::ImageButton:
@@ -59,8 +68,6 @@ class TabCloseButton : public views::ImageButton,
   MouseEventCallback mouse_event_callback_;
 
   SkColor icon_color_ = gfx::kPlaceholderColor;
-
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_CLOSE_BUTTON_H_

@@ -22,31 +22,26 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FIT_TO_VIEW_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FIT_TO_VIEW_BOX_H_
 
-#include "third_party/blink/renderer/core/svg/svg_animated_preserve_aspect_ratio.h"
-#include "third_party/blink/renderer/core/svg/svg_animated_rect.h"
-#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
-#include "third_party/blink/renderer/core/svg/svg_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 class AffineTransform;
+class FloatRect;
+class FloatSize;
 class QualifiedName;
+class SVGAnimatedPreserveAspectRatio;
+class SVGAnimatedRect;
+class SVGElement;
+class SVGPreserveAspectRatio;
 
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
   static AffineTransform ViewBoxToViewTransform(const FloatRect& view_box_rect,
                                                 const SVGPreserveAspectRatio*,
-                                                float view_width,
-                                                float view_height);
+                                                const FloatSize& viewport_size);
 
   static bool IsKnownAttribute(const QualifiedName&);
-
-  bool HasValidViewBox() const { return view_box_->CurrentValue()->IsValid(); }
-  bool HasEmptyViewBox() const {
-    return view_box_->CurrentValue()->IsValid() &&
-           view_box_->CurrentValue()->Value().IsEmpty();
-  }
 
   // JS API
   SVGAnimatedRect* viewBox() const { return view_box_.Get(); }
@@ -54,7 +49,7 @@ class SVGFitToViewBox : public GarbageCollectedMixin {
     return preserve_aspect_ratio_.Get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   explicit SVGFitToViewBox(SVGElement*);

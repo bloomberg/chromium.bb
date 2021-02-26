@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/location_bar_model.h"
 
@@ -24,11 +23,12 @@ class TestLocationBarModel : public LocationBarModel {
  public:
   TestLocationBarModel();
   ~TestLocationBarModel() override;
+  TestLocationBarModel(const TestLocationBarModel&) = delete;
+  TestLocationBarModel& operator=(const TestLocationBarModel&) = delete;
   base::string16 GetFormattedFullURL() const override;
   base::string16 GetURLForDisplay() const override;
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel() const override;
-  bool GetDisplaySearchTerms(base::string16* search_terms) override;
   metrics::OmniboxEventProto::PageClassification GetPageClassification(
       OmniboxFocusSource focus_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
@@ -36,6 +36,7 @@ class TestLocationBarModel : public LocationBarModel {
   base::string16 GetSecureAccessibilityText() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
+  bool ShouldPreventElision() const override;
 
   void set_formatted_full_url(const base::string16& url) {
     formatted_full_url_ = std::make_unique<base::string16>(url);
@@ -47,9 +48,6 @@ class TestLocationBarModel : public LocationBarModel {
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
   }
-  void set_display_search_terms(const base::string16& terms) {
-    display_search_terms_ = terms;
-  }
   void set_icon(const gfx::VectorIcon& icon) { icon_ = &icon; }
   void set_should_display_url(bool should_display_url) {
     should_display_url_ = should_display_url;
@@ -57,6 +55,9 @@ class TestLocationBarModel : public LocationBarModel {
   void set_offline_page(bool offline_page) { offline_page_ = offline_page; }
   void set_secure_display_text(base::string16 secure_display_text) {
     secure_display_text_ = secure_display_text;
+  }
+  void set_should_prevent_elision(bool should_prevent_elision) {
+    should_prevent_elision_ = should_prevent_elision;
   }
 
  private:
@@ -67,13 +68,11 @@ class TestLocationBarModel : public LocationBarModel {
 
   GURL url_;
   security_state::SecurityLevel security_level_ = security_state::NONE;
-  base::string16 display_search_terms_;
   const gfx::VectorIcon* icon_ = nullptr;
   bool should_display_url_ = false;
   bool offline_page_ = false;
   base::string16 secure_display_text_ = base::string16();
-
-  DISALLOW_COPY_AND_ASSIGN(TestLocationBarModel);
+  bool should_prevent_elision_ = false;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_LOCATION_BAR_MODEL_H_

@@ -211,6 +211,15 @@ CPDFSDKFormFillEnvironmentFromFPDFFormHandle(FPDF_FORMHANDLE handle) {
   return reinterpret_cast<CPDFSDK_FormFillEnvironment*>(handle);
 }
 
+inline FPDF_SIGNATURE FPDFSignatureFromCPDFDictionary(
+    CPDF_Dictionary* dictionary) {
+  return reinterpret_cast<FPDF_SIGNATURE>(dictionary);
+}
+inline CPDF_Dictionary* CPDFDictionaryFromFPDFSignature(
+    FPDF_SIGNATURE signature) {
+  return reinterpret_cast<CPDF_Dictionary*>(signature);
+}
+
 CPDFSDK_InteractiveForm* FormHandleToInteractiveForm(FPDF_FORMHANDLE hHandle);
 
 ByteString ByteStringFromFPDFWideString(FPDF_WIDESTRING wide_string);

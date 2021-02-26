@@ -51,7 +51,7 @@ const char* const kNameserversIPv4[] = {
     "1.0.0.1",
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 const char* const kNameserversIPv6[] = {
     NULL,
     "2001:DB8:0::42",
@@ -87,7 +87,7 @@ void InitializeResState(res_state res) {
     ++res->nscount;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Install IPv6 addresses, replacing the corresponding IPv4 addresses.
   unsigned nscount6 = 0;
   for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
@@ -108,7 +108,7 @@ void InitializeResState(res_state res) {
 }
 
 void CloseResState(res_state res) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   for (int i = 0; i < res->nscount; ++i) {
     if (res->_u._ext.nsaddrs[i] != NULL)
       free(res->_u._ext.nsaddrs[i]);
@@ -118,7 +118,7 @@ void CloseResState(res_state res) {
 
 void InitializeExpectedConfig(DnsConfig* config) {
   config->ndots = 2;
-  config->timeout = base::TimeDelta::FromSeconds(4);
+  config->fallback_period = base::TimeDelta::FromSeconds(4);
   config->attempts = 7;
   config->rotate = true;
   config->append_to_multi_label_name = true;
@@ -133,7 +133,7 @@ void InitializeExpectedConfig(DnsConfig* config) {
     config->nameservers.push_back(IPEndPoint(ip, NS_DEFAULTPORT + i));
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
@@ -241,7 +241,7 @@ class DnsConfigServicePosixTest : public testing::Test {
     service_.reset(new DnsConfigServicePosix());
   }
 
-  void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_, false)); }
+  void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_)); }
 
   base::test::TaskEnvironment task_environment_;
   bool seen_config_;

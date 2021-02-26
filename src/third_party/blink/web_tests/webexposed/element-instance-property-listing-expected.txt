@@ -104,7 +104,6 @@ namespace http://www.w3.org/1999/xhtml
     property computedStyleMap
     property contains
     property contentEditable
-    property createShadowRoot
     property dataset
     property dir
     property dispatchEvent
@@ -122,7 +121,6 @@ namespace http://www.w3.org/1999/xhtml
     property getAttributeNodeNS
     property getBoundingClientRect
     property getClientRects
-    property getDestinationInsertionPoints
     property getElementsByClassName
     property getElementsByTagName
     property getElementsByTagNameNS
@@ -240,7 +238,6 @@ namespace http://www.w3.org/1999/xhtml
     property onpointerup
     property onprogress
     property onratechange
-    property onrendersubtreeactivation
     property onreset
     property onresize
     property onscroll
@@ -260,7 +257,10 @@ namespace http://www.w3.org/1999/xhtml
     property ontouchend
     property ontouchmove
     property ontouchstart
+    property ontransitioncancel
     property ontransitionend
+    property ontransitionrun
+    property ontransitionstart
     property onvolumechange
     property onwaiting
     property onwebkitanimationend
@@ -290,6 +290,7 @@ namespace http://www.w3.org/1999/xhtml
     property removeChild
     property removeEventListener
     property replaceChild
+    property replaceChildren
     property replaceWith
     property requestFullscreen
     property requestPointerLock
@@ -307,6 +308,7 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setInnerHTML
     property setPointerCapture
     property shadowRoot
     property slot
@@ -319,6 +321,7 @@ namespace http://www.w3.org/1999/xhtml
     property toString
     property toggleAttribute
     property translate
+    property virtualKeyboardPolicy
     property webkitMatchesSelector
     property webkitRequestFullScreen
     property webkitRequestFullscreen
@@ -417,6 +420,7 @@ html element audio
     property playbackRate
     property played
     property preload
+    property preservesPitch
     property readyState
     property remote
     property seekable
@@ -458,7 +462,6 @@ html element body
     property onpagehide
     property onpageshow
     property onpopstate
-    property onportalactivate
     property onrejectionhandled
     property onstorage
     property ontimezonechange
@@ -611,7 +614,6 @@ html element frameset
     property onpagehide
     property onpageshow
     property onpopstate
-    property onportalactivate
     property onrejectionhandled
     property onstorage
     property ontimezonechange
@@ -727,7 +729,6 @@ html element input
     property name
     property pattern
     property placeholder
-    property rawValue
     property readOnly
     property reportValidity
     property required
@@ -778,13 +779,13 @@ html element link
     property hreflang
     property imageSizes
     property imageSrcset
-    property import
     property importance
     property integrity
     property media
     property referrerPolicy
     property rel
     property relList
+    property resources
     property rev
     property sheet
     property sizes
@@ -899,13 +900,6 @@ html element param
     property valueType
 html element picture
 html element plaintext
-html element portal
-    property activate
-    property onmessage
-    property onmessageerror
-    property postMessage
-    property referrerPolicy
-    property src
 html element pre
     property width
 html element progress
@@ -1182,6 +1176,7 @@ html element video
     property playsInline
     property poster
     property preload
+    property preservesPitch
     property readyState
     property remote
     property requestPictureInPicture
@@ -1309,7 +1304,6 @@ namespace http://www.w3.org/2000/svg
     property computedRole
     property computedStyleMap
     property contains
-    property createShadowRoot
     property dataset
     property dispatchEvent
     property elementTiming
@@ -1324,7 +1318,6 @@ namespace http://www.w3.org/2000/svg
     property getAttributeNodeNS
     property getBoundingClientRect
     property getClientRects
-    property getDestinationInsertionPoints
     property getElementsByClassName
     property getElementsByTagName
     property getElementsByTagNameNS
@@ -1431,7 +1424,6 @@ namespace http://www.w3.org/2000/svg
     property onpointerup
     property onprogress
     property onratechange
-    property onrendersubtreeactivation
     property onreset
     property onresize
     property onscroll
@@ -1451,7 +1443,10 @@ namespace http://www.w3.org/2000/svg
     property ontouchend
     property ontouchmove
     property ontouchstart
+    property ontransitioncancel
     property ontransitionend
+    property ontransitionrun
+    property ontransitionstart
     property onvolumechange
     property onwaiting
     property onwebkitanimationend
@@ -1481,6 +1476,7 @@ namespace http://www.w3.org/2000/svg
     property removeChild
     property removeEventListener
     property replaceChild
+    property replaceChildren
     property replaceWith
     property requestFullscreen
     property requestPointerLock
@@ -1498,6 +1494,7 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setInnerHTML
     property setPointerCapture
     property shadowRoot
     property slot

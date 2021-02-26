@@ -23,9 +23,11 @@
 #include "dawn_native/metal/ComputePipelineMTL.h"
 #include "dawn_native/metal/DeviceMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
+#include "dawn_native/metal/QuerySetMTL.h"
 #include "dawn_native/metal/RenderPipelineMTL.h"
 #include "dawn_native/metal/SamplerMTL.h"
 #include "dawn_native/metal/TextureMTL.h"
+#include "dawn_native/metal/UtilsMetal.h"
 
 namespace dawn_native { namespace metal {
 
@@ -40,13 +42,25 @@ namespace dawn_native { namespace metal {
             MTLStoreActionStoreAndMultisampleResolve;
 #pragma clang diagnostic pop
 
+        MTLIndexType MTLIndexFormat(wgpu::IndexFormat format) {
+            switch (format) {
+                case wgpu::IndexFormat::Uint16:
+                    return MTLIndexTypeUInt16;
+                case wgpu::IndexFormat::Uint32:
+                    return MTLIndexTypeUInt32;
+                case wgpu::IndexFormat::Undefined:
+                    UNREACHABLE();
+            }
+        }
+
         // Creates an autoreleased MTLRenderPassDescriptor matching desc
         MTLRenderPassDescriptor* CreateMTLRenderPassDescriptor(BeginRenderPassCmd* renderPass) {
             MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
 
-            for (uint32_t i :
+            for (ColorAttachmentIndex attachment :
                  IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
-                auto& attachmentInfo = renderPass->colorAttachments[i];
+                uint8_t i = static_cast<uint8_t>(attachment);
+                auto& attachmentInfo = renderPass->colorAttachments[attachment];
 
                 switch (attachmentInfo.loadOp) {
                     case wgpu::LoadOp::Clear:
@@ -58,10 +72,6 @@ namespace dawn_native { namespace metal {
 
                     case wgpu::LoadOp::Load:
                         descriptor.colorAttachments[i].loadAction = MTLLoadActionLoad;
-                        break;
-
-                    default:
-                        UNREACHABLE();
                         break;
                 }
 
@@ -92,23 +102,20 @@ namespace dawn_native { namespace metal {
                     case wgpu::StoreOp::Clear:
                         descriptor.colorAttachments[i].storeAction = MTLStoreActionDontCare;
                         break;
-
-                    default:
-                        UNREACHABLE();
-                        break;
                 }
             }
 
             if (renderPass->attachmentState->HasDepthStencilAttachment()) {
                 auto& attachmentInfo = renderPass->depthStencilAttachment;
 
-                // TODO(jiawei.shao@intel.com): support rendering into a layer of a texture.
                 id<MTLTexture> texture =
                     ToBackend(attachmentInfo.view->GetTexture())->GetMTLTexture();
                 const Format& format = attachmentInfo.view->GetTexture()->GetFormat();
 
                 if (format.HasDepth()) {
                     descriptor.depthAttachment.texture = texture;
+                    descriptor.depthAttachment.level = attachmentInfo.view->GetBaseMipLevel();
+                    descriptor.depthAttachment.slice = attachmentInfo.view->GetBaseArrayLayer();
 
                     switch (attachmentInfo.depthStoreOp) {
                         case wgpu::StoreOp::Store:
@@ -117,10 +124,6 @@ namespace dawn_native { namespace metal {
 
                         case wgpu::StoreOp::Clear:
                             descriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-                            break;
-
-                        default:
-                            UNREACHABLE();
                             break;
                     }
 
@@ -133,15 +136,13 @@ namespace dawn_native { namespace metal {
                         case wgpu::LoadOp::Load:
                             descriptor.depthAttachment.loadAction = MTLLoadActionLoad;
                             break;
-
-                        default:
-                            UNREACHABLE();
-                            break;
                     }
                 }
 
                 if (format.HasStencil()) {
                     descriptor.stencilAttachment.texture = texture;
+                    descriptor.stencilAttachment.level = attachmentInfo.view->GetBaseMipLevel();
+                    descriptor.stencilAttachment.slice = attachmentInfo.view->GetBaseArrayLayer();
 
                     switch (attachmentInfo.stencilStoreOp) {
                         case wgpu::StoreOp::Store:
@@ -150,10 +151,6 @@ namespace dawn_native { namespace metal {
 
                         case wgpu::StoreOp::Clear:
                             descriptor.stencilAttachment.storeAction = MTLStoreActionDontCare;
-                            break;
-
-                        default:
-                            UNREACHABLE();
                             break;
                     }
 
@@ -165,10 +162,6 @@ namespace dawn_native { namespace metal {
 
                         case wgpu::LoadOp::Load:
                             descriptor.stencilAttachment.loadAction = MTLLoadActionLoad;
-                            break;
-
-                        default:
-                            UNREACHABLE();
                             break;
                     }
                 }
@@ -259,7 +252,9 @@ namespace dawn_native { namespace metal {
             // MSL code generated by SPIRV-Cross expects.
             PerStage<std::array<uint32_t, kGenericMetalBufferSlots>> data;
 
-            void Apply(id<MTLRenderCommandEncoder> render, RenderPipeline* pipeline) {
+            void Apply(id<MTLRenderCommandEncoder> render,
+                       RenderPipeline* pipeline,
+                       bool enableVertexPulling) {
                 wgpu::ShaderStage stagesToApply =
                     dirtyStages & pipeline->GetStagesRequiringStorageBufferLength();
 
@@ -270,6 +265,11 @@ namespace dawn_native { namespace metal {
                 if (stagesToApply & wgpu::ShaderStage::Vertex) {
                     uint32_t bufferCount = ToBackend(pipeline->GetLayout())
                                                ->GetBufferBindingCount(SingleShaderStage::Vertex);
+
+                    if (enableVertexPulling) {
+                        bufferCount += pipeline->GetVertexStateDescriptor()->vertexBufferCount;
+                    }
+
                     [render setVertexBytes:data[SingleShaderStage::Vertex].data()
                                     length:sizeof(uint32_t) * bufferCount
                                    atIndex:kBufferLengthBufferSlot];
@@ -306,161 +306,6 @@ namespace dawn_native { namespace metal {
             }
         };
 
-        struct TextureBufferCopySplit {
-            static constexpr uint32_t kMaxTextureBufferCopyRegions = 3;
-
-            struct CopyInfo {
-                NSUInteger bufferOffset;
-                NSUInteger bytesPerRow;
-                NSUInteger bytesPerImage;
-                MTLOrigin textureOrigin;
-                MTLSize copyExtent;
-            };
-
-            uint32_t count = 0;
-            std::array<CopyInfo, kMaxTextureBufferCopyRegions> copies;
-        };
-
-        MTLOrigin MakeMTLOrigin(Origin3D origin) {
-            return MTLOriginMake(origin.x, origin.y, origin.z);
-        }
-
-        MTLSize MakeMTLSize(Extent3D extent) {
-            return MTLSizeMake(extent.width, extent.height, extent.depth);
-        }
-
-        TextureBufferCopySplit ComputeTextureBufferCopySplit(Origin3D origin,
-                                                             Extent3D copyExtent,
-                                                             Format textureFormat,
-                                                             Extent3D virtualSizeAtLevel,
-                                                             uint64_t bufferSize,
-                                                             uint64_t bufferOffset,
-                                                             uint32_t bytesPerRow,
-                                                             uint32_t rowsPerImage) {
-            TextureBufferCopySplit copy;
-
-            // When copying textures from/to an unpacked buffer, the Metal validation layer doesn't
-            // compute the correct range when checking if the buffer is big enough to contain the
-            // data for the whole copy. Instead of looking at the position of the last texel in the
-            // buffer, it computes the volume of the 3D box with bytesPerRow * (rowsPerImage /
-            // format.blockHeight) * copySize.depth. For example considering the pixel buffer below
-            // where in memory, each row data (D) of the texture is followed by some padding data
-            // (P):
-            //     |DDDDDDD|PP|
-            //     |DDDDDDD|PP|
-            //     |DDDDDDD|PP|
-            //     |DDDDDDD|PP|
-            //     |DDDDDDA|PP|
-            // The last pixel read will be A, but the driver will think it is the whole last padding
-            // row, causing it to generate an error when the pixel buffer is just big enough.
-
-            // We work around this limitation by detecting when Metal would complain and copy the
-            // last image and row separately using tight sourceBytesPerRow or sourceBytesPerImage.
-            uint32_t dataRowsPerImage = rowsPerImage / textureFormat.blockHeight;
-            uint32_t bytesPerImage = bytesPerRow * dataRowsPerImage;
-
-            // Metal validation layer requires that if the texture's pixel format is a compressed
-            // format, the sourceSize must be a multiple of the pixel format's block size or be
-            // clamped to the edge of the texture if the block extends outside the bounds of a
-            // texture.
-            uint32_t clampedCopyExtentWidth =
-                (origin.x + copyExtent.width > virtualSizeAtLevel.width)
-                    ? (virtualSizeAtLevel.width - origin.x)
-                    : copyExtent.width;
-            uint32_t clampedCopyExtentHeight =
-                (origin.y + copyExtent.height > virtualSizeAtLevel.height)
-                    ? (virtualSizeAtLevel.height - origin.y)
-                    : copyExtent.height;
-
-            // Check whether buffer size is big enough.
-            bool needWorkaround = bufferSize - bufferOffset < bytesPerImage * copyExtent.depth;
-            if (!needWorkaround) {
-                copy.count = 1;
-                copy.copies[0].bufferOffset = bufferOffset;
-                copy.copies[0].bytesPerRow = bytesPerRow;
-                copy.copies[0].bytesPerImage = bytesPerImage;
-                copy.copies[0].textureOrigin = MakeMTLOrigin(origin);
-                copy.copies[0].copyExtent =
-                    MTLSizeMake(clampedCopyExtentWidth, clampedCopyExtentHeight, copyExtent.depth);
-                return copy;
-            }
-
-            uint64_t currentOffset = bufferOffset;
-
-            // Doing all the copy except the last image.
-            if (copyExtent.depth > 1) {
-                copy.copies[copy.count].bufferOffset = currentOffset;
-                copy.copies[copy.count].bytesPerRow = bytesPerRow;
-                copy.copies[copy.count].bytesPerImage = bytesPerImage;
-                copy.copies[copy.count].textureOrigin = MakeMTLOrigin(origin);
-                copy.copies[copy.count].copyExtent = MTLSizeMake(
-                    clampedCopyExtentWidth, clampedCopyExtentHeight, copyExtent.depth - 1);
-
-                ++copy.count;
-
-                // Update offset to copy to the last image.
-                currentOffset += (copyExtent.depth - 1) * bytesPerImage;
-            }
-
-            // Doing all the copy in last image except the last row.
-            uint32_t copyBlockRowCount = copyExtent.height / textureFormat.blockHeight;
-            if (copyBlockRowCount > 1) {
-                copy.copies[copy.count].bufferOffset = currentOffset;
-                copy.copies[copy.count].bytesPerRow = bytesPerRow;
-                copy.copies[copy.count].bytesPerImage = bytesPerRow * (copyBlockRowCount - 1);
-                copy.copies[copy.count].textureOrigin =
-                    MTLOriginMake(origin.x, origin.y, origin.z + copyExtent.depth - 1);
-
-                ASSERT(copyExtent.height - textureFormat.blockHeight < virtualSizeAtLevel.height);
-                copy.copies[copy.count].copyExtent = MTLSizeMake(
-                    clampedCopyExtentWidth, copyExtent.height - textureFormat.blockHeight, 1);
-
-                ++copy.count;
-
-                // Update offset to copy to the last row.
-                currentOffset += (copyBlockRowCount - 1) * bytesPerRow;
-            }
-
-            // Doing the last row copy with the exact number of bytes in last row.
-            // Workaround this issue in a way just like the copy to a 1D texture.
-            uint32_t lastRowDataSize =
-                (copyExtent.width / textureFormat.blockWidth) * textureFormat.blockByteSize;
-            uint32_t lastRowCopyExtentHeight =
-                textureFormat.blockHeight + clampedCopyExtentHeight - copyExtent.height;
-            ASSERT(lastRowCopyExtentHeight <= textureFormat.blockHeight);
-
-            copy.copies[copy.count].bufferOffset = currentOffset;
-            copy.copies[copy.count].bytesPerRow = lastRowDataSize;
-            copy.copies[copy.count].bytesPerImage = lastRowDataSize;
-            copy.copies[copy.count].textureOrigin =
-                MTLOriginMake(origin.x, origin.y + copyExtent.height - textureFormat.blockHeight,
-                              origin.z + copyExtent.depth - 1);
-            copy.copies[copy.count].copyExtent =
-                MTLSizeMake(clampedCopyExtentWidth, lastRowCopyExtentHeight, 1);
-            ++copy.count;
-
-            return copy;
-        }
-
-        void EnsureSourceTextureInitialized(Texture* texture,
-                                            const Extent3D& size,
-                                            const TextureCopy& src) {
-            // TODO(crbug.com/dawn/145): Specify multiple layers based on |size|
-            texture->EnsureSubresourceContentInitialized(src.mipLevel, 1, src.arrayLayer, 1);
-        }
-
-        void EnsureDestinationTextureInitialized(Texture* texture,
-                                                 const Extent3D& size,
-                                                 const TextureCopy& dst) {
-            // TODO(crbug.com/dawn/145): Specify multiple layers based on |size|
-            if (IsCompleteSubresourceCopiedTo(texture, size, dst.mipLevel)) {
-                texture->SetIsSubresourceContentInitialized(true, dst.mipLevel, 1, dst.arrayLayer,
-                                                            1);
-            } else {
-                texture->EnsureSubresourceContentInitialized(dst.mipLevel, 1, dst.arrayLayer, 1);
-            }
-        }
-
         // Keeps track of the dirty bind groups so they can be lazily applied when we know the
         // pipeline state.
         // Bind groups may be inherited because bind groups are packed in the buffer /
@@ -473,7 +318,8 @@ namespace dawn_native { namespace metal {
 
             template <typename Encoder>
             void Apply(Encoder encoder) {
-                for (uint32_t index : IterateBitSet(mDirtyBindGroupsObjectChangedOrIsDynamic)) {
+                for (BindGroupIndex index :
+                     IterateBitSet(mDirtyBindGroupsObjectChangedOrIsDynamic)) {
                     ApplyBindGroup(encoder, index, ToBackend(mBindGroups[index]),
                                    mDynamicOffsetCounts[index], mDynamicOffsets[index].data(),
                                    ToBackend(mPipelineLayout));
@@ -488,7 +334,7 @@ namespace dawn_native { namespace metal {
             // two encoder types.
             void ApplyBindGroupImpl(id<MTLRenderCommandEncoder> render,
                                     id<MTLComputeCommandEncoder> compute,
-                                    uint32_t index,
+                                    BindGroupIndex index,
                                     BindGroup* group,
                                     uint32_t dynamicOffsetCount,
                                     uint64_t* dynamicOffsets,
@@ -498,7 +344,7 @@ namespace dawn_native { namespace metal {
                 // TODO(kainino@chromium.org): Maintain buffers and offsets arrays in BindGroup
                 // so that we only have to do one setVertexBuffers and one setFragmentBuffers
                 // call here.
-                for (BindingIndex bindingIndex = 0;
+                for (BindingIndex bindingIndex{0};
                      bindingIndex < group->GetLayout()->GetBindingCount(); ++bindingIndex) {
                     const BindingInfo& bindingInfo =
                         group->GetLayout()->GetBindingInfo(bindingIndex);
@@ -590,6 +436,7 @@ namespace dawn_native { namespace metal {
                         }
 
                         case wgpu::BindingType::SampledTexture:
+                        case wgpu::BindingType::MultisampledTexture:
                         case wgpu::BindingType::ReadonlyStorageTexture:
                         case wgpu::BindingType::WriteonlyStorageTexture: {
                             auto textureView =
@@ -608,10 +455,6 @@ namespace dawn_native { namespace metal {
                             }
                             break;
                         }
-
-                        case wgpu::BindingType::StorageTexture:
-                            UNREACHABLE();
-                            break;
                     }
                 }
             }
@@ -633,13 +476,17 @@ namespace dawn_native { namespace metal {
         // all the relevant state.
         class VertexBufferTracker {
           public:
-            void OnSetVertexBuffer(uint32_t slot, Buffer* buffer, uint64_t offset) {
+            explicit VertexBufferTracker(StorageBufferLengthTracker* lengthTracker)
+                : mLengthTracker(lengthTracker) {
+            }
+
+            void OnSetVertexBuffer(VertexBufferSlot slot, Buffer* buffer, uint64_t offset) {
                 mVertexBuffers[slot] = buffer->GetMTLBuffer();
                 mVertexBufferOffsets[slot] = offset;
 
-                // Use 64 bit masks and make sure there are no shift UB
-                static_assert(kMaxVertexBuffers <= 8 * sizeof(unsigned long long) - 1, "");
-                mDirtyVertexBuffers |= 1ull << slot;
+                ASSERT(buffer->GetSize() < std::numeric_limits<uint32_t>::max());
+                mVertexBufferBindingSizes[slot] = static_cast<uint32_t>(buffer->GetSize() - offset);
+                mDirtyVertexBuffers.set(slot);
             }
 
             void OnSetPipeline(RenderPipeline* lastPipeline, RenderPipeline* pipeline) {
@@ -649,15 +496,24 @@ namespace dawn_native { namespace metal {
                 mDirtyVertexBuffers |= pipeline->GetVertexBufferSlotsUsed();
             }
 
-            void Apply(id<MTLRenderCommandEncoder> encoder, RenderPipeline* pipeline) {
-                std::bitset<kMaxVertexBuffers> vertexBuffersToApply =
+            void Apply(id<MTLRenderCommandEncoder> encoder,
+                       RenderPipeline* pipeline,
+                       bool enableVertexPulling) {
+                const auto& vertexBuffersToApply =
                     mDirtyVertexBuffers & pipeline->GetVertexBufferSlotsUsed();
 
-                for (uint32_t dawnIndex : IterateBitSet(vertexBuffersToApply)) {
-                    uint32_t metalIndex = pipeline->GetMtlVertexBufferIndex(dawnIndex);
+                for (VertexBufferSlot slot : IterateBitSet(vertexBuffersToApply)) {
+                    uint32_t metalIndex = pipeline->GetMtlVertexBufferIndex(slot);
 
-                    [encoder setVertexBuffers:&mVertexBuffers[dawnIndex]
-                                      offsets:&mVertexBufferOffsets[dawnIndex]
+                    if (enableVertexPulling) {
+                        // Insert lengths for vertex buffers bound as storage buffers
+                        mLengthTracker->data[SingleShaderStage::Vertex][metalIndex] =
+                            mVertexBufferBindingSizes[slot];
+                        mLengthTracker->dirtyStages |= wgpu::ShaderStage::Vertex;
+                    }
+
+                    [encoder setVertexBuffers:&mVertexBuffers[slot]
+                                      offsets:&mVertexBufferOffsets[slot]
                                     withRange:NSMakeRange(metalIndex, 1)];
                 }
 
@@ -666,35 +522,37 @@ namespace dawn_native { namespace metal {
 
           private:
             // All the indices in these arrays are Dawn vertex buffer indices
-            std::bitset<kMaxVertexBuffers> mDirtyVertexBuffers;
-            std::array<id<MTLBuffer>, kMaxVertexBuffers> mVertexBuffers;
-            std::array<NSUInteger, kMaxVertexBuffers> mVertexBufferOffsets;
+            ityp::bitset<VertexBufferSlot, kMaxVertexBuffers> mDirtyVertexBuffers;
+            ityp::array<VertexBufferSlot, id<MTLBuffer>, kMaxVertexBuffers> mVertexBuffers;
+            ityp::array<VertexBufferSlot, NSUInteger, kMaxVertexBuffers> mVertexBufferOffsets;
+            ityp::array<VertexBufferSlot, uint32_t, kMaxVertexBuffers> mVertexBufferBindingSizes;
+
+            StorageBufferLengthTracker* mLengthTracker;
         };
 
     }  // anonymous namespace
 
     CommandBuffer::CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor)
-        : CommandBufferBase(encoder, descriptor), mCommands(encoder->AcquireCommands()) {
+        : CommandBufferBase(encoder, descriptor) {
     }
 
-    CommandBuffer::~CommandBuffer() {
-        FreeCommands(&mCommands);
-    }
-
-    void CommandBuffer::FillCommands(CommandRecordingContext* commandContext) {
+    MaybeError CommandBuffer::FillCommands(CommandRecordingContext* commandContext) {
         const std::vector<PassResourceUsage>& passResourceUsages = GetResourceUsages().perPass;
         size_t nextPassNumber = 0;
 
-        auto LazyClearForPass = [](const PassResourceUsage& usages) {
+        auto LazyClearForPass = [](const PassResourceUsage& usages,
+                                   CommandRecordingContext* commandContext) {
             for (size_t i = 0; i < usages.textures.size(); ++i) {
                 Texture* texture = ToBackend(usages.textures[i]);
                 // Clear textures that are not output attachments. Output attachments will be
                 // cleared in CreateMTLRenderPassDescriptor by setting the loadop to clear when the
                 // texture subresource has not been initialized before the render pass.
-                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::OutputAttachment)) {
-                    texture->EnsureSubresourceContentInitialized(0, texture->GetNumMipLevels(), 0,
-                                                                 texture->GetArrayLayers());
+                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::RenderAttachment)) {
+                    texture->EnsureSubresourceContentInitialized(texture->GetAllSubresources());
                 }
+            }
+            for (BufferBase* bufferBase : usages.buffers) {
+                ToBackend(bufferBase)->EnsureDataInitialized(commandContext);
             }
         };
 
@@ -704,10 +562,10 @@ namespace dawn_native { namespace metal {
                 case Command::BeginComputePass: {
                     mCommands.NextCommand<BeginComputePassCmd>();
 
-                    LazyClearForPass(passResourceUsages[nextPassNumber]);
+                    LazyClearForPass(passResourceUsages[nextPassNumber], commandContext);
                     commandContext->EndBlit();
 
-                    EncodeComputePass(commandContext);
+                    DAWN_TRY(EncodeComputePass(commandContext));
 
                     nextPassNumber++;
                     break;
@@ -716,12 +574,12 @@ namespace dawn_native { namespace metal {
                 case Command::BeginRenderPass: {
                     BeginRenderPassCmd* cmd = mCommands.NextCommand<BeginRenderPassCmd>();
 
-                    LazyClearForPass(passResourceUsages[nextPassNumber]);
+                    LazyClearForPass(passResourceUsages[nextPassNumber], commandContext);
                     commandContext->EndBlit();
 
                     LazyClearRenderPassAttachments(cmd);
                     MTLRenderPassDescriptor* descriptor = CreateMTLRenderPassDescriptor(cmd);
-                    EncodeRenderPass(commandContext, descriptor, cmd->width, cmd->height);
+                    DAWN_TRY(EncodeRenderPass(commandContext, descriptor, cmd->width, cmd->height));
 
                     nextPassNumber++;
                     break;
@@ -729,6 +587,11 @@ namespace dawn_native { namespace metal {
 
                 case Command::CopyBufferToBuffer: {
                     CopyBufferToBufferCmd* copy = mCommands.NextCommand<CopyBufferToBufferCmd>();
+
+                    ToBackend(copy->source)->EnsureDataInitialized(commandContext);
+                    ToBackend(copy->destination)
+                        ->EnsureDataInitializedAsDestination(commandContext,
+                                                             copy->destinationOffset, copy->size);
 
                     [commandContext->EnsureBlit()
                            copyFromBuffer:ToBackend(copy->source)->GetMTLBuffer()
@@ -747,25 +610,43 @@ namespace dawn_native { namespace metal {
                     Buffer* buffer = ToBackend(src.buffer.Get());
                     Texture* texture = ToBackend(dst.texture.Get());
 
-                    EnsureDestinationTextureInitialized(texture, copy->copySize, copy->destination);
+                    buffer->EnsureDataInitialized(commandContext);
+                    EnsureDestinationTextureInitialized(texture, copy->destination, copy->copySize);
 
-                    Extent3D virtualSizeAtLevel = texture->GetMipLevelVirtualSize(dst.mipLevel);
-                    TextureBufferCopySplit splittedCopies = ComputeTextureBufferCopySplit(
-                        dst.origin, copySize, texture->GetFormat(), virtualSizeAtLevel,
-                        buffer->GetSize(), src.offset, src.bytesPerRow, src.rowsPerImage);
+                    TextureBufferCopySplit splitCopies = ComputeTextureBufferCopySplit(
+                        texture, dst.mipLevel, dst.origin, copySize, buffer->GetSize(), src.offset,
+                        src.bytesPerRow, src.rowsPerImage, dst.aspect);
 
-                    for (uint32_t i = 0; i < splittedCopies.count; ++i) {
-                        const TextureBufferCopySplit::CopyInfo& copyInfo = splittedCopies.copies[i];
-                        [commandContext->EnsureBlit() copyFromBuffer:buffer->GetMTLBuffer()
-                                                        sourceOffset:copyInfo.bufferOffset
-                                                   sourceBytesPerRow:copyInfo.bytesPerRow
-                                                 sourceBytesPerImage:copyInfo.bytesPerImage
-                                                          sourceSize:copyInfo.copyExtent
-                                                           toTexture:texture->GetMTLTexture()
-                                                    destinationSlice:dst.arrayLayer
-                                                    destinationLevel:dst.mipLevel
-                                                   destinationOrigin:copyInfo.textureOrigin];
+                    for (uint32_t i = 0; i < splitCopies.count; ++i) {
+                        const TextureBufferCopySplit::CopyInfo& copyInfo = splitCopies.copies[i];
+
+                        const uint32_t copyBaseLayer = copyInfo.textureOrigin.z;
+                        const uint32_t copyLayerCount = copyInfo.copyExtent.depth;
+                        const MTLOrigin textureOrigin =
+                            MTLOriginMake(copyInfo.textureOrigin.x, copyInfo.textureOrigin.y, 0);
+                        const MTLSize copyExtent =
+                            MTLSizeMake(copyInfo.copyExtent.width, copyInfo.copyExtent.height, 1);
+
+                        MTLBlitOption blitOption =
+                            ComputeMTLBlitOption(texture->GetFormat(), dst.aspect);
+
+                        uint64_t bufferOffset = copyInfo.bufferOffset;
+                        for (uint32_t copyLayer = copyBaseLayer;
+                             copyLayer < copyBaseLayer + copyLayerCount; ++copyLayer) {
+                            [commandContext->EnsureBlit() copyFromBuffer:buffer->GetMTLBuffer()
+                                                            sourceOffset:bufferOffset
+                                                       sourceBytesPerRow:copyInfo.bytesPerRow
+                                                     sourceBytesPerImage:copyInfo.bytesPerImage
+                                                              sourceSize:copyExtent
+                                                               toTexture:texture->GetMTLTexture()
+                                                        destinationSlice:copyLayer
+                                                        destinationLevel:dst.mipLevel
+                                                       destinationOrigin:textureOrigin
+                                                                 options:blitOption];
+                            bufferOffset += copyInfo.bytesPerImage;
+                        }
                     }
+
                     break;
                 }
 
@@ -777,25 +658,45 @@ namespace dawn_native { namespace metal {
                     Texture* texture = ToBackend(src.texture.Get());
                     Buffer* buffer = ToBackend(dst.buffer.Get());
 
-                    EnsureSourceTextureInitialized(texture, copy->copySize, copy->source);
+                    buffer->EnsureDataInitializedAsDestination(commandContext, copy);
 
-                    Extent3D virtualSizeAtLevel = texture->GetMipLevelVirtualSize(src.mipLevel);
-                    TextureBufferCopySplit splittedCopies = ComputeTextureBufferCopySplit(
-                        src.origin, copySize, texture->GetFormat(), virtualSizeAtLevel,
-                        buffer->GetSize(), dst.offset, dst.bytesPerRow, dst.rowsPerImage);
+                    texture->EnsureSubresourceContentInitialized(
+                        GetSubresourcesAffectedByCopy(src, copySize));
 
-                    for (uint32_t i = 0; i < splittedCopies.count; ++i) {
-                        const TextureBufferCopySplit::CopyInfo& copyInfo = splittedCopies.copies[i];
-                        [commandContext->EnsureBlit() copyFromTexture:texture->GetMTLTexture()
-                                                          sourceSlice:src.arrayLayer
-                                                          sourceLevel:src.mipLevel
-                                                         sourceOrigin:copyInfo.textureOrigin
-                                                           sourceSize:copyInfo.copyExtent
-                                                             toBuffer:buffer->GetMTLBuffer()
-                                                    destinationOffset:copyInfo.bufferOffset
-                                               destinationBytesPerRow:copyInfo.bytesPerRow
-                                             destinationBytesPerImage:copyInfo.bytesPerImage];
+                    TextureBufferCopySplit splitCopies = ComputeTextureBufferCopySplit(
+                        texture, src.mipLevel, src.origin, copySize, buffer->GetSize(), dst.offset,
+                        dst.bytesPerRow, dst.rowsPerImage, src.aspect);
+
+                    for (uint32_t i = 0; i < splitCopies.count; ++i) {
+                        const TextureBufferCopySplit::CopyInfo& copyInfo = splitCopies.copies[i];
+
+                        const uint32_t copyBaseLayer = copyInfo.textureOrigin.z;
+                        const uint32_t copyLayerCount = copyInfo.copyExtent.depth;
+                        const MTLOrigin textureOrigin =
+                            MTLOriginMake(copyInfo.textureOrigin.x, copyInfo.textureOrigin.y, 0);
+                        const MTLSize copyExtent =
+                            MTLSizeMake(copyInfo.copyExtent.width, copyInfo.copyExtent.height, 1);
+
+                        MTLBlitOption blitOption =
+                            ComputeMTLBlitOption(texture->GetFormat(), src.aspect);
+
+                        uint64_t bufferOffset = copyInfo.bufferOffset;
+                        for (uint32_t copyLayer = copyBaseLayer;
+                             copyLayer < copyBaseLayer + copyLayerCount; ++copyLayer) {
+                            [commandContext->EnsureBlit() copyFromTexture:texture->GetMTLTexture()
+                                                              sourceSlice:copyLayer
+                                                              sourceLevel:src.mipLevel
+                                                             sourceOrigin:textureOrigin
+                                                               sourceSize:copyExtent
+                                                                 toBuffer:buffer->GetMTLBuffer()
+                                                        destinationOffset:bufferOffset
+                                                   destinationBytesPerRow:copyInfo.bytesPerRow
+                                                 destinationBytesPerImage:copyInfo.bytesPerImage
+                                                                  options:blitOption];
+                            bufferOffset += copyInfo.bytesPerImage;
+                        }
                     }
+
                     break;
                 }
 
@@ -805,34 +706,110 @@ namespace dawn_native { namespace metal {
                     Texture* srcTexture = ToBackend(copy->source.texture.Get());
                     Texture* dstTexture = ToBackend(copy->destination.texture.Get());
 
-                    EnsureSourceTextureInitialized(srcTexture, copy->copySize, copy->source);
-                    EnsureDestinationTextureInitialized(dstTexture, copy->copySize,
-                                                        copy->destination);
+                    srcTexture->EnsureSubresourceContentInitialized(
+                        GetSubresourcesAffectedByCopy(copy->source, copy->copySize));
+                    EnsureDestinationTextureInitialized(dstTexture, copy->destination,
+                                                        copy->copySize);
 
-                    [commandContext->EnsureBlit()
-                          copyFromTexture:srcTexture->GetMTLTexture()
-                              sourceSlice:copy->source.arrayLayer
-                              sourceLevel:copy->source.mipLevel
-                             sourceOrigin:MakeMTLOrigin(copy->source.origin)
-                               sourceSize:MakeMTLSize(copy->copySize)
-                                toTexture:dstTexture->GetMTLTexture()
-                         destinationSlice:copy->destination.arrayLayer
-                         destinationLevel:copy->destination.mipLevel
-                        destinationOrigin:MakeMTLOrigin(copy->destination.origin)];
+                    // TODO(jiawei.shao@intel.com): support copies with 1D and 3D textures.
+                    ASSERT(srcTexture->GetDimension() == wgpu::TextureDimension::e2D &&
+                           dstTexture->GetDimension() == wgpu::TextureDimension::e2D);
+                    const MTLSize sizeOneLayer =
+                        MTLSizeMake(copy->copySize.width, copy->copySize.height, 1);
+                    const MTLOrigin sourceOriginNoLayer =
+                        MTLOriginMake(copy->source.origin.x, copy->source.origin.y, 0);
+                    const MTLOrigin destinationOriginNoLayer =
+                        MTLOriginMake(copy->destination.origin.x, copy->destination.origin.y, 0);
+
+                    for (uint32_t slice = 0; slice < copy->copySize.depth; ++slice) {
+                        [commandContext->EnsureBlit()
+                              copyFromTexture:srcTexture->GetMTLTexture()
+                                  sourceSlice:copy->source.origin.z + slice
+                                  sourceLevel:copy->source.mipLevel
+                                 sourceOrigin:sourceOriginNoLayer
+                                   sourceSize:sizeOneLayer
+                                    toTexture:dstTexture->GetMTLTexture()
+                             destinationSlice:copy->destination.origin.z + slice
+                             destinationLevel:copy->destination.mipLevel
+                            destinationOrigin:destinationOriginNoLayer];
+                    }
                     break;
                 }
 
-                default: {
+                case Command::ResolveQuerySet: {
+                    ResolveQuerySetCmd* cmd = mCommands.NextCommand<ResolveQuerySetCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    Buffer* destination = ToBackend(cmd->destination.Get());
+
+                    destination->EnsureDataInitializedAsDestination(
+                        commandContext, cmd->destinationOffset, cmd->queryCount * sizeof(uint64_t));
+
+                    if (@available(macos 10.15, iOS 14.0, *)) {
+                        [commandContext->EnsureBlit()
+                              resolveCounters:querySet->GetCounterSampleBuffer()
+                                      inRange:NSMakeRange(cmd->firstQuery,
+                                                          cmd->firstQuery + cmd->queryCount)
+                            destinationBuffer:destination->GetMTLBuffer()
+                            destinationOffset:NSUInteger(cmd->destinationOffset)];
+                    } else {
+                        UNREACHABLE();
+                    }
+                    break;
+                }
+
+                case Command::WriteTimestamp: {
+                    WriteTimestampCmd* cmd = mCommands.NextCommand<WriteTimestampCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+
+                    if (@available(macos 10.15, iOS 14.0, *)) {
+                        [commandContext->EnsureBlit()
+                            sampleCountersInBuffer:querySet->GetCounterSampleBuffer()
+                                     atSampleIndex:NSUInteger(cmd->queryIndex)
+                                       withBarrier:YES];
+                    } else {
+                        UNREACHABLE();
+                    }
+                    break;
+                }
+
+                case Command::InsertDebugMarker: {
+                    // MTLCommandBuffer does not implement insertDebugSignpost
+                    SkipCommand(&mCommands, type);
+                    break;
+                }
+
+                case Command::PopDebugGroup: {
+                    mCommands.NextCommand<PopDebugGroupCmd>();
+
+                    if (@available(macos 10.13, *)) {
+                        [commandContext->GetCommands() popDebugGroup];
+                    }
+                    break;
+                }
+
+                case Command::PushDebugGroup: {
+                    PushDebugGroupCmd* cmd = mCommands.NextCommand<PushDebugGroupCmd>();
+                    char* label = mCommands.NextData<char>(cmd->length + 1);
+
+                    if (@available(macos 10.13, *)) {
+                        NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
+                        [commandContext->GetCommands() pushDebugGroup:mtlLabel];
+                        [mtlLabel release];
+                    }
+
+                    break;
+                }
+
+                default:
                     UNREACHABLE();
-                    break;
-                }
             }
         }
 
         commandContext->EndBlit();
+        return {};
     }
 
-    void CommandBuffer::EncodeComputePass(CommandRecordingContext* commandContext) {
+    MaybeError CommandBuffer::EncodeComputePass(CommandRecordingContext* commandContext) {
         ComputePipeline* lastPipeline = nullptr;
         StorageBufferLengthTracker storageBufferLengths = {};
         BindGroupTracker bindGroups(&storageBufferLengths);
@@ -845,7 +822,7 @@ namespace dawn_native { namespace metal {
                 case Command::EndComputePass: {
                     mCommands.NextCommand<EndComputePassCmd>();
                     commandContext->EndCompute();
-                    return;
+                    return {};
                 }
 
                 case Command::Dispatch: {
@@ -923,6 +900,20 @@ namespace dawn_native { namespace metal {
                     break;
                 }
 
+                case Command::WriteTimestamp: {
+                    WriteTimestampCmd* cmd = mCommands.NextCommand<WriteTimestampCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+
+                    if (@available(macos 10.15, iOS 14.0, *)) {
+                        [encoder sampleCountersInBuffer:querySet->GetCounterSampleBuffer()
+                                          atSampleIndex:NSUInteger(cmd->queryIndex)
+                                            withBarrier:YES];
+                    } else {
+                        UNREACHABLE();
+                    }
+                    break;
+                }
+
                 default: {
                     UNREACHABLE();
                     break;
@@ -934,10 +925,10 @@ namespace dawn_native { namespace metal {
         UNREACHABLE();
     }
 
-    void CommandBuffer::EncodeRenderPass(CommandRecordingContext* commandContext,
-                                         MTLRenderPassDescriptor* mtlRenderPass,
-                                         uint32_t width,
-                                         uint32_t height) {
+    MaybeError CommandBuffer::EncodeRenderPass(CommandRecordingContext* commandContext,
+                                               MTLRenderPassDescriptor* mtlRenderPass,
+                                               uint32_t width,
+                                               uint32_t height) {
         ASSERT(mtlRenderPass);
 
         Device* device = ToBackend(GetDevice());
@@ -981,7 +972,7 @@ namespace dawn_native { namespace metal {
             // If we need to use a temporary resolve texture we need to copy the result of MSAA
             // resolve back to the true resolve targets.
             if (useTemporaryResolveTexture) {
-                EncodeRenderPass(commandContext, mtlRenderPass, width, height);
+                DAWN_TRY(EncodeRenderPass(commandContext, mtlRenderPass, width, height));
                 for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
                     if (trueResolveTextures[i] == nil) {
                         continue;
@@ -994,7 +985,7 @@ namespace dawn_native { namespace metal {
                     [temporaryResolveTextures[i] release];
                     temporaryResolveTextures[i] = nil;
                 }
-                return;
+                return {};
             }
         }
 
@@ -1017,24 +1008,27 @@ namespace dawn_native { namespace metal {
 
             // If we found a store + MSAA resolve we need to resolve in a different render pass.
             if (hasStoreAndMSAAResolve) {
-                EncodeRenderPass(commandContext, mtlRenderPass, width, height);
+                DAWN_TRY(EncodeRenderPass(commandContext, mtlRenderPass, width, height));
                 ResolveInAnotherRenderPass(commandContext, mtlRenderPass, resolveTextures);
-                return;
+                return {};
             }
         }
 
-        EncodeRenderPassInternal(commandContext, mtlRenderPass, width, height);
+        DAWN_TRY(EncodeRenderPassInternal(commandContext, mtlRenderPass, width, height));
+        return {};
     }
 
-    void CommandBuffer::EncodeRenderPassInternal(CommandRecordingContext* commandContext,
-                                                 MTLRenderPassDescriptor* mtlRenderPass,
-                                                 uint32_t width,
-                                                 uint32_t height) {
+    MaybeError CommandBuffer::EncodeRenderPassInternal(CommandRecordingContext* commandContext,
+                                                       MTLRenderPassDescriptor* mtlRenderPass,
+                                                       uint32_t width,
+                                                       uint32_t height) {
+        bool enableVertexPulling = GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling);
         RenderPipeline* lastPipeline = nullptr;
         id<MTLBuffer> indexBuffer = nil;
         uint32_t indexBufferBaseOffset = 0;
-        VertexBufferTracker vertexBuffers;
+        wgpu::IndexFormat indexBufferFormat = wgpu::IndexFormat::Undefined;
         StorageBufferLengthTracker storageBufferLengths = {};
+        VertexBufferTracker vertexBuffers(&storageBufferLengths);
         BindGroupTracker bindGroups(&storageBufferLengths);
 
         id<MTLRenderCommandEncoder> encoder = commandContext->BeginRender(mtlRenderPass);
@@ -1044,9 +1038,9 @@ namespace dawn_native { namespace metal {
                 case Command::Draw: {
                     DrawCmd* draw = iter->NextCommand<DrawCmd>();
 
-                    vertexBuffers.Apply(encoder, lastPipeline);
+                    vertexBuffers.Apply(encoder, lastPipeline, enableVertexPulling);
                     bindGroups.Apply(encoder);
-                    storageBufferLengths.Apply(encoder, lastPipeline);
+                    storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
 
                     // The instance count must be non-zero, otherwise no-op
                     if (draw->instanceCount != 0) {
@@ -1069,12 +1063,19 @@ namespace dawn_native { namespace metal {
 
                 case Command::DrawIndexed: {
                     DrawIndexedCmd* draw = iter->NextCommand<DrawIndexedCmd>();
-                    size_t formatSize =
-                        IndexFormatSize(lastPipeline->GetVertexStateDescriptor()->indexFormat);
 
-                    vertexBuffers.Apply(encoder, lastPipeline);
+                    vertexBuffers.Apply(encoder, lastPipeline, enableVertexPulling);
                     bindGroups.Apply(encoder);
-                    storageBufferLengths.Apply(encoder, lastPipeline);
+                    storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
+
+                    // If a index format was specified in setIndexBuffer always use it.
+                    wgpu::IndexFormat indexFormat = indexBufferFormat;
+                    if (indexFormat == wgpu::IndexFormat::Undefined) {
+                        // Otherwise use the pipeline's index format.
+                        // TODO(crbug.com/dawn/502): This path is deprecated.
+                        indexFormat = lastPipeline->GetVertexStateDescriptor()->indexFormat;
+                    }
+                    size_t formatSize = IndexFormatSize(indexFormat);
 
                     // The index and instance count must be non-zero, otherwise no-op
                     if (draw->indexCount != 0 && draw->instanceCount != 0) {
@@ -1083,7 +1084,7 @@ namespace dawn_native { namespace metal {
                         if (draw->baseVertex == 0 && draw->firstInstance == 0) {
                             [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
                                                 indexCount:draw->indexCount
-                                                 indexType:lastPipeline->GetMTLIndexType()
+                                                 indexType:MTLIndexFormat(indexFormat)
                                                indexBuffer:indexBuffer
                                          indexBufferOffset:indexBufferBaseOffset +
                                                            draw->firstIndex * formatSize
@@ -1091,7 +1092,7 @@ namespace dawn_native { namespace metal {
                         } else {
                             [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
                                                 indexCount:draw->indexCount
-                                                 indexType:lastPipeline->GetMTLIndexType()
+                                                 indexType:MTLIndexFormat(indexFormat)
                                                indexBuffer:indexBuffer
                                          indexBufferOffset:indexBufferBaseOffset +
                                                            draw->firstIndex * formatSize
@@ -1106,9 +1107,9 @@ namespace dawn_native { namespace metal {
                 case Command::DrawIndirect: {
                     DrawIndirectCmd* draw = iter->NextCommand<DrawIndirectCmd>();
 
-                    vertexBuffers.Apply(encoder, lastPipeline);
+                    vertexBuffers.Apply(encoder, lastPipeline, enableVertexPulling);
                     bindGroups.Apply(encoder);
-                    storageBufferLengths.Apply(encoder, lastPipeline);
+                    storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
 
                     Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
                     id<MTLBuffer> indirectBuffer = buffer->GetMTLBuffer();
@@ -1121,14 +1122,22 @@ namespace dawn_native { namespace metal {
                 case Command::DrawIndexedIndirect: {
                     DrawIndirectCmd* draw = iter->NextCommand<DrawIndirectCmd>();
 
-                    vertexBuffers.Apply(encoder, lastPipeline);
+                    vertexBuffers.Apply(encoder, lastPipeline, enableVertexPulling);
                     bindGroups.Apply(encoder);
-                    storageBufferLengths.Apply(encoder, lastPipeline);
+                    storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
+
+                    // If a index format was specified in setIndexBuffer always use it.
+                    wgpu::IndexFormat indexFormat = indexBufferFormat;
+                    if (indexFormat == wgpu::IndexFormat::Undefined) {
+                        // Otherwise use the pipeline's index format.
+                        // TODO(crbug.com/dawn/502): This path is deprecated.
+                        indexFormat = lastPipeline->GetVertexStateDescriptor()->indexFormat;
+                    }
 
                     Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
                     id<MTLBuffer> indirectBuffer = buffer->GetMTLBuffer();
                     [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
-                                         indexType:lastPipeline->GetMTLIndexType()
+                                         indexType:MTLIndexFormat(indexFormat)
                                        indexBuffer:indexBuffer
                                  indexBufferOffset:indexBufferBaseOffset
                                     indirectBuffer:indirectBuffer
@@ -1173,6 +1182,9 @@ namespace dawn_native { namespace metal {
                     [encoder setDepthStencilState:newPipeline->GetMTLDepthStencilState()];
                     [encoder setFrontFacingWinding:newPipeline->GetMTLFrontFace()];
                     [encoder setCullMode:newPipeline->GetMTLCullMode()];
+                    [encoder setDepthBias:newPipeline->GetDepthBias()
+                               slopeScale:newPipeline->GetDepthBiasSlopeScale()
+                                    clamp:newPipeline->GetDepthBiasClamp()];
                     newPipeline->Encode(encoder);
 
                     lastPipeline = newPipeline;
@@ -1196,6 +1208,9 @@ namespace dawn_native { namespace metal {
                     auto b = ToBackend(cmd->buffer.Get());
                     indexBuffer = b->GetMTLBuffer();
                     indexBufferBaseOffset = cmd->offset;
+                    // TODO(crbug.com/dawn/502): Once setIndexBuffer is required to specify an
+                    // index buffer format store as an MTLIndexType.
+                    indexBufferFormat = cmd->format;
                     break;
                 }
 
@@ -1219,7 +1234,7 @@ namespace dawn_native { namespace metal {
                 case Command::EndRenderPass: {
                     mCommands.NextCommand<EndRenderPassCmd>();
                     commandContext->EndRender();
-                    return;
+                    return {};
                 }
 
                 case Command::SetStencilReference: {
@@ -1250,15 +1265,6 @@ namespace dawn_native { namespace metal {
                     rect.width = cmd->width;
                     rect.height = cmd->height;
 
-                    // The scissor rect x + width must be <= render pass width
-                    if ((rect.x + rect.width) > width) {
-                        rect.width = width - rect.x;
-                    }
-                    // The scissor rect y + height must be <= render pass height
-                    if ((rect.y + rect.height > height)) {
-                        rect.height = height - rect.y;
-                    }
-
                     [encoder setScissorRect:rect];
                     break;
                 }
@@ -1282,6 +1288,20 @@ namespace dawn_native { namespace metal {
                         while (iter->NextCommandId(&type)) {
                             EncodeRenderBundleCommand(iter, type);
                         }
+                    }
+                    break;
+                }
+
+                case Command::WriteTimestamp: {
+                    WriteTimestampCmd* cmd = mCommands.NextCommand<WriteTimestampCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+
+                    if (@available(macos 10.15, iOS 14.0, *)) {
+                        [encoder sampleCountersInBuffer:querySet->GetCounterSampleBuffer()
+                                          atSampleIndex:NSUInteger(cmd->queryIndex)
+                                            withBarrier:YES];
+                    } else {
+                        UNREACHABLE();
                     }
                     break;
                 }

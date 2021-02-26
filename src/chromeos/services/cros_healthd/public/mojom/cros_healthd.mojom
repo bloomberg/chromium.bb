@@ -13,9 +13,12 @@ module chromeos.cros_healthd.mojom;
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom";
+import "chromeos/services/network_health/public/mojom/network_diagnostics.mojom";
+import "chromeos/services/network_health/public/mojom/network_health.mojom";
 
 // Factory interface which allows remote ends to request implementations of the
-// probe or diagnostics services.
+// probe, diagnostics, or event services. Additionally, the browser can send
+// network-related implementations to the cros_healthd daemon.
 interface CrosHealthdServiceFactory {
   // Returns a bound interface to the diagnostics service.
   GetDiagnosticsService(CrosHealthdDiagnosticsService& service);
@@ -23,6 +26,16 @@ interface CrosHealthdServiceFactory {
   GetEventService(CrosHealthdEventService& service);
   // Returns a bound interface to the probe service.
   GetProbeService(CrosHealthdProbeService& service);
+  // Sends a bound interface to the Network Health service in Chrome.
+  SendNetworkHealthService(
+      pending_remote<
+          chromeos.network_health.mojom.NetworkHealthService> remote);
+  // Sends a NetworkDiagnosticsRoutines pending remote to the cros_healthd
+  // daemon.
+  SendNetworkDiagnosticsRoutines(
+      pending_remote<
+          chromeos.network_diagnostics.mojom.NetworkDiagnosticsRoutines>
+              network_diagnostics_routines);
 };
 
 // Diagnostics interface exposed by the cros_healthd daemon. Consumed in Chrome
@@ -68,38 +81,30 @@ interface CrosHealthdDiagnosticsService {
       => (RunRoutineResponse response);
 
   // Requests that the BatteryCapacity routine is created and started on the
-  // platform. This routine checks the battery's design capacity against the
-  // inputs. The routine will pass iff the design capacity of the battery read
-  // from the platform is inclusively within these bounds. This routine is only
-  // available if GetAvailableRoutines returned kBatteryCapactity.
-  //
-  // The request:
-  // * |low_mah| - lower bound for the battery's design capacity (mAh).
-  // * |high_mah| - upper bound for the battery's design capacity (mAh).
+  // platform. This routine checks the battery's design capacity against inputs
+  // configured in cros_config. If no configuration data is present in
+  // cros_config, the routine will fall back to fleet-wide default values of
+  // [1000, 10000]. The routine will pass iff the design capacity of the battery
+  // read from the platform is inclusively within these bounds. This routine is
+  // only available if GetAvailableRoutines returned kBatteryCapactity.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunBatteryCapacityRoutine(uint32 low_mah, uint32 high_mah)
-      => (RunRoutineResponse response);
+  RunBatteryCapacityRoutine() => (RunRoutineResponse response);
 
   // Requests that the BatteryHealth routine is created and started on the
   // platform. This routine checks the cycle count and percent wear of the
-  // battery. This routine is only available if GetAvailableRoutines returned
-  // kBatteryHealth.
-  //
-  // The request:
-  // * |maximum_cycle_count| - maximum cycle count allowed for the routine to
-  //                           pass.
-  // * |percent_battery_wear_allowed| - maximum percent battery wear allowed for
-  //                                    the routine to pass.
+  // battery against inputs configured in cros_config. If no configuration data
+  // is present in cros_config, the routine will fall back to fleet-wide default
+  // values of 1000 for the maximum allowable cycle count and 50% for maximum
+  // battery wear percentage allowed. This routine is only available if
+  // GetAvailableRoutines returned kBatteryHealth.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunBatteryHealthRoutine(uint32 maximum_cycle_count,
-                          uint32 percent_battery_wear_allowed)
-      => (RunRoutineResponse response);
+  RunBatteryHealthRoutine() => (RunRoutineResponse response);
 
   // Requests that the SmartctlCheck routine is created and started on the
   // platform. This routine checks available spare NVMe capacity against the
@@ -267,6 +272,123 @@ interface CrosHealthdDiagnosticsService {
   RunBatteryDischargeRoutine(uint32 length_seconds,
                              uint32 maximum_discharge_percent_allowed)
       => (RunRoutineResponse response);
+
+  // Requests that the BatteryCharge routine is created and started on the
+  // platform. This routine checks the battery's charge rate over a period of
+  // time. This routine is only available if GetAvailableRoutines returned
+  // kBatteryCharge.
+  //
+  // The request:
+  // * |length_seconds| - length of time to run the routine for.
+  // * |minimum_charge_percent_required| - the routine will fail if the battery
+  //                                       charges by less than this percentage.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunBatteryChargeRoutine(uint32 length_seconds,
+                          uint32 minimum_charge_percent_required)
+      => (RunRoutineResponse response);
+
+  // Requests that the Memory routine is created and started on the platform.
+  // This routine checks that the device's memory is working correctly. This
+  // routine is only available if GetAvailableRoutines returned kMemory.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunMemoryRoutine() => (RunRoutineResponse response);
+
+  // Requests that the LanConnectivity routine is created and started on the
+  // platform. This routine checks whether the device is connected to a LAN.
+  // This routine is only available if GetAvailableRoutines returned
+  // kLanConnectivity.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunLanConnectivityRoutine() => (RunRoutineResponse response);
+
+  // Requests that the SignalStrength routine is created and started on the
+  // platform. This routine checks whether there is an acceptable signal
+  // strength on wireless networks.  This routine is only available if
+  // GetAvailableRoutines returned kSignalStrength.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunSignalStrengthRoutine() => (RunRoutineResponse response);
+
+  // Requests that the GatewayCanBePinged routine is created and started on the
+  // platform. This routine checks whether the gateway of connected networks is
+  // pingable. This routine is only available if GetAvailableRoutines returned
+  // kGatewayCanBePinged.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunGatewayCanBePingedRoutine() => (RunRoutineResponse response);
+
+  // Requests that the HasSecureWiFiConnection routine is created and started
+  // on the platform. This routine checks whether the WiFi connection is
+  // secure. Note that if WiFi is not connected, the routine will not run. This
+  // routine is only available if GetAvailableRoutines returned
+  // kHasSecureWiFiConnection.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunHasSecureWiFiConnectionRoutine() => (RunRoutineResponse response);
+
+  // Requests that the DnsResolverPresent routine is created and started on the
+  // platform. This routine checks whether a DNS resolver is available to the
+  // browser. This routine is only available if GetAvailableRoutines returned
+  // kDnsResolverPresent.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunDnsResolverPresentRoutine() => (RunRoutineResponse response);
+
+  // Requests that the DnsLatency routine is created and started on the
+  // platform. This routine checks whether the DNS latency is below an
+  // acceptable threshold. This routine is only available if
+  // GetAvailableRoutines returned kDnsLatency.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunDnsLatencyRoutine() => (RunRoutineResponse response);
+
+  // Requests that the DnsResolution routine is created and started on the
+  // platform. This routine checks whether a DNS resolution can be completed
+  // successfully. This routine is only available if GetAvailableRoutines
+  // returned kDnsResolution.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunDnsResolutionRoutine() => (RunRoutineResponse response);
+
+  // Requests that the CaptivePortal routine is created and started on the
+  // platform. This routine checks whether the internet connection is behind
+  // a captive portal. This routine is only available if GetAvailableRoutines
+  // returned kCaptivePortal.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunCaptivePortalRoutine() => (RunRoutineResponse response);
+
+  // Requests that the HttpFirewall routine is created and started on the
+  // platform. This routine checks whether a firewall is blocking HTTP port 80.
+  // This routine is only available if GetAvailableRoutines returned
+  // kHttpFirewall.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunHttpFirewallRoutine() => (RunRoutineResponse response);
 };
 
 // Event interface exposed by the cros_healthd daemon.
@@ -295,6 +417,15 @@ interface CrosHealthdEventService {
 
 // Probe interface exposed by the cros_healthd daemon.
 interface CrosHealthdProbeService {
+  // Returns information about a specific process running on the device.
+  //
+  // The request:
+  // * |process_id| - PID of the process whose information is requested.
+  //
+  // The response:
+  // * |process_info| - Information about the requested process.
+  ProbeProcessInfo(uint32 process_id) => (ProcessResult process_info);
+
   // Returns telemetry information for the desired categories.
   //
   // The request:

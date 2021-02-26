@@ -31,6 +31,7 @@ SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 LKGM_FILE_PATH = os.path.join(SRC_DIR, 'chromeos', 'CHROMEOS_LKGM')
 # Should match something that looks like "12345.0.0".
 LKGM_RE = re.compile(r'\d+\.\d+\.\d+')
+PRIMARY_SLICE_EXPIRATION_S = 300
 
 
 def read_current_lkgm():
@@ -64,21 +65,10 @@ def parse_args(triggerer):
       dest='optional_dimensions',
       help='Optional dimensions which will result in additional task slices. '
            'Duplicated from the `swarming.py trigger` command.')
-  parser.add_argument(
-      '--primary-expiration', type=int, default=600,
-      help='How long to wait (in seconds) for an available bot in the primary '
-           'task slice.')
-  # BaseTestTriggerer's setup_parser_contract() takes care of adding needed
-  # swarming.py args if they're not already present. But only do this if
-  # '--shard-index' is passed in. (The exact usage of trigger scripts are
-  # currently changing. See crbug.com/926987 for more info.)
-  if '--shard-index' in sys.argv:
-    base_test_triggerer.BaseTestTriggerer.setup_parser_contract(parser)
-    args, additional_args = parser.parse_known_args()
-    additional_args = triggerer.modify_args(
-        additional_args, 0, args.shard_index, args.shards, args.dump_json)
-  else:
-    args, additional_args = parser.parse_known_args()
+  base_test_triggerer.BaseTestTriggerer.setup_parser_contract(parser)
+  args, additional_args = parser.parse_known_args()
+  additional_args = triggerer.modify_args(
+      additional_args, 0, args.shard_index, args.shards, args.dump_json)
 
   if additional_args[0] != 'trigger':
     parser.error(
@@ -124,14 +114,13 @@ def main():
     new_args.extend(['--dimension', 'device_status', 'available'])
 
   new_args.extend([
-      '--optional-dimension',
-      'device_os',
-      current_lkgm,
-      str(args.primary_expiration),
+      '-optional-dimension',
+      'device_os=%s:%d' % (current_lkgm, PRIMARY_SLICE_EXPIRATION_S),
   ])
   new_args += additional_args[1:]
 
-  return triggerer.run_swarming(new_args, True)
+  return triggerer.run_swarming_go(
+    new_args, True, args.dump_json, args.shard_index or 0, args.shards)
 
 
 if __name__ == '__main__':

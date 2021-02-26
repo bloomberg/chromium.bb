@@ -53,22 +53,24 @@ gn_args = ' '.join([
 # By default, the amalgamated .h only recurses in #includes but not in the
 # target deps. In the case of protos we want to follow deps even in lieu of
 # direct #includes. This is because, by design, protozero headers don't
-# inlcude each other but rely on forward declarations. The alternative would
+# include each other but rely on forward declarations. The alternative would
 # be adding each proto sub-target individually (e.g. //proto/trace/gpu:zero),
-# but doing that is unmaintainable.
-recurse_in_header_deps = '^//protos/.*zero$'
+# but doing that is unmaintainable. We also do this for cpp bindings since some
+# tracing SDK functions depend on them (and the system tracing IPC mechanism
+# does so too).
+recurse_in_header_deps = '^//protos/.*(cpp|zero)$'
 
 # Compiler flags which aren't filtered out.
-cflag_whitelist = r'^-(W.*|fno-exceptions|fPIC|std.*|fvisibility.*)$'
+cflag_allowlist = r'^-(W.*|fno-exceptions|fPIC|std.*|fvisibility.*)$'
 
 # Linker flags which aren't filtered out.
-ldflag_whitelist = r'^-()$'
+ldflag_allowlist = r'^-()$'
 
 # Libraries which are filtered out.
-lib_blacklist = r'^(c|gcc_eh)$'
+lib_denylist = r'^(c|gcc_eh)$'
 
 # Macros which aren't filtered out.
-define_whitelist = r'^(PERFETTO.*|GOOGLE_PROTOBUF.*)$'
+define_allowlist = r'^(PERFETTO.*|GOOGLE_PROTOBUF.*)$'
 
 # Includes which will be removed from the generated source.
 includes_to_remove = r'^(gtest).*$'
@@ -136,12 +138,12 @@ preamble = """// Copyright (C) 2019 The Android Open Source Project
 """ % tool_name
 
 
-def apply_blacklist(blacklist, items):
-  return [item for item in items if not re.match(blacklist, item)]
+def apply_denylist(denylist, items):
+  return [item for item in items if not re.match(denylist, item)]
 
 
-def apply_whitelist(whitelist, items):
-  return [item for item in items if re.match(whitelist, item)]
+def apply_allowlist(allowlist, items):
+  return [item for item in items if re.match(allowlist, item)]
 
 
 def normalize_path(path):
@@ -239,7 +241,7 @@ class AmalgamatedProject(object):
     self._add_target_headers(target_name)
 
     # Recurse into target deps, but only for protos. This generates headers
-    # for all the .pbzero.h files, even if they don't #include each other.
+    # for all the .{pbzero,gen}.h files, even if they don't #include each other.
     for _, dep in self._iterate_dep_edges(target_name):
       if (dep not in self._processed_header_deps and
           re.match(recurse_in_header_deps, dep)):
@@ -295,7 +297,7 @@ class AmalgamatedProject(object):
         result.append(flag)
       else:
         result[-1] += flag
-    return apply_whitelist(cflag_whitelist, result)
+    return apply_allowlist(cflag_allowlist, result)
 
   def _add_target_flags(self, target_name):
     for target_name in self._iterate_target_and_deps(target_name):
@@ -303,10 +305,10 @@ class AmalgamatedProject(object):
       self.cflags.update(self._filter_cflags(target.get('cflags', [])))
       self.cflags.update(self._filter_cflags(target.get('cflags_cc', [])))
       self.ldflags.update(
-          apply_whitelist(ldflag_whitelist, target.get('ldflags', [])))
-      self.libs.update(apply_blacklist(lib_blacklist, target.get('libs', [])))
+          apply_allowlist(ldflag_allowlist, target.get('ldflags', [])))
+      self.libs.update(apply_denylist(lib_denylist, target.get('libs', [])))
       self.defines.update(
-          apply_whitelist(define_whitelist, target.get('defines', [])))
+          apply_allowlist(define_allowlist, target.get('defines', [])))
 
   def _add_target_headers(self, target_name):
     target = self.desc[target_name]
@@ -329,6 +331,8 @@ class AmalgamatedProject(object):
 
   def _add_source_included_header(self, include_dirs, allowed_files,
                                   header_name):
+    if header_name in self._processed_headers:
+      return
     if header_name in self._processed_source_headers:
       return
     self._processed_source_headers.add(header_name)
@@ -525,7 +529,16 @@ Example build command:
     """Returns an example command line for building the output source."""
     source = self._get_nice_path(output_prefix, '%s.cc')
     library = self._get_nice_path(output_prefix, 'lib%s.so')
-    build_cmd = ['clang++', source, '-o', library, '-shared'] + \
+
+    if sys.platform.startswith('linux'):
+      llvm_script = os.path.join(gn_utils.repo_root(), 'gn',
+                                 'standalone', 'toolchain',
+                                 'linux_find_llvm.py')
+      cxx = subprocess.check_output([llvm_script]).splitlines()[2]
+    else:
+      cxx = 'clang++'
+
+    build_cmd = [cxx, source, '-o', library, '-shared'] + \
         sorted(self.cflags) + sorted(self.ldflags)
     for lib in sorted(self.libs):
       build_cmd.append('-l%s' % lib)

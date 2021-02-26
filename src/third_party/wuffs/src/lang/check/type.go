@@ -34,6 +34,12 @@ func (q *checker) tcheckVars(block []*a.Node) error {
 		name := o.Name()
 		if _, ok := q.localVars[name]; ok {
 			return fmt.Errorf("check: duplicate var %q", name.Str(q.tm))
+		} else if q.c.topLevelNames[name] != 0 {
+			return &Error{
+				Err:      fmt.Errorf("check: var %q shadows top level name", name.Str(q.tm)),
+				Filename: o.Filename(),
+				Line:     o.Line(),
+			}
 		}
 		if err := q.tcheckTypeExpr(o.XType(), 0); err != nil {
 			return err
@@ -140,32 +146,7 @@ func (q *checker) tcheckStatement(n *a.Node) error {
 		return nil
 
 	case a.KJump:
-		n := n.AsJump()
-		jumpTarget := (a.Loop)(nil)
-		if id := n.Label(); id != 0 {
-			for i := len(q.jumpTargets) - 1; i >= 0; i-- {
-				if w := q.jumpTargets[i]; w.Label() == id {
-					jumpTarget = w
-					break
-				}
-			}
-		} else if nj := len(q.jumpTargets); nj > 0 {
-			jumpTarget = q.jumpTargets[nj-1]
-		}
-		if jumpTarget == nil {
-			sepStr, labelStr := "", ""
-			if id := n.Label(); id != 0 {
-				sepStr, labelStr = ":", id.Str(q.tm)
-			}
-			return fmt.Errorf("no matching while/iterate statement for %s%s%s",
-				n.Keyword().Str(q.tm), sepStr, labelStr)
-		}
-		if n.Keyword() == t.IDBreak {
-			jumpTarget.SetHasBreak()
-		} else {
-			jumpTarget.SetHasContinue()
-		}
-		n.SetJumpTarget(jumpTarget)
+		// No-op.
 
 	case a.KRet:
 		n := n.AsRet()
@@ -268,6 +249,9 @@ func (q *checker) tcheckAssign(n *a.Assign) error {
 	rTyp := rhs.MType()
 
 	if op := n.Operator(); op == t.IDEq || op == t.IDEqQuestion {
+		if (op == t.IDEqQuestion) && !rTyp.Eq(typeExprStatus) {
+			return fmt.Errorf("check: =? only works with the base.status type")
+		}
 		return q.tcheckEq(0, lhs, lTyp, rhs, rTyp)
 	}
 
@@ -283,7 +267,10 @@ func (q *checker) tcheckAssign(n *a.Assign) error {
 				n.Operator().Str(q.tm), rhs.Str(q.tm), rTyp.Str(q.tm))
 		}
 		return nil
-	case t.IDTildeModPlusEq, t.IDTildeModMinusEq, t.IDTildeSatPlusEq, t.IDTildeSatMinusEq:
+
+	case t.IDTildeModPlusEq, t.IDTildeModMinusEq, t.IDTildeModStarEq,
+		t.IDTildeSatPlusEq, t.IDTildeSatMinusEq:
+
 		if !lTyp.IsUnsignedInteger() {
 			return fmt.Errorf("check: assignment %q: %q, of type %q, does not have unsigned integer type",
 				n.Operator().Str(q.tm), lhs.Str(q.tm), lTyp.Str(q.tm))
@@ -307,10 +294,6 @@ func (q *checker) tcheckLoop(n a.Loop) error {
 		}
 		setPlaceholderMBoundsMType(o)
 	}
-	q.jumpTargets = append(q.jumpTargets, n)
-	defer func() {
-		q.jumpTargets = q.jumpTargets[:len(q.jumpTargets)-1]
-	}()
 	for _, o := range n.Body() {
 		if err := q.tcheckStatement(o); err != nil {
 			return err
@@ -354,9 +337,30 @@ func (q *checker) tcheckExprOther(n *a.Expr, depth uint32) error {
 			n.SetMType(typeExprIdeal)
 			return nil
 
-		} else if id1.IsStrLiteral(q.tm) {
-			if _, ok := q.c.statuses[n.StatusQID()]; !ok {
-				return fmt.Errorf("check: unrecognized status %s", n.StatusQID().Str(q.tm))
+		} else if id1.IsSQStrLiteral(q.tm) {
+			s := id1.Str(q.tm)
+			unescaped, ok := t.Unescape(id1.Str(q.tm))
+			if !ok {
+				return fmt.Errorf("check: invalid '-string literal %q", s)
+			}
+
+			z := big.NewInt(0)
+			i, iEnd, iDelta := 0, len(unescaped), +1 // Big-endian.
+			if (len(s) > 2) && (s[len(s)-2] == 'l') {
+				i, iEnd, iDelta = len(unescaped)-1, -1, -1 // Little-endian.
+			}
+			for ; i != iEnd; i += iDelta {
+				z.Lsh(z, 8)
+				z.Or(z, big.NewInt(int64(unescaped[i])))
+			}
+
+			n.SetConstValue(z)
+			n.SetMType(typeExprIdeal)
+			return nil
+
+		} else if id1.IsDQStrLiteral(q.tm) {
+			if _, ok := q.c.statuses[t.QID{0, n.Ident()}]; !ok {
+				return fmt.Errorf("check: unrecognized status %s", n.Ident().Str(q.tm))
 			}
 			n.SetMType(typeExprStatus)
 			return nil
@@ -368,16 +372,12 @@ func (q *checker) tcheckExprOther(n *a.Expr, depth uint32) error {
 					return nil
 				}
 			}
-			if c, ok := q.c.consts[t.QID{0, id1}]; ok {
-				// TODO: check somewhere that a global ident (i.e. a const) is
-				// not directly in the LHS of an assignment.
-				n.SetGlobalIdent()
-				n.SetMType(c.XType())
+			if q.c.topLevelNames[id1] == a.KUse {
+				n.SetConstValue(zero)
+				n.SetMType(typeExprPackage)
 				return nil
 			}
-			// TODO: look for other (global) names: consts, funcs, statuses,
-			// structs from used packages.
-			return fmt.Errorf("check: unrecognized identifier %q", id1.Str(q.tm))
+			return q.tcheckExprXDotY(n, 0, id1)
 		}
 
 		switch id1 {
@@ -492,6 +492,24 @@ func (q *checker) tcheckExprOther(n *a.Expr, depth uint32) error {
 		n.Operator(), n.Str(q.tm))
 }
 
+func (q *checker) tcheckExprXDotY(n *a.Expr, x t.ID, y t.ID) error {
+	qid := t.QID{x, y}
+	if c, ok := q.c.consts[qid]; ok {
+		// TODO: check somewhere that a global ident (i.e. a const) is
+		// not directly in the LHS of an assignment.
+		n.SetGlobalIdent()
+		n.SetConstValue(c.Value().ConstValue())
+		n.SetMType(c.XType())
+		return nil
+	}
+	if _, ok := q.c.statuses[t.QID{x, y}]; ok {
+		n.SetMType(typeExprStatus)
+		return nil
+	}
+	// TODO: look in q.c.structs.
+	return fmt.Errorf("check: unrecognized name %q", qid.Str(q.tm))
+}
+
 func (q *checker) tcheckExprCall(n *a.Expr, depth uint32) error {
 	lhs := n.LHS().AsExpr()
 	if err := q.tcheckExpr(lhs, depth); err != nil {
@@ -569,6 +587,9 @@ func (q *checker) tcheckDot(n *a.Expr, depth uint32) error {
 	lhs := n.LHS().AsExpr()
 	if err := q.tcheckExpr(lhs, depth); err != nil {
 		return err
+	}
+	if lhs.MType() == typeExprPackage {
+		return q.tcheckExprXDotY(n, lhs.Ident(), n.Ident())
 	}
 	lTyp := lhs.MType().Pointee()
 	lQID := lTyp.QID()
@@ -749,8 +770,9 @@ func (q *checker) tcheckExprBinaryOp(n *a.Expr, depth uint32) error {
 	}
 
 	switch op {
-	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus,
+	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus, t.IDXBinaryTildeModStar,
 		t.IDXBinaryTildeSatPlus, t.IDXBinaryTildeSatMinus:
+
 		typ := lTyp
 		if typ.IsIdeal() {
 			typ = rTyp
@@ -844,12 +866,14 @@ func evalConstValueBinaryOp(tm *t.Map, n *a.Expr, l *big.Int, r *big.Int) (*big.
 		return btoi((l.Sign() != 0) && (r.Sign() != 0)), nil
 	case t.IDXBinaryOr:
 		return btoi((l.Sign() != 0) || (r.Sign() != 0)), nil
-	case t.IDXBinaryTildeModShiftL,
-		t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus,
+
+	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus,
+		t.IDXBinaryTildeModStar, t.IDXBinaryTildeModShiftL,
 		t.IDXBinaryTildeSatPlus, t.IDXBinaryTildeSatMinus:
+
 		return nil, fmt.Errorf("check: cannot apply tilde-operators to ideal numbers")
 	}
-	return nil, fmt.Errorf("check: unrecognized token (0x%02X) for evalConstValueBinaryOp", n.Operator())
+	return nil, fmt.Errorf("check: unrecognized token (0x%X) for evalConstValueBinaryOp", n.Operator())
 }
 
 func (q *checker) tcheckExprAssociativeOp(n *a.Expr, depth uint32) error {
@@ -887,7 +911,6 @@ func (q *checker) tcheckExprAssociativeOp(n *a.Expr, depth uint32) error {
 			typ = typeExprIdeal
 		}
 		n.SetMType(typ)
-		return nil
 
 	case t.IDXAssociativeAnd, t.IDXAssociativeOr:
 		for _, o := range n.Args() {
@@ -901,10 +924,79 @@ func (q *checker) tcheckExprAssociativeOp(n *a.Expr, depth uint32) error {
 			}
 		}
 		n.SetMType(typeExprBool)
-		return nil
+
+	default:
+		return fmt.Errorf("check: unrecognized token (0x%X) for tcheckExprAssociativeOp", n.Operator())
 	}
 
-	return fmt.Errorf("check: unrecognized token (0x%X) for tcheckExprAssociativeOp", n.Operator())
+	ncv, err := evalConstValueAssociativeOp(q.tm, n)
+	n.SetConstValue(ncv)
+	return err
+}
+
+func evalConstValueAssociativeOp(tm *t.Map, n *a.Expr) (*big.Int, error) {
+	args := n.Args()
+	if len(args) == 0 {
+		return nil, fmt.Errorf("check: no operands for associative operator")
+	}
+	cv0 := args[0].AsExpr().ConstValue()
+	if cv0 == nil {
+		return nil, nil
+	}
+	args = args[1:]
+	ncv := big.NewInt(0).Set(cv0)
+
+	switch n.Operator() {
+	case t.IDXAssociativePlus:
+		for _, o := range args {
+			if cv := o.AsExpr().ConstValue(); cv == nil {
+				return nil, nil
+			} else {
+				ncv.Add(ncv, cv)
+			}
+		}
+
+	case t.IDXAssociativeStar:
+		for _, o := range args {
+			if cv := o.AsExpr().ConstValue(); cv == nil {
+				return nil, nil
+			} else {
+				ncv.Mul(ncv, cv)
+			}
+		}
+
+	case t.IDXAssociativeAmp, t.IDXAssociativeAnd:
+		for _, o := range args {
+			if cv := o.AsExpr().ConstValue(); cv == nil {
+				return nil, nil
+			} else {
+				ncv.And(ncv, cv)
+			}
+		}
+
+	case t.IDXAssociativePipe, t.IDXAssociativeOr:
+		for _, o := range args {
+			if cv := o.AsExpr().ConstValue(); cv == nil {
+				return nil, nil
+			} else {
+				ncv.Or(ncv, cv)
+			}
+		}
+
+	case t.IDXAssociativeHat:
+		for _, o := range args {
+			if cv := o.AsExpr().ConstValue(); cv == nil {
+				return nil, nil
+			} else {
+				ncv.Xor(ncv, cv)
+			}
+		}
+
+	default:
+		return nil, fmt.Errorf("check: unrecognized token (0x%X) for evalConstValueAssociativeOp", n.Operator())
+	}
+
+	return ncv, nil
 }
 
 func (q *checker) tcheckTypeExpr(typ *a.TypeExpr, depth uint32) error {
@@ -926,7 +1018,7 @@ swtch:
 				if err := q.tcheckExpr(b, 0); err != nil {
 					return err
 				}
-				if q.exprConstValue(b) == nil {
+				if b.ConstValue() == nil {
 					return fmt.Errorf("check: %q is not constant", b.Str(q.tm))
 				}
 			}
@@ -952,7 +1044,7 @@ swtch:
 		if err := q.tcheckExpr(aLen, 0); err != nil {
 			return err
 		}
-		if q.exprConstValue(aLen) == nil {
+		if aLen.ConstValue() == nil {
 			return fmt.Errorf("check: %q is not constant", aLen.Str(q.tm))
 		}
 		fallthrough
@@ -966,21 +1058,6 @@ swtch:
 		return fmt.Errorf("check: %q is not a type", typ.Str(q.tm))
 	}
 	typ.AsNode().SetMType(typeExprTypeExpr)
-	return nil
-}
-
-func (q *checker) exprConstValue(n *a.Expr) *big.Int {
-	if cv := n.ConstValue(); cv != nil {
-		return cv
-	}
-	if n.Operator() == 0 {
-		if c, ok := q.c.consts[t.QID{0, n.Ident()}]; ok {
-			if cv := c.Value().ConstValue(); cv != nil {
-				n.SetConstValue(cv)
-				return cv
-			}
-		}
-	}
 	return nil
 }
 

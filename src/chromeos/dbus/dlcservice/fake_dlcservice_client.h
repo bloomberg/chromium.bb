@@ -30,19 +30,21 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   // Purging removes the DLC entirely from disk.
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
   void GetExistingDlcs(GetExistingDlcsCallback callback) override;
-  void OnInstallStatusForTest(dbus::Signal* signal) override;
+  void DlcStateChangedForTest(dbus::Signal* signal) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+  void NotifyObserversForTest(const dlcservice::DlcState& dlc_state);
 
   // Setters:
-  // TODO(hsuregan/kimjae): Convert setters and at tests that use them to
-  // underscore style instead of camel case.
-  void SetInstallError(const std::string& err) { install_err_ = err; }
-  void SetUninstallError(const std::string& err) { uninstall_err_ = err; }
-  void SetPurgeError(const std::string& err) { purge_err_ = err; }
-  void SetGetExistingDlcsError(const std::string& err) {
-    get_existing_dlcs_err_ = err;
+  void set_install_error(const std::string& err) { install_err_ = err; }
+  void set_install_root_path(const std::string& path) {
+    install_root_path_ = path;
   }
-  void set_installed_dlcs(const dlcservice::DlcModuleList& dlc_module_list) {
-    dlc_module_list_ = dlc_module_list;
+  void set_uninstall_error(const std::string& err) { uninstall_err_ = err; }
+  void set_purge_error(const std::string& err) { purge_err_ = err; }
+  void set_get_existing_dlcs_error(const std::string& err) {
+    get_existing_dlcs_err_ = err;
   }
   void set_dlcs_with_content(
       const dlcservice::DlcsWithContent& dlcs_with_content) {
@@ -54,9 +56,12 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   std::string uninstall_err_ = dlcservice::kErrorNone;
   std::string purge_err_ = dlcservice::kErrorNone;
   std::string get_installed_err_ = dlcservice::kErrorNone;
-  dlcservice::DlcModuleList dlc_module_list_;
   std::string get_existing_dlcs_err_ = dlcservice::kErrorNone;
+  std::string install_root_path_;
   dlcservice::DlcsWithContent dlcs_with_content_;
+
+  // A list of observers that are listening on state changes, etc.
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace chromeos

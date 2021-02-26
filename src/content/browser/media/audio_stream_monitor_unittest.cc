@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -52,7 +52,7 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    WebContentsImpl* web_contents = reinterpret_cast<WebContentsImpl*>(
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
         RenderViewHostTestHarness::web_contents());
     web_contents->SetDelegate(&mock_web_contents_delegate_);
 

@@ -204,11 +204,14 @@ def RunTests(args, chrome_path):
         '--window-size=1280,1024',
         '--enable-logging', '--v=1',
         '--enable-features=ForceWebRequestProxyForTest',
-        '--enable-blink-features=CustomElementsV0,'
-        'HTMLImportsStyleApplication,ShadowDOMV0',
-        ('http://localhost:%s/%s/tests.html?' % (port, args.tests)) +
-        'headless=true&testTypeToRun=all',
+        '--force-device-scale-factor=1',
     ]
+    if args.extra_chrome_args:
+      chrome_command.extend(args.extra_chrome_args.strip('"').split(' '))
+    chrome_command.append(
+        ('http://localhost:%s/%s/tests.html?' % (port, args.tests)) +
+        'headless=true&testTypeToRun=all')
+
     print('Starting Chrome at path %s...' % chrome_path)
     chrome_process = subprocess.Popen(
         chrome_command, stdout=sys.stdout, stderr=sys.stderr)
@@ -297,9 +300,16 @@ def Main(argv):
   parser.add_argument('--timeout-retries', type=int, default=0,
                       help='Number of times to retry if tests time out.'
                       'Default 0 (no retries)')
+  parser.add_argument('--extra-chrome-args', type=str,
+                      help='Extra args to pass to chrome.')
   parser.set_defaults(install_hooks=True)
   parser.set_defaults(use_local_chrome=True)
   args = parser.parse_args(argv[1:])
+
+  # TODO(crbug.com/1132884) Test consistently fails with canary channel on Mac.
+  if args.channel == 'canary' and sys.platform == 'darwin':
+    print ('Skipping canary channel tests on MacOS')
+    sys.exit(0)
 
   if args.install_hooks:
     install.InstallHooks()

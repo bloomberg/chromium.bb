@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -29,11 +30,12 @@
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_tag.h"
+#include "net/socket/udp_socket_global_limits.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 #if defined(__ANDROID__) && defined(__aarch64__)
 #define HAVE_SENDMMSG 1
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define HAVE_SENDMMSG 1
 #else
 #define HAVE_SENDMMSG 0
@@ -386,6 +388,9 @@ class NET_EXPORT UDPSocketPosix {
     experimental_recv_optimization_enabled_ = true;
   }
 
+  // Sets iOS Network Service Type for option SO_NET_SERVICE_TYPE.
+  int SetIOSNetworkServiceType(int ios_network_service_type);
+
  protected:
   // WriteAsync batching etc. are to improve throughput of large high
   // bandwidth uploads.
@@ -493,7 +498,7 @@ class NET_EXPORT UDPSocketPosix {
 
   // Same as SendTo(), except that address is passed by pointer
   // instead of by reference. It is called from Write() with |address|
-  // set to NULL.
+  // set to nullptr.
   int SendToOrWrite(IOBuffer* buf,
                     int buf_len,
                     const IPEndPoint* address,
@@ -628,6 +633,10 @@ class NET_EXPORT UDPSocketPosix {
   // client of the socket has to opt-in by calling the
   // enable_experimental_recv_optimization() method.
   bool experimental_recv_optimization_enabled_;
+
+  // Manages decrementing the global open UDP socket counter when this
+  // UDPSocket is destroyed.
+  OwnedUDPSocketCount owned_socket_count_;
 
   THREAD_CHECKER(thread_checker_);
 

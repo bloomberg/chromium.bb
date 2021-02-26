@@ -28,6 +28,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -75,8 +76,7 @@
 namespace blink {
 
 ScriptLoader::ScriptLoader(ScriptElementBase* element,
-                           bool parser_inserted,
-                           bool already_started)
+                           const CreateElementFlags flags)
     : element_(element),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
@@ -88,14 +88,21 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
   // TODO(hiroshige): Cloning is implemented together with
   // {HTML,SVG}ScriptElement::cloneElementWithoutAttributesAndChildren().
   // Clean up these later.
-  if (already_started)
+  if (flags.WasAlreadyStarted())
     already_started_ = true;
 
-  if (parser_inserted) {
-    // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... It is
+  if (flags.IsCreatedByParser()) {
+    // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">script
+    // elements with non-null parser documents are known as
+    // "parser-inserted".</spec>
+    // For more information on why this is not implemented in terms of a
+    // non-null parser document, see the documentation in the header file.
+    parser_inserted_ = true;
+
+    // <spec href="https://html.spec.whatwg.org/C/#parser-document">... It is
     // set by the HTML parser and the XML parser on script elements they insert
     // ...</spec>
-    parser_inserted_ = true;
+    parser_document_ = flags.ParserDocument();
 
     // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... It is unset
     // by the HTML parser and the XML parser on script elements they insert.
@@ -106,8 +113,9 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
 
 ScriptLoader::~ScriptLoader() {}
 
-void ScriptLoader::Trace(Visitor* visitor) {
+void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
+  visitor->Trace(parser_document_);
   visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);
   visitor->Trace(resource_keep_alive_);
@@ -187,7 +195,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
     LegacyTypeSupport support_legacy_types,
-    mojom::ScriptType* out_script_type,
+    mojom::blink::ScriptType* out_script_type,
     bool* out_is_import_map) {
   if (IsValidClassicScriptTypeAndLanguage(type, language,
                                           support_legacy_types)) {
@@ -196,7 +204,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     //
     // TODO(hiroshige): Annotate and/or cleanup this step.
     if (out_script_type)
-      *out_script_type = mojom::ScriptType::kClassic;
+      *out_script_type = mojom::blink::ScriptType::kClassic;
     if (out_is_import_map)
       *out_is_import_map = false;
     return true;
@@ -207,7 +215,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     // case-insensitive match for the string "module", the script's type is
     // "module". ...</spec>
     if (out_script_type)
-      *out_script_type = mojom::ScriptType::kModule;
+      *out_script_type = mojom::blink::ScriptType::kModule;
     if (out_is_import_map)
       *out_is_import_map = false;
     return true;
@@ -224,9 +232,9 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
   return false;
 }
 
-bool ScriptLoader::BlockForNoModule(mojom::ScriptType script_type,
+bool ScriptLoader::BlockForNoModule(mojom::blink::ScriptType script_type,
                                     bool nomodule) {
-  return nomodule && script_type == mojom::ScriptType::kClassic;
+  return nomodule && script_type == mojom::blink::ScriptType::kClassic;
 }
 
 // Corresponds to
@@ -250,17 +258,18 @@ network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
   return network::mojom::CredentialsMode::kOmit;
 }
 
-// https://github.com/WICG/feature-policy/issues/135
-bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
-                                           mojom::ScriptType script_type,
-                                           bool parser_inserted) {
-  if (element->GetDocument().IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kSyncScript)) {
+// https://github.com/w3c/webappsec-permissions-policy/issues/135
+bool ShouldBlockSyncScriptForDocumentPolicy(
+    const ScriptElementBase* element,
+    mojom::blink::ScriptType script_type,
+    bool parser_inserted) {
+  if (element->GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::DocumentPolicyFeature::kSyncScript)) {
     return false;
   }
 
   // Module scripts never block parsing.
-  if (script_type == mojom::ScriptType::kModule || !parser_inserted)
+  if (script_type == mojom::blink::ScriptType::kModule || !parser_inserted)
     return false;
 
   if (!element->HasSourceAttribute())
@@ -339,9 +348,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="10">If the element is flagged as "parser-inserted", but the
   // element's node document is not the Document of the parser that created the
   // element, then return.</spec>
-  //
-  // FIXME: If script is parser inserted, verify it's still in the original
-  // document.
+  if (parser_inserted_ && parser_document_ != &element_->GetDocument()) {
+    return false;
+  }
 
   // <spec step="11">If scripting is disabled for the script element, then
   // return. The script is not executed.</spec>
@@ -350,14 +359,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // is disabled for a node if there is no such browsing context, or if
   // scripting is disabled in that browsing context.</spec>
   Document& element_document = element_->GetDocument();
-  // TODO(timothygu): Investigate if we could switch from ExecutingFrame() to
-  // ExecutingWindow().
-  if (!element_document.ExecutingFrame())
-    return false;
-
-  LocalDOMWindow* context_window =
-      To<LocalDOMWindow>(element_->GetExecutionContext());
-  if (!context_window->GetFrame())
+  LocalDOMWindow* context_window = element_document.ExecutingWindow();
+  if (!context_window)
     return false;
   if (!context_window->CanExecuteScripts(kAboutToExecuteScript))
     return false;
@@ -408,13 +411,13 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!IsScriptForEventSupported())
     return false;
 
-  // This FeaturePolicy is still in the process of being added to the spec.
-  if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
-                                            parser_inserted_)) {
+  // This Document Policy is still in the process of being added to the spec.
+  if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
+                                             parser_inserted_)) {
     element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
-        "Synchronous script execution is disabled by Feature Policy"));
+        "Synchronous script execution is disabled by Document Policy"));
     return false;
   }
 
@@ -475,7 +478,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   ParserDisposition parser_state =
       IsParserInserted() ? kParserInserted : kNotParserInserted;
 
-  if (GetScriptType() == mojom::ScriptType::kModule)
+  if (GetScriptType() == mojom::blink::ScriptType::kModule)
     UseCounter::Count(*context_window, WebFeature::kPrepareModuleScript);
 
   DCHECK(!prepared_pending_script_);
@@ -566,7 +569,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    if (GetScriptType() == mojom::ScriptType::kClassic) {
+    if (GetScriptType() == mojom::blink::ScriptType::kClassic) {
       // - "classic":
 
       // <spec step="15">If the script element has a charset attribute, then let
@@ -660,7 +663,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
     switch (GetScriptType()) {
         // <spec step="25.2.A">"classic"</spec>
-      case mojom::ScriptType::kClassic: {
+      case mojom::blink::ScriptType::kClassic: {
         // <spec step="25.2.A.1">Let script be the result of creating a classic
         // script using source text, settings object, base URL, and
         // options.</spec>
@@ -688,7 +691,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       }
 
         // <spec step="25.2.B">"module"</spec>
-      case mojom::ScriptType::kModule: {
+      case mojom::blink::ScriptType::kModule: {
         // <spec step="25.2.B.1">Fetch an inline module script graph, given
         // source text, base URL, settings object, and options. When this
         // asynchronously completes, set the script's script to the result. At
@@ -723,7 +726,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
             MakeGarbageCollected<ModulePendingScriptTreeClient>();
         modulator->FetchDescendantsForInlineScript(
             module_script, fetch_client_settings_object_fetcher,
-            mojom::RequestContextType::SCRIPT,
+            mojom::blink::RequestContextType::SCRIPT,
             network::mojom::RequestDestination::kScript, module_tree_client);
         prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
             element_, module_tree_client, is_external_script_);
@@ -752,11 +755,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // If the script's type is "module", and the element has been flagged as
   // "parser-inserted", and the element does not have an async attribute
   // ...</spec>
-  if ((GetScriptType() == mojom::ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::blink::ScriptType::kClassic &&
        element_->HasSourceAttribute() && element_->DeferAttributeValue() &&
        parser_inserted_ && !element_->AsyncAttributeValue()) ||
-      (GetScriptType() == mojom::ScriptType::kModule && parser_inserted_ &&
-       !element_->AsyncAttributeValue())) {
+      (GetScriptType() == mojom::blink::ScriptType::kModule &&
+       parser_inserted_ && !element_->AsyncAttributeValue())) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestDeferredScript(), and
     // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
@@ -767,7 +770,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   }
 
   // Check for external script that should be force deferred.
-  if (GetScriptType() == mojom::ScriptType::kClassic &&
+  if (GetScriptType() == mojom::blink::ScriptType::kClassic &&
       element_->HasSourceAttribute() &&
       context_window->GetFrame()->ShouldForceDeferScript() &&
       IsA<HTMLDocument>(context_window->document()) && parser_inserted_ &&
@@ -788,7 +791,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="26.B">If the script's type is "classic", and the element has a
   // src attribute, and the element has been flagged as "parser-inserted", and
   // the element does not have an async attribute ...</spec>
-  if (GetScriptType() == mojom::ScriptType::kClassic &&
+  if (GetScriptType() == mojom::blink::ScriptType::kClassic &&
       element_->HasSourceAttribute() && parser_inserted_ &&
       !element_->AsyncAttributeValue()) {
     // This clause is implemented by the caller-side of prepareScript():
@@ -806,10 +809,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // If the script's type is "module", and the element does not have an async
   // attribute, and the element does not have the "non-blocking" flag set
   // ...</spec>
-  if ((GetScriptType() == mojom::ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::blink::ScriptType::kClassic &&
        element_->HasSourceAttribute() && !element_->AsyncAttributeValue() &&
        !non_blocking_) ||
-      (GetScriptType() == mojom::ScriptType::kModule &&
+      (GetScriptType() == mojom::blink::ScriptType::kModule &&
        !element_->AsyncAttributeValue() && !non_blocking_)) {
     // <spec step="26.C">... Add the element to the end of the list of scripts
     // that will execute in order as soon as possible associated with the node
@@ -833,15 +836,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // src attribute
   //
   // If the script's type is "module" ...</spec>
-  if ((GetScriptType() == mojom::ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::blink::ScriptType::kClassic &&
        element_->HasSourceAttribute()) ||
-      GetScriptType() == mojom::ScriptType::kModule) {
+      GetScriptType() == mojom::blink::ScriptType::kModule) {
     // <spec step="26.D">... The element must be added to the set of scripts
     // that will execute as soon as possible of the node document of the script
     // element at the time the prepare a script algorithm started. When the
     // script is ready, execute the script block and then remove the element
     // from the set of scripts that will execute as soon as possible.</spec>
     pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
+    // This is for the UKM count of async scripts in a document.
+    context_window->document()->IncrementAsyncScriptCount();
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
@@ -857,7 +862,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // The following clauses are executed only if the script's type is "classic"
   // and the element doesn't have a src attribute.
-  DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
+  DCHECK_EQ(GetScriptType(), mojom::blink::ScriptType::kClassic);
   DCHECK(!is_external_script_);
 
   // Check for inline script that should be force deferred.
@@ -941,7 +946,7 @@ void ScriptLoader::FetchModuleScriptTree(
   auto* module_tree_client =
       MakeGarbageCollected<ModulePendingScriptTreeClient>();
   modulator->FetchTree(url, fetch_client_settings_object_fetcher,
-                       mojom::RequestContextType::SCRIPT,
+                       mojom::blink::RequestContextType::SCRIPT,
                        network::mojom::RequestDestination::kScript, options,
                        ModuleScriptCustomFetchType::kNone, module_tree_client);
   prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
@@ -952,10 +957,7 @@ PendingScript* ScriptLoader::TakePendingScript(
     ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
 
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, scheduling_type_histogram,
-      ("Blink.Script.SchedulingType", kLastScriptSchedulingType + 1));
-  scheduling_type_histogram.Count(static_cast<int>(scheduling_type));
+  UMA_HISTOGRAM_ENUMERATION("Blink.Script.SchedulingType", scheduling_type);
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;
   pending_script->SetSchedulingType(scheduling_type);
@@ -972,10 +974,10 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
              ScriptSchedulingType::kInOrder);
   // Historically we clear |resource_keep_alive_| when the scheduling type is
   // kAsync or kInOrder (crbug.com/778799). But if the script resource was
-  // served via signed exchange, the script may not be in the HTTPCache,
+  // served via signed exchange, the script may not be in the HTTPCache, and
   // therefore will need to be refetched over network if it's evicted from the
-  // memory cache not be in the HTTPCache. So we keep |resource_keep_alive_| to
-  // keep the resource in the memory cache.
+  // memory cache. So we keep |resource_keep_alive_| to keep the resource in the
+  // memory cache.
   if (resource_keep_alive_ &&
       !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse() &&
       !base::FeatureList::IsEnabled(
@@ -1010,7 +1012,7 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 
   // <spec step="14">If the script element has an event attribute and a for
   // attribute, and the script's type is "classic", then:</spec>
-  if (GetScriptType() != mojom::ScriptType::kClassic ||
+  if (GetScriptType() != mojom::blink::ScriptType::kClassic ||
       event_attribute.IsNull() || for_attribute.IsNull())
     return true;
 

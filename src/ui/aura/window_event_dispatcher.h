@@ -106,7 +106,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   virtual void ProcessedTouchEvent(uint32_t unique_event_id,
                                    Window* window,
                                    ui::EventResult result,
-                                   bool is_source_touch_event_set_non_blocking);
+                                   bool is_source_touch_event_set_blocking);
 
   // These methods are used to defer the processing of mouse/touch events
   // related to resize. A client (typically a RenderWidgetHostViewAura) can call
@@ -281,7 +281,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                                  ui::GestureEvent* event);
   ui::EventDispatchDetails PreDispatchTouchEvent(Window* target,
                                                  ui::TouchEvent* event);
-  ui::EventDispatchDetails PreDispatchKeyEvent(ui::KeyEvent* event);
+  ui::EventDispatchDetails PreDispatchKeyEvent(Window* target,
+                                               ui::KeyEvent* event);
 
   WindowTreeHost* host_;
 

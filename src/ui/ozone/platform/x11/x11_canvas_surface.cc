@@ -8,16 +8,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gfx/x/connection.h"
 
 namespace ui {
 
-X11CanvasSurface::X11CanvasSurface(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner)
-    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      x11_software_bitmap_presenter_(widget,
-                                     task_runner_.get(),
-                                     std::move(gpu_task_runner)) {}
+X11CanvasSurface::X11CanvasSurface(gfx::AcceleratedWidget widget)
+    : x11_software_bitmap_presenter_(x11::Connection::Get(), widget, true) {}
 
 X11CanvasSurface::~X11CanvasSurface() = default;
 

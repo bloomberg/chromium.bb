@@ -8,12 +8,11 @@
 #include "chrome/test/chromedriver/chrome/adb_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/environment.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -21,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/constants/version.h"
@@ -84,9 +84,10 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
 void ExecuteCommandOnIOThread(
     const std::string& command, scoped_refptr<ResponseBuffer> response_buffer,
     int port) {
-  CHECK(base::MessageLoopCurrentForIO::IsSet());
-  AdbClientSocket::AdbQuery(port, command,
-      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
+  CHECK(base::CurrentIOThread::IsSet());
+  AdbClientSocket::AdbQuery(
+      port, command,
+      base::BindRepeating(&ResponseBuffer::OnResponse, response_buffer));
 }
 
 void SendFileOnIOThread(const std::string& device_serial,
@@ -94,10 +95,10 @@ void SendFileOnIOThread(const std::string& device_serial,
                         const std::string& content,
                         scoped_refptr<ResponseBuffer> response_buffer,
                         int port) {
-  CHECK(base::MessageLoopCurrentForIO::IsSet());
+  CHECK(base::CurrentIOThread::IsSet());
   AdbClientSocket::SendFile(
       port, device_serial, filename, content,
-      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
+      base::BindRepeating(&ResponseBuffer::OnResponse, response_buffer));
 }
 
 std::string GetSerialFromEnvironment() {
@@ -142,18 +143,20 @@ Status AdbImpl::GetDevices(std::vector<std::string>* devices) {
 
 Status AdbImpl::ForwardPort(const std::string& device_serial,
                             const std::string& remote_abstract,
-                            int* local_port_output) {
+                            int* local_port) {
   std::string response;
   Status adb_command_status = ExecuteHostCommand(
-      device_serial, "forward:tcp:0;localabstract:" + remote_abstract,
+      device_serial, "forward:tcp:" + base::NumberToString(*local_port) +
+          ";localabstract:" + remote_abstract,
       &response);
   // response should be the port number like "39025".
   if (!adb_command_status.IsOk())
     return Status(kUnknownError, "Failed to forward ports to device " +
                                      device_serial + ": " + response + ". " +
                                      adb_command_status.message());
-  base::StringToInt(response, local_port_output);
-  if (*local_port_output == 0) {
+  int local_port_output;
+  base::StringToInt(response, &local_port_output);
+  if (local_port_output == 0) {
     return Status(
         kUnknownError,
         base::StringPrintf(
@@ -163,10 +166,31 @@ Status AdbImpl::ForwardPort(const std::string& device_serial,
             "the host device to find your version of adb.",
             device_serial.c_str(), response.c_str(),
             kChromeDriverProductFullName));
+  } else if (*local_port != 0 && local_port_output != *local_port) {
+    return Status(
+        kUnknownError,
+        base::StringPrintf("Failed to forward ports to device %s with the"
+            "specified port: %d.", device_serial.c_str(), *local_port));
   }
-
+  *local_port = local_port_output;
   return Status(kOk);
 }
+
+Status AdbImpl::KillForwardPort(const std::string& device_serial,
+                                int port) {
+  std::string response;
+  Status adb_command_status = ExecuteHostCommand(
+      device_serial, "killforward:tcp:" + base::NumberToString(port),
+      &response);
+  if (adb_command_status.IsError())
+    return Status(kUnknownError, "Failed to kill forward port of device " +
+                                     device_serial + ": " +
+                                     base::NumberToString(port) + ": " +
+                                     response + ". " +
+                                     adb_command_status.message());
+  return Status(kOk);
+}
+
 
 Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
                                    const std::string& command_line_file,

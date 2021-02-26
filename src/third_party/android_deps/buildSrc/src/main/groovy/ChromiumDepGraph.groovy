@@ -28,15 +28,16 @@ class ChromiumDepGraph {
     // Some libraries don't properly fill their POM with the appropriate licensing information.
     // It is provided here from manual lookups. Note that licenseUrl must provide textual content
     // rather than be an html page.
-    final def FALLBACK_PROPERTIES = [
+    final def PROPERTY_OVERRIDES = [
         'androidx_multidex_multidex': new PropertyOverride(
             url: 'https://maven.google.com/androidx/multidex/multidex/2.0.0/multidex-2.0.0.aar'),
         'com_android_tools_desugar_jdk_libs': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/google/desugar_jdk_libs/master/LICENSE",
             generateTarget: false),
         'com_android_tools_desugar_jdk_libs_configuration': new PropertyOverride(
-            // Configuration stored in //third_party/r8.
-            exclude: true),
+            licensePath: "licenses/desugar_jdk_libs_configuration.txt",
+            licenseName: "BSD 3-Clause",
+            generateTarget: false),
         'backport_util_concurrent_backport_util_concurrent': new PropertyOverride(
             licensePath: "licenses/CC01.0.txt",
             licenseName: "CC0 1.0"),
@@ -53,6 +54,9 @@ class ChromiumDepGraph {
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
             licenseName: "Apache 2.0"),
         'com_google_auto_service_auto_service_annotations': new PropertyOverride(
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
+        'com_google_auto_value_auto_value_annotations': new PropertyOverride(
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
             licenseName: "Apache 2.0"),
         'com_google_code_findbugs_jFormatString': new PropertyOverride(
@@ -189,7 +193,8 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/google-ar/arcore-android-sdk/master/LICENSE",
             licenseName: "Apache 2.0"),
         'commons_cli_commons_cli': new PropertyOverride(
-            licenseName: "Apache 2.0"),
+            licenseName: "Apache 2.0",
+            licenseUrl: "https://raw.githubusercontent.com/apache/commons-cli/master/LICENSE.txt"),
         'javax_annotation_javax_annotation_api': new PropertyOverride(
             isShipped: false,  // Annotations are stripped by R8.
             licenseName: "CDDLv1.1",
@@ -208,6 +213,9 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
             licenseName: "GPL v2 with the classpath exception"),
         'org_checkerframework_dataflow': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
+        'org_checkerframework_dataflow_shaded': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
             licenseName: "GPL v2 with the classpath exception"),
         'org_checkerframework_javacutil': new PropertyOverride(
@@ -256,6 +264,13 @@ class ChromiumDepGraph {
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),
         'org_robolectric_shadows_framework': new PropertyOverride(
+            licensePath: "licenses/Codehaus_License-2009.txt",
+            licenseName: "MIT"),
+        'org_robolectric_shadows_multidex': new PropertyOverride(
+            licensePath: "licenses/Codehaus_License-2009.txt",
+            licenseName: "MIT",
+            cipdSuffix: "cr1"),
+        'org_robolectric_shadows_playservices': new PropertyOverride(
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),
         'org_robolectric_utils': new PropertyOverride(
@@ -319,13 +334,13 @@ class ChromiumDepGraph {
             dep.isShipped = true
         }
 
-        FALLBACK_PROPERTIES.each { id, fallbackProperties ->
+        PROPERTY_OVERRIDES.each { id, fallbackProperties ->
             if (fallbackProperties?.isShipped != null) {
                 def dep = dependencies.get(id)
                 if (dep != null) {
                     dep.isShipped = fallbackProperties.isShipped
                 } else {
-                    project.logger.warn("FALLBACK_PROPERTIES has stale dep: " + id)
+                    project.logger.warn("PROPERTY_OVERRIDES has stale dep: " + id)
                 }
             }
         }
@@ -403,6 +418,10 @@ class ChromiumDepGraph {
 
         // Get rid of irrelevant indent that might be present in the XML file.
         def description = pomContent.description?.text()?.trim()?.replaceAll(/\s+/, " ")
+        def displayName = pomContent.name?.text()
+        if (!displayName) {
+            displayName = dependency.module.id.name
+        }
 
         return customizeDep(new DependencyDescription(
                 id: id,
@@ -419,7 +438,7 @@ class ChromiumDepGraph {
                 fileName: artifact.file.name,
                 description: description,
                 url: pomContent.url?.text(),
-                displayName: pomContent.name?.text(),
+                displayName: displayName,
                 exclude: false,
                 cipdSuffix: "cr0",
         ))
@@ -442,7 +461,7 @@ class ChromiumDepGraph {
             dep.licensePath = "licenses/GNU_v2_with_Classpath_Exception_1991.txt"
         }
 
-        def fallbackProperties = FALLBACK_PROPERTIES.get(dep.id)
+        def fallbackProperties = PROPERTY_OVERRIDES.get(dep.id)
         if (fallbackProperties != null) {
             project.logger.debug("Using fallback properties for ${dep.id}")
             if (fallbackProperties.licenseName != null) {
@@ -481,21 +500,18 @@ class ChromiumDepGraph {
     }
 
     private resolveLicenseInformation(String id, GPathResult pomContent) {
-      def licenseName = ''
-      def licenseUrl = ''
-
-      def error = ''
       GPathResult licenses = pomContent?.licenses?.license
       if (!licenses || licenses.size() == 0) {
-          error = "No license found on ${id}"
+          return ["License Missing Error", ""]
       } else if (licenses.size() > 1) {
-          error = "More than one license found on ${id}"
+          def allUrls = ''
+          for (def license : licenses) {
+              allUrls += license.url.text() + " "
+          }
+          return ["Multiple Licenses Error: ${allUrls}", ""]
       }
 
-      if (error.isEmpty()) return [licenses[0].name.text(), licenses[0].url.text()]
-
-      project.logger.warn(error)
-      return ['', '']
+      return [licenses[0].name.text(), licenses[0].url.text()]
     }
 
     static class DependencyDescription {

@@ -140,7 +140,8 @@ static inline av_flatten int get_symbol(RangeCoder *c, uint8_t *state, int is_si
     if(get_rac(c, state+0))
         return 0;
     else{
-        int i, e, a;
+        int i, e;
+        unsigned a;
         e= 0;
         while(get_rac(c, state+1 + FFMIN(e,9))){ //1..10
             e++;
@@ -457,8 +458,8 @@ static void predictor_init_state(int *k, int *state, int order)
 
         for (j = 0, p = i+1; p < order; j++,p++)
             {
-            int tmp = x + shift_down(k[j] * state[p], LATTICE_SHIFT);
-            state[p] += shift_down(k[j]*x, LATTICE_SHIFT);
+            int tmp = x + shift_down(k[j] * (unsigned)state[p], LATTICE_SHIFT);
+            state[p] += shift_down(k[j]* (unsigned)x, LATTICE_SHIFT);
             x = tmp;
         }
     }
@@ -466,7 +467,7 @@ static void predictor_init_state(int *k, int *state, int order)
 
 static int predictor_calc_error(int *k, int *state, int order, int error)
 {
-    int i, x = error - shift_down(k[order-1] * state[order-1], LATTICE_SHIFT);
+    int i, x = error - shift_down(k[order-1] *  (unsigned)state[order-1], LATTICE_SHIFT);
 
 #if 1
     int *k_ptr = &(k[order-2]),
@@ -474,7 +475,7 @@ static int predictor_calc_error(int *k, int *state, int order, int error)
     for (i = order-2; i >= 0; i--, k_ptr--, state_ptr--)
     {
         int k_value = *k_ptr, state_value = *state_ptr;
-        x -= shift_down(k_value * state_value, LATTICE_SHIFT);
+        x -= shift_down(k_value * (unsigned)state_value, LATTICE_SHIFT);
         state_ptr[1] = state_value + shift_down(k_value * (unsigned)x, LATTICE_SHIFT);
     }
 #else
@@ -979,9 +980,7 @@ static av_cold int sonic_decode_close(AVCodecContext *avctx)
     av_freep(&s->int_samples);
     av_freep(&s->tap_quant);
     av_freep(&s->predictor_k);
-
-    for (i = 0; i < s->channels; i++)
-    {
+    for (i = 0; i < MAX_CHANNELS; i++) {
         av_freep(&s->predictor_state[i]);
         av_freep(&s->coded_samples[i]);
     }
@@ -1044,7 +1043,7 @@ static int sonic_decode_frame(AVCodecContext *avctx,
                 x += s->channels;
             }
 
-            s->int_samples[x] = predictor_calc_error(s->predictor_k, s->predictor_state[ch], s->num_taps, s->coded_samples[ch][i] * quant);
+            s->int_samples[x] = predictor_calc_error(s->predictor_k, s->predictor_state[ch], s->num_taps, s->coded_samples[ch][i] * (unsigned)quant);
             x += s->channels;
         }
 
@@ -1094,6 +1093,7 @@ AVCodec ff_sonic_decoder = {
     .close          = sonic_decode_close,
     .decode         = sonic_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_EXPERIMENTAL,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif /* CONFIG_SONIC_DECODER */
 
@@ -1108,6 +1108,7 @@ AVCodec ff_sonic_encoder = {
     .encode2        = sonic_encode_frame,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE },
     .capabilities   = AV_CODEC_CAP_EXPERIMENTAL,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .close          = sonic_encode_close,
 };
 #endif
@@ -1123,6 +1124,7 @@ AVCodec ff_sonic_ls_encoder = {
     .encode2        = sonic_encode_frame,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE },
     .capabilities   = AV_CODEC_CAP_EXPERIMENTAL,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .close          = sonic_encode_close,
 };
 #endif

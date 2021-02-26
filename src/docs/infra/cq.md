@@ -63,7 +63,7 @@ The Chromium CQ supports a variety of options that can change what it checks.
 ### What exactly does the CQ run?
 
 CQ runs the jobs specified in [commit-queue.cfg][2]. See
-[`cq-builders.md`](https://chromium.googlesource.com/chromium/src/+/master/src/infra/config/generated/cq-builders.md)
+[`cq-builders.md`](../../infra/config/generated/cq-builders.md)
 for an auto generated file with links to information about the builders on the
 CQ.
 
@@ -136,14 +136,18 @@ Please email dpranke@chromium.org, who will approve new build configurations.
 
 Several builders are included in the CQ only for changes that affect specific
 directories. These used to be configured via Cq-Include-Trybots footers
-injected at CL upload time. They are now configured via `location_regexp` fields
-in [commit-queue.cfg][2], e.g.
+injected at CL upload time. They are now configured via the `location_regexp`
+attribute of the tryjob parameter to the try builder's definition e.g.
 
 ```
-  builders {
-    name: "chromium/try/my-specific-trybot"
-    location_regexp: ".+/{+]/path/to/my/specific/directory/.+"
-  }
+  try_.some_builder_function(
+      name = "my-specific-try-builder",
+      tryjob = try_.job(
+          location_regexp = [
+              ".+/{+]/path/to/my/specific/directory/.+"
+          ],
+      ),
+  )
 ```
 
 ## Flakiness
@@ -176,4 +180,4 @@ infra-dev@chromium.org, or file a [trooper bug](https://g.co/bugatrooper).
 
 
 [1]: https://chromium.googlesource.com/chromium/tools/depot_tools/+/HEAD/git_footers.py
-[2]: ../../infra/config/commit-queue.cfg
+[2]: ../../infra/config/generated/commit-queue.cfg

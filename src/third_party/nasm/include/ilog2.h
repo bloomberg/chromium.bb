@@ -35,7 +35,6 @@
 #define ILOG2_H
 
 #include "compiler.h"
-#include <limits.h>
 
 #ifdef ILOG2_C                  /* For generating the out-of-line functions */
 # ifndef HAVE_MSVC_INLINE

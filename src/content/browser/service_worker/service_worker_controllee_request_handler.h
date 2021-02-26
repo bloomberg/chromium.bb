@@ -17,17 +17,15 @@
 #include "base/time/time.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_accessed_callback.h"
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class ResourceContext;
 class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerRegistration;
@@ -36,7 +34,7 @@ class ServiceWorkerVersion;
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
 //
-// TODO(crbug.com/824858): Merge into ServiceWorkerNavigationLoaderInterceptor
+// TODO(crbug.com/824858): Merge into ServiceWorkerMainResourceLoaderInterceptor
 // after the service worker core thread changes to the UI thread.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
  public:
@@ -45,7 +43,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerContainerHost> container_host,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination destination,
       bool skip_service_worker,
       ServiceWorkerAccessedCallback service_worker_accessed_callback);
   ~ServiceWorkerControlleeRequestHandler();
@@ -58,7 +56,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_request,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       ServiceWorkerLoaderCallback callback,
       NavigationLoaderInterceptor::FallbackCallback fallback_callback);
   // Returns params with the ControllerServiceWorkerInfoPtr if we have found
@@ -71,7 +68,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
       const network::ResourceRequest& tentative_request);
 
   // Exposed for testing.
-  ServiceWorkerNavigationLoader* loader() {
+  ServiceWorkerMainResourceLoader* loader() {
     return loader_wrapper_ ? loader_wrapper_->get() : nullptr;
   }
 
@@ -108,14 +105,13 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
 
   const base::WeakPtr<ServiceWorkerContextCore> context_;
   const base::WeakPtr<ServiceWorkerContainerHost> container_host_;
-  const blink::mojom::ResourceType resource_type_;
+  const network::mojom::RequestDestination destination_;
 
   // If true, service workers are bypassed for request interception.
   const bool skip_service_worker_;
 
-  std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
+  std::unique_ptr<ServiceWorkerMainResourceLoaderWrapper> loader_wrapper_;
   BrowserContext* browser_context_;
-  ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;
   base::TimeTicks registration_lookup_start_time_;

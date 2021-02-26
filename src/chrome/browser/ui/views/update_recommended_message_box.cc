@@ -39,6 +39,8 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
                  l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_NOT_NOW));
+  SetOwnedByWidget(true);
+  SetTitle(IDS_UPDATE_RECOMMENDED_DIALOG_TITLE);
   base::string16 update_message;
 #if defined(OS_CHROMEOS)
   update_message = l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED);
@@ -47,11 +49,11 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
       IDS_UPDATE_RECOMMENDED, BrowserList::GetIncognitoBrowserCount());
 #endif
 
-  views::MessageBoxView::InitParams params(update_message);
-  params.message_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      ChromeDistanceMetric::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   // Also deleted when the window closes.
-  message_box_view_ = new views::MessageBoxView(params);
+  message_box_view_ = new views::MessageBoxView(update_message);
+  message_box_view_->SetMessageWidth(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::UPDATE_RECOMMENDED);
 }
 
@@ -75,18 +77,6 @@ bool UpdateRecommendedMessageBox::ShouldShowCloseButton() const {
   return false;
 }
 
-base::string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
-#if defined(OS_CHROMEOS)
-  return base::string16();
-#else
-  return l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED_DIALOG_TITLE);
-#endif
-}
-
-void UpdateRecommendedMessageBox::DeleteDelegate() {
-  delete this;
-}
-
 ui::ModalType UpdateRecommendedMessageBox::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -96,9 +86,9 @@ views::View* UpdateRecommendedMessageBox::GetContentsView() {
 }
 
 views::Widget* UpdateRecommendedMessageBox::GetWidget() {
-  return message_box_view_->GetWidget();
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }
 
 const views::Widget* UpdateRecommendedMessageBox::GetWidget() const {
-  return message_box_view_->GetWidget();
+  return message_box_view_ ? message_box_view_->GetWidget() : nullptr;
 }

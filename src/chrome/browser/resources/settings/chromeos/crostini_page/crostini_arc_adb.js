@@ -10,7 +10,12 @@
 Polymer({
   is: 'settings-crostini-arc-adb',
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    I18nBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** @private {boolean} */
@@ -49,15 +54,23 @@ Polymer({
     /** @private {boolean} */
     canChangeAdbSideloading_: {
       type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('canChangeAdbSideloading');
-      },
+      value: false,
     },
 
     /** @private {boolean} */
     showConfirmationDialog_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () =>
+          new Set([chromeos.settings.mojom.Setting.kCrostiniAdbDebugging]),
     },
   },
 
@@ -68,8 +81,31 @@ Polymer({
           this.arcAdbEnabled_ = enabled;
           this.arcAdbNeedPowerwash_ = need_powerwash;
         });
+
+    this.addWebUIListener(
+        'crostini-can-change-arc-adb-sideload-changed',
+        (can_change_arc_adb_sideloading) => {
+          this.canChangeAdbSideloading_ = can_change_arc_adb_sideloading;
+        });
+
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestArcAdbSideloadStatus();
+
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .getCanChangeArcAdbSideloading();
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.CROSTINI_ANDROID_ADB) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -90,7 +126,11 @@ Polymer({
    */
   getPolicyIndicatorType_() {
     if (this.isEnterpriseManaged_) {
-      return CrPolicyIndicatorType.DEVICE_POLICY;
+      if (this.canChangeAdbSideloading_) {
+        return CrPolicyIndicatorType.NONE;
+      } else {
+        return CrPolicyIndicatorType.DEVICE_POLICY;
+      }
     } else if (!this.isOwnerProfile_) {
       return CrPolicyIndicatorType.OWNER;
     } else {

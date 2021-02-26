@@ -27,13 +27,11 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/builtin_service_manifests.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/system_connector_impl.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
-#include "content/public/app/content_browser_manifest.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -49,12 +47,13 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
@@ -71,6 +70,22 @@ base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
 
 base::LazyInstance<std::map<std::string, base::WeakPtr<UtilityProcessHost>>>::
     Leaky g_active_process_groups;
+
+const service_manager::Manifest& GetContentBrowserManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .WithServiceName(mojom::kBrowserServiceName)
+          .WithDisplayName("Content (browser process)")
+          .WithOptions(service_manager::ManifestOptionsBuilder()
+                           .CanConnectToInstancesInAnyGroup(true)
+                           .CanConnectToInstancesWithAnyId(true)
+                           .CanRegisterOtherServiceInstances(true)
+                           .Build())
+          .RequireCapability("*", "app")
+          .RequireCapability("*", "multizone")
+          .Build()};
+  return *manifest;
+}
 
 service_manager::Manifest GetContentSystemManifest() {
   // TODO(https://crbug.com/961869): This is a bit of a temporary hack so that
@@ -106,7 +121,7 @@ class ContentChildServiceProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      service_manager::SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::string16& display_name,
       LaunchCallback callback) override {
     mojo::PendingRemote<service_manager::mojom::Service> remote;
@@ -147,14 +162,12 @@ class ServiceExecutableProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      service_manager::SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::string16& display_name,
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
-    return launcher_
-        .Start(identity, service_manager::SandboxType::kNoSandbox,
-               std::move(callback))
-        .PassInterface();
+    return launcher_.Start(identity, sandbox::policy::SandboxType::kNoSandbox,
+                           std::move(callback));
   }
 
  private:
@@ -328,8 +341,8 @@ ServiceManagerContext::ServiceManagerContext(
   // The |service_manager_thread_task_runner_| must have been created before
   // starting the ServiceManager.
   DCHECK(service_manager_thread_task_runner_);
-  std::vector<service_manager::Manifest> manifests =
-      GetBuiltinServiceManifests();
+  std::vector<service_manager::Manifest> manifests;
+  manifests.push_back(GetContentBrowserManifest());
   manifests.push_back(GetContentSystemManifest());
   for (auto& manifest : manifests) {
     base::Optional<service_manager::Manifest> overlay =

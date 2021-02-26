@@ -113,7 +113,10 @@ int32_t VideoEncoderWrapper::Release() {
   int32_t status = JavaToNativeVideoCodecStatus(
       jni, Java_VideoEncoder_release(jni, encoder_));
   RTC_LOG(LS_INFO) << "release: " << status;
-  frame_extra_infos_.clear();
+  {
+    MutexLock lock(&frame_extra_infos_lock_);
+    frame_extra_infos_.clear();
+  }
   initialized_ = false;
 
   return status;
@@ -138,7 +141,10 @@ int32_t VideoEncoderWrapper::Encode(
   FrameExtraInfo info;
   info.capture_time_ns = frame.timestamp_us() * rtc::kNumNanosecsPerMicrosec;
   info.timestamp_rtp = frame.timestamp();
-  frame_extra_infos_.push_back(info);
+  {
+    MutexLock lock(&frame_extra_infos_lock_);
+    frame_extra_infos_.push_back(info);
+  }
 
   ScopedJavaLocalRef<jobject> j_frame = NativeToJavaVideoFrame(jni, frame);
   ScopedJavaLocalRef<jobject> ret =
@@ -229,19 +235,23 @@ void VideoEncoderWrapper::OnEncodedFrame(
   // entries that don't belong to us, and we need to be careful not to
   // remove them. Removing only those entries older than the current frame
   // provides this guarantee.
-  while (!frame_extra_infos_.empty() &&
-         frame_extra_infos_.front().capture_time_ns < capture_time_ns) {
+  FrameExtraInfo frame_extra_info;
+  {
+    MutexLock lock(&frame_extra_infos_lock_);
+    while (!frame_extra_infos_.empty() &&
+           frame_extra_infos_.front().capture_time_ns < capture_time_ns) {
+      frame_extra_infos_.pop_front();
+    }
+    if (frame_extra_infos_.empty() ||
+        frame_extra_infos_.front().capture_time_ns != capture_time_ns) {
+      RTC_LOG(LS_WARNING)
+          << "Java encoder produced an unexpected frame with timestamp: "
+          << capture_time_ns;
+      return;
+    }
+    frame_extra_info = frame_extra_infos_.front();
     frame_extra_infos_.pop_front();
   }
-  if (frame_extra_infos_.empty() ||
-      frame_extra_infos_.front().capture_time_ns != capture_time_ns) {
-    RTC_LOG(LS_WARNING)
-        << "Java encoder produced an unexpected frame with timestamp: "
-        << capture_time_ns;
-    return;
-  }
-  FrameExtraInfo frame_extra_info = std::move(frame_extra_infos_.front());
-  frame_extra_infos_.pop_front();
 
   // This is a bit subtle. The |frame| variable from the lambda capture is
   // const. Which implies that (i) we need to make a copy to be able to
@@ -254,13 +264,12 @@ void VideoEncoderWrapper::OnEncodedFrame(
   frame_copy.SetTimestamp(frame_extra_info.timestamp_rtp);
   frame_copy.capture_time_ms_ = capture_time_ns / rtc::kNumNanosecsPerMillisec;
 
-  RTPFragmentationHeader header = ParseFragmentationHeader(frame);
   if (frame_copy.qp_ < 0)
     frame_copy.qp_ = ParseQp(frame);
 
   CodecSpecificInfo info(ParseCodecSpecificInfo(frame));
 
-  callback_->OnEncodedImage(frame_copy, &info, &header);
+  callback_->OnEncodedImage(frame_copy, &info);
 }
 
 int32_t VideoEncoderWrapper::HandleReturnCode(JNIEnv* jni,
@@ -289,35 +298,6 @@ int32_t VideoEncoderWrapper::HandleReturnCode(JNIEnv* jni,
   return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
 }
 
-RTPFragmentationHeader VideoEncoderWrapper::ParseFragmentationHeader(
-    rtc::ArrayView<const uint8_t> buffer) {
-  RTPFragmentationHeader header;
-  if (codec_settings_.codecType == kVideoCodecH264) {
-    h264_bitstream_parser_.ParseBitstream(buffer.data(), buffer.size());
-
-    // For H.264 search for start codes.
-    const std::vector<H264::NaluIndex> nalu_idxs =
-        H264::FindNaluIndices(buffer.data(), buffer.size());
-    if (nalu_idxs.empty()) {
-      RTC_LOG(LS_ERROR) << "Start code is not found!";
-      RTC_LOG(LS_ERROR) << "Data:" << buffer[0] << " " << buffer[1] << " "
-                        << buffer[2] << " " << buffer[3] << " " << buffer[4]
-                        << " " << buffer[5];
-    }
-    header.VerifyAndAllocateFragmentationHeader(nalu_idxs.size());
-    for (size_t i = 0; i < nalu_idxs.size(); i++) {
-      header.fragmentationOffset[i] = nalu_idxs[i].payload_start_offset;
-      header.fragmentationLength[i] = nalu_idxs[i].payload_size;
-    }
-  } else {
-    // Generate a header describing a single fragment.
-    header.VerifyAndAllocateFragmentationHeader(1);
-    header.fragmentationOffset[0] = 0;
-    header.fragmentationLength[0] = buffer.size();
-  }
-  return header;
-}
-
 int VideoEncoderWrapper::ParseQp(rtc::ArrayView<const uint8_t> buffer) {
   int qp;
   bool success;
@@ -329,6 +309,7 @@ int VideoEncoderWrapper::ParseQp(rtc::ArrayView<const uint8_t> buffer) {
       success = vp9::GetQp(buffer.data(), buffer.size(), &qp);
       break;
     case kVideoCodecH264:
+      h264_bitstream_parser_.ParseBitstream(buffer.data(), buffer.size());
       success = h264_bitstream_parser_.GetLastSliceQp(&qp);
       break;
     default:  // Default is to not provide QP.
@@ -366,7 +347,6 @@ CodecSpecificInfo VideoEncoderWrapper::ParseCodecSpecificInfo(
           static_cast<uint8_t>(gof_idx_++ % gof_.num_frames_in_gof);
       info.codecSpecific.VP9.num_spatial_layers = 1;
       info.codecSpecific.VP9.first_frame_in_picture = true;
-      info.codecSpecific.VP9.end_of_picture = true;
       info.codecSpecific.VP9.spatial_layer_resolution_present = false;
       if (info.codecSpecific.VP9.ss_data_available) {
         info.codecSpecific.VP9.spatial_layer_resolution_present = true;

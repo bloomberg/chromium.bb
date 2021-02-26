@@ -83,6 +83,8 @@ static RE2::ErrorCode RegexpErrorToRE2(re2::RegexpStatusCode code) {
       return RE2::ErrorMissingBracket;
     case re2::kRegexpMissingParen:
       return RE2::ErrorMissingParen;
+    case re2::kRegexpUnexpectedParen:
+      return RE2::ErrorUnexpectedParen;
     case re2::kRegexpTrailingBackslash:
       return RE2::ErrorTrailingBackslash;
     case re2::kRegexpRepeatArgument:
@@ -293,7 +295,7 @@ static int FindMSBSet(uint32_t n) {
   DCHECK_NE(n, 0);
 #if defined(__GNUC__)
   return 31 ^ __builtin_clz(n);
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
   unsigned long c;
   _BitScanReverse(&c, n);
   return static_cast<int>(c);
@@ -405,6 +407,8 @@ bool RE2::Replace(std::string* str,
                   const StringPiece& rewrite) {
   StringPiece vec[kVecSize];
   int nvec = 1 + MaxSubmatch(rewrite);
+  if (nvec > 1 + re.NumberOfCapturingGroups())
+    return false;
   if (nvec > static_cast<int>(arraysize(vec)))
     return false;
   if (!re.Match(*str, 0, str->size(), UNANCHORED, vec, nvec))
@@ -425,6 +429,8 @@ int RE2::GlobalReplace(std::string* str,
                        const StringPiece& rewrite) {
   StringPiece vec[kVecSize];
   int nvec = 1 + MaxSubmatch(rewrite);
+  if (nvec > 1 + re.NumberOfCapturingGroups())
+    return false;
   if (nvec > static_cast<int>(arraysize(vec)))
     return false;
 
@@ -497,9 +503,10 @@ bool RE2::Extract(const StringPiece& text,
                   std::string* out) {
   StringPiece vec[kVecSize];
   int nvec = 1 + MaxSubmatch(rewrite);
+  if (nvec > 1 + re.NumberOfCapturingGroups())
+    return false;
   if (nvec > static_cast<int>(arraysize(vec)))
     return false;
-
   if (!re.Match(text, 0, text.size(), UNANCHORED, vec, nvec))
     return false;
 
@@ -1012,8 +1019,8 @@ bool RE2::Rewrite(std::string* out,
       int n = (c - '0');
       if (n >= veclen) {
         if (options_.log_errors()) {
-          LOG(ERROR) << "requested group " << n
-                     << " in regexp " << rewrite.data();
+          LOG(ERROR) << "invalid substitution \\" << n
+                     << " from " << veclen << " groups";
         }
         return false;
       }
@@ -1033,41 +1040,49 @@ bool RE2::Rewrite(std::string* out,
 
 /***** Parsers for various types *****/
 
-bool RE2::Arg::parse_null(const char* str, size_t n, void* dest) {
+namespace re2_internal {
+
+template <>
+bool Parse(const char* str, size_t n, void* dest) {
   // We fail if somebody asked us to store into a non-NULL void* pointer
   return (dest == NULL);
 }
 
-bool RE2::Arg::parse_string(const char* str, size_t n, void* dest) {
+template <>
+bool Parse(const char* str, size_t n, std::string* dest) {
   if (dest == NULL) return true;
-  reinterpret_cast<std::string*>(dest)->assign(str, n);
+  dest->assign(str, n);
   return true;
 }
 
-bool RE2::Arg::parse_stringpiece(const char* str, size_t n, void* dest) {
+template <>
+bool Parse(const char* str, size_t n, StringPiece* dest) {
   if (dest == NULL) return true;
-  *(reinterpret_cast<StringPiece*>(dest)) = StringPiece(str, n);
+  *dest = StringPiece(str, n);
   return true;
 }
 
-bool RE2::Arg::parse_char(const char* str, size_t n, void* dest) {
+template <>
+bool Parse(const char* str, size_t n, char* dest) {
   if (n != 1) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<char*>(dest)) = str[0];
+  *dest = str[0];
   return true;
 }
 
-bool RE2::Arg::parse_schar(const char* str, size_t n, void* dest) {
+template <>
+bool Parse(const char* str, size_t n, signed char* dest) {
   if (n != 1) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<signed char*>(dest)) = str[0];
+  *dest = str[0];
   return true;
 }
 
-bool RE2::Arg::parse_uchar(const char* str, size_t n, void* dest) {
+template <>
+bool Parse(const char* str, size_t n, unsigned char* dest) {
   if (n != 1) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<unsigned char*>(dest)) = str[0];
+  *dest = str[0];
   return true;
 }
 
@@ -1131,10 +1146,40 @@ static const char* TerminateNumber(char* buf, size_t nbuf, const char* str,
   return buf;
 }
 
-bool RE2::Arg::parse_long_radix(const char* str,
-                                size_t n,
-                                void* dest,
-                                int radix) {
+template <>
+bool Parse(const char* str, size_t n, float* dest) {
+  if (n == 0) return false;
+  static const int kMaxLength = 200;
+  char buf[kMaxLength+1];
+  str = TerminateNumber(buf, sizeof buf, str, &n, true);
+  char* end;
+  errno = 0;
+  float r = strtof(str, &end);
+  if (end != str + n) return false;   // Leftover junk
+  if (errno) return false;
+  if (dest == NULL) return true;
+  *dest = r;
+  return true;
+}
+
+template <>
+bool Parse(const char* str, size_t n, double* dest) {
+  if (n == 0) return false;
+  static const int kMaxLength = 200;
+  char buf[kMaxLength+1];
+  str = TerminateNumber(buf, sizeof buf, str, &n, true);
+  char* end;
+  errno = 0;
+  double r = strtod(str, &end);
+  if (end != str + n) return false;   // Leftover junk
+  if (errno) return false;
+  if (dest == NULL) return true;
+  *dest = r;
+  return true;
+}
+
+template <>
+bool Parse(const char* str, size_t n, long* dest, int radix) {
   if (n == 0) return false;
   char buf[kMaxNumberLength+1];
   str = TerminateNumber(buf, sizeof buf, str, &n, false);
@@ -1144,14 +1189,12 @@ bool RE2::Arg::parse_long_radix(const char* str,
   if (end != str + n) return false;   // Leftover junk
   if (errno) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<long*>(dest)) = r;
+  *dest = r;
   return true;
 }
 
-bool RE2::Arg::parse_ulong_radix(const char* str,
-                                 size_t n,
-                                 void* dest,
-                                 int radix) {
+template <>
+bool Parse(const char* str, size_t n, unsigned long* dest, int radix) {
   if (n == 0) return false;
   char buf[kMaxNumberLength+1];
   str = TerminateNumber(buf, sizeof buf, str, &n, false);
@@ -1167,62 +1210,52 @@ bool RE2::Arg::parse_ulong_radix(const char* str,
   if (end != str + n) return false;   // Leftover junk
   if (errno) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<unsigned long*>(dest)) = r;
+  *dest = r;
   return true;
 }
 
-bool RE2::Arg::parse_short_radix(const char* str,
-                                 size_t n,
-                                 void* dest,
-                                 int radix) {
+template <>
+bool Parse(const char* str, size_t n, short* dest, int radix) {
   long r;
-  if (!parse_long_radix(str, n, &r, radix)) return false;  // Could not parse
-  if ((short)r != r) return false;                         // Out of range
+  if (!Parse(str, n, &r, radix)) return false;  // Could not parse
+  if ((short)r != r) return false;              // Out of range
   if (dest == NULL) return true;
-  *(reinterpret_cast<short*>(dest)) = (short)r;
+  *dest = (short)r;
   return true;
 }
 
-bool RE2::Arg::parse_ushort_radix(const char* str,
-                                  size_t n,
-                                  void* dest,
-                                  int radix) {
+template <>
+bool Parse(const char* str, size_t n, unsigned short* dest, int radix) {
   unsigned long r;
-  if (!parse_ulong_radix(str, n, &r, radix)) return false;  // Could not parse
-  if ((unsigned short)r != r) return false;                 // Out of range
+  if (!Parse(str, n, &r, radix)) return false;  // Could not parse
+  if ((unsigned short)r != r) return false;     // Out of range
   if (dest == NULL) return true;
-  *(reinterpret_cast<unsigned short*>(dest)) = (unsigned short)r;
+  *dest = (unsigned short)r;
   return true;
 }
 
-bool RE2::Arg::parse_int_radix(const char* str,
-                               size_t n,
-                               void* dest,
-                               int radix) {
+template <>
+bool Parse(const char* str, size_t n, int* dest, int radix) {
   long r;
-  if (!parse_long_radix(str, n, &r, radix)) return false;  // Could not parse
-  if ((int)r != r) return false;                           // Out of range
+  if (!Parse(str, n, &r, radix)) return false;  // Could not parse
+  if ((int)r != r) return false;                // Out of range
   if (dest == NULL) return true;
-  *(reinterpret_cast<int*>(dest)) = (int)r;
+  *dest = (int)r;
   return true;
 }
 
-bool RE2::Arg::parse_uint_radix(const char* str,
-                                size_t n,
-                                void* dest,
-                                int radix) {
+template <>
+bool Parse(const char* str, size_t n, unsigned int* dest, int radix) {
   unsigned long r;
-  if (!parse_ulong_radix(str, n, &r, radix)) return false;  // Could not parse
-  if ((unsigned int)r != r) return false;                   // Out of range
+  if (!Parse(str, n, &r, radix)) return false;  // Could not parse
+  if ((unsigned int)r != r) return false;       // Out of range
   if (dest == NULL) return true;
-  *(reinterpret_cast<unsigned int*>(dest)) = (unsigned int)r;
+  *dest = (unsigned int)r;
   return true;
 }
 
-bool RE2::Arg::parse_longlong_radix(const char* str,
-                                    size_t n,
-                                    void* dest,
-                                    int radix) {
+template <>
+bool Parse(const char* str, size_t n, long long* dest, int radix) {
   if (n == 0) return false;
   char buf[kMaxNumberLength+1];
   str = TerminateNumber(buf, sizeof buf, str, &n, false);
@@ -1232,14 +1265,12 @@ bool RE2::Arg::parse_longlong_radix(const char* str,
   if (end != str + n) return false;   // Leftover junk
   if (errno) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<long long*>(dest)) = r;
+  *dest = r;
   return true;
 }
 
-bool RE2::Arg::parse_ulonglong_radix(const char* str,
-                                     size_t n,
-                                     void* dest,
-                                     int radix) {
+template <>
+bool Parse(const char* str, size_t n, unsigned long long* dest, int radix) {
   if (n == 0) return false;
   char buf[kMaxNumberLength+1];
   str = TerminateNumber(buf, sizeof buf, str, &n, false);
@@ -1254,68 +1285,11 @@ bool RE2::Arg::parse_ulonglong_radix(const char* str,
   if (end != str + n) return false;   // Leftover junk
   if (errno) return false;
   if (dest == NULL) return true;
-  *(reinterpret_cast<unsigned long long*>(dest)) = r;
+  *dest = r;
   return true;
 }
 
-static bool parse_double_float(const char* str, size_t n, bool isfloat,
-                               void* dest) {
-  if (n == 0) return false;
-  static const int kMaxLength = 200;
-  char buf[kMaxLength+1];
-  str = TerminateNumber(buf, sizeof buf, str, &n, true);
-  char* end;
-  errno = 0;
-  double r;
-  if (isfloat) {
-    r = strtof(str, &end);
-  } else {
-    r = strtod(str, &end);
-  }
-  if (end != str + n) return false;   // Leftover junk
-  if (errno) return false;
-  if (dest == NULL) return true;
-  if (isfloat) {
-    *(reinterpret_cast<float*>(dest)) = (float)r;
-  } else {
-    *(reinterpret_cast<double*>(dest)) = r;
-  }
-  return true;
-}
-
-bool RE2::Arg::parse_double(const char* str, size_t n, void* dest) {
-  return parse_double_float(str, n, false, dest);
-}
-
-bool RE2::Arg::parse_float(const char* str, size_t n, void* dest) {
-  return parse_double_float(str, n, true, dest);
-}
-
-#define DEFINE_INTEGER_PARSER(name)                                            \
-  bool RE2::Arg::parse_##name(const char* str, size_t n, void* dest) {         \
-    return parse_##name##_radix(str, n, dest, 10);                             \
-  }                                                                            \
-  bool RE2::Arg::parse_##name##_hex(const char* str, size_t n, void* dest) {   \
-    return parse_##name##_radix(str, n, dest, 16);                             \
-  }                                                                            \
-  bool RE2::Arg::parse_##name##_octal(const char* str, size_t n, void* dest) { \
-    return parse_##name##_radix(str, n, dest, 8);                              \
-  }                                                                            \
-  bool RE2::Arg::parse_##name##_cradix(const char* str, size_t n,              \
-                                       void* dest) {                           \
-    return parse_##name##_radix(str, n, dest, 0);                              \
-  }
-
-DEFINE_INTEGER_PARSER(short)
-DEFINE_INTEGER_PARSER(ushort)
-DEFINE_INTEGER_PARSER(int)
-DEFINE_INTEGER_PARSER(uint)
-DEFINE_INTEGER_PARSER(long)
-DEFINE_INTEGER_PARSER(ulong)
-DEFINE_INTEGER_PARSER(longlong)
-DEFINE_INTEGER_PARSER(ulonglong)
-
-#undef DEFINE_INTEGER_PARSER
+}  // namespace re2_internal
 
 namespace hooks {
 

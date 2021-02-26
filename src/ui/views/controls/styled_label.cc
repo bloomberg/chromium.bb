@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -19,21 +20,12 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
-#include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStyledLabelCustomViewKey, false)
-
-StyledLabel::TestApi::TestApi(StyledLabel* view) : view_(view) {}
-
-StyledLabel::TestApi::~TestApi() = default;
-
-const StyledLabel::LinkTargets& StyledLabel::TestApi::link_targets() {
-  return view_->link_targets_;
-}
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo() = default;
 StyledLabel::RangeStyleInfo::RangeStyleInfo(const RangeStyleInfo&) = default;
@@ -42,15 +34,22 @@ StyledLabel::RangeStyleInfo& StyledLabel::RangeStyleInfo::operator=(
 StyledLabel::RangeStyleInfo::~RangeStyleInfo() = default;
 
 // static
-StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
+StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink(
+    base::RepeatingClosure callback) {
+  // Adapt this closure to a Link::ClickedCallback by discarding the extra arg.
+  return CreateForLink(base::BindRepeating(
+      [](base::RepeatingClosure closure, const ui::Event&) { closure.Run(); },
+      std::move(callback)));
+}
+
+// static
+StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink(
+    Link::ClickedCallback callback) {
   RangeStyleInfo result;
+  result.callback = std::move(callback);
   result.disable_line_wrapping = true;
   result.text_style = style::STYLE_LINK;
   return result;
-}
-
-bool StyledLabel::RangeStyleInfo::IsLink() const {
-  return text_style && text_style.value() == style::STYLE_LINK;
 }
 
 StyledLabel::LayoutSizeInfo::LayoutSizeInfo(int max_valid_width)
@@ -67,9 +66,6 @@ bool StyledLabel::StyleRange::operator<(
 }
 
 struct StyledLabel::LayoutViews {
-  // The updated data for StyledLabel::link_targets_.
-  LinkTargets link_targets;
-
   // All views to be added as children, line by line.
   std::vector<std::vector<View*>> views_per_line;
 
@@ -78,11 +74,7 @@ struct StyledLabel::LayoutViews {
   std::vector<std::unique_ptr<View>> owned_views;
 };
 
-StyledLabel::StyledLabel(const base::string16& text,
-                         StyledLabelListener* listener)
-    : listener_(listener) {
-  base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
-}
+StyledLabel::StyledLabel() = default;
 
 StyledLabel::~StyledLabel() = default;
 
@@ -90,7 +82,11 @@ const base::string16& StyledLabel::GetText() const {
   return text_;
 }
 
-void StyledLabel::SetText(const base::string16& text) {
+void StyledLabel::SetText(base::string16 text) {
+  // Failing to trim trailing whitespace will cause later confusion when the
+  // text elider tries to do so internally. There's no obvious reason to
+  // preserve trailing whitespace anyway.
+  base::TrimWhitespace(std::move(text), base::TRIM_TRAILING, &text);
   if (text_ == text)
     return;
 
@@ -100,8 +96,9 @@ void StyledLabel::SetText(const base::string16& text) {
   OnPropertyChanged(&text_, kPropertyEffectsPreferredSizeChanged);
 }
 
-gfx::FontList StyledLabel::GetDefaultFontList() const {
-  return style::GetFont(text_context_, default_text_style_);
+gfx::FontList StyledLabel::GetFontList(const RangeStyleInfo& style_info) const {
+  return style_info.custom_font.value_or(style::GetFont(
+      text_context_, style_info.text_style.value_or(default_text_style_)));
 }
 
 void StyledLabel::AddStyleRange(const gfx::Range& range,
@@ -149,16 +146,16 @@ void StyledLabel::SetDefaultTextStyle(int text_style) {
 }
 
 int StyledLabel::GetLineHeight() const {
-  return specified_line_height_;
+  return line_height_.value_or(
+      style::GetLineHeight(text_context_, default_text_style_));
 }
 
 void StyledLabel::SetLineHeight(int line_height) {
-  if (specified_line_height_ == line_height)
+  if (line_height_ == line_height)
     return;
 
-  specified_line_height_ = line_height;
-  OnPropertyChanged(&specified_line_height_,
-                    kPropertyEffectsPreferredSizeChanged);
+  line_height_ = line_height;
+  OnPropertyChanged(&line_height_, kPropertyEffectsPreferredSizeChanged);
 }
 
 base::Optional<SkColor> StyledLabel::GetDisplayedOnBackgroundColor() const {
@@ -205,11 +202,9 @@ void StyledLabel::SizeToFit(int fixed_width) {
 }
 
 void StyledLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (text_context_ == style::CONTEXT_DIALOG_TITLE)
-    node_data->role = ax::mojom::Role::kTitleBar;
-  else
-    node_data->role = ax::mojom::Role::kStaticText;
-
+  node_data->role = (text_context_ == style::CONTEXT_DIALOG_TITLE)
+                        ? ax::mojom::Role::kTitleBar
+                        : ax::mojom::Role::kStaticText;
   node_data->SetName(GetText());
 }
 
@@ -228,12 +223,6 @@ void StyledLabel::Layout() {
 
   // If the layout has been recalculated, add and position all views.
   if (layout_views_) {
-    for (auto& link_target : layout_views_->link_targets) {
-      link_target.first->set_callback(base::BindRepeating(
-          &StyledLabel::LinkClicked, base::Unretained(this)));
-    }
-    link_targets_ = std::move(layout_views_->link_targets);
-
     // Delete all non-custom views on removal; custom views are temporarily
     // moved to |custom_views_|.
     RemoveOrDeleteAllChildViews();
@@ -309,11 +298,6 @@ void StyledLabel::OnThemeChanged() {
   UpdateLabelBackgroundColor();
 }
 
-void StyledLabel::LinkClicked(Link* source, int event_flags) {
-  if (listener_)
-    listener_->StyledLabelLinkClicked(this, link_targets_[source], event_flags);
-}
-
 // TODO(wutao): support gfx::ALIGN_TO_HEAD alignment.
 void StyledLabel::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   DCHECK_NE(gfx::ALIGN_TO_HEAD, alignment);
@@ -330,32 +314,20 @@ void StyledLabel::ClearStyleRanges() {
   PreferredSizeChanged();
 }
 
+void StyledLabel::ClickLinkForTesting() {
+  const auto it =
+      base::ranges::find(children(), Link::kViewClassName, &View::GetClassName);
+  DCHECK(it != children().cend());
+  (*it)->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE));
+}
+
 int StyledLabel::StartX(int excess_space) const {
   int x = GetInsets().left();
   if (horizontal_alignment_ == gfx::ALIGN_LEFT)
     return x;
   return x + ((horizontal_alignment_ == gfx::ALIGN_CENTER) ? (excess_space / 2)
                                                            : excess_space);
-}
-
-int StyledLabel::GetDefaultLineHeight() const {
-  return specified_line_height_ > 0
-             ? specified_line_height_
-             : std::max(
-                   style::GetLineHeight(text_context_, default_text_style_),
-                   GetDefaultFontList().GetHeight());
-}
-
-gfx::FontList StyledLabel::GetFontListForRange(
-    const StyleRanges::const_iterator& range) const {
-  if (range == style_ranges_.end())
-    return GetDefaultFontList();
-
-  return range->style_info.custom_font
-             ? range->style_info.custom_font.value()
-             : style::GetFont(
-                   text_context_,
-                   range->style_info.text_style.value_or(default_text_style_));
 }
 
 void StyledLabel::CalculateLayout(int width) const {
@@ -369,7 +341,7 @@ void StyledLabel::CalculateLayout(int width) const {
   layout_views_ = std::make_unique<LayoutViews>();
 
   const int content_width = width - insets.width();
-  const int default_line_height = GetDefaultLineHeight();
+  const int line_height = GetLineHeight();
   RangeStyleInfo default_style;
   default_style.text_style = default_text_style_;
   int max_width = 0, total_height = 0;
@@ -379,7 +351,7 @@ void StyledLabel::CalculateLayout(int width) const {
   StyleRanges::const_iterator current_range = style_ranges_.begin();
   for (base::string16 remaining_string = text_;
        content_width > 0 && !remaining_string.empty();) {
-    layout_size_info_.line_sizes.emplace_back(0, default_line_height);
+    layout_size_info_.line_sizes.emplace_back(0, line_height);
     auto& line_size = layout_size_info_.line_sizes.back();
     layout_views_->views_per_line.emplace_back();
     auto& views = layout_views_->views_per_line.back();
@@ -412,13 +384,13 @@ void StyledLabel::CalculateLayout(int width) const {
            !current_range->style_info.custom_view)) {
         const gfx::Rect chunk_bounds(line_size.width(), 0,
                                      content_width - line_size.width(),
-                                     default_line_height);
+                                     line_height);
         // If the start of the remaining text is inside a styled range, the font
         // style may differ from the base font. The font specified by the range
         // should be used when eliding text.
-        gfx::FontList text_font_list = position >= range.start()
-                                           ? GetFontListForRange(current_range)
-                                           : GetDefaultFontList();
+        gfx::FontList text_font_list =
+            GetFontList((position >= range.start()) ? current_range->style_info
+                                                    : RangeStyleInfo());
         int elide_result = gfx::ElideRectangleText(
             remaining_string, text_font_list, chunk_bounds.width(),
             chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
@@ -549,14 +521,13 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
     const RangeStyleInfo& style_info,
     const gfx::Range& range) const {
   std::unique_ptr<Label> result;
-  if (style_info.IsLink()) {
+  if (style_info.text_style == style::STYLE_LINK) {
     // Nothing should (and nothing does) use a custom font for links.
     DCHECK(!style_info.custom_font);
 
     // Note this ignores |default_text_style_|, in favor of style::STYLE_LINK.
     auto link = std::make_unique<Link>(text, text_context_);
-
-    layout_views_->link_targets[link.get()] = range;
+    link->SetCallback(style_info.callback);
 
     result = std::move(link);
   } else if (style_info.custom_font) {
@@ -602,16 +573,13 @@ void StyledLabel::RemoveOrDeleteAllChildViews() {
   }
 }
 
-BEGIN_METADATA(StyledLabel)
-ADD_PROPERTY_METADATA(StyledLabel, base::string16, Text)
-ADD_PROPERTY_METADATA(StyledLabel, int, TextContext)
-ADD_PROPERTY_METADATA(StyledLabel, int, DefaultTextStyle)
-ADD_PROPERTY_METADATA(StyledLabel, int, LineHeight)
-ADD_PROPERTY_METADATA(StyledLabel, bool, AutoColorReadabilityEnabled)
-ADD_PROPERTY_METADATA(StyledLabel,
-                      base::Optional<SkColor>,
-                      DisplayedOnBackgroundColor)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(StyledLabel, View)
+ADD_PROPERTY_METADATA(base::string16, Text)
+ADD_PROPERTY_METADATA(int, TextContext)
+ADD_PROPERTY_METADATA(int, DefaultTextStyle)
+ADD_PROPERTY_METADATA(int, LineHeight)
+ADD_PROPERTY_METADATA(bool, AutoColorReadabilityEnabled)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, DisplayedOnBackgroundColor)
+END_METADATA
 
 }  // namespace views

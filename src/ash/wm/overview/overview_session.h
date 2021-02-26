@@ -33,7 +33,6 @@ class PointF;
 
 namespace ui {
 class KeyEvent;
-class ScopedLayerAnimationSettings;
 }  // namespace ui
 
 namespace views {
@@ -56,12 +55,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public ShellObserver,
                                    public SplitViewObserver {
  public:
-  // Callback which fills out the passed settings object. Used by several
-  // functions so different callers can do similar animations with different
-  // settings.
-  using UpdateAnimationSettingsCallback =
-      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
-
   using WindowList = std::vector<aura::Window*>;
 
   explicit OverviewSession(OverviewDelegate* delegate);
@@ -141,9 +134,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                          bool animate,
                          bool restack);
 
-  // Removes |overview_item| from the corresponding grid. No items are
-  // repositioned.
+  // Removes |overview_item| from the corresponding grid.
   void RemoveItem(OverviewItem* overview_item);
+  void RemoveItem(OverviewItem* overview_item,
+                  bool item_destroying,
+                  bool reposition);
 
   void RemoveDropTargets();
 
@@ -201,14 +196,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void SetWindowListNotAnimatedWhenExiting(aura::Window* root_window);
 
   // Shifts and fades the grid in |grid_list_| associated with |location|.
-  // Returns a ui::ScopedLayerAnimationSettings object for the caller to
-  // observe.
-  std::unique_ptr<ui::ScopedLayerAnimationSettings>
-  UpdateGridAtLocationYPositionAndOpacity(
-      int64_t display_id,
-      float new_y,
-      float opacity,
-      UpdateAnimationSettingsCallback callback);
 
   // Updates all the overview items' mask and shadow.
   void UpdateRoundedCornersAndShadow();
@@ -330,9 +317,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
  private:
   friend class DesksAcceleratorsTest;
   friend class OverviewSessionTest;
+  class AccessibilityFocusAnnotator;
 
-  // Helper function that moves the selection widget to forward or backward on
-  // the corresponding window grid.
+  // Helper function that moves the highlight forward or backward on the
+  // corresponding window grid.
   void Move(bool reverse);
 
   // Helper function that processes a key event and maybe scrolls the overview
@@ -349,26 +337,21 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void OnItemAdded(aura::Window* window);
 
-  // Tracks observed windows.
-  base::flat_set<aura::Window*> observed_windows_;
-
   // Weak pointer to the overview delegate which will be called when a selection
   // is made.
   OverviewDelegate* delegate_;
 
-  // A weak pointer to the window which was focused on beginning window
-  // selection. If window selection is canceled the focus should be restored to
-  // this window.
+  // A weak pointer to the window which was focused on starting overview. If
+  // overview is canceled the focus should be restored to this window.
   aura::Window* restore_focus_window_ = nullptr;
 
   // A hidden window that receives focus while in overview mode. It is needed
   // because accessibility needs something focused for it to work and we cannot
   // use one of the overview windows otherwise wm::ActivateWindow will not
   // work.
-  // TODO(sammiequon): Investigate if we can focus the |selection_widget_| in
-  // OverviewGrid when it is created, or if we can focus a widget from the
-  // virtual desks UI when that is complete, or we may be able to add some
-  // mechanism to trigger accessibility events without a focused window.
+  // TODO(sammiequon): Focus the grid desks widget if it is always available, or
+  // we may be able to add some mechanism to trigger accessibility events
+  // without a focused window.
   std::unique_ptr<views::Widget> overview_focus_widget_;
 
   // A widget that is shown if we entered overview without any windows opened.
@@ -415,6 +398,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   std::unique_ptr<ScopedOverviewHideWindows> hide_overview_windows_;
 
   std::unique_ptr<OverviewHighlightController> highlight_controller_;
+
+  // Updates accessibility with the correct focus order among all overview
+  // widgets.
+  std::unique_ptr<AccessibilityFocusAnnotator> accessibility_focus_annotator_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewSession);
 };

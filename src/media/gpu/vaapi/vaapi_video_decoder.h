@@ -15,13 +15,15 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
+#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "media/base/cdm_context.h"
+#include "media/base/status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
@@ -29,6 +31,11 @@
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+
+namespace gpu {
+class GpuDriverBugWorkarounds;
+}
 
 namespace media {
 
@@ -46,10 +53,12 @@ class VaapiVideoDecoder : public DecoderInterface,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<DecoderInterface::Client> client);
 
-  static SupportedVideoDecoderConfigs GetSupportedConfigs();
+  static SupportedVideoDecoderConfigs GetSupportedConfigs(
+      const gpu::GpuDriverBugWorkarounds& workarounds);
 
   // DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
+                  CdmContext* cdm_context,
                   InitCB init_cb,
                   const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
@@ -96,40 +105,32 @@ class VaapiVideoDecoder : public DecoderInterface,
 
   // Schedule the next decode task in the queue to be executed.
   void ScheduleNextDecodeTask();
-  // Try to decode a single input buffer on the decoder thread.
+  // Try to decode a single input buffer.
   void HandleDecodeTask();
-  // Clear the decode task queue on the decoder thread. This is done when
-  // resetting or destroying the decoder, or encountering an error.
+  // Clear the decode task queue. This is done when resetting or destroying the
+  // decoder, or encountering an error.
   void ClearDecodeTaskQueue(DecodeStatus status);
 
-  // Output a single |video_frame| on the decoder thread.
-  void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
-                       const gfx::Rect& visible_rect,
-                       base::TimeDelta timestamp);
-  // Release the video frame associated with the specified |surface_id| on the
-  // decoder thread. This is called when the last reference to the associated
-  // VASurface has been released, which happens when the decoder outputted the
-  // video frame, or stopped using it as a reference frame. Note that this
-  // doesn't mean the frame can be reused immediately, as it might still be used
-  // by the client.
-  void ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
-                        VASurfaceID surface_id);
-  // Called when a video frame was returned to the video frame pool on the
-  // decoder thread. This will happen when both the client and decoder
-  // (in ReleaseFrameTask()) released their reference to the video frame.
-  void NotifyFrameAvailableTask();
+  // Releases the local reference to the VideoFrame associated with the
+  // specified |surface_id| on the decoder thread. This is called when
+  // |decoder_| has outputted the VideoFrame and stopped using it as a
+  // reference frame. Note that this doesn't mean the frame can be reused
+  // immediately, as it might still be used by the client.
+  void ReleaseVideoFrame(VASurfaceID surface_id);
+  // Callback for |frame_pool_| to notify of available resources.
+  void NotifyFrameAvailable();
 
-  // Flush the decoder on the decoder thread, blocks until all pending decode
-  // tasks have been executed and all frames have been output.
-  void FlushTask();
+  // Flushes |decoder_|, blocking until all pending decode tasks have been
+  // executed and all frames have been output.
+  void Flush();
 
-  // Called when resetting the decoder is done, executes |reset_cb|.
-  void ResetDoneTask(base::OnceClosure reset_cb);
+  // Called when resetting the decoder is finished, to execute |reset_cb|.
+  void ResetDone(base::OnceClosure reset_cb);
 
   // Create codec-specific AcceleratedVideoDecoder and reset related variables.
-  bool CreateAcceleratedVideoDecoder();
+  Status CreateAcceleratedVideoDecoder();
 
-  // Change the current |state_| to the specified |state| on the decoder thread.
+  // Change the current |state_| to the specified |state|.
   void SetState(State state);
 
   // The video decoder's state.
@@ -142,9 +143,6 @@ class VaapiVideoDecoder : public DecoderInterface,
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   // Color space of the video frame.
   VideoColorSpace color_space_;
-
-  // The video coded size.
-  gfx::Size pic_size_;
 
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
@@ -168,6 +166,15 @@ class VaapiVideoDecoder : public DecoderInterface,
   // The list of frames currently used as output buffers or reference frames.
   std::map<VASurfaceID, scoped_refptr<VideoFrame>> output_frames_;
 
+  // VASurfaces are created via importing |frame_pool_| resources into libva in
+  // CreateSurface(). The following map keeps those VASurfaces for reuse
+  // according to the expectations of libva vaDestroySurfaces(): "Surfaces can
+  // only be destroyed after all contexts using these surfaces have been
+  // destroyed."
+  // TODO(crbug.com/1040291): remove this keep-alive when using SharedImages.
+  base::small_map<std::map<gfx::GpuMemoryBufferId, scoped_refptr<VASurface>>>
+      allocated_va_surfaces_;
+
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
@@ -175,7 +182,7 @@ class VaapiVideoDecoder : public DecoderInterface,
   // the pointer from AcceleratedVideoDecoder.
   VaapiVideoDecoderDelegate* decoder_delegate_ = nullptr;
 
-  SEQUENCE_CHECKER(decoder_sequence_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtr<VaapiVideoDecoder> weak_this_;
   base::WeakPtrFactory<VaapiVideoDecoder> weak_this_factory_;

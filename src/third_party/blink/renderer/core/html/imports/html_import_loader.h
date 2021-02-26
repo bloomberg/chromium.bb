@@ -50,8 +50,6 @@ class HTMLImportsController;
 class HTMLImportLoader final : public GarbageCollected<HTMLImportLoader>,
                                public RawResourceClient,
                                public DocumentParserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
-
  public:
   enum State {
     kStateLoading,
@@ -87,7 +85,7 @@ class HTMLImportLoader final : public GarbageCollected<HTMLImportLoader>,
 
   V0CustomElementSyncMicrotaskQueue* MicrotaskQueue() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // RawResourceClient overrides:

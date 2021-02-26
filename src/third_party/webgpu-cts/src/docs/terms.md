@@ -1,11 +1,36 @@
 # Writing Tests
 
-- _Suites_ contain multiple:
-  - _READMEs_
-  - _Test Spec Files_. Contains one:
-    - _Test Group_. Defines a _test fixture_ and contains multiple:
-      - _Tests_. Defines a _test function_ and contains multiple:
-        - _Test Cases_, each with the same test function but different _parameters_.
+Each test suite is organized as a tree, both in the filesystem and further within each file.
+
+- _Suites_, e.g. `src/webgpu/`.
+  - _READMEs_, e.g. `src/webgpu/README.txt`.
+  - _Test Spec Files_, e.g. `src/webgpu/examples.spec.ts`.
+    Identified by their file path.
+    Each test spec file provides a description and a _Test Group_.
+    A _Test Group_ defines a test fixture, and contains multiple:
+    - _Tests_.
+      Identified by a comma-separated list of parts (e.g. `basic,async`)
+      which define a path through a filesystem-like tree (analogy: `basic/async.txt`).
+      Defines a _test function_ and contains multiple:
+      - _Test Cases_.
+        Identified by a list of _Public Parameters_ (e.g. `x` = `1`, `y` = `2`).
+        Each Test Case has the same test function but different Public Parameters.
+
+## Test Tree
+
+A _Test Tree_ is a tree whose leaves are individual Test Cases.
+
+A Test Tree can be thought of as follows:
+
+- Suite, which is the root of a tree with "leaves" which are:
+  - Test Spec Files, each of which is a tree with "leaves" which are:
+    - Tests, each of which is a tree with leaves which are:
+      - Test Cases.
+
+(In the implementation, this conceptual tree of trees is decomposed into one big tree
+whose leaves are Test Cases.)
+
+**Type:** `TestTree`
 
 ## Suite
 
@@ -22,30 +47,53 @@ Each member of a suite is identified by its path within the suite.
 
 Describes (in prose) the contents of a subdirectory in a suite.
 
-**Type:** After a README is loaded, it is stored as a `ReadmeFile`.
+READMEs are only processed at build time, when generating the _Listing_ for a suite.
 
-## IDs
+**Type:** `TestSuiteListingEntryReadme`
 
-### Test Spec ID
+## Queries
 
-Uniquely identifies a single test spec file.
-Comprised of suite name (`suite`) and test spec file path relative to the suite root (`path`).
+A _Query_ is a structured object which specifies a subset of cases in exactly one Suite.
+A Query can be represented uniquely as a string.
+Queries are used to:
 
-**Type:** `TestSpecID`
+- Identify a subtree of a suite (by identifying the root node of that subtree).
+- Identify individual cases.
+- Represent the list of tests that a test runner (standalone, wpt, or cmdline) should run.
+- Identify subtrees which should not be "collapsed" during WPT `cts.html` generation,
+  so that that cts.html "variants" can have individual test expectations
+  (i.e. marked as "expected to fail", "skip", etc.).
 
-**Example:** `{ suite: 'webgpu', path: 'command_buffer/compute/basic' }` corresponds to
-`src/webgpu/command_buffer/compute/basic.spec.ts`.
+There are four types of `TestQuery`:
 
-### Test Case ID
+- `TestQueryMultiFile` represents any subtree of the file hierarchy:
+  - `suite:*`
+  - `suite:path,to,*`
+  - `suite:path,to,file,*`
+- `TestQueryMultiTest` represents any subtree of the test hierarchy:
+  - `suite:path,to,file:*`
+  - `suite:path,to,file:path,to,*`
+  - `suite:path,to,file:path,to,test,*`
+- `TestQueryMultiCase` represents any subtree of the case hierarchy:
+  - `suite:path,to,file:path,to,test:*`
+  - `suite:path,to,file:path,to,test:my=0;*`
+  - `suite:path,to,file:path,to,test:my=0;params="here";*`
+- `TestQuerySingleCase` represents as single case:
+  - `suite:path,to,file:path,to,test:my=0;params="here"`
 
-Uniquely identifies a single test case within a test spec.
+Test Queries are a **weakly ordered set**: any query is
+_Unordered_, _Equal_, _StrictSuperset_, or _StrictSubset_ relative to any other.
+This property is used to construct the complete tree of test cases.
+In the examples above, every example query is a StrictSubset of the previous one
+(note: even `:*` is a subset of `,*`).
 
-Comprised of test name (`test`) and the parameters for a case (`params`).
-(If `params` is null, there is only one case for the test.)
+In the WPT and standalone harnesses, the query is stored in the URL, e.g.
+`index.html?q=q:u,e:r,y:*`.
 
-**Type:** `TestCaseID`
+Queries are selectively URL-encoded for readability and compatibility with browsers
+(see `encodeURIComponentSelectively`).
 
-**Example:** `{ test: '', params: { 'value': 1 } }`
+**Type:** `TestQuery`
 
 ## Listing
 
@@ -53,39 +101,35 @@ A listing of the **test spec files** in a suite.
 
 This can be generated only in Node, which has filesystem access (see `src/tools/crawl.ts`).
 As part of the build step, a _listing file_ is generated (see `src/tools/gen.ts`) so that the
-test files can be discovered by the web runner (since it does not have filesystem access).
+Test Spec Files can be discovered by the web runner (since it does not have filesystem access).
 
 **Type:** `TestSuiteListing`
 
 ### Listing File
 
+Each Suite has one Listing File (`suite/listing.[tj]s`), containing a list of the files
+in the suite.
+
+In `src/suite/listing.ts`, this is computed dynamically.
+In `out/suite/listing.js`, the listing has been pre-baked (by `tools/gen_listings`).
+
+**Type:** Once `import`ed, `ListingFile`
+
 **Example:** `out/webgpu/listing.js`
 
-## Test Spec
+## Test Spec File
 
-May be either a _test spec file_ or a _filtered test spec_.
-It is identified by a `TestSpecID`.
+A Test Spec File has a `description` and a Test Group (under which tests and cases are defined).
 
-Always contains one `RunCaseIterable`.
-
-**Type:** `TestSpec`
-
-### Test Spec File
-
-A single `.spec.ts` file. It always contains one _test group_.
+**Type:** Once `import`ed, `SpecFile`
 
 **Example:** `src/webgpu/**/*.spec.ts`
 
-### Filtered Test Spec
+## Test Group
 
-A subset of the tests in a single test spec file.
-It is created at runtime, via a filter.
+A subtree of tests. There is one Test Group per Test Spec File.
 
-It contains one "virtual" test group, which has type `RunCaseIterable`.
-
-## Test Group / Group
-
-A collection of test cases. There is one per test spec file.
+The Test Fixture used for tests is defined at TestGroup creation.
 
 **Type:** `TestGroup`
 
@@ -93,18 +137,17 @@ A collection of test cases. There is one per test spec file.
 
 One test. It has a single _test function_.
 
-It may represent multiple _test cases_, each of which runs the same test function with different **parameters**.
+It may represent multiple _test cases_, each of which runs the same Test Function with different
+Parameters.
 
-It is created by `TestGroup.test()`.
-At creation time, it can be parameterized via `Test.params()`.
-
-**Type:** `Test`
+A test is named using `TestGroup.test()`, which returns a `TestBuilder`.
+`TestBuilder.params()` can optionally be used to parameterize the test.
+Then, `TestBuilder.fn()` provides the Test Function.
 
 ### Test Function
 
-A test function is defined inline inside of a `TestGroup.test()` call.
-
-It receives an instance of the appropriate _test fixture_, through which it produce test results.
+When a test case is run, the Test Function receives an instance of the
+Test Fixture provided to the Test Group, producing test results.
 
 **Type:** `TestFn`
 
@@ -116,9 +159,20 @@ A single case of a test. It is identified by a `TestCaseID`: a test name, and it
 
 ## Parameters / Params
 
+Each Test Case has a (possibly empty) set of Parameters.
+The parameters are available to the Test Function `f(t)` via `t.params`.
+
+A set of Public Parameters identifies a Test Case within a Test.
+
+There are also Private Paremeters: any parameter name beginning with an underscore (`_`).
+These parameters are not part of the Test Case identification, but are still passed into
+the Test Function. They can be used to manually specify expected results.
+
+**Type:** `CaseParams`
+
 ## Test Fixture / Fixture
 
-Test fixtures provide helpers for tests to use.
+_Test Fixtures_ provide helpers for tests to use.
 A new instance of the fixture is created for every run of every test case.
 
 There is always one fixture class for a whole test group (though this may change).
@@ -126,7 +180,7 @@ There is always one fixture class for a whole test group (though this may change
 The fixture is also how a test gets access to the _case recorder_,
 which allows it to produce test results.
 
-They are also how tests produce results: `.log()`, `.fail()`, etc.
+They are also how tests produce results: `.skip()`, `.fail()`, etc.
 
 **Type:** `Fixture`
 
@@ -138,137 +192,61 @@ Provides basic fixture utilities most useful in the `unittests` suite.
 
 Provides utilities useful in WebGPU CTS tests.
 
-# Running Tests
-
-- _Queries_ contain multiple:
-  - _Filters_ (positive or negative).
-
-## Query
-
-A query is a string which denotes a subset of a test suite to run.
-It is comprised of a list of filters.
-A case is included in the subset if it matches any of the filters.
-
-In the WPT and standalone harnesses, the query is stored in the URL.
-
-Queries are selectively URL-encoded for readability and compatibility with browsers.
-
-**Example:** `?q=unittests:param_helpers:combine/=`
-**Example:** `?q=unittests:param_helpers:combine/mixed=`
-
-**Type:** None yet. TODO
-
-### Filter
-
-A filter matches a set of cases in a suite.
-
-Each filter may match one of:
-
-- `S:s` In one suite `S`, all specs whose paths start with `s` (which may be empty).
-- `S:s:t` In one spec `S:s`, all tests whose names start with `t` (which may be empty).
-- `S:s:t~c` In one test `S:s:t`, all cases whose params are a superset of `c`.
-- `S:s:t=c` In one test `S:s:t`, the single case whose params equal `c` (empty string = `{}`).
-
-**Type:** `TestFilter`
-
-### Using filters to split expectations
-
-A set of cases can be split using negative filters. For example, imagine you have one WPT test variant:
-
-- `webgpu/cts.html?q=unittests:param_helpers:`
-
-But one of the cases is failing. To be able to suppress the failing test without losing test coverage, the WPT test variant can be split into two variants:
-
-- `webgpu/cts.html?q=unittests:param_helpers:&not=unittests:param_helpers:combine/mixed:`
-- `webgpu/cts.html?q=unittests:param_helpers:combine/mixed:`
-
-This runs the same set of cases, but in two separate page loads.
-
 # Test Results
 
 ## Logger
 
 A logger logs the results of a whole test run.
 
-It saves an empty `LiveTestSpecResult` into its results array, then creates a
+It saves an empty `LiveTestSpecResult` into its results map, then creates a
 _test spec recorder_, which records the results for a group into the `LiveTestSpecResult`.
 
-### Test Spec Recorder
-
-Refers to a `LiveTestSpecResult` in the logger, and writes results into it.
-
-It saves an empty `LiveTestCaseResult` into its `LiveTestSpecResult`, then creates a
-_test case recorder_, which records the results for a case into the `LiveTestCaseResult`.
+**Type:** `Logger`
 
 ### Test Case Recorder
 
-Records the actual results of running a test case (its pass-status, run time, and logs)
-into its `LiveTestCaseResult`.
+Refers to a `LiveTestCaseResult` created by the logger.
+Records the results of running a test case (its pass-status, run time, and logs) into it.
+
+**Types:** `TestCaseRecorder`, `LiveTestCaseResult`
 
 #### Test Case Status
 
 The `status` of a `LiveTestCaseResult` can be one of:
 
-- `'running'`
-- `'fail'`
-- `'warn'`
+- `'running'` (only while still running)
 - `'pass'`
+- `'skip'`
+- `'warn'`
+- `'fail'`
 
-The "worst" result from running a case is always reported.
+The "worst" result from running a case is always reported (fail > warn > skip > pass).
+Note this means a test can still fail if it's "skipped", if it failed before
+`.skip()` was called.
+
+**Type:** `Status`
 
 ## Results Format
 
 The results are returned in JSON format.
 
-They are designed to be easily merged in JavaScript.
-(TODO: Write a merge tool.)
+They are designed to be easily merged in JavaScript:
+the `"results"` can be passed into the constructor of `Map` and merged from there.
 
-(TODO: Update these docs if the format changes.)
+(TODO: Write a merge tool, if needed.)
 
 ```js
 {
-  "version": "e24c459b46c4815f93f0aed5261e28008d1f2882-dirty",
+  "version": "bf472c5698138cdf801006cd400f587e9b1910a5-dirty",
   "results": [
-    // LiveTestSpecResult objects
-    {
-      "spec": "unittests:basic:",
-      "cases": [
-        // LiveTestCaseResult objects
-        {
-          "test": "test/sync",
-          "params": null,
-          "status": "pass",
-          "timems": 145,
-          "logs": []
-        },
-        {
-          "test": "test/async",
-          "params": null,
-          "status": "pass",
-          "timems": 26,
-          "logs": []
-        }
-      ]
-    },
-    {
-      "spec": "unittests:test_group:",
-      "cases": [
-        {
-          "test": "invalid test name",
-          "params": { "char": "\"" },
-          "status": "pass",
-          "timems": 66,
-          "logs": ["OK: threw"]
-        },
-        {
-          "test": "invalid test name",
-          "params": { "char": "`" },
-          "status": "pass",
-          "timems": 15,
-          "logs": ["OK: threw"]
-        }
-      ]
-    }
+    [
+      "unittests:async_mutex:basic:",
+      { "status": "pass", "timems": 0.286, "logs": [] }
+    ],
+    [
+      "unittests:async_mutex:serial:",
+      { "status": "pass", "timems": 0.415, "logs": [] }
+    ]
   ]
 }
 ```

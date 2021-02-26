@@ -21,6 +21,7 @@
 #include "api/video_codecs/video_encoder.h"
 #include "common_video/h264/h264_bitstream_parser.h"
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "sdk/android/src/jni/jni_helpers.h"
 #include "sdk/android/src/jni/video_frame.h"
 
@@ -67,8 +68,6 @@ class VideoEncoderWrapper : public VideoEncoder {
                            const JavaRef<jobject>& j_value,
                            const char* method_name);
 
-  RTPFragmentationHeader ParseFragmentationHeader(
-      rtc::ArrayView<const uint8_t> buffer);
   int ParseQp(rtc::ArrayView<const uint8_t> buffer);
   CodecSpecificInfo ParseCodecSpecificInfo(const EncodedImage& frame);
   ScopedJavaLocalRef<jobject> ToJavaBitrateAllocation(
@@ -84,7 +83,10 @@ class VideoEncoderWrapper : public VideoEncoder {
   const ScopedJavaGlobalRef<jobject> encoder_;
   const ScopedJavaGlobalRef<jclass> int_array_class_;
 
-  std::deque<FrameExtraInfo> frame_extra_infos_;
+  // Modified both on the encoder thread and the callback thread.
+  Mutex frame_extra_infos_lock_;
+  std::deque<FrameExtraInfo> frame_extra_infos_
+      RTC_GUARDED_BY(frame_extra_infos_lock_);
   EncodedImageCallback* callback_;
   bool initialized_;
   int num_resets_;

@@ -300,7 +300,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     }
   }
 
-  loader_.reset(frame->CreateAssociatedURLLoader(options));
+  loader_ = frame->CreateAssociatedURLLoader(options);
   if (!loader_.get())
     return PP_ERROR_FAILED;
 
@@ -391,7 +391,7 @@ void PepperURLLoaderHost::Close() {
     // crbug.com/384197.
     WebLocalFrame* frame = GetFrame();
     if (frame)
-      frame->StopLoading();
+      frame->DeprecatedStopLoading();
   }
 }
 

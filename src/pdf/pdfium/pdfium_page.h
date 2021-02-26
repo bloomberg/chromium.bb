@@ -10,32 +10,39 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
 #include "ppapi/cpp/private/pdf.h"
-#include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+class Point;
+class RectF;
+}  // namespace gfx
 
 namespace chrome_pdf {
 
 class PDFiumEngine;
+class Thumbnail;
 
 // Wrapper around a page from the document.
 class PDFiumPage {
  public:
   PDFiumPage(PDFiumEngine* engine, int i);
+  PDFiumPage(const PDFiumPage&) = delete;
+  PDFiumPage& operator=(const PDFiumPage&) = delete;
   PDFiumPage(PDFiumPage&& that);
   ~PDFiumPage();
-
-  using IsValidLinkFunction = bool (*)(const std::string& url);
-  static void SetIsValidLinkFunctionForTesting(IsValidLinkFunction function);
 
   // Unloads the PDFium data for this page from memory.
   void Unload();
@@ -53,7 +60,7 @@ class PDFiumPage {
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
   // Get the bounds of a character in page pixels.
-  pp::FloatRect GetCharBounds(int char_index);
+  gfx::RectF GetCharBounds(int char_index);
   // For all the links on the page, get their urls, underlying text ranges and
   // bounding boxes.
   std::vector<PDFEngine::AccessibilityLinkInfo> GetLinkInfo();
@@ -116,7 +123,7 @@ class PDFiumPage {
   // index if it's near a character, and also the type of text.
   // Target is optional. It will be filled in for WEBLINK_AREA or
   // DOCLINK_AREA only.
-  Area GetCharIndex(const pp::Point& point,
+  Area GetCharIndex(const gfx::Point& point,
                     PageOrientation orientation,
                     int* char_index,
                     int* form_type,
@@ -138,28 +145,35 @@ class PDFiumPage {
   // Given a rectangle in page coordinates, computes the range of continuous
   // characters which lie inside that rectangle. Returns false without
   // modifying the out parameters if no character lies inside the rectangle.
-  bool GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
+  bool GetUnderlyingTextRangeForRect(const gfx::RectF& rect,
                                      int* start_index,
                                      int* char_len);
 
   // Converts from page coordinates to screen coordinates.
-  pp::Rect PageToScreen(const pp::Point& offset,
-                        double zoom,
-                        double left,
-                        double top,
-                        double right,
-                        double bottom,
-                        PageOrientation orientation) const;
+  gfx::Rect PageToScreen(const gfx::Point& page_point,
+                         double zoom,
+                         double left,
+                         double top,
+                         double right,
+                         double bottom,
+                         PageOrientation orientation) const;
+
+  // Sets the callbacks for sending the thumbnail.
+  void RequestThumbnail(float device_pixel_ratio,
+                        SendThumbnailCallback send_callback);
+
+  // Generates a page thumbnail accommodating a specific |device_pixel_ratio|.
+  Thumbnail GenerateThumbnail(float device_pixel_ratio);
 
   int index() const { return index_; }
 
-  const pp::Rect& rect() const { return rect_; }
-  void set_rect(const pp::Rect& r) { rect_ = r; }
+  const gfx::Rect& rect() const { return rect_; }
+  void set_rect(const gfx::Rect& r) { rect_ = r; }
 
   // Availability is a one-way transition: A page can become available, but it
   // cannot become unavailable (unless deleted entirely).
   bool available() const { return available_; }
-  void MarkAvailable() { available_ = true; }
+  void MarkAvailable();
 
   void set_calculated_links(bool calculated_links) {
     calculated_links_ = calculated_links;
@@ -178,8 +192,128 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, TestPopulateHighlights);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageTextFieldTest, TestPopulateTextFields);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageButtonTest, TestPopulateButtons);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountPartialOverlaps);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountCompleteOverlaps);
+
+  class ScopedUnloadPreventer {
+   public:
+    explicit ScopedUnloadPreventer(PDFiumPage* page);
+    ~ScopedUnloadPreventer();
+
+   private:
+    PDFiumPage* const page_;
+  };
+
+  struct Link {
+    Link();
+    Link(const Link& that);
+    ~Link();
+
+    // Represents start index of underlying text range. Should be -1 if the link
+    // is not over text.
+    int32_t start_char_index = -1;
+    // Represents the number of characters that the link overlaps with.
+    int32_t char_count = 0;
+    std::vector<gfx::Rect> bounding_rects;
+    LinkTarget target;
+  };
+
+  // Represents an Image inside the page.
+  struct Image {
+    Image();
+    Image(const Image& other);
+    ~Image();
+
+    gfx::Rect bounding_rect;
+    // Alt text is available only for tagged PDFs.
+    std::string alt_text;
+  };
+
+  // Represents a highlight within the page.
+  struct Highlight {
+    Highlight();
+    Highlight(const Highlight& other);
+    ~Highlight();
+
+    // Start index of underlying text range. -1 indicates invalid value.
+    int32_t start_char_index = -1;
+    // Number of characters encompassed by this highlight.
+    int32_t char_count = 0;
+    gfx::Rect bounding_rect;
+
+    // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
+    // follows after it with each using 8 bytes.
+    uint32_t color;
+
+    // Text of the popup note associated with highlight.
+    std::string note_text;
+  };
+
+  // Represents a form field within the page.
+  struct FormField {
+    FormField();
+    FormField(const FormField& other);
+    ~FormField();
+
+    gfx::Rect bounding_rect;
+    // Represents the name of form field as defined in the field dictionary.
+    std::string name;
+    // Represents the flags of form field as defined in the field dictionary.
+    int flags;
+  };
+
+  // Represents a text field within the page.
+  struct TextField : FormField {
+    TextField();
+    TextField(const TextField& other);
+    ~TextField();
+
+    std::string value;
+  };
+
+  // Represents a choice field option.
+  struct ChoiceFieldOption {
+    ChoiceFieldOption();
+    ChoiceFieldOption(const ChoiceFieldOption& other);
+    ~ChoiceFieldOption();
+
+    std::string name;
+    bool is_selected;
+  };
+
+  // Represents a choice field within the page.
+  struct ChoiceField : FormField {
+    ChoiceField();
+    ChoiceField(const ChoiceField& other);
+    ~ChoiceField();
+
+    std::vector<ChoiceFieldOption> options;
+  };
+
+  // Represents a button within the page.
+  struct Button : FormField {
+    Button();
+    Button(const Button& other);
+    ~Button();
+
+    std::string value;
+    // A button can be of type radio, checkbox or push button.
+    int type;
+    // Represents if the radio button or checkbox is checked.
+    bool is_checked = false;
+    // Represents count of controls in the control group. A group of
+    // interactive form annotations is collectively called a form control
+    // group. Here an interactive form annotation should be either a radio
+    // button or a checkbox.
+    uint32_t control_count = 0;
+    // Represents index of the control in the control group. A group of
+    // interactive form annotations is collectively called a form control
+    // group. Here an interactive form annotation should be either a radio
+    // button or a checkbox. Value of |control_index| is -1 for push button.
+    int control_index = -1;
+  };
 
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
@@ -198,6 +332,12 @@ class PDFiumPage {
   void PopulateHighlight(FPDF_ANNOTATION annot);
   // Populate |text_fields_| with |annot|.
   void PopulateTextField(FPDF_ANNOTATION annot);
+  // Populate |choice_fields_| with |annot|.
+  void PopulateChoiceField(FPDF_ANNOTATION annot);
+  // Populate |buttons_| with |annot|.
+  void PopulateButton(FPDF_ANNOTATION annot);
+  // Populate form fields like text field, choice field and button on the page.
+  void PopulateFormField(FPDF_ANNOTATION annot);
   // Returns link type and fills target associated with a destination. Returns
   // NONSELECTABLE_AREA if detection failed.
   Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target);
@@ -234,82 +374,21 @@ class PDFiumPage {
       const MarkedContentIdToImageMap& marked_content_id_image_map,
       FPDF_STRUCTELEMENT current_element,
       std::set<FPDF_STRUCTELEMENT>* visited_elements);
-
-  class ScopedUnloadPreventer {
-   public:
-    explicit ScopedUnloadPreventer(PDFiumPage* page);
-    ~ScopedUnloadPreventer();
-
-   private:
-    PDFiumPage* const page_;
-  };
-
-  struct Link {
-    Link();
-    Link(const Link& that);
-    ~Link();
-
-    // Represents start index of underlying text range. Should be -1 if the link
-    // is not over text.
-    int32_t start_char_index = -1;
-    // Represents the number of characters that the link overlaps with.
-    int32_t char_count = 0;
-    std::vector<pp::Rect> bounding_rects;
-    LinkTarget target;
-  };
-
-  // Represents an Image inside the page.
-  struct Image {
-    Image();
-    Image(const Image& other);
-    ~Image();
-
-    pp::Rect bounding_rect;
-    // Alt text is available only for tagged PDFs.
-    std::string alt_text;
-  };
-
-  // Represents a highlight within the page.
-  struct Highlight {
-    Highlight();
-    Highlight(const Highlight& other);
-    ~Highlight();
-
-    // Start index of underlying text range. -1 indicates invalid value.
-    int32_t start_char_index = -1;
-    // Number of characters encompassed by this highlight.
-    int32_t char_count = 0;
-    pp::Rect bounding_rect;
-
-    // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
-    // follows after it with each using 8 bytes.
-    uint32_t color;
-  };
-
-  // Represents a text field within the page.
-  struct TextField {
-    TextField();
-    TextField(const TextField& other);
-    ~TextField();
-
-    // Represents the name of form field as defined in the field dictionary.
-    std::string name;
-    std::string value;
-    pp::Rect bounding_rect;
-    // Represents the flags of form field as defined in the field dictionary.
-    int flags;
-  };
-
   static uint32_t CountLinkHighlightOverlaps(
       const std::vector<Link>& links,
       const std::vector<Highlight>& highlights);
+  bool PopulateFormFieldProperties(FPDF_ANNOTATION annot,
+                                   FormField* form_field);
+  // Generates and sends the thumbnail using |send_callback|.
+  void GenerateAndSendThumbnail(float device_pixel_ratio,
+                                SendThumbnailCallback send_callback);
 
   PDFiumEngine* engine_;
   ScopedFPDFPage page_;
   ScopedFPDFTextPage text_page_;
   int index_;
   int preventing_unload_count_ = 0;
-  pp::Rect rect_;
+  gfx::Rect rect_;
   bool calculated_links_ = false;
   std::vector<Link> links_;
   bool calculated_images_ = false;
@@ -317,14 +396,15 @@ class PDFiumPage {
   bool calculated_annotations_ = false;
   std::vector<Highlight> highlights_;
   std::vector<TextField> text_fields_;
+  std::vector<ChoiceField> choice_fields_;
+  std::vector<Button> buttons_;
   bool logged_overlapping_annotations_ = false;
   bool calculated_page_object_text_run_breaks_ = false;
   // The set of character indices on which text runs need to be broken for page
   // objects.
   std::set<int> page_object_text_run_breaks_;
+  base::OnceClosure thumbnail_callback_;
   bool available_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFiumPage);
 };
 
 // Converts page orientations to the PDFium equivalents, as defined by

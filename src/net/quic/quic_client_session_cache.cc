@@ -46,9 +46,9 @@ QuicClientSessionCache::QuicClientSessionCache()
 
 QuicClientSessionCache::QuicClientSessionCache(size_t max_entries)
     : clock_(base::DefaultClock::GetInstance()), cache_(max_entries) {
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &QuicClientSessionCache::OnMemoryPressure, base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&QuicClientSessionCache::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 QuicClientSessionCache::~QuicClientSessionCache() {
@@ -97,10 +97,28 @@ std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
   }
   auto state = std::make_unique<quic::QuicResumptionState>();
   state->tls_session = iter->second.PopSession();
-  state->transport_params = iter->second.params.get();
-  state->application_state = iter->second.application_state.get();
+  if (iter->second.params != nullptr) {
+    state->transport_params =
+        std::make_unique<quic::TransportParameters>(*iter->second.params);
+  }
+  if (iter->second.application_state != nullptr) {
+    state->application_state = std::make_unique<quic::ApplicationState>(
+        *iter->second.application_state);
+  }
 
   return state;
+}
+
+void QuicClientSessionCache::ClearEarlyData(
+    const quic::QuicServerId& server_id) {
+  auto iter = cache_.Get(server_id);
+  if (iter == cache_.end())
+    return;
+  for (auto& session : iter->second.sessions) {
+    if (session) {
+      session.reset(SSL_SESSION_copy_without_early_data(session.get()));
+    }
+  }
 }
 
 void QuicClientSessionCache::FlushInvalidEntries() {

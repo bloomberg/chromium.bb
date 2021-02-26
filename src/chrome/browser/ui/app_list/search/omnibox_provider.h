@@ -28,6 +28,7 @@ class OmniboxProvider : public SearchProvider,
 
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   // Populates result list from AutocompleteResult.
@@ -40,7 +41,6 @@ class OmniboxProvider : public SearchProvider,
   void RecordQueryLatencyHistogram();
 
   Profile* profile_;
-  bool is_zero_state_enabled_ = false;
   // True if the input is empty for zero state suggestion.
   bool is_zero_state_input_ = false;
   AppListControllerDelegate* list_controller_;

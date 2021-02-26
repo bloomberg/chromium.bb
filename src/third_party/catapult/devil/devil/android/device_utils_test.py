@@ -80,12 +80,16 @@ class _MockApkHelper(object):
     self.perms = perms
     self.splits = splits if splits else []
     self.abis = [abis.ARM]
+    self.version_code = None
 
   def GetPackageName(self):
     return self.package_name
 
   def GetPermissions(self):
     return self.perms
+
+  def GetVersionCode(self):
+    return self.version_code
 
   def GetAbis(self):
     return self.abis
@@ -96,6 +100,11 @@ class _MockApkHelper(object):
                   allow_cached_props=False,
                   additional_locales=None):
     return _FakeContextManager([self.path] + self.splits)
+
+  #override
+  @staticmethod
+  def SupportsSplits():
+    return True
 
 
 class _MockMultipleDevicesError(Exception):
@@ -222,6 +231,10 @@ class DeviceUtilsTest(mock_calls.TestCase):
     return mock.Mock(
         side_effect=device_errors.CommandFailedError(msg, str(self.device)))
 
+  def MyRootUserBuildError(self):
+    return mock.Mock(side_effect=device_errors.RootUserBuildError(
+        device_serial=str(self.device)))
+
   def ShellError(self, output=None, status=1):
     def action(cmd, *args, **kwargs):
       raise device_errors.AdbShellCommandFailedError(cmd, output, status,
@@ -327,118 +340,20 @@ class DeviceUtilsIsOnlineTest(DeviceUtilsTest):
 
 class DeviceUtilsHasRootTest(DeviceUtilsTest):
   def testHasRoot_true(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='notasailfish')), (self.assertCall(
-                        self.call.adb.Shell('ls /root'), 'foo\n')):
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (self.assertCall(
+                             self.call.adb.Shell('id'), 'uid=0(root)\n')):
       self.assertTrue(self.device.HasRoot())
 
-  def testhasRootSpecial_true(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='sailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'),
-                        '1\n')):
-      self.assertTrue(self.device.HasRoot())
-
-  def testhasRootSpecialAosp_true(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='aosp_sailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'),
-                        '1\n')):
-      self.assertTrue(self.device.HasRoot())
-
-  def testhasRootEngBuild_true(self):
+  def testHasRootEngBuild_true(self):
     with self.patch_call(self.call.device.build_type, return_value='eng'):
       self.assertTrue(self.device.HasRoot())
 
   def testHasRoot_false(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='notasailfish')), (self.assertCall(
-                        self.call.adb.Shell('ls /root'), self.ShellError())):
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (self.assertCall(
+                             self.call.adb.Shell('id'), 'uid=2000(shell)\n')):
       self.assertFalse(self.device.HasRoot())
-
-  def testHasRootSpecial_false(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='sailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'), '\n')):
-      self.assertFalse(self.device.HasRoot())
-
-  def testHasRootSpecialAosp_false(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='aosp_sailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'), '\n')):
-      self.assertFalse(self.device.HasRoot())
-
-  def testHasRootSystemRootImage(self):
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='true')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.PIE)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='notasailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'),
-                        '1\n')):
-      self.assertTrue(self.device.HasRoot())
-
-  def testHasRoot10(self):
-    # All devices on Android 10 / Q and above should use the system-as-root
-    # partition layout, though they may not have the property set.
-    with self.patch_call(
-        self.call.device.build_type,
-        return_value='userdebug'), (self.patch_call(
-            self.call.device.build_system_root_image,
-            return_value='')), (self.patch_call(
-                self.call.device.build_version_sdk,
-                return_value=version_codes.Q)), (self.patch_call(
-                    self.call.device.product_name,
-                    return_value='notasailfish')), (self.assertCall(
-                        self.call.adb.Shell('getprop service.adb.root'),
-                        '1\n')):
-      self.assertTrue(self.device.HasRoot())
 
 
 class DeviceUtilsEnableRootTest(DeviceUtilsTest):
@@ -450,7 +365,7 @@ class DeviceUtilsEnableRootTest(DeviceUtilsTest):
   def testEnableRoot_userBuild(self):
     with self.assertCalls((self.call.adb.Root(), self.AdbCommandError()),
                           (self.call.device.IsUserBuild(), True)):
-      with self.assertRaises(device_errors.CommandFailedError):
+      with self.assertRaises(device_errors.RootUserBuildError):
         self.device.EnableRoot()
 
   def testEnableRoot_rootFails(self):
@@ -494,6 +409,29 @@ class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsTest):
         self.device.GetExternalStoragePath()
 
 
+class DeviceUtilsGetAppWritablePathTest(DeviceUtilsTest):
+  def testGetAppWritablePath_succeeds_sdk_pre_q(self):
+    with self.assertCalls(
+        (self.call.device.GetProp('ro.build.version.sdk', cache=True), '28'),
+        self.EnsureCacheInitialized(sdcard='/fake/storage/path')):
+      self.assertEquals('/fake/storage/path',
+                        self.device.GetAppWritablePath())
+
+  def testGetAppWritablePath_succeeds_sdk_q(self):
+    with self.assertCalls(
+        (self.call.device.GetProp('ro.build.version.sdk', cache=True), '29'),
+        self.EnsureCacheInitialized(sdcard='/fake/storage/path')):
+      self.assertEquals('/fake/storage/path/Download',
+                        self.device.GetAppWritablePath())
+
+  def testGetAppWritablePath_fails(self):
+    with self.assertCalls(
+        (self.call.device.GetProp('ro.build.version.sdk', cache=True), '29'),
+        self.EnsureCacheInitialized(sdcard='')):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.GetAppWritablePath()
+
+
 class DeviceUtilsIsApplicationInstalledTest(DeviceUtilsTest):
   def testIsApplicationInstalled_installed(self):
     with self.assertCalls((self.call.device.RunShellCommand(
@@ -502,20 +440,53 @@ class DeviceUtilsIsApplicationInstalledTest(DeviceUtilsTest):
       self.assertTrue(self.device.IsApplicationInstalled('some.installed.app'))
 
   def testIsApplicationInstalled_notInstalled(self):
-    with self.assertCalls((self.call.device.RunShellCommand(
-        ['pm', 'list', 'packages', 'not.installed.app'], check_return=True),
-                           '')):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['pm', 'list', 'packages', 'not.installed.app'], check_return=True),
+         ''),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'package'], check_return=True, large_output=True), [])):
       self.assertFalse(self.device.IsApplicationInstalled('not.installed.app'))
 
   def testIsApplicationInstalled_substringMatch(self):
-    with self.assertCalls((self.call.device.RunShellCommand(
-        ['pm', 'list', 'packages', 'substring.of.package'], check_return=True),
-                           [
-                               'package:first.substring.of.package',
-                               'package:second.substring.of.package',
-                           ])):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['pm', 'list', 'packages', 'substring.of.package'],
+            check_return=True),
+         [
+             'package:first.substring.of.package',
+             'package:second.substring.of.package',
+         ]),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'package'], check_return=True, large_output=True), [])):
       self.assertFalse(
           self.device.IsApplicationInstalled('substring.of.package'))
+
+  def testIsApplicationInstalled_dumpsysFallback(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['pm', 'list', 'packages', 'some.installed.app'],
+            check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'package'], check_return=True, large_output=True),
+         ['Package [some.installed.app] (a12345):'])):
+      self.assertTrue(self.device.IsApplicationInstalled('some.installed.app'))
+
+  def testIsApplicationInstalled_dumpsysFallbackVersioned(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'package'], check_return=True, large_output=True),
+         ['Package [some.installed.app_1234] (a12345):'])):
+      self.assertTrue(
+          self.device.IsApplicationInstalled('some.installed.app', 1234))
+
+  def testIsApplicationInstalled_dumpsysFallbackVersionNotNeeded(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'package'], check_return=True, large_output=True),
+         ['Package [some.installed.app] (a12345):'])):
+      self.assertTrue(
+          self.device.IsApplicationInstalled('some.installed.app', 1234))
 
 
 class DeviceUtilsGetApplicationPathsInternalTest(DeviceUtilsTest):
@@ -915,14 +886,14 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
         return_value='notflounder'), (self.patch_call(
             self.call.device.build_version_sdk, return_value=23)):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False),
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=None,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True),
           (self.call.device.GrantPermissions(TEST_PACKAGE, ['p1']), [])):
         self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0)
 
@@ -932,14 +903,14 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
         return_value='flounder'), (self.patch_call(
             self.call.device.build_version_sdk, return_value=23)):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=False,
-              allow_downgrade=False),
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=False,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True),
           (self.call.device.GrantPermissions(TEST_PACKAGE, ['p1']), [])):
         self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0)
 
@@ -949,14 +920,14 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
         return_value='notflounder'), (self.patch_call(
             self.call.device.build_version_sdk, return_value=20)):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          (self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False))):
+          (self.call.adb.Install(TEST_APK_PATH,
+                                 reinstall=False,
+                                 streaming=None,
+                                 allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0)
 
   def testInstall_findPermissions(self):
@@ -965,14 +936,14 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
         return_value='notflounder'), (self.patch_call(
             self.call.device.build_version_sdk, return_value=23)):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          (self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False)),
+          (self.call.adb.Install(TEST_APK_PATH,
+                                 reinstall=False,
+                                 streaming=None,
+                                 allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True),
           (self.call.device.GrantPermissions(TEST_PACKAGE, ['p1']), [])):
         self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0)
 
@@ -980,14 +951,14 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          (self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False)),
+          (self.call.adb.Install(TEST_APK_PATH,
+                                 reinstall=False,
+                                 streaming=None,
+                                 allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True),
           (self.call.device.GrantPermissions(TEST_PACKAGE, ['p1', 'p2']), [])):
         self.device.Install(
             DeviceUtilsInstallTest.mock_apk,
@@ -996,12 +967,13 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_identicalPriorInstall(self):
     with self.assertCalls(
-        (self.call.device._FakeInstall(set(), None)),
+        (self.call.device._FakeInstall(set(), None, 'test.package')),
         (mock.call.os.path.exists(TEST_APK_PATH), True),
         (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE),
          ['/fake/data/app/test.package.apk']),
         (self.call.device._ComputeStaleApks(TEST_PACKAGE, [TEST_APK_PATH]),
-         ([], None)), (self.call.device.ForceStop(TEST_PACKAGE))):
+         ([], None)), (self.call.device.ForceStop(TEST_PACKAGE)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
       self.device.Install(
           DeviceUtilsInstallTest.mock_apk, retries=0, permissions=[])
 
@@ -1009,17 +981,17 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE),
            ['/fake/data/app/test.package.apk']),
           (self.call.device._ComputeStaleApks(TEST_PACKAGE, [TEST_APK_PATH]),
            ([TEST_APK_PATH], None)), self.call.device.Uninstall(TEST_PACKAGE),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False)):
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=None,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.Install(
             DeviceUtilsInstallTest.mock_apk, retries=0, permissions=[])
 
@@ -1027,17 +999,17 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), [
               '/fake/data/app/test.package.apk',
               '/fake/data/app/test.package2.apk'
           ]), self.call.device.Uninstall(TEST_PACKAGE),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False)):
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=None,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.Install(
             DeviceUtilsInstallTest.mock_apk, retries=0, permissions=[])
 
@@ -1045,17 +1017,17 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE),
            ['/fake/data/app/test.package.apk']),
           (self.call.device._ComputeStaleApks(TEST_PACKAGE, [TEST_APK_PATH]),
            ([TEST_APK_PATH], None)),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=True,
-              streaming=None,
-              allow_downgrade=False)):
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=True,
+                                streaming=None,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.Install(
             DeviceUtilsInstallTest.mock_apk,
             reinstall=True,
@@ -1064,12 +1036,13 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_identicalPriorInstall_reinstall(self):
     with self.assertCalls(
-        (self.call.device._FakeInstall(set(), None)),
+        (self.call.device._FakeInstall(set(), None, 'test.package')),
         (mock.call.os.path.exists(TEST_APK_PATH), True),
         (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE),
          ['/fake/data/app/test.package.apk']),
         (self.call.device._ComputeStaleApks(TEST_PACKAGE, [TEST_APK_PATH]),
-         ([], None)), (self.call.device.ForceStop(TEST_PACKAGE))):
+         ([], None)), (self.call.device.ForceStop(TEST_PACKAGE)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
       self.device.Install(
           DeviceUtilsInstallTest.mock_apk,
           reinstall=True,
@@ -1077,8 +1050,9 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
           permissions=[])
 
   def testInstall_missingApk(self):
-    with self.assertCalls((self.call.device._FakeInstall(set(), None)),
-                          (mock.call.os.path.exists(TEST_APK_PATH), False)):
+    with self.assertCalls(
+        (self.call.device._FakeInstall(set(), None, 'test.package')),
+        (mock.call.os.path.exists(TEST_APK_PATH), False)):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0)
 
@@ -1086,7 +1060,7 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
           (self.call.adb.Install(
@@ -1101,17 +1075,17 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
     with self.patch_call(
         self.call.device.product_name, return_value='notflounder'):
       with self.assertCalls(
-          (self.call.device._FakeInstall(set(), None)),
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE),
            ['/fake/data/app/test.package.apk']),
           (self.call.device._ComputeStaleApks(TEST_PACKAGE, [TEST_APK_PATH]),
            ([TEST_APK_PATH], None)),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=True,
-              streaming=None,
-              allow_downgrade=True)):
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=True,
+                                streaming=None,
+                                allow_downgrade=True),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.Install(
             DeviceUtilsInstallTest.mock_apk,
             reinstall=True,
@@ -1136,18 +1110,39 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
            mock_zip_temp_dir),
           (mock.call.os.rename('fake1-master.apk', '/test/tmp/dir/fake1.apk')),
           (self.call.device.PushChangedFiles(
-              [('/test/tmp/dir', '/data/local/tmp/modules')],
+              [('/test/tmp/dir', '/data/local/tmp/modules/test.package')],
               delete_device_stale=True)),
           (mock.call.os.path.exists(TEST_APK_PATH), True),
           (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
-          self.call.adb.Install(
-              TEST_APK_PATH,
-              reinstall=False,
-              streaming=None,
-              allow_downgrade=False),
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=None,
+                                allow_downgrade=False),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True),
           (self.call.device.GrantPermissions(TEST_PACKAGE, None), [])):
         self.device.Install(
             mock_apk_with_fake, fake_modules=fake_modules, retries=0)
+
+  def testInstall_packageNotAvailableAfterInstall(self):
+    with self.patch_call(
+        self.call.device.product_name,
+        return_value='notflounder'), (self.patch_call(
+            self.call.device.build_version_sdk, return_value=23)), (
+                self.patch_call(self.call.device.IsApplicationInstalled,
+                                return_value=False)):
+      with self.assertCalls(
+          (self.call.device._FakeInstall(set(), None, 'test.package')),
+          (mock.call.os.path.exists(TEST_APK_PATH), True),
+          (self.call.device._GetApplicationPathsInternal(TEST_PACKAGE), []),
+          self.call.adb.Install(TEST_APK_PATH,
+                                reinstall=False,
+                                streaming=None,
+                                allow_downgrade=False)):
+        with self.assertRaisesRegexp(
+            device_errors.CommandFailedError,
+            'not installed on device after explicit install attempt'):
+          self.device.Install(
+              DeviceUtilsInstallTest.mock_apk, retries=0)
 
 
 class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
@@ -1172,7 +1167,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
               partial=None,
               reinstall=False,
               streaming=None,
-              allow_downgrade=False))):
+              allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.InstallSplitApk(
             'base.apk', ['split1.apk', 'split2.apk'], permissions=[], retries=0)
 
@@ -1193,7 +1189,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
               partial=None,
               reinstall=False,
               streaming=False,
-              allow_downgrade=False))):
+              allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.InstallSplitApk(
             'base.apk', ['split1.apk', 'split2.apk'], permissions=[], retries=0)
 
@@ -1218,7 +1215,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
                                          partial=TEST_PACKAGE,
                                          reinstall=True,
                                          streaming=None,
-                                         allow_downgrade=False))):
+                                         allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.InstallSplitApk(
             DeviceUtilsInstallSplitApkTest.mock_apk,
             ['split1.apk', 'split2.apk'],
@@ -1247,7 +1245,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
                                          partial=TEST_PACKAGE,
                                          reinstall=True,
                                          streaming=None,
-                                         allow_downgrade=True))):
+                                         allow_downgrade=True)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.InstallSplitApk(
             DeviceUtilsInstallSplitApkTest.mock_apk,
             ['split1.apk', 'split2.apk'],
@@ -1292,7 +1291,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
               partial=None,
               reinstall=False,
               streaming=None,
-              allow_downgrade=False))):
+              allow_downgrade=False)),
+          (self.call.device.IsApplicationInstalled(TEST_PACKAGE, None), True)):
         self.device.InstallSplitApk(
             DeviceUtilsInstallSplitApkTest.mock_apk,
             ['split1.apk', 'split2.apk'],
@@ -1398,6 +1398,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     expected_cmd_without_su = """sh -c 'echo '"'"'%s'"'"''""" % payload
     expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
+        (self.call.device.HasRoot(), True),
         (self.call.device.NeedsSU(), True),
         (self.call.device._Su(expected_cmd_without_su), expected_cmd),
         (mock.call.devil.android.device_temp_file.DeviceTempFile(
@@ -1414,6 +1415,33 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     expected_cmd_without_su = "sh -c 'setprop service.adb.root 0'"
     expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
+        (self.call.device.HasRoot(), True),
+        (self.call.device.NeedsSU(), True),
+        (self.call.device._Su(expected_cmd_without_su), expected_cmd),
+        (self.call.adb.Shell(expected_cmd), '')):
+      self.device.RunShellCommand(['setprop', 'service.adb.root', '0'],
+                                  check_return=True,
+                                  as_root=True)
+
+  def testRunShellCommand_withSuAndNotRoot(self):
+    expected_cmd_without_su = "sh -c 'setprop service.adb.root 0'"
+    expected_cmd = 'su -c %s' % expected_cmd_without_su
+    with self.assertCalls(
+        (self.call.device.HasRoot(), False),
+        (self.call.device.EnableRoot(), True),
+        (self.call.device.NeedsSU(), True),
+        (self.call.device._Su(expected_cmd_without_su), expected_cmd),
+        (self.call.adb.Shell(expected_cmd), '')):
+      self.device.RunShellCommand(['setprop', 'service.adb.root', '0'],
+                                  check_return=True,
+                                  as_root=True)
+
+  def testRunShellCommand_withSuAndUserBuild(self):
+    expected_cmd_without_su = "sh -c 'setprop service.adb.root 0'"
+    expected_cmd = 'su -c %s' % expected_cmd_without_su
+    with self.assertCalls(
+        (self.call.device.HasRoot(), False),
+        (self.call.device.EnableRoot(), self.MyRootUserBuildError()),
         (self.call.device.NeedsSU(), True),
         (self.call.device._Su(expected_cmd_without_su), expected_cmd),
         (self.call.adb.Shell(expected_cmd), '')):
@@ -1438,6 +1466,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
         'sh -c %s' % cmd_helper.SingleQuote(expected_cmd_with_run_as))
     expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
+        (self.call.device.HasRoot(), True),
         (self.call.device.NeedsSU(), True),
         (self.call.device._Su(expected_cmd_without_su), expected_cmd),
         (self.call.adb.Shell(expected_cmd), '')):
@@ -1656,7 +1685,8 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
   def testKillAll_root(self):
     with self.assertCalls(
         (self.call.device.ListProcesses('some.process'),
-         Processes(('some.process', 1234))), (self.call.device.NeedsSU(), True),
+         Processes(('some.process', 1234))), (self.call.device.HasRoot(), True),
+        (self.call.device.NeedsSU(), True),
         (self.call.device._Su("sh -c 'kill -9 1234'"),
          "su -c sh -c 'kill -9 1234'"),
         (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
@@ -2523,6 +2553,7 @@ class DeviceUtilsWriteFileTest(DeviceUtilsTest):
     expected_cmd_without_su = "sh -c 'echo -n contents > /test/file'"
     expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
+        (self.call.device.HasRoot(), True),
         (self.call.device.NeedsSU(), True),
         (self.call.device._Su(expected_cmd_without_su), expected_cmd),
         (self.call.adb.Shell(expected_cmd), '')):
@@ -3030,32 +3061,38 @@ class DeviceUtilsGetSetEnforce(DeviceUtilsTest):
       self.assertEqual(None, self.device.GetEnforce())
 
   def testSetEnforce_Enforcing(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 1'), '')):
       self.device.SetEnforce(enabled=True)
 
   def testSetEnforce_Permissive(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 0'), '')):
       self.device.SetEnforce(enabled=False)
 
   def testSetEnforce_EnforcingWithInt(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 1'), '')):
       self.device.SetEnforce(enabled=1)
 
   def testSetEnforce_PermissiveWithInt(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 0'), '')):
       self.device.SetEnforce(enabled=0)
 
   def testSetEnforce_EnforcingWithStr(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 1'), '')):
       self.device.SetEnforce(enabled='1')
 
   def testSetEnforce_PermissiveWithStr(self):
-    with self.assertCalls((self.call.device.NeedsSU(), False),
+    with self.assertCalls((self.call.device.HasRoot(), True),
+                          (self.call.device.NeedsSU(), False),
                           (self.call.adb.Shell('setenforce 0'), '')):
       self.device.SetEnforce(enabled='0')  # Not recommended but it works!
 
@@ -3359,28 +3396,28 @@ class DeviceUtilsClientCache(DeviceUtilsTest):
 
 
 class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
-  def testHealthyDevices_emptyBlacklist_defaultDeviceArg(self):
+  def testHealthyDevices_emptyDenylist_defaultDeviceArg(self):
     test_serials = ['0123456789abcdef', 'fedcba9876543210']
     with self.assertCalls(
         (mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.Devices(),
          [_AdbWrapperMock(s) for s in test_serials]),
         (mock.call.devil.android.device_utils.DeviceUtils.GetABI(), abis.ARM),
         (mock.call.devil.android.device_utils.DeviceUtils.GetABI(), abis.ARM)):
-      blacklist = mock.NonCallableMock(**{'Read.return_value': []})
-      devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+      denylist = mock.NonCallableMock(**{'Read.return_value': []})
+      devices = device_utils.DeviceUtils.HealthyDevices(denylist)
     for serial, device in zip(test_serials, devices):
       self.assertTrue(isinstance(device, device_utils.DeviceUtils))
       self.assertEquals(serial, device.adb.GetDeviceSerial())
 
-  def testHealthyDevices_blacklist_defaultDeviceArg(self):
+  def testHealthyDevices_denylist_defaultDeviceArg(self):
     test_serials = ['0123456789abcdef', 'fedcba9876543210']
     with self.assertCalls(
         (mock.call.devil.android.sdk.adb_wrapper.AdbWrapper.Devices(),
          [_AdbWrapperMock(s) for s in test_serials]),
         (mock.call.devil.android.device_utils.DeviceUtils.GetABI(), abis.ARM)):
-      blacklist = mock.NonCallableMock(
+      denylist = mock.NonCallableMock(
           **{'Read.return_value': ['fedcba9876543210']})
-      devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+      devices = device_utils.DeviceUtils.HealthyDevices(denylist)
     self.assertEquals(1, len(devices))
     self.assertTrue(isinstance(devices[0], device_utils.DeviceUtils))
     self.assertEquals('0123456789abcdef', devices[0].adb.GetDeviceSerial())
@@ -3603,7 +3640,7 @@ class DeviceUtilsGrantPermissionsTest(DeviceUtilsTest):
           self.device.GrantPermissions('package', [WRITE])
       self.assertEqual(logger.warnings, [])
 
-  def testGrantPermissions_BlackList(self):
+  def testGrantPermissions_DenyList(self):
     with PatchLogger() as logger:
       with self.patch_call(
           self.call.device.build_version_sdk,
@@ -3941,6 +3978,23 @@ class IterPushableComponentsTest(unittest.TestCase):
       actual = list(
           device_utils._IterPushableComponents(layout.root, device_path))
       self.assertItemsEqual(expected, actual)
+
+
+class DeviceUtilsGetTracingPathTest(DeviceUtilsTest):
+  def testGetTracingPath_hasDebugfs(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(['mount'], retries=0,
+                                          timeout=10, check_return=True),
+        ['debugfs on /sys/kernel/debug', 'proc on /proc'])):
+      self.assertEquals('/sys/kernel/debug/tracing',
+                        self.device.GetTracingPath())
+
+  def testGetTracingPath_noDebugfs(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(['mount'], retries=0,
+                                          timeout=10, check_return=True),
+        ['proc on /proc'])):
+      self.assertEquals('/sys/kernel/tracing', self.device.GetTracingPath())
 
 
 if __name__ == '__main__':

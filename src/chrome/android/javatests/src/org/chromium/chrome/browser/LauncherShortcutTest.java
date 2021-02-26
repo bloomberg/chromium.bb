@@ -11,8 +11,9 @@ import android.content.pm.ShortcutManager;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -30,7 +31,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -39,6 +39,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -114,8 +116,10 @@ public class LauncherShortcutTest {
                 () -> mActivityTestRule.getActivity().getActivityTab());
         Assert.assertEquals("Incorrect tab launch type.", TabLaunchType.FROM_LAUNCHER_SHORTCUT,
                 activityTab.getLaunchType());
-        Assert.assertTrue("Tab should be an NTP. Tab url: " + activityTab.getUrl(),
-                NewTabPage.isNTPUrl(activityTab.getUrl()));
+
+        Assert.assertTrue(
+                "Tab should be an NTP. Tab url: " + ChromeTabUtils.getUrlOnUiThread(activityTab),
+                UrlUtilities.isNTPUrl(ChromeTabUtils.getUrlOnUiThread(activityTab)));
 
         // Verify tab model.
         Assert.assertEquals("Incorrect tab model selected.", incognito,

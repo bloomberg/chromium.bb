@@ -72,8 +72,7 @@ bool WebViewWebClient::IsAppSpecificURL(const GURL& url) const {
 }
 
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
-  return web::BuildUserAgentFromProduct(
-      web::UserAgentType::MOBILE,
+  return web::BuildMobileUserAgent(
       base::SysNSStringToUTF8([CWVWebView userAgentProduct]));
 }
 
@@ -119,9 +118,8 @@ void WebViewWebClient::AllowCertificateError(
     const GURL& request_url,
     bool overridable,
     int64_t navigation_id,
-    const base::RepeatingCallback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   CWVWebView* web_view = [CWVWebView webViewForWebState:web_state];
-  base::RepeatingCallback<void(bool)> callback_copy = callback;
 
   SEL selector = @selector
       (webView:didFailNavigationWithSSLError:overridable:decisionHandler:);
@@ -141,15 +139,16 @@ void WebViewWebClient::AllowCertificateError(
                           CWVCertStatusKey : @(cert_status),
                         }];
 
+    __block base::OnceCallback<void(bool)> local_callback = std::move(callback);
     void (^decisionHandler)(CWVSSLErrorDecision) =
         ^(CWVSSLErrorDecision decision) {
           switch (decision) {
             case CWVSSLErrorDecisionOverrideErrorAndReload: {
-              callback_copy.Run(true);
+              std::move(local_callback).Run(true);
               break;
             }
             case CWVSSLErrorDecisionDoNothing: {
-              callback_copy.Run(false);
+              std::move(local_callback).Run(false);
               break;
             }
           }
@@ -160,7 +159,7 @@ void WebViewWebClient::AllowCertificateError(
                              overridable:overridable
                          decisionHandler:decisionHandler];
   } else {
-    callback_copy.Run(false);
+    std::move(callback).Run(false);
   }
 }
 

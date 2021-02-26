@@ -7,10 +7,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_consumer.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,22 +42,17 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 // The presenter of the feature.
 @property(nonatomic, weak) id<PasswordBreachPresenter> presenter;
 
-// Dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
-
 @end
 
 @implementation PasswordBreachMediator
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
                        presenter:(id<PasswordBreachPresenter>)presenter
-                      dispatcher:(id<ApplicationCommands>)dispatcher
                              URL:(const GURL&)URL
                         leakType:(CredentialLeakType)leakType {
   self = [super init];
   if (self) {
     _presenter = presenter;
-    _dispatcher = dispatcher;
     _leakType = GetLeakDialogType(leakType);
     _dismissReason = LeakDialogDismissalReason::kNoDirectInteraction;
 
@@ -76,18 +73,20 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 
 #pragma mark - ConfirmationAlertActionHandler
 
-- (void)confirmationAlertDone {
+- (void)confirmationAlertDismissAction {
   self.dismissReason = LeakDialogDismissalReason::kClickedOk;
   [self.presenter stop];
 }
 
 - (void)confirmationAlertPrimaryAction {
-  // Opening a new tab already stops the presentation in the presenter.
-  // No need to send |stop|.
   self.dismissReason = LeakDialogDismissalReason::kClickedCheckPasswords;
-  OpenNewTabCommand* newTabCommand =
-      [OpenNewTabCommand commandWithURLFromChrome:GetPasswordCheckupURL()];
-  [self.dispatcher openURLInNewTab:newTabCommand];
+  // Opening Password page will stop the presentation in the presenter.
+  // No need to send |stop|.
+  [self.presenter startPasswordCheck];
+}
+
+- (void)confirmationAlertSecondaryAction {
+  // No-op.
 }
 
 - (void)confirmationAlertLearnMoreAction {

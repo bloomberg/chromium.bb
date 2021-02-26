@@ -9,10 +9,17 @@ set -e -o pipefail
 MYPATH=$(dirname "${BASH_SOURCE[0]}")
 CYGWIN=false
 
+# Make sure this starts empty
+ARCH=
+
 UNAME=`uname -s | tr '[:upper:]' '[:lower:]'`
 case "${UNAME}" in
+  aix)
+    OS="${UNAME}"
+    ARCH="ppc64"  # apparently 'uname -m' returns something very different
+    ;;
   linux)
-    OS=linux
+    OS="${UNAME}"
     ;;
   cygwin*)
     OS=windows
@@ -23,49 +30,46 @@ case "${UNAME}" in
     ;;
   darwin)
     OS=mac
+    ARCH=amd64  # use amd64 binaries even on arm64, see crbug.com/1102967
     ;;
   *)
     >&2 echo "CIPD not supported on ${UNAME}"
     exit 1
 esac
 
-UNAME=`uname -m | tr '[:upper:]' '[:lower:]'`
-case "${UNAME}" in
-  x86_64|amd64)
-    ARCH=amd64
-    ;;
-  s390x)  # best-effort support for IBM s390x: crbug.com/764087
-    ARCH=s390x
-    ;;
-  ppc64)  # best-effort support for 64-bit PowerPC: crbug.com/773857
-    ARCH=ppc64
-    ;;
-  ppc64le)  # best-effort support for 64-bit PowerPC/LE: crbug.com/773857
-    ARCH=ppc64le
-    ;;
-  aarch64)
-    ARCH=arm64
-    ;;
-  armv7l)
-    ARCH=armv6l
-    ;;
-  arm*)
-    ARCH="${UNAME}"
-    ;;
-  *86)
-    ARCH=386
-    ;;
-  mips*)
-    # detect mips64le vs mips64.
-    ARCH="${UNAME}"
-    if lscpu | grep -q "Little Endian"; then
-      ARCH+=le
-    fi
-    ;;
-  *)
-    >&2 echo "UNKNOWN Machine architecture: ${UNAME}"
-    exit 1
-esac
+if [ -z $ARCH ]; then
+  UNAME=`uname -m | tr '[:upper:]' '[:lower:]'`
+  case "${UNAME}" in
+    x86_64|amd64)
+      ARCH=amd64
+      ;;
+    s390x|ppc64|ppc64le)  # best-effort support
+      ARCH="${UNAME}"
+      ;;
+    aarch64)
+      ARCH=arm64
+      ;;
+    armv7l)
+      ARCH=armv6l
+      ;;
+    arm*)
+      ARCH="${UNAME}"
+      ;;
+    *86)
+      ARCH=386
+      ;;
+    mips*)
+      # detect mips64le vs mips64.
+      ARCH="${UNAME}"
+      if lscpu | grep -q "Little Endian"; then
+        ARCH+=le
+      fi
+      ;;
+    *)
+      >&2 echo "UNKNOWN Machine architecture: ${UNAME}"
+      exit 1
+  esac
+fi
 
 # CIPD_BACKEND can be changed to ...-dev for manual testing.
 CIPD_BACKEND="https://chrome-infra-packages.appspot.com"
@@ -151,9 +155,9 @@ function clean_bootstrap() {
     mktemp "${MYPATH}/.cipd_client.XXXXXXX")
 
   if hash curl 2> /dev/null ; then
-    curl "${URL}" -s --show-error -f -A "${USER_AGENT}" -L -o "${CIPD_CLIENT_TMP}"
+    curl "${URL}" -s --show-error -f --retry 3 --retry-delay 5 -A "${USER_AGENT}" -L -o "${CIPD_CLIENT_TMP}"
   elif hash wget 2> /dev/null ; then
-    wget "${URL}" -q -U "${USER_AGENT}" -O "${CIPD_CLIENT_TMP}"
+    wget "${URL}" -q -t 3 -w 5 --retry-connrefused -U "${USER_AGENT}" -O "${CIPD_CLIENT_TMP}"
   else
     >&2 echo -n "[31;1m"
     >&2 echo -n "Your platform is missing a supported fetch command. "

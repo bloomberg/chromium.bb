@@ -6,6 +6,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
@@ -13,10 +14,12 @@
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
+#include "ash/assistant/ui/main_stage/assistant_zero_state_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
-#include "ash/strings/grit/ash_strings.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,7 +29,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -57,15 +59,15 @@ constexpr base::TimeDelta kDividerAnimationFadeInDuration =
 constexpr base::TimeDelta kDividerAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
 
-// Greeting animation.
-constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
+// Zero state animation.
+constexpr base::TimeDelta kZeroStateAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
-constexpr int kGreetingAnimationTranslationDip = 115;
-constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
+constexpr int kZeroStateAnimationTranslationDip = 115;
+constexpr base::TimeDelta kZeroStateAnimationFadeInDelay =
     base::TimeDelta::FromMilliseconds(33);
-constexpr base::TimeDelta kGreetingAnimationFadeInDuration =
+constexpr base::TimeDelta kZeroStateAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(167);
-constexpr base::TimeDelta kGreetingAnimationTranslateUpDuration =
+constexpr base::TimeDelta kZeroStateAnimationTranslateUpDuration =
     base::TimeDelta::FromMilliseconds(250);
 
 // HorizontalSeparator ---------------------------------------------------------
@@ -120,12 +122,17 @@ AppListAssistantMainStage::AppListAssistantMainStage(
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
-  assistant_ui_model_observer_.Add(AssistantUiController::Get());
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AppListAssistantMainStage::~AppListAssistantMainStage() = default;
+AppListAssistantMainStage::~AppListAssistantMainStage() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AppListAssistantMainStage::GetClassName() const {
   return "AppListAssistantMainStage";
@@ -165,7 +172,7 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
   // The content layout container stacks two views.
   // On top is a main content container including the line separator, progress
   // indicator query view and |ui_element_container_|.
-  // |greeting_label_| is laid out above of the main content container. As
+  // The |zero_state_view_| is laid out above of the main content container. As
   // such, it floats above and does not cause repositioning to any of content
   // layout's underlying views.
   auto content_layout_container = std::make_unique<views::View>();
@@ -181,35 +188,13 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
   stack_layout->SetRespectDimensionForView(
       main_content_layout_container, StackLayout::RespectDimension::kWidth);
 
-  greeting_label_ = content_layout_container->AddChildView(InitGreetingLabel());
-
-  // We need to stretch |greeting_label_| to match its parent so that it
-  // won't use heuristics in Label to infer line breaking, which seems to cause
-  // text clipping with DPI adjustment. See b/112843496.
-  stack_layout->SetRespectDimensionForView(
-      greeting_label_, StackLayout::RespectDimension::kHeight);
-  stack_layout->SetVerticalAlignmentForView(
-      greeting_label_, StackLayout::VerticalAlignment::kCenter);
+  // Zero state, which will be animated on its own layer.
+  zero_state_view_ = content_layout_container->AddChildView(
+      std::make_unique<AssistantZeroStateView>(delegate_));
+  zero_state_view_->SetPaintToLayer();
+  zero_state_view_->layer()->SetFillsBoundsOpaquely(false);
 
   return content_layout_container;
-}
-
-std::unique_ptr<views::Label> AppListAssistantMainStage::InitGreetingLabel() {
-  // Greeting label, which will be animated on its own layer.
-  auto greeting_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
-  greeting_label->SetID(AssistantViewID::kGreetingLabel);
-  greeting_label->SetAutoColorReadabilityEnabled(false);
-  greeting_label->SetEnabledColor(kTextColorPrimary);
-  greeting_label->SetFontList(assistant::ui::GetDefaultFontList()
-                                  .DeriveWithSizeDelta(8)
-                                  .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  greeting_label->SetHorizontalAlignment(
-      gfx::HorizontalAlignment::ALIGN_CENTER);
-  greeting_label->SetMultiLine(true);
-  greeting_label->SetPaintToLayer();
-  greeting_label->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  return greeting_label;
 }
 
 std::unique_ptr<views::View>
@@ -287,31 +272,31 @@ AppListAssistantMainStage::CreateFooterLayoutContainer() {
   return footer_container;
 }
 
-void AppListAssistantMainStage::AnimateInGreetingLabel() {
-  greeting_label_->layer()->GetAnimator()->StopAnimating();
+void AppListAssistantMainStage::AnimateInZeroState() {
+  zero_state_view_->layer()->GetAnimator()->StopAnimating();
 
-  // We're going to animate the greeting label up into position so we'll
-  // need to apply an initial transformation.
+  // We're going to animate the zero state view up into position so we'll need
+  // to apply an initial transformation.
   gfx::Transform transform;
-  transform.Translate(0, kGreetingAnimationTranslationDip);
+  transform.Translate(0, kZeroStateAnimationTranslationDip);
 
   // Set up our pre-animation values.
-  greeting_label_->layer()->SetOpacity(0.f);
-  greeting_label_->layer()->SetTransform(transform);
-  greeting_label_->SetVisible(true);
+  zero_state_view_->layer()->SetOpacity(0.f);
+  zero_state_view_->layer()->SetTransform(transform);
+  zero_state_view_->SetVisible(true);
 
-  // Start animating greeting label.
-  greeting_label_->layer()->GetAnimator()->StartTogether(
+  // Start animating the zero state view.
+  zero_state_view_->layer()->GetAnimator()->StartTogether(
       {// Animate the transformation.
        CreateLayerAnimationSequence(CreateTransformElement(
-           gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+           gfx::Transform(), kZeroStateAnimationTranslateUpDuration,
            gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
        // Animate the opacity to 100% with delay.
        CreateLayerAnimationSequence(
            ui::LayerAnimationElement::CreatePauseElement(
                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-               kGreetingAnimationFadeInDelay),
-           CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+               kZeroStateAnimationFadeInDelay),
+           CreateOpacityElement(1.f, kZeroStateAnimationFadeInDuration))});
 }
 
 void AppListAssistantMainStage::AnimateInFooter() {
@@ -327,9 +312,8 @@ void AppListAssistantMainStage::AnimateInFooter() {
 }
 
 void AppListAssistantMainStage::OnAssistantControllerDestroying() {
-  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
-  assistant_interaction_model_observer_.Remove(
-      AssistantInteractionController::Get());
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
 }
 
@@ -338,8 +322,8 @@ void AppListAssistantMainStage::OnCommittedQueryChanged(
   // Update the view.
   query_view_->SetQuery(query);
 
-  // If query is empty and we are showing greeting label, do not update the Ui.
-  if (query.Empty() && IsShown(greeting_label_))
+  // If query is empty and we are showing zero state, do not update the Ui.
+  if (query.Empty() && IsShown(zero_state_view_))
     return;
 
   // Hide the horizontal separator.
@@ -357,7 +341,7 @@ void AppListAssistantMainStage::OnCommittedQueryChanged(
           // ...then fade in.
           CreateOpacityElement(1.f, kDividerAnimationFadeInDuration)));
 
-  MaybeHideGreetingLabel();
+  MaybeHideZeroState();
 }
 
 void AppListAssistantMainStage::OnPendingQueryChanged(
@@ -365,10 +349,10 @@ void AppListAssistantMainStage::OnPendingQueryChanged(
   // Update the view.
   query_view_->SetQuery(query);
 
-  if (!IsShown(greeting_label_))
+  if (!IsShown(zero_state_view_))
     return;
 
-  // Animate the opacity to 100% with delay equal to |greeting_label_| fade out
+  // Animate the opacity to 100% with delay equal to |zero_state_view_| fade out
   // animation duration to avoid the two views displaying at the same time.
   constexpr base::TimeDelta kQueryAnimationFadeInDuration =
       base::TimeDelta::FromMilliseconds(433);
@@ -377,11 +361,11 @@ void AppListAssistantMainStage::OnPendingQueryChanged(
       CreateLayerAnimationSequence(
           ui::LayerAnimationElement::CreatePauseElement(
               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-              kGreetingAnimationFadeOutDuration),
+              kZeroStateAnimationFadeOutDuration),
           CreateOpacityElement(1.f, kQueryAnimationFadeInDuration)));
 
   if (!query.Empty())
-    MaybeHideGreetingLabel();
+    MaybeHideZeroState();
 }
 
 void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
@@ -395,7 +379,7 @@ void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 
 void AppListAssistantMainStage::OnResponseChanged(
     const scoped_refptr<AssistantResponse>& response) {
-  MaybeHideGreetingLabel();
+  MaybeHideZeroState();
 
   // Show the horizontal separator.
   horizontal_separator_->layer()->GetAnimator()->StartAnimation(
@@ -420,16 +404,16 @@ void AppListAssistantMainStage::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
-    // the greeting label and footer.
+    // the zero state view and footer.
     const bool from_search =
         entry_point == AssistantEntryPoint::kLauncherSearchResult;
     progress_indicator_->layer()->SetOpacity(0.f);
     horizontal_separator_->layer()->SetOpacity(from_search ? 1.f : 0.f);
 
     if (!from_search)
-      AnimateInGreetingLabel();
+      AnimateInZeroState();
     else
-      greeting_label_->SetVisible(false);
+      zero_state_view_->SetVisible(false);
 
     AnimateInFooter();
     return;
@@ -439,15 +423,15 @@ void AppListAssistantMainStage::OnUiVisibilityChanged(
 
   footer_->SetVisible(true);
   footer_->layer()->SetOpacity(1.f);
-  footer_->set_can_process_events_within_subtree(true);
+  footer_->SetCanProcessEventsWithinSubtree(true);
 }
 
-void AppListAssistantMainStage::MaybeHideGreetingLabel() {
-  if (!IsShown(greeting_label_))
+void AppListAssistantMainStage::MaybeHideZeroState() {
+  if (!IsShown(zero_state_view_))
     return;
 
-  assistant::util::FadeOutAndHide(greeting_label_,
-                                  kGreetingAnimationFadeOutDuration);
+  assistant::util::FadeOutAndHide(zero_state_view_,
+                                  kZeroStateAnimationFadeOutDuration);
 }
 
 }  // namespace ash

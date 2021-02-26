@@ -9,10 +9,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
@@ -67,7 +66,12 @@ class MediaStreamUIProxy::Core {
   ~Core();
 
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
-  void OnStarted(gfx::NativeViewId* window_id, bool has_source_callback);
+  void OnStarted(gfx::NativeViewId* window_id,
+                 bool has_source_callback,
+                 const std::string& label,
+                 std::vector<DesktopMediaID> screen_capture_ids);
+  void OnDeviceStopped(const std::string& label,
+                       const DesktopMediaID& media_id);
 
   void ProcessAccessRequestResponse(
       int render_process_id,
@@ -80,6 +84,8 @@ class MediaStreamUIProxy::Core {
   friend class FakeMediaStreamUIProxy;
   void ProcessStopRequestFromUI();
   void ProcessChangeSourceRequestFromUI(const DesktopMediaID& media_id);
+  void ProcessStateChangeFromUI(const DesktopMediaID& media,
+                                blink::mojom::MediaStreamStateChange);
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
 
@@ -131,10 +137,14 @@ void MediaStreamUIProxy::Core::RequestAccess(
                      request->render_frame_id));
 }
 
-void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id,
-                                         bool has_source_callback) {
+void MediaStreamUIProxy::Core::OnStarted(
+    gfx::NativeViewId* window_id,
+    bool has_source_callback,
+    const std::string& label,
+    std::vector<DesktopMediaID> screen_share_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // base::Unretained is safe here because |ui_| is owned by Core.
   MediaStreamUI::SourceCallback device_change_cb;
   if (has_source_callback) {
     device_change_cb = base::BindRepeating(
@@ -144,7 +154,16 @@ void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id,
   if (ui_) {
     *window_id = ui_->OnStarted(
         base::BindOnce(&Core::ProcessStopRequestFromUI, base::Unretained(this)),
-        device_change_cb);
+        device_change_cb, label, screen_share_ids,
+        base::BindRepeating(&Core::ProcessStateChangeFromUI,
+                            base::Unretained(this)));
+  }
+}
+
+void MediaStreamUIProxy::Core::OnDeviceStopped(const std::string& label,
+                                               const DesktopMediaID& media_id) {
+  if (ui_) {
+    ui_->OnDeviceStopped(label, media_id);
   }
 }
 
@@ -177,14 +196,22 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
       result == blink::mojom::MediaStreamRequestResult::OK)
     result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
 
-  if (stream_ui)
+  if (stream_ui) {
+    // Default TabSharingUIViews always calls stop callback when destroyed
+    // due to security reasons (see crbug.com/1155426 for details).
+    // However here the UI is replaced while the screencast is ongoing.
+    // Clearing the callback here ensures that screencast is not terminated.
+    if (ui_) {
+      ui_->SetStopCallback(base::DoNothing());
+    }
     ui_ = std::move(stream_ui);
+  }
 
   if (host && result == blink::mojom::MediaStreamRequestResult::OK)
     host->OnGrantedMediaStreamAccess();
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse, proxy_,
                      filtered_devices, result));
 }
@@ -192,8 +219,8 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
 void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
 }
 
@@ -201,10 +228,19 @@ void MediaStreamUIProxy::Core::ProcessChangeSourceRequestFromUI(
     const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaStreamUIProxy::ProcessChangeSourceRequestFromUI,
                      proxy_, media_id));
+}
+
+void MediaStreamUIProxy::Core::ProcessStateChangeFromUI(
+    const DesktopMediaID& media_id,
+    blink::mojom::MediaStreamStateChange new_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MediaStreamUIProxy::ProcessStateChangeFromUI,
+                                proxy_, media_id, new_state));
 }
 
 RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
@@ -245,8 +281,8 @@ void MediaStreamUIProxy::RequestAccess(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   response_callback_ = std::move(response_callback);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Core::RequestAccess, base::Unretained(core_.get()),
                      std::move(request)));
 }
@@ -254,22 +290,36 @@ void MediaStreamUIProxy::RequestAccess(
 void MediaStreamUIProxy::OnStarted(
     base::OnceClosure stop_callback,
     MediaStreamUI::SourceCallback source_callback,
-    WindowIdCallback window_id_callback) {
+    WindowIdCallback window_id_callback,
+    const std::string& label,
+    std::vector<DesktopMediaID> screen_share_ids,
+    MediaStreamUI::StateChangeCallback state_change_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   stop_callback_ = std::move(stop_callback);
   source_callback_ = std::move(source_callback);
+  state_change_callback_ = std::move(state_change_callback);
 
   // Owned by the PostTaskAndReply callback.
   gfx::NativeViewId* window_id = new gfx::NativeViewId(0);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&Core::OnStarted, base::Unretained(core_.get()), window_id,
-                     !!source_callback_),
+                     !!source_callback_, label, screen_share_ids),
       base::BindOnce(&MediaStreamUIProxy::OnWindowId,
                      weak_factory_.GetWeakPtr(), std::move(window_id_callback),
                      base::Owned(window_id)));
+}
+
+void MediaStreamUIProxy::OnDeviceStopped(const std::string& label,
+                                         const DesktopMediaID& media_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::OnDeviceStopped, base::Unretained(core_.get()),
+                     label, media_id));
 }
 
 void MediaStreamUIProxy::ProcessAccessRequestResponse(
@@ -283,9 +333,8 @@ void MediaStreamUIProxy::ProcessAccessRequestResponse(
 
 void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!stop_callback_.is_null());
-
-  std::move(stop_callback_).Run();
+  if (stop_callback_)
+    std::move(stop_callback_).Run();
 }
 
 void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI(
@@ -294,6 +343,15 @@ void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI(
 
   if (source_callback_)
     source_callback_.Run(media_id);
+}
+
+void MediaStreamUIProxy::ProcessStateChangeFromUI(
+    const DesktopMediaID& media_id,
+    blink::mojom::MediaStreamStateChange new_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (state_change_callback_)
+    state_change_callback_.Run(media_id, new_state);
 }
 
 void MediaStreamUIProxy::OnWindowId(WindowIdCallback window_id_callback,
@@ -334,8 +392,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeUIForMediaStream) == "deny") {
     // Immediately deny the request.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
             base::Unretained(core_.get()), request->render_process_id,
@@ -377,8 +435,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
     devices_to_use.clear();
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
                      base::Unretained(core_.get()), request->render_process_id,
                      request->render_frame_id, devices_to_use,
@@ -391,6 +449,12 @@ void FakeMediaStreamUIProxy::RequestAccess(
 void FakeMediaStreamUIProxy::OnStarted(
     base::OnceClosure stop_callback,
     MediaStreamUI::SourceCallback source_callback,
-    WindowIdCallback window_id_callback) {}
+    WindowIdCallback window_id_callback,
+    const std::string& label,
+    std::vector<DesktopMediaID> screen_share_ids,
+    MediaStreamUI::StateChangeCallback state_change_callback) {}
+
+void FakeMediaStreamUIProxy::OnDeviceStopped(const std::string& label,
+                                             const DesktopMediaID& media_id) {}
 
 }  // namespace content

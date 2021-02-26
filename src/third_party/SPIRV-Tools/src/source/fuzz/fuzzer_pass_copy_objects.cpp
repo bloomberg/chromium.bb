@@ -15,7 +15,8 @@
 #include "source/fuzz/fuzzer_pass_copy_objects.h"
 
 #include "source/fuzz/fuzzer_util.h"
-#include "source/fuzz/transformation_copy_object.h"
+#include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
+#include "source/fuzz/transformation_add_synonym.h"
 
 namespace spvtools {
 namespace fuzz {
@@ -40,6 +41,12 @@ void FuzzerPassCopyObjects::Apply() {
                "The opcode of the instruction we might insert before must be "
                "the same as the opcode in the descriptor for the instruction");
 
+        if (GetTransformationContext()->GetFactManager()->BlockIsDead(
+                block->id())) {
+          // Don't create synonyms in dead blocks.
+          return;
+        }
+
         // Check whether it is legitimate to insert a copy before this
         // instruction.
         if (!fuzzerutil::CanInsertOpcodeBeforeInstruction(SpvOpCopyObject,
@@ -53,9 +60,13 @@ void FuzzerPassCopyObjects::Apply() {
           return;
         }
 
-        std::vector<opt::Instruction*> relevant_instructions =
-            FindAvailableInstructions(function, block, inst_it,
-                                      fuzzerutil::CanMakeSynonymOf);
+        const auto relevant_instructions = FindAvailableInstructions(
+            function, block, inst_it,
+            [this](opt::IRContext* ir_context, opt::Instruction* inst) {
+              return TransformationAddSynonym::IsInstructionValid(
+                  ir_context, *GetTransformationContext(), inst,
+                  protobufs::TransformationAddSynonym::COPY_OBJECT);
+            });
 
         // At this point, |relevant_instructions| contains all the instructions
         // we might think of copying.
@@ -65,11 +76,12 @@ void FuzzerPassCopyObjects::Apply() {
 
         // Choose a copyable instruction at random, and create and apply an
         // object copying transformation based on it.
-        ApplyTransformation(TransformationCopyObject(
+        ApplyTransformation(TransformationAddSynonym(
             relevant_instructions[GetFuzzerContext()->RandomIndex(
                                       relevant_instructions)]
                 ->result_id(),
-            instruction_descriptor, GetFuzzerContext()->GetFreshId()));
+            protobufs::TransformationAddSynonym::COPY_OBJECT,
+            GetFuzzerContext()->GetFreshId(), instruction_descriptor));
       });
 }
 

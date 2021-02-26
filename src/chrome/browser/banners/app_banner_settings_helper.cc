@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/banners/app_banner_manager.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -62,7 +60,6 @@ const char kBannerParamsKey[] = "AppBannerTriggering";
 const char kBannerParamsEngagementTotalKey[] = "site_engagement_total";
 const char kBannerParamsDaysAfterBannerDismissedKey[] = "days_after_dismiss";
 const char kBannerParamsDaysAfterBannerIgnoredKey[] = "days_after_ignore";
-const char kBannerParamsLanguageKey[] = "language_option";
 
 // Total engagement score required before a banner will actually be triggered.
 double gTotalEngagementToTrigger = kDefaultTotalEngagementToTrigger;
@@ -78,8 +75,7 @@ std::unique_ptr<base::DictionaryValue> GetOriginAppBannerData(
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, origin_url, ContentSettingsType::APP_BANNER,
-          std::string(), NULL));
+          origin_url, origin_url, ContentSettingsType::APP_BANNER, NULL));
   if (!dict)
     return std::make_unique<base::DictionaryValue>();
 
@@ -117,9 +113,9 @@ class AppPrefs {
   void Save() {
     DCHECK(dict_);
     dict_ = nullptr;
-    settings_->SetWebsiteSettingDefaultScope(
-        origin_, GURL(), ContentSettingsType::APP_BANNER, std::string(),
-        std::move(origin_dict_));
+    settings_->SetWebsiteSettingDefaultScope(origin_, GURL(),
+                                             ContentSettingsType::APP_BANNER,
+                                             std::move(origin_dict_));
   }
 
  private:
@@ -166,18 +162,25 @@ void UpdateSiteEngagementToTrigger() {
 }
 
 // Reports whether |event| was recorded within the |period| up until |now|.
-bool WasEventWithinPeriod(AppBannerSettingsHelper::AppBannerEvent event,
-                          base::TimeDelta period,
-                          content::WebContents* web_contents,
-                          const GURL& origin_url,
-                          const std::string& package_name_or_start_url,
-                          base::Time now) {
-  base::Time event_time = AppBannerSettingsHelper::GetSingleBannerEvent(
-      web_contents, origin_url, package_name_or_start_url, event);
+// If we get nullopt, we cannot store any more values for |origin_url|.
+// Conservatively assume we did block a banner in this case.
+base::Optional<bool> WasEventWithinPeriod(
+    AppBannerSettingsHelper::AppBannerEvent event,
+    base::TimeDelta period,
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& package_name_or_start_url,
+    base::Time now) {
+  base::Optional<base::Time> event_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          web_contents, origin_url, package_name_or_start_url, event);
+
+  if (!event_time)
+    return base::nullopt;
 
   // Null times are in the distant past, so the delta between real times and
   // null events will always be greater than the limits.
-  return (now - event_time < period);
+  return (now - *event_time < period);
 }
 
 // Dictionary of time information for how long to wait before showing the
@@ -250,9 +253,8 @@ void AppBannerSettingsHelper::ClearHistoryForURLs(
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   for (const GURL& origin_url : origin_urls) {
-    settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
-                                            ContentSettingsType::APP_BANNER,
-                                            std::string(), nullptr);
+    settings->SetWebsiteSettingDefaultScope(
+        origin_url, GURL(), ContentSettingsType::APP_BANNER, nullptr);
     settings->FlushLossyWebsiteSettings();
   }
 }
@@ -318,11 +320,11 @@ bool AppBannerSettingsHelper::HasBeenInstalled(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url) {
-  base::Time added_time =
+  base::Optional<base::Time> added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
 
-  return !added_time.is_null();
+  return added_time && !added_time->is_null();
 }
 
 bool AppBannerSettingsHelper::WasBannerRecentlyBlocked(
@@ -332,10 +334,11 @@ bool AppBannerSettingsHelper::WasBannerRecentlyBlocked(
     base::Time now) {
   DCHECK(!package_name_or_start_url.empty());
 
-  return WasEventWithinPeriod(
+  base::Optional<bool> in_period = WasEventWithinPeriod(
       APP_BANNER_EVENT_DID_BLOCK,
       base::TimeDelta::FromDays(gDaysAfterDismissedToShow), web_contents,
       origin_url, package_name_or_start_url, now);
+  return in_period.value_or(true);
 }
 
 bool AppBannerSettingsHelper::WasBannerRecentlyIgnored(
@@ -345,13 +348,15 @@ bool AppBannerSettingsHelper::WasBannerRecentlyIgnored(
     base::Time now) {
   DCHECK(!package_name_or_start_url.empty());
 
-  return WasEventWithinPeriod(
+  base::Optional<bool> in_period = WasEventWithinPeriod(
       APP_BANNER_EVENT_DID_SHOW,
       base::TimeDelta::FromDays(gDaysAfterIgnoredToShow), web_contents,
       origin_url, package_name_or_start_url, now);
+
+  return in_period.value_or(true);
 }
 
-base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
+base::Optional<base::Time> AppBannerSettingsHelper::GetSingleBannerEvent(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
@@ -360,7 +365,7 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
 
   AppPrefs app_prefs(web_contents, origin_url, package_name_or_start_url);
   if (!app_prefs.dict())
-    return base::Time();
+    return base::nullopt;
 
   base::Value* internal_time = app_prefs.dict()->FindKeyOfType(
       kBannerEventKeys[event], base::Value::Type::DOUBLE);
@@ -381,13 +386,13 @@ void AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
     base::Time time) {
-  base::Time could_show_time =
+  base::Optional<base::Time> could_show_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_COULD_SHOW);
 
   int minutes = 0;
-  if (!could_show_time.is_null())
-    minutes = (time - could_show_time).InMinutes();
+  if (could_show_time && !could_show_time->is_null())
+    minutes = (time - *could_show_time).InMinutes();
 
   banners::TrackMinutesFromFirstVisitToBannerShown(minutes);
 }
@@ -453,21 +458,6 @@ void AppBannerSettingsHelper::UpdateFromFieldTrial() {
   // engagement to trigger from the params variations.
   UpdateDaysBetweenShowing();
   UpdateSiteEngagementToTrigger();
-}
-
-AppBannerSettingsHelper::LanguageOption
-AppBannerSettingsHelper::GetHomescreenLanguageOption() {
-  std::string param = variations::GetVariationParamValue(
-      kBannerParamsKey, kBannerParamsLanguageKey);
-  unsigned int language_option = 0;
-
-  if (param.empty() || !base::StringToUint(param, &language_option) ||
-      language_option < LANGUAGE_OPTION_MIN ||
-      language_option > LANGUAGE_OPTION_MAX) {
-    return LANGUAGE_OPTION_DEFAULT;
-  }
-
-  return static_cast<LanguageOption>(language_option);
 }
 
 bool AppBannerSettingsHelper::CanShowInstallTextAnimation(

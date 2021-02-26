@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: automation */
 
-/**
- * @const
- */
+/** @const */
 chrome.automation = {};
 
 /**
@@ -21,40 +19,67 @@ chrome.automation = {};
  * @see https://developer.chrome.com/extensions/automation#type-EventType
  */
 chrome.automation.EventType = {
-  ACTIVEDESCENDANTCHANGED: 'activedescendantchanged',
+  ACCESS_KEY_CHANGED: 'accessKeyChanged',
+  ACTIVE_DESCENDANT_CHANGED: 'activeDescendantChanged',
   ALERT: 'alert',
   ARIA_ATTRIBUTE_CHANGED: 'ariaAttributeChanged',
+  ATOMIC_CHANGED: 'atomicChanged',
+  AUTO_COMPLETE_CHANGED: 'autoCompleteChanged',
   AUTOCORRECTION_OCCURED: 'autocorrectionOccured',
   BLUR: 'blur',
+  BUSY_CHANGED: 'busyChanged',
   CHECKED_STATE_CHANGED: 'checkedStateChanged',
   CHILDREN_CHANGED: 'childrenChanged',
+  CLASS_NAME_CHANGED: 'classNameChanged',
   CLICKED: 'clicked',
+  COLLAPSED: 'collapsed',
   CONTROLS_CHANGED: 'controlsChanged',
+  DESCRIBED_BY_CHANGED: 'describedByChanged',
+  DESCRIPTION_CHANGED: 'descriptionChanged',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
+  DROPEFFECT_CHANGED: 'dropeffectChanged',
+  EDITABLE_TEXT_CHANGED: 'editableTextChanged',
+  ENABLED_CHANGED: 'enabledChanged',
   END_OF_TEST: 'endOfTest',
+  EXPANDED: 'expanded',
   EXPANDED_CHANGED: 'expandedChanged',
+  FLOW_FROM_CHANGED: 'flowFromChanged',
+  FLOW_TO_CHANGED: 'flowToChanged',
   FOCUS: 'focus',
   FOCUS_AFTER_MENU_CLOSE: 'focusAfterMenuClose',
+  FOCUS_CHANGED: 'focusChanged',
   FOCUS_CONTEXT: 'focusContext',
+  GRABBED_CHANGED: 'grabbedChanged',
+  HASPOPUP_CHANGED: 'haspopupChanged',
   HIDE: 'hide',
+  HIERARCHICAL_LEVEL_CHANGED: 'hierarchicalLevelChanged',
   HIT_TEST_RESULT: 'hitTestResult',
   HOVER: 'hover',
+  IGNORED_CHANGED: 'ignoredChanged',
+  IMAGE_ANNOTATION_CHANGED: 'imageAnnotationChanged',
   IMAGE_FRAME_UPDATED: 'imageFrameUpdated',
   INVALID_STATUS_CHANGED: 'invalidStatusChanged',
+  KEY_SHORTCUTS_CHANGED: 'keyShortcutsChanged',
+  LABELED_BY_CHANGED: 'labeledByChanged',
+  LANGUAGE_CHANGED: 'languageChanged',
   LAYOUT_COMPLETE: 'layoutComplete',
+  LAYOUT_INVALIDATED: 'layoutInvalidated',
   LIVE_REGION_CHANGED: 'liveRegionChanged',
   LIVE_REGION_CREATED: 'liveRegionCreated',
+  LIVE_REGION_NODE_CHANGED: 'liveRegionNodeChanged',
+  LIVE_RELEVANT_CHANGED: 'liveRelevantChanged',
+  LIVE_STATUS_CHANGED: 'liveStatusChanged',
   LOAD_COMPLETE: 'loadComplete',
   LOAD_START: 'loadStart',
   LOCATION_CHANGED: 'locationChanged',
   MEDIA_STARTED_PLAYING: 'mediaStartedPlaying',
   MEDIA_STOPPED_PLAYING: 'mediaStoppedPlaying',
   MENU_END: 'menuEnd',
+  MENU_ITEM_SELECTED: 'menuItemSelected',
   MENU_LIST_ITEM_SELECTED: 'menuListItemSelected',
   MENU_LIST_VALUE_CHANGED: 'menuListValueChanged',
   MENU_POPUP_END: 'menuPopupEnd',
-  MENU_POPUP_HIDE: 'menuPopupHide',
   MENU_POPUP_START: 'menuPopupStart',
   MENU_START: 'menuStart',
   MOUSE_CANCELED: 'mouseCanceled',
@@ -62,26 +87,53 @@ chrome.automation.EventType = {
   MOUSE_MOVED: 'mouseMoved',
   MOUSE_PRESSED: 'mousePressed',
   MOUSE_RELEASED: 'mouseReleased',
+  MULTILINE_STATE_CHANGED: 'multilineStateChanged',
+  MULTISELECTABLE_STATE_CHANGED: 'multiselectableStateChanged',
+  NAME_CHANGED: 'nameChanged',
+  OBJECT_ATTRIBUTE_CHANGED: 'objectAttributeChanged',
+  OTHER_ATTRIBUTE_CHANGED: 'otherAttributeChanged',
+  PARENT_CHANGED: 'parentChanged',
+  PLACEHOLDER_CHANGED: 'placeholderChanged',
+  PORTAL_ACTIVATED: 'portalActivated',
+  POSITION_IN_SET_CHANGED: 'positionInSetChanged',
+  RANGE_VALUE_CHANGED: 'rangeValueChanged',
+  RANGE_VALUE_MAX_CHANGED: 'rangeValueMaxChanged',
+  RANGE_VALUE_MIN_CHANGED: 'rangeValueMinChanged',
+  RANGE_VALUE_STEP_CHANGED: 'rangeValueStepChanged',
+  READONLY_CHANGED: 'readonlyChanged',
+  RELATED_NODE_CHANGED: 'relatedNodeChanged',
+  REQUIRED_STATE_CHANGED: 'requiredStateChanged',
+  ROLE_CHANGED: 'roleChanged',
   ROW_COLLAPSED: 'rowCollapsed',
   ROW_COUNT_CHANGED: 'rowCountChanged',
   ROW_EXPANDED: 'rowExpanded',
+  SCROLL_HORIZONTAL_POSITION_CHANGED: 'scrollHorizontalPositionChanged',
   SCROLL_POSITION_CHANGED: 'scrollPositionChanged',
+  SCROLL_VERTICAL_POSITION_CHANGED: 'scrollVerticalPositionChanged',
   SCROLLED_TO_ANCHOR: 'scrolledToAnchor',
+  SELECTED_CHANGED: 'selectedChanged',
   SELECTED_CHILDREN_CHANGED: 'selectedChildrenChanged',
+  SELECTED_VALUE_CHANGED: 'selectedValueChanged',
   SELECTION: 'selection',
   SELECTION_ADD: 'selectionAdd',
+  SELECTION_IN_TEXT_FIELD_CHANGED: 'selectionInTextFieldChanged',
   SELECTION_REMOVE: 'selectionRemove',
+  SET_SIZE_CHANGED: 'setSizeChanged',
   SHOW: 'show',
+  SORT_CHANGED: 'sortChanged',
   STATE_CHANGED: 'stateChanged',
-  TEXT_CHANGED: 'textChanged',
+  SUBTREE_CREATED: 'subtreeCreated',
+  TEXT_ATTRIBUTE_CHANGED: 'textAttributeChanged',
   TEXT_SELECTION_CHANGED: 'textSelectionChanged',
+  TEXT_CHANGED: 'textChanged',
   TOOLTIP_CLOSED: 'tooltipClosed',
   TOOLTIP_OPENED: 'tooltipOpened',
+  TREE_CHANGED: 'treeChanged',
+  VALUE_IN_TEXT_FIELD_CHANGED: 'valueInTextFieldChanged',
+  VALUE_CHANGED: 'valueChanged',
   WINDOW_ACTIVATED: 'windowActivated',
   WINDOW_DEACTIVATED: 'windowDeactivated',
   WINDOW_VISIBILITY_CHANGED: 'windowVisibilityChanged',
-  TREE_CHANGED: 'treeChanged',
-  VALUE_CHANGED: 'valueChanged',
 };
 
 /**
@@ -157,6 +209,8 @@ chrome.automation.RoleType = {
   DOC_NOTE_REF: 'docNoteRef',
   DOC_NOTICE: 'docNotice',
   DOC_PAGE_BREAK: 'docPageBreak',
+  DOC_PAGE_FOOTER: 'docPageFooter',
+  DOC_PAGE_HEADER: 'docPageHeader',
   DOC_PAGE_LIST: 'docPageList',
   DOC_PART: 'docPart',
   DOC_PREFACE: 'docPreface',
@@ -213,7 +267,6 @@ chrome.automation.RoleType = {
   MATH: 'math',
   MENU: 'menu',
   MENU_BAR: 'menuBar',
-  MENU_BUTTON: 'menuButton',
   MENU_ITEM: 'menuItem',
   MENU_ITEM_CHECK_BOX: 'menuItemCheckBox',
   MENU_ITEM_RADIO: 'menuItemRadio',
@@ -439,29 +492,71 @@ chrome.automation.MarkerType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/automation#type-EventCommandType
+ * @see https://developer.chrome.com/extensions/automation#type-IntentCommandType
  */
-chrome.automation.EventCommandType = {
+chrome.automation.IntentCommandType = {
   CLEAR_SELECTION: 'clearSelection',
-  CUT: 'cut',
   DELETE: 'delete',
   DICTATE: 'dictate',
   EXTEND_SELECTION: 'extendSelection',
   FORMAT: 'format',
+  HISTORY: 'history',
   INSERT: 'insert',
   MARKER: 'marker',
   MOVE_SELECTION: 'moveSelection',
-  PASTE: 'paste',
-  REPLACE: 'replace',
   SET_SELECTION: 'setSelection',
-  TYPE: 'type',
 };
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/automation#type-EventTextBoundaryType
+ * @see https://developer.chrome.com/extensions/automation#type-IntentInputEventType
  */
-chrome.automation.EventTextBoundaryType = {
+chrome.automation.IntentInputEventType = {
+  INSERT_TEXT: 'insertText',
+  INSERT_LINE_BREAK: 'insertLineBreak',
+  INSERT_PARAGRAPH: 'insertParagraph',
+  INSERT_ORDERED_LIST: 'insertOrderedList',
+  INSERT_UNORDERED_LIST: 'insertUnorderedList',
+  INSERT_HORIZONTAL_RULE: 'insertHorizontalRule',
+  INSERT_FROM_PASTE: 'insertFromPaste',
+  INSERT_FROM_DROP: 'insertFromDrop',
+  INSERT_FROM_YANK: 'insertFromYank',
+  INSERT_TRANSPOSE: 'insertTranspose',
+  INSERT_REPLACEMENT_TEXT: 'insertReplacementText',
+  INSERT_COMPOSITION_TEXT: 'insertCompositionText',
+  DELETE_WORD_BACKWARD: 'deleteWordBackward',
+  DELETE_WORD_FORWARD: 'deleteWordForward',
+  DELETE_SOFT_LINE_BACKWARD: 'deleteSoftLineBackward',
+  DELETE_SOFT_LINE_FORWARD: 'deleteSoftLineForward',
+  DELETE_HARD_LINE_BACKWARD: 'deleteHardLineBackward',
+  DELETE_HARD_LINE_FORWARD: 'deleteHardLineForward',
+  DELETE_CONTENT_BACKWARD: 'deleteContentBackward',
+  DELETE_CONTENT_FORWARD: 'deleteContentForward',
+  DELETE_BY_CUT: 'deleteByCut',
+  DELETE_BY_DRAG: 'deleteByDrag',
+  HISTORY_UNDO: 'historyUndo',
+  HISTORY_REDO: 'historyRedo',
+  FORMAT_BOLD: 'formatBold',
+  FORMAT_ITALIC: 'formatItalic',
+  FORMAT_UNDERLINE: 'formatUnderline',
+  FORMAT_STRIKE_THROUGH: 'formatStrikeThrough',
+  FORMAT_SUPERSCRIPT: 'formatSuperscript',
+  FORMAT_SUBSCRIPT: 'formatSubscript',
+  FORMAT_JUSTIFY_CENTER: 'formatJustifyCenter',
+  FORMAT_JUSTIFY_FULL: 'formatJustifyFull',
+  FORMAT_JUSTIFY_RIGHT: 'formatJustifyRight',
+  FORMAT_JUSTIFY_LEFT: 'formatJustifyLeft',
+  FORMAT_INDENT: 'formatIndent',
+  FORMAT_OUTDENT: 'formatOutdent',
+  FORMAT_REMOVE: 'formatRemove',
+  FORMAT_SET_BLOCK_TEXT_DIRECTION: 'formatSetBlockTextDirection',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-IntentTextBoundaryType
+ */
+chrome.automation.IntentTextBoundaryType = {
   CHARACTER: 'character',
   FORMAT: 'format',
   LINE_END: 'lineEnd',
@@ -485,11 +580,22 @@ chrome.automation.EventTextBoundaryType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/automation#type-EventMoveDirectionType
+ * @see https://developer.chrome.com/extensions/automation#type-IntentMoveDirectionType
  */
-chrome.automation.EventMoveDirectionType = {
-  FORWARD: 'forward',
+chrome.automation.IntentMoveDirectionType = {
   BACKWARD: 'backward',
+  FORWARD: 'forward',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-SortDirectionType
+ */
+chrome.automation.SortDirectionType = {
+  UNSORTED: 'unsorted',
+  ASCENDING: 'ascending',
+  DESCENDING: 'descending',
+  OTHER: 'other',
 };
 
 /**
@@ -515,9 +621,9 @@ chrome.automation.FindParams;
 
 /**
  * @typedef {{
- *   anchorObject: Object,
+ *   anchorObject: chrome.automation.AutomationNode,
  *   anchorOffset: number,
- *   focusObject: Object,
+ *   focusObject: chrome.automation.AutomationNode,
  *   focusOffset: number
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
@@ -526,9 +632,9 @@ chrome.automation.SetDocumentSelectionParams;
 
 /**
  * @typedef {{
- *   command: !chrome.automation.EventCommandType,
- *   textBoundary: !chrome.automation.EventTextBoundaryType,
- *   moveDirection: !chrome.automation.EventMoveDirectionType
+ *   command: !chrome.automation.IntentCommandType,
+ *   textBoundary: !chrome.automation.IntentTextBoundaryType,
+ *   moveDirection: !chrome.automation.IntentMoveDirectionType
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-AutomationIntent
  */
@@ -563,6 +669,7 @@ chrome.automation.AutomationEvent.prototype.type;
 chrome.automation.AutomationEvent.prototype.eventFrom;
 
 /**
+ * Any mouse coordinates associated with this event.
  * @type {number}
  * @see https://developer.chrome.com/extensions/automation#type-mouseX
  */
@@ -575,7 +682,7 @@ chrome.automation.AutomationEvent.prototype.mouseX;
 chrome.automation.AutomationEvent.prototype.mouseY;
 
 /**
- * Intents associated with this event.
+ * A list of $(ref:automation.AutomationIntent)s associated with this event.
  * @type {!Array<!chrome.automation.AutomationIntent>}
  * @see https://developer.chrome.com/extensions/automation#type-intents
  */
@@ -583,7 +690,7 @@ chrome.automation.AutomationEvent.prototype.intents;
 
 /**
  * Stops this event from further processing except for any remaining listeners
- * on $(ref:AutomationEvent.target).
+ * on $(ref:automation.AutomationEvent.target).
  * @see https://developer.chrome.com/extensions/automation#method-stopPropagation
  */
 chrome.automation.AutomationEvent.prototype.stopPropagation = function() {};
@@ -642,6 +749,352 @@ chrome.automation.Marker;
 /**
  * @constructor
  * @private
+ * @see https://developer.chrome.com/extensions/automation#type-AutomationPosition
+ */
+chrome.automation.AutomationPosition = function() {};
+
+/**
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-node
+ */
+chrome.automation.AutomationPosition.prototype.node;
+
+/**
+ * @type {number}
+ * @see https://developer.chrome.com/extensions/automation#type-childIndex
+ */
+chrome.automation.AutomationPosition.prototype.childIndex;
+
+/**
+ * @type {number}
+ * @see https://developer.chrome.com/extensions/automation#type-textOffset
+ */
+chrome.automation.AutomationPosition.prototype.textOffset;
+
+/**
+ * @type {string}
+ * @see https://developer.chrome.com/extensions/automation#type-affinity
+ */
+chrome.automation.AutomationPosition.prototype.affinity;
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isNullPosition
+ */
+chrome.automation.AutomationPosition.prototype.isNullPosition = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isTreePosition
+ */
+chrome.automation.AutomationPosition.prototype.isTreePosition = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.isTextPosition = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isLeafTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.isLeafTextPosition = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfAnchor
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfAnchor = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfAnchor
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfAnchor = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfWord
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfWord = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfWord
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfWord = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfLine
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfLine = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfLine
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfLine = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfParagraph
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfParagraph = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfParagraph
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfParagraph = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfPage
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfPage = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfPage
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfPage = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfFormat
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfFormat = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfFormat
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfFormat = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atStartOfDocument
+ */
+chrome.automation.AutomationPosition.prototype.atStartOfDocument = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-atEndOfDocument
+ */
+chrome.automation.AutomationPosition.prototype.atEndOfDocument = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-asTreePosition
+ */
+chrome.automation.AutomationPosition.prototype.asTreePosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-asTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.asTextPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-asLeafTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.asLeafTextPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPositionAtStartOfAnchor
+ */
+chrome.automation.AutomationPosition.prototype.moveToPositionAtStartOfAnchor = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPositionAtEndOfAnchor
+ */
+chrome.automation.AutomationPosition.prototype.moveToPositionAtEndOfAnchor = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPositionAtStartOfDocument
+ */
+chrome.automation.AutomationPosition.prototype.moveToPositionAtStartOfDocument = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPositionAtEndOfDocument
+ */
+chrome.automation.AutomationPosition.prototype.moveToPositionAtEndOfDocument = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToParentPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToParentPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextLeafTreePosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextLeafTreePosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousLeafTreePosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousLeafTreePosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextLeafTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextLeafTextPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousLeafTextPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousLeafTextPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextCharacterPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextCharacterPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousCharacterPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousCharacterPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextWordStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextWordStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousWordStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousWordStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextWordEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextWordEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousWordEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousWordEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextLineStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextLineStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousLineStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousLineStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextLineEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextLineEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousLineEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousLineEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousFormatStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousFormatStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextFormatEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextFormatEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextParagraphStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextParagraphStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousParagraphStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousParagraphStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextParagraphEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextParagraphEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousParagraphEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousParagraphEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextPageStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextPageStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousPageStartPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousPageStartPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextPageEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextPageEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousPageEndPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousPageEndPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToNextAnchorPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToNextAnchorPosition = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/automation#method-moveToPreviousAnchorPosition
+ */
+chrome.automation.AutomationPosition.prototype.moveToPreviousAnchorPosition = function() {};
+
+/**
+ * @return {number}
+ * @see https://developer.chrome.com/extensions/automation#method-maxTextOffset
+ */
+chrome.automation.AutomationPosition.prototype.maxTextOffset = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isInLineBreak
+ */
+chrome.automation.AutomationPosition.prototype.isInLineBreak = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isInTextObject
+ */
+chrome.automation.AutomationPosition.prototype.isInTextObject = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isInWhiteSpace
+ */
+chrome.automation.AutomationPosition.prototype.isInWhiteSpace = function() {};
+
+/**
+ * @return {boolean}
+ * @see https://developer.chrome.com/extensions/automation#method-isValid
+ */
+chrome.automation.AutomationPosition.prototype.isValid = function() {};
+
+/**
+ * @return {string}
+ * @see https://developer.chrome.com/extensions/automation#method-getText
+ */
+chrome.automation.AutomationPosition.prototype.getText = function() {};
+
+
+/**
+ * @constructor
+ * @private
  * @see https://developer.chrome.com/extensions/automation#type-AutomationNode
  */
 chrome.automation.AutomationNode = function() {};
@@ -685,13 +1138,25 @@ chrome.automation.AutomationNode.prototype.location;
  * Determines the location of the text within the node specified by |startIndex|
  * and |endIndex|, inclusively. Invokes |callback| with the bounding rectangle,
  * in screen coordinates. |callback| can be invoked either synchronously or
- * asynchronously.
+ * asynchronously. The bounds are clipped to ancestors.
  * @param {number} startIndex
  * @param {number} endIndex
- * @param {function(!chrome.automation.Rect):void} callback
+ * @param {function(!chrome.automation.Rect): void} callback
  * @see https://developer.chrome.com/extensions/automation#method-boundsForRange
  */
 chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex, callback) {};
+
+/**
+ * Determines the location of the text within the node specified by |startIndex|
+ * and |endIndex|, inclusively. Invokes |callback| with the bounding rectangle,
+ * in screen coordinates. |callback| can be invoked either synchronously or
+ * asynchronously. The bounds are not clipped to ancestors.
+ * @param {number} startIndex
+ * @param {number} endIndex
+ * @param {function(!chrome.automation.Rect): void} callback
+ * @see https://developer.chrome.com/extensions/automation#method-unclippedBoundsForRange
+ */
+chrome.automation.AutomationNode.prototype.unclippedBoundsForRange = function(startIndex, endIndex, callback) {};
 
 /**
  * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.
@@ -706,6 +1171,14 @@ chrome.automation.AutomationNode.prototype.unclippedLocation;
  * @see https://developer.chrome.com/extensions/automation#type-description
  */
 chrome.automation.AutomationNode.prototype.description;
+
+/**
+ * Description of the state of the checkbox. Used only when the node is
+ * checkable.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-checkedStateDescription
+ */
+chrome.automation.AutomationNode.prototype.checkedStateDescription;
 
 /**
  * The placeholder for this text field, if any.
@@ -1134,6 +1607,13 @@ chrome.automation.AutomationNode.prototype.selectionEndOffset;
  * @see https://developer.chrome.com/extensions/automation#type-selectionEndAffinity
  */
 chrome.automation.AutomationNode.prototype.selectionEndAffinity;
+
+/**
+ * Indicates that the node is marked user-select:none
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-notUserSelectableStyle
+ */
+chrome.automation.AutomationNode.prototype.notUserSelectableStyle;
 
 /**
  * The current value for this range.
@@ -1589,6 +2069,13 @@ chrome.automation.AutomationNode.prototype.nextFocus;
 chrome.automation.AutomationNode.prototype.indexInParent;
 
 /**
+ * The sort direction of this node.
+ * @type {!chrome.automation.SortDirectionType}
+ * @see https://developer.chrome.com/extensions/automation#type-sortDirection
+ */
+chrome.automation.AutomationNode.prototype.sortDirection;
+
+/**
  * Does the default action based on this node's role. This is generally the same
  * action that would result from clicking the node such as expanding a treeitem,
  * toggling a checkbox, selecting a radiobutton, or activating a button.
@@ -1626,7 +2113,7 @@ chrome.automation.AutomationNode.prototype.hitTest = function(x, y, eventToFire)
  * the resulting hit node.
  * @param {number} x
  * @param {number} y
- * @param {function(!chrome.automation.AutomationNode):void} callback
+ * @param {function(!chrome.automation.AutomationNode): void} callback
  * @see https://developer.chrome.com/extensions/automation#method-hitTestWithReply
  */
 chrome.automation.AutomationNode.prototype.hitTestWithReply = function(x, y, callback) {};
@@ -1723,7 +2210,7 @@ chrome.automation.AutomationNode.prototype.suspendMedia = function() {};
 
 /**
  * Scrolls this scrollable container backward.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollBackward
  */
@@ -1731,7 +2218,7 @@ chrome.automation.AutomationNode.prototype.scrollBackward = function(callback) {
 
 /**
  * Scrolls this scrollable container forward.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollForward
  */
@@ -1739,7 +2226,7 @@ chrome.automation.AutomationNode.prototype.scrollForward = function(callback) {}
 
 /**
  * Scrolls this scrollable container up.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollUp
  */
@@ -1747,7 +2234,7 @@ chrome.automation.AutomationNode.prototype.scrollUp = function(callback) {};
 
 /**
  * Scrolls this scrollable container down.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollDown
  */
@@ -1755,7 +2242,7 @@ chrome.automation.AutomationNode.prototype.scrollDown = function(callback) {};
 
 /**
  * Scrolls this scrollable container left.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollLeft
  */
@@ -1763,16 +2250,32 @@ chrome.automation.AutomationNode.prototype.scrollLeft = function(callback) {};
 
 /**
  * Scrolls this scrollable container right.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollRight
  */
 chrome.automation.AutomationNode.prototype.scrollRight = function(callback) {};
 
 /**
+ * Scrolls this scrollable container to the given point.
+ * @param {number} x
+ * @param {number} y
+ * @see https://developer.chrome.com/extensions/automation#method-scrollToPoint
+ */
+chrome.automation.AutomationNode.prototype.scrollToPoint = function(x, y) {};
+
+/**
+ * Sets this scrollable container's scroll offset.
+ * @param {number} x
+ * @param {number} y
+ * @see https://developer.chrome.com/extensions/automation#method-setScrollOffset
+ */
+chrome.automation.AutomationNode.prototype.setScrollOffset = function(x, y) {};
+
+/**
  * Adds a listener for the given event type and event phase.
  * @param {!chrome.automation.EventType} eventType
- * @param {function(!chrome.automation.AutomationEvent):void} listener A
+ * @param {function(!chrome.automation.AutomationEvent): void} listener A
  *     listener for events on an <code>AutomationNode</code>.
  * @param {boolean} capture
  * @see https://developer.chrome.com/extensions/automation#method-addEventListener
@@ -1782,7 +2285,7 @@ chrome.automation.AutomationNode.prototype.addEventListener = function(eventType
 /**
  * Removes a listener for the given event type and event phase.
  * @param {!chrome.automation.EventType} eventType
- * @param {function(!chrome.automation.AutomationEvent):void} listener A
+ * @param {function(!chrome.automation.AutomationEvent): void} listener A
  *     listener for events on an <code>AutomationNode</code>.
  * @param {boolean} capture
  * @see https://developer.chrome.com/extensions/automation#method-removeEventListener
@@ -1801,7 +2304,7 @@ chrome.automation.AutomationNode.prototype.removeEventListener = function(eventT
  * accessibility via hiding it using CSS or using aria-hidden), this will return
  * the nearest ancestor which does correspond to an automation node.</p>
  * @param {string} selector
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     when the result for a <code>query</code> is available.
  * @see https://developer.chrome.com/extensions/automation#method-domQuerySelector
  */
@@ -1854,6 +2357,15 @@ chrome.automation.AutomationNode.prototype.getNextTextMatch = function(searchStr
  */
 chrome.automation.AutomationNode.prototype.languageAnnotationForStringAttribute = function(attribute) {};
 
+/**
+ * Creates a position object backed by Chrome's accessibility position support.
+ * @param {number} offset
+ * @param {boolean=} isUpstream
+ * @return {!chrome.automation.AutomationPosition}
+ * @see https://developer.chrome.com/extensions/automation#method-createPosition
+ */
+chrome.automation.AutomationNode.prototype.createPosition = function(offset, isUpstream) {};
+
 
 /**
  * Get the automation tree for the tab with the given tabId, or the current tab
@@ -1862,7 +2374,7 @@ chrome.automation.AutomationNode.prototype.languageAnnotationForStringAttribute 
  * notification that the tree has fully loaded (the previous root node reference
  * will stop working at or before this point).
  * @param {number=} tabId
- * @param {function(!chrome.automation.AutomationNode):void=} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void=} callback Called
  *     when the <code>AutomationNode</code> for the page is available.
  * @see https://developer.chrome.com/extensions/automation#method-getTree
  */
@@ -1871,7 +2383,7 @@ chrome.automation.getTree = function(tabId, callback) {};
 /**
  * Get the automation tree for the whole desktop which consists of all on screen
  * views. Note this API is currently only supported on Chrome OS.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     when the <code>AutomationNode</code> for the page is available.
  * @see https://developer.chrome.com/extensions/automation#method-getDesktop
  */
@@ -1880,7 +2392,7 @@ chrome.automation.getDesktop = function(callback) {};
 /**
  * Get the automation node that currently has focus, globally. Will return null
  * if none of the nodes in any loaded trees have focus.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     with the <code>AutomationNode</code> that currently has focus.
  * @see https://developer.chrome.com/extensions/automation#method-getFocus
  */
@@ -1890,7 +2402,7 @@ chrome.automation.getFocus = function(callback) {};
  * Get the automation node that currently has accessibility focus, globally.
  * Will return null if none of the nodes in any loaded trees have accessibility
  * focus.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     with the <code>AutomationNode</code> that currently has accessibility
  *     focus.
  * @see https://developer.chrome.com/extensions/automation#method-getAccessibilityFocus
@@ -1903,16 +2415,16 @@ chrome.automation.getAccessibilityFocus = function(callback) {};
  * tree changes to listen to, and note that listnening to all tree changes can
  * be expensive.
  * @param {!chrome.automation.TreeChangeObserverFilter} filter
- * @param {function(!chrome.automation.TreeChange):void} observer A listener for
- *     changes on the <code>AutomationNode</code> tree.
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener
+ *     for changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-addTreeChangeObserver
  */
 chrome.automation.addTreeChangeObserver = function(filter, observer) {};
 
 /**
  * Remove a tree change observer.
- * @param {function(!chrome.automation.TreeChange):void} observer A listener for
- *     changes on the <code>AutomationNode</code> tree.
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener
+ *     for changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-removeTreeChangeObserver
  */
 chrome.automation.removeTreeChangeObserver = function(observer) {};

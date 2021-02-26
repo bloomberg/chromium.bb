@@ -13,7 +13,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
    */
   constructor(request) {
     super();
-    this.registerRequiredCSS('network/requestInitiatorView.css');
+    this.registerRequiredCSS('network/requestInitiatorView.css', {enableLegacyPatching: true});
     this.element.classList.add('request-initiator-view');
     /** @type {!Components.Linkifier.Linkifier} */
     this._linkifier = new Components.Linkifier.Linkifier();
@@ -53,11 +53,12 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     const icon = UI.Icon.Icon.create('smallicon-triangle-right');
     const clickableElement = section.createChild('div', 'request-initiator-view-section-title');
     clickableElement.appendChild(icon);
-    clickableElement.createTextChild(title);
+    UI.UIUtils.createTextChild(clickableElement, title);
     clickableElement.tabIndex = 0;
     sectionContent.classList.add('hidden', 'request-initiator-view-section-content');
     section.appendChild(sectionContent);
 
+    /** @param {boolean} expanded */
     const expand = expanded => {
       icon.setIconType(expanded ? 'smallicon-triangle-down' : 'smallicon-triangle-right');
       sectionContent.classList.toggle('hidden', !expanded);
@@ -78,19 +79,22 @@ export class RequestInitiatorView extends UI.Widget.VBox {
   _buildRequestChainTree(initiatorGraph) {
     const root = new UI.TreeOutline.TreeOutlineInShadow();
     const initiators = initiatorGraph.initiators;
+    /** @type {(!UI.TreeOutline.TreeElement|!UI.TreeOutline.TreeOutlineInShadow)} */
     let parent = root;
     for (const request of Array.from(initiators).reverse()) {
       const treeElement = new UI.TreeOutline.TreeElement(request.url());
       parent.appendChild(treeElement);
-      if (parent !== root) {
+      if (parent !== root && parent instanceof UI.TreeOutline.TreeElement) {
         parent.expand();
       }
       parent = treeElement;
     }
 
     // parent should be this._request tree element now
-    parent.select();
-    parent.titleElement.style.fontWeight = 'bold';
+    if (parent instanceof UI.TreeOutline.TreeElement) {
+      parent.select();
+      parent.titleElement.style.fontWeight = 'bold';
+    }
 
     const initiated = initiatorGraph.initiated;
     this._depthFirstSearchTreeBuilder(initiated, /** @type {!UI.TreeOutline.TreeElement} */ (parent), this._request);
@@ -134,7 +138,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
       this._appendExpandableSection(stackTracePreview.element, ls`Request call stack`, true);
     }
 
-    const initiatorGraph = self.SDK.networkLog.initiatorGraphForRequest(this._request);
+    const initiatorGraph = SDK.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
     if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {
       initiatorDataPresent = true;
       this._appendExpandableSection(

@@ -10,12 +10,11 @@
 #include <ostream>
 #include <string>
 
-#include "base/logging.h"
-#include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_base_export.h"
 
 namespace ui {
 
-class AX_EXPORT AXMode {
+class AX_BASE_EXPORT AXMode {
  public:
   static constexpr uint32_t kFirstModeFlag = 1 << 0;
 
@@ -60,10 +59,14 @@ class AX_EXPORT AXMode {
   // The accessibility tree will contain automatic image annotations.
   static constexpr uint32_t kLabelImages = 1 << 5;
 
+  // The accessibility tree will contain enough information to export
+  // an accessible PDF.
+  static constexpr uint32_t kPDF = 1 << 6;
+
   // Update this to include the last supported mode flag. If you add
   // another, be sure to update the stream insertion operator for
   // logging and debugging.
-  static constexpr uint32_t kLastModeFlag = 1 << 5;
+  static constexpr uint32_t kLastModeFlag = 1 << 6;
 
   constexpr AXMode() : flags_(0) {}
   constexpr AXMode(uint32_t flags) : flags_(flags) {}
@@ -104,7 +107,8 @@ static constexpr AXMode kAXModeComplete(AXMode::kNativeAPIs |
                                         AXMode::kScreenReader | AXMode::kHTML);
 
 // For debugging, test assertions, etc.
-AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXMode& mode);
+AX_BASE_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                        const AXMode& mode);
 
 }  // namespace ui
 

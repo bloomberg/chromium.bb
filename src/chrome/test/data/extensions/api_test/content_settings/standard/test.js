@@ -10,7 +10,6 @@ var default_content_settings = {
   "cookies": "session_only",
   "images": "allow",
   "javascript": "block",
-  "plugins": "allow",
   "popups": "block",
   "location": "ask",
   "notifications": "ask",
@@ -18,7 +17,6 @@ var default_content_settings = {
   "mouselock": "ask",
   "microphone": "ask",
   "camera": "ask",
-  "unsandboxedPlugins": "ask",
   "automaticDownloads": "ask"
 };
 
@@ -26,7 +24,6 @@ var settings = {
   "cookies": "block",
   "images": "allow",
   "javascript": "block",
-  "plugins": "detect_important_content",
   "popups": "allow",
   "location": "block",
   "notifications": "block",
@@ -34,7 +31,6 @@ var settings = {
   "mouselock": "block",  // Should be ignored.
   "microphone": "block",
   "camera": "block",
-  "unsandboxedPlugins": "block",
   "automaticDownloads": "block"
 };
 

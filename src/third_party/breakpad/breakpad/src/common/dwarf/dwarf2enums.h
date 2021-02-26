@@ -115,6 +115,16 @@ enum DwarfTag {
   DW_TAG_PGI_interface_block = 0xA020
 };
 
+enum DwarfUnitHeader {
+  DW_UT_compile = 0x01,
+  DW_UT_type = 0x02,
+  DW_UT_partial = 0x03,
+  DW_UT_skeleton = 0x04,
+  DW_UT_split_compile = 0x05,
+  DW_UT_split_type = 0x06,
+  DW_UT_lo_user = 0x80,
+  DW_UT_hi_user = 0xFF
+};
 
 enum DwarfHasChild {
   DW_children_no = 0,
@@ -149,7 +159,27 @@ enum DwarfForm {
   DW_FORM_sec_offset = 0x17,
   DW_FORM_exprloc = 0x18,
   DW_FORM_flag_present = 0x19,
+
+  // Added in DWARF 5:
+  DW_FORM_strx = 0x1a,
+  DW_FORM_strp_sup = 0x1d,
+  DW_FORM_line_strp = 0x1f,
+
+  // DWARF 4, but value out of order.
   DW_FORM_ref_sig8 = 0x20,
+
+  // Added in DWARF 5:
+  DW_FORM_strx1 = 0x25,
+  DW_FORM_strx2 = 0x26,
+  DW_FORM_strx3 = 0x27,
+  DW_FORM_strx4 = 0x28,
+
+  DW_FORM_addrx = 0x1b,
+  DW_FORM_addrx1 = 0x29,
+  DW_FORM_addrx2 = 0x2a,
+  DW_FORM_addrx3 = 0x2b,
+  DW_FORM_addrx4 = 0x2c,
+
   // Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.
   DW_FORM_GNU_addr_index = 0x1f01,
   DW_FORM_GNU_str_index = 0x1f02
@@ -286,6 +316,14 @@ enum DwarfAttribute {
   DW_AT_PGI_lstride  = 0x3a02
 };
 
+// Line number content type codes (DWARF 5).
+enum DwarfLineNumberContentType {
+  DW_LNCT_path = 1,
+  DW_LNCT_directory_index = 2,
+  DW_LNCT_timestamp = 3,
+  DW_LNCT_size = 4,
+  DW_LNCT_MD5 = 5,
+};
 
 // Line number opcodes.
 enum DwarfLineNumberOps {

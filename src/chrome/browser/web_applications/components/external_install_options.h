@@ -12,14 +12,18 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
+using WebApplicationInfoFactory =
+    base::RepeatingCallback<std::unique_ptr<WebApplicationInfo>()>;
+
 enum class ExternalInstallSource;
 
 struct ExternalInstallOptions {
-  ExternalInstallOptions(const GURL& url,
+  ExternalInstallOptions(const GURL& install_url,
                          DisplayMode user_display_mode,
                          ExternalInstallSource install_source);
   ~ExternalInstallOptions();
@@ -29,7 +33,7 @@ struct ExternalInstallOptions {
 
   bool operator==(const ExternalInstallOptions& other) const;
 
-  GURL url;
+  GURL install_url;
   DisplayMode user_display_mode;
   ExternalInstallSource install_source;
 
@@ -58,6 +62,12 @@ struct ExternalInstallOptions {
   // other platforms.
   bool add_to_management = true;
 
+  // Whether the app should be registered to run on OS login.
+  // Currently this only works on Windows by adding a shortcut to the
+  // Startup Folder.
+  // TODO(crbug.com/897302): Enable for other platforms.
+  bool run_on_os_login = false;
+
   // If true, the app icon is displayed on Chrome OS with a blocked logo on
   // top, and the user cannot launch the app. Has no effect on other platforms.
   bool is_disabled = false;
@@ -65,6 +75,25 @@ struct ExternalInstallOptions {
   // Whether the app should be reinstalled even if the user has previously
   // uninstalled it.
   bool override_previous_user_uninstall = false;
+
+  // Whether the app should only be installed if the user is using Chrome for
+  // the first time.
+  bool only_for_new_users = false;
+
+  // Which user types this app should be installed for.
+  // See apps::DetermineUserType() for relevant string constants.
+  std::vector<std::string> user_type_allowlist;
+
+  // Which feature flag should be enabled to install this app. See
+  // chrome/browser/web_applications/components/external_app_install_features.h
+  // for available features to gate on.
+  base::Optional<std::string> gate_on_feature;
+
+  // Whether this should not be installed for devices that support ARC.
+  bool disable_if_arc_supported = false;
+
+  // Whether this should not be installed for tablet devices.
+  bool disable_if_tablet_form_factor = false;
 
   // This must only be used by pre-installed default or system apps that are
   // valid PWAs if loading the real service worker is too costly to verify
@@ -93,6 +122,20 @@ struct ExternalInstallOptions {
   // it.
   bool reinstall_placeholder = false;
 
+  // Optional query parameters to add to the start_url when launching the app.
+  base::Optional<std::string> launch_query_params;
+
+  // Whether we should load |service_worker_registration_url| after successful
+  // installation to allow the site to install its service worker and set up
+  // offline caching.
+  bool load_and_await_service_worker_registration = true;
+
+  // The URL to use for service worker registration. This is
+  // configurable by sites that wish to be able to track install metrics of the
+  // install_url separate from the service worker registration step. Defaults to
+  // install_url if unset.
+  base::Optional<GURL> service_worker_registration_url;
+
   // A list of app_ids that the Web App System should attempt to uninstall and
   // replace with this app (e.g maintain shelf pins, app list positions).
   std::vector<AppId> uninstall_and_replace;
@@ -100,6 +143,15 @@ struct ExternalInstallOptions {
   // Additional keywords that will be used by the OS when searching for the app.
   // Only affects Chrome OS.
   std::vector<std::string> additional_search_terms;
+
+  // Determines whether |app_info_factory| is used as a fallback or the primary
+  // source of app metadata. If true the |install_url| and
+  // |service_worker_registration_url| will not be loaded.
+  bool only_use_app_info_factory = false;
+
+  // A factory callback that returns a unique_ptr<WebApplicationInfo> to be used
+  // as the app's installation metadata.
+  WebApplicationInfoFactory app_info_factory;
 };
 
 std::ostream& operator<<(std::ostream& out,

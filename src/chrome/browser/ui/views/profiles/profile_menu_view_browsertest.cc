@@ -5,6 +5,8 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -44,12 +46,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -112,7 +116,7 @@ Profile* CreateTestingProfile(const base::FilePath& path) {
   std::unique_ptr<Profile> profile =
       Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
   Profile* profile_ptr = profile.get();
-  profile_manager->RegisterTestingProfile(std::move(profile), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile), true);
   EXPECT_EQ(starting_number_of_profiles + 1,
             profile_manager->GetNumberOfProfiles());
   return profile_ptr;
@@ -144,7 +148,7 @@ class ProfileMenuViewTestBase {
     ASSERT_TRUE(profile_menu_view());
     profile_menu_view()->set_close_on_deactivate(false);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::RunLoop().RunUntilIdle();
 #else
     // If possible wait until the menu is active.
@@ -322,7 +326,13 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, OpenLogoutTab) {
 
 // Checks that the NTP is navigated to the logout URL, instead of creating
 // another tab.
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, SignoutFromNTP) {
+// Flaky on Linux, at least. crbug.com/1116606
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_SignoutFromNTP DISABLED_SignoutFromNTP
+#else
+#define MAYBE_SignoutFromNTP SignoutFromNTP
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, MAYBE_SignoutFromNTP) {
   // Start from the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -523,6 +533,10 @@ class ProfileMenuClickTest : public ProfileMenuClickTestBase,
   // This should be called in the test body.
   void RunTest() {
     ASSERT_NO_FATAL_FAILURE(OpenProfileMenu(browser()));
+    // These tests don't care about performing the actual menu actions, only
+    // about the histogram recorded.
+    ASSERT_TRUE(profile_menu_view());
+    profile_menu_view()->set_perform_menu_actions_for_testing(false);
     AdvanceFocus(/*count=*/GetParam() + 1);
     ASSERT_TRUE(GetFocusedItem());
     Click(GetFocusedItem());
@@ -660,8 +674,15 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
     // there are no other buttons at the end.
     ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1021930): Failure on Windows
+#define MAYBE_ProfileMenuClickTest_SyncError \
+  DISABLED_ProfileMenuClickTest_SyncError
+#else
+#define MAYBE_ProfileMenuClickTest_SyncError ProfileMenuClickTest_SyncError
+#endif
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
-                        ProfileMenuClickTest_SyncError) {
+                        MAYBE_ProfileMenuClickTest_SyncError) {
   ASSERT_TRUE(sync_harness()->SignInPrimaryAccount());
   // Check that the setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
@@ -697,8 +718,10 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
   sync_harness()->EnterSyncPausedStateForPrimaryAccount();
   // Check that the setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
-  ASSERT_FALSE(sync_service()->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_PAUSED));
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    ASSERT_EQ(syncer::SyncService::TransportState::PAUSED,
+              sync_service()->GetTransportState());
+  }
 
   RunTest();
 }
@@ -752,7 +775,7 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 // TODO(https://crbug.com/1021930) flakey on Linux and Windows.
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ProfileMenuClickTest_WithUnconsentedPrimaryAccount \
   DISABLED_ProfileMenuClickTest_WithUnconsentedPrimaryAccount
 #else
@@ -769,39 +792,6 @@ PROFILE_MENU_CLICK_TEST(
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kNotRequired));
-
-  RunTest();
-
-  if (GetExpectedActionableItemAtIndex(GetParam()) ==
-      ProfileMenuViewBase::ActionableItem::kSigninAccountButton) {
-    // The sync confirmation dialog was opened after clicking the signin button
-    // in the profile menu. It needs to be manually dismissed to not cause any
-    // crashes during shutdown.
-    EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
-        browser(), base::TimeDelta::FromSeconds(30)));
-  }
-}
-
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuViewBase::ActionableItem kActionableItems_GuestProfile[] =
-    {ProfileMenuViewBase::ActionableItem::kExitProfileButton,
-     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
-     ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
-     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
-     // The first button is added again to finish the cycle and test that
-     // there are no other buttons at the end.
-     ProfileMenuViewBase::ActionableItem::kExitProfileButton};
-
-PROFILE_MENU_CLICK_TEST(kActionableItems_GuestProfile,
-                        ProfileMenuClickTest_GuestProfile) {
-  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-  ui_test_utils::WaitForBrowserToOpen();
-  Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
-      ProfileManager::GetGuestProfilePath());
-  ASSERT_TRUE(guest);
-  // Open a second guest browser window, so the ExitProfileButton is shown.
-  SetTargetBrowser(CreateIncognitoBrowser(guest));
 
   RunTest();
 }
@@ -822,6 +812,105 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
   RunTest();
 }
 
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_GuestProfile[] =
+    {ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+     ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+     // The first button is added again to finish the cycle and test that
+     // there are no other buttons at the end.
+     // Note that the test does not rely on the specific order of running test
+     // instances, but considers the relative order of the actionable items in
+     // this array. So for the last item, it does N+1 steps through the menu (N
+     // being the number of items in the menu) and checks if the last item in
+     // this array triggers the same action as the first one.
+     ProfileMenuViewBase::ActionableItem::kExitProfileButton};
+
+// TODO(https://crbug.com/1125474): Revert to using PROFILE_MENU_CLICK_TEST when
+// non-ephemeral Guest profiles are removed.
+class GuestProfileMenuClickTest : public ProfileMenuClickTest {
+ public:
+  GuestProfileMenuClickTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, false);
+  }
+
+  ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kActionableItems_GuestProfile[index];
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(GuestProfileMenuClickTest);
+};
+
+IN_PROC_BROWSER_TEST_P(GuestProfileMenuClickTest,
+                       ProfileMenuClickTest_GuestProfile) {
+  Browser* browser = CreateGuestBrowser();
+  ASSERT_TRUE(browser);
+
+  // Open a second guest browser window, so the ExitProfileButton is shown.
+  SetTargetBrowser(CreateGuestBrowser());
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GuestProfileMenuClickTest,
+    ::testing::Range(size_t(0), base::size(kActionableItems_GuestProfile)));
+
+// TODO(https://crbug.com/1125474): Remove OS_CHROMEOS and enable for Lacros
+// when supported.
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_EphemeralGuestProfile[] = {
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton};
+
+class EphemeralGuestProfileMenuClickTest : public ProfileMenuClickTest {
+ public:
+  EphemeralGuestProfileMenuClickTest() {
+    EXPECT_TRUE(TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, true));
+  }
+
+  ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kActionableItems_EphemeralGuestProfile[index];
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(EphemeralGuestProfileMenuClickTest);
+};
+
+IN_PROC_BROWSER_TEST_P(EphemeralGuestProfileMenuClickTest,
+                       ProfileMenuClickTest_GuestProfile) {
+  Browser* browser = CreateGuestBrowser();
+  ASSERT_TRUE(browser);
+
+  // Open a second guest browser window, so the ExitProfileButton is shown.
+  SetTargetBrowser(CreateGuestBrowser());
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    EphemeralGuestProfileMenuClickTest,
+    ::testing::Range(size_t(0),
+                     base::size(kActionableItems_EphemeralGuestProfile)));
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) &&
+        // !defined(OS_CHROMEOS))
+
 class ProfileMenuClickKeyAcceleratorTest : public ProfileMenuClickTestBase {
  public:
   ProfileMenuClickKeyAcceleratorTest() = default;
@@ -839,6 +928,11 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuClickKeyAcceleratorTest, FocusOtherProfile) {
   // Open the menu using the keyboard.
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenu(browser(), /*use_mouse=*/false));
 
+  // This test doesn't care about performing the actual menu actions, only
+  // about the histogram recorded.
+  ASSERT_TRUE(profile_menu_view());
+  profile_menu_view()->set_perform_menu_actions_for_testing(false);
+
   // The first other profile menu should be focused when the menu is opened
   // via a key event.
   views::View* focused_view = GetFocusedItem();
@@ -852,5 +946,5 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuClickKeyAcceleratorTest, FocusOtherProfile) {
   histogram_tester_.ExpectUniqueSample(
       "Profile.Menu.ClickedActionableItem",
       ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
-      /*count=*/1);
+      /*expected_count=*/1);
 }

@@ -9,7 +9,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -17,8 +16,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
+#include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -27,8 +27,6 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -36,16 +34,12 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -54,12 +48,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/bookmark_sync_service_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -68,15 +63,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/favicon/core/favicon_service.h"
-#include "components/history/content/browser/content_visit_delegate.h"
-#include "components/history/content/browser/history_database_helper.h"
-#include "components/history/core/browser/history_backend.h"
-#include "components/history/core/browser/history_constants.h"
-#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -84,7 +71,7 @@
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/keyed_service/core/simple_key_map.h"
-#include "components/offline_pages/buildflags/buildflags.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
@@ -97,9 +84,10 @@
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/model/fake_sync_change_processor.h"
-#include "components/sync/model/sync_error_factory_mock.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -117,12 +105,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -147,6 +130,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
@@ -158,13 +142,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "components/offline_pages/core/stub_offline_page_model.h"
-#endif
-
 using base::Time;
-using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using testing::NiceMock;
@@ -174,40 +152,6 @@ namespace {
 
 // Default profile name
 const char kTestingProfile[] = "testing_profile";
-
-std::unique_ptr<KeyedService> BuildHistoryService(
-    content::BrowserContext* context) {
-  return std::make_unique<history::HistoryService>(
-      std::make_unique<ChromeHistoryClient>(
-          BookmarkModelFactory::GetForBrowserContext(context)),
-      std::make_unique<history::ContentVisitDelegate>(context));
-}
-
-std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  std::unique_ptr<InMemoryURLIndex> in_memory_url_index(
-      new InMemoryURLIndex(BookmarkModelFactory::GetForBrowserContext(profile),
-                           HistoryServiceFactory::GetForProfile(
-                               profile, ServiceAccessType::IMPLICIT_ACCESS),
-                           TemplateURLServiceFactory::GetForProfile(profile),
-                           profile->GetPath(), SchemeSet()));
-  in_memory_url_index->Init();
-  return std::move(in_memory_url_index);
-}
-
-std::unique_ptr<KeyedService> BuildBookmarkModel(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  std::unique_ptr<BookmarkModel> bookmark_model(
-      new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
-          BookmarkSyncServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(
-      profile->GetPrefs(), profile->GetPath(), profile->GetIOTaskRunner(),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
-  return std::move(bookmark_model);
-}
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
                               sql::InitStatus status,
@@ -220,15 +164,9 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   const base::FilePath& context_path = context->GetPath();
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
+      content::GetUIThreadTaskRunner({}),
       base::BindRepeating(&TestProfileErrorCallback));
 }
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
-  return std::make_unique<offline_pages::StubOfflinePageModel>();
-}
-#endif
 
 std::unique_ptr<KeyedService> BuildPersonalDataManagerInstanceFor(
     content::BrowserContext* context) {
@@ -247,6 +185,26 @@ const char TestingProfile::kTestUserProfileDir[] = "test-user";
 #else
 const char TestingProfile::kTestUserProfileDir[] = "Default";
 #endif
+
+// static
+bool TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+    base::test::ScopedFeatureList& scoped_feature_list,
+    bool enabled) {
+// This feature is now only supported on Windows, Linux, and Mac.
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (enabled)
+    scoped_feature_list.InitAndEnableFeature(
+        features::kEnableEphemeralGuestProfilesOnDesktop);
+  else
+    scoped_feature_list.InitAndDisableFeature(
+        features::kEnableEphemeralGuestProfilesOnDesktop);
+  return true;
+#else
+  return false;
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) &&
+        // !defined(OS_CHROMEOS))
+}
 
 TestingProfile::TestingProfile() : TestingProfile(base::FilePath()) {}
 
@@ -267,10 +225,10 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
       resource_context_(nullptr),
       delegate_(delegate),
       profile_name_(kTestingProfile),
-      override_policy_connector_is_managed_(base::nullopt) {
+      override_policy_connector_is_managed_(base::nullopt),
+      otr_profile_id_(base::nullopt) {
   if (profile_path_.empty()) {
-    CreateTempProfileDir();
-    profile_path_ = temp_dir_.GetPath();
+    profile_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   }
   Init();
   if (delegate_) {
@@ -294,11 +252,16 @@ TestingProfile::TestingProfile(
     bool allows_browser_windows,
     base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
+#if defined(OS_CHROMEOS)
+    std::unique_ptr<policy::UserCloudPolicyManagerChromeOS> policy_manager,
+#else
     std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
+#endif  // defined(OS_CHROMEOS)
     std::unique_ptr<policy::PolicyService> policy_service,
     TestingFactories testing_factories,
     const std::string& profile_name,
-    base::Optional<bool> override_policy_connector_is_managed)
+    base::Optional<bool> override_policy_connector_is_managed,
+    base::Optional<OTRProfileID> otr_profile_id)
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
@@ -321,14 +284,17 @@ TestingProfile::TestingProfile(
       profile_name_(profile_name),
       override_policy_connector_is_managed_(
           override_policy_connector_is_managed),
+      otr_profile_id_(otr_profile_id),
       policy_service_(std::move(policy_service)) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
+  // Only OffTheRecord profiles have an OTRProfileID.
+  DCHECK(!parent || otr_profile_id_.has_value());
+
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
-    CreateTempProfileDir();
-    profile_path_ = temp_dir_.GetPath();
+    profile_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   }
 
   // Set any testing factories prior to initializing the services.
@@ -352,34 +318,6 @@ TestingProfile::TestingProfile(
   SetSupervisedUserId(supervised_user_id);
 }
 
-void TestingProfile::CreateTempProfileDir() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  if (!temp_dir_.CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create unique temporary directory.";
-
-    // Fallback logic in case we fail to create unique temporary directory.
-    base::FilePath system_tmp_dir;
-    bool success = base::PathService::Get(base::DIR_TEMP, &system_tmp_dir);
-
-    // We're severly screwed if we can't get the system temporary
-    // directory. Die now to avoid writing to the filesystem root
-    // or other bad places.
-    CHECK(success);
-
-    base::FilePath fallback_dir(
-        system_tmp_dir.AppendASCII("TestingProfilePath"));
-    base::DeleteFileRecursively(fallback_dir);
-    base::CreateDirectory(fallback_dir);
-    if (!temp_dir_.Set(fallback_dir)) {
-      // That shouldn't happen, but if it does, try to recover.
-      LOG(ERROR) << "Failed to use a fallback temporary directory.";
-
-      // We're screwed if this fails, see CHECK above.
-      CHECK(temp_dir_.Set(system_tmp_dir));
-    }
-  }
-}
-
 void TestingProfile::Init() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // If threads have been initialized, we should be on the UI thread.
@@ -391,8 +329,12 @@ void TestingProfile::Init() {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
-    set_is_system_profile(profile_path_ ==
-                          profile_manager->GetSystemProfilePath());
+    if (IsOffTheRecord()) {
+      set_is_system_profile(original_profile_->IsSystemProfile());
+    } else {
+      set_is_system_profile(profile_path_ ==
+                            profile_manager->GetSystemProfilePath());
+    }
   }
 
   if (IsOffTheRecord()) {
@@ -439,6 +381,9 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
+  if (guest_session_ && IsEphemeralGuestProfileEnabled())
+    GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
+
   key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
@@ -451,11 +396,11 @@ void TestingProfile::Init() {
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
       factory->GetAccountManager(profile_path_.value());
-  account_manager->Initialize(
-      profile_path_, GetURLLoaderFactory(),
-      base::BindRepeating(&chromeos::DelayNetworkCall,
-                          base::TimeDelta::FromMilliseconds(
-                              chromeos::kDefaultNetworkRetryDelayMS)));
+  chromeos::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
+      base::BindRepeating(
+          [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
+  account_manager->Initialize(profile_path_, GetURLLoaderFactory(),
+                              immediate_callback_runner);
   account_manager->SetPrefService(GetPrefs());
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
@@ -549,8 +494,11 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
-  // If this profile owns an incognito profile, tear it down first.
-  incognito_profile_.reset();
+  if (!profile_destruction_callback_.is_null())
+    std::move(profile_destruction_callback_).Run();
+
+  // If this profile owns OffTheRecord profiles, tear them down first.
+  otr_profiles_.clear();
 
   // Any objects holding live URLFetchers should be deleted before teardown.
   TemplateURLFetcherFactory::ShutdownForProfile(this);
@@ -579,6 +527,16 @@ TestingProfile::~TestingProfile() {
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
 
+  // Make sure SharedProtoDatabase doesn't post delayed tasks anymore.
+  ForEachStoragePartition(
+      this,
+      base::BindRepeating([](content::StoragePartition* storage_partition) {
+        if (auto* provider =
+                storage_partition->GetProtoDatabaseProviderForTesting()) {
+          provider->SetSharedDBDeleteObsoleteDelayForTesting(base::TimeDelta());
+        }
+      }));
+
   // Shutdown storage partitions before we post a task to delete
   // the resource context.
   ShutdownStoragePartitions();
@@ -591,102 +549,28 @@ TestingProfile::~TestingProfile() {
     resource_context_ = nullptr;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ignore_result(temp_dir_.Delete());
 }
 
-void TestingProfile::CreateFaviconService() {
-  // It is up to the caller to create the history service if one is needed.
-  FaviconServiceFactory::GetInstance()->SetTestingFactory(
-      this, FaviconServiceFactory::GetDefaultFactory());
-}
-
-bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
+bool TestingProfile::CreateHistoryService() {
   // Should never be created multiple times.
   DCHECK(!HistoryServiceFactory::GetForProfileWithoutCreating(this));
 
-  if (delete_file) {
-    base::FilePath path = GetPath();
-    path = path.Append(history::kHistoryFilename);
-    if (!base::DeleteFile(path, false) || base::PathExists(path))
-      return false;
-  }
   // This will create and init the history service.
   history::HistoryService* history_service =
       static_cast<history::HistoryService*>(
           HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, base::BindRepeating(&BuildHistoryService)));
-  if (!history_service->Init(
-          no_db, history::HistoryDatabaseParamsForPath(GetPath()))) {
+              this, HistoryServiceFactory::GetDefaultFactory()));
+  if (!history_service) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         this, BrowserContextKeyedServiceFactory::TestingFactory());
     return false;
   }
-  // Some tests expect that CreateHistoryService() will also make the
-  // InMemoryURLIndex available.
-  InMemoryURLIndexFactory::GetInstance()->SetTestingFactory(
-      this, base::BindRepeating(&BuildInMemoryURLIndex));
-  // Disable WebHistoryService by default, since it makes network requests.
-  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(
-      this, BrowserContextKeyedServiceFactory::TestingFactory());
   return true;
-}
-
-void TestingProfile::CreateBookmarkModel(bool delete_file) {
-  if (delete_file) {
-    base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
-    base::DeleteFile(path, false);
-  }
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
-#endif
-  ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
-      this, ManagedBookmarkServiceFactory::GetDefaultFactory());
-  // This creates the BookmarkModel.
-  ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, base::BindRepeating(&BuildBookmarkModel)));
 }
 
 void TestingProfile::CreateWebDataService() {
   WebDataServiceFactory::GetInstance()->SetTestingFactory(
       this, base::BindRepeating(&BuildWebDataService));
-}
-
-void TestingProfile::BlockUntilHistoryBackendDestroyed() {
-  // Only get the history service if it actually exists since the caller of the
-  // test should explicitly call CreateHistoryService to build it.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
-
-  // Nothing to destroy
-  if (!history_service) {
-    return;
-  }
-
-  base::RunLoop run_loop;
-  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
-  HistoryServiceFactory::ShutdownForProfile(this);
-  run_loop.Run();
-}
-
-void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
-  // Only get the history service if it actually exists since the caller of the
-  // test should explicitly call CreateHistoryService to build it.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
-  DCHECK(history_service);
-  InMemoryURLIndex* index = InMemoryURLIndexFactory::GetForProfile(this);
-  if (!index || index->restored())
-    return;
-  base::RunLoop run_loop;
-  HistoryIndexRestoreObserver observer(
-      content::GetDeferredQuitTaskForRunLoop(&run_loop));
-  index->set_restore_cache_observer(&observer);
-  run_loop.Run();
-  index->set_restore_cache_observer(nullptr);
-  DCHECK(index->restored());
 }
 
 void TestingProfile::SetGuestSession(bool guest) {
@@ -737,12 +621,6 @@ std::string TestingProfile::GetProfileUserName() const {
   return profile_name_;
 }
 
-Profile::ProfileType TestingProfile::GetProfileType() const {
-  if (original_profile_)
-    return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
-  return REGULAR_PROFILE;
-}
-
 bool TestingProfile::IsOffTheRecord() {
   return original_profile_;
 }
@@ -752,68 +630,59 @@ bool TestingProfile::IsOffTheRecord() const {
 }
 
 const Profile::OTRProfileID& TestingProfile::GetOTRProfileID() const {
-  // TODO(https://crbug.com//1033903): Remove this variable and add support for
-  // non-primary OTRs.
-  static base::NoDestructor<Profile::OTRProfileID> incognito_profile_id(
-      Profile::OTRProfileID::PrimaryID());
   DCHECK(IsOffTheRecord());
-
-  return *incognito_profile_id;
+  return *otr_profile_id_;
 }
 
 void TestingProfile::SetOffTheRecordProfile(
     std::unique_ptr<Profile> otr_profile) {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(otr_profile);
   DCHECK(!IsOffTheRecord());
-  if (otr_profile)
-    DCHECK_EQ(this, otr_profile->GetOriginalProfile());
-  incognito_profile_ = std::move(otr_profile);
+  DCHECK_EQ(this, otr_profile->GetOriginalProfile());
+  otr_profiles_[otr_profile->GetOTRProfileID()] = std::move(otr_profile);
 }
 
 Profile* TestingProfile::GetOffTheRecordProfile(
     const OTRProfileID& otr_profile_id) {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
-  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
   if (IsOffTheRecord())
-    return this;
-  if (!incognito_profile_) {
+    return original_profile_->GetOffTheRecordProfile(otr_profile_id);
+
+  // Ephemeral Guest profiles do not support Incognito.
+  if (IsEphemeralGuestProfile() && otr_profile_id == OTRProfileID::PrimaryID())
+    return nullptr;
+
+  if (!HasOffTheRecordProfile(otr_profile_id)) {
     TestingProfile::Builder builder;
-    if (IsGuestSession())
+    if (IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
       builder.SetGuestSession();
-    builder.BuildIncognito(this);
+    builder.BuildOffTheRecord(this, otr_profile_id);
+    DCHECK(HasOffTheRecordProfile(otr_profile_id));
   }
-  return incognito_profile_.get();
+
+  return otr_profiles_[otr_profile_id].get();
 }
 
 std::vector<Profile*> TestingProfile::GetAllOffTheRecordProfiles() {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
   std::vector<Profile*> otr_profiles;
 
-  if (incognito_profile_)
-    otr_profiles.push_back(incognito_profile_.get());
+  for (auto& otr : otr_profiles_)
+    otr_profiles.push_back(otr.second.get());
 
   return otr_profiles;
 }
 
 void TestingProfile::DestroyOffTheRecordProfile(Profile* otr_profile) {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
-  incognito_profile_.reset();
-}
-
-void TestingProfile::DestroyOffTheRecordProfile() {
-  DestroyOffTheRecordProfile(incognito_profile_.get());
+  if (HasOffTheRecordProfile(otr_profile->GetOTRProfileID()))
+    otr_profiles_.erase(otr_profile->GetOTRProfileID());
 }
 
 bool TestingProfile::HasOffTheRecordProfile(
     const OTRProfileID& otr_profile_id) {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
-  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
-  return incognito_profile_.get() != nullptr;
+  return base::Contains(otr_profiles_, otr_profile_id);
 }
 
 bool TestingProfile::HasAnyOffTheRecordProfile() {
-  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
-  return incognito_profile_.get() != nullptr;
+  return !otr_profiles_.empty();
 }
 
 Profile* TestingProfile::GetOriginalProfile() {
@@ -977,11 +846,10 @@ TestingProfile::GetStorageNotificationService() {
   return nullptr;
 }
 
-bool TestingProfile::IsSameProfile(Profile *profile) {
+bool TestingProfile::IsSameOrParent(Profile* profile) {
   if (this == profile)
     return true;
-  Profile* otr_profile = incognito_profile_.get();
-  return otr_profile && profile == otr_profile;
+  return profile && profile->GetOriginalProfile() == this;
 }
 
 base::Time TestingProfile::GetStartTime() const {
@@ -1001,7 +869,7 @@ TestingProfile::GetPolicySchemaRegistryService() {
 #if defined(OS_CHROMEOS)
 policy::UserCloudPolicyManagerChromeOS*
 TestingProfile::GetUserCloudPolicyManagerChromeOS() {
-  return nullptr;
+  return user_cloud_policy_manager_.get();
 }
 
 policy::ActiveDirectoryPolicyManager*
@@ -1059,10 +927,6 @@ void TestingProfile::SetCreationTimeForTesting(base::Time creation_time) {
   start_time_ = creation_time;
 }
 
-bool TestingProfile::ShouldEnableOutOfBlinkCors() {
-  return network::features::ShouldEnableOutOfBlinkCorsForTesting();
-}
-
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return nullptr;
 }
@@ -1076,7 +940,7 @@ storage::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 }
 
 content::SSLHostStateDelegate* TestingProfile::GetSSLHostStateDelegate() {
-  return nullptr;
+  return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 content::PermissionControllerDelegate*
@@ -1126,16 +990,20 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 bool TestingProfile::IsGuestSession() const {
-  return guest_session_;
+  return guest_session_ && !IsEphemeralGuestProfileEnabled();
 }
 
-bool TestingProfile::IsNewProfile() {
+bool TestingProfile::IsEphemeralGuestProfile() const {
+  return guest_session_ && IsEphemeralGuestProfileEnabled();
+}
+
+bool TestingProfile::IsNewProfile() const {
   if (is_new_profile_.has_value())
     return is_new_profile_.value();
   return Profile::IsNewProfile();
 }
 
-Profile::ExitType TestingProfile::GetLastSessionExitType() {
+Profile::ExitType TestingProfile::GetLastSessionExitType() const {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
@@ -1195,10 +1063,18 @@ void TestingProfile::Builder::SetSupervisedUserId(
   supervised_user_id_ = supervised_user_id;
 }
 
+#if defined(OS_CHROMEOS)
+void TestingProfile::Builder::SetUserCloudPolicyManagerChromeOS(
+    std::unique_ptr<policy::UserCloudPolicyManagerChromeOS>
+        user_cloud_policy_manager) {
+  user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
+}
+#else
 void TestingProfile::Builder::SetUserCloudPolicyManager(
     std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager) {
   user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
 }
+#endif
 
 void TestingProfile::Builder::SetPolicyService(
     std::unique_ptr<policy::PolicyService> policy_service) {
@@ -1239,14 +1115,20 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
       std::move(testing_factories_), profile_name_,
-      override_policy_connector_is_managed_));
+      override_policy_connector_is_managed_, base::Optional<OTRProfileID>()));
 }
 
-TestingProfile* TestingProfile::Builder::BuildIncognito(
-    TestingProfile* original_profile) {
+TestingProfile* TestingProfile::Builder::BuildOffTheRecord(
+    TestingProfile* original_profile,
+    const OTRProfileID& otr_profile_id) {
   DCHECK(!build_called_);
   DCHECK(original_profile);
   build_called_ = true;
+
+  // Ephemeral guest profiles do not support Incognito.
+  if (original_profile->IsEphemeralGuestProfile() &&
+      otr_profile_id == OTRProfileID::PrimaryID())
+    return nullptr;
 
   // Note: Owned by |original_profile|.
   return new TestingProfile(
@@ -1258,5 +1140,11 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
       std::move(testing_factories_), profile_name_,
-      override_policy_connector_is_managed_);
+      override_policy_connector_is_managed_,
+      base::Optional<OTRProfileID>(otr_profile_id));
+}
+
+TestingProfile* TestingProfile::Builder::BuildIncognito(
+    TestingProfile* original_profile) {
+  return BuildOffTheRecord(original_profile, OTRProfileID::PrimaryID());
 }

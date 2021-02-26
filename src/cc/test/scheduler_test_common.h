@@ -12,6 +12,7 @@
 
 #include "base/time/time.h"
 #include "cc/metrics/compositor_timing_history.h"
+#include "cc/metrics/dropped_frame_counter.h"
 #include "cc/scheduler/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,6 +46,7 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   void SetPrepareTilesDurationEstimate(base::TimeDelta duration);
   void SetActivateDurationEstimate(base::TimeDelta duration);
   void SetDrawDurationEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameSentTime(base::TimeTicks time);
 
   base::TimeDelta BeginMainFrameQueueDurationCriticalEstimate() const override;
   base::TimeDelta BeginMainFrameQueueDurationNotCriticalEstimate()
@@ -67,6 +69,7 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 
   std::unique_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_owned_;
+  DroppedFrameCounter dropped_counter;
   std::unique_ptr<CompositorFrameReportingController>
       reporting_controller_owned_;
 

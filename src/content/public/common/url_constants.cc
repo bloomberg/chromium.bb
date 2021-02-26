@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "content/public/common/url_constants.h"
+
+#include "build/build_config.h"
 
 namespace content {
 
@@ -36,6 +37,7 @@ const char kChromeUIProcessInternalsHost[] = "process-internals";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIServiceWorkerInternalsHost[] = "serviceworker-internals";
 const char kChromeUITracingHost[] = "tracing";
+const char kChromeUIUkmHost[] = "ukm";
 const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
 
 const char kChromeUIBadCastCrashURL[] = "chrome://badcastcrash/";
@@ -60,6 +62,7 @@ const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors/";
 const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash/";
 const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang/";
 const char kChromeUIProcessInternalsURL[] = "chrome://process-internals";
+const char kChromeUIUntrustedResourcesURL[] = "chrome-untrusted://resources/";
 #if defined(OS_ANDROID)
 const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 #endif

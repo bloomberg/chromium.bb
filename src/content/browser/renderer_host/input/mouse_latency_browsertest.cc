@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/public/browser/render_view_host.h"
@@ -76,17 +77,14 @@ namespace content {
 class TracingRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   TracingRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                          RenderProcessHost* process,
+                          AgentSchedulingGroupHost& agent_scheduling_group,
                           int32_t routing_id,
-                          mojo::PendingRemote<mojom::Widget> widget,
                           bool hidden)
       : RenderWidgetHostImpl(delegate,
-                             process,
+                             agent_scheduling_group,
                              routing_id,
-                             std::move(widget),
                              hidden,
-                             std::make_unique<FrameTokenMessageQueue>()) {
-  }
+                             std::make_unique<FrameTokenMessageQueue>()) {}
 
   void OnMouseEventAck(
       const MouseEventWithLatencyInfo& event,
@@ -110,12 +108,11 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
 
   std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
-      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden) override {
     return std::make_unique<TracingRenderWidgetHost>(
-        delegate, process, routing_id, std::move(widget_interface), hidden);
+        delegate, agent_scheduling_group, routing_id, hidden);
   }
 
  private:
@@ -361,8 +358,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
                        gfx::Vector2dF(250, 250));
   // The following wait is the upper bound for gpu swap completed callback. It
   // is two frames to account for double buffering.
-  MainThreadFrameObserver observer(RenderWidgetHostImpl::From(
-      shell()->web_contents()->GetRenderViewHost()->GetWidget()));
+  MainThreadFrameObserver observer(GetWidgetHost());
   observer.Wait();
   observer.Wait();
 

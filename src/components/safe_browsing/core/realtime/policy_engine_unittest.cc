@@ -40,8 +40,8 @@ class RealTimePolicyEngineTest : public PlatformTest {
   }
 
   bool CanPerformFullURLLookup(bool is_off_the_record) {
-    return RealTimePolicyEngine::CanPerformFullURLLookup(&pref_service_,
-                                                         is_off_the_record);
+    return RealTimePolicyEngine::CanPerformFullURLLookup(
+        &pref_service_, is_off_the_record, /*variations_service=*/nullptr);
   }
 
   bool CanPerformFullURLLookupWithToken(
@@ -49,7 +49,18 @@ class RealTimePolicyEngineTest : public PlatformTest {
       syncer::SyncService* sync_service,
       signin::IdentityManager* identity_manager) {
     return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-        &pref_service_, is_off_the_record, sync_service, identity_manager);
+        &pref_service_, is_off_the_record, sync_service, identity_manager,
+        /*variations_service=*/nullptr);
+  }
+
+  bool CanPerformEnterpriseFullURLLookup(bool has_valid_dm_token,
+                                         bool is_off_the_record) {
+    return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+        &pref_service_, has_valid_dm_token, is_off_the_record);
+  }
+
+  bool IsInExcludedCountry(const std::string& country_code) {
+    return RealTimePolicyEngine::IsInExcludedCountry(country_code);
   }
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
@@ -84,7 +95,7 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
                                {{kRealTimeUrlLookupMemoryThresholdMb,
                                  base::NumberToString(
                                      memory_size_threshold)}}}},
-      /* disabled_features */ {});
+      /* disabled_features */ {kRealTimeUrlLookupEnabledForAllAndroidDevices});
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
@@ -163,11 +174,17 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnhancedProtection) {
-  base::test::ScopedFeatureList feature_list;
   pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
-  ASSERT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
-  feature_list.InitAndEnableFeature(kEnhancedProtection);
-  ASSERT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(kEnhancedProtection);
+    ASSERT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kEnhancedProtection);
+    ASSERT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  }
 }
 
 TEST_F(RealTimePolicyEngineTest,
@@ -206,7 +223,8 @@ TEST_F(RealTimePolicyEngineTest,
     feature_list.InitWithFeatures(
         /* enabled_features */ {kEnhancedProtection,
                                 kRealTimeUrlLookupEnabledForEP},
-        /* disabled_features */ {kRealTimeUrlLookupEnabledForEPWithToken});
+        /* disabled_features */ {kRealTimeUrlLookupEnabledForEPWithToken,
+                                 kRealTimeUrlLookupEnabledWithToken});
     EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
     EXPECT_FALSE(CanPerformFullURLLookupWithToken(
         /* is_off_the_record */ false, &sync_service, identity_manager));
@@ -296,7 +314,9 @@ TEST_F(RealTimePolicyEngineTest,
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookupWithToken_EnhancedProtection) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kEnhancedProtection);
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kEnhancedProtection},
+      /* disabled_features */ {kRealTimeUrlLookupEnabledWithToken});
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env =
       std::make_unique<signin::IdentityTestEnvironment>();
   signin::IdentityManager* identity_manager =
@@ -323,12 +343,57 @@ TEST_F(RealTimePolicyEngineTest,
       /*is_off_the_record=*/false, &sync_service, identity_manager));
 }
 
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_EnabledMainFrameOnlyForNonEpUser) {
+TEST_F(RealTimePolicyEngineTest, TestCanPerformEnterpriseFullURLLookup) {
+  // Is off the record profile.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(/*has_valid_dm_token=*/true,
+                                                   /*is_off_the_record=*/true));
+  }
+  // Feature flag disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
+  }
+  // No valid DM token.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/false, /*is_off_the_record=*/false));
+  }
+  // Policy disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    pref_service_.SetUserPref(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(REAL_TIME_CHECK_DISABLED));
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
+  }
+  // Policy enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    pref_service_.SetUserPref(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED));
+    EXPECT_TRUE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
+  }
+}
+
+TEST_F(
+    RealTimePolicyEngineTest,
+    TestCanPerformFullURLLookup_EnabledMainFrameOnlyForSubresourceDisabledUser) {
   for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
     ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-        resource_type, /*enhanced_protection_enabled=*/false);
+        resource_type, /*can_rt_check_subresource_url=*/false);
     switch (resource_type) {
       case ResourceType::kMainFrame:
         EXPECT_TRUE(enabled);
@@ -340,12 +405,13 @@ TEST_F(RealTimePolicyEngineTest,
   }
 }
 
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_EnabledNonMainFrameForEpUser) {
+TEST_F(
+    RealTimePolicyEngineTest,
+    TestCanPerformFullURLLookup_EnabledNonMainFrameForSubresourceEnabledUser) {
   for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
     ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-        resource_type, /*enhanced_protection_enabled=*/true);
+        resource_type, /*can_rt_check_subresource_url=*/true);
     switch (resource_type) {
       case ResourceType::kMainFrame:
       case ResourceType::kSubFrame:
@@ -355,6 +421,20 @@ TEST_F(RealTimePolicyEngineTest,
         EXPECT_FALSE(enabled);
         break;
     }
+  }
+}
+
+TEST_F(RealTimePolicyEngineTest, TestIsInExcludedCountry) {
+  const std::string non_excluded_countries[] = {"be", "br", "ca", "de", "es",
+                                                "fr", "ie", "in", "jp", "nl",
+                                                "ru", "se", "us"};
+  for (auto country : non_excluded_countries) {
+    EXPECT_FALSE(IsInExcludedCountry(country));
+  }
+
+  const std::string excluded_countries[] = {"cn"};
+  for (auto country : excluded_countries) {
+    EXPECT_TRUE(IsInExcludedCountry(country));
   }
 }
 

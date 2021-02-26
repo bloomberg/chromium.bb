@@ -7,6 +7,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <iron-iconset-svg name="oobe-welcome-32" size="32">
   <svg>
     <defs>
@@ -52,7 +56,7 @@
   </svg>
 </iron-iconset-svg>
 
-<dom-module id="oobe-welcome-md">
+<dom-module id="oobe-welcome-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_welcome.css">
@@ -105,7 +109,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="ok-button-language" text-key="oobeOKButtonText"
-            inverse on-tap="closeLanguageSection_"></oobe-text-button>
+            inverse on-click="closeLanguageSection_"></oobe-text-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="accessibilityScreen" role="dialog" hidden has-buttons
@@ -118,9 +122,8 @@
       </hd-iron-icon>
       <div slot="footer" class="layout vertical scroll">
         <oobe-a11y-option id="accessibility-spoken-feedback"
-        checked="[[a11yStatus.spokenFeedbackEnabled]]"
+            checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableSpokenFeedback"
             label-for-aria="[[i18nDynamic(locale, 'spokenFeedbackOption')]]"
             class="focus-on-show">
           <span slot="title">
@@ -135,7 +138,7 @@
         </oobe-a11y-option>
         <oobe-a11y-option id="accessibility-large-cursor"
             checked="[[a11yStatus.largeCursorEnabled]]"
-            on-change="onA11yOptionChanged_" chrome-message="enableLargeCursor"
+            on-change="onA11yOptionChanged_"
             label-for-aria="[[i18nDynamic(locale, 'largeCursorOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'largeCursorOption')]]
@@ -149,7 +152,7 @@
         </oobe-a11y-option>
         <oobe-a11y-option id="accessibility-high-contrast"
             checked="[[a11yStatus.highContrastEnabled]]"
-            on-change="onA11yOptionChanged_" chrome-message="enableHighContrast"
+            on-change="onA11yOptionChanged_"
             label-for-aria="[[i18nDynamic(locale, 'highContrastOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'highContrastOption')]]
@@ -164,7 +167,6 @@
         <oobe-a11y-option id="accessibility-screen-magnifier"
             checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableScreenMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'screenMagnifierOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'screenMagnifierOption')]]
@@ -179,7 +181,6 @@
         <oobe-a11y-option id="accessibility-select-to-speak"
             checked="[[a11yStatus.selectToSpeakEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableSelectToSpeak"
             label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
             id="selectToSpeakOobeOption">
           <span slot="title">
@@ -195,7 +196,6 @@
         <oobe-a11y-option id="accessibility-docked-magnifier"
             checked="[[a11yStatus.dockedMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableDockedMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'dockedMagnifierOption')]]
@@ -210,7 +210,6 @@
         <oobe-a11y-option id="accessibility-virtual-keyboard"
             checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableVirtualKeyboard"
             label-for-aria="[[i18nDynamic(locale, 'virtualKeyboardOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'virtualKeyboardOption')]]
@@ -226,7 +225,7 @@
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="ok-button-accessibility"
             text-key="oobeOKButtonText" inverse
-            on-tap="closeAccessibilitySection_"></oobe-text-button>
+            on-click="closeAccessibilitySection_"></oobe-text-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="timezoneScreen" role="dialog" hidden has-buttons
@@ -251,7 +250,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="ok-button-timezone" text-key="oobeOKButtonText"
-            inverse on-tap="closeTimezoneSection_"></oobe-text-button>
+            inverse on-click="closeTimezoneSection_"></oobe-text-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="oobeAdvancedOptionsScreen" role="dialog" hidden has-buttons
@@ -263,7 +262,7 @@
       <div slot="footer" class="layout vertical">
         <div class="flex layout vertical center-justified
             advanced-options-entry">
-          <button on-tap="onCFMBootstrappingClicked_">
+          <button on-click="onCFMBootstrappingClicked_">
             <div class="advanced-option-title">
               [[i18nDynamic(locale, 'advancedOptionsCFMSetupTitle')]]
             </div>
@@ -274,7 +273,7 @@
         </div>
         <div class="flex layout vertical center-justified
             advanced-options-entry">
-          <button on-tap="onDeviceRequisitionClicked_">
+          <button on-click="onDeviceRequisitionClicked_">
             <div class="advanced-option-title">
               [[i18nDynamic(locale, 'advancedOptionsDeviceRequisitionTitle')]]
             </div>
@@ -287,7 +286,7 @@
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="ok-button-advanced-options"
             text-key="oobeOKButtonText" inverse
-            on-tap="closeAdvancedOptionsSection_"></oobe-text-button>
+            on-click="closeAdvancedOptionsSection_"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

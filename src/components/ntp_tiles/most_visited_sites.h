@@ -21,7 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
@@ -31,6 +31,8 @@
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/search/repeatable_queries/repeatable_queries_service.h"
+#include "components/search/repeatable_queries/repeatable_queries_service_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
@@ -82,7 +84,8 @@ class MostVisitedSitesSupervisor {
 
 // Tracks the list of most visited sites.
 class MostVisitedSites : public history::TopSitesObserver,
-                         public MostVisitedSitesSupervisor::Observer {
+                         public MostVisitedSitesSupervisor::Observer,
+                         public RepeatableQueriesServiceObserver {
  public:
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
@@ -106,7 +109,6 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual ~HomepageClient() = default;
     virtual bool IsHomepageTileEnabled() const = 0;
     virtual GURL GetHomepageUrl() const = 0;
-    // TODO(https://crbug.com/862753): Extract this to another interface.
     virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
   };
 
@@ -124,6 +126,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   //  optional and if null, the associated features will be disabled.
   MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
+                   RepeatableQueriesService* repeatable_queries,
                    suggestions::SuggestionsService* suggestions,
                    std::unique_ptr<PopularSites> popular_sites,
                    std::unique_ptr<CustomLinksManager> custom_links,
@@ -147,8 +150,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Sets the observer, and immediately fetches the current suggestions.
   // Does not take ownership of |observer|, which must outlive this object and
-  // must not be null.
-  void SetMostVisitedURLsObserver(Observer* observer, size_t num_sites);
+  // must not be null. |max_num_sites| indicates the the maximum number of most
+  // visited sites to return.
+  void SetMostVisitedURLsObserver(Observer* observer, size_t max_num_sites);
 
   // Sets the client that provides platform-specific homepage preferences.
   // When used to replace an existing client, the new client will first be
@@ -210,8 +214,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // must be enabled.
   void UndoCustomLinkAction();
 
-  void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
-  void ClearBlacklistedUrls();
+  void AddOrRemoveBlockedUrl(const GURL& url, bool add_url);
+  void ClearBlockedUrls();
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;
@@ -242,6 +246,13 @@ class MostVisitedSites : public history::TopSitesObserver,
       const std::set<std::string>& hosts_to_skip,
       const std::string& host);
 
+  // Returns the maximum number of most visited sites to return. The return
+  // value is |max_num_sites_| which is ntp_tiles::kMaxNumMostVisited for
+  // Desktop, unless custom links are enabled in which case an additional tile
+  // may be returned making up to ntp_tiles::kMaxNumCustomLinks custom links
+  // including the "Add shortcut" button.
+  size_t GetMaxNumSites() const;
+
   // Initialize the query to Top Sites. Called if the SuggestionsService
   // returned no data.
   void InitiateTopSitesQuery();
@@ -252,6 +263,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Callback for when data is available from TopSites.
   void OnMostVisitedURLsAvailable(
       const history::MostVisitedURLList& visited_list);
+
+  NTPTilesVector InsertRepeatableQueryTiles(NTPTilesVector tiles);
 
   // Callback for when an update is reported by the SuggestionsService.
   void OnSuggestionsProfileChanged(
@@ -334,8 +347,13 @@ class MostVisitedSites : public history::TopSitesObserver,
   void TopSitesChanged(history::TopSites* top_sites,
                        ChangeReason change_reason) override;
 
+  // RepeatableQueriesServiceObserver implementation.
+  void OnRepeatableQueriesUpdated() override;
+  void OnRepeatableQueriesServiceShuttingDown() override;
+
   PrefService* prefs_;
   scoped_refptr<history::TopSites> top_sites_;
+  RepeatableQueriesService* repeatable_queries_;
   suggestions::SuggestionsService* suggestions_service_;
   std::unique_ptr<PopularSites> const popular_sites_;
   std::unique_ptr<CustomLinksManager> const custom_links_;
@@ -347,6 +365,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   Observer* observer_;
 
   // The maximum number of most visited sites to return.
+  // Do not use directly. Use GetMaxNumSites() instead.
   size_t max_num_sites_;
 
   // False if custom links is disabled and Most Visited sites should be returned
@@ -360,8 +379,12 @@ class MostVisitedSites : public history::TopSitesObserver,
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>
       suggestions_subscription_;
 
-  ScopedObserver<history::TopSites, history::TopSitesObserver>
-      top_sites_observer_{this};
+  base::ScopedObservation<history::TopSites, history::TopSitesObserver>
+      top_sites_observation_{this};
+
+  base::ScopedObservation<RepeatableQueriesService,
+                          RepeatableQueriesServiceObserver>
+      repeatable_queries_observation_{this};
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       custom_links_subscription_;

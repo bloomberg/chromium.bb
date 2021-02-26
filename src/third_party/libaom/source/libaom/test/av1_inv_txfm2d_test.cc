@@ -272,6 +272,7 @@ class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  private:
   LbdInvTxfm2dFunc target_func_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1LbdInvTxfm2d);
 
 void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TxType tx_type, TxSize tx_size,
                                           int run_times, int gt_int16) {

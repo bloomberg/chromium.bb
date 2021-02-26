@@ -9,10 +9,9 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
@@ -365,8 +364,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
  public:
   CertificateReportingServiceTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
-        io_task_runner_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})) {}
+        io_task_runner_(content::GetIOThreadTaskRunner({})) {}
 
   ~CertificateReportingServiceTest() override {}
 
@@ -385,8 +383,9 @@ class CertificateReportingServiceTest : public ::testing::Test {
         test_helper_->server_public_key(),
         test_helper_->server_public_key_version(), kMaxReportCountInQueue,
         base::TimeDelta::FromHours(24), clock_.get(),
-        base::Bind(&CertificateReportingServiceObserver::OnServiceReset,
-                   base::Unretained(&service_observer_))));
+        base::BindRepeating(
+            &CertificateReportingServiceObserver::OnServiceReset,
+            base::Unretained(&service_observer_))));
     service_observer_.WaitForReset();
 
     event_histogram_tester_.reset(new EventHistogramTester());

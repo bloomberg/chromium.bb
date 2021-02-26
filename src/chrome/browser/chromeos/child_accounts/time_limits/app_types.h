@@ -10,7 +10,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace chromeos {
 namespace app_time {
@@ -67,11 +67,11 @@ enum class AppNotification {
 
 enum class ChromeAppActivityState {
   // The browser is active and hosts urls in its active tab which are not
-  // whitelisted.
+  // allowlisted.
   kActive,
 
-  // Same as |kActive| except the urls the browser hosts are whitelisted.
-  kActiveWhitelisted,
+  // Same as |kActive| except the urls the browser hosts are allowlisted.
+  kActiveAllowlisted,
 
   // The browser window is not active.
   kInactive,

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package cast.common;
+
+option optimize_for = LITE_RUNTIME;
+
+// A Cast service info.
+message ServiceInfo {
+  oneof endpoint_address {
+    // gRPC endpoint (http://, unix:/ etc).
+    string grpc_endpoint = 1;
+  }
+}

@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -36,8 +37,14 @@ const char kDarkNumBytesKey[] = "dark_num_bytes";
 const char kAnimatedUrlKey[] = "animated_url";
 const char kDarkAnimatedUrlKey[] = "dark_animated_url";
 const char kLogUrlKey[] = "log_url";
+const char kDarkLogUrlKey[] = "dark_log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
+const char kDarkCtaLogUrlKey[] = "dark_cta_log_url";
 const char kShortLinkKey[] = "short_link";
+const char kWidthPx[] = "width_px";
+const char kHeightPx[] = "height_px";
+const char kDarkWidthPx[] = "dark_width_px";
+const char kDarkHeightPx[] = "dark_height_px";
 const char kIframeWidthPx[] = "iframe_width_px";
 const char kIframeHeightPx[] = "iframe_height_px";
 const char kDarkBackgroundColorKey[] = "dark_background_color";
@@ -220,7 +227,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   std::string animated_url;
   std::string dark_animated_url;
   std::string log_url;
+  std::string dark_log_url;
   std::string cta_log_url;
+  std::string dark_cta_log_url;
   std::string short_link;
   if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
@@ -231,7 +240,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kDarkAnimatedUrlKey, &dark_animated_url) ||
       !dict->GetString(kLogUrlKey, &log_url) ||
+      !dict->GetString(kDarkLogUrlKey, &dark_log_url) ||
       !dict->GetString(kCtaLogUrlKey, &cta_log_url) ||
+      !dict->GetString(kDarkCtaLogUrlKey, &dark_cta_log_url) ||
       !dict->GetString(kShortLinkKey, &short_link) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetString(kDarkMimeTypeKey, &metadata->dark_mime_type) ||
@@ -251,6 +262,10 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kDarkShareButtonIcon,
                        &metadata->dark_share_button_icon) ||
       !dict->GetString(kDarkShareButtonBg, &metadata->dark_share_button_bg) ||
+      !dict->GetInteger(kWidthPx, &metadata->width_px) ||
+      !dict->GetInteger(kHeightPx, &metadata->height_px) ||
+      !dict->GetInteger(kDarkWidthPx, &metadata->dark_width_px) ||
+      !dict->GetInteger(kDarkHeightPx, &metadata->dark_height_px) ||
       !dict->GetInteger(kIframeWidthPx, &metadata->iframe_width_px) ||
       !dict->GetInteger(kIframeHeightPx, &metadata->iframe_height_px) ||
       !dict->GetString(kDarkBackgroundColorKey,
@@ -265,7 +280,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   metadata->animated_url = GURL(animated_url);
   metadata->dark_animated_url = GURL(dark_animated_url);
   metadata->log_url = GURL(log_url);
+  metadata->dark_log_url = GURL(dark_log_url);
   metadata->cta_log_url = GURL(cta_log_url);
+  metadata->dark_cta_log_url = GURL(dark_cta_log_url);
   metadata->short_link = GURL(short_link);
 
   return metadata;
@@ -286,7 +303,9 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kDarkAnimatedUrlKey, metadata.dark_animated_url.spec());
   dict.SetString(kLogUrlKey, metadata.log_url.spec());
+  dict.SetString(kDarkLogUrlKey, metadata.dark_log_url.spec());
   dict.SetString(kCtaLogUrlKey, metadata.cta_log_url.spec());
+  dict.SetString(kDarkCtaLogUrlKey, metadata.dark_cta_log_url.spec());
   dict.SetString(kShortLinkKey, metadata.short_link.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetString(kDarkMimeTypeKey, metadata.dark_mime_type);
@@ -304,6 +323,10 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetDouble(kDarkShareButtonOpacity, metadata.dark_share_button_opacity);
   dict.SetString(kDarkShareButtonIcon, metadata.dark_share_button_icon);
   dict.SetString(kDarkShareButtonBg, metadata.dark_share_button_bg);
+  dict.SetInteger(kWidthPx, metadata.width_px);
+  dict.SetInteger(kHeightPx, metadata.height_px);
+  dict.SetInteger(kDarkWidthPx, metadata.dark_width_px);
+  dict.SetInteger(kDarkHeightPx, metadata.dark_height_px);
   dict.SetInteger(kIframeWidthPx, metadata.iframe_width_px);
   dict.SetInteger(kIframeHeightPx, metadata.iframe_height_px);
   dict.SetString(kDarkBackgroundColorKey, metadata.dark_background_color);
@@ -374,20 +397,20 @@ void LogoCache::WriteLogo(
   base::FilePath dark_logo_path = GetDarkLogoPath();
   base::FilePath metadata_path = GetMetadataPath();
 
-  if (!base::DeleteFile(metadata_path, false))
+  if (!base::DeleteFile(metadata_path))
     return;
 
   if (encoded_image &&
       base::WriteFile(logo_path, encoded_image->front_as<char>(),
                       static_cast<int>(encoded_image->size())) == -1) {
-    base::DeleteFile(logo_path, false);
+    base::DeleteFile(logo_path);
     return;
   }
   if (dark_encoded_image &&
       base::WriteFile(dark_logo_path, dark_encoded_image->front_as<char>(),
                       static_cast<int>(dark_encoded_image->size())) == -1) {
-    base::DeleteFile(logo_path, false);
-    base::DeleteFile(dark_logo_path, false);
+    base::DeleteFile(logo_path);
+    base::DeleteFile(dark_logo_path);
     return;
   }
 
@@ -395,9 +418,9 @@ void LogoCache::WriteLogo(
 }
 
 void LogoCache::DeleteLogoAndMetadata() {
-  base::DeleteFile(GetLogoPath(), false);
-  base::DeleteFile(GetDarkLogoPath(), false);
-  base::DeleteFile(GetMetadataPath(), false);
+  base::DeleteFile(GetLogoPath());
+  base::DeleteFile(GetDarkLogoPath());
+  base::DeleteFile(GetMetadataPath());
 }
 
 bool LogoCache::EnsureCacheDirectoryExists() {

@@ -254,6 +254,10 @@ void TestOpusDtx::Perform() {
 
   acm_send_->ModifyEncoder([](std::unique_ptr<AudioEncoder>* encoder_ptr) {
     (*encoder_ptr)->SetDtx(true);
+    // The default bitrate will not generate frames recognized as CN on desktop
+    // since the frames will be encoded as CELT. Set a low target bitrate to get
+    // consistent behaviour across platforms.
+    (*encoder_ptr)->OnReceivedTargetAudioBitrate(24000);
   });
 
   expects[static_cast<int>(AudioFrameType::kEmptyFrame)] = 1;

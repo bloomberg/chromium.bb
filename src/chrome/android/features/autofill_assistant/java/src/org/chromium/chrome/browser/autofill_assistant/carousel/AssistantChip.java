@@ -5,13 +5,21 @@
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+
+import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A chip to display to the user.
  */
+@JNINamespace("autofill_assistant")
 public class AssistantChip {
     @IntDef({Type.CHIP_ASSISTIVE, Type.BUTTON_FILLED_BLUE, Type.BUTTON_HAIRLINE})
     @Retention(RetentionPolicy.SOURCE)
@@ -26,7 +34,7 @@ public class AssistantChip {
 
     /**
      * An icon that should be displayed next to the text. This is the java version of the ChipIcon
-     * enum in //components/autofill_assistant/browser/service.proto. DO NOT change this without
+     * enum in //components/autofill_assistant/browser/model.proto. DO NOT change this without
      * adapting that proto enum.
      */
     @IntDef({Icon.NONE, Icon.CLEAR, Icon.DONE, Icon.REFRESH})
@@ -34,14 +42,17 @@ public class AssistantChip {
     public @interface Icon {
         int NONE = 0;
 
-        // https://icons.googleplex.com/#icon=ic_clear
+        // https://icons.googleplex.com/#icon=clear
         int CLEAR = 1;
 
-        // https://icons.googleplex.com/#icon=ic_done
+        // https://icons.googleplex.com/#icon=done
         int DONE = 2;
 
-        // https://icons.googleplex.com/#icon=ic_refresh
+        // https://icons.googleplex.com/#icon=refresh
         int REFRESH = 3;
+
+        // https://icons.googleplex.com/#icon=more_vert
+        int OVERFLOW = 4;
     }
 
     /**
@@ -67,32 +78,33 @@ public class AssistantChip {
      */
     private final boolean mSticky;
 
-    private final String mIdentifier;
-
     /** The callback that will be triggered when this chip is clicked. */
-    private final Runnable mSelectedListener;
+    private Runnable mSelectedListener;
+
+    /**
+     * The list of popup items to show when the chip is tapped. When specified, the regular {@code
+     * mSelectedListener} will be automatically replaced with a callback to display the popup menu.
+     */
+    private @Nullable List<String> mPopupItems;
+
+    /** The callback to invoke when the n'th item in {@code mPopupItems} is selected. */
+    private @Nullable Callback<Integer> mOnPopupItemSelected;
 
     public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
-            boolean sticky, String identifier, Runnable selectedListener) {
+            boolean sticky, boolean visible) {
         mType = type;
         mIcon = icon;
         mText = text;
         mDisabled = disabled;
-        mVisible = true;
         mSticky = sticky;
-        mIdentifier = identifier;
-        mSelectedListener = selectedListener;
+        mVisible = visible;
     }
 
-    public AssistantChip(AssistantChip other) {
-        mType = other.mType;
-        mIcon = other.mIcon;
-        mText = other.mText;
-        mDisabled = other.mDisabled;
-        mVisible = other.mVisible;
-        mSticky = other.mSticky;
-        mIdentifier = other.mIdentifier;
-        mSelectedListener = other.mSelectedListener;
+    public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
+            boolean sticky, boolean visible, Runnable selectedListener) {
+        this(type, icon, text, disabled, sticky, visible);
+        assert selectedListener != null;
+        mSelectedListener = selectedListener;
     }
 
     public int getType() {
@@ -127,12 +139,25 @@ public class AssistantChip {
         return mSticky;
     }
 
-    public String getIdentifier() {
-        return mIdentifier;
+    public @Nullable Runnable getSelectedListener() {
+        return mSelectedListener;
     }
 
-    public Runnable getSelectedListener() {
-        return mSelectedListener;
+    public void setSelectedListener(Runnable selectedListener) {
+        mSelectedListener = selectedListener;
+    }
+
+    public void setPopupItems(List<String> popupItems, Callback<Integer> onSelectedCallback) {
+        mPopupItems = popupItems;
+        mOnPopupItemSelected = onSelectedCallback;
+    }
+
+    public @Nullable List<String> getPopupItems() {
+        return mPopupItems;
+    }
+
+    public @Nullable Callback<Integer> getOnPopupItemSelectedCallback() {
+        return mOnPopupItemSelected;
     }
 
     @Override
@@ -144,7 +169,37 @@ public class AssistantChip {
         AssistantChip that = (AssistantChip) other;
         return this.getType() == that.getType() && this.getText().equals(that.getText())
                 && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky()
-                && this.getIdentifier().equals(that.getIdentifier())
                 && this.isDisabled() == that.isDisabled() && this.isVisible() == that.isVisible();
+    }
+
+    /**
+     * Creates a hairline assistant chip with an empty callback. The callback needs to be bound
+     * before the view is inflated.
+     */
+    @CalledByNative
+    public static AssistantChip createHairlineAssistantChip(
+            int icon, String text, boolean disabled, boolean sticky, boolean visible) {
+        return new AssistantChip(
+                AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled, sticky, visible);
+    }
+
+    /**
+     * Creates a blue-filled assistant chip with an empty callback. The callback needs to be bound
+     * before the view is inflated.
+     */
+    @CalledByNative
+    public static AssistantChip createHighlightedAssistantChip(
+            int icon, String text, boolean disabled, boolean sticky, boolean visible) {
+        return new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky, visible);
+    }
+
+    @CalledByNative
+    private static List<AssistantChip> createChipList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addChipToList(List<AssistantChip> list, AssistantChip chip) {
+        list.add(chip);
     }
 }

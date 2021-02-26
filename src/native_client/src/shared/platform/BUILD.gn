@@ -84,7 +84,7 @@ static_library("platform") {
       ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "linux/nacl_clock.c",
         "linux/nacl_host_dir.c",

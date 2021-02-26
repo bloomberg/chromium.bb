@@ -358,7 +358,7 @@ static int query_formats(AVFilterContext *ctx)
                 return ret;
             }
         }
-        if ((ret = ff_formats_ref(formats, &ctx->inputs[0]->out_formats)) < 0)
+        if ((ret = ff_formats_ref(formats, &ctx->inputs[0]->outcfg.formats)) < 0)
             return ret;
     }
     if (ctx->outputs[0]) {
@@ -372,7 +372,7 @@ static int query_formats(AVFilterContext *ctx)
                 return ret;
             }
         }
-        if ((ret = ff_formats_ref(formats, &ctx->outputs[0]->in_formats)) < 0)
+        if ((ret = ff_formats_ref(formats, &ctx->outputs[0]->incfg.formats)) < 0)
             return ret;
     }
 
@@ -647,8 +647,6 @@ static int scale_slice(AVFilterLink *link, AVFrame *out_buf, AVFrame *cur_pic, s
                          out,out_stride);
 }
 
-#define TS2T(ts, tb) ((ts) == AV_NOPTS_VALUE ? NAN : (double)(ts) * av_q2d(tb))
-
 static int scale_frame(AVFilterLink *link, AVFrame *in, AVFrame **frame_out)
 {
     AVFilterContext *ctx = link->dst;
@@ -882,9 +880,18 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     return ret;
 }
 
+#if FF_API_CHILD_CLASS_NEXT
 static const AVClass *child_class_next(const AVClass *prev)
 {
     return prev ? NULL : sws_get_class();
+}
+#endif
+
+static const AVClass *child_class_iterate(void **iter)
+{
+    const AVClass *c = *iter ? NULL : sws_get_class();
+    *iter = (void*)(uintptr_t)c;
+    return c;
 }
 
 #define OFFSET(x) offsetof(ScaleContext, x)
@@ -944,7 +951,10 @@ static const AVClass scale_class = {
     .option           = scale_options,
     .version          = LIBAVUTIL_VERSION_INT,
     .category         = AV_CLASS_CATEGORY_FILTER,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = child_class_next,
+#endif
+    .child_class_iterate = child_class_iterate,
 };
 
 static const AVFilterPad avfilter_vf_scale_inputs[] = {
@@ -984,7 +994,10 @@ static const AVClass scale2ref_class = {
     .option           = scale_options,
     .version          = LIBAVUTIL_VERSION_INT,
     .category         = AV_CLASS_CATEGORY_FILTER,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = child_class_next,
+#endif
+    .child_class_iterate = child_class_iterate,
 };
 
 static const AVFilterPad avfilter_vf_scale2ref_inputs[] = {

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+DEPOT_TOOLS=$(dirname "$0")/..
+
+PYTHON_BIN_DIR="$DEPOT_TOOLS/$(cat $DEPOT_TOOLS/python_bin_reldir.txt | xargs echo)"
+PATH="$PYTHON_BIN_DIR":"$PATH"
+"$PYTHON_BIN_DIR/python" "$@"

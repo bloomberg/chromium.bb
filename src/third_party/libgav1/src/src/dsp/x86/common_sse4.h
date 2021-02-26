@@ -17,6 +17,7 @@
 #ifndef LIBGAV1_SRC_DSP_X86_COMMON_SSE4_H_
 #define LIBGAV1_SRC_DSP_X86_COMMON_SSE4_H_
 
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_SSE4_1
@@ -25,6 +26,7 @@
 #include <smmintrin.h>
 
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -91,6 +93,14 @@ inline __m128i Load2x2(const void* src1, const void* src2) {
   return _mm_cvtsi32_si128(val1 | (val2 << 16));
 }
 
+// Load 2 uint8_t values into |lane| * 2 and |lane| * 2 + 1.
+template <int lane>
+inline __m128i Load2(const void* const buf, __m128i val) {
+  uint16_t temp;
+  memcpy(&temp, buf, 2);
+  return _mm_insert_epi16(val, temp, lane);
+}
+
 inline __m128i Load4(const void* src) {
   // With new compilers such as clang 8.0.0 we can use the new _mm_loadu_si32
   // intrinsic. Both _mm_loadu_si32(src) and the code here are compiled into a
@@ -136,6 +146,46 @@ inline __m128i LoadAligned16(const void* a) {
 }
 
 //------------------------------------------------------------------------------
+// Load functions to avoid MemorySanitizer's use-of-uninitialized-value warning.
+
+inline __m128i MaskOverreads(const __m128i source,
+                             const ptrdiff_t over_read_in_bytes) {
+  __m128i dst = source;
+#if LIBGAV1_MSAN
+  if (over_read_in_bytes > 0) {
+    __m128i mask = _mm_set1_epi8(-1);
+    for (ptrdiff_t i = 0; i < over_read_in_bytes; ++i) {
+      mask = _mm_srli_si128(mask, 1);
+    }
+    dst = _mm_and_si128(dst, mask);
+  }
+#else
+  static_cast<void>(over_read_in_bytes);
+#endif
+  return dst;
+}
+
+inline __m128i LoadLo8Msan(const void* const source,
+                           const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreads(LoadLo8(source), over_read_in_bytes + 8);
+}
+
+inline __m128i LoadHi8Msan(const __m128i v, const void* source,
+                           const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreads(LoadHi8(v, source), over_read_in_bytes);
+}
+
+inline __m128i LoadAligned16Msan(const void* const source,
+                                 const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreads(LoadAligned16(source), over_read_in_bytes);
+}
+
+inline __m128i LoadUnaligned16Msan(const void* const source,
+                                   const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreads(LoadUnaligned16(source), over_read_in_bytes);
+}
+
+//------------------------------------------------------------------------------
 // Store functions.
 
 inline void Store2(void* dst, const __m128i x) {
@@ -154,6 +204,10 @@ inline void StoreLo8(void* a, const __m128i v) {
 
 inline void StoreHi8(void* a, const __m128i v) {
   _mm_storeh_pi(static_cast<__m64*>(a), _mm_castsi128_ps(v));
+}
+
+inline void StoreAligned16(void* a, const __m128i v) {
+  _mm_store_si128(static_cast<__m128i*>(a), v);
 }
 
 inline void StoreUnaligned16(void* a, const __m128i v) {

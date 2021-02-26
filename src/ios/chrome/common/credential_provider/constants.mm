@@ -14,6 +14,8 @@
 #error "This file requires ARC support."
 #endif
 
+using app_group::ApplicationGroup;
+
 namespace {
 
 // Filename for the archivable storage.
@@ -22,24 +24,51 @@ NSString* const kArchivableStorageFilename = @"credential_store";
 // Credential Provider dedicated shared folder name.
 NSString* const kCredentialProviderContainer = @"credential_provider";
 
+// Used to generate the key for the app group user defaults containing the
+// managed user ID to be validated in the extension.
+NSString* const kUserDefaultsCredentialProviderManagedUserID =
+    @"kUserDefaultsCredentialProviderManagedUserID";
+
+// Used to generate a unique AppGroupPrefix to differentiate between different
+// versions of Chrome running in the same device.
+NSString* AppGroupPrefix() {
+  NSDictionary* infoDictionary = [NSBundle mainBundle].infoDictionary;
+  NSString* prefix = infoDictionary[@"MainAppBundleID"];
+  if (prefix) {
+    return prefix;
+  }
+  return [NSBundle mainBundle].bundleIdentifier;
+}
+
 }  // namespace
 
 NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
-      containerURLForSecurityApplicationGroupIdentifier:app_group::
-                                                            ApplicationGroup()];
-  DCHECK(groupURL) << "This should never be nil. Maybe check the entitlements.";
+      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];
-  return [credentialProviderURL
-      URLByAppendingPathComponent:kArchivableStorageFilename];
+  NSString* filename =
+      [AppGroupPrefix() stringByAppendingString:kArchivableStorageFilename];
+  return [credentialProviderURL URLByAppendingPathComponent:filename];
+}
+
+NSString* AppGroupUserDefaultsCredentialProviderManagedUserID() {
+  return [AppGroupPrefix()
+      stringByAppendingString:kUserDefaultsCredentialProviderManagedUserID];
+}
+
+NSArray<NSString*>* UnusedUserDefaultsCredentialProviderKeys() {
+  return @[
+    @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted.V0",
+    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted.V0"
+  ];
 }
 
 NSString* const kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted =
-    @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted";
+    @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted.V1";
 
 NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted =
-    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted";
+    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted.V1";
 
 NSString* const kUserDefaultsCredentialProviderConsentVerified =
     @"UserDefaultsCredentialProviderConsentVerified";

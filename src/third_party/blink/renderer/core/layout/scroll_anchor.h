@@ -108,7 +108,7 @@ class CORE_EXPORT ScrollAnchor final {
   // Notifies us that an object will be removed from the layout tree.
   void NotifyRemoved(LayoutObject*);
 
-  void Trace(Visitor* visitor) { visitor->Trace(scroller_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(scroller_); }
 
  private:
   void FindAnchor();
@@ -157,8 +157,10 @@ class CORE_EXPORT ScrollAnchor final {
   // Which corner of m_anchorObject's bounding box to anchor to.
   Corner corner_;
 
-  // Location of m_layoutObject relative to scroller at time of
-  // notifyBeforeLayout().
+  // Location of anchor_object_ relative to scroller block-start at the time of
+  // NotifyBeforeLayout(). Note that the block-offset is a logical coordinate,
+  // which makes a difference if we're in a block-flipped writing-mode
+  // (vertical-rl).
   LayoutPoint saved_relative_offset_;
 
   // Previously calculated css selector that uniquely locates the current
@@ -175,6 +177,11 @@ class CORE_EXPORT ScrollAnchor final {
   // True iff an adjustment check has been queued with the FrameView but not yet
   // performed.
   bool queued_;
+
+  // This is set to true if the last anchor we have selected is a
+  // 'content-visibility: auto' element that did not yet have a layout after
+  // becoming visible.
+  bool anchor_is_cv_auto_without_layout_ = false;
 };
 
 }  // namespace blink

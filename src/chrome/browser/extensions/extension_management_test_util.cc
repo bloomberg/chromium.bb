@@ -46,7 +46,7 @@ ExtensionManagementPrefUpdaterBase::~ExtensionManagementPrefUpdaterBase() {
 void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->RemoveWithoutPathExpansion(id, nullptr);
+  pref_->RemoveKey(id);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
@@ -57,7 +57,7 @@ void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
 
 // Helper functions for 'installation_mode' manipulation -----------------------
 
-void ExtensionManagementPrefUpdaterBase::SetBlacklistedByDefault(bool value) {
+void ExtensionManagementPrefUpdaterBase::SetBlocklistedByDefault(bool value) {
   pref_->SetString(make_path(schema::kWildcard, schema::kInstallationMode),
                    value ? schema::kBlocked : schema::kAllowed);
 }
@@ -337,8 +337,8 @@ ExtensionManagementPolicyUpdater::~ExtensionManagementPolicyUpdater() {
       ->Get(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()))
       .Set(policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
-           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD, TakePref(),
-           nullptr);
+           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+           std::move(*TakePref()), nullptr);
   provider_->UpdatePolicy(std::move(policies_));
 }
 

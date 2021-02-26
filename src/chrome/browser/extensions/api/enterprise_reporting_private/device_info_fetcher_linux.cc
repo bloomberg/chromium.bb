@@ -13,9 +13,11 @@
 #include <string>
 
 #include "base/environment.h"
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -34,6 +36,20 @@ std::string GetDeviceModel() {
 }
 
 std::string GetOsVersion() {
+  base::FilePath os_release_file("/etc/os-release");
+  std::string release_info;
+  base::StringPairs values;
+  if (base::PathExists(os_release_file) &&
+      base::ReadFileToStringWithMaxSize(os_release_file, &release_info, 8192) &&
+      base::SplitStringIntoKeyValuePairs(release_info, '=', '\n', &values)) {
+    auto version_id = std::find_if(values.begin(), values.end(), [](auto v) {
+      return v.first == "VERSION_ID";
+    });
+    if (version_id != values.end()) {
+      return base::TrimString(version_id->second, "\"", base::TRIM_ALL)
+          .as_string();
+    }
+  }
   return base::SysInfo::OperatingSystemVersion();
 }
 
@@ -92,8 +108,9 @@ enterprise_reporting_private::SettingValue GetScreenlockSecured() {
 // root device identifier, then locate its parent and get its type.
 enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   struct stat info;
-  // First figure out the device identifier.
-  stat("/", &info);
+  // First figure out the device identifier. Fail fast if this fails.
+  if (stat("/", &info) != 0)
+    return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
   int dev_major = major(info.st_dev);
   // The parent identifier will have the same major and minor 0. If and only if
   // it is a dm device can it also be an encrypted device (as evident from the
@@ -101,16 +118,46 @@ enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   base::FilePath dev_uuid(
       base::StringPrintf("/sys/dev/block/%d:0/dm/uuid", dev_major));
   std::string uuid;
-  if (base::PathExists(dev_uuid) &&
-      base::ReadFileToStringWithMaxSize(dev_uuid, &uuid, 1024)) {
-    // The device uuid starts with the driver type responsible for it. If it is
-    // the "crypt" driver then it is an encrypted device.
-    bool is_encrypted =
-        base::StartsWith(uuid, "crypt-", base::CompareCase::INSENSITIVE_ASCII);
-    return is_encrypted ? enterprise_reporting_private::SETTING_VALUE_ENABLED
-                        : enterprise_reporting_private::SETTING_VALUE_DISABLED;
+  if (base::PathExists(dev_uuid)) {
+    if (base::ReadFileToStringWithMaxSize(dev_uuid, &uuid, 1024)) {
+      // The device uuid starts with the driver type responsible for it. If it
+      // is the "crypt" driver then it is an encrypted device.
+      bool is_encrypted = base::StartsWith(
+          uuid, "crypt-", base::CompareCase::INSENSITIVE_ASCII);
+      return is_encrypted
+                 ? enterprise_reporting_private::SETTING_VALUE_ENABLED
+                 : enterprise_reporting_private::SETTING_VALUE_DISABLED;
+    }
+    return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
   }
-  return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
+  return enterprise_reporting_private::SETTING_VALUE_DISABLED;
+}
+
+std::vector<std::string> GetMacAddresses() {
+  std::vector<std::string> result;
+  base::DirReaderPosix reader("/sys/class/net");
+  if (!reader.IsValid())
+    return result;
+  while (reader.Next()) {
+    std::string name = reader.name();
+    if (name == "." || name == "..")
+      continue;
+    std::string address;
+    base::FilePath address_file(
+        base::StringPrintf("/sys/class/net/%s/address", name.c_str()));
+    // Filter out the loopback interface here.
+    if (!base::PathExists(address_file) ||
+        !base::ReadFileToStringWithMaxSize(address_file, &address, 1024) ||
+        base::StartsWith(address, "00:00:00:00:00:00",
+                         base::CompareCase::SENSITIVE)) {
+      continue;
+    }
+
+    base::TrimWhitespaceASCII(address, base::TrimPositions::TRIM_TRAILING,
+                              &address);
+    result.push_back(address);
+  }
+  return result;
 }
 
 }  // namespace
@@ -128,6 +175,7 @@ DeviceInfo DeviceInfoFetcherLinux::Fetch() {
   device_info.serial_number = GetSerialNumber();
   device_info.screen_lock_secured = GetScreenlockSecured();
   device_info.disk_encrypted = GetDiskEncrypted();
+  device_info.mac_addresses = GetMacAddresses();
   return device_info;
 }
 

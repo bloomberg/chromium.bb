@@ -17,6 +17,11 @@ export class EduAccountLoginBrowserProxy {
   updateEduCoexistenceFlowResult(result) {}
 
   /**
+   * @return {Promise<boolean>}
+   */
+  isNetworkReady() {}
+
+  /**
    * Send 'getParents' request to the handler. The promise will be resolved
    * with the list of parents (Array<ParentAccount>).
    * @return {Promise<Array<ParentAccount>>}
@@ -56,6 +61,13 @@ export class EduAccountLoginBrowserProxy {
    */
   completeLogin(credentials, eduLoginParams) {}
 
+  /**
+   * Send 'getAccounts' message to the handler. The promise will be resolved
+   * with the list of emails of accounts in session.
+   * @return {Promise<Array<string>>}
+   */
+  getAccounts() {}
+
   /** Send 'dialogClose' message to close the login dialog. */
   dialogClose() {}
 }
@@ -67,6 +79,11 @@ export class EduAccountLoginBrowserProxyImpl {
   /** @override */
   updateEduCoexistenceFlowResult(result) {
     chrome.send('updateEduCoexistenceFlowResult', [result]);
+  }
+
+  /** @override */
+  isNetworkReady() {
+    return sendWithPromise('isNetworkReady');
   }
 
   /** @override */
@@ -97,6 +114,11 @@ export class EduAccountLoginBrowserProxyImpl {
   /** @override */
   completeLogin(credentials, eduLoginParams) {
     chrome.send('completeLogin', [credentials, eduLoginParams]);
+  }
+
+  /** @override */
+  getAccounts() {
+    return sendWithPromise('getAccounts');
   }
 
   /** @override */

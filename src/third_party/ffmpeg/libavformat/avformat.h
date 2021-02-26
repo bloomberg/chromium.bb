@@ -1120,7 +1120,6 @@ typedef struct AVStream {
      * -1   -> probing finished
      *  0   -> no probing requested
      * rest -> perform probing with request_probe being the minimum score to accept.
-     * NOT PART OF PUBLIC API
      */
     int request_probe;
     /**
@@ -1166,7 +1165,6 @@ typedef struct AVStream {
 
     /**
      * Timestamp offset added to timestamps before muxing
-     * NOT PART OF PUBLIC API
      */
     int64_t mux_ts_offset;
 
@@ -2009,12 +2007,6 @@ void av_format_inject_global_side_data(AVFormatContext *s);
  */
 enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method(const AVFormatContext* ctx);
 
-typedef struct AVPacketList {
-    AVPacket pkt;
-    struct AVPacketList *next;
-} AVPacketList;
-
-
 /**
  * @defgroup lavf_core Core functions
  * @ingroup libavf
@@ -2191,7 +2183,8 @@ uint8_t *av_stream_new_side_data(AVStream *stream,
  *
  * @param stream stream
  * @param type desired side information type
- * @param size pointer for side information size to store (optional)
+ * @param size If supplied, *size will be set to the size of the side data
+ *             or to zero if the desired side data is not present.
  * @return pointer to data if present or NULL otherwise
  */
 uint8_t *av_stream_get_side_data(const AVStream *stream,

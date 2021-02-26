@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
-jumbo_component("views_examples_lib") {
+component("views_examples_lib") {
   testonly = true
 
   sources = [
@@ -45,8 +44,8 @@ jumbo_component("views_examples_lib") {
     "layout_example_base.h",
     "link_example.cc",
     "link_example.h",
-    "login_bubble_dialog.cc",
-    "login_bubble_dialog.h",
+    "login_bubble_dialog_example.cc",
+    "login_bubble_dialog_example.h",
     "menu_example.cc",
     "menu_example.h",
     "message_box_example.cc",
@@ -169,6 +168,13 @@ source_set("views_examples_proc") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+  if (is_chromeos) {
+    sources += [
+      "examples_views_delegate_chromeos.cc",
+      "examples_views_delegate_chromeos.h",
+    ]
+    deps += [ "//ui/wm:test_support" ]
+  }
 }
 
 executable("views_examples") {
@@ -186,7 +192,7 @@ executable("views_examples") {
   ]
 }
 
-jumbo_component("views_examples_with_content_lib") {
+component("views_examples_with_content_lib") {
   testonly = true
   sources = [
     "examples_window_with_content.cc",
@@ -263,6 +269,8 @@ copy("views_examples_resources_pak") {
 }
 
 test("views_examples_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "examples_unittest.cc",
     "examples_unittest_main.cc",

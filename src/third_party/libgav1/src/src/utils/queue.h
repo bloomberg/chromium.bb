@@ -73,6 +73,13 @@ class Queue {
     return elements_[back];
   }
 
+  // Clears the queue.
+  void Clear() {
+    while (!Empty()) {
+      Pop();
+    }
+  }
+
   // Returns true if the queue is empty.
   bool Empty() const { return size_ == 0; }
 

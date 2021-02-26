@@ -68,7 +68,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable<IDBRequest>,
                                   public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
  public:
   using Source = IDBObjectStoreOrIDBIndexOrIDBCursor;
@@ -149,6 +148,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     size_t PopulateForNewEvent(const char* trace_event_name);
 
    private:
+    friend class IDBRequest;
+
     // The name of the async trace events tracked by this instance.
     //
     // Null is used to signal that the instance is empty, so the event name
@@ -180,7 +181,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   ~IDBRequest() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   ScriptValue result(ScriptState*, ExceptionState&);
@@ -270,6 +271,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void HandleResponse(Vector<std::unique_ptr<IDBValue>>);
   void HandleResponse(int64_t);
   void HandleResponse();
+  void HandleResponse(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
+          receiver);
 
   // Only used in webkitGetDatabaseNames(), which is deprecated and hopefully
   // going away soon.

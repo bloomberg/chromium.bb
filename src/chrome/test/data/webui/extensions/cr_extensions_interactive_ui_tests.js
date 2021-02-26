@@ -10,7 +10,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Test fixture for interactive Polymer Extensions elements.
@@ -31,9 +30,14 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
     ];
   }
 
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
+  // The name of the mocha suite. Should be overridden by subclasses.
+  get suiteName() {
+    return null;
+  }
+
+  /** @param {string} testName The name of the test to run. */
+  runMochaTest(testName) {
+    runMochaTest(this.suiteName, testName);
   }
 };
 
@@ -60,4 +64,22 @@ var CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
 // Disabled due to flakiness, see https://crbug.com/945654
 TEST_F('CrExtensionsOptionsPageTest', 'DISABLED_All', function() {
   mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrExtensionsShortcutInputTest =
+    class extends CrExtensionsInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/shortcut_input_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return extension_shortcut_input_tests.suiteName;
+  }
+};
+
+TEST_F('CrExtensionsShortcutInputTest', 'Basic', function() {
+  this.runMochaTest(extension_shortcut_input_tests.TestNames.Basic);
 });

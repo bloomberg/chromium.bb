@@ -8,12 +8,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
@@ -28,6 +30,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -36,6 +39,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -47,13 +51,13 @@ namespace {
 class TestModuleScriptLoaderClient final
     : public GarbageCollected<TestModuleScriptLoaderClient>,
       public ModuleScriptLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptLoaderClient);
-
  public:
   TestModuleScriptLoaderClient() = default;
   ~TestModuleScriptLoaderClient() override = default;
 
-  void Trace(Visitor* visitor) override { visitor->Trace(module_script_); }
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(module_script_);
+  }
 
   void NotifyNewSingleModuleFinished(ModuleScript* module_script) override {
     was_notify_finished_ = true;
@@ -108,14 +112,14 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     return MakeGarbageCollected<DocumentModuleScriptFetcher>(pass_key);
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ScriptState> script_state_;
   Vector<ModuleRequest> requests_;
 };
 
-void ModuleScriptLoaderTestModulator::Trace(Visitor* visitor) {
+void ModuleScriptLoaderTestModulator::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   DummyModulator::Trace(visitor);
 }
@@ -185,10 +189,13 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* fetch_context = MakeGarbageCollected<MockFetchContext>();
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
-  fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
-                          base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                          MakeGarbageCollected<TestLoaderFactory>()));
+  fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      properties->MakeDetachable(), fetch_context,
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      MakeGarbageCollected<TestLoaderFactory>(
+          platform_->GetURLLoaderMockFactory()),
+      MakeGarbageCollected<MockContextLifecycleNotifier>()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
 }
@@ -197,10 +204,13 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   auto* fetch_context = MakeGarbageCollected<MockFetchContext>();
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
-  fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
-                          base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                          MakeGarbageCollected<TestLoaderFactory>()));
+  fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      properties->MakeDetachable(), fetch_context,
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      MakeGarbageCollected<TestLoaderFactory>(
+          platform_->GetURLLoaderMockFactory()),
+      MakeGarbageCollected<MockContextLifecycleNotifier>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       url_, mojom::blink::ScriptType::kModule, "GlobalScopeName", "UserAgent",
@@ -210,11 +220,14 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       nullptr /* worker_clients */, nullptr /* content_settings_client */,
       network::mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault, MakeGarbageCollected<WorkletModuleResponsesMap>(),
+      mojom::blink::V8CacheOptions::kDefault,
+      MakeGarbageCollected<WorkletModuleResponsesMap>(),
       mojo::NullRemote() /* browser_interface_broker */,
       BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
       base::UnguessableToken::Create() /* agent_cluster_id */);
-  global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
+  creation_params->parent_context_token =
+      LocalFrameToken(GetFrame().GetFrameToken());
+  global_scope_ = MakeGarbageCollected<FakeWorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame(),
       false /* create_microtask_queue */);
   global_scope_->ScriptController()->Initialize(NullURL());
@@ -491,7 +504,8 @@ void ModuleScriptLoaderTest::TestFetchURL(
     TestModuleScriptLoaderClient* client) {
   KURL url("https://example.test/module.js");
   url_test_helpers::RegisterMockedURLLoad(
-      url, test::CoreTestDataPath("module.js"), "text/javascript");
+      url, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
 
   auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),

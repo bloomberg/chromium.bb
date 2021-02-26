@@ -11,6 +11,8 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -22,6 +24,8 @@
 
 namespace ash {
 namespace {
+
+using ::chromeos::WindowStateType;
 
 constexpr gfx::Rect kInitialBounds(0, 0, 100, 100);
 
@@ -39,13 +43,13 @@ class TestClientControlledStateDelegate
   }
 
   void HandleBoundsRequest(WindowState* window_state,
-                           ash::WindowStateType requested_state,
+                           WindowStateType requested_state,
                            const gfx::Rect& bounds,
                            int64_t display_id) override {
     requested_bounds_ = bounds;
     if (requested_state != window_state->GetStateType()) {
-      DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
-             requested_state == ash::WindowStateType::kRightSnapped);
+      DCHECK(requested_state == WindowStateType::kLeftSnapped ||
+             requested_state == WindowStateType::kRightSnapped);
       old_state_ = window_state->GetStateType();
       new_state_ = requested_state;
     }
@@ -84,18 +88,13 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   TestWidgetDelegate() = default;
   ~TestWidgetDelegate() override = default;
 
-  // views::WidgetDelegateView:
-  bool CanResize() const override { return can_snap_; }
-  bool CanMaximize() const override { return can_snap_; }
-
   void EnableSnap() {
-    can_snap_ = true;
+    SetCanMaximize(true);
+    SetCanResize(true);
     GetWidget()->OnSizeConstraintsChanged();
   }
 
  private:
-  bool can_snap_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
@@ -576,6 +575,51 @@ TEST_F(ClientControlledStateTest, DisconnectPrimary) {
   ASSERT_NE(old_primary_id, screen->GetPrimaryDisplay().id());
   EXPECT_EQ(delegate()->display_id(), screen->GetPrimaryDisplay().id());
   EXPECT_EQ(bounds, delegate()->requested_bounds());
+}
+
+TEST_F(ClientControlledStateTest,
+       WmEventNormalIsResolvedToMaximizeInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ASSERT_EQ(true, Shell::Get()->tablet_mode_controller()->InTabletMode());
+  window_state()->window()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      aura::client::kResizeBehaviorCanMaximize);
+
+  const WMEvent normal_event(WM_EVENT_NORMAL);
+  window_state()->OnWMEvent(&normal_event);
+
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
+}
+
+TEST_F(ClientControlledStateTest,
+       IgnoreWmEventWhenWindowIsInTransitionalSnappedState) {
+  auto* split_view_controller =
+      SplitViewController::Get(window_state()->window());
+
+  widget_delegate()->EnableSnap();
+  split_view_controller->SnapWindow(window_state()->window(),
+                                    SplitViewController::SnapPosition::RIGHT);
+
+  EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsSnapped());
+
+  // Ensures the window is in a transitional snapped state.
+  EXPECT_TRUE(split_view_controller->IsWindowInTransitionalState(
+      window_state()->window()));
+  EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsSnapped());
+
+  // Ignores WMEvent if in a transitional state.
+  widget()->Maximize();
+  EXPECT_NE(WindowStateType::kMaximized, delegate()->new_state());
+
+  // Applies snap request.
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsSnapped());
+
+  // After exiting the transitional state, works normally.
+  widget()->Maximize();
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
 }
 
 }  // namespace ash

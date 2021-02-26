@@ -16,6 +16,7 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
@@ -266,6 +267,9 @@ bool BrowserViewRenderer::OnDrawHardware() {
   DCHECK(current_compositor_frame_consumer_);
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
 
+  const bool did_invalidate = did_invalidate_since_last_draw_;
+  did_invalidate_since_last_draw_ = false;
+
   if (!CanOnDraw()) {
     return false;
   }
@@ -315,7 +319,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
       external_draw_constraints_.transform, offscreen_pre_raster_, dip_scale_,
-      std::move(requests));
+      std::move(requests), did_invalidate);
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
@@ -343,8 +347,8 @@ bool BrowserViewRenderer::DoUpdateParentDrawData() {
 
   content::SynchronousCompositor* compositor = FindCompositor(id);
   if (compositor) {
-    compositor_->DidPresentCompositorFrames(std::move(new_timing_details),
-                                            frame_token);
+    compositor->DidPresentCompositorFrames(std::move(new_timing_details),
+                                           frame_token);
   }
 
   if (external_draw_constraints_ == new_constraints)
@@ -397,6 +401,7 @@ void BrowserViewRenderer::ReturnUsedResources(
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
+  did_invalidate_since_last_draw_ = false;
   return CanOnDraw() && CompositeSW(canvas);
 }
 
@@ -416,7 +421,7 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   }
 
   SkPictureRecorder recorder;
-  SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
+  SkCanvas* rec_canvas = recorder.beginRecording(width, height);
   if (compositor_) {
     {
       // Reset scroll back to the origin, will go back to the old
@@ -734,14 +739,14 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
   // BrowserViewRenderer::ScrollTo.
   if (max_scroll_offset_unscaled_.x()) {
     scroll_offset.set_x(
-        gfx::ToRoundedInt((scroll_offset_unscaled.x() * max_offset.x()) /
-                          max_scroll_offset_unscaled_.x()));
+        base::ClampRound((scroll_offset_unscaled.x() * max_offset.x()) /
+                         max_scroll_offset_unscaled_.x()));
   }
 
   if (max_scroll_offset_unscaled_.y()) {
     scroll_offset.set_y(
-        gfx::ToRoundedInt((scroll_offset_unscaled.y() * max_offset.y()) /
-                          max_scroll_offset_unscaled_.y()));
+        base::ClampRound((scroll_offset_unscaled.y() * max_offset.y()) /
+                         max_scroll_offset_unscaled_.y()));
   }
 
   DCHECK_LE(0, scroll_offset.x());
@@ -892,6 +897,7 @@ void BrowserViewRenderer::PostInvalidate(
   if (compositor != compositor_)
     return;
 
+  did_invalidate_since_last_draw_ = true;
   client_->PostInvalidate();
 }
 

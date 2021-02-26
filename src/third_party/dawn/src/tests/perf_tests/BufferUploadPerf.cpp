@@ -22,8 +22,8 @@ namespace {
     constexpr unsigned int kNumIterations = 50;
 
     enum class UploadMethod {
-        SetSubData,
-        CreateBufferMapped,
+        WriteBuffer,
+        MappedAtCreation,
     };
 
     // Perf delta exists between ranges [0, 1MB] vs [1MB, MAX_SIZE).
@@ -37,11 +37,11 @@ namespace {
         BufferSize_16MB = 16 * 1024 * 1024,
     };
 
-    struct BufferUploadParams : DawnTestParam {
-        BufferUploadParams(const DawnTestParam& param,
+    struct BufferUploadParams : AdapterTestParam {
+        BufferUploadParams(const AdapterTestParam& param,
                            UploadMethod uploadMethod,
                            UploadSize uploadSize)
-            : DawnTestParam(param), uploadMethod(uploadMethod), uploadSize(uploadSize) {
+            : AdapterTestParam(param), uploadMethod(uploadMethod), uploadSize(uploadSize) {
         }
 
         UploadMethod uploadMethod;
@@ -49,14 +49,14 @@ namespace {
     };
 
     std::ostream& operator<<(std::ostream& ostream, const BufferUploadParams& param) {
-        ostream << static_cast<const DawnTestParam&>(param);
+        ostream << static_cast<const AdapterTestParam&>(param);
 
         switch (param.uploadMethod) {
-            case UploadMethod::SetSubData:
-                ostream << "_SetSubData";
+            case UploadMethod::WriteBuffer:
+                ostream << "_WriteBuffer";
                 break;
-            case UploadMethod::CreateBufferMapped:
-                ostream << "_CreateBufferMapped";
+            case UploadMethod::MappedAtCreation:
+                ostream << "_MappedAtCreation";
                 break;
         }
 
@@ -92,7 +92,7 @@ class BufferUploadPerf : public DawnPerfTestWithParams<BufferUploadParams> {
     }
     ~BufferUploadPerf() override = default;
 
-    void TestSetUp() override;
+    void SetUp() override;
 
   private:
     void Step() override;
@@ -101,8 +101,8 @@ class BufferUploadPerf : public DawnPerfTestWithParams<BufferUploadParams> {
     std::vector<uint8_t> data;
 };
 
-void BufferUploadPerf::TestSetUp() {
-    DawnPerfTestWithParams<BufferUploadParams>::TestSetUp();
+void BufferUploadPerf::SetUp() {
+    DawnPerfTestWithParams<BufferUploadParams>::SetUp();
 
     wgpu::BufferDescriptor desc = {};
     desc.size = data.size();
@@ -113,27 +113,28 @@ void BufferUploadPerf::TestSetUp() {
 
 void BufferUploadPerf::Step() {
     switch (GetParam().uploadMethod) {
-        case UploadMethod::SetSubData: {
+        case UploadMethod::WriteBuffer: {
             for (unsigned int i = 0; i < kNumIterations; ++i) {
-                dst.SetSubData(0, data.size(), data.data());
+                queue.WriteBuffer(dst, 0, data.data(), data.size());
             }
-            // Make sure all SetSubData's are flushed.
+            // Make sure all WriteBuffer's are flushed.
             queue.Submit(0, nullptr);
             break;
         }
 
-        case UploadMethod::CreateBufferMapped: {
+        case UploadMethod::MappedAtCreation: {
             wgpu::BufferDescriptor desc = {};
             desc.size = data.size();
             desc.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::MapWrite;
+            desc.mappedAtCreation = true;
 
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
             for (unsigned int i = 0; i < kNumIterations; ++i) {
-                auto result = device.CreateBufferMapped(&desc);
-                memcpy(result.data, data.data(), data.size());
-                result.buffer.Unmap();
-                encoder.CopyBufferToBuffer(result.buffer, 0, dst, 0, data.size());
+                wgpu::Buffer buffer = device.CreateBuffer(&desc);
+                memcpy(buffer.GetMappedRange(0, data.size()), data.data(), data.size());
+                buffer.Unmap();
+                encoder.CopyBufferToBuffer(buffer, 0, dst, 0, data.size());
             }
 
             wgpu::CommandBuffer commands = encoder.Finish();
@@ -150,7 +151,7 @@ TEST_P(BufferUploadPerf, Run) {
 DAWN_INSTANTIATE_PERF_TEST_SUITE_P(BufferUploadPerf,
                                    {D3D12Backend(), MetalBackend(), OpenGLBackend(),
                                     VulkanBackend()},
-                                   {UploadMethod::SetSubData, UploadMethod::CreateBufferMapped},
+                                   {UploadMethod::WriteBuffer, UploadMethod::MappedAtCreation},
                                    {UploadSize::BufferSize_1KB, UploadSize::BufferSize_64KB,
                                     UploadSize::BufferSize_1MB, UploadSize::BufferSize_4MB,
                                     UploadSize::BufferSize_16MB});

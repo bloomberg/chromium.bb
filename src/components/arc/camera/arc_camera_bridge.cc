@@ -11,11 +11,12 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/dbus/arc_camera_client.h"
+#include "chromeos/dbus/arc/arc_camera_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "crypto/random.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -53,9 +54,10 @@ class ArcCameraBridge::PendingStartCameraServiceResult {
       mojo::ScopedMessagePipeHandle pipe,
       ArcCameraBridge::StartCameraServiceCallback callback)
       : owner_(owner),
-        service_(mojom::CameraServicePtrInfo(std::move(pipe), 0u)),
+        service_(
+            mojo::PendingRemote<mojom::CameraService>(std::move(pipe), 0u)),
         callback_(std::move(callback)) {
-    service_.set_connection_error_handler(
+    service_.set_disconnect_handler(
         base::BindOnce(&PendingStartCameraServiceResult::OnError,
                        weak_ptr_factory_.GetWeakPtr()));
     service_.QueryVersion(
@@ -78,13 +80,13 @@ class ArcCameraBridge::PendingStartCameraServiceResult {
   // Runs the callback and removes this object from the owner.
   void Finish() {
     DCHECK(callback_);
-    std::move(callback_).Run(std::move(service_));
+    std::move(callback_).Run(service_.Unbind());
     // Destructs |this|.
     owner_->pending_start_camera_service_results_.erase(this);
   }
 
   ArcCameraBridge* const owner_;
-  mojom::CameraServicePtr service_;
+  mojo::Remote<mojom::CameraService> service_;
   ArcCameraBridge::StartCameraServiceCallback callback_;
   base::WeakPtrFactory<PendingStartCameraServiceResult> weak_ptr_factory_{this};
 

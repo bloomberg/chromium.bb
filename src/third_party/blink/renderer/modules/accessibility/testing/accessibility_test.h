@@ -20,8 +20,6 @@ class AXObjectCacheImpl;
 class LocalFrameClient;
 class Node;
 
-namespace test {
-
 class AccessibilityTest : public RenderingTest {
   USING_FAST_MALLOC(AccessibilityTest);
 
@@ -33,9 +31,13 @@ class AccessibilityTest : public RenderingTest {
 
   AXObjectCacheImpl& GetAXObjectCache() const;
 
+  AXObject* GetAXObject(LayoutObject* layout_object) const;
+
   AXObject* GetAXObject(const Node& node) const;
 
   AXObject* GetAXRootObject() const;
+
+  AXObject* GetAXBodyObject() const;
 
   // Returns the object with the accessibility focus.
   AXObject* GetAXFocusedObject() const;
@@ -67,7 +69,6 @@ class ParameterizedAccessibilityTest : public testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_SUITE_P(All, ParameterizedAccessibilityTest, testing::Bool());
 
-}  // namespace test
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_

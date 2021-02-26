@@ -22,7 +22,7 @@
 ../../../third_party/catapult/devil/devil/android/constants/chrome.py
 ../../../third_party/catapult/devil/devil/android/constants/file_system.py
 ../../../third_party/catapult/devil/devil/android/decorators.py
-../../../third_party/catapult/devil/devil/android/device_blacklist.py
+../../../third_party/catapult/devil/devil/android/device_denylist.py
 ../../../third_party/catapult/devil/devil/android/device_errors.py
 ../../../third_party/catapult/devil/devil/android/device_signal.py
 ../../../third_party/catapult/devil/devil/android/device_temp_file.py
@@ -85,6 +85,7 @@
 ../../../third_party/markupsafe/_compat.py
 ../../../third_party/markupsafe/_native.py
 ../../gn_helpers.py
+../../print_python_deps.py
 ../adb_command_line.py
 ../apk_operations.py
 ../convert_dex_profile.py

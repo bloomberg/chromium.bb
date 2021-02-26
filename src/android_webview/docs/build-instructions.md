@@ -109,19 +109,20 @@ dependencies (i.e., `trichrome_library_apk`).
 
 Unlike most Android apps, WebView is part of the Android framework. One of the
 consequences of this is that the WebView implementation on the device can only
-be provided by a predetermined set of package names. Depending on the chosen
-build target, you may need to change the package name to match one of the
-following:
+be provided by a predetermined set of package names (see
+[details](webview-providers.md#Package-name)). Depending on the chosen build
+target, you may need to change the package name to match one of the following:
 
-| API level            | Has GMS vs. AOSP? | Allowed package names                 |
-| -------------------- | ----------------- | ------------------------------------- |
-| L-M                  | AOSP    | `com.android.webview` **(preinstalled)**        |
-| L-M                  | Has GMS | `com.google.android.webview` **(preinstalled)** |
-| N-P                  | AOSP    | `com.android.webview` **(preinstalled)**        |
-| N-P (TV/car devices) | Has GMS | `com.google.android.webview` **(preinstalled)** |
-| N-P (other devices)  | Has GMS | `com.android.chrome` **(preinstalled)**<br>`com.chrome.beta`<br>`com.chrome.dev`<br>`com.chrome.canary`<br>`com.google.android.apps.chrome`<br>`com.google.android.webview` **(preinstalled)** (see [Important notes for N-P](#important-notes-for-n_p)) |
-| >= Q                 | AOSP    | `com.android.webview` **(preinstalled)**        |
-| >= Q                 | Has GMS | `com.google.android.webview` **(preinstalled)**<br>`com.google.android.webview.beta`<br>`com.google.android.webview.dev`<br>`com.google.android.webview.canary`<br>`com.google.android.webview.debug`<br>`com.android.webview` |
+<!-- Keep this table in sync with webview-providers.md -->
+| API level            | Has GMS vs. AOSP? | Allowed package names |
+| -------------------- | ----------------- | --------------------- |
+| L-M                  | AOSP    | `com.android.webview` **(default, preinstalled)** |
+| L-M                  | Has GMS | `com.google.android.webview` **(default, preinstalled)** |
+| N-P                  | AOSP    | `com.android.webview` **(default, preinstalled)** |
+| N-P (TV/car devices) | Has GMS | `com.google.android.webview` **(default, preinstalled)** |
+| N-P (other devices)  | Has GMS | `com.android.chrome` **(default, preinstalled)**<br>`com.chrome.beta`<br>`com.chrome.dev`<br>`com.chrome.canary`<br>`com.google.android.apps.chrome` **(only userdebug/eng)**<br>`com.google.android.webview` **(preinstalled)** (see [Important notes for N-P](build-instructions.md#Important-notes-for-N-P)) |
+| >= Q                 | AOSP    | `com.android.webview` **(default, preinstalled)** |
+| >= Q                 | Has GMS | `com.google.android.webview` **(default, preinstalled)**<br>`com.google.android.webview.beta`<br>`com.google.android.webview.dev`<br>`com.google.android.webview.canary`<br>`com.google.android.webview.debug` **(only userdebug/eng)**<br>`com.android.webview` **(only userdebug/eng)** |
 
 `system_webview_apk` and `trichrome_webview_apk` use `com.android.webview` as
 their package name by default. If your device allows this package name, continue
@@ -163,6 +164,14 @@ Otherwise, you can remove the preinstalled WebView like so:
 ```shell
 android_webview/tools/remove_preinstalled_webview.py
 ```
+
+*** note
+If you're using an emulator, make sure to [start it with
+`-writable-system`](/docs/android_emulator.md#writable-system-partition)
+**before** removing the preinstalled WebView.
+***
+
+If the script doesn't work, see the [manual steps](removing-system-apps.md).
 
 ### Important notes for N-P
 
@@ -220,5 +229,5 @@ quick start.
 _TODO(ntfschr): document cases here which could arise generally, but wouldn't
 for the quick start._
 
-[1]: http://go/clank-webview/building-webview/android_webview-tests
+[1]: http://go/clank-webview/build_instructions.md
 [2]: https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev

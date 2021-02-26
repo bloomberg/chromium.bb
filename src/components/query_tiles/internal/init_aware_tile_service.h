@@ -32,6 +32,12 @@ class InitAwareTileService : public TileService {
   void StartFetchForTiles(bool is_from_reduced_mode,
                           BackgroundTaskFinishedCallback callback) override;
   void CancelTask() override;
+  void PurgeDb() override;
+  void SetServerUrl(const std::string& base_url) override;
+  void OnTileClicked(const std::string& tile_id) override;
+  void OnQuerySelected(const base::Optional<std::string>& parent_tile_id,
+                       const base::string16& query_text) override;
+  Logger* GetLogger() override;
 
   void OnTileServiceInitialized(bool success);
   void MaybeCacheApiCall(base::OnceClosure api_call);

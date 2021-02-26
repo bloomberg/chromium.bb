@@ -12,12 +12,13 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
-<link rel="import" href="lock_screen_password_prompt_dialog.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="setup_pin_dialog.html">
+<link rel="import" href="pin_autosubmit_dialog.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../prefs/prefs.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
@@ -68,13 +69,19 @@
         opacity: var(--settings-disabled-opacity);
         pointer-events: none;
       }
+
+      #autosubmitToggle {
+        padding-inline-start: 16px;
+        width: 100%;
+      }
     </style>
 
     <div>
       <settings-toggle-button id="enableLockScreen"
           pref="{{prefs.settings.enable_screen_lock}}"
           on-settings-boolean-control-change="onScreenLockChange_" no-set-pref
-          label="$i18n{enableScreenlock}">
+          label="$i18n{enableScreenlock}"
+          deep-link-focus-id$="[[Setting.kLockScreen]]">
       </settings-toggle-button>
 
       <template is="dom-if" if="[[quickUnlockEnabled_]]">
@@ -92,7 +99,8 @@
             <cr-radio-group id="unlockType"
                 disabled$="[[quickUnlockDisabledByPolicy_]]"
                 selected="{{selectedUnlockType}}"
-                aria-labelledby="lockScreenOptionsTitle">
+                aria-labelledby="lockScreenOptionsTitle"
+                deep-link-focus-id$="[[Setting.kChangeAuthPin]]">
               <cr-radio-button name="password" class="list-item underbar"
                   label=$i18n{lockScreenPasswordOnly}>
               </cr-radio-button>
@@ -113,6 +121,17 @@
                       [[getSetupPinText_(hasPin)]]
                     </cr-button>
                   </div>
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[quickUnlockPinAutosubmitFeatureEnabled_]]">
+                <div id="autosubmitToggle"
+                    hidden="[[!hasPin]]">
+                  <settings-toggle-button id="enablePinAutoSubmit"
+                      pref="{{prefs.pin_unlock_autosubmit_enabled}}" no-set-pref
+                      on-settings-boolean-control-change="onPinAutosubmitChange_"
+                      label="$i18n{lockScreenPinAutoSubmit}">
+                  </settings-toggle-button>
                 </div>
               </template>
             </cr-radio-group>
@@ -166,18 +185,17 @@
         </div>
       </template>
 
-      <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
-        <settings-lock-screen-password-prompt-dialog
-            id="lockScreenPasswordPrompt"
-            on-close="onPasswordPromptDialogClose_"
-            on-auth-token-obtained="onAuthTokenObtained_">
-        </settings-lock-screen-password-prompt-dialog>
-      </template>
-
       <template is="dom-if" if="[[showSetupPinDialog_]]" restamp>
-        <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes_]]"
+        <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes]]"
             on-close="onSetupPinDialogClose_">
         </settings-setup-pin-dialog>
+      </template>
+
+      <template is="dom-if" if="[[showPinAutosubmitDialog_]]" restamp>
+        <settings-pin-autosubmit-dialog id="pinAutosubmitDialog"
+            auth-token="[[authToken]]"
+            on-close="onPinAutosubmitDialogClose_">
+        </settings-pin-autosubmit-dialog>
       </template>
     </div>
   </template>

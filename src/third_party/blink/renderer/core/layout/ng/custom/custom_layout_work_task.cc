@@ -40,6 +40,13 @@ CustomLayoutWorkTask::CustomLayoutWorkTask(
 
 CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
 
+void CustomLayoutWorkTask::Trace(Visitor* visitor) const {
+  visitor->Trace(child_);
+  visitor->Trace(token_);
+  visitor->Trace(resolver_);
+  visitor->Trace(options_);
+}
+
 void CustomLayoutWorkTask::Run(
     const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
@@ -65,7 +72,8 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
   DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kLayoutFragment);
   DCHECK(options_ && resolver_);
 
-  NGConstraintSpaceBuilder builder(parent_space, child.Style().GetWritingMode(),
+  NGConstraintSpaceBuilder builder(parent_space,
+                                   child.Style().GetWritingDirection(),
                                    /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, child, &builder);
 
@@ -120,7 +128,6 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
     percentage_size.block_size = kIndefiniteSize;
   }
 
-  builder.SetTextDirection(child.Style().Direction());
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetReplacedPercentageResolutionSize(percentage_size);
@@ -133,8 +140,7 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
   auto space = builder.ToConstraintSpace();
   auto result = To<NGBlockNode>(child).Layout(space, nullptr /* break_token */);
 
-  NGBoxFragment fragment(parent_space.GetWritingMode(),
-                         parent_space.Direction(),
+  NGBoxFragment fragment(parent_space.GetWritingDirection(),
                          To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
 
   resolver_->Resolve(MakeGarbageCollected<CustomLayoutFragment>(
@@ -150,9 +156,10 @@ void CustomLayoutWorkTask::RunIntrinsicSizesTask(
   DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kIntrinsicSizes);
   DCHECK(resolver_);
 
-  MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max);
-  MinMaxSizesResult result =
-      ComputeMinAndMaxContentContribution(parent_style, child, input);
+  MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max,
+                         MinMaxSizesType::kContent);
+  MinMaxSizesResult result = ComputeMinAndMaxContentContribution(
+      parent_style, To<NGBlockNode>(child), input);
   resolver_->Resolve(MakeGarbageCollected<CustomIntrinsicSizes>(
       child_, token_, result.sizes.min_size, result.sizes.max_size));
 

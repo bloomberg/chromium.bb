@@ -35,6 +35,7 @@
 
 #include <cmath>  // for std::round,floor,ceil
 #include <limits>
+#include <memory>
 
 namespace {
 
@@ -144,7 +145,7 @@ public:
     }
 
 private:
-    typedef dng_host INHERITED;
+    using INHERITED = dng_host;
 };
 
 // T must be unsigned type.
@@ -208,7 +209,7 @@ private:
     // streaming too large data chunk. We can always adjust the limit here if we need.
     const size_t kMaxStreamSize = 100 * 1024 * 1024;  // 100MB
 
-    typedef SkDynamicMemoryWStream INHERITED;
+    using INHERITED = SkDynamicMemoryWStream;
 };
 
 // Note: the maximum buffer size is 100MB (limited by SkRawLimitedDynamicMemoryWStream).
@@ -434,7 +435,7 @@ public:
      */
     static SkDngImage* NewFromStream(SkRawStream* stream) {
         std::unique_ptr<SkDngImage> dngImage(new SkDngImage(stream));
-#if defined(IS_FUZZING_WITH_LIBFUZZER)
+#if defined(SK_BUILD_FOR_LIBFUZZER)
         // Libfuzzer easily runs out of memory after here. To avoid that
         // We just pretend all streams are invalid. Our AFL-fuzzer
         // should still exercise this code; it's more resistant to OOM.
@@ -566,9 +567,9 @@ private:
     bool readDng() {
         try {
             // Due to the limit of DNG SDK, we need to reset host and info.
-            fHost.reset(new SkDngHost(&fAllocator));
-            fInfo.reset(new dng_info);
-            fDngStream.reset(new SkDngStream(fStream.get()));
+            fHost = std::make_unique<SkDngHost>(&fAllocator);
+            fInfo = std::make_unique<dng_info>();
+            fDngStream = std::make_unique<SkDngStream>(fStream.get());
 
             fHost->ValidateSizes();
             fInfo->Parse(*fHost, *fDngStream);
@@ -620,9 +621,9 @@ std::unique_ptr<SkCodec> SkRawCodec::MakeFromStream(std::unique_ptr<SkStream> st
                                                     Result* result) {
     std::unique_ptr<SkRawStream> rawStream;
     if (is_asset_stream(*stream)) {
-        rawStream.reset(new SkRawAssetStream(std::move(stream)));
+        rawStream = std::make_unique<SkRawAssetStream>(std::move(stream));
     } else {
-        rawStream.reset(new SkRawBufferedStream(std::move(stream)));
+        rawStream = std::make_unique<SkRawBufferedStream>(std::move(stream));
     }
 
     // Does not take the ownership of rawStream.

@@ -17,9 +17,10 @@ class PostSaveCompromisedBubbleView : public PasswordBubbleViewBase {
   ~PostSaveCompromisedBubbleView() override;
 
  private:
-  // PasswordBubbleViewBase
+  // PasswordBubbleViewBase:
   PostSaveCompromisedBubbleController* GetController() override;
   const PostSaveCompromisedBubbleController* GetController() const override;
+  void OnThemeChanged() override;
 
   PostSaveCompromisedBubbleController controller_;
 };

@@ -18,7 +18,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -531,7 +532,7 @@ bool AddCrostiniAppInfo(
         crostini::GetThreeDayWindowStart(last_launch_time).ToJavaTime());
   }
 
-  if (registration.is_terminal_app()) {
+  if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
     app->set_app_type(em::CROSTINI_APP_TYPE_TERMINAL);
     // We do not log package information if the App is the terminal:
     return true;
@@ -715,11 +716,13 @@ class DeviceStatusCollectorState : public StatusCollectorState {
 
   void FetchCrosHealthdData(
       const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
-          cros_healthd_data_fetcher) {
+          cros_healthd_data_fetcher,
+      bool report_system_info,
+      bool report_vpd_info) {
     cros_healthd_data_fetcher.Run(
         CrosHealthdCollectionMode::kFull,
         base::BindOnce(&DeviceStatusCollectorState::OnCrosHealthdDataReceived,
-                       this));
+                       this, report_system_info, report_vpd_info));
   }
 
   void FetchEMMCLifeTime(
@@ -819,6 +822,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
 
   // Stores the contents of |probe_result| and |samples| to |response_params_|.
   void OnCrosHealthdDataReceived(
+      bool report_system_info,
+      bool report_vpd_info,
       chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result,
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
     namespace cros_healthd = chromeos::cros_healthd::mojom;
@@ -863,28 +868,110 @@ class DeviceStatusCollectorState : public StatusCollectorState {
             disk_info_out->set_model(storage->name);
             disk_info_out->set_type(storage->type);
             disk_info_out->set_size(storage->size);
+            disk_info_out->set_bytes_read_since_last_boot(
+                storage->bytes_read_since_last_boot);
+            disk_info_out->set_bytes_written_since_last_boot(
+                storage->bytes_written_since_last_boot);
+            disk_info_out->set_read_time_seconds_since_last_boot(
+                storage->read_time_seconds_since_last_boot);
+            disk_info_out->set_write_time_seconds_since_last_boot(
+                storage->write_time_seconds_since_last_boot);
+            disk_info_out->set_io_time_seconds_since_last_boot(
+                storage->io_time_seconds_since_last_boot);
+            const auto& discard_time =
+                storage->discard_time_seconds_since_last_boot;
+            if (!discard_time.is_null()) {
+              disk_info_out->set_discard_time_seconds_since_last_boot(
+                  discard_time->value);
+            }
+
+            // vendor_id
+            const auto& vendor_id = storage->vendor_id;
+            switch (vendor_id->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::
+                  NVME_SUBSYSTEM_VENDOR:
+                disk_info_out->set_nvme_subsystem_vendor(
+                    vendor_id->get_nvme_subsystem_vendor());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::
+                  EMMC_OEMID:
+                disk_info_out->set_emmc_oemid(vendor_id->get_emmc_oemid());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::OTHER:
+                disk_info_out->set_other_vendor(vendor_id->get_other());
+                break;
+            }
+
+            // product_id
+            const auto& product_id = storage->product_id;
+            switch (product_id->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  NVME_SUBSYSTEM_DEVICE:
+                disk_info_out->set_nvme_subsystem_device(
+                    product_id->get_nvme_subsystem_device());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  EMMC_PNM:
+                disk_info_out->set_emmc_pnm(product_id->get_emmc_pnm());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  OTHER:
+                disk_info_out->set_other_product(product_id->get_other());
+                break;
+            }
+
+            // revision
+            const auto& revision = storage->revision;
+            switch (revision->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  NVME_PCIE_REV:
+                disk_info_out->set_nvme_hardware_rev(
+                    revision->get_nvme_pcie_rev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  EMMC_PRV:
+                disk_info_out->set_emmc_hardware_rev(revision->get_emmc_prv());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  OTHER:
+                disk_info_out->set_other_hardware_rev(revision->get_other());
+                break;
+            }
+
+            // firmware version
+            const auto& fw_version = storage->firmware_version;
+            switch (fw_version->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  NVME_FIRMWARE_REV:
+                disk_info_out->set_nvme_firmware_rev(
+                    fw_version->get_nvme_firmware_rev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  EMMC_FWREV:
+                disk_info_out->set_emmc_firmware_rev(
+                    fw_version->get_emmc_fwrev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  OTHER:
+                disk_info_out->set_other_firmware_rev(fw_version->get_other());
+                break;
+            }
+
+            switch (storage->purpose) {
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kUnknown:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_UNKNOWN);
+                break;
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kBootDevice:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_BOOT);
+                break;
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kSwapDevice:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_SWAP);
+                break;
+            }
           }
-          break;
-        }
-      }
-    }
-
-    // Process CachedVpdResult.
-    const auto& vpd_result = probe_result->vpd_result;
-    if (!vpd_result.is_null()) {
-      switch (vpd_result->which()) {
-        case cros_healthd::CachedVpdResult::Tag::ERROR: {
-          LOG(ERROR) << "cros_healthd: Error getting cached VPD info: "
-                     << vpd_result->get_error()->msg;
-          break;
-        }
-
-        case cros_healthd::CachedVpdResult::Tag::VPD_INFO: {
-          const auto& vpd_info = vpd_result->get_vpd_info();
-          em::SystemStatus* const system_status_out =
-              response_params_.device_status->mutable_system_status();
-          if (vpd_info->sku_number.has_value())
-            system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
           break;
         }
       }
@@ -902,6 +989,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
 
         case cros_healthd::BatteryResult::Tag::BATTERY_INFO: {
           const auto& battery_info = battery_result->get_battery_info();
+          // Device does not have a battery.
+          if (battery_info.is_null())
+            break;
+
           em::PowerStatus* const power_status_out =
               response_params_.device_status->mutable_power_status();
           em::BatteryInfo* const battery_info_out =
@@ -970,7 +1061,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
 
             em::CpuInfo* const cpu_info_out =
                 response_params_.device_status->add_cpu_info();
-            cpu_info_out->set_model_name(physical_cpu->model_name);
+            if (physical_cpu->model_name)
+              cpu_info_out->set_model_name(physical_cpu->model_name.value());
             cpu_info_out->set_architecture(
                 static_cast<em::CpuInfo::Architecture>(cpu_info->architecture));
 
@@ -1098,6 +1190,90 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
       }
     }
+
+    // Process Bluetooth result.
+    const auto& bluetooth_result = probe_result->bluetooth_result;
+    if (!bluetooth_result.is_null()) {
+      switch (bluetooth_result->which()) {
+        case cros_healthd::BluetoothResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting Bluetooth info: "
+                     << bluetooth_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::BluetoothResult::Tag::BLUETOOTH_ADAPTER_INFO: {
+          for (const auto& adapter :
+               bluetooth_result->get_bluetooth_adapter_info()) {
+            em::BluetoothAdapterInfo* const adapter_info_out =
+                response_params_.device_status->add_bluetooth_adapter_info();
+            adapter_info_out->set_name(adapter->name);
+            adapter_info_out->set_address(adapter->address);
+            adapter_info_out->set_powered(adapter->powered);
+            adapter_info_out->set_num_connected_devices(
+                adapter->num_connected_devices);
+          }
+          break;
+        }
+      }
+    }
+
+    // Process SystemResult.
+    const auto& system_result = probe_result->system_result;
+    if (!system_result.is_null()) {
+      switch (system_result->which()) {
+        case cros_healthd::SystemResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting system info: "
+                     << system_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::SystemResult::Tag::SYSTEM_INFO: {
+          const auto& system_info = system_result->get_system_info();
+          em::SystemStatus* const system_status_out =
+              response_params_.device_status->mutable_system_status();
+          if (report_vpd_info) {
+            if (system_info->first_power_date.has_value()) {
+              system_status_out->set_first_power_date(
+                  system_info->first_power_date.value());
+            }
+            if (system_info->manufacture_date.has_value()) {
+              system_status_out->set_manufacture_date(
+                  system_info->manufacture_date.value());
+            }
+            if (system_info->product_sku_number.has_value()) {
+              system_status_out->set_vpd_sku_number(
+                  system_info->product_sku_number.value());
+            }
+            system_status_out->set_vpd_serial_number(
+                system_info->product_serial_number);
+          }
+          if (report_system_info) {
+            system_status_out->set_marketing_name(system_info->marketing_name);
+            if (system_info->bios_version.has_value()) {
+              system_status_out->set_bios_version(
+                  system_info->bios_version.value());
+            }
+            if (system_info->board_name.has_value()) {
+              system_status_out->set_board_name(
+                  system_info->board_name.value());
+            }
+            if (system_info->board_version.has_value()) {
+              system_status_out->set_board_version(
+                  system_info->board_version.value());
+            }
+            if (system_info->chassis_type) {
+              system_status_out->set_chassis_type(
+                  system_info->chassis_type->value);
+            }
+            if (system_info->product_name.has_value()) {
+              system_status_out->set_product_name(
+                  system_info->product_name.value());
+            }
+          }
+          break;
+        }
+      }
+    }
   }
 
   void OnEMMCLifetimeReceived(const em::DiskLifetimeEstimation& est) {
@@ -1173,8 +1349,9 @@ DeviceStatusCollector::DeviceStatusCollector(
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
     const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
     const GraphicsStatusFetcher& graphics_status_fetcher,
-    const CrashReportInfoFetcher& crash_report_info_fetcher)
-    : StatusCollector(provider, chromeos::CrosSettings::Get()),
+    const CrashReportInfoFetcher& crash_report_info_fetcher,
+    base::Clock* clock)
+    : StatusCollector(provider, chromeos::CrosSettings::Get(), clock),
       pref_service_(pref_service),
       firmware_fetch_error_(kFirmwareNotInitialized),
       volume_info_fetcher_(volume_info_fetcher),
@@ -1187,7 +1364,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       graphics_status_fetcher_(graphics_status_fetcher),
       crash_report_info_fetcher_(crash_report_info_fetcher),
-      power_manager_(chromeos::PowerManagerClient::Get()) {
+      power_manager_(chromeos::PowerManagerClient::Get()),
+      app_info_generator_(kMaxStoredPastActivityInterval, clock_) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
@@ -1276,8 +1454,20 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceBacklightInfo, callback);
   crash_report_info_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceCrashReportInfo, callback);
+  bluetooth_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceBluetoothInfo, callback);
+  fan_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceFanInfo, callback);
+  vpd_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceVpdInfo, callback);
+  app_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceAppInfo, callback);
+  system_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceSystemInfo, callback);
   stats_reporting_pref_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kStatsReportingPref, callback);
+
+  affiliated_session_service_.AddObserver(&app_info_generator_);
 
   power_manager_->AddObserver(this);
 
@@ -1331,6 +1521,7 @@ DeviceStatusCollector::DeviceStatusCollector(
 
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
+  affiliated_session_service_.RemoveObserver(&app_info_generator_);
 }
 
 // static
@@ -1421,6 +1612,28 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_crash_report_info_)) {
     report_crash_report_info_ = false;
   }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBluetoothInfo,
+                                  &report_bluetooth_info_)) {
+    report_bluetooth_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceSystemInfo,
+                                  &report_system_info_)) {
+    report_system_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceFanInfo,
+                                  &report_fan_info_)) {
+    report_fan_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceVpdInfo,
+                                  &report_vpd_info_)) {
+    report_vpd_info_ = false;
+  }
+  report_app_info_ = false;
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceAppInfo,
+                                  &report_app_info_)) {
+    report_app_info_ = false;
+  }
+  app_info_generator_.OnReportingChanged(report_app_info_);
   if (!cros_settings_->GetBoolean(chromeos::kStatsReportingPref,
                                   &stat_reporting_pref_)) {
     stat_reporting_pref_ = false;
@@ -1698,9 +1911,8 @@ void DeviceStatusCollector::FetchCrosHealthdData(
   SamplingProbeResultCallback completion_callback;
   switch (mode) {
     case CrosHealthdCollectionMode::kFull: {
-      categories_to_probe.push_back(ProbeCategoryEnum::kCachedVpdData);
-      categories_to_probe.push_back(ProbeCategoryEnum::kFan);
-
+      if (report_vpd_info_ || report_system_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kSystem);
       if (report_storage_status_) {
         categories_to_probe.push_back(
             ProbeCategoryEnum::kNonRemovableBlockDevices);
@@ -1715,6 +1927,10 @@ void DeviceStatusCollector::FetchCrosHealthdData(
         categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
       if (report_backlight_info_)
         categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
+      if (report_fan_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kFan);
+      if (report_bluetooth_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kBluetooth);
 
       completion_callback =
           base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
@@ -1745,8 +1961,10 @@ void DeviceStatusCollector::OnProbeDataFetched(
 }
 
 bool DeviceStatusCollector::ShouldFetchCrosHealthdData() const {
-  return report_power_status_ || report_storage_status_ || report_cpu_info_ ||
-         report_timezone_info_ || report_memory_info_ || report_backlight_info_;
+  return report_vpd_info_ || report_power_status_ || report_storage_status_ ||
+         report_cpu_info_ || report_timezone_info_ || report_memory_info_ ||
+         report_backlight_info_ || report_fan_info_ || report_bluetooth_info_ ||
+         report_system_info_;
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
@@ -1787,34 +2005,36 @@ bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
+  activity_storage_->RemoveOverlappingActivityPeriods();
   auto activity_times = activity_storage_->GetFilteredActivityPeriods(
       !IncludeEmailsInActivityReports());
 
   bool anything_reported = false;
-  for (const auto& activity_period : activity_times) {
-    // Skip intervals where there was no activity.
-    if (!activity_period.second.has_value()) {
-      continue;
-    }
-    // This is correct even when there are leap seconds, because when a leap
-    // second occurs, two consecutive seconds have the same timestamp.
-    int64_t end_timestamp =
-        activity_period.first.begin + Time::kMillisecondsPerDay;
+  for (const auto& activity_pair : activity_times) {
+    const auto& user_email = activity_pair.first;
+    const auto& activity_periods = activity_pair.second;
 
-    em::ActiveTimePeriod* active_period = status->add_active_periods();
-    em::TimePeriod* period = active_period->mutable_time_period();
-    period->set_start_timestamp(activity_period.first.begin);
-    period->set_end_timestamp(end_timestamp);
-    active_period->set_active_duration(activity_period.first.end -
-                                       activity_period.first.begin);
-    // Report user email only if users reporting is turned on.
-    if (!activity_period.second.value().user_email.empty()) {
-      active_period->set_user_email(activity_period.second.value().user_email);
+    for (const auto& activity_period : activity_periods) {
+      // This is correct even when there are leap seconds, because when a leap
+      // second occurs, two consecutive seconds have the same timestamp.
+      int64_t end_timestamp =
+          activity_period.start_timestamp() + Time::kMillisecondsPerDay;
+
+      em::ActiveTimePeriod* active_period = status->add_active_periods();
+      em::TimePeriod* period = active_period->mutable_time_period();
+      period->set_start_timestamp(activity_period.start_timestamp());
+      period->set_end_timestamp(end_timestamp);
+      active_period->set_active_duration(activity_period.end_timestamp() -
+                                         activity_period.start_timestamp());
+      // Report user email only if users reporting is turned on.
+      if (!user_email.empty()) {
+        active_period->set_user_email(user_email);
+      }
+      if (last_reported_end_timestamp_ < end_timestamp) {
+        last_reported_end_timestamp_ = end_timestamp;
+      }
+      anything_reported = true;
     }
-    if (last_reported_end_timestamp_ < end_timestamp) {
-      last_reported_end_timestamp_ = end_timestamp;
-    }
-    anything_reported = true;
   }
   return anything_reported;
 }
@@ -1848,8 +2068,16 @@ bool DeviceStatusCollector::GetWriteProtectSwitch(
   if (!statistics_provider_->GetMachineStatistic(
           chromeos::system::kFirmwareWriteProtectCurrentKey,
           &firmware_write_protect)) {
+    // TODO(crbug.com/1123153): Remove logging after the bug is fixed.
+    LOG(WARNING) << "Missing "
+                 << chromeos::system::kFirmwareWriteProtectCurrentKey
+                 << " statistics";
     return false;
   }
+  // TODO(crbug.com/1123153): Remove logging after the bug is fixed.
+  LOG(WARNING) << "Statistics "
+               << chromeos::system::kFirmwareWriteProtectCurrentKey << ": "
+               << firmware_write_protect;
 
   if (firmware_write_protect ==
       chromeos::system::kFirmwareWriteProtectCurrentValueOff) {
@@ -2076,7 +2304,8 @@ bool DeviceStatusCollector::GetHardwareStatus(
     state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
 
   if (ShouldFetchCrosHealthdData()) {
-    state->FetchCrosHealthdData(cros_healthd_data_fetcher_);
+    state->FetchCrosHealthdData(cros_healthd_data_fetcher_, report_system_info_,
+                                report_vpd_info_);
   } else {
     // Sample CPU temperature in a background thread.
     state->SampleCPUTempInfo(cpu_temp_fetcher_);
@@ -2227,6 +2456,10 @@ bool DeviceStatusCollector::GetCrashReportInfo(
 
 void DeviceStatusCollector::GetStatusAsync(
     const StatusCollectorCallback& response) {
+  last_requested_ = clock_->Now();
+
+  app_info_generator_.OnWillReport();
+
   // Must be on creation thread since some stats are written to in that thread
   // and accessing them from another thread would lead to race conditions.
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -2343,6 +2576,14 @@ void DeviceStatusCollector::GetSessionStatus(
     anything_reported |= GetSessionStatusForUser(state, status, primary_user);
   }
 
+  // |app_infos|
+  const auto app_infos = app_info_generator_.Generate();
+  anything_reported |= app_infos.has_value();
+  if (app_infos) {
+    *status->mutable_app_infos() = {app_infos.value().begin(),
+                                    app_infos.value().end()};
+  }
+
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
     state->response_params().session_status.reset();
@@ -2435,6 +2676,7 @@ std::string DeviceStatusCollector::GetAppVersion(
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
   activity_storage_->TrimActivityPeriods(last_reported_end_timestamp_,
                                          std::numeric_limits<int64_t>::max());
+  app_info_generator_.OnReportedSuccessfully(last_requested_);
 }
 
 bool DeviceStatusCollector::ShouldReportActivityTimes() const {
@@ -2451,6 +2693,9 @@ bool DeviceStatusCollector::ShouldReportHardwareStatus() const {
 }
 bool DeviceStatusCollector::ShouldReportCrashReportInfo() const {
   return report_crash_report_info_ && stat_reporting_pref_;
+}
+bool DeviceStatusCollector::ShouldReportAppInfoAndActivity() const {
+  return report_app_info_;
 }
 
 void DeviceStatusCollector::OnOSVersion(const std::string& version) {

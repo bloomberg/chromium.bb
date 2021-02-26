@@ -149,18 +149,24 @@ def FetchAdditionalWindowsBinaries(robo_configuration):
     raise Exception("update.py --package=objdump failed")
 
 
-def FetchMacSDK(robo_configuration):
-  """Download the 10.10 MacOSX sdk."""
+def FetchMacSDKs(robo_configuration):
+  """Download the MacOSX SDKs."""
   log("Installing Mac OSX sdk")
   robo_configuration.chdir_to_chrome_src()
-  sdk_base = "build/win_files/Xcode.app"
-  if not os.path.exists(sdk_base):
-    os.makedirs(sdk_base)
-  os.chdir(sdk_base)
   if robo_configuration.Call(
-      "gsutil.py cat gs://chrome-mac-sdk/toolchain-8E2002-3.tgz | tar xzvf -",
+      "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py",
       shell=True):
-    raise Exception("Cannot download and extract Mac SDK")
+    raise Exception("Cannot download and extract Mac beta SDK")
+
+  # TODO: Once the 11.0 SDK is out of beta, it should be used for both
+  # arm64 and intel builds.
+  log("Installing Mac OSX 11.0 beta sdk for arm64")
+  robo_configuration.chdir_to_chrome_src()
+  if robo_configuration.Call(
+      "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py "
+      "--xcode-version xcode_12_beta",
+      shell=True):
+    raise Exception("Cannot download and extract Mac beta SDK")
 
 
 def EnsureLLVMSymlinks(robo_configuration):
@@ -180,7 +186,7 @@ def EnsureLLVMSymlinks(robo_configuration):
   EnsureSymlink("clang", "clang++")
   EnsureSymlink("lld", "ld.lld")
   EnsureSymlink("lld", "lld-link")
-  # For mac.
+  # For mac. Only used at configure time to check if symbols are present.
   EnsureSymlink("lld", "ld64.lld")
 
 
@@ -196,7 +202,7 @@ def EnsureSysroots(robo_configuration):
 def EnsureChromiumNasm(robo_configuration):
   """Make sure that chromium's nasm is built, so we can use it.  apt-get's is
   too old."""
-  os.chdir(robo_configuration.chrome_src())
+  robo_configuration.chdir_to_chrome_src()
 
   # nasm in the LLVM bin directory that we already added to $PATH.  Note that we
   # put it there so that configure can find is as "nasm", rather than us having
@@ -232,7 +238,7 @@ def EnsureToolchains(robo_configuration):
   """Make sure that we have all the toolchains for cross-compilation"""
   EnsureGClientTargets(robo_configuration)
   FetchAdditionalWindowsBinaries(robo_configuration)
-  FetchMacSDK(robo_configuration)
+  FetchMacSDKs(robo_configuration)
   EnsureLLVMSymlinks(robo_configuration)
   EnsureSysroots(robo_configuration)
 

@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.support.test.filters.MediumTest;
+import android.content.Intent;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,8 +18,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -28,7 +30,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkVersion;
@@ -71,7 +73,7 @@ public class WebApkUpdateManagerTest {
     private static final String WEBAPK_ICON_URL = "/chrome/test/data/banners/image-512px.png";
     private static final String WEBAPK_ICON_MURMUR2_HASH = "7742433188808797392";
     private static final @WebDisplayMode int WEBAPK_DISPLAY_MODE = WebDisplayMode.STANDALONE;
-    private static final int WEBAPK_ORIENTATION = ScreenOrientationValues.LANDSCAPE;
+    private static final int WEBAPK_ORIENTATION = ScreenOrientationLockType.LANDSCAPE;
     private static final long WEBAPK_THEME_COLOR = 2147483648L;
     private static final long WEBAPK_BACKGROUND_COLOR = 2147483648L;
 
@@ -170,12 +172,12 @@ public class WebApkUpdateManagerTest {
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
             BrowserServicesIntentDataProvider intentDataProvider =
-                    WebApkIntentDataProviderFactory.create("", creationData.scope, null, null,
-                            creationData.name, creationData.shortName, creationData.displayMode,
-                            creationData.orientation, 0, creationData.themeColor,
-                            creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,
-                            false /* isSplashIconMaskable */, "",
-                            WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION,
+                    WebApkIntentDataProviderFactory.create(new Intent(), "", creationData.scope,
+                            null, null, creationData.name, creationData.shortName,
+                            creationData.displayMode, creationData.orientation, 0,
+                            creationData.themeColor, creationData.backgroundColor, 0,
+                            creationData.isPrimaryIconMaskable, false /* isSplashIconMaskable */,
+                            "", WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION,
                             creationData.manifestUrl, creationData.startUrl,
                             WebApkDistributor.BROWSER, creationData.iconUrlToMurmur2HashMap, null,
                             false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
@@ -273,7 +275,7 @@ public class WebApkUpdateManagerTest {
                 mTestServer.getURL("/chrome/test/data/banners/launcher-icon-3x.png"),
                 "16812314236514539104");
         creationData.displayMode = WebDisplayMode.STANDALONE;
-        creationData.orientation = ScreenOrientationValues.LANDSCAPE;
+        creationData.orientation = ScreenOrientationLockType.LANDSCAPE;
         creationData.themeColor = 2147483648L;
         creationData.backgroundColor = 2147483648L;
         creationData.isPrimaryIconMaskable = false;

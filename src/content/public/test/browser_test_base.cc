@@ -4,6 +4,7 @@
 
 #include "content/public/test/browser_test_base.h"
 
+#include <fcntl.h>
 #include <stddef.h>
 
 #include <iostream>
@@ -16,24 +17,26 @@
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/network_service_instance_impl.h"
@@ -57,30 +60,33 @@
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/content_browser_sanity_checker.h"
+#include "content/test/content_browser_consistency_checker.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/embedder/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
 #endif
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"  // nogncheck
+#include "content/app/content_main_runner_impl.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/service_manager_environment.h"
 #include "content/public/app/content_main_delegate.h"
@@ -89,11 +95,11 @@
 #include "ui/base/ui_base_paths.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/v8_initializer.h"
+#include "gin/v8_initializer.h"  // nogncheck
 #endif
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/sandbox_parameters_mac.h"
 #include "net/test/test_data_directory.h"
 #include "ui/events/test/event_generator.h"
@@ -107,6 +113,15 @@
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+#include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 #endif
 
 namespace content {
@@ -127,7 +142,7 @@ int g_browser_process_pid;
 
 void DumpStackTraceSignalHandler(int signal) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kDisableInProcessStackTraces) &&
+          switches::kDisableInProcessStackTraces) &&
       g_browser_process_pid == base::GetCurrentProcId()) {
     std::string message("BrowserTestBase received signal: ");
     message += strsignal(signal);
@@ -147,7 +162,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(base::OnceClosure task,
                              base::OnceClosure quit_task) {
   std::move(task).Run();
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_task));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(quit_task));
 }
 
 void TraceStopTracingComplete(base::OnceClosure quit,
@@ -176,17 +191,25 @@ class InitialNavigationObserver : public WebContentsObserver {
 
 }  // namespace
 
-BrowserTestBase::BrowserTestBase()
-    : expected_exit_code_(0),
-      enable_pixel_output_(false),
-      use_software_compositing_(false),
-      set_up_called_(false) {
+BrowserTestBase::BrowserTestBase() {
+#if defined(USE_OZONE) && defined(USE_X11)
+  // In case of the USE_OZONE + USE_X11 build, the OzonePlatform can either be
+  // enabled or disabled. However, tests may override the FeatureList that will
+  // result in unknown state for the UseOzonePlatform feature. Thus, the
+  // features::IsUsingOzonePlatform has static const initializer that won't be
+  // changed despite FeatureList being overridden. However, it requires to call
+  // this method at least once so that the value is set correctly. This place
+  // looks the most appropriate as tests haven't started to add own FeatureList
+  // yet and we still have the original value set by base::TestSuite.
+  ignore_result(features::IsUsingOzonePlatform());
+#endif
+
   CHECK(!g_instance_already_created)
       << "Each browser test should be run in a new process. If you are adding "
          "a new browser test suite that runs on Android, please add it to "
          "//build/android/pylib/gtest/gtest_test_instance.py.";
   g_instance_already_created = true;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   ui::test::EnableTestConfigForPlatformWindows();
 #endif
 
@@ -204,7 +227,7 @@ BrowserTestBase::BrowserTestBase()
 #if defined(USE_AURA)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));
 #endif
@@ -266,6 +289,20 @@ void BrowserTestBase::SetUp() {
   command_line->AppendSwitch(
       switches::kDisableBackgroundingOccludedWindowsForTesting);
 
+  if (enable_pixel_output_) {
+    DCHECK(!command_line->HasSwitch(switches::kForceDeviceScaleFactor))
+        << "--force-device-scale-factor flag already present. Tests using "
+        << "EnablePixelOutput should specify a forced device scale factor by "
+        << "passing it as an argument to EnblePixelOutput.";
+    DCHECK(force_device_scale_factor_);
+
+    // We do this before setting enable_pixel_output_ from the switch below so
+    // that the device scale factor is forced only when enabled from test code.
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", force_device_scale_factor_));
+  }
+
 #if defined(USE_AURA)
   // Most tests do not need pixel output, so we don't produce any. The command
   // line can override this behaviour to allow for visual debugging.
@@ -295,7 +332,7 @@ void BrowserTestBase::SetUp() {
   if (command_line->HasSwitch("enable-gpu"))
     use_software_gl = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac we always use hardware GL.
   use_software_gl = false;
 
@@ -316,6 +353,47 @@ void BrowserTestBase::SetUp() {
     use_software_gl = false;
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+  // If the test is running on the lacros environment, a file descriptor needs
+  // to be obtained and used to launch lacros-chrome so that a mojo connection
+  // between lacros-chrome and ash-chrome can be established.
+  // For more details, please see:
+  // //chrome/browser/chromeos/crosapi/test_mojo_connection_manager.h.
+  {
+    // TODO(crbug.com/1127581): Switch to use |kLacrosMojoSocketForTesting| in
+    // //chromeos/constants/chromeos_switches.h.
+    // Please refer to the CL comments for why it can't be done now:
+    // http://crrev.com/c/2402580/2/content/public/test/browser_test_base.cc
+    std::string socket_path =
+        command_line->GetSwitchValueASCII("lacros-mojo-socket-for-testing");
+    if (socket_path.empty()) {
+      chromeos::LacrosChromeServiceImpl::Get()->DisableCrosapiForTests();
+    } else {
+      auto channel = mojo::NamedPlatformChannel::ConnectToServer(socket_path);
+      base::ScopedFD socket_fd = channel.TakePlatformHandle().TakeFD();
+
+      // Mark the channel as blocking.
+      int flags = fcntl(socket_fd.get(), F_GETFL);
+      PCHECK(flags != -1);
+      fcntl(socket_fd.get(), F_SETFL, flags & ~O_NONBLOCK);
+
+      uint8_t buf[32];
+      std::vector<base::ScopedFD> descriptors;
+      auto size = mojo::SocketRecvmsg(socket_fd.get(), buf, sizeof(buf),
+                                      &descriptors, true /*block*/);
+      if (size < 0)
+        PLOG(ERROR) << "Error receiving message from the socket";
+      ASSERT_EQ(1, size);
+      EXPECT_EQ(0u, buf[0]);
+      ASSERT_EQ(1u, descriptors.size());
+      // It's OK to release the FD because lacros-chrome's code will consume it.
+      command_line->AppendSwitchASCII(
+          mojo::PlatformChannel::kHandleSwitch,
+          base::NumberToString(descriptors[0].release()));
+    }
+  }
+#endif
+
   if (use_software_gl && !use_software_compositing_)
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
 
@@ -326,7 +404,7 @@ void BrowserTestBase::SetUp() {
   if (!allow_network_access_to_host_resolutions_)
     test_host_resolver_ = std::make_unique<TestHostResolver>();
 
-  ContentBrowserSanityChecker scoped_enable_sanity_checks;
+  ContentBrowserConsistencyChecker scoped_enable_consistency_checks;
 
   SetUpInProcessBrowserTestFixture();
 
@@ -344,6 +422,19 @@ void BrowserTestBase::SetUp() {
                                                           &disabled_features);
   }
 
+#if defined(USE_X11) && defined(USE_OZONE)
+  // Append OzonePlatform to the enabled features so that the CommandLine
+  // instance has correct values, and other processes if any (GPU, for example),
+  // also use correct path.  features::IsUsingOzonePlatform() has static const
+  // initializer, which means the value of the features::IsUsingOzonePlatform()
+  // doesn't change even if tests override the FeatureList. Thus, it's correct
+  // to call it now as it is set way earlier than tests override the features.
+  //
+  // TODO(https://crbug.com/1096425): remove this as soon as use_x11 goes away.
+  if (features::IsUsingOzonePlatform())
+    enabled_features += ",UseOzonePlatform";
+#endif
+
   if (!enabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     enabled_features);
@@ -353,11 +444,9 @@ void BrowserTestBase::SetUp() {
                                     disabled_features);
   }
 
-  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 120
-  // seconds after chrome starts.
-  command_line->AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+  // Always disable the unsandbox GPU process for DX12 Info collection to avoid
+  // interference. This GPU process is launched 120 seconds after chrome starts.
+  command_line->AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
   // The current global field trial list contains any trials that were activated
   // prior to main browser startup. That global field trial list is about to be
@@ -435,6 +524,12 @@ void BrowserTestBase::SetUp() {
     InitializeBrowserMemoryInstrumentationClient();
   }
 
+  blink::TrialTokenValidator::SetOriginTrialPolicyGetter(
+      base::BindRepeating([]() -> blink::OriginTrialPolicy* {
+        ContentClient* client = GetContentClientForTesting();
+        return client ? client->GetOriginTrialPolicy() : nullptr;
+      }));
+
   // All FeatureList overrides should have been registered prior to browser test
   // SetUp().
   base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides(
@@ -492,7 +587,6 @@ void BrowserTestBase::SetUp() {
     ShutDownNetworkService();
     service_manager_env.reset();
     discardable_shared_memory_manager.reset();
-    spawned_test_server_.reset();
   }
 
   base::PostTaskAndroid::SignalNativeSchedulerShutdownForTesting();
@@ -514,7 +608,7 @@ void BrowserTestBase::SetUp() {
 }
 
 void BrowserTestBase::TearDown() {
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 #endif
@@ -566,12 +660,17 @@ void BrowserTestBase::WaitUntilJavaIsReady(base::OnceClosure quit_closure) {
 
 namespace {
 
-std::string GetDefaultTraceFilaneme() {
+std::string GetDefaultTraceFilename() {
   std::string test_suite_name = ::testing::UnitTest::GetInstance()
                                     ->current_test_info()
                                     ->test_suite_name();
   std::string test_name =
       ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  // Parameterised tests might have slashes in their full name — replace them
+  // before using it as a file name to avoid trying to write to an incorrect
+  // location.
+  base::ReplaceChars(test_suite_name, "/", "_", &test_suite_name);
+  base::ReplaceChars(test_name, "/", "_", &test_name);
   // Add random number to the trace file to distinguish traces from different
   // test runs.
   // We don't use timestamp here to avoid collisions with parallel runs of the
@@ -632,7 +731,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // This can be called from a posted task. Allow nested tasks here, because
     // otherwise the test body will have to do it in order to use RunLoop for
     // waiting.
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    base::CurrentThread::ScopedNestableTaskAllower allow;
 
 #if !defined(OS_ANDROID)
     // Fail the test if a renderer crashes while the test is running.
@@ -676,10 +775,10 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     base::FilePath trace_file =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kEnableTracingOutput);
-    // If there was no file specified, put a hardcoded one in the current
-    // working directory.
-    if (trace_file.empty())
-      trace_file = base::FilePath().AppendASCII(GetDefaultTraceFilaneme());
+    // If |trace_file| ends in a directory separator or is empty use a generated
+    // name in that directory (empty means current directory).
+    if (trace_file.empty() || trace_file.EndsWithSeparator())
+      trace_file = trace_file.AppendASCII(GetDefaultTraceFilename());
 
     // Wait for tracing to collect results from the renderers.
     base::RunLoop run_loop;
@@ -706,9 +805,6 @@ void BrowserTestBase::SetAllowNetworkAccessToHostResolutions() {
 }
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
-  CHECK(!spawned_test_server_.get());
-  spawned_test_server_ = std::make_unique<net::SpawnedTestServer>(
-      net::SpawnedTestServer::TYPE_HTTP, test_server_base);
   embedded_test_server()->AddDefaultHandlers(test_server_base);
 }
 
@@ -728,7 +824,10 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
   run_loop.Run();
 }
 
-void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }
+void BrowserTestBase::EnablePixelOutput(float force_device_scale_factor) {
+  enable_pixel_output_ = true;
+  force_device_scale_factor_ = force_device_scale_factor;
+}
 
 void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;

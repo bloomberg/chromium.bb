@@ -22,7 +22,6 @@ class NetworkInformation final
       public ActiveScriptWrappable<NetworkInformation>,
       public ExecutionContextLifecycleObserver,
       public NetworkStateNotifier::NetworkStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -56,7 +55,7 @@ class NetworkInformation final
   // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange, kTypechange)  // Deprecated

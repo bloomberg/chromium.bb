@@ -4,19 +4,16 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_dawn.h"
 
+#include <utility>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
+#include "skia/ext/legacy_display_globals.h"
+#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/vsync_provider.h"
-
-#if defined(OS_WIN)
-#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gl/vsync_provider_win.h"
-#elif defined(OS_LINUX)
-#include "third_party/dawn/src/include/dawn_native/VulkanBackend.h"
-#endif
 
 namespace viz {
 
@@ -39,24 +36,33 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     gfx::SurfaceOrigin origin,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(context_provider->GetGrContext(),
+                       memory_tracker,
+                       did_swap_buffer_complete_callback),
       context_provider_(context_provider),
-      widget_(widget) {
+      child_window_(widget) {
   capabilities_.output_surface_origin = origin;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.supports_post_sub_buffer = false;
 
-  capabilities_.sk_color_type = kSurfaceColorType;
-  capabilities_.gr_backend_format =
-      context_provider_->GetGrContext()->defaultBackendFormat(
-          kSurfaceColorType, GrRenderable::kYes);
-
-#if defined(OS_WIN)
-  vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(widget_);
-#endif
+  // TODO(https://crbug.com/1108406): use buffer format from Reshape().
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
+      kSurfaceColorType;
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] =
+      kSurfaceColorType;
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRA_8888)] =
+      kSurfaceColorType;
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRX_8888)] =
+      kSurfaceColorType;
+  vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(widget);
+  child_window_.Initialize();
 }
 
 SkiaOutputDeviceDawn::~SkiaOutputDeviceDawn() = default;
+
+gpu::SurfaceHandle SkiaOutputDeviceDawn::GetChildSurfaceHandle() const {
+  return child_window_.window();
+}
 
 bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
                                    float device_scale_factor,
@@ -86,7 +92,7 @@ void SkiaOutputDeviceDawn::SwapBuffers(
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
   swap_chain_.Present();
-  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+  FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
                     gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
 
@@ -117,9 +123,8 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint(
   GrBackendRenderTarget backend_target(
       size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
   DCHECK(backend_target.isValid());
-  // LegacyFontHost will get LCD text and skia figures out what type to use.
-  SkSurfaceProps surface_props(/*flags=*/0,
-                               SkSurfaceProps::kLegacyFontHost_InitType);
+  SkSurfaceProps surface_props =
+      skia::LegacyDisplayGlobals::GetSkSurfaceProps();
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_provider_->GetGrContext(), backend_target,
       capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
@@ -136,13 +141,8 @@ void SkiaOutputDeviceDawn::EndPaint() {
 }
 
 void SkiaOutputDeviceDawn::CreateSwapChainImplementation() {
-#if defined(OS_WIN)
   swap_chain_implementation_ = dawn_native::d3d12::CreateNativeSwapChainImpl(
-      context_provider_->GetDevice().Get(), widget_);
-#else
-  NOTREACHED();
-  ALLOW_UNUSED_LOCAL(widget_);
-#endif
+      context_provider_->GetDevice().Get(), child_window_.window());
 }
 
 }  // namespace viz

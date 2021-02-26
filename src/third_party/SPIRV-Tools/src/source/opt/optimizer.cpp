@@ -161,6 +161,7 @@ Optimizer& Optimizer::RegisterPerformancePasses() {
       .RegisterPass(CreateDeadBranchElimPass())
       .RegisterPass(CreateMergeReturnPass())
       .RegisterPass(CreateInlineExhaustivePass())
+      .RegisterPass(CreateEliminateDeadFunctionsPass())
       .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreatePrivateToLocalPass())
       .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
@@ -175,9 +176,18 @@ Optimizer& Optimizer::RegisterPerformancePasses() {
       .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateCCPPass())
       .RegisterPass(CreateAggressiveDCEPass())
+      .RegisterPass(CreateLoopUnrollPass(true))
+      .RegisterPass(CreateDeadBranchElimPass())
       .RegisterPass(CreateRedundancyEliminationPass())
       .RegisterPass(CreateCombineAccessChainsPass())
       .RegisterPass(CreateSimplificationPass())
+      .RegisterPass(CreateScalarReplacementPass())
+      .RegisterPass(CreateLocalAccessChainConvertPass())
+      .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
+      .RegisterPass(CreateLocalSingleStoreElimPass())
+      .RegisterPass(CreateAggressiveDCEPass())
+      .RegisterPass(CreateSSARewritePass())
+      .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateVectorDCEPass())
       .RegisterPass(CreateDeadInsertElimPass())
       .RegisterPass(CreateDeadBranchElimPass())
@@ -330,10 +340,6 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
     RegisterPass(CreateDescriptorScalarReplacementPass());
   } else if (pass_name == "eliminate-dead-code-aggressive") {
     RegisterPass(CreateAggressiveDCEPass());
-  } else if (pass_name == "propagate-line-info") {
-    RegisterPass(CreatePropagateLineInfoPass());
-  } else if (pass_name == "eliminate-redundant-line-info") {
-    RegisterPass(CreateRedundantLineInfoElimPass());
   } else if (pass_name == "eliminate-insert-extract") {
     RegisterPass(CreateInsertExtractElimPass());
   } else if (pass_name == "eliminate-local-single-block") {
@@ -407,19 +413,25 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
   } else if (pass_name == "replace-invalid-opcode") {
     RegisterPass(CreateReplaceInvalidOpcodePass());
   } else if (pass_name == "inst-bindless-check") {
-    RegisterPass(CreateInstBindlessCheckPass(7, 23, false, false, 2));
+    RegisterPass(CreateInstBindlessCheckPass(7, 23, false, false));
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
     RegisterPass(CreateAggressiveDCEPass());
   } else if (pass_name == "inst-desc-idx-check") {
-    RegisterPass(CreateInstBindlessCheckPass(7, 23, true, true, 2));
+    RegisterPass(CreateInstBindlessCheckPass(7, 23, true, true));
+    RegisterPass(CreateSimplificationPass());
+    RegisterPass(CreateDeadBranchElimPass());
+    RegisterPass(CreateBlockMergePass());
+    RegisterPass(CreateAggressiveDCEPass());
+  } else if (pass_name == "inst-buff-oob-check") {
+    RegisterPass(CreateInstBindlessCheckPass(7, 23, false, false, true));
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
     RegisterPass(CreateAggressiveDCEPass());
   } else if (pass_name == "inst-buff-addr-check") {
-    RegisterPass(CreateInstBuffAddrCheckPass(7, 23, 2));
+    RegisterPass(CreateInstBuffAddrCheckPass(7, 23));
     RegisterPass(CreateAggressiveDCEPass());
   } else if (pass_name == "convert-relaxed-to-half") {
     RegisterPass(CreateConvertRelaxedToHalfPass());
@@ -570,8 +582,8 @@ bool Optimizer::Run(const uint32_t* original_binary,
 
 #ifndef NDEBUG
   // We do not keep the result id of DebugScope in struct DebugScope.
-  // Instead, we assign random ids for them, which results in sanity
-  // check failures. We want to skip the sanity check when the module
+  // Instead, we assign random ids for them, which results in integrity
+  // check failures. We want to skip the integrity check when the module
   // contains DebugScope instructions.
   if (status == opt::Pass::Status::SuccessWithoutChange &&
       !context->module()->ContainsDebugScope()) {
@@ -743,13 +755,11 @@ Optimizer::PassToken CreateAggressiveDCEPass() {
 }
 
 Optimizer::PassToken CreatePropagateLineInfoPass() {
-  return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::ProcessLinesPass>(opt::kLinesPropagateLines));
+  return MakeUnique<Optimizer::PassToken::Impl>(MakeUnique<opt::EmptyPass>());
 }
 
 Optimizer::PassToken CreateRedundantLineInfoElimPass() {
-  return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::ProcessLinesPass>(opt::kLinesEliminateDeadLines));
+  return MakeUnique<Optimizer::PassToken::Impl>(MakeUnique<opt::EmptyPass>());
 }
 
 Optimizer::PassToken CreateCompactIdsPass() {
@@ -886,11 +896,11 @@ Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t desc_set,
                                                  uint32_t shader_id,
                                                  bool input_length_enable,
                                                  bool input_init_enable,
-                                                 uint32_t version) {
+                                                 bool input_buff_oob_enable) {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBindlessCheckPass>(desc_set, shader_id,
-                                             input_length_enable,
-                                             input_init_enable, version));
+      MakeUnique<opt::InstBindlessCheckPass>(
+          desc_set, shader_id, input_length_enable, input_init_enable,
+          input_buff_oob_enable));
 }
 
 Optimizer::PassToken CreateInstDebugPrintfPass(uint32_t desc_set,
@@ -900,10 +910,9 @@ Optimizer::PassToken CreateInstDebugPrintfPass(uint32_t desc_set,
 }
 
 Optimizer::PassToken CreateInstBuffAddrCheckPass(uint32_t desc_set,
-                                                 uint32_t shader_id,
-                                                 uint32_t version) {
+                                                 uint32_t shader_id) {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBuffAddrCheckPass>(desc_set, shader_id, version));
+      MakeUnique<opt::InstBuffAddrCheckPass>(desc_set, shader_id));
 }
 
 Optimizer::PassToken CreateConvertRelaxedToHalfPass() {

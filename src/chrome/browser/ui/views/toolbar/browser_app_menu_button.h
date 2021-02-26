@@ -12,9 +12,8 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
+#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
-#include "components/feature_engagement/buildflags.h"
-#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/view.h"
 
 class ToolbarView;
@@ -24,7 +23,7 @@ enum class InProductHelpFeature;
 // windows, which is implemented in WebAppMenuButton).
 class BrowserAppMenuButton : public AppMenuButton {
  public:
-  explicit BrowserAppMenuButton(ToolbarView* toolbar_view);
+  BrowserAppMenuButton(PressedCallback callback, ToolbarView* toolbar_view);
   BrowserAppMenuButton(const BrowserAppMenuButton&) = delete;
   BrowserAppMenuButton& operator=(const BrowserAppMenuButton&) = delete;
   ~BrowserAppMenuButton() override;
@@ -40,28 +39,10 @@ class BrowserAppMenuButton : public AppMenuButton {
   // with the menu.
   void ShowMenu(int run_types);
 
-  // Called to inform the button that it's being used as an anchor for a promo
-  // for |promo_feature|.  When this is non-null, the button is highlighted in a
-  // noticeable color, and the menu item appearance may be affected.
-  void SetPromoFeature(base::Optional<InProductHelpFeature> promo_feature);
-
-  // views::MenuButton:
-  void OnThemeChanged() override;
-
-  // Updates the presentation according to |severity_| and the theme provider.
-  void UpdateIcon();
-
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
 
- protected:
-  // If the button is being used as an anchor for a promo, returns the best
-  // promo color given the current background color. Otherwise, returns the
-  // standard ToolbarButton foreground color for the given |state|.
-  SkColor GetForegroundColor(ButtonState state) const override;
-
- private:
   // AppMenuButton:
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
@@ -77,8 +58,26 @@ class BrowserAppMenuButton : public AppMenuButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  void OnThemeChanged() override;
+  // Updates the presentation according to |severity_| and the theme provider.
+  void UpdateIcon() override;
+  void HandleMenuClosed() override;
 
+  // ui::PropertyHandler:
+  void AfterPropertyChange(const void* key, int64_t old_value) override;
+
+ protected:
+  // If the button is being used as an anchor for a promo, returns the best
+  // promo color given the current background color. Otherwise, returns the
+  // standard ToolbarButton foreground color for the given |state|.
+  SkColor GetForegroundColor(ButtonState state) const override;
+
+ private:
   void OnTouchUiChanged();
+
+  void UpdateTextAndHighlightColor();
+
+  void SetHasInProductHelpPromo(bool has_in_product_help_promo);
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{
       AppMenuIconController::IconType::NONE,
@@ -87,8 +86,10 @@ class BrowserAppMenuButton : public AppMenuButton {
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
 
-  // The feature, if any, for which this button is anchoring a promo.
-  base::Optional<InProductHelpFeature> promo_feature_;
+  // Determines whether to highlight the button for in-product help.
+  bool has_in_product_help_promo_ = false;
+
+  base::Optional<FeaturePromoController::PromoHandle> reopen_tab_promo_handle_;
 
   std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(

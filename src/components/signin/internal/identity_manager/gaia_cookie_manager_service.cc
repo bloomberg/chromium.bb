@@ -11,8 +11,8 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -601,9 +601,9 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), true /* secure */,
           false /* httponly */, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_DEFAULT));
+          net::COOKIE_PRIORITY_DEFAULT, false /* same_party */));
   OnCookieChange(
-      net::CookieChangeInfo(*cookie, net::CookieAccessSemantics::UNKNOWN,
+      net::CookieChangeInfo(*cookie, net::CookieAccessResult(),
                             net::CookieChangeCause::UNKNOWN_DELETION));
 }
 
@@ -1006,13 +1006,6 @@ void GaiaCookieManagerService::StartFetchingMergeSession() {
 void GaiaCookieManagerService::StartGaiaLogOut() {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::StartGaiaLogOut";
-
-  signin_client_->PreGaiaLogout(
-      base::BindOnce(&GaiaCookieManagerService::StartFetchingLogOut,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ =
       signin_client_->CreateGaiaAuthFetcher(this, requests_.front().source());

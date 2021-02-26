@@ -17,7 +17,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -58,20 +58,20 @@ class ActivityLogApiTest : public ExtensionApiTest {
   base::CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// TODO(crbug.com/299393): Flaky on Mac, Windows and Linux.
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/299393): This test is very long and can time out in debug or
+// ASAN builds.
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
 #define MAYBE_TriggerEvent TriggerEvent
 #endif
-
 // The test extension sends a message to its 'friend'. The test completes
 // if it successfully sees the 'friend' receive the message.
 IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
   ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
 
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&ActivityLogApiTest::HandleRequest, base::Unretained(this)));
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &ActivityLogApiTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   const Extension* friend_extension = LoadExtensionIncognito(
@@ -82,4 +82,3 @@ IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
 }
 
 }  // namespace extensions
-

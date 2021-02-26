@@ -18,6 +18,7 @@
 #include "Version.hpp"
 
 #include "Vulkan/VulkanPlatform.hpp"
+#include "spirv-tools/libspirv.h"
 
 namespace vk {
 
@@ -25,6 +26,8 @@ namespace vk {
 //       constexpr char* or char[] does not work for that purpose.
 #define SWIFTSHADER_DEVICE_NAME "SwiftShader Device"  // Max length: VK_MAX_PHYSICAL_DEVICE_NAME_SIZE
 #define SWIFTSHADER_UUID "SwiftShaderUUID"            // Max length: VK_UUID_SIZE (16)
+
+const spv_target_env SPIRV_VERSION = SPV_ENV_VULKAN_1_1;
 
 enum
 {
@@ -83,8 +86,10 @@ constexpr int SUBPIXEL_PRECISION_MASK = 0xFFFFFFFF >> (32 - SUBPIXEL_PRECISION_B
 
 }  // namespace vk
 
-#if defined(__linux__) || defined(__ANDROID__)
+#if defined(__linux__) && !defined(__ANDROID__)
 #	define SWIFTSHADER_EXTERNAL_MEMORY_OPAQUE_FD 1
+#	define SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD 1
+#elif defined(__ANDROID__)
 #	define SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD 1
 #endif
 

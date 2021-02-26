@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -33,6 +32,11 @@ class SimpleURLLoader;
 
 class SearchSuggestionParser {
  public:
+  // Disallow implicit constructors.
+  SearchSuggestionParser() = delete;
+  SearchSuggestionParser(const SearchSuggestionParser&) = delete;
+  SearchSuggestionParser& operator=(const SearchSuggestionParser&) = delete;
+
   // Indicates a missing suggestion group Id.
   static const int kNoSuggestionGroupId;
 
@@ -49,7 +53,7 @@ class SearchSuggestionParser {
            int relevance,
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
-           int subtype_identifier,
+           std::vector<int> subtypes,
            const std::string& deletion_url);
     Result(const Result& other);
     virtual ~Result();
@@ -62,7 +66,7 @@ class SearchSuggestionParser {
     }
 
     AutocompleteMatchType::Type type() const { return type_; }
-    int subtype_identifier() const { return subtype_identifier_; }
+    const std::vector<int>& subtypes() const { return subtypes_; }
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
     bool received_after_last_keystroke() const {
@@ -97,11 +101,8 @@ class SearchSuggestionParser {
 
     AutocompleteMatchType::Type type_;
 
-    // Used to identify the specific source / type for suggestions by the
-    // suggest server. See |result_subtype_identifier| in omnibox.proto for more
-    // details.
-    // The identifier 0 is reserved for cases where this specific type is unset.
-    int subtype_identifier_;
+    // Suggestion subtypes.
+    std::vector<int> subtypes_;
 
     // The relevance score.
     int relevance_;
@@ -129,14 +130,14 @@ class SearchSuggestionParser {
    public:
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
-                  int subtype_identifier,
+                  std::vector<int> subtypes,
                   bool from_keyword,
                   int relevance,
                   bool relevance_from_server,
                   const base::string16& input_text);
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
-                  int subtype_identifier,
+                  std::vector<int> subtypes,
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
                   const base::string16& annotation,
@@ -235,7 +236,7 @@ class SearchSuggestionParser {
     NavigationResult(const AutocompleteSchemeClassifier& scheme_classifier,
                      const GURL& url,
                      AutocompleteMatchType::Type type,
-                     int subtype_identifier,
+                     std::vector<int> subtypes,
                      const base::string16& description,
                      const std::string& deletion_url,
                      bool from_keyword,
@@ -291,6 +292,8 @@ class SearchSuggestionParser {
   struct Results {
     Results();
     ~Results();
+    Results(const Results&) = delete;
+    Results& operator=(const Results&) = delete;
 
     // Clears |suggest_results| and |navigation_results| and resets
     // |verbatim_relevance| to -1 (implies unset).
@@ -329,11 +332,11 @@ class SearchSuggestionParser {
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
 
-    // The server supplied map of suggestion group Ids to headers.
+    // The server supplied map of suggestion group IDs to header labels.
     HeadersMap headers_map;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Results);
+    // The server supplied list of group IDs that should be hidden-by-default.
+    std::vector<int> hidden_group_ids;
   };
 
   // Converts JSON loaded by a SimpleURLLoader into UTF-8 and returns the
@@ -365,8 +368,6 @@ class SearchSuggestionParser {
       int default_result_relevance,
       bool is_keyword_result,
       Results* results);
-
-  DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_SEARCH_SUGGESTION_PARSER_H_

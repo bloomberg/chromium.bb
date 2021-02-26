@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -52,9 +53,9 @@ const base::FilePath& GetTestDataDir() {
 
 class LocalNTPRenderTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This is required for the output to be rendered, then captured.
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+  void SetUp() override {
+    EnablePixelOutput();
+    InProcessBrowserTest::SetUp();
   }
 
   void LoadNewTabPageAndCapture(int viewport_width,
@@ -66,9 +67,10 @@ class LocalNTPRenderTest : public InProcessBrowserTest {
                                                           /*delay=*/1000);
     content::WebContents* active_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
+    content::RenderFrameSubmissionObserver render_frame_observer(active_tab);
 
     content::RenderWidgetHost* render_widget_host =
-        active_tab->GetRenderViewHost()->GetWidget();
+        active_tab->GetMainFrame()->GetRenderViewHost()->GetWidget();
     content::RenderWidgetHostView* view = render_widget_host->GetView();
     ASSERT_TRUE(view && view->IsSurfaceAvailableForCopy());
 
@@ -77,7 +79,9 @@ class LocalNTPRenderTest : public InProcessBrowserTest {
 
     gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
     ASSERT_TRUE(!copy_rect.IsEmpty());
-    ASSERT_TRUE(view->IsScrollOffsetAtTop());
+    const cc::RenderFrameMetadata& last_metadata =
+        render_frame_observer.LastRenderFrameMetadata();
+    ASSERT_TRUE(last_metadata.is_scroll_offset_at_top);
 
     run_loop_ = std::make_unique<base::RunLoop>();
     view->CopyFromSurface(copy_rect, copy_rect.size(),

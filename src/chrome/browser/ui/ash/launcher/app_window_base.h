@@ -13,6 +13,10 @@
 
 class AppWindowLauncherItemController;
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace views {
 class Widget;
 }
@@ -29,7 +33,7 @@ class AppWindowBase : public ui::BaseWindow {
 
   AppWindowBase(const ash::ShelfID& shelf_id, views::Widget* widget);
 
-  virtual ~AppWindowBase() {}
+  virtual ~AppWindowBase();
 
   void SetController(AppWindowLauncherItemController* controller);
 
@@ -43,9 +47,8 @@ class AppWindowBase : public ui::BaseWindow {
 
   AppWindowLauncherItemController* controller() const { return controller_; }
 
-  virtual void SetDescription(
-      const std::string& title,
-      const std::vector<uint8_t>& unsafe_icon_data_png) {}
+  virtual void SetDescription(const std::string& title,
+                              const gfx::ImageSkia& icon) {}
 
   virtual void SetFullscreenMode(FullScreenMode mode) {}
 

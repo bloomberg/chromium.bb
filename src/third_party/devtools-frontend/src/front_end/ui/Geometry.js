@@ -28,17 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 /**
  * @type {number}
  */
 export const _Eps = 1e-5;
 
-/**
- * @unrestricted
- */
 export class Vector {
   /**
    * @param {number} x
@@ -70,9 +64,7 @@ export class Vector {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Point {
   /**
    * @param {number} x
@@ -119,9 +111,7 @@ export class Point {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class CubicBezier {
   /**
    * @param {!Point} point1
@@ -138,8 +128,8 @@ export class CubicBezier {
   static parse(text) {
     const keywordValues = CubicBezier.KeywordValues;
     const value = text.toLowerCase().replace(/\s+/g, '');
-    if (Object.keys(keywordValues).indexOf(value) !== -1) {
-      return CubicBezier.parse(keywordValues[value]);
+    if (keywordValues.has(value)) {
+      return CubicBezier.parse(/** @type {string} */ (keywordValues.get(value)));
     }
     const bezierRegex = /^cubic-bezier\(([^,]+),([^,]+),([^,]+),([^,]+)\)$/;
     const match = value.match(bezierRegex);
@@ -176,8 +166,8 @@ export class CubicBezier {
   asCSSText() {
     const raw = 'cubic-bezier(' + this.controlPoints.join(', ') + ')';
     const keywordValues = CubicBezier.KeywordValues;
-    for (const keyword in keywordValues) {
-      if (raw === keywordValues[keyword]) {
+    for (const [keyword, value] of keywordValues) {
+      if (raw === value) {
         return keyword;
       }
     }
@@ -188,17 +178,16 @@ export class CubicBezier {
 /** @type {!RegExp} */
 CubicBezier.Regex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
 
-CubicBezier.KeywordValues = {
-  'linear': 'cubic-bezier(0, 0, 1, 1)',
-  'ease': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-  'ease-in': 'cubic-bezier(0.42, 0, 1, 1)',
-  'ease-in-out': 'cubic-bezier(0.42, 0, 0.58, 1)',
-  'ease-out': 'cubic-bezier(0, 0, 0.58, 1)'
-};
+/** @type {!Map<string, string>} */
+CubicBezier.KeywordValues = new Map([
+  ['linear', 'cubic-bezier(0, 0, 1, 1)'],
+  ['ease', 'cubic-bezier(0.25, 0.1, 0.25, 1)'],
+  ['ease-in', 'cubic-bezier(0.42, 0, 1, 1)'],
+  ['ease-in-out', 'cubic-bezier(0.42, 0, 0.58, 1)'],
+  ['ease-out', 'cubic-bezier(0, 0, 0.58, 1)'],
+]);
 
-/**
- * @unrestricted
- */
+
 export class EulerAngles {
   /**
    * @param {number} alpha
@@ -310,11 +299,59 @@ export const degreesToRadians = function(deg) {
 };
 
 /**
+ * @param {number} deg
+ * @return {number}
+ */
+export const degreesToGradians = function(deg) {
+  return deg / 9 * 10;
+};
+
+/**
+ * @param {number} deg
+ * @return {number}
+ */
+export const degreesToTurns = function(deg) {
+  return deg / 360;
+};
+
+/**
  * @param {number} rad
  * @return {number}
  */
 export const radiansToDegrees = function(rad) {
   return rad * 180 / Math.PI;
+};
+
+/**
+ * @param {number} rad
+ * @return {number}
+ */
+export const radiansToGradians = function(rad) {
+  return rad * 200 / Math.PI;
+};
+
+/**
+ * @param {number} rad
+ * @return {number}
+ */
+export const radiansToTurns = function(rad) {
+  return rad / (2 * Math.PI);
+};
+
+/**
+ * @param {number} grad
+ * @return {number}
+ */
+export const gradiansToRadians = function(grad) {
+  return grad * Math.PI / 200;
+};
+
+/**
+ * @param {number} turns
+ * @return {number}
+ */
+export const turnsToRadians = function(turns) {
+  return turns * 2 * Math.PI;
 };
 
 /**
@@ -328,7 +365,7 @@ export const boundsForTransformedPoints = function(matrix, points, aggregateBoun
     aggregateBounds = {minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity};
   }
   if (points.length % 3) {
-    console.assert('Invalid size of points array');
+    console.warn('Invalid size of points array');
   }
   for (let p = 0; p < points.length; p += 3) {
     let vector = new Vector(points[p], points[p + 1], points[p + 2]);
@@ -341,9 +378,7 @@ export const boundsForTransformedPoints = function(matrix, points, aggregateBoun
   return aggregateBounds;
 };
 
-/**
- * @unrestricted
- */
+
 export class Size {
   /**
    * @param {number} width
@@ -414,9 +449,7 @@ export class Size {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Insets {
   /**
    * @param {number} left
@@ -441,9 +474,7 @@ export class Insets {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Rect {
   /**
    * @param {number} left
@@ -499,9 +530,7 @@ export class Rect {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Constraints {
   /**
    * @param {!Size=} minimum

@@ -24,26 +24,28 @@ class Button;
 // the extensions menu. This includes the extension icon and name and triggers
 // the extension action.
 class ExtensionsMenuButton : public views::LabelButton,
-                             public views::ButtonListener,
                              public ToolbarActionViewDelegateViews {
  public:
   ExtensionsMenuButton(Browser* browser,
                        ExtensionsMenuItemView* parent,
-                       ToolbarActionViewController* controller);
+                       ToolbarActionViewController* controller,
+                       bool allow_pinning);
+  ExtensionsMenuButton(const ExtensionsMenuButton&) = delete;
+  ExtensionsMenuButton& operator=(const ExtensionsMenuButton&) = delete;
   ~ExtensionsMenuButton() override;
 
   static const char kClassName[];
 
   SkColor GetInkDropBaseColor() const override;
+  bool CanShowIconInToolbar() const override;
 
   const base::string16& label_text_for_testing() const {
     return label()->GetText();
   }
 
  private:
-  // views::ButtonListener:
+  // views::LabelButton:
   const char* GetClassName() const override;
-  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -53,6 +55,8 @@ class ExtensionsMenuButton : public views::LabelButton,
   void UpdateState() override;
   bool IsMenuRunning() const override;
 
+  void ButtonPressed();
+
   Browser* const browser_;
 
   // The container containing this view.
@@ -61,7 +65,7 @@ class ExtensionsMenuButton : public views::LabelButton,
   // Responsible for executing the extension's actions.
   ToolbarActionViewController* const controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
+  bool allow_pinning_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_BUTTON_H_

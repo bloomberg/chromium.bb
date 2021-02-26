@@ -52,7 +52,8 @@ class WebSecurityPolicy {
   BLINK_EXPORT static void RegisterURLSchemeAsAllowingServiceWorkers(
       const WebString&);
 
-  // Registers an URL scheme as allowing 'wasm-eval' CSP source directive.
+  // Registers an URL scheme as allowing the not-yet-standardized 'wasm-eval'
+  // CSP source directive.
   BLINK_EXPORT static void RegisterURLSchemeAsAllowingWasmEvalCSP(
       const WebString&);
 
@@ -64,6 +65,12 @@ class WebSecurityPolicy {
   // loaded in a top-level context.
   BLINK_EXPORT static void RegisterURLSchemeAsFirstPartyWhenTopLevel(
       const WebString&);
+
+  // Registers a URL scheme which will be considered first-party when loaded in
+  // a top-level context for child contexts which were loaded over secure
+  // schemes.
+  BLINK_EXPORT static void
+  RegisterURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(const WebString&);
 
   // Support for managing allow/block access lists to origins beyond the
   // same-origin policy. The block list takes priority over the allow list.

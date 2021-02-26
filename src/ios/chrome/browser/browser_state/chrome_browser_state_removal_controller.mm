@@ -47,8 +47,8 @@ void NukeBrowserStates(const std::vector<base::FilePath>& browser_states_path) {
     // Delete both the browser state directory and its corresponding cache.
     base::FilePath cache_path;
     ios::GetUserCacheDirectory(browser_state_path, &cache_path);
-    base::DeleteFileRecursively(browser_state_path);
-    base::DeleteFileRecursively(cache_path);
+    base::DeletePathRecursively(browser_state_path);
+    base::DeletePathRecursively(cache_path);
   }
 }
 
@@ -64,9 +64,10 @@ std::string GetGaiaIdForBrowserState(const std::string& browser_state_path,
 
 // Returns the email's domain of the identity associated with |gaia_id|.
 std::string GetDomainForGaiaId(const std::string& gaia_id) {
-  ChromeIdentity* identity = ios::GetChromeBrowserProvider()
-                                 ->GetChromeIdentityService()
-                                 ->GetIdentityWithGaiaID(gaia_id);
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identity_service->WaitUntilCacheIsPopulated();
+  ChromeIdentity* identity = identity_service->GetIdentityWithGaiaID(gaia_id);
   if (![identity userEmail])
     return std::string();
   return gaia::ExtractDomainName(

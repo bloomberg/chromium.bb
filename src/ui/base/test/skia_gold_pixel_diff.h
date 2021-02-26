@@ -16,6 +16,10 @@ class CommandLine;
 
 class SkBitmap;
 
+namespace ui {
+namespace test {
+
+class SkiaGoldMatchingAlgorithm;
 // This is the utility class for Skia Gold pixeltest.
 class SkiaGoldPixelDiff {
  public:
@@ -36,17 +40,24 @@ class SkiaGoldPixelDiff {
   //   test class name as the prefix. The name will be
   //   |screenshot_prefix| + "_" + |screenshot_name|.'
   //   E.g. 'ToolbarTest_BackButtonHover'.
-  void Init(const std::string& screenshot_prefix);
+  // corpus The corpus (i.e. result group) that will be used to store the
+  //   result in Gold. If omitted, will default to the generic corpus for
+  //   results from gtest-based tests.
+  void Init(const std::string& screenshot_prefix,
+            const std::string& corpus = std::string());
 
-  bool CompareScreenshot(const std::string& screenshot_name,
-                         const SkBitmap& bitmap) const;
+  bool CompareScreenshot(
+      const std::string& screenshot_name,
+      const SkBitmap& bitmap,
+      const SkiaGoldMatchingAlgorithm* algorithm = nullptr) const;
 
  protected:
   // Upload the local file to Skia Gold server. Return true if the screenshot
   // is the same as the remote golden image.
   virtual bool UploadToSkiaGoldServer(
       const base::FilePath& local_file_path,
-      const std::string& remote_golden_image_name) const;
+      const std::string& remote_golden_image_name,
+      const SkiaGoldMatchingAlgorithm* algorithm) const;
 
   virtual int LaunchProcess(const base::CommandLine& cmdline) const;
   bool Initialized() const { return initialized_; }
@@ -58,6 +69,8 @@ class SkiaGoldPixelDiff {
   bool initialized_ = false;
   // Use luci auth on bots. Don't use luci auth for local development.
   bool luci_auth_ = true;
+  // Which corpus in the instance to associate results with.
+  std::string corpus_;
   // Build revision. This is only used for CI run.
   std::string build_revision_;
   // The following 3 members are for tryjob run.
@@ -67,10 +80,16 @@ class SkiaGoldPixelDiff {
   std::string patchset_;
   // Buildbucket build id.
   std::string job_id_;
+  // Which code review system is being used, typically "gerrit" for Chromium
+  // and "gerrit-internal" for Chrome.
+  std::string code_review_system_;
   // The working dir for goldctl. It's the dir for storing temporary files.
   base::FilePath working_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaGoldPixelDiff);
 };
+
+}  // namespace test
+}  // namespace ui
 
 #endif  // UI_BASE_TEST_SKIA_GOLD_PIXEL_DIFF_H_

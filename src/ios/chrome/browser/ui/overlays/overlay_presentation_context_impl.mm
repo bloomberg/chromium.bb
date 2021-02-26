@@ -68,7 +68,7 @@ OverlayPresentationContextImpl::OverlayPresentationContextImpl(
     OverlayModality modality,
     OverlayRequestCoordinatorFactory* factory)
     : presenter_(OverlayPresenter::FromBrowser(browser, modality)),
-      shutdown_helper_(browser, presenter_),
+      shutdown_helper_(browser, presenter_, this),
       coordinator_delegate_(this),
       fullscreen_disabler_(browser, modality),
       coordinator_factory_(factory),
@@ -356,8 +356,7 @@ void OverlayPresentationContextImpl::DismissPresentedUI(
   DCHECK(state->coordinator());
 
   state->set_dismissal_reason(reason);
-  bool animate_dismissal = reason == OverlayDismissalReason::kUserInteraction ||
-                           reason == OverlayDismissalReason::kCancellation;
+  bool animate_dismissal = reason == OverlayDismissalReason::kUserInteraction;
   [state->coordinator() stopAnimated:animate_dismissal];
 }
 
@@ -375,12 +374,21 @@ void OverlayPresentationContextImpl::OverlayUIWasDismissed() {
     SetRequest(nullptr);
 }
 
+void OverlayPresentationContextImpl::BrowserDestroyed() {
+  for (std::pair<OverlayRequest* const, std::unique_ptr<OverlayRequestUIState>>&
+           state : states_) {
+    OverlayRequestUIState* ui_state = state.second.get();
+    ui_state->coordinator().delegate = nil;
+  }
+}
+
 #pragma mark BrowserShutdownHelper
 
 OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserShutdownHelper(
     Browser* browser,
-    OverlayPresenter* presenter)
-    : presenter_(presenter) {
+    OverlayPresenter* presenter,
+    OverlayPresentationContextImpl* presentation_context)
+    : presenter_(presenter), presentation_context_(presentation_context) {
   DCHECK(presenter_);
   browser->AddObserver(this);
 }
@@ -391,6 +399,7 @@ OverlayPresentationContextImpl::BrowserShutdownHelper::
 void OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserDestroyed(
     Browser* browser) {
   presenter_->SetPresentationContext(nullptr);
+  presentation_context_->BrowserDestroyed();
   browser->RemoveObserver(this);
 }
 

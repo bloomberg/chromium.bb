@@ -14,6 +14,9 @@
 
 namespace pdfium {
 namespace base {
+
+typedef void (*OomFunction)(size_t);
+
 namespace internal {
 
 struct PartitionPage;
@@ -73,9 +76,9 @@ struct BASE_EXPORT PartitionRootBase {
   ALWAYS_INLINE static bool IsValidPage(PartitionPage* page);
   ALWAYS_INLINE static PartitionRootBase* FromPage(PartitionPage* page);
 
-  // gOomHandlingFunction is invoked when PartitionAlloc hits OutOfMemory.
-  static void (*gOomHandlingFunction)();
-  NOINLINE void OutOfMemory();
+  // g_oom_handling_function is invoked when PartitionAlloc hits OutOfMemory.
+  static OomFunction g_oom_handling_function;
+  NOINLINE void OutOfMemory(size_t size);
 
   ALWAYS_INLINE void IncreaseCommittedPages(size_t len);
   ALWAYS_INLINE void DecreaseCommittedPages(size_t len);
@@ -163,7 +166,7 @@ ALWAYS_INLINE PartitionRootBase* PartitionRootBase::FromPage(
     PartitionPage* page) {
   PartitionSuperPageExtentEntry* extent_entry =
       reinterpret_cast<PartitionSuperPageExtentEntry*>(
-          reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
+          reinterpret_cast<uintptr_t>(page) & SystemPageBaseMask());
   return extent_entry->root;
 }
 

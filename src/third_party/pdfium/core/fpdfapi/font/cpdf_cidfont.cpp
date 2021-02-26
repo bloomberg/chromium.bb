@@ -21,9 +21,9 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/fx_font.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
 
@@ -201,19 +201,71 @@ void FT_UseCIDCharmap(FXFT_FaceRec* face, int coding) {
     FT_Set_Charmap(face, *FXFT_Get_Face_Charmaps(face));
 }
 
-bool IsMetricForCID(const uint32_t* pEntry, uint16_t CID) {
-  return pEntry[0] <= CID && pEntry[1] >= CID;
+bool IsMetricForCID(const int* pEntry, uint16_t cid) {
+  return pEntry[0] <= cid && pEntry[1] >= cid;
+}
+
+void LoadMetricsArray(const CPDF_Array* pArray,
+                      std::vector<int>* result,
+                      int nElements) {
+  int width_status = 0;
+  int iCurElement = 0;
+  int first_code = 0;
+  int last_code = 0;
+  for (size_t i = 0; i < pArray->size(); i++) {
+    const CPDF_Object* pObj = pArray->GetDirectObjectAt(i);
+    if (!pObj)
+      continue;
+
+    const CPDF_Array* pObjArray = pObj->AsArray();
+    if (pObjArray) {
+      if (width_status != 1)
+        return;
+      if (first_code > std::numeric_limits<int>::max() -
+                           pdfium::CollectionSize<int>(*pObjArray)) {
+        width_status = 0;
+        continue;
+      }
+
+      for (size_t j = 0; j < pObjArray->size(); j += nElements) {
+        result->push_back(first_code);
+        result->push_back(first_code);
+        for (int k = 0; k < nElements; k++)
+          result->push_back(pObjArray->GetIntegerAt(j + k));
+        first_code++;
+      }
+      width_status = 0;
+    } else {
+      if (width_status == 0) {
+        first_code = pObj->GetInteger();
+        width_status = 1;
+      } else if (width_status == 1) {
+        last_code = pObj->GetInteger();
+        width_status = 2;
+        iCurElement = 0;
+      } else {
+        if (!iCurElement) {
+          result->push_back(first_code);
+          result->push_back(last_code);
+        }
+        result->push_back(pObj->GetInteger());
+        iCurElement++;
+        if (iCurElement == nElements)
+          width_status = 0;
+      }
+    }
+  }
 }
 
 }  // namespace
 
 CPDF_CIDFont::CPDF_CIDFont(CPDF_Document* pDocument, CPDF_Dictionary* pFontDict)
     : CPDF_Font(pDocument, pFontDict) {
-  for (size_t i = 0; i < FX_ArraySize(m_CharBBox); ++i)
+  for (size_t i = 0; i < pdfium::size(m_CharBBox); ++i)
     m_CharBBox[i] = FX_RECT(-1, -1, -1, -1);
 }
 
-CPDF_CIDFont::~CPDF_CIDFont() {}
+CPDF_CIDFont::~CPDF_CIDFont() = default;
 
 bool CPDF_CIDFont::IsCIDFont() const {
   return true;
@@ -289,13 +341,13 @@ uint32_t CPDF_CIDFont::CharCodeFromUnicode(wchar_t unicode) const {
     case CIDCODING_CID: {
       if (!m_pCID2UnicodeMap || !m_pCID2UnicodeMap->IsLoaded())
         return 0;
-      uint32_t CID = 0;
-      while (CID < 65536) {
+      uint32_t cid = 0;
+      while (cid < 65536) {
         wchar_t this_unicode =
-            m_pCID2UnicodeMap->UnicodeFromCID(static_cast<uint16_t>(CID));
+            m_pCID2UnicodeMap->UnicodeFromCID(static_cast<uint16_t>(cid));
         if (this_unicode == unicode)
-          return CID;
-        CID++;
+          return cid;
+        cid++;
       }
       break;
     }
@@ -346,24 +398,27 @@ bool CPDF_CIDFont::Load() {
     m_bAdobeCourierStd = true;
   }
 
-  CPDF_Object* pEncoding = m_pFontDict->GetDirectObjectFor("Encoding");
+  const CPDF_Object* pEncoding = m_pFontDict->GetDirectObjectFor("Encoding");
   if (!pEncoding)
     return false;
 
   ByteString subtype = pCIDFontDict->GetStringFor("Subtype");
   m_bType1 = (subtype == "CIDFontType0");
 
+  if (!pEncoding->IsName() && !pEncoding->IsStream())
+    return false;
+
   CPDF_CMapManager* manager = CPDF_FontGlobals::GetInstance()->GetCMapManager();
-  if (pEncoding->IsName()) {
-    ByteString cmap = pEncoding->GetString();
-    m_pCMap = manager->GetPredefinedCMap(cmap);
-  } else if (CPDF_Stream* pStream = pEncoding->AsStream()) {
-    auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
+  const CPDF_Stream* pEncodingStream = pEncoding->AsStream();
+  if (pEncodingStream) {
+    auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pEncodingStream);
     pAcc->LoadAllDataFiltered();
     pdfium::span<const uint8_t> span = pAcc->GetSpan();
     m_pCMap = pdfium::MakeRetain<CPDF_CMap>(span);
   } else {
-    return false;
+    ASSERT(pEncoding->IsName());
+    ByteString cmap = pEncoding->GetString();
+    m_pCMap = manager->GetPredefinedCMap(cmap);
   }
 
   const CPDF_Dictionary* pFontDesc = pCIDFontDict->GetDictFor("FontDescriptor");
@@ -396,10 +451,12 @@ bool CPDF_CIDFont::Load() {
 
   const CPDF_Object* pmap = pCIDFontDict->GetDirectObjectFor("CIDToGIDMap");
   if (pmap) {
-    if (const CPDF_Stream* pStream = pmap->AsStream()) {
-      m_pStreamAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
+    const CPDF_Stream* pMapStream = pmap->AsStream();
+    if (pMapStream) {
+      m_pStreamAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pMapStream);
       m_pStreamAcc->LoadAllDataFiltered();
-    } else if (m_pFontFile && pmap->GetString() == "Identity") {
+    } else if (m_pFontFile && pmap->IsName() &&
+               pmap->GetString() == "Identity") {
       m_bCIDIsGID = true;
     }
   }
@@ -476,8 +533,8 @@ FX_RECT CPDF_CIDFont::GetCharBBox(uint32_t charcode) {
     }
   }
   if (!m_pFontFile && m_Charset == CIDSET_JAPAN1) {
-    uint16_t CID = CIDFromCharCode(charcode);
-    const uint8_t* pTransform = GetCIDTransform(CID);
+    uint16_t cid = CIDFromCharCode(charcode);
+    const uint8_t* pTransform = GetCIDTransform(cid);
     if (pTransform && !bVert) {
       CFX_Matrix matrix(CIDTransformToFloat(pTransform[0]),
                         CIDTransformToFloat(pTransform[1]),
@@ -494,59 +551,57 @@ FX_RECT CPDF_CIDFont::GetCharBBox(uint32_t charcode) {
   return rect;
 }
 
-uint32_t CPDF_CIDFont::GetCharWidthF(uint32_t charcode) {
+int CPDF_CIDFont::GetCharWidthF(uint32_t charcode) {
   if (charcode < 0x80 && m_bAnsiWidthsFixed)
     return (charcode >= 32 && charcode < 127) ? 500 : 0;
 
   uint16_t cid = CIDFromCharCode(charcode);
   size_t size = m_WidthList.size();
-  const uint32_t* pList = m_WidthList.data();
+  const int* pList = m_WidthList.data();
   for (size_t i = 0; i < size; i += 3) {
-    const uint32_t* pEntry = pList + i;
+    const int* pEntry = pList + i;
     if (IsMetricForCID(pEntry, cid))
       return pEntry[2];
   }
   return m_DefaultWidth;
 }
 
-short CPDF_CIDFont::GetVertWidth(uint16_t CID) const {
+int16_t CPDF_CIDFont::GetVertWidth(uint16_t cid) const {
   size_t vertsize = m_VertMetrics.size() / 5;
   if (vertsize) {
-    const uint32_t* pTable = m_VertMetrics.data();
+    const int* pTable = m_VertMetrics.data();
     for (size_t i = 0; i < vertsize; i++) {
-      const uint32_t* pEntry = pTable + (i * 5);
-      if (IsMetricForCID(pEntry, CID))
-        return static_cast<short>(pEntry[2]);
+      const int* pEntry = pTable + (i * 5);
+      if (IsMetricForCID(pEntry, cid))
+        return static_cast<int16_t>(pEntry[2]);
     }
   }
   return m_DefaultW1;
 }
 
-void CPDF_CIDFont::GetVertOrigin(uint16_t CID, short& vx, short& vy) const {
+CFX_Point16 CPDF_CIDFont::GetVertOrigin(uint16_t cid) const {
   size_t vertsize = m_VertMetrics.size() / 5;
   if (vertsize) {
-    const uint32_t* pTable = m_VertMetrics.data();
+    const int* pTable = m_VertMetrics.data();
     for (size_t i = 0; i < vertsize; i++) {
-      const uint32_t* pEntry = pTable + (i * 5);
-      if (IsMetricForCID(pEntry, CID)) {
-        vx = static_cast<short>(pEntry[3]);
-        vy = static_cast<short>(pEntry[4]);
-        return;
+      const int* pEntry = pTable + (i * 5);
+      if (IsMetricForCID(pEntry, cid)) {
+        return {static_cast<int16_t>(pEntry[3]),
+                static_cast<int16_t>(pEntry[4])};
       }
     }
   }
-  uint32_t dwWidth = m_DefaultWidth;
+  int width = m_DefaultWidth;
   size_t size = m_WidthList.size();
-  const uint32_t* pList = m_WidthList.data();
+  const int* pList = m_WidthList.data();
   for (size_t i = 0; i < size; i += 3) {
-    const uint32_t* pEntry = pList + i;
-    if (IsMetricForCID(pEntry, CID)) {
-      dwWidth = pEntry[2];
+    const int* pEntry = pList + i;
+    if (IsMetricForCID(pEntry, cid)) {
+      width = pEntry[2];
       break;
     }
   }
-  vx = static_cast<short>(dwWidth) / 2;
-  vy = m_DefaultVY;
+  return {static_cast<int16_t>(width / 2), m_DefaultVY};
 }
 
 int CPDF_CIDFont::GetGlyphIndex(uint32_t unicode, bool* pVertGlyph) {
@@ -576,7 +631,7 @@ int CPDF_CIDFont::GetGlyphIndex(uint32_t unicode, bool* pVertGlyph) {
   if (error || !m_Font.GetSubData())
     return index;
 
-  m_pTTGSUBTable = pdfium::MakeUnique<CFX_CTTGSUBTable>(m_Font.GetSubData());
+  m_pTTGSUBTable = std::make_unique<CFX_CTTGSUBTable>(m_Font.GetSubData());
   return GetVerticalGlyph(index, pVertGlyph);
 }
 
@@ -599,7 +654,7 @@ int CPDF_CIDFont::GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) {
     uint16_t cid = CIDFromCharCode(charcode);
     wchar_t unicode = 0;
     if (m_bCIDIsGID) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       if (FontStyleIsSymbolic(m_Flags))
         return cid;
 
@@ -664,7 +719,7 @@ int CPDF_CIDFont::GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) {
     if (m_Charset == CIDSET_JAPAN1) {
       if (unicode == '\\') {
         unicode = '/';
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
       } else if (unicode == 0xa5) {
         unicode = 0x5c;
 #endif
@@ -760,57 +815,6 @@ void CPDF_CIDFont::LoadSubstFont() {
                    g_CharsetCPs[m_Charset], IsVertWriting());
 }
 
-void CPDF_CIDFont::LoadMetricsArray(const CPDF_Array* pArray,
-                                    std::vector<uint32_t>* result,
-                                    int nElements) {
-  int width_status = 0;
-  int iCurElement = 0;
-  uint32_t first_code = 0;
-  uint32_t last_code = 0;
-  for (size_t i = 0; i < pArray->size(); i++) {
-    const CPDF_Object* pObj = pArray->GetDirectObjectAt(i);
-    if (!pObj)
-      continue;
-
-    if (const CPDF_Array* pObjArray = pObj->AsArray()) {
-      if (width_status != 1)
-        return;
-      if (first_code >
-          std::numeric_limits<uint32_t>::max() - pObjArray->size()) {
-        width_status = 0;
-        continue;
-      }
-
-      for (size_t j = 0; j < pObjArray->size(); j += nElements) {
-        result->push_back(first_code);
-        result->push_back(first_code);
-        for (int k = 0; k < nElements; k++)
-          result->push_back(pObjArray->GetIntegerAt(j + k));
-        first_code++;
-      }
-      width_status = 0;
-    } else {
-      if (width_status == 0) {
-        first_code = pObj->GetInteger();
-        width_status = 1;
-      } else if (width_status == 1) {
-        last_code = pObj->GetInteger();
-        width_status = 2;
-        iCurElement = 0;
-      } else {
-        if (!iCurElement) {
-          result->push_back(first_code);
-          result->push_back(last_code);
-        }
-        result->push_back(pObj->GetInteger());
-        iCurElement++;
-        if (iCurElement == nElements)
-          width_status = 0;
-      }
-    }
-  }
-}
-
 // static
 float CPDF_CIDFont::CIDTransformToFloat(uint8_t ch) {
   return (ch < 128 ? ch : ch - 255) * (1.0f / 127);
@@ -833,14 +837,14 @@ void CPDF_CIDFont::LoadGB2312() {
   m_bAnsiWidthsFixed = true;
 }
 
-const uint8_t* CPDF_CIDFont::GetCIDTransform(uint16_t CID) const {
+const uint8_t* CPDF_CIDFont::GetCIDTransform(uint16_t cid) const {
   if (m_Charset != CIDSET_JAPAN1 || m_pFontFile)
     return nullptr;
 
-  const auto* pEnd = g_Japan1_VertCIDs + FX_ArraySize(g_Japan1_VertCIDs);
+  const auto* pEnd = g_Japan1_VertCIDs + pdfium::size(g_Japan1_VertCIDs);
   const auto* pTransform = std::lower_bound(
-      g_Japan1_VertCIDs, pEnd, CID,
+      g_Japan1_VertCIDs, pEnd, cid,
       [](const CIDTransform& entry, uint16_t cid) { return entry.cid < cid; });
-  return (pTransform < pEnd && CID == pTransform->cid) ? &pTransform->a
+  return (pTransform < pEnd && cid == pTransform->cid) ? &pTransform->a
                                                        : nullptr;
 }

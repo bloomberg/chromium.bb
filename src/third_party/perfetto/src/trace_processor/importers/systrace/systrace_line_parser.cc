@@ -39,12 +39,16 @@ namespace trace_processor {
 SystraceLineParser::SystraceLineParser(TraceProcessorContext* ctx)
     : context_(ctx),
       sched_wakeup_name_id_(ctx->storage->InternString("sched_wakeup")),
-      cpuidle_name_id_(ctx->storage->InternString("cpuidle")) {}
+      cpuidle_name_id_(ctx->storage->InternString("cpuidle")),
+      workqueue_name_id_(ctx->storage->InternString("workqueue")),
+      sched_blocked_reason_id_(
+          ctx->storage->InternString("sched_blocked_reason")),
+      io_wait_id_(ctx->storage->InternString("io_wait")) {}
 
 util::Status SystraceLineParser::ParseLine(const SystraceLine& line) {
-  context_->process_tracker->GetOrCreateThread(line.pid);
-  context_->process_tracker->UpdateThreadName(
-      line.pid, context_->storage->InternString(base::StringView(line.task)));
+  auto utid = context_->process_tracker->UpdateThreadName(
+      line.pid, context_->storage->InternString(base::StringView(line.task)),
+      ThreadNamePriority::kFtrace);
 
   if (!line.tgid_str.empty() && line.tgid_str != "-----") {
     base::Optional<uint32_t> tgid = base::StringToUInt32(line.tgid_str);
@@ -57,6 +61,12 @@ util::Status SystraceLineParser::ParseLine(const SystraceLine& line) {
   for (base::StringSplitter ss(line.args_str, ' '); ss.Next();) {
     std::string key;
     std::string value;
+    if (!base::Contains(ss.cur_token(), "=")) {
+      key = "name";
+      value = ss.cur_token();
+      args.emplace(std::move(key), std::move(value));
+      continue;
+    }
     for (base::StringSplitter inner(ss.cur_token(), '='); inner.Next();) {
       if (key.empty()) {
         key = inner.cur_token();
@@ -98,8 +108,8 @@ util::Status SystraceLineParser::ParseLine(const SystraceLine& line) {
     }
 
     StringId name_id = context_->storage->InternString(base::StringView(comm));
-    auto wakee_utid =
-        context_->process_tracker->UpdateThreadName(wakee_pid.value(), name_id);
+    auto wakee_utid = context_->process_tracker->UpdateThreadName(
+        wakee_pid.value(), name_id, ThreadNamePriority::kFtrace);
     context_->event_tracker->PushInstant(line.ts, sched_wakeup_name_id_,
                                          wakee_utid, RefType::kRefUtid);
   } else if (line.event_name == "cpu_idle") {
@@ -165,6 +175,64 @@ util::Status SystraceLineParser::ParseLine(const SystraceLine& line) {
     }
     BinderTracker::GetOrCreate(context_)->TransactionAllocBuf(
         line.ts, line.pid, data_size.value(), offsets_size.value());
+  } else if (line.event_name == "clock_set_rate" ||
+             line.event_name == "clock_enable" ||
+             line.event_name == "clock_disable") {
+    std::string subtitle =
+        line.event_name == "clock_set_rate" ? " Frequency" : " State";
+    auto rate = base::StringToUInt32(args["state"]);
+    if (!rate.has_value()) {
+      return util::Status("Could not convert state");
+    }
+    std::string clock_name_str = args["name"] + subtitle;
+    StringId clock_name =
+        context_->storage->InternString(base::StringView(clock_name_str));
+    TrackId track =
+        context_->track_tracker->InternGlobalCounterTrack(clock_name);
+    context_->event_tracker->PushCounter(line.ts, rate.value(), track);
+  } else if (line.event_name == "workqueue_execute_start") {
+    auto split = base::SplitString(line.args_str, "function ");
+    StringId name_id =
+        context_->storage->InternString(base::StringView(split[1]));
+    TrackId track = context_->track_tracker->InternThreadTrack(utid);
+    context_->slice_tracker->Begin(line.ts, track, workqueue_name_id_, name_id);
+  } else if (line.event_name == "workqueue_execute_end") {
+    TrackId track = context_->track_tracker->InternThreadTrack(utid);
+    context_->slice_tracker->End(line.ts, track, workqueue_name_id_);
+  } else if (line.event_name == "thermal_temperature") {
+    std::string thermal_zone = args["thermal_zone"] + " Temperature";
+    StringId track_name =
+        context_->storage->InternString(base::StringView(thermal_zone));
+    TrackId track =
+        context_->track_tracker->InternGlobalCounterTrack(track_name);
+    auto temp = base::StringToInt32(args["temp"]);
+    if (!temp.has_value()) {
+      return util::Status("Could not convert temp");
+    }
+    context_->event_tracker->PushCounter(line.ts, temp.value(), track);
+  } else if (line.event_name == "cdev_update") {
+    std::string type = args["type"] + " Cooling Device";
+    StringId track_name =
+        context_->storage->InternString(base::StringView(type));
+    TrackId track =
+        context_->track_tracker->InternGlobalCounterTrack(track_name);
+    auto target = base::StringToDouble(args["target"]);
+    if (!target.has_value()) {
+      return util::Status("Could not convert target");
+    }
+    context_->event_tracker->PushCounter(line.ts, target.value(), track);
+  } else if (line.event_name == "sched_blocked_reason") {
+    uint32_t wakee_pid = *base::StringToUInt32(args["pid"]);
+    auto wakee_utid = context_->process_tracker->GetOrCreateThread(wakee_pid);
+
+    InstantId id = context_->event_tracker->PushInstant(
+        line.ts, sched_blocked_reason_id_, wakee_utid, RefType::kRefUtid,
+        false);
+
+    auto inserter = context_->args_tracker->AddArgsTo(id);
+    bool io_wait = *base::StringToInt32(args["iowait"]);
+    inserter.AddArg(io_wait_id_, Variadic::Boolean(io_wait));
+    context_->args_tracker->Flush();
   }
 
   return util::OkStatus();

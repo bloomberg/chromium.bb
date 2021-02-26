@@ -251,6 +251,7 @@ void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
 int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,
                                       const aom_metadata_array_t *arr) {
   if (!ybf || !arr || !arr->metadata_array) return -1;
+  if (ybf->metadata == arr) return 0;
   aom_remove_metadata_from_frame_buffer(ybf);
   ybf->metadata = aom_img_metadata_array_alloc(arr->sz);
   if (!ybf->metadata) return -1;

@@ -56,7 +56,9 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
           !node->is_permanent_node() &&
           base::FeatureList::IsEnabled(
               switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
-        // Force the favicon to be loaded.
+        // Force the favicon to be loaded. The worker will be nudged for commit
+        // in BookmarkModelObserverImpl::BookmarkNodeFaviconChanged() once
+        // favicon is loaded.
         bookmark_model_->GetFavicon(node);
         continue;
       }
@@ -68,7 +70,7 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
       data->parent_id = parent_entity->metadata()->server_id();
       // TODO(crbug.com/516866): Double check that custom passphrase works well
       // with this implementation, because:
-      // 1. NonBlockingTypeCommitContribution::AdjustCommitProto() clears the
+      // 1. syncer::CommitContributionImpl::AdjustCommitProto() clears the
       //    title out.
       // 2. Bookmarks (maybe ancient legacy bookmarks only?) use/used |name| to
       //    encode the title.

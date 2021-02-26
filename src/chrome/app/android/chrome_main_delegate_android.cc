@@ -14,7 +14,7 @@
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
-#include "components/policy/core/browser/android/android_combined_policy_provider.h"
+#include "components/policy/core/common/android/android_combined_policy_provider.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -24,7 +24,13 @@
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #endif
 
+namespace {
 using safe_browsing::SafeBrowsingApiHandler;
+
+// Whether to use the process start time for startup metrics.
+const base::Feature kUseProcessStartTimeForMetrics{
+    "UseProcessStartTimeForMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace
 
 // ChromeMainDelegateAndroid is created when the library is loaded. It is always
 // done in the process' main Java thread. But for a non-browser process, e.g.
@@ -33,9 +39,6 @@ ChromeMainDelegateAndroid::ChromeMainDelegateAndroid() = default;
 ChromeMainDelegateAndroid::~ChromeMainDelegateAndroid() = default;
 
 bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
-  // Start the sampling profiler as early as possible.
-  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
-
 #if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   safe_browsing_api_handler_.reset(
       new safe_browsing::SafeBrowsingApiHandlerBridge());
@@ -48,9 +51,11 @@ bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
   return ChromeMainDelegate::BasicStartupComplete(exit_code);
 }
 
-void ChromeMainDelegateAndroid::SandboxInitialized(
-    const std::string& process_type) {
-  ChromeMainDelegate::SandboxInitialized(process_type);
+void ChromeMainDelegateAndroid::PreSandboxStartup() {
+  ChromeMainDelegate::PreSandboxStartup();
+
+  // Start the sampling profiler after crashpad initialization.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 }
 
 void ChromeMainDelegateAndroid::SecureDataDirectory() {
@@ -87,8 +92,19 @@ int ChromeMainDelegateAndroid::RunProcess(
   // Also only record the start time the first time round, since this is the
   // start time of the application, and will be same for all requests.
   if (!browser_runner_) {
-    startup_metric_utils::RecordApplicationStartTime(
-        chrome::android::GetApplicationStartTime());
+    base::TimeTicks process_start_time = chrome::android::GetProcessStartTime();
+    base::TimeTicks application_start_time =
+        chrome::android::GetApplicationStartTime();
+    if (!process_start_time.is_null()) {
+      startup_metric_utils::RecordStartupProcessCreationTime(
+          process_start_time);
+      // TODO(crbug.com/1127482): Perf bots should add support for measuring
+      // Startup.LoadTime.ProcessCreateToApplicationStart, then the
+      // kUseProcessStartTimeForMetrics feature can be removed.
+      if (base::FeatureList::IsEnabled(kUseProcessStartTimeForMetrics))
+        application_start_time = process_start_time;
+    }
+    startup_metric_utils::RecordApplicationStartTime(application_start_time);
     browser_runner_ = content::BrowserMainRunner::Create();
   }
 

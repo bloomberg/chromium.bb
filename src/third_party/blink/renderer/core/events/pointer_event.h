@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 
+#include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -44,6 +45,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float pressure() const { return pressure_; }
   int32_t tiltX() const { return tilt_x_; }
   int32_t tiltY() const { return tilt_y_; }
+  double azimuthAngle() const { return azimuth_angle_; }
+  double altitudeAngle() const { return altitude_angle_; }
   float tangentialPressure() const { return tangential_pressure_; }
   int32_t twist() const { return twist_; }
   const String& pointerType() const { return pointer_type_; }
@@ -76,7 +79,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   PointerId pointer_id_;
@@ -85,6 +88,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float pressure_;
   int32_t tilt_x_;
   int32_t tilt_y_;
+  double azimuth_angle_;
+  double altitude_angle_;
   float tangential_pressure_;
   int32_t twist_;
   String pointer_type_;

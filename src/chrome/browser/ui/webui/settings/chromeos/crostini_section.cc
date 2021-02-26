@@ -7,13 +7,10 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,21 +33,15 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-const std::vector<SearchConcept>& GetCrostiniSearchConcepts() {
+const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniDetailsSubpagePath,
        mojom::SearchResultIcon::kPenguin,
-       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDetails},
        {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES,
        mojom::kCrostiniUsbPreferencesSubpagePath,
        mojom::SearchResultIcon::kPenguin,
@@ -82,18 +73,33 @@ const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
         IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT2,
         IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT3,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCrostiniMicAccess},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniOptedOutSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
+      {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniSectionPath,
        mojom::SearchResultIcon::kPenguin,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSection,
        {.section = mojom::Section::kCrostini},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
+       mojom::kCrostiniSectionPath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSetUpCrostini},
        {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
@@ -177,44 +183,20 @@ const std::vector<SearchConcept>& GetCrostiniDiskResizingSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetCrostiniMicSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS,
-       mojom::kCrostiniDetailsSubpagePath,
-       mojom::SearchResultIcon::kPenguin,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kCrostiniMicAccess},
-       {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS_ALT1,
-        SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
 bool IsProfileManaged(Profile* profile) {
   return profile->GetProfilePolicyConnector()->IsManaged();
 }
 
 bool IsDeviceManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
+  return webui::IsEnterpriseManaged();
 }
 
 bool IsAdbSideloadingAllowed() {
   return base::FeatureList::IsEnabled(features::kArcAdbSideloadingFeature);
 }
 
-bool IsPortForwardingAllowed() {
-  return base::FeatureList::IsEnabled(features::kCrostiniPortForwarding);
-}
-
 bool IsDiskResizingAllowed() {
   return base::FeatureList::IsEnabled(features::kCrostiniDiskResizing);
-}
-
-bool IsMicSettingAllowed() {
-  return base::FeatureList::IsEnabled(features::kCrostiniShowMicSetting);
 }
 
 }  // namespace
@@ -288,6 +270,10 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION},
       {"crostiniSharedUsbDevicesListEmptyMessage",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE},
+      {"crostiniSharedUsbDevicesInUse",
+       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_IN_USE},
+      {"crostiniSharedUsbDevicesReassign",
+       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_REASSIGN},
       {"crostiniArcAdbTitle", IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE},
       {"crostiniArcAdbDescription", IDS_SETTINGS_CROSTINI_ARC_ADB_DESCRIPTION},
       {"crostiniArcAdbLabel", IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL},
@@ -320,16 +306,22 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION},
       {"crostiniPortForwardingAddPortDialogTitle",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_TITLE},
-      {"crostiniPortForwardingAddPortDialogLabel",
-       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL},
+      {"crostiniPortForwardingAddPortDialogPortNumberLabel",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_LABEL},
+      {"crostiniPortForwardingAddPortDialogLabelLabel",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL_LABEL},
       {"crostiniPortForwardingTCP", IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP},
       {"crostiniPortForwardingUDP", IDS_SETTINGS_CROSTINI_PORT_FORWARDING_UDP},
       {"crostiniPortForwardingAddError",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR},
+      {"crostiniPortForwardingAddExisting",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_EXISTING},
       {"crostiniPortForwardingRemoveAllPorts",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_ALL_PORTS},
       {"crostiniPortForwardingRemovePort",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_PORT},
+      {"crostiniPortForwardingActivatePortError",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ACTIVATE_PORT_ERROR},
       {"crostiniPortForwardingToggleAriaLabel",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TOGGLE_PORT_ARIA_LABEL},
       {"crostiniPortForwardingRemoveAllPortsAriaLabel",
@@ -432,13 +424,9 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           chromeos::ProfileHelper::IsOwnerProfile(profile()));
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile()));
-  html_source->AddBoolean(
-      "canChangeAdbSideloading",
-      crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(profile()));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
                           IsContainerUpgradeAllowed());
   html_source->AddBoolean("showCrostiniDiskResize", IsDiskResizingAllowed());
-  html_source->AddBoolean("showCrostiniMic", IsMicSettingAllowed());
 }
 
 void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
@@ -446,6 +434,95 @@ void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
                                                      /*check_policy=*/false)) {
     web_ui->AddMessageHandler(std::make_unique<CrostiniHandler>(profile()));
   }
+}
+
+int CrostiniSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_CROSTINI_TITLE;
+}
+
+mojom::Section CrostiniSection::GetSection() const {
+  return mojom::Section::kCrostini;
+}
+
+mojom::SearchResultIcon CrostiniSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kPenguin;
+}
+
+std::string CrostiniSection::GetSectionPath() const {
+  return mojom::kCrostiniSectionPath;
+}
+
+bool CrostiniSection::LogMetric(mojom::Setting setting,
+                                base::Value& value) const {
+  // Unimplemented.
+  return false;
+}
+
+void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kSetUpCrostini);
+
+  // Crostini details.
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_CROSTINI_LABEL,
+                                     mojom::Subpage::kCrostiniDetails,
+                                     mojom::SearchResultIcon::kPenguin,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kCrostiniDetailsSubpagePath);
+  static constexpr mojom::Setting kCrostiniDetailsSettings[] = {
+      mojom::Setting::kCrostiniContainerUpgrade,
+      mojom::Setting::kCrostiniDiskResize,
+      mojom::Setting::kCrostiniMicAccess,
+      mojom::Setting::kUninstallCrostini,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCrostiniDetails,
+                            kCrostiniDetailsSettings, generator);
+
+  // Manage shared folders.
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_CROSTINI_SHARED_PATHS,
+      mojom::Subpage::kCrostiniManageSharedFolders,
+      mojom::Subpage::kCrostiniDetails, mojom::SearchResultIcon::kPenguin,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kCrostiniManageSharedFoldersSubpagePath);
+
+  // USB preferences.
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL,
+      mojom::Subpage::kCrostiniUsbPreferences, mojom::Subpage::kCrostiniDetails,
+      mojom::SearchResultIcon::kPenguin,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kCrostiniUsbPreferencesSubpagePath);
+
+  // Backup and restore.
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE,
+                                   mojom::Subpage::kCrostiniBackupAndRestore,
+                                   mojom::Subpage::kCrostiniDetails,
+                                   mojom::SearchResultIcon::kPenguin,
+                                   mojom::SearchResultDefaultRank::kMedium,
+                                   mojom::kCrostiniBackupAndRestoreSubpagePath);
+  static constexpr mojom::Setting kCrostiniBackupAndRestoreSettings[] = {
+      mojom::Setting::kBackupLinuxAppsAndFiles,
+      mojom::Setting::kRestoreLinuxAppsAndFiles,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kCrostiniBackupAndRestore,
+                            kCrostiniBackupAndRestoreSettings, generator);
+
+  // Develop Android apps.
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE,
+      mojom::Subpage::kCrostiniDevelopAndroidApps,
+      mojom::Subpage::kCrostiniDetails, mojom::SearchResultIcon::kPenguin,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kCrostiniDevelopAndroidAppsSubpagePath);
+  generator->RegisterNestedSetting(mojom::Setting::kCrostiniAdbDebugging,
+                                   mojom::Subpage::kCrostiniDevelopAndroidApps);
+
+  // Port forwarding.
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_PORT_FORWARDING,
+                                   mojom::Subpage::kCrostiniPortForwarding,
+                                   mojom::Subpage::kCrostiniDetails,
+                                   mojom::SearchResultIcon::kPenguin,
+                                   mojom::SearchResultDefaultRank::kMedium,
+                                   mojom::kCrostiniPortForwardingSubpagePath);
 }
 
 bool CrostiniSection::IsCrostiniAllowed() {
@@ -461,48 +538,47 @@ bool CrostiniSection::IsContainerUpgradeAllowed() {
   return crostini::ShouldAllowContainerUpgrade(profile());
 }
 
+bool CrostiniSection::IsPortForwardingAllowed() {
+  return crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile());
+}
+
 void CrostiniSection::UpdateSearchTags() {
-  registry()->RemoveSearchTags(GetCrostiniSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniMicSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
 
   if (!IsCrostiniAllowed())
     return;
 
-  registry()->AddSearchTags(GetCrostiniSearchConcepts());
-
   if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
-    registry()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());
+    updater.AddSearchTags(GetCrostiniOptedOutSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetCrostiniOptedInSearchConcepts());
+  updater.AddSearchTags(GetCrostiniOptedInSearchConcepts());
 
   if (IsExportImportAllowed())
-    registry()->AddSearchTags(GetCrostiniExportImportSearchConcepts());
+    updater.AddSearchTags(GetCrostiniExportImportSearchConcepts());
 
   if (IsAdbSideloadingAllowed() &&
       pref_service_->GetBoolean(arc::prefs::kArcEnabled)) {
-    registry()->AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+    updater.AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
   }
 
   if (IsPortForwardingAllowed())
-    registry()->AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
+    updater.AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
 
   if (IsContainerUpgradeAllowed())
-    registry()->AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+    updater.AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
 
   if (IsDiskResizingAllowed())
-    registry()->AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
-
-  if (IsMicSettingAllowed())
-    registry()->AddSearchTags(GetCrostiniMicSearchConcepts());
+    updater.AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
 }
 
 }  // namespace settings

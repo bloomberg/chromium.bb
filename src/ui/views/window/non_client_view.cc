@@ -5,11 +5,13 @@
 #include "ui/views/window/non_client_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
@@ -89,6 +91,15 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
+gfx::Rect NonClientFrameView::GetBoundsForClientView() const {
+  return gfx::Rect();
+}
+
+gfx::Rect NonClientFrameView::GetWindowBoundsForClientBounds(
+    const gfx::Rect& client_bounds) const {
+  return client_bounds;
+}
+
 bool NonClientFrameView::GetClientMask(const gfx::Size& size,
                                        SkPath* mask) const {
   return false;
@@ -105,7 +116,9 @@ gfx::Point NonClientFrameView::GetSystemMenuScreenPixelLocation() const {
 }
 #endif
 
-void NonClientFrameView::PaintAsActiveChanged(bool active) {}
+int NonClientFrameView::NonClientHitTest(const gfx::Point& point) {
+  return HTNOWHERE;
+}
 
 void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
@@ -136,11 +149,11 @@ int NonClientFrameView::GetSystemMenuY() const {
 }
 #endif
 
-BEGIN_METADATA(NonClientFrameView)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(NonClientFrameView, View)
+END_METADATA
 
-NonClientView::NonClientView() {
+NonClientView::NonClientView(views::ClientView* client_view)
+    : client_view_(client_view) {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
@@ -150,12 +163,13 @@ NonClientView::~NonClientView() {
   RemoveChildView(frame_view_.get());
 }
 
-void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
+void NonClientView::SetFrameView(
+    std::unique_ptr<NonClientFrameView> frame_view) {
   // See comment in header about ownership.
   frame_view->set_owned_by_client();
   if (frame_view_.get())
     RemoveChildView(frame_view_.get());
-  frame_view_.reset(frame_view);
+  frame_view_ = std::move(frame_view);
   if (parent())
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
 }
@@ -172,8 +186,8 @@ void NonClientView::SetOverlayView(View* view) {
     AddChildView(overlay_view_);
 }
 
-bool NonClientView::CanClose() {
-  return client_view_->CanClose();
+CloseRequestResult NonClientView::OnWindowCloseRequested() {
+  return client_view_->OnWindowCloseRequested();
 }
 
 void NonClientView::WindowClosing() {
@@ -323,8 +337,7 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
   return ViewTargeterDelegate::TargetForRect(root, rect);
 }
 
-BEGIN_METADATA(NonClientView)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(NonClientView, View)
+END_METADATA
 
 }  // namespace views

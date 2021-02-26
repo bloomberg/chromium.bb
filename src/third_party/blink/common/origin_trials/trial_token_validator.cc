@@ -32,8 +32,12 @@ TrialTokenResult::TrialTokenResult(OriginTrialTokenStatus status)
     : status(status) {}
 TrialTokenResult::TrialTokenResult(OriginTrialTokenStatus status,
                                    std::string name,
-                                   base::Time expiry)
-    : status(status), feature_name(name), expiry_time(expiry) {}
+                                   base::Time expiry,
+                                   bool is_third_party)
+    : status(status),
+      feature_name(name),
+      expiry_time(expiry),
+      is_third_party(is_third_party) {}
 TrialTokenResult::~TrialTokenResult() = default;
 
 TrialTokenValidator::TrialTokenValidator() {}
@@ -50,17 +54,21 @@ void TrialTokenValidator::ResetOriginTrialPolicyGetter() {
       []() -> blink::OriginTrialPolicy* { return nullptr; }));
 }
 
-OriginTrialPolicy* TrialTokenValidator::Policy() {
-  return PolicyGetter().Run();
+TrialTokenResult TrialTokenValidator::ValidateToken(
+    base::StringPiece token,
+    const url::Origin& origin,
+    base::Time current_time) const {
+  return ValidateToken(token, origin, nullptr, current_time);
 }
 
 TrialTokenResult TrialTokenValidator::ValidateToken(
     base::StringPiece token,
     const url::Origin& origin,
+    const url::Origin* third_party_origin,
     base::Time current_time) const {
-  OriginTrialPolicy* policy = Policy();
+  OriginTrialPolicy* policy = PolicyGetter().Run();
 
-  if (!policy->IsOriginTrialsSupported())
+  if (!policy || !policy->IsOriginTrialsSupported())
     return TrialTokenResult(OriginTrialTokenStatus::kNotSupported);
 
   std::vector<base::StringPiece> public_keys = policy->GetPublicKeys();
@@ -78,7 +86,18 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
   if (status != OriginTrialTokenStatus::kSuccess)
     return TrialTokenResult(status);
 
-  status = trial_token->IsValid(origin, current_time);
+  // If the third_party flag is set on the token, we match it against third
+  // party origin if it exists. Otherwise match against document origin.
+  if (trial_token->is_third_party()) {
+    if (third_party_origin) {
+      status = trial_token->IsValid(*third_party_origin, current_time);
+    } else {
+      status = OriginTrialTokenStatus::kWrongOrigin;
+    }
+  } else {
+    status = trial_token->IsValid(origin, current_time);
+  }
+
   if (status != OriginTrialTokenStatus::kSuccess)
     return TrialTokenResult(status);
 
@@ -88,8 +107,14 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
   if (policy->IsTokenDisabled(trial_token->signature()))
     return TrialTokenResult(OriginTrialTokenStatus::kTokenDisabled);
 
+  if (trial_token->usage_restriction() ==
+          TrialToken::UsageRestriction::kSubset &&
+      policy->IsFeatureDisabledForUser(trial_token->feature_name()))
+    return TrialTokenResult(OriginTrialTokenStatus::kFeatureDisabledForUser);
+
   return TrialTokenResult(status, trial_token->feature_name(),
-                          trial_token->expiry_time());
+                          trial_token->expiry_time(),
+                          trial_token->is_third_party());
 }
 
 bool TrialTokenValidator::RequestEnablesFeature(const net::URLRequest* request,
@@ -166,7 +191,7 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
 
 // static
 bool TrialTokenValidator::IsTrialPossibleOnOrigin(const GURL& url) {
-  OriginTrialPolicy* policy = Policy();
+  OriginTrialPolicy* policy = PolicyGetter().Run();
   return policy && policy->IsOriginTrialsSupported() &&
          policy->IsOriginSecure(url);
 }

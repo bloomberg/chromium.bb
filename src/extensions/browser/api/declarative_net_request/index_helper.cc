@@ -8,13 +8,14 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -28,8 +29,11 @@ IndexHelper::Result CombineResults(
     std::vector<std::pair<const RulesetSource*,
                           IndexAndPersistJSONRulesetResult>> results,
     bool log_histograms) {
+  using IndexStatus = IndexAndPersistJSONRulesetResult::Status;
+
   IndexHelper::Result total_result;
-  total_result.ruleset_checksums.reserve(results.size());
+  total_result.ruleset_install_prefs.reserve(results.size());
+  bool any_ruleset_indexed_successfully = false;
   size_t total_rules_count = 0;
   size_t enabled_rules_count = 0;
   size_t enabled_regex_rules_count = 0;
@@ -45,46 +49,65 @@ IndexHelper::Result CombineResults(
 
     // Per-ruleset limits should have been enforced during ruleset indexing.
     DCHECK_LE(index_result.regex_rules_count,
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(index_result.rules_count, source->rule_count_limit());
 
-    if (!index_result.success) {
+    if (index_result.status == IndexStatus::kError) {
       total_result.error = std::move(index_result.error);
       return total_result;
     }
-
-    total_result.ruleset_checksums.emplace_back(
-        source->id(), std::move(index_result.ruleset_checksum));
 
     total_result.warnings.insert(
         total_result.warnings.end(),
         std::make_move_iterator(index_result.warnings.begin()),
         std::make_move_iterator(index_result.warnings.end()));
 
-    total_index_and_persist_time += index_result.index_and_persist_time;
-    total_rules_count += index_result.rules_count;
+    if (index_result.status == IndexStatus::kIgnore) {
+      // If the ruleset was ignored and not indexed, there should be install
+      // warnings associated.
+      DCHECK(!index_result.warnings.empty());
+      total_result.ruleset_install_prefs.emplace_back(
+          source->id(), base::nullopt /* ruleset_checksum */,
+          true /* ignored */);
+      continue;
+    }
 
-    if (source->enabled_by_default()) {
-      enabled_rules_count += index_result.rules_count;
-      enabled_regex_rules_count += index_result.regex_rules_count;
+    DCHECK_EQ(IndexStatus::kSuccess, index_result.status);
+
+    if (index_result.status == IndexStatus::kSuccess) {
+      any_ruleset_indexed_successfully = true;
+
+      total_result.ruleset_install_prefs.emplace_back(
+          source->id(), std::move(index_result.ruleset_checksum),
+          false /* ignored */);
+
+      total_index_and_persist_time += index_result.index_and_persist_time;
+      total_rules_count += index_result.rules_count;
+
+      if (source->enabled_by_default()) {
+        enabled_rules_count += index_result.rules_count;
+        enabled_regex_rules_count += index_result.regex_rules_count;
+      }
     }
   }
 
   // Raise an install warning if the enabled rule count exceeds the API limits.
   // We don't raise a hard error to maintain forwards compatibility.
-  if (enabled_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES)) {
+  if (!base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules) &&
+      enabled_rules_count > static_cast<size_t>(GetStaticRuleLimit())) {
     total_result.warnings.emplace_back(
-        kEnabledRuleCountExceeded, manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        kEnabledRuleCountExceeded,
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
   } else if (enabled_regex_rules_count >
-             static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+             static_cast<size_t>(GetRegexRuleLimit())) {
     total_result.warnings.emplace_back(
         kEnabledRegexRuleCountExceeded,
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
   }
 
-  if (log_histograms) {
+  if (log_histograms && any_ruleset_indexed_successfully) {
     UMA_HISTOGRAM_TIMES(
         declarative_net_request::kIndexAndPersistRulesTimeHistogram,
         total_index_and_persist_time);

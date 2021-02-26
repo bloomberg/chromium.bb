@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -29,9 +28,6 @@
 #include "media/base/wall_clock_time_source.h"
 
 namespace media {
-
-// See |video_underflow_threshold_|.
-static const int kDefaultVideoUnderflowThresholdMs = 3000;
 
 class RendererImpl::RendererClientInternal final : public RendererClient {
  public:
@@ -93,7 +89,7 @@ RendererImpl::RendererImpl(
       video_renderer_(std::move(video_renderer)),
       current_audio_stream_(nullptr),
       current_video_stream_(nullptr),
-      time_source_(NULL),
+      time_source_(nullptr),
       time_ticking_(false),
       playback_rate_(0.0),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -105,23 +101,10 @@ RendererImpl::RendererImpl(
       cdm_context_(nullptr),
       underflow_disabled_for_testing_(false),
       clockless_video_playback_enabled_for_testing_(false),
-      video_underflow_threshold_(
-          base::TimeDelta::FromMilliseconds(kDefaultVideoUnderflowThresholdMs)),
       pending_audio_track_change_(false),
       pending_video_track_change_(false) {
   weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __func__;
-
-  // TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 are
-  // complete.
-  int threshold_ms = 0;
-  std::string threshold_ms_str(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kVideoUnderflowThresholdMs));
-  if (base::StringToInt(threshold_ms_str, &threshold_ms) && threshold_ms > 0) {
-    video_underflow_threshold_ =
-        base::TimeDelta::FromMilliseconds(threshold_ms);
-  }
 }
 
 RendererImpl::~RendererImpl() {
@@ -204,6 +187,14 @@ void RendererImpl::SetLatencyHint(
 
   if (audio_renderer_)
     audio_renderer_->SetLatencyHint(latency_hint);
+}
+
+void RendererImpl::SetPreservesPitch(bool preserves_pitch) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (audio_renderer_)
+    audio_renderer_->SetPreservesPitch(preserves_pitch);
 }
 
 void RendererImpl::Flush(base::OnceClosure flush_cb) {
@@ -735,7 +726,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
                               type, new_buffering_state, reason));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
-                                    video_underflow_threshold_);
+                                    video_underflow_threshold_.value());
       return;
     }
 
@@ -853,19 +844,15 @@ void RendererImpl::OnRendererEnded(DemuxerStream::Type type) {
   DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
   TRACE_EVENT1("media", "RendererImpl::OnRendererEnded", "type", type_string);
 
-  if (state_ != STATE_PLAYING)
+  // If all streams are ended, do not propagate a redundant ended event.
+  if (state_ != STATE_PLAYING || PlaybackHasEnded())
     return;
 
   if (type == DemuxerStream::AUDIO) {
-    // If all streams are ended, do not propagate a redundant ended event.
-    if (audio_ended_ && PlaybackHasEnded())
-      return;
+    DCHECK(audio_renderer_);
     audio_ended_ = true;
   } else {
     DCHECK(video_renderer_);
-    // If all streams are ended, do not propagate a redundant ended event.
-    if (audio_ended_ && PlaybackHasEnded())
-      return;
     video_ended_ = true;
     video_renderer_->OnTimeStopped();
   }

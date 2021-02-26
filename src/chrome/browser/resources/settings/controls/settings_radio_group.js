@@ -20,7 +20,22 @@ Polymer({
   properties: {
     groupAriaLabel: String,
 
+    /**
+     * If true, do not automatically set the preference value. This allows the
+     * container to confirm the change first then call either sendPrefChange
+     * or resetToPrefValue accordingly.
+     */
+    noSetPref: {
+      type: Boolean,
+      value: false,
+    },
+
     selected: String,
+
+    selectableElements: {
+      type: String,
+      value: ['cr-radio-button', 'controlled-radio-button'].join(', '),
+    },
   },
 
   hostAttributes: {
@@ -28,23 +43,36 @@ Polymer({
   },
 
   observers: [
-    'prefChanged_(pref.*)',
+    'resetToPrefValue(pref.*)',
   ],
 
-  /** @private */
-  prefChanged_() {
+  /** @override */
+  focus() {
+    this.$$('cr-radio-group').focus();
+  },
+
+  /** Reset the selected value to match the current pref value. */
+  resetToPrefValue() {
     const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (this.pref);
     this.selected = Settings.PrefUtil.prefToString(pref);
   },
 
-  /** @private */
-  onSelectedChanged_() {
+  /** Update the pref to the current selected value. */
+  sendPrefChange() {
     if (!this.pref) {
       return;
     }
-    this.selected = this.$$('cr-radio-group').selected;
     this.set(
         'pref.value',
         Settings.PrefUtil.stringToPrefValue(this.selected, this.pref));
+  },
+
+  /** @private */
+  onSelectedChanged_() {
+    this.selected = this.$$('cr-radio-group').selected;
+    if (!this.noSetPref) {
+      this.sendPrefChange();
+    }
+    this.fire('change');
   },
 });

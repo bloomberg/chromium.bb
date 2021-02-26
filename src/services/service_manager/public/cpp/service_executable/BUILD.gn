@@ -13,8 +13,8 @@ source_set("support") {
     "//mojo/core/embedder",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
+    "//sandbox/policy",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/sandbox",
   ]
 
   public_deps = [
@@ -22,7 +22,7 @@ source_set("support") {
     "//services/service_manager/public/mojom",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//sandbox/linux:sandbox",
       "//sandbox/linux:sandbox_services",

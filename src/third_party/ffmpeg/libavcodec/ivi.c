@@ -442,8 +442,10 @@ av_cold int ff_ivi_init_tiles(IVIPlaneDesc *planes,
 
             av_freep(&band->tiles);
             band->tiles = av_mallocz_array(band->num_tiles, sizeof(IVITile));
-            if (!band->tiles)
+            if (!band->tiles) {
+                band->num_tiles = 0;
                 return AVERROR(ENOMEM);
+            }
 
             /* use the first luma band as reference for motion vectors
              * and quant */
@@ -1192,6 +1194,8 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             AVPacket pkt;
             pkt.data = avpkt->data + (get_bits_count(&ctx->gb) >> 3);
             pkt.size = get_bits_left(&ctx->gb) >> 3;
+            ctx->got_p_frame = 0;
+            av_frame_unref(ctx->p_frame);
             ff_ivi_decode_frame(avctx, ctx->p_frame, &ctx->got_p_frame, &pkt);
         }
     }

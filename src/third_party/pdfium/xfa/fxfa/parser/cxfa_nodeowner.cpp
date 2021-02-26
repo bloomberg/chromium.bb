@@ -6,21 +6,20 @@
 
 #include "xfa/fxfa/parser/cxfa_nodeowner.h"
 
-#include <utility>
-
+#include "fxjs/gc/container_trace.h"
+#include "third_party/base/check.h"
+#include "xfa/fxfa/parser/cxfa_list.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 
 CXFA_NodeOwner::CXFA_NodeOwner() = default;
 
-CXFA_NodeOwner::~CXFA_NodeOwner() {
-  is_being_destroyed_ = true;
+CXFA_NodeOwner::~CXFA_NodeOwner() = default;
+
+void CXFA_NodeOwner::Trace(cppgc::Visitor* visitor) const {
+  ContainerTrace(visitor, lists_);
 }
 
-CXFA_Node* CXFA_NodeOwner::AddOwnedNode(std::unique_ptr<CXFA_Node> node) {
-  if (!node)
-    return nullptr;
-
-  CXFA_Node* ret = node.get();
-  nodes_.push_back(std::move(node));
-  return ret;
+void CXFA_NodeOwner::PersistList(CXFA_List* list) {
+  DCHECK(list);
+  lists_.emplace_back(list);
 }

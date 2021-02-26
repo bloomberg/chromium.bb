@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,6 +34,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -45,6 +47,7 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -57,11 +60,6 @@ namespace accessibility_private = extensions::api::accessibility_private;
 namespace {
 
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
-
-#if defined(OS_CHROMEOS)
-constexpr int kBackButtonWidth = 45;
-constexpr int kBackButtonHeight = 45;
-#endif
 
 }  // namespace
 
@@ -86,8 +84,11 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
 #if defined(OS_CHROMEOS)
+  // TODO(chrome-a11y-core): we can't open a settings page when you're on the
+  // signin profile, but maybe we should notify the user and explain why?
   Profile* profile = chromeos::AccessibilityManager::Get()->profile();
-  if (chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
   }
@@ -313,7 +314,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::SyntheticMouseEvent* mouse_data = &params->mouse_event;
 
-  ui::EventType type;
+  ui::EventType type = ui::ET_UNKNOWN;
   switch (mouse_data->type) {
     case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
       type = ui::ET_MOUSE_PRESSED;
@@ -337,7 +338,31 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
       NOTREACHED();
   }
 
-  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+  int flags = 0;
+  if (type != ui::ET_MOUSE_MOVED) {
+    switch (mouse_data->mouse_button) {
+      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_MIDDLE:
+        flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+        break;
+      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_RIGHT:
+        flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+        break;
+      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_BACK:
+        flags |= ui::EF_BACK_MOUSE_BUTTON;
+        break;
+      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_FOWARD:
+        flags |= ui::EF_FORWARD_MOUSE_BUTTON;
+        break;
+      default:
+        flags |= ui::EF_LEFT_MOUSE_BUTTON;
+    }
+  }
+
+  int changed_button_flags = flags;
+
+  flags |= ui::EF_IS_SYNTHESIZED;
+  if (mouse_data->touch_accessibility && *(mouse_data->touch_accessibility))
+    flags |= ui::EF_TOUCH_ACCESSIBILITY;
 
   // Locations are assumed to be display relative (and in DIPs).
   // TODO(crbug/893752) Choose correct display
@@ -346,7 +371,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
       std::make_unique<ui::MouseEvent>(type, location, location,
                                        ui::EventTimeForNow(), flags,
-                                       flags /* changed_button_flags */);
+                                       changed_button_flags);
 
   auto* host = ash::GetWindowTreeHostForDisplay(display.id());
   DCHECK(host);
@@ -362,11 +387,9 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
-  std::unique_ptr<accessibility_private::OnSelectToSpeakStateChanged::Params>
-      params =
-          accessibility_private::OnSelectToSpeakStateChanged::Params::Create(
-              *args_);
+AccessibilityPrivateSetSelectToSpeakStateFunction::Run() {
+  std::unique_ptr<accessibility_private::SetSelectToSpeakState::Params> params =
+      accessibility_private::SetSelectToSpeakState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::SelectToSpeakState params_state = params->state;
   ash::SelectToSpeakState state;
@@ -386,21 +409,41 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
   }
 
   auto* accessibility_manager = chromeos::AccessibilityManager::Get();
-  accessibility_manager->OnSelectToSpeakStateChanged(state);
+  accessibility_manager->SetSelectToSpeakState(state);
 
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
-AccessibilityPrivateOnScrollableBoundsForPointFoundFunction::Run() {
+AccessibilityPrivateHandleScrollableBoundsForPointFoundFunction::Run() {
   std::unique_ptr<
-      accessibility_private::OnScrollableBoundsForPointFound::Params>
-      params = accessibility_private::OnScrollableBoundsForPointFound::Params::
-          Create(*args_);
+      accessibility_private::HandleScrollableBoundsForPointFound::Params>
+      params = accessibility_private::HandleScrollableBoundsForPointFound::
+          Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  accessibility_private::ScreenRect rect = std::move(params->rect);
-  gfx::Rect bounds(rect.left, rect.top, rect.width, rect.height);
-  ash::AccessibilityController::Get()->OnAutoclickScrollableBoundsFound(bounds);
+  gfx::Rect bounds(params->rect.left, params->rect.top, params->rect.width,
+                   params->rect.height);
+  ash::AccessibilityController::Get()->HandleAutoclickScrollableBoundsFound(
+      bounds);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateMoveMagnifierToRectFunction::Run() {
+  std::unique_ptr<accessibility_private::MoveMagnifierToRect::Params> params =
+      accessibility_private::MoveMagnifierToRect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!features::IsMagnifierNewFocusFollowingEnabled()) {
+    return RespondNow(NoArguments());
+  }
+  gfx::Rect bounds(params->rect.left, params->rect.top, params->rect.width,
+                   params->rect.height);
+
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+  if (magnification_manager)
+    magnification_manager->HandleMoveMagnifierToRectIfEnabled(bounds);
+
   return RespondNow(NoArguments());
 }
 
@@ -420,57 +463,6 @@ AccessibilityPrivateToggleDictationFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
-  // TODO(anastasi): Remove this function once menu refactor is complete.
-  std::unique_ptr<accessibility_private::SetSwitchAccessMenuState::Params>
-      params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
-          *args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  chromeos::AccessibilityManager* manager =
-      chromeos::AccessibilityManager::Get();
-
-  if (!params->show) {
-    manager->HideSwitchAccessMenu();
-    return RespondNow(NoArguments());
-  }
-
-  accessibility_private::ScreenRect elem = std::move(params->element_bounds);
-  gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
-  int item_count = params->item_count;
-
-  // If we have an item count of 0, the panel is showing only the back button.
-  if (item_count == 0) {
-    manager->ShowSwitchAccessMenu(element_bounds, kBackButtonWidth,
-                                  kBackButtonHeight,
-                                  true /* back_button_only */);
-    return RespondNow(NoArguments());
-  }
-
-  int padding = 40;
-  int item_width = 88;
-
-  int item_height;
-  if (::switches::IsExperimentalAccessibilitySwitchAccessTextEnabled()) {
-    item_height = 85;
-  } else {
-    item_height = 60;
-  }
-  // TODO(anastasi): This should be a preference that the user can change.
-  int max_cols = 3;
-
-  // The number of rows is the number of items divided by the max columns,
-  // rounded down.
-  int rows = 1 + (item_count - 1) / max_cols;
-  int cols = rows == 1 ? item_count : max_cols;
-  int width = padding + (item_width * cols);
-  int height = padding + (item_height * rows);
-
-  manager->ShowSwitchAccessMenu(element_bounds, width, height);
-  return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction
 AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
   std::unique_ptr<accessibility_private::ForwardKeyEventsToSwitchAccess::Params>
       params =
@@ -478,10 +470,7 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
               *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ash::AccessibilityController::Get()->ForwardKeyEventsToSwitchAccess(
-      params->should_forward);
-
-  return RespondNow(NoArguments());
+  return RespondNow(Error("Forwarding key events is no longer supported."));
 }
 
 ExtensionFunction::ResponseAction
@@ -532,6 +521,12 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+AccessibilityPrivateActivatePointScanFunction::Run() {
+  ash::AccessibilityController::Get()->ActivatePointScan();
+  return RespondNow(NoArguments());
+}
+
 AccessibilityPrivateGetBatteryDescriptionFunction::
     AccessibilityPrivateGetBatteryDescriptionFunction() {}
 
@@ -540,7 +535,7 @@ AccessibilityPrivateGetBatteryDescriptionFunction::
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateGetBatteryDescriptionFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
+  return RespondNow(OneArgument(base::Value(
       ash::AccessibilityController::Get()->GetBatteryDescription())));
 }
 
@@ -553,6 +548,74 @@ AccessibilityPrivateSetVirtualKeyboardVisibleFunction::Run() {
 
   ash::AccessibilityController::Get()->SetVirtualKeyboardVisible(
       params->is_visible);
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivatePerformAcceleratorActionFunction::Run() {
+  std::unique_ptr<accessibility_private::PerformAcceleratorAction::Params>
+      params = accessibility_private::PerformAcceleratorAction::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ash::AcceleratorAction accelerator_action;
+  switch (params->accelerator_action) {
+    case accessibility_private::ACCELERATOR_ACTION_FOCUSPREVIOUSPANE:
+      accelerator_action = ash::FOCUS_PREVIOUS_PANE;
+      break;
+    case accessibility_private::ACCELERATOR_ACTION_FOCUSNEXTPANE:
+      accelerator_action = ash::FOCUS_NEXT_PANE;
+      break;
+    case accessibility_private::ACCELERATOR_ACTION_NONE:
+      NOTREACHED();
+      return RespondNow(Error("Invalid accelerator action."));
+  }
+
+  ash::AccessibilityController::Get()->PerformAcceleratorAction(
+      accelerator_action);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateIsFeatureEnabledFunction::Run() {
+  std::unique_ptr<accessibility_private::IsFeatureEnabled::Params> params =
+      accessibility_private::IsFeatureEnabled::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::AccessibilityFeature params_feature = params->feature;
+  bool enabled;
+  switch (params_feature) {
+    case accessibility_private::AccessibilityFeature::
+        ACCESSIBILITY_FEATURE_SELECTTOSPEAKNAVIGATIONCONTROL:
+      enabled = ::features::IsSelectToSpeakNavigationControlEnabled();
+      break;
+    case accessibility_private::AccessibilityFeature::
+        ACCESSIBILITY_FEATURE_NONE:
+      return RespondNow(Error("Unrecognized feature"));
+  }
+
+  return RespondNow(OneArgument(base::Value(enabled)));
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateUpdateSelectToSpeakPanelFunction::Run() {
+  std::unique_ptr<accessibility_private::UpdateSelectToSpeakPanel::Params>
+      params = accessibility_private::UpdateSelectToSpeakPanel::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (!params->show) {
+    ash::AccessibilityController::Get()->HideSelectToSpeakPanel();
+    return RespondNow(NoArguments());
+  }
+
+  if (!params->anchor || !params->is_paused)
+    return RespondNow(Error("Required parameters missing to show panel."));
+
+  const gfx::Rect anchor =
+      gfx::Rect(params->anchor->left, params->anchor->top,
+                params->anchor->width, params->anchor->height);
+  ash::AccessibilityController::Get()->ShowSelectToSpeakPanel(
+      anchor, *params->is_paused);
 
   return RespondNow(NoArguments());
 }

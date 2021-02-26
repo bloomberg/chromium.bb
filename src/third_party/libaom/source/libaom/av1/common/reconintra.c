@@ -35,6 +35,7 @@ enum {
 #define INTRA_EDGE_FILT 3
 #define INTRA_EDGE_TAPS 5
 #define MAX_UPSAMPLE_SZ 16
+#define NUM_INTRA_NEIGHBOUR_PIXELS (MAX_TX_SIZE * 2 + 32)
 
 static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_ABOVE | NEED_LEFT,                   // DC
@@ -1142,8 +1143,8 @@ static void build_intra_predictors_high(
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-  DECLARE_ALIGNED(16, uint16_t, left_data[MAX_TX_SIZE * 2 + 32]);
-  DECLARE_ALIGNED(16, uint16_t, above_data[MAX_TX_SIZE * 2 + 32]);
+  DECLARE_ALIGNED(16, uint16_t, left_data[NUM_INTRA_NEIGHBOUR_PIXELS]);
+  DECLARE_ALIGNED(16, uint16_t, above_data[NUM_INTRA_NEIGHBOUR_PIXELS]);
   uint16_t *const above_row = above_data + 16;
   uint16_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
@@ -1157,6 +1158,12 @@ static void build_intra_predictors_high(
   const int is_dr_mode = av1_is_directional_mode(mode);
   const int use_filter_intra = filter_intra_mode != FILTER_INTRA_MODES;
   int base = 128 << (xd->bd - 8);
+  // The left_data, above_data buffers must be zeroed to fix some intermittent
+  // valgrind errors. Uninitialized reads in intra pred modules (e.g. width = 4
+  // path in av1_highbd_dr_prediction_z2_avx2()) from left_data, above_data are
+  // seen to be the potential reason for this issue.
+  aom_memset16(left_data, base + 1, NUM_INTRA_NEIGHBOUR_PIXELS);
+  aom_memset16(above_data, base - 1, NUM_INTRA_NEIGHBOUR_PIXELS);
 
   // The default values if ref pixels are not available:
   // base   base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
@@ -1211,12 +1218,8 @@ static void build_intra_predictors_high(
       }
       if (i < num_left_pixels_needed)
         aom_memset16(&left_col[i], left_col[i - 1], num_left_pixels_needed - i);
-    } else {
-      if (n_top_px > 0) {
-        aom_memset16(left_col, above_ref[0], num_left_pixels_needed);
-      } else {
-        aom_memset16(left_col, base + 1, num_left_pixels_needed);
-      }
+    } else if (n_top_px > 0) {
+      aom_memset16(left_col, above_ref[0], num_left_pixels_needed);
     }
   }
 
@@ -1238,12 +1241,8 @@ static void build_intra_predictors_high(
       if (i < num_top_pixels_needed)
         aom_memset16(&above_row[i], above_row[i - 1],
                      num_top_pixels_needed - i);
-    } else {
-      if (n_left_px > 0) {
-        aom_memset16(above_row, left_ref[0], num_top_pixels_needed);
-      } else {
-        aom_memset16(above_row, base - 1, num_top_pixels_needed);
-      }
+    } else if (n_left_px > 0) {
+      aom_memset16(above_row, left_ref[0], num_top_pixels_needed);
     }
   }
 
@@ -1330,8 +1329,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int i;
   const uint8_t *above_ref = ref - ref_stride;
   const uint8_t *left_ref = ref - 1;
-  DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 32]);
-  DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 32]);
+  DECLARE_ALIGNED(16, uint8_t, left_data[NUM_INTRA_NEIGHBOUR_PIXELS]);
+  DECLARE_ALIGNED(16, uint8_t, above_data[NUM_INTRA_NEIGHBOUR_PIXELS]);
   uint8_t *const above_row = above_data + 16;
   uint8_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
@@ -1342,6 +1341,12 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int p_angle = 0;
   const int is_dr_mode = av1_is_directional_mode(mode);
   const int use_filter_intra = filter_intra_mode != FILTER_INTRA_MODES;
+  // The left_data, above_data buffers must be zeroed to fix some intermittent
+  // valgrind errors. Uninitialized reads in intra pred modules (e.g. width = 4
+  // path in av1_dr_prediction_z1_avx2()) from left_data, above_data are seen to
+  // be the potential reason for this issue.
+  memset(left_data, 129, NUM_INTRA_NEIGHBOUR_PIXELS);
+  memset(above_data, 127, NUM_INTRA_NEIGHBOUR_PIXELS);
 
   // The default values if ref pixels are not available:
   // 128 127 127 .. 127 127 127 127 127 127
@@ -1386,10 +1391,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     int need_bottom = extend_modes[mode] & NEED_BOTTOMLEFT;
     if (use_filter_intra) need_bottom = 0;
     if (is_dr_mode) need_bottom = p_angle > 180;
-    // the avx2 dr_prediction_z2 may read at most 3 extra bytes,
-    // due to the avx2 mask load is with dword granularity.
-    // so we initialize 3 extra bytes to silence valgrind complain.
-    const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 3);
+    const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
     i = 0;
     if (n_left_px > 0) {
       for (; i < n_left_px; i++) left_col[i] = left_ref[i * ref_stride];
@@ -1400,12 +1402,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       }
       if (i < num_left_pixels_needed)
         memset(&left_col[i], left_col[i - 1], num_left_pixels_needed - i);
-    } else {
-      if (n_top_px > 0) {
-        memset(left_col, above_ref[0], num_left_pixels_needed);
-      } else {
-        memset(left_col, 129, num_left_pixels_needed);
-      }
+    } else if (n_top_px > 0) {
+      memset(left_col, above_ref[0], num_left_pixels_needed);
     }
   }
 
@@ -1425,12 +1423,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       }
       if (i < num_top_pixels_needed)
         memset(&above_row[i], above_row[i - 1], num_top_pixels_needed - i);
-    } else {
-      if (n_left_px > 0) {
-        memset(above_row, left_ref[0], num_top_pixels_needed);
-      } else {
-        memset(above_row, 127, num_top_pixels_needed);
-      }
+    } else if (n_left_px > 0) {
+      memset(above_row, left_ref[0], num_top_pixels_needed);
     }
   }
 
@@ -1602,17 +1596,13 @@ void av1_predict_intra_block(
       col_off || (ss_x ? xd->chroma_left_available : xd->left_available);
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-  const int xr_chr_offset = 0;
-  const int yd_chr_offset = 0;
 
   // Distance between the right edge of this prediction block to
   // the frame right edge
-  const int xr =
-      (xd->mb_to_right_edge >> (3 + ss_x)) + (wpx - x - txwpx) - xr_chr_offset;
+  const int xr = (xd->mb_to_right_edge >> (3 + ss_x)) + wpx - x - txwpx;
   // Distance between the bottom edge of this prediction block to
   // the frame bottom edge
-  const int yd =
-      (xd->mb_to_bottom_edge >> (3 + ss_y)) + (hpx - y - txhpx) - yd_chr_offset;
+  const int yd = (xd->mb_to_bottom_edge >> (3 + ss_y)) + hpx - y - txhpx;
   const int right_available =
       mi_col + ((col_off + txw) << ss_x) < xd->tile.mi_col_end;
   const int bottom_available =
@@ -1620,7 +1610,7 @@ void av1_predict_intra_block(
 
   const PARTITION_TYPE partition = mbmi->partition;
 
-  BLOCK_SIZE bsize = mbmi->sb_type;
+  BLOCK_SIZE bsize = mbmi->bsize;
   // force 4x4 chroma component block size.
   if (ss_x || ss_y) {
     bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
@@ -1674,8 +1664,8 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
 #if CONFIG_DEBUG
     assert(is_cfl_allowed(xd));
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(
-        mbmi->sb_type, pd->subsampling_x, pd->subsampling_y);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(mbmi->bsize, pd->subsampling_x, pd->subsampling_y);
     (void)plane_bsize;
     assert(plane_bsize < BLOCK_SIZES_ALL);
     if (!xd->lossless[mbmi->segment_id]) {

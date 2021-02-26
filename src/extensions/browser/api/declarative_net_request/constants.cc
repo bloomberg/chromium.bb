@@ -65,6 +65,15 @@ const char kErrorNoHeaderListsSpecified[] =
     "one of these keys must be specified with a non-empty list.";
 const char kErrorInvalidHeaderName[] =
     "Rule with id * must specify a valid header name to be modified.";
+const char kErrorInvalidHeaderValue[] =
+    "Rule with id * specifies an invalid header value.";
+const char kErrorNoHeaderValueSpecified[] =
+    "Rule with id * must provide a value for a header to be appended/set.";
+const char kErrorHeaderValuePresent[] =
+    "Rule with id * must not provide a header value for a header to be "
+    "removed.";
+const char kErrorCannotAppendRequestHeader[] =
+    "Rule with id * must not specify a request header to be appended.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
@@ -81,6 +90,8 @@ const char kRuleNotParsedWarning[] =
     "Rule with * couldn't be parsed. Parse error: *.";
 const char kTooManyParseFailuresWarning[] =
     "Too many rule parse failures; Reporting the first *.";
+const char kIndexingRuleLimitExceeded[] =
+    "Ruleset with id * exceeds the indexing rule limit and will be ignored.";
 const char kInternalErrorUpdatingDynamicRules[] =
     "Internal error while updating dynamic rules.";
 const char kInternalErrorGettingDynamicRules[] =
@@ -109,6 +120,8 @@ const char kReadDynamicRulesJSONStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.ReadDynamicRulesJSONStatus";
 const char kIsLargeRegexHistogram[] =
     "Extensions.DeclarativeNetRequest.IsLargeRegexRule";
+const char kLoadRulesetResultHistogram[] =
+    "Extensions.DeclarativeNetRequest.LoadRulesetResult";
 
 const char kActionCountPlaceholderBadgeText[] =
     "<<declarativeNetRequestActionCount>>";
@@ -117,6 +130,9 @@ const char kErrorGetMatchedRulesMissingPermissions[] =
     "The extension must have the declarativeNetRequestFeedback permission or "
     "have activeTab granted for the specified tab ID in order to call this "
     "function.";
+
+const base::Feature kDeclarativeNetRequestGlobalRules{
+    "DeclarativeNetRequestGlobalRules", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace declarative_net_request
 }  // namespace extensions

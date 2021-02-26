@@ -9,17 +9,19 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 
 namespace {
 
-std::unique_ptr<base::Value> CopyBinaryValueToIntegerList(
+base::Value CopyBinaryValueToIntegerList(
     const base::Value::BlobStorage& input) {
   base::Value::ListStorage list;
   list.reserve(input.size());
   for (int c : input)
     list.emplace_back(c);
-  return base::Value::ToUniquePtrValue(base::Value(std::move(list)));
+  return base::Value(std::move(list));
 }
 
 }  // namespace
@@ -39,7 +41,7 @@ ExtensionFunction::ResponseAction IdltestSendArrayBufferViewFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction IdltestGetArrayBufferFunction::Run() {
-  static constexpr char kHello[] = "hello world";
+  static constexpr base::StringPiece kHello = "hello world";
   return RespondNow(
-      OneArgument(base::Value::CreateWithCopiedBuffer(kHello, strlen(kHello))));
+      OneArgument(base::Value(base::as_bytes(base::make_span(kHello)))));
 }

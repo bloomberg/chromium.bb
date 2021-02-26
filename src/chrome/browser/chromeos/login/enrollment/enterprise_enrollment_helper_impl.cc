@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -212,8 +211,8 @@ EnterpriseEnrollmentHelperImpl::GetRobotAuthCodeDeviceType() {
   return enterprise_management::DeviceServiceApiAccessRequest::CHROME_OS;
 }
 
-std::string EnterpriseEnrollmentHelperImpl::GetRobotOAuthScopes() {
-  return GaiaConstants::kAnyApiOAuth2Scope;
+std::set<std::string> EnterpriseEnrollmentHelperImpl::GetRobotOAuthScopes() {
+  return {GaiaConstants::kAnyApiOAuth2Scope};
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -410,6 +409,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
         case policy::DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
           UMA(policy::kMetricEnrollmentRegisterPolicyDeviceIdConflict);
           break;
+        case policy::DM_STATUS_SERVICE_TOO_MANY_REQUESTS:
+          UMA(policy::kMetricEnrollmentTooManyRequests);
+          break;
         case policy::DM_STATUS_SERVICE_POLICY_NOT_FOUND:
           UMA(policy::kMetricEnrollmentRegisterPolicyNotFound);
           break;
@@ -451,8 +453,16 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           UMA(policy::
                   kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense);
           break;
+        case policy::
+            DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL:
+          UMA(policy::
+                  kMetricEnrollmentRegisterEnterpriseAccountIsNotEligibleToEnroll);
+          break;
         case policy::DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED:
           UMA(policy::kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted);
+          break;
+        case policy::DM_STATUS_SERVICE_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE:
+          UMA(policy::kMetricEnrollmentIllegalAccountForPackagedEDULicense);
           break;
       }
       break;

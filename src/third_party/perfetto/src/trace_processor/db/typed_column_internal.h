@@ -24,7 +24,7 @@ namespace trace_processor {
 namespace tc_internal {
 
 // Serializer converts between the "public" type used by the rest of trace
-// processor and the type we store in the SparseVector.
+// processor and the type we store in the NullableVector.
 template <typename T, typename Enabled = void>
 struct Serializer {
   using serialized_type = T;
@@ -70,7 +70,7 @@ struct Serializer<StringPool::Id> {
   static serialized_type Serialize(base::Optional<StringPool::Id> value) {
     // Since StringPool::Id == 0 is always treated as null, rewrite
     // base::nullopt -> 0 to remove an extra check at filter time for
-    // base::nullopt. Instead, that code can assume that the SparseVector
+    // base::nullopt. Instead, that code can assume that the NullableVector
     // layer always returns a valid id and can handle the nullability at the
     // stringpool level.
     // TODO(lalitm): remove this special casing if we migrate all tables over
@@ -91,15 +91,16 @@ template <typename T, typename Enable = void>
 struct TypeHandler {
   using non_optional_type = T;
   using get_type = T;
-  using sql_value_type = T;
+  using sql_value_type =
+      typename Serializer<non_optional_type>::serialized_type;
 
   static constexpr bool is_optional = false;
   static constexpr bool is_string = false;
 
   template <typename SerializedType>
-  static SerializedType Get(const SparseVector<SerializedType>& sv,
+  static SerializedType Get(const NullableVector<SerializedType>& nv,
                             uint32_t idx) {
-    return sv.GetNonNull(idx);
+    return nv.GetNonNull(idx);
   }
 
   static bool Equals(T a, T b) {
@@ -115,16 +116,17 @@ template <typename T>
 struct TypeHandler<base::Optional<T>> {
   using non_optional_type = T;
   using get_type = base::Optional<T>;
-  using sql_value_type = T;
+  using sql_value_type =
+      typename Serializer<non_optional_type>::serialized_type;
 
   static constexpr bool is_optional = true;
   static constexpr bool is_string = false;
 
   template <typename SerializedType>
   static base::Optional<SerializedType> Get(
-      const SparseVector<SerializedType>& sv,
+      const NullableVector<SerializedType>& nv,
       uint32_t idx) {
-    return sv.Get(idx);
+    return nv.Get(idx);
   }
 
   static bool Equals(base::Optional<T> a, base::Optional<T> b) {
@@ -150,9 +152,9 @@ struct TypeHandler<StringPool::Id> {
   static constexpr bool is_optional = false;
   static constexpr bool is_string = true;
 
-  static StringPool::Id Get(const SparseVector<StringPool::Id>& sv,
+  static StringPool::Id Get(const NullableVector<StringPool::Id>& nv,
                             uint32_t idx) {
-    return sv.GetNonNull(idx);
+    return nv.GetNonNull(idx);
   }
 
   static bool Equals(StringPool::Id a, StringPool::Id b) { return a == b; }
@@ -173,9 +175,9 @@ struct TypeHandler<base::Optional<StringPool::Id>> {
   static constexpr bool is_string = true;
 
   static base::Optional<StringPool::Id> Get(
-      const SparseVector<StringPool::Id>& sv,
+      const NullableVector<StringPool::Id>& nv,
       uint32_t idx) {
-    StringPool::Id id = sv.GetNonNull(idx);
+    StringPool::Id id = nv.GetNonNull(idx);
     return id.is_null() ? base::nullopt : base::make_optional(id);
   }
 

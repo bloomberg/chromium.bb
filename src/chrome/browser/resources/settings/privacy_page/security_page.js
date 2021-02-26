@@ -8,7 +8,6 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './collapse_radio_button.js';
 import './disable_safebrowsing_dialog.js';
-import './passwords_leak_detection_toggle.js';
 import './secure_dns.js';
 import '../controls/settings_toggle_button.m.js';
 import '../icons.m.js';
@@ -17,26 +16,28 @@ import '../settings_shared_css.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
+import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions} from '../metrics_browser_proxy.js';
 import {SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
-import {Router} from '../router.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
-import {SafeBrowsingBrowserProxy, SafeBrowsingBrowserProxyImpl, SafeBrowsingRadioManagedState} from './safe_browsing_browser_proxy.js';
 
 /**
- * Enumeration of all safe browsing modes.
- * @enum {string}
+ * Enumeration of all safe browsing modes. Must be kept in sync with the enum
+ * of the same name located in:
+ * chrome/browser/safe_browsing/generated_safe_browsing_pref.h
+ * @enum {number}
  */
-const SafeBrowsing = {
-  ENHANCED: 'enhanced',
-  STANDARD: 'standard',
-  DISABLED: 'disabled',
+export const SafeBrowsingSetting = {
+  ENHANCED: 0,
+  STANDARD: 1,
+  DISABLED: 2,
 };
 
 Polymer({
@@ -45,7 +46,9 @@ Polymer({
   _template: html`{__html_template__}`,
 
   behaviors: [
+    I18nBehavior,
     PrefsBehavior,
+    RouteObserverBehavior,
   ],
 
   properties: {
@@ -76,15 +79,9 @@ Polymer({
      * Valid safe browsing states.
      * @private
      */
-    safeBrowsingEnum_: {
+    safeBrowsingSettingEnum_: {
       type: Object,
-      value: SafeBrowsing,
-    },
-
-    /** @private */
-    selectSafeBrowsingRadio_: {
-      type: String,
-      computed: 'computeSelectSafeBrowsingRadio_(prefs.safebrowsing.*)',
+      value: SafeBrowsingSetting,
     },
 
     /** @private */
@@ -95,9 +92,6 @@ Polymer({
         return loadTimeData.getBoolean('safeBrowsingEnhancedEnabled');
       },
     },
-
-    /** @private {!SafeBrowsingRadioManagedState} */
-    safeBrowsingRadioManagedState_: Object,
 
     /** @private */
     enableSecurityKeysSubpage_: {
@@ -117,10 +111,6 @@ Polymer({
     /** @private */
     showDisableSafebrowsingDialog_: Boolean,
   },
-
-  observers: [
-    'onSafeBrowsingPrefChange_(prefs.safebrowsing.*)',
-  ],
 
   /*
    * @param {!Map<string, string>} newConfig
@@ -144,21 +134,6 @@ Polymer({
     }
   },
 
-  /**
-   * @return {string}
-   * @private
-   */
-  computeSelectSafeBrowsingRadio_() {
-    if (this.prefs === undefined) {
-      return SafeBrowsing.STANDARD;
-    }
-    if (!this.getPref('safebrowsing.enabled').value) {
-      return SafeBrowsing.DISABLED;
-    }
-    return this.getPref('safebrowsing.enhanced').value ? SafeBrowsing.ENHANCED :
-                                                         SafeBrowsing.STANDARD;
-  },
-
   /** @private {PrivacyPageBrowserProxy} */
   browserProxy_: null,
 
@@ -167,31 +142,67 @@ Polymer({
 
   /** @override */
   ready() {
+    // Expand initial pref value manually because automatic
+    // expanding is disabled.
+    const prefValue = this.getPref('generated.safe_browsing').value;
+    if (prefValue === SafeBrowsingSetting.ENHANCED) {
+      this.$.safeBrowsingEnhanced.expanded = true;
+    } else if (prefValue === SafeBrowsingSetting.STANDARD) {
+      this.$.safeBrowsingStandard.expanded = true;
+    }
     this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
 
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
   },
 
-  /** @override */
-  attached() {
-    SafeBrowsingBrowserProxyImpl.getInstance().validateSafeBrowsingEnhanced();
+  /**
+   * RouteObserverBehavior
+   * @param {!Route} route
+   * @protected
+   */
+  currentRouteChanged(route) {
+    if (route === routes.SECURITY) {
+      this.metricsBrowserProxy_.recordSafeBrowsingInteractionHistogram(
+          SafeBrowsingInteractions.SAFE_BROWSING_SHOWED);
+      const queryParams = Router.getInstance().getQueryParameters();
+      const section = queryParams.get('q');
+      if (section === 'enhanced') {
+        this.$.safeBrowsingEnhanced.expanded = true;
+        this.$.safeBrowsingStandard.expanded = false;
+      }
+    }
   },
 
   /**
-   * Updates the various underlying cookie prefs based on the newly selected
-   * radio button.
-   * @param {!CustomEvent<{value: string}>} event
+   * Updates the buttons' expanded status by propagating previous click
+   * events
    * @private
    */
-  onSafeBrowsingRadioChange_: function(event) {
-    if (event.detail.value == SafeBrowsing.ENHANCED) {
-      this.setPrefValue('safebrowsing.enabled', true);
-      this.setPrefValue('safebrowsing.enhanced', true);
-    } else if (event.detail.value == SafeBrowsing.STANDARD) {
-      this.setPrefValue('safebrowsing.enabled', true);
-      this.setPrefValue('safebrowsing.enhanced', false);
-    } else {  // disabled state
+  updateCollapsedButtons_() {
+    this.$.safeBrowsingEnhanced.updateCollapsed();
+    this.$.safeBrowsingStandard.updateCollapsed();
+  },
+
+  /**
+   * Possibly displays the Safe Browsing disable dialog based on the users
+   * selection.
+   * @private
+   */
+  onSafeBrowsingRadioChange_: function() {
+    const selected =
+        Number.parseInt(this.$.safeBrowsingRadioGroup.selected, 10);
+    const prefValue = this.getPref('generated.safe_browsing').value;
+    if (prefValue !== selected) {
+      this.recordInteractionHistogramOnRadioChange_(
+          /** @type {!SafeBrowsingSetting} */ (selected));
+      this.recordActionOnRadioChange_(
+          /** @type {!SafeBrowsingSetting} */ (selected));
+    }
+    if (selected === SafeBrowsingSetting.DISABLED) {
       this.showDisableSafebrowsingDialog_ = true;
+    } else {
+      this.updateCollapsedButtons_();
+      this.$.safeBrowsingRadioGroup.sendPrefChange();
     }
   },
 
@@ -200,16 +211,24 @@ Polymer({
    * @private
    */
   getDisabledExtendedSafeBrowsing_() {
-    return !this.getPref('safebrowsing.enabled').value ||
-        !!this.getPref('safebrowsing.enhanced').value;
+    return this.getPref('generated.safe_browsing').value !==
+        SafeBrowsingSetting.STANDARD;
   },
 
-  /** @private */
-  async onSafeBrowsingPrefChange_() {
-    // Retrieve and update safe browsing radio managed state.
-    this.safeBrowsingRadioManagedState_ =
-        await SafeBrowsingBrowserProxyImpl.getInstance()
-            .getSafeBrowsingRadioManagedState();
+  /**
+   * @return {string}
+   * @private
+   */
+  getPasswordsLeakToggleSubLabel_() {
+    let subLabel = this.i18n('passwordsLeakDetectionGeneralDescription');
+    if (this.getPref('profile.password_manager_leak_detection').value &&
+        (!this.syncStatus.signedIn ||
+         !!this.syncStatus.signedIn && !!this.syncStatus.hasError)) {
+      subLabel +=
+          ' ' +  // Whitespace is a valid sentence separator w.r.t. i18n.
+          this.i18n('passwordsLeakDetectionSignedOutEnabledDescription');
+    }
+    return subLabel;
   },
 
   /** @private */
@@ -247,20 +266,119 @@ Polymer({
    * @private
    */
   onDisableSafebrowsingDialogClose_() {
+    const confirmed =
+        /** @type {!SettingsDisableSafebrowsingDialogElement} */ (
+            this.$$('settings-disable-safebrowsing-dialog'))
+            .wasConfirmed();
+    this.recordInteractionHistogramOnSafeBrowsingDialogClose_(confirmed);
+    this.recordActionOnSafeBrowsingDialogClose_(confirmed);
     // Check if the dialog was confirmed before closing it.
-    if (/** @type {!SettingsDisableSafebrowsingDialogElement} */
-        (this.$$('settings-disable-safebrowsing-dialog')).wasConfirmed()) {
-      this.setPrefValue('safebrowsing.enabled', false);
-      this.setPrefValue('safebrowsing.enhanced', false);
+    if (confirmed) {
+      this.$.safeBrowsingRadioGroup.sendPrefChange();
+      this.updateCollapsedButtons_();
+    } else {
+      this.$.safeBrowsingRadioGroup.resetToPrefValue();
     }
 
     this.showDisableSafebrowsingDialog_ = false;
 
-    // Have the correct radio button highlighted.
-    this.$.safeBrowsingRadio.selected = this.selectSafeBrowsingRadio_;
-
     // Set focus back to the no protection button regardless of user interaction
     // with the dialog, as it was the entry point to the dialog.
     focusWithoutInk(assert(this.$.safeBrowsingDisabled));
+  },
+
+  /** @private */
+  onEnhancedProtectionExpandButtonClicked_() {
+    this.recordInteractionHistogramOnExpandButtonClicked_(
+        SafeBrowsingSetting.ENHANCED);
+    this.recordActionOnExpandButtonClicked_(SafeBrowsingSetting.ENHANCED);
+  },
+
+  /** @private */
+  onStandardProtectionExpandButtonClicked_() {
+    this.recordInteractionHistogramOnExpandButtonClicked_(
+        SafeBrowsingSetting.STANDARD);
+    this.recordActionOnExpandButtonClicked_(SafeBrowsingSetting.STANDARD);
+  },
+
+  /**
+   * @param {!SafeBrowsingSetting} safeBrowsingSetting
+   * @private
+   */
+  recordInteractionHistogramOnRadioChange_(safeBrowsingSetting) {
+    let action;
+    if (safeBrowsingSetting === SafeBrowsingSetting.ENHANCED) {
+      action =
+          SafeBrowsingInteractions.SAFE_BROWSING_ENHANCED_PROTECTION_CLICKED;
+    } else if (safeBrowsingSetting === SafeBrowsingSetting.STANDARD) {
+      action =
+          SafeBrowsingInteractions.SAFE_BROWSING_STANDARD_PROTECTION_CLICKED;
+    } else {
+      action =
+          SafeBrowsingInteractions.SAFE_BROWSING_DISABLE_SAFE_BROWSING_CLICKED;
+    }
+    this.metricsBrowserProxy_.recordSafeBrowsingInteractionHistogram(action);
+  },
+
+  /**
+   * @param {!SafeBrowsingSetting} safeBrowsingSetting
+   * @private
+   */
+  recordInteractionHistogramOnExpandButtonClicked_(safeBrowsingSetting) {
+    this.metricsBrowserProxy_.recordSafeBrowsingInteractionHistogram(
+        safeBrowsingSetting === SafeBrowsingSetting.ENHANCED ?
+            SafeBrowsingInteractions
+                .SAFE_BROWSING_ENHANCED_PROTECTION_EXPAND_ARROW_CLICKED :
+            SafeBrowsingInteractions
+                .SAFE_BROWSING_STANDARD_PROTECTION_EXPAND_ARROW_CLICKED);
+  },
+
+  /**
+   * @param {boolean} confirmed
+   * @private
+   */
+  recordInteractionHistogramOnSafeBrowsingDialogClose_(confirmed) {
+    this.metricsBrowserProxy_.recordSafeBrowsingInteractionHistogram(
+        confirmed ? SafeBrowsingInteractions
+                        .SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_CONFIRMED :
+                    SafeBrowsingInteractions
+                        .SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_DENIED);
+  },
+
+  /**
+   * @param {!SafeBrowsingSetting} safeBrowsingSetting
+   * @private
+   */
+  recordActionOnRadioChange_(safeBrowsingSetting) {
+    let actionName;
+    if (safeBrowsingSetting === SafeBrowsingSetting.ENHANCED) {
+      actionName = 'SafeBrowsing.Settings.EnhancedProtectionClicked';
+    } else if (safeBrowsingSetting === SafeBrowsingSetting.STANDARD) {
+      actionName = 'SafeBrowsing.Settings.StandardProtectionClicked';
+    } else {
+      actionName = 'SafeBrowsing.Settings.DisableSafeBrowsingClicked';
+    }
+    this.metricsBrowserProxy_.recordAction(actionName);
+  },
+
+  /**
+   * @param {!SafeBrowsingSetting} safeBrowsingSetting
+   * @private
+   */
+  recordActionOnExpandButtonClicked_(safeBrowsingSetting) {
+    this.metricsBrowserProxy_.recordAction(
+        safeBrowsingSetting === SafeBrowsingSetting.ENHANCED ?
+            'SafeBrowsing.Settings.EnhancedProtectionExpandArrowClicked' :
+            'SafeBrowsing.Settings.StandardProtectionExpandArrowClicked');
+  },
+
+  /**
+   * @param {boolean} confirmed
+   * @private
+   */
+  recordActionOnSafeBrowsingDialogClose_(confirmed) {
+    this.metricsBrowserProxy_.recordAction(
+        confirmed ? 'SafeBrowsing.Settings.DisableSafeBrowsingDialogConfirmed' :
+                    'SafeBrowsing.Settings.DisableSafeBrowsingDialogDenied');
   },
 });

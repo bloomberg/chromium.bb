@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_meridiemnames.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -26,6 +26,8 @@ CXFA_MeridiemNames::CXFA_MeridiemNames(CXFA_Document* doc,
                 XFA_Element::MeridiemNames,
                 kMeridiemNamesPropertyData,
                 {},
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_MeridiemNames::~CXFA_MeridiemNames() = default;

@@ -5,7 +5,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/site_per_process_browsertest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -17,6 +17,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace content {
@@ -65,7 +66,7 @@ class TestClient: public DevToolsAgentHostClient {
 #else
 #define MAYBE_CrossSiteIframeAgentHost CrossSiteIframeAgentHost
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest,
                        MAYBE_CrossSiteIframeAgentHost) {
   DevToolsAgentHost::List list;
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
@@ -84,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
   GURL http_url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateFrameToURL(child, http_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, http_url));
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(1U, list.size());
@@ -96,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   GURL cross_site_url(embedded_test_server()->GetURL("/title2.html"));
   replace_host.SetHostStr("foo.com");
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(2U, list.size());
@@ -125,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   parent_client.WaitForReply();
 
   // Load back same-site page into iframe.
-  NavigateFrameToURL(root->child_at(0), http_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), http_url));
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(1U, list.size());
@@ -139,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   parent_host = nullptr;
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -158,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
   GURL http_url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateFrameToURL(child, http_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, http_url));
 
   scoped_refptr<DevToolsAgentHost> child_frame_agent =
       RenderFrameDevToolsAgentHost::GetOrCreateFor(child);
@@ -169,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   GURL cross_site_url(embedded_test_server()->GetURL("/title2.html"));
   replace_host.SetHostStr("foo.com");
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
   child_frame_agent = RenderFrameDevToolsAgentHost::GetOrCreateFor(child);
   EXPECT_NE(page_agent.get(), child_frame_agent.get());
@@ -177,8 +178,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   EXPECT_NE(child_frame_agent->GetId(), page_agent->GetId());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
-    AgentHostForPageEqualsOneForMainFrame) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest,
+                       AgentHostForPageEqualsOneForMainFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -193,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   GURL cross_site_url(embedded_test_server()->GetURL("/title2.html"));
   replace_host.SetHostStr("foo.com");
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(child, cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, cross_site_url));
 
   // First ask for child frame, then for main frame.
   scoped_refptr<DevToolsAgentHost> child_frame_agent =
@@ -230,7 +231,7 @@ class SitePerProcessDownloadDevToolsBrowserTest
   base::ScopedTempDir downloads_directory_;
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessDownloadDevToolsBrowserTest,
                        NotCommittedNavigationDoesNotBlockAgent) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -258,5 +259,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
   client.WaitForReply();
   ASSERT_TRUE(agent->DetachClient(&client));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessDevToolsBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessDownloadDevToolsBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 
 }  // namespace content

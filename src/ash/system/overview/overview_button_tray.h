@@ -6,9 +6,9 @@
 #define ASH_SYSTEM_OVERVIEW_OVERVIEW_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/session/session_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
@@ -71,6 +71,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void UpdateAfterLoginStatusChange() override;
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
 
   // views::View:

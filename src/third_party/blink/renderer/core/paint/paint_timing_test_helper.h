@@ -10,8 +10,6 @@ namespace blink {
 class MockPaintTimingCallbackManager final
     : public GarbageCollected<MockPaintTimingCallbackManager>,
       public PaintTimingCallbackManager {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaintTimingCallbackManager);
-
  public:
   ~MockPaintTimingCallbackManager() {}
   void RegisterCallback(
@@ -26,7 +24,7 @@ class MockPaintTimingCallbackManager final
 
   size_t CountCallbacks() { return callback_queue_.size(); }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
  private:
   PaintTimingCallbackManager::CallbackQueue callback_queue_;

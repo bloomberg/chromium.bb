@@ -11,13 +11,17 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/policy_container.mojom-forward.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -26,6 +30,7 @@
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
+#include "third_party/blink/public/platform/web_policy_container.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -128,7 +133,7 @@ struct BLINK_EXPORT WebNavigationInfo {
           network::mojom::CSPDisposition::CHECK;
 
   // When navigating to a blob url, this token specifies the blob.
-  mojo::ScopedMessagePipeHandle blob_url_token;
+  CrossVariantMojoRemote<mojom::BlobURLTokenInterfaceBase> blob_url_token;
 
   // When navigation initiated from the user input, this tracks
   // the input start time.
@@ -169,8 +174,8 @@ struct BLINK_EXPORT WebNavigationInfo {
       network::mojom::IPAddressSpace::kUnknown;
 
   // The frame policy specified by the frame owner element.
-  // Should be base::nullopt for top level navigations
-  base::Optional<FramePolicy> frame_policy;
+  // For top-level window with no opener, this is the default lax FramePolicy.
+  FramePolicy frame_policy;
 };
 
 // This structure holds all information provided by the embedder that is
@@ -193,14 +198,6 @@ struct BLINK_EXPORT WebNavigationParams {
   static std::unique_ptr<WebNavigationParams> CreateWithHTMLString(
       base::span<const char> html,
       const WebURL& base_url);
-
-  // Shortcut for loading an error page html.
-  static std::unique_ptr<WebNavigationParams> CreateForErrorPage(
-      WebDocumentLoader* failed_document_loader,
-      base::span<const char> html,
-      const WebURL& base_url,
-      const WebURL& unreachable_url,
-      int error_code);
 
 #if INSIDE_BLINK
   // Shortcut for loading html with "text/html" mime type and "UTF8" encoding.
@@ -329,13 +326,16 @@ struct BLINK_EXPORT WebNavigationParams {
   bool had_transient_activation = false;
   // Whether this navigation has a sticky user activation flag.
   bool is_user_activated = false;
+  // Whether the navigation should be allowed to invoke a text fragment anchor.
+  // This is based on a user activation but is different from the above bit as
+  // it can be propagated across redirects and is consumed on use.
+  bool has_text_fragment_token = false;
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources = false;
   // The previews state which should be used for this navigation.
-  WebURLRequest::PreviewsState previews_state =
-      WebURLRequest::kPreviewsUnspecified;
+  PreviewsState previews_state = PreviewsTypes::kPreviewsUnspecified;
   // The service worker network provider to be used in the new
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
@@ -352,14 +352,16 @@ struct BLINK_EXPORT WebNavigationParams {
         const WebString& header_integrity,
         const WebURL& inner_url,
         const WebURLResponse& inner_response,
-        mojo::ScopedMessagePipeHandle loader_factory_handle);
+        CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+            loader_factory);
     ~PrefetchedSignedExchange();
 
     WebURL outer_url;
     WebString header_integrity;
     WebURL inner_url;
     WebURLResponse inner_response;
-    mojo::ScopedMessagePipeHandle loader_factory_handle;
+    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        loader_factory;
   };
   WebVector<std::unique_ptr<PrefetchedSignedExchange>>
       prefetched_signed_exchanges;
@@ -381,12 +383,34 @@ struct BLINK_EXPORT WebNavigationParams {
   // computation in the document.
   WebURL web_bundle_claimed_url;
 
+  // UKM source id to be associated with the Document that will be installed
+  // in the current frame.
+  ukm::SourceId document_ukm_source_id = ukm::kInvalidSourceId;
+
   // The frame policy specified by the frame owner element.
   // Should be base::nullopt for top level navigations
   base::Optional<FramePolicy> frame_policy;
 
   // A list of origin trial names to enable for the document being loaded.
   WebVector<WebString> force_enabled_origin_trials;
+
+  // Whether the page is origin isolated.
+  // https://github.com/WICG/origin-isolation
+  bool origin_isolated = false;
+
+  // List of client hints enabled for top-level frame. These still need to be
+  // checked against feature policy before use.
+  WebVector<network::mojom::WebClientHintsType> enabled_client_hints;
+
+  // Whether the navigation is cross browsing context group (browsing instance).
+  bool is_cross_browsing_context_group_navigation = false;
+
+  // A list of additional content security policies to be enforced by blink.
+  WebVector<WebString> forced_content_security_policies;
+
+  // Blink's copy of the policy container containing security policies to be
+  // enforced on the document created by this navigation.
+  std::unique_ptr<WebPolicyContainer> policy_container;
 };
 
 }  // namespace blink

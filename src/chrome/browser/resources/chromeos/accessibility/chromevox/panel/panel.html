@@ -12,9 +12,7 @@
 <script type="text/javascript" src="../closure/base.js"></script>
 <script type="text/javascript" src="../deps.js"></script>
 <script type="text/javascript" src="panel_loader.js"></script>
-<script type="text/javascript" src="../chromeVoxPanelScript.js">
-</script>
-
+<script type="text/javascript" src="../chromeVoxPanelScript.js"></script>
 </head>
 
 <body>
@@ -38,6 +36,14 @@
           <table id="braille-table2">
           </table>
         </div>
+        <div hidden id="braille-pan-left_title" class="i18n"
+             msgid="braille_pan_left"></div>
+        <button id="braille-pan-left" aria-labelledby="braille-pan-left_title">
+        </button>
+        <div hidden id="braille-pan-right_title" class="i18n"
+             msgid="braille_pan_right"></div>
+        <button id="braille-pan-right"
+                aria-labelledby="braille-pan-right_title"></button>
       </div>
     </div>
     <div id="search-container">
@@ -69,19 +75,6 @@
 </div>
 <div id="menus_background">
   <div id="menu-bar" role="menubar">
-  </div>
-</div>
-<div id="tutorial" hidden>
-  <div id="tutorial_logo"></div>
-  <div hidden id="close_tutorial_title" class="i18n" msgid="close_tutorial">
-  </div>
-  <button id="close_tutorial" aria-labelledby="close_tutorial_title"></button>
-  <div id="tutorial_main">
-  </div>
-  <div id="tutorial_footer">
-    <button id="tutorial_previous" class="i18n" msgid="tutorial_previous">
-    </button>
-    <button id="tutorial_next" class="i18n" msgid="tutorial_next"></button>
   </div>
 </div>
 </body>

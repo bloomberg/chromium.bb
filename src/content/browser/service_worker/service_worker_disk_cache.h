@@ -7,77 +7,141 @@
 
 #include <stdint.h>
 
-#include "base/memory/weak_ptr.h"
-#include "content/browser/appcache/appcache_disk_cache.h"
-#include "content/browser/appcache/appcache_disk_cache_ops.h"
+#include <memory>
+#include <set>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "net/base/completion_once_callback.h"
+#include "net/disk_cache/disk_cache.h"
 
 namespace content {
 
-// Wholesale reusage of the appcache code for response reading,
-// writing, and storage. See the corresponding class in that
-// library for doc comments and other details.
-// TODO(michaeln): If this reuse sticks, refactor/move the
-// resused classes to a more common location.
+// TODO(crbug.com/586174): Use disk_cache::EntryResult for better lifetime
+// management of disk cache entries. Using EntryResult will eliminate allocating
+// raw pointers and static methods in service worker resource readers/writers.
 
-class CONTENT_EXPORT ServiceWorkerDiskCache : public AppCacheDiskCache {
+class ServiceWorkerDiskCache;
+
+// Thin wrapper around disk_cache::Entry.
+class CONTENT_EXPORT ServiceWorkerDiskCacheEntry {
+ public:
+  // The newly created entry takes ownership of `disk_cache_entry` and closes it
+  // on destruction. |cache| must outlive the newly created entry.
+  ServiceWorkerDiskCacheEntry(disk_cache::Entry* disk_cache_entry,
+                              ServiceWorkerDiskCache* cache);
+  ~ServiceWorkerDiskCacheEntry();
+
+  // See `disk_cache::Entry::ReadData()`.
+  int Read(int index,
+           int64_t offset,
+           net::IOBuffer* buf,
+           int buf_len,
+           net::CompletionOnceCallback callback);
+
+  // See `disk_cache::Entry::WriteData()`.
+  int Write(int index,
+            int64_t offset,
+            net::IOBuffer* buf,
+            int buf_len,
+            net::CompletionOnceCallback callback);
+  int64_t GetSize(int index);
+
+  // Should only be called by ServiceWorkerDiskCache.
+  void Abandon();
+
+ private:
+  // The disk_cache::Entry is owned by this entry and closed on destruction.
+  disk_cache::Entry* disk_cache_entry_;
+
+  // The cache that this entry belongs to.
+  ServiceWorkerDiskCache* const cache_;
+};
+
+// net::DiskCache wrapper for the cache used by service worker resources.
+//
+// Provides ways to create/open/doom service worker disk cache entries.
+class CONTENT_EXPORT ServiceWorkerDiskCache {
  public:
   ServiceWorkerDiskCache();
-};
+  ~ServiceWorkerDiskCache();
 
-// TODO(crbug.com/1060076): Migrate to
-// storage::mojom::ServiceWorkerResourceReader.
-class CONTENT_EXPORT ServiceWorkerResponseReader
-    : public AppCacheResponseReader {
- public:
-  // Reads response headers and metadata associated with this reader from
-  // storage. This is an adaptor method of ReadInfo().
-  using ReadResponseHeadCallback =
-      base::OnceCallback<void(int result,
-                              network::mojom::URLResponseHeadPtr response_head,
-                              scoped_refptr<net::IOBufferWithSize> metadata)>;
-  void ReadResponseHead(ReadResponseHeadCallback callback);
+  // Initializes the object to use disk backed storage.
+  net::Error InitWithDiskBackend(const base::FilePath& disk_cache_directory,
+                                 bool force,
+                                 base::OnceClosure post_cleanup_callback,
+                                 net::CompletionOnceCallback callback);
 
- protected:
-  // Should only be constructed by the storage class.
-  friend class ServiceWorkerStorage;
+  // Initializes the object to use memory only storage.
+  // This is used for Chrome's incognito browsing.
+  net::Error InitWithMemBackend(int64_t disk_cache_size,
+                                net::CompletionOnceCallback callback);
 
-  ServiceWorkerResponseReader(int64_t resource_id,
-                              base::WeakPtr<AppCacheDiskCache> disk_cache);
-};
+  void Disable();
+  bool is_disabled() const { return is_disabled_; }
 
-// TODO(crbug.com/1060076): Migrate to
-// storage::mojom::ServiceWorkerResourceWriter.
-class CONTENT_EXPORT ServiceWorkerResponseWriter
-    : public AppCacheResponseWriter {
- public:
-  // Writes response headers for a service worker script to storage. Currently
-  // this just converts |response_head| to HttpResponseInfo and calls
-  // WriteInfo(). |response_head| must be examined by
-  // service_worker_loader_helpers::CheckResponseHead() before calling this
-  // method.
-  void WriteResponseHead(const network::mojom::URLResponseHead& response_head,
-                         int response_data_size,
-                         net::CompletionOnceCallback callback);
+  using EntryCallback =
+      base::OnceCallback<void(int rv,
+                              std::unique_ptr<ServiceWorkerDiskCacheEntry>)>;
 
- protected:
-  // Should only be constructed by the storage class.
-  friend class ServiceWorkerStorage;
+  // Creates/opens/dooms a disk cache entry associated with `key`.
+  void CreateEntry(int64_t key, EntryCallback callback);
+  void OpenEntry(int64_t key, EntryCallback callback);
+  void DoomEntry(int64_t key, net::CompletionOnceCallback callback);
 
-  ServiceWorkerResponseWriter(int64_t resource_id,
-                              base::WeakPtr<AppCacheDiskCache> disk_cache);
-};
+  base::WeakPtr<ServiceWorkerDiskCache> GetWeakPtr();
 
-class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
-    : public AppCacheResponseMetadataWriter {
- protected:
-  // Should only be constructed by the storage class.
-  friend class ServiceWorkerStorage;
+  void set_is_waiting_to_initialize(bool is_waiting_to_initialize) {
+    is_waiting_to_initialize_ = is_waiting_to_initialize;
+  }
 
-  ServiceWorkerResponseMetadataWriter(
-      int64_t resource_id,
-      base::WeakPtr<AppCacheDiskCache> disk_cache);
+  disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
+
+ private:
+  class CreateBackendCallbackShim;
+  friend class ServiceWorkerDiskCacheEntry;
+
+  bool is_initializing_or_waiting_to_initialize() const {
+    return create_backend_callback_.get() != nullptr ||
+           is_waiting_to_initialize_;
+  }
+
+  net::Error Init(net::CacheType cache_type,
+                  const base::FilePath& directory,
+                  int64_t cache_size,
+                  bool force,
+                  base::OnceClosure post_cleanup_callback,
+                  net::CompletionOnceCallback callback);
+  void OnCreateBackendComplete(int return_value);
+
+  uint64_t GetNextCallId();
+
+  void DidGetEntryResult(uint64_t call_id, disk_cache::EntryResult result);
+  void DidDoomEntry(uint64_t call_id, int net_error);
+
+  // Called by ServiceWorkerDiskCacheEntry constructor.
+  void AddOpenEntry(ServiceWorkerDiskCacheEntry* entry);
+  // Called by ServiceWorkerDiskCacheEntry destructor.
+  void RemoveOpenEntry(ServiceWorkerDiskCacheEntry* entry);
+
+  bool is_disabled_ = false;
+  bool is_waiting_to_initialize_ = false;
+  net::CompletionOnceCallback init_callback_;
+  scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
+  std::vector<base::OnceClosure> pending_calls_;
+  uint64_t next_call_id_ = 0;
+  std::map</*call_id=*/uint64_t, EntryCallback> active_entry_calls_;
+  std::map</*call_id=*/uint64_t, net::CompletionOnceCallback>
+      active_doom_calls_;
+  std::set<ServiceWorkerDiskCacheEntry*> open_entries_;
+  std::unique_ptr<disk_cache::Backend> disk_cache_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ServiceWorkerDiskCache> weak_factory_{this};
 };
 
 }  // namespace content

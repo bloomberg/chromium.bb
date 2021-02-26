@@ -71,8 +71,9 @@ class LoopRestorationInfo {
       std::array<RestorationUnitInfo, kMaxPlanes>* reference_unit_info);
 
   // Getters.
-  RestorationUnitInfo loop_restoration_info(Plane plane, int unit_id) const {
-    return loop_restoration_info_[plane][unit_id];
+  const RestorationUnitInfo* loop_restoration_info(Plane plane,
+                                                   int unit_id) const {
+    return &loop_restoration_info_[plane][unit_id];
   }
 
   int num_horizontal_units(Plane plane) const {

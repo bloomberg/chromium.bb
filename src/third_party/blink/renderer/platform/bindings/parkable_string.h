@@ -12,10 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/thread_annotations.h"
-#include "third_party/blink/renderer/platform/disk_data_allocator.h"
+#include "third_party/blink/renderer/platform/disk_data_metadata.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -207,9 +208,11 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Called on the main thread after writing is done.
   // |params| is the same as the one passed to PostBackgroundWritingTask()|,
   // |metadata| is the on-disk metadata, nullptr if writing failed.
+  // |writing_time| is the elapsed background thread time used by disk writing.
   void OnWritingCompleteOnMainThread(
       std::unique_ptr<BackgroundTaskParams> params,
-      std::unique_ptr<DiskDataAllocator::Metadata> metadata);
+      std::unique_ptr<DiskDataMetadata> metadata,
+      base::TimeDelta writing_time);
 
   void DiscardUncompressedData();
   void DiscardCompressedData();
@@ -230,7 +233,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
     State state_;
     bool background_task_in_progress_;
     std::unique_ptr<Vector<uint8_t>> compressed_;
-    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata_;
+    std::unique_ptr<DiskDataMetadata> on_disk_metadata_;
     const SecureDigest digest_;
 
     // A string can be young, old or very old. It starts young, and ages with
@@ -280,8 +283,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
 // - vtable (from RefCounted)
 // - string_.Impl()
 // - metadata_
-static_assert(sizeof(ParkableStringImpl) == 3 * sizeof(void*),
-              "ParkableStringImpl should not be too large");
+ASSERT_SIZE(ParkableStringImpl, void* [3]);
 #endif
 
 class PLATFORM_EXPORT ParkableString final {

@@ -193,20 +193,15 @@ void ConstructCommands(CommandService* command_service,
   // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
   // commands for actions they don't have, so we should just be able to query
   // for a single action type.
-  bool active = false;
-  Command browser_action;
-  if (command_service->GetExtensionActionCommand(
-          extension_id, ActionInfo::TYPE_BROWSER, CommandService::ALL,
-          &browser_action, &active)) {
-    commands->push_back(construct_command(browser_action, active, true));
-  }
-
-  Command page_action;
-  active = false;
-  if (command_service->GetExtensionActionCommand(
-          extension_id, ActionInfo::TYPE_PAGE, CommandService::ALL,
-          &page_action, &active)) {
-    commands->push_back(construct_command(page_action, active, true));
+  for (auto action_type : {ActionInfo::TYPE_BROWSER, ActionInfo::TYPE_PAGE,
+                           ActionInfo::TYPE_ACTION}) {
+    bool active = false;
+    Command action_command;
+    if (command_service->GetExtensionActionCommand(extension_id, action_type,
+                                                   CommandService::ALL,
+                                                   &action_command, &active)) {
+      commands->push_back(construct_command(action_command, active, true));
+    }
   }
 
   CommandMap named_commands;
@@ -470,7 +465,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   if (include_disabled) {
     add_to_list(registry->disabled_extensions(),
                 developer::EXTENSION_STATE_DISABLED);
-    add_to_list(registry->blacklisted_extensions(),
+    add_to_list(registry->blocklisted_extensions(),
                 developer::EXTENSION_STATE_BLACKLISTED);
   }
   if (include_terminated) {
@@ -494,27 +489,27 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   std::unique_ptr<developer::ExtensionInfo> info(
       new developer::ExtensionInfo());
 
-  // Blacklist text.
-  int blacklist_text = -1;
-  switch (extension_prefs_->GetExtensionBlacklistState(extension.id())) {
-    case BLACKLISTED_MALWARE:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_MALWARE;
+  // Blocklist text.
+  int blocklist_text = -1;
+  switch (extension_prefs_->GetExtensionBlocklistState(extension.id())) {
+    case BLOCKLISTED_MALWARE:
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_MALWARE;
       break;
-    case BLACKLISTED_SECURITY_VULNERABILITY:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_SECURITY_VULNERABILITY;
+    case BLOCKLISTED_SECURITY_VULNERABILITY:
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_SECURITY_VULNERABILITY;
       break;
-    case BLACKLISTED_CWS_POLICY_VIOLATION:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_CWS_POLICY_VIOLATION;
+    case BLOCKLISTED_CWS_POLICY_VIOLATION:
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_CWS_POLICY_VIOLATION;
       break;
-    case BLACKLISTED_POTENTIALLY_UNWANTED:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_POTENTIALLY_UNWANTED;
+    case BLOCKLISTED_POTENTIALLY_UNWANTED:
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_POTENTIALLY_UNWANTED;
       break;
     default:
       break;
   }
-  if (blacklist_text != -1) {
+  if (blocklist_text != -1) {
     info->blacklist_text.reset(
-        new std::string(l10n_util::GetStringUTF8(blacklist_text)));
+        new std::string(l10n_util::GetStringUTF8(blocklist_text)));
   }
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
@@ -522,17 +517,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // ControlledInfo.
   bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
   if (is_policy_location) {
-    info->controlled_info.reset(new developer::ControlledInfo());
-    if (is_policy_location) {
-      info->controlled_info->type = developer::CONTROLLER_TYPE_POLICY;
-      info->controlled_info->text =
-          l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
-    } else {
-      info->controlled_info->type =
-          developer::CONTROLLER_TYPE_SUPERVISED_USER_CUSTODIAN;
-      info->controlled_info->text = l10n_util::GetStringUTF8(
-          IDS_EXTENSIONS_INSTALLED_BY_SUPERVISED_USER_CUSTODIAN);
-    }
+    info->controlled_info = std::make_unique<developer::ControlledInfo>();
+    info->controlled_info->text =
+        l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
   }
 
   bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;
@@ -569,6 +556,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       0;
   info->disable_reasons.blocked_by_policy =
       (disable_reasons & disable_reason::DISABLE_BLOCKED_BY_POLICY) != 0;
+  info->disable_reasons.reloading =
+      (disable_reasons & disable_reason::DISABLE_RELOAD) != 0;
   bool custodian_approval_required =
       (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
       0;
@@ -578,6 +567,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   bool permissions_increase =
       (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0;
   info->disable_reasons.parent_disabled_permissions =
+      supervised_user_service_->IsChild() &&
       !supervised_user_service_
            ->GetSupervisedUserExtensionsMayRequestPermissionsPref() &&
       (custodian_approval_required || permissions_increase);
@@ -595,8 +585,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   ManagementPolicy* management_policy = extension_system_->management_policy();
   info->file_access.is_enabled =
       (extension.wants_file_access() ||
-       Manifest::ShouldAlwaysAllowFileAccess(extension.location())) &&
-      management_policy->UserMayModifySettings(&extension, nullptr);
+       Manifest::ShouldAlwaysAllowFileAccess(extension.location()));
   info->file_access.is_active =
       util::AllowFileAccess(extension.id(), browser_context_);
 

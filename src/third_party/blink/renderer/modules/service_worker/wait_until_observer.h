@@ -22,8 +22,6 @@ class ScriptValue;
 class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollected<WaitUntilObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
-
  public:
   using PromiseSettledCallback =
       base::RepeatingCallback<void(const ScriptValue&)>;
@@ -91,7 +89,7 @@ class MODULES_EXPORT WaitUntilObserver final
   // TODO(falken): Can this just use Event::IsBeingDispatched?
   bool IsDispatchingEvent() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class InternalsServiceWorker;

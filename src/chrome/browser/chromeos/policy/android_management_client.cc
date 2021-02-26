@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -39,11 +39,11 @@ AndroidManagementClient::AndroidManagementClient(
 AndroidManagementClient::~AndroidManagementClient() {}
 
 void AndroidManagementClient::StartCheckAndroidManagement(
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK(device_management_service_);
   DCHECK(callback_.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   RequestAccessToken();
 }
 

@@ -9,10 +9,11 @@ before_script:
   - echo '#!/bin/sh' > /usr/sbin/policy-rc.d
   - echo 'exit 101' >> /usr/sbin/policy-rc.d
   - chmod +x /usr/sbin/policy-rc.d
+  - echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
   - apt-get update
-  - apt-get -y --no-install-recommends install build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl
+  - apt-get -y --no-install-recommends install build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl meson/stretch-backports
 
-build-native:
+build-native-autotools:
   stage: build
   script:
   - export BUILD_ID="wayland-$CI_JOB_NAME_$CI_COMMIT_SHA-$CI_JOB_ID"
@@ -33,4 +34,22 @@ build-native:
     - build-*/wayland-*.tar.xz
     - build-*/wayland*/_build/sub/*.log
     - build-*/*.log
+    - prefix-*
+
+build-native-meson:
+  stage: build
+  script:
+  - export BUILD_ID="wayland-$CI_JOB_NAME_$CI_COMMIT_SHA-$CI_JOB_ID"
+  - export PREFIX="$(pwd)/prefix-$BUILD_ID"
+  - export BUILDDIR="$(pwd)/build-$BUILD_ID"
+  - mkdir "$BUILDDIR" "$PREFIX"
+  - cd "$BUILDDIR"
+  - meson --prefix="$PREFIX" -Dicon_directory=/usr/share/X11/icons ..
+  - ninja -k0 test
+  - ninja clean
+  artifacts:
+    name: wayland-meson-$CI_COMMIT_SHA-$CI_JOB_ID
+    when: always
+    paths:
+    - build-meson/meson-logs
     - prefix-*

@@ -27,6 +27,7 @@ enum class InstallResultCode;
 class AppRegistrar;
 class AppRegistryController;
 class WebAppUiManager;
+class OsIntegrationManager;
 
 // An abstract finalizer for the installation process, represents the last step.
 // Takes WebApplicationInfo as input, writes data to disk (e.g icons, shortcuts)
@@ -53,11 +54,6 @@ class InstallFinalizer {
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
-  // For the new USS-based system only. Generate missing sync placeholder data
-  // and icons using |sync_data| fields.
-  virtual void FinalizeFallbackInstallAfterSync(
-      const AppId& app_id,
-      InstallFinalizedCallback callback) = 0;
   // Delete app data from disk (icon .png files). |app_id| must be unregistered.
   virtual void FinalizeUninstallAfterSync(const AppId& app_id,
                                           UninstallWebAppCallback callback) = 0;
@@ -94,30 +90,41 @@ class InstallFinalizer {
   virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
 
   // |virtual| for testing.
-  virtual bool CanAddAppToQuickLaunchBar() const;
-  virtual void AddAppToQuickLaunchBar(const AppId& app_id);
-
-  // |virtual| for testing.
   virtual bool CanReparentTab(const AppId& app_id, bool shortcut_created) const;
   virtual void ReparentTab(const AppId& app_id,
                            bool shortcut_created,
                            content::WebContents* web_contents);
 
+  virtual void RemoveLegacyInstallFinalizerForTesting() {}
+  virtual InstallFinalizer* legacy_finalizer_for_testing();
+
+  virtual void Start() {}
+  virtual void Shutdown() {}
+
   void SetSubsystems(AppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
-                     AppRegistryController* registry_controller);
+                     AppRegistryController* registry_controller,
+                     OsIntegrationManager* os_integration_manager);
 
   virtual ~InstallFinalizer() = default;
 
  protected:
-  AppRegistrar& registrar() const { return *registrar_; }
+  bool is_legacy_finalizer() const { return registrar_ == nullptr; }
+  AppRegistrar& registrar() const;
+
   WebAppUiManager& ui_manager() const { return *ui_manager_; }
   AppRegistryController& registry_controller() { return *registry_controller_; }
+  OsIntegrationManager& os_integration_manager() {
+    return *os_integration_manager_;
+  }
 
  private:
+  // If these pointers are nullptr then this is legacy install finalizer
+  // operating in standalone mode.
   AppRegistrar* registrar_ = nullptr;
   AppRegistryController* registry_controller_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
 };
 
 }  // namespace web_app

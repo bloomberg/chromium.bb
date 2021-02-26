@@ -5,9 +5,17 @@
 #include "chrome/updater/win/user_info.h"
 
 #include "base/check.h"
+#include "base/strings/string16.h"
 #include "chrome/updater/win/util.h"
 
 namespace updater {
+
+namespace {
+
+// Sid of NT AUTHORITY\SYSTEM user.
+constexpr base::char16 kSystemPrincipalSid[] = L"S-1-5-18";
+
+}  // namespace
 
 HRESULT GetProcessUser(base::string16* name,
                        base::string16* domain,
@@ -18,11 +26,11 @@ HRESULT GetProcessUser(base::string16* name,
   if (FAILED(hr))
     return hr;
 
-  if (sid != nullptr)
+  if (sid)
     *sid = current_sid.Sid();
-  if (name != nullptr)
+  if (name)
     *name = current_sid.AccountName();
-  if (domain != nullptr)
+  if (domain)
     *domain = current_sid.Domain();
 
   return S_OK;
@@ -40,6 +48,12 @@ HRESULT GetProcessUserSid(CSid* sid) {
   }
 
   return S_OK;
+}
+
+bool IsLocalSystemUser() {
+  base::string16 user_sid;
+  HRESULT hr = GetProcessUser(nullptr, nullptr, &user_sid);
+  return SUCCEEDED(hr) && user_sid.compare(kSystemPrincipalSid) == 0;
 }
 
 HRESULT GetThreadUserSid(base::string16* sid) {

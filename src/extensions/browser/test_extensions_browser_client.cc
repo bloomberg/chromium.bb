@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"
@@ -13,7 +14,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/login/login_state/login_state.h"
 #endif
 
@@ -23,12 +24,7 @@ namespace extensions {
 
 TestExtensionsBrowserClient::TestExtensionsBrowserClient(
     BrowserContext* main_context)
-    : main_context_(nullptr),
-      incognito_context_(nullptr),
-      lock_screen_context_(nullptr),
-      process_manager_delegate_(nullptr),
-      extension_system_factory_(nullptr),
-      extension_cache_(std::make_unique<NullExtensionCache>()) {
+    : extension_cache_(std::make_unique<NullExtensionCache>()) {
   if (main_context)
     SetMainContext(main_context);
 }
@@ -36,7 +32,7 @@ TestExtensionsBrowserClient::TestExtensionsBrowserClient(
 TestExtensionsBrowserClient::TestExtensionsBrowserClient()
     : TestExtensionsBrowserClient(nullptr) {}
 
-TestExtensionsBrowserClient::~TestExtensionsBrowserClient() {}
+TestExtensionsBrowserClient::~TestExtensionsBrowserClient() = default;
 
 void TestExtensionsBrowserClient::SetUpdateClientFactory(
     const base::Callback<update_client::UpdateClient*(void)>& factory) {
@@ -96,7 +92,7 @@ BrowserContext* TestExtensionsBrowserClient::GetOriginalContext(
   return main_context_;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::string TestExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
   if (context != main_context_ || !chromeos::LoginState::IsInitialized())

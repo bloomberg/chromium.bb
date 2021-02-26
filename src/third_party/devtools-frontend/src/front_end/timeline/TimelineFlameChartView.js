@@ -1,6 +1,8 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
@@ -19,6 +21,102 @@ import {TimelineFlameChartNetworkDataProvider} from './TimelineFlameChartNetwork
 import {TimelineModeViewDelegate, TimelineSelection} from './TimelinePanel.js';  // eslint-disable-line no-unused-vars
 import {AggregatedTimelineTreeView} from './TimelineTreeView.js';
 import {TimelineMarkerStyle, TimelineUIUtils} from './TimelineUIUtils.js';  // eslint-disable-line no-unused-vars
+import {WebVitalsIntegrator} from './WebVitalsTimelineUtils.js';
+
+class MainSplitWidget extends UI.SplitWidget.SplitWidget {
+  /**
+   * @param {boolean} isVertical
+   * @param {boolean} secondIsSidebar
+   * @param {string=} settingName
+   * @param {number=} defaultSidebarWidth
+   * @param {number=} defaultSidebarHeight
+   * @param {boolean=} constraintsInDip
+   */
+  constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip) {
+    super(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip);
+
+    /** @type {!WebVitalsIntegrator} */
+    this._webVitals;
+
+    /** @type {?PerformanceModel} */
+    this._model;
+  }
+
+  /**
+   * @param {!WebVitalsIntegrator} webVitals
+   */
+  setWebVitals(webVitals) {
+    /** @type {!WebVitalsIntegrator} */
+    this._webVitals = webVitals;
+    this._webVitals.setMinimumSize(0, 120);
+  }
+
+  /**
+   * @param {number} left
+   * @param {number} right
+   * @param {boolean} animate
+   */
+  setWindowTimes(left, right, animate) {
+    if (!this._webVitals) {
+      return;
+    }
+    this._webVitals.chartViewport.setWindowTimes(left, right, animate);
+    this._webVitals.webVitalsTimeline.data = {
+      startTime: left - this._model.timelineModel().minimumRecordTime(),
+      duration: right - left,
+    };
+  }
+
+  /**
+   * @param {?PerformanceModel} model
+   */
+  setModelAndUpdateBoundaries(model) {
+    this._model = model;
+    if (!this._webVitals) {
+      return;
+    }
+
+    const left = model.window().left;
+    const right = model.window().right;
+    const timelineModel = model.timelineModel();
+    const events = timelineModel.tracks().reduce((prev, curr) => prev.concat(curr.events), []);
+    const minimumBoundary = model.timelineModel().minimumRecordTime();
+
+    const prepareEvents = f => events.filter(f).map(e => e.startTime - minimumBoundary);
+
+    const lcpEvents = events.filter(e => timelineModel.isLCPCandidateEvent(e) || timelineModel.isLCPInvalidateEvent(e));
+    const lcpEventsByNavigationId = new Map();
+    for (const e of lcpEvents) {
+      const navigationId = e.args['data']['navigationId'];
+      const previousLastEvent = lcpEventsByNavigationId.get(navigationId);
+      if (!previousLastEvent || previousLastEvent.args['data']['candidateIndex'] < e.args['data']['candidateIndex']) {
+        lcpEventsByNavigationId.set(navigationId, e);
+      }
+    }
+
+    const latestLcpCandidatesByNavigationId = Array.from(lcpEventsByNavigationId.values());
+    const latestLcpEvents = latestLcpCandidatesByNavigationId.filter(e => timelineModel.isLCPCandidateEvent(e));
+
+    const longTasks =
+        events.filter(e => SDK.TracingModel.TracingModel.isCompletePhase(e.phase) && timelineModel.isLongRunningTask(e))
+            .map(e => ({start: e.startTime - minimumBoundary, duration: e.duration}));
+
+    this._webVitals.chartViewport.setBoundaries(left, right - left);
+
+    this._webVitals.chartViewport.setWindowTimes(left, right);
+
+    this._webVitals.webVitalsTimeline.data = {
+      startTime: left - this._model.timelineModel().minimumRecordTime(),
+      duration: right - left,
+      maxDuration: timelineModel.maximumRecordTime(),
+      fcps: events.filter(e => timelineModel.isFCPEvent(e)).map(e => ({timestamp: e.startTime - minimumBoundary, e})),
+      lcps: latestLcpEvents.map(e => e.startTime).map(t => ({timestamp: t - minimumBoundary})),
+      layoutShifts: prepareEvents(e => timelineModel.isLayoutShiftEvent(e)).map(t => ({timestamp: t})),
+      longTasks,
+      mainFrameNavigations: prepareEvents(e => timelineModel.isMainFrameNavigationStartEvent(e)),
+    };
+  }
+}
 
 /**
  * @implements {PerfUI.FlameChart.FlameChartDelegate}
@@ -41,9 +139,13 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._eventListeners = [];
 
     this._showMemoryGraphSetting = Common.Settings.Settings.instance().createSetting('timelineShowMemory', false);
+    this._showWebVitalsSetting = Common.Settings.Settings.instance().createSetting('timelineWebVitals', false);
 
     // Create main and network flamecharts.
     this._networkSplitWidget = new UI.SplitWidget.SplitWidget(false, false, 'timelineFlamechartMainView', 150);
+
+    // Ensure that the network panel & resizer appears above the web vitals / main thread.
+    this._networkSplitWidget.sidebarElement().style.zIndex = 120;
 
     const mainViewGroupExpansionSetting =
         Common.Settings.Settings.instance().createSetting('timelineFlamechartMainViewGroupExpansion', {});
@@ -70,7 +172,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._networkSplitWidget.hideDefaultResizer(true);
     this._networkSplitWidget.installResizer(this._splitResizer);
 
-    this._networkSplitWidget.setMainWidget(this._mainFlameChart);
+    this._webVitals = new WebVitalsIntegrator(this);
+
+    this._mainSplitWidget = new MainSplitWidget(false, false, 'timelineFlamechartMainAndVitalsView', undefined, 120);
+    this._mainSplitWidget.setWebVitals(this._webVitals);
+    this._mainSplitWidget.setMainWidget(this._mainFlameChart);
+    this._mainSplitWidget.setSidebarWidget(this._webVitals);
+    this.toggleWebVitalsLane();
+
+    this._networkSplitWidget.setMainWidget(this._mainSplitWidget);
     this._networkSplitWidget.setSidebarWidget(this._networkPane);
 
     // Create counters chart splitter.
@@ -110,6 +220,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._updateColorMapper();
   }
 
+  toggleWebVitalsLane() {
+    if (this._showWebVitalsSetting.get()) {
+      this._mainSplitWidget.showBoth();
+      this._mainSplitWidget.setSidebarSize(120);
+      this._mainSplitWidget.setResizable(false);
+      this._mainSplitWidget.hideDefaultResizer(true);
+    } else {
+      this._mainSplitWidget.hideSidebar();
+    }
+  }
+
   _updateColorMapper() {
     /** @type {!Map<string, string>} */
     this._urlToColorCache = new Map();
@@ -129,6 +250,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     this._mainFlameChart.setWindowTimes(window.left, window.right, animate);
     this._networkFlameChart.setWindowTimes(window.left, window.right, animate);
     this._networkDataProvider.setWindowTimes(window.left, window.right);
+    this._mainSplitWidget.setWindowTimes(window.left, window.right, animate);
     this._updateSearchResults(false, false);
   }
 
@@ -186,6 +308,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
       this._mainFlameChart.setWindowTimes(window.left, window.right);
       this._networkFlameChart.setWindowTimes(window.left, window.right);
       this._networkDataProvider.setWindowTimes(window.left, window.right);
+      this._mainSplitWidget.setModelAndUpdateBoundaries(model);
       this._updateSearchResults(false, false);
     }
     this._updateColorMapper();

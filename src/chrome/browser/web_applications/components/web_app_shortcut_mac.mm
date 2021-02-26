@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -39,7 +39,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -103,8 +102,8 @@
   if (newValue) {
     base::scoped_nsobject<TerminationObserver> scoped_self(
         self, base::scoped_policy::RETAIN);
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(
                        [](base::scoped_nsobject<TerminationObserver> observer) {
                          [observer onTerminated];
                        },
@@ -459,16 +458,16 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
             NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
         base::scoped_policy::RETAIN);
     if (app) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&RunAppLaunchCallbacks, app,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&RunAppLaunchCallbacks, app,
                                     std::move(launched_callback),
                                     std::move(terminated_callback)));
       return;
     }
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(launched_callback), base::Process()));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -640,8 +639,8 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&GetImageResourcesOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetImageResourcesOnUIThread,
                                 base::BindOnce(&SetWorkspaceIconOnWorkerThread,
                                                apps_directory)));
   return true;
@@ -925,11 +924,27 @@ bool WebAppShortcutCreator::BuildShortcut(
   return result;
 }
 
+// Returns a reference to the static UpdateShortcuts lock.
+// See https://crbug.com/1090548 for more info.
+base::Lock& GetUpdateShortcutsLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
+
 void WebAppShortcutCreator::CreateShortcutsAt(
     const std::vector<base::FilePath>& dst_app_paths,
     std::vector<base::FilePath>* updated_paths) const {
   DCHECK(updated_paths && updated_paths->empty());
   DCHECK(!dst_app_paths.empty());
+
+  // CreateShortcutsAt() modifies the app shim on disk, first by deleting
+  // the destination app shim (if it exists), then by copying a new app shim
+  // from the source app to the destination.  To ensure that process works,
+  // we must guarantee that no more than one CreateShortcutsAt() call will
+  // ever run at a time.  We have an UpdateShortcuts lock for this purpose,
+  // so check that lock has been acquired on this thread before proceeding.
+  // See https://crbug.com/1090548 for more info.
+  GetUpdateShortcutsLock().AssertAcquired();
 
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir()) {
@@ -959,7 +974,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
     }
 
     // Delete any old copies that may exist.
-    base::DeleteFileRecursively(dst_app_path);
+    base::DeletePathRecursively(dst_app_path);
 
     // Copy the bundle to |dst_app_path|.
     if (!base::CopyDirectory(staging_path, dst_app_path, true)) {
@@ -1013,6 +1028,13 @@ bool WebAppShortcutCreator::UpdateShortcuts(
       LOG(ERROR) << "Failed to localize " << applications_dir.value();
     }
   }
+
+  // Acquire the UpdateShortcuts lock.  This ensures only a single
+  // UpdateShortcuts call at a time will run at once past here.  Not
+  // protecting against that can result in multiple CreateShortcutsAt()
+  // calls deleting and creating the app shim folder at once.
+  // See https://crbug.com/1090548 for more info.
+  base::AutoLock auto_lock(GetUpdateShortcutsLock());
 
   // Get the list of paths to (re)create by bundle id (wherever it was moved
   // or copied by the user).
@@ -1253,8 +1275,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
 }
 
 bool WebAppShortcutCreator::IsMultiProfile() const {
-  // Only PWAs and bookmark apps are multi-profile capable.
-  return info_->url.is_valid();
+  return info_->is_multi_profile;
 }
 
 void WebAppShortcutCreator::RevealAppShimInFinder(
@@ -1271,7 +1292,7 @@ void WebAppShortcutCreator::RevealAppShimInFinder(
   // Perform the call to NSWorkSpace on the UI thread. Calling it on the IO
   // thread appears to cause crashes.
   // https://crbug.com/1067367
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(closure));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(closure));
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
@@ -1279,8 +1300,8 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<ShortcutInfo> shortcut_info) {
   if (AppShimLaunchDisabled()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(launched_callback), base::Process()));
     return;
   }
@@ -1307,15 +1328,19 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
   return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
 }
 
-void DeletePlatformShortcuts(const base::FilePath& app_data_path,
+bool DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   const std::string bundle_id = GetBundleIdentifier(shortcut_info.extension_id,
                                                     shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);
-  for (const auto& bundle_info : bundle_infos)
-    base::DeleteFileRecursively(bundle_info.bundle_path());
+  bool result = true;
+  for (const auto& bundle_info : bundle_infos) {
+    if (!base::DeletePathRecursively(bundle_info.bundle_path()))
+      result = false;
+  }
+  return result;
 }
 
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
@@ -1324,7 +1349,7 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   const std::string bundle_id = GetBundleIdentifier(app_id);
   auto bundle_infos = SearchForBundlesById(bundle_id);
   for (const auto& bundle_info : bundle_infos) {
-    base::DeleteFileRecursively(bundle_info.bundle_path());
+    base::DeletePathRecursively(bundle_info.bundle_path());
   }
 }
 
@@ -1356,7 +1381,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
       continue;
     if (!info.IsForProfile(profile_path))
       continue;
-    base::DeleteFileRecursively(info.bundle_path());
+    base::DeletePathRecursively(info.bundle_path());
   }
 }
 

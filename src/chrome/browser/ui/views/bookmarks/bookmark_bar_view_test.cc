@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -50,11 +51,14 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -75,7 +79,7 @@ using content::WebContents;
 
 namespace {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 // Waits for a views::Widget dialog to show up.
 class DialogWaiter : public aura::EnvObserver,
@@ -207,7 +211,7 @@ void MoveMouseAndPress(const gfx::Point& screen_pos,
                                                          std::move(closure)));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
@@ -287,14 +291,20 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     local_state_.reset(
         new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
-    profile_ = std::make_unique<TestingProfile>();
-    profile_->CreateBookmarkModel(true);
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     profile_->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
     Browser::CreateParams native_params(profile_.get(), true);
-    browser_ = CreateBrowserWithTestWindowForParams(&native_params);
+    browser_ = CreateBrowserWithTestWindowForParams(native_params);
 
     model_->ClearStore();
 
@@ -528,7 +538,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // The following tests were not enabled on Mac before. Consider enabling those
 // that are able to run on Mac (https://crbug.com/845342).
 
@@ -554,7 +564,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
 
     // Button should be depressed.
     views::LabelButton* button = GetBookmarkButton(0);
-    ASSERT_TRUE(button->state() == views::Button::STATE_PRESSED);
+    ASSERT_TRUE(button->GetState() == views::Button::STATE_PRESSED);
 
     // Click on the 2nd menu item (A URL).
     ASSERT_TRUE(menu->GetSubmenu());
@@ -574,7 +584,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
 
     // Make sure button is no longer pushed.
     views::LabelButton* button = GetBookmarkButton(0);
-    ASSERT_TRUE(button->state() == views::Button::STATE_NORMAL);
+    ASSERT_TRUE(button->GetState() == views::Button::STATE_NORMAL);
 
     views::MenuItemView* menu = bb_view_->GetMenu();
     ASSERT_TRUE(menu == NULL || !menu->GetSubmenu()->IsShowing());
@@ -629,7 +639,7 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
 
     // Make sure button is no longer pushed.
     views::LabelButton* button = GetBookmarkButton(0);
-    ASSERT_TRUE(button->state() == views::Button::STATE_NORMAL);
+    ASSERT_TRUE(button->GetState() == views::Button::STATE_NORMAL);
 
     Done();
   }
@@ -873,7 +883,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
 
     // The button should be highlighted now.
     EXPECT_EQ(views::Button::STATE_PRESSED,
-              bb_view_->other_bookmarks_button()->state());
+              bb_view_->other_bookmarks_button()->GetState());
 
     // Cause the target view to trigger a mouse up when dragged over.
     const views::View* target_view = drop_submenu->GetMenuItemAt(0);
@@ -891,7 +901,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
   void OnWidgetDragComplete(views::Widget* widget) override {
     // The button should be in normal state now.
     EXPECT_EQ(views::Button::STATE_NORMAL,
-              bb_view_->other_bookmarks_button()->state());
+              bb_view_->other_bookmarks_button()->GetState());
 
     BookmarkBarViewDragTestBase::OnWidgetDragComplete(widget);
   }
@@ -1146,7 +1156,13 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest10, KeyEvents)
+#if defined(OS_WIN)  // Fails on latest versions of Windows.
+                     // https://crbug.com/1108551.
+#define MAYBE_KeyEvents DISABLED_KeyEvents
+#else
+#define MAYBE_KeyEvents KeyEvents
+#endif
+VIEW_TEST(BookmarkBarViewTest10, MAYBE_KeyEvents)
 
 // Make sure the menu closes with the following sequence: show menu, show
 // context menu, close context menu (via escape), then click else where. This
@@ -1534,7 +1550,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
 
     // Button should be depressed.
     views::LabelButton* button = GetBookmarkButton(0);
-    ASSERT_TRUE(button->state() == views::Button::STATE_PRESSED);
+    ASSERT_TRUE(button->GetState() == views::Button::STATE_PRESSED);
 
     // Close the window.
     window()->Close();
@@ -1660,7 +1676,7 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
     // The button should be pressed.
     EXPECT_EQ(views::Button::STATE_PRESSED,
-              bb_view_->other_bookmarks_button()->state());
+              bb_view_->other_bookmarks_button()->GetState());
 
     // Move the mouse to the first folder on the bookmark bar.
     views::LabelButton* button = GetBookmarkButton(0);
@@ -1679,10 +1695,10 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
 
     // The menu for the first folder should be in the pressed state (since the
     // menu is showing for it)...
-    EXPECT_EQ(views::Button::STATE_PRESSED, GetBookmarkButton(0)->state());
+    EXPECT_EQ(views::Button::STATE_PRESSED, GetBookmarkButton(0)->GetState());
     // ... And the "other bookmarks" button should no longer be pressed.
     EXPECT_EQ(views::Button::STATE_NORMAL,
-              bb_view_->other_bookmarks_button()->state());
+              bb_view_->other_bookmarks_button()->GetState());
 
     menu->GetMenuController()->Cancel(views::MenuController::ExitType::kAll);
 
@@ -1773,27 +1789,26 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest20() = default;
 
-  void TearDown() override {
-    // Explicitly delete |container_view_| here so it is removed from the view
-    // hierarchy before the superclass TearDown() runs.  Otherwise, if the
-    // RunUntilIdle() call in the superclass triggers a layout, it will call
-    // ContainerViewForMenuExit::Layout(), which will fail since |bb_view_| will
-    // already be gone by that point.
-    container_view_.reset();
-    BookmarkBarViewEventTestBase::TearDown();
-  }
-
  protected:
   void DoTestOnMessageLoop() override {
     // Add |test_view_| next to |bb_view_|.
     views::View* parent = bb_view_->parent();
     parent->RemoveChildView(bb_view_);
-    container_view_ = std::make_unique<ContainerViewForMenuExit>();
-    container_view_->set_owned_by_client();
-    container_view_->AddChildView(bb_view_);
+    auto* const container_view =
+        parent->AddChildView(std::make_unique<views::View>());
+    auto* const layout =
+        container_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
+    layout->SetIgnoreDefaultMainAxisMargins(true)
+        .SetCollapseMargins(true)
+        .SetDefault(views::kMarginsKey, gfx::Insets(0, 2));
+    container_view->AddChildView(bb_view_);
+    bb_view_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
     test_view_ =
-        container_view_->AddChildView(std::make_unique<TestViewForMenuExit>());
-    parent->AddChildView(container_view_.get());
+        container_view->AddChildView(std::make_unique<TestViewForMenuExit>());
+    test_view_->SetPreferredSize(gfx::Size(20, 0));
     parent->Layout();
 
     EXPECT_EQ(0, test_view_->press_count());
@@ -1833,7 +1848,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     EXPECT_EQ(1, test_view_->press_count());
 #else
     EXPECT_EQ(2, test_view_->press_count());
@@ -1841,17 +1856,6 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     EXPECT_EQ(nullptr, bb_view_->GetMenu());
     Done();
   }
-
-  class ContainerViewForMenuExit : public views::View {
-   public:
-    ContainerViewForMenuExit() = default;
-
-    void Layout() override {
-      DCHECK_EQ(2u, children().size());
-      children()[0]->SetBounds(0, 0, width() - 22, height());
-      children()[1]->SetBounds(width() - 20, 0, 20, height());
-    }
-  };
 
   class TestViewForMenuExit : public views::View {
    public:
@@ -1867,7 +1871,6 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     int press_count_ = 0;
   };
 
-  std::unique_ptr<ContainerViewForMenuExit> container_view_;
   TestViewForMenuExit* test_view_ = nullptr;
 };
 
@@ -2057,7 +2060,13 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest23, ContextMenusKeyboard)
+#if defined(OS_WIN)  // Fails on latest versions of Windows.
+                     // https://crbug.com/1108551.
+#define MAYBE_ContextMenusKeyboard DISABLED_ContextMenusKeyboard
+#else
+#define MAYBE_ContextMenusKeyboard ContextMenusKeyboard
+#endif
+VIEW_TEST(BookmarkBarViewTest23, MAYBE_ContextMenusKeyboard)
 
 // Test that pressing escape on a menu opened via the keyboard dismisses the
 // context menu but not the parent menu.
@@ -2133,7 +2142,13 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest24, ContextMenusKeyboardEscape)
+#if defined(OS_WIN)  // Fails on latest versions of Windows.
+                     // https://crbug.com/1108551.
+#define MAYBE_ContextMenusKeyboardEscape DISABLED_ContextMenusKeyboardEscape
+#else
+#define MAYBE_ContextMenusKeyboardEscape ContextMenusKeyboardEscape
+#endif
+VIEW_TEST(BookmarkBarViewTest24, MAYBE_ContextMenusKeyboardEscape)
 
 #if defined(OS_WIN)
 // Tests that pressing the key KEYCODE closes the menu.
@@ -2153,7 +2168,7 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send KEYCODE key event, which should close the menu.
@@ -2195,7 +2210,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send WM_CANCELMODE, which should close the menu. The message is sent
@@ -2243,15 +2258,15 @@ class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {
 
 VIEW_TEST(BookmarkBarViewTest27, MiddleClickOnFolderOpensAllBookmarks)
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
  protected:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const ui_controls::AcceleratorState kAccelatorState = ui_controls::kCommand;
 #else
   const ui_controls::AcceleratorState kAccelatorState = ui_controls::kControl;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   void DoTestOnMessageLoop() override {
     views::LabelButton* button = GetBookmarkButton(0);

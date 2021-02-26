@@ -55,22 +55,25 @@ strip ./xcodebuild/{Debug,Release}/content_shell.app/Contents/MacOS/content_shel
 
 TODO: mention `testing/xvfb.py`
 
-The test runner script is in
-`third_party/blink/tools/run_web_tests.py`.
+The test runner script is in `third_party/blink/tools/run_web_tests.py`.
 
 To specify which build directory to use (e.g. out/Default, out/Release,
 out/Debug) you should pass the `-t` or `--target` parameter. For example, to
 use the build in `out/Default`, use:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t Default
+third_party/blink/tools/run_web_tests.py -t Default
 ```
 
 For Android (if your build directory is `out/android`):
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t android --android
+third_party/blink/tools/run_web_tests.py -t android --android
 ```
+
+*** promo
+Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+***
 
 Tests marked as `[ Skip ]` in
 [TestExpectations](../../third_party/blink/web_tests/TestExpectations)
@@ -97,13 +100,13 @@ arguments to `run_web_tests.py` relative to the web test directory
 use:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py fast/forms
+third_party/blink/tools/run_web_tests.py fast/forms
 ```
 
 Or you could use the following shorthand:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py fast/fo\*
+third_party/blink/tools/run_web_tests.py fast/fo\*
 ```
 
 *** promo
@@ -111,7 +114,7 @@ Example: To run the web tests with a debug build of `content_shell`, but only
 test the SVG tests and run pixel tests, you would run:
 
 ```bash
-[python] third_party/blink/tools/run_web_tests.py -t Default svg
+third_party/blink/tools/run_web_tests.py -t Default svg
 ```
 ***
 
@@ -143,7 +146,7 @@ for more details of running `content_shell`.
 To see a complete list of arguments supported, run:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py --help
+third_party/blink/tools/run_web_tests.py --help
 ```
 
 *** note
@@ -214,10 +217,10 @@ on this.
 
 There are two ways to run web tests with additional command-line arguments:
 
-* Using `--additional-driver-flag`:
+* Using `--additional-driver-flag` or `--flag-specific`:
 
   ```bash
-  python run_web_tests.py --additional-driver-flag=--blocking-repaint
+  third_party/blink/tools/run_web_tests.py --additional-driver-flag=--blocking-repaint
   ```
 
   This tells the test harness to pass `--blocking-repaint` to the
@@ -297,8 +300,15 @@ There are two ways to run web tests with additional command-line arguments:
   with the flags without creating any virtual tests.
 
 For flags whose implementation is still in progress, virtual test suites and
-flag-specific expectations represent two alternative strategies for testing.
-Consider the following when choosing between them:
+flag-specific expectations represent two alternative strategies for testing both
+the enabled code path and not-enabled code path. They are preferred to only
+setting a [runtime enabled feature](../../third_party/blink/renderer/platform/RuntimeEnabledFeatures.md)
+to `status: "test"` if the feature has substantially different code path from
+production because the latter would cause loss of test coverage of the production
+code path.
+
+Consider the following when choosing between virtual test suites and
+flag-specific expectations:
 
 * The
   [waterfall builders](https://dev.chromium.org/developers/testing/chromium-build-infrastructure/tour-of-the-chromium-buildbot)
@@ -306,7 +316,8 @@ Consider the following when choosing between them:
   will run all virtual test suites in addition to the non-virtual tests.
   Conversely, a flag-specific expectations file won't automatically cause the
   bots to test your flag - if you want bot coverage without virtual test suites,
-  you will need to set up a dedicated bot for your flag.
+  you will need to set up a dedicated bot ([example](https://chromium-review.googlesource.com/c/chromium/src/+/1850255))
+  for your flag.
 
 * Due to the above, virtual test suites incur a performance penalty for the
   commit queue and the continuous build infrastructure. This is exacerbated by
@@ -382,10 +393,10 @@ tips for finding the problem.
       spacing or box sizes are often unimportant, especially around fonts and
       form controls. Differences in wording of JS error messages are also
       usually acceptable.
-    * `python run_web_tests.py path/to/your/test.html` produces a page listing
-      all test results. Those which fail their expectations will include links
-      to the expected result, actual result, and diff. These results are saved
-      to `$root_build_dir/layout-test-results`.
+    * `third_party/blink/tools/run_web_tests.py path/to/your/test.html` produces
+      a page listing all test results. Those which fail their expectations will
+      include links to the expected result, actual result, and diff. These
+      results are saved to `$root_build_dir/layout-test-results`.
         * Alternatively the `--results-directory=path/for/output/` option allows
           you to specify an alternative directory for the output to be saved to.
     * If you're still sure it's correct, rebaseline the test (see below).
@@ -428,8 +439,7 @@ tips for finding the problem.
 To run the server manually to reproduce/debug a failure:
 
 ```bash
-cd src/third_party/blink/tools
-python run_blink_httpd.py
+third_party/blink/tools/run_blink_httpd.py
 ```
 
 The web tests are served from `http://127.0.0.1:8000/`. For example, to
@@ -473,18 +483,12 @@ machine?
 
 ### Debugging DevTools Tests
 
-* Add `debug_devtools=true` to `args.gn` and compile: `autoninja -C out/Default devtools_frontend_resources`
-  > Debug DevTools lets you avoid having to recompile after every change to the DevTools front-end.
 * Do one of the following:
     * Option A) Run from the `chromium/src` folder:
-      `third_party/blink/tools/run_web_tests.sh
-      --additional-driver-flag='--debug-devtools'
-      --additional-driver-flag='--remote-debugging-port=9222'
-      --time-out-ms=6000000`
+      `third_party/blink/tools/run_web_tests.py --additional-driver-flag='--remote-debugging-port=9222' --additional-driver-flag='--debug-devtools' --time-out-ms=6000000`
     * Option B) If you need to debug an http/tests/inspector test, start httpd
       as described above. Then, run content_shell:
-      `out/Default/content_shell --debug-devtools --remote-debugging-port=9222 --run-web-tests
-      http://127.0.0.1:8000/path/to/test.html`
+      `out/Default/content_shell --remote-debugging-port=9222 --additional-driver-flag='--debug-devtools' --run-web-tests http://127.0.0.1:8000/path/to/test.html`
 * Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
   link to open the devtools with the test loaded.
 * In the loaded devtools, set any required breakpoints and execute `test()` in
@@ -546,8 +550,7 @@ read on.
 ***
 
 ```bash
-cd src/third_party/blink
-python tools/run_web_tests.py --reset-results foo/bar/test.html
+third_party/blink/tools/run_web_tests.py --reset-results foo/bar/test.html
 ```
 
 If there are current expectation files for `web_tests/foo/bar/test.html`,
@@ -569,12 +572,18 @@ Though we prefer the Rebaseline Tool to local rebaselining, the Rebaseline Tool
 doesn't support rebaselining flag-specific expectations.
 
 ```bash
-cd src/third_party/blink
-python tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+third_party/blink/tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
+*** promo
+You can use `--flag-specific=config` as a shorthand of
+`--additional-driver-flag=--enable-flag` if `config` is defined in
+`web_tests/FlagSpecificConfig`.
+***
 
 New baselines will be created in the flag-specific baselines directory, e.g.
-`web_tests/flag-specific/enable-flag/foo/bar/test-expected.{txt,png}`.
+`web_tests/flag-specific/enable-flag/foo/bar/test-expected.{txt,png}`
+or
+`web_tests/flag-specific/config/foo/bar/test-expected.{txt,png}`
 
 Then you can commit the new baselines and upload the patch for review.
 

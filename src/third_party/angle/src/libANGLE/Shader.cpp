@@ -390,7 +390,7 @@ void Shader::resolveCompile()
     if (!mCompilingState->compileEvent->getResult())
     {
         mInfoLog += sh::GetInfoLog(compilerHandle);
-        WARN() << std::endl << mInfoLog;
+        INFO() << std::endl << mInfoLog;
         mState.mCompileStatus = CompileStatus::NOT_COMPILED;
         return;
     }
@@ -654,7 +654,7 @@ std::string Shader::getTransformFeedbackVaryingMappedName(const std::string &tfV
             else if (varying.isStruct())
             {
                 GLuint fieldIndex = 0;
-                const auto *field = FindShaderVarField(varying, tfVaryingName, &fieldIndex);
+                const auto *field = varying.findField(tfVaryingName, &fieldIndex);
                 ASSERT(field != nullptr && !field->isStruct() && !field->isArray());
                 return varying.mappedName + "." + field->mappedName;
             }

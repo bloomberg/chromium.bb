@@ -7,17 +7,16 @@ package org.chromium.chrome.browser.app.flags;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.RemovableInRelease;
+import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.init.ChromeStartupDelegate;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.util.ArrayList;
@@ -50,48 +49,65 @@ public class ChromeCachedFlags {
 
         // clang-format off
         List<String> featuresToCache = Arrays.asList(
+                ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM,
                 ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE,
-                ChromeFeatureList.CHROME_DUET,
-                ChromeFeatureList.CHROME_DUET_ADAPTIVE,
-                ChromeFeatureList.CHROME_DUET_LABELED,
+                ChromeFeatureList.CHROME_STARTUP_DELEGATE,
                 ChromeFeatureList.CLOSE_TAB_SUGGESTIONS,
+                ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
                 ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
-                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
+                ChromeFeatureList.EARLY_LIBRARY_LOAD,
+                ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID,
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
                 ChromeFeatureList.INSTANT_START,
-                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
-                ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW,
+                ChromeFeatureList.INTEREST_FEED_V2,
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
+                ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
+                ChromeFeatureList.REPORT_FEED_USER_ACTIONS,
+                ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT,
                 ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-                ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS,
+                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP,
+                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR,
+                ChromeFeatureList.USE_CHIME_ANDROID_SDK,
+                ChromeFeatureList.READ_LATER);
         // clang-format on
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
         CachedFeatureFlags.cacheAdditionalNativeFlags();
 
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
-                BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                AppMenuPropertiesDelegateImpl.ACTION_BAR_VARIATION,
+                AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION,
+                ChromeStartupDelegate.ENABLED,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS,
                 ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,
                 StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
+                StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE,
+                StartSurfaceConfiguration.TRENDY_ENABLED,
+                StartSurfaceConfiguration.TRENDY_ENDPOINT,
+                StartSurfaceConfiguration.TRENDY_FAILURE_MIN_PERIOD_MS,
+                StartSurfaceConfiguration.TRENDY_SUCCESS_MIN_PERIOD_MS,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
+                TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX,
+                TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP,
+                TabUiFeatureUtilities.ENABLE_PRICE_TRACKING,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
                 TabUiFeatureUtilities.ZOOMING_MIN_SDK,
@@ -101,15 +117,6 @@ public class ChromeCachedFlags {
         // clang-format on
         tryToCatchMissingParameters(fieldTrialsToCache);
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
-
-        // TODO(crbug.com/1062013): Remove this after M85.
-        // This pref is only needed while clients are transitioning to caching via
-        // {@link StartSurfaceConfiguration#START_SURFACE_VARIATION}. It is still honored by
-        // {@link StartSurfaceConfiguration#isStartSurfaceSinglePaneEnabled()}. When it is removed,
-        // the cached value will be lost, but this only matters if the client hasn't started Chrome
-        // in months, and the effect is only that they will use a default value for the first run.
-        SharedPreferencesManager.getInstance().removeKey(
-                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY);
 
         mIsFinishedCachingNativeFlags = true;
     }

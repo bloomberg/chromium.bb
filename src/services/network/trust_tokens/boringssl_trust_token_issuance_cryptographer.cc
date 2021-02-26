@@ -29,13 +29,23 @@ BoringsslTrustTokenIssuanceCryptographer::
     ~BoringsslTrustTokenIssuanceCryptographer() = default;
 
 bool BoringsslTrustTokenIssuanceCryptographer::Initialize(
+    mojom::TrustTokenProtocolVersion issuer_configured_version,
     int issuer_configured_batch_size) {
   if (!base::IsValueInRangeForNumericType<size_t>(issuer_configured_batch_size))
     return false;
 
+  const TRUST_TOKEN_METHOD* method = nullptr;
+  switch (issuer_configured_version) {
+    case mojom::TrustTokenProtocolVersion::kTrustTokenV2Pmb:
+      method = TRUST_TOKEN_experiment_v2_pmb();
+      break;
+    case mojom::TrustTokenProtocolVersion::kTrustTokenV2Voprf:
+      method = TRUST_TOKEN_experiment_v2_voprf();
+      break;
+  }
+
   ctx_ = bssl::UniquePtr<TRUST_TOKEN_CLIENT>(TRUST_TOKEN_CLIENT_new(
-      TRUST_TOKEN_experiment_v1(),
-      static_cast<size_t>(issuer_configured_batch_size)));
+      method, static_cast<size_t>(issuer_configured_batch_size)));
   return !!ctx_;
 }
 

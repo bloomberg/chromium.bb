@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -118,8 +118,8 @@ void SettingsResetPromptController::Accept() {
   UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptAccepted", true);
   model_->PerformReset(
       std::move(default_settings_),
-      base::Bind(&SettingsResetPromptController::OnInteractionDone,
-                 base::Unretained(this)));
+      base::BindOnce(&SettingsResetPromptController::OnInteractionDone,
+                     base::Unretained(this)));
 }
 
 void SettingsResetPromptController::Cancel() {

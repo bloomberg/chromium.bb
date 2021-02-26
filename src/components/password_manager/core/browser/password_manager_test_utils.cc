@@ -15,8 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 
-using autofill::PasswordForm;
-
 namespace password_manager {
 
 std::unique_ptr<PasswordForm> PasswordFormFromData(
@@ -28,7 +26,7 @@ std::unique_ptr<PasswordForm> PasswordFormFromData(
   if (form_data.signon_realm)
     form->signon_realm = std::string(form_data.signon_realm);
   if (form_data.origin)
-    form->origin = GURL(form_data.origin);
+    form->url = GURL(form_data.origin);
   if (form_data.action)
     form->action = GURL(form_data.action);
   if (form_data.submit_element)
@@ -52,7 +50,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   if (form_data.username_value)
     form->display_name = form->username_value;
   else
-    form->blacklisted_by_user = true;
+    form->blocked_by_user = true;
   form->icon_url = GURL("https://accounts.google.com/Icon");
   if (use_federated_login) {
     form->password_value.clear();
@@ -63,16 +61,15 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   return form;
 }
 
-std::unique_ptr<autofill::PasswordForm> CreateEntry(
-    const std::string& username,
-    const std::string& password,
-    const GURL& origin_url,
-    bool is_psl_match,
-    bool is_affiliation_based_match) {
-  auto form = std::make_unique<autofill::PasswordForm>();
+std::unique_ptr<PasswordForm> CreateEntry(const std::string& username,
+                                          const std::string& password,
+                                          const GURL& origin_url,
+                                          bool is_psl_match,
+                                          bool is_affiliation_based_match) {
+  auto form = std::make_unique<PasswordForm>();
   form->username_value = base::ASCIIToUTF16(username);
   form->password_value = base::ASCIIToUTF16(password);
-  form->origin = origin_url;
+  form->url = origin_url;
   form->is_public_suffix_match = is_psl_match;
   form->is_affiliation_based_match = is_affiliation_based_match;
   return form;
@@ -119,14 +116,15 @@ bool ContainsEqualPasswordFormsUnordered(
   return !had_mismatched_actual_form && remaining_expectations.empty();
 }
 
-MockPasswordStoreObserver::MockPasswordStoreObserver() {}
+MockPasswordStoreObserver::MockPasswordStoreObserver() = default;
 
-MockPasswordStoreObserver::~MockPasswordStoreObserver() {}
+MockPasswordStoreObserver::~MockPasswordStoreObserver() = default;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() {}
+MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() =
+    default;
 
-MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() {}
+MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() =
+    default;
 
 PasswordHashDataMatcher::PasswordHashDataMatcher(
     base::Optional<PasswordHashData> expected)
@@ -158,7 +156,5 @@ void PasswordHashDataMatcher::DescribeNegationTo(::std::ostream* os) const {
     base::Optional<PasswordHashData> expected) {
   return ::testing::MakeMatcher(new PasswordHashDataMatcher(expected));
 }
-
-#endif
 
 }  // namespace password_manager

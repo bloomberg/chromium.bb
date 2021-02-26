@@ -7,7 +7,6 @@ import("//remoting/build/config/remoting_build.gni")
 source_set("security_key") {
   sources = [
     "security_key_auth_handler.h",
-    "security_key_auth_handler_win.cc",
     "security_key_extension.cc",
     "security_key_extension.h",
     "security_key_extension_session.cc",
@@ -44,6 +43,10 @@ source_set("security_key") {
 
   if (is_posix) {
     sources += [ "security_key_auth_handler_posix.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "security_key_auth_handler_win.cc" ]
   }
 }
 
@@ -88,7 +91,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "security_key_auth_handler_win_unittest.cc",
     "security_key_extension_session_unittest.cc",
     "security_key_ipc_client_unittest.cc",
     "security_key_ipc_server_unittest.cc",
@@ -105,6 +107,10 @@ source_set("unit_tests") {
 
   if (is_posix) {
     sources += [ "security_key_auth_handler_posix_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "security_key_auth_handler_win_unittest.cc" ]
   }
 }
 

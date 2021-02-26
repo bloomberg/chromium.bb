@@ -13,7 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
@@ -111,7 +111,6 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
         cancelObsoleteTaskId();
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
-                                ExploreSitesBackgroundTask.class,
                                 DateUtils.HOUR_IN_MILLIS * DEFAULT_DELAY_HOURS,
                                 DateUtils.HOUR_IN_MILLIS * DEFAULT_FLEX_HOURS)
                         .setRequiredNetworkType(TaskInfo.NetworkType.ANY)

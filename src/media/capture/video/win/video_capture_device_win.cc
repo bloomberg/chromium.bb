@@ -51,7 +51,7 @@ bool PinMatchesCategory(IPin* pin, REFGUID category) {
   if (SUCCEEDED(hr)) {
     GUID pin_category;
     DWORD return_value;
-    hr = ks_property->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY, NULL, 0,
+    hr = ks_property->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY, nullptr, 0,
                           &pin_category, sizeof(pin_category), &return_value);
     if (SUCCEEDED(hr) && (return_value == sizeof(pin_category))) {
       found = (pin_category == category);
@@ -68,20 +68,36 @@ bool PinMatchesMajorType(IPin* pin, REFGUID major_type) {
   return SUCCEEDED(hr) && connection_media_type.majortype == major_type;
 }
 
+// Check if the video capture device supports pan, tilt and zoom controls.
 // static
-void VideoCaptureDeviceWin::GetDeviceCapabilityList(
-    const std::string& device_id,
-    bool query_detailed_frame_rates,
-    CapabilityList* out_capability_list) {
-  ComPtr<IBaseFilter> capture_filter;
-  HRESULT hr =
-      VideoCaptureDeviceWin::GetDeviceFilter(device_id, &capture_filter);
-  if (!capture_filter.Get()) {
-    DLOG(ERROR) << "Failed to create capture filter: "
-                << logging::SystemErrorCodeToString(hr);
-    return;
+VideoCaptureControlSupport VideoCaptureDeviceWin::GetControlSupport(
+    ComPtr<IBaseFilter> capture_filter) {
+  VideoCaptureControlSupport control_support;
+  ComPtr<ICameraControl> camera_control;
+  ComPtr<IVideoProcAmp> video_control;
+
+  if (GetCameraAndVideoControls(capture_filter, &camera_control,
+                                &video_control)) {
+    long min, max, step, default_value, flags;
+    control_support.pan = SUCCEEDED(camera_control->getRange_Pan(
+                              &min, &max, &step, &default_value, &flags)) &&
+                          min < max;
+    control_support.tilt = SUCCEEDED(camera_control->getRange_Tilt(
+                               &min, &max, &step, &default_value, &flags)) &&
+                           min < max;
+    control_support.zoom = SUCCEEDED(camera_control->getRange_Zoom(
+                               &min, &max, &step, &default_value, &flags)) &&
+                           min < max;
   }
 
+  return control_support;
+}
+
+// static
+void VideoCaptureDeviceWin::GetDeviceCapabilityList(
+    ComPtr<IBaseFilter> capture_filter,
+    bool query_detailed_frame_rates,
+    CapabilityList* out_capability_list) {
   ComPtr<IPin> output_capture_pin(VideoCaptureDeviceWin::GetPin(
       capture_filter.Get(), PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE, GUID_NULL));
   if (!output_capture_pin.Get()) {
@@ -184,81 +200,22 @@ void VideoCaptureDeviceWin::GetPinCapabilityList(
   }
 }
 
-// Finds and creates a DirectShow Video Capture filter matching the |device_id|.
-// static
-HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
-                                               IBaseFilter** filter) {
-  DCHECK(filter);
-
-  ComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
-                                  IID_PPV_ARGS(&dev_enum));
-  if (FAILED(hr))
-    return hr;
-
-  ComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       &enum_moniker, 0);
-  // CreateClassEnumerator returns S_FALSE on some Windows OS
-  // when no camera exist. Therefore the FAILED macro can't be used.
-  if (hr != S_OK)
-    return hr;
-
-  ComPtr<IBaseFilter> capture_filter;
-  for (ComPtr<IMoniker> moniker; enum_moniker->Next(1, &moniker, NULL) == S_OK;
-       moniker.Reset()) {
-    ComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
-    if (FAILED(hr))
-      continue;
-
-    // Find |device_id| via DevicePath, Description or FriendlyName, whichever
-    // is available first and is a VT_BSTR (i.e. String) type.
-    static const wchar_t* kPropertyNames[] = {L"DevicePath", L"Description",
-                                              L"FriendlyName"};
-
-    ScopedVariant name;
-    for (const auto* property_name : kPropertyNames) {
-      prop_bag->Read(property_name, name.Receive(), 0);
-      if (name.type() == VT_BSTR)
-        break;
-    }
-
-    if (name.type() == VT_BSTR) {
-      const std::string device_path(base::SysWideToUTF8(V_BSTR(name.ptr())));
-      if (device_path.compare(device_id) == 0) {
-        // We have found the requested device
-        hr = moniker->BindToObject(0, 0, IID_PPV_ARGS(&capture_filter));
-        DLOG_IF(ERROR, FAILED(hr)) << "Failed to bind camera filter: "
-                                   << logging::SystemErrorCodeToString(hr);
-        break;
-      }
-    }
-  }
-
-  *filter = capture_filter.Detach();
-  if (!*filter && SUCCEEDED(hr))
-    hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-
-  return hr;
-}
-
 // Finds an IPin on an IBaseFilter given the direction, Category and/or Major
 // Type. If either |category| or |major_type| are GUID_NULL, they are ignored.
 // static
-ComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
+ComPtr<IPin> VideoCaptureDeviceWin::GetPin(ComPtr<IBaseFilter> capture_filter,
                                            PIN_DIRECTION pin_dir,
                                            REFGUID category,
                                            REFGUID major_type) {
   ComPtr<IPin> pin;
   ComPtr<IEnumPins> pin_enum;
-  HRESULT hr = filter->EnumPins(&pin_enum);
-  if (pin_enum.Get() == NULL)
+  HRESULT hr = capture_filter->EnumPins(&pin_enum);
+  if (pin_enum.Get() == nullptr)
     return pin;
 
   // Get first unconnected pin.
   hr = pin_enum->Reset();  // set to first pin
-  while ((hr = pin_enum->Next(1, &pin, NULL)) == S_OK) {
+  while ((hr = pin_enum->Next(1, &pin, nullptr)) == S_OK) {
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
@@ -300,7 +257,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
       return pixel_format.format;
   }
   DVLOG(2) << "Device (also) supports an unknown media type "
-           << base::win::String16FromGUID(sub_type);
+           << base::win::WStringFromGUID(sub_type);
   return PIXEL_FORMAT_UNKNOWN;
 }
 
@@ -309,7 +266,7 @@ void VideoCaptureDeviceWin::ScopedMediaType::Free() {
     return;
 
   DeleteMediaType(media_type_);
-  media_type_ = NULL;
+  media_type_ = nullptr;
 }
 
 AM_MEDIA_TYPE** VideoCaptureDeviceWin::ScopedMediaType::Receive() {
@@ -323,13 +280,13 @@ void VideoCaptureDeviceWin::ScopedMediaType::FreeMediaType(AM_MEDIA_TYPE* mt) {
   if (mt->cbFormat != 0) {
     CoTaskMemFree(mt->pbFormat);
     mt->cbFormat = 0;
-    mt->pbFormat = NULL;
+    mt->pbFormat = nullptr;
   }
-  if (mt->pUnk != NULL) {
+  if (mt->pUnk != nullptr) {
     NOTREACHED();
     // pUnk should not be used.
     mt->pUnk->Release();
-    mt->pUnk = NULL;
+    mt->pUnk = nullptr;
   }
 }
 
@@ -337,16 +294,18 @@ void VideoCaptureDeviceWin::ScopedMediaType::FreeMediaType(AM_MEDIA_TYPE* mt) {
 // http://msdn.microsoft.com/en-us/library/dd375432(VS.85).aspx
 void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
     AM_MEDIA_TYPE* mt) {
-  if (mt != NULL) {
+  if (mt != nullptr) {
     FreeMediaType(mt);
     CoTaskMemFree(mt);
   }
 }
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(
-    const VideoCaptureDeviceDescriptor& device_descriptor)
+    const VideoCaptureDeviceDescriptor& device_descriptor,
+    ComPtr<IBaseFilter> capture_filter)
     : device_descriptor_(device_descriptor),
       state_(kIdle),
+      capture_filter_(std::move(capture_filter)),
       white_balance_mode_manual_(false),
       exposure_mode_manual_(false),
       focus_mode_manual_(false),
@@ -386,11 +345,6 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
 
 bool VideoCaptureDeviceWin::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  HRESULT hr = GetDeviceFilter(device_descriptor_.device_id, &capture_filter_);
-  DLOG_IF_FAILED_WITH_HRESULT("Failed to create capture filter", hr);
-  if (!capture_filter_.Get())
-    return false;
-
   output_capture_pin_ = GetPin(capture_filter_.Get(), PINDIR_OUTPUT,
                                PIN_CATEGORY_CAPTURE, GUID_NULL);
   if (!output_capture_pin_.Get()) {
@@ -400,20 +354,21 @@ bool VideoCaptureDeviceWin::Init() {
 
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
-  if (sink_filter_.get() == NULL) {
+  if (sink_filter_.get() == nullptr) {
     DLOG(ERROR) << "Failed to create sink filter";
     return false;
   }
 
   input_sink_pin_ = sink_filter_->GetPin(0);
 
-  hr = ::CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
-                          IID_PPV_ARGS(&graph_builder_));
+  HRESULT hr =
+      ::CoCreateInstance(CLSID_FilterGraph, nullptr, CLSCTX_INPROC_SERVER,
+                         IID_PPV_ARGS(&graph_builder_));
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create capture filter", hr);
   if (FAILED(hr))
     return false;
 
-  hr = ::CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC,
+  hr = ::CoCreateInstance(CLSID_CaptureGraphBuilder2, nullptr, CLSCTX_INPROC,
                           IID_PPV_ARGS(&capture_graph_builder_));
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create the Capture Graph Builder", hr);
   if (FAILED(hr))
@@ -430,13 +385,13 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr))
     return false;
 
-  hr = graph_builder_->AddFilter(capture_filter_.Get(), NULL);
+  hr = graph_builder_->AddFilter(capture_filter_.Get(), nullptr);
   DLOG_IF_FAILED_WITH_HRESULT("Failed to add the capture device to the graph",
                               hr);
   if (FAILED(hr))
     return false;
 
-  hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
+  hr = graph_builder_->AddFilter(sink_filter_.get(), nullptr);
   DLOG_IF_FAILED_WITH_HRESULT("Failed to add the sink filter to the graph", hr);
   if (FAILED(hr))
     return false;
@@ -541,7 +496,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
                                  input_sink_pin_.Get());
   } else {
     hr = graph_builder_->ConnectDirect(output_capture_pin_.Get(),
-                                       input_sink_pin_.Get(), NULL);
+                                       input_sink_pin_.Get(), nullptr);
   }
 
   if (FAILED(hr)) {
@@ -608,8 +563,10 @@ void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
     return;
 
   if (!camera_control_ || !video_control_) {
-    if (!InitializeVideoAndCameraControls())
+    if (!GetCameraAndVideoControls(capture_filter_, &camera_control_,
+                                   &video_control_)) {
       return;
+    }
   }
 
   auto photo_capabilities = mojo::CreateEmptyPhotoState();
@@ -715,8 +672,10 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!camera_control_ || !video_control_) {
-    if (!InitializeVideoAndCameraControls())
+    if (!GetCameraAndVideoControls(capture_filter_, &camera_control_,
+                                   &video_control_)) {
       return;
+    }
   }
 
   HRESULT hr;
@@ -834,9 +793,18 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
   std::move(callback).Run(true);
 }
 
-bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
+// static
+bool VideoCaptureDeviceWin::GetCameraAndVideoControls(
+    ComPtr<IBaseFilter> capture_filter,
+    ICameraControl** camera_control,
+    IVideoProcAmp** video_control) {
+  DCHECK(camera_control);
+  DCHECK(video_control);
+  DCHECK(!*camera_control);
+  DCHECK(!*video_control);
+
   ComPtr<IKsTopologyInfo> info;
-  HRESULT hr = capture_filter_.As(&info);
+  HRESULT hr = capture_filter.As(&info);
   if (FAILED(hr)) {
     DLOG_IF_FAILED_WITH_HRESULT("Failed to obtain the topology info.", hr);
     return false;
@@ -855,7 +823,7 @@ bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control_));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(camera_control));
       if (SUCCEEDED(hr))
         break;
       DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve the ICameraControl.", hr);
@@ -865,14 +833,14 @@ bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control_));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(video_control));
       if (SUCCEEDED(hr))
         break;
       DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve the IVideoProcAmp.", hr);
       return false;
     }
   }
-  return camera_control_ && video_control_;
+  return *camera_control && *video_control;
 }
 
 // Implements SinkFilterObserver::SinkFilterObserver.
@@ -889,6 +857,11 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   if (timestamp == kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
+  // We always calculate camera rotation for the first frame. We also cache the
+  // latest value to use when AutoRotation is turned off.
+  if (!camera_rotation_.has_value() || IsAutoRotationEnabled())
+    camera_rotation_ = GetCameraRotation(device_descriptor_.facing);
+
   // TODO(julien.isorce): retrieve the color space information using the
   // DirectShow api, AM_MEDIA_TYPE::VIDEOINFOHEADER2::dwControlFlags. If
   // AMCONTROL_COLORINFO_PRESENT, then reinterpret dwControlFlags as a
@@ -896,8 +869,8 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   // DXVA_VideoTransferMatrix, DXVA_VideoTransferFunction and
   // DXVA_NominalRangeto build a gfx::ColorSpace. See http://crbug.com/959992.
   client_->OnIncomingCapturedData(buffer, length, format, gfx::ColorSpace(),
-                                  GetCameraRotation(device_descriptor_.facing),
-                                  flip_y, base::TimeTicks::Now(), timestamp);
+                                  camera_rotation_.value(), flip_y,
+                                  base::TimeTicks::Now(), timestamp);
 
   while (!take_photo_callbacks_.empty()) {
     TakePhotoCallback cb = std::move(take_photo_callbacks_.front());

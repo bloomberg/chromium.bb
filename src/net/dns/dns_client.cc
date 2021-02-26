@@ -12,9 +12,10 @@
 #include "base/values.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_session.h"
-#include "net/dns/dns_socket_pool.h"
+#include "net/dns/dns_socket_allocator.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -27,9 +28,9 @@ namespace {
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
 base::Value NetLogDnsConfigParams(const DnsConfig* config) {
   if (!config)
-    return base::DictionaryValue();
+    return base::Value(base::Value::Type::DICTIONARY);
 
-  return base::Value::FromUniquePtrValue(config->ToValue());
+  return config->ToValue();
 }
 
 bool IsEqual(const base::Optional<DnsConfig>& c1, const DnsConfig* c2) {
@@ -48,7 +49,7 @@ void UpdateConfigForDohUpgrade(DnsConfig* config) {
   // when there are aspects of the system DNS config that are unhandled.
   if (!config->unhandled_options && config->allow_dns_over_https_upgrade &&
       !has_doh_servers &&
-      config->secure_dns_mode == DnsConfig::SecureDnsMode::AUTOMATIC) {
+      config->secure_dns_mode == SecureDnsMode::kAutomatic) {
     // If we're in strict mode on Android, only attempt to upgrade the
     // specified DoT hostname.
     if (!config->dns_over_tls_hostname.empty()) {
@@ -245,14 +246,11 @@ class DnsClientImpl : public DnsClient {
     if (new_effective_config) {
       DCHECK(new_effective_config.value().IsValid());
 
-      std::unique_ptr<DnsSocketPool> socket_pool(
-          new_effective_config.value().randomize_ports
-              ? DnsSocketPool::CreateDefault(socket_factory_,
-                                             rand_int_callback_)
-              : DnsSocketPool::CreateNull(socket_factory_, rand_int_callback_));
-      session_ =
-          new DnsSession(std::move(new_effective_config).value(),
-                         std::move(socket_pool), rand_int_callback_, net_log_);
+      auto socket_allocator = std::make_unique<DnsSocketAllocator>(
+          socket_factory_, new_effective_config.value().nameservers, net_log_);
+      session_ = new DnsSession(std::move(new_effective_config).value(),
+                                std::move(socket_allocator), rand_int_callback_,
+                                net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_.get());
     }
   }

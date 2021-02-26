@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/platform/graphics/gradient.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
       gradient_map_(MakeGarbageCollected<GradientMap>()) {}
 
 void LayoutSVGResourceGradient::RemoveAllClientsFromCache() {
+  NOT_DESTROYED();
   gradient_map_->clear();
   should_collect_gradient_attributes_ = true;
   To<SVGGradientElement>(*GetElement()).InvalidateDependentGradients();
@@ -50,6 +52,7 @@ void LayoutSVGResourceGradient::RemoveAllClientsFromCache() {
 
 bool LayoutSVGResourceGradient::RemoveClientFromCache(
     SVGResourceClient& client) {
+  NOT_DESTROYED();
   auto entry = gradient_map_->find(&client);
   if (entry == gradient_map_->end())
     return false;
@@ -59,6 +62,7 @@ bool LayoutSVGResourceGradient::RemoveClientFromCache(
 
 std::unique_ptr<GradientData> LayoutSVGResourceGradient::BuildGradientData(
     const FloatRect& object_bounding_box) {
+  NOT_DESTROYED();
   // Create gradient object
   auto gradient_data = std::make_unique<GradientData>();
 
@@ -94,29 +98,37 @@ std::unique_ptr<GradientData> LayoutSVGResourceGradient::BuildGradientData(
   return gradient_data;
 }
 
-SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
+bool LayoutSVGResourceGradient::ApplyShader(
     const SVGResourceClient& client,
-    const FloatRect& object_bounding_box) {
+    const FloatRect& reference_box,
+    const AffineTransform* additional_transform,
+    PaintFlags& flags) {
+  NOT_DESTROYED();
   ClearInvalidationMask();
 
   std::unique_ptr<GradientData>& gradient_data =
       gradient_map_->insert(&client, nullptr).stored_value->value;
   if (!gradient_data)
-    gradient_data = BuildGradientData(object_bounding_box);
+    gradient_data = BuildGradientData(reference_box);
 
   if (!gradient_data->gradient)
-    return SVGPaintServer::Invalid();
+    return false;
 
-  return SVGPaintServer(gradient_data->gradient,
-                        gradient_data->userspace_transform);
+  AffineTransform transform = gradient_data->userspace_transform;
+  if (additional_transform)
+    transform = *additional_transform * transform;
+  gradient_data->gradient->ApplyToFlags(flags,
+                                        AffineTransformToSkMatrix(transform));
+  return true;
 }
 
 bool LayoutSVGResourceGradient::IsChildAllowed(LayoutObject* child,
                                                const ComputedStyle&) const {
+  NOT_DESTROYED();
   if (!child->IsSVGResourceContainer())
     return false;
 
-  return ToLayoutSVGResourceContainer(child)->IsSVGPaintServer();
+  return To<LayoutSVGResourceContainer>(child)->IsSVGPaintServer();
 }
 
 GradientSpreadMethod LayoutSVGResourceGradient::PlatformSpreadMethodFromSVGType(

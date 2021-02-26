@@ -68,7 +68,9 @@ def StableHashPath(path):
       hasher.update('dir:' + d + '\x00')
     for f in files:
       hasher.update('filename:' + f + '\x00')
-      hasher.update('contents:' + HashFileContents(
-          os.path.join(root, f)))
+      # Don't try to hash nonexistent paths (e.g. bad symlinks)
+      if os.path.exists(os.path.join(root, f)):
+        hasher.update('contents:' + HashFileContents(
+            os.path.join(root, f)))
 
   return hasher.hexdigest()

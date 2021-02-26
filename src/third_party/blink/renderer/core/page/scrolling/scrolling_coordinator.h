@@ -65,7 +65,7 @@ class CORE_EXPORT ScrollingCoordinator final
  public:
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator() override;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
   // animation host and timeline to be owned by the ScrollingCoordinator. When
@@ -76,20 +76,6 @@ class CORE_EXPORT ScrollingCoordinator final
   void WillCloseAnimationHost(LocalFrameView*);
 
   void WillBeDestroyed();
-
-  // Return whether this scrolling coordinator handles scrolling for the given
-  // frame view.
-  bool CoordinatesScrollingForFrameView(LocalFrameView*) const;
-
-  // Called when any frame has done its layout or compositing has changed.
-  void NotifyGeometryChanged(LocalFrameView*);
-
-  // Update non-fast scrollable regions and touch event target rects.
-  // TODO(pdr): Refactor this out of ScrollingCoordinator.
-  void UpdateAfterPaint(LocalFrameView*);
-
-  // Should be called whenever the root layer for the given frame view changes.
-  void FrameViewRootLayerDidChange(LocalFrameView*);
 
   void WillDestroyScrollableArea(ScrollableArea*);
 
@@ -113,11 +99,6 @@ class CORE_EXPORT ScrollingCoordinator final
   void ScrollableAreaScrollLayerDidChange(PaintLayerScrollableArea*);
   void ScrollableAreaScrollbarLayerDidChange(PaintLayerScrollableArea*,
                                              ScrollbarOrientation);
-  // LocalFrame* must be a local root if non-null.
-  void TouchEventTargetRectsDidChange(LocalFrame*);
-
-  void UpdateNonFastScrollableRegions(LocalFrame*);
-  void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
 
   cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() {
@@ -137,6 +118,7 @@ class CORE_EXPORT ScrollingCoordinator final
   void DidChangeScrollbarsHidden(CompositorElementId, bool hidden) override;
 
   base::WeakPtr<ScrollingCoordinator> GetWeakPtr() {
+    DCHECK(page_);
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -148,11 +130,6 @@ class CORE_EXPORT ScrollingCoordinator final
   bool IsForMainFrame(ScrollableArea*) const;
 
   Member<Page> page_;
-
-  // Dirty flags used to identify what really needs to be computed after
-  // compositing is updated.
-  bool touch_event_target_rects_are_dirty_;
-  bool should_scroll_on_main_thread_dirty_;
 
  private:
   void SetScrollbarLayer(ScrollableArea*,

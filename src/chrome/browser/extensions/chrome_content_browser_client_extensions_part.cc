@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
@@ -58,6 +56,7 @@
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
@@ -77,13 +76,13 @@
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
+using blink::web_pref::WebPreferences;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
-using content::WebPreferences;
 
 namespace extensions {
 
@@ -313,7 +312,7 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
+bool ChromeContentBrowserClientExtensionsPart::ShouldLockProcessToSite(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
   if (!effective_site_url.SchemeIs(kExtensionScheme))
@@ -568,24 +567,7 @@ bool ChromeContentBrowserClientExtensionsPart::
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
-    const GURL& scope,
-    const GURL& first_party_url,
-    const GURL& script_url,
-    content::ResourceContext* context) {
-  // We only care about extension urls.
-  if (!first_party_url.SchemeIs(kExtensionScheme))
-    return true;
-
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
-  const Extension* extension =
-      extension_info_map->extensions().GetExtensionOrAppByURL(first_party_url);
-  return AllowServiceWorker(scope, script_url, extension);
-}
-
-// static
-bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
+bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party_url,
     const GURL& script_url,
@@ -597,7 +579,7 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
   const Extension* extension = ExtensionRegistry::Get(context)
                                    ->enabled_extensions()
                                    .GetExtensionOrAppByURL(first_party_url);
-  return AllowServiceWorker(scope, script_url, extension);
+  return ::extensions::AllowServiceWorker(scope, script_url, extension);
 }
 
 // static
@@ -684,13 +666,6 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
   ProcessMap::Get(context)->Insert(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&InfoMap::RegisterExtensionProcess,
-                     ExtensionSystem::Get(context)->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
@@ -709,13 +684,6 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
   ProcessMap::Get(context)->Remove(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&InfoMap::UnregisterExtensionProcess,
-                     ExtensionSystem::Get(context)->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(

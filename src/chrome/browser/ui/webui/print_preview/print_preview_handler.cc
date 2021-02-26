@@ -14,7 +14,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/print_preview/cloud_print_signin.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
@@ -79,11 +80,13 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #endif
@@ -106,6 +109,10 @@ PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
       return PrinterType::kPrivet;
     case UserActionBuckets::kPrintWithExtension:
       return PrinterType::kExtension;
+    // On Chrome OS, printing to Google Drive needs to open the local file
+    // picker so |kPrintToGoogleDriveCros| action should be handled by the
+    // PDFPrinterHandler.
+    case UserActionBuckets::kPrintToGoogleDriveCros:
     case UserActionBuckets::kPrintToPdf:
       return PrinterType::kPdf;
     case UserActionBuckets::kPrintToPrinter:
@@ -190,6 +197,11 @@ const char kUserAccounts[] = "userAccounts";
 // Print Preview will always send a request to the Google Cloud Print server on
 // load, to check the user's sign in state.
 const char kSyncAvailable[] = "syncAvailable";
+#if defined(OS_CHROMEOS)
+// Name of a dictionary field indicating whether the user's Drive directory is
+// mounted.
+const char kIsDriveMounted[] = "isDriveMounted";
+#endif  // defined(OS_CHROMEOS)
 
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
@@ -209,10 +221,18 @@ base::Value GetSettingsDictionary(const std::string& json_str) {
 }
 
 UserActionBuckets DetermineUserAction(const base::Value& settings) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (settings.FindKey(kSettingOpenPDFInPreview))
     return UserActionBuckets::kOpenInMacPreview;
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kPrintSaveToDrive) &&
+      settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false)) {
+    return UserActionBuckets::kPrintToGoogleDriveCros;
+  }
+#endif
+
   // This needs to be checked before checking for a cloud print ID, since a
   // print ticket for printing to Drive will also contain a cloud print ID.
   if (settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false))
@@ -430,9 +450,10 @@ void PrintPreviewHandler::RegisterMessages() {
           &PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "openPrinterSettings",
-      base::BindRepeating(&PrintPreviewHandler::HandleOpenPrinterSettings,
+      "managePrinters",
+      base::BindRepeating(&PrintPreviewHandler::HandleManagePrinters,
                           base::Unretained(this)));
+
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "getEulaUrl", base::BindRepeating(&PrintPreviewHandler::HandleGetEulaUrl,
@@ -628,6 +649,9 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   CHECK(settings.is_dict());
   int request_id = settings.FindIntKey(kPreviewRequestID).value();
   CHECK_GT(request_id, -1);
+  PrinterType printer_type = static_cast<PrinterType>(
+      settings.FindIntKey(kSettingPrinterType).value());
+  CHECK(printer_type != PrinterType::kCloud || IsCloudPrintEnabled());
 
   CHECK(!base::Contains(preview_callbacks_, request_id));
   preview_callbacks_[request_id] = callback_id;
@@ -789,10 +813,7 @@ void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
                      weak_factory_.GetWeakPtr(), callback_id, printer_name));
 }
 
-void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
-  bool add_account = false;
-  CHECK(args->GetBoolean(0, &add_account));
-
+void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);
 
@@ -801,21 +822,15 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
     // Chrome OS Account Manager is enabled on this Profile and hence, all
     // account management flows will go through native UIs and not through a
     // tabbed browser window.
-    if (add_account) {
-      chromeos::InlineLoginHandlerDialogChromeOS::Show(
-          chromeos::InlineLoginHandlerDialogChromeOS::Source::
-              kPrintPreviewDialog);
-    } else {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
-    }
+    chromeos::InlineLoginDialogChromeOS::Show(
+        chromeos::InlineLoginDialogChromeOS::Source::kPrintPreviewDialog);
     return;
   }
 #endif
 
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   CreateCloudPrintSigninTab(
-      displayer.browser(), add_account,
+      displayer.browser(),
       base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,
                      weak_factory_.GetWeakPtr()));
 }
@@ -869,21 +884,6 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 
   ReportRegeneratePreviewRequestCountBeforeCancel(
       regenerate_preview_request_count_);
-}
-
-void PrintPreviewHandler::HandleOpenPrinterSettings(
-    const base::ListValue* args) {
-#if defined(OS_CHROMEOS)
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()),
-      chromeos::settings::mojom::kPrintingDetailsSubpagePath);
-#else
-  GURL url(chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
-  content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK, false);
-  preview_web_contents()->OpenURL(params);
-#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -1020,6 +1020,16 @@ void PrintPreviewHandler::SendInitialSettings(
     GetUserAccountList(&initial_settings);
   }
 
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kPrintSaveToDrive)) {
+    drive::DriveIntegrationService* drive_service =
+        drive::DriveIntegrationServiceFactory::GetForProfile(
+            Profile::FromWebUI(web_ui()));
+    initial_settings.SetBoolKey(kIsDriveMounted,
+                                drive_service && drive_service->IsMounted());
+  }
+#endif  // defined(OS_CHROMEOS)
+
   ResolveJavascriptCallback(base::Value(callback_id), initial_settings);
 }
 
@@ -1090,6 +1100,9 @@ void PrintPreviewHandler::SendPrinterSetup(const std::string& callback_id,
 void PrintPreviewHandler::SendCloudPrintJob(
     const std::string& callback_id,
     const base::RefCountedMemory* data) {
+  // Crash if a cloud print job is requested and cloud print is not enabled.
+  CHECK(IsCloudPrintEnabled());
+
   // BASE64 encode the job data.
   const base::StringPiece raw_data(data->front_as<char>(), data->size());
   std::string base64_data;
@@ -1385,20 +1398,33 @@ void PrintPreviewHandler::SendManipulateSettingsForTest(
 #if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleRequestPrinterStatusUpdate(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(2U, args->GetSize());
+
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& printer_id = args->GetList()[1].GetString();
+
   PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
   handler->StartPrinterStatusRequest(
-      args->GetList()[0].GetString(),
-      base::BindOnce(&PrintPreviewHandler::OnPrinterStatusUpdated,
-                     weak_factory_.GetWeakPtr()));
+      printer_id, base::BindOnce(&PrintPreviewHandler::OnPrinterStatusUpdated,
+                                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::OnPrinterStatusUpdated(
+    const std::string& callback_id,
     const base::Value& cups_printer_status) {
-  // "printer-status-update" will also trigger non-PrintPreview UI for
-  // consuming fresh printer statuses.
-  FireWebUIListener("printer-status-update", cups_printer_status);
+  ResolveJavascriptCallback(base::Value(callback_id), cups_printer_status);
 }
 #endif
+
+void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
+#if defined(OS_CHROMEOS)
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      Profile::FromWebUI(web_ui()),
+      chromeos::settings::mojom::kPrintingDetailsSubpagePath);
+#else
+  printing::PrinterManagerDialog::ShowPrinterManagerDialog(
+      Profile::FromWebUI(web_ui()));
+#endif
+}
 
 }  // namespace printing

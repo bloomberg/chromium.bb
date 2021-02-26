@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,8 +20,6 @@
 #include "extensions/common/api/storage.h"
 
 namespace extensions {
-
-using content::BrowserThread;
 
 // SettingsFunction
 
@@ -77,8 +74,8 @@ ExtensionFunction::ResponseAction SettingsFunction::Run() {
 
 void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
   ResponseValue response = RunWithStorage(storage);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&SettingsFunction::Respond, this, std::move(response)));
 }
 
@@ -89,7 +86,7 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Swap(&result.settings());
-  return OneArgument(std::move(dict));
+  return OneArgument(base::Value::FromUniquePtrValue(std::move(dict)));
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
@@ -227,8 +224,7 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
       return BadMessage();
   }
 
-  return OneArgument(
-      std::make_unique<base::Value>(static_cast<int>(bytes_in_use)));
+  return OneArgument(base::Value(static_cast<int>(bytes_in_use)));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(

@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -54,8 +55,6 @@ class WebMouseEvent;
 class CORE_EXPORT DragController final
     : public GarbageCollected<DragController>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DragController);
-
  public:
   explicit DragController(Page*);
 
@@ -93,7 +92,7 @@ class CORE_EXPORT DragController final
   // ExecutionContextLifecycleObserver.
   void ContextDestroyed() final;
 
-  void Trace(Visitor*) final;
+  void Trace(Visitor*) const final;
 
  private:
   DispatchEventResult DispatchTextInputEventFor(LocalFrame*, DragData*);
@@ -126,8 +125,8 @@ class CORE_EXPORT DragController final
 
   // The document the mouse was last dragged over.
   Member<Document> document_under_mouse_;
-  // The Document (if any) that initiated the drag.
-  Member<Document> drag_initiator_;
+  // The window (if any) that initiated the drag.
+  Member<LocalDOMWindow> drag_initiator_;
 
   Member<DragState> drag_state_;
 

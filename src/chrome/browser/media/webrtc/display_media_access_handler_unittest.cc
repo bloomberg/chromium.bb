@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -19,12 +20,17 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #endif
 
 class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
@@ -88,6 +94,10 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
         content::NotificationDetails());
   }
 
+  DesktopMediaPicker::Params GetParams() {
+    return picker_factory_->picker()->GetParams();
+  }
+
   const DisplayMediaAccessHandler::RequestsQueues& GetRequestQueues() {
     return access_handler_->pending_requests_;
   }
@@ -103,7 +113,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
                  &result, &devices, false /* request_audio */);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -127,7 +137,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         content::DesktopMediaID::kFakeId,
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -154,6 +164,30 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionDenied) {
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, result);
   EXPECT_EQ(0u, devices.size());
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(DisplayMediaAccessHandlerTest, DlpRestricted) {
+  const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
+                                         content::DesktopMediaID::kFakeId);
+
+  // Setup Data Leak Prevention restriction.
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::DlpContentManager::SetDlpContentManagerForTesting(
+      &mock_dlp_content_manager);
+  EXPECT_CALL(mock_dlp_content_manager, IsScreenCaptureRestricted(media_id))
+      .Times(1)
+      .WillOnce(testing::Return(true));
+
+  blink::mojom::MediaStreamRequestResult result;
+  blink::MediaStreamDevices devices;
+  ProcessRequest(media_id, &result, &devices, /*request_audio=*/false);
+
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, result);
+  EXPECT_EQ(0u, devices.size());
+
+  policy::DlpContentManager::ResetDlpContentManagerForTesting();
+}
+#endif
 
 TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   const int render_process_id = 0;
@@ -191,6 +225,73 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   EXPECT_EQ(0u, queue_it->second.size());
   EXPECT_TRUE(test_flags[0].picker_deleted);
   access_handler_.reset();
+}
+
+TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissions) {
+  const int render_process_id = 0;
+  const int render_frame_id = 0;
+  const int page_request_id = 0;
+  const blink::mojom::MediaStreamType video_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+  const blink::mojom::MediaStreamType audio_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
+  FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
+      {true /* expect_screens */, true /* expect_windows*/,
+       true /* expect_tabs */, true /* expect_audio */,
+       content::DesktopMediaID(), true /* cancelled */}};
+  picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
+  content::MediaStreamRequest request(
+      render_process_id, render_frame_id, page_request_id,
+      GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), audio_stream_type, video_stream_type,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+  content::MediaResponseCallback callback;
+  content::WebContents* test_web_contents = web_contents();
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(
+          GURL("blob:http://127.0.0.1:8000/says: www.google.com"),
+          test_web_contents);
+  navigation->Commit();
+  access_handler_->HandleRequest(test_web_contents, request,
+                                 std::move(callback), nullptr /* extension */);
+  DesktopMediaPicker::Params params = GetParams();
+  access_handler_->UpdateMediaRequestState(
+      render_process_id, render_frame_id, page_request_id, video_stream_type,
+      content::MEDIA_REQUEST_STATE_CLOSING);
+  EXPECT_EQ(base::UTF8ToUTF16("http://127.0.0.1:8000"), params.app_name);
+}
+
+TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissionsNormalURLs) {
+  const int render_process_id = 0;
+  const int render_frame_id = 0;
+  const int page_request_id = 0;
+  const blink::mojom::MediaStreamType video_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+  const blink::mojom::MediaStreamType audio_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
+  FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
+      {true /* expect_screens */, true /* expect_windows*/,
+       true /* expect_tabs */, true /* expect_audio */,
+       content::DesktopMediaID(), true /* cancelled */}};
+  picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
+  content::MediaStreamRequest request(
+      render_process_id, render_frame_id, page_request_id,
+      GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), audio_stream_type, video_stream_type,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+  content::MediaResponseCallback callback;
+  content::WebContents* test_web_contents = web_contents();
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(
+          GURL("https://www.google.com"), test_web_contents);
+  navigation->Commit();
+  access_handler_->HandleRequest(test_web_contents, request,
+                                 std::move(callback), nullptr /* extension */);
+  DesktopMediaPicker::Params params = GetParams();
+  access_handler_->UpdateMediaRequestState(
+      render_process_id, render_frame_id, page_request_id, video_stream_type,
+      content::MEDIA_REQUEST_STATE_CLOSING);
+  EXPECT_EQ(base::UTF8ToUTF16("www.google.com"), params.app_name);
 }
 
 TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
@@ -261,7 +362,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags[0].picker_created);
   EXPECT_TRUE(test_flags[0].picker_deleted);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {

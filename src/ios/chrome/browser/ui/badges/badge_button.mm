@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 
 #include "base/feature_list.h"
-#import "base/logging.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -59,7 +59,8 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
   self.accepted = accepted;
   void (^changeTintColor)() = ^{
     self.tintColor = accepted ? nil : [UIColor colorNamed:kToolbarButtonColor];
-    self.accessibilityIdentifier = [self getAccessibilityIdentifier:accepted];
+    self.accessibilityIdentifier =
+        [self accessibilityIdentifierForAcceptedState:accepted];
   };
   if (animated) {
     [UIView animateWithDuration:kButtonAnimationDuration
@@ -88,7 +89,7 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 
 #pragma mark - Private
 
-- (NSString*)getAccessibilityIdentifier:(BOOL)accepted {
+- (NSString*)accessibilityIdentifierForAcceptedState:(BOOL)accepted {
   switch (self.badgeType) {
     case BadgeType::kBadgeTypeNone:
       NOTREACHED() << "A badge should not have kBadgeTypeNone";

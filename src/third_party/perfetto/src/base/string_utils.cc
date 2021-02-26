@@ -16,6 +16,7 @@
 
 #include "perfetto/ext/base/string_utils.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 #include <algorithm>
@@ -40,7 +41,7 @@ bool Contains(const std::string& haystack, const std::string& needle) {
 }
 
 size_t Find(const StringView& needle, const StringView& haystack) {
-  if (needle.size() == 0)
+  if (needle.empty())
     return 0;
   if (needle.size() > haystack.size())
     return std::string::npos;
@@ -138,6 +139,20 @@ std::string IntToHexString(uint32_t number) {
   return buf;
 }
 
+std::string Uint64ToHexString(uint64_t number) {
+  return "0x" + Uint64ToHexStringNoPrefix(number);
+}
+
+std::string Uint64ToHexStringNoPrefix(uint64_t number) {
+  size_t max_size = 17;  // Max uint64 is FFFFFFFFFFFFFFFF + 1 for null byte.
+  std::string buf;
+  buf.resize(max_size);
+  auto final_size = snprintf(&buf[0], max_size, "%" PRIx64 "", number);
+  PERFETTO_DCHECK(final_size >= 0);
+  buf.resize(static_cast<size_t>(final_size));  // Cuts off the final null byte.
+  return buf;
+}
+
 std::string StripChars(const std::string& str,
                        const std::string& chars,
                        char replacement) {
@@ -147,6 +162,23 @@ std::string StripChars(const std::string& str,
   for (const char* c = strpbrk(start, remove); c; c = strpbrk(c + 1, remove))
     res[static_cast<uintptr_t>(c - start)] = replacement;
   return res;
+}
+
+std::string ReplaceAll(std::string str,
+                       const std::string& to_replace,
+                       const std::string& replacement) {
+  PERFETTO_CHECK(!to_replace.empty());
+  size_t pos = 0;
+  while ((pos = str.find(to_replace, pos)) != std::string::npos) {
+    str.replace(pos, to_replace.length(), replacement);
+    pos += replacement.length();
+  }
+  return str;
+}
+
+std::string TrimLeading(const std::string& str) {
+  size_t idx = str.find_first_not_of(' ');
+  return idx == std::string::npos ? str : str.substr(idx);
 }
 
 }  // namespace base

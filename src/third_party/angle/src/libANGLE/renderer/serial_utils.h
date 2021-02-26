@@ -100,6 +100,7 @@ class SerialFactoryBase final : angle::NonCopyable
 
 using SerialFactory       = SerialFactoryBase<uint64_t>;
 using AtomicSerialFactory = SerialFactoryBase<std::atomic<uint64_t>>;
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_SERIAL_UTILS_H_

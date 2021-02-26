@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_MIXER_MIXER_INPUT_CONNECTION_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_MIXER_MIXER_INPUT_CONNECTION_H_
 
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -159,6 +160,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   const AudioContentType focus_type_;
   const int playout_channel_;
 
+  std::atomic<int> effective_playout_channel_;
+
   const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
@@ -202,6 +205,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   // to us.
   int64_t playback_start_pts_ GUARDED_BY(lock_) = INT64_MIN;
   int remaining_silence_frames_ GUARDED_BY(lock_) = 0;
+  bool fed_one_silence_buffer_after_removal_ GUARDED_BY(lock_) = false;
   ::media::NullMediaLog media_log_;
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_
       GUARDED_BY(lock_);

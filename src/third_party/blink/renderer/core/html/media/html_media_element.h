@@ -31,6 +31,7 @@
 
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
+#include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -65,10 +66,11 @@ class Event;
 class EventQueue;
 class ExceptionState;
 class HTMLMediaElementControlsList;
-class MediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class MediaError;
+class MediaSourceAttachment;
+class MediaSourceTracer;
 class MediaStreamDescriptor;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -88,10 +90,13 @@ class CORE_EXPORT HTMLMediaElement
       public ExecutionContextLifecycleStateObserver,
       private WebMediaPlayerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:
+  // Limits the range of media playback rate.
+  static constexpr double kMinPlaybackRate = 0.0625;
+  static constexpr double kMaxPlaybackRate = 16.0;
+
   bool IsMediaElement() const override { return true; }
 
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
@@ -108,7 +113,7 @@ class CORE_EXPORT HTMLMediaElement
   // for the given document.
   static void OnMediaControlsEnabledChange(Document*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WebMediaPlayer* GetWebMediaPlayer() const { return web_media_player_.get(); }
 
@@ -170,7 +175,7 @@ class CORE_EXPORT HTMLMediaElement
   WebTimeRanges BufferedInternal() const;
   TimeRanges* buffered() const;
   void load();
-  String canPlayType(const String& mime_type) const;
+  String canPlayType(ExecutionContext* context, const String& mime_type) const;
 
   // ready state
   enum ReadyState {
@@ -192,7 +197,6 @@ class CORE_EXPORT HTMLMediaElement
   void setDefaultPlaybackRate(double);
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
-  void UpdatePlaybackRate();
   TimeRanges* played();
   WebTimeRanges SeekableInternal() const;
   TimeRanges* seekable() const;
@@ -205,6 +209,8 @@ class CORE_EXPORT HTMLMediaElement
   void pause();
   double latencyHint() const;
   void setLatencyHint(double);
+  bool preservesPitch() const;
+  void setPreservesPitch(bool);
   void FlingingStarted();
   void FlingingStopped();
 
@@ -324,13 +330,15 @@ class CORE_EXPORT HTMLMediaElement
 
   WebMediaPlayer::LoadType GetLoadType() const;
 
-  bool HasMediaSource() const { return media_source_; }
+  bool HasMediaSource() const { return media_source_attachment_.get(); }
 
   // Return true if element is paused and won't resume automatically if it
   // becomes visible again.
   bool PausedWhenVisible() const;
 
   void SetCcLayerForTesting(cc::Layer* layer) { SetCcLayer(layer); }
+
+  bool IsShowPosterFlagSet() const { return show_poster_flag_; }
 
  protected:
   // Assert the correct order of the children in shadow dom when DCHECK is on.
@@ -359,12 +367,10 @@ class CORE_EXPORT HTMLMediaElement
   void DidMoveToNewDocument(Document& old_document) override;
   virtual KURL PosterImageURL() const { return KURL(); }
 
-  enum DisplayMode { kUnknown, kPoster, kVideo };
-  DisplayMode GetDisplayMode() const { return display_mode_; }
-  virtual void SetDisplayMode(DisplayMode mode) { display_mode_ = mode; }
-
   // Called after the creation of |web_media_player_|.
   virtual void OnWebMediaPlayerCreated() {}
+
+  void UpdateLayoutObject();
 
  private:
   // Friend class for testing.
@@ -394,10 +400,11 @@ class CORE_EXPORT HTMLMediaElement
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
   void ContextDestroyed() override;
 
-  virtual void UpdateDisplayState() {}
   virtual void OnPlay() {}
   virtual void OnLoadStarted() {}
   virtual void OnLoadFinished() {}
+
+  void SetShowPosterFlag(bool value);
 
   void SetReadyState(ReadyState);
   void SetNetworkState(WebMediaPlayer::NetworkState);
@@ -435,10 +442,11 @@ class CORE_EXPORT HTMLMediaElement
   bool WasAlwaysMuted() final;
   bool HasNativeControls() final;
   bool IsAudioElement() final;
-  WebMediaPlayer::DisplayType DisplayType() const override;
+  DisplayType GetDisplayType() const override;
   WebRemotePlaybackClient* RemotePlaybackClient() final {
     return remote_playback_client_;
   }
+  std::vector<TextTrackMetadata> GetTextTrackMetadata() override;
   gfx::ColorSpace TargetColorSpace() override;
   bool WasAutoplayInitiated() override;
   bool IsInAutoPIP() const override { return false; }
@@ -558,6 +566,9 @@ class CORE_EXPORT HTMLMediaElement
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
+  void SetError(MediaError* error);
+  void ReportCurrentTimeToMediaSource();
+
   Features GetFeatures() override;
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
@@ -578,6 +589,8 @@ class CORE_EXPORT HTMLMediaElement
   KURL current_src_after_redirects_;
   Member<MediaStreamDescriptor> src_object_;
 
+  // To prevent potential regression when extended by the MSE API, do not set
+  // |error_| outside of constructor and SetError().
   Member<MediaError> error_;
 
   double volume_;
@@ -624,9 +637,14 @@ class CORE_EXPORT HTMLMediaElement
   std::unique_ptr<WebMediaPlayer> web_media_player_;
   cc::Layer* cc_layer_;
 
-  DisplayMode display_mode_;
-
-  Member<MediaSource> media_source_;
+  // These two fields must be carefully set and reset: the actual derived type
+  // of the attachment (same-thread vs cross-thread, for instance) must be the
+  // same semantic as the actual derived type of the tracer. Further, if there
+  // is no attachment, then there must be no tracer that's tracking an active
+  // attachment. Note that some kinds of attachments do not require a tracer;
+  // see MediaSourceAttachment::StartAttachingToMediaElement() for details.
+  scoped_refptr<MediaSourceAttachment> media_source_attachment_;
+  Member<MediaSourceTracer> media_source_tracer_;
 
   // Stores "official playback position", updated periodically from "current
   // playback position". Official playback position should not change while
@@ -648,6 +666,7 @@ class CORE_EXPORT HTMLMediaElement
   bool paused_ : 1;
   bool seeking_ : 1;
   bool paused_by_context_paused_ : 1;
+  bool show_poster_flag_ : 1;
 
   // data has not been loaded since sending a "stalled" event
   bool sent_stalled_event_ : 1;
@@ -661,6 +680,10 @@ class CORE_EXPORT HTMLMediaElement
   bool processing_preference_change_ : 1;
 
   bool was_always_muted_ : 1;
+
+  // Whether or not |web_media_player_| should apply pitch adjustments at
+  // playback raters other than 1.0.
+  bool preserves_pitch_ = true;
 
   Member<AudioTrackList> audio_tracks_;
   Member<VideoTrackList> video_tracks_;
@@ -693,7 +716,7 @@ class CORE_EXPORT HTMLMediaElement
     // WebAudioSourceProviderClient
     void SetFormat(uint32_t number_of_channels, float sample_rate) override;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     Member<AudioSourceProviderClient> client_;
@@ -715,7 +738,7 @@ class CORE_EXPORT HTMLMediaElement
     void SetClient(AudioSourceProviderClient*) override;
     void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     scoped_refptr<WebAudioSourceProviderImpl> web_audio_source_provider_;

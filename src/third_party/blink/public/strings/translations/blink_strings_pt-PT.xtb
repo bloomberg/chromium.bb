@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">nota final</translation>
 <translation id="1281252709823657822">caixa de diálogo</translation>
 <translation id="1306460908038601864">Desativado</translation>
+<translation id="1311894908970423688">O valor tem de ser <ph name="VALUE_DATE_OR_TIME" />.</translation>
 <translation id="1335095011850992622">créditos</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
+<translation id="1480676835519562650">vários selecionáveis, <ph name="SELECTED" /> de <ph name="COUNT" /> selecionados.</translation>
 <translation id="1589122976691792535">região</translation>
 <translation id="1591562245178063882">Este mês</translation>
 <translation id="1637811476055996098">Escolher Ficheiros</translation>
 <translation id="1650423536718072820">trecho em destaque</translation>
+<translation id="1681022320378710418">hora atual</translation>
+<translation id="1727839386348365796">Selecionador de cores</translation>
 <translation id="1727886345390570319">ocultar menu de legendas ocultas</translation>
 <translation id="1729654308190250600">Introduza um endereço de email que não esteja vazio.</translation>
 <translation id="1758486001363313524">Outra...</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">grelha de árvore</translation>
 <translation id="1822429046913737220">AM/PM</translation>
+<translation id="1823704031293214298">rodapé da página</translation>
 <translation id="1832974991323546415">reproduzir no dispositivo remoto</translation>
 <translation id="190587075670221089">eliminação</translation>
 <translation id="1907737156431278478">exemplo</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033">Semana <ph name="WEEKNUMBER" />, de <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Faixa <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">caixa de verificação</translation>
+<translation id="2307576640803031502">na lista, item <ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="2311842470354187719">quebra de página</translation>
 <translation id="2335594187091864976">selecionador de data e hora</translation>
 <translation id="2393030564806080191">Valor de cor hexadecimal</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
 <translation id="2508569020611168319">lista de separadores</translation>
+<translation id="2530182415807757784">vários selecionáveis, nenhum selecionado.</translation>
 <translation id="2561842179657104141">mostrar mais controlos de multimédia</translation>
 <translation id="2572483411312390101">reproduzir</translation>
 <translation id="2613802280814924224">Introduza um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE" />.</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">Introduza um URL.</translation>
 <translation id="3175736971608411871">temporizador</translation>
 <translation id="3199563858620722075">caixa de combinação</translation>
+<translation id="3220661731597678625">passo atual</translation>
 <translation id="3329013043687509092">Saturação</translation>
 <translation id="3450233048674729344">O valor tem de ser inferior ou igual a <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definição</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">Mostrar mês anterior</translation>
 <translation id="421884353938374759">seletor de cores</translation>
 <translation id="4248100235867064564">barra de menu</translation>
+<translation id="4293574643247337246">cabeçalho da página</translation>
 <translation id="4360991593054037559">Introduza um valor válido. Os dois valores válidos mais próximos são <ph name="VALID_VALUE_LOW" /> e <ph name="VALID_VALUE_HIGHER" />.</translation>
-<translation id="4384583879834880242">Perg e Resp</translation>
-<translation id="4413860115965805769">botão de menu</translation>
+<translation id="4384249794467006333">Esta imagem não está etiquetada. Abra o menu Mais opções na parte superior direita para obter descrições da imagem.</translation>
+<translation id="4384583879834880242">Perguntas e respostas</translation>
 <translation id="4444765639179266822">Parece indicar: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">referência do glossário</translation>
 <translation id="4522570452068850558">Detalhes</translation>
+<translation id="4576178047100686001">Esta imagem não está etiquetada. Abra o menu Mais opções na parte superior esquerda para obter descrições da imagem.</translation>
 <translation id="4597532268155981612">formulário</translation>
 <translation id="4661075872484491155">árvore</translation>
 <translation id="4664250907885839816">Uma parte a seguir a "<ph name="ATSIGN" />" não deve conter o símbolo "<ph name="INVALIDCHARACTER" />".</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Introduza um número.</translation>
+<translation id="4912200001568447310">item atual</translation>
 <translation id="4912536737030637138">entrada da bibliografia</translation>
 <translation id="4915360478455618802">Mostrar selecionador de hora</translation>
 <translation id="492244087561876220">comentário</translation>
@@ -140,6 +152,7 @@
 <translation id="5334352251556557839">Não é possível reproduzir multimédia.</translation>
 <translation id="537648784377940524">A Data mínima (<ph name="MIN_DATE_OR_TIME" />) tem de ser anterior à Data máxima (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">figura</translation>
+<translation id="5425179576310518467">data atual</translation>
 <translation id="5453733299334684579">item de árvore</translation>
 <translation id="5466621249238537318">Selecione um ou mais ficheiros.</translation>
 <translation id="5468998798572797635">sair do modo de ecrã inteiro</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">mais opções</translation>
 <translation id="576709008726043716">introdução</translation>
 <translation id="57838592816432529">Desativar som</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="588258955323874662">Ecrã inteiro</translation>
 <translation id="5888666972993069672">A transmitir agora para <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">caixa de pesquisa</translation>
+<translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5966707198760109579">Semana</translation>
 <translation id="5987525920412732405">botão giratório</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">contador</translation>
 <translation id="6166809985690652833">posfácio</translation>
 <translation id="6209276755895393898">Parece ser: <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">página atual</translation>
 <translation id="6213469881011901533">glossário</translation>
 <translation id="6281588256137006900">Claridade</translation>
 <translation id="6281763101136022427">URL</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="668171684555832681">Outros...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709093583001123835">O valor tem de ser <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Má qualidade de reprodução.</translation>
 <translation id="6755330956360078551">sugestão</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">Aumente este texto para <ph name="MIN_CHARACTERS" /> ou mais carateres (atualmente, está a utilizar 1 caráter).</translation>
 <translation id="7034405885550056553">sugestão</translation>
 <translation id="709897737746224366">Faça corresponder o formato pedido.</translation>
+<translation id="7102274145889307184">localização atual</translation>
 <translation id="7118469954320184356">Nenhuma descrição disponível.</translation>
 <translation id="7139483182332611405">prefácio</translation>
 <translation id="7214187073215825913">informações sobre o conteúdo</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir de <ph name="WEEK_START_DATE" /></translation>
 <translation id="916607977885256133">Ecrã no ecrã</translation>
 <translation id="9168329111483466115">nota de rodapé</translation>
+<translation id="945780513535800434">Parcialmente selecionada</translation>
 <translation id="954003015749068518">entrar no modo ecrã no ecrã</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

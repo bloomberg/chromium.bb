@@ -13,13 +13,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11.h"        // nogncheck
-#include "ui/gfx/x/x11_types.h"  // nogncheck
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 namespace views {
@@ -72,7 +72,8 @@ BOOL CALLBACK FindAllWindowsCallback(HWND hwnd, LPARAM param) {
 
 std::vector<aura::Window*> GetAllTopLevelWindows() {
   std::vector<aura::Window*> roots;
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(ENABLE_DESKTOP_AURA)
   roots = DesktopWindowTreeHostLinux::GetAllOpenWindows();
 #elif defined(OS_WIN)
   {
@@ -125,18 +126,23 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   // be pushed to the window server when they change.
 #if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
   return widget->GetNativeWindow()->delegate()->GetMinimumSize();
-#elif defined(USE_X11)
-  XSizeHints hints;
-  long supplied_return;  // NOLINT(runtime/int)
-  XGetWMNormalHints(
-      gfx::GetXDisplay(),
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget(), &hints,
-      &supplied_return);
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform())
+    return widget->GetNativeWindow()->delegate()->GetMinimumSize();
+#endif  // USE_OZONE
+#if defined(USE_X11)
+  EXPECT_FALSE(features::IsUsingOzonePlatform());
+  ui::SizeHints hints;
+  ui::GetWmNormalHints(
+      static_cast<x11::Window>(
+          widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget()),
+      &hints);
   return gfx::Size(hints.min_width, hints.min_height);
-#else
+#endif  // USE_X11
+#endif  // OS_LINUX && !OS_CHROMEOS
   NOTREACHED();
   return gfx::Size();
-#endif
 }
 
 // static

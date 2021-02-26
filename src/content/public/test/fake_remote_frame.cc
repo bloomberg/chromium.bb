@@ -19,7 +19,7 @@ void FakeRemoteFrame::Init(blink::AssociatedInterfaceProvider* provider) {
                           base::Unretained(this)));
 }
 
-void FakeRemoteFrame::WillEnterFullscreen() {}
+void FakeRemoteFrame::WillEnterFullscreen(blink::mojom::FullscreenOptionsPtr) {}
 
 void FakeRemoteFrame::AddReplicatedContentSecurityPolicies(
     std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers) {}
@@ -42,6 +42,9 @@ void FakeRemoteFrame::SetReplicatedOrigin(
 void FakeRemoteFrame::SetReplicatedAdFrameType(
     blink::mojom::AdFrameType ad_frame_type) {}
 
+void FakeRemoteFrame::SetReplicatedName(const std::string& name,
+                                        const std::string& unique_name) {}
+
 void FakeRemoteFrame::DispatchLoadEventForFrameOwner() {}
 
 void FakeRemoteFrame::Collapse(bool collapsed) {}
@@ -57,7 +60,8 @@ void FakeRemoteFrame::BubbleLogicalScroll(
     ui::ScrollGranularity granularity) {}
 
 void FakeRemoteFrame::UpdateUserActivationState(
-    blink::mojom::UserActivationUpdateType) {}
+    blink::mojom::UserActivationUpdateType update_type,
+    blink::mojom::UserActivationNotificationType notification_type) {}
 
 void FakeRemoteFrame::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {}
@@ -79,6 +83,9 @@ void FakeRemoteFrame::DidStopLoading() {}
 
 void FakeRemoteFrame::IntrinsicSizingInfoOfChildChanged(
     blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
+
+void FakeRemoteFrame::UpdateOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
 
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -18,7 +18,7 @@
 
 namespace {
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 struct HybridSpellCheckTestCase {
   size_t language_count;
   size_t enabled_language_count;
@@ -27,13 +27,23 @@ struct HybridSpellCheckTestCase {
 };
 
 struct CombineSpellCheckResultsTestCase {
+  std::string browser_locale;
   std::string renderer_locale;
   const wchar_t* text;
   std::vector<SpellCheckResult> browser_results;
   bool use_spelling_service;
   blink::WebVector<blink::WebTextCheckingResult> expected_results;
 };
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+std::ostream& operator<<(std::ostream& out,
+                         const CombineSpellCheckResultsTestCase& test_case) {
+  out << "browser_locale=" << test_case.browser_locale
+      << ", renderer_locale=" << test_case.renderer_locale << ", text=\""
+      << test_case.text
+      << "\", use_spelling_service=" << test_case.use_spelling_service;
+  return out;
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 class SpellCheckProviderCacheTest : public SpellCheckProviderTest {
  protected:
@@ -47,7 +57,7 @@ class SpellCheckProviderCacheTest : public SpellCheckProviderTest {
   }
 };
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Test fixture for testing hybrid check cases.
 class HybridSpellCheckTest
     : public testing::TestWithParam<HybridSpellCheckTestCase> {
@@ -55,10 +65,35 @@ class HybridSpellCheckTest
   HybridSpellCheckTest() : provider_(&embedder_provider_) {}
   ~HybridSpellCheckTest() override {}
 
+  void SetUp() override {
+    // Don't delay initialization of the SpellcheckService on browser launch.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker},
+        /*disabled_features=*/{spellcheck::kWinDelaySpellcheckServiceInit});
+  }
+
+  void RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
+
  protected:
+  base::test::ScopedFeatureList feature_list_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
+};
+
+// Test fixture for testing hybrid check cases with delayed initialization of
+// the spellcheck service.
+class HybridSpellCheckTestDelayInit : public HybridSpellCheckTest {
+ public:
+  HybridSpellCheckTestDelayInit() = default;
+
+  void SetUp() override {
+    // Don't initialize the SpellcheckService on browser launch.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
+                              spellcheck::kWinDelaySpellcheckServiceInit},
+        /*disabled_features=*/{});
+  }
 };
 
 // Test fixture for testing combining results from both the native spell checker
@@ -74,7 +109,7 @@ class CombineSpellCheckResultsTest
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
 };
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 TEST_F(SpellCheckProviderCacheTest, SubstringWithoutMisspellings) {
   FakeTextCheckingResult result;
@@ -128,7 +163,7 @@ TEST_F(SpellCheckProviderCacheTest, ResetCacheOnCustomDictionaryUpdate) {
   EXPECT_EQ(result.completion_count_, 0U);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Tests that the SpellCheckProvider does not call into the native spell checker
 // on Windows when the native spell checker flags are disabled.
 TEST_F(SpellCheckProviderTest, ShouldNotUseBrowserSpellCheck) {
@@ -146,61 +181,39 @@ TEST_F(SpellCheckProviderTest, ShouldNotUseBrowserSpellCheck) {
   EXPECT_EQ(completion.cancellation_count_, 0U);
 }
 
-// Tests that the SpellCheckProvider calls into the native spell checker when
-// the browser spell checker flag is enabled, but the hybrid spell checker flag
-// isn't.
-TEST_F(SpellCheckProviderTest, ShouldUseBrowserSpellCheck) {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
-    return;
-  }
-
-  base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures({spellcheck::kWinUseBrowserSpellChecker},
-                                  {spellcheck::kWinUseHybridSpellChecker});
-
-  FakeTextCheckingResult completion;
-  base::string16 text = base::ASCIIToUTF16("This is a test");
-  provider_.RequestTextChecking(
-      text, std::make_unique<FakeTextCheckingCompletion>(&completion));
-
-  EXPECT_EQ(provider_.spelling_service_call_count_, 0U);
-  EXPECT_EQ(provider_.text_check_requests_.size(), 1U);
-  EXPECT_EQ(completion.completion_count_, 0U);
-  EXPECT_EQ(completion.cancellation_count_, 0U);
-}
+static const HybridSpellCheckTestCase kSpellCheckProviderHybridTestsParams[] = {
+    // No languages - should go straight to completion
+    HybridSpellCheckTestCase{0U, 0U, 0U, 0U},
+    // 1 disabled language - should go to browser
+    HybridSpellCheckTestCase{1U, 0U, 0U, 1U},
+    // 1 enabled language - should skip browser
+    HybridSpellCheckTestCase{1U, 1U, 1U, 0U},
+    // 1 disabled language, 1 enabled - should should go to browser
+    HybridSpellCheckTestCase{2U, 1U, 0U, 1U},
+    // 3 enabled languages - should skip browser
+    HybridSpellCheckTestCase{3U, 3U, 1U, 0U},
+    // 3 disabled languages - should go to browser
+    HybridSpellCheckTestCase{3U, 0U, 0U, 1U},
+    // 3 disabled languages, 3 enabled - should go to browser
+    HybridSpellCheckTestCase{6U, 3U, 0U, 1U}};
 
 // Tests that the SpellCheckProvider calls into the native spell checker only
 // when needed.
 INSTANTIATE_TEST_SUITE_P(
     SpellCheckProviderHybridTests,
     HybridSpellCheckTest,
-    testing::Values(
-        // No languages - should go straight to completion
-        HybridSpellCheckTestCase{0U, 0U, 0U, 0U},
-        // 1 disabled language - should go to browser
-        HybridSpellCheckTestCase{1U, 0U, 0U, 1U},
-        // 1 enabled language - should skip browser
-        HybridSpellCheckTestCase{1U, 1U, 1U, 0U},
-        // 1 disabled language, 1 enabled - should should go to browser
-        HybridSpellCheckTestCase{2U, 1U, 0U, 1U},
-        // 3 enabled languages - should skip browser
-        HybridSpellCheckTestCase{3U, 3U, 1U, 0U},
-        // 3 disabled languages - should go to browser
-        HybridSpellCheckTestCase{3U, 0U, 0U, 1U},
-        // 3 disabled languages, 3 enabled - should go to browser
-        HybridSpellCheckTestCase{6U, 3U, 0U, 1U}));
+    testing::ValuesIn(kSpellCheckProviderHybridTestsParams));
 
 TEST_P(HybridSpellCheckTest, ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
+  RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
+}
+
+void HybridSpellCheckTest::RunShouldUseBrowserSpellCheckOnlyWhenNeededTest() {
   if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
     return;
   }
 
   const auto& test_case = GetParam();
-  base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures(
-      /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                            spellcheck::kWinUseHybridSpellChecker},
-      /*disabled_features=*/{});
 
   FakeTextCheckingResult completion;
   provider_.spellcheck()->SetFakeLanguageCounts(
@@ -218,6 +231,20 @@ TEST_P(HybridSpellCheckTest, ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
   EXPECT_EQ(completion.cancellation_count_, 0U);
 }
 
+// Tests that the SpellCheckProvider calls into the native spell checker only
+// when needed when the code path through
+// SpellCheckProvider::RequestTextChecking is that used when the spellcheck
+// service is initialized on demand.
+INSTANTIATE_TEST_SUITE_P(
+    SpellCheckProviderHybridTests,
+    HybridSpellCheckTestDelayInit,
+    testing::ValuesIn(kSpellCheckProviderHybridTestsParams));
+
+TEST_P(HybridSpellCheckTestDelayInit,
+       ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
+  RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
+}
+
 // Tests that the SpellCheckProvider can correctly combine results from the
 // native spell checker and Hunspell.
 INSTANTIATE_TEST_SUITE_P(
@@ -225,7 +252,8 @@ INSTANTIATE_TEST_SUITE_P(
     CombineSpellCheckResultsTest,
     testing::Values(
         // Browser-only check, no browser results
-        CombineSpellCheckResultsTestCase{"",
+        CombineSpellCheckResultsTestCase{"en-US",
+                                         "",
                                          L"This has no misspellings",
                                          {},
                                          false,
@@ -233,6 +261,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         // Browser-only check, no spelling service, browser results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -256,8 +285,56 @@ INSTANTIATE_TEST_SUITE_P(
                      9,
                      4)})},
 
+        // Browser-only check, no spelling service, browser results, some words
+        // in character sets with no dictionaries enabled.
+        CombineSpellCheckResultsTestCase{
+            "en-US",
+            "",
+            L"Tihs has soem \x3053\x3093\x306B\x3061\x306F \x4F60\x597D "
+            L"\xC548\xB155\xD558\xC138\xC694 "
+            L"\x0930\x093E\x091C\x0927\x093E\x0928 words in different "
+            L"character sets "
+            L"(Japanese, Chinese, Korean, Hindi)",
+            {SpellCheckResult(SpellCheckResult::SPELLING,
+                              0,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              9,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              14,
+                              5,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              20,
+                              2,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              23,
+                              5,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              29,
+                              6,
+                              {base::ASCIIToUTF16("foo")})},
+            false,
+            blink::WebVector<blink::WebTextCheckingResult>(
+                {blink::WebTextCheckingResult(
+                     blink::WebTextDecorationType::
+                         kWebTextDecorationTypeSpelling,
+                     0,
+                     4),
+                 blink::WebTextCheckingResult(
+                     blink::WebTextDecorationType::
+                         kWebTextDecorationTypeSpelling,
+                     9,
+                     4)})},
+
         // Browser-only check, spelling service, spelling-only browser results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -284,6 +361,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Browser-only check, spelling service, spelling and grammar browser
         // results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -308,6 +386,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         // Hybrid check, no browser results
         CombineSpellCheckResultsTestCase{"en-US",
+                                         "en-US",
                                          L"This has no misspellings",
                                          {},
                                          false,
@@ -316,6 +395,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Hybrid check, no spelling service, browser results that all coincide
         // with Hunspell results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -342,6 +422,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Hybrid check, no spelling service, browser results that partially
         // coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"Tihs has soem misspellings",
             {
@@ -379,6 +460,7 @@ INSTANTIATE_TEST_SUITE_P(
         // coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
             "en-US",
+            "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               5,
@@ -392,10 +474,40 @@ INSTANTIATE_TEST_SUITE_P(
             blink::WebVector<blink::WebTextCheckingResult>()},
 
         // Hybrid check, no spelling service, browser results with some that
-        // are skipped by Hunspell because of character set mismatch
+        // that are in character set that does not have dictionary support (so
+        // (are considered spelled correctly)
         CombineSpellCheckResultsTestCase{
             "en-US",
-            L"Tihs word is misspelled in Russian: "
+            "fr",
+            L"Tihs mot is misspelled in Russian: "
+            L"\x043C\x0438\x0440\x0432\x043E\x0439",
+            {SpellCheckResult(SpellCheckResult::SPELLING,
+                              0,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              5,
+                              3,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              35,
+                              6,
+                              {base::ASCIIToUTF16("foo")})},
+            false,
+            blink::WebVector<blink::WebTextCheckingResult>(
+                std::vector<blink::WebTextCheckingResult>(
+                    {blink::WebTextCheckingResult(
+                        blink::WebTextDecorationType::
+                            kWebTextDecorationTypeSpelling,
+                        0,
+                        4)}))},
+
+        // Hybrid check, no spelling service, text with some words in a
+        // character set that only has a Hunspell dictionary enabled.
+        CombineSpellCheckResultsTestCase{
+            "en-US",
+            "ru",
+            L"Tihs \x0432\x0441\x0435\x0445 is misspelled in Russian: "
             L"\x043C\x0438\x0440\x0432\x043E\x0439",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               0,
@@ -426,6 +538,7 @@ INSTANTIATE_TEST_SUITE_P(
         // that all coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
             "en-US",
+            "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               0,
@@ -451,6 +564,7 @@ INSTANTIATE_TEST_SUITE_P(
         // but some of the spelling results are correctly spelled in Hunspell
         // locales
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"This has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -480,16 +594,18 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
 
   const auto& test_case = GetParam();
   base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures(
-      /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                            spellcheck::kWinUseHybridSpellChecker},
-      /*disabled_features=*/{});
-  bool has_renderer_check = !test_case.renderer_locale.empty();
+  local_features.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+  const bool has_browser_check = !test_case.browser_locale.empty();
+  const bool has_renderer_check = !test_case.renderer_locale.empty();
+
+  if (has_browser_check) {
+    provider_.spellcheck()->InitializeSpellCheckForLocale(
+        test_case.browser_locale, /*use_hunspell*/ false);
+  }
 
   if (has_renderer_check) {
-    provider_.spellcheck()->InitializeRendererSpellCheckForLocale(
-        test_case.renderer_locale);
-    provider_.spellcheck()->SetFakeLanguageCounts(2u, 1u);
+    provider_.spellcheck()->InitializeSpellCheckForLocale(
+        test_case.renderer_locale, /*use_hunspell*/ true);
   }
 
   if (test_case.use_spelling_service) {
@@ -501,7 +617,7 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
   FakeTextCheckingResult completion;
   SpellCheckProvider::HybridSpellCheckRequestInfo request_info = {
       /*used_hunspell=*/has_renderer_check,
-      /*used_native=*/true, base::TimeTicks::Now()};
+      /*used_native=*/has_browser_check, base::TimeTicks::Now()};
 
   int check_id = provider_.AddCompletionForTest(
       std::make_unique<FakeTextCheckingCompletion>(&completion), request_info);
@@ -536,6 +652,6 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
     }
   }
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 }  // namespace

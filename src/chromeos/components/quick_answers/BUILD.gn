@@ -6,10 +6,10 @@ source_set("quick_answers") {
   sources = [
     "quick_answers_client.cc",
     "quick_answers_client.h",
-    "quick_answers_consents.cc",
-    "quick_answers_consents.h",
     "quick_answers_model.cc",
     "quick_answers_model.h",
+    "quick_answers_notice.cc",
+    "quick_answers_notice.h",
     "result_loader.cc",
     "result_loader.h",
     "search_result_loader.cc",
@@ -26,12 +26,18 @@ source_set("quick_answers") {
     "search_result_parsers/translation_result_parser.h",
     "search_result_parsers/unit_conversion_result_parser.cc",
     "search_result_parsers/unit_conversion_result_parser.h",
+    "translation_response_parser.cc",
+    "translation_response_parser.h",
+    "translation_result_loader.cc",
+    "translation_result_loader.h",
     "understanding/intent_generator.cc",
     "understanding/intent_generator.h",
     "utils/language_detector.cc",
     "utils/language_detector.h",
     "utils/quick_answers_metrics.cc",
     "utils/quick_answers_metrics.h",
+    "utils/quick_answers_utils.cc",
+    "utils/quick_answers_utils.h",
   ]
   deps = [
     "//ash/public/cpp",
@@ -39,8 +45,10 @@ source_set("quick_answers") {
     "//base",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/constants:constants",
+    "//chromeos/services/assistant/public/shared",
     "//chromeos/services/machine_learning/public/cpp",
     "//chromeos/services/machine_learning/public/mojom",
+    "//chromeos/strings:strings_grit",
     "//components/prefs:prefs",
     "//net:net",
     "//services/data_decoder/public/cpp",
@@ -55,7 +63,7 @@ source_set("unit_tests") {
 
   sources = [
     "quick_answers_client_unittest.cc",
-    "quick_answers_consents_unittest.cc",
+    "quick_answers_notice_unittest.cc",
     "search_result_loader_unittest.cc",
     "search_result_parsers/definition_result_parser_unittest.cc",
     "search_result_parsers/kp_entity_result_parser_unittest.cc",
@@ -65,6 +73,8 @@ source_set("unit_tests") {
     "search_result_parsers/unit_conversion_result_parser_unittest.cc",
     "test/test_helpers.cc",
     "test/test_helpers.h",
+    "translation_response_parser_unittest.cc",
+    "translation_result_loader_unittest.cc",
     "understanding/intent_generator_unittest.cc",
   ]
 
@@ -76,6 +86,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/constants:constants",
+    "//chromeos/services/assistant/public/shared",
     "//chromeos/services/machine_learning/public/cpp:test_support",
     "//chromeos/services/machine_learning/public/mojom",
     "//components/prefs:prefs",

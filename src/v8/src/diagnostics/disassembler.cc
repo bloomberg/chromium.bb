@@ -241,11 +241,11 @@ static void PrintRelocInfo(StringBuilder* out, Isolate* isolate,
     out->AddFormatted("    ;; code:");
     Code code = isolate->heap()->GcSafeFindCodeForInnerPointer(
         relocinfo->target_address());
-    Code::Kind kind = code.kind();
+    CodeKind kind = code.kind();
     if (code.is_builtin()) {
       out->AddFormatted(" Builtin::%s", Builtins::name(code.builtin_index()));
     } else {
-      out->AddFormatted(" %s", Code::Kind2String(kind));
+      out->AddFormatted(" %s", CodeKindToString(kind));
     }
   } else if (RelocInfo::IsWasmStubCall(rmode) && host.is_wasm_code()) {
     // Host is isolate-independent, try wasm native module instead.
@@ -253,14 +253,13 @@ static void PrintRelocInfo(StringBuilder* out, Isolate* isolate,
         host.as_wasm_code()->native_module()->GetRuntimeStubId(
             relocinfo->wasm_stub_call_address()));
     out->AddFormatted("    ;; wasm stub: %s", runtime_stub_name);
-  } else if (RelocInfo::IsRuntimeEntry(rmode) && isolate &&
-             isolate->deoptimizer_data() != nullptr) {
+  } else if (RelocInfo::IsRuntimeEntry(rmode) && isolate != nullptr) {
     // A runtime entry relocinfo might be a deoptimization bailout.
     Address addr = relocinfo->target_address();
     DeoptimizeKind type;
     if (Deoptimizer::IsDeoptimizationEntry(isolate, addr, &type)) {
       out->AddFormatted("    ;; %s deoptimization bailout",
-                        Deoptimizer::MessageFor(type));
+                        Deoptimizer::MessageFor(type, false));
     } else {
       out->AddFormatted("    ;; %s", RelocInfo::RelocModeName(rmode));
     }
@@ -426,6 +425,8 @@ static int DecodeIt(Isolate* isolate, ExternalReferenceEncoder* ref_encoder,
 
 int Disassembler::Decode(Isolate* isolate, std::ostream* os, byte* begin,
                          byte* end, CodeReference code, Address current_pc) {
+  DCHECK_WITH_MSG(FLAG_text_is_readable,
+                  "Builtins disassembly requires a readable .text section");
   V8NameConverter v8NameConverter(isolate, code);
   if (isolate) {
     // We have an isolate, so support external reference names.

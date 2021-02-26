@@ -27,14 +27,11 @@
     "snippets",
     "ui"
   ],
-  "scripts": [],
   "modules": [
-    "changes.js",
-    "changes-legacy.js",
-    "ChangesHighlighter.js",
-    "ChangesView.js",
-    "ChangesSidebar.js",
-    "ChangesTextEditor.js"
+    "changes-legacy.js"
+  ],
+  "skip_compilation": [
+    "changes-legacy.js"
   ],
   "resources": [
     "changesView.css",

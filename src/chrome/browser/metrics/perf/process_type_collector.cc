@@ -9,7 +9,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/embedder/switches.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace metrics {
@@ -102,12 +101,10 @@ std::map<uint32_t, Process> ProcessTypeCollector::ParseProcessTypes(
       process = Process::GPU_PROCESS;
     } else if (type == switches::kUtilityProcess) {
       process = Process::UTILITY_PROCESS;
-    } else if (type == service_manager::switches::kZygoteProcess) {
+    } else if (type == switches::kZygoteProcess) {
       process = Process::ZYGOTE_PROCESS;
     } else if (type == switches::kPpapiPluginProcess) {
       process = Process::PPAPI_PLUGIN_PROCESS;
-    } else if (type == switches::kPpapiBrokerProcess) {
-      process = Process::PPAPI_BROKER_PROCESS;
     }
 
     process_types.emplace(pid, process);

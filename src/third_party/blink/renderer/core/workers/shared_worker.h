@@ -49,7 +49,6 @@ class CORE_EXPORT SharedWorker final
       public Supplementable<SharedWorker>,
       public ActiveScriptWrappable<SharedWorker> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 
  public:
   static SharedWorker* Create(ExecutionContext*,
@@ -70,7 +69,7 @@ class CORE_EXPORT SharedWorker final
   bool HasPendingActivity() const final;
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<MessagePort> port_;

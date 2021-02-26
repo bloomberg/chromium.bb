@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -55,15 +56,15 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
 }  // namespace
 
 CredentialsItemView::CredentialsItemView(
-    views::ButtonListener* button_listener,
+    PressedCallback callback,
     const base::string16& upper_text,
     const base::string16& lower_text,
-    const autofill::PasswordForm* form,
+    const password_manager::PasswordForm* form,
     network::mojom::URLLoaderFactory* loader_factory,
     int upper_text_style,
     int lower_text_style)
-    : Button(button_listener), form_(form) {
-  set_notify_enter_exit_on_child(true);
+    : Button(std::move(callback)) {
+  SetNotifyEnterExitOnChild(true);
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
@@ -76,23 +77,23 @@ CredentialsItemView::CredentialsItemView(
   // the parent can receive the events instead.
   auto image_view = std::make_unique<CircularImageView>();
   image_view_ = image_view.get();
-  image_view_->set_can_process_events_within_subtree(false);
+  image_view_->SetCanProcessEventsWithinSubtree(false);
   gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE);
   DCHECK(image.Width() >= kAvatarImageSize &&
          image.Height() >= kAvatarImageSize);
   UpdateAvatar(image.AsImageSkia());
-  if (form_->icon_url.is_valid()) {
+  if (form->icon_url.is_valid()) {
     // Fetch the actual avatar.
     AccountAvatarFetcher* fetcher = new AccountAvatarFetcher(
-        form_->icon_url, weak_ptr_factory_.GetWeakPtr());
+        form->icon_url, weak_ptr_factory_.GetWeakPtr());
     fetcher->Start(loader_factory);
   }
   AddChildView(std::move(image_view));
 
   // TODO(tapted): Check these (and the STYLE_ values below) against the spec on
   // http://crbug.com/651681.
-  const int kLabelContext = CONTEXT_BODY_TEXT_SMALL;
+  const int kLabelContext = CONTEXT_DIALOG_BODY_TEXT_SMALL;
 
   views::View* text_container = nullptr;
   if (!upper_text.empty() || !lower_text.empty()) {
@@ -120,9 +121,9 @@ CredentialsItemView::CredentialsItemView(
     lower_label_ = text_container->AddChildView(std::move(lower_label));
   }
 
-  if (form_->is_public_suffix_match) {
+  if (form->is_public_suffix_match) {
     info_icon_ = AddChildView(std::make_unique<views::TooltipIcon>(
-        base::UTF8ToUTF16(form_->origin.GetOrigin().spec())));
+        base::UTF8ToUTF16(form->url.GetOrigin().spec())));
   }
 
   if (!upper_text.empty() && !lower_text.empty())
@@ -136,21 +137,24 @@ CredentialsItemView::CredentialsItemView(
 CredentialsItemView::~CredentialsItemView() = default;
 
 void CredentialsItemView::SetStoreIndicatorIcon(
-    autofill::PasswordForm::Store store) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (store == autofill::PasswordForm::Store::kAccountStore &&
+    password_manager::PasswordForm::Store store) {
+  if (store == password_manager::PasswordForm::Store::kAccountStore &&
       !store_indicator_icon_view_) {
     store_indicator_icon_view_ =
         AddChildView(std::make_unique<views::ImageView>());
-    store_indicator_icon_view_->set_can_process_events_within_subtree(false);
-    store_indicator_icon_view_->SetImage(
-        gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor));
-  } else if (store == autofill::PasswordForm::Store::kProfileStore &&
+    store_indicator_icon_view_->SetCanProcessEventsWithinSubtree(false);
+    store_indicator_icon_view_->SetImage(gfx::CreateVectorIcon(
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        kGoogleGLogoIcon,
+#else
+        vector_icons::kSyncIcon,
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        gfx::kPlaceholderColor));
+  } else if (store == password_manager::PasswordForm::Store::kProfileStore &&
              store_indicator_icon_view_) {
     RemoveChildView(store_indicator_icon_view_);
     store_indicator_icon_view_ = nullptr;
   }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
@@ -162,7 +166,7 @@ int CredentialsItemView::GetPreferredHeight() const {
 }
 
 void CredentialsItemView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
+  if (GetState() == STATE_PRESSED || GetState() == STATE_HOVERED) {
     canvas->DrawColor(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
   }

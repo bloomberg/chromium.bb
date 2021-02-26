@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -49,25 +51,17 @@ struct CrosUsbDeviceInfo {
   CrosUsbDeviceInfo(const CrosUsbDeviceInfo&);
   ~CrosUsbDeviceInfo();
 
-  struct VmSharingInfo {
-    VmSharingInfo();
-    VmSharingInfo(const VmSharingInfo&);
-    ~VmSharingInfo();
-
-    // Whether the device is shared with the VM. Note that the device may be
-    // shared but not attached (yet) in which case |guest_port| below would be
-    // unset.
-    bool shared = false;
-    base::Optional<uint8_t> guest_port;
-  };
-
-  // Maps a VM name to the sharing/attach information of the device in the VM
-  // identified by that name.
-  base::flat_map<std::string, VmSharingInfo> vm_sharing_info;
   std::string guid;
   base::string16 label;
-  // Whether the device can be shared with Crostini.
+  // Whether the device can be shared with guest OSes.
   bool sharable_with_crostini = false;
+  // Name of VM shared with. Unset if not shared. Note that the device may be
+  // shared but not attached (yet) in which case |guest_port| below would be
+  // unset.
+  base::Optional<std::string> shared_vm_name;
+  base::Optional<uint8_t> guest_port;
+  // Interfaces shareable with guest OSes
+  uint32_t allowed_interfaces_mask = 0;
   // TODO(nverne): Add current state and errors etc.
 };
 
@@ -79,7 +73,9 @@ class CrosUsbDeviceObserver : public base::CheckedObserver {
 
 // Detects USB Devices for Chrome OS and manages UI for controlling their use
 // with CrOS, Web or GuestOSs.
-class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
+class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
+                        public chromeos::ConciergeClient::VmObserver,
+                        public chromeos::VmPluginDispatcherClient::Observer {
  public:
   // Used to namespace USB notifications to avoid clashes with WebUsbDetector.
   static std::string MakeNotificationId(const std::string& guid);
@@ -117,6 +113,10 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
                              const std::string& guid,
                              base::OnceCallback<void(bool success)> callback);
 
+  // Returns true if device was successfully shared with |vm_name|.
+  bool IsDeviceAlreadySharedWithVm(const std::string& vm_name,
+                                   const std::string& guid);
+
   void AddUsbDeviceObserver(CrosUsbDeviceObserver* observer);
   void RemoveUsbDeviceObserver(CrosUsbDeviceObserver* observer);
   void SignalUsbDeviceObservers();
@@ -131,6 +131,17 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<CrosUsbDeviceInfo> GetDevicesSharableWithCrostini() const;
 
  private:
+  // chromeos::ConciergeClient::VmObserver:
+  void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
+  void OnVmStopped(const vm_tools::concierge::VmStoppedSignal& signal) override;
+
+  // chromeos::VmPluginDispatcherClient::Observer:
+  void OnVmToolsStateChanged(
+      const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal)
+      override;
+  void OnVmStateChanged(
+      const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) override;
+
   // Called after USB device access has been checked.
   void OnDeviceChecked(device::mojom::UsbDeviceInfoPtr device,
                        bool hide_notification,
@@ -152,21 +163,35 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
                                base::OnceCallback<void(bool success)> callback,
                                base::File file);
 
+  void DoVmAttach(const std::string& vm_name,
+                  device::mojom::UsbDeviceInfoPtr device_info,
+                  base::ScopedFD fd,
+                  base::OnceCallback<void(bool success)> callback);
+
   // Callbacks for when the USB device state has been updated.
   void OnUsbDeviceAttachFinished(
       const std::string& vm_name,
       const std::string& guid,
       base::OnceCallback<void(bool success)> callback,
-      bool success,
-      uint8_t guest_port);
+      base::Optional<vm_tools::concierge::AttachUsbDeviceResponse> response);
+
   void OnUsbDeviceDetachFinished(
       const std::string& vm_name,
       const std::string& guid,
       base::OnceCallback<void(bool success)> callback,
-      bool success);
+      base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> response);
+
+  // Devices will be auto-detached if they are attached to another VM.
+  void AttachAfterDetach(const std::string& vm_name,
+                         const std::string& guid,
+                         base::OnceCallback<void(bool success)> callback,
+                         bool success);
 
   // Returns true when a device should show a notification when attached.
-  bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
+  bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info,
+                              uint32_t allowed_interfaces_mask);
+
+  void RelinquishDeviceClaim(const std::string& guid);
 
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
@@ -180,6 +205,16 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
 
   // A mapping from GUID -> UsbDeviceInfo for each attached USB device
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> available_device_info_;
+
+  // Populated when we open the device path on the host. Acts as a claim on the
+  // device even if the intended VM has not started yet. Removed when the device
+  // is shared successfully with the VM. When an file is closed (here or by the
+  // VM,  PermissionBroker will reattach the previous host drivers (if any).
+  struct DeviceClaim {
+    base::File device_file;
+    base::File lifeline_file;
+  };
+  std::map<std::string, DeviceClaim> devices_claimed_;
 
   std::vector<CrosUsbDeviceInfo> usb_devices_;
 

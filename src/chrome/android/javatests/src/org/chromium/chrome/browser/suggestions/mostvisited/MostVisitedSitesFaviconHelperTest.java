@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.suggestions.mostvisited;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
 
 import androidx.core.util.AtomicFile;
+import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,18 +17,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
 import org.chromium.chrome.browser.suggestions.tile.TileSource;
 import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,7 +70,7 @@ public class MostVisitedSitesFaviconHelperTest {
     @MediumTest
     public void testSaveFaviconsToFile() {
         // Add sites' URLs into the urlsToUpdate, except the last one.
-        Set<String> urlsToUpdate = new HashSet<>();
+        Set<GURL> urlsToUpdate = new HashSet<>();
         for (int i = 0; i < mExpectedSiteSuggestions.size() - 1; i++) {
             urlsToUpdate.add(mExpectedSiteSuggestions.get(i).url);
         }
@@ -83,8 +85,10 @@ public class MostVisitedSitesFaviconHelperTest {
                                 mExpectedSiteSuggestions, urlsToUpdate, null));
 
         // Wait util the file number equals to expected one.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                urlsToUpdate.size(), () -> getStateDirectorySize() - originalFilesNum));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    getStateDirectorySize() - originalFilesNum, Matchers.is(urlsToUpdate.size()));
+        });
 
         // The Favicon File lists in the disk.
         File topSitesDirectory = MostVisitedSitesMetadataUtils.getStateDirectory();
@@ -103,16 +107,16 @@ public class MostVisitedSitesFaviconHelperTest {
     private static List<SiteSuggestion> createFakeSiteSuggestions() {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>();
 
-        siteSuggestions.add(new SiteSuggestion("0 TOP_SITES", "https://www.foo.com", "",
+        siteSuggestions.add(new SiteSuggestion("0 TOP_SITES", new GURL("https://www.foo.com"), "",
                 TileTitleSource.TITLE_TAG, TileSource.TOP_SITES, TileSectionType.PERSONALIZED,
                 new Date()));
-        siteSuggestions.add(new SiteSuggestion("1 WHITELIST", "https://www.bar.com",
+        siteSuggestions.add(new SiteSuggestion("1 WHITELIST", new GURL("https://www.bar.com"),
                 "/not_exist.png", TileTitleSource.UNKNOWN, TileSource.WHITELIST,
                 TileSectionType.PERSONALIZED, new Date()));
-        siteSuggestions.add(new SiteSuggestion("2 TOP_SITES", "https://www.baz.com",
+        siteSuggestions.add(new SiteSuggestion("2 TOP_SITES", new GURL("https://www.baz.com"),
                 createBitmapAndWriteToFile(), TileTitleSource.UNKNOWN, TileSource.WHITELIST,
                 TileSectionType.PERSONALIZED, new Date()));
-        siteSuggestions.add(new SiteSuggestion("3 TOP_SITES", "https://www.qux.com", "",
+        siteSuggestions.add(new SiteSuggestion("3 TOP_SITES", new GURL("https://www.qux.com"), "",
                 TileTitleSource.UNKNOWN, TileSource.WHITELIST, TileSectionType.PERSONALIZED,
                 new Date()));
         siteSuggestions.get(0).faviconId = 0;

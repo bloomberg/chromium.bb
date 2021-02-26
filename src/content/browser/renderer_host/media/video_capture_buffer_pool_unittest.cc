@@ -26,6 +26,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MAC)
+#include "ui/gfx/mac/io_surface.h"
+#endif
+
 namespace content {
 
 static const media::VideoPixelFormat kCapturePixelFormats[] = {
@@ -62,7 +66,6 @@ class VideoCaptureBufferPoolTest
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
         pool_(new media::VideoCaptureBufferPoolImpl(
-            std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
             media::VideoCaptureBufferType::kSharedMemory,
             kTestBufferPoolSize)) {}
 
@@ -265,6 +268,83 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
     memset(buffer4->data(), 0x77, buffer4->mapped_size());
   buffer4.reset();
 }
+
+#if defined(OS_MAC)
+namespace {
+
+gfx::GpuMemoryBufferHandle CreateIOSurfaceHandle() {
+  gfx::GpuMemoryBufferHandle result;
+  result.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
+  result.id.id = -1;
+  result.io_surface.reset(
+      gfx::CreateIOSurface(gfx::Size(100, 100), gfx::BufferFormat::BGRA_8888));
+  return result;
+}
+
+}  // namespace
+
+TEST_P(VideoCaptureBufferPoolTest, BufferPoolExternal) {
+  auto handle0 = CreateIOSurfaceHandle();
+  auto handle1 = CreateIOSurfaceHandle();
+  auto handle2 = CreateIOSurfaceHandle();
+
+  constexpr int kInvalidId = -1;
+  int buffer_id_to_drop;
+
+  int buffer_id0 =
+      pool_->ReserveIdForExternalBuffer(handle0, &buffer_id_to_drop);
+  EXPECT_NE(buffer_id0, kInvalidId);
+  EXPECT_EQ(buffer_id_to_drop, kInvalidId);
+  EXPECT_FALSE(IOSurfaceIsInUse(handle0.io_surface));
+  pool_->HoldForConsumers(buffer_id0, 1);
+  EXPECT_TRUE(IOSurfaceIsInUse(handle0.io_surface));
+  pool_->RelinquishProducerReservation(buffer_id0);
+
+  // We should get a new buffer for handle1.
+  int buffer_id1 =
+      pool_->ReserveIdForExternalBuffer(handle1, &buffer_id_to_drop);
+  EXPECT_NE(buffer_id1, kInvalidId);
+  EXPECT_EQ(buffer_id_to_drop, kInvalidId);
+  pool_->HoldForConsumers(buffer_id1, 1);
+  pool_->RelinquishProducerReservation(buffer_id1);
+  pool_->RelinquishConsumerHold(buffer_id1, 1);
+
+  // We should reuse handle1's buffer.
+  int buffer_id1_reuse =
+      pool_->ReserveIdForExternalBuffer(handle1, &buffer_id_to_drop);
+  EXPECT_EQ(buffer_id1, buffer_id1_reuse);
+  EXPECT_EQ(buffer_id_to_drop, kInvalidId);
+  pool_->HoldForConsumers(buffer_id1_reuse, 1);
+  pool_->RelinquishProducerReservation(buffer_id1_reuse);
+
+  // If we leave buffer_id1 held for a consumer, then we create a new buffer id
+  // for it.
+  int buffer_id1_new =
+      pool_->ReserveIdForExternalBuffer(handle1, &buffer_id_to_drop);
+  EXPECT_NE(buffer_id1, buffer_id1_new);
+  EXPECT_EQ(buffer_id_to_drop, kInvalidId);
+  pool_->HoldForConsumers(buffer_id1_new, 1);
+  pool_->RelinquishProducerReservation(buffer_id1_new);
+  pool_->RelinquishConsumerHold(buffer_id1_new, 1);
+
+  // We have now reached kTestBufferPoolSize buffers. So our next allocation
+  // will return the LRU buffer, which is buffer_id1_new.
+  pool_->RelinquishConsumerHold(buffer_id1_reuse, 1);
+  int buffer_id2 =
+      pool_->ReserveIdForExternalBuffer(handle2, &buffer_id_to_drop);
+  EXPECT_NE(buffer_id0, buffer_id2);
+  EXPECT_NE(buffer_id1, buffer_id2);
+  EXPECT_NE(buffer_id1_new, buffer_id2);
+  EXPECT_EQ(buffer_id_to_drop, buffer_id1_new);
+
+  // Finally, let's reuse handle0.
+  pool_->RelinquishConsumerHold(buffer_id0, 1);
+  int buffer_id0_reuse =
+      pool_->ReserveIdForExternalBuffer(handle0, &buffer_id_to_drop);
+  EXPECT_EQ(buffer_id0, buffer_id0_reuse);
+  EXPECT_EQ(buffer_id_to_drop, kInvalidId);
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureBufferPoolTest,

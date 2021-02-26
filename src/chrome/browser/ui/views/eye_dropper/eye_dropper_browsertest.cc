@@ -18,7 +18,7 @@
 #include "ui/display/display_switches.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/eye_dropper/eye_dropper_win.h"
+#include "chrome/browser/ui/views/eye_dropper/eye_dropper_view.h"
 #endif
 
 class EyeDropperBrowserTest : public UiBrowserTest,
@@ -33,9 +33,11 @@ class EyeDropperBrowserTest : public UiBrowserTest,
 
   // UiBrowserTest:
   void ShowUi(const std::string& name) override {
+#if defined(OS_WIN)
     content::RenderFrameHost* parent_frame =
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
     eye_dropper_ = ShowEyeDropper(parent_frame, /*listener=*/nullptr);
+#endif
   }
 
   bool VerifyUi() override {
@@ -44,7 +46,7 @@ class EyeDropperBrowserTest : public UiBrowserTest,
       return false;
 
     views::Widget* widget =
-        static_cast<EyeDropperWin*>(eye_dropper_.get())->GetWidget();
+        static_cast<EyeDropperView*>(eye_dropper_.get())->GetWidget();
     auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
     const std::string screenshot_name =
         base::StrCat({test_info->test_case_name(), "_", test_info->name()});
@@ -66,7 +68,8 @@ class EyeDropperBrowserTest : public UiBrowserTest,
 };
 
 // Invokes the eye dropper.
-IN_PROC_BROWSER_TEST_P(EyeDropperBrowserTest, InvokeUi_default) {
+// Flaky: https://crbug.com/1131319
+IN_PROC_BROWSER_TEST_P(EyeDropperBrowserTest, DISABLED_InvokeUi_default) {
   ShowAndVerifyUi();
 }
 

@@ -18,6 +18,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -41,6 +42,7 @@
 #include "media/base/time_source.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_encoder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -114,6 +116,7 @@ class MockPipeline : public Pipeline {
   MOCK_CONST_METHOD0(GetVolume, float());
   MOCK_METHOD1(SetVolume, void(float));
   MOCK_METHOD1(SetLatencyHint, void(base::Optional<base::TimeDelta>));
+  MOCK_METHOD1(SetPreservesPitch, void(bool));
 
   // TODO(sandersd): These should probably have setters too.
   MOCK_CONST_METHOD0(GetMediaTime, base::TimeDelta());
@@ -194,7 +197,6 @@ class MockDemuxerStream : public DemuxerStream {
   Liveness liveness() const override;
   void Read(ReadCB read_cb) { OnRead(read_cb); }
   MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
-  MOCK_CONST_METHOD0(IsReadPending, bool());
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
@@ -215,12 +217,19 @@ class MockDemuxerStream : public DemuxerStream {
 
 class MockVideoDecoder : public VideoDecoder {
  public:
-  explicit MockVideoDecoder(
-      const std::string& decoder_name = "MockVideoDecoder");
+  MockVideoDecoder();
+  explicit MockVideoDecoder(std::string decoder_name);
+  MockVideoDecoder(bool is_platform_decoder,
+                   bool supports_decryption,
+                   std::string decoder_name);
   ~MockVideoDecoder() override;
 
-  // VideoDecoder implementation.
+  // Decoder implementation
+  bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+
+  // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -247,18 +256,64 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
 
  private:
-  std::string decoder_name_;
+  const bool is_platform_decoder_;
+  const bool supports_decryption_;
+  const std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
+};
+
+class MockVideoEncoder : public VideoEncoder {
+ public:
+  MockVideoEncoder();
+  ~MockVideoEncoder() override;
+
+  // VideoEncoder implementation.
+  MOCK_METHOD(void,
+              Initialize,
+              (VideoCodecProfile profile,
+               const VideoEncoder::Options& options,
+               VideoEncoder::OutputCB output_cb,
+               VideoEncoder::StatusCB done_cb),
+              (override));
+
+  MOCK_METHOD(void,
+              Encode,
+              (scoped_refptr<VideoFrame> frame,
+               bool key_frame,
+               VideoEncoder::StatusCB done_cb),
+              (override));
+
+  MOCK_METHOD(void,
+              ChangeOptions,
+              (const VideoEncoder::Options& options,
+               VideoEncoder::OutputCB output_cb,
+               VideoEncoder::StatusCB done_cb),
+              (override));
+
+  MOCK_METHOD(void, Flush, (VideoEncoder::StatusCB done_cb), (override));
+
+  // A function for mocking destructor calls
+  MOCK_METHOD(void, Dtor, ());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
 };
 
 class MockAudioDecoder : public AudioDecoder {
  public:
-  explicit MockAudioDecoder(
-      const std::string& decoder_name = "MockAudioDecoder");
+  MockAudioDecoder();
+  explicit MockAudioDecoder(std::string decoder_name);
+  explicit MockAudioDecoder(bool is_platform_decoder,
+                            bool supports_decryption,
+                            std::string decoder_name);
   ~MockAudioDecoder() override;
 
-  // AudioDecoder implementation.
+  // Decoder implementation
+  bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+
+  // AudioDecoder implementation.
   void Initialize(const AudioDecoderConfig& config,
                   CdmContext* cdm_context,
                   InitCB init_cb,
@@ -272,13 +327,14 @@ class MockAudioDecoder : public AudioDecoder {
                     InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
-  MOCK_METHOD2(Decode,
-               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
+  MOCK_METHOD2(Decode, void(scoped_refptr<DecoderBuffer> buffer, DecodeCB));
   void Reset(base::OnceClosure cb) override { Reset_(cb); }
   MOCK_METHOD1(Reset_, void(base::OnceClosure&));
 
  private:
-  std::string decoder_name_;
+  const bool is_platform_decoder_;
+  const bool supports_decryption_;
+  const std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);
 };
 
@@ -357,6 +413,7 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD1(SetLatencyHint,
                void(base::Optional<base::TimeDelta> latency_hint));
+  MOCK_METHOD1(SetPreservesPitch, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);
@@ -378,7 +435,8 @@ class MockRenderer : public Renderer {
                     RendererClient* client,
                     PipelineStatusCallback& init_cb));
   MOCK_METHOD1(SetLatencyHint, void(base::Optional<base::TimeDelta>));
-  void Flush(base::OnceClosure flush_cb) { OnFlush(flush_cb); }
+  MOCK_METHOD1(SetPreservesPitch, void(bool));
+  void Flush(base::OnceClosure flush_cb) override { OnFlush(flush_cb); }
   MOCK_METHOD1(OnFlush, void(base::OnceClosure& flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(SetPlaybackRate, void(double playback_rate));
@@ -493,8 +551,6 @@ class MockDecryptor : public Decryptor {
   MockDecryptor();
   ~MockDecryptor() override;
 
-  MOCK_METHOD2(RegisterNewKeyCB,
-               void(StreamType stream_type, NewKeyCB new_key_cb));
   MOCK_METHOD3(Decrypt,
                void(StreamType stream_type,
                     scoped_refptr<DecoderBuffer> encrypted,
@@ -523,6 +579,8 @@ class MockCdmContext : public CdmContext {
   MockCdmContext();
   ~MockCdmContext() override;
 
+  MOCK_METHOD1(RegisterEventCB,
+               std::unique_ptr<CallbackRegistration>(EventCB event_cb));
   MOCK_METHOD0(GetDecryptor, Decryptor*());
   MOCK_METHOD0(RequiresMediaFoundationRenderer, bool());
 
@@ -531,12 +589,12 @@ class MockCdmContext : public CdmContext {
                bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
 #endif
 
-  int GetCdmId() const override;
+  base::Optional<base::UnguessableToken> GetCdmId() const override;
 
-  void set_cdm_id(int cdm_id);
+  void set_cdm_id(const base::UnguessableToken* cdm_id);
 
  private:
-  int cdm_id_ = CdmContext::kInvalidCdmId;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
 };
@@ -572,10 +630,25 @@ class MockCdmSessionPromise : public NewSessionCdmPromise {
   DISALLOW_COPY_AND_ASSIGN(MockCdmSessionPromise);
 };
 
+class MockCdmKeyStatusPromise : public KeyStatusCdmPromise {
+ public:
+  // |expect_success| is true if resolve() should be called, false if reject()
+  // is expected. |key_status| is updated with the key status on resolve().
+  MockCdmKeyStatusPromise(bool expect_success,
+                          CdmKeyInformation::KeyStatus* key_status);
+  ~MockCdmKeyStatusPromise() override;
+
+  MOCK_METHOD1(resolve, void(const CdmKeyInformation::KeyStatus&));
+  MOCK_METHOD3(reject,
+               void(CdmPromise::Exception, uint32_t, const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCdmKeyStatusPromise);
+};
+
 class MockCdm : public ContentDecryptionModule {
  public:
   MockCdm(const std::string& key_system,
-          const url::Origin& security_origin,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
@@ -646,7 +719,6 @@ class MockCdmFactory : public CdmFactory {
   // created CDM is passed to |cdm_created_cb|, a copy is kept (and available
   // using Cdm()). If |key_system| is empty, no CDM will be created.
   void Create(const std::string& key_system,
-              const url::Origin& security_origin,
               const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,

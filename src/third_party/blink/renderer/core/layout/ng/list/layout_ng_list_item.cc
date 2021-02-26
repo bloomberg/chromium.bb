@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
-#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 
 namespace blink {
 
@@ -98,7 +98,7 @@ const LayoutObject* LayoutNGListItem::FindSymbolMarkerLayoutText(
     return list_marker->SymbolMarkerLayoutText(*object);
 
   if (object->IsLayoutNGListItem())
-    return FindSymbolMarkerLayoutText(ToLayoutNGListItem(object)->Marker());
+    return FindSymbolMarkerLayoutText(To<LayoutNGListItem>(object)->Marker());
 
   if (object->IsAnonymousBlock())
     return FindSymbolMarkerLayoutText(object->Parent());

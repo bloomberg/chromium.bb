@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -28,6 +27,14 @@ class FidoDeviceAuthenticator;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceDiscovery
     : public FidoDiscoveryBase {
  public:
+  // BLEObserver is an interface for discoveries that watch for BLE adverts.
+  class BLEObserver {
+   public:
+    virtual ~BLEObserver();
+
+    virtual void OnBLEAdvertSeen(const std::array<uint8_t, 20>& advert) = 0;
+  };
+
   enum class State {
     kIdle,
     kStarting,

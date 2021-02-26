@@ -58,6 +58,11 @@ namespace identity {
     // When the <code>scopes</code> field is present, it overrides the
     // list of scopes specified in manifest.json.
     DOMString[]? scopes;
+
+    // The <code>enableGranularPermissions</code> flag allows extensions to
+    // opt-in early to the granular permissions consent screen, in which
+    // requested permissions are granted or denied individually.
+    boolean? enableGranularPermissions;
   };
 
   dictionary InvalidTokenDetails {
@@ -84,10 +89,12 @@ namespace identity {
     boolean? interactive;
   };
 
-  callback GetAuthTokenCallback = void (optional DOMString token);
+  callback GetAuthTokenCallback = void (optional DOMString token,
+                                        optional DOMString[] grantedScopes);
   callback GetAccountsCallback = void (AccountInfo[] accounts);
   callback GetProfileUserInfoCallback = void (ProfileUserInfo userInfo);
   callback InvalidateAuthTokenCallback = void ();
+  callback ClearAllCachedAuthTokensCallback = void ();
   callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
 
   interface Functions {
@@ -115,7 +122,11 @@ namespace identity {
     //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the
-    // manifest, or undefined if there was an error.
+    // manifest, or undefined if there was an error. The
+    // <code>grantedScopes</code> parameter is not yet available and will be
+    // populated in future versions of Chrome. When available, this parameter
+    // will contain the list of granted scopes corresponding with the returned
+    // token.
     static void getAuthToken(optional TokenDetails details,
                              optional GetAuthTokenCallback callback);
 
@@ -149,6 +160,15 @@ namespace identity {
     static void removeCachedAuthToken(
         InvalidTokenDetails details,
         optional InvalidateAuthTokenCallback callback);
+
+    // Resets the state of the Identity API:
+    // - Removes all OAuth2 access tokens from the token cache
+    // - Removes user's account preferences
+    // - De-authorizes the user from all auth flows
+    //
+    // |callback| : Called when the state has been cleared.
+    static void clearAllCachedAuthTokens(
+        ClearAllCachedAuthTokensCallback callback);
 
     // Starts an auth flow at the specified URL.
     //

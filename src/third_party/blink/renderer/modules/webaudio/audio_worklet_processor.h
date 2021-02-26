@@ -45,20 +45,20 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
 
   // |AudioWorkletHandler| invokes this method to process audio.
   bool Process(
-      Vector<scoped_refptr<AudioBus>>* input_buses,
-      Vector<scoped_refptr<AudioBus>>* output_buses,
-      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
+      const Vector<scoped_refptr<AudioBus>>& inputs,
+      Vector<scoped_refptr<AudioBus>>& outputs,
+      const HashMap<String, std::unique_ptr<AudioFloatArray>>& param_value_map);
 
   const String& Name() const { return name_; }
 
   void SetErrorState(AudioWorkletProcessorErrorState);
   AudioWorkletProcessorErrorState GetErrorState() const;
-  bool hasErrorOccured() const;
+  bool hasErrorOccurred() const;
 
   // IDL
   MessagePort* port() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   using BackingArrayBuffers =
@@ -109,6 +109,10 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
       v8::Isolate*,
       const BackingArrayBuffers& array_buffers,
       Vector<scoped_refptr<AudioBus>>& audio_port);
+
+  // Fills a given BackingArrayBuffers with zeros.
+  static void ZeroArrayBuffers(v8::Isolate*,
+                               const BackingArrayBuffers& array_buffers);
 
   // Returns true if the structure of |param_value_map| matches |params| object
   // and the underlying ArrayBuffers are not transferred.

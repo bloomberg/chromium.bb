@@ -9,10 +9,6 @@
 
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 
-namespace gpu {
-class SharedImageManager;
-}
-
 namespace viz {
 
 // Test implementation that creates a FakeOutputSurface.
@@ -22,13 +18,17 @@ class TestOutputSurfaceProvider : public OutputSurfaceProvider {
   ~TestOutputSurfaceProvider() override;
 
   // OutputSurfaceProvider implementation.
+  std::unique_ptr<DisplayCompositorMemoryAndTaskController> CreateGpuDependency(
+      bool gpu_compositing,
+      gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings) override;
   std::unique_ptr<OutputSurface> CreateOutputSurface(
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      const RendererSettings& renderer_settings) override;
-
-  gpu::SharedImageManager* GetSharedImageManager() override;
+      DisplayCompositorMemoryAndTaskController* display_controller,
+      const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOutputSurfaceProvider);

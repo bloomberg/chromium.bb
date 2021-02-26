@@ -6,20 +6,22 @@
 
 #include "src/ast/ast-source-ranges.h"
 #include "src/ast/ast.h"
-#include "src/execution/off-thread-isolate.h"
+#include "src/execution/local-isolate.h"
 #include "src/handles/handles-inl.h"
 #include "src/heap/factory.h"
 #include "src/heap/heap-inl.h"
+#include "src/heap/local-factory-inl.h"
 #include "src/heap/memory-chunk.h"
-#include "src/heap/off-thread-factory-inl.h"
 #include "src/heap/read-only-heap.h"
+#include "src/logging/local-logger.h"
 #include "src/logging/log.h"
-#include "src/logging/off-thread-logger.h"
 #include "src/objects/literal-objects-inl.h"
 #include "src/objects/module-inl.h"
 #include "src/objects/oddball.h"
 #include "src/objects/shared-function-info-inl.h"
 #include "src/objects/source-text-module.h"
+#include "src/objects/string-inl.h"
+#include "src/objects/string.h"
 #include "src/objects/template-objects-inl.h"
 
 namespace v8 {
@@ -43,7 +45,7 @@ template V8_EXPORT_PRIVATE Handle<HeapNumber>
 FactoryBase<Factory>::NewHeapNumber<AllocationType::kReadOnly>();
 
 template V8_EXPORT_PRIVATE Handle<HeapNumber>
-FactoryBase<OffThreadFactory>::NewHeapNumber<AllocationType::kOld>();
+FactoryBase<LocalFactory>::NewHeapNumber<AllocationType::kOld>();
 
 template <typename Impl>
 Handle<Struct> FactoryBase<Impl>::NewStruct(InstanceType type,
@@ -194,7 +196,8 @@ Handle<BytecodeArray> FactoryBase<Impl>::NewBytecodeArray(
   instance->set_bytecode_age(BytecodeArray::kNoAgeBytecodeAge);
   instance->set_constant_pool(*constant_pool);
   instance->set_handler_table(read_only_roots().empty_byte_array());
-  instance->set_source_position_table(read_only_roots().undefined_value());
+  instance->set_source_position_table(read_only_roots().undefined_value(),
+                                      kReleaseStore);
   CopyBytes(reinterpret_cast<byte*>(instance->GetFirstBytecodeAddress()),
             raw_bytecodes, length);
   instance->clear_padding();
@@ -310,9 +313,9 @@ Handle<SharedFunctionInfo> FactoryBase<Impl>::NewSharedFunctionInfo(
   bool has_shared_name = maybe_name.ToHandle(&shared_name);
   if (has_shared_name) {
     DCHECK(shared_name->IsFlat());
-    shared->set_name_or_scope_info(*shared_name);
+    shared->set_name_or_scope_info(*shared_name, kReleaseStore);
   } else {
-    DCHECK_EQ(shared->name_or_scope_info(),
+    DCHECK_EQ(shared->name_or_scope_info(kAcquireLoad),
               SharedFunctionInfo::kNoSharedNameSentinel);
   }
 
@@ -323,18 +326,19 @@ Handle<SharedFunctionInfo> FactoryBase<Impl>::NewSharedFunctionInfo(
     DCHECK(!Builtins::IsBuiltinId(maybe_builtin_index));
     DCHECK_IMPLIES(function_data->IsCode(),
                    !Code::cast(*function_data).is_builtin());
-    shared->set_function_data(*function_data);
+    shared->set_function_data(*function_data, kReleaseStore);
   } else if (Builtins::IsBuiltinId(maybe_builtin_index)) {
     shared->set_builtin_id(maybe_builtin_index);
   } else {
-    shared->set_builtin_id(Builtins::kIllegal);
+    DCHECK(shared->HasBuiltinId());
+    DCHECK_EQ(Builtins::kIllegal, shared->builtin_id());
   }
 
   shared->CalculateConstructAsBuiltin();
   shared->set_kind(kind);
 
 #ifdef VERIFY_HEAP
-  shared->SharedFunctionInfoVerify(isolate());
+  if (FLAG_verify_heap) shared->SharedFunctionInfoVerify(isolate());
 #endif  // VERIFY_HEAP
   return shared;
 }
@@ -407,14 +411,14 @@ FactoryBase<Impl>::NewTemplateObjectDescription(
 
 template <typename Impl>
 Handle<FeedbackMetadata> FactoryBase<Impl>::NewFeedbackMetadata(
-    int slot_count, int feedback_cell_count, AllocationType allocation) {
+    int slot_count, int create_closure_slot_count, AllocationType allocation) {
   DCHECK_LE(0, slot_count);
   int size = FeedbackMetadata::SizeFor(slot_count);
   HeapObject result = AllocateRawWithImmortalMap(
       size, allocation, read_only_roots().feedback_metadata_map());
   Handle<FeedbackMetadata> data(FeedbackMetadata::cast(result), isolate());
   data->set_slot_count(slot_count);
-  data->set_closure_feedback_cell_count(feedback_cell_count);
+  data->set_create_closure_slot_count(create_closure_slot_count);
 
   // Initialize the data section to 0.
   int data_size = size - FeedbackMetadata::kHeaderSize;
@@ -433,7 +437,7 @@ Handle<CoverageInfo> FactoryBase<Impl>::NewCoverageInfo(
   int size = CoverageInfo::SizeFor(slot_count);
   Map map = read_only_roots().coverage_info_map();
   HeapObject result =
-      AllocateRawWithImmortalMap(size, AllocationType::kYoung, map);
+      AllocateRawWithImmortalMap(size, AllocationType::kOld, map);
   Handle<CoverageInfo> info(CoverageInfo::cast(result), isolate());
 
   info->set_slot_count(slot_count);
@@ -446,12 +450,67 @@ Handle<CoverageInfo> FactoryBase<Impl>::NewCoverageInfo(
 }
 
 template <typename Impl>
+Handle<String> FactoryBase<Impl>::MakeOrFindTwoCharacterString(uint16_t c1,
+                                                               uint16_t c2) {
+  if ((c1 | c2) <= unibrow::Latin1::kMaxChar) {
+    uint8_t buffer[] = {static_cast<uint8_t>(c1), static_cast<uint8_t>(c2)};
+    return InternalizeString(Vector<const uint8_t>(buffer, 2));
+  }
+  uint16_t buffer[] = {c1, c2};
+  return InternalizeString(Vector<const uint16_t>(buffer, 2));
+}
+
+template <typename Impl>
+template <class StringTableKey>
+Handle<String> FactoryBase<Impl>::InternalizeStringWithKey(
+    StringTableKey* key) {
+  return isolate()->string_table()->LookupKey(isolate(), key);
+}
+
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<Factory>::InternalizeStringWithKey(
+        OneByteStringKey* key);
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<Factory>::InternalizeStringWithKey(
+        TwoByteStringKey* key);
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<Factory>::InternalizeStringWithKey(
+        SeqOneByteSubStringKey* key);
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<Factory>::InternalizeStringWithKey(
+        SeqTwoByteSubStringKey* key);
+
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<LocalFactory>::InternalizeStringWithKey(
+        OneByteStringKey* key);
+template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
+    Handle<String> FactoryBase<LocalFactory>::InternalizeStringWithKey(
+        TwoByteStringKey* key);
+
+template <typename Impl>
+Handle<String> FactoryBase<Impl>::InternalizeString(
+    const Vector<const uint8_t>& string, bool convert_encoding) {
+  SequentialStringKey<uint8_t> key(string, HashSeed(read_only_roots()),
+                                   convert_encoding);
+  return InternalizeStringWithKey(&key);
+}
+
+template <typename Impl>
+Handle<String> FactoryBase<Impl>::InternalizeString(
+    const Vector<const uint16_t>& string, bool convert_encoding) {
+  SequentialStringKey<uint16_t> key(string, HashSeed(read_only_roots()),
+                                    convert_encoding);
+  return InternalizeStringWithKey(&key);
+}
+
+template <typename Impl>
 Handle<SeqOneByteString> FactoryBase<Impl>::NewOneByteInternalizedString(
     const Vector<const uint8_t>& str, uint32_t hash_field) {
   Handle<SeqOneByteString> result =
       AllocateRawOneByteInternalizedString(str.length(), hash_field);
   DisallowHeapAllocation no_gc;
-  MemCopy(result->GetChars(no_gc), str.begin(), str.length());
+  MemCopy(result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded()),
+          str.begin(), str.length());
   return result;
 }
 
@@ -461,7 +520,8 @@ Handle<SeqTwoByteString> FactoryBase<Impl>::NewTwoByteInternalizedString(
   Handle<SeqTwoByteString> result =
       AllocateRawTwoByteInternalizedString(str.length(), hash_field);
   DisallowHeapAllocation no_gc;
-  MemCopy(result->GetChars(no_gc), str.begin(), str.length() * kUC16Size);
+  MemCopy(result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded()),
+          str.begin(), str.length() * kUC16Size);
   return result;
 }
 
@@ -524,7 +584,7 @@ MaybeHandle<String> FactoryBase<Impl>::NewConsString(
   if (length == 2) {
     uint16_t c1 = left->Get(0);
     uint16_t c2 = right->Get(0);
-    return impl()->MakeOrFindTwoCharacterString(c1, c2);
+    return MakeOrFindTwoCharacterString(c1, c2);
   }
 
   // Make sure that an out of memory exception is thrown if the length
@@ -549,21 +609,31 @@ MaybeHandle<String> FactoryBase<Impl>::NewConsString(
       Handle<SeqOneByteString> result =
           NewRawOneByteString(length, allocation).ToHandleChecked();
       DisallowHeapAllocation no_gc;
-      uint8_t* dest = result->GetChars(no_gc);
+      uint8_t* dest =
+          result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded());
       // Copy left part.
-      const uint8_t* src = left->template GetChars<uint8_t>(no_gc);
-      CopyChars(dest, src, left_length);
+      {
+        SharedStringAccessGuardIfNeeded access_guard(*left);
+        const uint8_t* src =
+            left->template GetChars<uint8_t>(no_gc, access_guard);
+        CopyChars(dest, src, left_length);
+      }
       // Copy right part.
-      src = right->template GetChars<uint8_t>(no_gc);
-      CopyChars(dest + left_length, src, right_length);
+      {
+        SharedStringAccessGuardIfNeeded access_guard(*right);
+        const uint8_t* src =
+            right->template GetChars<uint8_t>(no_gc, access_guard);
+        CopyChars(dest + left_length, src, right_length);
+      }
       return result;
     }
 
     Handle<SeqTwoByteString> result =
         NewRawTwoByteString(length, allocation).ToHandleChecked();
 
-    DisallowHeapAllocation pointer_stays_valid;
-    uc16* sink = result->GetChars(pointer_stays_valid);
+    DisallowHeapAllocation no_gc;
+    uc16* sink =
+        result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded());
     String::WriteToFlat(*left, sink, 0, left->length());
     String::WriteToFlat(*right, sink + left->length(), 0, right->length());
     return result;
@@ -644,7 +714,7 @@ Handle<SharedFunctionInfo> FactoryBase<Impl>::NewSharedFunctionInfo() {
   shared->Init(read_only_roots(), unique_id);
 
 #ifdef VERIFY_HEAP
-  shared->SharedFunctionInfoVerify(isolate());
+  if (FLAG_verify_heap) shared->SharedFunctionInfoVerify(isolate());
 #endif  // VERIFY_HEAP
   return shared;
 }
@@ -721,8 +791,10 @@ template <typename Impl>
 HeapObject FactoryBase<Impl>::AllocateRawArray(int size,
                                                AllocationType allocation) {
   HeapObject result = AllocateRaw(size, allocation);
-  if (size > kMaxRegularHeapObjectSize && FLAG_use_marking_progress_bar) {
-    MemoryChunk* chunk = MemoryChunk::FromHeapObject(result);
+  if (!V8_ENABLE_THIRD_PARTY_HEAP_BOOL &&
+      (size > Heap::MaxRegularHeapObjectSize(allocation)) &&
+      FLAG_use_marking_progress_bar) {
+    BasicMemoryChunk* chunk = BasicMemoryChunk::FromHeapObject(result);
     chunk->SetFlag<AccessMode::ATOMIC>(MemoryChunk::HAS_PROGRESS_BAR);
   }
   return result;
@@ -774,7 +846,7 @@ HeapObject FactoryBase<Impl>::AllocateRaw(int size, AllocationType allocation,
 // Instantiate FactoryBase for the two variants we want.
 template class EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE) FactoryBase<Factory>;
 template class EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
-    FactoryBase<OffThreadFactory>;
+    FactoryBase<LocalFactory>;
 
 }  // namespace internal
 }  // namespace v8

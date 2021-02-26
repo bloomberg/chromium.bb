@@ -13,14 +13,15 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/assistant/test_support/mock_assistant_state.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -30,10 +31,9 @@ namespace app_list {
 namespace test {
 
 using chromeos::assistant::AssistantAllowedState;
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantQuerySource;
-using chromeos::assistant::mojom::AssistantSuggestion;
-using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantQuerySource;
+using chromeos::assistant::AssistantSuggestion;
 using testing::DoAll;
 using testing::NiceMock;
 using testing::SaveArg;
@@ -46,9 +46,9 @@ class Expect {
     EXPECT_EQ(r_.display_index(), ash::SearchResultDisplayIndex::kFirstIndex);
     EXPECT_EQ(r_.display_type(), ash::SearchResultDisplayType::kChip);
     EXPECT_EQ(r_.result_type(), ash::AppListSearchResultType::kAssistantChip);
-    EXPECT_EQ(r_.GetSearchResultType(), ash::SearchResultType::ASSISTANT);
+    EXPECT_EQ(r_.metrics_type(), ash::SearchResultType::ASSISTANT);
     EXPECT_TRUE(r_.chip_icon().BackedBySameObjectAs(gfx::CreateVectorIcon(
-        ash::kAssistantIcon,
+        chromeos::kAssistantIcon,
         ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
         gfx::kPlaceholderColor)));
   }
@@ -80,14 +80,14 @@ class ConversationStarterBuilder {
       delete;
   ~ConversationStarterBuilder() = default;
 
-  AssistantSuggestionPtr Build() {
+  AssistantSuggestion Build() {
     DCHECK(!id_.is_empty());
     DCHECK(!text_.empty());
 
-    AssistantSuggestionPtr conversation_starter = AssistantSuggestion::New();
-    conversation_starter->id = id_;
-    conversation_starter->text = text_;
-    conversation_starter->action_url = action_url_;
+    AssistantSuggestion conversation_starter;
+    conversation_starter.id = id_;
+    conversation_starter.text = text_;
+    conversation_starter.action_url = action_url_;
     return conversation_starter;
   }
 
@@ -110,36 +110,6 @@ class ConversationStarterBuilder {
   base::UnguessableToken id_;
   std::string text_;
   GURL action_url_;
-};
-
-// TestAssistantState ----------------------------------------------------------
-
-class TestAssistantState : public ash::AssistantState {
- public:
-  TestAssistantState() {
-    allowed_state_ = chromeos::assistant::AssistantAllowedState::ALLOWED;
-    settings_enabled_ = true;
-  }
-
-  TestAssistantState(const TestAssistantState&) = delete;
-  TestAssistantState& operator=(const TestAssistantState&) = delete;
-  ~TestAssistantState() override = default;
-
-  void SetAllowedState(AssistantAllowedState allowed_state) {
-    if (allowed_state_ != allowed_state) {
-      allowed_state_ = allowed_state;
-      for (auto& observer : observers_)
-        observer.OnAssistantFeatureAllowedChanged(allowed_state_.value());
-    }
-  }
-
-  void SetSettingsEnabled(bool enabled) {
-    if (settings_enabled_ != enabled) {
-      settings_enabled_ = enabled;
-      for (auto& observer : observers_)
-        observer.OnAssistantSettingsEnabled(settings_enabled_.value());
-    }
-  }
 };
 
 // TestAssistantSuggestionsController ------------------------------------------
@@ -165,26 +135,16 @@ class TestAssistantSuggestionsController
     return &model_;
   }
 
-  void AddModelObserver(
-      ash::AssistantSuggestionsModelObserver* observer) override {
-    model_.AddObserver(observer);
-  }
-
-  void RemoveModelObserver(
-      ash::AssistantSuggestionsModelObserver* observer) override {
-    model_.RemoveObserver(observer);
-  }
-
   void ClearConversationStarters() { SetConversationStarters({}); }
 
-  void SetConversationStarter(AssistantSuggestionPtr conversation_starter) {
-    std::vector<AssistantSuggestionPtr> conversation_starters;
+  void SetConversationStarter(AssistantSuggestion conversation_starter) {
+    std::vector<AssistantSuggestion> conversation_starters;
     conversation_starters.push_back(std::move(conversation_starter));
     SetConversationStarters(std::move(conversation_starters));
   }
 
   void SetConversationStarters(
-      std::vector<AssistantSuggestionPtr> conversation_starters) {
+      std::vector<AssistantSuggestion> conversation_starters) {
     model_.SetConversationStarters(std::move(conversation_starters));
   }
 
@@ -204,7 +164,7 @@ class AssistantSearchProviderTest : public AppListTestBase {
 
   AssistantSearchProvider& search_provider() { return search_provider_; }
 
-  TestAssistantState& assistant_state() { return assistant_state_; }
+  ash::MockAssistantState& assistant_state() { return assistant_state_; }
 
   NiceMock<ash::MockAssistantController>& assistant_controller() {
     return assistant_controller_;
@@ -215,7 +175,7 @@ class AssistantSearchProviderTest : public AppListTestBase {
   }
 
  private:
-  TestAssistantState assistant_state_;
+  ash::MockAssistantState assistant_state_;
   NiceMock<ash::MockAssistantController> assistant_controller_;
   TestAssistantSuggestionsController suggestions_controller_;
   AssistantSearchProvider search_provider_;
@@ -224,14 +184,14 @@ class AssistantSearchProviderTest : public AppListTestBase {
 // Tests -----------------------------------------------------------------------
 
 TEST_F(AssistantSearchProviderTest, ShouldHaveAnInitialResult) {
-  std::vector<const AssistantSuggestion*> conversation_starters =
+  const std::vector<AssistantSuggestion>& conversation_starters =
       suggestions_controller().GetModel()->GetConversationStarters();
 
   ASSERT_EQ(1u, conversation_starters.size());
   ASSERT_EQ(1u, search_provider().results().size());
 
   const ChromeSearchResult& result = *search_provider().results().at(0);
-  Expect(result).Matches(*conversation_starters.front());
+  Expect(result).Matches(conversation_starters.front());
 }
 
 TEST_F(AssistantSearchProviderTest,
@@ -278,36 +238,36 @@ TEST_F(AssistantSearchProviderTest,
 
 TEST_F(AssistantSearchProviderTest,
        ShouldUpdateResultsWhenConversationStartersChange) {
-  AssistantSuggestionPtr update = ConversationStarterBuilder()
-                                      .WithId(base::UnguessableToken::Create())
-                                      .WithText("Updated result")
-                                      .Build();
+  AssistantSuggestion update = ConversationStarterBuilder()
+                                   .WithId(base::UnguessableToken::Create())
+                                   .WithText("Updated result")
+                                   .Build();
 
-  suggestions_controller().SetConversationStarter(update->Clone());
+  suggestions_controller().SetConversationStarter(update);
   ASSERT_EQ(1u, search_provider().results().size());
 
   const ChromeSearchResult& result = *search_provider().results().at(0);
-  Expect(result).Matches(*update);
+  Expect(result).Matches(update);
 }
 
 TEST_F(AssistantSearchProviderTest,
        ShouldDelegateOpeningResultsToAssistantController) {
-  std::vector<std::pair<AssistantSuggestionPtr, GURL>> test_cases;
+  std::vector<std::pair<AssistantSuggestion, GURL>> test_cases;
 
   // Test case 1:
   // Action URLs which are *not* Assistant deep links should *not* be modified.
-  test_cases.push_back(
-      std::make_pair(ConversationStarterBuilder()
-                         .WithId(base::UnguessableToken::Create())
-                         .WithText("Search")
-                         .WithActionUrl("https://www.google.com/search")
-                         .Build(),
-                     /*expected_url=*/GURL("https://www.google.com/search")));
+  test_cases.emplace_back(
+      ConversationStarterBuilder()
+          .WithId(base::UnguessableToken::Create())
+          .WithText("Search")
+          .WithActionUrl("https://www.google.com/search")
+          .Build(),
+      /*expected_url=*/GURL("https://www.google.com/search"));
 
   // Test case 2:
   // We expect Assistant deep links to accurately reflect launcher chip as being
   // both the entry point into Assistant UI as well as the query source.
-  test_cases.push_back(std::make_pair(
+  test_cases.emplace_back(
       ConversationStarterBuilder()
           .WithId(base::UnguessableToken::Create())
           .WithText("Weather")
@@ -316,13 +276,13 @@ TEST_F(AssistantSearchProviderTest,
       /*expected_url=*/GURL(base::StringPrintf(
           "googleassistant://send-query?q=weather&entryPoint=%d&querySource=%d",
           static_cast<int>(AssistantEntryPoint::kLauncherChip),
-          static_cast<int>(AssistantQuerySource::kLauncherChip)))));
+          static_cast<int>(AssistantQuerySource::kLauncherChip))));
 
   // Test case 3:
   // When conversation starters do *not* specify an action URL explicitly, it is
   // implicitly understood that they should trigger an Assistant query composed
   // of their display text.
-  test_cases.push_back(std::make_pair(
+  test_cases.emplace_back(
       ConversationStarterBuilder()
           .WithId(base::UnguessableToken::Create())
           .WithText("What can you do?")
@@ -331,7 +291,7 @@ TEST_F(AssistantSearchProviderTest,
           "googleassistant://"
           "send-query?q=What+can+you+do%%3F&entryPoint=%d&querySource=%d",
           static_cast<int>(AssistantEntryPoint::kLauncherChip),
-          static_cast<int>(AssistantQuerySource::kLauncherChip)))));
+          static_cast<int>(AssistantQuerySource::kLauncherChip))));
 
   for (auto& test_case : test_cases) {
     suggestions_controller().SetConversationStarter(std::move(test_case.first));

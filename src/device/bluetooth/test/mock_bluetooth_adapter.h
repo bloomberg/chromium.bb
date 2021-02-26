@@ -58,20 +58,20 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_CONST_METHOD0(GetName, std::string());
   MOCK_METHOD3(SetName,
                void(const std::string& name,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    ErrorCallback error_callback));
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
   MOCK_CONST_METHOD0(CanPower, bool());
   MOCK_METHOD3(SetPowered,
                void(bool powered,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    ErrorCallback error_callback));
   MOCK_CONST_METHOD0(IsDiscoverable, bool());
   MOCK_METHOD3(SetDiscoverable,
                void(bool discoverable,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
+                    base::OnceClosure callback,
+                    ErrorCallback error_callback));
   MOCK_CONST_METHOD0(IsDiscovering, bool());
   MOCK_METHOD2(
       StartScanWithFilter_,
@@ -104,15 +104,24 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD4(CreateRfcommService,
                void(const BluetoothUUID& uuid,
                     const ServiceOptions& options,
-                    const CreateServiceCallback& callback,
-                    const CreateServiceErrorCallback& error_callback));
+                    CreateServiceCallback callback,
+                    CreateServiceErrorCallback error_callback));
   MOCK_METHOD4(CreateL2capService,
                void(const BluetoothUUID& uuid,
                     const ServiceOptions& options,
-                    const CreateServiceCallback& callback,
-                    const CreateServiceErrorCallback& error_callback));
+                    CreateServiceCallback callback,
+                    CreateServiceErrorCallback error_callback));
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothLocalGattService*(const std::string& identifier));
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  MOCK_METHOD4(
+      ConnectDevice,
+      void(const std::string& address,
+           const base::Optional<BluetoothDevice::AddressType>& address_type,
+           ConnectDeviceCallback callback,
+           ErrorCallback error_callback));
+
+#endif
 
   // BluetoothAdapter is supposed to manage the lifetime of BluetoothDevices.
   // This method takes ownership of the MockBluetoothDevice. This is only for
@@ -142,17 +151,16 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     DiscoverySessionResultCallback callback) override;
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) override;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override;
-  void ResetAdvertising(
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      AdvertisementErrorCallback error_callback) override;
+  void ResetAdvertising(base::OnceClosure callback,
+                        AdvertisementErrorCallback error_callback) override;
 #endif
   ~MockBluetoothAdapter() override;
 

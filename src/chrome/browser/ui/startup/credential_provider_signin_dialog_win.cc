@@ -37,7 +37,8 @@ namespace {
 bool g_enable_gcpw_signin_during_tests = false;
 #endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
 
-// This message must match the one sent in inline_login.js: sendLSTFetchResults.
+// This message must match the one sent in inline_login_app.js:
+// sendLSTFetchResults.
 constexpr char kLSTFetchResultsMessage[] = "lstFetchResults";
 
 void WriteResultToHandle(const base::Value& result) {
@@ -48,7 +49,7 @@ void WriteResultToHandle(const base::Value& result) {
     // ::GetStdHandle(STD_OUTPUT_HANDLE) will result in an invalid or null
     // handle if Chrome was started without providing a console.
     HANDLE output_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    if (output_handle != nullptr && output_handle != INVALID_HANDLE_VALUE) {
+    if (output_handle && output_handle != INVALID_HANDLE_VALUE) {
       DWORD written;
       if (!::WriteFile(output_handle, json_result.c_str(), json_result.length(),
                        &written, nullptr)) {
@@ -145,6 +146,11 @@ class CredentialProviderWebUIMessageHandler
       const std::string& additional_mdm_oauth_scopes)
       : signin_callback_(std::move(signin_callback)),
         additional_mdm_oauth_scopes_(additional_mdm_oauth_scopes) {}
+
+  CredentialProviderWebUIMessageHandler(
+      const CredentialProviderWebUIMessageHandler&) = delete;
+  CredentialProviderWebUIMessageHandler& operator=(
+      const CredentialProviderWebUIMessageHandler&) = delete;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
@@ -248,8 +254,6 @@ class CredentialProviderWebUIMessageHandler
 
   HandleGcpwSigninCompleteResult signin_callback_;
   const std::string additional_mdm_oauth_scopes_;
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderWebUIMessageHandler);
 };
 
 }  // namespace
@@ -278,6 +282,11 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
         additional_mdm_oauth_scopes(additional_mdm_oauth_scopes),
         show_tos_(show_tos),
         signin_callback_(std::move(signin_callback)) {}
+
+  CredentialProviderWebDialogDelegate(
+      const CredentialProviderWebDialogDelegate&) = delete;
+  CredentialProviderWebDialogDelegate& operator=(
+      const CredentialProviderWebDialogDelegate&) = delete;
 
   GURL GetDialogContentURL() const override {
     signin_metrics::AccessPoint access_point =
@@ -316,7 +325,7 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   }
 
   ui::ModalType GetDialogModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
+    return ui::MODAL_TYPE_WINDOW;
   }
 
   base::string16 GetDialogTitle() const override { return base::string16(); }
@@ -402,9 +411,6 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   mutable HandleGcpwSigninCompleteResult signin_callback_;
 
   mutable CredentialProviderWebUIMessageHandler* handler_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderWebDialogDelegate);
 };
 
 bool ValidateSigninCompleteResult(const std::string& access_token,

@@ -10,7 +10,6 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {
@@ -129,18 +128,19 @@ void MediaInterfaceFactory::CreateFlingingRenderer(
 }
 #endif  // defined(OS_ANDROID)
 
-void MediaInterfaceFactory::CreateCdm(
-    const std::string& key_system,
-    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {
+void MediaInterfaceFactory::CreateCdm(const std::string& key_system,
+                                      const media::CdmConfig& cdm_config,
+                                      CreateCdmCallback callback) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateCdm, weak_this_,
-                                  key_system, std::move(receiver)));
+                                  key_system, cdm_config, std::move(callback)));
     return;
   }
 
   DVLOG(1) << __func__ << ": key_system = " << key_system;
-  GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(receiver));
+  GetMediaInterfaceFactory()->CreateCdm(key_system, cdm_config,
+                                        std::move(callback));
 }
 
 media::mojom::InterfaceFactory*

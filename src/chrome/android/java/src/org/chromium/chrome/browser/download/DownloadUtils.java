@@ -13,11 +13,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.StrictMode;
 import android.text.TextUtils;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -43,10 +43,9 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.download.ResumeMode;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -187,8 +186,8 @@ public class DownloadUtils {
      * @return Whether or not pagination headers should be shown on download home.
      */
     public static boolean shouldShowPaginationHeaders() {
-        return AccessibilityUtil.isAccessibilityEnabled()
-                || AccessibilityUtil.isHardwareKeyboardAttached(
+        return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+                || ChromeAccessibilityUtil.isHardwareKeyboardAttached(
                         ContextUtils.getApplicationContext().getResources().getConfiguration());
     }
 
@@ -279,8 +278,6 @@ public class DownloadUtils {
             return bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents());
         }
 
-        if (((TabImpl) tab).isShowingInterstitialPage()) return false;
-
         // Don't allow re-downloading the currently displayed offline page.
         if (OfflinePageUtils.isOfflinePage(tab)) return false;
 
@@ -298,23 +295,13 @@ public class DownloadUtils {
 
         // It's ok to use blocking calls on main thread here, since the user is waiting to open or
         // share the file to other apps.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        Uri uri = null;
-
-        try {
-            boolean isOnSDCard = DownloadDirectoryProvider.isDownloadOnSDCard(filePath);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER)
-                    && isOnSDCard) {
-                // Use custom file provider to generate content URI for download on SD card.
-                uri = DownloadFileProvider.createContentUri(filePath);
-            } else {
-                // Use FileProvider to generate content URI or file URI.
-                uri = FileUtils.getUriForFile(new File(filePath));
-            }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+        boolean isOnSDCard = DownloadDirectoryProvider.isDownloadOnSDCard(filePath);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER) && isOnSDCard) {
+            // Use custom file provider to generate content URI for download on SD card.
+            return DownloadFileProvider.createContentUri(filePath);
         }
-        return uri;
+        // Use FileProvider to generate content URI or file URI.
+        return FileUtils.getUriForFile(new File(filePath));
     }
 
     /**
@@ -400,10 +387,8 @@ public class DownloadUtils {
         // Check if any apps can open the file.
         try {
             // TODO(qinmin): Move this to an AsyncTask so we don't need to temper with strict mode.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             Uri uri = ContentUriUtils.isContentUri(filePath) ? Uri.parse(filePath)
                                                              : getUriForOtherApps(filePath);
-            StrictMode.setThreadPolicy(oldPolicy);
             Intent viewIntent =
                     MediaViewerUtils.createViewIntentForUri(uri, mimeType, originalUrl, referrer);
             context.startActivity(viewIntent);

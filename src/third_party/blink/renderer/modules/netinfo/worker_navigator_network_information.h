@@ -18,8 +18,6 @@ class WorkerNavigator;
 class WorkerNavigatorNetworkInformation final
     : public GarbageCollected<WorkerNavigatorNetworkInformation>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
-
  public:
   static const char kSupplementName[];
 
@@ -33,7 +31,7 @@ class WorkerNavigatorNetworkInformation final
 
   WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NetworkInformation* connection(ExecutionContext*);

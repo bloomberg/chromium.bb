@@ -63,8 +63,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // The distance for the dragged window to pass over the bottom of the display
   // so that it can be dragged into home launcher or overview. If not pass this
-  // value, the window will snap back to its original position. The value is
-  // different for standard or dense shelf.
+  // value (the top of the hotseat), the window will snap back to its original
+  // position. The value is different for standard or dense shelf.
   static float GetReturnToMaximizedThreshold();
 
   class Observer : public base::CheckedObserver {
@@ -75,8 +75,7 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   };
 
   DragWindowFromShelfController(aura::Window* window,
-                                const gfx::PointF& location_in_screen,
-                                HotseatState hotseat_state);
+                                const gfx::PointF& location_in_screen);
   ~DragWindowFromShelfController() override;
 
   // Called during swiping up on the shelf.
@@ -125,8 +124,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
       const gfx::PointF& location_in_screen) const;
 
   // Returns true if the dragged window should restore to its original bounds
-  // after drag ends. Happens when |location_in_screen| is within
-  // GetReturnToMaximizedThreshold() threshold.
+  // after drag ends. Happens when the bottom of the dragged window is
+  // within the GetReturnToMaximizedThreshold() threshold.
   bool ShouldRestoreToOriginalBounds(
       const gfx::PointF& location_in_screen) const;
 
@@ -182,15 +181,15 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   gfx::PointF previous_location_in_screen_;
   bool drag_started_ = false;
 
+  // Whether overview was active when the drag started.
+  bool started_in_overview_ = false;
+
   // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
   std::unique_ptr<WindowsHider> windows_hider_;
 
   // Timer to show and update overview.
   base::OneShotTimer show_overview_timer_;
-
-  // The hotseat state when drag starts.
-  const HotseatState hotseat_state_;
 
   // True if overview is active and its windows are showing.
   bool show_overview_windows_ = false;
@@ -201,6 +200,12 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   base::ObserverList<Observer> observers_;
 
   bool during_window_restoration_callback_ = false;
+
+  SplitViewController::SnapPosition initial_snap_position_ =
+      SplitViewController::NONE;
+
+  SplitViewController::SnapPosition end_snap_position_ =
+      SplitViewController::NONE;
 
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 

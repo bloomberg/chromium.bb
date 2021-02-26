@@ -5,51 +5,94 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/preprocess_grit.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//ui/webui/resources/tools/generate_grd.gni")
 import("../optimize_webui.gni")
 
+preprocess_folder = "preprocessed"
+preprocess_manifest = "preprocessed_manifest.json"
+preprocess_gen_manifest = "preprocessed_gen_manifest.json"
+
 if (optimize_webui) {
-  bookmarks_pak_file = "bookmarks_resources.pak"
-  unpak_folder = "bookmarks_resources.unpak"
+  build_manifest = "build_manifest.json"
 
   optimize_webui("build") {
     host = "bookmarks"
-    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    input = rebase_path("$target_gen_dir/$preprocess_folder", root_build_dir)
     js_out_files = [ "bookmarks.rollup.js" ]
     js_module_in_files = [ "bookmarks.js" ]
+    out_manifest = "$target_gen_dir/$build_manifest"
 
     deps = [
-      ":unpak",
-      "../../../../ui/webui/resources:modulize",
+      ":preprocess",
+      ":preprocess_generated",
+      "../../../../ui/webui/resources:preprocess",
     ]
     excludes = [ "chrome://resources/js/cr.m.js" ]
   }
+}
 
-  unpak("unpak") {
-    pak_file = bookmarks_pak_file
-    out_folder = unpak_folder
-
-    deps = [ ":flattened_resources" ]
-  }
-
-  grit("flattened_resources") {
-    source = "bookmarks_resources.grd"
-
-    grit_flags = [
-      "-E",
-      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+generate_grd("build_grd") {
+  input_files = [ "bookmarks.html" ]
+  input_files_base_dir = rebase_path(".", "//")
+  if (optimize_webui) {
+    deps = [ ":build" ]
+    manifest_files = [ "$target_gen_dir/$build_manifest" ]
+    resource_path_rewrites = [ "bookmarks.rollup.js|bookmarks.js" ]
+  } else {
+    deps = [
+      ":preprocess",
+      ":preprocess_generated",
     ]
-
-    deps = [ ":web_components" ]
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/bookmarks_resources.h",
-      "grit/bookmarks_resources_map.cc",
-      "grit/bookmarks_resources_map.h",
-      bookmarks_pak_file,
+    manifest_files = [
+      "$target_gen_dir/$preprocess_manifest",
+      "$target_gen_dir/$preprocess_gen_manifest",
     ]
-    output_dir = "$root_gen_dir/chrome/browser/resources/bookmarks"
   }
+  grd_prefix = "bookmarks"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
+}
+
+preprocess_grit("preprocess") {
+  in_folder = "./"
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_manifest"
+  in_files = [
+    "actions.js",
+    "api_listener.js",
+    "bookmarks.js",
+    "browser_proxy.js",
+    "constants.js",
+    "debouncer.js",
+    "dialog_focus_manager.js",
+    "dnd_manager.js",
+    "mouse_focus_behavior.js",
+    "reducers.js",
+    "store_client.js",
+    "store.js",
+    "types.js",
+    "util.js",
+  ]
+}
+
+preprocess_grit("preprocess_generated") {
+  deps = [ ":web_components" ]
+  in_folder = target_gen_dir
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
+  in_files = [
+    "app.js",
+    "command_manager.js",
+    "edit_dialog.js",
+    "folder_node.js",
+    "item.js",
+    "list.js",
+    "router.js",
+    "shared_style.js",
+    "shared_vars.js",
+    "toolbar.js",
+  ]
 }
 
 html_to_js("web_components") {
@@ -65,6 +108,23 @@ html_to_js("web_components") {
     "shared_vars.js",
     "toolbar.js",
   ]
+}
+
+grit("bookmarks_resources") {
+  defines = chrome_grit_defines
+
+  # These arguments are needed since the grd is generated at build time.
+  enable_input_discovery_for_gn_analyze = false
+  source = "$target_gen_dir/bookmarks_resources.grd"
+  deps = [ ":build_grd" ]
+
+  outputs = [
+    "grit/bookmarks_resources.h",
+    "grit/bookmarks_resources_map.cc",
+    "grit/bookmarks_resources_map.h",
+    "bookmarks_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 js_type_check("closure_compile") {
@@ -101,7 +161,8 @@ js_library("actions") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("api_listener") {
@@ -115,7 +176,8 @@ js_library("api_listener") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("app") {
@@ -127,11 +189,14 @@ js_library("app") {
     ":store",
     ":store_client",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:find_shortcut_behavior.m",
     "//ui/webui/resources/cr_elements/cr_splitter:cr_splitter",
-    "//ui/webui/resources/js:find_shortcut_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [
+    "$externs_path/bookmarks.js",
+    "$externs_path/metrics_private.js",
+  ]
 }
 
 js_library("browser_proxy") {
@@ -158,9 +223,13 @@ js_library("command_manager") {
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:plural_string_proxy",
     "//ui/webui/resources/js/cr/ui:keyboard_shortcut_list.m",
   ]
-  externs_list = [ "$externs_path/bookmark_manager_private.js" ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/bookmark_manager_private.js",
+                   "$externs_path/bookmarks.js",
+                 ]
 }
 
 js_library("constants") {
@@ -203,7 +272,7 @@ js_library("edit_dialog") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("folder_node") {
@@ -216,7 +285,6 @@ js_library("folder_node") {
     ":util",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("item") {
@@ -233,13 +301,11 @@ js_library("item") {
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("list") {
   deps = [
     ":actions",
-    ":browser_proxy",
     ":command_manager",
     ":constants",
     ":item",
@@ -250,6 +316,7 @@ js_library("list") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:list_property_update_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:plural_string_proxy",
   ]
 }
 
@@ -281,7 +348,6 @@ js_library("store") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("store_client") {
@@ -306,18 +372,15 @@ js_library("toolbar") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [
-    "$externs_path/bookmark_manager_private.js",
-    "$externs_path/chrome_extensions.js",
-  ]
 }
 
 js_library("types") {
   deps = [ ":constants" ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("util") {
   deps = [ ":types" ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }

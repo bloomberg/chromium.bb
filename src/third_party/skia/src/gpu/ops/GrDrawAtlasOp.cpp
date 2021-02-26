@@ -8,8 +8,9 @@
 #include "src/gpu/ops/GrDrawAtlasOp.h"
 
 #include "include/core/SkRSXform.h"
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/utils/SkRandom.h"
+#include "src/core/SkMatrixPriv.h"
 #include "src/core/SkRectPriv.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
@@ -29,7 +30,7 @@ private:
 public:
     DEFINE_OP_CLASS_ID
 
-    DrawAtlasOp(const Helper::MakeArgs&, const SkPMColor4f& color,
+    DrawAtlasOp(GrProcessorSet*, const SkPMColor4f& color,
                 const SkMatrix& viewMatrix, GrAAType, int spriteCount, const SkRSXform* xforms,
                 const SkRect* rects, const SkColor* colors);
 
@@ -43,10 +44,6 @@ public:
         }
     }
 
-#ifdef SK_DEBUG
-    SkString dumpInfo() const override;
-#endif
-
     FixedFunctionFlags fixedFunctionFlags() const override;
 
     GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
@@ -59,17 +56,21 @@ private:
                              SkArenaAlloc*,
                              const GrSurfaceProxyView* writeView,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&) override;
+                             const GrXferProcessor::DstProxyView&,
+                             GrXferBarrierFlags renderPassXferBarriers) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override;
+#endif
 
     const SkPMColor4f& color() const { return fColor; }
     const SkMatrix& viewMatrix() const { return fViewMatrix; }
     bool hasColors() const { return fHasColors; }
     int quadCount() const { return fQuadCount; }
 
-    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*, const GrCaps&) override;
+    CombineResult onCombineIfPossible(GrOp* t, SkArenaAlloc*, const GrCaps&) override;
 
     struct Geometry {
         SkPMColor4f fColor;
@@ -86,7 +87,7 @@ private:
     GrSimpleMesh* fMesh = nullptr;
     GrProgramInfo* fProgramInfo = nullptr;
 
-    typedef GrMeshDrawOp INHERITED;
+    using INHERITED = GrMeshDrawOp;
 };
 
 static GrGeometryProcessor* make_gp(SkArenaAlloc* arena,
@@ -103,10 +104,10 @@ static GrGeometryProcessor* make_gp(SkArenaAlloc* arena,
                                          LocalCoords::kHasExplicit_Type, viewMatrix);
 }
 
-DrawAtlasOp::DrawAtlasOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+DrawAtlasOp::DrawAtlasOp(GrProcessorSet* processorSet, const SkPMColor4f& color,
                          const SkMatrix& viewMatrix, GrAAType aaType, int spriteCount,
                          const SkRSXform* xforms, const SkRect* rects, const SkColor* colors)
-        : INHERITED(ClassID()), fHelper(helperArgs, aaType), fColor(color) {
+        : INHERITED(ClassID()), fHelper(processorSet, aaType), fColor(color) {
     SkASSERT(xforms);
     SkASSERT(rects);
 
@@ -185,15 +186,14 @@ DrawAtlasOp::DrawAtlasOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& 
     this->setTransformedBounds(bounds, viewMatrix, HasAABloat::kNo, IsHairline::kNo);
 }
 
-#ifdef SK_DEBUG
-SkString DrawAtlasOp::dumpInfo() const {
+#if GR_TEST_UTILS
+SkString DrawAtlasOp::onDumpInfo() const {
     SkString string;
     for (const auto& geo : fGeoData) {
         string.appendf("Color: 0x%08x, Quads: %d\n", geo.fColor.toBytes_RGBA(),
                        geo.fVerts.count() / 4);
     }
     string += fHelper.dumpInfo();
-    string += INHERITED::dumpInfo();
     return string;
 }
 #endif
@@ -202,7 +202,8 @@ void DrawAtlasOp::onCreateProgramInfo(const GrCaps* caps,
                                       SkArenaAlloc* arena,
                                       const GrSurfaceProxyView* writeView,
                                       GrAppliedClip&& appliedClip,
-                                      const GrXferProcessor::DstProxyView& dstProxyView) {
+                                      const GrXferProcessor::DstProxyView& dstProxyView,
+                                      GrXferBarrierFlags renderPassXferBarriers) {
     // Setup geometry processor
     GrGeometryProcessor* gp = make_gp(arena,
                                       this->hasColors(),
@@ -210,7 +211,8 @@ void DrawAtlasOp::onCreateProgramInfo(const GrCaps* caps,
                                       this->viewMatrix());
 
     fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
-                                             dstProxyView, gp, GrPrimitiveType::kTriangles);
+                                             dstProxyView, gp, GrPrimitiveType::kTriangles,
+                                             renderPassXferBarriers);
 }
 
 void DrawAtlasOp::onPrepareDraws(Target* target) {
@@ -251,8 +253,7 @@ void DrawAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBound
     flushState->drawMesh(*fMesh);
 }
 
-GrOp::CombineResult DrawAtlasOp::onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*,
-                                                     const GrCaps& caps) {
+GrOp::CombineResult DrawAtlasOp::onCombineIfPossible(GrOp* t, SkArenaAlloc*, const GrCaps& caps) {
     DrawAtlasOp* that = t->cast<DrawAtlasOp>();
 
     if (!fHelper.isCompatible(that->fHelper, caps, this->bounds(), that->bounds())) {
@@ -301,14 +302,14 @@ GrProcessorSet::Analysis DrawAtlasOp::finalize(
 
 } // anonymous namespace
 
-std::unique_ptr<GrDrawOp> GrDrawAtlasOp::Make(GrRecordingContext* context,
-                                              GrPaint&& paint,
-                                              const SkMatrix& viewMatrix,
-                                              GrAAType aaType,
-                                              int spriteCount,
-                                              const SkRSXform* xforms,
-                                              const SkRect* rects,
-                                              const SkColor* colors) {
+GrOp::Owner GrDrawAtlasOp::Make(GrRecordingContext* context,
+                                GrPaint&& paint,
+                                const SkMatrix& viewMatrix,
+                                GrAAType aaType,
+                                int spriteCount,
+                                const SkRSXform* xforms,
+                                const SkRect* rects,
+                                const SkColor* colors) {
     return GrSimpleMeshDrawOpHelper::FactoryHelper<DrawAtlasOp>(context, std::move(paint),
                                                                 viewMatrix, aaType,
                                                                 spriteCount, xforms,

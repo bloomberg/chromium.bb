@@ -5,6 +5,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -22,8 +23,10 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -89,7 +92,8 @@ class BackgroundAnimation : public AppListFolderView::Animation,
                               : folder_view_->folder_item_icon_bounds();
     to_rect -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
-        folder_view_->GetAppListConfig().folder_background_color();
+        AppListColorProvider::Get()->GetFolderBackgroundColor(
+            folder_view_->GetAppListConfig().folder_background_color());
     const SkColor from_color =
         show_ ? folder_view_->GetAppListConfig().folder_bubble_color()
               : background_color;
@@ -98,6 +102,8 @@ class BackgroundAnimation : public AppListFolderView::Animation,
               : folder_view_->GetAppListConfig().folder_bubble_color();
 
     background_view_->layer()->SetColor(from_color);
+    background_view_->layer()->SetBackgroundBlur(
+        AppListColorProvider::Get()->GetFolderBackgrounBlurSigma());
     background_view_->layer()->SetClipRect(from_rect);
     background_view_->layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF(from_radius));
@@ -145,10 +151,14 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
         animation_(this),
         folder_view_(folder_view) {
     // Calculate the source and target states.
-    from_color_ = show_ ? folder_view_->GetAppListConfig().grid_title_color()
-                        : SK_ColorTRANSPARENT;
-    to_color_ = show_ ? SK_ColorTRANSPARENT
-                      : folder_view_->GetAppListConfig().grid_title_color();
+    from_color_ = show_
+                      ? AppListColorProvider::Get()->GetFolderTitleTextColor(
+                            folder_view_->GetAppListConfig().grid_title_color())
+                      : SK_ColorTRANSPARENT;
+    to_color_ = show_
+                    ? SK_ColorTRANSPARENT
+                    : AppListColorProvider::Get()->GetFolderTitleTextColor(
+                          folder_view_->GetAppListConfig().grid_title_color());
 
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation_.SetSlideDuration(
@@ -418,8 +428,6 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     // preferred bounds is calculated correctly.
     folder_view_->contents_container()->layer()->SetTransform(gfx::Transform());
     folder_view_->RecordAnimationSmoothness();
-
-    folder_view_->NotifyAccessibilityLocationChanges();
   }
 
  private:
@@ -473,12 +481,6 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
           contents_view_->app_list_view()->is_tablet_mode()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
-  show_hide_metrics_reporter_ =
-      std::make_unique<FolderShowHideAnimationReporter>();
-  show_hide_metrics_recorder_ =
-      std::make_unique<AppListAnimationMetricsRecorder>(
-          show_hide_metrics_reporter_.get());
-
   model_->AddObserver(this);
 }
 
@@ -505,9 +507,13 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
 void AppListFolderView::ScheduleShowHideAnimation(bool show,
                                                   bool hide_for_reparent) {
   CreateOpenOrCloseFolderAccessibilityEvent(show);
-  show_hide_metrics_recorder_->OnAnimationStart(
-      GetAppListConfig().folder_transition_in_duration(),
-      GetWidget()->GetCompositor());
+  show_hide_metrics_tracker_ =
+      GetWidget()->GetCompositor()->RequestNewThroughputTracker();
+  show_hide_metrics_tracker_->Start(
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness,
+                                 smoothness);
+      })));
 
   hide_for_reparent_ = hide_for_reparent;
 
@@ -672,23 +678,17 @@ AppListItemView* AppListFolderView::GetActivatedFolderItemView() {
 }
 
 void AppListFolderView::RecordAnimationSmoothness() {
-  show_hide_metrics_recorder_->OnAnimationEnd(GetWidget()->GetCompositor());
+  // RecordAnimationSmoothness is called when ContentsContainerAnimation
+  // ends as well. Do not record show/hide metrics for that.
+  if (show_hide_metrics_tracker_) {
+    show_hide_metrics_tracker_->Stop();
+    show_hide_metrics_tracker_.reset();
+  }
 }
 
 void AppListFolderView::OnTabletModeChanged(bool started) {
   folder_header_view()->set_tablet_mode(started);
   page_switcher_->set_is_tablet_mode(started);
-}
-
-void AppListFolderView::NotifyAccessibilityLocationChanges() {
-  contents_container_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kLocationChanged, true);
-  items_grid_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
-                                             true);
-  folder_header_view_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kLocationChanged, true);
-  page_switcher_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
-                                           true);
 }
 
 void AppListFolderView::CalculateIdealBounds() {
@@ -819,7 +819,8 @@ void AppListFolderView::HideViewImmediately() {
   if (activated_folder_item_view) {
     activated_folder_item_view->SetIconVisible(true);
     activated_folder_item_view->title()->SetEnabledColor(
-        GetAppListConfig().grid_title_color());
+        AppListColorProvider::Get()->GetFolderTitleTextColor(
+            GetAppListConfig().grid_title_color()));
     activated_folder_item_view->title()->SetVisible(true);
   }
 }

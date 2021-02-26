@@ -6,7 +6,8 @@
 
 #include <cstring>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "absl/base/macros.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 
 namespace quic {
 namespace test {
@@ -25,29 +26,36 @@ constexpr char kTicketPrefix[] = "TEST TICKET";
 
 }  // namespace
 
-size_t TestTicketCrypter::MaxOverhead() {
-  return QUICHE_ARRAYSIZE(kTicketPrefix);
+TestTicketCrypter::TestTicketCrypter()
+    : ticket_prefix_(ABSL_ARRAYSIZE(kTicketPrefix) + 16) {
+  memcpy(ticket_prefix_.data(), kTicketPrefix, ABSL_ARRAYSIZE(kTicketPrefix));
+  QuicRandom::GetInstance()->RandBytes(
+      ticket_prefix_.data() + ABSL_ARRAYSIZE(kTicketPrefix), 16);
 }
 
-std::vector<uint8_t> TestTicketCrypter::Encrypt(quiche::QuicheStringPiece in) {
-  size_t prefix_len = QUICHE_ARRAYSIZE(kTicketPrefix);
+size_t TestTicketCrypter::MaxOverhead() {
+  return ticket_prefix_.size();
+}
+
+std::vector<uint8_t> TestTicketCrypter::Encrypt(absl::string_view in) {
+  size_t prefix_len = ticket_prefix_.size();
   std::vector<uint8_t> out(prefix_len + in.size());
-  memcpy(out.data(), kTicketPrefix, prefix_len);
+  memcpy(out.data(), ticket_prefix_.data(), prefix_len);
   memcpy(out.data() + prefix_len, in.data(), in.size());
   return out;
 }
 
-std::vector<uint8_t> TestTicketCrypter::Decrypt(quiche::QuicheStringPiece in) {
-  size_t prefix_len = QUICHE_ARRAYSIZE(kTicketPrefix);
+std::vector<uint8_t> TestTicketCrypter::Decrypt(absl::string_view in) {
+  size_t prefix_len = ticket_prefix_.size();
   if (fail_decrypt_ || in.size() < prefix_len ||
-      memcmp(kTicketPrefix, in.data(), prefix_len) != 0) {
+      memcmp(ticket_prefix_.data(), in.data(), prefix_len) != 0) {
     return std::vector<uint8_t>();
   }
   return std::vector<uint8_t>(in.begin() + prefix_len, in.end());
 }
 
 void TestTicketCrypter::Decrypt(
-    quiche::QuicheStringPiece in,
+    absl::string_view in,
     std::unique_ptr<ProofSource::DecryptCallback> callback) {
   auto decrypted_ticket = Decrypt(in);
   if (run_async_) {

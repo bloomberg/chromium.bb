@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -316,9 +317,12 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
   }
 
   // Alert all listeners waiting for the nonexistent RR types.
-  auto i = listeners_.upper_bound(ListenerKey(record->name(), 0));
-  for (; i != listeners_.end() && i->first.first == record->name(); i++) {
-    if (!rdata->GetBit(i->first.second)) {
+  ListenerKey key(record->name(), 0);
+  auto i = listeners_.upper_bound(key);
+  for (; i != listeners_.end() &&
+         i->first.name_lowercase() == key.name_lowercase();
+       i++) {
+    if (!rdata->GetBit(i->first.type())) {
       for (auto& observer : *i->second)
         observer.AlertNsecRecord();
     }
@@ -328,6 +332,17 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
 void MDnsClientImpl::Core::OnConnectionError(int error) {
   // TODO(noamsml): On connection error, recreate connection and flush cache.
   VLOG(1) << "MDNS OnConnectionError (code: " << error << ")";
+}
+
+MDnsClientImpl::Core::ListenerKey::ListenerKey(const std::string& name,
+                                               uint16_t type)
+    : name_lowercase_(base::ToLowerASCII(name)), type_(type) {}
+
+bool MDnsClientImpl::Core::ListenerKey::operator<(
+    const MDnsClientImpl::Core::ListenerKey& key) const {
+  if (name_lowercase_ == key.name_lowercase_)
+    return type_ < key.type_;
+  return name_lowercase_ < key.name_lowercase_;
 }
 
 void MDnsClientImpl::Core::AlertListeners(
@@ -574,8 +589,8 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
     return;
   }
 
-  next_refresh_.Reset(base::Bind(&MDnsListenerImpl::DoRefresh,
-                                 AsWeakPtr()));
+  next_refresh_.Reset(
+      base::BindRepeating(&MDnsListenerImpl::DoRefresh, AsWeakPtr()));
 
   // Schedule refreshes at both 85% and 95% of the original TTL. These will both
   // be canceled and rescheduled if the record's TTL is updated due to a
@@ -731,8 +746,8 @@ bool MDnsTransactionImpl::QueryAndListen() {
   if (!client_->core()->SendQuery(rrtype_, name_))
     return false;
 
-  timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
-                            AsWeakPtr()));
+  timeout_.Reset(
+      base::BindOnce(&MDnsTransactionImpl::SignalTransactionOver, AsWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_.callback(), kTransactionTimeout);
 

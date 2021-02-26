@@ -12,11 +12,11 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/session/fullscreen_controller.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
 #include "ash/session/session_aborted_dialog.h"
-#include "ash/session/session_observer.h"
 #include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
@@ -25,7 +25,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "components/account_id/account_id.h"
@@ -66,10 +66,6 @@ bool SessionControllerImpl::IsActiveUserSessionStarted() const {
 
 bool SessionControllerImpl::CanLockScreen() const {
   return IsActiveUserSessionStarted() && can_lock_;
-}
-
-bool SessionControllerImpl::IsScreenLocked() const {
-  return state_ == SessionState::LOCKED;
 }
 
 bool SessionControllerImpl::ShouldLockScreenAutomatically() const {
@@ -115,14 +111,14 @@ bool SessionControllerImpl::ShouldEnableSettings() const {
     return false;
   }
 
-  return user_sessions_[0]->should_enable_settings;
+  return true;
 }
 
 bool SessionControllerImpl::ShouldShowNotificationTray() const {
   if (!IsActiveUserSessionStarted() || IsInSecondaryLoginScreen())
     return false;
 
-  return user_sessions_[0]->should_show_notification_tray;
+  return true;
 }
 
 const SessionControllerImpl::UserSessions&
@@ -136,6 +132,19 @@ const UserSession* SessionControllerImpl::GetUserSession(
     return nullptr;
 
   return user_sessions_[index].get();
+}
+
+const UserSession* SessionControllerImpl::GetUserSessionByAccountId(
+    const AccountId& account_id) const {
+  auto it =
+      std::find_if(user_sessions_.begin(), user_sessions_.end(),
+                   [&account_id](const std::unique_ptr<UserSession>& session) {
+                     return session->user_info.account_id == account_id;
+                   });
+  if (it == user_sessions_.end())
+    return nullptr;
+
+  return (*it).get();
 }
 
 const UserSession* SessionControllerImpl::GetPrimaryUserSession() const {
@@ -221,6 +230,11 @@ void SessionControllerImpl::RequestSignOut() {
     client_->RequestSignOut();
 }
 
+void SessionControllerImpl::AttemptRestartChrome() {
+  if (client_)
+    client_->AttemptRestartChrome();
+}
+
 void SessionControllerImpl::SwitchActiveUser(const AccountId& account_id) {
   if (client_)
     client_->SwitchActiveUser(account_id);
@@ -274,6 +288,10 @@ void SessionControllerImpl::AddObserver(SessionObserver* observer) {
 
 void SessionControllerImpl::RemoveObserver(SessionObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool SessionControllerImpl::IsScreenLocked() const {
+  return state_ == SessionState::LOCKED;
 }
 
 void SessionControllerImpl::SetClient(SessionControllerClient* client) {
@@ -403,7 +421,7 @@ void SessionControllerImpl::NotifyChromeTerminating() {
 }
 
 void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
-                                                  base::TimeTicks start_time) {
+                                                  base::Time start_time) {
   session_length_limit_ = length_limit;
   session_start_time_ = start_time;
   for (auto& observer : observers_)

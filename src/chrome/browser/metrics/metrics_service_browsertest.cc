@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,10 +36,10 @@
 #include "components/metrics/persistent_histograms.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
-#include "services/service_manager/embedder/switches.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/window_open_disposition.h"
@@ -52,7 +53,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 namespace {
 
 // Check CrashExitCodes.Renderer histogram for a single bucket entry and then
@@ -70,7 +71,7 @@ void VerifyRendererExitCodeIsSignal(
 }
 
 }  // namespace
-#endif  // OS_MACOSX || OS_LINUX
+#endif  // defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // This test class verifies that metrics reporting works correctly for various
 // renderer behaviors such as page loads, recording crashed tabs, and browser
@@ -166,9 +167,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
 // Flaky on Linux. See http://crbug.com/131094
 // Child crashes fail the process on ASan (see crbug.com/411251,
 // crbug.com/368525).
-// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
-#if defined(OS_LINUX) || defined(ADDRESS_SANITIZER) || \
-    (defined(OS_WIN) && !defined(NDEBUG))
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(ADDRESS_SANITIZER)
 #define MAYBE_CrashRenderers DISABLED_CrashRenderers
 #define MAYBE_CheckCrashRenderers DISABLED_CheckCrashRenderers
 #else
@@ -194,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_ACCESS_VIOLATION)), 1);
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   VerifyRendererExitCodeIsSignal(histogram_tester, SIGSEGV);
 #endif
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
@@ -249,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_BREAKPOINT)), 1);
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   VerifyRendererExitCodeIsSignal(histogram_tester, SIGTRAP);
 #endif
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
@@ -261,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, OOMRenderers) {
   // Disable stack traces during this test since DbgHelp is unreliable in
   // low-memory conditions (see crbug.com/692564).
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      service_manager::switches::kDisableInProcessStackTraces);
+      switches::kDisableInProcessStackTraces);
 
   base::HistogramTester histogram_tester;
 

@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 
+#include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 
@@ -70,19 +71,22 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
   // TODO(davve): Find out the correct default object size in this context.
-  return ImageSizeWithDefaultSize(multiplier,
-                                  LayoutSize(LayoutReplaced::kDefaultWidth,
-                                             LayoutReplaced::kDefaultHeight));
+  FloatSize default_size =
+      layout_object_->IsListMarkerImage()
+          ? FloatSize(To<LayoutListMarkerImage>(layout_object_)->DefaultSize())
+          : FloatSize(LayoutReplaced::kDefaultWidth,
+                      LayoutReplaced::kDefaultHeight);
+  return ImageSizeWithDefaultSize(multiplier, default_size);
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSizeWithDefaultSize(
     float multiplier,
-    const LayoutSize& default_size) const {
+    const FloatSize& default_size) const {
   return style_image_->ImageSize(
       layout_object_->GetDocument(), multiplier, default_size,
       LayoutObject::ShouldRespectImageOrientation(layout_object_));
 }
-void LayoutImageResourceStyleImage::Trace(Visitor* visitor) {
+void LayoutImageResourceStyleImage::Trace(Visitor* visitor) const {
   visitor->Trace(style_image_);
   LayoutImageResource::Trace(visitor);
 }

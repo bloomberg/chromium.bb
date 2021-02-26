@@ -41,7 +41,7 @@
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
@@ -53,7 +53,7 @@
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
-#if defined(OS_MACOSX) && __OBJC__
+#if defined(OS_MAC) && __OBJC__
 @class BrowserAccessibilityCocoa;
 #endif
 
@@ -111,25 +111,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsIgnored() const;
 
-  // Returns true if this object is used only for representing text.
-  bool IsTextOnlyObject() const;
-
   bool IsLineBreakObject() const;
 
-  // Returns true if this is a leaf node on this platform, meaning any
-  // children should not be exposed to this platform's native accessibility
-  // layer.
-  // The definition of a leaf may vary depending on the platform,
-  // but a leaf node should never have children that are focusable or
-  // that might send notifications.
+  // See AXNode::IsLeaf().
   bool PlatformIsLeaf() const;
-
-  // Returns true if this is a leaf node on this platform, including
-  // ignored nodes, meaning any children should not be exposed to this
-  // platform's native accessibility layer, but a node shouldn't be
-  // considered a leaf node solely because it has only ignored children.
-  // Each platform subclass should implement this itself.
-  virtual bool PlatformIsLeafIncludingIgnored() const;
 
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
@@ -143,7 +128,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual uint32_t PlatformChildCount() const;
 
   // Return a pointer to the child at the given index, or NULL for an
-  // invalid index. Returns NULL if PlatformIsLeaf() returns true.
+  // invalid index. Returns nullptr if PlatformIsLeaf() returns true.
   virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
   BrowserAccessibility* PlatformGetParent() const;
@@ -185,12 +170,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   PlatformChildIterator PlatformChildrenEnd() const;
   // Return a pointer to the first ancestor that is a selection container
   BrowserAccessibility* PlatformGetSelectionContainer() const;
-
-  // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, including ignored nodes, meaning that this node is not
-  // actually exposed to the platform, but a node shouldn't be
-  // considered a leaf node solely because it has only ignored children.
-  bool PlatformIsChildOfLeafIncludingIgnored() const;
 
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
@@ -256,21 +235,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Returns the value of a control, such as the value of a text field, a slider
-  // or a scrollbar.
-  //
-  // For text fields, computes the value of the field from its internal
-  // representation in the accessibility tree if necessary.
-  //
-  // This is to handle the cases such as ARIA textbox, where the value should
-  // be calculated from the object's inner text, as well as all text fields
-  // originating from Blink where the HTML value attribute cannot always be
-  // trusted.
-  //
-  // TODO(nektar): Move this method to AXNode when AXNodePosition and
-  // BrowserAccessibilityPosition are merged into one class.
-  virtual base::string16 GetValue() const;
-
   // This is an approximate hit test that only uses the information in
   // the browser process to compute the correct result. It will not return
   // correct results in many cases of z-index, overflow, and absolute
@@ -316,7 +280,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   InternalChildIterator InternalChildrenBegin() const;
   InternalChildIterator InternalChildrenEnd() const;
 
-  int32_t GetId() const;
+  ui::AXNode::AXID GetId() const;
   gfx::RectF GetLocation() const;
   ax::mojom::Role GetRole() const;
   int32_t GetState() const;
@@ -388,34 +352,20 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   virtual bool IsClickable() const;
 
-  // A text field is any widget in which the user should be able to enter and
-  // edit text.
-  //
-  // Examples include <input type="text">, <input type="password">, <textarea>,
-  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
-  // and <div role="combobox">. Note that when an ARIA role that indicates that
-  // the widget is editable is used, such as "role=textbox", the element doesn't
-  // need to be contenteditable for this method to return true, as in theory
-  // JavaScript could be used to implement editing functionality. In practice,
-  // this situation should be rare.
+  // See AXNodeData::IsTextField().
   bool IsTextField() const;
 
-  // A text field that is used for entering passwords.
+  // See AXNodeData::IsPasswordField().
   bool IsPasswordField() const;
 
-  // A text field that doesn't accept rich text content, such as text with
-  // special formatting or styling.
+  // See AXNodeData::IsPlainTextField().
   bool IsPlainTextField() const;
 
-  // A text field that accepts rich text content, such as text with special
-  // formatting or styling.
+  // See AXNodeData::IsRichTextField().
   bool IsRichTextField() const;
 
-  // Return true if the accessible name was explicitly set to "" by the author
+  // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
-
-  // TODO(nektar): Remove this method and replace with GetInnerText.
-  std::string ComputeAccessibleNameFromDescendants() const;
 
   // Get text to announce for a live region change, for ATs that do not
   // implement this functionality.
@@ -465,12 +415,16 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  bool HasModalDialog() const override;
   gfx::NativeViewAccessible GetFirstChild() override;
   gfx::NativeViewAccessible GetLastChild() override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
   bool IsChildOfLeaf() const override;
+  bool IsDescendantOfPlainTextField() const override;
+  bool IsLeaf() const override;
+  bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
@@ -480,6 +434,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
   base::string16 GetInnerText() const override;
+  base::string16 GetValueForControl() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
@@ -523,10 +478,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetTableAriaRowCount() const override;
   base::Optional<int> GetTableCellCount() const override;
   base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
-  std::vector<int32_t> GetColHeaderNodeIds() const override;
-  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
-  std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
+  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds() const override;
+  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds(
+      int col_index) const override;
+  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds() const override;
+  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds(
+      int row_index) const override;
   ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;
@@ -560,6 +517,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   bool IsMinimized() const override;
+  bool IsText() const override;
   bool IsWebContent() const override;
   bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
@@ -574,9 +532,24 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsOrderedSet() const override;
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
+
+  // Returns true if this node is a list marker or if it's a descendant
+  // of a list marker node. Returns false otherwise.
   bool IsInListMarker() const;
+
+  // Returns true if this node is a collapsed popup button that is parent to a
+  // menu list popup.
   bool IsCollapsedMenuListPopUpButton() const;
+
+  // Returns the popup button ancestor of this current node if any. The popup
+  // button needs to be the parent of a menu list popup and needs to be
+  // collapsed.
   BrowserAccessibility* GetCollapsedMenuListPopUpButtonAncestor() const;
+
+  // If this node is within an editable region, returns the node that is at the
+  // root of that editable region, otherwise returns nullptr. In accessibility,
+  // an editable region is synonymous to a text field.
+  BrowserAccessibility* GetTextFieldAncestor() const;
 
   // Returns true if:
   // 1. This node is a list, AND

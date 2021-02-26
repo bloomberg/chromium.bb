@@ -11,8 +11,7 @@
 namespace query_tiles {
 
 // Default base URL string for the Query Tiles server.
-constexpr char kDefaultBaseURL[] =
-    "https://autopush-gsaprototype-pa.sandbox.googleapis.com";
+constexpr char kDefaultBaseURL[] = "https://chromeupboarding-pa.googleapis.com";
 
 // Default URL string for GetQueryTiles RPC.
 constexpr char kDefaultGetQueryTilePath[] = "/v1/querytiles";
@@ -49,6 +48,16 @@ constexpr char kBackoffInitDelayInMsKey[] = "backoff_policy_init_delay_in_ms";
 // Finch parameter key for Backoff policy maximum delay in ms.
 constexpr char kBackoffMaxDelayInMsKey[] = "backoff_policy_max_delay_in_ms";
 
+constexpr char kTileScoreDecayLambdaKey[] = "tile_score_decay_lambda";
+
+constexpr char kMinimumScoreForNewFrontTilesKey[] =
+    "min_score_for_new_front_tiles";
+
+constexpr char kNumTrendingTilesKey[] = "num_trending_tiles_to_display";
+
+constexpr char kMaxTrendingTileImpressionsKey[] =
+    "max_trending_tile_impressions";
+
 // Default expire duration.
 constexpr int kDefaultExpireDurationInSeconds = 48 * 60 * 60;  // 2 days.
 
@@ -58,7 +67,8 @@ constexpr int kDefaultScheduleInterval = 12 * 3600 * 1000;  // 12 hours.
 // Default length of random window added to the interval.
 constexpr int kDefaultRandomWindow = 4 * 3600 * 1000;  // 4 hours.
 
-// Default length of random window added to the interval.
+// Default delta value from start window time to end window time in one-off
+// background task.
 constexpr int kDefaultOneoffTaskWindow = 2 * 3600 * 1000;  // 2 hours.
 
 // Default initial delay in backoff policy.
@@ -67,22 +77,45 @@ constexpr int kDefaultBackoffInitDelayInMs = 30 * 1000;  // 30 seconds.
 // Default maximum delay in backoff policy, also used for suspend duration.
 constexpr int kDefaultBackoffMaxDelayInMs = 24 * 3600 * 1000;  // 1 day.
 
+// Default lambda value used for calculating tile score decay over time.
+constexpr double kDefaultTileScoreDecayLambda = -0.099;
+
+// Default minimum score for new tiles in front of others. 0.9 is chosen so
+// that new tiles will have a higher score than tiles that have not been
+// clicked for 2 days.
+constexpr double kDefaultMinimumTileScoreForNewFrontTiles = 0.9;
+
+// Default number of trending tiles to be displayed at the same time.
+constexpr int kDefaultNumTrendingTilesToDisplay = 2;
+
+// Default number of impressions a trending tile to be displayed .
+constexpr int kDefaultMaxTrendingTileImpressions = 2;
+
 namespace {
 
 // For testing. Json string for single tier experiment tag.
 const char kQueryTilesSingleTierExperimentTag[] = "{\"maxLevels\": \"1\"}";
+
+// Json Experiment tag for enabling trending queries.
+const char kQueryTilesEnableTrendingExperimentTag[] =
+    "{\"enableTrending\": \"true\"}";
 
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
   return base_url.ReplaceComponents(replacements);
 }
+
 }  // namespace
 
 // static
 GURL TileConfig::GetQueryTilesServerUrl() {
-  std::string base_url = base::GetFieldTrialParamValueByFeature(
-      features::kQueryTiles, kBaseURLKey);
+  return GetQueryTilesServerUrl(base::GetFieldTrialParamValueByFeature(
+      features::kQueryTiles, kBaseURLKey));
+}
+
+// static
+GURL TileConfig::GetQueryTilesServerUrl(const std::string& base_url) {
   GURL server_url = base_url.empty() ? GURL(kDefaultBaseURL) : GURL(base_url);
   return BuildGetQueryTileURL(server_url, kDefaultGetQueryTilePath);
 }
@@ -98,6 +131,11 @@ std::string TileConfig::GetExperimentTag() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kQueryTilesSingleTier)) {
     return kQueryTilesSingleTierExperimentTag;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesEnableTrending)) {
+    return kQueryTilesEnableTrendingExperimentTag;
   }
 
   return base::GetFieldTrialParamValueByFeature(features::kQueryTiles,
@@ -156,6 +194,34 @@ int TileConfig::GetBackoffPolicyArgsMaxDelayInMs() {
   return base::GetFieldTrialParamByFeatureAsInt(features::kQueryTiles,
                                                 kBackoffMaxDelayInMsKey,
                                                 kDefaultBackoffMaxDelayInMs);
+}
+
+// static
+double TileConfig::GetTileScoreDecayLambda() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      features::kQueryTiles, kTileScoreDecayLambdaKey,
+      kDefaultTileScoreDecayLambda);
+}
+
+// static
+double TileConfig::GetMinimumScoreForNewFrontTiles() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      features::kQueryTiles, kMinimumScoreForNewFrontTilesKey,
+      kDefaultMinimumTileScoreForNewFrontTiles);
+}
+
+// static
+int TileConfig::GetNumTrendingTilesToDisplay() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kQueryTiles, kNumTrendingTilesKey,
+      kDefaultNumTrendingTilesToDisplay);
+}
+
+// static
+int TileConfig::GetMaxTrendingTileImpressions() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kQueryTiles, kMaxTrendingTileImpressionsKey,
+      kDefaultMaxTrendingTileImpressions);
 }
 
 }  // namespace query_tiles

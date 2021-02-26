@@ -8,6 +8,7 @@
 #include <string>
 
 #include "cast/standalone_receiver/sdl_player_base.h"
+#include "cast/streaming/constants.h"
 
 namespace openscreen {
 namespace cast {
@@ -21,7 +22,7 @@ class SDLVideoPlayer final : public SDLPlayerBase {
   SDLVideoPlayer(ClockNowFunctionPtr now_function,
                  TaskRunner* task_runner,
                  Receiver* receiver,
-                 const std::string& codec_name,
+                 VideoCodec codec_name,
                  SDL_Renderer* renderer,
                  std::function<void()> error_callback);
 

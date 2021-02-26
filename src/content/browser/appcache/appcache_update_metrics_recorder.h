@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_METRICS_RECORDER_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_METRICS_RECORDER_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/browser/appcache/appcache_update_job_state.h"
 #include "content/common/content_export.h"
 
@@ -37,6 +37,12 @@ class CONTENT_EXPORT AppCacheUpdateMetricsRecorder {
   // will not be detected/reported through this metric.
   void IncrementExistingResourceCorrupt();
 
+  // IncrementExistingResourceCorruptionRecovery() keeps track of the number of
+  // times we detected a corrupt resource and triggered corruption recovery.
+  // This will only occur when the corruption recovery feature is enabled in
+  // a given Chromium instance.
+  void IncrementExistingResourceCorruptionRecovery();
+
   // IncrementExistingResourceNotCorrupt() keeps track of the number of non-
   // corrupt resources that we've encountered.  Non-corrupt cache entries that
   // are present and haven't been read or haven't been checked to see if they
@@ -46,14 +52,6 @@ class CONTENT_EXPORT AppCacheUpdateMetricsRecorder {
   // IncrementExistingResourceReused() keeps track of the number of times
   // we've determined we can reuse an existing resource.
   void IncrementExistingResourceReused();
-
-  // IncrementExistingVaryDuring304() tracks the number of times during a 304
-  // update we encounter a cached response with a Vary header and the 304
-  // response doesn't contain a Vary header.  We track this case because we
-  // don't support updating the cached response and don't expect it to be a
-  // common case in the field.  The UMA data we get will help us understand if
-  // that's correct.
-  void IncrementExistingVaryDuring304();
 
   // RecordCanceled() logs whether the update job was canceled somehow.
   void RecordCanceled();
@@ -76,9 +74,9 @@ class CONTENT_EXPORT AppCacheUpdateMetricsRecorder {
   int existing_corruption_fixed_in_update_ = 0;
   int existing_resource_check_ = 0;
   int existing_resource_corrupt_ = 0;
+  int existing_resource_corruption_recovery_ = 0;
   int existing_resource_not_corrupt_ = 0;
   int existing_resource_reused_ = 0;
-  int existing_vary_during_304_ = 0;
   bool canceled_ = false;
   AppCacheUpdateJobState final_internal_state_;
 

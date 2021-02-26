@@ -72,9 +72,9 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     // the result with a task to the current thread.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback, force_os_failure_
-                                     ? shell_integration::NOT_DEFAULT
-                                     : shell_integration::IS_DEFAULT));
+        base::BindOnce(std::move(callback),
+                       force_os_failure_ ? shell_integration::NOT_DEFAULT
+                                         : shell_integration::IS_DEFAULT));
 
     if (!force_os_failure_)
       os_registered_protocols_.insert(protocol);
@@ -660,7 +660,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
   registry()->OnAcceptRegisterProtocolHandler(ph_do2);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // TODO(benwells): When Linux support is more reliable and
 // http://crbug.com/88255 is fixed this test will pass.
 #define MAYBE_TestOSRegistrationFailure DISABLED_TestOSRegistrationFailure
@@ -977,9 +977,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestURIPercentEncoding) {
 
   // Space character.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom handler"));
-  // TODO(mgiuca): Check whether this(' ') should be encoded as '%20'.
   ASSERT_EQ(translated_url,
-            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom+handler"));
+            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%20handler"));
 
   // Query parameters.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom?foo=bar&bar=baz"));
@@ -993,21 +992,18 @@ TEST_F(ProtocolHandlerRegistryTest, TestURIPercentEncoding) {
                                  "url=web%2Bcustom%3A%2F%2Fcustom%2F%3C%3E%60%"
                                  "7B%7D%23%3F%22'%25F0%259F%2598%2582"));
 
-  // C0 characters. GURL constructor encodes U+001F as "%1F" first, because
-  // U+001F is an illegal char. Then the protocol handler translator encodes it
-  // to "%251F" again. That's why the expected result has double-encoded URL.
+  // ASCII characters from the C0 controls percent-encode set.
+  // GURL constructor encodes U+001F and U+007F as "%1F" and "%7F" first,
+  // Then the protocol handler translator encodes them to "%25%1F" and "%25%7F"
+  // again. That's why the expected result has double-encoded URL.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x1fhandler"));
   ASSERT_EQ(
       translated_url,
       GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%251Fhandler"));
-
-  // Control characters.
-  // TODO(crbug.com/809852): Check why non-special URLs don't encode any
-  // characters above U+001F.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x7Fhandler"));
   ASSERT_EQ(
       translated_url,
-      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%7Fhandler"));
+      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%257Fhandler"));
 
   // Path percent-encode set.
   translated_url =
@@ -1073,4 +1069,50 @@ TEST_F(ProtocolHandlerRegistryTest, ExtensionHandler) {
       "news",
       GURL("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/test.html")));
   ASSERT_TRUE(registry()->IsHandledProtocol("news"));
+}
+
+// See
+// https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
+TEST_F(ProtocolHandlerRegistryTest, WebPlusPrefix) {
+  // Not ASCII alphas.
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+***", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+***"));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+123", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+123"));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+   ", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+   "));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+name123", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+name123"));
+
+  // ASCII lower alphas.
+  registry()->OnAcceptRegisterProtocolHandler(
+      CreateProtocolHandler("web+abcdefghijklmnopqrstuvwxyz",
+                            GURL("https://www.google.com/handler%s")));
+  ASSERT_TRUE(registry()->IsHandledProtocol("web+abcdefghijklmnopqrstuvwxyz"));
+
+  // ASCII upper alphas are lowercased.
+  registry()->OnAcceptRegisterProtocolHandler(
+      CreateProtocolHandler("web+ZYXWVUTSRQPONMLKJIHGFEDCBA",
+                            GURL("https://www.google.com/handler%s")));
+  ASSERT_TRUE(registry()->IsHandledProtocol("web+zyxwvutsrqponmlkjihgfedcba"));
+}
+
+// See
+// https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+TEST_F(ProtocolHandlerRegistryTest, SafelistedSchemes) {
+  std::string schemes[] = {
+      "bitcoin",  "cabal",       "dat",    "did",    "doi",   "dweb",
+      "ethereum", "geo",         "hyper",  "im",     "ipfs",  "ipns",
+      "irc",      "ircs",        "magnet", "mailto", "mms",   "news",
+      "nntp",     "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",
+      "ssh",      "tel",         "urn",    "webcal", "wtai",  "xmpp"};
+  for (auto& scheme : schemes) {
+    registry()->OnAcceptRegisterProtocolHandler(
+        CreateProtocolHandler(scheme, GURL("https://example.com/url=%s")));
+    ASSERT_TRUE(registry()->IsHandledProtocol(scheme));
+  }
 }

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -163,8 +164,9 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
       const std::vector<InputDevice>& devices) override {}
   void DispatchTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) override {}
-  void DispatchMouseDevicesUpdated(
-      const std::vector<InputDevice>& devices) override {}
+  void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices,
+                                   bool has_mouse,
+                                   bool has_pointing_stick) override {}
   void DispatchTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) override {}
   void DispatchUncategorizedDevicesUpdated(
@@ -2289,5 +2291,19 @@ TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
   const ui::InProgressTouchEvdev& in_progress_event = dev->event(0);
   EXPECT_FLOAT_EQ(14.f, in_progress_event.major);
   EXPECT_FLOAT_EQ(11.f, in_progress_event.minor);
+}
+
+// b/162596241
+TEST_F(TouchEventConverterEvdevTest, InvalidDimensions) {
+  EventDeviceInfo devinfo;
+  input_absinfo absinfo = {};
+  absinfo.maximum = 1 << 16;
+  devinfo.SetAbsInfo(ABS_X, absinfo);
+  devinfo.SetAbsInfo(ABS_MT_POSITION_X, absinfo);
+  devinfo.SetAbsInfo(ABS_Y, absinfo);
+  devinfo.SetAbsInfo(ABS_MT_POSITION_Y, absinfo);
+  EXPECT_FALSE(
+      TouchEventConverterEvdev::Create({}, base::FilePath(kTestDevicePath), 0,
+                                       devinfo, shared_palm_state(), nullptr));
 }
 }  // namespace ui

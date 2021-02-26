@@ -9,6 +9,7 @@
 
 #include "include/effects/SkGradientShader.h"
 #include "include/effects/SkShaderMaskFilter.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGRenderEffect.h"
 #include "src/utils/SkJSON.h"
@@ -54,7 +55,8 @@ private:
     MaskInfo onMakeMask() const override {
         if (fCompletion >= 100) {
             // The layer is fully disabled.
-            return { nullptr, false };
+            // TODO: fix layer controller visibility clash and pass a null shader instead.
+            return { SkShaders::Color(SK_ColorTRANSPARENT), false };
         }
 
         if (fCompletion <= 0) {

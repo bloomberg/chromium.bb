@@ -8,9 +8,11 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
@@ -54,12 +56,11 @@ const char kMediaFeedsTestHTML[] =
     "  <head>%s</head>";
 
 const char kMediaFeedsTestHeadHTML[] =
-    "<link rel=feed type=\"application/ld+json\" "
+    "<link rel=media-feed type=\"application/ld+json\" "
     "href=\"/media-feed.json\"/>";
 
 const char kMediaFeedsMinTestHeadHTML[] =
-    "<link rel=feed type=\"application/ld+json\" "
-    "href=\"/media-feed-min.json\"/>";
+    "<link rel=media-feed href=\"/media-feed-min.json\"/>";
 
 struct TestData {
   std::string head_html;
@@ -164,8 +165,9 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
 
-    GetMediaHistoryService()->GetItemsForMediaFeedForDebug(
-        feed_id,
+    GetMediaHistoryService()->GetMediaFeedItems(
+        media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForDebug(feed_id),
         base::BindLambdaForTesting(
             [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
               out = std::move(items);
@@ -240,8 +242,11 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
     file = file.Append(kMediaFeedsTestDir).AppendASCII(file_name.c_str());
 
-    base::ReadFileToString(file, &full_test_data_);
-    ASSERT_TRUE(full_test_data_.size());
+    std::string test_data;
+    base::ReadFileToString(file, &test_data);
+    ASSERT_TRUE(test_data.size());
+
+    full_test_data_ = test_data.c_str();
   }
 
   net::EmbeddedTestServer https_server_;
@@ -263,8 +268,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   EXPECT_EQ(1u, discovered_feeds.size());
 
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
-                                         run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      discovered_feeds[0]->id,
+      base::BindLambdaForTesting(
+          [&](const std::string& ignored) { run_loop.Quit(); }));
   run_loop.Run();
   WaitForDB();
 
@@ -303,11 +310,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   ASSERT_EQ(2u, feeds[0]->logos.size());
   EXPECT_EQ(logo1, feeds[0]->logos[0]);
   EXPECT_EQ(logo2, feeds[0]->logos[1]);
-  EXPECT_FALSE(feeds[0]->associated_origins.empty());
-  EXPECT_THAT(
-      feeds[0]->associated_origins,
-      testing::Contains(url::Origin::Create(GURL("https://www.github.com"))));
   EXPECT_EQ(user_id, feeds[0]->user_identifier);
+  EXPECT_EQ("TEST", feeds[0]->cookie_name_filter);
 
   auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
 
@@ -316,8 +320,12 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   // Check each feed item and all fields one-by-one.
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
-    expected_item->name =
-        base::ASCIIToUTF16("Anatomy of a Web Media Experience");
+    expected_item->id = 1;
+
+    const std::string name = "Anatomy of a Web Media Experience 😊";
+    ASSERT_TRUE(
+        base::UTF8ToUTF16(name.c_str(), name.size(), &expected_item->name));
+
     expected_item->type = mojom::MediaFeedItemType::kVideo;
     expected_item->author = mojom::Author::New();
     expected_item->author->name = "Google Chrome Developers";
@@ -332,7 +340,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         {mojom::InteractionCounterType::kWatch, 7252},
         {mojom::InteractionCounterType::kLike, 94},
         {mojom::InteractionCounterType::kDislike, 4}};
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kUnknown;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
@@ -355,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 2;
     expected_item->name = base::ASCIIToUTF16(
         "Building Modern Web Media Experiences: Picture-in-Picture and AV1");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
@@ -375,7 +385,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         {mojom::InteractionCounterType::kWatch, 7252},
         {mojom::InteractionCounterType::kLike, 94},
         {mojom::InteractionCounterType::kDislike, 4}};
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL("https://youtu.be/iTC3mfe0DwE?t=10");
@@ -405,12 +416,14 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 3;
     expected_item->name = base::ASCIIToUTF16("Chrome Releases");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
         base::Time::FromString("2019-11-10", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
@@ -474,12 +487,14 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 4;
     expected_item->name = base::ASCIIToUTF16("Chrome University");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
         base::Time::FromString("2020-01-01", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kCompleted;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
@@ -538,12 +553,14 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 5;
     expected_item->name = base::ASCIIToUTF16("JAM stack");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
         base::Time::FromString("2020-01-22", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->duration =
         base::TimeDelta::FromMinutes(9) + base::TimeDelta::FromSeconds(55);
     expected_item->action = mojom::Action::New();
@@ -569,6 +586,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 6;
     expected_item->name = base::ASCIIToUTF16("Ask Chrome");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
     expected_item->author = mojom::Author::New();
@@ -579,7 +597,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         base::Time::FromString("2020-01-27", &expected_item->date_published));
     expected_item->duration = base::TimeDelta::FromMinutes(1);
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=zJQNQmE6_UI");
@@ -608,6 +627,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 7;
     expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
     expected_item->type = mojom::MediaFeedItemType::kMovie;
     ASSERT_TRUE(
@@ -618,7 +638,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     expected_item->content_ratings.push_back(std::move(content_rating));
     expected_item->duration = base::TimeDelta::FromMinutes(12);
     expected_item->genre.push_back("Comedy");
-    expected_item->is_family_friendly = false;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kNo;
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL(
         "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html");
@@ -662,8 +683,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   EXPECT_EQ(1u, discovered_feeds.size());
 
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
-                                         run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      discovered_feeds[0]->id,
+      base::BindLambdaForTesting(
+          [&](const std::string& ignored) { run_loop.Quit(); }));
   run_loop.Run();
   WaitForDB();
 
@@ -692,6 +715,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   ASSERT_EQ(2u, feeds[0]->logos.size());
   EXPECT_EQ(logo1, feeds[0]->logos[0]);
   EXPECT_EQ(logo2, feeds[0]->logos[1]);
+  EXPECT_TRUE(feeds[0]->cookie_name_filter.empty());
 
   auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
 
@@ -701,6 +725,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   // the correct fields are set. Don't assume or require any specific ordering.
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 1;
     expected_item->name =
         base::ASCIIToUTF16("Anatomy of a Web Media Experience");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
@@ -712,7 +737,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
         base::Time::FromString("2019-05-09", &expected_item->date_published));
     expected_item->duration =
         base::TimeDelta::FromMinutes(34) + base::TimeDelta::FromSeconds(41);
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
@@ -733,11 +759,13 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 2;
     expected_item->name = base::ASCIIToUTF16("Chrome Releases");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
         base::Time::FromString("2019-11-10", &expected_item->date_published));
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
 
     expected_item->tv_episode = mojom::TVEpisode::New();
     expected_item->tv_episode->duration =
@@ -773,11 +801,13 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 3;
     expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
     expected_item->type = mojom::MediaFeedItemType::kMovie;
     ASSERT_TRUE(
         base::Time::FromString("2008-01-01", &expected_item->date_published));
-    expected_item->is_family_friendly = false;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kNo;
     expected_item->duration = base::TimeDelta::FromMinutes(12);
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL(
@@ -807,8 +837,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }
@@ -866,8 +898,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }
@@ -886,8 +920,16 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
   }
 }
 
+// Flaky on lacros: crbug.com/1124983
+#if BUILDFLAG(IS_LACROS)
+#define MAYBE_ResetMediaFeed_WebContentsDestroyed \
+  DISABLED_ResetMediaFeed_WebContentsDestroyed
+#else
+#define MAYBE_ResetMediaFeed_WebContentsDestroyed \
+  ResetMediaFeed_WebContentsDestroyed
+#endif
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
-                       ResetMediaFeed_WebContentsDestroyed) {
+                       MAYBE_ResetMediaFeed_WebContentsDestroyed) {
   DiscoverFeed(kMediaFeedsTestURL);
 
   {
@@ -897,8 +939,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }
@@ -942,22 +986,27 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     MediaFeedsDiscoveryBrowserTest,
     ::testing::Values(
-        TestData{"<link rel=feed type=\"application/ld+json\" "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
                  "href=\"/test\"/>",
                  true},
-        TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
+        TestData{"<link rel=media-feed href=\"/test\"/>", true},
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
+                 "href=\"/test\"/>",
                  false, false},
         TestData{"", false},
-        TestData{"<link rel=feed type=\"application/ld+json\" "
-                 "href=\"/test\"/><link rel=feed "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
+                 "href=\"/test\"/><link rel=media-feed "
                  "type=\"application/ld+json\" href=\"/test2\"/>",
                  true},
-        TestData{"<link rel=feed type=\"application/ld+json\" "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
                  "href=\"https://www.example.com/test\"/>",
                  false},
-        TestData{"<link rel=feed type=\"application/ld+json\" href=\"\"/>",
+        TestData{
+            "<link rel=media-feed type=\"application/ld+json\" href=\"\"/>",
+            false},
+        TestData{"<link rel=feed type=\"application/ld+json\" "
+                 "href=\"/test\"/>",
                  false},
-        TestData{"<link rel=feed href=\"/test\"/>", false},
         TestData{
             "<link rel=other type=\"application/ld+json\" href=\"/test\"/>",
             false}));

@@ -108,12 +108,15 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
 #endif
                               AVxWorker *workers, int num_workers,
                               AV1LfSync *lf_sync);
+
+#if !CONFIG_REALTIME_ONLY
 void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
                                           struct AV1Common *cm,
                                           int optimized_lr, AVxWorker *workers,
                                           int num_workers, AV1LrSync *lr_sync,
                                           void *lr_ctxt);
 void av1_loop_restoration_dealloc(AV1LrSync *lr_sync, int num_workers);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"

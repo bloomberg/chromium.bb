@@ -33,7 +33,6 @@ class CORE_EXPORT Request final : public ScriptWrappable,
                                   public ActiveScriptWrappable<Request>,
                                   public Body {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Request);
 
  public:
   using ForServiceWorkerFetchEvent =
@@ -59,7 +58,7 @@ class CORE_EXPORT Request final : public ScriptWrappable,
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
   static Request* Create(ScriptState*,
-                         const mojom::blink::FetchAPIRequest&,
+                         mojom::blink::FetchAPIRequestPtr,
                          ForServiceWorkerFetchEvent);
 
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
@@ -93,17 +92,17 @@ class CORE_EXPORT Request final : public ScriptWrappable,
     return Body::HasPendingActivity();
   }
 
-  FetchRequestData* PassRequestData(ScriptState*, ExceptionState&);
+  FetchRequestData* PassRequestData(ScriptState*);
   mojom::blink::FetchAPIRequestPtr CreateFetchAPIRequest() const;
   bool HasBody() const;
   BodyStreamBuffer* BodyBuffer() override { return request_->Buffer(); }
   const BodyStreamBuffer* BodyBuffer() const override {
     return request_->Buffer();
   }
-  mojom::RequestContextType GetRequestContextType() const;
+  mojom::blink::RequestContextType GetRequestContextType() const;
   network::mojom::RequestDestination GetRequestDestination() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   const FetchRequestData* GetRequest() const { return request_; }

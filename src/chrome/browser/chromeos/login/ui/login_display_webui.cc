@@ -7,7 +7,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
-#include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -16,6 +15,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
@@ -54,8 +56,21 @@ void LoginDisplayWebUI::Init(const user_manager::UserList& users,
                              bool allow_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
-  SignInScreenController::Get()->Init(users);
-  show_guest_ = show_guest;
+
+  OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
+  const std::string display_type = oobe_ui->display_type();
+  if (display_type == OobeUI::kUserAddingDisplay && !user_selection_screen_) {
+    user_selection_screen_ = std::make_unique<ChromeUserSelectionScreen>(
+        DisplayedScreen::USER_ADDING_SCREEN);
+    user_board_view_ = oobe_ui->GetView<UserBoardScreenHandler>()->GetWeakPtr();
+    user_selection_screen_->SetView(user_board_view_.get());
+    // TODO(jdufault): Bind and Unbind should be controlled by either the
+    // Model/View which are then each responsible for automatically unbinding
+    // the other associated View/Model instance. Then we can eliminate this
+    // exposed WeakPtr logic. See crbug.com/685287.
+    user_board_view_->Bind(user_selection_screen_.get());
+    user_selection_screen_->Init(users);
+  }
   show_users_changed_ = (show_users_ != show_users);
   show_users_ = show_users;
   allow_new_user_changed_ = (allow_new_user_ != allow_new_user);
@@ -71,11 +86,13 @@ void LoginDisplayWebUI::Init(const user_manager::UserList& users,
 // ---- User selection screen methods
 
 void LoginDisplayWebUI::HandleGetUsers() {
-  SignInScreenController::Get()->SendUserList();
+  if (user_selection_screen_)
+    user_selection_screen_->HandleGetUsers();
 }
 
 void LoginDisplayWebUI::CheckUserStatus(const AccountId& account_id) {
-  SignInScreenController::Get()->CheckUserStatus(account_id);
+  if (user_selection_screen_)
+    user_selection_screen_->CheckUserStatus(account_id);
 }
 
 // ---- Gaia screen methods
@@ -125,8 +142,9 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
 
   // Only display hints about keyboard layout if the error is authentication-
   // related.
-  if (error_msg_id != IDS_LOGIN_ERROR_WHITELIST &&
-      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST &&
+  if (error_msg_id != IDS_LOGIN_ERROR_ALLOWLIST &&
+      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_ALLOWLIST &&
+      error_msg_id != IDS_ENTERPRISE_AND_FAMILY_LINK_LOGIN_ERROR_ALLOWLIST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
       error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED &&
@@ -150,17 +168,9 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
                             help_topic_id);
 }
 
-void LoginDisplayWebUI::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  VLOG(1) << "Show error screen, error_id: " << error_id;
-  if (!webui_handler_)
-    return;
-  webui_handler_->ShowErrorScreen(error_id);
-}
-
 void LoginDisplayWebUI::ShowPasswordChangedDialog(bool show_password_error,
-                                                  const std::string& email) {
-  if (webui_handler_)
-    webui_handler_->ShowPasswordChangedDialog(show_password_error, email);
+                                                  const AccountId& account_id) {
+  NOTIMPLEMENTED();
 }
 
 void LoginDisplayWebUI::ShowSigninUI(const std::string& email) {
@@ -168,14 +178,9 @@ void LoginDisplayWebUI::ShowSigninUI(const std::string& email) {
     webui_handler_->ShowSigninUI(email);
 }
 
-void LoginDisplayWebUI::ShowWhitelistCheckFailedError() {
+void LoginDisplayWebUI::ShowAllowlistCheckFailedError() {
   if (webui_handler_)
-    webui_handler_->ShowWhitelistCheckFailedError();
-}
-
-// LoginDisplayWebUI, NativeWindowDelegate implementation: ---------------------
-gfx::NativeWindow LoginDisplayWebUI::GetNativeWindow() const {
-  return parent_window();
+    webui_handler_->ShowAllowlistCheckFailedError();
 }
 
 // LoginDisplayWebUI, SigninScreenHandlerDelegate implementation: --------------
@@ -194,24 +199,16 @@ void LoginDisplayWebUI::Login(const UserContext& user_context,
 }
 
 void LoginDisplayWebUI::OnSigninScreenReady() {
-  SignInScreenController::Get()->OnSigninScreenReady();
+  if (user_selection_screen_)
+    user_selection_screen_->InitEasyUnlock();
 
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }
 
-void LoginDisplayWebUI::RemoveUser(const AccountId& account_id) {
-  SignInScreenController::Get()->RemoveUser(account_id);
-}
-
 void LoginDisplayWebUI::ShowEnterpriseEnrollmentScreen() {
   if (delegate_)
     delegate_->OnStartEnterpriseEnrollment();
-}
-
-void LoginDisplayWebUI::ShowEnableDebuggingScreen() {
-  if (delegate_)
-    delegate_->OnStartEnableDebuggingScreen();
 }
 
 void LoginDisplayWebUI::ShowKioskEnableScreen() {
@@ -224,24 +221,15 @@ void LoginDisplayWebUI::ShowKioskAutolaunchScreen() {
     delegate_->OnStartKioskAutolaunchScreen();
 }
 
-void LoginDisplayWebUI::ShowUpdateRequiredScreen() {
-  if (delegate_)
-    delegate_->ShowUpdateRequiredScreen();
-}
-
 void LoginDisplayWebUI::ShowWrongHWIDScreen() {
-  if (delegate_)
-    delegate_->ShowWrongHWIDScreen();
+  LoginDisplayHost::default_host()->StartWizard(WrongHWIDScreenView::kScreenId);
 }
 
 void LoginDisplayWebUI::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
-  SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
-}
-
-bool LoginDisplayWebUI::IsShowGuest() const {
-  return show_guest_;
+  if (user_selection_screen_)
+    user_selection_screen_->SetHandler(webui_handler_);
 }
 
 bool LoginDisplayWebUI::IsShowUsers() const {
@@ -250,10 +238,6 @@ bool LoginDisplayWebUI::IsShowUsers() const {
 
 bool LoginDisplayWebUI::ShowUsersHasChanged() const {
   return show_users_changed_;
-}
-
-bool LoginDisplayWebUI::IsAllowNewUser() const {
-  return allow_new_user_;
 }
 
 bool LoginDisplayWebUI::AllowNewUserChanged() const {
@@ -266,10 +250,6 @@ bool LoginDisplayWebUI::IsSigninInProgress() const {
 
 bool LoginDisplayWebUI::IsUserSigninCompleted() const {
   return is_signin_completed();
-}
-
-void LoginDisplayWebUI::Signout() {
-  delegate_->Signout();
 }
 
 void LoginDisplayWebUI::OnUserActivity(const ui::Event* event) {

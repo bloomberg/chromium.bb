@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "components/performance_manager/persistence/site_data/noop_site_data_writer.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
-#include "components/performance_manager/persistence/site_data/site_data_reader.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
+#include "components/performance_manager/public/persistence/site_data/site_data_reader.h"
 
 namespace performance_manager {
 
@@ -36,15 +36,18 @@ std::unique_ptr<SiteDataReader> NonRecordingSiteDataCache::GetReaderForOrigin(
 }
 
 std::unique_ptr<SiteDataWriter> NonRecordingSiteDataCache::GetWriterForOrigin(
-    const url::Origin& origin,
-    performance_manager::TabVisibility tab_visibility) {
+    const url::Origin& origin) {
   // Return a fake data writer.
   SiteDataWriter* writer = new NoopSiteDataWriter();
   return base::WrapUnique(writer);
 }
 
-bool NonRecordingSiteDataCache::IsRecordingForTesting() {
+bool NonRecordingSiteDataCache::IsRecording() const {
   return false;
+}
+
+int NonRecordingSiteDataCache::Size() const {
+  return 0;
 }
 
 const char* NonRecordingSiteDataCache::GetDataCacheName() {

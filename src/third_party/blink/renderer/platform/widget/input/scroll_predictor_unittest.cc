@@ -5,17 +5,18 @@
 #include "third_party/blink/renderer/platform/widget/input/scroll_predictor.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/input/predictor_factory.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/empty_filter.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/empty_predictor.h"
 #include "third_party/blink/renderer/platform/widget/input/prediction/filter_factory.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/kalman_predictor.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/least_squares_predictor.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/linear_predictor.h"
+#include "ui/base/prediction/empty_filter.h"
+#include "ui/base/prediction/empty_predictor.h"
+#include "ui/base/prediction/kalman_predictor.h"
+#include "ui/base/prediction/least_squares_predictor.h"
+#include "ui/base/prediction/linear_predictor.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 namespace test {
@@ -32,11 +33,12 @@ class ScrollPredictorTest : public testing::Test {
   void SetUp() override {
     original_events_.clear();
     scroll_predictor_ = std::make_unique<ScrollPredictor>();
-    scroll_predictor_->predictor_ = std::make_unique<EmptyPredictor>();
+    scroll_predictor_->predictor_ = std::make_unique<ui::EmptyPredictor>();
   }
 
   void SetUpLSQPredictor() {
-    scroll_predictor_->predictor_ = std::make_unique<LeastSquaresPredictor>();
+    scroll_predictor_->predictor_ =
+        std::make_unique<ui::LeastSquaresPredictor>();
   }
 
   std::unique_ptr<WebInputEvent> CreateGestureScrollUpdate(
@@ -45,19 +47,20 @@ class ScrollPredictorTest : public testing::Test {
       double time_delta_in_milliseconds = 0,
       WebGestureEvent::InertialPhaseState phase =
           WebGestureEvent::InertialPhaseState::kNonMomentum) {
-    WebGestureEvent gesture(
+    auto gesture = std::make_unique<WebGestureEvent>(
         WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
         WebGestureDevice::kTouchscreen);
-    gesture.data.scroll_update.delta_x = delta_x;
-    gesture.data.scroll_update.delta_y = delta_y;
-    gesture.data.scroll_update.inertial_phase = phase;
+    gesture->data.scroll_update.delta_x = delta_x;
+    gesture->data.scroll_update.delta_y = delta_y;
+    gesture->data.scroll_update.inertial_phase = phase;
 
-    original_events_.emplace_back(gesture.Clone(), ui::LatencyInfo(),
-                                  base::NullCallback());
+    original_events_.emplace_back(std::make_unique<WebCoalescedInputEvent>(
+                                      gesture->Clone(), ui::LatencyInfo()),
+                                  nullptr, base::NullCallback());
 
-    return gesture.Clone();
+    return gesture;
   }
 
   void CoalesceWith(const std::unique_ptr<WebInputEvent>& new_event,
@@ -75,10 +78,10 @@ class ScrollPredictorTest : public testing::Test {
 
   void HandleResampleScrollEvents(std::unique_ptr<WebInputEvent>& event,
                                   double time_delta_in_milliseconds = 0) {
-    std::unique_ptr<EventWithCallback> event_with_callback =
-        std::make_unique<EventWithCallback>(std::move(event), ui::LatencyInfo(),
-                                            base::TimeTicks(),
-                                            base::NullCallback());
+    auto event_with_callback = std::make_unique<EventWithCallback>(
+        std::make_unique<WebCoalescedInputEvent>(std::move(event),
+                                                 ui::LatencyInfo()),
+        base::TimeTicks(), base::NullCallback(), nullptr);
     event_with_callback->original_events() = std::move(original_events_);
 
     event_with_callback = scroll_predictor_->ResampleScrollEvents(
@@ -89,7 +92,7 @@ class ScrollPredictorTest : public testing::Test {
     event = event_with_callback->event().Clone();
   }
 
-  std::unique_ptr<InputPredictor::InputData> PredictionAvailable(
+  std::unique_ptr<ui::InputPredictor::InputData> PredictionAvailable(
       double time_delta_in_milliseconds = 0) {
     return scroll_predictor_->predictor_->GeneratePrediction(
         WebInputEvent::GetStaticTimeStampForTests() +
@@ -195,12 +198,12 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
   EXPECT_FALSE(GetResamplingState());
 
   // after GSE
-  WebGestureEvent gesture_end(WebInputEvent::Type::kGestureScrollEnd,
-                              WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests(),
-                              WebGestureDevice::kTouchscreen);
-  std::unique_ptr<WebInputEvent> event = gesture_end.Clone();
-  HandleResampleScrollEvents(event);
+  std::unique_ptr<WebInputEvent> gesture_end =
+      std::make_unique<WebGestureEvent>(
+          WebInputEvent::Type::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+          WebInputEvent::GetStaticTimeStampForTests(),
+          WebGestureDevice::kTouchscreen);
+  HandleResampleScrollEvents(gesture_end);
   EXPECT_FALSE(GetResamplingState());
 }
 
@@ -411,48 +414,42 @@ TEST_F(ScrollPredictorTest, ScrollPredictorNotChangeScrollDirection) {
 TEST_F(ScrollPredictorTest, ScrollPredictorTypeSelection) {
   // Use LinearResampling predictor by default.
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType(blink::features::kScrollPredictorNameLinearResampling);
+  VerifyPredictorType(::features::kPredictorNameLinearResampling);
 
   // When resampling is enabled, predictor type is set from
   // kResamplingScrollEvents.
-  ConfigurePredictorFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameEmpty);
-  VerifyPredictorType(blink::features::kScrollPredictorNameEmpty);
+  ConfigurePredictorFieldTrialAndInitialize(features::kResamplingScrollEvents,
+                                            ::features::kPredictorNameEmpty);
+  VerifyPredictorType(::features::kPredictorNameEmpty);
+
+  ConfigurePredictorFieldTrialAndInitialize(features::kResamplingScrollEvents,
+                                            ::features::kPredictorNameLsq);
+  VerifyPredictorType(::features::kPredictorNameLsq);
+
+  ConfigurePredictorFieldTrialAndInitialize(features::kResamplingScrollEvents,
+                                            ::features::kPredictorNameKalman);
+  VerifyPredictorType(::features::kPredictorNameKalman);
 
   ConfigurePredictorFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameLsq);
-  VerifyPredictorType(blink::features::kScrollPredictorNameLsq);
-
-  ConfigurePredictorFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameKalman);
-  VerifyPredictorType(blink::features::kScrollPredictorNameKalman);
-
-  ConfigurePredictorFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameLinearFirst);
-  VerifyPredictorType(blink::features::kScrollPredictorNameLinearFirst);
+      features::kResamplingScrollEvents, ::features::kPredictorNameLinearFirst);
+  VerifyPredictorType(::features::kPredictorNameLinearFirst);
 }
 
 // Check the right filter is selected
 TEST_F(ScrollPredictorTest, DefaultFilter) {
-  ConfigureFilterFieldTrialAndInitialize(
-      blink::features::kFilteringScrollPrediction, "");
-  VerifyFilterType(blink::features::kFilterNameEmpty);
+  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
+                                         "");
+  VerifyFilterType(::features::kFilterNameEmpty);
   EXPECT_TRUE(isFilteringEnabled());
 
-  ConfigureFilterFieldTrialAndInitialize(
-      blink::features::kFilteringScrollPrediction,
-      blink::features::kFilterNameEmpty);
-  VerifyFilterType(blink::features::kFilterNameEmpty);
+  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
+                                         ::features::kFilterNameEmpty);
+  VerifyFilterType(::features::kFilterNameEmpty);
   EXPECT_TRUE(isFilteringEnabled());
 
-  ConfigureFilterFieldTrialAndInitialize(
-      blink::features::kFilteringScrollPrediction,
-      blink::features::kFilterNameOneEuro);
-  VerifyFilterType(blink::features::kFilterNameOneEuro);
+  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
+                                         ::features::kFilterNameOneEuro);
+  VerifyFilterType(::features::kFilterNameOneEuro);
   EXPECT_TRUE(isFilteringEnabled());
 }
 
@@ -461,9 +458,8 @@ TEST_F(ScrollPredictorTest, DefaultFilter) {
 // We then send the same events with kalman and the empty filter, we should
 // expect the same results.
 TEST_F(ScrollPredictorTest, FilteringPrediction) {
-  ConfigurePredictorFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameKalman);
+  ConfigurePredictorFieldTrialAndInitialize(features::kResamplingScrollEvents,
+                                            ::features::kPredictorNameKalman);
 
   std::vector<double> accumulated_deltas;
   std::unique_ptr<WebInputEvent> gesture_update;
@@ -480,10 +476,8 @@ TEST_F(ScrollPredictorTest, FilteringPrediction) {
 
   // Now we enable filtering and compare the deltas
   ConfigurePredictorAndFilterFieldTrialAndInitialize(
-      blink::features::kResamplingScrollEvents,
-      blink::features::kScrollPredictorNameKalman,
-      blink::features::kFilteringScrollPrediction,
-      blink::features::kFilterNameEmpty);
+      features::kResamplingScrollEvents, ::features::kPredictorNameKalman,
+      features::kFilteringScrollPrediction, ::features::kFilterNameEmpty);
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
 
   for (int i = 0; i < 100; i++) {

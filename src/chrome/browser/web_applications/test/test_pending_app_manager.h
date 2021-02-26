@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "url/gurl.h"
@@ -18,9 +17,12 @@ namespace web_app {
 
 class TestAppRegistrar;
 
+// Deprecated. Please use TestPendingAppManagerImpl instead.
 class TestPendingAppManager : public PendingAppManager {
  public:
   explicit TestPendingAppManager(TestAppRegistrar* registrar);
+  TestPendingAppManager(const TestPendingAppManager&) = delete;
+  TestPendingAppManager& operator=(const TestPendingAppManager&) = delete;
   ~TestPendingAppManager() override;
 
   // The foo_requests methods may return duplicates, if the underlying
@@ -74,7 +76,6 @@ class TestPendingAppManager : public PendingAppManager {
 
   base::WeakPtrFactory<TestPendingAppManager> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(TestPendingAppManager);
 };
 
 }  // namespace web_app

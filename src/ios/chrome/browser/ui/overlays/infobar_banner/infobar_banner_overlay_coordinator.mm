@@ -19,6 +19,9 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/confirm/confirm_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/save_password_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/update_password_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/save_card/save_card_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/translate/translate_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator_util.h"
@@ -45,7 +48,10 @@
 + (NSArray<Class>*)supportedMediatorClasses {
   return @[
     [SavePasswordInfobarBannerOverlayMediator class],
-    [ConfirmInfobarBannerOverlayMediator class]
+    [UpdatePasswordInfobarBannerOverlayMediator class],
+    [ConfirmInfobarBannerOverlayMediator class],
+    [TranslateInfobarBannerOverlayMediator class],
+    [SaveCardInfobarBannerOverlayMediator class],
   ];
 }
 
@@ -96,22 +102,47 @@
   self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   self.bannerViewController.interactionDelegate = self.bannerTransitionDriver;
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:animated
-                                      completion:^{
-                                        [self finishPresentation];
-                                      }];
+  __weak InfobarBannerOverlayCoordinator* weakSelf = self;
+  [self.baseViewController
+      presentViewController:self.viewController
+                   animated:animated
+                 completion:^{
+                   InfobarBannerOverlayCoordinator* strongSelf = weakSelf;
+                   if (strongSelf) {
+                     [strongSelf finishPresentation];
+                   }
+                 }];
   self.started = YES;
+
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    // Auto-dismiss the banner after timeout if VoiceOver is off (banner should
+    // persist until user explicitly swipes it away).
+    NSTimeInterval timeout =
+        config->is_high_priority()
+            ? kInfobarBannerLongPresentationDurationInSeconds
+            : kInfobarBannerDefaultPresentationDurationInSeconds;
+    [self performSelector:@selector(dismissBannerIfReady)
+               withObject:nil
+               afterDelay:timeout];
+  }
 }
 
 - (void)stopAnimated:(BOOL)animated {
   if (!self.started)
     return;
-  [self.baseViewController dismissViewControllerAnimated:animated
-                                              completion:^{
-                                                [self finishDismissal];
-                                              }];
+  // Mark started as NO before calling dismissal callback to prevent dup
+  // stopAnimated: executions.
   self.started = NO;
+  __weak InfobarBannerOverlayCoordinator* weakSelf = self;
+  [self.baseViewController
+      dismissViewControllerAnimated:animated
+                         completion:^{
+                           InfobarBannerOverlayCoordinator* strongSelf =
+                               weakSelf;
+                           if (strongSelf) {
+                             [strongSelf finishDismissal];
+                           }
+                         }];
 }
 
 - (UIViewController*)viewController {
@@ -125,19 +156,26 @@
   // Notify the presentation context that the presentation has finished.  This
   // is necessary to synchronize OverlayPresenter scheduling logic with the UI
   // layer.
-  self.delegate->OverlayUIDidFinishPresentation(self.request);
+  if (self.delegate) {
+    self.delegate->OverlayUIDidFinishPresentation(self.request);
+  }
   UpdateBannerAccessibilityForPresentation(self.baseViewController,
                                            self.viewController.view);
 }
 
 // Called when the dismissal of the banner UI is finished.
 - (void)finishDismissal {
+  InfobarBannerOverlayMediator* mediator =
+      base::mac::ObjCCast<InfobarBannerOverlayMediator>(self.mediator);
+  [mediator finishDismissal];
   self.bannerViewController = nil;
   self.mediator = nil;
   // Notify the presentation context that the dismissal has finished.  This
   // is necessary to synchronize OverlayPresenter scheduling logic with the UI
   // layer.
-  self.delegate->OverlayUIDidFinishDismissal(self.request);
+  if (self.delegate) {
+    self.delegate->OverlayUIDidFinishDismissal(self.request);
+  }
   UpdateBannerAccessibilityForDismissal(self.baseViewController);
 }
 
@@ -149,6 +187,12 @@
           [self class].supportedMediatorClasses, self.request));
   DCHECK(mediator) << "None of the supported mediator classes support request.";
   return mediator;
+}
+
+// Indicate to the UI to dismiss itself if it is ready (e.g. the user is not
+// currently interaction with it).
+- (void)dismissBannerIfReady {
+  [self.bannerViewController dismissWhenInteractionIsFinished];
 }
 
 @end

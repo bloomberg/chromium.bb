@@ -53,13 +53,13 @@ void FuzzerPassAddCompositeTypes::MaybeAddMissingVectorTypes() {
     return FindOrCreateBoolType();
   };
   std::function<uint32_t()> float_type_supplier = [this]() -> uint32_t {
-    return FindOrCreate32BitFloatType();
+    return FindOrCreateFloatType(32);
   };
   std::function<uint32_t()> int_type_supplier = [this]() -> uint32_t {
-    return FindOrCreate32BitIntegerType(true);
+    return FindOrCreateIntegerType(32, true);
   };
   std::function<uint32_t()> uint_type_supplier = [this]() -> uint32_t {
-    return FindOrCreate32BitIntegerType(false);
+    return FindOrCreateIntegerType(32, false);
   };
 
   // Consider each of the base types with which we can make vectors.
@@ -96,8 +96,8 @@ void FuzzerPassAddCompositeTypes::MaybeAddMissingMatrixTypes() {
 void FuzzerPassAddCompositeTypes::AddNewArrayType() {
   ApplyTransformation(TransformationAddTypeArray(
       GetFuzzerContext()->GetFreshId(), ChooseScalarOrCompositeType(),
-      FindOrCreate32BitIntegerConstant(
-          GetFuzzerContext()->GetRandomSizeForNewArray(), false)));
+      FindOrCreateIntegerConstant(
+          {GetFuzzerContext()->GetRandomSizeForNewArray()}, 32, false, false)));
 }
 
 void FuzzerPassAddCompositeTypes::AddNewStructType() {
@@ -120,10 +120,15 @@ uint32_t FuzzerPassAddCompositeTypes::ChooseScalarOrCompositeType() {
       case SpvOpTypeFloat:
       case SpvOpTypeInt:
       case SpvOpTypeMatrix:
-      case SpvOpTypeStruct:
       case SpvOpTypeVector:
         candidates.push_back(inst.result_id());
         break;
+      case SpvOpTypeStruct: {
+        if (!fuzzerutil::MembersHaveBuiltInDecoration(GetIRContext(),
+                                                      inst.result_id())) {
+          candidates.push_back(inst.result_id());
+        }
+      } break;
       default:
         break;
     }

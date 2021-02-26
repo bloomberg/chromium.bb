@@ -51,10 +51,10 @@ using google_breakpad::PathnameStripper;
 using google_breakpad::SymbolSupplier;
 using google_breakpad::SystemInfo;
 
-OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
-                                               const string &symbol_search_dir)
+OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string& search_dir,
+                                               const string& symbol_search_dir)
   : search_dir_(search_dir) {
-  NSFileManager *mgr = [NSFileManager defaultManager];
+  NSFileManager* mgr = [NSFileManager defaultManager];
   size_t length = symbol_search_dir.length();
   if (length) {
     // Load all sym files in symbol_search_dir into our module_file_map
@@ -62,51 +62,51 @@ OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
     // MODULE mac x86 BBF0A8F9BEADDD2048E6464001CA193F0 GoogleDesktopDaemon
     // or
     // MODULE mac ppc BBF0A8F9BEADDD2048E6464001CA193F0 GoogleDesktopDaemon
-    const char *symbolSearchStr = symbol_search_dir.c_str();
-    NSString *symbolSearchPath = 
+    const char* symbolSearchStr = symbol_search_dir.c_str();
+    NSString* symbolSearchPath = 
       [mgr stringWithFileSystemRepresentation:symbolSearchStr 
                                        length:strlen(symbolSearchStr)];
-    NSDirectoryEnumerator *dirEnum = [mgr enumeratorAtPath:symbolSearchPath];
-    NSString *fileName;
-    NSCharacterSet *hexSet = 
+    NSDirectoryEnumerator* dirEnum = [mgr enumeratorAtPath:symbolSearchPath];
+    NSString* fileName;
+    NSCharacterSet* hexSet = 
       [NSCharacterSet characterSetWithCharactersInString:@"0123456789ABCDEF"];
-    NSCharacterSet *newlineSet = 
+    NSCharacterSet* newlineSet = 
       [NSCharacterSet characterSetWithCharactersInString:@"\r\n"];
     while ((fileName = [dirEnum nextObject])) {
       // Check to see what type of file we have
-      NSDictionary *attrib = [dirEnum fileAttributes];
-      NSString *fileType = [attrib objectForKey:NSFileType];
+      NSDictionary* attrib = [dirEnum fileAttributes];
+      NSString* fileType = [attrib objectForKey:NSFileType];
       if ([fileType isEqualToString:NSFileTypeDirectory]) {
         // Skip subdirectories
         [dirEnum skipDescendents];
       } else {
-        NSString *filePath = [symbolSearchPath stringByAppendingPathComponent:fileName];
-        NSString *dataStr = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:NULL];
+        NSString* filePath = [symbolSearchPath stringByAppendingPathComponent:fileName];
+        NSString* dataStr = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:NULL];
         if (dataStr) {
           // Check file to see if it is of appropriate type, and grab module
           // name.
-          NSScanner *scanner = [NSScanner scannerWithString:dataStr];
+          NSScanner* scanner = [NSScanner scannerWithString:dataStr];
           BOOL goodScan = [scanner scanString:@"MODULE mac " intoString:nil];
           if (goodScan) {
             goodScan = ([scanner scanString:@"x86 " intoString:nil] ||
                         [scanner scanString:@"x86_64 " intoString:nil] ||
                         [scanner scanString:@"ppc " intoString:nil]);
             if (goodScan) {
-              NSString *moduleID;
+              NSString* moduleID;
               goodScan = [scanner scanCharactersFromSet:hexSet 
                                              intoString:&moduleID];
               if (goodScan) {
                 // Module IDs are always 33 chars long
                 goodScan = [moduleID length] == 33;
                 if (goodScan) {
-                  NSString *moduleName;
+                  NSString* moduleName;
                   goodScan = [scanner scanUpToCharactersFromSet:newlineSet 
                                                      intoString:&moduleName];
                   if (goodScan) {
                     goodScan = [moduleName length] > 0;
                     if (goodScan) {
-                      const char *moduleNameStr = [moduleName UTF8String];
-                      const char *filePathStr = [filePath fileSystemRepresentation];
+                      const char* moduleNameStr = [moduleName UTF8String];
+                      const char* filePathStr = [filePath fileSystemRepresentation];
                       // Map our file
                       module_file_map_[moduleNameStr] = filePathStr;
                     }
@@ -122,9 +122,9 @@ OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
 }
 
 SymbolSupplier::SymbolResult
-OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
-                                      const SystemInfo *system_info,
-                                      string *symbol_file) {
+OnDemandSymbolSupplier::GetSymbolFile(const CodeModule* module,
+                                      const SystemInfo* system_info,
+                                      string* symbol_file) {
   string path(GetModuleSymbolFile(module));
 
   if (path.empty()) {
@@ -142,10 +142,10 @@ OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
 }
 
 SymbolSupplier::SymbolResult
-OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
-                                      const SystemInfo *system_info,
-                                      string *symbol_file,
-                                      string *symbol_data) {
+OnDemandSymbolSupplier::GetSymbolFile(const CodeModule* module,
+                                      const SystemInfo* system_info,
+                                      string* symbol_file,
+                                      string* symbol_data) {
   SymbolSupplier::SymbolResult s = GetSymbolFile(module,
                                                  system_info,
                                                  symbol_file);
@@ -162,11 +162,11 @@ OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
 }
 
 SymbolSupplier::SymbolResult
-OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
-                                             const SystemInfo *system_info,
-                                             string *symbol_file,
-                                             char **symbol_data,
-                                             size_t *symbol_data_size) {
+OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule* module,
+                                             const SystemInfo* system_info,
+                                             string* symbol_file,
+                                             char** symbol_data,
+                                             size_t* symbol_data_size) {
   std::string symbol_data_string;
   SymbolSupplier::SymbolResult result = GetSymbolFile(module,
                                                       system_info,
@@ -186,21 +186,21 @@ OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
   return result;
 }
 
-void OnDemandSymbolSupplier::FreeSymbolData(const CodeModule *module) {
-  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+void OnDemandSymbolSupplier::FreeSymbolData(const CodeModule* module) {
+  map<string, char*>::iterator it = memory_buffers_.find(module->code_file());
   if (it != memory_buffers_.end()) {
     delete [] it->second;
     memory_buffers_.erase(it);
   }
 }
 
-string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule *module) {
-  NSFileManager *mgr = [NSFileManager defaultManager];
-  const char *moduleStr = module->code_file().c_str();
-  NSString *modulePath =
+string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule* module) {
+  NSFileManager* mgr = [NSFileManager defaultManager];
+  const char* moduleStr = module->code_file().c_str();
+  NSString* modulePath =
     [mgr stringWithFileSystemRepresentation:moduleStr length:strlen(moduleStr)];
-  const char *searchStr = search_dir_.c_str();
-  NSString *searchDir =
+  const char* searchStr = search_dir_.c_str();
+  NSString* searchDir =
     [mgr stringWithFileSystemRepresentation:searchStr length:strlen(searchStr)];
 
   if ([mgr fileExistsAtPath:modulePath])
@@ -209,9 +209,9 @@ string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule *module) {
   // If the module is not found, try to start appending the components to the
   // search string and stop if a file (not dir) is found or all components
   // have been appended
-  NSArray *pathComponents = [modulePath componentsSeparatedByString:@"/"];
+  NSArray* pathComponents = [modulePath componentsSeparatedByString:@"/"];
   size_t count = [pathComponents count];
-  NSMutableString *path = [NSMutableString string];
+  NSMutableString* path = [NSMutableString string];
 
   for (size_t i = 0; i < count; ++i) {
     [path setString:searchDir];
@@ -230,22 +230,22 @@ string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule *module) {
   return "";
 }
 
-string OnDemandSymbolSupplier::GetModulePath(const CodeModule *module) {
+string OnDemandSymbolSupplier::GetModulePath(const CodeModule* module) {
   return module->code_file();
 }
 
-string OnDemandSymbolSupplier::GetNameForModule(const CodeModule *module) {
+string OnDemandSymbolSupplier::GetNameForModule(const CodeModule* module) {
   return PathnameStripper::File(module->code_file());
 }
 
-string OnDemandSymbolSupplier::GetModuleSymbolFile(const CodeModule *module) {
+string OnDemandSymbolSupplier::GetModuleSymbolFile(const CodeModule* module) {
   string name(GetNameForModule(module));
   map<string, string>::iterator result = module_file_map_.find(name);
 
   return (result == module_file_map_.end()) ? "" : (*result).second;
 }
 
-static float GetFileModificationTime(const char *path) {
+static float GetFileModificationTime(const char* path) {
   float result = 0;
   struct stat file_stat;
   if (stat(path, &file_stat) == 0)
@@ -255,12 +255,12 @@ static float GetFileModificationTime(const char *path) {
   return result;
 }
 
-bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
-                                                const SystemInfo *system_info) {
+bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule* module,
+                                                const SystemInfo* system_info) {
   bool result = true;
   string name = GetNameForModule(module);
   string module_path = GetLocalModulePath(module);
-  NSString *symbol_path = [NSString stringWithFormat:@"/tmp/%s.%s.sym",
+  NSString* symbol_path = [NSString stringWithFormat:@"/tmp/%s.%s.sym",
     name.c_str(), system_info->cpu.c_str()];
 
   if (module_path.empty())

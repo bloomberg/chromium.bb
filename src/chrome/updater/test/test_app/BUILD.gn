@@ -38,25 +38,25 @@ process_version("version_header") {
   output = "$target_gen_dir/test_app_version.h"
 }
 
+source_set("constants") {
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
+}
+
 source_set("app_sources") {
   sources = [
     "//chrome/updater/app/app.cc",
     "//chrome/updater/app/app.h",
-    "constants.cc",
-    "constants.h",
     "test_app.cc",
     "test_app.h",
-    "test_app_mac.mm",
-    "test_app_win.cc",
     "update_client.cc",
     "update_client.h",
-    "update_client_mac.h",
-    "update_client_mac.mm",
-    "update_client_win.cc",
-    "update_client_win.h",
   ]
 
   deps = [
+    ":constants",
     ":version_header",
     "//base",
     "//chrome/updater:base",
@@ -66,21 +66,29 @@ source_set("app_sources") {
 
   if (is_mac) {
     sources += [
-      "//chrome/updater/server/mac/service_protocol.h",
-      "//chrome/updater/server/mac/service_protocol.mm",
-      "//chrome/updater/server/mac/update_service_wrappers.h",
-      "//chrome/updater/server/mac/update_service_wrappers.mm",
+      "//chrome/updater/app/server/mac/service_protocol.h",
+      "//chrome/updater/app/server/mac/service_protocol.mm",
+      "//chrome/updater/app/server/mac/update_service_wrappers.h",
+      "//chrome/updater/app/server/mac/update_service_wrappers.mm",
+      "test_app_mac.mm",
+      "update_client_mac.h",
+      "update_client_mac.mm",
     ]
 
     deps += [ "//chrome/updater/mac:xpc_names" ]
 
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
   }
 
   if (is_win) {
+    sources += [
+      "test_app_win.cc",
+      "update_client_win.cc",
+      "update_client_win.h",
+    ]
     deps += [
-      "//chrome/updater/server/win:updater_idl_idl",
-      "//chrome/updater/win:base",
+      "//chrome/updater/app/server/win:updater_idl_idl",
+      "//chrome/updater/win:lib",
     ]
   }
 }

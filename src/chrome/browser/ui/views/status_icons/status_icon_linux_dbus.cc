@@ -175,7 +175,7 @@ base::FilePath WriteIconFile(size_t icon_file_id,
   base::FilePath file_path = temp_dir.Append(
       "status_icon_" + base::NumberToString(icon_file_id) + ".png");
   if (!base::WriteFile(file_path, data->front_as<char>(), data->size())) {
-    base::DeleteFileRecursively(temp_dir);
+    base::DeletePathRecursively(temp_dir);
     return {};
   }
 
@@ -344,7 +344,7 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
   properties_->RegisterInterface(kInterfaceStatusNotifierItem);
   auto set_property = [&](const std::string& property_name, auto&& value) {
     properties_->SetProperty(kInterfaceStatusNotifierItem, property_name,
-                             std::move(value), false);
+                             std::forward<decltype(value)>(value), false);
   };
   set_property(kPropertyItemIsMenu, DbusBoolean(false));
   set_property(kPropertyWindowId, DbusInt32(0));
@@ -515,7 +515,7 @@ void StatusIconLinuxDbus::CleanupIconFile() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!icon_file_.empty()) {
     icon_task_runner_->PostTask(
-        FROM_HERE, (base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                   icon_file_.DirName(), true)));
+        FROM_HERE, (base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                                   icon_file_.DirName())));
   }
 }

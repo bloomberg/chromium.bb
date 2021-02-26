@@ -16,11 +16,12 @@ as64 = '/third_party/mingw-w64/mingw/bin/x86_64-w64-mingw32-as.exe'
 
 def main(argv):
   try:
-    (opts, args) = getopt.getopt(argv[1:], 'a:p:o:')
+    (opts, args) = getopt.getopt(argv[1:], 'a:p:o:c:')
 
     nacl_build_subarch = 0
     nacl_path = os.getcwd()
     output_filename = None
+    compiler_path = None
 
     for opt, val in opts:
       if opt == '-o':
@@ -38,6 +39,8 @@ def main(argv):
           raise getopt.error('Unknown target architecture ' + val)
       elif opt == '-p':
         nacl_path = (val)
+      elif opt == '-c':
+        compiler_path = val.replace('/', os.path.sep)
 
     if nacl_build_subarch == 0:
       raise getopt.error( 'You must specify a build architecture: '
@@ -54,16 +57,17 @@ def main(argv):
       #
       # Run the C compiler as a preprocessor and pipe the output into a string
       #
-      cl_command = ['cl.exe',
+      cl_command = [compiler_path,
                     '/nologo',
                     '/D__ASSEMBLER__',
                     '/DNACL_BUILD_ARCH=' + nacl_build_arch,
                     '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
                     '/DNACL_WINDOWS=1',
-                    '/TP',
                     '/E',
                     '/I' + nacl_path,
                     filename]
+      if nacl_build_subarch == 32:
+        cl_command.append('-m32')
       p = subprocess.Popen(cl_command,
                            shell=True,
                            stdout=subprocess.PIPE,

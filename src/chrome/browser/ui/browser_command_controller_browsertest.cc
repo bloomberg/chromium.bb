@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -33,9 +34,9 @@
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
-#include "ash/public/cpp/window_properties.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/ui/base/window_pin_type.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -84,38 +85,36 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 }
 
-// Note that a Browser's destructor, when the browser's profile is guest, will
-// create and execute a BrowsingDataRemover.
-// Flakes http://crbug.com/471953
-IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
-                       DISABLED_NewAvatarMenuEnabledInGuestMode) {
+// TODO(https://crbug.com/1125474): Expand to cover ChromeOS.
+#if !defined(OS_CHROMEOS)
+class GuestBrowserCommandControllerBrowserTest
+    : public BrowserCommandControllerBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  GuestBrowserCommandControllerBrowserTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(GuestBrowserCommandControllerBrowserTest,
+                       NewAvatarMenuEnabledInGuestMode) {
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
-  // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
-  // does incomplete initialization that would lead to
-  // SystemUrlRequestContextGetter being leaked.
-  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-  ui_test_utils::WaitForBrowserToOpen();
-  EXPECT_EQ(2U, BrowserList::GetInstance()->size());
-
-  // Access the browser that was created for the new Guest Profile.
-  Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
-      ProfileManager::GetGuestProfilePath());
-  Browser* browser = chrome::FindAnyBrowser(guest, true);
+  Browser* browser = CreateGuestBrowser();
   EXPECT_TRUE(browser);
 
-  // The BrowsingDataRemover needs a loaded TemplateUrlService or else it hangs
-  // on to a CallbackList::Subscription forever.
-  TemplateURLServiceFactory::GetForProfile(guest)->set_loaded(true);
-
   const CommandUpdater* command_updater = browser->command_controller();
-#if defined(OS_CHROMEOS)
-  // Chrome OS uses system tray menu to handle multi-profiles.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#else
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#endif
 }
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestBrowserCommandControllerBrowserTest,
+                         /*is_ephemeral=*/testing::Bool());
+#endif
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
@@ -126,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_EXIT));
   // Set locked fullscreen mode.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
+      chromeos::kWindowPinTypeKey, chromeos::WindowPinType::kTrustedPinned);
   // Update the corresponding command_controller state.
   browser()->command_controller()->LockedFullscreenStateChanged();
   // Update some more states just to make sure the wrong commands don't get
@@ -138,25 +137,25 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   // IDC_EXIT is not enabled in locked fullscreen.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_EXIT));
 
-  constexpr int kWhitelistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
+  constexpr int kAllowlistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
 
-  // Go through all the command ids and make sure all non-whitelisted commands
+  // Go through all the command ids and make sure all non-allowlisted commands
   // are disabled.
   for (int id : command_updater->GetAllIds()) {
-    if (base::Contains(kWhitelistedIds, id)) {
+    if (base::Contains(kAllowlistedIds, id)) {
       continue;
     }
     EXPECT_FALSE(command_updater->IsCommandEnabled(id));
   }
 
-  // Verify the set of whitelisted commands.
-  for (int id : kWhitelistedIds) {
+  // Verify the set of allowlisted commands.
+  for (int id : kAllowlistedIds) {
     EXPECT_TRUE(command_updater->IsCommandEnabled(id));
   }
 
   // Exit locked fullscreen mode.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::WindowPinType::kNone);
+      chromeos::kWindowPinTypeKey, chromeos::WindowPinType::kNone);
   // Update the corresponding command_controller state.
   browser()->command_controller()->LockedFullscreenStateChanged();
   // IDC_EXIT is enabled again.
@@ -188,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
                        PRE_TestTabRestoreCommandEnabled) {
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());

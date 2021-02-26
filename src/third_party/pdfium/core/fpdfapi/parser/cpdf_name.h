@@ -7,16 +7,13 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_NAME_H_
 #define CORE_FPDFAPI_PARSER_CPDF_NAME_H_
 
-#include <memory>
-
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fxcrt/string_pool_template.h"
 #include "core/fxcrt/weak_ptr.h"
 
 class CPDF_Name final : public CPDF_Object {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   // CPDF_Object:
   Type GetType() const override;

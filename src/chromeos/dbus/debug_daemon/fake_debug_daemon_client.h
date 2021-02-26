@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void StopPerf(uint64_t session_id, VoidDBusMethodCallback callback) override;
   void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
                           GetLogsCallback callback) override;
-  void BackupArcBugReport(const std::string& userhash,
+  void BackupArcBugReport(const cryptohome::AccountIdentifier& id,
                           VoidDBusMethodCallback callback) override;
   void GetAllLogs(GetLogsCallback callback) override;
   void GetLog(const std::string& log_name,
@@ -68,7 +68,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void TestICMPWithOptions(const std::string& ip_address,
                            const std::map<std::string, std::string>& options,
                            TestICMPCallback callback) override;
-  void UploadCrashes() override;
+  void UploadCrashes(UploadCrashesCallback callback) override;
   void EnableDebuggingFeatures(const std::string& password,
                                EnableDebuggingCallback callback) override;
   void QueryDebuggingFeatures(QueryDevFeaturesCallback callback) override;
@@ -88,8 +88,6 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void CupsRemovePrinter(const std::string& name,
                          CupsRemovePrinterCallback callback,
                          base::OnceClosure error_callback) override;
-  void StartConcierge(ConciergeCallback callback) override;
-  void StopConcierge(ConciergeCallback callback) override;
   void StartPluginVmDispatcher(const std::string& owner_id,
                                const std::string& lang,
                                PluginVmDispatcherCallback callback) override;

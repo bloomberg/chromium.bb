@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -179,7 +179,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             temp_dir_.GetPath(),
-            special_storage_policy_,
             quota_manager_->proxy(),
             base::DefaultClock::GetInstance(),
             mojo::NullRemote(),

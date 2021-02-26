@@ -5,17 +5,25 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 
 #include "base/ios/block_types.h"
-#include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_helper.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
+#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -26,7 +34,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface RecentTabsCoordinator ()<RecentTabsPresentationDelegate>
+@interface RecentTabsCoordinator () <RecentTabsContextMenuDelegate,
+                                     RecentTabsPresentationDelegate>
 // Completion block called once the recentTabsViewController is dismissed.
 @property(nonatomic, copy) ProceduralBlock completion;
 // Mediator being managed by this Coordinator.
@@ -36,6 +45,11 @@
     TableViewNavigationController* recentTabsNavigationController;
 @property(nonatomic, strong)
     RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
+@property(nonatomic, strong)
+    RecentTabsTableViewController* recentTabsTableViewController;
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
+@property(nonatomic, strong)
+    RecentTabsContextMenuHelper* recentTabsContextMenuHelper;
 @end
 
 @implementation RecentTabsCoordinator
@@ -46,15 +60,26 @@
 
 - (void)start {
   // Initialize and configure RecentTabsTableViewController.
-  RecentTabsTableViewController* recentTabsTableViewController =
+  self.recentTabsTableViewController =
       [[RecentTabsTableViewController alloc] init];
-  recentTabsTableViewController.browser = self.browser;
-  recentTabsTableViewController.loadStrategy = self.loadStrategy;
+  self.recentTabsTableViewController.browser = self.browser;
+  self.recentTabsTableViewController.loadStrategy = self.loadStrategy;
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
   id<ApplicationCommands> handler =
       HandlerForProtocol(dispatcher, ApplicationCommands);
-  recentTabsTableViewController.handler = handler;
-  recentTabsTableViewController.presentationDelegate = self;
+  self.recentTabsTableViewController.handler = handler;
+  self.recentTabsTableViewController.presentationDelegate = self;
+
+  if (@available(iOS 13.0, *)) {
+    self.recentTabsContextMenuHelper =
+        [[RecentTabsContextMenuHelper alloc] initWithBrowser:self.browser
+                              recentTabsPresentationDelegate:self
+                               recentTabsContextMenuDelegate:self];
+    self.recentTabsTableViewController.menuProvider =
+        self.recentTabsContextMenuHelper;
+    self.recentTabsTableViewController.session =
+        self.baseViewController.view.window.windowScene.session;
+  }
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
@@ -63,7 +88,7 @@
                            action:@selector(dismissButtonTapped)];
   [dismissButton
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
-  recentTabsTableViewController.navigationItem.rightBarButtonItem =
+  self.recentTabsTableViewController.navigationItem.rightBarButtonItem =
       dismissButton;
 
   // Initialize and configure RecentTabsMediator. Make sure to use the
@@ -75,18 +100,18 @@
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].
-  self.mediator.consumer = recentTabsTableViewController;
+  self.mediator.consumer = self.recentTabsTableViewController;
   // TODO(crbug.com/845636) : Currently, the image data source must be set
   // before the mediator starts updating its consumer. Fix this so that order of
   // calls does not matter.
-  recentTabsTableViewController.imageDataSource = self.mediator;
-  recentTabsTableViewController.delegate = self.mediator;
+  self.recentTabsTableViewController.imageDataSource = self.mediator;
+  self.recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
   [self.mediator configureConsumer];
 
   // Present RecentTabsNavigationController.
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]
-      initWithTable:recentTabsTableViewController];
+      initWithTable:self.recentTabsTableViewController];
   self.recentTabsNavigationController.toolbarHidden = YES;
 
   BOOL useCustomPresentation = YES;
@@ -95,7 +120,7 @@
       [self.recentTabsNavigationController
           setModalPresentationStyle:UIModalPresentationFormSheet];
       self.recentTabsNavigationController.presentationController.delegate =
-          recentTabsTableViewController;
+          self.recentTabsTableViewController;
       useCustomPresentation = NO;
     }
   }
@@ -109,7 +134,7 @@
         setModalPresentationStyle:UIModalPresentationCustom];
   }
 
-  recentTabsTableViewController.preventUpdates = NO;
+  self.recentTabsTableViewController.preventUpdates = NO;
 
   [self.baseViewController
       presentViewController:self.recentTabsNavigationController
@@ -118,16 +143,14 @@
 }
 
 - (void)stop {
-  // TODO(crbug.com/805135): Create RecentTabsLocalCommands?. Remove
-  // "base/mac/foundation_util.h" import then.
-  RecentTabsTableViewController* recentTabsTableViewController =
-      base::mac::ObjCCastStrict<RecentTabsTableViewController>(
-          self.recentTabsNavigationController.tableViewController);
-  [recentTabsTableViewController dismissModals];
+  [self.recentTabsTableViewController dismissModals];
   [self.recentTabsNavigationController
       dismissViewControllerAnimated:YES
                          completion:self.completion];
   self.recentTabsNavigationController = nil;
+  self.recentTabsContextMenuHelper = nil;
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
 }
@@ -139,15 +162,33 @@
 
 #pragma mark - RecentTabsPresentationDelegate
 
+- (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session {
+  base::RecordAction(base::UserMetricsAction(
+      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
+  base::UmaHistogramCounts100(
+      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
+      session->tabs.size());
+
+  for (auto const& tab : session->tabs) {
+    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
+    params.SetInBackground(YES);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.load_strategy = self.loadStrategy;
+    params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
+  }
+
+  [self showActiveRegularTabFromRecentTabs];
+}
+
 - (void)dismissRecentTabs {
+  // Stopping this coordinator reveals the tab UI underneath.
   self.completion = nil;
   [self stop];
 }
 
 - (void)showActiveRegularTabFromRecentTabs {
-  // Stopping this coordinator reveals the tab UI underneath.
-  self.completion = nil;
-  [self stop];
+  [self dismissRecentTabs];
 }
 
 - (void)showHistoryFromRecentTabs {
@@ -161,6 +202,34 @@
     weakSelf.completion = nil;
   };
   [self stop];
+}
+
+#pragma mark - RecentTabsContextMenuDelegate
+
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::RecentTabsEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.recentTabsTableViewController
+                         browser:self.browser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
+}
+
+- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  [self.recentTabsTableViewController
+      removeSessionAtSessionSectionIdentifier:sectionIdentifier];
+}
+
+- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+    (NSInteger)sectionIdentifier {
+  return [self.recentTabsTableViewController
+      sessionForSectionIdentifier:sectionIdentifier];
 }
 
 @end

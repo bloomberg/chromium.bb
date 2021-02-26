@@ -9,35 +9,46 @@
 
 namespace mojo {
 
-mojo::PlatformHandle StructTraits<
-    gfx::mojom::GpuFenceHandleDataView,
-    gfx::GpuFenceHandle>::native_fd(const gfx::GpuFenceHandle& handle) {
 #if defined(OS_POSIX)
-  if (handle.type != gfx::GpuFenceHandleType::kAndroidNativeFenceSync)
-    return mojo::PlatformHandle();
-  return mojo::PlatformHandle(base::ScopedFD(handle.native_fd.fd));
-#else
-  return mojo::PlatformHandle();
-#endif
+mojo::PlatformHandle
+StructTraits<gfx::mojom::GpuFenceHandleDataView,
+             gfx::GpuFenceHandle>::native_fd(gfx::GpuFenceHandle& handle) {
+  return mojo::PlatformHandle(std::move(handle.owned_fd));
 }
+#elif defined(OS_WIN)
+mojo::PlatformHandle
+StructTraits<gfx::mojom::GpuFenceHandleDataView,
+             gfx::GpuFenceHandle>::native_handle(gfx::GpuFenceHandle& handle) {
+  return mojo::PlatformHandle(std::move(handle.owned_handle));
+}
+#endif
 
 bool StructTraits<gfx::mojom::GpuFenceHandleDataView, gfx::GpuFenceHandle>::
     Read(gfx::mojom::GpuFenceHandleDataView data, gfx::GpuFenceHandle* out) {
-  if (!data.ReadType(&out->type))
-    return false;
-
-  if (out->type == gfx::GpuFenceHandleType::kAndroidNativeFenceSync) {
 #if defined(OS_POSIX)
-    constexpr bool auto_close = true;
-    out->native_fd =
-        base::FileDescriptor(data.TakeNativeFd().ReleaseFD(), auto_close);
-    return true;
-#else
-    NOTREACHED();
-    return false;
-#endif
-  }
+  out->owned_fd = data.TakeNativeFd().TakeFD();
   return true;
+#elif defined(OS_WIN)
+  out->owned_handle = data.TakeNativeHandle().TakeHandle();
+  return true;
+#else
+  return false;
+#endif
+}
+
+void StructTraits<gfx::mojom::GpuFenceHandleDataView,
+                  gfx::GpuFenceHandle>::SetToNull(gfx::GpuFenceHandle* handle) {
+#if defined(OS_POSIX)
+  handle->owned_fd.reset();
+#elif defined(OS_WIN)
+  handle->owned_handle.Close();
+#endif
+}
+
+bool StructTraits<gfx::mojom::GpuFenceHandleDataView,
+                  gfx::GpuFenceHandle>::IsNull(const gfx::GpuFenceHandle&
+                                                   handle) {
+  return handle.is_null();
 }
 
 }  // namespace mojo

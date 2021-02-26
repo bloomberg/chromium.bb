@@ -20,6 +20,10 @@ class NGPhysicalFragmentCollectorBase {
 
  public:
   virtual Vector<Result> CollectFrom(const NGPhysicalFragment&) = 0;
+  NGPhysicalFragmentCollectorBase(const NGPhysicalFragmentCollectorBase&) =
+      delete;
+  NGPhysicalFragmentCollectorBase& operator=(
+      const NGPhysicalFragmentCollectorBase&) = delete;
 
  protected:
   explicit NGPhysicalFragmentCollectorBase() = default;
@@ -89,8 +93,6 @@ class NGPhysicalFragmentCollectorBase {
   PhysicalOffset current_offset_to_root_;
   Vector<Result> results_;
   bool should_stop_traversing_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NGPhysicalFragmentCollectorBase);
 };
 
 // The visitor emitting all visited fragments.
@@ -99,6 +101,8 @@ class DescendantCollector final : public NGPhysicalFragmentCollectorBase {
 
  public:
   DescendantCollector() = default;
+  DescendantCollector(const DescendantCollector&) = delete;
+  DescendantCollector& operator=(const DescendantCollector&) = delete;
 
   Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
     return CollectExclusivelyFrom(fragment);
@@ -109,8 +113,6 @@ class DescendantCollector final : public NGPhysicalFragmentCollectorBase {
     Emit();
     VisitChildren();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(DescendantCollector);
 };
 
 // The visitor emitting fragments generated from the given LayoutInline,
@@ -125,6 +127,8 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
   explicit LayoutInlineCollector(const LayoutInline& container) {
     CollectInclusiveDescendants(container);
   }
+  LayoutInlineCollector(const LayoutInlineCollector&) = delete;
+  LayoutInlineCollector& operator=(const LayoutInlineCollector&) = delete;
 
   Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
     return CollectExclusivelyFrom(fragment);
@@ -152,13 +156,11 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
       }
       if (!node->IsLayoutInline())
         continue;
-      CollectInclusiveDescendants(ToLayoutInline(*node));
+      CollectInclusiveDescendants(To<LayoutInline>(*node));
     }
   }
 
   HashSet<const LayoutObject*> inclusive_descendants_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutInlineCollector);
 };
 
 }  // namespace
@@ -167,11 +169,11 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
 Vector<Result> NGInlineFragmentTraversal::SelfFragmentsOf(
     const NGPhysicalContainerFragment& container,
     const LayoutObject* layout_object) {
-  if (const LayoutInline* layout_inline = ToLayoutInlineOrNull(layout_object)) {
+  if (const auto* layout_inline = DynamicTo<LayoutInline>(layout_object)) {
     // TODO(crbug.com/874361): Stop partial culling of inline boxes, so that we
     // can simply check existence of paint fragments below.
     if (!layout_inline->HasSelfPaintingLayer()) {
-      return LayoutInlineCollector(ToLayoutInline(*layout_object))
+      return LayoutInlineCollector(To<LayoutInline>(*layout_object))
           .CollectFrom(container);
     }
   }

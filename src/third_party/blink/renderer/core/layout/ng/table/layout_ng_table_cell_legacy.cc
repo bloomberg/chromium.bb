@@ -19,9 +19,10 @@ LayoutNGTableCellLegacy::LayoutNGTableCellLegacy(Element* element)
     : LayoutNGBlockFlowMixin<LayoutTableCell>(element) {}
 
 void LayoutNGTableCellLegacy::UpdateBlockLayout(bool relayout_children) {
+  NOT_DESTROYED();
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  SetOverrideLogicalWidth(LogicalWidth());
+  SetOverrideLogicalWidth(LogicalWidth().ClampNegativeToZero());
   UpdateInFlowBlockLayout();
 }
 

@@ -7,6 +7,14 @@
 namespace openscreen {
 namespace cast {
 
+RtpPayloadType GetPayloadType(AudioCodec codec) {
+  return RtpPayloadType::kAudioHackForAndroidTV;
+}
+
+RtpPayloadType GetPayloadType(VideoCodec codec) {
+  return RtpPayloadType::kVideoHackForAndroidTV;
+}
+
 bool IsRtpPayloadType(uint8_t raw_byte) {
   switch (static_cast<RtpPayloadType>(raw_byte)) {
     case RtpPayloadType::kAudioOpus:

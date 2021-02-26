@@ -8,24 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
-# Run build_server so that files needed by tests are copied to the local
-# third_party directory.
 import os
-import sys
-
-WHITELIST = [ r'.+_test.py$' ]
-# The integration tests are selectively run from the PRESUBMIT in
-# chrome/common/extensions. Github filesystem support is currently
-# disabled.
-BLACKLIST = [ r'integration_test.py$', r'.*github.*_test.py$' ]
-
-def _BuildServer(input_api):
-  try:
-    sys.path.insert(0, input_api.PresubmitLocalPath())
-    import build_server
-    build_server.main()
-  finally:
-    sys.path.pop(0)
 
 def _WarnIfAppYamlHasntChanged(input_api, output_api):
   app_yaml_path = os.path.join(input_api.PresubmitLocalPath(), 'app.yaml')
@@ -57,19 +40,8 @@ No? I guess this presubmit check doesn't work.
 ''')]
 
 def _RunPresubmit(input_api, output_api):
-  _BuildServer(input_api)
-  # For now, print any lint errors. When these have been eliminated,
-  # move these into the warning list below.
-  # See crbug.com/434363 and crbug.com/461130.
-  lint_errors = input_api.canned_checks.RunPylint(input_api, output_api)
-  if lint_errors:
-    print(lint_errors)
-
-  return (
-      _WarnIfAppYamlHasntChanged(input_api, output_api) +
-      input_api.canned_checks.RunUnitTestsInDirectory(
-          input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
-  )
+  # TODO(crbug.com/434363): Enable pylint for the docserver.
+  return _WarnIfAppYamlHasntChanged(input_api, output_api)
 
 def CheckChangeOnUpload(input_api, output_api):
   return _RunPresubmit(input_api, output_api)

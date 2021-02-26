@@ -41,6 +41,22 @@ function openPicker(element, callback, errorCallback) {
         errorCallback();
 }
 
+// openPickerAppearanceOnly opens a picker UI for the following types:
+// - menulist SELECT
+// - INPUT color
+// - INPUT date/datetime-local/month/week
+
+// This is intended for use with picker UI tests that are only testing picker
+// appearance. Therefore, it is expected that tests using this API should fail
+// if the picker does not open.
+function openPickerAppearanceOnly(element, callback) {
+    let errorCallback = undefined;
+    if (typeof testFailed === 'function') {
+        errorCallback = () => testFailed('Popup failed to open.');
+    }
+    openPicker(element, callback, errorCallback);
+  }
+
 // openPickerWithPromise opens a picker UI for the following types:
 // - menulist SELECT
 // - INPUT color
@@ -77,6 +93,7 @@ function openPickerHelper(element) {
     return internals.pagePopupWindow;
 }
 
+// TODO(crbug.com/1047176) - use clickToOpenPickerWithPromise instead
 function clickToOpenPicker(x, y, callback, errorCallback) {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
@@ -86,6 +103,28 @@ function clickToOpenPicker(x, y, callback, errorCallback) {
         setPopupOpenCallback(callback);
     else if (typeof errorCallback === "function" && !popupWindow)
         errorCallback();
+}
+
+// Uses test_driver to open the picker.
+function clickToOpenPickerWithPromise(x, y, callback, errorCallback) {
+    return new Promise((resolve, reject)=>{
+      var actions = new test_driver.Actions();
+      actions
+          .pointerMove(x, y)
+          .pointerDown()
+          .pointerUp()
+          .send();
+      waitUntil(()=>internals.pagePopupWindow).then(()=>{
+        popupWindow = internals.pagePopupWindow;
+        if (typeof callback === "function")
+          setPopupOpenCallback(callback);
+        resolve();
+      }).catch((err)=>{
+          if (typeof errorCallback === "function" && !popupWindow)
+            errorCallback();
+         reject();
+      });
+    });
 }
 
 function setPopupOpenCallback(callback) {

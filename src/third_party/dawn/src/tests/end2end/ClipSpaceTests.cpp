@@ -59,8 +59,7 @@ class ClipSpaceTest : public DawnTest {
         textureDescriptor.dimension = wgpu::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
-        textureDescriptor.arrayLayerCount = 1;
+            wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
         textureDescriptor.size = {kSize, kSize, 1};
@@ -98,4 +97,8 @@ TEST_P(ClipSpaceTest, ClipSpace) {
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kGreen, colorTexture, 0, 0);
 }
 
-DAWN_INSTANTIATE_TEST(ClipSpaceTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(ClipSpaceTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

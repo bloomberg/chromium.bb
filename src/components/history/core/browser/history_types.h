@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -27,7 +26,6 @@
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/query_parser/query_parser.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -37,9 +35,7 @@ class PageUsageData;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64_t FaviconBitmapID;  // Identifier for a bitmap in a favicon.
 typedef int64_t SegmentID;        // URL segments for the most visited view.
-typedef int64_t IconMappingID;    // For page url and icon mapping.
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item
@@ -73,7 +69,8 @@ class VisitRow {
            VisitID arg_referring_visit,
            ui::PageTransition arg_transition,
            SegmentID arg_segment_id,
-           bool arg_incremented_omnibox_typed_score);
+           bool arg_incremented_omnibox_typed_score,
+           bool publicly_routable);
   ~VisitRow();
 
   // ID of this row (visit ID, used a a referrer for other visits).
@@ -103,6 +100,18 @@ class VisitRow {
 
   // Records whether the visit incremented the omnibox typed score.
   bool incremented_omnibox_typed_score = false;
+
+  // Indicates whether the IP of this url visit was publicly routable. According
+  // to the IETF document RFC-1918 (https://tools.ietf.org/html/rfc1918), the IP
+  // addresses within certain ranges are reserved for "private" internets, and
+  // the remaining addresses are considered "publicly routable".
+  //
+  // It’s a property of the visit because it can change depending on the network
+  // situation at navigation time. A value of “false” can mean several things:
+  // the IP was not publicly routable; this was not a committed navigation; this
+  // runs on iOS (unimplemented for iOS at this point); or the visit was
+  // migrated.
+  bool publicly_routable = false;
 
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) const {
@@ -370,6 +379,7 @@ struct HistoryAddPageArgs {
                      VisitSource source,
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited,
+                     bool publicly_routable,
                      base::Optional<base::string16> title = base::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
   ~HistoryAddPageArgs();
@@ -389,6 +399,9 @@ struct HistoryAddPageArgs {
   // doesn't guarantee it's relevant for Most Visited, since other requirements
   // exist (e.g. certain page transition types).
   bool consider_for_ntp_most_visited;
+  // Indicates whether the IP of this URL was publicly routable. It’s a property
+  // of the visit. See VisitRow for more details.
+  bool publicly_routable;
   base::Optional<base::string16> title;
 };
 
@@ -487,100 +500,6 @@ struct HistoryLastVisitToHostResult {
   // |success| is false.
   bool success = false;
   base::Time last_visit;
-};
-
-// Favicons -------------------------------------------------------------------
-
-// Used for the mapping between the page and icon.
-struct IconMapping {
-  IconMapping();
-  IconMapping(const IconMapping&);
-  IconMapping(IconMapping&&) noexcept;
-  ~IconMapping();
-
-  IconMapping& operator=(const IconMapping&);
-
-  // The unique id of the mapping.
-  IconMappingID mapping_id = 0;
-
-  // The url of a web page.
-  GURL page_url;
-
-  // The unique id of the icon.
-  favicon_base::FaviconID icon_id = 0;
-
-  // The url of the icon.
-  GURL icon_url;
-
-  // The type of icon.
-  favicon_base::IconType icon_type = favicon_base::IconType::kInvalid;
-};
-
-// Defines a favicon bitmap and its associated pixel size.
-struct FaviconBitmapIDSize {
-  FaviconBitmapIDSize();
-  ~FaviconBitmapIDSize();
-
-  // The unique id of the favicon bitmap.
-  FaviconBitmapID bitmap_id = 0;
-
-  // The pixel dimensions of the associated bitmap.
-  gfx::Size pixel_size;
-};
-
-enum FaviconBitmapType {
-  // The bitmap gets downloaded while visiting its page. Their life-time is
-  // bound to the life-time of the corresponding visit in history.
-  //  - These bitmaps are re-downloaded when visiting the page again and the
-  //  last_updated timestamp is old enough.
-  ON_VISIT,
-
-  // The bitmap gets downloaded because it is demanded by some Chrome UI (while
-  // not visiting its page). For this reason, their life-time cannot be bound to
-  // the life-time of the corresponding visit in history.
-  // - These bitmaps are evicted from the database based on the last time they
-  //   were requested.
-  // - Furthermore, on-demand bitmaps are immediately marked as expired. Hence,
-  //   they are always replaced by ON_VISIT favicons whenever their page gets
-  //   visited.
-  ON_DEMAND
-};
-
-// Defines all associated mappings of a given favicon.
-struct IconMappingsForExpiry {
-  IconMappingsForExpiry();
-  IconMappingsForExpiry(const IconMappingsForExpiry& other);
-  ~IconMappingsForExpiry();
-
-  // URL of a given favicon.
-  GURL icon_url;
-  // URLs of all pages mapped to a given favicon
-  std::vector<GURL> page_urls;
-};
-
-// Defines a favicon bitmap stored in the history backend.
-struct FaviconBitmap {
-  FaviconBitmap();
-  FaviconBitmap(const FaviconBitmap& other);
-  ~FaviconBitmap();
-
-  // The unique id of the bitmap.
-  FaviconBitmapID bitmap_id = 0;
-
-  // The id of the favicon to which the bitmap belongs to.
-  favicon_base::FaviconID icon_id = 0;
-
-  // Time at which |bitmap_data| was last updated.
-  base::Time last_updated;
-
-  // Time at which |bitmap_data| was last requested.
-  base::Time last_requested;
-
-  // The bits of the bitmap.
-  scoped_refptr<base::RefCountedMemory> bitmap_data;
-
-  // The pixel dimensions of bitmap_data.
-  gfx::Size pixel_size;
 };
 
 struct ExpireHistoryArgs {
@@ -725,6 +644,23 @@ class DomainVisit {
  private:
   std::string domain_;
   base::Time visit_time_;
+};
+
+enum class UrlsModifiedReason {
+  // The title was changed.
+  kTitleChanged,
+
+  // Modified because of Sync.
+  kSync,
+
+  // Some number of visits were removed because they were old.
+  kExpired,
+
+  // The user deleted some of the visits.
+  kUserDeleted,
+
+  // Notification is the result of AndroidProviderBackend.
+  kAndroidDb,
 };
 
 }  // namespace history

@@ -5,11 +5,12 @@
 #ifndef UI_BASE_POINTER_TOUCH_UI_CONTROLLER_H_
 #define UI_BASE_POINTER_TOUCH_UI_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 
 #if defined(OS_WIN)
 namespace gfx {
@@ -20,9 +21,9 @@ class SingletonHwndObserver;
 namespace ui {
 
 // Central controller to handle touch UI modes.
-class UI_BASE_EXPORT TouchUiController {
+class COMPONENT_EXPORT(UI_BASE) TouchUiController {
  public:
-  using CallbackList = base::CallbackList<void()>;
+  using CallbackList = base::RepeatingClosureList;
   using Subscription = CallbackList::Subscription;
 
   enum class TouchUiState {
@@ -31,13 +32,18 @@ class UI_BASE_EXPORT TouchUiController {
     kEnabled,
   };
 
-  class UI_BASE_EXPORT TouchUiScoperForTesting {
+  class COMPONENT_EXPORT(UI_BASE) TouchUiScoperForTesting {
    public:
     explicit TouchUiScoperForTesting(bool enabled,
                                      TouchUiController* controller = Get());
     TouchUiScoperForTesting(const TouchUiScoperForTesting&) = delete;
     TouchUiScoperForTesting& operator=(const TouchUiScoperForTesting&) = delete;
     ~TouchUiScoperForTesting();
+
+    // Update the current touch mode state but still roll back to the
+    // original state at destruction. Allows a test to change the mode
+    // multiple times without creating multiple instances.
+    void UpdateState(bool enabled);
 
    private:
     TouchUiController* const controller_;
@@ -63,6 +69,8 @@ class UI_BASE_EXPORT TouchUiController {
 
  private:
   TouchUiState SetTouchUiState(TouchUiState touch_ui_state);
+
+  void TouchUiChanged();
 
   bool tablet_mode_ = false;
   TouchUiState touch_ui_state_;

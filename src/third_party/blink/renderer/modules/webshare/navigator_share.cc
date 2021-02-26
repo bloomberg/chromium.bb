@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_share_data.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -49,35 +50,48 @@ String ErrorToString(mojom::blink::ShareError error) {
   return String();
 }
 
-bool HasFiles(const ShareData& share_data) {
-  if (!RuntimeEnabledFeatures::WebShareV2Enabled() || !share_data.hasFiles())
+bool HasFiles(const ShareData& data) {
+  if (!data.hasFiles())
     return false;
 
-  const HeapVector<Member<File>>& files = share_data.files();
-  return !files.IsEmpty();
+  return !data.files().IsEmpty();
 }
 
-// Returns a message for a TypeError if share(share_data) would reject with
-// TypeError. https://w3c.github.io/web-share/level-2/#canshare-method
-// Otherwise returns an empty string.
-// Populates full_url with the result of running the URL parser on
-// share_data.url
-String CheckForTypeError(const LocalDOMWindow& window,
-                         const ShareData& share_data,
-                         KURL* full_url) {
-  if (!share_data.hasTitle() && !share_data.hasText() && !share_data.hasUrl() &&
-      !HasFiles(share_data)) {
-    return "No known share data fields supplied. If using only new fields "
-           "(other than title, text and url), you must feature-detect "
-           "them first.";
+// Returns true unless |share(data)| would reject with TypeError.
+// Populates |url| with the result of running the URL parser on |data.url|.
+// If the return value is false and |exception_state| is non null, throws
+// TypeError.
+//
+// https://w3c.github.io/web-share/level-2/#canshare-method
+// https://w3c.github.io/web-share/level-2/#share-method
+bool CanShareInternal(const LocalDOMWindow& window,
+                      const ShareData& data,
+                      KURL& url,
+                      ExceptionState* exception_state) {
+  if (!data.hasTitle() && !data.hasText() && !data.hasUrl() &&
+      !HasFiles(data)) {
+    if (exception_state) {
+      exception_state->ThrowTypeError(
+          "No known share data fields supplied. If using only new fields "
+          "(other than title, text and url), you must feature-detect "
+          "them first.");
+    }
+    return false;
   }
 
-  *full_url = window.CompleteURL(share_data.url());
-  if (!full_url->IsNull() && !full_url->IsValid()) {
-    return "Invalid URL";
+  if (data.hasUrl()) {
+    url = window.CompleteURL(data.url());
+    if (!url.IsValid() ||
+        (!url.ProtocolIsInHTTPFamily() &&
+         url.Protocol() != window.document()->BaseURL().Protocol())) {
+      if (exception_state) {
+        exception_state->ThrowTypeError("Invalid URL");
+      }
+      return false;
+    }
   }
 
-  return g_empty_string;
+  return true;
 }
 
 }  // namespace
@@ -91,7 +105,7 @@ class NavigatorShare::ShareClientImpl final
 
   void OnConnectionError();
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(navigator_);
     visitor->Trace(resolver_);
   }
@@ -119,8 +133,10 @@ NavigatorShare::ShareClientImpl::ShareClientImpl(
                   {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
 
 void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
-  if (navigator_)
-    navigator_->clients_.erase(this);
+  if (navigator_) {
+    DCHECK_EQ(navigator_->client_, this);
+    navigator_->client_ = nullptr;
+  }
 
   if (error == mojom::blink::ShareError::OK) {
     UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
@@ -147,8 +163,6 @@ void NavigatorShare::ShareClientImpl::OnConnectionError() {
       "Internal error: could not connect to Web Share interface."));
 }
 
-NavigatorShare::~NavigatorShare() = default;
-
 NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   NavigatorShare* supplement =
       Supplement<Navigator>::From<NavigatorShare>(navigator);
@@ -159,35 +173,31 @@ NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   return *supplement;
 }
 
-void NavigatorShare::Trace(Visitor* visitor) {
+void NavigatorShare::Trace(Visitor* visitor) const {
   visitor->Trace(service_remote_);
-  visitor->Trace(clients_);
+  visitor->Trace(client_);
   Supplement<Navigator>::Trace(visitor);
 }
-
-NavigatorShare::NavigatorShare()
-    :  // |NavigatorShare| is not ExecutionContext-associated.
-      service_remote_(nullptr) {}
 
 const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 
 bool NavigatorShare::canShare(ScriptState* script_state,
-                              const ShareData* share_data) {
+                              const ShareData* data) {
   if (!script_state->ContextIsValid())
     return false;
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  KURL full_url;
-  return CheckForTypeError(*window, *share_data, &full_url).IsEmpty();
+  KURL unused_url;
+  return CanShareInternal(*window, *data, unused_url, nullptr);
 }
 
 bool NavigatorShare::canShare(ScriptState* script_state,
                               Navigator& navigator,
-                              const ShareData* share_data) {
-  return From(navigator).canShare(script_state, share_data);
+                              const ShareData* data) {
+  return From(navigator).canShare(script_state, data);
 }
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
-                                    const ShareData* share_data,
+                                    const ShareData* data,
                                     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(
@@ -197,18 +207,30 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  KURL full_url;
-  String error_message = CheckForTypeError(*window, *share_data, &full_url);
-  if (!error_message.IsEmpty()) {
-    exception_state.ThrowTypeError(error_message);
+  // The feature policy is currently not enforced.
+  LocalDOMWindow* const window = LocalDOMWindow::From(script_state);
+  window->CountUse(
+      ExecutionContext::From(script_state)
+              ->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebShare)
+          ? WebFeature::kWebSharePolicyAllow
+          : WebFeature::kWebSharePolicyDisallow);
+
+  if (client_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "A earlier share had not yet completed.");
     return ScriptPromise();
   }
 
-  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+  if (!LocalFrame::ConsumeTransientUserActivation(window->GetFrame())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
+    return ScriptPromise();
+  }
+
+  KURL url;
+  if (!CanShareInternal(*window, *data, url, &exception_state)) {
+    DCHECK(exception_state.HadException());
     return ScriptPromise();
   }
 
@@ -222,18 +244,12 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     DCHECK(service_remote_.is_bound());
   }
 
-  bool has_files = HasFiles(*share_data);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ShareClientImpl* client =
-      MakeGarbageCollected<ShareClientImpl>(this, has_files, resolver);
-  clients_.insert(client);
-  ScriptPromise promise = resolver->Promise();
-
+  bool has_files = HasFiles(*data);
   WTF::Vector<mojom::blink::SharedFilePtr> files;
   uint64_t total_bytes = 0;
   if (has_files) {
-    files.ReserveInitialCapacity(share_data->files().size());
-    for (const blink::Member<blink::File>& file : share_data->files()) {
+    files.ReserveInitialCapacity(data->files().size());
+    for (const blink::Member<blink::File>& file : data->files()) {
       total_bytes += file->size();
       files.push_back(mojom::blink::SharedFile::New(file->name(),
                                                     file->GetBlobDataHandle()));
@@ -247,27 +263,28 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
   }
 
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  client_ = MakeGarbageCollected<ShareClientImpl>(this, has_files, resolver);
   service_remote_->Share(
-      share_data->hasTitle() ? share_data->title() : g_empty_string,
-      share_data->hasText() ? share_data->text() : g_empty_string, full_url,
-      std::move(files),
-      WTF::Bind(&ShareClientImpl::Callback, WrapPersistent(client)));
+      data->hasTitle() ? data->title() : g_empty_string,
+      data->hasText() ? data->text() : g_empty_string, url, std::move(files),
+      WTF::Bind(&ShareClientImpl::Callback, WrapPersistent(client_.Get())));
 
-  return promise;
+  return resolver->Promise();
 }
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     Navigator& navigator,
-                                    const ShareData* share_data,
+                                    const ShareData* data,
                                     ExceptionState& exception_state) {
-  return From(navigator).share(script_state, share_data, exception_state);
+  return From(navigator).share(script_state, data, exception_state);
 }
 
 void NavigatorShare::OnConnectionError() {
-  for (auto& client : clients_) {
-    client->OnConnectionError();
+  if (client_) {
+    client_->OnConnectionError();
+    client_ = nullptr;
   }
-  clients_.clear();
   service_remote_.reset();
 }
 

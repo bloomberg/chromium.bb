@@ -20,9 +20,9 @@
 #include "base/scoped_generic.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/pe_image_reader.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wincrypt_shim.h"
-#include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
 // This must be after wincrypt and wintrust.
 #include <mscat.h>
@@ -255,7 +255,7 @@ void GetCertificateInfo(const base::FilePath& filename,
 
 bool IsMicrosoftModule(base::StringPiece16 subject) {
   static constexpr wchar_t kMicrosoft[] = L"Microsoft ";
-  return subject.starts_with(kMicrosoft);
+  return base::StartsWith(subject, kMicrosoft);
 }
 
 StringMapping GetEnvironmentVariablesMapping(
@@ -284,8 +284,7 @@ void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
   size_t min_length = std::numeric_limits<size_t>::max();
   for (const auto& mapping : prefix_mapping) {
     DCHECK_EQ(base::i18n::ToLower(mapping.first), mapping.first);
-    if (base::StartsWith(path_copy, mapping.first,
-                         base::CompareCase::SENSITIVE)) {
+    if (base::StartsWith(path_copy, mapping.first)) {
       // Make sure the matching prefix is a full path component.
       if (path_copy[mapping.first.length()] != '\\' &&
           path_copy[mapping.first.length()] != '\0') {
@@ -323,7 +322,7 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
   if (bytes_read == -1)
     return false;
 
-  safe_browsing::PeImageReader pe_image_reader;
+  base::win::PeImageReader pe_image_reader;
   if (!pe_image_reader.Initialize(buffer.get(), bytes_read))
     return false;
 

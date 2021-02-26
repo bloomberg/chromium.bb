@@ -48,12 +48,6 @@ class MockRTCPeerConnectionHandlerPlatform : public RTCPeerConnectionHandler {
                            RTCSessionDescriptionPlatform*) override;
   void SetRemoteDescription(RTCVoidRequest*,
                             RTCSessionDescriptionPlatform*) override;
-  RTCSessionDescriptionPlatform* LocalDescription() override;
-  RTCSessionDescriptionPlatform* RemoteDescription() override;
-  RTCSessionDescriptionPlatform* CurrentLocalDescription() override;
-  RTCSessionDescriptionPlatform* CurrentRemoteDescription() override;
-  RTCSessionDescriptionPlatform* PendingLocalDescription() override;
-  RTCSessionDescriptionPlatform* PendingRemoteDescription() override;
   const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
       const override;
   webrtc::RTCErrorType SetConfiguration(
@@ -64,14 +58,14 @@ class MockRTCPeerConnectionHandlerPlatform : public RTCPeerConnectionHandler {
   void GetStats(RTCStatsReportCallback,
                 const Vector<webrtc::NonStandardGroupId>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTransceiverWithTrack(const WebMediaStreamTrack&,
+  AddTransceiverWithTrack(MediaStreamComponent*,
                           const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(const String& kind,
                          const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
-      const WebMediaStreamTrack&,
-      const Vector<WebMediaStream>&) override;
+      MediaStreamComponent*,
+      const MediaStreamDescriptorVector&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> RemoveTrack(
       RTCRtpSenderPlatform*) override;
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(

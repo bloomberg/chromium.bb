@@ -28,18 +28,15 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -59,29 +56,16 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
   return serialized;
 }
 
-SecurityContext::SecurityContext(const SecurityContextInit& init,
-                                 SecurityContextType context_type)
-    : sandbox_flags_(init.GetSandboxFlags()),
-      security_origin_(init.GetSecurityOrigin()),
-      feature_policy_(init.CreateFeaturePolicy()),
-      report_only_feature_policy_(init.CreateReportOnlyFeaturePolicy()),
-      document_policy_(init.CreateDocumentPolicy()),
-      report_only_document_policy_(init.CreateReportOnlyDocumentPolicy()),
-      content_security_policy_(init.GetCSP()),
-      address_space_(network::mojom::IPAddressSpace::kUnknown),
+SecurityContext::SecurityContext(ExecutionContext* execution_context)
+    : execution_context_(execution_context),
       insecure_request_policy_(
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
-      require_safe_types_(false),
-      context_type_for_asserts_(context_type),
-      agent_(init.GetAgent()),
-      secure_context_mode_(init.GetSecureContextMode()),
-      origin_trial_context_(init.GetOriginTrialContext()),
-      bind_csp_immediately_(init.BindCSPImmediately()) {}
+          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {}
 
-void SecurityContext::Trace(Visitor* visitor) {
+SecurityContext::~SecurityContext() = default;
+
+void SecurityContext::Trace(Visitor* visitor) const {
+  visitor->Trace(execution_context_);
   visitor->Trace(content_security_policy_);
-  visitor->Trace(agent_);
-  visitor->Trace(origin_trial_context_);
 }
 
 void SecurityContext::SetSecurityOrigin(
@@ -99,14 +83,48 @@ void SecurityContext::SetSecurityOrigin(
   // that transition. See https://crbug.com/1068008. It would be great if we
   // could get rid of this exemption.
   bool is_worker_transition_to_opaque =
-      context_type_for_asserts_ == kWorker &&
+      execution_context_ &&
+      execution_context_->IsWorkerOrWorkletGlobalScope() &&
       IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin) &&
       security_origin->IsOpaque() &&
       security_origin->GetOriginOrPrecursorOriginIfOpaque() == security_origin_;
-  CHECK(context_type_for_asserts_ == kRemoteFrame || !security_origin_ ||
+  CHECK(!execution_context_ || !security_origin_ ||
         security_origin_->CanAccess(security_origin.get()) ||
         is_worker_transition_to_opaque);
   security_origin_ = std::move(security_origin);
+
+  if (!security_origin_->IsPotentiallyTrustworthy()) {
+    secure_context_mode_ = SecureContextMode::kInsecureContext;
+    secure_context_explanation_ = SecureContextModeExplanation::kInsecureScheme;
+  } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+                 security_origin_->Protocol())) {
+    secure_context_mode_ = SecureContextMode::kSecureContext;
+    secure_context_explanation_ = SecureContextModeExplanation::kSecure;
+  } else if (execution_context_) {
+    if (execution_context_->HasInsecureContextInAncestors()) {
+      secure_context_mode_ = SecureContextMode::kInsecureContext;
+      secure_context_explanation_ =
+          SecureContextModeExplanation::kInsecureAncestor;
+    } else {
+      secure_context_mode_ = SecureContextMode::kSecureContext;
+      secure_context_explanation_ =
+          security_origin_->IsLocalhost()
+              ? SecureContextModeExplanation::kSecureLocalhost
+              : SecureContextModeExplanation::kSecure;
+    }
+  }
+
+  bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
+  if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone) {
+    UseCounter::Count(
+        execution_context_,
+        is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                  : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
+  }
+
+  UseCounter::Count(execution_context_,
+                    is_secure ? WebFeature::kSecureContextCheckPassed
+                              : WebFeature::kSecureContextCheckFailed);
 }
 
 void SecurityContext::SetSecurityOriginForTesting(
@@ -155,9 +173,19 @@ void SecurityContext::SetFeaturePolicy(
   feature_policy_ = std::move(feature_policy);
 }
 
-void SecurityContext::SetDocumentPolicyForTesting(
-    std::unique_ptr<DocumentPolicy> document_policy) {
-  document_policy_ = std::move(document_policy);
+void SecurityContext::SetReportOnlyFeaturePolicy(
+    std::unique_ptr<FeaturePolicy> feature_policy) {
+  report_only_feature_policy_ = std::move(feature_policy);
+}
+
+void SecurityContext::SetDocumentPolicy(
+    std::unique_ptr<DocumentPolicy> policy) {
+  document_policy_ = std::move(policy);
+}
+
+void SecurityContext::SetReportOnlyDocumentPolicy(
+    std::unique_ptr<DocumentPolicy> policy) {
+  report_only_document_policy_ = std::move(policy);
 }
 
 bool SecurityContext::IsFeatureEnabled(
@@ -181,7 +209,7 @@ bool SecurityContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature) const {
   DCHECK(GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type() ==
          mojom::blink::PolicyValueType::kBool);
-  return IsFeatureEnabled(feature, PolicyValue(true)).enabled;
+  return IsFeatureEnabled(feature, PolicyValue::CreateBool(true)).enabled;
 }
 
 SecurityContext::FeatureStatus SecurityContext::IsFeatureEnabled(

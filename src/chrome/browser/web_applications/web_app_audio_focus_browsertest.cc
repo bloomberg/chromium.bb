@@ -87,7 +87,7 @@ class WebAppAudioFocusBrowserTest : public WebAppControllerBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
+IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(kAudioFocusTestPageURL);
 
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   EXPECT_EQ(group_id, GetAudioFocusGroupId(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, WebAppHasSameAudioFocus) {
+IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, WebAppHasSameAudioFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(kAudioFocusTestPageURL);
 
@@ -185,13 +185,5 @@ IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, WebAppHasSameAudioFocus) {
 
   EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusGroupId(web_contents));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppAudioFocusBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
 
 }  // namespace web_app

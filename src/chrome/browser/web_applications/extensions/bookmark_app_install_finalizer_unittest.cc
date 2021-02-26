@@ -13,18 +13,20 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/test/test_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_prefs.h"
@@ -72,13 +74,14 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
               nullptr,
               nullptr) {}
 
-    void OnUnpackSuccess(
-        const base::FilePath& temp_dir,
-        const base::FilePath& extension_dir,
+    void OnUnpackSuccessOnSharedFileThread(
+        base::FilePath temp_dir,
+        base::FilePath extension_dir,
         std::unique_ptr<base::DictionaryValue> original_manifest,
-        const Extension* extension,
-        const SkBitmap& install_icon,
-        declarative_net_request::RulesetChecksums ruleset_checksums) override {
+        scoped_refptr<const Extension> extension,
+        SkBitmap install_icon,
+        declarative_net_request::RulesetInstallPrefs ruleset_install_prefs)
+        override {
       run_loop_.Quit();
     }
 
@@ -90,13 +93,14 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
                             base::ASCIIToUTF16(""));
       NotifyCrxInstallComplete(error);
     }
+    FakeCrxInstaller(const FakeCrxInstaller&) = delete;
+    FakeCrxInstaller& operator=(const FakeCrxInstaller&) = delete;
 
    private:
     ~FakeCrxInstaller() override = default;
 
     base::RunLoop run_loop_;
 
-    DISALLOW_COPY_AND_ASSIGN(FakeCrxInstaller);
   };
 
   class TestCrxInstallerToDisableExtension : public CrxInstaller {
@@ -120,6 +124,10 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
           &TestCrxInstallerToDisableExtension::OnCrxInstalled, this));
       CrxInstaller::InstallWebApp(web_app);
     }
+    TestCrxInstallerToDisableExtension(
+        const TestCrxInstallerToDisableExtension&) = delete;
+    TestCrxInstallerToDisableExtension& operator=(
+        const TestCrxInstallerToDisableExtension&) = delete;
 
    private:
     ~TestCrxInstallerToDisableExtension() override = default;
@@ -136,10 +144,13 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
 
     InstallerResultCallback real_callback_;
 
-    DISALLOW_COPY_AND_ASSIGN(TestCrxInstallerToDisableExtension);
   };
 
   BookmarkAppInstallFinalizerTest() = default;
+  BookmarkAppInstallFinalizerTest(const BookmarkAppInstallFinalizerTest&) =
+      delete;
+  BookmarkAppInstallFinalizerTest& operator=(
+      const BookmarkAppInstallFinalizerTest&) = delete;
   ~BookmarkAppInstallFinalizerTest() override = default;
 
   void SetUp() override {
@@ -156,15 +167,21 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     registry_controller_ =
         std::make_unique<web_app::TestAppRegistryController>(profile());
     ui_manager_ = std::make_unique<web_app::TestWebAppUiManager>();
+    os_integration_manager_ =
+        std::make_unique<web_app::TestOsIntegrationManager>(
+            profile(), /*shortcut_manager=*/nullptr,
+            /*file_handler_manager=*/nullptr);
 
     finalizer_ = std::make_unique<BookmarkAppInstallFinalizer>(profile());
     finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get(),
-                              registry_controller_.get());
+                              registry_controller_.get(),
+                              os_integration_manager_.get());
+    registrar_->SetSubsystems(os_integration_manager_.get());
   }
 
-  web_app::AppId InstallExternalApp(const GURL& app_url) {
+  web_app::AppId InstallExternalApp(const GURL& start_url) {
     auto info = std::make_unique<WebApplicationInfo>();
-    info->app_url = app_url;
+    info->start_url = start_url;
     info->title = base::ASCIIToUTF16(kWebAppTitle);
 
     web_app::InstallFinalizer::FinalizeOptions options;
@@ -183,7 +200,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     run_loop.Run();
 
     web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(app_url, app_id,
+        .Insert(start_url, app_id,
                 web_app::ExternalInstallSource::kExternalPolicy);
 
     return app_id;
@@ -208,8 +225,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<web_app::TestAppRegistryController> registry_controller_;
   std::unique_ptr<web_app::TestWebAppUiManager> ui_manager_;
   std::unique_ptr<BookmarkAppInstallFinalizer> finalizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizerTest);
+  std::unique_ptr<web_app::TestOsIntegrationManager> os_integration_manager_;
 };
 
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallButExtensionIsDisabled) {
@@ -227,7 +243,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallButExtensionIsDisabled) {
       }));
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -264,7 +280,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
       }));
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   base::RunLoop run_loop;
@@ -307,7 +323,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
   // Start install finalization for the 1st app
   {
     WebApplicationInfo web_application_info;
-    web_application_info.app_url = url1;
+    web_application_info.start_url = url1;
 
     finalizer().FinalizeInstall(
         web_application_info, options,
@@ -324,7 +340,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
   // Start install finalization for the 2nd app
   {
     WebApplicationInfo web_application_info;
-    web_application_info.app_url = url2;
+    web_application_info.start_url = url2;
 
     finalizer().FinalizeInstall(
         web_application_info, options,
@@ -346,7 +362,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
 
 TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -373,7 +389,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
 
 TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -400,7 +416,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
 TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
   base::HistogramTester histograms;
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -444,7 +460,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledButExtensionIsDisabled) {
       }));
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -481,7 +497,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledFails) {
       }));
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -510,7 +526,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledFails) {
 
 TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallForArc) {
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
 
   web_app::InstallFinalizer::FinalizeOptions options;
   options.install_source = WebappInstallSource::ARC;
@@ -640,7 +656,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
 
 TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = WebAppUrl();
+  info->start_url = WebAppUrl();
 
   web_app::InstallFinalizer::FinalizeOptions options;
   options.install_source = WebappInstallSource::INTERNAL_DEFAULT;

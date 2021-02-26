@@ -22,6 +22,8 @@
 #include "components/translate/content/browser/content_record_page_language.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/browser/translate_metrics_logger.h"
+#include "components/translate/core/common/translate_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -33,7 +35,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/web_preferences.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -78,7 +79,7 @@ void ContentTranslateDriver::RemoveObserver(Observer* observer) {
 
 void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
                                                  int attempt) {
-  if (translate_manager_->GetLanguageState().translation_pending())
+  if (translate_manager_->GetLanguageState()->translation_pending())
     return;
 
   // During a reload we need web content to be available before the
@@ -200,7 +201,7 @@ void ContentTranslateDriver::NavigationEntryCommitted(
   }
 
   if (!load_details.is_main_frame &&
-      translate_manager_->GetLanguageState().translation_declined()) {
+      translate_manager_->GetLanguageState()->translation_declined()) {
     // Some sites (such as Google map) may trigger sub-frame navigations
     // when the user interacts with the page.  We don't want to show a new
     // infobar if the user already dismissed one in that case.
@@ -226,7 +227,7 @@ void ContentTranslateDriver::NavigationEntryCommitted(
     return;
   }
 
-  if (!translate_manager_->GetLanguageState().page_needs_translation())
+  if (!translate_manager_->GetLanguageState()->page_needs_translation())
     return;
 
   // Note that we delay it as the ordering of the processing of this callback
@@ -235,16 +236,19 @@ void ContentTranslateDriver::NavigationEntryCommitted(
   // an infobar, it must be done after that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ContentTranslateDriver::InitiateTranslation,
-                     weak_pointer_factory_.GetWeakPtr(),
-                     translate_manager_->GetLanguageState().original_language(),
-                     0));
+      base::BindOnce(
+          &ContentTranslateDriver::InitiateTranslation,
+          weak_pointer_factory_.GetWeakPtr(),
+          translate_manager_->GetLanguageState()->original_language(), 0));
 }
 
 void ContentTranslateDriver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted())
     return;
+
+  if (navigation_handle->IsInMainFrame())
+    finish_navigation_time_ = base::TimeTicks::Now();
 
   // Let the LanguageState clear its state.
   const bool reload =
@@ -261,7 +265,7 @@ void ContentTranslateDriver::DidFinishNavigation(
                                       google_util::ALLOW_NON_STANDARD_PORTS) ||
        IsAutoHrefTranslateAllOriginsEnabled());
 
-  translate_manager_->GetLanguageState().DidNavigate(
+  translate_manager_->GetLanguageState()->DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
       reload, navigation_handle->GetHrefTranslate(), navigation_from_google);
 }
@@ -283,6 +287,10 @@ void ContentTranslateDriver::RegisterPage(
     mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
     const translate::LanguageDetectionDetails& details,
     const bool page_needs_translation) {
+  base::TimeTicks language_determined_time = base::TimeTicks::Now();
+  ReportLanguageDeterminedDuration(finish_navigation_time_,
+                                   language_determined_time);
+
   // If we have a language histogram (i.e. we're not in incognito), update it
   // with the detected language of every page visited.
   if (language_histogram_ && details.is_cld_reliable)
@@ -294,7 +302,7 @@ void ContentTranslateDriver::RegisterPage(
                      base::Unretained(this), next_page_seq_no_));
   translate_manager_->set_current_seq_no(next_page_seq_no_);
 
-  translate_manager_->GetLanguageState().LanguageDetermined(
+  translate_manager_->GetLanguageState()->LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
   if (web_contents()) {
@@ -315,8 +323,12 @@ void ContentTranslateDriver::OnPageTranslated(
     const std::string& original_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
-  if (cancelled)
+  if (cancelled) {
+    // Informs the |TranslateMetricsLogger| that the translation was cancelled.
+    translate_manager_->GetActiveTranslateMetricsLogger()
+        ->LogTranslationFinished(false);
     return;
+  }
 
   translate_manager_->PageTranslated(
       original_lang, translated_lang, error_type);

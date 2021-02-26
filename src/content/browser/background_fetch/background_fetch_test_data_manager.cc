@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
@@ -30,7 +31,10 @@ class MockBGFQuotaManagerProxy : public storage::MockQuotaManagerProxy {
             base::ThreadTaskRunnerHandle::Get().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
-  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
+  void RegisterClient(
+      scoped_refptr<storage::QuotaClient> client,
+      storage::QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types) override {}
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,
@@ -78,8 +82,16 @@ void BackgroundFetchTestDataManager::InitializeOnCoreThread() {
   DCHECK(cache_manager_);
 
   mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
-  blob_storage_context_->BindMojoContext(
-      remote.InitWithNewPipeAndPassReceiver());
+
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::PostTaskAndReply(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ChromeBlobStorageContext::BindMojoContext,
+                     blob_storage_context_,
+                     remote.InitWithNewPipeAndPassReceiver()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
   auto context =
       base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote));
   cache_manager_->SetBlobParametersForCache(std::move(context));

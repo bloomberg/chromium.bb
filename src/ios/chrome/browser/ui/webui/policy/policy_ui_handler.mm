@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_map.h"
@@ -51,6 +51,8 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
       {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
       {"error", IDS_POLICY_LABEL_ERROR},
+      {"deprecated", IDS_POLICY_LABEL_DEPRECATED},
+      {"future", IDS_POLICY_LABEL_FUTURE},
       {"ignored", IDS_POLICY_LABEL_IGNORED},
       {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
       {"ok", IDS_POLICY_OK},
@@ -134,7 +136,7 @@ void PolicyUIHandler::HandleListenPoliciesUpdates(const base::ListValue* args) {
 }
 
 void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
-  GetPolicyService()->RefreshPolicies(base::Bind(
+  GetPolicyService()->RefreshPolicies(base::BindOnce(
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 

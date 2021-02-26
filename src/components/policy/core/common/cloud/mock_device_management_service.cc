@@ -5,7 +5,7 @@
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -97,7 +97,18 @@ std::string MockDeviceManagementServiceConfiguration::GetPlatformParameter() {
   return kPlatform;
 }
 
-std::string MockDeviceManagementServiceConfiguration::GetReportingServerUrl() {
+std::string
+MockDeviceManagementServiceConfiguration::GetRealtimeReportingServerUrl() {
+  return server_url_;
+}
+
+std::string
+MockDeviceManagementServiceConfiguration::GetEncryptedReportingServerUrl() {
+  return server_url_;
+}
+
+std::string
+MockDeviceManagementServiceConfiguration::GetReportingConnectorServerUrl() {
   return server_url_;
 }
 

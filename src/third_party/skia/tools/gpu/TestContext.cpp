@@ -8,9 +8,8 @@
 
 #include "tools/gpu/TestContext.h"
 
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkTraceEvent.h"
-#include "src/gpu/GrContextPriv.h"
 #include "tools/gpu/FlushFinishTracker.h"
 #include "tools/gpu/GpuTimer.h"
 
@@ -22,7 +21,7 @@ TestContext::~TestContext() {
     SkASSERT(!fGpuTimer);
 }
 
-sk_sp<GrContext> TestContext::makeGrContext(const GrContextOptions&) {
+sk_sp<GrDirectContext> TestContext::makeContext(const GrContextOptions&) {
     return nullptr;
 }
 
@@ -35,7 +34,7 @@ SkScopeExit TestContext::makeCurrentAndAutoRestore() const {
     return asr;
 }
 
-void TestContext::flushAndWaitOnSync(GrContext* context) {
+void TestContext::flushAndWaitOnSync(GrDirectContext* context) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(context);
 
@@ -54,6 +53,7 @@ void TestContext::flushAndWaitOnSync(GrContext* context) {
     flushInfo.fFinishedContext = fFinishTrackers[fCurrentFlushIdx].get();
 
     context->flush(flushInfo);
+    context->submit();
 
     fCurrentFlushIdx = (fCurrentFlushIdx + 1) % SK_ARRAY_COUNT(fFinishTrackers);
 }
@@ -65,4 +65,4 @@ void TestContext::teardown() {
     fGpuTimer.reset();
 }
 
-}
+}  // namespace sk_gpu_test

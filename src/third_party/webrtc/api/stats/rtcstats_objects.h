@@ -134,7 +134,7 @@ class RTC_EXPORT RTCDataChannelStats final : public RTCStats {
 
   RTCStatsMember<std::string> label;
   RTCStatsMember<std::string> protocol;
-  RTCStatsMember<int32_t> datachannelid;
+  RTCStatsMember<int32_t> data_channel_identifier;
   // TODO(hbos): Support enum types? "RTCStatsMember<RTCDataChannelState>"?
   RTCStatsMember<std::string> state;
   RTCStatsMember<uint32_t> messages_sent;
@@ -419,6 +419,18 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value for both "audio" and "video",
   // currently not collected for "video". https://bugs.webrtc.org/7065
   RTCStatsMember<double> jitter;
+  RTCStatsMember<double> jitter_buffer_delay;
+  RTCStatsMember<uint64_t> jitter_buffer_emitted_count;
+  RTCStatsMember<uint64_t> total_samples_received;
+  RTCStatsMember<uint64_t> concealed_samples;
+  RTCStatsMember<uint64_t> silent_concealed_samples;
+  RTCStatsMember<uint64_t> concealment_events;
+  RTCStatsMember<uint64_t> inserted_samples_for_deceleration;
+  RTCStatsMember<uint64_t> removed_samples_for_acceleration;
+  RTCStatsMember<double> audio_level;
+  RTCStatsMember<double> total_audio_energy;
+  RTCStatsMember<double> total_samples_duration;
+  RTCStatsMember<int32_t> frames_received;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> round_trip_time;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
@@ -441,8 +453,13 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   RTCStatsMember<double> gap_loss_rate;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> gap_discard_rate;
+  RTCStatsMember<uint32_t> frame_width;
+  RTCStatsMember<uint32_t> frame_height;
+  RTCStatsMember<uint32_t> frame_bit_depth;
+  RTCStatsMember<double> frames_per_second;
   RTCStatsMember<uint32_t> frames_decoded;
   RTCStatsMember<uint32_t> key_frames_decoded;
+  RTCStatsMember<uint32_t> frames_dropped;
   RTCStatsMember<double> total_decode_time;
   RTCStatsMember<double> total_inter_frame_delay;
   RTCStatsMember<double> total_squared_inter_frame_delay;
@@ -602,7 +619,9 @@ class RTC_EXPORT RTCTransportStats final : public RTCStats {
   ~RTCTransportStats() override;
 
   RTCStatsMember<uint64_t> bytes_sent;
+  RTCStatsMember<uint64_t> packets_sent;
   RTCStatsMember<uint64_t> bytes_received;
+  RTCStatsMember<uint64_t> packets_received;
   RTCStatsMember<std::string> rtcp_transport_stats_id;
   // TODO(hbos): Support enum types? "RTCStatsMember<RTCDtlsTransportState>"?
   RTCStatsMember<std::string> dtls_state;

@@ -22,6 +22,7 @@
 #include "src/trace_processor/importers/common/args_tracker.h"
 #include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/process_tracker.h"
+#include "src/trace_processor/importers/common/system_info_tracker.h"
 #include "src/trace_processor/importers/ftrace/ftrace_descriptors.h"
 #include "src/trace_processor/storage/stats.h"
 #include "src/trace_processor/types/task_state.h"
@@ -72,8 +73,10 @@ void SchedEventTracker::PushSchedSwitch(uint32_t cpu,
                                         int32_t next_prio) {
   // At this stage all events should be globally timestamp ordered.
   if (ts < context_->event_tracker->max_timestamp()) {
-    PERFETTO_ELOG("sched_switch event out of order by %.4f ms, skipping",
-                  (context_->event_tracker->max_timestamp() - ts) / 1e6);
+    PERFETTO_ELOG(
+        "sched_switch event out of order by %.4f ms, skipping",
+        static_cast<double>(context_->event_tracker->max_timestamp() - ts) /
+            1e6);
     context_->storage->IncrementStats(stats::sched_switch_out_of_order);
     return;
   }
@@ -81,8 +84,8 @@ void SchedEventTracker::PushSchedSwitch(uint32_t cpu,
   PERFETTO_DCHECK(cpu < kMaxCpus);
 
   StringId next_comm_id = context_->storage->InternString(next_comm);
-  UniqueTid next_utid =
-      context_->process_tracker->UpdateThreadName(next_pid, next_comm_id);
+  UniqueTid next_utid = context_->process_tracker->UpdateThreadName(
+      next_pid, next_comm_id, ThreadNamePriority::kFtrace);
 
   // First use this data to close the previous slice.
   bool prev_pid_match_prev_next_pid = false;
@@ -102,8 +105,8 @@ void SchedEventTracker::PushSchedSwitch(uint32_t cpu,
   // this event's |prev_comm| == previous event's |next_comm| does not hold
   // if the thread changed its name while scheduled.
   StringId prev_comm_id = context_->storage->InternString(prev_comm);
-  UniqueTid prev_utid =
-      context_->process_tracker->UpdateThreadName(prev_pid, prev_comm_id);
+  UniqueTid prev_utid = context_->process_tracker->UpdateThreadName(
+      prev_pid, prev_comm_id, ThreadNamePriority::kFtrace);
 
   auto new_slice_idx = AddRawEventAndStartSlice(
       cpu, ts, prev_utid, prev_pid, prev_comm_id, prev_prio, prev_state,
@@ -124,16 +127,18 @@ void SchedEventTracker::PushSchedSwitchCompact(uint32_t cpu,
                                                StringId next_comm_id) {
   // At this stage all events should be globally timestamp ordered.
   if (ts < context_->event_tracker->max_timestamp()) {
-    PERFETTO_ELOG("sched_switch event out of order by %.4f ms, skipping",
-                  (context_->event_tracker->max_timestamp() - ts) / 1e6);
+    PERFETTO_ELOG(
+        "sched_switch event out of order by %.4f ms, skipping",
+        static_cast<double>(context_->event_tracker->max_timestamp() - ts) /
+            1e6);
     context_->storage->IncrementStats(stats::sched_switch_out_of_order);
     return;
   }
   context_->event_tracker->UpdateMaxTimestamp(ts);
   PERFETTO_DCHECK(cpu < kMaxCpus);
 
-  UniqueTid next_utid =
-      context_->process_tracker->UpdateThreadName(next_pid, next_comm_id);
+  UniqueTid next_utid = context_->process_tracker->UpdateThreadName(
+      next_pid, next_comm_id, ThreadNamePriority::kFtrace);
 
   auto* pending_sched = &pending_sched_per_cpu_[cpu];
 
@@ -239,7 +244,10 @@ void SchedEventTracker::ClosePendingSlice(uint32_t pending_slice_idx,
   // We store the state as a uint16 as we only consider values up to 2048
   // when unpacking the information inside; this allows savings of 48 bits
   // per slice.
-  auto task_state = ftrace_utils::TaskState(static_cast<uint16_t>(prev_state));
+  auto kernel_version =
+      SystemInfoTracker::GetOrCreate(context_)->GetKernelVersion();
+  auto task_state = ftrace_utils::TaskState(static_cast<uint16_t>(prev_state),
+                                            kernel_version);
   if (!task_state.is_valid()) {
     context_->storage->IncrementStats(stats::task_state_invalid);
   }
@@ -259,8 +267,10 @@ void SchedEventTracker::PushSchedWakingCompact(uint32_t cpu,
                                                StringId comm_id) {
   // At this stage all events should be globally timestamp ordered.
   if (ts < context_->event_tracker->max_timestamp()) {
-    PERFETTO_ELOG("sched_waking event out of order by %.4f ms, skipping",
-                  (context_->event_tracker->max_timestamp() - ts) / 1e6);
+    PERFETTO_ELOG(
+        "sched_waking event out of order by %.4f ms, skipping",
+        static_cast<double>(context_->event_tracker->max_timestamp() - ts) /
+            1e6);
     context_->storage->IncrementStats(stats::sched_waking_out_of_order);
     return;
   }

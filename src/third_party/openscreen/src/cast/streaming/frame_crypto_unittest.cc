@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "util/crypto/random_bytes.h"
 
 namespace openscreen {
 namespace cast {
@@ -28,8 +29,8 @@ TEST(FrameCryptoTest, EncryptsAndDecryptsFrames) {
   frame1.frame_id = frame0.frame_id + 1;
   frame1.data = frame0.data;
 
-  const std::array<uint8_t, 16> key = FrameCrypto::GenerateRandomBytes();
-  const std::array<uint8_t, 16> iv = FrameCrypto::GenerateRandomBytes();
+  const std::array<uint8_t, 16> key = GenerateRandomBytes16();
+  const std::array<uint8_t, 16> iv = GenerateRandomBytes16();
   EXPECT_NE(0, memcmp(key.data(), iv.data(), sizeof(key)));
   const FrameCrypto crypto(key, iv);
 

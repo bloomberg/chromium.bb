@@ -28,8 +28,9 @@ void RecordUkmFeatures(const UkmFeatureList& features,
     if (!features_recorded.test(static_cast<size_t>(feature)))
       continue;
     if (ukm_features_recorded->find(static_cast<size_t>(feature)) !=
-        ukm_features_recorded->end())
+        ukm_features_recorded->end()) {
       continue;
+    }
     ukm::builders::Blink_UseCounter(source_id)
         .SetFeature(static_cast<size_t>(feature))
         .SetIsMainFrameFeature(
@@ -208,7 +209,7 @@ void UseCounterPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
 }
 
 void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
@@ -216,7 +217,7 @@ void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
         failed_provisional_load_info) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -224,7 +225,7 @@ UseCounterPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetSourceId());
+                    GetDelegate().GetPageUkmSourceId());
   return CONTINUE_OBSERVING;
 }
 
@@ -236,4 +237,10 @@ UseCounterPageLoadMetricsObserver::ShouldObserveMimeType(
                  mime_type == "image/svg+xml"
              ? CONTINUE_OBSERVING
              : STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UseCounterPageLoadMetricsObserver::OnEnterBackForwardCache(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  return CONTINUE_OBSERVING;
 }

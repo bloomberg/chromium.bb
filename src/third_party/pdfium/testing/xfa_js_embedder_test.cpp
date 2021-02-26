@@ -8,40 +8,25 @@
 
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_isolatetracker.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
-#include "xfa/fxfa/cxfa_ffapp.h"
 
-XFAJSEmbedderTest::XFAJSEmbedderTest()
-    : array_buffer_allocator_(
-          pdfium::MakeUnique<CFX_V8ArrayBufferAllocator>()) {}
+XFAJSEmbedderTest::XFAJSEmbedderTest() = default;
 
-XFAJSEmbedderTest::~XFAJSEmbedderTest() {}
+XFAJSEmbedderTest::~XFAJSEmbedderTest() = default;
 
 void XFAJSEmbedderTest::SetUp() {
-  v8::Isolate::CreateParams params;
-  params.array_buffer_allocator = array_buffer_allocator_.get();
-  isolate_ = v8::Isolate::New(params);
-  ASSERT_TRUE(isolate_);
-
-  EmbedderTest::SetExternalIsolate(isolate_);
-  EmbedderTest::SetUp();
-
-  CXFA_FFApp::SkipFontLoadForTesting(true);
+  JSEmbedderTest::SetUp();
 }
 
 void XFAJSEmbedderTest::TearDown() {
-  CXFA_FFApp::SkipFontLoadForTesting(false);
-
-  value_.reset();
+  value_.Reset();
   script_context_ = nullptr;
 
-  EmbedderTest::TearDown();
-
-  isolate_->Dispose();
-  isolate_ = nullptr;
+  JSEmbedderTest::TearDown();
 }
 
 CXFA_Document* XFAJSEmbedderTest::GetXFADocument() const {
@@ -54,6 +39,10 @@ CXFA_Document* XFAJSEmbedderTest::GetXFADocument() const {
     return nullptr;
 
   return pContext->GetXFADoc()->GetXFADoc();
+}
+
+v8::Local<v8::Value> XFAJSEmbedderTest::GetValue() const {
+  return v8::Local<v8::Value>::New(isolate(), value_);
 }
 
 bool XFAJSEmbedderTest::OpenDocumentWithOptions(
@@ -72,27 +61,38 @@ bool XFAJSEmbedderTest::OpenDocumentWithOptions(
 }
 
 bool XFAJSEmbedderTest::Execute(ByteStringView input) {
+  CFXJSE_ScopeUtil_IsolateHandleContext scope(script_context_->GetJseContext());
   if (ExecuteHelper(input))
     return true;
 
-  CFXJSE_Value msg(GetIsolate());
-  value_->GetObjectPropertyByIdx(1, &msg);
   fprintf(stderr, "FormCalc: %.*s\n", static_cast<int>(input.GetLength()),
           input.unterminated_c_str());
-  // If the parsing of the input fails, then v8 will not run, so there will be
-  // no value here to print.
-  if (msg.IsString() && !msg.ToWideString().IsEmpty())
-    fprintf(stderr, "JS ERROR: %ls\n", msg.ToWideString().c_str());
+
+  v8::Local<v8::Value> result = GetValue();
+  if (!fxv8::IsArray(result))
+    return false;
+
+  v8::Local<v8::Value> msg = fxv8::ReentrantGetArrayElementHelper(
+      isolate(), result.As<v8::Array>(), 1);
+  if (!fxv8::IsString(msg))
+    return false;
+
+  WideString str = fxv8::ReentrantToWideStringHelper(isolate(), msg);
+  if (!str.IsEmpty())
+    fprintf(stderr, "JS ERROR: %ls\n", str.c_str());
   return false;
 }
 
 bool XFAJSEmbedderTest::ExecuteSilenceFailure(ByteStringView input) {
+  CFXJSE_ScopeUtil_IsolateHandleContext scope(script_context_->GetJseContext());
   return ExecuteHelper(input);
 }
 
 bool XFAJSEmbedderTest::ExecuteHelper(ByteStringView input) {
-  value_ = pdfium::MakeUnique<CFXJSE_Value>(GetIsolate());
-  return script_context_->RunScript(CXFA_Script::Type::Formcalc,
-                                    WideString::FromUTF8(input).AsStringView(),
-                                    value_.get(), GetXFADocument()->GetRoot());
+  auto value = std::make_unique<CFXJSE_Value>();
+  bool ret = script_context_->RunScript(
+      CXFA_Script::Type::Formcalc, WideString::FromUTF8(input).AsStringView(),
+      value.get(), GetXFADocument()->GetRoot());
+  value_.Reset(isolate(), value->GetValue(isolate()));
+  return ret;
 }

@@ -52,9 +52,9 @@ def validate_tag(key, value):
 
 
 def normalize(v, prefix=None):
-  """Given a string, "v", mutate it into a valid stream name.
+  """Given a string (str|unicode), mutate it into a valid stream name (str).
 
-  This operates by replacing invalid stream naem characters with underscores (_)
+  This operates by replacing invalid stream name characters with underscores (_)
   when encountered.
 
   A special case is when "v" begins with an invalid character. In this case, we
@@ -89,6 +89,10 @@ def normalize(v, prefix=None):
 
   # Validate the resulting string.
   validate_stream_name(v)
+  # v could be of type unicode. As a valid stream name contains only ascii
+  # characters, it is safe to transcode v to ascii encoding (become str type).
+  if isinstance(v, unicode):
+    return v.encode('ascii')
   return v
 
 

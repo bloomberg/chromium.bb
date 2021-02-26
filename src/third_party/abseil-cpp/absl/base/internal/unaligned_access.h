@@ -32,8 +32,8 @@
 // (namespaces, inline) which are absent or incompatible in C.
 #if defined(__cplusplus)
 
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
-    defined(MEMORY_SANITIZER)
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_THREAD_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
 // Consider we have an unaligned load/store of 4 bytes from address 0x...05.
 // AddressSanitizer will treat it as a 3-byte access to the range 05:07 and
 // will miss a bug if 08 is the first unaddressable byte.
@@ -45,17 +45,7 @@
 // For all three tools, replacing an unaligned access with a tool-specific
 // callback solves the problem.
 
-// Make sure uint16_t/uint32_t/uint64_t are defined.
-#include <stdint.h>
-
-extern "C" {
-uint16_t __sanitizer_unaligned_load16(const void *p);
-uint32_t __sanitizer_unaligned_load32(const void *p);
-uint64_t __sanitizer_unaligned_load64(const void *p);
-void __sanitizer_unaligned_store16(void *p, uint16_t v);
-void __sanitizer_unaligned_store32(void *p, uint32_t v);
-void __sanitizer_unaligned_store64(void *p, uint64_t v);
-}  // extern "C"
+#include <sanitizer/common_interface_defs.h>
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN

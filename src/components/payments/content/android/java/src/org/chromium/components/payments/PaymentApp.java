@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -34,47 +33,6 @@ public abstract class PaymentApp extends EditableOption {
      * app, such as AutofillPaymentInstrument.
      */
     protected boolean mHaveRequestedAutofillData;
-
-    /**
-     * The interface for listener to payment method, shipping address, and shipping option change
-     * events. Note: What the spec calls "payment methods" in the context of a "change event", this
-     * code calls "apps".
-     */
-    public interface PaymentRequestUpdateEventListener {
-        /**
-         * Called to notify merchant of payment method change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
-         *
-         * @param methodName         Method name. For example, "https://google.com/pay". Should not
-         *                           be null or empty.
-         * @param stringifiedDetails JSON-serialized object. For example, {"type": "debit"}. Should
-         *                           not be null.
-         * @return Whether the payment state was valid.
-         */
-        boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails);
-
-        /**
-         * Called to notify merchant of shipping option change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
-         *
-         * @param shippingOptionId Selected shipping option Identifier, Should not be null or
-         *                         empty.
-         * @return Whether the payment state wa valid.
-         */
-        boolean changeShippingOptionFromInvokedApp(String shippingOptionId);
-
-        /**
-         * Called to notify merchant of shipping address change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
-         *
-         * @param shippingAddress Selected shipping address. Should not be null.
-         * @return Whether the payment state wa valid.
-         */
-        boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress);
-    }
 
     /**
      * The interface for the requester of payment details from the app.
@@ -284,11 +242,9 @@ public abstract class PaymentApp extends EditableOption {
 
     /**
      * Abort invocation of the payment app.
-     *
-     * @param id       The unique identifier of the PaymentRequest.
      * @param callback The callback to return abort result.
      */
-    public void abortPaymentApp(String id, AbortCallback callback) {
+    public void abortPaymentApp(AbortCallback callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
@@ -300,19 +256,10 @@ public abstract class PaymentApp extends EditableOption {
     /** Cleans up any resources held by the payment app. For example, closes server connections. */
     public abstract void dismissInstrument();
 
-    /** @param readyForMnimalUI Whether the payment app is ready for minimal UI flow. */
-    public void setIsReadyForMinimalUI(boolean isReadyForMinimalUI) {}
-
     /** @return Whether the payment app is ready for a minimal UI flow. */
     public boolean isReadyForMinimalUI() {
         return false;
     }
-
-    /**
-     * @param accountBalance The account balance of the payment handler that is ready for a minimal
-     * UI flow.
-     */
-    public void setAccountBalance(@Nullable String accountBalance) {}
 
     /** @return Account balance for minimal UI flow. */
     @Nullable
@@ -346,5 +293,25 @@ public abstract class PaymentApp extends EditableOption {
      */
     public long getUkmSourceId() {
         return 0;
+    }
+
+    /**
+     * Sets the endpoint for payment handler communication. Must be called before invoking this
+     * payment app. Used only by payment apps that are backed by a payment handler.
+     * @param host The endpoint for payment handler communication. Should not be null.
+     */
+    public void setPaymentHandlerHost(PaymentHandlerHost host) {}
+
+    /** @return The type of payment app. */
+    public @PaymentAppType int getPaymentAppType() {
+        return PaymentAppType.UNDEFINED;
+    }
+
+    /**
+     * @return Whether this app should be chosen over other available payment apps. For example,
+     * when the Play Billing payment app is available in a TWA.
+     */
+    public boolean isPreferred() {
+        return false;
     }
 }

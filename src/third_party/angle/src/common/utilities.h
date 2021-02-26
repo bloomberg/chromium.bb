@@ -66,12 +66,6 @@ std::string StripLastArrayIndex(const std::string &name);
 
 bool SamplerNameContainsNonZeroArrayElement(const std::string &name);
 
-// Find the child field which matches 'fullName' == var.name + "." + field.name.
-// Return nullptr if not found.
-const sh::ShaderVariable *FindShaderVarField(const sh::ShaderVariable &var,
-                                             const std::string &fullName,
-                                             GLuint *fieldIndexOut);
-
 // Find the range of index values in the provided indices pointer.  Primitive restart indices are
 // only counted in the range if primitive restart is disabled.
 IndexRange ComputeIndexRange(DrawElementsType indexType,
@@ -228,6 +222,22 @@ const char *GetDebugMessageSourceString(GLenum source);
 const char *GetDebugMessageTypeString(GLenum type);
 const char *GetDebugMessageSeverityString(GLenum severity);
 
+// For use with EXT_texture_format_sRGB_override and EXT_texture_sRGB_decode
+// A texture may be forced to decode to a nonlinear colorspace, to a linear colorspace, or to the
+// default colorspace of its current format.
+//
+// Default corresponds to "the texture should use the imageview that corresponds to its format"
+// Linear corresponds to "the texture has sRGB decoding disabled by extension, and should use a
+// linear imageview even if it is in a nonlinear format" NonLinear corresponds to "the texture has
+// sRGB override enabled by extension, and should use a nonlinear imageview even if it is in a
+// linear format"
+enum class SrgbOverride
+{
+    Default = 0,
+    SRGB,
+    Linear
+};
+
 }  // namespace gl
 
 namespace egl
@@ -263,5 +273,14 @@ void writeFile(const char *path, const void *data, size_t size);
 #if defined(ANGLE_PLATFORM_WINDOWS)
 void ScheduleYield();
 #endif
+
+// Get the underlying type. Useful for indexing into arrays with enum values by avoiding the clutter
+// of the extraneous static_cast<>() calls.
+// https://stackoverflow.com/a/8357462
+template <typename E>
+constexpr typename std::underlying_type<E>::type ToUnderlying(E e) noexcept
+{
+    return static_cast<typename std::underlying_type<E>::type>(e);
+}
 
 #endif  // COMMON_UTILITIES_H_

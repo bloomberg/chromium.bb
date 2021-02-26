@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_type_converter.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -64,11 +65,11 @@ void PushMessagingClient::Subscribe(
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr options_ptr =
-      ConvertSubscriptionOptionPointer(options);
+      mojo::ConvertTo<mojom::blink::PushSubscriptionOptionsPtr>(options);
 
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.
-  if (!options->applicationServerKey()->ByteLengthAsSizeT()) {
+  if (!options->applicationServerKey()->ByteLength()) {
     ManifestManager* manifest_manager =
         ManifestManager::From(*GetSupplementable());
     manifest_manager->RequestManifest(
@@ -81,7 +82,7 @@ void PushMessagingClient::Subscribe(
   }
 }
 
-void PushMessagingClient::Trace(Visitor* visitor) {
+void PushMessagingClient::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(push_messaging_manager_);
 }

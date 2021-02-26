@@ -10,40 +10,29 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-
-// Defines the interface the driver needs to the controller.
-@protocol CWVPasswordManagerDriverDelegate <NSObject>
-
-@property(readonly, nonatomic)
-    password_manager::PasswordManager* passwordManager;
-
-// Returns the current URL of the main frame.
-@property(readonly, nonatomic) const GURL& lastCommittedURL;
-
-// Finds and fills the password form using the supplied |formData| to
-// match the password form and to populate the field values.
-- (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData;
-
-// Informs delegate that there are no saved credentials for the current page.
-- (void)informNoSavedCredentials;
-
-@end
+#include "components/password_manager/ios/password_manager_driver_bridge.h"
 
 namespace ios_web_view {
 // An //ios/web_view implementation of password_manager::PasswordManagerDriver.
 class WebViewPasswordManagerDriver
     : public password_manager::PasswordManagerDriver {
  public:
-  explicit WebViewPasswordManagerDriver();
+  explicit WebViewPasswordManagerDriver(
+      password_manager::PasswordManager* password_manager);
   ~WebViewPasswordManagerDriver() override;
 
   // password_manager::PasswordManagerDriver implementation.
   int GetId() const override;
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  void InformNoSavedCredentials() override;
+  void InformNoSavedCredentials(
+      bool should_show_popup_without_passwords) override;
+  void FormEligibleForGenerationFound(
+      const autofill::PasswordFormGenerationData& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
@@ -60,12 +49,12 @@ class WebViewPasswordManagerDriver
   bool CanShowAutofillUi() const override;
   const GURL& GetLastCommittedURL() const override;
 
-  void set_delegate(id<CWVPasswordManagerDriverDelegate> delegate) {
-    delegate_ = delegate;
-  }
+  void set_bridge(id<PasswordManagerDriverBridge> bridge) { bridge_ = bridge; }
 
  private:
-  __weak id<CWVPasswordManagerDriverDelegate> delegate_;
+  __weak id<PasswordManagerDriverBridge> bridge_;
+
+  password_manager::PasswordManager* password_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerDriver);
 };

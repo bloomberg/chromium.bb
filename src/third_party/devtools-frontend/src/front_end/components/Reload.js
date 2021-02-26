@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import * as Host from '../host/host.js';
-
-import {State} from './DockController.js';
+import * as UI from '../ui/ui.js';
 
 export function reload() {
-  if (self.Components.dockController.canDock() && self.Components.dockController.dockSide() === State.Undocked) {
+  if (UI.DockController.DockController.instance().canDock() &&
+      UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked) {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(true, function() {});
   }
   Host.InspectorFrontendHost.InspectorFrontendHostInstance.reattach(() => window.location.reload());

@@ -36,15 +36,15 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
-#include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/federated_learning/floc.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
-#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_value_change.h"
@@ -53,24 +53,23 @@
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
-#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
-#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text_link_colors.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/fragment_directive.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap_observer_list.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/heap_observer_set.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -83,6 +82,10 @@ class SingleThreadTaskRunner;
 namespace ukm {
 class UkmRecorder;
 }  // namespace ukm
+
+namespace net {
+class SiteForCookies;
+}  // namespace net
 
 namespace network {
 namespace mojom {
@@ -105,9 +108,8 @@ class Comment;
 class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
 class DisplayLockDocumentState;
+class DocumentData;
 class ElementIntersectionObserverData;
-class WindowAgent;
-class WindowAgentFactory;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
@@ -141,6 +143,7 @@ class FloatQuad;
 class FloatRect;
 class FontMatchingMetrics;
 class FormController;
+class FrameCallback;
 class HTMLAllCollection;
 class HTMLBodyElement;
 class FrameScheduler;
@@ -156,6 +159,7 @@ class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
+class IdleTask;
 class IntersectionObserverController;
 class LayoutView;
 class LazyLoadImageObserver;
@@ -167,7 +171,6 @@ class LocalFrameView;
 class Location;
 class MediaQueryListListener;
 class MediaQueryMatcher;
-class NavigationInitiatorImpl;
 class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
@@ -180,16 +183,17 @@ class Range;
 class ResourceFetcher;
 class RootScrollerController;
 class ScriptValue;
+class ScriptedIdleTaskController;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class Text;
 class TrustedHTML;
 class ScriptElementBase;
 class ScriptPromise;
+class ScriptRegexp;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
-class SecurityContextInit;
 class SecurityOrigin;
 class SelectorQueryCache;
 class SerializedScriptValue;
@@ -240,7 +244,6 @@ enum DocumentClass {
   kMediaDocumentClass = 1 << 4,
   kSVGDocumentClass = 1 << 5,
   kXMLDocumentClass = 1 << 6,
-  kViewSourceDocumentClass = 1 << 7,
 };
 
 enum ShadowCascadeOrder {
@@ -267,15 +270,29 @@ using ExplicitlySetAttrElementsMap =
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
-// (typically, HTML) resource. It provides both the content to be displayed to
-// the user in a frame and an execution context for JavaScript code.
+// (typically, HTML) resource.
+//
+// A document may or may not have a browsing context
+// (https://html.spec.whatwg.org/#browsing-context). A document with a browsing
+// context is created by navigation, and has a non-null domWindow(), GetFrame(),
+// Loader(), etc., and is visible to the user. It will have a valid
+// GetExecutionContext(), which will be equal to domWindow(). If the Document
+// constructor receives a DocumentInit created WithDocumentLoader(), it will
+// have a browsing context.
+// Documents created by all other APIs do not have a browsing context. These
+// Documents still have a valid GetExecutionContext() (i.e., the domWindow() of
+// the Document in which they were created), so they can still access
+// script, but return null for domWindow(), GetFrame() and Loader(). Generally,
+// they should not downcast the ExecutionContext to a LocalDOMWindow and access
+// the properties of the window directly.
+// Finally, unit tests are allowed to create a Document that does not even
+// have a valid GetExecutionContext(). This is a lightweight way to test
+// properties of the Document and the DOM that do not require script.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public UseCounter,
-                             public FeaturePolicyParserDelegate,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Document);
 
  public:
   // Factory for web-exposed Document constructor. The argument document must be
@@ -284,12 +301,12 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://dom.spec.whatwg.org/#dom-document-document
   static Document* Create(Document&);
 
-  // Construct a Document instance with the default DocumentInit and
-  // kDefaultDocumentClass.
-  Document();
   explicit Document(const DocumentInit& init,
                     DocumentClassFlags flags = kDefaultDocumentClass);
   ~Document() override;
+
+  // Constructs a Document instance without a subclass for testing.
+  static Document* CreateForTest();
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
@@ -303,69 +320,24 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using TreeScope::getElementById;
 
-  // TODO(crbug.com/1029822) Former ExecutionContext overrides. Most of these
-  // should move to LocalDOMWindow.
-  ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
-  LocalDOMWindow* ExecutingWindow() const;
-  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts);
-  String OutgoingReferrer() const;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
-  FrameOrWorkerScheduler* GetScheduler();
+  bool IsInitialEmptyDocument() const { return is_initial_empty_document_; }
+  // Sometimes we permit an initial empty document to cease to be the initial
+  // empty document. This is needed for cross-process navigations, where a new
+  // LocalFrame needs to be created but the conceptual frame might have had
+  // other Documents in a different process. document.open() also causes the
+  // document to cease to be the initial empty document.
+  void OverrideIsInitialEmptyDocument() { is_initial_empty_document_ = false; }
 
-  // FeaturePolicyParserDelegate override
-  // TODO(crbug.com/1029822) FeaturePolicyParserDelegate overrides, these
-  // should migrate to LocalDOMWindow.
-  bool FeatureEnabled(OriginTrialFeature) const override;
-  void CountFeaturePolicyUsage(mojom::WebFeature feature) override;
-  bool FeaturePolicyFeatureObserved(
-      mojom::blink::FeaturePolicyFeature feature) override;
+  // Gets the associated LocalDOMWindow even if this Document is associated with
+  // an HTMLImportsController.
+  LocalDOMWindow* ExecutingWindow() const;
+
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   bool DocumentPolicyFeatureObserved(
       mojom::blink::DocumentPolicyFeature feature);
 
-  SecurityContext& GetSecurityContext() { return security_context_; }
-  const SecurityContext& GetSecurityContext() const {
-    return security_context_;
-  }
-
-  // TODO(crbug.com/1029822): Temporary helpers to access ExecutionContext
-  // methods. These will need to be audited. Some might be useful permanent
-  // helpers.
-  const SecurityOrigin* GetSecurityOrigin() const;
-  SecurityOrigin* GetMutableSecurityOrigin();
-  ContentSecurityPolicy* GetContentSecurityPolicy() const;
-  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
-  bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
-  PublicURLManager& GetPublicURLManager();
-  bool IsContextPaused() const;
-  bool IsContextDestroyed() const;
-  ContentSecurityPolicyDelegate& GetContentSecurityPolicyDelegate();
-  SecureContextMode GetSecureContextMode() const;
-  bool IsSecureContext() const;
-  bool IsSecureContext(String& error_message) const;
-  void SetSecureContextModeForTesting(SecureContextMode);
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
-  v8::Isolate* GetIsolate() const;
-  Agent* GetAgent() const;
-  OriginTrialContext* GetOriginTrialContext() const;
-  bool IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string) const;
-  bool IsFeatureEnabled(
-      mojom::blink::DocumentPolicyFeature,
-      ReportOptions report_option = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
-  bool IsFeatureEnabled(
-      mojom::blink::DocumentPolicyFeature,
-      PolicyValue threshold_value,
-      ReportOptions report_option = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
-
-  String addressSpaceForBindings() const;
+  String addressSpaceForBindings(ScriptState*) const;
 
   bool CanContainRangeEndPoint() const override { return true; }
 
@@ -476,7 +448,7 @@ class CORE_EXPORT Document : public ContainerNode,
     has_xml_declaration_ = has_xml_declaration ? 1 : 0;
   }
 
-  String visibilityState() const;
+  AtomicString visibilityState() const;
   bool IsPageVisible() const;
   bool hidden() const;
   void DidChangeVisibilityState();
@@ -530,11 +502,12 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSrcdocDocument() const { return is_srcdoc_document_; }
   bool IsMobileDocument() const { return is_mobile_document_; }
 
-  StyleResolver* GetStyleResolver() const;
-  StyleResolver& EnsureStyleResolver() const;
+  StyleResolver& GetStyleResolver() const;
 
   bool IsViewSource() const { return is_view_source_; }
-  void SetIsViewSource(bool);
+  void SetIsViewSource(bool is_view_source) {
+    is_view_source_ = is_view_source;
+  }
 
   // WebXR DOM Overlay support, cf https://immersive-web.github.io/dom-overlays/
   // True if there's an ongoing "immersive-ar" WebXR session with a DOM Overlay
@@ -573,12 +546,12 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentState* GetDocumentState() const;
   void SetStateForNewControls(const Vector<String>&);
 
-  LocalFrameView* View() const;                    // can be null
-  LocalFrame* GetFrame() const { return frame_; }  // can be null
-  // Returns frame_ for current document, or if this is an HTML import, master
-  // document's frame_, if any.  Can be null.
+  LocalFrameView* View() const;  // can be null
+  LocalFrame* GetFrame() const;  // can be null
+  // Returns frame_ for current document, or if this is an HTML import,
+  // tree_root document's frame_, if any.  Can be null.
   // TODO(kochi): Audit usage of this interface (crbug.com/746150).
-  LocalFrame* GetFrameOfMasterDocument() const;
+  LocalFrame* GetFrameOfTreeRootDocument() const;
   Page* GetPage() const;          // can be null
   Settings* GetSettings() const;  // can be null
 
@@ -627,7 +600,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncLayoutBlockCounter() { ++layout_blocks_counter_; }
   void IncLayoutBlockCounterNG() { ++layout_blocks_counter_ng_; }
 
-  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -641,20 +614,18 @@ class CORE_EXPORT Document : public ContainerNode,
                                            DocumentUpdateReason reason);
 
   // Returns true if page box (margin boxes and page borders) is visible.
-  bool IsPageBoxVisible(int page_index);
+  bool IsPageBoxVisible(uint32_t page_index);
 
   // Gets the description for the specified page. This includes preferred page
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
   // specified.
-  void GetPageDescription(int page_index, WebPrintPageDescription*);
+  void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
   void Initialize();
   virtual void Shutdown();
-
-  void InitContentSecurityPolicy(ContentSecurityPolicy*);
 
   // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
@@ -674,9 +645,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   DocumentLoader* Loader() const;
 
-  // This is the DOM API document.open(). enteredDocument is the responsible
-  // document of the entry settings object.
-  void open(Document* entered_document, ExceptionState&);
+  // This is the DOM API document.open().
+  void open(LocalDOMWindow* entered_window, ExceptionState&);
   // This is used internally and does not handle exceptions.
   void open();
   DocumentParser* OpenForNavigation(ParserSynchronizationPolicy,
@@ -753,10 +723,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void CancelParsing();
 
   void write(const String& text,
-             Document* entered_document = nullptr,
+             LocalDOMWindow* entered_window = nullptr,
              ExceptionState& = ASSERT_NO_EXCEPTION);
   void writeln(const String& text,
-               Document* entered_document = nullptr,
+               LocalDOMWindow* entered_window = nullptr,
                ExceptionState& = ASSERT_NO_EXCEPTION);
   void write(v8::Isolate*, const Vector<String>& text, ExceptionState&);
   void writeln(v8::Isolate*, const Vector<String>& text, ExceptionState&);
@@ -765,7 +735,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(mkwst): Write a spec for this.
   void write(v8::Isolate*, TrustedHTML*, ExceptionState&);
   void writeln(v8::Isolate*, TrustedHTML*, ExceptionState&);
-  bool IsTrustedTypesEnabledForDoc() const;
 
   bool WellFormed() const { return well_formed_; }
 
@@ -961,7 +930,6 @@ class CORE_EXPORT Document : public ContainerNode,
                          unsigned old_length);
   void DidSplitTextNode(const Text& old_node);
 
-  void ClearDOMWindow() { dom_window_ = nullptr; }
   LocalDOMWindow* domWindow() const { return dom_window_; }
 
   // Helper functions for forwarding LocalDOMWindow event related tasks to the
@@ -1022,6 +990,8 @@ class CORE_EXPORT Document : public ContainerNode,
   ElementIntersectionObserverData&
   EnsureDocumentExplicitRootIntersectionObserverData();
 
+  const ScriptRegexp& EnsureEmailRegexp() const;
+
   // Returns the owning element in the parent document. Returns nullptr if
   // this is the top level document or the owner is remote.
   HTMLFrameOwnerElement* LocalOwner() const;
@@ -1029,7 +999,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void WillChangeFrameOwnerProperties(int margin_width,
                                       int margin_height,
                                       mojom::blink::ScrollbarMode,
-                                      bool is_display_none);
+                                      bool is_display_none,
+                                      mojom::ColorScheme color_scheme);
 
   String title() const { return title_; }
   void setTitle(const String&);
@@ -1066,7 +1037,6 @@ class CORE_EXPORT Document : public ContainerNode,
   //    inherits its cookieURL but not its URL.
   //
   const KURL& CookieURL() const { return cookie_url_; }
-  void SetCookieURL(const KURL& url) { cookie_url_ = url; }
 
   // Returns null if the document is not attached to a frame.
   scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
@@ -1081,8 +1051,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.
-  ScriptPromise hasStorageAccess(ScriptState* script_state) const;
+  ScriptPromise hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
+
+  // Fragment directive API, currently used to feature detect text-fragments.
+  // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
+  FragmentDirective& fragmentDirective() const;
 
   // Sends a query via Mojo to ask whether the user has any trust tokens. This
   // can reject on permissions errors (e.g. associating |issuer| with the
@@ -1093,10 +1067,21 @@ class CORE_EXPORT Document : public ContainerNode,
                               const String& issuer,
                               ExceptionState&);
 
+  // Floc service helper methods to facilitate querying the floc (i.e.
+  // interestCohort).
+  mojom::blink::FlocService* GetFlocService(
+      ExecutionContext* execution_context);
+
+  // Sends a query via Mojo to ask for the interest cohort. This can reject on
+  // permissions errors (e.g. cookies not allowed, etc.) or when the interest
+  // cohort is unavailable.
+  // https://github.com/jkarlin/floc
+  ScriptPromise interestCohort(ScriptState* script_state);
+
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
   // or move it and make it sensitive to the type of document.
-  static bool IsValidName(const String&);
+  static bool IsValidName(const StringView&);
 
   // The following breaks a qualified name into a prefix and a local name.
   // It also does a validity check, and returns false if the qualified name
@@ -1153,7 +1138,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // The document of the parent frame.
   Document* ParentDocument() const;
   Document& TopDocument() const;
-  Document* ContextDocument() const;
+
+  // Will only return nullptr in unit tests.
+  ExecutionContext* GetExecutionContext() const final;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
 
@@ -1198,6 +1185,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // updating focus appearance.
   bool WillUpdateFocusAppearance() const;
 
+  void SendFocusNotification(Element*, mojom::blink::FocusType);
+
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);
 
@@ -1237,7 +1226,11 @@ class CORE_EXPORT Document : public ContainerNode,
     kLoadEventInProgress,
     kLoadEventCompleted,
     kBeforeUnloadEventInProgress,
-    kBeforeUnloadEventCompleted,
+    // Advanced to only if the beforeunload event in this document and
+    // subdocuments isn't canceled and will cause an unload. If beforeunload is
+    // canceled |load_event_progress_| will revert to its value prior to the
+    // beforeunload being dispatched.
+    kBeforeUnloadEventHandled,
     kPageHideInProgress,
     kUnloadVisibilityChangeInProgress,
     kUnloadEventInProgress,
@@ -1249,11 +1242,21 @@ class CORE_EXPORT Document : public ContainerNode,
   bool LoadEventFinished() const {
     return load_event_progress_ >= kLoadEventCompleted;
   }
-  bool UnloadStarted() const {
-    return load_event_progress_ >= kPageHideInProgress;
+  bool BeforeUnloadStarted() const {
+    return load_event_progress_ >= kBeforeUnloadEventInProgress;
   }
   bool ProcessingBeforeUnload() const {
     return load_event_progress_ == kBeforeUnloadEventInProgress;
+  }
+  bool UnloadStarted() const {
+    return load_event_progress_ >= kPageHideInProgress;
+  }
+  bool UnloadEventInProgress() const {
+    return load_event_progress_ == kUnloadEventInProgress;
+  }
+
+  void BeforeUnloadDoneWillUnload() {
+    load_event_progress_ = kBeforeUnloadEventHandled;
   }
 
   void SetContainsPlugins() { contains_plugins_ = true; }
@@ -1293,20 +1296,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
-  int RequestAnimationFrame(FrameRequestCallbackCollection::FrameCallback*);
+  int RequestAnimationFrame(FrameCallback*);
   void CancelAnimationFrame(int id);
   void ServiceScriptedAnimations(
       base::TimeTicks monotonic_animation_start_time);
-  void SetCurrentFrameIsThrottled(bool throttled) {
-    current_frame_is_throttled_ = true;
-  }
 
-  int RequestPostAnimationFrame(FrameRequestCallbackCollection::FrameCallback*);
-  void CancelPostAnimationFrame(int id);
-  void RunPostAnimationFrameCallbacks();
-
-  int RequestIdleCallback(ScriptedIdleTaskController::IdleTask*,
-                          const IdleRequestOptions*);
+  int RequestIdleCallback(IdleTask*, const IdleRequestOptions*);
   void CancelIdleCallback(int id);
 
   ScriptedAnimationController& GetScriptedAnimationController();
@@ -1332,8 +1327,7 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLImportLoader* ImportLoader() const;
 
   bool IsHTMLImport() const;
-  // TODO(kochi): Audit usage of this interface (crbug.com/746150).
-  Document& MasterDocument() const;
+  Document& TreeRootDocument() const;
 
   void DidLoadAllImports();
 
@@ -1393,8 +1387,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false) const;
 
-  LocalFrame* ExecutingFrame();
-
   DocumentLifecycle& Lifecycle() { return lifecycle_; }
   const DocumentLifecycle& Lifecycle() const { return lifecycle_; }
   bool IsActive() const { return lifecycle_.IsActive(); }
@@ -1414,10 +1406,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetResizedForViewportUnits();
   void ClearResizedForViewportUnits();
 
-  void UpdateActiveStyle();
   void InvalidateStyleAndLayoutForFontUpdates();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   AtomicString ConvertLocalName(const AtomicString&);
 
@@ -1442,9 +1433,6 @@ class CORE_EXPORT Document : public ContainerNode,
   SnapCoordinator& GetSnapCoordinator();
   void PerformScrollSnappingTasks();
 
-  void DidEnforceInsecureRequestPolicy();
-  void DidEnforceInsecureNavigationsSet();
-
   bool MayContainV0Shadow() const { return may_contain_v0_shadow_; }
 
   ShadowCascadeOrder GetShadowCascadeOrder() const {
@@ -1456,8 +1444,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1;
   }
 
-  Element* rootScroller() const;
-  void setRootScroller(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   RootScrollerController& GetRootScrollerController() const {
     DCHECK(root_scroller_controller_);
     return *root_scroller_controller_;
@@ -1476,9 +1462,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
-
-  // Apply pending feature policy headers and document policy headers.
-  void ApplyPendingFramePolicyHeaders();
 
   const AtomicString& bgColor() const;
   void setBgColor(const AtomicString&);
@@ -1515,7 +1498,6 @@ class CORE_EXPORT Document : public ContainerNode,
   StylePropertyMapReadOnly* ComputedStyleMap(Element*);
   void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
   StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
-  void NavigateLocalAdsFrames();
 
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
@@ -1550,21 +1532,14 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
-  bool IsLazyLoadPolicyEnforced() const;
   bool IsFocusAllowed() const;
-
-  NavigationInitiatorImpl& NavigationInitiator();
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
-  WindowAgent& GetWindowAgent();
-  WindowAgentFactory* GetWindowAgentFactory() const {
-    return window_agent_factory_;
-  }
-
   void IncrementNumberOfCanvases();
 
-  void ProcessJavaScriptUrl(const KURL&, network::mojom::CSPDisposition);
+  void ProcessJavaScriptUrl(const KURL&,
+                            scoped_refptr<const DOMWrapperWorld> world);
 
   DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
@@ -1598,21 +1573,19 @@ class CORE_EXPORT Document : public ContainerNode,
   // A new vision deficiency is being emulated through DevTools.
   void VisionDeficiencyChanged();
 
-  void ClearIsolatedWorldCSPForTesting(int32_t world_id);
-
   // A META element with name=color-scheme was added, removed, or modified.
   // Update the presentation level color-scheme property for the root element.
   void ColorSchemeMetaChanged();
 
+  // A META element with name=battery-savings was added, removed, or modified.
+  // Re-collect the META values that apply and pass to LayerTreeHost.
+  void BatterySavingsMetaChanged();
+
   // Use counter related functions.
   void CountUse(mojom::WebFeature feature) final;
-  void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
   void CountProperty(CSSPropertyID property_id) const;
   void CountAnimatedProperty(CSSPropertyID property_id) const;
-  // Count |feature| only when this document is associated with a cross-origin
-  // iframe.
-  void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
   // Return whether the Feature was previously counted for this document.
   // NOTE: only for use in testing.
   bool IsUseCounted(mojom::WebFeature) const;
@@ -1625,13 +1598,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsAnimatedPropertyCounted(CSSPropertyID property) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
 
-  // Bind Content Security Policy to this document. This will cause the
-  // CSP to resolve the 'self' attribute and all policies will then be
-  // applied to this document.
-  void BindContentSecurityPolicy();
-
   void UpdateForcedColors();
   bool InForcedColorsMode() const;
+  bool InDarkMode();
 
   // Capture the toggle event during parsing either by HTML parser or XML
   // parser.
@@ -1651,7 +1620,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return !pending_javascript_urls_.IsEmpty();
   }
 
-  String GetFragmentDirective() const { return fragment_directive_; }
+  String GetFragmentDirective() const { return fragment_directive_string_; }
   bool UseCountFragmentDirective() const {
     return use_count_fragment_directive_;
   }
@@ -1669,12 +1638,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void MarkHasFindInPageRequest();
   void MarkHasFindInPageContentVisibilityActiveMatch();
+  void MarkHasFindInPageBeforematchExpandedHiddenMatchable();
 
   void CancelPendingJavaScriptUrls();
 
-  HeapObserverList<SynchronousMutationObserver>&
-  SynchronousMutationObserverList() {
-    return synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>&
+  SynchronousMutationObserverSet() {
+    return synchronous_mutation_observer_set_;
   }
 
   void NotifyUpdateCharacterData(CharacterData* character_data,
@@ -1683,8 +1653,22 @@ class CORE_EXPORT Document : public ContainerNode,
                                  unsigned new_length);
   void NotifyChangeChildren(const ContainerNode& container);
 
-  FontPreloadManager& GetFontPreloadManager() { return font_preload_manager_; }
+  FontPreloadManager& GetFontPreloadManager() { return *font_preload_manager_; }
   void FontPreloadingFinishedOrTimedOut();
+
+  void IncrementAsyncScriptCount() { async_script_count_++; }
+  void RecordAsyncScriptCount();
+
+  void MarkFirstPaint();
+  void MaybeExecuteDelayedAsyncScripts();
+
+  enum class DeclarativeShadowRootAllowState : uint8_t {
+    kNotSet,
+    kAllow,
+    kDeny
+  };
+  DeclarativeShadowRootAllowState GetDeclarativeShadowRootAllowState() const;
+  void setAllowDeclarativeShadowRoot(bool val);
 
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
@@ -1702,21 +1686,22 @@ class CORE_EXPORT Document : public ContainerNode,
  private:
   friend class DocumentTest;
   friend class IgnoreDestructiveWriteCountIncrementer;
+  friend class TextFragmentSelectorGeneratorTest;
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class IgnoreOpensDuringUnloadCountIncrementer;
   friend class NthIndexCache;
+  friend class CanvasRenderingAPIUkmMetricsTest;
+  friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, FindInPageUkm);
+  FRIEND_TEST_ALL_PREFIXES(TextFinderSimTest,
+                           BeforeMatchExpandedHiddenMatchableUkm);
+  FRIEND_TEST_ALL_PREFIXES(TextFinderSimTest,
+                           BeforeMatchExpandedHiddenMatchableUkmNoHandler);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentAnchorMetricsTest, LinkOpenedSuccessUKM);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentAnchorMetricsTest, LinkOpenedFailedUKM);
   class NetworkStateObserver;
-
-  Document(const DocumentInit& initization,
-           const SecurityContextInit& init_helper,
-           DocumentClassFlags document_classes);
-
-  // Post initialization of the object handling of both feature policy and
-  // document policy.
-  void PoliciesInitialized(const DocumentInit& document_initializer);
 
   friend class AXContext;
   void AddAXContext(AXContext*);
@@ -1730,7 +1715,6 @@ class CORE_EXPORT Document : public ContainerNode,
       delete;  // This will catch anyone doing an unnecessary check.
 
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
-  void InitSecurityContext(const DocumentInit&);
 
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;
@@ -1742,6 +1726,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool NeedsFullLayoutTreeUpdate() const;
 
   void PropagateStyleToViewport();
+
+  void InvalidateScrollbars();
 
   void UpdateUseShadowTreesIfNeeded();
   void EvaluateMediaQueryListIfNeeded();
@@ -1820,9 +1806,6 @@ class CORE_EXPORT Document : public ContainerNode,
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
 
-  const ParsedFeaturePolicy GetOwnerContainerPolicy() const;
-  const FeaturePolicy* GetParentFeaturePolicy() const;
-
   // Returns true if use of |method_name| for markup insertion is allowed by
   // feature policy; otherwise returns false and throws a DOM exception.
   bool AllowedToUseDynamicMarkUpInsertion(const char* method_name,
@@ -1833,7 +1816,8 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void NotifyFocusedElementChanged(Element* old_focused_element,
-                                   Element* new_focused_element);
+                                   Element* new_focused_element,
+                                   mojom::blink::FocusType focus_type);
   void DisplayNoneChangedForFrame();
 
   // Handles a connection error to |has_trust_tokens_answerer_| by rejecting all
@@ -1842,6 +1826,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   DocumentLifecycle lifecycle_;
 
+  bool is_initial_empty_document_;
+
   bool evaluate_media_queries_on_style_recalc_;
 
   // If we do ignore the pending stylesheet count, then we need to add a boolean
@@ -1849,22 +1835,17 @@ class CORE_EXPORT Document : public ContainerNode,
   // stylesheets do eventually load.
   PendingSheetLayout pending_sheet_layout_;
 
-  Member<WindowAgentFactory> window_agent_factory_;
-  Member<LocalFrame> frame_;
   Member<LocalDOMWindow> dom_window_;
   Member<HTMLImportsController> imports_controller_;
 
-  SecurityContext security_context_;
-
-  // Document::CountUse() attributes the feature counts to the DocumentLoader
-  // which is returned by Loader(). During construction Loader() returns null,
-  // so we use this UseCounter instead.
-  // TODO(dgozman): we should probably explicitly set and clear loader instead.
-  Member<UseCounter> use_counter_during_construction_;
-
-  // The document of creator browsing context for frame-less documents such as
-  // documents created by DOMParser and DOMImplementation.
-  WeakMember<Document> context_document_;
+  // For Documents given a dom_window_ at creation that are not Shutdown(),
+  // execution_context_ and dom_window_ will be equal.
+  // For Documents given a dom_window_ at creation that are Shutdown(),
+  // execution_context_ will be nullptr.
+  // For Documents not given a dom_window_ at creation, execution_context_
+  // will be the LocalDOMWindow where script will execute (which may be nullptr
+  // in unit tests).
+  Member<ExecutionContext> execution_context_;
 
   Member<ResourceFetcher> fetcher_;
   Member<DocumentParser> parser_;
@@ -1906,10 +1887,12 @@ class CORE_EXPORT Document : public ContainerNode,
   struct PendingJavascriptUrl {
    public:
     PendingJavascriptUrl(const KURL& input_url,
-                         network::mojom::CSPDisposition input_disposition)
-        : url(input_url), disposition(input_disposition) {}
+                         scoped_refptr<const DOMWrapperWorld> world)
+        : url(input_url), world(std::move(world)) {}
     KURL url;
-    network::mojom::CSPDisposition disposition;
+
+    // The world in which the navigation to |url| initiated. Non-null.
+    scoped_refptr<const DOMWrapperWorld> world;
   };
   Vector<PendingJavascriptUrl> pending_javascript_urls_;
 
@@ -2060,7 +2043,6 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned write_recursion_depth_;
 
   Member<ScriptedAnimationController> scripted_animation_controller_;
-  bool current_frame_is_throttled_;
   Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 
@@ -2115,11 +2097,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
-  int64_t ukm_source_id_;
+  const int64_t ukm_source_id_;
   bool needs_to_record_ukm_outlive_time_;
 
-  // Tracks and reports UKM metrics of the number of attempted font family match
-  // attempts (both successful and not successful) by the page.
+  // Tracks and reports metrics of attempted font match attempts (both
+  // successful and not successful) by the page.
   std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
 
 #if DCHECK_IS_ON()
@@ -2169,19 +2151,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool allow_dirty_shadow_v0_traversal_ = false;
 #endif
 
-  Member<NavigationInitiatorImpl> navigation_initiator_;
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
-
-  // Pending feature policy headers to send to browser after DidCommitNavigation
-  // IPC.
-  ParsedFeaturePolicy pending_fp_headers_;
-
-  // Pending document policy headers to send to browser after
-  // DidCommitNavigation IPC. Note: pending_dp_headers is the document policy
-  // state used to initialize |document_policy_| in SecurityContext. Verifying
-  // its integrity against required_document_policy has already been done in
-  // DocumentLoader.
-  DocumentPolicy::FeatureState pending_dp_headers_;
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
@@ -2191,10 +2161,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<bool> parsed_document_policies_;
 
   AtomicString override_last_modified_;
-
-  // Map from isolated world IDs to their ContentSecurityPolicy instances.
-  Member<HeapHashMap<int, Member<ContentSecurityPolicy>>>
-      isolated_world_csp_map_;
 
   // Used to keep track of which ComputedAccessibleNodes have already been
   // instantiated in this document to avoid constructing duplicates.
@@ -2217,15 +2183,16 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool is_for_markup_sanitization_ = false;
 
-  String fragment_directive_;
+  String fragment_directive_string_;
+  Member<FragmentDirective> fragment_directive_;
 
   bool use_count_fragment_directive_ = false;
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
 
-  HeapObserverList<SynchronousMutationObserver>
-      synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>
+      synchronous_mutation_observer_set_;
 
   Member<DisplayLockDocumentState> display_lock_document_state_;
 
@@ -2236,30 +2203,37 @@ class CORE_EXPORT Document : public ContainerNode,
   // Records find-in-page metrics, which are sent to UKM on shutdown.
   bool had_find_in_page_request_ = false;
   bool had_find_in_page_render_subtree_active_match_ = false;
+  bool had_find_in_page_beforematch_expanded_hidden_matchable_ = false;
 
-  // Mojo remote used to determine if the document has permission to access
-  // storage or not.
-  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+  // To reduce the API noisiness an explicit deny decision will set a
+  // flag that auto rejects the promise without the need for an IPC
+  // call or potential user prompt.
+  bool expressly_denied_storage_access_ = false;
 
-  // Mojo remote used to answer API calls asking whether the user has trust
-  // tokens (https://github.com/wicg/trust-token-api). The other endpoint
-  // is in the network service, which may crash and restart. To handle this:
-  //   1. |pending_has_trust_tokens_resolvers_| keeps track of promises
-  // depending on |has_trust_tokens_answerer_|'s answers;
-  //   2. |HasTrustTokensAnswererConnectionError| handles connection errors by
-  // rejecting all pending promises and clearing the pending set.
-  HeapMojoRemote<network::mojom::blink::HasTrustTokensAnswerer>
-      has_trust_tokens_answerer_;
+  Member<FontPreloadManager> font_preload_manager_;
 
-  // In order to be able to answer promises when the Mojo remote disconnects,
-  // maintain all pending promises here, deleting them on successful completion
-  // or on connection error, whichever comes first.
-  HeapHashSet<Member<ScriptPromiseResolver>>
-      pending_has_trust_tokens_resolvers_;
+  int async_script_count_ = 0;
+  bool first_paint_recorded_ = false;
 
-  FontPreloadManager font_preload_manager_;
+  DeclarativeShadowRootAllowState declarative_shadow_root_allow_state_ =
+      DeclarativeShadowRootAllowState::kNotSet;
 
   WeakMember<Node> find_in_page_active_match_node_;
+
+  Member<DocumentData> data_;
+
+  // If you want to add new data members to blink::Document, please reconsider
+  // if the members really should be in blink::Document.  document.h is a very
+  // popular header, and the size of document.h affects build time
+  // significantly.
+  //
+  // If a new data member doesn't make sense in inactive documents, such as
+  // documents created by DOMImplementation/DOMParser, the member should not be
+  // in blink::Document.  It should be in a per-Frame class like
+  // blink::LocalDOMWindow and blink::LocalFrame.
+  //
+  // If you need to add new data members to blink::Document and it requires new
+  // #includes, add them to blink::DocumentData instead.
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

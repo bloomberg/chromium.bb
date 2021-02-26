@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/time/time.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -42,7 +44,7 @@ class CastSoundsManager {
                                      bool repeat) = 0;
 
   // Plays the sound added for |key|.
-  virtual void Play(int key) = 0;
+  virtual void Play(int key, AudioContentType content_type) = 0;
 
   // Stops playing the sound added for |key| if it is currently playing.
   virtual void Stop(int key) = 0;

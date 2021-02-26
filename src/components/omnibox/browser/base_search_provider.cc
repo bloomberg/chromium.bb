@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +32,15 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace {
+
+bool MatchTypeAndContentsAreEqual(const AutocompleteMatch& lhs,
+                                  const AutocompleteMatch& rhs) {
+  return lhs.contents == rhs.contents && lhs.type == rhs.type;
+}
+
+}  // namespace
+
 // SuggestionDeletionHandler -------------------------------------------------
 
 // This class handles making requests to the server in order to delete
@@ -48,6 +56,10 @@ class SuggestionDeletionHandler {
 
   ~SuggestionDeletionHandler();
 
+  SuggestionDeletionHandler(const SuggestionDeletionHandler&) = delete;
+  SuggestionDeletionHandler& operator=(const SuggestionDeletionHandler&) =
+      delete;
+
  private:
   // Callback from SimpleURLLoader
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
@@ -55,8 +67,6 @@ class SuggestionDeletionHandler {
 
   std::unique_ptr<network::SimpleURLLoader> deletion_fetcher_;
   DeletionCompletedCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
 };
 
 SuggestionDeletionHandler::SuggestionDeletionHandler(
@@ -157,7 +167,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, /*subtype_identifier=*/0, from_keyword,
+      suggestion, type, /*subtypes=*/{}, from_keyword,
       /*relevance=*/0, /*relevance_from_server=*/false,
       /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
@@ -176,8 +186,8 @@ AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
     const SearchTermsData& search_terms_data,
     int accepted_suggestion) {
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
-      /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST, /*subtypes=*/{271},
+      /*from_keyword_provider=*/false, relevance,
       /*relevance_from_server=*/false,
       base::CollapseWhitespace(input.text(), false));
   // On device providers are asynchronous.
@@ -214,6 +224,16 @@ bool BaseSearchProvider::IsNTPPage(
          (classification == OEP::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
          (classification == OEP::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) ||
          (classification == OEP::NTP_REALBOX);
+}
+
+// static
+bool BaseSearchProvider::IsSearchResultsPage(
+    metrics::OmniboxEventProto::PageClassification classification) {
+  using OEP = metrics::OmniboxEventProto;
+  return (classification ==
+          OEP::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT) ||
+         (classification ==
+          OEP::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT);
 }
 
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -289,13 +309,12 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.contents_class = suggestion.match_contents_class();
   match.suggestion_group_id = suggestion.suggestion_group_id();
   match.answer = suggestion.answer();
-  match.subtype_identifier = suggestion.subtype_identifier();
+  match.subtypes = suggestion.subtypes();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     match.RecordAdditionalInfo(kACMatchPropertySuggestionText,
-                               base::UTF16ToUTF8(suggestion.suggestion()));
-    match.RecordAdditionalInfo(
-        kACMatchPropertyContentsPrefix,
-        base::UTF16ToUTF8(suggestion.match_contents_prefix()));
+                               suggestion.suggestion());
+    match.RecordAdditionalInfo(kACMatchPropertyContentsPrefix,
+                               suggestion.match_contents_prefix());
     match.RecordAdditionalInfo(
         kACMatchPropertyContentsStartIndex,
         static_cast<int>(
@@ -568,8 +587,22 @@ void BaseSearchProvider::DeleteMatchFromMatches(
     // may have reformulated that. Not that while checking for matching
     // contents works for personalized suggestions, if more match types gain
     // deletion support, this algorithm may need to be re-examined.
-    if (i->contents == match.contents && i->type == match.type) {
+
+    if (MatchTypeAndContentsAreEqual(match, *i)) {
       matches_.erase(i);
+      break;
+    }
+
+    // Handle the case where the deleted match is only found within the
+    // duplicate_matches sublist.
+    std::vector<AutocompleteMatch>& duplicates = i->duplicate_matches;
+    auto it =
+        std::remove_if(duplicates.begin(), duplicates.end(),
+                       [&match](const AutocompleteMatch& duplicate) {
+                         return MatchTypeAndContentsAreEqual(match, duplicate);
+                       });
+    if (it != duplicates.end()) {
+      duplicates.erase(it, duplicates.end());
       break;
     }
   }

@@ -32,8 +32,11 @@ public_app_shared_sources = [
   "content_main_delegate.cc",
   "content_main_delegate.h",
   "content_main_runner.h",
-  "sandbox_helper_win.h",
 ]
+
+if (is_win) {
+  public_app_shared_sources += [ "sandbox_helper_win.h" ]
+}
 
 public_app_shared_deps = [
   "//base",
@@ -41,7 +44,6 @@ public_app_shared_deps = [
   "//content:export",
   "//content/public/common:common_sources",
   "//services/service_manager",
-  "//services/service_manager/embedder",
   "//services/service_manager/public/cpp",
 ]
 
@@ -92,22 +94,4 @@ if (is_component_build) {
       "//content/app",
     ]
   }
-}
-
-source_set("content_browser_manifest") {
-  sources = [
-    "content_browser_manifest.cc",
-    "content_browser_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [ "//services/service_manager/public/cpp" ]
-}
-
-group("service_manifests") {
-  public_deps = [ ":content_browser_manifest" ]
 }

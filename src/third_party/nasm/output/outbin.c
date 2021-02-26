@@ -75,10 +75,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "nctype.h"
 
 #include "nasm.h"
 #include "nasmlib.h"
@@ -231,12 +228,11 @@ static void bin_cleanup(void)
     uint64_t pend;
     int h;
 
-#ifdef DEBUG
-    nasm_error(ERR_DEBUG,
-            "bin_cleanup: Sections were initially referenced in this order:\n");
-    for (h = 0, s = sections; s; h++, s = s->next)
-        fprintf(stdout, "%i. %s\n", h, s->name);
-#endif
+    if (debug_level(1)) {
+        nasm_debug("bin_cleanup: Sections were initially referenced in this order:\n");
+        for (h = 0, s = sections; s; h++, s = s->next)
+            nasm_debug("%i. %s\n", h, s->name);
+    }
 
     /* Assembly has completed, so now we need to generate the output file.
      * Step 1: Separate progbits and nobits sections into separate lists.
@@ -508,21 +504,19 @@ static void bin_cleanup(void)
     for (h = 0, s = sections; s; s = s->next) {
         if (!(s->flags & VSTART_DEFINED)) {     /* Non-fatal errors after assembly has completed are generally a
                                                  * no-no, but we'll throw a fatal one eventually so it's ok.  */
-            nasm_error(ERR_NONFATAL, "cannot compute vstart for section %s",
-                  s->name);
+            nasm_nonfatal("cannot compute vstart for section %s", s->name);
             h++;
         }
     }
     if (h)
         nasm_fatal("circular vfollows path detected");
 
-#ifdef DEBUG
-    nasm_error(ERR_DEBUG,
-            "bin_cleanup: Confirm final section order for output file:\n");
-    for (h = 0, s = sections; s && (s->flags & TYPE_PROGBITS);
-         h++, s = s->next)
-        fprintf(stdout, "%i. %s\n", h, s->name);
-#endif
+    if (debug_level(1)) {
+        nasm_debug("bin_cleanup: Confirm final section order for output file:\n");
+        for (h = 0, s = sections; s && (s->flags & TYPE_PROGBITS);
+             h++, s = s->next)
+            nasm_debug("%i. %s\n", h, s->name);
+    }
 
     /* Step 5: Apply relocations. */
 
@@ -612,6 +606,7 @@ static void bin_cleanup(void)
             fprintf(rf, "\n\n");
             list_for_each(s, sections) {
                 fprintf(rf, "---- Section %s ", s->name);
+                if (strlen(s->name) < 65)
                 for (h = 65 - strlen(s->name); h; h--)
                     fputc('-', rf);
                 fprintf(rf, "\n\nclass:     ");
@@ -647,7 +642,7 @@ static void bin_cleanup(void)
         if (map_control & MAP_SYMBOLS) {
             int32_t segment;
             int64_t offset;
-            bool found_label;
+            enum label_type found_label;
 
             fprintf(rf, "-- Symbols ");
             for (h = 68; h; h--)
@@ -660,7 +655,7 @@ static void bin_cleanup(void)
                 fprintf(rf, "\n\nValue     Name\n");
                 list_for_each(l, no_seg_labels) {
                     found_label = lookup_label(l->name, &segment, &offset);
-                    nasm_assert(found_label);
+                    nasm_assert(found_label != LBL_none);
                     fprintf(rf, "%08"PRIX64"  %s\n", offset, l->name);
                 }
                 fprintf(rf, "\n\n");
@@ -673,7 +668,7 @@ static void bin_cleanup(void)
                     fprintf(rf, "\n\nReal              Virtual           Name\n");
                     list_for_each(l, s->labels) {
                         found_label = lookup_label(l->name, &segment, &offset);
-                        nasm_assert(found_label);
+                        nasm_assert(found_label != LBL_none);
                         fprintf(rf, "%16"PRIX64"  %16"PRIX64"  %s\n",
                                 s->start + offset, s->vstart + offset,
                                 l->name);
@@ -732,7 +727,7 @@ static void bin_out(int32_t segto, const void *data,
 
     if (wrt != NO_SEG) {
         wrt = NO_SEG;           /* continue to do _something_ */
-        nasm_error(ERR_NONFATAL, "WRT not supported by binary output format");
+        nasm_nonfatal("WRT not supported by binary output format");
     }
 
     /* Find the segment we are targeting. */
@@ -749,8 +744,8 @@ static void bin_out(int32_t segto, const void *data,
     }
 
     if ((s->flags & TYPE_NOBITS) && (type != OUT_RESERVE))
-        nasm_error(ERR_WARNING, "attempt to initialize memory in a"
-              " nobits section: ignored");
+        nasm_warn(WARN_OTHER, "attempt to initialize memory in a"
+                  " nobits section: ignored");
 
     switch (type) {
     case OUT_ADDRESS:
@@ -759,11 +754,11 @@ static void bin_out(int32_t segto, const void *data,
 
         if (segment != NO_SEG && !find_section_by_index(segment)) {
             if (segment % 2)
-                nasm_error(ERR_NONFATAL, "binary output format does not support"
-                      " segment base references");
+                nasm_nonfatal("binary output format does not support"
+                              " segment base references");
             else
-                nasm_error(ERR_NONFATAL, "binary output format does not support"
-                      " external references");
+                nasm_nonfatal("binary output format does not support"
+                              " external references");
             segment = NO_SEG;
         }
         if (s->flags & TYPE_PROGBITS) {
@@ -789,8 +784,8 @@ static void bin_out(int32_t segto, const void *data,
 
     case OUT_RESERVE:
         if (s->flags & TYPE_PROGBITS) {
-            nasm_error(ERR_WARNING, "uninitialized space declared in"
-                  " %s section: zeroing", s->name);
+            nasm_warn(WARN_ZEROING, "uninitialized space declared in"
+                      " %s section: zeroing", s->name);
             saa_wbytes(s->contents, NULL, size);
         }
 	break;
@@ -804,11 +799,11 @@ static void bin_out(int32_t segto, const void *data,
 	size = realsize(type, size);
         if (segment != NO_SEG && !find_section_by_index(segment)) {
             if (segment % 2)
-                nasm_error(ERR_NONFATAL, "binary output format does not support"
-                      " segment base references");
+                nasm_nonfatal("binary output format does not support"
+                              " segment base references");
             else
-                nasm_error(ERR_NONFATAL, "binary output format does not support"
-                      " external references");
+                nasm_nonfatal("binary output format does not support"
+                              " external references");
             segment = NO_SEG;
         }
         if (s->flags & TYPE_PROGBITS) {
@@ -821,7 +816,7 @@ static void bin_out(int32_t segto, const void *data,
     }
 
     default:
-	nasm_error(ERR_NONFATAL, "unsupported relocation type %d\n", type);
+	nasm_nonfatal("unsupported relocation type %d\n", type);
 	break;
     }
 
@@ -835,13 +830,13 @@ static void bin_deflabel(char *name, int32_t segment, int64_t offset,
     (void)offset;               /* Don't warn that this parameter is unused */
 
     if (special)
-        nasm_error(ERR_NONFATAL, "binary format does not support any"
-              " special symbol types");
+        nasm_nonfatal("binary format does not support any"
+                      " special symbol types");
     else if (name[0] == '.' && name[1] == '.' && name[2] != '@')
-        nasm_error(ERR_NONFATAL, "unrecognised special symbol `%s'", name);
+        nasm_nonfatal("unrecognised special symbol `%s'", name);
     else if (is_global == 2)
-        nasm_error(ERR_NONFATAL, "binary output format does not support common"
-              " variables");
+        nasm_nonfatal("binary output format does not support common"
+                      " variables");
     else {
         struct Section *s;
         struct bin_label ***ltp;
@@ -955,14 +950,13 @@ static int bin_read_attribute(char **line, int *attribute,
                         break;
                 }
                 if (!**line) {
-                    nasm_error(ERR_NONFATAL,
-                          "invalid syntax in `section' directive");
+                    nasm_nonfatal("invalid syntax in `section' directive");
                     return -1;
                 }
                 ++(*line);
             }
             if (!**line) {
-                nasm_error(ERR_NONFATAL, "expecting `)'");
+                nasm_nonfatal("expecting `)'");
                 return -1;
             }
         }
@@ -971,8 +965,8 @@ static int bin_read_attribute(char **line, int *attribute,
 
     /* Check for no value given. */
     if (!*exp) {
-        nasm_error(ERR_WARNING, "No value given to attribute in"
-              " `section' directive");
+        nasm_warn(WARN_OTHER, "No value given to attribute in"
+                  " `section' directive");
         return -1;
     }
 
@@ -983,13 +977,13 @@ static int bin_read_attribute(char **line, int *attribute,
     e = evaluate(stdscan, NULL, &tokval, NULL, 1, NULL);
     if (e) {
         if (!is_really_simple(e)) {
-            nasm_error(ERR_NONFATAL, "section attribute value must be"
-                  " a critical expression");
+            nasm_nonfatal("section attribute value must be"
+                          " a critical expression");
             return -1;
         }
     } else {
-        nasm_error(ERR_NONFATAL, "Invalid attribute value"
-              " specified in `section' directive.");
+        nasm_nonfatal("Invalid attribute value"
+                      " specified in `section' directive.");
         return -1;
     }
     *value = (uint64_t)reloc_value(e);
@@ -1033,8 +1027,7 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
                     *astring = '\0';
                     astring++;
                 }
-                nasm_error(ERR_WARNING, "ignoring unknown section attribute:"
-                      " \"%s\"", p);
+                nasm_warn(WARN_OTHER, "ignoring unknown section attribute: \"%s\"", p);
             }
             continue;
         }
@@ -1043,9 +1036,8 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
         case ATTRIB_NOBITS:
             if ((sec->flags & TYPE_DEFINED)
                 && (sec->flags & TYPE_PROGBITS))
-                nasm_error(ERR_NONFATAL,
-                      "attempt to change section type"
-                      " from progbits to nobits");
+                nasm_nonfatal("attempt to change section type"
+                              " from progbits to nobits");
             else
                 sec->flags |= TYPE_DEFINED | TYPE_NOBITS;
             continue;
@@ -1053,8 +1045,8 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle progbits attribute. */
         case ATTRIB_PROGBITS:
             if ((sec->flags & TYPE_DEFINED) && (sec->flags & TYPE_NOBITS))
-                nasm_error(ERR_NONFATAL, "attempt to change section type"
-                      " from nobits to progbits");
+                nasm_nonfatal("attempt to change section type"
+                              " from nobits to progbits");
             else
                 sec->flags |= TYPE_DEFINED | TYPE_PROGBITS;
             continue;
@@ -1062,8 +1054,7 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle align attribute. */
         case ATTRIB_ALIGN:
             if (!value || ((value - 1) & value)) {
-                nasm_error(ERR_NONFATAL,
-                           "argument to `align' is not a power of two");
+                nasm_nonfatal("argument to `align' is not a power of two");
             } else {
                 /*
                  * Alignment is already satisfied if
@@ -1074,8 +1065,7 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
 
                 /* Don't allow a conflicting align value. */
                 if ((sec->flags & START_DEFINED) && (sec->start & (value - 1))) {
-                    nasm_error(ERR_NONFATAL,
-                              "`align' value conflicts with section start address");
+                    nasm_nonfatal("`align' value conflicts with section start address");
                 } else {
                     sec->align  = value;
                     sec->flags |= ALIGN_DEFINED;
@@ -1086,8 +1076,7 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle valign attribute. */
         case ATTRIB_VALIGN:
             if (!value || ((value - 1) & value))
-                nasm_error(ERR_NONFATAL, "argument to `valign' is not a"
-                      " power of two");
+                nasm_nonfatal("argument to `valign' is not a power of two");
             else {              /* Alignment is already satisfied if the previous
                                  * align value is greater. */
                 if ((sec->flags & VALIGN_DEFINED) && (value < sec->valign))
@@ -1096,9 +1085,7 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
                 /* Don't allow a conflicting valign value. */
                 if ((sec->flags & VSTART_DEFINED)
                     && (sec->vstart & (value - 1)))
-                    nasm_error(ERR_NONFATAL,
-                          "`valign' value conflicts "
-                          "with `vstart' address");
+                    nasm_nonfatal("`valign' value conflicts with `vstart' address");
                 else {
                     sec->valign = value;
                     sec->flags |= VALIGN_DEFINED;
@@ -1109,17 +1096,17 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle start attribute. */
         case ATTRIB_START:
             if (sec->flags & FOLLOWS_DEFINED)
-                nasm_error(ERR_NONFATAL, "cannot combine `start' and `follows'"
-                      " section attributes");
+                nasm_nonfatal("cannot combine `start' and `follows'"
+                              " section attributes");
             else if ((sec->flags & START_DEFINED) && (value != sec->start))
-                nasm_error(ERR_NONFATAL, "section start address redefined");
+                nasm_nonfatal("section start address redefined");
             else {
                 sec->start = value;
                 sec->flags |= START_DEFINED;
                 if (sec->flags & ALIGN_DEFINED) {
                     if (sec->start & (sec->align - 1))
-                        nasm_error(ERR_NONFATAL, "`start' address conflicts"
-                              " with section alignment");
+                        nasm_nonfatal("`start' address conflicts"
+                                      " with section alignment");
                     sec->flags ^= ALIGN_DEFINED;
                 }
             }
@@ -1128,21 +1115,19 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle vstart attribute. */
         case ATTRIB_VSTART:
             if (sec->flags & VFOLLOWS_DEFINED)
-                nasm_error(ERR_NONFATAL,
-                      "cannot combine `vstart' and `vfollows'"
-                      " section attributes");
+                nasm_nonfatal("cannot combine `vstart' and `vfollows'"
+                              " section attributes");
             else if ((sec->flags & VSTART_DEFINED)
                      && (value != sec->vstart))
-                nasm_error(ERR_NONFATAL,
-                      "section virtual start address"
-                      " (vstart) redefined");
+                nasm_nonfatal("section virtual start address"
+                              " (vstart) redefined");
             else {
                 sec->vstart = value;
                 sec->flags |= VSTART_DEFINED;
                 if (sec->flags & VALIGN_DEFINED) {
                     if (sec->vstart & (sec->valign - 1))
-                        nasm_error(ERR_NONFATAL, "`vstart' address conflicts"
-                              " with `valign' value");
+                        nasm_nonfatal("`vstart' address conflicts"
+                                      " with `valign' value");
                     sec->flags ^= VALIGN_DEFINED;
                 }
             }
@@ -1153,14 +1138,13 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             p = astring;
             astring += strcspn(astring, " \t");
             if (astring == p)
-                nasm_error(ERR_NONFATAL, "expecting section name for `follows'"
-                      " attribute");
+                nasm_nonfatal("expecting section name for `follows'"
+                              " attribute");
             else {
                 *(astring++) = '\0';
                 if (sec->flags & START_DEFINED)
-                    nasm_error(ERR_NONFATAL,
-                          "cannot combine `start' and `follows'"
-                          " section attributes");
+                    nasm_nonfatal("cannot combine `start' and `follows'"
+                                  " section attributes");
                 sec->follows = nasm_strdup(p);
                 sec->flags |= FOLLOWS_DEFINED;
             }
@@ -1169,16 +1153,14 @@ static void bin_assign_attributes(struct Section *sec, char *astring)
             /* Handle vfollows attribute. */
         case ATTRIB_VFOLLOWS:
             if (sec->flags & VSTART_DEFINED)
-                nasm_error(ERR_NONFATAL,
-                      "cannot combine `vstart' and `vfollows'"
-                      " section attributes");
+                nasm_nonfatal("cannot combine `vstart' and `vfollows'"
+                              " section attributes");
             else {
                 p = astring;
                 astring += strcspn(astring, " \t");
                 if (astring == p)
-                    nasm_error(ERR_NONFATAL,
-                          "expecting section name for `vfollows'"
-                          " attribute");
+                    nasm_nonfatal("expecting section name for `vfollows'"
+                                  " attribute");
                 else {
                     *(astring++) = '\0';
                     sec->vfollows = nasm_strdup(p);
@@ -1218,7 +1200,7 @@ static void bin_define_section_labels(void)
     labels_defined = 1;
 }
 
-static int32_t bin_secname(char *name, int pass, int *bits)
+static int32_t bin_secname(char *name, int *bits)
 {
     char *p;
     struct Section *sec;
@@ -1227,14 +1209,15 @@ static int32_t bin_secname(char *name, int pass, int *bits)
      * pass.  Use this opportunity to establish the default section
      * (default is BITS-16 ".text" segment).
      */
-    if (!name) {                /* Reset ORG and section attributes at the start of each pass. */
+    if (!name) {
+        /* Reset ORG and section attributes at the start of each pass. */
         origin_defined = 0;
         list_for_each(sec, sections)
             sec->flags &= ~(START_DEFINED | VSTART_DEFINED |
                             ALIGN_DEFINED | VALIGN_DEFINED);
 
         /* Define section start and vstart labels. */
-        if (pass != 1)
+        if (!pass_first())
             bin_define_section_labels();
 
         /* Establish the default (.text) section. */
@@ -1263,14 +1246,14 @@ static int32_t bin_secname(char *name, int pass, int *bits)
     }
 
     /* Handle attribute assignments. */
-    if (pass != 1)
+    if (!pass_first())
         bin_assign_attributes(sec, p);
 
 #ifndef ABIN_SMART_ADAPT
     /* The following line disables smart adaptation of
      * PROGBITS/NOBITS section types (it forces sections to
      * default to PROGBITS). */
-    if ((pass != 1) && !(sec->flags & TYPE_DEFINED))
+    if (!pass_first() && !(sec->flags & TYPE_DEFINED))
         sec->flags |= TYPE_DEFINED | TYPE_PROGBITS;
 #endif
 
@@ -1278,7 +1261,7 @@ static int32_t bin_secname(char *name, int pass, int *bits)
 }
 
 static enum directive_result
-bin_directive(enum directive directive, char *args, int pass)
+bin_directive(enum directive directive, char *args)
 {
     switch (directive) {
     case D_ORG:
@@ -1293,21 +1276,21 @@ bin_directive(enum directive directive, char *args, int pass)
         e = evaluate(stdscan, NULL, &tokval, NULL, 1, NULL);
         if (e) {
             if (!is_really_simple(e))
-                nasm_error(ERR_NONFATAL, "org value must be a critical"
+                nasm_nonfatal("org value must be a critical"
                       " expression");
             else {
                 value = reloc_value(e);
                 /* Check for ORG redefinition. */
                 if (origin_defined && (value != origin))
-                    nasm_error(ERR_NONFATAL, "program origin redefined");
+                    nasm_nonfatal("program origin redefined");
                 else {
                     origin = value;
                     origin_defined = 1;
                 }
             }
         } else
-            nasm_error(ERR_NONFATAL, "No or invalid offset specified"
-                  " in ORG directive.");
+            nasm_nonfatal("No or invalid offset specified"
+                          " in ORG directive.");
         return DIRR_OK;
     }
     case D_MAP:
@@ -1316,7 +1299,7 @@ bin_directive(enum directive directive, char *args, int pass)
      * and symbol information to stdout, stderr, or to a file. */
 	char *p;
 	
-        if (pass != 1)
+        if (!pass_first())
             return DIRR_OK;
         args += strspn(args, " \t");
         while (*args) {
@@ -1343,14 +1326,13 @@ bin_directive(enum directive directive, char *args, int pass)
                 else {          /* Must be a filename. */
                     rf = nasm_open_write(p, NF_TEXT);
                     if (!rf) {
-                        nasm_error(ERR_WARNING, "unable to open map file `%s'",
-                              p);
+                        nasm_warn(WARN_OTHER|ERR_PASS1, "unable to open map file `%s'", p);
                         map_control = 0;
                         return DIRR_OK;
                     }
                 }
             } else
-                nasm_error(ERR_WARNING, "map file already specified");
+                nasm_warn(WARN_OTHER|ERR_PASS1, "map file already specified");
         }
         if (map_control == 0)
             map_control |= MAP_ORIGIN | MAP_SUMMARY;
@@ -1524,7 +1506,7 @@ static void write_srecord(unsigned int len,  unsigned int alen,
     case 4:
 	break;
     default:
-	nasm_assert(0);
+	panic();
 	break;
     }
 
@@ -1614,7 +1596,7 @@ static void do_output_srec(void)
 
 
 const struct ofmt of_bin = {
-    "flat-form binary files (e.g. DOS .COM, .SYS)",
+    "Flat raw binary (MS-DOS, embedded, ...)",
     "bin",
     "",
     0,
@@ -1637,7 +1619,7 @@ const struct ofmt of_bin = {
 };
 
 const struct ofmt of_ith = {
-    "Intel hex",
+    "Intel Hex encoded flat binary",
     "ith",
     ".ith",                     /* really should have been ".hex"... */
     OFMT_TEXT,
@@ -1660,7 +1642,7 @@ const struct ofmt of_ith = {
 };
 
 const struct ofmt of_srec = {
-    "Motorola S-records",
+    "Motorola S-records encoded flat binary",
     "srec",
     ".srec",
     OFMT_TEXT,

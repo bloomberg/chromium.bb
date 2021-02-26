@@ -26,6 +26,7 @@
 #include "include/core/SkTypes.h"
 #include "include/effects/SkDashPathEffect.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/private/SkTPin.h"
 #include "src/core/SkColorSpaceXformSteps.h"
 
 #include <math.h>
@@ -77,7 +78,7 @@ static void compare_pixel(const char* label,
     memcpy(&pixel, bm.getAddr(0,0), sizeof(pixel));
 
     SkColor4f expected = transform(color,cs, canvas_cs.get());
-    if (canvas->imageInfo().colorType() < kRGBA_F16_SkColorType) {
+    if (SkColorTypeIsNormalized(canvas->imageInfo().colorType())) {
         // We can't expect normalized formats to hold values outside [0,1].
         for (int i = 0; i < 4; ++i) {
             expected[i] = SkTPin(expected[i], 0.0f, 1.0f);

@@ -8,13 +8,13 @@
 #include "remoting/host/linux/x11_keyboard.h"
 
 #include "base/macros.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/connection.h"
 
 namespace remoting {
 
 class X11KeyboardImpl : public X11Keyboard {
  public:
-  X11KeyboardImpl(Display* display);
+  explicit X11KeyboardImpl(x11::Connection* connection);
   ~X11KeyboardImpl() override;
 
   // KeyboardInterface overrides.
@@ -34,7 +34,7 @@ class X11KeyboardImpl : public X11Keyboard {
 
  private:
   // X11 graphics context.
-  Display* display_;
+  x11::Connection* connection_;
 
   DISALLOW_COPY_AND_ASSIGN(X11KeyboardImpl);
 };

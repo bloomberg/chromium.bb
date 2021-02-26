@@ -4,29 +4,38 @@
 
 #include "chrome/browser/component_updater/registration.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/buildflags.h"
+#include "chrome/browser/component_updater/autofill_regex_component_installer.h"
+#include "chrome/browser/component_updater/autofill_states_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
+#include "chrome/browser/component_updater/first_party_sets_component_installer.h"
+#include "chrome/browser/component_updater/floc_component_installer.h"
 #include "chrome/browser/component_updater/games_component_installer.h"
+#include "chrome/browser/component_updater/hyphenation_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
-#include "chrome/browser/component_updater/safety_tips_component_installer.h"
+#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/component_updater/trust_token_key_commitments_component_installer.h"
+#include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/crl_set_remover.h"
 #include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
+#include "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -45,10 +54,9 @@
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
-#include "chrome/browser/enterprise/connectors/service_providers.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "media/base/media_switches.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -58,10 +66,6 @@
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif  // BUILDFLAG(ENABLE_NACL)
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
-#endif
 
 #if BUILDFLAG(ENABLE_VR)
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
@@ -92,9 +96,8 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  RegisterPepperFlashComponent(cus);
-#endif
+  // TODO(crbug.com/1069814): Remove after 2021-10-01.
+  CleanUpPepperFlashComponent();
 
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   RegisterWidevineCdmComponent(cus);
@@ -117,10 +120,13 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #endif
 
   RegisterSubresourceFilterComponent(cus);
+  RegisterFlocComponent(cus,
+                        g_browser_process->floc_sorting_lsh_clusters_service());
   RegisterOnDeviceHeadSuggestComponent(
       cus, g_browser_process->GetApplicationLocale());
-  RegisterOptimizationHintsComponent(cus, is_off_the_record_profile,
-                                     profile_prefs);
+  RegisterOptimizationHintsComponent(cus, is_off_the_record_profile);
+  RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(cus);
+  RegisterFirstPartySetsComponent(cus);
 
   base::FilePath path;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {
@@ -135,23 +141,17 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
     // Chrome OS: On Chrome OS, this cleanup is delayed until user login.
     component_updater::DeleteLegacySTHSet(path);
 #endif
-
+  }
+  RegisterSSLErrorAssistantComponent(cus);
+  RegisterFileTypePoliciesComponent(cus);
 #if !defined(OS_CHROMEOS)
-    // CRLSetFetcher attempts to load a CRL set from either the local disk or
-    // network.
-    // For Chrome OS this registration is delayed until user login.
-    component_updater::RegisterCRLSetComponent(cus, path);
+  // CRLSetFetcher attempts to load a CRL set from either the local disk or
+  // network.
+  // For Chrome OS this registration is delayed until user login.
+  component_updater::RegisterCRLSetComponent(cus);
 #endif  // !defined(OS_CHROMEOS)
 
-    RegisterOriginTrialsComponent(cus, path);
-
-    RegisterFileTypePoliciesComponent(cus, path);
-
-    RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(cus, path);
-
-    RegisterSSLErrorAssistantComponent(cus, path);
-  }
-
+  RegisterOriginTrialsComponent(cus);
   RegisterMediaEngagementPreloadComponent(cus, base::OnceClosure());
 
 #if defined(OS_WIN)
@@ -165,38 +165,41 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID)
-  RegisterInterventionPolicyDatabaseComponent(
-      cus, g_browser_process->GetTabManager()->intervention_policy_database());
-#endif
-
 #if BUILDFLAG(ENABLE_VR)
   if (component_updater::ShouldRegisterVrAssetsComponentOnStartup()) {
     component_updater::RegisterVrAssetsComponent(cus);
   }
 #endif
 
-  RegisterSafetyTipsComponent(cus, path);
-  RegisterCrowdDenyComponent(cus, path);
-  RegisterTLSDeprecationConfigComponent(cus, path);
+  RegisterSafetyTipsComponent(cus);
+  RegisterCrowdDenyComponent(cus);
+  RegisterTLSDeprecationConfigComponent(cus);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
   component_updater::RegisterGamesComponent(cus, profile_prefs);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
-    component_updater::RegisterSODAComponent(cus, profile_prefs,
-                                             base::OnceClosure());
+  base::UmaHistogramBoolean("Accessibility.LiveCaption.FeatureEnabled",
+                            base::FeatureList::IsEnabled(media::kLiveCaption));
+  component_updater::RegisterSodaComponent(cus, profile_prefs,
+                                           g_browser_process->local_state(),
+                                           base::OnceClosure());
+  component_updater::RegisterSodaLanguageComponent(
+      cus, profile_prefs, g_browser_process->local_state());
 #endif
 
 #if defined(OS_CHROMEOS)
   RegisterSmartDimComponent(cus);
 #endif  // !defined(OS_CHROMEOS)
 
-#if !defined(OS_ANDROID)
-  enterprise_connectors::RegisterServiceProvidersComponent(cus);
+#if BUILDFLAG(USE_MINIKIN_HYPHENATION) && !defined(OS_ANDROID)
+  RegisterHyphenationComponent(cus);
 #endif
+
+  RegisterZxcvbnDataComponent(cus);
+
+  RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 }
 
 }  // namespace component_updater

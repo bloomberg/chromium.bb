@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
 
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/core/favicon_util.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/web_contents.h"
@@ -17,14 +20,15 @@ namespace metrics_util = password_manager::metrics_util;
 
 namespace {
 
-std::vector<autofill::PasswordForm> DeepCopyForms(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms) {
-  std::vector<autofill::PasswordForm> result;
+std::vector<password_manager::PasswordForm> DeepCopyForms(
+    const std::vector<std::unique_ptr<password_manager::PasswordForm>>& forms) {
+  std::vector<password_manager::PasswordForm> result;
   result.reserve(forms.size());
-  std::transform(forms.begin(), forms.end(), std::back_inserter(result),
-                 [](const std::unique_ptr<autofill::PasswordForm>& form) {
-                   return *form;
-                 });
+  std::transform(
+      forms.begin(), forms.end(), std::back_inserter(result),
+      [](const std::unique_ptr<password_manager::PasswordForm>& form) {
+        return *form;
+      });
   return result;
 }
 
@@ -35,12 +39,11 @@ ItemsBubbleController::ItemsBubbleController(
     : PasswordBubbleControllerBase(
           std::move(delegate),
           /*display_disposition=*/metrics_util::MANUAL_MANAGE_PASSWORDS),
-      dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION) {
-  local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
-  GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(),
-                                    delegate_->GetOrigin(),
-                                    !local_credentials_.empty(), &title_);
-}
+      local_credentials_(DeepCopyForms(delegate_->GetCurrentForms())),
+      title_(
+          GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(),
+                                            delegate_->GetOrigin(),
+                                            !local_credentials_.empty())) {}
 
 ItemsBubbleController::~ItemsBubbleController() {
   if (!interaction_reported_)
@@ -55,7 +58,7 @@ void ItemsBubbleController::OnManageClicked(
 }
 
 void ItemsBubbleController::OnPasswordAction(
-    const autofill::PasswordForm& password_form,
+    const password_manager::PasswordForm& password_form,
     PasswordAction action) {
   Profile* profile = GetProfile();
   if (!profile)
@@ -68,6 +71,25 @@ void ItemsBubbleController::OnPasswordAction(
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);
+}
+
+void ItemsBubbleController::RequestFavicon(
+    base::OnceCallback<void(const gfx::Image&)> favicon_ready_callback) {
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(GetProfile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::GetFaviconImageForPageURL(
+      favicon_service, GetWebContents()->GetVisibleURL(),
+      favicon_base::IconType::kFavicon,
+      base::BindOnce(&ItemsBubbleController::OnFaviconReady,
+                     base::Unretained(this), std::move(favicon_ready_callback)),
+      &favicon_tracker_);
+}
+
+void ItemsBubbleController::OnFaviconReady(
+    base::OnceCallback<void(const gfx::Image&)> favicon_ready_callback,
+    const favicon_base::FaviconImageResult& result) {
+  std::move(favicon_ready_callback).Run(result.image);
 }
 
 void ItemsBubbleController::ReportInteractions() {

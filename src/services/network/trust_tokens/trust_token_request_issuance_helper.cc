@@ -7,18 +7,21 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/task/thread_pool.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
+#include "services/network/public/cpp/trust_token_http_headers.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
-#include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_key_filtering.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
@@ -82,11 +85,16 @@ TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
     TrustTokenStore* token_store,
     const TrustTokenKeyCommitmentGetter* key_commitment_getter,
     std::unique_ptr<Cryptographer> cryptographer,
+    std::unique_ptr<LocalTrustTokenOperationDelegate> local_operation_delegate,
+    base::RepeatingCallback<bool(mojom::TrustTokenKeyCommitmentResult::Os)>
+        is_current_os_callback,
     net::NetLogWithSource net_log)
     : top_level_origin_(std::move(top_level_origin)),
       token_store_(token_store),
       key_commitment_getter_(std::move(key_commitment_getter)),
       cryptographer_(std::move(cryptographer)),
+      local_operation_delegate_(std::move(local_operation_delegate)),
+      is_current_os_callback_(std::move(is_current_os_callback)),
       net_log_(std::move(net_log)) {
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
@@ -104,9 +112,6 @@ void TrustTokenRequestIssuanceHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(request);
-  DCHECK(!request->initiator() ||
-         IsOriginPotentiallyTrustworthy(*request->initiator()))
-      << *request->initiator();
 
   net_log_.BeginEvent(
       net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_ISSUANCE);
@@ -147,8 +152,29 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     return;
   }
 
+  if (features::kPlatformProvidedTrustTokenIssuance.Get() &&
+      !commitment_result->request_issuance_locally_on.empty()) {
+    should_divert_issuance_request_to_os_ = base::ranges::any_of(
+        commitment_result->request_issuance_locally_on,
+        [this](mojom::TrustTokenKeyCommitmentResult::Os os) {
+          return is_current_os_callback_.Run(os);
+        });
+    if (!should_divert_issuance_request_to_os_ &&
+        commitment_result->unavailable_local_issuance_fallback ==
+            mojom::TrustTokenKeyCommitmentResult::
+                UnavailableLocalIssuanceFallback::kReturnWithError) {
+      // If the issuer requests that issuance be mediated by the OS on at least
+      // one platform, and we aren't on that platform, and the issuer has
+      // configured that we should return with an error in this case, do so.
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
+      return;
+    }
+  }
+
+  protocol_version_ = commitment_result->protocol_version;
   if (!commitment_result->batch_size ||
-      !cryptographer_->Initialize(commitment_result->batch_size)) {
+      !cryptographer_->Initialize(protocol_version_,
+                                  commitment_result->batch_size)) {
     LogOutcome(net_log_, kBegin,
                "Internal error initializing cryptography delegate");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
@@ -197,8 +223,31 @@ void TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete(
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
+
+  if (should_divert_issuance_request_to_os_) {
+    LogOutcome(net_log_, kBegin,
+               "Passing operation to local issuance provider");
+    auto fulfill_request = mojom::FulfillTrustTokenIssuanceRequest::New();
+    fulfill_request->issuer = url::Origin::Create(request->url());
+    fulfill_request->request = std::move(*maybe_blinded_tokens);
+    local_operation_delegate_->FulfillIssuance(
+        std::move(fulfill_request),
+        base::BindOnce(&TrustTokenRequestIssuanceHelper::
+                           DoneRequestingLocallyFulfilledIssuance,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(done)));
+    // |this| may have been deleted and/or Finalize may have been called
+    // already.
+    return;
+  }
+
   request->SetExtraRequestHeaderByName(kTrustTokensSecTrustTokenHeader,
                                        std::move(*maybe_blinded_tokens),
+                                       /*overwrite=*/true);
+
+  std::string protocol_string_version =
+      internal::ProtocolVersionToString(protocol_version_);
+  request->SetExtraRequestHeaderByName(kTrustTokensSecTrustTokenVersionHeader,
+                                       protocol_string_version,
                                        /*overwrite=*/true);
 
   // We don't want cache reads, because the highest priority is to execute the
@@ -237,10 +286,16 @@ void TrustTokenRequestIssuanceHelper::Finalize(
 
   response->headers->RemoveHeader(kTrustTokensSecTrustTokenHeader);
 
+  ConfirmIssuanceResponse(std::move(header_value), std::move(done));
+}
+
+void TrustTokenRequestIssuanceHelper::ConfirmIssuanceResponse(
+    std::string issuance_response,
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ConfirmIssuanceOnPostedSequence,
-                     std::move(cryptographer_), std::move(header_value)),
+                     std::move(cryptographer_), std::move(issuance_response)),
       base::BindOnce(&TrustTokenRequestIssuanceHelper::
                          OnDelegateConfirmIssuanceCallComplete,
                      weak_ptr_factory_.GetWeakPtr(), std::move(done)));
@@ -275,6 +330,45 @@ void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
       });
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
   return;
+}
+
+void TrustTokenRequestIssuanceHelper::DoneRequestingLocallyFulfilledIssuance(
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+    mojom::FulfillTrustTokenIssuanceAnswerPtr answer) {
+  switch (answer->status) {
+    case mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound: {
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
+      return;
+    }
+    case mojom::FulfillTrustTokenIssuanceAnswer::Status::kUnknownError: {
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kUnknownError);
+      return;
+    }
+    case mojom::FulfillTrustTokenIssuanceAnswer::Status::kOk:
+      break;
+  }
+
+  // Log the beginning of the Finalize event here, since this is where we enter
+  // the main response processing logic when executing issuance locally:
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE);
+  ConfirmIssuanceResponse(
+      std::move(answer->response),
+      base::BindOnce(&TrustTokenRequestIssuanceHelper::
+                         DoneFinalizingLocallyFulfilledIssuance,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(done)));
+}
+
+void TrustTokenRequestIssuanceHelper::DoneFinalizingLocallyFulfilledIssuance(
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+    mojom::TrustTokenOperationStatus status) {
+  if (status == mojom::TrustTokenOperationStatus::kOk) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::
+                            kOperationSuccessfullyFulfilledLocally);
+    return;
+  }
+
+  std::move(done).Run(status);
 }
 
 }  // namespace network

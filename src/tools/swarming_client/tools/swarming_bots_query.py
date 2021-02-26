@@ -15,8 +15,9 @@ import sys
 from six.moves import urllib
 
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 
 
 def _run_json(cmd):
@@ -48,20 +49,25 @@ def fetch_bots(swarming, dimensions):
 def main():
   parser = optparse.OptionParser(description=sys.modules['__main__'].__doc__)
   parser.add_option(
-      '-S', '--swarming',
-      metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
+      '-S',
+      '--swarming',
+      metavar='URL',
+      default=os.environ.get('SWARMING_SERVER', ''),
       help='Swarming server to use')
 
   group = optparse.OptionGroup(parser, 'Filtering')
   group.add_option(
-      '-d', '--dimension', metavar='KEY:VALUE', dest='dimensions',
-      action='append', default=[],
+      '-d',
+      '--dimension',
+      metavar='KEY:VALUE',
+      dest='dimensions',
+      action='append',
+      default=[],
       help='Dimensions to filter on')
   group.add_option('-k', '--key', help='State key to print out')
   parser.add_option_group(group)
 
-  parser.add_option(
-      '-v', '--verbose', action='count', default=0, help='Log')
+  parser.add_option('-v', '--verbose', action='count', default=0, help='Log')
   options, args = parser.parse_args()
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
   if args:

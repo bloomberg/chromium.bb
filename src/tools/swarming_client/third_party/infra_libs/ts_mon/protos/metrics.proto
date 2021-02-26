@@ -5,10 +5,10 @@ syntax = "proto2";
 
 package ts_mon.proto;
 
-import "any.proto";
-import "timestamp.proto";
-import "acquisition_network_device.proto";
-import "acquisition_task.proto";
+import "infra_libs/ts_mon/protos/any.proto";
+import "infra_libs/ts_mon/protos/timestamp.proto";
+import "infra_libs/ts_mon/protos/acquisition_network_device.proto";
+import "infra_libs/ts_mon/protos/acquisition_task.proto";
 
 message MetricsPayload {
   repeated MetricsCollection metrics_collection = 1;

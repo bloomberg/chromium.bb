@@ -15,11 +15,15 @@ include_rules = [
   "+components/crash/core/common",
   "+components/dom_distiller/core",
   "+components/dom_distiller/ios",
+  "+components/enterprise",
   "+components/error_page/common",
   "+components/favicon/core",
+  "+components/shared_highlighting/core/common",
+  "+components/previous_session_info/previous_session_info.h",
   "+components/favicon/ios",
   "+components/favicon_base",
   "+components/feature_engagement",
+  "+components/feed/core/v2",
   "+components/flags_ui",
   "+components/gcm_driver",
   "+components/google/core",
@@ -37,6 +41,7 @@ include_rules = [
   "+components/language",
   "+components/language_usage_metrics",
   "+components/leveldb_proto",
+  "+components/lookalikes/core",
   "+components/metrics",
   "+components/ntp_tiles",
   "+components/user_prefs",
@@ -59,6 +64,7 @@ include_rules = [
   "+components/policy/core/browser",
   "+components/policy/core/common",
   "+components/policy/policy_constants.h",
+  "+components/policy/proto/device_management_backend.pb.h",
   "+components/pref_registry",
   "+components/prefs",
   "+components/profile_metrics",
@@ -68,6 +74,7 @@ include_rules = [
   "+components/reading_list",
   "+components/rlz",
   "+components/safe_browsing",
+  "+components/safety_check",
   "+components/search",
   "+components/search_engines",
   "+components/search_provider_logos",
@@ -145,3 +152,9 @@ include_rules = [
   "+components/strings/grit",
   "+ios/chrome/grit",
 ]
+
+specific_include_rules = {
+  ".*test\.mm": [
+    "+components/previous_session_info/previous_session_info_private.h",
+  ],
+}

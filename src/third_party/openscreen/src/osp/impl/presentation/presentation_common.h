@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #include "osp/msgs/osp_messages.h"
 #include "osp/public/message_demuxer.h"
@@ -34,7 +35,7 @@ MessageDemuxer* GetClientDemuxer();
 
 class PresentationID {
  public:
-  PresentationID(const std::string presentation_id);
+  explicit PresentationID(const std::string presentation_id);
 
   operator bool() { return id_; }
   operator std::string() { return id_.value(); }

@@ -46,7 +46,7 @@ static av_cold int init(AVCodecContext *avctx)
     }
 
     if(a->is_mjpeg) {
-        AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+        const AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
         AVDictionary *thread_opt = NULL;
         if (!codec) {
             av_log(avctx, AV_LOG_ERROR, "MJPEG codec not found\n");
@@ -54,6 +54,8 @@ static av_cold int init(AVCodecContext *avctx)
         }
 
         a->mjpeg_avctx = avcodec_alloc_context3(codec);
+        if (!a->mjpeg_avctx)
+            return AVERROR(ENOMEM);
 
         av_dict_set(&thread_opt, "threads", "1", 0); // Is this needed ?
         a->mjpeg_avctx->refcounted_frames = 1;
@@ -91,8 +93,7 @@ static av_cold int end(AVCodecContext *avctx)
 {
     AVRnContext *a = avctx->priv_data;
 
-    avcodec_close(a->mjpeg_avctx);
-    av_freep(&a->mjpeg_avctx);
+    avcodec_free_context(&a->mjpeg_avctx);
 
     return 0;
 }
@@ -169,5 +170,5 @@ AVCodec ff_avrn_decoder = {
     .close          = end,
     .decode         = decode_frame,
     .max_lowres     = 3,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

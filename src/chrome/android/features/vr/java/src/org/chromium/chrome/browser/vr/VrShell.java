@@ -37,8 +37,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
@@ -49,12 +49,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -401,7 +400,7 @@ public class VrShell extends GvrLayout
 
         // Start with content rendering paused if the renderer-drawn controls are visible, as this
         // would cause the in-content omnibox to be shown to users.
-        boolean pauseContent = mActivity.getFullscreenManager().getContentOffset() > 0;
+        boolean pauseContent = mActivity.getBrowserControlsManager().getContentOffset() > 0;
 
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
@@ -544,7 +543,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                ((TabImpl) model.getTabAt(i)).updateAttachment(window, null);
+                model.getTabAt(i).updateAttachment(window, null);
             }
         }
     }
@@ -785,6 +784,12 @@ public class VrShell extends GvrLayout
         if (mNativeVrShell != 0) VrShellJni.get().onPause(mNativeVrShell, VrShell.this);
     }
 
+    public void destroyWindowAndroid() {
+        reparentAllTabs(mActivity.getWindowAndroid());
+        mCompositorView.onExitVr(mActivity.getWindowAndroid());
+        mContentVrWindowAndroid.destroy();
+    }
+
     @Override
     public void shutdown() {
         if (mVrBrowsingEnabled) {
@@ -822,6 +827,7 @@ public class VrShell extends GvrLayout
         mContentVirtualDisplay.destroy();
 
         mCompositorView.onExitVr(mActivity.getWindowAndroid());
+        mContentVrWindowAndroid.destroy();
 
         if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setProgressBarEnabled(true);
@@ -1034,7 +1040,7 @@ public class VrShell extends GvrLayout
 
     @CalledByNative
     public boolean hasDaydreamSupport() {
-        return mDelegate.hasDaydreamSupport();
+        return VrCoreInstallUtils.hasDaydreamSupport();
     }
 
     public void requestToExitVr(@UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {
@@ -1042,18 +1048,12 @@ public class VrShell extends GvrLayout
         if (showExitPromptBeforeDoff) {
             VrShellJni.get().requestToExitVr(mNativeVrShell, VrShell.this, reason);
         } else {
-            VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
             mDelegate.onExitVrRequestResult(true);
         }
     }
 
     @CalledByNative
-    private void onExitVrRequestResult(@UiUnsupportedMode int reason, boolean shouldExit) {
-        if (shouldExit) {
-            if (mNativeVrShell != 0) {
-                VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
-            }
-        }
+    private void onExitVrRequestResult(boolean shouldExit) {
         mDelegate.onExitVrRequestResult(shouldExit);
     }
 
@@ -1375,8 +1375,6 @@ public class VrShell extends GvrLayout
         void setHistoryButtonsEnabled(
                 long nativeVrShell, VrShell caller, boolean canGoBack, boolean canGoForward);
         void requestToExitVr(long nativeVrShell, VrShell caller, @UiUnsupportedMode int reason);
-        void logUnsupportedModeUserMetric(
-                long nativeVrShell, VrShell caller, @UiUnsupportedMode int mode);
         void showSoftInput(long nativeVrShell, VrShell caller, boolean show);
         void updateWebInputIndices(long nativeVrShell, VrShell caller, int selectionStart,
                 int selectionEnd, int compositionStart, int compositionEnd);

@@ -14,19 +14,19 @@
 #include "third_party/blink/renderer/core/css/hash_tools.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/shorthand.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 
 namespace blink {
 
-using css_property_parser_helpers::ConsumeIdent;
-using css_property_parser_helpers::IsImplicitProperty;
-using css_property_parser_helpers::ParseLonghand;
+using css_parsing_utils::ConsumeIdent;
+using css_parsing_utils::IsImplicitProperty;
+using css_parsing_utils::ParseLonghand;
 
 class CSSIdentifierValue;
 
@@ -46,7 +46,7 @@ const CSSValue* MaybeConsumeCSSWideKeyword(CSSParserTokenRange& range) {
     value = CSSInheritedValue::Create();
   if (id == CSSValueID::kUnset)
     value = cssvalue::CSSUnsetValue::Create();
-  if (RuntimeEnabledFeatures::CSSRevertEnabled() && id == CSSValueID::kRevert)
+  if (id == CSSValueID::kRevert)
     value = cssvalue::CSSRevertValue::Create();
 
   if (value)
@@ -153,15 +153,16 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   if (CSSVariableParser::ContainsValidVariableReferences(original_range)) {
     bool is_animation_tainted = false;
     auto* variable = MakeGarbageCollected<CSSVariableReferenceValue>(
-        CSSVariableData::Create(original_range, is_animation_tainted, true,
-                                context_->BaseURL(), context_->Charset()),
+        CSSVariableData::Create({original_range, StringView()},
+                                is_animation_tainted, true, context_->BaseURL(),
+                                context_->Charset()),
         *context_);
 
     if (is_shorthand) {
       const cssvalue::CSSPendingSubstitutionValue& pending_value =
           *MakeGarbageCollected<cssvalue::CSSPendingSubstitutionValue>(
               property_id, variable);
-      css_property_parser_helpers::AddExpandedPropertyForValue(
+      css_parsing_utils::AddExpandedPropertyForValue(
           property_id, pending_value, important, *parsed_properties_);
     } else {
       AddProperty(property_id, CSSPropertyID::kInvalid, *variable, important,
@@ -216,24 +217,18 @@ static CSSPropertyID UnresolvedCSSPropertyID(
 
 CSSPropertyID unresolvedCSSPropertyID(const ExecutionContext* execution_context,
                                       const String& string) {
-  unsigned length = string.length();
-  CSSParserMode mode = kHTMLStandardMode;
-  return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(execution_context, string.Characters8(),
-                                       length, mode)
-             : UnresolvedCSSPropertyID(execution_context, string.Characters16(),
-                                       length, mode);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return UnresolvedCSSPropertyID(execution_context, chars, length,
+                                   kHTMLStandardMode);
+  });
 }
 
 CSSPropertyID UnresolvedCSSPropertyID(const ExecutionContext* execution_context,
                                       StringView string,
                                       CSSParserMode mode) {
-  unsigned length = string.length();
-  return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(execution_context, string.Characters8(),
-                                       length, mode)
-             : UnresolvedCSSPropertyID(execution_context, string.Characters16(),
-                                       length, mode);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return UnresolvedCSSPropertyID(execution_context, chars, length, mode);
+  });
 }
 
 template <typename CharacterType>
@@ -281,8 +276,8 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
     AddProperty(property, CSSPropertyID::kInvalid, *value, important,
                 IsImplicitProperty::kNotImplicit, *parsed_properties_);
   } else {
-    css_property_parser_helpers::AddExpandedPropertyForValue(
-        property, *value, important, *parsed_properties_);
+    css_parsing_utils::AddExpandedPropertyForValue(property, *value, important,
+                                                   *parsed_properties_);
   }
   range_ = range_copy;
   return true;
@@ -300,19 +295,19 @@ static CSSValue* ConsumeSingleViewportDescriptor(
     case CSSPropertyID::kMaxHeight:
       if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
         return ConsumeIdent(range);
-      return css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, context, kValueRangeNonNegative);
+      return css_parsing_utils::ConsumeLengthOrPercent(range, context,
+                                                       kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
     case CSSPropertyID::kZoom: {
       if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
-      CSSValue* parsed_value = css_property_parser_helpers::ConsumeNumber(
+      CSSValue* parsed_value = css_parsing_utils::ConsumeNumber(
           range, context, kValueRangeNonNegative);
       if (parsed_value)
         return parsed_value;
-      return css_property_parser_helpers::ConsumePercent(
-          range, context, kValueRangeNonNegative);
+      return css_parsing_utils::ConsumePercent(range, context,
+                                               kValueRangeNonNegative);
     }
     case CSSPropertyID::kUserZoom:
       return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);

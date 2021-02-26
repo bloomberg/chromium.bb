@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -26,11 +27,12 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -39,6 +41,8 @@ namespace autofill {
 namespace {
 
 const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("merge");
+const base::FilePath::CharType kTestNameStructuredNames[] =
+    FILE_PATH_LITERAL("merge_structured_names");
 const base::FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("*.in");
 
 const char kFieldSeparator[] = ":";
@@ -70,7 +74,12 @@ const base::FilePath& GetTestDataDir() {
 
 const std::vector<base::FilePath> GetTestFiles() {
   base::FilePath dir = GetTestDataDir();
-  dir = dir.AppendASCII("autofill").AppendASCII("merge").AppendASCII("input");
+  bool structured_names = base::FeatureList::IsEnabled(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+  dir =
+      dir.AppendASCII("autofill")
+          .AppendASCII(structured_names ? "merge_structured_names" : "merge")
+          .AppendASCII("input");
   base::FileEnumerator input_files(dir, false, base::FileEnumerator::FILES,
                                    kFileNamePattern);
   std::vector<base::FilePath> files;
@@ -80,9 +89,9 @@ const std::vector<base::FilePath> GetTestFiles() {
   }
   std::sort(files.begin(), files.end());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   base::mac::ClearAmIBundledCache();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   return files;
 }
@@ -303,8 +312,17 @@ ServerFieldType AutofillMergeTest::StringToFieldType(const std::string& str) {
 
 TEST_P(AutofillMergeTest, DataDrivenMergeProfiles) {
   const bool kIsExpectedToPass = true;
-  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName),
-                       kIsExpectedToPass);
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    RunOneDataDrivenTest(GetParam(),
+                         GetOutputDirectory(kTestNameStructuredNames),
+                         kIsExpectedToPass);
+  } else {
+    RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName),
+                         kIsExpectedToPass);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

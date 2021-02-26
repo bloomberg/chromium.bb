@@ -1,7 +1,7 @@
 # HarfBuzz feature options
 option('glib', type: 'feature', value: 'auto',
   description: 'Enable GLib unicode functions')
-option('gobject', type: 'feature', value: 'disabled',
+option('gobject', type: 'feature', value: 'auto',
   description: 'Enable GObject bindings')
 option('cairo', type: 'feature', value: 'auto',
   description: 'Use Cairo graphics library')
@@ -21,14 +21,18 @@ option('coretext', type: 'feature', value: 'disabled',
   description: 'Enable CoreText shaper backend on macOS')
 
 # Common feature options
-option('tests', type : 'feature', value : 'enabled', yield : true,
+option('tests', type: 'feature', value: 'enabled', yield: true,
   description: 'Enable or disable unit tests')
-option('introspection', type : 'feature', value : 'disabled', yield : true,
-  description : 'Generate gobject-introspection bindings (.gir/.typelib files)')
+option('introspection', type: 'feature', value: 'auto', yield: true,
+  description: 'Generate gobject-introspection bindings (.gir/.typelib files)')
+option('docs', type: 'feature', value: 'auto', yield: true,
+  description: 'Generate documentation with gtk-doc')
 
-option('icu-builtin', type: 'boolean', value: false,
+option('benchmark', type: 'feature', value: 'auto',
+  description: 'Enable benchmark tests')
+option('icu_builtin', type: 'boolean', value: false,
   description: 'Don\'t separate ICU support as harfbuzz-icu module')
-option('experimental-api', type: 'boolean', value: false,
+option('experimental_api', type: 'boolean', value: false,
   description: 'Enable experimental APIs')
-option('amalgam', type : 'boolean', value : false,
-  description : 'Enable amalgam builds')
+option('fuzzer_ldflags', type: 'string',
+  description: 'Extra LDFLAGS used during linking of fuzzing binaries')

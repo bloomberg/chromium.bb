@@ -49,6 +49,7 @@ struct WasmModule;
 #define WASM_RUNTIME_STUB_LIST(V, VTRAP) \
   FOREACH_WASM_TRAPREASON(VTRAP)         \
   V(WasmCompileLazy)                     \
+  V(WasmTriggerTierUp)                   \
   V(WasmDebugBreak)                      \
   V(WasmInt32ToHeapNumber)               \
   V(WasmTaggedNonSmiToInt32)             \
@@ -56,6 +57,7 @@ struct WasmModule;
   V(WasmFloat64ToNumber)                 \
   V(WasmTaggedToFloat64)                 \
   V(WasmAllocateJSArray)                 \
+  V(WasmAllocatePair)                    \
   V(WasmAtomicNotify)                    \
   V(WasmI32AtomicWait32)                 \
   V(WasmI32AtomicWait64)                 \
@@ -71,8 +73,9 @@ struct WasmModule;
   V(WasmStackOverflow)                   \
   V(WasmThrow)                           \
   V(WasmRethrow)                         \
+  V(WasmTraceEnter)                      \
+  V(WasmTraceExit)                       \
   V(WasmTraceMemory)                     \
-  V(AllocateHeapNumber)                  \
   V(ArgumentsAdaptorTrampoline)          \
   V(BigIntToI32Pair)                     \
   V(BigIntToI64)                         \
@@ -198,6 +201,8 @@ class V8_EXPORT_PRIVATE WasmCode final {
   static bool ShouldBeLogged(Isolate* isolate);
   void LogCode(Isolate* isolate) const;
 
+  WasmCode(const WasmCode&) = delete;
+  WasmCode& operator=(const WasmCode&) = delete;
   ~WasmCode();
 
   void IncRef() {
@@ -346,8 +351,6 @@ class V8_EXPORT_PRIVATE WasmCode final {
   // from (3) and all (2)), the code object is deleted and the memory for the
   // machine code is freed.
   std::atomic<int> ref_count_{1};
-
-  DISALLOW_COPY_AND_ASSIGN(WasmCode);
 };
 
 // Check that {WasmCode} objects are sufficiently small. We create many of them,
@@ -364,6 +367,17 @@ const char* GetWasmCodeKindAsString(WasmCode::Kind);
 // Manages the code reservations and allocations of a single {NativeModule}.
 class WasmCodeAllocator {
  public:
+#if V8_TARGET_ARCH_ARM64
+  // ARM64 only supports direct calls within a 128 MB range.
+  static constexpr size_t kMaxCodeSpaceSize = 128 * MB;
+#else
+  // Use 1024 MB limit for code spaces on other platforms. This is smaller than
+  // the total allowed code space (kMaxWasmCodeMemory) to avoid unnecessarily
+  // big reservations, and to ensure that distances within a code space fit
+  // within a 32-bit signed integer.
+  static constexpr size_t kMaxCodeSpaceSize = 1024 * MB;
+#endif
+
   // {OptionalLock} is passed between {WasmCodeAllocator} and {NativeModule} to
   // indicate that the lock on the {WasmCodeAllocator} is already taken. It's
   // optional to allow to also call methods without holding the lock.
@@ -420,6 +434,11 @@ class WasmCodeAllocator {
   size_t GetNumCodeSpaces() const;
 
  private:
+  // Sentinel value to be used for {AllocateForCodeInRegion} for specifying no
+  // restriction on the region to allocate in.
+  static constexpr base::AddressRegion kUnrestrictedRegion{
+      kNullAddress, std::numeric_limits<size_t>::max()};
+
   // The engine-wide wasm code manager.
   WasmCodeManager* const code_manager_;
 
@@ -457,6 +476,10 @@ class V8_EXPORT_PRIVATE NativeModule final {
 #else
   static constexpr bool kNeedsFarJumpsBetweenCodeSpaces = false;
 #endif
+
+  NativeModule(const NativeModule&) = delete;
+  NativeModule& operator=(const NativeModule&) = delete;
+  ~NativeModule();
 
   // {AddCode} is thread safe w.r.t. other calls to {AddCode} or methods adding
   // code below, i.e. it can be called concurrently from background threads.
@@ -566,14 +589,26 @@ class V8_EXPORT_PRIVATE NativeModule final {
   UseTrapHandler use_trap_handler() const { return use_trap_handler_; }
   void set_lazy_compile_frozen(bool frozen) { lazy_compile_frozen_ = frozen; }
   bool lazy_compile_frozen() const { return lazy_compile_frozen_; }
-  Vector<const uint8_t> wire_bytes() const { return wire_bytes_->as_vector(); }
+  Vector<const uint8_t> wire_bytes() const {
+    return std::atomic_load(&wire_bytes_)->as_vector();
+  }
   const WasmModule* module() const { return module_.get(); }
   std::shared_ptr<const WasmModule> shared_module() const { return module_; }
   size_t committed_code_space() const {
     return code_allocator_.committed_code_space();
   }
+  size_t generated_code_size() const {
+    return code_allocator_.generated_code_size();
+  }
+  size_t liftoff_bailout_count() const { return liftoff_bailout_count_.load(); }
+  size_t liftoff_code_size() const { return liftoff_code_size_.load(); }
+  size_t turbofan_code_size() const { return turbofan_code_size_.load(); }
   WasmEngine* engine() const { return engine_; }
 
+  bool HasWireBytes() const {
+    auto wire_bytes = std::atomic_load(&wire_bytes_);
+    return wire_bytes && !wire_bytes->empty();
+  }
   void SetWireBytes(OwnedVector<const uint8_t> wire_bytes);
 
   WasmCode* Lookup(Address) const;
@@ -581,8 +616,6 @@ class V8_EXPORT_PRIVATE NativeModule final {
   WasmImportWrapperCache* import_wrapper_cache() const {
     return import_wrapper_cache_.get();
   }
-
-  ~NativeModule();
 
   const WasmFeatures& enabled_features() const { return enabled_features_; }
 
@@ -600,18 +633,23 @@ class V8_EXPORT_PRIVATE NativeModule final {
       Vector<WasmCompilationResult>);
 
   // Set a new tiering state, but don't trigger any recompilation yet; use
-  // {TriggerRecompilation} for that. The two steps are split because In some
+  // {RecompileForTiering} for that. The two steps are split because In some
   // scenarios we need to drop locks before triggering recompilation.
   void SetTieringState(TieringState);
 
   // Check whether this modules is tiered down for debugging.
   bool IsTieredDown();
 
-  // Trigger a full recompilation of this module, in the tier set previously via
-  // {SetTieringState}. When tiering down, the calling thread contributes to
-  // compilation and only returns once recompilation is done. Tiering up happens
-  // concurrently, so this method might return before it is complete.
-  void TriggerRecompilation();
+  // Fully recompile this module in the tier set previously via
+  // {SetTieringState}. The calling thread contributes to compilation and only
+  // returns once recompilation is done.
+  void RecompileForTiering();
+
+  // Find all functions that need to be recompiled for a new tier. Note that
+  // compilation jobs might run concurrently, so this method only considers the
+  // compilation state of this native module at the time of the call.
+  // Returns a vector of function indexes to recompile.
+  std::vector<int> FindFunctionsToRecompile(TieringState);
 
   // Free a set of functions of this module. Uncommits whole pages if possible.
   // The given vector must be ordered by the instruction start address, and all
@@ -623,8 +661,15 @@ class V8_EXPORT_PRIVATE NativeModule final {
   // Retrieve the number of separately reserved code spaces for this module.
   size_t GetNumberOfCodeSpacesForTesting() const;
 
+  // Check whether there is DebugInfo for this NativeModule.
+  bool HasDebugInfo() const;
+
   // Get or create the debug info for this NativeModule.
   DebugInfo* GetDebugInfo();
+
+  uint32_t* num_liftoff_function_calls_array() {
+    return num_liftoff_function_calls_.get();
+  }
 
  private:
   friend class WasmCode;
@@ -656,6 +701,8 @@ class V8_EXPORT_PRIVATE NativeModule final {
   WasmCode* CreateEmptyJumpTableInRegion(
       int jump_table_size, base::AddressRegion,
       const WasmCodeAllocator::OptionalLock&);
+
+  void UpdateCodeSize(size_t, ExecutionTier, ForDebugging);
 
   // Hold the {allocation_mutex_} when calling one of these methods.
   // {slot_index} is the index in the declared functions, i.e. function index
@@ -710,6 +757,9 @@ class V8_EXPORT_PRIVATE NativeModule final {
   // A cache of the import wrappers, keyed on the kind and signature.
   std::unique_ptr<WasmImportWrapperCache> import_wrapper_cache_;
 
+  // Array to handle number of function calls.
+  std::unique_ptr<uint32_t[]> num_liftoff_function_calls_;
+
   // This mutex protects concurrent calls to {AddCode} and friends.
   mutable base::Mutex allocation_mutex_;
 
@@ -744,13 +794,16 @@ class V8_EXPORT_PRIVATE NativeModule final {
   int modification_scope_depth_ = 0;
   UseTrapHandler use_trap_handler_ = kNoTrapHandler;
   bool lazy_compile_frozen_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeModule);
+  std::atomic<size_t> liftoff_bailout_count_{0};
+  std::atomic<size_t> liftoff_code_size_{0};
+  std::atomic<size_t> turbofan_code_size_{0};
 };
 
 class V8_EXPORT_PRIVATE WasmCodeManager final {
  public:
   explicit WasmCodeManager(size_t max_committed);
+  WasmCodeManager(const WasmCodeManager&) = delete;
+  WasmCodeManager& operator=(const WasmCodeManager&) = delete;
 
 #ifdef DEBUG
   ~WasmCodeManager() {
@@ -796,7 +849,7 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
 
   V8_WARN_UNUSED_RESULT VirtualMemory TryAllocate(size_t size,
                                                   void* hint = nullptr);
-  bool Commit(base::AddressRegion);
+  void Commit(base::AddressRegion);
   void Decommit(base::AddressRegion);
 
   void FreeNativeModule(Vector<VirtualMemory> owned_code,
@@ -822,8 +875,6 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
 
   // End of fields protected by {native_modules_mutex_}.
   //////////////////////////////////////////////////////////////////////////////
-
-  DISALLOW_COPY_AND_ASSIGN(WasmCodeManager);
 };
 
 // Within the scope, the native_module is writable and not executable.
@@ -851,6 +902,8 @@ class NativeModuleModificationScope final {
 class V8_EXPORT_PRIVATE WasmCodeRefScope {
  public:
   WasmCodeRefScope();
+  WasmCodeRefScope(const WasmCodeRefScope&) = delete;
+  WasmCodeRefScope& operator=(const WasmCodeRefScope&) = delete;
   ~WasmCodeRefScope();
 
   // Register a {WasmCode} reference in the current {WasmCodeRefScope}. Fails if
@@ -860,8 +913,6 @@ class V8_EXPORT_PRIVATE WasmCodeRefScope {
  private:
   WasmCodeRefScope* const previous_scope_;
   std::unordered_set<WasmCode*> code_ptrs_;
-
-  DISALLOW_COPY_AND_ASSIGN(WasmCodeRefScope);
 };
 
 // Similarly to a global handle, a {GlobalWasmCodeRef} stores a single
@@ -874,6 +925,9 @@ class GlobalWasmCodeRef {
     code_->IncRef();
   }
 
+  GlobalWasmCodeRef(const GlobalWasmCodeRef&) = delete;
+  GlobalWasmCodeRef& operator=(const GlobalWasmCodeRef&) = delete;
+
   ~GlobalWasmCodeRef() { WasmCode::DecrementRefCount({&code_, 1}); }
 
   // Get a pointer to the contained {WasmCode} object. This is only guaranteed
@@ -884,7 +938,6 @@ class GlobalWasmCodeRef {
   WasmCode* const code_;
   // Also keep the {NativeModule} alive.
   const std::shared_ptr<NativeModule> native_module_;
-  DISALLOW_COPY_AND_ASSIGN(GlobalWasmCodeRef);
 };
 
 const char* GetRuntimeStubName(WasmCode::RuntimeStubId);

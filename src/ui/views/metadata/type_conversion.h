@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/shadow_value.h"
@@ -31,15 +33,22 @@ namespace metadata {
 // whether the types are "small" (defined as "fundamental, enum, or pointer").
 // ArgType<T> gives the appropriate type to use as an argument in such cases.
 template <typename T>
-using ArgType = typename std::conditional<std::is_fundamental<T>::value ||
-                                              std::is_enum<T>::value ||
-                                              std::is_pointer<T>::value,
-                                          T,
-                                          const T&>::type;
+using ArgType =
+    typename std::conditional<std::is_fundamental<T>::value ||
+                                  std::is_enum<T>::value ||
+                                  std::is_pointer<T>::value ||
+                                  (std::is_move_assignable<T>::value &&
+                                   std::is_move_constructible<T>::value &&
+                                   !std::is_copy_assignable<T>::value &&
+                                   !std::is_copy_constructible<T>::value),
+                              T,
+                              const T&>::type;
 
 // General Type Conversion Template Functions ---------------------------------
 template <typename T>
 struct TypeConverter {
+  static constexpr bool is_serializable = std::is_enum<T>::value;
+  static bool IsSerializable() { return is_serializable; }
   static base::string16 ToString(ArgType<T> source_value);
   static base::Optional<T> FromString(const base::string16& source_value);
 };
@@ -101,6 +110,8 @@ static const EnumStrings<T>& GetEnumStringsInstance();
 #define DECLARE_CONVERSIONS(T)                                               \
   template <>                                                                \
   struct VIEWS_EXPORT TypeConverter<T> {                                     \
+    static constexpr bool is_serializable = true;                            \
+    static bool IsSerializable() { return is_serializable; }                 \
     static base::string16 ToString(ArgType<T> source_value);                 \
     static base::Optional<T> FromString(const base::string16& source_value); \
   };
@@ -122,6 +133,7 @@ DECLARE_CONVERSIONS(base::TimeDelta)
 DECLARE_CONVERSIONS(gfx::ShadowValues)
 DECLARE_CONVERSIONS(gfx::Size)
 DECLARE_CONVERSIONS(gfx::Range)
+DECLARE_CONVERSIONS(gfx::Insets)
 
 #undef DECLARE_CONVERSIONS
 
@@ -131,6 +143,8 @@ VIEWS_EXPORT const base::string16& GetNullOptStr();
 
 template <typename T>
 struct TypeConverter<base::Optional<T>> {
+  static constexpr bool is_serializable = TypeConverter<T>::is_serializable;
+  static bool IsSerializable() { return is_serializable; }
   static base::string16 ToString(ArgType<base::Optional<T>> source_value) {
     if (!source_value)
       return GetNullOptStr();
@@ -144,6 +158,15 @@ struct TypeConverter<base::Optional<T>> {
     auto ret = TypeConverter<T>::FromString(source_value);
     return ret ? base::make_optional(ret) : base::nullopt;
   }
+};
+
+template <typename T>
+struct TypeConverter<std::unique_ptr<T>> {
+  static constexpr bool is_serializable = false;
+  static bool IsSerializable() { return is_serializable; }
+  static base::string16 ToString(const std::unique_ptr<T>& source_value);
+  static base::Optional<std::unique_ptr<T>> FromString(
+      const base::string16& source_value);
 };
 
 }  // namespace metadata

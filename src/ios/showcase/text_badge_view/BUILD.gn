@@ -4,7 +4,7 @@ source_set("text_badge_view") {
     "sc_text_badge_view_controller.mm",
   ]
   deps = [ "//ios/chrome/browser/ui/reading_list:reading_list_ui" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -21,19 +21,5 @@ source_set("eg2_tests") {
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]
-  libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  testonly = true
-  defines = [ "CHROME_EARL_GREY_1" ]
-  sources = [ "sc_text_badge_view_egtest.mm" ]
-  deps = [
-    "//ios/chrome/browser/ui/reading_list:reading_list_ui",
-    "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ui/base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+  frameworks = [ "UIKit.framework" ]
 }

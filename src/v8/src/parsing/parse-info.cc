@@ -32,8 +32,6 @@ UnoptimizedCompileFlags::UnoptimizedCompileFlags(Isolate* isolate,
   set_might_always_opt(FLAG_always_opt || FLAG_prepare_always_opt);
   set_allow_natives_syntax(FLAG_allow_natives_syntax);
   set_allow_lazy_compile(FLAG_lazy);
-  set_allow_harmony_dynamic_import(FLAG_harmony_dynamic_import);
-  set_allow_harmony_import_meta(FLAG_harmony_import_meta);
   set_allow_harmony_private_methods(FLAG_harmony_private_methods);
   set_collect_source_positions(!FLAG_enable_lazy_source_positions ||
                                isolate->NeedsDetailedOptimizedCodeLineInfo());
@@ -179,7 +177,7 @@ ParseInfo::ParseInfo(const UnoptimizedCompileFlags flags,
                      UnoptimizedCompileState* state)
     : flags_(flags),
       state_(state),
-      zone_(std::make_unique<Zone>(state->allocator(), ZONE_NAME)),
+      zone_(std::make_unique<Zone>(state->allocator(), "parser-zone")),
       extension_(nullptr),
       script_scope_(nullptr),
       stack_limit_(0),
@@ -271,7 +269,7 @@ template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
         ScriptOriginOptions origin_options, NativesFlag natives);
 template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
     Handle<Script> ParseInfo::CreateScript(
-        OffThreadIsolate* isolate, Handle<String> source,
+        LocalIsolate* isolate, Handle<String> source,
         MaybeHandle<FixedArray> maybe_wrapped_arguments,
         ScriptOriginOptions origin_options, NativesFlag natives);
 
@@ -286,7 +284,7 @@ AstValueFactory* ParseInfo::GetOrCreateAstValueFactory() {
 void ParseInfo::AllocateSourceRangeMap() {
   DCHECK(flags().block_coverage_enabled());
   DCHECK_NULL(source_range_map());
-  set_source_range_map(new (zone()) SourceRangeMap(zone()));
+  set_source_range_map(zone()->New<SourceRangeMap>(zone()));
 }
 
 void ParseInfo::ResetCharacterStream() { character_stream_.reset(); }

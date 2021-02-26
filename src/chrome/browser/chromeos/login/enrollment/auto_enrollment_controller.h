@@ -32,8 +32,8 @@ namespace chromeos {
 // make a decision.
 class AutoEnrollmentController {
  public:
-  typedef base::CallbackList<void(policy::AutoEnrollmentState)>
-      ProgressCallbackList;
+  using ProgressCallbackList =
+      base::RepeatingCallbackList<void(policy::AutoEnrollmentState)>;
 
   // Parameter values for the kEnterpriseEnableForcedReEnrollment flag.
   static const char kForcedReEnrollmentAlways[];
@@ -44,6 +44,10 @@ class AutoEnrollmentController {
   static const char kInitialEnrollmentAlways[];
   static const char kInitialEnrollmentNever[];
   static const char kInitialEnrollmentOfficialBuild[];
+
+  // Parameter values for the kEnterpriseEnablePrivateSetMembership flag.
+  static const char kEnablePsmAlways[];
+  static const char kEnablePsmNever[];
 
   // Requirement for forced re-enrollment check.
   enum class FRERequirement {
@@ -59,26 +63,26 @@ class AutoEnrollmentController {
     kExplicitlyNotRequired
   };
 
-  // Requirement for initial enrollment check.
-  enum class InitialEnrollmentRequirement {
-    // Initial enrollment check is not required.
+  // Requirement for initial state determination.
+  enum class InitialStateDeterminationRequirement {
+    // Initial state determination is not required.
     kNotRequired,
-    // Initial enrollment check is required.
+    // Initial state determination is required.
     kRequired
   };
 
-  // Type of auto enrollment check.
+  // Type of auto enrollment or state determination check.
   enum class AutoEnrollmentCheckType {
     kNone,
     // Forced Re-Enrollment check.
-    kFRE,
-    // Initial enrollment check.
-    kInitialEnrollment
+    kForcedReEnrollment,
+    // Initial state determination.
+    kInitialStateDetermination
   };
 
   // State of the system clock.
   enum class SystemClockSyncState {
-    // This |AutoEnrollmentController| has not tried to wait for the system
+    // This `AutoEnrollmentController` has not tried to wait for the system
     // clock sync state yet.
     kCanWaitForSync,
     // Currently waiting for the system clock to become synchronized.
@@ -97,9 +101,12 @@ class AutoEnrollmentController {
   // flags and official build status.
   static bool IsInitialEnrollmentEnabled();
 
-  // Returns true if any auto enrollment check is enabled based on command-line
-  // flags and official build status.
+  // Returns true if any either FRE or initial enrollment are enabled.
   static bool IsEnabled();
+
+  // Returns true if the use of private set membership is enabled based on
+  // command-line flags.
+  static bool IsPrivateSetMembershipEnabled();
 
   // Returns whether the FRE auto-enrollment check is required. When
   // kCheckEnrollmentKey VPD entry is present, it is explicitly stating whether
@@ -114,7 +121,7 @@ class AutoEnrollmentController {
   static FRERequirement GetFRERequirement();
 
   // Returns the type of auto-enrollment check performed by this client. This
-  // will be |AutoEnrollmentCheckType::kNone| before |Start()| has been called.
+  // will be `AutoEnrollmentCheckType::kNone` before `Start()` has been called.
   AutoEnrollmentCheckType auto_enrollment_check_type() const {
     return auto_enrollment_check_type_;
   }
@@ -135,10 +142,10 @@ class AutoEnrollmentController {
 
   policy::AutoEnrollmentState state() const { return state_; }
 
-  // Sets the factory that will be used to create the |AutoEnrollmentClient|.
+  // Sets the factory that will be used to create the `AutoEnrollmentClient`.
   // Ownership is not transferred when calling this - the caller must ensure
-  // that the |Factory| pointed to by |auto_enrollment_client_factory| remains
-  // valid while this |AutoEnrollmentController| is using it.
+  // that the `Factory` pointed to by `auto_enrollment_client_factory` remains
+  // valid while this `AutoEnrollmentController` is using it.
   // To use the default factory again, call with nullptr.
   void SetAutoEnrollmentClientFactoryForTesting(
       policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory);
@@ -152,15 +159,16 @@ class AutoEnrollmentController {
   // clock sync and will be called again when the system clock state is known.
   void StartWithSystemClockSyncState();
 
-  // Returns whether the initial enrollment check is required.
-  // May set |system_clock_sync_wait_requested_| to true if Initial Enrollment
-  // is skipped due to the embargo period and the system clock has not been
-  // synchronized yet.
-  InitialEnrollmentRequirement GetInitialEnrollmentRequirement();
+  // Returns whether the initial state determination is required.
+  // May set `system_clock_sync_wait_requested_` to true if initial state
+  // determination is skipped due to the embargo period and the system clock
+  // has not been synchronized yet.
+  InitialStateDeterminationRequirement
+  GetInitialStateDeterminationRequirement();
 
   // Determines the type of auto-enrollment check that should be done. Sets
-  // |auto_enrollment_check_type_| and |fre_requirement_|.
-  // May set |system_clock_sync_wait_requested_| to true if Initial Enrollment
+  // `auto_enrollment_check_type_` and `fre_requirement_`.
+  // May set `system_clock_sync_wait_requested_` to true if Initial Enrollment
   // is skipped due to the embargo period and the system clock has not been
   // synchronized yet.
   void DetermineAutoEnrollmentCheckType();
@@ -192,7 +200,7 @@ class AutoEnrollmentController {
   // Starts the auto-enrollment client for initial enrollment.
   void StartClientForInitialEnrollment();
 
-  // Sets |state_| and notifies |progress_callbacks_|.
+  // Sets `state_` and notifies `progress_callbacks_`.
   void UpdateState(policy::AutoEnrollmentState state);
 
   // Clears everything that needs to be cleared at OOBE if
@@ -208,10 +216,10 @@ class AutoEnrollmentController {
   void StartCleanupForcedReEnrollment();
 
   // Makes a D-Bus call to cryptohome to remove the firmware management
-  // parameters (FWMP) from TPM. Stops the |safeguard_timer_| and notifies the
-  // |progress_callbacks_| in case cryptohome does not become available and the
+  // parameters (FWMP) from TPM. Stops the `safeguard_timer_` and notifies the
+  // `progress_callbacks_` in case cryptohome does not become available and the
   // timer is still running.
-  // |service_is_ready| indicates if the cryptohome D-Bus service is ready.
+  // `service_is_ready` indicates if the cryptohome D-Bus service is ready.
   void StartRemoveFirmwareManagementParameters(bool service_is_ready);
 
   // Callback for RemoveFirmwareManagementParameters(). If an error is received
@@ -222,15 +230,15 @@ class AutoEnrollmentController {
       base::Optional<cryptohome::BaseReply> reply);
 
   // Makes a D-Bus call to session_manager to set block_devmode=0 and
-  // check_enrollment=0 in RW_VPD. Stops the |safeguard_timer_| and notifies the
-  // |progress_callbacks_| in case session manager does not become available
+  // check_enrollment=0 in RW_VPD. Stops the `safeguard_timer_` and notifies the
+  // `progress_callbacks_` in case session manager does not become available
   // and the timer is still running.
-  // |service_is_ready| indicates if the session manager D-Bus service is ready.
+  // `service_is_ready` indicates if the session manager D-Bus service is ready.
   void StartClearForcedReEnrollmentVpd(bool service_is_ready);
 
   // Callback for ClearForcedReEnrollmentVpd(). If an error is received
   // here, it is logged only, without changing the flow after that.
-  // This also notifies the |progress_callbacks_| since the forced re-enrollment
+  // This also notifies the `progress_callbacks_` since the forced re-enrollment
   // cleanup is finished at this point.
   void OnForcedReEnrollmentVpdCleared(bool reply);
 
@@ -238,11 +246,11 @@ class AutoEnrollmentController {
   void Timeout();
 
   // Returns the factory that should be used to construct a new
-  // |AutoEnrollmentClient|.
+  // `AutoEnrollmentClient`.
   policy::AutoEnrollmentClient::Factory* GetAutoEnrollmentClientFactory();
 
-  // Unowned pointer. If not nullptr, this will be used to create the |client_|.
-  // It can be set using |SetAutoEnrollmentClientFactoryForTesting|.
+  // Unowned pointer. If not nullptr, this will be used to create the `client_`.
+  // It can be set using `SetAutoEnrollmentClientFactoryForTesting`.
   policy::AutoEnrollmentClient::Factory*
       testing_auto_enrollment_client_factory_ = nullptr;
 
@@ -265,7 +273,7 @@ class AutoEnrollmentController {
   FRERequirement fre_requirement_ = FRERequirement::kRequired;
 
   // Which type of auto-enrollment check is being performed by this
-  // |AutoEnrollmentClient|.
+  // `AutoEnrollmentClient`.
   AutoEnrollmentCheckType auto_enrollment_check_type_ =
       AutoEnrollmentCheckType::kNone;
 
@@ -273,15 +281,15 @@ class AutoEnrollmentController {
   std::unique_ptr<SystemClockSyncWaiter> system_clock_sync_waiter_;
 
   // Current system clock sync state. This is only modified in
-  // |OnSystemClockSyncResult| after |system_clock_sync_wait_requested_| has
+  // `OnSystemClockSyncResult` after `system_clock_sync_wait_requested_` has
   // been set to true.
   SystemClockSyncState system_clock_sync_state_ =
       SystemClockSyncState::kCanWaitForSync;
 
-  // If this is set to true, |StartWithSystemClockSyncState| should be re-run
+  // If this is set to true, `StartWithSystemClockSyncState` should be re-run
   // when the system clock sync state is known.
-  // This is only triggered once in the lifetime of |AutoEnrollmentController|,
-  // it's never set back to |false|.
+  // This is only triggered once in the lifetime of `AutoEnrollmentController`,
+  // it's never set back to `false`.
   bool system_clock_sync_wait_requested_ = false;
 
   // Keeps track of number of tries to request state keys.

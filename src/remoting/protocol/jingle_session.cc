@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -749,8 +750,8 @@ void JingleSession::ProcessAuthenticationStep() {
 
 void JingleSession::OnAuthenticated() {
   transport_->Start(authenticator_.get(),
-                    base::Bind(&JingleSession::SendTransportInfo,
-                               weak_factory_.GetWeakPtr()));
+                    base::BindRepeating(&JingleSession::SendTransportInfo,
+                                        weak_factory_.GetWeakPtr()));
 
   base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
   std::vector<PendingMessage> messages_to_process;

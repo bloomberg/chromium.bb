@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 
+#import <MaterialComponents/MaterialButtons.h>
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,8 +22,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -447,7 +448,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 - (void)layoutActionButton {
   CGRect containerBounds = self.containerBounds;
   BOOL isIPadIdiom = IsIPadIdiom();
-  BOOL isPortrait = IsPortrait();
+  BOOL isPortrait = IsPortrait(self.window);
   BOOL shouldAddActionButtonToContainer = isIPadIdiom || !isPortrait;
   LayoutRect actionButtonLayout = LayoutRectZero;
   actionButtonLayout.size =
@@ -490,7 +491,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     // Center the containerView on iPads.
     containerOriginY =
         (CGRectGetHeight(self.bounds) - containerSize.height) / 2.0f;
-  } else if (IsPortrait()) {
+  } else if (IsPortrait(self.window)) {
     // Align containerView to a quarter of the view height on portrait iPhones.
     containerOriginY =
         (CGRectGetHeight(self.bounds) - containerSize.height) / 4.0f;

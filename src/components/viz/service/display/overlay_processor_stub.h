@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_STUB_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_STUB_H_
 
+#include <vector>
+
 #include "components/viz/service/display/overlay_processor_interface.h"
 
 namespace viz {
@@ -18,14 +20,16 @@ class VIZ_SERVICE_EXPORT OverlayProcessorStub
 
   // Overrides OverlayProcessorInterface's pure virtual functions.
   bool IsOverlaySupported() const final;
+  gfx::Rect GetPreviousFrameOverlaysBoundingRect() const final;
   gfx::Rect GetAndResetOverlayDamage() final;
-  bool NeedsSurfaceOccludingDamageRect() const final;
+  bool NeedsSurfaceDamageRectList() const final;
   void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
-      RenderPassList* render_passes,
+      AggregatedRenderPassList* render_passes,
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
+      SurfaceDamageRectList* surface_damage_rect_list,
       OutputSurfaceOverlayPlane* output_surface_plane,
       CandidateList* overlay_candidates,
       gfx::Rect* damage_rect,

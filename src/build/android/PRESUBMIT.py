@@ -21,13 +21,16 @@ def CommonChecks(input_api, output_api):
       r'gyp/.*\.py$',
   ]
   tests = []
+  # yapf likes formatting the extra_paths_list to be less readable.
+  # yapf: disable
   tests.extend(
       input_api.canned_checks.GetPylint(
           input_api,
           output_api,
           pylintrc='pylintrc',
-          black_list=[
+          files_to_skip=[
               r'.*_pb2\.py',
+              r'.*list_java_targets\.py',  # crbug.com/1100664
           ] + build_pys,
           extra_paths_list=[
               J(),
@@ -41,17 +44,19 @@ def CommonChecks(input_api, output_api):
               J('..', '..', 'third_party', 'catapult', 'tracing'),
               J('..', '..', 'third_party', 'depot_tools'),
               J('..', '..', 'third_party', 'colorama', 'src'),
-              J('..', '..', 'third_party', 'pymock'),
+              J('..', '..', 'build'),
           ]))
   tests.extend(
       input_api.canned_checks.GetPylint(
           input_api,
           output_api,
-          white_list=build_pys,
-          black_list=[
+          files_to_check=build_pys,
+          files_to_skip=[
+              r'.*_pb2\.py',
               r'.*_pb2\.py',
           ],
           extra_paths_list=[J('gyp'), J('gn')]))
+  # yapf: enable
 
   # Disabled due to http://crbug.com/410936
   #output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -70,6 +75,7 @@ def CommonChecks(input_api, output_api):
               J('.', 'emma_coverage_stats_test.py'),
               J('.', 'list_class_verification_failures_test.py'),
               J('gyp', 'util', 'build_utils_test.py'),
+              J('gyp', 'util', 'manifest_utils_test.py'),
               J('gyp', 'util', 'md5_check_test.py'),
               J('gyp', 'util', 'resource_utils_test.py'),
               J('pylib', 'constants', 'host_paths_unittest.py'),
@@ -79,6 +85,8 @@ def CommonChecks(input_api, output_api):
               J('pylib', 'local', 'device',
                 'local_device_instrumentation_test_run_test.py'),
               J('pylib', 'local', 'device', 'local_device_test_run_test.py'),
+              J('pylib', 'local', 'machine',
+                'local_machine_junit_test_run_test.py'),
               J('pylib', 'output', 'local_output_manager_test.py'),
               J('pylib', 'output', 'noop_output_manager_test.py'),
               J('pylib', 'output', 'remote_output_manager_test.py'),
@@ -86,6 +94,7 @@ def CommonChecks(input_api, output_api):
               J('pylib', 'symbols', 'apk_native_libs_unittest.py'),
               J('pylib', 'symbols', 'elf_symbolizer_unittest.py'),
               J('pylib', 'symbols', 'symbol_utils_unittest.py'),
+              J('pylib', 'utils', 'chrome_proxy_utils_test.py'),
               J('pylib', 'utils', 'decorators_test.py'),
               J('pylib', 'utils', 'device_dependencies_test.py'),
               J('pylib', 'utils', 'dexdump_test.py'),

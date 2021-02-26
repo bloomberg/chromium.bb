@@ -35,7 +35,7 @@ void PaymentManager::setUserHint(const String& user_hint) {
 
 ScriptPromise PaymentManager::enableDelegations(
     ScriptState* script_state,
-    const Vector<String>& stringified_delegations,
+    const Vector<V8PaymentDelegation>& delegations,
     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -51,26 +51,31 @@ ScriptPromise PaymentManager::enableDelegations(
     return ScriptPromise();
   }
 
-  Vector<payments::mojom::blink::PaymentDelegation> delegations;
-  for (auto delegation : stringified_delegations) {
-    if (delegation == "shippingAddress") {
-      delegations.emplace_back(
-          payments::mojom::blink::PaymentDelegation::SHIPPING_ADDRESS);
-    } else if (delegation == "payerName") {
-      delegations.emplace_back(
-          payments::mojom::blink::PaymentDelegation::PAYER_NAME);
-    } else if (delegation == "payerPhone") {
-      delegations.emplace_back(
-          payments::mojom::blink::PaymentDelegation::PAYER_PHONE);
-    } else {
-      DCHECK_EQ("payerEmail", delegation);
-      delegations.emplace_back(
-          payments::mojom::blink::PaymentDelegation::PAYER_EMAIL);
+  using MojoPaymentDelegation = payments::mojom::blink::PaymentDelegation;
+  Vector<MojoPaymentDelegation> mojo_delegations;
+  for (auto delegation : delegations) {
+    MojoPaymentDelegation mojo_delegation = MojoPaymentDelegation::PAYER_EMAIL;
+    switch (delegation.AsEnum()) {
+      case V8PaymentDelegation::Enum::kShippingAddress:
+        mojo_delegation = MojoPaymentDelegation::SHIPPING_ADDRESS;
+        break;
+      case V8PaymentDelegation::Enum::kPayerName:
+        mojo_delegation = MojoPaymentDelegation::PAYER_NAME;
+        break;
+      case V8PaymentDelegation::Enum::kPayerPhone:
+        mojo_delegation = MojoPaymentDelegation::PAYER_PHONE;
+        break;
+      case V8PaymentDelegation::Enum::kPayerEmail:
+        mojo_delegation = MojoPaymentDelegation::PAYER_EMAIL;
+        break;
+      default:
+        NOTREACHED();
     }
+    mojo_delegations.push_back(mojo_delegation);
   }
 
   manager_->EnableDelegations(
-      std::move(delegations),
+      std::move(mojo_delegations),
       WTF::Bind(&PaymentManager::OnEnableDelegationsResponse,
                 WrapPersistent(this)));
   enable_delegations_resolver_ =
@@ -78,7 +83,7 @@ ScriptPromise PaymentManager::enableDelegations(
   return enable_delegations_resolver_->Promise();
 }
 
-void PaymentManager::Trace(Visitor* visitor) {
+void PaymentManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(manager_);
   visitor->Trace(instruments_);

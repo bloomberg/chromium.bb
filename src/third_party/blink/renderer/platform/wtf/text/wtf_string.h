@@ -103,6 +103,14 @@ class WTF_EXPORT String {
   String(StringImpl* impl) : impl_(impl) {}
   String(scoped_refptr<StringImpl> impl) : impl_(std::move(impl)) {}
 
+  // Copying a String is a relatively inexpensive, since the underlying data is
+  // immutable and refcounted.
+  String(const String&) = default;
+  String& operator=(const String&) = default;
+
+  String(String&&) noexcept = default;
+  String& operator=(String&&) = default;
+
   void swap(String& o) { impl_.swap(o.impl_); }
 
   template <typename CharType>
@@ -206,6 +214,8 @@ class WTF_EXPORT String {
                   unsigned start = 0) const {
     return impl_ ? impl_->Find(match_function, start) : kNotFound;
   }
+  wtf_size_t Find(base::RepeatingCallback<bool(UChar)> match_callback,
+                  wtf_size_t index = 0) const;
 
   // Find substrings.
   wtf_size_t Find(

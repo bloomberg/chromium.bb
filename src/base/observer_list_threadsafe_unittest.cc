@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -18,7 +19,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -198,57 +199,6 @@ TEST(ObserverListThreadSafeTest, RemoveObserver) {
   EXPECT_EQ(0, b.total);
 }
 
-TEST(ObserverListThreadSafeTest, WithoutSequence) {
-  scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
-      new ObserverListThreadSafe<Foo>);
-
-  Adder a(1), b(1), c(1);
-
-  // No sequence, so these should not be added.
-  observer_list->AddObserver(&a);
-  observer_list->AddObserver(&b);
-
-  {
-    // Add c when there's a sequence.
-    test::TaskEnvironment task_environment;
-    observer_list->AddObserver(&c);
-
-    observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
-    RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(0, a.total);
-    EXPECT_EQ(0, b.total);
-    EXPECT_EQ(10, c.total);
-
-    // Now add a when there's a sequence.
-    observer_list->AddObserver(&a);
-
-    // Remove c when there's a sequence.
-    observer_list->RemoveObserver(&c);
-
-    // Notify again.
-    observer_list->Notify(FROM_HERE, &Foo::Observe, 20);
-    RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(20, a.total);
-    EXPECT_EQ(0, b.total);
-    EXPECT_EQ(10, c.total);
-  }
-
-  // Removing should always succeed with or without a sequence.
-  observer_list->RemoveObserver(&a);
-
-  // Notifying should not fail but should also be a no-op.
-  test::TaskEnvironment task_environment;
-  observer_list->AddObserver(&b);
-  observer_list->Notify(FROM_HERE, &Foo::Observe, 30);
-  RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(20, a.total);
-  EXPECT_EQ(30, b.total);
-  EXPECT_EQ(10, c.total);
-}
-
 class FooRemover : public Foo {
  public:
   explicit FooRemover(ObserverListThreadSafe<Foo>* list) : list_(list) {}
@@ -354,6 +304,9 @@ class SequenceVerificationObserver : public Foo {
   explicit SequenceVerificationObserver(
       scoped_refptr<SequencedTaskRunner> task_runner)
       : task_runner_(std::move(task_runner)) {}
+  SequenceVerificationObserver(const SequenceVerificationObserver&) = delete;
+  SequenceVerificationObserver& operator=(const SequenceVerificationObserver&) =
+      delete;
   ~SequenceVerificationObserver() override = default;
 
   void Observe(int x) override {
@@ -365,8 +318,6 @@ class SequenceVerificationObserver : public Foo {
  private:
   const scoped_refptr<SequencedTaskRunner> task_runner_;
   bool called_on_valid_sequence_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SequenceVerificationObserver);
 };
 
 }  // namespace
@@ -428,6 +379,10 @@ class RemoveWhileNotificationIsRunningObserver : public Foo {
                               WaitableEvent::InitialState::NOT_SIGNALED),
         barrier_(WaitableEvent::ResetPolicy::AUTOMATIC,
                  WaitableEvent::InitialState::NOT_SIGNALED) {}
+  RemoveWhileNotificationIsRunningObserver(
+      const RemoveWhileNotificationIsRunningObserver&) = delete;
+  RemoveWhileNotificationIsRunningObserver& operator=(
+      const RemoveWhileNotificationIsRunningObserver&) = delete;
   ~RemoveWhileNotificationIsRunningObserver() override = default;
 
   void Observe(int x) override {
@@ -442,8 +397,6 @@ class RemoveWhileNotificationIsRunningObserver : public Foo {
  private:
   WaitableEvent notification_running_;
   WaitableEvent barrier_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveWhileNotificationIsRunningObserver);
 };
 
 }  // namespace

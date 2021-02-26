@@ -8,13 +8,16 @@ android_library("java") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/xsurface/FeedActionsHandler.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/HybridListRenderer.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/ImageFetchClient.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/ImagePrefetcher.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManager.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManagerObserver.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/ProcessScope.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/ProcessScopeDependencyProvider.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceActionsHandler.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceDependencyProvider.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceRenderer.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceScope.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceScopeDependencyProvider.java",
   ]
   deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
 }

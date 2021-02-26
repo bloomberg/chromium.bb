@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin.account_picker;
 
+import android.view.View.OnClickListener;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
@@ -24,7 +26,7 @@ class AccountPickerProperties {
      * Properties for "add account" row in account picker.
      */
     static class AddAccountRowProperties {
-        static final PropertyModel.ReadableObjectPropertyKey<Runnable> ON_CLICK_LISTENER =
+        static final PropertyModel.ReadableObjectPropertyKey<OnClickListener> ON_CLICK_LISTENER =
                 new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
 
         static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ON_CLICK_LISTENER};
@@ -33,7 +35,25 @@ class AccountPickerProperties {
 
         static PropertyModel createModel(Runnable runnableAddAccount) {
             return new PropertyModel.Builder(ALL_KEYS)
-                    .with(ON_CLICK_LISTENER, runnableAddAccount)
+                    .with(ON_CLICK_LISTENER, v -> runnableAddAccount.run())
+                    .build();
+        }
+    }
+
+    /**
+     * Properties for "incognito account" row in account picker.
+     */
+    static class IncognitoAccountRowProperties {
+        static final PropertyModel.ReadableObjectPropertyKey<OnClickListener> ON_CLICK_LISTENER =
+                new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
+
+        static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ON_CLICK_LISTENER};
+
+        private IncognitoAccountRowProperties() {}
+
+        static PropertyModel createModel(Runnable runnableIncognitoMode) {
+            return new PropertyModel.Builder(ALL_KEYS)
+                    .with(ON_CLICK_LISTENER, v -> runnableIncognitoMode.run())
                     .build();
         }
     }
@@ -42,8 +62,8 @@ class AccountPickerProperties {
      * Properties for account row in account picker.
      */
     static class ExistingAccountRowProperties {
-        static final PropertyModel.ReadableObjectPropertyKey<DisplayableProfileData> PROFILE_DATA =
-                new PropertyModel.ReadableObjectPropertyKey<>("profile_data");
+        static final PropertyModel.WritableObjectPropertyKey<DisplayableProfileData> PROFILE_DATA =
+                new PropertyModel.WritableObjectPropertyKey<>("profile_data");
         static final PropertyModel.WritableBooleanPropertyKey IS_SELECTED_ACCOUNT =
                 new PropertyModel.WritableBooleanPropertyKey("is_selected_account");
         static final PropertyModel
@@ -68,7 +88,8 @@ class AccountPickerProperties {
     /**
      * Item types of account picker.
      */
-    @IntDef({ItemType.EXISTING_ACCOUNT_ROW, ItemType.ADD_ACCOUNT_ROW})
+    @IntDef({ItemType.EXISTING_ACCOUNT_ROW, ItemType.ADD_ACCOUNT_ROW,
+            ItemType.INCOGNITO_ACCOUNT_ROW})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -82,5 +103,11 @@ class AccountPickerProperties {
          * use {@link AddAccountRowViewBinder} for view setup.
          */
         int ADD_ACCOUNT_ROW = 2;
+
+        /**
+         * Item type for models created with {@link IncognitoAccountRowProperties#createModel} and
+         * use {@link IncognitoAccountRowViewBinder} for view setup.
+         */
+        int INCOGNITO_ACCOUNT_ROW = 3;
     }
 }

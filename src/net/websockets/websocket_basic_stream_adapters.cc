@@ -131,8 +131,8 @@ void WebSocketSpdyStreamAdapter::OnHeadersSent() {
 }
 
 void WebSocketSpdyStreamAdapter::OnHeadersReceived(
-    const spdy::SpdyHeaderBlock& response_headers,
-    const spdy::SpdyHeaderBlock* pushed_request_headers) {
+    const spdy::Http2HeaderBlock& response_headers,
+    const spdy::Http2HeaderBlock* pushed_request_headers) {
   if (delegate_)
     delegate_->OnHeadersReceived(response_headers);
 }
@@ -151,10 +151,15 @@ void WebSocketSpdyStreamAdapter::OnDataSent() {
 }
 
 void WebSocketSpdyStreamAdapter::OnTrailers(
-    const spdy::SpdyHeaderBlock& trailers) {}
+    const spdy::Http2HeaderBlock& trailers) {}
 
 void WebSocketSpdyStreamAdapter::OnClose(int status) {
-  DCHECK_GT(ERR_IO_PENDING, status);
+  DCHECK_NE(ERR_IO_PENDING, status);
+  DCHECK_LE(status, 0);
+
+  if (status == OK) {
+    status = ERR_CONNECTION_CLOSED;
+  }
 
   stream_error_ = status;
   stream_ = nullptr;

@@ -26,7 +26,6 @@ typedef struct ConvolveParams {
   int round_1;
   int plane;
   int is_compound;
-  int compound_index;  // 0: the first single in compound mode, 1: the second.
   int use_dist_wtd_comp_avg;
   int fwd_offset;
   int bck_offset;
@@ -66,7 +65,6 @@ static INLINE ConvolveParams get_conv_params_no_round(int cmp_index, int plane,
                                                       int dst_stride,
                                                       int is_compound, int bd) {
   ConvolveParams conv_params;
-  conv_params.compound_index = cmp_index;
   assert(IMPLIES(cmp_index, is_compound));
 
   conv_params.is_compound = is_compound;

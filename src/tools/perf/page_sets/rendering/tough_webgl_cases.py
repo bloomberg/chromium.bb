@@ -4,6 +4,7 @@
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
+from page_sets.system_health import platforms
 
 
 class ToughWebglPage(rendering_story.RenderingStory):
@@ -104,6 +105,28 @@ class AnimometerWebGLMultiDrawPage(ToughWebglPage):
   # pylint: disable=line-too-long
   URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html?webgl_version=2&use_ubos=1&use_multi_draw=1'
 
+
+class AnimometerWebGLIndexed(ToughWebglPage):
+  BASE_NAME = 'animometer_webgl_indexed'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  # pylint: disable=line-too-long
+  URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl-indexed-instanced.html?webgl_version=2&use_attributes=1&num_geometries=120000'
+
+
+class AnimometerWebGLIndexedMultiDraw(ToughWebglPage):
+  BASE_NAME = 'animometer_webgl_indexed_multi_draw'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  # pylint: disable=line-too-long
+  URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl-indexed-instanced.html?webgl_version=2&use_attributes=1&use_multi_draw=1&num_geometries=120000'
+
+
+class AnimometerWebGLIndexedBaseVertexBaseInstancePage(ToughWebglPage):
+  BASE_NAME = 'animometer_webgl_indexed_multi_draw_base_vertex_base_instance'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  # pylint: disable=line-too-long
+  URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl-indexed-instanced.html?webgl_version=2&use_attributes=1&use_multi_draw=1&use_base_vertex_base_instance=1&num_geometries=120000'
+
+
 class AnimometerWebGLAttribArraysPage(ToughWebglPage):
   BASE_NAME = 'animometer_webgl_attrib_arrays'
   # pylint: disable=line-too-long
@@ -112,8 +135,47 @@ class AnimometerWebGLAttribArraysPage(ToughWebglPage):
     story_tags.REPRESENTATIVE_MAC_DESKTOP
   ]
 
+
 class CameraToWebGLPage(ToughWebglPage):
   TAGS = ToughWebglPage.TAGS + [story_tags.USE_FAKE_CAMERA_DEVICE]
   BASE_NAME = 'camera_to_webgl'
   # pylint: disable=line-too-long
   URL = 'https://www.khronos.org/registry/webgl/sdk/tests/extra/texture-from-camera-stress.html?uploadsPerFrame=200'
+
+
+class UnityPage(ToughWebglPage):
+  ABSTRACT_STORY = True
+
+  def RunNavigateSteps(self, action_runner):
+    super(UnityPage, self).RunNavigateSteps(action_runner)
+    # Wait an additional 10 seconds for any loading screens
+    # or interaction to click "Play"
+    action_runner.Wait(10)
+
+  def RunPageInteractions(self, action_runner):
+    with action_runner.CreateInteraction('WebGLAnimation'):
+      action_runner.Wait(30)
+
+
+class SkelebuddiesWasm2020(UnityPage):
+  BASE_NAME = 'skelebuddies_wasm_2020'
+  # pylint: disable=line-too-long
+  URL = 'http://clb.confined.space/emunittest/Skelebuddies-Wasm-Release-2020-10-26-profiling/Skelebuddies.html?playback'
+
+
+class TinyRacingV3Wasm2020(UnityPage):
+  BASE_NAME = 'tiny_racing_v3_wasm_2020'
+  # pylint: disable=line-too-long
+  URL = 'http://clb.confined.space/emunittest/llvm-tinyracing-wasm-release-2020-03-17/TinyRacing.html?playback'
+
+
+class MicrogameFPS(UnityPage):
+  BASE_NAME = 'microgame_fps'
+  # pylint: disable=line-too-long
+  URL = 'http://clb.confined.space/emunittest/microgame-fps_20190922_131915_wasm_release_profiling/index.html?playback'
+
+
+class LostCrypt(UnityPage):
+  BASE_NAME = 'lost_crypt'
+  # pylint: disable=line-too-long
+  URL = 'http://clb.confined.space/emunittest/LostCrypt_20191220_131436_wasm_release/index.html?playback'

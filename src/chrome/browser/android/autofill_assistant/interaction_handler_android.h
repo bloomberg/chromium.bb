@@ -20,8 +20,10 @@
 
 namespace autofill_assistant {
 class BasicInteractions;
-class GenericUiControllerAndroid;
+class GenericUiNestedControllerAndroid;
 class UserModel;
+class ViewHandlerAndroid;
+class RadioButtonController;
 
 // Receives incoming events and runs the corresponding set of callbacks.
 //
@@ -33,13 +35,13 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
  public:
   using InteractionCallback = base::RepeatingCallback<void()>;
 
-  // Constructor. |event_handler|, |user_model|, |basic_interactions|,
-  // |views|, |jcontext| and |jdelegate| must outlive this instance.
+  // Constructor. All dependencies must outlive this instance.
   InteractionHandlerAndroid(
       EventHandler* event_handler,
       UserModel* user_model,
       BasicInteractions* basic_interactions,
-      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+      ViewHandlerAndroid* view_handler,
+      RadioButtonController* radio_button_controller,
       base::android::ScopedJavaGlobalRef<jobject> jcontext,
       base::android::ScopedJavaGlobalRef<jobject> jdelegate);
   ~InteractionHandlerAndroid() override;
@@ -67,30 +69,27 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   // Overrides autofill_assistant::EventHandler::Observer.
   void OnEvent(const EventHandler::EventKey& key) override;
 
-  // Adds |model_identifier| to the list of model identifiers belonging to
-  // |radio_group|.
-  void AddRadioButtonToGroup(const std::string& radio_group,
-                             const std::string& model_identifier);
+  // Runs all callbacks triggered by model value changes. This is useful to
+  // properly initialize a UI after inflation, since all UI state should be
+  // bound to the model.
+  void RunValueChangedCallbacks();
 
-  // Ensures that only |selected_model_identifier| is set to true in
-  // |radio_group|.
-  void UpdateRadioButtonGroup(const std::string& radio_group,
-                              const std::string& selected_model_identifier);
-
- private:
+  // Creates a callback from |proto|.
   base::Optional<InteractionCallback> CreateInteractionCallbackFromProto(
       const CallbackProto& proto);
 
+ private:
   // Deletes the nested ui controller associated with |identifier|.
   void DeleteNestedUi(const std::string& identifier);
 
   // Attempts to inflate |proto|. If successful, the new controller is added
   // to the list of managed nested controllers. Note that *this keeps ownership
   // of created nested UIs!
-  const GenericUiControllerAndroid* CreateNestedUi(
+  const GenericUiNestedControllerAndroid* CreateNestedUi(
       const GenericUserInterfaceProto& proto,
       const std::string& identifier);
 
+  void CreateAndAttachNestedGenericUi(const CreateNestedGenericUiProto& proto);
   void CreateAndShowGenericPopup(const ShowGenericUiPopupProto& proto);
 
   // Maps event keys to the corresponding list of callbacks to execute.
@@ -100,17 +99,16 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   EventHandler* event_handler_ = nullptr;
   UserModel* user_model_ = nullptr;
   BasicInteractions* basic_interactions_ = nullptr;
-  std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views_;
+  ViewHandlerAndroid* view_handler_ = nullptr;
+  RadioButtonController* radio_button_controller_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;
 
-  // TODO(b/154811503): move radio_groups_ and nested_ui_controllers_ to
+  // TODO(b/154811503): move nested_ui_controllers_ to
   // generic_ui_controller_android.
-  // Maps radiogroup identifiers to the list of corresponding model identifiers.
-  std::map<std::string, std::vector<std::string>> radio_groups_;
   // Maps nested-ui identifiers to their instances.
-  std::map<std::string, std::unique_ptr<GenericUiControllerAndroid>>
+  std::map<std::string, std::unique_ptr<GenericUiNestedControllerAndroid>>
       nested_ui_controllers_;
 
   base::WeakPtrFactory<InteractionHandlerAndroid> weak_ptr_factory_{this};

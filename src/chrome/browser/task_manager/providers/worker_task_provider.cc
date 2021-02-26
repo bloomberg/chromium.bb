@@ -27,6 +27,12 @@ Task* WorkerTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
 void WorkerTaskProvider::OnProfileAdded(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // It is possible for this method to be called multiple times for the same
+  // profile, if the profile loads an extension during initialization which also
+  // triggers this logic path. https://crbug.com/1065798.
+  if (observed_profiles_.IsObserving(profile))
+    return;
+
   observed_profiles_.Add(profile);
 
   auto per_profile_worker_task_tracker =
@@ -82,10 +88,10 @@ void WorkerTaskProvider::StartUpdating() {
     for (auto* profile : loaded_profiles) {
       OnProfileAdded(profile);
 
-      // If the incognito window is open, we have to check its profile and
-      // create the tasks if there are any.
-      if (profile->HasOffTheRecordProfile())
-        OnProfileAdded(profile->GetOffTheRecordProfile());
+      // If any off-the-record profile exists, we have to check them and create
+      // the tasks if there are any.
+      for (Profile* otr : profile->GetAllOffTheRecordProfiles())
+        OnProfileAdded(otr);
     }
   }
 }

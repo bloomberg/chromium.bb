@@ -58,11 +58,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -129,26 +128,21 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 void SetupAnimator(ui::ScopedLayerAnimationSettings* animation_setter,
                    base::TimeDelta animation_duration,
-                   gfx::Tween::Type type,
-                   ui::AnimationMetricsReporter* animation_metrics_reporter) {
+                   gfx::Tween::Type type) {
   animation_setter->SetTransitionDuration(animation_duration);
   if (!animation_duration.is_zero()) {
     animation_setter->SetTweenType(type);
     animation_setter->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    if (animation_metrics_reporter)
-      animation_setter->SetAnimationMetricsReporter(animation_metrics_reporter);
   }
 }
 
 void AnimateOpacity(ui::Layer* layer,
                     float target_opacity,
                     base::TimeDelta animation_duration,
-                    gfx::Tween::Type type,
-                    ui::AnimationMetricsReporter* animation_metrics_reporter) {
+                    gfx::Tween::Type type) {
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  SetupAnimator(&animation_setter, animation_duration, type,
-                animation_metrics_reporter);
+  SetupAnimator(&animation_setter, animation_duration, type);
   layer->SetOpacity(target_opacity);
 }
 
@@ -156,11 +150,6 @@ void AnimateOpacity(ui::Layer* layer,
 bool IsAppListWindow(const aura::Window* window) {
   const aura::Window* parent = window->parent();
   return parent && parent->id() == kShellWindowId_AppListContainer;
-}
-
-bool IsHotseatEnabled() {
-  return Shell::Get()->IsInTabletMode() &&
-         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 int GetOffset(int offset, bool from_touchpad) {
@@ -177,15 +166,15 @@ int GetOffset(int offset, bool from_touchpad) {
 // gestures.
 ash::HomeLauncherGestureHandler::Mode
 GetHomeLauncherGestureHandlerModeForDrag() {
-  if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-      IsHotseatEnabled() && Shell::Get()->home_screen_controller() &&
+  if (Shell::Get()->IsInTabletMode() &&
+      Shell::Get()->home_screen_controller() &&
       Shell::Get()->home_screen_controller()->IsHomeScreenVisible() &&
       Shell::Get()->overview_controller() &&
       !Shell::Get()->overview_controller()->InOverviewSession()) {
     return HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
   }
 
-  return HomeLauncherGestureHandler::Mode::kSlideUpToShow;
+  return HomeLauncherGestureHandler::Mode::kNone;
 }
 
 // Returns the |WorkspaceWindowState| of the currently active desk on the root
@@ -411,7 +400,6 @@ void ShelfLayoutManager::InitObservers() {
   shell->AddShellObserver(this);
   SplitViewController::Get(shelf_widget_->GetNativeWindow())->AddObserver(this);
   ShelfConfig::Get()->AddObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->app_list_controller()->AddObserver(this);
   shell->lock_state_controller()->AddObserver(this);
@@ -439,7 +427,6 @@ void ShelfLayoutManager::PrepareForShutdown() {
   // Stop observing changes to avoid updating a partially destructed shelf.
   Shell::Get()->activation_client()->RemoveObserver(this);
   ShelfConfig::Get()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -471,7 +458,6 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 
 gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
   if (!Shell::Get()->IsInTabletMode() ||
-      !chromeos::switches::ShouldShowShelfHotseat() ||
       state_.session_state != session_manager::SessionState::ACTIVE) {
     return GetIdealBounds();
   }
@@ -518,6 +504,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     // Needed to show system tray in non active session state.
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
+    SetState(SHELF_HIDDEN);
+  } else if (Shell::Get()->session_controller()->IsRunningInAppMode()) {
     SetState(SHELF_HIDDEN);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
@@ -620,7 +608,8 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   }
 
   const bool in_app_shelf = ShelfConfig::Get()->is_in_app();
-  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
+  const bool in_tablet_mode = ShelfConfig::Get()->in_tablet_mode();
+  const bool in_overview_mode = ShelfConfig::Get()->in_overview_mode();
 
   contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(!IsVisible());
 
@@ -639,7 +628,7 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   // allowed by the current shelf state.
   const bool allow_home_to_overview_nudge =
       in_tablet_mode && !in_app_shelf &&
-      !ShelfConfig::Get()->shelf_controls_shown();
+      !ShelfConfig::Get()->shelf_controls_shown() && !in_overview_mode;
   if (allow_home_to_overview_nudge && !home_to_overview_nudge_controller_) {
     home_to_overview_nudge_controller_ =
         std::make_unique<HomeToOverviewNudgeController>(
@@ -701,7 +690,7 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
 void ShelfLayoutManager::ProcessGestureEventOfInAppHotseat(
     ui::GestureEvent* event,
     aura::Window* target) {
-  if (!IsHotseatEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return;
   DCHECK_EQ(hotseat_state(), HotseatState::kExtended);
 
@@ -710,8 +699,16 @@ void ShelfLayoutManager::ProcessGestureEventOfInAppHotseat(
 
   base::AutoReset<bool> hide_hotseat(&should_hide_hotseat_, true);
 
-  // Record gesture metrics only for ET_GESTURE_BEGIN to avoid over counting.
-  if (event->type() == ui::ET_GESTURE_BEGIN) {
+  // In overview mode, only the gesture tap event is able to make the hotseat
+  // exit the extended mode.
+  const bool in_overview =
+      Shell::Get()->overview_controller() &&
+      Shell::Get()->overview_controller()->InOverviewSession();
+  ui::EventType interesting_type =
+      in_overview ? ui::ET_GESTURE_TAP : ui::ET_GESTURE_BEGIN;
+
+  // Record gesture metrics only for `interesting_type` to avoid over counting.
+  if (event->type() == interesting_type) {
     UMA_HISTOGRAM_ENUMERATION(
         kHotseatGestureHistogramName,
         InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf);
@@ -839,19 +836,15 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   const bool maximized =
       in_split_view_mode ||
       state_.window_state == WorkspaceWindowState::kFullscreen ||
-      (state_.window_state == WorkspaceWindowState::kMaximized &&
-       !Shell::Get()
-            ->home_screen_controller()
-            ->home_launcher_gesture_handler()
-            ->GetActiveWindow());
-  const bool app_list_is_visible =
-      Shell::Get()->app_list_controller() &&
-      Shell::Get()->app_list_controller()->IsVisible(display_.id());
+      state_.window_state == WorkspaceWindowState::kMaximized;
   const bool in_overview =
       Shell::Get()->overview_controller() &&
       Shell::Get()->overview_controller()->InOverviewSession();
   if (Shell::Get()->IsInTabletMode()) {
-    if (app_list_is_visible) {
+    const bool app_list_target_visibility =
+        Shell::Get()->app_list_controller() &&
+        Shell::Get()->app_list_controller()->GetTargetVisibility(display_.id());
+    if (app_list_target_visibility) {
       // TODO(https://crbug.com/1058205): Test this behavior.
       // If the IME virtual keyboard is showing, the shelf should appear in-app.
       // The workspace area in tablet mode is always the in-app workspace area,
@@ -859,26 +852,18 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       // area.
       if (ShelfConfig::Get()->is_virtual_keyboard_shown())
         return ShelfBackgroundType::kInApp;
-      // If the home launcher is shown or mostly shown, show the home launcher
-      // background. If it is mostly hidden, show the in-app or overview
-      // background.
-      if (!Shell::Get()->app_list_controller()->GetTargetVisibility(
-              display_.id())) {
-        return in_overview ? ShelfBackgroundType::kOverview
-                           : ShelfBackgroundType::kInApp;
-      }
+
       return ShelfBackgroundType::kHomeLauncher;
-    } else if (Shell::Get()
-                   ->app_list_controller()
-                   ->home_launcher_transition_state() !=
-               AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
-      return ShelfBackgroundType::kHomeLauncher;
-    } else if (maximized) {
-      // If the home launcher is not shown but it is maximized, show the
-      // in-app shelf.
-      return ShelfBackgroundType::kInApp;
     }
-  } else if (app_list_is_visible) {
+
+    return in_overview ? ShelfBackgroundType::kOverview
+                       : ShelfBackgroundType::kInApp;
+  }
+
+  const bool app_list_is_visible =
+      Shell::Get()->app_list_controller() &&
+      Shell::Get()->app_list_controller()->IsVisible(display_.id());
+  if (app_list_is_visible) {
     // When auto-hide shelf is enabled, shelf cannot be considered maximized.
     if (maximized && state_.visibility_state != SHELF_AUTO_HIDE)
       return ShelfBackgroundType::kMaximizedWithAppList;
@@ -890,8 +875,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     // When a window is maximized, if the auto-hide shelf is enabled and we are
     // in clamshell mode, the shelf will keep the default transparent
     // background.
-    if (!Shell::Get()->IsInTabletMode() &&
-        state_.visibility_state == SHELF_AUTO_HIDE)
+    if (state_.visibility_state == SHELF_AUTO_HIDE)
       return ShelfBackgroundType::kDefaultBg;
 
     return ShelfBackgroundType::kMaximized;
@@ -918,13 +902,7 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
   if (!is_background_blur_enabled_)
     return false;
 
-  if (chromeos::switches::ShouldShowShelfHotseat()) {
-    return shelf_background_type_ == ShelfBackgroundType::kDefaultBg &&
-           state_.session_state == session_manager::SessionState::ACTIVE;
-  }
-
-  return (shelf_background_type_ == ShelfBackgroundType::kHomeLauncher ||
-          shelf_background_type_ == ShelfBackgroundType::kDefaultBg) &&
+  return shelf_background_type_ == ShelfBackgroundType::kDefaultBg &&
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
 
@@ -1032,6 +1010,7 @@ void ShelfLayoutManager::OnOverviewModeWillStart() {
 void ShelfLayoutManager::OnOverviewModeStarting() {
   overview_mode_will_start_ = false;
   overview_suspend_work_area_update_.emplace(this);
+  UpdateContextualNudges();
 }
 
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
@@ -1082,8 +1061,11 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
-  if (!IsShelfWindow(gained_active))
+  if (!IsShelfWindow(gained_active) &&
+      !(window_drag_controller_ &&
+        window_drag_controller_->during_window_restoration_callback())) {
     shelf_->hotseat_widget()->set_manually_extended(/*value=*/false);
+  }
 
   UpdateAutoHideStateNow();
 }
@@ -1148,6 +1130,10 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
 }
 
 void ShelfLayoutManager::OnLocaleChanged() {
+  shelf_->shelf_widget()->HandleLocaleChange();
+  shelf_->status_area_widget()->HandleLocaleChange();
+  shelf_->navigation_widget()->HandleLocaleChange();
+
   // Layout update is needed when language changes between LTR and RTL.
   LayoutShelf();
 }
@@ -1174,24 +1160,11 @@ void ShelfLayoutManager::OnShelfConfigUpdated() {
   UpdateContextualNudges();
 }
 
-void ShelfLayoutManager::OnTabletModeStarted() {
-  LayoutShelf(/*animate=*/true);
-  UpdateContextualNudges();
-}
-
-void ShelfLayoutManager::OnTabletModeEnded() {
-  LayoutShelf(/*animate=*/true);
-  UpdateContextualNudges();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
 void ShelfLayoutManager::OnCenterVisibilityChanged(
     message_center::Visibility visibility) {
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return;
-
   // Uses base::CancelableClosure to handle two edge cases: (1)
   // ShelfLayoutManager is destructed before the callback runs. (2) The previous
   // callback is still pending.
@@ -1288,7 +1261,15 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     MaybeUpdateShelfBackground(change_type);
 
   CalculateTargetBoundsAndUpdateWorkArea();
-  shelf_->hotseat_widget()->SetState(new_hotseat_state);
+  HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
+  hotseat_widget->SetState(new_hotseat_state);
+
+  // Called before UpdateBoundsAndOpacity(). Because creation of the hotseat
+  // bounds animation which is triggered by hotseat state update requires the
+  // state transition type.
+  HotseatWidget::ScopedInStateTransition scoped_in_state_transition(
+      hotseat_widget, previous_hotseat_state, new_hotseat_state);
+
   UpdateBoundsAndOpacity(true /* animate */);
 
   // OnAutoHideStateChanged Should be emitted when:
@@ -1315,8 +1296,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
 HotseatState ShelfLayoutManager::CalculateHotseatState(
     ShelfVisibilityState visibility_state,
-    ShelfAutoHideState auto_hide_state) {
-  if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
+    ShelfAutoHideState auto_hide_state) const {
+  if (!Shell::Get()->IsInTabletMode() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShownClamshell;
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
@@ -1329,7 +1310,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       ((overview_controller && overview_controller->InOverviewSession()) ||
        overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
-  const bool app_list_visible =
+  const bool app_list_target_visibility =
       app_list_controller->GetTargetVisibility(display_.id()) ||
       app_list_controller->ShouldHomeLauncherBeVisible();
 
@@ -1339,8 +1320,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
   // Only force to show if there is not a pending drag operation.
   if (shelf_widget_->is_hotseat_forced_to_show() && drag_status_ == kDragNone)
-    return app_list_visible ? HotseatState::kShownHomeLauncher
-                            : HotseatState::kExtended;
+    return app_list_target_visibility ? HotseatState::kShownHomeLauncher
+                                      : HotseatState::kExtended;
 
   bool in_split_view = false;
   if (in_overview) {
@@ -1353,47 +1334,41 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   switch (drag_status_) {
     case kDragNone:
     case kDragHomeToOverviewInProgress: {
-      switch (app_list_controller->home_launcher_transition_state()) {
-        case AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown:
+      if (app_list_target_visibility)
+        return HotseatState::kShownHomeLauncher;
+
+      // Show the hotseat if the shelf view's context menu is showing.
+      if (shelf_->hotseat_widget()->IsShowingShelfMenu())
+        return HotseatState::kExtended;
+
+      if (in_overview && !in_split_view) {
+        // Maintain the ShownHomeLauncher state if we enter overview mode
+        // from it.
+        if (hotseat_state() == HotseatState::kShownHomeLauncher)
           return HotseatState::kShownHomeLauncher;
-        case AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden:
-          return in_overview ? HotseatState::kExtended : HotseatState::kHidden;
-        case AppListControllerImpl::HomeLauncherTransitionState::kFinished:
-          if (app_list_visible)
-            return HotseatState::kShownHomeLauncher;
-
-          // Show the hotseat if the shelf view's context menu is showing.
-          if (shelf_->hotseat_widget()->IsShowingShelfMenu())
-            return HotseatState::kExtended;
-
-          if (in_split_view)
-            return HotseatState::kHidden;
-
-          if (in_overview)
-            return HotseatState::kExtended;
-
-          if (state_forced_by_back_gesture_)
-            return HotseatState::kExtended;
-
-          if (visibility_state == SHELF_AUTO_HIDE) {
-            if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
-                should_hide_hotseat_) {
-              return HotseatState::kHidden;
-            }
-            return HotseatState::kExtended;
-          }
-          if (shelf_->hotseat_widget()->is_manually_extended() &&
-              !should_hide_hotseat_) {
-            return HotseatState::kExtended;
-          }
-
-          // If none of the conditions above were met means that the state
-          // changed because of an action other than a user intervention.
-          // We should hide the hotseat and reset the |is_manually extended|
-          // flag to false.
-          shelf_->hotseat_widget()->set_manually_extended(false);
-          return HotseatState::kHidden;
+        return HotseatState::kExtended;
       }
+
+      if (state_forced_by_back_gesture_)
+        return HotseatState::kExtended;
+
+      if (visibility_state == SHELF_AUTO_HIDE) {
+        if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN || should_hide_hotseat_)
+          return HotseatState::kHidden;
+
+        return HotseatState::kExtended;
+      }
+      if (shelf_->hotseat_widget()->is_manually_extended() &&
+          !should_hide_hotseat_) {
+        return HotseatState::kExtended;
+      }
+
+      // If none of the conditions above were met means that the state
+      // changed because of an action other than a user intervention.
+      // We should hide the hotseat and reset the |is_manually extended|
+      // flag to false.
+      shelf_->hotseat_widget()->set_manually_extended(false);
+      return HotseatState::kHidden;
     }
     case kDragCompleteInProgress:
       if (visibility_state == SHELF_AUTO_HIDE) {
@@ -1411,7 +1386,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       if (!hotseat_is_in_drag_)
         return hotseat_state();
 
-      if (app_list_visible)
+      if (app_list_target_visibility)
         return HotseatState::kShownHomeLauncher;
 
       if (in_overview && !in_split_view)
@@ -1459,18 +1434,15 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       return HotseatState::kExtended;
     }
     case kDragAppListInProgress:
-      return app_list_controller->home_launcher_transition_state() ==
-                     AppListControllerImpl::HomeLauncherTransitionState::
-                         kMostlyHidden
-                 ? HotseatState::kHidden
-                 : HotseatState::kShownHomeLauncher;
+      return app_list_target_visibility ? HotseatState::kShownHomeLauncher
+                                        : HotseatState::kHidden;
     default:
       // Do not change the hotseat state until the drag is complete or
       // canceled.
       return hotseat_state();
   }
   NOTREACHED();
-  return HotseatState::kShownHomeLauncher;
+  return HotseatState::kNone;
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
@@ -1500,6 +1472,7 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
     return false;
 
   dimmed_for_inactivity_ = dimmed;
+
   CalculateTargetBoundsAndUpdateWorkArea();
 
   const base::TimeDelta dim_animation_duration =
@@ -1507,18 +1480,23 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
   const gfx::Tween::Type dim_animation_tween =
       ShelfConfig::Get()->DimAnimationTween();
 
+  const bool animate = !dim_animation_duration.is_zero();
+  base::Optional<ui::AnimationThroughputReporter> navigation_widget_reporter;
+  if (animate) {
+    navigation_widget_reporter.emplace(
+        GetLayer(shelf_->navigation_widget())->GetAnimator(),
+        shelf_->GetNavigationWidgetAnimationReportCallback(hotseat_state()));
+  }
+
   AnimateOpacity(GetLayer(shelf_->navigation_widget()), target_opacity_,
-                 dim_animation_duration, dim_animation_tween,
-                 shelf_->GetNavigationWidgetAnimationMetricsReporter());
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(shelf_->hotseat_widget()->GetShelfView()->layer(),
                  shelf_->hotseat_widget()->CalculateShelfViewOpacity(),
-                 dim_animation_duration, dim_animation_tween,
-                 /*animation_metrics_reporter=*/nullptr);
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(GetLayer(shelf_->status_area_widget()), target_opacity_,
-                 dim_animation_duration, dim_animation_tween,
-                 /*animation_metrics_reporter=*/nullptr);
+                 dim_animation_duration, dim_animation_tween);
 
   shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
   return true;
@@ -1547,21 +1525,26 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
           shelf_widget_->GetNativeWindow());
       bool in_overview =
           Shell::Get()->overview_controller()->InOverviewSession();
-      if (!in_overview && !state_.IsScreenLocked() &&
-          (shelf_->alignment() != ShelfAlignment::kBottomLocked ||
-           display_.work_area() == display_.bounds())) {
-        gfx::Insets insets;
-        // If user session is blocked (login to new user session or add user to
-        // the existing session - multi-profile) then give 100% of work area
-        // only if keyboard is not shown.
-        // TODO(agawronska): Could this be called from WorkAreaInsets?
-        const WorkAreaInsets* const work_area =
-            WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
-        if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
-          insets = work_area->user_work_area_insets();
-
-        Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
-                                               insets);
+      const WorkAreaInsets* const work_area =
+          WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
+      if (state_.IsActiveSessionState()) {
+        if (!in_overview &&
+            (shelf_->alignment() != ShelfAlignment::kBottomLocked ||
+             display_.work_area() == display_.bounds())) {
+          gfx::Insets insets;
+          // If user session is blocked (login to new user session or add user
+          // to the existing session - multi-profile) then give 100% of work
+          // area only if keyboard is not shown.
+          // TODO(agawronska): Could this be called from WorkAreaInsets?
+          if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
+            insets = work_area->user_work_area_insets();
+          Shell::Get()->SetDisplayWorkAreaInsets(
+              shelf_widget_->GetNativeWindow(), insets);
+        }
+      } else {
+        Shell::Get()->SetDisplayWorkAreaInsets(
+            shelf_widget_->GetNativeWindow(),
+            work_area->GetAccessibilityInsets());
       }
     }
   }
@@ -1602,19 +1585,21 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);
-  const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
 
+  const int default_shelf_inset =
+      GetShelfInset(state.visibility_state, ShelfConfig::Get()->shelf_size());
+  // In tablet mode, keep horizontal shelf inset at in-app shelf size
+  // to avoid work area updates when the shelf size changes when going to and
+  // from home screen (shelf size rules differ on home screen).
+  const int horizontal_inset =
+      Shell::Get()->IsInTabletMode()
+          ? GetShelfInset(state.visibility_state,
+                          ShelfConfig::Get()->in_app_shelf_size())
+          : default_shelf_inset;
   return shelf_->SelectValueForShelfAlignment(
-      gfx::Insets(0, 0,
-                  GetShelfInset(state.visibility_state,
-                                IsHotseatEnabled()
-                                    ? ShelfConfig::Get()->in_app_shelf_size()
-                                    : shelf_bounds.height()),
-                  0),
-      gfx::Insets(
-          0, GetShelfInset(state.visibility_state, shelf_bounds.width()), 0, 0),
-      gfx::Insets(0, 0, 0,
-                  GetShelfInset(state.visibility_state, shelf_bounds.width())));
+      gfx::Insets(0, 0, horizontal_inset, 0),
+      gfx::Insets(0, default_shelf_inset, 0, 0),
+      gfx::Insets(0, 0, 0, default_shelf_inset));
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
@@ -1627,9 +1612,11 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
       CalculateTargetBounds(state_, hotseat_target_state);
   gfx::Rect shelf_bounds_for_workarea_calculation =
       shelf_->shelf_widget()->GetTargetBounds();
-  // When the hotseat is enabled, only use the in-app shelf bounds when
-  // calculating the work area. This prevents windows resizing unnecessarily.
-  if (IsHotseatEnabled()) {
+  // In tablet mode, only use the in-app shelf bounds when calculating the work
+  // area. This prevents windows resizing unnecessarily. If the shelf is not
+  // visible then use the regular calculations. Note that on the home screen,
+  // the shelf is deemed visible as it is visible with a transparent background.
+  if (Shell::Get()->IsInTabletMode() && IsVisible()) {
     shelf_bounds_for_workarea_calculation =
         GetIdealBoundsForWorkAreaCalculation();
   }
@@ -1664,9 +1651,9 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   }
 
   float translate = 0.f;
-  if (IsHotseatEnabled()) {
-    // The drag up gesture should not taper off when the hotseat is enabled
-    // because there should be a linear transition to the home launcher gesture.
+  if (Shell::Get()->IsInTabletMode()) {
+    // The drag up gesture should not taper off in tablet mode to have a linear
+    // transition to the home launcher gesture.
     translate = drag_amount_;
   } else {
     const bool resist = shelf_->SelectValueForShelfAlignment(
@@ -1694,7 +1681,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   const int shelf_position = baseline + translate;
   if (horizontal) {
-    if (!IsHotseatEnabled()) {
+    if (!Shell::Get()->IsInTabletMode()) {
       shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
       shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
       shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
@@ -1706,20 +1693,25 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     const bool move_shelf_with_hotseat =
         !Shell::Get()->overview_controller()->InOverviewSession() &&
         visibility_state() == SHELF_AUTO_HIDE;
+    // Do not allow the shelf to be dragged more than |shelf_size| from the
+    // bottom of the display.
+    int adjusted_shelf_position =
+        std::max(available_bounds.bottom() - shelf_size,
+                 static_cast<int>(shelf_position));
     if (move_shelf_with_hotseat) {
-      // Do not allow the shelf to be dragged more than |shelf_size| from the
-      // bottom of the display.
-      int shelf_y = std::max(available_bounds.bottom() - shelf_size,
-                             static_cast<int>(baseline + translate));
       // Window drags only happen after the hotseat has been dragged up to its
       // full height. After the drag moves a window, do not allow the drag to
       // move the hotseat down.
       if (IsWindowDragInProgress())
-        shelf_y = available_bounds.bottom() - shelf_size;
+        adjusted_shelf_position = available_bounds.bottom() - shelf_size;
       gfx::Rect updated_target_bounds =
           shelf_->shelf_widget()->GetTargetBounds();
-      updated_target_bounds.set_y(shelf_y);
+      updated_target_bounds.set_y(adjusted_shelf_position);
       shelf_->shelf_widget()->set_target_bounds(updated_target_bounds);
+      shelf_->navigation_widget()->UpdateTargetBoundsForGesture(
+          adjusted_shelf_position);
+      shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
+          adjusted_shelf_position);
     }
 
     int hotseat_y = 0;
@@ -1743,17 +1735,15 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // the hotseat down.
     if (IsWindowDragInProgress())
       hotseat_y = -hotseat_extended_y;
-    gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
     gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-    hotseat_bounds.set_y(hotseat_y + shelf_bounds.y());
+    hotseat_bounds.set_y(hotseat_y + adjusted_shelf_position);
     shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
-    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
     return;
   }
 
   shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
-  shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
   shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
+  shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
   shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
 }
 
@@ -1817,7 +1807,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
   // Don't let the shelf auto-hide when in tablet mode and Chromevox is on.
   if (in_tablet_mode &&
-      Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
+      Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
@@ -1971,13 +1961,14 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 }
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
-  // The shelf should not become transparent during the animation to or from
-  // HomeLauncher.
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->IsInTabletMode() &&
-      Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
-          AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
-    return 1.0f;
+  if (Shell::Get()->IsInTabletMode()) {
+    // The shelf should not become transparent during the animation to or from
+    // HomeLauncher.
+    auto* app_list_controller = Shell::Get()->app_list_controller();
+    if (app_list_controller->GetTargetVisibility(display_.id()) !=
+        app_list_controller->IsVisible(display_.id())) {
+      return 1.0f;
+    }
   }
 
   float opacity_when_visible = kDefaultShelfOpacity;
@@ -2029,16 +2020,16 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
 
   const bool up_on_shown_hotseat =
       hotseat_state() == HotseatState::kShownHomeLauncher && scroll_y < 0;
-  if (IsHotseatEnabled() && up_on_shown_hotseat) {
+  if (Shell::Get()->IsInTabletMode() && up_on_shown_hotseat) {
     return GetHomeLauncherGestureHandlerModeForDrag() ==
            HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
   }
 
-  if (IsHotseatEnabled()) {
-    if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-        hotseat_state() != HotseatState::kShownHomeLauncher) {
+  if (Shell::Get()->IsInTabletMode()) {
+    if (hotseat_state() != HotseatState::kShownHomeLauncher &&
+        hotseat_state() != HotseatState::kNone) {
       // If hotseat is hidden or extended (in-app or in-overview), do not let
-      // HomeLauncherGestureHandler to handle the events.
+      // HomeLauncherGestureHandler handle the events.
       return false;
     }
 
@@ -2075,10 +2066,7 @@ bool ShelfLayoutManager::StartGestureDrag(
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     const HomeLauncherGestureHandler::Mode target_mode =
         GetHomeLauncherGestureHandlerModeForDrag();
-    drag_status_ =
-        target_mode == HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview
-            ? kDragHomeToOverviewInProgress
-            : kDragAppListInProgress;
+    drag_status_ = kDragHomeToOverviewInProgress;
     if (home_launcher_handler->OnPressEvent(target_mode,
                                             gesture_in_screen.location_f())) {
       return true;
@@ -2293,7 +2281,7 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
 
 void ShelfLayoutManager::MaybeSetupHotseatDrag(
     const ui::LocatedEvent& event_in_screen) {
-  if (!IsHotseatEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return;
 
   // Do not allow Hotseat dragging when the hotseat is shown within the shelf.
@@ -2315,10 +2303,9 @@ void ShelfLayoutManager::MaybeSetupHotseatDrag(
 void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
                                     float scroll_x,
                                     float scroll_y) {
-  if (hotseat_is_in_drag_) {
-    DCHECK(hotseat_presentation_time_recorder_);
-    hotseat_presentation_time_recorder_->RequestNext();
-  }
+  const int starting_hotseat_y =
+      shelf_->hotseat_widget()->GetTargetBounds().y();
+
   if (drag_status_ == kDragAppListInProgress) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
@@ -2344,6 +2331,17 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
           event_in_screen.AsGestureEvent()->details().velocity_y();
     }
     LayoutShelf();
+
+    // Request a new hotseat presentation time record if the hotseat bounds
+    // changed while the hotseat is in drag. If hotseat bounds remained the
+    // same, there might be no changes to present, and the presentation time
+    // recorder may end up recording inflated times when it's reset.
+    if (hotseat_is_in_drag_ &&
+        starting_hotseat_y != shelf_->hotseat_widget()->GetTargetBounds().y()) {
+      DCHECK(hotseat_presentation_time_recorder_);
+      hotseat_presentation_time_recorder_->RequestNext();
+    }
+
     MaybeUpdateWindowDrag(event_in_screen, gfx::Vector2dF(scroll_x, scroll_y));
   }
 }
@@ -2368,21 +2366,8 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   else
     CancelDrag(window_drag_result);
 
-  // Dragged window is finalized after drag handling is completed so drag state
-  // does not interfere with updates on shelf state during window state changes.
-  if (window_drag_controller_.get())
-    window_drag_controller_->FinalizeDraggedWindow();
-
-  // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->IsInTabletMode()) {
-    if (features::AreContextualNudgesEnabled() &&
-        window_drag_result == ShelfWindowDragResult::kGoToHomeScreen) {
-      contextual_tooltip::HandleGesturePerformed(
-          Shell::Get()->session_controller()->GetActivePrefService(),
-          contextual_tooltip::TooltipType::kInAppToHome);
-    }
-
+  // Hotseat gestures are only meaningful in tablet mode.
+  if (Shell::Get()->IsInTabletMode()) {
     base::Optional<InAppShelfGestures> gesture_to_record =
         CalculateHotseatGestureToRecord(window_drag_result,
                                         transitioned_from_overview_to_home,
@@ -2440,12 +2425,21 @@ void ShelfLayoutManager::CancelDrag(
     else
       Shell::Get()->app_list_controller()->DismissAppList();
   } else {
-    MaybeCancelWindowDrag();
     // Set |drag_status_| to kDragCancelInProgress to set the
     // auto hide state to |drag_auto_hide_state_|, which is the
     // visibility state before starting drag.
     drag_status_ = kDragCancelInProgress;
     UpdateVisibilityState();
+
+    // Dragged window is finalized after drag handling is completed so drag
+    // state does not interfere with updates on shelf state during window state
+    // changes.
+    if (window_drag_controller_.get()) {
+      if (window_drag_result.has_value())
+        window_drag_controller_->FinalizeDraggedWindow();
+      else
+        MaybeCancelWindowDrag();
+    }
   }
   if (hotseat_is_in_drag_) {
     // If the gesture started the overview session, the hotseat will be
@@ -2454,9 +2448,13 @@ void ShelfLayoutManager::CancelDrag(
     shelf_->hotseat_widget()->set_manually_extended(
         hotseat_state() == HotseatState::kExtended &&
         (!Shell::Get()->overview_controller()->InOverviewSession() ||
+         SplitViewController::Get(shelf_widget_->GetNativeWindow())
+             ->InSplitViewMode() ||
          (window_drag_result.has_value() &&
-          window_drag_result.value() ==
-              ShelfWindowDragResult::kRestoreToOriginalBounds)));
+          (window_drag_result.value() ==
+               ShelfWindowDragResult::kRestoreToOriginalBounds ||
+           window_drag_result.value() ==
+               ShelfWindowDragResult::kGoToSplitviewMode))));
 
     hotseat_presentation_time_recorder_.reset();
   }
@@ -2481,6 +2479,12 @@ void ShelfLayoutManager::CompleteDragWithChangedVisibility() {
   drag_status_ = kDragCompleteInProgress;
 
   UpdateVisibilityState();
+
+  // Dragged window is finalized after drag handling is completed so drag state
+  // does not interfere with updates on shelf state during window state changes.
+  if (window_drag_controller_.get())
+    window_drag_controller_->FinalizeDraggedWindow();
+
   drag_status_ = kDragNone;
   if (hotseat_is_in_drag_)
     hotseat_presentation_time_recorder_.reset();
@@ -2593,8 +2597,6 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
 bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     const ui::LocatedEvent& event_in_screen,
     const gfx::Vector2dF& scroll) {
-  if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
-    return false;
   if (!Shell::Get()->IsInTabletMode())
     return false;
   if (drag_status_ != kDragInProgress)
@@ -2642,7 +2644,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return false;
 
   window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
-      window, event_in_screen.location_f(), hotseat_state());
+      window, event_in_screen.location_f());
   return true;
 }
 
@@ -2679,7 +2681,7 @@ base::Optional<ShelfWindowDragResult> ShelfLayoutManager::MaybeEndWindowDrag(
 
 bool ShelfLayoutManager::MaybeEndDragFromOverviewToHome(
     const ui::LocatedEvent& event_in_screen) {
-  if (!IsHotseatEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return false;
 
   if (!allow_fling_from_overview_to_home_ ||

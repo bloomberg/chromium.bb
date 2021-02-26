@@ -4,11 +4,67 @@
 
 #include "components/bookmarks/browser/url_index.h"
 
+#include <iterator>
+
 #include "base/containers/adapters.h"
 #include "base/guid.h"
 #include "components/bookmarks/browser/url_and_title.h"
 
 namespace bookmarks {
+
+namespace {
+
+// Computes and aggregates into |*stats| metrics corresponding to a particular
+// group of bookmarks with the same URL, listed in |*bookmarks_with_same_url|.
+// The caller is responsible to guarantee that these provided bookmarks all
+// share the same URL. Upon completion of this function, the state of
+// |*bookmarks_with_same_url| is unspecified, because the implementation is free
+// to modify its state desirable to avoid additional memory allocations on the
+// calling site.
+void AddStatsForBookmarksWithSameUrl(
+    std::vector<const BookmarkNode*>* bookmarks_with_same_url,
+    UrlIndex::Stats* stats) {
+  if (bookmarks_with_same_url->size() <= 1)
+    return;
+
+  stats->duplicate_url_bookmark_count += bookmarks_with_same_url->size() - 1;
+
+  // Sort only if there are 3 or more bookmarks. With exactly two (which is
+  // believed to be a common case) the precise ordering is irrelevant for the
+  // logic that follows.
+  if (bookmarks_with_same_url->size() > 2) {
+    std::sort(bookmarks_with_same_url->begin(), bookmarks_with_same_url->end(),
+              [](const BookmarkNode* a, const BookmarkNode* b) {
+                DCHECK_EQ(a->url(), b->url());
+                if (a->GetTitle() != b->GetTitle())
+                  return a->GetTitle() < b->GetTitle();
+                return a->parent() < b->parent();
+              });
+  }
+
+  size_t duplicate_title_count = 0;
+  size_t duplicate_title_and_parent_count = 0;
+
+  auto prev_i = bookmarks_with_same_url->begin();
+  for (auto i = std::next(prev_i); i != bookmarks_with_same_url->end();
+       ++i, ++prev_i) {
+    DCHECK_EQ((*prev_i)->url(), (*i)->url());
+    if ((*prev_i)->GetTitle() == (*i)->GetTitle()) {
+      ++duplicate_title_count;
+      if ((*prev_i)->parent() == (*i)->parent())
+        ++duplicate_title_and_parent_count;
+    }
+  }
+
+  DCHECK_LT(duplicate_title_count, bookmarks_with_same_url->size());
+  DCHECK_LE(duplicate_title_and_parent_count, duplicate_title_count);
+
+  stats->duplicate_url_and_title_bookmark_count += duplicate_title_count;
+  stats->duplicate_url_and_title_and_parent_bookmark_count +=
+      duplicate_title_and_parent_count;
+}
+
+}  // namespace
 
 UrlIndex::UrlIndex(std::unique_ptr<BookmarkNode> root)
     : root_(std::move(root)) {
@@ -27,22 +83,6 @@ std::unique_ptr<BookmarkNode> UrlIndex::Remove(BookmarkNode* node,
                                                std::set<GURL>* removed_urls) {
   base::AutoLock url_lock(url_lock_);
   RemoveImpl(node, removed_urls);
-  if (removed_urls) {
-    // RemoveImpl() adds an entry to removed_urls for each node of type URL. As
-    // duplicates are allowed we need to remove any entries that are still
-    // bookmarked.
-    for (auto i = removed_urls->begin(); i != removed_urls->end();) {
-      if (IsBookmarkedNoLock(*i)) {
-        // When we erase the iterator pointing at the erasee is
-        // invalidated, so using i++ here within the "erase" call is
-        // important as it advances the iterator before passing the
-        // old value through to erase.
-        removed_urls->erase(i++);
-      } else {
-        ++i;
-      }
-    }
-  }
   BookmarkNode* parent = node->parent();
   return parent->Remove(size_t{parent->GetIndexOf(node)});
 }
@@ -86,9 +126,28 @@ bool UrlIndex::HasBookmarks() const {
   return !nodes_ordered_by_url_set_.empty();
 }
 
-size_t UrlIndex::UrlCount() const {
+UrlIndex::Stats UrlIndex::ComputeStats() const {
   base::AutoLock url_lock(url_lock_);
-  return nodes_ordered_by_url_set_.size();
+  UrlIndex::Stats stats;
+  stats.total_url_bookmark_count = nodes_ordered_by_url_set_.size();
+
+  if (stats.total_url_bookmark_count <= 1)
+    return stats;
+
+  std::vector<const BookmarkNode*> bookmarks_with_same_url;
+  auto prev_i = nodes_ordered_by_url_set_.begin();
+  for (auto i = std::next(prev_i); i != nodes_ordered_by_url_set_.end();
+       ++i, ++prev_i) {
+    if ((*prev_i)->url() != (*i)->url()) {
+      AddStatsForBookmarksWithSameUrl(&bookmarks_with_same_url, &stats);
+      bookmarks_with_same_url.clear();
+    }
+
+    bookmarks_with_same_url.push_back(*i);
+  }
+
+  AddStatsForBookmarksWithSameUrl(&bookmarks_with_same_url, &stats);
+  return stats;
 }
 
 bool UrlIndex::IsBookmarked(const GURL& url) {
@@ -140,7 +199,7 @@ void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
     while (*i != node)
       ++i;
     nodes_ordered_by_url_set_.erase(i);
-    if (removed_urls)
+    if (removed_urls && !IsBookmarkedNoLock(node->url()))
       removed_urls->insert(node->url());
   }
   for (const auto& child : base::Reversed(node->children()))

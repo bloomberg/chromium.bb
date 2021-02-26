@@ -97,12 +97,12 @@ protected:
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override;
     void drawAtlas(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[], int count,
                    SkBlendMode, const SkPaint&) override;
-    void drawDevice(SkBaseDevice*, int x, int y, const SkPaint&) override;
 
     ///////////////////////////////////////////////////////////////////////////
 
-    void drawSpecial(SkSpecialImage*, int x, int y, const SkPaint&,
-                     SkImage*, const SkMatrix&) override;
+    void drawDevice(SkBaseDevice*, const SkPaint&) override;
+    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkPaint&) override;
+
     sk_sp<SkSpecialImage> makeSpecial(const SkBitmap&) override;
     sk_sp<SkSpecialImage> makeSpecial(const SkImage*) override;
     sk_sp<SkSpecialImage> snapSpecial(const SkIRect&, bool = false) override;
@@ -122,6 +122,7 @@ protected:
     void onClipPath(const SkPath& path, SkClipOp, bool aa) override;
     void onClipShader(sk_sp<SkShader>) override;
     void onClipRegion(const SkRegion& deviceRgn, SkClipOp) override;
+    void onReplaceClip(const SkIRect& rect) override;
     void onSetDeviceClipRestriction(SkIRect* mutableClipRestriction) override;
     bool onClipIsAA() const override;
     bool onClipIsWideOpen() const override;
@@ -135,7 +136,6 @@ protected:
 
 private:
     friend class SkCanvas;
-    friend struct DeviceCM; //for setMatrixClip
     friend class SkDraw;
     friend class SkDrawIter;
     friend class SkDrawTiler;
@@ -161,7 +161,7 @@ private:
     SkGlyphRunListPainter fGlyphPainter;
 
 
-    typedef SkBaseDevice INHERITED;
+    using INHERITED = SkBaseDevice;
 };
 
 class SkBitmapDeviceFilteredSurfaceProps {

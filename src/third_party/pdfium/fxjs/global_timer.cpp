@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "core/fxcrt/timerhandler_iface.h"
+#include "core/fxcrt/cfx_timer.h"
 #include "fxjs/cjs_app.h"
 #include "third_party/base/no_destructor.h"
 #include "third_party/base/stl_util.h"
@@ -36,7 +36,7 @@ GlobalTimer::GlobalTimer(CJS_App* pObj,
       m_pRuntime(pRuntime),
       m_pEmbedApp(pObj) {
   if (HasValidID()) {
-    ASSERT(!pdfium::ContainsKey(GetGlobalTimerMap(), m_nTimerID));
+    ASSERT(!pdfium::Contains(GetGlobalTimerMap(), m_nTimerID));
     GetGlobalTimerMap()[m_nTimerID] = this;
   }
 }
@@ -48,7 +48,7 @@ GlobalTimer::~GlobalTimer() {
   if (m_pRuntime && m_pRuntime->GetTimerHandler())
     m_pRuntime->GetTimerHandler()->KillTimer(m_nTimerID);
 
-  ASSERT(pdfium::ContainsKey(GetGlobalTimerMap(), m_nTimerID));
+  ASSERT(pdfium::Contains(GetGlobalTimerMap(), m_nTimerID));
   GetGlobalTimerMap().erase(m_nTimerID);
 }
 
@@ -88,5 +88,5 @@ void GlobalTimer::Cancel(int32_t nTimerID) {
 }
 
 bool GlobalTimer::HasValidID() const {
-  return m_nTimerID != TimerHandlerIface::kInvalidTimerID;
+  return m_nTimerID != CFX_Timer::HandlerIface::kInvalidTimerID;
 }

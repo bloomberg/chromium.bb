@@ -155,6 +155,19 @@ public class SideSlideLayout extends ViewGroup {
 
         // The absolute offset has to take into account that the circle starts at an offset
         mTotalDragDistance = RAW_SWIPE_LIMIT_DP * getResources().getDisplayMetrics().density;
+
+        mAnimateToStartPosition.setAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                reset();
+            }
+        });
     }
 
     /**
@@ -270,11 +283,19 @@ public class SideSlideLayout extends ViewGroup {
     }
 
     /**
+     * @param Total amount of pull offset.
+     */
+    float getPullOffset() {
+        return mTotalMotion;
+    }
+
+    /**
      * Apply a pull impulse to the effect. If the effect is disabled or has yet
      * to start, the pull will be ignored.
-     * @param delta the magnitude of the pull.
+     * @param offset Updated total pull offset.
      */
-    public void pull(float delta) {
+    public void pull(float offset) {
+        float delta = offset - mTotalMotion;
         if (!isEnabled() || !mIsBeingDragged) return;
 
         float maxDelta = mTotalDragDistance / MIN_PULLS_TO_ACTIVATE;
@@ -324,14 +345,14 @@ public class SideSlideLayout extends ViewGroup {
      * @param faded {@code true} if arrow bubble should fade out.
      * @param animate {@code true} if animation is needed.
      */
-    void fadeArrow(boolean faded, boolean animate) {
+    void fadeBubble(boolean faded, boolean animate) {
         mArrowView.setFaded(faded, animate);
     }
 
     /**
      * Hide arrow bubble by making it fade away at the current position.
      */
-    void hideArrow() {
+    void hideBubble() {
         mNavigating = false;
         startHidingAnimation(mNavigateListener);
     }

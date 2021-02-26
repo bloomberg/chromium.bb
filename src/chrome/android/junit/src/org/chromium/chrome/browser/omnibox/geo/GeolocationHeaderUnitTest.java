@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -38,6 +39,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
@@ -133,8 +135,8 @@ public class GeolocationHeaderUnitTest {
         GeolocationHeader.setAppPermissionGrantedForTesting(true);
         when(mTab.isIncognito()).thenReturn(false);
         when(mTab.getWebContents()).thenReturn(mWebContentsMock);
-        when(mWebsitePreferenceBridgeJniMock.getGeolocationSettingForOrigin(
-                     any(BrowserContextHandle.class), anyString(), anyString()))
+        when(mWebsitePreferenceBridgeJniMock.getSettingForOrigin(any(BrowserContextHandle.class),
+                     eq(ContentSettingsType.GEOLOCATION), anyString(), anyString()))
                 .thenReturn(ContentSettingValues.ALLOW);
         when(mWebsitePreferenceBridgeJniMock.isPermissionControlledByDSE(
                      any(BrowserContextHandle.class), anyInt(), anyString()))
@@ -258,8 +260,9 @@ public class GeolocationHeaderUnitTest {
 
     @Test
     public void testGetGeoHeaderOldLocationLocationOff() {
-        GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LocationSource.MASTER_OFF);
-        // If the master switch is off, networks should never be included (old location might).
+        GeolocationHeader.setLocationSourceForTesting(
+                GeolocationHeader.LocationSource.LOCATION_OFF);
+        // If the location switch is off, networks should never be included (old location might).
         checkOldLocation("X-Geo: w " + ENCODED_PROTO_LOCATION);
     }
 
@@ -270,6 +273,13 @@ public class GeolocationHeaderUnitTest {
         GeolocationHeader.setAppPermissionGrantedForTesting(false);
         // Nothing should be included when app permission is missing.
         checkOldLocation(null);
+    }
+
+    @Test
+    public void testGetGeoHeaderNoProfile() {
+        when(mProfileJniMock.fromWebContents(any(WebContents.class))).thenReturn(null);
+        String header = GeolocationHeader.getGeoHeader(SEARCH_URL, mTab);
+        assertNull(header);
     }
 
     @Test

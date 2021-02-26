@@ -9,14 +9,18 @@
 #include <stdint.h>
 
 #include <cstdlib>
+#include <limits>
+#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -2012,14 +2016,13 @@ TEST_F(TraceEventTestFixture, MAYBE_TraceWithDisabledByDefaultCategoryFilters) {
 class MyData : public ConvertableToTraceFormat {
  public:
   MyData() = default;
+  MyData(const MyData&) = delete;
+  MyData& operator=(const MyData&) = delete;
   ~MyData() override = default;
 
   void AppendAsTraceFormat(std::string* out) const override {
     out->append("{\"foo\":1}");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MyData);
 };
 
 TEST_F(TraceEventTestFixture, ConvertableTypes) {
@@ -2317,7 +2320,7 @@ bool IsArgNameWhitelisted(const char* arg_name) {
   return base::MatchPattern(arg_name, "granular_arg_whitelisted");
 }
 
-bool IsTraceEventArgsWhitelisted(const char* category_group_name,
+bool IsTraceEventArgsAllowlisted(const char* category_group_name,
                                  const char* event_name,
                                  ArgumentNameFilterPredicate* arg_filter) {
   if (base::MatchPattern(category_group_name, "toplevel") &&
@@ -2338,7 +2341,7 @@ bool IsTraceEventArgsWhitelisted(const char* category_group_name,
 
 TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
   TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::BindRepeating(&IsTraceEventArgsWhitelisted));
+      base::BindRepeating(&IsTraceEventArgsAllowlisted));
 
   TraceLog::GetInstance()->SetEnabled(
     TraceConfig(kRecordAllCategoryFilter, "enable-argument-filter"),

@@ -14,7 +14,8 @@ extern const int kDefaultImplicitGrantLimit;
 class StorageAccessGrantPermissionContext
     : public permissions::PermissionContextBase {
  public:
-  StorageAccessGrantPermissionContext(content::BrowserContext* browser_context);
+  explicit StorageAccessGrantPermissionContext(
+      content::BrowserContext* browser_context);
 
   ~StorageAccessGrantPermissionContext() override;
 
@@ -27,6 +28,10 @@ class StorageAccessGrantPermissionContext
                            PermissionDeniedWithoutUserGesture);
   FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
                            ImplicitGrantLimitPerRequestingOrigin);
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+                           ExplicitGrantDenial);
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+                           ExplicitGrantAccept);
   friend class StorageAccessGrantPermissionContextTest;
 
   StorageAccessGrantPermissionContext(
@@ -52,10 +57,23 @@ class StorageAccessGrantPermissionContext
                            const GURL& embedding_origin,
                            permissions::BrowserPermissionCallback callback,
                            bool persist,
-                           ContentSetting content_setting) override;
+                           ContentSetting content_setting,
+                           bool is_one_time) override;
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedding_origin,
-                            ContentSetting content_setting) override;
+                            ContentSetting content_setting,
+                            bool is_one_time) override;
+
+  // Internal implementation for NotifyPermissionSet. Allows for differentiation
+  // of implicit and explicit grants using |implicit_result|.
+  void NotifyPermissionSetInternal(
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      permissions::BrowserPermissionCallback callback,
+      bool persist,
+      ContentSetting content_setting,
+      bool implicit_result);
 
   ContentSettingsType content_settings_type_;
 };

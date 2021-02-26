@@ -61,7 +61,7 @@ bool FastSourceLineResolver::ShouldDeleteMemoryBufferAfterLoadModule() {
   return false;
 }
 
-void FastSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {
+void FastSourceLineResolver::Module::LookupAddress(StackFrame* frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
   // First, look for a FUNC record that covers address. Use
@@ -109,7 +109,7 @@ void FastSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {
 
 // WFI: WindowsFrameInfo.
 // Returns a WFI object reading from a raw memory chunk of data
-WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char *raw) {
+WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char* raw) {
   const WindowsFrameInfo::StackInfoTypes type =
      static_cast<const WindowsFrameInfo::StackInfoTypes>(
          *reinterpret_cast<const int32_t*>(raw));
@@ -117,7 +117,7 @@ WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char *raw) {
   // The first 8 bytes of int data are unused.
   // They correspond to "StackInfoTypes type_;" and "int valid;"
   // data member of WFI.
-  const uint32_t *para_uint32 = reinterpret_cast<const uint32_t*>(
+  const uint32_t* para_uint32 = reinterpret_cast<const uint32_t*>(
       raw + 2 * sizeof(int32_t));
 
   uint32_t prolog_size = para_uint32[0];;
@@ -126,7 +126,7 @@ WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char *raw) {
   uint32_t saved_register_size = para_uint32[3];
   uint32_t local_size = para_uint32[4];
   uint32_t max_stack_size = para_uint32[5];
-  const char *boolean = reinterpret_cast<const char*>(para_uint32 + 6);
+  const char* boolean = reinterpret_cast<const char*>(para_uint32 + 6);
   bool allocates_base_pointer = (*boolean != 0);
   string program_string = boolean + 1;
 
@@ -145,15 +145,15 @@ WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char *raw) {
 // Does NOT take ownership of mem_buffer.
 // In addition, treat mem_buffer as const char*.
 bool FastSourceLineResolver::Module::LoadMapFromMemory(
-    char *memory_buffer,
+    char* memory_buffer,
     size_t memory_buffer_size) {
   if (!memory_buffer) return false;
 
   // Read the "is_corrupt" flag.
-  const char *mem_buffer = memory_buffer;
+  const char* mem_buffer = memory_buffer;
   mem_buffer = SimpleSerializer<bool>::Read(mem_buffer, &is_corrupt_);
 
-  const uint32_t *map_sizes = reinterpret_cast<const uint32_t*>(mem_buffer);
+  const uint32_t* map_sizes = reinterpret_cast<const uint32_t*>(mem_buffer);
 
   unsigned int header_size = kNumberMaps_ * sizeof(unsigned int);
 
@@ -185,8 +185,8 @@ bool FastSourceLineResolver::Module::LoadMapFromMemory(
   return true;
 }
 
-WindowsFrameInfo *FastSourceLineResolver::Module::FindWindowsFrameInfo(
-    const StackFrame *frame) const {
+WindowsFrameInfo* FastSourceLineResolver::Module::FindWindowsFrameInfo(
+    const StackFrame* frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
   scoped_ptr<WindowsFrameInfo> result(new WindowsFrameInfo());
 
@@ -238,8 +238,8 @@ WindowsFrameInfo *FastSourceLineResolver::Module::FindWindowsFrameInfo(
   return NULL;
 }
 
-CFIFrameInfo *FastSourceLineResolver::Module::FindCFIFrameInfo(
-    const StackFrame *frame) const {
+CFIFrameInfo* FastSourceLineResolver::Module::FindCFIFrameInfo(
+    const StackFrame* frame) const {
   MemAddr address = frame->instruction - frame->module->base_address();
   MemAddr initial_base, initial_size;
   const char* initial_rules = NULL;

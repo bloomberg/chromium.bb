@@ -5,16 +5,6 @@
 #ifndef PLATFORM_BASE_MACROS_H_
 #define PLATFORM_BASE_MACROS_H_
 
-// Use this when declaring/defining _defaulted_ noexcept move constructors, to
-// work around a bug(?) in g++ with deducing noexcept.
-#ifndef MAYBE_NOEXCEPT
-#if defined(__GNUC__)
-#define MAYBE_NOEXCEPT
-#else
-#define MAYBE_NOEXCEPT noexcept
-#endif
-#endif
-
 #ifdef DISALLOW_COPY
 #define OSP_DISALLOW_COPY DISALLOW_COPY
 #else

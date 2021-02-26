@@ -27,7 +27,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 /** @interface */
@@ -110,6 +110,11 @@ export class ItemDelegate {
    * @return {!Promise<void>}
    */
   removeRuntimeHostPermission(id, host) {}
+
+  // TODO(tjudkins): This function is not specific to items, so should be pulled
+  // out to a more generic place when we need to access it from elsewhere.
+  /** @param {string} metricName */
+  recordUserAction(metricName) {}
 }
 
 Polymer({
@@ -276,14 +281,6 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isControlled_() {
-    return isControlled(this.data);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
   isEnabled_() {
     return isEnabled(this.data.state);
   },
@@ -417,11 +414,18 @@ Polymer({
    */
   computeDevReloadButtonHidden_() {
     // Only display the reload spinner if the extension is unpacked and
-    // enabled. There's no point in reloading a disabled extension, and we'll
-    // show a crashed reload button if it's terminated.
+    // enabled or disabled for reload. If an extension fails to reload (due to
+    // e.g. a parsing error), it will
+    // remain disabled with the "reloading" reason. We show the reload button
+    // when it's disabled for reload to enable developers to reload the fixed
+    // version. (Note that trying to reload an extension that is currently
+    // trying to reload is a no-op.) For other
+    // disableReasons, there's no point in reloading a disabled extension, and
+    // we'll show a crashed reload button if it's terminated.
     const showIcon =
         this.data.location === chrome.developerPrivate.Location.UNPACKED &&
-        this.data.state === chrome.developerPrivate.ExtensionState.ENABLED;
+        (this.data.state === chrome.developerPrivate.ExtensionState.ENABLED ||
+         this.data.disableReasons.reloading);
     return !showIcon;
   },
 

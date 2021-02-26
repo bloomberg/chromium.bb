@@ -34,9 +34,9 @@ void ForwardingModelTypeControllerDelegate::GetAllNodesForDebugging(
   other_->GetAllNodesForDebugging(std::move(callback));
 }
 
-void ForwardingModelTypeControllerDelegate::GetStatusCountersForDebugging(
-    StatusCountersCallback callback) {
-  other_->GetStatusCountersForDebugging(std::move(callback));
+void ForwardingModelTypeControllerDelegate::GetTypeEntitiesCountForDebugging(
+    base::OnceCallback<void(const TypeEntitiesCount&)> callback) const {
+  other_->GetTypeEntitiesCountForDebugging(std::move(callback));
 }
 
 void ForwardingModelTypeControllerDelegate::

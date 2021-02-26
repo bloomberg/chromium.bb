@@ -25,6 +25,7 @@
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
 #include "internal.h"
+#include "packet_internal.h"
 #include "snow_dwt.h"
 #include "snow.h"
 
@@ -1624,9 +1625,21 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         s->lambda = 0;
     }//else keep previous frame's qlog until after motion estimation
 
+#if FF_API_CODED_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    av_frame_unref(avctx->coded_frame);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
     if (s->current_picture->data[0]) {
         int w = s->avctx->width;
         int h = s->avctx->height;
+
+#if FF_API_CODED_FRAME
+        ret = av_frame_make_writable(s->current_picture);
+        if (ret < 0)
+            return ret;
+#endif
 
         s->mpvencdsp.draw_edges(s->current_picture->data[0],
                                 s->current_picture->linesize[0], w   , h   ,
@@ -1645,7 +1658,6 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     ff_snow_frame_start(s);
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
-    av_frame_unref(avctx->coded_frame);
     ret = av_frame_ref(avctx->coded_frame, s->current_picture);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
@@ -1936,6 +1948,11 @@ static const AVOption options[] = {
     { "pred",           "Spatial decomposition type",                                OFFSET(pred), AV_OPT_TYPE_INT, { .i64 = 0 }, DWT_97, DWT_53, VE, "pred" },
         { "dwt97", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = 0 }, INT_MIN, INT_MAX, VE, "pred" },
         { "dwt53", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = 1 }, INT_MIN, INT_MAX, VE, "pred" },
+    { "rc_eq", "Set rate control equation. When computing the expression, besides the standard functions "
+     "defined in the section 'Expression Evaluation', the following functions are available: "
+     "bits2qp(bits), qp2bits(qp). Also the following constants are available: iTex pTex tex mv "
+     "fCode iCount mcVar var isI isP isB avgQP qComp avgIITex avgPITex avgPPTex avgBPTex avgTex.",
+                                                                                  OFFSET(m.rc_eq), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VE },
     { NULL },
 };
 

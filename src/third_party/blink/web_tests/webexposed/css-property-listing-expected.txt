@@ -14,7 +14,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-box-orient
     -webkit-box-pack
     -webkit-box-reflect
-    -webkit-font-size-delta
     -webkit-font-smoothing
     -webkit-highlight
     -webkit-hyphenate-character
@@ -69,6 +68,7 @@ All changes to this list should go through Blink's feature review process: http:
     animation-iteration-count
     animation-name
     animation-play-state
+    animation-timeline
     animation-timing-function
     appearance
     aspect-ratio
@@ -153,6 +153,7 @@ All changes to this list should go through Blink's feature review process: http:
     content-visibility
     counter-increment
     counter-reset
+    counter-set
     cursor
     cx
     cy
@@ -231,10 +232,10 @@ All changes to this list should go through Blink's feature review process: http:
     marker-mid
     marker-start
     mask
-    mask-source-type
     mask-type
+    math-depth
+    math-shift
     math-style
-    math-superscript-shift-style
     max-block-size
     max-height
     max-inline-size
@@ -260,6 +261,7 @@ All changes to this list should go through Blink's feature review process: http:
     outline-width
     overflow-anchor
     overflow-block
+    overflow-clip-margin
     overflow-inline
     overflow-wrap
     overflow-x
@@ -313,6 +315,8 @@ All changes to this list should go through Blink's feature review process: http:
     scroll-snap-align
     scroll-snap-stop
     scroll-snap-type
+    scrollbar-gutter
+    scrollbar-width
     shape-image-threshold
     shape-margin
     shape-outside
@@ -420,6 +424,7 @@ All changes to this list should go through Blink's feature review process: http:
         animation-iteration-count
         animation-name
         animation-play-state
+        animation-timeline
         animation-timing-function
     background
         background-attachment
@@ -709,6 +714,7 @@ All changes to this list should go through Blink's feature review process: http:
         text-decoration-color
         text-decoration-line
         text-decoration-style
+        text-decoration-thickness
     transition
         transition-delay
         transition-duration

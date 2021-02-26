@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.multiwindow;
 
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.createSecondChromeTabbedActivity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,6 +24,8 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -33,10 +36,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -95,14 +96,13 @@ public class MultiWindowUtilsTest {
                 ApplicationStatus.getStateForActivity(activity2) == ActivityState.RESUMED);
 
         // Open settings and wait for ChromeTabbedActivity2 to pause.
-        activity2.onMenuOrKeyboardAction(R.id.preferences_id, true);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity2.onMenuOrKeyboardAction(R.id.preferences_id, true); });
         int expected = ActivityState.PAUSED;
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getStateForActivity(activity2);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    ApplicationStatus.getStateForActivity(activity2), Matchers.is(expected));
+        });
 
         Assert.assertEquals(
                 "The most recently resumed ChromeTabbedActivity should be used for intents.",
@@ -117,7 +117,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity1IsRunning() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
@@ -137,7 +136,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity2IsRunning() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         createSecondChromeTabbedActivity(activity1);
@@ -158,7 +156,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentNoActivitiesAlive() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         activity1.finishAndRemoveTask();
@@ -176,7 +173,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivity2TaskRunning() {
         ChromeTabbedActivity activity2 =
                 createSecondChromeTabbedActivity(mActivityTestRule.getActivity());

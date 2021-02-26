@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -96,7 +96,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {}
 
-  void RemoveAndWait(int remove_mask) {
+  void RemoveAndWait(uint64_t remove_mask) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(
             shell()->web_contents()->GetBrowserContext());
@@ -109,7 +109,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   }
 
   void RemoveWithFilterAndWait(
-      int remove_mask,
+      uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
 }
 
 // Verify that TransportSecurityState data is not cleared if REMOVE_CACHE is not
-// set or there is a WHITELIST filter.
+// set or there is a deletelist filter.
 // TODO(crbug.com/1040065): Add support for filtered deletions and update test.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
                        PreserveTransportSecurityState) {
@@ -247,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
   RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
   EXPECT_TRUE(IsHstsSet());
 
-  auto filter =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  auto filter = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
   filter->AddRegisterableDomain("foobar.com");
   RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter));
@@ -431,7 +431,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplTrustTokenTest, RemoveByDomain) {
   ASSERT_TRUE(tester.HasOrigin(another_origin));
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kDelete));
   builder->AddRegisterableDomain("topframe.example");
   RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                           std::move(builder));
@@ -459,7 +460,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplTrustTokenTest,
 
   // Delete all data *except* that specified by the filter.
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve));
   builder->AddRegisterableDomain("topframe.example");
   RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                           std::move(builder));

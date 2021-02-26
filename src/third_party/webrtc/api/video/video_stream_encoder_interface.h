@@ -13,10 +13,13 @@
 
 #include <vector>
 
+#include "api/adaptation/resource.h"
 #include "api/fec_controller_override.h"
 #include "api/rtp_parameters.h"  // For DegradationPreference.
+#include "api/scoped_refptr.h"
 #include "api/units/data_rate.h"
 #include "api/video/video_bitrate_allocator.h"
+#include "api/video/video_layers_allocation.h"
 #include "api/video/video_sink_interface.h"
 #include "api/video/video_source_interface.h"
 #include "api/video_codecs/video_encoder.h"
@@ -47,7 +50,22 @@ class VideoStreamEncoderInterface : public rtc::VideoSinkInterface<VideoFrame> {
         bool is_svc,
         VideoEncoderConfig::ContentType content_type,
         int min_transmit_bitrate_bps) = 0;
+
+    virtual void OnBitrateAllocationUpdated(
+        const VideoBitrateAllocation& allocation) = 0;
+
+    virtual void OnVideoLayersAllocationUpdated(
+        VideoLayersAllocation allocation) = 0;
   };
+
+  // If the resource is overusing, the VideoStreamEncoder will try to reduce
+  // resolution or frame rate until no resource is overusing.
+  // TODO(https://crbug.com/webrtc/11565): When the ResourceAdaptationProcessor
+  // is moved to Call this method could be deleted altogether in favor of
+  // Call-level APIs only.
+  virtual void AddAdaptationResource(rtc::scoped_refptr<Resource> resource) = 0;
+  virtual std::vector<rtc::scoped_refptr<Resource>>
+  GetAdaptationResources() = 0;
 
   // Sets the source that will provide video frames to the VideoStreamEncoder's
   // OnFrame method. |degradation_preference| control whether or not resolution
@@ -98,11 +116,6 @@ class VideoStreamEncoderInterface : public rtc::VideoSinkInterface<VideoFrame> {
                                 uint8_t fraction_lost,
                                 int64_t round_trip_time_ms,
                                 double cwnd_reduce_ratio) = 0;
-
-  // Register observer for the bitrate allocation between the temporal
-  // and spatial layers.
-  virtual void SetBitrateAllocationObserver(
-      VideoBitrateAllocationObserver* bitrate_observer) = 0;
 
   // Set a FecControllerOverride, through which the encoder may override
   // decisions made by FecController.

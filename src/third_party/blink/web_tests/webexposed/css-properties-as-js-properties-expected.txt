@@ -1,6 +1,8 @@
 This test (crudely) documents Blink's web-exposed CSS properties.  All changes to this list should go through Blink's feature review process: http://www.chromium.org/blink#new-features
 
 
+advanceOverride
+advanceProportionalOverride
 alignContent
 alignItems
 alignSelf
@@ -14,8 +16,10 @@ animationFillMode
 animationIterationCount
 animationName
 animationPlayState
+animationTimeline
 animationTimingFunction
 appearance
+ascentOverride
 aspectRatio
 backdropFilter
 backfaceVisibility
@@ -126,16 +130,19 @@ content
 contentVisibility
 counterIncrement
 counterReset
+counterSet
 cssFloat
 cssText
 cursor
 cx
 cy
 d
+descentOverride
 direction
 display
 dominantBaseline
 emptyCells
+end
 fill
 fillOpacity
 fillRule
@@ -212,6 +219,7 @@ length
 letterSpacing
 lightingColor
 lineBreak
+lineGapOverride
 lineHeight
 lineHeightStep
 listStyle
@@ -234,10 +242,10 @@ markerEnd
 markerMid
 markerStart
 mask
-maskSourceType
 maskType
+mathDepth
+mathShift
 mathStyle
-mathSuperscriptShiftStyle
 maxBlockSize
 maxHeight
 maxInlineSize
@@ -269,6 +277,7 @@ outlineWidth
 overflow
 overflowAnchor
 overflowBlock
+overflowClipMargin
 overflowInline
 overflowWrap
 overflowX
@@ -340,14 +349,18 @@ scrollPaddingTop
 scrollSnapAlign
 scrollSnapStop
 scrollSnapType
+scrollbarGutter
+scrollbarWidth
 setProperty
 shapeImageThreshold
 shapeMargin
 shapeOutside
 shapeRendering
 size
+source
 speak
 src
+start
 stopColor
 stopOpacity
 stroke
@@ -381,6 +394,7 @@ textSizeAdjust
 textTransform
 textUnderlineOffset
 textUnderlinePosition
+timeRange
 top
 touchAction
 transform
@@ -474,7 +488,6 @@ webkitFlexGrow
 webkitFlexShrink
 webkitFlexWrap
 webkitFontFeatureSettings
-webkitFontSizeDelta
 webkitFontSmoothing
 webkitHighlight
 webkitHyphenateCharacter

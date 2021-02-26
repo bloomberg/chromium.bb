@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
@@ -89,14 +90,14 @@ TEST_F(HTMLInputElementTest, create) {
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
 
   input = MakeGarbageCollected<HTMLInputElement>(
-      GetDocument(), CreateElementFlags::ByParser());
+      GetDocument(), CreateElementFlags::ByParser(&GetDocument()));
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
   input->ParserSetAttributes(Vector<Attribute>());
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
 }
 
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
-  auto* document_without_frame = MakeGarbageCollected<Document>();
+  auto* document_without_frame = Document::CreateForTest();
   EXPECT_EQ(nullptr, document_without_frame->GetPage());
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_without_frame);
   html->AppendChild(

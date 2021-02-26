@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/wincrypt_shim.h"
 #include "build/build_config.h"
@@ -59,6 +59,9 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
           callback) override {
     std::move(callback).Run(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
+  void ShowSyncDisabledConfirmation(
+      base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+          callback) override {}
   void ShowSyncSettings() override {}
   void SwitchToProfile(Profile* new_profile) override {}
 };
@@ -574,7 +577,8 @@ void CreateAndSwitchToProfile(const std::string& basepath) {
   base::FilePath path = profile_manager->user_data_dir().AppendASCII(basepath);
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      path, base::Bind(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
+      path,
+      base::BindRepeating(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
       base::string16(), std::string());
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by UnblockOnProfileCreation when the profile is created.

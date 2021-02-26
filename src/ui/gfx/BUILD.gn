@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -13,12 +12,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
 # Several targets want to include this header file, and some of them are
 # child dependencies of "gfx". Therefore, we separate it out here so multiple
 # targets can all have a dependency for header checking purposes without
@@ -28,7 +21,7 @@ source_set("gfx_export") {
 }
 
 # Used for color generation at build time without importing all the gfx.
-jumbo_component("color_utils") {
+component("color_utils") {
   sources = [
     "color_palette.h",
     "color_utils.cc",
@@ -43,9 +36,11 @@ jumbo_component("color_utils") {
   ]
 }
 
-jumbo_component("geometry_skia") {
+component("geometry_skia") {
   sources = [
     "geometry_skia_export.h",
+    "mask_filter_info.cc",
+    "mask_filter_info.h",
     "rrect_f.cc",
     "rrect_f.h",
     "rrect_f_builder.cc",
@@ -66,7 +61,7 @@ jumbo_component("geometry_skia") {
   defines = [ "GEOMETRY_SKIA_IMPLEMENTATION" ]
 }
 
-jumbo_component("gfx") {
+component("gfx") {
   sources = [
     "break_list.h",
     "color_analysis.cc",
@@ -92,6 +87,8 @@ jumbo_component("gfx") {
     "font_util.h",
     "gdi_util.cc",
     "gdi_util.h",
+    "gpu_extra_info.cc",
+    "gpu_extra_info.h",
     "half_float.cc",
     "half_float.h",
     "icon_util.cc",
@@ -127,6 +124,7 @@ jumbo_component("gfx") {
     "shadow_value.h",
     "skbitmap_operations.cc",
     "skbitmap_operations.h",
+    "swap_result.cc",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
     "text_constants.h",
@@ -143,13 +141,15 @@ jumbo_component("gfx") {
   ]
   if (is_android) {
     sources += [
+      "android/android_surface_control_compat.cc",
+      "android/android_surface_control_compat.h",
       "android/java_bitmap.cc",
       "android/java_bitmap.h",
       "android/view_configuration.cc",
       "android/view_configuration.h",
     ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "font_fallback_linux.cc",
       "font_fallback_linux.h",
@@ -170,8 +170,6 @@ jumbo_component("gfx") {
       "image/image_skia_util_mac.h",
       "image/image_skia_util_mac.mm",
       "image/image_util_mac.mm",
-      "mac/cocoa_scrollbar_painter.cc",
-      "mac/cocoa_scrollbar_painter.h",
       "mac/coordinate_conversion.h",
       "mac/coordinate_conversion.mm",
       "mac/nswindow_frame_controls.h",
@@ -306,7 +304,7 @@ jumbo_component("gfx") {
     "//third_party/zlib",
   ]
 
-  if (!is_mac && !is_ios) {
+  if (!is_apple) {
     sources += [
       "platform_font_skia.cc",
       "platform_font_skia.h",
@@ -387,12 +385,12 @@ jumbo_component("gfx") {
   }
 
   # Linux.
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
@@ -413,7 +411,7 @@ jumbo_component("gfx") {
   }
 }
 
-jumbo_component("color_space") {
+component("color_space") {
   sources = [
     "color_space.cc",
     "color_space.h",
@@ -444,7 +442,7 @@ jumbo_component("color_space") {
       "mac/display_icc_profiles.cc",
       "mac/display_icc_profiles.h",
     ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "CoreGraphics.framework",
     ]
@@ -520,7 +518,7 @@ group("memory_buffer") {
 }
 
 # Cannot be a static_library in component builds due to exported functions
-jumbo_source_set("memory_buffer_sources") {
+source_set("memory_buffer_sources") {
   visibility = [ ":*" ]  # Depend on through ":memory_buffer".
 
   # TODO(brettw) refactor this so these sources are in a coherent directory
@@ -541,6 +539,8 @@ jumbo_source_set("memory_buffer_sources") {
     "gpu_fence.h",
     "gpu_fence_handle.cc",
     "gpu_fence_handle.h",
+    "hdr_metadata.cc",
+    "hdr_metadata.h",
     "native_pixmap.h",
     "overlay_transform.h",
     "surface_origin.h",
@@ -567,7 +567,7 @@ jumbo_source_set("memory_buffer_sources") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "linux/client_native_pixmap_dmabuf.cc",
       "linux/client_native_pixmap_dmabuf.h",
@@ -580,7 +580,7 @@ jumbo_source_set("memory_buffer_sources") {
     deps += [ "//build/config/linux/libdrm" ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     deps += [ "//third_party/libsync" ]
   }
 
@@ -597,7 +597,7 @@ jumbo_source_set("memory_buffer_sources") {
     public_deps += [ "//ipc:message_support" ]
   }
 
-  if ((is_linux || use_ozone) && !is_nacl) {
+  if ((is_linux || is_chromeos || use_ozone) && !is_nacl) {
     sources += [
       "native_pixmap_handle.cc",
       "native_pixmap_handle.h",
@@ -606,7 +606,7 @@ jumbo_source_set("memory_buffer_sources") {
 }
 
 # TODO(ccameron): This can be moved into a separate source_set.
-jumbo_component("gfx_switches") {
+component("gfx_switches") {
   sources = [
     "switches.cc",
     "switches.h",
@@ -618,7 +618,7 @@ jumbo_component("gfx_switches") {
   deps = [ "//base" ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "animation/animation_test_api.cc",
@@ -673,7 +673,7 @@ test("gfx_unittests") {
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
   ]
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "font_fallback_linux_unittest.cc",
       "font_render_params_linux_unittest.cc",
@@ -734,7 +734,6 @@ test("gfx_unittests") {
       "geometry/quaternion_unittest.cc",
       "geometry/rect_unittest.cc",
       "geometry/rounded_corners_f_unittest.cc",
-      "geometry/safe_integer_conversions_unittest.cc",
       "geometry/scroll_offset_unittest.cc",
       "geometry/size_unittest.cc",
       "geometry/vector2d_unittest.cc",
@@ -764,7 +763,7 @@ test("gfx_unittests") {
     sources += [ "system_fonts_win_unittest.cc" ]
   }
 
-  if (is_linux || is_android || is_fuchsia || is_win) {
+  if (is_linux || is_chromeos || is_android || is_fuchsia || is_win) {
     sources += [ "platform_font_skia_unittest.cc" ]
   }
 
@@ -795,11 +794,11 @@ test("gfx_unittests") {
 
   data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   }
 
-  if (!is_mac && !is_ios) {
+  if (!is_apple) {
     sources += [
       "interpolated_transform_unittest.cc",
       "transform_unittest.cc",
@@ -856,7 +855,7 @@ test("gfx_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "linux/fontconfig_util_unittest.cc",
       "linux/native_pixmap_dmabuf_unittest.cc",

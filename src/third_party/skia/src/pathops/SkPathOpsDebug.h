@@ -32,22 +32,22 @@ struct SkDCubic;
 class SkTSect;
 
 // define this when running fuzz
-// #define IS_FUZZING_WITH_LIBFUZZER
+// #define SK_BUILD_FOR_FUZZER
 
-// dummy classes to fool msvs Visual Studio 2018 Immediate Window
-#define DummyClasses(a, b) \
+// fake classes to fool msvs Visual Studio 2018 Immediate Window
+#define FakeClasses(a, b) \
 class SkDebugTCoincident##a##b; \
 class SkDebugTSect##a##b; \
 class SkDebugTSpan##a##b
 
-DummyClasses(Quad, Quad);
-DummyClasses(Conic, Quad);
-DummyClasses(Conic, Conic);
-DummyClasses(Cubic, Quad);
-DummyClasses(Cubic, Conic);
-DummyClasses(Cubic, Cubic);
+FakeClasses(Quad, Quad);
+FakeClasses(Conic, Quad);
+FakeClasses(Conic, Conic);
+FakeClasses(Cubic, Quad);
+FakeClasses(Cubic, Conic);
+FakeClasses(Cubic, Cubic);
 
-#undef DummyClasses
+#undef FakeClasses
 
 #ifdef SK_RELEASE
 #define FORCE_RELEASE 1
@@ -84,7 +84,7 @@ DummyClasses(Cubic, Cubic);
 #define DEBUG_ALIGNMENT 0
 #define DEBUG_ANGLE 0
 #define DEBUG_ASSEMBLE 0
-#define DEBUG_COINCIDENCE 0  // sanity checking
+#define DEBUG_COINCIDENCE 0
 #define DEBUG_COINCIDENCE_DUMP 0  // accumulate and dump which algorithms fired
 #define DEBUG_COINCIDENCE_ORDER 0  // for well behaved curves, check if pairs match up in t-order
 #define DEBUG_COINCIDENCE_VERBOSE 0  // usually whether the next function generates coincidence
@@ -250,13 +250,6 @@ DummyClasses(Cubic, Cubic);
 
 #define FAIL_WITH_NULL_IF(cond) \
         do { bool fail = (cond); SkOPASSERT(!fail); if (fail) return nullptr; } while (false)
-
-// Some functions serve two masters: one allows the function to fail, the other expects success
-// always. If abort is true, tests with normal numbers may not fail and assert if they do so.
-// If abort is false, both normal and extreme numbers may return false without asserting.
-#define RETURN_FALSE_IF(abort, cond) \
-        do { bool fail = (cond); SkOPASSERT(!(abort) || !fail); if (fail) return false; \
-        } while (false)
 
 class SkPathOpsDebug {
 public:

@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/embedder_support/switches.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/navigation_entry.h"
@@ -357,25 +357,30 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, true, NULL);
 
   // Now let's have a tab navigate out of and back into the app's web
-  // extent. Neither navigation should switch processes.
+  // extent. Neither navigation should switch processes (but may change
+  // RenderViewHosts, so we are saving and comparing the processes directly).
   const GURL& app_url(base_url.Resolve("path1/empty.html"));
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
-  RenderViewHost* host2 =
-      browser()->tab_strip_model()->GetWebContentsAt(2)->GetRenderViewHost();
+  content::RenderProcessHost* old_process = browser()
+                                                ->tab_strip_model()
+                                                ->GetWebContentsAt(2)
+                                                ->GetMainFrame()
+                                                ->GetRenderViewHost()
+                                                ->GetProcess();
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(2),
                      non_app_url);
-  EXPECT_EQ(host2->GetProcess(), browser()
-                                     ->tab_strip_model()
-                                     ->GetWebContentsAt(2)
-                                     ->GetMainFrame()
-                                     ->GetProcess());
+  EXPECT_EQ(old_process, browser()
+                             ->tab_strip_model()
+                             ->GetWebContentsAt(2)
+                             ->GetMainFrame()
+                             ->GetProcess());
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(2),
                      app_url);
-  EXPECT_EQ(host2->GetProcess(), browser()
-                                     ->tab_strip_model()
-                                     ->GetWebContentsAt(2)
-                                     ->GetMainFrame()
-                                     ->GetProcess());
+  EXPECT_EQ(old_process, browser()
+                             ->tab_strip_model()
+                             ->GetWebContentsAt(2)
+                             ->GetMainFrame()
+                             ->GetProcess());
 }
 
 // Tests that app process switching works properly in the following scenario:
@@ -615,8 +620,8 @@ IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, OpenAppFromIframe) {
                                        true);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  PopupBlockerTabHelper* popup_blocker_tab_helper =
-      PopupBlockerTabHelper::FromWebContents(tab);
+  blocked_content::PopupBlockerTabHelper* popup_blocker_tab_helper =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(tab);
   EXPECT_EQ(1u, popup_blocker_tab_helper->GetBlockedPopupsCount());
 }
 
@@ -718,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   EXPECT_EQ(2U, active_browser_list->size());
   content::WebContents* popup_contents =
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(popup_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
   content::RenderProcessHost* popup_process =
       popup_contents->GetMainFrame()->GetProcess();
@@ -788,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, NavigatePopupFromAppToOutsideApp) {
   EXPECT_EQ(2U, active_browser_list->size());
   content::WebContents* popup_contents =
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(popup_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
   SiteInstance* popup_instance = popup_contents->GetSiteInstance();
   EXPECT_EQ(app_instance, popup_instance);

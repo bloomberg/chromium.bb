@@ -31,6 +31,11 @@ class COMPONENT_EXPORT(PERMISSION_BROKER) FakePermissionBrokerClient
   void OpenPath(const std::string& path,
                 OpenPathCallback callback,
                 ErrorCallback error_callback) override;
+  void ClaimDevicePath(const std::string& path,
+                       uint32_t allowed_interfaces_mask,
+                       int lifeline_fd,
+                       OpenPathCallback callback,
+                       ErrorCallback error_callback) override;
   void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
                             int lifeline_fd,

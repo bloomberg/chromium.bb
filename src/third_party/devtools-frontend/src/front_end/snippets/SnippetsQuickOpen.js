@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
 import * as Common from '../common/common.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
-import {evaluateScriptSnippet} from './ScriptSnippetFileSystem.js';
+import {evaluateScriptSnippet, findSnippetsProject} from './ScriptSnippetFileSystem.js';
 
 export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
@@ -39,7 +40,7 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
    * @override
    */
   attach() {
-    this._snippets = Snippets.project.uiSourceCodes();
+    this._snippets = findSnippetsProject().uiSourceCodes();
   }
 
   /**

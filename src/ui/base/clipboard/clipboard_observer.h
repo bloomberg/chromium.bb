@@ -7,17 +7,23 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 
 namespace ui {
 
-// Observer that receives the notifications of clipboard change events.
+// Observer that receives the notifications of clipboard events.
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardObserver {
  public:
-  // Called when clipboard data is changed.
-  virtual void OnClipboardDataChanged() = 0;
+  // Override notified when clipboard data is changed.
+  virtual void OnClipboardDataChanged();
+
+#if defined(OS_CHROMEOS)
+  // Override notified when clipboard data is read.
+  virtual void OnClipboardDataRead();
+#endif
 
  protected:
-  virtual ~ClipboardObserver() = default;
+  virtual ~ClipboardObserver();
 };
 
 }  // namespace ui

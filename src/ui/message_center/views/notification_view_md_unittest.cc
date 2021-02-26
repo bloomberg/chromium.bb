@@ -15,6 +15,9 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -22,18 +25,21 @@
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_observer.h"
+#include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/button_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_utils.h"
 
 namespace message_center {
 
-/* Test fixture ***************************************************************/
+namespace {
 
 // Used to fill bitmaps returned by CreateBitmap().
 static const SkColor kBitmapColor = SK_ColorGREEN;
@@ -102,6 +108,17 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
+SkColor DeriveMinContrastColor(SkColor foreground, SkColor background) {
+  SkColor contrast_color =
+      color_utils::BlendForMinContrast(foreground, background).color;
+  float contrast_ratio =
+      color_utils::GetContrastRatio(background, contrast_color);
+  EXPECT_GE(contrast_ratio, color_utils::kMinimumReadableContrastRatio);
+  return contrast_color;
+}
+
+}  // namespace
+
 class NotificationViewMDTest : public views::InkDropObserver,
                                public views::ViewsTestBase,
                                public views::ViewObserver,
@@ -117,13 +134,7 @@ class NotificationViewMDTest : public views::InkDropObserver,
   // Overridden from views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
-  NotificationViewMD* notification_view() const {
-    return notification_view_.get();
-  }
-  views::Widget* widget() const {
-    DCHECK_EQ(widget_, notification_view()->GetWidget());
-    return widget_;
-  }
+  NotificationViewMD* notification_view() const { return notification_view_; }
 
   // Overridden from message_center::MessageCenterObserver:
   void OnNotificationRemoved(const std::string& notification_id,
@@ -168,8 +179,7 @@ class NotificationViewMDTest : public views::InkDropObserver,
   bool delete_on_notification_removed_ = false;
   std::set<std::string> removed_ids_;
   scoped_refptr<NotificationTestDelegate> delegate_;
-  std::unique_ptr<NotificationViewMD> notification_view_;
-  views::Widget* widget_;
+  NotificationViewMD* notification_view_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMDTest);
@@ -215,9 +225,9 @@ void NotificationViewMDTest::TearDown() {
          delete_on_notification_removed_);
   if (notification_view_) {
     notification_view_->SetInkDropMode(MessageView::InkDropMode::OFF);
-    static_cast<views::View*>(notification_view_.get())->RemoveObserver(this);
-    widget()->Close();
-    notification_view_.reset();
+    static_cast<views::View*>(notification_view_)->RemoveObserver(this);
+    notification_view_->GetWidget()->Close();
+    notification_view_ = nullptr;
   }
   MessageCenter::Shutdown();
   views::ViewsTestBase::TearDown();
@@ -227,19 +237,20 @@ void NotificationViewMDTest::OnViewPreferredSizeChanged(
     views::View* observed_view) {
   EXPECT_EQ(observed_view, notification_view());
   if (delete_on_preferred_size_changed_) {
-    widget()->CloseNow();
-    notification_view_.reset();
+    notification_view_->GetWidget()->CloseNow();
+    notification_view_ = nullptr;
     return;
   }
-  widget()->SetSize(notification_view()->GetPreferredSize());
+  notification_view_->GetWidget()->SetSize(
+      notification_view()->GetPreferredSize());
 }
 
 void NotificationViewMDTest::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
   if (delete_on_notification_removed_) {
-    widget()->CloseNow();
-    notification_view_.reset();
+    notification_view_->GetWidget()->CloseNow();
+    notification_view_ = nullptr;
     return;
   }
 }
@@ -309,19 +320,19 @@ void NotificationViewMDTest::UpdateNotificationViews(
     // MessageViewFactory::Create.
     // TODO(tetsui): Confirm that NotificationViewMD options are same as one
     // created by the method.
-    notification_view_ = std::make_unique<NotificationViewMD>(notification);
-    static_cast<views::View*>(notification_view_.get())->AddObserver(this);
-    notification_view_->set_owned_by_client();
+    auto notification_view = std::make_unique<NotificationViewMD>(notification);
+    static_cast<views::View*>(notification_view.get())->AddObserver(this);
 
     views::Widget::InitParams init_params(
         CreateParams(views::Widget::InitParams::TYPE_POPUP));
-    widget_ = new views::Widget();
-    widget_->Init(std::move(init_params));
-    widget_->SetContentsView(notification_view_.get());
-    widget_->SetSize(notification_view_->GetPreferredSize());
-    widget_->Show();
-    widget_->widget_delegate()->SetCanActivate(true);
-    widget_->Activate();
+    // The native widget owns |widget| and |widget| owns |notification_view_|.
+    auto* widget = new views::Widget();
+    widget->Init(std::move(init_params));
+    notification_view_ = widget->SetContentsView(std::move(notification_view));
+    widget->SetSize(notification_view_->GetPreferredSize());
+    widget->Show();
+    widget->widget_delegate()->SetCanActivate(true);
+    widget->Activate();
   } else {
     notification_view_->UpdateWithNotification(notification);
   }
@@ -472,7 +483,7 @@ TEST_F(NotificationViewMDTest, TestIconSizing) {
 TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification_view()->CreateOrUpdateViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
   // When collapsed, new buttons are not shown.
   EXPECT_FALSE(notification_view()->expanded_);
@@ -492,7 +503,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
@@ -504,12 +515,12 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   notification_view()->CreateOrUpdateViews(*notification);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
@@ -519,14 +530,14 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 }
 
 TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_buttons(CreateButtons(2));
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -534,9 +545,9 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[1]->state());
+            notification_view()->action_buttons_[1]->GetState());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
@@ -548,15 +559,15 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[1]->state());
+            notification_view()->action_buttons_[1]->GetState());
 
   notification->set_buttons(CreateButtons(1));
   UpdateNotificationViews(*notification);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(1u, notification_view()->action_buttons_.size());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
@@ -567,7 +578,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 }
 
 TEST_F(NotificationViewMDTest, TestActionButtonClick) {
@@ -576,9 +587,10 @@ TEST_F(NotificationViewMDTest, TestActionButtonClick) {
 
   notification->set_buttons(CreateButtons(2));
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -604,9 +616,10 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   buttons[1].placeholder = base::string16();
   notification->set_buttons(buttons);
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -691,9 +704,10 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   buttons[1].placeholder = base::string16();
   notification->set_buttons(buttons);
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -740,13 +754,14 @@ TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
   buttons[1].placeholder = base::string16();
   notification->set_buttons(buttons);
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Press and release space key to open inline reply text field.
   // Note: VKEY_RETURN should work too, but triggers a click on MacOS.
@@ -759,7 +774,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
 
 // Synthetic scroll events are not supported on Mac in the views
 // test framework.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_SlideOut DISABLED_SlideOut
 #else
 #define MAYBE_SlideOut SlideOut
@@ -786,7 +801,7 @@ TEST_F(NotificationViewMDTest, MAYBE_SlideOut) {
   EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_SlideOutNested DISABLED_SlideOutNested
 #else
 #define MAYBE_SlideOutNested SlideOutNested
@@ -812,7 +827,7 @@ TEST_F(NotificationViewMDTest, MAYBE_SlideOutNested) {
   EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_DisableSlideForcibly DISABLED_DisableSlideForcibly
 #else
 #define MAYBE_DisableSlideForcibly DisableSlideForcibly
@@ -968,7 +983,8 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
   gfx::Point done_cursor_location(1, 1);
   views::View::ConvertPointToScreen(notification_view()->header_row_,
                                     &done_cursor_location);
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
   generator.MoveMouseTo(done_cursor_location);
   generator.ClickLeftButton();
 
@@ -976,42 +992,85 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
 }
 
 TEST_F(NotificationViewMDTest, TestAccentColor) {
-  constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
-  constexpr SkColor kCustomAccentColor = gfx::kGoogleYellow900;
+  const SkColor kNotificationBackgroundColor = SK_ColorWHITE;
+  const SkColor kActionButtonBackgroundColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
+  const SkColor kActionButtonTextColor =
+      DeriveMinContrastColor(gfx::kGoogleBlue600, kActionButtonBackgroundColor);
+
+  const SkColor kDarkCustomAccentColor = SkColorSetRGB(0x0D, 0x65, 0x2D);
+  const SkColor kBrightCustomAccentColor = SkColorSetRGB(0x34, 0xA8, 0x53);
 
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_buttons(CreateButtons(2));
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
+  auto app_icon_color_matches = [&](SkColor color) {
+    SkBitmap expected =
+        notification->GenerateMaskedSmallIcon(kSmallImageSizeMD, color)
+            .AsBitmap();
+    SkBitmap actual = *notification_view()
+                           ->header_row_->app_icon_view_for_testing()
+                           ->GetImage()
+                           .bitmap();
+    return gfx::test::AreBitmapsEqual(expected, actual);
+  };
+
   // By default, header does not have accent color (default grey), and
   // buttons have default accent color.
-  EXPECT_EQ(kNotificationDefaultAccentColor,
-            notification_view()->header_row_->accent_color_for_testing());
+  EXPECT_FALSE(
+      notification_view()->header_row_->accent_color_for_testing().has_value());
   EXPECT_EQ(
       kActionButtonTextColor,
       notification_view()->action_buttons_[0]->enabled_color_for_testing());
   EXPECT_EQ(
       kActionButtonTextColor,
       notification_view()->action_buttons_[1]->enabled_color_for_testing());
+  EXPECT_TRUE(app_icon_color_matches(
+      notification_view()->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_NotificationDefaultAccentColor)));
 
   // If custom accent color is set, the header and the buttons should have the
   // same accent color.
-  notification->set_accent_color(kCustomAccentColor);
+  notification->set_accent_color(kDarkCustomAccentColor);
   UpdateNotificationViews(*notification);
-  EXPECT_EQ(kCustomAccentColor,
-            notification_view()->header_row_->accent_color_for_testing());
+  auto accent_color =
+      notification_view()->header_row_->accent_color_for_testing();
+  ASSERT_TRUE(accent_color.has_value());
+  EXPECT_EQ(kDarkCustomAccentColor, accent_color.value());
   EXPECT_EQ(
-      kCustomAccentColor,
+      kDarkCustomAccentColor,
       notification_view()->action_buttons_[0]->enabled_color_for_testing());
   EXPECT_EQ(
-      kCustomAccentColor,
+      kDarkCustomAccentColor,
       notification_view()->action_buttons_[1]->enabled_color_for_testing());
+  EXPECT_TRUE(app_icon_color_matches(kDarkCustomAccentColor));
+
+  // If the custom accent color is too bright, we expect it to be darkened so
+  // text and icons are still readable.
+  SkColor expected_color_title = DeriveMinContrastColor(
+      kBrightCustomAccentColor, kNotificationBackgroundColor);
+  // Action buttons have a darker background.
+  SkColor expected_color_actions = DeriveMinContrastColor(
+      kBrightCustomAccentColor, kActionButtonBackgroundColor);
+
+  notification->set_accent_color(kBrightCustomAccentColor);
+  UpdateNotificationViews(*notification);
+  accent_color = notification_view()->header_row_->accent_color_for_testing();
+  ASSERT_TRUE(accent_color.has_value());
+  EXPECT_EQ(kBrightCustomAccentColor, accent_color.value());
+  EXPECT_EQ(
+      expected_color_actions,
+      notification_view()->action_buttons_[0]->enabled_color_for_testing());
+  EXPECT_EQ(
+      expected_color_actions,
+      notification_view()->action_buttons_[1]->enabled_color_for_testing());
+  EXPECT_TRUE(app_icon_color_matches(expected_color_title));
 }
 
 TEST_F(NotificationViewMDTest, UseImageAsIcon) {
@@ -1097,7 +1156,8 @@ TEST_F(NotificationViewMDTest, UpdateInSettings) {
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
   UpdateNotificationViews(*notification);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Inline settings will be shown by clicking settings button.
   EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
@@ -1124,7 +1184,8 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
   UpdateNotificationViews(*notification);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Inline settings will be shown by clicking settings button.
   EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
@@ -1183,7 +1244,8 @@ TEST_F(NotificationViewMDTest, InlineSettingsInkDropAnimation) {
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
   UpdateNotificationViews(*notification);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Inline settings will be shown by clicking settings button.
   EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
@@ -1198,9 +1260,9 @@ TEST_F(NotificationViewMDTest, InlineSettingsInkDropAnimation) {
   notification_view()->GetInkDrop()->AddObserver(this);
 
   // Resize the widget by 1px to simulate the expand animation.
-  gfx::Rect size = widget()->GetWindowBoundsInScreen();
+  gfx::Rect size = notification_view()->GetWidget()->GetWindowBoundsInScreen();
   size.Inset(0, 0, 0, 1);
-  widget()->SetBounds(size);
+  notification_view()->GetWidget()->SetBounds(size);
 
   notification_view()->GetInkDrop()->RemoveObserver(this);
 
@@ -1208,12 +1270,48 @@ TEST_F(NotificationViewMDTest, InlineSettingsInkDropAnimation) {
   EXPECT_FALSE(ink_drop_stopped());
 }
 
+TEST_F(NotificationViewMDTest, PreferredSize) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NotificationType::NOTIFICATION_TYPE_IMAGE);
+  UpdateNotificationViews(*notification);
+
+  // Collapsed preferred width is determined by the header view.
+  notification_view()->SetExpanded(false);
+  EXPECT_EQ(kNotificationWidth,
+            notification_view()->GetPreferredSize().width());
+
+  // Ensure expanded preferred width is not extended by the image view.
+  notification_view()->SetExpanded(true);
+  EXPECT_EQ(kNotificationWidth,
+            notification_view()->GetPreferredSize().width());
+}
+
+TEST_F(NotificationViewMDTest, InkDropClipRect) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NotificationType::NOTIFICATION_TYPE_IMAGE);
+  UpdateNotificationViews(*notification);
+
+  // Toggle inline settings to show ink drop background.
+  notification_view()->ToggleInlineSettings(DummyEvent());
+
+  auto* ink_drop =
+      static_cast<views::InkDropImpl*>(notification_view()->GetInkDrop());
+  views::test::InkDropImplTestApi ink_drop_test_api(ink_drop);
+  gfx::Rect clip_rect = ink_drop_test_api.GetRootLayer()->clip_rect();
+
+  // Expect clip rect to honor the insets to draw the shadow.
+  gfx::Insets insets = notification_view()->GetInsets();
+  EXPECT_EQ(notification_view()->GetPreferredSize() - insets.size(),
+            clip_rect.size());
+  EXPECT_EQ(gfx::Point(insets.left(), insets.top()), clip_rect.origin());
+}
+
 TEST_F(NotificationViewMDTest, TestClick) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   delegate_->set_expecting_click(true);
 
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
   ui::test::EventGenerator generator(
       GetRootWindow(notification_view()->GetWidget()));
@@ -1237,9 +1335,10 @@ TEST_F(NotificationViewMDTest, TestClickExpanded) {
   delegate_->set_expecting_click(true);
 
   UpdateNotificationViews(*notification);
-  widget()->Show();
+  notification_view()->GetWidget()->Show();
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
 
   // Expand the notification if it's collapsed.
   if (!notification_view()->expanded_)
@@ -1268,8 +1367,8 @@ TEST_F(NotificationViewMDTest, TestDeleteOnToggleExpanded) {
 
   // The view can be deleted by PreferredSizeChanged(). https://crbug.com/918933
   set_delete_on_preferred_size_changed(true);
-  notification_view()->ButtonPressed(notification_view()->header_row_,
-                                     DummyEvent());
+  views::test::ButtonTestApi(notification_view()->header_row_)
+      .NotifyClick(DummyEvent());
 }
 
 TEST_F(NotificationViewMDTest, TestDeleteOnDisableNotification) {
@@ -1283,8 +1382,8 @@ TEST_F(NotificationViewMDTest, TestDeleteOnDisableNotification) {
   // After DisableNotification() is called, |notification_view| can be deleted.
   // https://crbug.com/924922
   set_delete_on_notification_removed(true);
-  notification_view()->ButtonPressed(notification_view()->settings_done_button_,
-                                     DummyEvent());
+  views::test::ButtonTestApi(notification_view()->settings_done_button_)
+      .NotifyClick(DummyEvent());
 }
 
 TEST_F(NotificationViewMDTest, TestLongTitleAndMessage) {

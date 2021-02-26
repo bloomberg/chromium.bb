@@ -5,8 +5,8 @@
 #include "components/signin/internal/identity_manager/oauth_multilogin_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
@@ -145,7 +145,7 @@ void RunSetCookieCallbackWithSuccess(
     const GURL&,
     const net::CookieOptions&,
     network::mojom::CookieManager::SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus());
+  std::move(callback).Run(net::CookieAccessResult());
 }
 
 class MockCookieManager
@@ -205,12 +205,12 @@ class OAuthMultiloginHelperTest
 
   std::string multilogin_url() const {
     return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
-           "?source=ChromiumBrowser&mlreuse=0";
+           "?source=ChromiumBrowser&reuseCookies=0";
   }
 
   std::string multilogin_url_with_external_cc_result() const {
     return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
-           "?source=ChromiumBrowser&mlreuse=0&externalCcResult=" +
+           "?source=ChromiumBrowser&reuseCookies=0&externalCcResult=" +
            kExternalCcResult;
   }
 

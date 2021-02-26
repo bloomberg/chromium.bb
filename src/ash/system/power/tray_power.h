@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
@@ -30,6 +30,10 @@ class PowerTrayView : public TrayItemView,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
+
+  // TrayItemView:
+  void HandleLocaleChange() override;
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;

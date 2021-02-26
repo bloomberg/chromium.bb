@@ -29,6 +29,8 @@ class PageInfoControllerAndroid : public PageInfoUI {
   void RecordPageInfoAction(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             jint action);
+  void UpdatePermissions(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   // PageInfoUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
@@ -43,7 +45,7 @@ class PageInfoControllerAndroid : public PageInfoUI {
   // set to some non-default value, but there are some permissions which require
   // customized behavior.
   base::Optional<ContentSetting> GetSettingToDisplay(
-      const PermissionInfo& permission);
+      const PageInfo::PermissionInfo& permission);
 
   // The presenter that controlls the Page Info UI.
   std::unique_ptr<PageInfo> presenter_;

@@ -55,6 +55,52 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
   return AutocompleteMatchType::SEARCH_SUGGEST;
 }
 
+// Convert the supplied Json::Value representation of list-of-lists-of-integers
+// to a vector-of-vecrors-of-integers, containing (ideally) one vector of
+// integers per match.
+// The logic here does not validate if the length of top level vector is same as
+// number of returned matches and will supply empty vector for any item that is
+// either invalid or missing.
+// The function will always return a valid and properly sized vector of vectors,
+// equal in length to |expected_size|, even if the input |subtypes_value| is not
+// valid.
+std::vector<std::vector<int>> ParseMatchSubtypes(
+    const base::Value* subtypes_value,
+    size_t expected_size) {
+  std::vector<std::vector<int>> result(expected_size);
+
+  if (subtypes_value == nullptr || !subtypes_value->is_list())
+    return result;
+  const auto& subtypes_list = subtypes_value->GetList();
+
+  if (!subtypes_list.empty() && subtypes_list.size() != expected_size) {
+    LOG(WARNING) << "The length of reported subtypes (" << subtypes_list.size()
+                 << ") does not match the expected length (" << expected_size
+                 << ')';
+  }
+
+  const auto num_items = std::min(expected_size, subtypes_list.size());
+  for (auto index = 0u; index < num_items; index++) {
+    const auto& subtypes_item = subtypes_list[index];
+    // Permissive: ignore subtypes that are not in a form of a list.
+    if (!subtypes_item.is_list())
+      continue;
+
+    const auto& subtype_list = subtypes_item.GetList();
+    auto& result_subtypes = result[index];
+    result_subtypes.reserve(subtype_list.size());
+
+    for (const auto& subtype : subtype_list) {
+      // Permissive: Skip over any item that is not an integer.
+      if (!subtype.is_int())
+        continue;
+      result_subtypes.emplace_back(subtype.GetInt());
+    }
+  }
+
+  return result;
+}
+
 }  // namespace
 
 // Value chosen based on SuggestionGroupIds::INVALID in suggestion_config.proto.
@@ -66,11 +112,11 @@ SearchSuggestionParser::Result::Result(bool from_keyword,
                                        int relevance,
                                        bool relevance_from_server,
                                        AutocompleteMatchType::Type type,
-                                       int subtype_identifier,
+                                       std::vector<int> subtypes,
                                        const std::string& deletion_url)
     : from_keyword_(from_keyword),
       type_(type),
-      subtype_identifier_(subtype_identifier),
+      subtypes_(std::move(subtypes)),
       relevance_(relevance),
       relevance_from_server_(relevance_from_server),
       received_after_last_keystroke_(true),
@@ -85,14 +131,14 @@ SearchSuggestionParser::Result::~Result() {}
 SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
-    int subtype_identifier,
+    std::vector<int> subtypes,
     bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
     : SuggestResult(suggestion,
                     type,
-                    subtype_identifier,
+                    std::move(subtypes),
                     suggestion,
                     /*match_contents_prefix=*/base::string16(),
                     /*annotation=*/base::string16(),
@@ -109,7 +155,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
 SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
-    int subtype_identifier,
+    std::vector<int> subtypes,
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
@@ -126,7 +172,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
              relevance,
              relevance_from_server,
              type,
-             subtype_identifier,
+             std::move(subtypes),
              deletion_url),
       suggestion_(suggestion),
       match_contents_prefix_(match_contents_prefix),
@@ -208,8 +254,8 @@ int SearchSuggestionParser::SuggestResult::CalculateRelevance(
 SearchSuggestionParser::NavigationResult::NavigationResult(
     const AutocompleteSchemeClassifier& scheme_classifier,
     const GURL& url,
-    AutocompleteMatchType::Type type,
-    int subtype_identifier,
+    AutocompleteMatchType::Type match_type,
+    std::vector<int> subtypes,
     const base::string16& description,
     const std::string& deletion_url,
     bool from_keyword,
@@ -219,8 +265,8 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     : Result(from_keyword,
              relevance,
              relevance_from_server,
-             type,
-             subtype_identifier,
+             match_type,
+             std::move(subtypes),
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -423,12 +469,15 @@ bool SearchSuggestionParser::ParseSuggestResults(
   const base::ListValue* relevances = nullptr;
   const base::ListValue* experiment_stats = nullptr;
   const base::ListValue* suggestion_details = nullptr;
-  const base::DictionaryValue* headers = nullptr;
   const base::ListValue* subtype_identifiers = nullptr;
   const base::DictionaryValue* extras = nullptr;
+  const base::Value* suggestsubtypes = nullptr;
   int prefetch_index = -1;
+
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
+
+    suggestsubtypes = extras->FindPath("google:suggestsubtypes");
 
     // Discard this list if its size does not match that of the suggestions.
     if (extras->GetList("google:suggestrelevance", &relevances) &&
@@ -454,14 +503,25 @@ bool SearchSuggestionParser::ParseSuggestResults(
       }
     }
 
-    const base::DictionaryValue* wrapper_dict = nullptr;
-    if (extras->GetDictionary("google:headertexts", &wrapper_dict) &&
-        wrapper_dict && wrapper_dict->GetDictionary("a", &headers) && headers) {
-      for (const auto& it : headers->DictItems()) {
-        int suggestion_group_id;
-        base::StringToInt(it.first, &suggestion_group_id);
-        results->headers_map[suggestion_group_id] =
-            base::UTF8ToUTF16(it.second.GetString());
+    const base::DictionaryValue* header_texts = nullptr;
+    if (extras->GetDictionary("google:headertexts", &header_texts) &&
+        header_texts) {
+      const base::DictionaryValue* headers = nullptr;
+      if (header_texts->GetDictionary("a", &headers) && headers) {
+        for (const auto& it : headers->DictItems()) {
+          int suggestion_group_id;
+          base::StringToInt(it.first, &suggestion_group_id);
+          results->headers_map[suggestion_group_id] =
+              base::UTF8ToUTF16(it.second.GetString());
+        }
+      }
+
+      const base::ListValue* hidden_group_ids = nullptr;
+      if (header_texts->GetList("h", &hidden_group_ids) && hidden_group_ids) {
+        for (const auto& value : hidden_group_ids->GetList()) {
+          if (value.is_int())
+            results->hidden_group_ids.emplace_back(value.GetInt());
+        }
       }
     }
 
@@ -473,7 +533,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
         suggestion_details->GetSize() != results_list->GetSize())
       suggestion_details = nullptr;
 
-    // Get subtype identifiers.
+    // Legacy code: Get subtype identifiers.
     if (extras->GetList("google:subtypeid", &subtype_identifiers) &&
         subtype_identifiers->GetSize() != results_list->GetSize()) {
       subtype_identifiers = nullptr;
@@ -484,6 +544,12 @@ bool SearchSuggestionParser::ParseSuggestResults(
     JSONStringValueSerializer json_serializer(&results->metadata);
     json_serializer.Serialize(*extras);
   }
+
+  // Processed list of match subtypes, one vector per match.
+  // Note: ParseMatchSubtypes will handle the cases where the key does not
+  // exist or contains malformed data.
+  std::vector<std::vector<int>> subtypes =
+      ParseMatchSubtypes(suggestsubtypes, results_list->GetSize());
 
   // Clear the previous results now that new results are available.
   results->suggest_results.clear();
@@ -506,10 +572,18 @@ bool SearchSuggestionParser::ParseSuggestResults(
       relevances = nullptr;
     AutocompleteMatchType::Type match_type =
         AutocompleteMatchType::SEARCH_SUGGEST;
-    int subtype_identifier = 0;
+
+    // Legacy code: if the server sends us a single subtype ID, place it beside
+    // other subtypes.
     if (subtype_identifiers) {
+      int subtype_identifier = 0;
       subtype_identifiers->GetInteger(index, &subtype_identifier);
+
+      if (subtype_identifier != 0) {
+        subtypes[index].emplace_back(subtype_identifier);
+      }
     }
+
     if (types && types->GetString(index, &type))
       match_type = GetAutocompleteMatchType(type);
     const base::DictionaryValue* suggestion_detail = nullptr;
@@ -530,7 +604,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
         if (descriptions != nullptr)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
-            scheme_classifier, url, match_type, subtype_identifier, title,
+            scheme_classifier, url, match_type, subtypes[index], title,
             deletion_url, is_keyword_result, relevance, relevances != nullptr,
             input.text()));
       }
@@ -597,21 +671,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
-          suggestion,
-          match_type,
-          subtype_identifier,
+          suggestion, match_type, subtypes[index],
           base::CollapseWhitespace(match_contents, false),
-          match_contents_prefix,
-          annotation,
-          additional_query_params,
-          deletion_url,
-          image_dominant_color,
-          image_url,
-          is_keyword_result,
-          relevance,
-          relevances != nullptr,
-          should_prefetch,
-          trimmed_input));
+          match_contents_prefix, annotation, additional_query_params,
+          deletion_url, image_dominant_color, image_url, is_keyword_result,
+          relevance, relevances != nullptr, should_prefetch, trimmed_input));
 
       if (suggestion_group_id) {
         results->suggest_results.back().set_suggestion_group_id(

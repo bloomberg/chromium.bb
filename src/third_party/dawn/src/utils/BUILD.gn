@@ -25,9 +25,7 @@ import("${dawn_root}/scripts/dawn_features.gni")
 # use the real library from third_party/.
 if (dawn_supports_glfw_for_windowing) {
   group("dawn_glfw") {
-    public_deps = [
-      "${dawn_root}/third_party/gn/glfw",
-    ]
+    public_deps = [ "${dawn_root}/third_party/gn/glfw" ]
   }
 } else if (is_fuchsia) {
   # The mock implementation of GLFW on Fuchsia
@@ -52,9 +50,7 @@ if (dawn_supports_glfw_for_windowing) {
       "Glfw3Fuchsia.cpp",
     ]
     public_configs = [ ":dawn_glfw_public_config" ]
-    deps = [
-      "${dawn_root}/src/common",
-    ]
+    deps = [ "${dawn_root}/src/common" ]
   }
 } else {
   # Just skip GLFW on other systems
@@ -74,10 +70,13 @@ static_library("dawn_utils") {
     "ComboRenderBundleEncoderDescriptor.h",
     "ComboRenderPipelineDescriptor.cpp",
     "ComboRenderPipelineDescriptor.h",
+    "PlatformDebugLogger.h",
     "SystemUtils.cpp",
     "SystemUtils.h",
     "TerribleCommandBuffer.cpp",
     "TerribleCommandBuffer.h",
+    "TestUtils.cpp",
+    "TestUtils.h",
     "TextureFormatUtils.cpp",
     "TextureFormatUtils.h",
     "Timer.h",
@@ -91,6 +90,13 @@ static_library("dawn_utils") {
     "${dawn_shaderc_dir}:libshaderc",
   ]
   libs = []
+  frameworks = []
+
+  if (is_win) {
+    sources += [ "WindowsDebugLogger.cpp" ]
+  } else {
+    sources += [ "EmptyDebugLogger.cpp" ]
+  }
 
   if (is_win) {
     sources += [ "WindowsTimer.cpp" ]
@@ -100,7 +106,7 @@ static_library("dawn_utils") {
       "ObjCUtils.h",
       "ObjCUtils.mm",
     ]
-    libs += [ "QuartzCore.framework" ]
+    frameworks += [ "QuartzCore.framework" ]
   } else {
     sources += [ "PosixTimer.cpp" ]
   }
@@ -114,13 +120,11 @@ static_library("dawn_utils") {
 
     if (dawn_enable_metal) {
       sources += [ "GLFWUtils_metal.mm" ]
-      libs += [ "Metal.framework" ]
+      frameworks += [ "Metal.framework" ]
     }
   }
 
-  public_deps = [
-    "${dawn_root}/src/dawn:dawncpp_headers",
-  ]
+  public_deps = [ "${dawn_root}/src/dawn:dawncpp_headers" ]
 }
 
 ###############################################################################
@@ -137,9 +141,7 @@ if (dawn_standalone) {
       "BackendBinding.h",
     ]
 
-    public_deps = [
-      "${dawn_root}/src/dawn:dawn_headers",
-    ]
+    public_deps = [ "${dawn_root}/src/dawn:dawn_headers" ]
 
     deps = [
       ":dawn_glfw",
@@ -147,6 +149,7 @@ if (dawn_standalone) {
       "${dawn_root}/src/dawn_native",
     ]
     libs = []
+    frameworks = []
 
     if (dawn_enable_d3d12) {
       sources += [ "D3D12Binding.cpp" ]
@@ -154,7 +157,7 @@ if (dawn_standalone) {
 
     if (dawn_enable_metal) {
       sources += [ "MetalBinding.mm" ]
-      libs += [
+      frameworks += [
         "Metal.framework",
         "QuartzCore.framework",
       ]

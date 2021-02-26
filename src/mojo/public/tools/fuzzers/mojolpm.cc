@@ -10,7 +10,11 @@
 
 namespace mojolpm {
 
-Context::Context() : message_(0, 0, 0, 0, nullptr) {}
+const uint32_t kPipeElementMaxSize = 0x1000u;
+const uint32_t kPipeCapacityMaxSize = 0x100000u;
+const uint32_t kPipeActionMaxSize = 0x100000u;
+
+Context::Context() = default;
 
 Context::~Context() = default;
 
@@ -18,49 +22,68 @@ Context::Storage::Storage() = default;
 
 Context::Storage::~Storage() = default;
 
-void Context::StartTestcase(
-    TestcaseBase* testcase,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  testcase_ = testcase;
-  task_runner_ = task_runner;
+void Context::StartTestcase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void Context::EndTestcase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Some fuzzers need to destroy the fuzzer thread along with their testcase,
+  // so we need to detach the sequence checker here so that it will be attached
+  // to the new sequence for the next testcase.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  // We need to destroy all Remotes/Receivers before we start destroying other
+  // objects (like callbacks).
+  for (const TypeId& interface_type_id : interface_type_ids_) {
+    auto instances_iter = instances_.find(interface_type_id);
+    if (instances_iter != instances_.end()) {
+      instances_iter->second.clear();
+    }
+  }
+  interface_type_ids_.clear();
   instances_.clear();
-  testcase_ = nullptr;
 }
 
-bool Context::IsFinished() {
-  if (testcase_) {
-    return testcase_->IsFinished();
+void Context::StartDeserialization() {
+  rollback_.clear();
+}
+
+void Context::EndDeserialization(Rollback rollback) {
+  if (rollback == Rollback::kRollback) {
+    for (const auto& entry : rollback_) {
+      RemoveInstance(entry.first, entry.second);
+    }
   }
-  return true;
+  rollback_.clear();
 }
 
-void Context::NextAction() {
-  // fprintf(stderr, "NextAction\n");
-  CHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (testcase_) {
-    testcase_->NextAction();
+void Context::RemoveInstance(TypeId type_id, uint32_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto instances_iter = instances_.find(type_id);
+  if (instances_iter != instances_.end()) {
+    auto& instance_map = instances_iter->second;
+
+    // normalize id to [0, max_id]
+    if (instance_map.size() > 0 && instance_map.rbegin()->first < id) {
+      id = id % (instance_map.rbegin()->first + 1);
+    }
+
+    // choose the first valid entry after id
+    auto instance = instance_map.lower_bound(id);
+    if (instance == instance_map.end()) {
+      mojolpmdbg("failed!\n");
+      return;
+    }
+
+    instance_map.erase(instance);
+  } else {
+    mojolpmdbg("failed!\n");
   }
 }
-
-void Context::PostNextAction() {
-  if (task_runner_) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(&Context::NextAction,
-                                                     base::Unretained(this)));
-  }
-}
-
-Context* g_context = nullptr;
 
 Context* GetContext() {
-  DCHECK(g_context);
-  return g_context;
-}
-
-void SetContext(Context* context) {
-  g_context = context;
+  static base::NoDestructor<Context> context;
+  return context.get();
 }
 
 bool FromProto(const bool& input, bool& output) {
@@ -209,8 +232,10 @@ bool FromProto(const ::mojolpm::DataPipeConsumerHandle& input,
 
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = input.new_().flags();
-    options.element_num_bytes = input.new_().element_num_bytes();
-    options.capacity_num_bytes = input.new_().capacity_num_bytes();
+    options.element_num_bytes =
+        std::min(input.new_().element_num_bytes(), kPipeElementMaxSize);
+    options.capacity_num_bytes =
+        std::min(input.new_().capacity_num_bytes(), kPipeCapacityMaxSize);
 
     if (MOJO_RESULT_OK ==
         mojo::CreateDataPipe(&options, &producer, &consumer)) {
@@ -246,8 +271,10 @@ bool FromProto(const ::mojolpm::DataPipeProducerHandle& input,
 
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = input.new_().flags();
-    options.element_num_bytes = input.new_().element_num_bytes();
-    options.capacity_num_bytes = input.new_().capacity_num_bytes();
+    options.element_num_bytes =
+        std::min(input.new_().element_num_bytes(), kPipeElementMaxSize);
+    options.capacity_num_bytes =
+        std::min(input.new_().capacity_num_bytes(), kPipeCapacityMaxSize);
 
     if (MOJO_RESULT_OK ==
         mojo::CreateDataPipe(&options, &producer, &consumer)) {
@@ -310,8 +337,10 @@ void HandleDataPipeRead(const ::mojolpm::DataPipeRead& input) {
 
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = input.handle().new_().flags();
-    options.element_num_bytes = input.handle().new_().element_num_bytes();
-    options.capacity_num_bytes = input.handle().new_().capacity_num_bytes();
+    options.element_num_bytes = std::min(
+        input.handle().new_().element_num_bytes(), kPipeElementMaxSize);
+    options.capacity_num_bytes = std::min(
+        input.handle().new_().capacity_num_bytes(), kPipeCapacityMaxSize);
 
     if (MOJO_RESULT_OK ==
         mojo::CreateDataPipe(&options, &producer, &consumer)) {
@@ -323,7 +352,10 @@ void HandleDataPipeRead(const ::mojolpm::DataPipeRead& input) {
   }
 
   if (consumer_ptr) {
-    uint32_t size = input.size();
+    unsigned int size = input.size();
+    if (size > kPipeActionMaxSize) {
+      size = kPipeActionMaxSize;
+    }
     std::vector<char> data(size);
     consumer_ptr->get().ReadData(data.data(), &size, 0);
   }
@@ -344,8 +376,10 @@ void HandleDataPipeWrite(const ::mojolpm::DataPipeWrite& input) {
 
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = input.handle().new_().flags();
-    options.element_num_bytes = input.handle().new_().element_num_bytes();
-    options.capacity_num_bytes = input.handle().new_().capacity_num_bytes();
+    options.element_num_bytes = std::min(
+        input.handle().new_().element_num_bytes(), kPipeElementMaxSize);
+    options.capacity_num_bytes = std::min(
+        input.handle().new_().capacity_num_bytes(), kPipeCapacityMaxSize);
 
     if (MOJO_RESULT_OK ==
         mojo::CreateDataPipe(&options, &producer, &consumer)) {
@@ -357,7 +391,10 @@ void HandleDataPipeWrite(const ::mojolpm::DataPipeWrite& input) {
   }
 
   if (producer_ptr) {
-    uint32_t size = static_cast<uint32_t>(input.data().size());
+    unsigned int size = input.data().size();
+    if (size > kPipeActionMaxSize) {
+      size = kPipeActionMaxSize;
+    }
     producer_ptr->get().WriteData(input.data().data(), &size, 0);
   }
 }

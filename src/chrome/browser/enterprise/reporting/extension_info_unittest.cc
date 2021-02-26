@@ -4,7 +4,6 @@
 
 #include "chrome/browser/enterprise/reporting/extension_info.h"
 
-#include "chrome/browser/enterprise/reporting/profile_report_generator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -147,7 +146,7 @@ TEST_F(ExtensionInfoTest, ExtensionBlocked) {
 
 TEST_F(ExtensionInfoTest, ExtensionBlacklisted) {
   auto extension = BuildExtension();
-  service()->BlacklistExtensionForTest(kId);
+  service()->BlocklistExtensionForTest(kId);
 
   em::ChromeUserProfileInfo info;
   AppendExtensionInfoIntoProfileReport(profile(), &info);

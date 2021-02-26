@@ -27,7 +27,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -122,10 +121,9 @@ public class AddExceptionPreference
         final CheckBox thirdPartyExceptionsBox =
                 (CheckBox) view.findViewById(R.id.third_parties_exception_checkbox);
 
-        if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                || !ContentSettingsFeatureList.isEnabled(
-                        ContentSettingsFeatureList
-                                .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)) {
+        if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
+            // TODO(crbug.com/1077766): Change the string of the checkbox to something like
+            // "including third-party cookies on this site".
             thirdPartyExceptionsBox.setVisibility(View.GONE);
             thirdPartyExceptionsBox.setChecked(false);
         }
@@ -137,7 +135,7 @@ public class AddExceptionPreference
                     boolean isThirdPartyException = thirdPartyExceptionsBox.isChecked();
                     String hostname = input.getText().toString().trim();
 
-                    // If a user chooses "all cookies, on this site only", set wildcard as primary
+                    // If a user clicks the third party checkbox, set wildcard as primary
                     String primary = isThirdPartyException ? SITE_WILDCARD : hostname;
                     String secondary = !isThirdPartyException ? SITE_WILDCARD : hostname;
 

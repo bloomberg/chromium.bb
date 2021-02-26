@@ -32,6 +32,7 @@
 #include <unicode/ucnv_cb.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -326,7 +327,7 @@ void TextCodecICU::CreateICUConverter() const {
   DLOG_IF(ERROR, err == U_AMBIGUOUS_ALIAS_WARNING)
       << "ICU ambiguous alias warning for encoding: " << encoding_.GetName();
   if (converter_icu_)
-    ucnv_setFallback(converter_icu_, TRUE);
+    ucnv_setFallback(converter_icu_, true);
 }
 
 int TextCodecICU::DecodeToBuffer(UChar* target,

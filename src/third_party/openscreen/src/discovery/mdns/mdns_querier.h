@@ -7,6 +7,8 @@
 
 #include <list>
 #include <map>
+#include <memory>
+#include <vector>
 
 #include "discovery/common/config.h"
 #include "discovery/mdns/mdns_receiver.h"
@@ -42,7 +44,13 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   // Starts an mDNS query with the given name, DNS type, and DNS class.  Updated
   // records are passed to |callback|.  The caller must ensure |callback|
   // remains alive while it is registered with a query.
-  // NOTE: NSEC records cannot be queried for.
+  // NOTE: This call is only valid for |dns_type| values:
+  // - DnsType::kA
+  // - DnsType::kPTR
+  // - DnsType::kTXT
+  // - DnsType::kAAAA
+  // - DnsType::kSRV
+  // - DnsType::kANY
   void StartQuery(const DomainName& name,
                   DnsType dns_type,
                   DnsClass dns_class,
@@ -164,6 +172,8 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   bool ShouldAnswerRecordBeProcessed(const MdnsRecord& answer);
 
   // Processes any record update, calling into the below methods as needed.
+  // NOTE: All records of type OPT are dropped, as they should not be cached per
+  // RFC6891.
   void ProcessRecord(const MdnsRecord& records);
 
   // Processes a shared record update as a record of type |type|.

@@ -2,34 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {Point} from './constants.js';
+
 /**
- * A class that listens for touch events and produces events when these
- * touches form gestures (e.g. pinching).
+ * @typedef {{
+ *   center: !Point,
+ *   direction: (string|undefined),
+ *   scaleRatio: (?number|undefined),
+ *   startScaleRatio: (?number|undefined),
+ * }}
  */
+export let PinchEventDetail;
+
+// A class that listens for touch events and produces events when these
+// touches form gestures (e.g. pinching).
 export class GestureDetector {
   /**
-   * @param {!Element} element The element to monitor for touch gestures.
+   * @param {!EventTarget|!Element} element The element to monitor for touch
+   *     gestures.
    */
   constructor(element) {
-    /** @private {!Element} */
-    this.element_ = element;
-
-    this.element_.addEventListener(
+    element.addEventListener(
         'touchstart',
         /** @type {function(!Event)} */ (this.onTouchStart_.bind(this)),
         {passive: true});
 
     const boundOnTouch =
         /** @type {function(!Event)} */ (this.onTouch_.bind(this));
-    this.element_.addEventListener('touchmove', boundOnTouch, {passive: true});
-    this.element_.addEventListener('touchend', boundOnTouch, {passive: true});
-    this.element_.addEventListener(
-        'touchcancel', boundOnTouch, {passive: true});
+    element.addEventListener('touchmove', boundOnTouch, {passive: true});
+    element.addEventListener('touchend', boundOnTouch, {passive: true});
+    element.addEventListener('touchcancel', boundOnTouch, {passive: true});
 
-    this.element_.addEventListener(
+    element.addEventListener(
         'wheel',
         /** @type {function(!Event)} */ (this.onWheel_.bind(this)),
         {passive: false});
+    document.addEventListener(
+        'contextmenu', e => this.handleContextMenuEvent_(e));
 
     this.pinchStartEvent_ = null;
     this.lastTouchTouchesCount_ = 0;
@@ -52,24 +62,17 @@ export class GestureDetector {
      */
     this.wheelEndTimeout_ = null;
 
-    /** @private {!Map<string, !Array<!Function>>} */
-    this.listeners_ =
-        new Map([['pinchstart', []], ['pinchupdate', []], ['pinchend', []]]);
+    /** @private {!EventTarget} */
+    this.eventTarget_ = new EventTarget();
+  }
+
+  /** @return {!EventTarget} */
+  getEventTarget() {
+    return this.eventTarget_;
   }
 
   /**
-   * Add a |listener| to be notified of |type| events.
-   *
-   * @param {string} type The event type to be notified for.
-   * @param {!Function} listener The callback.
-   */
-  addEventListener(type, listener) {
-    if (this.listeners_.has(type)) {
-      this.listeners_.get(type).push(listener);
-    }
-  }
-
-  /**
+   * Public for tests.
    * @return {boolean} True if the last touch start was a two finger touch.
    */
   wasTwoFingerTouch() {
@@ -77,22 +80,17 @@ export class GestureDetector {
   }
 
   /**
-   * Call the relevant listeners with the given |pinchEvent|.
-   *
-   * @param {!Object} pinchEvent The event to notify the listeners of.
+   * Call the relevant listeners with the given |PinchEventDetail|.
+   * @param {string} type The type of pinch event.
+   * @param {!PinchEventDetail} detail The event to notify the listeners of.
    * @private
    */
-  notify_(pinchEvent) {
-    const listeners = this.listeners_.get(pinchEvent.type);
-
-    for (const l of listeners) {
-      l(pinchEvent);
-    }
+  notify_(type, detail) {
+    this.eventTarget_.dispatchEvent(new CustomEvent(type, {detail}));
   }
 
   /**
    * The callback for touchstart events on the element.
-   *
    * @param {!TouchEvent} event Touch event on the element.
    * @private
    */
@@ -104,12 +102,11 @@ export class GestureDetector {
 
     this.pinchStartEvent_ = event;
     this.lastEvent_ = event;
-    this.notify_({type: 'pinchstart', center: GestureDetector.center_(event)});
+    this.notify_('pinchstart', {center: GestureDetector.center_(event)});
   }
 
   /**
    * The callback for touch move, end, and cancel events on the element.
-   *
    * @param {!TouchEvent} event Touch event on the element.
    * @private
    */
@@ -126,14 +123,12 @@ export class GestureDetector {
       const startScaleRatio =
           GestureDetector.pinchScaleRatio_(lastEvent, this.pinchStartEvent_);
       const center = GestureDetector.center_(lastEvent);
-      const endEvent = {
-        type: 'pinchend',
-        startScaleRatio: startScaleRatio,
-        center: center
-      };
       this.pinchStartEvent_ = null;
       this.lastEvent_ = null;
-      this.notify_(endEvent);
+      this.notify_('pinchend', {
+        startScaleRatio: startScaleRatio,
+        center: center,
+      });
       return;
     }
 
@@ -141,12 +136,11 @@ export class GestureDetector {
     const startScaleRatio =
         GestureDetector.pinchScaleRatio_(event, this.pinchStartEvent_);
     const center = GestureDetector.center_(event);
-    this.notify_({
-      type: 'pinchupdate',
+    this.notify_('pinchupdate', {
       scaleRatio: scaleRatio,
       direction: scaleRatio > 1.0 ? 'in' : 'out',
       startScaleRatio: startScaleRatio,
-      center: center
+      center: center,
     });
 
     this.lastEvent_ = event;
@@ -154,7 +148,6 @@ export class GestureDetector {
 
   /**
    * The callback for wheel events on the element.
-   *
    * @param {!WheelEvent} event Wheel event on the element.
    * @private
    */
@@ -179,16 +172,15 @@ export class GestureDetector {
 
     if (this.accumulatedWheelScale_ == null) {
       this.accumulatedWheelScale_ = 1.0;
-      this.notify_({type: 'pinchstart', center: position});
+      this.notify_('pinchstart', {center: position});
     }
 
     this.accumulatedWheelScale_ *= scale;
-    this.notify_({
-      type: 'pinchupdate',
+    this.notify_('pinchupdate', {
       scaleRatio: scale,
       direction: scale > 1.0 ? 'in' : 'out',
       startScaleRatio: this.accumulatedWheelScale_,
-      center: position
+      center: position,
     });
 
     // We don't get any phase information for the ctrl-wheels, so we don't know
@@ -200,21 +192,35 @@ export class GestureDetector {
     }
     const gestureEndDelayMs = 100;
     const endEvent = {
-      type: 'pinchend',
       startScaleRatio: this.accumulatedWheelScale_,
-      center: position
+      center: position,
     };
-    this.wheelEndTimeout_ = window.setTimeout(function(endEvent) {
-      this.notify_(endEvent);
+    this.wheelEndTimeout_ = window.setTimeout(() => {
+      this.notify_('pinchend', endEvent);
       this.wheelEndTimeout_ = null;
       this.accumulatedWheelScale_ = null;
-    }.bind(this), gestureEndDelayMs, endEvent);
+    }, gestureEndDelayMs);
+  }
+
+  /**
+   * @param {!Event} e The context menu event
+   * @private
+   */
+  handleContextMenuEvent_(e) {
+    // Stop Chrome from popping up the context menu on long press. We need to
+    // make sure the start event did not have 2 touches because we don't want
+    // to block two finger tap opening the context menu. We check for
+    // firesTouchEvents in order to not block the context menu on right click.
+    const capabilities =
+        /** @type {{ sourceCapabilities: Object }} */ (e).sourceCapabilities;
+    if (capabilities.firesTouchEvents && !this.wasTwoFingerTouch()) {
+      e.preventDefault();
+    }
   }
 
   /**
    * Computes the change in scale between this touch event
    * and a previous one.
-   *
    * @param {!TouchEvent} event Latest touch event on the element.
    * @param {!TouchEvent} prevEvent A previous touch event on the element.
    * @return {?number} The ratio of the scale of this event and the
@@ -229,7 +235,6 @@ export class GestureDetector {
 
   /**
    * Computes the distance between fingers.
-   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
    * @return {number} Distance between touch[0] and touch[1].
    * @private
@@ -244,9 +249,8 @@ export class GestureDetector {
 
   /**
    * Computes the midpoint between fingers.
-   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
-   * @return {!Object} Midpoint between touch[0] and touch[1].
+   * @return {!Point} Midpoint between touch[0] and touch[1].
    * @private
    */
   static center_(event) {

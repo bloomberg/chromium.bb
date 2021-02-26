@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -144,8 +144,7 @@ class MockVideoDecoder : public VideoDecoder {
             PIXEL_FORMAT_ARGB, mailbox_holders, GetReleaseMailboxCB(),
             config_.coded_size(), config_.visible_rect(),
             config_.natural_size(), buffer->timestamp());
-        frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                      true);
+        frame->metadata()->power_efficient = true;
         output_cb_.Run(frame);
       }
     }
@@ -161,15 +160,15 @@ class MockVideoDecoder : public VideoDecoder {
                                                   std::move(reset_cb));
   }
 
- private:
-  // Destructing a std::unique_ptr<VideoDecoder>(this) is a no-op.
-  // TODO(sandersd): After this, any method call is an error. Implement checks
-  // for that.
-  void Destroy() override { DVLOG(1) << __func__ << "(): Ignored"; }
+  base::WeakPtr<MockVideoDecoder> GetWeakPtr() {
+    return weak_this_factory_.GetWeakPtr();
+  }
 
+ private:
   VideoDecoderConfig config_;
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
+  base::WeakPtrFactory<MockVideoDecoder> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
@@ -258,10 +257,10 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     return result.is_ok();
   }
 
-  DecodeStatus Decode(scoped_refptr<DecoderBuffer> buffer,
-                      VideoFrame::ReleaseMailboxCB release_cb =
-                          VideoFrame::ReleaseMailboxCB()) {
-    DecodeStatus result = DecodeStatus::DECODE_ERROR;
+  Status Decode(scoped_refptr<DecoderBuffer> buffer,
+                VideoFrame::ReleaseMailboxCB release_cb =
+                    VideoFrame::ReleaseMailboxCB()) {
+    Status result(DecodeStatus::DECODE_ERROR);
 
     if (!buffer->end_of_stream()) {
       decoder_->release_mailbox_cb = std::move(release_cb);
@@ -334,8 +333,12 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   StrictMock<MockMediaLog> client_media_log_;
 
   // VideoDecoder (impl used by service) under test.
-  std::unique_ptr<MockVideoDecoder> decoder_ =
-      std::make_unique<StrictMock<MockVideoDecoder>>();
+  // |decoder_owner_| owns the decoder until ownership is transferred to the
+  // |MojoVideoDecoderService|. |decoder_| references it for the duration of its
+  // lifetime.
+  std::unique_ptr<MockVideoDecoder> decoder_owner_ =
+      std::make_unique<MockVideoDecoder>();
+  base::WeakPtr<MockVideoDecoder> decoder_ = decoder_owner_->GetWeakPtr();
 
   // MediaLog that the service has provided to |decoder_|. This should be
   // proxied to |client_media_log_|.
@@ -346,9 +349,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(MediaLog* media_log) {
     DCHECK(!decoder_media_log_);
     decoder_media_log_ = media_log;
-    // Since MockVideoDecoder::Destroy() is a no-op, this doesn't actually
-    // transfer ownership.
-    return std::unique_ptr<VideoDecoder>(decoder_.get());
+    return std::move(decoder_owner_);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -395,7 +396,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoDecoder) {
               Run(HasStatusCode(StatusCode::kMojoDecoderNoWrappedDecoder)));
 
   // Clear |decoder_| so that Initialize() should fail.
-  decoder_.reset();
+  decoder_owner_.reset();
   client_->Initialize(TestVideoConfig::NormalH264(), false, nullptr,
                       init_cb.Get(), output_cb_.Get(), waiting_cb_.Get());
   RunUntilIdle();
@@ -431,7 +432,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, WaitingForKey) {
 
   EXPECT_CALL(*decoder_, Decode_(_, _));
   EXPECT_CALL(waiting_cb_, Run(WaitingReason::kNoDecryptionKey));
-  EXPECT_CALL(decode_cb, Run(DecodeStatus::OK));
+  EXPECT_CALL(decode_cb, Run(IsOkStatus()));
 
   client_->Decode(buffer, decode_cb.Get());
   RunUntilIdle();
@@ -441,10 +442,10 @@ TEST_F(MojoVideoDecoderIntegrationTest, Decode) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_CALL(output_cb_, Run(_));
-  ASSERT_EQ(Decode(CreateKeyframe(0)), DecodeStatus::OK);
+  ASSERT_TRUE(Decode(CreateKeyframe(0)).is_ok());
   Mock::VerifyAndClearExpectations(&output_cb_);
 
-  ASSERT_EQ(Decode(DecoderBuffer::CreateEOSBuffer()), DecodeStatus::OK);
+  ASSERT_TRUE(Decode(DecoderBuffer::CreateEOSBuffer()).is_ok());
 }
 
 TEST_F(MojoVideoDecoderIntegrationTest, Release) {
@@ -454,7 +455,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, Release) {
   scoped_refptr<VideoFrame> frame;
 
   EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
-  ASSERT_EQ(Decode(CreateKeyframe(0), release_cb.Get()), DecodeStatus::OK);
+  ASSERT_TRUE(Decode(CreateKeyframe(0), release_cb.Get()).is_ok());
   Mock::VerifyAndClearExpectations(&output_cb_);
 
   EXPECT_CALL(release_cb, Run(_));
@@ -469,7 +470,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, ReleaseAfterShutdown) {
   scoped_refptr<VideoFrame> frame;
 
   EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
-  ASSERT_EQ(Decode(CreateKeyframe(0), release_cb.Get()), DecodeStatus::OK);
+  ASSERT_TRUE(Decode(CreateKeyframe(0), release_cb.Get()).is_ok());
   Mock::VerifyAndClearExpectations(&output_cb_);
 
   client_.reset();
@@ -545,7 +546,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitialPlaybackUMASuccess) {
   EXPECT_CALL(output_cb_, Run(_)).Times(frames_to_decode);
   EXPECT_CALL(*decoder_, Decode_(_, _)).Times(frames_to_decode);
 
-  EXPECT_CALL(decode_cb, Run(DecodeStatus::OK)).Times(frames_to_decode);
+  EXPECT_CALL(decode_cb, Run(IsOkStatus())).Times(frames_to_decode);
 
   for (int i = 0; i < frames_to_decode - 1; i++)
     client_->Decode(CreateKeyframe(i * 16), decode_cb.Get());
@@ -573,9 +574,9 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitialPlaybackUMAError) {
   EXPECT_CALL(output_cb_, Run(_)).Times(frames_to_decode - 1);
   EXPECT_CALL(*decoder_, Decode_(_, _)).Times(frames_to_decode);
 
-  EXPECT_CALL(decode_cb, Run(DecodeStatus::OK)).Times(frames_to_decode - 1);
+  EXPECT_CALL(decode_cb, Run(IsOkStatus())).Times(frames_to_decode - 1);
 
-  EXPECT_CALL(decode_cb, Run(DecodeStatus::DECODE_ERROR)).Times(1);
+  EXPECT_CALL(decode_cb, Run(IsDecodeErrorStatus())).Times(1);
 
   for (int i = 0; i < frames_to_decode - 1; i++)
     client_->Decode(CreateKeyframe(i * 16), decode_cb.Get());

@@ -171,9 +171,18 @@ void ShowDisplayErrorNotification(const base::string16& message,
               })),
           kNotificationMonitorWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+}
+
+base::string16 ConvertRefreshRateToString16(float refresh_rate) {
+  std::string str = base::StringPrintf("%.2f", refresh_rate);
+
+  // Remove the mantissa for whole numbers.
+  if (EndsWith(str, ".00", base::CompareCase::INSENSITIVE_ASCII))
+    str.erase(str.length() - 3);
+
+  return base::UTF8ToUTF16(str);
 }
 
 base::string16 GetDisplayErrorNotificationMessageForTest() {

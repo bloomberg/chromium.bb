@@ -10,19 +10,18 @@
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
-#include "content/renderer/loader/internet_disconnected_web_url_loader.h"
-#include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
-#include "content/renderer/loader/web_url_request_util.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "third_party/blink/public/platform/internet_disconnected_web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_request_extra_data.h"
 
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
-    const blink::mojom::RendererPreferences& renderer_preferences,
+    const blink::RendererPreferences& renderer_preferences,
     const GURL& worker_script_url,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
@@ -36,7 +35,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
         preference_watcher_receiver,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater,
-    int32_t service_worker_route_id)
+    int32_t service_worker_route_id,
+    const std::vector<std::string>& cors_exempt_header_list)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
       pending_url_loader_factory_(std::move(pending_url_loader_factory)),
@@ -49,7 +49,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
           std::move(preference_watcher_receiver)),
       pending_subresource_loader_updater_(
           std::move(pending_subresource_loader_updater)),
-      service_worker_route_id_(service_worker_route_id) {}
+      service_worker_route_id_(service_worker_route_id),
+      cors_exempt_header_list_(cors_exempt_header_list) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -62,6 +63,7 @@ void ServiceWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
     blink::AcceptLanguagesWatcher* watcher) {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
+  resource_dispatcher_->SetCorsExemptHeaderList(cors_exempt_header_list_);
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
   preference_watcher_receiver_.Bind(
@@ -75,7 +77,7 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
           std::move(pending_url_loader_factory_)));
 
   internet_disconnected_web_url_loader_factory_ =
-      std::make_unique<InternetDisconnectedWebURLLoaderFactory>();
+      std::make_unique<blink::InternetDisconnectedWebURLLoaderFactory>();
 
   if (pending_script_loader_factory_) {
     web_script_loader_factory_ =
@@ -97,13 +99,12 @@ ServiceWorkerFetchContextImpl::GetURLLoaderFactory() {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
-    mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+    blink::CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        url_loader_factory) {
   return std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-              std::move(url_loader_factory_handle),
-              network::mojom::URLLoaderFactory::Version_)));
+          std::move(url_loader_factory)));
 }
 
 blink::WebURLLoaderFactory*
@@ -117,9 +118,10 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
   }
-  auto extra_data = base::MakeRefCounted<RequestExtraData>();
-  extra_data->set_originated_from_service_worker(true);
-  extra_data->set_render_frame_id(service_worker_route_id_);
+  auto url_request_extra_data =
+      base::MakeRefCounted<blink::WebURLRequestExtraData>();
+  url_request_extra_data->set_originated_from_service_worker(true);
+  url_request_extra_data->set_render_frame_id(service_worker_route_id_);
 
   const bool needs_to_skip_throttling =
       static_cast<GURL>(request.Url()) == script_url_to_skip_throttling_ &&
@@ -137,11 +139,11 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
     // worker scripts.
     script_url_to_skip_throttling_ = GURL();
   } else if (throttle_provider_) {
-    extra_data->set_url_loader_throttles(
+    url_request_extra_data->set_url_loader_throttles(
         throttle_provider_->CreateThrottles(MSG_ROUTING_NONE, request));
   }
 
-  request.SetExtraData(std::move(extra_data));
+  request.SetURLRequestExtraData(std::move(url_request_extra_data));
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetReferrerString(blink::WebString());
@@ -191,18 +193,19 @@ void ServiceWorkerFetchContextImpl::UpdateSubresourceLoaderFactories(
 }
 
 void ServiceWorkerFetchContextImpl::NotifyUpdate(
-    blink::mojom::RendererPreferencesPtr new_prefs) {
+    const blink::RendererPreferences& new_prefs) {
   DCHECK(accept_languages_watcher_);
-  if (renderer_preferences_.accept_languages != new_prefs->accept_languages)
+  if (renderer_preferences_.accept_languages != new_prefs.accept_languages)
     accept_languages_watcher_->NotifyUpdate();
-  renderer_preferences_ = *new_prefs;
+  renderer_preferences_ = new_prefs;
 }
 
 blink::WebString ServiceWorkerFetchContextImpl::GetAcceptLanguages() const {
   return blink::WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
 
-mojo::ScopedMessagePipeHandle
+blink::CrossVariantMojoReceiver<
+    blink::mojom::WorkerTimingContainerInterfaceBase>
 ServiceWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   // No receiver exists because requests from service workers are never handled
   // by a service worker.

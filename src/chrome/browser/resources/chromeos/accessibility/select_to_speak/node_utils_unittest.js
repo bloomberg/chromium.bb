@@ -13,7 +13,10 @@ SelectToSpeakNodeUtilsUnitTest.prototype.extraLibraries = [
   'paragraph_utils.js',
   'node_utils.js',
   'word_utils.js',
-  'rect_utils.js',
+  '../common/closure_shim.js',
+  '../common/constants.js',
+  '../common/automation_util.js',
+  '../common/rect_util.js',
 ];
 
 
@@ -277,21 +280,21 @@ TEST_F(
     });
 
 TEST_F(
-    'SelectToSpeakNodeUtilsUnitTest', 'getDeepEquivalentForSelectionNoChildren',
-    function() {
+    'SelectToSpeakNodeUtilsUnitTest',
+    'getDeepEquivalentForSelectionDeprecatedNoChildren', function() {
       const node = {name: 'Hello, world', children: []};
-      let result = NodeUtils.getDeepEquivalentForSelection(node, 0);
+      let result = NodeUtils.getDeepEquivalentForSelectionDeprecated(node, 0);
       assertEquals(node, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(node, 6);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(node, 6);
       assertEquals(node, result.node);
       assertEquals(6, result.offset);
     });
 
 TEST_F(
     'SelectToSpeakNodeUtilsUnitTest',
-    'getDeepEquivalentForSelectionSimpleChildren', function() {
+    'getDeepEquivalentForSelectionDeprecatedSimpleChildren', function() {
       const child1 =
           {name: 'Hello,', children: [], role: 'inlineTextBox', state: {}};
       const child2 =
@@ -304,28 +307,30 @@ TEST_F(
       };
       child1.parent = root;
       child2.parent = root;
-      let result = NodeUtils.getDeepEquivalentForSelection(root, 0, true);
+      let result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 0, true);
       assertEquals(child1, result.node);
       assertEquals(0, result.offset);
 
       // Get the last index of the first child
-      result = NodeUtils.getDeepEquivalentForSelection(root, 5, false);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 5, false);
       assertEquals(child1, result.node);
       assertEquals(5, result.offset);
 
       // Get the first index of the second child
-      result = NodeUtils.getDeepEquivalentForSelection(root, 6, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 6, true);
       assertEquals(child2, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 9, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 9, true);
       assertEquals(child2, result.node);
       assertEquals(3, result.offset);
     });
 
 TEST_F(
     'SelectToSpeakNodeUtilsUnitTest',
-    'getDeepEquivalentForSelectionComplexChildren', function() {
+    'getDeepEquivalentForSelectionDeprecatedComplexChildren', function() {
       const child1 =
           {name: 'Hello', children: [], role: 'inlineTextBox', state: {}};
       // Empty name
@@ -371,23 +376,114 @@ TEST_F(
       child4.parent = root;
       child7.parent = root;
 
-      let result = NodeUtils.getDeepEquivalentForSelection(root, 0, true);
+      let result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 0, true);
       assertEquals(child1, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 1, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 1, true);
       assertEquals(child5, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 2, false);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 2, false);
       assertEquals(child6, result.node);
       assertEquals(5, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(child4, 2, true);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(child4, 2, true);
       assertEquals(child1, result.node);
       assertEquals(2, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(child4, 5, true);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(child4, 5, true);
       assertEquals(child3, result.node);
       assertEquals(0, result.offset);
+    });
+
+TEST_F(
+    'SelectToSpeakNodeUtilsUnitTest', 'sortSvgNodesByReadingOrder', function() {
+      const svgRootNode = {role: 'svgRoot'};
+      const gNode1 = {
+        role: 'genericContainer',
+        parent: svgRootNode,
+        unclippedLocation: {left: 300, top: 10, width: 100, height: 50}
+      };
+      const gNode2 = {
+        role: 'genericContainer',
+        parent: svgRootNode,
+        unclippedLocation: {left: 20, top: 10, width: 100, height: 50}
+      };
+      const textNode1 = {
+        role: 'staticText',
+        parent: gNode2,
+        unclippedLocation: {left: 50, top: 10, width: 20, height: 50},
+        name: 'one'
+      };
+      const textNode2 = {
+        role: 'staticText',
+        parent: gNode1,
+        unclippedLocation: {left: 300, top: 10, width: 20, height: 50},
+        name: 'two'
+      };
+      const textNode3 = {
+        role: 'staticText',
+        parent: gNode1,
+        unclippedLocation: {left: 350, top: 10, width: 20, height: 50},
+        name: 'three'
+      };
+
+      const nodes = [textNode3, textNode2, textNode1];
+      NodeUtils.sortSvgNodesByReadingOrder(nodes);
+      assertEquals(nodes[0].name, 'one');
+      assertEquals(nodes[1].name, 'two');
+      assertEquals(nodes[2].name, 'three');
+    });
+
+TEST_F(
+    'SelectToSpeakNodeUtilsUnitTest', 'sortNodesByReadingOrderMultipleSVGs',
+    function() {
+      const textNode1 = {role: 'staticText', name: 'Text Node 1'};
+      const svg1RootNode = {role: 'svgRoot'};
+      const svg1Node1 = {
+        role: 'staticText',
+        parent: svg1RootNode,
+        unclippedLocation: {left: 0, top: 10, width: 20, height: 50},
+        name: 'SVG 1 Node 1'
+      };
+      const svg1Node2 = {
+        role: 'staticText',
+        parent: svg1RootNode,
+        unclippedLocation: {left: 50, top: 10, width: 20, height: 50},
+        name: 'SVG 1 Node 2'
+      };
+      const textNode2 = {role: 'staticText', name: 'Text Node 2'};
+      const svg2RootNode = {role: 'svgRoot'};
+      const svg2Node1 = {
+        role: 'staticText',
+        parent: svg2RootNode,
+        unclippedLocation: {left: 300, top: 10, width: 20, height: 50},
+        name: 'SVG 2 Node 1'
+      };
+      const svg2Node2 = {
+        role: 'staticText',
+        parent: svg2RootNode,
+        unclippedLocation: {left: 350, top: 10, width: 20, height: 50},
+        name: 'SVG 2 Node 2'
+      };
+      const textNode3 = {role: 'staticText', name: 'Text Node 3'};
+
+      const nodes = [
+        textNode1, svg1Node2, svg1Node1, textNode2, svg2Node2, svg2Node1,
+        textNode3
+      ];
+      NodeUtils.sortSvgNodesByReadingOrder(nodes);
+
+      assertEquals(nodes[0].name, 'Text Node 1');
+      assertEquals(nodes[1].name, 'SVG 1 Node 1');
+      assertEquals(nodes[2].name, 'SVG 1 Node 2');
+      assertEquals(nodes[3].name, 'Text Node 2');
+      assertEquals(nodes[4].name, 'SVG 2 Node 1');
+      assertEquals(nodes[5].name, 'SVG 2 Node 2');
+      assertEquals(nodes[6].name, 'Text Node 3');
     });

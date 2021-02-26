@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
-#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_read_response.h"
 
 namespace bluetooth {
@@ -140,13 +140,25 @@ void FakeRemoteGattCharacteristic::ReadRemoteCharacteristic(
 
 void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
+  mojom::WriteType mojom_write_type;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      mojom_write_type = mojom::WriteType::kWriteWithResponse;
+      break;
+    case WriteType::kWithoutResponse:
+      mojom_write_type = mojom::WriteType::kWriteWithoutResponse;
+      break;
+  }
+
   // It doesn't make sense to dispatch a custom write response if the
   // characteristic only supports write without response but we still need to
   // run the callback because that's the guarantee the API makes.
-  if (properties_ & PROPERTY_WRITE_WITHOUT_RESPONSE) {
+  if (write_type == WriteType::kWithoutResponse) {
     last_written_value_ = value;
+    last_write_type_ = mojom_write_type;
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
     return;
@@ -156,10 +168,33 @@ void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
       FROM_HERE,
       base::BindOnce(&FakeRemoteGattCharacteristic::DispatchWriteResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(error_callback), value));
+                     std::move(error_callback), value, mojom_write_type));
 }
 
-#if defined(OS_CHROMEOS)
+void FakeRemoteGattCharacteristic::DeprecatedWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  const mojom::WriteType write_type = mojom::WriteType::kWriteDefaultDeprecated;
+  // It doesn't make sense to dispatch a custom write response if the
+  // characteristic only supports write without response but we still need to
+  // run the callback because that's the guarantee the API makes.
+  if (properties_ & PROPERTY_WRITE_WITHOUT_RESPONSE) {
+    last_written_value_ = value;
+    last_write_type_ = write_type;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeRemoteGattCharacteristic::DispatchWriteResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(error_callback), value, write_type));
+}
+
+#if BUILDFLAG(IS_ASH)
 void FakeRemoteGattCharacteristic::PrepareWriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
@@ -168,19 +203,9 @@ void FakeRemoteGattCharacteristic::PrepareWriteRemoteCharacteristic(
 }
 #endif
 
-bool FakeRemoteGattCharacteristic::WriteWithoutResponse(
-    base::span<const uint8_t> value) {
-  if (properties_ & PROPERTY_WRITE_WITHOUT_RESPONSE) {
-    last_written_value_.emplace(value.begin(), value.end());
-    return true;
-  }
-
-  return false;
-}
-
 void FakeRemoteGattCharacteristic::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     NotificationType notification_type,
 #endif
     base::OnceClosure callback,
@@ -232,7 +257,8 @@ void FakeRemoteGattCharacteristic::DispatchReadResponse(
 void FakeRemoteGattCharacteristic::DispatchWriteResponse(
     base::OnceClosure callback,
     ErrorCallback error_callback,
-    const std::vector<uint8_t>& value) {
+    const std::vector<uint8_t>& value,
+    mojom::WriteType write_type) {
   DCHECK(next_write_response_);
   uint16_t gatt_code = next_write_response_.value();
   next_write_response_.reset();
@@ -240,6 +266,7 @@ void FakeRemoteGattCharacteristic::DispatchWriteResponse(
   switch (gatt_code) {
     case mojom::kGATTSuccess:
       last_written_value_ = value;
+      last_write_type_ = write_type;
       std::move(callback).Run();
       break;
     case mojom::kGATTInvalidHandle:

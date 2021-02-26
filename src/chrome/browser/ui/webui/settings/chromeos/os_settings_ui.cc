@@ -8,32 +8,32 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_receive_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_share_settings.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
+#include "chrome/browser/ui/webui/settings/chromeos/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/cellular_setup/cellular_setup_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace chromeos {
 namespace settings {
-
-#if !BUILDFLAG(OPTIMIZE_WEBUI)
-namespace {
-const char kOsGeneratedPath[] =
-    "@out_folder@/gen/chrome/browser/resources/settings/";
-}
-#endif
 
 // static
 void OSSettingsUI::RegisterProfilePrefs(
@@ -54,6 +54,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   OsSettingsManager* manager = OsSettingsManagerFactory::GetForProfile(profile);
   manager->AddHandlers(web_ui);
   manager->AddLoadTimeData(html_source);
+  html_source->DisableTrustedTypesCSP();
 
   // TODO(khorimoto): Move to DeviceSection::AddHandler() once |html_source|
   // parameter is removed.
@@ -61,18 +62,26 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::StorageHandler>(profile,
                                                            html_source));
 
+  int default_resource =
+      base::FeatureList::IsEnabled(chromeos::features::kOsSettingsPolymer3)
+          ? IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);
-  html_source->AddResourcePath("lazy_load.crisper.js",
-                               IDR_OS_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath("chromeos/lazy_load.html",
-                               IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-  html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
+          : IDR_OS_SETTINGS_VULCANIZED_HTML;
 #else
+          : IDR_OS_SETTINGS_CHROMEOS_OS_SETTINGS_HTML;
+#endif
+
   webui::SetupWebUIDataSource(
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
-      kOsGeneratedPath, IDR_OS_SETTINGS_SETTINGS_HTML);
+      /*generated_path=*/std::string(), default_resource);
+
+  // For Polymer 2 optimized builds that rely on loading individual subpages,
+  // set the default resource for tests.
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  if (!base::FeatureList::IsEnabled(chromeos::features::kOsSettingsPolymer3)) {
+    html_source->SetDefaultResource(default_resource);
+  }
 #endif
 
   ManagedUIHandler::Initialize(web_ui, html_source);
@@ -91,21 +100,25 @@ OSSettingsUI::~OSSettingsUI() {
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<cellular_setup::mojom::CellularSetup> receiver) {
+  cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
+      std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::UserActionRecorder> receiver) {
-  user_action_recorder_ =
-      std::make_unique<SettingsUserActionTracker>(std::move(receiver));
+  OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+      ->settings_user_action_tracker()
+      ->BindInterface(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::SearchHandler> receiver) {
-  if (!base::FeatureList::IsEnabled(::chromeos::features::kNewOsSettingsSearch))
-    return;
-
   OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
       ->search_handler()
       ->BindInterface(std::move(receiver));
@@ -119,6 +132,31 @@ void OSSettingsUI::BindInterface(
             Profile::FromWebUI(web_ui()));
   }
   app_management_page_handler_factory_->Bind(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<nearby_share::mojom::NearbyShareSettings> receiver) {
+  NearbySharingService* service =
+      NearbySharingServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  service->GetSettings()->Bind(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<nearby_share::mojom::ReceiveManager> receiver) {
+  NearbySharingService* service =
+      NearbySharingServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<NearbyReceiveManager>(service),
+                              std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<nearby_share::mojom::ContactManager> receiver) {
+  NearbySharingService* service =
+      NearbySharingServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  service->GetContactManager()->Bind(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)

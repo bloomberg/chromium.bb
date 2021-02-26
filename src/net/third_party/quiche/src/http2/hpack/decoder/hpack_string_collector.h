@@ -12,9 +12,9 @@
 #include <iosfwd>
 #include <string>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_string_decoder_listener.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -40,7 +40,7 @@ struct HpackStringCollector : public HpackStringDecoderListener {
   void OnStringData(const char* data, size_t length) override;
   void OnStringEnd() override;
 
-  ::testing::AssertionResult Collected(quiche::QuicheStringPiece str,
+  ::testing::AssertionResult Collected(absl::string_view str,
                                        bool is_huffman_encoded) const;
 
   std::string ToString() const;

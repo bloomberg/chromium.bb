@@ -36,15 +36,15 @@ wgpu::BindGroup bindGroup;
 
 void initBuffers() {
     static const uint32_t indexData[3] = {
-        0, 1, 2,
+        0,
+        1,
+        2,
     };
     indexBuffer =
         utils::CreateBufferFromData(device, indexData, sizeof(indexData), wgpu::BufferUsage::Index);
 
     static const float vertexData[12] = {
-        0.0f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.0f, 1.0f,
+        0.0f, 0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, 0.0f, 1.0f,
     };
     vertexBuffer = utils::CreateBufferFromData(device, vertexData, sizeof(vertexData),
                                                wgpu::BufferUsage::Vertex);
@@ -56,7 +56,6 @@ void initTextures() {
     descriptor.size.width = 1024;
     descriptor.size.height = 1024;
     descriptor.size.depth = 1;
-    descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
@@ -74,8 +73,8 @@ void initTextures() {
 
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 0, 0);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
+    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 4 * 1024);
+    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {1024, 1024, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -90,7 +89,7 @@ void init() {
 
     queue = device.GetDefaultQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::OutputAttachment,
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
 
     initBuffers();
@@ -141,17 +140,19 @@ void init() {
 
     wgpu::TextureView view = texture.CreateView();
 
-    bindGroup = utils::MakeBindGroup(device, bgl, {
-        {0, sampler},
-        {1, view}
-    });
+    bindGroup = utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, view}});
 }
 
-struct {uint32_t a; float b;} s;
+struct {
+    uint32_t a;
+    float b;
+} s;
 void frame() {
     s.a = (s.a + 1) % 256;
     s.b += 0.02f;
-    if (s.b >= 1.0f) {s.b = 0.0f;}
+    if (s.b >= 1.0f) {
+        s.b = 0.0f;
+    }
 
     wgpu::TextureView backbufferView = swapchain.GetCurrentTextureView();
     utils::ComboRenderPassDescriptor renderPass({backbufferView}, depthStencilView);
@@ -162,7 +163,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBuffer(indexBuffer);
+        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(3);
         pass.EndPass();
     }

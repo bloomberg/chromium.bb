@@ -52,6 +52,8 @@ enum SpirVCaseT
 	SPIRV_CASETYPE_NONE = 0,
 	SPIRV_CASETYPE_COMPARE,
 	SPIRV_CASETYPE_FREM,
+	SPIRV_CASETYPE_MODFSTRUCT,
+	SPIRV_CASETYPE_FREXPSTRUCT,
 	SPIRV_CASETYPE_MAX_ENUM,
 };
 
@@ -66,11 +68,13 @@ struct ShaderSpec
 	vk::ShaderBuildOptions	buildOptions;
 	bool					packFloat16Bit;
 	SpirVCaseT				spirvCase;
+	int						localSizeX;			// May be used for compute shaders.
 
 	ShaderSpec (void)
 		: glslVersion		(glu::GLSL_VERSION_450)
 		, packFloat16Bit	(false)
 		, spirvCase			(SPIRV_CASETYPE_NONE)
+		, localSizeX		(1)
 	{}
 };
 

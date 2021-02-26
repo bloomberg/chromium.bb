@@ -16,6 +16,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -71,6 +72,7 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int player_id) {
   id_map_.Remove(player_id);
   idle_player_map_.erase(player_id);
   stale_players_.erase(player_id);
+  players_with_video_.erase(player_id);
   playing_videos_.erase(player_id);
 
   Send(
@@ -79,28 +81,38 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int player_id) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::DidPlay(
+void RendererWebMediaPlayerDelegate::DidMediaMetadataChange(
     int player_id,
-    bool has_video,
     bool has_audio,
+    bool has_video,
     MediaContentType media_content_type) {
   DVLOG(2) << __func__ << "(" << player_id << ", " << has_video << ", "
            << has_audio << ", " << static_cast<int>(media_content_type) << ")";
-  DCHECK(id_map_.Lookup(player_id));
 
-  has_played_media_ = true;
   if (has_video) {
-    if (!playing_videos_.count(player_id)) {
-      playing_videos_.insert(player_id);
-      has_played_video_ = true;
-    }
+    players_with_video_.insert(player_id);
   } else {
+    players_with_video_.erase(player_id);
     playing_videos_.erase(player_id);
   }
 
-  Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      routing_id(), player_id, has_video, has_audio, false,
-      media_content_type));
+  Send(new MediaPlayerDelegateHostMsg_OnMediaMetadataChanged(
+      routing_id(), player_id, has_audio, has_video, media_content_type));
+
+  ScheduleUpdateTask();
+}
+
+void RendererWebMediaPlayerDelegate::DidPlay(int player_id) {
+  DVLOG(2) << __func__ << "(" << player_id << ")";
+  DCHECK(id_map_.Lookup(player_id));
+
+  has_played_media_ = true;
+  if (players_with_video_.count(player_id) == 1) {
+    playing_videos_.insert(player_id);
+    has_played_video_ = true;
+  }
+
+  Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(routing_id(), player_id));
 
   ScheduleUpdateTask();
 }
@@ -118,12 +130,14 @@ void RendererWebMediaPlayerDelegate::DidPlayerMediaPositionStateChange(
       routing_id(), delegate_id, position));
 }
 
-void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
-  DVLOG(2) << __func__ << "(" << player_id << ")";
+void RendererWebMediaPlayerDelegate::DidPause(int player_id,
+                                              bool reached_end_of_stream) {
+  DVLOG(2) << __func__ << "(" << player_id << ", " << reached_end_of_stream
+           << ")";
   DCHECK(id_map_.Lookup(player_id));
   playing_videos_.erase(player_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), player_id,
-                                                    false));
+                                                    reached_end_of_stream));
 
   // Required to keep background playback statistics up to date.
   ScheduleUpdateTask();
@@ -132,6 +146,7 @@ void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
 void RendererWebMediaPlayerDelegate::PlayerGone(int player_id) {
   DVLOG(2) << __func__ << "(" << player_id << ")";
   DCHECK(id_map_.Lookup(player_id));
+  players_with_video_.erase(player_id);
   playing_videos_.erase(player_id);
   Send(
       new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(), player_id));
@@ -207,6 +222,34 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
       routing_id(), delegate_id, available));
 }
 
+void RendererWebMediaPlayerDelegate::DidAudioOutputSinkChange(
+    int delegate_id,
+    const std::string& hashed_device_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged(
+      routing_id(), delegate_id, hashed_device_id));
+}
+
+void RendererWebMediaPlayerDelegate::DidDisableAudioOutputSinkChanges(
+    int delegate_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnAudioOutputSinkChangingDisabled(
+      routing_id(), delegate_id));
+}
+
+void RendererWebMediaPlayerDelegate::DidBufferUnderflow(int player_id) {
+  Send(new MediaPlayerDelegateHostMsg_OnBufferUnderflow(routing_id(),
+                                                        player_id));
+}
+
+void RendererWebMediaPlayerDelegate::DidSeek(int player_id) {
+  // Send the seek updates to delegate only once per second.
+  if (last_seek_update_time_.is_null() ||
+      (base::TimeTicks::Now() - last_seek_update_time_ >=
+       base::TimeDelta::FromSeconds(1))) {
+    last_seek_update_time_ = base::TimeTicks::Now();
+    Send(new MediaPlayerDelegateHostMsg_OnSeek(routing_id(), player_id));
+  }
+}
+
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 
@@ -248,6 +291,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateEnterPictureInPicture)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ExitPictureInPicture,
                         OnMediaDelegateExitPictureInPicture)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SetAudioSinkId,
+                        OnMediaDelegateSetAudioSink)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
                         OnMediaDelegatePowerExperimentState)
     IPC_MESSAGE_UNHANDLED(return false)
@@ -290,7 +335,8 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(
     if (triggered_by_user && render_frame()) {
       // TODO(avayvod): remove when default play/pause is handled via
       // the MediaSession code path.
-      render_frame()->GetWebFrame()->NotifyUserActivation();
+      render_frame()->GetWebFrame()->NotifyUserActivation(
+          blink::mojom::UserActivationNotificationType::kInteraction);
     }
     observer->OnPause();
   }
@@ -303,8 +349,10 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
   if (observer) {
     // TODO(avayvod): remove when default play/pause is handled via
     // the MediaSession code path.
-    if (render_frame())
-      render_frame()->GetWebFrame()->NotifyUserActivation();
+    if (render_frame()) {
+      render_frame()->GetWebFrame()->NotifyUserActivation(
+          blink::mojom::UserActivationNotificationType::kInteraction);
+    }
     observer->OnPlay();
   }
 }
@@ -372,6 +420,14 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegateExitPictureInPicture(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnExitPictureInPicture();
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegateSetAudioSink(
+    int player_id,
+    std::string sink_id) {
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer)
+    observer->OnSetAudioSink(sink_id);
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegatePowerExperimentState(

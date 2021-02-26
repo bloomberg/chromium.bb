@@ -10,6 +10,7 @@
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device.h"
 #include "services/device/public/cpp/test/mock_usb_mojo_device.h"
@@ -60,6 +61,13 @@ void FakeUsbDeviceManager::GetDevice(
                         std::move(device_client));
 }
 
+void FakeUsbDeviceManager::GetSecurityKeyDevice(
+    const std::string& guid,
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+    mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
+  return GetDevice(guid, std::move(device_receiver), std::move(device_client));
+}
+
 #if defined(OS_ANDROID)
 void FakeUsbDeviceManager::RefreshDeviceInfo(
     const std::string& guid,
@@ -74,7 +82,7 @@ void FakeUsbDeviceManager::RefreshDeviceInfo(
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 void FakeUsbDeviceManager::CheckAccess(const std::string& guid,
                                        CheckAccessCallback callback) {
   std::move(callback).Run(true);
@@ -82,12 +90,14 @@ void FakeUsbDeviceManager::CheckAccess(const std::string& guid,
 
 void FakeUsbDeviceManager::OpenFileDescriptor(
     const std::string& guid,
+    uint32_t drop_privileges_mask,
+    mojo::PlatformHandle lifeline_fd,
     OpenFileDescriptorCallback callback) {
   std::move(callback).Run(base::File(
       base::FilePath(FILE_PATH_LITERAL("/dev/null")),
       base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 void FakeUsbDeviceManager::SetClient(
     mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {

@@ -46,7 +46,7 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
-                   HitTestAction) final;
+                   HitTestAction) override;
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
@@ -72,8 +72,6 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   void AddOutlineRects(Vector<PhysicalRect>&,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
-
-  base::Optional<LayoutUnit> FragmentBaseline() const;
 
   void DirtyLinesFromChangedChild(LayoutObject* child,
                                   MarkingBehavior marking_behavior) final;

@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -27,6 +26,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -41,7 +41,6 @@ namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)) {
-  host_->render_frame_metadata_provider()->AddObserver(this);
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
@@ -59,8 +58,6 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   // so that the |text_input_manager_| will free its state.
   if (text_input_manager_)
     text_input_manager_->Unregister(this);
-  if (host_)
-    host_->render_frame_metadata_provider()->RemoveObserver(this);
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
@@ -113,25 +110,6 @@ void RenderWidgetHostViewBase::StopFlingingIfNecessary(
   }
 }
 
-void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
-    const cc::RenderFrameMetadata& metadata) {}
-
-void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
-  const cc::RenderFrameMetadata& metadata =
-      host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  is_scroll_offset_at_top_ = metadata.is_scroll_offset_at_top;
-
-  BrowserAccessibilityManager* manager =
-      host()->GetRootBrowserAccessibilityManager();
-  if (manager)
-    manager->SetPageScaleFactor(metadata.page_scale_factor);
-}
-
-void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
-
-void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
-    const cc::RenderFrameMetadata& metadata) {}
-
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
     blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
@@ -141,10 +119,15 @@ gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
 }
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
-    const WidgetHostMsg_SelectionBounds_Params& params) {
+    const gfx::Rect& anchor_rect,
+    base::i18n::TextDirection anchor_dir,
+    const gfx::Rect& focus_rect,
+    base::i18n::TextDirection focus_dir,
+    bool is_anchor_first) {
 #if !defined(OS_ANDROID)
   if (GetTextInputManager())
-    GetTextInputManager()->SelectionBoundsChanged(this, params);
+    GetTextInputManager()->SelectionBoundsChanged(
+        this, anchor_rect, anchor_dir, focus_rect, focus_dir, is_anchor_first);
 #else
   NOTREACHED() << "Selection bounds should be routed through the compositor.";
 #endif
@@ -260,7 +243,7 @@ void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
                const gfx::Vector2d offset, const SkBitmap& main_image,
                const SkBitmap& popup_image) {
               // Draw popup_image into main_image.
-              SkCanvas canvas(main_image);
+              SkCanvas canvas(main_image, SkSurfaceProps{});
               canvas.drawBitmap(popup_image, offset.x(), offset.y());
               std::move(final_callback).Run(main_image);
             },
@@ -452,11 +435,6 @@ RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
-  if (host())
-    host()->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
-}
-
 gfx::AcceleratedWidget
     RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;
@@ -529,10 +507,6 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   host()->SynchronizeVisualProperties();
 }
 
-bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() {
-  return is_scroll_offset_at_top_;
-}
-
 viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewBase::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
@@ -548,22 +522,14 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewBase::GetScreenInfo(blink::ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
-}
-
-uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
-  return renderer_frame_number_;
-}
-
-void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
-  ++renderer_frame_number_;
 }
 
 void RenderWidgetHostViewBase::OnAutoscrollStart() {
@@ -673,10 +639,7 @@ bool RenderWidgetHostViewBase::HasSize() const {
 }
 
 void RenderWidgetHostViewBase::Destroy() {
-  if (host_) {
-    host_->render_frame_metadata_provider()->RemoveObserver(this);
-    host_ = nullptr;
-  }
+  host_ = nullptr;
 }
 
 bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
@@ -689,7 +652,7 @@ RenderWidgetHostViewBase::ExtractAndCancelActiveTouches() {
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
-    const TextInputState& text_input_state) {
+    const ui::mojom::TextInputState& text_input_state) {
   if (GetTextInputManager())
     GetTextInputManager()->UpdateTextInputState(this, text_input_state);
 }
@@ -754,30 +717,27 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
 
 void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
     base::TimeTicks start_time,
-    base::Optional<bool> destination_is_loaded,
-    base::Optional<bool> destination_is_frozen,
+    bool destination_is_loaded,
     bool show_reason_tab_switching,
     bool show_reason_unoccluded,
     bool show_reason_bfcache_restore) {
-  if (last_record_tab_switch_time_request_.has_value()) {
-    last_record_tab_switch_time_request_.value().UpdateRequest(
-        RecordContentToVisibleTimeRequest(
-            start_time, destination_is_loaded, destination_is_frozen,
-            show_reason_tab_switching, show_reason_unoccluded,
-            show_reason_bfcache_restore));
+  auto record_tab_switch_time_request =
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start_time, destination_is_loaded, show_reason_tab_switching,
+          show_reason_unoccluded, show_reason_bfcache_restore);
+
+  if (last_record_tab_switch_time_request_) {
+    blink::UpdateRecordContentToVisibleTimeRequest(
+        *record_tab_switch_time_request, *last_record_tab_switch_time_request_);
   } else {
-    last_record_tab_switch_time_request_.emplace(
-        start_time, destination_is_loaded, destination_is_frozen,
-        show_reason_tab_switching, show_reason_unoccluded,
-        show_reason_bfcache_restore);
+    last_record_tab_switch_time_request_ =
+        std::move(record_tab_switch_time_request);
   }
 }
 
-base::Optional<RecordContentToVisibleTimeRequest>
+blink::mojom::RecordContentToVisibleTimeRequestPtr
 RenderWidgetHostViewBase::TakeRecordContentToVisibleTimeRequest() {
-  auto stored_state = std::move(last_record_tab_switch_time_request_);
-  last_record_tab_switch_time_request_.reset();
-  return stored_state;
+  return std::move(last_record_tab_switch_time_request_);
 }
 
 void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
@@ -824,8 +784,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
   DCHECK_GT(device_scale_factor, 0.0f);
-  gfx::Point3F point_in_pixels(
-      gfx::ConvertPointToPixel(device_scale_factor, point));
+  gfx::Point3F point_in_pixels =
+      gfx::Point3F(gfx::ConvertPointToPixels(point, device_scale_factor));
   // TODO(crbug.com/966995): Optimize so that |point_in_pixels| doesn't need to
   // be in the coordinate space of the root surface in HitTestQuery.
   gfx::Transform transform_root_to_original;
@@ -833,12 +793,14 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
                               &transform_root_to_original);
   if (!transform_root_to_original.TransformPointReverse(&point_in_pixels))
     return false;
+  gfx::PointF transformed_point_in_physical_pixels;
   if (!query->TransformLocationForTarget(
-          target_ancestors, point_in_pixels.AsPointF(), transformed_point)) {
+          target_ancestors, point_in_pixels.AsPointF(),
+          &transformed_point_in_physical_pixels)) {
     return false;
   }
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  *transformed_point = gfx::ConvertPointToDips(
+      transformed_point_in_physical_pixels, device_scale_factor);
   return true;
 }
 

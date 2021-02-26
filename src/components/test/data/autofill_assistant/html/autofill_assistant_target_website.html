@@ -17,8 +17,8 @@ found in the LICENSE file.
         button.parentNode.removeChild(button);
       }
 
-      var removeTouchArea = function(element) {
-        var touch_area = document.getElementById(element);
+      var removeTouchArea = function(event) {
+        var touch_area = event.target;
         touch_area.parentNode.removeChild(touch_area);
       }
 
@@ -131,18 +131,46 @@ found in the LICENSE file.
         left: 400px;
         top: 400px;
       }
+      #overlay {
+          visibility: hidden;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 9999;
+          background-color: #ff0000;
+      }
+
+      #input1_container {
+          position: relative;
+      }
+      #input1_container > label {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          z-index: 2;
+          background-color: yellow;
+      }
+      #input1_container input:focus + label {
+          top: 100%;
+          margin-top: 0px;
+      }
     </style>
   </head>
 
   <body onload="moveTouchAreaTwoAndThree()">
     <!-- Touch areas can be accessed without needing scroll. -->
     <div>
-      <p id="touch_area_one" ontouchend="removeTouchArea('touch_area_one')">
+      <p id="touch_area_one" ontouchend="removeTouchArea(event)" onmouseup="removeTouchArea(event)">
         Touchable Area One</p>
       <br>
     </div>
+    <br> <!-- safety padding, do not remove: crbug/1140957 -->
     <div>
-      <p id="touch_area_four" ontouchend="removeTouchArea('touch_area_four')">
+      <p id="touch_area_four" ontouchend="removeTouchArea(event)">
         Touchable Area Four</p>
       <br>
     </div>
@@ -158,32 +186,37 @@ found in the LICENSE file.
 
     <!-- Touch areas get moved in intervals. -->
     <div>
-      <p id="touch_area_two" ontouchend="removeTouchArea('touch_area_two')">
+      <p id="touch_area_two" ontouchend="removeTouchArea(event)">
         Touchable Area Two</p>
       <br>
     </div>
     <div>
-      <p id="touch_area_three" ontouchend="removeTouchArea('touch_area_three')">
+      <p id="touch_area_three" ontouchend="removeTouchArea(event)">
         Touchable Area Three</p>
       <br>
     </div>
 
     <!-- Touch areas can only be accessed after scrolling. -->
     <div>
-      <p id="touch_area_five" ontouchend="removeTouchArea('touch_area_five')">
+      <p id="touch_area_five" ontouchend="removeTouchArea(event)">
         Touchable Area Five</p>
       <br>
     </div>
+    <br> <!-- safety padding, do not remove: crbug/1140957 -->
     <div>
-      <p id="touch_area_six" ontouchend="removeTouchArea('touch_area_six')">
+      <p id="touch_area_six" ontouchend="removeTouchArea(event)" onclick="removeTouchArea(event)">
         Touchable Area Six</p>
       <br>
     </div>
 
     <div>
       <button id="button" type="button" onclick=
-          "removeButton()">Test Button</button>
+          "removeButton()"><span>Test Button</span></button>
       <br>
+    </div>
+
+    <div id="emptydiv" style="width: 100%; height: 0px; padding: 0px; margin: 0px;">
+      This text is hidden, but might be revealed if the div's height is increased.
     </div>
 
     <div>
@@ -195,26 +228,34 @@ found in the LICENSE file.
       </select>
     </div>
 
-    <div>
-      <input id="input1" type="field" value="helloworld1" />
+    <div id="input1_container">
+      <label class="pairs" for="input1"><b>Input1</b></label>
+      <input class="pairs" id="input1" type="text" value="helloworld1" />
     </div>
     <div>
-      <input id="input2" type="field" value="helloworld2" />
+      <label class="pairs" for="input2">Input2</label>
+      <input class="pairs" id="input2" type="text" value="helloworld2" />
     </div>
     <div>
-      <input id="input3" type="field" value="helloworld3" />
+      <label class="pairs" for="input3">Input3</label>
+      <input class="pairs" id="input3" type="text" value="helloworld3" />
     </div>
     <div>
-      <input id="input4" type="field" value="helloworld4" />
+      <label class="pairs" for="input4">Input4</label>
+      <input class="pairs" id="input4" type="text" value="helloworld4" />
     </div>
     <div>
-      <input id="input5" type="field" value="helloworld5" />
+      <label class="pairs" for="input5">Input5</label>
+      <input class="pairs" id="input5" type="text" value="helloworld5" />
     </div>
     <div>
-      <input id="uppercase_input" type="field" value="HELLOWORLD6" />
+      <input id="uppercase_input" type="text" value="HELLOWORLD6" />
     </div>
     <div>
-      <input id="input6" type="field" value="" />
+      <input id="input6" type="text" value="" />
+    </div>
+    <div>
+      <input id="input7" type="text" value="" />
     </div>
 
     <div>
@@ -261,6 +302,15 @@ found in the LICENSE file.
     <label for="terms-and-conditions" >
       <a href="#">I have read and understood <br />the terms and conditions</a>
     </label>
+
+    <label id="option1_label" for="option1">Option <b>1</b></label>
+    <input type="checkbox" id="option1">
+    <label id="option2_label">
+      Option <b>2</b>
+      <input id="option2" type="checkbox" name="option2">
+    </label>
+    <label id="bad_label1" for="doesnotexist">A label without an element</label>
+    <label id="bad_label2">Another label without an element</label>
 
     <script>
       let upperCaseInput = document.querySelector("#uppercase_input");
@@ -313,5 +363,37 @@ found in the LICENSE file.
       <div id="scroll_item_5" style="width:50px;height:50px">5</div>
     </div>
     <div id="after_scroll_container"/>
+
+    <div>Section with text only</div>
+    <div>Section with text and <button onclick="removeButton()">some button</button></div>
+
+    <table class="proximity">
+      <tr><td>One</td><td>Two</td><td>Three</td></tr>
+      <tr><td>Four</td><td><span id="at_center">Center</span></td><td>Five</td></tr>
+      <tr><td>Six</td><td>Seven</td><td>Eight</td></tr>
+    </table>
+
+    <a id="form_target_website_link" href="form_target_website.html">Link to FormTargetWebsite</a>
+    <div id="form_target_navigation_action" onclick="window.location.href='form_target_website.html'">Navigate to FormTargetWebsite</div>
+
+    <div id="overlay">
+      This is an overlay that covers the whole page.
+    </div>
+
+    <div class="nth_match_parent">
+      <span class="nth_match_child"></span>
+    </div>
+
+    <div class="nth_match_parent">
+      <p class="nth_match_child"></p>
+      <ul class="nth_match_child">
+        <li class="nth_match_child"></li>
+      </ul>
+      <strong class="nth_match_child"></strong>
+    </div>
+
+    <div class="label">Label 1</div>
+    <div class="label">Label 2</div>
+    <div class="label">Label 3</div>
   </body>
 </html>

@@ -17,11 +17,11 @@ EarconEngine = class {
   constructor() {
     // Public control parameters. All of these are meant to be adjustable.
 
-    /** @type {number} The master volume, as an amplification factor. */
-    this.masterVolume = 1.0;
+    /** @type {number} The output volume, as an amplification factor. */
+    this.outputVolume = 1.0;
 
     /** @type {number} The base relative pitch adjustment, in half-steps. */
-    this.masterPitch = -4;
+    this.basePitch = -4;
 
     /** @type {number} The click volume, as an amplification factor. */
     this.clickVolume = 0.4;
@@ -35,11 +35,11 @@ EarconEngine = class {
     /** @type {number} The base delay for repeated sounds, in seconds. */
     this.baseDelay = 0.045;
 
-    /** @type {number} The master stereo panning, from -1 to 1. */
-    this.masterPan = EarconEngine.CENTER_PAN_;
+    /** @type {number} The base stereo panning, from -1 to 1. */
+    this.basePan = EarconEngine.CENTER_PAN_;
 
-    /** @type {number} The master reverb level as an amplification factor. */
-    this.masterReverb = 0.4;
+    /** @type {number} The base reverb level as an amplification factor. */
+    this.baseReverb = 0.4;
 
     /**
      * @type {string} The choice of the reverb impulse response to use.
@@ -155,7 +155,7 @@ EarconEngine = class {
 
   /**
    * Return an AudioNode containing the final processing that all
-   * sounds go through: master volume / gain, panning, and reverb.
+   * sounds go through: output volume / gain, panning, and reverb.
    * The chain is hooked up to the destination automatically, so you
    * just need to connect your source to the return value from this
    * method.
@@ -165,12 +165,12 @@ EarconEngine = class {
    *          reverb: (number | undefined)}} properties
    *     An object where you can override the default
    *     gain, pan, and reverb, otherwise these are taken from
-   *     masterVolume, masterPan, and masterReverb.
+   *     outputVolume, basePan, and baseReverb.
    * @return {!AudioNode} The filters to be applied to all sounds, connected
    *     to the destination node.
    */
   createCommonFilters(properties) {
-    let gain = this.masterVolume;
+    let gain = this.outputVolume;
     if (properties.gain) {
       gain *= properties.gain;
     }
@@ -179,11 +179,11 @@ EarconEngine = class {
     const first = gainNode;
     let last = gainNode;
 
-    let pan = this.masterPan;
+    let pan = this.basePan;
     if (properties.pan !== undefined) {
       pan = properties.pan;
     }
-    if (pan != 0) {
+    if (pan !== 0) {
       const panNode = this.context_.createPanner();
       panNode.setPosition(pan, 0, 0);
       panNode.setOrientation(0, 0, 1);
@@ -191,7 +191,7 @@ EarconEngine = class {
       last = panNode;
     }
 
-    let reverb = this.masterReverb;
+    let reverb = this.baseReverb;
     if (properties.reverb !== undefined) {
       reverb = properties.reverb;
     }
@@ -249,11 +249,11 @@ EarconEngine = class {
       opt_properties = /** @type {undefined} */ ({});
     }
 
-    let pitch = this.masterPitch;
+    let pitch = this.basePitch;
     if (opt_properties.pitch) {
       pitch += opt_properties.pitch;
     }
-    if (pitch != 0) {
+    if (pitch !== 0) {
       source.playbackRate.value = Math.pow(EarconEngine.HALF_STEP, pitch);
     }
 
@@ -336,6 +336,22 @@ EarconEngine = class {
   }
 
   /**
+   * Play the smart sticky mode on sound.
+   */
+  onSmartStickyModeOn() {
+    this.play('static', {gain: this.clickVolume * 0.5});
+    this.play(this.controlSound, {pitch: 7});
+  }
+
+  /**
+   * Play the smart sticky mode off sound.
+   */
+  onSmartStickyModeOff() {
+    this.play('static', {gain: this.clickVolume * 0.5});
+    this.play(this.controlSound, {pitch: -5});
+  }
+
+  /**
    * Play the select control sound.
    */
   onSelect() {
@@ -381,28 +397,14 @@ EarconEngine = class {
     this.play('selection_reverse');
   }
 
-  onTouchEnterAnchor() {
-    this.play('static', {gain: this.clickVolume});
-    const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, 6);
-    this.generateSinusoidal({
-      attack: 0.0,
-      decay: 0.01,
-      dur: 0.03,
-      gain: 0.5,
-      freq: freq1,
-      overtones: 1,
-      overtoneFactor: 0.8
-    });
-  }
-
-  onTouchExitAnchor() {
-    this.play('static', {gain: this.clickVolume});
+  onNoPointerAnchor() {
+    this.play('static', {gain: this.clickVolume * 0.2});
     const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, 13);
     this.generateSinusoidal({
       attack: 0.00001,
       decay: 0.01,
       dur: 0.1,
-      gain: 0.3,
+      gain: 0.008,
       freq: freq1,
       overtones: 1,
       overtoneFactor: 0.1
@@ -424,7 +426,7 @@ EarconEngine = class {
    * and the decay time |decay|, in seconds.
    *
    * As with other functions, |pan| and |reverb| can be used to override
-   * masterPan and masterReverb.
+   * basePan and baseReverb.
    *
    * @param {{gain: number,
    *          freq: number,
@@ -538,7 +540,7 @@ EarconEngine = class {
           const gain = overtoneGain * freqDecay;
           const freq = (i + 1) * 220 *
               Math.pow(EarconEngine.HALF_STEP, pitches[j] + this.sweepPitch);
-          if (j == 0) {
+          if (j === 0) {
             osc.frequency.setValueAtTime(freq, startTime);
             gainNode.gain.setValueAtTime(gain, startTime);
           } else {
@@ -751,14 +753,14 @@ EarconEngine = class {
     // pan position.
     x = (2 * x - 1) * EarconEngine.MAX_PAN_ABS_X_POSITION;
 
-    this.masterPan = x;
+    this.basePan = x;
   }
 
   /**
    * Resets panning to default (centered).
    */
   resetPan() {
-    this.masterPan = EarconEngine.CENTER_PAN_;
+    this.basePan = EarconEngine.CENTER_PAN_;
   }
 };
 

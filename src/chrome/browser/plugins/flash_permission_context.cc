@@ -78,7 +78,9 @@ void FlashPermissionContext::UpdateTabContext(
 void FlashPermissionContext::UpdateContentSetting(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    ContentSetting content_setting) {
+    ContentSetting content_setting,
+    bool is_one_time) {
+  DCHECK(!is_one_time);
   DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
   DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
@@ -99,7 +101,7 @@ void FlashPermissionContext::UpdateContentSetting(
     pattern = ContentSettingsPattern::FromURLNoWildcard(embedding_origin);
   host_content_settings_map->SetContentSettingCustomScope(
       pattern, ContentSettingsPattern::Wildcard(), content_settings_type(),
-      std::string(), content_setting);
+      content_setting);
 }
 
 bool FlashPermissionContext::IsRestrictedToSecureOrigins() const {

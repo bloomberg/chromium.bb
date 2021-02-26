@@ -213,21 +213,23 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
     // Report-only
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, ContentSecurityPolicyType::kReport);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  script_src, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(),
-                  IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, script_src,
+            script_src, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(),
+            IntegrityMetadataSet(), kParserInserted));
 
     // Enforce
     directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  script_src, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(),
-                  IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, script_src,
+            script_src, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(),
+            IntegrityMetadataSet(), kParserInserted));
   }
 }
 
@@ -246,7 +248,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
       {"https://example.com", "https://not.example.com/file", "boo", false},
       {"https://example.com", "https://not.example.com/file", "", false},
 
-      // Doesn't affect URLs that match the whitelist.
+      // Doesn't affect URLs that match the allowlist.
       {"https://example.com 'nonce-yay'", "https://example.com/file", "yay",
        true},
       {"https://example.com 'nonce-yay'", "https://example.com/file", "boo",
@@ -270,22 +272,24 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
     // Report-only 'script-src'
     Member<CSPDirectiveList> directive_list = CreateList(
         String("script-src ") + test.list, ContentSecurityPolicyType::kReport);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(test.nonce),
-                  IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(test.nonce),
+            IntegrityMetadataSet(), kParserInserted));
 
     // Enforce 'script-src'
     directive_list = CreateList(String("script-src ") + test.list,
                                 ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(test.nonce),
-                  IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(test.nonce),
+            IntegrityMetadataSet(), kParserInserted));
 
     // Report-only 'style-src'
     directive_list = CreateList(String("style-src ") + test.list,
@@ -294,7 +298,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
         test.expected,
         directive_list->AllowFromSource(
             ContentSecurityPolicy::DirectiveType::kStyleSrcElem, resource,
-            ResourceRequest::RedirectStatus::kNoRedirect,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
             ReportingDisposition::kSuppressReporting, String(test.nonce)));
 
     // Enforce 'style-src'
@@ -304,7 +308,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
         test.expected,
         directive_list->AllowFromSource(
             ContentSecurityPolicy::DirectiveType::kStyleSrcElem, resource,
-            ResourceRequest::RedirectStatus::kNoRedirect,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
             ReportingDisposition::kSuppressReporting, String(test.nonce)));
 
     // Report-only 'style-src'
@@ -314,29 +318,30 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
         test.expected,
         directive_list->AllowFromSource(
             ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
-            ResourceRequest::RedirectStatus::kNoRedirect,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
             ReportingDisposition::kSuppressReporting, String(test.nonce)));
     EXPECT_EQ(
         test.expected,
         directive_list->AllowFromSource(
             ContentSecurityPolicy::DirectiveType::kStyleSrcElem, resource,
-            ResourceRequest::RedirectStatus::kNoRedirect,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
             ReportingDisposition::kSuppressReporting, String(test.nonce)));
 
     // Enforce 'style-src'
     directive_list = CreateList(String("default-src ") + test.list,
                                 ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(test.nonce),
-                  IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(test.nonce),
+            IntegrityMetadataSet(), kParserInserted));
     EXPECT_EQ(
         test.expected,
         directive_list->AllowFromSource(
             ContentSecurityPolicy::DirectiveType::kStyleSrcElem, resource,
-            ResourceRequest::RedirectStatus::kNoRedirect,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
             ReportingDisposition::kSuppressReporting, String(test.nonce)));
   }
 }
@@ -358,7 +363,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
        false},
       {"https://example.com", "https://not.example.com/file", "", false},
 
-      // Doesn't affect URLs that match the whitelist.
+      // Doesn't affect URLs that match the allowlist.
       {"https://example.com 'sha256-yay'", "https://example.com/file",
        "sha256-yay", true},
       {"https://example.com 'sha256-yay'", "https://example.com/file",
@@ -366,7 +371,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
       {"https://example.com 'sha256-yay'", "https://example.com/file", "",
        true},
 
-      // Does affect URLs that don't match the whitelist.
+      // Does affect URLs that don't match the allowlist.
       {"https://example.com 'sha256-yay'", "https://not.example.com/file",
        "sha256-yay", true},
       {"https://example.com 'sha256-yay'", "https://not.example.com/file",
@@ -388,7 +393,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
       // But they also don't interfere.
       {"'sha256-yay'", "https://a.com/file", "sha256-yay asdf256-boo", true},
 
-      // Additional whitelisted hashes in the CSP don't interfere.
+      // Additional allowlisted hashes in the CSP don't interfere.
       {"'sha256-yay' 'sha384-boo'", "https://a.com/file", "sha256-yay", true},
       {"'sha256-yay' 'sha384-boo'", "https://a.com/file", "sha384-boo", true},
 
@@ -422,184 +427,24 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
     // Report-only 'script-src'
     Member<CSPDirectiveList> directive_list = CreateList(
         String("script-src ") + test.list, ContentSecurityPolicyType::kReport);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(),
-                  integrity_metadata, kParserInserted));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(),
+            integrity_metadata, kParserInserted));
 
     // Enforce 'script-src'
     directive_list = CreateList(String("script-src ") + test.list,
                                 ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowFromSource(
-                  ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting, String(),
-                  integrity_metadata, kParserInserted));
-  }
-}
-
-TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
-  struct TestCase {
-    const char* list;
-    const char* url;
-    const mojom::RequestContextType context;
-    const network::mojom::RequestDestination request_destination;
-    bool expected;
-  } cases[] = {
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-
-      // Extra WSP
-      {"require-sri-for  script     script  ", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for      style    script", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, false},
-
-      {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, false},
-      {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::IMAGE,
-       network::mojom::RequestDestination::kImage, true},
-
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::AUDIO,
-       network::mojom::RequestDestination::kAudio, true},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, false},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER,
-       network::mojom::RequestDestination::kServiceWorker, false},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER,
-       network::mojom::RequestDestination::kSharedWorker, false},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::WORKER,
-       network::mojom::RequestDestination::kWorker, false},
-      {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, true},
-
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::AUDIO,
-       network::mojom::RequestDestination::kAudio, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER,
-       network::mojom::RequestDestination::kServiceWorker, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER,
-       network::mojom::RequestDestination::kSharedWorker, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::WORKER,
-       network::mojom::RequestDestination::kWorker, true},
-      {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, false},
-
-      // Multiple tokens
-      {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, false},
-      {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, false},
-      {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::IMAGE,
-       network::mojom::RequestDestination::kImage, true},
-
-      // Matching is case-insensitive
-      {"require-sri-for Script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-
-      // Unknown tokens do not affect result
-      {"require-sri-for blabla12 as", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, true},
-      {"require-sri-for blabla12 as  script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, false},
-      {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, false},
-      {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::IMAGE,
-       network::mojom::RequestDestination::kImage, true},
-
-      // Empty token list has no effect
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, true},
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::IMPORT,
-       network::mojom::RequestDestination::kEmpty, true},
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::STYLE,
-       network::mojom::RequestDestination::kStyle, true},
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER,
-       network::mojom::RequestDestination::kServiceWorker, true},
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER,
-       network::mojom::RequestDestination::kSharedWorker, true},
-      {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::WORKER,
-       network::mojom::RequestDestination::kWorker, true},
-
-      // Order does not matter
-      {"require-sri-for a b script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-      {"require-sri-for a script b", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT,
-       network::mojom::RequestDestination::kScript, false},
-  };
-
-  for (const auto& test : cases) {
-    const KURL resource(test.url);
-    // Report-only
-    Member<CSPDirectiveList> directive_list =
-        CreateList(test.list, ContentSecurityPolicyType::kReport);
-    EXPECT_EQ(true, directive_list->AllowRequestWithoutIntegrity(
-                        test.context, test.request_destination, resource,
-                        ResourceRequest::RedirectStatus::kNoRedirect,
-                        ReportingDisposition::kSuppressReporting));
-
-    // Enforce
-    directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected,
-              directive_list->AllowRequestWithoutIntegrity(
-                  test.context, test.request_destination, resource,
-                  ResourceRequest::RedirectStatus::kNoRedirect,
-                  ReportingDisposition::kSuppressReporting));
+    EXPECT_EQ(
+        test.expected,
+        directive_list->AllowFromSource(
+            ContentSecurityPolicy::DirectiveType::kScriptSrcElem, resource,
+            resource, ResourceRequest::RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting, String(),
+            integrity_metadata, kParserInserted));
   }
 }
 
@@ -644,7 +489,7 @@ TEST_F(CSPDirectiveListTest, WorkerSrc) {
     EXPECT_EQ(test.allowed,
               directive_list->AllowFromSource(
                   ContentSecurityPolicy::DirectiveType::kWorkerSrc, resource,
-                  ResourceRequest::RedirectStatus::kNoRedirect,
+                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
                   ReportingDisposition::kSuppressReporting));
   }
 }
@@ -690,14 +535,14 @@ TEST_F(CSPDirectiveListTest, WorkerSrcChildSrcFallback) {
     EXPECT_EQ(test.allowed,
               directive_list->AllowFromSource(
                   ContentSecurityPolicy::DirectiveType::kWorkerSrc, resource,
-                  ResourceRequest::RedirectStatus::kNoRedirect,
+                  resource, ResourceRequest::RedirectStatus::kNoRedirect,
                   ReportingDisposition::kSuppressReporting));
   }
 }
 
 TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
   CSPDirectiveList* a = CreateList(
-      "script-src http://*.one.com; img-src https://one.com "
+      "script-src http://*.one.com; img-src https://sub.one.com "
       "http://two.com/imgs/",
       ContentSecurityPolicyType::kEnforce);
 
@@ -711,49 +556,53 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
       {{"script-src http://example.com"}, false, false},
       {{"img-src http://example.com"}, false, false},
       {{"script-src http://*.one.com"}, false, true},
-      {{"img-src https://one.com http://two.com/imgs/"}, false, true},
+      {{"img-src https://sub.one.com http://two.com/imgs/"}, false, true},
       {{"default-src http://example.com"}, false, false},
-      {{"default-src https://one.com http://two.com/imgs/"}, false, false},
-      {{"default-src http://one.com"}, false, false},
+      {{"default-src https://sub.one.com http://two.com/imgs/"}, false, false},
+      {{"default-src http://sub.one.com"}, false, false},
       {{"script-src http://*.one.com; img-src http://two.com/"}, false, false},
-      {{"script-src http://*.one.com", "img-src http://one.com"}, false, true},
+      {{"script-src http://*.one.com", "img-src http://sub.one.com"},
+       false,
+       true},
       {{"script-src http://*.one.com", "script-src https://two.com"},
        false,
        true},
       {{"script-src http://*.random.com", "script-src https://random.com"},
        false,
        false},
-      {{"script-src http://one.com", "script-src https://random.com"},
+      {{"script-src http://sub.one.com", "script-src https://random.com"},
        false,
        false},
-      {{"script-src http://*.random.com; default-src http://one.com "
+      {{"script-src http://*.random.com; default-src http://sub.one.com "
         "http://two.com/imgs/",
-        "default-src https://random.com"},
+        "default-src https://sub.random.com"},
        false,
        false},
       // `listB`, which is as restrictive as `A`, is subsumed.
-      {{"default-src https://one.com"}, true, false},
+      {{"default-src https://sub.one.com"}, true, false},
       {{"default-src http://random.com",
         "default-src https://non-random.com:*"},
        true,
        false},
-      {{"script-src http://*.one.com; img-src https://one.com"}, true, false},
-      {{"script-src http://*.one.com; img-src https://one.com "
+      {{"script-src http://*.one.com; img-src https://sub.one.com"},
+       true,
+       false},
+      {{"script-src http://*.one.com; img-src https://sub.one.com "
         "http://two.com/imgs/"},
        true,
        true},
       {{"script-src http://*.one.com",
-        "img-src https://one.com http://two.com/imgs/"},
+        "img-src https://sub.one.com http://two.com/imgs/"},
        true,
        true},
-      {{"script-src http://*.random.com; default-src https://one.com "
+      {{"script-src http://*.random.com; default-src https://sub.one.com "
         "http://two.com/imgs/",
         "default-src https://else.com"},
        true,
        false},
-      {{"script-src http://*.random.com; default-src https://one.com "
+      {{"script-src http://*.random.com; default-src https://sub.one.com "
         "http://two.com/imgs/",
-        "default-src https://one.com"},
+        "default-src https://sub.one.com"},
        true,
        false},
   };

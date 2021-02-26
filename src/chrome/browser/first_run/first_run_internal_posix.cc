@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/initial_preferences.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/prefs/pref_service.h"
@@ -108,12 +108,7 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #endif  // !OS_CHROMEOS
 }
 
-bool IsFirstRunSentinelPresent() {
-  base::FilePath sentinel;
-  return !GetFirstRunSentinelFilePath(&sentinel) || base::PathExists(sentinel);
-}
-
-bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+bool ShowPostInstallEULAIfNeeded(installer::InitialPreferences* install_prefs) {
   // The EULA is only handled on Windows.
   return true;
 }

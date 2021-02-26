@@ -36,9 +36,7 @@ bool FillsViewport(const Element& element) {
   if (!element.GetLayoutObject())
     return false;
 
-  DCHECK(element.GetLayoutObject()->IsBox());
-
-  LayoutBox* layout_box = ToLayoutBox(element.GetLayoutObject());
+  auto* layout_box = To<LayoutBox>(element.GetLayoutObject());
 
   // TODO(bokan): Broken for OOPIF. crbug.com/642378.
   Document& top_document = element.GetDocument().TopDocument();
@@ -90,8 +88,10 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
     return frame_view->LayoutViewport();
   }
 
-  DCHECK(element.GetLayoutObject()->IsBox());
-  return ToLayoutBox(element.GetLayoutObject())->GetScrollableArea();
+  if (!element.GetLayoutBoxForScrolling())
+    return nullptr;
+
+  return element.GetLayoutBoxForScrolling()->GetScrollableArea();
 }
 
 }  // namespace
@@ -99,7 +99,7 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document), effective_root_scroller_(&document) {}
 
-void RootScrollerController::Trace(Visitor* visitor) {
+void RootScrollerController::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(root_scroller_);
   visitor->Trace(effective_root_scroller_);
@@ -236,7 +236,7 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
   if (element.GetLayoutObject()->IsInsideFlowThread())
     return false;
 
-  if (!element.GetLayoutObject()->HasOverflowClip() &&
+  if (!element.GetLayoutObject()->IsScrollContainer() &&
       !element.IsFrameOwnerElement())
     return false;
 
@@ -322,8 +322,9 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
       if (ancestor_style->ScrollsOverflowY() && area->HasVerticalOverflow())
         return false;
     } else {
-      if (ancestor->ShouldClipOverflow() || ancestor->HasMask() ||
-          ancestor->HasClip() || ancestor->HasClipPath()) {
+      if (ancestor->ShouldClipOverflowAlongEitherAxis() ||
+          ancestor->HasMask() || ancestor->HasClip() ||
+          ancestor->HasClipPath()) {
         return false;
       }
     }

@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -119,7 +120,7 @@ std::unique_ptr<base::Value> Validator::MapValue(
 
 std::unique_ptr<base::DictionaryValue> Validator::MapObject(
     const OncValueSignature& signature,
-    const base::DictionaryValue& onc_object,
+    const base::Value& onc_object,
     bool* error) {
   std::unique_ptr<base::DictionaryValue> repaired(new base::DictionaryValue);
 
@@ -245,7 +246,7 @@ std::unique_ptr<base::Value> Validator::MapEntry(
 }
 
 bool Validator::ValidateObjectDefault(const OncValueSignature& signature,
-                                      const base::DictionaryValue& onc_object,
+                                      const base::Value& onc_object,
                                       base::DictionaryValue* result) {
   bool found_unknown_field = false;
   bool nested_error_occured = false;
@@ -268,10 +269,10 @@ bool Validator::ValidateRecommendedField(
     base::DictionaryValue* result) {
   CHECK(result);
 
-  std::unique_ptr<base::Value> recommended_value;
+  base::Optional<base::Value> recommended_value =
+      result->ExtractKey(::onc::kRecommended);
   // This remove passes ownership to |recommended_value|.
-  if (!result->RemoveWithoutPathExpansion(::onc::kRecommended,
-                                          &recommended_value)) {
+  if (!recommended_value) {
     return true;
   }
 
@@ -566,7 +567,7 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
             << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
         AddValidationIssue(false /* is_error */, msg.str());
         path_.pop_back();
-        object->RemoveWithoutPathExpansion(::onc::wifi::kSSID, nullptr);
+        object->RemoveKey(::onc::wifi::kSSID);
       }
     }
   }
@@ -603,9 +604,9 @@ bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
 }
 
 bool Validator::IsGlobalNetworkConfigInUserImport(
-    const base::DictionaryValue& onc_object) {
+    const base::Value& onc_object) {
   if (onc_source_ == ::onc::ONC_SOURCE_USER_IMPORT &&
-      onc_object.HasKey(::onc::toplevel_config::kGlobalNetworkConfiguration)) {
+      onc_object.FindKey(::onc::toplevel_config::kGlobalNetworkConfiguration)) {
     std::ostringstream msg;
     msg << "Field '" << ::onc::toplevel_config::kGlobalNetworkConfiguration
         << "' is prohibited in ONC user imports";
@@ -674,9 +675,11 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
 
     std::string type = GetStringFromDict(*result, ::onc::network_config::kType);
 
-    // Prohibit anything but WiFi and Ethernet for device-level policy (which
-    // corresponds to shared networks). See also http://crosbug.com/28741.
+    // Prohibit anything but WiFi, Ethernet and VPN for device-level policy
+    // (which corresponds to shared networks). See also
+    // http://crosbug.com/28741.
     if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY && !type.empty() &&
+        type != ::onc::network_type::kVPN &&
         type != ::onc::network_type::kWiFi &&
         type != ::onc::network_type::kEthernet) {
       std::ostringstream msg;
@@ -685,7 +688,6 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
       AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
-
     if (type == ::onc::network_type::kWiFi) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kWiFi);
     } else if (type == ::onc::network_type::kEthernet) {
@@ -729,8 +731,8 @@ bool Validator::ValidateIPConfig(base::DictionaryValue* result,
                                  bool require_fields) {
   const std::vector<const char*> valid_types = {::onc::ipconfig::kIPv4,
                                                 ::onc::ipconfig::kIPv6};
-  if (FieldExistsAndHasNoValidValue(
-          *result, ::onc::ipconfig::kType, valid_types))
+  if (FieldExistsAndHasNoValidValue(*result, ::onc::ipconfig::kType,
+                                    valid_types))
     return false;
 
   std::string type = GetStringFromDict(*result, ::onc::ipconfig::kType);
@@ -819,9 +821,17 @@ bool Validator::ValidateWiFi(base::DictionaryValue* result) {
 }
 
 bool Validator::ValidateVPN(base::DictionaryValue* result) {
-  const std::vector<const char*> valid_types = {
-      ::onc::vpn::kIPsec, ::onc::vpn::kTypeL2TP_IPsec, ::onc::vpn::kOpenVPN,
-      ::onc::vpn::kThirdPartyVpn, ::onc::vpn::kArcVpn};
+  std::vector<const char*> valid_types = {
+      ::onc::vpn::kIPsec,
+      ::onc::vpn::kTypeL2TP_IPsec,
+      ::onc::vpn::kOpenVPN,
+  };
+
+  if (!managed_onc_) {
+    valid_types.push_back(::onc::vpn::kThirdPartyVpn);
+    valid_types.push_back(::onc::vpn::kArcVpn);
+  }
+
   if (FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kType, valid_types))
     return false;
 
@@ -1009,8 +1019,18 @@ bool Validator::ValidateCertificatePattern(base::DictionaryValue* result) {
 
 bool Validator::ValidateGlobalNetworkConfiguration(
     base::DictionaryValue* result) {
+  // Replace the deprecated kBlacklistedHexSSIDs with kBlockedHexSSIDs.
+  if (!result->HasKey(::onc::global_network_config::kBlockedHexSSIDs)) {
+    base::Optional<base::Value> blocked =
+        result->ExtractKey(::onc::global_network_config::kBlacklistedHexSSIDs);
+    if (blocked) {
+      result->SetKey(::onc::global_network_config::kBlockedHexSSIDs,
+                     std::move(*blocked));
+    }
+  }
+
   // Validate that kDisableNetworkTypes, kAllowOnlyPolicyNetworksToConnect and
-  // kBlacklistedHexSSIDs are only allowed in device policy.
+  // kBlockedHexSSIDs are only allowed in device policy.
   if (!IsInDevicePolicy(result,
                         ::onc::global_network_config::kDisableNetworkTypes) ||
       !IsInDevicePolicy(
@@ -1020,15 +1040,16 @@ bool Validator::ValidateGlobalNetworkConfiguration(
                         ::onc::global_network_config::
                             kAllowOnlyPolicyNetworksToConnectIfAvailable) ||
       !IsInDevicePolicy(result,
-                        ::onc::global_network_config::kBlacklistedHexSSIDs)) {
+                        ::onc::global_network_config::kBlockedHexSSIDs)) {
     return false;
   }
 
   // Ensure the list contains only legitimate network type identifiers.
   const std::vector<const char*> valid_network_type_values = {
       ::onc::network_config::kCellular, ::onc::network_config::kEthernet,
-      ::onc::network_config::kWiFi, ::onc::network_config::kWimaxDeprecated,
-      ::onc::network_config::kTether};
+      ::onc::network_config::kTether,   ::onc::network_config::kWiFi,
+      ::onc::network_config::kVPN,      ::onc::network_config::kWimaxDeprecated,
+  };
   if (!ListFieldContainsValidValues(
           *result, ::onc::global_network_config::kDisableNetworkTypes,
           valid_network_type_values)) {

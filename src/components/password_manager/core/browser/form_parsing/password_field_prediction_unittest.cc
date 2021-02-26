@@ -8,9 +8,11 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,14 +34,30 @@ using autofill::USERNAME;
 using autofill::USERNAME_AND_EMAIL_ADDRESS;
 using base::ASCIIToUTF16;
 
-using FieldPrediction =
-    autofill::AutofillQueryResponseContents::Field::FieldPrediction;
+using FieldPrediction = autofill::AutofillQueryResponse::FormSuggestion::
+    FieldSuggestion::FieldPrediction;
 
 namespace password_manager {
 
 namespace {
 
-TEST(FormPredictionsTest, ConvertToFormPredictions) {
+// The boolean parameter determines the feature state of
+// `kSecondaryServerFieldPredictions`.
+class FormPredictionsTest : public ::testing::TestWithParam<bool> {
+ public:
+  FormPredictionsTest() {
+    feature_list_.InitWithFeatureState(
+        features::kSecondaryServerFieldPredictions,
+        AreSecondaryPredictionsEnabled());
+  }
+
+  bool AreSecondaryPredictionsEnabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(FormPredictionsTest, ConvertToFormPredictions) {
   struct TestField {
     std::string name;
     std::string form_control_type;
@@ -55,13 +73,20 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       {"Password", "password", PASSWORD, PASSWORD, false},
       {"confirm_password", "password", CONFIRMATION_PASSWORD,
        CONFIRMATION_PASSWORD, true},
-      // username in |additional_types| takes precedence.
-      {"email", "text", EMAIL_ADDRESS, USERNAME, false, {USERNAME}},
-      // cvc in |additional_types| takes precedence.
+      // username in |additional_types| takes precedence if the feature is
+      // enabled.
+      {"email",
+       "text",
+       EMAIL_ADDRESS,
+       AreSecondaryPredictionsEnabled() ? USERNAME : EMAIL_ADDRESS,
+       false,
+       {USERNAME}},
+      // cvc in |additional_types| takes precedence if the feature is enabled.
       {"cvc",
        "password",
        PASSWORD,
-       CREDIT_CARD_VERIFICATION_CODE,
+       AreSecondaryPredictionsEnabled() ? CREDIT_CARD_VERIFICATION_CODE
+                                        : PASSWORD,
        false,
        {CREDIT_CARD_VERIFICATION_CODE}},
       // non-password, non-cvc types in |additional_types| are ignored.
@@ -84,8 +109,6 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     field->set_server_type(test_fields[i].input_type);
 
     std::vector<FieldPrediction> predictions(1);
-    predictions[0].set_may_use_prefilled_placeholder(
-        test_fields[i].may_use_prefilled_placeholder);
 
     for (ServerFieldType type : test_fields[i].additional_types) {
       FieldPrediction additional_prediction;
@@ -93,6 +116,8 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       predictions.push_back(additional_prediction);
     }
     field->set_server_predictions(predictions);
+    field->set_may_use_prefilled_placeholder(
+        test_fields[i].may_use_prefilled_placeholder);
   }
 
   constexpr int driver_id = 1000;
@@ -206,7 +231,7 @@ TEST(FormPredictionsTest, DeriveFromServerFieldType) {
               DeriveFromServerFieldType(test_case.server_type));
   }
 }
-
+INSTANTIATE_TEST_SUITE_P(All, FormPredictionsTest, testing::Bool());
 }  // namespace
 
 }  // namespace password_manager

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 
+#include <vector>
+
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
@@ -31,6 +33,21 @@ enum Type {
 };
 }  // namespace Source
 
+// Type of OS hook.
+//
+// This enum should be zero based. It is not strongly typed enum class to
+// support implicit conversion to int. Values are also used as index in
+// OsHooksResults.
+namespace OsHookType {
+enum Type {
+  kShortcuts = 0,
+  kRunOnOsLogin,
+  kShortcutsMenu,
+  kFileHandlers,
+  kMaxValue = kFileHandlers,
+};
+}
+
 // The result of an attempted web app installation, uninstallation or update.
 //
 // This is an enum, instead of a struct with multiple fields (e.g. one field for
@@ -44,6 +61,7 @@ enum class InstallResultCode {
   // Success category:
   kSuccessNewInstall = 0,
   kSuccessAlreadyInstalled = 1,
+
   // Failure category:
   // An inter-process request to blink renderer failed.
   kGetWebApplicationInfoFailed = 3,
@@ -83,12 +101,22 @@ enum class InstallResultCode {
   // App managers are shutting down. For example, when user logs out immediately
   // after login.
   kCancelledOnWebAppProviderShuttingDown = 21,
+  // The Web Apps system is not ready: registry is not yet opened or already
+  // closed.
+  kWebAppProviderNotReady = 22,
 
-  kMaxValue = kCancelledOnWebAppProviderShuttingDown
+  // Success category for background installs:
+  kSuccessOfflineOnlyInstall = 23,
+  kSuccessOfflineFallbackInstall = 24,
+
+  kMaxValue = kSuccessOfflineFallbackInstall
 };
 
 // Checks if InstallResultCode is not a failure.
 bool IsSuccess(InstallResultCode code);
+
+// Checks if InstallResultCode indicates a new app was installed.
+bool IsNewInstall(InstallResultCode code);
 
 // PendingAppManager: Where an app was installed from. This affects what flags
 // will be used when installing the app.
@@ -157,14 +185,54 @@ constexpr int kWebAppIconSmall = 32;
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in
-// a browser tab, we open in a browser tab. Otherwise, we open in a standalone
+// a browser tab, we open in a browser tab. If the developer has specified
+// the app should utilize more advanced display modes and/or fallback chain,
+// attempt honor those preferences. Otherwise, we open in a standalone
 // window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
 // window (for app_display_mode 'browser' or 'minimal-ui').
-DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
-                                        DisplayMode user_display_mode);
+DisplayMode ResolveEffectiveDisplayMode(
+    DisplayMode app_display_mode,
+    const std::vector<DisplayMode>& app_display_mode_overrides,
+    DisplayMode user_display_mode);
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     DisplayMode display_mode);
+
+// The operation mode for Run on OS Login.
+enum class RunOnOsLoginMode {
+  // kUndefined: The web app is not registered with the OS.
+  kUndefined = 0,
+  // kWindowed: The web app is registered with the OS and will be launched as
+  // normal window. This is also the default launch mode for web apps.
+  kWindowed = 1,
+  // kMinimized: The web app is registered with the OS and will be launched as a
+  // minimized window.
+  kMinimized = 2
+};
+
+std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode);
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Records result of user reaction to install in-product help promo.
+enum class InstallIphResult {
+  // Installed the web app after IPH was shown.
+  kInstalled = 0,
+  // Clicked the install icon but canceled install after IPH was shown.
+  kCanceled = 1,
+  // Ignored IPH, didn't click install.
+  kIgnored = 2,
+  kMaxValue = kIgnored
+};
+
+// Number of times IPH can be ignored for this app before it's muted.
+constexpr int kIphMuteAfterConsecutiveAppSpecificIgnores = 3;
+// Number of times IPH can be ignored for any app before it's muted.
+constexpr int kIphMuteAfterConsecutiveAppAgnosticIgnores = 4;
+// Number of days to mute IPH after it's ignored for this app.
+constexpr int kIphAppSpecificMuteTimeSpanDays = 90;
+// Number of days to mute IPH after it's ignored for any app.
+constexpr int kIphAppAgnosticMuteTimeSpanDays = 14;
 
 }  // namespace web_app
 

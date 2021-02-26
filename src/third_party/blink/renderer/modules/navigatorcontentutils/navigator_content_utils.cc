@@ -27,7 +27,10 @@
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
 #include "base/stl_util.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
+#include "third_party/blink/public/common/security/protocol_handler_security_level.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
@@ -36,118 +39,123 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
 const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 
-// Changes to this list must be kept in sync with the browser-side checks in
-// /chrome/common/custom_handlers/protocol_handler.cc.
-static const HashSet<String>& SupportedSchemes() {
-  DEFINE_STATIC_LOCAL(
-      HashSet<String>, supported_schemes,
-      ({
-          "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-          "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-          "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
-      }));
-  return supported_schemes;
+namespace {
+
+const char kToken[] = "%s";
+
+static bool VerifyCustomHandlerURLSecurity(
+    const LocalDOMWindow& window,
+    const KURL& full_url,
+    String& error_message,
+    ProtocolHandlerSecurityLevel security_level) {
+  // Although not required by the spec, the spec allows additional security
+  // checks. Bugs have arisen from allowing non-http/https URLs, e.g.
+  // https://crbug.com/971917 and it doesn't make a lot of sense to support
+  // them. We do need to allow extensions to continue using the API.
+  if (!full_url.ProtocolIsInHTTPFamily() &&
+      !full_url.ProtocolIs("chrome-extension")) {
+    error_message =
+        "The scheme of the url provided must be 'https' or "
+        "'chrome-extension'.";
+    return false;
+  }
+
+  // The specification says that the API throws SecurityError exception if the
+  // URL's origin differs from the window's origin.
+  if (security_level < ProtocolHandlerSecurityLevel::kUntrustedOrigins &&
+      !window.GetSecurityOrigin()->CanRequest(full_url)) {
+    error_message =
+        "Can only register custom handler in the document's origin.";
+    return false;
+  }
+
+  return true;
 }
 
-static bool VerifyCustomHandlerURL(const Document& document,
-                                   const String& url,
-                                   ExceptionState& exception_state) {
+static bool VerifyCustomHandlerURL(
+    const LocalDOMWindow& window,
+    const String& user_url,
+    ExceptionState& exception_state,
+    ProtocolHandlerSecurityLevel security_level) {
+  KURL full_url = window.CompleteURL(user_url);
+  KURL base_url = window.BaseURL();
+  String error_message;
+
+  if (!VerifyCustomHandlerURLSyntax(full_url, base_url, user_url,
+                                    error_message)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      error_message);
+    return false;
+  }
+
+  if (!VerifyCustomHandlerURLSecurity(window, full_url, error_message,
+                                      security_level)) {
+    exception_state.ThrowSecurityError(error_message);
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
+  if (!IsValidProtocol(scheme)) {
+    error_string = "The scheme name '" + scheme +
+                   "' is not allowed by URI syntax (RFC3986).";
+    return false;
+  }
+
+  bool has_custom_scheme_prefix;
+  StringUTF8Adaptor scheme_adaptor(scheme);
+  if (!IsValidCustomHandlerScheme(scheme_adaptor.AsStringPiece(),
+                                  has_custom_scheme_prefix)) {
+    if (has_custom_scheme_prefix) {
+      error_string =
+          "The scheme name '" + scheme +
+          "' is not allowed. Schemes starting with 'web+' must be followed by "
+          "one or more ASCII letters.";
+    } else {
+      error_string = "The scheme '" + scheme +
+                     "' doesn't belong to the scheme allowlist. "
+                     "Please prefix non-allowlisted schemes "
+                     "with the string 'web+'.";
+    }
+    return false;
+  }
+
+  return true;
+}
+
+bool VerifyCustomHandlerURLSyntax(const KURL& full_url,
+                                  const KURL& base_url,
+                                  const String& user_url,
+                                  String& error_message) {
   // The specification requires that it is a SyntaxError if the "%s" token is
   // not present.
-  static const char kToken[] = "%s";
-  int index = url.Find(kToken);
+  int index = user_url.Find(kToken);
   if (-1 == index) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "The url provided ('" + url + "') does not contain '%s'.");
+    error_message =
+        "The url provided ('" + user_url + "') does not contain '%s'.";
     return false;
   }
 
   // It is also a SyntaxError if the custom handler URL, as created by removing
   // the "%s" token and prepending the base url, does not resolve.
-  String new_url = url;
-  new_url.Remove(index, base::size(kToken) - 1);
-  KURL kurl = document.CompleteURL(new_url);
-
-  if (kurl.IsEmpty() || !kurl.IsValid()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
+  if (full_url.IsEmpty() || !full_url.IsValid()) {
+    error_message =
         "The custom handler URL created by removing '%s' and prepending '" +
-            document.BaseURL().GetString() + "' is invalid.");
-    return false;
-  }
-
-  // Although not required by the spec, the spec allows additional security
-  // checks. Bugs have arisen from allowing non-http/https URLs, e.g.
-  // https://crbug.com/971917 and it doesn't make a lot of sense to support
-  // them. We do need to allow extensions to continue using the API.
-  if (!kurl.ProtocolIsInHTTPFamily() && !kurl.ProtocolIs("chrome-extension")) {
-    exception_state.ThrowSecurityError(
-        "The scheme of the url provided must be 'https' or "
-        "'chrome-extension'.");
-    return false;
-  }
-
-  // The specification says that the API throws SecurityError exception if the
-  // URL's origin differs from the document's origin.
-  if (!document.GetSecurityOrigin()->CanRequest(kurl)) {
-    exception_state.ThrowSecurityError(
-        "Can only register custom handler in the document's origin.");
+        base_url.GetString() + "' is invalid.";
     return false;
   }
 
   return true;
-}
-
-// HTML5 requires that schemes with the |web+| prefix contain one or more
-// ASCII alphas after that prefix.
-static bool IsValidWebSchemeName(const String& protocol) {
-  if (protocol.length() < 5)
-    return false;
-
-  unsigned protocol_length = protocol.length();
-  for (unsigned i = 4; i < protocol_length; i++) {
-    char c = protocol[i];
-    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool VerifyCustomHandlerScheme(const String& scheme,
-                                      ExceptionState& exception_state) {
-  if (!IsValidProtocol(scheme)) {
-    exception_state.ThrowSecurityError(
-        "The scheme name '" + scheme +
-        "' is not allowed by URI syntax (RFC3986).");
-    return false;
-  }
-
-  if (scheme.StartsWithIgnoringASCIICase("web+")) {
-    if (IsValidWebSchemeName(scheme))
-      return true;
-    exception_state.ThrowSecurityError(
-        "The scheme name '" + scheme +
-        "' is not allowed. Schemes starting with 'web+' must be followed by "
-        "one or more ASCII letters.");
-    return false;
-  }
-
-  if (SupportedSchemes().Contains(scheme.LowerASCII()))
-    return true;
-
-  exception_state.ThrowSecurityError(
-      "The scheme '" + scheme +
-      "' doesn't belong to the scheme allowlist. "
-      "Please prefix non-allowlisted schemes "
-      "with the string 'web+'.");
-  return false;
 }
 
 NavigatorContentUtils& NavigatorContentUtils::From(Navigator& navigator,
@@ -168,38 +176,40 @@ void NavigatorContentUtils::registerProtocolHandler(
     Navigator& navigator,
     const String& scheme,
     const String& url,
-    const String& title,
     ExceptionState& exception_state) {
-  LocalFrame* frame = navigator.GetFrame();
-  if (!frame)
+  LocalDOMWindow* window = navigator.DomWindow();
+  if (!window)
     return;
-  Document* document = frame->GetDocument();
-  DCHECK(document);
 
   // Per the HTML specification, exceptions for arguments must be surfaced in
   // the order of the arguments.
-  if (!VerifyCustomHandlerScheme(scheme, exception_state))
+  String error_message;
+  if (!VerifyCustomHandlerScheme(scheme, error_message)) {
+    exception_state.ThrowSecurityError(error_message);
     return;
+  }
 
-  if (!VerifyCustomHandlerURL(*document, url, exception_state))
+  if (!VerifyCustomHandlerURL(
+          *window, url, exception_state,
+          Platform::Current()->GetProtocolHandlerSecurityLevel()))
     return;
 
   // Count usage; perhaps we can forbid this from cross-origin subframes as
   // proposed in https://crbug.com/977083.
   UseCounter::Count(
-      *document, frame->IsCrossOriginToMainFrame()
-                     ? WebFeature::kRegisterProtocolHandlerCrossOriginSubframe
-                     : WebFeature::kRegisterProtocolHandlerSameOriginAsTop);
+      window, window->GetFrame()->IsCrossOriginToMainFrame()
+                  ? WebFeature::kRegisterProtocolHandlerCrossOriginSubframe
+                  : WebFeature::kRegisterProtocolHandlerSameOriginAsTop);
   // Count usage. Context should now always be secure due to the same-origin
   // check and the requirement that the calling context be secure.
-  UseCounter::Count(*document,
-                    document->IsSecureContext()
+  UseCounter::Count(window,
+                    window->IsSecureContext()
                         ? WebFeature::kRegisterProtocolHandlerSecureOrigin
                         : WebFeature::kRegisterProtocolHandlerInsecureOrigin);
 
-  NavigatorContentUtils::From(navigator, *frame)
+  NavigatorContentUtils::From(navigator, *window->GetFrame())
       .Client()
-      ->RegisterProtocolHandler(scheme, document->CompleteURL(url), title);
+      ->RegisterProtocolHandler(scheme, window->CompleteURL(url));
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(
@@ -207,24 +217,27 @@ void NavigatorContentUtils::unregisterProtocolHandler(
     const String& scheme,
     const String& url,
     ExceptionState& exception_state) {
-  LocalFrame* frame = navigator.GetFrame();
-  if (!frame)
-    return;
-  Document* document = frame->GetDocument();
-  DCHECK(document);
-
-  if (!VerifyCustomHandlerScheme(scheme, exception_state))
+  LocalDOMWindow* window = navigator.DomWindow();
+  if (!window)
     return;
 
-  if (!VerifyCustomHandlerURL(*document, url, exception_state))
+  String error_message;
+  if (!VerifyCustomHandlerScheme(scheme, error_message)) {
+    exception_state.ThrowSecurityError(error_message);
+    return;
+  }
+
+  if (!VerifyCustomHandlerURL(
+          *window, url, exception_state,
+          Platform::Current()->GetProtocolHandlerSecurityLevel()))
     return;
 
-  NavigatorContentUtils::From(navigator, *frame)
+  NavigatorContentUtils::From(navigator, *window->GetFrame())
       .Client()
-      ->UnregisterProtocolHandler(scheme, document->CompleteURL(url));
+      ->UnregisterProtocolHandler(scheme, window->CompleteURL(url));
 }
 
-void NavigatorContentUtils::Trace(Visitor* visitor) {
+void NavigatorContentUtils::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   Supplement<Navigator>::Trace(visitor);
 }

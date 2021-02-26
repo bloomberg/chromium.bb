@@ -88,9 +88,11 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
    */
   createElementForItem(item) {
     const element = document.createElement('div');
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, 'web_audio/audioContextSelector.css');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        element,
+        {cssFile: 'web_audio/audioContextSelector.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const title = shadowRoot.createChild('div', 'title');
-    title.createTextChild(this.titleFor(item).trimEndWithMaxLength(100));
+    UI.UIUtils.createTextChild(title, this.titleFor(item).trimEndWithMaxLength(100));
     return element;
   }
 
@@ -145,7 +147,7 @@ export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
       this._toolbarItem.setTitle(ls`Audio context: ${this.titleFor(item)}`);
     }
 
-    this.dispatchEventToListeners(WebAudio.AudioContextSelector.Events.ContextSelected, item);
+    this.dispatchEventToListeners(Events.ContextSelected, item);
   }
 
   reset() {

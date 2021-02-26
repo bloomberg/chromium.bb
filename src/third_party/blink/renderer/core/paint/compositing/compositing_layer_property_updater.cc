@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
@@ -29,18 +30,19 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   if (!object.HasLayer())
     return;
-  const auto* paint_layer = ToLayoutBoxModelObject(object).Layer();
+  const auto* paint_layer = To<LayoutBoxModelObject>(object).Layer();
   const auto* mapping = paint_layer->GetCompositedLayerMapping();
   if (!mapping)
     return;
 
   const FragmentData& fragment_data = object.FirstFragment();
   DCHECK(fragment_data.HasLocalBorderBoxProperties());
-  // SPv1 compositing forces single fragment for composited elements.
+  // SPv1 compositing forces single fragment for directly composited elements.
   DCHECK(!fragment_data.NextFragment() ||
          // We create multiple fragments for composited repeating fixed-position
          // during printing.
-         object.GetDocument().Printing());
+         object.GetDocument().Printing() ||
+         !object.CanBeCompositedForDirectReasons());
 
   PhysicalOffset layout_snapped_paint_offset =
       fragment_data.PaintOffset() - paint_layer->SubpixelAccumulation();
@@ -62,7 +64,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   }
 #endif
 
-  base::Optional<PropertyTreeState> container_layer_state;
+  base::Optional<PropertyTreeStateOrAlias> container_layer_state;
   auto SetContainerLayerState =
       [&fragment_data, &snapped_paint_offset,
        &container_layer_state](GraphicsLayer* graphics_layer) {
@@ -86,28 +88,20 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
                                ScrollbarOrCorner scrollbar_or_corner) {
         if (!graphics_layer)
           return;
-        PropertyTreeState scrollbar_layer_state =
+        PropertyTreeStateOrAlias scrollbar_layer_state =
             container_layer_state.value_or(
                 fragment_data.LocalBorderBoxProperties());
-        // OverflowControlsClip should be applied within the scrollbar
-        // layers.
+        // OverflowControlsClip should be applied within the scrollbar layers.
         if (const auto* properties = fragment_data.PaintProperties()) {
-          if (const auto* clip = properties->OverflowControlsClip()) {
+          if (const auto* clip = properties->OverflowControlsClip())
             scrollbar_layer_state.SetClip(*clip);
-          } else if (const auto* css_clip = properties->CssClip()) {
-            DCHECK(css_clip->Parent());
-            scrollbar_layer_state.SetClip(*css_clip->Parent());
-          }
-        }
 
-        if (const auto* properties = fragment_data.PaintProperties()) {
           if (scrollbar_or_corner == ScrollbarOrCorner::kHorizontalScrollbar) {
             if (const auto* effect = properties->HorizontalScrollbarEffect()) {
               scrollbar_layer_state.SetEffect(*effect);
             }
-          }
-
-          if (scrollbar_or_corner == ScrollbarOrCorner::kVerticalScrollbar) {
+          } else if (scrollbar_or_corner ==
+                     ScrollbarOrCorner::kVerticalScrollbar) {
             if (const auto* effect = properties->VerticalScrollbarEffect())
               scrollbar_layer_state.SetEffect(*effect);
           }
@@ -144,7 +138,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     // See comments for ScrollTranslation in object_paint_properties.h for the
     // reason of adding ScrollOrigin().
     auto contents_paint_offset =
-        snapped_paint_offset + ToLayoutBox(object).ScrollOrigin();
+        snapped_paint_offset + To<LayoutBox>(object).ScrollOrigin();
     auto SetScrollingContentsLayerState = [&fragment_data,
                                            &contents_paint_offset](
                                               GraphicsLayer* graphics_layer) {
@@ -174,7 +168,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         fragment_data.ContentsProperties(), offset);
   }
 
-  if (auto* squashing_layer = mapping->SquashingLayer()) {
+  if (auto* squashing_layer = mapping->NonScrollingSquashingLayer()) {
     auto state = fragment_data.PreEffectProperties();
     // The squashing layer's ClippingContainer is the common ancestor of clip
     // state of all squashed layers, so we should use its clip state. This skips
@@ -186,21 +180,30 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
             ? clipping_container->FirstFragment().ContentsProperties().Clip()
             : ClipPaintPropertyNode::Root());
     squashing_layer->SetLayerState(
-        state,
-        snapped_paint_offset + mapping->SquashingLayerOffsetFromLayoutObject());
+        state, snapped_paint_offset +
+                   mapping->NonScrollingSquashingLayerOffsetFromLayoutObject());
   }
 
   if (auto* mask_layer = mapping->MaskLayer()) {
     auto state = fragment_data.LocalBorderBoxProperties();
     const auto* properties = fragment_data.PaintProperties();
     DCHECK(properties);
-    DCHECK(properties->Mask());
+    DCHECK(properties->Mask() || properties->ClipPathMask());
     DCHECK(properties->MaskClip());
-    state.SetEffect(*properties->Mask());
+    state.SetEffect(properties->Mask() ? *properties->Mask()
+                                       : *properties->ClipPathMask());
     state.SetClip(*properties->MaskClip());
 
     mask_layer->SetLayerState(
         state, snapped_paint_offset + mask_layer->OffsetFromLayoutObject());
+  }
+
+  if (RuntimeEnabledFeatures::CompositeSVGEnabled()) {
+    if (object.IsSVGRoot()) {
+      main_graphics_layer->SetShouldCreateLayersAfterPaint(
+          To<LayoutSVGRoot>(object).HasDescendantCompositingReasons() &&
+          main_graphics_layer->PaintsContentOrHitTest());
+    }
   }
 }
 

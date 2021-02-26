@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_LIGHT_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_LIGHT_ELEMENT_H_
 
-#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/light_source.h"
@@ -31,6 +30,7 @@
 namespace blink {
 
 class Filter;
+class SVGAnimatedNumber;
 
 class SVGFELightElement : public SVGElement {
  public:
@@ -65,7 +65,7 @@ class SVGFELightElement : public SVGElement {
     return limiting_cone_angle_.Get();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SVGFELightElement(const QualifiedName&, Document&);

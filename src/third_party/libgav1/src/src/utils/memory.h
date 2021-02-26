@@ -70,7 +70,7 @@ inline void* AlignedAlloc(size_t alignment, size_t size) {
   // more convenient to use memalign(). Unlike glibc, Android does not consider
   // memalign() an obsolete function.
   return memalign(alignment, size);
-#else   // !defined(__ANDROID__)
+#else  // !defined(__ANDROID__)
   void* ptr = nullptr;
   // posix_memalign requires that the requested alignment be at least
   // sizeof(void*). In this case, fall back on malloc which should return

@@ -36,7 +36,15 @@ Msgs = class {
       return Msgs.applySubstitutions_(message, opt_subs);
     }
     message = chrome.i18n.getMessage(Msgs.NAMESPACE_ + messageId, opt_subs);
-    if (message == undefined || message == '') {
+    if ((message === undefined || message === '') &&
+        messageId.endsWith('_brl')) {
+      // Braille string entries are optional. If we couldn't find a braille-
+      // specific string, try again without the '_brl' suffix.
+      message = chrome.i18n.getMessage(
+          Msgs.NAMESPACE_ + messageId.replace('_brl', ''), opt_subs);
+    }
+
+    if (message === undefined || message === '') {
       throw new Error('Invalid ChromeVox message id: ' + messageId);
     }
     return message;
@@ -59,7 +67,7 @@ Msgs = class {
         throw new Error('Element has no msgid attribute: ' + elts[i]);
       }
       const val = Msgs.getMsg(msgid);
-      if (elts[i].tagName == 'INPUT') {
+      if (elts[i].tagName === 'INPUT') {
         elts[i].setAttribute('placeholder', val);
       } else {
         elts[i].textContent = val;

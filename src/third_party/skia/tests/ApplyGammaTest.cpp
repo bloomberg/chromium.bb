@@ -17,12 +17,12 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkTypes.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkTemplates.h"
 #include "src/core/SkUtils.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
@@ -94,7 +94,7 @@ bool check_gamma(uint32_t src, uint32_t dst, bool toSRGB, float error,
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ApplyGamma, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
+    auto context = ctxInfo.directContext();
     static constexpr SkISize kBaseSize{256, 256};
     static const size_t kRowBytes = sizeof(uint32_t) * kBaseSize.fWidth;
 
@@ -126,7 +126,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ApplyGamma, reporter, ctxInfo) {
         SkCanvas* dstCanvas = dst->getCanvas();
 
         dstCanvas->clear(SK_ColorRED);
-        dst->flush();
+        dst->flushAndSubmit();
 
         SkPaint gammaPaint;
         gammaPaint.setBlendMode(SkBlendMode::kSrc);
@@ -134,7 +134,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ApplyGamma, reporter, ctxInfo) {
                                          : SkColorFilters::SRGBToLinearGamma());
 
         dstCanvas->drawBitmap(bm, 0, 0, &gammaPaint);
-        dst->flush();
+        dst->flushAndSubmit();
 
         sk_memset32(read.get(), 0, kBaseSize.fWidth * kBaseSize.fHeight);
         if (!dst->readPixels(ii, read.get(), kRowBytes, 0, 0)) {

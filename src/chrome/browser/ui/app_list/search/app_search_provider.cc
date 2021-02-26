@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -42,11 +44,13 @@
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
-#include "chrome/common/string_matching/tokenized_string.h"
-#include "chrome/common/string_matching/tokenized_string_match.h"
+#include "chrome/grit/generated_resources.h"
+#include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string_match.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 
@@ -64,6 +68,10 @@ constexpr bool kUseWeightedRatio = false;
 constexpr bool kUseEditDistance = false;
 constexpr double kRelevanceThreshold = 0.32;
 constexpr double kPartialMatchPenaltyRate = 0.9;
+
+using chromeos::string_matching::FuzzyTokenizedStringMatch;
+using chromeos::string_matching::TokenizedString;
+using chromeos::string_matching::TokenizedStringMatch;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -287,9 +295,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
                     apps::IconCache::GarbageCollectionPolicy::kExplicit) {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
-    if (proxy) {
-      Observe(&proxy->AppRegistryCache());
-    }
+    Observe(&proxy->AppRegistryCache());
 
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
@@ -309,9 +315,6 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
   void AddApps(AppSearchProvider::Apps* apps_vector) override {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile());
-    if (!proxy) {
-      return;
-    }
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
       if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||
@@ -353,7 +356,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
 
       // Until it's been installed, the Crostini Terminal is hidden and
       // requires a few characters before being shown in search results.
-      if (update.AppId() == crostini::GetTerminalId() &&
+      if (update.AppId() == crostini::kCrostiniTerminalSystemAppId &&
           !crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
         apps_vector->back()->set_recommendable(false);
         apps_vector->back()->set_relevance_threshold(
@@ -374,11 +377,14 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
         profile(), app_id, list_controller, is_recommended, &icon_cache_);
   }
 
-  void ViewClosing() override { icon_cache_.SweepReleasedIcons(); }
-
  private:
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override {
+    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser ||
+        update.IconKeyChanged()) {
+      icon_cache_.RemoveIcon(update.AppType(), update.AppId());
+    }
+
     if (update.Readiness() == apps::mojom::Readiness::kReady) {
       owner()->RefreshAppsAndUpdateResultsDeferred();
     } else {
@@ -448,6 +454,10 @@ void AppSearchProvider::ViewClosing() {
     data_source->ViewClosing();
 }
 
+ash::AppListSearchResultType AppSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kInstalledApp;
+}
+
 void AppSearchProvider::RefreshAppsAndUpdateResults() {
   // Clear any pending requests if any.
   refresh_apps_factory_.InvalidateWeakPtrs();
@@ -472,7 +482,8 @@ void AppSearchProvider::RefreshAppsAndUpdateResultsDeferred() {
 void AppSearchProvider::UpdateRecommendedResults(
     const base::flat_map<std::string, uint16_t>& id_to_app_list_index) {
   SearchProvider::Results new_results;
-  std::set<std::string> seen_or_filtered_apps;
+  std::set<std::string> seen_or_filtered_tile_apps;
+  std::set<std::string> seen_or_filtered_chip_apps;
   const uint16_t apps_size = apps_.size();
   new_results.reserve(apps_size);
 
@@ -523,7 +534,18 @@ void AppSearchProvider::UpdateRecommendedResults(
       result->set_relevance(0.0f);
     }
 
-    MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
+    // Create a second result to the display in the launcher chips, that is
+    // otherwise identical to |result|.
+    std::unique_ptr<AppResult> chip_result =
+        app->data_source()->CreateResult(app->id(), list_controller_, true);
+    chip_result->SetMetadata(result->CloneMetadata());
+    chip_result->SetDisplayType(ChromeSearchResult::DisplayType::kChip);
+    chip_result->set_relevance(result->relevance());
+
+    MaybeAddResult(&new_results, std::move(result),
+                   &seen_or_filtered_tile_apps);
+    MaybeAddResult(&new_results, std::move(chip_result),
+                   &seen_or_filtered_chip_apps);
   }
   PublishQueriedResultsOrRecommendation(false, &new_results);
 }

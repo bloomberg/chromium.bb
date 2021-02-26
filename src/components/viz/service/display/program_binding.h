@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -125,6 +125,8 @@ class VIZ_SERVICE_EXPORT ProgramKey {
     has_output_color_matrix_ = value;
   }
   TexCoordPrecision tex_coord_precision() const { return precision_; }
+
+  ProgramType type() const { return type_; }
 
  private:
   friend struct ProgramKeyHash;

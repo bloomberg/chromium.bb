@@ -22,7 +22,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/sync/test/integration/os_sync_test.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #endif
@@ -35,19 +34,16 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   // Only some special whitelisted types (and control types) are allowed in
   // standalone transport mode.
   syncer::ModelTypeSet allowed_types(
-      syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
+      syncer::DEVICE_INFO, syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
       syncer::AUTOFILL_WALLET_DATA, syncer::SHARING_MESSAGE);
   allowed_types.PutAll(syncer::ControlTypes());
-  if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
-    allowed_types.Put(syncer::DEVICE_INFO);
-  }
 #if defined(OS_CHROMEOS)
   // OS sync types run in transport mode.
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     allowed_types.PutAll({syncer::APPS, syncer::APP_SETTINGS, syncer::APP_LIST,
                           syncer::APP_SETTINGS, syncer::ARC_PACKAGE,
                           syncer::PRINTERS, syncer::OS_PREFERENCES,
-                          syncer::OS_PRIORITY_PREFERENCES});
+                          syncer::OS_PRIORITY_PREFERENCES, syncer::WEB_APPS});
   }
   if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
     allowed_types.Put(syncer::WIFI_CONFIGURATIONS);
@@ -76,14 +72,8 @@ class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
 
 class SingleClientStandaloneTransportSyncTest : public SyncTest {
  public:
-  SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {
-    DisableVerifier();
-  }
-
-  ~SingleClientStandaloneTransportSyncTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientStandaloneTransportSyncTest);
+  SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  ~SingleClientStandaloneTransportSyncTest() override = default;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
@@ -290,9 +280,7 @@ class SingleClientStandaloneTransportOsSyncTest : public OsSyncTest {
  public:
   SingleClientStandaloneTransportOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
     // Enable in-development types.
-    scoped_features_.InitWithFeatures({features::kDesktopPWAsWithoutExtensions,
-                                       switches::kSyncWifiConfigurations},
-                                      {});
+    scoped_features_.InitAndEnableFeature(switches::kSyncWifiConfigurations);
   }
   ~SingleClientStandaloneTransportOsSyncTest() override = default;
 

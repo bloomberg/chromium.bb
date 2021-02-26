@@ -42,7 +42,14 @@ namespace blink {
 class LocalFrameClient;
 class LocalFrame;
 class ResourceResponse;
-struct ProgressItem;
+
+struct ProgressItem {
+  USING_FAST_MALLOC(ProgressItem);
+
+ public:
+  int64_t bytes_received = 0;
+  int64_t estimated_length = 0;
+};
 
 // FIXME: This is only used on Android. Android is the only Chrome
 // browser which shows a progress bar during loading.
@@ -52,7 +59,7 @@ class CORE_EXPORT ProgressTracker final
  public:
   explicit ProgressTracker(LocalFrame*);
   ~ProgressTracker();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void Dispose();
 
   double EstimatedProgress() const;

@@ -25,7 +25,7 @@ namespace aec3 {
 #if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
 
 // Verifies that the check for non-null output gains works.
-TEST(SuppressionGain, NullOutputGains) {
+TEST(SuppressionGainDeathTest, NullOutputGains) {
   std::vector<std::array<float, kFftLengthBy2Plus1>> E2(1, {0.f});
   std::vector<std::array<float, kFftLengthBy2Plus1>> R2(1, {0.f});
   std::vector<std::array<float, kFftLengthBy2Plus1>> S2(1);
@@ -49,7 +49,7 @@ TEST(SuppressionGain, NullOutputGains) {
                    std::vector<std::vector<std::vector<float>>>(
                        3, std::vector<std::vector<float>>(
                               1, std::vector<float>(kBlockSize, 0.f))),
-                   &high_bands_gain, nullptr),
+                   false, &high_bands_gain, nullptr),
       "");
 }
 
@@ -107,7 +107,7 @@ TEST(SuppressionGain, BasicGainComputation) {
     aec_state.Update(delay_estimate, subtractor.FilterFrequencyResponses(),
                      subtractor.FilterImpulseResponses(),
                      *render_delay_buffer->GetRenderBuffer(), E2, Y2, output);
-    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x,
+    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x, false,
                              &high_bands_gain, &g);
   }
   std::for_each(g.begin(), g.end(),
@@ -126,7 +126,7 @@ TEST(SuppressionGain, BasicGainComputation) {
     aec_state.Update(delay_estimate, subtractor.FilterFrequencyResponses(),
                      subtractor.FilterImpulseResponses(),
                      *render_delay_buffer->GetRenderBuffer(), E2, Y2, output);
-    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x,
+    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x, false,
                              &high_bands_gain, &g);
   }
   std::for_each(g.begin(), g.end(),
@@ -137,7 +137,7 @@ TEST(SuppressionGain, BasicGainComputation) {
   R2[1].fill(10000000000000.f);
 
   for (int k = 0; k < 10; ++k) {
-    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x,
+    suppression_gain.GetGain(E2, S2, R2, N2, analyzer, aec_state, x, false,
                              &high_bands_gain, &g);
   }
   std::for_each(g.begin(), g.end(),

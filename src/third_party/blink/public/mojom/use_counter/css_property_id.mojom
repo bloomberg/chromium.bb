@@ -15,6 +15,7 @@ enum CSSSampleId {
 
     // These internal properties exist but are mapped to 0 to ensure they don't get
     // reported in use counter.
+    kInternalAlignSelfBlock = 0,
     kInternalEmptyLineHeight = 0,
     kInternalVisitedBackgroundColor = 0,
     kInternalVisitedBorderBlockEndColor = 0,
@@ -35,6 +36,7 @@ enum CSSSampleId {
     kInternalVisitedTextEmphasisColor = 0,
     kInternalVisitedTextFillColor = 0,
     kInternalVisitedTextStrokeColor = 0,
+    kInternalFontSizeDelta = 0,
 
     // This CSSSampleId represents page load for CSS histograms. It is recorded once
     // per page visit for each CSS histogram being logged on the blink side and the
@@ -283,7 +285,7 @@ enum CSSSampleId {
     kFlexShrink = 238,
     kFlexWrap = 239,
     kJustifyContent = 240,
-    kWebkitFontSizeDelta = 241,
+    // kWebkitFontSizeDelta = 241,
     kGridTemplateColumns = 242,
     kGridTemplateRows = 243,
     kGridColumnStart = 244,
@@ -701,12 +703,39 @@ enum CSSSampleId {
     kMathStyle = 656,
     kAspectRatio = 657,
     kAppearance = 658,
-    kMathSuperscriptShiftStyle = 659,
+    // kMathSuperscriptShiftStyle = 659,
     kRubyPosition = 660,
     kTextUnderlineOffset = 661,
     kContentVisibility = 662,
     kTextDecorationThickness = 663,
     kPageOrientation = 664,
+    kAnimationTimeline = 665,
+    kCounterSet = 666,
+    kSource = 667,
+    kStart = 668,
+    kEnd = 669,
+    kTimeRange = 670,
+    kScrollbarGutter = 671,
+    kAscentOverride = 672,
+    kDescentOverride = 673,
+    kAdvanceOverride = 674,
+    kLineGapOverride = 675,
+    kMathShift = 676,
+    kMathDepth = 677,
+    kAdvanceProportionalOverride = 678,
+    kOverflowClipMargin = 679,
+    kScrollbarWidth = 680,
+    // @counter-style descriptors
+    kSystem = 681,
+    kNegative = 682,
+    kPrefix = 683,
+    kSuffix = 684,
+    kRange = 685,
+    kPad = 686,
+    kFallback = 687,
+    kSymbols = 688,
+    kAdditiveSymbols = 689,
+    kSpeakAs = 690,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

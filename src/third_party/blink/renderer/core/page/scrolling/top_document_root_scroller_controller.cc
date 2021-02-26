@@ -30,7 +30,7 @@ ScrollableArea* GetScrollableArea(Node* node) {
       !node->GetLayoutObject()->IsBoxModelObject())
     return nullptr;
 
-  return ToLayoutBoxModelObject(node->GetLayoutObject())->GetScrollableArea();
+  return To<LayoutBoxModelObject>(node->GetLayoutObject())->GetScrollableArea();
 }
 
 }  // namespace
@@ -38,7 +38,7 @@ ScrollableArea* GetScrollableArea(Node* node) {
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(Page& page)
     : page_(&page) {}
 
-void TopDocumentRootScrollerController::Trace(Visitor* visitor) {
+void TopDocumentRootScrollerController::Trace(Visitor* visitor) const {
   visitor->Trace(viewport_apply_scroll_);
   visitor->Trace(global_root_scroller_);
   visitor->Trace(page_);
@@ -56,10 +56,8 @@ void TopDocumentRootScrollerController::DidResizeViewport() {
   if (!GlobalRootScroller()->GetLayoutObject())
     return;
 
-  DCHECK(GlobalRootScroller()->GetLayoutObject()->IsBoxModelObject());
-
-  LayoutBoxModelObject* layout_object =
-      ToLayoutBoxModelObject(GlobalRootScroller()->GetLayoutObject());
+  auto* layout_object =
+      To<LayoutBoxModelObject>(GlobalRootScroller()->GetLayoutObject());
 
   // Top controls can resize the viewport without invalidating compositing or
   // paint so we need to do that manually here.

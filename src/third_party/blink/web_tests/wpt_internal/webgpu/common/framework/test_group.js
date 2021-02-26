@@ -1,127 +1,157 @@
 /**
-* AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
-**/
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-import { allowedTestNameCharacters } from './allowed_characters.js';
-import { extractPublicParams, paramsEquals } from './params_utils.js';
-import { checkPublicParamType } from './url_query.js';
+ * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
+ **/ import { SkipTestCase } from './fixture.js';
+import { extractPublicParams } from './params_utils.js';
+import { kPathSeparator } from './query/separators.js';
+import { stringifyPublicParams, stringifyPublicParamsUniquely } from './query/stringify_params.js';
+import { validQueryPart } from './query/validQueryPart.js';
 import { assert } from './util/util.js';
-const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
-export class TestGroup {
+
+export function makeTestGroup(fixture) {
+  return new TestGroup(fixture);
+}
+
+// Interfaces for running tests
+
+export function makeTestGroupForUnitTesting(fixture) {
+  return new TestGroup(fixture);
+}
+
+class TestGroup {
+  seen = new Set();
+  tests = [];
+
   constructor(fixture) {
-    _defineProperty(this, "fixture", void 0);
-
-    _defineProperty(this, "seen", new Set());
-
-    _defineProperty(this, "tests", []);
-
     this.fixture = fixture;
   }
 
-  *iterate(log) {
-    for (const test of this.tests) {
-      yield* test.iterate(log);
-    }
+  iterate() {
+    return this.tests;
   }
 
   checkName(name) {
-    assert(validNames.test(name), `Invalid test name ${name}; must match [${validNames}]+`);
-    assert( // Shouldn't happen due to the rule above. Just makes sure that treated
-    // unencoded strings as encoded strings is OK.
-    name === decodeURIComponent(name), `Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`);
+    assert(
+      // Shouldn't happen due to the rule above. Just makes sure that treated
+      // unencoded strings as encoded strings is OK.
+      name === decodeURIComponent(name),
+      `Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`
+    );
+
     assert(!this.seen.has(name), `Duplicate test name: ${name}`);
+
     this.seen.add(name);
-  } // TODO: This could take a fixture, too, to override the one for the group.
+  }
 
+  // TODO: This could take a fixture, too, to override the one for the group.
+  test(name) {
+    const testCreationStack = new Error(`Test created: ${name}`);
 
-  test(name, fn) {
-    // Replace spaces with underscores for readability.
-    assert(name.indexOf('_') === -1, 'Invalid test name ${name}: contains underscore (use space)');
-    name = name.replace(/ /g, '_');
     this.checkName(name);
-    const test = new Test(name, this.fixture, fn);
+
+    const parts = name.split(kPathSeparator);
+    for (const p of parts) {
+      assert(validQueryPart.test(p), `Invalid test name part ${p}; must match ${validQueryPart}`);
+    }
+
+    const test = new TestBuilder(parts, this.fixture, testCreationStack);
     this.tests.push(test);
     return test;
   }
 
-} // This test is created when it's inserted, but may be parameterized afterward (.params()).
+  validate() {
+    for (const test of this.tests) {
+      test.validate();
+    }
+  }
+}
 
-class Test {
-  constructor(name, fixture, fn) {
-    _defineProperty(this, "name", void 0);
+class TestBuilder {
+  cases = undefined;
 
-    _defineProperty(this, "fixture", void 0);
-
-    _defineProperty(this, "fn", void 0);
-
-    _defineProperty(this, "cases", null);
-
-    this.name = name;
+  constructor(testPath, fixture, testCreationStack) {
+    this.testPath = testPath;
     this.fixture = fixture;
-    this.fn = fn;
+    this.testCreationStack = testCreationStack;
   }
 
-  params(specs) {
-    assert(this.cases === null, 'test case is already parameterized');
-    const cases = Array.from(specs);
-    const seen = []; // This is n^2.
+  desc(description) {
+    this.description = description.trim();
+    return this;
+  }
 
-    for (const spec of cases) {
-      const publicParams = extractPublicParams(spec); // Check type of public params: can only be (currently):
-      // number, string, boolean, undefined, number[]
+  fn(fn) {
+    assert(this.testFn === undefined);
+    this.testFn = fn;
+  }
 
-      for (const v of Object.values(publicParams)) {
-        checkPublicParamType(v);
+  unimplemented() {
+    assert(this.testFn === undefined);
+    this.testFn = () => {
+      throw new SkipTestCase('test unimplemented');
+    };
+  }
+
+  validate() {
+    const testPathString = this.testPath.join(kPathSeparator);
+    assert(this.testFn !== undefined, () => {
+      let s = `Test is missing .fn(): ${testPathString}`;
+      if (this.testCreationStack.stack) {
+        s += `\n-> test created at:\n${this.testCreationStack.stack}`;
       }
+      return s;
+    });
 
-      assert(!seen.some(x => paramsEquals(x, publicParams)), 'Duplicate test case params');
-      seen.push(publicParams);
+    if (this.cases === undefined) {
+      return;
     }
 
-    this.cases = cases;
-  }
+    const seen = new Set();
+    for (const testcase of this.cases) {
+      // stringifyPublicParams also checks for invalid params values
+      const testcaseString = stringifyPublicParams(testcase);
 
-  *iterate(rec) {
-    for (const params of this.cases || [null]) {
-      yield new RunCaseSpecific(rec, this.name, params, this.fixture, this.fn);
+      // A (hopefully) unique representation of a params value.
+      const testcaseStringUnique = stringifyPublicParamsUniquely(testcase);
+      assert(
+        !seen.has(testcaseStringUnique),
+        `Duplicate public test case params for test ${testPathString}: ${testcaseString}`
+      );
+
+      seen.add(testcaseStringUnique);
     }
   }
 
+  params(casesIterable) {
+    assert(this.cases === undefined, 'test case is already parameterized');
+    this.cases = Array.from(casesIterable);
+
+    return this;
+  }
+
+  *iterate() {
+    assert(this.testFn !== undefined, 'No test function (.fn()) for test');
+    for (const params of this.cases || [{}]) {
+      yield new RunCaseSpecific(this.testPath, params, this.fixture, this.testFn);
+    }
+  }
 }
 
 class RunCaseSpecific {
-  constructor(recorder, test, params, fixture, fn) {
-    _defineProperty(this, "id", void 0);
-
-    _defineProperty(this, "params", void 0);
-
-    _defineProperty(this, "recorder", void 0);
-
-    _defineProperty(this, "fixture", void 0);
-
-    _defineProperty(this, "fn", void 0);
-
-    this.id = {
-      test,
-      params: params ? extractPublicParams(params) : null
-    };
+  constructor(testPath, params, fixture, fn) {
+    this.id = { test: testPath, params: extractPublicParams(params) };
     this.params = params;
-    this.recorder = recorder;
     this.fixture = fixture;
     this.fn = fn;
   }
 
-  async run(debug) {
-    const [rec, res] = this.recorder.record(this.id.test, this.id.params);
-    rec.start(debug);
-
+  async run(rec) {
+    rec.start();
     try {
       const inst = new this.fixture(rec, this.params || {});
 
       try {
         await inst.init();
+
         await this.fn(inst);
       } finally {
         // Runs as long as constructor succeeded, even if initialization or the test failed.
@@ -130,18 +160,10 @@ class RunCaseSpecific {
     } catch (ex) {
       // There was an exception from constructor, init, test, or finalize.
       // An error from init or test may have been a SkipTestCase.
-      // An error from finalize may have been an eventualAsyncExpectation failure.
+      // An error from finalize may have been an eventualAsyncExpectation failure
+      // or unexpected validation/OOM error from the GPUDevice.
       rec.threw(ex);
     }
-
     rec.finish();
-    return res;
   }
-
-  injectResult(result) {
-    const [, res] = this.recorder.record(this.id.test, this.id.params);
-    Object.assign(res, result);
-  }
-
 }
-//# sourceMappingURL=test_group.js.map

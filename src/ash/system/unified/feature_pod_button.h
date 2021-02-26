@@ -21,9 +21,9 @@ namespace ash {
 class FeaturePodControllerBase;
 
 // A toggle button with an icon used by feature pods and in other places.
-class FeaturePodIconButton : public views::ToggleImageButton {
+class FeaturePodIconButton : public views::ImageButton {
  public:
-  FeaturePodIconButton(views::ButtonListener* listener, bool is_togglable);
+  FeaturePodIconButton(PressedCallback callback, bool is_togglable);
   ~FeaturePodIconButton() override;
 
   // Change the toggle state. See FeaturePodButton::SetToggled.
@@ -40,15 +40,22 @@ class FeaturePodIconButton : public views::ToggleImageButton {
       const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
   bool toggled() const { return toggled_; }
 
  private:
+  // Updates vector icon. Called by SetToggled to update the icon's color on
+  // toggle state.
+  void UpdateVectorIcon();
+
   // True if this button is a togglable.
   const bool is_togglable_;
 
   // True if the button is currently toggled.
   bool toggled_ = false;
+
+  const gfx::VectorIcon* icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodIconButton);
 };
@@ -56,7 +63,7 @@ class FeaturePodIconButton : public views::ToggleImageButton {
 // Button internally used in FeaturePodButton. Should not be used directly.
 class FeaturePodLabelButton : public views::Button {
  public:
-  explicit FeaturePodLabelButton(views::ButtonListener* listener);
+  explicit FeaturePodLabelButton(PressedCallback callback);
   ~FeaturePodLabelButton() override;
 
   // Set the text of label shown below the icon. See FeaturePodButton::SetLabel.
@@ -80,6 +87,7 @@ class FeaturePodLabelButton : public views::Button {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
  private:
   // Layout |child| in horizontal center with its vertical origin set to |y|.
@@ -105,8 +113,7 @@ class FeaturePodLabelButton : public views::Button {
 // the current state. Otherwise, the button is not a toggle button and just
 // navigates to the appropriate detailed view.
 // See the comment in FeaturePodsView for detail.
-class ASH_EXPORT FeaturePodButton : public views::View,
-                                    public views::ButtonListener {
+class ASH_EXPORT FeaturePodButton : public views::View {
  public:
   FeaturePodButton(FeaturePodControllerBase* controller,
                    bool is_togglable = true);
@@ -166,18 +173,12 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   void RequestFocus() override;
   const char* GetClassName() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   bool visible_preferred() const { return visible_preferred_; }
 
   FeaturePodIconButton* icon_button() const { return icon_button_; }
 
  private:
   void OnEnabledChanged();
-
-  // Unowned.
-  FeaturePodControllerBase* const controller_;
 
   // Owned by views hierarchy.
   FeaturePodIconButton* const icon_button_;

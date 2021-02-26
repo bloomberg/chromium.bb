@@ -8,15 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/test_switches.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -69,7 +69,7 @@ PixelTest::PixelTest(GraphicsBackend backend)
     init_vulkan = true;
   } else if (backend == kSkiaDawn) {
     scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     init_vulkan = true;
 #elif defined(OS_WIN)
     // TODO(sgilhuly): Initialize D3D12 for Windows.
@@ -90,7 +90,7 @@ PixelTest::PixelTest(GraphicsBackend backend)
 
 PixelTest::~PixelTest() = default;
 
-bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
+bool PixelTest::RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                              const base::FilePath& ref_file,
                              const PixelComparator& comparator) {
   return RunPixelTestWithReadbackTarget(pass_list, pass_list->back().get(),
@@ -98,8 +98,8 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
 }
 
 bool PixelTest::RunPixelTestWithReadbackTarget(
-    viz::RenderPassList* pass_list,
-    viz::RenderPass* target,
+    viz::AggregatedRenderPassList* pass_list,
+    viz::AggregatedRenderPass* target,
     const base::FilePath& ref_file,
     const PixelComparator& comparator) {
   return RunPixelTestWithReadbackTargetAndArea(
@@ -107,8 +107,8 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
 }
 
 bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
-    viz::RenderPassList* pass_list,
-    viz::RenderPass* target,
+    viz::AggregatedRenderPassList* pass_list,
+    viz::AggregatedRenderPass* target,
     const base::FilePath& ref_file,
     const PixelComparator& comparator,
     const gfx::Rect* copy_rect) {
@@ -131,7 +131,11 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
-                       display_color_spaces_);
+                       display_color_spaces_, &surface_damage_rect_list_);
+
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())
@@ -141,11 +145,11 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   return PixelsMatchReference(ref_file, comparator);
 }
 
-bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
+bool PixelTest::RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                              std::vector<SkColor>* ref_pixels,
                              const PixelComparator& comparator) {
   base::RunLoop run_loop;
-  viz::RenderPass* target = pass_list->back().get();
+  auto* target = pass_list->back().get();
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
@@ -162,7 +166,11 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
-                       display_color_spaces_);
+                       display_color_spaces_, &surface_damage_rect_list_);
+
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())
@@ -208,7 +216,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
     return false;
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
+  if (cmd->HasSwitch(switches::kRebaselinePixelTests))
     return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
 
   return MatchesPNGFile(
@@ -272,8 +280,8 @@ void PixelTest::SetUpGLWithoutRenderer(
 void PixelTest::SetUpGLRenderer(gfx::SurfaceOrigin output_surface_origin) {
   SetUpGLWithoutRenderer(output_surface_origin);
   renderer_ = std::make_unique<viz::GLRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr, base::ThreadTaskRunnerHandle::Get());
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr, base::ThreadTaskRunnerHandle::Get());
   renderer_->Initialize();
   renderer_->SetVisible(true);
 }
@@ -283,11 +291,13 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
-  // Set up the skia renderer.
+  auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+      gpu_service(), gpu::kNullSurfaceHandle);
+  display_controller_ =
+      std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
+          std::move(skia_deps));
   output_surface_ = viz::SkiaOutputSurfaceImpl::Create(
-      std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
-          gpu_service(), gpu::kNullSurfaceHandle),
-      renderer_settings_);
+      display_controller_.get(), renderer_settings_, &debug_settings_);
   output_surface_->BindToClient(output_surface_client_.get());
   static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get())
       ->SetCapabilitiesForTesting(output_surface_origin);
@@ -296,9 +306,9 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
       /*compositor_context_provider=*/nullptr,
       /*shared_bitmap_manager=*/nullptr);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr, static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
-      viz::SkiaRenderer::DrawMode::DDL);
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr,
+      static_cast<viz::SkiaOutputSurface*>(output_surface_.get()));
   renderer_->Initialize();
   renderer_->SetVisible(true);
 
@@ -340,8 +350,8 @@ void PixelTest::SetUpSoftwareRenderer() {
   child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr);
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr);
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
   renderer_->Initialize();

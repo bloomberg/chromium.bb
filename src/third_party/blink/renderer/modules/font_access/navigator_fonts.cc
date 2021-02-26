@@ -21,8 +21,6 @@ template <typename T>
 class NavigatorFontsImpl final : public GarbageCollected<NavigatorFontsImpl<T>>,
                                  public Supplement<T>,
                                  public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorFontsImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -45,7 +43,7 @@ class NavigatorFontsImpl final : public GarbageCollected<NavigatorFontsImpl<T>>,
     return font_manager_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(blink::Visitor* visitor) const override {
     visitor->Trace(font_manager_);
     Supplement<T>::Trace(visitor);
   }
@@ -69,15 +67,6 @@ FontManager* NavigatorFonts::fonts(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   DCHECK(ExecutionContext::From(script_state)->IsContextThread());
   return NavigatorFontsImpl<Navigator>::From(navigator).GetFontManager();
-}
-
-FontManager* NavigatorFonts::fonts(ScriptState* script_state,
-                                   WorkerNavigator& navigator,
-                                   ExceptionState& exception_state) {
-  DCHECK(ExecutionContext::From(script_state)->IsContextThread());
-  // TODO(https://crbug.com/1043348): Support FeaturePolicy when it's ready for
-  // workers.
-  return NavigatorFontsImpl<WorkerNavigator>::From(navigator).GetFontManager();
 }
 
 }  // namespace blink

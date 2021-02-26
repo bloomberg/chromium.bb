@@ -47,7 +47,6 @@ class MIDIPort : public EventTargetWithInlineData,
                  public ActiveScriptWrappable<MIDIPort>,
                  public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 
  public:
   enum ConnectionState {
@@ -75,7 +74,7 @@ class MIDIPort : public EventTargetWithInlineData,
   void SetState(midi::mojom::PortState);
   ConnectionState GetConnection() const { return connection_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 

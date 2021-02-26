@@ -25,8 +25,12 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_use_measurement/core/data_use_measurement.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/proxy_server.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
@@ -156,6 +160,7 @@ class TestDataReductionProxyConfigServiceClient
 class MockDataReductionProxyService : public DataReductionProxyService {
  public:
   MockDataReductionProxyService(
+      data_use_measurement::DataUseMeasurement* data_use_measurement,
       DataReductionProxySettings* settings,
       network::TestNetworkQualityTracker* test_network_quality_tracker,
       PrefService* prefs,
@@ -187,6 +192,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
 class TestDataReductionProxyService : public DataReductionProxyService {
  public:
   TestDataReductionProxyService(
+      data_use_measurement::DataUseMeasurement* data_use_measurement,
       DataReductionProxySettings* settings,
       PrefService* prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -194,15 +200,11 @@ class TestDataReductionProxyService : public DataReductionProxyService {
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
   ~TestDataReductionProxyService() override;
 
-  // Records |ignore_long_term_black_list_rules| as |ignore_blacklist_|.
-  void SetIgnoreLongTermBlackListRules(
-      bool ignore_long_term_black_list_rules) override;
-
-  bool ignore_blacklist() const { return ignore_blacklist_; }
+  bool ignore_blocklist() const { return ignore_blocklist_; }
 
  private:
-  // Whether the long term blacklist rules should be ignored.
-  bool ignore_blacklist_ = false;
+  // Whether the long term blocklist rules should be ignored.
+  bool ignore_blocklist_ = false;
 };
 
 // Test version of |DataStore|. Uses an in memory hash map to store data.
@@ -287,6 +289,8 @@ class DataReductionProxyTestContext {
     bool use_test_config_client_;
     bool skip_settings_initialization_;
     std::unique_ptr<DataReductionProxySettings> settings_;
+    std::unique_ptr<data_use_measurement::DataUseMeasurement>
+        data_use_measurement_;
   };
 
   virtual ~DataReductionProxyTestContext();
@@ -374,6 +378,8 @@ class DataReductionProxyTestContext {
   };
 
   DataReductionProxyTestContext(
+      std::unique_ptr<data_use_measurement::DataUseMeasurement>
+          data_use_measurement,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -384,6 +390,9 @@ class DataReductionProxyTestContext {
           test_network_quality_tracker,
       std::unique_ptr<TestConfigStorer> config_storer,
       unsigned int test_context_flags);
+
+  std::unique_ptr<data_use_measurement::DataUseMeasurement>
+      data_use_measurement_;
 
   unsigned int test_context_flags_;
 

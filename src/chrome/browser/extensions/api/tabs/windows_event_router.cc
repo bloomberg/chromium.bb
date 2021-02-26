@@ -159,7 +159,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
   // allows windows not created by toolkit-views to be tracked.
   // TODO(tapted): Remove the ifdefs (and NOTIFICATION_NO_KEY_WINDOW) when
   // Chrome on Mac only makes windows with toolkit-views.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
                  content::NotificationService::AllSources());
 #elif defined(TOOLKIT_VIEWS)
@@ -174,20 +174,20 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
 }
 
 WindowsEventRouter::~WindowsEventRouter() {
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #endif
 }
 
 void WindowsEventRouter::OnAppWindowAdded(extensions::AppWindow* app_window) {
-  if (!profile_->IsSameProfile(
+  if (!profile_->IsSameOrParent(
           Profile::FromBrowserContext(app_window->browser_context())))
     return;
   AddAppWindow(app_window);
 }
 
 void WindowsEventRouter::OnAppWindowRemoved(extensions::AppWindow* app_window) {
-  if (!profile_->IsSameProfile(
+  if (!profile_->IsSameOrParent(
           Profile::FromBrowserContext(app_window->browser_context())))
     return;
 
@@ -206,7 +206,7 @@ void WindowsEventRouter::OnWindowControllerAdded(
     WindowController* window_controller) {
   if (!HasEventListener(windows::OnCreated::kEventName))
     return;
-  if (!profile_->IsSameProfile(window_controller->profile()))
+  if (!profile_->IsSameOrParent(window_controller->profile()))
     return;
   // Ignore any windows without an associated browser (e.g., AppWindows).
   if (!window_controller->GetBrowser())
@@ -228,7 +228,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
     WindowController* window_controller) {
   if (!HasEventListener(windows::OnRemoved::kEventName))
     return;
-  if (!profile_->IsSameProfile(window_controller->profile()))
+  if (!profile_->IsSameOrParent(window_controller->profile()))
     return;
   // Ignore any windows without an associated browser (e.g., AppWindows).
   if (!window_controller->GetBrowser())
@@ -241,7 +241,30 @@ void WindowsEventRouter::OnWindowControllerRemoved(
                 window_controller, std::move(args));
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+void WindowsEventRouter::OnWindowBoundsChanged(
+    WindowController* window_controller) {
+  if (!HasEventListener(windows::OnBoundsChanged::kEventName))
+    return;
+  if (!profile_->IsSameOrParent(window_controller->profile()))
+    return;
+  // Ignore any windows without an associated browser (e.g., AppWindows).
+  if (!window_controller->GetBrowser())
+    return;
+
+  auto args = std::make_unique<base::ListValue>();
+  // Since we don't populate tab info here, the context type doesn't matter.
+  constexpr ExtensionTabUtil::PopulateTabBehavior populate_behavior =
+      ExtensionTabUtil::kDontPopulateTabs;
+  constexpr Feature::Context context_type = Feature::UNSPECIFIED_CONTEXT;
+  args->Append(ExtensionTabUtil::CreateWindowValueForExtension(
+      *window_controller->GetBrowser(), nullptr, populate_behavior,
+      context_type));
+  DispatchEvent(events::WINDOWS_ON_BOUNDS_CHANGED,
+                windows::OnBoundsChanged::kEventName, window_controller,
+                std::move(args));
+}
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(nullptr);
@@ -252,7 +275,7 @@ void WindowsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   DCHECK_EQ(chrome::NOTIFICATION_NO_KEY_WINDOW, type);
   OnActiveWindowChanged(nullptr);
 #endif
@@ -263,7 +286,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   Profile* window_profile = nullptr;
   int window_id = extension_misc::kUnknownWindowId;
   if (window_controller &&
-      profile_->IsSameProfile(window_controller->profile())) {
+      profile_->IsSameOrParent(window_controller->profile())) {
     window_profile = window_controller->profile();
     window_id = window_controller->GetWindowId();
   }

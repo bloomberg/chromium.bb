@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/base/syncer_error.h"
 #include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -21,7 +21,6 @@ class GetUpdatesResponse;
 
 namespace syncer {
 
-class DebugInfoGetter;
 class GetUpdatesDelegate;
 class StatusController;
 class SyncCycle;
@@ -71,9 +70,6 @@ class GetUpdatesProcessor {
       const ModelTypeSet& gu_types,
       const sync_pb::GetUpdatesResponse& gu_response,
       StatusController* status_controller);
-
-  static void CopyClientDebugInfo(DebugInfoGetter* debug_info_getter,
-                                  sync_pb::DebugInfo* debug_info);
 
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, BookmarkNudge);
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, NotifyMany);

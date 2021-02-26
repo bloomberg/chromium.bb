@@ -31,7 +31,7 @@ SensorProxyImpl::SensorProxyImpl(device::mojom::blink::SensorType sensor_type,
 
 SensorProxyImpl::~SensorProxyImpl() {}
 
-void SensorProxyImpl::Trace(Visitor* visitor) {
+void SensorProxyImpl::Trace(Visitor* visitor) const {
   visitor->Trace(sensor_remote_);
   visitor->Trace(client_receiver_);
   SensorProxy::Trace(visitor);
@@ -41,15 +41,15 @@ void SensorProxyImpl::Initialize() {
   if (state_ != kUninitialized)
     return;
 
-  if (!sensor_provider()) {
+  if (!sensor_provider_proxy()) {
     HandleSensorError();
     return;
   }
 
   state_ = kInitializing;
-  auto callback =
-      WTF::Bind(&SensorProxyImpl::OnSensorCreated, WrapWeakPersistent(this));
-  sensor_provider()->GetSensor(type_, std::move(callback));
+  sensor_provider_proxy()->GetSensor(
+      type_,
+      WTF::Bind(&SensorProxyImpl::OnSensorCreated, WrapWeakPersistent(this)));
 }
 
 void SensorProxyImpl::AddConfiguration(
@@ -65,7 +65,8 @@ void SensorProxyImpl::RemoveConfiguration(
     device::mojom::blink::SensorConfigurationPtr configuration) {
   DCHECK(IsInitialized());
   RemoveActiveFrequency(configuration->frequency);
-  sensor_remote_->RemoveConfiguration(std::move(configuration));
+  if (sensor_remote_.is_bound())
+    sensor_remote_->RemoveConfiguration(std::move(configuration));
 }
 
 double SensorProxyImpl::GetDefaultFrequency() const {
@@ -79,7 +80,7 @@ std::pair<double, double> SensorProxyImpl::GetFrequencyLimits() const {
 }
 
 void SensorProxyImpl::Suspend() {
-  if (suspended_)
+  if (suspended_ || !sensor_remote_.is_bound())
     return;
 
   sensor_remote_->Suspend();
@@ -88,7 +89,7 @@ void SensorProxyImpl::Suspend() {
 }
 
 void SensorProxyImpl::Resume() {
-  if (!suspended_)
+  if (!suspended_ || !sensor_remote_.is_bound())
     return;
 
   sensor_remote_->Resume();

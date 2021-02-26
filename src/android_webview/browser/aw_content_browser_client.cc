@@ -11,7 +11,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
-#include "android_webview/browser/aw_content_browser_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -50,7 +49,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
@@ -59,7 +57,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/content/policy_blocklist_navigation_throttle.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
@@ -87,7 +85,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
-#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -96,12 +93,14 @@
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -226,8 +225,8 @@ void MaybeCreateSafeBrowsing(
   if (!render_process_host)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
                      resource_context, std::move(get_checker_delegate),
                      std::move(receiver)));
@@ -403,6 +402,9 @@ bool AwContentBrowserClient::ForceSniffingFileUrlsForHtml() {
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
+  // AppCache should always be enabled for WebView until it is removed.
+  command_line->AppendSwitch(switches::kAppCacheForceEnabled);
+
   if (!command_line->HasSwitch(switches::kSingleProcess)) {
     // The only kind of a child process WebView can have is renderer or utility.
     std::string process_type =
@@ -455,11 +457,14 @@ AwContentBrowserClient::CreateQuotaPermissionContext() {
 content::GeneratedCodeCacheSettings
 AwContentBrowserClient::GetGeneratedCodeCacheSettings(
     content::BrowserContext* context) {
-  // If we pass 0 for size, disk_cache will pick a default size using the
-  // heuristics based on available disk size. These are implemented in
-  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  // WebView limits the main HTTP cache to 20MB; we need to set a comparable
+  // limit for the code cache since the source file needs to be in the HTTP
+  // cache for the code cache entry to be used. There are two code caches that
+  // both use this value, so we pass 10MB to keep the total disk usage to
+  // roughly 2x what it was before the code cache was implemented.
+  // TODO(crbug/893318): webview should have smarter cache sizing logic.
   AwBrowserContext* browser_context = static_cast<AwBrowserContext*>(context);
-  return content::GeneratedCodeCacheSettings(true, 0,
+  return content::GeneratedCodeCacheSettings(true, 10 * 1024 * 1024,
                                              browser_context->GetCacheDir());
 }
 
@@ -591,13 +596,13 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   int crash_signal_fd =
       crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
   if (crash_signal_fd >= 0) {
-    mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* rvh,
-    content::WebPreferences* web_prefs) {
+    blink::web_pref::WebPreferences* web_prefs) {
   AwSettings* aw_settings = AwSettings::FromWebContents(
       content::WebContents::FromRenderViewHost(rvh));
   if (aw_settings) {
@@ -627,7 +632,7 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             navigation_handle, navigation_interception::SynchronyMode::kSync));
-    throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
+    throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
         navigation_handle, AwBrowserContext::FromWebContents(
                                navigation_handle->GetWebContents())));
     throttles.push_back(
@@ -639,13 +644,6 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
 content::DevToolsManagerDelegate*
 AwContentBrowserClient::GetDevToolsManagerDelegate() {
   return new AwDevToolsManagerDelegate();
-}
-
-base::Optional<service_manager::Manifest>
-AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetAWContentBrowserOverlayManifest();
-  return base::nullopt;
 }
 
 bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(
@@ -683,7 +681,7 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
           base::BindRepeating(
               &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
               base::Unretained(this))),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   auto create_spellcheck_host =
@@ -691,9 +689,8 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
         mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
                                     std::move(receiver));
       };
-  registry->AddInterface(
-      base::BindRepeating(create_spellcheck_host),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+  registry->AddInterface(base::BindRepeating(create_spellcheck_host),
+                         content::GetUIThreadTaskRunner({}));
 #endif
 }
 
@@ -747,7 +744,7 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
     safe_browsing_url_checker_delegate_ = new AwUrlCheckerDelegateImpl(
         AwBrowserProcess::GetInstance()->GetSafeBrowsingDBManager(),
         AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager(),
-        AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager());
+        AwBrowserProcess::GetInstance()->GetSafeBrowsingAllowlistManager());
   }
 
   return safe_browsing_url_checker_delegate_;
@@ -841,8 +838,8 @@ bool AwContentBrowserClient::HandleExternalProtocol(
         0 /* process_id */, std::move(receiver), mojo::NullRemote(),
         true /* intercept_only */, base::nullopt /* security_options */);
   } else {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](mojo::PendingReceiver<network::mojom::URLLoaderFactory>
                    receiver) {
@@ -868,10 +865,11 @@ void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
   if (aw_settings && aw_settings->GetAllowFileAccess()) {
     AwBrowserContext* aw_browser_context =
         AwBrowserContext::FromWebContents(web_contents);
-    auto file_factory = CreateFileURLLoaderFactory(
-        aw_browser_context->GetPath(),
-        aw_browser_context->GetSharedCorsOriginAccessList());
-    factories->emplace(url::kFileScheme, std::move(file_factory));
+    factories->emplace(
+        url::kFileScheme,
+        content::CreateFileURLLoaderFactory(
+            aw_browser_context->GetPath(),
+            aw_browser_context->GetSharedCorsOriginAccessList()));
   }
 }
 
@@ -883,27 +881,26 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // TODO(lukasza): When/if we eventually add OOPIF support for AW we should
   // consider running AW tests with and without site-per-process (and this might
   // require returning true below).  Adding OOPIF support for AW is tracked by
-  // https://crbug.com/869494.
+  // https://crbug.com/806404.
   return false;
 }
 
-bool AwContentBrowserClient::ShouldLockToOrigin(
+bool AwContentBrowserClient::ShouldDisableSiteIsolation() {
+  // Since AW does not yet support OOPIFs, we must return true here to disable
+  // features that may trigger OOPIFs, such as origin isolation.
+  //
+  // Adding OOPIF support for AW is tracked by https://crbug.com/806404.
+  return true;
+}
+
+bool AwContentBrowserClient::ShouldLockProcessToSite(
     content::BrowserContext* browser_context,
     const GURL& effective_url) {
-  // TODO(lukasza): https://crbug.cmo/869494: Once Android WebView supports
-  // OOPIFs, we should remove this ShouldLockToOrigin overload.  Till then,
+  // TODO(lukasza): https://crbug.com/806404: Once Android WebView supports
+  // OOPIFs, we should remove this ShouldLockProcess overload.  Till then,
   // returning false helps avoid accidentally applying citadel-style Site
   // Isolation enforcement to Android WebView (and causing incorrect renderer
   // kills).
-  return false;
-}
-
-bool AwContentBrowserClient::DoesWebUISchemeRequireProcessLock(
-    base::StringPiece scheme) {
-  // TODO(nasko,alexmos): WebView does not currently lock processes for WebUI
-  // navigations, even though it does cross-process navigations. It should be
-  // fixed and this method can be removed.
-  // See https://crbug.com/1071464.
   return false;
 }
 
@@ -914,6 +911,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     base::Optional<int64_t> navigation_id,
+    ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
@@ -955,7 +953,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
     const auto& preferences =
-        frame->GetRenderViewHost()->GetWebkitPreferences();
+        WebContents::FromRenderFrameHost(frame)->GetOrCreateWebPreferences();
     // See also //android_webview/docs/cors-and-webview-api.md to understand how
     // each settings affect CORS behaviors on file:// and content://.
     if (request_initiator.scheme() == url::kFileScheme) {
@@ -971,8 +969,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
           preferences.allow_file_access_from_file_urls ||
           preferences.allow_universal_access_from_file_urls;
     }
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
                        std::move(proxied_receiver),
                        std::move(target_factory_remote), security_options));
@@ -980,8 +978,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     // A service worker and worker subresources set nullptr to |frame|, and
     // work without seeing the AllowUniversalAccessFromFileURLs setting. So,
     // we don't pass a valid |security_options| here.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
                                   process_id, std::move(proxied_receiver),
                                   std::move(target_factory_remote),
                                   base::nullopt /* security_options */));
@@ -1075,6 +1073,10 @@ bool AwContentBrowserClient::IsOriginTrialRequiredForAppCache(
 content::SpeechRecognitionManagerDelegate*
 AwContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new AwSpeechRecognitionManagerDelegate();
+}
+
+bool AwContentBrowserClient::HasErrorPage(int http_status_code) {
+  return http_status_code >= 400;
 }
 
 // static

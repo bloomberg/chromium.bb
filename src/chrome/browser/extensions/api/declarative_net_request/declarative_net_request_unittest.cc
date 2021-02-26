@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -38,8 +40,10 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -47,7 +51,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,8 +94,8 @@ InstallWarning GetLargeRegexWarning(
   return InstallWarning(ErrorUtils::FormatErrorMessage(
                             GetErrorWithFilename(kErrorRegexTooLarge, filename),
                             base::NumberToString(rule_id), kRegexFilterKey),
-                        manifest_keys::kDeclarativeNetRequestKey,
-                        manifest_keys::kDeclarativeRuleResourcesKey);
+                        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                        dnr_api::DNRInfo::kRuleResources);
 }
 
 // Base test fixture to test indexing of rulesets.
@@ -112,6 +115,7 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
         }));
     ASSERT_TRUE(RulesMonitorService::Get(browser_context()));
 
+    extension_prefs_ = ExtensionPrefs::Get(browser_context());
     loader_ = CreateExtensionLoader();
     extension_dir_ =
         temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension"));
@@ -148,13 +152,15 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());
 
     // The histograms below are not logged for unpacked extensions.
-    if (GetParam() == ExtensionLoadType::PACKED && expect_rulesets_indexed) {
+    if (GetParam() == ExtensionLoadType::PACKED) {
+      int expected_samples = expect_rulesets_indexed ? 1 : 0;
+
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
-                              1 /* count */);
+                              expected_samples);
       tester.ExpectUniqueSample(kManifestRulesCountHistogram,
-                                expected_rules_count, 1 /* count */);
+                                expected_rules_count, expected_samples);
       tester.ExpectUniqueSample(kManifestEnabledRulesCountHistogram,
-                                expected_enabled_rules_count, 1 /* count */);
+                                expected_enabled_rules_count, expected_samples);
     }
   }
 
@@ -195,15 +201,17 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
         ListBuilder()
             .Append(rule_ids_to_remove.begin(), rule_ids_to_remove.end())
             .Build();
+    std::unique_ptr<base::Value> rules_to_add_value = ToListValue(rules_to_add);
 
-    std::unique_ptr<base::Value> args =
-        ListBuilder()
-            .Append(std::move(ids_to_remove_value))
-            .Append(ToListValue(rules_to_add))
-            .Build();
-    std::string json_args;
-    base::JSONWriter::WriteWithOptions(
-        *args, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_args);
+    constexpr const char kParams[] = R"(
+      [{
+        "addRules": $1,
+        "removeRuleIds": $2
+      }]
+    )";
+    const std::string json_args =
+        content::JsReplace(kParams, std::move(*rules_to_add_value),
+                           std::move(*ids_to_remove_value));
 
     auto update_function =
         base::MakeRefCounted<DeclarativeNetRequestUpdateDynamicRulesFunction>();
@@ -218,14 +226,19 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
       const std::vector<std::string>& ruleset_ids_to_remove,
       const std::vector<std::string>& ruleset_ids_to_add,
       base::Optional<std::string> expected_error) {
-    std::unique_ptr<base::Value> args =
-        ListBuilder()
-            .Append(ToListValue(ruleset_ids_to_remove))
-            .Append(ToListValue(ruleset_ids_to_add))
-            .Build();
-    std::string json_args;
-    base::JSONWriter::WriteWithOptions(
-        *args, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_args);
+    std::unique_ptr<base::Value> ids_to_remove_value =
+        ToListValue(ruleset_ids_to_remove);
+    std::unique_ptr<base::Value> ids_to_add_value =
+        ToListValue(ruleset_ids_to_add);
+
+    constexpr const char kParams[] = R"(
+      [{
+        "disableRulesetIds": $1,
+        "enableRulesetIds": $2
+      }]
+    )";
+    const std::string json_args = content::JsReplace(
+        kParams, std::move(*ids_to_remove_value), std::move(*ids_to_add_value));
 
     auto function = base::MakeRefCounted<
         DeclarativeNetRequestUpdateEnabledRulesetsFunction>();
@@ -278,6 +291,46 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
         UnorderedElementsAreArray(GetPublicRulesetIDs(extension, *matcher)));
   }
 
+  void UpdateExtensionLoaderAndPath(const base::FilePath& file_path) {
+    loader_ = CreateExtensionLoader();
+    extension_ = nullptr;
+    extension_dir_ = file_path;
+    ASSERT_TRUE(base::CreateDirectory(extension_dir_));
+  }
+
+  void CheckExtensionAllocationInPrefs(
+      const ExtensionId& extension_id,
+      base::Optional<size_t> expected_rules_count) {
+    size_t actual_rules_count = 0;
+
+    bool has_allocated_rules_count =
+        extension_prefs_->GetDNRAllocatedGlobalRuleCount(extension_id,
+                                                         &actual_rules_count);
+
+    EXPECT_EQ(expected_rules_count.has_value(), has_allocated_rules_count);
+    if (expected_rules_count.has_value())
+      EXPECT_EQ(*expected_rules_count, actual_rules_count);
+  }
+
+  void VerifyGetAvailableStaticRuleCountFunction(
+      const Extension& extension,
+      size_t expected_available_rule_count) {
+    auto function = base::MakeRefCounted<
+        DeclarativeNetRequestGetAvailableStaticRuleCountFunction>();
+    function->set_extension(&extension);
+    function->set_has_callback(true);
+
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), "[]" /* args */, browser_context());
+    ASSERT_TRUE(result);
+
+    EXPECT_EQ(expected_available_rule_count,
+              static_cast<size_t>(result->GetInt()));
+  }
+
+  const ExtensionPrefs* extension_prefs() { return extension_prefs_; }
+
   ChromeTestExtensionLoader* extension_loader() { return loader_.get(); }
 
   const Extension* extension() const { return extension_.get(); }
@@ -295,6 +348,7 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
   base::FilePath extension_dir_;
   std::unique_ptr<ChromeTestExtensionLoader> loader_;
   scoped_refptr<const Extension> extension_;
+  const ExtensionPrefs* extension_prefs_ = nullptr;
 };
 
 // Fixture testing that declarative rules corresponding to the Declarative Net
@@ -335,10 +389,9 @@ class SingleRulesetTest : public DeclarativeNetRequestUnittest {
     else
       rules_count = rules_list_.size();
 
-    // We only index up to dnr_api::MAX_NUMBER_OF_RULES rules per ruleset.
-    rules_count = std::min(rules_count,
-                           static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
-
+    // We only index up to GetMaximumRulesPerRuleset() rules per ruleset.
+    rules_count =
+        std::min(rules_count, static_cast<size_t>(GetMaximumRulesPerRuleset()));
     DeclarativeNetRequestUnittest::LoadAndExpectSuccess(rules_count,
                                                         rules_count, true);
   }
@@ -520,8 +573,8 @@ TEST_P(SingleRulesetTest, TooManyParseFailures) {
     ASSERT_EQ(1u + kMaxUnparsedRulesWarnings, expected_warnings.size());
 
     InstallWarning warning("");
-    warning.key = manifest_keys::kDeclarativeNetRequestKey;
-    warning.specific = manifest_keys::kDeclarativeRuleResourcesKey;
+    warning.key = dnr_api::ManifestKeys::kDeclarativeNetRequest;
+    warning.specific = dnr_api::DNRInfo::kRuleResources;
 
     // The initial warnings should correspond to the first
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
@@ -578,10 +631,8 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_StrongTypes) {
     std::vector<InstallWarning> expected_warnings;
 
     for (const auto& warning : extension()->install_warnings()) {
-      EXPECT_EQ(extensions::manifest_keys::kDeclarativeNetRequestKey,
-                warning.key);
-      EXPECT_EQ(extensions::manifest_keys::kDeclarativeRuleResourcesKey,
-                warning.specific);
+      EXPECT_EQ(dnr_api::ManifestKeys::kDeclarativeNetRequest, warning.key);
+      EXPECT_EQ(dnr_api::DNRInfo::kRuleResources, warning.specific);
       EXPECT_THAT(warning.message, ::testing::HasSubstr("Parse error"));
     }
   }
@@ -622,40 +673,43 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
   SetRules(base::JSONReader::ReadDeprecated(kRules));
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(1u);
+
+  // Rules with ids "2" and "3" will be successfully indexed. Note that for rule
+  // with id "3", the "invalidKey" will simply be ignored during parsing
+  // (without causing any install warning).
+  size_t expected_rule_count = 2;
+  LoadAndExpectSuccess(expected_rule_count);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
-    ASSERT_EQ(3u, extension()->install_warnings().size());
+    ASSERT_EQ(2u, extension()->install_warnings().size());
     std::vector<InstallWarning> expected_warnings;
 
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "id 1",
             "'condition': expected dictionary, got list"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
-    expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(
-            GetErrorWithFilename(kRuleNotParsedWarning), "id 3",
-            "found unexpected key 'invalidKey'"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "index 4",
             "'id': expected id, got string"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
     EXPECT_EQ(expected_warnings, extension()->install_warnings());
   }
 }
 
-// Ensure that we can add up to MAX_NUMBER_OF_RULES.
+// Ensure that we can add up to GetStaticRuleLimit() rules.
 TEST_P(SingleRulesetTest, RuleCountLimitMatched) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   TestRule rule = CreateGenericRule();
-  for (int i = 0; i < dnr_api::MAX_NUMBER_OF_RULES; ++i) {
+  for (int i = 0; i < GetStaticRuleLimit(); ++i) {
     rule.id = kMinValidID + i;
     rule.condition->url_filter = std::to_string(i);
     AddRule(rule);
@@ -665,8 +719,12 @@ TEST_P(SingleRulesetTest, RuleCountLimitMatched) {
 
 // Ensure that we get an install warning on exceeding the rule count limit.
 TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   TestRule rule = CreateGenericRule();
-  for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_RULES + 1; ++i) {
+  for (int i = 1; i <= GetStaticRuleLimit() + 1; ++i) {
     rule.id = kMinValidID + i;
     rule.condition->url_filter = std::to_string(i);
     AddRule(rule);
@@ -680,8 +738,8 @@ TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
   if (GetParam() != ExtensionLoadType::PACKED) {
     ASSERT_EQ(1u, extension()->install_warnings().size());
     EXPECT_EQ(InstallWarning(GetErrorWithFilename(kRuleCountExceeded),
-                             manifest_keys::kDeclarativeNetRequestKey,
-                             manifest_keys::kDeclarativeRuleResourcesKey),
+                             dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                             dnr_api::DNRInfo::kRuleResources),
               extension()->install_warnings()[0]);
   }
 }
@@ -749,10 +807,14 @@ TEST_P(SingleRulesetTest, WarningAndError) {
 // Ensure that we get an install warning on exceeding the regex rule count
 // limit.
 TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedRegexRuleLimitOverrideForTesting(100);
+
   TestRule regex_rule = CreateGenericRule();
   regex_rule.condition->url_filter.reset();
   int rule_id = kMinValidID;
-  for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_REGEX_RULES + 5; ++i, ++rule_id) {
+  for (int i = 1; i <= GetRegexRuleLimit() + 5; ++i, ++rule_id) {
     regex_rule.id = rule_id;
     regex_rule.condition->regex_filter = std::to_string(i);
     AddRule(regex_rule);
@@ -767,15 +829,14 @@ TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(dnr_api::MAX_NUMBER_OF_REGEX_RULES +
-                       kCountNonRegexRules);
+  LoadAndExpectSuccess(GetRegexRuleLimit() + kCountNonRegexRules);
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     ASSERT_EQ(1u, extension()->install_warnings().size());
     EXPECT_EQ(InstallWarning(GetErrorWithFilename(kRegexRuleCountExceeded),
-                             manifest_keys::kDeclarativeNetRequestKey,
-                             manifest_keys::kDeclarativeRuleResourcesKey),
+                             dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                             dnr_api::DNRInfo::kRuleResources),
               extension()->install_warnings()[0]);
   }
 }
@@ -904,6 +965,156 @@ TEST_P(SingleRulesetTest, UpdateEnabledRulesetsRace) {
   VerifyPublicRulesetIDs(*extension, {});
 }
 
+// Test fixture for a single ruleset with the
+// |kDeclarativeNetRequestGlobalRules| feature enabled.
+class SingleRulesetGlobalRulesTest : public SingleRulesetTest {
+ public:
+  SingleRulesetGlobalRulesTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kDeclarativeNetRequestGlobalRules);
+  }
+
+  // SingleRulesetTest override.
+  void SetUp() override {
+    SingleRulesetTest::SetUp();
+
+    // Sanity check that the extension can index and enable up to
+    // |rule_limit_override_| + |global_limit_override_| rules.
+    ASSERT_EQ(300, GetMaximumRulesPerRuleset());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Override the API guaranteed minimum to prevent a timeout on loading the
+  // extension.
+  base::AutoReset<int> guaranteed_minimum_override_ =
+      CreateScopedStaticGuaranteedMinimumOverrideForTesting(100);
+
+  // Similarly, override the global limit to prevent a timeout.
+  base::AutoReset<int> global_limit_override_ =
+      CreateScopedGlobalStaticRuleLimitOverrideForTesting(200);
+};
+
+// Ensure that we can add up to the |dnr_api::GUARANTEED_MINIMUM_STATIC_RULES| +
+// |kMaxStaticRulesPerProfile| rules if the global rules feature is enabled.
+TEST_P(SingleRulesetGlobalRulesTest, RuleCountLimitMatched) {
+  TestRule rule = CreateGenericRule();
+  for (int i = 0; i < GetMaximumRulesPerRuleset(); ++i) {
+    rule.id = kMinValidID + i;
+    rule.condition->url_filter = std::to_string(i);
+    AddRule(rule);
+  }
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  LoadAndExpectSuccess(300);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension());
+
+  ASSERT_EQ(1u, static_sources.size());
+  EXPECT_TRUE(base::PathExists(static_sources[0].indexed_path()));
+
+  // The ruleset's ID should not be marked as ignored in prefs.
+  EXPECT_FALSE(extension_prefs()->ShouldIgnoreDNRRuleset(
+      extension()->id(), static_sources[0].id()));
+}
+
+// Ensure that an extension's allocation will be kept when it is disabled.
+TEST_P(SingleRulesetGlobalRulesTest, AllocationKeptWhenDisabled) {
+  TestRule rule = CreateGenericRule();
+  for (int i = 0; i < GetMaximumRulesPerRuleset(); ++i) {
+    rule.id = kMinValidID + i;
+    rule.condition->url_filter = std::to_string(i);
+    AddRule(rule);
+  }
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  LoadAndExpectSuccess(300);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  // The 200 rules that contribute to the global pool should be tracked.
+  GlobalRulesTracker& global_rules_tracker =
+      RulesMonitorService::Get(browser_context())->global_rules_tracker();
+  EXPECT_EQ(200u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // An entry for these 200 rules should be persisted for the extension in
+  // prefs.
+  CheckExtensionAllocationInPrefs(extension()->id(), 200);
+
+  service()->DisableExtension(extension()->id(),
+                              disable_reason::DISABLE_USER_ACTION);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(0);
+
+  // The extension's last known extra rule count should be persisted after it is
+  // disabled.
+  EXPECT_EQ(200u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+  CheckExtensionAllocationInPrefs(extension()->id(), 200);
+
+  // Now re-enable the extension. The extension should load all of its rules
+  // without any problems.
+  service()->EnableExtension(extension()->id());
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  EXPECT_EQ(200u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+  CheckExtensionAllocationInPrefs(extension()->id(), 200);
+}
+
+// Ensure that we get an install warning on exceeding the rule count limit and
+// that no rules are indexed.
+TEST_P(SingleRulesetGlobalRulesTest, RuleCountLimitExceeded) {
+  TestRule rule = CreateGenericRule();
+  for (int i = 1; i <= GetMaximumRulesPerRuleset() + 1; ++i) {
+    rule.id = kMinValidID + i;
+    rule.condition->url_filter = std::to_string(i);
+    AddRule(rule);
+  }
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      0, 0, false /* expect_rulesets_indexed */);
+
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension());
+
+  // Since the ruleset was ignored and not indexed, it should not be persisted
+  // to a file.
+  ASSERT_EQ(1u, static_sources.size());
+  EXPECT_FALSE(base::PathExists(static_sources[0].indexed_path()));
+
+  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
+  // which causes it to lose the install warning. This should be fixed.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    ASSERT_EQ(1u, extension()->install_warnings().size());
+    InstallWarning expected_warning =
+        InstallWarning(GetErrorWithFilename(ErrorUtils::FormatErrorMessage(
+                           kIndexingRuleLimitExceeded,
+                           std::to_string(static_sources[0].id().value()))),
+                       dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                       dnr_api::DNRInfo::kRuleResources);
+
+    EXPECT_EQ(expected_warning, extension()->install_warnings()[0]);
+  }
+
+  // The ruleset's ID should be persisted in the ignored rulesets pref.
+  EXPECT_TRUE(extension_prefs()->ShouldIgnoreDNRRuleset(
+      extension()->id(), static_sources[0].id()));
+
+  // Since the ruleset was not indexed, no rules should contribute to the extra
+  // static rule count.
+  GlobalRulesTracker& global_rules_tracker =
+      RulesMonitorService::Get(browser_context())->global_rules_tracker();
+  EXPECT_EQ(0u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Likewise, no entry should be persisted in prefs.
+  CheckExtensionAllocationInPrefs(extension()->id(), base::nullopt);
+}
+
 // Tests that multiple static rulesets are correctly indexed.
 class MultipleRulesetsTest : public DeclarativeNetRequestUnittest {
  public:
@@ -916,6 +1127,8 @@ class MultipleRulesetsTest : public DeclarativeNetRequestUnittest {
   }
 
   void AddRuleset(const TestRulesetInfo& info) { rulesets_.push_back(info); }
+
+  void ClearRulesets() { rulesets_.clear(); }
 
   TestRulesetInfo CreateRuleset(const std::string& manifest_id_and_path,
                                 size_t num_non_regex_rules,
@@ -947,15 +1160,15 @@ class MultipleRulesetsTest : public DeclarativeNetRequestUnittest {
       const base::Optional<size_t>& expected_rules_count = base::nullopt,
       const base::Optional<size_t>& expected_enabled_rules_count =
           base::nullopt) {
+    size_t static_rule_limit = GetMaximumRulesPerRuleset();
     size_t rules_count = 0u;
     size_t rules_enabled_count = 0u;
     for (const TestRulesetInfo& info : rulesets_) {
       size_t count = info.rules_value.GetList().size();
 
-      // We only index up to dnr_api::MAX_NUMBER_OF_RULES per ruleset, but may
-      // index more rules than this limit across rulesets.
-      count =
-          std::min(count, static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
+      // We only index up to |static_rule_limit| rules per ruleset, but
+      // may index more rules than this limit across rulesets.
+      count = std::min(count, static_rule_limit);
 
       rules_count += count;
       if (info.enabled)
@@ -1017,6 +1230,12 @@ TEST_P(MultipleRulesetsTest, ListNotPassed) {
 // Tests an extension with multiple static rulesets with each ruleset generating
 // some install warnings.
 TEST_P(MultipleRulesetsTest, InstallWarnings) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+  base::AutoReset<int> regex_rule_limit_override =
+      CreateScopedRegexRuleLimitOverrideForTesting(60);
+
   size_t expected_rule_count = 0;
   size_t enabled_rule_count = 0;
   std::vector<std::string> expected_warnings;
@@ -1045,29 +1264,27 @@ TEST_P(MultipleRulesetsTest, InstallWarnings) {
   {
     // Persist a ruleset with an install warning for exceeding the rule count.
     TestRulesetInfo info =
-        CreateRuleset(kId2, dnr_api::MAX_NUMBER_OF_RULES + 1, 0, false);
+        CreateRuleset(kId2, GetStaticRuleLimit() + 1, 0, false);
     AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRuleCountExceeded, info.relative_file_path));
 
-    expected_rule_count += dnr_api::MAX_NUMBER_OF_RULES;
+    expected_rule_count += GetStaticRuleLimit();
   }
 
   {
     // Persist a ruleset with an install warning for exceeding the regex rule
     // count.
     size_t kCountNonRegexRules = 5;
-    TestRulesetInfo info =
-        CreateRuleset(kId3, kCountNonRegexRules,
-                      dnr_api::MAX_NUMBER_OF_REGEX_RULES + 1, false);
+    TestRulesetInfo info = CreateRuleset(kId3, kCountNonRegexRules,
+                                         GetRegexRuleLimit() + 1, false);
     AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRegexRuleCountExceeded, info.relative_file_path));
 
-    expected_rule_count +=
-        kCountNonRegexRules + dnr_api::MAX_NUMBER_OF_REGEX_RULES;
+    expected_rule_count += kCountNonRegexRules + GetRegexRuleLimit();
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
@@ -1111,12 +1328,16 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
 // Ensure that exceeding the rules count limit across rulesets raises an install
 // warning.
 TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(50);
+
   // Enabled on load.
   AddRuleset(CreateRuleset(kId1, 10, 0, true));
   // Disabled by default.
   AddRuleset(CreateRuleset(kId2, 20, 0, false));
   // Not enabled on load since including it exceeds the static rules count.
-  AddRuleset(CreateRuleset(kId3, dnr_api::MAX_NUMBER_OF_RULES + 10, 0, true));
+  AddRuleset(CreateRuleset(kId3, GetStaticRuleLimit() + 10, 0, true));
   // Enabled on load.
   AddRuleset(CreateRuleset(kId4, 30, 0, true));
 
@@ -1126,8 +1347,6 @@ TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
   {
     // To prevent timeouts in debug builds, increase the wait timeout to the
     // test launcher's timeout. See crbug.com/1071403.
-    // TODO(karandeepb): Provide a way to fake dnr_api::MAX_NUMBER_OF_RULES in
-    // tests to decrease test runtime.
     base::test::ScopedRunLoopTimeout specific_timeout(
         FROM_HERE, TestTimeouts::test_launcher_timeout());
     LoadAndExpectSuccess();
@@ -1167,7 +1386,7 @@ TEST_P(MultipleRulesetsTest, RegexRuleCountExceeded) {
   AddRuleset(CreateRuleset(kId1, 10000, 100, true));
   // Won't be enabled on load since including it will exceed the regex rule
   // count.
-  AddRuleset(CreateRuleset(kId2, 1, dnr_api::MAX_NUMBER_OF_REGEX_RULES, true));
+  AddRuleset(CreateRuleset(kId2, 1, GetRegexRuleLimit(), true));
   // Won't be enabled on load since it is disabled by default.
   AddRuleset(CreateRuleset(kId3, 10, 10, false));
   // Enabled on load.
@@ -1225,8 +1444,12 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InvalidRulesetID) {
 }
 
 TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   AddRuleset(CreateRuleset(kId1, 10, 10, true));
-  AddRuleset(CreateRuleset(kId2, dnr_api::MAX_NUMBER_OF_RULES, 0, false));
+  AddRuleset(CreateRuleset(kId2, GetStaticRuleLimit(), 0, false));
 
   RulesetManagerObserver ruleset_waiter(manager());
   LoadAndExpectSuccess();
@@ -1245,7 +1468,7 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RuleCountExceeded) {
 
 TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RegexRuleCountExceeded) {
   AddRuleset(CreateRuleset(kId1, 0, 10, false));
-  AddRuleset(CreateRuleset(kId2, 0, dnr_api::MAX_NUMBER_OF_REGEX_RULES, true));
+  AddRuleset(CreateRuleset(kId2, 0, GetRegexRuleLimit(), true));
 
   RulesetManagerObserver ruleset_waiter(manager());
   LoadAndExpectSuccess();
@@ -1274,8 +1497,7 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InternalError) {
     // First delete the indexed ruleset file for the second ruleset. Enabling it
     // should cause re-indexing and succeed in enabling the ruleset.
     base::HistogramTester tester;
-    ASSERT_TRUE(base::DeleteFile(static_sources[1].indexed_path(),
-                                 false /* recursive */));
+    ASSERT_TRUE(base::DeleteFile(static_sources[1].indexed_path()));
 
     RunUpdateEnabledRulesetsFunction(*extension(), {kId1}, {kId2},
                                      base::nullopt);
@@ -1290,10 +1512,8 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InternalError) {
     // Now delete both the indexed and json ruleset file for the first ruleset.
     // This will prevent enabling the first ruleset since re-indexing will fail.
     base::HistogramTester tester;
-    ASSERT_TRUE(base::DeleteFile(static_sources[0].indexed_path(),
-                                 false /* recursive */));
-    ASSERT_TRUE(
-        base::DeleteFile(static_sources[0].json_path(), false /* recursive */));
+    ASSERT_TRUE(base::DeleteFile(static_sources[0].indexed_path()));
+    ASSERT_TRUE(base::DeleteFile(static_sources[0].json_path()));
 
     RunUpdateEnabledRulesetsFunction(*extension(), {}, {kId1},
                                      kInternalErrorUpdatingEnabledRulesets);
@@ -1312,7 +1532,6 @@ TEST_P(MultipleRulesetsTest, UpdateAndGetEnabledRulesets_Success) {
   LoadAndExpectSuccess();
   ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
 
-  std::vector<std::string> ruleset_ids;
   RunUpdateEnabledRulesetsFunction(*extension(), {kId1, kId3}, {kId2},
                                    base::nullopt /* expected_error */);
   VerifyPublicRulesetIDs(*extension(), {kId2});
@@ -1366,12 +1585,456 @@ TEST_P(MultipleRulesetsTest, UpdateAndGetEnabledRulesets_Success) {
   VerifyGetEnabledRulesetsFunction(*extension, {kId1, kId2, kId3});
 }
 
+// Test fixture for multiple static rulesets with the
+// |kDeclarativeNetRequestGlobalRules| feature enabled.
+class MultipleRulesetsGlobalRulesTest : public MultipleRulesetsTest {
+ public:
+  MultipleRulesetsGlobalRulesTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kDeclarativeNetRequestGlobalRules);
+  }
+
+  // MultipleRulesetsTest override.
+  void SetUp() override {
+    MultipleRulesetsTest::SetUp();
+
+    // Sanity check that the extension can index and enable up to
+    // |rule_limit_override_| + |global_limit_override_| rules.
+    ASSERT_EQ(300, GetMaximumRulesPerRuleset());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Override the API guaranteed minimum to prevent a timeout on loading the
+  // extension.
+  base::AutoReset<int> guaranteed_minimum_override_ =
+      CreateScopedStaticGuaranteedMinimumOverrideForTesting(100);
+
+  // Similarly, override the global limit to prevent a timeout.
+  base::AutoReset<int> global_limit_override_ =
+      CreateScopedGlobalStaticRuleLimitOverrideForTesting(200);
+};
+
+// Ensure that only rulesets which exceed the rules count limit will not have
+// their rules indexed and will raise an install warning.
+TEST_P(MultipleRulesetsGlobalRulesTest, StaticRuleCountExceeded) {
+  // Ruleset should not be indexed as it exceeds the limit.
+  AddRuleset(CreateRuleset(kId1, 301, 0, true));
+
+  // Ruleset should be indexed as it is within the limit.
+  AddRuleset(CreateRuleset(kId2, 250, 0, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+  extension_loader()->set_ignore_manifest_warnings(true);
+
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      250, 250, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension()->id());
+  ASSERT_TRUE(composite_matcher);
+
+  VerifyPublicRulesetIDs(*extension(), {kId2});
+
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 250))));
+
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension());
+  ASSERT_EQ(2u, static_sources.size());
+
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    std::string expected_warning = GetErrorWithFilename(
+        ErrorUtils::FormatErrorMessage(
+            kIndexingRuleLimitExceeded,
+            std::to_string(static_sources[0].id().value())),
+        kId1);
+
+    EXPECT_THAT(extension()->install_warnings(),
+                UnorderedElementsAre(
+                    Field(&InstallWarning::message, expected_warning)));
+  }
+
+  // Since the first ruleset was ignored and not indexed, it should not be
+  // persisted to a file.
+  EXPECT_FALSE(base::PathExists(static_sources[0].indexed_path()));
+
+  // The second ruleset was indexed and it should be persisted.
+  EXPECT_TRUE(base::PathExists(static_sources[1].indexed_path()));
+
+  // The first ruleset's ID should be persisted in the ignored rulesets pref.
+  EXPECT_TRUE(extension_prefs()->ShouldIgnoreDNRRuleset(
+      extension()->id(), static_sources[0].id()));
+
+  // The second ruleset's ID should not be marked as ignored in prefs.
+  EXPECT_FALSE(extension_prefs()->ShouldIgnoreDNRRuleset(
+      extension()->id(), static_sources[1].id()));
+}
+
+// Ensure that a ruleset which causes the extension to go over the global rule
+// limit is correctly ignored.
+TEST_P(MultipleRulesetsGlobalRulesTest, RulesetIgnored) {
+  AddRuleset(CreateRuleset(kId1, 90, 0, true));
+  AddRuleset(CreateRuleset(kId2, 150, 0, true));
+
+  // This ruleset should not be loaded because it would exceed the global limit.
+  AddRuleset(CreateRuleset(kId3, 100, 0, true));
+
+  AddRuleset(CreateRuleset(kId4, 60, 0, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  // This logs the number of rules the extension has specified to be enabled in
+  // the manifest, which may be different than the actual number of rules
+  // enabled.
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      400, 400, true /* expect_rulesets_indexed */);
+
+  ExtensionId extension_id = extension()->id();
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension_id);
+  ASSERT_TRUE(composite_matcher);
+
+  VerifyPublicRulesetIDs(*extension(), {kId1, kId2, kId4});
+
+  EXPECT_THAT(composite_matcher->matchers(),
+              UnorderedElementsAre(
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 90)),
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 150)),
+                  Pointee(Property(&RulesetMatcher::GetRulesCount, 60))));
+
+  // 200 rules should contribute to the global pool.
+  const GlobalRulesTracker& global_rules_tracker =
+      RulesMonitorService::Get(browser_context())->global_rules_tracker();
+  EXPECT_EQ(200u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Check that the extra static rule count is also persisted in prefs.
+  CheckExtensionAllocationInPrefs(extension_id, 200);
+}
+
+// Ensure that the global rule count is counted correctly for multiple
+// extensions.
+TEST_P(MultipleRulesetsGlobalRulesTest, MultipleExtensions) {
+  // Load an extension with 90 rules.
+  AddRuleset(CreateRuleset(kId1, 90, 0, true));
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      90, 90, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  VerifyPublicRulesetIDs(*extension(), {kId1});
+  scoped_refptr<const Extension> first_extension = extension();
+  ASSERT_TRUE(first_extension.get());
+
+  // The first extension should not have any rules count towards the global
+  // pool.
+  const GlobalRulesTracker& global_rules_tracker =
+      RulesMonitorService::Get(browser_context())->global_rules_tracker();
+  EXPECT_EQ(0u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Load an extension with 201 rules.
+  UpdateExtensionLoaderAndPath(
+      temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension_2")));
+  ClearRulesets();
+  AddRuleset(CreateRuleset(kId2, 201, 0, true));
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      201, 201, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(2);
+  VerifyPublicRulesetIDs(*extension(), {kId2});
+  scoped_refptr<const Extension> second_extension = extension();
+  ASSERT_TRUE(second_extension.get());
+
+  // The second extension should have 101 rules count towards the global pool.
+  EXPECT_EQ(101u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Load an extension with 150 rules.
+  UpdateExtensionLoaderAndPath(
+      temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension_3")));
+  ClearRulesets();
+  AddRuleset(CreateRuleset(kId3, 150, 0, true));
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      150, 150, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(3);
+  VerifyPublicRulesetIDs(*extension(), {kId3});
+  scoped_refptr<const Extension> third_extension = extension();
+  ASSERT_TRUE(third_extension.get());
+
+  // Combined, the second and third extensions should have 151 rules count
+  // towards the global pool.
+  EXPECT_EQ(151u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Check that the prefs entry (or lack thereof) for extra static rule count is
+  // correct for each extension.
+  CheckExtensionAllocationInPrefs(first_extension.get()->id(), base::nullopt);
+  CheckExtensionAllocationInPrefs(second_extension.get()->id(), 101);
+  CheckExtensionAllocationInPrefs(third_extension.get()->id(), 50);
+}
+
+// Ensure that the global rules limit is enforced correctly for multiple
+// extensions.
+TEST_P(MultipleRulesetsGlobalRulesTest, MultipleExtensionsRuleLimitExceeded) {
+  // Load an extension with 300 rules, which reaches the global rules limit.
+  AddRuleset(CreateRuleset(kId1, 300, 0, true));
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      300, 300, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  scoped_refptr<const Extension> first_extension = extension();
+  ASSERT_TRUE(first_extension.get());
+  ExtensionId first_extension_id = first_extension.get()->id();
+
+  VerifyPublicRulesetIDs(*first_extension.get(), {kId1});
+  CheckExtensionAllocationInPrefs(first_extension_id, 200);
+
+  // Load a second extension. Only one of its rulesets should be loaded.
+  UpdateExtensionLoaderAndPath(
+      temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension_2")));
+  ClearRulesets();
+
+  AddRuleset(
+      CreateRuleset(kId2, GetStaticGuaranteedMinimumRuleCount(), 0, true));
+  AddRuleset(CreateRuleset(kId3, 1, 0, true));
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      GetStaticGuaranteedMinimumRuleCount() + 1,
+      GetStaticGuaranteedMinimumRuleCount() + 1,
+      true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(2);
+  scoped_refptr<const Extension> second_extension = extension();
+  ASSERT_TRUE(second_extension.get());
+  ExtensionId second_extension_id = second_extension.get()->id();
+
+  // Only |kId2| should be enabled as |kId3| causes the global rule limit to be
+  // exceeded.
+  VerifyPublicRulesetIDs(*second_extension.get(), {kId2});
+  CheckExtensionAllocationInPrefs(second_extension_id, base::nullopt);
+
+  // Since the ID of the second extension is known only after it was installed,
+  // disable then enable the extension so the ID can be used for the
+  // WarningServiceObserver.
+  service()->DisableExtension(second_extension_id,
+                              disable_reason::DISABLE_USER_ACTION);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  WarningService* warning_service = WarningService::Get(browser_context());
+  WarningServiceObserver warning_observer(warning_service, second_extension_id);
+  service()->EnableExtension(second_extension_id);
+
+  // Wait until we surface a warning.
+  warning_observer.WaitForWarning();
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(2);
+
+  // Ensure that a warning was raised for the second extension.
+  EXPECT_THAT(
+      warning_service->GetWarningTypesAffectingExtension(second_extension_id),
+      ::testing::ElementsAre(Warning::kEnabledRuleCountExceeded));
+
+  service()->UninstallExtension(first_extension_id,
+                                UNINSTALL_REASON_FOR_TESTING, nullptr);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  service()->DisableExtension(second_extension_id,
+                              disable_reason::DISABLE_USER_ACTION);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(0);
+  CheckExtensionAllocationInPrefs(first_extension_id, base::nullopt);
+  CheckExtensionAllocationInPrefs(second_extension_id, base::nullopt);
+
+  service()->EnableExtension(second_extension_id);
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+
+  // Once the first extension is uninstalled, both |kId2| and |kId3| should be
+  // enabled.
+  VerifyPublicRulesetIDs(*second_extension.get(), {kId2, kId3});
+  CheckExtensionAllocationInPrefs(second_extension_id, 1);
+  EXPECT_TRUE(
+      warning_service->GetWarningTypesAffectingExtension(second_extension_id)
+          .empty());
+}
+
+TEST_P(MultipleRulesetsGlobalRulesTest, UpdateAndGetEnabledRulesets_Success) {
+  AddRuleset(CreateRuleset(kId1, 90, 0, false));
+  AddRuleset(CreateRuleset(kId2, 60, 0, true));
+  AddRuleset(CreateRuleset(kId3, 150, 0, true));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      300, 210, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension()->id());
+  ASSERT_TRUE(composite_matcher);
+
+  VerifyPublicRulesetIDs(*extension(), {kId2, kId3});
+  CheckExtensionAllocationInPrefs(extension()->id(), 110);
+
+  // Disable |kId2|.
+  RunUpdateEnabledRulesetsFunction(*extension(), {kId2}, {},
+                                   base::nullopt /* expected_error */);
+
+  VerifyPublicRulesetIDs(*extension(), {kId3});
+  VerifyGetEnabledRulesetsFunction(*extension(), {kId3});
+
+  // After |kId2| is disabled, 50 rules should contribute to the global pool.
+  GlobalRulesTracker& global_rules_tracker =
+      RulesMonitorService::Get(browser_context())->global_rules_tracker();
+  EXPECT_EQ(50u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+
+  // Check that the extra static rule count is also persisted in prefs.
+  CheckExtensionAllocationInPrefs(extension()->id(), 50);
+
+  // Enable |kId1|.
+  RunUpdateEnabledRulesetsFunction(*extension(), {}, {kId1},
+                                   base::nullopt /* expected_error */);
+  VerifyPublicRulesetIDs(*extension(), {kId1, kId3});
+  VerifyGetEnabledRulesetsFunction(*extension(), {kId1, kId3});
+
+  // After |kId1| is enabled, 140 rules should contribute to the global pool.
+  EXPECT_EQ(140u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+  CheckExtensionAllocationInPrefs(extension()->id(), 140);
+
+  // Disable |kId3|.
+  RunUpdateEnabledRulesetsFunction(*extension(), {kId3}, {},
+                                   base::nullopt /* expected_error */);
+  VerifyPublicRulesetIDs(*extension(), {kId1});
+  VerifyGetEnabledRulesetsFunction(*extension(), {kId1});
+
+  // After |kId3| is disabled, no rules should contribute to the global pool and
+  // there should not be an entry for the extension in prefs.
+  EXPECT_EQ(0u, global_rules_tracker.GetAllocatedGlobalRuleCountForTesting());
+  CheckExtensionAllocationInPrefs(extension()->id(), base::nullopt);
+}
+
+TEST_P(MultipleRulesetsGlobalRulesTest,
+       UpdateAndGetEnabledRulesets_RuleCountExceeded) {
+  AddRuleset(CreateRuleset(kId1, 250, 0, true));
+  AddRuleset(CreateRuleset(kId2, 40, 0, true));
+  AddRuleset(CreateRuleset(kId3, 50, 0, false));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      340, 290, true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  CompositeMatcher* composite_matcher =
+      manager()->GetMatcherForExtension(extension()->id());
+  ASSERT_TRUE(composite_matcher);
+
+  VerifyPublicRulesetIDs(*extension(), {kId1, kId2});
+  CheckExtensionAllocationInPrefs(extension()->id(), 190);
+
+  // Disable |kId2| and enable |kId3|.
+  RunUpdateEnabledRulesetsFunction(*extension(), {kId2}, {kId3},
+                                   base::nullopt /* expected_error */);
+
+  // updateEnabledRulesets looks at the rule counts at the end of the update, so
+  // disabling |kId2| and enabling |kId3| works (because the total rule count is
+  // under the limit).
+  VerifyPublicRulesetIDs(*extension(), {kId1, kId3});
+  VerifyGetEnabledRulesetsFunction(*extension(), {kId1, kId3});
+  CheckExtensionAllocationInPrefs(extension()->id(), 200);
+
+  // Enable |kId2|. This should not succeed because the global rule limit would
+  // be exceeded.
+  RunUpdateEnabledRulesetsFunction(*extension(), {}, {kId2},
+                                   kEnabledRulesetsRuleCountExceeded);
+  VerifyPublicRulesetIDs(*extension(), {kId1, kId3});
+  VerifyGetEnabledRulesetsFunction(*extension(), {kId1, kId3});
+  CheckExtensionAllocationInPrefs(extension()->id(), 200);
+}
+
+// Test that getAvailableStaticRuleCount returns the correct number of rules an
+// extension can still enable.
+TEST_P(MultipleRulesetsGlobalRulesTest, GetAvailableStaticRuleCount) {
+  AddRuleset(CreateRuleset(kId1, 50, 0, true));
+  AddRuleset(CreateRuleset(kId2, 100, 0, false));
+
+  RulesetManagerObserver ruleset_waiter(manager());
+
+  LoadAndExpectSuccess(150, 50);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(1);
+  scoped_refptr<const Extension> first_extension = extension();
+  ASSERT_TRUE(first_extension.get());
+  ExtensionId first_extension_id = first_extension.get()->id();
+
+  // Initially, the extension should have 250 more static rules available, and
+  // no rules allocated from the global pool.
+  VerifyPublicRulesetIDs(*first_extension.get(), {kId1});
+  CheckExtensionAllocationInPrefs(first_extension_id, base::nullopt);
+  VerifyGetAvailableStaticRuleCountFunction(*first_extension.get(), 250);
+
+  // Enabling |kId2| should result in 50 rules allocated in the global pool, and
+  // 150 more rules available for the extension to enable.
+  RunUpdateEnabledRulesetsFunction(*first_extension.get(), {}, {kId2},
+                                   base::nullopt /* expected_error */);
+  VerifyPublicRulesetIDs(*first_extension.get(), {kId1, kId2});
+  CheckExtensionAllocationInPrefs(first_extension_id, 50);
+  VerifyGetAvailableStaticRuleCountFunction(*first_extension.get(), 150);
+
+  // Disabling all rulesets should result in 300 rules available.
+  RunUpdateEnabledRulesetsFunction(*first_extension.get(), {kId1, kId2}, {},
+                                   base::nullopt /* expected_error */);
+  VerifyPublicRulesetIDs(*first_extension.get(), {});
+  CheckExtensionAllocationInPrefs(first_extension_id, base::nullopt);
+  VerifyGetAvailableStaticRuleCountFunction(*first_extension.get(), 300);
+
+  // Load another extension with one ruleset with 300 rules.
+  UpdateExtensionLoaderAndPath(
+      temp_dir().GetPath().Append(FILE_PATH_LITERAL("test_extension_2")));
+  ClearRulesets();
+
+  AddRuleset(CreateRuleset(kId3, GetMaximumRulesPerRuleset(), 0, true));
+  DeclarativeNetRequestUnittest::LoadAndExpectSuccess(
+      GetMaximumRulesPerRuleset(), GetMaximumRulesPerRuleset(),
+      true /* expect_rulesets_indexed */);
+
+  ruleset_waiter.WaitForExtensionsWithRulesetsCount(2);
+  scoped_refptr<const Extension> second_extension = extension();
+  ASSERT_TRUE(second_extension.get());
+  ExtensionId second_extension_id = second_extension.get()->id();
+
+  VerifyPublicRulesetIDs(*second_extension.get(), {kId3});
+  CheckExtensionAllocationInPrefs(second_extension_id, 200);
+
+  // The first extension should still have GetStaticGuaranteedMinimumRuleCount()
+  // rules available as it has no rules enabled and the global pool is full.
+  VerifyGetAvailableStaticRuleCountFunction(
+      *first_extension.get(), GetStaticGuaranteedMinimumRuleCount());
+
+  // The second extension should not have any rules available since its
+  // allocation consists of the entire global pool.
+  VerifyGetAvailableStaticRuleCountFunction(*second_extension.get(), 0);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          SingleRulesetTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
                                            ExtensionLoadType::UNPACKED));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SingleRulesetGlobalRulesTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+
 INSTANTIATE_TEST_SUITE_P(All,
                          MultipleRulesetsTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MultipleRulesetsGlobalRulesTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
                                            ExtensionLoadType::UNPACKED));
 

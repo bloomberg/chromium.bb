@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/root_inline_box_painter.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
@@ -43,8 +44,7 @@ struct SameSizeAsRootInlineBox : public InlineFlowBox {
   LayoutUnit layout_variables[6];
 };
 
-static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox),
-              "RootInlineBox should stay small");
+ASSERT_SIZE(RootInlineBox, SameSizeAsRootInlineBox);
 
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* g_ellipsis_box_map = nullptr;
@@ -173,7 +173,7 @@ LayoutUnit RootInlineBox::PlaceEllipsisBox(bool ltr,
 }
 
 void RootInlineBox::Paint(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset,
+                          const PhysicalOffset& paint_offset,
                           LayoutUnit line_top,
                           LayoutUnit line_bottom) const {
   RootInlineBoxPainter(*this).Paint(paint_info, paint_offset, line_top,
@@ -586,7 +586,7 @@ void RootInlineBox::AscentAndDescentForBox(
   Vector<const SimpleFontData*>* used_fonts = nullptr;
   if (box->IsText()) {
     GlyphOverflowAndFallbackFontsMap::iterator it =
-        text_box_data_map.find(ToInlineTextBox(box));
+        text_box_data_map.find(To<InlineTextBox>(box));
     used_fonts = it == text_box_data_map.end() ? nullptr : &it->value.first;
   }
 

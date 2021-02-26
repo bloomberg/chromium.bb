@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +30,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     policy_.SetDefaultInitialSigningKey();
     policy_.policy_data().set_policy_type(
-        dm_protocol::kChromeMachineLevelUserCloudPolicyType);
+        GetMachineLevelUserCloudPolicyTypeForCurrentOS());
     policy_.payload().mutable_searchsuggestenabled()->set_value(false);
     policy_.Build();
   }
@@ -46,8 +47,8 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
   void SetExpectedPolicyMap(PolicySource source) {
     expected_policy_map_.Clear();
     expected_policy_map_.Set("SearchSuggestEnabled", POLICY_LEVEL_MANDATORY,
-                             POLICY_SCOPE_MACHINE, source,
-                             std::make_unique<base::Value>(false), nullptr);
+                             POLICY_SCOPE_MACHINE, source, base::Value(false),
+                             nullptr);
   }
 
   std::unique_ptr<MachineLevelUserCloudPolicyStore> CreateStore(
@@ -255,7 +256,7 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadRecentExternalPolicies) {
   PolicyMap expected_updater_policy_map;
   expected_updater_policy_map.Set(
       "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
 
   ASSERT_TRUE(loader->policy());
   EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));
@@ -287,7 +288,7 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadExternalOnlyPolicies) {
   PolicyMap expected_updater_policy_map;
   expected_updater_policy_map.Set(
       "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
 
   ASSERT_TRUE(loader->policy());
   EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));

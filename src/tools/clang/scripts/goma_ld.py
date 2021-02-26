@@ -26,6 +26,8 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
   WL = '-Wl,'
   TLTO = '-plugin-opt=thinlto'
   SEP = '='
+  DATA_SECTIONS = '-fdata-sections'
+  FUNCTION_SECTIONS = '-ffunction-sections'
   GROUP_RE = re.compile(WL + '--(?:end|start)-group')
   MACHINE_RE = re.compile('-m([0-9]+)')
   OBJ_PATH = '-plugin-opt=obj-path' + SEP
@@ -33,20 +35,21 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
   PREFIX_REPLACE = TLTO + '-prefix-replace' + SEP
   XIR = '-x ir '
 
-  WHITELISTED_TARGETS = {
+  ALLOWLIST = {
       'chrome',
   }
 
   def analyze_args(self, args, *posargs, **kwargs):
     # TODO(crbug.com/1040196): Builds are unreliable when all targets use
-    # distributed ThinLTO, so we only enable it for whitelisted targets.
+    # distributed ThinLTO, so we only enable it for some targets.
     # For other targets, we fall back to local ThinLTO. We must use ThinLTO
     # because we build with -fsplit-lto-unit, which requires code generation
     # be done for each object and target.
-    if args.output is None or os.path.basename(
-        args.output) not in self.WHITELISTED_TARGETS:
-      # Returning None causes the original, non-distributed linker command to be
-      # invoked.
+    # Returning None from this function causes the original, non-distributed
+    # linker command to be invoked.
+    if args.output is None:
+      return None
+    if not (args.allowlist or os.path.basename(args.output) in self.ALLOWLIST):
       return None
     return super(GomaLinkUnix, self).analyze_args(args, *posargs, **kwargs)
 

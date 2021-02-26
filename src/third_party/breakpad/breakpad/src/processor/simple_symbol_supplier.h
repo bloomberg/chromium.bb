@@ -94,44 +94,44 @@ class SimpleSymbolSupplier : public SymbolSupplier {
  public:
   // Creates a new SimpleSymbolSupplier, using path as the root path where
   // symbols are stored.
-  explicit SimpleSymbolSupplier(const string &path) : paths_(1, path) {}
+  explicit SimpleSymbolSupplier(const string& path) : paths_(1, path) {}
 
   // Creates a new SimpleSymbolSupplier, using paths as a list of root
   // paths where symbols may be stored.
-  explicit SimpleSymbolSupplier(const vector<string> &paths) : paths_(paths) {}
+  explicit SimpleSymbolSupplier(const vector<string>& paths) : paths_(paths) {}
 
   virtual ~SimpleSymbolSupplier() {}
 
   // Returns the path to the symbol file for the given module.  See the
   // description above.
-  virtual SymbolResult GetSymbolFile(const CodeModule *module,
-                                     const SystemInfo *system_info,
-                                     string *symbol_file);
+  virtual SymbolResult GetSymbolFile(const CodeModule* module,
+                                     const SystemInfo* system_info,
+                                     string* symbol_file);
 
-  virtual SymbolResult GetSymbolFile(const CodeModule *module,
-                                     const SystemInfo *system_info,
-                                     string *symbol_file,
-                                     string *symbol_data);
+  virtual SymbolResult GetSymbolFile(const CodeModule* module,
+                                     const SystemInfo* system_info,
+                                     string* symbol_file,
+                                     string* symbol_data);
 
   // Allocates data buffer on heap and writes symbol data into buffer.
   // Symbol supplier ALWAYS takes ownership of the data buffer.
-  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
-                                            const SystemInfo *system_info,
-                                            string *symbol_file,
-                                            char **symbol_data,
-                                            size_t *symbol_data_size);
+  virtual SymbolResult GetCStringSymbolData(const CodeModule* module,
+                                            const SystemInfo* system_info,
+                                            string* symbol_file,
+                                            char** symbol_data,
+                                            size_t* symbol_data_size);
 
   // Free the data buffer allocated in the above GetCStringSymbolData();
-  virtual void FreeSymbolData(const CodeModule *module);
+  virtual void FreeSymbolData(const CodeModule* module);
 
  protected:
-  SymbolResult GetSymbolFileAtPathFromRoot(const CodeModule *module,
-                                           const SystemInfo *system_info,
-                                           const string &root_path,
-                                           string *symbol_file);
+  SymbolResult GetSymbolFileAtPathFromRoot(const CodeModule* module,
+                                           const SystemInfo* system_info,
+                                           const string& root_path,
+                                           string* symbol_file);
 
  private:
-  map<string, char *> memory_buffers_;
+  map<string, char*> memory_buffers_;
   vector<string> paths_;
 };
 

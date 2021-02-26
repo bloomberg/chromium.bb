@@ -138,7 +138,7 @@ static void SetupOptions(int argc, const char *argv[], Options* options) {
   options->machine_readable = false;
   options->output_stack_contents = false;
 
-  while ((ch = getopt(argc, (char * const *)argv, "hms")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "hms")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv, false);

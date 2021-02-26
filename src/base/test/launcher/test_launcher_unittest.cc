@@ -11,15 +11,18 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -262,16 +265,35 @@ TEST_F(TestLauncherTest, FilterIncludePreTest) {
 }
 
 // Test TestLauncher "gtest_repeat" switch.
-TEST_F(TestLauncherTest, RunningMultipleIterations) {
+TEST_F(TestLauncherTest, RepeatTest) {
   AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
+  // Unless --gtest-break-on-failure is specified,
   command_line->AppendSwitchASCII("gtest_repeat", "2");
   using ::testing::_;
   EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
       .Times(2)
-      .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
-                                   TestResult::TEST_SUCCESS));
+      .WillRepeatedly(::testing::DoAll(OnTestResult(
+          &test_launcher, "Test.firstTest", TestResult::TEST_SUCCESS)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher --gtest_repeat and --gtest_break_on_failure.
+TEST_F(TestLauncherTest, RunningMultipleIterationsUntilFailure) {
+  AddMockedTests("Test", {"firstTest"});
+  SetUpExpectCalls();
+  // Unless --gtest-break-on-failure is specified,
+  command_line->AppendSwitchASCII("gtest_repeat", "4");
+  command_line->AppendSwitch("gtest_break_on_failure");
+  using ::testing::_;
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+      .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
+                                              TestResult::TEST_SUCCESS)))
+      .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
+                                              TestResult::TEST_SUCCESS)))
+      .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
+                                              TestResult::TEST_FAILURE)));
+  EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
 // Test TestLauncher will retry failed test, and stop on success.
@@ -513,6 +535,8 @@ TEST_F(TestLauncherTest, JsonSummary) {
   FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
   command_line->AppendSwitchPath("test-launcher-summary-output", path);
   command_line->AppendSwitchASCII("gtest_repeat", "2");
+  // Force the repeats to run sequentially.
+  command_line->AppendSwitch("gtest_break_on_failure");
 
   // Setup results to be returned by the test launcher delegate.
   TestResult first_result =
@@ -707,12 +731,12 @@ TEST(MockUnitTests, DISABLED_FailTest) {
 TEST(MockUnitTests, DISABLED_CrashTest) {
   IMMEDIATE_CRASH();
 }
-// Basic test will not be reached with default batch size.
+// Basic test will not be reached, due to the preceding crash in the same batch.
 TEST(MockUnitTests, DISABLED_NoRunTest) {
   ASSERT_TRUE(true);
 }
 
-// Using TestLauncher to launch 3 simple unitests
+// Using TestLauncher to launch 3 basic unitests
 // and validate the resulting json file.
 TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
@@ -761,6 +785,109 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
       iteration_val, "MockUnitTests.CrashTest", "CRASH", 0u));
   EXPECT_TRUE(test_launcher_utils::ValidateTestResult(
       iteration_val, "MockUnitTests.NoRunTest", "NOTRUN", 0u));
+}
+
+// TODO(crbug.com/1094369): Enable leaked-child checks on other platforms.
+#if defined(OS_FUCHSIA)
+
+// Test that leaves a child process running. The test is DISABLED_, so it can
+// be launched explicitly by RunMockLeakProcessTest
+
+MULTIPROCESS_TEST_MAIN(LeakChildProcess) {
+  while (true)
+    PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+}
+
+TEST(LeakedChildProcessTest, DISABLED_LeakChildProcess) {
+  Process child_process = SpawnMultiProcessTestChild(
+      "LeakChildProcess", GetMultiProcessTestChildBaseCommandLine(),
+      LaunchOptions());
+  ASSERT_TRUE(child_process.IsValid());
+  // Don't wait for the child process to exit.
+}
+
+// Validate that a test that leaks a process causes the batch to have an
+// error exit_code.
+TEST_F(UnitTestLauncherDelegateTester, LeakedChildProcess) {
+  CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
+  command_line.AppendSwitchASCII(
+      "gtest_filter", "LeakedChildProcessTest.DISABLED_LeakChildProcess");
+
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
+  command_line.AppendSwitchPath("test-launcher-summary-output", path);
+  command_line.AppendSwitch("gtest_also_run_disabled_tests");
+  command_line.AppendSwitchASCII("test-launcher-retry-limit", "0");
+#if defined(OS_WIN)
+  // In Windows versions prior to Windows 8, nested job objects are
+  // not allowed and cause this test to fail.
+  if (win::GetVersion() < win::Version::WIN8) {
+    command_line.AppendSwitch(kDontUseJobObjectFlag);
+  }
+#endif  // defined(OS_WIN)
+
+  std::string output;
+  int exit_code = 0;
+  GetAppOutputWithExitCode(command_line, &output, &exit_code);
+
+  // Validate that we actually ran a test.
+  Optional<Value> root = test_launcher_utils::ReadSummary(path);
+  ASSERT_TRUE(root);
+
+  Value* val = root->FindDictKey("test_locations");
+  ASSERT_TRUE(val);
+  EXPECT_EQ(1u, val->DictSize());
+
+  EXPECT_TRUE(test_launcher_utils::ValidateTestLocations(
+      val, "LeakedChildProcessTest"));
+
+  // Validate that the leaked child caused the batch to error-out.
+  EXPECT_EQ(exit_code, 1);
+}
+#endif  // defined(OS_FUCHSIA)
+
+// Validate GetTestOutputSnippetTest assigns correct output snippet.
+TEST(TestLauncherTools, GetTestOutputSnippetTest) {
+  const std::string output =
+      "[ RUN      ] TestCase.FirstTest\n"
+      "[       OK ] TestCase.FirstTest (0 ms)\n"
+      "Post first test output\n"
+      "[ RUN      ] TestCase.SecondTest\n"
+      "[  FAILED  ] TestCase.SecondTest (0 ms)\n"
+      "[ RUN      ] TestCase.ThirdTest\n"
+      "[  SKIPPED ] TestCase.ThirdTest (0 ms)\n"
+      "Post second test output";
+  TestResult result;
+
+  // test snippet of a successful test
+  result.full_name = "TestCase.FirstTest";
+  result.status = TestResult::TEST_SUCCESS;
+  EXPECT_EQ(GetTestOutputSnippet(result, output),
+            "[ RUN      ] TestCase.FirstTest\n"
+            "[       OK ] TestCase.FirstTest (0 ms)\n");
+
+  // test snippet of a failure on exit tests should include output
+  // after test concluded, but not subsequent tests output.
+  result.status = TestResult::TEST_FAILURE_ON_EXIT;
+  EXPECT_EQ(GetTestOutputSnippet(result, output),
+            "[ RUN      ] TestCase.FirstTest\n"
+            "[       OK ] TestCase.FirstTest (0 ms)\n"
+            "Post first test output\n");
+
+  // test snippet of a failed test
+  result.full_name = "TestCase.SecondTest";
+  result.status = TestResult::TEST_FAILURE;
+  EXPECT_EQ(GetTestOutputSnippet(result, output),
+            "[ RUN      ] TestCase.SecondTest\n"
+            "[  FAILED  ] TestCase.SecondTest (0 ms)\n");
+
+  // test snippet of a skipped test. Note that the status is SUCCESS because
+  // the gtest XML format doesn't make a difference between SUCCESS and SKIPPED
+  result.full_name = "TestCase.ThirdTest";
+  result.status = TestResult::TEST_SUCCESS;
+  EXPECT_EQ(GetTestOutputSnippet(result, output),
+            "[ RUN      ] TestCase.ThirdTest\n"
+            "[  SKIPPED ] TestCase.ThirdTest (0 ms)\n");
 }
 
 }  // namespace

@@ -58,16 +58,28 @@ class QuicConfigPeer {
                                              QuicUint128 token);
 
   static void SetReceivedMaxPacketSize(QuicConfig* config,
-                                       uint32_t max_packet_size);
+                                       uint32_t max_udp_payload_size);
+
+  static void SetReceivedMinAckDelayMs(QuicConfig* config,
+                                       uint32_t min_ack_delay_ms);
 
   static void SetNegotiated(QuicConfig* config, bool negotiated);
 
   static void SetReceivedOriginalConnectionId(
       QuicConfig* config,
-      const QuicConnectionId& original_connection_id);
+      const QuicConnectionId& original_destination_connection_id);
+
+  static void SetReceivedInitialSourceConnectionId(
+      QuicConfig* config,
+      const QuicConnectionId& initial_source_connection_id);
+
+  static void SetReceivedRetrySourceConnectionId(
+      QuicConfig* config,
+      const QuicConnectionId& retry_source_connection_id);
 
   static void SetReceivedMaxDatagramFrameSize(QuicConfig* config,
                                               uint64_t max_datagram_frame_size);
+  static void DisableSupportHandshakeDone(QuicConfig* config);
 };
 
 }  // namespace test

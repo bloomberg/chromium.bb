@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/base/macros.h"
 #include "url/gurl.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
@@ -19,7 +20,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_transport_test_tools.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 
 namespace quic {
 namespace test {
@@ -108,14 +108,15 @@ TEST_F(QuicTransportClientSessionTest, SuccessfulConnection) {
   Connect();
   EXPECT_TRUE(session_->IsSessionReady());
 
-  QuicStream* client_indication_stream =
-      QuicSessionPeer::zombie_streams(session_.get())[ClientIndicationStream()]
+  QuicStream* client_indication_stream;
+  client_indication_stream =
+      QuicSessionPeer::stream_map(session_.get())[ClientIndicationStream()]
           .get();
   ASSERT_TRUE(client_indication_stream != nullptr);
   const std::string client_indication = DataInStream(client_indication_stream);
   const std::string expected_client_indication{
       kTestOriginClientIndication,
-      QUICHE_ARRAYSIZE(kTestOriginClientIndication) - 1};
+      ABSL_ARRAYSIZE(kTestOriginClientIndication) - 1};
   EXPECT_EQ(client_indication, expected_client_indication);
 }
 
@@ -133,14 +134,15 @@ TEST_F(QuicTransportClientSessionTest, SuccessfulConnectionWithPath) {
   Connect();
   EXPECT_TRUE(session_->IsSessionReady());
 
-  QuicStream* client_indication_stream =
-      QuicSessionPeer::zombie_streams(session_.get())[ClientIndicationStream()]
+  QuicStream* client_indication_stream;
+  client_indication_stream =
+      QuicSessionPeer::stream_map(session_.get())[ClientIndicationStream()]
           .get();
   ASSERT_TRUE(client_indication_stream != nullptr);
   const std::string client_indication = DataInStream(client_indication_stream);
   const std::string expected_client_indication{
       kTestOriginClientIndication,
-      QUICHE_ARRAYSIZE(kTestOriginClientIndication) - 1};
+      ABSL_ARRAYSIZE(kTestOriginClientIndication) - 1};
   EXPECT_EQ(client_indication, expected_client_indication);
 }
 

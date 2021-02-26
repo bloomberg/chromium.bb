@@ -7,9 +7,10 @@ package org.chromium.chrome.features.start_surface;
 import android.app.Activity;
 
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /** Explore surface feed stream lifecycle manager. */
 class ExploreSurfaceStreamLifecycleManager extends StreamLifecycleManager {
@@ -39,8 +40,9 @@ class ExploreSurfaceStreamLifecycleManager extends StreamLifecycleManager {
         // If there is a header to opt out from article suggestions, we don't call
         // Stream#onShow to prevent feed services from being warmed up if the user
         // has opted out during the previous session.
-        return (!mHasHeader
-                || PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
+        return !mHasHeader
+                || UserPrefs.get(Profile.getLastUsedRegularProfile())
+                           .getBoolean(Pref.ARTICLES_LIST_VISIBLE);
     }
     // TODO(crbug.com/982018): Save and restore instance state when opening the feeds in normal
     // Tabs.

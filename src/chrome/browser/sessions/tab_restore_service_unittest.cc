@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -80,7 +80,7 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
         user_agent_override_(blink::UserAgentOverride::UserAgentOnly(
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
             " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19")),
-        time_factory_(NULL),
+        time_factory_(nullptr),
         window_id_(SessionID::FromSerializedValue(1)),
         tab_id_(SessionID::FromSerializedValue(2)) {
     user_agent_override_.ua_metadata_override.emplace();

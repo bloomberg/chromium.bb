@@ -74,6 +74,10 @@ class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
 
+namespace blink {
+enum class ProtocolHandlerSecurityLevel;
+}
+
 namespace chrome {
 class BrowserCommandController;
 }
@@ -153,8 +157,6 @@ class Browser : public TabStripModelObserver,
     FEATURE_TOOLBAR = 1 << 2,
     FEATURE_LOCATIONBAR = 1 << 3,
     FEATURE_BOOKMARKBAR = 1 << 4,
-    FEATURE_INFOBAR = 1 << 5,
-    FEATURE_DOWNLOADSHELF = 1 << 6,
     // TODO(crbug.com/992834): Add FEATURE_PAGECONTROLS to describe the presence
     // of per-page controls such as Content Settings Icons, which should be
     // decoupled from FEATURE_LOCATIONBAR as they have independent presence in
@@ -183,6 +185,14 @@ class Browser : public TabStripModelObserver,
   // Represents the result of the user being warned before closing the browser.
   // See WarnBeforeClosingCallback and WarnBeforeClosing() below.
   enum class WarnBeforeClosingResult { kOkToClose, kDoNotClose };
+
+  // Represents the result of a browser creation request.
+  enum class BrowserCreationStatus {
+    kOk,
+    kErrorNoProcess,
+    kErrorProfileUnsuitable,
+    kErrorLoadingKiosk,
+  };
 
   // Callback that receives the result of a user being warned about closing a
   // browser window (for example, if closing the window would interrupt a
@@ -236,6 +246,9 @@ class Browser : public TabStripModelObserver,
     // programmatically created.
     bool user_gesture;
 
+    // True if the app is resizeable.
+    bool can_resize;
+
     // Whether this browser was created specifically for dragged tab(s).
     bool in_tab_dragging = false;
 
@@ -243,9 +256,12 @@ class Browser : public TabStripModelObserver,
     // default. Intended for testing.
     BrowserWindow* window = nullptr;
 
+    // User-set title of this browser window, if there is one.
+    std::string user_title;
+
    private:
     friend class Browser;
-    friend class WindowSizerAshTest;
+    friend class WindowSizerChromeOSTest;
 
     static CreateParams CreateForAppBase(bool is_popup,
                                          const std::string& app_name,
@@ -270,7 +286,7 @@ class Browser : public TabStripModelObserver,
   // Constructors, Creation, Showing //////////////////////////////////////////
 
   // Creates a browser instance with the provided params.
-  // Returns nullptr if the requested browser creation is not allowed.
+  // Crashes if the requested browser creation is not allowed.
   // For example, browser creation will not be allowed for profiles that
   // disallow browsing (like sign-in profile on Chrome OS).
   //
@@ -282,10 +298,10 @@ class Browser : public TabStripModelObserver,
   // caller is expected to take the ownership of the created Browser instance.
   static Browser* Create(const CreateParams& params);
 
-  // DEPRECATED in favor of Create().
-  // TODO(tbarzic): Make the constructor non-public once browser construction
-  // instances are replaced with Create(). https://crbug.com/916859.
-  explicit Browser(const CreateParams& params);
+  // Returns whether a browser window can be created for the specified profile.
+  static BrowserCreationStatus GetBrowserCreationStatusForProfile(
+      Profile* profile);
+
   ~Browser() override;
 
   // Set overrides for the initial window bounds and maximized state.
@@ -313,6 +329,7 @@ class Browser : public TabStripModelObserver,
   const CreateParams& create_params() const { return create_params_; }
   Type type() const { return type_; }
   const std::string& app_name() const { return app_name_; }
+  const std::string& user_title() const { return user_title_; }
   bool is_trusted_source() const { return is_trusted_source_; }
   Profile* profile() const { return profile_; }
   gfx::Rect override_bounds() const { return override_bounds_; }
@@ -555,6 +572,7 @@ class Browser : public TabStripModelObserver,
                              content::WebContents* contents,
                              int index) override;
   void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
+                              content::WebContents* contents,
                               int index) override;
   void TabStripEmpty() override;
 
@@ -563,7 +581,7 @@ class Browser : public TabStripModelObserver,
                                 float ratio) override;
   int GetTopControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* contents) override;
+      content::WebContents* contents) override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   bool CanOverscrollContent() override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
@@ -578,17 +596,10 @@ class Browser : public TabStripModelObserver,
                              const blink::WebGestureEvent& event) override;
   bool CanDragEnter(content::WebContents* source,
                     const content::DropData& data,
-                    blink::WebDragOperationsMask operations_allowed) override;
+                    blink::DragOperationsMask operations_allowed) override;
   blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
-      content::RenderFrameHost* frame,
-      const content::BluetoothChooser::EventHandler& event_handler) override;
-  std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
-      content::RenderFrameHost* frame,
-      const content::BluetoothScanningPrompt::EventHandler& event_handler)
-      override;
   void CreateSmsPrompt(content::RenderFrameHost*,
                        const url::Origin&,
                        const std::string& one_time_code,
@@ -612,6 +623,10 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
+  void UpdateInspectedWebContentsIfNecessary(
+      content::WebContents* old_contents,
+      content::WebContents* new_contents,
+      base::OnceCallback<void()> callback) override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
   bool IsFrameLowPriority(
       const content::WebContents* web_contents,
@@ -638,6 +653,9 @@ class Browser : public TabStripModelObserver,
            type_ == TYPE_APP_POPUP;
   }
 
+  // True if the browser is resizeable.
+  bool can_resize() const { return create_params_.can_resize; }
+
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
 
@@ -661,14 +679,16 @@ class Browser : public TabStripModelObserver,
   // dragging.
   void SetIsInTabDragging(bool is_in_tab_dragging);
 
+  // Sets the browser's user title. Setting it to an empty string clears it.
+  void SetWindowUserTitle(const std::string& user_title);
+
  private:
   friend class BrowserTest;
+  friend class ExclusiveAccessTest;
   friend class FullscreenControllerInteractiveTest;
-  friend class FullscreenControllerTest;
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest,
                            IsReservedCommandOrKeyIsApp);
-  FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastGuest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastIncognito);
   FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastRegular);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest, AppFullScreen);
@@ -676,14 +696,13 @@ class Browser : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
   FRIEND_TEST_ALL_PREFIXES(ExclusiveAccessBubbleWindowControllerTest,
                            DenyExitsFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(FullscreenControllerTest,
+  FRIEND_TEST_ALL_PREFIXES(ExclusiveAccessTest,
                            TabEntersPresentationModeFromWindowed);
+  FRIEND_TEST_ALL_PREFIXES(GuestBrowserCloseTest, LastGuest);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            OpenAppShortcutWindowPref);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutTabPref);
-
-  class InterstitialObserver;
 
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.
@@ -719,6 +738,8 @@ class Browser : public TabStripModelObserver,
     // screen. Only used on Mac.
     BOOKMARK_BAR_STATE_CHANGE_TOOLBAR_OPTION_CHANGE,
   };
+
+  explicit Browser(const CreateParams& params);
 
   // Overridden from content::WebContentsDelegate:
   content::WebContents* OpenURLFromTab(
@@ -797,26 +818,26 @@ class Browser : public TabStripModelObserver,
       content::RenderFrameHost* frame,
       content::EyeDropperListener* listener) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
+                      scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   void EnumerateDirectory(content::WebContents* web_contents,
-                          std::unique_ptr<content::FileSelectListener> listener,
+                          scoped_refptr<content::FileSelectListener> listener,
                           const base::FilePath& path) override;
-  bool EmbedsFullscreenWidget() override;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) override;
   blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
-  void RegisterProtocolHandler(content::WebContents* web_contents,
+  blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel(
+      content::RenderFrameHost* requesting_frame) override;
+  void RegisterProtocolHandler(content::RenderFrameHost* requesting_frame,
                                const std::string& protocol,
                                const GURL& url,
                                bool user_gesture) override;
-  void UnregisterProtocolHandler(content::WebContents* web_contents,
+  void UnregisterProtocolHandler(content::RenderFrameHost* requesting_frame,
                                  const std::string& protocol,
                                  const GURL& url,
                                  bool user_gesture) override;
@@ -858,7 +879,7 @@ class Browser : public TabStripModelObserver,
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-  void CapturePaintPreviewOfCrossProcessSubframe(
+  void CapturePaintPreviewOfSubframe(
       content::WebContents* web_contents,
       const gfx::Rect& rect,
       const base::UnguessableToken& guid,
@@ -1072,8 +1093,6 @@ class Browser : public TabStripModelObserver,
 
   // Data members /////////////////////////////////////////////////////////////
 
-  std::vector<InterstitialObserver*> interstitial_observers_;
-
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar profile_pref_registrar_;
@@ -1195,6 +1214,8 @@ class Browser : public TabStripModelObserver,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
+
+  std::string user_title_;
 
   // Controls both signin and sync consent.
   SigninViewController signin_view_controller_;

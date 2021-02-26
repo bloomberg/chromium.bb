@@ -67,8 +67,9 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
 // called synchronously from the background fetch call.
 bool ShouldBlockDueToCSP(ExecutionContext* execution_context,
                          const KURL& request_url) {
-  return !execution_context->GetContentSecurityPolicyForWorld()
-              ->AllowConnectToSource(request_url);
+  return !execution_context->GetContentSecurityPolicyForCurrentWorld()
+              ->AllowConnectToSource(request_url, request_url,
+                                     RedirectStatus::kNoRedirect);
 }
 
 bool ShouldBlockPort(const KURL& request_url) {
@@ -107,7 +108,7 @@ bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
                                const KURL& request_url) {
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
     network::mojom::IPAddressSpace requestor_space =
-        execution_context->GetSecurityContext().AddressSpace();
+        execution_context->AddressSpace();
 
     // TODO(mkwst): This only checks explicit IP addresses. We'll have to move
     // all this up to //net and //content in order to have any real impact on
@@ -132,25 +133,17 @@ scoped_refptr<BlobDataHandle> ExtractBlobHandle(
     ExceptionState& exception_state) {
   DCHECK(request);
 
-  if (request->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked ||
-      request->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
-    DCHECK(!exception_state.HadException());
+  if (request->IsBodyLocked() || request->IsBodyUsed()) {
     exception_state.ThrowTypeError("Request body is already used");
     return nullptr;
   }
-
-  if (exception_state.HadException())
-    return nullptr;
 
   BodyStreamBuffer* buffer = request->BodyBuffer();
   if (!buffer)
     return nullptr;
 
   auto blob_handle = buffer->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize,
-      exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
 
   return blob_handle;
 }
@@ -559,7 +552,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
   NOTREACHED();
 }
 
-void BackgroundFetchManager::Trace(Visitor* visitor) {
+void BackgroundFetchManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
   visitor->Trace(loaders_);

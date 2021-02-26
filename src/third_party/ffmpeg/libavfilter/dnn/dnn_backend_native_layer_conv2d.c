@@ -19,11 +19,28 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/thread.h"
+#include "libavutil/cpu.h"
 #include "dnn_backend_native_layer_conv2d.h"
 
 #define CLAMP_TO_EDGE(x, w) ((x) < 0 ? 0 : ((x) >= (w) ? (w - 1) : (x)))
 
-int dnn_load_layer_conv2d(Layer *layer, AVIOContext *model_file_context, int file_size)
+//struct to pass parameters
+typedef struct thread_common_param{
+    DnnOperand *operands;
+    const int32_t *input_operand_indexes;
+    int32_t output_operand_index;
+    const void *parameters;
+    NativeContext *ctx;
+    float *output_data;
+} thread_common_param;
+
+typedef struct thread_param{
+    thread_common_param *thread_common_param;
+    int thread_start, thread_end;
+} thread_param;
+
+int dnn_load_layer_conv2d(Layer *layer, AVIOContext *model_file_context, int file_size, int operands_num)
 {
     ConvolutionalParams *conv_params;
     int kernel_size;
@@ -80,20 +97,26 @@ int dnn_load_layer_conv2d(Layer *layer, AVIOContext *model_file_context, int fil
     layer->input_operand_indexes[0] = (int32_t)avio_rl32(model_file_context);
     layer->output_operand_index = (int32_t)avio_rl32(model_file_context);
     dnn_size += 8;
+
+    if (layer->input_operand_indexes[0] >= operands_num || layer->output_operand_index >= operands_num) {
+        return 0;
+    }
+
     return dnn_size;
 }
 
-int dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_operand_indexes,
-                             int32_t output_operand_index, const void *parameters)
+static void * dnn_execute_layer_conv2d_thread(void *threadarg)
 {
-    float *output;
-    int32_t input_operand_index = input_operand_indexes[0];
-    int number = operands[input_operand_index].dims[0];
+    //pass parameters
+    thread_param *thread_param = (struct thread_param *)threadarg;
+    thread_common_param *thread_common_param = thread_param->thread_common_param;
+    DnnOperand *operands = thread_common_param->operands;
+    int32_t input_operand_index = thread_common_param->input_operand_indexes[0];
     int height = operands[input_operand_index].dims[1];
     int width = operands[input_operand_index].dims[2];
     int channel = operands[input_operand_index].dims[3];
     const float *input = operands[input_operand_index].data;
-    const ConvolutionalParams *conv_params = (const ConvolutionalParams *)parameters;
+    const ConvolutionalParams *conv_params = (const ConvolutionalParams *)(thread_common_param->parameters);
 
     int radius = conv_params->kernel_size >> 1;
     int src_linesize = width * conv_params->input_num;
@@ -101,21 +124,12 @@ int dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_operand_
     int filter_size = conv_params->kernel_size * filter_linesize;
     int pad_size = (conv_params->padding_method == VALID) ? (conv_params->kernel_size - 1) / 2 * conv_params->dilation : 0;
 
-    DnnOperand *output_operand = &operands[output_operand_index];
-    output_operand->dims[0] = number;
-    output_operand->dims[1] = height - pad_size * 2;
-    output_operand->dims[2] = width - pad_size * 2;
-    output_operand->dims[3] = conv_params->output_num;
-    output_operand->data_type = operands[input_operand_index].data_type;
-    output_operand->length = calculate_operand_data_length(output_operand);
-    output_operand->data = av_realloc(output_operand->data, output_operand->length);
-    if (!output_operand->data)
-        return -1;
-    output = output_operand->data;
+    float *output = thread_common_param->output_data;
+    output += (conv_params->output_num) * (width - 2 * pad_size) * (thread_param->thread_start - pad_size);
 
     av_assert0(channel == conv_params->input_num);
 
-    for (int y = pad_size; y < height - pad_size; ++y) {
+    for (int y = thread_param->thread_start; y < thread_param->thread_end; ++y) {
         for (int x = pad_size; x < width - pad_size; ++x) {
             for (int n_filter = 0; n_filter < conv_params->output_num; ++n_filter) {
                 if (conv_params->has_bias)
@@ -163,5 +177,80 @@ int dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_operand_
             output += conv_params->output_num;
         }
     }
-    return 0;
+    return (void *)DNN_SUCCESS;
+}
+
+
+int dnn_execute_layer_conv2d(DnnOperand *operands, const int32_t *input_operand_indexes,
+                             int32_t output_operand_index, const void *parameters, NativeContext *ctx)
+{
+    int thread_num = (ctx->options.conv2d_threads <= 0 || ctx->options.conv2d_threads > av_cpu_count())
+        ? (av_cpu_count() + 1) : (ctx->options.conv2d_threads);
+#if HAVE_PTHREAD_CANCEL
+    pthread_t *thread_id = av_malloc(thread_num * sizeof(pthread_t));
+    int thread_stride;
+#endif
+    thread_param **thread_param = av_malloc(thread_num * sizeof(*thread_param));
+    thread_common_param thread_common_param;
+    const ConvolutionalParams *conv_params = (const ConvolutionalParams *)(parameters);
+    int height = operands[input_operand_indexes[0]].dims[1];
+    int width = operands[input_operand_indexes[0]].dims[2];
+    int pad_size = (conv_params->padding_method == VALID) ? (conv_params->kernel_size - 1) / 2 * conv_params->dilation : 0;
+    DnnOperand *output_operand = &operands[output_operand_index];
+
+    output_operand->dims[0] = operands[input_operand_indexes[0]].dims[0];
+    output_operand->dims[1] = height - pad_size * 2;
+    output_operand->dims[2] = width - pad_size * 2;
+    output_operand->dims[3] = conv_params->output_num;
+    output_operand->data_type = operands[input_operand_indexes[0]].data_type;
+    output_operand->length = calculate_operand_data_length(output_operand);
+    if (output_operand->length <= 0) {
+        av_log(ctx, AV_LOG_ERROR, "The output data length overflow\n");
+        return DNN_ERROR;
+    }
+    output_operand->data = av_realloc(output_operand->data, output_operand->length);
+    if (!output_operand->data) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to reallocate memory for output\n");
+        return DNN_ERROR;
+    }
+    thread_common_param.output_data = output_operand->data;
+    thread_common_param.operands = operands;
+    thread_common_param.input_operand_indexes = input_operand_indexes;
+    thread_common_param.output_operand_index = output_operand_index;
+    thread_common_param.parameters = parameters;
+    thread_common_param.ctx = ctx;
+
+#if HAVE_PTHREAD_CANCEL
+    thread_stride = (height - pad_size * 2) / thread_num;
+    //create threads
+    for (int i = 0; i < thread_num; i++){
+        thread_param[i] = av_malloc(sizeof(**thread_param));
+        thread_param[i]->thread_common_param = &thread_common_param;
+        thread_param[i]->thread_start = thread_stride * i + pad_size;
+        thread_param[i]->thread_end = (i == thread_num - 1) ? (height - pad_size) : (thread_param[i]->thread_start + thread_stride);
+        pthread_create(&thread_id[i], NULL, dnn_execute_layer_conv2d_thread, (void *)thread_param[i]);
+    }
+
+    //join threads, res gets function return
+    for (int i = 0; i < thread_num; i++){
+        pthread_join(thread_id[i], NULL);
+    }
+
+    //release memory
+    av_free(thread_id);
+
+    for (int i = 0; i < thread_num; i++){
+        av_free(thread_param[i]);
+    }
+#else
+    thread_param[0] = av_malloc(sizeof(**thread_param));
+    thread_param[0]->thread_common_param = &thread_common_param;
+    thread_param[0]->thread_start = pad_size;
+    thread_param[0]->thread_end = height - pad_size;
+    dnn_execute_layer_conv2d_thread((void *)thread_param[0]);
+    av_free(thread_param[0]);
+#endif
+
+    av_free(thread_param);
+    return DNN_SUCCESS;
 }

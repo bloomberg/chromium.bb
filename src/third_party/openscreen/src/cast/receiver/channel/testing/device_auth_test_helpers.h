@@ -10,28 +10,11 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
+#include "cast/receiver/channel/static_credentials.h"
 
 namespace openscreen {
 namespace cast {
-
-class StaticCredentialsProvider final
-    : public DeviceAuthNamespaceHandler::CredentialsProvider {
- public:
-  StaticCredentialsProvider() = default;
-  ~StaticCredentialsProvider() = default;
-
-  absl::Span<const uint8_t> GetCurrentTlsCertAsDer() override {
-    return absl::Span<uint8_t>(tls_cert_der);
-  }
-  const DeviceCredentials& GetCurrentDeviceCredentials() override {
-    return device_creds;
-  }
-
-  DeviceCredentials device_creds;
-  std::vector<uint8_t> tls_cert_der;
-};
 
 void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
                                     bssl::UniquePtr<X509>* parsed_cert,

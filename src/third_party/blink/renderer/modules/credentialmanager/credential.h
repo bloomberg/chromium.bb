@@ -20,12 +20,13 @@ class MODULES_EXPORT Credential : public ScriptWrappable {
 
  public:
   ~Credential() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual bool IsPasswordCredential() const { return false; }
   virtual bool IsFederatedCredential() const { return false; }
   virtual bool IsPublicKeyCredential() const { return false; }
   virtual bool IsOTPCredential() const { return false; }
+  virtual bool IsPaymentCredential() const { return false; }
 
   // Credential.idl
   const String& id() const { return id_; }

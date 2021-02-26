@@ -10,9 +10,9 @@
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_widget.h"
 
-CFWL_BarcodeTP::CFWL_BarcodeTP() {}
+CFWL_BarcodeTP::CFWL_BarcodeTP() = default;
 
-CFWL_BarcodeTP::~CFWL_BarcodeTP() {}
+CFWL_BarcodeTP::~CFWL_BarcodeTP() = default;
 
 void CFWL_BarcodeTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {

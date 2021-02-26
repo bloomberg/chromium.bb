@@ -4,20 +4,26 @@
 
 #include "weblayer/browser/navigation_controller_impl.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
+#include "weblayer/browser/navigation_entry_data.h"
+#include "weblayer/browser/navigation_ui_data_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_observer.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
 #include "base/trace_event/trace_event.h"
+#include "components/embedder_support/android/util/web_resource_response.h"
 #include "weblayer/browser/java/jni/NavigationControllerImpl_jni.h"
 #endif
 
@@ -28,6 +34,29 @@ using base::android::ScopedJavaLocalRef;
 #endif
 
 namespace weblayer {
+
+class NavigationControllerImpl::DelayDeletionHelper {
+ public:
+  explicit DelayDeletionHelper(NavigationControllerImpl* controller)
+      : controller_(controller->weak_ptr_factory_.GetWeakPtr()) {
+    // This should never be called reentrantly.
+    DCHECK(!controller->should_delay_web_contents_deletion_);
+    controller->should_delay_web_contents_deletion_ = true;
+  }
+
+  DelayDeletionHelper(const DelayDeletionHelper&) = delete;
+  DelayDeletionHelper& operator=(const DelayDeletionHelper&) = delete;
+
+  ~DelayDeletionHelper() {
+    if (controller_)
+      controller_->should_delay_web_contents_deletion_ = false;
+  }
+
+  bool WasControllerDeleted() { return controller_.get() == nullptr; }
+
+ private:
+  base::WeakPtr<NavigationControllerImpl> controller_;
+};
 
 // NavigationThrottle implementation responsible for delaying certain
 // operations and performing them when safe. This is necessary as content
@@ -109,6 +138,58 @@ NavigationControllerImpl::CreateNavigationThrottle(
   return throttle;
 }
 
+NavigationImpl* NavigationControllerImpl::GetNavigationImplFromHandle(
+    content::NavigationHandle* handle) {
+  auto iter = navigation_map_.find(handle);
+  return iter == navigation_map_.end() ? nullptr : iter->second.get();
+}
+
+NavigationImpl* NavigationControllerImpl::GetNavigationImplFromId(
+    int64_t navigation_id) {
+  for (const auto& iter : navigation_map_) {
+    if (iter.first->GetNavigationId() == navigation_id)
+      return iter.second.get();
+  }
+
+  return nullptr;
+}
+
+void NavigationControllerImpl::OnFirstContentfulPaint(
+    const base::TimeTicks& navigation_start,
+    const base::TimeDelta& first_contentful_paint) {
+#if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer",
+               "Java_NavigationControllerImpl_onFirstContentfulPaint2");
+  int64_t first_contentful_paint_ms = first_contentful_paint.InMilliseconds();
+  Java_NavigationControllerImpl_onFirstContentfulPaint2(
+      AttachCurrentThread(), java_controller_,
+      (navigation_start - base::TimeTicks()).InMicroseconds(),
+      first_contentful_paint_ms);
+#endif
+
+  for (auto& observer : observers_)
+    observer.OnFirstContentfulPaint(navigation_start, first_contentful_paint);
+}
+
+void NavigationControllerImpl::OnLargestContentfulPaint(
+    const base::TimeTicks& navigation_start,
+    const base::TimeDelta& largest_contentful_paint) {
+#if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer",
+               "Java_NavigationControllerImpl_onLargestContentfulPaint2");
+  int64_t largest_contentful_paint_ms =
+      largest_contentful_paint.InMilliseconds();
+  Java_NavigationControllerImpl_onLargestContentfulPaint(
+      AttachCurrentThread(), java_controller_,
+      (navigation_start - base::TimeTicks()).InMicroseconds(),
+      largest_contentful_paint_ms);
+#endif
+
+  for (auto& observer : observers_)
+    observer.OnLargestContentfulPaint(navigation_start,
+                                      largest_contentful_paint);
+}
+
 #if defined(OS_ANDROID)
 void NavigationControllerImpl::SetNavigationControllerImpl(
     JNIEnv* env,
@@ -116,18 +197,39 @@ void NavigationControllerImpl::SetNavigationControllerImpl(
   java_controller_ = java_controller;
 }
 
-void NavigationControllerImpl::Navigate(JNIEnv* env,
-                                        const JavaParamRef<jstring>& url) {
-  Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
-}
-
-void NavigationControllerImpl::NavigateWithParams(
+void NavigationControllerImpl::Navigate(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
-    jboolean should_replace_current_entry) {
+    jboolean should_replace_current_entry,
+    jboolean disable_intent_processing,
+    jboolean disable_network_error_auto_reload,
+    jboolean enable_auto_play,
+    const base::android::JavaParamRef<jobject>& response) {
   auto params = std::make_unique<content::NavigationController::LoadURLParams>(
       GURL(base::android::ConvertJavaStringToUTF8(env, url)));
   params->should_replace_current_entry = should_replace_current_entry;
+  // On android, the transition type largely dictates whether intent processing
+  // happens. PAGE_TRANSITION_TYPED does not process intents, where as
+  // PAGE_TRANSITION_LINK will (with the caveat that even links may not trigger
+  // intent processing under some circumstances).
+  params->transition_type = disable_intent_processing
+                                ? ui::PAGE_TRANSITION_TYPED
+                                : ui::PAGE_TRANSITION_LINK;
+  auto data = std::make_unique<NavigationUIDataImpl>();
+
+  if (disable_network_error_auto_reload)
+    data->set_disable_network_error_auto_reload(true);
+
+  if (!response.is_null()) {
+    data->SetResponse(
+        std::make_unique<embedder_support::WebResourceResponse>(response));
+  }
+
+  params->navigation_ui_data = std::move(data);
+
+  if (enable_auto_play)
+    params->was_activated = content::mojom::WasActivatedOption::kYes;
+
   DoNavigate(std::move(params));
 }
 
@@ -144,6 +246,11 @@ ScopedJavaLocalRef<jstring> NavigationControllerImpl::GetNavigationEntryTitle(
     int index) {
   return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
       env, GetNavigationEntryTitle(index)));
+}
+
+bool NavigationControllerImpl::IsNavigationEntrySkippable(JNIEnv* env,
+                                                          int index) {
+  return IsNavigationEntrySkippable(index);
 }
 #endif
 
@@ -190,6 +297,9 @@ void NavigationControllerImpl::Navigate(
       std::make_unique<content::NavigationController::LoadURLParams>(url);
   load_params->should_replace_current_entry =
       params.should_replace_current_entry;
+  if (params.enable_auto_play)
+    load_params->was_activated = content::mojom::WasActivatedOption::kYes;
+
   DoNavigate(std::move(load_params));
 }
 
@@ -257,6 +367,10 @@ std::string NavigationControllerImpl::GetNavigationEntryTitle(int index) {
   return base::UTF16ToUTF8(entry->GetTitle());
 }
 
+bool NavigationControllerImpl::IsNavigationEntrySkippable(int index) {
+  return web_contents()->GetController().IsEntryMarkedToBeSkipped(index);
+}
+
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
@@ -272,8 +386,28 @@ void NavigationControllerImpl::DidStartNavigation(
   base::AutoReset<NavigationImpl*> auto_reset(&navigation_starting_,
                                               navigation);
   navigation->set_safe_to_set_request_headers(true);
-  navigation->set_safe_to_set_user_agent(true);
+  navigation->set_safe_to_disable_network_error_auto_reload(true);
+
 #if defined(OS_ANDROID)
+  // Desktop mode and per-navigation UA use the same mechanism and so don't
+  // interact well. It's not possible to support both at the same time since
+  // if there's a per-navigation UA active and desktop mode is turned on, or
+  // was on previously, the WebContent's state would have to change before
+  // navigation even though that would be wrong for the previous navigation if
+  // the new navigation didn't commit.
+  if (!TabImpl::FromWebContents(web_contents())->desktop_user_agent_enabled())
+#endif
+    navigation->set_safe_to_set_user_agent(true);
+
+#if defined(OS_ANDROID)
+  NavigationUIDataImpl* navigation_ui_data = static_cast<NavigationUIDataImpl*>(
+      navigation_handle->GetNavigationUIData());
+  if (navigation_ui_data) {
+    auto response = navigation_ui_data->TakeResponse();
+    if (response)
+      navigation->SetResponse(std::move(response));
+  }
+
   if (java_controller_) {
     JNIEnv* env = AttachCurrentThread();
     {
@@ -291,6 +425,7 @@ void NavigationControllerImpl::DidStartNavigation(
     observer.NavigationStarted(navigation);
   navigation->set_safe_to_set_user_agent(false);
   navigation->set_safe_to_set_request_headers(false);
+  navigation->set_safe_to_disable_network_error_auto_reload(false);
 }
 
 void NavigationControllerImpl::DidRedirectNavigation(
@@ -324,8 +459,24 @@ void NavigationControllerImpl::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  DelayDeletionHelper deletion_helper(this);
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
+
+  if (navigation_handle->HasCommitted()) {
+    // Set state on NavigationEntry user data if a per-navigation user agent was
+    // specified. This can't be done earlier because a NavigationEntry might not
+    // have existed at the time that SetUserAgentString was called.
+    if (navigation->set_user_agent_string_called()) {
+      auto* entry = web_contents()->GetController().GetLastCommittedEntry();
+      if (entry) {
+        auto* entry_data = NavigationEntryData::Get(entry);
+        if (entry_data)
+          entry_data->set_per_navigation_user_agent_override(true);
+      }
+    }
+  }
+
   if (navigation_handle->GetNetErrorCode() == net::OK &&
       !navigation_handle->IsErrorPage()) {
 #if defined(OS_ANDROID)
@@ -335,10 +486,15 @@ void NavigationControllerImpl::DidFinishNavigation(
       Java_NavigationControllerImpl_navigationCompleted(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
+      if (deletion_helper.WasControllerDeleted())
+        return;
     }
 #endif
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.NavigationCompleted(navigation);
+      if (deletion_helper.WasControllerDeleted())
+        return;
+    }
   } else {
 #if defined(OS_ANDROID)
     if (java_controller_) {
@@ -347,11 +503,24 @@ void NavigationControllerImpl::DidFinishNavigation(
       Java_NavigationControllerImpl_navigationFailed(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
+      if (deletion_helper.WasControllerDeleted())
+        return;
     }
 #endif
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.NavigationFailed(navigation);
+      if (deletion_helper.WasControllerDeleted())
+        return;
+    }
   }
+
+  // Note InsertVisualStateCallback currently does not take into account
+  // any delays from surface sync, ie a frame submitted by renderer may not
+  // be displayed immediately. Such situations should be rare however, so
+  // this should be good enough for the purposes needed.
+  web_contents()->GetMainFrame()->InsertVisualStateCallback(base::BindOnce(
+      &NavigationControllerImpl::OldPageNoLongerRendered,
+      weak_ptr_factory_.GetWeakPtr(), navigation_handle->GetURL()));
 
   navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
@@ -389,6 +558,20 @@ void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
     observer.OnFirstContentfulPaint();
 }
 
+void NavigationControllerImpl::OldPageNoLongerRendered(const GURL& url,
+                                                       bool success) {
+#if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer",
+               "Java_NavigationControllerImpl_onOldPageNoLongerRendered");
+  JNIEnv* env = AttachCurrentThread();
+  Java_NavigationControllerImpl_onOldPageNoLongerRendered(
+      env, java_controller_,
+      base::android::ConvertUTF8ToJavaString(env, url.spec()));
+#endif
+  for (auto& observer : observers_)
+    observer.OnOldPageNoLongerRendered(url);
+}
+
 void NavigationControllerImpl::NotifyLoadStateChanged() {
 #if defined(OS_ANDROID)
   if (java_controller_) {
@@ -406,10 +589,18 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
 
 void NavigationControllerImpl::DoNavigate(
     std::unique_ptr<content::NavigationController::LoadURLParams> params) {
-  // Navigations should use the default user-agent. If the embedder wants a
-  // custom user-agent, the embedder will call Navigation::SetUserAgentString().
-  params->override_user_agent =
-      content::NavigationController::UA_OVERRIDE_FALSE;
+  // Navigations should use the default user-agent (which may be overridden if
+  // desktop mode is turned on). If the embedder wants a custom user-agent, the
+  // embedder will call Navigation::SetUserAgentString() in DidStartNavigation.
+#if defined(OS_ANDROID)
+  // We need to set UA_OVERRIDE_FALSE if per navigation UA is set. However at
+  // this point we don't know if the embedder will call that later. Since we
+  // ensure that the two can't be set at the same time, it's sufficient to
+  // not enable it if desktop mode is turned on.
+  if (!TabImpl::FromWebContents(web_contents())->desktop_user_agent_enabled())
+#endif
+    params->override_user_agent =
+        content::NavigationController::UA_OVERRIDE_FALSE;
   if (navigation_starting_) {
     // DoNavigate() is being called reentrantly. Delay processing until it's
     // safe.
@@ -426,11 +617,6 @@ void NavigationControllerImpl::DoNavigate(
     return;
   }
 
-  // For WebLayer's production use cases, navigations from the embedder are most
-  // appropriately viewed as being from links with user gestures. In particular,
-  // this ensures that intents resulting from these navigations get launched as
-  // the embedder expects.
-  params->transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
   params->has_user_gesture = true;
   web_contents()->GetController().LoadURLWithParams(*params);
   // So that if the user had entered the UI in a bar it stops flashing the

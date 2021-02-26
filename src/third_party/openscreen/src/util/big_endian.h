@@ -150,7 +150,7 @@ class BigEndianBuffer {
  public:
   class Cursor {
    public:
-    Cursor(BigEndianBuffer* buffer)
+    explicit Cursor(BigEndianBuffer* buffer)
         : buffer_(buffer), origin_(buffer_->current_) {}
     Cursor(const Cursor& other) = delete;
     Cursor(Cursor&& other) = delete;

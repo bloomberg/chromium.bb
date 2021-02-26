@@ -13,7 +13,8 @@ namespace cc {
 base::TimeDelta INTERVAL = base::TimeDelta::FromMilliseconds(16);
 
 FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
-    : CompositorFrameReportingController(/*should_report_metrics=*/true) {}
+    : CompositorFrameReportingController(/*should_report_metrics=*/true,
+                                         /*layer_tree_host_id=*/1) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {
@@ -52,13 +53,19 @@ void FakeCompositorFrameReportingController::DidCommit() {
 }
 
 void FakeCompositorFrameReportingController::WillActivate() {
-  if (!HasReporterAt(PipelineStage::kCommit))
+  // Pending trees for impl-side invalidations are created without a prior
+  // commit.
+  if (!HasReporterAt(PipelineStage::kCommit) &&
+      !next_activate_has_invalidation())
     DidCommit();
   CompositorFrameReportingController::WillActivate();
 }
 
 void FakeCompositorFrameReportingController::DidActivate() {
-  if (!HasReporterAt(PipelineStage::kCommit))
+  // Pending trees for impl-side invalidations are created without a prior
+  // commit.
+  if (!HasReporterAt(PipelineStage::kCommit) &&
+      !next_activate_has_invalidation())
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }

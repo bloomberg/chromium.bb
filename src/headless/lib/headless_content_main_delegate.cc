@@ -34,8 +34,8 @@
 #include "headless/lib/headless_macros.h"
 #include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "headless/lib/utility/headless_content_utility_client.h"
-#include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -47,11 +47,11 @@
 #include "headless/embedded_resource_pak.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #include "components/crash/core/app/crashpad.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "components/crash/core/app/breakpad_linux.h"
 #endif
 
@@ -99,9 +99,15 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
       ui::SCALE_FACTOR_NONE);
 
 #else
-
   base::FilePath dir_module;
+
+// Fuchsia doesn't implement DIR_MODULE
+#if !defined(OS_FUCHSIA)
   bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
+#else
+  bool result = base::PathService::Get(base::DIR_ASSETS, &dir_module);
+#endif  // !defined(OS_FUCHSIA)
+
   DCHECK(result);
 
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
@@ -123,7 +129,7 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
   base::FilePath chrome_200_pak =
       dir_module.Append(FILE_PATH_LITERAL("chrome_200_percent.pak"));
 
-#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
+#if defined(OS_MAC) && !defined(COMPONENT_BUILD)
   // In non component builds, check if fall back in Resources/ folder is
   // available.
   if (!base::PathExists(resources_pak)) {
@@ -191,7 +197,7 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line->AppendSwitch(::switches::kSingleProcess);
 
   if (options()->disable_sandbox)
-    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
 
   if (!options()->enable_resource_scheduler)
     command_line->AppendSwitch(::switches::kDisableResourceScheduler);
@@ -222,11 +228,11 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // When running headless there is no need to suppress input until content
   // is ready for display (because it isn't displayed to users).
-  command_line->AppendSwitch(::switches::kAllowPreCommitInput);
+  command_line->AppendSwitch(::blink::switches::kAllowPreCommitInput);
 
 #if defined(OS_WIN)
   command_line->AppendSwitch(
-      ::switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+      ::switches::kDisableGpuProcessForDX12InfoCollection);
 #endif
 
   content::Profiling::ProcessStarted();
@@ -268,7 +274,7 @@ void HeadlessContentMainDelegate::InitLogging(
         command_line.GetSwitchValueASCII(::switches::kLoggingLevel);
     int level = 0;
     if (base::StringToInt(log_level, &level) && level >= 0 &&
-        level < logging::LOG_NUM_SEVERITIES) {
+        level < logging::LOGGING_NUM_SEVERITIES) {
       logging::SetMinLogLevel(level);
     } else {
       DLOG(WARNING) << "Bad log level: " << log_level;
@@ -303,6 +309,10 @@ void HeadlessContentMainDelegate::InitLogging(
     log_path = base::FilePath::FromUTF8Unsafe(filename);
   }
 
+  // On Windows, having non canonical forward slashes in log file name causes
+  // problems with sandbox filters, see https://crbug.com/859676
+  log_path = log_path.NormalizePathSeparators();
+
   settings.logging_dest = log_mode;
   settings.log_file_path = log_path.value().c_str();
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
@@ -311,7 +321,6 @@ void HeadlessContentMainDelegate::InitLogging(
   bool success = logging::InitLogging(settings);
   DCHECK(success);
 }
-
 
 void HeadlessContentMainDelegate::InitCrashReporter(
     const base::CommandLine& command_line) {
@@ -335,9 +344,9 @@ void HeadlessContentMainDelegate::InitCrashReporter(
     DCHECK(!breakpad::IsCrashReporterEnabled());
     return;
   }
-  if (process_type != service_manager::switches::kZygoteProcess)
+  if (process_type != switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 // Avoid adding this dependency in Windows Chrome non component builds, since
 // crashpad is already enabled.
@@ -398,7 +407,7 @@ int HeadlessContentMainDelegate::RunProcess(
   return 0;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 void SIGTERMProfilingShutdown(int signal) {
   content::Profiling::Stop();
   struct sigaction sigact;
@@ -433,7 +442,7 @@ void HeadlessContentMainDelegate::ZygoteForked() {
   breakpad::InitCrashReporter(process_type);
 #endif
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // static
 HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
@@ -485,13 +494,13 @@ void HeadlessContentMainDelegate::PostEarlyInitialization(
         ::switches::kRunAllCompositorStagesBeforeDraw,
         ::switches::kDisableNewContentRenderingTimeout,
         cc::switches::kDisableThreadedAnimation,
-        ::switches::kDisableThreadedScrolling,
         // Animtion-only BeginFrames are only supported when updates from the
         // impl-thread are disabled, see go/headless-rendering.
         cc::switches::kDisableCheckerImaging,
+        blink::switches::kDisableThreadedScrolling,
         // Ensure that image animations don't resync their animation timestamps
         // when looping back around.
-        ::switches::kDisableImageAnimationResync,
+        blink::switches::kDisableImageAnimationResync,
     };
     for (const auto* flag : switches)
       base::CommandLine::ForCurrentProcess()->AppendSwitch(flag);

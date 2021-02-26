@@ -14,6 +14,11 @@
 
 #include "dawn_native/metal/QueueMTL.h"
 
+#include "common/Math.h"
+#include "dawn_native/Buffer.h"
+#include "dawn_native/CommandValidation.h"
+#include "dawn_native/Commands.h"
+#include "dawn_native/DynamicUploader.h"
 #include "dawn_native/metal/CommandBufferMTL.h"
 #include "dawn_native/metal/DeviceMTL.h"
 #include "dawn_platform/DawnPlatform.h"
@@ -31,7 +36,7 @@ namespace dawn_native { namespace metal {
 
         TRACE_EVENT_BEGIN0(GetDevice()->GetPlatform(), Recording, "CommandBufferMTL::FillCommands");
         for (uint32_t i = 0; i < commandCount; ++i) {
-            ToBackend(commands[i])->FillCommands(commandContext);
+            DAWN_TRY(ToBackend(commands[i])->FillCommands(commandContext));
         }
         TRACE_EVENT_END0(GetDevice()->GetPlatform(), Recording, "CommandBufferMTL::FillCommands");
 

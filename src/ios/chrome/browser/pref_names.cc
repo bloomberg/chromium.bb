@@ -74,6 +74,10 @@ const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 const char kIosBookmarkSigninPromoDisplayedCount[] =
     "ios.bookmark.signin_promo_displayed_count";
 
+// The time when the DiscoverFeed was last refreshed.
+const char kIosDiscoverFeedLastRefreshTime[] =
+    "ios.discover_feed.last_refresh_time";
+
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in settings view.
 const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
@@ -102,15 +106,10 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
-// A boolean pref set to true if prediction of network actions is allowed.
-// Actions include prerendering of web pages.
-// NOTE: The "dns_prefetching.enabled" value is used so that historical user
-// preferences are not lost.
-const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
-
-// Preference that hold a boolean indicating whether network prediction should
-// be limited to wifi (when enabled).
-const char kNetworkPredictionWifiOnly[] = "ios.dns_prefetching.wifi_only";
+// An integer set to one of the NetworkPredictionSetting enum values indicating
+// network prediction settings.
+const char kNetworkPredictionSetting[] =
+    "ios.prerender.network_prediction_settings";
 
 // Which bookmarks folder should be visible on the new tab page v4.
 const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
@@ -147,5 +146,7 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 // keyed by domain. The final values are double values representing the user
 // zoom level (i.e. 1 means no change, 100%).
 const char kIosUserZoomMultipliers[] = "ios.user_zoom_multipliers";
+
+const char kPrintingEnabled[] = "printing.enabled";
 
 }  // namespace prefs

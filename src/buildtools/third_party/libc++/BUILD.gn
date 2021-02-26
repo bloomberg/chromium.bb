@@ -42,7 +42,7 @@ target(_libcxx_target_type, "libc++") {
     "//build/config:common_deps",
     "//third_party/catapult/devil:devil",
   ]
-  if (is_linux) {
+  if (is_linux && !is_chromeos) {
     # This target packages libc++.so, so must have an explicit dependency on
     # libc++.
     visibility +=
@@ -110,6 +110,9 @@ target(_libcxx_target_type, "libc++") {
     "//build/config/coverage:default_coverage",
   ]
   if (is_android && libcxx_is_shared) {
+    # Use libc++_chrome to avoid conflicting with system libc++
+    # See crbug.com/1076244#c11 for more detail.
+    output_name = "libc++_chrome"
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   }
   configs += [
@@ -162,7 +165,7 @@ target(_libcxx_target_type, "libc++") {
       ]
     }
   }
-  if (!is_mac && !is_ios && (is_asan || is_tsan || is_msan)) {
+  if (!is_apple && (is_asan || is_tsan || is_msan)) {
     # In {a,t,m}san configurations, operator new and operator delete will be
     # provided by the sanitizer runtime library.  Since libc++ defines these
     # symbols with weak linkage, and the *san runtime uses strong linkage, it

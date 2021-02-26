@@ -5,14 +5,15 @@
 #ifndef V8_OBJECTS_CONTEXTS_INL_H_
 #define V8_OBJECTS_CONTEXTS_INL_H_
 
-#include "src/objects/contexts.h"
-
 #include "src/heap/heap-write-barrier.h"
+#include "src/objects/contexts.h"
 #include "src/objects/dictionary-inl.h"
 #include "src/objects/fixed-array-inl.h"
+#include "src/objects/js-function-inl.h"
 #include "src/objects/js-objects-inl.h"
 #include "src/objects/map-inl.h"
 #include "src/objects/objects-inl.h"
+#include "src/objects/ordered-hash-table-inl.h"
 #include "src/objects/osr-optimized-code-cache-inl.h"
 #include "src/objects/regexp-match-info.h"
 #include "src/objects/scope-info.h"
@@ -27,10 +28,12 @@ namespace internal {
 OBJECT_CONSTRUCTORS_IMPL(ScriptContextTable, FixedArray)
 CAST_ACCESSOR(ScriptContextTable)
 
-int ScriptContextTable::used() const { return Smi::ToInt(get(kUsedSlotIndex)); }
+int ScriptContextTable::synchronized_used() const {
+  return Smi::ToInt(synchronized_get(kUsedSlotIndex));
+}
 
-void ScriptContextTable::set_used(int used) {
-  set(kUsedSlotIndex, Smi::FromInt(used));
+void ScriptContextTable::synchronized_set_used(int used) {
+  synchronized_set(kUsedSlotIndex, Smi::FromInt(used));
 }
 
 // static
@@ -41,7 +44,7 @@ Handle<Context> ScriptContextTable::GetContext(Isolate* isolate,
 }
 
 Context ScriptContextTable::get_context(int i) const {
-  DCHECK_LT(i, used());
+  DCHECK_LT(i, synchronized_used());
   return Context::cast(this->get(i + kFirstContextSlotIndex));
 }
 
@@ -53,11 +56,11 @@ SMI_ACCESSORS(Context, length, kLengthOffset)
 CAST_ACCESSOR(NativeContext)
 
 Object Context::get(int index) const {
-  const Isolate* isolate = GetIsolateForPtrCompr(*this);
+  IsolateRoot isolate = GetIsolateForPtrCompr(*this);
   return get(isolate, index);
 }
 
-Object Context::get(const Isolate* isolate, int index) const {
+Object Context::get(IsolateRoot isolate, int index) const {
   DCHECK_LT(static_cast<unsigned>(index),
             static_cast<unsigned>(this->length()));
   return TaggedField<Object>::Relaxed_Load(isolate, *this,
@@ -82,6 +85,25 @@ void Context::set(int index, Object value, WriteBarrierMode mode) {
 
 void Context::set_scope_info(ScopeInfo scope_info) {
   set(SCOPE_INFO_INDEX, scope_info);
+}
+
+Object Context::synchronized_get(int index) const {
+  IsolateRoot isolate = GetIsolateForPtrCompr(*this);
+  return synchronized_get(isolate, index);
+}
+
+Object Context::synchronized_get(IsolateRoot isolate, int index) const {
+  DCHECK_LT(static_cast<unsigned int>(index),
+            static_cast<unsigned int>(this->length()));
+  return ACQUIRE_READ_FIELD(*this, OffsetOfElementAt(index));
+}
+
+void Context::synchronized_set(int index, Object value) {
+  DCHECK_LT(static_cast<unsigned int>(index),
+            static_cast<unsigned int>(this->length()));
+  const int offset = OffsetOfElementAt(index);
+  RELEASE_WRITE_FIELD(*this, offset, value);
+  WRITE_BARRIER(*this, offset, value);
 }
 
 Object Context::unchecked_previous() { return get(PREVIOUS_INDEX); }
@@ -246,17 +268,28 @@ Map Context::GetInitialJSArrayMap(ElementsKind kind) const {
 }
 
 DEF_GETTER(NativeContext, microtask_queue, MicrotaskQueue*) {
-  ExternalPointer_t encoded_value =
-      ReadField<ExternalPointer_t>(kMicrotaskQueueOffset);
-  return reinterpret_cast<MicrotaskQueue*>(
-      DecodeExternalPointer(isolate, encoded_value));
+  return reinterpret_cast<MicrotaskQueue*>(ReadExternalPointerField(
+      kMicrotaskQueueOffset, isolate, kNativeContextMicrotaskQueueTag));
+}
+
+void NativeContext::AllocateExternalPointerEntries(Isolate* isolate) {
+  InitExternalPointerField(kMicrotaskQueueOffset, isolate);
 }
 
 void NativeContext::set_microtask_queue(Isolate* isolate,
                                         MicrotaskQueue* microtask_queue) {
-  ExternalPointer_t encoded_value = EncodeExternalPointer(
-      isolate, reinterpret_cast<Address>(microtask_queue));
-  WriteField<ExternalPointer_t>(kMicrotaskQueueOffset, encoded_value);
+  WriteExternalPointerField(kMicrotaskQueueOffset, isolate,
+                            reinterpret_cast<Address>(microtask_queue),
+                            kNativeContextMicrotaskQueueTag);
+}
+
+void NativeContext::synchronized_set_script_context_table(
+    ScriptContextTable script_context_table) {
+  synchronized_set(SCRIPT_CONTEXT_TABLE_INDEX, script_context_table);
+}
+
+ScriptContextTable NativeContext::synchronized_script_context_table() const {
+  return ScriptContextTable::cast(synchronized_get(SCRIPT_CONTEXT_TABLE_INDEX));
 }
 
 OSROptimizedCodeCache NativeContext::GetOSROptimizedCodeCache() {

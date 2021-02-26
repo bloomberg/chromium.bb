@@ -18,7 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/index_helper.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -41,6 +41,7 @@ enum class VerifierFormat;
 namespace extensions {
 class Extension;
 enum class SandboxedUnpackerFailureReason;
+enum class InstallationStage;
 
 namespace declarative_net_request {
 struct IndexAndPersistJSONRulesetResult;
@@ -74,8 +75,8 @@ class SandboxedUnpackerClient
   //
   // install_icon - The icon we will display in the installation UI, if any.
   //
-  // ruleset_checksums - Checksums for the indexed rulesets corresponding to
-  // the Declarative Net Request API.
+  // ruleset_install_prefs - Install prefs needed for the Declarative Net
+  // Request API.
   //
   // Note: OnUnpackSuccess/Failure may be called either synchronously or
   // asynchronously from SandboxedUnpacker::StartWithCrx/Directory.
@@ -85,8 +86,11 @@ class SandboxedUnpackerClient
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums) = 0;
+      declarative_net_request::RulesetInstallPrefs ruleset_install_prefs) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
+
+  // Called after stage of installation is changed.
+  virtual void OnStageChanged(InstallationStage stage) {}
 
  protected:
   friend class base::RefCountedDeleteOnSequence<SandboxedUnpackerClient>;
@@ -133,8 +137,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // TaskShutdownBehavior::SKIP_ON_SHUTDOWN to ensure that either the task is
   // fully run (if initiated before shutdown) or not run at all (if shutdown is
   // initiated first). See crbug.com/235525.
-  // TODO(devlin): We should probably just have SandboxedUnpacker use the common
-  // ExtensionFileTaskRunner, and not pass in a separate one.
   // TODO(devlin): SKIP_ON_SHUTDOWN is also not quite sufficient for this. We
   // should probably instead be using base::ImportantFileWriter or similar.
   SandboxedUnpacker(
@@ -263,9 +265,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // is called.
   base::Optional<base::Value> manifest_;
 
-  // Checksums for the indexed rulesets, see more in
-  // SandboxedUnpackerClient::OnUnpackSuccess description.
-  declarative_net_request::RulesetChecksums ruleset_checksums_;
+  // Install prefs needed for the Declarative Net Request API.
+  declarative_net_request::RulesetInstallPrefs ruleset_install_prefs_;
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;

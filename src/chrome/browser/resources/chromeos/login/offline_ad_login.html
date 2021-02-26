@@ -7,11 +7,15 @@
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <!--
   Offline UI for the AD Domain joining and User authentication.
 
   Example:
-      <offline-ad-login show-machine-input> </offline-ad-login>
+      <offline-ad-login-element show-machine-input> </offline-ad-login-element>
 
   Attributes:
     'isDomainJoin' - Whether the screen is for domain join. For the join it
@@ -42,7 +46,7 @@
                        optional. If user passed, the password input would be
                        invalidated.
 -->
-<dom-module id="offline-ad-login">
+<dom-module id="offline-ad-login-element">
   <template>
     <style include="md-select oobe-dialog-host">
     </style>
@@ -64,10 +68,10 @@
         </cr-input>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="skipButton" on-tap="onSkipClicked_"
+        <oobe-text-button id="skipButton" on-click="onSkipClicked_"
             text-key="adUnlockPasswordSkip"></oobe-text-button>
         <oobe-next-button id="unlockButton"
-            on-tap="onUnlockPasswordEntered_"></oobe-next-button>
+            on-click="onUnlockPasswordEntered_"></oobe-next-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="credsStep" hidden="[[unlockPasswordStep]]"
@@ -111,7 +115,8 @@
               label="[[i18nDynamic(locale, 'adAuthLoginUsername')]]"
               on-keydown="onKeydownUserInput_"
               error-message="[[i18nDynamic(locale, 'adLoginInvalidUsername')]]">
-            <span slot="suffix" hidden="[[domainHidden(userRealm, userName)]]">
+            <span slot="suffix" id="userRealm"
+                hidden="[[domainHidden(userRealm, userName)]]">
               [[userRealm]]
             </span>
           </cr-input>
@@ -133,13 +138,14 @@
           </div>
         </div>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal" hidden="[[loading]]">
+      <div slot="back-navigation" hidden="[[loading]]">
         <oobe-back-button id="backToUnlockButton" on-click="onBackToUnlock_"
             disabled="[[disabled]]" hidden></oobe-back-button>
         <oobe-back-button id="backButton" on-click="onBackButton_"
             hidden="[[isDomainJoin]]"></oobe-back-button>
-        <div class="flex"></div>
-        <oobe-next-button id="nextButton" on-tap="onSubmit_"
+      </div>
+      <div slot="bottom-buttons" hidden="[[loading]]">
+        <oobe-next-button id="nextButton" on-click="onSubmit_"
             disabled="[[disabled]]"></oobe-next-button>
       </div>
     </oobe-dialog>
@@ -183,9 +189,9 @@
       </div>
       <div slot="button-container">
         <oobe-text-button text-key="adJoinCancel"
-            on-tap="onMoreOptionsCancelTap_" autofocus></oobe-text-button>
+            on-click="onMoreOptionsCancelTap_" autofocus></oobe-text-button>
         <oobe-text-button id="moreOptionsSave" text-key="adJoinSave"
-            on-tap="onMoreOptionsConfirmTap_" inverse></oobe-text-button>
+            on-click="onMoreOptionsConfirmTap_" inverse></oobe-text-button>
       </div>
     </cr-dialog>
   </template>

@@ -9,12 +9,12 @@
 
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_test_utils.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/no_state_prefetch/browser/prerender_handle.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
@@ -342,9 +342,6 @@ TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
   TestWebContentsObserver observer2(contents2(), &tracker());
 
   // Prerender some contents.
-  prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
-  prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
   GURL url("http://www.example.com");

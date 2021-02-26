@@ -21,13 +21,16 @@ namespace chromeos {
 // start and stop VMs, as well as for disk image management.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
+  static constexpr base::ObserverListPolicy kObserverListPolicy =
+      base::ObserverListPolicy::EXISTING_ONLY;
+
   // Used for observing Concierge service itself.
   class Observer : public base::CheckedObserver {
    public:
     // Called when Concierge service exits.
     virtual void ConciergeServiceStopped() = 0;
     // Called when Concierge service is either started or restarted.
-    virtual void ConciergeServiceRestarted() = 0;
+    virtual void ConciergeServiceStarted() = 0;
   };
 
   // Used for observing VMs starting and stopping.
@@ -248,6 +251,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::ResizeDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::ResizeDiskImageResponse>
           callback) = 0;
+
+  // Sets the cryptohome id of the given VM.
+  // |callback| is called after the method call finishes.
+  virtual void SetVmId(
+      const vm_tools::concierge::SetVmIdRequest& request,
+      DBusMethodCallback<vm_tools::concierge::SetVmIdResponse> callback) = 0;
 
   // Creates an instance of ConciergeClient.
   static std::unique_ptr<ConciergeClient> Create();

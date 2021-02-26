@@ -40,8 +40,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   FakeBluetoothAdapterClient();
   ~FakeBluetoothAdapterClient() override;
-  int GetPauseCount() { return pause_count_; }
-  int GetUnpauseCount() { return unpause_count_; }
 
   // BluetoothAdapterClient overrides
   void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
@@ -53,12 +51,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
                       ResponseCallback callback) override;
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      ResponseCallback callback) override;
-  void PauseDiscovery(const dbus::ObjectPath& object_path,
-                      base::OnceClosure callback,
-                      ErrorCallback error_callback) override;
-  void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                        base::OnceClosure callback,
-                        ErrorCallback error_callback) override;
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,
                     base::OnceClosure callback,
@@ -75,6 +67,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
                            uint32_t handle,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override;
+  void ConnectDevice(const dbus::ObjectPath& object_path,
+                     const std::string& address,
+                     const base::Optional<AddressType>& address_type,
+                     ConnectDeviceCallback callback,
+                     ErrorCallback error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);
@@ -87,6 +84,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // Make StartDiscovery fail when called next time.
   void MakeStartDiscoveryFail();
+
+  // Sets whether discovery simulation should be enabled or not.
+  void SetDiscoverySimulation(bool enabled);
 
   // Mark the adapter and second adapter as visible or invisible.
   void SetVisible(bool visible);
@@ -132,12 +132,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   // Number of times we've been asked to discover.
   int discovering_count_;
 
-  // Number of times we've been asked to pause discovery.
-  int pause_count_;
-
-  // Number of times we've been asked to unpause discovery.
-  int unpause_count_;
-
   // Current discovery filter
   std::unique_ptr<DiscoveryFilter> discovery_filter_;
 
@@ -146,6 +140,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // When set, next call to StartDiscovery would fail.
   bool set_start_discovery_should_fail_ = false;
+
+  // When set, enables discovery simulation.
+  bool enable_discovery_simulation_ = true;
 
   // Current timeout interval used when posting delayed tasks.
   int simulation_interval_ms_;

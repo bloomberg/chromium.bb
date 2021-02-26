@@ -6,11 +6,31 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {
 namespace app_time {
+
+enterprise_management::App::AppType AppTypeForReporting(
+    apps::mojom::AppType type) {
+  switch (type) {
+    case apps::mojom::AppType::kArc:
+      return enterprise_management::App::ARC;
+    case apps::mojom::AppType::kBuiltIn:
+      return enterprise_management::App::BUILT_IN;
+    case apps::mojom::AppType::kCrostini:
+      return enterprise_management::App::CROSTINI;
+    case apps::mojom::AppType::kExtension:
+      return enterprise_management::App::EXTENSION;
+    case apps::mojom::AppType::kPluginVm:
+      return enterprise_management::App::PLUGIN_VM;
+    case apps::mojom::AppType::kWeb:
+      return enterprise_management::App::WEB;
+    default:
+      return enterprise_management::App::UNKNOWN;
+  }
+}
 
 AppId GetChromeAppId() {
   return AppId(apps::mojom::AppType::kExtension, extension_misc::kChromeAppId);

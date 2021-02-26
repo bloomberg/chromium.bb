@@ -4,14 +4,15 @@
 
 #include "chrome/browser/accessibility/caption_controller.h"
 
-#include <string>
+#include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/accessibility/caption_util.h"
+#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/soda/constants.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +38,8 @@ const char* const kCaptionStylePrefsToObserve[] = {
     prefs::kAccessibilityCaptionsTextShadow,
     prefs::kAccessibilityCaptionsBackgroundOpacity};
 
+constexpr int kSodaCleanUpDelayInDays = 30;
+
 }  // namespace
 
 namespace captions {
@@ -50,16 +54,9 @@ void CaptionController::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kLiveCaptionEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterFilePathPref(prefs::kSODAPath, base::FilePath());
-}
 
-// static
-void CaptionController::InitOffTheRecordPrefs(Profile* off_the_record_profile) {
-  DCHECK(off_the_record_profile->IsOffTheRecord());
-  off_the_record_profile->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
-                                                 false);
-  off_the_record_profile->GetPrefs()->SetFilePath(prefs::kSODAPath,
-                                                  base::FilePath());
+  // Initially default the language to en-US.
+  registry->RegisterStringPref(prefs::kLiveCaptionLanguageCode, "en-US");
 }
 
 void CaptionController::Init() {
@@ -67,11 +64,24 @@ void CaptionController::Init() {
   if (!base::FeatureList::IsEnabled(media::kLiveCaption))
     return;
 
+  base::UmaHistogramBoolean(
+      "Accessibility.LiveCaption.UseSodaForLiveCaption",
+      base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption));
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(profile_->GetPrefs());
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line &&
+      command_line->HasSwitch(switches::kEnableLiveCaptionPrefForTesting)) {
+    profile_->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  }
+
   pref_change_registrar_->Add(
       prefs::kLiveCaptionEnabled,
       base::BindRepeating(&CaptionController::OnLiveCaptionEnabledChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kLiveCaptionLanguageCode,
+      base::BindRepeating(&CaptionController::OnLiveCaptionLanguageChanged,
                           base::Unretained(this)));
 
   enabled_ = IsLiveCaptionEnabled();
@@ -90,25 +100,30 @@ void CaptionController::OnLiveCaptionEnabledChanged() {
     return;
   enabled_ = enabled;
 
-  UpdateSpeechRecognitionServiceEnabled();
+  if (enabled_) {
+    // Register SODA component and download speech model.
+    g_browser_process->local_state()->SetTime(prefs::kSodaScheduledDeletionTime,
+                                              base::Time());
+    speech::SODAInstaller::GetInstance()->InstallSODA(profile_->GetPrefs());
+    speech::SODAInstaller::GetInstance()->InstallLanguage(profile_->GetPrefs());
+  } else {
+    // Schedule SODA to be deleted in 30 days if the feature is not enabled
+    // before then.
+    g_browser_process->local_state()->SetTime(
+        prefs::kSodaScheduledDeletionTime,
+        base::Time::Now() + base::TimeDelta::FromDays(kSodaCleanUpDelayInDays));
+  }
   UpdateUIEnabled();
+}
+
+void CaptionController::OnLiveCaptionLanguageChanged() {
+  if (enabled_)
+    speech::SODAInstaller::GetInstance()->InstallLanguage(profile_->GetPrefs());
 }
 
 bool CaptionController::IsLiveCaptionEnabled() {
   PrefService* profile_prefs = profile_->GetPrefs();
   return profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled);
-}
-
-void CaptionController::UpdateSpeechRecognitionServiceEnabled() {
-  if (enabled_) {
-    // Register SODA component and download speech model.
-    component_updater::RegisterSODAComponent(
-        g_browser_process->component_updater(), profile_->GetPrefs(),
-        base::BindOnce(&component_updater::SODAComponentInstallerPolicy::
-                           UpdateSODAComponentOnDemand));
-  } else {
-    // TODO(evliu): Unregister SODA component.
-  }
 }
 
 void CaptionController::UpdateUIEnabled() {
@@ -143,36 +158,53 @@ void CaptionController::UpdateUIEnabled() {
 }
 
 void CaptionController::UpdateAccessibilityCaptionHistograms() {
-  base::UmaHistogramBoolean("Accessibility.LiveCaptions", enabled_);
+  base::UmaHistogramBoolean("Accessibility.LiveCaption", enabled_);
 }
 
 void CaptionController::OnBrowserAdded(Browser* browser) {
-  if (browser->profile() != profile_)
+  if (browser->profile() != profile_ &&
+      browser->profile()->GetOriginalProfile() != profile_) {
     return;
+  }
 
+  DCHECK(!caption_bubble_controllers_.count(browser));
   caption_bubble_controllers_[browser] =
       CaptionBubbleController::Create(browser);
   caption_bubble_controllers_[browser]->UpdateCaptionStyle(caption_style_);
 }
 
 void CaptionController::OnBrowserRemoved(Browser* browser) {
-  if (browser->profile() != profile_)
+  if (browser->profile() != profile_ &&
+      browser->profile()->GetOriginalProfile() != profile_) {
     return;
+  }
 
   DCHECK(caption_bubble_controllers_.count(browser));
   caption_bubble_controllers_.erase(browser);
 }
 
-void CaptionController::DispatchTranscription(
+bool CaptionController::DispatchTranscription(
     content::WebContents* web_contents,
     const chrome::mojom::TranscriptionResultPtr& transcription_result) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
+  if (!browser || !caption_bubble_controllers_.count(browser))
+    return false;
+  return caption_bubble_controllers_[browser]->OnTranscription(
+      transcription_result, web_contents);
+}
+
+void CaptionController::OnError(content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser || !caption_bubble_controllers_.count(browser))
     return;
-  if (!caption_bubble_controllers_.count(browser))
-    return;
-  caption_bubble_controllers_[browser]->OnTranscription(transcription_result,
-                                                        web_contents);
+  return caption_bubble_controllers_[browser]->OnError(web_contents);
+}
+
+CaptionBubbleController*
+CaptionController::GetCaptionBubbleControllerForBrowser(Browser* browser) {
+  if (!browser || !caption_bubble_controllers_.count(browser))
+    return nullptr;
+  return caption_bubble_controllers_[browser].get();
 }
 
 void CaptionController::UpdateCaptionStyle() {

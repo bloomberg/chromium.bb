@@ -28,11 +28,15 @@ import * as ProtocolClient from '../protocol_client/protocol_client.js';  // esl
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {DebuggerModel, Location} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
+import {FrameAssociated} from './FrameAssociated.js';        // eslint-disable-line no-unused-vars
+import {PageResourceLoadInitiator} from './PageResourceLoader.js';  // eslint-disable-line no-unused-vars
 import {ResourceTreeModel} from './ResourceTreeModel.js';
 import {ExecutionContext} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
+import {Target} from './SDKModel.js';                // eslint-disable-line no-unused-vars
 
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
+ * TODO(chromium:1011811): make `implements {FrameAssociated}` annotation work here.
  * @unrestricted
  */
 export class Script {
@@ -55,14 +59,12 @@ export class Script {
    * @param {?number} codeOffset
    * @param {?string} scriptLanguage
    * @param {?Protocol.Debugger.DebugSymbols} debugSymbols
+   * @param {?string} embedderName
    */
   constructor(
       debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash,
       isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, originStackTrace, codeOffset, scriptLanguage,
-      debugSymbols) {
-    /** @type {?string} */
-    this._source;
-
+      debugSymbols, embedderName) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -83,13 +85,28 @@ export class Script {
     this.debugSymbols = debugSymbols;
     this.hasSourceURL = hasSourceURL;
     this.contentLength = length;
+    /** @type {?TextUtils.ContentProvider.ContentProvider} */
     this._originalContentProvider = null;
-    this._originalSource = null;
     this.originStackTrace = originStackTrace;
     this._codeOffset = codeOffset;
     this._language = scriptLanguage;
-    this._lineMap = null;
-    this._functionBodyOffsets = null;
+    /** @type {?Promise<!TextUtils.ContentProvider.DeferredContent>} */
+    this._contentPromise = null;
+    this._embedderName = embedderName;
+  }
+
+  /**
+   * @returns {?string}
+   */
+  embedderName() {
+    return this._embedderName;
+  }
+
+  /**
+   * @returns {!Target}
+   */
+  target() {
+    return this.debuggerModel.target();
   }
 
   /**
@@ -132,15 +149,22 @@ export class Script {
   /**
    * @return {boolean}
    */
-  isWasm() {
-    return this._language === Protocol.Debugger.ScriptLanguage.WebAssembly;
+  isJavaScript() {
+    return this._language === Protocol.Debugger.ScriptLanguage.JavaScript;
   }
 
   /**
    * @return {boolean}
    */
-  hasWasmDisassembly() {
-    return !!this._lineMap && !this.sourceMapURL;
+  isWasm() {
+    return this._language === Protocol.Debugger.ScriptLanguage.WebAssembly;
+  }
+
+  /**
+   * @return {string|null}
+   */
+  scriptLanguage() {
+    return this._language;
   }
 
   /**
@@ -185,51 +209,11 @@ export class Script {
    * @override
    * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
-  async requestContent() {
-    if (this._source) {
-      return {content: this._source, isEncoded: false};
+  requestContent() {
+    if (!this._contentPromise) {
+      this._contentPromise = this.originalContentProvider().requestContent();
     }
-    if (!this.scriptId) {
-      return {error: ls`Script removed or deleted.`, isEncoded: false};
-    }
-
-    try {
-      const sourceOrBytecode =
-          await this.debuggerModel.target().debuggerAgent().invoke_getScriptSource({scriptId: this.scriptId});
-      const source = sourceOrBytecode.scriptSource;
-      if (source) {
-        if (this.hasSourceURL) {
-          this._source = Script._trimSourceURLComment(source);
-        } else {
-          this._source = source;
-        }
-      } else {
-        this._source = '';
-        if (sourceOrBytecode.bytecode) {
-          const worker = new Common.Worker.WorkerWrapper('wasmparser_worker_entrypoint');
-          /** @type {!Promise<!MessageEvent>} */
-          const promise = new Promise(function(resolve, reject) {
-            worker.onmessage = resolve;
-            worker.onerror = reject;
-          });
-          worker.postMessage({method: 'disassemble', params: {content: sourceOrBytecode.bytecode}});
-
-          /** @type {{source: string, offsets: ?Array<number>, functionBodyOffsets: ?Array<{start: number, end: number}>}} */
-          const data = (await promise).data;
-          this._source = data.source;
-          this._lineMap = data.offsets;
-          this._functionBodyOffsets = data.functionBodyOffsets;
-          this.endLine = (this._lineMap && this._lineMap.length) || 0;
-        }
-      }
-
-      if (this._originalSource === null) {
-        this._originalSource = this._source;
-      }
-      return {content: this._source, isEncoded: false};
-    } catch (err) {
-      return {error: ls`Unable to fetch script source.`, isEncoded: false};
-    }
+    return this._contentPromise;
   }
 
   /**
@@ -246,14 +230,39 @@ export class Script {
    */
   originalContentProvider() {
     if (!this._originalContentProvider) {
-      const lazyContent = () => this.requestContent().then(() => {
-        return {
-          content: this._originalSource || '',
-          isEncoded: false,
-        };
-      });
+      /** @type {?Promise<!TextUtils.ContentProvider.DeferredContent>} } */
+      let lazyContentPromise;
       this._originalContentProvider =
-          new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
+          new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => {
+            if (!lazyContentPromise) {
+              lazyContentPromise = (async () => {
+                if (!this.scriptId) {
+                  return {content: null, error: ls`Script removed or deleted.`, isEncoded: false};
+                }
+                try {
+                  const result = await this.debuggerModel.target().debuggerAgent().invoke_getScriptSource(
+                      {scriptId: this.scriptId});
+                  if (result.getError()) {
+                    throw new Error(result.getError());
+                  }
+                  const {scriptSource, bytecode} = result;
+                  if (bytecode) {
+                    return {content: bytecode, isEncoded: true};
+                  }
+                  let content = scriptSource || '';
+                  if (this.hasSourceURL) {
+                    content = Script._trimSourceURLComment(content);
+                  }
+                  return {content, isEncoded: false};
+
+                } catch (err) {
+                  // TODO(bmeurer): Propagate errors as exceptions / rejections.
+                  return {content: null, error: ls`Unable to fetch script source.`, isEncoded: false};
+                }
+              })();
+            }
+            return lazyContentPromise;
+          });
     }
     return this._originalContentProvider;
   }
@@ -301,8 +310,8 @@ export class Script {
       return;
     }
 
-    await this.requestContent();
-    if (this._source === newSource) {
+    const {content: oldSource} = await this.requestContent();
+    if (oldSource === newSource) {
       callback(null);
       return;
     }
@@ -310,7 +319,7 @@ export class Script {
         {scriptId: this.scriptId, scriptSource: newSource});
 
     if (!response.getError() && !response.exceptionDetails) {
-      this._source = newSource;
+      this._contentPromise = Promise.resolve({content: newSource, isEncoded: false});
     }
 
     const needsStepIn = !!response.stackChanged;
@@ -329,68 +338,6 @@ export class Script {
       return new Location(this.debuggerModel, this.scriptId, lineNumber, columnNumber);
     }
     return null;
-  }
-
-  /**
-   * @param {number} lineNumber
-   * @return {?Location}
-   */
-  wasmByteLocation(lineNumber) {
-    if (this._lineMap && lineNumber < this._lineMap.length) {
-      return new Location(this.debuggerModel, this.scriptId, 0, this._lineMap[lineNumber]);
-    }
-    return null;
-  }
-
-  /**
-   * @param {number} byteOffset
-   * @return {number}
-   */
-  wasmDisassemblyLine(byteOffset) {
-    let line = 0;
-    // TODO: Implement binary search if necessary for large wasm modules
-    while (this._lineMap && line < this._lineMap.length && byteOffset > this._lineMap[line]) {
-      line++;
-    }
-    return line;
-  }
-
-  /**
-   * @param {number} lineNumber
-   * @return {boolean}
-   */
-  isWasmDisassemblyBreakableLine(lineNumber) {
-    if (!this._functionBodyOffsets || this._functionBodyOffsets.length === 0) {
-      return false;
-    }
-    const location = this.wasmByteLocation(lineNumber);
-    if (!location) {
-      return false;
-    }
-    const byteOffset = location.columnNumber;
-
-    // Here, this._functionBodyOffsets is [{start:s0, end:e0}, {start:s1, end:e1}, ...].
-    // Also, we have s0 < e0 < s1 < e1 ... and the breakable lines are defined by the union of [a0,b0), [a1,b1), ...
-    let first = 0;
-    let last = this._functionBodyOffsets.length - 1;
-    // Quick return if it is outside of code section.
-    if (byteOffset < this._functionBodyOffsets[first].start || byteOffset >= this._functionBodyOffsets[last].end) {
-      return false;
-    }
-    // Binary search.
-    while (first <= last) {
-      const mid = (first + last) >> 1;
-      const functionBodyOffset = this._functionBodyOffsets[mid];
-      if (byteOffset < functionBodyOffset.start) {
-        last = mid - 1;
-      } else if (byteOffset >= functionBodyOffset.end) {
-        first = mid + 1;
-      } else {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**
@@ -458,6 +405,13 @@ export class Script {
       this[frameIdSymbol] = frameIdForScript(this);
     }
     return this[frameIdSymbol] || '';
+  }
+
+  /**
+   * @returns {!PageResourceLoadInitiator}
+   */
+  createPageResourceLoadInitiator() {
+    return {target: this.target(), frameId: this.frameId, initiatorUrl: this.embedderName()};
   }
 }
 

@@ -6,7 +6,6 @@
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_FIELD_TRIAL_CREATOR_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -62,8 +61,6 @@ class VariationsFieldTrialCreator {
   // setup completed successfully.
   // |kEnableGpuBenchmarking|, |kEnableFeatures|, |kDisableFeatures| are
   // feature controlling flags not directly accesible from variations.
-  // |unforcable_field_trials| contains the list of trials that can not be
-  // overridden.
   // |variation_ids| allows for forcing ids selected in chrome://flags and/or
   // specified using the command-line flag.
   // |low_entropy_provider| allows for field trial randomization.
@@ -73,6 +70,8 @@ class VariationsFieldTrialCreator {
   // |safe_seed_manager| should be notified of the combined server and client
   // state that was activated to create the field trials (only when the return
   // value is true).
+  // |low_entropy_source_value| contains the low entropy source value that was
+  // used for client-side randomization of variations.
   // |extra_overrides| gives a list of feature overrides that should be applied
   // after the features explicitly disabled/enabled from the command line via
   // --disable-features and --enable-features, but before field trials.
@@ -84,7 +83,6 @@ class VariationsFieldTrialCreator {
       const char* kEnableGpuBenchmarking,
       const char* kEnableFeatures,
       const char* kDisableFeatures,
-      const std::set<std::string>& unforceable_field_trials,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
@@ -92,7 +90,8 @@ class VariationsFieldTrialCreator {
           low_entropy_provider,
       std::unique_ptr<base::FeatureList> feature_list,
       PlatformFieldTrials* platform_field_trials,
-      SafeSeedManager* safe_seed_manager);
+      SafeSeedManager* safe_seed_manager,
+      base::Optional<int> low_entropy_source_value);
 
   // Returns all of the client state used for filtering studies.
   // As a side-effect, may update the stored permanent consistency country.
@@ -132,11 +131,6 @@ class VariationsFieldTrialCreator {
   // Returns the locale that was used for evaluating trials.
   const std::string& application_locale() const { return application_locale_; }
 
-  // Returns the short hardware class value used to evaluate variations hardware
-  // class filters. Only implemented on CrOS and Android - returns empty string
-  // on other platforms.
-  static std::string GetShortHardwareClass();
-
  private:
   // Loads the seed from the variations store into |seed|, and records metrics
   // about the loaded seed. Returns true on success, in which case |seed| will
@@ -160,8 +154,7 @@ class VariationsFieldTrialCreator {
   // successfully; and if so, stores the loaded variations state into the
   // |safe_seed_manager|.
   bool CreateTrialsFromSeed(
-      std::unique_ptr<const base::FieldTrial::EntropyProvider>
-          low_entropy_provider,
+      const base::FieldTrial::EntropyProvider& low_entropy_provider,
       base::FeatureList* feature_list,
       SafeSeedManager* safe_seed_manager);
 

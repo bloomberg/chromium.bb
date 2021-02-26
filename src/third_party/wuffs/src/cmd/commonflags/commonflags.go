@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// ----------------
+
 // commonflags holds flag defaults and usage messages that are common to the
 // Wuffs command line tools.
 //
@@ -25,11 +27,8 @@ import (
 )
 
 const (
-	CcompilersDefault = "clang-5.0,gcc"
+	CcompilersDefault = "clang-9,gcc"
 	CcompilersUsage   = `comma-separated list of C compilers`
-
-	CformatterDefault = "clang-format-5.0"
-	CformatterUsage   = `C formatter`
 
 	FocusDefault = ""
 	FocusUsage   = `comma-separated list of tests or benchmarks (name prefixes) to focus on, e.g. "wuffs_gif_decode"`

@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_offset_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_offset.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -41,7 +43,7 @@ SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEOffsetElement::Trace(Visitor* visitor) {
+void SVGFEOffsetElement::Trace(Visitor* visitor) const {
   visitor->Trace(dx_);
   visitor->Trace(dy_);
   visitor->Trace(in1_);

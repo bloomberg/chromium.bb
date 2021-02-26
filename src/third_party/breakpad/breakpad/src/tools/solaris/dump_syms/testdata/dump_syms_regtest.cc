@@ -41,7 +41,7 @@ class C {
 
   void f() { member_ = g(); }
   virtual int g() { return 2; }
-  static char* h(const C &that) { return 0; }
+  static char* h(const C& that) { return 0; }
 
  private:
   int member_;
@@ -53,12 +53,12 @@ static int i() {
 
 }  // namespace google_breakpad
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   google_breakpad::C object;
   object.set_member(google_breakpad::i());
   object.f();
   int value = object.g();
-  char *nothing = object.h(object);
+  char* nothing = object.h(object);
 
   return 0;
 }

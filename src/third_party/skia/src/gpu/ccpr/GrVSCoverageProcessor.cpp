@@ -18,10 +18,7 @@ public:
             : fShader(std::move(shader)), fNumSides(numSides) {}
 
 private:
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&,
-                 const CoordTransformRange& transformRange) final {
-        this->setTransformDataHelper(SkMatrix::I(), pdman, transformRange);
-    }
+    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&) final {}
 
     void onEmitCode(EmitArgs&, GrGPArgs*) override;
 
@@ -533,10 +530,10 @@ void GrVSCoverageProcessor::reset(PrimitiveType primitiveType, int subpassIdx,
 }
 
 void GrVSCoverageProcessor::bindBuffers(GrOpsRenderPass* renderPass,
-                                        const GrBuffer* instanceBuffer) const {
+                                        sk_sp<const GrBuffer> instanceBuffer) const {
     SkASSERT(fTriangleType == GrPrimitiveType::kTriangles ||
              fTriangleType == GrPrimitiveType::kTriangleStrip);
-    renderPass->bindBuffers(fIndexBuffer.get(), instanceBuffer, fVertexBuffer.get(),
+    renderPass->bindBuffers(fIndexBuffer, std::move(instanceBuffer), fVertexBuffer,
                             GrPrimitiveRestart(GrPrimitiveType::kTriangleStrip == fTriangleType));
 }
 

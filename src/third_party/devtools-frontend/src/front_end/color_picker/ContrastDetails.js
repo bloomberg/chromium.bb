@@ -12,10 +12,12 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!ContrastInfo} contrastInfo
    * @param {!Element} contentElement
-   * @param {function(boolean=, !Common.EventTarget.EventTargetEvent=)} toggleMainColorPickerCallback
-   * @param {function()} expandedChangedCallback
+   * @param {function(boolean=, !Common.EventTarget.EventTargetEvent=):void} toggleMainColorPickerCallback
+   * @param {function():void} expandedChangedCallback
+   * @param {function(!Common.Color.Color):void} colorSelectedCallback
    */
-  constructor(contrastInfo, contentElement, toggleMainColorPickerCallback, expandedChangedCallback) {
+  constructor(
+      contrastInfo, contentElement, toggleMainColorPickerCallback, expandedChangedCallback, colorSelectedCallback) {
     super();
     /** @type {!ContrastInfo} */
     this._contrastInfo = contrastInfo;
@@ -23,11 +25,14 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {!Element} */
     this._element = contentElement.createChild('div', 'spectrum-contrast-details collapsed');
 
-    /** @type {function(boolean=, !Common.EventTarget.EventTargetEvent=)} */
+    /** @type {function(boolean=, !Common.EventTarget.EventTargetEvent=):void} */
     this._toggleMainColorPicker = toggleMainColorPickerCallback;
 
-    /** @type {function()} */
+    /** @type {function():void} */
     this._expandedChangedCallback = expandedChangedCallback;
+
+    /** @type {function(!Common.Color.Color):void} */
+    this._colorSelectedCallback = colorSelectedCallback;
 
     /** @type {boolean} */
     this._expanded = false;
@@ -53,20 +58,22 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     const contrastValueRow = this._element.createChild('div');
     contrastValueRow.addEventListener('click', this._topRowClicked.bind(this));
     const contrastValueRowContents = contrastValueRow.createChild('div', 'container');
-    contrastValueRowContents.createTextChild(Common.UIString.UIString('Contrast ratio'));
+    UI.UIUtils.createTextChild(contrastValueRowContents, Common.UIString.UIString('Contrast ratio'));
 
     this._contrastValueBubble = contrastValueRowContents.createChild('span', 'contrast-details-value');
     this._contrastValue = this._contrastValueBubble.createChild('span');
+    /** @type {!Array<!Node>} */
     this._contrastValueBubbleIcons = [];
     this._contrastValueBubbleIcons.push(
         this._contrastValueBubble.appendChild(UI.Icon.Icon.create('smallicon-checkmark-square')));
     this._contrastValueBubbleIcons.push(
         this._contrastValueBubble.appendChild(UI.Icon.Icon.create('smallicon-checkmark-behind')));
     this._contrastValueBubbleIcons.push(this._contrastValueBubble.appendChild(UI.Icon.Icon.create('smallicon-no')));
-    this._contrastValueBubbleIcons.forEach(button => button.addEventListener('click', event => {
-      ContrastDetails._showHelp();
-      event.consume(false);
-    }));
+    this._contrastValueBubbleIcons.forEach(
+        button => button.addEventListener('click', /** @param {!Event} event */ event => {
+          ContrastDetails._showHelp();
+          event.consume(false);
+        }));
 
     const expandToolbar = new UI.Toolbar.Toolbar('expand', contrastValueRowContents);
     this._expandButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Show more'), 'smallicon-expand-more');
@@ -80,10 +87,10 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     this._contrastThresholds = this._expandedDetails.createChild('div', 'contrast-thresholds');
 
     this._contrastAA = this._contrastThresholds.createChild('div', 'contrast-threshold');
-    this._contrastPassFailAA = this._contrastAA.createChild('span', 'contrast-pass-fail');
+    this._contrastPassFailAA = this._contrastAA.createChild('div', 'contrast-pass-fail');
 
     this._contrastAAA = this._contrastThresholds.createChild('div', 'contrast-threshold');
-    this._contrastPassFailAAA = this._contrastAAA.createChild('span', 'contrast-pass-fail');
+    this._contrastPassFailAAA = this._contrastAAA.createChild('div', 'contrast-pass-fail');
 
     this._chooseBgColor = this._expandedDetails.createChild('div', 'contrast-choose-bg-color');
     this._chooseBgColor.textContent = Common.UIString.UIString('Pick background color');
@@ -109,6 +116,57 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
 
   _hideNoContrastInfoAvailableMessage() {
     this._noContrastInfoAvailable.classList.add('hidden');
+  }
+
+  /**
+   * @param {string} threshold
+   */
+  _computeSuggestedColor(threshold) {
+    const fgColor = this._contrastInfo.color();
+    const bgColor = this._contrastInfo.bgColor();
+    if (!fgColor || !bgColor) {
+      return;
+    }
+
+    const requiredContrast = this._contrastInfo.contrastRatioThreshold(threshold);
+    if (!requiredContrast) {
+      return;
+    }
+
+    // We add a bit to the required contrast to make sure we are over the limit.
+    return Common.Color.Color.findFgColorForContrast(fgColor, bgColor, requiredContrast + 0.05);
+  }
+
+  /**
+   * @param {string} threshold
+   */
+  _onSuggestColor(threshold) {
+    Host.userMetrics.colorFixed(threshold);
+    const color = this._computeSuggestedColor(threshold);
+    if (color) {
+      this._colorSelectedCallback(color);
+    }
+  }
+
+  /**
+   * @param {!Element} parent
+   * @param {!Common.Color.Color} suggestedColor
+   */
+  _createFixColorButton(parent, suggestedColor) {
+    const button = /** @type {!HTMLElement} */ (parent.createChild('button', 'contrast-fix-button'));
+    const originalColorFormat = this._contrastInfo.colorFormat();
+    const colorFormat = originalColorFormat && originalColorFormat !== Common.Color.Format.Nickname &&
+            originalColorFormat !== Common.Color.Format.Original ?
+        originalColorFormat :
+        Common.Color.Format.HEXA;
+    const formattedColor = suggestedColor.asString(colorFormat);
+    const suggestedColorString = formattedColor ? formattedColor + ' ' : '';
+    const label = ls`Use suggested color ${suggestedColorString}to fix low contrast`;
+    UI.ARIAUtils.setAccessibleName(button, label);
+    button.title = label;
+    button.tabIndex = 0;
+    button.style.backgroundColor = suggestedColorString;
+    return button;
   }
 
   _update() {
@@ -142,8 +200,9 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
 
     this._bgColorSwatch.setColors(fgColor, bgColor);
 
-    const aa = this._contrastInfo.contrastRatioThreshold('aa');
-    this._passesAA = this._contrastInfo.contrastRatio() >= aa;
+    // In greater then comparisons we can substite null with 0.
+    const aa = this._contrastInfo.contrastRatioThreshold('aa') || 0;
+    this._passesAA = (this._contrastInfo.contrastRatio() || 0) >= aa;
     this._contrastPassFailAA.removeChildren();
     const labelAA = this._contrastPassFailAA.createChild('span', 'contrast-link-label');
     labelAA.textContent = Common.UIString.UIString('AA');
@@ -152,10 +211,16 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
       this._contrastPassFailAA.appendChild(UI.Icon.Icon.create('smallicon-checkmark-square'));
     } else {
       this._contrastPassFailAA.appendChild(UI.Icon.Icon.create('smallicon-no'));
+      const suggestedColor = this._computeSuggestedColor('aa');
+      if (suggestedColor) {
+        const fixAA = this._createFixColorButton(this._contrastPassFailAA, suggestedColor);
+        fixAA.addEventListener('click', () => this._onSuggestColor('aa'));
+      }
     }
 
-    const aaa = this._contrastInfo.contrastRatioThreshold('aaa');
-    const passesAAA = this._contrastInfo.contrastRatio() >= aaa;
+    // In greater then comparisons we can substite null with 0.
+    const aaa = this._contrastInfo.contrastRatioThreshold('aaa') || 0;
+    const passesAAA = (this._contrastInfo.contrastRatio() || 0) >= aaa;
     this._contrastPassFailAAA.removeChildren();
     const labelAAA = this._contrastPassFailAAA.createChild('span', 'contrast-link-label');
     labelAAA.textContent = Common.UIString.UIString('AAA');
@@ -164,9 +229,15 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
       this._contrastPassFailAAA.appendChild(UI.Icon.Icon.create('smallicon-checkmark-square'));
     } else {
       this._contrastPassFailAAA.appendChild(UI.Icon.Icon.create('smallicon-no'));
+      const suggestedColor = this._computeSuggestedColor('aaa');
+      if (suggestedColor) {
+        const fixAAA = this._createFixColorButton(this._contrastPassFailAAA, suggestedColor);
+        fixAAA.addEventListener('click', () => this._onSuggestColor('aaa'));
+      }
     }
 
-    [labelAA, labelAAA].forEach(e => e.addEventListener('click', event => ContrastDetails._showHelp()));
+    [labelAA, labelAAA].forEach(
+        e => e.addEventListener('click', /** @param {!Event} event */ event => ContrastDetails._showHelp()));
 
     this._element.classList.toggle('contrast-fail', !this._passesAA);
     this._contrastValueBubble.classList.toggle('contrast-aa', this._passesAA);
@@ -204,7 +275,10 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _expandButtonClicked(event) {
-    this._contrastValueBubble.getComponentSelection().empty();
+    const selection = this._contrastValueBubble.getComponentSelection();
+    if (selection) {
+      selection.empty();
+    }
     this._toggleExpanded();
   }
 
@@ -212,7 +286,10 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Event} event
    */
   _topRowClicked(event) {
-    this._contrastValueBubble.getComponentSelection().empty();
+    const selection = this._contrastValueBubble.getComponentSelection();
+    if (selection) {
+      selection.empty();
+    }
     this._toggleExpanded();
     event.consume(true);
   }
@@ -312,8 +389,10 @@ export class Swatch {
   constructor(parentElement) {
     this._parentElement = parentElement;
     this._swatchElement = parentElement.createChild('span', 'swatch contrast swatch-inner-white');
-    this._swatchInnerElement = this._swatchElement.createChild('span', 'swatch-inner');
-    this._textPreview = this._swatchElement.createChild('div', 'text-preview');
+    /** @type {!HTMLElement} */
+    this._swatchInnerElement = /** @type {!HTMLElement} */ (this._swatchElement.createChild('span', 'swatch-inner'));
+    /** @type {!HTMLElement} */
+    this._textPreview = /** @type {!HTMLElement} */ (this._swatchElement.createChild('div', 'text-preview'));
     this._textPreview.textContent = 'Aa';
   }
 

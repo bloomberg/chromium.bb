@@ -76,6 +76,9 @@ const uint32_t V4L2VideoDecodeAccelerator::supported_input_fourccs_[] = {
     V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9,
 };
 
+// static
+base::AtomicRefCount V4L2VideoDecodeAccelerator::num_instances_(0);
+
 struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
@@ -132,7 +135,8 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     scoped_refptr<V4L2Device> device)
-    : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : can_use_decoder_(num_instances_.Increment() < kMaxNumOfInstances),
+      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
       output_mode_(Config::OutputMode::ALLOCATE),
@@ -162,6 +166,8 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   // These maps have members that should be manually destroyed, e.g. file
   // descriptors, mmap() segments, etc.
   DCHECK(output_buffer_map_.empty());
+
+  num_instances_.Decrement();
 }
 
 bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
@@ -170,6 +176,11 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
            << ", output_mode=" << static_cast<int>(config.output_mode);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kUninitialized);
+
+  if (!can_use_decoder_) {
+    VLOGF(1) << "Reached the maximum number of decoder instances";
+    return false;
+  }
 
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -1523,8 +1534,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord(
       ret = std::move(buffer).QueueMMap();
       break;
     case V4L2_MEMORY_DMABUF:
-      ret = std::move(buffer).QueueDMABuf(
-          output_record.output_frame->DmabufFds());
+      ret = std::move(buffer).QueueDMABuf(output_record.output_frame);
       break;
     default:
       NOTREACHED();
@@ -1880,6 +1890,10 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
+  cancelable_service_device_task_.Reset(base::BindRepeating(
+      &V4L2VideoDecodeAccelerator::ServiceDeviceTask, base::Unretained(this)));
+  cancelable_service_device_task_callback_ =
+      cancelable_service_device_task_.callback();
   device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DevicePollTask,
                                 base::Unretained(this), 0));
@@ -1901,6 +1915,10 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll() {
     return false;
   }
   device_poll_thread_.Stop();
+  // Must be done after the Stop() above to ensure
+  // |cancelable_service_device_task_callback_| is not copied.
+  cancelable_service_device_task_.Cancel();
+  cancelable_service_device_task_callback_ = {};
   // Clear the interrupt now, to be sure.
   if (!device_->ClearDevicePollInterrupt()) {
     PLOG(ERROR) << "ClearDevicePollInterrupt: failed";
@@ -2027,8 +2045,8 @@ void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::ServiceDeviceTask,
-                                base::Unretained(this), event_pending));
+      FROM_HERE,
+      base::BindOnce(cancelable_service_device_task_callback_, event_pending));
 }
 
 bool V4L2VideoDecodeAccelerator::IsDestroyPending() {
@@ -2314,9 +2332,9 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
 
   image_processor_ = v4l2_vda_helpers::CreateImageProcessor(
       *output_format_fourcc_, *egl_image_format_fourcc_, coded_size_,
-      egl_image_size_, visible_size_, output_buffer_map_.size(),
-      image_processor_device_, image_processor_output_mode,
-      decoder_thread_.task_runner(),
+      egl_image_size_, visible_size_, VideoFrame::StorageType::STORAGE_DMABUFS,
+      output_buffer_map_.size(), image_processor_device_,
+      image_processor_output_mode, decoder_thread_.task_runner(),
       // Unretained(this) is safe for ErrorCB because |decoder_thread_| is owned
       // by this V4L2VideoDecodeAccelerator and |this| must be valid when
       // ErrorCB is executed.

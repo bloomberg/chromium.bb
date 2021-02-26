@@ -18,11 +18,15 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/app_service_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
@@ -38,17 +42,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_host.h"
@@ -71,6 +77,10 @@ using storage::FileSystemURL;
 
 namespace file_manager {
 namespace file_tasks {
+
+const char kActionIdView[] = "view";
+const char kActionIdSend[] = "send";
+const char kActionIdSendMultiple[] = "send_multiple";
 
 namespace {
 
@@ -161,6 +171,20 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
   tasks->swap(filtered);
 }
 
+// Returns whether |path| is a RAW image file according to its extension. Note
+// that since none of the extensions of interest are "known" mime types (per
+// net/mime_util.cc), it's enough to simply check the extension rather than
+// using MimeTypeCollector. TODO(crbug/1030935): Remove this.
+bool IsRawImage(const base::FilePath& path) {
+  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
+                                            ".nrw", ".orf", ".raf", ".rw2"};
+  for (const char* extension : kRawExtensions) {
+    if (path.MatchesExtension(extension))
+      return true;
+  }
+  return false;
+}
+
 // Adjusts |tasks| to reflect the product decision that chrome://media-app
 // should behave more like a user-installed app than a fallback handler.
 // Specifically, only apps set as the default in user prefs should be preferred
@@ -183,13 +207,15 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   if (media_app_task == tasks->end())
     return;
 
-  // TODO(crbug/1030935): Once Media app supports RAW files, delete the
-  // IsRawImage early exit. This is necessary while Gallery is still the
-  // better option for RAW files. The any_non_image check can be removed once
-  // video player functionality of the Media App is fully polished.
+  // TODO(crbug/1030935): Delete the IsRawImage function and early exit when
+  // kMediaAppHandlesRaw is removed. The any_non_image check can be removed once
+  // video player functionality of the Media App is fully polished
+  // (b/171154148).
   bool any_non_image = false;
   for (const auto& entry : entries) {
-    if (IsRawImage(entry.path)) {
+    if (!base::FeatureList::IsEnabled(
+            chromeos::features::kMediaAppHandlesRaw) &&
+        IsRawImage(entry.path)) {
       tasks->erase(media_app_task);
       return;  // Let Gallery handle it.
     }
@@ -282,6 +308,21 @@ Profile* GetProfileForExtensionTask(Profile* profile,
   return profile;
 }
 
+GURL GetIconURL(Profile* profile, const Extension& extension) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile) &&
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+              ->AppRegistryCache()
+              .GetAppType(extension.id()) != apps::mojom::AppType::kUnknown) {
+    return apps::AppIconSource::GetIconURL(
+        extension.id(), extension_misc::EXTENSION_ICON_SMALL);
+  }
+  return extensions::ExtensionIconSource::GetIconURL(
+      &extension, extension_misc::EXTENSION_ICON_SMALL,
+      ExtensionIconSet::MATCH_BIGGER,
+      false);  // grayscale
+}
+
 void ExecuteByArcAfterMimeTypesCollected(
     Profile* profile,
     const TaskDescriptor& task,
@@ -289,6 +330,13 @@ void ExecuteByArcAfterMimeTypesCollected(
     FileTaskFinishedCallback done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
+  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
+      (task.action_id == kActionIdSend ||
+       task.action_id == kActionIdSendMultiple)) {
+    ExecuteAppServiceTask(profile, task, file_urls, *mime_types,
+                          std::move(done));
+    return;
+  }
   ExecuteArcTask(profile, task, file_urls, *mime_types, std::move(done));
 }
 
@@ -521,7 +569,9 @@ bool ExecuteFileTask(Profile* profile,
   }
 
   // Some action IDs of the file manager's file browser handlers require the
-  // files to be directly opened with the browser.
+  // files to be directly opened with the browser. In a multiprofile session
+  // this will always open on the current desktop, regardless of which profile
+  // owns the files, so return TASK_RESULT_OPENED.
   if (ShouldBeOpenedWithBrowser(task.app_id, task.action_id)) {
     const bool result =
         OpenFilesWithBrowser(profile, file_urls, task.action_id);
@@ -554,6 +604,9 @@ bool ExecuteFileTask(Profile* profile,
     DCHECK(!extension->from_bookmark());
     apps::LaunchPlatformAppWithFileHandler(extension_task_profile, extension,
                                            task.action_id, paths);
+    // In a multiprofile session, platform apps will open on the desktop
+    // corresponding to the profile that owns the files, so return
+    // TASK_RESULT_MESSAGE_SENT.
     if (!done.is_null())
       std::move(done).Run(
           extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
@@ -694,10 +747,7 @@ void FindFileHandlerTasks(Profile* profile,
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
-      GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
-          extension, extension_misc::EXTENSION_ICON_SMALL,
-          ExtensionIconSet::MATCH_BIGGER,
-          false);  // grayscale
+      const GURL best_icon = GetIconURL(profile, *extension);
 
       // If file handler doesn't match as good match, regards it as generic file
       // handler.
@@ -755,10 +805,7 @@ void FindFileBrowserHandlerTasks(
 
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
-    const GURL icon_url = extensions::ExtensionIconSource::GetIconURL(
-        extension, extension_misc::EXTENSION_ICON_SMALL,
-        ExtensionIconSet::MATCH_BIGGER,
-        false);  // grayscale
+    const GURL icon_url = GetIconURL(profile, *extension);
 
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(extension_id, file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
@@ -788,8 +835,16 @@ void FindExtensionAndAppTasks(
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
+  // TODO(crbug/1092784): Link app service task finder here to test the intent
+  // handling backend. This is not fully completed and only support sharing for
+  // now. When the unified sharesheet UI is completed, this might be called from
+  // a different place.
+  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing)) {
+    FindAppServiceTasks(profile, entries, file_urls, result_list_ptr);
+  }
+
   // 5. Find and append Guest OS tasks.
-  FindGuestOsTasks(profile, entries, result_list_ptr,
+  FindGuestOsTasks(profile, entries, file_urls, result_list_ptr,
                    // Done. Apply post-filtering and callback.
                    base::BindOnce(PostProcessFoundTasks, profile, entries,
                                   std::move(callback), std::move(result_list)));
@@ -847,6 +902,23 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     }
   }
 
+  // Prefer a fallback app over viewing in the browser (crbug.com/1111399).
+  // Unless it's HTML which should open in the browser (crbug.com/1121396).
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    FullTaskDescriptor& task = (*tasks)[i];
+    if (IsFallbackFileHandler(task) &&
+        task.task_descriptor().action_id != "view-in-browser") {
+      const extensions::EntryInfo entry = entries[0];
+      const base::FilePath& file_path = entry.path;
+
+      if (IsHtmlFile(file_path)) {
+        break;
+      }
+      task.set_is_default(true);
+      return;
+    }
+  }
+
   // No default tasks found. If there is any fallback file browser handler,
   // make it as default task, so it's selected by default.
   for (size_t i = 0; i < tasks->size(); ++i) {
@@ -859,10 +931,10 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   }
 }
 
-bool IsRawImage(const base::FilePath& path) {
-  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
-                                            ".nrw", ".orf", ".raf", ".rw2"};
-  for (const char* extension : kRawExtensions) {
+bool IsHtmlFile(const base::FilePath& path) {
+  constexpr const char* kHtmlExtensions[] = {".htm", ".html", ".mhtml",
+                                             ".xht", ".xhtm", ".xhtml"};
+  for (const char* extension : kHtmlExtensions) {
     if (path.MatchesExtension(extension))
       return true;
   }

@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, PrinterType} from 'chrome://print/print_preview.js';
+import {CapabilitiesResponse, Destination, LocalDestinationInfo, NativeInitialSettings, NativeLayer, PageLayoutInfo, PrinterSetupResponse, PrinterType, ProvisionalDestinationInfo} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+import {getCddTemplate, getPdfPrinter} from './print_preview_test_utils.js';
 
 /**
  * Test version of the native layer.
+ * @implements {NativeLayer}
  */
 export class NativeLayerStub extends TestBrowserProxy {
   constructor() {
@@ -23,6 +26,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       'getEulaUrl',
       'hidePreview',
       'print',
+      'requestPrinterStatusUpdate',
       'saveAppState',
       'setupPrinter',
       'showSystemDialog',
@@ -30,7 +34,7 @@ export class NativeLayerStub extends TestBrowserProxy {
     ]);
 
     /**
-     * @private {!NativeInitialSettings} The initial settings
+     * @private {?NativeInitialSettings} The initial settings
      *     to be used for the response to a |getInitialSettings| call.
      */
     this.initialSettings_ = null;
@@ -52,14 +56,14 @@ export class NativeLayerStub extends TestBrowserProxy {
 
     /**
      * @private {!Map<string,
-     *                !Promise<!CapabilitiesResponse>}
+     *                !Promise<!CapabilitiesResponse>>}
      *     A map from destination IDs to the responses to be sent when
      *     |getPrinterCapabilities| is called for the ID.
      */
     this.localDestinationCapabilities_ = new Map();
 
     /**
-     * @private {!PrinterSetupResponse} The response to be sent
+     * @private {?PrinterSetupResponse} The response to be sent
      *     on a |setupPrinter| call.
      */
     this.setupPrinterResponse_ = null;
@@ -89,6 +93,20 @@ export class NativeLayerStub extends TestBrowserProxy {
 
     /** @private {string} license The PPD license of a destination. */
     this.eulaUrl_ = '';
+
+    /**
+     * @private {!Map<string, !Object>}
+     * A map from printerId to PrinterStatus. Defining the value parameter as
+     * Object instead of PrinterStatus because the PrinterStatus type is CrOS
+     * specific, and this class is used by tests on all platforms.
+     */
+    this.printerStatusMap_ = new Map();
+
+    /** @private {?PromiseResolver} */
+    this.multiplePrinterStatusRequestsPromise_ = null;
+
+    /** @private {number} */
+    this.multiplePrinterStatusRequestsCount_ = 0;
   }
 
   /** @param {number} pageCount The number of pages in the document. */
@@ -104,7 +122,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @override */
   getInitialSettings() {
     this.methodCalled('getInitialSettings');
-    return Promise.resolve(this.initialSettings_);
+    return Promise.resolve(assert(this.initialSettings_));
   }
 
   /** @override */
@@ -158,12 +176,6 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /** @override */
-  getPrivetPrinters() {
-    this.methodCalled('getPrivetPrinters');
-    return Promise.resolve(true);
-  }
-
-  /** @override */
   getPrinterCapabilities(printerId, type) {
     this.methodCalled(
         'getPrinterCapabilities',
@@ -175,11 +187,9 @@ export class NativeLayerStub extends TestBrowserProxy {
         this.multipleCapabilitiesPromise_ = null;
       }
     }
-    if (printerId === Destination.GooglePromotedId.SAVE_AS_PDF) {
-      return Promise.resolve({
-        deviceName: 'Save as PDF',
-        capabilities: getPdfPrinter(),
-      });
+    if (printerId === Destination.GooglePromotedId.SAVE_AS_PDF ||
+        printerId === Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS) {
+      return Promise.resolve(getPdfPrinter());
     }
     if (type !== PrinterType.LOCAL_PRINTER) {
       return Promise.reject();
@@ -208,8 +218,8 @@ export class NativeLayerStub extends TestBrowserProxy {
   setupPrinter(printerId) {
     this.methodCalled('setupPrinter', printerId);
     return this.shouldRejectPrinterSetup_ ?
-        Promise.reject(this.setupPrinterResponse_) :
-        Promise.resolve(this.setupPrinterResponse_);
+        Promise.reject(assert(this.setupPrinterResponse_)) :
+        Promise.resolve(assert(this.setupPrinterResponse_));
   }
 
   /** @override */
@@ -223,9 +233,6 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /** @override */
-  recordAction() {}
-
-  /** @override */
   recordInHistogram() {}
 
   /** @override */
@@ -234,10 +241,10 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /** @override */
-  signIn(addAccount) {
-    this.methodCalled('signIn', addAccount);
+  signIn() {
+    this.methodCalled('signIn');
     const accounts = this.accounts_ || ['foo@chromium.org'];
-    if (!this.accounts_ && addAccount) {
+    if (!this.accounts_) {
       accounts.push('bar@chromium.org');
     }
     if (accounts.length > 0) {
@@ -245,13 +252,17 @@ export class NativeLayerStub extends TestBrowserProxy {
     }
   }
 
-  /**
-   * @param {!Array<string>} accounts The accounts to send when signIn is
-   * called.
-   */
-  setSignIn(accounts) {
-    this.accounts_ = accounts;
-  }
+  /** @override */
+  getAccessToken() {}
+
+  /** @override */
+  grantExtensionPrinterAccess() {}
+
+  /** @override */
+  cancelPendingPrintRequest() {}
+
+  /** @override */
+  managePrinters() {}
 
   /**
    * @param {!NativeInitialSettings} settings The settings
@@ -267,6 +278,14 @@ export class NativeLayerStub extends TestBrowserProxy {
    */
   setLocalDestinations(localDestinations) {
     this.localDestinationInfos_ = localDestinations;
+    this.localDestinationCapabilities_ = new Map();
+    this.localDestinationInfos_.forEach(info => {
+      this.setLocalDestinationCapabilities({
+        printer: info,
+        capabilities:
+            getCddTemplate(info.deviceName, info.printerName).capabilities,
+      });
+    });
   }
 
   /**
@@ -281,7 +300,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   /**
    * @param {!CapabilitiesResponse} response The
    *     response to send for the destination whose ID is in the response.
-   * @param {?boolean} opt_reject Whether to reject the callback for this
+   * @param {boolean=} opt_reject Whether to reject the callback for this
    *     destination. Defaults to false (will resolve callback) if not
    *     provided.
    */
@@ -292,9 +311,9 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /**
-   * @param {!PrinterSetupResponse} The response to send when
+   * @param {!PrinterSetupResponse} response The response to send when
    *     |setupPrinter| is called.
-   * @param {?boolean} opt_reject Whether printSetup requests should be
+   * @param {boolean=} opt_reject Whether printSetup requests should be
    *     rejected. Defaults to false (will resolve callback) if not provided.
    */
   setSetupPrinterResponse(response, opt_reject) {
@@ -303,7 +322,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   }
 
   /**
-   * @param {string} bad_id The printer ID that should cause an
+   * @param {string} id The printer ID that should cause an
    *     SETTINGS_INVALID error in response to a preview request. Models a
    *     bad printer driver.
    */
@@ -331,4 +350,45 @@ export class NativeLayerStub extends TestBrowserProxy {
   setEulaUrl(eulaUrl) {
     this.eulaUrl_ = eulaUrl;
   }
+
+  /**
+   * Sends a request to the printer with id |printerId| for its current status.
+   * @param {string} printerId
+   * @return {!Promise} Promise that resolves returns a printer status.
+   * @override
+   */
+  requestPrinterStatusUpdate(printerId) {
+    this.methodCalled('requestPrinterStatusUpdate');
+    if (this.multiplePrinterStatusRequestsPromise_) {
+      this.multiplePrinterStatusRequestsCount_--;
+      if (this.multiplePrinterStatusRequestsCount_ === 0) {
+        this.multiplePrinterStatusRequestsPromise_.resolve();
+        this.multiplePrinterStatusRequestsPromise_ = null;
+      }
+    }
+
+    return Promise.resolve(this.printerStatusMap_.get(printerId) || {});
+  }
+
+  /**
+   * @param {string} printerId
+   * @param {!Object} printerStatus
+   */
+  addPrinterStatusToMap(printerId, printerStatus) {
+    this.printerStatusMap_.set(printerId, printerStatus);
+  }
+
+  /**
+   * @param {number} count The number of printer status requests to wait for.
+   * @return {!Promise} Promise that resolves after |count| requests.
+   */
+  waitForMultiplePrinterStatusRequests(count) {
+    assert(this.multiplePrinterStatusRequestsPromise_ === null);
+    this.multiplePrinterStatusRequestsCount_ = count;
+    this.multiplePrinterStatusRequestsPromise_ = new PromiseResolver();
+    return this.multiplePrinterStatusRequestsPromise_.promise;
+  }
+
+  /** @override */
+  recordPrinterStatusHistogram(statusReason, didUserAttemptPrint) {}
 }

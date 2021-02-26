@@ -5,8 +5,7 @@
 #ifndef BASE_SEQUENCE_CHECKER_H_
 #define BASE_SEQUENCE_CHECKER_H_
 
-#include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/sequence_checker_impl.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -77,13 +76,9 @@
       scoped_validate_sequence_checker_)(name, ##__VA_ARGS__)
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
-#if __OBJC__ && defined(OS_IOS) && !HAS_FEATURE(objc_cxx_static_assert)
-// TODO(thakis): Remove this branch once Xcode's clang has clang r356148.
-#define SEQUENCE_CHECKER(name)
-#else
+// A no-op expansion that can be followed by a semicolon at class level.
 #define SEQUENCE_CHECKER(name) static_assert(true, "")
-#endif
-#define DCHECK_CALLED_ON_VALID_SEQUENCE(name, ...) EAT_STREAM_PARAMETERS
+#define DCHECK_CALLED_ON_VALID_SEQUENCE(name, ...) EAT_CHECK_STREAM_PARAMS()
 #define DETACH_FROM_SEQUENCE(name)
 #endif  // DCHECK_IS_ON()
 
@@ -104,12 +99,11 @@ class LOCKABLE SequenceCheckerDoNothing {
   SequenceCheckerDoNothing(SequenceCheckerDoNothing&& other) = default;
   SequenceCheckerDoNothing& operator=(SequenceCheckerDoNothing&& other) =
       default;
+  SequenceCheckerDoNothing(const SequenceCheckerDoNothing&) = delete;
+  SequenceCheckerDoNothing& operator=(const SequenceCheckerDoNothing&) = delete;
 
   bool CalledOnValidSequence() const WARN_UNUSED_RESULT { return true; }
   void DetachFromSequence() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SequenceCheckerDoNothing);
 };
 
 #if DCHECK_IS_ON()

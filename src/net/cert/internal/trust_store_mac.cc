@@ -127,11 +127,8 @@ TrustStatus IsTrustDictionaryTrustedForPolicy(
     }
 
     // kSecPolicyOid is guaranteed to be present in the policy dictionary.
-    //
-    // TODO(mattm): remove the CFCastStrict below once Chromium builds against
-    // the 10.11 SDK.
     CFStringRef policy_oid = base::mac::GetValueFromDictionary<CFStringRef>(
-        policy_dict, base::mac::CFCastStrict<CFStringRef>(kSecPolicyOid));
+        policy_dict, kSecPolicyOid);
 
     if (!CFEqual(policy_oid, target_policy_oid))
       return TrustStatus::UNSPECIFIED;
@@ -358,7 +355,7 @@ class KeychainTrustSettingsChangedNotifier {
   // Must be called on the network notification thread.  |callback| will be run
   // on the network notification thread. The returned Subscription must be
   // destroyed on the network notification thread.
-  static std::unique_ptr<base::CallbackList<void()>::Subscription> AddCallback(
+  static std::unique_ptr<base::RepeatingClosureList::Subscription> AddCallback(
       base::RepeatingClosure callback) {
     DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
     return Get()->callback_list_.Add(std::move(callback));
@@ -392,7 +389,7 @@ class KeychainTrustSettingsChangedNotifier {
     return notifier.get();
   }
 
-  base::CallbackList<void()> callback_list_;
+  base::RepeatingClosureList callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(KeychainTrustSettingsChangedNotifier);
 };
@@ -430,7 +427,7 @@ class KeychainTrustObserver {
   void Increment() { base::subtle::Barrier_AtomicIncrement(&iteration_, 1); }
 
   // Only accessed on the notification thread.
-  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription_;
+  std::unique_ptr<base::RepeatingClosureList::Subscription> subscription_;
 
   base::subtle::Atomic64 iteration_ = 0;
 
@@ -519,6 +516,12 @@ class TrustStoreMac::TrustCache {
     return TrustStatus::UNSPECIFIED;
   }
 
+  // Initializes the cache, if it isn't already initialized.
+  void InitializeTrustCache() {
+    base::AutoLock lock(cache_lock_);
+    MaybeInitializeCache();
+  }
+
  private:
   // (Re-)Initialize the cache if necessary. Must be called after acquiring
   // |cache_lock_| and before accessing any of the |*_domain_cache_| members.
@@ -553,11 +556,14 @@ class TrustStoreMac::TrustCache {
   DISALLOW_COPY_AND_ASSIGN(TrustCache);
 };
 
-TrustStoreMac::TrustStoreMac(CFTypeRef policy_oid)
-    : trust_cache_(std::make_unique<TrustCache>(
-          base::mac::CFCastStrict<CFStringRef>(policy_oid))) {}
+TrustStoreMac::TrustStoreMac(CFStringRef policy_oid)
+    : trust_cache_(std::make_unique<TrustCache>(policy_oid)) {}
 
 TrustStoreMac::~TrustStoreMac() = default;
+
+void TrustStoreMac::InitializeTrustCache() const {
+  trust_cache_->InitializeTrustCache();
+}
 
 bool TrustStoreMac::IsKnownRoot(const ParsedCertificate* cert) const {
   return trust_cache_->IsKnownRoot(cert);

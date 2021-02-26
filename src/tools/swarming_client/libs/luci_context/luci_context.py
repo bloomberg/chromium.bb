@@ -26,9 +26,9 @@ import six
 
 _LOGGER = logging.getLogger(__name__)
 
-# _ENV_KEY is the environment variable that we look for to find out where the
+# ENV_KEY is the environment variable that we look for to find out where the
 # LUCI context file is.
-_ENV_KEY = 'LUCI_CONTEXT'
+ENV_KEY = 'LUCI_CONTEXT'
 
 # _CUR_CONTEXT contains the cached LUCI Context that is currently available to
 # read. A value of None indicates that the value has not yet been populated.
@@ -41,7 +41,7 @@ _WRITE_LOCK = threading.RLock()
 
 
 @contextlib.contextmanager
-def _tf(data, data_raw=False, workdir=None):
+def _tf(data, data_raw=False, leak=False, workdir=None):
   tf = tempfile.NamedTemporaryFile(
       mode='w', prefix='luci_ctx.', suffix='.json', delete=False, dir=workdir)
   _LOGGER.debug('Writing LUCI_CONTEXT file %r', tf.name)
@@ -54,11 +54,12 @@ def _tf(data, data_raw=False, workdir=None):
     tf.close()  # close it so that winders subprocesses can read it.
     yield tf.name
   finally:
-    try:
-      os.unlink(tf.name)
-    except OSError as ex:
-      _LOGGER.error(
-        'Failed to delete written LUCI_CONTEXT file %r: %s', tf.name, ex)
+    if not leak:
+      try:
+        os.unlink(tf.name)
+      except OSError as ex:
+        _LOGGER.error('Failed to delete written LUCI_CONTEXT file %r: %s',
+                      tf.name, ex)
 
 
 def _to_utf8(obj):
@@ -110,7 +111,7 @@ def _initial_load():
   global _CUR_CONTEXT
   to_assign = {}
 
-  ctx_path = os.environ.get(_ENV_KEY)
+  ctx_path = os.environ.get(ENV_KEY)
   if ctx_path:
     if six.PY2:
       ctx_path = ctx_path.decode(sys.getfilesystemencoding())
@@ -141,15 +142,19 @@ def _read_full():
 
 def _mutate(section_values):
   new_val = read_full()
-  for section, value in section_values.items():
+  changed = False
+  for section, value in six.iteritems(section_values):
     if value is None:
-      new_val.pop(section, None)
+      if new_val.pop(section, None) is not None:
+        changed = True
     elif isinstance(value, dict):
+      if new_val.get(section, None) != value:
+        changed = True
       new_val[section] = value
     else:
       raise ValueError(
         'Bad type for LUCI_CONTEXT[%r]: %s', section, type(value).__name__)
-  return new_val
+  return new_val, changed
 
 
 def read_full():
@@ -190,7 +195,7 @@ def read(section_key):
 
 
 @contextlib.contextmanager
-def write(_tmpdir=None, **section_values):
+def write(_leak=False, _tmpdir=None, **section_values):
   """Write is a contextmanager which will write all of the provided section
   details to a new context, copying over the values from any unmentioned
   sections. The new context file will be set in os.environ. When the
@@ -207,6 +212,8 @@ def write(_tmpdir=None, **section_values):
   done, this function raises an exception.
 
   Args:
+    _leak (bool) - If true, the new LUCI_CONTEXT file won't be deleted after
+      contextmanager exits.
     _tmpdir (str) - an optional directory to use for the newly written
       LUCI_CONTEXT file.
     section_values (str -> value) - A mapping of section_key to the new value
@@ -215,7 +222,7 @@ def write(_tmpdir=None, **section_values):
 
   Raises:
     MultipleLUCIContextException if called from multiple threads
-    simulataneously.
+    simultaneously.
 
   Example:
     Given a LUCI_CONTEXT of:
@@ -231,51 +238,54 @@ def write(_tmpdir=None, **section_values):
     with write(swarming=None): ...    # deletes 'swarming'
     with write(something={...}): ...  # sets 'something' section to {...}
   """
-  # If there are no edits, just pass-through
-  if not section_values:
+  new_val, changed = _mutate(section_values)
+  # If new context remain unchanged, just pass-through
+  if not changed:
     yield
     return
-
-  new_val = _mutate(section_values)
 
   global _CUR_CONTEXT
   got_lock = _WRITE_LOCK.acquire(blocking=False)
   if not got_lock:
     raise MultipleLUCIContextException()
   try:
-    with _tf(new_val, workdir=_tmpdir) as name:
+    with _tf(new_val, leak=_leak, workdir=_tmpdir) as name:
       try:
         old_value = _CUR_CONTEXT
-        old_envvar = os.environ.get(_ENV_KEY, None)
+        old_envvar = os.environ.get(ENV_KEY, None)
         if six.PY2:
-          os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
+          os.environ[ENV_KEY] = name.encode(sys.getfilesystemencoding())
         else:
-          os.environ[_ENV_KEY] = name
+          os.environ[ENV_KEY] = name
         _CUR_CONTEXT = new_val
         yield
       finally:
         _CUR_CONTEXT = old_value
         if old_envvar is None:
-          del os.environ[_ENV_KEY]
+          del os.environ[ENV_KEY]
         else:
-          os.environ[_ENV_KEY] = old_envvar
+          os.environ[ENV_KEY] = old_envvar
   finally:
     _WRITE_LOCK.release()
 
 
 @contextlib.contextmanager
-def stage(_tmpdir=None, **section_values):
+def stage(_leak=False, _tmpdir=None, **section_values):
   """Prepares and writes new LUCI_CONTEXT file, but doesn't replace the env var.
 
   This is useful when launching new process asynchronously in new LUCI_CONTEXT
   environment. In this case, modifying the environment of the current process
   (like 'write' does) may be harmful.
 
-  Calls the body with a path to the new LUCI_CONTEXT file or None if
-  'section_values' is empty (meaning, no changes have been made).
+  Calls the body with a path to the new LUCI_CONTEXT file or None if no changes
+  have been made (either 'section_values' is empty or has the exact same values
+  as the current context) and the existing path should be reused (can be
+  accessed via `os.environ[luci_context.ENV_KEY]`).
   """
-  if not section_values:
+  new_val, changed = _mutate(section_values)
+  if not changed and ENV_KEY in os.environ:
     yield None
     return
-  with _tf(_mutate(section_values), workdir=_tmpdir) as name:
+
+  with _tf(new_val, leak=_leak, workdir=_tmpdir) as name:
     yield name

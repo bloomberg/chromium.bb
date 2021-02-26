@@ -14,8 +14,12 @@
 #include "base/scoped_clear_last_error.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -29,6 +33,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/udp_client_socket.h"
 #include "net/socket/udp_server_socket.h"
+#include "net/socket/udp_socket_global_limits.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -151,9 +156,11 @@ class UDPSocketTest : public PlatformTest, public WithTaskEnvironment {
 
 const int UDPSocketTest::kMaxRead;
 
-void ReadCompleteCallback(int* result_out, base::Closure callback, int result) {
+void ReadCompleteCallback(int* result_out,
+                          base::OnceClosure callback,
+                          int result) {
   *result_out = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
@@ -309,12 +316,11 @@ TEST_F(UDPSocketTest, PartialRecv) {
   EXPECT_EQ(second_packet, received);
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 // - MacOS: requires root permissions on OSX 10.7+.
 // - Android: devices attached to testbots don't have default network, so
 // broadcasting to 255.255.255.255 returns error -109 (Address not reachable).
 // crbug.com/139144.
-// - Fuchsia: TODO(crbug.com/959314): broadcast support is not implemented yet.
 #define MAYBE_LocalBroadcast DISABLED_LocalBroadcast
 #else
 #define MAYBE_LocalBroadcast LocalBroadcast
@@ -571,7 +577,7 @@ TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
     EXPECT_THAT(rv, IsOk());
 
     rv = client.SetDoNotFragment();
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#if defined(OS_APPLE) || defined(OS_FUCHSIA)
     // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
     EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
 #else
@@ -593,7 +599,7 @@ TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
     EXPECT_THAT(rv, IsOk());
 
     rv = server.SetDoNotFragment();
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#if defined(OS_APPLE) || defined(OS_FUCHSIA)
     // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
     EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
 #else
@@ -628,6 +634,8 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
 
   IPAddress group_ip;
   EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
+// TODO(https://github.com/google/gvisor/issues/3839): don't guard on
+// OS_FUCHSIA.
 #if defined(OS_WIN) || defined(OS_FUCHSIA)
   IPEndPoint bind_address(IPAddress::AllZeros(group_ip.size()), 0 /* port */);
 #else
@@ -659,6 +667,8 @@ TEST_F(UDPSocketTest, MAYBE_SharedMulticastAddress) {
 
   IPAddress group_ip;
   ASSERT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
+// TODO(https://github.com/google/gvisor/issues/3839): don't guard on
+// OS_FUCHSIA.
 #if defined(OS_WIN) || defined(OS_FUCHSIA)
   IPEndPoint receive_address(IPAddress::AllZeros(group_ip.size()),
                              0 /* port */);
@@ -1368,5 +1378,141 @@ TEST_F(UDPSocketTest, Tag) {
   EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
 }
 #endif
+
+// Scoped helper to override the process-wide UDP socket limit.
+class OverrideUDPSocketLimit {
+ public:
+  explicit OverrideUDPSocketLimit(int new_limit) {
+    base::FieldTrialParams params;
+    params[features::kLimitOpenUDPSocketsMax.name] =
+        base::NumberToString(new_limit);
+
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kLimitOpenUDPSockets, params);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that UDPClientSocket respects the global UDP socket limits.
+TEST_F(UDPSocketTest, LimitClientSocket) {
+  // Reduce the global UDP limit to 2.
+  OverrideUDPSocketLimit set_limit(2);
+
+  ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+  auto socket1 = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
+                                                   nullptr, NetLogSource());
+  auto socket2 = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
+                                                   nullptr, NetLogSource());
+
+  // Simply constructing a UDPClientSocket does not increase the limit (no
+  // Connect() or Bind() has been called yet).
+  ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+  // The specific value of this address doesn't really matter, and no server
+  // needs to be running here. The test only needs to call Connect() and won't
+  // send any datagrams.
+  IPEndPoint server_address(IPAddress::IPv4Localhost(), 8080);
+
+  // Successful Connect() on socket1 increases socket count.
+  EXPECT_THAT(socket1->Connect(server_address), IsOk());
+  EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+
+  // Successful Connect() on socket2 increases socket count.
+  EXPECT_THAT(socket2->Connect(server_address), IsOk());
+  EXPECT_EQ(2, GetGlobalUDPSocketCountForTesting());
+
+  // Attempting a third Connect() should fail with ERR_INSUFFICIENT_RESOURCES,
+  // as the limit is currently 2.
+  auto socket3 = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
+                                                   nullptr, NetLogSource());
+  EXPECT_THAT(socket3->Connect(server_address),
+              IsError(ERR_INSUFFICIENT_RESOURCES));
+  EXPECT_EQ(2, GetGlobalUDPSocketCountForTesting());
+
+  // Check that explicitly closing socket2 free up a count.
+  socket2->Close();
+  EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+
+  // Since the socket was already closed, deleting it will not affect the count.
+  socket2.reset();
+  EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+
+  // Now that the count is below limit, try to connect socket3 again. This time
+  // it will work.
+  EXPECT_THAT(socket3->Connect(server_address), IsOk());
+  EXPECT_EQ(2, GetGlobalUDPSocketCountForTesting());
+
+  // Verify that closing the two remaining sockets brings the open count back to
+  // 0.
+  socket1.reset();
+  EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+  socket3.reset();
+  EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
+}
+
+// Tests that UDPSocketClient updates the global counter
+// correctly when Connect() fails.
+TEST_F(UDPSocketTest, LimitConnectFail) {
+  ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+  {
+    // Simply allocating a UDPSocket does not increase count.
+    UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
+    EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+    // Calling Open() allocates the socket and increases the global counter.
+    EXPECT_THAT(socket.Open(ADDRESS_FAMILY_IPV4), IsOk());
+    EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+
+    // Connect to an IPv6 address should fail since the socket was created for
+    // IPv4.
+    EXPECT_THAT(socket.Connect(net::IPEndPoint(IPAddress::IPv6Localhost(), 53)),
+                Not(IsOk()));
+
+    // That Connect() failed doesn't change the global counter.
+    EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+  }
+
+  // Finally, destroying UDPSocket decrements the global counter.
+  EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
+}
+
+// Tests allocating UDPClientSockets and Connect()ing them in parallel.
+//
+// This is primarily intended for coverage under TSAN, to check for races
+// enforcing the global socket counter.
+TEST_F(UDPSocketTest, LimitConnectMultithreaded) {
+  ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+  // Start up some threads.
+  std::vector<std::unique_ptr<base::Thread>> threads;
+  for (size_t i = 0; i < 5; ++i) {
+    threads.push_back(std::make_unique<base::Thread>("Worker thread"));
+    ASSERT_TRUE(threads.back()->Start());
+  }
+
+  // Post tasks to each of the threads.
+  for (const auto& thread : threads) {
+    thread->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce([] {
+          // The specific value of this address doesn't really matter, and no
+          // server needs to be running here. The test only needs to call
+          // Connect() and won't send any datagrams.
+          IPEndPoint server_address(IPAddress::IPv4Localhost(), 8080);
+
+          UDPClientSocket socket(DatagramSocket::DEFAULT_BIND, nullptr,
+                                 NetLogSource());
+          EXPECT_THAT(socket.Connect(server_address), IsOk());
+        }));
+  }
+
+  // Complete all the tasks.
+  threads.clear();
+
+  EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
+}
 
 }  // namespace net

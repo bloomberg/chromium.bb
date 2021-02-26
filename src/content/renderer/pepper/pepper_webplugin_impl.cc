@@ -17,7 +17,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/v8object_var.h"
 #include "content/renderer/render_frame_impl.h"
@@ -40,7 +39,6 @@
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
-#include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -58,6 +56,13 @@ using blink::WebVector;
 
 namespace content {
 
+blink::WebTextInputType ConvertTextInputType(ui::TextInputType type) {
+  // Check the type is in the range representable by ui::TextInputType.
+  DCHECK_LE(type, static_cast<int>(ui::TEXT_INPUT_TYPE_MAX))
+      << "blink::WebTextInputType and ui::TextInputType not synchronized";
+  return static_cast<blink::WebTextInputType>(type);
+}
+
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
   RenderFrameImpl* render_frame;
@@ -66,14 +71,11 @@ struct PepperWebPluginImpl::InitData {
   GURL url;
 };
 
-PepperWebPluginImpl::PepperWebPluginImpl(
-    PluginModule* plugin_module,
-    const WebPluginParams& params,
-    RenderFrameImpl* render_frame,
-    std::unique_ptr<PluginInstanceThrottlerImpl> throttler)
+PepperWebPluginImpl::PepperWebPluginImpl(PluginModule* plugin_module,
+                                         const WebPluginParams& params,
+                                         RenderFrameImpl* render_frame)
     : init_data_(new InitData()),
       full_frame_(params.load_manually),
-      throttler_(std::move(throttler)),
       instance_object_(PP_MakeUndefined()),
       container_(nullptr) {
   DCHECK(plugin_module);
@@ -90,9 +92,6 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       base::debug::AllocateCrashKeyString("subresource_url",
                                           base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(subresource_url, init_data_->url.spec());
-
-  if (throttler_)
-    throttler_->SetWebPlugin(this);
 }
 
 PepperWebPluginImpl::~PepperWebPluginImpl() {}
@@ -114,7 +113,7 @@ bool PepperWebPluginImpl::Initialize(WebPluginContainer* container) {
     return false;
 
   if (!instance_->Initialize(init_data_->arg_names, init_data_->arg_values,
-                             full_frame_, std::move(throttler_))) {
+                             full_frame_)) {
     // If |container_| is nullptr, this object has already been synchronously
     // destroy()-ed during |instance_|'s Initialize call. In that case, we early
     // exit. We neither create a replacement plugin nor destroy() ourselves.
@@ -200,7 +199,7 @@ bool PepperWebPluginImpl::SupportsKeyboardFocus() const {
 void PepperWebPluginImpl::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
-  if (instance_ && !instance_->FlashIsFullscreenOrPending())
+  if (instance_)
     instance_->Paint(canvas, plugin_rect_, rect);
 }
 
@@ -210,7 +209,7 @@ void PepperWebPluginImpl::UpdateGeometry(
     const WebRect& unobscured_rect,
     bool is_visible) {
   plugin_rect_ = window_rect;
-  if (instance_ && !instance_->FlashIsFullscreenOrPending())
+  if (instance_)
     instance_->ViewChanged(plugin_rect_, clip_rect, unobscured_rect);
 }
 
@@ -254,7 +253,7 @@ blink::WebInputEventResult PepperWebPluginImpl::HandleInputEvent(
     ui::Cursor* cursor) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
-  if (!instance_ || instance_->FlashIsFullscreenOrPending())
+  if (!instance_)
     return blink::WebInputEventResult::kNotHandled;
   return instance_->HandleCoalescedInputEvent(coalesced_event, cursor)
              ? blink::WebInputEventResult::kHandledApplication
@@ -490,6 +489,67 @@ void PepperWebPluginImpl::RotateView(RotationType type) {
 
 bool PepperWebPluginImpl::IsPlaceholder() {
   return false;
+}
+
+void PepperWebPluginImpl::DidLoseMouseLock() {
+  if (instance_)
+    instance_->OnMouseLockLost();
+}
+
+void PepperWebPluginImpl::DidReceiveMouseLockResult(bool success) {
+  if (instance_)
+    instance_->OnLockMouseACK(success);
+}
+
+bool PepperWebPluginImpl::CanComposeInline() {
+  if (!instance_)
+    return false;
+  return instance_->IsPluginAcceptingCompositionEvents();
+}
+
+void PepperWebPluginImpl::ImeCommitTextForPlugin(
+    const blink::WebString& text,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
+    const gfx::Range& replacement_range,
+    int relative_cursor_pos) {
+  if (!instance_)
+    return;
+  instance_->OnImeCommitText(text.Utf16(), replacement_range,
+                             relative_cursor_pos);
+}
+
+void PepperWebPluginImpl::ImeSetCompositionForPlugin(
+    const blink::WebString& text,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
+    const gfx::Range& replacement_range,
+    int selection_start,
+    int selection_end) {
+  if (!instance_)
+    return;
+  instance_->OnImeSetComposition(text.Utf16(), ime_text_spans, selection_start,
+                                 selection_end);
+}
+
+void PepperWebPluginImpl::ImeFinishComposingTextForPlugin(bool keep_selection) {
+  if (!instance_)
+    return;
+  instance_->OnImeFinishComposingText(keep_selection);
+}
+
+bool PepperWebPluginImpl::ShouldDispatchImeEventsToPlugin() {
+  return true;
+}
+
+blink::WebTextInputType PepperWebPluginImpl::GetPluginTextInputType() {
+  if (!instance_)
+    return blink::WebTextInputType::kWebTextInputTypeNone;
+  return ConvertTextInputType(instance_->text_input_type());
+}
+
+gfx::Rect PepperWebPluginImpl::GetPluginCaretBounds() {
+  if (!instance_)
+    return gfx::Rect();
+  return instance_->GetCaretBounds();
 }
 
 }  // namespace content

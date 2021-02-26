@@ -10,7 +10,6 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"
@@ -26,7 +25,7 @@
 
 namespace {
 
-const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
+const char kTestServerRoot[] = "fuchsia/engine/test/data";
 
 }  // namespace
 
@@ -38,14 +37,14 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    // Add an argument to WebEngine instance to distinguish it from other
+    // Add a switch to the WebEngine instance to distinguish it from other
     // instances that may be started by other tests.
-    std::string test_arg =
+    std::string test_switch =
         std::string("--test-name=") +
         testing::UnitTest::GetInstance()->current_test_info()->name();
 
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitch(test_arg);
+    command_line.AppendSwitch(test_switch);
 
     web_context_provider_ = cr_fuchsia::ConnectContextProvider(
         web_engine_controller_.NewRequest(), command_line);
@@ -61,12 +60,11 @@ class WebEngineDebugIntegrationTest : public testing::Test {
     directory_loop.Run();
 
     // Enumerate all entries in /hub/c/context_provider.cmx to find WebEngine
-    // instance with |test_arg|.
+    // instance with |test_switch|.
     base::FileEnumerator file_enum(
         base::FilePath("/hub/c/context_provider.cmx"), false,
         base::FileEnumerator::DIRECTORIES);
-    base::FilePath web_engine_path = file_enum.Next();
-    ASSERT_FALSE(web_engine_path.empty());
+    base::FilePath web_engine_path;
 
     for (auto dir = file_enum.Next(); !dir.empty(); dir = file_enum.Next()) {
       std::string args;
@@ -76,8 +74,8 @@ class WebEngineDebugIntegrationTest : public testing::Test {
         continue;
       }
 
-      if (args.find(test_arg) != std::string::npos) {
-        // There should only one instance of WebEngine with |test_arg|.
+      if (args.find(test_switch) != std::string::npos) {
+        // There should only one instance of WebEngine with |test_switch|.
         EXPECT_TRUE(web_engine_path.empty());
 
         web_engine_path = dir;
@@ -86,11 +84,11 @@ class WebEngineDebugIntegrationTest : public testing::Test {
       }
     }
 
-    // Check that we've found the WebEngine instance with |test_arg|.
+    // Check that we've found the WebEngine instance with |test_switch|.
     ASSERT_FALSE(web_engine_path.empty());
 
     debug_dir_ = std::make_unique<sys::ServiceDirectory>(
-        base::fuchsia::OpenDirectory(web_engine_path.Append("out/debug")));
+        base::OpenDirectoryHandle(web_engine_path.Append("out/debug")));
     debug_dir_->Connect(debug_.NewRequest());
 
     // Attach the DevToolsListener. EnableDevTools has an acknowledgement
@@ -128,8 +126,8 @@ struct TestContextAndFrame {
                                UserModeDebugging user_mode_debugging,
                                std::string url) {
     // Create a Context, a Frame and navigate it to |url|.
-    auto directory = base::fuchsia::OpenDirectory(
-        base::FilePath(base::fuchsia::kServiceDirectoryPath));
+    auto directory =
+        base::OpenDirectoryHandle(base::FilePath(base::kServiceDirectoryPath));
     if (!directory.is_valid())
       return;
 

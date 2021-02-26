@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_TEST_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_CORE_TEST_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/single_thread_task_runner.h"
@@ -14,7 +15,6 @@
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -23,19 +23,20 @@ namespace payments {
 
 class TestPaymentRequestDelegate : public PaymentRequestDelegate {
  public:
-  explicit TestPaymentRequestDelegate(
+  TestPaymentRequestDelegate(
+      std::unique_ptr<base::SingleThreadTaskExecutor> task_executor,
       autofill::PersonalDataManager* personal_data_manager);
   ~TestPaymentRequestDelegate() override;
 
   // PaymentRequestDelegate
-  void ShowDialog(PaymentRequest* request) override {}
+  void ShowDialog(base::WeakPtr<PaymentRequest> request) override {}
   void RetryDialog() override {}
   void CloseDialog() override {}
   void ShowErrorMessage() override {}
   void ShowProcessingSpinner() override {}
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
-  bool IsIncognito() const override;
+  bool IsOffTheRecord() const override;
   const GURL& GetLastCommittedURL() const override;
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,
@@ -53,7 +54,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   void CompleteFullCardRequest();
 
  private:
-  base::SingleThreadTaskExecutor main_task_executor_;
+  std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;

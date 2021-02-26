@@ -23,11 +23,13 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
  public:
   NGFlexLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
-
  private:
+  scoped_refptr<const NGLayoutResult> RelayoutIgnoringChildScrollbarChanges();
+  scoped_refptr<const NGLayoutResult> LayoutInternal();
+
   bool DoesItemCrossSizeComputeToAuto(const NGBlockNode& child) const;
   bool IsItemFlexBasisDefinite(const NGBlockNode& child) const;
   bool IsItemMainSizeDefinite(const NGBlockNode& child) const;
@@ -51,6 +53,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;
 
+  LayoutUnit CalculateFixedCrossSize(const MinMaxSizes& cross_axis_min_max,
+                                     const NGBoxStrut& margins) const;
+
   NGConstraintSpace BuildSpaceForFlexBasis(const NGBlockNode& flex_item) const;
   NGConstraintSpace BuildSpaceForIntrinsicBlockSize(
       const NGBlockNode& flex_item,
@@ -58,7 +63,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       const MinMaxSizes& cross_axis) const;
   void ConstructAndAppendFlexItems();
   void ApplyStretchAlignmentToChild(FlexItem& flex_item);
-  void GiveLinesAndItemsFinalPositionAndSize();
+  bool GiveLinesAndItemsFinalPositionAndSize();
   void LayoutColumnReverse(LayoutUnit main_axis_content_size);
 
   // This is same method as FlexItem but we need that logic before FlexItem is
@@ -68,6 +73,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   void HandleOutOfFlowPositioned(NGBlockNode child);
 
+  void AdjustButtonBaseline(LayoutUnit final_content_cross_size);
+
   // Propagates the baseline from the given flex-item if needed.
   void PropagateBaselineFromChild(
       const FlexItem&,
@@ -75,13 +82,11 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       LayoutUnit block_offset,
       base::Optional<LayoutUnit>* fallback_baseline);
 
-  const NGBoxStrut border_padding_;
-  const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;
   const bool is_horizontal_flow_;
   const bool is_cross_size_definite_;
+  bool ignore_child_scrollbar_changes_ = false;
   LogicalSize border_box_size_;
-  LogicalSize content_box_size_;
   LogicalSize child_percentage_size_;
   base::Optional<FlexLayoutAlgorithm> algorithm_;
 };

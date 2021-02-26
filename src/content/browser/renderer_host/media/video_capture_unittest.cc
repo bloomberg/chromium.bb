@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +34,6 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
@@ -57,7 +57,8 @@ void VideoInputDevicesEnumerated(base::OnceClosure quit_closure,
                                  const url::Origin& security_origin,
                                  blink::WebMediaDeviceInfoArray* out,
                                  const MediaDeviceEnumeration& enumeration) {
-  for (const auto& info : enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
+  for (const auto& info : enumeration[static_cast<size_t>(
+           blink::mojom::MediaDeviceType::MEDIA_VIDEO_INPUT)]) {
     std::string device_id = MediaStreamManager::GetHMACForMediaDeviceID(
         salt, security_origin, info.device_id);
     out->push_back(
@@ -144,7 +145,8 @@ class VideoCaptureTest : public testing::Test,
     {
       base::RunLoop run_loop;
       MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-      devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+      devices_to_enumerate[static_cast<size_t>(
+          blink::mojom::MediaDeviceType::MEDIA_VIDEO_INPUT)] = true;
       MediaDeviceSaltAndOrigin salt_and_origin =
           GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id);
       media_stream_manager_->media_devices_manager()->EnumerateDevices(
@@ -303,7 +305,7 @@ class VideoCaptureTest : public testing::Test,
   }
 
   // |media_stream_manager_| needs to outlive |task_environment_| because it is
-  // a MessageLoopCurrent::DestructionObserver.
+  // a CurrentThread::DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   const content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<media::AudioManager> audio_manager_;

@@ -43,7 +43,6 @@ class SourceBuffer;
 class SourceBufferList final : public EventTargetWithInlineData,
                                public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
  public:
   SourceBufferList(ExecutionContext*, EventQueue*);
@@ -73,7 +72,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
     return ExecutionContextClient::GetExecutionContext();
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void ScheduleEvent(const AtomicString&);

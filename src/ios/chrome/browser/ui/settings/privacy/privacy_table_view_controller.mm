@@ -6,6 +6,8 @@
 
 #include "base/check.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
@@ -41,17 +43,16 @@ NSString* const kPrivacyTableViewId = @"kPrivacyTableViewId";
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierWebServices = kSectionIdentifierEnumZero,
-  SectionIndentifierCookies,
-  SectionIdentifierClearBrowsingData,
+  SectionIdentifierPrivacyContent = kSectionIdentifierEnumZero,
+  SectionIdentifierWebServices,
+
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
-  ItemTypeCookies,
-  ItemTypeClearBrowsingDataClear,
+  ItemTypeClearBrowsingDataClear = kItemTypeEnumZero,
   // Footer to suggest the user to open Sync and Google services settings.
-  ItemTypeClearBrowsingDataFooter,
+  ItemTypePrivacyFooter,
+  ItemTypeOtherDevicesHandoff,
 };
 
 // Only used in this class to openn the Sync and Google services settings.
@@ -127,25 +128,19 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [super loadModel];
 
   TableViewModel* model = self.tableViewModel;
-
-  // Web Services Section
+  [model addSectionWithIdentifier:SectionIdentifierPrivacyContent];
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
+
+  // Clear Browsing item.
+  [model addItem:[self clearBrowsingDetailItem]
+      toSectionWithIdentifier:SectionIdentifierPrivacyContent];
+
+  [model setFooter:[self showPrivacyFooterItem]
+      forSectionWithIdentifier:SectionIdentifierPrivacyContent];
+
+  // Web Services item.
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
-
-  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
-    // Cookies Section
-    [model addSectionWithIdentifier:SectionIndentifierCookies];
-    [model addItem:[self cookiesItem]
-        toSectionWithIdentifier:SectionIndentifierCookies];
-  }
-
-  // Clear Browsing Section
-  [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  [model addItem:[self clearBrowsingDetailItem]
-      toSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  [model setFooter:[self showClearBrowsingDataFooterItem]
-      forSectionWithIdentifier:SectionIdentifierClearBrowsingData];
 }
 
 #pragma mark - Model Objects
@@ -166,23 +161,15 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 // Creates TableViewHeaderFooterItem instance to show a link to open the Sync
 // and Google services settings.
-- (TableViewHeaderFooterItem*)showClearBrowsingDataFooterItem {
-  TableViewLinkHeaderFooterItem* showClearBrowsingDataFooterItem =
+- (TableViewHeaderFooterItem*)showPrivacyFooterItem {
+  TableViewLinkHeaderFooterItem* showPrivacyFooterItem =
       [[TableViewLinkHeaderFooterItem alloc]
-          initWithType:ItemTypeClearBrowsingDataFooter];
-  showClearBrowsingDataFooterItem.text =
+          initWithType:ItemTypePrivacyFooter];
+  showPrivacyFooterItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER);
-  showClearBrowsingDataFooterItem.linkURL = GURL(kGoogleServicesSettingsURL);
+  showPrivacyFooterItem.linkURL = GURL(kGoogleServicesSettingsURL);
 
-  return showClearBrowsingDataFooterItem;
-}
-
-// Returns TableViewHeaderFooterItem instance to open Cookies screen.
-- (TableViewItem*)cookiesItem {
-  return [self detailItemWithType:ItemTypeCookies
-                          titleId:IDS_IOS_OPTIONS_PRIVACY_COOKIES
-                       detailText:nil
-          accessibilityIdentifier:kSettingsCookiesCellId];
+  return showPrivacyFooterItem;
 }
 
 - (TableViewItem*)clearBrowsingDetailItem {
@@ -206,6 +193,16 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   detailItem.accessibilityIdentifier = accessibilityIdentifier;
 
   return detailItem;
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePrivacySettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePrivacySettingsBack"));
 }
 
 #pragma mark - UITableViewDelegate
@@ -232,9 +229,6 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
       break;
     case ItemTypeClearBrowsingDataClear:
       [self.handler showClearBrowsingData];
-      break;
-    case ItemTypeCookies:
-      [self.handler showCookies];
       break;
     default:
       break;

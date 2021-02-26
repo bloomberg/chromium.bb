@@ -105,11 +105,11 @@
     label =
         await remoteCall.waitForElement(appId, [tooltipQueryVisible, '#label']);
     chrome.test.assertEq(
-        'Files in this folder are read only.' +
-            ' Some activities are not supported.',
+        'The contents of this folder are read-only.' +
+        ' Some activities are not supported.',
         label.text);
-    chrome.test.assertEq('card-tooltip', tooltip.attributes.class);
-    chrome.test.assertEq('card-label', label.attributes.class);
+    chrome.test.assertEq('card-tooltip', tooltip.attributes['class']);
+    chrome.test.assertEq('card-label', label.attributes['class']);
 
     // Send a mouseout event.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -130,8 +130,8 @@
     chrome.test.assertEq('Search', label.text);
 
     // Tooltip class should be cleared as ordinary tooltip shown.
-    chrome.test.assertEq('', label.attributes.class);
-    chrome.test.assertEq('', tooltip.attributes.class);
+    chrome.test.assertEq('', label.attributes['class']);
+    chrome.test.assertEq('', tooltip.attributes['class']);
   };
 
   /**

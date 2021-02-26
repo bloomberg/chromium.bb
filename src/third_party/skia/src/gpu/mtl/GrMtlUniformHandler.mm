@@ -6,7 +6,6 @@
 */
 
 #include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTexturePriv.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/gpu/mtl/GrMtlUniformHandler.h"
 
@@ -87,6 +86,7 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
         case kTexture2DRectSampler_GrSLType:
         case kSampler_GrSLType:
         case kTexture2D_GrSLType:
+        case kInput_GrSLType:
             break;
     }
     SK_ABORT("Unexpected type");
@@ -169,6 +169,7 @@ static inline uint32_t grsltype_to_mtl_size(GrSLType type) {
         case kTexture2DRectSampler_GrSLType:
         case kSampler_GrSLType:
         case kTexture2D_GrSLType:
+        case kInput_GrSLType:
             break;
     }
     SK_ABORT("Unexpected type");
@@ -216,12 +217,11 @@ GrGLSLUniformHandler::UniformHandle GrMtlUniformHandler::internalAddUniformArray
     // the names will mismatch.  I think the correct solution is to have all GPs which need the
     // uniform view matrix, they should upload the view matrix in their setData along with regular
     // uniforms.
-    SkString resolvedName;
     char prefix = 'u';
     if ('u' == name[0] || !strncmp(name, GR_NO_MANGLE_PREFIX, strlen(GR_NO_MANGLE_PREFIX))) {
         prefix = '\0';
     }
-    fProgramBuilder->nameVariable(&resolvedName, prefix, name, mangleName);
+    SkString resolvedName = fProgramBuilder->nameVariable(prefix, name, mangleName);
 
     uint32_t offset = get_ubo_aligned_offset(&fCurrentUBOOffset, &fCurrentUBOMaxAlignment,
                                              type, arrayCount);
@@ -252,9 +252,9 @@ GrGLSLUniformHandler::SamplerHandle GrMtlUniformHandler::addSampler(
     int binding = fSamplers.count();
 
     SkASSERT(name && strlen(name));
-    SkString mangleName;
-    char prefix = 'u';
-    fProgramBuilder->nameVariable(&mangleName, prefix, name, true);
+
+    constexpr char prefix = 'u';
+    SkString mangleName = fProgramBuilder->nameVariable(prefix, name, /*mangle=*/true);
 
     GrTextureType type = backendFormat.textureType();
 
@@ -271,7 +271,6 @@ GrGLSLUniformHandler::SamplerHandle GrMtlUniformHandler::addSampler(
         0
     });
 
-    SkASSERT(caps->textureSwizzleAppliedInShader());
     fSamplerSwizzles.push_back(swizzle);
     SkASSERT(fSamplerSwizzles.count() == fSamplers.count());
     return GrGLSLUniformHandler::SamplerHandle(fSamplers.count() - 1);

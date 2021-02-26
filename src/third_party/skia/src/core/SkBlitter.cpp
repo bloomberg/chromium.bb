@@ -270,7 +270,7 @@ void SkBlitter::blitMask(const SkMask& mask, const SkIRect& clip) {
     }
 }
 
-/////////////////////// these guys are not virtual, just a helpers
+/////////////////////// these are not virtual, just helpers
 
 void SkBlitter::blitMaskRegion(const SkMask& mask, const SkRegion& clip) {
     if (clip.quickReject(mask.fBounds)) {
@@ -655,10 +655,7 @@ bool SkBlitter::UseRasterPipelineBlitter(const SkPixmap& device, const SkPaint& 
 
     // The legacy blitters cannot handle any of these complex features (anymore).
     if (device.alphaType() == kUnpremul_SkAlphaType        ||
-        matrix.hasPerspective()                            ||
-        paint.getColorFilter()                             ||
         paint.getBlendMode() > SkBlendMode::kLastCoeffMode ||
-        paint.getFilterQuality() == kHigh_SkFilterQuality  ||
         (mf && mf->getFormat() == SkMask::k3D_Format)) {
         return true;
     }
@@ -739,19 +736,31 @@ SkBlitter* SkBlitter::Choose(const SkPixmap& device,
         paint.writable()->setDither(false);
     }
 
-    SkMatrix ctm = matrixProvider.localToDevice();
     if (gUseSkVMBlitter) {
-        if (auto blitter = SkCreateSkVMBlitter(device, *paint, ctm, alloc, clipShader)) {
+        if (auto blitter = SkCreateSkVMBlitter(device, *paint, matrixProvider,
+                                               alloc, clipShader)) {
             return blitter;
         }
     }
 
+    // Same basic idea used a few times: try SkRP, then try SkVM, then give up with a null-blitter.
+    // (Setting gUseSkVMBlitter is the only way we prefer SkVM over SkRP at the moment.)
+    auto create_SkRP_or_SkVMBlitter = [&]() -> SkBlitter* {
+        if (auto blitter = SkCreateRasterPipelineBlitter(device, *paint, matrixProvider,
+                                                         alloc, clipShader)) {
+            return blitter;
+        }
+        if (auto blitter = SkCreateSkVMBlitter(device, *paint, matrixProvider,
+                                               alloc, clipShader)) {
+            return blitter;
+        }
+        return alloc->make<SkNullBlitter>();
+    };
+
+    SkMatrix ctm = matrixProvider.localToDevice();
     // We'll end here for many interesting cases: color spaces, color filters, most color types.
     if (UseRasterPipelineBlitter(device, *paint, ctm) || clipShader) {
-        auto blitter =
-                SkCreateRasterPipelineBlitter(device, *paint, matrixProvider, alloc, clipShader);
-        SkASSERT(blitter);
-        return blitter;
+        return create_SkRP_or_SkVMBlitter();
     }
 
     // Everything but legacy kN32_SkColorType and kRGB_565_SkColorType should already be handled.
@@ -768,12 +777,9 @@ SkBlitter* SkBlitter::Choose(const SkPixmap& device,
                 {*paint, ctm, nullptr, device.colorType(), device.colorSpace()},
                 alloc);
 
-        // Creating the context isn't always possible... we'll just fall back to raster pipeline.
+        // Creating the context isn't always possible... try fallbacks before giving up.
         if (!shaderContext) {
-            auto blitter = SkCreateRasterPipelineBlitter(device, *paint, matrixProvider, alloc,
-                                                         clipShader);
-            SkASSERT(blitter);
-            return blitter;
+            return create_SkRP_or_SkVMBlitter();
         }
     }
 
@@ -793,8 +799,7 @@ SkBlitter* SkBlitter::Choose(const SkPixmap& device,
             if (shaderContext && SkRGB565_Shader_Blitter::Supports(device, *paint)) {
                 return alloc->make<SkRGB565_Shader_Blitter>(device, *paint, shaderContext);
             } else {
-                return SkCreateRasterPipelineBlitter(device, *paint, matrixProvider, alloc,
-                                                     clipShader);
+                return create_SkRP_or_SkVMBlitter();
             }
 
         default:
@@ -854,10 +859,8 @@ void SkRectClipCheckBlitter::blitAntiRect(int x, int y, int width, int height,
                                      SkAlpha leftAlpha, SkAlpha rightAlpha) {
     bool skipLeft = !leftAlpha;
     bool skipRight = !rightAlpha;
-#ifdef SK_DEBUG
     SkIRect r = SkIRect::MakeXYWH(x + skipLeft, y, width + 2 - skipRight - skipLeft, height);
     SkASSERT(r.isEmpty() || fClipRect.contains(r));
-#endif
     fBlitter->blitAntiRect(x, y, width, height, leftAlpha, rightAlpha);
 }
 

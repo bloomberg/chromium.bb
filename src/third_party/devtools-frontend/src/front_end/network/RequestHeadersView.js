@@ -29,10 +29,10 @@
  */
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
+import * as ClientVariations from '../client_variations/client_variations.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
-import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -42,7 +42,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
    */
   constructor(request) {
     super();
-    this.registerRequiredCSS('network/requestHeadersView.css');
+    this.registerRequiredCSS('network/requestHeadersView.css', {enableLegacyPatching: true});
     this.element.classList.add('request-headers-view');
 
     this._request = request;
@@ -59,9 +59,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
     this._highlightedElement = null;
 
     const root = new UI.TreeOutline.TreeOutlineInShadow();
-    root.registerRequiredCSS('object_ui/objectValue.css');
-    root.registerRequiredCSS('object_ui/objectPropertiesSection.css');
-    root.registerRequiredCSS('network/requestHeadersTree.css');
+    root.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    root.registerRequiredCSS('object_ui/objectPropertiesSection.css', {enableLegacyPatching: true});
+    root.registerRequiredCSS('network/requestHeadersTree.css', {enableLegacyPatching: true});
     root.element.classList.add('request-headers-tree');
     root.makeDense();
     this.element.appendChild(root.element);
@@ -119,12 +119,30 @@ export class RequestHeadersView extends UI.Widget.VBox {
   }
 
   /**
+   * @param {!UI.TreeOutline.TreeElement} treeElement
+   * @param {string} value
+   */
+  _addEntryContextMenuHandler(treeElement, value) {
+    treeElement.listItemElement.addEventListener('contextmenu', event => {
+      event.consume(true);
+      const contextMenu = new UI.ContextMenu.ContextMenu(event);
+      const decodedValue = decodeURIComponent(value);
+      const copyDecodedValueHandler = () => {
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(decodedValue);
+      };
+      contextMenu.clipboardSection().appendItem(ls`Copy value`, copyDecodedValueHandler);
+      contextMenu.show();
+    });
+  }
+
+  /**
    * @param {string} name
    * @param {string} value
    * @return {!DocumentFragment}
    */
   _formatHeader(name, value) {
-    const fragment = createDocumentFragment();
+    const fragment = document.createDocumentFragment();
     fragment.createChild('div', 'header-name').textContent = name + ': ';
     fragment.createChild('span', 'header-separator');
     fragment.createChild('div', 'header-value source-code').textContent = value;
@@ -133,11 +151,11 @@ export class RequestHeadersView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!{name:string,value:(string|undefined),headerNotSet:(boolean|undefined),headerValueIncorrect:(boolean|undefined),details:(!{explanation:string,examples:!Array<!{codeSnippet:string,comment:(string|undefined)}>}|undefined)}} header
+   * @param {!BlockedReasonDetailDescriptor} header
    * @return {!DocumentFragment}
    */
   _formatHeaderObject(header) {
-    const fragment = createDocumentFragment();
+    const fragment = document.createDocumentFragment();
     if (header.headerNotSet) {
       fragment.createChild('div', 'header-badge header-badge-text').textContent = 'not-set';
     }
@@ -146,9 +164,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
     fragment.createChild('span', 'header-separator');
     if (header.value) {
       if (header.headerValueIncorrect) {
-        fragment.createChild('div', 'header-value source-code header-warning').textContent = header.value;
+        fragment.createChild('div', 'header-value source-code header-warning').textContent = header.value.toString();
       } else {
-        fragment.createChild('div', 'header-value source-code').textContent = header.value;
+        fragment.createChild('div', 'header-value source-code').textContent = header.value.toString();
       }
     }
     if (header.details) {
@@ -164,8 +182,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         }
       }
 
-      if (Root.Runtime.experiments.isEnabled('issuesPane') &&
-          BrowserSDK.RelatedIssue.hasIssueOfCategory(
+      if (BrowserSDK.RelatedIssue.hasIssueOfCategory(
               this._request, SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy)) {
         const link = document.createElement('div');
         link.classList.add('devtools-link');
@@ -181,7 +198,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         callToActionBody.appendChild(link);
       } else if (header.details.link) {
         const link = UI.XLink.XLink.create(header.details.link.url, ls`Learn more`, 'link');
-        link.prepend(UI.Icon.Icon.create('largeicon-link', 'link-icon'));
+        link.prepend(UI.Icon.Icon.create('largeicon-link'));
         callToActionBody.appendChild(link);
       }
     }
@@ -317,14 +334,15 @@ export class RequestHeadersView extends UI.Widget.VBox {
 
     paramsTreeElement.listItemElement.removeChildren();
     paramsTreeElement.listItemElement.createChild('div', 'selection fill');
-    paramsTreeElement.listItemElement.createTextChild(title);
+    UI.UIUtils.createTextChild(paramsTreeElement.listItemElement, title);
 
     const headerCount = document.createElement('span');
     headerCount.classList.add('header-count');
-    headerCount.textContent = Common.UIString.UIString('\xA0(%d)', params.length);
+    const numberOfParams = params ? params.length : 0;
+    headerCount.textContent = Common.UIString.UIString('\xA0(%d)', numberOfParams);
     paramsTreeElement.listItemElement.appendChild(headerCount);
 
-    const shouldViewSource = paramsTreeElement[_viewSourceSymbol];
+    const shouldViewSource = viewSourceForItems.has(paramsTreeElement);
     if (shouldViewSource) {
       this._appendParamsSource(title, params, sourceText, paramsTreeElement);
     } else {
@@ -350,23 +368,22 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const viewParsed = function(event) {
       listItemElement.removeEventListener('contextmenu', viewParsedContextMenu);
 
-      paramsTreeElement[_viewSourceSymbol] = false;
+      viewSourceForItems.delete(paramsTreeElement);
       this._refreshParams(title, params, sourceText, paramsTreeElement);
       event.consume();
     };
 
     /**
      * @param {!Event} event
-     * @this {RequestHeadersView}
      */
-    const viewParsedContextMenu = function(event) {
+    const viewParsedContextMenu = event => {
       if (!paramsTreeElement.expanded) {
         return;
       }
       const contextMenu = new UI.ContextMenu.ContextMenu(event);
       contextMenu.newSection().appendItem(ls`View parsed`, viewParsed.bind(this, event));
       contextMenu.show();
-    }.bind(this);
+    };
 
     const viewParsedButton = this._createViewSourceToggle(/* viewSource */ true, viewParsed.bind(this));
     listItemElement.appendChild(viewParsedButton);
@@ -381,11 +398,11 @@ export class RequestHeadersView extends UI.Widget.VBox {
    * @param {!UI.TreeOutline.TreeElement} paramsTreeElement
    */
   _appendParamsParsed(title, params, sourceText, paramsTreeElement) {
-    for (let i = 0; i < params.length; ++i) {
-      const paramNameValue = createDocumentFragment();
-      if (params[i].name !== '') {
-        const name = this._formatParameter(params[i].name + ': ', 'header-name', this._decodeRequestParameters);
-        const value = this._formatParameter(params[i].value, 'header-value source-code', this._decodeRequestParameters);
+    for (const param of params || []) {
+      const paramNameValue = document.createDocumentFragment();
+      if (param.name !== '') {
+        const name = this._formatParameter(param.name + ': ', 'header-name', this._decodeRequestParameters);
+        const value = this._formatParameter(param.value, 'header-value source-code', this._decodeRequestParameters);
         paramNameValue.appendChild(name);
         paramNameValue.createChild('span', 'header-separator');
         paramNameValue.appendChild(value);
@@ -395,6 +412,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
       }
 
       const paramTreeElement = new UI.TreeOutline.TreeElement(paramNameValue);
+      this._addEntryContextMenuHandler(paramTreeElement, param.value);
       paramsTreeElement.appendChild(paramTreeElement);
     }
 
@@ -407,7 +425,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const viewSource = function(event) {
       listItemElement.removeEventListener('contextmenu', viewSourceContextMenu);
 
-      paramsTreeElement[_viewSourceSymbol] = true;
+      viewSourceForItems.add(paramsTreeElement);
       this._refreshParams(title, params, sourceText, paramsTreeElement);
       event.consume();
     };
@@ -423,9 +441,8 @@ export class RequestHeadersView extends UI.Widget.VBox {
 
     /**
      * @param {!Event} event
-     * @this {RequestHeadersView}
      */
-    const viewSourceContextMenu = function(event) {
+    const viewSourceContextMenu = event => {
       if (!paramsTreeElement.expanded) {
         return;
       }
@@ -435,7 +452,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
       const viewURLEncodedText = this._decodeRequestParameters ? ls`View URL encoded` : ls`View decoded`;
       section.appendItem(viewURLEncodedText, toggleURLDecoding.bind(this, event));
       contextMenu.show();
-    }.bind(this);
+    };
 
     const viewSourceButton = this._createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));
     listItemElement.appendChild(viewSourceButton);
@@ -459,10 +476,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const rootListItemElement = rootListItem.listItemElement;
     rootListItemElement.removeChildren();
     rootListItemElement.createChild('div', 'selection fill');
-    rootListItemElement.createTextChild(this._requestPayloadCategory.title);
+    UI.UIUtils.createTextChild(rootListItemElement, this._requestPayloadCategory.title.toString());
 
-    const shouldViewSource = rootListItem[_viewSourceSymbol];
-    if (shouldViewSource) {
+    if (viewSourceForItems.has(rootListItem)) {
       this._appendJSONPayloadSource(rootListItem, parsedObject, sourceText);
     } else {
       this._appendJSONPayloadParsed(rootListItem, parsedObject, sourceText);
@@ -484,7 +500,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
      */
     const viewParsed = function(event) {
       rootListItemElement.removeEventListener('contextmenu', viewParsedContextMenu);
-      rootListItem[_viewSourceSymbol] = false;
+      viewSourceForItems.delete(rootListItem);
       this._refreshRequestJSONPayload(parsedObject, sourceText);
       event.consume();
     };
@@ -494,16 +510,15 @@ export class RequestHeadersView extends UI.Widget.VBox {
 
     /**
      * @param {!Event} event
-     * @this {RequestHeadersView}
      */
-    const viewParsedContextMenu = function(event) {
+    const viewParsedContextMenu = event => {
       if (!rootListItem.expanded) {
         return;
       }
       const contextMenu = new UI.ContextMenu.ContextMenu(event);
       contextMenu.newSection().appendItem(ls`View parsed`, viewParsed.bind(this, event));
       contextMenu.show();
-    }.bind(this);
+    };
 
     rootListItemElement.addEventListener('contextmenu', viewParsedContextMenu);
   }
@@ -517,8 +532,12 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const object =
         /** @type {!SDK.RemoteObject.LocalJSONObject} */ (SDK.RemoteObject.RemoteObject.fromLocalObject(parsedObject));
     const section = new ObjectUI.ObjectPropertiesSection.RootElement(object);
-    section.title = object.description;
+    section.title = /** @type {string} */ (object.description);
     section.expand();
+    // `editable` is not a valid property for `ObjectUI.ObjectPropertiesSection.RootElement`. Only for
+    // `ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection`. We do not know if this assignment is
+    // safe to delete.
+    // @ts-ignore
     section.editable = false;
     rootListItem.childrenListElement.classList.add('source-code', 'object-properties-section');
 
@@ -532,23 +551,22 @@ export class RequestHeadersView extends UI.Widget.VBox {
     const viewSource = function(event) {
       rootListItemElement.removeEventListener('contextmenu', viewSourceContextMenu);
 
-      rootListItem[_viewSourceSymbol] = true;
+      viewSourceForItems.add(rootListItem);
       this._refreshRequestJSONPayload(parsedObject, sourceText);
       event.consume();
     };
 
     /**
      * @param {!Event} event
-     * @this {RequestHeadersView}
      */
-    const viewSourceContextMenu = function(event) {
+    const viewSourceContextMenu = event => {
       if (!rootListItem.expanded) {
         return;
       }
       const contextMenu = new UI.ContextMenu.ContextMenu(event);
       contextMenu.newSection().appendItem(ls`View source`, viewSource.bind(this, event));
       contextMenu.show();
-    }.bind(this);
+    };
 
     const viewSourceButton = this._createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));
     rootListItemElement.appendChild(viewSourceButton);
@@ -558,7 +576,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
 
   /**
    * @param {boolean} viewSource
-   * @param {function(!Event)} handler
+   * @param {function(!Event):void} handler
    * @return {!Element}
    */
   _createViewSourceToggle(viewSource, handler) {
@@ -613,7 +631,8 @@ export class RequestHeadersView extends UI.Widget.VBox {
     } else {
       const headersWithIssues = [];
       if (this._request.wasBlocked()) {
-        const headerWithIssues = BlockedReasonDetails.get(this._request.blockedReason());
+        const headerWithIssues =
+            BlockedReasonDetails.get(/** @type {!Protocol.Network.BlockedReason} */ (this._request.blockedReason()));
         if (headerWithIssues) {
           headersWithIssues.push(headerWithIssues);
         }
@@ -659,12 +678,13 @@ export class RequestHeadersView extends UI.Widget.VBox {
     statusCodeElement.hidden = !this._request.statusCode;
 
     if (this._request.statusCode) {
-      const statusCodeFragment = createDocumentFragment();
+      const statusCodeFragment = document.createDocumentFragment();
       statusCodeFragment.createChild('div', 'header-name').textContent = ls`Status Code` +
           ': ';
       statusCodeFragment.createChild('span', 'header-separator');
 
-      const statusCodeImage = statusCodeFragment.createChild('span', 'resource-status-image', 'dt-icon-label');
+      const statusCodeImage = /** @type {!UI.UIUtils.DevToolsIconLabel} */ (
+          statusCodeFragment.createChild('span', 'resource-status-image', 'dt-icon-label'));
       statusCodeImage.title = this._request.statusCode + ' ' + this._request.statusText;
 
       if (this._request.statusCode < 300 || this._request.statusCode === 304) {
@@ -683,11 +703,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
         statusText += ' ' + ls`(from memory cache)`;
         statusTextElement.classList.add('status-from-cache');
       } else if (this._request.fetchedViaServiceWorker) {
-        statusText += ' ' + ls`(from ServiceWorker)`;
+        statusText += ' ' + ls`(from service worker)`;
         statusTextElement.classList.add('status-from-cache');
-      } else if (
-          this._request.redirectSource() && this._request.redirectSource().signedExchangeInfo() &&
-          !this._request.redirectSource().signedExchangeInfo().errors) {
+      } else if (this._request.redirectSourceSignedExchangeInfoHasNoErrors()) {
         statusText += ' ' + ls`(from signed-exchange)`;
         statusTextElement.classList.add('status-from-cache');
       } else if (this._request.fromPrefetchCache()) {
@@ -711,7 +729,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
   _refreshHeadersTitle(title, headersTreeElement, headersLength) {
     headersTreeElement.listItemElement.removeChildren();
     headersTreeElement.listItemElement.createChild('div', 'selection fill');
-    headersTreeElement.listItemElement.createTextChild(title);
+    UI.UIUtils.createTextChild(headersTreeElement.listItemElement, title);
 
     const headerCount = Common.UIString.UIString('\xA0(%d)', headersLength);
     headersTreeElement.listItemElement.createChild('span', 'header-count').textContent = headerCount;
@@ -736,13 +754,14 @@ export class RequestHeadersView extends UI.Widget.VBox {
       if (this._request.cachedInMemory() || this._request.cached()) {
         cautionText = ls`Provisional headers are shown. Disable cache to see full headers.`;
         cautionTitle = ls
-        `Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn't store the original request headers. Disable cache to see full request headers.`;
+        `Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn’t store the original request headers. Disable cache to see full request headers.`;
       } else {
         cautionText = ls`Provisional headers are shown`;
       }
-      const cautionElement = createElement('div');
+      const cautionElement = document.createElement('div');
       cautionElement.title = cautionTitle;
-      cautionElement.createChild('span', '', 'dt-icon-label').type = 'smallicon-warning';
+      /** @type {!UI.UIUtils.DevToolsIconLabel} */ (cautionElement.createChild('span', '', 'dt-icon-label')).type =
+          'smallicon-warning';
       cautionElement.createChild('div', 'caution').textContent = cautionText;
       const cautionTreeElement = new UI.TreeOutline.TreeElement(cautionElement);
       headersTreeElement.appendChild(cautionTreeElement);
@@ -757,12 +776,15 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
 
     headersTreeElement.hidden = !length && !provisionalHeaders;
-    for (let i = 0; i < length; ++i) {
-      const headerTreeElement = new UI.TreeOutline.TreeElement(this._formatHeaderObject(headers[i]));
-      headerTreeElement[_headerNameSymbol] = headers[i].name;
+    for (const header of headers) {
+      const headerTreeElement = new UI.TreeOutline.TreeElement(
+          this._formatHeaderObject(/** @type {!BlockedReasonDetailDescriptor} */ (/** @type {*} */ (header))));
+      headerNames.set(headerTreeElement, header.name);
 
-      if (headers[i].name.toLowerCase() === 'set-cookie') {
-        const matchingBlockedReasons = blockedCookieLineToReasons.get(headers[i].value);
+      const headerId = header.name.toLowerCase();
+
+      if (headerId === 'set-cookie') {
+        const matchingBlockedReasons = blockedCookieLineToReasons.get(header.value);
         if (matchingBlockedReasons) {
           const icon = UI.Icon.Icon.create('smallicon-warning', '');
           headerTreeElement.listItemElement.appendChild(icon);
@@ -778,7 +800,22 @@ export class RequestHeadersView extends UI.Widget.VBox {
         }
       }
 
+      this._addEntryContextMenuHandler(headerTreeElement, header.value);
       headersTreeElement.appendChild(headerTreeElement);
+
+      if (headerId === 'x-client-data') {
+        const data = ClientVariations.parseClientVariations(header.value);
+        const output = ClientVariations.formatClientVariations(
+            data, ls`Active client experiment variation IDs.`,
+            ls`Active client experiment variation IDs that trigger server-side behavior.`);
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('x-client-data-details');
+        UI.UIUtils.createTextChild(wrapper, ls`Decoded:`);
+        const div = wrapper.createChild('div');
+        div.classList.add('source-code');
+        div.textContent = output;
+        headerTreeElement.listItemElement.appendChild(wrapper);
+      }
     }
   }
 
@@ -864,8 +901,11 @@ export class RequestHeadersView extends UI.Widget.VBox {
    */
   _revealAndHighlight(category, name) {
     this._clearHighlight();
+    if (!category) {
+      return;
+    }
     for (const element of category.children()) {
-      if (element[_headerNameSymbol] !== name) {
+      if (headerNames.get(element) !== name) {
         continue;
       }
       this._highlightedElement = element;
@@ -890,8 +930,11 @@ export class RequestHeadersView extends UI.Widget.VBox {
   }
 }
 
-export const _headerNameSymbol = Symbol('HeaderName');
-export const _viewSourceSymbol = Symbol('ViewSource');
+/** @type {!WeakSet<(!Category|!UI.TreeOutline.TreeElement)>} */
+const viewSourceForItems = new WeakSet();
+
+/** @type {!WeakMap<!UI.TreeOutline.TreeElement, string>} */
+const headerNames = new WeakMap();
 
 /**
  * @unrestricted
@@ -936,25 +979,43 @@ export class Category extends UI.TreeOutline.TreeElement {
   }
 }
 
+/**
+ * @typedef {{
+ *   name: string,
+ *   value: ?Object,
+ *   headerValueIncorrect: ?boolean,
+ *   details: !{
+ *     explanation: string,
+ *     examples: !Array<!{codeSnippet: string, comment:(string|undefined)}>,
+ *     link: ?{url:string},
+ *   },
+ *   headerNotSet: ?boolean,
+ * }}
+ */
+let BlockedReasonDetailDescriptor;  // eslint-disable-line no-unused-vars
 
+/** @type {!Map<!Protocol.Network.BlockedReason, !BlockedReasonDetailDescriptor>} */
 const BlockedReasonDetails = new Map([
   [
     Protocol.Network.BlockedReason.CoepFrameResourceNeedsCoepHeader, {
       name: 'cross-origin-embedder-policy',
       value: null,
+      headerValueIncorrect: null,
       details: {
           explanation:
               ls
           `To embed this frame in your document, the response needs to enable the cross-origin embedder policy by specifying the following response header:`,
-          examples: [{codeSnippet:'Cross-Origin-Embedder-Policy: require-corp'}],
+          examples: [{codeSnippet:'Cross-Origin-Embedder-Policy: require-corp', comment: undefined}],
           link: {url: 'https://web.dev/coop-coep/'}
-      }
+      },
+      headerNotSet: null,
     }
   ],
   [
     Protocol.Network.BlockedReason.CorpNotSameOriginAfterDefaultedToSameOriginByCoep, {
       name: 'cross-origin-resource-policy',
       value: null,
+      headerValueIncorrect: null,
       details: {
         explanation:
             ls
@@ -963,8 +1024,9 @@ const BlockedReasonDetails = new Map([
           {codeSnippet:'Cross-Origin-Resource-Policy: same-site', comment: ls`Choose this option if the resource and the document are served from the same site.` },
           {codeSnippet:'Cross-Origin-Resource-Policy: cross-origin', comment: ls`Only choose this option if an arbitrary website including this resource does not impose a security risk.` },
         ],
-        link: {url: 'https://web.dev/coop-coep/'}
-      }
+        link: {url: 'https://web.dev/coop-coep/'},
+      },
+      headerNotSet: null,
     }
   ],
   [
@@ -978,7 +1040,8 @@ const BlockedReasonDetails = new Map([
         `This document was blocked from loading in an iframe with a sandbox attribute because this document specified a cross-origin opener policy.`,
         examples: [],
         link: {url: 'https://web.dev/coop-coep/'}
-      }
+      },
+      headerNotSet: null,
     }
   ],
   [
@@ -992,8 +1055,10 @@ const BlockedReasonDetails = new Map([
             `To use this resource from a different site, the server may relax the cross-origin resource policy response header:`,
         examples: [
           {codeSnippet:'Cross-Origin-Resource-Policy: cross-origin', comment: ls`Only choose this option if an arbitrary website including this resource does not impose a security risk.` },
-        ]
-      }
+        ],
+        link: null,
+      },
+      headerNotSet: null,
     }
   ],
   [
@@ -1008,8 +1073,10 @@ const BlockedReasonDetails = new Map([
             examples: [
               {codeSnippet:'Cross-Origin-Resource-Policy: same-site', comment: ls`Choose this option if the resource and the document are served from the same site.` },
               {codeSnippet:'Cross-Origin-Resource-Policy: cross-origin', comment: ls`Only choose this option if an arbitrary website including this resource does not impose a security risk.` },
-            ]
-      }
+            ],
+        link: null,
+      },
+      headerNotSet: null,
     }
   ],
 ]);

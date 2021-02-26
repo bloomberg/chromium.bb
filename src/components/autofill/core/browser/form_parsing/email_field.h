@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
+#include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
 
 namespace autofill {
 
@@ -18,6 +19,7 @@ class LogManager;
 class EmailField : public FormField {
  public:
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
+                                          const std::string& page_language,
                                           LogManager* log_manager);
   explicit EmailField(const AutofillField* field);
 

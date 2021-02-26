@@ -8,8 +8,8 @@ import unittest
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.w3c.common import (read_credentials, is_testharness_baseline,
-                                is_basename_skipped, is_file_exportable,
-                                CHROMIUM_WPT_DIR)
+                                is_disallowed_ini, is_basename_skipped,
+                                is_file_exportable, CHROMIUM_WPT_DIR)
 
 
 class CommonTest(unittest.TestCase):
@@ -88,10 +88,17 @@ class CommonTest(unittest.TestCase):
 
     def test_is_basename_skipped(self):
         self.assertTrue(is_basename_skipped('MANIFEST.json'))
+        self.assertTrue(is_basename_skipped('DIR_METADATA'))
         self.assertTrue(is_basename_skipped('OWNERS'))
         self.assertTrue(is_basename_skipped('reftest.list'))
         self.assertTrue(is_basename_skipped('.gitignore'))
         self.assertFalse(is_basename_skipped('something.json'))
+
+    def test_is_disallowed_ini(self):
+        self.assertFalse(is_disallowed_ini('tox.ini'))
+        self.assertFalse(is_disallowed_ini("wptrunner.default.ini"))
+        self.assertTrue(is_disallowed_ini('test.html.ini'))
+        self.assertTrue(is_disallowed_ini('__dir__.ini'))
 
     def test_is_basename_skipped_asserts_basename(self):
         with self.assertRaises(AssertionError):
@@ -106,6 +113,18 @@ class CommonTest(unittest.TestCase):
         self.assertFalse(
             is_file_exportable(CHROMIUM_WPT_DIR + 'MANIFEST.json'))
         self.assertFalse(is_file_exportable(CHROMIUM_WPT_DIR + 'dom/OWNERS'))
+        self.assertFalse(
+            is_file_exportable(CHROMIUM_WPT_DIR + 'dom/DIR_METADATA'))
+        self.assertTrue(
+            is_file_exportable(CHROMIUM_WPT_DIR +
+                               'tools/wptrunner/wptrunner.default.ini'))
+        self.assertFalse(
+            is_file_exportable(
+                CHROMIUM_WPT_DIR +
+                'infrastructure/metadata/infrastructure/expected-fail/timeout.html.ini'
+            ))
+        self.assertFalse(
+            is_file_exportable(CHROMIUM_WPT_DIR + 'dom/historical.html.ini'))
 
     def test_is_file_exportable_asserts_path(self):
         # Rejects basenames.

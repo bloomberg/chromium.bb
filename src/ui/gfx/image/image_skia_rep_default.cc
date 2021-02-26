@@ -9,6 +9,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/color_palette.h"
 
@@ -32,6 +33,10 @@ ImageSkiaRep::ImageSkiaRep(const SkBitmap& src, float scale)
       pixel_size_(gfx::Size(src.width(), src.height())),
       bitmap_(src),
       scale_(scale) {
+  // If the bitmap has been initialized then it must be in N32 format.
+  if (!(bitmap_.isNull() && bitmap_.colorType() == kUnknown_SkColorType &&
+        bitmap_.alphaType() == kUnknown_SkAlphaType))
+    CHECK_EQ(bitmap_.colorType(), kN32_SkColorType);
   bitmap_.setImmutable();
   paint_image_ = cc::PaintImage::CreateFromBitmap(src);
 }
@@ -98,7 +103,7 @@ const SkBitmap& ImageSkiaRep::GetBitmap() const {
     // as it forces a rasterization on the UI thread.
     bitmap_.allocN32Pixels(pixel_width(), pixel_height());
     bitmap_.eraseColor(SK_ColorTRANSPARENT);
-    SkCanvas canvas(bitmap_);
+    SkCanvas canvas(bitmap_, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
     paint_record_->Playback(&canvas);
     bitmap_.setImmutable();
   }

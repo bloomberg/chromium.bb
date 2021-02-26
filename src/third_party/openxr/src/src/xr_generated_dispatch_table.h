@@ -2,9 +2,11 @@
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2019 The Khronos Group Inc.
+// Copyright (c) 2017-2020 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -179,6 +181,18 @@ struct XrGeneratedDispatchTable {
     PFN_xrSetInputDeviceStateFloatEXT SetInputDeviceStateFloatEXT;
     PFN_xrSetInputDeviceStateVector2fEXT SetInputDeviceStateVector2fEXT;
     PFN_xrSetInputDeviceLocationEXT SetInputDeviceLocationEXT;
+
+    // ---- XR_MSFT_spatial_graph_bridge extension commands
+    PFN_xrCreateSpatialGraphNodeSpaceMSFT CreateSpatialGraphNodeSpaceMSFT;
+
+    // ---- XR_EXT_hand_tracking extension commands
+    PFN_xrCreateHandTrackerEXT CreateHandTrackerEXT;
+    PFN_xrDestroyHandTrackerEXT DestroyHandTrackerEXT;
+    PFN_xrLocateHandJointsEXT LocateHandJointsEXT;
+
+    // ---- XR_MSFT_hand_tracking_mesh extension commands
+    PFN_xrCreateHandMeshSpaceMSFT CreateHandMeshSpaceMSFT;
+    PFN_xrUpdateHandMeshMSFT UpdateHandMeshMSFT;
 };
 
 

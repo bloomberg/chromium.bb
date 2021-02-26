@@ -15,8 +15,6 @@
 namespace {
 
 // Error message strings corresponding to the InstallableStatusCode enum.
-static const char kNotInMainFrameMessage[] =
-    "Page is not loaded in the main frame";
 static const char kNotFromSecureOriginMessage[] =
     "Page is not served from a secure origin";
 static const char kNoManifestMessage[] = "Page has no manifest <link> URL";
@@ -59,8 +57,15 @@ static const char kNoUrlForServiceWorker[] =
     "manifest";
 static const char kPreferRelatedApplications[] =
     "Manifest specifies prefer_related_applications: true";
+static const char kPreferRelatedApplicationsSupportedOnlyBetaStable[] =
+    "prefer_related_applications is only supported on Chrome Beta and Stable "
+    "channels on Android.";
+static const char kManifestLocationChanged[] =
+    "Manifest location changed during fetch";
+static const char kManifestDisplayOverrideNotSupportedMessage[] =
+    "Manifest contains 'display_override' field, and the first supported "
+    "display mode must be one of 'standalone', 'fullscreen', or 'minimal-ui'";
 
-static const char kNotInMainFrameId[] = "not-in-main-frame";
 static const char kNotFromSecureOriginId[] = "not-from-secure-origin";
 static const char kNoManifestId[] = "no-manifest";
 static const char kManifestEmptyId[] = "manifest-empty";
@@ -88,6 +93,11 @@ static const char kNotOfflineCapableId[] = "not-offline-capable";
 static const char kNoUrlForServiceWorkerId[] = "no-url-for-service-worker";
 static const char kPreferRelatedApplicationsId[] =
     "prefer-related-applications";
+static const char kPreferRelatedApplicationsSupportedOnlyBetaStableId[] =
+    "prefer-related-applications-only-beta-stable";
+static const char kManifestLocationChangedId[] = "manifest-location-changed";
+static const char kManifestDisplayOverrideNotSupportedId[] =
+    "manifest-display-override-not-supported";
 
 const std::string& GetMessagePrefix() {
   static base::NoDestructor<std::string> message_prefix(
@@ -118,9 +128,6 @@ std::string GetErrorMessage(InstallableStatusCode code) {
     case WAITING_FOR_NATIVE_DATA:
     case SHOWING_APP_INSTALLATION_DIALOG:
     case MAX_ERROR_CODE:
-      break;
-    case NOT_IN_MAIN_FRAME:
-      message = kNotInMainFrameMessage;
       break;
     case NOT_FROM_SECURE_ORIGIN:
       message = kNotFromSecureOriginMessage;
@@ -186,6 +193,15 @@ std::string GetErrorMessage(InstallableStatusCode code) {
     case PREFER_RELATED_APPLICATIONS:
       message = kPreferRelatedApplications;
       break;
+    case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
+      message = kPreferRelatedApplicationsSupportedOnlyBetaStable;
+      break;
+    case MANIFEST_URL_CHANGED:
+      message = kManifestLocationChanged;
+      break;
+    case MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED:
+      message = kManifestDisplayOverrideNotSupportedMessage;
+      break;
   }
 
   return message;
@@ -215,9 +231,6 @@ content::InstallabilityError GetInstallabilityError(
     case WAITING_FOR_NATIVE_DATA:
     case SHOWING_APP_INSTALLATION_DIALOG:
     case MAX_ERROR_CODE:
-      break;
-    case NOT_IN_MAIN_FRAME:
-      error_id = kNotInMainFrameId;
       break;
     case NOT_FROM_SECURE_ORIGIN:
       error_id = kNotFromSecureOriginId;
@@ -284,6 +297,15 @@ content::InstallabilityError GetInstallabilityError(
       break;
     case PREFER_RELATED_APPLICATIONS:
       error_id = kPreferRelatedApplicationsId;
+      break;
+    case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
+      error_id = kPreferRelatedApplicationsSupportedOnlyBetaStableId;
+      break;
+    case MANIFEST_URL_CHANGED:
+      error_id = kManifestLocationChangedId;
+      break;
+    case MANIFEST_DISPLAY_OVERRIDE_NOT_SUPPORTED:
+      error_id = kManifestDisplayOverrideNotSupportedId;
       break;
   }
   error.error_id = error_id;

@@ -31,7 +31,7 @@ namespace blink {
 
 FilterOperations::FilterOperations() = default;
 
-void FilterOperations::Trace(Visitor* visitor) {
+void FilterOperations::Trace(Visitor* visitor) const {
   visitor->Trace(operations_);
 }
 
@@ -89,6 +89,13 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
   return std::any_of(
       operations_.begin(), operations_.end(),
       [](const auto& operation) { return operation->MovesPixels(); });
+}
+
+bool FilterOperations::HasReferenceFilter() const {
+  return std::any_of(
+      operations_.begin(), operations_.end(), [](const auto& operation) {
+        return operation->GetType() == FilterOperation::REFERENCE;
+      });
 }
 
 void FilterOperations::AddClient(SVGResourceClient& client) const {

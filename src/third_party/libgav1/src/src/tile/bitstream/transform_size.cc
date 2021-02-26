@@ -141,7 +141,7 @@ void Tile::ReadVariableTransformTree(const Block& block, int row4x4,
   Stack<TransformTreeNode, 7> stack;
   stack.Push(TransformTreeNode(column4x4, row4x4, tx_size, 0));
 
-  while (!stack.Empty()) {
+  do {
     TransformTreeNode node = stack.Pop();
     const int tx_width4x4 = kTransformWidth4x4[node.tx_size];
     const int tx_height4x4 = kTransformHeight4x4[node.tx_size];
@@ -189,7 +189,7 @@ void Tile::ReadVariableTransformTree(const Block& block, int row4x4,
     }
     block_parameters_holder_.Find(node.y, node.x)->transform_size =
         node.tx_size;
-  }
+  } while (!stack.Empty());
 }
 
 void Tile::DecodeTransformSize(const Block& block) {

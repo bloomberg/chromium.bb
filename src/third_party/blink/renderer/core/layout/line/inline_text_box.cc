@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -51,8 +52,7 @@ struct SameSizeAsInlineTextBox : public InlineBox {
   void* pointers[2];
 };
 
-static_assert(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox),
-              "InlineTextBox should stay small");
+ASSERT_SIZE(InlineTextBox, SameSizeAsInlineTextBox);
 
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* g_text_boxes_with_overflow;
@@ -93,6 +93,14 @@ void InlineTextBox::SetLogicalOverflowRect(const LayoutRect& rect) {
   if (!g_text_boxes_with_overflow)
     g_text_boxes_with_overflow = new InlineTextBoxOverflowMap;
   g_text_boxes_with_overflow->Set(this, rect);
+}
+
+PhysicalRect InlineTextBox::PhysicalOverflowRect() const {
+  LayoutRect overflow_rect = LogicalOverflowRect();
+  if (!IsHorizontal())
+    overflow_rect = overflow_rect.TransposedRect();
+  FlipForWritingMode(overflow_rect);
+  return PhysicalRectToBeNoop(overflow_rect);
 }
 
 void InlineTextBox::Move(const LayoutSize& delta) {
@@ -483,7 +491,7 @@ bool InlineTextBox::GetEmphasisMarkPosition(
 }
 
 void InlineTextBox::Paint(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset,
+                          const PhysicalOffset& paint_offset,
                           LayoutUnit /*lineTop*/,
                           LayoutUnit /*lineBottom*/) const {
   InlineTextBoxPainter(*this).Paint(paint_info, paint_offset);
@@ -500,18 +508,18 @@ void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
   e_pos = std::min(static_cast<int>(status.end) - start_, (int)len_);
 }
 
-void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
-                                        const LayoutPoint& box_origin,
+void InlineTextBox::PaintDocumentMarker(const PaintInfo& paint_info,
+                                        const PhysicalOffset& box_origin,
                                         const DocumentMarker& marker,
                                         const ComputedStyle& style,
                                         const Font& font,
                                         bool grammar) const {
-  InlineTextBoxPainter(*this).PaintDocumentMarker(pt, box_origin, marker, style,
-                                                  font, grammar);
+  InlineTextBoxPainter(*this).PaintDocumentMarker(paint_info, box_origin,
+                                                  marker, style, font, grammar);
 }
 
 void InlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
-                                              const LayoutPoint& box_origin,
+                                              const PhysicalOffset& box_origin,
                                               const TextMarkerBase& marker,
                                               const ComputedStyle& style,
                                               const Font& font) const {
@@ -520,7 +528,7 @@ void InlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
 }
 
 void InlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
-                                              const LayoutPoint& box_origin,
+                                              const PhysicalOffset& box_origin,
                                               const TextMarkerBase& marker,
                                               const ComputedStyle& style,
                                               const Font& font) const {

@@ -14,13 +14,6 @@
 namespace query_tiles {
 namespace test {
 
-// Print data in Tile, also with tree represent by adjacent nodes
-// key-value[parent id: {children id}] pairs.
-std::string DebugString(const Tile* entry);
-
-// Print data in TileGroup.
-std::string DebugString(const TileGroup* group);
-
 // Build and reset the TileGroup for test usage.
 void ResetTestGroup(TileGroup* group);
 
@@ -28,6 +21,9 @@ void ResetTestGroup(TileGroup* group);
 // of tree.
 // Build and reset the Tile for test usage.
 void ResetTestEntry(Tile* entry);
+
+// Return a list of trending tiles for test.
+std::vector<std::unique_ptr<Tile>> GetTestTrendingTileList();
 
 // Returns true if all data in two TileGroups are identical.
 bool AreTileGroupsIdentical(const TileGroup& lhs, const TileGroup& rhs);

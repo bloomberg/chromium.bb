@@ -28,14 +28,14 @@ namespace {
 // Total width of the bubble view.
 constexpr int kBubbleTotalWidthDp = 192;
 
-// Margin around the bubble view.
+// Padding around the bubble view.
 constexpr int kBubblePaddingDp = 16;
 
 // Spacing between the child view inside the bubble view.
 constexpr int kBubbleBetweenChildSpacingDp = 16;
 
 // Border radius of the rounded bubble.
-constexpr int kErrorBubbleBorderRadius = 8;
+constexpr int kBubbleBorderRadius = 8;
 
 // The amount of time for bubble show/hide animation.
 constexpr base::TimeDelta kBubbleAnimationDuration =
@@ -81,7 +81,7 @@ class LoginBubbleHandler : public ui::EventHandler {
     if (login_views_utils::HasFocusInAnyChildView(bubble_))
       return;
 
-    if (!bubble_->IsPersistent())
+    if (!bubble_->is_persistent())
       bubble_->Hide();
   }
 
@@ -105,7 +105,7 @@ class LoginBubbleHandler : public ui::EventHandler {
       return;
     }
 
-    if (!bubble_->IsPersistent())
+    if (!bubble_->is_persistent())
       bubble_->Hide();
   }
 
@@ -137,12 +137,11 @@ void LoginBaseBubbleView::EnsureLayer() {
   // Layer rendering is needed for animation.
   SetPaintToLayer();
   SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent80,
-      AshColorProvider::AshColorMode::kDark);
+      AshColorProvider::BaseLayerType::kTransparent80);
   layer()->SetBackgroundBlur(
       static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
   SetBackground(views::CreateRoundedRectBackground(background_color,
-                                                   kErrorBubbleBorderRadius));
+                                                   kBubbleBorderRadius));
   layer()->SetFillsBoundsOpaquely(false);
 }
 
@@ -158,8 +157,10 @@ void LoginBaseBubbleView::Show() {
   ScheduleAnimation(true /*visible*/);
 
   // Tell ChromeVox to read bubble contents.
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                           true /*send_native_event*/);
+  if (notify_a11y_alert_on_show_) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                             true /*send_native_event*/);
+  }
 }
 
 void LoginBaseBubbleView::Hide() {
@@ -170,21 +171,65 @@ LoginButton* LoginBaseBubbleView::GetBubbleOpener() const {
   return nullptr;
 }
 
-bool LoginBaseBubbleView::IsPersistent() const {
-  return false;
-}
-
-void LoginBaseBubbleView::SetPersistent(bool persistent) {}
-
 gfx::Point LoginBaseBubbleView::CalculatePosition() {
-  if (GetAnchorView()) {
-    gfx::Point bottom_left = GetAnchorView()->bounds().bottom_left();
-    ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
-                         parent() /*target*/, &bottom_left);
-    return bottom_left;
-  }
+  if (!GetAnchorView())
+    return gfx::Point();
 
-  return gfx::Point();
+  // Views' positions are defined in the parents' coordinate system. Therefore,
+  // the position of the bubble needs to be returned in its parent's coordinate
+  // system. kTryBeforeThenAfter and kTryAfterThenBefore use strategies implying
+  // to know the bounds of the entire window; therefore, resulting position is
+  // calculated by using the root view's coordinates system. kShowAbove and
+  // kShowBelow are less complicated, they only use the coordinate system of the
+  // the anchor view's parent.
+
+  // In RTL case, we are doing mirroring in `ConvertPointToTarget` when finding
+  // the position of the bubble. However, there's no need to mirror since the
+  // coordinate system is from right to left and the origin is the right upper
+  // corner. `GetMirroredXWithWidthInView` is called to cancel out the mirroring
+  // effect and returning the correct position for the bubble.
+  gfx::Point anchor_position = GetAnchorView()->bounds().origin();
+  gfx::Point origin;
+  ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
+                       GetAnchorView()->GetWidget()->GetRootView() /*target*/,
+                       &origin);
+  origin.set_x(parent()->GetMirroredXWithWidthInView(
+      origin.x(), GetAnchorView()->parent()->width()));
+  anchor_position += origin.OffsetFromOrigin();
+  auto bounds = GetBoundsAvailableToShowBubble();
+  gfx::Size bubble_size(width() + 2 * horizontal_padding_,
+                        height() + vertical_padding_);
+
+  gfx::Point result;
+  View* source;
+  switch (positioning_strategy_) {
+    case PositioningStrategy::kTryBeforeThenAfter:
+      result = login_views_utils::CalculateBubblePositionBeforeAfterStrategy(
+          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
+      source = GetAnchorView()->GetWidget()->GetRootView();
+      break;
+    case PositioningStrategy::kTryAfterThenBefore:
+      result = login_views_utils::CalculateBubblePositionAfterBeforeStrategy(
+          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
+      source = GetAnchorView()->GetWidget()->GetRootView();
+      break;
+    case PositioningStrategy::kShowAbove: {
+      gfx::Point top_center = GetAnchorView()->bounds().top_center();
+      result = top_center - gfx::Vector2d(GetPreferredSize().width() / 2,
+                                          GetPreferredSize().height());
+      source = GetAnchorView()->parent();
+      break;
+    }
+    case PositioningStrategy::kShowBelow: {
+      result = GetAnchorView()->bounds().bottom_left();
+      source = GetAnchorView()->parent();
+      break;
+    }
+  }
+  // Get position of the bubble surrounded by paddings.
+  result.Offset(horizontal_padding_, 0);
+  ConvertPointToTarget(source /*source*/, parent() /*target*/, &result);
+  return result;
 }
 
 void LoginBaseBubbleView::SetAnchorView(views::View* anchor_view) {
@@ -227,36 +272,10 @@ void LoginBaseBubbleView::OnBlur() {
   Hide();
 }
 
-gfx::Point LoginBaseBubbleView::CalculatePositionUsingDefaultStrategy(
-    PositioningStrategy strategy,
-    int horizontal_padding,
-    int vertical_padding) const {
-  if (!GetAnchorView())
-    return gfx::Point();
-
-  gfx::Point anchor_position = GetAnchorView()->bounds().origin();
-  ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
-                       GetAnchorView()->GetWidget()->GetRootView() /*target*/,
-                       &anchor_position);
-  auto bounds = GetBoundsAvailableToShowBubble();
-  gfx::Size bubble_size(width() + 2 * horizontal_padding,
-                        height() + vertical_padding);
-  gfx::Point result = gfx::Point();
-  switch (strategy) {
-    case PositioningStrategy::kShowOnLeftSideOrRightSide:
-      result = login_views_utils::CalculateBubblePositionLeftRightStrategy(
-          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
-      break;
-    case PositioningStrategy::kShowOnRightSideOrLeftSide:
-      result = login_views_utils::CalculateBubblePositionRightLeftStrategy(
-          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
-      break;
-  }
-  // Get position of the bubble surrounded by paddings.
-  result.Offset(horizontal_padding, 0);
-  ConvertPointToTarget(GetAnchorView()->GetWidget()->GetRootView() /*source*/,
-                       parent() /*target*/, &result);
-  return result;
+void LoginBaseBubbleView::SetPadding(int horizontal_padding,
+                                     int vertical_padding) {
+  horizontal_padding_ = horizontal_padding;
+  vertical_padding_ = vertical_padding;
 }
 
 gfx::Rect LoginBaseBubbleView::GetBoundsAvailableToShowBubble() const {

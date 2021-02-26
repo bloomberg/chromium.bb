@@ -12,9 +12,11 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
+#include "media/gpu/vaapi/vaapi_video_decoder_delegate.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 
 using base::test::RunClosure;
 using ::testing::_;
@@ -104,7 +106,7 @@ class MockVaapiPicture : public VaapiPicture {
   ~MockVaapiPicture() override = default;
 
   // VaapiPicture implementation.
-  bool Allocate(gfx::BufferFormat format) override { return true; }
+  Status Allocate(gfx::BufferFormat format) override { return OkStatus(); }
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override {
@@ -148,11 +150,12 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                                         public VideoDecodeAccelerator::Client {
  public:
   VaapiVideoDecodeAcceleratorTest()
-      : vda_(base::Bind([] { return true; }),
-             base::Bind([](uint32_t client_texture_id,
-                           uint32_t texture_target,
-                           const scoped_refptr<gl::GLImage>& image,
-                           bool can_bind_to_sampler) { return true; })),
+      : vda_(
+            base::BindRepeating([] { return true; }),
+            base::BindRepeating([](uint32_t client_texture_id,
+                                   uint32_t texture_target,
+                                   const scoped_refptr<gl::GLImage>& image,
+                                   bool can_bind_to_sampler) { return true; })),
         decoder_thread_("VaapiVideoDecodeAcceleratorTestThread"),
         mock_decoder_(new ::testing::StrictMock<MockAcceleratedVideoDecoder>),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
@@ -166,8 +169,12 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
     vda_.decoder_thread_task_runner_ = decoder_thread_.task_runner();
 
+    decoder_delegate_ =
+        std::make_unique<VaapiVideoDecoderDelegate>(&vda_, mock_vaapi_wrapper_);
+
     // Plug in all the mocks and ourselves as the |client_|.
     vda_.decoder_.reset(mock_decoder_);
+    vda_.decoder_delegate_ = decoder_delegate_.get();
     vda_.client_ = weak_ptr_factory_.GetWeakPtr();
     vda_.vaapi_wrapper_ = mock_vaapi_wrapper_;
     vda_.vpp_vaapi_wrapper_ = mock_vpp_vaapi_wrapper_;
@@ -376,6 +383,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
   base::test::TaskEnvironment task_environment_;
 
+  std::unique_ptr<VaapiVideoDecoderDelegate> decoder_delegate_;
+
   // The class under test and a worker thread for it.
   VaapiVideoDecodeAccelerator vda_;
   base::Thread decoder_thread_;
@@ -405,9 +414,11 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
                 gl::kGLImplementationEGLGLES2));
 
 #if defined(USE_X11)
-  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
-            mock_vaapi_picture_factory_->GetVaapiImplementation(
-                gl::kGLImplementationDesktopGL));
+  if (!features::IsUsingOzonePlatform()) {
+    EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
+              mock_vaapi_picture_factory_->GetVaapiImplementation(
+                  gl::kGLImplementationDesktopGL));
+  }
 #endif
 }
 

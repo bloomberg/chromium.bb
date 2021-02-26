@@ -5,14 +5,13 @@
 #include "chrome/browser/extensions/startup_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -100,25 +99,25 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
  protected:
   ~ValidateCrxHelper() override {}
 
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_root,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const Extension* extension,
-      const SkBitmap& install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums) override {
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon,
+                       declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = true;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void OnUnpackFailure(const CrxInstallError& error) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = false;
     error_ = error.message();
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void FinishOnUIThread() {

@@ -61,7 +61,8 @@ public:
 	VkResult reset(VkCommandPoolResetFlags flags);
 
 	void beginRenderPass(RenderPass *renderPass, Framebuffer *framebuffer, VkRect2D renderArea,
-	                     uint32_t clearValueCount, const VkClearValue *pClearValues, VkSubpassContents contents);
+	                     uint32_t clearValueCount, const VkClearValue *pClearValues, VkSubpassContents contents,
+	                     const VkRenderPassAttachmentBeginInfo *attachmentBeginInfo);
 	void nextSubpass(VkSubpassContents contents);
 	void endRenderPass();
 	void executeCommands(uint32_t commandBufferCount, const VkCommandBuffer *pCommandBuffers);
@@ -191,7 +192,13 @@ public:
 	void submit(CommandBuffer::ExecutionState &executionState);
 	void submitSecondary(CommandBuffer::ExecutionState &executionState) const;
 
-	class Command;
+	class Command
+	{
+	public:
+		virtual void play(ExecutionState &executionState) = 0;
+		virtual std::string description() = 0;
+		virtual ~Command() {}
+	};
 
 private:
 	void resetState();
@@ -212,7 +219,7 @@ private:
 	VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 	// FIXME (b/119409619): replace this vector by an allocator so we can control all memory allocations
-	std::vector<std::unique_ptr<Command>> *commands;
+	std::vector<std::unique_ptr<Command>> commands;
 
 #ifdef ENABLE_VK_DEBUGGER
 	std::shared_ptr<vk::dbg::File> debuggerFile;

@@ -29,15 +29,13 @@ namespace dawn_native { namespace vulkan {
                     return VK_ATTACHMENT_LOAD_OP_LOAD;
                 case wgpu::LoadOp::Clear:
                     return VK_ATTACHMENT_LOAD_OP_CLEAR;
-                default:
-                    UNREACHABLE();
             }
         }
     }  // anonymous namespace
 
     // RenderPassCacheQuery
 
-    void RenderPassCacheQuery::SetColor(uint32_t index,
+    void RenderPassCacheQuery::SetColor(ColorAttachmentIndex index,
                                         wgpu::TextureFormat format,
                                         wgpu::LoadOp loadOp,
                                         bool hasResolveTarget) {
@@ -94,13 +92,13 @@ namespace dawn_native { namespace vulkan {
 
         // Contains the attachment description that will be chained in the create info
         // The order of all attachments in attachmentDescs is "color-depthstencil-resolve".
-        constexpr uint32_t kMaxAttachmentCount = kMaxColorAttachments * 2 + 1;
+        constexpr uint8_t kMaxAttachmentCount = kMaxColorAttachments * 2 + 1;
         std::array<VkAttachmentDescription, kMaxAttachmentCount> attachmentDescs = {};
 
         VkSampleCountFlagBits vkSampleCount = VulkanSampleCount(query.sampleCount);
 
         uint32_t colorAttachmentIndex = 0;
-        for (uint32_t i : IterateBitSet(query.colorMask)) {
+        for (ColorAttachmentIndex i : IterateBitSet(query.colorMask)) {
             auto& attachmentRef = colorAttachmentRefs[colorAttachmentIndex];
             auto& attachmentDesc = attachmentDescs[colorAttachmentIndex];
 
@@ -142,7 +140,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         uint32_t resolveAttachmentIndex = 0;
-        for (uint32_t i : IterateBitSet(query.resolveTargetMask)) {
+        for (ColorAttachmentIndex i : IterateBitSet(query.resolveTargetMask)) {
             auto& attachmentRef = resolveAttachmentRefs[resolveAttachmentIndex];
             auto& attachmentDesc = attachmentDescs[attachmentCount];
 
@@ -159,6 +157,13 @@ namespace dawn_native { namespace vulkan {
 
             ++attachmentCount;
             ++resolveAttachmentIndex;
+        }
+
+        // All color attachments without a corresponding resolve attachment must be set to VK_ATTACHMENT_UNUSED
+        for (; resolveAttachmentIndex < colorAttachmentIndex; resolveAttachmentIndex++) {
+            auto& attachmentRef = resolveAttachmentRefs[resolveAttachmentIndex];
+            attachmentRef.attachment = VK_ATTACHMENT_UNUSED;
+            attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // The Khronos Vulkan validation layer will complain if not set
         }
 
         VkAttachmentReference* resolveTargetAttachmentRefs =
@@ -204,7 +209,7 @@ namespace dawn_native { namespace vulkan {
 
         HashCombine(&hash, Hash(query.resolveTargetMask));
 
-        for (uint32_t i : IterateBitSet(query.colorMask)) {
+        for (ColorAttachmentIndex i : IterateBitSet(query.colorMask)) {
             HashCombine(&hash, query.colorFormats[i], query.colorLoadOp[i]);
         }
 
@@ -232,7 +237,7 @@ namespace dawn_native { namespace vulkan {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a.colorMask)) {
+        for (ColorAttachmentIndex i : IterateBitSet(a.colorMask)) {
             if ((a.colorFormats[i] != b.colorFormats[i]) ||
                 (a.colorLoadOp[i] != b.colorLoadOp[i])) {
                 return false;

@@ -4,6 +4,8 @@
 
 #include "discovery/dnssd/impl/instance_key.h"
 
+#include <vector>
+
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
@@ -32,7 +34,8 @@ InstanceKey::InstanceKey(absl::string_view instance,
                          absl::string_view service,
                          absl::string_view domain)
     : ServiceKey(service, domain), instance_id_(instance) {
-  OSP_DCHECK(IsInstanceValid(instance_id_));
+  OSP_DCHECK(IsInstanceValid(instance_id_))
+      << "invalid instance id" << instance;
 }
 
 InstanceKey::InstanceKey(const InstanceKey& other) = default;
@@ -40,6 +43,12 @@ InstanceKey::InstanceKey(InstanceKey&& other) = default;
 
 InstanceKey& InstanceKey::operator=(const InstanceKey& rhs) = default;
 InstanceKey& InstanceKey::operator=(InstanceKey&& rhs) = default;
+
+DomainName InstanceKey::GetName() const {
+  std::vector<std::string> labels = ServiceKey::GetName().labels();
+  labels.insert(labels.begin(), instance_id());
+  return DomainName(std::move(labels));
+}
 
 }  // namespace discovery
 }  // namespace openscreen

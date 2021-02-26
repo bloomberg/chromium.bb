@@ -80,6 +80,6 @@ TEST_P(BordersTestLarge, TestLowBitrate) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-AV1_INSTANTIATE_TEST_CASE(BordersTestLarge,
-                          ::testing::Values(::libaom_test::kTwoPassGood));
+AV1_INSTANTIATE_TEST_SUITE(BordersTestLarge,
+                           ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

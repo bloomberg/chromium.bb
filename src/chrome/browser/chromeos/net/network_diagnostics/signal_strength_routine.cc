@@ -49,7 +49,7 @@ bool SignalStrengthRoutine::CanRun() {
   return true;
 }
 
-void SignalStrengthRoutine::RunTest(SignalStrengthRoutineCallback callback) {
+void SignalStrengthRoutine::RunRoutine(SignalStrengthRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));
     return;
@@ -60,7 +60,7 @@ void SignalStrengthRoutine::RunTest(SignalStrengthRoutineCallback callback) {
 
 void SignalStrengthRoutine::AnalyzeResultsAndExecuteCallback() {
   if (signal_strength_ == kUnknownSignalStrength) {
-    set_verdict(mojom::RoutineVerdict::kNotRun);
+    set_verdict(mojom::RoutineVerdict::kProblem);
     problems_.emplace_back(mojom::SignalStrengthProblem::kSignalNotFound);
   } else if (signal_strength_ < kSignalStrengthThreshold) {
     set_verdict(mojom::RoutineVerdict::kProblem);

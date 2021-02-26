@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/nocompile.gni")
 
-# Change this target's type to jumbo_component if it starts to contain more than
+# Change this target's type to component if it starts to contain more than
 # just headers. Header-only targets cannot be compiled to libraries, so it must
 # remain a source_set for now.
 source_set("type_safety") {
@@ -13,7 +12,10 @@ source_set("type_safety") {
     "id_type.h",
     "pass_key.h",
     "strong_alias.h",
+    "token_type.h",
   ]
+
+  deps = [ "//base" ]
 }
 
 source_set("tests") {
@@ -22,6 +24,7 @@ source_set("tests") {
     "id_type_unittest.cc",
     "pass_key_unittest.cc",
     "strong_alias_unittest.cc",
+    "token_type_unittest.cc",
   ]
 
   deps = [

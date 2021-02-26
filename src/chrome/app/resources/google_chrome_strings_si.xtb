@@ -10,16 +10,20 @@
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> පෙරදී Chrome භාවිත කරමින් තිබිණි</translation>
 <translation id="1097330777386562916">ඔබ Chrome නවත්වන විට කුකී සහ වෙබ් අඩවි දත්ත හිස් කරන්න</translation>
 <translation id="110877069173485804">මේ ඔබේ Chromeය.</translation>
+<translation id="1125124144982679672">Chrome භාවිත කරමින් සිටින්නේ කවුද?</translation>
 <translation id="1142745911746664600">Chrome යාවත්කාලීන කළ නොහැක</translation>
 <translation id="1154147086299354128">&amp;Chrome තුළ විවෘත කරන්න</translation>
 <translation id="123620459398936149">Chrome OS හට ඔබේ දත්ත සම්මුහු කළ නොහැක. ඔබේ සමමුහු කිරීමේ මුරපදය යාවත්කාලීන කරන්න.</translation>
 <translation id="1302523850133262269">කරුණාකර Chrome නවතම පද්ධති යාවත්කාලීන ස්ථාපනය කරන අතරතුර රැඳී සිටින්න.</translation>
+<translation id="1355000804395496115">කාර්යාල සහ පුද්ගලික බ්‍රවුස් කිරීම වෙන් කිරීමට හෝ මෙම උපාංගය භාවිතා කරන විවිධ පුද්ගලයින් සඳහා Chrome හි විවිධ පැතිකඩවල් භාවිත කරන්න</translation>
 <translation id="137466361146087520">Google Chrome බීටා</translation>
 <translation id="1399397803214730675">මෙම පරිගණකය සතුව දැනටමත් Google Chrome නවතම සංස්කරණය පවතී. මෘදුකාංගය ක්‍රියා නොකරයි නම්, කරුණාකර Google Chrome ඉවත් කර නැවත උත්සහ කරන්න.</translation>
 <translation id="1434626383986940139">Chrome Canary යෙදුම්</translation>
+<translation id="1513277449617685876">පුද්ගලික සහ <ph name="NEW_USER" /> බ්‍රවුස් කිරීම වෙන් කිරීමට, Chrome තුළ නව පැතිකඩක් තනන්න</translation>
 <translation id="1553358976309200471">Chrome යාවත් කරන්න</translation>
 <translation id="1587223624401073077">Google Chrome ඔබේ කැමරාව භාවිතා කරයි.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> අනතුරුදායක විය හැකිය, එම නිසා Chrome එය අවහිර කර ඇත.</translation>
+<translation id="1597911401261118146">ඔබගේ මුරපද දත්ත කඩ කිරීම්වලින් සහ අනෙකුත් ආරක්ෂක ගැටලුවලින් සුරක්ෂිතද යන්න පරීක්ෂා කිරීමට, <ph name="BEGIN_LINK" />Chrome වෙත පුරන්න<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Chrome වඩාත් ආරක්ෂිත කිරීම සඳහා, අප විසින් <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ලැයිස්තුගත කර නොමැති හා ඔබේ දැනුමෙන් තොරව එක් කර ඇති ඇතැම් දිගු අබල කර ඇත.</translation>
 <translation id="162629503687514352">Chrome OS හට ඔබේ මුරපද සමමුහූර්ත කිරීමට නොහැකි විය.</translation>
 <translation id="1628000112320670027">Chrome සමගින් උදවු ලබා ගන්න</translation>
@@ -34,13 +38,12 @@
 <translation id="1734234790201236882">Chrome මෙම මුරපදය ඔබගේ Google ගිණුමට සුරකිනු ඇත. ඔබට එය මතක තබා ගැනීමට සිදු නොවේ.</translation>
 <translation id="174539241580958092">Google Chrome හට පිරීමේ දෝෂයක් හේතුවෙන් ඔබගේ දත්ත සමමුහුර්ත කළ නොහැකි විය.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1786003790898721085">ඔබ ඔබගේ <ph name="TARGET_DEVICE_NAME" /> හි Chrome වෙත පුරා ඇති බව සහතික කර ගෙන අනතුරුව නැවත යැවීමට උත්සාහ කරන්න.</translation>
 <translation id="1812689907177901597">මෙය අක්‍රිය කිරීමෙන්, ඔබට Chrome වෙත පුරනය නොවී Gmail වැනි Google වෙබ් අඩවිවලට පුරනය විය හැක.</translation>
 <translation id="1860536484129686729">Chrome හට මෙම අඩවිය සදහා ඔබේ කැමරාවට ප්‍රවේශ වීමට අවසර අවශ්‍යයි</translation>
 <translation id="1873233029667955273">Google Chrome ඔබේ පෙරනිමි බ්‍රව්සරය නොවේ</translation>
 <translation id="1874309113135274312">Google Chrome බීටා (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome යල් පැන ගොස් ඇත</translation>
-<translation id="1900795423379050516">මෙම පිටුවෙහි සැකසීමක් නොපෙන්වන්නේ නම්, ඔබේ <ph name="LINK_BEGIN" />
-    Chrome බ්‍රවුසර සැකසීම්<ph name="LINK_END" /> තුළ සොයා බලන්න</translation>
 <translation id="1919130412786645364">Chrome පුරනයට ඉඩ දෙන්න</translation>
 <translation id="2063848847527508675">යාවත්කාලීනය යෙදීමට Chrome OS නැවත ඇරඹිය යුතුය.</translation>
 <translation id="2094919256425865063">කෙසේ වුවත් Chrome වෙතින් ඉවත් වන්න ද?</translation>
@@ -59,7 +62,6 @@
 <translation id="2534507159460261402">Google Pay (Chrome වෙත පිටපත් කෙරිණි)</translation>
 <translation id="2580411288591421699">දැන් ඇති Google Chrome සංස්කරණයම ස්ථාපනය කළ නොහැක. Google Chrome වසා නැවත උත්සාහ කරන්න.</translation>
 <translation id="2586406160782125153">මෙය ඔබගේ බ්‍රවුස් කිරීමේ දත්ත මෙම උපාංගයෙන් මකනු ඇත. ඔබගේ දත්ත පසුව ලබා ගැනීමට, <ph name="USER_EMAIL" /> ලෙස Chrome වෙත පුරන්න.</translation>
-<translation id="2588322182880276190">ක්‍රෝම් ලාංඡනය</translation>
 <translation id="2622559029861875898">Chrome හට යාවත්කාලීන පරීක්‍ෂා කළ නොහැක. ඔබේ අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="2644798301485385923">Chrome OS පද්ධතිය</translation>
 <translation id="2652691236519827073">සබැඳිය නව Chrome ප&amp;ටිත්තක විවෘත කරන්න</translation>
@@ -72,14 +74,18 @@
 <translation id="2847461019998147611">මෙම භාෂාවෙන් Google Chrome දර්ශනය කරන්න</translation>
 <translation id="2857540653560290388">Chrome දියත් කරමින්...</translation>
 <translation id="2871893339301912279">ඔබ Chromeට සයින් ඉන් වී ඇත!</translation>
+<translation id="2885378588091291677">කාර්ය කළමණාකරු</translation>
 <translation id="2888126860611144412">Chrome ගැන</translation>
+<translation id="2926676257163822632">දුර්වල මුරපද අනුමානය කිරීමට පහසුයි. <ph name="BEGIN_LINK" />ඔබ සඳහා ප්‍රබල මුරපද තැනීමට සහ මතක තබා ගැනීමට<ph name="END_LINK" /> Chrome හට ඉඩ දෙන්න.</translation>
 <translation id="2929907241665500097">Chrome යාවත්කාලීන නොවිය, යම් දෙයක් වැරදිණි. <ph name="BEGIN_LINK" />Chrome යාවත්කාලීන ගැටලු සහ අසමත් වූ යාවත්කාලීන නිරාකරණ කරන්න.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ජාල පුරනය - Chrome</translation>
+<translation id="298099161970687941">Chrome විවෘත වන විට අසන්න</translation>
 <translation id="3037838751736561277">Google Chrome පසුබිම් ප්‍රකාරය තුළ ඇත.</translation>
 <translation id="3059710691562604940">සුරක්ෂිත පිරික්සුම ක්‍රියාවිරහිතයි. එය ක්‍රියාත්මක කිරීමට Chrome නිර්දේශ කරයි.</translation>
 <translation id="3065168410429928842">Chrome පටිත්ත</translation>
 <translation id="3080151273017101988">Google Chrome වසා ඇති විට පසුබිම් යෙදුම් ධාවනය අඛණ්ඩව කරන්න</translation>
 <translation id="3089968997497233615">Google Chrome හි නව, වඩා ආරක්ෂිත සංස්කරණයක් පවතී.</translation>
+<translation id="3114643501466072395">ඔබගේ වෙනත් මුරපද දත්ත කඩ කිරීම්වලින් සහ අනෙකුත් ආරක්ෂක ගැටලුවලින් සුරක්ෂිතද යන්න පරීක්ෂා කිරීමට, <ph name="BEGIN_LINK" />Chrome වෙත පුරන්න<ph name="END_LINK" />.</translation>
 <translation id="3127818369811890733">Chrome OS හට ඔබේ දත්ත සමමුහූර්ත කිරීමට නොහැකි විය.</translation>
 <translation id="3149510190863420837">Chrome යෙදුම්</translation>
 <translation id="3360895254066713204">Chrome සහායක</translation>
@@ -100,6 +106,7 @@
 <translation id="3622797965165704966">දැන් Chrome ඔබගේ Google ගිණුම සහ බෙදාගත් පරිගණක මත භාවිතා කිරීමට වඩාත් පහසුයි.</translation>
 <translation id="3718181793972440140">මෙය අයිතම 1ක් මෙම උපාංගයෙන් මකනු ඇත. ඔබගේ දත්ත පසුව ලබා ගැනීමට, <ph name="USER_EMAIL" /> ලෙස Chrome වෙත පුරන්න.</translation>
 <translation id="3735758079232443276">"<ph name="EXTENSION_NAME" />" දිගුව විසින් ඔබ Chrome ආරම්භ කරන විට පෙන්වන පිටුව වෙනස් කර ඇත.</translation>
+<translation id="3779473566290487688">අනාගත Google Chrome යාවත්කාලීන ලබා ගැනීමට, ඔබට OS X 10.11 හෝ පසු අනුවාදයක් අවශ්‍ය වේ. මෙම පරිගණකය OS X 10.10 භාවිත කරමින් සිටියි.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Google Chrome කවුළුව වසා නැවත උත්සාහ කරන්න.</translation>
 <translation id="3865754807470779944">Chrome අනුවාදය <ph name="PRODUCT_VERSION" /> ස්ථාපන කෙරේ</translation>
@@ -107,6 +114,7 @@
 <translation id="3889417619312448367">Google Chrome අස්ථාපනය</translation>
 <translation id="4050175100176540509">වැදගත් ආරක්ෂක වැඩිදියුණු කිරීම් සහ නව විශේෂාංග නවතම අනුවාදය තුළ ලද හැකිය.</translation>
 <translation id="4053720452172726777">Google Chrome ගලපා පාලනය කරන්න</translation>
+<translation id="4110895483821904099">ඔබගේ නව Chrome පැතිකඩ පිහිටුවන්න</translation>
 <translation id="4143243756087420366">Chrome නම සහ පින්තූරය</translation>
 <translation id="4147555960264124640">ඔබ කළමනාකරණය කරන ගිණුමකින් සයින් ඉන් වී එහි පරිපාලකට Google Chrome පැතිකඩේ පාලනය ලබා දෙයි. ඔබේ යෙදුම්, පිටු සලකුණු, රහස් වචන ආදී දත්ත සහ Chrome වෙනත් පසුතල ස්ථිරවම <ph name="USER_NAME" />ට සම්බන්ධ කෙරෙනු ඇත. ඔබට මෙම දත්ත Google Accounts ඩෑෂ්බෝඩ් එකෙන් මැකිය හැකි මුත් වෙනත් ගිණුමක් හා සම්බන්ධ කළ නොහැකි වනු ඇත.<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ස්ථාපකයට සංරක්ෂකය විහිදුවිය නොහැකි විය. කරුණාකර නැවත Google Chrome බාගන්න.</translation>
@@ -116,6 +124,7 @@
 <translation id="4251615635259297716">මෙම ගිණුමට Chrome දත්ත සම්බන්ධ කරන්නද?</translation>
 <translation id="4281844954008187215">සේවා කොන්දේසි</translation>
 <translation id="4293420128516039005">ඔබගේ උපාංග හරහා Chrome සමමුහුර්ත කර පෞද්ගලීකරණය කිරීමට පුරනය වන්න</translation>
+<translation id="4325083532956419387">Chrome OS අනුවාදය</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome දත්ත කඩ කිරීම්, නරක දිගු, සහ තවත් ඒවාවලින් ඔබව ආරක්‍ෂිතව තබා ගැනීමට උදවු කළ හැක</translation>
@@ -185,6 +194,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="6368958679917195344">Chrome OS යතාර්තයක් බවට පත්කරන වෙනත් <ph name="BEGIN_LINK_CROS_OSS" />විවෘත කේත මෘදුකාංග<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome යාවත්කාලීන කරමින් (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6650333065969705433">ආරක්ෂිත මාධ්‍ය වාදනය කිරීම සඳහා Rosetta භාවිත කිරීමට, ඔබ Chrome යළි ඇරඹිය යුතුය.</translation>
 <translation id="6676384891291319759">අන්තර්ජාලය වෙත පිවිසෙන්න</translation>
 <translation id="6679975945624592337">Chrome Run හට පසුබිම ධාවනය වීමට ඉඩ දෙන්න</translation>
 <translation id="6750954913813541382">අක්‍ෂර වින්‍යාස දෝෂ නිවැරදි කිරීමට, නිඔබ බ්‍රවුසරය තුළ ටයිප් කරන පාඨය Chrome විසින් Google වෙත යවනු ලැබේ</translation>
@@ -195,6 +205,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="6967962315388095737">mDNS තදබදයට ඉඩ දීමට Google Chrome බීටා සඳහා බන්ධිත රීතිය.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> විසින් ඔබ පහත සේවා කොන්දේසි උපකරණය භාවිත කිරීමට පෙර කියවා පිළිගන්නා බවට නියම කරයි. මෙම නියමයන් Google Chrome OS නියමයන් පුළුල් කිරීම , වෙනස් කිරීම හෝ සීමා කිරීම නොකරයි.</translation>
 <translation id="6989339256997917931">Google ක්‍රෝම් යාවත්කාල වී ඇත. නමුත් ඔබ එය අවම වශයෙන් දින 30ක් වත් භාවිත කර නොමැත.</translation>
+<translation id="7054640471403081847">දෘඩකාංග සහාය නොවන හෙයින් පරිගණකයට Google Chrome යාවත්කාලිනයන් ලබා ගැනීම නැවතෙනු ඇත.</translation>
 <translation id="7062128746136194023">ඔබේ මාපිය Chrome සඳහා "වෙබ් අඩවි, යෙදුම් සහ දිගු සඳහා වන අවසර" අක්‍රිය කර ඇත. මෙම <ph name="EXTENSION_TYPE_PARAMETER" /> එක් කිරීමට අවසර නැත.</translation>
 <translation id="7098166902387133879">Google Chrome ඔබගේ මයික්‍රෆෝනය භාවිතා කරමින් සිටී.</translation>
 <translation id="7106741999175697885">ක්‍රියාවලි පාලක - Google Chrome</translation>
@@ -208,10 +219,10 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="7398801000654795464">ඔබ Chrome වෙත <ph name="USER_EMAIL_ADDRESS" /> ලෙස පුරා තිබුණි. කරුණාකර නැවත පිරීමට එම ගිණුමම භාවිතා කරන්න.</translation>
 <translation id="7408085963519505752">Chrome OS නියම</translation>
 <translation id="7419046106786626209">Chrome OS ඔබේ වසම සඳහා සම්මුහුර්ත ලද නොහැකි නිසා Google Chrome හට ඔබේ දත්ත සම්මුහුර්ත කළ නොහැකි විය.</translation>
+<translation id="7423733001651488593">මෙය මෙම උපාංගය වෙතින් ඔබේ බ්‍රවුස් කිරීමේ දත්ත ස්ථිරව මකනු ඇත. දත්ත ප්‍රතිසාධනය කිරීමට, Chrome වෙත පුරන්න</translation>
 <translation id="7486227612705979895">ලිපින තීරුවේ යෝජනා කිරීමට Chrome ඔබගේ Drive ප්‍රවේශ කරනු ඇත</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ඔබේ උපාංගය යාවත්කාලීනද බැලීමට <ph name="LINK_BEGIN" />Chrome OS සැකසුම්<ph name="LINK_END" /> වෙත යන්න</translation>
-<translation id="7589360514048265910">Mac OS X 10.9 තවදුරටත් සහාය නොදක්වන නිසා මෙම පරිගණකයට තවදුරටත් Google Chrome යාවත්කාලීන නොලැබෙනු ඇත.</translation>
 <translation id="7592736734348559088">Google Chrome ට ඔබේ සයින් ඉන් විස්තර යල් පැනගොස් ඇති හෙයින් සමමු කළ නොහැකි විය.</translation>
 <translation id="7626032353295482388">Chrome වෙත පිළිගනිමු</translation>
 <translation id="7629695634924605473">Chrome ඔබට ඔබේ මුරපද කිසි විටෙක හෝ අවදානමට ලක් වී තිබේද යන්න දන්වයි</translation>
@@ -241,10 +252,12 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="8342675569599923794">මෙම ගොනුව අනතුරුදායකයි, එනිසා Chrome එය අවහිර කර ඇත.</translation>
 <translation id="8370517070665726704">ප්‍රකාශන හිමිකම <ph name="YEAR" /> Google LLC. සියලුම හිමිකම් ඇවිරිණි.</translation>
 <translation id="840084489713044809">Google Chrome හට ඔබගේ මුරපද නිර්යාත කිරීමට අවශ්‍යය.</translation>
+<translation id="8433638294851456451">මෙහි සිට ඔබගේ Android දුරකථනයට අංකයක් යැවීමට, උපාංග දෙකෙහිම Chrome වෙත පුරන්න.</translation>
 <translation id="8498858610309223613">Google Chrome සඳහා විශේෂ ආරක්‍ෂක යාවත්කාලීනයක් දැන් යොදා ගත්තා. දැන් යළි අරඹන්න, අපි ඔබේ පටිති ප්‍රතිසාධන කරන්නම්.</translation>
 <translation id="8521348052903287641">mDNS තදබදයට ඉඩ දීමට Google Chrome Dev සඳහා බන්ධිත රීතිය.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Google Chrome හි නව සංස්කරණයක් පවතී, එය සැමදාටම වඩා වේගවත්.</translation>
+<translation id="861359755029082151">මෙම පිටුවේ ආරක්ෂිත මාධ්‍ය වාදනය කිරීමට Rosetta විසින් Chrome සබල කරයි.</translation>
 <translation id="8614913330719544658">Google Chrome ප්‍රතිචාර නොදක්වයි. යළි දියත් කරන්නද?</translation>
 <translation id="861702415419836452">Chrome හට ඔබේ වටපිටාවේ ත්‍රිමාන සිතියමක් සෑදීමට ඔබේ කැමරාවට ප්‍රවේශ වීමට අවසර අවශ්‍යයි</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome 1 විනාඩියකින් යළි දියත් වෙයි}one{Chrome විනාඩි # කින් යළි දියත් වෙයි}other{Chrome විනාඩි # කින් යළි දියත් වෙයි}}</translation>
@@ -253,11 +266,14 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="8679801911857917785">තවද එය ඔබ Chrome ආරම්භයේදී දකින පිටුවද වෙනස් කරයි.</translation>
 <translation id="870251953148363156">Google Chrome යාවත්කාලීන කරන්න</translation>
 <translation id="873133009373065397">Google Chrome හට පෙරනිමි බ්‍රව්සරය නිර්ණය කිරීමට හෝ සැකසීමට නොහැකිය</translation>
+<translation id="8748242232968346981">Chrome තුළ ඔබගේම පැතිකඩ තනන්නද?</translation>
 <translation id="8823341990149967727">Chrome යල් පැන ගොස් ඇත</translation>
 <translation id="8834965163890861871">Google Chrome මුරපද සංස්කරණ කිරීමට උත්සහ කරයි. එයට ඉඩදීම සඳහා Windows මුරපදය යොදන්න.</translation>
 <translation id="884296878221830158">ඔබ ක්‍රෝම් ආරම්භ කළ විට හෝ මුල්පිටු බොත්තම ක්ලික් කළ විට පෙන්විය යුත්තේ කුමන පිටුවදැයි එමඟින් පාලනය කරයි.</translation>
 <translation id="8862326446509486874">ඔබට පද්ධති මට්ටමේ ස්ථානපයකට අයිතිය නැත. නැවත පරිපාලක වශයෙන් ස්ථාපකය ධාවනය කිරීමට උත්සාහ කරන්න.</translation>
+<translation id="8907709077090383765">ආරක්ෂිත මාධ්‍ය වාදනය කිරීම සඳහා Chrome සබල කිරීමට, ඔබ Rosetta ස්ථාපනය කිරීමට අවශ්‍යයි. ඔබට දැන් එය ස්ථාපනය කිරීමට අවශ්‍යද?</translation>
 <translation id="8914504000324227558">Chrome නැවත දියත් කරන්න</translation>
+<translation id="8922193594870374009"><ph name="ORIGIN" /> වෙතින් ඔබගේ Android දුරකථනයට අංකයක් යැවීමට, උපාංග දෙකෙහිම Chrome වෙත පුරන්න.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome යාවත්කාලීනයක් තිබේ}=1{Chrome යාවත්කාලීනයක් තිබේ}one{දින # කට Chrome යාවත්කාලීනයක් ලැබී ඇත}other{දින # කට Chrome යාවත්කාලීනයක් ලැබී ඇත}}</translation>
 <translation id="9026991721384951619">පිවිසුම් දත්ත කල් ඉකුත්වී ඇති බැවින් Chrome OS හට ඔබේ දත්ත සම්මුහු කළ නොහැකි විය.</translation>
 <translation id="9067395829937117663">Google Chrome හට Windows 7 හෝ ඊට ඉහළ අනුවාදයක් අවශ්‍යයි.</translation>

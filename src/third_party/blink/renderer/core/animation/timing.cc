@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 
 namespace blink {
 
@@ -111,13 +112,17 @@ ComputedEffectTiming* Timing::getComputedTiming(
   ComputedEffectTiming* computed_timing = ComputedEffectTiming::Create();
 
   // ComputedEffectTiming members.
-  computed_timing->setEndTime(EndTimeInternal() * 1000);
-  computed_timing->setActiveDuration(ActiveDuration() * 1000);
+  computed_timing->setEndTime(
+      CSSNumberish::FromDouble(EndTimeInternal() * 1000));
+  computed_timing->setActiveDuration(
+      CSSNumberish::FromDouble(ActiveDuration() * 1000));
 
-  if (calculated_timing.local_time)
-    computed_timing->setLocalTime(calculated_timing.local_time.value() * 1000);
-  else
+  if (calculated_timing.local_time) {
+    computed_timing->setLocalTime(
+        CSSNumberish::FromDouble(calculated_timing.local_time.value() * 1000));
+  } else {
     computed_timing->setLocalTimeToNull();
+  }
 
   if (calculated_timing.is_in_effect) {
     DCHECK(calculated_timing.current_iteration);
@@ -153,23 +158,25 @@ ComputedEffectTiming* Timing::getComputedTiming(
 
 Timing::CalculatedTiming Timing::CalculateTimings(
     base::Optional<double> local_time,
+    base::Optional<Phase> timeline_phase,
     AnimationDirection animation_direction,
     bool is_keyframe_effect,
     base::Optional<double> playback_rate) const {
   const double active_duration = ActiveDuration();
 
-  const Timing::Phase current_phase =
-      CalculatePhase(active_duration, local_time, animation_direction, *this);
+  Timing::Phase current_phase = CalculatePhase(
+      active_duration, local_time, timeline_phase, animation_direction, *this);
+
   const base::Optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
   base::Optional<double> progress;
-  const double iteration_duration = IterationDuration().InSecondsF();
+  const double local_iteration_duration = IterationDuration().InSecondsF();
 
-  const base::Optional<double> overall_progress =
-      CalculateOverallProgress(current_phase, active_time, iteration_duration,
-                               iteration_count, iteration_start);
+  const base::Optional<double> overall_progress = CalculateOverallProgress(
+      current_phase, active_time, local_iteration_duration, iteration_count,
+      iteration_start);
   const base::Optional<double> simple_iteration_progress =
       CalculateSimpleIterationProgress(current_phase, overall_progress,
                                        iteration_start, active_time,
@@ -189,21 +196,21 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   AnimationTimeDelta time_to_next_iteration = AnimationTimeDelta::Max();
   // Conditionally compute the time to next iteration, which is only
   // applicable if the iteration duration is non-zero.
-  if (iteration_duration) {
+  if (local_iteration_duration) {
     const double start_offset =
-        MultiplyZeroAlwaysGivesZero(iteration_start, iteration_duration);
+        MultiplyZeroAlwaysGivesZero(iteration_start, local_iteration_duration);
     DCHECK_GE(start_offset, 0);
     const base::Optional<AnimationTimeDelta> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
     const base::Optional<AnimationTimeDelta> iteration_time =
-        CalculateIterationTime(iteration_duration, active_duration,
+        CalculateIterationTime(local_iteration_duration, active_duration,
                                offset_active_time, start_offset, current_phase,
                                *this);
     if (iteration_time) {
       // active_time cannot be null if iteration_time is not null.
       DCHECK(active_time);
       time_to_next_iteration =
-          AnimationTimeDelta::FromSecondsD(iteration_duration) -
+          AnimationTimeDelta::FromSecondsD(local_iteration_duration) -
           iteration_time.value();
       if (AnimationTimeDelta::FromSecondsD(active_duration) -
               active_time.value() <

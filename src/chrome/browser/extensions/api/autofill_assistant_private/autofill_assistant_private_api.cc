@@ -189,8 +189,18 @@ void AutofillAssistantPrivateEventRouter::OnInfoBoxChanged(
 
 void AutofillAssistantPrivateEventRouter::OnProgressChanged(int progress) {}
 
+void AutofillAssistantPrivateEventRouter::OnProgressActiveStepChanged(
+    int active_step) {}
+
 void AutofillAssistantPrivateEventRouter::OnProgressVisibilityChanged(
     bool visible) {}
+
+void AutofillAssistantPrivateEventRouter::OnStepProgressBarConfigurationChanged(
+    const autofill_assistant::ShowProgressBarProto::
+        StepProgressBarConfiguration& configuration) {}
+
+void AutofillAssistantPrivateEventRouter::OnProgressBarErrorStateChanged(
+    bool error) {}
 
 void AutofillAssistantPrivateEventRouter::OnTouchableAreaChanged(
     const autofill_assistant::RectF& visual_viewport,
@@ -327,6 +337,10 @@ std::string AutofillAssistantPrivateAPI::GetEmailAddressForAccessTokenAccount()
   return "joe@example.com";
 }
 
+std::string AutofillAssistantPrivateAPI::GetChromeSignedInEmailAddress() const {
+  return "joe@example.com";
+}
+
 autofill_assistant::AccessTokenFetcher*
 AutofillAssistantPrivateAPI::GetAccessTokenFetcher() {
   return access_token_fetcher_.get();
@@ -362,8 +376,19 @@ AutofillAssistantPrivateAPI::GetDeviceContext() const {
   return autofill_assistant::DeviceContext();
 }
 
+bool AutofillAssistantPrivateAPI::IsAccessibilityEnabled() const {
+  return false;
+}
+
 void AutofillAssistantPrivateAPI::Shutdown(
     autofill_assistant::Metrics::DropOutReason reason) {}
+
+void AutofillAssistantPrivateAPI::RecordDropOut(
+    autofill_assistant::Metrics::DropOutReason reason) {}
+
+void bool AutofillAssistantPrivateAPI::HasHadUI() {
+  return true;
+}
 
 // Note that this method implements autofill_assistant::Client and simply
 // forwards the web_contents associated with the controller. There is no reason

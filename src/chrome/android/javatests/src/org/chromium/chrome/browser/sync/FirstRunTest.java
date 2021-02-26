@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
@@ -12,16 +11,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -34,9 +36,8 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
@@ -45,7 +46,6 @@ import java.util.concurrent.TimeoutException;
  * Tests for the first run experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class FirstRunTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule() {
@@ -113,10 +113,19 @@ public class FirstRunTest {
 
         @Override
         public void onAbortFirstRunExperience() {}
+
+        @Override
+        public void onExitFirstRun() {}
     }
 
     private final TestObserver mTestObserver = new TestObserver();
     private FirstRunActivity mActivity;
+
+    @Before
+    public void setUp() {
+        Assert.assertFalse(
+                CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE));
+    }
 
     @After
     public void tearDown() {
@@ -131,12 +140,12 @@ public class FirstRunTest {
     @Test
     @FlakyTest(message = "https://crbug.com/616456")
     public void testSignIn() {
-        Account testAccount = SigninTestUtil.addTestAccount();
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        CoreAccountInfo testAccountInfo = mSyncTestRule.addTestAccount();
+        Assert.assertNull(mSyncTestRule.getCurrentSignedInAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
-        processFirstRun(testAccount.name, false /* ShowSettings */);
-        Assert.assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
+        processFirstRun(testAccountInfo.getEmail(), false /* ShowSettings */);
+        Assert.assertEquals(testAccountInfo, mSyncTestRule.getCurrentSignedInAccount());
         SyncTestUtil.waitForSyncActive();
     }
 
@@ -149,13 +158,13 @@ public class FirstRunTest {
     @Test
     @FlakyTest(message = "https://crbug.com/616456")
     public void testSignInWithOpenSettings() {
-        final Account testAccount = SigninTestUtil.addTestAccount();
+        CoreAccountInfo testAccountInfo = mSyncTestRule.addTestAccount();
         final SettingsActivity settingsActivity =
-                processFirstRun(testAccount.name, true /* ShowSettings */);
+                processFirstRun(testAccountInfo.getEmail(), true /* ShowSettings */);
 
         // User should be signed in and the sync backend should initialize, but sync should not
         // become fully active until the settings page is closed.
-        Assert.assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(testAccountInfo, mSyncTestRule.getCurrentSignedInAccount());
         SyncTestUtil.waitForEngineInitialized();
         Assert.assertFalse(SyncTestUtil.isSyncActive());
 
@@ -175,10 +184,10 @@ public class FirstRunTest {
     @Feature({"Sync"})
     @DisabledTest // https://crbug.com/901488
     public void testNoSignIn() {
-        SigninTestUtil.addTestAccount();
+        mSyncTestRule.addTestAccount();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         processFirstRun(null, false /* ShowSettings */);
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertNull(mSyncTestRule.getCurrentSignedInAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 

@@ -19,6 +19,8 @@ source_set("webui") {
     "flags_ui.h",
     "inspect/inspect_ui.h",
     "inspect/inspect_ui.mm",
+    "management/management_ui.h",
+    "management/management_ui.mm",
     "ntp_tiles_internals_ui.cc",
     "ntp_tiles_internals_ui.h",
     "prefs_internals_ui.cc",
@@ -71,6 +73,7 @@ source_set("webui") {
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/policy",
     "//ios/chrome/browser/suggestions",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:terms_util",
@@ -126,32 +129,6 @@ source_set("webui_internal") {
   ]
 }
 
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [
-    "inspect/inspect_ui_egtest.mm",
-    "web_ui_egtest.mm",
-  ]
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//components/strings",
-    "//components/version_info",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/components/webui:url_constants",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//net:test_support",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -178,5 +155,5 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

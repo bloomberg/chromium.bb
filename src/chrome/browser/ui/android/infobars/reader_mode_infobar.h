@@ -8,12 +8,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/infobar_android.h"
+#include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/infobar_delegate.h"
 
 class ReaderModeInfoBarDelegate;
 
-class ReaderModeInfoBar : public InfoBarAndroid {
+class ReaderModeInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit ReaderModeInfoBar(
       std::unique_ptr<ReaderModeInfoBarDelegate> delegate);
@@ -26,7 +26,7 @@ class ReaderModeInfoBar : public InfoBarAndroid {
  protected:
   infobars::InfoBarDelegate* GetDelegate();
 
-  // InfoBarAndroid overrides.
+  // infobars::InfoBarAndroid overrides.
   void ProcessButton(int action) override;
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;

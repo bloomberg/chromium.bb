@@ -45,6 +45,8 @@ class TabSharingUIViews : public TabSharingUI,
       base::OnceClosure stop_callback,
       content::MediaStreamUI::SourceCallback source_callback) override;
 
+  void SetStopCallback(base::OnceClosure stop_callback) override;
+
   // TabSharingUI:
   // Runs |source_callback_| to start sharing the tab containing |infobar|.
   // Removes infobars on all tabs; OnStarted() will recreate the infobars with
@@ -74,6 +76,7 @@ class TabSharingUIViews : public TabSharingUI,
   // WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
 
  private:
   void CreateInfobarsForAllTabs();

@@ -5,9 +5,8 @@
 #ifndef CONTENT_BROWSER_SPEECH_TTS_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_SPEECH_TTS_CONTROLLER_IMPL_H_
 
-#include <deque>
+#include <list>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -22,21 +21,28 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tts_controller.h"
-#include "content/public/browser/tts_controller_delegate.h"
 #include "content/public/browser/tts_platform.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
 
+#if defined(OS_CHROMEOS)
+class TtsControllerDelegate;
+#endif
+
 // Singleton class that manages text-to-speech for all TTS engines and
 // APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
-class CONTENT_EXPORT TtsControllerImpl : public TtsController {
+class CONTENT_EXPORT TtsControllerImpl : public TtsController,
+                                         public WebContentsObserver {
  public:
   // Get the single instance of this class.
   static TtsControllerImpl* GetInstance();
+
+  void SetStopSpeakingWhenHidden(bool value);
 
   // TtsController methods
   bool IsSpeaking() override;
@@ -59,6 +65,8 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
   TtsEngineDelegate* GetTtsEngineDelegate() override;
 
+  void Shutdown();
+
   // Called directly by ~BrowserContext, because a raw BrowserContext pointer
   // is stored in an Utterance.
   void OnBrowserContextDestroyed(BrowserContext* browser_context);
@@ -76,23 +84,35 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   TtsControllerImpl();
   ~TtsControllerImpl() override;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestTtsControllerShutdown);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
-                           TestTtsControllerUtteranceDefaults);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestBrowserContextRemoved);
+  // Exposed for unittest.
+  bool IsPausedForTesting() const { return paused_; }
 
+ private:
+  friend class TestTtsControllerImpl;
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
 
   // Get the platform TTS implementation (or injected mock).
   TtsPlatform* GetTtsPlatform();
 
+  // Whether the platform implementation is supported and completed its
+  // initialization.
+  bool TtsPlatformReady();
+
+  // Whether the platform implementation is supported, but still being
+  // initialized.
+  bool TtsPlatformLoading();
+
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
   void SpeakNow(std::unique_ptr<TtsUtterance> utterance);
 
-  void StopInternal(const GURL& source_url);
+  // If the current utterance matches |source_url|, it is stopped and the
+  // utterance queue cleared.
+  void StopAndClearQueue(const GURL& source_url);
+
+  // Stops the current utterance if it matches |source_url|. Returns true on
+  // success, false if the current utterance does not match |source_url|.
+  bool StopCurrentUtteranceIfMatches(const GURL& source_url);
 
   // Clear the utterance queue. If send_events is true, will send
   // TTS_EVENT_CANCELLED events on each one.
@@ -120,9 +140,31 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   static void PopulateParsedText(std::string* parsed_text,
                                  const base::Value* element);
 
-  TtsControllerDelegate* GetTtsControllerDelegate();
+  int GetMatchingVoice(TtsUtterance* utterance,
+                       const std::vector<VoiceData>& voices);
 
-  TtsControllerDelegate* delegate_;
+  // Called internally to set |current_utterance_|.
+  void SetCurrentUtterance(std::unique_ptr<TtsUtterance> utterance);
+
+  // Used when the WebContents of the current utterance is destroyed/hidden.
+  void StopCurrentUtteranceAndRemoveUtterancesMatching(WebContents* wc);
+
+  // Returns true if the utterance should be spoken.
+  bool ShouldSpeakUtterance(TtsUtterance* utterance);
+
+  // WebContentsObserver methods
+  void WebContentsDestroyed() override;
+  void OnVisibilityChanged(Visibility visibility) override;
+
+#if defined(OS_CHROMEOS)
+  TtsControllerDelegate* GetTtsControllerDelegate();
+  void SetTtsControllerDelegateForTesting(TtsControllerDelegate* delegate);
+  TtsControllerDelegate* delegate_ = nullptr;
+#endif
+
+  TtsEngineDelegate* engine_delegate_ = nullptr;
+
+  bool stop_speaking_when_hidden_ = false;
 
   // A set of delegates that want to be notified when the voices change.
   base::ObserverList<VoicesChangedDelegate> voices_changed_delegates_;
@@ -131,14 +173,14 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   std::unique_ptr<TtsUtterance> current_utterance_;
 
   // Whether the queue is paused or not.
-  bool paused_;
+  bool paused_ = false;
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
-  TtsPlatform* tts_platform_;
+  TtsPlatform* tts_platform_ = nullptr;
 
   // A queue of utterances to speak after the current one finishes.
-  std::deque<std::unique_ptr<TtsUtterance>> utterance_deque_;
+  std::list<std::unique_ptr<TtsUtterance>> utterance_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

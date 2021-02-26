@@ -24,11 +24,6 @@ namespace
 {
 
 constexpr const ImmutableString kAngleDecorString("angle_");
-// D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT = 128;
-const unsigned int kMaxInputResourceSlotCount = 128u;
-// If uniform block member's array size is larger than kMinArraySizeUseStructuredBuffer,
-// then we translate uniform block to StructuredBuffer for compiling performance.
-const unsigned int kMinArraySizeUseStructuredBuffer = 50u;
 
 static const char *UniformRegisterPrefix(const TType &type)
 {
@@ -104,11 +99,72 @@ void OutputUniformIndexArrayInitializer(TInfoSinkBase &out,
     out << "}";
 }
 
+static TString InterfaceBlockScalarVectorFieldPaddingString(const TType &type)
+{
+    switch (type.getBasicType())
+    {
+        case EbtFloat:
+            switch (type.getNominalSize())
+            {
+                case 1:
+                    return "float3 padding;";
+                case 2:
+                    return "float2 padding;";
+                case 3:
+                    return "float padding;";
+                default:
+                    break;
+            }
+            break;
+        case EbtInt:
+            switch (type.getNominalSize())
+            {
+                case 1:
+                    return "int3 padding;";
+                case 2:
+                    return "int2 padding;";
+                case 3:
+                    return "int padding";
+                default:
+                    break;
+            }
+            break;
+        case EbtUInt:
+            switch (type.getNominalSize())
+            {
+                case 1:
+                    return "uint3 padding;";
+                case 2:
+                    return "uint2 padding;";
+                case 3:
+                    return "uint padding;";
+                default:
+                    break;
+            }
+            break;
+        case EbtBool:
+            switch (type.getNominalSize())
+            {
+                case 1:
+                    return "bool3 padding;";
+                case 2:
+                    return "bool2 padding;";
+                case 3:
+                    return "bool padding;";
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    return "";
+}
+
 }  // anonymous namespace
 
 ResourcesHLSL::ResourcesHLSL(StructureHLSL *structureHLSL,
                              ShShaderOutput outputType,
-                             ShCompileOptions compileOptions,
                              const std::vector<ShaderVariable> &uniforms,
                              unsigned int firstUniformRegister)
     : mUniformRegister(firstUniformRegister),
@@ -118,7 +174,6 @@ ResourcesHLSL::ResourcesHLSL(StructureHLSL *structureHLSL,
       mSamplerCount(0),
       mStructureHLSL(structureHLSL),
       mOutputType(outputType),
-      mCompileOptions(compileOptions),
       mUniforms(uniforms)
 {}
 
@@ -641,7 +696,8 @@ void ResourcesHLSL::imageMetadataUniforms(TInfoSinkBase &out, unsigned int regIn
 }
 
 TString ResourcesHLSL::uniformBlocksHeader(
-    const ReferencedInterfaceBlocks &referencedInterfaceBlocks)
+    const ReferencedInterfaceBlocks &referencedInterfaceBlocks,
+    const std::map<int, const TInterfaceBlock *> &uniformBlockTranslatedToStructuredBuffer)
 {
     TString interfaceBlocks;
 
@@ -656,7 +712,7 @@ TString ResourcesHLSL::uniformBlocksHeader(
 
         // In order to avoid compile performance issue, translate uniform block to structured
         // buffer. anglebug.com/3682.
-        if (shouldTranslateUniformBlockToStructuredBuffer(interfaceBlock))
+        if (uniformBlockTranslatedToStructuredBuffer.count(interfaceBlock.uniqueId().get()) != 0)
         {
             unsigned int structuredBufferRegister = mSRVRegister;
             if (instanceVariable != nullptr && instanceVariable->getType().isArray())
@@ -785,10 +841,22 @@ TString ResourcesHLSL::uniformBlockWithOneLargeArrayMemberString(
     {
         if (arrayIndex == GL_INVALID_INDEX || arrayIndex == 0)
         {
-            hlsl += "struct matrix" + Decorate(field.name()) + " { " + typeString + " _matrix_" +
+            hlsl += "struct pack" + Decorate(interfaceBlock.name()) + " { " + typeString + " " +
                     Decorate(field.name()) + "; };\n";
         }
-        typeString = "matrix" + Decorate(field.name());
+        typeString = "pack" + Decorate(interfaceBlock.name());
+    }
+    else if (fieldType.isVectorArray() || fieldType.isScalarArray())
+    {
+        // If the member is an array of scalars or vectors, std140 rules require the base array
+        // stride are rounded up to the base alignment of a vec4.
+        if (arrayIndex == GL_INVALID_INDEX || arrayIndex == 0)
+        {
+            hlsl += "struct pack" + Decorate(interfaceBlock.name()) + " { " + typeString + " " +
+                    Decorate(field.name()) + ";\n";
+            hlsl += InterfaceBlockScalarVectorFieldPaddingString(fieldType) + " };\n";
+        }
+        typeString = "pack" + Decorate(interfaceBlock.name());
     }
 
     if (instanceVariable != nullptr)
@@ -855,7 +923,7 @@ TString ResourcesHLSL::uniformBlockMembersString(const TInterfaceBlock &interfac
         if (blockStorage == EbsStd140)
         {
             // 2 and 3 component vector types in some cases need pre-padding
-            hlsl += padHelper.prePaddingString(fieldType);
+            hlsl += padHelper.prePaddingString(fieldType, false);
         }
 
         hlsl += "    " + InterfaceBlockFieldTypeString(field, blockStorage, false) + " " +
@@ -882,17 +950,5 @@ TString ResourcesHLSL::uniformBlockStructString(const TInterfaceBlock &interface
            "\n"
            "{\n" +
            uniformBlockMembersString(interfaceBlock, blockStorage) + "};\n\n";
-}
-
-bool ResourcesHLSL::shouldTranslateUniformBlockToStructuredBuffer(
-    const TInterfaceBlock &interfaceBlock)
-{
-    const TType &fieldType = *interfaceBlock.fields()[0]->type();
-
-    return (mCompileOptions & SH_DONT_TRANSLATE_UNIFORM_BLOCK_TO_STRUCTUREDBUFFER) == 0 &&
-           mSRVRegister < kMaxInputResourceSlotCount && interfaceBlock.fields().size() == 1u &&
-           (fieldType.getStruct() != nullptr || fieldType.isMatrix()) &&
-           fieldType.getNumArraySizes() == 1u &&
-           fieldType.getOutermostArraySize() >= kMinArraySizeUseStructuredBuffer;
 }
 }  // namespace sh

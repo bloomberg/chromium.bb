@@ -77,6 +77,38 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
       tstIndex += 1;
     }
   }
+  void RunSpeedTest() const {
+    int stride = tx_size_wide[txSize_];
+    uint8_t *left = alloc_;
+    uint8_t *above = alloc_ + MaxTxSize;
+    const int numIter = 5000;
+
+    PrepareBuffer();
+    aom_usec_timer ref_timer;
+    aom_usec_timer_start(&ref_timer);
+    for (int i = 0; i < numIter; i++) {
+      predFuncRef_(predRef_, stride, txSize_, &above[1], left, mode_);
+    }
+    aom_usec_timer_mark(&ref_timer);
+
+    aom_usec_timer timer;
+    aom_usec_timer_start(&timer);
+    for (int i = 0; i < numIter; i++) {
+      predFunc_(pred_, stride, txSize_, &above[1], left, mode_);
+    }
+    aom_usec_timer_mark(&timer);
+
+    const int ref_sum_time =
+        static_cast<int>(aom_usec_timer_elapsed(&ref_timer));
+    const int sum_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+
+    printf("c_time = %d \t simd_time = %d \t Gain = %4.2f \t mode =  %d \n",
+           ref_sum_time, sum_time,
+           (static_cast<float>(ref_sum_time) / static_cast<float>(sum_time)),
+           static_cast<int>(mode_));
+
+    DiffPred(0);
+  }
 
  private:
   void PrepareBuffer() const {
@@ -110,8 +142,10 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
 
 TEST_P(AV1FilterIntraPredTest, BitExactCheck) { RunTest(); }
 
-using std::make_tuple;
+TEST_P(AV1FilterIntraPredTest, DISABLED_Speed) { RunSpeedTest(); }
 
+using ::testing::make_tuple;
+#if HAVE_SSE4_1
 const PredFuncMode kPredFuncMdArray[] = {
   make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_DC_PRED),
@@ -133,4 +167,30 @@ INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AV1FilterIntraPredTest,
     ::testing::Combine(::testing::ValuesIn(kPredFuncMdArray),
                        ::testing::ValuesIn(kTxSize)));
+#endif  // HAVE_SSE4_1
+
+#if HAVE_NEON
+const PredFuncMode kPredFuncMdArrayNEON[] = {
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_neon,
+             FILTER_DC_PRED),
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_neon,
+             FILTER_V_PRED),
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_neon,
+             FILTER_H_PRED),
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_neon,
+             FILTER_D157_PRED),
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_neon,
+             FILTER_PAETH_PRED),
+};
+
+const TX_SIZE kTxSizeNEON[] = { TX_4X4,  TX_8X8,  TX_16X16, TX_32X32, TX_4X8,
+                                TX_8X4,  TX_8X16, TX_16X8,  TX_16X32, TX_32X16,
+                                TX_4X16, TX_16X4, TX_8X32,  TX_32X8 };
+
+INSTANTIATE_TEST_SUITE_P(
+    NEON, AV1FilterIntraPredTest,
+    ::testing::Combine(::testing::ValuesIn(kPredFuncMdArrayNEON),
+                       ::testing::ValuesIn(kTxSizeNEON)));
+#endif  // HAVE_NEON
+
 }  // namespace

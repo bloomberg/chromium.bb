@@ -9,10 +9,10 @@
 #include <list>
 #include <memory>
 
+#include "absl/base/attributes.h"
 #include "net/third_party/quiche/src/quic/core/quic_alarm.h"
 #include "net/third_party/quiche/src/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer_wrapper.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_macros.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_client.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
@@ -54,12 +54,12 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
 
   void SetWritable() override;
 
-  char* GetNextWriteLocation(
+  QuicPacketBuffer GetNextWriteLocation(
       const QuicIpAddress& /*self_address*/,
       const QuicSocketAddress& /*peer_address*/) override {
     // If the wrapped writer supports zero-copy, disable it, because it is not
     // compatible with delayed writes in this class.
-    return nullptr;
+    return {nullptr, nullptr};
   }
 
   // Writes out any packet which should have been sent by now
@@ -73,7 +73,14 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   void OnCanWrite();
 
   // The percent of time a packet is simulated as being lost.
-  void set_fake_packet_loss_percentage(int32_t fake_packet_loss_percentage);
+  // If |fake_packet_loss_percentage| is 100, then all packages are lost.
+  // Otherwise actual percentage will be lower than
+  // |fake_packet_loss_percentage|, because every dropped package is followed by
+  // a minimum number of successfully written packets.
+  void set_fake_packet_loss_percentage(int32_t fake_packet_loss_percentage) {
+    QuicWriterMutexLock lock(&config_mutex_);
+    fake_packet_loss_percentage_ = fake_packet_loss_percentage;
+  }
 
   // Simulate dropping the first n packets unconditionally.
   // Subsequent packets will be lost at fake_packet_loss_percentage_ if set.
@@ -119,7 +126,9 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   }
 
   // Useful for reproducing very flaky issues.
-  QUIC_UNUSED void set_seed(uint64_t seed) { simple_random_.set_seed(seed); }
+  ABSL_ATTRIBUTE_UNUSED void set_seed(uint64_t seed) {
+    simple_random_.set_seed(seed);
+  }
 
  private:
   // Writes out the next packet to the contained writer and returns the time
@@ -148,7 +157,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
     QuicTime send_time;
   };
 
-  typedef std::list<DelayedWrite> DelayedPacketList;
+  using DelayedPacketList = std::list<DelayedWrite>;
 
   const QuicClock* clock_;
   std::unique_ptr<QuicAlarm> write_unblocked_alarm_;
@@ -159,6 +168,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   DelayedPacketList delayed_packets_;
   QuicByteCount cur_buffer_size_;
   uint64_t num_calls_to_write_;
+  int32_t num_consecutive_succesful_writes_;
 
   QuicMutex config_mutex_;
   int32_t fake_packet_loss_percentage_ QUIC_GUARDED_BY(config_mutex_);
@@ -168,7 +178,6 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   QuicTime::Delta fake_packet_delay_ QUIC_GUARDED_BY(config_mutex_);
   QuicBandwidth fake_bandwidth_ QUIC_GUARDED_BY(config_mutex_);
   QuicByteCount buffer_size_ QUIC_GUARDED_BY(config_mutex_);
-  int32_t num_consecutive_packet_lost_ QUIC_GUARDED_BY(config_mutex_);
 };
 
 }  // namespace test

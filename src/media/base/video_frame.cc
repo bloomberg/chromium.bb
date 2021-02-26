@@ -27,6 +27,9 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#if defined(OS_MAC)
+#include "ui/gfx/mac/io_surface.h"
+#endif
 
 namespace media {
 
@@ -57,7 +60,7 @@ std::string VideoFrame::StorageTypeToString(
       return "OWNED_MEMORY";
     case VideoFrame::STORAGE_SHMEM:
       return "SHMEM";
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     case VideoFrame::STORAGE_DMABUFS:
       return "DMABUFS";
 #endif
@@ -74,7 +77,7 @@ std::string VideoFrame::StorageTypeToString(
 // static
 bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
   return
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       // This is not strictly needed but makes explicit that, at VideoFrame
       // level, DmaBufs are not mappable from userspace.
       storage_type != VideoFrame::STORAGE_DMABUFS &&
@@ -259,7 +262,7 @@ static base::Optional<VideoFrameLayout> GetDefaultLayout(
   return VideoFrameLayout::CreateWithPlanes(format, coded_size, planes);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // This class allows us to embed a vector<ScopedFD> into a scoped_refptr, and
 // thus to have several VideoFrames share the same set of DMABUF FDs.
 class VideoFrame::DmabufHolder
@@ -277,7 +280,7 @@ class VideoFrame::DmabufHolder
   friend class base::RefCountedThreadSafe<DmabufHolder>;
   ~DmabufHolder() = default;
 };
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // static
 bool VideoFrame::IsValidConfig(VideoPixelFormat format,
@@ -338,8 +341,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
   scoped_refptr<VideoFrame> frame =
       new VideoFrame(*layout, StorageType::STORAGE_OPAQUE,
                      gfx::Rect(natural_size), natural_size, timestamp);
-  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
-                                         overlay_plane_id);
+  frame->metadata()->overlay_plane_id = overlay_plane_id;
   return frame;
 }
 
@@ -366,7 +368,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
       format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420 &&
       format != PIXEL_FORMAT_ABGR && format != PIXEL_FORMAT_XR30 &&
-      format != PIXEL_FORMAT_XB30) {
+      format != PIXEL_FORMAT_XB30 && format != PIXEL_FORMAT_P016LE) {
     DLOG(ERROR) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -544,6 +546,45 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    int32_t y_stride,
+    int32_t uv_stride,
+    uint8_t* y_data,
+    uint8_t* uv_data,
+    base::TimeDelta timestamp) {
+  const StorageType storage = STORAGE_UNOWNED_MEMORY;
+  if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config."
+                << ConfigToString(format, storage, coded_size, visible_rect,
+                                  natural_size);
+    return nullptr;
+  }
+
+  if (NumPlanes(format) != 2) {
+    DLOG(ERROR) << "Expecting Y, UV planes to be present for the video format.";
+    return nullptr;
+  }
+
+  auto layout = VideoFrameLayout::CreateWithStrides(format, coded_size,
+                                                    {y_stride, uv_stride});
+  if (!layout) {
+    DLOG(ERROR) << "Invalid layout";
+    return nullptr;
+  }
+
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp));
+  frame->data_[kYPlane] = y_data;
+  frame->data_[kUVPlane] = uv_data;
+
+  return frame;
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
@@ -567,11 +608,37 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
 
   const size_t num_planes =
       NumberOfPlanesForLinearBufferFormat(gpu_memory_buffer->GetFormat());
-  std::vector<int32_t> strides;
+  std::vector<ColorPlaneLayout> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i)
-    strides.push_back(gpu_memory_buffer->stride(i));
-  const auto layout = VideoFrameLayout::CreateWithStrides(*format, coded_size,
-                                                          std::move(strides));
+    planes[i].stride = gpu_memory_buffer->stride(i);
+  uint64_t modifier = gfx::NativePixmapHandle::kNoModifier;
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  if (gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP) {
+    const auto gmb_handle = gpu_memory_buffer->CloneHandle();
+    if (gmb_handle.is_null() ||
+        gmb_handle.native_pixmap_handle.planes.empty()) {
+      DLOG(ERROR) << "Failed to clone the GpuMemoryBufferHandle";
+      return nullptr;
+    }
+    if (gmb_handle.native_pixmap_handle.planes.size() != num_planes) {
+      DLOG(ERROR) << "Invalid number of planes="
+                  << gmb_handle.native_pixmap_handle.planes.size()
+                  << ", expected num_planes=" << num_planes;
+      return nullptr;
+    }
+    for (size_t i = 0; i < num_planes; ++i) {
+      const auto& plane = gmb_handle.native_pixmap_handle.planes[i];
+      planes[i].stride = plane.stride;
+      planes[i].offset = plane.offset;
+      planes[i].size = plane.size;
+    }
+    modifier = gmb_handle.native_pixmap_handle.modifier;
+  }
+#endif
+
+  const auto layout = VideoFrameLayout::CreateWithPlanes(
+      *format, coded_size, std::move(planes),
+      VideoFrameLayout::kBufferAddressAlignment, modifier);
   if (!layout) {
     DLOG(ERROR) << __func__ << " Invalid layout";
     return nullptr;
@@ -590,7 +657,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
   return frame;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const VideoFrameLayout& layout,
@@ -632,7 +699,72 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapUnacceleratedIOSurface(
+    gfx::GpuMemoryBufferHandle handle,
+    const gfx::Rect& visible_rect,
+    base::TimeDelta timestamp) {
+  if (handle.type != gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER) {
+    DLOG(ERROR) << "Non-IOSurface handle.";
+    return nullptr;
+  }
+  gfx::ScopedIOSurface io_surface = handle.io_surface;
+  if (!io_surface) {
+    return nullptr;
+  }
+
+  // Only support NV12 IOSurfaces.
+  const OSType cv_pixel_format = IOSurfaceGetPixelFormat(io_surface);
+  if (cv_pixel_format != kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange) {
+    DLOG(ERROR) << "Invalid (non-NV12) pixel format.";
+    return nullptr;
+  }
+  const VideoPixelFormat pixel_format = PIXEL_FORMAT_NV12;
+
+  // Retrieve the layout parameters for |io_surface_|.
+  const size_t num_planes = IOSurfaceGetPlaneCount(io_surface);
+  const gfx::Size size(IOSurfaceGetWidth(io_surface),
+                       IOSurfaceGetHeight(io_surface));
+  std::vector<int32_t> strides;
+  for (size_t i = 0; i < num_planes; ++i)
+    strides.push_back(IOSurfaceGetBytesPerRowOfPlane(io_surface, i));
+  base::Optional<VideoFrameLayout> layout =
+      media::VideoFrameLayout::CreateWithStrides(pixel_format, size, strides);
+  if (!layout) {
+    DLOG(ERROR) << "Invalid layout.";
+    return nullptr;
+  }
+
+  const StorageType storage_type = STORAGE_UNOWNED_MEMORY;
+  if (!IsValidConfig(pixel_format, storage_type, size, visible_rect, size)) {
+    DLOG(ERROR) << "Invalid config.";
+    return nullptr;
+  }
+
+  // Lock the IOSurface for CPU read access. After the VideoFrame is created,
+  // add a destruction callback to unlock the IOSurface.
+  kern_return_t lock_result =
+      IOSurfaceLock(io_surface, kIOSurfaceLockReadOnly, nullptr);
+  if (lock_result != kIOReturnSuccess) {
+    DLOG(ERROR) << "Failed to lock IOSurface.";
+    return nullptr;
+  }
+  auto unlock_lambda = [](base::ScopedCFTypeRef<IOSurfaceRef> io_surface) {
+    IOSurfaceUnlock(io_surface, kIOSurfaceLockReadOnly, nullptr);
+  };
+
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(*layout, storage_type, visible_rect, size, timestamp);
+  for (size_t i = 0; i < num_planes; ++i) {
+    frame->data_[i] = reinterpret_cast<uint8_t*>(
+        IOSurfaceGetBaseAddressOfPlane(io_surface, i));
+  }
+  frame->AddDestructionObserver(
+      base::BindOnce(unlock_lambda, std::move(io_surface)));
+  return frame;
+}
+
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
     CVPixelBufferRef cv_pixel_buffer,
@@ -726,7 +858,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
     }
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DCHECK(frame->dmabuf_fds_);
   // If there are any |dmabuf_fds_| plugged in, we should refer them too.
   wrapping_frame->dmabuf_fds_ = frame->dmabuf_fds_;
@@ -750,7 +882,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
   }
   scoped_refptr<VideoFrame> frame = new VideoFrame(
       *layout, STORAGE_UNKNOWN, gfx::Rect(), gfx::Size(), kNoTimestamp);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
+  frame->metadata()->end_of_stream = true;
   return frame;
 }
 
@@ -876,13 +1008,17 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
-    case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
+    }
+    case PIXEL_FORMAT_P016LE: {
+      static const int bytes_per_element[] = {1, 2};
+      DCHECK_LT(plane, base::size(bytes_per_element));
+      return bytes_per_element[plane] * 2;
     }
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
@@ -975,8 +1111,11 @@ bool VideoFrame::IsMappable() const {
 }
 
 bool VideoFrame::HasTextures() const {
+  // A SharedImage can be turned into a texture, and so it counts as a texture
+  // in the context of this call.
   return wrapped_frame_ ? wrapped_frame_->HasTextures()
-                        : !mailbox_holders_[0].mailbox.IsZero();
+                        : (mailbox_holders_[0].mailbox.IsSharedImage() ||
+                           !mailbox_holders_[0].mailbox.IsZero());
 }
 
 size_t VideoFrame::NumTextures() const {
@@ -1059,7 +1198,7 @@ VideoFrame::mailbox_holder(size_t texture_index) const {
                         : mailbox_holders_[texture_index];
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
 
@@ -1077,7 +1216,7 @@ bool VideoFrame::IsSameDmaBufsAs(const VideoFrame& frame) const {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 CVPixelBufferRef VideoFrame::CvPixelBuffer() const {
   return cv_pixel_buffer_.get();
 }
@@ -1119,7 +1258,7 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
 }
 
 std::string VideoFrame::AsHumanReadableString() const {
-  if (metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
+  if (metadata()->end_of_stream)
     return "end of stream";
 
   std::ostringstream s;
@@ -1142,7 +1281,7 @@ VideoFrame::VideoFrame(const VideoFrameLayout& layout,
       storage_type_(storage_type),
       visible_rect_(Intersection(visible_rect, gfx::Rect(layout.coded_size()))),
       natural_size_(natural_size),
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       dmabuf_fds_(base::MakeRefCounted<DmabufHolder>()),
 #endif
       timestamp_(timestamp),

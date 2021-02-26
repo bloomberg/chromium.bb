@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_template.h"
 
 #include "fxjs/xfa/cjx_template.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -35,6 +35,8 @@ CXFA_Template::CXFA_Template(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Template,
           kTemplatePropertyData,
           kTemplateAttributeData,
-          pdfium::MakeUnique<CJX_Template>(this)) {}
+          cppgc::MakeGarbageCollected<CJX_Template>(
+              doc->GetHeap()->GetAllocationHandle(),
+              this)) {}
 
 CXFA_Template::~CXFA_Template() = default;

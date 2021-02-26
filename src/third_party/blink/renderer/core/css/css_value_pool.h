@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -65,6 +65,8 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   using FontFamilyValueCache = HeapHashMap<String, Member<CSSFontFamilyValue>>;
 
   CSSValuePool();
+  CSSValuePool(const CSSValuePool&) = delete;
+  CSSValuePool& operator=(const CSSValuePool&) = delete;
 
   // Cached individual values.
   CSSColorValue* TransparentColor() { return color_transparent_; }
@@ -77,6 +79,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   CSSInvalidVariableValue* InvalidVariableValue() {
     return invalid_variable_value_;
   }
+  CSSInitialColorValue* InitialColorValue() { return initial_color_value_; }
 
   // Vector caches.
   CSSIdentifierValue* IdentifierCacheValue(CSSValueID ident) {
@@ -130,7 +133,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
     return font_face_value_cache_.insert(string, nullptr);
   }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Cached individual values.
@@ -139,6 +142,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   Member<CSSUnsetValue> unset_value_;
   Member<CSSRevertValue> revert_value_;
   Member<CSSInvalidVariableValue> invalid_variable_value_;
+  Member<CSSInitialColorValue> initial_color_value_;
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;
   Member<CSSColorValue> color_black_;
@@ -159,7 +163,6 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   FontFamilyValueCache font_family_value_cache_;
 
   friend CORE_EXPORT CSSValuePool& CssValuePool();
-  DISALLOW_COPY_AND_ASSIGN(CSSValuePool);
 };
 
 CORE_EXPORT CSSValuePool& CssValuePool();

@@ -76,20 +76,18 @@ void UberReceivedPacketManager::MaybeUpdateAckTimeout(
     bool should_last_packet_instigate_acks,
     EncryptionLevel decrypted_packet_level,
     QuicPacketNumber last_received_packet_number,
-    QuicTime time_of_last_received_packet,
     QuicTime now,
     const RttStats* rtt_stats) {
   if (!supports_multiple_packet_number_spaces_) {
     received_packet_managers_[0].MaybeUpdateAckTimeout(
-        should_last_packet_instigate_acks, last_received_packet_number,
-        time_of_last_received_packet, now, rtt_stats);
+        should_last_packet_instigate_acks, last_received_packet_number, now,
+        rtt_stats);
     return;
   }
   received_packet_managers_[QuicUtils::GetPacketNumberSpace(
                                 decrypted_packet_level)]
       .MaybeUpdateAckTimeout(should_last_packet_instigate_acks,
-                             last_received_packet_number,
-                             time_of_last_received_packet, now, rtt_stats);
+                             last_received_packet_number, now, rtt_stats);
 }
 
 void UberReceivedPacketManager::ResetAckStates(
@@ -100,9 +98,15 @@ void UberReceivedPacketManager::ResetAckStates(
   }
   received_packet_managers_[QuicUtils::GetPacketNumberSpace(encryption_level)]
       .ResetAckStates();
+  if (encryption_level == ENCRYPTION_INITIAL) {
+    // After one Initial ACK is sent, the others should be sent 'immediately'.
+    received_packet_managers_[INITIAL_DATA].set_local_max_ack_delay(
+        kAlarmGranularity);
+  }
 }
 
-void UberReceivedPacketManager::EnableMultiplePacketNumberSpacesSupport() {
+void UberReceivedPacketManager::EnableMultiplePacketNumberSpacesSupport(
+    Perspective perspective) {
   if (supports_multiple_packet_number_spaces_) {
     QUIC_BUG << "Multiple packet number spaces has already been enabled";
     return;
@@ -114,8 +118,15 @@ void UberReceivedPacketManager::EnableMultiplePacketNumberSpacesSupport() {
   }
   // In IETF QUIC, the peer is expected to acknowledge packets in Initial and
   // Handshake packets with minimal delay.
-  received_packet_managers_[INITIAL_DATA].set_local_max_ack_delay(
-      kAlarmGranularity);
+  if (!GetQuicReloadableFlag(quic_delay_initial_ack) ||
+      perspective == Perspective::IS_CLIENT) {
+    // Delay the first server ACK, because server ACKs are padded to
+    // full size and count towards the amplification limit.
+    received_packet_managers_[INITIAL_DATA].set_local_max_ack_delay(
+        kAlarmGranularity);
+  } else {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_delay_initial_ack);
+  }
   received_packet_managers_[HANDSHAKE_DATA].set_local_max_ack_delay(
       kAlarmGranularity);
 
@@ -193,14 +204,9 @@ void UberReceivedPacketManager::set_min_received_before_ack_decimation(
   }
 }
 
-size_t UberReceivedPacketManager::ack_frequency_before_ack_decimation() const {
-  return received_packet_managers_[0].ack_frequency_before_ack_decimation();
-}
-
-void UberReceivedPacketManager::set_ack_frequency_before_ack_decimation(
-    size_t new_value) {
+void UberReceivedPacketManager::set_ack_frequency(size_t new_value) {
   for (auto& received_packet_manager : received_packet_managers_) {
-    received_packet_manager.set_ack_frequency_before_ack_decimation(new_value);
+    received_packet_manager.set_ack_frequency(new_value);
   }
 }
 
@@ -221,27 +227,20 @@ void UberReceivedPacketManager::set_max_ack_ranges(size_t max_ack_ranges) {
   }
 }
 
-QuicTime::Delta UberReceivedPacketManager::max_ack_delay() {
-  if (!supports_multiple_packet_number_spaces_) {
-    return received_packet_managers_[0].local_max_ack_delay();
-  }
-  return received_packet_managers_[APPLICATION_DATA].local_max_ack_delay();
-}
-
-void UberReceivedPacketManager::set_max_ack_delay(
-    QuicTime::Delta max_ack_delay) {
-  if (!supports_multiple_packet_number_spaces_) {
-    received_packet_managers_[0].set_local_max_ack_delay(max_ack_delay);
-    return;
-  }
-  received_packet_managers_[APPLICATION_DATA].set_local_max_ack_delay(
-      max_ack_delay);
-}
-
 void UberReceivedPacketManager::set_save_timestamps(bool save_timestamps) {
   for (auto& received_packet_manager : received_packet_managers_) {
     received_packet_manager.set_save_timestamps(save_timestamps);
   }
+}
+
+void UberReceivedPacketManager::OnAckFrequencyFrame(
+    const QuicAckFrequencyFrame& frame) {
+  if (!supports_multiple_packet_number_spaces_) {
+    QUIC_BUG << "Received AckFrequencyFrame when multiple packet number spaces "
+                "is not supported";
+    return;
+  }
+  received_packet_managers_[APPLICATION_DATA].OnAckFrequencyFrame(frame);
 }
 
 }  // namespace quic

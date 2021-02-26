@@ -32,7 +32,7 @@ class BqExportOptions(PipelineOptions):
         '--table_suffix',
         help='Suffix to add to table name (for dev purposes, e.g. "_test").',
         default='')
-    parser.add_argument(
+    parser.add_value_provider_argument(
         '--dataset',
         help='BigQuery dataset name.  Overrideable for testing/dev purposes.',
         default='chromeperf_dashboard_data')
@@ -52,6 +52,7 @@ class _TimeRangeProvider(object):
   This class is a workaround for the lack of NestedValueProviders in Beam's
   Python SDK.
   """
+
   def __init__(self, end_date, num_days):
     self._end_date = end_date
     self._num_days = num_days

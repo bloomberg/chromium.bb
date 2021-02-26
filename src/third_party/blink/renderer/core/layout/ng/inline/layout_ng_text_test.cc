@@ -142,6 +142,23 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteCollapseWhiteSpaceEnd) {
             GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// web_tests/external/wpt/editing/run/delete.html?993-993
+// web_tests/external/wpt/editing/run/forwarddelete.html?1193-1193
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteNbspInPreWrap) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  InsertStyleElement("#target { white-space:pre-wrap; }");
+  SetBodyInnerHTML(u"<p id=target>&nbsp; abc</p>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);
+
+  EXPECT_EQ(
+      "*{' ', ShapeResult=0+1}\n"
+      "*{'abc', ShapeResult=2+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
@@ -174,6 +191,38 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
       GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// editing/deleting/delete_ws_fixup.html
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteThenNonCollapse) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<div id=target>abc def<b> </b>ghi</div>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(4, 3, ASSERT_NO_EXCEPTION);  // remove "def"
+
+  EXPECT_EQ(
+      "*{'abc ', ShapeResult=0+4}\n"
+      "{''}\n"
+      "{'ghi', ShapeResult=4+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// editing/deleting/delete_ws_fixup.html
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteThenNonCollapse2) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<div id=target>abc def<b> X </b>ghi</div>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(4, 3, ASSERT_NO_EXCEPTION);  // remove "def"
+
+  EXPECT_EQ(
+      "*{'abc ', ShapeResult=0+4}\n"
+      "{'X ', ShapeResult=4+2}\n"
+      "{'ghi', ShapeResult=6+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 // http://crbug.com/1039143
 TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithBidiControl) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -187,6 +236,39 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithBidiControl) {
 
   EXPECT_EQ("LayoutText has NeedsCollectInlines",
             GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// http://crbug.com/1125262
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithGeneratedBreakOpportunity) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  InsertStyleElement("#target { white-space:nowrap; }");
+  SetBodyInnerHTML(u"<p><b><i id=target>ab\n</i>\n</b>\n</div>");
+  // We have two ZWS for "</i>\n" and "</b>\n".
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(2, 1, ASSERT_NO_EXCEPTION);  // remove "\n"
+
+  EXPECT_EQ(
+      "*{'ab', ShapeResult=0+2}\n"
+      "{''}\n"
+      "{''}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// http://crbug.com/1123251
+TEST_F(LayoutNGTextTest, SetTextWithOffsetEditingTextCollapsedSpace) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+  SetBodyInnerHTML(u"<p id=target></p>");
+  // Simulate: insertText("A") + InsertHTML("X ")
+  Text& text = *GetDocument().CreateEditingTextNode("AX ");
+  GetElementById("target")->appendChild(&text);
+  UpdateAllLifecyclePhasesForTest();
+
+  text.replaceData(0, 2, " ", ASSERT_NO_EXCEPTION);
+
+  EXPECT_EQ("*{''}\n", GetItemsAsString(*text.GetLayoutObject()));
 }
 
 TEST_F(LayoutNGTextTest, SetTextWithOffsetInsert) {

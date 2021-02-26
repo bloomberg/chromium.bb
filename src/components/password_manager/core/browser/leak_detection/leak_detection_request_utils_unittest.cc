@@ -35,7 +35,7 @@ TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
       Run(AllOf(
           Field(&LookupSingleLeakData::payload,
                 AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
-                            ElementsAre(61, 112, -45)),
+                            ElementsAre(0x3D, 0x70, 0xD3, 0x60)),
                       Field(&LookupSingleLeakPayload::encrypted_payload,
                             testing::Ne("")))),
           Field(&LookupSingleLeakData::encryption_key, testing::Ne("")))));
@@ -45,15 +45,31 @@ TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
 TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestDataWithKey) {
   base::test::SingleThreadTaskEnvironment task_env;
   auto task_runner = task_env.GetMainThreadTaskRunner();
+  base::CancelableTaskTracker task_tracker;
   base::MockOnceCallback<void(LookupSingleLeakPayload)> callback;
 
-  PrepareSingleLeakRequestData(task_runner.get(), "random_key", "jonsnow",
-                               "1234", callback.Get());
+  PrepareSingleLeakRequestData(task_tracker, *task_runner, "random_key",
+                               "jonsnow", "1234", callback.Get());
   EXPECT_CALL(callback,
               Run(AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
-                              ElementsAre(61, 112, -45)),
+                              ElementsAre(0x3D, 0x70, 0xD3, 0x60)),
                         Field(&LookupSingleLeakPayload::encrypted_payload,
                               testing::Ne("")))));
+  task_env.RunUntilIdle();
+}
+
+TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestDataCancelled) {
+  base::test::SingleThreadTaskEnvironment task_env;
+  auto task_runner = task_env.GetMainThreadTaskRunner();
+  base::MockOnceCallback<void(LookupSingleLeakPayload)> callback;
+  EXPECT_CALL(callback, Run).Times(0);
+
+  {
+    base::CancelableTaskTracker task_tracker;
+    PrepareSingleLeakRequestData(task_tracker, *task_runner, "random_key",
+                                 "jonsnow", "1234", callback.Get());
+  }
+
   task_env.RunUntilIdle();
 }
 

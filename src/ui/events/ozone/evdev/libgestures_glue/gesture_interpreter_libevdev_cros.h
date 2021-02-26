@@ -66,6 +66,8 @@ class COMPONENT_EXPORT(EVDEV) GestureInterpreterLibevdevCros
  private:
   void OnGestureMove(const Gesture* gesture, const GestureMove* move);
   void OnGestureScroll(const Gesture* gesture, const GestureScroll* move);
+  void OnGestureMouseWheel(const Gesture* gesture,
+                           const GestureMouseWheel* wheel);
   void OnGestureButtonsChange(const Gesture* gesture,
                               const GestureButtonsChange* move);
   void OnGestureContactInitiated(const Gesture* gesture);
@@ -97,6 +99,7 @@ class COMPONENT_EXPORT(EVDEV) GestureInterpreterLibevdevCros
   // True if the device may be regarded as a mouse. This includes normal mice
   // and multi-touch mice.
   bool is_mouse_ = false;
+  bool is_pointing_stick_ = false;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
@@ -122,6 +125,9 @@ class COMPONENT_EXPORT(EVDEV) GestureInterpreterLibevdevCros
 
   // Gesture lib device properties.
   std::unique_ptr<GestureDeviceProperties> device_properties_;
+
+  // The number of pixels to count as one "tick" on a multitouch mouse.
+  static const int kMultitouchMousePixelsPerTick = 50;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreterLibevdevCros);
 };

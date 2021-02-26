@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -20,7 +20,9 @@
 #include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+#include "components/content_settings/core/common/features.h"
+#else
 #include "third_party/blink/public/common/features.h"
 #endif
 
@@ -35,12 +37,8 @@ CookieSettings::CookieSettings(
       is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(false) {
-  content_settings_observer_.Add(host_content_settings_map_.get());
+  content_settings_observation_.Observe(host_content_settings_map_.get());
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(
-      prefs::kBlockThirdPartyCookies,
-      base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
-                          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
       base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
@@ -57,19 +55,14 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
 void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
   host_content_settings_map_->GetSettingsForOneType(
-      ContentSettingsType::COOKIES, std::string(), settings);
+      ContentSettingsType::COOKIES, settings);
 }
 
 void CookieSettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kBlockThirdPartyCookies, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kCookieControlsMode,
-      static_cast<int>(kImprovedCookieControlsDefaultInIncognito.Get()
-                           ? CookieControlsMode::kIncognitoOnly
-                           : CookieControlsMode::kOff),
+      static_cast<int>(CookieControlsMode::kIncognitoOnly),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -83,8 +76,7 @@ void CookieSettings::SetCookieSetting(const GURL& primary_url,
                                       ContentSetting setting) {
   DCHECK(IsValidSetting(setting));
   host_content_settings_map_->SetContentSettingDefaultScope(
-      primary_url, GURL(), ContentSettingsType::COOKIES, std::string(),
-      setting);
+      primary_url, GURL(), ContentSettingsType::COOKIES, setting);
 }
 
 void CookieSettings::ResetCookieSetting(const GURL& primary_url) {
@@ -109,14 +101,14 @@ void CookieSettings::SetThirdPartyCookieSetting(const GURL& first_party_url,
   host_content_settings_map_->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromURLNoWildcard(first_party_url),
-      ContentSettingsType::COOKIES, std::string(), setting);
+      ContentSettingsType::COOKIES, setting);
 }
 
 void CookieSettings::ResetThirdPartyCookieSetting(const GURL& first_party_url) {
   host_content_settings_map_->SetContentSettingCustomScope(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromURLNoWildcard(first_party_url),
-      ContentSettingsType::COOKIES, std::string(), CONTENT_SETTING_DEFAULT);
+      ContentSettingsType::COOKIES, CONTENT_SETTING_DEFAULT);
 }
 
 bool CookieSettings::IsStorageDurable(const GURL& origin) const {
@@ -124,8 +116,7 @@ bool CookieSettings::IsStorageDurable(const GURL& origin) const {
   // https://crbug.com/539538
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
       origin /*primary*/, origin /*secondary*/,
-      ContentSettingsType::DURABLE_STORAGE,
-      std::string() /*resource_identifier*/);
+      ContentSettingsType::DURABLE_STORAGE);
   return setting == CONTENT_SETTING_ALLOW;
 }
 
@@ -140,8 +131,7 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
       cookie_domain, false /* secure scheme */);
 
   *setting = host_content_settings_map_->GetContentSetting(
-      cookie_domain_url, GURL(), ContentSettingsType::LEGACY_COOKIE_ACCESS,
-      std::string() /* resource_identifier */);
+      cookie_domain_url, GURL(), ContentSettingsType::LEGACY_COOKIE_ACCESS);
 }
 
 bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
@@ -191,8 +181,7 @@ void CookieSettings::GetCookieSettingInternal(
   SettingInfo info;
   std::unique_ptr<base::Value> value =
       host_content_settings_map_->GetWebsiteSetting(
-          url, first_party_url, ContentSettingsType::COOKIES, std::string(),
-          &info);
+          url, first_party_url, ContentSettingsType::COOKIES, &info);
   if (source)
     *source = info.source;
 
@@ -208,6 +197,11 @@ void CookieSettings::GetCookieSettingInternal(
   ContentSetting setting = ValueToContentSetting(value.get());
   bool block = block_third && is_third_party_request;
 
+  if (!block) {
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
+  }
+
 #if !defined(OS_IOS)
   // IOS doesn't use blink and as such cannot check our feature flag. Disabling
   // by default there should be no-op as the lack of Blink also means no grants
@@ -218,29 +212,33 @@ void CookieSettings::GetCookieSettingInternal(
   if (block &&
       base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     ContentSetting setting = host_content_settings_map_->GetContentSetting(
-        url, first_party_url, ContentSettingsType::STORAGE_ACCESS,
-        std::string());
+        url, first_party_url, ContentSettingsType::STORAGE_ACCESS);
 
-    if (setting == CONTENT_SETTING_ALLOW)
+    if (setting == CONTENT_SETTING_ALLOW) {
       block = false;
+      FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                     ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
+    }
   }
 #endif
+
+  if (block) {
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_BLOCKED);
+  }
 
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 
 CookieSettings::~CookieSettings() = default;
 
-bool CookieSettings::IsCookieControlsEnabled() {
-  if (base::FeatureList::IsEnabled(
-          kImprovedCookieControlsForThirdPartyCookieBlocking) &&
-      pref_change_registrar_.prefs()->GetBoolean(
-          prefs::kBlockThirdPartyCookies)) {
-    return true;
-  }
+bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
+#if defined(OS_IOS)
   if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
     return false;
+#endif
 
   CookieControlsMode mode = static_cast<CookieControlsMode>(
       pref_change_registrar_.prefs()->GetInteger(prefs::kCookieControlsMode));
@@ -259,8 +257,7 @@ bool CookieSettings::IsCookieControlsEnabled() {
 void CookieSettings::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
+    ContentSettingsType content_type) {
   if (content_type == ContentSettingsType::COOKIES) {
     for (auto& observer : observers_)
       observer.OnCookieSettingChanged();
@@ -270,10 +267,7 @@ void CookieSettings::OnContentSettingChanged(
 void CookieSettings::OnCookiePreferencesChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  bool new_block_third_party_cookies =
-      pref_change_registrar_.prefs()->GetBoolean(
-          prefs::kBlockThirdPartyCookies) ||
-      IsCookieControlsEnabled();
+  bool new_block_third_party_cookies = ShouldBlockThirdPartyCookiesInternal();
 
   // Safe to read |block_third_party_cookies_| without locking here because the
   // only place that writes to it is this method and it will always be run on

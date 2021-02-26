@@ -31,7 +31,7 @@
 #ifdef SK_GL
 #include "include/core/SkImageInfo.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrContext.h"
+#include "include/gpu/GrDirectContext.h"
 #include "include/gpu/gl/GrGLInterface.h"
 #include "include/gpu/gl/GrGLTypes.h"
 
@@ -214,21 +214,19 @@ SkImageInfo toSkImageInfo(const SimpleImageInfo& sii) {
 }
 
 #ifdef SK_GL
-sk_sp<GrContext> MakeGrContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context)
+sk_sp<GrDirectContext> MakeGrContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context)
 {
     EMSCRIPTEN_RESULT r = emscripten_webgl_make_context_current(context);
     if (r < 0) {
         printf("failed to make webgl context current %d\n", r);
         return nullptr;
     }
-    // setup GrContext
+    // setup GrDirectContext
     auto interface = GrGLMakeNativeInterface();
-    // setup contexts
-    sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
-    return grContext;
+    return GrDirectContext::MakeGL(interface);
 }
 
-sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrContext> grContext, int width, int height) {
+sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrDirectContext> grContext, int width, int height) {
     glClearColor(0, 0, 0, 0);
     glClearStencil(0);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -256,7 +254,7 @@ sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrContext> grContext, int width, in
     return surface;
 }
 
-sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrContext> grContext, int width, int height) {
+sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrDirectContext> grContext, int width, int height) {
     SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
 
     sk_sp<SkSurface> surface(SkSurface::MakeRenderTarget(grContext.get(),
@@ -267,7 +265,7 @@ sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrContext> grContext, int width, int hei
     return surface;
 }
 
-sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrContext> grContext, SimpleImageInfo sii) {
+sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrDirectContext> grContext, SimpleImageInfo sii) {
     sk_sp<SkSurface> surface(SkSurface::MakeRenderTarget(grContext.get(),
                              SkBudgeted::kYes,
                              toSkImageInfo(sii), 0,
@@ -289,32 +287,34 @@ sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrContext> grContext, SimpleImageInfo si
 // types Pi, Pf").  But, we can just pretend they are numbers and cast them to be pointers and
 // the compiler is happy.
 EMSCRIPTEN_BINDINGS(Skottie) {
-    #ifdef SK_GL
+#ifdef SK_GL
     function("currentContext", &emscripten_webgl_get_current_context);
     function("setCurrentContext", &emscripten_webgl_make_context_current);
     function("MakeGrContext", &MakeGrContext);
     function("MakeOnScreenGLSurface", &MakeOnScreenGLSurface);
-    function("MakeRenderTarget", select_overload<sk_sp<SkSurface>(sk_sp<GrContext>, int, int)>(&MakeRenderTarget));
-    function("MakeRenderTarget", select_overload<sk_sp<SkSurface>(sk_sp<GrContext>, SimpleImageInfo)>(&MakeRenderTarget));
+    function("MakeRenderTarget",
+        select_overload<sk_sp<SkSurface>(sk_sp<GrDirectContext>, int, int)>(&MakeRenderTarget));
+    function("MakeRenderTarget",
+        select_overload<sk_sp<SkSurface>(sk_sp<GrDirectContext>, SimpleImageInfo)>(&MakeRenderTarget));
 
     constant("gpu", true);
 
-    class_<GrContext>("GrContext")
-    .smart_ptr<sk_sp<GrContext>>("sk_sp<GrContext>");
-    // .function("getResourceCacheLimitBytes", optional_override([](GrContext& self)->size_t {
+    class_<GrDirectContext>("GrDirectContext")
+    .smart_ptr<sk_sp<GrDirectContext>>("sk_sp<GrDirectContext>");
+    // .function("getResourceCacheLimitBytes", optional_override([](GrDirectContext& self)->size_t {
     //     int maxResources = 0;// ignored
     //     size_t currMax = 0;
     //     self.getResourceCacheLimits(&maxResources, &currMax);
     //     return currMax;
     // }))
-    // .function("getResourceCacheUsageBytes", optional_override([](GrContext& self)->size_t {
+    // .function("getResourceCacheUsageBytes", optional_override([](GrDirectContext& self)->size_t {
     //     int usedResources = 0;// ignored
     //     size_t currUsage = 0;
     //     self.getResourceCacheUsage(&usedResources, &currUsage);
     //     return currUsage;
     // }))
-    // .function("releaseResourcesAndAbandonContext", &GrContext::releaseResourcesAndAbandonContext)
-    // .function("setResourceCacheLimitBytes", optional_override([](GrContext& self, size_t maxResourceBytes)->void {
+    // .function("releaseResourcesAndAbandonContext", &GrDirectContext::releaseResourcesAndAbandonContext)
+    // .function("setResourceCacheLimitBytes", optional_override([](GrDirectContext& self, size_t maxResourceBytes) {
     //     int maxResources = 0;
     //     size_t currMax = 0; // ignored
     //     self.getResourceCacheLimits(&maxResources, &currMax);

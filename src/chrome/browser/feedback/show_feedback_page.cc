@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,9 +19,15 @@
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/bind.h"
+#include "chrome/browser/chromeos/crosapi/browser_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 namespace feedback_private = extensions::api::feedback_private;
@@ -52,13 +59,76 @@ bool IsFromUserInteraction(FeedbackSource source) {
     case kFeedbackSourceDesktopTabGroups:
     case kFeedbackSourceMdSettingsAboutPage:
     case kFeedbackSourceOldSettingsAboutPage:
+    case kFeedbackSourceTabSearch:
       return true;
     default:
       return false;
   }
 }
+
+void OnLacrosActiveTabUrlFeteched(
+    Profile* profile,
+    chrome::FeedbackSource source,
+    const std::string& description_template,
+    const std::string& description_placeholder_text,
+    const std::string& category_tag,
+    const std::string& extra_diagnostics,
+    const base::Optional<GURL>& active_tab_url) {
+  GURL page_url;
+  if (active_tab_url)
+    page_url = *active_tab_url;
+  chrome::ShowFeedbackPage(page_url, profile, source, description_template,
+                           description_placeholder_text, category_tag,
+                           extra_diagnostics);
+}
+#endif  // defined(OS_CHROMEOS)
+
+// TODO(http://crbug.com/1132106): Include the following code only in
+// non-lacros builds after M87 beta when Feedback crosapi is available in all
+// ash versions.
+// Calls feedback private api to show Feedback ui.
+void RequestFeedbackFlow(const GURL& page_url,
+                         Profile* profile,
+                         FeedbackSource source,
+                         const std::string& description_template,
+                         const std::string& description_placeholder_text,
+                         const std::string& category_tag,
+                         const std::string& extra_diagnostics) {
+  extensions::FeedbackPrivateAPI* api =
+      extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
+
+  feedback_private::FeedbackFlow flow =
+      source == kFeedbackSourceSadTabPage
+          ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
+          : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR;
+
+  bool include_bluetooth_logs = false;
+#if defined(OS_CHROMEOS)
+  if (IsGoogleInternalAccount(profile)) {
+    flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
+    include_bluetooth_logs = IsFromUserInteraction(source);
+  }
 #endif
+
+  api->RequestFeedbackForFlow(
+      description_template, description_placeholder_text, category_tag,
+      extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
+      include_bluetooth_logs, source == kFeedbackSourceKaleidoscope);
+}
+
 }  // namespace
+
+#if BUILDFLAG(IS_LACROS)
+namespace internal {
+// Requests to show Feedback ui remotely in ash via crosapi mojo call.
+void ShowFeedbackPageLacros(const GURL& page_url,
+                            FeedbackSource source,
+                            const std::string& description_template,
+                            const std::string& description_placeholder_text,
+                            const std::string& category_tag,
+                            const std::string& extra_diagnostics);
+}  // namespace internal
+#endif
 
 void ShowFeedbackPage(const Browser* browser,
                       FeedbackSource source,
@@ -73,9 +143,26 @@ void ShowFeedbackPage(const Browser* browser,
   }
 
   Profile* profile = GetFeedbackProfile(browser);
+
+#if defined(OS_CHROMEOS)
+  // When users invoke the feedback dialog by pressing alt-shift-i without
+  // an active ash window, we need to check if there is an active lacros window
+  // and show its Url in the feedback dialog if there is any.
+  if (!browser && crosapi::BrowserManager::Get()->IsRunning() &&
+      crosapi::BrowserManager::Get()->GetActiveTabUrlSupported()) {
+    crosapi::BrowserManager::Get()->GetActiveTabUrl(base::BindOnce(
+        &OnLacrosActiveTabUrlFeteched, profile, source, description_template,
+        description_placeholder_text, category_tag, extra_diagnostics));
+  } else {
+    ShowFeedbackPage(page_url, profile, source, description_template,
+                     description_placeholder_text, category_tag,
+                     extra_diagnostics);
+  }
+#else
   ShowFeedbackPage(page_url, profile, source, description_template,
                    description_placeholder_text, category_tag,
                    extra_diagnostics);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ShowFeedbackPage(const GURL& page_url,
@@ -96,26 +183,28 @@ void ShowFeedbackPage(const GURL& page_url,
   UMA_HISTOGRAM_ENUMERATION("Feedback.RequestSource", source,
                             kFeedbackSourceCount);
 
-  extensions::FeedbackPrivateAPI* api =
-      extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
-
-  feedback_private::FeedbackFlow flow =
-      source == kFeedbackSourceSadTabPage
-          ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
-          : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR;
-
-  bool include_bluetooth_logs = false;
-#if defined(OS_CHROMEOS)
-  if (IsGoogleInternalAccount(profile)) {
-    flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
-    include_bluetooth_logs = IsFromUserInteraction(source);
+#if BUILDFLAG(IS_LACROS)
+  if (chromeos::LacrosChromeServiceImpl::Get()->IsFeedbackAvailable()) {
+    // Send request to ash via crosapi mojo to show Feedback ui from ash.
+    internal::ShowFeedbackPageLacros(page_url, source, description_template,
+                                     description_placeholder_text, category_tag,
+                                     extra_diagnostics);
+  } else {
+    // If ash version is too old, which does not support Feedback crosapi,
+    // invoke the Feedback ui from feedback extension in lacros and send
+    // a simple lacros feedback report for backward compatibility support.
+    // TODO(http://crbug.com/1132106): Remove this code after M87 beta
+    // when Feedback should be available in crosapi for all ash versions.
+    RequestFeedbackFlow(page_url, profile, source, description_template,
+                        description_placeholder_text, category_tag,
+                        extra_diagnostics);
   }
-#endif
-
-  api->RequestFeedbackForFlow(
-      description_template, description_placeholder_text, category_tag,
-      extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
-      include_bluetooth_logs);
+#else
+  // Show feedback dialog using feedback extension API.
+  RequestFeedbackFlow(page_url, profile, source, description_template,
+                      description_placeholder_text, category_tag,
+                      extra_diagnostics);
+#endif  //  BUILDFLAG(IS_LACROS)
 }
 
 }  // namespace chrome

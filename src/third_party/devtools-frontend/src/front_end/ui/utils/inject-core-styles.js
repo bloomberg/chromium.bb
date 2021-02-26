@@ -4,6 +4,7 @@
 
 // @ts-nocheck
 // TODO(crbug.com/1011811): Enable TypeScript compiler checks
+import * as ThemeSupport from '../../theme_support/theme_support.js';
 
 import {appendStyle} from './append-style.js';
 
@@ -11,8 +12,8 @@ import {appendStyle} from './append-style.js';
  * @param {!Element|!ShadowRoot} root
  */
 export function injectCoreStyles(root) {
-  appendStyle(root, 'ui/inspectorCommon.css');
-  appendStyle(root, 'ui/textButton.css');
-  self.UI.themeSupport.injectHighlightStyleSheets(root);
-  self.UI.themeSupport.injectCustomStyleSheets(root);
+  appendStyle(root, 'ui/inspectorCommon.css', {enableLegacyPatching: true});
+  appendStyle(root, 'ui/textButton.css', {enableLegacyPatching: true});
+  ThemeSupport.ThemeSupport.instance().injectHighlightStyleSheets(root);
+  ThemeSupport.ThemeSupport.instance().injectCustomStyleSheets(root);
 }

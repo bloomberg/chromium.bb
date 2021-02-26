@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
+#include "base/logging.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -43,7 +44,7 @@ void VerifyHasStringOnStack(const std::string& query) {
 #endif
 
 TEST(ThreadPoolServiceThreadTest, MAYBE_StackHasIdentifyingFrame) {
-  ServiceThread service_thread(nullptr, DoNothing());
+  ServiceThread service_thread(nullptr);
   service_thread.Start();
 
   service_thread.task_runner()->PostTask(

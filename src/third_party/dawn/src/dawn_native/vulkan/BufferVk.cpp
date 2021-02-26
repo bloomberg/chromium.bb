@@ -14,6 +14,7 @@
 
 #include "dawn_native/vulkan/BufferVk.h"
 
+#include "dawn_native/CommandBuffer.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/ResourceHeapVk.h"
@@ -50,6 +51,12 @@ namespace dawn_native { namespace vulkan {
             if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             }
+            if (usage & wgpu::BufferUsage::QueryResolve) {
+                // VK_BUFFER_USAGE_TRANSFER_DST_BIT is required by vkCmdCopyQueryPoolResults
+                // but we also add VK_BUFFER_USAGE_STORAGE_BUFFER_BIT because the queries will
+                // be post-processed by a compute shader and written to this buffer.
+                flags |= (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+            }
 
             return flags;
         }
@@ -74,6 +81,9 @@ namespace dawn_native { namespace vulkan {
             }
             if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+            }
+            if (usage & wgpu::BufferUsage::QueryResolve) {
+                flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
 
             return flags;
@@ -109,6 +119,9 @@ namespace dawn_native { namespace vulkan {
             if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
             }
+            if (usage & wgpu::BufferUsage::QueryResolve) {
+                flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+            }
 
             return flags;
         }
@@ -116,13 +129,13 @@ namespace dawn_native { namespace vulkan {
     }  // namespace
 
     // static
-    ResultOrError<Buffer*> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
+    ResultOrError<Ref<Buffer>> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
         Ref<Buffer> buffer = AcquireRef(new Buffer(device, descriptor));
-        DAWN_TRY(buffer->Initialize());
-        return buffer.Detach();
+        DAWN_TRY(buffer->Initialize(descriptor->mappedAtCreation));
+        return std::move(buffer);
     }
 
-    MaybeError Buffer::Initialize() {
+    MaybeError Buffer::Initialize(bool mappedAtCreation) {
         // Avoid passing ludicrously large sizes to drivers because it causes issues: drivers add
         // some constants to the size passed and align it, but for values close to the maximum
         // VkDeviceSize this can cause overflows and makes drivers crash or return bad sizes in the
@@ -140,7 +153,7 @@ namespace dawn_native { namespace vulkan {
         // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
         // of creating a new 4-byte buffer?
         createInfo.size = std::max(GetSize(), uint64_t(4u));
-        // Add CopyDst for non-mappable buffer initialization in CreateBufferMapped
+        // Add CopyDst for non-mappable buffer initialization with mappedAtCreation
         // and robust resource initialization.
         createInfo.usage = VulkanBufferUsage(GetUsage() | wgpu::BufferUsage::CopyDst);
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -148,7 +161,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.pQueueFamilyIndices = 0;
 
         Device* device = ToBackend(GetDevice());
-        DAWN_TRY(CheckVkSuccess(
+        DAWN_TRY(CheckVkOOMThenSuccess(
             device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
             "vkCreateBuffer"));
 
@@ -165,19 +178,18 @@ namespace dawn_native { namespace vulkan {
                                         mMemoryAllocation.GetOffset()),
             "vkBindBufferMemory"));
 
+        // The buffers with mappedAtCreation == true will be initialized in
+        // BufferBase::MapAtCreation().
+        if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting) &&
+            !mappedAtCreation) {
+            ClearBuffer(device->GetPendingRecordingContext(), 0x01010101);
+        }
+
         return {};
     }
 
     Buffer::~Buffer() {
         DestroyInternal();
-    }
-
-    void Buffer::OnMapReadCommandSerialFinished(uint32_t mapSerial, const void* data) {
-        CallMapReadCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
-    }
-
-    void Buffer::OnMapWriteCommandSerialFinished(uint32_t mapSerial, void* data) {
-        CallMapWriteCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
     }
 
     VkBuffer Buffer::GetHandle() const {
@@ -186,81 +198,88 @@ namespace dawn_native { namespace vulkan {
 
     void Buffer::TransitionUsageNow(CommandRecordingContext* recordingContext,
                                     wgpu::BufferUsage usage) {
-        bool lastIncludesTarget = (mLastUsage & usage) == usage;
-        bool lastReadOnly = (mLastUsage & kReadOnlyBufferUsages) == mLastUsage;
+        VkBufferMemoryBarrier barrier;
+        VkPipelineStageFlags srcStages = 0;
+        VkPipelineStageFlags dstStages = 0;
+
+        if (TransitionUsageAndGetResourceBarrier(usage, &barrier, &srcStages, &dstStages)) {
+            ASSERT(srcStages != 0 && dstStages != 0);
+            ToBackend(GetDevice())
+                ->fn.CmdPipelineBarrier(recordingContext->commandBuffer, srcStages, dstStages, 0, 0,
+                                        nullptr, 1u, &barrier, 0, nullptr);
+        }
+    }
+
+    bool Buffer::TransitionUsageAndGetResourceBarrier(wgpu::BufferUsage usage,
+                                                      VkBufferMemoryBarrier* barrier,
+                                                      VkPipelineStageFlags* srcStages,
+                                                      VkPipelineStageFlags* dstStages) {
+        bool lastIncludesTarget = IsSubset(usage, mLastUsage);
+        bool lastReadOnly = IsSubset(mLastUsage, kReadOnlyBufferUsages);
 
         // We can skip transitions to already current read-only usages.
         if (lastIncludesTarget && lastReadOnly) {
-            return;
+            return false;
         }
 
         // Special-case for the initial transition: Vulkan doesn't allow access flags to be 0.
         if (mLastUsage == wgpu::BufferUsage::None) {
             mLastUsage = usage;
-            return;
+            return false;
         }
 
-        VkPipelineStageFlags srcStages = VulkanPipelineStage(mLastUsage);
-        VkPipelineStageFlags dstStages = VulkanPipelineStage(usage);
+        *srcStages |= VulkanPipelineStage(mLastUsage);
+        *dstStages |= VulkanPipelineStage(usage);
 
-        VkBufferMemoryBarrier barrier;
-        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-        barrier.pNext = nullptr;
-        barrier.srcAccessMask = VulkanAccessFlags(mLastUsage);
-        barrier.dstAccessMask = VulkanAccessFlags(usage);
-        barrier.srcQueueFamilyIndex = 0;
-        barrier.dstQueueFamilyIndex = 0;
-        barrier.buffer = mHandle;
-        barrier.offset = 0;
-        barrier.size = GetSize();
-
-        ToBackend(GetDevice())
-            ->fn.CmdPipelineBarrier(recordingContext->commandBuffer, srcStages, dstStages, 0, 0,
-                                    nullptr, 1, &barrier, 0, nullptr);
+        barrier->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        barrier->pNext = nullptr;
+        barrier->srcAccessMask = VulkanAccessFlags(mLastUsage);
+        barrier->dstAccessMask = VulkanAccessFlags(usage);
+        barrier->srcQueueFamilyIndex = 0;
+        barrier->dstQueueFamilyIndex = 0;
+        barrier->buffer = mHandle;
+        barrier->offset = 0;
+        barrier->size = GetSize();
 
         mLastUsage = usage;
+
+        return true;
     }
 
-    bool Buffer::IsMapWritable() const {
+    bool Buffer::IsCPUWritableAtCreation() const {
         // TODO(enga): Handle CPU-visible memory on UMA
         return mMemoryAllocation.GetMappedPointer() != nullptr;
     }
 
-    MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
-        *mappedPointer = mMemoryAllocation.GetMappedPointer();
+    MaybeError Buffer::MapAtCreationImpl() {
         return {};
     }
 
-    MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
+    MaybeError Buffer::MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) {
         Device* device = ToBackend(GetDevice());
 
         CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
-        TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapRead);
 
-        uint8_t* memory = mMemoryAllocation.GetMappedPointer();
-        ASSERT(memory != nullptr);
+        // TODO(jiawei.shao@intel.com): initialize mapped buffer in CPU side.
+        EnsureDataInitialized(recordingContext);
 
-        MapRequestTracker* tracker = device->GetMapRequestTracker();
-        tracker->Track(this, serial, memory, false);
-        return {};
-    }
-
-    MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
-        Device* device = ToBackend(GetDevice());
-
-        CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
-        TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapWrite);
-
-        uint8_t* memory = mMemoryAllocation.GetMappedPointer();
-        ASSERT(memory != nullptr);
-
-        MapRequestTracker* tracker = device->GetMapRequestTracker();
-        tracker->Track(this, serial, memory, true);
+        if (mode & wgpu::MapMode::Read) {
+            TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapRead);
+        } else {
+            ASSERT(mode & wgpu::MapMode::Write);
+            TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapWrite);
+        }
         return {};
     }
 
     void Buffer::UnmapImpl() {
         // No need to do anything, we keep CPU-visible memory mapped at all time.
+    }
+
+    void* Buffer::GetMappedPointerImpl() {
+        uint8_t* memory = mMemoryAllocation.GetMappedPointer();
+        ASSERT(memory != nullptr);
+        return memory;
     }
 
     void Buffer::DestroyImpl() {
@@ -272,34 +291,67 @@ namespace dawn_native { namespace vulkan {
         }
     }
 
-    // MapRequestTracker
-
-    MapRequestTracker::MapRequestTracker(Device* device) : mDevice(device) {
-    }
-
-    MapRequestTracker::~MapRequestTracker() {
-        ASSERT(mInflightRequests.Empty());
-    }
-
-    void MapRequestTracker::Track(Buffer* buffer, uint32_t mapSerial, void* data, bool isWrite) {
-        Request request;
-        request.buffer = buffer;
-        request.mapSerial = mapSerial;
-        request.data = data;
-        request.isWrite = isWrite;
-
-        mInflightRequests.Enqueue(std::move(request), mDevice->GetPendingCommandSerial());
-    }
-
-    void MapRequestTracker::Tick(Serial finishedSerial) {
-        for (auto& request : mInflightRequests.IterateUpTo(finishedSerial)) {
-            if (request.isWrite) {
-                request.buffer->OnMapWriteCommandSerialFinished(request.mapSerial, request.data);
-            } else {
-                request.buffer->OnMapReadCommandSerialFinished(request.mapSerial, request.data);
-            }
+    void Buffer::EnsureDataInitialized(CommandRecordingContext* recordingContext) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
         }
-        mInflightRequests.ClearUpTo(finishedSerial);
+
+        InitializeToZero(recordingContext);
     }
 
+    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+                                                    uint64_t offset,
+                                                    uint64_t size) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferRange(offset, size)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero(recordingContext);
+        }
+    }
+
+    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+                                                    const CopyTextureToBufferCmd* copy) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero(recordingContext);
+        }
+    }
+
+    void Buffer::InitializeToZero(CommandRecordingContext* recordingContext) {
+        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
+        ASSERT(!IsDataInitialized());
+
+        ClearBuffer(recordingContext, 0u);
+        GetDevice()->IncrementLazyClearCountForTesting();
+        SetIsDataInitialized();
+    }
+
+    void Buffer::ClearBuffer(CommandRecordingContext* recordingContext, uint32_t clearValue) {
+        ASSERT(recordingContext != nullptr);
+
+        // Vulkan validation layer doesn't allow the `size` in vkCmdFillBuffer() to be 0.
+        if (GetSize() == 0u) {
+            return;
+        }
+
+        TransitionUsageNow(recordingContext, wgpu::BufferUsage::CopyDst);
+
+        Device* device = ToBackend(GetDevice());
+        // TODO(jiawei.shao@intel.com): find out why VK_WHOLE_SIZE doesn't work on old Windows Intel
+        // Vulkan drivers.
+        device->fn.CmdFillBuffer(recordingContext->commandBuffer, mHandle, 0, GetSize(),
+                                 clearValue);
+    }
 }}  // namespace dawn_native::vulkan

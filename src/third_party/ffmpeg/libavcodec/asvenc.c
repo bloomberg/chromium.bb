@@ -228,7 +228,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         clone->format = pict->format;
         clone->width  = FFALIGN(pict->width, 16);
         clone->height = FFALIGN(pict->height, 16);
-        ret = av_frame_get_buffer(clone, 32);
+        ret = av_frame_get_buffer(clone, 0);
         if (ret < 0) {
             av_frame_free(&clone);
             return ret;
@@ -295,6 +295,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     while (put_bits_count(&a->pb) & 31)
         put_bits(&a->pb, 8, 0);
 
+    flush_put_bits(&a->pb);
     size = put_bits_count(&a->pb) / 32;
 
     if (avctx->codec_id == AV_CODEC_ID_ASV1) {

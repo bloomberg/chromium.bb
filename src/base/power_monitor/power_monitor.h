@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/power_monitor/power_observer.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -40,12 +41,10 @@ class BASE_EXPORT PowerMonitor {
   // from which it was registered.
   // Must not be called from within a notification callback.
   //
-  // AddObserver() fails and returns false if PowerMonitor::Initialize() has not
-  // been invoked. Failure should only happen in unit tests, where the
-  // PowerMonitor is generally not initialized. It is safe to call
-  // RemoveObserver with a PowerObserver that was not successfully added as an
+  // It is safe to add observers before the PowerMonitor is initialized. It is
+  // safe to call RemoveObserver with a PowerObserver that was not added as an
   // observer.
-  static bool AddObserver(PowerObserver* observer);
+  static void AddObserver(PowerObserver* observer);
   static void RemoveObserver(PowerObserver* observer);
 
   // Is the computer currently on battery power. May only be called if the
@@ -57,6 +56,18 @@ class BASE_EXPORT PowerMonitor {
   // before initialisation, the process is assumed to not be suspended no matter
   // what is the real power state.
   static bool IsProcessSuspended();
+
+  // Read the current DeviceThermalState if known. Can be called on any thread.
+  // May only be called if the PowerMonitor has been initialized.
+  static PowerObserver::DeviceThermalState GetCurrentThermalState();
+
+#if defined(OS_ANDROID)
+  // Read and return the current remaining battery capacity (microampere-hours).
+  // Only supported with a device power source (i.e. not in child processes in
+  // Chrome) and on devices with Android >= Lollipop as well as a power supply
+  // that supports this counter. Returns 0 if unsupported.
+  static int GetRemainingBatteryCapacity();
+#endif  // defined(OS_ANDROID)
 
   // Uninitializes the PowerMonitor. Should be called at the end of any unit
   // test that mocks out the PowerMonitor, to avoid affecting subsequent tests.
@@ -76,6 +87,8 @@ class BASE_EXPORT PowerMonitor {
   static void NotifyPowerStateChange(bool battery_in_use);
   static void NotifySuspend();
   static void NotifyResume();
+  static void NotifyThermalStateChange(
+      PowerObserver::DeviceThermalState new_state);
 
   static PowerMonitor* GetInstance();
 

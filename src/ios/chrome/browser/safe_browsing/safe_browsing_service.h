@@ -5,13 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "net/cookies/cookie_deletion_info.h"
 #include "url/gurl.h"
 
 class PrefService;
 
 namespace base {
 class FilePath;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -49,6 +55,16 @@ class SafeBrowsingService
 
   // Returns true if |url| has a scheme that is handled by Safe Browsing.
   virtual bool CanCheckUrl(const GURL& url) const = 0;
+
+  // Returns the SharedURLLoaderFactory used for Safe Browsing network requests.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
+
+  // Clears cookies if the given deletion time range is for "all time". Calls
+  // the given |callback| once deletion is complete.
+  virtual void ClearCookies(
+      const net::CookieDeletionInfo::TimeRange& creation_range,
+      base::OnceClosure callback) = 0;
 
  protected:
   SafeBrowsingService() = default;

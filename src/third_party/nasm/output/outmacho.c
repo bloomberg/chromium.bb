@@ -38,10 +38,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "nctype.h"
 
 #include "nasm.h"
 #include "nasmlib.h"
@@ -363,7 +360,6 @@ static void macho_init(void)
     strs = saa_init(1L);
 
     section_by_index = raa_init();
-    hash_init(&section_by_name, HASH_MEDIUM);
 
     /* string table starts with a zero byte so index 0 is an empty string */
     saa_wbytes(strs, zero_buffer, 1);
@@ -473,7 +469,7 @@ static int64_t add_reloc(struct section *sect, int32_t section,
 	break;
 
     case RL_SUB: /* obsolete */
-	nasm_error(ERR_WARNING, "relcation with subtraction"
+	nasm_warn(WARN_OTHER, "relcation with subtraction"
 		   "becomes to be obsolete");
 	r->ext = 0;
 	r->type = X86_64_RELOC_SUBTRACTOR;
@@ -560,7 +556,7 @@ static void macho_output(int32_t secto, const void *data,
 
     s = get_section_by_index(secto);
     if (!s) {
-        nasm_error(ERR_WARNING, "attempt to assemble code in"
+        nasm_warn(WARN_OTHER, "attempt to assemble code in"
               " section %d: defaulting to `.text'", secto);
         s = get_section_by_name("__TEXT", "__text");
 
@@ -582,10 +578,10 @@ static void macho_output(int32_t secto, const void *data,
     is_bss = (s->flags & SECTION_TYPE) == S_ZEROFILL;
 
     if (is_bss && type != OUT_RESERVE) {
-        nasm_error(ERR_WARNING, "attempt to initialize memory in "
+        nasm_warn(WARN_OTHER, "attempt to initialize memory in "
               "BSS section: ignored");
         /* FIXME */
-        nasm_error(ERR_WARNING, "section size may be negative"
+        nasm_warn(WARN_OTHER, "section size may be negative"
             "with address symbols");
         s->size += realsize(type, size);
         return;
@@ -596,7 +592,7 @@ static void macho_output(int32_t secto, const void *data,
     switch (type) {
     case OUT_RESERVE:
         if (!is_bss) {
-            nasm_error(ERR_WARNING, "uninitialized space declared in"
+            nasm_warn(WARN_ZEROING, "uninitialized space declared in"
 		       " %s,%s section: zeroing", s->segname, s->sectname);
 
             sect_write(s, NULL, size);
@@ -789,7 +785,7 @@ lookup_known_section(const char *name, bool by_sectname)
     return NULL;
 }
 
-static int32_t macho_section(char *name, int pass, int *bits)
+static int32_t macho_section(char *name, int *bits)
 {
     const struct macho_known_section *known_section;
     const struct macho_known_section_attr *sa;
@@ -801,8 +797,6 @@ static int32_t macho_section(char *name, int pass, int *bits)
     char *comma;
 
     bool new_seg;
-
-    (void)pass;
 
     /* Default to the appropriate number of bits. */
     if (!name) {
@@ -987,8 +981,9 @@ static void macho_symdef(char *name, int32_t section, int64_t offset,
 
 #if defined(DEBUG) && DEBUG>2
     nasm_error(ERR_DEBUG,
-            " macho_symdef: %s, pass0=%d, passn=%"PRId64", sec=%"PRIx32", off=%"PRIx64", is_global=%d, %s\n",
-	       name, pass0, passn, section, offset, is_global, special);
+            " macho_symdef: %s, pass=%"PRId64" type %s, sec=%"PRIx32", off=%"PRIx64", is_global=%d, %s\n",
+	       name, pass_count(), pass_types[pass_type()],
+	       section, offset, is_global, special);
 #endif
 
     if (is_global == 3) {
@@ -1656,7 +1651,7 @@ static void macho_write (void)
     if (seg_nsects > 0)
 	offset = macho_write_segment (offset);
     else
-        nasm_error(ERR_WARNING, "no sections?");
+        nasm_warn(WARN_OTHER, "no sections?");
 
     if (nsyms > 0) {
         /* write out symbol command */
@@ -1745,7 +1740,7 @@ static bool macho_set_section_attribute_by_symbol(const char *label, uint32_t fl
     int32_t nasm_seg;
     int64_t offset;
 
-    if (!lookup_label(label, &nasm_seg, &offset)) {
+    if (lookup_label(label, &nasm_seg, &offset) == LBL_none) {
 	nasm_error(ERR_NONFATAL, "unknown symbol `%s' in no_dead_strip", label);
 	return false;
     }
@@ -1768,7 +1763,6 @@ static enum directive_result macho_no_dead_strip(const char *labels)
     char *s, *p, *ep;
     char ec;
     enum directive_result rv = DIRR_ERROR;
-    bool real = passn > 1;
 
     p = s = nasm_strdup(labels);
     while (*p) {
@@ -1783,7 +1777,7 @@ static enum directive_result macho_no_dead_strip(const char *labels)
 	    goto err;
 	}
 	*ep = '\0';
-	if (real) {
+	if (!pass_first()) {
 	    if (!macho_set_section_attribute_by_symbol(p, S_ATTR_NO_DEAD_STRIP))
 		rv = DIRR_ERROR;
 	}
@@ -1806,14 +1800,12 @@ err:
 static enum directive_result
 macho_pragma(const struct pragma *pragma)
 {
-    bool real = passn > 1;
-
     switch (pragma->opcode) {
     case D_SUBSECTIONS_VIA_SYMBOLS:
 	if (*pragma->tail)
 	    return DIRR_BADPARAM;
 
-	if (real)
+	if (!pass_first())
 	    head_flags |= MH_SUBSECTIONS_VIA_SYMBOLS;
 
         /* Jmp-match optimization conflicts */
@@ -1845,10 +1837,10 @@ static void macho_dbg_generate(void)
     /* debug section defines */
     {
         int bits = 0;
-        macho_section(".debug_abbrev", 0, &bits);
-        macho_section(".debug_info", 0, &bits);
-        macho_section(".debug_line", 0, &bits);
-        macho_section(".debug_str", 0, &bits);
+        macho_section(".debug_abbrev", &bits);
+        macho_section(".debug_info", &bits);
+        macho_section(".debug_line", &bits);
+        macho_section(".debug_str", &bits);
     }
 
     /* dw section walk to find high_addr and total_len */
@@ -1950,7 +1942,7 @@ static void macho_dbg_generate(void)
         nasm_assert(p_section != NULL);
 
         producer_str_offset = 0;
-        module_str_offset = dir_str_offset = saa_wcstring(p_str, nasm_signature);
+        module_str_offset = dir_str_offset = saa_wcstring(p_str, nasm_signature());
         dir_str_offset += saa_wcstring(p_str, cur_file);
         saa_wcstring(p_str, cur_dir);
 
@@ -2292,7 +2284,7 @@ static void macho32_init(void)
 }
 
 static const struct dfmt macho32_df_dwarf = {
-    "MachO32 (i386) dwarf debug format for Darwin/MacOS",
+    "Mach-O i386 dwarf for Darwin/MacOS",
     "dwarf",
     macho_dbg_init,
     macho_dbg_linenum,
@@ -2308,7 +2300,7 @@ static const struct dfmt * const macho32_df_arr[2] =
  { &macho32_df_dwarf, NULL };
 
 const struct ofmt of_macho32 = {
-    "NeXTstep/OpenStep/Rhapsody/Darwin/MacOS X (i386) object files",
+    "Mach-O i386 (Mach, including MacOS X and variants)",
     "macho32",
     ".o",
     0,
@@ -2359,7 +2351,7 @@ static void macho64_init(void)
 }
 
 static const struct dfmt macho64_df_dwarf = {
-    "MachO64 (x86-64) dwarf debug format for Darwin/MacOS",
+    "Mach-O x86-64 dwarf for Darwin/MacOS",
     "dwarf",
     macho_dbg_init,
     macho_dbg_linenum,
@@ -2375,7 +2367,7 @@ static const struct dfmt * const macho64_df_arr[2] =
  { &macho64_df_dwarf, NULL };
 
 const struct ofmt of_macho64 = {
-    "NeXTstep/OpenStep/Rhapsody/Darwin/MacOS X (x86_64) object files",
+    "Mach-O x86-64 (Mach, including MacOS X and variants)",
     "macho64",
     ".o",
     0,

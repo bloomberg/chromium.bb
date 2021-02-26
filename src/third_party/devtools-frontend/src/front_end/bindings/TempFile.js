@@ -72,7 +72,7 @@ export class TempFile {
   async readRange(startOffset, endOffset) {
     if (!this._lastBlob) {
       Common.Console.Console.instance().error('Attempt to read a temp file that was never written');
-      return Promise.resolve('');
+      return '';
     }
     const blob = typeof startOffset === 'number' || typeof endOffset === 'number' ?
         this._lastBlob.slice(/** @type {number} */ (startOffset), /** @type {number} */ (endOffset)) :
@@ -102,7 +102,7 @@ export class TempFile {
       outputStream.close();
       return Promise.resolve(/** @type {?FileError} */ (null));
     }
-    const reader = new ChunkedFileReader(/** @type {!Blob} */ (this._lastBlob), 10 * 1000 * 1000, progress);
+    const reader = new ChunkedFileReader(/** @type {!File} */ (this._lastBlob), 10 * 1000 * 1000, progress);
     return reader.read(outputStream).then(success => success ? null : reader.error());
   }
 
@@ -145,6 +145,9 @@ export class TempFileBackingStorage {
    */
   appendAccessibleString(string) {
     this._flush();
+    if (!this._file) {
+      return async () => null;
+    }
     const startOffset = this._file.size();
     this._strings.push(string);
     this._flush();

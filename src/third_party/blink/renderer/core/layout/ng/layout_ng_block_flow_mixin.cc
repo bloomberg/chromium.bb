@@ -7,7 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -34,7 +36,6 @@ LayoutNGBlockFlowMixin<Base>::LayoutNGBlockFlowMixin(Element* element)
   static_assert(std::is_base_of<LayoutBlockFlow, Base>::value,
                 "Base class of LayoutNGBlockFlowMixin must be LayoutBlockFlow "
                 "or derived class.");
-  DCHECK(!element || !element->ShouldForceLegacyLayout());
 }
 
 template <typename Base>
@@ -46,7 +47,7 @@ void LayoutNGBlockFlowMixin<Base>::StyleDidChange(
     const ComputedStyle* old_style) {
   Base::StyleDidChange(diff, old_style);
 
-  if (diff.NeedsCollectInlines()) {
+  if (diff.NeedsReshape()) {
     Base::SetNeedsCollectInlines();
   }
 }
@@ -74,7 +75,7 @@ void LayoutNGBlockFlowMixin<Base>::ClearNGInlineNodeData() {
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::AddLayoutOverflowFromChildren() {
-  if (Base::LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+  if (Base::ChildLayoutBlockedByDisplayLock())
     return;
 
   // |ComputeOverflow()| calls this, which is called from
@@ -92,7 +93,8 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
   const NGPhysicalBoxFragment* physical_fragment = CurrentFragment();
   DCHECK(physical_fragment);
   PhysicalRect children_overflow =
-      physical_fragment->ScrollableOverflowFromChildren();
+      physical_fragment->ScrollableOverflowFromChildren(
+          NGPhysicalFragment::kNormalHeight);
 
   // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
   const ComputedStyle& style = physical_fragment->Style();
@@ -113,7 +115,10 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
     return;
   }
 
-  if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+  // TODO(crbug.com/1145048): Currently |NGBoxPhysicalFragment| does not support
+  // NG block fragmentation. Fallback to the legacy code path.
+  if (Base::PhysicalFragmentCount() == 1) {
+    const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
     if (fragment->HasItems()) {
       fragment->AddSelfOutlineRects(additional_offset, include_block_overflows,
                                     &rects);
@@ -124,31 +129,65 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
   Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
 }
 
-// Retrieve NGBaseline from the current fragment.
-template <typename Base>
-base::Optional<LayoutUnit> LayoutNGBlockFlowMixin<Base>::FragmentBaseline()
-    const {
-  if (Base::ShouldApplyLayoutContainment())
-    return base::nullopt;
-
-  if (const NGPhysicalFragment* physical_fragment = CurrentFragment())
-    return To<NGPhysicalBoxFragment>(physical_fragment)->Baseline();
-  return base::nullopt;
-}
-
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::FirstLineBoxBaseline() const {
-  if (base::Optional<LayoutUnit> offset = FragmentBaseline())
-    return *offset;
-  return Base::FirstLineBoxBaseline();
+  // Please see |Paint()| for these DCHECKs.
+  DCHECK(!Base::CanTraversePhysicalFragments() ||
+         !Base::Parent()->CanTraversePhysicalFragments());
+  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
+
+  if (const base::Optional<LayoutUnit> baseline =
+          Base::FirstLineBoxBaselineOverride())
+    return *baseline;
+
+  if (Base::PhysicalFragmentCount()) {
+    const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
+    DCHECK(fragment);
+    if (base::Optional<LayoutUnit> offset = fragment->Baseline())
+      return *offset;
+  }
+
+  // This logic is in |LayoutBlock|, but we cannot call |Base| because doing so
+  // may traverse |LayoutObject| tree, which may call this function for a child,
+  // but the child may be block fragmented.
+  if (Base::ChildrenInline()) {
+    return Base::EmptyLineBaseline(
+        Base::IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine);
+  }
+  return LayoutUnit(-1);
 }
 
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
-  if (base::Optional<LayoutUnit> offset = FragmentBaseline())
-    return *offset;
-  return Base::InlineBlockBaseline(line_direction);
+  // Please see |Paint()| for these DCHECKs.
+  DCHECK(!Base::CanTraversePhysicalFragments() ||
+         !Base::Parent()->CanTraversePhysicalFragments());
+  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
+
+  if (const base::Optional<LayoutUnit> baseline =
+          Base::InlineBlockBaselineOverride(line_direction))
+    return *baseline;
+
+  if (Base::PhysicalFragmentCount()) {
+    const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
+    DCHECK(fragment);
+    if (base::Optional<LayoutUnit> offset = fragment->Baseline())
+      return *offset;
+  }
+
+  // This logic is in |LayoutBlock| and |LayoutBlockFlow|, but we cannot call
+  // |Base| because doing so may traverse |LayoutObject| tree, which may call
+  // this function for a child, but the child may be block fragmented.
+  if (!Base::ChildrenInline()) {
+    for (LayoutObject* child = Base::LastChild(); child;
+         child = child->PreviousSibling()) {
+      DCHECK(child->IsBox());
+      if (!child->IsFloatingOrOutOfFlowPositioned())
+        return LayoutUnit(-1);
+    }
+  }
+  return Base::EmptyLineBaseline(line_direction);
 }
 
 template <typename Base>
@@ -181,8 +220,7 @@ template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
   // Avoid painting dirty objects because descendants maybe already destroyed.
   if (UNLIKELY(Base::NeedsLayout() &&
-               !Base::LayoutBlockedByDisplayLock(
-                   DisplayLockLifecycleTarget::kChildren))) {
+               !Base::ChildLayoutBlockedByDisplayLock())) {
     NOTREACHED();
     return;
   }
@@ -215,18 +253,19 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
+  // When |this| is NG block fragmented, the painter should traverse fragemnts
+  // instead of |LayoutObject|, because this function cannot handle block
+  // fragmented objects. We can come here only when |this| cannot traverse
+  // fragments, or the parent is legacy.
+  DCHECK(!Base::CanTraversePhysicalFragments() ||
+         !Base::Parent()->CanTraversePhysicalFragments());
+  DCHECK_LE(Base::PhysicalFragmentCount(), 1u);
+
+  if (!Base::MayIntersect(result, hit_test_location, accumulated_offset))
+    return false;
+
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
-    if (!Base::IsEffectiveRootScroller()) {
-      // Check if we need to do anything at all.
-      // If we have clipping, then we can't have any spillout.
-      PhysicalRect overflow_box = Base::HasOverflowClip()
-                                      ? Base::PhysicalBorderBoxRect()
-                                      : Base::PhysicalVisualOverflowRect();
-      overflow_box.Move(accumulated_offset);
-      if (!hit_test_location.Intersects(overflow_box))
-        return false;
-    }
-    if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
+    if (Base::IsInSelfHitTestingPhase(action) && Base::IsScrollContainer() &&
         Base::HitTestOverflowControl(result, hit_test_location,
                                      accumulated_offset))
       return true;
@@ -236,7 +275,9 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
   }
 
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
-    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+    if (Base::PhysicalFragmentCount()) {
+      const NGPhysicalBoxFragment* fragment = Base::GetPhysicalFragment(0);
+      DCHECK(fragment);
       if (fragment->HasItems() ||
           // Check descendants of this fragment because floats may be in the
           // |NGFragmentItems| of the descendants.
@@ -272,19 +313,9 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
     Base::OffsetForContents(point_in_contents);
     if (const PositionWithAffinity position =
             paint_fragment->PositionForPoint(point_in_contents))
-      return position;
+      return AdjustForEditingBoundary(position);
   } else if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
-    if (const NGFragmentItems* items = fragment->Items()) {
-      // The given offset is relative to this |LayoutBlockFlow|. Convert to the
-      // contents offset.
-      PhysicalOffset point_in_contents = point;
-      Base::OffsetForContents(point_in_contents);
-      NGInlineCursor cursor(*items);
-      if (const PositionWithAffinity position =
-              cursor.PositionForPointInInlineFormattingContext(
-                  point_in_contents, *fragment))
-        return position;
-    }
+    return fragment->PositionForPoint(point);
   }
 
   return Base::CreatePositionWithAffinity(0);
@@ -299,12 +330,9 @@ void LayoutNGBlockFlowMixin<Base>::DirtyLinesFromChangedChild(
   // We need to dirty line box fragments only if the child is once laid out in
   // LayoutNG inline formatting context. New objects are handled in
   // NGInlineNode::MarkLineBoxesDirty().
-  if (child->IsInLayoutNGInlineFormattingContext()) {
-    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      if (const NGFragmentItems* items = Base::FragmentItems())
-        items->DirtyLinesFromChangedChild(child);
-    }
-  }
+  if (child->IsInLayoutNGInlineFormattingContext() &&
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    NGFragmentItems::DirtyLinesFromChangedChild(*child, *this);
 }
 
 template <typename Base>
@@ -332,15 +360,14 @@ void LayoutNGBlockFlowMixin<Base>::UpdateMargins() {
   // on ourselves, since that's what the legacy container expects.
   const ComputedStyle& style = Base::StyleRef();
   const ComputedStyle& cb_style = containing_block->StyleRef();
-  const auto writing_mode = cb_style.GetWritingMode();
-  const auto direction = cb_style.Direction();
+  const auto writing_direction = cb_style.GetWritingDirection();
   LayoutUnit available_logical_width =
       LayoutBoxUtils::AvailableLogicalWidth(*this, containing_block);
   NGBoxStrut margins = ComputePhysicalMargins(style, available_logical_width)
-                           .ConvertToLogical(writing_mode, direction);
+                           .ConvertToLogical(writing_direction);
   ResolveInlineMargins(style, cb_style, available_logical_width,
                        Base::LogicalWidth(), &margins);
-  Base::SetMargin(margins.ConvertToPhysical(writing_mode, direction));
+  Base::SetMargin(margins.ConvertToPhysical(writing_direction));
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;

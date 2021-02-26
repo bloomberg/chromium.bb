@@ -19,7 +19,7 @@ class TestCallback {
   PermissionMenuModel::ChangeCallback callback() {
     return base::Bind(&TestCallback::PermissionChanged, base::Unretained(this));
   }
-  void PermissionChanged(const PageInfoUI::PermissionInfo& permission) {
+  void PermissionChanged(const PageInfo::PermissionInfo& permission) {
     current_ = permission.setting;
   }
 
@@ -39,7 +39,7 @@ class PermissionMenuModelTest : public testing::Test {
 
 TEST_F(PermissionMenuModelTest, TestDefault) {
   TestCallback callback;
-  PageInfoUI::PermissionInfo permission;
+  PageInfo::PermissionInfo permission;
   permission.type = ContentSettingsType::COOKIES;
   permission.setting = CONTENT_SETTING_ALLOW;
   permission.default_setting = CONTENT_SETTING_ALLOW;
@@ -56,7 +56,7 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
     ContentSettingsType type = i ? ContentSettingsType::MEDIASTREAM_MIC
                                  : ContentSettingsType::MEDIASTREAM_CAMERA;
     TestCallback callback;
-    PageInfoUI::PermissionInfo permission;
+    PageInfo::PermissionInfo permission;
     permission.type = type;
     permission.setting = CONTENT_SETTING_ALLOW;
     permission.default_setting = CONTENT_SETTING_ALLOW;
@@ -70,7 +70,7 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
 
 TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
-  PageInfoUI::PermissionInfo permission;
+  PageInfo::PermissionInfo permission;
   permission.type = ContentSettingsType::NOTIFICATIONS;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
@@ -89,7 +89,7 @@ TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
 
 TEST_F(PermissionMenuModelTest, TestUsbGuard) {
   TestCallback callback;
-  PageInfoUI::PermissionInfo permission;
+  PageInfo::PermissionInfo permission;
   permission.type = ContentSettingsType::USB_GUARD;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
@@ -104,7 +104,7 @@ TEST_F(PermissionMenuModelTest, TestUsbGuard) {
 TEST_F(PermissionMenuModelTest, TestSerialGuard) {
   const GURL kUrl("http://www.google.com");
   TestCallback callback;
-  PageInfoUI::PermissionInfo permission;
+  PageInfo::PermissionInfo permission;
   permission.type = ContentSettingsType::SERIAL_GUARD;
   permission.setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
@@ -132,8 +132,36 @@ TEST_F(PermissionMenuModelTest, TestSerialGuard) {
 TEST_F(PermissionMenuModelTest, TestBluetoothScanning) {
   const GURL kUrl("http://www.google.com");
   TestCallback callback;
-  PageInfoUI::PermissionInfo permission;
+  PageInfo::PermissionInfo permission;
   permission.type = ContentSettingsType::BLUETOOTH_SCANNING;
+  permission.setting = CONTENT_SETTING_ASK;
+  permission.source = content_settings::SETTING_SOURCE_USER;
+  permission.is_incognito = false;
+
+  permission.default_setting = CONTENT_SETTING_ASK;
+  PermissionMenuModel default_ask_model(profile(), kUrl, permission,
+                                        callback.callback());
+  ASSERT_EQ(3, default_ask_model.GetItemCount());
+  EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
+            default_ask_model.GetLabelAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Block"), default_ask_model.GetLabelAt(1));
+  EXPECT_EQ(base::ASCIIToUTF16("Ask"), default_ask_model.GetLabelAt(2));
+
+  permission.default_setting = CONTENT_SETTING_BLOCK;
+  PermissionMenuModel default_block_model(profile(), kUrl, permission,
+                                          callback.callback());
+  ASSERT_EQ(3, default_block_model.GetItemCount());
+  EXPECT_EQ(base::ASCIIToUTF16("Block (default)"),
+            default_block_model.GetLabelAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Block"), default_block_model.GetLabelAt(1));
+  EXPECT_EQ(base::ASCIIToUTF16("Ask"), default_block_model.GetLabelAt(2));
+}
+
+TEST_F(PermissionMenuModelTest, TestHidGuard) {
+  const GURL kUrl("http://www.google.com");
+  TestCallback callback;
+  PageInfo::PermissionInfo permission;
+  permission.type = ContentSettingsType::HID_GUARD;
   permission.setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;

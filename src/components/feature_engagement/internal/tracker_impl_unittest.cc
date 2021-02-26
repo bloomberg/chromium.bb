@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -85,8 +85,8 @@ class TestTrackerInMemoryEventStore : public InMemoryEventStore {
   explicit TestTrackerInMemoryEventStore(bool load_should_succeed)
       : load_should_succeed_(load_should_succeed) {}
 
-  void Load(const OnLoadedCallback& callback) override {
-    HandleLoadResult(callback, load_should_succeed_);
+  void Load(OnLoadedCallback callback) override {
+    HandleLoadResult(std::move(callback), load_should_succeed_);
   }
 
   void WriteEvent(const Event& event) override {

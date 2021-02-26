@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/sequenced_task_runner.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 
 namespace paint_preview {
@@ -26,12 +27,16 @@ class PaintPreviewCompositorService {
 
   // Creates a compositor instance tied to the service. |connected_closure| is
   // run once the compositor is started.
-  virtual std::unique_ptr<PaintPreviewCompositorClient> CreateCompositor(
-      base::OnceClosure connected_closure) = 0;
+  virtual std::unique_ptr<PaintPreviewCompositorClient,
+                          base::OnTaskRunnerDeleter>
+  CreateCompositor(base::OnceClosure connected_closure) = 0;
 
   // Returns whether there are any active clients. This can be used to
   // check if killing this service is safe (i.e. won't drop messages).
   virtual bool HasActiveClients() const = 0;
+
+  // Sets the disconnect handler for this service.
+  virtual void SetDisconnectHandler(base::OnceClosure disconnect_handler) = 0;
 
   PaintPreviewCompositorService(const PaintPreviewCompositorService&) = delete;
   PaintPreviewCompositorService& operator=(

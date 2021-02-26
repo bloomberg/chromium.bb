@@ -6,8 +6,9 @@
 
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
-#include "content/renderer/loader/request_extra_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/platform/web_url_request_extra_data.h"
 
 namespace content {
 
@@ -42,13 +43,14 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
   const GURL kScriptUrl("https://example.com/main.js");
   const GURL kScriptUrlToSkipThrottling("https://example.com/skip.js");
   auto context = base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      blink::mojom::RendererPreferences(), kScriptUrl,
+      blink::RendererPreferences(), kScriptUrl,
       /*pending_url_loader_factory=*/nullptr,
       /*pending_script_loader_factory=*/nullptr, kScriptUrlToSkipThrottling,
       std::make_unique<FakeURLLoaderThrottleProvider>(),
       /*websocket_handshake_throttle_provider=*/nullptr, mojo::NullReceiver(),
       mojo::NullReceiver(),
-      /*service_worker_route_id=*/-1);
+      /*service_worker_route_id=*/-1,
+      /*cors_exempt_header_list=*/std::vector<std::string>());
 
   {
     // Call WillSendRequest() for kScriptURL.
@@ -58,11 +60,11 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should be created by the provider.
-    auto* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData().get());
-    ASSERT_TRUE(extra_data);
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
-        extra_data->TakeURLLoaderThrottles();
+    auto* url_request_extra_data = static_cast<blink::WebURLRequestExtraData*>(
+        request.GetURLRequestExtraData().get());
+    ASSERT_TRUE(url_request_extra_data);
+    blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
+        url_request_extra_data->TakeURLLoaderThrottles();
     EXPECT_EQ(1u, throttles.size());
   }
   {
@@ -73,11 +75,11 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should not be created by the provider.
-    auto* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData().get());
-    ASSERT_TRUE(extra_data);
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
-        extra_data->TakeURLLoaderThrottles();
+    auto* url_request_extra_data = static_cast<blink::WebURLRequestExtraData*>(
+        request.GetURLRequestExtraData().get());
+    ASSERT_TRUE(url_request_extra_data);
+    blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
+        url_request_extra_data->TakeURLLoaderThrottles();
     EXPECT_TRUE(throttles.empty());
   }
 }

@@ -12,11 +12,13 @@
 
 namespace viz {
 class VizProcessContextProvider;
+class DisplayCompositorMemoryAndTaskController;
 }
 
 namespace gpu {
 class CommandBufferTaskExecutor;
 class CommandBufferHelper;
+class GLInProcessContext;
 class SingleTaskSequence;
 class InProcessCommandBuffer;
 
@@ -31,8 +33,7 @@ class InProcessCommandBuffer;
 // it is created on VizProcessContextProvider. When this is used with
 // SkiaRenderer, it is created on SkiaOutputSurfaceImpl. Each user of this class
 // would hold a reference.
-class GL_IN_PROCESS_CONTEXT_EXPORT GpuTaskSchedulerHelper
-    : public base::RefCounted<GpuTaskSchedulerHelper> {
+class GL_IN_PROCESS_CONTEXT_EXPORT GpuTaskSchedulerHelper {
  public:
   // This constructor is only used for SkiaOutputSurface.
   explicit GpuTaskSchedulerHelper(
@@ -40,6 +41,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuTaskSchedulerHelper
   // This constructor is used for command buffer GLOutputSurface.
   explicit GpuTaskSchedulerHelper(
       CommandBufferTaskExecutor* command_buffer_task_executor);
+  ~GpuTaskSchedulerHelper();
 
   // This function sets up the |command_buffer_helper| which flushes the command
   // buffer when a user outside of the command buffer shares the same
@@ -62,16 +64,15 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuTaskSchedulerHelper
   SequenceId GetSequenceId();
 
  private:
-  friend class base::RefCounted<GpuTaskSchedulerHelper>;
-  ~GpuTaskSchedulerHelper();
-
   // If |using_command_buffer_| is true, we are using this class with
   // GLOutputSurface. Otherwise we are using this class with
   // SkiaOutputSurface.
   bool using_command_buffer_;
 
+  friend class gpu::GLInProcessContext;
   friend class gpu::InProcessCommandBuffer;
   friend class viz::VizProcessContextProvider;
+  friend class viz::DisplayCompositorMemoryAndTaskController;
   // Only used for inside CommandBuffer implementation.
   SingleTaskSequence* GetTaskSequence() const;
 

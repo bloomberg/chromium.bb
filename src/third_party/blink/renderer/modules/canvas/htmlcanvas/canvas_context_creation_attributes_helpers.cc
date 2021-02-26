@@ -18,7 +18,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.depth = attrs->depth();
   result.fail_if_major_performance_caveat =
       attrs->failIfMajorPerformanceCaveat();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(crbug.com/945835): enable desynchronized on Mac.
   result.desynchronized = false;
 #else
@@ -29,6 +29,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.preserve_drawing_buffer = attrs->preserveDrawingBuffer();
   result.power_preference = attrs->powerPreference();
   result.stencil = attrs->stencil();
+  result.will_read_frequently = attrs->willReadFrequently();
   result.xr_compatible = attrs->xrCompatible();
   return result;
 }

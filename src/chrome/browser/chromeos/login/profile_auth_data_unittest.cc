@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
@@ -64,9 +64,12 @@ CreateNetworkContextForDefaultStoragePartition(
     network::NetworkService* network_service,
     content::BrowserContext* browser_context) {
   mojo::PendingRemote<network::mojom::NetworkContext> network_context_remote;
+  auto params = network::mojom::NetworkContextParams::New();
+  params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
   auto network_context = std::make_unique<network::NetworkContext>(
       network_service, network_context_remote.InitWithNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      std::move(params));
   content::BrowserContext::GetDefaultStoragePartition(browser_context)
       ->SetNetworkContextForTesting(std::move(network_context_remote));
   return network_context;
@@ -218,7 +221,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
             std::string());
 
   network::mojom::CookieManager* cookies = GetCookies(browser_context);
-  // Ensure |cookies| is fully initialized.
+  // Ensure `cookies` is fully initialized.
   base::RunLoop run_loop;
   cookies->GetAllCookies(base::BindLambdaForTesting(
       [&](const net::CookieList& cookies) { run_loop.Quit(); }));
@@ -231,21 +234,24 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value,
           kSAMLIdPCookieDomainWithWildcard, std::string(), base::Time(),
           base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+          false),
       GURL(kSAMLIdPCookieURL), options, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+          false),
       GURL(kSAMLIdPCookieURL), options, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kGAIACookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+          false),
       GURL(kGAIACookieURL), options, base::DoNothing());
 }
 

@@ -36,14 +36,6 @@
 namespace payments {
 namespace {
 
-enum class EditorViewControllerTags : int {
-  // The tag for the button that saves the model being edited. Starts
-  // at PAYMENT_REQUEST_COMMON_TAG_MAX not to conflict with tags
-  // common to all views.
-  SAVE_BUTTON = static_cast<int>(
-      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
-};
-
 std::unique_ptr<views::View> CreateErrorLabelView(
     const base::string16& error,
     autofill::ServerFieldType type) {
@@ -60,7 +52,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(
   view->SetLayoutManager(std::move(layout));
 
   std::unique_ptr<views::Label> error_label =
-      std::make_unique<views::Label>(error, CONTEXT_BODY_TEXT_SMALL);
+      std::make_unique<views::Label>(error, CONTEXT_DIALOG_BODY_TEXT_SMALL);
   error_label->SetID(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) + type);
   error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_AlertSeverityHigh));
@@ -74,9 +66,9 @@ std::unique_ptr<views::View> CreateErrorLabelView(
 }  // namespace
 
 EditorViewController::EditorViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog,
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog,
     BackNavigationType back_navigation_type,
     bool is_incognito)
     : PaymentRequestSheetController(spec, state, dialog),
@@ -128,13 +120,22 @@ bool EditorViewController::ValidateInputFields() {
   return true;
 }
 
-std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
-  auto button =
-      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
-  button->SetProminent(true);
-  button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
-  button->SetID(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
-  return button;
+base::string16 EditorViewController::GetPrimaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_DONE);
+}
+
+views::Button::PressedCallback
+EditorViewController::GetPrimaryButtonCallback() {
+  return base::BindRepeating(&EditorViewController::SaveButtonPressed,
+                             base::Unretained(this));
+}
+
+int EditorViewController::GetPrimaryButtonId() {
+  return static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON);
+}
+
+bool EditorViewController::GetPrimaryButtonEnabled() {
+  return true;
 }
 
 bool EditorViewController::ShouldShowSecondaryButton() {
@@ -166,27 +167,6 @@ void EditorViewController::UpdateEditorView() {
   dialog()->EditorViewUpdated();
 }
 
-void EditorViewController::ButtonPressed(views::Button* sender,
-                                         const ui::Event& event) {
-  switch (sender->tag()) {
-    case static_cast<int>(EditorViewControllerTags::SAVE_BUTTON):
-      if (ValidateModelAndSave()) {
-        switch (back_navigation_type_) {
-          case BackNavigationType::kOneStep:
-            dialog()->GoBack();
-            break;
-          case BackNavigationType::kPaymentSheet:
-            dialog()->GoBackToPaymentSheet();
-            break;
-        }
-      }
-      break;
-    default:
-      PaymentRequestSheetController::ButtonPressed(sender, event);
-      break;
-  }
-}
-
 views::View* EditorViewController::GetFirstFocusedView() {
   if (initial_focus_field_view_)
     return initial_focus_field_view_;
@@ -214,7 +194,9 @@ EditorViewController::CreateComboboxForField(const EditorField& field,
 
   // Using autofill field type as a view ID.
   combobox->SetID(GetInputFieldViewId(field.type));
-  combobox->set_listener(this);
+  combobox->SetCallback(
+      base::BindRepeating(&EditorViewController::OnPerformAction,
+                          base::Unretained(this), combobox.get()));
   comboboxes_.insert(std::make_pair(combobox.get(), field));
   return combobox;
 }
@@ -226,9 +208,8 @@ void EditorViewController::ContentsChanged(views::Textfield* sender,
   primary_button()->SetEnabled(ValidateInputFields());
 }
 
-void EditorViewController::OnPerformAction(views::Combobox* sender) {
-  ValidatingCombobox* sender_cast = static_cast<ValidatingCombobox*>(sender);
-  sender_cast->OnContentsChanged();
+void EditorViewController::OnPerformAction(ValidatingCombobox* sender) {
+  static_cast<ValidatingCombobox*>(sender)->OnContentsChanged();
   primary_button()->SetEnabled(ValidateInputFields());
 }
 
@@ -512,6 +493,17 @@ void EditorViewController::AddOrUpdateErrorMessageForField(
           label_view_it->second->children().front()->children().front())
           ->SetText(error_message);
     }
+  }
+}
+
+void EditorViewController::SaveButtonPressed() {
+  if (!ValidateModelAndSave())
+    return;
+  if (back_navigation_type_ == BackNavigationType::kOneStep) {
+    dialog()->GoBack();
+  } else {
+    DCHECK_EQ(BackNavigationType::kPaymentSheet, back_navigation_type_);
+    dialog()->GoBackToPaymentSheet();
   }
 }
 

@@ -13,11 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 
@@ -35,9 +35,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
    public:
     virtual ~Observer() {}
 
-    // Called when a new message arrives. |message| contains the message.
-    // The contents of the dictionary include the keys listed above.
-    virtual void MessageReceived(const base::DictionaryValue& message) = 0;
+    // Called when a new message arrives. |message| contains the message which
+    // is a dictionary value containing entries for kNumberKey, kTextKey, and
+    // kTimestampKey.
+    virtual void MessageReceived(const base::Value& message) = 0;
   };
 
   ~NetworkSmsHandler() override;
@@ -70,17 +71,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   // Adds |message| to the list of received messages. If the length of the
   // list exceeds the maximum number of retained messages, erase the least
   // recently received message.
-  void AddReceivedMessage(const base::DictionaryValue& message);
+  void AddReceivedMessage(const base::Value& message);
 
   // Notify observers that |message| was received.
-  void NotifyMessageReceived(const base::DictionaryValue& message);
+  void NotifyMessageReceived(const base::Value& message);
 
-    // Called from NetworkSmsDeviceHandler when a message is received.
-  void MessageReceived(const base::DictionaryValue& message);
+  // Called from NetworkSmsDeviceHandler when a message is received.
+  void MessageReceived(const base::Value& message);
 
   // Callback to handle the manager properties with the list of devices.
-  void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
-                                 const base::DictionaryValue& properties);
+  void ManagerPropertiesCallback(base::Optional<base::Value> properties);
 
   // Requests properties for each entry in |devices|.
   void UpdateDevices(const base::Value& devices);
@@ -88,12 +88,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   // Callback to handle the device properties for |device_path|.
   // A NetworkSmsDeviceHandler will be instantiated for each cellular device.
   void DevicePropertiesCallback(const std::string& device_path,
-                                DBusMethodCallStatus call_status,
-                                const base::DictionaryValue& properties);
+                                base::Optional<base::Value> properties);
 
   base::ObserverList<Observer, true>::Unchecked observers_;
   std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;
-  std::vector<std::unique_ptr<base::DictionaryValue>> received_messages_;
+  std::vector<base::Value> received_messages_;
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);

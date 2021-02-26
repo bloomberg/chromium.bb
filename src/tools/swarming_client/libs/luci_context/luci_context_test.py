@@ -19,7 +19,7 @@ from libs.luci_context import luci_context
 
 class TestLuciContext(unittest.TestCase):
   def setUp(self):
-    self.ek = luci_context._ENV_KEY
+    self.ek = luci_context.ENV_KEY
     # Makes all logged messages go into unittest's buffer to be revealed on test
     # failure.
     logging.root.handlers[0].stream = sys.stdout
@@ -112,6 +112,20 @@ class TestLuciContext(unittest.TestCase):
     self.assertIsNone(r('other'))
     self.assertIsNone(r('something'))
 
+  def test_write_unchanged(self):
+    with luci_context.write(something={'data': True}):
+      path = os.environ.get(self.ek)
+      with luci_context.write():
+        self.assertDictEqual(luci_context.read_full(),
+                             {'something': {'data': True}})
+        self.assertEqual(os.environ.get(self.ek), path)
+      with luci_context.write(something={'data': True}):
+        self.assertEqual(os.environ.get(self.ek), path)
+        self.assertDictEqual(luci_context.read_full(),
+                             {'something': {'data': True}})
+      with luci_context.write(something={'data': False}):
+        self.assertNotEqual(os.environ.get(self.ek), path)
+
   def test_stage(self):
     path = None
     with luci_context.stage(something={'data': True}) as path:
@@ -119,6 +133,16 @@ class TestLuciContext(unittest.TestCase):
         self.assertEqual('{"something": {"data": true}}', f.read())
     # The file is gone outside 'with' block.
     self.assertFalse(os.path.exists(path))
+
+  def test_stage_unchanged(self):
+    with luci_context.write(something={'data': True}):
+      path = os.environ.get(self.ek)
+      with luci_context.stage() as new_path:
+        self.assertIsNone(new_path)
+      with luci_context.stage(something={'data': True}) as new_path:
+        self.assertIsNone(new_path)
+      with luci_context.stage(something={'data': False}) as new_path:
+        self.assertNotEqual(new_path, path)
 
   def test_to_utf8_bytes(self):
     input_dict = {b'key1': b'value1', b'key2': b'value2'}
@@ -138,9 +162,17 @@ class TestLuciContext(unittest.TestCase):
     output_dict = luci_context._to_utf8(input_dict)
     self.assertDictEqual({'key1': 'value1', 'key2': 'value2'}, output_dict)
 
+  def test_leak(self):
+    path = None
+    with luci_context._tf({'something': {'data': True}}, leak=True) as path:
+      self.assertTrue(os.path.exists(path))
+    # The file is not deleted after contextmanager exits
+    self.assertTrue(os.path.exists(path))
+    os.unlink(path)
+
 
 if __name__ == '__main__':
   # Pop it out of the environment to make sure we start clean.
   logging.basicConfig()
-  os.environ.pop(luci_context._ENV_KEY, None)
+  os.environ.pop(luci_context.ENV_KEY, None)
   unittest.main(buffer=True)

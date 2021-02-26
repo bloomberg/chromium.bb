@@ -35,11 +35,13 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -246,9 +248,11 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       mouse_event.button = button;
       mouse_event.SetPositionInWidget(15, 15);
       mouse_event.click_count = 1;
-      tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+      tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+          mouse_event);
       mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-      tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+      tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+          mouse_event);
     }
 
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
@@ -538,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
       blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 
   // Navigate to C.
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
 
   base::string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
@@ -629,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
   // Verify that the referrer policy was honored and the main page's origin was
   // send as referrer.
   content::RenderFrameHost* frame = content::FrameMatchingPredicate(
-      tab, base::Bind(&content::FrameIsChildOfMainFrame));
+      tab, base::BindRepeating(&content::FrameIsChildOfMainFrame));
   std::string title;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       frame,
@@ -735,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 // These tests assume a default policy of no-referrer-when-downgrade.
 struct ReferrerOverrideParams {
   base::Optional<base::Feature> feature_to_enable;
-  // If true, calls content::Referrer::SetForceLegacyDefaultReferrerPolicy()
+  // If true, calls blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy()
   // to pin the default policy to no-referrer-when-downgrade.
   bool force_no_referrer_when_downgrade_default;
   network::mojom::ReferrerPolicy baseline_policy;
@@ -766,8 +771,7 @@ struct ReferrerOverrideParams {
      .same_origin_to_cross_origin_subresource_redirect =
          ReferrerPolicyTest::EXPECT_EMPTY_REFERRER},
     {
-        .feature_to_enable =
-            network::features::kCapReferrerToOriginOnCrossOrigin,
+        .feature_to_enable = net::features::kCapReferrerToOriginOnCrossOrigin,
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kAlways,
         // Applying the cap doesn't change the "referrer policy"
@@ -789,7 +793,7 @@ struct ReferrerOverrideParams {
             ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
     },
     {
-        .feature_to_enable = features::kReducedReferrerGranularity,
+        .feature_to_enable = blink::features::kReducedReferrerGranularity,
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests
@@ -807,7 +811,7 @@ struct ReferrerOverrideParams {
             ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
     },
     {
-        .feature_to_enable = features::kReducedReferrerGranularity,
+        .feature_to_enable = blink::features::kReducedReferrerGranularity,
         .force_no_referrer_when_downgrade_default = true,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests
@@ -832,7 +836,7 @@ class ReferrerOverrideTest
   ReferrerOverrideTest() {
     if (GetParam().feature_to_enable)
       scoped_feature_list_.InitAndEnableFeature(*GetParam().feature_to_enable);
-    content::Referrer::SetForceLegacyDefaultReferrerPolicy(
+    blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(
         GetParam().force_no_referrer_when_downgrade_default);
   }
 
@@ -997,7 +1001,7 @@ class ReferrerPolicyCapReferrerToOriginOnCrossOriginTest
  public:
   ReferrerPolicyCapReferrerToOriginOnCrossOriginTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        network::features::kCapReferrerToOriginOnCrossOrigin);
+        net::features::kCapReferrerToOriginOnCrossOrigin);
   }
 
  private:

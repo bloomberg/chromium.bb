@@ -29,8 +29,6 @@ namespace blink {
 class PLATFORM_EXPORT BufferingBytesConsumer final
     : public BytesConsumer,
       private BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BufferingBytesConsumer);
-
  public:
   // Creates a BufferingBytesConsumer that waits some delay before beginning
   // to buffer data from the underlying consumer. This delay provides an
@@ -79,7 +77,7 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   Error GetError() const override;
   String DebugName() const override { return "BufferingBytesConsumer"; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnTimerFired(TimerBase*);

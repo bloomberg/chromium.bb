@@ -12,7 +12,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
+#include "chrome/browser/ui/android/layouts/scene_layer.h"
 #include "ui/android/resources/resource_manager_impl.h"
 
 namespace cc {
@@ -44,7 +44,13 @@ class ScrollingBottomViewSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jobj,
       const base::android::JavaParamRef<jobject>& jcontent_tree);
 
+  SkColor GetBackgroundColor() override;
+
+  bool ShouldShowBackground() override;
+
  private:
+  bool should_show_background_;
+  SkColor background_color_;
   scoped_refptr<cc::Layer> view_container_;
   scoped_refptr<cc::UIResourceLayer> view_layer_;
 

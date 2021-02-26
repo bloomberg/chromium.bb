@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -167,6 +168,8 @@ TestBookmarkPositions PositionsFromExpectations(
 class BookmarkProviderTest : public testing::Test {
  public:
   BookmarkProviderTest();
+  BookmarkProviderTest(const BookmarkProviderTest&) = delete;
+  BookmarkProviderTest& operator=(const BookmarkProviderTest&) = delete;
 
  protected:
   void SetUp() override;
@@ -175,9 +178,6 @@ class BookmarkProviderTest : public testing::Test {
   std::unique_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
   TestSchemeClassifier classifier_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkProviderTest);
 };
 
 BookmarkProviderTest::BookmarkProviderTest() {
@@ -486,7 +486,7 @@ TEST_F(BookmarkProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("foo"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }

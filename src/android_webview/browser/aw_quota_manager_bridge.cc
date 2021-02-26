@@ -12,10 +12,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -30,7 +29,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using content::StoragePartition;
-using storage::QuotaClient;
 using storage::QuotaManager;
 
 namespace android_webview {
@@ -87,11 +85,12 @@ GetOriginsTask::~GetOriginsTask() {}
 
 void GetOriginsTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&QuotaManager::GetOriginsModifiedBetween, quota_manager_,
                      blink::mojom::StorageType::kTemporary,
                      base::Time() /* Since beginning of time. */,
+                     base::Time::Max() /* Until the end of times */,
                      base::BindOnce(&GetOriginsTask::OnOriginsObtained, this)));
 }
 
@@ -129,8 +128,8 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
 void GetOriginsTask::CheckDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
   } else if (num_callbacks_received_ > num_callbacks_to_wait_) {
     NOTREACHED();
   }
@@ -146,7 +145,7 @@ void RunOnUIThread(base::OnceClosure task) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     std::move(task).Run();
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(task));
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   }
 }
 
@@ -253,7 +252,7 @@ void AwQuotaManagerBridge::GetOriginsCallbackImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   Java_AwQuotaManagerBridge_onGetOriginsCallback(
@@ -274,8 +273,8 @@ void OnUsageAndQuotaObtained(
     usage = 0;
     quota = 0;
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(ui_callback), usage, quota));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(ui_callback), usage, quota));
 }
 
 }  // namespace
@@ -303,8 +302,8 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
                      weak_factory_.GetWeakPtr(), callback_id, is_quota);
 
   // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &QuotaManager::GetUsageAndQuota, GetQuotaManager(),
           url::Origin::Create(GURL(origin)),
@@ -319,7 +318,7 @@ void AwQuotaManagerBridge::QuotaUsageCallbackImpl(int jcallback_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   Java_AwQuotaManagerBridge_onGetUsageAndQuotaForOriginCallback(

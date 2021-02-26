@@ -5,7 +5,6 @@
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
@@ -30,7 +29,7 @@ Polymer({
 
     depth: {
       type: Number,
-      observer: 'depthChanged_'
+      observer: 'depthChanged_',
     },
 
     /** @private */
@@ -123,5 +122,13 @@ Polymer({
   toggleChildren_(e) {
     this.childrenShown_ = !this.childrenShown_;
     e.stopPropagation();  // Prevent the above onClick_ handler from firing.
-  }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getAriaExpanded_() {
+    return this.childrenShown_ ? 'true' : 'false';
+  },
 });

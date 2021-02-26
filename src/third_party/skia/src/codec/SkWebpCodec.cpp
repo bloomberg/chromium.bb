@@ -77,7 +77,7 @@ std::unique_ptr<SkCodec> SkWebpCodec::MakeFromStream(std::unique_ptr<SkStream> s
     const int width = WebPDemuxGetI(demux, WEBP_FF_CANVAS_WIDTH);
     const int height = WebPDemuxGetI(demux, WEBP_FF_CANVAS_HEIGHT);
 
-    // Sanity check for image size that's about to be decoded.
+    // Validate the image size that's about to be decoded.
     {
         const int64_t size = sk_64_mul(width, height);
         // now check that if we are 4-bytes per pixel, we also don't overflow
@@ -143,7 +143,7 @@ std::unique_ptr<SkCodec> SkWebpCodec::MakeFromStream(std::unique_ptr<SkStream> s
             // sense to guess kBGRA which is likely closer to the final
             // output.  Otherwise, we might end up converting
             // BGRA->YUVA->BGRA.
-            // Fallthrough:
+            [[fallthrough]];
         case 2:
             // This is the lossless format (BGRA).
             if (hasAlpha) {
@@ -224,9 +224,7 @@ int SkWebpCodec::onGetRepetitionCount() {
         return kRepetitionCountInfinite;
     }
 
-#ifndef SK_LEGACY_WEBP_LOOP_COUNT
     loopCount--;
-#endif
     return loopCount;
 }
 

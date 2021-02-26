@@ -5,20 +5,22 @@
 package org.chromium.content.browser;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
 
-import org.junit.Assert;
+import androidx.test.filters.LargeTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -65,9 +67,9 @@ public class GestureDetectorResetTest {
             try {
                 contents = DOMUtils.getNodeContents(mWebContents, mNodeId);
             } catch (Throwable e) {
-                Assert.fail("Failed to retrieve node contents: " + e);
+                throw new CriteriaNotSatisfiedException(e);
             }
-            Assert.assertEquals(mFailureReason, mExpectedContents, contents);
+            Criteria.checkThat(mFailureReason, contents, Matchers.is(mExpectedContents));
         }
     }
 
@@ -97,7 +99,6 @@ public class GestureDetectorResetTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testSeparateClicksAreRegisteredOnReload()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

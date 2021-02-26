@@ -119,13 +119,9 @@ export class ResourceScriptMapping {
     if (!scriptFile._hasScripts([script])) {
       return null;
     }
-    let lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
+    const lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
     let columnNumber = rawLocation.columnNumber || 0;
-    if (script.hasWasmDisassembly()) {
-      // TODO(chromium:1056632) This produces the wrong result when the disassembly is not loaded yet.
-      lineNumber = script.wasmDisassemblyLine(columnNumber);
-      columnNumber = 0;
-    } else if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
+    if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
       columnNumber -= script.columnOffset;
     }
     return uiSourceCode.uiLocation(lineNumber, columnNumber);
@@ -140,13 +136,10 @@ export class ResourceScriptMapping {
    */
   uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
     const scriptFile = this._uiSourceCodeToScriptFile.get(uiSourceCode);
-    if (!scriptFile) {
+    if (!scriptFile || typeof scriptFile._script === 'undefined') {
       return [];
     }
     const script = scriptFile._script;
-    if (script.hasWasmDisassembly()) {
-      return [script.wasmByteLocation(lineNumber)];
-    }
     if (script.isInlineScriptWithSourceURL()) {
       return [this._debuggerModel.createRawLocation(
           script, lineNumber + script.lineOffset, lineNumber ? columnNumber : columnNumber + script.columnOffset)];
@@ -190,7 +183,9 @@ export class ResourceScriptMapping {
     const oldUISourceCode = project.uiSourceCodeForURL(url);
     if (oldUISourceCode) {
       const scriptFile = this._uiSourceCodeToScriptFile.get(oldUISourceCode);
-      await this._removeScript(scriptFile._script);
+      if (scriptFile && typeof scriptFile._script !== 'undefined') {
+        await this._removeScript(scriptFile._script);
+      }
     }
 
     // Create UISourceCode.
@@ -202,7 +197,7 @@ export class ResourceScriptMapping {
     const scriptFile = new ResourceScriptFile(this, uiSourceCode, [script]);
     this._uiSourceCodeToScriptFile.set(uiSourceCode, scriptFile);
 
-    const mimeType = script.isWasm() ? 'text/webassembly' : 'text/javascript';
+    const mimeType = script.isWasm() ? 'application/wasm' : 'text/javascript';
     project.addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, mimeType);
     await this._debuggerWorkspaceBinding.updateLocations(script);
   }
@@ -227,7 +222,9 @@ export class ResourceScriptMapping {
     const uiSourceCode =
         /** @type {!Workspace.UISourceCode.UISourceCode} */ (project.uiSourceCodeForURL(script.sourceURL));
     const scriptFile = this._uiSourceCodeToScriptFile.get(uiSourceCode);
-    scriptFile.dispose();
+    if (scriptFile) {
+      scriptFile.dispose();
+    }
     this._uiSourceCodeToScriptFile.delete(uiSourceCode);
     project.removeFile(script.sourceURL);
     await this._debuggerWorkspaceBinding.updateLocations(script);
@@ -285,7 +282,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
    */
   constructor(resourceScriptMapping, uiSourceCode, scripts) {
     super();
-    console.assert(scripts.length);
+    console.assert(scripts.length > 0);
 
     this._resourceScriptMapping = resourceScriptMapping;
     this._uiSourceCode = uiSourceCode;
@@ -305,7 +302,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   _hasScripts(scripts) {
-    return this._script && this._script === scripts[0];
+    return !!this._script && this._script === scripts[0];
   }
 
   /**
@@ -318,7 +315,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
     if (!this._script) {
       return false;
     }
-    if (typeof this._scriptSource === 'undefined') {
+    if (typeof this._scriptSource === 'undefined' || this._scriptSource === null) {
       return false;
     }
     const workingCopy = this._uiSourceCode.workingCopy();
@@ -399,40 +396,44 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   async _divergeFromVM() {
-    this._isDivergingFromVM = true;
-    await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
-    delete this._isDivergingFromVM;
-    this._hasDivergedFromVM = true;
-    this.dispatchEventToListeners(ResourceScriptFile.Events.DidDivergeFromVM, this._uiSourceCode);
+    if (this._script) {
+      this._isDivergingFromVM = true;
+      await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
+      delete this._isDivergingFromVM;
+      this._hasDivergedFromVM = true;
+      this.dispatchEventToListeners(ResourceScriptFile.Events.DidDivergeFromVM, this._uiSourceCode);
+    }
   }
 
   async _mergeToVM() {
-    delete this._hasDivergedFromVM;
-    this._isMergingToVM = true;
-    await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
-    delete this._isMergingToVM;
-    this.dispatchEventToListeners(ResourceScriptFile.Events.DidMergeToVM, this._uiSourceCode);
+    if (this._script) {
+      delete this._hasDivergedFromVM;
+      this._isMergingToVM = true;
+      await this._resourceScriptMapping._debuggerWorkspaceBinding.updateLocations(this._script);
+      delete this._isMergingToVM;
+      this.dispatchEventToListeners(ResourceScriptFile.Events.DidMergeToVM, this._uiSourceCode);
+    }
   }
 
   /**
    * @return {boolean}
    */
   hasDivergedFromVM() {
-    return this._hasDivergedFromVM;
+    return !!this._hasDivergedFromVM;
   }
 
   /**
    * @return {boolean}
    */
   isDivergingFromVM() {
-    return this._isDivergingFromVM;
+    return !!this._isDivergingFromVM;
   }
 
   /**
    * @return {boolean}
    */
   isMergingToVM() {
-    return this._isMergingToVM;
+    return !!this._isMergingToVM;
   }
 
   checkMapping() {
@@ -470,14 +471,14 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   hasSourceMapURL() {
-    return this._script && !!this._script.sourceMapURL;
+    return !!this._script && !!this._script.sourceMapURL;
   }
 
   /**
-   * @return {!SDK.Script.Script}
+   * @return {?SDK.Script.Script}
    */
   get script() {
-    return this._script;
+    return this._script || null;
   }
 
   /**

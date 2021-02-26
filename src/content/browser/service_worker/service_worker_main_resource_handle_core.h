@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/common/content_export.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace network {
@@ -48,9 +49,12 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
       int render_frame_id,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
+          coep_reporter,
+      ukm::SourceId document_ukm_source_id);
+  void OnEndNavigationCommit();
   void OnBeginWorkerCommit(
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      ukm::SourceId worker_ukm_source_id);
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
@@ -63,6 +67,16 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
 
   base::WeakPtr<ServiceWorkerContainerHost> container_host() {
     return container_host_;
+  }
+
+  void set_parent_container_host(
+      base::WeakPtr<ServiceWorkerContainerHost> container_host) {
+    DCHECK(!parent_container_host_);
+    parent_container_host_ = std::move(container_host);
+  }
+
+  base::WeakPtr<ServiceWorkerContainerHost> parent_container_host() {
+    return parent_container_host_;
   }
 
   void set_interceptor(
@@ -86,6 +100,8 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerMainResourceHandle> ui_handle_;
   base::WeakPtr<ServiceWorkerContainerHost> container_host_;
+  // Only used for workers with a blob URL.
+  base::WeakPtr<ServiceWorkerContainerHost> parent_container_host_;
   std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
   ServiceWorkerAccessedCallback service_worker_accessed_callback_;
 

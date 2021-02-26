@@ -10,11 +10,16 @@
 
 namespace switches {
 
+extern const char kSyncServiceURL[];
+extern const char kTrustedVaultServiceURL[];
+
 extern const base::Feature kSyncNigoriRemoveMetadataOnCacheGuidMismatch;
 extern const base::Feature kSyncForceDisableScryptForCustomPassphrase;
 extern const base::Feature kSyncE2ELatencyMeasurement;
 extern const base::Feature kSyncCustomSharingMessageNudgeDelay;
 extern const base::FeatureParam<int> kSyncSharingMessageNudgeDelayMilliseconds;
+
+extern const base::Feature kSyncResetEntitiesStateOnCommitFailure;
 
 }  // namespace switches
 

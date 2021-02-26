@@ -19,12 +19,15 @@ struct CompositingReasonStringMap {
 
 constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::k3DTransform, "transform3D", "Has a 3d transform"},
+    {CompositingReason::kTrivial3DTransform, "trivialTransform3D",
+     "Has a trivial 3d transform"},
     {CompositingReason::kVideo, "video", "Is an accelerated video"},
     {CompositingReason::kCanvas, "canvas",
      "Is an accelerated canvas, or is a display list backed canvas that was "
      "promoted to a layer based on a performance heuristic."},
     {CompositingReason::kPlugin, "plugin", "Is an accelerated plugin"},
     {CompositingReason::kIFrame, "iFrame", "Is an accelerated iFrame"},
+    {CompositingReason::kSVGRoot, "SVGRoot", "Is an accelerated SVG root"},
     {CompositingReason::kBackfaceVisibilityHidden, "backfaceVisibilityHidden",
      "Has backface-visibility: hidden"},
     {CompositingReason::kActiveTransformAnimation, "activeTransformAnimation",
@@ -60,6 +63,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Has a will-change compositing hint other than transform and opacity"},
     {CompositingReason::kBackdropFilter, "backdropFilter",
      "Has a backdrop filter"},
+    {CompositingReason::kBackdropFilterMask, "backdropFilterMask",
+     "Is a mask for backdrop filter"},
     {CompositingReason::kRootScroller, "rootScroller",
      "Is the document.rootScroller"},
     {CompositingReason::kAssumedOverlap, "assumedOverlap",
@@ -90,10 +95,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "blendingWithCompositedDescendants",
      "Has a blending effect that needs to be known by compositor because of "
      "composited descendants"},
-    {CompositingReason::kClipsCompositingDescendants,
-     "clipsCompositingDescendants",
-     "Has a clip that needs to be known by compositor because of composited "
-     "descendants"},
     {CompositingReason::kPerspectiveWith3DDescendants,
      "perspectiveWith3DDescendants",
      "Has a perspective transform that needs to be known by compositor because "
@@ -105,32 +106,21 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
-    {CompositingReason::kPositionFixedWithCompositedDescendants,
-     "positionFixedWithCompositedDescendants"
-     "Is a position:fixed element with composited descendants"},
+    {CompositingReason::kFullscreenVideoWithCompositedDescendants,
+     "fullscreenVideoWithCompositedDescendants",
+     "Is a fullscreen video element with composited descendants"},
     {CompositingReason::kRoot, "root", "Is the root layer"},
     {CompositingReason::kLayerForHorizontalScrollbar,
      "layerForHorizontalScrollbar",
      "Secondary layer, the horizontal scrollbar layer"},
     {CompositingReason::kLayerForVerticalScrollbar, "layerForVerticalScrollbar",
      "Secondary layer, the vertical scrollbar layer"},
-    {CompositingReason::kLayerForOverflowControlsHost,
-     "layerForOverflowControlsHost",
-     "Secondary layer, the overflow controls host layer"},
     {CompositingReason::kLayerForScrollCorner, "layerForScrollCorner",
      "Secondary layer, the scroll corner layer"},
     {CompositingReason::kLayerForScrollingContents, "layerForScrollingContents",
      "Secondary layer, to house contents that can be scrolled"},
-    {CompositingReason::kLayerForScrollingContainer,
-     "layerForScrollingContainer",
-     "Secondary layer, used to position the scrolling contents while "
-     "scrolling"},
     {CompositingReason::kLayerForSquashingContents, "layerForSquashingContents",
      "Secondary layer, home for a group of squashable content"},
-    {CompositingReason::kLayerForSquashingContainer,
-     "layerForSquashingContainer",
-     "Secondary layer, no-op layer to place the squashing layer correctly in "
-     "the composited layer tree"},
     {CompositingReason::kLayerForForeground, "layerForForeground",
      "Secondary layer, to contain any normal flow and positive z-index "
      "contents on top of a negative z-index layer"},
@@ -140,6 +130,9 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Layer painted on top of other layers as decoration"},
     {CompositingReason::kLayerForOther, "layerForOther",
      "Layer for link highlight, frame overlay, etc."},
+    {CompositingReason::kBackfaceInvisibility3DAncestor,
+     "BackfaceInvisibility3DAncestor",
+     "Ancestor in same 3D rendering context has a hidden backface"},
 };
 
 }  // anonymous namespace

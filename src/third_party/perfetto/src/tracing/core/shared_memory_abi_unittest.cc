@@ -107,7 +107,7 @@ TEST_P(SharedMemoryABITest, NominalCases) {
       ASSERT_EQ(SharedMemoryABI::kChunkBeingWritten,
                 abi.GetChunkState(page_idx, chunk_idx));
 
-      // Sanity check chunk bounds.
+      // Check chunk bounds.
       size_t expected_chunk_size =
           (page_size() - sizeof(SharedMemoryABI::PageHeader)) / num_chunks;
       expected_chunk_size = expected_chunk_size - (expected_chunk_size % 4);
@@ -141,6 +141,14 @@ TEST_P(SharedMemoryABITest, NominalCases) {
       ASSERT_TRUE(
           chunk.header()->packets.load().flags &
           SharedMemoryABI::ChunkHeader::kLastPacketContinuesOnNextChunk);
+
+      // Test clearing the needs patching flag.
+      chunk.SetFlag(SharedMemoryABI::ChunkHeader::kChunkNeedsPatching);
+      ASSERT_TRUE(chunk.header()->packets.load().flags &
+                  SharedMemoryABI::ChunkHeader::kChunkNeedsPatching);
+      chunk.ClearNeedsPatchingFlag();
+      ASSERT_FALSE(chunk.header()->packets.load().flags &
+                   SharedMemoryABI::ChunkHeader::kChunkNeedsPatching);
 
       // Reacquiring the same chunk should fail.
       ASSERT_FALSE(abi.TryAcquireChunkForWriting(page_idx, chunk_idx, &header)

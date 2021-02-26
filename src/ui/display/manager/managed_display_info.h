@@ -40,6 +40,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   ~ManagedDisplayMode();
   ManagedDisplayMode(const ManagedDisplayMode& other);
   ManagedDisplayMode& operator=(const ManagedDisplayMode& other);
+  bool operator==(const ManagedDisplayMode& other) const;
 
   // Returns the size in DIP which is visible to the user.
   gfx::Size GetSizeInDIP() const;
@@ -65,15 +66,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   bool native_ = false;         // True if mode is native mode of the display.
   float device_scale_factor_ = 1.0f;  // The device scale factor of the mode.
 };
-
-inline bool operator==(const ManagedDisplayMode& lhs,
-                       const ManagedDisplayMode& rhs) {
-  return lhs.size() == rhs.size() &&
-         lhs.is_interlaced() == rhs.is_interlaced() &&
-         lhs.refresh_rate() == rhs.refresh_rate() &&
-         lhs.native() == rhs.native() &&
-         lhs.device_scale_factor() == rhs.device_scale_factor();
-}
 
 inline bool operator!=(const ManagedDisplayMode& lhs,
                        const ManagedDisplayMode& rhs) {
@@ -209,10 +201,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   // Returns the rotation set by a given |source|.
   Display::Rotation GetRotation(Display::RotationSource source) const;
-
-  // Returns a measure of density relative to a display with 1.0 DSF. Unlike the
-  // effective DSF, this is independent from the UI scale.
-  float GetDensityRatio() const;
 
   // Returns the ui scale and device scale factor actually used to create
   // display that chrome sees. This is |device_scale_factor| x |zoom_factor_|.

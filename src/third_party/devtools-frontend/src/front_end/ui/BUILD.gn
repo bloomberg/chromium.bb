@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../third_party/typescript/typescript.gni")
+import("../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../scripts/build/ninja/devtools_module.gni")
 
-ts_library("ui") {
+devtools_module("ui") {
   sources = [
     "ARIAUtils.js",
     "Action.js",
@@ -14,6 +15,7 @@ ts_library("ui") {
     "ContextFlavorListener.js",
     "ContextMenu.js",
     "Dialog.js",
+    "DockController.js",
     "DropTarget.js",
     "EmptyWidget.js",
     "FilterBar.js",
@@ -42,7 +44,6 @@ ts_library("ui") {
     "SegmentedButton.js",
     "SettingsUI.js",
     "ShortcutRegistry.js",
-    "ShortcutsScreen.js",
     "SoftContextMenu.js",
     "SoftDropDown.js",
     "SplitWidget.js",
@@ -64,14 +65,71 @@ ts_library("ui") {
     "XLink.js",
     "XWidget.js",
     "ZoomManager.js",
-    "ui.js",
   ]
 
   deps = [
-    "../common",
-    "../dom_extension",
-    "../host",
-    "../text_utils",
-    "utils",
+    "../common:bundle",
+    "../dom_extension:bundle",
+    "../host:bundle",
+    "../platform:bundle",
+    "../text_utils:bundle",
+    "../theme_support:bundle",
+    "utils:bundle",
   ]
+}
+
+copy_to_gen("legacy_css") {
+  sources = [
+    "checkboxTextLabel.css",
+    "closeButton.css",
+    "confirmDialog.css",
+    "dialog.css",
+    "dropTarget.css",
+    "emptyWidget.css",
+    "filter.css",
+    "glassPane.css",
+    "infobar.css",
+    "inlineButton.css",
+    "inspectorCommon.css",
+    "inspectorStyle.css",
+    "inspectorSyntaxHighlight.css",
+    "inspectorSyntaxHighlightDark.css",
+    "inspectorViewTabbedPane.css",
+    "listWidget.css",
+    "popover.css",
+    "progressIndicator.css",
+    "radioButton.css",
+    "remoteDebuggingTerminatedScreen.css",
+    "reportView.css",
+    "rootView.css",
+    "searchableView.css",
+    "segmentedButton.css",
+    "slider.css",
+    "smallBubble.css",
+    "softContextMenu.css",
+    "softDropDown.css",
+    "softDropDownButton.css",
+    "splitWidget.css",
+    "suggestBox.css",
+    "tabbedPane.css",
+    "targetCrashedScreen.css",
+    "textButton.css",
+    "textPrompt.css",
+    "toolbar.css",
+    "tooltip.css",
+    "treeoutline.css",
+    "viewContainers.css",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "ui.js"
+
+  deps = [ ":ui" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "ui-legacy.js"
+
+  deps = [ ":bundle" ]
 }

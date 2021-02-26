@@ -7,13 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/posix/unix_domain_socket.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
@@ -121,16 +120,16 @@ class ArcTracingDataSource
       const perfetto::DataSourceConfig& data_source_config) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
     // |producer| is a singleton that is never destroyed.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ArcTracingDataSource::StartTracingOnUI,
                        base::Unretained(this), producer, data_source_config));
   }
 
   void StopTracing(base::OnceClosure stop_complete_callback) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
                                   base::Unretained(this),
                                   std::move(stop_complete_callback)));
   }
@@ -304,13 +303,11 @@ ArcTracingBridge::~ArcTracingBridge() {
   arc_bridge_service_->tracing()->RemoveObserver(this);
 
   // Delete the reader on the IO thread.
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->DeleteSoon(FROM_HERE, reader_.release());
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, reader_.release());
 }
 
 void ArcTracingBridge::GetCategories(std::set<std::string>* category_set) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+  base::AutoLock lock(categories_lock_);
   for (const auto& category : categories_) {
     category_set->insert(category.full_name);
   }
@@ -330,6 +327,7 @@ void ArcTracingBridge::OnCategoriesReady(
     const std::vector<std::string>& categories) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  base::AutoLock lock(categories_lock_);
   // There is no API in TraceLog to remove a category from the UI. As an
   // alternative, the old category that is no longer in |categories_| will be
   // ignored when calling |StartTracing|.
@@ -368,20 +366,23 @@ void ArcTracingBridge::StartTracing(const std::string& config,
   }
 
   std::vector<std::string> selected_categories;
-  for (const auto& category : categories_) {
-    if (trace_config.IsCategoryGroupEnabled(category.full_name))
-      selected_categories.push_back(category.name);
+  {
+    base::AutoLock lock(categories_lock_);
+    for (const auto& category : categories_) {
+      if (trace_config.IsCategoryGroupEnabled(category.full_name))
+        selected_categories.push_back(category.name);
+    }
   }
 
   tracing_instance->StartTracing(
-      selected_categories, mojo::WrapPlatformFile(write_fd.release()),
+      selected_categories, mojo::WrapPlatformFile(std::move(write_fd)),
       base::BindOnce(&ArcTracingBridge::OnArcTracingStarted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ArcTracingReader::StartTracing,
                      base::Unretained(reader_.get()), std::move(read_fd)));
 }
@@ -425,8 +426,8 @@ void ArcTracingBridge::OnArcTracingStopped(
   }
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ArcTracingReader::StopTracing,
                      base::Unretained(reader_.get())),
       base::BindOnce(&ArcTracingBridge::OnTracingReaderStopped,
@@ -450,7 +451,6 @@ ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
 
 void ArcTracingBridge::ArcTracingAgent::GetCategories(
     std::set<std::string>* category_set) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_->GetCategories(category_set);
 }
 

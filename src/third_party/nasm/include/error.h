@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------- *
  *
- *   Copyright 1996-2018 The NASM Authors - All Rights Reserved
+ *   Copyright 1996-2020 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
  *
@@ -41,100 +41,123 @@
 #include "compiler.h"
 
 /*
+ * File pointer for error messages
+ */
+extern FILE *error_file;        /* Error file descriptor */
+
+/*
+ * Typedef for the severity field
+ */
+typedef uint32_t errflags;
+
+/*
  * An error reporting function should look like this.
  */
-void printf_func(2, 3) nasm_error(int severity, const char *fmt, ...);
+void printf_func(2, 3) nasm_error(errflags severity, const char *fmt, ...);
+void printf_func(1, 2) nasm_listmsg(const char *fmt, ...);
+void printf_func(2, 3) nasm_listmsgf(errflags flags, const char *fmt, ...);
+void printf_func(1, 2) nasm_debug(const char *fmt, ...);
+void printf_func(2, 3) nasm_debugf(errflags flags, const char *fmt, ...);
+void printf_func(1, 2) nasm_info(const char *fmt, ...);
+void printf_func(2, 3) nasm_infof(errflags flags, const char *fmt, ...);
+void printf_func(2, 3) nasm_warn(errflags flags, const char *fmt, ...);
+void printf_func(1, 2) nasm_nonfatal(const char *fmt, ...);
+void printf_func(2, 3) nasm_nonfatalf(errflags flags, const char *fmt, ...);
 fatal_func printf_func(1, 2) nasm_fatal(const char *fmt, ...);
+fatal_func printf_func(2, 3) nasm_fatalf(errflags flags, const char *fmt, ...);
+fatal_func printf_func(1, 2) nasm_critical(const char *fmt, ...);
+fatal_func printf_func(2, 3) nasm_criticalf(errflags flags, const char *fmt, ...);
 fatal_func printf_func(1, 2) nasm_panic(const char *fmt, ...);
-fatal_func printf_func(2, 3) nasm_fatal_fl(int flags, const char *fmt, ...);
-fatal_func printf_func(2, 3) nasm_panic_fl(int flags, const char *fmt, ...);
+fatal_func printf_func(2, 3) nasm_panicf(errflags flags, const char *fmt, ...);
 fatal_func nasm_panic_from_macro(const char *file, int line);
 #define panic() nasm_panic_from_macro(__FILE__, __LINE__);
 
-typedef void (*vefunc) (int severity, const char *fmt, va_list ap);
-extern vefunc nasm_verror;
-static inline vefunc nasm_set_verror(vefunc ve)
-{
-    vefunc old_verror = nasm_verror;
-    nasm_verror = ve;
-    return old_verror;
-}
+void nasm_verror(errflags severity, const char *fmt, va_list ap);
+fatal_func nasm_verror_critical(errflags severity, const char *fmt, va_list ap);
 
 /*
  * These are the error severity codes which get passed as the first
  * argument to an efunc.
  */
+#define ERR_LISTMSG		0x00000000      /* for the listing file only */
+#define ERR_DEBUG		0x00000001	/* debugging message */
+#define ERR_INFO		0x00000002	/* information for the list file */
+#define ERR_WARNING		0x00000003	/* warn only: no further action */
+#define ERR_NONFATAL		0x00000004	/* terminate assembly after phase */
+#define ERR_FATAL		0x00000005	/* instantly fatal: exit with error */
+#define ERR_CRITICAL		0x00000006      /* fatal, but minimize code before exit */
+#define ERR_PANIC		0x00000007	/* internal error: panic instantly
+						 * and dump core for reference */
+#define ERR_MASK		0x00000007	/* mask off the above codes */
+#define ERR_UNDEAD		0x00000008      /* skip if we already have errors */
+#define ERR_NOFILE		0x00000010	/* don't give source file name/line */
+#define ERR_HERE		0x00000020      /* point to a specific source location */
+#define ERR_USAGE		0x00000040	/* print a usage message */
+#define ERR_PASS1		0x00000080	/* message on pass_first */
+#define ERR_PASS2		0x00000100	/* ignore unless on pass_final */
 
-#define ERR_DEBUG       0x00000000      /* put out debugging message */
-#define ERR_WARNING     0x00000001      /* warn only: no further action */
-#define ERR_NONFATAL    0x00000002      /* terminate assembly after phase */
-#define ERR_FATAL       0x00000006      /* instantly fatal: exit with error */
-#define ERR_PANIC       0x00000007      /* internal error: panic instantly
-                                         * and dump core for reference */
-#define ERR_MASK        0x00000007      /* mask off the above codes */
-#define ERR_NOFILE      0x00000010      /* don't give source file name/line */
-#define ERR_TOPFILE	0x00000020      /* give the top input file name only */
-#define ERR_USAGE       0x00000040      /* print a usage message */
-#define ERR_PASS1       0x00000080      /* only print this error on pass one */
-#define ERR_PASS2       0x00000100      /* only print this error on pass one */
-
-#define ERR_NO_SEVERITY 0x00000200      /* suppress printing severity */
-#define ERR_PP_PRECOND	0x00000400	/* for preprocessor use */
-#define ERR_PP_LISTMACRO 0x00000800	/* from preproc->error_list_macros() */
+#define ERR_NO_SEVERITY		0x00000200	/* suppress printing severity */
+#define ERR_PP_PRECOND		0x00000400	/* for preprocessor use */
+#define ERR_PP_LISTMACRO	0x00000800	/* from preproc->error_list_macros() */
+#define ERR_HOLD		0x00001000      /* this error/warning can be held */
 
 /*
  * These codes define specific types of suppressible warning.
+ * They are assumed to occupy the most significant bits of the
+ * severity code.
  */
-
-#define ERR_WARN_MASK   0xFFFFF000      /* the mask for this feature */
-#define ERR_WARN_SHR    12              /* how far to shift right */
-
-#define WARN(x)         ((x) << ERR_WARN_SHR)
-#define WARN_IDX(x)     (((x) & ERR_WARN_MASK) >> ERR_WARN_SHR)
-
-#define ERR_WARN_OTHER          WARN( 0) /* any noncategorized warning */
-#define ERR_WARN_MNP            WARN( 1) /* macro-num-parameters warning */
-#define ERR_WARN_MSR            WARN( 2) /* macro self-reference */
-#define ERR_WARN_MDP            WARN( 3) /* macro default parameters check */
-#define ERR_WARN_OL             WARN( 4) /* orphan label (no colon, and
-                                          * alone on line) */
-#define ERR_WARN_NOV            WARN( 5) /* numeric overflow */
-#define ERR_WARN_GNUELF         WARN( 6) /* using GNU ELF extensions */
-#define ERR_WARN_FL_OVERFLOW    WARN( 7) /* FP overflow */
-#define ERR_WARN_FL_DENORM      WARN( 8) /* FP denormal */
-#define ERR_WARN_FL_UNDERFLOW   WARN( 9) /* FP underflow */
-#define ERR_WARN_FL_TOOLONG     WARN(10) /* FP too many digits */
-#define ERR_WARN_USER           WARN(11) /* %warning directives */
-#define ERR_WARN_LOCK		WARN(12) /* bad LOCK prefixes */
-#define ERR_WARN_HLE		WARN(13) /* bad HLE prefixes */
-#define ERR_WARN_BND		WARN(14) /* bad BND prefixes */
-#define ERR_WARN_ZEXTRELOC	WARN(15) /* relocation zero-extended */
-#define ERR_WARN_PTR		WARN(16) /* not a NASM keyword */
-#define ERR_WARN_BAD_PRAGMA	WARN(17) /* malformed pragma */
-#define ERR_WARN_UNKNOWN_PRAGMA	WARN(18) /* unknown pragma */
-#define ERR_WARN_NOTMY_PRAGMA	WARN(19) /* pragma inapplicable */
-#define ERR_WARN_UNK_WARNING	WARN(20) /* unknown warning */
-#define ERR_WARN_NEG_REP	WARN(21) /* negative repeat count */
-#define ERR_WARN_PHASE		WARN(22) /* phase error in pass 1 */
-
-/* The "all" warning acts as a global switch, it must come last */
-#define ERR_WARN_ALL            23 /* Do not use WARN() here */
-
-struct warning {
-    const char *name;
-    const char *help;
-    bool enabled;
-};
-extern const struct warning warnings[ERR_WARN_ALL+1];
+#define WARN_SHR		16              /* how far to shift right */
+#define WARN_IDX(x)		(((errflags)(x)) >> WARN_SHR)
+#define WARN_MASK		((~(errflags)0) << WARN_SHR)
 
 /* This is a bitmask */
-#define WARN_ST_ENABLED      1   /* Warning is currently enabled */
-#define WARN_ST_ERROR        2   /* Treat this warning as an error */
+#define WARN_ST_ENABLED		1 /* Warning is currently enabled */
+#define WARN_ST_ERROR		2 /* Treat this warning as an error */
 
-extern uint8_t warning_state[ERR_WARN_ALL];
-extern uint8_t warning_state_init[ERR_WARN_ALL];
+/* Possible initial state for warnings */
+#define WARN_INIT_OFF		0
+#define WARN_INIT_ON		WARN_ST_ENABLED
+#define WARN_INIT_ERR		(WARN_ST_ENABLED|WARN_ST_ERROR)
 
 /* Process a warning option or directive */
-bool set_warning_status(const char *);
+bool set_warning_status(const char *value);
+
+/* Warning stack management */
+void push_warnings(void);
+void pop_warnings(void);
+void init_warnings(void);
+void reset_warnings(void);
+
+/*
+ * Tentative error hold for warnings/errors indicated with ERR_HOLD.
+ *
+ * This is a stack; the "hold" argument *must*
+ * match the value returned from nasm_error_hold_push().
+ * If "issue" is true the errors are committed (or promoted to the next
+ * higher stack level), if false then they are discarded.
+ *
+ * Errors stronger than ERR_NONFATAL cannot be held.
+ */
+struct nasm_errhold;
+typedef struct nasm_errhold *errhold;
+errhold nasm_error_hold_push(void);
+void nasm_error_hold_pop(errhold hold, bool issue);
+
+/* Should be included from within error.h only */
+#include "warnings.h"
+
+/* By defining MAX_DEBUG, we can compile out messages entirely */
+#ifndef MAX_DEBUG
+# define MAX_DEBUG (~0U)
+#endif
+
+/* Debug level checks */
+static inline bool debug_level(unsigned int level)
+{
+    extern unsigned int debug_nasm;
+    if (is_constant(level) && level > MAX_DEBUG)
+        return false;
+    return unlikely(level <= debug_nasm);
+}
 
 #endif /* NASM_ERROR_H */

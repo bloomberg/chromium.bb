@@ -47,20 +47,38 @@ class CounterNode : public RefCounted<CounterNode> {
   USING_FAST_MALLOC(CounterNode);
 
  public:
+  enum Type { kIncrementType = 1 << 0, kResetType = 1 << 1, kSetType = 1 << 2 };
+
   static scoped_refptr<CounterNode> Create(LayoutObject&,
-                                           bool is_reset,
+                                           unsigned type_mask,
                                            int value);
   ~CounterNode();
-  bool ActsAsReset() const { return has_reset_type_ || !parent_; }
-  bool HasResetType() const { return has_reset_type_; }
+  bool ActsAsReset() const { return HasResetType() || !parent_; }
+  bool HasResetType() const { return type_mask_ & kResetType; }
+  bool HasSetType() const { return type_mask_ & kSetType; }
   int Value() const { return value_; }
   int CountInParent() const { return count_in_parent_; }
-  LayoutObject& Owner() const { return owner_; }
+  LayoutObject& Owner() const { return *owner_; }
   void AddLayoutObject(LayoutCounter*);
   void RemoveLayoutObject(LayoutCounter*);
 
   // Invalidates the text in the layoutObjects of this counter, if any.
   void ResetLayoutObjects();
+
+  // This finds a closest ancestor style containment boundary, crosses it, and
+  // then returns the closest ancestor CounterNode available (for the given
+  // `identifier`). Note that the element that specifies contain: style is
+  // itself considered to be across the boundary from its subtree.
+  static CounterNode* AncestorNodeAcrossStyleContainment(
+      const LayoutObject&,
+      const AtomicString& identifier);
+
+  // Returns the parent of this CounterNode. If the node is the root, then it
+  // instead tries to find a node with the same identifier across the style
+  // containment boundary so that it can continue navigating up to the root of
+  // the document. This is used for reporting content: counters().
+  CounterNode* ParentCrossingStyleContainment(
+      const AtomicString& identifier) const;
 
   CounterNode* Parent() const { return parent_; }
   CounterNode* PreviousSibling() const { return previous_sibling_; }
@@ -88,17 +106,17 @@ class CounterNode : public RefCounted<CounterNode> {
                                             const AtomicString& identifier);
 
  private:
-  CounterNode(LayoutObject&, bool is_reset, int value);
+  CounterNode(LayoutObject&, unsigned type_mask, int value);
   int ComputeCountInParent() const;
   // Invalidates the text in the layoutObject of this counter, if any,
   // and in the layoutObjects of all descendants of this counter, if any.
   void ResetThisAndDescendantsLayoutObjects();
   void Recount();
 
-  bool has_reset_type_;
+  unsigned type_mask_;
   int value_;
   int count_in_parent_;
-  LayoutObject& owner_;
+  LayoutObject* const owner_;
   LayoutCounter* root_layout_object_;
 
   CounterNode* parent_;

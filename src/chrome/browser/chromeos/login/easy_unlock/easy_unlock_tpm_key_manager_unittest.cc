@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -180,13 +179,13 @@ void ExpectNotCalledCallback() {
   ADD_FAILURE() << "Not reached";
 }
 
-// Used to track how may |EasyUnlockTpmKeyManager::PrepareTpmKey| callbacks
-// have been called. It increases |*count| by 1.
+// Used to track how may `EasyUnlockTpmKeyManager::PrepareTpmKey` callbacks
+// have been called. It increases `*count` by 1.
 void IncreaseCount(int* count) {
   ++(*count);
 }
 
-// Sets |*result| to |value| and runs |callback|.
+// Sets `*result` to `value` and runs `callback`.
 // Used as a callback to EasyUnlockTpmKeyManager::SignUsingTpmKey in tests.
 void RecordStringAndRunClosure(std::string* result,
                                const base::Closure& callback,
@@ -235,8 +234,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
     bool success = false;
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::InitTestNssUserOnIOThread,
                        base::Unretained(this), base::Unretained(&success)),
         run_loop.QuitClosure());
@@ -259,8 +258,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &EasyUnlockTpmKeyManagerTest::FinalizeTestNssUserOnIOThread,
             base::Unretained(this)),
@@ -273,8 +272,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   void ResetTestNssUser() {
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::ResetTestNssUserOnIOThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());
@@ -292,7 +291,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   // Imports a private RSA key to the test system slot.
   // It returns whether the key has been imported. In order for the method to
   // succeed, the test system slot must have been set up
-  // (using |SetUpTestSystemSlot|).
+  // (using `SetUpTestSystemSlot`).
   bool ImportPrivateKey(const unsigned char* key, int key_size) {
     if (!test_system_slot_ || !test_system_slot_->slot()) {
       LOG(ERROR) << "System slot not initialized.";
@@ -352,7 +351,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   TestingProfileManager profile_manager_;
 
   // The testing profiles that own EasyUnlockTPMKeyManager services.
-  // Owned by |profile_manager_|.
+  // Owned by `profile_manager_`.
   TestingProfile* user_profile_;
   TestingProfile* signin_profile_;
 

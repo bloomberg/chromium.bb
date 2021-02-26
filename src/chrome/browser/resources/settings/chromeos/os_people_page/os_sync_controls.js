@@ -27,6 +27,7 @@ Polymer({
   is: 'os-sync-controls',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -87,6 +88,15 @@ Polymer({
       computed: `computeDataTypeTogglesDisabled_(osSyncFeatureEnabled,
           osSyncPrefs.syncAllOsTypes)`,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([chromeos.settings.mojom.Setting.kSplitSyncOnOff]),
+    },
   },
 
   /** @private {?settings.OsSyncBrowserProxy} */
@@ -117,10 +127,11 @@ Polymer({
    * @protected
    */
   currentRouteChanged(newRoute, oldRoute) {
-    if (newRoute == settings.routes.OS_SYNC) {
+    if (newRoute === settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateToOsSyncPage();
+      this.attemptDeepLink();
     }
-    if (oldRoute == settings.routes.OS_SYNC) {
+    if (oldRoute === settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateAwayFromOsSyncPage();
     }
   },
@@ -151,6 +162,17 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  getSyncOnOffButtonLabel_() {
+    if (!this.osSyncFeatureEnabled) {
+      return this.i18n('osSyncTurnOn');
+    }
+    return this.i18n('osSyncTurnOff');
+  },
+
+  /**
    * Returns the CSS class for the sync status icon.
    * @return {string}
    * @private
@@ -169,7 +191,7 @@ Polymer({
     if (this.syncStatus.hasUnrecoverableError) {
       return 'sync-problem';
     }
-    if (this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE) {
+    if (this.syncStatus.statusAction === settings.StatusAction.REAUTHENTICATE) {
       return 'sync-paused';
     }
     return 'sync-problem';
@@ -216,14 +238,8 @@ Polymer({
   },
 
   /** @private */
-  onTurnOnSyncButtonClick_() {
-    this.browserProxy_.setOsSyncFeatureEnabled(true);
-    settings.recordSettingChange();
-  },
-
-  /** @private */
-  onTurnOffSyncButtonClick_() {
-    this.browserProxy_.setOsSyncFeatureEnabled(false);
+  onSyncOnOffButtonClick_() {
+    this.browserProxy_.setOsSyncFeatureEnabled(!this.osSyncFeatureEnabled);
     settings.recordSettingChange();
   },
 

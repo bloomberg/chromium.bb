@@ -20,12 +20,10 @@ constexpr uint8_t kBitPatterns[] = {0b00000000, 0b11111111, 0b01010101,
 // These are used for testing various vector sizes, begins/ends of ranges, etc.
 // They will exercise both the "inlined storage" (size <= 64 case) and
 // "heap-allocated storage" cases. These are all of the prime numbers less than
-// 200, and also any non-negative multiples of 64 less than 200.
-const int kTestSizes[] = {0,   1,   2,   3,   5,   7,   11,  13,  17,  19,  23,
-                          29,  31,  37,  41,  43,  47,  53,  59,  61,  64,  67,
-                          71,  73,  79,  83,  89,  97,  101, 103, 107, 109, 113,
-                          127, 128, 131, 137, 139, 149, 151, 157, 163, 167, 173,
-                          179, 181, 191, 192, 193, 197, 199};
+// 100, and also any non-negative multiples of 64 less than 192.
+const int kTestSizes[] = {0,  1,  2,  3,  5,  7,  11, 13, 17,  19,
+                          23, 29, 31, 37, 41, 43, 47, 53, 59,  61,
+                          64, 67, 71, 73, 79, 83, 89, 97, 127, 128};
 
 // Returns a subspan of |kTestSizes| that contains all values in the range
 // [first,last].

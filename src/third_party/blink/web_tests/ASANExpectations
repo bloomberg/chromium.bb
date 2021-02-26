@@ -1,5 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
-#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Win Win7 Win10 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -77,3 +76,5 @@ crbug.com/989365 [ Linux ] external/wpt/cookie-store/serviceworker_cookiechange_
 
 crbug.com/1048597 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Timeout ]
 
+# Sheriff 2020-08-25
+crbug.com/1121429 fast/selectors/placeholder-shown-style-update.html [ Pass Crash ]

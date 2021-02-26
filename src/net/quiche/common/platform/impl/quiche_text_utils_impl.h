@@ -11,15 +11,15 @@
 #include <string>
 #include <vector>
 
-#include "base/base64.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/abseil_string_conversions.h"
 #include "net/base/hex_utils.h"
-#include "net/base/parse_number.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "third_party/abseil-cpp/absl/strings/ascii.h"
+#include "third_party/abseil-cpp/absl/strings/escaping.h"
+#include "third_party/abseil-cpp/absl/strings/match.h"
+#include "third_party/abseil-cpp/absl/strings/str_cat.h"
+#include "third_party/abseil-cpp/absl/strings/str_split.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace quiche {
 
@@ -27,87 +27,78 @@ namespace quiche {
 class QuicheTextUtilsImpl {
  public:
   // Returns true of |data| starts with |prefix|, case sensitively.
-  static bool StartsWith(QuicheStringPiece data, QuicheStringPiece prefix) {
-    return base::StartsWith(data, prefix, base::CompareCase::SENSITIVE);
+  static bool StartsWith(absl::string_view data, absl::string_view prefix) {
+    return absl::StartsWith(data, prefix);
   }
 
   // Returns true if |data| end with |suffix|, case sensitively.
-  static bool EndsWith(QuicheStringPiece data, QuicheStringPiece suffix) {
-    return base::EndsWith(data, suffix, base::CompareCase::SENSITIVE);
+  static bool EndsWith(absl::string_view data, absl::string_view suffix) {
+    return absl::EndsWith(data, suffix);
   }
 
   // Returns true of |data| ends with |suffix|, case insensitively.
-  static bool EndsWithIgnoreCase(QuicheStringPiece data,
-                                 QuicheStringPiece suffix) {
-    return base::EndsWith(data, suffix, base::CompareCase::INSENSITIVE_ASCII);
+  static bool EndsWithIgnoreCase(absl::string_view data,
+                                 absl::string_view suffix) {
+    return absl::EndsWithIgnoreCase(data, suffix);
   }
 
   // Returns a new std::string in which |data| has been converted to lower case.
-  static std::string ToLower(QuicheStringPiece data) {
-    return base::ToLowerASCII(data);
+  static std::string ToLower(absl::string_view data) {
+    return absl::AsciiStrToLower(data);
   }
 
   // Remove leading and trailing whitespace from |data|.
-  static void RemoveLeadingAndTrailingWhitespace(QuicheStringPiece* data) {
-    *data = base::TrimWhitespaceASCII(*data, base::TRIM_ALL);
+  static void RemoveLeadingAndTrailingWhitespace(absl::string_view* data) {
+    *data = absl::StripAsciiWhitespace(*data);
   }
 
   // Returns true if |in| represents a valid uint64, and stores that value in
   // |out|.
-  static bool StringToUint64(QuicheStringPiece in, uint64_t* out) {
-    return base::StringToUint64(in, out);
+  static bool StringToUint64(absl::string_view in, uint64_t* out) {
+    return absl::SimpleAtoi(in, out);
   }
 
   // Returns true if |in| represents a valid int, and stores that value in
   // |out|.
-  static bool StringToInt(QuicheStringPiece in, int* out) {
-    return base::StringToInt(in, out);
+  static bool StringToInt(absl::string_view in, int* out) {
+    return absl::SimpleAtoi(in, out);
   }
 
   // Returns true if |in| represents a valid uint32, and stores that value in
   // |out|.
-  static bool StringToUint32(QuicheStringPiece in, uint32_t* out) {
-    return net::ParseUint32(in, out, nullptr);
+  static bool StringToUint32(absl::string_view in, uint32_t* out) {
+    return absl::SimpleAtoi(in, out);
   }
 
   // Returns true if |in| represents a valid size_t, and stores that value in
   // |out|.
-  static bool StringToSizeT(QuicheStringPiece in, size_t* out) {
-    return base::StringToSizeT(in, out);
+  static bool StringToSizeT(absl::string_view in, size_t* out) {
+    return absl::SimpleAtoi(in, out);
   }
 
   // Returns a new std::string representing |in|.
-  static std::string Uint64ToString(uint64_t in) {
-    return base::NumberToString(in);
-  }
+  static std::string Uint64ToString(uint64_t in) { return absl::StrCat(in); }
 
   // This converts |length| bytes of binary to a 2*|length|-character
   // hexadecimal representation.
   // Return value: 2*|length| characters of ASCII std::string.
-  static std::string HexEncode(QuicheStringPiece data) {
-    return base::ToLowerASCII(::base::HexEncode(data.data(), data.size()));
+  static std::string HexEncode(absl::string_view data) {
+    return absl::BytesToHexString(data);
   }
 
-  static std::string Hex(uint32_t v) {
-    std::stringstream ss;
-    ss << std::hex << v;
-    return ss.str();
-  }
+  static std::string Hex(uint32_t v) { return absl::StrCat(absl::Hex(v)); }
 
   // Converts |data| from a hexadecimal ASCII string to a binary string
   // that is |data.length()/2| bytes long. On failure returns empty string.
-  static std::string HexDecode(QuicheStringPiece data) {
-    std::string result;
-    if (!base::HexStringToString(data, &result))
-      result.clear();
-    return result;
+  static std::string HexDecode(absl::string_view data) {
+    return absl::HexStringToBytes(data);
   }
 
   // Base64 encodes with no padding |data_len| bytes of |data| into |output|.
   static void Base64Encode(const uint8_t* data,
                            size_t data_len,
                            std::string* output) {
-    base::Base64Encode(
+    absl::Base64Escape(
         std::string(reinterpret_cast<const char*>(data), data_len), output);
     // Remove padding.
     size_t len = output->size();
@@ -124,10 +115,10 @@ class QuicheTextUtilsImpl {
 
   // Decodes a base64-encoded |input|.  Returns nullopt when the input is
   // invalid.
-  static QuicheOptional<std::string> Base64Decode(QuicheStringPiece input) {
+  static absl::optional<std::string> Base64Decode(absl::string_view input) {
     std::string output;
-    if (!base::Base64Decode(input, &output)) {
-      return QuicheOptional<std::string>();
+    if (!absl::Base64Unescape(input, &output)) {
+      return absl::optional<std::string>();
     }
     return output;
   }
@@ -137,26 +128,24 @@ class QuicheTextUtilsImpl {
   // printed as '.' in the ASCII output.
   // For example, given the input "Hello, QUIC!\01\02\03\04", returns:
   // "0x0000:  4865 6c6c 6f2c 2051 5549 4321 0102 0304  Hello,.QUIC!...."
-  static std::string HexDump(QuicheStringPiece binary_input) {
-    return net::HexDump(binary_input);
+  static std::string HexDump(absl::string_view binary_input) {
+    return net::HexDump(base::StringViewToStringPiece(binary_input));
   }
 
   // Returns true if |data| contains any uppercase characters.
-  static bool ContainsUpperCase(QuicheStringPiece data) {
-    return std::any_of(data.begin(), data.end(), base::IsAsciiUpper<char>);
+  static bool ContainsUpperCase(absl::string_view data) {
+    return std::any_of(data.begin(), data.end(), absl::ascii_isupper);
   }
 
   // Returns true if |data| contains only decimal digits.
-  static bool IsAllDigits(QuicheStringPiece data) {
-    return std::all_of(data.begin(), data.end(),
-                       base::IsAsciiDigit<QuicheStringPiece::value_type>);
+  static bool IsAllDigits(absl::string_view data) {
+    return std::all_of(data.begin(), data.end(), absl::ascii_isdigit);
   }
 
   // Splits |data| into a vector of pieces delimited by |delim|.
-  static std::vector<QuicheStringPiece> Split(QuicheStringPiece data,
+  static std::vector<absl::string_view> Split(absl::string_view data,
                                               char delim) {
-    return base::SplitStringPiece(data, QuicheStringPiece(&delim, 1),
-                                  base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    return absl::StrSplit(data, delim);
   }
 };
 

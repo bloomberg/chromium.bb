@@ -20,7 +20,7 @@
 #include "base/win/windows_types.h"
 #elif defined(OS_FUCHSIA)
 #include <zircon/types.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/mach_types.h>
 #elif defined(OS_POSIX)
 #include <pthread.h>
@@ -34,7 +34,7 @@ namespace base {
 typedef DWORD PlatformThreadId;
 #elif defined(OS_FUCHSIA)
 typedef zx_handle_t PlatformThreadId;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 typedef mach_port_t PlatformThreadId;
 #elif defined(OS_POSIX)
 typedef pid_t PlatformThreadId;
@@ -123,6 +123,12 @@ class BASE_EXPORT PlatformThread {
   // ThreadMain method will be called on the newly created thread.
   class BASE_EXPORT Delegate {
    public:
+    // The interval at which the thread expects to have work to do. Zero if
+    // unknown. (Example: audio buffer duration for real-time audio.) Is used to
+    // optimize the thread real-time behavior. Is called on the newly created
+    // thread before ThreadMain().
+    virtual TimeDelta GetRealtimePeriod();
+
     virtual void ThreadMain() = 0;
 
    protected:
@@ -221,7 +227,10 @@ class BASE_EXPORT PlatformThread {
 
   static ThreadPriority GetCurrentThreadPriority();
 
-#if defined(OS_LINUX)
+  // Returns a realtime period provided by |delegate|.
+  static TimeDelta GetRealtimePeriod(Delegate* delegate);
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Toggles a specific thread's priority at runtime. This can be used to
   // change the priority of a thread in a different process and will fail
   // if the calling process does not have proper permissions. The
@@ -231,13 +240,31 @@ class BASE_EXPORT PlatformThread {
   // to change the priority of sandboxed threads for improved performance.
   // Warning: Don't use this for a main thread because that will change the
   // whole thread group's (i.e. process) priority.
-  static void SetThreadPriority(PlatformThreadId thread_id,
+  static void SetThreadPriority(PlatformThreadId process_id,
+                                PlatformThreadId thread_id,
                                 ThreadPriority priority);
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Signals that the feature list has been initialized which allows to check
+  // the feature's value now and initialize state. This prevents race
+  // conditions where the feature is being checked while it is being
+  // initialized, which can cause a crash.
+  static void InitThreadPostFieldTrial();
 #endif
 
   // Returns the default thread stack size set by chrome. If we do not
   // explicitly set default size then returns 0.
   static size_t GetDefaultThreadStackSize();
+
+#if defined(OS_APPLE)
+  // Initializes realtime threading based on kOptimizedRealtimeThreadingMac
+  // feature status.
+  static void InitializeOptimizedRealtimeThreadingFeature();
+
+  // Stores the period value in TLS.
+  static void SetCurrentThreadRealtimePeriodValue(TimeDelta realtime_period);
+#endif
 
  private:
   static void SetCurrentThreadPriorityImpl(ThreadPriority priority);

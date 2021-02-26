@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "ui/latency/average_lag_tracker.h"
 #include "ui/latency/latency_info.h"
 
 namespace ui {
@@ -25,14 +24,6 @@ class LatencyTracker {
   void OnGpuSwapBuffersCompleted(
       const std::vector<LatencyInfo>& latency_info,
       bool top_controls_visible_height_changed = false);
-  void OnGpuSwapBuffersCompleted(
-      const LatencyInfo& latency,
-      bool top_controls_visible_height_changed = false);
-
-  using LatencyInfoProcessor =
-      base::RepeatingCallback<void(const std::vector<ui::LatencyInfo>&)>;
-  static void SetLatencyInfoProcessorForTesting(
-      const LatencyInfoProcessor& processor);
 
  private:
   enum class InputMetricEvent {
@@ -43,6 +34,9 @@ class LatencyTracker {
 
     INPUT_METRIC_EVENT_MAX = SCROLL_UPDATE_WHEEL
   };
+
+  void OnGpuSwapBuffersCompleted(const LatencyInfo& latency,
+                                 bool top_controls_visible_height_changed);
 
   void ReportUkmScrollLatency(
       const InputMetricEvent& metric_event,
@@ -57,8 +51,6 @@ class LatencyTracker {
       base::TimeTicks gpu_swap_end_timestamp,
       const LatencyInfo& latency,
       bool top_controls_visible_height_changed);
-
-  AverageLagTracker average_lag_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LatencyTracker);
 };

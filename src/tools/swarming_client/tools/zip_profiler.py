@@ -17,8 +17,9 @@ import tempfile
 import time
 import zlib
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -49,14 +50,14 @@ def zip_file(compressor_constructor, compression_level, filename):
 def zip_directory(compressor_constructor, compression_level, root_dir):
   compressed_size = 0
   for root, _, files in os.walk(root_dir):
-    compressed_size += sum(zip_file(compressor_constructor, compression_level,
-                                    os.path.join(root, name))
-                           for name in files)
+    compressed_size += sum(
+        zip_file(compressor_constructor, compression_level,
+                 os.path.join(root, name)) for name in files)
   return compressed_size
 
 
-def profile_compress(zip_module_name, compressor_constructor,
-                     compression_range, compress_func, compress_target):
+def profile_compress(zip_module_name, compressor_constructor, compression_range,
+                     compress_func, compress_target):
   for i in compression_range:
     start_time = time.time()
     compressed_size = compress_func(compressor_constructor, i, compress_target)
@@ -80,9 +81,11 @@ def main():
   tools.disable_buffering()
   parser = optparse.OptionParser()
   parser.add_option('-s', '--isolated', help='.isolated file to profile with.')
-  parser.add_option('--largest_files', type='int',
-                    help='If this is set, instead of compressing all the '
-                    'files, only the large n files will be compressed')
+  parser.add_option(
+      '--largest_files',
+      type='int',
+      help='If this is set, instead of compressing all the '
+      'files, only the large n files will be compressed')
   options, args = parser.parse_args()
 
   if args:
@@ -95,10 +98,10 @@ def main():
     temp_dir = tempfile.mkdtemp(prefix=u'zip_profiler')
 
     # Create a directory of the required files
-    subprocess.check_call([os.path.join(CLIENT_DIR, 'isolate.py'),
-                           'remap',
-                           '-s', options.isolated,
-                           '--outdir', temp_dir])
+    subprocess.check_call([
+        os.path.join(CLIENT_DIR, 'isolate.py'), 'remap', '-s', options.isolated,
+        '--outdir', temp_dir
+    ])
 
     file_set = tree_files(temp_dir)
 

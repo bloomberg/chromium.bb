@@ -3,8 +3,29 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "base/strings/string_split.h"
 
 namespace autofill_assistant {
+
+// Parameter that allows setting the color of the overlay.
+const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
+
+// Parameter that contains the current session username. Should be synced with
+// |SESSION_USERNAME_PARAMETER| from
+// .../password_manager/PasswordChangeLauncher.java
+// TODO(b/151401974): Eliminate duplicate parameter definitions.
+const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
+
+// Legacy, remove as soon as possible.
+// Parameter that contains the path of the lite script that was used to trigger
+// this flow (may be empty).
+const char kLiteScriptPathParamaterName[] = "TRIGGER_SCRIPT_USED";
+
+// Parameter that contains a base64-encoded GetTriggerScriptsResponseProto
+// message. This allows callers to directly inject trigger scripts, rather than
+// fetching them from a remote backend.
+const char kBase64TriggerScriptsResponseProtoParameterName[] =
+    "TRIGGER_SCRIPTS_BASE64";
 
 // static
 std::unique_ptr<TriggerContext> TriggerContext::CreateEmpty() {
@@ -27,6 +48,23 @@ std::unique_ptr<TriggerContext> TriggerContext::Merge(
 TriggerContext::TriggerContext() {}
 TriggerContext::~TriggerContext() {}
 
+base::Optional<std::string> TriggerContext::GetOverlayColors() const {
+  return GetParameter(kOverlayColorParameterName);
+}
+
+base::Optional<std::string> TriggerContext::GetPasswordChangeUsername() const {
+  return GetParameter(kPasswordChangeUsernameParameterName);
+}
+
+bool TriggerContext::WasStartedByLegacyTriggerScript() const {
+  return GetParameter(kLiteScriptPathParamaterName).has_value();
+}
+
+base::Optional<std::string>
+TriggerContext::GetBase64TriggerScriptsResponseProto() const {
+  return GetParameter(kBase64TriggerScriptsResponseProtoParameterName);
+}
+
 TriggerContextImpl::TriggerContextImpl() {}
 
 TriggerContextImpl::TriggerContextImpl(
@@ -37,13 +75,8 @@ TriggerContextImpl::TriggerContextImpl(
 
 TriggerContextImpl::~TriggerContextImpl() = default;
 
-void TriggerContextImpl::AddParameters(
-    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
-  for (const auto& param_entry : parameters_) {
-    ScriptParameterProto* parameter = dest->Add();
-    parameter->set_name(param_entry.first);
-    parameter->set_value(param_entry.second);
-  }
+std::map<std::string, std::string> TriggerContextImpl::GetParameters() const {
+  return parameters_;
 }
 
 base::Optional<std::string> TriggerContextImpl::GetParameter(
@@ -57,6 +90,15 @@ base::Optional<std::string> TriggerContextImpl::GetParameter(
 
 std::string TriggerContextImpl::experiment_ids() const {
   return experiment_ids_;
+}
+
+bool TriggerContextImpl::HasExperimentId(
+    const std::string& experiment_id) const {
+  std::vector<std::string> experiments = base::SplitString(
+      experiment_ids_, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
+  return std::find(experiments.begin(), experiments.end(), experiment_id) !=
+         experiments.end();
 }
 
 bool TriggerContextImpl::is_cct() const {
@@ -81,11 +123,14 @@ MergedTriggerContext::MergedTriggerContext(
 
 MergedTriggerContext::~MergedTriggerContext() {}
 
-void MergedTriggerContext::AddParameters(
-    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
+std::map<std::string, std::string> MergedTriggerContext::GetParameters() const {
+  std::map<std::string, std::string> merged_parameters;
   for (const TriggerContext* context : contexts_) {
-    context->AddParameters(dest);
+    for (const auto& parameter : context->GetParameters()) {
+      merged_parameters.insert(parameter);
+    }
   }
+  return merged_parameters;
 }
 
 base::Optional<std::string> MergedTriggerContext::GetParameter(
@@ -111,6 +156,16 @@ std::string MergedTriggerContext::experiment_ids() const {
     experiment_ids.append(context->experiment_ids());
   }
   return experiment_ids;
+}
+
+bool MergedTriggerContext::HasExperimentId(
+    const std::string& experiment_id) const {
+  for (const TriggerContext* context : contexts_) {
+    if (context->HasExperimentId(experiment_id)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool MergedTriggerContext::is_cct() const {

@@ -5,18 +5,61 @@
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/notreached.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantChip_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDateTime_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantValue_jni.h"
+#include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
-
 namespace ui_controller_android_utils {
+namespace {
+
+DrawableIcon MapDrawableIcon(DrawableProto::Icon icon) {
+  switch (icon) {
+    case DrawableProto::DRAWABLE_ICON_UNDEFINED:
+      return DrawableIcon::DRAWABLE_ICON_UNDEFINED;
+    case DrawableProto::PROGRESSBAR_DEFAULT_INITIAL_STEP:
+      return DrawableIcon::PROGRESSBAR_DEFAULT_INITIAL_STEP;
+    case DrawableProto::PROGRESSBAR_DEFAULT_DATA_COLLECTION:
+      return DrawableIcon::PROGRESSBAR_DEFAULT_DATA_COLLECTION;
+    case DrawableProto::PROGRESSBAR_DEFAULT_PAYMENT:
+      return DrawableIcon::PROGRESSBAR_DEFAULT_PAYMENT;
+    case DrawableProto::PROGRESSBAR_DEFAULT_FINAL_STEP:
+      return DrawableIcon::PROGRESSBAR_DEFAULT_FINAL_STEP;
+    case DrawableProto::SITTING_PERSON:
+      return DrawableIcon::SITTING_PERSON;
+    case DrawableProto::TICKET_STUB:
+      return DrawableIcon::TICKET_STUB;
+    case DrawableProto::SHOPPING_BASKET:
+      return DrawableIcon::SHOPPING_BASKET;
+    case DrawableProto::FAST_FOOD:
+      return DrawableIcon::FAST_FOOD;
+    case DrawableProto::LOCAL_DINING:
+      return DrawableIcon::LOCAL_DINING;
+    case DrawableProto::COGWHEEL:
+      return DrawableIcon::COGWHEEL;
+    case DrawableProto::KEY:
+      return DrawableIcon::KEY;
+    case DrawableProto::CAR:
+      return DrawableIcon::CAR;
+    case DrawableProto::GROCERY:
+      return DrawableIcon::GROCERY;
+    case DrawableProto::VISIBILITY_ON:
+      return DrawableIcon::VISIBILITY_ON;
+    case DrawableProto::VISIBILITY_OFF:
+      return DrawableIcon::VISIBILITY_OFF;
+  }
+}
+
+}  // namespace
 
 base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
     JNIEnv* env,
@@ -65,15 +108,14 @@ base::Optional<int> GetPixelSize(
   switch (proto.size_case()) {
     case ClientDimensionProto::kDp:
       return Java_AssistantDimension_getPixelSizeDp(env, jcontext, proto.dp());
-      break;
     case ClientDimensionProto::kWidthFactor:
       return Java_AssistantDimension_getPixelSizeWidthFactor(
           env, jcontext, proto.width_factor());
-      break;
     case ClientDimensionProto::kHeightFactor:
       return Java_AssistantDimension_getPixelSizeHeightFactor(
           env, jcontext, proto.height_factor());
-      break;
+    case ClientDimensionProto::kSizeInPixel:
+      return proto.size_in_pixel();
     case ClientDimensionProto::SIZE_NOT_SET:
       return base::nullopt;
   }
@@ -89,6 +131,84 @@ int GetPixelSizeOrDefault(
     return *size;
   }
   return default_value;
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const DrawableProto& proto,
+    const UserModel* user_model) {
+  switch (proto.drawable_case()) {
+    case DrawableProto::kResourceIdentifier:
+      if (!Java_AssistantDrawable_isValidDrawableResource(
+              env, jcontext,
+              base::android::ConvertUTF8ToJavaString(
+                  env, proto.resource_identifier()))) {
+        VLOG(1) << "Encountered invalid drawable resource identifier: "
+                << proto.resource_identifier();
+        return nullptr;
+      }
+      return Java_AssistantDrawable_createFromResource(
+          env, base::android::ConvertUTF8ToJavaString(
+                   env, proto.resource_identifier()));
+    case DrawableProto::kBitmap: {
+      int width_pixels = ui_controller_android_utils::GetPixelSizeOrDefault(
+          env, jcontext, proto.bitmap().width(), 0);
+      int height_pixels = ui_controller_android_utils::GetPixelSizeOrDefault(
+          env, jcontext, proto.bitmap().height(), 0);
+      return Java_AssistantDrawable_createFromUrl(
+          env,
+          base::android::ConvertUTF8ToJavaString(env, proto.bitmap().url()),
+          width_pixels, height_pixels);
+    }
+    case DrawableProto::kShape: {
+      switch (proto.shape().shape_case()) {
+        case ShapeDrawableProto::kRectangle: {
+          auto jbackground_color = ui_controller_android_utils::GetJavaColor(
+              env, jcontext, proto.shape().background_color());
+          auto jstroke_color = ui_controller_android_utils::GetJavaColor(
+              env, jcontext, proto.shape().stroke_color());
+          int stroke_width_pixels =
+              ui_controller_android_utils::GetPixelSizeOrDefault(
+                  env, jcontext, proto.shape().stroke_width(), 0);
+          int corner_radius_pixels =
+              ui_controller_android_utils::GetPixelSizeOrDefault(
+                  env, jcontext, proto.shape().rectangle().corner_radius(), 0);
+          return Java_AssistantDrawable_createRectangleShape(
+              env, jbackground_color, jstroke_color, stroke_width_pixels,
+              corner_radius_pixels);
+          break;
+        }
+        case ShapeDrawableProto::SHAPE_NOT_SET:
+          return nullptr;
+      }
+    }
+    case DrawableProto::kIcon: {
+      return Java_AssistantDrawable_createFromIcon(
+          env, static_cast<int>(MapDrawableIcon(proto.icon())));
+    }
+    case DrawableProto::kBase64: {
+      return Java_AssistantDrawable_createFromBase64(
+          env, base::android::ToJavaByteArray(env, proto.base64()));
+    }
+    case DrawableProto::kFavicon: {
+      if (!user_model) {
+        VLOG(1) << "User model missing while trying to create a favicon.";
+        return nullptr;
+      }
+      int diameter_size_in_pixel =
+          ui_controller_android_utils::GetPixelSizeOrDefault(
+              env, jcontext, proto.favicon().diameter_size(), 0);
+      std::string url = proto.favicon().has_website_url()
+                            ? proto.favicon().website_url()
+                            : user_model->GetCurrentURL().spec();
+      return Java_AssistantDrawable_createFromFavicon(
+          env, base::android::ConvertUTF8ToJavaString(env, url),
+          diameter_size_in_pixel, proto.favicon().force_monogram());
+    }
+    case DrawableProto::DRAWABLE_NOT_SET:
+      return nullptr;
+  }
 }
 
 base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
@@ -126,7 +246,7 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
     case ValueProto::kProfiles:
     case ValueProto::kLoginOptions:
     case ValueProto::kCreditCardResponse:
-    case ValueProto::kLoginOptionResponse:
+    case ValueProto::kServerPayload:
     case ValueProto::kUserActions:
       // Unused.
       NOTREACHED();
@@ -278,6 +398,70 @@ std::string SafeConvertJavaStringToNative(
   return native_string;
 }
 
-}  // namespace ui_controller_android_utils
+BottomSheetState ToNativeBottomSheetState(int state) {
+  switch (state) {
+    case 1:
+      return BottomSheetState::COLLAPSED;
+    case 2:
+    case 3:
+      return BottomSheetState::EXPANDED;
+    default:
+      return BottomSheetState::UNDEFINED;
+  }
+}
 
+int ToJavaBottomSheetState(BottomSheetState state) {
+  switch (state) {
+    case BottomSheetState::COLLAPSED:
+      return 1;
+    case BottomSheetState::UNDEFINED:
+      // The current assumption is that Autobot always starts with the bottom
+      // sheet expanded.
+    case BottomSheetState::EXPANDED:
+      return 2;
+    default:
+      return -1;
+  }
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChip(
+    JNIEnv* env,
+    const ChipProto& chip) {
+  switch (chip.type()) {
+    default:  // Other chip types are not supported.
+      return nullptr;
+
+    case HIGHLIGHTED_ACTION:
+    case DONE_ACTION:
+      return Java_AssistantChip_createHighlightedAssistantChip(
+          env, chip.icon(),
+          base::android::ConvertUTF8ToJavaString(env, chip.text()),
+          /* disabled = */ false, chip.sticky(), /* visible = */ true);
+
+    case NORMAL_ACTION:
+    case CANCEL_ACTION:
+    case CLOSE_ACTION:
+    case FEEDBACK_ACTION:
+      return Java_AssistantChip_createHairlineAssistantChip(
+          env, chip.icon(),
+          base::android::ConvertUTF8ToJavaString(env, chip.text()),
+          /* disabled = */ false, chip.sticky(), /* visible = */ true);
+  }
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaAssistantChipList(
+    JNIEnv* env,
+    const std::vector<ChipProto>& chips) {
+  auto jlist = Java_AssistantChip_createChipList(env);
+  for (const auto& chip : chips) {
+    auto jchip = CreateJavaAssistantChip(env, chip);
+    if (!jchip) {
+      return nullptr;
+    }
+    Java_AssistantChip_addChipToList(env, jlist, jchip);
+  }
+  return jlist;
+}
+
+}  // namespace ui_controller_android_utils
 }  // namespace autofill_assistant

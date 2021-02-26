@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "content/public/browser/media_session.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -36,6 +36,7 @@ class FakeMediaSession : public content::MediaSession {
   MOCK_METHOD1(ScrubTo, void(base::TimeDelta));
   MOCK_METHOD0(EnterPictureInPicture, void());
   MOCK_METHOD0(ExitPictureInPicture, void());
+  MOCK_METHOD1(SetAudioSinkId, void(const base::Optional<std::string>& id));
 
   // content::MediaSession APIs faked to implement testing behaviour.
   MOCK_METHOD1(DidReceiveAction,

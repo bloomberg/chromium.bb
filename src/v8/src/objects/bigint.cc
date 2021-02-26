@@ -20,7 +20,6 @@
 #include "src/objects/bigint.h"
 
 #include "src/execution/isolate-inl.h"
-#include "src/execution/off-thread-isolate.h"
 #include "src/heap/factory.h"
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/numbers/conversions.h"
@@ -418,10 +417,10 @@ template <typename LocalIsolate>
 Handle<BigInt> BigInt::Zero(LocalIsolate* isolate, AllocationType allocation) {
   return MutableBigInt::Zero(isolate, allocation);
 }
-template Handle<BigInt> BigInt::Zero<Isolate>(Isolate* isolate,
-                                              AllocationType allocation);
-template Handle<BigInt> BigInt::Zero<OffThreadIsolate>(
-    OffThreadIsolate* isolate, AllocationType allocation);
+template Handle<BigInt> BigInt::Zero(Isolate* isolate,
+                                     AllocationType allocation);
+template Handle<BigInt> BigInt::Zero(LocalIsolate* isolate,
+                                     AllocationType allocation);
 
 Handle<BigInt> BigInt::UnaryMinus(Isolate* isolate, Handle<BigInt> x) {
   // Special case: There is no -0n.
@@ -716,7 +715,7 @@ MaybeHandle<MutableBigInt> MutableBigInt::BitwiseAnd(Isolate* isolate,
   if (!x->sign() && !y->sign()) {
     return AbsoluteAnd(isolate, x, y);
   } else if (x->sign() && y->sign()) {
-    int result_length = Max(x->length(), y->length()) + 1;
+    int result_length = std::max(x->length(), y->length()) + 1;
     // (-x) & (-y) == ~(x-1) & ~(y-1) == ~((x-1) | (y-1))
     // == -(((x-1) | (y-1)) + 1)
     Handle<MutableBigInt> result;
@@ -747,7 +746,7 @@ MaybeHandle<MutableBigInt> MutableBigInt::BitwiseXor(Isolate* isolate,
   if (!x->sign() && !y->sign()) {
     return AbsoluteXor(isolate, x, y);
   } else if (x->sign() && y->sign()) {
-    int result_length = Max(x->length(), y->length());
+    int result_length = std::max(x->length(), y->length());
     // (-x) ^ (-y) == ~(x-1) ^ ~(y-1) == (x-1) ^ (y-1)
     Handle<MutableBigInt> result =
         AbsoluteSubOne(isolate, x, result_length).ToHandleChecked();
@@ -755,7 +754,7 @@ MaybeHandle<MutableBigInt> MutableBigInt::BitwiseXor(Isolate* isolate,
     return AbsoluteXor(isolate, result, y_1, *result);
   } else {
     DCHECK(x->sign() != y->sign());
-    int result_length = Max(x->length(), y->length()) + 1;
+    int result_length = std::max(x->length(), y->length()) + 1;
     // Assume that x is the positive BigInt.
     if (x->sign()) std::swap(x, y);
     // x ^ (-y) == x ^ ~(y-1) == ~(x ^ (y-1)) == -((x ^ (y-1)) + 1)
@@ -776,7 +775,7 @@ MaybeHandle<BigInt> BigInt::BitwiseOr(Isolate* isolate, Handle<BigInt> x,
 MaybeHandle<MutableBigInt> MutableBigInt::BitwiseOr(Isolate* isolate,
                                                     Handle<BigInt> x,
                                                     Handle<BigInt> y) {
-  int result_length = Max(x->length(), y->length());
+  int result_length = std::max(x->length(), y->length());
   if (!x->sign() && !y->sign()) {
     return AbsoluteOr(isolate, x, y);
   } else if (x->sign() && y->sign()) {
@@ -823,32 +822,39 @@ MaybeHandle<BigInt> BigInt::Decrement(Isolate* isolate, Handle<BigInt> x) {
   return MutableBigInt::MakeImmutable(result);
 }
 
-ComparisonResult BigInt::CompareToString(Isolate* isolate, Handle<BigInt> x,
-                                         Handle<String> y) {
+Maybe<ComparisonResult> BigInt::CompareToString(Isolate* isolate,
+                                                Handle<BigInt> x,
+                                                Handle<String> y) {
   // a. Let ny be StringToBigInt(y);
   MaybeHandle<BigInt> maybe_ny = StringToBigInt(isolate, y);
   // b. If ny is NaN, return undefined.
   Handle<BigInt> ny;
   if (!maybe_ny.ToHandle(&ny)) {
-    DCHECK(!isolate->has_pending_exception());
-    return ComparisonResult::kUndefined;
+    if (isolate->has_pending_exception()) {
+      return Nothing<ComparisonResult>();
+    } else {
+      return Just(ComparisonResult::kUndefined);
+    }
   }
   // c. Return BigInt::lessThan(x, ny).
-  return CompareToBigInt(x, ny);
+  return Just(CompareToBigInt(x, ny));
 }
 
-bool BigInt::EqualToString(Isolate* isolate, Handle<BigInt> x,
-                           Handle<String> y) {
+Maybe<bool> BigInt::EqualToString(Isolate* isolate, Handle<BigInt> x,
+                                  Handle<String> y) {
   // a. Let n be StringToBigInt(y).
   MaybeHandle<BigInt> maybe_n = StringToBigInt(isolate, y);
   // b. If n is NaN, return false.
   Handle<BigInt> n;
   if (!maybe_n.ToHandle(&n)) {
-    DCHECK(!isolate->has_pending_exception());
-    return false;
+    if (isolate->has_pending_exception()) {
+      return Nothing<bool>();
+    } else {
+      return Just(false);
+    }
   }
   // c. Return the result of x == n.
-  return EqualToBigInt(*x, *n);
+  return Just(EqualToBigInt(*x, *n));
 }
 
 bool BigInt::EqualToNumber(Handle<BigInt> x, Handle<Object> y) {
@@ -1048,9 +1054,13 @@ MaybeHandle<BigInt> BigInt::FromObject(Isolate* isolate, Handle<Object> obj) {
   if (obj->IsString()) {
     Handle<BigInt> n;
     if (!StringToBigInt(isolate, Handle<String>::cast(obj)).ToHandle(&n)) {
-      THROW_NEW_ERROR(isolate,
-                      NewSyntaxError(MessageTemplate::kBigIntFromObject, obj),
-                      BigInt);
+      if (isolate->has_pending_exception()) {
+        return MaybeHandle<BigInt>();
+      } else {
+        THROW_NEW_ERROR(isolate,
+                        NewSyntaxError(MessageTemplate::kBigIntFromObject, obj),
+                        BigInt);
+      }
     }
     return n;
   }
@@ -1125,7 +1135,7 @@ double MutableBigInt::ToDouble(Handle<BigIntBase> x) {
   return bit_cast<double>(double_bits);
 }
 
-// This is its own function to keep control flow sane. The meaning of the
+// This is its own function to simplify control flow. The meaning of the
 // parameters is defined by {ToDouble}'s local variable usage.
 MutableBigInt::Rounding MutableBigInt::DecideRounding(Handle<BigIntBase> x,
                                                       int mantissa_bits_unset,
@@ -1361,7 +1371,7 @@ inline Handle<MutableBigInt> MutableBigInt::AbsoluteBitwiseOp(
       std::swap(x_length, y_length);
     }
   }
-  DCHECK(num_pairs == Min(x_length, y_length));
+  DCHECK(num_pairs == std::min(x_length, y_length));
   Handle<MutableBigInt> result(result_storage, isolate);
   int result_length = extra_digits == kCopy ? x_length : num_pairs;
   if (result_storage.is_null()) {
@@ -1862,6 +1872,8 @@ Handle<BigInt> MutableBigInt::RightShiftByAbsolute(Isolate* isolate,
   DCHECK_LE(result_length, length);
   Handle<MutableBigInt> result = New(isolate, result_length).ToHandleChecked();
   if (bits_shift == 0) {
+    // Zero out any overflow digit (see "rounding_can_overflow" above).
+    result->set_digit(result_length - 1, 0);
     for (int i = digit_shift; i < length; i++) {
       result->set_digit(i - digit_shift, x->digit(i));
     }
@@ -1952,13 +1964,12 @@ MaybeHandle<FreshlyAllocatedBigInt> BigInt::AllocateFor(
     return MaybeHandle<FreshlyAllocatedBigInt>();
   }
 }
-template MaybeHandle<FreshlyAllocatedBigInt> BigInt::AllocateFor<Isolate>(
+template MaybeHandle<FreshlyAllocatedBigInt> BigInt::AllocateFor(
     Isolate* isolate, int radix, int charcount, ShouldThrow should_throw,
     AllocationType allocation);
-template MaybeHandle<FreshlyAllocatedBigInt>
-BigInt::AllocateFor<OffThreadIsolate>(OffThreadIsolate* isolate, int radix,
-                                      int charcount, ShouldThrow should_throw,
-                                      AllocationType allocation);
+template MaybeHandle<FreshlyAllocatedBigInt> BigInt::AllocateFor(
+    LocalIsolate* isolate, int radix, int charcount, ShouldThrow should_throw,
+    AllocationType allocation);
 
 template <typename LocalIsolate>
 Handle<BigInt> BigInt::Finalize(Handle<FreshlyAllocatedBigInt> x, bool sign) {
@@ -1969,7 +1980,7 @@ Handle<BigInt> BigInt::Finalize(Handle<FreshlyAllocatedBigInt> x, bool sign) {
 
 template Handle<BigInt> BigInt::Finalize<Isolate>(
     Handle<FreshlyAllocatedBigInt>, bool);
-template Handle<BigInt> BigInt::Finalize<OffThreadIsolate>(
+template Handle<BigInt> BigInt::Finalize<LocalIsolate>(
     Handle<FreshlyAllocatedBigInt>, bool);
 
 // The serialization format MUST NOT CHANGE without updating the format
@@ -2383,7 +2394,7 @@ Handle<BigInt> MutableBigInt::TruncateAndSubFromPowerOfTwo(Isolate* isolate,
   int x_length = x->length();
   digit_t borrow = 0;
   // Take digits from {x} unless its length is exhausted.
-  int limit = Min(last, x_length);
+  int limit = std::min(last, x_length);
   for (; i < limit; i++) {
     digit_t new_borrow = 0;
     digit_t difference = digit_sub(0, x->digit(i), &new_borrow);

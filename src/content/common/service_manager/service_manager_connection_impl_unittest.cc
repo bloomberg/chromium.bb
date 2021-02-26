@@ -4,9 +4,9 @@
 
 #include "content/common/service_manager/service_manager_connection_impl.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -34,10 +34,11 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   connection.AddServiceRequestHandler(
-      kTestServiceName, base::BindLambdaForTesting(
-                            [&event](service_manager::mojom::ServiceRequest) {
-                              event.Signal();
-                            }));
+      kTestServiceName,
+      base::BindLambdaForTesting(
+          [&event](mojo::PendingReceiver<service_manager::mojom::Service>) {
+            event.Signal();
+          }));
   connection.Start();
 
   mojo::PendingRemote<service_manager::mojom::Service> packaged_service;

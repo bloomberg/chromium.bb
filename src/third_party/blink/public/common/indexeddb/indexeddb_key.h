@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string16.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -20,6 +20,11 @@ namespace blink {
 class BLINK_COMMON_EXPORT IndexedDBKey {
  public:
   typedef std::vector<IndexedDBKey> KeyArray;
+
+  // Non-standard limits, selected to avoid breaking real-world use of the API
+  // while also preventing buggy (or malicious) code from causing crashes.
+  static constexpr size_t kMaximumDepth = 2000;
+  static constexpr size_t kMaximumArraySize = 1000000;
 
   IndexedDBKey();  // Defaults to mojom::IDBKeyType::Invalid.
   explicit IndexedDBKey(mojom::IDBKeyType);  // must be Null or Invalid

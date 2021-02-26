@@ -17,7 +17,7 @@ source_set("badges") {
     "//ios/chrome/common/ui/util",
     "//ios/showcase/common",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -45,19 +45,5 @@ source_set("eg2_tests") {
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]
-  libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "sc_badge_egtest.mm" ]
-  deps = [
-    ":badges_constants",
-    "//ios/chrome/browser/infobars:badge",
-    "//ios/chrome/browser/ui/badges:public",
-    "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_settings_base.h"
-#include "services/network/session_cleanup_cookie_store.h"
+#include "services/network/public/cpp/session_cookie_delete_predicate.h"
 
 class GURL;
 
@@ -58,7 +58,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   }
 
   void set_content_settings_for_legacy_cookie_access(
-      const ContentSettingsForOneType& settings);
+      const ContentSettingsForOneType& settings) {
+    settings_for_legacy_cookie_access_ = settings;
+  }
 
   void set_storage_access_grants(const ContentSettingsForOneType& settings) {
     storage_access_grants_ = settings;
@@ -67,8 +69,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   // Returns a predicate that takes the domain of a cookie and a bool whether
   // the cookie is secure and returns true if the cookie should be deleted on
   // exit.
-  SessionCleanupCookieStore::DeleteCookiePredicate
-  CreateDeleteCookieOnExitPredicate() const;
+  DeleteCookiePredicate CreateDeleteCookieOnExitPredicate() const;
 
   // content_settings::CookieSettingsBase:
   void GetSettingForLegacyCookieAccess(const std::string& cookie_domain,

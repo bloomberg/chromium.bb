@@ -16,6 +16,7 @@
 #define SRC_LIBFUZZER_LIBFUZZER_MACRO_H_
 
 #include <stddef.h>
+
 #include <cstdint>
 #include <functional>
 #include <type_traits>
@@ -38,20 +39,15 @@
 // libFuzzer suggests putting one-time-initialization in a function used to
 // initialize a static variable inside the fuzzer target. For example:
 //
-// static bool Callback(protobuf::Message* message) { ... }
-//
-// static bool OneTimeInitialization() {
-//   REGISTER_PROTO_FIELD_MUTATOR(SomeMessage, "name_of_the_field", Callback);
+// static bool Modify(
+//     SomeMessage* message /* Fix or additionally modify the message */,
+//     unsigned int seed /* If random generator is needed use this seed */) {
 //   ...
 // }
 //
 // DEFINE_PROTO_FUZZER(const SomeMessage& msg) {
-//   static bool initialized = OneTimeInitialization();
-//   ...
+//   static PostProcessorRegistration reg(&Modify);
 // }
-#define REGISTER_PROTO_FIELD_MUTATOR(message_class, field_name, callback) \
-  protobuf_mutator::libfuzzer::RegisterProtoFieldMutator( \
-    message_class::descriptor()->FindFieldByName(#field_name), callback)
 
 // Implementation of macros above.
 #define DEFINE_CUSTOM_PROTO_MUTATOR_IMPL(use_binary, Proto)                    \
@@ -82,6 +78,10 @@
     return 0;                                                               \
   }
 
+#define DEFINE_POST_PROCESS_PROTO_MUTATION_IMPL(Proto) \
+  using PostProcessorRegistration =                    \
+      protobuf_mutator::libfuzzer::PostProcessorRegistration<Proto>;
+
 #define DEFINE_PROTO_FUZZER_IMPL(use_binary, arg)                              \
   static void TestOneProtoInput(arg);                                          \
   using FuzzerProtoType = std::remove_const<std::remove_reference<             \
@@ -89,6 +89,7 @@
   DEFINE_CUSTOM_PROTO_MUTATOR_IMPL(use_binary, FuzzerProtoType)                \
   DEFINE_CUSTOM_PROTO_CROSSOVER_IMPL(use_binary, FuzzerProtoType)              \
   DEFINE_TEST_ONE_PROTO_INPUT_IMPL(use_binary, FuzzerProtoType)                \
+  DEFINE_POST_PROCESS_PROTO_MUTATION_IMPL(FuzzerProtoType)                     \
   static void TestOneProtoInput(arg)
 
 namespace protobuf_mutator {
@@ -104,9 +105,23 @@ size_t CustomProtoCrossOver(bool binary, const uint8_t* data1, size_t size1,
                             protobuf::Message* input2);
 bool LoadProtoInput(bool binary, const uint8_t* data, size_t size,
                     protobuf::Message* input);
-void RegisterProtoFieldMutator(
-    const protobuf::FieldDescriptor* field,
-    std::function<void(protobuf::Message*)> callback);
+
+void RegisterPostProcessor(
+    const protobuf::Descriptor* desc,
+    std::function<void(protobuf::Message* message, unsigned int seed)>
+        callback);
+
+template <class Proto>
+struct PostProcessorRegistration {
+  PostProcessorRegistration(
+      const std::function<void(Proto* message, unsigned int seed)>& callback) {
+    RegisterPostProcessor(
+        Proto::descriptor(),
+        [callback](protobuf::Message* message, unsigned int seed) {
+          callback(static_cast<Proto*>(message), seed);
+        });
+  }
+};
 
 }  // namespace libfuzzer
 }  // namespace protobuf_mutator

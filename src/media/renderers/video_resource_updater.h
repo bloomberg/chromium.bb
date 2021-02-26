@@ -22,23 +22,31 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Rect;
-class RRectF;
 class Transform;
 }  // namespace gfx
+
+namespace gpu {
+class SharedImageInterface;
+}  // namespace gpu
 
 namespace viz {
 class ClientResourceProvider;
 class ContextProvider;
 class RasterContextProvider;
-class RenderPass;
+class CompositorRenderPass;
 class SharedBitmapReporter;
 }  // namespace viz
+
+namespace gfx {
+class MaskFilterInfo;
+}
 
 namespace media {
 class PaintCanvasVideoRenderer;
@@ -110,12 +118,12 @@ class MEDIA_EXPORT VideoResourceUpdater
   // of this class (e.g: VideoFrameSubmitter). Producing only one quad will
   // allow viz to optimize compositing when the only content changing per-frame
   // is the video.
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    scoped_refptr<VideoFrame> frame,
                    gfx::Transform transform,
                    gfx::Rect quad_rect,
                    gfx::Rect visible_quad_rect,
-                   const gfx::RRectF& rounded_corner_bounds,
+                   const gfx::MaskFilterInfo& mask_filter_info,
                    gfx::Rect clip_rect,
                    bool is_clipped,
                    bool context_opaque,
@@ -182,17 +190,23 @@ class MEDIA_EXPORT VideoResourceUpdater
   VideoFrameExternalResources CreateForSoftwarePlanes(
       scoped_refptr<VideoFrame> video_frame);
 
+  gpu::gles2::GLES2Interface* ContextGL();
+
   void RecycleResource(uint32_t plane_resource_id,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
   void ReturnTexture(scoped_refptr<VideoFrame> video_frame,
                      const gpu::SyncToken& sync_token,
                      bool lost_resource);
+  void DestroyMailbox(gpu::Mailbox mailbox,
+                      scoped_refptr<VideoFrame> video_frame,
+                      const gpu::SyncToken& sync_token,
+                      bool lost_resource);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
-
+  gpu::SharedImageInterface* SharedImageInterface() const;
   viz::ContextProvider* const context_provider_;
   viz::RasterContextProvider* const raster_context_provider_;
   viz::SharedBitmapReporter* const shared_bitmap_reporter_;

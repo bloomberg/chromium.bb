@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -181,7 +182,7 @@ ui::WindowShowState GetWidgetShowState(const Widget* widget) {
 // Give the OS an opportunity to process messages for an activation change, when
 // there is actually no change expected (e.g. ShowInactive()).
 void RunPendingMessagesForActiveStatusChange() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, a single spin is *usually* enough. It isn't when a widget is shown
   // and made active in two steps, so tests should follow up with a ShowSync()
   // or ActivateSync to ensure a consistent state.
@@ -208,7 +209,7 @@ void ShowSync(Widget* widget) {
 }
 
 void DeactivateSync(Widget* widget) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Deactivation of a window isn't a concept on Mac: If an application is
   // active and it has any activatable windows, then one of them is always
   // active. But we can simulate deactivation (e.g. as if another application
@@ -361,7 +362,7 @@ TEST_F(DesktopWidgetTestInteractive, FocusChangesOnBubble) {
   owned_bubble_delegate_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   BubbleDialogDelegateView* bubble_delegate_view =
       owned_bubble_delegate_view.get();
-  BubbleDialogDelegateView::CreateBubble(owned_bubble_delegate_view.release())
+  BubbleDialogDelegateView::CreateBubble(std::move(owned_bubble_delegate_view))
       ->Show();
   bubble_delegate_view->RequestFocus();
 
@@ -603,7 +604,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 // Test view focus retention when a widget's HWND is disabled and re-enabled.
 TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   WidgetAutoclosePtr widget(CreateTopLevelFramelessPlatformWidget());
-  widget->SetContentsView(new View);
+  widget->SetContentsView(std::make_unique<View>());
   for (size_t i = 0; i < 2; ++i) {
     auto child = std::make_unique<View>();
     child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -811,22 +812,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
 }
 #endif  // defined(OS_WIN)
 
-// Provides functionality to create a window modal dialog.
-class ModalDialogDelegate : public DialogDelegateView {
- public:
-  explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  ~ModalDialogDelegate() override = default;
-
-  // WidgetDelegate overrides.
-  ui::ModalType GetModalType() const override { return type_; }
-
- private:
-  ui::ModalType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
-};
-
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
@@ -852,12 +838,11 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   EXPECT_EQ(top_level_native_view, focus_changes[0]);
 
   // Create a modal dialog.
-  ui::ModalType modal_type = ui::MODAL_TYPE_WINDOW;
-  // This instance will be destroyed when the dialog is destroyed.
-  ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate(modal_type);
+  auto dialog_delegate = std::make_unique<DialogDelegateView>();
+  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, nullptr, top_level_widget.GetNativeView());
+      dialog_delegate.release(), nullptr, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
 
   // Note the dialog widget doesn't need a ShowSync. Since it is modal, it gains
@@ -869,7 +854,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   EXPECT_EQ(gfx::kNullNativeView, focus_changes[1]);
   EXPECT_EQ(modal_native_view, focus_changes[2]);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Window modal dialogs on Mac are "sheets", which animate to close before
   // activating their parent widget.
   views::test::WidgetActivationWaiter waiter(&top_level_widget, true);
@@ -1053,7 +1038,7 @@ TEST_F(WidgetTestInteractive, ShowAfterShowInactive) {
   EXPECT_EQ(GetWidgetShowState(widget.get()), ui::SHOW_STATE_NORMAL);
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
 TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   ShowSync(widget.get());
@@ -1069,13 +1054,13 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
   EXPECT_EQ(GetWidgetShowState(widget2.get()), ui::SHOW_STATE_INACTIVE);
   EXPECT_EQ(GetWidgetShowState(widget.get()), ui::SHOW_STATE_NORMAL);
 }
-#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
 
 // ExitFullscreenRestoreState doesn't use DesktopAura widgets. On Mac, there are
 // currently only Desktop widgets and fullscreen changes have to coordinate with
 // the OS. See BridgedNativeWidgetUITest for native Mac fullscreen tests.
 // Maximize on mac is also (intentionally) a no-op.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
 #else
 #define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
@@ -1221,7 +1206,7 @@ TEST_F(DesktopWidgetTestInteractive, MinimizeAndActivateFocus) {
 
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
 // Tests that minimizing a widget causes the gesture_handler
 // to be cleared when the widget is minimized.
 TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
@@ -1241,7 +1226,8 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 }
 #endif
 
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(ENABLE_DESKTOP_AURA)
 // Tests that when a desktop native widget has modal transient child, it should
 // avoid restore focused view itself as the modal transient child window will do
 // that, thus avoids having multiple focused view visually (crbug.com/727641).
@@ -1263,10 +1249,10 @@ TEST_F(DesktopWidgetTestInteractive,
 
   // Create a modal dialog.
   // This instance will be destroyed when the dialog is destroyed.
-  ModalDialogDelegate* dialog_delegate =
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+  auto dialog_delegate = std::make_unique<DialogDelegateView>();
+  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
   Widget* modal_dialog_widget = DialogDelegate::CreateDialogWidget(
-      dialog_delegate, nullptr, top_level->GetNativeView());
+      dialog_delegate.release(), nullptr, top_level->GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(0, 0, 100, 10));
   Textfield* dialog_textfield = new Textfield;
   dialog_textfield->SetBounds(0, 0, 50, 5);
@@ -1288,7 +1274,8 @@ TEST_F(DesktopWidgetTestInteractive,
   EXPECT_TRUE(dialog_textfield->HasFocus());
   EXPECT_FALSE(textfield->HasFocus());
 }
-#endif  // defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
+        // BUILDFLAG(ENABLE_DESKTOP_AURA)
 
 namespace {
 
@@ -1394,7 +1381,7 @@ TEST_F(WidgetCaptureTest, Capture) {
   TestCapture(false);
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
 // See description in TestCapture(). Creates DesktopNativeWidget.
 TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
   TestCapture(true);
@@ -1456,10 +1443,10 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
   MouseView* mouse_view1 = new MouseView;
   MouseView* mouse_view2 = new MouseView;
-  View* contents_view = new View;
+  auto contents_view = std::make_unique<View>();
   contents_view->AddChildView(mouse_view1);
   contents_view->AddChildView(mouse_view2);
-  widget.SetContentsView(contents_view);
+  widget.SetContentsView(std::move(contents_view));
 
   mouse_view1->SetBounds(0, 0, 200, 400);
   mouse_view2->SetBounds(200, 0, 200, 400);
@@ -1480,8 +1467,7 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
 TEST_F(WidgetCaptureTest, CaptureAutoReset) {
   WidgetAutoclosePtr toplevel(CreateTopLevelFramelessPlatformWidget());
-  View* container = new View;
-  toplevel->SetContentsView(container);
+  toplevel->SetContentsView(std::make_unique<View>());
 
   EXPECT_FALSE(toplevel->HasCapture());
   toplevel->SetCapture(nullptr);
@@ -1507,8 +1493,7 @@ TEST_F(WidgetCaptureTest, CaptureAutoReset) {
 
 TEST_F(WidgetCaptureTest, ResetCaptureOnGestureEnd) {
   WidgetAutoclosePtr toplevel(CreateTopLevelFramelessPlatformWidget());
-  View* container = new View;
-  toplevel->SetContentsView(container);
+  View* container = toplevel->SetContentsView(std::make_unique<View>());
 
   View* gesture = new GestureCaptureView;
   gesture->SetBounds(0, 0, 30, 30);
@@ -1570,10 +1555,11 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
   WidgetAutoclosePtr first(CreateTopLevelFramelessPlatformWidget());
   Widget* second = CreateTopLevelFramelessPlatformWidget();
 
-  NestedLoopCaptureView* container = new NestedLoopCaptureView(second);
-  first->SetContentsView(container);
+  NestedLoopCaptureView* container =
+      first->SetContentsView(std::make_unique<NestedLoopCaptureView>(second));
 
-  second->SetContentsView(new ExitLoopOnRelease(container->GetQuitClosure()));
+  second->SetContentsView(
+      std::make_unique<ExitLoopOnRelease>(container->GetQuitClosure()));
 
   first->SetSize(gfx::Size(100, 100));
   first->Show();
@@ -1597,21 +1583,21 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
 // time.
 TEST_F(WidgetCaptureTest, GrabUngrab) {
   auto top_level = CreateTestWidget();
-  top_level->SetContentsView(new MouseView());
+  top_level->SetContentsView(std::make_unique<MouseView>());
 
   Widget* child1 = new Widget;
   Widget::InitParams params1 = CreateParams(Widget::InitParams::TYPE_CONTROL);
   params1.parent = top_level->GetNativeView();
   params1.bounds = gfx::Rect(10, 10, 100, 100);
   child1->Init(std::move(params1));
-  child1->SetContentsView(new MouseView());
+  child1->SetContentsView(std::make_unique<MouseView>());
 
   Widget* child2 = new Widget;
   Widget::InitParams params2 = CreateParams(Widget::InitParams::TYPE_CONTROL);
   params2.parent = top_level->GetNativeView();
   params2.bounds = gfx::Rect(110, 10, 100, 100);
   child2->Init(std::move(params2));
-  child2->SetContentsView(new MouseView());
+  child2->SetContentsView(std::make_unique<MouseView>());
 
   top_level->Show();
   RunPendingMessages();
@@ -1663,7 +1649,7 @@ TEST_F(WidgetCaptureTest, GrabUngrab) {
 // Disabled on Mac. Desktop Mac doesn't have system modal windows since Carbon
 // was deprecated. It does have application modal windows, but only Ash requests
 // those.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_SystemModalWindowReleasesCapture \
   DISABLED_SystemModalWindowReleasesCapture
 #elif defined(OS_CHROMEOS)
@@ -1700,11 +1686,11 @@ TEST_F(WidgetCaptureTest, MAYBE_SystemModalWindowReleasesCapture) {
   EXPECT_TRUE(top_level_widget.HasCapture());
 
   // Create a modal dialog.
-  ModalDialogDelegate* dialog_delegate =
-      new ModalDialogDelegate(ui::MODAL_TYPE_SYSTEM);
+  auto dialog_delegate = std::make_unique<DialogDelegateView>();
+  dialog_delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, nullptr, top_level_widget.GetNativeView());
+      dialog_delegate.release(), nullptr, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   ShowSync(modal_dialog_widget);
 
@@ -1718,22 +1704,23 @@ TEST_F(WidgetCaptureTest, MAYBE_SystemModalWindowReleasesCapture) {
 // Regression test for http://crbug.com/382421 (Linux-Aura issue).
 // TODO(pkotwicz): Make test pass on CrOS and Windows.
 // TODO(tapted): Investigate for toolkit-views on Mac http;//crbug.com/441064.
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_APPLE)
 #define MAYBE_MouseExitOnCaptureGrab DISABLED_MouseExitOnCaptureGrab
 #else
 #define MAYBE_MouseExitOnCaptureGrab MouseExitOnCaptureGrab
 #endif
 
 // Test that a synthetic mouse exit is sent to the widget which was handling
-// mouse events when a different widget grabs capture.
+// mouse events when a different widget grabs capture. Except for Windows,
+// which does not send a synthetic mouse exit.
 TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   Widget widget1;
   Widget::InitParams params1 =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1.Init(std::move(params1));
-  MouseView* mouse_view1 = new MouseView;
-  widget1.SetContentsView(mouse_view1);
+  MouseView* mouse_view1 =
+      widget1.SetContentsView(std::make_unique<MouseView>());
   widget1.Show();
   widget1.SetBounds(gfx::Rect(300, 300));
 
@@ -1754,9 +1741,15 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
 
   widget2.SetCapture(nullptr);
   EXPECT_EQ(0, mouse_view1->EnteredCalls());
-  // Grabbing native capture on Windows generates a ui::ET_MOUSE_EXITED event
-  // in addition to the one generated by Chrome.
-  EXPECT_LT(0, mouse_view1->ExitedCalls());
+  // On Windows, Chrome doesn't synthesize a separate mouse exited event.
+  // Instead, it uses ::TrackMouseEvent to get notified of the mouse leaving.
+  // Calling SetCapture does not cause Windows to generate a WM_MOUSELEAVE
+  // event. See WindowEventDispatcher::OnOtherRootGotCapture() for more info.
+#if defined(OS_WIN)
+  EXPECT_EQ(0, mouse_view1->ExitedCalls());
+#else
+  EXPECT_EQ(1, mouse_view1->ExitedCalls());
+#endif  // OS_WIN
 }
 
 namespace {
@@ -1806,7 +1799,7 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   child->AddObserver(&observer);
   child->Show();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, activation is asynchronous. A single trip to the runloop should be
   // sufficient. On Aura platforms, note that since the child widget isn't top-
   // level, the aura window manager gets asked whether the widget is active, not
@@ -1917,7 +1910,7 @@ class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
   DISALLOW_COPY_AND_ASSIGN(WidgetInputMethodInteractiveTest);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_Activation DISABLED_Activation
 #else
 #define MAYBE_Activation Activation
@@ -1962,7 +1955,7 @@ TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
 // Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
 // DNWA (which just activates the last active window) and involves the
 // AuraTestHelper which sets the input method as DummyInputMethod.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
   DeactivateSync(widget.get());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
@@ -2010,7 +2003,7 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 // Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
 // DNWA (which just activates the last active window) and involves the
 // AuraTestHelper which sets the input method as DummyInputMethod.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
   DeactivateSync(parent.get());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             parent->GetInputMethod()->GetTextInputType());

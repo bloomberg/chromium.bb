@@ -475,7 +475,8 @@ void UsbTransferFunction::OnCompleted(
     UsbTransferStatus status,
     std::unique_ptr<base::DictionaryValue> transfer_info) {
   if (status == UsbTransferStatus::COMPLETED) {
-    Respond(OneArgument(std::move(transfer_info)));
+    Respond(
+        OneArgument(base::Value::FromUniquePtrValue(std::move(transfer_info))));
   } else {
     auto error_args = std::make_unique<base::ListValue>();
     error_args->Append(std::move(transfer_info));
@@ -489,13 +490,12 @@ void UsbTransferFunction::OnCompleted(
 void UsbTransferFunction::OnTransferInCompleted(
     UsbTransferStatus status,
     const std::vector<uint8_t>& data) {
-  auto transfer_info = std::make_unique<base::DictionaryValue>();
-  transfer_info->SetInteger(kResultCodeKey, static_cast<int>(status));
-  transfer_info->Set(
-      kDataKey, base::Value::CreateWithCopiedBuffer(
-                    reinterpret_cast<const char*>(data.data()), data.size()));
+  base::Value transfer_info(base::Value::Type::DICTIONARY);
+  transfer_info.SetIntKey(kResultCodeKey, static_cast<int>(status));
+  transfer_info.SetKey(kDataKey, base::Value(data));
 
-  OnCompleted(status, std::move(transfer_info));
+  OnCompleted(status, base::DictionaryValue::From(base::Value::ToUniquePtrValue(
+                          std::move(transfer_info))));
 }
 
 void UsbTransferFunction::OnTransferOutCompleted(UsbTransferStatus status) {
@@ -665,7 +665,7 @@ void UsbFindDevicesFunction::OnDisconnect() {
 }
 
 void UsbFindDevicesFunction::OpenComplete() {
-  Respond(OneArgument(std::move(result_)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result_))));
 }
 
 UsbGetDevicesFunction::UsbGetDevicesFunction() = default;
@@ -714,7 +714,7 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
     }
   }
 
-  Respond(OneArgument(std::move(result)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
 
 UsbGetUserSelectedDevicesFunction::UsbGetUserSelectedDevicesFunction() =
@@ -728,7 +728,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (!user_gesture()) {
-    return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
   }
 
   bool multiple = false;
@@ -773,7 +773,7 @@ void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     result->Append(api_device.ToValue());
   }
 
-  Respond(OneArgument(std::move(result)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
 
 UsbGetConfigurationsFunction::UsbGetConfigurationsFunction() = default;
@@ -816,7 +816,8 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
     }
     configs->Append(api_config.ToValue());
   }
-  return RespondNow(OneArgument(std::move(configs)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(configs))));
 }
 
 UsbRequestAccessFunction::UsbRequestAccessFunction() = default;
@@ -826,7 +827,7 @@ ExtensionFunction::ResponseAction UsbRequestAccessFunction::Run() {
   std::unique_ptr<usb::RequestAccess::Params> parameters =
       RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+  return RespondNow(OneArgument(base::Value(true)));
 }
 
 UsbOpenDeviceFunction::UsbOpenDeviceFunction() = default;
@@ -888,9 +889,9 @@ void UsbOpenDeviceFunction::OnDeviceOpened(
   DCHECK(device_info);
   UsbDeviceResource* resource = new UsbDeviceResource(
       extension_id(), device_info->guid, std::move(device));
-  Respond(OneArgument(PopulateConnectionHandle(manager->Add(resource),
-                                               device_info->vendor_id,
-                                               device_info->product_id)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      PopulateConnectionHandle(manager->Add(resource), device_info->vendor_id,
+                               device_info->product_id))));
 }
 
 void UsbOpenDeviceFunction::OnDisconnect() {
@@ -956,7 +957,8 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
       DCHECK(config);
       if (config->configuration_value == active_config_value) {
         ConfigDescriptor api_config = ConvertConfigDescriptor(*config);
-        return RespondNow(OneArgument(api_config.ToValue()));
+        return RespondNow(
+            OneArgument(base::Value::FromUniquePtrValue(api_config.ToValue())));
       }
     }
   }
@@ -992,7 +994,8 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
       for (size_t i = 0; i < api_config.interfaces.size(); ++i) {
         result->Append(api_config.interfaces[i].ToValue());
       }
-      return RespondNow(OneArgument(std::move(result)));
+      return RespondNow(
+          OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
     }
   }
   // Respond with an error if the config object can't be found according to
@@ -1332,7 +1335,7 @@ ExtensionFunction::ResponseAction UsbResetDeviceFunction::Run() {
 
 void UsbResetDeviceFunction::OnComplete(bool success) {
   if (success) {
-    Respond(OneArgument(std::make_unique<base::Value>(true)));
+    Respond(OneArgument(base::Value(true)));
   } else {
     ReleaseDeviceResource(parameters_->handle);
 

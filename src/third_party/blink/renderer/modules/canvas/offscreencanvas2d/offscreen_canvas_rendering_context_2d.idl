@@ -16,6 +16,8 @@
     // state
     void save(); // push state on state stack
     void restore(); // pop state stack and restore state
+    // Clear the canvas and reset the path
+    [RuntimeEnabled=NewCanvas2DAPI] void reset();
 
     // transformations (default transform is the identity matrix)
     void scale(unrestricted double x, unrestricted double y);
@@ -41,6 +43,7 @@
     attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
     CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
     [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
+    [RuntimeEnabled=NewCanvas2DAPI] CanvasGradient createConicGradient(double startAngle, double centerX, double centerY);
     [CallWith=ScriptState, RaisesException] CanvasPattern? createPattern(CanvasImageSource image, [TreatNullAs=EmptyString] DOMString repetitionType);
 
     // shadows
@@ -87,8 +90,6 @@
     // If OffscreenCanva ships before color managed canvas, this method must remain behind flag.
     // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
     [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
-    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
-
 
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)
@@ -106,6 +107,11 @@
     attribute DOMString textAlign; // "start", "end", "left", "right", "center" (default: "start")
     attribute DOMString textBaseline; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
     attribute DOMString direction; // "inherit", "rtl", "ltr" (default: "inherit")
+    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textLetterSpacing; // length in pixel (default: 0)
+    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textWordSpacing; // length in pixel (default: 0)
+    [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString fontKerning; // "auto", "normal", "none" (default: "auto")
+    [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString fontVariantCaps; // "normal", "small-caps", "all-small-caps", "petite-caps", "all-petite-caps", "unicase", "titling-caps" (default: "normal")
+    [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString textRendering; // "auto", "optimizeSpeed", "optimizeLegibility", "geometricPrecision" (default: auto)
 };
 
 OffscreenCanvasRenderingContext2D includes CanvasPath;

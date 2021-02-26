@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/power_monitor/test/fake_power_monitor_source.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,11 +29,43 @@ namespace {
 
 class MockSessionLengthLimiterDelegate : public SessionLengthLimiter::Delegate {
  public:
-  MOCK_CONST_METHOD0(GetCurrentTime, const base::TimeTicks(void));
+  MOCK_CONST_METHOD0(GetClock, const base::Clock*(void));
   MOCK_METHOD0(StopSession, void(void));
 };
 
+// Helper class to simulate wall clock advance during suspend/resume.
+class WallClockForwarder {
+ public:
+  explicit WallClockForwarder(base::TestMockTimeTaskRunner* runner);
+  ~WallClockForwarder();
+  WallClockForwarder(const WallClockForwarder&) = delete;
+  WallClockForwarder& operator=(const WallClockForwarder&) = delete;
+
+  void ForwardWhileSuspended(const base::TimeDelta& delta);
+
+ private:
+  // Unowned, must outlive this.
+  base::TestMockTimeTaskRunner* const runner_;
+
+  // Used to simulate a power suspend and resume.
+  base::test::ScopedFakePowerMonitorSource fake_power_monitor_source_;
+};
+
 }  // namespace
+
+WallClockForwarder::WallClockForwarder(base::TestMockTimeTaskRunner* runner)
+    : runner_(runner) {}
+
+WallClockForwarder::~WallClockForwarder() = default;
+
+void WallClockForwarder::ForwardWhileSuspended(const base::TimeDelta& delta) {
+  fake_power_monitor_source_.Suspend();
+
+  runner_->AdvanceWallClock(delta);
+
+  fake_power_monitor_source_.Resume();
+  runner_->RunUntilIdle();
+}
 
 class SessionLengthLimiterTest : public testing::Test {
  protected:
@@ -47,10 +80,10 @@ class SessionLengthLimiterTest : public testing::Test {
   bool IsSessionUserActivitySeenPrefSet();
   bool GetSessionUserActivitySeenPref();
 
-  void SetSessionStartTimePref(const base::TimeTicks& session_start_time);
+  void SetSessionStartTimePref(const base::Time& session_start_time);
   void ClearSessionStartTimePref();
   bool IsSessionStartTimePrefSet();
-  base::TimeTicks GetSessionStartTimePref();
+  base::Time GetSessionStartTimePref();
 
   void SetSessionLengthLimitPref(const base::TimeDelta& session_length_limit);
   void ClearSessionLengthLimitPref();
@@ -71,8 +104,9 @@ class SessionLengthLimiterTest : public testing::Test {
   void DestroySessionLengthLimiter();
 
   scoped_refptr<base::TestMockTimeTaskRunner> runner_;
-  base::TimeTicks session_start_time_;
-  base::TimeTicks session_stop_time_;
+  std::unique_ptr<WallClockForwarder> wall_clock_forwarder_;
+  base::Time session_start_time_;
+  base::Time session_stop_time_;
 
  private:
   TestingPrefServiceSimple local_state_;
@@ -92,10 +126,12 @@ void SessionLengthLimiterTest::SetUp() {
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   SessionLengthLimiter::RegisterPrefs(local_state_.registry());
   runner_ = new base::TestMockTimeTaskRunner;
+  wall_clock_forwarder_ = std::make_unique<WallClockForwarder>(runner_.get());
   runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1000));
 }
 
 void SessionLengthLimiterTest::TearDown() {
+  wall_clock_forwarder_.reset();
   session_length_limiter_.reset();
   TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
 }
@@ -120,7 +156,7 @@ bool SessionLengthLimiterTest::GetSessionUserActivitySeenPref() {
 }
 
 void SessionLengthLimiterTest::SetSessionStartTimePref(
-    const base::TimeTicks& session_start_time) {
+    const base::Time& session_start_time) {
   local_state_.SetUserPref(prefs::kSessionStartTime,
                            std::make_unique<base::Value>(base::NumberToString(
                                session_start_time.ToInternalValue())));
@@ -134,9 +170,9 @@ bool SessionLengthLimiterTest::IsSessionStartTimePrefSet() {
   return local_state_.HasPrefPath(prefs::kSessionStartTime);
 }
 
-base::TimeTicks SessionLengthLimiterTest::GetSessionStartTimePref() {
+base::Time SessionLengthLimiterTest::GetSessionStartTimePref() {
   EXPECT_TRUE(IsSessionStartTimePrefSet());
-  return base::TimeTicks::FromInternalValue(
+  return base::Time::FromInternalValue(
       local_state_.GetInt64(prefs::kSessionStartTime));
 }
 
@@ -172,7 +208,7 @@ void SessionLengthLimiterTest::
     UpdateSessionStartTimeIfWaitingForUserActivity() {
   if (!user_activity_seen_ &&
       local_state_.GetBoolean(prefs::kSessionWaitForInitialUserActivity)) {
-    session_start_time_ = runner_->NowTicks();
+    session_start_time_ = runner_->Now();
   }
 }
 
@@ -184,19 +220,19 @@ void SessionLengthLimiterTest::ExpectStopSession() {
 }
 
 void SessionLengthLimiterTest::SaveSessionStopTime() {
-  session_stop_time_ = runner_->NowTicks();
+  session_stop_time_ = runner_->Now();
 }
 
 void SessionLengthLimiterTest::CreateSessionLengthLimiter(
     bool browser_restarted) {
   user_activity_seen_ = false;
-  session_start_time_ = runner_->NowTicks();
+  session_start_time_ = runner_->Now();
 
   EXPECT_FALSE(delegate_);
   delegate_ = new NiceMock<MockSessionLengthLimiterDelegate>;
-  ON_CALL(*delegate_, GetCurrentTime())
+  ON_CALL(*delegate_, GetClock())
       .WillByDefault(
-          Invoke(runner_.get(), &base::TestMockTimeTaskRunner::NowTicks));
+          Invoke(runner_.get(), &base::TestMockTimeTaskRunner::GetMockClock));
   EXPECT_CALL(*delegate_, StopSession()).Times(0);
   session_length_limiter_.reset(
       new SessionLengthLimiter(delegate_, browser_restarted));
@@ -284,7 +320,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -292,7 +328,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -300,7 +336,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(runner_->NowTicks() - base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() - base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -308,7 +344,7 @@ TEST_F(SessionLengthLimiterTest, StartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time valid.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(runner_->NowTicks() - base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() - base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(false);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -340,7 +376,7 @@ TEST_F(SessionLengthLimiterTest, RestartDoNotWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_EQ(session_start_time_, GetSessionStartTimePref());
@@ -348,14 +384,14 @@ TEST_F(SessionLengthLimiterTest, RestartDoNotWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_EQ(session_start_time_, GetSessionStartTimePref());
   DestroySessionLengthLimiter();
 
-  const base::TimeTicks stored_session_start_time =
-      runner_->NowTicks() - base::TimeDelta::FromHours(2);
+  const base::Time stored_session_start_time =
+      runner_->Now() - base::TimeDelta::FromHours(2);
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();
@@ -402,7 +438,7 @@ TEST_F(SessionLengthLimiterTest, RestartWaitForInitialUserActivity) {
 
   // Pref indicating user activity not set. Session start time in the future.
   ClearSessionUserActivitySeenPref();
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
@@ -410,14 +446,14 @@ TEST_F(SessionLengthLimiterTest, RestartWaitForInitialUserActivity) {
 
   // Pref indicating user activity set. Session start time in the future.
   SetSessionUserActivitySeenPref(true);
-  SetSessionStartTimePref(runner_->NowTicks() + base::TimeDelta::FromHours(2));
+  SetSessionStartTimePref(runner_->Now() + base::TimeDelta::FromHours(2));
   CreateSessionLengthLimiter(true);
   EXPECT_FALSE(IsSessionUserActivitySeenPrefSet());
   EXPECT_FALSE(IsSessionStartTimePrefSet());
   DestroySessionLengthLimiter();
 
-  const base::TimeTicks stored_session_start_time =
-      runner_->NowTicks() - base::TimeDelta::FromHours(2);
+  const base::Time stored_session_start_time =
+      runner_->Now() - base::TimeDelta::FromHours(2);
 
   // Pref indicating user activity not set. Session start time valid.
   ClearSessionUserActivitySeenPref();
@@ -735,6 +771,58 @@ TEST_F(SessionLengthLimiterTest, RunAndRemoveSessionLengthLimit) {
 
   // Verify that no timer fires to terminate the session.
   runner_->FastForwardUntilNoTasksRemain();
+}
+
+// Tests that session is stopped immediately if limit was hit with when device
+// was suspended.
+TEST_F(SessionLengthLimiterTest, SuspendAndStop) {
+  base::ThreadTaskRunnerHandle runner_handler(runner_);
+
+  // Set a 60 second session time limit.
+  SetSessionLengthLimitPref(base::TimeDelta::FromSeconds(60));
+
+  CreateSessionLengthLimiter(false);
+
+  // Verify that the timer fires and the session is terminated when the session
+  // length limit is reached.
+  ExpectStopSession();
+
+  // Simulate 30 seconds of the active session, then 60 seconds of sleep
+  // (suspended device). Given that session length limit is 60 seconds, it will
+  // hit exactly if the middle of sleen (and processed when device is resumed,
+  // so real session length will be 90 seconds).
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  wall_clock_forwarder_->ForwardWhileSuspended(
+      base::TimeDelta::FromSeconds(60));
+  EXPECT_EQ(session_start_time_ + base::TimeDelta::FromSeconds(90),
+            session_stop_time_);
+}
+
+// Tests that session is stopped withing timeout, even when part of session time
+// device was suspended.
+TEST_F(SessionLengthLimiterTest, SuspendAndRun) {
+  base::ThreadTaskRunnerHandle runner_handler(runner_);
+
+  // Set a 60 second session time limit.
+  SetSessionLengthLimitPref(base::TimeDelta::FromSeconds(60));
+
+  CreateSessionLengthLimiter(false);
+
+  // Simulate 20 seconds of the active session, then 30 seconds of sleep
+  // (suspended device). Given that session length limit is 60 seconds, and
+  // total 50 seconds passed, there will be 10 seconds of the session left (and
+  // the second FastForwardBy will hit the limit).
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  wall_clock_forwarder_->ForwardWhileSuspended(
+      base::TimeDelta::FromSeconds(30));
+
+  // Verify that the timer fires and the session is terminated when the session
+  // length limit is reached.
+  ExpectStopSession();
+
+  runner_->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  EXPECT_EQ(session_start_time_ + base::TimeDelta::FromSeconds(60),
+            session_stop_time_);
 }
 
 }  // namespace chromeos

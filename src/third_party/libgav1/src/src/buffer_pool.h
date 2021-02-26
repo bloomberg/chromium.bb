@@ -19,6 +19,7 @@
 
 #include <array>
 #include <cassert>
+#include <climits>
 #include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstdint>
 #include <cstring>
@@ -29,9 +30,9 @@
 #include "src/gav1/frame_buffer.h"
 #include "src/internal_frame_buffer_list.h"
 #include "src/symbol_decoder_context.h"
-#include "src/utils/array_2d.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
+#include "src/utils/reference_info.h"
 #include "src/utils/segmentation.h"
 #include "src/utils/segmentation_map.h"
 #include "src/utils/types.h"
@@ -108,21 +109,11 @@ class RefCountedBuffer {
   bool showable_frame() const { return showable_frame_; }
   void set_showable_frame(bool value) { showable_frame_ = value; }
 
-  // This array has kNumReferenceFrameTypes elements.
-  const uint8_t* order_hint_array() const { return order_hint_.data(); }
-  uint8_t order_hint(ReferenceFrameType reference_frame) const {
-    return order_hint_[reference_frame];
-  }
-  void set_order_hint(ReferenceFrameType reference_frame, uint8_t order_hint) {
-    order_hint_[reference_frame] = order_hint;
-  }
-  void ClearOrderHints() { order_hint_.fill(0); }
-
   // Sets upscaled_width_, frame_width_, frame_height_, render_width_,
   // render_height_, rows4x4_ and columns4x4_ from the corresponding fields
-  // in frame_header. Allocates motion_field_reference_frame_,
-  // motion_field_mv_, and segmentation_map_. Returns true on success, false
-  // on failure.
+  // in frame_header. Allocates reference_info_.motion_field_reference_frame,
+  // reference_info_.motion_field_mv_, and segmentation_map_. Returns true on
+  // success, false on failure.
   bool SetFrameDimensions(const ObuFrameHeader& frame_header);
 
   int32_t upscaled_width() const { return upscaled_width_; }
@@ -135,26 +126,10 @@ class RefCountedBuffer {
   int32_t rows4x4() const { return rows4x4_; }
   int32_t columns4x4() const { return columns4x4_; }
 
-  // Entry at |row|, |column| corresponds to
-  // MfRefFrames[row * 2 + 1][column * 2 + 1] in the spec.
-  ReferenceFrameType* motion_field_reference_frame(int row, int column) {
-    return &motion_field_reference_frame_[row][column];
-  }
-
-  const ReferenceFrameType* motion_field_reference_frame(int row,
-                                                         int column) const {
-    return &motion_field_reference_frame_[row][column];
-  }
-
-  // Entry at |row|, |column| corresponds to
-  // MfMvs[row * 2 + 1][column * 2 + 1] in the spec.
-  MotionVector* motion_field_mv(int row, int column) {
-    return &motion_field_mv_[row][column];
-  }
-
-  const MotionVector* motion_field_mv(int row, int column) const {
-    return &motion_field_mv_[row][column];
-  }
+  int spatial_id() const { return spatial_id_; }
+  void set_spatial_id(int value) { spatial_id_ = value; }
+  int temporal_id() const { return temporal_id_; }
+  void set_temporal_id(int value) { temporal_id_ = value; }
 
   SegmentationMap* segmentation_map() { return &segmentation_map_; }
   const SegmentationMap* segmentation_map() const { return &segmentation_map_; }
@@ -205,6 +180,9 @@ class RefCountedBuffer {
     film_grain_params_ = params;
   }
 
+  const ReferenceInfo* reference_info() const { return &reference_info_; }
+  ReferenceInfo* reference_info() { return &reference_info_; }
+
   // This will wake up the WaitUntil*() functions and make them return false.
   void Abort() {
     {
@@ -217,8 +195,10 @@ class RefCountedBuffer {
   }
 
   void SetFrameState(FrameState frame_state) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    frame_state_ = frame_state;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      frame_state_ = frame_state;
+    }
     if (frame_state == kFrameStateParsed) {
       parsed_condvar_.notify_all();
     } else if (frame_state == kFrameStateDecoded) {
@@ -230,9 +210,11 @@ class RefCountedBuffer {
   // Sets the progress of this frame to |progress_row| and notifies any threads
   // that may be waiting on rows <= |progress_row|.
   void SetProgress(int progress_row) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (progress_row_ >= progress_row) return;
-    progress_row_ = progress_row;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      if (progress_row_ >= progress_row) return;
+      progress_row_ = progress_row;
+    }
     progress_row_condvar_.notify_all();
   }
 
@@ -257,8 +239,14 @@ class RefCountedBuffer {
   }
 
   // Waits until the |progress_row| has been decoded (as indicated either by
-  // |progress_row_| or |frame_state_|).
-  bool WaitUntil(int progress_row) {
+  // |progress_row_| or |frame_state_|). |progress_row_cache| must not be
+  // nullptr and will be populated with the value of |progress_row_| after the
+  // wait.
+  //
+  // Typical usage of |progress_row_cache| is as follows:
+  //  * Initialize |*progress_row_cache| to INT_MIN.
+  //  * Call WaitUntil only if |*progress_row_cache| < |progress_row|.
+  bool WaitUntil(int progress_row, int* progress_row_cache) {
     // If |progress_row| is negative, it means that the wait is on the top
     // border to be available. The top border will be available when row 0 has
     // been decoded. So we can simply wait on row 0 instead.
@@ -268,6 +256,11 @@ class RefCountedBuffer {
            !abort_) {
       progress_row_condvar_.wait(lock);
     }
+    // Once |frame_state_| reaches kFrameStateDecoded, |progress_row_| may no
+    // longer be updated. So we set |*progress_row_cache| to INT_MAX in that
+    // case.
+    *progress_row_cache =
+        (frame_state_ != kFrameStateDecoded) ? progress_row_ : INT_MAX;
     return !abort_;
   }
 
@@ -311,8 +304,6 @@ class RefCountedBuffer {
   ChromaSamplePosition chroma_sample_position_ = kChromaSamplePositionUnknown;
   bool showable_frame_ = false;
 
-  std::array<uint8_t, kNumReferenceFrameTypes> order_hint_ = {};
-
   int32_t upscaled_width_ = 0;
   int32_t frame_width_ = 0;
   int32_t frame_height_ = 0;
@@ -320,13 +311,9 @@ class RefCountedBuffer {
   int32_t render_height_ = 0;
   int32_t columns4x4_ = 0;
   int32_t rows4x4_ = 0;
+  int spatial_id_ = 0;
+  int temporal_id_ = 0;
 
-  // Array of size (rows4x4 / 2) x (columns4x4 / 2). Entry at i, j corresponds
-  // to MfRefFrames[i * 2 + 1][j * 2 + 1] in the spec.
-  Array2D<ReferenceFrameType> motion_field_reference_frame_;
-  // Array of size (rows4x4 / 2) x (columns4x4 / 2). Entry at i, j corresponds
-  // to MfMvs[i * 2 + 1][j * 2 + 1] in the spec.
-  Array2D<MotionVector> motion_field_mv_;
   // segmentation_map_ contains a rows4x4_ by columns4x4_ 2D array.
   SegmentationMap segmentation_map_;
 
@@ -344,6 +331,7 @@ class RefCountedBuffer {
   // on feature_enabled only, we also save their values as an optimization.
   Segmentation segmentation_ = {};
   FilmGrainParams film_grain_params_ = {};
+  ReferenceInfo reference_info_;
 };
 
 // RefCountedBufferPtr contains a reference to a RefCountedBuffer.

@@ -16,6 +16,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
+#include "net/quic/quic_event_logger.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
@@ -28,14 +29,13 @@ class HistogramBase;
 
 namespace net {
 
-// This class is a debug visitor of a quic::QuicConnection which logs
-// events to |net_log|.
+// Handles both NetLog support and UMA histograms for QUIC.
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public quic::QuicConnectionDebugVisitor,
       public quic::QuicPacketCreator::DebugDelegate {
  public:
   QuicConnectionLogger(
-      quic::QuicSpdySession* session,
+      quic::QuicSession* session,
       const char* const connection_description,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       const NetLogWithSource& net_log);
@@ -46,9 +46,17 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnFrameAddedToPacket(const quic::QuicFrame& frame) override;
   void OnStreamFrameCoalesced(const quic::QuicStreamFrame& frame) override;
 
-  // QuicConnectionDebugVisitor Interface
+  // quic::QuicConnectionDebugVisitor Interface
   void OnPacketSent(const quic::SerializedPacket& serialized_packet,
                     quic::TransmissionType transmission_type,
+                    quic::QuicTime sent_time) override;
+  void OnPacketSent(quic::QuicPacketNumber packet_number,
+                    quic::QuicPacketLength packet_length,
+                    bool has_crypto_handshake,
+                    quic::TransmissionType transmission_type,
+                    quic::EncryptionLevel encryption_level,
+                    const quic::QuicFrames& retransmittable_frames,
+                    const quic::QuicFrames& nonretransmittable_frames,
                     quic::QuicTime sent_time) override;
   void OnIncomingAck(quic::QuicPacketNumber ack_packet_number,
                      quic::EncryptionLevel ack_decrypted_level,
@@ -73,7 +81,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       quic::EncryptionLevel decryption_level) override;
   void OnDuplicatePacket(quic::QuicPacketNumber packet_number) override;
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
-  void OnPacketHeader(const quic::QuicPacketHeader& header) override;
+  void OnPacketHeader(const quic::QuicPacketHeader& header,
+                      quic::QuicTime receive_time,
+                      quic::EncryptionLevel level) override;
   void OnPathChallengeFrame(const quic::QuicPathChallengeFrame& frame) override;
   void OnPathResponseFrame(const quic::QuicPathResponseFrame& frame) override;
   void OnCryptoFrame(const quic::QuicCryptoFrame& frame) override;
@@ -90,7 +100,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                            const quic::QuicTime& receive_time) override;
   void OnBlockedFrame(const quic::QuicBlockedFrame& frame) override;
   void OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) override;
-  void OnPingFrame(const quic::QuicPingFrame& frame) override;
+  void OnPingFrame(const quic::QuicPingFrame& frame,
+                   quic::QuicTime::Delta ping_received_delay) override;
   void OnPaddingFrame(const quic::QuicPaddingFrame& frame) override;
   void OnNewConnectionIdFrame(
       const quic::QuicNewConnectionIdFrame& frame) override;
@@ -109,6 +120,12 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;
   void OnRttChanged(quic::QuicTime::Delta rtt) const override;
+  void OnTransportParametersSent(
+      const quic::TransportParameters& transport_parameters) override;
+  void OnTransportParametersReceived(
+      const quic::TransportParameters& transport_parameters) override;
+  void OnTransportParametersResumed(
+      const quic::TransportParameters& transport_parameters) override;
 
   void OnCryptoHandshakeMessageReceived(
       const quic::CryptoHandshakeMessage& message);
@@ -122,6 +139,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Returns connection's overall packet loss rate in fraction.
   float ReceivedPacketLossRate() const;
 
+  void OnZeroRttRejected(int reason) override;
+
  private:
   // Do a factory get for a histogram to record a 6-packet loss-sequence as a
   // sample. The histogram will record the 64 distinct possible combinations.
@@ -132,8 +151,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // the overall packet loss rate, and record it into a histogram.
   void RecordAggregatePacketLossRate() const;
 
-  NetLogWithSource net_log_;
-  quic::QuicSpdySession* session_;  // Unowned.
+  quic::QuicSession* session_;  // Unowned.
   // The last packet number received.
   quic::QuicPacketNumber last_received_packet_number_;
   // The size of the most recently received packet.
@@ -194,6 +212,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Receives notifications regarding the performance of the underlying socket
   // for the QUIC connection. May be null.
   const std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
+
+  QuicEventLogger event_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };

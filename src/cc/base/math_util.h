@@ -9,13 +9,14 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -70,9 +71,9 @@ struct HomogeneousCoordinate {
     // However, w may be close to 0 and we lose precision on our geometry
     // calculations if we allow scaling to extremely large values.
     return gfx::PointF(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
-                                          (float)kInfiniteCoordinate),
+                                          float{kInfiniteCoordinate}),
                        base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
-                                          (float)kInfiniteCoordinate));
+                                          float{kInfiniteCoordinate}));
   }
 
   gfx::Point3F CartesianPoint3d() const {
@@ -86,11 +87,11 @@ struct HomogeneousCoordinate {
     // However, w may be close to 0 and we lose precision on our geometry
     // calculations if we allow scaling to extremely large values.
     return gfx::Point3F(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
-                                           (float)kInfiniteCoordinate),
+                                           float{kInfiniteCoordinate}),
                         base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
-                                           (float)kInfiniteCoordinate),
+                                           float{kInfiniteCoordinate}),
                         base::ClampToRange(z() * inv_w, -kInfiniteCoordinate,
-                                           (float)kInfiniteCoordinate));
+                                           float{kInfiniteCoordinate}));
   }
 
   SkScalar x() const { return vec[0]; }
@@ -303,6 +304,9 @@ class CC_BASE_EXPORT MathUtil {
   static void AddToTracedValue(const char* name,
                                const gfx::RRectF& rect,
                                base::trace_event::TracedValue* res);
+  static void AddCornerRadiiToTracedValue(const char* name,
+                                          const gfx::RRectF& rect,
+                                          base::trace_event::TracedValue* res);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.

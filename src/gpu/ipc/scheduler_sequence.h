@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/sequence_id.h"
@@ -18,6 +18,7 @@
 
 namespace viz {
 class Display;
+class DisplayCompositorMemoryAndTaskController;
 class ScopedAllowGpuAccessForDisplayResourceProvider;
 class OutputSurfaceProviderImpl;
 class OverlayProcessorAndroid;
@@ -36,6 +37,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT ScopedAllowScheduleGpuTask {
   // Only add more friend declarations for classes that Android WebView is
   // guaranteed to be able to support. Talk to boliu@ if in doubt.
   friend class viz::Display;
+  friend class viz::DisplayCompositorMemoryAndTaskController;
   friend class viz::ScopedAllowGpuAccessForDisplayResourceProvider;
   friend class viz::OutputSurfaceProviderImpl;
   // Overlay is not supported for WebView. However the initialization and

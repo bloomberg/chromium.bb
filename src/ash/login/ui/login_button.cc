@@ -4,6 +4,8 @@
 
 #include "ash/login/ui/login_button.h"
 
+#include <utility>
+
 #include "ash/login/ui/views_utils.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -21,12 +23,12 @@ constexpr SkColor kInkDropHighlightColor =
 
 }  // namespace
 
-LoginButton::LoginButton(views::ButtonListener* listener)
-    : views::ImageButton(listener) {
+LoginButton::LoginButton(PressedCallback callback)
+    : views::ImageButton(std::move(callback)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
+  SetHasInkDropActionOnClick(true);
 
   SetInstallFocusRingOnFocus(true);
   login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),

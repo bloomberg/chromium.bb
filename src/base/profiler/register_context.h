@@ -15,9 +15,9 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/machine/thread_status.h>
-#elif defined(OS_ANDROID) || defined(OS_LINUX)
+#elif defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <sys/ucontext.h>
 #endif
 
@@ -69,10 +69,15 @@ inline uintptr_t& RegisterContextInstructionPointer(::CONTEXT* context) {
 #endif
 }
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)  // #if defined(OS_WIN)
+#elif defined(OS_MAC)  // #if defined(OS_WIN)
 
+#if defined(ARCH_CPU_X86_64)
 using RegisterContext = x86_thread_state64_t;
+#elif defined(ARCH_CPU_ARM64)
+using RegisterContext = arm_thread_state64_t;
+#endif
 
+#if defined(ARCH_CPU_X86_64)
 inline uintptr_t& RegisterContextStackPointer(x86_thread_state64_t* context) {
   return AsUintPtr(&context->__rsp);
 }
@@ -86,7 +91,27 @@ inline uintptr_t& RegisterContextInstructionPointer(
   return AsUintPtr(&context->__rip);
 }
 
-#elif defined(OS_ANDROID) || defined(OS_LINUX)  // #if defined(OS_WIN)
+#elif defined(ARCH_CPU_ARM64)
+
+// TODO(thakis): Have getter/setter functions instead of returning a ref to
+// prepare for arm64e. See __DARWIN_OPAQUE_ARM_THREAD_STATE6 in
+// mach/arm/_structs.h
+inline uintptr_t& RegisterContextStackPointer(arm_thread_state64_t* context) {
+  return AsUintPtr(&context->__sp);
+}
+
+inline uintptr_t& RegisterContextFramePointer(arm_thread_state64_t* context) {
+  return AsUintPtr(&context->__fp);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(
+    arm_thread_state64_t* context) {
+  return AsUintPtr(&context->__pc);
+}
+#endif
+
+#elif defined(OS_ANDROID) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)  // #if defined(OS_WIN)
 
 using RegisterContext = mcontext_t;
 

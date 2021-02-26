@@ -69,6 +69,10 @@ public class ResponseParser {
     private boolean mParsedPing;
     private boolean mParsedUpdatecheck;
 
+    public ResponseParser(String appId, boolean expectInstallEvent) {
+        this(appId, expectInstallEvent, !expectInstallEvent, !expectInstallEvent);
+    }
+
     public ResponseParser(String appId, boolean expectInstallEvent, boolean expectPing,
             boolean expectUpdatecheck) {
         this(false, appId, expectInstallEvent, expectPing, expectUpdatecheck);
@@ -87,7 +91,7 @@ public class ResponseParser {
         XMLParser parser = new XMLParser(xml);
         Node rootNode = parser.getRootNode();
         parseRootNode(rootNode);
-        return new VersionConfig(getNewVersion(), getURL(), getDaystartDays());
+        return new VersionConfig(getNewVersion(), getURL(), getDaystartDays(), getUpdateStatus());
     }
 
     public int getDaystartSeconds() {

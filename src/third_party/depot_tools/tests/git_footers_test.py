@@ -46,9 +46,15 @@ My commit message is my best friend. It is my life. I must master it.
         git_footers.split_footers('H\n\nBug:\nAlso: footer'),
         (['H', ''], ['Bug:', 'Also: footer'],
          [('Bug', ''), ('Also', 'footer')]))
+    self.assertEqual(git_footers.split_footers('H\n\nBug:      '),
+                     (['H', ''], ['Bug:'], [('Bug', '')]))
+    self.assertEqual(git_footers.split_footers('H\n\nBug: 1234     '),
+                     (['H', ''], ['Bug: 1234'], [('Bug', '1234')]))
     self.assertEqual(
-        git_footers.split_footers('H\n\nBug:      '),
-        (['H', ''], ['Bug:      '], [('Bug', '')]))
+        git_footers.split_footers('H\n\nBug: 1234\nChange-Id: Ib4321  '),
+        (['H', ''], ['Bug: 1234', 'Change-Id: Ib4321'], [('Bug', '1234'),
+                                                         ('Change-Id', 'Ib4321')
+                                                         ]))
 
     self.assertEqual(
         git_footers.parse_footers(self._message), {})

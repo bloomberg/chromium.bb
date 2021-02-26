@@ -23,6 +23,7 @@
 ; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+%include "config.asm"
 %include "ext/x86/x86inc.asm"
 
 SECTION_RODATA 64 ; avoids cacheline splits
@@ -157,7 +158,7 @@ cglobal msac_decode_symbol_adapt4, 0, 6, 6
     mov [t7+msac.rng], t2d
     not            t4
     sub           t1d, ecx
-    jge .end ; no refill required
+    jae .end ; no refill required
 
 ; refill:
     mov            t2, [t7+msac.buf]
@@ -504,7 +505,7 @@ cglobal msac_decode_bool, 0, 6, 0
     mov [t7+msac.rng], t2d
     not            t4
     sub           t5d, ecx
-    jge %%end
+    jae %%end
     mov            t2, [t7+msac.buf]
     mov           rcx, [t7+msac.end]
 %if UNIX64 == 0

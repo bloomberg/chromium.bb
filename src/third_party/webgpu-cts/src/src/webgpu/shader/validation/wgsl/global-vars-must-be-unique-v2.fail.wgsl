@@ -6,8 +6,7 @@ fn a()->void {
   return;
 }
 
+[[stage(vertex)]]
 fn main() -> void {
   return;
 }
-entry_point vertex = main;
-

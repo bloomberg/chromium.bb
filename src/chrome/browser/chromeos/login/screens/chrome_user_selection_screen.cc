@@ -36,7 +36,7 @@
 namespace chromeos {
 
 ChromeUserSelectionScreen::ChromeUserSelectionScreen(
-    const std::string& display_type)
+    DisplayedScreen display_type)
     : UserSelectionScreen(display_type) {
   device_local_account_policy_service_ =
       g_browser_process->platform_part()
@@ -105,9 +105,9 @@ void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
     return;
   }
 
-  // When no display name is set by policy, the |User|, owned by |UserManager|,
-  // decides what display name to use. However, the order in which |UserManager|
-  // and |this| are informed of the display name change is undefined. Post a
+  // When no display name is set by policy, the `User`, owned by `UserManager`,
+  // decides what display name to use. However, the order in which `UserManager`
+  // and `this` are informed of the display name change is undefined. Post a
   // task that will update the UI after the UserManager is guaranteed to have
   // been informed of the change.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -128,7 +128,7 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   std::vector<std::string> new_recommended_locales;
   base::ListValue const* list = NULL;
   if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-      entry->value && entry->value->GetAsList(&list)) {
+      entry->value() && entry->value()->GetAsList(&list)) {
     for (base::ListValue::const_iterator it = list->begin(); it != list->end();
          ++it) {
       std::string locale;

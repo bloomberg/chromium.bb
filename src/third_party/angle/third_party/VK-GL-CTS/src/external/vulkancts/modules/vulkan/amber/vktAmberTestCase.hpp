@@ -38,6 +38,12 @@ namespace vkt
 namespace cts_amber
 {
 
+struct BufferRequirement
+{
+	vk::VkFormat				m_format;
+	vk::VkFormatFeatureFlags	m_featureFlags;
+};
+
 class AmberTestInstance : public TestInstance
 {
 public:
@@ -50,7 +56,7 @@ public:
 	virtual tcu::TestStatus iterate (void);
 
 private:
-  amber::Recipe* m_recipe;
+	amber::Recipe* m_recipe;
 };
 
 class AmberTestCase : public TestCase
@@ -88,6 +94,9 @@ public:
 	// An instance or device extension will not have a period in its name.
 	void addRequirement(const std::string& requirement);
 
+	void addImageRequirement(vk::VkImageCreateInfo info);
+	void addBufferRequirement(BufferRequirement req);
+
 private:
 	bool parse (const std::string& readFilename);
 
@@ -108,14 +117,19 @@ private:
 	// An example entry is: "VariablePointerFeatures.variablePointers".
 	// Use a set for consistent ordering.
 	std::set<std::string> m_required_features;
+
+	std::vector<vk::VkImageCreateInfo> m_imageRequirements;
+	std::vector<BufferRequirement> m_bufferRequirements;
 };
 
-AmberTestCase* createAmberTestCase (tcu::TestContext&				testCtx,
-									const char*						name,
-									const char*						description,
-									const char*						category,
-									const std::string&				filename,
-									const std::vector<std::string>	requirements = std::vector<std::string>());
+AmberTestCase* createAmberTestCase (tcu::TestContext&							testCtx,
+									const char*									name,
+									const char*									description,
+									const char*									category,
+									const std::string&							filename,
+									const std::vector<std::string>				requirements = std::vector<std::string>(),
+									const std::vector<vk::VkImageCreateInfo>	imageRequirements = std::vector<vk::VkImageCreateInfo>(),
+									const std::vector<BufferRequirement>		bufferRequirements = std::vector<BufferRequirement>());
 
 void createAmberTestsFromIndexFile (tcu::TestContext&	testCtx,
 									tcu::TestCaseGroup*	group,

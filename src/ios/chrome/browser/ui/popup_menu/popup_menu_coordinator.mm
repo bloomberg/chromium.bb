@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -28,7 +30,6 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
-#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -51,6 +52,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
 // Mediator for the popup menu.
 @property(nonatomic, strong) PopupMenuMediator* mediator;
+// Mediator to that alerts the main |mediator| when the web content area
+// is blocked by an overlay.
+@property(nonatomic, strong) BrowserContainerMediator* contentBlockerMediator;
 // ViewController for this mediator.
 @property(nonatomic, strong) PopupMenuTableViewController* viewController;
 // Handles user interaction with the popup menu items.
@@ -127,13 +131,6 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShowNewTabMenu"));
   [self presentPopupOfType:PopupMenuTypeNewTab
             fromNamedGuide:kNewTabButtonGuide];
-}
-
-- (void)showTabStripTabGridButtonPopup {
-  DCHECK(!base::FeatureList::IsEnabled(kChangeTabSwitcherPosition));
-  base::RecordAction(base::UserMetricsAction("MobileTabStripShowTabGridMenu"));
-  [self presentPopupOfType:PopupMenuTypeTabStripTabGrid
-            fromNamedGuide:kTabStripTabSwitcherGuide];
 }
 
 - (void)dismissPopupMenuAnimated:(BOOL)animated {
@@ -230,7 +227,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
                                     ->IsOffTheRecord()
                readingListModel:ReadingListModelFactory::GetForBrowserState(
                                     self.browser->GetBrowserState())
-      triggerNewIncognitoTabTip:triggerNewIncognitoTabTip];
+      triggerNewIncognitoTabTip:triggerNewIncognitoTabTip
+         browserPolicyConnector:GetApplicationContext()
+                                    ->GetBrowserPolicyConnector()];
   self.mediator.engagementTracker =
       feature_engagement::TrackerFactory::GetForBrowserState(
           self.browser->GetBrowserState());
@@ -244,8 +243,14 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       ios::TemplateURLServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
   self.mediator.popupMenu = tableViewController;
-  self.mediator.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
+  OverlayPresenter* overlayPresenter = OverlayPresenter::FromBrowser(
       self.browser, OverlayModality::kWebContentArea);
+  self.mediator.webContentAreaOverlayPresenter = overlayPresenter;
+
+  self.contentBlockerMediator = [[BrowserContainerMediator alloc]
+                initWithWebStateList:self.browser->GetWebStateList()
+      webContentAreaOverlayPresenter:overlayPresenter];
+  self.contentBlockerMediator.consumer = self.mediator;
 
   self.actionHandler = [[PopupMenuActionHandler alloc] init];
   self.actionHandler.baseViewController = self.baseViewController;

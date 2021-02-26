@@ -32,6 +32,8 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -128,7 +130,7 @@ template <>
 struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
   static mojom::AutocompleteMatchPtr Convert(const AutocompleteMatch& input) {
     mojom::AutocompleteMatchPtr result(mojom::AutocompleteMatch::New());
-    if (input.provider != NULL) {
+    if (input.provider) {
       result->provider_name = std::string(input.provider->GetName());
       result->provider_done = input.provider->done();
     }
@@ -162,14 +164,15 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->type = AutocompleteMatchType::ToString(input.type);
     result->is_search_type = AutocompleteMatch::IsSearchType(input.type);
     result->has_tab_match = input.has_tab_match;
-    if (input.associated_keyword.get() != NULL) {
+    if (input.associated_keyword.get()) {
       result->associated_keyword =
           base::UTF16ToUTF8(input.associated_keyword->keyword);
     }
     result->keyword = base::UTF16ToUTF8(input.keyword);
     result->duplicates = static_cast<int32_t>(input.duplicate_matches.size());
     result->from_previous = input.from_previous;
-
+    result->pedal_id =
+        input.pedal ? static_cast<int32_t>(input.pedal->id()) : 0;
     result->additional_info =
         mojo::ConvertTo<std::vector<mojom::AutocompleteAdditionalInfoPtr>>(
             input.additional_info);
@@ -347,7 +350,8 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input.set_prefer_keyword(prefer_keyword);
   if (prefer_keyword)
     input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
-  input.set_from_omnibox_focus(zero_suggest);
+  input.set_focus_type(zero_suggest ? OmniboxFocusType::ON_FOCUS
+                                    : OmniboxFocusType::DEFAULT);
 
   controller_->Start(input);
 }

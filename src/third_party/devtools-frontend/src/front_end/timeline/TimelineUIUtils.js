@@ -28,6 +28,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
@@ -110,7 +112,6 @@ export class TimelineUIUtils {
     eventStyles[type.MarkDOMContent] = new TimelineRecordStyle(ls`DOMContentLoaded Event`, scripting, true);
     eventStyles[type.MarkFirstPaint] = new TimelineRecordStyle(ls`First Paint`, painting, true);
     eventStyles[type.MarkFCP] = new TimelineRecordStyle(ls`First Contentful Paint`, rendering, true);
-    eventStyles[type.MarkFMP] = new TimelineRecordStyle(ls`First Meaningful Paint`, rendering, true);
     eventStyles[type.MarkLCPCandidate] = new TimelineRecordStyle(ls`Largest Contentful Paint`, rendering, true);
     eventStyles[type.TimeStamp] = new TimelineRecordStyle(ls`Timestamp`, scripting);
     eventStyles[type.ConsoleTime] = new TimelineRecordStyle(ls`Console Time`, scripting);
@@ -699,11 +700,11 @@ export class TimelineUIUtils {
       case recordType.FunctionCall:
       case recordType.JSFrame: {
         details = createElement('span');
-        details.createTextChild(TimelineUIUtils.frameDisplayName(eventData));
+        UI.UIUtils.createTextChild(details, TimelineUIUtils.frameDisplayName(eventData));
         const location = linkifyLocation(
             eventData['scriptId'], eventData['url'], eventData['lineNumber'], eventData['columnNumber']);
         if (location) {
-          details.createTextChild(' @ ');
+          UI.UIUtils.createTextChild(details, ' @ ');
           details.appendChild(location);
         }
         break;
@@ -788,15 +789,32 @@ export class TimelineUIUtils {
         link = 'https://web.dev/first-contentful-paint';
         name = 'first contentful paint';
         break;
-      case recordType.MarkFMP:
-        link = 'https://web.dev/first-meaningful-paint/';
-        name = 'first meaningful paint';
-        break;
       default:
         break;
     }
 
     return UI.Fragment.html`<div>${UI.XLink.XLink.create(link, ls`Learn more`)} about ${name}.</div>`;
+  }
+
+  /**
+   * @param {!Object} eventData
+   * @param {!TimelineDetailsContentHelper} contentHelper
+   */
+  static buildCompilationCacheDetails(eventData, contentHelper) {
+    if ('producedCacheSize' in eventData) {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script saved to cache`);
+      contentHelper.appendTextRow(
+          ls`Compilation cache size`, Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
+    } else if ('consumedCacheSize' in eventData) {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script loaded from cache`);
+      contentHelper.appendTextRow(
+          ls`Compilation cache size`, Platform.NumberUtilities.bytesToString(eventData['consumedCacheSize']));
+    } else if (eventData && eventData['cacheRejected']) {
+      // Version mismatch or similar.
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`failed to load script from cache`);
+    } else {
+      contentHelper.appendTextRow(ls`Compilation cache status`, ls`script not eligible`);
+    }
   }
 
   /**
@@ -961,17 +979,10 @@ export class TimelineUIUtils {
         if (url) {
           contentHelper.appendLocationRow(ls`Script`, url, eventData['lineNumber'], eventData['columnNumber']);
         }
-        contentHelper.appendTextRow(ls`Streamed`, eventData['streamed']);
-        const producedCacheSize = eventData && eventData['producedCacheSize'];
-        if (producedCacheSize) {
-          contentHelper.appendTextRow(ls`Produced Cache Size`, producedCacheSize);
-        }
-        const cacheConsumeOptions = eventData && eventData['cacheConsumeOptions'];
-        if (cacheConsumeOptions) {
-          contentHelper.appendTextRow(ls`Cache Consume Options`, cacheConsumeOptions);
-          contentHelper.appendTextRow(ls`Consumed Cache Size`, eventData['consumedCacheSize']);
-          contentHelper.appendTextRow(ls`Cache Rejected`, eventData['cacheRejected']);
-        }
+        const isStreamed = eventData['streamed'];
+        contentHelper.appendTextRow(
+            ls`Streamed`, isStreamed + (isStreamed ? '' : `: ${eventData['notStreamedReason']}`));
+        TimelineUIUtils.buildCompilationCacheDetails(eventData, contentHelper);
         break;
       }
 
@@ -1128,11 +1139,21 @@ export class TimelineUIUtils {
 
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
-      case recordTypes.MarkFMP:
       case recordTypes.MarkLoad:
       case recordTypes.MarkDOMContent: {
-        contentHelper.appendTextRow(
-            ls`Timestamp`, Number.preciseMillisToString(event.startTime - model.minimumRecordTime(), 1));
+        let eventTime = event.startTime - model.minimumRecordTime();
+
+        // Find the appropriate navStart based on the navigation ID.
+        const {navigationId} = event.args.data;
+        if (navigationId) {
+          const navStartTime = model.navStartTimes().get(navigationId);
+
+          if (navStartTime) {
+            eventTime = event.startTime - navStartTime.startTime;
+          }
+        }
+
+        contentHelper.appendTextRow(ls`Timestamp`, Number.preciseMillisToString(eventTime, 1));
         contentHelper.appendElementRow(ls`Details`, TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
         break;
       }
@@ -1360,7 +1381,7 @@ export class TimelineUIUtils {
     contentHelper.addSection(ls`Network request`, color);
 
     if (request.url) {
-      contentHelper.appendElementRow(ls`URL`, Components.Linkifier.Linkifier.linkifyURL(request.url));
+      contentHelper.appendElementRow(ls`URL`, Components.Linkifier.Linkifier.linkifyURL(request.url, {tabStop: true}));
     }
 
     // The time from queueing the request until resource processing is finished.
@@ -1571,7 +1592,7 @@ export class TimelineUIUtils {
     }
 
     const invalidationsTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    invalidationsTreeOutline.registerRequiredCSS('timeline/invalidationsTree.css');
+    invalidationsTreeOutline.registerRequiredCSS('timeline/invalidationsTree.css', {enableLegacyPatching: true});
     invalidationsTreeOutline.element.classList.add('invalidations-tree');
 
     const invalidationGroups = groupInvalidationsByCause(invalidations);
@@ -1695,7 +1716,7 @@ export class TimelineUIUtils {
       return null;
     }
     const container = createElement('div');
-    UI.Utils.appendStyle(container, 'components/imagePreview.css');
+    UI.Utils.appendStyle(container, 'components/imagePreview.css', {enableLegacyPatching: true});
     container.classList.add('image-preview-container', 'vbox', 'link');
     const img = container.createChild('img');
     img.src = imageURL;
@@ -1814,16 +1835,9 @@ export class TimelineUIUtils {
     const element = document.createElement('div');
     element.classList.add('timeline-details-view-pie-chart-wrapper');
     element.classList.add('hbox');
-    const pieChart = new PerfUI.PieChart.PieChart({
-      chartName: ls`Time spent in rendering`,
-      size: 110,
-      formatter: value => Number.preciseMillisToString(value),
-      showLegend: true,
-    });
-    pieChart.element.classList.add('timeline-details-view-pie-chart');
-    pieChart.initializeWithTotal(total);
-    const pieChartContainer = element.createChild('div', 'vbox');
-    pieChartContainer.appendChild(pieChart.element);
+
+    const pieChart = PerfUI.PieChart.createPieChart();
+    const slices = [];
 
     /**
      * @param {string} name
@@ -1835,7 +1849,7 @@ export class TimelineUIUtils {
       if (!value) {
         return;
       }
-      pieChart.addSlice(value, color, title);
+      slices.push({value, color, title});
     }
 
     // In case of self time, first add self, then children of the same category.
@@ -1862,6 +1876,18 @@ export class TimelineUIUtils {
       }
       appendLegendRow(category.name, category.title, aggregatedStats[category.name], category.childColor);
     }
+
+    pieChart.data = {
+      chartName: ls`Time spent in rendering`,
+      size: 110,
+      formatter: value => Number.preciseMillisToString(value),
+      showLegend: true,
+      total,
+      slices
+    };
+    const pieChartContainer = element.createChild('div', 'vbox');
+    pieChartContainer.appendChild(pieChart);
+
     return element;
   }
 
@@ -1996,8 +2022,6 @@ export class TimelineUIUtils {
         return ls`FP`;
       case recordTypes.MarkFCP:
         return ls`FCP`;
-      case recordTypes.MarkFMP:
-        return ls`FMP`;
       case recordTypes.MarkLCPCandidate:
         return ls`LCP`;
     }
@@ -2011,9 +2035,11 @@ export class TimelineUIUtils {
   static markerStyleForEvent(event) {
     const tallMarkerDashStyle = [6, 4];
     const title = TimelineUIUtils.eventTitle(event);
+    const recordTypes = TimelineModel.TimelineModel.RecordType;
 
-    if (event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.Console) ||
-        event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming)) {
+    if (event.name !== recordTypes.NavigationStart &&
+        (event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.Console) ||
+         event.hasCategory(TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming))) {
       return {
         title: title,
         dashStyle: tallMarkerDashStyle,
@@ -2024,10 +2050,13 @@ export class TimelineUIUtils {
         lowPriority: false,
       };
     }
-    const recordTypes = TimelineModel.TimelineModel.RecordType;
     let tall = false;
     let color = 'grey';
     switch (event.name) {
+      case recordTypes.NavigationStart:
+        color = '#FF9800';
+        tall = true;
+        break;
       case recordTypes.FrameStartedLoading:
         color = 'green';
         tall = true;
@@ -2046,10 +2075,6 @@ export class TimelineUIUtils {
         break;
       case recordTypes.MarkFCP:
         color = '#1A6937';
-        tall = true;
-        break;
-      case recordTypes.MarkFMP:
-        color = '#134A26';
         tall = true;
         break;
       case recordTypes.MarkLCPCandidate:
@@ -2150,7 +2175,7 @@ export class TimelineUIUtils {
       case warnings.V8Deopt: {
         span.appendChild(UI.XLink.XLink.create(
             'https://github.com/GoogleChrome/devtools-docs/issues/53', Common.UIString.UIString('Not optimized')));
-        span.createTextChild(Common.UIString.UIString(': %s', eventData['deoptReason']));
+        UI.UIUtils.createTextChild(span, Common.UIString.UIString(': %s', eventData['deoptReason']));
         break;
       }
 
@@ -2266,12 +2291,12 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     const first = this._invalidations[0];
     if (first.cause.stackTrace) {
       const stack = content.createChild('div');
-      stack.createTextChild(ls`Stack trace:`);
+      UI.UIUtils.createTextChild(stack, ls`Stack trace:`);
       this._contentHelper.createChildStackTraceElement(
           stack, TimelineUIUtils._stackTraceFromCallFrames(first.cause.stackTrace));
     }
 
-    content.createTextChild(this._invalidations.length !== 1 ? ls`Nodes:` : ls`Node:`);
+    UI.UIUtils.createTextChild(content, this._invalidations.length !== 1 ? ls`Nodes:` : ls`Node:`);
     const nodeList = content.createChild('div', 'node-list');
     let firstNode = true;
     for (let i = 0; i < this._invalidations.length; i++) {
@@ -2279,7 +2304,7 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
       const invalidationNode = this._createInvalidationNode(invalidation, true);
       if (invalidationNode) {
         if (!firstNode) {
-          nodeList.createTextChild(ls`, `);
+          UI.UIUtils.createTextChild(nodeList, ls`, `);
         }
         firstNode = false;
 
@@ -2287,19 +2312,21 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
 
         const extraData = invalidation.extraData ? ', ' + invalidation.extraData : '';
         if (invalidation.changedId) {
-          nodeList.createTextChild(
-              Common.UIString.UIString('(changed id to "%s"%s)', invalidation.changedId, extraData));
+          UI.UIUtils.createTextChild(
+              nodeList, Common.UIString.UIString('(changed id to "%s"%s)', invalidation.changedId, extraData));
         } else if (invalidation.changedClass) {
-          nodeList.createTextChild(
-              Common.UIString.UIString('(changed class to "%s"%s)', invalidation.changedClass, extraData));
+          UI.UIUtils.createTextChild(
+              nodeList, Common.UIString.UIString('(changed class to "%s"%s)', invalidation.changedClass, extraData));
         } else if (invalidation.changedAttribute) {
-          nodeList.createTextChild(
+          UI.UIUtils.createTextChild(
+              nodeList,
               Common.UIString.UIString('(changed attribute to "%s"%s)', invalidation.changedAttribute, extraData));
         } else if (invalidation.changedPseudo) {
-          nodeList.createTextChild(
-              Common.UIString.UIString('(changed pesudo to "%s"%s)', invalidation.changedPseudo, extraData));
+          UI.UIUtils.createTextChild(
+              nodeList, Common.UIString.UIString('(changed pesudo to "%s"%s)', invalidation.changedPseudo, extraData));
         } else if (invalidation.selectorPart) {
-          nodeList.createTextChild(Common.UIString.UIString('(changed "%s"%s)', invalidation.selectorPart, extraData));
+          UI.UIUtils.createTextChild(
+              nodeList, Common.UIString.UIString('(changed "%s"%s)', invalidation.selectorPart, extraData));
         }
       }
     }
@@ -2360,7 +2387,7 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     }
     if (showUnknownNodes) {
       const nodeSpan = createElement('span');
-      return nodeSpan.createTextChild(Common.UIString.UIString('[ unknown node ]'));
+      return UI.UIUtils.createTextChild(nodeSpan, Common.UIString.UIString('[ unknown node ]'));
     }
   }
 }
@@ -2454,7 +2481,7 @@ export class TimelinePopupContentHelper {
    */
   _createCell(content, styleName) {
     const text = createElement('label');
-    text.createTextChild(String(content));
+    UI.UIUtils.createTextChild(text, String(content));
     const cell = createElement('td');
     cell.className = 'timeline-details';
     if (styleName) {
@@ -2488,7 +2515,7 @@ export class TimelinePopupContentHelper {
     if (content instanceof Node) {
       cell.appendChild(content);
     } else {
-      cell.createTextChild(content || '');
+      UI.UIUtils.createTextChild(cell, content || '');
     }
     row.appendChild(cell);
     this._contentTable.appendChild(row);
@@ -2533,7 +2560,7 @@ export class TimelineDetailsContentHelper {
       if (swatchColor) {
         titleElement.createChild('div').style.backgroundColor = swatchColor;
       }
-      titleElement.createTextChild(title);
+      UI.UIUtils.createTextChild(titleElement, title);
     }
 
     this._tableElement = this.element.createChild('div', 'vbox timeline-details-chip-body');
@@ -2577,7 +2604,7 @@ export class TimelineDetailsContentHelper {
     if (content instanceof Node) {
       valueElement.appendChild(content);
     } else {
-      valueElement.createTextChild(content || '');
+      UI.UIUtils.createTextChild(valueElement, content || '');
     }
   }
 
@@ -2615,7 +2642,8 @@ export class TimelineDetailsContentHelper {
       return;
     }
     locationContent.appendChild(link);
-    locationContent.createTextChild(Platform.StringUtilities.sprintf(' [%s…%s]', startLine + 1, endLine + 1 || ''));
+    UI.UIUtils.createTextChild(
+        locationContent, Platform.StringUtilities.sprintf(' [%s…%s]', startLine + 1, endLine + 1 || ''));
     this.appendElementRow(title, locationContent);
   }
 

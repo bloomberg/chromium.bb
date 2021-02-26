@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -30,7 +30,7 @@
 
 #if defined(OS_ANDROID)
 #include "device/bluetooth/test/bluetooth_test_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
@@ -167,7 +167,8 @@ class FidoBleConnectionTest : public ::testing::Test {
 
     ON_CALL(*fido_service_revision_bitfield_, WriteRemoteCharacteristic_)
         .WillByDefault(Invoke(
-            [=](auto&, base::OnceClosure& callback,
+            [=](auto&, BluetoothRemoteGattCharacteristic::WriteType,
+                base::OnceClosure& callback,
                 const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE, std::move(callback));
@@ -225,8 +226,7 @@ class FidoBleConnectionTest : public ::testing::Test {
     EXPECT_CALL(*fido_device_, GetAddress)
         .WillRepeatedly(::testing::Return(new_address));
     for (auto& observer : adapter_->GetObservers())
-      observer.DeviceAddressChanged(adapter_.get(), fido_device_,
-                                    std::move(old_address));
+      observer.DeviceAddressChanged(adapter_.get(), fido_device_, old_address);
   }
 
   void SetNextReadControlPointLengthReponse(bool success,
@@ -283,19 +283,15 @@ class FidoBleConnectionTest : public ::testing::Test {
   }
 
   void SetNextWriteControlPointResponse(bool success) {
-// For performance reasons we try writes without responses first on macOS.
-#if defined(OS_MACOSX)
-    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse)
-        .WillOnce(Return(success));
-    if (success)
-      return;
-#else
-    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse).Times(0);
-#endif  // defined(OS_MACOSX)
-
-    EXPECT_CALL(*fido_control_point_, WriteRemoteCharacteristic_(_, _, _))
+    EXPECT_CALL(
+        *fido_control_point_,
+        WriteRemoteCharacteristic_(
+            _, BluetoothRemoteGattCharacteristic::WriteType::kWithoutResponse,
+            _, _))
         .WillOnce(Invoke([success](
-                             const auto& data, base::OnceClosure& callback,
+                             const auto& data,
+                             BluetoothRemoteGattCharacteristic::WriteType,
+                             base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&
                                  error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -309,10 +305,15 @@ class FidoBleConnectionTest : public ::testing::Test {
 
   void SetNextWriteServiceRevisionResponse(std::vector<uint8_t> expected_data,
                                            bool success) {
-    EXPECT_CALL(*fido_service_revision_bitfield_,
-                WriteRemoteCharacteristic_(expected_data, _, _))
+    EXPECT_CALL(
+        *fido_service_revision_bitfield_,
+        WriteRemoteCharacteristic_(
+            expected_data,
+            BluetoothRemoteGattCharacteristic::WriteType::kWithResponse, _, _))
         .WillOnce(Invoke([success](
-                             const auto& data, base::OnceClosure& callback,
+                             const auto& data,
+                             BluetoothRemoteGattCharacteristic::WriteType,
+                             base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&
                                  error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -327,17 +328,16 @@ class FidoBleConnectionTest : public ::testing::Test {
   void AddFidoService() {
     auto fido_service = std::make_unique<NiceMockBluetoothGattService>(
         fido_device_, "fido_service", BluetoothUUID(kFidoServiceUUID),
-        /* is_primary */ true, /* is_local */ false);
+        /*is_primary=*/true);
     fido_service_ = fido_service.get();
     fido_device_->AddMockService(std::move(fido_service));
 
-    static constexpr bool kIsLocal = false;
     {
       auto fido_control_point =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               fido_service_, "fido_control_point",
-              BluetoothUUID(kFidoControlPointUUID), kIsLocal,
-              BluetoothGattCharacteristic::PROPERTY_WRITE,
+              BluetoothUUID(kFidoControlPointUUID),
+              BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       fido_control_point_ = fido_control_point.get();
       fido_service_->AddMockCharacteristic(std::move(fido_control_point));
@@ -346,7 +346,7 @@ class FidoBleConnectionTest : public ::testing::Test {
     {
       auto fido_status = std::make_unique<NiceMockBluetoothGattCharacteristic>(
           fido_service_, "fido_status", BluetoothUUID(kFidoStatusUUID),
-          kIsLocal, BluetoothGattCharacteristic::PROPERTY_NOTIFY,
+          BluetoothGattCharacteristic::PROPERTY_NOTIFY,
           BluetoothGattCharacteristic::PERMISSION_NONE);
       fido_status_ = fido_status.get();
       fido_service_->AddMockCharacteristic(std::move(fido_status));
@@ -356,7 +356,7 @@ class FidoBleConnectionTest : public ::testing::Test {
       auto fido_control_point_length =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               fido_service_, "fido_control_point_length",
-              BluetoothUUID(kFidoControlPointLengthUUID), kIsLocal,
+              BluetoothUUID(kFidoControlPointLengthUUID),
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       fido_control_point_length_ = fido_control_point_length.get();
@@ -368,7 +368,7 @@ class FidoBleConnectionTest : public ::testing::Test {
       auto fido_service_revision =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               fido_service_, "fido_service_revision",
-              BluetoothUUID(kFidoServiceRevisionUUID), kIsLocal,
+              BluetoothUUID(kFidoServiceRevisionUUID),
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       fido_service_revision_ = fido_service_revision.get();
@@ -379,7 +379,7 @@ class FidoBleConnectionTest : public ::testing::Test {
       auto fido_service_revision_bitfield =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               fido_service_, "fido_service_revision_bitfield",
-              BluetoothUUID(kFidoServiceRevisionBitfieldUUID), kIsLocal,
+              BluetoothUUID(kFidoServiceRevisionBitfieldUUID),
               BluetoothGattCharacteristic::PROPERTY_READ |
                   BluetoothGattCharacteristic::PROPERTY_WRITE,
               BluetoothGattCharacteristic::PERMISSION_NONE);

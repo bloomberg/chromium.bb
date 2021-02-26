@@ -276,14 +276,15 @@ void BluetoothSocketListenFunction::OnGetAdapter(
     return;
   }
 
-  std::unique_ptr<std::string> name;
+  base::Optional<std::string> name;
   if (socket->name())
-    name.reset(new std::string(*socket->name()));
+    name = *socket->name();
 
   CreateService(
-      adapter, bluetooth_uuid, std::move(name),
-      base::Bind(&BluetoothSocketListenFunction::OnCreateService, this),
-      base::Bind(&BluetoothSocketListenFunction::OnCreateServiceError, this));
+      adapter, bluetooth_uuid, name,
+      base::BindOnce(&BluetoothSocketListenFunction::OnCreateService, this),
+      base::BindOnce(&BluetoothSocketListenFunction::OnCreateServiceError,
+                     this));
 }
 
 void BluetoothSocketListenFunction::OnCreateService(
@@ -333,20 +334,18 @@ bool BluetoothSocketListenUsingRfcommFunction::CreateParams() {
 void BluetoothSocketListenUsingRfcommFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
-    std::unique_ptr<std::string> name,
-    const device::BluetoothAdapter::CreateServiceCallback& callback,
-    const device::BluetoothAdapter::CreateServiceErrorCallback&
-        error_callback) {
+    const base::Optional<std::string>& name,
+    device::BluetoothAdapter::CreateServiceCallback callback,
+    device::BluetoothAdapter::CreateServiceErrorCallback error_callback) {
   device::BluetoothAdapter::ServiceOptions service_options;
   service_options.name = std::move(name);
 
   ListenOptions* options = params_->options.get();
-  if (options) {
-    if (options->channel.get())
-      service_options.channel.reset(new int(*(options->channel)));
-  }
+  if (options && options->channel.get())
+    service_options.channel = *options->channel;
 
-  adapter->CreateRfcommService(uuid, service_options, callback, error_callback);
+  adapter->CreateRfcommService(uuid, service_options, std::move(callback),
+                               std::move(error_callback));
 }
 
 std::unique_ptr<base::ListValue>
@@ -376,27 +375,25 @@ bool BluetoothSocketListenUsingL2capFunction::CreateParams() {
 void BluetoothSocketListenUsingL2capFunction::CreateService(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID& uuid,
-    std::unique_ptr<std::string> name,
-    const device::BluetoothAdapter::CreateServiceCallback& callback,
-    const device::BluetoothAdapter::CreateServiceErrorCallback&
-        error_callback) {
+    const base::Optional<std::string>& name,
+    device::BluetoothAdapter::CreateServiceCallback callback,
+    device::BluetoothAdapter::CreateServiceErrorCallback error_callback) {
   device::BluetoothAdapter::ServiceOptions service_options;
   service_options.name = std::move(name);
 
   ListenOptions* options = params_->options.get();
-  if (options) {
-    if (options->psm) {
-      int psm = *options->psm;
-      if (!IsValidPsm(psm)) {
-        error_callback.Run(kInvalidPsmError);
-        return;
-      }
-
-      service_options.psm.reset(new int(psm));
+  if (options && options->psm) {
+    int psm = *options->psm;
+    if (!IsValidPsm(psm)) {
+      std::move(error_callback).Run(kInvalidPsmError);
+      return;
     }
+
+    service_options.psm = psm;
   }
 
-  adapter->CreateL2capService(uuid, service_options, callback, error_callback);
+  adapter->CreateL2capService(uuid, service_options, std::move(callback),
+                              std::move(error_callback));
 }
 
 std::unique_ptr<base::ListValue>

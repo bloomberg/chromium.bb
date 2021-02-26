@@ -14,9 +14,12 @@
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/gpu/gles2_decoder_helper.h"
 #include "ui/gl/gl_context.h"
 
@@ -35,16 +38,18 @@ class CommandBufferHelperImpl
 
     stub_->AddDestructionObserver(this);
     wait_sequence_id_ = stub_->channel()->scheduler()->CreateSequence(
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         // Workaround for crbug.com/1035750.
         // TODO(sandersd): Investigate whether there is a deeper scheduling
         // problem that can be resolved.
         gpu::SchedulingPriority::kHigh
 #else
         gpu::SchedulingPriority::kNormal
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
     );
     decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
+    tracker_ =
+        std::make_unique<gpu::MemoryTypeTracker>(stub_->GetMemoryTracker());
   }
 
   gl::GLContext* GetGLContext() override {
@@ -55,6 +60,12 @@ class CommandBufferHelperImpl
       return nullptr;
 
     return decoder_helper_->GetGLContext();
+  }
+
+  gpu::SharedImageStub* GetSharedImageStub() override {
+    if (!stub_)
+      return nullptr;
+    return stub_->channel()->shared_image_stub();
   }
 
   bool HasStub() override {
@@ -69,6 +80,24 @@ class CommandBufferHelperImpl
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     return decoder_helper_ && decoder_helper_->MakeContextCurrent();
+  }
+
+  std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> Register(
+      std::unique_ptr<gpu::SharedImageBacking> backing) override {
+    DVLOG(2) << __func__;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return stub_->channel()
+        ->gpu_channel_manager()
+        ->shared_image_manager()
+        ->Register(std::move(backing), tracker_.get());
+  }
+
+  gpu::TextureBase* GetTexture(GLuint service_id) const override {
+    DVLOG(2) << __func__ << "(" << service_id << ")";
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(stub_->decoder_context()->GetGLContext()->IsCurrent(nullptr));
+    DCHECK(textures_.count(service_id));
+    return textures_.at(service_id)->GetTextureBase();
   }
 
   GLuint CreateTexture(GLenum target,
@@ -162,6 +191,23 @@ class CommandBufferHelperImpl
     will_destroy_stub_cb_ = std::move(will_destroy_stub_cb);
   }
 
+  bool IsPassthrough() const override {
+    if (!stub_)
+      return false;
+    return stub_->decoder_context()
+        ->GetFeatureInfo()
+        ->is_passthrough_cmd_decoder();
+  }
+
+  bool SupportsTextureRectangle() const override {
+    if (!stub_)
+      return false;
+    return stub_->decoder_context()
+        ->GetFeatureInfo()
+        ->feature_flags()
+        .arb_texture_rectangle;
+  }
+
  private:
   ~CommandBufferHelperImpl() override {
     DVLOG(1) << __func__;
@@ -210,6 +256,8 @@ class CommandBufferHelperImpl
   std::map<GLuint, std::unique_ptr<gpu::gles2::AbstractTexture>> textures_;
 
   WillDestroyStubCB will_destroy_stub_cb_;
+
+  std::unique_ptr<gpu::MemoryTypeTracker> tracker_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelperImpl);

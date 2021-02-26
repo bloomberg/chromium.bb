@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -45,7 +45,7 @@ class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
 class MODULES_EXPORT PeerConnectionDependencyFactory
-    : base::MessageLoopCurrent::DestructionObserver {
+    : base::CurrentThread::DestructionObserver {
  public:
   ~PeerConnectionDependencyFactory() override;
 
@@ -115,7 +115,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcNetworkTaskRunner();
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetWebRtcSignalingTaskRunner();
@@ -131,7 +131,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   void EnsureWebRtcAudioDeviceImpl();
 
  private:
-  // Implement base::MessageLoopCurrent::DestructionObserver.
+  // Implement base::CurrentThread::DestructionObserver.
   // This makes sure the libjingle PeerConnectionFactory is released before
   // the renderer message loop is destroyed.
   void WillDestroyCurrentMessageLoop() override;
@@ -139,7 +139,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Functions related to Stun probing trial to determine how fast we could send
   // Stun request without being dropped by NAT.
   void TryScheduleStunProbeTrial();
-  void StartStunProbeTrialOnWorkerThread(const String& params);
+  void StartStunProbeTrialOnNetworkThread(const String& params);
 
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
@@ -149,11 +149,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
       media::GpuVideoAcceleratorFactories* gpu_factories,
       base::WaitableEvent* event);
 
-  void InitializeWorkerThread(rtc::Thread** thread, base::WaitableEvent* event);
-
-  void CreateIpcNetworkManagerOnWorkerThread(
+  void CreateIpcNetworkManagerOnNetworkThread(
       base::WaitableEvent* event,
-      std::unique_ptr<MdnsResponderAdapter> mdns_responder);
+      std::unique_ptr<MdnsResponderAdapter> mdns_responder,
+      rtc::Thread** thread);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
 
@@ -173,10 +172,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.
-  rtc::Thread* signaling_thread_;
-  rtc::Thread* worker_thread_;
+  rtc::Thread* signaling_thread_ = nullptr;
+  rtc::Thread* network_thread_ = nullptr;
   base::Thread chrome_signaling_thread_;
-  base::Thread chrome_worker_thread_;
+  base::Thread chrome_network_thread_;
 
   THREAD_CHECKER(thread_checker_);
 

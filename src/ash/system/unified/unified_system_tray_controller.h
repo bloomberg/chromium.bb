@@ -10,8 +10,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
+#include "ash/system/media/unified_media_controls_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/animation_delegate_views.h"
 
@@ -24,6 +27,7 @@ namespace ash {
 class DetailedViewController;
 class FeaturePodControllerBase;
 class PaginationController;
+class UnifiedMediaControlsController;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
 class UnifiedSystemTrayBubble;
@@ -33,7 +37,8 @@ class UnifiedSystemTrayView;
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
 class ASH_EXPORT UnifiedSystemTrayController
     : public views::AnimationDelegateViews,
-      public UnifiedVolumeSliderController::Delegate {
+      public UnifiedVolumeSliderController::Delegate,
+      public UnifiedMediaControlsController::Delegate {
  public:
   UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
                               UnifiedSystemTrayBubble* bubble = nullptr,
@@ -59,14 +64,11 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandleEnterpriseInfoAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
-  // Called when message center visibility is changed. Called from the
-  // view.
-  void OnMessageCenterVisibilityUpdated();
 
   // Handle finger dragging and expand/collapse the view. Called from view.
-  void BeginDrag(const gfx::Point& location);
-  void UpdateDrag(const gfx::Point& location);
-  void EndDrag(const gfx::Point& location);
+  void BeginDrag(const gfx::PointF& location);
+  void UpdateDrag(const gfx::PointF& location);
+  void EndDrag(const gfx::PointF& location);
   void Fling(int velocity);
 
   // Show user selector view. Called from the view.
@@ -89,8 +91,12 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowLocaleDetailedView();
   // Show the detailed view of audio. Called from the view.
   void ShowAudioDetailedView();
+  // Show the detailed view for dark mode. Called from the feature pod button.
+  void ShowDarkModeDetailedView();
   // Show the detailed view of notifier settings. Called from the view.
   void ShowNotifierSettingsView();
+  // Show the detailed view of media controls. Called from the view.
+  void ShowMediaControlsDetailedView();
 
   // If you want to add a new detailed view, add here.
 
@@ -128,6 +134,10 @@ class ASH_EXPORT UnifiedSystemTrayController
   // UnifiedVolumeSliderController::Delegate:
   void OnAudioSettingsButtonClicked() override;
 
+  // UnifedMediaControlsController::Delegate;
+  void ShowMediaControls() override;
+  void OnMediaControlsViewClicked() override;
+
   UnifiedSystemTrayModel* model() { return model_; }
 
   PaginationController* pagination_controller() {
@@ -142,8 +152,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayControllerTest;
   friend class UnifiedMessageCenterBubbleTest;
-
-  class SystemTrayTransitionAnimationMetricsReporter;
 
   // How the expanded state is toggled. The enum is used to back an UMA
   // histogram and should be treated as append-only.
@@ -170,12 +178,16 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Update how much the view is expanded based on |animation_|.
   void UpdateExpandedAmount();
 
+  // Update the gesture distance by using the tray's collapsed and expanded
+  // height.
+  void UpdateDragThreshold();
+
   // Return touch drag amount between 0.0 and 1.0. If expanding, it increases
   // towards 1.0. If collapsing, it decreases towards 0.0. If the view is
   // dragged to the same direction as the current state, it does not change the
   // value. For example, if the view is expanded and it's dragged to the top, it
   // keeps returning 1.0.
-  double GetDragExpandedAmount(const gfx::Point& location) const;
+  double GetDragExpandedAmount(const gfx::PointF& location) const;
 
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
@@ -209,6 +221,8 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   std::unique_ptr<PaginationController> pagination_controller_;
 
+  std::unique_ptr<UnifiedMediaControlsController> media_controls_controller_;
+
   // Controller of volume slider. Owned.
   std::unique_ptr<UnifiedVolumeSliderController> volume_slider_controller_;
 
@@ -221,13 +235,18 @@ class ASH_EXPORT UnifiedSystemTrayController
   bool was_expanded_ = true;
 
   // The last |location| passed to BeginDrag(). Only valid during dragging.
-  gfx::Point drag_init_point_;
+  gfx::PointF drag_init_point_;
+
+  // Threshold in pixel that fully collapses / expands the view through gesture.
+  // Used to calculate the expanded amount that corresponds to gesture location
+  // during drag.
+  double drag_threshold_ = 0;
 
   // Animation between expanded and collapsed states.
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
-  std::unique_ptr<SystemTrayTransitionAnimationMetricsReporter>
-      animation_metrics_reporter_;
+  // Tracks the smoothness of collapse and expand animation.
+  base::Optional<ui::ThroughputTracker> animation_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayController);
 };

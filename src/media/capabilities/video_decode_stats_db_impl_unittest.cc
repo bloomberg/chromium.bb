@@ -6,8 +6,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -89,6 +89,10 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
 
   bool GetEnableUnweightedEntries() {
     return VideoDecodeStatsDBImpl::GetEnableUnweightedEntries();
+  }
+
+  static base::FieldTrialParams GetFieldTrialParams() {
+    return VideoDecodeStatsDBImpl::GetFieldTrialParams();
   }
 
   void SetDBClock(base::Clock* clock) {
@@ -273,10 +277,7 @@ TEST_F(VideoDecodeStatsDBImplTest, ConfigureMaxFramesPerBuffer) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       media::kMediaCapabilitiesWithParameters, params);
 
-  base::FieldTrialParams actual_params;
-  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_params));
-  EXPECT_EQ(params, actual_params);
+  EXPECT_EQ(GetFieldTrialParams(), params);
 
   EXPECT_EQ(new_max_frames_per_buffer, GetMaxFramesPerBuffer());
 
@@ -314,10 +315,7 @@ TEST_F(VideoDecodeStatsDBImplTest, ConfigureExpireDays) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       media::kMediaCapabilitiesWithParameters, params);
 
-  base::FieldTrialParams actual_params;
-  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_params));
-  EXPECT_EQ(params, actual_params);
+  EXPECT_EQ(GetFieldTrialParams(), params);
 
   EXPECT_EQ(new_max_days_to_keep_stats, GetMaxDaysToKeepStats());
 
@@ -638,10 +636,7 @@ TEST_F(VideoDecodeStatsDBImplTest, EnableUnweightedEntries) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       media::kMediaCapabilitiesWithParameters, params);
 
-  base::FieldTrialParams actual_params;
-  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_params));
-  EXPECT_EQ(params, actual_params);
+  EXPECT_EQ(GetFieldTrialParams(), params);
 
   // Confirm field trial overridden.
   EXPECT_TRUE(GetMaxDaysToKeepStats());

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+from parameterized import parameterized
 import unittest
 import xml.dom.minidom
 
@@ -64,8 +65,8 @@ TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
 TEST_BASE_HISTOGRAM_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
-  <histogram base="true" name="Test.Base" expires_after="2211-11-22"
-      units="units" expires_after="2019-01-01">
+  <histogram base="true" name="Test.Base" units="units"
+      expires_after="2211-11-22">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Base histogram.
@@ -88,8 +89,8 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
       Not a base histogram: base attribute explicitly set to "false".
     </summary>
   </histogram>
-  <histogram name="Test.NotBase.Implicit" expires_after="M100" units="units"
-      expires_after="2019-01-01">
+  <histogram name="Test.NotBase.Implicit" units="units"
+      expires_after="M100">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: no base attribute specified.
@@ -117,6 +118,167 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
 </histogram-configuration>
 """
 
+TEST_HISTOGRAM_WITH_TOKENS = """
+<histogram-configuration>
+<histograms>
+<histogram name="HistogramName.{Color}{Size}" expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="red">
+      <obsolete>
+        Obsolete red
+      </obsolete>
+    </variant>
+    <variant name="green">
+      <owner>green@chromium.org</owner>
+    </variant>
+  </token>
+  <token key="Size">
+    <variant name="" summary="all"/>
+    <variant name=".small" summary="small">
+      <owner>small@chromium.org</owner>
+      <obsolete>
+        Obsolete small
+      </obsolete>
+    </variant>
+    <variant name=".medium" summary="medium"/>
+    <variant name=".large" summary="large"/>
+  </token>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
+
+TEST_HISTOGRAM_WITH_VARIANTS = """
+<histogram-configuration>
+<histograms>
+<variants name="HistogramNameSize">
+  <variant name="" summary="all"/>
+  <variant name=".small" summary="small">
+    <owner>small@chromium.org</owner>
+    <obsolete>
+      Obsolete small
+    </obsolete>
+  </variant>
+  <variant name=".medium" summary="medium"/>
+  <variant name=".large" summary="large"/>
+</variants>
+
+<histogram name="HistogramName.{Color}{Size}" expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="red">
+      <obsolete>
+        Obsolete red
+      </obsolete>
+    </variant>
+    <variant name="green">
+      <owner>green@chromium.org</owner>
+    </variant>
+  </token>
+  <token key="Size" variants="HistogramNameSize"/>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
+
+TEST_HISTOGRAM_TOKENS_DUPLICATE = """
+<histogram-configuration>
+<histograms>
+<histogram name="Histogram{Color}{Size}" units="things"
+    expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="" summary="all"/>
+    <variant name=".red" summary="red"/>
+    <variant name=".green" summary="green"/>
+  </token>
+  <token key="Size">
+    <variant name="" summary="all"/>
+    <variant name=".red" summary="red"/>
+    <variant name=".small" summary="small"/>
+    <variant name=".medium" summary="medium"/>
+    <variant name=".large" summary="large"/>
+  </token>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
+
+TEST_HISTOGRAM_VARIANTS_DUPLICATE = """
+<histogram-configuration>
+<variants name="HistogramNameSize">
+  <variant name="" summary="all"/>
+  <variant name=".red" summary="red"/>
+  <variant name=".small" summary="small"/>
+  <variant name=".medium" summary="medium"/>
+  <variant name=".large" summary="large"/>
+</variants>
+
+<histograms>
+<histogram name="Histogram{Color}{Size}" units="things"
+    expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="" summary="all"/>
+    <variant name=".red" summary="red"/>
+    <variant name=".green" summary="green"/>
+  </token>
+  <token key="Size" variants="HistogramNameSize"/>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
+
+
+TEST_HISTOGRAM_WITH_MIXED_VARIANTS = """
+<histogram-configuration>
+<histograms>
+<variants name="HistogramNameSize">
+  <variant name=".medium" summary="medium"/>
+  <variant name=".large" summary="large"/>
+</variants>
+
+<histogram name="HistogramName.{Color}{Size}" expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {Size} size.
+  </summary>
+  <token key="Color">
+    <variant name="red">
+      <obsolete>
+        Obsolete red
+      </obsolete>
+    </variant>
+    <variant name="green">
+      <owner>green@chromium.org</owner>
+    </variant>
+  </token>
+  <token key="Size" variants="HistogramNameSize">
+    <variant name="" summary="all"/>
+    <variant name=".small" summary="small">
+      <owner>small@chromium.org</owner>
+      <obsolete>
+        Obsolete small
+      </obsolete>
+    </variant>
+  </token>
+</histogram>
+</histograms>
+</histogram-configuration>
+"""
 
 class ExtractHistogramsTest(unittest.TestCase):
 
@@ -320,6 +482,33 @@ class ExtractHistogramsTest(unittest.TestCase):
         'Multi-paragraph sample description UI>Browser. Words.\n\n'
         'Still multi-paragraph sample description.\n\nHere.')
 
+  def testComponentExtraction(self):
+    """Checks that components are successfully extracted from histograms."""
+    histogram = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+  <histogram name="Coffee" expires_after="2022-01-01">
+    <owner>histogram_owner@google.com</owner>
+    <summary>An ode to coffee.</summary>
+    <component>Liquid&gt;Hot</component>
+    <component>Caffeine</component>
+  </histogram>
+</histograms>
+
+<histogram_suffixes_list>
+  <histogram_suffixes name="Brand" separator=".">
+    <suffix name="Dunkies" label="The coffee is from Dunkin."/>
+    <affected-histogram name="Coffee"/>
+  </histogram_suffixes>
+</histogram_suffixes_list>
+</histogram-configuration>
+""")
+    histograms, _ = extract_histograms.ExtractHistogramsFromDom(histogram)
+    self.assertEqual(histograms['Coffee']['components'],
+                     ['Liquid>Hot', 'Caffeine'])
+    self.assertEqual(histograms['Coffee.Dunkies']['components'],
+                     ['Liquid>Hot', 'Caffeine'])
+
   def testNewHistogramWithoutSummary(self):
     histogram_without_summary = xml.dom.minidom.parseString("""
 <histogram-configuration>
@@ -332,6 +521,21 @@ class ExtractHistogramsTest(unittest.TestCase):
 """)
     _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
         histogram_without_summary, {})
+    self.assertTrue(have_errors)
+
+  def testNewHistogramWithEmptySummary(self):
+    histogram_with_empty_summary = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
+   <owner>person@chromium.org</owner>
+   <summary/>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_empty_summary, {})
     self.assertTrue(have_errors)
 
   def testNewHistogramWithoutEnumOrUnit(self):
@@ -527,9 +731,168 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histogram_suffixes_list>
 </histogram-configuration>
 """)
-    have_errors = extract_histograms. _UpdateHistogramsWithSuffixes(
+    have_errors = extract_histograms._UpdateHistogramsWithSuffixes(
         suffix_with_label, {})
     self.assertFalse(have_errors)
+
+  @parameterized.expand([
+      ('InlineTokens', TEST_HISTOGRAM_WITH_TOKENS),
+      ('InlineTokenAndOutOfLineVariants', TEST_HISTOGRAM_WITH_VARIANTS),
+      ('MixedVariants', TEST_HISTOGRAM_WITH_MIXED_VARIANTS),
+  ])
+  def testUpdateNameWithTokens(self, _, input_xml):
+    histogram_with_token = xml.dom.minidom.parseString(input_xml)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    self.assertIn('HistogramName.red.small', histograms_dict)
+    self.assertIn('HistogramName.green.small', histograms_dict)
+    self.assertIn('HistogramName.red.medium', histograms_dict)
+    self.assertIn('HistogramName.green.medium', histograms_dict)
+    self.assertIn('HistogramName.red.large', histograms_dict)
+    self.assertIn('HistogramName.green.large', histograms_dict)
+    self.assertIn('HistogramName.red', histograms_dict)
+    self.assertIn('HistogramName.green', histograms_dict)
+    self.assertNotIn('HistogramName{Color}{Size}', histograms_dict)
+
+    # Make sure generated histograms do not have tokens.
+    self.assertNotIn('tokens', histograms_dict['HistogramName.red.small'])
+    self.assertNotIn('tokens', histograms_dict['HistogramName.green.large'])
+
+  @parameterized.expand([
+      ('InlineTokens', TEST_HISTOGRAM_WITH_TOKENS),
+      ('InlineTokenAndOutOfLineVariants', TEST_HISTOGRAM_WITH_VARIANTS),
+      ('MixedVariants', TEST_HISTOGRAM_WITH_MIXED_VARIANTS),
+  ])
+  def testUpdateSummaryWithTokens(self, _, input_xml):
+    histogram_with_token = xml.dom.minidom.parseString(input_xml)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    # Use the variant's name to format the summary when the variant's summary
+    # attribute is omitted.
+    self.assertEqual(
+        'This is a histogram for button of red color and small size.',
+        histograms_dict['HistogramName.red.small']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of green color and small size.',
+        histograms_dict['HistogramName.green.small']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of red color and medium size.',
+        histograms_dict['HistogramName.red.medium']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of green color and medium size.',
+        histograms_dict['HistogramName.green.medium']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of red color and large size.',
+        histograms_dict['HistogramName.red.large']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of green color and large size.',
+        histograms_dict['HistogramName.green.large']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of red color and all size.',
+        histograms_dict['HistogramName.red']['summary'])
+    self.assertEqual(
+        'This is a histogram for button of green color and all size.',
+        histograms_dict['HistogramName.green']['summary'])
+
+  @parameterized.expand([
+      ('InlineTokens', TEST_HISTOGRAM_WITH_TOKENS),
+      ('InlineTokenAndOutOfLineVariants', TEST_HISTOGRAM_WITH_VARIANTS),
+      ('MixedVariants', TEST_HISTOGRAM_WITH_MIXED_VARIANTS),
+  ])
+  def testUpdateWithTokenOwner(self, _, input_xml):
+    histogram_with_token = xml.dom.minidom.parseString(input_xml)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+
+    self.assertEqual(['small@chromium.org'],
+                     histograms_dict['HistogramName.red.small']['owners'])
+    self.assertEqual(['me@chromium.org'],
+                     histograms_dict['HistogramName.red.medium']['owners'])
+    self.assertEqual(['me@chromium.org'],
+                     histograms_dict['HistogramName.red.large']['owners'])
+    self.assertEqual(['me@chromium.org'],
+                     histograms_dict['HistogramName.red']['owners'])
+    self.assertEqual(['green@chromium.org', 'small@chromium.org'],
+                     histograms_dict['HistogramName.green.small']['owners'])
+    self.assertEqual(['green@chromium.org'],
+                     histograms_dict['HistogramName.green.medium']['owners'])
+    self.assertEqual(['green@chromium.org'],
+                     histograms_dict['HistogramName.green.large']['owners'])
+    self.assertEqual(['green@chromium.org'],
+                     histograms_dict['HistogramName.green']['owners'])
+
+  @parameterized.expand([
+      ('InlineTokens', TEST_HISTOGRAM_WITH_TOKENS),
+      ('InlineTokenAndOutOfLineVariants', TEST_HISTOGRAM_WITH_VARIANTS),
+      ('MixedVariants', TEST_HISTOGRAM_WITH_MIXED_VARIANTS),
+  ])
+  def testUpdateWithTokenObsolete(self, _, input_xml):
+    histogram_with_token = xml.dom.minidom.parseString(input_xml)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_token, {})
+    histograms_dict, _ = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+
+    # New histograms should inherit the obsolete reason of the last
+    # obsolete token by order of appearance.
+    self.assertEqual('Obsolete small',
+                     histograms_dict['HistogramName.red.small']['obsolete'])
+    self.assertEqual('Obsolete red',
+                     histograms_dict['HistogramName.red.medium']['obsolete'])
+    self.assertEqual('Obsolete red',
+                     histograms_dict['HistogramName.red.large']['obsolete'])
+    self.assertEqual('Obsolete red',
+                     histograms_dict['HistogramName.red']['obsolete'])
+    self.assertEqual('Obsolete small',
+                     histograms_dict['HistogramName.green.small']['obsolete'])
+    self.assertNotIn('obsolete', histograms_dict['HistogramName.green.medium'])
+    self.assertNotIn('obsolete', histograms_dict['HistogramName.green.large'])
+    self.assertNotIn('obsolete', histograms_dict['HistogramName.green'])
+
+  @parameterized.expand([
+      ('InlineTokens', TEST_HISTOGRAM_TOKENS_DUPLICATE),
+      ('InlineTokenAndOutOfLineVariants', TEST_HISTOGRAM_VARIANTS_DUPLICATE),
+  ])
+  def testUpdateNameDuplicateVariant(self, _, input_xml):
+    """Tests that if duplicate names are generated due to multiple tokens
+    having the same variant and empty string variant, an error is reported."""
+    histogram_with_duplicate_variant = xml.dom.minidom.parseString(input_xml)
+    histograms_dict, _ = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_duplicate_variant, {})
+    _, have_errors = extract_histograms._UpdateHistogramsWithTokens(
+        histograms_dict)
+    self.assertTrue(have_errors)
+
+  def testVariantsNotExists(self):
+    histogram_without_corresponding_variants = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+<histogram name="Histogram{Color}{SizeNone}" units="things"
+    expires_after="2017-10-16">
+  <owner>me@chromium.org</owner>
+  <summary>
+    This is a histogram for button of {Color} color and {SizeNone} size.
+  </summary>
+  <token key="Color">
+    <variant name="" summary="all"/>
+    <variant name=".red" summary="red"/>
+    <variant name=".green" summary="green"/>
+  </token>
+  <token key="SizeNone" variants="HistogramNameSize"/>
+</histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_without_corresponding_variants, {})
+    self.assertTrue(have_errors)
+
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.ERROR + 1)

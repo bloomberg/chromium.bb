@@ -16,9 +16,9 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -87,29 +87,29 @@ gfx::Rect PipPositioner::GetSnapFractionAppliedBounds(
 
   if (snap_fraction < 1.) {
     int offset = movement_area.x() +
-                 gfx::ToRoundedInt(snap_fraction *
-                                   (movement_area.width() - bounds.width()));
+                 base::ClampRound(snap_fraction *
+                                  (movement_area.width() - bounds.width()));
     return gfx::Rect(offset, movement_area.y(), bounds.width(),
                      bounds.height());
   } else if (snap_fraction < 2.) {
     snap_fraction -= 1.;
     int offset = movement_area.y() +
-                 gfx::ToRoundedInt(snap_fraction *
-                                   (movement_area.height() - bounds.height()));
+                 base::ClampRound(snap_fraction *
+                                  (movement_area.height() - bounds.height()));
     return gfx::Rect(movement_area.right() - bounds.width(), offset,
                      bounds.width(), bounds.height());
   } else if (snap_fraction < 3.) {
     snap_fraction -= 2.;
     int offset = movement_area.x() +
-                 gfx::ToRoundedInt((1. - snap_fraction) *
-                                   (movement_area.width() - bounds.width()));
+                 base::ClampRound((1. - snap_fraction) *
+                                  (movement_area.width() - bounds.width()));
     return gfx::Rect(offset, movement_area.bottom() - bounds.height(),
                      bounds.width(), bounds.height());
   } else {
     snap_fraction -= 3.;
     int offset = movement_area.y() +
-                 gfx::ToRoundedInt((1. - snap_fraction) *
-                                   (movement_area.height() - bounds.height()));
+                 base::ClampRound((1. - snap_fraction) *
+                                  (movement_area.height() - bounds.height()));
     return gfx::Rect(movement_area.x(), offset, bounds.width(),
                      bounds.height());
   }

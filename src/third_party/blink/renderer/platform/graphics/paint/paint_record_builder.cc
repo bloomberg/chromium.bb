@@ -30,7 +30,7 @@ PaintRecordBuilder::PaintRecordBuilder(
   context_ =
       std::make_unique<GraphicsContext>(*paint_controller_, metafile, tracker);
   if (containing_context) {
-    context_->SetDarkMode(containing_context->dark_mode_settings());
+    context_->SetDarkModeEnabled(containing_context->IsDarkModeEnabled());
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
     context_->SetPrinting(containing_context->Printing());
     context_->SetIsPaintingPreview(containing_context->IsPaintingPreview());
@@ -48,9 +48,7 @@ sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
 
 void PaintRecordBuilder::EndRecording(cc::PaintCanvas& canvas,
                                       const PropertyTreeState& replay_state) {
-  paint_controller_->CommitNewDisplayItems();
-  paint_controller_->FinishCycle();
-  paint_controller_->GetPaintArtifact().Replay(canvas, replay_state);
+  canvas.drawPicture(EndRecording(replay_state));
 }
 
 }  // namespace blink

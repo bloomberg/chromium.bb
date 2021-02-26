@@ -4,6 +4,8 @@
 
 #include "cc/layers/viewport.h"
 
+#include <algorithm>
+
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "cc/input/browser_controls_offset_manager.h"
@@ -52,15 +54,15 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& physical_delta,
   gfx::Vector2dF pending_scroll_node_delta = scroll_node_delta;
 
   // Attempt to scroll inner viewport first.
-  pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
+  pending_scroll_node_delta -= host_impl_->GetInputHandler().ScrollSingleNode(
       *InnerScrollNode(), pending_scroll_node_delta, viewport_point,
-      is_direct_manipulation, &scroll_tree());
+      is_direct_manipulation);
 
   // Now attempt to scroll the outer viewport.
   if (scroll_outer_viewport) {
-    pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
+    pending_scroll_node_delta -= host_impl_->GetInputHandler().ScrollSingleNode(
         *OuterScrollNode(), pending_scroll_node_delta, viewport_point,
-        is_direct_manipulation, &scroll_tree());
+        is_direct_manipulation);
   }
 
   ScrollResult result;
@@ -74,7 +76,8 @@ bool Viewport::CanScroll(const ScrollNode& node,
                          const ScrollState& scroll_state) const {
   DCHECK(ShouldScroll(node));
 
-  bool result = host_impl_->CanConsumeDelta(scroll_state, *InnerScrollNode());
+  bool result = host_impl_->GetInputHandler().CanConsumeDelta(
+      scroll_state, *InnerScrollNode());
 
   // If the passed in node is the inner viewport, we're not interested in the
   // scrollability of the outer viewport. See LTHI::GetNodeToScroll for how the
@@ -82,8 +85,56 @@ bool Viewport::CanScroll(const ScrollNode& node,
   if (node.scrolls_inner_viewport)
     return result;
 
-  result |= host_impl_->CanConsumeDelta(scroll_state, *OuterScrollNode());
+  result |= host_impl_->GetInputHandler().CanConsumeDelta(scroll_state,
+                                                          *OuterScrollNode());
   return result;
+}
+
+gfx::Vector2dF Viewport::ComputeClampedDelta(
+    const gfx::Vector2dF& scroll_delta) const {
+  // When clamping for the outer viewport, we need to distribute the scroll
+  // between inner and outer to get the clamped value. The returned values
+  // from ComputeScrollDelta are unscaled, so we have to do scaling
+  // conversions each step of the way.
+  ScrollNode* inner_node = InnerScrollNode();
+  gfx::Vector2dF inner_delta = host_impl_->GetInputHandler().ComputeScrollDelta(
+      *inner_node, scroll_delta);
+
+  float page_scale = host_impl_->active_tree()->page_scale_factor_for_scroll();
+  gfx::Vector2dF unscaled_delta = scroll_delta;
+  unscaled_delta.Scale(1.f / page_scale);
+
+  gfx::Vector2dF remaining_delta = unscaled_delta - inner_delta;
+  remaining_delta.Scale(page_scale);
+
+  const ScrollNode* outer_node = OuterScrollNode();
+  gfx::Vector2dF outer_delta = host_impl_->GetInputHandler().ComputeScrollDelta(
+      *outer_node, remaining_delta);
+
+  gfx::Vector2dF combined_delta = inner_delta + outer_delta;
+  combined_delta.Scale(page_scale);
+
+  return combined_delta;
+}
+
+gfx::SizeF Viewport::GetInnerViewportSizeExcludingScrollbars() const {
+  DCHECK(InnerScrollNode());
+  ScrollNode* inner_node = InnerScrollNode();
+  gfx::SizeF inner_bounds(inner_node->container_bounds);
+  ScrollNode* outer_node = OuterScrollNode();
+  ScrollbarSet scrollbars = host_impl_->ScrollbarsFor(outer_node->element_id);
+  gfx::SizeF scrollbars_size;
+  for (const auto* scrollbar : scrollbars) {
+    if (scrollbar->orientation() == ScrollbarOrientation::VERTICAL) {
+      scrollbars_size.set_width(scrollbar->bounds().width());
+    } else {
+      DCHECK(scrollbar->orientation() == ScrollbarOrientation::HORIZONTAL);
+      scrollbars_size.set_height(scrollbar->bounds().height());
+    }
+  }
+
+  inner_bounds.Enlarge(-scrollbars_size.width(), -scrollbars_size.height());
+  return inner_bounds;
 }
 
 void Viewport::ScrollByInnerFirst(const gfx::Vector2dF& delta) {
@@ -119,13 +170,13 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
 
   ScrollNode* inner_node = InnerScrollNode();
   gfx::Vector2dF inner_delta =
-      host_impl_->ComputeScrollDelta(*inner_node, delta);
+      host_impl_->GetInputHandler().ComputeScrollDelta(*inner_node, delta);
 
   gfx::Vector2dF pending_delta = scaled_delta - inner_delta;
   pending_delta.Scale(scale_factor);
 
-  gfx::Vector2dF outer_delta =
-      host_impl_->ComputeScrollDelta(*outer_node, pending_delta);
+  gfx::Vector2dF outer_delta = host_impl_->GetInputHandler().ComputeScrollDelta(
+      *outer_node, pending_delta);
 
   if (inner_delta.IsZero() && outer_delta.IsZero())
     return gfx::Vector2dF(0, 0);

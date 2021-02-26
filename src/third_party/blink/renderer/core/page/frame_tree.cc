@@ -66,12 +66,27 @@ const AtomicString& FrameTree::GetName() const {
       }
     }
   }
+
+  if (cross_browsing_context_group_set_nulled_name_) {
+    auto* frame = DynamicTo<LocalFrame>(this_frame_.Get());
+    if (frame && frame->IsMainFrame() && !name_.IsEmpty()) {
+      UseCounter::Count(
+          frame->GetDocument(),
+          WebFeature::
+              kCrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed);
+    }
+  }
   return name_;
 }
 
 // TODO(andypaicu): remove this once we have gathered the data
 void FrameTree::ExperimentalSetNulledName() {
   experimental_set_nulled_name_ = true;
+}
+
+// TODO(shuuran): remove this once we have gathered the data
+void FrameTree::CrossBrowsingContextGroupSetNulledName() {
+  cross_browsing_context_group_set_nulled_name_ = true;
 }
 
 void FrameTree::SetName(const AtomicString& name,
@@ -93,36 +108,30 @@ void FrameTree::SetName(const AtomicString& name,
 
   // TODO(andypaicu): remove this once we have gathered the data
   experimental_set_nulled_name_ = false;
+
+  auto* frame = DynamicTo<LocalFrame>(this_frame_.Get());
+  if (frame && frame->IsMainFrame() && !name.IsEmpty()) {
+    // TODO(shuuran): remove this once we have gathered the data
+    cross_browsing_context_group_set_nulled_name_ = false;
+  }
   name_ = name;
 }
 
 DISABLE_CFI_PERF
 Frame* FrameTree::Parent() const {
-  if (!this_frame_->Client())
-    return nullptr;
-  return this_frame_->Client()->Parent();
+  return this_frame_->Parent();
 }
 
 Frame& FrameTree::Top() const {
-  // FIXME: top() should never return null, so here are some hacks to deal
-  // with EmptyLocalFrameClient and cases where the frame is detached
-  // already...
-  if (!this_frame_->Client())
-    return *this_frame_;
-  Frame* candidate = this_frame_->Client()->Top();
-  return candidate ? *candidate : *this_frame_;
+  return *this_frame_->Top();
 }
 
 Frame* FrameTree::NextSibling() const {
-  if (!this_frame_->Client())
-    return nullptr;
-  return this_frame_->Client()->NextSibling();
+  return this_frame_->NextSibling();
 }
 
 Frame* FrameTree::FirstChild() const {
-  if (!this_frame_->Client())
-    return nullptr;
-  return this_frame_->Client()->FirstChild();
+  return this_frame_->FirstChild();
 }
 
 Frame* FrameTree::ScopedChild(unsigned index) const {
@@ -217,7 +226,8 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
 
   if (frame && !new_window) {
     if (frame->GetPage() != current_frame->GetPage())
-      frame->GetPage()->GetChromeClient().Focus(current_frame);
+      frame->FocusPage(current_frame);
+
     // Focusing can fire onblur, so check for detach.
     if (!frame->GetPage())
       frame = nullptr;
@@ -295,7 +305,7 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   // The embedder can return a frame from another agent cluster. Make sure
   // that the returned frame, if any, has explicitly allowed cross-agent
   // cluster access.
-  DCHECK(!named_frame || local_frame->GetDocument()
+  DCHECK(!named_frame || local_frame->DomWindow()
                              ->GetSecurityOrigin()
                              ->IsGrantedCrossAgentClusterAccess());
   return named_frame;
@@ -349,7 +359,7 @@ Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
   return nullptr;
 }
 
-void FrameTree::Trace(Visitor* visitor) {
+void FrameTree::Trace(Visitor* visitor) const {
   visitor->Trace(this_frame_);
 }
 

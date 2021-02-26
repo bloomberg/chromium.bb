@@ -21,7 +21,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
+#include "ui/views/style/platform_style.h"
+#include "ui/views/test/button_test_api.h"
 #include "ui/views/view.h"
 
 // A view wrapper class that owns the ExtensionsToolbarContainer.
@@ -64,7 +68,7 @@ ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser,
   }
   menu_view_ = std::make_unique<ExtensionsMenuView>(
       extensions_container_->extensions_button(), browser_,
-      extensions_container_);
+      extensions_container_, true);
 }
 ExtensionsMenuTestUtil::~ExtensionsMenuTestUtil() = default;
 
@@ -111,10 +115,7 @@ void ExtensionsMenuTestUtil::Press(int index) {
 
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), 0, 0);
-  // ExtensionsMenuButton::ButtonPressed() is private; workaround by casting to
-  // to a ButtonListener.
-  static_cast<views::ButtonListener*>(primary_button)
-      ->ButtonPressed(primary_button, event);
+  views::test::ButtonTestApi(primary_button).NotifyClick(event);
 }
 
 std::string ExtensionsMenuTestUtil::GetExtensionId(int index) {
@@ -166,6 +167,11 @@ ExtensionsContainer* ExtensionsMenuTestUtil::GetExtensionsContainer() {
   return extensions_container_;
 }
 
+void ExtensionsMenuTestUtil::WaitForExtensionsContainerLayout() {
+  views::test::WaitForAnimatingLayoutManager(
+      static_cast<views::View*>(extensions_container_));
+}
+
 std::unique_ptr<ExtensionActionTestHelper>
 ExtensionsMenuTestUtil::CreateOverflowBar(Browser* browser) {
   // There is no overflow bar with the ExtensionsMenu implementation.
@@ -179,15 +185,28 @@ void ExtensionsMenuTestUtil::LayoutForOverflowBar() {
 }
 
 gfx::Size ExtensionsMenuTestUtil::GetMinPopupSize() {
-  return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);
+  return ExtensionPopup::kMinSize;
 }
 
 gfx::Size ExtensionsMenuTestUtil::GetMaxPopupSize() {
-  return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
+  return ExtensionPopup::kMaxSize;
 }
 
 gfx::Size ExtensionsMenuTestUtil::GetToolbarActionSize() {
   return extensions_container_->GetToolbarActionSize();
+}
+
+gfx::Size ExtensionsMenuTestUtil::GetMaxAvailableSizeToFitBubbleOnScreen(
+    int action_index) {
+  auto* view_delegate = static_cast<ToolbarActionViewDelegateViews*>(
+      static_cast<ExtensionActionViewController*>(
+          extensions_container_->GetActionForId(GetExtensionId(action_index)))
+          ->view_delegate());
+  return views::BubbleDialogDelegate::GetMaxAvailableScreenSpaceToPlaceBubble(
+      view_delegate->GetReferenceButtonForPopup(),
+      views::BubbleBorder::TOP_RIGHT,
+      views::PlatformStyle::kAdjustBubbleIfOffscreen,
+      views::BubbleFrameView::PreferredArrowAdjustment::kMirror);
 }
 
 ExtensionsMenuItemView* ExtensionsMenuTestUtil::GetMenuItemViewAtIndex(

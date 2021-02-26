@@ -67,7 +67,7 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
   // Configures not to show an attribute prompt.
   void DisableAttributePromptUpdate();
   // Attribute prompt should be displayed during enrollment, and
-  // |asset_id| / |location| should be sent back to server.
+  // `asset_id` / `location` should be sent back to server.
   void ExpectAttributePromptUpdate(const std::string& asset_id,
                                    const std::string& location);
 
@@ -82,6 +82,10 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
   // InProcessBrowserTestMixin:
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
+
+  // Sets expectation of a RestoreAfterRollback call and initiates the
+  // corresponding callback.
+  void ExpectRestoreAfterRollback();
 
  private:
   // Unowned reference to last created mock.

@@ -18,8 +18,6 @@ class WorkerNavigator;
 
 class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
                              public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBadge);
-
  public:
   static const char kSupplementName[];
 
@@ -38,7 +36,7 @@ class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
   static ScriptPromise clearAppBadge(ScriptState*, Navigator&);
   static ScriptPromise clearAppBadge(ScriptState*, WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static ScriptPromise SetAppBadgeHelper(

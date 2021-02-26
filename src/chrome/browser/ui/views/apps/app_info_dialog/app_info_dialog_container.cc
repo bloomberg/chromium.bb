@@ -20,7 +20,6 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -29,14 +28,14 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/views/background.h"
 #endif
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const ui::ModalType kModalType = ui::MODAL_TYPE_CHILD;
 const views::BubbleBorder::Shadow kShadowType = views::BubbleBorder::NO_ASSETS;
 #else
@@ -62,7 +61,8 @@ class AppListOverlayBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(ash::AppListConfig::instance().contents_background_color());
+    flags.setColor(
+        ash::AppListColorProvider::Get()->GetContentsBackgroundColor());
     canvas->DrawRoundRect(view->GetContentsBounds(),
                           kAppListOverlayBorderRadius, flags);
   }
@@ -105,14 +105,18 @@ class BaseDialogContainer : public views::DialogDelegateView {
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
-class AppListDialogContainer : public BaseDialogContainer,
-                               public views::ButtonListener {
+class AppListDialogContainer : public BaseDialogContainer {
  public:
   explicit AppListDialogContainer(std::unique_ptr<views::View> dialog_body)
       : BaseDialogContainer(std::move(dialog_body), base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
-    close_button_ =
-        AddChildView(views::BubbleFrameView::CreateCloseButton(this));
+    close_button_ = AddChildView(
+        views::BubbleFrameView::CreateCloseButton(base::BindRepeating(
+            [](AppListDialogContainer* container) {
+              container->GetWidget()->CloseWithReason(
+                  views::Widget::ClosedReason::kCloseButtonClicked);
+            },
+            base::Unretained(this))));
   }
   ~AppListDialogContainer() override {}
 
@@ -131,19 +135,9 @@ class AppListDialogContainer : public BaseDialogContainer,
   }
 
   // views::WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new views::NativeFrameView(widget);
-  }
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == close_button_) {
-      GetWidget()->CloseWithReason(
-          views::Widget::ClosedReason::kCloseButtonClicked);
-    } else {
-      NOTREACHED();
-    }
+    return std::make_unique<views::NativeFrameView>(widget);
   }
 
   views::Button* close_button_;
@@ -201,9 +195,9 @@ class NativeDialogContainer : public BaseDialogContainer {
 
  private:
   // Overridden from views::WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
+    auto frame = std::make_unique<FullSizeBubbleFrameView>();
     auto border = std::make_unique<views::BubbleBorder>(
         views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor);
     border->set_use_theme_background_color(true);

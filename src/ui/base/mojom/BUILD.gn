@@ -10,12 +10,25 @@ mojom("mojom") {
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
   ]
+
+  if (is_mac) {
+    sources += [ "attributed_string.mojom" ]
+    public_deps = [
+      "//mojo/public/mojom/base",
+      "//ui/gfx/range/mojom",
+    ]
+  }
+
   cpp_typemaps = [
     {
       types = [
         {
           mojom = "ui.mojom.DialogButton"
           cpp = "::ui::DialogButton"
+        },
+        {
+          mojom = "ui.mojom.MenuSourceType"
+          cpp = "::ui::MenuSourceType"
         },
         {
           mojom = "ui.mojom.ModalType"
@@ -36,4 +49,8 @@ mojom("mojom") {
       traits_public_deps = [ "//ui/base" ]
     },
   ]
+
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
 }

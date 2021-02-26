@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_win.h"
 
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/win/windows_types.h"
@@ -12,6 +13,7 @@
 #include "net/base/network_interfaces.h"
 
 // Those headers need defines from windows_types.h, thus have to come after it.
+#include <iphlpapi.h>      // NOLINT(build/include_order)
 #include <powersetting.h>  // NOLINT(build/include_order)
 #include <propsys.h>       // NOLINT(build/include_order)
 #include <shobjidl.h>      // NOLINT(build/include_order)
@@ -49,6 +51,19 @@ std::string GetSerialNumber() {
   base::win::WmiComputerSystemInfo sys_info =
       base::win::WmiComputerSystemInfo::Get();
   return base::UTF16ToUTF8(sys_info.serial_number());
+}
+
+// Retrieves the FQDN of the comeputer and if this fails reverts to the hostname
+// as known to the net subsystem.
+std::string GetComputerName() {
+  DWORD size = 1024;
+  std::string result(size, '\0');
+
+  if (!::GetComputerNameExA(ComputerNameDnsFullyQualified, &result[0], &size))
+    return net::GetHostName();
+  result.resize(size);
+
+  return result;
 }
 
 // Retrieves the state of the screen locking feature from the screen saver
@@ -212,6 +227,41 @@ enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   return enterprise_reporting_private::SETTING_VALUE_DISABLED;
 }
 
+std::vector<std::string> GetMacAddresses() {
+  std::vector<std::string> mac_addresses;
+  ULONG adapter_info_size = 0;
+  // Get the right buffer size in case of overflow
+  if (::GetAdaptersInfo(nullptr, &adapter_info_size) != ERROR_BUFFER_OVERFLOW ||
+      adapter_info_size == 0) {
+    return mac_addresses;
+  }
+
+  std::vector<byte> adapters(adapter_info_size);
+  if (::GetAdaptersInfo(reinterpret_cast<PIP_ADAPTER_INFO>(adapters.data()),
+                        &adapter_info_size) != ERROR_SUCCESS) {
+    return mac_addresses;
+  }
+
+  // The returned value is not an array of IP_ADAPTER_INFO elements but a linked
+  // list of such
+  PIP_ADAPTER_INFO adapter =
+      reinterpret_cast<PIP_ADAPTER_INFO>(adapters.data());
+  while (adapter) {
+    if (adapter->AddressLength == 6) {
+      mac_addresses.push_back(
+          base::StringPrintf("%02X-%02X-%02X-%02X-%02X-%02X",
+                             static_cast<unsigned int>(adapter->Address[0]),
+                             static_cast<unsigned int>(adapter->Address[1]),
+                             static_cast<unsigned int>(adapter->Address[2]),
+                             static_cast<unsigned int>(adapter->Address[3]),
+                             static_cast<unsigned int>(adapter->Address[4]),
+                             static_cast<unsigned int>(adapter->Address[5])));
+    }
+    adapter = adapter->Next;
+  }
+  return mac_addresses;
+}
+
 }  // namespace
 
 DeviceInfoFetcherWin::DeviceInfoFetcherWin() = default;
@@ -222,11 +272,12 @@ DeviceInfo DeviceInfoFetcherWin::Fetch() {
   DeviceInfo device_info;
   device_info.os_name = "windows";
   device_info.os_version = base::SysInfo::OperatingSystemVersion();
-  device_info.device_host_name = net::GetHostName();
+  device_info.device_host_name = GetComputerName();
   device_info.device_model = base::SysInfo::HardwareModelName();
   device_info.serial_number = GetSerialNumber();
   device_info.screen_lock_secured = GetScreenlockSecured();
   device_info.disk_encrypted = GetDiskEncrypted();
+  device_info.mac_addresses = GetMacAddresses();
   return device_info;
 }
 

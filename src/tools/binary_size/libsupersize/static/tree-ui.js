@@ -21,9 +21,9 @@ const newTreeElement = (() => {
   /** @type {HTMLTemplateElement} Template for leaves in the tree */
   const _leafTemplate = document.getElementById('treenode-symbol');
   /** @type {HTMLTemplateElement} Template for trees */
-  const _treeTemplate = document.getElementById('treenode-container');
+  const _treeTemplate = document.getElementById('treenode-template');
 
-  /** @type {HTMLUListElement} Symbol tree container */
+  /** @type {HTMLUListElement} Symbol tree element */
   const _symbolTree = document.getElementById('symboltree');
 
   /**
@@ -82,7 +82,7 @@ const newTreeElement = (() => {
   async function _toggleTreeElement(event) {
     event.preventDefault();
 
-    // See `#treenode-container` for the relation of these elements.
+    // See `#treenode-template` for the relation of these elements.
     const link = /** @type {HTMLAnchorElement} */ (event.currentTarget);
     const treeitem = /** @type {HTMLLIElement} */ (link.parentElement);
     const group = /** @type {HTMLUListElement} */ (link.nextElementSibling);
@@ -135,7 +135,7 @@ const newTreeElement = (() => {
     /**
      * @type {HTMLAnchorElement | HTMLSpanElement} Tree node element, either
      * a tree or leaf. Trees use `<a>` tags, leaves use `<span>` tags.
-     * See `#treenode-container` and `#treenode-symbol`.
+     * See `#treenode-template` and `#treenode-symbol`.
      */
     const link = event.target;
     /** @type {number} Index of this element in the node list */
@@ -445,13 +445,19 @@ const newTreeElement = (() => {
         dom.replace(_symbolTree, rootElement);
         if (!_doneLoad && percent === 1) {
           _doneLoad = true;
-          console.log('Pro Tip: await worker.openNode("$FILE_PATH")')
+          console.log(
+              '%cPro Tip: %cawait supersize.worker.openNode("$FILE_PATH")',
+              'font-weight:bold; color: red;', '')
         }
       })
     );
   }
 
-  window.supersize.treeReady.then(displayTree);
+  window.supersize.treeReady.then((message) => {
+    document.querySelector('#group-by-container')
+            .toggleAttribute('disabled', !message.isMultiContainer);
+    displayTree(message);
+  });
   window.supersize.worker.setOnProgressHandler(displayTree);
 
   _fileUpload.addEventListener('change', event => {

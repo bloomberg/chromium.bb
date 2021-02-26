@@ -17,6 +17,7 @@
 #include "include/core/SkSize.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkTypes.h"
+#include "include/gpu/GrDirectContext.h"
 #include "tools/ToolUtils.h"
 
 namespace {
@@ -46,7 +47,7 @@ public:
     }
 
 private:
-    typedef SkImageGenerator INHERITED;
+    using INHERITED = SkImageGenerator;
 };
 
 using MakerT = sk_sp<SkImage>(*)(SkCanvas*, const SkImageInfo&);
@@ -59,7 +60,7 @@ const MakerT makers[] = {
     // SkImage_Gpu
     [](SkCanvas* c, const SkImageInfo& info) -> sk_sp<SkImage> {
         sk_sp<SkSurface> surface;
-        surface = SkSurface::MakeRenderTarget(c->getGrContext(), SkBudgeted::kNo, info);
+        surface = SkSurface::MakeRenderTarget(c->recordingContext(), SkBudgeted::kNo, info);
         return make_mask(surface ? surface : SkSurface::MakeRaster(info));
     },
 
@@ -69,7 +70,7 @@ const MakerT makers[] = {
     },
 };
 
-} // anonymous ns
+}  // namespace
 
 // Checks whether subset SkImages preserve the original color type (A8 in this case).
 DEF_SIMPLE_GM(imagemasksubset, canvas, 480, 480) {
@@ -82,7 +83,8 @@ DEF_SIMPLE_GM(imagemasksubset, canvas, 480, 480) {
         sk_sp<SkImage> image = makers[i](canvas, info);
         if (image) {
             canvas->drawImageRect(image, SkRect::Make(kSubset), kDest, &paint);
-            sk_sp<SkImage> subset = image->makeSubset(kSubset);
+            auto direct = GrAsDirectContext(canvas->recordingContext());
+            sk_sp<SkImage> subset = image->makeSubset(kSubset, direct);
             canvas->drawImageRect(subset, kDest.makeOffset(kSize.width() * 1.5f, 0), &paint);
         }
         canvas->translate(0, kSize.height() * 1.5f);

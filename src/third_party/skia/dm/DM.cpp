@@ -40,6 +40,7 @@
 #include "tools/trace/EventTracingPriv.h"
 #include "tools/trace/SkDebugfTracer.h"
 
+#include <memory>
 #include <vector>
 
 #include <stdlib.h>
@@ -59,8 +60,10 @@
 
 extern bool gSkForceRasterPipelineBlitter;
 extern bool gUseSkVMBlitter;
+extern bool gSkVMAllowJIT;
 
-static DEFINE_string(src, "tests gm skp mskp lottie svg image colorImage", "Source types to test.");
+static DEFINE_string(src, "tests gm skp mskp lottie rive svg image colorImage",
+                     "Source types to test.");
 static DEFINE_bool(nameByHash, false,
                    "If true, write to FLAGS_writePath[0]/<hash>.png instead of "
                    "to FLAGS_writePath[0]/<config>/<sourceType>/<sourceOptions>/<name>.png");
@@ -69,12 +72,12 @@ static DEFINE_string(matrix, "1 0 0 1",
                     "2x2 scale+skew matrix to apply or upright when using "
                     "'matrix' or 'upright' in config.");
 
-static DEFINE_string(blacklist, "",
-        "Space-separated config/src/srcOptions/name quadruples to blacklist. "
+static DEFINE_string(skip, "",
+        "Space-separated config/src/srcOptions/name quadruples to skip. "
         "'_' matches anything. '~' negates the match. E.g. \n"
-        "'--blacklist gpu skp _ _' will blacklist all SKPs drawn into the gpu config.\n"
-        "'--blacklist gpu skp _ _ 8888 gm _ aarects' will also blacklist the aarects GM on 8888.\n"
-        "'--blacklist ~8888 svg _ svgparse_' blocks non-8888 SVGs that contain \"svgparse_\" in "
+        "'--skip gpu skp _ _' will skip all SKPs drawn into the gpu config.\n"
+        "'--skip gpu skp _ _ 8888 gm _ aarects' will also skip the aarects GM on 8888.\n"
+        "'--skip ~8888 svg _ svgparse_' blocks non-8888 SVGs that contain \"svgparse_\" in "
                                             "the name.");
 
 static DEFINE_string2(readPath, r, "",
@@ -92,6 +95,7 @@ static DEFINE_int(shard,  0, "Which shard do I run?");
 static DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp file.");
 static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 static DEFINE_bool(skvm, false, "sets gUseSkVMBlitter");
+static DEFINE_bool(jit,  true,  "sets gSkVMAllowJIT");
 
 static DEFINE_string(bisect, "",
         "Pair of: SKP file to bisect, followed by an l/r bisect trail string (e.g., 'lrll'). The "
@@ -109,8 +113,8 @@ static DEFINE_string(colorImages, "",
 
 static DEFINE_bool2(veryVerbose, V, false, "tell individual tests to be verbose.");
 
-static DEFINE_bool(cpu, true, "master switch for running CPU-bound work.");
-static DEFINE_bool(gpu, true, "master switch for running GPU-bound work.");
+static DEFINE_bool(cpu, true, "Run CPU-bound work?");
+static DEFINE_bool(gpu, true, "Run GPU-bound work?");
 
 static DEFINE_bool(dryRun, false,
                    "just print the tests that would be run, without actually running them.");
@@ -138,6 +142,7 @@ static DEFINE_bool2(verbose, v, false, "enable verbose output from the test driv
 
 static DEFINE_string(skps, "skps", "Directory to read skps from.");
 static DEFINE_string(lotties, "lotties", "Directory to read (Bodymovin) jsons from.");
+static DEFINE_string(rives, "rives", "Directory to read Rive/Flare files from.");
 static DEFINE_string(svgs, "", "Directory to read SVGs from, or a single SVG file.");
 
 static DEFINE_int_2(threads, j, -1,
@@ -153,7 +158,6 @@ static DEFINE_bool(rasterize_pdf, false, "Rasterize PDFs when possible.");
 
 static DEFINE_bool(runVerifiers, false,
                    "if true, run SkQP-style verification of GM-produced images.");
-
 
 #if defined(__MSVC_RUNTIME_CHECKS)
 #include <rtcapi.h>
@@ -206,13 +210,13 @@ static void info(const char* fmt) {
     }
 }
 
-static SkTArray<SkString> gFailures;
+static SkTArray<SkString>* gFailures = new SkTArray<SkString>;
 
 static void fail(const SkString& err) {
     static SkSpinlock mutex;
     SkAutoSpinlock lock(mutex);
     SkDebugf("\n\nFAILURE: %s\n\n", err.c_str());
-    gFailures.push_back(err);
+    gFailures->push_back(err);
 }
 
 struct Running {
@@ -231,19 +235,19 @@ static void dump_json() {
 }
 
 // We use a spinlock to make locking this in a signal handler _somewhat_ safe.
-static SkSpinlock        gMutex;
-static int               gPending;
-static SkTArray<Running> gRunning;
+static SkSpinlock*        gMutex = new SkSpinlock;
+static int                gPending;
+static SkTArray<Running>* gRunning = new SkTArray<Running>;
 
 static void done(const char* config, const char* src, const char* srcOptions, const char* name) {
     SkString id = SkStringPrintf("%s %s %s %s", config, src, srcOptions, name);
     vlog("done  %s\n", id.c_str());
     int pending;
     {
-        SkAutoSpinlock lock(gMutex);
-        for (int i = 0; i < gRunning.count(); i++) {
-            if (gRunning[i].id == id) {
-                gRunning.removeShuffle(i);
+        SkAutoSpinlock lock(*gMutex);
+        for (int i = 0; i < gRunning->count(); i++) {
+            if (gRunning->at(i).id == id) {
+                gRunning->removeShuffle(i);
                 break;
             }
         }
@@ -258,10 +262,10 @@ static void done(const char* config, const char* src, const char* srcOptions, co
         int curr = sk_tools::getCurrResidentSetSizeMB(),
             peak = sk_tools::getMaxResidentSetSizeMB();
 
-        SkAutoSpinlock lock(gMutex);
+        SkAutoSpinlock lock(*gMutex);
         info("\n%dMB RAM, %dMB peak, %d queued, %d active:\n",
-             curr, peak, gPending - gRunning.count(), gRunning.count());
-        for (auto& task : gRunning) {
+             curr, peak, gPending - gRunning->count(), gRunning->count());
+        for (auto& task : *gRunning) {
             task.dump();
         }
     }
@@ -270,14 +274,14 @@ static void done(const char* config, const char* src, const char* srcOptions, co
 static void start(const char* config, const char* src, const char* srcOptions, const char* name) {
     SkString id = SkStringPrintf("%s %s %s %s", config, src, srcOptions, name);
     vlog("start %s\n", id.c_str());
-    SkAutoSpinlock lock(gMutex);
-    gRunning.push_back({id,SkGetThreadID()});
+    SkAutoSpinlock lock(*gMutex);
+    gRunning->push_back({id,SkGetThreadID()});
 }
 
 static void find_culprit() {
     // Assumes gMutex is locked.
     SkThreadID thisThread = SkGetThreadID();
-    for (auto& task : gRunning) {
+    for (auto& task : *gRunning) {
         if (task.thread == thisThread) {
             info("Likely culprit:\n");
             task.dump();
@@ -300,7 +304,7 @@ static void find_culprit() {
         #undef _
         };
 
-        SkAutoSpinlock lock(gMutex);
+        SkAutoSpinlock lock(*gMutex);
 
         const DWORD code = e->ExceptionRecord->ExceptionCode;
         info("\nCaught exception %u", code);
@@ -310,7 +314,7 @@ static void find_culprit() {
             }
         }
         info(", was running:\n");
-        for (auto& task : gRunning) {
+        for (auto& task : *gRunning) {
             task.dump();
         }
         find_culprit();
@@ -339,19 +343,19 @@ static void find_culprit() {
     static void (*previous_handler[max_of(SIGABRT,SIGBUS,SIGFPE,SIGILL,SIGSEGV,SIGTERM)+1])(int);
 
     static void crash_handler(int sig) {
-        SkAutoSpinlock lock(gMutex);
+        SkAutoSpinlock lock(*gMutex);
 
         info("\nCaught signal %d [%s] (%dMB RAM, peak %dMB), was running:\n",
              sig, strsignal(sig),
              sk_tools::getCurrResidentSetSizeMB(), sk_tools::getMaxResidentSetSizeMB());
 
-        for (auto& task : gRunning) {
+        for (auto& task : *gRunning) {
             task.dump();
         }
         find_culprit();
 
     #if !defined(SK_BUILD_FOR_ANDROID)
-        void* stack[64];
+        void* stack[128];
         int count = backtrace(stack, SK_ARRAY_COUNT(stack));
         char** symbols = backtrace_symbols(stack, count);
         info("\nStack trace:\n");
@@ -398,10 +402,10 @@ struct Gold : public SkString {
         }
     };
 };
-static SkTHashSet<Gold, Gold::Hash> gGold;
+static SkTHashSet<Gold, Gold::Hash>* gGold = new SkTHashSet<Gold, Gold::Hash>;
 
 static void add_gold(JsonWriter::BitmapResult r) {
-    gGold.add(Gold(r.config, r.sourceType, r.sourceOptions, r.name, r.md5));
+    gGold->add(Gold(r.config, r.sourceType, r.sourceOptions, r.name, r.md5));
 }
 
 static void gather_gold() {
@@ -417,12 +421,12 @@ static void gather_gold() {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #if defined(SK_BUILD_FOR_WIN)
-    static const char* kNewline = "\r\n";
+    static constexpr char kNewline[] = "\r\n";
 #else
-    static const char* kNewline = "\n";
+    static constexpr char kNewline[] = "\n";
 #endif
 
-static SkTHashSet<SkString> gUninterestingHashes;
+static SkTHashSet<SkString>* gUninterestingHashes = new SkTHashSet<SkString>;
 
 static void gather_uninteresting_hashes() {
     if (!FLAGS_uninterestingHashesFile.isEmpty()) {
@@ -439,10 +443,10 @@ static void gather_uninteresting_hashes() {
         SkTArray<SkString> hashes;
         SkStrSplit(contents.c_str(), kNewline, &hashes);
         for (const SkString& hash : hashes) {
-            gUninterestingHashes.add(hash);
+            gUninterestingHashes->add(hash);
         }
         info("FYI: loaded %d distinct uninteresting hashes from %d lines\n",
-             gUninterestingHashes.count(), hashes.count());
+             gUninterestingHashes->count(), hashes.count());
     }
 }
 
@@ -457,10 +461,10 @@ struct TaggedSink : public std::unique_ptr<Sink> {
     SkString tag;
 };
 
-static const bool kMemcpyOK = true;
+static constexpr bool kMemcpyOK = true;
 
-static SkTArray<TaggedSrc,  kMemcpyOK>  gSrcs;
-static SkTArray<TaggedSink, kMemcpyOK> gSinks;
+static SkTArray<TaggedSrc,  kMemcpyOK>* gSrcs  = new SkTArray<TaggedSrc,  kMemcpyOK>;
+static SkTArray<TaggedSink, kMemcpyOK>* gSinks = new SkTArray<TaggedSink, kMemcpyOK>;
 
 static bool in_shard() {
     static int N = 0;
@@ -471,7 +475,7 @@ static void push_src(const char* tag, ImplicitString options, Src* s) {
     std::unique_ptr<Src> src(s);
     if (in_shard() && FLAGS_src.contains(tag) &&
         !CommandLineFlags::ShouldSkip(FLAGS_match, src->name().c_str())) {
-        TaggedSrc& s = gSrcs.push_back();
+        TaggedSrc& s = gSrcs->push_back();
         s.reset(src.release());
         s.tag = tag;
         s.options = options;
@@ -611,6 +615,7 @@ static void push_image_gen_src(Path path, ImageGenSrc::Mode mode, SkAlphaType al
     push_src("image", folder, src);
 }
 
+#ifdef SK_ENABLE_ANDROID_UTILS
 static void push_brd_src(Path path, CodecSrc::DstColorType dstColorType, BRDSrc::Mode mode,
         uint32_t sampleSize) {
     SkString folder("brd_android_codec");
@@ -669,6 +674,7 @@ static void push_brd_srcs(Path path, bool gray) {
         }
     }
 }
+#endif // SK_ENABLE_ANDROID_UTILS
 
 static void push_codec_srcs(Path path) {
     sk_sp<SkData> encoded(SkData::MakeFromFileName(path.c_str()));
@@ -677,7 +683,7 @@ static void push_codec_srcs(Path path) {
         return;
     }
     std::unique_ptr<SkCodec> codec = SkCodec::MakeFromData(encoded);
-    if (nullptr == codec.get()) {
+    if (nullptr == codec) {
         info("Couldn't create codec for %s.", path.c_str());
         return;
     }
@@ -797,6 +803,7 @@ static void push_codec_srcs(Path path) {
             }
         }
 
+#ifdef SK_ENABLE_ANDROID_UTILS
         static const char* const brdExts[] = {
             "jpg", "jpeg", "png", "webp",
             "JPG", "JPEG", "PNG", "WEBP",
@@ -808,6 +815,7 @@ static void push_codec_srcs(Path path) {
                 break;
             }
         }
+#endif
     }
 
     // Push image generator GPU test.
@@ -830,6 +838,8 @@ static void push_codec_srcs(Path path) {
         {
             push_image_gen_src(path, ImageGenSrc::kPlatform_Mode, alphaType, false);
         }
+#elif defined(SK_ENABLE_NDK_IMAGES)
+        push_image_gen_src(path, ImageGenSrc::kPlatform_Mode, alphaType, false);
 #endif
     }
 }
@@ -866,6 +876,9 @@ static bool gather_srcs() {
 #if defined(SK_ENABLE_SKOTTIE)
     gather_file_srcs<SkottieSrc>(FLAGS_lotties, "json", "lottie");
 #endif
+#if defined(SK_ENABLE_SKRIVE)
+    gather_file_srcs<SkRiveSrc>(FLAGS_rives, "flr", "rive");
+#endif
 #if defined(SK_XML)
     gather_file_srcs<SVGSrc>(FLAGS_svgs, "svg");
 #endif
@@ -880,7 +893,7 @@ static bool gather_srcs() {
         return false;
     }
 
-    for (auto image : images) {
+    for (const SkString& image : images) {
         push_codec_srcs(image);
     }
 
@@ -889,7 +902,7 @@ static bool gather_srcs() {
         return false;
     }
 
-    for (auto colorImage : colorImages) {
+    for (const SkString& colorImage : colorImages) {
         push_src("colorImage", "decode_native", new ColorCodecSrc(colorImage, false));
         push_src("colorImage", "decode_to_dst", new ColorCodecSrc(colorImage,  true));
     }
@@ -902,7 +915,7 @@ static void push_sink(const SkCommandLineConfig& config, Sink* s) {
 
     // Try a simple Src as a canary.  If it fails, skip this sink.
     struct : public Src {
-        Result draw(SkCanvas* c) const override {
+        Result draw(GrDirectContext*, SkCanvas* c) const override {
             c->drawRect(SkRect::MakeWH(1,1), SkPaint());
             return Result::Ok();
         }
@@ -919,7 +932,7 @@ static void push_sink(const SkCommandLineConfig& config, Sink* s) {
         exit(1);
     }
 
-    TaggedSink& ts = gSinks.push_back();
+    TaggedSink& ts = gSinks->push_back();
     ts.reset(sink.release());
     ts.tag = config.getTag();
 }
@@ -946,6 +959,8 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
                 return new GPUPrecompileTestingSink(gpuConfig, grCtxOptions);
             } else if (gpuConfig->getUseDDLSink()) {
                 return new GPUDDLSink(gpuConfig, grCtxOptions);
+            } else if (gpuConfig->getOOPRish()) {
+                return new GPUOOPRSink(gpuConfig, grCtxOptions);
             } else {
                 return new GPUSink(gpuConfig, grCtxOptions);
             }
@@ -1067,7 +1082,7 @@ static bool gather_sinks(const GrContextOptions& grCtxOptions, bool defaultConfi
         // If we're using the default configs, we're okay.
         defaultConfigs ||
         // Otherwise, make sure that all specified configs have become sinks.
-        configs.count() == gSinks.count()) {
+        configs.count() == gSinks->count()) {
         return true;
     }
     return false;
@@ -1083,13 +1098,13 @@ static bool match(const char* needle, const char* haystack) {
     return nullptr != strstr(haystack, needle);
 }
 
-static bool is_blacklisted(const char* sink, const char* src,
-                           const char* srcOptions, const char* name) {
-    for (int i = 0; i < FLAGS_blacklist.count() - 3; i += 4) {
-        if (match(FLAGS_blacklist[i+0], sink) &&
-            match(FLAGS_blacklist[i+1], src) &&
-            match(FLAGS_blacklist[i+2], srcOptions) &&
-            match(FLAGS_blacklist[i+3], name)) {
+static bool should_skip(const char* sink, const char* src,
+                        const char* srcOptions, const char* name) {
+    for (int i = 0; i < FLAGS_skip.count() - 3; i += 4) {
+        if (match(FLAGS_skip[i+0], sink) &&
+            match(FLAGS_skip[i+1], src) &&
+            match(FLAGS_skip[i+2], srcOptions) &&
+            match(FLAGS_skip[i+3], name)) {
             return true;
         }
     }
@@ -1098,7 +1113,7 @@ static bool is_blacklisted(const char* sink, const char* src,
 
 // Even when a Task Sink reports to be non-threadsafe (e.g. GPU), we know things like
 // .png encoding are definitely thread safe.  This lets us offload that work to CPU threads.
-static SkTaskGroup gDefinitelyThreadSafeWork;
+static SkTaskGroup* gDefinitelyThreadSafeWork = new SkTaskGroup;
 
 // The finest-grained unit of work we can run: draw a single Src into a single Sink,
 // report any errors, and perhaps write out the output: a .png of the bitmap, or a raw stream.
@@ -1146,7 +1161,7 @@ struct Task {
 
             // We're likely switching threads here, so we must capture by value, [=] or [foo,bar].
             SkStreamAsset* data = stream.detachAsStream().release();
-            gDefinitelyThreadSafeWork.add([task,name,bitmap,data]{
+            gDefinitelyThreadSafeWork->add([task,name,bitmap,data]{
                 std::unique_ptr<SkStreamAsset> ownedData(data);
 
                 std::unique_ptr<HashAndEncode> hashAndEncode;
@@ -1158,8 +1173,8 @@ struct Task {
                         hash.writeStream(data, data->getLength());
                         data->rewind();
                     } else {
-                        hashAndEncode.reset(new HashAndEncode(bitmap));
-                        hashAndEncode->write(&hash);
+                        hashAndEncode = std::make_unique<HashAndEncode>(bitmap);
+                        hashAndEncode->feedHash(&hash);
                     }
                     SkMD5::Digest digest = hash.finish();
                     for (int i = 0; i < 16; i++) {
@@ -1168,8 +1183,8 @@ struct Task {
                 }
 
                 if (!FLAGS_readPath.isEmpty() &&
-                    !gGold.contains(Gold(task.sink.tag, task.src.tag,
-                                         task.src.options, name, md5))) {
+                    !gGold->contains(Gold(task.sink.tag, task.src.tag,
+                                          task.src.options, name, md5))) {
                     fail(SkStringPrintf("%s not found for %s %s %s %s in %s",
                                         md5.c_str(),
                                         task.sink.tag.c_str(),
@@ -1204,23 +1219,20 @@ struct Task {
                                   h = (int)CGRectGetHeight(bounds);
 
                         SkBitmap rasterized;
-                        rasterized.allocPixels(
-                                SkImageInfo::Make(w,h, kRGBA_8888_SkColorType, kPremul_SkAlphaType));
+                        rasterized.allocPixels(SkImageInfo::Make(
+                            w, h, kRGBA_8888_SkColorType, kPremul_SkAlphaType));
                         rasterized.eraseColor(SK_ColorWHITE);
 
-                        SkUniqueCFRef<CGColorSpaceRef> cs{
-                            CGColorSpaceCreateDeviceRGB()};
-                        CGBitmapInfo info = kCGBitmapByteOrder32Big
-                                          | kCGImageAlphaPremultipliedLast;
+                        SkUniqueCFRef<CGColorSpaceRef> cs{CGColorSpaceCreateDeviceRGB()};
+                        CGBitmapInfo info = kCGBitmapByteOrder32Big |
+                                            (CGBitmapInfo)kCGImageAlphaPremultipliedLast;
 
-                        SkUniqueCFRef<CGContextRef> ctx{
-                            CGBitmapContextCreate(rasterized.getPixels(),
-                                                  w,h,8,rasterized.rowBytes(), cs.get(),info)};
+                        SkUniqueCFRef<CGContextRef> ctx{CGBitmapContextCreate(
+                            rasterized.getPixels(), w,h,8, rasterized.rowBytes(), cs.get(), info)};
                         CGContextDrawPDFPage(ctx.get(), page);
 
-
-                        // Skip calling hashAndEncode->write(SkMD5*)... we want the .pdf's hash.
-                        hashAndEncode.reset(new HashAndEncode(rasterized));
+                        // Skip calling hashAndEncode->feedHash(SkMD5*)... we want the .pdf's hash.
+                        hashAndEncode = std::make_unique<HashAndEncode>(rasterized);
                         WriteToDisk(task, md5, "png", nullptr,0, &rasterized, hashAndEncode.get());
                     } else
                 #endif
@@ -1346,7 +1358,7 @@ struct Task {
 
         // If an MD5 is uninteresting, we want it noted in the JSON file,
         // but don't want to dump it out as a .png (or whatever ext is).
-        if (gUninterestingHashes.contains(md5)) {
+        if (gUninterestingHashes->contains(md5)) {
             return;
         }
 
@@ -1370,7 +1382,7 @@ struct Task {
             sk_mkdir(path.c_str());
             path = SkOSPath::Join(path.c_str(), task.src.tag.c_str());
             sk_mkdir(path.c_str());
-            if (strcmp(task.src.options.c_str(), "") != 0) {
+            if (0 != strcmp(task.src.options.c_str(), "")) {
               path = SkOSPath::Join(path.c_str(), task.src.options.c_str());
               sk_mkdir(path.c_str());
             }
@@ -1379,21 +1391,21 @@ struct Task {
             path.append(ext);
         }
 
+        SkFILEWStream file(path.c_str());
+        if (!file.isValid()) {
+            fail(SkStringPrintf("Can't open %s for writing.\n", path.c_str()));
+            return;
+        }
         if (bitmap) {
             SkASSERT(hashAndEncode);
-            if (!hashAndEncode->writePngTo(path.c_str(),
-                                           result.md5.c_str(),
-                                           FLAGS_key,
-                                           FLAGS_properties)) {
+            if (!hashAndEncode->encodePNG(&file,
+                                          result.md5.c_str(),
+                                          FLAGS_key,
+                                          FLAGS_properties)) {
                 fail(SkStringPrintf("Can't encode PNG to %s.\n", path.c_str()));
                 return;
             }
         } else {
-            SkFILEWStream file(path.c_str());
-            if (!file.isValid()) {
-                fail(SkStringPrintf("Can't open %s for writing.\n", path.c_str()));
-                return;
-            }
             if (!file.writeStream(data, len)) {
                 fail(SkStringPrintf("Can't write to %s.\n", path.c_str()));
                 return;
@@ -1423,7 +1435,8 @@ struct Task {
 
 // Unit tests don't fit so well into the Src/Sink model, so we give them special treatment.
 
-static SkTDArray<skiatest::Test> gParallelTests, gSerialTests;
+static SkTDArray<skiatest::Test>* gParallelTests = new SkTDArray<skiatest::Test>;
+static SkTDArray<skiatest::Test>* gSerialTests   = new SkTDArray<skiatest::Test>;
 
 static void gather_tests() {
     if (!FLAGS_src.contains("tests")) {
@@ -1437,9 +1450,9 @@ static void gather_tests() {
             continue;
         }
         if (test.needsGpu && FLAGS_gpu) {
-            gSerialTests.push_back(test);
+            gSerialTests->push_back(test);
         } else if (!test.needsGpu && FLAGS_cpu) {
-            gParallelTests.push_back(test);
+            gParallelTests->push_back(test);
         }
     }
 }
@@ -1455,7 +1468,7 @@ static void run_test(skiatest::Test test, const GrContextOptions& grCtxOptions) 
         bool verbose() const override { return FLAGS_veryVerbose; }
     } reporter;
 
-    if (!FLAGS_dryRun && !is_blacklisted("_", "tests", "_", test.name)) {
+    if (!FLAGS_dryRun && !should_skip("_", "tests", "_", test.name)) {
         AutoreleasePool pool;
         GrContextOptions options = grCtxOptions;
         test.modifyGrContextOptions(&options);
@@ -1491,6 +1504,7 @@ int main(int argc, char** argv) {
 
     gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
     gUseSkVMBlitter               = FLAGS_skvm;
+    gSkVMAllowJIT                 = FLAGS_jit;
 
     // The bots like having a verbose.log to upload, so always touch the file even if --verbose.
     if (!FLAGS_writePath.isEmpty()) {
@@ -1521,7 +1535,7 @@ int main(int argc, char** argv) {
     // TODO(dogben): This is a bit ugly. Find a cleaner way to do this.
     bool defaultConfigs = true;
     for (int i = 0; i < argc; i++) {
-        static const char* kConfigArg = "--config";
+        static constexpr char kConfigArg[] = "--config";
         if (strcmp(argv[i], kConfigArg) == 0) {
             defaultConfigs = false;
             break;
@@ -1531,42 +1545,44 @@ int main(int argc, char** argv) {
         return 1;
     }
     gather_tests();
-    gPending = gSrcs.count() * gSinks.count() + gParallelTests.count() + gSerialTests.count();
+    gPending = gSrcs->count() * gSinks->count() + gParallelTests->count() + gSerialTests->count();
     info("%d srcs * %d sinks + %d tests == %d tasks\n",
-         gSrcs.count(), gSinks.count(), gParallelTests.count() + gSerialTests.count(), gPending);
+         gSrcs->count(), gSinks->count(), gParallelTests->count() + gSerialTests->count(),
+         gPending);
 
     // Kick off as much parallel work as we can, making note of any serial work we'll need to do.
     SkTaskGroup parallel;
     SkTArray<Task> serial;
 
-    for (auto& sink : gSinks)
-    for (auto&  src : gSrcs) {
-        if (src->veto(sink->flags()) ||
-            is_blacklisted(sink.tag.c_str(), src.tag.c_str(),
-                           src.options.c_str(), src->name().c_str())) {
-            SkAutoSpinlock lock(gMutex);
-            gPending--;
-            continue;
-        }
+    for (TaggedSink& sink : *gSinks) {
+        for (TaggedSrc& src : *gSrcs) {
+            if (src->veto(sink->flags()) ||
+                should_skip(sink.tag.c_str(), src.tag.c_str(),
+                            src.options.c_str(), src->name().c_str())) {
+                SkAutoSpinlock lock(*gMutex);
+                gPending--;
+                continue;
+            }
 
-        Task task(src, sink);
-        if (src->serial() || sink->serial()) {
-            serial.push_back(task);
-        } else {
-            parallel.add([task] { Task::Run(task); });
+            Task task(src, sink);
+            if (src->serial() || sink->serial()) {
+                serial.push_back(task);
+            } else {
+                parallel.add([task] { Task::Run(task); });
+            }
         }
     }
-    for (auto test : gParallelTests) {
+    for (skiatest::Test& test : *gParallelTests) {
         parallel.add([test, grCtxOptions] { run_test(test, grCtxOptions); });
     }
 
     // With the parallel work running, run serial tasks and tests here on main thread.
-    for (auto task : serial) { Task::Run(task); }
-    for (auto test : gSerialTests) { run_test(test, grCtxOptions); }
+    for (Task& task : serial) { Task::Run(task); }
+    for (skiatest::Test& test : *gSerialTests) { run_test(test, grCtxOptions); }
 
     // Wait for any remaining parallel work to complete (including any spun off of serial tasks).
     parallel.wait();
-    gDefinitelyThreadSafeWork.wait();
+    gDefinitelyThreadSafeWork->wait();
 
     // At this point we're back in single-threaded land.
 
@@ -1575,12 +1591,12 @@ int main(int argc, char** argv) {
     // Make sure we've flushed all our results to disk.
     dump_json();
 
-    if (gFailures.count() > 0) {
+    if (!gFailures->empty()) {
         info("Failures:\n");
-        for (int i = 0; i < gFailures.count(); i++) {
-            info("\t%s\n", gFailures[i].c_str());
+        for (const SkString& fail : *gFailures) {
+            info("\t%s\n", fail.c_str());
         }
-        info("%d failures\n", gFailures.count());
+        info("%d failures\n", gFailures->count());
         return 1;
     }
 

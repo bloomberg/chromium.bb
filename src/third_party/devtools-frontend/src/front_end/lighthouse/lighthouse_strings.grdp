@@ -27,6 +27,9 @@
   <message name="IDS_DEVTOOLS_2046d43f4cc1f59c06f764da2ca2355a" desc="Status text in the Lighthouse panel">
     The print popup window is open. Please close it to continue.
   </message>
+  <message name="IDS_DEVTOOLS_223ab60aebd6edaa26b1d6a5c752c2e2" desc="Text in Lighthouse Controller">
+    Apply mobile emulation
+  </message>
   <message name="IDS_DEVTOOLS_24e8ca2483129261096ba8ba0fbcd247" desc="Fast fact in the pop-up dialog when lighthouse is running in the Lighthouse panel">
     70% of mobile pages take nearly 7 seconds for the visual content above the fold to display on the screen. [Source: <ph name="LOCKED_1">Think with Google</ph>]
   </message>
@@ -79,13 +82,25 @@
     At least one category must be selected.
   </message>
   <message name="IDS_DEVTOOLS_67aa731132e0e7bbabb1b3d3c363e7d6" desc="Help text in Lighthouse Controller">
-    Multiple tabs are being controlled by the same service worker. Close your other tabs on the same origin to audit this page.
+    Multiple tabs are being controlled by the same <ph name="LOCKED_TERM">service worker</ph>. Close your other tabs on the same origin to audit this page.
   </message>
   <message name="IDS_DEVTOOLS_6e394d18cb68d551f58fa35f4dfc70bb" desc="Fast fact in the pop-up dialog when lighthouse is running in the Lighthouse panel">
     As page load time increases from one second to seven seconds, the probability of a mobile site visitor bouncing increases 113%. [Source: <ph name="LOCKED_1">Think with Google</ph>]
   </message>
+  <message name="IDS_DEVTOOLS_8cae4d24054ecacd0dc3abaff429dab9" desc="Label for view trace button when simulated throttling is enabled">
+    View Original Trace
+  </message>
+  <message name="IDS_DEVTOOLS_084badbad25e33878839805e757d7487" desc="Text in Lighthouse Status View">
+    Lighthouse is loading the page.
+  </message>
+  <message name="IDS_DEVTOOLS_bc28aa52ba5b534ad9d198157c375d67" desc="Text to clear storage of the web page">
+    Clear storage
+  </message>
   <message name="IDS_DEVTOOLS_c919bc809db2475992927aebf39eeb7d" desc="Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel">
     Simulate a slower page load, based on data from an initial unthrottled load. If disabled, the page is actually slowed with applied throttling.
+  </message>
+  <message name="IDS_DEVTOOLS_d05ccbc748353441f061b4b039a29775" desc="Help text for 'View Trace' button">
+    The performance metrics above are simulated and won&apos;t match the timings found in this trace. Disable simulated throttling in &quot;Lighthouse Settings&quot; if you want the timings to match.
   </message>
   <message name="IDS_DEVTOOLS_d7d305befb5ff987deb149b9f4e197d6" desc="Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in start view of the audits panel">
     <ph name="LOCKED_1">Lighthouse</ph> settings
@@ -165,11 +180,17 @@
   <message name="IDS_DEVTOOLS_d88946b678e4c2f251d4e292e8142291" desc="Text in Lighthouse Controller">
     SEO
   </message>
+  <message name="IDS_DEVTOOLS_da56165412f9d591c86c0d3d5b9d230f" desc="Text when stored data in multiple locations may affect lighthouse run">
+    There may be stored data affecting loading performance in these locations: <ph name="LOCATIONS_JOIN______">$1s<ex>IndexedDB, WebSQL</ex></ph>. Audit this page in an incognito window to prevent those resources from affecting your scores.
+  </message>
   <message name="IDS_DEVTOOLS_deeacee140c7d3a451440dd0e206e256" desc="Text in Lighthouse Start View">
     Identify and fix common problems that affect your site&apos;s performance, accessibility, and user experience.
   </message>
   <message name="IDS_DEVTOOLS_e339ef3bcd3e92466fa83dc21e690a5b" desc="Fast fact in the pop-up dialog when lighthouse is running in the Lighthouse panel">
     As the number of elements on a page increases from 400 to 6,000, the probability of conversion drops 95%. [Source: <ph name="LOCKED_1">Think with Google</ph>]
+  </message>
+  <message name="IDS_DEVTOOLS_e7abfdd2618ffdaa7cb0fa4528c7f89f" desc="Text when stored data in one location may affect lighthouse run">
+    There may be stored data affecting loading performance in this location: <ph name="LOCATIONS_JOIN______">$1s<ex>IndexedDB</ex></ph>. Audit this page in an incognito window to prevent those resources from affecting your scores.
   </message>
   <message name="IDS_DEVTOOLS_ea60ba1496b05c6a5816fb75d0665c8d" desc="Text of a DOM element in Lighthouse Status View">
     If this issue is reproducible, please report it at the <ph name="LOCKED_1">Lighthouse</ph> <ph name="LOCKED_2">GitHub</ph> repo.

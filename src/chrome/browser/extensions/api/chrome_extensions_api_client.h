@@ -67,8 +67,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
-  std::unique_ptr<SupervisedUserServiceDelegate>
-  CreateSupervisedUserServiceDelegate() const override;
+  std::unique_ptr<SupervisedUserExtensionsDelegate>
+  CreateSupervisedUserExtensionsDelegate() const override;
 
   std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider()
       const override;
@@ -86,8 +86,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       const std::vector<char>& image_data,
       api::clipboard::ImageType type,
       AdditionalDataItemList additional_items,
-      const base::Closure& success_callback,
-      const base::Callback<void(const std::string&)>& error_callback) override;
+      base::OnceClosure success_callback,
+      base::OnceCallback<void(const std::string&)> error_callback) override;
 #endif
 
   AutomationInternalApiDelegate* GetAutomationInternalApiDelegate() override;

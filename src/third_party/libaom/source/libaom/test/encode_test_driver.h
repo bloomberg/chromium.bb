@@ -105,38 +105,38 @@ class Encoder {
   void EncodeFrame(VideoSource *video) { EncodeFrame(video, 0); }
 
   void Control(int ctrl_id, int arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, int *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_scaling_mode *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_svc_layer_id *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_svc_ref_frame_config *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_svc_params *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
 #if CONFIG_AV1_ENCODER
   void Control(int ctrl_id, aom_active_map_t *arg) {
-    const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 #endif
@@ -214,6 +214,9 @@ class EncoderTest {
 
   // Hook to be called on every PSNR packet.
   virtual void PSNRPktHook(const aom_codec_cx_pkt_t * /*pkt*/) {}
+
+  // Hook to be called on every first pass stats packet.
+  virtual void StatsPktHook(const aom_codec_cx_pkt_t * /*pkt*/) {}
 
   // Hook to determine whether the encode loop should continue.
   virtual bool Continue() const {

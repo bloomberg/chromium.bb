@@ -5,6 +5,7 @@
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -90,20 +91,9 @@ const State = {
   RESULT_FINAL: 5,
 };
 
-/**
- * The set of possible recognition errors.
- * @enum {!number}
- */
-const Error = {
-  ABORTED: 0,
-  NO_SPEECH: 1,
-  AUDIO_CAPTURE: 2,
-  NETWORK: 3,
-  NOT_ALLOWED: 4,
-  LANGUAGE_NOT_SUPPORTED: 5,
-  NO_MATCH: 6,
-  OTHER: 7,
-};
+
+/** @typedef {newTabPage.mojom.VoiceSearchError} */
+const Error = newTabPage.mojom.VoiceSearchError;
 
 /**
  * Returns the error type based on the error string received from the webkit
@@ -115,20 +105,23 @@ const Error = {
 function toError(webkitError) {
   switch (webkitError) {
     case 'aborted':
-      return Error.ABORTED;
+      return Error.kAborted;
     case 'audio-capture':
-      return Error.AUDIO_CAPTURE;
+      return Error.kAudioCapture;
     case 'language-not-supported':
-      return Error.LANGUAGE_NOT_SUPPORTED;
+      return Error.kLanguageNotSupported;
     case 'network':
-      return Error.NETWORK;
+      return Error.kNetwork;
     case 'no-speech':
-      return Error.NO_SPEECH;
+      return Error.kNoSpeech;
     case 'not-allowed':
+      return Error.kNotAllowed;
     case 'service-not-allowed':
-      return Error.NOT_ALLOWED;
+      return Error.kServiceNotAllowed;
+    case 'bad-grammar':
+      return Error.kBadGrammar;
     default:
-      return Error.OTHER;
+      return Error.kOther;
   }
 }
 
@@ -140,10 +133,10 @@ function toError(webkitError) {
  */
 function getErrorTimeout(error) {
   switch (error) {
-    case Error.AUDIO_CAPTURE:
-    case Error.NO_SPEECH:
-    case Error.NOT_ALLOWED:
-    case Error.NO_MATCH:
+    case Error.kAudioCapture:
+    case Error.kNoSpeech:
+    case Error.kNotAllowed:
+    case Error.kNoMatch:
       return ERROR_TIMEOUT_LONG_MS;
     default:
       return ERROR_TIMEOUT_SHORT_MS;
@@ -201,6 +194,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
 
   constructor() {
     super();
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
     /** @private {webkitSpeechRecognition} */
     this.voiceRecognition_ = new webkitSpeechRecognition();
     this.voiceRecognition_.continuous = false;
@@ -214,7 +209,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
       this.onError_(toError(e.error));
     };
     this.voiceRecognition_.onnomatch = () => {
-      this.onError_(Error.NO_MATCH);
+      this.onError_(Error.kNoMatch);
     };
     /** @private {number|undefined} */
     this.timerId_ = undefined;
@@ -243,19 +238,71 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onOverlayClick_() {
     this.$.dialog.close();
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kCloseOverlay);
+  }
+
+  /**
+   * Handles <ENTER> or <SPACE> to trigger a query if we have recognized speech.
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onOverlayKeydown_(e) {
+    if (['Enter', ' '].includes(e.key) && this.finalResult_) {
+      this.onFinalResult_();
+    } else if (e.key === 'Escape') {
+      this.onOverlayClick_();
+    }
+  }
+
+  /**
+   * Handles <ENTER> or <SPACE> to simulate click.
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onLinkKeydown_(e) {
+    if (!['Enter', ' '].includes(e.key)) {
+      return;
+    }
+    // Otherwise, we may trigger overlay-wide keyboard shortcuts.
+    e.stopPropagation();
+    // Otherwise, we open the link twice.
+    e.preventDefault();
+    e.target.click();
+  }
+
+  /** @private */
+  onLearnMoreClick_() {
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kSupportLinkClicked);
   }
 
   /**
    * @param {!Event} e
    * @private
    */
-  onRetryClick_(e) {
-    if (this.state_ !== State.ERROR_RECEIVED ||
-        this.error_ !== Error.NO_MATCH) {
-      return;
-    }
+  onTryAgainClick_(e) {
+    // Otherwise, we close the overlay.
     e.stopPropagation();
     this.start();
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kTryAgainLink);
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onMicClick_(e) {
+    if (this.state_ !== State.ERROR_RECEIVED ||
+        this.error_ !== Error.kNoMatch) {
+      return;
+    }
+    // Otherwise, we close the overlay.
+    e.stopPropagation();
+    this.start();
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kTryAgainMicButton);
   }
 
   /** @private */
@@ -277,7 +324,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
       return;
     }
     this.voiceRecognition_.abort();
-    this.onError_(Error.NO_MATCH);
+    this.onError_(Error.kNoMatch);
   }
 
   /**
@@ -286,8 +333,9 @@ class VoiceSearchOverlayElement extends PolymerElement {
    */
   resetErrorTimer_(duration) {
     BrowserProxy.getInstance().clearTimeout(this.timerId_);
-    this.timerId_ = BrowserProxy.getInstance().setTimeout(
-        this.onOverlayClick_.bind(this), duration);
+    this.timerId_ = BrowserProxy.getInstance().setTimeout(() => {
+      this.$.dialog.close();
+    }, duration);
   }
 
   /** @private */
@@ -364,7 +412,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onFinalResult_() {
     if (!this.finalResult_) {
-      this.onError_(Error.NO_MATCH);
+      this.onError_(Error.kNoMatch);
       return;
     }
     this.state_ = State.RESULT_FINAL;
@@ -376,6 +424,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
     const queryUrl =
         new URL('/search', loadTimeData.getString('googleBaseUrl'));
     queryUrl.search = searchParams.toString();
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.kQuerySubmitted);
     BrowserProxy.getInstance().navigate(queryUrl.href);
   }
 
@@ -383,20 +433,20 @@ class VoiceSearchOverlayElement extends PolymerElement {
   onEnd_() {
     switch (this.state_) {
       case State.STARTED:
-        this.onError_(Error.AUDIO_CAPTURE);
+        this.onError_(Error.kAudioCapture);
         return;
       case State.AUDIO_RECEIVED:
-        this.onError_(Error.NO_SPEECH);
+        this.onError_(Error.kNoSpeech);
         return;
       case State.SPEECH_RECEIVED:
       case State.RESULT_RECEIVED:
-        this.onError_(Error.NO_MATCH);
+        this.onError_(Error.kNoMatch);
         return;
       case State.ERROR_RECEIVED:
       case State.RESULT_FINAL:
         return;
       default:
-        this.onError_(Error.OTHER);
+        this.onError_(Error.kOther);
         return;
     }
   }
@@ -406,7 +456,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
    * @private
    */
   onError_(error) {
-    if (error === Error.ABORTED) {
+    this.pageHandler_.onVoiceSearchError(error);
+    if (error === Error.kAborted) {
       // We are in the process of closing voice search.
       return;
     }
@@ -457,14 +508,41 @@ class VoiceSearchOverlayElement extends PolymerElement {
    * @return {string}
    * @private
    */
+  getErrorText_() {
+    switch (this.error_) {
+      case Error.kNoSpeech:
+        return 'no-speech';
+      case Error.kAudioCapture:
+        return 'audio-capture';
+      case Error.kNetwork:
+        return 'network';
+      case Error.kNotAllowed:
+      case Error.kServiceNotAllowed:
+        return 'not-allowed';
+      case Error.kLanguageNotSupported:
+        return 'language-not-supported';
+      case Error.kNoMatch:
+        return 'no-match';
+      case Error.kAborted:
+      case Error.kOther:
+      default:
+        return 'other';
+    }
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
   getErrorLink_() {
     switch (this.error_) {
-      case Error.NO_SPEECH:
-      case Error.AUDIO_CAPTURE:
+      case Error.kNoSpeech:
+      case Error.kAudioCapture:
         return 'learn-more';
-      case Error.NOT_ALLOWED:
+      case Error.kNotAllowed:
+      case Error.kServiceNotAllowed:
         return 'details';
-      case Error.NO_MATCH:
+      case Error.kNoMatch:
         return 'try-again';
       default:
         return 'none';

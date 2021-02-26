@@ -9,7 +9,7 @@
 
 #import "common/platform.h"
 
-#if defined(ANGLE_PLATFORM_IOS) && !defined(ANGLE_PLATFORM_MACCATALYST)
+#if defined(ANGLE_ENABLE_EAGL)
 
 #    import "libANGLE/renderer/gl/eagl/IOSurfaceSurfaceEAGL.h"
 
@@ -48,9 +48,9 @@ struct IOSurfaceFormatInfo
 // clang-format off
 
 static const IOSurfaceFormatInfo kIOSurfaceFormats[] = {
-    {GL_RED,      GL_UNSIGNED_BYTE,  1, GL_RED,  GL_RED,  GL_UNSIGNED_BYTE },
-    {GL_R16UI,    GL_UNSIGNED_SHORT, 2, GL_RED,  GL_RED,  GL_UNSIGNED_SHORT},
-    {GL_RG,       GL_UNSIGNED_BYTE,  2, GL_RG,   GL_RG,   GL_UNSIGNED_BYTE },
+    {GL_RED,      GL_UNSIGNED_BYTE,  1, GL_R8,  GL_RED,  GL_UNSIGNED_BYTE },
+    {GL_R16UI,    GL_UNSIGNED_SHORT, 2, GL_R16UI, GL_RED_INTEGER,  GL_UNSIGNED_SHORT},
+    {GL_RG,       GL_UNSIGNED_BYTE,  2, GL_RG8,  GL_RG,   GL_UNSIGNED_BYTE },
     {GL_RGB,      GL_UNSIGNED_BYTE,  4, GL_RGBA, GL_BGRA, GL_UNSIGNED_BYTE },
     {GL_BGRA_EXT, GL_UNSIGNED_BYTE,  4, GL_RGBA, GL_BGRA, GL_UNSIGNED_BYTE },
     {GL_RGBA,     GL_HALF_FLOAT,     8, GL_RGBA, GL_RGBA, GL_HALF_FLOAT    },
@@ -83,6 +83,7 @@ IOSurfaceSurfaceEAGL::IOSurfaceSurfaceEAGL(const egl::SurfaceState &state,
       mWidth(0),
       mHeight(0),
       mPlane(0),
+      mRowStrideInPixels(0),
       mFormatIndex(-1),
       mAlphaInitialized(false)
 {
@@ -94,6 +95,14 @@ IOSurfaceSurfaceEAGL::IOSurfaceSurfaceEAGL(const egl::SurfaceState &state,
     mWidth  = static_cast<int>(attribs.get(EGL_WIDTH));
     mHeight = static_cast<int>(attribs.get(EGL_HEIGHT));
     mPlane  = static_cast<int>(attribs.get(EGL_IOSURFACE_PLANE_ANGLE));
+    // Hopefully the number of bytes per row is always an integer number of pixels. We use
+    // glReadPixels to fill the IOSurface in the simulator and it can only support strides that are
+    // an integer number of pixels.
+    ASSERT(IOSurfaceGetBytesPerRowOfPlane(mIOSurface, mPlane) %
+               IOSurfaceGetBytesPerElementOfPlane(mIOSurface, mPlane) ==
+           0);
+    mRowStrideInPixels = static_cast<int>(IOSurfaceGetBytesPerRowOfPlane(mIOSurface, mPlane) /
+                                          IOSurfaceGetBytesPerElementOfPlane(mIOSurface, mPlane));
 
     EGLAttrib internalFormat = attribs.get(EGL_TEXTURE_INTERNAL_FORMAT_ANGLE);
     EGLAttrib type           = attribs.get(EGL_TEXTURE_TYPE_ANGLE);
@@ -227,6 +236,7 @@ egl::Error IOSurfaceSurfaceEAGL::releaseTexImage(const gl::Context *context, EGL
         functions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                                         mBoundTextureID, 0);
         gl::PixelPackState state;
+        state.rowLength = mRowStrideInPixels;
         state.alignment = 1;
         stateManager->setPixelPackState(state);
         // TODO(kbr): possibly more state to be set here, including setting any
@@ -417,4 +427,4 @@ IOSurfaceLockOptions IOSurfaceSurfaceEAGL::getIOSurfaceLockOptions() const
 
 }  // namespace rx
 
-#endif  // defined(ANGLE_PLATFORM_IOS)
+#endif  // defined(ANGLE_ENABLE_EAGL)

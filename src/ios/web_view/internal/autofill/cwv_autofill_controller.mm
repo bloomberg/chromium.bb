@@ -18,22 +18,21 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
-#import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#import "components/password_manager/ios/shared_password_controller.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
-#import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
@@ -47,40 +46,17 @@
 #import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
-#import "ios/web_view/internal/passwords/cwv_password_controller.h"
+#import "ios/web_view/internal/passwords/cwv_password_internal.h"
+#import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
+#import "net/base/mac/url_conversions.h"
 
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
-
-@interface CWVAutofillController ()<AutofillDriverIOSBridge,
-                                    CRWWebStateObserver,
-                                    CWVAutofillClientIOSBridge,
-                                    FormActivityObserver,
-                                    CWVPasswordControllerDelegate>
-
-// For the field identified by |fieldIdentifier|, with type |fieldType| in the
-// form named |formName|, fetches non-password suggestions that can be used to
-// autofill.
-// No-op if no such form and field can be found in the current page.
-// |fieldIdentifier| identifies the field that had focus. It is passed to
-// CWVAutofillControllerDelegate and forwarded to this method.
-// |fieldType| is the 'type' attribute of the html field.
-// |frameID| is the ID of the web frame containing the form.
-// |completionHandler| will only be called on success.
-- (void)
-fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                                 fieldType:(NSString*)fieldType
-                                   frameID:(NSString*)frameID
-                         completionHandler:
-                             (void (^)(NSArray<CWVAutofillSuggestion*>*))
-                                 completionHandler;
-
-@end
 
 @implementation CWVAutofillController {
   // Bridge to observe the |webState|.
@@ -88,9 +64,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
   // Autofill agent associated with |webState|.
   AutofillAgent* _autofillAgent;
-
-  // Handles password autofilling related logic.
-  CWVPasswordController* _passwordController;
 
   // Autofill client associated with |webState|.
   std::unique_ptr<autofill::WebViewAutofillClientIOS> _autofillClient;
@@ -104,6 +77,14 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
 
+  // Handles password autofilling related logic.
+  std::unique_ptr<password_manager::PasswordManager> _passwordManager;
+  std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>
+      _passwordManagerClient;
+  std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>
+      _passwordManagerDriver;
+  SharedPasswordController* _passwordController;
+
   // The current credit card saver. Can be nil if no save attempt is pending.
   // Held weak because |_delegate| is responsible for maintaing its lifetime.
   __weak CWVCreditCardSaver* _saver;
@@ -115,23 +96,32 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
 
-  NSString* _lastFocusFormActivityWebFrameID;
-
+  NSString* _lastFormActivityWebFrameID;
+  NSString* _lastFormActivityTypedValue;
+  NSString* _lastFormActivityType;
   FormRendererId _lastFormActivityUniqueFormID;
   FieldRendererId _lastFormActivityUniqueFieldID;
 }
 
 @synthesize delegate = _delegate;
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-                  autofillClient:
-                      (std::unique_ptr<autofill::WebViewAutofillClientIOS>)
-                          autofillClient
-                   autofillAgent:(AutofillAgent*)autofillAgent
-               JSAutofillManager:(JsAutofillManager*)JSAutofillManager
-             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-              passwordController:(CWVPasswordController*)passwordController
-               applicationLocale:(const std::string&)applicationLocale {
+- (instancetype)
+         initWithWebState:(web::WebState*)webState
+           autofillClient:(std::unique_ptr<autofill::WebViewAutofillClientIOS>)
+                              autofillClient
+            autofillAgent:(AutofillAgent*)autofillAgent
+        JSAutofillManager:(JsAutofillManager*)JSAutofillManager
+      JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
+          passwordManager:(std::unique_ptr<password_manager::PasswordManager>)
+                              passwordManager
+    passwordManagerClient:
+        (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
+            passwordManagerClient
+    passwordManagerDriver:
+        (std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>)
+            passwordManagerDriver
+       passwordController:(SharedPasswordController*)passwordController
+        applicationLocale:(const std::string&)applicationLocale {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -157,8 +147,19 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
     _JSSuggestionManager = JSSuggestionManager;
 
+    _passwordManagerClient = std::move(passwordManagerClient);
+    _passwordManagerClient->set_bridge(self);
+    _passwordManager = std::move(passwordManager);
+    _passwordManagerDriver = std::move(passwordManagerDriver);
+    _passwordManagerDriver->set_bridge(passwordController);
     _passwordController = passwordController;
     _passwordController.delegate = self;
+
+    [NSNotificationCenter.defaultCenter
+        addObserver:self
+           selector:@selector(handlePasswordStoreSyncToggledNotification:)
+               name:CWVPasswordStoreSyncToggledNotification
+             object:nil];
   }
   return self;
 }
@@ -180,14 +181,17 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
         completionHandler:(nullable void (^)(void))completionHandler {
   web::WebFrame* frame =
       web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
-  [_JSAutofillManager clearAutofilledFieldsForFormName:formName
-                                       fieldIdentifier:fieldIdentifier
-                                               inFrame:frame
-                                     completionHandler:^{
-                                       if (completionHandler) {
-                                         completionHandler();
-                                       }
-                                     }];
+  [_JSAutofillManager
+      clearAutofilledFieldsForFormName:formName
+                          formUniqueID:_lastFormActivityUniqueFormID
+                       fieldIdentifier:fieldIdentifier
+                         fieldUniqueID:_lastFormActivityUniqueFieldID
+                               inFrame:frame
+                     completionHandler:^(NSString*) {
+                       if (completionHandler) {
+                         completionHandler();
+                       }
+                     }];
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
@@ -197,86 +201,27 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>* _Nonnull))
                               completionHandler {
-  __block NSArray<CWVAutofillSuggestion*>* passwordSuggestions;
-  __block NSArray<CWVAutofillSuggestion*>* nonPasswordSuggestions;
-  void (^resultHandler)() = ^{
-    // Will continue process after both fetch operations are done.
-    if (passwordSuggestions && nonPasswordSuggestions) {
-      // If password suggestion is found, show password suggestion only,
-      // otherwise show other autofill suggestions.
-      completionHandler(passwordSuggestions.count > 0 ? passwordSuggestions
-                                                      : nonPasswordSuggestions);
-    }
-  };
+  NSMutableArray<CWVAutofillSuggestion*>* allSuggestions =
+      [NSMutableArray array];
+  __block NSInteger pendingFetches = 0;
+  void (^resultHandler)(NSArray<CWVAutofillSuggestion*>*) =
+      ^(NSArray<CWVAutofillSuggestion*>* suggestions) {
+        [allSuggestions addObjectsFromArray:suggestions];
+        if (pendingFetches == 0) {
+          completionHandler(allSuggestions);
+        }
+      };
 
-  // Fetch password suggestion first.
-  [_passwordController
-      fetchSuggestionsForFormWithName:formName
-                         uniqueFormID:_lastFormActivityUniqueFormID
-                      fieldIdentifier:fieldIdentifier
-                        uniqueFieldID:_lastFormActivityUniqueFieldID
-                            fieldType:fieldType
-                              frameID:frameID
-                    completionHandler:^(
-                        NSArray<CWVAutofillSuggestion*>* suggestions) {
-                      passwordSuggestions = suggestions;
-                      resultHandler();
-                    }];
-
-  [self fetchNonPasswordSuggestionsForFormWithName:formName
-                                   fieldIdentifier:fieldIdentifier
-                                         fieldType:fieldType
-                                           frameID:frameID
-                                 completionHandler:^(
-                                     NSArray<CWVAutofillSuggestion*>*
-                                         suggestions) {
-                                   nonPasswordSuggestions = suggestions;
-                                   resultHandler();
-                                 }];
-}
-
-- (void)
-fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                                 fieldType:(NSString*)fieldType
-                                   frameID:(NSString*)frameID
-                         completionHandler:
-                             (void (^)(NSArray<CWVAutofillSuggestion*>*))
-                                 completionHandler {
+  // Construct query.
   FormSuggestionProviderQuery* formQuery = [[FormSuggestionProviderQuery alloc]
       initWithFormName:formName
           uniqueFormID:_lastFormActivityUniqueFormID
        fieldIdentifier:fieldIdentifier
          uniqueFieldID:_lastFormActivityUniqueFieldID
              fieldType:fieldType
-                  type:nil
-            typedValue:nil
+                  type:_lastFormActivityType
+            typedValue:_lastFormActivityTypedValue
                frameID:frameID];
-  __weak CWVAutofillController* weakSelf = self;
-  id availableHandler = ^(BOOL suggestionsAvailable) {
-    CWVAutofillController* strongSelf = weakSelf;
-    if (!strongSelf) {
-      completionHandler(@[]);
-      return;
-    }
-    id retrieveHandler = ^(NSArray* suggestions,
-                           id<FormSuggestionProvider> delegate) {
-      NSMutableArray* autofillSuggestions = [NSMutableArray array];
-      for (FormSuggestion* formSuggestion in suggestions) {
-        CWVAutofillSuggestion* autofillSuggestion = [
-            [CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
-                                                        formName:formName
-                                                 fieldIdentifier:fieldIdentifier
-                                                         frameID:frameID
-                                            isPasswordSuggestion:NO];
-        [autofillSuggestions addObject:autofillSuggestion];
-      }
-      completionHandler([autofillSuggestions copy]);
-    };
-    [strongSelf->_autofillAgent retrieveSuggestionsForForm:formQuery
-                                                  webState:strongSelf->_webState
-                                         completionHandler:retrieveHandler];
-  };
   // It is necessary to call |checkIfSuggestionsAvailableForForm| before
   // |retrieveSuggestionsForForm| because the former actually queries the db,
   // while the latter merely returns them.
@@ -284,22 +229,63 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       base::SysUTF8ToNSString(web::GetMainWebFrameId(_webState));
   BOOL isMainFrame = [frameID isEqualToString:mainFrameID];
 
-  [_autofillAgent checkIfSuggestionsAvailableForForm:formQuery
-                                         isMainFrame:isMainFrame
-                                      hasUserGesture:YES
-                                            webState:_webState
-                                   completionHandler:availableHandler];
+  // Check both autofill and password suggestions.
+  NSArray<id<FormSuggestionProvider>>* providers =
+      @[ _passwordController, _autofillAgent ];
+  pendingFetches = providers.count;
+  for (id<FormSuggestionProvider> suggestionProvider in providers) {
+    __weak CWVAutofillController* weakSelf = self;
+    id availableHandler = ^(BOOL suggestionsAvailable) {
+      pendingFetches--;
+      CWVAutofillController* strongSelf = weakSelf;
+      if (!strongSelf) {
+        resultHandler(@[]);
+        return;
+      }
+      BOOL isPasswordSuggestion =
+          suggestionProvider == strongSelf->_passwordController;
+      id retrieveHandler =
+          ^(NSArray* suggestions, id<FormSuggestionProvider> delegate) {
+            NSMutableArray* autofillSuggestions = [NSMutableArray array];
+            for (FormSuggestion* formSuggestion in suggestions) {
+              CWVAutofillSuggestion* autofillSuggestion =
+                  [[CWVAutofillSuggestion alloc]
+                      initWithFormSuggestion:formSuggestion
+                                    formName:formName
+                             fieldIdentifier:fieldIdentifier
+                                     frameID:frameID
+                        isPasswordSuggestion:isPasswordSuggestion];
+              [autofillSuggestions addObject:autofillSuggestion];
+            }
+            resultHandler([autofillSuggestions copy]);
+          };
+      [suggestionProvider retrieveSuggestionsForForm:formQuery
+                                            webState:strongSelf->_webState
+                                   completionHandler:retrieveHandler];
+    };
+
+    [suggestionProvider checkIfSuggestionsAvailableForForm:formQuery
+                                               isMainFrame:isMainFrame
+                                            hasUserGesture:YES
+                                                  webState:_webState
+                                         completionHandler:availableHandler];
+  }
 }
 
 - (void)acceptSuggestion:(CWVAutofillSuggestion*)suggestion
        completionHandler:(nullable void (^)(void))completionHandler {
   if (suggestion.isPasswordSuggestion) {
-    [_passwordController fillSuggestion:suggestion
-                      completionHandler:^{
-                        if (completionHandler) {
-                          completionHandler();
-                        }
-                      }];
+    [_passwordController didSelectSuggestion:suggestion.formSuggestion
+                                        form:suggestion.formName
+                                uniqueFormID:_lastFormActivityUniqueFormID
+                             fieldIdentifier:suggestion.fieldIdentifier
+                               uniqueFieldID:_lastFormActivityUniqueFieldID
+                                     frameID:suggestion.frameID
+                           completionHandler:^{
+                             if (completionHandler) {
+                               completionHandler();
+                             }
+                           }];
   } else {
     [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
                                    form:suggestion.formName
@@ -317,19 +303,19 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
 - (void)focusPreviousField {
   [_JSSuggestionManager
-      selectPreviousElementInFrameWithID:_lastFocusFormActivityWebFrameID];
+      selectPreviousElementInFrameWithID:_lastFormActivityWebFrameID];
 }
 
 - (void)focusNextField {
   [_JSSuggestionManager
-      selectNextElementInFrameWithID:_lastFocusFormActivityWebFrameID];
+      selectNextElementInFrameWithID:_lastFormActivityWebFrameID];
 }
 
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler {
   [_JSSuggestionManager
       fetchPreviousAndNextElementsPresenceInFrameWithID:
-          _lastFocusFormActivityWebFrameID
+          _lastFormActivityWebFrameID
                                       completionHandler:completionHandler];
 }
 
@@ -354,6 +340,10 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
 - (void)hideAutofillPopup {
   [_autofillAgent hideAutofillPopup];
+}
+
+- (bool)isQueryIDRelevant:(int)queryID {
+  return [_autofillAgent isQueryIDRelevant:queryID];
 }
 
 - (void)
@@ -451,7 +441,8 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)propagateAutofillPredictionsForForms:
     (const std::vector<autofill::FormStructure*>&)forms {
-  // Not supported.
+  _passwordManager->ProcessAutofillPredictions(_passwordManagerDriver.get(),
+                                               forms);
 }
 
 #pragma mark - AutofillDriverIOSBridge
@@ -493,16 +484,20 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   DCHECK_EQ(_webState, webState);
 
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
-  _lastFormActivityUniqueFormID = FormRendererId(params.unique_form_id);
+  _lastFormActivityUniqueFormID = params.unique_form_id;
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
-  _lastFormActivityUniqueFieldID = FieldRendererId(params.unique_field_id);
+  _lastFormActivityUniqueFieldID = params.unique_field_id;
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
+  NSString* nsType = base::SysUTF8ToNSString(params.type);
   BOOL userInitiated = params.has_user_gesture;
+
+  _lastFormActivityWebFrameID = nsFrameID;
+  _lastFormActivityTypedValue = nsValue;
+  _lastFormActivityType = nsType;
   if (params.type == "focus") {
-    _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
                    (autofillController:
                        didFocusOnFieldWithIdentifier:fieldType:formName:frameID
@@ -516,7 +511,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                           userInitiated:userInitiated];
     }
   } else if (params.type == "input") {
-    _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
                    (autofillController:
                        didInputInFieldWithIdentifier:fieldType:formName:frameID
@@ -567,34 +561,159 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   _autofillClient.reset();
   _webState->RemoveObserver(_webStateObserverBridge.get());
   _webStateObserverBridge.reset();
+  _passwordManagerDriver.reset();
+  _passwordManager.reset();
+  _passwordManagerClient.reset();
   _webState = nullptr;
 }
 
-#pragma mark - CWVPasswordControllerDelegate
+#pragma mark - PasswordManagerClientBridge
 
-- (void)passwordController:(CWVPasswordController*)passwordController
-    decideSavePolicyForPassword:(CWVPassword*)password
-                decisionHandler:(void (^)(CWVPasswordUserDecision decision))
-                                    decisionHandler {
-  if ([self.delegate respondsToSelector:@selector
-                     (autofillController:
-                         decideSavePolicyForPassword:decisionHandler:)]) {
+- (web::WebState*)webState {
+  return _webState;
+}
+
+- (password_manager::PasswordManager*)passwordManager {
+  return _passwordManager.get();
+}
+
+- (const GURL&)lastCommittedURL {
+  return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
+}
+
+- (void)showSavePasswordInfoBar:
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToSave
+                         manual:(BOOL)manual {
+  if (![self.delegate respondsToSelector:@selector
+                      (autofillController:
+                          decideSavePolicyForPassword:decisionHandler:)]) {
+    return;
+  }
+
+  __block std::unique_ptr<password_manager::PasswordFormManagerForUI> formPtr(
+      std::move(formToSave));
+
+  const password_manager::PasswordForm& credentials =
+      formPtr->GetPendingCredentials();
+  CWVPassword* password =
+      [[CWVPassword alloc] initWithPasswordForm:credentials];
+
+  [self.delegate autofillController:self
+        decideSavePolicyForPassword:password
+                    decisionHandler:^(CWVPasswordUserDecision decision) {
+                      switch (decision) {
+                        case CWVPasswordUserDecisionYes:
+                          formPtr->Save();
+                          break;
+                        case CWVPasswordUserDecisionNever:
+                          formPtr->PermanentlyBlacklist();
+                          break;
+                        case CWVPasswordUserDecisionNotThisTime:
+                          // Do nothing.
+                          break;
+                      }
+                    }];
+}
+
+- (void)showUpdatePasswordInfoBar:
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToUpdate
+                           manual:(BOOL)manual {
+  if (![self.delegate respondsToSelector:@selector
+                      (autofillController:
+                          decideUpdatePolicyForPassword:decisionHandler:)]) {
+    return;
+  }
+
+  __block std::unique_ptr<password_manager::PasswordFormManagerForUI> formPtr(
+      std::move(formToUpdate));
+
+  const password_manager::PasswordForm& credentials =
+      formPtr->GetPendingCredentials();
+  CWVPassword* password =
+      [[CWVPassword alloc] initWithPasswordForm:credentials];
+
+  [self.delegate autofillController:self
+      decideUpdatePolicyForPassword:password
+                    decisionHandler:^(CWVPasswordUserDecision decision) {
+                      // Marking a password update as "never" makes no sense as
+                      // the password has already been saved.
+                      DCHECK_NE(decision, CWVPasswordUserDecisionNever)
+                          << "A password update can only be accepted or "
+                             "ignored.";
+                      if (decision == CWVPasswordUserDecisionYes) {
+                        formPtr->Update(credentials);
+                      }
+                    }];
+}
+
+- (void)removePasswordInfoBarManualFallback:(BOOL)manual {
+  // No op.
+}
+
+- (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
+                                  URL:(const GURL&)URL {
+  if ([self.delegate
+          respondsToSelector:@selector(autofillController:
+                                 notifyUserOfPasswordLeakOnURL:leakType:)]) {
+    CWVPasswordLeakType cwvLeakType = 0;
+    if (password_manager::IsPasswordSaved(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeSaved;
+    }
+    if (password_manager::IsPasswordUsedOnOtherSites(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeUsedOnOtherSites;
+    }
+    if (password_manager::IsSyncingPasswordsNormally(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeSyncingNormally;
+    }
     [self.delegate autofillController:self
-          decideSavePolicyForPassword:password
-                      decisionHandler:decisionHandler];
+        notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(URL)
+                             leakType:cwvLeakType];
   }
 }
 
-- (void)passwordController:(CWVPasswordController*)passwordController
-    decideUpdatePolicyForPassword:(CWVPassword*)password
-                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
-                                      decisionHandler {
-  if ([self.delegate respondsToSelector:@selector
-                     (autofillController:
-                         decideUpdatePolicyForPassword:decisionHandler:)]) {
+#pragma mark - SharedPasswordControllerDelegate
+
+- (password_manager::PasswordManagerClient*)passwordManagerClient {
+  return _passwordManagerClient.get();
+}
+
+- (password_manager::PasswordManagerDriver*)passwordManagerDriver {
+  return _passwordManagerDriver.get();
+}
+
+- (void)sharedPasswordController:(SharedPasswordController*)controller
+    showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
+                   decisionHandler:(void (^)(BOOL accept))decisionHandler {
+  if ([self.delegate
+          respondsToSelector:@selector(autofillController:
+                                 suggestGeneratedPassword:decisionHandler:)]) {
     [self.delegate autofillController:self
-        decideUpdatePolicyForPassword:password
+             suggestGeneratedPassword:generatedPotentialPassword
                       decisionHandler:decisionHandler];
+  } else {
+    // If not implemented, just reject.
+    decisionHandler(/*accept=*/NO);
+  }
+}
+
+- (void)sharedPasswordController:(SharedPasswordController*)controller
+             didAcceptSuggestion:(FormSuggestion*)suggestion {
+  // No op.
+}
+
+#pragma mark - Private Methods
+
+- (void)handlePasswordStoreSyncToggledNotification:
+    (NSNotification*)notification {
+  NSValue* wrappedBrowserState =
+      notification.userInfo[CWVPasswordStoreNotificationBrowserStateKey];
+  ios_web_view::WebViewBrowserState* browserState =
+      static_cast<ios_web_view::WebViewBrowserState*>(
+          wrappedBrowserState.pointerValue);
+  if (_webState->GetBrowserState() == browserState) {
+    _passwordManagerClient->UpdateFormManagers();
   }
 }
 

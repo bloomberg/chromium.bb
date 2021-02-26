@@ -144,7 +144,7 @@ class WindowProxy : public GarbageCollected<WindowProxy> {
  public:
   virtual ~WindowProxy();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   void InitializeIfNeeded();
 
@@ -155,6 +155,8 @@ class WindowProxy : public GarbageCollected<WindowProxy> {
 
   CORE_EXPORT v8::Local<v8::Object> GlobalProxyIfNotDetached();
   v8::Local<v8::Object> ReleaseGlobalProxy();
+  // This does not initialize the window proxy, either Initialize or
+  // InitializeIfNeeded needs to be called after this method.
   void SetGlobalProxy(v8::Local<v8::Object>);
 
   // TODO(dcheng): Temporarily exposed to avoid include cycles. Remove the need

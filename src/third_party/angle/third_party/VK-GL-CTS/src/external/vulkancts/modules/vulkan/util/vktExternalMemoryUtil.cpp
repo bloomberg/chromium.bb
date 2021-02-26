@@ -891,7 +891,8 @@ vk::Move<vk::VkSemaphore> createAndImportSemaphore (const vk::DeviceInterface&		
 
 deUint32 chooseMemoryType(deUint32 bits)
 {
-	DE_ASSERT(bits != 0);
+	if (bits == 0)
+		return 0;
 
 	for (deUint32 memoryTypeIndex = 0; (1u << memoryTypeIndex) <= bits; memoryTypeIndex++)
 	{
@@ -916,6 +917,21 @@ deUint32 chooseHostVisibleMemoryType (deUint32 bits, const vk::VkPhysicalDeviceM
 
 	TCU_THROW(NotSupportedError, "No supported memory type found");
 	return -1;
+}
+
+vk::VkMemoryRequirements getImageMemoryRequirements (const vk::DeviceInterface& vkd,
+													 vk::VkDevice device,
+													 vk::VkImage image,
+													 vk::VkExternalMemoryHandleTypeFlagBits externalType)
+{
+	if (externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+	{
+		return { 0u, 0u, 0u };
+	}
+	else
+	{
+		return vk::getImageMemoryRequirements(vkd, device, image);
+	}
 }
 
 vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::DeviceInterface&					vkd,
@@ -1068,6 +1084,16 @@ static vk::Move<vk::VkDeviceMemory> importMemory (const vk::DeviceInterface&				
 		ahbApi->describe(handle.getAndroidHardwareBuffer(), DE_NULL, DE_NULL, DE_NULL, &ahbFormat, DE_NULL, DE_NULL);
 		DE_ASSERT(ahbApi->ahbFormatIsBlob(ahbFormat) || image != 0);
 
+		vk::VkAndroidHardwareBufferPropertiesANDROID ahbProperties =
+		{
+			vk::VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID,
+			DE_NULL,
+			0u,
+			0u
+		};
+
+		vkd.getAndroidHardwareBufferPropertiesANDROID(device, handle.getAndroidHardwareBuffer(), &ahbProperties);
+
 		vk::VkImportAndroidHardwareBufferInfoANDROID	importInfo =
 		{
 			vk::VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID,
@@ -1085,8 +1111,8 @@ static vk::Move<vk::VkDeviceMemory> importMemory (const vk::DeviceInterface&				
 		{
 			vk::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			(isDedicated ? (const void*)&dedicatedInfo : (const void*)&importInfo),
-			requirements.size,
-			(memoryTypeIndex == ~0U) ? chooseMemoryType(requirements.memoryTypeBits)  : memoryTypeIndex
+			ahbProperties.allocationSize,
+			(memoryTypeIndex == ~0U) ? chooseMemoryType(ahbProperties.memoryTypeBits)  : memoryTypeIndex
 		};
 		vk::Move<vk::VkDeviceMemory> memory (vk::allocateMemory(vkd, device, &info));
 
@@ -1202,6 +1228,9 @@ vk::Move<vk::VkImage> createExternalImage (const vk::DeviceInterface&					vkd,
 										   deUint32										mipLevels,
 										   deUint32										arrayLayers)
 {
+	if (createFlags & vk::VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT && arrayLayers < 6u)
+		arrayLayers = 6u;
+
 	const vk::VkExternalMemoryImageCreateInfo		externalCreateInfo	=
 	{
 		vk::VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
@@ -1443,6 +1472,8 @@ deUint64 AndroidHardwareBufferExternalApi26::vkUsageToAhbUsage(vk::VkImageUsageF
 	  case vk::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT:
 		return AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
 	  case vk::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT:
+	  case vk::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT:
+		// Alias of AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER which is defined in later Android API versions.
 		return AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
 	  default:
 		  return 0u;
@@ -1494,6 +1525,7 @@ class AndroidHardwareBufferExternalApi28 : public  AndroidHardwareBufferExternal
 public:
 
 	virtual deUint64 vkCreateToAhbUsage(vk::VkImageCreateFlagBits vkFlag);
+	virtual deUint32 vkFormatToAhbFormat(vk::VkFormat vkFormat);
 	virtual deUint64 mustSupportAhbUsageFlags();
 
 	AndroidHardwareBufferExternalApi28() : AndroidHardwareBufferExternalApi26() {};
@@ -1513,6 +1545,27 @@ deUint64 AndroidHardwareBufferExternalApi28::vkCreateToAhbUsage(vk::VkImageCreat
 		return AHARDWAREBUFFER_USAGE_GPU_CUBE_MAP;
 	  default:
 		return AndroidHardwareBufferExternalApi26::vkCreateToAhbUsage(vkFlags);
+	}
+}
+
+deUint32 AndroidHardwareBufferExternalApi28::vkFormatToAhbFormat(vk::VkFormat vkFormat)
+{
+	switch(vkFormat)
+	{
+	  case vk::VK_FORMAT_D16_UNORM:
+		return AHARDWAREBUFFER_FORMAT_D16_UNORM;
+	  case vk::VK_FORMAT_X8_D24_UNORM_PACK32:
+		return AHARDWAREBUFFER_FORMAT_D24_UNORM;
+	  case vk::VK_FORMAT_D24_UNORM_S8_UINT:
+		return AHARDWAREBUFFER_FORMAT_D24_UNORM_S8_UINT;
+	  case vk::VK_FORMAT_D32_SFLOAT:
+		return AHARDWAREBUFFER_FORMAT_D32_FLOAT;
+	  case vk::VK_FORMAT_D32_SFLOAT_S8_UINT:
+		return AHARDWAREBUFFER_FORMAT_D32_FLOAT_S8_UINT;
+	  case vk::VK_FORMAT_S8_UINT:
+		return AHARDWAREBUFFER_FORMAT_S8_UINT;
+	  default:
+		return AndroidHardwareBufferExternalApi26::vkFormatToAhbFormat(vkFormat);
 	}
 }
 

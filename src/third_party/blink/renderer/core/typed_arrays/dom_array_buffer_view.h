@@ -100,20 +100,10 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return BaseAddressMaybeShared();
   }
 
-  size_t byteOffsetAsSizeT() const {
-    return !IsDetached() ? raw_byte_offset_ : 0;
-  }
-  // This function is deprecated and should not be used. Use {byteOffsetAsSizeT}
-  // instead.
-  unsigned deprecatedByteOffsetAsUnsigned() const {
-    return base::checked_cast<unsigned>(byteOffsetAsSizeT());
-  }
-  virtual size_t byteLengthAsSizeT() const = 0;
-  // This function is deprecated and should not be used. Use {byteLengthAsSizeT}
-  // instead.
-  unsigned deprecatedByteLengthAsUnsigned() const {
-    return base::checked_cast<unsigned>(byteLengthAsSizeT());
-  }
+  size_t byteOffset() const { return !IsDetached() ? raw_byte_offset_ : 0; }
+
+  virtual size_t byteLength() const = 0;
+
   virtual unsigned TypeSize() const = 0;
   bool IsShared() const { return dom_array_buffer_->IsShared(); }
 
@@ -127,7 +117,7 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return v8::Local<v8::Object>();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(dom_array_buffer_);
     ScriptWrappable::Trace(visitor);
   }

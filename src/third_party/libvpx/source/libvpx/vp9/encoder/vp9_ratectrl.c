@@ -431,11 +431,17 @@ void vp9_rc_init(const VP9EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
     rc->max_gf_interval = vp9_rc_get_default_max_gf_interval(
         oxcf->init_framerate, rc->min_gf_interval);
   rc->baseline_gf_interval = (rc->min_gf_interval + rc->max_gf_interval) / 2;
+  if ((oxcf->pass == 0) && (oxcf->rc_mode == VPX_Q)) {
+    rc->static_scene_max_gf_interval = FIXED_GF_INTERVAL;
+  } else {
+    rc->static_scene_max_gf_interval = MAX_STATIC_GF_GROUP_LENGTH;
+  }
 
   rc->force_max_q = 0;
   rc->last_post_encode_dropped_scene_change = 0;
   rc->use_post_encode_drop = 0;
   rc->ext_use_post_encode_drop = 0;
+  rc->disable_overshoot_maxq_cbr = 0;
   rc->arf_active_best_quality_adjustment_factor = 1.0;
   rc->arf_increase_active_best_quality = 0;
   rc->preserve_arf_as_gld = 0;
@@ -1690,8 +1696,10 @@ void vp9_rc_compute_frame_size_bounds(const VP9_COMP *cpi, int frame_target,
   } else {
     // For very small rate targets where the fractional adjustment
     // may be tiny make sure there is at least a minimum range.
-    const int tol_low = (cpi->sf.recode_tolerance_low * frame_target) / 100;
-    const int tol_high = (cpi->sf.recode_tolerance_high * frame_target) / 100;
+    const int tol_low =
+        (int)(((int64_t)cpi->sf.recode_tolerance_low * frame_target) / 100);
+    const int tol_high =
+        (int)(((int64_t)cpi->sf.recode_tolerance_high * frame_target) / 100);
     *frame_under_shoot_limit = VPXMAX(frame_target - tol_low - 100, 0);
     *frame_over_shoot_limit =
         VPXMIN(frame_target + tol_high + 100, cpi->rc.max_frame_bandwidth);
@@ -1706,9 +1714,16 @@ void vp9_rc_set_frame_target(VP9_COMP *cpi, int target) {
 
   // Modify frame size target when down-scaling.
   if (cpi->oxcf.resize_mode == RESIZE_DYNAMIC &&
-      rc->frame_size_selector != UNSCALED)
+      rc->frame_size_selector != UNSCALED) {
     rc->this_frame_target = (int)(rc->this_frame_target *
                                   rate_thresh_mult[rc->frame_size_selector]);
+  }
+
+#if CONFIG_RATE_CTRL
+  if (cpi->encode_command.use_external_target_frame_bits) {
+    rc->this_frame_target = cpi->encode_command.target_frame_bits;
+  }
+#endif
 
   // Target rate per SB64 (including partial SB64s.
   rc->sb64_target_rate = (int)(((int64_t)rc->this_frame_target * 64 * 64) /
@@ -1981,6 +1996,7 @@ void vp9_rc_postencode_update_drop_frame(VP9_COMP *cpi) {
   cpi->rc.rc_2_frame = 0;
   cpi->rc.rc_1_frame = 0;
   cpi->rc.last_avg_frame_bandwidth = cpi->rc.avg_frame_bandwidth;
+  cpi->rc.last_q[INTER_FRAME] = cpi->common.base_qindex;
   // For SVC on dropped frame when framedrop_mode != LAYER_DROP:
   // in this mode the whole superframe may be dropped if only a single layer
   // has buffer underflow (below threshold). Since this can then lead to
@@ -2371,7 +2387,8 @@ void vp9_rc_get_svc_params(VP9_COMP *cpi) {
   if (cm->show_frame) update_buffer_level_svc_preencode(cpi);
 
   if (cpi->oxcf.resize_mode == RESIZE_DYNAMIC && svc->single_layer_svc == 1 &&
-      svc->spatial_layer_id == svc->first_spatial_layer_to_encode) {
+      svc->spatial_layer_id == svc->first_spatial_layer_to_encode &&
+      svc->temporal_layer_id == 0) {
     LAYER_CONTEXT *lc = NULL;
     cpi->resize_pending = vp9_resize_one_pass_cbr(cpi);
     if (cpi->resize_pending) {
@@ -2399,9 +2416,11 @@ void vp9_rc_get_svc_params(VP9_COMP *cpi) {
                            lc->scaling_factor_num_resize,
                            lc->scaling_factor_den_resize, &width, &height);
       vp9_set_size_literal(cpi, width, height);
+      svc->resize_set = 1;
     }
   } else {
     cpi->resize_pending = 0;
+    svc->resize_set = 0;
   }
 }
 
@@ -2686,18 +2705,18 @@ int vp9_resize_one_pass_cbr(VP9_COMP *cpi) {
   // Force downsize based on per-frame-bandwidth, for extreme case,
   // for HD input.
   if (cpi->resize_state == ORIG && cm->width * cm->height >= 1280 * 720) {
-    if (rc->avg_frame_bandwidth < (int)(300000 / 30)) {
+    if (rc->avg_frame_bandwidth < 300000 / 30) {
       resize_action = DOWN_ONEHALF;
       cpi->resize_state = ONE_HALF;
       force_downsize_rate = 1;
-    } else if (rc->avg_frame_bandwidth < (int)(400000 / 30)) {
+    } else if (rc->avg_frame_bandwidth < 400000 / 30) {
       resize_action = ONEHALFONLY_RESIZE ? DOWN_ONEHALF : DOWN_THREEFOUR;
       cpi->resize_state = ONEHALFONLY_RESIZE ? ONE_HALF : THREE_QUARTER;
       force_downsize_rate = 1;
     }
   } else if (cpi->resize_state == THREE_QUARTER &&
              cm->width * cm->height >= 960 * 540) {
-    if (rc->avg_frame_bandwidth < (int)(300000 / 30)) {
+    if (rc->avg_frame_bandwidth < 300000 / 30) {
       resize_action = DOWN_ONEHALF;
       cpi->resize_state = ONE_HALF;
       force_downsize_rate = 1;
@@ -2708,7 +2727,7 @@ int vp9_resize_one_pass_cbr(VP9_COMP *cpi) {
   // Ignore samples close to key frame, since QP is usually high after key.
   if (!force_downsize_rate && cpi->rc.frames_since_key > cpi->framerate) {
     const int window = VPXMIN(30, (int)(2 * cpi->framerate));
-    cpi->resize_avg_qp += cm->base_qindex;
+    cpi->resize_avg_qp += rc->last_q[INTER_FRAME];
     if (cpi->rc.buffer_level < (int)(30 * rc->optimal_buffer_level / 100))
       ++cpi->resize_buffer_underflow;
     ++cpi->resize_count;
@@ -2987,7 +3006,7 @@ void vp9_scene_detection_onepass(VP9_COMP *cpi) {
     int scene_cut_force_key_frame = 0;
     int num_zero_temp_sad = 0;
     uint64_t avg_sad_current = 0;
-    uint32_t min_thresh = 10000;
+    uint32_t min_thresh = 20000;  // ~5 * 64 * 64
     float thresh = 8.0f;
     uint32_t thresh_key = 140000;
     if (cpi->oxcf.speed <= 5) thresh_key = 240000;
@@ -3244,7 +3263,7 @@ int vp9_encodedframe_overshoot(VP9_COMP *cpi, int frame_size, int *q) {
       int tl = 0;
       int sl = 0;
       SVC *svc = &cpi->svc;
-      for (sl = 0; sl < svc->first_spatial_layer_to_encode; ++sl) {
+      for (sl = 0; sl < VPXMAX(1, svc->first_spatial_layer_to_encode); ++sl) {
         for (tl = 0; tl < svc->number_temporal_layers; ++tl) {
           const int layer =
               LAYER_IDS_TO_IDX(sl, tl, svc->number_temporal_layers);

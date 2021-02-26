@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -50,9 +49,8 @@ DialRegistry::DialRegistry()
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&content::GetNetworkConnectionTracker),
+  content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&content::GetNetworkConnectionTracker),
       base::BindOnce(&DialRegistry::SetNetworkConnectionTracker,
                      base::Unretained(this)));
 }
@@ -92,7 +90,6 @@ void DialRegistry::ClearDialService() {
 void DialRegistry::OnListenerAdded() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (++num_listeners_ == 1) {
-    VLOG(2) << "Listener added; starting periodic discovery.";
     StartPeriodicDiscovery();
   }
   // Event listeners with the current device list.
@@ -105,7 +102,6 @@ void DialRegistry::OnListenerRemoved() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(num_listeners_, 0);
   if (--num_listeners_ == 0) {
-    VLOG(2) << "Listeners removed; stopping periodic discovery.";
     StopPeriodicDiscovery();
   }
 }
@@ -205,7 +201,6 @@ void DialRegistry::StartPeriodicDiscovery() {
 void DialRegistry::DoDiscovery() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(dial_);
-  VLOG(2) << "About to discover!";
   dial_->Discover();
 }
 
@@ -227,8 +222,6 @@ bool DialRegistry::PruneExpiredDevices() {
   while (it != device_by_label_map_.end()) {
     auto* device = it->second;
     if (IsDeviceExpired(*device)) {
-      VLOG(2) << "Device " << device->label() << " expired, removing";
-
       // Make a copy of the device ID here since |device| will be destroyed
       // during erase().
       std::string device_id = device->device_id();
@@ -271,9 +264,6 @@ void DialRegistry::Clear() {
 void DialRegistry::MaybeSendEvent() {
   // Send an event if the device list has changed since the last event.
   bool needs_event = last_event_registry_generation_ < registry_generation_;
-  VLOG(2) << "lerg = " << last_event_registry_generation_
-          << ", rg = " << registry_generation_
-          << ", needs_event = " << needs_event;
   if (needs_event)
     SendEvent();
 }
@@ -315,8 +305,6 @@ void DialRegistry::OnDeviceDiscovered(DialService* service,
   auto lookup_result = device_by_id_map_.find(device_data->device_id());
 
   if (lookup_result != device_by_id_map_.end()) {
-    VLOG(2) << "Found device " << device_data->device_id() << ", merging";
-
     // Already have previous response.  Merge in data from this response and
     // track if there were any API visible changes.
     did_modify_list = lookup_result->second->UpdateFrom(*device_data);
@@ -326,23 +314,17 @@ void DialRegistry::OnDeviceDiscovered(DialService* service,
 
   if (did_modify_list)
     registry_generation_++;
-
-  VLOG(2) << "did_modify_list = " << did_modify_list
-          << ", generation = " << registry_generation_;
 }
 
 bool DialRegistry::MaybeAddDevice(std::unique_ptr<DialDeviceData> device_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (device_by_id_map_.size() == max_devices_) {
-    VLOG(1) << "Maximum registry size reached.  Cannot add device.";
     return false;
   }
   device_data->set_label(NextLabel());
   DialDeviceData* device_data_ptr = device_data.get();
   device_by_id_map_[device_data_ptr->device_id()] = std::move(device_data);
   device_by_label_map_[device_data_ptr->label()] = device_data_ptr;
-  VLOG(2) << "Added device, id = " << device_data_ptr->device_id()
-          << ", label = " << device_data_ptr->label();
   return true;
 }
 
@@ -374,10 +356,7 @@ void DialRegistry::OnConnectionChanged(network::mojom::ConnectionType type) {
   switch (type) {
     case network::mojom::ConnectionType::CONNECTION_NONE:
       if (dial_) {
-        VLOG(2) << "Lost connection, shutting down discovery and clearing"
-                << " list.";
         OnDialError(DIAL_NETWORK_DISCONNECTED);
-
         StopPeriodicDiscovery();
         // TODO(justinlin): As an optimization, we can probably keep our device
         // list around and restore it if we reconnected to the exact same
@@ -389,12 +368,12 @@ void DialRegistry::OnConnectionChanged(network::mojom::ConnectionType type) {
     case network::mojom::ConnectionType::CONNECTION_2G:
     case network::mojom::ConnectionType::CONNECTION_3G:
     case network::mojom::ConnectionType::CONNECTION_4G:
+    case network::mojom::ConnectionType::CONNECTION_5G:
     case network::mojom::ConnectionType::CONNECTION_ETHERNET:
     case network::mojom::ConnectionType::CONNECTION_WIFI:
     case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
     case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
       if (!dial_) {
-        VLOG(2) << "Connection detected, restarting discovery.";
         StartPeriodicDiscovery();
       }
       break;

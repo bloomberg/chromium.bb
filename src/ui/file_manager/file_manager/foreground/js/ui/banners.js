@@ -21,6 +21,12 @@ const DRIVE_WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
 const DOWNLOADS_WARNING_DISMISSED_KEY = 'downloadsSpaceWarningDismissed';
 
 /**
+ * Key in localStorage to store the number of sessions the Offline Info banner
+ * message has shown in.
+ */
+const OFFLINE_INFO_BANNER_COUNTER_KEY = 'driveOfflineInfoBannerCounter';
+
+/**
  * Maximum times Drive Welcome banner could have shown.
  */
 const WELCOME_HEADER_COUNTER_LIMIT = 25;
@@ -44,6 +50,11 @@ const DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE = 1 * 1024 * 1024 * 1024;
  * @const {number}
  */
 const DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
+
+/**
+ * Maximum sessions the Offline Info banner should be shown.
+ */
+const OFFLINE_INFO_BANNER_COUNTER_LIMIT = 3;
 
 /**
  * Responsible for showing following banners in the file list.
@@ -71,7 +82,7 @@ class Banners extends cr.EventTarget {
     this.privateOnDirectoryChangedBound_ =
         this.privateOnDirectoryChanged_.bind(this);
 
-    const handler = this.checkSpaceAndMaybeShowWelcomeBanner_.bind(this);
+    const handler = this.maybeShowDriveBanners_.bind(this);
     this.directoryModel_.addEventListener('scan-completed', handler);
     this.directoryModel_.addEventListener('rescan-completed', handler);
     this.directoryModel_.addEventListener(
@@ -88,11 +99,25 @@ class Banners extends cr.EventTarget {
     this.warningDismissedCounter_ = 0;
     this.downloadsWarningDismissedTime_ = 0;
 
+    /**
+     * Number of sessions the offline info banner has been shown in already.
+     * @private {!number}
+     */
+    this.offlineInfoBannerCounter_ = 0;
+
+    /**
+     * Whether or not the offline info banner has been shown this session.
+     * @private {!boolean}
+     */
+    this.hasShownOfflineInfoBanner_ = false;
+
     this.ready_ = new Promise((resolve, reject) => {
       chrome.storage.local.get(
           [
-            WELCOME_HEADER_COUNTER_KEY, DRIVE_WARNING_DISMISSED_KEY,
-            DOWNLOADS_WARNING_DISMISSED_KEY
+            WELCOME_HEADER_COUNTER_KEY,
+            DRIVE_WARNING_DISMISSED_KEY,
+            DOWNLOADS_WARNING_DISMISSED_KEY,
+            OFFLINE_INFO_BANNER_COUNTER_KEY,
           ],
           values => {
             if (chrome.runtime.lastError) {
@@ -107,12 +132,15 @@ class Banners extends cr.EventTarget {
                 parseInt(values[DRIVE_WARNING_DISMISSED_KEY], 10) || 0;
             this.downloadsWarningDismissedTime_ =
                 parseInt(values[DOWNLOADS_WARNING_DISMISSED_KEY], 10) || 0;
+            this.offlineInfoBannerCounter_ =
+                parseInt(values[OFFLINE_INFO_BANNER_COUNTER_KEY], 10) || 0;
 
             // If it's in test, override the counter to show the header by
             // force.
             if (chrome.test) {
               this.welcomeHeaderCounter_ = 0;
               this.warningDismissedCounter_ = 0;
+              this.offlineInfoBannerCounter_ = 0;
             }
             resolve();
           });
@@ -128,6 +156,21 @@ class Banners extends cr.EventTarget {
       e.preventDefault();
     });
     this.maybeShowAuthFailBanner_();
+
+    /**
+     * Banner informing user they can make elements available offline.
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.offlineInfoBanner_ = queryRequiredElement('#offline-info-banner');
+    util.setClampLine(
+        queryRequiredElement('.body2-primary', this.offlineInfoBanner_), '2');
+    queryRequiredElement('#offline-learn-more').addEventListener('click', e => {
+      util.visitURL(str('GOOGLE_DRIVE_OFFLINE_HELP_URL'));
+      this.setOfflineInfoBannerCounter_(OFFLINE_INFO_BANNER_COUNTER_LIMIT);
+      this.offlineInfoBanner_.hidden = true;
+      e.preventDefault();
+    });
   }
 
   /**
@@ -152,6 +195,17 @@ class Banners extends cr.EventTarget {
   }
 
   /**
+   * @param {number} value How many sessions the Offline Info banner has shown
+   * in.
+   * @private
+   */
+  setOfflineInfoBannerCounter_(value) {
+    const values = {};
+    values[OFFLINE_INFO_BANNER_COUNTER_KEY] = value;
+    chrome.storage.local.set(values);
+  }
+
+  /**
    * chrome.storage.onChanged event handler.
    * @param {Object<Object>} changes Changes values.
    * @param {string} areaName "local" or "sync".
@@ -168,6 +222,10 @@ class Banners extends cr.EventTarget {
     if (areaName == 'local' && DOWNLOADS_WARNING_DISMISSED_KEY in changes) {
       this.downloadsWarningDismissedTime_ =
           changes[DOWNLOADS_WARNING_DISMISSED_KEY].newValue;
+    }
+    if (areaName == 'local' && OFFLINE_INFO_BANNER_COUNTER_KEY in changes) {
+      this.offlineInfoBannerCounter_ =
+          changes[OFFLINE_INFO_BANNER_COUNTER_KEY].newValue;
     }
   }
 
@@ -216,6 +274,7 @@ class Banners extends cr.EventTarget {
     let close, links;
     if (util.isFilesNg()) {
       const message = util.createChild(wrapper, 'drive-welcome-message');
+      util.setClampLine(message, '2');
 
       const title = util.createChild(message, 'drive-welcome-title headline2');
       title.textContent = str('DRIVE_WELCOME_TITLE');
@@ -226,6 +285,10 @@ class Banners extends cr.EventTarget {
       text.innerHTML = str(messageId);
 
       links = util.createChild(body, 'drive-welcome-links');
+
+      // Hide link if it's trimmed by line-clamp so it does not get focus
+      // and break ellipsis render.
+      this.hideOverflowedElement(links, body);
 
       const buttonGroup = util.createChild(wrapper, 'button-group', 'div');
 
@@ -256,6 +319,7 @@ class Banners extends cr.EventTarget {
     more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
     more.tabIndex = 0;
     more.id = 'drive-welcome-link';
+    more.rel = 'opener';
     more.target = '_blank';
 
     this.previousDirWasOnDrive_ = false;
@@ -307,6 +371,7 @@ class Banners extends cr.EventTarget {
         text.textContent = strf(
             'DRIVE_SPACE_AVAILABLE_LONG',
             util.bytesToString(opt_sizeStats.remainingSize));
+        util.setClampLine(text, '2');
         box.appendChild(text);
 
         const buttonGroup = this.document_.createElement('div');
@@ -322,6 +387,7 @@ class Banners extends cr.EventTarget {
 
         const link = this.document_.createElement('a');
         link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
+        link.rel = 'opener';
         link.target = '_blank';
         const buyMore = this.document_.createElement('cr-button');
         buyMore.className = 'banner-button text-button';
@@ -351,6 +417,7 @@ class Banners extends cr.EventTarget {
 
         const link = this.document_.createElement('a');
         link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
+        link.rel = 'opener';
         link.target = '_blank';
         const button = this.document_.createElement('button');
         button.className = 'imitate-paper-button';
@@ -394,32 +461,43 @@ class Banners extends cr.EventTarget {
    * Shows or hides the welcome banner for drive.
    * @private
    */
-  checkSpaceAndMaybeShowWelcomeBanner_() {
+  maybeShowDriveBanners_() {
     this.ready_.then(() => {
       if (!this.isOnCurrentProfileDrive()) {
-        // We are not on the drive file system. Do not show (close) the welcome
-        // banner.
+        // We are not on the drive file system. Do not show (close) the drive
+        // banners.
         this.cleanupWelcomeBanner_();
         this.previousDirWasOnDrive_ = false;
+        this.offlineInfoBanner_.hidden = true;
         return;
       }
 
       const driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DRIVE);
-      if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
-          !driveVolume || driveVolume.error) {
-        // The banner is already shown enough times or the drive FS is not
-        // mounted. So, do nothing here.
+      if (!driveVolume || driveVolume.error) {
+        // Drive is not mounted, so do nothing.
         return;
       }
 
-      this.maybeShowWelcomeBanner_();
+      if (this.welcomeHeaderCounter_ < WELCOME_HEADER_COUNTER_LIMIT) {
+        this.maybeShowWelcomeBanner_();
+      }
+
+      if (util.isFilesNg() && util.isDriveDssPinEnabled() &&
+          (this.offlineInfoBannerCounter_ < OFFLINE_INFO_BANNER_COUNTER_LIMIT ||
+           this.hasShownOfflineInfoBanner_)) {
+        this.offlineInfoBanner_.hidden = false;
+        if (!this.hasShownOfflineInfoBanner_) {
+          this.hasShownOfflineInfoBanner_ = true;
+          this.setOfflineInfoBannerCounter_(this.offlineInfoBannerCounter_ + 1);
+        }
+      }
     });
   }
 
   /**
    * Decides which banner should be shown, and show it. This method is designed
-   * to be called only from checkSpaceAndMaybeShowWelcomeBanner_.
+   * to be called only from maybeShowDriveBanners_.
    * @private
    */
   maybeShowWelcomeBanner_() {
@@ -577,6 +655,12 @@ class Banners extends cr.EventTarget {
    * @private
    */
   maybeShowLowSpaceWarning_(volume) {
+    // Never show low space warning banners in a test as it will cause flakes.
+    // TODO(crbug.com/1146265): Somehow figure out a way to test these banners.
+    if (window.IN_TEST) {
+      return;
+    }
+
     // TODO(kaznacheev): Unify the two low space warning.
     switch (volume.volumeType) {
       case VolumeManagerCommon.VolumeType.DOWNLOADS:
@@ -670,9 +754,21 @@ class Banners extends cr.EventTarget {
       const message = this.document_.createElement('div');
       message.className = 'warning-message';
       if (util.isFilesNg()) {
-        message.className += 'warning-message body2-primary';
+        message.className += ' body2-primary';
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING_FILESNG'));
+        util.setClampLine(message, '2');
+
+        // Wrap a div around link.
+        const link = message.querySelector('a');
+        const linkWrapper = this.document_.createElement('div');
+        linkWrapper.className = 'link-wrapper';
+        message.appendChild(linkWrapper);
+        linkWrapper.appendChild(link);
+
+        // Hide the link if it's trimmed by line-clamp so it does not get focus
+        // and break ellipsis render.
+        this.hideOverflowedElement(linkWrapper, message);
       } else {
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
@@ -746,6 +842,7 @@ class Banners extends cr.EventTarget {
     const learnMore =
         create(panel, 'a', 'learn-more plain-link', str('DRIVE_LEARN_MORE'));
     learnMore.href = str('GOOGLE_DRIVE_ERROR_HELP_URL');
+    learnMore.rel = 'opener';
     learnMore.target = '_blank';
   }
 
@@ -803,5 +900,22 @@ class Banners extends cr.EventTarget {
         connection.reason ==
             chrome.fileManagerPrivate.DriveOfflineReason.NOT_READY;
     this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
+  }
+
+  /**
+   * Hides element if it has overflowed its container after resizing.
+   *
+   * @param {!Element} element The element to hide.
+   * @param {!Element} container The container to observe overflow.
+   */
+  hideOverflowedElement(element, container) {
+    const observer = new ResizeObserver(() => {
+      if (util.hasOverflow(container)) {
+        element.style.visibility = 'hidden';
+      } else {
+        element.style.visibility = 'visible';
+      }
+    });
+    observer.observe(container);
   }
 }

@@ -50,8 +50,8 @@ class HTTPDownload {
   // transaction occurs.  If Download fails before a transaction can occur,
   // |status_code| will be set to 0.  Any failures will result in messages
   // being printed to stderr.
-  static bool Download(const wstring &url,
-                       const map<wstring, wstring> *parameters,
+  static bool Download(const wstring& url,
+                       const map<wstring, wstring>* parameters,
                        string *content, int *status_code);
  private:
   static HttpClient* CreateHttpClient(const wchar_t*);

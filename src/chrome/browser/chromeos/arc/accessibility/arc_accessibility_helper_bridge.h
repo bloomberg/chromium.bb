@@ -9,8 +9,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 
-#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
@@ -19,6 +20,7 @@
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_action_handler.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -41,8 +43,8 @@ class ArcBridgeService;
 arc::mojom::CaptionStylePtr GetCaptionStyleFromPrefs(PrefService* prefs);
 
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
-// accessibility events and info via mojo interface and dispatch them to chrome
-// os components.
+// accessibility events and info via mojo interface and dispatch them to Chrome
+// OS components.
 class ArcAccessibilityHelperBridge
     : public KeyedService,
       public mojom::AccessibilityHelperHost,
@@ -51,7 +53,8 @@ class ArcAccessibilityHelperBridge
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
       public arc::ArcInputMethodManagerService::Observer,
-      public ash::ArcNotificationSurfaceManager::Observer {
+      public ash::ArcNotificationSurfaceManager::Observer,
+      public aura::WindowObserver {
  public:
   // Builds the ArcAccessibilityHelperBridgeFactory.
   static void CreateFactory();
@@ -95,6 +98,7 @@ class ArcAccessibilityHelperBridge
 
   // AXTreeSourceArc::Delegate overrides.
   void OnAction(const ui::AXActionData& data) const override;
+  bool UseFullFocusMode() const override;
 
   // ArcAppListPrefs::Observer overrides.
   void OnTaskDestroyed(int32_t task_id) override;
@@ -112,6 +116,11 @@ class ArcAccessibilityHelperBridge
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
+
+  // aura::WindowObserver overrides.
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   void InvokeUpdateEnabledFeatureForTesting();
 
@@ -156,6 +165,9 @@ class ArcAccessibilityHelperBridge
   void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
   void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
+  // Update |window_id_to_task_id_| with a given window if necessary.
+  void UpdateWindowIdMapping(aura::Window* window);
+
   void DispatchEventTextAnnouncement(
       mojom::AccessibilityEventData* event_data) const;
   void DispatchCustomSpokenFeedbackToggled(bool enabled) const;
@@ -165,10 +177,13 @@ class ArcAccessibilityHelperBridge
   AXTreeSourceArc* GetFromTreeId(ui::AXTreeID tree_id) const;
 
   bool activation_observer_added_ = false;
-  bool is_focus_highlight_enabled_ = false;
+  bool is_focus_event_enabled_ = false;
+  bool use_full_focus_mode_ = false;
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
   TreeMap trees_;
+
+  std::map<int32_t, int32_t> window_id_to_task_id_;
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;

@@ -11,6 +11,7 @@
 
 namespace {
 
+constexpr const char* kDefaultContainer = "(Default container)";
 constexpr const char* kNoComponent = "(No component)";
 
 bool PartialMatch(std::string_view view, const RE2& regex) {
@@ -31,6 +32,14 @@ namespace caspian {
 
 std::string_view IdPathLens::ParentName(const BaseSymbol& symbol) {
   return "";
+}
+
+std::string_view ContainerLens::ParentName(const BaseSymbol& symbol) {
+  std::string component;
+  if (symbol.ContainerName() && *symbol.ContainerName()) {
+    return symbol.ContainerName();
+  }
+  return kDefaultContainer;
 }
 
 std::string_view ComponentLens::ParentName(const BaseSymbol& symbol) {
@@ -61,7 +70,7 @@ std::string_view GeneratedLens::ParentName(const BaseSymbol& symbol) {
     return "Not generated";
   }
 
-  static LazyRE2 java_protobuf_regex = {R"(Proto\.java$)"};
+  static LazyRE2 java_protobuf_regex = {R"(__protoc_java\.srcjar)"};
   if (PartialMatch(symbol.SourcePath(), *java_protobuf_regex)) {
     return "Java Protocol Buffers";
   }
@@ -71,8 +80,8 @@ std::string_view GeneratedLens::ParentName(const BaseSymbol& symbol) {
     return "C++ Protocol Buffers";
   }
 
-  static LazyRE2 mojo_regex = {".mojom|^mojo/|^mojo::"};
-  if (PartialMatch(symbol.ObjectPath(), *mojo_regex)) {
+  static LazyRE2 mojo_regex = {"\\bmojom?\\b|^mojo::"};
+  if (PartialMatch(symbol.SourcePath(), *mojo_regex)) {
     return "Mojo";
   }
 

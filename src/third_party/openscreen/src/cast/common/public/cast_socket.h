@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "platform/api/tls_connection.h"
+#include "util/weak_ptr.h"
 
 namespace cast {
 namespace channel {
@@ -58,6 +59,8 @@ class CastSocket : public TlsConnection::Client {
   void OnError(TlsConnection* connection, Error error) override;
   void OnRead(TlsConnection* connection, std::vector<uint8_t> block) override;
 
+  WeakPtr<CastSocket> GetWeakPtr() const { return weak_factory_.GetWeakPtr(); }
+
  private:
   enum class State : bool {
     kOpen = true,
@@ -72,7 +75,14 @@ class CastSocket : public TlsConnection::Client {
   bool audio_only_ = false;
   std::vector<uint8_t> read_buffer_;
   State state_ = State::kOpen;
+
+  WeakPtrFactory<CastSocket> weak_factory_{this};
 };
+
+// Returns socket->socket_id() if |socket| is not null, otherwise 0.
+constexpr int ToCastSocketId(CastSocket* socket) {
+  return socket ? socket->socket_id() : 0;
+}
 
 }  // namespace cast
 }  // namespace openscreen

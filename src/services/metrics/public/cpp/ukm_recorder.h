@@ -20,20 +20,21 @@
 class PermissionUmaUtil;
 class WebApkUkmRecorder;
 
-namespace blink {
-class Document;
-}  // namespace blink
-
 namespace metrics {
 class UkmRecorderInterface;
 }  // namespace metrics
 
 namespace content {
-class PaymentAppProviderImpl;
+class PaymentAppProviderUtil;
+class RenderFrameHostImpl;
 }  // namespace content
 
 namespace web_app {
 class DesktopWebAppUkmRecorder;
+}
+
+namespace weblayer {
+class BackgroundSyncDelegateImpl;
 }
 
 namespace ukm {
@@ -79,8 +80,8 @@ class METRICS_EXPORT UkmRecorder {
 
  protected:
   // Type-safe wrappers for Update<X> functions.
-  void RecordOtherURL(base::UkmSourceId source_id, const GURL& url);
-  void RecordAppURL(base::UkmSourceId source_id,
+  void RecordOtherURL(ukm::SourceIdObj source_id, const GURL& url);
+  void RecordAppURL(ukm::SourceIdObj source_id,
                     const GURL& url,
                     const AppType app_type);
 
@@ -94,18 +95,19 @@ class METRICS_EXPORT UkmRecorder {
 
   // Gets new source Id for PAYMENT_APP_ID type and updates the source url to
   // the scope of the app. This method should only be called by
-  // PaymentAppProviderImpl class when the payment app window is opened.
+  // PaymentAppProviderUtil class when the payment app window is opened.
   static SourceId GetSourceIdForPaymentAppFromScope(
       const GURL& service_worker_scope);
 
  private:
+  friend weblayer::BackgroundSyncDelegateImpl;
   friend DelegatingUkmRecorder;
   friend TestRecordingHelper;
   friend UkmBackgroundRecorderService;
-  friend blink::Document;
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
-  friend content::PaymentAppProviderImpl;
+  friend content::PaymentAppProviderUtil;
+  friend content::RenderFrameHostImpl;
 
   // WebApkUkmRecorder and DesktopWebAppUkmRecorder record metrics about
   // installed web apps. Instead of using

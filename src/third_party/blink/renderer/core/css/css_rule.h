@@ -42,9 +42,8 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
  public:
   ~CSSRule() override = default;
 
-  // The values must match the table in [1]. See also css_rule.idl.
-  // [1] https://wiki.csswg.org/spec/cssom-constants
   enum Type {
+    // Web-exposed values, see css_rule.idl:
     kStyleRule = 1,
     kCharsetRule = 2,
     kImportRule = 3,
@@ -54,14 +53,27 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
     kKeyframesRule = 7,
     kKeyframeRule = 8,
     kNamespaceRule = 10,
+    kCounterStyleRule = 11,
     kSupportsRule = 12,
     kViewportRule = 15,
-    kPropertyRule = 18,
-    // Experimental features below. Such features must be greater than 1000:
-    // the 0-1000 range is reserved by the CSS Working Group.
+    // CSSOM constants are deprecated [1], and there will be no new
+    // web-exposed values.
+    //
+    // [1] https://wiki.csswg.org/spec/cssom-constants
+
+    // Values for internal use, not web-exposed:
+    kPropertyRule = 16,
+    kScrollTimelineRule = 17,
   };
 
-  virtual Type type() const = 0;
+  virtual Type GetType() const = 0;
+
+  // https://drafts.csswg.org/cssom/#dom-cssrule-type
+  int type() const {
+    Type type = GetType();
+    return type > Type::kViewportRule ? 0 : static_cast<int>(type);
+  }
+
   virtual String cssText() const = 0;
   virtual void Reattach(StyleRuleBase*) = 0;
 
@@ -71,7 +83,7 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
 
   void SetParentRule(CSSRule*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   CSSStyleSheet* parentStyleSheet() const {
     if (parent_is_rule_)

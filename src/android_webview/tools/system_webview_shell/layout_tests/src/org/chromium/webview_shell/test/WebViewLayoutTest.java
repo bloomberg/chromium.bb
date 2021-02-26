@@ -7,8 +7,9 @@ package org.chromium.webview_shell.test;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
+
+import androidx.test.filters.MediumTest;
 
 import junit.framework.ComparisonFailure;
 
@@ -109,6 +110,7 @@ public class WebViewLayoutTest {
 
     // This is a non-failing test because it tends to require frequent rebaselines.
     @Test
+    @DisabledTest(message = "https://crbug.com/1144241")
     @MediumTest
     public void testGlobalInterfaceNoFail() throws Exception {
         runBlinkLayoutTest("webexposed/global-interface-listing.html",
@@ -146,6 +148,7 @@ public class WebViewLayoutTest {
     }
 
     @Test
+    @DisabledTest(message = "https://crbug.com/1144241")
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -192,6 +195,7 @@ public class WebViewLayoutTest {
     }
 
     @Test
+    @DisabledTest(message = "https://crbug.com/1144241")
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();

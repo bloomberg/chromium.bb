@@ -29,6 +29,9 @@ specific_include_rules = {
     # See http://crbug.com/162530 for details.
     "+chrome/browser/extensions/api/file_system/file_system_api.h",
     # To access sandbox includes.
-    "+services/service_manager/sandbox",
-  ]
+    "+sandbox/policy",
+  ],
+ "load_and_launch_browsertest.cc": [
+  "+ui/ozone/public/ozone_switches.h"
+  ],
 }

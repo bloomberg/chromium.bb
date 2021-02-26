@@ -138,10 +138,15 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // Called when the UI for |request_| has finished being dismissed.
   void OverlayUIWasDismissed();
 
+  // Called when the Browser is being destroyed.
+  void BrowserDestroyed();
+
   // Helper object that detaches the UI delegate for Browser shudown.
   class BrowserShutdownHelper : public BrowserObserver {
    public:
-    BrowserShutdownHelper(Browser* browser, OverlayPresenter* presenter);
+    BrowserShutdownHelper(Browser* browser,
+                          OverlayPresenter* presenter,
+                          OverlayPresentationContextImpl* presentation_context);
     ~BrowserShutdownHelper() override;
 
     // BrowserObserver:
@@ -150,6 +155,8 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
    private:
     // The presenter whose delegate needs to be reset.
     OverlayPresenter* presenter_ = nullptr;
+    // OverlayPresentationContextImpl reference.
+    OverlayPresentationContextImpl* presentation_context_ = nullptr;
   };
 
   // Helper object that listens for UI dismissal events.
@@ -183,13 +190,13 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // The context's delegate.
   __weak id<OverlayPresentationContextImplDelegate> delegate_ = nil;
   // The window in which overlay UI will be presented.
-  UIWindow* window_ = nil;
+  __weak UIWindow* window_ = nil;
   // The UIViewController used as the base for overlays UI displayed using child
   // UIViewControllers.
-  UIViewController* container_view_controller_ = nil;
+  __weak UIViewController* container_view_controller_ = nil;
   // The UIViewController used as the base for overlays displayed using
   // presented UIViewControllers.
-  UIViewController* presentation_context_view_controller_ = nil;
+  __weak UIViewController* presentation_context_view_controller_ = nil;
   // The presentation capabilities of |coordinator_|'s view controller.
   UIPresentationCapabilities presentation_capabilities_ =
       UIPresentationCapabilities::kNone;

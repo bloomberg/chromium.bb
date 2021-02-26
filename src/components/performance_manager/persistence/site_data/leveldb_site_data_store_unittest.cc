@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
@@ -30,7 +30,7 @@ class ScopedReadOnlyDirectory {
   explicit ScopedReadOnlyDirectory(const base::FilePath& root_dir);
   ~ScopedReadOnlyDirectory() {
     permission_restorer_.reset();
-    EXPECT_TRUE(base::DeleteFileRecursively(read_only_path_));
+    EXPECT_TRUE(base::DeletePathRecursively(read_only_path_));
   }
 
   const base::FilePath& GetReadOnlyPath() { return read_only_path_; }

@@ -8,8 +8,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -27,6 +29,7 @@
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -54,6 +57,8 @@ class NavigationPredictorPreconnectClientBrowserTest
   void SetUpOnMainThread() override {
     subresource_filter::SubresourceFilterBrowserTest::SetUpOnMainThread();
     host_resolver()->ClearRules();
+    NavigationPredictorPreconnectClient::EnablePreconnectsForLocalIPsForTesting(
+        true);
 
     auto* loading_predictor =
         predictors::LoadingPredictorFactory::GetForProfile(
@@ -70,6 +75,12 @@ class NavigationPredictorPreconnectClientBrowserTest
       const GURL& url,
       const net::NetworkIsolationKey& network_isolation_key,
       bool success) override {
+    // The tests do not care about preresolves to non-test server (e.g., hard
+    // coded preconnects to google.com).
+    if (url::Origin::Create(url) !=
+        url::Origin::Create(https_server_->base_url())) {
+      return;
+    }
     EXPECT_TRUE(success);
     preresolve_done_count_++;
     if (run_loop_)
@@ -123,6 +134,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
                        PreconnectNotSearch) {
+  base::HistogramTester histogram_tester;
   const GURL& url = GetTestURL("/anchors_different_area.html");
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -130,6 +142,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
   // client.
   WaitForPreresolveCount(2);
   EXPECT_EQ(2, preresolve_done_count_);
+  histogram_tester.ExpectUniqueSample("NavigationPredictor.IsPubliclyRoutable",
+                                      true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
@@ -170,7 +184,6 @@ class NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout
 IN_PROC_BROWSER_TEST_F(
     NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout,
     ActionAccuracy_timeout) {
-
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -199,6 +212,14 @@ IN_PROC_BROWSER_TEST_F(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
 
+  EXPECT_EQ(6, preresolve_done_count_);
+
+  // By default, same document navigation should not trigger new preconnects.
+  const GURL& same_document_url =
+      GetTestURL("/page_with_same_host_anchor_element.html#foobar");
+  ui_test_utils::NavigateToURL(browser(), same_document_url);
+  // Expect another one.
+  WaitForPreresolveCount(6);
   EXPECT_EQ(6, preresolve_done_count_);
 }
 
@@ -285,6 +306,54 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(3, preresolve_done_count_);
 }
 
+class NavigationPredictorSameDocumentPreconnectClientBrowserTest
+    : public NavigationPredictorPreconnectClientBrowserTest {
+ public:
+  NavigationPredictorSameDocumentPreconnectClientBrowserTest()
+      : NavigationPredictorPreconnectClientBrowserTest() {
+    // Configure kDelayRequestsOnMultiplexedConnections experiment params.
+    base::FieldTrialParams params_kNetUnusedIdleSocketTimeout;
+    params_kNetUnusedIdleSocketTimeout["unused_idle_socket_timeout_seconds"] =
+        "0";
+
+    // Configure kThrottleDelayable experiment params.
+    base::FieldTrialParams
+        params_kNavigationPredictorEnablePreconnectOnSameDocumentNavigations;
+    feature_list_.InitWithFeaturesAndParameters(
+        {{net::features::kNetUnusedIdleSocketTimeout,
+          params_kNetUnusedIdleSocketTimeout},
+         {features::
+              kNavigationPredictorEnablePreconnectOnSameDocumentNavigations,
+          params_kNavigationPredictorEnablePreconnectOnSameDocumentNavigations}},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that we preconnect after the last preconnect timed out.
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorSameDocumentPreconnectClientBrowserTest,
+    SameDocumentNavigation) {
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  WaitForPreresolveCount(3);
+  EXPECT_LE(3, preresolve_done_count_);
+
+  // Expect another one.
+  WaitForPreresolveCount(4);
+  EXPECT_LE(4, preresolve_done_count_);
+
+  const GURL& same_document_url =
+      GetTestURL("/page_with_same_host_anchor_element.html#foobar");
+  ui_test_utils::NavigateToURL(browser(), same_document_url);
+  // Expect another one.
+  WaitForPreresolveCount(8);
+  EXPECT_LE(8, preresolve_done_count_);
+}
+
 namespace {
 // Feature to control preconnect to search.
 const base::Feature kPreconnectToSearchTest{"PreconnectToSearch",
@@ -304,8 +373,13 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
   base::test::ScopedFeatureList feature_list_;
 };
 
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_PreconnectSearchWithFeature DISABLED_PreconnectSearchWithFeature
+#else
+#define MAYBE_PreconnectSearchWithFeature PreconnectSearchWithFeature
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
-                       PreconnectSearchWithFeature) {
+                       MAYBE_PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
@@ -339,6 +413,34 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
   // preconnect.
   WaitForPreresolveCount(4);
   EXPECT_EQ(4, preresolve_done_count_);
+}
+
+class NavigationPredictorPreconnectClientLocalURLBrowserTest
+    : public NavigationPredictorPreconnectClientBrowserTest {
+ public:
+  NavigationPredictorPreconnectClientLocalURLBrowserTest() = default;
+
+ private:
+  void SetUpOnMainThread() override {
+    NavigationPredictorPreconnectClientBrowserTest::SetUpOnMainThread();
+    NavigationPredictorPreconnectClient::EnablePreconnectsForLocalIPsForTesting(
+        false);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(
+      NavigationPredictorPreconnectClientLocalURLBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientLocalURLBrowserTest,
+                       NoPreconnectSearch) {
+  base::HistogramTester histogram_tester;
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // There should not be any preconnects to non-public addresses.
+  histogram_tester.ExpectUniqueSample("NavigationPredictor.IsPubliclyRoutable",
+                                      false, 1);
 }
 
 }  // namespace

@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_encrypt.h"
 
 #include "fxjs/xfa/cjx_encrypt.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -34,6 +34,8 @@ CXFA_Encrypt::CXFA_Encrypt(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Encrypt,
           kEncryptPropertyData,
           kEncryptAttributeData,
-          pdfium::MakeUnique<CJX_Encrypt>(this)) {}
+          cppgc::MakeGarbageCollected<CJX_Encrypt>(
+              doc->GetHeap()->GetAllocationHandle(),
+              this)) {}
 
 CXFA_Encrypt::~CXFA_Encrypt() = default;

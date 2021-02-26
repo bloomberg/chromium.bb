@@ -40,11 +40,14 @@ enum EventFlags {
   EF_RIGHT_MOUSE_BUTTON = 1 << 12,
   EF_BACK_MOUSE_BUTTON = 1 << 13,
   EF_FORWARD_MOUSE_BUTTON = 1 << 14,
+  EF_MOUSE_BUTTON = EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
+                    EF_RIGHT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON |
+                    EF_FORWARD_MOUSE_BUTTON,
 
 // An artificial value used to bridge platform differences.
 // Many commands on Mac as Cmd+Key are the counterparts of
 // Ctrl+Key on other platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EF_PLATFORM_ACCELERATOR = EF_COMMAND_DOWN,
 #else
   EF_PLATFORM_ACCELERATOR = EF_CONTROL_DOWN,

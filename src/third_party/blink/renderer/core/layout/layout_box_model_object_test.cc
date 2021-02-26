@@ -18,8 +18,8 @@ namespace blink {
 
 class LayoutBoxModelObjectTest : public RenderingTest {
  protected:
-  PaintLayer* GetPaintLayerByElementId(const char* id) {
-    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
+  LayoutBoxModelObject* GetLayoutBoxModelObjectByElementId(const char* id) {
+    return To<LayoutBoxModelObject>(GetLayoutObjectByElementId(id));
   }
 };
 
@@ -36,16 +36,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
     <div id='scroller'><div id='container'><div
     id='sticky'></div></div><div class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollOffsetInt().Width(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -79,16 +77,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
     <div id='scroller'><div id='container'><div
     id='sticky'></div></div><div class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollOffsetInt().Width(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -129,18 +125,16 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionInlineConstraints) {
     </div>
   )HTML");
 
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollOffsetInt().Width(), 50));
   EXPECT_EQ(50.f, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
 
   sticky->UpdateStickyPositionConstraints();
 
-  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -188,18 +182,16 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLInlineConstraints) {
   //                     scroller
   //                     ----2190
   //                         sticky
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   EXPECT_EQ(50.f, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
 
   sticky->UpdateStickyPositionConstraints();
 
-  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -232,16 +224,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
     <div id='scroller'><div id='container'><div
     id='sticky'></div></div><div class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollOffsetInt().Width(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -270,16 +260,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
     <div id='scroller'><div id='container'><div
     id='sticky'></div></div><div class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -305,16 +293,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
     <div id='scroller'><div id='sticky'></div><div
     class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -341,16 +327,14 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
     <div id='scroller'><div id='container'><div class='header'></div><div
     id='sticky'></div></div><div class='spacer'></div></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   ASSERT_EQ(50.0, scrollable_area->ScrollPosition().Y());
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
-  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+  ASSERT_EQ(scroller->Layer(), sticky->Layer()->AncestorScrollContainerLayer());
 
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -375,11 +359,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
         <tr><td id='sticky'></td></tr>
     </table></div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
   sticky->UpdateStickyPositionConstraints();
   const StickyPositionScrollingConstraints& constraints =
       scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
@@ -410,13 +392,10 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
     <div class='spacer' id='target'></div>
     </div>
   )HTML");
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
-  LayoutBoxModelObject* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
+  auto* target = GetLayoutBoxModelObjectByElementId("target");
   EXPECT_TRUE(
       scrollable_area->GetStickyConstraintsMap().Contains(sticky->Layer()));
   EXPECT_EQ(25.f, scrollable_area->GetStickyConstraintsMap()
@@ -474,7 +453,7 @@ TEST_F(LayoutBoxModelObjectTest,
       GetPaintLayerByElementId("stickyInnerInline");
 
   PaintLayerScrollableArea* scrollable_area =
-      sticky_outer_div->AncestorOverflowLayer()->GetScrollableArea();
+      sticky_outer_div->AncestorScrollContainerLayer()->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
@@ -572,7 +551,7 @@ TEST_F(LayoutBoxModelObjectTest,
   PaintLayer* sticky_grandchild = GetPaintLayerByElementId("stickyGrandchild");
 
   PaintLayerScrollableArea* scrollable_area =
-      sticky_parent->AncestorOverflowLayer()->GetScrollableArea();
+      sticky_parent->AncestorScrollContainerLayer()->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
@@ -632,14 +611,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNested) {
     <div id='stickyChild'></div></div><div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyChild"));
+  auto* sticky_parent = GetLayoutBoxModelObjectByElementId("stickyParent");
+  auto* sticky_child = GetLayoutBoxModelObjectByElementId("stickyChild");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
@@ -675,14 +651,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionChildHasLargerTop) {
     <div id='stickyChild'></div></div><div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyChild"));
+  auto* sticky_parent = GetLayoutBoxModelObjectByElementId("stickyParent");
+  auto* sticky_child = GetLayoutBoxModelObjectByElementId("stickyChild");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
@@ -718,14 +691,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionParentHasLargerTop) {
     <div id='stickyChild'></div></div><div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyChild"));
+  auto* sticky_parent = GetLayoutBoxModelObjectByElementId("stickyParent");
+  auto* sticky_child = GetLayoutBoxModelObjectByElementId("stickyChild");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
@@ -761,14 +731,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionChildPushingOutsideParent) {
     <div id='stickyChild'></div></div><div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyChild"));
+  auto* sticky_parent = GetLayoutBoxModelObjectByElementId("stickyParent");
+  auto* sticky_child = GetLayoutBoxModelObjectByElementId("stickyChild");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
@@ -808,16 +775,12 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTripleNestedDiv) {
     <div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* outmost_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("outmostSticky"));
-  LayoutBoxModelObject* middle_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("middleSticky"));
-  LayoutBoxModelObject* inner_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("innerSticky"));
+  auto* outmost_sticky = GetLayoutBoxModelObjectByElementId("outmostSticky");
+  auto* middle_sticky = GetLayoutBoxModelObjectByElementId("middleSticky");
+  auto* inner_sticky = GetLayoutBoxModelObjectByElementId("innerSticky");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
@@ -867,14 +830,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedStickyTable) {
     </table></div><div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* sticky_div =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyDiv"));
-  LayoutBoxModelObject* sticky_th =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyTh"));
+  auto* sticky_div = GetLayoutBoxModelObjectByElementId("stickyDiv");
+  auto* sticky_th = GetLayoutBoxModelObjectByElementId("stickyTh");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 150));
@@ -940,14 +900,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionComplexTableNesting) {
     <div id='postPadding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* outer_sticky_th =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerStickyTh"));
-  LayoutBoxModelObject* inner_sticky_th =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("innerStickyTh"));
+  auto* outer_sticky_th = GetLayoutBoxModelObjectByElementId("outerStickyTh");
+  auto* inner_sticky_th = GetLayoutBoxModelObjectByElementId("innerStickyTh");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 150));
@@ -990,14 +947,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedInlineElements) {
     </div>
   )HTML");
 
-  LayoutBoxModelObject* outer_inline =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerInline"));
-  LayoutBoxModelObject* inner_inline =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("innerInline"));
+  auto* outer_inline = GetLayoutBoxModelObjectByElementId("outerInline");
+  auto* inner_inline = GetLayoutBoxModelObjectByElementId("innerInline");
 
   // Scroll the page down.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(
       FloatPoint(scrollable_area->ScrollPosition().X(), 50));
@@ -1022,13 +976,10 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedFixedPos) {
     <div id='innerSticky'></div></div></div><div id='padding'></div></div>
   )HTML");
 
-  LayoutBoxModelObject* outer_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("outerSticky"));
-  LayoutBoxModelObject* inner_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("innerSticky"));
+  auto* outer_sticky = GetLayoutBoxModelObjectByElementId("outerSticky");
+  auto* inner_sticky = GetLayoutBoxModelObjectByElementId("innerSticky");
 
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
   StickyConstraintsMap constraints_map =
@@ -1070,16 +1021,16 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   auto* parent = target->Parent();
   auto* original_compositing_container =
       target->Layer()->CompositingContainer();
-  EXPECT_FALSE(target->StyleRef().IsStackingContext());
-  EXPECT_TRUE(target->StyleRef().IsStacked());
-  EXPECT_FALSE(parent->StyleRef().IsStacked());
+  EXPECT_FALSE(target->IsStackingContext());
+  EXPECT_TRUE(target->IsStacked());
+  EXPECT_FALSE(parent->IsStacked());
   EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
 
   target_element->setAttribute(html_names::kClassAttr, "non-stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
-  EXPECT_FALSE(target->StyleRef().IsStacked());
+  EXPECT_FALSE(target->IsStacked());
   EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
   EXPECT_TRUE(original_compositing_container->DescendantNeedsRepaint());
   auto* new_compositing_container = target->Layer()->CompositingContainer();
@@ -1090,7 +1041,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
-  EXPECT_TRUE(target->StyleRef().IsStacked());
+  EXPECT_TRUE(target->IsStacked());
   EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
   EXPECT_TRUE(new_compositing_container->DescendantNeedsRepaint());
   EXPECT_EQ(original_compositing_container,
@@ -1111,14 +1062,12 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
       </div>
   )HTML");
 
-  LayoutBoxModelObject* sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* sticky = GetLayoutBoxModelObjectByElementId("sticky");
+  auto* scroller = GetLayoutBoxModelObjectByElementId("scroller");
 
-  // The 'scroller' starts as non-overflow, so the sticky element's ancestor
-  // overflow layer should be the outer scroller.
-  EXPECT_TRUE(sticky->Layer()->AncestorOverflowLayer()->IsRootLayer());
+  // The 'scroller' starts as as a non-scroll container, so the sticky
+  // element's ancestor overflow layer should be the outer scroller.
+  EXPECT_TRUE(sticky->Layer()->AncestorScrollContainerLayer()->IsRootLayer());
 
   // We need the sticky element to not be a PaintLayer child of the scroller,
   // so that it is later reparented under the scroller's PaintLayer
@@ -1153,7 +1102,7 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
 
   auto* target = GetDocument().getElementById("target");
   auto* target_layer =
-      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+      To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer();
   ASSERT_NE(nullptr, target_layer);
   EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 
@@ -1223,19 +1172,19 @@ TEST_F(LayoutBoxModelObjectTest, ChangingWillChangeFilter) {
   target->classList().Add("willChange");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 
   // A lifecycle update should clear dirty bits.
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 
   // Removing will-change: filter should check for paint invalidation and remove
   // the PaintLayer.
   target->classList().Remove("willChange");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_FALSE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_FALSE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 }
 
 TEST_F(LayoutBoxModelObjectTest, ChangingBackdropFilterWithWillChange) {
@@ -1288,19 +1237,19 @@ TEST_F(LayoutBoxModelObjectTest, ChangingWillChangeBackdropFilter) {
   target->classList().Add("willChange");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 
   // A lifecycle update should clear dirty bits.
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 
   // Removing will-change: backdrop-filter should check for paint invalidation
   // and remove the PaintLayer.
   target->classList().Remove("willChange");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_TRUE(target->GetLayoutObject()->ShouldCheckForPaintInvalidation());
-  EXPECT_FALSE(ToLayoutBoxModelObject(target->GetLayoutObject())->Layer());
+  EXPECT_FALSE(To<LayoutBoxModelObject>(target->GetLayoutObject())->Layer());
 }
 
 TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
@@ -1327,7 +1276,7 @@ TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   auto* option_element = GetDocument().getElementById("opt");
   auto* option_layout = option_element->GetLayoutObject();
   ASSERT_TRUE(option_layout);
-  EXPECT_TRUE(option_layout->StyleRef().IsStackingContext());
+  EXPECT_TRUE(option_layout->IsStackingContext());
   EXPECT_TRUE(option_layout->StyleRef().HasCurrentOpacityAnimation());
 }
 
@@ -1343,8 +1292,7 @@ TEST_F(LayoutBoxModelObjectTest,
     <div id=target class=contained></div>
     <div id=unrelated class=contained></div>
   )HTML");
-  LayoutBoxModelObject* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+  auto* target = GetLayoutBoxModelObjectByElementId("target");
   ASSERT_TRUE(target->Layer());
 
   EXPECT_FALSE(target->Layer()->NeedsCompositingInputsUpdate());

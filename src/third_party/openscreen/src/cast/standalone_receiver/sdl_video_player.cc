@@ -5,6 +5,7 @@
 #include "cast/standalone_receiver/sdl_video_player.h"
 
 #include <sstream>
+#include <utility>
 
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "util/osp_logging.h"
@@ -20,13 +21,13 @@ constexpr char kVideoMediaType[] = "video";
 SDLVideoPlayer::SDLVideoPlayer(ClockNowFunctionPtr now_function,
                                TaskRunner* task_runner,
                                Receiver* receiver,
-                               const std::string& codec_name,
+                               VideoCodec codec,
                                SDL_Renderer* renderer,
                                std::function<void()> error_callback)
     : SDLPlayerBase(now_function,
                     task_runner,
                     receiver,
-                    codec_name,
+                    CodecToString(codec),
                     std::move(error_callback),
                     kVideoMediaType),
       renderer_(renderer) {

@@ -97,29 +97,10 @@ struct NDEFMessage {
 };
 
 struct NDEFWriteOptions {
-  // Only the case of |ignore_read| being |true| matters: while this push
-  // operation is pending, even a NFC tag comes in proximity range, do not read
-  // it for all active watchers.
-  bool ignore_read;
-
   // Only the case of |overwrite| being |false| matters: the push operation will
-  // read the NFC tag regardless of |ignore_read| to determine if it has NDEF
-  // records on it, and if yes, do not execute write.
+  // read the NFC tag to determine if it has NDEF records on it, and if yes, do
+  // not execute write.
   bool overwrite;
-};
-
-struct NDEFScanOptions {
-  // Defines record id filtering constraint. Null means don't filter, empty
-  // string means must match on empty.
-  string? id;
-
-  // Defines record type filtering constraint. Null means don't filter, empty
-  // string means must match on empty.
-  string? record_type;
-
-  // Defines media type filtering constraint. Null means don't filter, empty
-  // string means must match on empty.
-  string? media_type;
 };
 
 interface NFC {
@@ -134,10 +115,9 @@ interface NFC {
   // Cancels pending push request.
   CancelPush() => (NDEFError? error);
 
-  // Starts watching for nearby NFC devices with data that matches
-  // NDEFScanOptions filtering criteria. |id| identifies each watch request on
-  // the current Mojo connection.
-  Watch(NDEFScanOptions options, uint32 id) => (NDEFError? error);
+  // Starts watching for nearby NFC devices. |id| identifies each watch request
+  // on the current Mojo connection.
+  Watch(uint32 id) => (NDEFError? error);
 
   // Cancels watch operation with provided id.
   CancelWatch (uint32 id) => (NDEFError? error);

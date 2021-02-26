@@ -6,6 +6,7 @@
  */
 #include "src/core/SkGeometry.h"
 #include "src/core/SkPathPriv.h"
+#include "src/core/SkTSort.h"
 #include "src/pathops/SkOpEdgeBuilder.h"
 #include "src/pathops/SkReduceOrder.h"
 
@@ -277,7 +278,7 @@ bool SkOpEdgeBuilder::walk() {
                         bool fCanAdd;
                     } splits[4];
                     SkASSERT(SK_ARRAY_COUNT(splits) == SK_ARRAY_COUNT(splitT) + 1);
-                    SkTQSort(splitT, &splitT[breaks - 1]);
+                    SkTQSort(splitT, splitT + breaks);
                     for (int index = 0; index <= breaks; ++index) {
                         Splitsville* split = &splits[index];
                         split->fT[0] = index ? splitT[index - 1] : 0;

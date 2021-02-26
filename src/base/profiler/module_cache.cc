@@ -4,9 +4,10 @@
 
 #include "base/profiler/module_cache.h"
 
-#include <algorithm>
 #include <iterator>
 #include <utility>
+
+#include "base/ranges/algorithm.h"
 
 namespace base {
 
@@ -33,19 +34,16 @@ ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
 const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
-  const auto non_native_module_loc = non_native_modules_.find(address);
-  if (non_native_module_loc != non_native_modules_.end())
-    return non_native_module_loc->get();
-
-  const auto native_module_loc = native_modules_.find(address);
-  if (native_module_loc != native_modules_.end())
-    return native_module_loc->get();
+  if (const ModuleCache::Module* module = GetExistingModuleForAddress(address))
+    return module;
 
   std::unique_ptr<const Module> new_module = CreateModuleForAddress(address);
   if (!new_module)
     return nullptr;
-  const auto loc = native_modules_.insert(std::move(new_module));
-  return loc.first->get();
+  const auto result = native_modules_.insert(std::move(new_module));
+  // TODO(https://crbug.com/1131769): Reintroduce DCHECK(result.second) after
+  // fixing the issue that is causing it to fail.
+  return result.first->get();
 }
 
 std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
@@ -59,42 +57,73 @@ std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
 }
 
 void ModuleCache::UpdateNonNativeModules(
-    const std::vector<const Module*>& to_remove,
-    std::vector<std::unique_ptr<const Module>> to_add) {
+    const std::vector<const Module*>& defunct_modules,
+    std::vector<std::unique_ptr<const Module>> new_modules) {
   // Insert the modules to remove into a set to support O(log(n)) lookup below.
-  flat_set<const Module*> to_remove_set(to_remove.begin(), to_remove.end());
+  flat_set<const Module*> defunct_modules_set(defunct_modules.begin(),
+                                              defunct_modules.end());
 
   // Reorder the modules to be removed to the last slots in the set, then move
   // them to the inactive modules, then erase the moved-from modules from the
-  // set. The flat_set docs endorse using base::EraseIf() which performs the
-  // same operations -- exclusive of the moves -- so this is OK even though it
-  // might seem like we're messing with the internal set representation.
+  // set. This is a variation on the standard erase-remove idiom, which is
+  // explicitly endorsed for implementing erase behavior on flat_sets.
   //
-  // remove_if is O(m*log(r)) where m is the number of current modules and r is
-  // the number of modules to remove. insert and erase are both O(r).
-  auto first_module_to_remove = std::remove_if(
-      non_native_modules_.begin(), non_native_modules_.end(),
-      [&to_remove_set](const std::unique_ptr<const Module>& module) {
-        return to_remove_set.find(module.get()) != to_remove_set.end();
+  // stable_partition is O(m*log(r)) where m is the number of current modules
+  // and r is the number of modules to remove. insert and erase are both O(r).
+  auto first_module_defunct_modules = ranges::stable_partition(
+      non_native_modules_,
+      [&defunct_modules_set](const std::unique_ptr<const Module>& module) {
+        return defunct_modules_set.find(module.get()) ==
+               defunct_modules_set.end();
       });
   // All modules requested to be removed should have been found.
-  DCHECK_EQ(static_cast<ptrdiff_t>(to_remove.size()),
-            std::distance(first_module_to_remove, non_native_modules_.end()));
+  DCHECK_EQ(
+      static_cast<ptrdiff_t>(defunct_modules.size()),
+      std::distance(first_module_defunct_modules, non_native_modules_.end()));
   inactive_non_native_modules_.insert(
       inactive_non_native_modules_.end(),
-      std::make_move_iterator(first_module_to_remove),
+      std::make_move_iterator(first_module_defunct_modules),
       std::make_move_iterator(non_native_modules_.end()));
-  non_native_modules_.erase(first_module_to_remove, non_native_modules_.end());
+  non_native_modules_.erase(first_module_defunct_modules,
+                            non_native_modules_.end());
 
   // Insert the modules to be added. This operation is O((m + a) + a*log(a))
   // where m is the number of current modules and a is the number of modules to
   // be added.
-  non_native_modules_.insert(std::make_move_iterator(to_add.begin()),
-                             std::make_move_iterator(to_add.end()));
+  const size_t prior_non_native_modules_size = non_native_modules_.size();
+  non_native_modules_.insert(std::make_move_iterator(new_modules.begin()),
+                             std::make_move_iterator(new_modules.end()));
+  // Every module in |new_modules| should have been moved into
+  // |non_native_modules_|. This guards against use-after-frees if |new_modules|
+  // were to contain any modules equivalent to what's already in
+  // |non_native_modules_|, in which case the module would remain in
+  // |new_modules| and be deleted on return from the function. While this
+  // scenario would be a violation of the API contract, it would present a
+  // difficult-to-track-down crash scenario.
+  CHECK_EQ(prior_non_native_modules_size + new_modules.size(),
+           non_native_modules_.size());
 }
 
 void ModuleCache::AddCustomNativeModule(std::unique_ptr<const Module> module) {
-  native_modules_.insert(std::move(module));
+  const bool was_inserted = native_modules_.insert(std::move(module)).second;
+  // |module| should have been inserted into |native_modules_|, indicating that
+  // there was no equivalent module already present. While this scenario would
+  // be a violation of the API contract, it would present a
+  // difficult-to-track-down crash scenario.
+  CHECK(was_inserted);
+}
+
+const ModuleCache::Module* ModuleCache::GetExistingModuleForAddress(
+    uintptr_t address) const {
+  const auto non_native_module_loc = non_native_modules_.find(address);
+  if (non_native_module_loc != non_native_modules_.end())
+    return non_native_module_loc->get();
+
+  const auto native_module_loc = native_modules_.find(address);
+  if (native_module_loc != native_modules_.end())
+    return native_module_loc->get();
+
+  return nullptr;
 }
 
 bool ModuleCache::ModuleAndAddressCompare::operator()(

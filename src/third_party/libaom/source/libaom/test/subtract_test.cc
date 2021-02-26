@@ -159,6 +159,7 @@ class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
   uint8_t *pred_;
   int16_t *diff_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HBDSubtractBlockTest);
 
 void AV1HBDSubtractBlockTest::CheckResult() {
   const int test_num = 100;

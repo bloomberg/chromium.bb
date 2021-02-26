@@ -91,7 +91,7 @@ bool DeleteDirectoriesWithoutMatchingExecutable(
       const base::FilePath directory_path = install_dir.Append(directory_name);
       LOG(WARNING) << "Attempting to delete stray directory "
                    << directory_path.value();
-      if (!base::DeleteFileRecursively(directory_path)) {
+      if (!base::DeletePathRecursively(directory_path)) {
         PLOG(ERROR) << "Failed to delete stray directory "
                     << directory_path.value();
         success = false;
@@ -121,7 +121,7 @@ bool DeleteExecutablesWithoutMatchingDirectory(
       const base::FilePath executable_name = executable_path.BaseName();
       LOG(WARNING) << "Attempting to delete stray executable "
                    << executable_path.value();
-      if (!base::DeleteFile(executable_path, false)) {
+      if (!base::DeleteFile(executable_path)) {
         PLOG(ERROR) << "Failed to delete stray executable "
                     << executable_path.value();
         success = false;
@@ -185,7 +185,7 @@ bool DeleteVersion(const base::FilePath& version_directory,
   // Delete locked files. The files won't actually be deleted until the locks
   // are released.
   for (const base::FilePath& locked_file_path : locked_file_paths) {
-    if (!base::DeleteFile(locked_file_path, false)) {
+    if (!base::DeleteFile(locked_file_path)) {
       PLOG(ERROR) << "Failed to delete locked file "
                   << locked_file_path.value();
       success = false;
@@ -197,7 +197,7 @@ bool DeleteVersion(const base::FilePath& version_directory,
   locks.clear();
 
   // Delete the version directory.
-  if (!base::DeleteFileRecursively(version_directory)) {
+  if (!base::DeletePathRecursively(version_directory)) {
     PLOG(ERROR) << "Failed to delete version directory "
                 << version_directory.value();
     success = false;

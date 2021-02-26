@@ -25,8 +25,6 @@ namespace {
 template <typename T>
 class GlobalNativeIOImpl final : public GarbageCollected<GlobalNativeIOImpl<T>>,
                                  public Supplement<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(GlobalNativeIOImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -61,7 +59,7 @@ class GlobalNativeIOImpl final : public GarbageCollected<GlobalNativeIOImpl<T>>,
     return native_io_manager_;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(native_io_manager_);
     Supplement<T>::Trace(visitor);
   }

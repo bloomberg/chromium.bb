@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
+#include <unicode/unistr.h>
+#include <string>
+#include <tuple>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -43,6 +47,57 @@ TEST(FontCache, NoFallbackForPrivateUseArea) {
   }
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+TEST(FontCache, FallbackForEmojis) {
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
+  FontCachePurgePreventer purge_preventer;
+
+  FontDescription font_description;
+  font_description.SetGenericFamily(FontDescription::kStandardFamily);
+
+  static constexpr char kNotoColorEmoji[] = "Noto Color Emoji";
+
+  // We should use structured binding when it becomes available...
+  for (auto info : {
+           std::pair<UChar32, bool>{U'☺', true},
+           {U'👪', true},
+           {U'🤣', false},
+       }) {
+    UChar32 character = info.first;
+    // Set to true if the installed contour fonts support this glyph.
+    bool available_in_contour_font = info.second;
+    std::string character_utf8;
+    icu::UnicodeString(character).toUTF8String(character_utf8);
+
+    {
+      scoped_refptr<SimpleFontData> font_data =
+          font_cache->FallbackFontForCharacter(
+              font_description, character, nullptr,
+              FontFallbackPriority::kEmojiEmoji);
+      EXPECT_EQ(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+          << "Character " << character_utf8
+          << " doesn't match what we expected for kEmojiEmoji.";
+    }
+    {
+      scoped_refptr<SimpleFontData> font_data =
+          font_cache->FallbackFontForCharacter(
+              font_description, character, nullptr,
+              FontFallbackPriority::kEmojiText);
+      if (available_in_contour_font) {
+        EXPECT_NE(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+            << "Character " << character_utf8
+            << " doesn't match what we expected for kEmojiText.";
+      } else {
+        EXPECT_EQ(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+            << "Character " << character_utf8
+            << " doesn't match what we expected for kEmojiText.";
+      }
+    }
+  }
+}
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 TEST(FontCache, firstAvailableOrFirst) {
   EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").IsEmpty());
   EXPECT_TRUE(FontCache::FirstAvailableOrFirst(String()).IsEmpty());
@@ -74,7 +129,7 @@ TEST(FontCache, getLargerThanMaxUnsignedFont) {
   FontFaceCreationParams creation_params;
   scoped_refptr<blink::SimpleFontData> font_data =
       font_cache->GetFontData(font_description, AtomicString());
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_ANDROID) && !defined(OS_MAC) && !defined(OS_WIN)
   // Unfortunately, we can't ensure a font here since on Android and Mac the
   // unittests can't access the font configuration. However, this test passes
   // when it's not crashing in FontCache.
@@ -82,86 +137,11 @@ TEST(FontCache, getLargerThanMaxUnsignedFont) {
 #endif
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 TEST(FontCache, systemFont) {
   FontCache::SystemFontFamily();
   // Test the function does not crash. Return value varies by system and config.
 }
 #endif
-
-class EnumerationConsumer {
- public:
-  explicit EnumerationConsumer(
-      const std::vector<FontEnumerationEntry>& expectations) {
-    for (const auto& f : expectations) {
-      ps_name_set_.insert(f.postscript_name.Utf8());
-      full_name_set_.insert(f.full_name.Utf8());
-      family_set_.insert(f.family.Utf8());
-    }
-  }
-
-  void Consume(const std::vector<FontEnumerationEntry>& entries) {
-    for (auto f : entries) {
-      ps_name_set_.erase(f.postscript_name.Utf8());
-      full_name_set_.erase(f.full_name.Utf8());
-      family_set_.erase(f.family.Utf8());
-    }
-  }
-
-  bool AllExpectationsMet() {
-    return ps_name_set_.empty() && full_name_set_.empty() &&
-           family_set_.empty();
-  }
-
- private:
-  std::set<std::string> ps_name_set_;
-  std::set<std::string> full_name_set_;
-  std::set<std::string> family_set_;
-};
-
-TEST(FontCache, EnumerateAvailableFonts) {
-  FontCache* font_cache = FontCache::GetFontCache();
-  ASSERT_TRUE(font_cache);
-
-  std::vector<FontEnumerationEntry> expectations;
-
-#if defined(OS_MACOSX)
-  expectations.push_back(FontEnumerationEntry{"Monaco", "Monaco", "Monaco"});
-  expectations.push_back(
-      FontEnumerationEntry{"Menlo-Regular", "Menlo Regular", "Menlo"});
-  expectations.push_back(
-      FontEnumerationEntry{"Menlo-Bold", "Menlo Bold", "Menlo"});
-  expectations.push_back(
-      FontEnumerationEntry{"Menlo-BoldItalic", "Menlo Bold Italic", "Menlo"});
-#endif
-
-  auto entries = font_cache->EnumerateAvailableFonts();
-  auto consumer = EnumerationConsumer(expectations);
-
-  consumer.Consume(entries);
-  ASSERT_TRUE(consumer.AllExpectationsMet());
-}
-
-TEST(FontCache, EnumerateAvailableFontsInvalidation) {
-  FontCache* font_cache = FontCache::GetFontCache();
-  ASSERT_TRUE(font_cache);
-
-  // Make sure we start at zero.
-  font_cache->Invalidate();
-  size_t zero = 0;
-  ASSERT_EQ(zero, font_cache->EnumerationCacheSizeForTesting());
-
-  // The cache gets populated.
-  size_t enum_size_1 = font_cache->EnumerateAvailableFonts().size();
-  ASSERT_EQ(enum_size_1, font_cache->EnumerationCacheSizeForTesting());
-
-  // Invalidation clears the cache.
-  font_cache->Invalidate();
-  ASSERT_EQ(zero, font_cache->EnumerationCacheSizeForTesting());
-
-  // The cache gets re-populated.
-  size_t enum_size_2 = font_cache->EnumerateAvailableFonts().size();
-  ASSERT_EQ(enum_size_1, enum_size_2);
-}
 
 }  // namespace blink

@@ -14,13 +14,12 @@
     "sdk",
     "ui"
   ],
-  "scripts": [],
   "modules": [
     "console_counters.js",
     "console_counters-legacy.js",
     "WarningErrorCounter.js"
   ],
   "resources": [
-    "errorWarningCounter.css"
+    "warningErrorCounter.css"
   ]
 }

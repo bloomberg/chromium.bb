@@ -103,7 +103,7 @@ constexpr base::TimeDelta kTimeRemainingThreshold =
 const base::FilePath::CharType kWebstoreDownloadFolder[] =
     FILE_PATH_LITERAL("Webstore Downloads");
 
-base::FilePath* g_download_directory_for_tests = NULL;
+base::FilePath* g_download_directory_for_tests = nullptr;
 
 base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
                                    const std::string& id) {
@@ -224,13 +224,7 @@ void WebstoreInstaller::Delegate::OnExtensionDownloadProgress(
     const std::string& id,
     download::DownloadItem* item) {}
 
-WebstoreInstaller::Approval::Approval()
-    : profile(NULL),
-      use_app_installed_bubble(false),
-      skip_post_install_ui(false),
-      skip_install_dialog(false),
-      manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {
-}
+WebstoreInstaller::Approval::Approval() = default;
 
 std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
@@ -285,16 +279,12 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       delegate_(delegate),
       id_(id),
       install_source_(source),
-      download_item_(NULL),
-      approval_(approval.release()),
-      total_modules_(0),
-      download_started_(false) {
+      approval_(approval.release()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 content::Source<CrxInstaller>(NULL));
+  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+                 content::Source<CrxInstaller>(nullptr));
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
@@ -377,7 +367,7 @@ void WebstoreInstaller::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update) {
-  CHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  CHECK(profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
   if (pending_modules_.empty())
     return;
   SharedModuleInfo::ImportInfo info = pending_modules_.front();
@@ -389,7 +379,7 @@ void WebstoreInstaller::OnExtensionInstalled(
   if (download_item_) {
     download_item_->RemoveObserver(this);
     download_item_->Remove();
-    download_item_ = NULL;
+    download_item_ = nullptr;
   }
   crx_installer_.reset();
 
@@ -416,7 +406,7 @@ void WebstoreInstaller::OnExtensionInstalled(
 }
 
 void WebstoreInstaller::InvalidateDelegate() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
 }
 
 void WebstoreInstaller::SetDownloadDirectoryForTests(
@@ -427,7 +417,7 @@ void WebstoreInstaller::SetDownloadDirectoryForTests(
 WebstoreInstaller::~WebstoreInstaller() {
   if (download_item_) {
     download_item_->RemoveObserver(this);
-    download_item_ = NULL;
+    download_item_ = nullptr;
   }
 }
 
@@ -546,7 +536,7 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
 void WebstoreInstaller::OnDownloadDestroyed(DownloadItem* download) {
   CHECK_EQ(download_item_, download);
   download_item_->RemoveObserver(this);
-  download_item_ = NULL;
+  download_item_ = nullptr;
 }
 
 void WebstoreInstaller::DownloadNextPendingModule() {
@@ -607,11 +597,11 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!contents->GetRenderViewHost()) {
+  if (!contents->GetMainFrame()->GetRenderViewHost()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!contents->GetRenderViewHost()->GetProcess()) {
+  if (!contents->GetMainFrame()->GetRenderViewHost()->GetProcess()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
@@ -630,9 +620,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
   int render_process_host_id =
-      contents->GetRenderViewHost()->GetProcess()->GetID();
-  int render_view_host_routing_id =
-      contents->GetRenderViewHost()->GetRoutingID();
+      contents->GetMainFrame()->GetRenderViewHost()->GetProcess()->GetID();
 
   content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -658,16 +646,16 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
             "This feature cannot be disabled. It is only activated if the user "
             "triggers an extension installation."
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }
           }
         })");
   std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
-      download_url_, render_process_host_id, render_view_host_routing_id,
-      render_frame_host->GetRoutingID(), traffic_annotation));
+      download_url_, render_process_host_id, render_frame_host->GetRoutingID(),
+      traffic_annotation));
   params->set_file_path(file);
   if (controller.GetVisibleEntry()) {
     content::Referrer referrer = content::Referrer::SanitizeForRequest(
@@ -743,7 +731,7 @@ void WebstoreInstaller::ReportFailure(const std::string& error,
                                       FailureReason reason) {
   if (delegate_) {
     delegate_->OnExtensionInstallFailure(id_, error, reason);
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   extensions::InstallTracker* tracker =
@@ -756,7 +744,7 @@ void WebstoreInstaller::ReportFailure(const std::string& error,
 void WebstoreInstaller::ReportSuccess() {
   if (delegate_) {
     delegate_->OnExtensionInstallSuccess(id_);
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   Release();  // Balanced in Start().

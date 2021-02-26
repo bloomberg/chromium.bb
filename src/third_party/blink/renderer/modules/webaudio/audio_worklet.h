@@ -21,7 +21,6 @@ class SerializedScriptValue;
 
 class MODULES_EXPORT AudioWorklet final : public Worklet {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(AudioWorklet);
 
  public:
   explicit AudioWorklet(BaseAudioContext*);
@@ -51,7 +50,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   // are ready.
   bool IsReady();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implements Worklet

@@ -27,8 +27,6 @@ namespace {
 class MockPaymentStateResolver final
     : public GarbageCollected<MockPaymentStateResolver>,
       public PaymentStateResolver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentStateResolver);
-
  public:
   MockPaymentStateResolver() {
     ON_CALL(*this, Complete(testing::_, testing::_, testing::_))
@@ -46,7 +44,9 @@ class MockPaymentStateResolver final
                              const PaymentValidationErrors* errorFields,
                              ExceptionState&));
 
-  void Trace(Visitor* visitor) override { visitor->Trace(dummy_promise_); }
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(dummy_promise_);
+  }
 
  private:
   ScriptPromise dummy_promise_;

@@ -421,6 +421,26 @@ const DeviceCapabilities kLinkTouchpad = {
     base::size(kLinkTouchpadAbsAxes),
 };
 
+const DeviceCapabilities kMorphiusPointingStick = {
+    /* path */ "/sys/devices/platform/i8042/serio1/input/input12/event11",
+    /* name */ "TPPS/2 JYT_Synaptics TrackPoint",
+    /* phys */ "isa0060/serio1/input0",
+    /* uniq */ "",
+    /* bustype */ "0011",
+    /* vendor */ "0002",
+    /* product */ "000a",
+    /* version */ "0000",
+    /* prop */ "21",
+    /* ev */ "7",
+    /* key */ "70000 0 0 0 0",
+    /* rel */ "3",
+    /* abs */ "0",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+};
+
 // Captured from generic HP KU-1156 USB keyboard.
 const DeviceCapabilities kHpUsbKeyboard = {
     /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.3/2-1.3:1.0/"
@@ -1089,6 +1109,11 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
   if (!ParseBitfield(capabilities.led, LED_CNT, &led_bits))
     return false;
   devinfo->SetLedEvents(&led_bits[0], led_bits.size());
+
+  std::vector<unsigned long> ff_bits;
+  if (!ParseBitfield(capabilities.ff, FF_CNT, &ff_bits))
+    return false;
+  devinfo->SetFfEvents(&ff_bits[0], ff_bits.size());
 
   std::vector<unsigned long> prop_bits;
   if (!ParseBitfield(capabilities.prop, INPUT_PROP_CNT, &prop_bits))

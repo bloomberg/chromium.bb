@@ -15,14 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
 
 struct ConfigureContext;
+struct TypeEntitiesCount;
 class ModelTypeConfigurer;
 class SyncError;
 
@@ -42,12 +41,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
     FAILED           // The controller was started but encountered an error.
   };
 
-  // Returned from RegisterWithBackend.
-  enum RegisterWithBackendResult {
-    // Used when RegisterWithBackend is called on an already-registered type.
-    // TODO(crbug.com/647505): Get rid of this entry entirely if possible.
-    REGISTRATION_IGNORED,
-    // Indicates that the initial download for this type is already complete.
+  // Returned from ActivateDataType.
+  enum ActivateDataTypeResult {
+    // Indicates that the initial download for this type is already complete, or
+    // wasn't needed in the first place (e.g. for proxy types).
     TYPE_ALREADY_DOWNLOADED,
     // Indicates that the initial download for this type still needs to be done.
     TYPE_NOT_YET_DOWNLOADED,
@@ -64,9 +61,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
       base::OnceCallback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>;
 
-  using StatusCountersCallback =
-      base::OnceCallback<void(ModelType, const StatusCounters&)>;
-
   using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
   using TypeVector = std::vector<std::unique_ptr<DataTypeController>>;
 
@@ -82,11 +76,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual void LoadModels(const ConfigureContext& configure_context,
                           const ModelLoadCallback& model_load_callback) = 0;
 
-  // Registers with sync backend if needed. This function is called by
-  // DataTypeManager before downloading initial data. Returns whether the
-  // initial download for this type is already complete.
-  // TODO(crbug.com/647505): Rename this function to ActivateDataType().
-  virtual RegisterWithBackendResult RegisterWithBackend(
+  // Called by DataTypeManager once the local model has loaded, but before
+  // downloading initial data (if necessary). Returns whether the initial
+  // download for this type is already complete.
+  virtual ActivateDataTypeResult ActivateDataType(
       ModelTypeConfigurer* configurer) = 0;
 
   // Called by DataTypeManager to deactivate the controlled data type.
@@ -123,15 +116,19 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   };
   virtual PreconditionState GetPreconditionState() const;
 
+  // Returns whether the datatype knows how to, and wants to, run in
+  // transport-only mode (see syncer::SyncMode enum).
+  virtual bool ShouldRunInTransportOnlyMode() const = 0;
+
   // Returns a ListValue representing all nodes for this data type through
   // |callback| on this thread. Can only be called if state() != NOT_RUNNING.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   virtual void GetAllNodes(AllNodesCallback callback) = 0;
 
-  // Collects StatusCounters for this datatype and passes them to |callback|.
-  // Used to display entity counts in chrome://sync-internals. Can be called
-  // only if state() != NOT_RUNNING.
-  virtual void GetStatusCounters(StatusCountersCallback callback) = 0;
+  // Collects TypeEntitiesCount for this datatype and passes them to |callback|.
+  // Used to display entity counts in chrome://sync-internals.
+  virtual void GetTypeEntitiesCount(
+      base::OnceCallback<void(const TypeEntitiesCount&)> callback) const = 0;
 
   // Records entities count and estimated memory usage of the type into
   // histograms. Can be called only if state() != NOT_RUNNING.

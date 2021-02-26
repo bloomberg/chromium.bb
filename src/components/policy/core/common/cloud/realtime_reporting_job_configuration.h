@@ -12,39 +12,25 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/reporting_job_configuration_base.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
 
 class CloudPolicyClient;
-class DMAuth;
 
 class POLICY_EXPORT RealtimeReportingJobConfiguration
-    : public JobConfigurationBase {
+    : public ReportingJobConfigurationBase {
  public:
   // Keys used in report dictionary.
   static const char kContextKey[];
   static const char kEventListKey[];
 
-  // Keys used in request payload dictionary.  Public for testing.
-  static const char kBrowserIdKey[];
-  static const char kChromeVersionKey[];
-  static const char kClientIdKey[];
-  static const char kDmTokenKey[];
-  static const char kEventsKey[];
-  static const char kMachineUserKey[];
-  static const char kOsPlatformKey[];
-  static const char kOsVersionKey[];
+  // Keys used to parse the response.
+  static const char kEventIdKey[];
   static const char kUploadedEventsKey[];
   static const char kFailedUploadsKey[];
   static const char kPermanentFailedUploadsKey[];
-  static const char kEventIdKey[];
-
-  typedef base::OnceCallback<void(DeviceManagementService::Job* job,
-                                  DeviceManagementStatus code,
-                                  int net_error,
-                                  const base::Value&)>
-      Callback;
 
   // Combines the info given in |events| that corresponds to Event proto, and
   // info given in |context| that corresponds to the Device, Browser and Profile
@@ -52,9 +38,16 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
   // google3/google/internal/chrome/reporting/v1/chromereporting.proto.
   static base::Value BuildReport(base::Value events, base::Value context);
 
+  // Configures a request to send real-time reports to the |server_url|
+  // endpoint.  If |add_connector_url_params| is true then URL parameters
+  // specific to enterprise connectors are added to the request uploading
+  // the report.  |callback| is invoked once the report is uploaded.
+  // |add_connector_url_params| will flip whether the service provider endpoint
+  // parameters will be used.
   RealtimeReportingJobConfiguration(CloudPolicyClient* client,
-                                    std::unique_ptr<DMAuth> auth_data,
-                                    Callback callback);
+                                    const std::string& server_url,
+                                    bool add_connector_url_params,
+                                    UploadCompleteCallback callback);
 
   ~RealtimeReportingJobConfiguration() override;
 
@@ -69,33 +62,25 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
   // Returns true if the report was added successfully.
   bool AddReport(base::Value report);
 
-  // DeviceManagementService::JobConfiguration.
-  std::string GetPayload() override;
-  std::string GetUmaName() override;
-  DeviceManagementService::Job::RetryMethod ShouldRetry(
+ protected:
+  // ReportingJobConfigurationBase
+  DeviceManagementService::Job::RetryMethod ShouldRetryInternal(
       int response_code,
-      const std::string& response_body) override;
-  void OnBeforeRetry(int response_code,
-                     const std::string& response_body) override;
-  void OnURLLoadComplete(DeviceManagementService::Job* job,
-                         int net_error,
-                         int response_code,
-                         const std::string& response_body) override;
+      const std::string& response) override;
+  void OnBeforeRetryInternal(int response_code,
+                             const std::string& response_body) override;
 
-  // JobConfigurationBase overrides.
-  GURL GetURL(int last_error) override;
+  std::string GetUmaString() const override;
 
  private:
   // Does one time initialization of the payload when the configuration is
   // created.
-  void InitializePayload(CloudPolicyClient* client);
+  void InitializePayloadInternal(CloudPolicyClient* client,
+                                 bool add_connector_url_params);
 
   // Gathers the ids of the uploads that failed
-  std::set<std::string> GetFailedUploadIds(const std::string& response_body);
-
-  std::string server_url_;
-  base::Value payload_;
-  Callback callback_;
+  std::set<std::string> GetFailedUploadIds(
+      const std::string& response_body) const;
 
   DISALLOW_COPY_AND_ASSIGN(RealtimeReportingJobConfiguration);
 };

@@ -17,15 +17,16 @@
 #include "extensions/common/extension_urls.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
 const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
+
+bool g_log_response_code_for_testing_ = false;
 
 }  // namespace
 
@@ -40,6 +41,11 @@ WebstoreDataFetcher::WebstoreDataFetcher(WebstoreDataFetcherDelegate* delegate,
       max_auto_retries_(0) {}
 
 WebstoreDataFetcher::~WebstoreDataFetcher() {}
+
+// static
+void WebstoreDataFetcher::SetLogResponseCodeForTesting(bool enabled) {
+  g_log_response_code_for_testing_ = enabled;
+}
 
 void WebstoreDataFetcher::Start(
     network::mojom::URLLoaderFactory* url_loader_factory) {
@@ -90,10 +96,27 @@ void WebstoreDataFetcher::Start(
         network::SimpleURLLoader::RETRY_ON_5XX |
             network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   }
+
+  if (g_log_response_code_for_testing_) {
+    simple_url_loader_->SetOnResponseStartedCallback(base::BindOnce(
+        &WebstoreDataFetcher::OnResponseStarted, base::Unretained(this)));
+  }
+
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory,
       base::BindOnce(&WebstoreDataFetcher::OnSimpleLoaderComplete,
                      base::Unretained(this)));
+}
+
+void WebstoreDataFetcher::OnResponseStarted(
+    const GURL& final_url,
+    const network::mojom::URLResponseHead& response_head) {
+  if (!response_head.headers)
+    return;
+
+  int response_code = response_head.headers->response_code();
+  if (response_code != 200)
+    LOG(ERROR) << "Response_code: " << response_code;
 }
 
 void WebstoreDataFetcher::OnJsonParsed(

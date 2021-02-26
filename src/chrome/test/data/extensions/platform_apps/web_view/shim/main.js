@@ -25,6 +25,8 @@ embedder.setUp_ = function(config) {
     return;
   }
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
+  embedder.echoURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/echo.html';
   embedder.emptyGuestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/empty_guest.html';
   embedder.windowOpenGuestURL = embedder.baseGuestURL +
@@ -2852,7 +2854,41 @@ function testLoadDataAPI() {
 
   webview.addEventListener('loadstop', loadstopListener1);
   document.body.appendChild(webview);
-};
+}
+
+// loadDataWithBaseUrl cannot generally be used with a chrome-extension:// base
+// URL, however the embedding extension may use its own chrome-extension://
+// origin. We test that an embedder can use its own origin as the base and that
+// relative URLs resolve to it by loading something in the guest from the
+// embedder's accessible_resources.
+function testLoadDataAPIAccessibleResources() {
+  let webview = new WebView();
+  // The accessible_resources listed in the manifest file are under the
+  // "foobar" partition.
+  webview.partition = 'foobar';
+  webview.src = 'about:blank';
+
+  let loadstopListener2 = function() {
+    webview.executeScript(
+        {code: 'document.querySelector(\'img\').src'}, (e) => {
+          embedder.test.assertEq(e, location.origin + '/test.bmp');
+          embedder.test.succeed();
+        });
+  };
+
+  let loadstopListener1 = function() {
+    webview.removeEventListener('loadstop', loadstopListener1);
+    webview.addEventListener('loadstop', loadstopListener2);
+
+    let encodedData =
+        window.btoa('<html>This is a test.<br><img src="test.bmp"><br></html>');
+    webview.loadDataWithBaseUrl('data:text/html;base64,' + encodedData,
+                                location.origin);
+  };
+
+  webview.addEventListener('loadstop', loadstopListener1);
+  document.body.appendChild(webview);
+}
 
 // Test that the resize events fire with the correct values, and in the
 // correct order, when resizing occurs.
@@ -3139,11 +3175,22 @@ function testMailtoLink() {
 }
 
 // This test verifies that an embedder can navigate a WebView to a blob URL it
-// creates.
+// creates. Additionally this test also verifies that an embedder can't navigate
+// to a blob URL a WebView creates.
 function testBlobURL() {
   var webview = new WebView();
-  var blob = new Blob(['<html><body>Blob content</body></html>'],
-                      {type: 'text/html'});
+  var blob =
+      new Blob([`
+<html>
+  <body>Blob content</body>
+  <script>
+    self.onmessage = e => {
+      const blob = new Blob(['hello world']);
+      const url = URL.createObjectURL(blob);
+      e.ports[0].postMessage(url);
+    };
+  </script>
+</html>`], {type: 'text/html'});
   var blobURL = URL.createObjectURL(blob);
   webview.src = blobURL;
 
@@ -3154,7 +3201,19 @@ function testBlobURL() {
   };
   webview.onloadstop = function() {
     embedder.test.assertTrue(webview.src == blobURL);
-    embedder.test.succeed();
+    const channel = new MessageChannel();
+    webview.contentWindow.postMessage('', '*', [channel.port1]);
+    channel.port2.onmessage = e => {
+      embedder.test.assertTrue(e.data.startsWith('blob:' + window.origin));
+      fetch(e.data).then(
+          () => {
+            window.console.log('Blob URL load incorrectly succeeded.');
+            embedder.test.fail();
+          },
+          () => {
+            embedder.test.succeed();
+          });
+    };
   };
 
   document.body.appendChild(webview);
@@ -3251,6 +3310,36 @@ function testSelectPopupPositionInMac() {
   });
 
   webview.setAttribute('src', chrome.runtime.getURL('guest_with_select.html'));
+  document.body.appendChild(webview);
+}
+
+function testWebRequestBlockedNavigation() {
+  var webview = new WebView();
+  webview.addEventListener('loadcommit', (e) => {
+    // Cancel all subsequent requests.
+    webview.request.onHeadersReceived.addListener(() => {
+      return {cancel: true};
+    }, {urls: ['<all_urls>']}, ['blocking']);
+
+    // TODO(mcnee): Consider testing that a 'loadabort' event is fired as well.
+
+    // When a request is cancelled, it will eventually fire a loadstop event. If
+    // webview hasn't been navigated away from the echo page to an error page,
+    // it will echo MessageEvent.data back.
+    webview.addEventListener('loadstop', () => {
+      // Note: simply checking `src` doesn't work here, since it's set to the
+      // URL of the last attempted navigation (which was blocked).
+      // TODO(https://crbug.com/1126515): Clarify/figure out how the src
+      // attribute should behave.
+      webview.contentWindow.postMessage('moo', '*');
+    });
+    window.addEventListener('message', (e) => {
+      embedder.test.assertEq('moo', e.data);
+      embedder.test.succeed();
+    });
+    webview.src = embedder.emptyGuestURL;
+  });
+  webview.src = embedder.echoURL;
   document.body.appendChild(webview);
 }
 
@@ -3362,6 +3451,7 @@ embedder.test.testList = {
   'testFindAPI_findupdate': testFindAPI_findupdate,
   'testFindInMultipleWebViews': testFindInMultipleWebViews,
   'testLoadDataAPI': testLoadDataAPI,
+  'testLoadDataAPIAccessibleResources': testLoadDataAPIAccessibleResources,
   'testResizeEvents': testResizeEvents,
   'testPerOriginZoomMode': testPerOriginZoomMode,
   'testPerViewZoomMode': testPerViewZoomMode,
@@ -3378,7 +3468,8 @@ embedder.test.testList = {
        testRendererNavigationRedirectWhileUnattached,
   'testBlobURL': testBlobURL,
   'testWebViewAndEmbedderInNewWindow': testWebViewAndEmbedderInNewWindow,
-  'testSelectPopupPositionInMac': testSelectPopupPositionInMac
+  'testSelectPopupPositionInMac': testSelectPopupPositionInMac,
+  'testWebRequestBlockedNavigation': testWebRequestBlockedNavigation
 };
 
 onload = function() {

@@ -1,4 +1,9 @@
-    <style include="cr-hidden-style">
+    <style include="pdf-shared cr-hidden-style">
+      :host {
+        --pdf-toolbar-background-color: rgb(50, 54, 57);
+        --pdf-toolbar-text-color: rgb(241, 241, 241);
+      }
+
       :host ::selection {
         background: rgba(255, 255, 255, 0.3);
       }
@@ -22,7 +27,6 @@
       }
 
       #pageselector-container {
-        text-align: center;
         /* The container resizes according to the width of the toolbar. On small
          * screens with large numbers of pages, overflow page numbers without
          * wrapping. */
@@ -35,16 +39,6 @@
         user-select: none;
       }
 
-      cr-icon-button {
-        --cr-icon-button-fill-color: rgb(241, 241, 241);
-        margin: 6px;
-      }
-
-      cr-icon-button:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-      }
-
       paper-progress {
         --paper-progress-active-color: var(--google-blue-300);
         --paper-progress-container-color: transparent;
@@ -54,23 +48,13 @@
       }
 
       #toolbar {
-        @apply --shadow-elevation-2dp;
-        background-color: rgb(50, 54, 57);
-        position: relative;
-      }
-
-      #annotations-bar {
-        align-items: center;
-        background-color: rgb(32, 33, 34);
-        justify-content: center;
-      }
-
-      #toolbar,
-      #annotations-bar {
-        color: rgb(241, 241, 241);
+        background-color: var(--pdf-toolbar-background-color);
+        box-shadow: var(--cr-elevation-2);
+        color: var(--pdf-toolbar-text-color);
         display: flex;
         height: 48px;
         padding: 0 16px;
+        position: relative;
       }
 
       #progress-container {
@@ -83,37 +67,8 @@
         width: auto;
       }
 
-      #pen,
-      #highlighter {
-        --dropdown-width: 346px;
-      }
-
-      #pen,
-      #highlighter {
-        --dropdown-open-background: rgb(50, 54, 57);
-      }
-
-      #eraser {
-        opacity: 0.38;
-      }
-
-      #eraser[selected],
-      #eraser:focus,
-      #eraser:hover {
-        opacity: 1;
-      }
-
-      #annotation-separator {
-        background: white;
-        height: 30px;
-        margin-inline-end: 12px;
-        margin-inline-start: 12px;
-        opacity: 0.38;
-        width: 1px;
-      }
-
       :host([annotation-mode]) #annotate {
-        background-color: rgba(255, 255, 255, 0.24);
+        background-color: var(--active-button-bg);
         border-radius: 50%;
       }
 
@@ -121,26 +76,13 @@
         margin-inline-start: 8px;
       }
 
-      #pen {
-        margin-inline-end: 10px;
-      }
-
-      #highlighter {
-        margin-inline-end: 6px;
-      }
-
       .invisible {
         visibility: hidden;
       }
 
       @media(max-width: 675px) {
-        #bookmarks,
-        #rotate-left {
+        #bookmarks {
           display: none;
-        }
-
-        #pageselector-container {
-          flex: 2;
         }
       }
 
@@ -159,37 +101,40 @@
     </style>
     <div id="toolbar">
       <div id="aligner">
-        <span id="title" title="{{docTitle}}">
-          <span>{{docTitle}}</span>
+        <span id="title" title="[[docTitle]]">
+          <span>[[docTitle]]</span>
         </span>
 
         <div id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
-              doc-length="{{docLength}}" page-no="{{pageNo}}"
-              strings="{{strings}}">
+              doc-length="[[docLength]]" page-no="[[pageNo]]">
           </viewer-page-selector>
         </div>
 
         <div id="buttons" class="invisible">
+<if expr="chromeos">
           <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
             <cr-icon-button id="annotate" iron-icon="pdf:create"
                 disabled="[[!annotationAvailable]]" on-click="toggleAnnotation"
-                aria-label$="{{strings.tooltipAnnotate}}"
-                title$="{{strings.tooltipAnnotate}}"></cr-icon-button>
+                aria-label="$i18n{tooltipAnnotate}"
+                title="$i18n{tooltipAnnotate}"></cr-icon-button>
           </template>
+</if>
 
           <cr-icon-button id="rotate-right" iron-icon="pdf:rotate-right"
               disabled="[[annotationMode]]" on-click="rotateRight"
-              aria-label$="{{strings.tooltipRotateCW}}"
-              title$="{{strings.tooltipRotateCW}}"></cr-icon-button>
-
-          <cr-icon-button id="download" iron-icon="cr:file-download"
-              on-click="download" aria-label$="{{strings.tooltipDownload}}"
-              title$="{{strings.tooltipDownload}}"></cr-icon-button>
+              aria-label="$i18n{tooltipRotateCW}"
+              title="$i18n{tooltipRotateCW}"></cr-icon-button>
+          <viewer-download-controls id="downloads"
+              has-edits="[[hasEdits]]"
+              has-entered-annotation-mode="[[hasEnteredAnnotationMode]]"
+              is-form-field-focused="[[isFormFieldFocused]]"
+              pdf-form-save-enabled="[[pdfFormSaveEnabled]]">
+          </viewer-download-controls>
 
           <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
-              hidden="[[!printingEnabled]]" title$="{{strings.tooltipPrint}}"
-              aria-label$="{{strings.tooltipPrint}}"></cr-icon-button>
+              hidden="[[!printingEnabled]]" title="$i18n{tooltipPrint}"
+              aria-label="$i18n{tooltipPrint}"></cr-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
                                    selected
@@ -197,7 +142,7 @@
                                    hidden$="[[!bookmarks.length]]"
                                    open-icon="pdf:bookmark"
                                    closed-icon="pdf:bookmark-border"
-                                   header="{{strings.bookmarks}}">
+                                   header="$i18n{bookmarks}">
             <template is="dom-repeat" items="[[bookmarks]]">
               <viewer-bookmark bookmark="[[item]]" depth="0"></viewer-bookmark>
             </template>
@@ -211,60 +156,8 @@
       </div>
     </div>
 
-    <div id="annotations-bar" hidden>
-      <viewer-toolbar-dropdown id="pen"
-          selected$="[[isAnnotationTool_('pen', annotationTool.tool)]]"
-          open-after-select
-          on-click="annotationToolClicked_"
-          open-icon="pdf:marker"
-          closed-icon="pdf:marker"
-          dropdown-centered
-          hide-header
-          header$="{{strings.annotationPen}}"
-          style="--pen-tip-fill: #000000">
-        <viewer-pen-options
-          selected-color="#000000"
-          selected-size="0.1429"
-          strings="[[strings]]"
-          on-selected-size-changed="annotationToolOptionChanged_"
-          on-selected-color-changed="annotationToolOptionChanged_">
-        </viewer-pen-options>
-      </viewer-toolbar-dropdown>
-
-      <viewer-toolbar-dropdown id="highlighter"
-          selected$="[[isAnnotationTool_('highlighter', annotationTool.tool)]]"
-          open-after-select
-          on-click="annotationToolClicked_"
-          open-icon="pdf:highlighter"
-          closed-icon="pdf:highlighter"
-          dropdown-centered
-          hide-header
-          header$="{{strings.annotationHighlighter}}"
-          style="--pen-tip-fill: #ffbc00">
-        <viewer-pen-options
-          selected-color="#ffbc00"
-          selected-size="0.7143"
-          strings="[[strings]]"
-          on-selected-size-changed="annotationToolOptionChanged_"
-          on-selected-color-changed="annotationToolOptionChanged_">
-        </viewer-pen-options>
-      </viewer-toolbar-dropdown>
-
-      <cr-icon-button id="eraser"
-          selected$="[[isAnnotationTool_('eraser', annotationTool.tool)]]"
-          on-click="annotationToolClicked_" iron-icon="pdf:eraser"
-          aria-label$="{{strings.annotationEraser}}"
-          title$="{{strings.annotationEraser}}"></cr-icon-button>
-
-      <div id="annotation-separator"></div>
-
-      <cr-icon-button id="undo" disabled="[[!canUndoAnnotation]]"
-          iron-icon="pdf:undo" on-click="undo"
-          aria-label$="{{strings.annotationUndo}}"
-          title$="{{strings.annotationUndo}}"></cr-icon-button>
-
-      <cr-icon-button id="redo" disabled="[[!canRedoAnnotation]]"
-          iron-icon="pdf:redo" on-click="redo"
-          aria-label$="{{strings.annotationRedo}}"
-          title$="{{strings.annotationRedo}}"></cr-icon-button>
-    </div>
+<if expr="chromeos">
+    <viewer-annotations-bar annotation-mode="[[annotationMode]]"
+        ink-controller="[[inkController]]" hidden>
+    </viewer-annotations-bar>
+</if>

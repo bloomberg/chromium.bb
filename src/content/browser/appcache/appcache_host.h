@@ -65,6 +65,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
                                     public AppCacheGroup::UpdateObserver,
                                     public AppCacheServiceImpl::Observer {
  public:
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
+
   class CONTENT_EXPORT Observer {
    public:
     Observer(const Observer&) = delete;
@@ -87,6 +89,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
       const base::UnguessableToken& host_id,
       int process_id,
       int render_frame_id,
+      SecurityPolicyHandle security_policy_handle,
       mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       AppCacheServiceImpl* service);
   ~AppCacheHost() override;
@@ -127,7 +130,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // May return NULL if the request isn't subject to retrieval from an appache.
   std::unique_ptr<AppCacheRequestHandler> CreateRequestHandler(
       std::unique_ptr<AppCacheRequest> request,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       bool should_reset_appcache);
 
   // Support for devtools inspecting appcache resources.
@@ -180,7 +183,6 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     return process_id_;
   }
 
-  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
   SecurityPolicyHandle* security_policy_handle() {
     return &security_policy_handle_;
   }

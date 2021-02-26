@@ -4,9 +4,8 @@
 
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 
-#include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "chrome/common/media_router/mojom/media_status.mojom.h"
+#include "components/media_router/common/mojom/media_status.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -64,6 +63,7 @@ void CastMediaSessionController::Send(
     case media_session::mojom::MediaSessionAction::kScrubTo:
     case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
     case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
+    case media_session::mojom::MediaSessionAction::kSwitchAudioDevice:
       NOTREACHED();
       return;
   }
@@ -101,9 +101,9 @@ void CastMediaSessionController::IncrementCurrentTimeAfterOneSecond() {
                      weak_ptr_factory_.GetWeakPtr()));
   // TODO(crbug.com/1052156): If the playback rate is not 1, we must increment
   // at a different rate.
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        increment_current_time_callback_.callback(),
-                        base::TimeDelta::FromSeconds(1));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, increment_current_time_callback_.callback(),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void CastMediaSessionController::IncrementCurrentTime() {

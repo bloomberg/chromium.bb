@@ -23,6 +23,7 @@ EffectNode::EffectNode()
       double_sided(true),
       trilinear_filtering(false),
       is_drawn(true),
+      only_draws_visible_content(true),
       subtree_hidden(false),
       has_potential_filter_animation(false),
       has_potential_backdrop_filter_animation(false),
@@ -34,6 +35,8 @@ EffectNode::EffectNode()
       effect_changed(false),
       subtree_has_copy_request(false),
       is_fast_rounded_corner(false),
+      node_or_ancestor_has_filters(false),
+      affected_by_backdrop_filter(false),
       render_surface_reason(RenderSurfaceReason::kNone),
       transform_id(0),
       clip_id(0),
@@ -45,6 +48,7 @@ EffectNode::EffectNode(const EffectNode& other) = default;
 
 EffectNode::~EffectNode() = default;
 
+#if DCHECK_IS_ON()
 bool EffectNode::operator==(const EffectNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
          stable_id == other.stable_id && opacity == other.opacity &&
@@ -56,9 +60,10 @@ bool EffectNode::operator==(const EffectNode& other) const {
          backdrop_filters == other.backdrop_filters &&
          backdrop_filter_bounds == other.backdrop_filter_bounds &&
          backdrop_mask_element_id == other.backdrop_mask_element_id &&
-         filters_origin == other.filters_origin &&
-         rounded_corner_bounds == other.rounded_corner_bounds &&
+         mask_filter_info == other.mask_filter_info &&
          is_fast_rounded_corner == other.is_fast_rounded_corner &&
+         node_or_ancestor_has_filters == other.node_or_ancestor_has_filters &&
+         affected_by_backdrop_filter == other.affected_by_backdrop_filter &&
          // The specific reason is just for tracing/testing/debugging, so just
          // check whether a render surface is needed.
          HasRenderSurface() == other.HasRenderSurface() &&
@@ -67,7 +72,9 @@ bool EffectNode::operator==(const EffectNode& other) const {
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided &&
          trilinear_filtering == other.trilinear_filtering &&
-         is_drawn == other.is_drawn && subtree_hidden == other.subtree_hidden &&
+         is_drawn == other.is_drawn &&
+         only_draws_visible_content == other.only_draws_visible_content &&
+         subtree_hidden == other.subtree_hidden &&
          has_potential_filter_animation ==
              other.has_potential_filter_animation &&
          has_potential_backdrop_filter_animation ==
@@ -89,6 +96,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          closest_ancestor_with_copy_request_id ==
              other.closest_ancestor_with_copy_request_id;
 }
+#endif  // DCHECK_IS_ON()
 
 const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
   switch (reason) {
@@ -150,10 +158,18 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   if (!backdrop_filters.IsEmpty())
     value->SetString("backdrop_filters", backdrop_filters.ToString());
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
-  value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
-  if (!rounded_corner_bounds.IsEmpty()) {
-    MathUtil::AddToTracedValue("rounded_corner_bounds", rounded_corner_bounds,
+  value->SetBoolean("node_or_ancestor_has_filters",
+                    node_or_ancestor_has_filters);
+  if (!mask_filter_info.IsEmpty()) {
+    MathUtil::AddToTracedValue("mask_filter_bounds", mask_filter_info.bounds(),
                                value);
+    if (mask_filter_info.HasRoundedCorners()) {
+      MathUtil::AddCornerRadiiToTracedValue(
+          "mask_filter_rounded_corner_raii",
+          mask_filter_info.rounded_corner_bounds(), value);
+      value->SetBoolean("mask_filter_is_fast_rounded_corner",
+                        is_fast_rounded_corner);
+    }
   }
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("cache_render_surface", cache_render_surface);
@@ -163,6 +179,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     hidden_by_backface_visibility);
   value->SetBoolean("trilinear_filtering", trilinear_filtering);
   value->SetBoolean("is_drawn", is_drawn);
+  value->SetBoolean("only_draws_visible_content", only_draws_visible_content);
   value->SetBoolean("has_potential_filter_animation",
                     has_potential_filter_animation);
   value->SetBoolean("has_potential_backdrop_filter_animation",
@@ -181,6 +198,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     closest_ancestor_with_cached_render_surface_id);
   value->SetInteger("closest_ancestor_with_copy_request_id",
                     closest_ancestor_with_copy_request_id);
+  value->SetBoolean("affected_by_backdrop_filter", affected_by_backdrop_filter);
 }
 
 }  // namespace cc

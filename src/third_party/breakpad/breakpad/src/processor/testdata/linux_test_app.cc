@@ -51,8 +51,8 @@
 namespace {
 
 // google_breakpad::MinidumpCallback to invoke after minidump generation.
-static bool callback(const char *dump_path, const char *id,
-                     void *context,
+static bool callback(const char* dump_path, const char* id,
+                     void* context,
                      bool succeeded) {
   if (succeeded) {
     printf("dump guid is %s\n", id);
@@ -65,13 +65,13 @@ static bool callback(const char *dump_path, const char *id,
 }
 
 static void CrashFunction() {
-  int *i = reinterpret_cast<int*>(0x45);
+  int* i = reinterpret_cast<int*>(0x45);
   *i = 5;  // crash!
 }
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   google_breakpad::ExceptionHandler eh(".", NULL, callback, NULL, true);
   if (!eh.WriteMinidump()) {
     printf("Failed to generate on-demand minidump\n");

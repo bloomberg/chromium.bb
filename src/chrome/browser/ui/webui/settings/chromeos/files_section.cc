@@ -52,7 +52,8 @@ const std::vector<SearchConcept>& GetFilesSearchConcepts() {
 FilesSection::FilesSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetFilesSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetFilesSearchConcepts());
 }
 
 FilesSection::~FilesSection() = default;
@@ -100,6 +101,37 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 void FilesSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<chromeos::smb_dialog::SmbHandler>(
       profile(), base::DoNothing()));
+}
+
+int FilesSection::GetSectionNameMessageId() const {
+  return IDS_OS_SETTINGS_FILES;
+}
+
+mojom::Section FilesSection::GetSection() const {
+  return mojom::Section::kFiles;
+}
+
+mojom::SearchResultIcon FilesSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kFolder;
+}
+
+std::string FilesSection::GetSectionPath() const {
+  return mojom::kFilesSectionPath;
+}
+
+bool FilesSection::LogMetric(mojom::Setting setting, base::Value& value) const {
+  // Unimplemented.
+  return false;
+}
+
+void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  generator->RegisterTopLevelSetting(mojom::Setting::kGoogleDriveConnection);
+
+  // Network file shares.
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_DOWNLOADS_SMB_SHARES, mojom::Subpage::kNetworkFileShares,
+      mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kNetworkFileSharesSubpagePath);
 }
 
 }  // namespace settings

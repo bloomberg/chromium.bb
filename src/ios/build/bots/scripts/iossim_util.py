@@ -129,7 +129,16 @@ def create_device_by_platform_and_version(platform, version):
     udid = subprocess.check_output(
         ['xcrun', 'simctl', 'create', name, device_type, runtime],
         stderr=subprocess.STDOUT).rstrip()
-    LOGGER.info('Created simulator with UDID: %s', udid)
+    LOGGER.info('Created simulator in first attempt with UDID: %s', udid)
+    # Sometimes above command fails to create a simulator. Verify it and retry
+    # once if first attempt failed.
+    if not is_device_with_udid_simulator(udid):
+      # Try to delete once to avoid duplicate in case of race condition.
+      delete_simulator_by_udid(udid)
+      udid = subprocess.check_output(
+          ['xcrun', 'simctl', 'create', name, device_type, runtime],
+          stderr=subprocess.STDOUT).rstrip()
+      LOGGER.info('Created simulator in second attempt with UDID: %s', udid)
     return udid
   except subprocess.CalledProcessError as e:
     LOGGER.error('Error when creating simulator "%s": %s' % (name, e.output))
@@ -143,7 +152,14 @@ def delete_simulator_by_udid(udid):
     udid: (str) UDID of simulator.
   """
   LOGGER.info('Deleting simulator %s', udid)
-  subprocess.call(['xcrun', 'simctl', 'delete', udid])
+  try:
+    subprocess.check_output(['xcrun', 'simctl', 'delete', udid],
+                            stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    # Logging error instead of throwing so we don't cause failures in case
+    # this was indeed failing to clean up.
+    message = 'Failed to delete simulator %s with error %s' % (udid, e.output)
+    LOGGER.error(message)
 
 
 def wipe_simulator_by_udid(udid):
@@ -161,7 +177,7 @@ def wipe_simulator_by_udid(udid):
         if device['state'] != 'Shutdown':
           subprocess.check_call(['xcrun', 'simctl', 'shutdown', device['udid']])
       except subprocess.CalledProcessError as ex:
-        LOGGER.info('Shutdown failed %s ', ex)
+        LOGGER.error('Shutdown failed %s ', ex)
       subprocess.check_call(['xcrun', 'simctl', 'erase', device['udid']])
 
 

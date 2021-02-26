@@ -29,14 +29,14 @@ if (enable_nacl) {
       ":minimal_content_dummy",
       ":switches",
       "//ipc",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
     ]
 
     deps = [
       ":nacl_error_code",
       "//base",
       "//base:base_static",
-      "//content/public/common:service_names",
+      "//content/public/common:content_descriptors",
       "//mojo/core/embedder",
       "//services/service_manager/public/cpp",
     ]
@@ -81,7 +81,7 @@ if (enable_nacl) {
       "//url",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "nacl_paths.cc",
         "nacl_paths.h",
@@ -92,12 +92,16 @@ if (enable_nacl) {
   }
 
   source_set("debug_exception_handler") {
-    sources = [
-      "nacl_debug_exception_handler_win.cc",
-      "nacl_debug_exception_handler_win.h",
-    ]
+    sources = []
 
     deps = [ "//base" ]
+
+    if (is_win) {
+      sources += [
+        "nacl_debug_exception_handler_win.cc",
+        "nacl_debug_exception_handler_win.h",
+      ]
+    }
   }
 
   source_set("nacl_error_code") {
@@ -107,6 +111,25 @@ if (enable_nacl) {
 
   mojom("mojo_bindings") {
     sources = [ "nacl.mojom" ]
+    cpp_typemaps = [
+      {
+        types = [
+          {
+            mojom = "nacl.mojom.NaClErrorCode"
+            cpp = "::NaClErrorCode"
+          },
+        ]
+        traits_headers =
+            [ "//native_client/src/trusted/service_runtime/nacl_error_code.h" ]
+        traits_private_headers =
+            [ "//components/nacl/common/nacl_types_param_traits.h" ]
+        traits_public_deps = [
+          ":minimal",
+          ":nacl_error_code",
+        ]
+        traits_deps = [ "//ipc" ]
+      },
+    ]
   }
 }
 

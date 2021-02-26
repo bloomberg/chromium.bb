@@ -6,11 +6,20 @@
 
 #include <ostream>
 
+#include "base/base64.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/values.h"
 
 namespace chromeos {
 namespace attestation {
+namespace {
+std::string Base64EncodeStr(const std::string& str) {
+  std::string result;
+  base::Base64Encode(str, &result);
+  return result;
+}
+}  // namespace
 
 // These messages are exposed to the extensions that using
 // chrome.enterprise.platformKeys API. Someone can rely on exectly these
@@ -45,7 +54,7 @@ const char TpmChallengeKeyResult::kTimeoutErrorMsg[] =
     "Device web based attestation failed with timeout error.";
 const char TpmChallengeKeyResult::kDeviceWebBasedAttestationUrlErrorMsg[] =
     "Device web based attestation is not enabled for the provided URL.";
-const char TpmChallengeKeyResult::kExtensionNotWhitelistedErrorMsg[] =
+const char TpmChallengeKeyResult::kExtensionNotAllowedErrorMsg[] =
     "The extension does not have permission to call this function.";
 const char TpmChallengeKeyResult::kChallengeBadBase64ErrorMsg[] =
     "Challenge is not base64 encoded.";
@@ -53,6 +62,12 @@ const char TpmChallengeKeyResult::kDeviceWebBasedAttestationNotOobeErrorMsg[] =
     "Device web based attestation is only available on the OOBE screen.";
 const char TpmChallengeKeyResult::kGetPublicKeyFailedErrorMsg[] =
     "Failed to get public key.";
+const char TpmChallengeKeyResult::kMarkCorporateKeyFailedErrorMsg[] =
+    "Failed to mark key as corporate.";
+const char TpmChallengeKeyResult::kAttestationServiceInternalErrorMsg[] =
+    "OS platform service internal error.";
+const char TpmChallengeKeyResult::kUploadCertificateFailedErrorMsg[] =
+    "Failed to upload machine certificate.";
 
 // static
 TpmChallengeKeyResult TpmChallengeKeyResult::MakeChallengeResponse(
@@ -119,14 +134,20 @@ const char* TpmChallengeKeyResult::GetErrorMessage() const {
       return kTimeoutErrorMsg;
     case TpmChallengeKeyResultCode::kDeviceWebBasedAttestationUrlError:
       return kDeviceWebBasedAttestationUrlErrorMsg;
-    case TpmChallengeKeyResultCode::kExtensionNotWhitelistedError:
-      return kExtensionNotWhitelistedErrorMsg;
+    case TpmChallengeKeyResultCode::kExtensionNotAllowedError:
+      return kExtensionNotAllowedErrorMsg;
     case TpmChallengeKeyResultCode::kChallengeBadBase64Error:
       return kChallengeBadBase64ErrorMsg;
     case TpmChallengeKeyResultCode::kDeviceWebBasedAttestationNotOobeError:
       return kDeviceWebBasedAttestationNotOobeErrorMsg;
     case TpmChallengeKeyResultCode::kGetPublicKeyFailedError:
       return kGetPublicKeyFailedErrorMsg;
+    case TpmChallengeKeyResultCode::kMarkCorporateKeyFailedError:
+      return kMarkCorporateKeyFailedErrorMsg;
+    case TpmChallengeKeyResultCode::kAttestationServiceInternalError:
+      return kAttestationServiceInternalErrorMsg;
+    case TpmChallengeKeyResultCode::kUploadCertificateFailedError:
+      return kUploadCertificateFailedErrorMsg;
     case TpmChallengeKeyResultCode::kSuccess:
       // Not an error message.
       NOTREACHED();
@@ -137,6 +158,34 @@ const char* TpmChallengeKeyResult::GetErrorMessage() const {
 
 bool TpmChallengeKeyResult::IsSuccess() const {
   return result_code == TpmChallengeKeyResultCode::kSuccess;
+}
+
+bool TpmChallengeKeyResult::operator==(
+    const TpmChallengeKeyResult& other) const {
+  return ((result_code == other.result_code) &&
+          (public_key == other.public_key) &&
+          (challenge_response == other.challenge_response));
+}
+
+bool TpmChallengeKeyResult::operator!=(
+    const TpmChallengeKeyResult& other) const {
+  return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const TpmChallengeKeyResult& result) {
+  base::Value value(base::Value::Type::DICTIONARY);
+
+  value.SetIntKey("result_code", static_cast<int>(result.result_code));
+  if (!result.IsSuccess()) {
+    value.SetStringKey("error_message", result.GetErrorMessage());
+  }
+  value.SetStringKey("public_key", Base64EncodeStr(result.public_key));
+  value.SetStringKey("challenge_response",
+                     Base64EncodeStr(result.challenge_response));
+
+  os << value;
+  return os;
 }
 
 }  // namespace attestation

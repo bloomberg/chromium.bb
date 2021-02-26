@@ -19,7 +19,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
@@ -31,9 +30,9 @@ using ::testing::_;
 namespace content {
 
 using media_session::mojom::AudioFocusType;
+using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using media_session::mojom::MediaSessionInfoPtr;
-using media_session::mojom::MediaPlaybackState;
 using media_session::test::MockMediaSessionMojoObserver;
 using media_session::test::TestAudioFocusObserver;
 
@@ -204,9 +203,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     GetMediaSession()->StartDucking();
     observer.WaitForState(MediaSessionInfo::SessionState::kDucking);
-
-    EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
@@ -550,7 +546,6 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
     observer->WaitForGainedEvent();
   }
 
-
   {
     MockMediaSessionMojoObserver observer(*media_session_1);
     observer.WaitForState(MediaSessionInfo::SessionState::kDucking);
@@ -569,7 +564,7 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
@@ -587,7 +582,7 @@ TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   EXPECT_EQ(1, delegate->request_audio_focus_count());
 }
 
-#else  // defined(OS_MACOSX)
+#else  // defined(OS_MAC)
 
 TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
@@ -638,7 +633,7 @@ TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
   EXPECT_EQ(1, delegate->request_audio_focus_count());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #endif  // !defined(OS_ANDROID)
 
@@ -694,6 +689,32 @@ TEST_F(MediaSessionImplTest, SessionInfoPictureInPicture) {
       media_session::test::GetMediaSessionInfoSync(GetMediaSession())
           ->picture_in_picture_state,
       media_session::mojom::MediaPictureInPictureState::kNotInPictureInPicture);
+}
+
+TEST_F(MediaSessionImplTest, SessionInfoAudioSink) {
+  // When the session is created it should be using the default audio device.
+  // When the default audio device is in use, the |audio_sink_id| attribute
+  // should be unset.
+  EXPECT_FALSE(media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+                   ->audio_sink_id.has_value());
+  int player1 = player_observer_->StartNewPlayer();
+  int player2 = player_observer_->StartNewPlayer();
+  GetMediaSession()->AddPlayer(player_observer_.get(), player1,
+                               media::MediaContentType::Persistent);
+  GetMediaSession()->AddPlayer(player_observer_.get(), player2,
+                               media::MediaContentType::Persistent);
+  player_observer_->SetAudioSinkId(player1, "1");
+  player_observer_->SetAudioSinkId(player2, "1");
+
+  auto info = media_session::test::GetMediaSessionInfoSync(GetMediaSession());
+  ASSERT_TRUE(info->audio_sink_id.has_value());
+  EXPECT_EQ(info->audio_sink_id.value(), "1");
+
+  // If multiple audio devices are being used the audio sink id attribute should
+  // be unset.
+  player_observer_->SetAudioSinkId(player2, "2");
+  info = media_session::test::GetMediaSessionInfoSync(GetMediaSession());
+  EXPECT_FALSE(info->audio_sink_id.has_value());
 }
 
 }  // namespace content

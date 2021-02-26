@@ -1314,6 +1314,7 @@ void vkt::subgroups::initStdFrameBufferPrograms(	SourceCollections&				programCo
 			<< testSrc
 			<< "  out_color[gl_InvocationID] = float(tempRes);\n"
 			<< "  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
+			<< (gsPointSize ? " gl_out[gl_InvocationID].gl_PointSize = gl_in[gl_InvocationID].gl_PointSize;\n" : "")
 			<< "}\n";
 
 		programCollection.glslSources.add("tesc")
@@ -1339,6 +1340,7 @@ void vkt::subgroups::initStdFrameBufferPrograms(	SourceCollections&				programCo
 			<< testSrc
 			<< "  out_color = float(tempRes);\n"
 			<< "  gl_Position = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);\n"
+			<< (gsPointSize ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "")
 			<< "}\n";
 
 		subgroups::setTesCtrlShaderFrameBuffer(programCollection);
@@ -1354,6 +1356,7 @@ void vkt::subgroups::initStdPrograms(	vk::SourceCollections&			programCollection
 										const vk::ShaderBuildOptions&	buildOptions,
 										vk::VkShaderStageFlags			shaderStage,
 										vk::VkFormat					format,
+										bool							gsPointSize,
 										std::string						extHeader,
 										std::string						testSrc,
 										std::string						helperStr)
@@ -1440,6 +1443,7 @@ void vkt::subgroups::initStdPrograms(	vk::SourceCollections&			programCollection
 			"    gl_TessLevelOuter[1] = 1.0f;\n"
 			"  }\n"
 			"  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
+			+ (gsPointSize ? " gl_out[gl_InvocationID].gl_PointSize = gl_in[gl_InvocationID].gl_PointSize;\n" : "") +
 			"}\n";
 
 		const string tese =
@@ -1463,6 +1467,7 @@ void vkt::subgroups::initStdPrograms(	vk::SourceCollections&			programCollection
 			"  result[gl_PrimitiveID * 2 + uint(gl_TessCoord.x + 0.5)] = tempRes;\n"
 			"  float pixelSize = 2.0f/1024.0f;\n"
 			"  gl_Position = gl_in[0].gl_Position + gl_TessCoord.x * pixelSize / 2.0f;\n"
+			+ (gsPointSize ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "") +
 			"}\n";
 
 		const string geometry =
@@ -1486,6 +1491,7 @@ void vkt::subgroups::initStdPrograms(	vk::SourceCollections&			programCollection
 			+ testSrc +
 			"  result[gl_PrimitiveIDIn] = tempRes;\n"
 			"  gl_Position = gl_in[0].gl_Position;\n"
+			+ (gsPointSize ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "") +
 			"  EmitVertex();\n"
 			"  EndPrimitive();\n"
 			"}\n";
@@ -1591,6 +1597,47 @@ bool vkt::subgroups::isTessellationAndGeometryPointSizeSupported (Context& conte
 	const VkPhysicalDeviceFeatures features = getPhysicalDeviceFeatures(
 		context.getInstanceInterface(), context.getPhysicalDevice());
 	return features.shaderTessellationAndGeometryPointSize ? true : false;
+}
+
+bool vkt::subgroups::is16BitUBOStorageSupported(Context& context) {
+	VkPhysicalDevice16BitStorageFeatures storage16bit;
+	deMemset(&storage16bit, 0, sizeof(storage16bit));
+	storage16bit.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+	storage16bit.pNext = DE_NULL;
+
+	VkPhysicalDeviceFeatures2 features2;
+	deMemset(&features2, 0, sizeof(features2));
+	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	features2.pNext = &storage16bit;
+
+	const PlatformInterface&		platformInterface = context.getPlatformInterface();
+	const VkInstance				instance = context.getInstance();
+	const InstanceDriver			instanceDriver(platformInterface, instance);
+
+	instanceDriver.getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &features2);
+	return bool(storage16bit.uniformAndStorageBuffer16BitAccess);
+}
+
+
+bool vkt::subgroups::is8BitUBOStorageSupported(Context& context) {
+
+	VkPhysicalDevice8BitStorageFeatures storage8bit;
+	deMemset(&storage8bit, 0, sizeof(storage8bit));
+	storage8bit.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR;
+	storage8bit.pNext = DE_NULL;
+
+	VkPhysicalDeviceFeatures2 features2;
+	deMemset(&features2, 0, sizeof(features2));
+	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	features2.pNext = &storage8bit;
+
+
+	const PlatformInterface&		platformInterface = context.getPlatformInterface();
+	const VkInstance				instance = context.getInstance();
+	const InstanceDriver			instanceDriver(platformInterface, instance);
+
+	instanceDriver.getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &features2);
+	return bool(storage8bit.uniformAndStorageBuffer8BitAccess);
 }
 
 bool vkt::subgroups::isFormatSupportedForDevice(Context& context, vk::VkFormat format)
@@ -1989,6 +2036,46 @@ bool vkt::subgroups::isFormatBool (VkFormat format)
 		case VK_FORMAT_R8G8B8_USCALED:
 		case VK_FORMAT_R8G8B8A8_USCALED:
 			return true;
+	}
+}
+
+bool vkt::subgroups::isFormat8bitTy(VkFormat format)
+{
+	switch (format)
+	{
+	default:
+		return false;
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8B8_SINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8B8_UINT:
+	case VK_FORMAT_R8G8B8A8_UINT:
+		return true;
+	}
+}
+
+bool vkt::subgroups::isFormat16BitTy(VkFormat format)
+{
+	switch (format)
+	{
+	default:
+		return false;
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_R16G16B16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16B16_SINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16B16_UINT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+		return true;
 	}
 }
 
@@ -3887,12 +3974,16 @@ tcu::TestStatus vkt::subgroups::makeComputeTestRequiredSubgroupSize(
 	const Unique<VkCommandBuffer> cmdBuffer(
 		makeCommandBuffer(context, *cmdPool));
 
-	Move<VkPipeline> *pipelines = new Move<VkPipeline>[localSizesToTestCount - 1];
+	std::vector<de::SharedPtr<Move<VkPipeline>>> pipelines(localSizesToTestCount);
+
+	context.getTestContext().touchWatchdog();
 	pipelines[0] =
-		makeComputePipeline(context, *pipelineLayout, *shaderModule,
-							pipelineShaderStageCreateFlags, VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT, (VkPipeline) DE_NULL,
-							localSizesToTest[0][0], localSizesToTest[0][1], localSizesToTest[0][2],
-							isRequiredSubgroupSize ? subgroupSize : 0u);
+		de::SharedPtr<Move<VkPipeline>>(new Move<VkPipeline>(
+			makeComputePipeline(context, *pipelineLayout, *shaderModule,
+								pipelineShaderStageCreateFlags, VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT, (VkPipeline) DE_NULL,
+								localSizesToTest[0][0], localSizesToTest[0][1], localSizesToTest[0][2],
+								isRequiredSubgroupSize ? subgroupSize : 0u)));
+	context.getTestContext().touchWatchdog();
 
 	for (deUint32 index = 1; index < (localSizesToTestCount - 1); index++)
 	{
@@ -3900,11 +3991,14 @@ tcu::TestStatus vkt::subgroups::makeComputeTestRequiredSubgroupSize(
 		const deUint32 nextY = localSizesToTest[index][1];
 		const deUint32 nextZ = localSizesToTest[index][2];
 
+		context.getTestContext().touchWatchdog();
 		pipelines[index] =
-			makeComputePipeline(context, *pipelineLayout, *shaderModule,
-								pipelineShaderStageCreateFlags, VK_PIPELINE_CREATE_DERIVATIVE_BIT, *pipelines[0],
-								nextX, nextY, nextZ,
-								isRequiredSubgroupSize ? subgroupSize : 0u);
+			de::SharedPtr<Move<VkPipeline>>(new Move<VkPipeline>(
+				makeComputePipeline(context, *pipelineLayout, *shaderModule,
+									pipelineShaderStageCreateFlags, VK_PIPELINE_CREATE_DERIVATIVE_BIT, **pipelines[0],
+									nextX, nextY, nextZ,
+									isRequiredSubgroupSize ? subgroupSize : 0u)));
+		context.getTestContext().touchWatchdog();
 	}
 
 	for (deUint32 index = 0; index < (localSizesToTestCount - 1); index++)
@@ -3915,7 +4009,7 @@ tcu::TestStatus vkt::subgroups::makeComputeTestRequiredSubgroupSize(
 
 		beginCommandBuffer(vk, *cmdBuffer);
 
-		vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipelines[index]);
+		vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, **pipelines[index]);
 
 		vk.cmdBindDescriptorSets(*cmdBuffer,
 				VK_PIPELINE_BIND_POINT_COMPUTE, *pipelineLayout, 0u, 1u,
@@ -3956,8 +4050,6 @@ tcu::TestStatus vkt::subgroups::makeComputeTestRequiredSubgroupSize(
 
 		vk.resetCommandBuffer(*cmdBuffer, 0);
 	}
-
-	delete[] pipelines;
 
 	if (0 < failedIterations)
 	{

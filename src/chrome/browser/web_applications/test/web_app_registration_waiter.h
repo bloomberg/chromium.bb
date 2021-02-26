@@ -16,14 +16,21 @@ class WebAppRegistrationWaiter {
   explicit WebAppRegistrationWaiter(PendingAppManager* manager);
   ~WebAppRegistrationWaiter();
 
-  void AwaitNextRegistration(const GURL& launch_url,
+  void AwaitNextRegistration(const GURL& install_url,
                              RegistrationResultCode code);
+
+  void AwaitNextNonFailedRegistration(const GURL& install_url);
+
+  void AwaitRegistrationsComplete();
 
  private:
   PendingAppManager* const manager_;
   base::RunLoop run_loop_;
-  GURL launch_url_;
-  RegistrationResultCode code_;
+  GURL install_url_;
+  // If unset then check for any non failure result.
+  base::Optional<RegistrationResultCode> code_;
+
+  base::RunLoop complete_run_loop_;
 };
 
 }  // namespace web_app

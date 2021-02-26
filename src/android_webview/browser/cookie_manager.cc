@@ -18,7 +18,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -39,6 +39,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -51,8 +52,8 @@
 #include "url/url_constants.h"
 
 using base::WaitableEvent;
-using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -223,16 +224,13 @@ void CookieManager::MigrateCookieStorePath() {
   base::FilePath old_cookie_store_path = GetPathInAppDirectory("Cookies");
   base::FilePath old_cookie_journal_path =
       GetPathInAppDirectory("Cookies-journal");
+  base::FilePath new_cookie_journal_path =
+      GetPathInAppDirectory("Default/Cookies-journal");
 
   if (base::PathExists(old_cookie_store_path)) {
+    base::CreateDirectory(cookie_store_path_.DirName());
     base::Move(old_cookie_store_path, cookie_store_path_);
-    base::Move(old_cookie_journal_path, cookie_store_path_);
-  } else {
-    // Some users got an incomplete version of this migration where the journal
-    // was not moved. Delete the old journal if it exists, as we can't merge
-    // them.
-    // TODO(torne): remove this in a future release (M81?)
-    base::DeleteFile(old_cookie_journal_path, false);
+    base::Move(old_cookie_journal_path, new_cookie_journal_path);
   }
 }
 
@@ -354,7 +352,8 @@ net::CookieStore* CookieManager::GetCookieStore() {
     // compatibility reasons.
     cookie_store_->SetCookieAccessDelegate(
         std::make_unique<network::CookieAccessDelegateImpl>(
-            network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY));
+            network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY,
+            nullptr /* preloaded_first_party_sets */));
   }
 
   return cookie_store_.get();
@@ -476,7 +475,7 @@ void CookieManager::SetCookieHelper(const GURL& host,
   UMA_HISTOGRAM_ENUMERATION(
       "Android.WebView.CookieManager.SameSiteAttributeValue", samesite);
 
-  net::CanonicalCookie::CookieInclusionStatus status;
+  net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(new_host, value, base::Time::Now(),
                                    base::nullopt /* server_time */, &status));
@@ -491,23 +490,20 @@ void CookieManager::SetCookieHelper(const GURL& host,
                           cc->IsSecure());
   }
 
-  // Note: CookieStore and network::CookieManager have different signatures: one
-  // accepts a boolean callback while the other (recently) changed to accept a
-  // CookieInclusionStatus callback. WebView only cares about boolean success,
-  // which is why we use |AdaptCookieInclusionStatusToBool|. This is temporary
+  // Note: CookieStore and network::CookieManager both accept a
+  // CookieAccessResult callback. WebView only cares about boolean success,
+  // which is why we use |AdaptCookieAccessResultToBool|. This is temporary
   // technical debt until we fully launch the Network Service code path.
   if (GetMojoCookieManager()) {
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
     GetMojoCookieManager()->SetCanonicalCookie(
         *cc.get(), new_host, net::CookieOptions::MakeAllInclusive(),
-        net::cookie_util::AdaptCookieInclusionStatusToBool(
-            std::move(callback)));
+        net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(
         std::move(cc), new_host, net::CookieOptions::MakeAllInclusive(),
-        net::cookie_util::AdaptCookieInclusionStatusToBool(
-            std::move(callback)));
+        net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   }
 }
 
@@ -547,9 +543,9 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
 void CookieManager::GetCookieListCompleted(
     base::OnceClosure complete,
     net::CookieList* result,
-    const net::CookieStatusList& value,
-    const net::CookieStatusList& excluded_cookies) {
-  *result = net::cookie_util::StripStatuses(value);
+    const net::CookieAccessResultList& value,
+    const net::CookieAccessResultList& excluded_cookies) {
+  *result = net::cookie_util::StripAccessResults(value);
   std::move(complete).Run();
 }
 

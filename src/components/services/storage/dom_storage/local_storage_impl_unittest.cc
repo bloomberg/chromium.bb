@@ -5,7 +5,7 @@
 #include "components/services/storage/dom_storage/local_storage_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -14,12 +14,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/public/cpp/constants.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -685,7 +686,9 @@ TEST_F(LocalStorageImplTest, Migration) {
   const base::FilePath old_db_path = local_storage_path.Append(
       LocalStorageImpl::LegacyDatabaseFileNameFromOrigin(origin1));
   {
-    LegacyDomStorageDatabase db(old_db_path);
+    LegacyDomStorageDatabase db(
+        old_db_path, std::make_unique<FilesystemProxy>(
+                         FilesystemProxy::UNRESTRICTED, local_storage_path));
     LegacyDomStorageValuesMap data;
     data[key] = base::NullableString16(value, false);
     data[key2] = base::NullableString16(value, false);
@@ -1000,7 +1003,7 @@ TEST_F(LocalStorageImplTest, CorruptionOnDisk) {
                                  FILE_PATH_LITERAL("MANIFEST*"));
   for (base::FilePath name = file_enum.Next(); !name.empty();
        name = file_enum.Next()) {
-    base::DeleteFile(name, false);
+    base::DeleteFile(name);
   }
 
   // Make sure data is gone.

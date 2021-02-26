@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -43,8 +44,7 @@ struct SameSizeAsElementData final
   void* pointers[2];
 };
 
-static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData),
-              "ElementData should stay small");
+ASSERT_SIZE(ElementData, SameSizeAsElementData);
 
 static AdditionalBytes AdditionalBytesForShareableElementDataWithAttributeCount(
     unsigned count) {
@@ -110,11 +110,11 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
   return true;
 }
 
-void ElementData::Trace(Visitor* visitor) {
+void ElementData::Trace(Visitor* visitor) const {
   if (bit_field_.get_concurrently<IsUniqueFlag>()) {
-    static_cast<UniqueElementData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const UniqueElementData*>(this)->TraceAfterDispatch(visitor);
   } else {
-    static_cast<ShareableElementData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const ShareableElementData*>(this)->TraceAfterDispatch(visitor);
   }
 }
 

@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -504,7 +504,8 @@ void ComponentCloudPolicyService::FilterAndInstallPolicy() {
   // Make a copy in |policy_| and filter it and validate against the schemas;
   // this is what's passed to the outside world.
   policy_.CopyFrom(*unfiltered_policy_);
-  current_schema_map_->FilterBundle(&policy_);
+  current_schema_map_->FilterBundle(&policy_,
+                                    /*drop_invalid_component_policies=*/false);
 
   policy_installed_ = true;
   DVLOG(1) << "Installed policy (count = "

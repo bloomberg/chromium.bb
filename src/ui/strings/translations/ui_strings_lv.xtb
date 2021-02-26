@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Nevar kopīgot: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> ir samainīts ar <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Jūs jau iepriekš meklējāt šo vienumu. Dzēšot vienumu “<ph name="QUERY" />” no vēstures, tas tiks neatgriezeniski noņemts no jūsu konta visās ierīcēs.</translation>
+<translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
 <translation id="1643823602425662293">Paziņojums</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">Atlasiet</translation>
 <translation id="1859234291848436338">Rakstīšanas virziens</translation>
 <translation id="1860796786778352021">Paziņojuma aizvēršana</translation>
+<translation id="186476001994626254">Web Smart Paste saturs</translation>
 <translation id="1871244248791675517">Iespraušana</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Izvēlēties visus</translation>
+<translation id="19085484004813472">Šī ir jauna funkcija</translation>
 <translation id="2006524834898217237">Pārbaudiet, vai šajā ierīcē ir izveidots savienojums ar internetu.</translation>
 <translation id="208586643495776849">Lūdzu, mēģiniet vēlreiz</translation>
-<translation id="2090963878406559571">Lai no vietnes <ph name="ORIGIN" /> uz Android tālruni nosūtītu numuru, <ph name="TROUBLESHOOT_LINK" /> abām iestatījumos esošajām ierīcēm.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d.}zero{# d.}one{# d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2161656808144014275">Teksts</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Kalibrēšana ir pabeigta.</translation>
 <translation id="252373100621549798">Nezināms displejs</translation>
 <translation id="2545651323591713692">Atlikt</translation>
+<translation id="2570734079541893434">Pārvaldīt iestatījumus</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{pēc 1 h}zero{pēc # h}one{pēc # h}other{pēc # h}}</translation>
 <translation id="2583543531130364912">Skārienekrāna kalibrēšana</translation>
+<translation id="2586657967955657006">Starpliktuve</translation>
 <translation id="2666092431469916601">Augša</translation>
 <translation id="2701330563083355633">Kopīgota no: <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Jauns</translation>
 <translation id="2743387203779672305">Kopēt starpliktuvē</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Atvērt mapi</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Pirms 1 gada}zero{Pirms # gadiem}one{Pirms # gada}other{Pirms # gadiem}}</translation>
+<translation id="2878511608894704031">Dzēst visu</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{pēc 1 d.}zero{pēc # d.}one{pēc # d.}other{pēc # d.}}</translation>
 <translation id="2931838996092594335">noklikšķināt</translation>
 <translation id="2981684127883932071">Tiek rādīti ieteikumi</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418">Fails “<ph name="SAVEAS_EXTENSION_TYPE" />”</translation>
 <translation id="3608915363409716668">Vairāk nekā <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Meklēt “<ph name="LOOKUP_STRING" />”</translation>
+<translation id="3622035490309591977">Starpliktuves vēsture</translation>
 <translation id="364720409959344976">Augšupielādējamās mapes atlase</translation>
 <translation id="3660179305079774227">Bulta augšup</translation>
 <translation id="3670030362669914947">Numurs</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="430191667033048642">Lietotne <ph name="MOVED_APP_NAME" /> pārvietota uz mapi <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
+<translation id="4491109536499578614">Attēls</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, vērtējums zvaigznītēs: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, lietotņu ieteikumi</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Atklāšanas trijstūris</translation>
 <translation id="5278860589123563674">Neizdevās nosūtīt</translation>
+<translation id="5283099933536931082">Lietotne <ph name="APP_ITEM_TITLE" /> aicina pievērst tai uzmanību.</translation>
 <translation id="528468243742722775">Beigas</translation>
-<translation id="5327567770033251652">ieslēgt sinhronizāciju</translation>
 <translation id="5329858601952122676">Dzēst</translation>
 <translation id="5395308026110844773">Lietotne <ph name="DRAGGED_APP_NAME" /> tiek vilkta <ph name="IN_PLACE_APP" /> lietotnes vietā, atlaidiet, lai izveidotu mapi.</translation>
 <translation id="5463830097259460683">Emocijzīmes un simboli</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
 <translation id="547979256943495781">Plaukts tiek rādīts labajā pusē</translation>
+<translation id="5528053674512161860">Neizdevās ielādēt lapu, jo nav instalēts izstrādātāja lietotāja saskarnes modulis (dev_ui)</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistēma</translation>
 <translation id="5583640892426849032">Atkāpšanās taustiņš</translation>
 <translation id="5613020302032141669">Kreisā bulta</translation>
+<translation id="5652575806481723716">Lietotne <ph name="FOCUSED_APP_NAME" /> aicina pievērst tai uzmanību.</translation>
 <translation id="5675363643668471212">Plaukta vienums</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}zero{# min}one{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktīva šodien}=1{Aktīva pirms 1 dienas}zero{Aktīva pirms # dienām}one{Aktīva pirms # dienas}other{Aktīva pirms # dienām}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 diena un }zero{# dienas un }one{# diena un }other{# dienas un }}</translation>
 <translation id="5789643057113097023">:</translation>
+<translation id="5843690142429128814">Attēls.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{pēc 1 g.}zero{pēc # g.}one{pēc # g.}other{pēc # g.}}</translation>
+<translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Atlikusi 1 sekunde}zero{Atlikušas # sekundes}one{Atlikusi # sekunde}other{Atlikušas # sekundes}}</translation>
 <translation id="5941711191222866238">Minimizēt</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 stunda}zero{# stundas}one{# stunda}other{# stundas}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6119846243427417423">aktivizt</translation>
 <translation id="6129953537138746214">Atstarpe</translation>
+<translation id="6134259848159370930">Varat meklēt ierīcē, lietotnēs, iestatījumos un tīmeklī.</translation>
 <translation id="6135826906199951471">Dzēst</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Skatīt visas lietotnes</translation>
 <translation id="6165508094623778733">Uzzināt vairāk</translation>
+<translation id="6166852626429024716">Varat meklēt ierīcē, lietotnēs, iestatījumos, tīmeklī…</translation>
 <translation id="6264365405983206840">&amp;Atlasīt visu</translation>
 <translation id="6351032674660237738">LIETOTŅU IETEIKUMI</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google asistents</translation>
 <translation id="6430678249303439055">Bloķēt visus paziņojumus no šīs lietotnes</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pirms 1 sekundes}zero{Pirms # sekundēm}one{Pirms # sekundes}other{Pirms # sekundēm}}</translation>
+<translation id="6503257047630241175">RTF saturs</translation>
 <translation id="6539092367496845964">Radās kļūda. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="654149438358937226">Bloķēt visus paziņojumus</translation>
 <translation id="6567071839949112727">noklikšķināt uz priekšteča</translation>
 <translation id="6578407462441924264">Bez nosaukuma</translation>
 <translation id="6612467943526193239">Lai izietu no kalibrēšanas, nospiediet Esc.</translation>
 <translation id="6620110761915583480">Saglabāt failu</translation>
-<translation id="6656912866303152668">Gādājiet, lai ierīces <ph name="TARGET_DEVICE_NAME" /> pārlūkprogrammā Chrome ir ieslēgta sinhronizācija, un pēc tam mēģiniet nosūtīt saturu vēlreiz.</translation>
 <translation id="6699343763173986273">Multivide — nākamā dziesma</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
-<translation id="6779314412797872738">Lai no šejienes uz Android tālruni nosūtītu numuru, <ph name="TROUBLESHOOT_LINK" /> abām iestatījumos esošajām ierīcēm.</translation>
 <translation id="6786750046913594791">Aizvērt mapi</translation>
 <translation id="6808150112686056157">Multivide — pārtraukt</translation>
 <translation id="6845383723252244143">Atlasīt mapi</translation>
 <translation id="6845533974506654842">nospiest</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Atlikusi 1 stunda}zero{Atlikušas # stundas}one{Atlikusi # stunda}other{Atlikušas # stundas}}</translation>
 <translation id="688711909580084195">Tīmekļa lapa bez nosaukuma</translation>
+<translation id="6902419395050653510">HTML saturs.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Atlicis 1 gads}zero{Atlikuši # gadi}one{Atlicis # gads}other{Atlikuši # gadi}}</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Atlikusi 1 min}zero{Atlikušas # min}one{Atlikusi # min}other{Atlikušas # min}}</translation>
 <translation id="7319740667687257810">Palaišanas programma, daļējs skats</translation>
-<translation id="7352651011704765696">Radās problēma</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pirms 1 min}zero{Pirms # min}one{Pirms # min}other{Pirms # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Atlikusi 1 minūte}zero{Atlikušas # minūtes}one{Atlikusi # minūte}other{Atlikušas # minūtes}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Pārvietota uz <ph name="PAGE_NUMBER" />. lapu, <ph name="ROW_NUMBER" />. rindu, <ph name="COLUMN_NUMBER" />. sleju.</translation>
 <translation id="7879499977785298635">Nebloķēt</translation>
 <translation id="7907591526440419938">Atvērt failu</translation>
+<translation id="7952747673138230804">Chrome OS rāda ieteikumus jaunam pieejamajam saturam. Statistikas dati kvalitātes uzlabošanai tiek sūtīti tikai tad, ja esat piekritis kopīgot lietojuma datus. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Komandtaustiņš</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Vairāk nekā 1 nelasīts paziņojums}zero{Vairāk nekā # nelasīti paziņojumi}one{Vairāk nekā # nelasīts paziņojums}other{Vairāk nekā # nelasīti paziņojumi}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{pēc 1 min}zero{pēc # min}one{pēc # min}other{pēc # min}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Plaukts tiek rādīts vienmēr</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Varat meklēt savā ierīcē, lietotnēs, iestatījumos un tīmeklī. Lai pārvietotos lietotnēs, izmantojiet bulttaustiņus.</translation>
 <translation id="8725488761726303204">vēl <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}zero{# h}one{# h}other{# h}}</translation>

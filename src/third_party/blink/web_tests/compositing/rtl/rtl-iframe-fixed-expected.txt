@@ -7,13 +7,10 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame (positioned) IFRAME",
-      "bounds": [400, 400]
-    },
-    {
       "name": "LayoutView #document",
       "bounds": [400, 400],
-      "backgroundColor": "#FF0000"
+      "contentsOpaqueForText": true,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='positioned layer'",

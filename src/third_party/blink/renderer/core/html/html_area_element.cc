@@ -114,8 +114,8 @@ Path HTMLAreaElement::GetPath(const LayoutObject* container_object) const {
     Path path;
     // No need to zoom because it is already applied in
     // containerObject->borderBoxRect().
-    if (container_object->IsBox())
-      path.AddRect(FloatRect(ToLayoutBox(container_object)->BorderBoxRect()));
+    if (const auto* box = DynamicTo<LayoutBox>(container_object))
+      path.AddRect(FloatRect(box->BorderBoxRect()));
     path_ = nullptr;
     return path;
   }
@@ -212,10 +212,8 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
     return;
 
   LayoutObject* layout_object = image_element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsImage())
-    return;
-
-  ToLayoutImage(layout_object)->AreaElementFocusChanged(this);
+  if (auto* layout_image = DynamicTo<LayoutImage>(layout_object))
+    layout_image->AreaElementFocusChanged(this);
 }
 
 void HTMLAreaElement::UpdateFocusAppearanceWithOptions(

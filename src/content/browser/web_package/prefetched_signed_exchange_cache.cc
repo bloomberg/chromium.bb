@@ -7,13 +7,14 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,7 +134,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   InnerResponseURLLoader(
       const network::ResourceRequest& request,
       network::mojom::URLResponseHeadPtr inner_response,
-      const url::Origin& request_initiator_site_lock,
+      const url::Origin& request_initiator_origin_lock,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
@@ -180,7 +181,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     corb_checker_ = std::make_unique<CrossOriginReadBlockingChecker>(
-        request, *response_, request_initiator_site_lock, *blob_data_handle_,
+        request, *response_, request_initiator_origin_lock, *blob_data_handle_,
         base::BindOnce(
             &InnerResponseURLLoader::OnCrossOriginReadBlockingCheckComplete,
             base::Unretained(this)));
@@ -277,8 +278,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &InnerResponseURLLoader::CreateMojoBlobReader,
             weak_factory_.GetWeakPtr(), std::move(pipe_producer_handle),
@@ -315,8 +316,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   static void BlobReaderCompleteOnIO(
       base::WeakPtr<InnerResponseURLLoader> loader,
       net::Error result) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
                                   std::move(loader), result));
   }
 
@@ -338,10 +339,10 @@ class SubresourceSignedExchangeURLLoaderFactory
  public:
   SubresourceSignedExchangeURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry,
-      const url::Origin& request_initiator_site_lock)
+      std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> entry,
+      const url::Origin& request_initiator_origin_lock)
       : entry_(std::move(entry)),
-        request_initiator_site_lock_(request_initiator_site_lock) {
+        request_initiator_origin_lock_(request_initiator_origin_lock) {
     receivers_.Add(this, std::move(receiver));
     receivers_.set_disconnect_handler(base::BindRepeating(
         &SubresourceSignedExchangeURLLoaderFactory::OnMojoDisconnect,
@@ -363,7 +364,7 @@ class SubresourceSignedExchangeURLLoaderFactory
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
             request, entry_->inner_response().Clone(),
-            request_initiator_site_lock_,
+            request_initiator_origin_lock_,
             std::make_unique<const storage::BlobDataHandle>(
                 *entry_->blob_data_handle()),
             *entry_->completion_status(), std::move(client),
@@ -382,8 +383,8 @@ class SubresourceSignedExchangeURLLoaderFactory
     delete this;
   }
 
-  std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry_;
-  const url::Origin request_initiator_site_lock_;
+  std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> entry_;
+  const url::Origin request_initiator_origin_lock_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceSignedExchangeURLLoaderFactory);
@@ -396,7 +397,7 @@ class PrefetchedNavigationLoaderInterceptor
     : public NavigationLoaderInterceptor {
  public:
   PrefetchedNavigationLoaderInterceptor(
-      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange,
+      std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> exchange,
       std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list)
       : exchange_(std::move(exchange)), info_list_(std::move(info_list)) {}
 
@@ -472,7 +473,7 @@ class PrefetchedNavigationLoaderInterceptor
   }
 
   State state_ = State::kInitial;
-  std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange_;
+  std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> exchange_;
   std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list_;
 
   base::WeakPtrFactory<PrefetchedNavigationLoaderInterceptor> weak_factory_{
@@ -481,7 +482,7 @@ class PrefetchedNavigationLoaderInterceptor
   DISALLOW_COPY_AND_ASSIGN(PrefetchedNavigationLoaderInterceptor);
 };
 
-bool CanStoreEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
+bool CanStoreEntry(const PrefetchedSignedExchangeCacheEntry& entry) {
   const net::HttpResponseHeaders* outer_headers =
       entry.outer_response()->headers.get();
   // We don't store responses with a "cache-control: no-store" header.
@@ -502,7 +503,7 @@ bool CanStoreEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
   return true;
 }
 
-bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
+bool CanUseEntry(const PrefetchedSignedExchangeCacheEntry& entry,
                  const base::Time& verification_time) {
   if (entry.signature_expire_time() < verification_time)
     return false;
@@ -530,7 +531,7 @@ bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
 // This method support the form of "sha256-<base64-hash-value>".
 bool ExtractSHA256HashValueFromString(const base::StringPiece value,
                                       net::SHA256HashValue* out) {
-  if (!value.starts_with("sha256-"))
+  if (!base::StartsWith(value, "sha256-"))
     return false;
   const base::StringPiece base64_str = value.substr(7);
   std::string decoded;
@@ -545,7 +546,7 @@ bool ExtractSHA256HashValueFromString(const base::StringPiece value,
 // Returns a map of subresource URL to SHA256HashValue which are declared in the
 // rel=allowd-alt-sxg link header of |main_exchange|'s inner response.
 std::map<GURL, net::SHA256HashValue> GetAllowedAltSXG(
-    const PrefetchedSignedExchangeCache::Entry& main_exchange) {
+    const PrefetchedSignedExchangeCacheEntry& main_exchange) {
   std::map<GURL, net::SHA256HashValue> result;
   std::string link_header;
   main_exchange.inner_response()->headers->GetNormalizedHeader("link",
@@ -579,74 +580,12 @@ std::map<GURL, net::SHA256HashValue> GetAllowedAltSXG(
 
 }  // namespace
 
-PrefetchedSignedExchangeCache::Entry::Entry() = default;
-PrefetchedSignedExchangeCache::Entry::~Entry() = default;
-
-void PrefetchedSignedExchangeCache::Entry::SetOuterUrl(const GURL& outer_url) {
-  outer_url_ = outer_url;
-}
-void PrefetchedSignedExchangeCache::Entry::SetOuterResponse(
-    network::mojom::URLResponseHeadPtr outer_response) {
-  outer_response_ = std::move(outer_response);
-}
-void PrefetchedSignedExchangeCache::Entry::SetHeaderIntegrity(
-    std::unique_ptr<const net::SHA256HashValue> header_integrity) {
-  header_integrity_ = std::move(header_integrity);
-}
-void PrefetchedSignedExchangeCache::Entry::SetInnerUrl(const GURL& inner_url) {
-  inner_url_ = inner_url;
-}
-void PrefetchedSignedExchangeCache::Entry::SetInnerResponse(
-    network::mojom::URLResponseHeadPtr inner_response) {
-  inner_response_ = std::move(inner_response);
-}
-void PrefetchedSignedExchangeCache::Entry::SetCompletionStatus(
-    std::unique_ptr<const network::URLLoaderCompletionStatus>
-        completion_status) {
-  completion_status_ = std::move(completion_status);
-}
-void PrefetchedSignedExchangeCache::Entry::SetBlobDataHandle(
-    std::unique_ptr<const storage::BlobDataHandle> blob_data_handle) {
-  blob_data_handle_ = std::move(blob_data_handle);
-}
-void PrefetchedSignedExchangeCache::Entry::SetSignatureExpireTime(
-    const base::Time& signature_expire_time) {
-  signature_expire_time_ = signature_expire_time;
-}
-
-std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>
-PrefetchedSignedExchangeCache::Entry::Clone() const {
-  DCHECK(outer_url().is_valid());
-  DCHECK(outer_response());
-  DCHECK(header_integrity());
-  DCHECK(inner_url().is_valid());
-  DCHECK(inner_response());
-  DCHECK(completion_status());
-  DCHECK(blob_data_handle());
-  DCHECK(!signature_expire_time().is_null());
-
-  std::unique_ptr<Entry> clone = std::make_unique<Entry>();
-  clone->SetOuterUrl(outer_url_);
-  clone->SetOuterResponse(outer_response_.Clone());
-  clone->SetHeaderIntegrity(
-      std::make_unique<const net::SHA256HashValue>(*header_integrity_));
-  clone->SetInnerUrl(inner_url_);
-  clone->SetInnerResponse(inner_response_.Clone());
-  clone->SetCompletionStatus(
-      std::make_unique<const network::URLLoaderCompletionStatus>(
-          *completion_status_));
-  clone->SetBlobDataHandle(
-      std::make_unique<const storage::BlobDataHandle>(*blob_data_handle_));
-  clone->SetSignatureExpireTime(signature_expire_time_);
-  return clone;
-}
-
 PrefetchedSignedExchangeCache::PrefetchedSignedExchangeCache() = default;
 
 PrefetchedSignedExchangeCache::~PrefetchedSignedExchangeCache() = default;
 
 void PrefetchedSignedExchangeCache::Store(
-    std::unique_ptr<const Entry> cached_exchange) {
+    std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> cached_exchange) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (exchanges_.size() > kMaxEntrySize)
     return;
@@ -672,21 +611,27 @@ void PrefetchedSignedExchangeCache::Clear() {
 }
 
 std::unique_ptr<NavigationLoaderInterceptor>
-PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
+PrefetchedSignedExchangeCache::MaybeCreateInterceptor(
+    const GURL& outer_url,
+    int frame_tree_node_id,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto it = exchanges_.find(outer_url);
   if (it == exchanges_.end())
     return nullptr;
   const base::Time verification_time =
       signed_exchange_utils::GetVerificationTime();
-  const std::unique_ptr<const Entry>& exchange = it->second;
+  const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>& exchange =
+      it->second;
   if (!CanUseEntry(*exchange.get(), verification_time)) {
     exchanges_.erase(it);
     return nullptr;
   }
+  auto info_list = GetInfoListForNavigation(
+      *exchange, verification_time, frame_tree_node_id, network_isolation_key);
+
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      exchange->Clone(),
-      GetInfoListForNavigation(*exchange, verification_time));
+      exchange->Clone(), std::move(info_list));
 }
 
 const PrefetchedSignedExchangeCache::EntryMap&
@@ -704,7 +649,8 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
   int64_t body_size_total = 0u;
   int64_t headers_size_total = 0u;
   for (const auto& exchanges_it : exchanges_) {
-    const std::unique_ptr<const Entry>& exchange = exchanges_it.second;
+    const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>& exchange =
+        exchanges_it.second;
     const uint64_t body_size = exchange->blob_data_handle()->size();
     body_size_total += body_size;
     UMA_HISTOGRAM_COUNTS_10M("PrefetchedSignedExchangeCache.BodySize",
@@ -723,45 +669,66 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
 
 std::vector<mojom::PrefetchedSignedExchangeInfoPtr>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
-    const Entry& main_exchange,
-    const base::Time& verification_time) {
+    const PrefetchedSignedExchangeCacheEntry& main_exchange,
+    const base::Time& verification_time,
+    int frame_tree_node_id,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const url::Origin outer_url_origin =
       url::Origin::Create(main_exchange.outer_url());
-  const url::Origin request_initiator_site_lock =
+  const url::Origin request_initiator_origin_lock =
       url::Origin::Create(main_exchange.inner_url());
   const auto inner_url_header_integrity_map = GetAllowedAltSXG(main_exchange);
 
   std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list;
   EntryMap::iterator exchanges_it = exchanges_.begin();
   while (exchanges_it != exchanges_.end()) {
-    const std::unique_ptr<const Entry>& exchange = exchanges_it->second;
+    const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>& exchange =
+        exchanges_it->second;
     if (!CanUseEntry(*exchange.get(), verification_time)) {
       exchanges_.erase(exchanges_it++);
       continue;
     }
     auto it = inner_url_header_integrity_map.find(exchange->inner_url());
-    if (it == inner_url_header_integrity_map.end() ||
-        it->second != *exchange->header_integrity()) {
+    if (it == inner_url_header_integrity_map.end()) {
       ++exchanges_it;
       continue;
     }
 
     // Restrict the main SXG and the subresources SXGs to be served from the
     // same origin.
-    if (outer_url_origin.IsSameOriginWith(
+    if (!outer_url_origin.IsSameOriginWith(
             url::Origin::Create(exchange->outer_url()))) {
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_loader_factory;
-      new SubresourceSignedExchangeURLLoaderFactory(
-          pending_loader_factory.InitWithNewPipeAndPassReceiver(),
-          exchange->Clone(), request_initiator_site_lock);
-      info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
-          exchange->outer_url(), *exchange->header_integrity(),
-          exchange->inner_url(), exchange->inner_response().Clone(),
-          std::move(pending_loader_factory)));
+      ++exchanges_it;
+      continue;
     }
+
+    if (it->second != *exchange->header_integrity()) {
+      ++exchanges_it;
+      auto reporter = SignedExchangeReporter::MaybeCreate(
+          exchange->outer_url(), main_exchange.outer_url().spec(),
+          *exchange->outer_response(), network_isolation_key,
+          frame_tree_node_id);
+      if (reporter) {
+        reporter->set_cert_server_ip_address(
+            exchange->cert_server_ip_address());
+        reporter->set_inner_url(exchange->inner_url());
+        reporter->set_cert_url(exchange->cert_url());
+        reporter->ReportHeaderIntegrityMismatch();
+      }
+      continue;
+    }
+
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        pending_loader_factory;
+    new SubresourceSignedExchangeURLLoaderFactory(
+        pending_loader_factory.InitWithNewPipeAndPassReceiver(),
+        exchange->Clone(), request_initiator_origin_lock);
+    info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
+        exchange->outer_url(), *exchange->header_integrity(),
+        exchange->inner_url(), exchange->inner_response().Clone(),
+        std::move(pending_loader_factory)));
     ++exchanges_it;
   }
   return info_list;

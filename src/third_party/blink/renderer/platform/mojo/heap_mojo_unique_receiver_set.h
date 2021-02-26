@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -18,8 +19,7 @@ namespace blink {
 // HeapMojoUniqueReceiverSet by default. HeapMojoUniqueReceiverSet must be
 // associated with context. HeapMojoUniqueReceiverSet's constructor takes
 // context as a mandatory parameter. HeapMojoUniqueReceiverSet resets the mojo
-// connection when 1) the owner object is garbage-collected or 2) the associated
-// ExecutionContext is detached.
+// connection when the associated ExecutionContext is detached.
 template <typename Interface,
           typename Deleter = std::default_delete<Interface>,
           HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver>
@@ -32,9 +32,7 @@ class HeapMojoUniqueReceiverSet {
       mojo::UniquePtrImplRefTraits<Interface, Deleter>>::ImplPointerType;
 
   explicit HeapMojoUniqueReceiverSet(ContextLifecycleNotifier* context)
-      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {
-    DCHECK(context);
-  }
+      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {}
   HeapMojoUniqueReceiverSet(const HeapMojoUniqueReceiverSet&) = delete;
   HeapMojoUniqueReceiverSet& operator=(const HeapMojoUniqueReceiverSet&) =
       delete;
@@ -57,25 +55,20 @@ class HeapMojoUniqueReceiverSet {
     return wrapper_->receiver_set().HasReceiver(id);
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
-  // Garbage collected wrapper class to add a prefinalizer.
+  // Garbage collected wrapper class to add ContextLifecycleObserver.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
-    USING_PRE_FINALIZER(Wrapper, Dispose);
-    USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
-
    public:
     explicit Wrapper(ContextLifecycleNotifier* notifier) {
       SetContextLifecycleNotifier(notifier);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
-
-    void Dispose() { receiver_set_.Clear(); }
 
     mojo::UniqueReceiverSet<Interface, void, Deleter>& receiver_set() {
       return receiver_set_;
@@ -83,7 +76,9 @@ class HeapMojoUniqueReceiverSet {
 
     // ContextLifecycleObserver methods
     void ContextDestroyed() override {
-      if (Mode == HeapMojoWrapperMode::kWithContextObserver)
+      if (Mode == HeapMojoWrapperMode::kWithContextObserver ||
+          (Mode == HeapMojoWrapperMode::kWithoutContextObserver &&
+           base::FeatureList::IsEnabled(kHeapMojoUseContextObserver)))
         receiver_set_.Clear();
     }
 

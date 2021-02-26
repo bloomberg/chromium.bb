@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as CommonModule from './common.js';
 
 self.Common = self.Common || {};
@@ -76,7 +78,7 @@ Common.CompositeProgress = CommonModule.Progress.CompositeProgress;
 Common.QueryParamHandler = CommonModule.QueryParamHandler.QueryParamHandler;
 
 /**
- * @enum {!ResourceType}
+ * @enum {!CommonModule.ResourceType.ResourceType}
  */
 Common.resourceTypes = CommonModule.ResourceType.resourceTypes;
 

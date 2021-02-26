@@ -5,14 +5,6 @@
 import("//build_overrides/build.gni")
 import("osp/build/config/services.gni")
 
-declare_args() {
-  # Set to true to force building the standalone receiver on Mac. It's currently
-  # disabled due to build bot struggles, but works fine on local, recent clang
-  # installations.
-  # TODO(crbug.com/openscreen/86): Remove when the Mac bots have been upgraded.
-  force_build_standalone_receiver = false
-}
-
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {
@@ -28,8 +20,6 @@ group("gn_all") {
     "discovery:dnssd",
     "discovery:mdns",
     "discovery:public",
-    "osp",
-    "osp/msgs",
     "platform",
     "third_party/abseil",
     "third_party/boringssl",
@@ -40,36 +30,37 @@ group("gn_all") {
     "util",
   ]
 
-  if (use_mdns_responder) {
-    deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
-  }
-
-  if (use_chromium_quic) {
+  # Mac OS X 10.15 is incompatible with the current version of QUIC.
+  if (!is_mac) {
     deps += [
-      "third_party/chromium_quic",
-      "third_party/chromium_quic:quic_demo_server",
-      "third_party/chromium_quic:quic_streaming_playback_controller",
+      "osp",
+      "osp/msgs",
     ]
-  }
 
-  if (use_chromium_quic && use_mdns_responder) {
-    deps += [ "osp:osp_demo" ]
+    if (use_mdns_responder) {
+      deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
+    }
+
+    if (use_chromium_quic) {
+      deps += [
+        "third_party/chromium_quic",
+        "third_party/chromium_quic:quic_demo_server",
+        "third_party/chromium_quic:quic_streaming_playback_controller",
+      ]
+    }
+
+    if (use_chromium_quic && use_mdns_responder) {
+      deps += [ "osp:osp_demo" ]
+    }
   }
 
   if (!build_with_chromium) {
     deps += [
+      "cast/standalone_receiver:cast_receiver",
+      "cast/standalone_sender:cast_sender",
       "third_party/protobuf:protoc($host_toolchain)",
       "third_party/zlib",
     ]
-
-    # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
-    # compiler is upgraded.
-    if (!is_mac || force_build_standalone_receiver) {
-      deps += [
-        "cast/standalone_receiver:cast_receiver",
-        "cast/standalone_sender:cast_sender",
-      ]
-    }
   }
 }
 
@@ -81,26 +72,34 @@ source_set("openscreen_unittests_all") {
     "cast/sender:unittests",
     "cast/streaming:unittests",
     "cast/test:unittests",
-    "discovery:unittests",
-    "osp:unittests",
-    "osp/msgs:unittests",
     "platform:unittests",
-    "test:test_main",
     "third_party/abseil",
     "util:unittests",
   ]
 
   if (!build_with_chromium && is_posix) {
-    public_deps += [ "cast/test:make_crl_tests($host_toolchain)" ]
+    public_deps += [
+      "cast/test:make_crl_tests($host_toolchain)",
+
+      # TODO(crbug.com/1132604): Discovery unittests fail in Chrome.
+      "discovery:unittests",
+    ]
   }
 
-  if (use_mdns_responder) {
+  if (!is_mac) {
     public_deps += [
-      "osp/impl/discovery/mdns:unittests",
-
-      # Currently this target only includes mDNS tests.
-      "osp/impl/testing:unittests",
+      "osp:unittests",
+      "osp/msgs:unittests",
     ]
+
+    if (use_mdns_responder) {
+      public_deps += [
+        "osp/impl/discovery/mdns:unittests",
+
+        # Currently this target only includes mDNS tests.
+        "osp/impl/testing:unittests",
+      ]
+    }
   }
 }
 
@@ -109,6 +108,7 @@ if (!build_with_chromium) {
     testonly = true
     deps = [
       ":openscreen_unittests_all",
+      "test:test_main",
     ]
   }
 }
@@ -120,7 +120,6 @@ if (!build_with_chromium && is_posix) {
       "cast/common:discovery_e2e_test",
       "cast/test:e2e_tests",
       "cast/test:make_crl_tests($host_toolchain)",
-      "test:test_main",
     ]
   }
 
@@ -128,6 +127,7 @@ if (!build_with_chromium && is_posix) {
     testonly = true
     deps = [
       ":e2e_tests_all",
+      "test:test_main",
     ]
   }
 }

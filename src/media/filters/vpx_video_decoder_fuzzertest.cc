@@ -9,7 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -30,8 +30,7 @@ struct Env {
   base::test::SingleThreadTaskEnvironment task_environment;
 };
 
-void OnDecodeComplete(const base::Closure& quit_closure,
-                      media::DecodeStatus status) {
+void OnDecodeComplete(const base::Closure& quit_closure, media::Status status) {
   quit_closure.Run();
 }
 
@@ -105,7 +104,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     decoder.Initialize(
         config, true /* low_delay */, nullptr /* cdm_context */,
         base::BindOnce(&OnInitDone, run_loop.QuitClosure(), &success),
-        base::Bind(&OnOutputComplete), base::NullCallback());
+        base::BindRepeating(&OnOutputComplete), base::NullCallback());
     run_loop.Run();
     if (!success)
       return 0;

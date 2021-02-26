@@ -12,7 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -33,38 +33,10 @@ class PreviewsServiceTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::OFFLINE)),
-            allowed_types_and_versions.end());
-}
-
-TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::OFFLINE)),
-            allowed_types_and_versions.end());
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviews} /* enabled features */,
-      {} /* disabled features */);
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::LITE_PAGE)),
-            allowed_types_and_versions.end());
-}
-
 TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
 #if !defined(OS_ANDROID)
   // For non-android, default is disabled.
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
+  blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
   EXPECT_EQ(allowed_types_and_versions.find(
                 static_cast<int>(previews::PreviewsType::NOSCRIPT)),
@@ -74,7 +46,7 @@ TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       previews::features::kNoScriptPreviews);
-  blacklist::BlacklistData::AllowedTypesAndVersions
+  blocklist::BlocklistData::AllowedTypesAndVersions
       allowed_types_and_versions2 = PreviewsService::GetAllowedPreviews();
   EXPECT_NE(allowed_types_and_versions2.find(
                 static_cast<int>(previews::PreviewsType::NOSCRIPT)),
@@ -84,7 +56,7 @@ TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
 TEST_F(PreviewsServiceTest, TestDeferAllScriptPreviewsEnabledByFeature) {
 #if !defined(OS_ANDROID)
   // For non-android, default is disabled.
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
+  blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
   EXPECT_EQ(allowed_types_and_versions.find(
                 static_cast<int>(previews::PreviewsType::DEFER_ALL_SCRIPT)),
@@ -94,7 +66,7 @@ TEST_F(PreviewsServiceTest, TestDeferAllScriptPreviewsEnabledByFeature) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       previews::features::kDeferAllScriptPreviews);
-  blacklist::BlacklistData::AllowedTypesAndVersions
+  blocklist::BlocklistData::AllowedTypesAndVersions
       allowed_types_and_versions2 = PreviewsService::GetAllowedPreviews();
   EXPECT_NE(allowed_types_and_versions2.find(
                 static_cast<int>(previews::PreviewsType::DEFER_ALL_SCRIPT)),

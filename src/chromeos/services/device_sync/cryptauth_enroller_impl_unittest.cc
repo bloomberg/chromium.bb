@@ -114,8 +114,8 @@ class DeviceSyncCryptAuthEnrollerTest
 
     // This call is actually synchronous.
     secure_message_delegate_->GenerateKeyPair(
-        base::Bind(&DeviceSyncCryptAuthEnrollerTest::OnKeyPairGenerated,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncCryptAuthEnrollerTest::OnKeyPairGenerated,
+                       base::Unretained(this)));
   }
 
   // Starts the enroller.
@@ -124,8 +124,8 @@ class DeviceSyncCryptAuthEnrollerTest
     enroller_result_.reset();
     enroller_.Enroll(
         user_public_key_, user_private_key_, device_info, kInvocationReason,
-        base::Bind(&DeviceSyncCryptAuthEnrollerTest::OnEnrollerCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncCryptAuthEnrollerTest::OnEnrollerCompleted,
+                       base::Unretained(this)));
   }
 
   // Verifies that |serialized_message| is a valid SecureMessage sent with the
@@ -138,7 +138,7 @@ class DeviceSyncCryptAuthEnrollerTest
     std::string symmetric_key;
     secure_message_delegate_->DeriveKey(
         server_session_private_key, kClientSessionPublicKey,
-        base::Bind(&SaveDerivedKey, &symmetric_key));
+        base::BindOnce(&SaveDerivedKey, &symmetric_key));
 
     std::string inner_message;
     std::string inner_payload;
@@ -151,7 +151,8 @@ class DeviceSyncCryptAuthEnrollerTest
       unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
       secure_message_delegate_->UnwrapSecureMessage(
           serialized_message, symmetric_key, unwrap_options,
-          base::Bind(&SaveUnwrapResults, &verified, &inner_message, &header));
+          base::BindOnce(&SaveUnwrapResults, &verified, &inner_message,
+                         &header));
       EXPECT_TRUE(verified);
 
       cryptauth::GcmMetadata metadata;
@@ -169,7 +170,8 @@ class DeviceSyncCryptAuthEnrollerTest
       unwrap_options.signature_scheme = securemessage::ECDSA_P256_SHA256;
       secure_message_delegate_->UnwrapSecureMessage(
           inner_message, user_public_key_, unwrap_options,
-          base::Bind(&SaveUnwrapResults, &verified, &inner_payload, &header));
+          base::BindOnce(&SaveUnwrapResults, &verified, &inner_payload,
+                         &header));
       EXPECT_TRUE(verified);
       EXPECT_EQ(user_public_key_, header.verification_key_id());
     }
@@ -211,10 +213,9 @@ class DeviceSyncCryptAuthEnrollerTest
     enroller_result_.reset(new bool(success));
   }
 
-  void OnSetupEnrollment(
-      const cryptauth::SetupEnrollmentRequest& request,
-      const CryptAuthClient::SetupEnrollmentCallback& callback,
-      const CryptAuthClient::ErrorCallback& error_callback) {
+  void OnSetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
+                         CryptAuthClient::SetupEnrollmentCallback callback,
+                         CryptAuthClient::ErrorCallback error_callback) {
     // Check that SetupEnrollment is called before FinishEnrollment.
     EXPECT_FALSE(setup_request_.get());
     EXPECT_FALSE(finish_request_.get());
@@ -222,22 +223,21 @@ class DeviceSyncCryptAuthEnrollerTest
     EXPECT_TRUE(error_callback_.is_null());
 
     setup_request_.reset(new cryptauth::SetupEnrollmentRequest(request));
-    setup_callback_ = callback;
-    error_callback_ = error_callback;
+    setup_callback_ = std::move(callback);
+    error_callback_ = std::move(error_callback);
   }
 
-  void OnFinishEnrollment(
-      const cryptauth::FinishEnrollmentRequest& request,
-      const CryptAuthClient::FinishEnrollmentCallback& callback,
-      const CryptAuthClient::ErrorCallback& error_callback) {
+  void OnFinishEnrollment(const cryptauth::FinishEnrollmentRequest& request,
+                          CryptAuthClient::FinishEnrollmentCallback callback,
+                          CryptAuthClient::ErrorCallback error_callback) {
     // Check that FinishEnrollment is called after SetupEnrollment.
     EXPECT_TRUE(setup_request_.get());
     EXPECT_FALSE(finish_request_.get());
     EXPECT_TRUE(finish_callback_.is_null());
 
     finish_request_.reset(new cryptauth::FinishEnrollmentRequest(request));
-    finish_callback_ = callback;
-    error_callback_ = error_callback;
+    finish_callback_ = std::move(callback);
+    error_callback_ = std::move(error_callback);
   }
 
   // The persistent user key-pair.
@@ -273,7 +273,7 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, EnrollmentSucceeds) {
   ASSERT_EQ(1, setup_request_->types_size());
   EXPECT_EQ(kSupportedEnrollmentTypeGcmV1, setup_request_->types(0));
   ASSERT_FALSE(setup_callback_.is_null());
-  setup_callback_.Run(GetSetupEnrollmentResponse(true));
+  std::move(setup_callback_).Run(GetSetupEnrollmentResponse(true));
 
   // Handle FinishEnrollment request.
   EXPECT_TRUE(finish_request_.get());
@@ -283,7 +283,7 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, EnrollmentSucceeds) {
   EXPECT_EQ(kInvocationReason, finish_request_->invocation_reason());
 
   ASSERT_FALSE(finish_callback_.is_null());
-  finish_callback_.Run(GetFinishEnrollmentResponse(true));
+  std::move(finish_callback_).Run(GetFinishEnrollmentResponse(true));
 
   ASSERT_TRUE(enroller_result_.get());
   EXPECT_TRUE(*enroller_result_);
@@ -294,7 +294,7 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, SetupEnrollmentApiCallError) {
 
   EXPECT_TRUE(setup_request_.get());
   ASSERT_FALSE(error_callback_.is_null());
-  error_callback_.Run(NetworkRequestError::kBadRequest);
+  std::move(error_callback_).Run(NetworkRequestError::kBadRequest);
 
   EXPECT_TRUE(finish_callback_.is_null());
   ASSERT_TRUE(enroller_result_.get());
@@ -305,7 +305,7 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, SetupEnrollmentBadStatus) {
   StartEnroller(GetDeviceInfo());
 
   EXPECT_TRUE(setup_request_.get());
-  setup_callback_.Run(GetSetupEnrollmentResponse(false));
+  std::move(setup_callback_).Run(GetSetupEnrollmentResponse(false));
 
   EXPECT_TRUE(finish_callback_.is_null());
   ASSERT_TRUE(enroller_result_.get());
@@ -317,7 +317,7 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, SetupEnrollmentNoInfosReturned) {
   EXPECT_TRUE(setup_request_.get());
   cryptauth::SetupEnrollmentResponse response;
   response.set_status(kResponseStatusOk);
-  setup_callback_.Run(response);
+  std::move(setup_callback_).Run(response);
 
   EXPECT_TRUE(finish_callback_.is_null());
   ASSERT_TRUE(enroller_result_.get());
@@ -326,26 +326,26 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, SetupEnrollmentNoInfosReturned) {
 
 TEST_F(DeviceSyncCryptAuthEnrollerTest, FinishEnrollmentApiCallError) {
   StartEnroller(GetDeviceInfo());
-  setup_callback_.Run(GetSetupEnrollmentResponse(true));
+  std::move(setup_callback_).Run(GetSetupEnrollmentResponse(true));
   ASSERT_FALSE(error_callback_.is_null());
-  error_callback_.Run(NetworkRequestError::kAuthenticationError);
+  std::move(error_callback_).Run(NetworkRequestError::kAuthenticationError);
   ASSERT_TRUE(enroller_result_.get());
   EXPECT_FALSE(*enroller_result_);
 }
 
 TEST_F(DeviceSyncCryptAuthEnrollerTest, FinishEnrollmentBadStatus) {
   StartEnroller(GetDeviceInfo());
-  setup_callback_.Run(GetSetupEnrollmentResponse(true));
+  std::move(setup_callback_).Run(GetSetupEnrollmentResponse(true));
   ASSERT_FALSE(finish_callback_.is_null());
-  finish_callback_.Run(GetFinishEnrollmentResponse(false));
+  std::move(finish_callback_).Run(GetFinishEnrollmentResponse(false));
   ASSERT_TRUE(enroller_result_.get());
   EXPECT_FALSE(*enroller_result_);
 }
 
 TEST_F(DeviceSyncCryptAuthEnrollerTest, ReuseEnroller) {
   StartEnroller(GetDeviceInfo());
-  setup_callback_.Run(GetSetupEnrollmentResponse(true));
-  finish_callback_.Run(GetFinishEnrollmentResponse(true));
+  std::move(setup_callback_).Run(GetSetupEnrollmentResponse(true));
+  std::move(finish_callback_).Run(GetFinishEnrollmentResponse(true));
   EXPECT_TRUE(*enroller_result_);
 
   StartEnroller(GetDeviceInfo());

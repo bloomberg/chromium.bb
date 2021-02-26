@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,7 +13,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -30,7 +28,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -42,6 +39,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
+import org.chromium.components.browser_ui.site_settings.AllSiteSettings;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.Website;
@@ -58,7 +57,6 @@ import java.util.Collection;
  * Android settings, when Android is restoring ManageSpaceActivity after Chrome was killed, or for
  * tests.
  */
-@TargetApi(Build.VERSION_CODES.KITKAT)
 public class ManageSpaceActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ManageSpaceActivity";
 
@@ -107,8 +105,6 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         mManageSiteDataButton.setOnClickListener(this);
         mClearUnimportantButton.setOnClickListener(this);
 
-        // We should only be using this activity if we're >= KitKat.
-        assert android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT;
         mClearAllDataButton = (Button) findViewById(R.id.clear_all_data);
         mClearAllDataButton.setOnClickListener(this);
         super.onCreate(savedInstanceState);
@@ -125,28 +121,21 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             }
         };
 
-        // Allow reading/writing to disk to check whether the last attempt was successful before
-        // kicking off the browser process initialization.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            String productVersion = AboutChromeSettings.getApplicationVersion(
-                    this, ChromeVersionInfo.getProductVersion());
-            String failedVersion = SharedPreferencesManager.getInstance().readString(
-                    ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, null);
-            if (TextUtils.equals(failedVersion, productVersion)) {
-                parts.onStartupFailure(null);
-                return;
-            }
-
-            // If the native library crashes and kills the browser process, there is no guarantee
-            // java-side the pref will be written before the process dies. We want to make sure we
-            // don't attempt to start the browser process and have it kill chrome. This activity is
-            // used to clear data for the chrome app, so it must be particularly error resistant.
-            SharedPreferencesManager.getInstance().writeStringSync(
-                    ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, productVersion);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+        String productVersion = AboutChromeSettings.getApplicationVersion(
+                this, ChromeVersionInfo.getProductVersion());
+        String failedVersion = SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, null);
+        if (TextUtils.equals(failedVersion, productVersion)) {
+            parts.onStartupFailure(null);
+            return;
         }
+
+        // If the native library crashes and kills the browser process, there is no guarantee
+        // java-side the pref will be written before the process dies. We want to make sure we
+        // don't attempt to start the browser process and have it kill chrome. This activity is
+        // used to clear data for the chrome app, so it must be particularly error resistant.
+        SharedPreferencesManager.getInstance().writeStringSync(
+                ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, productVersion);
 
         try {
             ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
@@ -246,8 +235,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
             SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-            settingsLauncher.launchSettingsActivity(
-                    this, SingleCategorySettings.class, initialArguments);
+            settingsLauncher.launchSettingsActivity(this, AllSiteSettings.class, initialArguments);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =
                     (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);

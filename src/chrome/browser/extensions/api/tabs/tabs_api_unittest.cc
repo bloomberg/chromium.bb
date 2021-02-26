@@ -4,20 +4,25 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
@@ -28,8 +33,9 @@
 #include "ui/display/test/test_screen.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
-#include "ash/public/cpp/window_properties.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
+#include "chromeos/ui/base/window_pin_type.h"
+#include "chromeos/ui/base/window_properties.h"
 #endif
 
 namespace extensions {
@@ -113,7 +119,7 @@ void TabsApiUnitTest::SetUp() {
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_NORMAL;
   params.window = browser_window_.get();
-  browser_.reset(new Browser(params));
+  browser_.reset(Browser::Create(params));
   scoped_screen_override_ =
       std::make_unique<ScopedScreenOverride>(&test_screen_);
 }
@@ -418,6 +424,449 @@ TEST_F(TabsApiUnitTest, TabsUpdateJavaScriptUrlNotAllowed) {
   browser()->tab_strip_model()->CloseAllTabs();
 }
 
+// Test that the tabs.move() function correctly rearranges sets of tabs within a
+// single window.
+TEST_F(TabsApiUnitTest, TabsMoveWithinWindow) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("MoveWithinWindowTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Use the TabsMoveFunction to move tabs 0, 2, and 4 to index 1.
+  auto function = base::MakeRefCounted<TabsMoveFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([[%d, %d, %d], {"index": 1}])";
+  const std::string args =
+      base::StringPrintf(kFormatArgs, tab_ids[0], tab_ids[2], tab_ids[4]);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(0), web_contentses[1]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(1), web_contentses[0]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(2), web_contentses[2]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(3), web_contentses[4]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(4), web_contentses[3]);
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.move() function correctly rearranges sets of tabs across
+// windows.
+TEST_F(TabsApiUnitTest, TabsMoveAcrossWindows) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("MoveAcrossWindowTest").Build();
+
+  // Add several web contents to the original browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Create a new window and add a few tabs, getting the ID of the last tab.
+  TestBrowserWindow* window2 = new TestBrowserWindow;
+  // TestBrowserWindowOwner handles its own lifetime, and also cleans up
+  // |window2|.
+  new TestBrowserWindowOwner(window2);
+  Browser::CreateParams params(profile(), /* user_gesture */ true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window2;
+  std::unique_ptr<Browser> browser2(Browser::Create(params));
+  BrowserList::SetLastActive(browser2.get());
+  int window_id2 = ExtensionTabUtil::GetWindowId(browser2.get());
+
+  constexpr int kNumTabs2 = 3;
+  for (int i = 0; i < kNumTabs2; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    CreateSessionServiceTabHelper(contents.get());
+    browser2->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                   /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs2, browser2->tab_strip_model()->count());
+
+  content::WebContents* web_contents2 =
+      browser2->tab_strip_model()->GetWebContentsAt(2);
+  int tab_id2 = sessions::SessionTabHelper::IdForTab(web_contents2).id();
+
+  // Use the TabsMoveFunction to move tab 2 from browser2 and tabs 0, 2, and 4
+  // from the original browser to index 1 of browser2.
+  constexpr int kNumTabsMovedAcrossWindows = 3;
+  auto function = base::MakeRefCounted<TabsMoveFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] =
+      R"([[%d, %d, %d, %d], {"windowId": %d, "index": 1}])";
+  const std::string args = base::StringPrintf(
+      kFormatArgs, tab_id2, tab_ids[0], tab_ids[2], tab_ids[4], window_id2);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
+  ASSERT_EQ(kNumTabs2 + kNumTabsMovedAcrossWindows, tab_strip_model2->count());
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(1), web_contents2);
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(2), web_contentses[0]);
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(3), web_contentses[2]);
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(4), web_contentses[4]);
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+  browser2->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.group() function correctly rearranges sets of tabs within
+// a single window before grouping.
+TEST_F(TabsApiUnitTest, TabsGroupWithinWindow) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("GroupWithinWindowTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Use the TabsGroupFunction to group tabs 0, 2, and 4.
+  auto function = base::MakeRefCounted<TabsGroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([{"tabIds": [%d, %d, %d]}])";
+  const std::string args =
+      base::StringPrintf(kFormatArgs, tab_ids[0], tab_ids[2], tab_ids[4]);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(0), web_contentses[0]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(1), web_contentses[2]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(2), web_contentses[4]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(3), web_contentses[1]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(4), web_contentses[3]);
+
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_strip_model->GetTabGroupForTab(0);
+  EXPECT_TRUE(group.has_value());
+  EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(1));
+  EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(2));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(3));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(4));
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.group() function correctly groups tabs even when given
+// out-of-order or duplicate tab IDs.
+TEST_F(TabsApiUnitTest, TabsGroupMixedTabIds) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("GroupMixedTabIdsTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Use the TabsGroupFunction to group tab 1 twice, along with tabs 3 and 2.
+  auto function = base::MakeRefCounted<TabsGroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([{"tabIds": [%d, %d, %d, %d]}])";
+  const std::string args = base::StringPrintf(
+      kFormatArgs, tab_ids[1], tab_ids[1], tab_ids[3], tab_ids[2]);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(0), web_contentses[0]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(1), web_contentses[1]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(2), web_contentses[2]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(3), web_contentses[3]);
+  EXPECT_EQ(tab_strip_model->GetWebContentsAt(4), web_contentses[4]);
+
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_strip_model->GetTabGroupForTab(1);
+  EXPECT_TRUE(group.has_value());
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(0));
+  EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(1));
+  EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(2));
+  EXPECT_EQ(group, tab_strip_model->GetTabGroupForTab(3));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(4));
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.group() function throws an error if both createProperties
+// and groupId are specified.
+TEST_F(TabsApiUnitTest, TabsGroupParamsError) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("GroupParamsErrorTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Add a tab to a group to have an existing group ID.
+  tab_groups::TabGroupId group =
+      browser()->tab_strip_model()->AddToNewGroup({1});
+  int group_id = tab_groups_util::GetGroupId(group);
+
+  // Attempt to specify both createProperties and groupId.
+  auto function = base::MakeRefCounted<TabsGroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] =
+      R"([{"tabIds": [%d, %d, %d],
+           "groupId": %d, "createProperties": {"windowId": -1}}])";
+  const std::string args = base::StringPrintf(kFormatArgs, tab_ids[0],
+                                              tab_ids[2], tab_ids[4], group_id);
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), args, browser(), api_test_utils::NONE);
+  EXPECT_EQ(tabs_constants::kGroupParamsError, error);
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.group() function correctly rearranges sets of tabs across
+// windows before grouping.
+TEST_F(TabsApiUnitTest, TabsGroupAcrossWindows) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("GroupAcrossWindowsTest").Build();
+
+  // Add several web contents to the original browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Create a new window and add a few tabs, adding one to a group.
+  TestBrowserWindow* window2 = new TestBrowserWindow;
+  // TestBrowserWindowOwner handles its own lifetime, and also cleans up
+  // |window2|.
+  new TestBrowserWindowOwner(window2);
+  Browser::CreateParams params(profile(), /* user_gesture */ true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window2;
+  std::unique_ptr<Browser> browser2(Browser::Create(params));
+
+  constexpr int kNumTabs2 = 3;
+  for (int i = 0; i < kNumTabs2; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    CreateSessionServiceTabHelper(contents.get());
+    browser2->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                   /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs2, browser2->tab_strip_model()->count());
+
+  tab_groups::TabGroupId group2 =
+      browser2->tab_strip_model()->AddToNewGroup({1});
+  int group_id2 = tab_groups_util::GetGroupId(group2);
+
+  // Use the TabsGroupFunction to group tabs 0, 2, and 4 from the original
+  // browser into the same group as the one in browser2.
+  constexpr int kNumTabsMovedAcrossWindows = 3;
+  auto function = base::MakeRefCounted<TabsGroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([{"tabIds": [%d, %d, %d], "groupId": %d}])";
+  const std::string args = base::StringPrintf(
+      kFormatArgs, tab_ids[0], tab_ids[2], tab_ids[4], group_id2);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
+  ASSERT_EQ(kNumTabs2 + kNumTabsMovedAcrossWindows, tab_strip_model2->count());
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(2), web_contentses[0]);
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(3), web_contentses[2]);
+  EXPECT_EQ(tab_strip_model2->GetWebContentsAt(4), web_contentses[4]);
+
+  EXPECT_EQ(group2, tab_strip_model2->GetTabGroupForTab(1).value());
+  EXPECT_EQ(group2, tab_strip_model2->GetTabGroupForTab(2).value());
+  EXPECT_EQ(group2, tab_strip_model2->GetTabGroupForTab(3).value());
+  EXPECT_EQ(group2, tab_strip_model2->GetTabGroupForTab(4).value());
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+  browser2->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.ungroup() function correctly ungroups tabs from a single
+// group and deletes it.
+TEST_F(TabsApiUnitTest, TabsUngroupSingleGroup) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("UngroupSingleGroupTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Add tabs 1, 2, and 3 to a group.
+  tab_groups::TabGroupId group =
+      browser()->tab_strip_model()->AddToNewGroup({1, 2, 3});
+
+  // Use the TabsUngroupFunction to ungroup tabs 1, 2, and 3.
+  auto function = base::MakeRefCounted<TabsUngroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([[%d, %d, %d]])";
+  const std::string args =
+      base::StringPrintf(kFormatArgs, tab_ids[1], tab_ids[2], tab_ids[3]);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  // Expect the group to be deleted because all tabs were ungrouped from it.
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(1));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(2));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(3));
+  EXPECT_FALSE(tab_strip_model->group_model()->ContainsTabGroup(group));
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
+// Test that the tabs.ungroup() function correctly ungroups tabs from several
+// different groups and deletes any empty ones.
+TEST_F(TabsApiUnitTest, TabsUngroupFromMultipleGroups) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("UngroupFromMultipleGroupsTest").Build();
+
+  // Add several web contents to the browser and get their tab IDs.
+  constexpr int kNumTabs = 5;
+  std::vector<int> tab_ids;
+  std::vector<content::WebContents*> web_contentses;
+  for (int i = 0; i < kNumTabs; ++i) {
+    std::unique_ptr<content::WebContents> contents(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+    CreateSessionServiceTabHelper(contents.get());
+    tab_ids.push_back(
+        sessions::SessionTabHelper::IdForTab(contents.get()).id());
+    web_contentses.push_back(contents.get());
+
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
+                                                    /* foreground */ true);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  // Add tabs 1, 2, and 3 to a group1, and tab 4 to group2.
+  tab_groups::TabGroupId group1 =
+      browser()->tab_strip_model()->AddToNewGroup({1, 2, 3});
+  tab_groups::TabGroupId group2 =
+      browser()->tab_strip_model()->AddToNewGroup({4});
+
+  // Use the TabsUngroupFunction to ungroup tabs 2, 3, and 4.
+  auto function = base::MakeRefCounted<TabsUngroupFunction>();
+  function->set_extension(extension);
+  constexpr char kFormatArgs[] = R"([[%d, %d, %d]])";
+  const std::string args =
+      base::StringPrintf(kFormatArgs, tab_ids[2], tab_ids[3], tab_ids[4]);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), args, browser(), api_test_utils::NONE));
+
+  // Expect group2 to be deleted because all tabs were ungrouped from it.
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(group1, tab_strip_model->GetTabGroupForTab(1).value());
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(2));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(3));
+  EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(4));
+  EXPECT_TRUE(tab_strip_model->group_model()->ContainsTabGroup(group1));
+  EXPECT_FALSE(tab_strip_model->group_model()->ContainsTabGroup(group2));
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+}
+
 TEST_F(TabsApiUnitTest, TabsGoForwardNoSelectedTabError) {
   scoped_refptr<const Extension> extension = CreateTabsExtension();
   auto function = base::MakeRefCounted<TabsGoForwardFunction>();
@@ -445,7 +894,7 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBack) {
   const int tab_id =
       sessions::SessionTabHelper::IdForTab(raw_web_contents).id();
   browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
-                                                  true);
+                                                  /* foreground */ true);
   // Go back with chrome.tabs.goBack.
   auto goback_function = base::MakeRefCounted<TabsGoBackFunction>();
   goback_function->set_extension(extension_with_tabs_permission.get());
@@ -595,11 +1044,49 @@ TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
 
   // In locked fullscreen mode we should not be able to create any tabs.
   browser_window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
+      chromeos::kWindowPinTypeKey, chromeos::WindowPinType::kTrustedPinned);
 
   EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
             extension_function_test_utils::RunFunctionAndReturnError(
                 function.get(), "[{}]", browser(), api_test_utils::NONE));
+}
+
+// Ensure tabs.captureVisibleTab respects any Data Leak Prevention restrictions.
+TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
+  // Setup the function and extension.
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Screenshot")
+                                                 .AddPermission("tabs")
+                                                 .AddPermission("<all_urls>")
+                                                 .Build();
+  auto function = base::MakeRefCounted<TabsCaptureVisibleTabFunction>();
+  function->set_extension(extension.get());
+
+  // Add a visible tab.
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents.get());
+  const GURL kGoogle("http://www.google.com");
+  web_contents_tester->NavigateAndCommit(kGoogle);
+  browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                  /*foreground=*/true);
+
+  // Setup Data Leak Prevention restriction.
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::DlpContentManager::SetDlpContentManagerForTesting(
+      &mock_dlp_content_manager);
+  EXPECT_CALL(mock_dlp_content_manager, IsScreenshotRestricted(testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(true));
+
+  // Run the function and check result.
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), "[{}]", browser(), api_test_utils::NONE);
+  EXPECT_EQ(tabs_constants::kScreenshotsDisabled, error);
+
+  // Clean up.
+  browser()->tab_strip_model()->CloseAllTabs();
+  policy::DlpContentManager::ResetDlpContentManagerForTesting();
 }
 #endif  // defined(OS_CHROMEOS)
 

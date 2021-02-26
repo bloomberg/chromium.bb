@@ -66,8 +66,7 @@ void WireTest::SetUp() {
     mS2cBuf->SetHandler(mWireClient.get());
 
     device = mWireClient->GetDevice();
-    DawnProcTable clientProcs = dawn_wire::WireClient::GetProcs();
-    dawnProcSetProcs(&clientProcs);
+    dawnProcSetProcs(&dawn_wire::client::GetProcs());
 
     apiDevice = mockDevice;
 
@@ -112,6 +111,10 @@ dawn_wire::WireClient* WireTest::GetWireClient() {
 void WireTest::DeleteServer() {
     EXPECT_CALL(api, QueueRelease(apiQueue)).Times(1);
     mWireServer = nullptr;
+}
+
+void WireTest::DeleteClient() {
+    mWireClient = nullptr;
 }
 
 void WireTest::SetupIgnoredCallExpectations() {

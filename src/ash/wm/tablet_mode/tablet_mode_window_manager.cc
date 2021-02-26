@@ -23,6 +23,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_toggle_fullscreen_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
@@ -33,12 +34,16 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/display/screen.h"
 
 namespace ash {
 
 namespace {
+
+using ::chromeos::WindowStateType;
 
 // This function is called to check if window[i] is eligible to be carried over
 // to split view mode during clamshell <-> tablet mode transition or multi-user
@@ -121,10 +126,14 @@ class ScopedObserveWindowAnimation {
     if (!window_)
       return;
 
-    // Stops observing if |window_| is not animating, or if it is not tracked by
-    // TabletModeWindowManager. When this object is destroyed while exiting
-    // tablet mode, |window_| is no longer tracked, so skip that check.
-    if (window_->layer()->GetAnimator()->is_animating() &&
+    const bool is_animating =
+        window_->layer()->GetAnimator()->IsAnimatingProperty(
+            TabletModeController::GetObservedTabletTransitionProperty());
+    // Stops observing if |window_| is not animating the property we care about,
+    // or if it is not tracked by TabletModeWindowManager. When this object is
+    // destroyed while exiting tablet mode, |window_| is no longer tracked, so
+    // skip that check.
+    if (is_animating &&
         (exiting_tablet_mode_ || manager_->IsTrackingWindow(window_))) {
       return;
     }
@@ -492,12 +501,12 @@ TabletModeWindowManager::GetCarryOverWindowsInSplitView(
   // IsCarryOverCandidateForSplitView() to be carried over to splitscreen.
   MruWindowTracker::WindowList mru_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-  mru_windows.erase(
-      std::remove_if(mru_windows.begin(), mru_windows.end(),
-                     [](aura::Window* window) {
-                       return window->GetProperty(kIsShowingInOverviewKey);
-                     }),
-      mru_windows.end());
+  mru_windows.erase(std::remove_if(mru_windows.begin(), mru_windows.end(),
+                                   [](aura::Window* window) {
+                                     return window->GetProperty(
+                                         chromeos::kIsShowingInOverviewKey);
+                                   }),
+                    mru_windows.end());
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   if (IsCarryOverCandidateForSplitView(mru_windows, 0u, root_window)) {
     if (GetWindowStateType(mru_windows[0], clamshell_to_tablet) ==

@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
+#include "chrome/installer/setup/install_params.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -63,12 +64,12 @@ class MockWorkItemList : public WorkItemList {
   MockWorkItemList() {}
 
   MOCK_METHOD5(AddCopyTreeWorkItem,
-               WorkItem*(const std::wstring&,
-                         const std::wstring&,
-                         const std::wstring&,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const base::FilePath&,
                          CopyOverWriteOption,
-                         const std::wstring&));
-  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const base::FilePath&));
+                         const base::FilePath&));
+  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem*(const base::FilePath&));
   MOCK_METHOD3(AddCreateRegKeyWorkItem,
                WorkItem*(HKEY, const std::wstring&, REGSAM));
   MOCK_METHOD3(AddDeleteRegKeyWorkItem,
@@ -79,9 +80,9 @@ class MockWorkItemList : public WorkItemList {
   MOCK_METHOD2(AddDeleteTreeWorkItem,
                WorkItem*(const base::FilePath&, const base::FilePath&));
   MOCK_METHOD4(AddMoveTreeWorkItem,
-               WorkItem*(const std::wstring&,
-                         const std::wstring&,
-                         const std::wstring&,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const base::FilePath&,
                          MoveTreeOption));
   // Workaround for gmock problems with disambiguating between string pointers
   // and DWORD.
@@ -117,9 +118,6 @@ class MockWorkItemList : public WorkItemList {
                          const std::wstring&,
                          DWORD,
                          bool));
-  MOCK_METHOD3(AddSelfRegWorkItem, WorkItem* (const std::wstring&,
-                                              bool,
-                                              bool));
 };
 
 class MockProductState : public ProductState {
@@ -155,8 +153,7 @@ class MockProductState : public ProductState {
 class MockInstallationState : public InstallationState {
  public:
   // Included for testing.
-  void SetProductState(bool system_install,
-                       const ProductState& product_state) {
+  void SetProductState(bool system_install, const ProductState& product_state) {
     ProductState& target = system_install ? system_chrome_ : user_chrome_;
     target.CopyFrom(product_state);
   }
@@ -164,15 +161,11 @@ class MockInstallationState : public InstallationState {
 
 class MockInstallerState : public InstallerState {
  public:
-  void set_level(Level level) {
-    InstallerState::set_level(level);
-  }
+  void set_level(Level level) { InstallerState::set_level(level); }
 
   void set_operation(Operation operation) { operation_ = operation; }
 
-  void set_state_key(const std::wstring& state_key) {
-    state_key_ = state_key;
-  }
+  void set_state_key(const std::wstring& state_key) { state_key_ = state_key; }
 };
 
 void AddChromeToInstallationState(bool system_level,
@@ -261,8 +254,8 @@ class InstallWorkerTest : public testing::Test {
         base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\chrome.7z");
     src_path_ = base::FilePath(
         L"C:\\UnlikelyPath\\Temp\\chrome_123\\source\\Chrome-bin");
-    setup_path_ = base::FilePath(
-        L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
+    setup_path_ =
+        base::FilePath(L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
     temp_dir_ = base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
   }
 
@@ -316,15 +309,14 @@ TEST_F(InstallWorkerTest, TestInstallChromeSystem) {
   EXPECT_CALL(work_item_list, AddDeleteRegKeyWorkItem(_, _, _))
       .WillRepeatedly(Return(delete_reg_key_work_item.get()));
 
-  AddInstallWorkItems(*installation_state.get(),
-                      *installer_state.get(),
-                      setup_path_,
-                      archive_path_,
-                      src_path_,
-                      temp_dir_,
-                      current_version_.get(),
-                      *new_version_.get(),
-                      &work_item_list);
+  const base::Version current_version(
+      installer_state->GetCurrentVersion(*installation_state));
+  installer::InstallParams install_params = {
+      *installer_state, *installation_state, setup_path_, current_version,
+      archive_path_,    src_path_,           temp_dir_,   *new_version_,
+  };
+
+  AddInstallWorkItems(install_params, &work_item_list);
 }
 
 // Tests for installer::AddUpdateBrandCodeWorkItem().

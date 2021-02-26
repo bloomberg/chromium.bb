@@ -40,8 +40,9 @@ WebMessagePort::Message::Message(const base::string16& data,
 
 WebMessagePort::MessageReceiver::MessageReceiver() = default;
 WebMessagePort::MessageReceiver::~MessageReceiver() = default;
+
 bool WebMessagePort::MessageReceiver::OnMessage(Message) {
-  return true;
+  return false;
 }
 
 WebMessagePort::WebMessagePort() = default;
@@ -51,6 +52,7 @@ WebMessagePort::WebMessagePort(WebMessagePort&& other) {
 }
 
 WebMessagePort& WebMessagePort::operator=(WebMessagePort&& other) {
+  CloseIfNecessary();
   Take(std::move(other));
   return *this;
 }

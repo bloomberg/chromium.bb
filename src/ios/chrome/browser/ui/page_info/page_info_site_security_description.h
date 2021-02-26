@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-// Types of the different actions the page info site security button can have.
+// Types of the different actions the page info Site Security button can have.
 typedef NS_ENUM(NSUInteger, PageInfoSiteSecurityButtonAction) {
   // No action.
   PageInfoSiteSecurityButtonActionNone,
@@ -17,13 +17,17 @@ typedef NS_ENUM(NSUInteger, PageInfoSiteSecurityButtonAction) {
   PageInfoSiteSecurityButtonActionReload,
 };
 
-// Config for the information displayed by the page info site security.
+// Config for the information displayed by the page info Site Security section.
 @interface PageInfoSiteSecurityDescription : NSObject
 
-@property(nonatomic, copy) NSString* title;
+@property(nonatomic, copy) NSString* siteURL;
+@property(nonatomic, copy) NSString* status;
 @property(nonatomic, copy) NSString* message;
-@property(nonatomic, strong) UIImage* image;
+// TODO(crbug.com/1038923): Remove this.
+@property(nonatomic, strong) UIImage* legacyImage;
+@property(nonatomic, copy) NSString* iconImageName;
 @property(nonatomic, assign) PageInfoSiteSecurityButtonAction buttonAction;
+@property(nonatomic, assign) BOOL isEmpty;
 
 @end
 

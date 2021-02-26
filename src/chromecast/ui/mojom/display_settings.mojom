@@ -30,6 +30,9 @@ interface DisplaySettings {
   // be off and other settings will not be applied.
   SetScreenOn(bool display_on);
 
+  // Sets whether the screen should power off when SetScreenOn(false) is called.
+  SetAllowScreenPowerOff(bool allow_power_off);
+
   // Adds an observer to DisplaySettings.
   AddDisplaySettingsObserver(pending_remote<DisplaySettingsObserver> observer);
 };

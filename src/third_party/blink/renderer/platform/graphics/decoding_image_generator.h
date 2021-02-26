@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkYUVAIndex.h"
+#include "third_party/skia/include/core/SkYUVAPixmaps.h"
 
 class SkData;
 
@@ -76,14 +76,15 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                  size_t frame_index,
                  PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override;
-  bool QueryYUVA8(SkYUVASizeInfo*,
-                  SkYUVAIndex[SkYUVAIndex::kIndexCount],
-                  SkYUVColorSpace*) const override;
-  bool GetYUVA8Planes(const SkYUVASizeInfo&,
-                      const SkYUVAIndex[SkYUVAIndex::kIndexCount],
-                      void* planes[4],
-                      size_t frame_index,
-                      uint32_t lazy_pixel_ref) override;
+
+  bool QueryYUVA(
+      const SkYUVAPixmapInfo::SupportedDataTypes& supported_data_types,
+      SkYUVAPixmapInfo* yuva_pixmap_info) const override;
+
+  bool GetYUVAPlanes(const SkYUVAPixmaps& pixmaps,
+                     size_t frame_index,
+                     uint32_t lazy_pixel_ref) override;
+
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
   const cc::ImageHeaderMetadata* GetMetadataForDecodeAcceleration()

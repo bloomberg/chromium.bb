@@ -5,6 +5,7 @@
 #include "system_features_disable_list_policy_handler.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -16,6 +17,7 @@ namespace policy {
 const char kCameraFeature[] = "camera";
 const char kBrowserSettingsFeature[] = "browser_settings";
 const char kOsSettingsFeature[] = "os_settings";
+const char kScanningFeature[] = "scanning";
 
 const char kSystemFeaturesDisableListHistogram[] =
     "Enterprise.SystemFeaturesDisableList";
@@ -69,6 +71,8 @@ SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
     return SystemFeature::OS_SETTINGS;
   if (system_feature == kBrowserSettingsFeature)
     return SystemFeature::BROWSER_SETTINGS;
+  if (system_feature == kScanningFeature)
+    return SystemFeature::SCANNING;
 
   LOG(ERROR) << "Unsupported system feature: " << system_feature;
   return UNKNOWN_SYSTEM_FEATURE;

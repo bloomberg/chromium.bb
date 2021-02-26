@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -26,8 +25,7 @@ class DiceSigninButtonView;
 //   the user to sign in to Chrome.
 // * If Chrome has at least one account, then the promo button is personalized
 //   with the user full name and avatar icon and allows the user to enable sync.
-class DiceBubbleSyncPromoView : public views::View,
-                                public views::ButtonListener {
+class DiceBubbleSyncPromoView : public views::View {
  public:
   // Creates a personalized sync promo view.
   // |delegate| is not owned by DiceBubbleSyncPromoView.
@@ -46,17 +44,13 @@ class DiceBubbleSyncPromoView : public views::View,
                           int text_style = views::style::STYLE_PRIMARY);
   ~DiceBubbleSyncPromoView() override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // Returns the sign-in button.
   views::View* GetSigninButtonForTesting();
 
  private:
   // Used to enable sync in the DiceAccountsMenu and when |signin_button_| is
   // pressed.
-  void EnableSync(bool is_default_promo_account,
-                  const base::Optional<AccountInfo>& account);
+  void EnableSync();
 
   // views::View:
   const char* GetClassName() const override;

@@ -10,7 +10,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,12 +18,12 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "chrome/utility/importer/nss_decryptor.h"
-#include "components/autofill/core/common/password_form.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
@@ -381,7 +380,7 @@ void FirefoxImporter::ImportPasswords() {
     return;
   }
 
-  std::vector<autofill::PasswordForm> forms;
+  std::vector<importer::ImportedPasswordForm> forms;
   base::FilePath source_path = source_path_;
   const base::FilePath sqlite_file = source_path.AppendASCII("signons.sqlite");
   const base::FilePath json_file = source_path.AppendASCII("logins.json");
@@ -401,12 +400,9 @@ void FirefoxImporter::ImportPasswords() {
   }
 
   if (!cancelled()) {
-    UMA_HISTOGRAM_COUNTS_10000("Import.NumberOfImportedPasswords.Firefox",
-                               forms.size());
     for (size_t i = 0; i < forms.size(); ++i) {
       if (!forms[i].username_value.empty() ||
-          !forms[i].password_value.empty() ||
-          forms[i].blacklisted_by_user) {
+          !forms[i].password_value.empty() || forms[i].blocked_by_user) {
         bridge_->SetPasswordForm(forms[i]);
       }
     }

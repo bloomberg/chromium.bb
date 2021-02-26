@@ -4,9 +4,14 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -33,6 +38,7 @@ import org.chromium.ui.widget.ViewRectProvider;
  */
 public class SectionHeaderView extends LinearLayout implements View.OnClickListener {
     private static final int IPH_TIMEOUT_MS = 10000;
+    private static final int ANIMATION_DURATION_MS = 200;
 
     // Views in the header layout that are set during inflate.
     private TextView mTitleView;
@@ -44,9 +50,19 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
     private SectionHeader mHeader;
 
     private boolean mHasMenu;
+    private boolean mAnimatePaddingWhenDisabled;
 
     public SectionHeaderView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        TypedArray attrArray = context.getTheme().obtainStyledAttributes(
+                attrs, R.styleable.SectionHeaderView, 0, 0);
+
+        try {
+            mAnimatePaddingWhenDisabled = attrArray.getBoolean(
+                    R.styleable.SectionHeaderView_animatePaddingWhenDisabled, false);
+        } finally {
+            attrArray.recycle();
+        }
     }
 
     @Override
@@ -63,6 +79,25 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
 
         if (mHasMenu) {
             mMenuView.setOnClickListener((View v) -> { displayMenu(); });
+            int touchPadding;
+            // If we are animating padding, add additional touch area around the menu.
+            if (mAnimatePaddingWhenDisabled) {
+                touchPadding = getResources().getDimensionPixelSize(
+                        R.dimen.feed_v2_header_menu_touch_padding);
+            } else {
+                touchPadding = 0;
+            }
+            post(() -> {
+                Rect rect = new Rect();
+                mMenuView.getHitRect(rect);
+
+                rect.top -= touchPadding;
+                rect.bottom += touchPadding;
+                rect.left -= touchPadding;
+                rect.right += touchPadding;
+
+                setTouchDelegate(new TouchDelegate(rect, mMenuView));
+            });
         }
     }
 
@@ -100,14 +135,67 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
 
         if (mHeader.isExpandable()) {
             if (!mHasMenu) {
-                mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+                mStatusView.setText(
+                        mHeader.isExpanded() ? R.string.hide_content : R.string.show_content);
             }
-            setBackgroundResource(
-                    mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
+            if (mAnimatePaddingWhenDisabled) {
+                int finalHorizontalPadding = 0;
+                boolean isClosingHeader = !mHeader.isExpanded();
+                if (isClosingHeader) {
+                    // If closing header, add additional padding.
+                    finalHorizontalPadding = getResources().getDimensionPixelSize(
+                            R.dimen.feed_v2_header_menu_disabled_padding);
+                } else {
+                    // Otherwise, remove the background now.
+                    setBackgroundResource(0);
+                }
+                ValueAnimator animator =
+                        ValueAnimator.ofInt(getPaddingLeft(), finalHorizontalPadding);
+                animator.addUpdateListener((ValueAnimator animation) -> {
+                    int horizontalPadding = (Integer) animation.getAnimatedValue();
+                    setPadding(/*left*/ horizontalPadding, getPaddingTop(),
+                            /*right*/ horizontalPadding, getPaddingBottom());
+                });
+                animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        // If we closed the header, add the hairline after animation.
+                        if (isClosingHeader) {
+                            setBackgroundResource(R.drawable.hairline_border_card_background);
+                        }
+                    }
+                });
+                animator.setDuration(ANIMATION_DURATION_MS);
+                animator.start();
+            } else {
+                setBackgroundResource(
+                        mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
+            }
         }
     }
+
     /** Shows an IPH on the feed header menu button. */
     public void showMenuIph(UserEducationHelper helper) {
+        final ViewRectProvider rectProvider = new ViewRectProvider(mMenuView) {
+            // ViewTreeObserver.OnPreDrawListener implementation.
+            @Override
+            public boolean onPreDraw() {
+                boolean result = super.onPreDraw();
+
+                int minRectBottomPosPx =
+                        getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                        + mMenuView.getHeight() / 2;
+                // Notify that the rectangle is hidden to dismiss the popup if the anchor is
+                // positioned too high.
+                if (getRect().bottom < minRectBottomPosPx) {
+                    notifyRectHidden();
+                }
+
+                return result;
+            }
+        };
+        int yInsetPx =
+                getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
         helper.requestShowIPH(new IPHCommandBuilder(mMenuView.getContext().getResources(),
                 FeatureConstants.FEED_HEADER_MENU_FEATURE, R.string.ntp_feed_menu_iph,
                 R.string.accessibility_ntp_feed_menu_iph)
@@ -115,8 +203,9 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
                                       .setCircleHighlight(true)
                                       .setShouldHighlight(true)
                                       .setDismissOnTouch(false)
-                                      .setInsetRect(new Rect(0, 0, 0, 0))
+                                      .setInsetRect(new Rect(0, 0, 0, -yInsetPx))
                                       .setAutoDismissTimeout(5 * 1000)
+                                      .setViewRectProvider(rectProvider)
                                       .build());
     }
 

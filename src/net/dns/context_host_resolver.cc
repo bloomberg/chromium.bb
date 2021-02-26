@@ -150,16 +150,6 @@ class ContextHostResolver::WrappedResolveHostRequest
     return inner_request_->GetHostnameResults();
   }
 
-  const base::Optional<EsniContent>& GetEsniResults() const override {
-    if (!inner_request_) {
-      static const base::NoDestructor<base::Optional<EsniContent>>
-          nullopt_result;
-      return *nullopt_result;
-    }
-
-    return inner_request_->GetEsniResults();
-  }
-
   net::ResolveErrorInfo GetResolveErrorInfo() const override {
     if (!inner_request_) {
       return resolve_error_info_;
@@ -336,7 +326,7 @@ HostCache* ContextHostResolver::GetHostCache() {
   return resolve_context_->host_cache();
 }
 
-std::unique_ptr<base::Value> ContextHostResolver::GetDnsConfigAsValue() const {
+base::Value ContextHostResolver::GetDnsConfigAsValue() const {
   return manager_->GetDnsConfigAsValue();
 }
 

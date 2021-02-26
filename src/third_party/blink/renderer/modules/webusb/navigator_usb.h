@@ -16,8 +16,6 @@ class USB;
 
 class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
                            public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUSB);
-
  public:
   static const char kSupplementName[];
 
@@ -30,7 +28,7 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
 
   explicit NavigatorUSB(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<USB> usb_;

@@ -29,7 +29,6 @@ void FakeLocalFrameHost::FullscreenStateChanged(bool is_fullscreen) {}
 
 void FakeLocalFrameHost::RegisterProtocolHandler(const WTF::String& scheme,
                                                  const ::blink::KURL& url,
-                                                 const ::WTF::String& title,
                                                  bool user_gesture) {}
 
 void FakeLocalFrameHost::UnregisterProtocolHandler(const WTF::String& scheme,
@@ -46,22 +45,24 @@ void FakeLocalFrameHost::DocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {}
 
 void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
-
-void FakeLocalFrameHost::LifecycleStateChanged(
-    mojom::blink::FrameLifecycleState state) {}
-
-void FakeLocalFrameHost::EvictFromBackForwardCache() {}
+void FakeLocalFrameHost::SetVirtualKeyboardOverlayPolicy(
+    bool vk_overlays_content) {}
 
 void FakeLocalFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 
 void FakeLocalFrameHost::DidChangeThemeColor(
-    const base::Optional<::SkColor>& theme_color) {}
+    base::Optional<::SkColor> theme_color) {}
+
+void FakeLocalFrameHost::DidChangeBackgroundColor(SkColor background_color,
+                                                  bool color_adjust) {}
 
 void FakeLocalFrameHost::DidFailLoadWithError(const ::blink::KURL& url,
                                               int32_t error_code) {}
 
 void FakeLocalFrameHost::DidFocusFrame() {}
+
+void FakeLocalFrameHost::DidCallFocus() {}
 
 void FakeLocalFrameHost::EnforceInsecureRequestPolicy(
     mojom::InsecureRequestPolicy policy_bitmap) {}
@@ -107,10 +108,11 @@ void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
 void FakeLocalFrameHost::UpdateTitle(
     const WTF::String& title,
-    mojo_base::mojom::blink::TextDirection title_direction) {}
+    base::i18n::TextDirection title_direction) {}
 
 void FakeLocalFrameHost::UpdateUserActivationState(
-    mojom::blink::UserActivationUpdateType update_type) {}
+    mojom::blink::UserActivationUpdateType update_type,
+    mojom::UserActivationNotificationType notification_type) {}
 
 void FakeLocalFrameHost::HandleAccessibilityFindInPageResult(
     mojom::blink::FindInPageResultAXParamsPtr params) {}
@@ -149,10 +151,6 @@ void FakeLocalFrameHost::RunBeforeUnloadConfirm(
   std::move(callback).Run(true);
 }
 
-void FakeLocalFrameHost::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
-  std::move(callback).Run(true);
-}
-
 void FakeLocalFrameHost::UpdateFaviconURL(
     WTF::Vector<blink::mojom::blink::FaviconURLPtr> favicon_urls) {}
 
@@ -161,8 +159,12 @@ void FakeLocalFrameHost::DownloadURL(
 
 void FakeLocalFrameHost::FocusedElementChanged(
     bool is_editable_element,
-    const gfx::Rect& bounds_in_frame_widget) {}
+    const gfx::Rect& bounds_in_frame_widget,
+    blink::mojom::FocusType focus_type) {}
 
+void FakeLocalFrameHost::TextSelectionChanged(const WTF::String& text,
+                                              uint32_t offset,
+                                              const gfx::Range& range) {}
 void FakeLocalFrameHost::ShowPopupMenu(
     mojo::PendingRemote<mojom::blink::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
@@ -182,6 +184,27 @@ void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
 void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
     const base::UnguessableToken& child_frame_token,
     mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) {}
+
+void FakeLocalFrameHost::DidChangeOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame) {}
+
+void FakeLocalFrameHost::DidChangeCSPAttribute(
+    const base::UnguessableToken& child_frame_token,
+    network::mojom::blink::ContentSecurityPolicyPtr) {}
+
+void FakeLocalFrameHost::DidChangeFramePolicy(
+    const base::UnguessableToken& child_frame_token,
+    const FramePolicy& frame_policy) {}
+
+void FakeLocalFrameHost::BindPolicyContainer(
+    mojo::PendingAssociatedReceiver<mojom::blink::PolicyContainerHost>
+        receiver) {}
+
+void FakeLocalFrameHost::CapturePaintPreviewOfSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {}
+
+void FakeLocalFrameHost::Detach() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

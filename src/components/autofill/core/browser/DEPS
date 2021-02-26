@@ -4,16 +4,20 @@ include_rules = [
   "+components/history/core/browser",
   "+components/infobars/core",
   "+components/keyed_service/core",
+  "+components/language_usage_metrics",
   "+components/leveldb_proto",
   "+components/metrics",
   "+components/policy",
   "+components/security_state",
+  "+components/security_interstitials/core/pref_names.h",
   "+components/signin/public",
   "+components/sync",
+  "+components/translate/core/browser",
   "+components/variations",
   "+components/version_info",
   "+components/webdata/common",
   "+components/webdata_services",
+  "+content/public/test",
   "+crypto/hkdf.h",
   "+crypto/random.h",
   "+google_apis/gaia",
@@ -42,7 +46,9 @@ specific_include_rules = {
     "+components/ukm",
   ],
   "(test_)?credit_card_fido_authenticator\.(cc|h)": [
+    "+device/fido/authenticator_selection_criteria.h",
     "+device/fido/fido_constants.h",
+    "+device/fido/fido_types.h",
     "+third_party/blink/public/mojom/webauthn/authenticator.mojom.h",
   ],
   "(test_)?internal_authenticator\.h": [
@@ -51,6 +57,9 @@ specific_include_rules = {
   ],
   "autofill_driver\.h": [
     "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+  ],
+  "test_autofill_driver\.h": [
+    "+components/autofill/content/browser/content_autofill_driver.h"
   ],
   "credit_card_save_manager_unittest\.cc": [
     "+components/ukm",

@@ -5,7 +5,9 @@
 #include "components/autofill/content/renderer/form_tracker.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
@@ -104,6 +106,21 @@ void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
                                 Observer::ElementChangeSource::SELECT_CHANGED));
 }
 
+void FormTracker::TrackAutofilledElement(const WebFormControlElement& element) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
+  DCHECK(element.IsAutofilled());
+
+  if (ignore_control_changes_)
+    return;
+
+  ResetLastInteractedElements();
+  if (element.Form().IsNull())
+    last_interacted_formless_element_ = element;
+  else
+    last_interacted_form_ = element.Form();
+  TrackElement();
+}
+
 void FormTracker::FireProbablyFormSubmittedForTesting() {
   FireProbablyFormSubmitted();
 }
@@ -126,14 +143,13 @@ void FormTracker::FormControlDidChangeImpl(
   }
 }
 
-void FormTracker::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                           ui::PageTransition transition) {
+void FormTracker::DidCommitProvisionalLoad(ui::PageTransition transition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  if (!is_same_document_navigation) {
-    ResetLastInteractedElements();
-    return;
-  }
+  ResetLastInteractedElements();
+}
 
+void FormTracker::DidFinishSameDocumentNavigation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }
 
@@ -159,7 +175,7 @@ void FormTracker::DidStartNavigation(
   }
 }
 
-void FormTracker::FrameDetached() {
+void FormTracker::WillDetach() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   FireInferredFormSubmission(SubmissionSource::FRAME_DETACHED);
 }
@@ -191,6 +207,11 @@ void FormTracker::FireFormSubmitted(const blink::WebFormElement& form) {
 }
 
 void FormTracker::FireProbablyFormSubmitted() {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillProbableFormSubmissionInBrowser)) {
+    return;
+  }
+
   for (auto& observer : observers_)
     observer.OnProbablyFormSubmitted();
   ResetLastInteractedElements();

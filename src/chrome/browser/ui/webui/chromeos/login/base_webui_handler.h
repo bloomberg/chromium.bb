@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
@@ -114,9 +114,9 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 
-  // Show selected WebUI |screen|.
+  // Show selected WebUI `screen`.
   void ShowScreen(OobeScreenId screen);
-  // Show selected WebUI |screen|. Pass screen initialization using the |data|
+  // Show selected WebUI `screen`. Pass screen initialization using the `data`
   // parameter.
   void ShowScreenWithData(OobeScreenId screen,
                           const base::DictionaryValue* data);
@@ -152,7 +152,7 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // insert. Does nothing.
   void InsertIntoList(std::vector<base::Value>*);
 
-  // Record |function_name| and |args| as an incoming event if recording is
+  // Record `function_name` and `args` as an incoming event if recording is
   // enabled.
   void MaybeRecordIncomingEvent(const std::string& function_name,
                                 const base::ListValue* args);

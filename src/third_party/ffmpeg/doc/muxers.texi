@@ -89,6 +89,12 @@ specific scenarios, e.g. when merging multiple audio streams into one for
 compatibility with software that only supports a single audio stream in AVI
 (see @ref{amerge,,the "amerge" section in the ffmpeg-filters manual,ffmpeg-filters}).
 
+@item flipped_raw_rgb
+If set to true, store positive height for raw RGB bitmaps, which indicates
+bitmap is stored bottom-up. Note that this option does not flip the bitmap
+which has to be done manually beforehand, e.g. by using the vflip filter.
+Default is @var{false} and indicates bitmap is stored top down.
+
 @end table
 
 @anchor{chromaprint}
@@ -267,8 +273,10 @@ Override User-Agent field in HTTP header. Applicable only for HTTP output.
 @item http_persistent @var{http_persistent}
 Use persistent HTTP connections. Applicable only for HTTP output.
 @item hls_playlist @var{hls_playlist}
-Generate HLS playlist files as well. The master playlist is generated with the filename master.m3u8.
+Generate HLS playlist files as well. The master playlist is generated with the filename @var{hls_master_name}.
 One media playlist file is generated for each stream with filenames media_0.m3u8, media_1.m3u8, etc.
+@item hls_master_name @var{file_name}
+HLS master playlist name. Default is "master.m3u8".
 @item streaming @var{streaming}
 Enable (1) or disable (0) chunk streaming mode of output. In chunk streaming
 mode, each frame will be a moof fragment which forms a chunk.
@@ -363,6 +371,10 @@ adjusting playback latency and buffer occupancy during normal playback by client
 @item max_playback_rate @var{max_playback_rate}
 Set the maximum playback rate indicated as appropriate for the purposes of automatically
 adjusting playback latency and buffer occupancy during normal playback by clients.
+
+@item update_period @var{update_period}
+ Set the mpd update period ,for dynamic content.
+ The unit is second.
 
 @end table
 
@@ -648,6 +660,9 @@ Set the starting sequence numbers according to @var{start_number} option value.
 @item epoch
 The start number will be the seconds since epoch (1970-01-01 00:00:00)
 
+@item epoch_us
+The start number will be the microseconds since epoch (1970-01-01 00:00:00)
+
 @item datetime
 The start number will be based on the current date/time as YYYYmmddHHMMSS. e.g. 20161231235759.
 
@@ -844,7 +859,7 @@ fmp4 files may be used in HLS version 7 and above.
 @item hls_fmp4_init_filename @var{filename}
 Set filename to the fragment files header file, default filename is @file{init.mp4}.
 
-@item hls_fmp4_init_resend @var{filename}
+@item hls_fmp4_init_resend
 Resend init file after m3u8 file refresh every time, default is @var{0}.
 
 When @code{var_stream_map} is set with two or more variant streams, the
@@ -1311,7 +1326,8 @@ The recognized metadata settings in this muxer are:
 
 @table @option
 @item title
-Set title name provided to a single track.
+Set title name provided to a single track. This gets mapped to
+the FileDescription element for a stream written as attachment.
 
 @item language
 Specify the language of the track in the Matroska languages form.
@@ -1403,6 +1419,13 @@ disposition default exists, no subtitle track will be marked as default.
 In this mode the FlagDefault is set if and only if the AV_DISPOSITION_DEFAULT
 flag is set in the disposition of the corresponding stream.
 @end table
+
+@item flipped_raw_rgb
+If set to true, store positive height for raw RGB bitmaps, which indicates
+bitmap is stored bottom-up. Note that this option does not flip the bitmap
+which has to be done manually beforehand, e.g. by using the vflip filter.
+Default is @var{false} and indicates bitmap is stored top down.
+
 @end table
 
 @anchor{md5}
@@ -2270,6 +2293,11 @@ certain (usually permanent) errors the recovery is not attempted even when
 @item restart_with_keyframe @var{bool}
 Specify whether to wait for the keyframe after recovering from
 queue overflow or failure. This option is set to 0 (false) by default.
+
+@item timeshift @var{duration}
+Buffer the specified amount of packets and delay writing the output. Note that
+@var{queue_size} must be big enough to store the packets for timeshift. At the
+end of the input the fifo buffer is flushed at realtime speed.
 
 @end table
 

@@ -15,7 +15,7 @@
 #include "third_party/private_membership/src/internal/hashed_bucket_id.h"
 
 #include "third_party/private_membership/src/private_membership.pb.h"
-#include "private_membership_rlwe.pb.h"
+#include "third_party/private_membership/src/private_membership_rlwe.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "third_party/shell-encryption/src/testing/protobuf_matchers.h"
@@ -36,7 +36,7 @@ private_membership::rlwe::PrivateMembershipRlweQuery::HashedBucketId
 ApiHashedBucketId(absl::string_view hashed_bucket_id, int bit_length) {
   private_membership::rlwe::PrivateMembershipRlweQuery::HashedBucketId
       api_hashed_bucket_id;
-  api_hashed_bucket_id.set_hashed_bucket_id(hashed_bucket_id);
+  api_hashed_bucket_id.set_hashed_bucket_id(std::string(hashed_bucket_id));
   api_hashed_bucket_id.set_bit_length(bit_length);
   return api_hashed_bucket_id;
 }
@@ -128,7 +128,7 @@ TEST(HashedBucketId, ToApiProto) {
       api_proto = ApiHashedBucketId("abcd", 32);
   ASSERT_OK_AND_ASSIGN(HashedBucketId id,
                        HashedBucketId::CreateFromApiProto(api_proto));
-  EXPECT_THAT(id.ToApiProto(), EqualsProto(api_proto));
+  EXPECT_EQ(id.ToApiProto().SerializeAsString(), api_proto.SerializeAsString());
 }
 
 TEST(HashedBucketIdTest, EqualsFalse) {

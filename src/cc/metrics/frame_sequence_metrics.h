@@ -5,6 +5,8 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 #define CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
@@ -12,6 +14,7 @@
 
 namespace cc {
 class ThroughputUkmReporter;
+class JankMetrics;
 
 enum class FrameSequenceTrackerType {
   // Used as an enum for metrics. DO NOT reorder or delete values. Rather,
@@ -21,12 +24,13 @@ enum class FrameSequenceTrackerType {
   kPinchZoom = 2,
   kRAF = 3,
   kTouchScroll = 4,
-  kUniversal = 5,
   kVideo = 6,
   kWheelScroll = 7,
   kScrollbarScroll = 8,
   kCustom = 9,  // Note that the metrics for kCustom are not reported on UMA,
                 // and instead are dispatched back to the LayerTreeHostClient.
+  kCanvasAnimation = 10,
+  kJSAnimation = 11,
   kMaxType
 };
 
@@ -39,27 +43,53 @@ class CC_EXPORT FrameSequenceMetrics {
   FrameSequenceMetrics(const FrameSequenceMetrics&) = delete;
   FrameSequenceMetrics& operator=(const FrameSequenceMetrics&) = delete;
 
-  enum class ThreadType { kMain, kCompositor, kSlower, kUnknown };
+  enum class ThreadType { kMain, kCompositor, kUnknown };
 
   struct ThroughputData {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
-        const ThroughputData& main);
+        const ThroughputData& main,
+        ThreadType effective_thred);
 
-    // Returns the throughput in percent, a return value of base::nullopt
-    // indicates that no throughput metric is reported.
-    static base::Optional<int> ReportHistogram(FrameSequenceMetrics* metrics,
-                                               ThreadType thread_type,
-                                               int metric_index,
-                                               const ThroughputData& data);
+    static bool CanReportHistogram(FrameSequenceMetrics* metrics,
+                                   ThreadType thread_type,
+                                   const ThroughputData& data);
+
+    // Returns the dropped throughput in percent
+    static int ReportDroppedFramePercentHistogram(FrameSequenceMetrics* metrics,
+                                                  ThreadType thread_type,
+                                                  int metric_index,
+                                                  const ThroughputData& data);
+
+    // Returns the missed deadline throughput in percent
+    static int ReportMissedDeadlineFramePercentHistogram(
+        FrameSequenceMetrics* metrics,
+        ThreadType thread_type,
+        int metric_index,
+        const ThroughputData& data);
 
     void Merge(const ThroughputData& data) {
       frames_expected += data.frames_expected;
       frames_produced += data.frames_produced;
+      frames_ontime += data.frames_ontime;
 #if DCHECK_IS_ON()
       frames_processed += data.frames_processed;
       frames_received += data.frames_received;
 #endif
+    }
+
+    int DroppedFramePercent() const {
+      if (frames_expected == 0)
+        return 0;
+      return std::ceil(100 * (frames_expected - frames_produced) /
+                       static_cast<double>(frames_expected));
+    }
+
+    int MissedDeadlineFramePercent() const {
+      if (frames_produced == 0)
+        return 0;
+      return std::ceil(100 * (frames_produced - frames_ontime) /
+                       static_cast<double>(frames_produced));
     }
 
     // Tracks the number of frames that were expected to be shown during this
@@ -69,6 +99,10 @@ class CC_EXPORT FrameSequenceMetrics {
     // Tracks the number of frames that were actually presented to the user
     // during this frame-sequence.
     uint32_t frames_produced = 0;
+
+    // Tracks the number of frames that were actually presented to the user
+    // that didn't miss the vsync deadline during this frame-sequence.
+    uint32_t frames_ontime = 0;
 
 #if DCHECK_IS_ON()
     // Tracks the number of frames that is either submitted or reported as no
@@ -82,8 +116,12 @@ class CC_EXPORT FrameSequenceMetrics {
 
   void SetScrollingThread(ThreadType thread);
 
-  using CustomReporter =
-      base::OnceCallback<void(ThroughputData throughput_data)>;
+  struct CustomReportData {
+    uint32_t frames_expected = 0;
+    uint32_t frames_produced = 0;
+    uint32_t jank_count = 0;
+  };
+  using CustomReporter = base::OnceCallback<void(const CustomReportData& data)>;
   // Sets reporter callback for kCustom typed sequence.
   void SetCustomReporter(CustomReporter custom_reporter);
 
@@ -96,13 +134,9 @@ class CC_EXPORT FrameSequenceMetrics {
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
   void ReportMetrics();
-  void ComputeAggregatedThroughputForTesting() {
-    ComputeAggregatedThroughput();
-  }
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
-  ThroughputData& aggregated_throughput() { return aggregated_throughput_; }
   void add_checkerboarded_frames(int64_t frames) {
     frames_checkerboarded_ += frames;
   }
@@ -113,17 +147,48 @@ class CC_EXPORT FrameSequenceMetrics {
     return throughput_ukm_reporter_;
   }
 
+  // Must be called before destructor.
+  void ReportLeftoverData();
+
+  void AdoptTrace(FrameSequenceMetrics* adopt_from);
+  void AdvanceTrace(base::TimeTicks timestamp);
+
+  void ComputeJank(FrameSequenceMetrics::ThreadType thread_type,
+                   uint32_t frame_token,
+                   base::TimeTicks presentation_time,
+                   base::TimeDelta frame_interval);
+
+  void NotifySubmitForJankReporter(FrameSequenceMetrics::ThreadType thread_type,
+                                   uint32_t frame_token,
+                                   uint32_t sequence_number);
+
+  void NotifyNoUpdateForJankReporter(
+      FrameSequenceMetrics::ThreadType thread_type,
+      uint32_t sequence_number,
+      base::TimeDelta frame_interval);
+
  private:
-  void ComputeAggregatedThroughput();
   const FrameSequenceTrackerType type_;
+
+  // Tracks some data to generate useful trace events.
+  struct TraceData {
+    explicit TraceData(FrameSequenceMetrics* metrics);
+    ~TraceData();
+    FrameSequenceMetrics* metrics;
+    base::TimeTicks last_timestamp = base::TimeTicks::Now();
+    int frame_count = 0;
+    bool enabled = false;
+    void* trace_id = nullptr;
+
+    void Advance(base::TimeTicks new_timestamp);
+    void Terminate();
+  } trace_data_{this};
 
   // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
   ThroughputUkmReporter* const throughput_ukm_reporter_;
 
   ThroughputData impl_throughput_;
   ThroughputData main_throughput_;
-  // The aggregated throughput for the main/compositor thread.
-  ThroughputData aggregated_throughput_;
 
   ThreadType scrolling_thread_ = ThreadType::kUnknown;
 
@@ -133,6 +198,8 @@ class CC_EXPORT FrameSequenceMetrics {
 
   // Callback invoked to report metrics for kCustom typed sequence.
   CustomReporter custom_reporter_;
+
+  std::unique_ptr<JankMetrics> jank_reporter_;
 };
 
 }  // namespace cc

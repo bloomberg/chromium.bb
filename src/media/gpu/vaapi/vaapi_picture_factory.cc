@@ -6,9 +6,11 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_X11)
+#include "media/gpu/vaapi/vaapi_picture_native_pixmap_angle.h"
 #include "media/gpu/vaapi/vaapi_picture_tfp.h"
 #endif
 #if defined(USE_OZONE)
@@ -22,21 +24,40 @@ namespace media {
 
 namespace {
 
-const struct {
-  gl::GLImplementation gl_impl;
-  VaapiPictureFactory::VaapiImplementation va_impl;
-} kVaapiImplementationPairs[] = {{gl::kGLImplementationEGLGLES2,
-                                  VaapiPictureFactory::kVaapiImplementationDrm}
-#if defined(USE_X11)
-                                 ,
-                                 {gl::kGLImplementationDesktopGL,
-                                  VaapiPictureFactory::kVaapiImplementationX11}
-#endif  // USE_X11
-};
+template <typename PictureType>
+std::unique_ptr<VaapiPicture> CreateVaapiPictureNativeImpl(
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    const PictureBuffer& picture_buffer,
+    const gfx::Size& visible_size,
+    uint32_t client_texture_id,
+    uint32_t service_texture_id) {
+  return std::make_unique<PictureType>(
+      std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+      picture_buffer.id(), picture_buffer.size(), visible_size,
+      service_texture_id, client_texture_id, picture_buffer.texture_target());
+}
 
 }  // namespace
 
-VaapiPictureFactory::VaapiPictureFactory() = default;
+VaapiPictureFactory::VaapiPictureFactory() {
+  vaapi_impl_pairs_.insert(
+      std::make_pair(gl::kGLImplementationEGLGLES2,
+                     VaapiPictureFactory::kVaapiImplementationDrm));
+#if defined(USE_X11)
+  vaapi_impl_pairs_.insert(
+      std::make_pair(gl::kGLImplementationEGLANGLE,
+                     VaapiPictureFactory::kVaapiImplementationAngle));
+  if (!features::IsUsingOzonePlatform()) {
+    vaapi_impl_pairs_.insert(
+        std::make_pair(gl::kGLImplementationDesktopGL,
+                       VaapiPictureFactory::kVaapiImplementationX11));
+  }
+#endif
+
+  DeterminePictureCreationAndDownloadingMechanism();
+}
 
 VaapiPictureFactory::~VaapiPictureFactory() = default;
 
@@ -60,73 +81,104 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
           ? picture_buffer.service_texture_ids()[0]
           : 0;
 
-  std::unique_ptr<VaapiPicture> picture;
-
   // Select DRM(egl) / TFP(glx) at runtime with --use-gl=egl / --use-gl=desktop
-  switch (GetVaapiImplementation(gl::GetGLImplementation())) {
-#if defined(USE_OZONE)
-    // We can be called without GL initialized, which is valid if we use Ozone.
-    case kVaapiImplementationNone:
-      FALLTHROUGH;
-    case kVaapiImplementationDrm:
-      picture.reset(new VaapiPictureNativePixmapOzone(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
-#elif defined(USE_EGL)
-    case kVaapiImplementationDrm:
-      picture.reset(new VaapiPictureNativePixmapEgl(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
-#endif
-
-#if defined(USE_X11)
-    case kVaapiImplementationX11:
-      picture.reset(new VaapiTFPPicture(
-          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), visible_size,
-          service_texture_id, client_texture_id,
-          picture_buffer.texture_target()));
-      break;
-#endif  // USE_X11
-
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-
-  return picture;
+  return CreateVaapiPictureNative(vaapi_wrapper, make_context_current_cb,
+                                  bind_image_cb, picture_buffer, visible_size,
+                                  client_texture_id, service_texture_id);
 }
 
 VaapiPictureFactory::VaapiImplementation
 VaapiPictureFactory::GetVaapiImplementation(gl::GLImplementation gl_impl) {
-  for (const auto& implementation_pair : kVaapiImplementationPairs) {
-    if (gl_impl == implementation_pair.gl_impl)
-      return implementation_pair.va_impl;
-  }
-
+  if (base::Contains(vaapi_impl_pairs_, gl_impl))
+    return vaapi_impl_pairs_[gl_impl];
   return kVaapiImplementationNone;
 }
 
 uint32_t VaapiPictureFactory::GetGLTextureTarget() {
 #if defined(USE_OZONE)
-  return GL_TEXTURE_EXTERNAL_OES;
-#else
-  return GL_TEXTURE_2D;
+  if (features::IsUsingOzonePlatform())
+    return GL_TEXTURE_EXTERNAL_OES;
 #endif
+  return GL_TEXTURE_2D;
 }
 
 gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
 #if defined(USE_OZONE)
-  return gfx::BufferFormat::YUV_420_BIPLANAR;
-#else
-  return gfx::BufferFormat::RGBX_8888;
+  if (features::IsUsingOzonePlatform())
+    return gfx::BufferFormat::YUV_420_BIPLANAR;
 #endif
+  return gfx::BufferFormat::RGBX_8888;
+}
+
+void VaapiPictureFactory::DeterminePictureCreationAndDownloadingMechanism() {
+  switch (GetVaapiImplementation(gl::GetGLImplementation())) {
+#if defined(USE_OZONE)
+    // We can be called without GL initialized, which is valid if we use Ozone.
+    case kVaapiImplementationNone:
+      if (features::IsUsingOzonePlatform()) {
+        create_picture_cb_ = base::BindRepeating(
+            &CreateVaapiPictureNativeImpl<VaapiPictureNativePixmapOzone>);
+        needs_vpp_for_downloading_ = true;
+      }
+
+      // This is reached by unit tests which don't require create_picture_cb_
+      // to be initialized or called.
+      break;
+#endif  // defined(USE_OZONE)
+#if defined(USE_X11)
+    case kVaapiImplementationX11:
+      DCHECK(!features::IsUsingOzonePlatform());
+      create_picture_cb_ =
+          base::BindRepeating(&CreateVaapiPictureNativeImpl<VaapiTFPPicture>);
+      // Neither VaapiTFPPicture or VaapiPictureNativePixmapAngle needs the VPP.
+      needs_vpp_for_downloading_ = false;
+      break;
+    case kVaapiImplementationAngle:
+      DCHECK(!features::IsUsingOzonePlatform());
+      create_picture_cb_ = base::BindRepeating(
+          &CreateVaapiPictureNativeImpl<VaapiPictureNativePixmapAngle>);
+      // Neither VaapiTFPPicture or VaapiPictureNativePixmapAngle needs the VPP.
+      needs_vpp_for_downloading_ = false;
+      break;
+#endif  // defined(USE_X11)
+    case kVaapiImplementationDrm:
+#if defined(USE_OZONE)
+      if (features::IsUsingOzonePlatform()) {
+        create_picture_cb_ = base::BindRepeating(
+            &CreateVaapiPictureNativeImpl<VaapiPictureNativePixmapOzone>);
+        needs_vpp_for_downloading_ = true;
+        break;
+      }
+#endif  // defined(USE_OZONE)
+#if defined(USE_EGL)
+      create_picture_cb_ = base::BindRepeating(
+          &CreateVaapiPictureNativeImpl<VaapiPictureNativePixmapEgl>);
+      needs_vpp_for_downloading_ = true;
+      break;
+#endif  // defined(USE_EGL)
+      // ozone or egl must be used to use the DRM implementation.
+      NOTREACHED();
+    default:
+      NOTREACHED();
+  }
+}
+
+bool VaapiPictureFactory::NeedsProcessingPipelineForDownloading() const {
+  return needs_vpp_for_downloading_;
+}
+
+std::unique_ptr<VaapiPicture> VaapiPictureFactory::CreateVaapiPictureNative(
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
+    const PictureBuffer& picture_buffer,
+    const gfx::Size& visible_size,
+    uint32_t client_texture_id,
+    uint32_t service_texture_id) {
+  CHECK(create_picture_cb_);
+  return create_picture_cb_.Run(
+      std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
+      picture_buffer, visible_size, client_texture_id, service_texture_id);
 }
 
 }  // namespace media

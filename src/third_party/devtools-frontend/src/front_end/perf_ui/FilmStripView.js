@@ -13,15 +13,24 @@ import * as UI from '../ui/ui.js';
 export class FilmStripView extends UI.Widget.HBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('perf_ui/filmStripView.css');
+    this.registerRequiredCSS('perf_ui/filmStripView.css', {enableLegacyPatching: true});
     this.contentElement.classList.add('film-strip-view');
     this._statusLabel = this.contentElement.createChild('div', 'label');
     this.reset();
     this.setMode(Modes.TimeBased);
+
+    /** @type {number} */
+    this._zeroTime;
+
+    /** @type {number} */
+    this._spanTime;
+
+    /** @type {!SDK.FilmStripModel.FilmStripModel} */
+    this._model;
   }
 
   /**
-   * @param {!Element} imageElement
+   * @param {!HTMLImageElement} imageElement
    * @param {?string} data
    */
   static _setImageData(imageElement, data) {
@@ -62,16 +71,27 @@ export class FilmStripView extends UI.Widget.HBox {
    */
   createFrameElement(frame) {
     const time = frame.timestamp;
+    const frameTime = Number.millisToString(time - this._zeroTime);
     const element = document.createElement('div');
     element.classList.add('frame');
     element.title = Common.UIString.UIString('Doubleclick to zoom image. Click to view preceding requests.');
-    element.createChild('div', 'time').textContent = Number.millisToString(time - this._zeroTime);
-    const imageElement = element.createChild('div', 'thumbnail').createChild('img');
+    element.createChild('div', 'time').textContent = frameTime;
+    element.tabIndex = 0;
+    element.setAttribute('aria-label', ls`Screenshot for ${frameTime} - select to view preceding requests.`);
+    UI.ARIAUtils.markAsButton(element);
+    const imageElement = /** @type {!HTMLImageElement} */ (element.createChild('div', 'thumbnail').createChild('img'));
     imageElement.alt = ls`Screenshot`;
     element.addEventListener('mousedown', this._onMouseEvent.bind(this, Events.FrameSelected, time), false);
     element.addEventListener('mouseenter', this._onMouseEvent.bind(this, Events.FrameEnter, time), false);
     element.addEventListener('mouseout', this._onMouseEvent.bind(this, Events.FrameExit, time), false);
     element.addEventListener('dblclick', this._onDoubleClick.bind(this, frame), false);
+    element.addEventListener('focusin', this._onMouseEvent.bind(this, Events.FrameEnter, time), false);
+    element.addEventListener('focusout', this._onMouseEvent.bind(this, Events.FrameExit, time), false);
+    element.addEventListener('keydown', event => {
+      if (event.code === 'Enter' || event.code === 'Space') {
+        this._onMouseEvent(Events.FrameSelected, time);
+      }
+    });
 
     return frame.imageDataPromise().then(FilmStripView._setImageData.bind(null, imageElement)).then(returnElement);
     /**
@@ -142,7 +162,7 @@ export class FilmStripView extends UI.Widget.HBox {
        * @return {!Element}
        */
       function fixWidth(element) {
-        element.style.width = frameWidth + 'px';
+        /** @type {!HTMLElement} */ (element).style.width = frameWidth + 'px';
         return element;
       }
     }
@@ -235,7 +255,7 @@ export class Dialog {
     `;
 
     this._widget = /** @type {!UI.XWidget.XWidget} */ (this._fragment.element());
-    this._widget.tabIndex = 0;
+    /** @type {!HTMLElement} */ (this._widget).tabIndex = 0;
     this._widget.addEventListener('keydown', this._keyDown.bind(this), false);
 
     this._frames = filmStripFrame.model().frames();
@@ -251,6 +271,10 @@ export class Dialog {
       this._dialog = new UI.Dialog.Dialog();
       this._dialog.contentElement.appendChild(this._widget);
       this._dialog.setDefaultFocusedElement(this._widget);
+      // Dialog can take an undefined `where` param for show(), however its superclass (GlassPane)
+      // requires a Document. TypeScript is unhappy that show() is not given a parameter here,
+      // however, so marking it as an ignore.
+      // @ts-ignore See above.
       this._dialog.show();
     }
     this._dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
@@ -260,9 +284,10 @@ export class Dialog {
    * @param {!Event} event
    */
   _keyDown(event) {
-    switch (event.key) {
+    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    switch (keyboardEvent.key) {
       case 'ArrowLeft':
-        if (Host.Platform.isMac() && event.metaKey) {
+        if (Host.Platform.isMac() && keyboardEvent.metaKey) {
           this._onFirstFrame();
         } else {
           this._onPrevFrame();
@@ -270,7 +295,7 @@ export class Dialog {
         break;
 
       case 'ArrowRight':
-        if (Host.Platform.isMac() && event.metaKey) {
+        if (Host.Platform.isMac() && keyboardEvent.metaKey) {
           this._onLastFrame();
         } else {
           this._onNextFrame();
@@ -312,13 +337,16 @@ export class Dialog {
   }
 
   /**
-   * @return {!Promise<undefined>}
+   * @return {!Promise<void>}
    */
   _render() {
     const frame = this._frames[this._index];
     this._fragment.$('time').textContent = Number.millisToString(frame.timestamp - this._zeroTime);
     return frame.imageDataPromise()
-        .then(FilmStripView._setImageData.bind(null, this._fragment.$('image')))
+        .then(() => {
+          const image = /** @type {!HTMLImageElement} */ (this._fragment.$('image'));
+          return FilmStripView._setImageData(image, null);
+        })
         .then(this._resize.bind(this));
   }
 }

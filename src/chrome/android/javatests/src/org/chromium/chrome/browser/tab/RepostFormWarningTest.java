@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
-import android.text.TextUtils;
 
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,16 +18,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -40,14 +39,12 @@ import java.util.concurrent.TimeoutException;
  * Integration tests verifying that form resubmission dialogs are correctly displayed and handled.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class RepostFormWarningTest {
     // Active tab.
 
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private Tab mTab;
     // Callback helper that manages waiting for pageloads to finish.
@@ -165,30 +162,20 @@ public class RepostFormWarningTest {
     }
 
     private void waitForNoReportFormWarningDialog() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Form resubmission dialog not dismissed correctly") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getCurrentModalDialog() == null;
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Form resubmission dialog not dismissed correctly",
+                    getCurrentModalDialog(), Matchers.nullValue());
+        });
     }
 
     private PropertyModel waitForRepostFormWarningDialog() {
-        CriteriaHelper.pollUiThread(new Criteria("Form resubmission warning not shown") {
-            @Override
-            public boolean isSatisfied() {
-                PropertyModel dialogModel = getCurrentModalDialog();
-                if (dialogModel == null) {
-                    updateFailureReason("No modal dialog shown");
-                    return false;
-                }
-
-                updateFailureReason("Modal dialog is not a HTTP post dialog");
-                return TextUtils.equals(
-                        mActivityTestRule.getActivity().getString(R.string.http_post_warning_title),
-                        dialogModel.get(ModalDialogProperties.TITLE));
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            PropertyModel dialogModel = getCurrentModalDialog();
+            Criteria.checkThat("No modal dialog shown", dialogModel, Matchers.notNullValue());
+            Criteria.checkThat("Modal dialog is not a HTTP post dialog",
+                    dialogModel.get(ModalDialogProperties.TITLE),
+                    Matchers.is(mActivityTestRule.getActivity().getString(
+                            R.string.http_post_warning_title)));
         });
         return getCurrentModalDialog();
     }

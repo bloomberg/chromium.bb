@@ -9,11 +9,12 @@
 
 #include "ash/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
-#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
+#include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/shortcut_viewer/views/bubble_view.h"
 #include "base/i18n/rtl.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,8 +59,10 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     const KeyboardShortcutItem& item,
     ShortcutCategory category)
     : shortcut_item_(&item), category_(category) {
-  description_label_view_ = AddChildView(std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringUTF16(item.description_message_id), nullptr));
+  description_label_view_ =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  description_label_view_->SetText(
+      l10n_util::GetStringUTF16(item.description_message_id));
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |description_label_view_| always
   // align to left.
@@ -91,28 +94,58 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
       has_invalid_dom_key = true;
       break;
     }
-    replacement_strings.emplace_back(dom_key_string);
+    replacement_strings.push_back(dom_key_string);
 
     base::string16 accessible_name = GetAccessibleNameForKeyboardCode(key_code);
-    accessible_names.emplace_back(accessible_name.empty() ? dom_key_string
-                                                          : accessible_name);
+    accessible_names.push_back(accessible_name.empty() ? dom_key_string
+                                                       : accessible_name);
+  }
+
+  int shortcut_message_id;
+  if (has_invalid_dom_key) {
+    // |shortcut_message_id| should never be used if the shortcut is not
+    // supported on the current keyboard layout.
+    shortcut_message_id = -1;
+  } else if (item.shortcut_message_id) {
+    shortcut_message_id = *item.shortcut_message_id;
+  } else {
+    // Automatically determine the shortcut message based on the number of
+    // replacement strings.
+    // As there are separators inserted between the modifiers, a shortcut with
+    // N modifiers has 2*N + 1 replacement strings.
+    switch (replacement_strings.size()) {
+      case 1:
+        shortcut_message_id = IDS_KSV_SHORTCUT_ONE_KEY;
+        break;
+      case 3:
+        shortcut_message_id = IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY;
+        break;
+      case 5:
+        shortcut_message_id = IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY;
+        break;
+      case 7:
+        shortcut_message_id = IDS_KSV_SHORTCUT_THREE_MODIFIERS_ONE_KEY;
+        break;
+      default:
+        NOTREACHED() << "Automatically determined shortcut has "
+                     << replacement_strings.size() << " replacement strings.";
+    }
   }
 
   base::string16 shortcut_string;
   base::string16 accessible_string;
   if (replacement_strings.empty()) {
-    shortcut_string = l10n_util::GetStringUTF16(has_invalid_dom_key
-                                                    ? IDS_KSV_KEY_NO_MAPPING
-                                                    : item.shortcut_message_id);
+    shortcut_string = l10n_util::GetStringUTF16(
+        has_invalid_dom_key ? IDS_KSV_KEY_NO_MAPPING : shortcut_message_id);
     accessible_string = shortcut_string;
   } else {
-    shortcut_string = l10n_util::GetStringFUTF16(item.shortcut_message_id,
+    shortcut_string = l10n_util::GetStringFUTF16(shortcut_message_id,
                                                  replacement_strings, &offsets);
     accessible_string = l10n_util::GetStringFUTF16(
-        item.shortcut_message_id, accessible_names, /*offsets=*/nullptr);
+        shortcut_message_id, accessible_names, /*offsets=*/nullptr);
   }
-  shortcut_label_view_ = AddChildView(
-      std::make_unique<views::StyledLabel>(shortcut_string, nullptr));
+  shortcut_label_view_ = AddChildView(std::make_unique<views::StyledLabel>());
+  shortcut_label_view_->SetText(shortcut_string);
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |shortcut_label_view_| always
   // align to right.

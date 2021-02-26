@@ -19,7 +19,7 @@
 #include "dawn/webgpu.h"
 #include "dawn_native/NullBackend.h"
 
-ValidationTest::ValidationTest() {
+void ValidationTest::SetUp() {
     instance = std::make_unique<dawn_native::Instance>();
     instance->DiscoverDefaultAdapters();
 
@@ -27,7 +27,7 @@ ValidationTest::ValidationTest() {
 
     // Validation tests run against the null backend, find the corresponding adapter
     bool foundNullAdapter = false;
-    for (auto &currentAdapter : adapters) {
+    for (auto& currentAdapter : adapters) {
         wgpu::AdapterProperties adapterProperties;
         currentAdapter.GetProperties(&adapterProperties);
 
@@ -40,28 +40,10 @@ ValidationTest::ValidationTest() {
 
     ASSERT(foundNullAdapter);
 
-    DawnProcTable procs = dawn_native::GetProcs();
-    dawnProcSetProcs(&procs);
+    dawnProcSetProcs(&dawn_native::GetProcs());
 
-    device = CreateDeviceFromAdapter(adapter, std::vector<const char*>());
-}
-
-wgpu::Device ValidationTest::CreateDeviceFromAdapter(
-    dawn_native::Adapter adapterToTest,
-    const std::vector<const char*>& requiredExtensions) {
-    wgpu::Device deviceToTest;
-
-    // Always keep the code path to test creating a device without a device descriptor.
-    if (requiredExtensions.empty()) {
-        deviceToTest = wgpu::Device::Acquire(adapterToTest.CreateDevice());
-    } else {
-        dawn_native::DeviceDescriptor descriptor;
-        descriptor.requiredExtensions = requiredExtensions;
-        deviceToTest = wgpu::Device::Acquire(adapterToTest.CreateDevice(&descriptor));
-    }
-
-    deviceToTest.SetUncapturedErrorCallback(ValidationTest::OnDeviceError, this);
-    return deviceToTest;
+    device = CreateTestDevice();
+    device.SetUncapturedErrorCallback(ValidationTest::OnDeviceError, this);
 }
 
 ValidationTest::~ValidationTest() {
@@ -73,6 +55,11 @@ ValidationTest::~ValidationTest() {
 
 void ValidationTest::TearDown() {
     ASSERT_FALSE(mExpectError);
+
+    if (device) {
+        EXPECT_EQ(mLastWarningCount,
+                  dawn_native::GetDeprecationWarningCountForTesting(device.Get()));
+    }
 }
 
 void ValidationTest::StartExpectDeviceError() {
@@ -85,6 +72,33 @@ bool ValidationTest::EndExpectDeviceError() {
 }
 std::string ValidationTest::GetLastDeviceErrorMessage() const {
     return mDeviceErrorMessage;
+}
+
+void ValidationTest::WaitForAllOperations(const wgpu::Device& device) const {
+    wgpu::Queue queue = device.GetDefaultQueue();
+    wgpu::Fence fence = queue.CreateFence();
+
+    // Force the currently submitted operations to completed.
+    queue.Signal(fence, 1);
+    while (fence.GetCompletedValue() < 1) {
+        device.Tick();
+    }
+
+    // TODO(cwallez@chromium.org): It's not clear why we need this additional tick. Investigate it
+    // once WebGPU has defined the ordering of callbacks firing.
+    device.Tick();
+}
+
+bool ValidationTest::HasWGSL() const {
+#ifdef DAWN_ENABLE_WGSL
+    return true;
+#else
+    return false;
+#endif
+}
+
+wgpu::Device ValidationTest::CreateTestDevice() {
+    return wgpu::Device::Acquire(adapter.CreateDevice());
 }
 
 // static
@@ -105,17 +119,16 @@ ValidationTest::DummyRenderPass::DummyRenderPass(const wgpu::Device& device)
     descriptor.size.width = width;
     descriptor.size.height = height;
     descriptor.size.depth = 1;
-    descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = attachmentFormat;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::OutputAttachment;
+    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
     attachment = device.CreateTexture(&descriptor);
 
     wgpu::TextureView view = attachment.CreateView();
     mColorAttachment.attachment = view;
     mColorAttachment.resolveTarget = nullptr;
-    mColorAttachment.clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+    mColorAttachment.clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
     mColorAttachment.loadOp = wgpu::LoadOp::Clear;
     mColorAttachment.storeOp = wgpu::StoreOp::Store;
 

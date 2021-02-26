@@ -4,17 +4,25 @@
 
 #include "ui/views/controls/scrollbar/base_scroll_bar_button.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
-BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
-    : Button(listener),
+BaseScrollBarButton::BaseScrollBarButton(PressedCallback callback,
+                                         const base::TickClock* tick_clock)
+    : Button(std::move(callback)),
       repeater_(base::BindRepeating(&BaseScrollBarButton::RepeaterNotifyClick,
-                                    base::Unretained(this))) {}
+                                    base::Unretained(this)),
+                tick_clock) {
+  // Not focusable by default.
+  SetFocusBehavior(FocusBehavior::NEVER);
+}
 
 BaseScrollBarButton::~BaseScrollBarButton() = default;
 
@@ -42,8 +50,7 @@ void BaseScrollBarButton::RepeaterNotifyClick() {
   Button::NotifyClick(event);
 }
 
-BEGIN_METADATA(BaseScrollBarButton)
-METADATA_PARENT_CLASS(Button)
-END_METADATA()
+BEGIN_METADATA(BaseScrollBarButton, Button)
+END_METADATA
 
 }  // namespace views

@@ -8,12 +8,15 @@
 #include <map>
 #include <set>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/target.h"
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 
@@ -85,8 +88,11 @@ class TargetHandler : public DevToolsDomainHandler,
                        bool* out_success) override;
   Response ExposeDevToolsProtocol(const std::string& target_id,
                                   Maybe<std::string> binding_name) override;
-  Response CreateBrowserContext(Maybe<bool> dispose_on_detach,
-                                std::string* out_context_id) override;
+  void CreateBrowserContext(
+      Maybe<bool> in_disposeOnDetach,
+      Maybe<String> in_proxyServer,
+      Maybe<String> in_proxyBypassList,
+      std::unique_ptr<CreateBrowserContextCallback> callback) override;
   void DisposeBrowserContext(
       const std::string& context_id,
       std::unique_ptr<DisposeBrowserContextCallback> callback) override;
@@ -103,6 +109,10 @@ class TargetHandler : public DevToolsDomainHandler,
   Response GetTargets(
       std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos)
       override;
+
+  void ApplyNetworkContextParamsOverrides(
+      BrowserContext* browser_context,
+      network::mojom::NetworkContextParams* network_context_params);
 
  private:
   class Session;
@@ -143,10 +153,12 @@ class TargetHandler : public DevToolsDomainHandler,
   std::map<DevToolsAgentHost*, Session*> auto_attached_sessions_;
   std::set<DevToolsAgentHost*> reported_hosts_;
   base::flat_set<std::string> dispose_on_detach_context_ids_;
+  base::flat_map<std::string, net::ProxyConfig> contexts_with_overridden_proxy_;
   AccessMode access_mode_;
   std::string owner_target_id_;
   DevToolsSession* root_session_;
   base::flat_set<Throttle*> throttles_;
+  base::Optional<net::ProxyConfig> pending_proxy_config_;
   base::WeakPtrFactory<TargetHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);

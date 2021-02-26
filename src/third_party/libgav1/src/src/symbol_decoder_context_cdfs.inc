@@ -15,7 +15,7 @@
 // This file is just a convenience to separate out all the CDF constant
 // definitions from the symbol decoder context functions.
 
-constexpr uint16_t kDefaultPartitionCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultPartitionCdf
     [kBlockWidthCount][kPartitionContexts][kMaxPartitionTypes + 1] = {
         // width 8
         {{13636, 7258, 2376, 0, 0},
@@ -43,32 +43,34 @@ constexpr uint16_t kDefaultPartitionCdf
          {27339, 26092, 25646, 741, 541, 237, 186, 0, 0},
          {32057, 31802, 31596, 320, 230, 151, 104, 0, 0}}};
 
-constexpr uint16_t kDefaultSegmentIdCdf[kSegmentIdContexts][kMaxSegments + 1] =
-    {{27146, 24875, 16675, 14535, 4959, 4395, 235, 0, 0},
-     {18494, 14538, 10211, 7833, 2788, 1917, 424, 0, 0},
-     {5241, 4281, 4045, 3878, 371, 121, 89, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultSegmentIdCdf[kSegmentIdContexts][kMaxSegments + 1] = {
+        {27146, 24875, 16675, 14535, 4959, 4395, 235, 0, 0},
+        {18494, 14538, 10211, 7833, 2788, 1917, 424, 0, 0},
+        {5241, 4281, 4045, 3878, 371, 121, 89, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultUsePredictedSegmentIdCdf[kUsePredictedSegmentIdContexts]
                                     [kBooleanFieldCdfSize] = {{16384, 0, 0},
                                                               {16384, 0, 0},
                                                               {16384, 0, 0}};
 
-constexpr uint16_t kDefaultSkipCdf[kSkipContexts][kBooleanFieldCdfSize] = {
-    {1097, 0, 0}, {16253, 0, 0}, {28192, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultSkipCdf[kSkipContexts][kBooleanFieldCdfSize] = {
+        {1097, 0, 0}, {16253, 0, 0}, {28192, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultSkipModeCdf[kSkipModeContexts][kBooleanFieldCdfSize] = {
         {147, 0, 0}, {12060, 0, 0}, {24641, 0, 0}};
 
 // This constant is also used for DeltaLf and DeltaLfMulti.
-constexpr uint16_t kDefaultDeltaQCdf[kDeltaSymbolCount + 1] = {4608, 648, 91, 0,
-                                                               0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultDeltaQCdf[kDeltaSymbolCount + 1] = {4608, 648, 91, 0, 0};
 
-constexpr uint16_t kDefaultIntraBlockCopyCdf[kBooleanFieldCdfSize] = {2237, 0,
-                                                                      0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultIntraBlockCopyCdf[kBooleanFieldCdfSize] = {2237, 0, 0};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultIntraFrameYModeCdf[kIntraModeContexts][kIntraModeContexts]
                               [kIntraPredictionModesY + 1] = {
                                   {{17180, 15741, 13430, 12550, 12086, 11658,
@@ -122,7 +124,7 @@ constexpr uint16_t
                                    {25150, 24480, 22909, 22259, 17382, 14111,
                                     9865, 3992, 3588, 1413, 966, 175, 0, 0}}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultYModeCdf[kYModeContexts][kIntraPredictionModesY + 1] = {
         {9967, 9279, 8475, 8012, 7167, 6645, 6162, 5350, 4823, 3540, 3083, 2419,
          0, 0},
@@ -133,7 +135,7 @@ constexpr uint16_t
         {12613, 11467, 9930, 9590, 9507, 9235, 9065, 7964, 7416, 6193, 5752,
          4719, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultAngleDeltaCdf[kDirectionalIntraModes][kAngleDeltaSymbolCount + 1] =
         {{30588, 27736, 25201, 9992, 5779, 2551, 0, 0},
          {30467, 27160, 23967, 9281, 5794, 2438, 0, 0},
@@ -144,7 +146,7 @@ constexpr uint16_t
          {30528, 21672, 17315, 12427, 10207, 3851, 0, 0},
          {29163, 22340, 20309, 15092, 11524, 2113, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultUVModeCdf[kBooleanSymbolCount][kIntraPredictionModesY]
                      [kIntraPredictionModesUV + 1] = {
                          // CFL not allowed.
@@ -202,24 +204,26 @@ constexpr uint16_t
                           {29624, 27681, 25386, 25264, 25175, 25078, 24967,
                            24704, 24536, 23520, 22893, 22247, 3720, 0, 0}}};
 
-constexpr uint16_t kDefaultCflAlphaSignsCdf[kCflAlphaSignsSymbolCount + 1] = {
-    31350, 30645, 19428, 14363, 5796, 4425, 474, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultCflAlphaSignsCdf[kCflAlphaSignsSymbolCount + 1] = {
+        31350, 30645, 19428, 14363, 5796, 4425, 474, 0, 0};
 
-constexpr uint16_t kDefaultCflAlphaCdf[kCflAlphaContexts][kCflAlphaSymbolCount +
-                                                          1] = {
-    {25131, 12049, 1367, 287, 111, 80, 76, 72, 68, 64, 60, 56, 52, 48, 44, 0,
-     0},
-    {18403, 9165, 4633, 1600, 601, 373, 281, 195, 148, 121, 100, 96, 92, 88, 84,
-     0, 0},
-    {21236, 10388, 4323, 1408, 419, 245, 184, 119, 95, 91, 87, 83, 79, 75, 71,
-     0, 0},
-    {5778, 1366, 486, 197, 76, 72, 68, 64, 60, 56, 52, 48, 44, 40, 36, 0, 0},
-    {15520, 6710, 3864, 2160, 1463, 891, 642, 447, 374, 304, 252, 208, 192, 175,
-     146, 0, 0},
-    {18030, 11090, 6989, 4867, 3744, 2466, 1788, 925, 624, 355, 248, 174, 146,
-     112, 108, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultCflAlphaCdf[kCflAlphaContexts][kCflAlphaSymbolCount + 1] = {
+        {25131, 12049, 1367, 287, 111, 80, 76, 72, 68, 64, 60, 56, 52, 48, 44,
+         0, 0},
+        {18403, 9165, 4633, 1600, 601, 373, 281, 195, 148, 121, 100, 96, 92, 88,
+         84, 0, 0},
+        {21236, 10388, 4323, 1408, 419, 245, 184, 119, 95, 91, 87, 83, 79, 75,
+         71, 0, 0},
+        {5778, 1366, 486, 197, 76, 72, 68, 64, 60, 56, 52, 48, 44, 40, 36, 0,
+         0},
+        {15520, 6710, 3864, 2160, 1463, 891, 642, 447, 374, 304, 252, 208, 192,
+         175, 146, 0, 0},
+        {18030, 11090, 6989, 4867, 3744, 2466, 1788, 925, 624, 355, 248, 174,
+         146, 112, 108, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultUseFilterIntraCdf[kMaxBlockSizes][kBooleanFieldCdfSize] = {
         {28147, 0, 0}, {26025, 0, 0}, {19998, 0, 0}, {26875, 0, 0},
         {24902, 0, 0}, {20217, 0, 0}, {12539, 0, 0}, {22400, 0, 0},
@@ -228,25 +232,28 @@ constexpr uint16_t
         {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
         {16384, 0, 0}, {16384, 0, 0}};
 
-constexpr uint16_t kDefaultFilterIntraModeCdf[kNumFilterIntraPredictors + 1] = {
-    23819, 19992, 15557, 3210, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultFilterIntraModeCdf[kNumFilterIntraPredictors + 1] = {
+        23819, 19992, 15557, 3210, 0, 0};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultTxDepthCdf[4][kTxDepthContexts][kMaxTxDepthSymbolCount + 1] = {
         {{12800, 0, 0}, {12800, 0, 0}, {8448, 0, 0}},
         {{20496, 2596, 0, 0}, {20496, 2596, 0, 0}, {14091, 1920, 0, 0}},
         {{19782, 17588, 0, 0}, {19782, 17588, 0, 0}, {8466, 7166, 0, 0}},
         {{26986, 21293, 0, 0}, {26986, 21293, 0, 0}, {15965, 10009, 0, 0}}};
 
-constexpr uint16_t kDefaultTxSplitCdf[kTxSplitContexts][kBooleanFieldCdfSize] =
-    {{4187, 0, 0},  {8922, 0, 0},  {11921, 0, 0}, {8453, 0, 0},  {14572, 0, 0},
-     {20635, 0, 0}, {13977, 0, 0}, {21881, 0, 0}, {21763, 0, 0}, {5589, 0, 0},
-     {12764, 0, 0}, {21487, 0, 0}, {6219, 0, 0},  {13460, 0, 0}, {18544, 0, 0},
-     {4753, 0, 0},  {11222, 0, 0}, {18368, 0, 0}, {4603, 0, 0},  {10367, 0, 0},
-     {16680, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultTxSplitCdf[kTxSplitContexts][kBooleanFieldCdfSize] = {
+        {4187, 0, 0},  {8922, 0, 0},  {11921, 0, 0}, {8453, 0, 0},
+        {14572, 0, 0}, {20635, 0, 0}, {13977, 0, 0}, {21881, 0, 0},
+        {21763, 0, 0}, {5589, 0, 0},  {12764, 0, 0}, {21487, 0, 0},
+        {6219, 0, 0},  {13460, 0, 0}, {18544, 0, 0}, {4753, 0, 0},
+        {11222, 0, 0}, {18368, 0, 0}, {4603, 0, 0},  {10367, 0, 0},
+        {16680, 0, 0}};
 
 /* clang-format off */
-constexpr uint16_t kDefaultAllZeroCdf[kCoefficientQuantizerContexts]
+alignas(kMaxAlignment) constexpr uint16_t kDefaultAllZeroCdf[kCoefficientQuantizerContexts]
                                  [kNumSquareTransformSizes][kAllZeroContexts]
                                  [kBooleanFieldCdfSize] = {
   {
@@ -320,7 +327,7 @@ constexpr uint16_t kDefaultAllZeroCdf[kCoefficientQuantizerContexts]
 };
 /* clang-format on */
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultInterTxTypeCdf[3][kNumExtendedTransformSizes][kNumTransformTypes +
                                                           1] = {
         {{28310, 27208, 25073, 23059, 19438, 17979, 15231, 12502, 11264, 9920,
@@ -339,7 +346,7 @@ constexpr uint16_t
          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
         {{16384, 0, 0}, {28601, 0, 0}, {30770, 0, 0}, {32020, 0, 0}}};
 
-constexpr uint16_t kDefaultIntraTxTypeCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultIntraTxTypeCdf
     [2][kNumExtendedTransformSizes][kIntraPredictionModesY]
     [kNumTransformTypes + 1] = {
         {{{31233, 24733, 23307, 20017, 9301, 4943, 0, 0},
@@ -408,26 +415,26 @@ constexpr uint16_t kDefaultIntraTxTypeCdf
           {32685, 27153, 20767, 15540, 0, 0},
           {30800, 27212, 20745, 14221, 0, 0}}}};
 
-constexpr uint16_t kDefaultEobPt16Cdf[kCoefficientQuantizerContexts]
-                                     [kNumPlaneTypes][kEobPtContexts]
-                                     [kEobPt16SymbolCount + 1] = {
-                                         {{{31928, 31729, 30788, 27873, 0, 0},
-                                           {32398, 32097, 30885, 28297, 0, 0}},
-                                          {{29521, 27818, 23080, 18205, 0, 0},
-                                           {30864, 29414, 25005, 18121, 0, 0}}},
-                                         {{{30643, 30217, 27603, 23822, 0, 0},
-                                           {32255, 32003, 30909, 26429, 0, 0}},
-                                          {{25131, 23270, 18509, 13660, 0, 0},
-                                           {30271, 28672, 23902, 15775, 0, 0}}},
-                                         {{{28752, 27871, 23887, 17800, 0, 0},
-                                           {32052, 31663, 30122, 22712, 0, 0}},
-                                          {{21629, 19498, 14527, 9202, 0, 0},
-                                           {29576, 27736, 22471, 13013, 0, 0}}},
-                                         {{{26060, 23810, 18022, 10635, 0, 0},
-                                           {31546, 30694, 27985, 17358, 0, 0}},
-                                          {{13193, 11002, 6724, 3059, 0, 0},
-                                           {25471, 22001, 13495, 4574, 0, 0}}}};
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultEobPt16Cdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
+                      [kEobPtContexts][kEobPt16SymbolCount + 1] = {
+                          {{{31928, 31729, 30788, 27873, 0, 0},
+                            {32398, 32097, 30885, 28297, 0, 0}},
+                           {{29521, 27818, 23080, 18205, 0, 0},
+                            {30864, 29414, 25005, 18121, 0, 0}}},
+                          {{{30643, 30217, 27603, 23822, 0, 0},
+                            {32255, 32003, 30909, 26429, 0, 0}},
+                           {{25131, 23270, 18509, 13660, 0, 0},
+                            {30271, 28672, 23902, 15775, 0, 0}}},
+                          {{{28752, 27871, 23887, 17800, 0, 0},
+                            {32052, 31663, 30122, 22712, 0, 0}},
+                           {{21629, 19498, 14527, 9202, 0, 0},
+                            {29576, 27736, 22471, 13013, 0, 0}}},
+                          {{{26060, 23810, 18022, 10635, 0, 0},
+                            {31546, 30694, 27985, 17358, 0, 0}},
+                           {{13193, 11002, 6724, 3059, 0, 0},
+                            {25471, 22001, 13495, 4574, 0, 0}}}};
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultEobPt32Cdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
                       [kEobPtContexts][kEobPt32SymbolCount + 1] = {
                           {{{32368, 32248, 31791, 30666, 26226, 0, 0},
@@ -446,7 +453,7 @@ constexpr uint16_t
                             {31612, 31066, 29093, 23494, 12229, 0, 0}},
                            {{10682, 8486, 5758, 2998, 1025, 0, 0},
                             {25069, 21871, 11877, 5842, 1140, 0, 0}}}};
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultEobPt64Cdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
                       [kEobPtContexts][kEobPt64SymbolCount + 1] = {
                           {{{32439, 32270, 31667, 30984, 29503, 25010, 0, 0},
@@ -465,7 +472,7 @@ constexpr uint16_t
                             {31479, 30448, 28797, 24842, 18615, 8477, 0, 0}},
                            {{8556, 7060, 4500, 2733, 1461, 719, 0, 0},
                             {24042, 20390, 13359, 6318, 2730, 306, 0, 0}}}};
-constexpr uint16_t kDefaultEobPt128Cdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultEobPt128Cdf
     [kCoefficientQuantizerContexts][kNumPlaneTypes][kEobPtContexts]
     [kEobPt128SymbolCount + 1] = {
         {{{32549, 32286, 31628, 30677, 29088, 26740, 20182, 0, 0},
@@ -485,7 +492,7 @@ constexpr uint16_t kDefaultEobPt128Cdf
          {{8455, 6706, 4383, 2661, 1551, 870, 423, 0, 0},
           {23603, 19486, 11618, 2482, 874, 197, 56, 0, 0}}}};
 
-constexpr uint16_t kDefaultEobPt256Cdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultEobPt256Cdf
     [kCoefficientQuantizerContexts][kNumPlaneTypes][kEobPtContexts]
     [kEobPt256SymbolCount + 1] = {
         {{{32458, 32184, 30881, 29179, 26600, 24157, 21416, 17116, 0, 0},
@@ -505,7 +512,7 @@ constexpr uint16_t kDefaultEobPt256Cdf
          {{9658, 8171, 5628, 3874, 2601, 1841, 1376, 674, 0, 0},
           {22770, 15107, 7590, 4671, 1460, 730, 365, 73, 0, 0}}}};
 
-constexpr uint16_t kDefaultEobPt512Cdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultEobPt512Cdf
     [kCoefficientQuantizerContexts][kNumPlaneTypes][kEobPt512SymbolCount + 1] =
         {{{32127, 31785, 29061, 27338, 22534, 17810, 13980, 9356, 6707, 0, 0},
           {27673, 26322, 22772, 19414, 16751, 14782, 11849, 6639, 3628, 0, 0}},
@@ -516,7 +523,7 @@ constexpr uint16_t kDefaultEobPt512Cdf
          {{26841, 24959, 21845, 18171, 13329, 8633, 4312, 1626, 708, 0, 0},
           {11675, 9725, 7026, 5110, 3671, 3052, 2695, 1948, 812, 0, 0}}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultEobPt1024Cdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
                         [kEobPt1024SymbolCount + 1] = {
                             {{32375, 32347, 32017, 31145, 29608, 26416, 19423,
@@ -537,7 +544,7 @@ constexpr uint16_t
                               2961, 198, 0, 0}}};
 
 /* clang-format off */
-constexpr uint16_t kDefaultEobExtraCdf[kCoefficientQuantizerContexts]
+alignas(kMaxAlignment) constexpr uint16_t kDefaultEobExtraCdf[kCoefficientQuantizerContexts]
                                   [kNumSquareTransformSizes][kNumPlaneTypes]
                                   [kEobExtraContexts][kBooleanFieldCdfSize] = {
   {
@@ -710,7 +717,7 @@ constexpr uint16_t kDefaultEobExtraCdf[kCoefficientQuantizerContexts]
   }
 };
 
-constexpr uint16_t kDefaultCoeffBaseEobCdf[kCoefficientQuantizerContexts]
+alignas(kMaxAlignment) constexpr uint16_t kDefaultCoeffBaseEobCdf[kCoefficientQuantizerContexts]
                                       [kNumSquareTransformSizes][kNumPlaneTypes]
                                       [kCoeffBaseEobContexts]
                                       [kCoeffBaseEobSymbolCount + 1] = {
@@ -845,7 +852,7 @@ constexpr uint16_t kDefaultCoeffBaseEobCdf[kCoefficientQuantizerContexts]
 };
 /* clang-format on */
 
-constexpr uint16_t kDefaultCoeffBaseCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultCoeffBaseCdf
     [kCoefficientQuantizerContexts][kNumSquareTransformSizes][kNumPlaneTypes]
     [kCoeffBaseContexts][kCoeffBaseSymbolCount + 1] = {
         {{{{28734, 23838, 20041, 0, 0}, {14686, 3027, 891, 0, 0},
@@ -1689,7 +1696,7 @@ constexpr uint16_t kDefaultCoeffBaseCdf
            {24576, 16384, 8192, 0, 0}, {24576, 16384, 8192, 0, 0},
            {24576, 16384, 8192, 0, 0}, {24576, 16384, 8192, 0, 0}}}}};
 
-constexpr uint16_t kDefaultCoeffBaseRangeCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultCoeffBaseRangeCdf
     [kCoefficientQuantizerContexts][kNumSquareTransformSizes][kNumPlaneTypes]
     [kCoeffBaseRangeContexts][kCoeffBaseRangeSymbolCount + 1] = {
         {{{{18470, 12050, 8594, 0, 0},  {20232, 13167, 8979, 0, 0},
@@ -2134,7 +2141,7 @@ constexpr uint16_t kDefaultCoeffBaseRangeCdf
            {24576, 16384, 8192, 0, 0}}}}};
 
 /* clang-format off */
-constexpr uint16_t kDefaultDcSignCdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
+alignas(kMaxAlignment) constexpr uint16_t kDefaultDcSignCdf[kCoefficientQuantizerContexts][kNumPlaneTypes]
                                 [kDcSignContexts][kBooleanFieldCdfSize] = {
   {{{16768, 0, 0}, {19712, 0, 0}, {13952, 0, 0}}, {{17536, 0, 0}, {19840, 0, 0},
     {15488, 0, 0}}},
@@ -2146,14 +2153,17 @@ constexpr uint16_t kDefaultDcSignCdf[kCoefficientQuantizerContexts][kNumPlaneTyp
     {15488, 0, 0}}}
 };
 /* clang-format on */
-constexpr uint16_t kDefaultRestorationTypeCdf[kCoeffBaseRangeSymbolCount + 1] =
-    {23355, 10187, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultRestorationTypeCdf[kRestorationTypeSymbolCount + 1] = {23355, 10187,
+                                                                   0, 0};
 
-constexpr uint16_t kDefaultUseWienerCdf[kBooleanFieldCdfSize] = {21198, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultUseWienerCdf[kBooleanFieldCdfSize] = {21198, 0, 0};
 
-constexpr uint16_t kDefaultUseSgrProjCdf[kBooleanFieldCdfSize] = {15913, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultUseSgrProjCdf[kBooleanFieldCdfSize] = {15913, 0, 0};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultHasPaletteYCdf[kPaletteBlockSizeContexts][kPaletteYModeContexts]
                           [kBooleanFieldCdfSize] = {
                               {{1092, 0, 0}, {29349, 0, 0}, {31507, 0, 0}},
@@ -2164,7 +2174,7 @@ constexpr uint16_t
                               {{503, 0, 0}, {28753, 0, 0}, {31247, 0, 0}},
                               {{318, 0, 0}, {24822, 0, 0}, {32639, 0, 0}}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultPaletteYSizeCdf[kPaletteBlockSizeContexts]
                            [kPaletteSizeSymbolCount + 1] = {
                                {24816, 19768, 14619, 11290, 7241, 3527, 0, 0},
@@ -2175,11 +2185,11 @@ constexpr uint16_t
                                {23057, 17880, 15845, 11716, 7107, 4893, 0, 0},
                                {17828, 11971, 11090, 8582, 5735, 3769, 0, 0}};
 
-constexpr uint16_t kDefaultHasPaletteUVCdf[kPaletteUVModeContexts]
-                                          [kBooleanFieldCdfSize] = {
-                                              {307, 0, 0}, {11280, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultHasPaletteUVCdf[kPaletteUVModeContexts][kBooleanFieldCdfSize] = {
+        {307, 0, 0}, {11280, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultPaletteUVSizeCdf[kPaletteBlockSizeContexts]
                             [kPaletteSizeSymbolCount + 1] = {
                                 {24055, 12789, 5640, 3159, 1437, 496, 0, 0},
@@ -2191,7 +2201,7 @@ constexpr uint16_t
                                 {31499, 27333, 22335, 13805, 11068, 6903, 0,
                                  0}};
 
-constexpr uint16_t kDefaultPaletteColorIndexCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultPaletteColorIndexCdf
     [kNumPlaneTypes][kPaletteSizeSymbolCount][kPaletteColorIndexContexts]
     [kPaletteColorIndexSymbolCount + 1] = {
         {{{4058, 0, 0},
@@ -2265,10 +2275,11 @@ constexpr uint16_t kDefaultPaletteColorIndexCdf
           {14803, 12684, 10536, 8794, 6494, 4366, 2378, 0, 0},
           {1578, 1439, 1252, 1089, 943, 742, 446, 0, 0}}}};
 
-constexpr uint16_t kDefaultIsInterCdf[kIsInterContexts][kBooleanFieldCdfSize] =
-    {{31962, 0, 0}, {16106, 0, 0}, {12582, 0, 0}, {6230, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultIsInterCdf[kIsInterContexts][kBooleanFieldCdfSize] = {
+        {31962, 0, 0}, {16106, 0, 0}, {12582, 0, 0}, {6230, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultUseCompoundReferenceCdf[kUseCompoundReferenceContexts]
                                    [kBooleanFieldCdfSize] = {{5940, 0, 0},
                                                              {8733, 0, 0},
@@ -2276,7 +2287,7 @@ constexpr uint16_t
                                                              {22128, 0, 0},
                                                              {29867, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultCompoundReferenceTypeCdf[kCompoundReferenceTypeContexts]
                                     [kBooleanFieldCdfSize] = {{31570, 0, 0},
                                                               {30698, 0, 0},
@@ -2284,7 +2295,7 @@ constexpr uint16_t
                                                               {25269, 0, 0},
                                                               {10293, 0, 0}};
 
-constexpr uint16_t kDefaultCompoundReferenceCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultCompoundReferenceCdf
     [kNumCompoundReferenceTypes][kReferenceContexts][3][kBooleanFieldCdfSize] =
         {{{{27484, 0, 0}, {28903, 0, 0}, {29640, 0, 0}},
           {{9616, 0, 0}, {18595, 0, 0}, {17498, 0, 0}},
@@ -2293,7 +2304,7 @@ constexpr uint16_t kDefaultCompoundReferenceCdf
           {{12877, 0, 0}, {10327, 0, 0}, {17608, 0, 0}},
           {{2037, 0, 0}, {1709, 0, 0}, {5224, 0, 0}}}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultCompoundBackwardReferenceCdf[kReferenceContexts][2]
                                         [kBooleanFieldCdfSize] = {
                                             {{30533, 0, 0}, {31345, 0, 0}},
@@ -2301,7 +2312,7 @@ constexpr uint16_t
                                             {{2162, 0, 0}, {2279, 0, 0}}};
 
 /* clang-format off */
-constexpr uint16_t kDefaultSingleReferenceCdf[kReferenceContexts][6]
+alignas(kMaxAlignment) constexpr uint16_t kDefaultSingleReferenceCdf[kReferenceContexts][6]
                                          [kBooleanFieldCdfSize] = {
   {{27871, 0, 0}, {31213, 0, 0}, {28532, 0, 0}, {24118, 0, 0}, {31864, 0, 0},
    {31324, 0, 0}},
@@ -2311,7 +2322,7 @@ constexpr uint16_t kDefaultSingleReferenceCdf[kReferenceContexts][6]
    {2464, 0, 0}}};
 /* clang-format on */
 
-constexpr uint16_t kDefaultCompoundPredictionModeCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultCompoundPredictionModeCdf
     [kCompoundPredictionModeContexts][kNumCompoundInterPredictionModes + 1] = {
         {25008, 18945, 16960, 15127, 13612, 12102, 5877, 0, 0},
         {22038, 13316, 11623, 10019, 8729, 7637, 4044, 0, 0},
@@ -2322,35 +2333,37 @@ constexpr uint16_t kDefaultCompoundPredictionModeCdf
         {15643, 8495, 6954, 5276, 4554, 4064, 2176, 0, 0},
         {19722, 9554, 8263, 6826, 5333, 4326, 3438, 0, 0}};
 
-constexpr uint16_t kDefaultNewMvCdf[kNewMvContexts][kBooleanFieldCdfSize] = {
-    {8733, 0, 0},  {16138, 0, 0}, {17429, 0, 0},
-    {24382, 0, 0}, {20546, 0, 0}, {28092, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultNewMvCdf[kNewMvContexts][kBooleanFieldCdfSize] = {
+        {8733, 0, 0},  {16138, 0, 0}, {17429, 0, 0},
+        {24382, 0, 0}, {20546, 0, 0}, {28092, 0, 0}};
 
-constexpr uint16_t kDefaultZeroMvCdf[kZeroMvContexts][kBooleanFieldCdfSize] = {
-    {30593, 0, 0}, {31714, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultZeroMvCdf[kZeroMvContexts][kBooleanFieldCdfSize] = {{30593, 0, 0},
+                                                                {31714, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultReferenceMvCdf[kReferenceMvContexts][kBooleanFieldCdfSize] = {
         {8794, 0, 0}, {8580, 0, 0}, {14920, 0, 0},
         {4146, 0, 0}, {8456, 0, 0}, {12845, 0, 0}};
 
 // This is called drl_mode in the spec where DRL stands for Dynamic Reference
 // List.
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultRefMvIndexCdf[kRefMvIndexContexts][kBooleanFieldCdfSize] = {
         {19664, 0, 0}, {8208, 0, 0}, {13823, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultIsInterIntraCdf[kInterIntraContexts][kBooleanFieldCdfSize] = {
         {5881, 0, 0}, {5171, 0, 0}, {2531, 0, 0}};
 
-constexpr uint16_t kDefaultInterIntraModeCdf[kInterIntraContexts]
-                                            [kNumInterIntraModes + 1] = {
-                                                {30893, 21686, 5436, 0, 0},
-                                                {30295, 22772, 6380, 0, 0},
-                                                {28530, 21231, 6842, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultInterIntraModeCdf[kInterIntraContexts][kNumInterIntraModes + 1] = {
+        {30893, 21686, 5436, 0, 0},
+        {30295, 22772, 6380, 0, 0},
+        {28530, 21231, 6842, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultIsWedgeInterIntraCdf[kMaxBlockSizes][kBooleanFieldCdfSize] = {
         {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
         {12732, 0, 0}, {7811, 0, 0},  {16384, 0, 0}, {16384, 0, 0},
@@ -2359,7 +2372,7 @@ constexpr uint16_t
         {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
         {16384, 0, 0}, {16384, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultWedgeIndexCdf[kMaxBlockSizes][kWedgeIndexSymbolCount + 1] = {
         {30720, 28672, 26624, 24576, 22528, 20480, 18432, 16384, 14336, 12288,
          10240, 8192, 6144, 4096, 2048, 0, 0},
@@ -2406,47 +2419,53 @@ constexpr uint16_t
         {30720, 28672, 26624, 24576, 22528, 20480, 18432, 16384, 14336, 12288,
          10240, 8192, 6144, 4096, 2048, 0, 0}};
 
-constexpr uint16_t kDefaultUseObmcCdf[kMaxBlockSizes][kBooleanFieldCdfSize] = {
-    {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {22331, 0, 0},
-    {23397, 0, 0}, {9104, 0, 0},  {16384, 0, 0}, {23467, 0, 0}, {15336, 0, 0},
-    {18345, 0, 0}, {8760, 0, 0},  {11867, 0, 0}, {17626, 0, 0}, {6951, 0, 0},
-    {9945, 0, 0},  {5889, 0, 0},  {10685, 0, 0}, {2640, 0, 0},  {1754, 0, 0},
-    {1208, 0, 0},  {130, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultUseObmcCdf[kMaxBlockSizes][kBooleanFieldCdfSize] = {
+        {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
+        {22331, 0, 0}, {23397, 0, 0}, {9104, 0, 0},  {16384, 0, 0},
+        {23467, 0, 0}, {15336, 0, 0}, {18345, 0, 0}, {8760, 0, 0},
+        {11867, 0, 0}, {17626, 0, 0}, {6951, 0, 0},  {9945, 0, 0},
+        {5889, 0, 0},  {10685, 0, 0}, {2640, 0, 0},  {1754, 0, 0},
+        {1208, 0, 0},  {130, 0, 0}};
 
-constexpr uint16_t kDefaultMotionModeCdf[kMaxBlockSizes][kNumMotionModes + 1] =
-    {{21845, 10923, 0, 0}, {21845, 10923, 0, 0}, {21845, 10923, 0, 0},
-     {21845, 10923, 0, 0}, {25117, 8008, 0, 0},  {28030, 8003, 0, 0},
-     {3969, 1378, 0, 0},   {21845, 10923, 0, 0}, {27377, 7240, 0, 0},
-     {13349, 5958, 0, 0},  {27645, 9162, 0, 0},  {3795, 1174, 0, 0},
-     {6337, 1994, 0, 0},   {21162, 8460, 0, 0},  {6508, 3652, 0, 0},
-     {12408, 4706, 0, 0},  {3026, 1565, 0, 0},   {11089, 5938, 0, 0},
-     {3252, 2067, 0, 0},   {3870, 2371, 0, 0},   {1890, 1433, 0, 0},
-     {261, 210, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMotionModeCdf[kMaxBlockSizes][kNumMotionModes + 1] = {
+        {21845, 10923, 0, 0}, {21845, 10923, 0, 0}, {21845, 10923, 0, 0},
+        {21845, 10923, 0, 0}, {25117, 8008, 0, 0},  {28030, 8003, 0, 0},
+        {3969, 1378, 0, 0},   {21845, 10923, 0, 0}, {27377, 7240, 0, 0},
+        {13349, 5958, 0, 0},  {27645, 9162, 0, 0},  {3795, 1174, 0, 0},
+        {6337, 1994, 0, 0},   {21162, 8460, 0, 0},  {6508, 3652, 0, 0},
+        {12408, 4706, 0, 0},  {3026, 1565, 0, 0},   {11089, 5938, 0, 0},
+        {3252, 2067, 0, 0},   {3870, 2371, 0, 0},   {1890, 1433, 0, 0},
+        {261, 210, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultIsExplicitCompoundTypeCdf[kIsExplicitCompoundTypeContexts]
                                      [kBooleanFieldCdfSize] = {
                                          {6161, 0, 0},  {9877, 0, 0},
                                          {13928, 0, 0}, {8174, 0, 0},
                                          {12834, 0, 0}, {10094, 0, 0}};
 
-constexpr uint16_t
+alignas(kMaxAlignment) constexpr uint16_t
     kDefaultIsCompoundTypeAverageCdf[kIsCompoundTypeAverageContexts]
                                     [kBooleanFieldCdfSize] = {
                                         {14524, 0, 0}, {19903, 0, 0},
                                         {25715, 0, 0}, {19509, 0, 0},
                                         {23434, 0, 0}, {28124, 0, 0}};
 
-constexpr uint16_t kDefaultCompoundTypeCdf
-    [kMaxBlockSizes][kNumExplicitCompoundPredictionTypes + 1] = {
-        {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
-        {9337, 0, 0},  {19597, 0, 0}, {20948, 0, 0}, {16384, 0, 0},
-        {21298, 0, 0}, {22998, 0, 0}, {23668, 0, 0}, {16384, 0, 0},
-        {25067, 0, 0}, {24535, 0, 0}, {26596, 0, 0}, {16384, 0, 0},
-        {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
-        {16384, 0, 0}, {16384, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultCompoundTypeCdf[kMaxBlockSizes]
+                           [kNumExplicitCompoundPredictionTypes + 1] = {
+                               {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
+                               {16384, 0, 0}, {9337, 0, 0},  {19597, 0, 0},
+                               {20948, 0, 0}, {16384, 0, 0}, {21298, 0, 0},
+                               {22998, 0, 0}, {23668, 0, 0}, {16384, 0, 0},
+                               {25067, 0, 0}, {24535, 0, 0}, {26596, 0, 0},
+                               {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
+                               {16384, 0, 0}, {16384, 0, 0}, {16384, 0, 0},
+                               {16384, 0, 0}};
 
-constexpr uint16_t kDefaultInterpolationFilterCdf
+alignas(kMaxAlignment) constexpr uint16_t kDefaultInterpolationFilterCdf
     [kInterpolationFilterContexts][kNumExplicitInterpolationFilters + 1] = {
         {833, 48, 0, 0},      {27200, 49, 0, 0},    {32346, 29830, 0, 0},
         {4524, 160, 0, 0},    {1562, 815, 0, 0},    {27906, 647, 0, 0},
@@ -2455,30 +2474,36 @@ constexpr uint16_t kDefaultInterpolationFilterCdf
         {1746, 759, 0, 0},    {29805, 675, 0, 0},   {32167, 31825, 0, 0},
         {17799, 11370, 0, 0}};
 
-constexpr uint16_t kDefaultMvJointCdf[kNumMvJointTypes + 1] = {28672, 21504,
-                                                               13440, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvJointCdf[kNumMvJointTypes + 1] = {28672, 21504, 13440, 0, 0};
 
-constexpr uint16_t kDefaultMvSignCdf[kBooleanFieldCdfSize] = {16384, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvSignCdf[kBooleanFieldCdfSize] = {16384, 0, 0};
 
-constexpr uint16_t kDefaultMvClassCdf[kMvClassSymbolCount + 1] = {
-    4096, 1792, 910, 448, 217, 112, 28, 11, 6, 1, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvClassCdf[kMvClassSymbolCount + 1] = {
+        4096, 1792, 910, 448, 217, 112, 28, 11, 6, 1, 0};
 
-constexpr uint16_t kDefaultMvClass0BitCdf[kBooleanFieldCdfSize] = {5120, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvClass0BitCdf[kBooleanFieldCdfSize] = {5120, 0, 0};
 
-constexpr uint16_t kDefaultMvClass0FractionCdf[kBooleanSymbolCount]
-                                              [kMvFractionSymbolCount + 1] = {
-                                                  {16384, 8192, 6144, 0, 0},
-                                                  {20480, 11520, 8640, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvClass0FractionCdf[kBooleanSymbolCount][kMvFractionSymbolCount +
+                                                     1] = {
+        {16384, 8192, 6144, 0, 0}, {20480, 11520, 8640, 0, 0}};
 
-constexpr uint16_t kDefaultMvClass0HighPrecisionCdf[kBooleanFieldCdfSize] = {
-    12288, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvClass0HighPrecisionCdf[kBooleanFieldCdfSize] = {12288, 0, 0};
 
-constexpr uint16_t kDefaultMvBitCdf[kMvBitSymbolCount][kBooleanFieldCdfSize] = {
-    {15360, 0, 0}, {14848, 0, 0}, {13824, 0, 0}, {12288, 0, 0}, {10240, 0, 0},
-    {8192, 0, 0},  {4096, 0, 0},  {2816, 0, 0},  {2816, 0, 0},  {2048, 0, 0}};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvBitCdf[kMvBitSymbolCount][kBooleanFieldCdfSize] = {
+        {15360, 0, 0}, {14848, 0, 0}, {13824, 0, 0}, {12288, 0, 0},
+        {10240, 0, 0}, {8192, 0, 0},  {4096, 0, 0},  {2816, 0, 0},
+        {2816, 0, 0},  {2048, 0, 0}};
 
-constexpr uint16_t kDefaultMvFractionCdf[kMvFractionSymbolCount + 1] = {
-    24576, 15360, 11520, 0, 0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvFractionCdf[kMvFractionSymbolCount + 1] = {24576, 15360, 11520, 0,
+                                                         0};
 
-constexpr uint16_t kDefaultMvHighPrecisionCdf[kBooleanFieldCdfSize] = {16384, 0,
-                                                                       0};
+alignas(kMaxAlignment) constexpr uint16_t
+    kDefaultMvHighPrecisionCdf[kBooleanFieldCdfSize] = {16384, 0, 0};

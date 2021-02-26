@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
@@ -217,6 +216,135 @@ TEST_F(WebStateTest, Snapshot) {
   });
 }
 
+// Tests that the create PDF method retuns an PDF of a rendered html page.
+TEST_F(WebStateTest, CreateFullPagePdf_ValidURL) {
+  [[[UIApplication sharedApplication] keyWindow]
+      addSubview:web_state()->GetView()];
+
+  // Load a URL and some HTML in the WebState.
+  GURL url("https://www.chromium.org");
+  NavigationManager::WebLoadParams load_params(url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return web_state()->GetLastCommittedURL() == url &&
+           !web_state()->IsLoading();
+  }));
+
+  NSString* data_html =
+      @"<html><div style='background-color:#FF0000; width:50%; "
+       "height:100%;'></div></html>";
+  web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                        @"text/html", url);
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return !web_state()->IsLoading();
+  }));
+
+  // Create a PDF for this page and validate the data.
+  __block NSData* callback_data = nil;
+  web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+    callback_data = [pdf_document_data copy];
+  }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return callback_data;
+  }));
+
+  CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(
+      CGDataProviderCreateWithCFData((CFDataRef)callback_data));
+  CGSize pdf_size =
+      CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
+
+  CGFloat kSaveAreaTopInset =
+      UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
+  EXPECT_GE(pdf_size.height,
+            UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
+  EXPECT_GE(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
+
+  CGPDFDocumentRelease(pdf);
+}
+
+// Tests that CreateFullPagePdf invokes completion callback nil when an invalid
+// URL is loaded.
+TEST_F(WebStateTest, CreateFullPagePdf_InvalidURLs) {
+  GURL app_specific_url(
+      base::StringPrintf("%s://app_specific_url", kTestAppSpecificScheme));
+
+  // Empty URL and app-specific URLs (e.g. app_specific_url) should get nil
+  // data through the completion callback.
+  std::vector<GURL> invalid_urls = {GURL(), app_specific_url};
+  NSString* data_html = @(kTestPageHTML);
+  for (auto& url : invalid_urls) {
+    web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                          @"text/html", url);
+
+    NavigationManager::WebLoadParams load_params(url);
+    web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+    ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForPageLoadTimeout, ^bool {
+          return web_state()->GetLastCommittedURL() == url;
+        }));
+
+    __block NSData* callback_data = nil;
+    __block bool callback_called = false;
+    web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+      callback_data = [pdf_document_data copy];
+      callback_called = true;
+    }));
+
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+      return callback_called;
+    }));
+
+    ASSERT_FALSE(callback_data);
+  }
+}
+
+// Tests that CreateFullPagePdf invokes completion callback nil when the
+// WebState content is not HTML (e.g. a PDF file).
+TEST_F(WebStateTest, CreateFullPagePdfWebStatePdfContent) {
+  CGRect fake_bounds = CGRectMake(0, 0, 100, 100);
+  UIGraphicsPDFRenderer* pdf_renderer =
+      [[UIGraphicsPDFRenderer alloc] initWithBounds:fake_bounds];
+  NSData* pdf_data = [pdf_renderer
+      PDFDataWithActions:^(UIGraphicsPDFRendererContext* context) {
+        [context beginPage];
+        [[UIColor blueColor] setFill];
+        [context fillRect:fake_bounds];
+      }];
+
+  GURL test_url("https://www.chromium.org/somePDF.pdf");
+  NavigationManager::WebLoadParams load_params(test_url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^bool {
+        return web_state()->GetLastCommittedURL() == test_url &&
+               !web_state()->IsLoading();
+      }));
+
+  std::string mime_type = "application/pdf";
+  web_state()->LoadData(
+      pdf_data, [NSString stringWithUTF8String:mime_type.c_str()], test_url);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^bool {
+        return !web_state()->IsLoading();
+      }));
+
+  __block NSData* callback_data = nil;
+  __block bool callback_called = false;
+  web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+    callback_data = [pdf_document_data copy];
+    callback_called = true;
+  }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return callback_called;
+  }));
+
+  ASSERT_FALSE(callback_data);
+}
+
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = true.
 TEST_F(WebStateTest, MessageFromMainFrame) {
@@ -310,6 +438,7 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -413,6 +542,7 @@ TEST_F(WebStateTest, CallStopDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -457,6 +587,7 @@ TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -511,6 +642,7 @@ TEST_F(WebStateTest, CallReloadDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -556,6 +688,7 @@ TEST_F(WebStateTest, RestorePageTitles) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   NavigationManager* navigation_manager = web_state->GetNavigationManager();

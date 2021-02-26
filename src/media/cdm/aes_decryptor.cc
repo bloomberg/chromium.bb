@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -169,14 +168,11 @@ AesDecryptor::AesDecryptor(
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb)
+    const SessionExpirationUpdateCB& /*session_expiration_update_cb*/)
     : session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb) {
+      session_keys_change_cb_(session_keys_change_cb) {
   DVLOG(1) << __func__;
-  // AesDecryptor doesn't keep any persistent data, so no need to do anything
-  // with |security_origin|.
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
@@ -338,18 +334,8 @@ bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
 void AesDecryptor::FinishUpdate(const std::string& session_id,
                                 bool key_added,
                                 std::unique_ptr<SimpleCdmPromise> promise) {
-  {
-    base::AutoLock auto_lock(new_key_cb_lock_);
-
-    if (new_audio_key_cb_)
-      new_audio_key_cb_.Run();
-
-    if (new_video_key_cb_)
-      new_video_key_cb_.Run();
-  }
-
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
   promise->resolve();
-
   session_keys_change_cb_.Run(
       session_id, key_added,
       GenerateKeysInfoList(session_id, CdmKeyInformation::USABLE));
@@ -418,15 +404,17 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   //           "persistent-license"
   //              Let message be a message containing or reflecting the record
   //              of license destruction.
+  //           "persistent-usage-record"
+  //              Not supported by AesDecryptor.
   std::vector<uint8_t> message;
-  if (it->second != CdmSessionType::kTemporary) {
+  if (it->second == CdmSessionType::kPersistentLicense) {
     // The license release message is specified in the spec:
     // https://w3c.github.io/encrypted-media/#clear-key-release-format.
     KeyIdList key_ids;
     key_ids.reserve(keys_info.size());
     for (const auto& key_info : keys_info)
       key_ids.push_back(key_info->key_id);
-    CreateKeyIdsInitData(key_ids, &message);
+    message = CreateLicenseReleaseMessage(key_ids);
   }
 
   // 4.5. Queue a task to run the following steps:
@@ -436,7 +424,7 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   session_keys_change_cb_.Run(session_id, false, std::move(keys_info));
 
   // 4.5.2 Run the Update Expiration algorithm on the session, providing NaN.
-  session_expiration_update_cb_.Run(session_id, base::Time());
+  // But for Clear Key, the keys never expire. So do nothing here.
 
   // 4.5.3 If any of the preceding steps failed, reject promise with a new
   //       DOMException whose name is the appropriate error name.
@@ -457,38 +445,19 @@ CdmContext* AesDecryptor::GetCdmContext() {
 
 std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterEventCB(
     EventCB event_cb) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return event_callbacks_.Register(std::move(event_cb));
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }
 
-int AesDecryptor::GetCdmId() const {
-  return kInvalidCdmId;
-}
-
-void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                    NewKeyCB new_key_cb) {
-  base::AutoLock auto_lock(new_key_cb_lock_);
-
-  switch (stream_type) {
-    case kAudio:
-      new_audio_key_cb_ = std::move(new_key_cb);
-      break;
-    case kVideo:
-      new_video_key_cb_ = std::move(new_key_cb);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
 
 void AesDecryptor::Decrypt(StreamType stream_type,
                            scoped_refptr<DecoderBuffer> encrypted,
                            DecryptCB decrypt_cb) {
-  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": "
+           << encrypted->AsHumanReadableString(/*verbose=*/true);
 
   if (!encrypted->decrypt_config()) {
     // If there is no DecryptConfig, then the data is unencrypted so return it
@@ -513,6 +482,12 @@ void AesDecryptor::Decrypt(StreamType stream_type,
     std::move(decrypt_cb).Run(kError, nullptr);
     return;
   }
+
+  auto now = base::Time::Now();
+  if (first_decryption_time_.is_null())
+    first_decryption_time_ = now;
+
+  latest_decryption_time_ = now;
 
   DCHECK_EQ(decrypted->timestamp(), encrypted->timestamp());
   DCHECK_EQ(decrypted->duration(), encrypted->duration());
@@ -667,6 +642,29 @@ CdmKeysInfo AesDecryptor::GenerateKeysInfoList(
     }
   }
   return keys_info;
+}
+
+bool AesDecryptor::GetRecordOfKeyUsage(const std::string& session_id,
+                                       KeyIdList& key_ids,
+                                       base::Time& first_decryption_time,
+                                       base::Time& latest_decryption_time) {
+  auto it = open_sessions_.find(session_id);
+  if (it == open_sessions_.end() ||
+      it->second != CdmSessionType::kPersistentUsageRecord) {
+    return false;
+  }
+
+  base::AutoLock auto_lock(key_map_lock_);
+  for (const auto& item : key_map_) {
+    if (item.second->Contains(session_id)) {
+      key_ids.emplace_back(item.first.begin(), item.first.end());
+    }
+  }
+
+  first_decryption_time = first_decryption_time_;
+  latest_decryption_time = latest_decryption_time_;
+
+  return true;
 }
 
 AesDecryptor::DecryptionKey::DecryptionKey(const std::string& secret)

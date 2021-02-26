@@ -39,10 +39,14 @@ std::map<std::string, std::string> GetProcessSimpleAnnotations() {
     std::map<std::string, std::string> process_annotations;
     @autoreleasepool {
       NSBundle* outer_bundle = base::mac::OuterBundle();
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      process_annotations["prod"] = "Chrome_Mac";
+#else
       NSString* product = base::mac::ObjCCast<NSString>([outer_bundle
           objectForInfoDictionaryKey:base::mac::CFToNSCast(kCFBundleNameKey)]);
       process_annotations["prod"] =
           base::SysNSStringToUTF8(product).append("_Mac");
+#endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       // Empty means stable.
@@ -52,10 +56,16 @@ std::map<std::string, std::string> GetProcessSimpleAnnotations() {
 #endif
       NSString* channel = base::mac::ObjCCast<NSString>(
           [outer_bundle objectForInfoDictionaryKey:@"KSChannelID"]);
-      if (channel) {
+      if (!channel || [channel isEqual:@"arm64"] ||
+          [channel isEqual:@"universal"]) {
+        if (allow_empty_channel)
+          process_annotations["channel"] = "";
+      } else {
+        if ([channel hasPrefix:@"arm64-"])
+          channel = [channel substringFromIndex:[@"arm64-" length]];
+        else if ([channel hasPrefix:@"universal-"])
+          channel = [channel substringFromIndex:[@"universal-" length]];
         process_annotations["channel"] = base::SysNSStringToUTF8(channel);
-      } else if (allow_empty_channel) {
-        process_annotations["channel"] = "";
       }
 
       NSString* version =

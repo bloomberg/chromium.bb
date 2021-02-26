@@ -22,10 +22,13 @@ target_sources(dawn_utils PRIVATE
     "ComboRenderPipelineDescriptor.h"
     "GLFWUtils.cpp"
     "GLFWUtils.h"
+    "PlatformDebugLogger.h"
     "SystemUtils.cpp"
     "SystemUtils.h"
     "TerribleCommandBuffer.cpp"
     "TerribleCommandBuffer.h"
+    "TestUtils.cpp"
+    "TestUtils.h"
     "TextureFormatUtils.cpp"
     "TextureFormatUtils.h"
     "Timer.h"
@@ -41,6 +44,12 @@ target_link_libraries(dawn_utils
             shaderc
             glfw
 )
+
+if(WIN32)
+    target_sources(dawn_utils PRIVATE "WindowsDebugLogger.cpp")
+else()
+    target_sources(dawn_utils PRIVATE "EmptyDebugLogger.cpp")
+endif()
 
 if(WIN32)
     target_sources(dawn_utils PRIVATE "WindowsTimer.cpp")

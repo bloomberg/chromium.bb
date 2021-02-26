@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
@@ -43,7 +46,7 @@ export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
    */
   constructor(sharedModel) {
     super(true);
-    this.registerRequiredCSS('elements/platformFontsWidget.css');
+    this.registerRequiredCSS('elements/platformFontsWidget.css', {enableLegacyPatching: true});
 
     this._sharedModel = sharedModel;
     this._sharedModel.addEventListener(Events.ComputedStyleChanged, this.update, this);

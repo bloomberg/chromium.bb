@@ -5,6 +5,7 @@
 #include "ui/compositor/layer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -28,7 +29,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_context.h"
@@ -37,6 +37,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
 
@@ -59,7 +60,7 @@ void CheckSnapped(float snapped_position) {
   // artifacts as well as large enough to not cause false crashes when an
   // uncommon device scale factor is applied.
   const float kEplison = 0.003f;
-  float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
+  float diff = std::abs(snapped_position - std::round(snapped_position));
   DCHECK_LT(diff, kEplison);
 }
 #endif
@@ -272,12 +273,16 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetMasksToBounds(GetMasksToBounds());
   clone->SetOpacity(GetTargetOpacity());
   clone->SetVisible(GetTargetVisibility());
+  clone->SetClipRect(GetTargetClipRect());
   clone->SetAcceptEvents(accept_events());
   clone->SetFillsBoundsOpaquely(fills_bounds_opaquely_);
   clone->SetFillsBoundsCompletely(fills_bounds_completely_);
   clone->SetRoundedCornerRadius(rounded_corner_radii());
   clone->SetIsFastRoundedCorner(is_fast_rounded_corner());
   clone->SetName(name_);
+
+  // the |damaged_region_| will be sent to cc later in SendDamagedRects().
+  clone->damaged_region_ = damaged_region_;
 
   return clone;
 }
@@ -308,7 +313,9 @@ void Layer::SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer) {
 
   scoped_refptr<cc::MirrorLayer> new_layer =
       cc::MirrorLayer::Create(subtree_reflected_layer->cc_layer_);
-  SwitchToLayer(new_layer);
+  if (!SwitchToLayer(new_layer))
+    return;
+
   mirror_layer_ = std::move(new_layer);
 
   subtree_reflected_layer_ = subtree_reflected_layer;
@@ -375,11 +382,19 @@ void Layer::Add(Layer* child) {
 }
 
 void Layer::Remove(Layer* child) {
+  base::WeakPtr<Layer> weak_this = weak_ptr_factory_.GetWeakPtr();
+  base::WeakPtr<Layer> weak_child = child->weak_ptr_factory_.GetWeakPtr();
+
   // Current bounds are used to calculate offsets when layers are reparented.
   // Stop (and complete) an ongoing animation to update the bounds immediately.
   LayerAnimator* child_animator = child->animator_.get();
   if (child_animator)
     child_animator->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
+
+  // Do not proceed if |this| or |child| is released by an animation observer
+  // of |child|'s bounds animation.
+  if (!weak_this || !weak_child)
+    return;
 
   Compositor* compositor = GetCompositor();
   if (compositor)
@@ -484,6 +499,14 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
 
 bool Layer::GetMasksToBounds() const {
   return cc_layer_->masks_to_bounds();
+}
+
+gfx::Rect Layer::GetTargetClipRect() const {
+  if (animator_ &&
+      animator_->IsAnimatingProperty(LayerAnimationElement::CLIP)) {
+    return animator_->GetTargetClipRect();
+  }
+  return clip_rect();
 }
 
 void Layer::SetClipRect(const gfx::Rect& clip_rect) {
@@ -725,11 +748,19 @@ void Layer::SetName(const std::string& name) {
   cc_layer_->SetDebugName(name);
 }
 
-void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
+bool Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   // Finish animations being handled by cc_layer_.
   if (animator_) {
+    base::WeakPtr<Layer> weak_this = weak_ptr_factory_.GetWeakPtr();
+
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+    if (!weak_this)
+      return false;
+
     animator_->StopAnimatingProperty(LayerAnimationElement::OPACITY);
+    if (!weak_this)
+      return false;
+
     animator_->SwitchToLayer(new_layer);
   }
 
@@ -781,12 +812,16 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 
   SetLayerFilters();
   SetLayerBackgroundFilters();
+  return true;
 }
 
-void Layer::SwitchCCLayerForTest() {
+bool Layer::SwitchCCLayerForTest() {
   scoped_refptr<cc::PictureLayer> new_layer = cc::PictureLayer::Create(this);
-  SwitchToLayer(new_layer);
+  if (!SwitchToLayer(new_layer))
+    return false;
+
   content_layer_ = std::move(new_layer);
+  return true;
 }
 
 // Note: The code that sets this flag would be responsible to unset it on that
@@ -889,7 +924,9 @@ void Layer::SetTransferableResource(
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
     new_layer->SetFlipped(true);
-    SwitchToLayer(new_layer);
+    if (!SwitchToLayer(new_layer))
+      return;
+
     texture_layer_ = new_layer;
     // Reset the frame_size_in_dip_ so that SetTextureSize() will not early out,
     // the frame_size_in_dip_ was for a previous (different) |texture_layer_|.
@@ -972,7 +1009,9 @@ void Layer::SetShowReflectedSurface(const viz::SurfaceId& surface_id,
 
   if (!surface_layer_) {
     scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
-    SwitchToLayer(new_layer);
+    if (!SwitchToLayer(new_layer))
+      return;
+
     surface_layer_ = new_layer;
   }
 
@@ -1007,7 +1046,9 @@ void Layer::SetShowSolidColorContent() {
     return;
 
   scoped_refptr<cc::SolidColorLayer> new_layer = cc::SolidColorLayer::Create();
-  SwitchToLayer(new_layer);
+  if (!SwitchToLayer(new_layer))
+    return;
+
   solid_color_layer_ = new_layer;
 
   transfer_resource_ = viz::TransferableResource();
@@ -1038,7 +1079,10 @@ void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {
   DCHECK_EQ(type_, LAYER_NINE_PATCH);
   DCHECK(nine_patch_layer_.get());
   nine_patch_layer_aperture_ = aperture_in_dip;
-  gfx::Rect aperture_in_pixel = ConvertRectToPixel(this, aperture_in_dip);
+  // TODO(danakj): Specifying the aperture in DIPs as integers is not sufficient
+  // and means the resulting aperture in pixels will not be exact.
+  gfx::Rect aperture_in_pixel = gfx::ToEnclosingRect(
+      gfx::ConvertRectToPixels(aperture_in_dip, device_scale_factor()));
   nine_patch_layer_->SetAperture(aperture_in_pixel);
 }
 
@@ -1259,8 +1303,7 @@ gfx::Rect Layer::PaintableRegion() {
   return gfx::Rect(size());
 }
 
-scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
-    ContentLayerClient::PaintingControlSetting painting_control) {
+scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList() {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
   gfx::Rect local_bounds(bounds().size());
   gfx::Rect invalidation(
@@ -1280,12 +1323,6 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
-
-size_t Layer::GetApproximateUnsharedMemoryUsage() const {
-  // Most of the "picture memory" is shared with the cc::DisplayItemList, so
-  // there's nothing significant to report here.
-  return 0;
-}
 
 bool Layer::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registar,
@@ -1362,8 +1399,14 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
   if (old_bounds.origin() != bounds_.origin())
     RecomputePosition();
 
+  auto ptr = weak_ptr_factory_.GetWeakPtr();
+
   if (delegate_)
     delegate_->OnLayerBoundsChanged(old_bounds, reason);
+
+  // The layer may be deleted in the observer.
+  if (!ptr)
+    return;
 
   if (bounds.size() == old_bounds.size()) {
     // Don't schedule a draw if we're invisible. We'll schedule one
@@ -1385,10 +1428,12 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
     reflecting_layer->MatchLayerSize(this);
 }
 
-void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
+void Layer::SetTransformFromAnimation(const gfx::Transform& new_transform,
                                       PropertyChangeReason reason) {
-  const gfx::Transform old_transform = this->transform();
-  cc_layer_->SetTransform(transform);
+  const gfx::Transform old_transform = transform();
+  if (old_transform == new_transform)
+    return;
+  cc_layer_->SetTransform(new_transform);
 
   // Skip recomputing position if the subpixel offset does not need updating
   // which is the case if an explicit offset is set.
@@ -1618,7 +1663,9 @@ void Layer::CreateSurfaceLayerIfNecessary() {
     return;
   scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
   new_layer->SetSurfaceHitTestable(true);
-  SwitchToLayer(new_layer);
+  if (!SwitchToLayer(new_layer))
+    return;
+
   surface_layer_ = new_layer;
 }
 

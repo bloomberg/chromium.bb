@@ -30,12 +30,69 @@ disabled.
 
 ### Adding a new check
 
-If you'd like to propose the addition of a new check, please send an email to
-cxx@chromium.org describing why you think the check is helpful. If the proposed
-check is approved, you may turn it on, though please note that this is only
+New checks require review from cxx@chromium.org. If you propose a check and it
+gets approved, you may turn it on, though please note that this is only
 provisional approval: we get signal from users clicking "Not Useful" on
 comments. If feedback is overwhelmingly "users don't find this useful," the
 check may be removed.
+
+Traditionally, petitions to add checks include [an
+evaluation](https://docs.google.com/document/d/1i1KmXtDD4j_qjhmAdGlJ6UkYXByVX1Kp952Zusdcl5k/edit?usp=sharing)
+of the check under review. Crucially, this includes two things:
+
+- a count of how many times this check fires across Chromium
+- a random sample (>30) of places where the check fires across Chromium
+
+It's expected that the person proposing the check has manually surveyed every
+clang-tidy diagnostic in the sample, noting any bugs, odd behaviors, or
+interesting patterns they've noticed. If clang-tidy emits FixIts, these are
+expected to be considered by the evaluation, too.
+
+An example of a previous proposal email thread is
+[here](https://groups.google.com/a/chromium.org/g/cxx/c/iZ6-Y9ZhC3Q/m/g-8HzqmbAAAJ).
+
+#### Evaluating: running clang-tidy across Chromium
+
+Running clang-tidy requires some setup. First, you'll need to sync clang-tidy,
+which requires adding `checkout_clang_tidy` to your `.gclient` file:
+
+```
+solutions = [
+  {
+    'custom_vars': {
+      'checkout_clang_tidy': True,
+    },
+  }
+]
+```
+
+Your next run of `gclient runhooks` should cause clang-tidy to be synced.
+
+To run clang-tidy across all of Chromium, you'll need a checkout of Chromium's
+[build/](https://chromium.googlesource.com/chromium/tools/build) repository.
+Once you have that and a Chromium `out/` dir with an `args.gn`, running
+clang-tidy across all of Chromium is a single command:
+
+```
+$ cd ${chromium}/src
+$ ${chromium_build}/recipes/recipe_modules/tricium_clang_tidy/resources/tricium_clang_tidy.py \
+    --base_path $PWD \
+    --out_dir out/Linux \
+    --findings_file all_findings.json \
+    --clang_tidy_binary $PWD/third_party/llvm-build/Release+Asserts/bin/clang-tidy \
+    --all
+```
+
+All clang-tidy checks are run on Linux builds of Chromium, so please set up your
+`args.gn` to build Linux.
+
+`all_findings.json` is where all of clang-tidy's findings will be dumped. The
+format of this file is detailed in `tricium_clang_tidy.py`.
+
+**Note** that the above command will use Chromium's top-level `.clang-tidy` file
+(or `.clang-tidy` files scattered throughout `third_party/`, depending on the
+files we lint. In order to test a *new* check, you'll have to add it to
+Chromium's top-level `.clang-tidy` file.
 
 ### Ignoring a check
 
@@ -155,7 +212,7 @@ gn gen . --export-compile-commands
 ```
 4.  Run clang-tidy.
 ```
-<PATH_TO_LLVM_SRC>/clang-tidy/tool/run-clang-tidy.py \
+<PATH_TO_LLVM_SRC>/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py \
     -p . \# Set the root project directory, where compile_commands.json is.
     # Set the clang-tidy binary path, if it's not in your $PATH.
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
@@ -163,11 +220,11 @@ gn gen . --export-compile-commands
     # and you are using the `fix` behavior of clang-tidy.
     -clang-apply-replacements-binary \
         <PATH_TO_LLVM_BUILD>/bin/clang-apply-replacements \
-    # The checks to employ in the build. Use `-*` to omit default checks.
+    # The checks to employ in the build. Use `-*,...` to omit default checks.
     -checks=<CHECKS> \
     -header-filter=<FILTER> \# Optional, limit results to only certain files.
     -fix \# Optional, used if you want to have clang-tidy auto-fix errors.
-    chrome/browser # The path to the files you want to check.
+    'chrome/browser/.*' # A regex of the files you want to check.
 
 Copy-Paste Friendly (though you'll still need to stub in the variables):
 <PATH_TO_LLVM_SRC>/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py \
@@ -178,12 +235,12 @@ Copy-Paste Friendly (though you'll still need to stub in the variables):
     -checks=<CHECKS> \
     -header-filter=<FILTER> \
     -fix \
-    chrome/browser
+    'chrome/browser/.*'
 ```
 
-\*It's not clear which, if any, `gn` flags may cause issues for
-`clang-tidy`. I've had no problems building a component release build,
-both with and without goma. if you run into issues, let us know!
+Note that the source file regex must match how the build specified the file.
+This means that on Windows, you must use (escaped) backslashes even from a bash
+shell.
 
 ### Questions
 

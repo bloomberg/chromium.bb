@@ -81,8 +81,9 @@ void RemoteDeviceV2LoaderImpl::Load(
     secure_message_delegate_->DeriveKey(
         user_private_key,
         id_device_pair.second.better_together_device_metadata->public_key(),
-        base::Bind(&RemoteDeviceV2LoaderImpl::OnPskDerived,
-                   base::Unretained(this), id_device_pair.second, user_email));
+        base::BindOnce(&RemoteDeviceV2LoaderImpl::OnPskDerived,
+                       base::Unretained(this), id_device_pair.second,
+                       user_email));
   }
 }
 
@@ -107,7 +108,9 @@ void RemoteDeviceV2LoaderImpl::AddRemoteDevice(const CryptAuthDevice& device,
       device.last_update_time.ToJavaTime(), device.feature_states,
       beto_metadata ? multidevice::FromCryptAuthV2SeedRepeatedPtrField(
                           beto_metadata->beacon_seeds())
-                    : std::vector<multidevice::BeaconSeed>());
+                    : std::vector<multidevice::BeaconSeed>(),
+      beto_metadata ? beto_metadata->bluetooth_public_address()
+                    : std::string());
 
   remaining_ids_to_process_.erase(device.instance_id());
 

@@ -11,15 +11,17 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/browser/cookie_manager_impl.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/cookie_access_result.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -41,7 +43,7 @@ std::unique_ptr<net::CanonicalCookie> CreateCookie(base::StringPiece name,
       /*expiration_time=*/base::Time(), /*last_access_time=*/base::Time(),
       /*secure=*/true,
       /*httponly*/ false, net::CookieSameSite::NO_RESTRICTION,
-      net::COOKIE_PRIORITY_MEDIUM);
+      net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false);
 }
 
 class CookieManagerImplTest : public testing::Test {
@@ -58,9 +60,14 @@ class CookieManagerImplTest : public testing::Test {
  protected:
   network::mojom::NetworkContext* GetNetworkContext() {
     if (!network_context_.is_bound()) {
+      network::mojom::NetworkContextParamsPtr params =
+          network::mojom::NetworkContextParams::New();
+      // Use a dummy CertVerifier that always passes cert verification, since
+      // these unittests don't need to test CertVerifier behavior.
+      params->cert_verifier_params =
+          network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
       network_service_->CreateNetworkContext(
-          network_context_.BindNewPipeAndPassReceiver(),
-          network::mojom::NetworkContextParams::New());
+          network_context_.BindNewPipeAndPassReceiver(), std::move(params));
       network_context_.reset_on_disconnect();
     }
     return network_context_.get();
@@ -74,8 +81,8 @@ class CookieManagerImplTest : public testing::Test {
     net::CookieOptions options;
     mojo_cookie_manager_->SetCanonicalCookie(
         *CreateCookie(name, value), GURL(kTestCookieUrl), options,
-        base::BindOnce([](net::CanonicalCookie::CookieInclusionStatus status) {
-          EXPECT_TRUE(status.IsInclude());
+        base::BindOnce([](net::CookieAccessResult result) {
+          EXPECT_TRUE(result.status.IsInclude());
         }));
   }
 

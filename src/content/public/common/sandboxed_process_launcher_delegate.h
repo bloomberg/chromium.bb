@@ -10,12 +10,12 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "services/service_manager/sandbox/sandbox_delegate.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
+#include "sandbox/policy/sandbox_delegate.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 namespace content {
@@ -25,7 +25,7 @@ namespace content {
 // i.e. to loosen it if needed.
 // The methods below will be called on the PROCESS_LAUNCHER thread.
 class CONTENT_EXPORT SandboxedProcessLauncherDelegate
-    : public service_manager::SandboxDelegate {
+    : public sandbox::policy::SandboxDelegate {
  public:
   ~SandboxedProcessLauncherDelegate() override {}
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Returns the zygote used to launch the process.
-  virtual service_manager::ZygoteHandle GetZygote();
+  virtual ZygoteHandle GetZygote();
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #if defined(OS_POSIX)
@@ -51,11 +51,15 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
   virtual base::EnvironmentMap GetEnvironment();
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Whether or not to disclaim TCC responsibility for the process, defaults to
   // false. See base::LaunchOptions::disclaim_responsibility.
   virtual bool DisclaimResponsibility();
-#endif
+
+#if defined(ARCH_CPU_ARM64)
+  virtual bool LaunchX86_64();
+#endif  // ARCH_CPU_ARM64
+#endif  // OS_MAC
 };
 
 }  // namespace content

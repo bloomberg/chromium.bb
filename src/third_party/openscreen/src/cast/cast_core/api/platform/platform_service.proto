@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package cast.platform;
+
+option optimize_for = LITE_RUNTIME;
+
+// Platform service. Implemented and hosted by Platform.
+service PlatformService {
+  // Starts a runtime. Called by CastCoreService which endpoint is fetched from
+  // the ServerContext.
+  rpc StartRuntime(StartRuntimeRequest) returns (StartRuntimeResponse);
+
+  // Stops a runtime.
+  rpc StopRuntime(StopRuntimeRequest) returns (StopRuntimeResponse);
+
+  // Gets device info.
+  rpc GetDeviceInfo(GetDeviceInfoRequest) returns (GetDeviceInfoResponse);
+}
+
+message StartRuntimeRequest {
+  string runtime_id = 1;
+}
+
+message StartRuntimeResponse {}
+
+message StopRuntimeRequest {
+  string runtime_id = 1;
+}
+
+message StopRuntimeResponse {}
+
+message GetDeviceInfoRequest {}
+
+message GetDeviceInfoResponse {
+  // TODO: Add device information that Cast needs. Below is an approximation of
+  // such information.
+  bool has_surface = 1;
+}

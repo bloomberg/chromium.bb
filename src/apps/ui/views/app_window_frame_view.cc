@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/grit/theme_resources.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -53,7 +54,8 @@ AppWindowFrameView::~AppWindowFrameView() = default;
 void AppWindowFrameView::Init() {
   if (draw_frame_) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    auto close_button = std::make_unique<views::ImageButton>(this);
+    auto close_button = std::make_unique<views::ImageButton>(
+        base::BindRepeating(&views::Widget::Close, base::Unretained(widget_)));
     close_button->SetImage(
         views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
@@ -63,11 +65,14 @@ void AppWindowFrameView::Init() {
     close_button->SetImage(
         views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_P).ToImageSkia());
+    close_button->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     close_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
     close_button_ = AddChildView(std::move(close_button));
     // STATE_NORMAL images are set in SetButtonImagesForFrame, not here.
-    auto maximize_button = std::make_unique<views::ImageButton>(this);
+    auto maximize_button =
+        std::make_unique<views::ImageButton>(base::BindRepeating(
+            &views::Widget::Maximize, base::Unretained(widget_)));
     maximize_button->SetImage(
         views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
@@ -77,26 +82,33 @@ void AppWindowFrameView::Init() {
     maximize_button->SetImage(
         views::Button::STATE_DISABLED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_D).ToImageSkia());
+    maximize_button->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     maximize_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
     maximize_button_ = AddChildView(std::move(maximize_button));
-    auto restore_button = std::make_unique<views::ImageButton>(this);
+    auto restore_button =
+        std::make_unique<views::ImageButton>(base::BindRepeating(
+            &views::Widget::Restore, base::Unretained(widget_)));
     restore_button->SetImage(
         views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_H).ToImageSkia());
     restore_button->SetImage(
         views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_P).ToImageSkia());
+    restore_button->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     restore_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
     restore_button_ = AddChildView(std::move(restore_button));
-    auto minimize_button = std::make_unique<views::ImageButton>(this);
+    auto minimize_button =
+        std::make_unique<views::ImageButton>(base::BindRepeating(
+            &views::Widget::Minimize, base::Unretained(widget_)));
     minimize_button->SetImage(
         views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_H).ToImageSkia());
     minimize_button->SetImage(
         views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_P).ToImageSkia());
+    minimize_button->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     minimize_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
     minimize_button_ = AddChildView(std::move(minimize_button));
@@ -125,7 +137,9 @@ gfx::Rect AppWindowFrameView::GetBoundsForClientView() const {
 gfx::Rect AppWindowFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Rect window_bounds = client_bounds;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Get the difference between the widget's client area bounds and window
   // bounds, and grow |window_bounds| by that amount.
   gfx::Insets native_frame_insets =
@@ -343,19 +357,6 @@ gfx::Size AppWindowFrameView::GetMaximumSize() const {
     max_size.Enlarge(0, height() - client_size.height());
 
   return max_size;
-}
-
-void AppWindowFrameView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  DCHECK(draw_frame_);
-  if (sender == close_button_)
-    widget_->Close();
-  else if (sender == maximize_button_)
-    widget_->Maximize();
-  else if (sender == restore_button_)
-    widget_->Restore();
-  else if (sender == minimize_button_)
-    widget_->Minimize();
 }
 
 SkColor AppWindowFrameView::CurrentFrameColor() {

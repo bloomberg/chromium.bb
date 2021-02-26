@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -123,8 +123,7 @@ CrostiniExportImport::OperationData* CrostiniExportImport::NewOperationData(
 
 CrostiniExportImport::OperationData* CrostiniExportImport::NewOperationData(
     ExportImportType type) {
-  return NewOperationData(
-      type, ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName));
+  return NewOperationData(type, ContainerId::GetDefault());
 }
 
 void CrostiniExportImport::ExportContainer(content::WebContents* web_contents) {
@@ -297,28 +296,30 @@ void CrostiniExportImport::Start(
               kCrostiniDefaultVmName, path, false,
               base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
                              weak_ptr_factory_.GetWeakPtr(),
-                             operation_data->container_id, std::move(callback))
-
-                  ));
+                             operation_data->container_id, path,
+                             std::move(callback))));
       break;
     case ExportImportType::IMPORT:
       guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
           kCrostiniDefaultVmName, path, false,
           base::BindOnce(&CrostiniExportImport::ImportAfterSharing,
                          weak_ptr_factory_.GetWeakPtr(),
-                         operation_data->container_id, std::move(callback)));
+                         operation_data->container_id, path,
+                         std::move(callback)));
       break;
   }
 }
 
 void CrostiniExportImport::ExportAfterSharing(
     const ContainerId& container_id,
+    const base::FilePath& path,
     CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
     const std::string& failure_reason) {
   if (!result) {
-    LOG(ERROR) << "Error sharing for export " << container_path.value() << ": "
+    LOG(ERROR) << "Error sharing for export host path=" << path.value()
+               << ", container path=" << container_path.value() << ": "
                << failure_reason;
     auto it = status_trackers_.find(container_id);
     if (it != status_trackers_.end()) {
@@ -329,7 +330,7 @@ void CrostiniExportImport::ExportAfterSharing(
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ExportLxdContainer(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName, container_path,
+      ContainerId::GetDefault(), container_path,
       base::BindOnce(&CrostiniExportImport::OnExportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
                      container_id, std::move(callback)));
@@ -357,8 +358,7 @@ void CrostiniExportImport::OnExportComplete(
         // file is functionally the same as a successful cancel.
         base::ThreadPool::PostTask(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+            base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -373,7 +373,7 @@ void CrostiniExportImport::OnExportComplete(
           base::UmaHistogramCustomCounts("Crostini.BackupCompressedSizeLog2",
                                          std::round(std::log2(compressed_size)),
                                          0, 50, 50);
-          base::UmaHistogramPercentage(
+          base::UmaHistogramPercentageObsoleteDoNotUse(
               "Crostini.BackupSizeRatio",
               std::round(compressed_size * 100.0 / container_size));
         }
@@ -390,8 +390,7 @@ void CrostiniExportImport::OnExportComplete(
         // file needs to be cleaned up.
         base::ThreadPool::PostTask(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+            base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -402,8 +401,7 @@ void CrostiniExportImport::OnExportComplete(
     LOG(ERROR) << "Error exporting " << int(result);
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       it->second->path(), false));
+        base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
     switch (result) {
       case CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED:
         enum_hist_result = ExportContainerResult::kFailedVmStopped;
@@ -473,12 +471,14 @@ void CrostiniExportImport::OnExportContainerProgress(
 
 void CrostiniExportImport::ImportAfterSharing(
     const ContainerId& container_id,
+    const base::FilePath& path,
     CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
     const std::string& failure_reason) {
   if (!result) {
-    LOG(ERROR) << "Error sharing for import " << container_path.value() << ": "
+    LOG(ERROR) << "Error sharing for import path=" << path
+               << ", container path=" << container_path.value() << ": "
                << failure_reason;
     auto it = status_trackers_.find(container_id);
     if (it != status_trackers_.end()) {
@@ -489,7 +489,7 @@ void CrostiniExportImport::ImportAfterSharing(
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ImportLxdContainer(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName, container_path,
+      ContainerId::GetDefault(), container_path,
       base::BindOnce(&CrostiniExportImport::OnImportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
                      container_id, std::move(callback)));
@@ -580,7 +580,7 @@ void CrostiniExportImport::OnImportComplete(
 
   // Restart from CrostiniManager.
   CrostiniManager::GetForProfile(profile_)->RestartCrostini(
-      container_id.vm_name, container_id.container_name, std::move(callback));
+      container_id, std::move(callback));
 }
 
 void CrostiniExportImport::OnImportContainerProgress(

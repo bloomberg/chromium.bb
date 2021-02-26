@@ -13,11 +13,12 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -27,9 +28,9 @@ namespace {
 
 // Aliases.
 using chromeos::assistant::AssistantAllowedState;
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantQuerySource;
-using chromeos::assistant::mojom::AssistantSuggestion;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantQuerySource;
+using chromeos::assistant::AssistantSuggestion;
 
 // Constants.
 constexpr char kIdPrefix[] = "googleassistant://";
@@ -46,15 +47,15 @@ bool AreResultsAllowed() {
 // Returns the action URL for the specified |conversation_starter|.
 // NOTE: Assistant deep links are modified to ensure that they accurately
 // reflect their being presented to the user as launcher chips.
-GURL GetActionUrl(const AssistantSuggestion* conversation_starter) {
-  GURL action_url = conversation_starter->action_url;
+GURL GetActionUrl(const AssistantSuggestion& conversation_starter) {
+  GURL action_url = conversation_starter.action_url;
 
   if (action_url.is_empty()) {
     // When conversation starters do *not* specify an |action_url| explicitly it
     // is implicitly understood that they should trigger an Assistant query
     // composed of their display |text|.
     action_url = ash::assistant::util::CreateAssistantQueryDeepLink(
-        conversation_starter->text);
+        conversation_starter.text);
   }
 
   if (ash::assistant::util::IsDeepLinkUrl(action_url)) {
@@ -72,15 +73,16 @@ GURL GetActionUrl(const AssistantSuggestion* conversation_starter) {
 class AssistantSearchResult : public ChromeSearchResult {
  public:
   explicit AssistantSearchResult(
-      const AssistantSuggestion* conversation_starter)
+      const AssistantSuggestion& conversation_starter)
       : action_url_(GetActionUrl(conversation_starter)) {
-    set_id(kIdPrefix + conversation_starter->id.ToString());
+    set_id(kIdPrefix + conversation_starter.id.ToString());
     SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
     SetDisplayType(ash::SearchResultDisplayType::kChip);
     SetResultType(ash::AppListSearchResultType::kAssistantChip);
-    SetTitle(base::UTF8ToUTF16(conversation_starter->text));
+    SetMetricsType(ash::SearchResultType::ASSISTANT);
+    SetTitle(base::UTF8ToUTF16(conversation_starter.text));
     SetChipIcon(gfx::CreateVectorIcon(
-        ash::kAssistantIcon,
+        chromeos::kAssistantIcon,
         ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
         gfx::kPlaceholderColor));
 
@@ -96,11 +98,6 @@ class AssistantSearchResult : public ChromeSearchResult {
   ~AssistantSearchResult() override = default;
 
  private:
-  // ChromeSearchResult:
-  ash::SearchResultType GetSearchResultType() const override {
-    return ash::SearchResultType::ASSISTANT;
-  }
-
   void Open(int event_flags) override {
     // Opening of |action_url_| is delegated to the Assistant controller as only
     // the Assistant controller knows how to handle Assistant deep links.
@@ -118,11 +115,27 @@ AssistantSearchProvider::AssistantSearchProvider() {
   UpdateResults();
 
   // Bind observers.
-  state_observer_.Add(ash::AssistantState::Get());
-  suggestions_observer_.Add(ash::AssistantSuggestionsController::Get());
+  assistant_controller_observer_.Add(ash::AssistantController::Get());
+  assistant_state_observer_.Add(ash::AssistantState::Get());
+  ash::AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
 }
 
-AssistantSearchProvider::~AssistantSearchProvider() = default;
+AssistantSearchProvider::~AssistantSearchProvider() {
+  if (ash::AssistantSuggestionsController::Get()) {
+    ash::AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(
+        this);
+  }
+}
+
+ash::AppListSearchResultType AssistantSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kAssistantChip;
+}
+
+void AssistantSearchProvider::OnAssistantControllerDestroying() {
+  ash::AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
+  assistant_state_observer_.Remove(ash::AssistantState::Get());
+  assistant_controller_observer_.Remove(ash::AssistantController::Get());
+}
 
 void AssistantSearchProvider::OnAssistantFeatureAllowedChanged(
     chromeos::assistant::AssistantAllowedState allowed_state) {
@@ -134,7 +147,7 @@ void AssistantSearchProvider::OnAssistantSettingsEnabled(bool enabled) {
 }
 
 void AssistantSearchProvider::OnConversationStartersChanged(
-    const std::vector<const AssistantSuggestion*>& conversation_starters) {
+    const std::vector<AssistantSuggestion>& conversation_starters) {
   UpdateResults();
 }
 
@@ -145,14 +158,14 @@ void AssistantSearchProvider::UpdateResults() {
     return;
   }
 
-  std::vector<const AssistantSuggestion*> conversation_starters =
+  const std::vector<AssistantSuggestion>& conversation_starters =
       ash::AssistantSuggestionsController::Get()
           ->GetModel()
           ->GetConversationStarters();
 
   SearchProvider::Results results;
   if (!conversation_starters.empty()) {
-    const AssistantSuggestion* starter = conversation_starters.front();
+    const AssistantSuggestion& starter = conversation_starters.front();
     results.push_back(std::make_unique<AssistantSearchResult>(starter));
   }
   SwapResults(&results);

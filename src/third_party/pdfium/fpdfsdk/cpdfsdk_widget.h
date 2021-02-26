@@ -68,6 +68,7 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   int GetSelectedIndex(int nIndex) const;
   WideString GetValue() const;
   WideString GetDefaultValue() const;
+  WideString GetExportValue() const;
   WideString GetOptionLabel(int nIndex) const;
   int CountOptions() const;
   bool IsOptionSelected(int nIndex) const;
@@ -141,10 +142,6 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   bool m_bAppModified = false;
   uint32_t m_nAppearanceAge = 0;
   uint32_t m_nValueAge = 0;
-
-#ifdef PDF_ENABLE_XFA
-  mutable UnownedPtr<CXFA_FFWidgetHandler> m_pWidgetHandler;
-#endif  // PDF_ENABLE_XFA
 };
 
 inline CPDFSDK_Widget* ToCPDFSDKWidget(CPDFSDK_Annot* pAnnot) {

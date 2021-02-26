@@ -19,7 +19,6 @@ namespace blink {
 
 class JSONArray;
 class JSONObject;
-class PaintArtifact;
 class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
@@ -34,22 +33,17 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   gfx::Rect PaintableRegion() override {
     return gfx::Rect(raster_invalidator_.LayerBounds().size());
   }
-  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting) override {
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() override {
     return cc_display_item_list_;
   }
   bool FillsBoundsCompletely() const override { return false; }
-  size_t GetApproximateUnsharedMemoryUsage() const override {
-    // TODO(jbroman): Actually calculate memory usage.
-    return 0;
-  }
 
   // LayerAsJSONClient implementation
   void AppendAdditionalInfoAsJSON(LayerTreeFlags,
                                   const cc::Layer&,
                                   JSONObject&) const override;
 
-  const cc::Layer& Layer() const { return *cc_picture_layer_.get(); }
+  cc::Layer& Layer() const { return *cc_picture_layer_.get(); }
   const PropertyTreeState& State() const { return layer_state_; }
 
   bool Matches(const PaintChunk& paint_chunk) const {
@@ -57,18 +51,17 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   }
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
-      scoped_refptr<const PaintArtifact>,
       const PaintChunkSubset&,
       const gfx::Rect& layer_bounds,
       const PropertyTreeState&);
 
   RasterInvalidator& GetRasterInvalidator() { return raster_invalidator_; }
 
+  size_t ApproximateUnsharedMemoryUsage() const;
+
  private:
   // Callback from raster_invalidator_.
-  void InvalidateRect(const IntRect& rect) {
-    cc_picture_layer_->SetNeedsDisplayRect(rect);
-  }
+  void InvalidateRect(const IntRect&);
 
   base::Optional<PaintChunk::Id> id_;
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;

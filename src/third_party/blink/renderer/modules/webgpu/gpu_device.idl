@@ -8,12 +8,12 @@
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUDevice : EventTarget {
     [SameObject] readonly attribute GPUAdapter adapter;
+    readonly attribute FrozenArray<GPUExtensionName> extensions;
     [CallWith=ScriptState] readonly attribute Promise<GPUDeviceLostInfo> lost;
 
     [SameObject] readonly attribute GPUQueue defaultQueue;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
-    [RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
     GPUSampler createSampler(optional GPUSamplerDescriptor descriptor = {});
 
@@ -27,6 +27,8 @@
 
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
+
+    GPUQuerySet createQuerySet(GPUQuerySetDescriptor descriptor);
 
     void pushErrorScope(GPUErrorFilter filter);
     [CallWith=ScriptState] Promise<GPUError?> popErrorScope();

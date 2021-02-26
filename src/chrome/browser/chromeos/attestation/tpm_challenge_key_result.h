@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_TPM_CHALLENGE_KEY_RESULT_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_TPM_CHALLENGE_KEY_RESULT_H_
 
+#include <ostream>
 #include <string>
 
 namespace chromeos {
@@ -29,11 +30,14 @@ enum class TpmChallengeKeyResultCode {
   kAttestationUnsupportedError = 12,
   kTimeoutError = 13,
   kDeviceWebBasedAttestationUrlError = 14,
-  kExtensionNotWhitelistedError = 15,
+  kExtensionNotAllowedError = 15,
   kChallengeBadBase64Error = 16,
   kDeviceWebBasedAttestationNotOobeError = 17,
   kGetPublicKeyFailedError = 18,
-  kMaxValue = kGetPublicKeyFailedError,
+  kMarkCorporateKeyFailedError = 19,
+  kAttestationServiceInternalError = 20,
+  kUploadCertificateFailedError = 21,
+  kMaxValue = kUploadCertificateFailedError,
 };
 
 // If |IsSuccess| returns false, |result_code| contains error code and
@@ -57,10 +61,13 @@ struct TpmChallengeKeyResult {
   static const char kAttestationUnsupportedErrorMsg[];
   static const char kTimeoutErrorMsg[];
   static const char kDeviceWebBasedAttestationUrlErrorMsg[];
-  static const char kExtensionNotWhitelistedErrorMsg[];
+  static const char kExtensionNotAllowedErrorMsg[];
   static const char kChallengeBadBase64ErrorMsg[];
   static const char kDeviceWebBasedAttestationNotOobeErrorMsg[];
   static const char kGetPublicKeyFailedErrorMsg[];
+  static const char kMarkCorporateKeyFailedErrorMsg[];
+  static const char kAttestationServiceInternalErrorMsg[];
+  static const char kUploadCertificateFailedErrorMsg[];
 
   static TpmChallengeKeyResult MakeChallengeResponse(
       const std::string& challenge_response);
@@ -71,10 +78,16 @@ struct TpmChallengeKeyResult {
   const char* GetErrorMessage() const;
   bool IsSuccess() const;
 
+  bool operator==(const TpmChallengeKeyResult& other) const;
+  bool operator!=(const TpmChallengeKeyResult& other) const;
+
   TpmChallengeKeyResultCode result_code = TpmChallengeKeyResultCode::kSuccess;
   std::string public_key;
   std::string challenge_response;
 };
+
+// For unit tests and debugging.
+std::ostream& operator<<(std::ostream& os, const TpmChallengeKeyResult& result);
 
 }  // namespace attestation
 }  // namespace chromeos

@@ -13,6 +13,7 @@ goog.require('ChromeVoxState');
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
 const RoleType = chrome.automation.RoleType;
+const StateType = chrome.automation.StateType;
 const TreeChange = chrome.automation.TreeChange;
 const TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
 const TreeChangeType = chrome.automation.TreeChangeType;
@@ -65,21 +66,12 @@ LiveRegions = class {
   onTreeChange(treeChange) {
     const type = treeChange.type;
     const node = treeChange.target;
-    if ((!node.containerLiveStatus || node.containerLiveStatus == 'off') &&
-        type != TreeChangeType.SUBTREE_UPDATE_END) {
+    if ((!node.containerLiveStatus || node.containerLiveStatus === 'off') &&
+        type !== TreeChangeType.SUBTREE_UPDATE_END) {
       return;
     }
 
-    const currentRange = this.chromeVoxState_.currentRange;
-    if (!currentRange) {
-      return;
-    }
-
-    let webView = AutomationUtil.getTopLevelRoot(node);
-    webView = webView ? webView.parent : null;
-    if (!LiveRegions.announceLiveRegionsFromBackgroundTabs_ &&
-        currentRange.start.node.role != RoleType.DESKTOP &&
-        (!webView || !webView.state.focused)) {
+    if (this.shouldIgnoreLiveRegion_(node)) {
       return;
     }
 
@@ -91,18 +83,18 @@ LiveRegions = class {
 
     if (all ||
         (additions &&
-         (type == TreeChangeType.NODE_CREATED ||
-          type == TreeChangeType.SUBTREE_CREATED))) {
+         (type === TreeChangeType.NODE_CREATED ||
+          type === TreeChangeType.SUBTREE_CREATED))) {
       this.queueLiveRegionChange_(node);
-    } else if (all || (text && type == TreeChangeType.TEXT_CHANGED)) {
+    } else if (all || (text && type === TreeChangeType.TEXT_CHANGED)) {
       this.queueLiveRegionChange_(node);
     }
 
-    if ((all || removals) && type == TreeChangeType.NODE_REMOVED) {
+    if ((all || removals) && type === TreeChangeType.NODE_REMOVED) {
       this.outputLiveRegionChange_(node, '@live_regions_removed');
     }
 
-    if (type == TreeChangeType.SUBTREE_UPDATE_END) {
+    if (type === TreeChangeType.SUBTREE_UPDATE_END) {
       this.processQueuedTreeChanges_();
     }
   }
@@ -169,10 +161,12 @@ LiveRegions = class {
     output.withSpeechCategory(TtsCategory.LIVE);
 
     // Queue live regions coming from background tabs.
-    let webView = AutomationUtil.getTopLevelRoot(node);
-    webView = webView ? webView.parent : null;
-    const forceQueue = !webView || !webView.state.focused ||
-        node.containerLiveStatus == 'polite';
+    let hostView = AutomationUtil.getTopLevelRoot(node);
+    hostView = hostView ? hostView.parent : null;
+    const currentRange = this.chromeVoxState_.currentRange;
+    const forceQueue = !hostView || !hostView.state.focused ||
+        (currentRange && currentRange.start.node.root !== node.root) ||
+        node.containerLiveStatus === 'polite';
 
     // Enqueue live region updates that were received at approximately
     // the same time, otherwise flush previous live region updates.
@@ -217,6 +211,39 @@ LiveRegions = class {
     for (let child = root.firstChild; child; child = child.nextSibling) {
       this.addNodeToNodeSetRecursive_(child);
     }
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   * @private
+   */
+  shouldIgnoreLiveRegion_(node) {
+    if (LiveRegions.announceLiveRegionsFromBackgroundTabs_) {
+      return false;
+    }
+
+    const currentRange = this.chromeVoxState_.currentRange;
+    if (currentRange && currentRange.start.node.root === node.root) {
+      return false;
+    }
+
+    let hostView = AutomationUtil.getTopLevelRoot(node);
+    hostView = hostView ? hostView.parent : null;
+    if (!hostView) {
+      return true;
+    }
+
+    if (hostView.role === RoleType.WINDOW &&
+        !hostView.state[StateType.INVISIBLE]) {
+      return false;
+    }
+
+    if (hostView.state.focused) {
+      return false;
+    }
+
+    return true;
   }
 };
 

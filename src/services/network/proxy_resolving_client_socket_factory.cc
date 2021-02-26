@@ -29,6 +29,8 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
   session_context.cert_transparency_verifier =
       request_context->cert_transparency_verifier();
   session_context.ct_policy_enforcer = request_context->ct_policy_enforcer();
+  session_context.sct_auditing_delegate =
+      request_context->sct_auditing_delegate();
   session_context.proxy_resolution_service =
       request_context->proxy_resolution_service();
   session_context.proxy_delegate = request_context->proxy_delegate();
@@ -76,6 +78,7 @@ ProxyResolvingClientSocketFactory::~ProxyResolvingClientSocketFactory() {}
 std::unique_ptr<ProxyResolvingClientSocket>
 ProxyResolvingClientSocketFactory::CreateSocket(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     bool use_tls) {
   // |request_context|'s HttpAuthCache might have updates. For example, a user
   // might have since entered proxy credentials. Clear the http auth of
@@ -96,7 +99,8 @@ ProxyResolvingClientSocketFactory::CreateSocket(
           ->http_auth_cache();
   network_session_->http_auth_cache()->CopyProxyEntriesFrom(*other_auth_cache);
   return std::make_unique<ProxyResolvingClientSocket>(
-      network_session_.get(), common_connect_job_params_.get(), url, use_tls);
+      network_session_.get(), common_connect_job_params_.get(), url,
+      network_isolation_key, use_tls);
 }
 
 }  // namespace network

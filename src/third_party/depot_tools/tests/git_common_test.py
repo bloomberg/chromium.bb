@@ -524,6 +524,59 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     }
     self.assertEqual(expected, actual)
 
+  def testGetBranchesInfoWithReset(self):
+    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
+    self.repo.git('checkout','-tb', 'foobarA', 'master')
+    self.repo.git('config', 'branch.foobarA.base',
+      self.repo.run(self.gc.hash_one, 'master'))
+    self.repo.git('config', 'branch.foobarA.base-upstream', 'master')
+
+    with self.repo.open('foobar1', 'w') as f:
+      f.write('hello')
+    self.repo.git('add', 'foobar1')
+    self.repo.git_commit('commit1')
+
+    with self.repo.open('foobar2', 'w') as f:
+      f.write('goodbye')
+    self.repo.git('add', 'foobar2')
+    self.repo.git_commit('commit2')
+
+    self.repo.git('checkout','-tb', 'foobarB', 'foobarA')
+    self.repo.git('config', 'branch.foobarB.base',
+      self.repo.run(self.gc.hash_one, 'foobarA'))
+    self.repo.git('config', 'branch.foobarB.base-upstream', 'foobarA')
+    self.repo.git('checkout', 'foobarA')
+    self.repo.git('reset', '--hard', 'HEAD~')
+
+    with self.repo.open('foobar', 'w') as f:
+      f.write('world')
+    self.repo.git('add', 'foobar')
+    self.repo.git_commit('commit1.2')
+
+    actual = self.repo.run(self.gc.get_branches_info, True)
+    expected = {
+        'foobarA': (
+            self.repo.run(self.gc.hash_one, 'foobarA', short=True),
+            'master',
+            2,
+            None
+        ),
+        'foobarB': (
+            self.repo.run(self.gc.hash_one, 'foobarB', short=True),
+            'foobarA',
+            None,
+            1
+        ),
+        'master': (
+            self.repo.run(self.gc.hash_one, 'master', short=True),
+            '',
+            None,
+            None
+        ),
+        '': None
+    }
+    self.assertEqual(expected, actual)
+
 
 class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
                                GitCommonTestBase):
@@ -638,6 +691,36 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
 
     self.assertIsNone(
       self.repo.run(self.gc.get_or_create_merge_base, 'branch_DOG'))
+
+  def testMergeBaseWithForkPoint(self):
+    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
+    self.repo.git('checkout','-tb', 'foobarA', 'master')
+    foobarA = self.repo.run(self.gc.hash_one, 'foobarA', short=True)
+
+    self.repo.git('checkout','-tb', 'foobarB', 'foobarA')
+    with self.repo.open('cl1', 'w') as f:
+        f.write('cl1')
+    self.repo.git('add', 'cl1')
+    self.repo.git_commit('cl1')
+    foobarB_old = self.repo.run(self.gc.hash_one, 'foobarB', short=True)
+
+    self.repo.git('checkout','-tb', 'foobarC', 'foobarB')
+    with self.repo.open('cl2', 'w') as f:
+        f.write('cl2')
+    self.repo.git('add', 'cl2')
+    self.repo.git_commit('cl2')
+    foobarC = self.repo.run(self.gc.hash_one, 'foobarC', short=True)
+
+    self.repo.git('checkout', 'foobarB')
+    with self.repo.open('cl1', 'w') as f:
+      f.write('amend cl1')
+    self.repo.git('add', 'cl1')
+    self.repo.git('commit', '--amend', '-m', 'amend cl1')
+
+    self.assertIn(foobarA,
+      self.repo.run(self.gc.get_or_create_merge_base, 'foobarB', foobarB_old))
+    self.assertIn(foobarB_old,
+      self.repo.run(self.gc.get_or_create_merge_base, foobarC, 'foobarB'))
 
   def testGetBranchTree(self):
     skipped, tree = self.repo.run(self.gc.get_branch_tree)

@@ -1638,6 +1638,21 @@ VKAPI_ATTR VkResult VKAPI_CALL getDisplayPlaneCapabilities2KHR (VkPhysicalDevice
 	return VK_SUCCESS;
 }
 
+VKAPI_ATTR VkResult VKAPI_CALL getPhysicalDeviceFragmentShadingRatesKHR (VkPhysicalDevice physicalDevice, deUint32* pFragmentShadingRateCount, VkPhysicalDeviceFragmentShadingRateKHR* pFragmentShadingRates)
+{
+	DE_UNREF(physicalDevice);
+	DE_UNREF(pFragmentShadingRateCount);
+	DE_UNREF(pFragmentShadingRates);
+	return VK_SUCCESS;
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetFragmentShadingRateKHR (VkCommandBuffer commandBuffer, const VkExtent2D* pFragmentSize, const VkFragmentShadingRateCombinerOpKHR combinerOps[2])
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pFragmentSize);
+	DE_UNREF(combinerOps);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL getPipelineExecutablePropertiesKHR (VkDevice device, const VkPipelineInfoKHR* pPipelineInfo, deUint32* pExecutableCount, VkPipelineExecutablePropertiesKHR* pProperties)
 {
 	DE_UNREF(device);
@@ -1663,6 +1678,42 @@ VKAPI_ATTR VkResult VKAPI_CALL getPipelineExecutableInternalRepresentationsKHR (
 	DE_UNREF(pInternalRepresentationCount);
 	DE_UNREF(pInternalRepresentations);
 	return VK_SUCCESS;
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdCopyBuffer2KHR (VkCommandBuffer commandBuffer, const VkCopyBufferInfo2KHR* pCopyBufferInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pCopyBufferInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdCopyImage2KHR (VkCommandBuffer commandBuffer, const VkCopyImageInfo2KHR* pCopyImageInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pCopyImageInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdCopyBufferToImage2KHR (VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2KHR* pCopyBufferToImageInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pCopyBufferToImageInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdCopyImageToBuffer2KHR (VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2KHR* pCopyImageToBufferInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pCopyImageToBufferInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdBlitImage2KHR (VkCommandBuffer commandBuffer, const VkBlitImageInfo2KHR* pBlitImageInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pBlitImageInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdResolveImage2KHR (VkCommandBuffer commandBuffer, const VkResolveImageInfo2KHR* pResolveImageInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pResolveImageInfo);
 }
 
 VKAPI_ATTR void VKAPI_CALL debugReportMessageEXT (VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, deUint64 object, deUintptr location, deInt32 messageCode, const char* pLayerPrefix, const char* pMessage)
@@ -2360,6 +2411,89 @@ VKAPI_ATTR void VKAPI_CALL cmdSetLineStippleEXT (VkCommandBuffer commandBuffer, 
 	DE_UNREF(lineStipplePattern);
 }
 
+VKAPI_ATTR void VKAPI_CALL cmdSetCullModeEXT (VkCommandBuffer commandBuffer, VkCullModeFlags cullMode)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(cullMode);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetFrontFaceEXT (VkCommandBuffer commandBuffer, VkFrontFace frontFace)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(frontFace);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetPrimitiveTopologyEXT (VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(primitiveTopology);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetViewportWithCountEXT (VkCommandBuffer commandBuffer, deUint32 viewportCount, const VkViewport* pViewports)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(viewportCount);
+	DE_UNREF(pViewports);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetScissorWithCountEXT (VkCommandBuffer commandBuffer, deUint32 scissorCount, const VkRect2D* pScissors)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(scissorCount);
+	DE_UNREF(pScissors);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdBindVertexBuffers2EXT (VkCommandBuffer commandBuffer, deUint32 firstBinding, deUint32 bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(firstBinding);
+	DE_UNREF(bindingCount);
+	DE_UNREF(pBuffers);
+	DE_UNREF(pOffsets);
+	DE_UNREF(pSizes);
+	DE_UNREF(pStrides);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetDepthTestEnableEXT (VkCommandBuffer commandBuffer, VkBool32 depthTestEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(depthTestEnable);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetDepthWriteEnableEXT (VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(depthWriteEnable);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetDepthCompareOpEXT (VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(depthCompareOp);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetDepthBoundsTestEnableEXT (VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(depthBoundsTestEnable);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetStencilTestEnableEXT (VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(stencilTestEnable);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetStencilOpEXT (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(faceMask);
+	DE_UNREF(failOp);
+	DE_UNREF(passOp);
+	DE_UNREF(depthFailOp);
+	DE_UNREF(compareOp);
+}
+
 VKAPI_ATTR void VKAPI_CALL getGeneratedCommandsMemoryRequirementsNV (VkDevice device, const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2* pMemoryRequirements)
 {
 	DE_UNREF(device);
@@ -2771,6 +2905,7 @@ static const tcu::StaticFunctionLibrary::Entry s_instanceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkGetPhysicalDeviceDisplayPlaneProperties2KHR,						getPhysicalDeviceDisplayPlaneProperties2KHR),
 	VK_NULL_FUNC_ENTRY(vkGetDisplayModeProperties2KHR,										getDisplayModeProperties2KHR),
 	VK_NULL_FUNC_ENTRY(vkGetDisplayPlaneCapabilities2KHR,									getDisplayPlaneCapabilities2KHR),
+	VK_NULL_FUNC_ENTRY(vkGetPhysicalDeviceFragmentShadingRatesKHR,							getPhysicalDeviceFragmentShadingRatesKHR),
 	VK_NULL_FUNC_ENTRY(vkCreateDebugReportCallbackEXT,										createDebugReportCallbackEXT),
 	VK_NULL_FUNC_ENTRY(vkDestroyDebugReportCallbackEXT,										destroyDebugReportCallbackEXT),
 	VK_NULL_FUNC_ENTRY(vkDebugReportMessageEXT,												debugReportMessageEXT),
@@ -3002,12 +3137,19 @@ static const tcu::StaticFunctionLibrary::Entry s_deviceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkGetSemaphoreCounterValueKHR,						getSemaphoreCounterValue),
 	VK_NULL_FUNC_ENTRY(vkWaitSemaphoresKHR,									waitSemaphores),
 	VK_NULL_FUNC_ENTRY(vkSignalSemaphoreKHR,								signalSemaphore),
+	VK_NULL_FUNC_ENTRY(vkCmdSetFragmentShadingRateKHR,						cmdSetFragmentShadingRateKHR),
 	VK_NULL_FUNC_ENTRY(vkGetBufferDeviceAddressKHR,							getBufferDeviceAddress),
 	VK_NULL_FUNC_ENTRY(vkGetBufferOpaqueCaptureAddressKHR,					getBufferOpaqueCaptureAddress),
 	VK_NULL_FUNC_ENTRY(vkGetDeviceMemoryOpaqueCaptureAddressKHR,			getDeviceMemoryOpaqueCaptureAddress),
 	VK_NULL_FUNC_ENTRY(vkGetPipelineExecutablePropertiesKHR,				getPipelineExecutablePropertiesKHR),
 	VK_NULL_FUNC_ENTRY(vkGetPipelineExecutableStatisticsKHR,				getPipelineExecutableStatisticsKHR),
 	VK_NULL_FUNC_ENTRY(vkGetPipelineExecutableInternalRepresentationsKHR,	getPipelineExecutableInternalRepresentationsKHR),
+	VK_NULL_FUNC_ENTRY(vkCmdCopyBuffer2KHR,									cmdCopyBuffer2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdCopyImage2KHR,									cmdCopyImage2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdCopyBufferToImage2KHR,							cmdCopyBufferToImage2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdCopyImageToBuffer2KHR,							cmdCopyImageToBuffer2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdBlitImage2KHR,									cmdBlitImage2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdResolveImage2KHR,								cmdResolveImage2KHR),
 	VK_NULL_FUNC_ENTRY(vkDebugMarkerSetObjectTagEXT,						debugMarkerSetObjectTagEXT),
 	VK_NULL_FUNC_ENTRY(vkDebugMarkerSetObjectNameEXT,						debugMarkerSetObjectNameEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdDebugMarkerBeginEXT,							cmdDebugMarkerBeginEXT),
@@ -3090,6 +3232,18 @@ static const tcu::StaticFunctionLibrary::Entry s_deviceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkGetBufferDeviceAddressEXT,							getBufferDeviceAddressEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdSetLineStippleEXT,								cmdSetLineStippleEXT),
 	VK_NULL_FUNC_ENTRY(vkResetQueryPoolEXT,									resetQueryPool),
+	VK_NULL_FUNC_ENTRY(vkCmdSetCullModeEXT,									cmdSetCullModeEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetFrontFaceEXT,								cmdSetFrontFaceEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetPrimitiveTopologyEXT,						cmdSetPrimitiveTopologyEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetViewportWithCountEXT,						cmdSetViewportWithCountEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetScissorWithCountEXT,							cmdSetScissorWithCountEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdBindVertexBuffers2EXT,							cmdBindVertexBuffers2EXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetDepthTestEnableEXT,							cmdSetDepthTestEnableEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetDepthWriteEnableEXT,							cmdSetDepthWriteEnableEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetDepthCompareOpEXT,							cmdSetDepthCompareOpEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetDepthBoundsTestEnableEXT,					cmdSetDepthBoundsTestEnableEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetStencilTestEnableEXT,						cmdSetStencilTestEnableEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetStencilOpEXT,								cmdSetStencilOpEXT),
 	VK_NULL_FUNC_ENTRY(vkGetGeneratedCommandsMemoryRequirementsNV,			getGeneratedCommandsMemoryRequirementsNV),
 	VK_NULL_FUNC_ENTRY(vkCmdPreprocessGeneratedCommandsNV,					cmdPreprocessGeneratedCommandsNV),
 	VK_NULL_FUNC_ENTRY(vkCmdExecuteGeneratedCommandsNV,						cmdExecuteGeneratedCommandsNV),

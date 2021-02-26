@@ -7,11 +7,11 @@
 
 #include "media/base/ipc/media_param_traits.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/mojom/hdr_metadata_mojom_traits.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/mojom/video_color_space_mojom_traits.h"
 #include "media/mojo/mojom/video_transformation_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
+#include "ui/gfx/mojom/hdr_metadata_mojom_traits.h"
 
 namespace mojo {
 
@@ -64,7 +64,7 @@ struct StructTraits<media::mojom::VideoDecoderConfigDataView,
     return input.video_transformation();
   }
 
-  static const base::Optional<media::HDRMetadata>& hdr_metadata(
+  static const base::Optional<gfx::HDRMetadata>& hdr_metadata(
       const media::VideoDecoderConfig& input) {
     return input.hdr_metadata();
   }

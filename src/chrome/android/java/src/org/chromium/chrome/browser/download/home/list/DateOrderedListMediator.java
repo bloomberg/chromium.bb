@@ -14,6 +14,10 @@ import androidx.core.util.Pair;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -44,12 +48,12 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelega
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
-import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,6 +112,7 @@ class DateOrderedListMediator {
     private final MediatorSelectionObserver mSelectionObserver;
     private final SelectionDelegate<ListItem> mSelectionDelegate;
     private final DownloadManagerUiConfig mUiConfig;
+    private final DownloadLaterDialogHelper mDownloadLaterDialogHelper;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final InvalidStateOfflineItemFilter mInvalidStateFilter;
@@ -163,8 +168,9 @@ class DateOrderedListMediator {
             LegacyDownloadProvider legacyProvider, FaviconProvider faviconProvider,
             ShareController shareController, DeleteController deleteController,
             RenameController renameController, SelectionDelegate<ListItem> selectionDelegate,
-            DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
-            ListItemModel model, DiscardableReferencePool discardableReferencePool) {
+            DownloadLaterDialogHelper downloadLaterDialogHelper, DownloadManagerUiConfig config,
+            DateOrderedListObserver dateOrderedListObserver, ListItemModel model,
+            DiscardableReferencePool discardableReferencePool) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -185,6 +191,7 @@ class DateOrderedListMediator {
         mDeleteController = deleteController;
         mRenameController = renameController;
         mSelectionDelegate = selectionDelegate;
+        mDownloadLaterDialogHelper = downloadLaterDialogHelper;
         mUiConfig = config;
 
         mSource = new OfflineItemSource(mProvider);
@@ -218,6 +225,7 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.PROVIDER_FAVICON, this::getFavicon);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
         mModel.getProperties().set(ListProperties.CALLBACK_RENAME, this::onRenameItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_CHANGE, this::onChangeItem);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_PAGINATION_CLICK, mListMutationController::loadMorePages);
         mModel.getProperties().set(ListProperties.CALLBACK_GROUP_PAGINATION_CLICK,
@@ -229,6 +237,7 @@ class DateOrderedListMediator {
         mSource.destroy();
         mProvider.destroy();
         mThumbnailProvider.destroy();
+        mDownloadLaterDialogHelper.destroy();
     }
 
     /**
@@ -325,7 +334,7 @@ class DateOrderedListMediator {
 
     private void onDeleteItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.MENU_DELETE);
-        deleteItemsInternal(CollectionUtil.newArrayList(item));
+        deleteItemsInternal(Collections.singletonList(item));
     }
 
     private void onShareItem(OfflineItem item) {
@@ -338,6 +347,17 @@ class DateOrderedListMediator {
         mRenameController.rename(item.title, (newName, renameCallback) -> {
             mProvider.renameItem(item, newName, renameCallback);
         });
+    }
+
+    private void onChangeItem(OfflineItem item) {
+        UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_HOME_CHANGE_SCHEDULE_CLICKED);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                item.schedule, Source.DOWNLOAD_HOME, (newSchedule) -> {
+                    if (newSchedule == null) return;
+                    mProvider.changeSchedule(item, newSchedule);
+                });
     }
 
     /**
@@ -353,11 +373,7 @@ class DateOrderedListMediator {
         mDeleteController.canDelete(items, delete -> {
             if (delete) {
                 for (OfflineItem item : itemsToDelete) {
-                    if (item.state != OfflineItemState.COMPLETE) {
-                        mProvider.cancelDownload(item);
-                    } else {
-                        mProvider.removeItem(item);
-                    }
+                    mProvider.removeItem(item);
 
                     // Remove and have a single decision path for cleaning up thumbnails when the
                     // glue layer is no longer needed.

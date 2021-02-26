@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/notification_platform_bridge_mac.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac_unnotification.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/i18n/number_formatting.h"
+#include "base/feature_list.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -24,13 +24,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac_utils.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
@@ -38,17 +37,13 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crash/core/app/crashpad.h"
-#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 @class NSUserNotification;
 @class NSUserNotificationCenter;
@@ -70,35 +65,6 @@
 
 namespace {
 
-// Loads the profile and process the Notification response
-void DoProcessNotificationResponse(NotificationCommon::Operation operation,
-                                   NotificationHandler::Type type,
-                                   const std::string& profile_id,
-                                   bool incognito,
-                                   const GURL& origin,
-                                   const std::string& notification_id,
-                                   const base::Optional<int>& action_index,
-                                   const base::Optional<base::string16>& reply,
-                                   const base::Optional<bool>& by_user) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Profile ID can be empty for system notifications, which are not bound to a
-  // profile, but system notifications are transient and thus not handled by
-  // this NotificationPlatformBridge.
-  // When transient notifications are supported, this should route the
-  // notification response to the system NotificationDisplayService.
-  DCHECK(!profile_id.empty());
-
-  ProfileManager* profileManager = g_browser_process->profile_manager();
-  DCHECK(profileManager);
-
-  profileManager->LoadProfile(
-      profile_id, incognito,
-      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                 operation, type, origin, notification_id, action_index, reply,
-                 by_user));
-}
-
 // This enum backs an UMA histogram, so it should be treated as append-only.
 enum XPCConnectionEvent {
   INTERRUPTED = 0,
@@ -111,20 +77,6 @@ void RecordXPCEvent(XPCConnectionEvent event) {
                             XPC_CONNECTION_EVENT_COUNT);
 }
 
-base::string16 CreateNotificationTitle(
-    const message_center::Notification& notification) {
-  base::string16 title;
-  // Show progress percentage if available. We don't support indeterminate
-  // states on macOS native notifications.
-  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS &&
-      notification.progress() >= 0 && notification.progress() <= 100) {
-    title += base::FormatPercent(notification.progress());
-    title += base::UTF8ToUTF16(" - ");
-  }
-  title += notification.title();
-  return title;
-}
-
 bool IsPersistentNotification(
     const message_center::Notification& notification) {
   if (!NotificationPlatformBridgeMac::SupportsAlerts())
@@ -132,48 +84,6 @@ bool IsPersistentNotification(
 
   return notification.never_timeout() ||
          notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
-}
-
-base::string16 CreateNotificationContext(
-    const message_center::Notification& notification,
-    bool requires_attribution) {
-  if (!requires_attribution)
-    return notification.context_message();
-
-  // Mac OS notifications don't provide a good way to elide the domain (or tell
-  // you the maximum width of the subtitle field). We have experimentally
-  // determined the maximum number of characters that fit using the widest
-  // possible character (m). If the domain fits in those character we show it
-  // completely. Otherwise we use eTLD + 1.
-
-  // These numbers have been obtained through experimentation on various
-  // Mac OS platforms.
-
-  constexpr size_t kMaxDomainLengthAlert = 19;
-  constexpr size_t kMaxDomainLengthBanner = 28;
-
-  size_t max_characters = IsPersistentNotification(notification)
-                              ? kMaxDomainLengthAlert
-                              : kMaxDomainLengthBanner;
-
-  base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin::Create(notification.origin_url()),
-      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-
-  if (origin.size() <= max_characters)
-    return origin;
-
-  // Too long, use etld+1
-  base::string16 etldplusone =
-      base::UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
-          notification.origin_url(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-
-  // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
-  if (etldplusone.empty())
-    return origin;
-
-  return etldplusone;
 }
 
 // Implements the version check to determine if alerts are supported. Do not
@@ -223,6 +133,11 @@ NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
 // static
 std::unique_ptr<NotificationPlatformBridge>
 NotificationPlatformBridge::Create() {
+  if (@available(macOS 10.14, *)) {
+    if (base::FeatureList::IsEnabled(features::kNewMacNotificationAPI)) {
+      return std::make_unique<NotificationPlatformBridgeMacUNNotification>();
+    }
+  }
   base::scoped_nsobject<AlertDispatcherImpl> alert_dispatcher(
       [[AlertDispatcherImpl alloc] init]);
   return std::make_unique<NotificationPlatformBridgeMac>(
@@ -248,8 +163,8 @@ void NotificationPlatformBridgeMac::Display(
            settingsLabel:l10n_util::GetNSString(
                              IDS_NOTIFICATION_BUTTON_SETTINGS)]);
 
-  [builder
-      setTitle:base::SysUTF16ToNSString(CreateNotificationTitle(notification))];
+  [builder setTitle:base::SysUTF16ToNSString(
+                        CreateMacNotificationTitle(notification))];
 
   base::string16 context_message =
       notification.items().empty()
@@ -262,10 +177,16 @@ void NotificationPlatformBridgeMac::Display(
   bool requires_attribution =
       notification.context_message().empty() &&
       notification_type != NotificationHandler::Type::EXTENSION;
-  [builder setSubTitle:base::SysUTF16ToNSString(CreateNotificationContext(
-                           notification, requires_attribution))];
+
+  bool is_persistent = IsPersistentNotification(notification);
+
+  [builder setSubTitle:base::SysUTF16ToNSString(CreateMacNotificationContext(
+                           is_persistent, notification, requires_attribution))];
 
   if (!notification.icon().IsEmpty()) {
+    // TODO(crbug/1138176): Resize images by adding a transparent border so that
+    // its dimensions are uniform and do not get resized once sent to the
+    // notification center
     [builder setIcon:notification.icon().ToNSImage()];
   }
 
@@ -303,6 +224,8 @@ void NotificationPlatformBridgeMac::Display(
   [builder setNotificationId:base::SysUTF8ToNSString(notification.id())];
   [builder setProfileId:base::SysUTF8ToNSString(GetProfileId(profile))];
   [builder setIncognito:profile->IsOffTheRecord()];
+  [builder setCreatorPid:[NSNumber numberWithInteger:static_cast<NSInteger>(
+                                                         getpid())]];
   [builder
       setNotificationType:[NSNumber numberWithInteger:static_cast<NSInteger>(
                                                           notification_type)]];
@@ -367,116 +290,6 @@ void NotificationPlatformBridgeMac::SetReadyCallback(
 void NotificationPlatformBridgeMac::DisplayServiceShutDown(Profile* profile) {}
 
 // static
-void NotificationPlatformBridgeMac::ProcessNotificationResponse(
-    NSDictionary* response) {
-  if (!NotificationPlatformBridgeMac::VerifyNotificationData(response))
-    return;
-
-  NSNumber* button_index =
-      [response objectForKey:notification_constants::kNotificationButtonIndex];
-  NSNumber* operation =
-      [response objectForKey:notification_constants::kNotificationOperation];
-
-  std::string notification_origin = base::SysNSStringToUTF8(
-      [response objectForKey:notification_constants::kNotificationOrigin]);
-  std::string notification_id = base::SysNSStringToUTF8(
-      [response objectForKey:notification_constants::kNotificationId]);
-  std::string profile_id = base::SysNSStringToUTF8(
-      [response objectForKey:notification_constants::kNotificationProfileId]);
-  NSNumber* is_incognito =
-      [response objectForKey:notification_constants::kNotificationIncognito];
-  NSNumber* notification_type =
-      [response objectForKey:notification_constants::kNotificationType];
-
-  base::Optional<int> action_index;
-  if (button_index.intValue !=
-      notification_constants::kNotificationInvalidButtonIndex) {
-    action_index = button_index.intValue;
-  }
-
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(DoProcessNotificationResponse,
-                     static_cast<NotificationCommon::Operation>(
-                         operation.unsignedIntValue),
-                     static_cast<NotificationHandler::Type>(
-                         notification_type.unsignedIntValue),
-                     profile_id, [is_incognito boolValue],
-                     GURL(notification_origin), notification_id, action_index,
-                     base::nullopt /* reply */, true /* by_user */));
-}
-
-// static
-bool NotificationPlatformBridgeMac::VerifyNotificationData(
-    NSDictionary* response) {
-  if (![response
-          objectForKey:notification_constants::kNotificationButtonIndex] ||
-      ![response objectForKey:notification_constants::kNotificationOperation] ||
-      ![response objectForKey:notification_constants::kNotificationId] ||
-      ![response objectForKey:notification_constants::kNotificationProfileId] ||
-      ![response objectForKey:notification_constants::kNotificationIncognito] ||
-      ![response objectForKey:notification_constants::kNotificationType]) {
-    LOG(ERROR) << "Missing required key";
-    return false;
-  }
-
-  NSNumber* button_index =
-      [response objectForKey:notification_constants::kNotificationButtonIndex];
-  NSNumber* operation =
-      [response objectForKey:notification_constants::kNotificationOperation];
-  NSString* notification_id =
-      [response objectForKey:notification_constants::kNotificationId];
-  NSString* profile_id =
-      [response objectForKey:notification_constants::kNotificationProfileId];
-  NSNumber* notification_type =
-      [response objectForKey:notification_constants::kNotificationType];
-
-  if (button_index.intValue <
-          notification_constants::kNotificationInvalidButtonIndex ||
-      button_index.intValue >=
-          static_cast<int>(blink::kNotificationMaxActions)) {
-    LOG(ERROR) << "Invalid number of buttons supplied "
-               << button_index.intValue;
-    return false;
-  }
-
-  if (operation.unsignedIntValue > NotificationCommon::OPERATION_MAX) {
-    LOG(ERROR) << operation.unsignedIntValue
-               << " does not correspond to a valid operation.";
-    return false;
-  }
-
-  if (notification_id.length <= 0) {
-    LOG(ERROR) << "Notification Id is empty";
-    return false;
-  }
-
-  if (profile_id.length <= 0) {
-    LOG(ERROR) << "ProfileId not provided";
-    return false;
-  }
-
-  if (notification_type.unsignedIntValue >
-      static_cast<unsigned int>(NotificationHandler::Type::MAX)) {
-    LOG(ERROR) << notification_type.unsignedIntValue
-               << " Does not correspond to a valid operation.";
-    return false;
-  }
-
-  // Origin is not actually required but if it's there it should be a valid one.
-  NSString* origin =
-      [response objectForKey:notification_constants::kNotificationOrigin];
-  if (origin && origin.length) {
-    std::string notificationOrigin = base::SysNSStringToUTF8(origin);
-    GURL url(notificationOrigin);
-    if (!url.is_valid())
-      return false;
-  }
-
-  return true;
-}
-
-// static
 bool NotificationPlatformBridgeMac::SupportsAlerts() {
   // Cache result as SysInfo::OperatingSystemVersionNumbers might be expensive.
   static bool supports_alerts = SupportsAlertsImpl();
@@ -489,8 +302,7 @@ bool NotificationPlatformBridgeMac::SupportsAlerts() {
        didActivateNotification:(NSUserNotification*)notification {
   NSDictionary* notificationResponse =
       [NotificationResponseBuilder buildActivatedDictionary:notification];
-  NotificationPlatformBridgeMac::ProcessNotificationResponse(
-      notificationResponse);
+  ProcessMacNotificationResponse(notificationResponse);
 }
 
 // Overriden from _NSUserNotificationCenterDelegatePrivate.
@@ -503,8 +315,7 @@ bool NotificationPlatformBridgeMac::SupportsAlerts() {
                didDismissAlert:(NSUserNotification*)notification {
   NSDictionary* notificationResponse =
       [NotificationResponseBuilder buildDismissedDictionary:notification];
-  NotificationPlatformBridgeMac::ProcessNotificationResponse(
-      notificationResponse);
+  ProcessMacNotificationResponse(notificationResponse);
 }
 
 // Overriden from _NSUserNotificationCenterDelegatePrivate.
@@ -516,8 +327,7 @@ bool NotificationPlatformBridgeMac::SupportsAlerts() {
   for (NSUserNotification* notification in notifications) {
     NSDictionary* notificationResponse =
         [NotificationResponseBuilder buildDismissedDictionary:notification];
-    NotificationPlatformBridgeMac::ProcessNotificationResponse(
-        notificationResponse);
+    ProcessMacNotificationResponse(notificationResponse);
   }
 }
 
@@ -617,8 +427,8 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
     for (NSString* alert in alerts)
       displayedNotifications.insert(base::SysNSStringToUTF8(alert));
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(copyable_callback, std::move(displayedNotifications),
                        true /* supports_synchronization */));
   };
@@ -630,8 +440,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
 
 // NotificationReply:
 - (void)notificationClick:(NSDictionary*)notificationResponseData {
-  NotificationPlatformBridgeMac::ProcessNotificationResponse(
-      notificationResponseData);
+  ProcessMacNotificationResponse(notificationResponseData);
 }
 
 // Private methods:
@@ -647,7 +456,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
         crash_reporter::GetCrashpadClient().GetHandlerMachPort());
     base::scoped_nsobject<CrXPCMachPort> xpcPort(
         [[CrXPCMachPort alloc] initWithMachSendRight:std::move(exceptionPort)]);
-    [proxy setMachExceptionPort:xpcPort];
+    [proxy setUseUNNotification:NO machExceptionPort:xpcPort];
     _setExceptionPort = YES;
   }
 

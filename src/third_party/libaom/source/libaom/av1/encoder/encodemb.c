@@ -84,8 +84,7 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE plane_bsize, int plane) {
 
 int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                    int block, TX_SIZE tx_size, TX_TYPE tx_type,
-                   const TXB_CTX *const txb_ctx, int fast_mode,
-                   int *rate_cost) {
+                   const TXB_CTX *const txb_ctx, int *rate_cost) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   const int eob = p->eobs[block];
@@ -93,12 +92,12 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   if (eob == 0 || !cpi->optimize_seg_arr[segment_id] ||
       xd->lossless[segment_id]) {
-    *rate_cost = av1_cost_skip_txb(x, txb_ctx, plane, tx_size);
+    *rate_cost = av1_cost_skip_txb(&x->coeff_costs, txb_ctx, plane, tx_size);
     return eob;
   }
 
   return av1_optimize_txb_new(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
-                              rate_cost, cpi->oxcf.sharpness, fast_mode);
+                              rate_cost, cpi->oxcf.algo_cfg.sharpness);
 }
 
 // Hyper-parameters for dropout optimization, based on following logics.
@@ -224,7 +223,7 @@ void av1_dropout_qcoeff(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
   if (eob != p->eobs[block]) {
     p->eobs[block] = eob;
     p->txb_entropy_ctx[block] =
-        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, eob);
+        av1_get_txb_entropy_context(qcoeff, scan_order, eob);
   }
 }
 
@@ -260,9 +259,41 @@ static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES] = {
 };
 #endif
 
+// Computes the transform for DC only blocks
+void av1_xform_dc_only(MACROBLOCK *x, int plane, int block,
+                       TxfmParam *txfm_param, int64_t per_px_mean) {
+  assert(per_px_mean != INT64_MAX);
+  const struct macroblock_plane *const p = &x->plane[plane];
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *const coeff = p->coeff + block_offset;
+  const int n_coeffs = av1_get_max_eob(txfm_param->tx_size);
+  memset(coeff, 0, sizeof(*coeff) * n_coeffs);
+  coeff[0] =
+      (tran_low_t)((per_px_mean * dc_coeff_scale[txfm_param->tx_size]) >> 12);
+}
+
 void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
                      int blk_col, BLOCK_SIZE plane_bsize, TxfmParam *txfm_param,
                      QUANT_PARAM *qparam) {
+  av1_xform(x, plane, block, blk_row, blk_col, plane_bsize, txfm_param);
+  av1_quant(x, plane, block, txfm_param, qparam);
+}
+
+void av1_xform(MACROBLOCK *x, int plane, int block, int blk_row, int blk_col,
+               BLOCK_SIZE plane_bsize, TxfmParam *txfm_param) {
+  const struct macroblock_plane *const p = &x->plane[plane];
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *const coeff = p->coeff + block_offset;
+  const int diff_stride = block_size_wide[plane_bsize];
+
+  const int src_offset = (blk_row * diff_stride + blk_col);
+  const int16_t *src_diff = &p->src_diff[src_offset << MI_SIZE_LOG2];
+
+  av1_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
+}
+
+void av1_quant(MACROBLOCK *x, int plane, int block, TxfmParam *txfm_param,
+               QUANT_PARAM *qparam) {
   const struct macroblock_plane *const p = &x->plane[plane];
   const SCAN_ORDER *const scan_order =
       get_scan(txfm_param->tx_size, txfm_param->tx_type);
@@ -271,16 +302,10 @@ void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
   tran_low_t *const qcoeff = p->qcoeff + block_offset;
   tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
   uint16_t *const eob = &p->eobs[block];
-  const int diff_stride = block_size_wide[plane_bsize];
-
-  const int src_offset = (blk_row * diff_stride + blk_col);
-  const int16_t *src_diff = &p->src_diff[src_offset << MI_SIZE_LOG2];
-
-  av1_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
 
   if (qparam->xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     const int n_coeffs = av1_get_max_eob(txfm_param->tx_size);
-    if (LIKELY(!x->skip_block)) {
+    if (LIKELY(!x->seg_skip_block)) {
 #if CONFIG_AV1_HIGHBITDEPTH
       quant_func_list[qparam->xform_quant_idx][txfm_param->is_hbd](
           coeff, n_coeffs, p, qcoeff, dqcoeff, eob, scan_order, qparam);
@@ -298,9 +323,8 @@ void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
     p->txb_entropy_ctx[block] = 0;
   } else {
     p->txb_entropy_ctx[block] =
-        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
+        av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
   }
-  return;
 }
 
 void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,
@@ -366,7 +390,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   l = &args->tl[blk_row];
 
   TX_TYPE tx_type = DCT_DCT;
-  if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
+  if (!is_blk_skip(x->txfm_search_info.blk_skip, plane,
+                   blk_row * bw + blk_col) &&
+      !mbmi->skip_mode) {
     tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col, tx_size,
                               cm->features.reduced_tx_set_used);
     TxfmParam txfm_param;
@@ -379,8 +405,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       quant_idx =
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->oxcf.quant_b_adapt,
-                    &quant_param);
+    av1_setup_quant(tx_size, use_trellis, quant_idx,
+                    cpi->oxcf.q_cfg.quant_b_adapt, &quant_param);
     av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, tx_type,
                       &quant_param);
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
@@ -396,7 +422,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
-                     args->cpi->sf.rd_sf.trellis_eob_fast, &dummy_rate_cost);
+                     &dummy_rate_cost);
     }
     if (!quant_param.use_optimize_b && do_dropout) {
       av1_dropout_qcoeff(x, plane, block, tx_size, tx_type,
@@ -423,8 +449,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   // again.
   if (p->eobs[block] == 0 && plane == 0) {
 #if 0
-    if (args->cpi->oxcf.aq_mode == NO_AQ &&
-        args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
+    if (args->cpi->oxcf.q_cfg.aq_mode == NO_AQ &&
+        args->cpi->oxcf.q_cfg.deltaq_mode == NO_DELTA_Q) {
       // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
       // enable_optimize_b is true to detect potential RD bug.
       const uint8_t disable_txk_check = args->enable_optimize_b;
@@ -466,7 +492,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd->subsampling_x,
+      plane ? av1_get_max_uv_txsize(mbmi->bsize, pd->subsampling_x,
                                     pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
@@ -570,7 +596,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   QUANT_PARAM quant_param;
 
   av1_setup_xform(cm, x, tx_size, DCT_DCT, &txfm_param);
-  av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, cpi->oxcf.quant_b_adapt,
+  av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, cpi->oxcf.q_cfg.quant_b_adapt,
                   &quant_param);
   av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, DCT_DCT,
                     &quant_param);
@@ -601,7 +627,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->skip_txfm = 1;
-  if (x->skip_txfm) return;
+  if (x->txfm_search_info.skip_txfm) return;
 
   struct optimize_ctx ctx;
   struct encode_b_args arg = {
@@ -690,7 +716,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   TX_TYPE tx_type = DCT_DCT;
   const int bw = mi_size_wide[plane_bsize];
-  if (plane == 0 && is_blk_skip(x, plane, blk_row * bw + blk_col)) {
+  if (plane == 0 && is_blk_skip(x->txfm_search_info.blk_skip, plane,
+                                blk_row * bw + blk_col)) {
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;
   } else {
@@ -712,8 +739,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
 
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->oxcf.quant_b_adapt,
-                    &quant_param);
+    av1_setup_quant(tx_size, use_trellis, quant_idx,
+                    cpi->oxcf.q_cfg.quant_b_adapt, &quant_param);
     av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, tx_type,
                       &quant_param);
 
@@ -739,7 +766,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
-                     args->cpi->sf.rd_sf.trellis_eob_fast, &dummy_rate_cost);
+                     &dummy_rate_cost);
     }
     if (do_dropout) {
       av1_dropout_qcoeff(x, plane, block, tx_size, tx_type,
@@ -760,8 +787,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   // again.
   if (*eob == 0 && plane == 0) {
 #if 0
-    if (args->cpi->oxcf.aq_mode == NO_AQ
-        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
+    if (args->cpi->oxcf.q_cfg.aq_mode == NO_AQ
+        && args->cpi->oxcf.q_cfg.deltaq_mode == NO_DELTA_Q) {
       assert(xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col)] ==
           DCT_DCT);
     }

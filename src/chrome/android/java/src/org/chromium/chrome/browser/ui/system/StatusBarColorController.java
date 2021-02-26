@@ -14,11 +14,13 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CallbackController;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
@@ -31,13 +33,13 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 
 /**
- * Maintains the status bar color for a {@link ChromeActivity}.
+ * Maintains the status bar color for a {@link Window}.
  */
 public class StatusBarColorController
         implements Destroyable, TopToolbarCoordinator.UrlExpansionObserver,
@@ -66,9 +68,8 @@ public class StatusBarColorController
 
     private final Window mWindow;
     private final boolean mIsTablet;
-    private final @Nullable OverviewModeBehavior mOverviewModeBehavior;
+    private @Nullable OverviewModeBehavior mOverviewModeBehavior;
     private final StatusBarColorProvider mStatusBarColorProvider;
-    private final ScrimView.StatusBarScrimDelegate mStatusBarScrimDelegate;
     private final ActivityTabProvider.ActivityTabTabObserver mStatusBarColorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
 
@@ -78,6 +79,7 @@ public class StatusBarColorController
     private final @ColorInt int mIncognitoDefaultThemeColor;
 
     private @Nullable TabModelSelector mTabModelSelector;
+    private CallbackController mCallbackController = new CallbackController();
     private @Nullable OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
     private @Nullable Tab mCurrentTab;
     private boolean mIsInOverviewMode;
@@ -92,21 +94,25 @@ public class StatusBarColorController
     private @ColorInt int mStatusBarColorWithoutStatusIndicator;
 
     /**
-     * @param chromeActivity The {@link ChromeActivity} that this class is attached to.
+     * Constructs a StatusBarColorController.
+     *
+     * @param window The Android app window, used to access decor view and set the status color.
+     * @param isTablet Whether the current context is on a tablet.
+     * @param resources An Android resources object, used to load colors.
+     * @param statusBarColorProvider An implementation of {@link StatusBarColorProvider}.
+     * @param overviewModeBehaviorSupplier Supplies the overview mode behavior.
+     * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      */
-    public StatusBarColorController(
-            ChromeActivity chromeActivity, ActivityTabProvider tabProvider) {
-        mWindow = chromeActivity.getWindow();
-        mIsTablet = chromeActivity.isTablet();
-        mOverviewModeBehavior = chromeActivity.getOverviewModeBehavior();
-        mStatusBarColorProvider = chromeActivity;
-        mStatusBarScrimDelegate = (fraction) -> {
-            mStatusBarScrimFraction = fraction;
-            updateStatusBarColor();
-        };
+    public StatusBarColorController(Window window, boolean isTablet, Resources resources,
+            StatusBarColorProvider statusBarColorProvider,
+            OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            ActivityTabProvider tabProvider) {
+        mWindow = window;
+        mIsTablet = isTablet;
+        mStatusBarColorProvider = statusBarColorProvider;
 
-        Resources resources = chromeActivity.getResources();
         mStandardPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, false);
         mIncognitoPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, true);
         mStandardDefaultThemeColor = ChromeColors.getDefaultThemeColor(resources, false);
@@ -139,6 +145,13 @@ public class StatusBarColorController
             }
 
             @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                // Stop referring to the Tab once detached from an activity. Will be restored
+                // by |onObservingDifferentTab|.
+                if (window == null) mCurrentTab = null;
+            }
+
+            @Override
             public void onDestroyed(Tab tab) {
                 // Make sure that #mCurrentTab is cleared because #onObservingDifferentTab() might
                 // not be notified early enough when #onUrlExpansionPercentageChanged() is called.
@@ -147,7 +160,7 @@ public class StatusBarColorController
             }
 
             @Override
-            protected void onObservingDifferentTab(Tab tab) {
+            protected void onObservingDifferentTab(Tab tab, boolean hint) {
                 mCurrentTab = tab;
                 mShouldUpdateStatusBarColorForNTP = isStandardNTP();
 
@@ -171,24 +184,29 @@ public class StatusBarColorController
             }
         };
 
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeObserver = new EmptyOverviewModeObserver() {
-                @Override
-                public void onOverviewModeStartedShowing(boolean showToolbar) {
-                    mIsInOverviewMode = true;
-                    updateStatusBarColor();
-                }
+        if (overviewModeBehaviorSupplier != null) {
+            overviewModeBehaviorSupplier.onAvailable(
+                    mCallbackController.makeCancelable(overviewModeBehavior -> {
+                        assert overviewModeBehavior != null;
+                        mOverviewModeBehavior = overviewModeBehavior;
+                        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                            @Override
+                            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                                mIsInOverviewMode = true;
+                                updateStatusBarColor();
+                            }
 
-                @Override
-                public void onOverviewModeFinishedHiding() {
-                    mIsInOverviewMode = false;
-                    updateStatusBarColor();
-                }
-            };
-            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+                            @Override
+                            public void onOverviewModeFinishedHiding() {
+                                mIsInOverviewMode = false;
+                                updateStatusBarColor();
+                            }
+                        };
+                        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+                    }));
         }
 
-        chromeActivity.getLifecycleDispatcher().register(this);
+        activityLifecycleDispatcher.register(this);
     }
 
     // Destroyable implementation.
@@ -201,12 +219,16 @@ public class StatusBarColorController
         if (mTabModelSelector != null) {
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         }
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
     }
 
     // TopToolbarCoordinator.UrlExpansionObserver implementation.
     @Override
-    public void onUrlExpansionPercentageChanged(float percentage) {
-        mToolbarUrlExpansionPercentage = percentage;
+    public void onUrlExpansionProgressChanged(float fraction) {
+        mToolbarUrlExpansionPercentage = fraction;
         if (mShouldUpdateStatusBarColorForNTP) updateStatusBarColor();
     }
 
@@ -219,6 +241,15 @@ public class StatusBarColorController
     }
 
     /**
+     * Update the scrim amount on the status bar.
+     * @param fraction The scrim fraction in range [0, 1].
+     */
+    public void setStatusBarScrimFraction(float fraction) {
+        mStatusBarScrimFraction = fraction;
+        updateStatusBarColor();
+    }
+
+    /**
      * @param tabModelSelector The {@link TabModelSelector} to check whether incognito model is
      *                         selected.
      */
@@ -226,14 +257,6 @@ public class StatusBarColorController
         assert mTabModelSelector == null : "mTabModelSelector should only be set once.";
         mTabModelSelector = tabModelSelector;
         if (mTabModelSelector != null) mTabModelSelector.addObserver(mTabModelSelectorObserver);
-    }
-
-    /**
-     * @return The {@link ScrimView.StatusBarScrimDelegate} that adjusts the status bar color based
-     *         on the scrim offset.
-     */
-    public ScrimView.StatusBarScrimDelegate getStatusBarScrimDelegate() {
-        return mStatusBarScrimDelegate;
     }
 
     public void updateStatusBarColor() {

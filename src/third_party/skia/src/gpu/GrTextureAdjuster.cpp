@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrProxyProvider.h"
@@ -49,8 +49,8 @@ GrSurfaceProxyView GrTextureAdjuster::makeMippedCopy() {
     return copy;
 }
 
-GrSurfaceProxyView GrTextureAdjuster::onView(GrMipMapped mipMapped) {
-    if (this->context()->priv().abandoned()) {
+GrSurfaceProxyView GrTextureAdjuster::onView(GrMipmapped mipMapped) {
+    if (this->context()->abandoned()) {
         // The texture was abandoned.
         return {};
     }
@@ -60,7 +60,7 @@ GrSurfaceProxyView GrTextureAdjuster::onView(GrMipMapped mipMapped) {
 
     GrTextureProxy* texProxy = fOriginal.asTextureProxy();
     SkASSERT(texProxy);
-    if (mipMapped == GrMipMapped::kNo || texProxy->mipMapped() == GrMipMapped::kYes) {
+    if (mipMapped == GrMipmapped::kNo || texProxy->mipmapped() == GrMipmapped::kYes) {
         return fOriginal;
     }
 
@@ -68,7 +68,7 @@ GrSurfaceProxyView GrTextureAdjuster::onView(GrMipMapped mipMapped) {
     if (!copy) {
         // If we were unable to make a copy and we only needed a copy for mips, then we will return
         // the source texture here and require that the GPU backend is able to fall back to using
-        // bilerp if mips are required.
+        // linear filtering if mips are required.
         return fOriginal;
     }
     SkASSERT(copy.asTextureProxy());
@@ -77,44 +77,20 @@ GrSurfaceProxyView GrTextureAdjuster::onView(GrMipMapped mipMapped) {
 
 std::unique_ptr<GrFragmentProcessor> GrTextureAdjuster::createFragmentProcessor(
         const SkMatrix& textureMatrix,
-        const SkRect& constraintRect,
-        FilterConstraint filterConstraint,
-        bool coordsLimitedToConstraintRect,
+        const SkRect* subset,
+        const SkRect* domain,
+        GrSamplerState samplerState) {
+    return this->createFragmentProcessorForView(
+            this->view(samplerState.mipmapped()), textureMatrix, subset, domain, samplerState);
+}
+
+std::unique_ptr<GrFragmentProcessor> GrTextureAdjuster::createBicubicFragmentProcessor(
+        const SkMatrix& textureMatrix,
+        const SkRect* subset,
+        const SkRect* domain,
         GrSamplerState::WrapMode wrapX,
         GrSamplerState::WrapMode wrapY,
-        const GrSamplerState::Filter* filterOrNullForBicubic) {
-    GrSurfaceProxyView view;
-    if (filterOrNullForBicubic) {
-        view = this->view(*filterOrNullForBicubic);
-    } else {
-        view = this->view(GrMipMapped::kNo);
-    }
-    if (!view) {
-        return nullptr;
-    }
-    SkASSERT(view.asTextureProxy());
-
-    SkRect domain;
-    DomainMode domainMode =
-        DetermineDomainMode(constraintRect, filterConstraint, coordsLimitedToConstraintRect,
-                            view.proxy(), filterOrNullForBicubic, &domain);
-    if (kTightCopy_DomainMode == domainMode) {
-        // TODO: Copy the texture and adjust the texture matrix (both parts need to consider
-        // non-int constraint rect)
-        // For now: treat as bilerp and ignore what goes on above level 0.
-
-        // We only expect MIP maps to require a tight copy.
-        SkASSERT(filterOrNullForBicubic &&
-                 GrSamplerState::Filter::kMipMap == *filterOrNullForBicubic);
-        static const GrSamplerState::Filter kBilerp = GrSamplerState::Filter::kBilerp;
-        domainMode =
-            DetermineDomainMode(constraintRect, filterConstraint, coordsLimitedToConstraintRect,
-                                view.proxy(), &kBilerp, &domain);
-        SkASSERT(kTightCopy_DomainMode != domainMode);
-    }
-    SkASSERT(kNoDomain_DomainMode == domainMode ||
-             (domain.fLeft <= domain.fRight && domain.fTop <= domain.fBottom));
-    return this->createFragmentProcessorForSubsetAndFilter(std::move(view), textureMatrix,
-                                                           domainMode, domain, wrapX, wrapY,
-                                                           filterOrNullForBicubic);
+        SkImage::CubicResampler kernel) {
+    return this->createBicubicFragmentProcessorForView(
+            this->view(GrMipmapped::kNo), textureMatrix, subset, domain, wrapX, wrapY, kernel);
 }

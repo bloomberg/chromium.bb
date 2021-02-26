@@ -33,7 +33,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "content/public/common/frame_navigate_params.h"
 
 using content::DevToolsAgentHost;
 using content::WebContents;
@@ -671,8 +670,9 @@ void InspectUI::PopulateAdditionalTargets(const base::Value& targets) {
   web_ui()->CallJavascriptFunctionUnsafe("populateAdditionalTargets", targets);
 }
 
-void InspectUI::PopulatePortStatus(const base::Value& status) {
-  web_ui()->CallJavascriptFunctionUnsafe("populatePortStatus", status);
+void InspectUI::PopulatePortStatus(base::Value status) {
+  web_ui()->CallJavascriptFunctionUnsafe("populatePortStatus",
+                                         std::move(status));
 }
 
 void InspectUI::ShowIncognitoWarning() {

@@ -39,16 +39,16 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class SiteSettingsCategory {
     @IntDef({Type.ALL_SITES, Type.ADS, Type.AUGMENTED_REALITY, Type.AUTOMATIC_DOWNLOADS,
-            Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING, Type.CAMERA, Type.CLIPBOARD,
-            Type.COOKIES, Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC,
-            Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND,
-            Type.USB, Type.VIRTUAL_REALITY, Type.USE_STORAGE})
+            Type.BACKGROUND_SYNC, Type.BLUETOOTH, Type.BLUETOOTH_SCANNING, Type.CAMERA,
+            Type.CLIPBOARD, Type.COOKIES, Type.IDLE_DETECTION, Type.DEVICE_LOCATION,
+            Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC, Type.NOTIFICATIONS, Type.POPUPS,
+            Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND, Type.USB, Type.VIRTUAL_REALITY,
+            Type.USE_STORAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
-        // Values used to address array index - should be enumerated from 0 and can't have gaps.
         // All updates here must also be reflected in {@link #preferenceKey(int)
         // preferenceKey} and {@link #contentSettingsType(int) contentSettingsType}.
-        int ALL_SITES = 0; // Always first as it should appear in the UI at the top.
+        int ALL_SITES = 0;
         int ADS = 1;
         int AUGMENTED_REALITY = 2;
         int AUTOMATIC_DOWNLOADS = 3;
@@ -58,21 +58,23 @@ public class SiteSettingsCategory {
         int CLIPBOARD = 7;
         int COOKIES = 8;
         int DEVICE_LOCATION = 9;
-        int JAVASCRIPT = 10;
-        int MICROPHONE = 11;
-        int NFC = 12;
-        int NOTIFICATIONS = 13;
-        int POPUPS = 14;
-        int PROTECTED_MEDIA = 15;
-        int SENSORS = 16;
-        int SOUND = 17;
-        int USB = 18;
-        int VIRTUAL_REALITY = 19;
-        int USE_STORAGE = 20; // Always last as it should appear in the UI at the bottom.
+        int IDLE_DETECTION = 10;
+        int JAVASCRIPT = 11;
+        int MICROPHONE = 12;
+        int NFC = 13;
+        int NOTIFICATIONS = 14;
+        int POPUPS = 15;
+        int PROTECTED_MEDIA = 16;
+        int SENSORS = 17;
+        int SOUND = 18;
+        int USB = 19;
+        int BLUETOOTH = 20;
+        int VIRTUAL_REALITY = 21;
+        int USE_STORAGE = 22;
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 21;
+        int NUM_ENTRIES = 23;
     }
 
     private final BrowserContextHandle mBrowserContextHandle;
@@ -156,6 +158,8 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.AUTOMATIC_DOWNLOADS;
             case Type.BACKGROUND_SYNC:
                 return ContentSettingsType.BACKGROUND_SYNC;
+            case Type.BLUETOOTH:
+                return ContentSettingsType.BLUETOOTH_GUARD;
             case Type.BLUETOOTH_SCANNING:
                 return ContentSettingsType.BLUETOOTH_SCANNING;
             case Type.CAMERA:
@@ -166,6 +170,8 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.COOKIES;
             case Type.DEVICE_LOCATION:
                 return ContentSettingsType.GEOLOCATION;
+            case Type.IDLE_DETECTION:
+                return ContentSettingsType.IDLE_DETECTION;
             case Type.JAVASCRIPT:
                 return ContentSettingsType.JAVASCRIPT;
             case Type.MICROPHONE:
@@ -201,6 +207,8 @@ public class SiteSettingsCategory {
         switch (type) {
             case ContentSettingsType.USB_GUARD:
                 return ContentSettingsType.USB_CHOOSER_DATA;
+            case ContentSettingsType.BLUETOOTH_GUARD:
+                return ContentSettingsType.BLUETOOTH_CHOOSER_DATA;
             default:
                 return -1; // Conversion unavailable.
         }
@@ -221,6 +229,8 @@ public class SiteSettingsCategory {
                 return "automatic_downloads";
             case Type.BACKGROUND_SYNC:
                 return "background_sync";
+            case Type.BLUETOOTH:
+                return "bluetooth";
             case Type.BLUETOOTH_SCANNING:
                 return "bluetooth_scanning";
             case Type.CAMERA:
@@ -231,6 +241,8 @@ public class SiteSettingsCategory {
                 return "cookies";
             case Type.DEVICE_LOCATION:
                 return "device_location";
+            case Type.IDLE_DETECTION:
+                return "idle_detection";
             case Type.JAVASCRIPT:
                 return "javascript";
             case Type.MICROPHONE:
@@ -294,24 +306,16 @@ public class SiteSettingsCategory {
      * custodian of a supervised account.
      */
     public boolean isManaged() {
-        if (showSites(Type.AUTOMATIC_DOWNLOADS)) {
-            return WebsitePreferenceBridge.isAutomaticDownloadsManaged(getBrowserContextHandle());
-        } else if (showSites(Type.BACKGROUND_SYNC)) {
-            return WebsitePreferenceBridge.isBackgroundSyncManaged(getBrowserContextHandle());
-        } else if (showSites(Type.COOKIES)) {
-            return !WebsitePreferenceBridge.isAcceptCookiesUserModifiable(
-                    getBrowserContextHandle());
-        } else if (showSites(Type.DEVICE_LOCATION)) {
-            return !WebsitePreferenceBridge.isAllowLocationUserModifiable(
-                    getBrowserContextHandle());
-        } else if (showSites(Type.JAVASCRIPT)) {
-            return WebsitePreferenceBridge.javaScriptManaged(getBrowserContextHandle());
-        } else if (showSites(Type.CAMERA)) {
-            return !WebsitePreferenceBridge.isCameraUserModifiable(getBrowserContextHandle());
-        } else if (showSites(Type.MICROPHONE)) {
-            return !WebsitePreferenceBridge.isMicUserModifiable(getBrowserContextHandle());
-        } else if (showSites(Type.POPUPS)) {
-            return WebsitePreferenceBridge.isPopupsManaged(getBrowserContextHandle());
+        // TODO(dullweber): Why do we check some permissions for managed state and some for user
+        // modifiability and some not at all?
+        if (showSites(Type.AUTOMATIC_DOWNLOADS) || showSites(Type.BACKGROUND_SYNC)
+                || showSites(Type.JAVASCRIPT) || showSites(Type.POPUPS)) {
+            return WebsitePreferenceBridge.isContentSettingManaged(
+                    getBrowserContextHandle(), getContentSettingsType());
+        } else if (showSites(Type.COOKIES) || showSites(Type.DEVICE_LOCATION)
+                || showSites(Type.CAMERA) || showSites(Type.MICROPHONE)) {
+            return !WebsitePreferenceBridge.isContentSettingUserModifiable(
+                    getBrowserContextHandle(), getContentSettingsType());
         }
         return false;
     }
@@ -321,16 +325,11 @@ public class SiteSettingsCategory {
      * enterprise admin) of the account if the account is supervised.
      */
     public boolean isManagedByCustodian() {
-        if (showSites(Type.COOKIES)) {
-            return WebsitePreferenceBridge.isAcceptCookiesManagedByCustodian(
-                    getBrowserContextHandle());
-        } else if (showSites(Type.DEVICE_LOCATION)) {
-            return WebsitePreferenceBridge.isAllowLocationManagedByCustodian(
-                    getBrowserContextHandle());
-        } else if (showSites(Type.CAMERA)) {
-            return WebsitePreferenceBridge.isCameraManagedByCustodian(getBrowserContextHandle());
-        } else if (showSites(Type.MICROPHONE)) {
-            return WebsitePreferenceBridge.isMicManagedByCustodian(getBrowserContextHandle());
+        // TODO(dullweber): Why do we only check these types?
+        if (showSites(Type.COOKIES) || showSites(Type.DEVICE_LOCATION) || showSites(Type.CAMERA)
+                || showSites(Type.MICROPHONE)) {
+            return WebsitePreferenceBridge.isContentSettingManagedByCustodian(
+                    getBrowserContextHandle(), getContentSettingsType());
         }
         return false;
     }
@@ -347,12 +346,14 @@ public class SiteSettingsCategory {
      * @param activity The current activity.
      * @param specificCategory Whether the warnings refer to a single category or is an aggregate
      *                         for many permissions.
+     * @param appName The name of the app to use in warning strings.
      */
     public void configurePermissionIsOffPreferences(Preference osWarning, Preference osWarningExtra,
-            Activity activity, boolean specificCategory) {
+            Activity activity, boolean specificCategory, String appName) {
         Intent perAppIntent = getIntentToEnableOsPerAppPermission(activity);
         Intent globalIntent = getIntentToEnableOsGlobalPermission(activity);
-        String perAppMessage = getMessageForEnablingOsPerAppPermission(activity, !specificCategory);
+        String perAppMessage =
+                getMessageForEnablingOsPerAppPermission(activity, !specificCategory, appName);
         String globalMessage = getMessageForEnablingOsGlobalPermission(activity);
         String unsupportedMessage = getMessageIfNotSupported(activity);
 
@@ -484,7 +485,8 @@ public class SiteSettingsCategory {
      * Returns the message to display when per-app permission is blocked.
      * @param plural Whether it applies to one per-app permission or multiple.
      */
-    protected String getMessageForEnablingOsPerAppPermission(Activity activity, boolean plural) {
+    protected String getMessageForEnablingOsPerAppPermission(
+            Activity activity, boolean plural, String appName) {
         @ContentSettingsType
         int type = this.getContentSettingsType();
         int permission_string = R.string.android_permission_off;
@@ -500,7 +502,7 @@ public class SiteSettingsCategory {
             permission_string = R.string.android_notifications_permission_off;
         }
         return activity.getResources().getString(
-                plural ? R.string.android_permission_off_plural : permission_string);
+                plural ? R.string.android_permission_off_plural : permission_string, appName);
     }
 
     /**

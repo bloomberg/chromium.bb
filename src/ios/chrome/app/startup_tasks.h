@@ -18,10 +18,10 @@ class ChromeBrowserState;
     (ChromeBrowserState*)browserState;
 // Starts Omaha and, if first run, sets install time.  For official builds only.
 - (void)initializeOmaha;
-// Donate initial Intents.
-- (void)donateIntents;
 // Registers to receive UIApplicationWillResignActiveNotification.
 - (void)registerForApplicationWillResignActiveNotification;
+// Logs the number of Chrome Siri Shortcuts to UMA.
+- (void)logSiriShortcuts;
 
 @end
 

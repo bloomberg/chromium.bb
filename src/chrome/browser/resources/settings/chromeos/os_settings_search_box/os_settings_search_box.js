@@ -7,6 +7,34 @@
 
 const mojom = chromeos.settings.mojom;
 
+const MAX_NUM_SEARCH_RESULTS = 5;
+
+const SEARCH_REQUEST_METRIC_NAME = 'ChromeOS.Settings.SearchRequests';
+
+const USER_ACTION_ON_SEARCH_RESULTS_SHOWN_METRIC_NAME =
+    'ChromeOS.Settings.UserActionOnSearchResultsShown';
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const OsSettingSearchRequestTypes = {
+  ANY_SEARCH_REQUEST: 0,
+  DISCARED_RESULTS_SEARCH_REQUEST: 1,
+  SHOWN_RESULTS_SEARCH_REQUEST: 2,
+};
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const OsSettingSearchBoxUserAction = {
+  SEARCH_RESULT_CLICKED: 0,
+  CLICKED_OUT_OF_SEARCH_BOX: 1,
+};
+
 /**
  * @fileoverview 'os-settings-search-box' is the container for the search input
  * and settings search results.
@@ -15,6 +43,13 @@ Polymer({
   is: 'os-settings-search-box',
 
   behaviors: [I18nBehavior],
+
+  /**
+   * Receiver responsible for observing search result availability changes.
+   * @private {
+   *  ?chromeos.settings.mojom.SearchResultsObserverReceiver}
+   */
+  searchResultObserverReceiver_: null,
 
   properties: {
     // True when the toolbar is displaying in narrow mode.
@@ -29,6 +64,12 @@ Polymer({
       type: Boolean,
       value: false,
       notify: true,
+      reflectToAttribute: true,
+    },
+
+    hasSearchQuery: {
+      type: Boolean,
+      value: false,
       reflectToAttribute: true,
     },
 
@@ -93,23 +134,78 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
+
+    /**
+     * The number of searches performed in one lifecycle of the search box.
+     * @private
+     */
+    searchRequestCount_: {
+      type: Number,
+      value: 0,
+    },
   },
 
   listeners: {
     'blur': 'onBlur_',
     'keydown': 'onKeyDown_',
-    'search-changed': 'fetchSearchResults_',
+    'search-changed': 'onSearchChanged_',
   },
 
   /** @override */
   attached() {
     const toolbarSearchField = this.$.search;
     const searchInput = toolbarSearchField.getSearchInput();
+    if (settings.Router.getInstance().currentRoute === settings.routes.BASIC) {
+      // The search field should only focus initially if settings is opened
+      // directly to the base page, with no path. Opening to a section or a
+      // subpage should not focus the search field.
+      toolbarSearchField.showAndFocus();
+    }
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
+    searchInput.addEventListener(
+        'mousedown', this.onSearchInputMousedown_.bind(this));
+
+    // If the search was initiated by directly entering a search URL, need to
+    // sync the URL parameter to the textbox.
+    const urlSearchQuery =
+        settings.Router.getInstance().getQueryParameters().get('search') || '';
+
+    // Setting the search box value without triggering a 'search-changed'
+    // event, to prevent an unnecessary duplicate entry in |window.history|.
+    toolbarSearchField.setValue(urlSearchQuery, /*noEvent=*/true);
 
     // Initialize the announcer once.
     Polymer.IronA11yAnnouncer.requestAvailability();
+
+    // Log number of search requests made each time settings window closes.
+    window.addEventListener('beforeunload', () => {
+      chrome.metricsPrivate.recordSparseValue(
+          'ChromeOS.Settings.SearchRequestsPerSession',
+          this.searchRequestCount_);
+    });
+
+    // Observe for availability changes of results.
+    this.searchResultObserverReceiver_ =
+        new chromeos.settings.mojom.SearchResultsObserverReceiver(
+            /**
+             * @type {!chromeos.settings.mojom.SearchResultsObserverInterface}
+             */
+            (this));
+    settings.getSearchHandler().observe(
+        this.searchResultObserverReceiver_.$.bindNewPipeAndPassRemote());
+  },
+
+  /** @override */
+  detached() {
+    this.searchResultObserverReceiver_.$.close();
+  },
+
+  /**
+   * Overrides chromeos.settings.mojom.SearchResultsObserverInterfaces
+   */
+  onSearchResultAvailabilityChanged() {
+    this.fetchSearchResults_();
   },
 
   /**
@@ -140,6 +236,12 @@ Polymer({
   },
 
   /** @private */
+  onSearchChanged_() {
+    this.hasSearchQuery = !!this.getCurrentQuery_();
+    this.fetchSearchResults_();
+  },
+
+  /** @private */
   fetchSearchResults_() {
     const query = this.getCurrentQuery_();
     if (query === '') {
@@ -153,9 +255,26 @@ Polymer({
     // strings support either 8 or 16 bit characters, and must be converted to
     // an array of 16 bit character codes that match base::string16.
     const queryMojoString16 = {data: Array.from(query, c => c.charCodeAt())};
-    settings.getSearchHandler().search(queryMojoString16).then(response => {
-      this.onSearchResultsReceived_(query, response.results);
-    });
+    const timeOfSearchRequest = Date.now();
+    settings.getSearchHandler()
+        .search(
+            queryMojoString16, MAX_NUM_SEARCH_RESULTS,
+            mojom.ParentResultBehavior.kAllowParentResults)
+        .then(response => {
+          const latencyMs = Date.now() - timeOfSearchRequest;
+          chrome.metricsPrivate.recordTime(
+              'ChromeOS.Settings.SearchLatency', latencyMs);
+          this.onSearchResultsReceived_(query, response.results);
+          this.fire('search-results-fetched');
+        });
+
+    ++this.searchRequestCount_;
+    chrome.metricsPrivate.recordEnumerationValue(
+        SEARCH_REQUEST_METRIC_NAME,
+        OsSettingSearchRequestTypes.ANY_SEARCH_REQUEST,
+        Object.keys(OsSettingSearchRequestTypes).length);
+    chrome.metricsPrivate.recordSparseValue(
+        'ChromeOS.Settings.NumCharsOfQueries', query.length);
   },
 
   /**
@@ -165,7 +284,19 @@ Polymer({
    * @private
    */
   onSearchResultsReceived_(query, results) {
-    if (query !== this.getCurrentQuery_()) {
+    chrome.metricsPrivate.recordSparseValue(
+        'ChromeOS.Settings.NumSearchResultsFetched', results.length);
+
+    const shouldDiscardResults = query !== this.getCurrentQuery_();
+
+    chrome.metricsPrivate.recordEnumerationValue(
+        SEARCH_REQUEST_METRIC_NAME,
+        shouldDiscardResults ?
+            OsSettingSearchRequestTypes.DISCARED_RESULTS_SEARCH_REQUEST :
+            OsSettingSearchRequestTypes.SHOWN_RESULTS_SEARCH_REQUEST,
+        Object.keys(OsSettingSearchRequestTypes).length);
+
+    if (shouldDiscardResults) {
       // Received search results are invalid as the query has since changed.
       return;
     }
@@ -176,36 +307,21 @@ Polymer({
     settings.recordSearch();
   },
 
-  /**
-   * Causes ChromeVox to announce number of search results.
-   * @private
-   */
-  makeA11ySearchResultAnnouncement_() {
-    let a11yAlertText;
-    switch (this.searchResults_.length) {
-      case 0:
-        a11yAlertText = this.i18n('searchNoResults');
-        break;
-      case 1:
-        a11yAlertText = this.i18n('searchResultsOne', this.getCurrentQuery_());
-        break;
-      default:
-        a11yAlertText = this.i18n(
-            'searchResultsNumber', this.searchResults_.length,
-            this.getCurrentQuery_());
-        break;
-    }
-
-    this.fire('iron-announce', {text: a11yAlertText});
-  },
-
   /** @private */
   onNavigatedToResultRowRoute_() {
+    // Blur search input to prevent blinking caret. Note that this blur event
+    // will not always be propagated to OsSettingsSearchBox (e.g. user decides
+    // to click on the same search result twice) so |this.shouldShowDropdown_|
+    // must always be set to false in |this.onNavigatedToResultRowRoute_()|.
+    this.$.search.blur();
+
     // Settings has navigated to another page; close search results dropdown.
     this.shouldShowDropdown_ = false;
 
-    // Blur search input to prevent blinking caret.
-    this.$.search.blur();
+    chrome.metricsPrivate.recordEnumerationValue(
+        USER_ACTION_ON_SEARCH_RESULTS_SHOWN_METRIC_NAME,
+        OsSettingSearchBoxUserAction.SEARCH_RESULT_CLICKED,
+        Object.keys(OsSettingSearchBoxUserAction).length);
   },
 
   /**
@@ -214,6 +330,19 @@ Polymer({
    */
   onBlur_(e) {
     e.stopPropagation();
+
+    // A blur event generated programmatically (as is most of the time the case
+    // in onNavigatedToResultRowRoute_()), or focusing a different window other
+    // than the OS Settings window will have a null |e.sourceCapabilities|. On
+    // the other hand, a blur event generated by intentionally clicking or
+    // tapping an area outside the search box, but still within the OS Settings
+    // window, will have a non-null |e.sourceCapabilities|.
+    if (e.sourceCapabilities && this.searchResultsExist_) {
+      chrome.metricsPrivate.recordEnumerationValue(
+          USER_ACTION_ON_SEARCH_RESULTS_SHOWN_METRIC_NAME,
+          OsSettingSearchBoxUserAction.CLICKED_OUT_OF_SEARCH_BOX,
+          Object.keys(OsSettingSearchBoxUserAction).length);
+    }
 
     // Close the dropdown because  a region outside the search box was clicked.
     this.shouldShowDropdown_ = false;
@@ -230,6 +359,22 @@ Polymer({
     }
 
     this.fetchSearchResults_();
+  },
+
+  /* @private */
+  onSearchInputMousedown_() {
+    // If the search input is clicked while the dropdown is closed, and there
+    // already contains input text from a previous query, highlight the entire
+    // query text so that the user can choose to easily replace the query
+    // instead of having to delete the previous query manually. A mousedown
+    // event is used because it is captured before |shouldShowDropdown_|
+    // changes, unlike a click event which is captured after
+    // |shouldShowDropdown_| changes.
+    if (!this.shouldShowDropdown_) {
+      // Select all search input text once the initial state is set.
+      const searchInput = this.$.search.getSearchInput();
+      Polymer.RenderStatus.afterNextRender(this, () => searchInput.select());
+    }
   },
 
   /**
@@ -273,9 +418,8 @@ Polymer({
       return;
     }
 
-    this.makeA11ySearchResultAnnouncement_();
-
     if (!this.searchResultsExist_) {
+      this.fire('iron-announce', {text: this.i18n('searchNoResults')});
       return;
     }
 
@@ -357,6 +501,14 @@ Polymer({
       e.preventDefault();
       this.selectRowViaKeys_(e.key);
       return;
+    }
+  },
+
+  /* @private */
+  onSearchIconClicked_() {
+    this.$.search.getSearchInput().select();
+    if (this.getCurrentQuery_()) {
+      this.shouldShowDropdown_ = true;
     }
   },
 });

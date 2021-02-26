@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
@@ -34,7 +33,7 @@ Browser* EnsureBrowser(Browser* browser, Profile* profile) {
     // create a new one.
     browser = chrome::FindLastActiveWithProfile(profile);
     if (!browser) {
-      browser = new Browser(Browser::CreateParams(profile, true));
+      browser = Browser::Create(Browser::CreateParams(profile, true));
       chrome::AddTabAt(browser, GURL(), -1, true);
     }
     browser->window()->Show();
@@ -63,32 +62,6 @@ void OnEmailConfirmation(DiceTurnSyncOnHelper::SigninChoiceCallback callback,
 
 }  // namespace
 
-DiceTurnSyncOnHelperDelegateImpl::SigninDialogDelegate::SigninDialogDelegate(
-    DiceTurnSyncOnHelper::SigninChoiceCallback callback)
-    : callback_(std::move(callback)) {
-  DCHECK(callback_);
-}
-
-DiceTurnSyncOnHelperDelegateImpl::SigninDialogDelegate::
-    ~SigninDialogDelegate() = default;
-
-void DiceTurnSyncOnHelperDelegateImpl::SigninDialogDelegate::OnCancelSignin() {
-  DCHECK(callback_);
-  std::move(callback_).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CANCEL);
-}
-
-void DiceTurnSyncOnHelperDelegateImpl::SigninDialogDelegate::
-    OnContinueSignin() {
-  DCHECK(callback_);
-  std::move(callback_).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
-}
-
-void DiceTurnSyncOnHelperDelegateImpl::SigninDialogDelegate::
-    OnSigninWithNewProfile() {
-  DCHECK(callback_);
-  std::move(callback_).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_NEW_PROFILE);
-}
-
 DiceTurnSyncOnHelperDelegateImpl::DiceTurnSyncOnHelperDelegateImpl(
     Browser* browser)
     : browser_(browser), profile_(browser_->profile()) {
@@ -104,28 +77,16 @@ DiceTurnSyncOnHelperDelegateImpl::~DiceTurnSyncOnHelperDelegateImpl() {
 void DiceTurnSyncOnHelperDelegateImpl::ShowLoginError(
     const std::string& email,
     const std::string& error_message) {
-  LoginUIServiceFactory::GetForProfile(profile_)->DisplayLoginResult(
-      browser_, base::UTF8ToUTF16(error_message), base::UTF8ToUTF16(email));
+  DiceTurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(email, error_message,
+                                                           browser_);
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::ShowEnterpriseAccountConfirmation(
     const std::string& email,
     DiceTurnSyncOnHelper::SigninChoiceCallback callback) {
-  DCHECK(callback);
   browser_ = EnsureBrowser(browser_, profile_);
-  content::WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents) {
-    std::move(callback).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CANCEL);
-    return;
-  }
-
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Show_EnterpriseAccountPrompt"));
-  TabDialogs::FromWebContents(web_contents)
-      ->ShowProfileSigninConfirmation(
-          browser_, profile_, email,
-          std::make_unique<SigninDialogDelegate>(std::move(callback)));
+  DiceTurnSyncOnHelper::Delegate::ShowEnterpriseAccountConfirmationForBrowser(
+      email, std::move(callback), browser_);
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::ShowSyncConfirmation(
@@ -137,6 +98,13 @@ void DiceTurnSyncOnHelperDelegateImpl::ShowSyncConfirmation(
       LoginUIServiceFactory::GetForProfile(profile_));
   browser_ = EnsureBrowser(browser_, profile_);
   browser_->signin_view_controller()->ShowModalSyncConfirmationDialog();
+}
+
+void DiceTurnSyncOnHelperDelegateImpl::ShowSyncDisabledConfirmation(
+    base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+        callback) {
+  // This is handled by the same UI element as the normal sync confirmation.
+  ShowSyncConfirmation(std::move(callback));
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::ShowMergeSyncDataConfirmation(

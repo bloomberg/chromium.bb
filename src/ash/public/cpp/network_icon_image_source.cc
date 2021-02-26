@@ -20,11 +20,8 @@ namespace network_icon {
 
 namespace {
 
-// TODO(estade): share this alpha with other things in ash (battery, etc.).
-// See https://crbug.com/623987 and https://crbug.com/632827
-// For now, this value should match the one used in kTrayIconBackgroundAlpha
-// in ash/system/tray/tray_constants.cc
-constexpr int kSignalStrengthImageBgAlpha = 0x4D;
+constexpr int kIconStrokeWidth = 2;
+constexpr int kCellularIconOffset = 1;
 
 SkPath CreateArcPath(gfx::RectF oval, float start_angle, float sweep_angle) {
   SkPath path;
@@ -79,9 +76,10 @@ void NetworkIconImageSource::Draw(gfx::Canvas* canvas) {
         height - gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_left.icon));
   }
   if (badges_.bottom_right.icon) {
-    const int badge_size =
-        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon);
-    paint_badge(badges_.bottom_right, width - badge_size, height - badge_size);
+    const int badge_offset =
+        gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon) - 1;
+    paint_badge(badges_.bottom_right, width - badge_offset,
+                height - badge_offset);
   }
 }
 
@@ -137,16 +135,17 @@ void SignalStrengthImageSource::DrawArcs(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Background. Skip drawing for full signal.
-  if (signal_strength_ != kNumNetworkImages - 1) {
-    flags.setColor(SkColorSetA(color_, kSignalStrengthImageBgAlpha));
-    canvas->sk_canvas()->drawPath(
-        CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
-  }
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kIconStrokeWidth);
+  flags.setColor(color_);
+
+  // Background (outline)
+  canvas->sk_canvas()->drawPath(
+      CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
+
   // Foreground (signal strength).
   if (signal_strength_ != 0) {
-    flags.setColor(color_);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // Percent of the height of the background wedge that we draw the
     // foreground wedge, indexed by signal strength.
     static constexpr float kWedgeHeightPercentages[] = {0.f, 0.375f, 0.5833f,
@@ -173,7 +172,8 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
 
   auto make_triangle = [scale, kFullTriangleSide, this](SkScalar side) {
     SkPath triangle;
-    triangle.moveTo(scale(padding_), scale(padding_ + kFullTriangleSide));
+    triangle.moveTo(scale(padding_ + kCellularIconOffset),
+                    scale(padding_ + kFullTriangleSide + kCellularIconOffset));
     triangle.rLineTo(scale(side), 0);
     triangle.rLineTo(0, -scale(side));
     triangle.close();
@@ -182,15 +182,17 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Background. Skip drawing for full signal.
-  if (signal_strength_ != kNumNetworkImages - 1) {
-    flags.setColor(SkColorSetA(color_, kSignalStrengthImageBgAlpha));
-    canvas->DrawPath(make_triangle(kFullTriangleSide), flags);
-  }
+  flags.setColor(color_);
+
+  // Background.
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kIconStrokeWidth);
+
+  canvas->DrawPath(make_triangle(kFullTriangleSide), flags);
+
   // Foreground (signal strength).
   if (signal_strength_ != 0) {
-    flags.setColor(color_);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // As a percentage of the bg triangle, the length of one of the short
     // sides of the fg triangle, indexed by signal strength.
     static constexpr float kTriangleSidePercents[] = {0.f, 0.375f, 0.5833f,

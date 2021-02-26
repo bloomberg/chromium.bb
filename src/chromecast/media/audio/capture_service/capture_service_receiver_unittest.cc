@@ -14,7 +14,6 @@
 #include "base/test/task_environment.h"
 #include "chromecast/media/audio/capture_service/message_parsing_utils.h"
 #include "chromecast/media/audio/capture_service/packet_header.h"
-#include "chromecast/media/audio/mock_audio_input_callback.h"
 #include "chromecast/net/mock_stream_socket.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,24 +28,24 @@ namespace capture_service {
 namespace {
 
 constexpr StreamInfo kStreamInfo =
-    StreamInfo{StreamType::kSoftwareEchoCancelled, 1,
-               SampleFormat::PLANAR_FLOAT, 16000, 160};
-constexpr PacketHeader kPacketHeader =
-    PacketHeader{0,
-                 static_cast<uint8_t>(MessageType::kAudio),
-                 static_cast<uint8_t>(kStreamInfo.stream_type),
-                 kStreamInfo.num_channels,
-                 static_cast<uint8_t>(kStreamInfo.sample_format),
-                 kStreamInfo.sample_rate,
-                 kStreamInfo.frames_per_buffer};
-
-void FillHeader(char* buf, uint16_t size, const PacketHeader& header) {
-  base::WriteBigEndian(buf, size);
-  memcpy(buf + sizeof(size),
-         reinterpret_cast<const char*>(&header) +
-             offsetof(struct PacketHeader, message_type),
-         sizeof(header) - offsetof(struct PacketHeader, message_type));
-}
+    StreamInfo{StreamType::kSoftwareEchoCancelled,
+               AudioCodec::kPcm,
+               1,
+               SampleFormat::PLANAR_FLOAT,
+               16000,
+               160};
+constexpr HandshakePacket kHandshakePacket =
+    HandshakePacket{0,
+                    static_cast<uint8_t>(MessageType::kHandshake),
+                    static_cast<uint8_t>(kStreamInfo.stream_type),
+                    static_cast<uint8_t>(kStreamInfo.audio_codec),
+                    static_cast<uint8_t>(kStreamInfo.sample_format),
+                    kStreamInfo.num_channels,
+                    kStreamInfo.frames_per_buffer,
+                    kStreamInfo.sample_rate};
+constexpr PcmPacketHeader kPcmAudioPacketHeader =
+    PcmPacketHeader{0, static_cast<uint8_t>(MessageType::kPcmAudio),
+                    static_cast<uint8_t>(kStreamInfo.stream_type), 0};
 
 class MockStreamSocket : public chromecast::MockStreamSocket {
  public:
@@ -54,13 +53,20 @@ class MockStreamSocket : public chromecast::MockStreamSocket {
   ~MockStreamSocket() override = default;
 };
 
+class MockCaptureServiceReceiverDelegate
+    : public chromecast::media::CaptureServiceReceiver::Delegate {
+ public:
+  MockCaptureServiceReceiverDelegate() = default;
+  ~MockCaptureServiceReceiverDelegate() override = default;
+
+  MOCK_METHOD(bool, OnInitialStreamInfo, (const StreamInfo&), (override));
+  MOCK_METHOD(bool, OnCaptureData, (const char*, size_t), (override));
+  MOCK_METHOD(void, OnCaptureError, (), (override));
+};
+
 class CaptureServiceReceiverTest : public ::testing::Test {
  public:
-  CaptureServiceReceiverTest()
-      : receiver_(StreamType::kSoftwareEchoCancelled,
-                  kStreamInfo.sample_rate,
-                  kStreamInfo.num_channels,
-                  kStreamInfo.frames_per_buffer) {
+  CaptureServiceReceiverTest() : receiver_(kStreamInfo, &delegate_) {
     receiver_.SetTaskRunnerForTest(base::ThreadPool::CreateSequencedTaskRunner(
         {base::TaskPriority::USER_BLOCKING}));
   }
@@ -69,73 +75,72 @@ class CaptureServiceReceiverTest : public ::testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  chromecast::MockAudioInputCallback audio_;
+  MockCaptureServiceReceiverDelegate delegate_;
   CaptureServiceReceiver receiver_;
 };
 
 TEST_F(CaptureServiceReceiverTest, StartStop) {
   auto socket1 = std::make_unique<MockStreamSocket>();
   auto socket2 = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket1, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket1, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket1, Read(_, _, _)).WillOnce(Return(net::ERR_IO_PENDING));
-  EXPECT_CALL(*socket2, Connect(_)).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket1, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket1, Write).WillOnce(Return(sizeof(HandshakePacket)));
+  EXPECT_CALL(*socket1, Read).WillOnce(Return(net::ERR_IO_PENDING));
+  EXPECT_CALL(*socket2, Connect).WillOnce(Return(net::OK));
 
   // Sync.
-  receiver_.StartWithSocket(&audio_, std::move(socket1));
+  receiver_.StartWithSocket(std::move(socket1));
   task_environment_.RunUntilIdle();
   receiver_.Stop();
 
   // Async.
-  receiver_.StartWithSocket(&audio_, std::move(socket2));
+  receiver_.StartWithSocket(std::move(socket2));
   receiver_.Stop();
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ConnectFailed) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::ERR_FAILED));
-  EXPECT_CALL(audio_, OnError());
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::ERR_FAILED));
+  EXPECT_CALL(delegate_, OnCaptureError);
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ConnectTimeout) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::ERR_IO_PENDING));
-  EXPECT_CALL(audio_, OnError());
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::ERR_IO_PENDING));
+  EXPECT_CALL(delegate_, OnCaptureError);
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.FastForwardBy(CaptureServiceReceiver::kConnectTimeout);
 }
 
 TEST_F(CaptureServiceReceiverTest, SendRequest) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _))
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Write)
       .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
                           net::CompletionOnceCallback,
                           const net::NetworkTrafficAnnotationTag&) {
-        EXPECT_EQ(buf_len, static_cast<int>(sizeof(PacketHeader)));
+        EXPECT_EQ(buf_len, static_cast<int>(sizeof(HandshakePacket)));
         const char* data = buf->data();
         uint16_t size;
         base::ReadBigEndian(data, &size);
-        EXPECT_EQ(size, sizeof(PacketHeader) - sizeof(size));
-        PacketHeader header;
-        memcpy(&header, data, sizeof(PacketHeader));
-        EXPECT_EQ(header.message_type, static_cast<uint8_t>(MessageType::kAck));
-        EXPECT_EQ(header.stream_type, kPacketHeader.stream_type);
-        EXPECT_EQ(header.num_channels, kPacketHeader.num_channels);
-        EXPECT_EQ(header.sample_format, kPacketHeader.sample_format);
-        EXPECT_EQ(header.sample_rate, kPacketHeader.sample_rate);
-        EXPECT_EQ(header.timestamp_or_frames,
-                  kPacketHeader.timestamp_or_frames);
+        EXPECT_EQ(size, sizeof(HandshakePacket) - sizeof(size));
+        HandshakePacket packet;
+        std::memcpy(&packet, data, sizeof(HandshakePacket));
+        EXPECT_EQ(packet.message_type, kHandshakePacket.message_type);
+        EXPECT_EQ(packet.stream_type, kHandshakePacket.stream_type);
+        EXPECT_EQ(packet.audio_codec, kHandshakePacket.audio_codec);
+        EXPECT_EQ(packet.num_channels, kHandshakePacket.num_channels);
+        EXPECT_EQ(packet.num_frames, kHandshakePacket.num_frames);
+        EXPECT_EQ(packet.sample_rate, kHandshakePacket.sample_rate);
         return buf_len;
       }));
-  EXPECT_CALL(*socket, Read(_, _, _)).WillOnce(Return(net::ERR_IO_PENDING));
+  EXPECT_CALL(*socket, Read).WillOnce(Return(net::ERR_IO_PENDING));
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
   // Stop receiver to disconnect socket, since receiver doesn't own the IO
   // task runner in unittests.
@@ -143,25 +148,34 @@ TEST_F(CaptureServiceReceiverTest, SendRequest) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
+TEST_F(CaptureServiceReceiverTest, ReceivePcmAudioMessage) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket, Read(_, _, _))
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Write).WillOnce(Return(sizeof(HandshakePacket)));
+  EXPECT_CALL(*socket, Read)
+      // Ack message.
+      .WillOnce(Invoke(
+          [](net::IOBuffer* buf, int buf_len, net::CompletionOnceCallback) {
+            int total_size = sizeof(HandshakePacket);
+            EXPECT_GE(buf_len, total_size);
+            FillBuffer(buf->data(), total_size, &kHandshakePacket.message_type,
+                       sizeof(HandshakePacket) - sizeof(uint16_t));
+            return total_size;
+          }))
+      // Audio message.
       .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
                           net::CompletionOnceCallback) {
-        int total_size = sizeof(PacketHeader) + DataSizeInBytes(kStreamInfo);
+        int total_size = sizeof(PcmPacketHeader) + DataSizeInBytes(kStreamInfo);
         EXPECT_GE(buf_len, total_size);
-        uint16_t size = total_size - sizeof(uint16_t);
-        PacketHeader header = kPacketHeader;
-        header.timestamp_or_frames = 0;  // Timestamp.
-        FillHeader(buf->data(), size, header);
+        FillBuffer(buf->data(), total_size, &kPcmAudioPacketHeader.message_type,
+                   sizeof(PcmPacketHeader) - sizeof(uint16_t));
         return total_size;  // No need to fill audio frames.
       }))
       .WillOnce(Return(net::ERR_IO_PENDING));
-  EXPECT_CALL(audio_, OnData(_, _, 1.0 /* volume */));
+  EXPECT_CALL(delegate_, OnInitialStreamInfo).WillOnce(Return(true));
+  EXPECT_CALL(delegate_, OnCaptureData).WillOnce(Return(true));
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
   // Stop receiver to disconnect socket, since receiver doesn't own the IO
   // task runner in unittests.
@@ -169,75 +183,50 @@ TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(CaptureServiceReceiverTest, ReceiveAckMessage) {
+TEST_F(CaptureServiceReceiverTest, ReceiveMetadataMessage) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket, Read(_, _, _))
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Write).WillOnce(Return(sizeof(HandshakePacket)));
+  EXPECT_CALL(*socket, Read)
       .WillOnce(Invoke(
           [](net::IOBuffer* buf, int buf_len, net::CompletionOnceCallback) {
-            int total_size = sizeof(PacketHeader);
+            uint16_t size = sizeof(uint8_t) + 1;  // MessageType and 1 byte.
+            int total_size = size + sizeof(size);
             EXPECT_GE(buf_len, total_size);
-            uint16_t size = total_size - sizeof(uint16_t);
-            PacketHeader header = kPacketHeader;
-            header.message_type = static_cast<uint8_t>(MessageType::kAck);
-            header.sample_format =
-                static_cast<uint8_t>(SampleFormat::INTERLEAVED_INT16);
-            FillHeader(buf->data(), size, header);
-            return total_size;
+            base::WriteBigEndian(buf->data(), size);
+            uint8_t message_type = static_cast<uint8_t>(MessageType::kMetadata);
+            std::memcpy(buf->data() + sizeof(size), &message_type,
+                        sizeof(message_type));
+            return total_size;  // No need to fill metadata.
           }))
       .WillOnce(Return(net::ERR_IO_PENDING));
-  // Neither OnError nor OnData will be called.
-  EXPECT_CALL(audio_, OnError()).Times(0);
-  EXPECT_CALL(audio_, OnData(_, _, _)).Times(0);
+  // Neither OnCaptureError nor OnCaptureData will be called.
+  EXPECT_CALL(delegate_, OnCaptureError).Times(0);
+  EXPECT_CALL(delegate_, OnCaptureData).Times(0);
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
-  task_environment_.RunUntilIdle();
-}
-
-TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
-  auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket, Read(_, _, _))
-      .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
-                          net::CompletionOnceCallback) {
-        int total_size = sizeof(PacketHeader) + DataSizeInBytes(kStreamInfo);
-        EXPECT_GE(buf_len, total_size);
-        uint16_t size = total_size - sizeof(uint16_t);
-        PacketHeader header = kPacketHeader;
-        header.sample_format = static_cast<uint8_t>(SampleFormat::LAST_FORMAT) +
-                               1;        // Invalid format.
-        header.timestamp_or_frames = 0;  // Timestamp.
-        FillHeader(buf->data(), size, header);
-        return total_size;  // No need to fill audio frames.
-      }));
-  EXPECT_CALL(audio_, OnError());
-
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveError) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket, Read(_, _, _))
-      .WillOnce(Return(net::ERR_CONNECTION_RESET));
-  EXPECT_CALL(audio_, OnError());
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Write).WillOnce(Return(sizeof(HandshakePacket)));
+  EXPECT_CALL(*socket, Read).WillOnce(Return(net::ERR_CONNECTION_RESET));
+  EXPECT_CALL(delegate_, OnCaptureError);
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveEosMessage) {
   auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
-  EXPECT_CALL(*socket, Read(_, _, _)).WillOnce(Return(0));
-  EXPECT_CALL(audio_, OnError());
+  EXPECT_CALL(*socket, Connect).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Write).WillOnce(Return(sizeof(HandshakePacket)));
+  EXPECT_CALL(*socket, Read).WillOnce(Return(0));
+  EXPECT_CALL(delegate_, OnCaptureError);
 
-  receiver_.StartWithSocket(&audio_, std::move(socket));
+  receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();
 }
 

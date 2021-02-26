@@ -25,7 +25,6 @@
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
-#include "gpu/config/gpu_extra_info.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -38,6 +37,7 @@
 #include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
+#include "ui/gfx/gpu_extra_info.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -67,12 +67,13 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
         const base::Optional<gpu::GpuFeatureInfo>&
             gpu_feature_info_for_hardware_gpu,
-        const gpu::GpuExtraInfo& gpu_extra_info) = 0;
+        const gfx::GpuExtraInfo& gpu_extra_info) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
     virtual void MaybeShutdownGpuProcess() = 0;
 #if defined(OS_WIN)
     virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
+    virtual void DidUpdateHDRStatus(bool hdr_enabled) = 0;
 #endif
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
                                        gpu::DomainGuilt guilt) = 0;
@@ -158,7 +159,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // Connects to FrameSinkManager running in the Viz service.
   void ConnectFrameSinkManager(
       mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-      mojo::PendingRemote<mojom::FrameSinkManagerClient> client);
+      mojo::PendingRemote<mojom::FrameSinkManagerClient> client,
+      const DebugRendererSettings& debug_renderer_settings);
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.
@@ -218,7 +220,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
       const base::Optional<gpu::GpuFeatureInfo>&
           gpu_feature_info_for_hardware_gpu,
-      const gpu::GpuExtraInfo& gpu_extra_info) override;
+      const gfx::GpuExtraInfo& gpu_extra_info) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& url) override;
@@ -231,6 +233,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void DisableGpuCompositing() override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+  void DidUpdateHDRStatus(bool hdr_enabled) override;
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
 #endif

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 namespace chromeos {
 
@@ -28,11 +28,15 @@ class Suggester {
   // Called when suggestion is being shown.
   // Returns SuggestionStatus as suggester handles the event.
   virtual SuggestionStatus HandleKeyEvent(
-      const ::input_method::InputMethodEngineBase::KeyboardEvent& event) = 0;
+      const InputMethodEngineBase::KeyboardEvent& event) = 0;
 
   // Check if suggestion should be displayed according to the surrounding text
   // information.
   virtual bool Suggest(const base::string16& text) = 0;
+
+  // Accepts the suggestion at a given index, index can be made default if
+  // unnecessary. Returns true if suggestion is accepted successfully.
+  virtual bool AcceptSuggestion(size_t index) = 0;
 
   virtual void DismissSuggestion() = 0;
 

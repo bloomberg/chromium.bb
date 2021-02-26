@@ -8,13 +8,15 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/android/chrome_jni_headers/SendTabToSelfInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobars/infobar_android.h"
+#include "chrome/browser/share/android/jni_headers/SendTabToSelfInfoBar_jni.h"
+#include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,7 +24,9 @@ namespace send_tab_to_self {
 
 SendTabToSelfInfoBar::SendTabToSelfInfoBar(
     std::unique_ptr<SendTabToSelfInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : infobars::InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 SendTabToSelfInfoBar::~SendTabToSelfInfoBar() = default;
 

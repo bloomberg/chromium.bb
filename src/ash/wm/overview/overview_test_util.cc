@@ -4,15 +4,36 @@
 
 #include "ash/wm/overview/overview_test_util.h"
 
+#include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "base/run_loop.h"
+#include "base/test/bind.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
+
+namespace {
+
+void WaitForOverviewAnimationState(OverviewAnimationState state) {
+  // Early out if animations are disabled.
+  if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() ==
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
+    return;
+  }
+
+  base::RunLoop run_loop;
+  OverviewTestApi().WaitForOverviewState(
+      state, base::BindLambdaForTesting([&](bool) { run_loop.Quit(); }));
+  run_loop.Run();
+}
+
+}  // namespace
 
 // TODO(sammiequon): Consider adding an overload for this function to trigger
 // the key event |count| times.
@@ -52,6 +73,15 @@ void ToggleOverview(OverviewEnterExitType type) {
     overview_controller->StartOverview(type);
 }
 
+void WaitForOverviewEnterAnimation() {
+  WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+}
+
+void WaitForOverviewExitAnimation() {
+  WaitForOverviewAnimationState(OverviewAnimationState::kExitAnimationComplete);
+}
+
 OverviewSession* GetOverviewSession() {
   auto* session = Shell::Get()->overview_controller()->overview_session();
   DCHECK(session);
@@ -69,9 +99,9 @@ OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
 
 gfx::Rect ShrinkBoundsByHotseatInset(const gfx::Rect& rect) {
   gfx::Rect new_rect = rect;
-  const int hotseat_bottom_inset =
-      ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
-      ShelfConfig::Get()->hotseat_bottom_padding();
+  const int hotseat_bottom_inset = ShelfConfig::Get()->GetHotseatSize(
+                                       /*density=*/HotseatDensity::kNormal) +
+                                   ShelfConfig::Get()->hotseat_bottom_padding();
   new_rect.Inset(0, 0, 0, hotseat_bottom_inset);
   return new_rect;
 }

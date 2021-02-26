@@ -22,11 +22,32 @@ const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable concurrent inlining in TurboFan.
+// Enables concurrent inlining in TurboFan.
 const base::Feature kV8ConcurrentInlining{"V8ConcurrentInlining",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable per-context marking worklists in V8 GC.
+// Enables per-context marking worklists in V8 GC.
 const base::Feature kV8PerContextMarkingWorklist{
     "V8PerContextMarkingWorklist", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables flushing of the instruction cache for the embedded blob.
+const base::Feature kV8FlushEmbeddedBlobICache{
+    "V8FlushEmbeddedBlobICache", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables reduced number of concurrent marking tasks.
+const base::Feature kV8ReduceConcurrentMarkingTasks{
+    "V8ReduceConcurrentMarkingTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disables reclaiming of unmodified wrappers objects.
+const base::Feature kV8NoReclaimUnmodifiedWrappers{
+    "V8NoReclaimUnmodifiedWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables concurrent heap access and allocation.
+const base::Feature kV8LocalHeaps{"V8LocalHeaps",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables TurboFan's direct heap access.
+const base::Feature kV8TurboDirectHeapAccess{"V8TurboDirectHeapAccess",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features

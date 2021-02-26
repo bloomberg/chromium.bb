@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "url/gurl.h"
 
 namespace customtabs {
@@ -143,9 +144,8 @@ std::unique_ptr<HttpResponse> LargeHeadersAndResponseSize(
     return nullptr;
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  response->AddCustomHeader(
-      "X-Large-Header",
-      std::string(DetachedResourceRequest::kMaxResponseSize, 'b'));
+  // Maximum header size ios 256kB, stay below it.
+  response->AddCustomHeader("X-Large-Header", std::string(100 * 1024, 'b'));
   response->set_code(net::HTTP_OK);
 
   uint32_t length;
@@ -163,9 +163,8 @@ std::unique_ptr<HttpResponse> LargeResponseAndCookie(
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
   response->AddCustomHeader("Set-Cookie", kCookieFromLargeResponse);
-  response->AddCustomHeader(
-      "X-Large-Header",
-      std::string(DetachedResourceRequest::kMaxResponseSize, 'b'));
+  // Maximum header size ios 256kB, stay below it.
+  response->AddCustomHeader("X-Large-Header", std::string(100 * 1024, 'b'));
   response->set_code(net::HTTP_OK);
   response->set_content(
       std::string(DetachedResourceRequest::kMaxResponseSize + 1, 'a'));
@@ -272,7 +271,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
     DetachedResourceRequest::CreateAndStart(
         browser_context(), url, site_for_cookies,
-        content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "");
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "");
     first_request_waiter.Run();
     second_request_waiter.Run();
 
@@ -282,7 +281,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
   void SetAndCheckReferrer(const std::string& initial_referrer,
                            const std::string& expected_referrer,
-                           net::URLRequest::ReferrerPolicy policy) {
+                           net::ReferrerPolicy policy) {
     base::RunLoop request_completion_waiter;
     base::RunLoop server_request_waiter;
     HttpRequest::HeaderMap headers;
@@ -329,7 +328,7 @@ TEST_F(DetachedResourceRequestTest, Simple) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
         request_completion_waiter.Quit();
@@ -354,7 +353,7 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_NE(net::OK, net_error);
         request_waiter.Quit();
@@ -384,7 +383,7 @@ TEST_F(DetachedResourceRequestTest, ResponseTooLarge) {
 
     DetachedResourceRequest::CreateAndStart(
         browser_context(), url, site_for_cookies,
-        content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
         base::BindLambdaForTesting([&](int net_error) {
           EXPECT_EQ(net::OK, net_error);
           request_waiter.Quit();
@@ -407,7 +406,7 @@ TEST_F(DetachedResourceRequestTest, ResponseTooLarge) {
 
     DetachedResourceRequest::CreateAndStart(
         browser_context(), url, site_for_cookies,
-        content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
         base::BindLambdaForTesting([&](int net_error) {
           EXPECT_NE(net::OK, net_error);
           request_waiter.Quit();
@@ -435,7 +434,7 @@ TEST_F(DetachedResourceRequestTest, CookieSetWithTruncatedResponse) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_NE(net::OK, net_error);
         request_waiter.Quit();
@@ -470,7 +469,7 @@ TEST_F(DetachedResourceRequestTest, MultipleRequests) {
   for (int i = 0; i < 2; ++i) {
     DetachedResourceRequest::CreateAndStart(
         browser_context(), url, site_for_cookies,
-        content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "");
+        blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "");
   }
   request_waiter.Run();
   EXPECT_EQ(site_for_cookies.spec(), headers["referer"]);
@@ -491,7 +490,7 @@ TEST_F(DetachedResourceRequestTest, NoReferrerWhenDowngrade) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "");
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "");
   request_waiter.Run();
   EXPECT_EQ("", headers["referer"]);
 }
@@ -518,7 +517,7 @@ TEST_F(DetachedResourceRequestTest, FollowRedirect) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "");
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "");
   first_request_waiter.Run();
   second_request_waiter.Run();
 }
@@ -543,7 +542,7 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
         request_completion_waiter.Quit();
@@ -557,20 +556,19 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
 TEST_F(DetachedResourceRequestTest, DefaultReferrerPolicy) {
   // No Referrer on downgrade.
   SetAndCheckReferrer("https://cats.google.com", "",
-                      content::Referrer::GetDefaultReferrerPolicy());
+                      blink::ReferrerUtils::GetDefaultNetReferrerPolicy());
 }
 
 TEST_F(DetachedResourceRequestTest, OriginReferrerPolicy) {
   // Only the origin, even for downgrades.
   SetAndCheckReferrer("https://cats.google.com/cute-cats",
-                      "https://cats.google.com/",
-                      net::URLRequest::ReferrerPolicy::ORIGIN);
+                      "https://cats.google.com/", net::ReferrerPolicy::ORIGIN);
 }
 
 TEST_F(DetachedResourceRequestTest, NeverClearReferrerPolicy) {
   SetAndCheckReferrer("https://cats.google.com/cute-cats",
                       "https://cats.google.com/cute-cats",
-                      net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER);
+                      net::ReferrerPolicy::NEVER_CLEAR);
 }
 
 TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
@@ -604,7 +602,7 @@ TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
         detached_request_waiter.Quit();
@@ -642,7 +640,7 @@ TEST_F(DetachedResourceRequestTest, ManyRedirects) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation,
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation,
       "com.google.android.googlequicksearchbox",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
@@ -674,7 +672,7 @@ TEST_F(DetachedResourceRequestTest, TooManyRedirects) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(-net::ERR_TOO_MANY_REDIRECTS, net_error);
         request_waiter.Quit();
@@ -703,7 +701,7 @@ TEST_F(DetachedResourceRequestTest, CachedResponse) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
         first_request_waiter.Quit();
@@ -712,7 +710,7 @@ TEST_F(DetachedResourceRequestTest, CachedResponse) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
-      content::Referrer::GetDefaultReferrerPolicy(), kMotivation, "",
+      blink::ReferrerUtils::GetDefaultNetReferrerPolicy(), kMotivation, "",
       base::BindLambdaForTesting([&](int net_error) {
         EXPECT_EQ(net::OK, net_error);
         second_request_waiter.Quit();

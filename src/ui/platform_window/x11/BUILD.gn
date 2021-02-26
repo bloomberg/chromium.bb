@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
+import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
-import("//ui/ozone/ozone.gni")
+import("//testing/test.gni")
 
 assert(use_x11 || ozone_platform_x11)
 
-jumbo_component("x11") {
+component("x11") {
   output_name = "x11_window"
 
   deps = [
@@ -24,8 +24,7 @@ jumbo_component("x11") {
     "//ui/gfx/x",
     "//ui/platform_window",
     "//ui/platform_window/common",
-    "//ui/platform_window/extensions",
-    "//ui/platform_window/platform_window_handler",
+    "//ui/platform_window/wm",
   ]
 
   defines = [ "X11_WINDOW_IMPLEMENTATION" ]
@@ -48,4 +47,45 @@ jumbo_component("x11") {
     configs += [ "//build/config/linux/atk" ]
     deps += [ "//ui/events/x" ]
   }
+}
+
+test("x11_unittests") {
+  use_xvfb = true
+
+  sources = [
+    "test/device_data_manager_x11_unittest.cc",
+    "test/events_x_unittest.cc",
+    "test/x11_event_translation_unittest.cc",
+    "test/x11_window_unittest.cc",
+  ]
+  deps = [
+    ":x11",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/base:features",
+    "//ui/base/x",
+    "//ui/base/x:test_support",
+    "//ui/events:test_support",
+    "//ui/events/platform/x11",
+    "//ui/events/x",
+    "//ui/gfx:test_support",
+    "//ui/gfx/x",
+    "//ui/platform_window",
+  ]
+  configs += [ "//build/config:precompiled_headers" ]
+
+  # Needed for tests.  Please note that if you want to run tests locally,
+  # ensure that you start them from your out directory with the xvfb
+  # script so that openbox has time to start. Otherwise, the x11_unittests
+  # will time out. e.g. -
+  #
+  # 1) cd out/Debug.
+  # 2) ../../testing/xvfb.py ./x11_unittests.
+  #
+  #TODO(dpranke): move that to appropriate place after test() template is
+  # reworked.
+  data_deps = [ "//ui/base/x/xwmstartupcheck" ]
 }

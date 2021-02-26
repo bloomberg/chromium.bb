@@ -1,13 +1,15 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Helper functions used in multiple unit tests."""
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
 import base64
+import fnmatch
+import itertools
 import json
 import logging
 import mock
@@ -119,9 +121,8 @@ class TestCase(unittest.TestCase):
     responses = []
     for task in tasks:
       responses.append(
-          self.Post(
-              handler_name,
-              urllib.unquote_plus(base64.b64decode(task['body']))))
+          self.Post(handler_name,
+                    urllib.unquote_plus(base64.b64decode(task['body']))))
       if recurse:
         responses.extend(
             self.ExecuteTaskQueueTasks(handler_name, task_queue_name))
@@ -154,8 +155,7 @@ class TestCase(unittest.TestCase):
     self.addCleanup(patch.stop)
 
   def SetCurrentUserOAuth(self, user):
-    self.PatchObject(oauth, 'get_current_user', mock.Mock(
-        return_value=user))
+    self.PatchObject(oauth, 'get_current_user', mock.Mock(return_value=user))
 
   def SetCurrentClientIdOAuth(self, client_id):
     self.PatchObject(oauth, 'get_client_id', mock.Mock(return_value=client_id))
@@ -183,8 +183,7 @@ class TestCase(unittest.TestCase):
     for script_element in scripts_elements:
       contents = script_element.renderContents()
       # Assume that the variable is all one line, with no line breaks.
-      match = re.search(var_name + r'\s*=\s*(.+);\s*$', contents,
-                        re.MULTILINE)
+      match = re.search(var_name + r'\s*=\s*(.+);\s*$', contents, re.MULTILINE)
       if match:
         javascript_value = match.group(1)
         try:
@@ -217,6 +216,7 @@ class TestCase(unittest.TestCase):
     user is internal; it just checks for cached values and returns False
     if nothing is found.
     """
+
     def IsInternalUser():
       return bool(utils.GetCachedIsInternalUser(utils.GetEmail()))
 
@@ -229,6 +229,7 @@ class TestCase(unittest.TestCase):
     user is internal; it just checks for cached values and returns False
     if nothing is found.
     """
+
     def IsAdministrator():
       return bool(utils.GetCachedIsAdministrator(utils.GetEmail()))
 
@@ -294,8 +295,8 @@ def _AddRowsFromDict(container_key, row_dict):
   for int_id in sorted(row_dict):
     rows.append(
         graph_data.Row(id=int_id, parent=container_key, **row_dict[int_id]))
-  ndb.Future.wait_all(
-      [r.put_async() for r in rows] + [rows[0].UpdateParentAsync()])
+  ndb.Future.wait_all([r.put_async() for r in rows] +
+                      [rows[0].UpdateParentAsync()])
   return rows
 
 
@@ -304,8 +305,8 @@ def _AddRowsFromIterable(container_key, row_ids):
   rows = []
   for int_id in sorted(row_ids):
     rows.append(graph_data.Row(id=int_id, parent=container_key, value=int_id))
-  ndb.Future.wait_all(
-      [r.put_async() for r in rows] + [rows[0].UpdateParentAsync()])
+  ndb.Future.wait_all([r.put_async() for r in rows] +
+                      [rows[0].UpdateParentAsync()])
   return rows
 
 
@@ -324,6 +325,205 @@ def SetSheriffDomains(domains):
   stored_object.Set(utils.SHERIFF_DOMAINS_KEY, domains)
 
 
-def SetIpWhitelist(ip_addresses):
-  """Sets the list of whitelisted IP addresses."""
-  stored_object.Set(utils.IP_WHITELIST_KEY, ip_addresses)
+def SetIpAllowlist(ip_addresses):
+  """Sets the IP address allowlist."""
+  stored_object.Set(utils.IP_ALLOWLIST_KEY, ip_addresses)
+
+
+# TODO(fancl): Make it a "real" fake issue tracker.
+class FakeIssueTrackerService(object):
+  """A fake version of IssueTrackerService that saves call values."""
+
+  def __init__(self):
+    self.bug_id = 12345
+    self._bug_id_counter = self.bug_id
+    self.new_bug_args = None
+    self.new_bug_kwargs = None
+    self.add_comment_args = None
+    self.add_comment_kwargs = None
+    self.calls = []
+    self._base_issue = {
+        'cc': [{
+            'kind': 'monorail#issuePerson',
+            'htmlLink': 'https://bugs.chromium.org/u/1253971105',
+            'name': 'user@chromium.org',
+        }, {
+            'kind': 'monorail#issuePerson',
+            'name': 'hello@world.org',
+        }],
+        'labels': [
+            'Type-Bug',
+            'Pri-3',
+            'M-61',
+        ],
+        'owner': {
+            'kind': 'monorail#issuePerson',
+            'htmlLink': 'https://bugs.chromium.org/u/49586776',
+            'name': 'owner@chromium.org',
+        },
+        'author': {
+            'kind': 'monorail#issuePerson',
+            'htmlLink': 'https://bugs.chromium.org/u/49586776',
+            'name': 'author@chromium.org',
+        },
+        'state': 'open',
+        'status': 'Unconfirmed',
+        'summary': 'The bug title',
+        'components': [
+            'Blink>ServiceWorker',
+            'Foo>Bar',
+        ],
+        'published': '2017-06-28T01:26:53',
+        'updated': '2018-03-01T16:16:22',
+    }
+    # TODO(dberris): Migrate users to not rely on the seeded issue.
+    self.issues = {
+        ('chromium', self._bug_id_counter): {
+            k: v for k, v in itertools.chain(self._base_issue.items(), [(
+                'id', self._bug_id_counter), ('projectId', 'chromium')])
+        }
+    }
+    self.issue_comments = {('chromium', self._bug_id_counter): []}
+
+  @property
+  def issue(self):
+    return self.issues.get(('chromium', self.bug_id))
+
+  @property
+  def comments(self):
+    return self.issue_comments.get(('chromium', self.bug_id))
+
+  def NewBug(self, *args, **kwargs):
+    self.new_bug_args = args
+    self.new_bug_kwargs = kwargs
+    self.calls.append({
+        'method': 'NewBug',
+        'args': args,
+        'kwargs': kwargs,
+    })
+    # TODO(dberris): In the future, actually generate the issue.
+    self.issues.update({
+        (kwargs.get('project', 'chromium'), self._bug_id_counter): {
+            k: v for k, v in itertools.chain(self._base_issue.items(), [(
+                'id', self._bug_id_counter
+            ), ('projectId', kwargs.get('project', 'chromium'))])
+        }
+    })
+    result = {
+        'bug_id': self._bug_id_counter,
+        'project_id': kwargs.get('project', 'chromium')
+    }
+    self._bug_id_counter += 1
+    return result
+
+  def AddBugComment(self, *args, **kwargs):
+    self.add_comment_args = args
+    self.add_comment_kwargs = kwargs
+
+    # If we fined that one of the keyword arguments is an update, we'll mimic
+    # what the actual service will do and mark the state "closed" or "open".
+    # TODO(dberris): Actually simulate an update faithfully, someday.
+    issue_key = (kwargs.get('project', 'chromium'), args[0])
+    status = kwargs.get('status')
+    if status:
+      self.issues.setdefault(issue_key, {}).update({
+          'state': ('closed'
+                    if kwargs.get('status') in {'WontFix', 'Fixed'} else 'open')
+      })
+    self.calls.append({
+        'method': 'AddBugComment',
+        'args': args,
+        'kwargs': kwargs,
+    })
+
+  def GetIssue(self, issue_id, project='chromium'):
+    return self.issues.get((project, issue_id))
+
+  def GetIssueComments(self, issue_id, project='chromium'):
+    return self.issue_comments.get((project, issue_id), [])
+
+
+class FakeSheriffConfigClient(object):
+
+  def __init__(self):
+    self.patterns = {}
+
+  def Match(self, path, **_):
+    # The real implementation is quite different from fnmatch. But this is
+    # enough for testing because we shouldn't test match logic.
+    for p, s in self.patterns.items():
+      if re.match(fnmatch.translate(p), path):
+        return s, None
+    return [], None
+
+
+class FakeCrrev(object):
+
+  def __init__(self):
+    self._response = None
+    self.SetSuccess()
+
+  def SetSuccess(self, git_sha='abcd'):
+    self._response = {'git_sha': git_sha}
+
+  def SetFailure(self):
+    self._response = {'error': {'message': 'some error'}}
+
+  def GetNumbering(self, *args, **kwargs):
+    # pylint: disable=unused-argument
+    return self._response
+
+
+class FakePinpoint(object):
+
+  def __init__(self):
+    self.new_job_request = None
+    self._response = None
+    self.SetSuccess()
+
+  def SetSuccess(self, job_id='123456'):
+    self._response = {'jobId': job_id}
+
+  def SetFailure(self):
+    self._response = {'error': 'some error'}
+
+  def NewJob(self, request):
+    self.new_job_request = request
+    return self._response
+
+
+class FakeGitiles(object):
+
+  def __init__(self, repo_commit_list=None):
+    self._repo_commit_list = repo_commit_list or {}
+
+  def CommitInfo(self, repo, revision):
+    logging.debug('Called: repo = %s, revision = %s', repo, revision)
+    return self._repo_commit_list.get(repo, {}).get(revision, {})
+
+
+class FakeRevisionInfoClient(object):
+
+  def __init__(self, infos, revisions):
+    self._infos = infos
+    self._revisions = revisions
+
+  def GetRevisionInfoConfig(self):
+    return self._infos
+
+  def GetRevisions(self, test_key, revision):
+    return self._revisions.get(test_key.string_id(), {}).get(revision, {})
+
+  def GetRangeRevisionInfo(self, test_key, start, end):
+    revision_info = self.GetRevisionInfoConfig()
+    revision_start = self.GetRevisions(test_key, start - 1)
+    revision_end = self.GetRevisions(test_key, end)
+    infos = []
+    for k, info in revision_info.items():
+      if k not in revision_start or k not in revision_end:
+        continue
+      url = info.get('url', '')
+      info['url'] = url.replace('{{R1}}', revision_start[k]).replace(
+          '{{R2}}', revision_end[k])
+      infos.append(info)
+    return infos

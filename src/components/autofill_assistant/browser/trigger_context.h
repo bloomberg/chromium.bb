@@ -37,16 +37,24 @@ class TriggerContext {
   TriggerContext();
   virtual ~TriggerContext();
 
-  // Adds all parameters to the given proto field.
-  virtual void AddParameters(
-      google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const = 0;
+  // Returns all parameters as a map.
+  virtual std::map<std::string, std::string> GetParameters() const = 0;
 
   // Returns the value of a specific parameter, if present.
   virtual base::Optional<std::string> GetParameter(
       const std::string& name) const = 0;
 
+  // Getters for specific parameters.
+  base::Optional<std::string> GetOverlayColors() const;
+  base::Optional<std::string> GetPasswordChangeUsername() const;
+  bool WasStartedByLegacyTriggerScript() const;
+  base::Optional<std::string> GetBase64TriggerScriptsResponseProto() const;
+
   // Returns a comma-separated set of experiment ids.
   virtual std::string experiment_ids() const = 0;
+
+  // Returns whether an experiment is contained in |experiment_ids|.
+  virtual bool HasExperimentId(const std::string& experiment_id) const = 0;
 
   // Returns true if we're in a Chrome Custom Tab created for Autofill
   // Assistant, originally created through AutofillAssistantFacade.start(), in
@@ -75,12 +83,6 @@ class TriggerContextImpl : public TriggerContext {
 
   ~TriggerContextImpl() override;
 
-  // Implements TriggerContext:
-  void AddParameters(google::protobuf::RepeatedPtrField<ScriptParameterProto>*
-                         dest) const override;
-  base::Optional<std::string> GetParameter(
-      const std::string& name) const override;
-
   void SetCCT(bool value) { cct_ = value; }
   void SetOnboardingShown(bool value) { onboarding_shown_ = value; }
   void SetDirectAction(bool value) { direct_action_ = value; }
@@ -88,7 +90,12 @@ class TriggerContextImpl : public TriggerContext {
     caller_account_hash_ = value;
   }
 
+  // Implements TriggerContext:
+  std::map<std::string, std::string> GetParameters() const override;
+  base::Optional<std::string> GetParameter(
+      const std::string& name) const override;
   std::string experiment_ids() const override;
+  bool HasExperimentId(const std::string& experiment_id) const override;
   bool is_cct() const override;
   bool is_onboarding_shown() const override;
   bool is_direct_action() const override;
@@ -103,9 +110,7 @@ class TriggerContextImpl : public TriggerContext {
   std::string experiment_ids_;
 
   bool cct_ = false;
-
   bool direct_action_ = false;
-
   bool onboarding_shown_ = false;
 
   std::string caller_account_hash_ = "";
@@ -120,11 +125,11 @@ class MergedTriggerContext : public TriggerContext {
   ~MergedTriggerContext() override;
 
   // Implements TriggerContext:
-  void AddParameters(google::protobuf::RepeatedPtrField<ScriptParameterProto>*
-                         dest) const override;
+  std::map<std::string, std::string> GetParameters() const override;
   base::Optional<std::string> GetParameter(
       const std::string& name) const override;
   std::string experiment_ids() const override;
+  bool HasExperimentId(const std::string& experiment_id) const override;
   bool is_cct() const override;
   bool is_onboarding_shown() const override;
   bool is_direct_action() const override;

@@ -28,7 +28,6 @@
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_answer_card_view.h"
 #include "ash/app_list/views/search_result_container_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
@@ -44,6 +43,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/search_box/search_box_constants.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,10 +53,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -144,7 +142,7 @@ bool IsViewVisibleOnScreen(views::View* view) {
 class TestStartPageSearchResult : public TestSearchResult {
  public:
   TestStartPageSearchResult() {
-    set_display_type(ash::SearchResultDisplayType::kTile);
+    set_display_type(ash::SearchResultDisplayType::kChip);
     set_is_recommendation(true);
   }
   ~TestStartPageSearchResult() override = default;
@@ -438,9 +436,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     views::ViewsTestBase::SetUp();
 
     // Initialize app list view.
-    fake_card_contents_.set_default_response_headers(
-        SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
-            "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
     view_->InitView(GetContext());
@@ -473,10 +468,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     // Disable animation timer.
     view_->GetWidget()->GetLayer()->GetAnimator()->set_disable_timer_for_test(
         true);
-
-    // The Update above will elicit a navigation. Wait for it.
-    delegate_->fake_navigable_contents_factory()
-        .WaitForAndBindNextContentsRequest(&fake_card_contents_);
   }
 
   void TearDown() override {
@@ -507,15 +498,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   // Add search results for test on focus movement.
-  void SetUpSearchResults(int tile_results_num,
-                          int list_results_num,
-                          bool card_result) {
+  void SetUpSearchResults(int tile_results_num, int list_results_num) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(
         std::make_pair(ash::SearchResultDisplayType::kTile, tile_results_num));
-    if (card_result)
-      result_types.push_back(
-          std::make_pair(ash::SearchResultDisplayType::kCard, 1));
     result_types.push_back(
         std::make_pair(ash::SearchResultDisplayType::kList, list_results_num));
 
@@ -534,10 +520,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
         result->set_display_type(data.first);
         result->set_display_score(display_score);
         result->set_title(base::ASCIIToUTF16("Test"));
-        if (data.first == ash::SearchResultDisplayType::kCard) {
-          const GURL kFakeCardUrl = GURL("https://www.google.com/coac?q=fake");
-          result->set_query_url(kFakeCardUrl);
-        }
         results->Add(std::move(result));
       }
     }
@@ -810,9 +792,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardUIController keyboard_ui_controller_;
 
-  // A fake NavigableContents implementation to back card navigation requests.
-  content::FakeNavigableContents fake_card_contents_;
-
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 
@@ -896,7 +875,7 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults, true);
+  SetUpSearchResults(kTileResults, kListResults);
 
   std::vector<views::View*> forward_view_list;
 
@@ -906,9 +885,7 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
           ->tile_views_for_test();
   for (int i = 0; i < kTileResults; ++i)
     forward_view_list.push_back(tile_views[i]);
-  forward_view_list.push_back(contents_view()
-                                  ->search_result_answer_card_view_for_test()
-                                  ->GetAnswerCardResultViewForTest());
+
   SearchResultListView* list_view =
       contents_view()->search_result_list_view_for_test();
   for (int i = 0; i < kListResults; ++i)
@@ -953,7 +930,7 @@ TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults, true);
+  SetUpSearchResults(kTileResults, kListResults);
 
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
@@ -1006,7 +983,7 @@ TEST_P(AppListViewFocusTest, LeftRightFocusTraversalInHalfState) {
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
 
   constexpr int kTileResults = 6;
-  SetUpSearchResults(kTileResults, 0, false);
+  SetUpSearchResults(kTileResults, 0);
 
   std::vector<views::View*> forward_view_list;
   const std::vector<SearchResultTileItemView*>& tile_views =
@@ -1136,7 +1113,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults, true);
+  SetUpSearchResults(kTileResults, kListResults);
 
   std::vector<views::View*> forward_view_list;
 
@@ -1145,9 +1122,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
   forward_view_list.push_back(tile_views[0]);
-  forward_view_list.push_back(contents_view()
-                                  ->search_result_answer_card_view_for_test()
-                                  ->GetAnswerCardResultViewForTest());
+
   SearchResultListView* list_view =
       contents_view()->search_result_list_view_for_test();
   for (int i = 0; i < kListResults; ++i)
@@ -1164,9 +1139,6 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   std::vector<views::View*> backward_view_list;
   for (int i = kListResults - 1; i >= 0; --i)
     backward_view_list.push_back(list_view->GetResultViewAt(i));
-  backward_view_list.push_back(contents_view()
-                                   ->search_result_answer_card_view_for_test()
-                                   ->GetAnswerCardResultViewForTest());
   backward_view_list.push_back(tile_views[kTileResults - 1]);
 
   // Test traversal triggered by up.
@@ -1273,7 +1245,7 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
   const int kTileResults = 3;
   const int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults, true);
+  SetUpSearchResults(kTileResults, kListResults);
 
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
@@ -1318,48 +1290,31 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
 }
 
 // Tests that key event which is not handled by focused view will be redirected
-// to search box.
+// to search box when search box view is active (but not focused).
 TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
-  // UI behavior is different with Zero State enabled. This test is
-  // the expected UI behavior with zero state feature being disabled.
-  // TODO(jennyz): Add new test case for UI behavior for zero state.
-  // crbug.com/925195.
-  scoped_feature_list_.InitAndDisableFeature(
-      app_list_features::kEnableZeroStateSuggestions);
-  EXPECT_FALSE(app_list_features::IsZeroStateSuggestionsEnabled());
-
   Show();
 
   // Set focus to first suggestion app and type a character.
   GetAllSuggestions()[0]->RequestFocus();
-  SimulateKeyPress(ui::VKEY_SPACE, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->GetText(), base::UTF8ToUTF16(" "));
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-
-  // UI and Focus behavior is different with Zero State enabled.
-  // Set focus to expand arrow and type a character.
-  expand_arrow_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_A, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->GetText(),
-            base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(), base::UTF8ToUTF16("a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and type a character.
   search_box_view()->close_button()->RequestFocus();
+  EXPECT_NE(search_box_view()->search_box(), focused_view());
   SimulateKeyPress(ui::VKEY_B, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->GetText(),
-            base::UTF8ToUTF16(" ab"));
+            base::UTF8ToUTF16("ab"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and hitting backspace.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_BACK, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->GetText(),
-            base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(), base::UTF8ToUTF16("a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 }
 
@@ -1400,7 +1355,7 @@ TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
   EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults, false);
+  SetUpSearchResults(kTileResults, kListResults);
 
   // Move focus to the first search result.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -1436,7 +1391,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   // fake list results.
   search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
   const int kListResults = 2;
-  SetUpSearchResults(0, kListResults, false);
+  SetUpSearchResults(0, kListResults);
   SearchResultListView* list_view =
       contents_view()->search_result_list_view_for_test();
 
@@ -1447,7 +1402,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
 
   // Populate both fake list results and tile results.
   const int kTileResults = 3;
-  SetUpSearchResults(kTileResults, kListResults, false);
+  SetUpSearchResults(kTileResults, kListResults);
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
           ->search_result_tile_item_list_view_for_test()
@@ -1469,19 +1424,8 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   SimulateKeyPress(ui::VKEY_TAB, false);
   EXPECT_FALSE(tile_views[0]->selected());
 
-  // Populate only answer card.
-  SetUpSearchResults(0, 0, true);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  SearchResultBaseView* answer_container = static_cast<SearchResultBaseView*>(
-      contents_view()
-          ->search_result_answer_card_view_for_test()
-          ->GetAnswerCardResultViewForTest());
-  EXPECT_EQ(answer_container,
-            contents_view()->search_results_page_view()->first_result_view());
-  EXPECT_TRUE(answer_container->selected());
-
   // Clear up all search results.
-  SetUpSearchResults(0, 0, false);
+  SetUpSearchResults(0, 0);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(nullptr,
             contents_view()->search_results_page_view()->first_result_view());
@@ -1503,29 +1447,23 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
   // fake list results. Then hit Enter key.
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
   const int kListResults = 2;
-  SetUpSearchResults(0, kListResults, false);
+  SetUpSearchResults(0, kListResults);
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_EQ(1, GetOpenFirstSearchResultCount());
   EXPECT_EQ(1, GetTotalOpenSearchResultCount());
 
   // Populate both fake list results and tile results. Then hit Enter key.
   const int kTileResults = 3;
-  SetUpSearchResults(kTileResults, kListResults, false);
+  SetUpSearchResults(kTileResults, kListResults);
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_EQ(2, GetOpenFirstSearchResultCount());
   EXPECT_EQ(2, GetTotalOpenSearchResultCount());
 
-  // Populate only answer card. Then hit Enter key.
-  SetUpSearchResults(0, 0, true);
-  SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_EQ(3, GetOpenFirstSearchResultCount());
-  EXPECT_EQ(3, GetTotalOpenSearchResultCount());
-
   // Clear up all search results. Then hit Enter key.
-  SetUpSearchResults(0, 0, false);
+  SetUpSearchResults(0, 0);
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_EQ(3, GetOpenFirstSearchResultCount());
-  EXPECT_EQ(3, GetTotalOpenSearchResultCount());
+  EXPECT_EQ(2, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(2, GetTotalOpenSearchResultCount());
 }
 
 // Tests that search box becomes focused when it is activated.
@@ -1571,9 +1509,9 @@ TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
   TestLeftAndRightKeyTraversalOnTextfield(search_box_view()->search_box());
 }
 
-// Tests that the focus is reset onto the search box and the folder exits after
-// hitting enter on folder name.
-TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOnFolderName) {
+// Tests that the focus is reset and the folder does not exit after hitting
+// enter/escape on folder name.
+TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOrEscapeOnFolderName) {
   Show();
 
   // Transition to FULLSCREEN_ALL_APPS state and open the folder.
@@ -1589,8 +1527,14 @@ TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOnFolderName) {
 
   // Hit enter key.
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  search_box_view()->search_box()->RequestFocus();
-  EXPECT_FALSE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_FALSE(folder_name_view->HasFocus());
+
+  // Refocus and hit escape key.
+  folder_name_view->RequestFocus();
+  SimulateKeyPress(ui::VKEY_ESCAPE, false);
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_FALSE(folder_name_view->HasFocus());
 }
 
 // Tests that the selection highlight follows the page change.
@@ -2071,7 +2015,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   view_->OnGestureEvent(&update_event);
 
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateApps));
 
@@ -2079,7 +2023,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // during drag.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(view_->is_in_drag());
-  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateSearchResults));
   histogram_tester.ExpectTotalCount(
@@ -2099,7 +2043,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
   // if launcher drag finished.
   EXPECT_FALSE(view_->is_in_drag());
-  EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateApps));
   histogram_tester.ExpectTotalCount(
@@ -2492,19 +2436,6 @@ TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
   EXPECT_FALSE(assistant_page_view()->GetVisible());
 }
 
-// Tests that no answer card view when kEnableAssistantSearch is enabled.
-TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantSearch}, {});
-  ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
-
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-
-  EXPECT_FALSE(contents_view()->search_result_answer_card_view_for_test());
-}
-
 // Tests that pressing escape in embedded Assistant UI returns to fullscreen
 // if the Assistant UI was launched from fullscreen app list.
 TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToAppList) {
@@ -2601,6 +2532,16 @@ TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
 
   EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
   EXPECT_FALSE(search_box_view()->GetVisible());
+}
+
+// Tests that the expand arrow cannot be seen when opening the app list with
+// side shelf enabled.
+TEST_F(AppListViewTest, ExpandArrowNotVisibleWithSideShelf) {
+  Initialize(false /*is_tablet_mode*/);
+
+  Show(true /*is_side_shelf*/);
+
+  EXPECT_EQ(0.0f, contents_view()->expand_arrow_view()->layer()->opacity());
 }
 
 // Tests fullscreen apps grid sizing and layout for small screens (width < 960)

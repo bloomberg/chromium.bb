@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/token.h"
@@ -64,10 +65,13 @@ static const SessionCommand::id_type kCommandLastActiveTime = 21;
 static const SessionCommand::id_type kCommandSetWindowWorkspace2 = 23;
 static const SessionCommand::id_type kCommandTabNavigationPathPruned = 24;
 static const SessionCommand::id_type kCommandSetTabGroup = 25;
-static const SessionCommand::id_type kCommandSetTabGroupMetadata = 26;
+// OBSOLETE Superseded by kCommandSetTabGroupMetadata2.
+// static const SessionCommand::id_type kCommandSetTabGroupMetadata = 26;
 static const SessionCommand::id_type kCommandSetTabGroupMetadata2 = 27;
 static const SessionCommand::id_type kCommandSetTabGuid = 28;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride2 = 29;
+static const SessionCommand::id_type kCommandSetTabData = 30;
+static const SessionCommand::id_type kCommandSetWindowUserTitle = 31;
 
 namespace {
 
@@ -632,7 +636,6 @@ bool CreateTabsAndWindows(
         break;
       }
 
-      case kCommandSetTabGroupMetadata:
       case kCommandSetTabGroupMetadata2: {
         std::unique_ptr<base::Pickle> pickle = command->PayloadAsPickle();
         base::PickleIterator iter(*pickle);
@@ -649,27 +652,16 @@ bool CreateTabsAndWindows(
         if (!iter.ReadString16(&title))
           return true;
 
-        if (command->id() == kCommandSetTabGroupMetadata) {
-          SkColor color;
-          if (!iter.ReadUInt32(&color))
-            return true;
+        uint32_t color_int;
+        if (!iter.ReadUInt32(&color_int))
+          return true;
 
-          // crrev.com/c/1968039 changes the color of a tab group from a SkColor
-          // to a TabGroupColorId. Here we ignore the old SkColor and assign the
-          // default TabGroupColorId because the fallback is acceptable while
-          // the tab groups feature isn't yet launched. Once it is,
-          // kCommandSetTabGroupMetadata will be deprecated in favor of
-          // kCommandSetTabGroupMetadata2, which properly restores
-          // TabGroupColorIds.
-          group->visual_data = tab_groups::TabGroupVisualData(
-              title, tab_groups::TabGroupColorId::kGrey);
-        } else {
-          uint32_t color_int;
-          if (!iter.ReadUInt32(&color_int))
-            return true;
-
-          group->visual_data = tab_groups::TabGroupVisualData(title, color_int);
-        }
+        // The |is_collapsed| boolean was added in M88 to save the collapsed
+        // state, so previous versions may not have this stored.
+        bool is_collapsed = false;
+        ignore_result(!iter.ReadBool(&is_collapsed));
+        group->visual_data =
+            tab_groups::TabGroupVisualData(title, color_int, is_collapsed);
         break;
       }
 
@@ -807,6 +799,40 @@ bool CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSetTabData: {
+        std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
+        base::PickleIterator it(*pickle);
+        SessionID::id_type tab_id = -1;
+        int size = 0;
+        if (!it.ReadInt(&tab_id) || !it.ReadInt(&size)) {
+          DVLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        std::map<std::string, std::string> data;
+        for (int i = 0; i < size; i++) {
+          std::string key;
+          std::string value;
+          if (!it.ReadString(&key) || !it.ReadString(&value)) {
+            DVLOG(1) << "Failed reading command " << command->id();
+            return true;
+          }
+          data.insert({key, value});
+        }
+
+        GetTab(SessionID::FromSerializedValue(tab_id), tabs)->data =
+            std::move(data);
+        break;
+      }
+
+      case kCommandSetWindowUserTitle: {
+        SessionID window_id = SessionID::InvalidValue();
+        std::string title;
+        if (!RestoreSetWindowUserTitleCommand(*command, &window_id, &title))
+          return true;
+        GetWindow(window_id, windows)->user_title = title;
+        break;
+      }
+
       default:
         DVLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
@@ -926,6 +952,9 @@ std::unique_ptr<SessionCommand> CreateTabGroupMetadataUpdateCommand(
   WriteTokenToPickle(&pickle, group.token());
   pickle.WriteString16(visual_data->title());
   pickle.WriteUInt32(static_cast<int>(visual_data->color()));
+
+  // This boolean was added in M88 to save the collapsed state.
+  pickle.WriteBool(visual_data->is_collapsed());
   return std::make_unique<SessionCommand>(kCommandSetTabGroupMetadata2, pickle);
 }
 
@@ -1013,6 +1042,13 @@ std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
                                        app_name);
 }
 
+std::unique_ptr<SessionCommand> CreateSetWindowUserTitleCommand(
+    const SessionID& window_id,
+    const std::string& user_title) {
+  return CreateSetWindowUserTitleCommand(kCommandSetWindowUserTitle, window_id,
+                                         user_title);
+}
+
 std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
     const SessionID& tab_id,
     const std::string& guid) {
@@ -1020,6 +1056,19 @@ std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
   pickle.WriteInt(tab_id.id());
   pickle.WriteString(guid);
   return std::make_unique<SessionCommand>(kCommandSetTabGuid, pickle);
+}
+
+std::unique_ptr<SessionCommand> CreateSetTabDataCommand(
+    const SessionID& tab_id,
+    const std::map<std::string, std::string>& data) {
+  base::Pickle pickle;
+  pickle.WriteInt(tab_id.id());
+  pickle.WriteInt(data.size());
+  for (const auto& kv : data) {
+    pickle.WriteString(kv.first);
+    pickle.WriteString(kv.second);
+  }
+  return std::make_unique<SessionCommand>(kCommandSetTabData, pickle);
 }
 
 bool ReplacePendingCommand(CommandStorageManager* command_storage_manager,

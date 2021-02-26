@@ -116,7 +116,7 @@ scoped_refptr<BlobDataItem> BlobDataItem::CreateFutureFile(uint64_t offset,
 
 // static
 scoped_refptr<BlobDataItem> BlobDataItem::CreateFileFilesystem(
-    const GURL& url,
+    const FileSystemURL& url,
     uint64_t offset,
     uint64_t length,
     base::Time expected_modification_time,
@@ -193,6 +193,7 @@ void BlobDataItem::ShrinkBytes(size_t new_length) {
   DCHECK_EQ(type_, Type::kBytes);
   length_ = new_length;
   bytes_.resize(length_);
+  bytes_.shrink_to_fit();
 }
 
 void BlobDataItem::PopulateFile(
@@ -251,7 +252,7 @@ void PrintTo(const BlobDataItem& x, ::std::ostream* os) {
           << ", expected_modification_time: " << x.expected_modification_time();
       break;
     case BlobDataItem::Type::kFileFilesystem:
-      *os << "kFileFilesystem, url: " << x.filesystem_url();
+      *os << "kFileFilesystem, url: " << x.filesystem_url().DebugString();
       break;
     case BlobDataItem::Type::kReadableDataHandle:
       *os << "kReadableDataHandle"

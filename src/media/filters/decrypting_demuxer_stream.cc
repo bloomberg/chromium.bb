@@ -8,10 +8,12 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
@@ -26,12 +28,14 @@ static bool IsStreamValid(DemuxerStream* stream) {
 }
 
 DecryptingDemuxerStream::DecryptingDemuxerStream(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     MediaLog* media_log,
     const WaitingCB& waiting_cb)
     : task_runner_(task_runner),
       media_log_(media_log),
-      waiting_cb_(waiting_cb) {}
+      waiting_cb_(waiting_cb) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 std::string DecryptingDemuxerStream::GetDisplayName() const {
   return "DecryptingDemuxerStream";
@@ -41,13 +45,12 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
                                          CdmContext* cdm_context,
                                          PipelineStatusCallback status_cb) {
   DVLOG(2) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(stream);
   DCHECK(cdm_context);
   DCHECK(!demuxer_stream_);
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
   init_cb_ = BindToCurrentLoop(std::move(status_cb));
 
@@ -62,10 +65,8 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   decryptor_ = cdm_context->GetDecryptor();
 
-  decryptor_->RegisterNewKeyCB(
-      GetDecryptorStreamType(),
-      BindToCurrentLoop(base::BindRepeating(
-          &DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &DecryptingDemuxerStream::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
 
   state_ = kIdle;
   std::move(init_cb_).Run(PIPELINE_OK);
@@ -73,24 +74,21 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
 void DecryptingDemuxerStream::Read(ReadCB read_cb) {
   DVLOG(3) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kIdle) << state_;
   DCHECK(read_cb);
   CHECK(!read_cb_) << "Overlapping reads are not supported.";
 
   read_cb_ = BindToCurrentLoop(std::move(read_cb));
   state_ = kPendingDemuxerRead;
-  demuxer_stream_->Read(base::BindOnce(
-      &DecryptingDemuxerStream::OnBufferReadFromDemuxerStream, weak_this_));
-}
-
-bool DecryptingDemuxerStream::IsReadPending() const {
-  return !read_cb_.is_null();
+  demuxer_stream_->Read(
+      base::BindOnce(&DecryptingDemuxerStream::OnBufferReadFromDemuxerStream,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DecryptingDemuxerStream::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__ << " - state: " << state_;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ != kUninitialized) << state_;
   DCHECK(!reset_cb_);
 
@@ -150,7 +148,7 @@ bool DecryptingDemuxerStream::SupportsConfigChanges() {
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __func__ << " : state_ = " << state_;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == kUninitialized)
     return;
@@ -177,7 +175,7 @@ void DecryptingDemuxerStream::OnBufferReadFromDemuxerStream(
     DemuxerStream::Status status,
     scoped_refptr<DecoderBuffer> buffer) {
   DVLOG(3) << __func__ << ": status = " << status;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kPendingDemuxerRead) << state_;
   DCHECK(read_cb_);
   DCHECK_EQ(buffer.get() != nullptr, status == kOk) << status;
@@ -238,24 +236,24 @@ void DecryptingDemuxerStream::OnBufferReadFromDemuxerStream(
 }
 
 void DecryptingDemuxerStream::DecryptPendingBuffer() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
   DCHECK(!pending_buffer_to_decrypt_->end_of_stream());
   TRACE_EVENT_ASYNC_BEGIN2(
       "media", "DecryptingDemuxerStream::DecryptPendingBuffer", this, "type",
       DemuxerStream::GetTypeName(demuxer_stream_->type()), "timestamp_us",
       pending_buffer_to_decrypt_->timestamp().InMicroseconds());
-  decryptor_->Decrypt(
-      GetDecryptorStreamType(), pending_buffer_to_decrypt_,
-      BindToCurrentLoop(base::BindOnce(
-          &DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
+  decryptor_->Decrypt(GetDecryptorStreamType(), pending_buffer_to_decrypt_,
+                      BindToCurrentLoop(base::BindOnce(
+                          &DecryptingDemuxerStream::OnBufferDecrypted,
+                          weak_factory_.GetWeakPtr())));
 }
 
 void DecryptingDemuxerStream::OnBufferDecrypted(
     Decryptor::Status status,
     scoped_refptr<DecoderBuffer> decrypted_buffer) {
   DVLOG(3) << __func__ << " - status: " << status;
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
   DCHECK(read_cb_);
   DCHECK(pending_buffer_to_decrypt_);
@@ -310,18 +308,23 @@ void DecryptingDemuxerStream::OnBufferDecrypted(
 
   DCHECK_EQ(status, Decryptor::kSuccess);
 
-  // Copy the key frame flag from the encrypted to decrypted buffer, assuming
-  // that the decryptor initialized the flag to false.
-  if (pending_buffer_to_decrypt_->is_key_frame())
-    decrypted_buffer->set_is_key_frame(true);
+  // Copy the key frame flag and duration from the encrypted to decrypted
+  // buffer.
+  // TODO(crbug.com/1116263): Ensure all fields are copied by Decryptor.
+  decrypted_buffer->set_is_key_frame(
+      pending_buffer_to_decrypt_->is_key_frame());
+  decrypted_buffer->set_duration(pending_buffer_to_decrypt_->duration());
 
   pending_buffer_to_decrypt_ = nullptr;
   state_ = kIdle;
   std::move(read_cb_).Run(kOk, std::move(decrypted_buffer));
 }
 
-void DecryptingDemuxerStream::OnKeyAdded() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+void DecryptingDemuxerStream::OnCdmContextEvent(CdmContext::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
 
   if (state_ == kPendingDecrypt) {
     key_added_while_decrypt_pending_ = true;

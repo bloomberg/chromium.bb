@@ -6,24 +6,31 @@ package org.chromium.weblayer.test;
 
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.webkit.ValueCallback;
 
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Download;
 import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.DownloadError;
 import org.chromium.weblayer.DownloadState;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -103,7 +110,8 @@ public class DownloadCallbackTest {
         }
 
         public void waitForIntercept() {
-            CriteriaHelper.pollInstrumentationThread(() -> Assert.assertNotNull(mUrl));
+            CriteriaHelper.pollInstrumentationThread(
+                    () -> Criteria.checkThat(mUrl, Matchers.notNullValue()));
         }
 
         public void waitForStarted() {
@@ -170,6 +178,47 @@ public class DownloadCallbackTest {
             Assert.assertEquals(mimetype, mCallback.mMimetype);
             Assert.assertEquals(data.length(), mCallback.mContentLength);
             // TODO(estade): verify mUserAgent.
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * Verifies that if the first navigation in a Tab is for a download then it is deleted.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86) // Behavior landed in 86.
+    public void testFirstNavigationIsDownloadClosesTab() throws Throwable {
+        // Set up listening for the tab removal that we expect to happen.
+        CallbackHelper onTabRemovedCallbackHelper = new CallbackHelper();
+        TabListCallback tabListCallback = new TabListCallback() {
+            @Override
+            public void onTabRemoved(Tab tab) {
+                onTabRemovedCallbackHelper.notifyCalled();
+            }
+        };
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { browser.registerTabListCallback(tabListCallback); });
+
+        final String data = "download data";
+        final String contentDisposition = "attachment;filename=\"download.txt\"";
+        final String mimetype = "text/plain";
+
+        List<Pair<String, String>> downloadHeaders = new ArrayList<Pair<String, String>>();
+        downloadHeaders.add(Pair.create("Content-Disposition", contentDisposition));
+        downloadHeaders.add(Pair.create("Content-Type", mimetype));
+        downloadHeaders.add(Pair.create("Content-Length", Integer.toString(data.length())));
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String pageUrl = webServer.setResponse("/download.txt", data, downloadHeaders);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mActivity.getTab().getNavigationController().navigate(Uri.parse(pageUrl));
+            });
+            mCallback.waitForCompleted();
+            onTabRemovedCallbackHelper.waitForFirst();
         } finally {
             webServer.shutdown();
         }

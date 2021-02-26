@@ -27,7 +27,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_RESOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_RESOURCE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
@@ -40,6 +39,8 @@ class CORE_EXPORT LayoutImageResource
     : public GarbageCollected<LayoutImageResource> {
  public:
   LayoutImageResource();
+  LayoutImageResource(const LayoutImageResource&) = delete;
+  LayoutImageResource& operator=(const LayoutImageResource&) = delete;
   virtual ~LayoutImageResource();
 
   virtual void Initialize(LayoutObject*);
@@ -67,10 +68,10 @@ class CORE_EXPORT LayoutImageResource
   virtual FloatSize ImageSize(float multiplier) const;
   // Default size is effective when this is LayoutImageResourceStyleImage.
   virtual FloatSize ImageSizeWithDefaultSize(float multiplier,
-                                             const LayoutSize&) const;
+                                             const FloatSize&) const;
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(cached_image_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(cached_image_); }
 
  protected:
   // Device scale factor for the associated LayoutObject.
@@ -80,9 +81,6 @@ class CORE_EXPORT LayoutImageResource
 
   LayoutObject* layout_object_;
   Member<ImageResourceContent> cached_image_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LayoutImageResource);
 };
 
 }  // namespace blink

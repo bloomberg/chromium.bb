@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <limits>
 #include <map>
 #include <memory>
 #include <utility>
@@ -28,7 +26,6 @@
 #include "core/fxge/fx_font.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_edit.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
@@ -160,7 +157,7 @@ void AddUnicode(std::ostringstream* pBuffer, uint32_t unicode) {
 
 // Loads the charcode to unicode mapping into a stream
 CPDF_Stream* LoadUnicode(CPDF_Document* pDoc,
-                         const std::map<uint32_t, uint32_t>& to_unicode) {
+                         const std::multimap<uint32_t, uint32_t>& to_unicode) {
   // A map charcode->unicode
   std::map<uint32_t, uint32_t> char_to_uni;
   // A map <char_start, char_end> to vector v of unicode characters of size (end
@@ -291,10 +288,7 @@ RetainPtr<CPDF_Font> LoadSimpleFont(CPDF_Document* pDoc,
                                     static_cast<int>(dwCurrentChar));
   CPDF_Array* widthsArray = pDoc->NewIndirect<CPDF_Array>();
   while (true) {
-    uint32_t width =
-        std::min(pFont->GetGlyphWidth(dwGlyphIndex),
-                 static_cast<uint32_t>(std::numeric_limits<int>::max()));
-    widthsArray->AppendNew<CPDF_Number>(static_cast<int>(width));
+    widthsArray->AppendNew<CPDF_Number>(pFont->GetGlyphWidth(dwGlyphIndex));
     uint32_t nextChar =
         FT_Get_Next_Char(pFont->GetFaceRec(), dwCurrentChar, &dwGlyphIndex);
     // Simple fonts have 1-byte charcodes only.
@@ -361,15 +355,15 @@ RetainPtr<CPDF_Font> LoadCompositeFont(CPDF_Document* pDoc,
   if (dwGlyphIndex == 0 || dwCurrentChar > kMaxUnicode)
     return nullptr;
 
-  std::map<uint32_t, uint32_t> to_unicode;
+  std::multimap<uint32_t, uint32_t> to_unicode;
   std::map<uint32_t, uint32_t> widths;
   while (true) {
     if (dwCurrentChar > kMaxUnicode)
       break;
 
-    if (!pdfium::ContainsKey(widths, dwGlyphIndex))
+    if (!pdfium::Contains(widths, dwGlyphIndex))
       widths[dwGlyphIndex] = pFont->GetGlyphWidth(dwGlyphIndex);
-    to_unicode[dwGlyphIndex] = dwCurrentChar;
+    to_unicode.emplace(dwGlyphIndex, dwCurrentChar);
     dwCurrentChar =
         FT_Get_Next_Char(pFont->GetFaceRec(), dwCurrentChar, &dwGlyphIndex);
     if (dwGlyphIndex == 0)
@@ -456,7 +450,7 @@ FPDFPageObj_NewTextObj(FPDF_DOCUMENT document,
   if (!pFont)
     return nullptr;
 
-  auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
+  auto pTextObj = std::make_unique<CPDF_TextObject>();
   pTextObj->m_TextState.SetFont(pFont);
   pTextObj->m_TextState.SetFontSize(font_size);
   pTextObj->DefaultStates();
@@ -493,7 +487,7 @@ FPDF_EXPORT FPDF_FONT FPDF_CALLCONV FPDFText_LoadFont(FPDF_DOCUMENT document,
   }
 
   auto span = pdfium::make_span(data, size);
-  auto pFont = pdfium::MakeUnique<CFX_Font>();
+  auto pFont = std::make_unique<CFX_Font>();
 
   // TODO(npm): Maybe use FT_Get_X11_Font_Format to check format? Otherwise, we
   // are allowing giving any font that can be loaded on freetype and setting it
@@ -585,7 +579,7 @@ FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document,
   if (!pDoc || !pFont)
     return nullptr;
 
-  auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
+  auto pTextObj = std::make_unique<CPDF_TextObject>();
   pTextObj->m_TextState.SetFont(
       CPDF_DocPageData::FromDocument(pDoc)->GetFont(pFont->GetFontDict()));
   pTextObj->m_TextState.SetFontSize(font_size);
@@ -598,7 +592,7 @@ FPDFTextObj_GetTextRenderMode(FPDF_PAGEOBJECT text) {
   CPDF_TextObject* pTextObj = CPDFTextObjectFromFPDFPageObject(text);
   if (!pTextObj)
     return FPDF_TEXTRENDERMODE_UNKNOWN;
-  return static_cast<FPDF_TEXT_RENDERMODE>(pTextObj->m_TextState.GetTextMode());
+  return static_cast<FPDF_TEXT_RENDERMODE>(pTextObj->GetTextRenderMode());
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -613,7 +607,6 @@ FPDFTextObj_SetTextRenderMode(FPDF_PAGEOBJECT text,
   if (!pTextObj)
     return false;
 
-  pTextObj->m_TextState.SetTextMode(
-      static_cast<TextRenderingMode>(render_mode));
+  pTextObj->SetTextRenderMode(static_cast<TextRenderingMode>(render_mode));
   return true;
 }

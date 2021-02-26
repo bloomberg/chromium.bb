@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,16 +16,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.url.Origin;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
@@ -38,6 +39,7 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
     private static final String AUTOFILL_ASSISTANT_INTENT_URL =
             "intent://www.example.com#Intent;scheme=https;"
             + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.START_IMMEDIATELY=true;"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
     private static final String[] SUPERVISOR_START_ACTIONS = {
@@ -80,9 +82,22 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
         private boolean mWasAutofillAssistantStarted;
     }
 
+    private static class MockOrigin extends Origin {};
+
+    public void maybeSetAndGetRequestMetadata(ExternalNavigationDelegateImpl delegate,
+            Intent intent, boolean hasUserGesture, boolean isRendererInitiated,
+            Origin initiatorOrigin) {
+        delegate.maybeSetRequestMetadata(
+                intent, hasUserGesture, isRendererInitiated, initiatorOrigin);
+        IntentWithRequestMetadataHandler.RequestMetadata metadata =
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
+        Assert.assertEquals(hasUserGesture, metadata.hasUserGesture());
+        Assert.assertEquals(isRendererInitiated, metadata.isRendererInitiated());
+        Assert.assertEquals(initiatorOrigin, metadata.getInitiatorOrigin());
+    }
+
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Test
     @SmallTest
@@ -168,7 +183,7 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
 
     @Test
     @SmallTest
-    public void testMaybeSetUserGesture() {
+    public void maybeSetRequestMetadata() {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 mActivityTestRule.getActivity().getActivityTab());
 
@@ -176,8 +191,14 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        delegate.maybeSetUserGesture(intent);
-        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+        delegate.maybeSetRequestMetadata(intent, false, false, null);
+        Assert.assertNull(
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent));
+
+        maybeSetAndGetRequestMetadata(delegate, intent, true, true, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, true, false, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, false, true, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, false, false, new MockOrigin());
     }
 
     @Test

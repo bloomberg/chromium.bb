@@ -12,14 +12,6 @@
       "transform": 1
     },
     {
-      "name": "Scrolling Contents Layer",
-      "bounds": [200, 200],
-      "invalidations": [
-        [0, 0, 200, 200]
-      ],
-      "transform": 1
-    },
-    {
       "name": "Horizontal Scrollbar Layer",
       "position": [0, 100],
       "bounds": [100, 0],
@@ -32,10 +24,9 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='target'",
+      "name": "Scrolling Contents Layer",
       "bounds": [200, 200],
-      "contentsOpaque": true,
-      "backgroundColor": "#008000",
+      "backgroundColor": "#00800080",
       "invalidations": [
         [0, 0, 200, 200]
       ],

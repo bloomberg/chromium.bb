@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "ash/public/cpp/window_state_type.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,6 +25,8 @@ class InputMethodSurface;
 class InputMethodSurfaceManager;
 class Surface;
 class ShellSurface;
+class ToastSurface;
+class ToastSurfaceManager;
 
 namespace test {
 
@@ -59,10 +61,17 @@ class ExoTestHelper {
   // Creates window of size (width, height) at center of screen.
   ExoTestWindow CreateWindow(int width, int height, bool is_modal);
   std::unique_ptr<ClientControlledShellSurface>
-  CreateClientControlledShellSurface(Surface* surface, bool is_modal = false);
+  CreateClientControlledShellSurface(Surface* surface,
+                                     bool is_modal = false,
+                                     bool default_scale_cancellation = true);
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
-      InputMethodSurfaceManager* surface_manager);
+      InputMethodSurfaceManager* surface_manager,
+      bool default_scale_cancellation = true);
+  std::unique_ptr<ToastSurface> CreateToastSurface(
+      Surface* surface,
+      ToastSurfaceManager* surface_manager,
+      bool default_scale_cancellation = true);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExoTestHelper);

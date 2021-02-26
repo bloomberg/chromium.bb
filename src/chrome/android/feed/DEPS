@@ -1,10 +1,12 @@
 include_rules = [
   "+chrome/browser/android/lifecycle",
+  "+chrome/browser/image_fetcher",
   "+chrome/browser/profiles/android/java",
   "+chrome/browser/tab/java",
   "+chrome/browser/ui/messages/android/java",
+  "+chrome/browser/xsurface/android",
   "+components/background_task_scheduler",
   "+components/feature_engagement",
   "+components/feed",
-  "+content/public/android/java/src/org/chromium/content_public",
+  "+content/public/android/java/src/org/chromium/content_public/browser",
 ]

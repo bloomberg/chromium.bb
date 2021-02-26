@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_H_
 
+#include <list>
 #include <memory>
 
 #include "ash/ash_export.h"
@@ -20,8 +21,8 @@ class MessagePopupView;
 namespace ash {
 
 namespace tray {
-class TimeTrayItemView;
 class NetworkTrayView;
+class TimeTrayItemView;
 }  // namespace tray
 
 class CurrentLocaleView;
@@ -30,10 +31,12 @@ class ManagedDeviceTrayItemView;
 class NotificationCounterView;
 class QuietModeView;
 class PrivacyScreenToastController;
+class TrayItemView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
 class UnifiedMessageCenterBubble;
+class CameraMicTrayItemView;
 
 // The UnifiedSystemTray is the system menu of Chromium OS, which is a clickable
 // rounded rectangle typically located on the bottom right corner of the screen,
@@ -124,12 +127,25 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Returns true if the user manually expanded the quick settings.
   bool IsQuickSettingsExplicitlyExpanded() const;
 
+  // This enum is for the ChromeOS.SystemTray.FirstInteraction UMA histogram and
+  // should be kept in sync.
+  enum class FirstInteractionType {
+    kQuickSettings = 0,
+    kMessageCenter = 1,
+    kMaxValue = kMessageCenter,
+  };
+
+  // Records a metric of the first interaction with the tray bubble, i.e.
+  // whether it was a click/tap on the message center or quick settings.
+  void MaybeRecordFirstInteraction(FirstInteractionType type);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
   void CloseBubble() override;
   base::string16 GetAccessibleNameForBubble() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
@@ -169,6 +185,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   message_center::MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id);
 
+  // Adds the tray item to the the unified system tray container.
+  // The container takes the ownership of |tray_item|.
+  void AddTrayItemToContainer(TrayItemView* tray_item);
+
   const std::unique_ptr<UiDelegate> ui_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
@@ -187,13 +207,20 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   CurrentLocaleView* const current_locale_view_;
   ImeModeView* const ime_mode_view_;
   ManagedDeviceTrayItemView* const managed_device_view_;
+  CameraMicTrayItemView* const camera_view_;
+  CameraMicTrayItemView* const mic_view_;
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
   tray::TimeTrayItemView* const time_view_;
 
   tray::NetworkTrayView* network_tray_view_ = nullptr;
 
+  // Contains all tray items views added to tray_container().
+  std::list<TrayItemView*> tray_items_;
+
   base::OneShotTimer timer_;
+
+  bool first_interaction_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };

@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {CrLottieElement} from '../cr_lottie/cr_lottie.m.js';
+
+/** @type {string} */
+/* #export */ const FINGEPRINT_TICK_DARK_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK_DARK';
+
+/** @type {string} */
+/* #export */ const FINGEPRINT_TICK_LIGHT_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
+
 (function() {
 
 /**
@@ -82,6 +92,15 @@ Polymer({
     },
 
     /**
+     * Whether lottie animation should be autoplayed.
+     * @type {boolean}
+     */
+    autoplay: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Scale factor based the configured radius (circleRadius) vs the default
      * radius (DEFAULT_CANVAS_CIRCLE_RADIUS).
      * This will affect the size of icons and checkmark.
@@ -103,12 +122,15 @@ Polymer({
 
   // Also put these values as member values so they can be overridden by tests
   // and the tests do not need to be changed every time the UI is.
-  /** @private {number} */
-  canvasCircleStrokeWidth_: CANVAS_CIRCLE_STROKE_WIDTH,
-  /** @private {string} */
-  canvasCircleBackgroundColor_: CANVAS_CIRCLE_BACKGROUND_COLOR,
-  /** @private {string} */
-  canvasCircleProgressColor_: CANVAS_CIRCLE_PROGRESS_COLOR,
+
+  /** @type {number} */
+  canvasCircleStrokeWidth: CANVAS_CIRCLE_STROKE_WIDTH,
+
+  /** @type {string} */
+  canvasCircleBackgroundColor: CANVAS_CIRCLE_BACKGROUND_COLOR,
+
+  /** @type {string} */
+  canvasCircleProgressColor: CANVAS_CIRCLE_PROGRESS_COLOR,
 
   /**
    * Animation ID for fingerprint scan progress bar.
@@ -124,10 +146,36 @@ Polymer({
    */
   updateTimerId_: undefined,
 
+  /**
+   * Media query for dark mode.
+   * @type {MediaQueryList|undefined}
+   * @private
+   */
+  darkModeQuery_: undefined,
+
+  /**
+   * Dark mode change listener callback.
+   * @type {function(MediaQueryList)|undefined}
+   * @private
+   */
+  darkModeListener_: undefined,
+
   /** @override */
   attached() {
     this.scale_ = this.circleRadius / DEFAULT_CANVAS_CIRCLE_RADIUS;
     this.updateImages_();
+
+    this.darkModeListener_ = this.updateAnimationAsset_.bind(this);
+    this.darkModeQuery_ = window.matchMedia('(prefers-color-scheme: dark)');
+    this.darkModeQuery_.addListener(this.darkModeListener_);
+    this.updateAnimationAsset_();
+  },
+
+  /** @override */
+  detached() {
+    this.darkModeQuery_.removeListener(
+        /** @type {function(MediaQueryList)} */ (this.darkModeListener_));
+    this.darkModeListener_ = undefined;
   },
 
   /**
@@ -145,7 +193,7 @@ Polymer({
 
     ctx.beginPath();
     ctx.arc(c.width / 2, c.height / 2, this.circleRadius, startAngle, endAngle);
-    ctx.lineWidth = this.canvasCircleStrokeWidth_;
+    ctx.lineWidth = this.canvasCircleStrokeWidth;
     ctx.strokeStyle = color;
     ctx.stroke();
   },
@@ -155,7 +203,7 @@ Polymer({
    * |circleRadius| and color |CANVAS_CIRCLE_BACKGROUND_COLOR|.
    */
   drawBackgroundCircle() {
-    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor_);
+    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor);
   },
 
   /**
@@ -203,11 +251,10 @@ Polymer({
       // |start| + |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI /
       // 2) otherwise the regular draw from |start| to |currentAngle| will
       // draw nothing which will cause a flicker for one frame.
-      this.drawArc(
-          start, start + currentAngle, this.canvasCircleProgressColor_);
+      this.drawArc(start, start + currentAngle, this.canvasCircleProgressColor);
       this.drawArc(
           start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
-          this.canvasCircleBackgroundColor_);
+          this.canvasCircleBackgroundColor);
       currentAngle += step;
     };
 
@@ -223,6 +270,34 @@ Polymer({
     } else {
       this.animateScanProgress_();
     }
+  },
+
+  /**
+   * Controls the animation based on the value of |shouldPlay|.
+   * @param {boolean} shouldPlay Will play the animation if true else pauses it.
+   */
+  setPlay(shouldPlay) {
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.setPlay(shouldPlay);
+  },
+
+  /**
+   * Updates the lottie animation taking into account the current state and
+   * whether dark mode is enabled.
+   * @private
+   */
+  updateAnimationAsset_() {
+    const scanningAnimation =
+        /** @type {CrLottieElement} */ (this.$.scanningAnimation);
+    if (this.isComplete_) {
+      scanningAnimation.animationUrl = this.darkModeQuery_.matches ?
+          FINGEPRINT_TICK_DARK_URL :
+          FINGEPRINT_TICK_LIGHT_URL;
+      return;
+    }
+    scanningAnimation.animationUrl =
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
   },
 
   /*
@@ -245,10 +320,14 @@ Polymer({
    * @private
    */
   animateScanComplete_() {
-    this.$.checkmarkDiv.hidden = false;
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.singleLoop = true;
+    scanningAnimation.classList.remove('translucent');
+    this.updateAnimationAsset_();
+    this.resizeCheckMark_(scanningAnimation);
+
     this.$.enrollmentDone.hidden = false;
-    this.$.scanningAnimation.hidden = true;
-    this.$.enrollmentDone.style.opacity = 1;
   },
 
   /**
@@ -257,12 +336,8 @@ Polymer({
    */
   animateScanProgress_() {
     this.$.enrollmentDone.hidden = false;
-    this.$.enrollmentDone.style.opacity = 0.3;
-    this.$.scanningAnimation.hidden = true;
     this.updateTimerId_ = window.setTimeout(() => {
       this.$.enrollmentDone.hidden = true;
-      this.$.enrollmentDone.style.opacity = 1;
-      this.$.scanningAnimation.hidden = false;
     }, FINGERPRINT_SCAN_SUCCESS_MS);
   },
 
@@ -285,8 +360,14 @@ Polymer({
     this.isComplete_ = false;
     this.drawBackgroundCircle();
     this.$.enrollmentDone.hidden = true;
-    this.$.scanningAnimation.hidden = false;
-    this.$.checkmarkDiv.hidden = true;
+
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.singleLoop = false;
+    scanningAnimation.classList.add('translucent');
+    this.updateAnimationAsset_();
+    this.resizeAndCenterIcon_(scanningAnimation);
+    scanningAnimation.hidden = false;
   },
 
   /**
@@ -298,8 +379,6 @@ Polymer({
         /** @type {!HTMLElement} */ (this.$.scanningAnimation));
     this.resizeAndCenterIcon_(
         /** @type {!HTMLElement} */ (this.$.enrollmentDone));
-    this.resizeCheckMark_(
-        /** @type {!HTMLElement} */ (this.$.checkmarkAnimation));
   },
 
   /**
@@ -315,7 +394,7 @@ Polymer({
 
     // Place in the center of the canvas.
     const left = this.$.canvas.width / 2 - ICON_WIDTH * this.scale_ / 2;
-    const top = 0 - ICON_HEIGHT * this.scale_ / 2 - this.$.canvas.height / 2;
+    const top = this.$.canvas.height / 2 - ICON_HEIGHT * this.scale_ / 2;
     target.style.left = left + 'px';
     target.style.top = top + 'px';
   },
@@ -332,9 +411,8 @@ Polymer({
     target.style.height = CHECK_MARK_SIZE * this.scale_ + 'px';
 
     // Place it in the left bottom corner of fingerprint progress circle.
-    const top = 0 -
-        (CHECK_MARK_SIZE * this.scale_ + this.$.canvas.height / 2 -
-         this.circleRadius);
+    const top = this.$.canvas.height / 2 + this.circleRadius -
+        CHECK_MARK_SIZE * this.scale_;
     const left = this.$.canvas.width / 2 + this.circleRadius -
         CHECK_MARK_SIZE * this.scale_;
     target.style.left = left + 'px';

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/event.h"
 
 namespace ui {
 
@@ -18,18 +18,18 @@ class ScopedXEventDispatcher;
 // X11 Event Waiter class
 class XEventWaiter : public ui::XEventObserver {
  public:
-  static XEventWaiter* Create(XID window, base::OnceClosure callback);
+  static XEventWaiter* Create(x11::Window window, base::OnceClosure callback);
 
  private:
   explicit XEventWaiter(base::OnceClosure callback);
   ~XEventWaiter() override;
 
   // ui::XEventObserver:
-  void DidProcessXEvent(XEvent* xev) override {}
-  void WillProcessXEvent(XEvent* xev) override;
+  void DidProcessXEvent(x11::Event* xev) override {}
+  void WillProcessXEvent(x11::Event* xev) override;
 
   // Returns atom that indidates that the XEvent is marker event.
-  static XAtom MarkerEventAtom();
+  static x11::Atom MarkerEventAtom();
 
   base::OnceClosure success_callback_;
   std::unique_ptr<ui::ScopedXEventDispatcher> dispatcher_;

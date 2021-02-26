@@ -36,7 +36,7 @@
 #include "net/base/network_change_notifier_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -65,6 +65,8 @@ const char* ConnectionTypeToString(
       return "CONNECTION_3G";
     case net::NetworkChangeNotifier::CONNECTION_4G:
       return "CONNECTION_4G";
+    case net::NetworkChangeNotifier::CONNECTION_5G:
+      return "CONNECTION_5G";
     case net::NetworkChangeNotifier::CONNECTION_NONE:
       return "CONNECTION_NONE";
     case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
@@ -142,7 +144,7 @@ class NetWatcher :
 }  // namespace
 
 int main(int argc, char* argv[]) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   base::AtExitManager exit_manager;

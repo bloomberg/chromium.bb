@@ -24,15 +24,16 @@ blink_modules_sources("credentialmanager") {
     "credentials_container.h",
     "federated_credential.cc",
     "federated_credential.h",
-    "navigator_credentials.cc",
-    "navigator_credentials.h",
     "otp_credential.cc",
     "otp_credential.h",
     "password_credential.cc",
     "password_credential.h",
+    "payment_credential.cc",
+    "payment_credential.h",
     "public_key_credential.cc",
     "public_key_credential.h",
     "scoped_promise_resolver.cc",
     "scoped_promise_resolver.h",
   ]
+  deps = [ "//services/metrics/public/cpp:ukm_builders" ]
 }

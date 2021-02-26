@@ -18,6 +18,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "net/base/features.h"
+#include "net/base/url_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/socket/ssl_client_socket.h"
@@ -156,7 +157,7 @@ HttpServerProperties::HttpServerProperties(
                                    this,
                                    tick_clock_),
       canonical_suffixes_({".ggpht.com", ".c.youtube.com", ".googlevideo.com",
-                           ".googleusercontent.com"}),
+                           ".googleusercontent.com", ".gvt1.com"}),
       quic_server_info_map_(kDefaultMaxQuicServerEntries),
       max_server_configs_stored_in_properties_(kDefaultMaxQuicServerEntries) {}
 
@@ -374,16 +375,14 @@ void HttpServerProperties::OnDefaultNetworkChanged() {
     MaybeQueueWriteProperties();
 }
 
-std::unique_ptr<base::Value>
-HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
+base::Value HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
   const base::Time now = clock_->Now();
   const base::TimeTicks now_ticks = tick_clock_->NowTicks();
-  std::unique_ptr<base::ListValue> dict_list(new base::ListValue);
+  base::Value dict_list(base::Value::Type::LIST);
   for (const auto& server_info : server_info_map_) {
     if (!server_info.second.alternative_services.has_value())
       continue;
-    std::unique_ptr<base::ListValue> alternative_service_list(
-        new base::ListValue);
+    base::Value alternative_service_list(base::Value::Type::LIST);
     const ServerInfoMapKey& key = server_info.first;
     for (const AlternativeServiceInfo& alternative_service_info :
          server_info.second.alternative_services.value()) {
@@ -414,19 +413,18 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
             ")";
         alternative_service_string.append(broken_info_string);
       }
-      alternative_service_list->AppendString(alternative_service_string);
+      alternative_service_list.Append(std::move(alternative_service_string));
     }
-    if (alternative_service_list->empty())
+    if (alternative_service_list.GetList().empty())
       continue;
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("server", key.server.Serialize());
-    dict->SetString("network_isolation_key",
-                    key.network_isolation_key.ToDebugString());
-    dict->Set("alternative_service", std::unique_ptr<base::Value>(
-                                         std::move(alternative_service_list)));
-    dict_list->Append(std::move(dict));
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetStringKey("server", key.server.Serialize());
+    dict.SetStringKey("network_isolation_key",
+                      key.network_isolation_key.ToDebugString());
+    dict.SetKey("alternative_service", std::move(alternative_service_list));
+    dict_list.Append(std::move(dict));
   }
-  return std::move(dict_list);
+  return dict_list;
 }
 
 bool HttpServerProperties::WasLastLocalAddressWhenQuicWorked(
@@ -871,7 +869,7 @@ void HttpServerProperties::SetAlternativeServicesInternal(
     // before the first completes. In this case, only one of the jobs
     // would reach this code, whereas all of them should should have.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
-                                    false);
+                                    IsGoogleHost(origin.host()));
   }
 
   // If this host ends with a canonical suffix, then set it as the

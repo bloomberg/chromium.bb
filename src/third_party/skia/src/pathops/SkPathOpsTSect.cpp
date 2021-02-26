@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "src/core/SkTSort.h"
 #include "src/pathops/SkPathOpsTSect.h"
 
 #define COINCIDENT_SPAN_COUNT 9
@@ -1759,8 +1760,7 @@ struct SkClosestSect {
         for (int index = 0; index < fUsed; ++index) {
             closestPtrs.push_back(&fClosest[index]);
         }
-        SkTQSort<const SkClosestRecord >(closestPtrs.begin(), closestPtrs.end()
-                - 1);
+        SkTQSort<const SkClosestRecord>(closestPtrs.begin(), closestPtrs.end());
         for (int index = 0; index < fUsed; ++index) {
             const SkClosestRecord* test = closestPtrs[index];
             test->addIntersection(intersections);

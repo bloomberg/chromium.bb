@@ -4,45 +4,42 @@
 
 package org.chromium.chrome.browser.search_engines.settings;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
-
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.MainSettings;
-import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.policy.test.annotations.Policies;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -50,11 +47,20 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class SearchEngineSettingsTest {
-    @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
-    @Rule
-    public final SettingsActivityTestRule<SearchEngineSettings> mSettingsActivityTestRule =
+    private final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    private final SettingsActivityTestRule<SearchEngineSettings> mSearchEngineSettingsTestRule =
             new SettingsActivityTestRule<>(SearchEngineSettings.class);
+
+    private final SettingsActivityTestRule<MainSettings> mMainSettingsTestRule =
+            new SettingsActivityTestRule<>(MainSettings.class);
+
+    // We need to destroy the SettingsActivity before tearing down the mock sign-in environment
+    // setup in ChromeBrowserTestRule to avoid code crash.
+    @Rule
+    public final RuleChain mRuleChain = RuleChain.outerRule(mBrowserTestRule)
+                                                .around(mMainSettingsTestRule)
+                                                .around(mSearchEngineSettingsTestRule);
 
     /**
      * Change search engine and make sure it works correctly.
@@ -63,15 +69,14 @@ public class SearchEngineSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableIf.Build(hardware_is = "sprout", message = "crashes on android-one: crbug.com/540720")
-    @RetryOnFailure
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        mSettingsActivityTestRule.startSettingsActivity();
+        mSearchEngineSettingsTestRule.startSettingsActivity();
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -91,8 +96,9 @@ public class SearchEngineSettingsTest {
             // first and ensure that location permission is NOT granted.
             String keyword3 = pref.getKeywordFromIndexForTesting(3);
             String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
-            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.BLOCK);
+            WebsitePreferenceBridgeJni.get().setSettingForOrigin(
+                    Profile.getLastUsedRegularProfile(), ContentSettingsType.GEOLOCATION, url, url,
+                    ContentSettingValues.BLOCK);
             keyword3 = pref.setValueForTesting("3");
             Assert.assertEquals(keyword3,
                     TemplateUrlServiceFactory.get()
@@ -108,12 +114,14 @@ public class SearchEngineSettingsTest {
             // setting to allow for search engine 3 before changing to search engine 2.
             // Otherwise the block setting will cause the content setting for search engine 2
             // to be reset when we switch to it.
-            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.ALLOW);
+            WebsitePreferenceBridgeJni.get().setSettingForOrigin(
+                    Profile.getLastUsedRegularProfile(), ContentSettingsType.GEOLOCATION, url, url,
+                    ContentSettingValues.ALLOW);
             keyword2 = pref.getKeywordFromIndexForTesting(2);
             url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
-            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.ALLOW);
+            WebsitePreferenceBridgeJni.get().setSettingForOrigin(
+                    Profile.getLastUsedRegularProfile(), ContentSettingsType.GEOLOCATION, url, url,
+                    ContentSettingValues.ALLOW);
             keyword2 = pref.setValueForTesting("2");
             Assert.assertEquals(keyword2,
                     TemplateUrlServiceFactory.get()
@@ -137,28 +145,18 @@ public class SearchEngineSettingsTest {
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
         ensureTemplateUrlServiceLoaded();
-        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> TemplateUrlServiceFactory.get().isDefaultSearchManaged());
 
-        SettingsActivity settingsActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class);
+        mMainSettingsTestRule.startSettingsActivity();
 
-        final MainSettings mainSettings =
-                ActivityUtils.waitForFragmentToAttach(settingsActivity, MainSettings.class);
+        final MainSettings mainSettings = mMainSettingsTestRule.getFragment();
 
         final Preference searchEnginePref =
                 waitForPreference(mainSettings, MainSettings.PREF_SEARCH_ENGINE);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
-            @Override
-            public Object call() {
-                return searchEnginePref.getFragment();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(searchEnginePref.getFragment(), Matchers.nullValue());
+        });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManagedPreferenceDelegate managedPrefDelegate =
                     mainSettings.getManagedPreferenceDelegateForTest();
@@ -181,17 +179,17 @@ public class SearchEngineSettingsTest {
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        mSettingsActivityTestRule.startSettingsActivity();
+        mSearchEngineSettingsTestRule.startSettingsActivity();
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 
@@ -244,7 +242,7 @@ public class SearchEngineSettingsTest {
     private @ContentSettingValues int locationPermissionForSearchEngine(String keyword) {
         String url = TemplateUrlServiceFactory.get().getSearchEngineUrlFromTemplateUrl(keyword);
         PermissionInfo locationSettings =
-                new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
+                new PermissionInfo(ContentSettingsType.GEOLOCATION, url, null, false);
         @ContentSettingValues
         int locationPermission =
                 locationSettings.getContentSetting(Profile.getLastUsedRegularProfile());
@@ -253,11 +251,9 @@ public class SearchEngineSettingsTest {
 
     private static Preference waitForPreference(final PreferenceFragmentCompat prefFragment,
             final String preferenceKey) throws ExecutionException {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return prefFragment.findPreference(preferenceKey) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Expected valid preference for: " + preferenceKey,
+                    prefFragment.findPreference(preferenceKey), Matchers.notNullValue());
         });
 
         return TestThreadUtils.runOnUiThreadBlocking(

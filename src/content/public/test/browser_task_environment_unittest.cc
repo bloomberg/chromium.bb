@@ -4,13 +4,18 @@
 
 #include "content/public/test/browser_task_environment.h"
 
+#include <string>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/callback_helpers.h"
+#include "base/dcheck_is_on.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/task/thread_pool.h"
+#include "base/test/bind.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,8 +43,8 @@ void PostToThreadPool(int iteration, base::subtle::Atomic32* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(&PostTaskToUIThread, iteration + 1, tasks_run));
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(&PostTaskToUIThread, iteration + 1, tasks_run));
 }
 
 void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
@@ -50,8 +55,8 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PostToThreadPool, iteration + 1, tasks_run));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PostToThreadPool, iteration + 1, tasks_run));
 }
 
 }  // namespace
@@ -86,8 +91,8 @@ void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PostRecurringTaskToIOThread, iteration + 1, tasks_run));
 }
 
@@ -138,24 +143,24 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
       BrowserTaskEnvironment::Options::REAL_IO_THREAD,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
   // Should set up a UI main thread.
-  EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
+  EXPECT_TRUE(base::CurrentUIThread::IsSet());
+  EXPECT_FALSE(base::CurrentIOThread::IsSet());
 
   // Should create a real IO thread. If it was on the same thread the following
   // will timeout.
   base::WaitableEvent signaled_on_real_io_thread;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&base::WaitableEvent::Signal,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                 Unretained(&signaled_on_real_io_thread)));
   signaled_on_real_io_thread.TimedWait(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(signaled_on_real_io_thread.IsSignaled());
 
-  // Tasks posted via PostTask don't run in ThreadPoolExecutionMode::QUEUED
-  // until RunUntilIdle is called.
+  // Tasks posted via ThreadPool::PostTask don't run in
+  // ThreadPoolExecutionMode::QUEUED until RunUntilIdle is called.
   base::AtomicFlag task_ran;
-  PostTask(FROM_HERE,
-           BindOnce([](base::AtomicFlag* task_ran) { task_ran->Set(); },
-                    Unretained(&task_ran)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, BindOnce([](base::AtomicFlag* task_ran) { task_ran->Set(); },
+                          Unretained(&task_ran)));
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   EXPECT_FALSE(task_ran.IsSet());
@@ -170,11 +175,41 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   // Should set up a UI main thread.
-  EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
+  EXPECT_TRUE(base::CurrentUIThread::IsSet());
+  EXPECT_FALSE(base::CurrentIOThread::IsSet());
 
   // There should be a mock clock.
   EXPECT_THAT(task_environment.GetMockClock(), testing::NotNull());
+}
+
+// Verify that posting tasks to the UI/IO threads without having the
+// BrowserTaskEnvironment instance causes a crash.
+TEST(BrowserTaskEnvironmentTest, NotInitialized) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
+
+  std::string death_matcher;
+#if DCHECK_IS_ON() && !defined(OS_ANDROID)
+  // Expect that in builds with working DCHECK messages the failure message
+  // includes a hint towards using the BrowserTaskEnvironment class.
+  death_matcher = "Check failed:.*\n*.*BrowserTaskEnvironment";
+#endif
+
+  EXPECT_DEATH_IF_SUPPORTED(
+      { GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::DoNothing()); },
+      death_matcher);
+  EXPECT_DEATH_IF_SUPPORTED(
+      { GetIOThreadTaskRunner({})->PostTask(FROM_HERE, base::DoNothing()); },
+      death_matcher);
+
+  EXPECT_DEATH_IF_SUPPORTED(
+      { base::PostTask(FROM_HERE, {BrowserThread::UI}, base::DoNothing()); },
+      death_matcher);
+  EXPECT_DEATH_IF_SUPPORTED(
+      { base::PostTask(FROM_HERE, {BrowserThread::IO}, base::DoNothing()); },
+      death_matcher);
 }
 
 }  // namespace content

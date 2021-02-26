@@ -34,7 +34,6 @@ class ServiceWorkerRegistration final
       public Supplementable<ServiceWorkerRegistration>,
       public mojom::blink::ServiceWorkerRegistrationObject {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
   USING_PRE_FINALIZER(ServiceWorkerRegistration, Dispose);
 
  public:
@@ -92,7 +91,7 @@ class ServiceWorkerRegistration final
 
   void Dispose();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // ExecutionContextLifecycleObserver overrides.

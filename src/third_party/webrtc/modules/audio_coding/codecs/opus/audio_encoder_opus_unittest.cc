@@ -93,17 +93,13 @@ std::unique_ptr<AudioEncoderOpusStates> CreateCodec(int sample_rate_hz,
 AudioEncoderRuntimeConfig CreateEncoderRuntimeConfig() {
   constexpr int kBitrate = 40000;
   constexpr int kFrameLength = 60;
-  constexpr bool kEnableFec = true;
   constexpr bool kEnableDtx = false;
   constexpr size_t kNumChannels = 1;
-  constexpr float kPacketLossFraction = 0.1f;
   AudioEncoderRuntimeConfig config;
   config.bitrate_bps = kBitrate;
   config.frame_length_ms = kFrameLength;
-  config.enable_fec = kEnableFec;
   config.enable_dtx = kEnableDtx;
   config.num_channels = kNumChannels;
-  config.uplink_packet_loss_fraction = kPacketLossFraction;
   return config;
 }
 
@@ -111,7 +107,6 @@ void CheckEncoderRuntimeConfig(const AudioEncoderOpusImpl* encoder,
                                const AudioEncoderRuntimeConfig& config) {
   EXPECT_EQ(*config.bitrate_bps, encoder->GetTargetBitrate());
   EXPECT_EQ(*config.frame_length_ms, encoder->next_frame_length_ms());
-  EXPECT_EQ(*config.enable_fec, encoder->fec_enabled());
   EXPECT_EQ(*config.enable_dtx, encoder->GetDtx());
   EXPECT_EQ(*config.num_channels, encoder->num_channels_to_encode());
 }
@@ -203,101 +198,32 @@ TEST_P(AudioEncoderOpusTest,
   // Constants are replicated from audio_states->encoderopus.cc.
   const int kMinBitrateBps = 6000;
   const int kMaxBitrateBps = 510000;
+  const int kOverheadBytesPerPacket = 64;
+  states->encoder->OnReceivedOverhead(kOverheadBytesPerPacket);
+  const int kOverheadBps = 8 * kOverheadBytesPerPacket *
+                           rtc::CheckedDivExact(48000, kDefaultOpusPacSize);
   // Set a too low bitrate.
-  states->encoder->OnReceivedUplinkBandwidth(kMinBitrateBps - 1, absl::nullopt);
+  states->encoder->OnReceivedUplinkBandwidth(kMinBitrateBps + kOverheadBps - 1,
+                                             absl::nullopt);
   EXPECT_EQ(kMinBitrateBps, states->encoder->GetTargetBitrate());
   // Set a too high bitrate.
-  states->encoder->OnReceivedUplinkBandwidth(kMaxBitrateBps + 1, absl::nullopt);
+  states->encoder->OnReceivedUplinkBandwidth(kMaxBitrateBps + kOverheadBps + 1,
+                                             absl::nullopt);
   EXPECT_EQ(kMaxBitrateBps, states->encoder->GetTargetBitrate());
   // Set the minimum rate.
-  states->encoder->OnReceivedUplinkBandwidth(kMinBitrateBps, absl::nullopt);
+  states->encoder->OnReceivedUplinkBandwidth(kMinBitrateBps + kOverheadBps,
+                                             absl::nullopt);
   EXPECT_EQ(kMinBitrateBps, states->encoder->GetTargetBitrate());
   // Set the maximum rate.
-  states->encoder->OnReceivedUplinkBandwidth(kMaxBitrateBps, absl::nullopt);
+  states->encoder->OnReceivedUplinkBandwidth(kMaxBitrateBps + kOverheadBps,
+                                             absl::nullopt);
   EXPECT_EQ(kMaxBitrateBps, states->encoder->GetTargetBitrate());
   // Set rates from kMaxBitrateBps up to 32000 bps.
-  for (int rate = kMinBitrateBps; rate <= 32000; rate += 1000) {
+  for (int rate = kMinBitrateBps + kOverheadBps; rate <= 32000 + kOverheadBps;
+       rate += 1000) {
     states->encoder->OnReceivedUplinkBandwidth(rate, absl::nullopt);
-    EXPECT_EQ(rate, states->encoder->GetTargetBitrate());
+    EXPECT_EQ(rate - kOverheadBps, states->encoder->GetTargetBitrate());
   }
-}
-
-namespace {
-
-// Returns a vector with the n evenly-spaced numbers a, a + (b - a)/(n - 1),
-// ..., b.
-std::vector<float> IntervalSteps(float a, float b, size_t n) {
-  RTC_DCHECK_GT(n, 1u);
-  const float step = (b - a) / (n - 1);
-  std::vector<float> points;
-  points.push_back(a);
-  for (size_t i = 1; i < n - 1; ++i)
-    points.push_back(a + i * step);
-  points.push_back(b);
-  return points;
-}
-
-// Sets the packet loss rate to each number in the vector in turn, and verifies
-// that the loss rate as reported by the encoder is |expected_return| for all
-// of them.
-void TestSetPacketLossRate(const AudioEncoderOpusStates* states,
-                           const std::vector<float>& losses,
-                           float expected_return) {
-  // |kSampleIntervalMs| is chosen to ease the calculation since
-  // 0.9999 ^ 184198 = 1e-8. Which minimizes the effect of
-  // PacketLossFractionSmoother used in AudioEncoderOpus.
-  constexpr int64_t kSampleIntervalMs = 184198;
-  for (float loss : losses) {
-    states->encoder->OnReceivedUplinkPacketLossFraction(loss);
-    states->fake_clock->AdvanceTime(TimeDelta::Millis(kSampleIntervalMs));
-    EXPECT_FLOAT_EQ(expected_return, states->encoder->packet_loss_rate());
-  }
-}
-
-}  // namespace
-
-TEST_P(AudioEncoderOpusTest, PacketLossRateOptimized) {
-  auto states = CreateCodec(sample_rate_hz_, 1);
-  auto I = [](float a, float b) { return IntervalSteps(a, b, 10); };
-  constexpr float eps = 1e-8f;
-
-  // Note that the order of the following calls is critical.
-
-  // clang-format off
-  TestSetPacketLossRate(states.get(), I(0.00f      , 0.01f - eps), 0.00f);
-  TestSetPacketLossRate(states.get(), I(0.01f + eps, 0.06f - eps), 0.01f);
-  TestSetPacketLossRate(states.get(), I(0.06f + eps, 0.11f - eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.11f + eps, 0.22f - eps), 0.10f);
-  TestSetPacketLossRate(states.get(), I(0.22f + eps, 1.00f      ), 0.20f);
-
-  TestSetPacketLossRate(states.get(), I(1.00f      , 0.18f + eps), 0.20f);
-  TestSetPacketLossRate(states.get(), I(0.18f - eps, 0.09f + eps), 0.10f);
-  TestSetPacketLossRate(states.get(), I(0.09f - eps, 0.04f + eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.04f - eps, 0.01f + eps), 0.01f);
-  TestSetPacketLossRate(states.get(), I(0.01f - eps, 0.00f      ), 0.00f);
-  // clang-format on
-}
-
-TEST_P(AudioEncoderOpusTest, PacketLossRateLowerBounded) {
-  test::ScopedFieldTrials override_field_trials(
-      "WebRTC-Audio-OpusMinPacketLossRate/Enabled-5/");
-  auto states = CreateCodec(sample_rate_hz_, 1);
-  auto I = [](float a, float b) { return IntervalSteps(a, b, 10); };
-  constexpr float eps = 1e-8f;
-
-  // clang-format off
-  TestSetPacketLossRate(states.get(), I(0.00f      , 0.01f - eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.01f + eps, 0.06f - eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.06f + eps, 0.11f - eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.11f + eps, 0.22f - eps), 0.10f);
-  TestSetPacketLossRate(states.get(), I(0.22f + eps, 1.00f      ), 0.20f);
-
-  TestSetPacketLossRate(states.get(), I(1.00f      , 0.18f + eps), 0.20f);
-  TestSetPacketLossRate(states.get(), I(0.18f - eps, 0.09f + eps), 0.10f);
-  TestSetPacketLossRate(states.get(), I(0.09f - eps, 0.04f + eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.04f - eps, 0.01f + eps), 0.05f);
-  TestSetPacketLossRate(states.get(), I(0.01f - eps, 0.00f      ), 0.05f);
-  // clang-format on
 }
 
 TEST_P(AudioEncoderOpusTest, SetReceiverFrameLengthRange) {
@@ -337,6 +263,8 @@ TEST_P(AudioEncoderOpusTest,
 
 TEST_P(AudioEncoderOpusTest,
        InvokeAudioNetworkAdaptorOnReceivedUplinkBandwidth) {
+  test::ScopedFieldTrials override_field_trials(
+      "WebRTC-Audio-StableTargetAdaptation/Disabled/");
   auto states = CreateCodec(sample_rate_hz_, 2);
   states->encoder->EnableAudioNetworkAdaptor("", nullptr);
 
@@ -354,6 +282,28 @@ TEST_P(AudioEncoderOpusTest,
   EXPECT_CALL(*states->mock_bitrate_smoother, AddSample(kTargetAudioBitrate));
   states->encoder->OnReceivedUplinkBandwidth(kTargetAudioBitrate,
                                              kProbingIntervalMs);
+
+  CheckEncoderRuntimeConfig(states->encoder.get(), config);
+}
+
+TEST_P(AudioEncoderOpusTest,
+       InvokeAudioNetworkAdaptorOnReceivedUplinkAllocation) {
+  auto states = CreateCodec(sample_rate_hz_, 2);
+  states->encoder->EnableAudioNetworkAdaptor("", nullptr);
+
+  auto config = CreateEncoderRuntimeConfig();
+  EXPECT_CALL(*states->mock_audio_network_adaptor, GetEncoderRuntimeConfig())
+      .WillOnce(Return(config));
+
+  BitrateAllocationUpdate update;
+  update.target_bitrate = DataRate::BitsPerSec(30000);
+  update.stable_target_bitrate = DataRate::BitsPerSec(20000);
+  update.bwe_period = TimeDelta::Millis(200);
+  EXPECT_CALL(*states->mock_audio_network_adaptor,
+              SetTargetAudioBitrate(update.target_bitrate.bps()));
+  EXPECT_CALL(*states->mock_audio_network_adaptor,
+              SetUplinkBandwidth(update.stable_target_bitrate.bps()));
+  states->encoder->OnReceivedUplinkAllocation(update);
 
   CheckEncoderRuntimeConfig(states->encoder.get(), config);
 }
@@ -404,16 +354,21 @@ TEST_P(AudioEncoderOpusTest,
 
   // First time, no filtering.
   states->encoder->OnReceivedUplinkPacketLossFraction(kPacketLossFraction_1);
-  EXPECT_FLOAT_EQ(0.01f, states->encoder->packet_loss_rate());
+  EXPECT_FLOAT_EQ(0.02f, states->encoder->packet_loss_rate());
 
   states->fake_clock->AdvanceTime(TimeDelta::Millis(kSecondSampleTimeMs));
   states->encoder->OnReceivedUplinkPacketLossFraction(kPacketLossFraction_2);
 
   // Now the output of packet loss fraction smoother should be
-  // (0.02 + 0.198) / 2 = 0.109, which reach the threshold for the optimized
-  // packet loss rate to increase to 0.05. If no smoothing has been made, the
-  // optimized packet loss rate should have been increase to 0.1.
-  EXPECT_FLOAT_EQ(0.05f, states->encoder->packet_loss_rate());
+  // (0.02 + 0.198) / 2 = 0.109.
+  EXPECT_NEAR(0.109f, states->encoder->packet_loss_rate(), 0.001);
+}
+
+TEST_P(AudioEncoderOpusTest, PacketLossRateUpperBounded) {
+  auto states = CreateCodec(sample_rate_hz_, 2);
+
+  states->encoder->OnReceivedUplinkPacketLossFraction(0.5);
+  EXPECT_FLOAT_EQ(0.2f, states->encoder->packet_loss_rate());
 }
 
 TEST_P(AudioEncoderOpusTest, DoNotInvokeSetTargetBitrateIfOverheadUnknown) {
@@ -428,76 +383,6 @@ TEST_P(AudioEncoderOpusTest, DoNotInvokeSetTargetBitrateIfOverheadUnknown) {
   // Since |OnReceivedOverhead| has not been called, the codec bitrate should
   // not change.
   EXPECT_EQ(kDefaultOpusRate, states->encoder->GetTargetBitrate());
-}
-
-TEST_P(AudioEncoderOpusTest, OverheadRemovedFromTargetAudioBitrate) {
-  test::ScopedFieldTrials override_field_trials(
-      "WebRTC-SendSideBwe-WithOverhead/Enabled/");
-
-  auto states = CreateCodec(sample_rate_hz_, 2);
-
-  constexpr size_t kOverheadBytesPerPacket = 64;
-  states->encoder->OnReceivedOverhead(kOverheadBytesPerPacket);
-
-  constexpr int kTargetBitrateBps = 40000;
-  states->encoder->OnReceivedUplinkBandwidth(kTargetBitrateBps, absl::nullopt);
-
-  int packet_rate = rtc::CheckedDivExact(48000, kDefaultOpusPacSize);
-  EXPECT_EQ(kTargetBitrateBps -
-                8 * static_cast<int>(kOverheadBytesPerPacket) * packet_rate,
-            states->encoder->GetTargetBitrate());
-}
-
-TEST_P(AudioEncoderOpusTest, BitrateBounded) {
-  test::ScopedFieldTrials override_field_trials(
-      "WebRTC-SendSideBwe-WithOverhead/Enabled/");
-
-  constexpr int kMinBitrateBps = 6000;
-  constexpr int kMaxBitrateBps = 510000;
-
-  auto states = CreateCodec(sample_rate_hz_, 2);
-
-  constexpr size_t kOverheadBytesPerPacket = 64;
-  states->encoder->OnReceivedOverhead(kOverheadBytesPerPacket);
-
-  int packet_rate = rtc::CheckedDivExact(48000, kDefaultOpusPacSize);
-
-  // Set a target rate that is smaller than |kMinBitrateBps| when overhead is
-  // subtracted. The eventual codec rate should be bounded by |kMinBitrateBps|.
-  int target_bitrate =
-      kOverheadBytesPerPacket * 8 * packet_rate + kMinBitrateBps - 1;
-  states->encoder->OnReceivedUplinkBandwidth(target_bitrate, absl::nullopt);
-  EXPECT_EQ(kMinBitrateBps, states->encoder->GetTargetBitrate());
-
-  // Set a target rate that is greater than |kMaxBitrateBps| when overhead is
-  // subtracted. The eventual codec rate should be bounded by |kMaxBitrateBps|.
-  target_bitrate =
-      kOverheadBytesPerPacket * 8 * packet_rate + kMaxBitrateBps + 1;
-  states->encoder->OnReceivedUplinkBandwidth(target_bitrate, absl::nullopt);
-  EXPECT_EQ(kMaxBitrateBps, states->encoder->GetTargetBitrate());
-}
-
-TEST_P(AudioEncoderOpusTest, MinPacketLossRate) {
-  constexpr float kDefaultMinPacketLossRate = 0.01;
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-OpusMinPacketLossRate/Enabled/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    EXPECT_EQ(kDefaultMinPacketLossRate, states->encoder->packet_loss_rate());
-  }
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-OpusMinPacketLossRate/Enabled-200/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    EXPECT_EQ(kDefaultMinPacketLossRate, states->encoder->packet_loss_rate());
-  }
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-OpusMinPacketLossRate/Enabled-50/");
-    constexpr float kMinPacketLossRate = 0.5;
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    EXPECT_EQ(kMinPacketLossRate, states->encoder->packet_loss_rate());
-  }
 }
 
 // Verifies that the complexity adaptation in the config works as intended.
@@ -602,6 +487,8 @@ TEST_P(AudioEncoderOpusTest, EmptyConfigDoesNotAffectEncoderSettings) {
 }
 
 TEST_P(AudioEncoderOpusTest, UpdateUplinkBandwidthInAudioNetworkAdaptor) {
+  test::ScopedFieldTrials override_field_trials(
+      "WebRTC-Audio-StableTargetAdaptation/Disabled/");
   auto states = CreateCodec(sample_rate_hz_, 2);
   states->encoder->EnableAudioNetworkAdaptor("", nullptr);
   const size_t opus_rate_khz = rtc::CheckedDivExact(sample_rate_hz_, 1000);

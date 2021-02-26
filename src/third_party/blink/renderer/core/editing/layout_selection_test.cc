@@ -21,10 +21,8 @@ namespace blink {
 
 static LayoutTextFragment* FirstLetterPartFor(
     const LayoutObject* layout_object) {
-  if (!layout_object->IsText())
-    return nullptr;
-  if (const LayoutText* layout_text = ToLayoutTextOrNull(layout_object))
-    return ToLayoutTextFragmentOrNull(layout_text->GetFirstLetterPart());
+  if (const auto* layout_text = DynamicTo<LayoutText>(layout_object))
+    return DynamicTo<LayoutTextFragment>(layout_text->GetFirstLetterPart());
   return nullptr;
 }
 
@@ -39,7 +37,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
                                   const LayoutText& layout_text,
                                   SelectionState state) {
     if (layout_text.IsInLayoutNGInlineFormattingContext()) {
-      NGInlineCursor cursor(*layout_text.RootInlineFormattingContext());
+      NGInlineCursor cursor(*layout_text.ContainingNGBlockFlow());
       cursor.MoveTo(layout_text);
       if (!cursor)
         return;
@@ -68,7 +66,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
     const SelectionState& state = layout_object->GetSelectionState();
     ostream << ", " << state;
     if (layout_object->IsText()) {
-      PrintLayoutTextInfo(selection, ostream, ToLayoutText(*layout_object),
+      PrintLayoutTextInfo(selection, ostream, To<LayoutText>(*layout_object),
                           state);
     }
 
@@ -979,7 +977,7 @@ class NGLayoutSelectionTest
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const LayoutObject& layout_object) const {
     DCHECK(layout_object.IsText());
-    NGInlineCursor cursor(*layout_object.RootInlineFormattingContext());
+    NGInlineCursor cursor(*layout_object.ContainingNGBlockFlow());
     cursor.MoveTo(layout_object);
     return Selection().ComputeLayoutSelectionStatus(cursor);
   }

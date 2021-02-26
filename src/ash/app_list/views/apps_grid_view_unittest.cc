@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -43,7 +44,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -168,7 +168,7 @@ class DragAfterPageFlipTask : public ash::PaginationModelObserver {
 class TestSuggestedSearchResult : public TestSearchResult {
  public:
   TestSuggestedSearchResult() {
-    set_display_type(ash::SearchResultDisplayType::kTile);
+    set_display_type(ash::SearchResultDisplayType::kChip);
     set_is_recommendation(true);
   }
   ~TestSuggestedSearchResult() override {}
@@ -1955,6 +1955,8 @@ class AppsGridGapTest : public AppsGridViewTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridGapTest);
 };
+
+INSTANTIATE_TEST_SUITE_P(All, AppsGridGapTest, testing::Bool());
 
 TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   const int kApps = 2;

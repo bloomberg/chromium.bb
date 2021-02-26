@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -15,11 +16,20 @@
 
 namespace blink {
 
+bool FeatureAvailable(const String& feature, ExecutionContext* ec) {
+  return GetDefaultFeatureNameMap().Contains(feature) &&
+         (!DisabledByOriginTrial(feature, ec)) &&
+         (!IsFeatureForMeasurementOnly(GetDefaultFeatureNameMap().at(feature)));
+}
+
+DOMFeaturePolicy::DOMFeaturePolicy(ExecutionContext* context)
+    : context_(context) {}
+
 bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
                                      const String& feature) const {
   ExecutionContext* execution_context =
       script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (FeatureAvailable(feature, execution_context)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
     return GetPolicy()->IsFeatureEnabled(feature_name);
   }
@@ -36,14 +46,14 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
-    GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+    context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
     return false;
   }
 
-  if (!GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (!FeatureAvailable(feature, execution_context)) {
     AddWarningForUnrecognizedFeature(feature);
     return false;
   }
@@ -77,14 +87,14 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
     const String& feature) const {
   ExecutionContext* execution_context =
       script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (FeatureAvailable(feature, execution_context)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
 
     const FeaturePolicy::Allowlist allowlist =
         GetPolicy()->GetAllowlistForFeature(feature_name);
     const auto& allowed_origins = allowlist.AllowedOrigins();
     if (allowed_origins.empty()) {
-      if (allowlist.GetFallbackValue())
+      if (allowlist.MatchesAll())
         return Vector<String>({"*"});
     }
     Vector<String> result;
@@ -100,17 +110,14 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
-  GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+  context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       "Unrecognized feature: '" + feature + "'."));
 }
 
-void DOMFeaturePolicy::Trace(Visitor* visitor) {
+void DOMFeaturePolicy::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  visitor->Trace(context_);
 }
-
-void DOMFeaturePolicy::UpdateContainerPolicy(
-    const ParsedFeaturePolicy& container_policy,
-    scoped_refptr<const SecurityOrigin> src_origin) {}
 
 }  // namespace blink

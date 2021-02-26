@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.text.TextUtils;
@@ -35,7 +33,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateControllerFactory;
 import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics;
@@ -169,7 +167,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         mObservers.addObserver(observer);
 
         if (mStatus != null) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> observer.onResult(mStatus));
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, observer.bind(mStatus));
         } else {
             if (mOmahaQuery.getStatus() == Status.PENDING) {
                 mOmahaQuery.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -447,14 +445,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
             File path = Environment.getDataDirectory();
             StatFs statFs = new StatFs(path.getAbsolutePath());
-            long size;
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                size = getSize(statFs);
-            } else {
-                size = getSizeUpdatedApi(statFs);
-            }
-            RecordHistogram.recordLinearCountHistogram(
-                    "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", (int) size, 1, 200, 100);
+            long size = getSize(statFs);
             RecordHistogram.recordLinearCountHistogram(
                     "GoogleUpdate.InfoBar.DeviceFreeSpace", (int) size, 1, 1000, 50);
 
@@ -474,16 +465,8 @@ public class UpdateStatusProvider implements ActivityStateListener {
             return true;
         }
 
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-        private long getSizeUpdatedApi(StatFs statFs) {
-            return ConversionUtils.bytesToMegabytes(statFs.getAvailableBytes());
-        }
-
-        @SuppressWarnings("deprecation")
         private long getSize(StatFs statFs) {
-            int blockSize = statFs.getBlockSize();
-            int availableBlocks = statFs.getAvailableBlocks();
-            return ConversionUtils.bytesToMegabytes(blockSize * availableBlocks);
+            return ConversionUtils.bytesToMegabytes(statFs.getAvailableBytes());
         }
     }
 }

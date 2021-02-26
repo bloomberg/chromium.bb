@@ -639,7 +639,7 @@ class Time {
   // Deprecated. Use `absl::TimeZone::CivilInfo`.
   struct
       Breakdown {
-    int64_t year;          // year (e.g., 2013)
+    int64_t year;        // year (e.g., 2013)
     int month;           // month of year [1:12]
     int day;             // day of month [1:31]
     int hour;            // hour of day [0:23]
@@ -1203,18 +1203,15 @@ struct tm ToTM(Time t, TimeZone tz);
 // time with UTC offset.  Also note the use of "%Y": RFC3339 mandates that
 // years have exactly four digits, but we allow them to take their natural
 // width.
-ABSL_DLL extern const char
-    RFC3339_full[];  // %Y-%m-%dT%H:%M:%E*S%Ez
-ABSL_DLL extern const char RFC3339_sec[];  // %Y-%m-%dT%H:%M:%S%Ez
+ABSL_DLL extern const char RFC3339_full[];  // %Y-%m-%d%ET%H:%M:%E*S%Ez
+ABSL_DLL extern const char RFC3339_sec[];   // %Y-%m-%d%ET%H:%M:%S%Ez
 
 // RFC1123_full
 // RFC1123_no_wday
 //
 // FormatTime()/ParseTime() format specifiers for RFC1123 date/time strings.
-ABSL_DLL extern const char
-    RFC1123_full[];  // %a, %d %b %E4Y %H:%M:%S %z
-ABSL_DLL extern const char
-    RFC1123_no_wday[];  // %d %b %E4Y %H:%M:%S %z
+ABSL_DLL extern const char RFC1123_full[];     // %a, %d %b %E4Y %H:%M:%S %z
+ABSL_DLL extern const char RFC1123_no_wday[];  // %d %b %E4Y %H:%M:%S %z
 
 // FormatTime()
 //
@@ -1229,6 +1226,7 @@ ABSL_DLL extern const char
 //   - %E#f - Fractional seconds with # digits of precision
 //   - %E*f - Fractional seconds with full precision (a literal '*')
 //   - %E4Y - Four-character years (-999 ... -001, 0000, 0001 ... 9999)
+//   - %ET  - The RFC3339 "date-time" separator "T"
 //
 // Note that %E0S behaves like %S, and %E0f produces no characters.  In
 // contrast %E*f always produces at least one digit, which may be '0'.
@@ -1271,7 +1269,8 @@ inline std::ostream& operator<<(std::ostream& os, Time t) {
 // returns the corresponding `absl::Time`. Uses strftime()-like formatting
 // options, with the same extensions as FormatTime(), but with the
 // exceptions that %E#S is interpreted as %E*S, and %E#f as %E*f.  %Ez
-// and %E*z also accept the same inputs.
+// and %E*z also accept the same inputs, which (along with %z) includes
+// 'z' and 'Z' as synonyms for +00:00.  %ET accepts either 'T' or 't'.
 //
 // %Y consumes as many numeric characters as it can, so the matching data
 // should always be terminated with a non-numeric.  %E4Y always consumes
@@ -1495,12 +1494,10 @@ constexpr Duration Hours(int64_t n) {
 constexpr bool operator<(Duration lhs, Duration rhs) {
   return time_internal::GetRepHi(lhs) != time_internal::GetRepHi(rhs)
              ? time_internal::GetRepHi(lhs) < time_internal::GetRepHi(rhs)
-             : time_internal::GetRepHi(lhs) ==
-                       (std::numeric_limits<int64_t>::min)()
-                   ? time_internal::GetRepLo(lhs) + 1 <
-                         time_internal::GetRepLo(rhs) + 1
-                   : time_internal::GetRepLo(lhs) <
-                         time_internal::GetRepLo(rhs);
+         : time_internal::GetRepHi(lhs) == (std::numeric_limits<int64_t>::min)()
+             ? time_internal::GetRepLo(lhs) + 1 <
+                   time_internal::GetRepLo(rhs) + 1
+             : time_internal::GetRepLo(lhs) < time_internal::GetRepLo(rhs);
 }
 
 constexpr bool operator==(Duration lhs, Duration rhs) {

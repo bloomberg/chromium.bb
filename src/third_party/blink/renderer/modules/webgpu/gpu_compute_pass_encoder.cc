@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_query_set.h"
 
 namespace blink {
 
@@ -54,8 +55,8 @@ void GPUComputePassEncoder::setBindGroup(
 }
 
 void GPUComputePassEncoder::pushDebugGroup(String groupLabel) {
-  GetProcs().computePassEncoderPushDebugGroup(GetHandle(),
-                                              groupLabel.Utf8().data());
+  std::string label = groupLabel.Utf8();
+  GetProcs().computePassEncoderPushDebugGroup(GetHandle(), label.c_str());
 }
 
 void GPUComputePassEncoder::popDebugGroup() {
@@ -63,8 +64,8 @@ void GPUComputePassEncoder::popDebugGroup() {
 }
 
 void GPUComputePassEncoder::insertDebugMarker(String markerLabel) {
-  GetProcs().computePassEncoderInsertDebugMarker(GetHandle(),
-                                                 markerLabel.Utf8().data());
+  std::string label = markerLabel.Utf8();
+  GetProcs().computePassEncoderInsertDebugMarker(GetHandle(), label.c_str());
 }
 
 void GPUComputePassEncoder::setPipeline(GPUComputePipeline* pipeline) {
@@ -79,6 +80,12 @@ void GPUComputePassEncoder::dispatchIndirect(GPUBuffer* indirectBuffer,
                                              uint64_t indirectOffset) {
   GetProcs().computePassEncoderDispatchIndirect(
       GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
+void GPUComputePassEncoder::writeTimestamp(GPUQuerySet* querySet,
+                                           uint32_t queryIndex) {
+  GetProcs().computePassEncoderWriteTimestamp(
+      GetHandle(), querySet->GetHandle(), queryIndex);
 }
 
 void GPUComputePassEncoder::endPass() {

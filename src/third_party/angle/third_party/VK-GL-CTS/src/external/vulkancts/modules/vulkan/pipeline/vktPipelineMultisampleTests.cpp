@@ -3676,6 +3676,10 @@ void VariableRateTestCase::checkSupport (Context& context) const
 			TCU_THROW(NotSupportedError, "Variable multisample rate not supported");
 	}
 
+	// Check if sampleRateShading is supported.
+	if(!vk::getPhysicalDeviceFeatures(vki, physicalDevice).sampleRateShading)
+		TCU_THROW(NotSupportedError, "Sample rate shading is not supported");
+
 	// Make sure all subpass sample counts are supported.
 	const auto	properties		= vk::getPhysicalDeviceProperties(vki, physicalDevice);
 	const auto&	supportedCounts	= properties.limits.framebufferNoAttachmentsSampleCounts;
@@ -4662,6 +4666,56 @@ tcu::TestCaseGroup* createMultisampleTests (tcu::TestContext& testCtx)
 						comb,						//	SampleCounts				subpassCounts;
 					};
 					variableRateGroup->addChild(new VariableRateTestCase(testCtx, name.str(), desc.str(), params));
+				}
+			}
+
+			// Cases with non-empty framebuffers: only 2 subpasses to avoid a large number of combinations.
+			{
+				// Use one more sample count for the framebuffer attachment. It will be taken from the last item.
+				auto combs = combinations(kSampleCounts, 2 + 1);
+				for (auto& comb : combs)
+				{
+					// Framebuffer sample count.
+					const auto fbCount = comb.back();
+					comb.pop_back();
+
+					// Check sample counts actually vary between some of the subpasses.
+					std::set<vk::VkSampleCountFlagBits> uniqueVals(begin(comb), end(comb));
+					if (uniqueVals.size() < 2)
+						continue;
+
+					for (const auto flag : unusedAttachmentFlag)
+					{
+						std::ostringstream name;
+						std::ostringstream desc;
+
+						desc << "Framebuffer with sample count " << fbCount << " and subpasses with counts ";
+
+						bool first = true;
+						for (const auto& count : comb)
+						{
+							name << (first ? "" : "_") << count;
+							desc << (first ? "" : ", ") << count;
+							first = false;
+						}
+
+						name << "_fb_" << fbCount;
+
+						if (flag)
+						{
+							name << "_unused";
+							desc << " and unused attachments";
+						}
+
+						const VariableRateTestCase::TestParams params =
+						{
+							true,						//	bool						nonEmptyFramebuffer;
+							fbCount,					//	vk::VkSampleCountFlagBits	fbCount;
+							flag,						//	bool						unusedAttachment;
+							comb,						//	SampleCounts				subpassCounts;
+						};
+						variableRateGroup->addChild(new VariableRateTestCase(testCtx, name.str(), desc.str(), params));
+					}
 				}
 			}
 

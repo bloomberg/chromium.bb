@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -90,10 +91,9 @@ void OptimizationGuideBridge::Destroy(JNIEnv* env) {
   delete this;
 }
 
-void OptimizationGuideBridge::RegisterOptimizationTypesAndTargets(
+void OptimizationGuideBridge::RegisterOptimizationTypes(
     JNIEnv* env,
-    const JavaParamRef<jintArray>& joptimization_types,
-    const JavaParamRef<jintArray>& joptimization_targets) {
+    const JavaParamRef<jintArray>& joptimization_types) {
   // Convert optimization types to proto.
   std::vector<int> joptimization_types_vector;
   JavaIntArrayToIntVector(env, joptimization_types,
@@ -105,25 +105,13 @@ void OptimizationGuideBridge::RegisterOptimizationTypesAndTargets(
             joptimization_type));
   }
 
-  // Convert optimization targets to proto.
-  std::vector<int> joptimization_targets_vector;
-  JavaIntArrayToIntVector(env, joptimization_targets,
-                          &joptimization_targets_vector);
-  std::vector<optimization_guide::proto::OptimizationTarget>
-      optimization_targets;
-  for (const int joptimization_target : joptimization_targets_vector) {
-    optimization_targets.push_back(
-        static_cast<optimization_guide::proto::OptimizationTarget>(
-            joptimization_target));
-  }
-
-  optimization_guide_keyed_service_->RegisterOptimizationTypesAndTargets(
-      optimization_types, optimization_targets);
+  optimization_guide_keyed_service_->RegisterOptimizationTypes(
+      optimization_types);
 }
 
 void OptimizationGuideBridge::CanApplyOptimization(
     JNIEnv* env,
-    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jobject>& java_gurl,
     jint optimization_type,
     const JavaParamRef<jobject>& java_callback) {
   if (!optimization_guide_keyed_service_->GetHintsManager()) {
@@ -136,7 +124,8 @@ void OptimizationGuideBridge::CanApplyOptimization(
 
   optimization_guide_keyed_service_->GetHintsManager()
       ->CanApplyOptimizationAsync(
-          GURL(ConvertJavaStringToUTF8(env, url)),
+          *url::GURLAndroid::ToNativeGURL(env, java_gurl),
+          /*navigation_id=*/base::nullopt,
           static_cast<optimization_guide::proto::OptimizationType>(
               optimization_type),
           base::BindOnce(&OnOptimizationGuideDecision,

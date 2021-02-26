@@ -11,6 +11,7 @@
 #include "include/core/SkColor.h"
 #include "include/core/SkPoint.h"
 #include "include/core/SkPoint3.h"
+#include "include/private/SkTPin.h"
 
 class SkMatrix;
 class SkPath;
@@ -72,6 +73,6 @@ bool GetSpotShadowTransform(const SkPoint3& lightPos, SkScalar lightRadius,
 // get bounds prior to the ctm being applied
 void GetLocalBounds(const SkPath&, const SkDrawShadowRec&, const SkMatrix& ctm, SkRect* bounds);
 
-}
+}  // namespace SkDrawShadowMetrics
 
 #endif

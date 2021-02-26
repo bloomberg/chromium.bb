@@ -25,7 +25,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
@@ -36,25 +35,36 @@ PictureLayerTiling::PictureLayerTiling(
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
     float min_preraster_distance,
-    float max_preraster_distance)
+    float max_preraster_distance,
+    bool can_use_lcd_text)
     : raster_transform_(raster_transform),
       client_(client),
       tree_(tree),
       raster_source_(raster_source),
       min_preraster_distance_(min_preraster_distance),
-      max_preraster_distance_(max_preraster_distance) {
+      max_preraster_distance_(max_preraster_distance),
+      can_use_lcd_text_(can_use_lcd_text) {
   DCHECK(!raster_source->IsSolidColor());
   DCHECK_GE(raster_transform.translation().x(), 0.f);
   DCHECK_LT(raster_transform.translation().x(), 1.f);
   DCHECK_GE(raster_transform.translation().y(), 0.f);
   DCHECK_LT(raster_transform.translation().y(), 1.f);
 
-  DCHECK(!gfx::ScaleToFlooredSize(raster_source_->GetSize(),
-                                  raster_transform.scale())
-              .IsEmpty())
+#if DCHECK_IS_ON()
+  gfx::SizeF scaled_source_size(gfx::ScaleSize(
+      gfx::SizeF(raster_source_->GetSize()), raster_transform.scale()));
+  gfx::Size floored_size = gfx::ToFlooredSize(scaled_source_size);
+  bool is_width_empty =
+      !floored_size.width() &&
+      !MathUtil::IsWithinEpsilon(scaled_source_size.width(), 1.f);
+  bool is_height_empty =
+      !floored_size.height() &&
+      !MathUtil::IsWithinEpsilon(scaled_source_size.height(), 1.f);
+  DCHECK(!is_width_empty && !is_height_empty)
       << "Tiling created with scale too small as contents become empty."
       << " Layer bounds: " << raster_source_->GetSize().ToString()
       << " Raster transform: " << raster_transform_.ToString();
+#endif
 
   gfx::Rect content_bounds_rect =
       EnclosingContentsRectFromLayerRect(gfx::Rect(raster_source_->GetSize()));
@@ -73,7 +83,7 @@ Tile* PictureLayerTiling::CreateTile(const Tile::CreateInfo& info) {
   TileMapKey key(i, j);
   DCHECK(tiles_.find(key) == tiles_.end());
 
-  if (!raster_source_->CoversRect(info.enclosing_layer_rect))
+  if (!raster_source_->CoversRect(info.enclosing_layer_rect, *client_))
     return nullptr;
 
   all_tiles_done_ = false;
@@ -302,8 +312,13 @@ Tile::CreateInfo PictureLayerTiling::CreateInfoForTile(int i, int j) const {
   tile_rect.set_size(tiling_data_.max_texture_size());
   gfx::Rect enclosing_layer_rect =
       EnclosingLayerRectFromContentsRect(tile_rect);
-  return Tile::CreateInfo(this, i, j, enclosing_layer_rect, tile_rect,
-                          raster_transform_);
+  return Tile::CreateInfo{this,
+                          i,
+                          j,
+                          enclosing_layer_rect,
+                          tile_rect,
+                          raster_transform_,
+                          can_use_lcd_text_};
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(
@@ -330,9 +345,18 @@ bool PictureLayerTiling::ShouldCreateTileAt(
   if (!TilingMatchesTileIndices(active_twin))
     return true;
 
+  // If our settings don't match the active twin, it means that the active
+  // tiles will all be removed when we activate. So we need all the tiles on the
+  // pending tree to be created. See
+  // PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin.
+  if (can_use_lcd_text() != active_twin->can_use_lcd_text() ||
+      raster_transform() != active_twin->raster_transform())
+    return true;
+
   // If the active tree can't create a tile, because of its raster source, then
   // the pending tree should create one.
-  if (!active_twin->raster_source()->CoversRect(info.enclosing_layer_rect))
+  if (!active_twin->raster_source()->CoversRect(info.enclosing_layer_rect,
+                                                *active_twin->client()))
     return true;
 
   const Region* layer_invalidation = client_->GetPendingInvalidation();
@@ -855,7 +879,7 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
     Tile* tile,
     PriorityRectType priority_rect_type) const {
   DCHECK(tile);
-  DCHECK(raster_source()->CoversRect(tile->enclosing_layer_rect()))
+  DCHECK(raster_source()->CoversRect(tile->enclosing_layer_rect(), *client_))
       << "Recording rect: "
       << EnclosingLayerRectFromContentsRect(tile->content_rect()).ToString();
 

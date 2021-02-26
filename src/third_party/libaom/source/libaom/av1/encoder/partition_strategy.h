@@ -33,6 +33,38 @@
 #define FEATURE_SMS_SPLIT_MODEL_FLAG \
   (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)
 
+// Number of sub-partitions in rectangular partition types.
+#define SUB_PARTITIONS_RECT 2
+
+// Number of sub-partitions in split partition type.
+#define SUB_PARTITIONS_SPLIT 4
+
+// Number of sub-partitions in AB partition types.
+#define SUB_PARTITIONS_AB 3
+
+// Number of sub-partitions in 4-way partition types.
+#define SUB_PARTITIONS_PART4 4
+
+// 4part parition types.
+enum { HORZ4 = 0, VERT4, NUM_PART4_TYPES } UENUM1BYTE(PART4_TYPES);
+
+// AB parition types.
+enum {
+  HORZ_A = 0,
+  HORZ_B,
+  VERT_A,
+  VERT_B,
+  NUM_AB_PARTS
+} UENUM1BYTE(AB_PART_TYPE);
+
+// Rectangular parition types.
+enum { HORZ = 0, VERT, NUM_RECT_PARTS } UENUM1BYTE(RECT_PART_TYPE);
+
+// Structure to keep win flags for HORZ and VERT partition evaluations.
+typedef struct {
+  int rect_part_win[NUM_RECT_PARTS];
+} RD_RECT_PART_WIN_INFO;
+
 void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
                                   int bsize, int label_idx,
                                   int *partition_none_allowed,
@@ -55,8 +87,8 @@ void av1_simple_motion_search_based_split(
 // to prune some partitions.
 void av1_simple_motion_search_prune_rect(
     AV1_COMP *const cpi, MACROBLOCK *x, SIMPLE_MOTION_DATA_TREE *sms_tree,
-    int mi_row, int mi_col, BLOCK_SIZE bsize, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *prune_horz, int *prune_vert);
+    int mi_row, int mi_col, BLOCK_SIZE bsize, int partition_horz_allowed,
+    int partition_vert_allowed, int *prune_horz, int *prune_vert);
 
 #if !CONFIG_REALTIME_ONLY
 // Early terminates PARTITION_NONE using simple_motion_search features and the
@@ -78,7 +110,8 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
                                         float *features);
 
 // Predict the maximum BLOCK_SIZE to be used to encoder the current superblock.
-BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
+BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
+                                     const MACROBLOCK *const x,
                                      const float *features);
 
 // Attempts an early termination after PARTITION_SPLIT.
@@ -104,29 +137,60 @@ void av1_ml_prune_rect_partition(const AV1_COMP *const cpi,
 
 // Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
 // considered.
-void av1_ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
-                               int64_t best_rd, int64_t horz_rd[2],
-                               int64_t vert_rd[2], int64_t split_rd[4],
-                               int *const horza_partition_allowed,
-                               int *const horzb_partition_allowed,
-                               int *const verta_partition_allowed,
-                               int *const vertb_partition_allowed);
+void av1_ml_prune_ab_partition(
+    BLOCK_SIZE bsize, int part_ctx, int var_ctx, int64_t best_rd,
+    int64_t horz_rd[SUB_PARTITIONS_RECT], int64_t vert_rd[SUB_PARTITIONS_RECT],
+    int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const horza_partition_allowed,
+    int *const horzb_partition_allowed, int *const verta_partition_allowed,
+    int *const vertb_partition_allowed);
 
 // Use a ML model to predict if horz4 and vert4 should be considered.
-void av1_ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                              BLOCK_SIZE bsize, int part_ctx, int64_t best_rd,
-                              int64_t horz_rd[2], int64_t vert_rd[2],
-                              int64_t split_rd[4],
-                              int *const partition_horz4_allowed,
-                              int *const partition_vert4_allowed,
-                              unsigned int pb_source_variance, int mi_row,
-                              int mi_col);
+void av1_ml_prune_4_partition(
+    const AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize,
+    int part_ctx, int64_t best_rd,
+    int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
+    int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const partition_horz4_allowed,
+    int *const partition_vert4_allowed, unsigned int pb_source_variance,
+    int mi_row, int mi_col);
 
-// ML-based partition search breakout after PARTITION_NONE
+// ML-based partition search breakout after PARTITION_NONE.
 int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                             const MACROBLOCK *const x,
                             const RD_STATS *const rd_stats,
-                            unsigned int pb_source_variance);
+                            unsigned int pb_source_variance, int bit_depth);
+
+// The first round of partition pruning determined before any partition
+// has been tested. The decisions will be updated and passed back
+// to the partition search function.
+void av1_prune_partitions_before_search(
+    AV1_COMP *const cpi, MACROBLOCK *const x, int mi_row, int mi_col,
+    BLOCK_SIZE bsize, SIMPLE_MOTION_DATA_TREE *const sms_tree,
+    int *partition_none_allowed, int *partition_horz_allowed,
+    int *partition_vert_allowed, int *do_rectangular_split,
+    int *do_square_split, int *prune_horz, int *prune_vert);
+
+// Prune out partitions that lead to coding block sizes outside the min and max
+// bsizes set by the encoder. Max and min square partition levels are defined as
+// the partition nodes that the recursive function rd_pick_partition() can
+// reach. To implement this: only PARTITION_NONE is allowed if the current node
+// equals max_partition_size, only PARTITION_SPLIT is allowed if the current
+// node exceeds max_partition_size.
+void av1_prune_partitions_by_max_min_bsize(
+    SuperBlockEnc *sb_enc, BLOCK_SIZE bsize, int is_not_edge_block,
+    int *partition_none_allowed, int *partition_horz_allowed,
+    int *partition_vert_allowed, int *do_square_split);
+
+// Prune out AB partitions based on rd decisions made from testing the
+// basic partitions.
+void av1_prune_ab_partitions(
+    const AV1_COMP *cpi, const MACROBLOCK *x, const PC_TREE *pc_tree,
+    BLOCK_SIZE bsize, int pb_source_variance, int64_t best_rdcost,
+    int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
+    int64_t split_rd[SUB_PARTITIONS_SPLIT],
+    const RD_RECT_PART_WIN_INFO *rect_part_win_info, int ext_partition_allowed,
+    int partition_horz_allowed, int partition_vert_allowed,
+    int *horza_partition_allowed, int *horzb_partition_allowed,
+    int *verta_partition_allowed, int *vertb_partition_allowed);
 #endif  // !CONFIG_REALTIME_ONLY
 
 // A simplified version of set_offsets meant to be used for
@@ -200,13 +264,13 @@ static INLINE int is_full_sb(const CommonModeInfoParams *const mi_params,
 // Do not use this criteria for screen content videos.
 // Since screen content videos could often find good predictors and the largest
 // block size is likely to be used.
-static INLINE int use_auto_max_partition(AV1_COMP *const cpi,
+static INLINE int use_auto_max_partition(const AV1_COMP *const cpi,
                                          BLOCK_SIZE sb_size, int mi_row,
                                          int mi_col) {
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
-  AV1_COMMON *const cm = &cpi->common;
-  return !frame_is_intra_only(cm) && !cpi->is_screen_content_type &&
+  const AV1_COMMON *const cm = &cpi->common;
+  return !frame_is_intra_only(cm) && !cpi->use_screen_content_tools &&
          cpi->sf.part_sf.auto_max_partition_based_on_simple_motion !=
              NOT_IN_USE &&
          sb_size == BLOCK_128X128 &&

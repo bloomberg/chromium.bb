@@ -19,6 +19,7 @@ class GrAtlasManager;
 class GrCaps;
 class GrStrikeCache;
 class GrOpFlushState;
+class GrSmallPathAtlasMgr;
 
 /**
  * Base class for mesh-drawing GrDrawOps.
@@ -40,8 +41,10 @@ protected:
                            SkArenaAlloc* arena,
                            const GrSurfaceProxyView* writeView,
                            GrAppliedClip&& appliedClip,
-                           const GrXferProcessor::DstProxyView& dstProxyView) {
-        this->onCreateProgramInfo(caps, arena, writeView, std::move(appliedClip), dstProxyView);
+                           const GrXferProcessor::DstProxyView& dstProxyView,
+                           GrXferBarrierFlags renderPassXferBarriers) {
+        this->onCreateProgramInfo(caps, arena, writeView, std::move(appliedClip), dstProxyView,
+                                  renderPassXferBarriers);
     }
 
     void createProgramInfo(Target* target);
@@ -87,7 +90,7 @@ protected:
         using PatternHelper::vertices;
 
     private:
-        typedef PatternHelper INHERITED;
+        using INHERITED = PatternHelper;
     };
 
     static bool CombinedQuadCountWillOverflow(GrAAType aaType,
@@ -102,7 +105,8 @@ protected:
     virtual void onPrePrepareDraws(GrRecordingContext*,
                                    const GrSurfaceProxyView* writeView,
                                    GrAppliedClip*,
-                                   const GrXferProcessor::DstProxyView&);
+                                   const GrXferProcessor::DstProxyView&,
+                                   GrXferBarrierFlags renderPassXferBarriers);
 
 private:
     virtual GrProgramInfo* programInfo() = 0;
@@ -112,18 +116,20 @@ private:
                                      SkArenaAlloc*,
                                      const GrSurfaceProxyView* writeView,
                                      GrAppliedClip&&,
-                                     const GrXferProcessor::DstProxyView&) = 0;
+                                     const GrXferProcessor::DstProxyView&,
+                                     GrXferBarrierFlags renderPassXferBarriers) = 0;
 
     void onPrePrepare(GrRecordingContext* context,
                       const GrSurfaceProxyView* writeView,
                       GrAppliedClip* clip,
-                      const GrXferProcessor::DstProxyView& dstProxyView) final {
-        this->onPrePrepareDraws(context, writeView, clip, dstProxyView);
+                      const GrXferProcessor::DstProxyView& dstProxyView,
+                      GrXferBarrierFlags renderPassXferBarriers) final {
+        this->onPrePrepareDraws(context, writeView, clip, dstProxyView, renderPassXferBarriers);
     }
     void onPrepare(GrOpFlushState* state) final;
 
     virtual void onPrepareDraws(Target*) = 0;
-    typedef GrDrawOp INHERITED;
+    using INHERITED = GrDrawOp;
 };
 
 class GrMeshDrawOp::Target {
@@ -217,11 +223,15 @@ public:
 
     virtual const GrXferProcessor::DstProxyView& dstProxyView() const = 0;
 
+    virtual GrXferBarrierFlags renderPassBarriers() const = 0;
+
+    virtual GrThreadSafeCache* threadSafeCache() const = 0;
     virtual GrResourceProvider* resourceProvider() const = 0;
     uint32_t contextUniqueID() const { return this->resourceProvider()->contextUniqueID(); }
 
     virtual GrStrikeCache* strikeCache() const = 0;
     virtual GrAtlasManager* atlasManager() const = 0;
+    virtual GrSmallPathAtlasMgr* smallPathAtlasManager() const = 0;
 
     // This should be called during onPrepare of a GrOp. The caller should add any proxies to the
     // array it will use that it did not access during a call to visitProxies. This is usually the

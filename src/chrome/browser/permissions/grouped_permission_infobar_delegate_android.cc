@@ -87,12 +87,14 @@ base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
 
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
     case QuietUiReason::kTriggeredByCrowdDeny:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION);
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_ABUSIVE_MESSAGE);
   }
@@ -108,9 +110,11 @@ bool GroupedPermissionInfoBarDelegate::ShouldSecondaryButtonOpenSettings()
 
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
       return true;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return false;
   }
 
@@ -129,11 +133,16 @@ base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
   // This will be used as the text of the link in the expanded state.
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
       return base::string16();
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
@@ -172,10 +181,12 @@ bool GroupedPermissionInfoBarDelegate::Accept() {
       permission_prompt_->web_contents());
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
       permission_prompt_->Accept();
       break;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       permission_prompt_->Deny();
       break;
   }
@@ -190,10 +201,12 @@ bool GroupedPermissionInfoBarDelegate::Cancel() {
       permission_prompt_->web_contents());
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
       // The infobar needs to be kept open after the "Manage" button is clicked.
       return false;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       permission_prompt_->Accept();
       return true;
   }
@@ -243,12 +256,14 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
 
   switch (manager->ReasonForUsingQuietUi()) {
     case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
       return l10n_util::GetStringUTF16(
           (button == BUTTON_OK)
               ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON
               : IDS_NOTIFICATION_BUTTON_MANAGE);
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(
           (button == BUTTON_OK)
               ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CONTINUE_BLOCKING_BUTTON

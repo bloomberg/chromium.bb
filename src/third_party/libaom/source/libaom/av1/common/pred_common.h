@@ -340,7 +340,7 @@ static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-  const TX_SIZE max_tx_size = max_txsize_rect_lookup[mbmi->sb_type];
+  const TX_SIZE max_tx_size = max_txsize_rect_lookup[mbmi->bsize];
   const int max_tx_wide = tx_size_wide[max_tx_size];
   const int max_tx_high = tx_size_high[max_tx_size];
   const int has_above = xd->up_available;
@@ -351,11 +351,11 @@ static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
 
   if (has_above)
     if (is_inter_block(above_mbmi))
-      above = block_size_wide[above_mbmi->sb_type] >= max_tx_wide;
+      above = block_size_wide[above_mbmi->bsize] >= max_tx_wide;
 
   if (has_left)
     if (is_inter_block(left_mbmi))
-      left = block_size_high[left_mbmi->sb_type] >= max_tx_high;
+      left = block_size_high[left_mbmi->bsize] >= max_tx_high;
 
   if (has_above && has_left)
     return (above + left);

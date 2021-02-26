@@ -6,8 +6,10 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
@@ -34,6 +36,21 @@ const char kAddIframeScript[] =
     "var frame = document.createElement('iframe');\n"
     "frame.src = $1;\n"
     "document.body.appendChild(frame);\n";
+
+content::mojom::OpenURLParamsPtr CreateOpenURLParams(const GURL& url) {
+  auto params = content::mojom::OpenURLParams::New();
+  params->url = url;
+  params->disposition = WindowOpenDisposition::CURRENT_TAB;
+  params->should_replace_current_entry = false;
+  params->user_gesture = true;
+  return params;
+}
+
+bool DoesURLRequireDedicatedProcess(const IsolationContext& isolation_context,
+                                    const GURL& url) {
+  return SiteInstanceImpl::ComputeSiteInfoForTesting(isolation_context, url)
+      .RequiresDedicatedProcess(isolation_context);
+}
 
 }  // namespace
 
@@ -146,7 +163,7 @@ class WebUINavigationBrowserTest : public ContentBrowserTest {
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     Shell* new_shell = new_shell_observer.GetShell();
     WebContents* new_web_contents = new_shell->web_contents();
-    WaitForLoadStop(new_web_contents);
+    EXPECT_TRUE(WaitForLoadStop(new_web_contents));
 
     EXPECT_EQ(web_url, new_web_contents->GetLastCommittedURL());
 
@@ -241,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
                        WebFrameInChromeUntrustedSchemeAllowedByCSP) {
   // Add a DataSource with no iframe restrictions.
   TestUntrustedDataSourceCSP csp;
-  csp.child_src = "";
+  csp.child_src = "child-src * data:;";
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          "test-host", csp);
   GURL main_frame_url(GetChromeUntrustedUIURL("test-host/title1.html"));
@@ -378,13 +395,11 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 }
 
 // Verify that a browser check stops websites from embeding chrome:// iframes.
-// This tests the FrameHostMsg_OpenURL path.
+// This tests the OpenURL Mojo method.
 IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
                        DisallowEmbeddingChromeSchemeFromWebFrameBrowserCheck) {
   GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
-
-  GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
 
   // Add iframe but don't navigate it to a chrome:// URL yet.
   EXPECT_TRUE(ExecJs(shell(),
@@ -396,15 +411,15 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
                             ->GetFrameTree()
                             ->root();
   EXPECT_EQ(1U, root->child_count());
-  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
   EXPECT_EQ("about:blank", child->GetLastCommittedURL());
 
   // Simulate an IPC message to navigate the subframe to a chrome:// URL.
   // This bypasses the renderer-side check that would have stopped the
   // navigation.
   TestNavigationObserver observer(shell()->web_contents());
-  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
-                                     webui_url);
+  static_cast<mojom::FrameHost*>(child)->OpenURL(
+      CreateOpenURLParams(GetWebUIURL("web-ui/title1.html?noxfo=true")));
   observer.Wait();
 
   child = root->child_at(0)->current_frame_host();
@@ -412,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 }
 
 // Verify that a browser check stops websites from embeding chrome-untrusted://
-// iframes. This tests the FrameHostMsg_OpenURL path.
+// iframes. This tests the OpenURL Mojo method path.
 IN_PROC_BROWSER_TEST_F(
     WebUINavigationBrowserTest,
     DisallowEmbeddingChromeUntrustedSchemeFromWebFrameBrowserCheck) {
@@ -424,8 +439,6 @@ IN_PROC_BROWSER_TEST_F(
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          "test-iframe-host", csp);
 
-  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
-
   // Add iframe but don't navigate it to a chrome-untrusted:// URL yet.
   EXPECT_TRUE(ExecJs(shell(),
                      "var frame = document.createElement('iframe');\n"
@@ -436,14 +449,14 @@ IN_PROC_BROWSER_TEST_F(
                             ->GetFrameTree()
                             ->root();
   EXPECT_EQ(1U, root->child_count());
-  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
   EXPECT_EQ("about:blank", child->GetLastCommittedURL());
 
-  // Simulate an IPC message to navigate the subframe to a
-  // chrome-untrusted:// URL.
+  // Simulate a Mojo message to navigate the subframe to a chrome-untrusted://
+  // URL.
   TestNavigationObserver observer(shell()->web_contents());
-  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
-                                     untrusted_url);
+  static_cast<mojom::FrameHost*>(child)->OpenURL(CreateOpenURLParams(
+      GetChromeUntrustedUIURL("test-iframe-host/title1.html")));
   observer.Wait();
 
   child = root->child_at(0)->current_frame_host();
@@ -642,16 +655,18 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  RenderFrameHost* webui_rfh = root->current_frame_host();
-  scoped_refptr<SiteInstance> webui_site_instance =
+  RenderFrameHostImpl* webui_rfh = root->current_frame_host();
+  scoped_refptr<SiteInstanceImpl> webui_site_instance =
       webui_rfh->GetSiteInstance();
 
   EXPECT_EQ(main_frame_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_FALSE(
+      webui_site_instance->GetSiteInfo().process_lock_url().is_empty());
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->GetProcessLock());
 
   TestUntrustedDataSourceCSP csp;
   std::vector<std::string> frame_ancestors({"chrome://web-ui"});
@@ -836,16 +851,16 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  RenderFrameHost* webui_rfh = root->current_frame_host();
-  scoped_refptr<SiteInstance> webui_site_instance =
+  RenderFrameHostImpl* webui_rfh = root->current_frame_host();
+  scoped_refptr<SiteInstanceImpl> webui_site_instance =
       webui_rfh->GetSiteInstance();
 
   EXPECT_EQ(chrome_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->GetProcessLock());
 
   GURL web_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script =
@@ -862,9 +877,9 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
       root->current_frame_host()->GetSiteInstance()));
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       root->current_frame_host()->GetProcess()->GetID()));
-  EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->GetSiteURL());
+            webui_site_instance->GetProcessLock());
 }
 
 #if !defined(OS_ANDROID)
@@ -911,8 +926,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   // chrome:// URLs should require a dedicated process.
   WebContents* web_contents = shell()->web_contents();
   BrowserContext* browser_context = web_contents->GetBrowserContext();
-  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      IsolationContext(browser_context), chrome_url));
+  EXPECT_TRUE(DoesURLRequireDedicatedProcess(IsolationContext(browser_context),
+                                             chrome_url));
 
   // Navigate to a WebUI page.
   EXPECT_TRUE(NavigateToURL(shell(), chrome_url));
@@ -934,8 +949,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 
   // Verify that the blob also requires a dedicated process and that it would
   // use the same site url as the original page.
-  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      IsolationContext(browser_context), blob_url));
+  EXPECT_TRUE(DoesURLRequireDedicatedProcess(IsolationContext(browser_context),
+                                             blob_url));
   EXPECT_EQ(expected_site_url,
             SiteInstance::GetSiteForURL(browser_context, blob_url));
 }
@@ -952,8 +967,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   // chrome-untrusted:// URLs should require a dedicated process.
   WebContents* web_contents = shell()->web_contents();
   BrowserContext* browser_context = web_contents->GetBrowserContext();
-  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      IsolationContext(browser_context), chrome_untrusted_url));
+  EXPECT_TRUE(DoesURLRequireDedicatedProcess(IsolationContext(browser_context),
+                                             chrome_untrusted_url));
 
   // Navigate to a chrome-untrusted:// page.
   EXPECT_TRUE(NavigateToURL(shell(), chrome_untrusted_url));
@@ -975,8 +990,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 
   // Verify that the blob also requires a dedicated process and that it would
   // use the same site url as the original page.
-  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      IsolationContext(browser_context), blob_url));
+  EXPECT_TRUE(DoesURLRequireDedicatedProcess(IsolationContext(browser_context),
+                                             blob_url));
   EXPECT_EQ(expected_site_url,
             SiteInstance::GetSiteForURL(browser_context, blob_url));
 }

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
@@ -51,7 +51,7 @@ void BackgroundFetchServiceImpl::CreateForWorker(
           WrapRefCounted(static_cast<StoragePartitionImpl*>(
                              render_process_host->GetStoragePartition())
                              ->GetBackgroundFetchContext()),
-          info.script_origin,
+          info.origin,
           /* render_frame_tree_node_id= */ 0,
           /* wc_getter= */ base::NullCallback(), std::move(receiver)));
 }

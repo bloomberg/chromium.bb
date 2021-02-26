@@ -143,10 +143,6 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
 
-void AuthenticatorTransportSelectorSheetModel::StartPhonePairing() {
-  dialog_model()->StartPhonePairing();
-}
-
 void AuthenticatorTransportSelectorSheetModel::StartWinNativeApi() {
   dialog_model()->StartWinNativeApi();
 }
@@ -496,22 +492,22 @@ AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
     const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE,
                                     GetRelyingPartyIdString(dialog_model()));
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepDescription()
     const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_DESCRIPTION);
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 ui::MenuModel*
@@ -531,12 +527,12 @@ bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonEnabled()
 
 base::string16
 AuthenticatorTouchIdIncognitoBumpSheetModel::GetAcceptButtonLabel() const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_CONTINUE);
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void AuthenticatorTouchIdIncognitoBumpSheetModel::OnAccept() {
@@ -581,6 +577,64 @@ base::string16 AuthenticatorPaaskSheetModel::GetStepDescription() const {
 }
 
 ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
+}
+
+// AuthenticatorPaaskV2SheetModel  -----------------------------------------
+
+AuthenticatorPaaskV2SheetModel::AuthenticatorPaaskV2SheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
+
+AuthenticatorPaaskV2SheetModel::~AuthenticatorPaaskV2SheetModel() = default;
+
+bool AuthenticatorPaaskV2SheetModel::IsBackButtonVisible() const {
+#if defined(OS_WIN)
+  return !base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi);
+#else
+  return true;
+#endif
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsActivityIndicatorVisible() const {
+  return true;
+}
+
+const gfx::VectorIcon& AuthenticatorPaaskV2SheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPhoneDarkIcon
+                                                 : kWebauthnPhoneIcon;
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_TITLE);
+}
+
+void AuthenticatorPaaskV2SheetModel::OnAccept() {
+  return dialog_model()->StartPhonePairing();
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_V2_ACTIVATE_TITLE);
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_CABLE_V2_ACTIVATE_DESCRIPTION_SHORT);
+}
+
+ui::MenuModel* AuthenticatorPaaskV2SheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
 }
 

@@ -7,8 +7,7 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/dom_selection.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
@@ -1181,7 +1181,7 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
 }
 
 TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1191,7 +1191,7 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
   )HTML");
 
   Compositor().BeginFrame();
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // PageTestBase sizes the page to 800x600. Click on the scrollbar
   // track, move off, then release the mouse and verify that GestureScrollEnd
@@ -1213,13 +1213,13 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse down on the scrollbar track should have generated GSB/GSU.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 2u);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[0].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 2u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[0]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollBegin);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[1].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[1]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollUpdate);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 
   const gfx::PointF middle_of_page(100, 100);
@@ -1233,9 +1233,9 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse move should not have generated any gestures.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 2u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 2u);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, middle_of_page,
@@ -1246,16 +1246,16 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse up must generate GestureScrollEnd.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 3u);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[2].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 3u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[2]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollEnd);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 }
 
 TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1266,7 +1266,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // Mouse down on the page, the move the mouse to the scrollbar and release.
   // Validate that we don't inject a ScrollEnd (since no ScrollBegin was
@@ -1281,7 +1281,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
 
   // Mouse down on the page should not generate scroll gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   const gfx::PointF scrollbar_forward_track(795, 560);
   WebMouseEvent mouse_move(WebInputEvent::Type::kMouseMove,
@@ -1293,7 +1293,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
       mouse_move, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
   // Mouse move should not have generated any gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, scrollbar_forward_track,
                          scrollbar_forward_track,
@@ -1303,11 +1303,11 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
 
   // Mouse up should not have generated any gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 }
 
 TEST_F(EventHandlerSimTest, RightClickNoGestures) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1318,7 +1318,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // PageTestBase sizes the page to 800x600. Right click on the scrollbar
   // track, and release the mouse and verify that no gesture events are
@@ -1332,7 +1332,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
   mouse_down.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, scrollbar_forward_track,
                          scrollbar_forward_track,
@@ -1341,11 +1341,11 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
   mouse_up.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 }
 
 // https://crbug.com/976557 tracks the fix for re-enabling this test on Mac.
-#ifdef OS_MACOSX
+#if defined(OS_MAC)
 #define MAYBE_GestureTapWithScrollSnaps DISABLED_GestureTapWithScrollSnaps
 #else
 #define MAYBE_GestureTapWithScrollSnaps GestureTapWithScrollSnaps
@@ -1365,7 +1365,7 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
   // ScrollingCoordinator is initialized.
   GetDocument().GetSettings()->SetAcceleratedCompositingEnabled(true);
 
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1391,7 +1391,7 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // Only run this test if scrollbars are hit-testable (they are not on
   // Android).
@@ -1408,42 +1408,24 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
 
   TapEventBuilder tap(scrollbar_forward_track, 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap);
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 3u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 3u);
 
-  const Vector<frame_test_helpers::InjectedScrollGestureData>& data =
-      WebWidgetClient().GetInjectedScrollGestureData();
-  const frame_test_helpers::InjectedScrollGestureData gsb_data = data[0];
-  const frame_test_helpers::InjectedScrollGestureData gsu_data = data[1];
-  const frame_test_helpers::InjectedScrollGestureData gse_data = data[2];
-  EXPECT_EQ(gsb_data.type, WebInputEvent::Type::kGestureScrollBegin);
-  EXPECT_EQ(gsu_data.type, WebInputEvent::Type::kGestureScrollUpdate);
-  EXPECT_EQ(gse_data.type, WebInputEvent::Type::kGestureScrollEnd);
+  const Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>& data =
+      WebWidgetClient().GetInjectedScrollEvents();
+  EXPECT_EQ(data[0]->Event().GetType(),
+            WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_EQ(data[1]->Event().GetType(),
+            WebInputEvent::Type::kGestureScrollUpdate);
+  EXPECT_EQ(data[2]->Event().GetType(), WebInputEvent::Type::kGestureScrollEnd);
+  const WebGestureEvent& gsb =
+      static_cast<const WebGestureEvent&>(data[0]->Event());
+  const WebGestureEvent& gsu =
+      static_cast<const WebGestureEvent&>(data[1]->Event());
+  const WebGestureEvent& gse =
+      static_cast<const WebGestureEvent&>(data[2]->Event());
 
-  // Inject the gesture sequence based on the injected data.
-  WebGestureEvent gsb{WebInputEvent::Type::kGestureScrollBegin,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gsb.SetFrameScale(1);
-  gsb.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gsb.data.scroll_begin.delta_x_hint = -gsb_data.delta.x();
-  gsb.data.scroll_begin.delta_y_hint = -gsb_data.delta.y();
-  gsb.data.scroll_begin.scrollable_area_element_id =
-      gsb_data.scrollable_area_element_id.GetStableId();
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
-  WebGestureEvent gsu{WebInputEvent::Type::kGestureScrollUpdate,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gsu.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gsu.SetFrameScale(1);
-  gsu.data.scroll_update.delta_x = -gsu_data.delta.x();
-  gsu.data.scroll_update.delta_y = -gsu_data.delta.y();
-  gsu.data.scroll_update.delta_units = gsu_data.granularity;
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsu);
-  WebGestureEvent gse{WebInputEvent::Type::kGestureScrollEnd,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gse.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gse.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gse);
 
   // Ensure that there is an active animation on the scrollable area event
@@ -1501,7 +1483,7 @@ TEST_F(EventHandlerTest, MouseLeaveResetsUnknownState) {
 // Test that leaving an iframe sets the mouse position to unknown on that
 // iframe.
 TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
@@ -1566,7 +1548,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
 // Test that mouse down and move a small distance on a draggable element will
 // not change cursor style.
 TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1608,7 +1590,7 @@ TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
 
 // Ensure that tap on element in iframe should apply active state.
 TEST_F(EventHandlerSimTest, TapActiveInFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -1673,7 +1655,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
 // Test that the hover is updated at the next begin frame after the compositor
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1740,7 +1722,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
 // Test that the hover is updated at the next begin frame after the main thread
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1808,7 +1790,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
 // scroll ends in an iframe.
 TEST_F(EventHandlerSimTest,
        TestUpdateHoverAfterMainThreadScrollInIFrameAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1878,7 +1860,7 @@ TEST_F(EventHandlerSimTest,
 // Test that the hover is updated at the next begin frame after the smooth JS
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 500));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1941,7 +1923,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
 // thread scroll snap animation finishes.
 TEST_F(EventHandlerSimTest,
        TestUpdateHoverAfterMainThreadScrollSnapAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2023,7 +2005,7 @@ TEST_F(EventHandlerSimTest,
 
 TEST_F(EventHandlerSimTest,
        TestUpdateHoverAfterMainThreadScrollAtSnapPointAtBeginFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2090,7 +2072,7 @@ TEST_F(EventHandlerSimTest,
 }
 
 TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   SimSubresourceRequest cursor_request("https://example.com/100x100.png",
                                        "image/png");
@@ -2149,7 +2131,7 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 }
 
 TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   SimSubresourceRequest cursor_request("https://example.com/48x48.png",
                                        "image/png");
@@ -2209,7 +2191,7 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 }
 
 TEST_F(EventHandlerSimTest, NeverExposeKeyboardEvent) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
@@ -2284,7 +2266,7 @@ TEST_F(EventHandlerSimTest, NeverExposeKeyboardEvent) {
 TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
   GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2361,7 +2343,7 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
 }
 
 TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
-  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2422,7 +2404,7 @@ TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
 }
 
 TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
-  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2495,7 +2477,7 @@ TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
 }
 
 TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2582,7 +2564,7 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
 }
 
 TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request_outer("https://example.com/test-outer.html", "text/html");
   SimRequest request_inner("https://example.com/test-inner.html", "text/html");
   LoadURL("https://example.com/test-outer.html");
@@ -2641,8 +2623,51 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrame) {
   ASSERT_EQ(scrollable_area->ScrollOffsetInt().Height(), delta_y);
 }
 
+TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrameNoCrash) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest request_outer("https://example.com/test-outer.html", "text/html");
+  SimRequest request_inner("https://example.com/test-inner.html", "text/html");
+  LoadURL("https://example.com/test-outer.html");
+  request_outer.Complete(R"HTML(
+    <!DOCTYPE html>
+    <iframe id="iframe" src="test-inner.html"></iframe>
+    <div style="height:1000px"></div>
+    )HTML");
+
+  request_inner.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div style="height:1000px"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* const iframe =
+      To<HTMLFrameElementBase>(GetDocument().getElementById("iframe"));
+  FrameView* child_frame_view =
+      iframe->GetLayoutEmbeddedContent()->ChildFrameView();
+  auto* local_child_frame_view = DynamicTo<LocalFrameView>(child_frame_view);
+  ScrollableArea* scrollable_area = local_child_frame_view->GetScrollableArea();
+
+  iframe->style()->setProperty(GetDocument().GetExecutionContext(), "display",
+                               "none", String(), ASSERT_NO_EXCEPTION);
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Target the iframe scrollable area and make sure it scrolls when targeted
+  // with gestures.
+  constexpr float delta_y = 100;
+  WebGestureEvent gesture_scroll_begin{
+      WebInputEvent::Type::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_begin.SetFrameScale(1);
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+      scrollable_area->GetScrollElementId().GetStableId();
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+}
+
 TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollViewport) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   // Set a page scale factor so that the VisualViewport will also scroll.
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -2694,7 +2719,7 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollViewport) {
 }
 
 TEST_F(EventHandlerSimTest, SelecteTransformedTextWhenCapturing) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2755,7 +2780,7 @@ TEST_F(EventHandlerSimTest, SelecteTransformedTextWhenCapturing) {
 // frame and move to outer frame does not capture mouse to inner frame.
 TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
   ScopedMouseSubframeNoImplicitCaptureForTest scoped_feature(true);
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
@@ -2847,7 +2872,7 @@ TEST_F(EventHandlerSimTest,
        MouseDragWithPointerCaptureAndNoSubframeImplicitCapture) {
   ScopedMouseSubframeNoImplicitCaptureForTest scoped_feature(true);
 
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
@@ -2937,7 +2962,7 @@ TEST_F(EventHandlerSimTest,
 // Test that mouse right button down and move to an iframe will route the events
 // to iframe correctly.
 TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
@@ -2997,7 +3022,7 @@ TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
 
 // Tests that pen dragging on an element and moves will keep the element active.
 TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -3045,7 +3070,7 @@ TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
 }
 
 TEST_F(EventHandlerSimTest, TestNoCrashOnMouseWheelZeroDelta) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -3084,6 +3109,130 @@ TEST_F(EventHandlerSimTest, TestNoCrashOnMouseWheelZeroDelta) {
             GetDocument().View()->LayoutViewport()->GetScrollOffset().Height());
   ASSERT_EQ(0,
             GetDocument().View()->LayoutViewport()->GetScrollOffset().Width());
+}
+
+// The mouse wheel events which have the phases of "MayBegin" or "Cancel"
+// should fire wheel events to the DOM.
+TEST_F(EventHandlerSimTest, TestNoWheelEventWithPhaseMayBeginAndCancel) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id="area" style="width:100px;height:100px">
+      </div>
+      <p id='log'>no wheel event</p>
+    </body>
+    <script>
+      document.addEventListener('wheel', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'received wheel event, deltaX: ' + e.deltaX + ' deltaY: ' + e.deltaY;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(50, 50);
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  wheel_event.SetPositionInScreen(50, 50);
+  wheel_event.delta_x = 0;
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseMayBegin;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element.InnerHTML().Utf8());
+
+  wheel_event.phase = WebMouseWheelEvent::kPhaseCancelled;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element.InnerHTML().Utf8());
+}
+
+// The mouse wheel events which have the phases of "End" should fire wheel
+// events to the DOM, but for other phases like "Begin", "Change" and
+// "Stationary", there should be wheels evnets fired to the DOM.
+TEST_F(EventHandlerSimTest, TestWheelEventsWithDifferentPhases) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body>
+      <div id="area" style="width:100px;height:100px">
+      </div>
+      <p id='log'>no wheel event</p>
+    </body>
+    <script>
+      document.addEventListener('wheel', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'received wheel event, deltaX: ' + e.deltaX + ' deltaY: ' + e.deltaY;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(50, 50);
+  Compositor().BeginFrame();
+
+  auto* element = GetDocument().getElementById("log");
+  WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  wheel_event.SetPositionInScreen(50, 50);
+  wheel_event.delta_x = 0;
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseMayBegin;
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -1;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseBegan;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 1",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -2;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 2",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -3;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 3",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -4;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseStationary;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 4",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = -5;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseChanged;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("received wheel event, deltaX: 0 deltaY: 5",
+            element->innerHTML().Utf8());
+
+  wheel_event.delta_y = 0;
+  wheel_event.phase = WebMouseWheelEvent::kPhaseEnded;
+  element->setInnerHTML("no wheel event");
+  GetDocument().GetFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
+  EXPECT_EQ("no wheel event", element->innerHTML().Utf8());
 }
 
 }  // namespace blink

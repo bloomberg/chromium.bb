@@ -16,8 +16,6 @@
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -28,7 +26,6 @@
 
 namespace app_list {
 class SearchController;
-class SearchResourceManager;
 }  // namespace app_list
 
 class AppListClientWithProfileTest;
@@ -44,6 +41,8 @@ class AppListClientImpl
       public TemplateURLServiceObserver {
  public:
   AppListClientImpl();
+  AppListClientImpl(const AppListClientImpl&) = delete;
+  AppListClientImpl& operator=(const AppListClientImpl&) = delete;
   ~AppListClientImpl() override;
 
   static AppListClientImpl* GetInstance();
@@ -58,8 +57,7 @@ class AppListClientImpl
                         int suggestion_index,
                         bool launch_as_default) override;
   void InvokeSearchResultAction(const std::string& result_id,
-                                int action_index,
-                                int event_flags) override;
+                                int action_index) override;
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
@@ -73,19 +71,13 @@ class AppListClientImpl
                            GetContextMenuModelCallback callback) override;
   void OnAppListVisibilityWillChange(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
-  void OnFolderCreated(int profile_id,
-                       std::unique_ptr<ash::AppListItemMetadata> item) override;
-  void OnFolderDeleted(int profile_id,
-                       std::unique_ptr<ash::AppListItemMetadata> item) override;
+  void OnItemAdded(int profile_id,
+                   std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnItemUpdated(int profile_id,
                      std::unique_ptr<ash::AppListItemMetadata> item) override;
-  void OnPageBreakItemAdded(int profile_id,
-                            const std::string& id,
-                            const syncer::StringOrdinal& position) override;
+  void OnFolderDeleted(int profile_id,
+                       std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnPageBreakItemDeleted(int profile_id, const std::string& id) override;
-  void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visible) override;
   void OnQuickSettingsChanged(
@@ -180,8 +172,6 @@ class AppListClientImpl
   // callbacks.
   std::map<int, AppListModelUpdater*> profile_model_mappings_;
 
-  std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
-  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
@@ -190,12 +180,12 @@ class AppListClientImpl
 
   ash::AppListController* app_list_controller_ = nullptr;
 
+  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
+
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppListClientImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CLIENT_IMPL_H_

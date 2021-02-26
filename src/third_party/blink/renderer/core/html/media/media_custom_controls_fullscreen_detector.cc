@@ -111,6 +111,7 @@ void MediaCustomControlsFullscreenDetector::Attach() {
       WTF::BindRepeating(
           &MediaCustomControlsFullscreenDetector::OnIntersectionChanged,
           WrapWeakPersistent(this)),
+      LocalFrameUkmAggregator::kMediaIntersectionObserver,
       IntersectionObserver::kDeliverDuringPostLifecycleSteps,
       IntersectionObserver::kFractionOfRoot, 0, false, true);
   viewport_intersection_observer_->observe(&VideoElement());
@@ -231,7 +232,7 @@ bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {
   return fullscreen_element->contains(&VideoElement());
 }
 
-void MediaCustomControlsFullscreenDetector::Trace(Visitor* visitor) {
+void MediaCustomControlsFullscreenDetector::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
   visitor->Trace(viewport_intersection_observer_);

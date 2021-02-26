@@ -4,11 +4,40 @@
 
 apply plugin: ChromiumPlugin
 
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "org.owasp:dependency-check-gradle:5.3.2.1"
+  }
+}
+
+apply plugin: "org.owasp.dependencycheck"
+
 repositories {
     mavenCentral()
     maven {
         url 'https://maven.google.com'
     }
+    maven {
+        url 'https://androidx.dev/snapshots/builds/6894841/artifacts/repository'
+    }
+}
+
+dependencyCheck {
+    // Any known vulnerability of any severity will cause the build to fail.
+    failBuildOnCVSS = 0
+    suppressionFile = file("vulnerability_supressions.xml")
+    // Libraries used in these configurations aren't shipped in Chrome.
+    // They are only used to aid in compiling or testing.
+    skipConfigurations = [
+        "buildCompile",
+        "androidTestCompile",
+        "testCompile"
+    ]
 }
 
 dependencies {
@@ -18,43 +47,62 @@ dependencies {
     compile "androidx.lifecycle:lifecycle-runtime:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-common:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-common-java8:${androidXArchComponentsVersion}"
+    compile "androidx.lifecycle:lifecycle-livedata-core:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-viewmodel:${androidXArchComponentsVersion}"
 
     // Support v4 libraries
     def androidXSupportLibVersion = '1.0.0'
-    compile "androidx.core:core:${androidXSupportLibVersion}"
-    compile "androidx.legacy:legacy-support-core-ui:${androidXSupportLibVersion}"
-    compile "androidx.legacy:legacy-support-core-utils:${androidXSupportLibVersion}"
-    compile "androidx.legacy:legacy-support-v4:${androidXSupportLibVersion}"
-    compile "androidx.legacy:legacy-support-v13:${androidXSupportLibVersion}"
-
-    compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
+    compile "androidx.core:core:1.1.0"
+    compile "androidx.core:core-animation:1.0.0-SNAPSHOT"
+    compile "androidx.activity:activity:1.1.0"
+    compile "androidx.annotation:annotation:1.1.0"
     compile "androidx.appcompat:appcompat:1.2.0-beta01"
-    compile "androidx.asynclayoutinflater:asynclayoutinflater:${androidXSupportLibVersion}"
-    compile "androidx.cardview:cardview:${androidXSupportLibVersion}"
-    compile "androidx.concurrent:concurrent-futures:${androidXSupportLibVersion}"
-    compile "androidx.collection:collection:${androidXSupportLibVersion}"
-    compile "androidx.coordinatorlayout:coordinatorlayout:${androidXSupportLibVersion}"
+    compile "androidx.appcompat:appcompat-resources:1.2.0-beta01"
+    compile "androidx.asynclayoutinflater:asynclayoutinflater:1.1.0-SNAPSHOT"
+    compile "androidx.cardview:cardview:1.1.0-SNAPSHOT"
+    compile "androidx.concurrent:concurrent-futures:1.2.0-SNAPSHOT"
+    compile "androidx.collection:collection:1.1.0"
+    compile "androidx.coordinatorlayout:coordinatorlayout:1.2.0-SNAPSHOT"
     compile "androidx.customview:customview:${androidXSupportLibVersion}"
     compile "androidx.drawerlayout:drawerlayout:${androidXSupportLibVersion}"
-    compile "androidx.fragment:fragment:${androidXSupportLibVersion}"
+    compile "androidx.fragment:fragment:1.2.5"
     compile "androidx.gridlayout:gridlayout:${androidXSupportLibVersion}"
     compile "androidx.interpolator:interpolator:${androidXSupportLibVersion}"
+    compile "androidx.leanback:leanback:${androidXSupportLibVersion}"
     compile "androidx.leanback:leanback-preference:${androidXSupportLibVersion}"
-    compile "androidx.localbroadcastmanager:localbroadcastmanager:${androidXSupportLibVersion}"
+    compile "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0-SNAPSHOT"
+    compile "androidx.media:media:${androidXSupportLibVersion}"
     compile "androidx.mediarouter:mediarouter:${androidXSupportLibVersion}"
-    compile "androidx.preference:preference:${androidXSupportLibVersion}"
+    compile "androidx.preference:preference:1.1.1"
+    compile "androidx.slice:slice-core:${androidXSupportLibVersion}"
+    compile "androidx.slice:slice-builders:${androidXSupportLibVersion}"
     compile "androidx.recyclerview:recyclerview:${androidXSupportLibVersion}"
-    compile "androidx.swiperefreshlayout:swiperefreshlayout:${androidXSupportLibVersion}"
-    compile "androidx.vectordrawable:vectordrawable:${androidXSupportLibVersion}"
-    compile "androidx.vectordrawable:vectordrawable-animated:${androidXSupportLibVersion}"
-    compile "androidx.tvprovider:tvprovider:${androidXSupportLibVersion}"
+    compile "androidx.savedstate:savedstate:${androidXSupportLibVersion}"
+    compile "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-SNAPSHOT"
+    compile "androidx.vectordrawable:vectordrawable:1.2.0-SNAPSHOT"
+    compile "androidx.vectordrawable:vectordrawable-animated:1.2.0-SNAPSHOT"
+    compile "androidx.tvprovider:tvprovider:1.1.0-SNAPSHOT"
     compile "androidx.viewpager:viewpager:${androidXSupportLibVersion}"
+    compile "androidx.window:window:1.0.0-alpha01"
+    compile "androidx.exifinterface:exifinterface:1.4.0-SNAPSHOT"
+
+    // Those are for use by doubledown libraries.
+    compile "androidx.arch.core:core-common:2.1.0"
+    compile "androidx.annotation:annotation-experimental:1.1.0-SNAPSHOT"
+    compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
+    compile "androidx.legacy:legacy-support-core-utils:1.0.0"
+    compile "androidx.lifecycle:lifecycle-runtime:${androidXSupportLibVersion}"
+    compile "androidx.transition:transition:1.4.0-SNAPSHOT"
+    compile "androidx.viewpager2:viewpager2:${androidXSupportLibVersion}"
 
     compile "androidx.multidex:multidex:2.0.0"
+    compile "androidx.webkit:webkit:1.3.0-rc01"
+
+    // Used by 1p Play Services.
+    compile "androidx.legacy:legacy-support-v4:${androidXSupportLibVersion}"
 
     // Replacement for com.android.support:design
-    compile "com.google.android.material:material:1.0.0-rc02"
+    compile "com.google.android.material:material:1.2.0-alpha06"
 
     // Architecture components
     def archComponentsVersion = '1.1.1'
@@ -71,7 +119,7 @@ dependencies {
     compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
     compile "com.google.android.gms:play-services-base:${gmsVersion}"
     compile "com.google.android.gms:play-services-auth-base:${gmsVersion}"
-    compile "com.google.android.gms:play-services-auth-api-phone:17.1.0"
+    compile "com.google.android.gms:play-services-auth-api-phone:17.5.0"
     compile "com.google.android.gms:play-services-auth:${gmsVersion}"
     compile "com.google.android.gms:play-services-cast:${gmsVersion}"
     compile "com.google.android.gms:play-services-cast-framework:${gmsVersion}"
@@ -92,18 +140,6 @@ dependencies {
     compile "com.android.support:support-core-utils:${supportLibVersion}"
     compile "com.android.support:support-fragment:${supportLibVersion}"
 
-    // Support v7 libraries
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:gridlayout-v7:${supportLibVersion}"
-    compile "com.android.support:mediarouter-v7:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile "com.android.support:cardview-v7:${supportLibVersion}"
-    compile "com.android.support:preference-v7:${supportLibVersion}"
-
-    compile "com.android.support:support-v13:${supportLibVersion}"
-
-    compile "com.android.support:preference-leanback-v17:${supportLibVersion}"
-
     compile "com.android.support:support-annotations:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
 
@@ -113,7 +149,7 @@ dependencies {
     compile "com.android.support:customview:${supportLibVersion}"
     compile "com.android.support:drawerlayout:${supportLibVersion}"
     compile "com.android.support:interpolator:${supportLibVersion}"
-    compile "com.android.support:localbroadcastmanager:${supportLibVersion}"
+    compile "com.android.support:localbroadcastmanager:1.1.0-SNAPSHOT"
     compile "com.android.support:swiperefreshlayout:${supportLibVersion}"
     compile "com.android.support:viewpager:${supportLibVersion}"
 
@@ -123,13 +159,18 @@ dependencies {
     compile "com.google.guava:failureaccess:1.0.1"
     compile "com.google.guava:listenablefuture:1.0"
     compile "com.google.j2objc:j2objc-annotations:1.1"
-    compile "com.google.protobuf:protobuf-lite:3.0.1"
+    compile "com.google.protobuf:protobuf-javalite:3.13.0"
     compile "javax.annotation:javax.annotation-api:1.3.2"
     compile "javax.annotation:jsr250-api:1.0"
     compile "javax.inject:javax.inject:1"
 
     // Used by R8 to desugar library functions.
-    compile "com.android.tools:desugar_jdk_libs:1.0.5"
+    compile "com.android.tools:desugar_jdk_libs:1.0.10"
+    // When updating this line, please run the following to update the
+    // desugar.json file:
+    //  $ unzip -p third_party/android_deps/libs/desugar_jdk_libs_configuration/desugar_jdk_libs_configuration_$VERSION.jar \
+    //      META-INF/desugar/d8/desugar.json > third_party/r8/desugar_jdk_libs.json
+    compile "com.android.tools:desugar_jdk_libs_configuration:1.0.10"
 
     // buildCompile targets have supports_android = false.
     buildCompile "com.google.guava:guava:27.0.1-jre"
@@ -141,10 +182,20 @@ dependencies {
     // Matches version depended on by Dagger.
     buildCompile "com.squareup:javapoet:1.11.0"
 
+    def errorproneVersion = '2.4.0'
+    // Used by downstream targets.
+    compile "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+    compile "org.checkerframework:checker-compat-qual:2.5.3"
+    compile "org.codehaus.mojo:animal-sniffer-annotations:1.17"
+
+    buildCompile "com.google.errorprone:error_prone_core:${errorproneVersion}"
+    buildCompile "com.google.errorprone:error_prone_check_api:${errorproneVersion}"
+    buildCompile "com.google.errorprone:error_prone_annotation:${errorproneVersion}"
+    buildCompile "com.google.errorprone:javac:9+181-r4173-1"
+
     buildCompile "com.google.auto.service:auto-service:1.0-rc6"
     buildCompile "com.google.auto.service:auto-service-annotations:1.0-rc6"
     buildCompile "com.google.code.gson:gson:2.8.0"
-    buildCompile "com.google.errorprone:error_prone_core:2.3.4"
     buildCompile "org.ow2.asm:asm:7.0"
     buildCompile "org.ow2.asm:asm-commons:7.0"
     buildCompile "org.ow2.asm:asm-tree:7.0"
@@ -159,23 +210,30 @@ dependencies {
     androidTestCompile "androidx.test:monitor:1.2.0"
     androidTestCompile "androidx.test:rules:1.2.0"
     androidTestCompile "androidx.test:runner:1.2.0"
-    androidTestCompile "androidx.test.espresso:espresso-core:3.1.0"
+    androidTestCompile "androidx.test.espresso:espresso-contrib:3.2.0"
+    androidTestCompile "androidx.test.espresso:espresso-core:3.2.0"
+    androidTestCompile "androidx.test.espresso:espresso-intents:3.2.0"
+    androidTestCompile "androidx.test.espresso:espresso-web:3.2.0"
     androidTestCompile "androidx.test.ext:junit:1.1.1"
     androidTestCompile "androidx.test.uiautomator:uiautomator:2.2.0"
     androidTestCompile "com.googlecode.java-diff-utils:diffutils:1.3.0"
+    // Version 1.2 is needed by espresso-web, but we'll newer 1.2.1.
+    androidTestCompile "org.ccil.cowan.tagsoup:tagsoup:1.2.1"
 
-    // Need to avoid having support_android = true set on dependencies.
-    testCompile "org.robolectric:robolectric:4.3.1"
+
+    def robolectricVersion = '4.3.1'
+    // Use testCompile to avoid having support_android = true set on
+    // robolectric dependencies.
+    testCompile "org.robolectric:robolectric:${robolectricVersion}"
+    testCompile "org.robolectric:shadows-multidex:${robolectricVersion}"
+    testCompile "org.robolectric:shadows-playservices:${robolectricVersion}"
+    testCompile "org.robolectric:utils:${robolectricVersion}"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {
     // Paths are relative to the chromium source root.
     repositoryPath 'third_party/android_deps'
-    depsPath 'DEPS'
     chromiumSourceRoot '../..'
     cipdBucket 'chromium'
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.3.1'
+    internalTargetVisibility = [ ':*' ]
 }

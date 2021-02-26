@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "ash/media/media_notification_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -27,10 +29,6 @@ namespace ash {
 
 namespace {
 
-// Maximum count of notification shown by a number label. "+" icon is shown
-// instead if it exceeds this limit.
-constexpr size_t kTrayNotificationMaxCount = 9;
-
 constexpr double kTrayNotificationCircleIconRadius = 8;
 
 // The size of the number font inside the icon. Should be updated when
@@ -40,7 +38,7 @@ constexpr int kNumberIconFontSize = 11;
 gfx::FontList GetNumberIconFontList() {
   // |kNumberIconFontSize| is hard-coded as 11, which whould be updated when
   // the tray icon size is changed.
-  DCHECK_EQ(20, kUnifiedTrayIconSize);
+  DCHECK_EQ(18, kUnifiedTrayIconSize);
 
   gfx::Font default_font;
   int font_size_delta = kNumberIconFontSize - default_font.GetFontSize();
@@ -105,8 +103,33 @@ NotificationCounterView::~NotificationCounterView() {
 void NotificationCounterView::Update() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  size_t notification_count =
-      message_center::MessageCenter::Get()->NotificationCount();
+
+  // If flag is set, do not include media notifications in count.
+  // TODO(crbug.com/1111881) This code can be removed when OS media controls are
+  // launched (expected by M90).
+  const bool dont_count_media_notification =
+      base::FeatureList::IsEnabled(features::kMediaNotificationsCounter);
+
+  const message_center::NotificationList::Notifications& visible =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+
+  size_t notification_count = std::count_if(
+      visible.begin(), visible.end(),
+      [dont_count_media_notification](
+          message_center::Notification* notification) {
+        const std::string& notifier = notification->notifier_id().id;
+        // Don't count these notifications since we have `CameraMicTrayItemView`
+        // to show indicators on the systray.
+        if (notifier == kVmCameraNotifierId || notifier == kVmMicNotifierId) {
+          return false;
+        }
+        if (dont_count_media_notification &&
+            notifier == kMediaSessionNotifierId) {
+          return false;
+        }
+        return true;
+      });
+
   if (notification_count == 0 ||
       message_center::MessageCenter::Get()->IsQuietMode() ||
       !session_controller->ShouldShowNotificationTray() ||
@@ -121,7 +144,7 @@ void NotificationCounterView::Update() {
         gfx::CanvasImageSource::MakeImageSkia<NumberIconImageSource>(icon_id));
     count_for_display_ = icon_id;
   }
-  image_view()->set_tooltip_text(l10n_util::GetPluralStringFUTF16(
+  image_view()->SetTooltipText(l10n_util::GetPluralStringFUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP, notification_count));
   SetVisible(true);
 }
@@ -130,6 +153,10 @@ base::string16 NotificationCounterView::GetAccessibleNameString() const {
   return l10n_util::GetPluralStringFUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP,
       message_center::MessageCenter::Get()->NotificationCount());
+}
+
+void NotificationCounterView::HandleLocaleChange() {
+  Update();
 }
 
 void NotificationCounterView::OnSessionStateChanged(
@@ -143,7 +170,7 @@ const char* NotificationCounterView::GetClassName() const {
 
 QuietModeView::QuietModeView(Shelf* shelf) : TrayItemView(shelf) {
   CreateImageView();
-  image_view()->set_tooltip_text(
+  image_view()->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP));
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -166,6 +193,11 @@ void QuietModeView::Update() {
   } else {
     SetVisible(false);
   }
+}
+
+void QuietModeView::HandleLocaleChange() {
+  image_view()->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP));
 }
 
 void QuietModeView::OnSessionStateChanged(session_manager::SessionState state) {

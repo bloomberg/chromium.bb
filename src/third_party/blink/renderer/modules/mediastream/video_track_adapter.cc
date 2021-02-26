@@ -22,6 +22,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -308,11 +309,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
                    &source_format_settings_.prev_frame_timestamp);
   MaybeUpdateTracksFormat(*frame);
 
-  double frame_rate;
-  if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                    &frame_rate)) {
-    frame_rate = MediaStreamVideoSource::kUnknownFrameRate;
-  }
+  double frame_rate = frame->metadata()->frame_rate.value_or(
+      MediaStreamVideoSource::kUnknownFrameRate);
 
   auto frame_drop_reason = media::VideoCaptureFrameDropReason::kNone;
   if (MaybeDropFrame(*frame, frame_rate, &frame_drop_reason)) {
@@ -411,11 +409,13 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     media::VideoCaptureFrameDropReason* reason) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
-  // Do not drop frames if max frame rate hasn't been specified or the source
-  // frame rate is known and is lower than max.
+  // Do not drop frames if max frame rate hasn't been specified.
   if (settings_.max_frame_rate() == 0.0f ||
-      (source_frame_rate > 0 &&
+      (base::FeatureList::IsEnabled(
+           features::kMediaStreamTrackUseConfigMaxFrameRate) &&
+       source_frame_rate > 0 &&
        source_frame_rate <= settings_.max_frame_rate())) {
+    last_time_stamp_ = frame.timestamp();
     return false;
   }
 

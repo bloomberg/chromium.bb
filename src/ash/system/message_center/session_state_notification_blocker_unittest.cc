@@ -81,19 +81,21 @@ class SessionStateNotificationBlockerTest
 };
 
 TEST_F(SessionStateNotificationBlockerTest, BaseTest) {
-  // Default status: OOBE.
+  // OOBE.
+  GetSessionControllerClient()->SetSessionState(SessionState::OOBE);
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   message_center::NotifierId notifier_id(
       message_center::NotifierType::APPLICATION, "test-notifier");
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
   GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
   SimulateUserLogin("user@test.com");
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
@@ -112,7 +114,9 @@ TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT, kNotifierSystemPriority);
 
-  // Default status: OOBE.
+  // OOBE.
+  GetSessionControllerClient()->SetSessionState(SessionState::OOBE);
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
@@ -122,7 +126,7 @@ TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
 
   // Logged in as a normal user.
   SimulateUserLogin("user@test.com");
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
@@ -137,15 +141,17 @@ TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
 }
 
 TEST_F(SessionStateNotificationBlockerTest, BlockOnPrefService) {
-  // Default status: OOBE.
+  // OOBE.
+  GetSessionControllerClient()->SetSessionState(SessionState::OOBE);
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   message_center::NotifierId notifier_id(
       message_center::NotifierType::APPLICATION, "test-notifier");
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
   GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Simulates login event sequence in production code:
   // - Add a user session;
@@ -157,17 +163,16 @@ TEST_F(SessionStateNotificationBlockerTest, BlockOnPrefService) {
       GetSessionControllerClient();
   session_controller_client->AddUserSession(kUserAccountId.GetUserEmail(),
                                             user_manager::USER_TYPE_REGULAR,
-                                            true, /* enable_settings */
                                             false /* provide_pref_service */);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   session_controller_client->SwitchActiveUser(kUserAccountId);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   session_controller_client->SetSessionState(SessionState::ACTIVE);
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   session_controller_client->ProvidePrefServiceForUser(kUserAccountId);

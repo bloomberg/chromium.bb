@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
@@ -79,10 +79,10 @@ class BluetoothAdapterWinTest : public testing::Test {
       active_discovery_sessions_;
 
   void DiscoverySessionCallbackPassthrough(
-      const base::RepeatingClosure& callback,
+      base::OnceClosure callback,
       std::unique_ptr<BluetoothDiscoverySession> new_session) {
     active_discovery_sessions_.push(std::move(new_session));
-    callback.Run();
+    std::move(callback).Run();
   }
 
   void IncrementNumStartDiscoveryCallbacks() {
@@ -107,14 +107,14 @@ class BluetoothAdapterWinTest : public testing::Test {
   typedef base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>
       DiscoverySessionErrorCallback;
 
-  using ErrorCallback = base::RepeatingClosure;
+  using ErrorCallback = base::OnceClosure;
 
   void CallStartDiscoverySession() {
     adapter_win_->StartDiscoverySession(
         base::BindOnce(
             &BluetoothAdapterWinTest::DiscoverySessionCallbackPassthrough,
             base::Unretained(this),
-            base::BindRepeating(
+            base::BindOnce(
                 &BluetoothAdapterWinTest::IncrementNumStartDiscoveryCallbacks,
                 base::Unretained(this))),
         base::BindOnce(
@@ -122,9 +122,10 @@ class BluetoothAdapterWinTest : public testing::Test {
             base::Unretained(this)));
   }
 
-  void StopTopDiscoverySession(const base::RepeatingClosure& callback,
+  void StopTopDiscoverySession(base::OnceClosure callback,
                                ErrorCallback error_callback) {
-    active_discovery_sessions_.front()->Stop(callback, error_callback);
+    active_discovery_sessions_.front()->Stop(std::move(callback),
+                                             std::move(error_callback));
     active_discovery_sessions_.pop();
   }
 
@@ -284,7 +285,7 @@ TEST_F(BluetoothAdapterWinTest, SingleStopDiscovery) {
   adapter_win_->DiscoveryStarted(true);
   ui_task_runner_->ClearPendingTasks();
   StopTopDiscoverySession(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());
@@ -309,7 +310,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStopDiscoveries) {
   bluetooth_task_runner_->ClearPendingTasks();
   for (int i = 0; i < num_discoveries - 1; i++) {
     StopTopDiscoverySession(
-        base::BindRepeating(
+        base::BindOnce(
             &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
             base::Unretained(this)),
         ErrorCallback());
@@ -318,7 +319,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStopDiscoveries) {
     EXPECT_EQ(i + 1, num_stop_discovery_callbacks_);
   }
   StopTopDiscoverySession(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());
@@ -339,13 +340,13 @@ TEST_F(BluetoothAdapterWinTest,
   ui_task_runner_->RunPendingTasks();
   bluetooth_task_runner_->ClearPendingTasks();
   StopTopDiscoverySession(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());
   EXPECT_FALSE(bluetooth_task_runner_->HasPendingTask());
   StopTopDiscoverySession(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());
@@ -359,7 +360,7 @@ TEST_F(BluetoothAdapterWinTest,
   EXPECT_TRUE(adapter_->IsDiscovering());
   ui_task_runner_->RunPendingTasks();
   active_discovery_sessions_.front()->Stop(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());
@@ -376,7 +377,7 @@ TEST_F(BluetoothAdapterWinTest, StartDiscoveryBeforeDiscoveryStopped) {
   adapter_win_->DiscoveryStarted(true);
   ui_task_runner_->RunPendingTasks();
   StopTopDiscoverySession(
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterWinTest::IncrementNumStopDiscoveryCallbacks,
           base::Unretained(this)),
       ErrorCallback());

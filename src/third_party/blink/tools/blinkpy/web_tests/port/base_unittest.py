@@ -29,8 +29,10 @@
 import json
 import optparse
 import unittest
+import mock
 
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
+from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.common.system.output_capture import OutputCapture
@@ -38,6 +40,7 @@ from blinkpy.common.system.platform_info_mock import MockPlatformInfo
 from blinkpy.common.system.system_host import SystemHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests.port.base import Port, VirtualTestSuite
+from blinkpy.web_tests.port.factory import PortFactory
 from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem, WEB_TEST_DIR, TestPort
 
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
@@ -49,7 +52,7 @@ class PortTest(LoggingTestCase):
                   with_tests=False,
                   port_name=None,
                   **kwargs):
-        host = MockSystemHost()
+        host = MockHost()
         if executive:
             host.executive = executive
         if with_tests:
@@ -1023,6 +1026,40 @@ class PortTest(LoggingTestCase):
             sorted(port.tests(['virtual/virtual_wpt_dom/'])),
             dom_wpt + ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
 
+    def test_virtual_test_paths(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port)
+        ssl_tests = [
+            'virtual/mixed_wpt/http/tests/ssl/text.html',
+        ]
+        http_passes_tests = [
+            'virtual/mixed_wpt/http/tests/passes/image.html',
+            'virtual/mixed_wpt/http/tests/passes/text.html',
+        ]
+        dom_tests = [
+            'virtual/mixed_wpt/external/wpt/dom/ranges/Range-attributes-slow.html',
+            'virtual/mixed_wpt/external/wpt/dom/ranges/Range-attributes.html',
+        ]
+
+        #  The full set of tests must be returned when running the entire suite.
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/'])),
+                         dom_tests + http_passes_tests + ssl_tests)
+
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/external'])),
+                         dom_tests)
+
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/http'])),
+                         http_passes_tests + ssl_tests)
+        self.assertEqual(
+            sorted(
+                port.tests([
+                    'virtual/mixed_wpt/http/tests/ssl',
+                    'virtual/mixed_wpt/external/wpt/dom'
+                ])), dom_tests + ssl_tests)
+
+        # Make sure we don't run a non-existent test.
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/passes'])), [])
+
     def test_is_non_wpt_test_file(self):
         port = self.make_port(with_tests=True)
         self.assertTrue(port.is_non_wpt_test_file('', 'foo.html'))
@@ -1137,6 +1174,20 @@ class PortTest(LoggingTestCase):
             port.is_slow_wpt_test(
                 'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'
             ))
+        self.assertFalse(
+            port.is_slow_wpt_test(
+                'external/wpt/css/css-pseudo/idlharness.html'))
+
+    def test_is_slow_wpt_test_idlharness_with_dcheck(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port)
+        port.host.filesystem.write_text_file(port._build_path('args.gn'),
+                                             'dcheck_always_on=true\n')
+        # We always consider idlharness tests slow, even if they aren't marked
+        # such in the manifest. See https://crbug.com/1047818
+        self.assertTrue(
+            port.is_slow_wpt_test(
+                'external/wpt/css/css-pseudo/idlharness.html'))
 
     def test_is_slow_wpt_test_with_variations(self):
         port = self.make_port(with_tests=True)
@@ -1662,6 +1713,38 @@ class PortTest(LoggingTestCase):
             options=optparse.Values({'nocheck_sys_deps': True}))
         self.assertIn('--disable-system-font-check',
                       port.additional_driver_flags())
+
+    def test_enable_tracing(self):
+        options, _ = optparse.OptionParser().parse_args([])
+        options.enable_tracing = '*,-blink'
+        port = self.make_port(with_tests=True, options=options)
+        with mock.patch('time.strftime', return_value='TIME'):
+            self.assertEqual([
+                '--trace-startup=*,-blink',
+                '--trace-startup-duration=0',
+                '--trace-startup-file=trace_layout_test_non_virtual_TIME.json',
+            ], port.args_for_test('non/virtual'))
+
+    def test_all_systems(self):
+        # Port.ALL_SYSTEMS should match CONFIGURATION_SPECIFIER_MACROS.
+        all_systems = []
+        for system in Port.ALL_SYSTEMS:
+            self.assertEqual(len(system), 2)
+            all_systems.append(system[0])
+        all_systems.sort()
+        configuration_specifier_macros = []
+        for macros in Port.CONFIGURATION_SPECIFIER_MACROS.values():
+            configuration_specifier_macros += macros
+        configuration_specifier_macros.sort()
+        self.assertListEqual(all_systems, configuration_specifier_macros)
+
+    def test_configuration_specifier_macros(self):
+        # CONFIGURATION_SPECIFIER_MACROS should contain all SUPPORTED_VERSIONS
+        # of each port. Must use real Port classes in this test.
+        for port_name, versions in Port.CONFIGURATION_SPECIFIER_MACROS.items():
+            port_class, _ = PortFactory.get_port_class(port_name)
+            self.assertIsNotNone(port_class, port_name)
+            self.assertListEqual(versions, list(port_class.SUPPORTED_VERSIONS))
 
 
 class NaturalCompareTest(unittest.TestCase):

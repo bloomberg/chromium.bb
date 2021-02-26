@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace android_webview {
 
@@ -51,16 +52,6 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
     // Otherwise the listener of the response may be starved.
     std::move(result).Run(false);
   }
-}
-
-void AwRenderViewHostExt::ClearCache() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetRenderViewHost()->Send(new AwViewMsg_ClearCache);
-}
-
-void AwRenderViewHostExt::KillRenderProcess() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetRenderViewHost()->Send(new AwViewMsg_KillProcess);
 }
 
 bool AwRenderViewHostExt::HasNewHitTestData() const {
@@ -109,26 +100,13 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
   if (background_color_ == c)
     return;
   background_color_ = c;
-  if (web_contents()->GetRenderViewHost()) {
-    web_contents()->GetMainFrame()->Send(new AwViewMsg_SetBackgroundColor(
-        web_contents()->GetMainFrame()->GetRoutingID(), background_color_));
+  if (local_main_frame_remote_) {
+    local_main_frame_remote_->SetBackgroundColor(background_color_);
   }
 }
 
 void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
-  // We need to store state on the browser-side, as state might need to be
-  // synchronized again later (see AwRenderViewHostExt::RenderFrameCreated)
-  if (will_suppress_error_page_ == suppress)
-    return;
   will_suppress_error_page_ = suppress;
-
-  web_contents()->SendToAllFrames(new AwViewMsg_WillSuppressErrorPage(
-      MSG_ROUTING_NONE, will_suppress_error_page_));
-}
-
-void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
-  web_contents()->GetRenderViewHost()->Send(
-      new AwViewMsg_SetJsOnlineProperty(network_up));
 }
 
 void AwRenderViewHostExt::SmoothScroll(int target_x,
@@ -156,17 +134,18 @@ void AwRenderViewHostExt::ClearImageRequests() {
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
   if (!frame_host->GetParent()) {
-    frame_host->Send(new AwViewMsg_SetBackgroundColor(
-        frame_host->GetRoutingID(), background_color_));
-  }
+    local_main_frame_remote_.reset();
+    frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        local_main_frame_remote_.BindNewEndpointAndPassReceiver());
 
-  // Synchronizing error page suppression state down to the renderer cannot be
-  // done when RenderViewHostChanged is fired (similar to how other settings do
-  // it) because for cross-origin navigations in multi-process mode, the
-  // navigation will already have started then. Also, newly created subframes
-  // need to inherit the state.
-  frame_host->Send(new AwViewMsg_WillSuppressErrorPage(
-      frame_host->GetRoutingID(), will_suppress_error_page_));
+    local_main_frame_remote_->SetBackgroundColor(background_color_);
+  }
+}
+
+void AwRenderViewHostExt::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (will_suppress_error_page_)
+    navigation_handle->SetSilentlyIgnoreErrors();
 }
 
 void AwRenderViewHostExt::DidFinishNavigation(

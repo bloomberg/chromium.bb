@@ -36,32 +36,14 @@ namespace bindings {
 
 class DictionaryBase;
 class EnumerationBase;
-class UnionBase;
 
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceNativeValue(
-    v8::Isolate* isolate,
+CORE_EXPORT void NativeValueTraitsInterfaceNotOfType(
     const WrapperTypeInfo* wrapper_type_info,
-    v8::Local<v8::Value> value,
     ExceptionState& exception_state);
 
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceArgumentValue(
-    v8::Isolate* isolate,
+CORE_EXPORT void NativeValueTraitsInterfaceNotOfType(
     const WrapperTypeInfo* wrapper_type_info,
     int argument_index,
-    v8::Local<v8::Value> value,
-    ExceptionState& exception_state);
-
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceOrNullNativeValue(
-    v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapper_type_info,
-    v8::Local<v8::Value> value,
-    ExceptionState& exception_state);
-
-CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
-    v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapper_type_info,
-    int argument_index,
-    v8::Local<v8::Value> value,
     ExceptionState& exception_state);
 
 }  // namespace bindings
@@ -296,10 +278,12 @@ namespace bindings {
 //   F(x);  // ToBlinkString<AtomicString> is used.
 //   G(x);  // ToBlinkString<String> is used.
 class CORE_EXPORT NativeValueTraitsStringAdapter {
+  STACK_ALLOCATED();
+
  public:
   NativeValueTraitsStringAdapter() = default;
   NativeValueTraitsStringAdapter(const NativeValueTraitsStringAdapter&) =
-      default;
+      delete;
   NativeValueTraitsStringAdapter(NativeValueTraitsStringAdapter&&) = default;
   explicit NativeValueTraitsStringAdapter(v8::Local<v8::String> value)
       : v8_string_(value) {}
@@ -309,7 +293,7 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
       : wtf_string_(ToBlinkString(value)) {}
 
   NativeValueTraitsStringAdapter& operator=(
-      const NativeValueTraitsStringAdapter&) = default;
+      const NativeValueTraitsStringAdapter&) = delete;
   NativeValueTraitsStringAdapter& operator=(NativeValueTraitsStringAdapter&&) =
       default;
   NativeValueTraitsStringAdapter& operator=(const String& value) {
@@ -318,8 +302,20 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
     return *this;
   }
 
+  void Init(v8::Local<v8::String> value) {
+    DCHECK(v8_string_.IsEmpty());
+    DCHECK(wtf_string_.IsNull());
+    v8_string_ = value;
+  }
+
+  // NOLINTNEXTLINE(google-explicit-constructor)
   operator String() const { return ToString<String>(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
   operator AtomicString() const { return ToString<AtomicString>(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator StringView() const& { return ToStringView(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator StringView() const&& = delete;
 
  private:
   template <class StringType>
@@ -329,8 +325,17 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
     return StringType(wtf_string_);
   }
 
+  StringView ToStringView() const& {
+    if (LIKELY(!v8_string_.IsEmpty())) {
+      return ToBlinkStringView(v8_string_, string_view_backing_store_,
+                               kExternalize);
+    }
+    return wtf_string_;
+  }
+
   v8::Local<v8::String> v8_string_;
   String wtf_string_;
+  mutable StringView::StackBackingStore string_view_backing_store_;
 };
 
 }  // namespace bindings
@@ -1185,22 +1190,29 @@ struct NativeValueTraits<
     T,
     typename std::enable_if_t<std::is_base_of<ScriptWrappable, T>::value>>
     : public NativeValueTraitsBase<T*> {
-  static T* NativeValue(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceNativeValue(
-               isolate, T::GetStaticWrapperTypeInfo(), value, exception_state)
-        ->template ToImpl<T>();
+  static inline T* NativeValue(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    bindings::NativeValueTraitsInterfaceNotOfType(wrapper_type_info,
+                                                  exception_state);
+    return nullptr;
   }
 
-  static T* ArgumentValue(v8::Isolate* isolate,
-                          int argument_index,
-                          v8::Local<v8::Value> value,
-                          ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceArgumentValue(
-               isolate, T::GetStaticWrapperTypeInfo(), argument_index, value,
-               exception_state)
-        ->template ToImpl<T>();
+  static inline T* ArgumentValue(v8::Isolate* isolate,
+                                 int argument_index,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    bindings::NativeValueTraitsInterfaceNotOfType(
+        wrapper_type_info, argument_index, exception_state);
+    return nullptr;
   }
 };
 
@@ -1209,35 +1221,35 @@ struct NativeValueTraits<
     IDLNullable<T>,
     typename std::enable_if_t<std::is_base_of<ScriptWrappable, T>::value>>
     : public NativeValueTraitsBase<IDLNullable<T>> {
-  static T* NativeValue(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceOrNullNativeValue(
-               isolate, T::GetStaticWrapperTypeInfo(), value, exception_state)
-        ->template ToImpl<T>();
+  static inline T* NativeValue(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
+
+    if (value->IsNullOrUndefined())
+      return nullptr;
+
+    bindings::NativeValueTraitsInterfaceNotOfType(wrapper_type_info,
+                                                  exception_state);
+    return nullptr;
   }
 
-  static T* ArgumentValue(v8::Isolate* isolate,
-                          int argument_index,
-                          v8::Local<v8::Value> value,
-                          ExceptionState& exception_state) {
-    return bindings::NativeValueTraitsInterfaceOrNullArgumentValue(
-               isolate, T::GetStaticWrapperTypeInfo(), argument_index, value,
-               exception_state)
-        ->template ToImpl<T>();
-  }
-};
+  static inline T* ArgumentValue(v8::Isolate* isolate,
+                                 int argument_index,
+                                 v8::Local<v8::Value> value,
+                                 ExceptionState& exception_state) {
+    const WrapperTypeInfo* wrapper_type_info = T::GetStaticWrapperTypeInfo();
+    if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+      return ToScriptWrappable(value.As<v8::Object>())->template ToImpl<T>();
 
-// Union types
-template <typename T>
-struct NativeValueTraits<
-    T,
-    typename std::enable_if_t<std::is_base_of<bindings::UnionBase, T>::value>>
-    : public NativeValueTraitsBase<T> {
-  static T NativeValue(v8::Isolate* isolate,
-                       v8::Local<v8::Value> value,
-                       ExceptionState& exception_state) {
-    return T::Create(isolate, value, exception_state);
+    if (value->IsNullOrUndefined())
+      return nullptr;
+
+    bindings::NativeValueTraitsInterfaceNotOfType(
+        wrapper_type_info, argument_index, exception_state);
+    return nullptr;
   }
 };
 

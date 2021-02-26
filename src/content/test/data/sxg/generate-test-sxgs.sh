@@ -33,6 +33,11 @@ echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$sctdir/dummy.sct
 gen-certurl -pem prime256v1-sha256.public.pem \
   -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org.public.pem.cbor
 
+
+# Same as above, but for google-com.example.org.
+gen-certurl -pem prime256v1-sha256-google-com.public.pem \
+  -ocsp $tmpdir/ocsp -sctDir $sctdir > google-com.example.org.public.pem.cbor
+
 # Generate the certificate chain of "*.example.org", whose validity period is
 # more than 90 days.
 gen-certurl -pem prime256v1-sha256-validity-too-long.public.pem \
@@ -63,6 +68,22 @@ gen-signedexchange \
   -date $signature_date \
   -expire 168h \
   -o test.example.org_test.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file for google-com.example.org. This is used
+# for lookalike URL testing.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://google-com.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256-google-com.public.pem \
+  -certUrl https://google-com.example.org/cert.msg \
+  -validityUrl https://google-com.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date $signature_date \
+  -expire 168h \
+  -o google-com.example.org_test.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange for the missing nosniff header test case.

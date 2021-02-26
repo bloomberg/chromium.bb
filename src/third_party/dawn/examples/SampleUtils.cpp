@@ -60,7 +60,7 @@ void PrintGLFWError(int code, const char* message) {
 enum class CmdBufType {
     None,
     Terrible,
-    //TODO(cwallez@chromium.org) double terrible cmdbuf
+    // TODO(cwallez@chromium.org): double terrible cmdbuf
 };
 
 // Default to D3D12, Metal, Vulkan, OpenGL in that order as D3D12 and Metal are the preferred on
@@ -74,7 +74,7 @@ static wgpu::BackendType backendType = wgpu::BackendType::Vulkan;
 #elif defined(DAWN_ENABLE_BACKEND_OPENGL)
 static wgpu::BackendType backendType = wgpu::BackendType::OpenGL;
 #else
-    #error
+#    error
 #endif
 
 static CmdBufType cmdBufType = CmdBufType::Terrible;
@@ -96,6 +96,7 @@ wgpu::Device CreateCppDawnDevice() {
 
     // Create the test window and discover adapters using it (esp. for OpenGL)
     utils::SetupGLFWWindowHintsForBackend(backendType);
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
     if (!window) {
         return wgpu::Device();
@@ -136,31 +137,26 @@ wgpu::Device CreateCppDawnDevice() {
             cDevice = backendDevice;
             break;
 
-        case CmdBufType::Terrible:
-            {
-                c2sBuf = new utils::TerribleCommandBuffer();
-                s2cBuf = new utils::TerribleCommandBuffer();
+        case CmdBufType::Terrible: {
+            c2sBuf = new utils::TerribleCommandBuffer();
+            s2cBuf = new utils::TerribleCommandBuffer();
 
-                dawn_wire::WireServerDescriptor serverDesc = {};
-                serverDesc.device = backendDevice;
-                serverDesc.procs = &backendProcs;
-                serverDesc.serializer = s2cBuf;
+            dawn_wire::WireServerDescriptor serverDesc = {};
+            serverDesc.device = backendDevice;
+            serverDesc.procs = &backendProcs;
+            serverDesc.serializer = s2cBuf;
 
-                wireServer = new dawn_wire::WireServer(serverDesc);
-                c2sBuf->SetHandler(wireServer);
+            wireServer = new dawn_wire::WireServer(serverDesc);
+            c2sBuf->SetHandler(wireServer);
 
-                dawn_wire::WireClientDescriptor clientDesc = {};
-                clientDesc.serializer = c2sBuf;
+            dawn_wire::WireClientDescriptor clientDesc = {};
+            clientDesc.serializer = c2sBuf;
 
-                wireClient = new dawn_wire::WireClient(clientDesc);
-                WGPUDevice clientDevice = wireClient->GetDevice();
-                DawnProcTable clientProcs = dawn_wire::WireClient::GetProcs();
-                s2cBuf->SetHandler(wireClient);
-
-                procs = clientProcs;
-                cDevice = clientDevice;
-            }
-            break;
+            wireClient = new dawn_wire::WireClient(clientDesc);
+            cDevice = wireClient->GetDevice();
+            procs = dawn_wire::client::GetProcs();
+            s2cBuf->SetHandler(wireClient);
+        } break;
     }
 
     dawnProcSetProcs(&procs);
@@ -189,11 +185,10 @@ wgpu::TextureView CreateDefaultDepthStencilView(const wgpu::Device& device) {
     descriptor.size.width = 640;
     descriptor.size.height = 480;
     descriptor.size.depth = 1;
-    descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::OutputAttachment;
+    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
     auto depthStencilTexture = device.CreateTexture(&descriptor);
     return depthStencilTexture.CreateView();
 }
@@ -222,7 +217,8 @@ bool InitSample(int argc, const char** argv) {
                 backendType = wgpu::BackendType::Vulkan;
                 continue;
             }
-            fprintf(stderr, "--backend expects a backend name (opengl, metal, d3d12, null, vulkan)\n");
+            fprintf(stderr,
+                    "--backend expects a backend name (opengl, metal, d3d12, null, vulkan)\n");
             return false;
         }
         if (std::string("-c") == argv[i] || std::string("--command-buffer") == argv[i]) {

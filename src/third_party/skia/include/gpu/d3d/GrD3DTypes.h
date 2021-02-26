@@ -21,9 +21,12 @@
 // You should only include this header if you need the Direct3D definitions and are
 // prepared to rename those identifiers. Otherwise use GrD3DTypesMinimal.h.
 
+#include "include/core/SkRefCnt.h"
 #include "include/gpu/d3d/GrD3DTypesMinimal.h"
 #include <d3d12.h>
 #include <dxgi1_4.h>
+
+class GrD3DGpu;
 
  /** Check if the argument is non-null, and if so, call obj->AddRef() and return obj.
   */
@@ -47,6 +50,7 @@ public:
     using element_type = T;
 
     constexpr gr_cp() : fObject(nullptr) {}
+    constexpr gr_cp(std::nullptr_t) : fObject(nullptr) {}
 
     /**
      *  Shares the underlying object by calling AddRef(), so that both the argument and the newly
@@ -99,6 +103,8 @@ public:
         return *this;
     }
 
+    explicit operator bool() const { return this->get() != nullptr; }
+
     T* get() const { return fObject; }
     T* operator->() const { return fObject; }
     T** operator&() { return &fObject; }
@@ -148,54 +154,81 @@ template <typename T> inline bool operator!=(const gr_cp<T>& a,
     return a.get() != b.get();
 }
 
+// interface classes for the GPU memory allocator
+class GrD3DAlloc : public SkRefCnt {
+public:
+    ~GrD3DAlloc() override = default;
+};
+
+class GrD3DMemoryAllocator : public SkRefCnt {
+public:
+    virtual gr_cp<ID3D12Resource> createResource(D3D12_HEAP_TYPE, const D3D12_RESOURCE_DESC*,
+                                                 D3D12_RESOURCE_STATES initialResourceState,
+                                                 sk_sp<GrD3DAlloc>* allocation,
+                                                 const D3D12_CLEAR_VALUE*) = 0;
+};
+
 // Note: there is no notion of Borrowed or Adopted resources in the D3D backend,
 // so Ganesh will ref fResource once it's asked to wrap it.
 // Clients are responsible for releasing their own ref to avoid memory leaks.
 struct GrD3DTextureResourceInfo {
-    gr_cp<ID3D12Resource>    fResource;
-    D3D12_RESOURCE_STATES    fResourceState;
-    DXGI_FORMAT              fFormat;
-    uint32_t                 fLevelCount;
-    unsigned int             fSampleQualityLevel;
-    GrProtected              fProtected;
+    gr_cp<ID3D12Resource>    fResource             = nullptr;
+    sk_sp<GrD3DAlloc>        fAlloc                = nullptr;
+    D3D12_RESOURCE_STATES    fResourceState        = D3D12_RESOURCE_STATE_COMMON;
+    DXGI_FORMAT              fFormat               = DXGI_FORMAT_UNKNOWN;
+    uint32_t                 fSampleCount          = 1;
+    uint32_t                 fLevelCount           = 0;
+    unsigned int             fSampleQualityPattern = DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN;
+    GrProtected              fProtected            = GrProtected::kNo;
 
-    GrD3DTextureResourceInfo()
-            : fResource(nullptr)
-            , fResourceState(D3D12_RESOURCE_STATE_COMMON)
-            , fFormat(DXGI_FORMAT_UNKNOWN)
-            , fLevelCount(0)
-            , fSampleQualityLevel(0)
-            , fProtected(GrProtected::kNo) {}
+    GrD3DTextureResourceInfo() = default;
 
     GrD3DTextureResourceInfo(ID3D12Resource* resource,
+                             const sk_sp<GrD3DAlloc> alloc,
                              D3D12_RESOURCE_STATES resourceState,
                              DXGI_FORMAT format,
+                             uint32_t sampleCount,
                              uint32_t levelCount,
                              unsigned int sampleQualityLevel,
                              GrProtected isProtected = GrProtected::kNo)
             : fResource(resource)
+            , fAlloc(alloc)
             , fResourceState(resourceState)
             , fFormat(format)
+            , fSampleCount(sampleCount)
             , fLevelCount(levelCount)
-            , fSampleQualityLevel(sampleQualityLevel)
+            , fSampleQualityPattern(sampleQualityLevel)
             , fProtected(isProtected) {}
 
     GrD3DTextureResourceInfo(const GrD3DTextureResourceInfo& info,
                              GrD3DResourceStateEnum resourceState)
             : fResource(info.fResource)
+            , fAlloc(info.fAlloc)
             , fResourceState(static_cast<D3D12_RESOURCE_STATES>(resourceState))
             , fFormat(info.fFormat)
+            , fSampleCount(info.fSampleCount)
             , fLevelCount(info.fLevelCount)
-            , fSampleQualityLevel(info.fSampleQualityLevel)
+            , fSampleQualityPattern(info.fSampleQualityPattern)
             , fProtected(info.fProtected) {}
 
 #if GR_TEST_UTILS
     bool operator==(const GrD3DTextureResourceInfo& that) const {
         return fResource == that.fResource && fResourceState == that.fResourceState &&
-               fFormat == that.fFormat && fLevelCount == that.fLevelCount &&
-               fSampleQualityLevel == that.fSampleQualityLevel && fProtected == that.fProtected;
+               fFormat == that.fFormat && fSampleCount == that.fSampleCount &&
+               fLevelCount == that.fLevelCount &&
+               fSampleQualityPattern == that.fSampleQualityPattern && fProtected == that.fProtected;
     }
 #endif
+};
+
+struct GrD3DFenceInfo {
+    GrD3DFenceInfo()
+        : fFence(nullptr)
+        , fValue(0) {
+    }
+
+    gr_cp<ID3D12Fence> fFence;
+    uint64_t           fValue;  // signal value for the fence
 };
 
 #endif

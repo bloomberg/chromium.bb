@@ -13,14 +13,14 @@
  *
  * Ripple size of the activated state is same with the size of this element.
  */
-var FilesToggleRipple = Polymer({
+Polymer({
   is: 'files-toggle-ripple',
 
   properties: {
     'activated': {
       type: Boolean,
       value: false,
-      observer: 'activatedChanged_'
+      observer: 'activatedChanged_',
     },
   },
 
@@ -132,3 +132,5 @@ var FilesToggleRipple = Polymer({
     ], 150);
   }
 });
+
+//# sourceURL=//ui/file_manager/file_manager/foreground/elements/files_toggle_ripple.js

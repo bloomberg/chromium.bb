@@ -12,7 +12,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -222,7 +222,7 @@ EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   auto rules_value = std::make_unique<base::ListValue>();
   for (const auto* rule : rules_out)
     rules_value->Append(rule->ToValue());
-  return OneArgument(std::move(rules_value));
+  return OneArgument(base::Value::FromUniquePtrValue(std::move(rules_value)));
 }
 
 void EventsEventAddRulesFunction::RecordUMA(
@@ -309,7 +309,7 @@ EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
   auto rules_value = std::make_unique<base::ListValue>();
   for (const auto* rule : rules)
     rules_value->Append(rule->ToValue());
-  return OneArgument(std::move(rules_value));
+  return OneArgument(base::Value::FromUniquePtrValue(std::move(rules_value)));
 }
 
 void EventsEventGetRulesFunction::RecordUMA(

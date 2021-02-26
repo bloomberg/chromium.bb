@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/mojom/widget/device_emulation_params.mojom-blink.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -106,7 +107,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
           web_view->GetPage()->GetSettings().GetCookieEnabled()),
       document_cookie_disabled_(false) {}
 
-void DevToolsEmulator::Trace(Visitor* visitor) {}
+void DevToolsEmulator::Trace(Visitor* visitor) const {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {
   embedder_text_autosizing_enabled_ = enabled;
@@ -139,7 +140,7 @@ void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
   }
 }
 
-void DevToolsEmulator::SetViewportStyle(WebViewportStyle style) {
+void DevToolsEmulator::SetViewportStyle(mojom::blink::ViewportStyle style) {
   embedder_viewport_style_ = style;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
@@ -198,7 +199,7 @@ void DevToolsEmulator::SetAvailablePointerTypes(int types) {
     web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(types);
 }
 
-void DevToolsEmulator::SetPrimaryPointerType(PointerType pointer_type) {
+void DevToolsEmulator::SetPrimaryPointerType(ui::PointerType pointer_type) {
   embedder_primary_pointer_type_ = pointer_type;
   if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetPrimaryPointerType(pointer_type);
@@ -210,17 +211,17 @@ void DevToolsEmulator::SetAvailableHoverTypes(int types) {
     web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(types);
 }
 
-void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
+void DevToolsEmulator::SetPrimaryHoverType(ui::HoverType hover_type) {
   embedder_primary_hover_type_ = hover_type;
   if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
 TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
-    const WebDeviceEmulationParams& params) {
+    const DeviceEmulationParams& params) {
   if (device_metrics_enabled_ &&
       emulation_params_.view_size == params.view_size &&
-      emulation_params_.screen_position == params.screen_position &&
+      emulation_params_.screen_type == params.screen_type &&
       emulation_params_.device_scale_factor == params.device_scale_factor &&
       emulation_params_.scale == params.scale &&
       emulation_params_.viewport_offset == params.viewport_offset &&
@@ -235,11 +236,11 @@ TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
   device_metrics_enabled_ = true;
 
   web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
-      calculateDeviceScaleAdjustment(params.view_size.width,
-                                     params.view_size.height,
+      calculateDeviceScaleAdjustment(params.view_size.width(),
+                                     params.view_size.height(),
                                      params.device_scale_factor));
 
-  if (params.screen_position == WebDeviceEmulationParams::kMobile)
+  if (params.screen_type == mojom::blink::EmulatedScreenType::kMobile)
     EnableMobileEmulation();
   else
     DisableMobileEmulation();
@@ -301,7 +302,7 @@ void DevToolsEmulator::EnableMobileEmulation() {
   Page::PlatformColorsChanged();
   web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(true);
   web_view_->GetPage()->GetSettings().SetViewportStyle(
-      WebViewportStyle::kMobile);
+      mojom::blink::ViewportStyle::kMobile);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(true);
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(true);
   web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
@@ -455,13 +456,13 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
   web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
       enabled ? max_touch_points : original_max_touch_points_);
   web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
-      enabled ? kPointerTypeCoarse : embedder_available_pointer_types_);
+      enabled ? ui::POINTER_TYPE_COARSE : embedder_available_pointer_types_);
   web_view_->GetPage()->GetSettings().SetPrimaryPointerType(
-      enabled ? kPointerTypeCoarse : embedder_primary_pointer_type_);
+      enabled ? ui::POINTER_TYPE_COARSE : embedder_primary_pointer_type_);
   web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(
-      enabled ? kHoverTypeNone : embedder_available_hover_types_);
+      enabled ? ui::HOVER_TYPE_NONE : embedder_available_hover_types_);
   web_view_->GetPage()->GetSettings().SetPrimaryHoverType(
-      enabled ? kHoverTypeNone : embedder_primary_hover_type_);
+      enabled ? ui::HOVER_TYPE_NONE : embedder_primary_hover_type_);
   WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
   if (enabled && frame)
     frame->GetFrame()->GetEventHandler().ClearMouseEventManager();

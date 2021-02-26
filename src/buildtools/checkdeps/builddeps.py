@@ -93,7 +93,8 @@ class DepsBuilder(object):
     Args:
       base_directory: local path to root of checkout, e.g. C:\chr\src.
       verbose: Set to True for debug output.
-      being_tested: Set to True to ignore the DEPS file at tools/checkdeps/DEPS.
+      being_tested: Set to True to ignore the DEPS file at
+                    buildtools/checkdeps/DEPS.
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
     base_directory = (base_directory or
@@ -232,11 +233,12 @@ class DepsBuilder(object):
       'File': FileImpl,
       'From': FromImpl,
       'Var': _VarImpl(local_scope).Lookup,
+      'Str': str,
     }
     deps_file_path = os.path.join(dir_path_local_abs, 'DEPS')
 
     # The second conditional here is to disregard the
-    # tools/checkdeps/DEPS file while running tests.  This DEPS file
+    # buildtools/checkdeps/DEPS file while running tests.  This DEPS file
     # has a skip_child_includes for 'testdata' which is necessary for
     # running production tests, since there are intentional DEPS
     # violations under the testdata directory.  On the other hand when

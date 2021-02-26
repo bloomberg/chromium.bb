@@ -6,30 +6,36 @@
 #define COMPONENTS_QUERY_TILES_INTERNAL_TILE_SERVICE_SCHEDULER_H_
 
 #include <memory>
+#include <string>
 
-#include "base/time/clock.h"
-#include "base/time/tick_clock.h"
 #include "components/background_task_scheduler/background_task_scheduler.h"
-#include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_types.h"
-#include "components/query_tiles/tile_service_prefs.h"
-#include "net/base/backoff_entry_serializer.h"
-
-class PrefService;
 
 namespace query_tiles {
+
+struct TileGroup;
 
 // Coordinates with native background task scheduler to schedule or cancel a
 // TileBackgroundTask.
 class TileServiceScheduler {
  public:
-  // Method to create a TileServiceScheduler instance.
-  static std::unique_ptr<TileServiceScheduler> Create(
-      background_task::BackgroundTaskScheduler* scheduler,
-      PrefService* prefs,
-      base::Clock* clock,
-      const base::TickClock* tick_clock,
-      std::unique_ptr<net::BackoffEntry::Policy> backoff_policy);
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    Delegate(const Delegate& other) = delete;
+    Delegate& operator=(const Delegate& other) = delete;
+
+    // Returns the tile group instance holds in memory.
+    virtual TileGroup* GetTileGroup() = 0;
+  };
+
+  // Set delegate object for the scheduler.
+  virtual void SetDelegate(Delegate* delegate) = 0;
+
+  // Called when fetching task starts.
+  virtual void OnFetchStarted() = 0;
 
   // Called on fetch task completed, schedule another task with or without
   // backoff based on the status. Success status will lead a regular schedule
@@ -44,16 +50,22 @@ class TileServiceScheduler {
   // directly set the release time until 24 hours later.
   virtual void OnTileManagerInitialized(TileGroupStatus status) = 0;
 
-  // Cancel current existing task, and reset backoff.
+  // Called when database is purged. Reset the flow and update the status.
+  virtual void OnDbPurged(TileGroupStatus status) = 0;
+
+  // Called when parsed group data are saved.
+  virtual void OnGroupDataSaved(TileGroupStatus status) = 0;
+
+  // Cancel current existing task, and reset scheduler.
   virtual void CancelTask() = 0;
 
-  virtual ~TileServiceScheduler();
+  virtual ~TileServiceScheduler() = default;
 
   TileServiceScheduler(const TileServiceScheduler& other) = delete;
   TileServiceScheduler& operator=(const TileServiceScheduler& other) = delete;
 
  protected:
-  TileServiceScheduler();
+  TileServiceScheduler() = default;
 };
 
 }  // namespace query_tiles

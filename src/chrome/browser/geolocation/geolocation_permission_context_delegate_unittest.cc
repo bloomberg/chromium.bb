@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
@@ -35,14 +35,14 @@ class TestSearchEngineDelegate
     return url::Origin::Create(GURL(kDSETestUrl));
   }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   void UpdateDSEOrigin() { dse_changed_callback_.Run(); }
 
  private:
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 }  // namespace
 #endif
@@ -55,9 +55,9 @@ class GeolocationPermissionContextDelegateTests
     ChromeRenderViewHostTestHarness::SetUp();
 
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
-    content_settings::TabSpecificContentSettings::CreateForWebContents(
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
 #if defined(OS_ANDROID)
     static_cast<permissions::GeolocationPermissionContextAndroid*>(
@@ -71,21 +71,6 @@ class GeolocationPermissionContextDelegateTests
                                                           GRANTED);
     MockLocationSettings::ClearHasShownLocationSettingsDialog();
 #endif
-  }
-
-  void CheckTabContentsState(const GURL& requesting_frame,
-                             ContentSetting expected_content_setting) {
-    content_settings::TabSpecificContentSettings* content_settings =
-        content_settings::TabSpecificContentSettings::FromWebContents(
-            web_contents());
-    const ContentSettingsUsagesState::StateMap& state_map =
-        content_settings->geolocation_usages_state().state_map();
-    EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));
-    EXPECT_EQ(0U, state_map.count(requesting_frame));
-    auto settings = state_map.find(requesting_frame.GetOrigin());
-    ASSERT_FALSE(settings == state_map.end())
-        << "geolocation state not found " << requesting_frame;
-    EXPECT_EQ(expected_content_setting, settings->second);
   }
 };
 
@@ -110,7 +95,11 @@ TEST_F(GeolocationPermissionContextDelegateTests, TabContentSettingIsUpdated) {
   ASSERT_TRUE(manager->IsRequestInProgress());
   manager->Accept();
   run_loop.Run();
-  CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
+          web_contents()->GetMainFrame());
+  EXPECT_TRUE(
+      content_settings->IsContentAllowed(ContentSettingsType::GEOLOCATION));
 }
 
 #if defined(OS_ANDROID)
@@ -133,7 +122,7 @@ TEST_F(GeolocationPermissionContextDelegateTests,
                                       requesting_frame, requesting_frame)
                 .content_setting);
 
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = profile()->GetPrimaryOTRProfile();
 
   // A DSE setting of ALLOW should not flow through to incognito.
   ASSERT_EQ(CONTENT_SETTING_ASK,

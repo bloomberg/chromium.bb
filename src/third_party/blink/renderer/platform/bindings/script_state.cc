@@ -7,11 +7,13 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 
 namespace blink {
 
 ScriptState::ScriptState(v8::Local<v8::Context> context,
-                         scoped_refptr<DOMWrapperWorld> world)
+                         scoped_refptr<DOMWrapperWorld> world,
+                         ExecutionContext* execution_context)
     : isolate_(context->GetIsolate()),
       context_(isolate_, context),
       world_(std::move(world)),
@@ -20,6 +22,8 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
   DCHECK(world_);
   context_.SetWeak(this, &OnV8ContextCollectedCallback);
   context->SetAlignedPointerInEmbedderData(kV8ContextPerContextDataIndex, this);
+  RendererResourceCoordinator::Get()->OnScriptStateCreated(this,
+                                                           execution_context);
 }
 
 ScriptState::~ScriptState() {
@@ -27,6 +31,7 @@ ScriptState::~ScriptState() {
   DCHECK(context_.IsEmpty());
   InstanceCounters::DecrementCounter(
       InstanceCounters::kDetachedScriptStateCounter);
+  RendererResourceCoordinator::Get()->OnScriptStateDestroyed(this);
 }
 
 void ScriptState::DetachGlobalObject() {
@@ -38,6 +43,7 @@ void ScriptState::DisposePerContextData() {
   per_context_data_ = nullptr;
   InstanceCounters::IncrementCounter(
       InstanceCounters::kDetachedScriptStateCounter);
+  RendererResourceCoordinator::Get()->OnScriptStateDetached(this);
 }
 
 void ScriptState::DissociateContext() {

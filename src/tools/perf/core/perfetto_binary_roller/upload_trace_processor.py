@@ -7,6 +7,7 @@ import argparse
 import os
 import re
 import sys
+import time
 
 # Add tools/perf to sys.path.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -39,10 +40,10 @@ def main(args):
       '--revision',
       help=('Perfetto revision. '
             'If not supplied, will try to infer from DEPS file.'))
+  parser.add_argument('--isolated-script-test-output',
+                      help='Path to the output file.')
 
-  # When this script is invoked on a CI bot, there are some extra arguments
-  # that we have to ignore.
-  args, _ = parser.parse_known_args(args)
+  args = parser.parse_args(args)
 
   revision = args.revision or _PerfettoRevision()
 
@@ -50,7 +51,23 @@ def main(args):
                                        args.path, revision)
 
   # CI bot expects a valid JSON object as script output.
-  sys.stdout.write('{}\n')
+  if args.isolated_script_test_output is not None:
+    with open(args.isolated_script_test_output, 'w') as f:
+      f.write('''{
+          "interrupted": false,
+          "num_failures_by_type": {
+              "FAIL": 0,
+              "PASS": 1
+          },
+          "seconds_since_epoch": %s,
+          "tests": {
+               "upload_trace_processor": {
+                   "actual": "PASS",
+                   "expected": "PASS"
+               }
+          },
+          "version": 3
+      }''' % time.time())
 
 
 if __name__ == '__main__':

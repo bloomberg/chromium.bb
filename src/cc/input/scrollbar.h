@@ -11,13 +11,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-static constexpr int kPixelsPerLineStep = 40;
-static constexpr float kMinFractionToStepWhenPaging = 0.875f;
-
-// Each directional scroll for percentage-based units should scroll 1/8th of
-// the scrollable area.
-static constexpr float kPercentDeltaForDirectionalScroll = 0.125f;
-
 // Autoscrolling (on the main thread) happens by applying a delta every 50ms.
 // Hence, pixels per second for a autoscroll cc animation can be calculated as:
 // autoscroll velocity = delta / 0.05 sec = delta x 20
@@ -34,9 +27,9 @@ static constexpr int kDefaultWinScrollbarThickness = 17;
 
 namespace cc {
 
-enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
+enum class ScrollbarOrientation { HORIZONTAL, VERTICAL };
 
-enum ScrollbarPart {
+enum class ScrollbarPart {
   THUMB,
   TRACK_BUTTONS_TICKMARKS,  // for PartNeedsRepaint() and PaintPart() only.
   BACK_BUTTON,
@@ -58,6 +51,7 @@ class Scrollbar : public base::RefCounted<Scrollbar> {
   virtual bool IsOverlay() const = 0;
   virtual bool HasThumb() const = 0;
   virtual bool SupportsDragSnapBack() const = 0;
+  virtual bool JumpOnTrackClick() const = 0;
 
   // The following rects are all relative to the scrollbar's origin.
   // The location of ThumbRect reflects scroll offset, but cc will ignore it

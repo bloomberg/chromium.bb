@@ -10,6 +10,7 @@ from __future__ import print_function
 import datetime
 import json
 import logging
+import re
 
 import apache_beam as beam
 from apache_beam.options.pipeline_options import DebugOptions
@@ -22,6 +23,9 @@ from bq_export.split_by_timestamp import ReadTimestampRangeFromDatastore
 from bq_export.export_options import BqExportOptions
 from bq_export.utils import (FloatHack, PrintCounters,
                              WriteToPartitionedBigQuery)
+
+# BigQuery table names may only have letters, numbers, and underscore.
+_INVALID_BQ_TABLE_NAME_CHARS_RE = re.compile('[^a-zA-Z0-9_]')
 
 
 def main():
@@ -36,27 +40,69 @@ def main():
   failed_entity_transforms = Metrics.counter('main', 'failed_entity_transforms')
 
   """
-  CREATE TABLE `chromeperf.chromeperf_dashboard_data.rows_test`
+  CREATE TABLE `chromeperf.chromeperf_dashboard_rows.<MASTER>`
   (revision INT64 NOT NULL,
    value FLOAT64 NOT NULL,
    std_error FLOAT64,
    `timestamp` TIMESTAMP NOT NULL,
+   master STRING NOT NULL,
+   bot STRING NOT NULL,
+   measurement STRING,
    test STRING NOT NULL,
-   master STRING,
-   bot STRING,
    properties STRING)
-  PARTITION BY DATE(`timestamp`);
+  PARTITION BY DATE(`timestamp`)
+  CLUSTER BY master, bot, measurement;
   """  # pylint: disable=pointless-string-statement
-  bq_row_schema = {'fields': [
-      {'name': 'revision', 'type': 'INT64', 'mode': 'REQUIRED'},
-      {'name': 'value', 'type': 'FLOAT', 'mode': 'REQUIRED'},
-      {'name': 'std_error', 'type': 'FLOAT', 'mode': 'NULLABLE'},
-      {'name': 'timestamp', 'type': 'TIMESTAMP', 'mode': 'REQUIRED'},
-      {'name': 'test', 'type': 'STRING', 'mode': 'REQUIRED'},
-      {'name': 'master', 'type': 'STRING', 'mode': 'NULLABLE'},
-      {'name': 'bot', 'type': 'STRING', 'mode': 'NULLABLE'},
-      {'name': 'properties', 'type': 'STRING', 'mode': 'NULLABLE'},
-  ]}
+  bq_row_schema = {
+      'fields': [
+          {
+              'name': 'revision',
+              'type': 'INT64',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'value',
+              'type': 'FLOAT',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'std_error',
+              'type': 'FLOAT',
+              'mode': 'NULLABLE'
+          },
+          {
+              'name': 'timestamp',
+              'type': 'TIMESTAMP',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'master',
+              'type': 'STRING',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'bot',
+              'type': 'STRING',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'measurement',
+              'type': 'STRING',
+              'mode': 'NULLABLE'
+          },
+          {
+              'name': 'test',
+              'type': 'STRING',
+              'mode': 'REQUIRED'
+          },
+          {
+              'name': 'properties',
+              'type': 'STRING',
+              'mode': 'NULLABLE'
+          },
+      ]
+  }
+
   def RowEntityToRowDict(entity):
     entities_read.inc()
     try:
@@ -82,6 +128,7 @@ def main():
       if len(test_path_parts) >= 3:
         d['master'] = test_path_parts[0]
         d['bot'] = test_path_parts[1]
+        d['measurement'] = '/'.join(test_path_parts[2:])
       return [d]
     except KeyError:
       logging.getLogger().exception('Failed to convert Row')
@@ -99,10 +146,17 @@ def main():
   row_dicts = (
       row_entities | 'ConvertEntityToRow(Row)' >> FlatMap(RowEntityToRowDict))
 
-  table_name = '{}:chromeperf_dashboard_data.rows{}'.format(
-      project, bq_export_options.table_suffix)
+  def TableNameFn(element):
+    """Write each element to a table based on the table name."""
+    master = _INVALID_BQ_TABLE_NAME_CHARS_RE.sub('_', element['master'])
+    return '{project}:{dataset}.{master}{suffix}'.format(
+        project=project,
+        dataset=bq_export_options.dataset.get(),
+        master=master,
+        suffix=bq_export_options.table_suffix)
+
   _ = row_dicts | 'WriteToBigQuery(rows)' >> WriteToPartitionedBigQuery(
-      table_name, bq_row_schema)
+      TableNameFn, bq_row_schema)
 
   result = p.run()
   result.wait_until_finish()

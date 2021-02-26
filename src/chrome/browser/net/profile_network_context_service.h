@@ -132,9 +132,6 @@ class ProfileNetworkContextService
 
   void ScheduleUpdateCTPolicy();
 
-  // Update the CORS mitigation list for the all of profiles_'s NetworkContexts.
-  void UpdateCorsMitigationList();
-
   bool ShouldSplitAuthCacheByNetworkIsolationKey() const;
   void UpdateSplitAuthCacheByNetworkIsolationKey();
 
@@ -155,8 +152,7 @@ class ProfileNetworkContextService
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
 
   // content_settings::CookieSettings::Observer:
   void OnThirdPartyCookieBlockingChanged(

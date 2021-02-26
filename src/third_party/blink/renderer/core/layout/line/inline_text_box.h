@@ -34,7 +34,6 @@
 namespace blink {
 
 class DocumentMarker;
-class GraphicsContext;
 class TextMarkerBase;
 
 class CORE_EXPORT InlineTextBox : public InlineBox {
@@ -102,6 +101,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   LayoutUnit LogicalBottomVisualOverflow() const {
     return LogicalOverflowRect().MaxY();
   }
+  PhysicalRect PhysicalOverflowRect() const;
 
   // charactersWithHyphen, if provided, must not be destroyed before the
   // TextRun.
@@ -134,19 +134,19 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
       bool include_newline_space_width = true) const;
   void SelectionStartEnd(int& s_pos, int& e_pos) const;
 
-  virtual void PaintDocumentMarker(GraphicsContext&,
-                                   const LayoutPoint& box_origin,
+  virtual void PaintDocumentMarker(const PaintInfo&,
+                                   const PhysicalOffset& box_origin,
                                    const DocumentMarker&,
                                    const ComputedStyle&,
                                    const Font&,
                                    bool grammar) const;
   virtual void PaintTextMarkerForeground(const PaintInfo&,
-                                         const LayoutPoint& box_origin,
+                                         const PhysicalOffset& box_origin,
                                          const TextMarkerBase&,
                                          const ComputedStyle&,
                                          const Font&) const;
   virtual void PaintTextMarkerBackground(const PaintInfo&,
-                                         const LayoutPoint& box_origin,
+                                         const PhysicalOffset& box_origin,
                                          const TextMarkerBase&,
                                          const ComputedStyle&,
                                          const Font&) const;
@@ -155,7 +155,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
  protected:
   void Paint(const PaintInfo&,
-             const LayoutPoint&,
+             const PhysicalOffset&,
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
   bool NodeAtPoint(HitTestResult&,
@@ -240,7 +240,10 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   }
 };
 
-DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
+template <>
+struct DowncastTraits<InlineTextBox> {
+  static bool AllowFrom(const InlineBox& box) { return box.IsInlineTextBox(); }
+};
 
 }  // namespace blink
 

@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -206,6 +206,10 @@ void AccessibilityNotificationWaiter::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
   ListenToFrame(static_cast<RenderFrameHostImpl*>(new_host));
+}
+
+void AccessibilityNotificationWaiter::Quit() {
+  loop_runner_->Quit();
 }
 
 }  // namespace content

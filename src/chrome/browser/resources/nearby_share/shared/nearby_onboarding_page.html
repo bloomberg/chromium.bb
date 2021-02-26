@@ -1,0 +1,69 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="./nearby_page_template.html">
+<link rel="import" href="./nearby_share_settings.html">
+<link rel="import" href="./nearby_share_settings_behavior.html">
+
+<dom-module id="nearby-onboarding-page">
+  <template>
+    <style include="cr-icons cr-shared-style"></style>
+    <style>
+      #center-content {
+        box-sizing: border-box;
+        display: flex;
+        flex-grow: 1;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #splash-image-column {
+        height: 200px;
+        margin: 10px;
+        width: 200px;
+      }
+
+      #device-name-column {
+        margin: 10px;
+      }
+
+      #link-row {
+        border: 1px solid lightgray;
+        border-radius: 5px;
+      }
+
+      #deviceName {
+        margin-top: 60px;
+      }
+
+      #device-name-group {
+        padding-inline-end: 10px;
+        padding-inline-start: 10px;
+      }
+    </style>
+    <nearby-page-template title="$i18n{nearbyShareOnboardingPageTitle}"
+        sub-title="$i18n{nearbyShareOnboardingPageSubtitle}"
+        action-button-label="$i18n{nearbyShareActionsNext}"
+        action-button-event-name="next"
+        action-disabled="[[hasErrorMessage_(errorMessage)]]"
+        cancel-button-label="$i18n{nearbyShareActionsCancel}"
+        cancel-button-event-name="close">
+      <div id=center-content slot="content">
+        <iron-icon id="splash-image-column"
+            icon="nearby-images:nearby-onboarding-splash">
+        </iron-icon>
+        <div id="device-name-column">
+          <cr-input label="$i18n{nearbyShareOnboardingPageDeviceName}"
+              id="deviceName" value="[[settings.deviceName]]"
+              on-input="onDeviceNameInput_" error-message="[[errorMessage]]"
+              invalid="[[hasErrorMessage_(errorMessage)]]" autofocus>
+          </cr-input>
+        </div>
+      </div>
+    </nearby-page-template>
+  </template>
+  <script src="nearby_onboarding_page.js"></script>
+</dom-module>

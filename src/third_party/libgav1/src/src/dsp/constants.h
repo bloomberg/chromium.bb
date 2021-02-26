@@ -64,7 +64,7 @@ extern const uint16_t kSgrScaleParameter[16][2];
 
 extern const uint8_t kCdefPrimaryTaps[2][2];
 
-extern const int8_t kCdefDirections[8][2][2];
+extern const int8_t kCdefDirectionsPadded[12][2][2];
 
 }  // namespace libgav1
 

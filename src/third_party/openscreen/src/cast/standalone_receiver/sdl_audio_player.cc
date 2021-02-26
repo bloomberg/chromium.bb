@@ -6,16 +6,14 @@
 
 #include <chrono>
 #include <sstream>
+#include <utility>
 
 #include "absl/types/span.h"
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "util/big_endian.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/trace_logging.h"
-
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 
 namespace openscreen {
 namespace cast {
@@ -57,12 +55,12 @@ void InterleaveAudioSamples(const uint8_t* const planes[],
 SDLAudioPlayer::SDLAudioPlayer(ClockNowFunctionPtr now_function,
                                TaskRunner* task_runner,
                                Receiver* receiver,
-                               const std::string& codec_name,
+                               AudioCodec codec,
                                std::function<void()> error_callback)
     : SDLPlayerBase(now_function,
                     task_runner,
                     receiver,
-                    codec_name,
+                    CodecToString(codec),
                     std::move(error_callback),
                     kAudioMediaType) {}
 
@@ -117,9 +115,9 @@ ErrorOr<Clock::time_point> SDLAudioPlayer::RenderNextFrame(
       pending_audio_spec_.samples *= 2;
     }
 
-    approximate_lead_time_ = (pending_audio_spec_.samples *
-                              duration_cast<Clock::duration>(kOneSecond)) /
-                             pending_audio_spec_.freq;
+    approximate_lead_time_ =
+        (pending_audio_spec_.samples * Clock::to_duration(kOneSecond)) /
+        pending_audio_spec_.freq;
   }
 
   // If the decoded audio is in planar format, interleave it for SDL.

@@ -71,8 +71,11 @@ void BoxModelObjectPainter::PaintTextClipMask(
             EBoxDecorationBreak::kSlice) {
       local_offset -= LogicalOffsetOnLine(*flow_box_);
     }
+    // TODO(layout-ng): This looks incorrect in flipped writing mode.
+    PhysicalOffset physical_local_offset(local_offset.Width(),
+                                         local_offset.Height());
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info, paint_offset.ToLayoutPoint() - local_offset,
+    flow_box_->Paint(paint_info, paint_offset - physical_local_offset,
                      root.LineTop(), root.LineBottom());
   } else if (auto* layout_block = DynamicTo<LayoutBlock>(box_model_)) {
     layout_block->PaintObject(paint_info, paint_offset);
@@ -91,7 +94,7 @@ PhysicalRect BoxModelObjectPainter::AdjustRectForScrolledContent(
   if (!info.is_clipped_with_local_scrolling)
     return rect;
 
-  const auto& this_box = ToLayoutBox(box_model_);
+  const auto& this_box = To<LayoutBox>(box_model_);
   if (BoxDecorationData::IsPaintingScrollingBackground(paint_info, this_box))
     return rect;
 
@@ -126,13 +129,15 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
     const FillLayer& bg_layer,
     BackgroundBleedAvoidance bleed_avoidance,
     bool is_painting_scrolling_background) const {
+  PhysicalBoxSides sides_to_include;
+  if (flow_box_)
+    sides_to_include = flow_box_->SidesToInclude();
   return BoxPainterBase::FillLayerInfo(
       box_model_.GetDocument(), box_model_.StyleRef(),
-      box_model_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
+      box_model_.IsScrollContainer(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(&box_model_),
-      (flow_box_ ? flow_box_->IncludeLogicalLeftEdge() : true),
-      (flow_box_ ? flow_box_->IncludeLogicalRightEdge() : true),
-      box_model_.IsLayoutInline(), is_painting_scrolling_background);
+      sides_to_include, box_model_.IsLayoutInline(),
+      is_painting_scrolling_background);
 }
 
 bool BoxModelObjectPainter::IsPaintingScrollingBackground(
@@ -140,7 +145,7 @@ bool BoxModelObjectPainter::IsPaintingScrollingBackground(
   if (!box_model_.IsBox())
     return false;
 
-  const auto& this_box = ToLayoutBox(box_model_);
+  const auto& this_box = To<LayoutBox>(box_model_);
   return BoxDecorationData::IsPaintingScrollingBackground(paint_info, this_box);
 }
 

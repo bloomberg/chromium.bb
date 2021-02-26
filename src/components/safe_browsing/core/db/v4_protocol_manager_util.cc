@@ -116,11 +116,11 @@ std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {
 PlatformType GetCurrentPlatformType() {
 #if defined(OS_WIN)
   return WINDOWS_PLATFORM;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   return LINUX_PLATFORM;
 #elif defined(OS_IOS)
   return IOS_PLATFORM;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return OSX_PLATFORM;
 #else
   // TODO(crbug.com/1030487): This file is, in fact, intended to be compiled on

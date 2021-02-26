@@ -28,6 +28,10 @@ ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
 
 ArcAppShortcutsSearchProvider::~ArcAppShortcutsSearchProvider() = default;
 
+ash::AppListSearchResultType ArcAppShortcutsSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kArcAppShortcut;
+}
+
 void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
@@ -64,6 +68,9 @@ void ArcAppShortcutsSearchProvider::UpdateRecommendedResults(
     std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items) {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_prefs);
+
+  // All ArcAppShortcutSearchResults have display type kList, so they are shown
+  // in the zero-state results list, but not in the suggestion chips.
 
   // Maps app IDs to their score according to |ranker_|
   SearchProvider::Results search_results;

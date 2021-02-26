@@ -1,4 +1,6 @@
-// Copyright (c) 2018-2019 The Khronos Group Inc.
+// Copyright (c) 2018-2020 The Khronos Group Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +23,6 @@
 #include <android/native_window.h>
 #include <android/window.h>
 #include <android/native_window_jni.h>
-#include <android_native_app_glue.h>
 #endif  // XR_USE_PLATFORM_ANDROID
 
 #ifdef XR_USE_PLATFORM_WIN32

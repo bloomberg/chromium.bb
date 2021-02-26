@@ -16,7 +16,6 @@
 #define COMMON_SERIALSTORAGE_H_
 
 #include "common/Assert.h"
-#include "common/Serial.h"
 
 #include <cstdint>
 #include <utility>
@@ -26,7 +25,8 @@ struct SerialStorageTraits {};
 
 template <typename Derived>
 class SerialStorage {
-  private:
+  protected:
+    using Serial = typename SerialStorageTraits<Derived>::Serial;
     using Value = typename SerialStorageTraits<Derived>::Value;
     using Storage = typename SerialStorageTraits<Derived>::Storage;
     using StorageIterator = typename SerialStorageTraits<Derived>::StorageIterator;
@@ -158,13 +158,13 @@ void SerialStorage<Derived>::ClearUpTo(Serial serial) {
 }
 
 template <typename Derived>
-Serial SerialStorage<Derived>::FirstSerial() const {
+typename SerialStorage<Derived>::Serial SerialStorage<Derived>::FirstSerial() const {
     DAWN_ASSERT(!Empty());
     return mStorage.begin()->first;
 }
 
 template <typename Derived>
-Serial SerialStorage<Derived>::LastSerial() const {
+typename SerialStorage<Derived>::Serial SerialStorage<Derived>::LastSerial() const {
     DAWN_ASSERT(!Empty());
     return mStorage.back().first;
 }
@@ -280,8 +280,8 @@ SerialStorage<Derived>::ConstIterator::ConstIterator(
 }
 
 template <typename Derived>
-typename SerialStorage<Derived>::ConstIterator& SerialStorage<Derived>::ConstIterator::
-operator++() {
+typename SerialStorage<Derived>::ConstIterator&
+SerialStorage<Derived>::ConstIterator::operator++() {
     const Value* vectorData = mStorageIterator->second.data();
 
     if (mSerialIterator == nullptr) {

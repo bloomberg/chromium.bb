@@ -4,8 +4,10 @@
 
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -132,7 +134,7 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   DCHECK_EQ(num_planes, frame->layout().num_planes());
   DCHECK(vea_.is_bound());
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // TODO(crbug.com/1003197): Remove this once we stop supporting STORAGE_DMABUF
   // in VideoEncodeAccelerator.
   if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
@@ -248,6 +250,24 @@ void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
   DCHECK(vea_.is_bound());
 
   vea_->RequestEncodingParametersChange(bitrate, framerate);
+}
+
+bool MojoVideoEncodeAccelerator::IsFlushSupported() {
+  DVLOG(2) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(vea_.is_bound());
+
+  bool flush_support = false;
+  vea_->IsFlushSupported(&flush_support);
+  return flush_support;
+}
+
+void MojoVideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
+  DVLOG(2) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(vea_.is_bound());
+
+  vea_->Flush(std::move(flush_callback));
 }
 
 void MojoVideoEncodeAccelerator::Destroy() {

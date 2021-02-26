@@ -124,13 +124,26 @@ void ShowWebAppInstallDialog(content::WebContents* web_contents,
 void SetAutoAcceptWebAppDialogForTesting(bool auto_accept,
                                          bool auto_open_in_window);
 
+// Describes the state of in-product-help being shown to the user.
+enum class PwaInProductHelpState {
+  // The in-product-help bubble was shown.
+  kShown,
+  // The in-product-help bubble was not shown.
+  kNotShown
+};
+
 // Shows the PWA installation confirmation bubble anchored off the PWA install
 // icon in the omnibox.
 //
 // |web_app_info| is the WebApplicationInfo to be installed.
-void ShowPWAInstallBubble(content::WebContents* web_contents,
-                          std::unique_ptr<WebApplicationInfo> web_app_info,
-                          AppInstallationAcceptanceCallback callback);
+// |callback| is called when install bubble closed.
+// |iph_state| records whether PWA install iph is shown before Install bubble is
+// shown.
+void ShowPWAInstallBubble(
+    content::WebContents* web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    AppInstallationAcceptanceCallback callback,
+    PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
 
 // Sets whether |ShowPWAInstallBubble| should accept immediately without any
 // user interaction.
@@ -153,13 +166,13 @@ void ShowPrintJobConfirmationDialog(gfx::NativeWindow parent,
 
 #endif  // OS_CHROMEOS
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(TOOLKIT_VIEWS)
 
@@ -358,6 +371,12 @@ base::OnceClosure ShowDeviceChooserDialog(
     content::RenderFrameHost* owner,
     std::unique_ptr<ChooserController> controller);
 bool IsDeviceChooserShowingForTesting(Browser* browser);
+
+// Show the prompt to set a window name for browser's window, optionally with
+// the given context.
+void ShowWindowNamePrompt(Browser* browser);
+void ShowWindowNamePromptForTesting(Browser* browser,
+                                    gfx::NativeWindow context);
 
 }  // namespace chrome
 

@@ -36,26 +36,27 @@ import java.util.Map;
 public class MainActivity extends FragmentActivity {
     private PersistentErrorView mErrorView;
     private WebViewPackageError mDifferentPackageError;
-    private boolean mDifferentPackageErrorVisible = false;
+    private boolean mDifferentPackageErrorVisible;
     private boolean mSwitchFragmentOnResume;
     final Map<Integer, Integer> mFragmentIdMap = new HashMap<>();
 
     // Keep in sync with DeveloperUiService.java
-    private static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
-    private static final int FRAGMENT_ID_HOME = 0;
-    private static final int FRAGMENT_ID_CRASHES = 1;
-    private static final int FRAGMENT_ID_FLAGS = 2;
+    public static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
+    public static final int FRAGMENT_ID_HOME = 0;
+    public static final int FRAGMENT_ID_CRASHES = 1;
+    public static final int FRAGMENT_ID_FLAGS = 2;
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
     @IntDef({MenuChoice.SWITCH_PROVIDER, MenuChoice.REPORT_BUG, MenuChoice.CHECK_UPDATES,
-            MenuChoice.CRASHES_REFRESH})
+            MenuChoice.CRASHES_REFRESH, MenuChoice.ABOUT_DEVTOOLS})
     public @interface MenuChoice {
         int SWITCH_PROVIDER = 0;
         int REPORT_BUG = 1;
         int CHECK_UPDATES = 2;
         int CRASHES_REFRESH = 3;
-        int COUNT = 4;
+        int ABOUT_DEVTOOLS = 4;
+        int COUNT = 5;
     }
 
     public static void logMenuSelection(@MenuChoice int selectedMenuItem) {
@@ -204,6 +205,7 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         // Store the Intent so we can switch Fragments in onResume (which is called next). Only need
         // to switch Fragment if the Intent specifies to do so.
         setIntent(intent);
@@ -287,6 +289,12 @@ public class MainActivity extends FragmentActivity {
                                         .build();
                 startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
             }
+            return true;
+        } else if (item.getItemId() == R.id.options_menu_about_devui) {
+            logMenuSelection(MenuChoice.ABOUT_DEVTOOLS);
+            Uri uri = Uri.parse(
+                    "https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md");
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -5,25 +5,35 @@
 #include "ash/system/accessibility/floating_menu_button.h"
 
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
-namespace {
-const SkColor kFloatingMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
+FloatingMenuButton::FloatingMenuButton() {
+  SetImageHorizontalAlignment(ALIGN_CENTER);
+  SetImageVerticalAlignment(ALIGN_MIDDLE);
+  SetFlipCanvasOnPaintForRTLUI(false);
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
-FloatingMenuButton::FloatingMenuButton(views::ButtonListener* listener,
+FloatingMenuButton::FloatingMenuButton(views::Button::PressedCallback callback,
                                        const gfx::VectorIcon& icon,
                                        int accessible_name_id,
                                        bool flip_for_rtl)
-    : FloatingMenuButton(listener,
+    : FloatingMenuButton(callback,
                          icon,
                          accessible_name_id,
                          flip_for_rtl,
@@ -31,44 +41,70 @@ FloatingMenuButton::FloatingMenuButton(views::ButtonListener* listener,
                          /*draw_highlight=*/true,
                          /*is_a11y_togglable=*/true) {}
 
-FloatingMenuButton::FloatingMenuButton(views::ButtonListener* listener,
+FloatingMenuButton::FloatingMenuButton(views::Button::PressedCallback callback,
                                        const gfx::VectorIcon& icon,
                                        int accessible_name_id,
                                        bool flip_for_rtl,
                                        int size,
                                        bool draw_highlight,
                                        bool is_a11y_togglable)
-    : TopShortcutButton(listener, accessible_name_id),
+    : views::ImageButton(callback),
       icon_(&icon),
       size_(size),
       draw_highlight_(draw_highlight),
       is_a11y_togglable_(is_a11y_togglable) {
-  EnableCanvasFlippingForRTLUI(flip_for_rtl);
+  SetImageHorizontalAlignment(ALIGN_CENTER);
+  SetImageVerticalAlignment(ALIGN_MIDDLE);
+  SetFlipCanvasOnPaintForRTLUI(flip_for_rtl);
   SetPreferredSize(gfx::Size(size_, size_));
-  UpdateImage();
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
+  views::InstallCircleHighlightPathGenerator(this);
+  SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 }
 
 FloatingMenuButton::~FloatingMenuButton() = default;
 
-// views::Button:
-const char* FloatingMenuButton::GetClassName() const {
-  return "FloatingMenuButton";
-}
-
-// Set the vector icon shown in a circle.
 void FloatingMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  if (icon_ == &icon)
+    return;
   icon_ = &icon;
   UpdateImage();
 }
 
-// Change the toggle state.
-void FloatingMenuButton::SetToggled(bool toggled) {
-  toggled_ = toggled;
-  UpdateImage();
-  SchedulePaint();
+bool FloatingMenuButton::GetA11yTogglable() const {
+  return is_a11y_togglable_;
 }
 
-// TopShortcutButton:
+void FloatingMenuButton::SetA11yTogglable(bool a11y_togglable) {
+  if (a11y_togglable == is_a11y_togglable_)
+    return;
+  is_a11y_togglable_ = a11y_togglable;
+  OnPropertyChanged(&is_a11y_togglable_, views::kPropertyEffectsPaint);
+}
+
+bool FloatingMenuButton::GetDrawHighlight() const {
+  return draw_highlight_;
+}
+
+void FloatingMenuButton::SetDrawHighlight(bool draw_highlight) {
+  if (draw_highlight_ == draw_highlight)
+    return;
+  draw_highlight_ = draw_highlight;
+  OnPropertyChanged(&draw_highlight_, views::kPropertyEffectsPaint);
+}
+
+bool FloatingMenuButton::GetToggled() const {
+  return toggled_;
+}
+
+void FloatingMenuButton::SetToggled(bool toggled) {
+  if (toggled_ == toggled)
+    return;
+  toggled_ = toggled;
+  UpdateImage();
+  OnPropertyChanged(&toggled_, views::PropertyEffects::kPropertyEffectsPaint);
+}
+
 void FloatingMenuButton::PaintButtonContents(gfx::Canvas* canvas) {
   if (draw_highlight_) {
     gfx::Rect rect(GetContentsBounds());
@@ -76,9 +112,9 @@ void FloatingMenuButton::PaintButtonContents(gfx::Canvas* canvas) {
     flags.setAntiAlias(true);
     flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
         toggled_
-            ? AshColorProvider::ControlsLayerType::kActiveControlBackground
-            : AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-        AshColorProvider::AshColorMode::kDark));
+            ? AshColorProvider::ControlsLayerType::kControlBackgroundColorActive
+            : AshColorProvider::ControlsLayerType::
+                  kControlBackgroundColorInactive));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
   }
@@ -93,7 +129,7 @@ gfx::Size FloatingMenuButton::CalculatePreferredSize() const {
 void FloatingMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!GetEnabled())
     return;
-  TopShortcutButton::GetAccessibleNodeData(node_data);
+  views::ImageButton::GetAccessibleNodeData(node_data);
   if (!is_a11y_togglable_)
     return;
   node_data->role = ax::mojom::Role::kToggleButton;
@@ -101,22 +137,40 @@ void FloatingMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                                       : ax::mojom::CheckedState::kFalse);
 }
 
-void FloatingMenuButton::SetId(int id) {
-  views::View::SetID(id);
+std::unique_ptr<views::InkDrop> FloatingMenuButton::CreateInkDrop() {
+  return TrayPopupUtils::CreateInkDrop(this);
+}
+
+std::unique_ptr<views::InkDropRipple> FloatingMenuButton::CreateInkDropRipple()
+    const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent());
+}
+
+std::unique_ptr<views::InkDropHighlight>
+FloatingMenuButton::CreateInkDropHighlight() const {
+  return TrayPopupUtils::CreateInkDropHighlight(this);
+}
+
+void FloatingMenuButton::OnThemeChanged() {
+  ImageButton::OnThemeChanged();
+  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kFocusRingColor));
+  UpdateImage();
+  SchedulePaint();
 }
 
 void FloatingMenuButton::UpdateImage() {
-  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      AshColorProvider::AshColorMode::kDark);
-  SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(
-          *icon_, toggled_ ? kFloatingMenuButtonIconColorActive : icon_color));
-  SetImage(
-      views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(
-          *icon_, toggled_ ? kFloatingMenuButtonIconColorActive : icon_color));
+  DCHECK(icon_);
+  AshColorProvider::Get()->DecorateIconButton(
+      this, *icon_, toggled_, GetDefaultSizeOfVectorIcon(*icon_));
 }
+
+BEGIN_METADATA(FloatingMenuButton, views::ImageButton)
+ADD_PROPERTY_METADATA(bool, A11yTogglable)
+ADD_PROPERTY_METADATA(bool, DrawHighlight)
+ADD_PROPERTY_METADATA(bool, Toggled)
+END_METADATA
 
 }  // namespace ash

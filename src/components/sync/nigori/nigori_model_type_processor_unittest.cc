@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/model/type_entities_count.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,25 +91,24 @@ CommitResponseData CreateNigoriCommitResponseData(
 class MockNigoriSyncBridge : public NigoriSyncBridge {
  public:
   MockNigoriSyncBridge() = default;
-  ~MockNigoriSyncBridge() = default;
-
-  MOCK_METHOD1(MergeSyncData,
-               base::Optional<ModelError>(base::Optional<EntityData> data));
-  MOCK_METHOD1(ApplySyncChanges,
-               base::Optional<ModelError>(base::Optional<EntityData> data));
-  MOCK_METHOD0(GetData, std::unique_ptr<EntityData>());
-  MOCK_METHOD2(ResolveConflict,
-               ConflictResolution(const EntityData& local_data,
-                                  const EntityData& remote_data));
-  MOCK_METHOD0(ApplyDisableSyncChanges, void());
+  ~MockNigoriSyncBridge() override = default;
+  MOCK_METHOD(base::Optional<ModelError>,
+              MergeSyncData,
+              (base::Optional<EntityData> data),
+              (override));
+  MOCK_METHOD(base::Optional<ModelError>,
+              ApplySyncChanges,
+              (base::Optional<EntityData> data),
+              (override));
+  MOCK_METHOD(std::unique_ptr<EntityData>, GetData, (), (override));
+  MOCK_METHOD(void, ApplyDisableSyncChanges, (), (override));
 };
 
 class MockCommitQueue : public CommitQueue {
  public:
   MockCommitQueue() = default;
-  ~MockCommitQueue() = default;
-
-  MOCK_METHOD0(NudgeForCommit, void());
+  ~MockCommitQueue() override = default;
+  MOCK_METHOD(void, NudgeForCommit, (), (override));
 };
 
 class NigoriModelTypeProcessorTest : public testing::Test {
@@ -150,14 +150,12 @@ class NigoriModelTypeProcessorTest : public testing::Test {
   NigoriModelTypeProcessor* processor() { return &processor_; }
 
   bool ProcessorHasEntity() {
-    StatusCounters status_counters;
-    base::MockCallback<
-        syncer::ModelTypeControllerDelegate::StatusCountersCallback>
-        status_callback;
-    EXPECT_CALL(status_callback, Run)
-        .WillOnce(testing::SaveArg<1>(&status_counters));
-    processor()->GetStatusCountersForDebugging(status_callback.Get());
-    return status_counters.num_entries > 0;
+    TypeEntitiesCount count(NIGORI);
+    base::MockCallback<base::OnceCallback<void(const TypeEntitiesCount&)>>
+        capture_callback;
+    EXPECT_CALL(capture_callback, Run).WillOnce(testing::SaveArg<0>(&count));
+    processor()->GetTypeEntitiesCountForDebugging(capture_callback.Get());
+    return count.non_tombstone_entities > 0;
   }
 
  private:

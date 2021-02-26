@@ -29,6 +29,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void SetRate(double) override {}
   void SetVolume(double) override {}
   void SetLatencyHint(double) override {}
+  void SetPreservesPitch(bool) override {}
   void OnRequestPictureInPicture() override {}
   void OnPictureInPictureAvailabilityChanged(bool available) override {}
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
@@ -64,6 +65,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
              cc::PaintFlags&,
              int already_uploaded_id,
              VideoFrameUploadMetadata*) override {}
+  scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   bool HasAvailableVideoFrame() const override { return false; }
   base::WeakPtr<WebMediaPlayer> AsWeakPtr() override { return nullptr; }
 };

@@ -27,7 +27,7 @@ export const cssPath = function(node, optimized) {
   }
 
   const steps = [];
-  let contextNode = node;
+  let contextNode = /** @type {?SDK.DOMModel.DOMNode} */ (node);
   while (contextNode) {
     const step = _cssPathStep(contextNode, !!optimized, contextNode === node);
     if (!step) {
@@ -49,10 +49,11 @@ export const cssPath = function(node, optimized) {
  * @return {boolean}
  */
 export const canGetJSPath = function(node) {
+  /** @type {?SDK.DOMModel.DOMNode} */
   let wp = node;
   while (wp) {
-    if (wp.ancestorShadowRoot() &&
-        wp.ancestorShadowRoot().shadowRootType() !== SDK.DOMModel.DOMNode.ShadowRootTypes.Open) {
+    const shadowRoot = wp.ancestorShadowRoot();
+    if (shadowRoot && shadowRoot.shadowRootType() !== SDK.DOMModel.DOMNode.ShadowRootTypes.Open) {
       return false;
     }
     wp = wp.ancestorShadowHost();
@@ -71,6 +72,7 @@ export const jsPath = function(node, optimized) {
   }
 
   const path = [];
+  /** @type {?SDK.DOMModel.DOMNode} */
   let wp = node;
   while (wp) {
     path.push(cssPath(wp, optimized));
@@ -150,7 +152,7 @@ export const _cssPathStep = function(node, optimized, isTargetNode) {
   let ownIndex = -1;
   let elementIndex = -1;
   const siblings = parent.children();
-  for (let i = 0; (ownIndex === -1 || !needsNthChild) && i < siblings.length; ++i) {
+  for (let i = 0; siblings && (ownIndex === -1 || !needsNthChild) && i < siblings.length; ++i) {
     const sibling = siblings[i];
     if (sibling.nodeType() !== Node.ELEMENT_NODE) {
       continue;
@@ -190,7 +192,7 @@ export const _cssPathStep = function(node, optimized, isTargetNode) {
   let result = nodeName;
   if (isTargetNode && nodeName.toLowerCase() === 'input' && node.getAttribute('type') && !node.getAttribute('id') &&
       !node.getAttribute('class')) {
-    result += '[type=' + CSS.escape(node.getAttribute('type')) + ']';
+    result += '[type=' + CSS.escape((node.getAttribute('type')) || '') + ']';
   }
   if (needsNthChild) {
     result += ':nth-child(' + (ownIndex + 1) + ')';
@@ -214,7 +216,7 @@ export const xPath = function(node, optimized) {
   }
 
   const steps = [];
-  let contextNode = node;
+  let contextNode = /** @type {?SDK.DOMModel.DOMNode} */ (node);
   while (contextNode) {
     const step = _xPathValue(contextNode, optimized);
     if (!step) {
@@ -283,7 +285,13 @@ export const _xPathValue = function(node, optimized) {
  * @return {number}
  */
 export const _xPathIndex = function(node) {
-  // Returns -1 in case of error, 0 if no siblings matching the same expression, <XPath index among the same expression-matching sibling nodes> otherwise.
+  /**
+   * Returns -1 in case of error, 0 if no siblings matching the same expression,
+   * <XPath index among the same expression-matching sibling nodes> otherwise.
+   *
+   * @param {!SDK.DOMModel.DOMNode} left
+   * @param {!SDK.DOMModel.DOMNode} right
+   */
   function areNodesSimilar(left, right) {
     if (left === right) {
       return true;

@@ -21,8 +21,8 @@ constexpr uint32_t kRTSize = 4;
 
 class DrawIndexedIndirectTest : public DawnTest {
   protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
@@ -46,6 +46,7 @@ class DrawIndexedIndirectTest : public DawnTest {
         descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.cVertexState.indexFormat = wgpu::IndexFormat::Uint32;
         descriptor.cVertexState.vertexBufferCount = 1;
         descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
         descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
@@ -88,7 +89,7 @@ class DrawIndexedIndirectTest : public DawnTest {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
             pass.SetPipeline(pipeline);
             pass.SetVertexBuffer(0, vertexBuffer);
-            pass.SetIndexBuffer(indexBuffer, indexOffset);
+            pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32, indexOffset);
             pass.DrawIndexedIndirect(indirectBuffer, indirectOffset);
             pass.EndPass();
         }

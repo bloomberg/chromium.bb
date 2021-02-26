@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/media/media_devices_permission_checker.h"
@@ -19,6 +18,8 @@
 #include "media/audio/audio_system.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
+
+using blink::mojom::MediaDeviceType;
 
 namespace content {
 
@@ -57,8 +58,8 @@ void CheckAccessOnUIThread(
   std::move(cb).Run(std::move(salt_and_origin.device_id_salt),
                     std::move(salt_and_origin.origin),
                     MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
-                        blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT,
-                        render_process_id, render_frame_id));
+                        MediaDeviceType::MEDIA_AUDIO_OUTPUT, render_process_id,
+                        render_frame_id));
 }
 
 }  // namespace
@@ -170,8 +171,8 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
       trace_scope->UsingSessionId(session_id, device->id);
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+          FROM_HERE,
           base::BindOnce(&GetMediaDeviceSaltAndOrigin, render_process_id_,
                          render_frame_id),
           base::BindOnce(&AudioOutputAuthorizationHandler::HashDeviceId,
@@ -191,8 +192,8 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
 
   trace_scope->CheckAccessStart(device_id);
   // Check device permissions if nondefault device is requested.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CheckAccessOnUIThread, render_process_id_,
                      render_frame_id, override_permissions_,
                      permissions_override_value_,
@@ -207,6 +208,11 @@ void AudioOutputAuthorizationHandler::OverridePermissionsForTesting(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   override_permissions_ = true;
   permissions_override_value_ = override_value;
+}
+
+void AudioOutputAuthorizationHandler::
+    SetAuthorizedDeviceIdForGlobalMediaControls(std::string hashed_device_id) {
+  hashed_device_id_for_global_media_controls_ = std::move(hashed_device_id);
 }
 
 void AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
@@ -244,6 +250,12 @@ void AudioOutputAuthorizationHandler::AccessChecked(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   trace_scope->AccessChecked(has_access);
 
+  // If this device has been explicitly allowed by the browser, overwrite the
+  // result of the permission check.
+  has_access = device_id == hashed_device_id_for_global_media_controls_
+                   ? true
+                   : has_access;
+
   if (!has_access) {
     std::move(cb).Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
                       media::AudioParameters::UnavailableDeviceParams(),
@@ -252,7 +264,8 @@ void AudioOutputAuthorizationHandler::AccessChecked(
   }
 
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[static_cast<size_t>(
+      MediaDeviceType::MEDIA_AUDIO_OUTPUT)] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       devices_to_enumerate,
       base::BindOnce(&AudioOutputAuthorizationHandler::TranslateDeviceID,
@@ -272,7 +285,7 @@ void AudioOutputAuthorizationHandler::TranslateDeviceID(
   DCHECK(!media::AudioDeviceDescription::IsDefaultDevice(device_id));
 
   for (const blink::WebMediaDeviceInfo& device_info :
-       enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+       enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_OUTPUT)]) {
     if (DoesMediaDeviceIDMatchHMAC(salt, security_origin, device_id,
                                    device_info.device_id)) {
       GetDeviceParameters(std::move(trace_scope), std::move(cb),

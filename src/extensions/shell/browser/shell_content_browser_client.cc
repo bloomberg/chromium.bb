@@ -8,15 +8,11 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -36,7 +32,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
@@ -48,6 +43,7 @@
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "extensions/shell/common/version.h"  // Generated file.
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -62,8 +58,6 @@
 
 using base::CommandLine;
 using content::BrowserContext;
-using content::BrowserThread;
-
 namespace extensions {
 namespace {
 
@@ -164,13 +158,6 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
       ->Insert(extension->id(),
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&InfoMap::RegisterExtensionProcess,
-                     browser_main_parts_->extension_system()->info_map(),
-                     extension->id(), site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ShellContentBrowserClient::SiteInstanceDeleting(
@@ -188,13 +175,6 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
       ->Remove(extension->id(),
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&InfoMap::UnregisterExtensionProcess,
-                     browser_main_parts_->extension_system()->info_map(),
-                     extension->id(), site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -258,13 +238,16 @@ ShellContentBrowserClient::GetNavigationUIData(
 
 void ShellContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     int frame_tree_node_id,
+    ukm::SourceIdObj ukm_source_id,
     NonNetworkURLLoaderFactoryMap* factories) {
+  DCHECK(factories);
+
   content::WebContents* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          web_contents->GetBrowserContext(),
+          web_contents->GetBrowserContext(), ukm_source_id,
           !!extensions::WebViewGuest::FromWebContents(web_contents)));
 }
 
@@ -274,6 +257,7 @@ void ShellContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   DCHECK(browser_context);
   DCHECK(factories);
+
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionWorkerMainResourceURLLoaderFactory(
@@ -286,6 +270,7 @@ void ShellContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   DCHECK(browser_context);
   DCHECK(factories);
+
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(
@@ -296,10 +281,11 @@ void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  auto factory = extensions::CreateExtensionURLLoaderFactory(render_process_id,
-                                                             render_frame_id);
-  if (factory)
-    factories->emplace(extensions::kExtensionScheme, std::move(factory));
+  DCHECK(factories);
+
+  factories->emplace(extensions::kExtensionScheme,
+                     extensions::CreateExtensionURLLoaderFactory(
+                         render_process_id, render_frame_id));
 }
 
 bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
@@ -309,6 +295,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     base::Optional<int64_t> navigation_id,
+    ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
@@ -320,7 +307,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
           browser_context);
   bool use_proxy = web_request_api->MaybeProxyURLLoaderFactory(
       browser_context, frame, render_process_id, type, std::move(navigation_id),
-      factory_receiver, header_client);
+      ukm_source_id, factory_receiver, header_client);
   if (bypass_redirect_checks)
     *bypass_redirect_checks = use_proxy;
   return use_proxy;
@@ -348,6 +335,11 @@ void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
       browser_context, origin, is_for_isolated_world, factory_params);
 }
 
+base::FilePath
+ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return GetBrowserContext()->GetPath();
+}
+
 std::string ShellContentBrowserClient::GetUserAgent() {
   // Must contain a user agent string for version sniffing. For example,
   // pluginless WebRTC Hangouts checks the Chrome version number.
@@ -365,7 +357,7 @@ ShellContentBrowserClient::CreateShellBrowserMainParts(
 void ShellContentBrowserClient::AppendRendererSwitches(
     base::CommandLine* command_line) {
   static const char* const kSwitchNames[] = {
-      switches::kWhitelistedExtensionID,
+      switches::kAllowlistedExtensionID,
       // TODO(jamescook): Should we check here if the process is in the
       // extension service process map, or can we assume all renderers are
       // extension renderers?

@@ -50,7 +50,8 @@ LinkRelAttribute::LinkRelAttribute()
       is_module_preload_(false),
       is_service_worker_(false),
       is_canonical_(false),
-      is_monetization_(false) {}
+      is_monetization_(false),
+      is_web_bundle_(false) {}
 
 LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
   if (rel.IsEmpty())
@@ -70,10 +71,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
       is_alternate_ = true;
     } else if (EqualIgnoringASCIICase(link_type, "icon")) {
       // This also allows "shortcut icon" since we just ignore the non-standard
-      // "shortcut" token.
-      // FIXME: This doesn't really follow the spec that requires "shortcut
-      // icon" to be the entire string
-      // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
+      // "shortcut" token (in accordance with the spec).
       icon_type_ = mojom::blink::FaviconIconType::kFavicon;
     } else if (EqualIgnoringASCIICase(link_type, "prefetch")) {
       is_link_prefetch_ = true;
@@ -102,6 +100,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
       is_canonical_ = true;
     } else if (EqualIgnoringASCIICase(link_type, "monetization")) {
       is_monetization_ = true;
+    } else if (EqualIgnoringASCIICase(link_type, "webbundle")) {
+      is_web_bundle_ = true;
     }
     // Adding or removing a value here requires you to update
     // RelList::supportedTokens()

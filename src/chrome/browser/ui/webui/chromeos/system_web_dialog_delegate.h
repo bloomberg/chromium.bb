@@ -73,7 +73,6 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
-  bool CanResizeDialog() const override;
   std::string GetDialogArgs() const override;
   void OnDialogShown(content::WebUI* webui) override;
   // Note: deletes |this|.
@@ -104,6 +103,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // Returns the dialog window (pointer to |aura::Window|). This will be a
   // |nullptr| if the dialog has not been created yet.
   gfx::NativeWindow dialog_window() const { return dialog_window_; }
+
+  // A setter for modal type.
+  void set_modal_type(ui::ModalType modal_type) { modal_type_ = modal_type; }
 
  private:
   GURL gurl_;

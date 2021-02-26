@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.query_tiles;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 
@@ -18,11 +18,13 @@ import static org.chromium.chrome.browser.query_tiles.ListMatchers.matchList;
 import static org.chromium.chrome.browser.query_tiles.TileMatchers.withChip;
 import static org.chromium.chrome.browser.query_tiles.ViewActions.scrollTo;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.test.filters.SmallTest;
+
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -38,14 +42,13 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.components.query_tiles.TestTileProvider;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -53,7 +56,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.QUERY_TILES)
+@Features.EnableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.QUERY_TILES_IN_NTP})
 public class QueryTileSectionTest {
     private static final String SEARCH_URL_PATTERN = "https://www.google.com/search?q=";
 
@@ -207,16 +210,15 @@ public class QueryTileSectionTest {
     }
 
     private String getTabUrl() {
-        return mActivityTestRule.getActivity().getActivityTab().getUrl().getValidSpecOrEmpty();
+        return ChromeTabUtils.getUrlOnUiThread(mActivityTestRule.getActivity().getActivityTab())
+                .getValidSpecOrEmpty();
     }
 
     private void waitForSearchResultsPage() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("The SRP was never loaded. " + mTab.getUrl().getValidSpecOrEmpty()) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mTab.getUrl().getValidSpecOrEmpty().contains(SEARCH_URL_PATTERN);
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("The SRP was never loaded.",
+                    ChromeTabUtils.getUrlOnUiThread(mTab).getValidSpecOrEmpty(),
+                    Matchers.containsString(SEARCH_URL_PATTERN));
+        });
     }
 }

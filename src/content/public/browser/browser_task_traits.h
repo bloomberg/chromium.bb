@@ -49,10 +49,10 @@ enum class BrowserTaskType {
 // to a BrowserThread.
 //
 // To post a task to the UI thread (analogous for IO thread):
-//     base::PostTask(FROM_HERE, {BrowserThread::UI}, task);
+//     GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task);
 //
 // To obtain a TaskRunner for the UI thread (analogous for the IO thread):
-//     base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+//     GetUIThreadTaskRunner({});
 //
 // Tasks posted to the same BrowserThread with the same traits will be executed
 // in the order they were posted, regardless of the TaskRunners they were
@@ -152,6 +152,12 @@ class CONTENT_EXPORT BrowserTaskTraits : public base::TaskTraits {
     // TODO(1026641): Reconsider whether BrowserTaskTraits should really be
     // supporting base::TaskPriority.
     ValidTrait(base::TaskPriority);
+
+    // TODO(1026641): These traits are meaningless on BrowserThreads but some
+    // callers of post_task.h had been using them in conjunction with
+    // BrowserThread::ID traits. Remove such usage post-migration.
+    ValidTrait(base::MayBlock);
+    ValidTrait(base::TaskShutdownBehavior);
   };
 
   // TODO(1026641): Get rid of BrowserTaskTraitsExtension and store its members

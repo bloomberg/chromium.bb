@@ -4,6 +4,9 @@
 
 #include "platform/impl/tls_data_router_posix.h"
 
+#include <memory>
+#include <utility>
+
 #include "platform/impl/stream_socket_posix.h"
 #include "platform/impl/tls_connection_posix.h"
 #include "util/osp_logging.h"
@@ -42,7 +45,8 @@ void TlsDataRouterPosix::DeregisterConnection(TlsConnectionPosix* connection) {
     connections_.erase(it, connections_.end());
   }
 
-  waiter_->OnHandleDeletion(this, connection->socket_handle());
+  waiter_->OnHandleDeletion(this, connection->socket_handle(),
+                            disable_locking_for_testing_);
 }
 
 void TlsDataRouterPosix::RegisterAcceptObserver(
@@ -59,36 +63,27 @@ void TlsDataRouterPosix::RegisterAcceptObserver(
   waiter_->Subscribe(this, socket_ptr->socket_handle());
 }
 
-void TlsDataRouterPosix::DeregisterAcceptObserver(StreamSocketPosix* socket) {
-  OnSocketDestroyed(socket, false);
-}
-
-void TlsDataRouterPosix::OnConnectionDestroyed(TlsConnectionPosix* connection) {
-  // TODO(jophba, rwkeane): implement this method.
-  OSP_UNIMPLEMENTED();
-}
-
-void TlsDataRouterPosix::OnSocketDestroyed(StreamSocketPosix* socket,
-                                           bool skip_locking_for_testing) {
+void TlsDataRouterPosix::DeregisterAcceptObserver(SocketObserver* observer) {
+  std::vector<std::unique_ptr<StreamSocketPosix>> sockets_to_delete;
   {
     std::unique_lock<std::mutex> lock(accept_socket_mutex_);
-    if (!accept_socket_mappings_.erase(socket)) {
-      return;
+    for (auto it = accept_stream_sockets_.begin();
+         it != accept_stream_sockets_.end();) {
+      auto map_entry = accept_socket_mappings_.find(it->get());
+      OSP_DCHECK(map_entry != accept_socket_mappings_.end());
+      if (map_entry->second == observer) {
+        sockets_to_delete.push_back(std::move(*it));
+        accept_socket_mappings_.erase(map_entry);
+        it = accept_stream_sockets_.erase(it);
+      } else {
+        ++it;
+      }
     }
   }
 
-  waiter_->OnHandleDeletion(this, std::cref(socket->socket_handle()),
-                            skip_locking_for_testing);
-
-  {
-    std::unique_lock<std::mutex> lock(accept_socket_mutex_);
-    auto it = std::find_if(
-        accept_stream_sockets_.begin(), accept_stream_sockets_.end(),
-        [socket](const std::unique_ptr<StreamSocketPosix>& ptr) {
-          return ptr.get() == socket;
-        });
-    OSP_DCHECK(it != accept_stream_sockets_.end());
-    accept_stream_sockets_.erase(it);
+  for (auto& socket : sockets_to_delete) {
+    waiter_->OnHandleDeletion(this, socket->socket_handle(),
+                              disable_locking_for_testing_);
   }
 }
 
@@ -123,14 +118,6 @@ void TlsDataRouterPosix::ProcessReadyHandle(
 bool TlsDataRouterPosix::HasTimedOut(Clock::time_point start_time,
                                      Clock::duration timeout) {
   return now_function_() - start_time > timeout;
-}
-
-void TlsDataRouterPosix::RemoveWatchedSocket(StreamSocketPosix* socket) {
-  std::unique_lock<std::mutex> lock(accept_socket_mutex_);
-  const auto it = accept_socket_mappings_.find(socket);
-  if (it != accept_socket_mappings_.end()) {
-    accept_socket_mappings_.erase(it);
-  }
 }
 
 bool TlsDataRouterPosix::IsSocketWatched(StreamSocketPosix* socket) const {

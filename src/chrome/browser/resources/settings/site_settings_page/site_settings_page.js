@@ -61,7 +61,6 @@ function getCategoryItemMap() {
       icon: 'settings:vr-headset',
       enabledLabel: 'siteSettingsArAsk',
       disabledLabel: 'siteSettingsArBlock',
-      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
@@ -116,11 +115,7 @@ function getCategoryItemMap() {
       disabledLabel: 'siteSettingsBlocked',
     },
     {
-      route: (function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-            routes.COOKIES :
-            routes.SITE_SETTINGS_COOKIES;
-      })(),
+      route: routes.COOKIES,
       id: Id.COOKIES,
       label: 'siteSettingsCookies',
       icon: 'settings:cookie',
@@ -143,8 +138,14 @@ function getCategoryItemMap() {
       icon: 'settings:hid-device',
       enabledLabel: 'siteSettingsHidDevicesAsk',
       disabledLabel: 'siteSettingsHidDevicesBlock',
-      shouldShow: () =>
-          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+    },
+    {
+      route: routes.SITE_SETTINGS_IDLE_DETECTION,
+      id: Id.IDLE_DETECTION,
+      label: 'siteSettingsIdleDetection',
+      icon: 'settings:person',
+      enabledLabel: 'siteSettingsIdleDetectionAsk',
+      disabledLabel: 'siteSettingsIdleDetectionBlock',
     },
     {
       route: routes.SITE_SETTINGS_IMAGES,
@@ -184,18 +185,24 @@ function getCategoryItemMap() {
       label: 'siteSettingsInsecureContent',
       icon: 'settings:insecure-content',
       disabledLabel: 'siteSettingsInsecureContentBlock',
-      shouldShow: () =>
-          loadTimeData.getBoolean('enableInsecureContentContentSetting'),
     },
     {
-      route: routes.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
-      id: Id.NATIVE_FILE_SYSTEM_WRITE,
-      label: 'siteSettingsNativeFileSystemWrite',
+      route: routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
+      id: Id.FILE_SYSTEM_WRITE,
+      label: 'siteSettingsFileSystemWrite',
       icon: 'settings:save-original',
-      enabledLabel: 'siteSettingsNativeFileSystemWriteAsk',
-      disabledLabel: 'siteSettingsNativeFileSystemWriteBlock',
+      enabledLabel: 'siteSettingsFileSystemWriteAsk',
+      disabledLabel: 'siteSettingsFileSystemWriteBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_FONT_ACCESS,
+      id: Id.FONT_ACCESS,
+      label: 'fonts',
+      icon: 'settings:font-access',
+      enabledLabel: 'siteSettingsFontAccessAsk',
+      disabledLabel: 'siteSettingsFontAccessBlock',
       shouldShow: () =>
-          loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting'),
+          loadTimeData.getBoolean('enableFontAccessContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_NOTIFICATIONS,
@@ -220,14 +227,6 @@ function getCategoryItemMap() {
       id: 'pdfDocuments',
       label: 'siteSettingsPdfDocuments',
       icon: 'settings:pdf',
-    },
-    {
-      route: routes.SITE_SETTINGS_FLASH,
-      id: Id.PLUGINS,
-      label: 'siteSettingsFlash',
-      icon: 'cr:extension',
-      enabledLabel: 'siteSettingsFlashAskFirst',
-      disabledLabel: 'siteSettingsFlashBlock',
     },
     {
       route: routes.SITE_SETTINGS_POPUPS,
@@ -277,14 +276,6 @@ function getCategoryItemMap() {
       disabledLabel: 'siteSettingsSoundBlock',
     },
     {
-      route: routes.SITE_SETTINGS_UNSANDBOXED_PLUGINS,
-      id: Id.UNSANDBOXED_PLUGINS,
-      label: 'siteSettingsUnsandboxedPlugins',
-      icon: 'cr:extension',
-      enabledLabel: 'siteSettingsUnsandboxedPluginsAsk',
-      disabledLabel: 'siteSettingsUnsandboxedPluginsBlock',
-    },
-    {
       route: routes.SITE_SETTINGS_USB_DEVICES,
       id: Id.USB_DEVICES,
       label: 'siteSettingsUsbDevices',
@@ -299,7 +290,6 @@ function getCategoryItemMap() {
       icon: 'settings:vr-headset',
       enabledLabel: 'siteSettingsVrAsk',
       disabledLabel: 'siteSettingsVrBlock',
-      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_WINDOW_PLACEMENT,
@@ -357,45 +347,6 @@ Polymer({
     lists_: {
       type: Object,
       value: function() {
-        if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-          return {
-            all: buildItemListFromIds([
-              Id.COOKIES,
-              Id.GEOLOCATION,
-              Id.CAMERA,
-              Id.MIC,
-              Id.SENSORS,
-              Id.NOTIFICATIONS,
-              Id.JAVASCRIPT,
-              Id.PLUGINS,
-              Id.IMAGES,
-              Id.POPUPS,
-              Id.ADS,
-              Id.BACKGROUND_SYNC,
-              Id.SOUND,
-              Id.AUTOMATIC_DOWNLOADS,
-              Id.UNSANDBOXED_PLUGINS,
-              Id.PROTOCOL_HANDLERS,
-              Id.MIDI_DEVICES,
-              Id.ZOOM_LEVELS,
-              Id.USB_DEVICES,
-              Id.SERIAL_PORTS,
-              Id.BLUETOOTH_DEVICES,
-              Id.NATIVE_FILE_SYSTEM_WRITE,
-              Id.HID_DEVICES,
-              'pdfDocuments',
-              Id.PROTECTED_CONTENT,
-              Id.CLIPBOARD,
-              Id.PAYMENT_HANDLER,
-              Id.MIXEDSCRIPT,
-              Id.BLUETOOTH_SCANNING,
-              Id.AR,
-              Id.VR,
-              Id.WINDOW_PLACEMENT,
-            ]),
-          };
-        }
-
         return {
           permissionsBasic: buildItemListFromIds([
             Id.GEOLOCATION,
@@ -407,25 +358,25 @@ Polymer({
           permissionsAdvanced: buildItemListFromIds([
             Id.SENSORS,
             Id.AUTOMATIC_DOWNLOADS,
-            Id.UNSANDBOXED_PLUGINS,
             Id.PROTOCOL_HANDLERS,
             Id.MIDI_DEVICES,
             Id.USB_DEVICES,
             Id.SERIAL_PORTS,
             Id.BLUETOOTH_DEVICES,
-            Id.NATIVE_FILE_SYSTEM_WRITE,
+            Id.FILE_SYSTEM_WRITE,
             Id.HID_DEVICES,
             Id.CLIPBOARD,
             Id.PAYMENT_HANDLER,
             Id.BLUETOOTH_SCANNING,
             Id.AR,
             Id.VR,
+            Id.IDLE_DETECTION,
             Id.WINDOW_PLACEMENT,
+            Id.FONT_ACCESS,
           ]),
           contentBasic: buildItemListFromIds([
             Id.COOKIES,
             Id.JAVASCRIPT,
-            Id.PLUGINS,
             Id.IMAGES,
             Id.POPUPS,
           ]),
@@ -445,14 +396,6 @@ Polymer({
     focusConfig: {
       type: Object,
       observer: 'focusConfigChanged_',
-    },
-
-    /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
     },
 
     /** @private */
@@ -489,9 +432,6 @@ Polymer({
    * @private
    */
   getClassForSiteSettingsAllLink_() {
-    return (this.privacySettingsRedesignEnabled_ &&
-            !this.noRecentSitePermissions_) ?
-        'hr' :
-        '';
+    return this.noRecentSitePermissions_ ? '' : 'hr';
   },
 });

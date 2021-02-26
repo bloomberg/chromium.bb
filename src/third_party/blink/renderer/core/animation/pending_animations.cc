@@ -165,8 +165,14 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
       waiting_for_compositor_animation_start_.push_back(animation);
       continue;
     }
-    animation->NotifyReady(monotonic_animation_start_time -
-                           animation->timeline()->ZeroTimeInSeconds());
+    if (animation->timeline() &&
+        !animation->timeline()->IsMonotonicallyIncreasing()) {
+      animation->NotifyReady(
+          animation->timeline()->CurrentTimeSeconds().value_or(0));
+    } else {
+      animation->NotifyReady(monotonic_animation_start_time -
+                             animation->timeline()->ZeroTimeInSeconds());
+    }
   }
 }
 
@@ -203,7 +209,7 @@ void PendingAnimations::FlushWaitingNonCompositedAnimations() {
   }
 }
 
-void PendingAnimations::Trace(Visitor* visitor) {
+void PendingAnimations::Trace(Visitor* visitor) const {
   visitor->Trace(pending_);
   visitor->Trace(waiting_for_compositor_animation_start_);
 }

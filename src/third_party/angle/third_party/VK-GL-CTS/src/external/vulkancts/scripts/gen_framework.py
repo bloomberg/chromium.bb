@@ -637,6 +637,8 @@ def parseDefinitions (extensionName, src):
 		extNameUpper = extensionName.upper()
 		extNameUpper = extNameUpper.replace("VK_INTEL_SHADER_INTEGER_FUNCTIONS2", "VK_INTEL_SHADER_INTEGER_FUNCTIONS_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_ROBUSTNESS2", "VK_EXT_ROBUSTNESS_2")
+		extNameUpper = extNameUpper.replace("VK_EXT_FRAGMENT_DENSITY_MAP2", "VK_EXT_FRAGMENT_DENSITY_MAP_2")
+		extNameUpper = extNameUpper.replace("VK_AMD_SHADER_CORE_PROPERTIES2", "VK_AMD_SHADER_CORE_PROPERTIES_2")
 		# SPEC_VERSION enums
 		if definition[0].startswith(extNameUpper) and definition[1].isdigit():
 			return False
@@ -1162,6 +1164,22 @@ def writeStrUtilImpl (api, filename):
 				yield "}"
 	writeInlFile(filename, INL_HEADER, makeStrUtilImpl())
 
+
+def writeObjTypeImpl (api, filename):
+	def makeObjTypeImpl ():
+
+		yield "namespace vk"
+		yield "{"
+
+		yield "template<typename T> VkObjectType getObjectType	(void);"
+
+		for line in indentLines(["template<> inline VkObjectType\tgetObjectType<%s>\t(void) { return %s;\t}" % (handle.name, prefixName("VK_OBJECT_TYPE_", handle.name)) for handle in api.handles if not handle.isAlias]):
+			yield line
+
+		yield "}"
+
+	writeInlFile(filename, INL_HEADER, makeObjTypeImpl())
+
 class ConstructorFunction:
 	def __init__ (self, type, name, objectType, ifaceArgs, arguments):
 		self.type		= type
@@ -1442,6 +1460,44 @@ def writeTypeUtil (api, filename):
 
 	writeInlFile(filename, INL_HEADER, gen())
 
+def writeDriverIds(filename):
+
+	driverIdsString = []
+	driverIdsString.append("static const struct\n"
+					 "{\n"
+					 "\tstd::string driver;\n"
+					 "\tdeUint32 id;\n"
+					 "} driverIds [] =\n"
+					 "{")
+
+	vulkanCore = readFile(os.path.join(VULKAN_H_DIR, "vulkan_core.h"))
+
+	items = re.search(r'(?:typedef\s+enum\s+VkDriverId\s*{)((.*\n)*)(?:}\s*VkDriverId\s*;)', vulkanCore).group(1).split(',')
+	driverItems = dict()
+	for item in items:
+		item.strip()
+		splitted = item.split('=')
+		key = splitted[0].strip()
+		value_str = splitted[1].strip()
+		try: # is this previously defined value?
+			value = driverItems[value_str]
+		except:
+			value = value_str
+			value_str = ""
+		if value_str:
+			value_str = "\t// " + value_str
+		driverItems[key] = value
+		if not item == items[-1]:
+			driverIdsString.append("\t{\"" + key + "\"" + ", " + value + "}," + value_str)
+		else:
+			driverIdsString.append("\t{\"" + key + "\"" + ", " + value + "}" + value_str)
+		driverItems[key] = value
+
+	driverIdsString.append("};")
+
+	writeInlFile(filename, INL_HEADER, driverIdsString)
+
+
 def writeSupportedExtenions(api, filename):
 
 	def writeExtensionsForVersions(map):
@@ -1618,17 +1674,31 @@ def writeDeviceFeatures2(api, filename):
 		'VkPhysicalDeviceBufferDeviceAddressFeaturesEXT',
 		'VkPhysicalDeviceBufferDeviceAddressFeatures',
 		'VkPhysicalDeviceDescriptorIndexingFeatures',
-		'VkPhysicalDeviceTimelineSemaphoreFeatures'
+		'VkPhysicalDeviceTimelineSemaphoreFeatures',
+		'VkPhysicalDeviceFragmentDensityMapFeaturesEXT',
+		'VkPhysicalDeviceFragmentDensityMap2FeaturesEXT'
 	]
 	# helper class used to encapsulate all data needed during generation
 	class StructureDetail:
 		def __init__ (self, name):
 			nameResult			= re.search('(.*)Features(.*)', name[len('VkPhysicalDevice'):])
-			nameSplit			= re.findall(r'[1-9A-Z]+(?:[a-z1-9]+|[A-Z]*(?=[A-Z]|$))', nameResult.group(1))
-			nameSplitUp			= map(str.upper, nameSplit)
-			postfix				= '' if (len(nameResult.group(2)) == 0) else '_' + nameResult.group(2)
+			nameSplitUp			= ''
+			# generate structure type name from structure name
+			# note that sometimes digits are separated with '_':
+			# VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT
+			# but mostly they are not:
+			# VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES
+			if (nameResult.group(1) == 'FragmentDensityMap2'):
+				nameSplitUp		= ['FRAGMENT', 'DENSITY', 'MAP', '2', 'FEATURES']
+			else:
+				nameSplit		= re.findall(r'[1-9A-Z]+(?:[a-z1-9]+|[A-Z]*(?=[A-Z]|$))', nameResult.group(1))
+				nameSplitUp		= map(str.upper, nameSplit)
+				nameSplitUp		= list(nameSplitUp) + ['FEATURES']
+			# check if there is extension suffix
+			if (len(nameResult.group(2)) != 0):
+				nameSplitUp.append(nameResult.group(2))
 			self.name			= name
-			self.sType			= 'VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_' + '_'.join(nameSplitUp) + '_FEATURES' + postfix
+			self.sType			= 'VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_' + '_'.join(nameSplitUp)
 			self.instanceName	= 'd' + name[11:]
 			self.flagName		= 'is' + name[16:]
 			self.extension		= None
@@ -1691,7 +1761,7 @@ def writeDeviceFeatures2(api, filename):
 		if extension is not None:
 			condition = ' checkExtension(properties, "' + extension + '")'
 		if major is not None:
-			if condition is not '':
+			if condition != '':
 				condition += '\t' * int((39 - len(extension)) / 4) + '|| '
 			else:
 				condition += '\t' * 17 + '   '
@@ -1745,7 +1815,7 @@ def generateDeviceFeaturesDefs(src):
 	defs = []
 	for sType, sSuffix in matches:
 		structName			= re.sub("[_0-9][a-z]", lambda match: match.group(0).upper(), sType.capitalize()).replace('_', '')
-		ptrnStructName		= r'\s*typedef\s+struct\s+(VkPhysicalDevice' + structName + 'Features' + sSuffix[1:] + ')'
+		ptrnStructName		= r'\s*typedef\s+struct\s+(VkPhysicalDevice' + structName + 'Features' + sSuffix.replace('_', '') + ')'
 		matchStructName		= re.search(ptrnStructName, src, re.IGNORECASE)
 		if matchStructName:
 			# handle special cases
@@ -1753,8 +1823,6 @@ def generateDeviceFeaturesDefs(src):
 				sType = "SCISSOR_EXCLUSIVE"
 			elif sType == "ASTC_DECODE":
 				sType = "ASTC_DECODE_MODE"
-			elif sType == "TEXTURE_COMPRESSION_ASTC_HDR":
-				continue # skip due to const pNext
 			if sType in {'VULKAN_1_1', 'VULKAN_1_2'}:
 				continue
 			# end handling special cases
@@ -1762,10 +1830,10 @@ def generateDeviceFeaturesDefs(src):
 			matchExtensionName	= re.search(ptrnExtensionName, src, re.M)
 			ptrnSpecVersion		= r'^\s*#define\s+(\w+' + sSuffix + '_' + sType + '_SPEC_VERSION).+$'
 			matchSpecVersion	= re.search(ptrnSpecVersion, src, re.M)
-			defs.append( (sType, sSuffix, matchStructName.group(1), \
+			defs.append( (sType, '', sSuffix, matchStructName.group(1), \
 							matchExtensionName.group(0)	if matchExtensionName	else None,
 							matchExtensionName.group(1)	if matchExtensionName	else None,
-							matchSpecVersion.group	(1)	if matchSpecVersion		else '0') )
+							matchSpecVersion.group(1)	if matchSpecVersion		else '0') )
 	return defs
 
 def generateDevicePropertiesDefs(src):
@@ -1776,26 +1844,42 @@ def generateDevicePropertiesDefs(src):
 	# construct final list
 	defs = []
 	for sType, sSuffix in matches:
-		# skip VkPhysicalDeviceGroupProperties
-		if sType == "GROUP":
+		# handle special cases
+		if sType in {'VULKAN_1_1', 'VULKAN_1_2', 'GROUP', 'MEMORY_BUDGET', 'MEMORY', 'TOOL'}:
 			continue
-		structName			= re.sub("[_0-9][a-z]", lambda match: match.group(0).upper(), sType.capitalize()).replace('_', '')
-		ptrnStructName		= r'\s*typedef\s+struct\s+(VkPhysicalDevice' + structName + 'Properties' + sSuffix[1:] + ')'
+		# there are cases like VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD
+		# where 2 is after PROPERTIES - to handle this we need to split suffix to two parts
+		sVerSuffix = ''
+		sExtSuffix = sSuffix
+		suffixStart = sSuffix.rfind('_')
+		if suffixStart > 0:
+			sVerSuffix = sSuffix[:suffixStart]
+			sExtSuffix = sSuffix[suffixStart:]
+		# handle special case
+		if sType == "ID":
+			structName	= sType
+		else:
+			structName	= re.sub("[_0-9][a-z]", lambda match: match.group(0).upper(), sType.capitalize()).replace('_', '')
+		ptrnStructName		= r'\s*typedef\s+struct\s+(VkPhysicalDevice' + structName + 'Properties' + sSuffix.replace('_', '') + ')'
 		matchStructName		= re.search(ptrnStructName, src, re.M)
 		if matchStructName:
-			if sType in {'VULKAN_1_1', 'VULKAN_1_2'}:
-				continue
 			extType = sType
 			if extType == "MAINTENANCE_3":
 				extType = "MAINTENANCE3"
 			elif extType == "DISCARD_RECTANGLE":
 				extType = "DISCARD_RECTANGLES"
+			elif extType == "DRIVER":
+				extType = "DRIVER_PROPERTIES"
+			elif extType == "POINT_CLIPPING":
+				extType = "MAINTENANCE2"
+			elif extType == "SHADER_CORE":
+				extType = "SHADER_CORE_PROPERTIES"
 			# end handling special cases
-			ptrnExtensionName	= r'^\s*#define\s+(\w+' + sSuffix + '_' + extType + '_EXTENSION_NAME).+$'
+			ptrnExtensionName	= r'^\s*#define\s+(\w+' + sExtSuffix + '_' + extType + sVerSuffix +'[_0-9]*_EXTENSION_NAME).+$'
 			matchExtensionName	= re.search(ptrnExtensionName, src, re.M)
-			ptrnSpecVersion		= r'^\s*#define\s+(\w+' + sSuffix + '_' + extType + '_SPEC_VERSION).+$'
+			ptrnSpecVersion		= r'^\s*#define\s+(\w+' + sExtSuffix + '_' + extType + sVerSuffix + '[_0-9]*_SPEC_VERSION).+$'
 			matchSpecVersion	= re.search(ptrnSpecVersion, src, re.M)
-			defs.append( (sType, sSuffix, matchStructName.group(1), \
+			defs.append( (sType, sVerSuffix, sExtSuffix, matchStructName.group(1), \
 							matchExtensionName.group(0)	if matchExtensionName	else None,
 							matchExtensionName.group(1)	if matchExtensionName	else None,
 							matchSpecVersion.group	(1)	if matchSpecVersion		else '0') )
@@ -1806,7 +1890,7 @@ def writeDeviceFeatures(api, dfDefs, filename):
 	# and construct dictionary with all of their attributes
 	blobMembers = {}
 	blobStructs = {}
-	blobPattern = re.compile("^VkPhysicalDeviceVulkan([1-9][0-9])Features$")
+	blobPattern = re.compile("^VkPhysicalDeviceVulkan([1-9][0-9])Features[0-9]*$")
 	for structureType in api.compositeTypes:
 		match = blobPattern.match(structureType.name)
 		if match:
@@ -1817,8 +1901,8 @@ def writeDeviceFeatures(api, dfDefs, filename):
 	initFromBlobDefinitions = []
 	emptyInitDefinitions = []
 	# iterate over all feature structures
-	allFeaturesPattern = re.compile("^VkPhysicalDevice\w+Features")
-	nonExtFeaturesPattern = re.compile("^VkPhysicalDevice\w+Features$")
+	allFeaturesPattern = re.compile("^VkPhysicalDevice\w+Features[1-9]*")
+	nonExtFeaturesPattern = re.compile("^VkPhysicalDevice\w+Features[1-9]*$")
 	for structureType in api.compositeTypes:
 		# skip structures that are not feature structures
 		if not allFeaturesPattern.match(structureType.name):
@@ -1843,9 +1927,9 @@ def writeDeviceFeatures(api, dfDefs, filename):
 				# add specialization for this feature structure
 				memberCopying = ""
 				for member in structureMembers:
-					memberCopying += "\tfeatureType.{0} = allBlobs.vk{1}.{0};\n".format(member.name, blobName)
+					memberCopying += "\tfeatureType.{0} = allFeaturesBlobs.vk{1}.{0};\n".format(member.name, blobName)
 				wholeFunction = \
-					"template<> void initFromBlob<{0}>({0}& featureType, const AllBlobs& allBlobs)\n" \
+					"template<> void initFeatureFromBlob<{0}>({0}& featureType, const AllFeaturesBlobs& allFeaturesBlobs)\n" \
 					"{{\n" \
 					"{1}" \
 					"}}".format(structureType.name, memberCopying)
@@ -1856,15 +1940,15 @@ def writeDeviceFeatures(api, dfDefs, filename):
 		# add empty template definition as on Fedora there are issue with
 		# linking using just generic template - all specializations are needed
 		if notPartOfBlob:
-			emptyFunction = "template<> void initFromBlob<{0}>({0}&, const AllBlobs&) {{}}"
+			emptyFunction = "template<> void initFeatureFromBlob<{0}>({0}&, const AllFeaturesBlobs&) {{}}"
 			emptyInitDefinitions.append(emptyFunction.format(structureType.name))
 	extensionDefines = []
 	makeFeatureDescDefinitions = []
 	featureStructWrappers = []
-	for idx, (sType, sSuffix, extStruct, extLine, extName, specVer) in enumerate(dfDefs):
+	for idx, (sType, sVerSuffix, sExtSuffix, extStruct, extLine, extName, specVer) in enumerate(dfDefs):
 		extensionNameDefinition = extName
 		if not extensionNameDefinition:
-			extensionNameDefinition = 'DECL{0}_{1}_EXTENSION_NAME'.format((sSuffix if sSuffix else ''), sType)
+			extensionNameDefinition = 'DECL{0}_{1}_EXTENSION_NAME'.format((sExtSuffix if sExtSuffix else ''), sType)
 		# construct defines with names
 		if extLine:
 			extensionDefines.append(extLine)
@@ -1877,7 +1961,7 @@ def writeDeviceFeatures(api, dfDefs, filename):
 			sType = "ASTC_DECODE"
 		# end handling special cases
 		# construct makeFeatureDesc template function definitions
-		sTypeName = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_{0}_FEATURES{1}".format(sType, sSuffix)
+		sTypeName = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_{0}_FEATURES{1}".format(sType, sVerSuffix + sExtSuffix)
 		makeFeatureDescDefinitions.append("template<> FeatureDesc makeFeatureDesc<{0}>(void) " \
 			"{{ return FeatureDesc{{{1}, {2}, {3}, {4}}}; }}".format(extStruct, sTypeName, extensionNameDefinition, specVer, len(dfDefs)-idx))
 		# construct CreateFeatureStruct wrapper block
@@ -1899,9 +1983,9 @@ def writeDeviceFeatures(api, dfDefs, filename):
 			if structName == 'VkPhysicalDeviceShaderDrawParameterFeatures':
 				structName = 'VkPhysicalDeviceShaderDrawParametersFeatures'
 			# end handling special cases
-			structDef = [s for s in dfDefs if s[2] == structName][0]
+			structDef = [s for s in dfDefs if s[3] == structName][0]
 			sType = structDef[0]
-			sSuffix = structDef[1]
+			sSuffix = structDef[1] + structDef[2]
 			# handle special cases
 			if sType == "SCISSOR_EXCLUSIVE":
 				sType = "EXCLUSIVE_SCISSOR"
@@ -1930,41 +2014,133 @@ def writeDeviceFeatures(api, dfDefs, filename):
 	stream.append('} // vk\n')
 	writeInlFile(filename, INL_HEADER, stream)
 
-def writeDeviceProperties(dfDefs, filename):
+def writeDeviceProperties(api, dpDefs, filename):
+	# find VkPhysicalDeviceVulkan[1-9][0-9]Features blob structurs
+	# and construct dictionary with all of their attributes
+	blobMembers = {}
+	blobStructs = {}
+	blobPattern = re.compile("^VkPhysicalDeviceVulkan([1-9][0-9])Properties[0-9]*$")
+	for structureType in api.compositeTypes:
+		match = blobPattern.match(structureType.name)
+		if match:
+			allMembers = [member.name for member in structureType.members]
+			vkVersion = match.group(1)
+			blobMembers[vkVersion] = allMembers[2:]
+			blobStructs[vkVersion] = set()
+	initFromBlobDefinitions = []
+	emptyInitDefinitions = []
+	# iterate over all property structures
+	allPropertiesPattern = re.compile("^VkPhysicalDevice\w+Properties[1-9]*")
+	nonExtPropertiesPattern = re.compile("^VkPhysicalDevice\w+Properties[1-9]*$")
+	for structureType in api.compositeTypes:
+		# skip structures that are not property structures
+		if not allPropertiesPattern.match(structureType.name):
+			continue
+		# skip structures that were previously identified as blobs
+		if blobPattern.match(structureType.name):
+			continue
+		if structureType.isAlias:
+			continue
+		# skip sType and pNext and just grab third and next attributes
+		structureMembers = structureType.members[2:]
+		notPartOfBlob = True
+		if nonExtPropertiesPattern.match(structureType.name):
+			# check if this member is part of any of the blobs
+			for blobName, blobMemberList in blobMembers.items():
+				# if just one member is not part of this blob go to the next blob
+				# (we asume that all members are part of blob - no need to check all)
+				if structureMembers[0].name not in blobMemberList:
+					continue
+				# add another property structure name to this blob
+				blobStructs[blobName].add(structureType)
+				# add specialization for this property structure
+				memberCopying = ""
+				for member in structureMembers:
+					if not member.arraySize:
+						# handle special case
+						if structureType.name == "VkPhysicalDeviceSubgroupProperties" and "subgroup" not in member.name :
+							blobMemberName = "subgroup" + member.name[0].capitalize() + member.name[1:]
+							memberCopying += "\tpropertyType.{0} = allPropertiesBlobs.vk{1}.{2};\n".format(member.name, blobName, blobMemberName)
+						# end handling special case
+						else:
+							memberCopying += "\tpropertyType.{0} = allPropertiesBlobs.vk{1}.{0};\n".format(member.name, blobName)
+					else:
+						memberCopying += "\tmemcpy(propertyType.{0}, allPropertiesBlobs.vk{1}.{0}, sizeof({2}) * {3});\n".format(member.name, blobName, member.type[0], member.arraySize[1:-1])
+				wholeFunction = \
+					"template<> void initPropertyFromBlob<{0}>({0}& propertyType, const AllPropertiesBlobs& allPropertiesBlobs)\n" \
+					"{{\n" \
+					"{1}" \
+					"}}".format(structureType.name, memberCopying)
+				initFromBlobDefinitions.append(wholeFunction)
+				notPartOfBlob = False
+				# assuming that all members are part of blob, goto next
+				break
+		# add empty template definition as on Fedora there are issue with
+		# linking using just generic template - all specializations are needed
+		if notPartOfBlob:
+			emptyFunction = "template<> void initPropertyFromBlob<{0}>({0}&, const AllPropertiesBlobs&) {{}}"
+			emptyInitDefinitions.append(emptyFunction.format(structureType.name))
 	extensionDefines = []
 	makePropertyDescDefinitions = []
 	propertyStructWrappers = []
-	for idx, (sType, sSuffix, extStruct, extLine, extName, specVer) in enumerate(dfDefs):
+	for idx, (sType, sVerSuffix, sExtSuffix, extStruct, extLine, extName, specVer) in enumerate(dpDefs):
 		extensionNameDefinition = extName
 		if not extensionNameDefinition:
-			extensionNameDefinition = 'DECL{0}_{1}_EXTENSION_NAME'.format((sSuffix if sSuffix else ''), sType)
+			extensionNameDefinition = 'DECL{0}_{1}_EXTENSION_NAME'.format((sExtSuffix if sExtSuffix else ''), sType)
 		# construct defines with names
 		if extLine:
 			extensionDefines.append(extLine)
 		else:
-			extensionDefines.append('#define {0} "not_existent_property"'.format(extensionNameDefinition))
+			extensionDefines.append('#define {0} "core_property"'.format(extensionNameDefinition))
 		# construct makePropertyDesc template function definitions
-		sTypeName = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_{0}_PROPERTIES{1}".format(sType, sSuffix)
+		sTypeName = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_{0}_PROPERTIES{1}".format(sType, sVerSuffix + sExtSuffix)
 		makePropertyDescDefinitions.append("template<> PropertyDesc makePropertyDesc<{0}>(void) " \
-			"{{ return PropertyDesc({1}, {2}, {3}, {4}); }}".format(extStruct, sTypeName, extensionNameDefinition, specVer, len(dfDefs)-idx))
+			"{{ return PropertyDesc{{{1}, {2}, {3}, {4}}}; }}".format(extStruct, sTypeName, extensionNameDefinition, specVer, len(dpDefs)-idx))
 		# construct CreateProperty struct wrapper block
 		propertyStructWrappers.append("\t{{ createPropertyStructWrapper<{0}>, {1}, {2} }},".format(extStruct, extensionNameDefinition, specVer))
+			# construct method that will check if structure sType is part of blob
+	blobChecker = "bool isPartOfBlobProperties (VkStructureType sType)\n{\n" \
+				  "\tconst std::vector<VkStructureType> sTypeVect =" \
+				  "\t{\n"
+	# iterate over blobs with list of structures
+	for blobName in sorted(blobStructs.keys()):
+		blobChecker += "\t\t// Vulkan{0}\n".format(blobName)
+		# iterate over all feature structures in current blob
+		structuresList = list(blobStructs[blobName])
+		structuresList = sorted(structuresList, key=lambda s: s.name)
+		for structType in structuresList:
+			# find definition of this structure in dpDefs
+			structName = structType.name
+			structDef = [s for s in dpDefs if s[3] == structName][0]
+			sType = structDef[0]
+			sSuffix = structDef[1] + structDef[2]
+			sTypeName = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_{0}_PROPERTIES{1}".format(sType, sSuffix)
+			blobChecker += "\t\t{0},\n".format(sTypeName)
+	blobChecker += "\t};\n" \
+				   "\treturn de::contains(sTypeVect.begin(), sTypeVect.end(), sType);\n" \
+				   "}\n"
 	# combine all definition lists
 	stream = [
 	'#include "vkDeviceProperties.hpp"\n',
 	'namespace vk\n{']
 	stream.extend(extensionDefines)
 	stream.append('\n')
+	stream.extend(initFromBlobDefinitions)
+	stream.append('\n// generic template is not enough for some compilers')
+	stream.extend(emptyInitDefinitions)
+	stream.append('\n')
 	stream.extend(makePropertyDescDefinitions)
 	stream.append('\n')
-	stream.append('static const PropertyStructMapItem propertyStructCreatorMap[] =\n{')
+	stream.append('static const PropertyStructCreationData propertyStructCreationArray[] =\n{')
 	stream.extend(propertyStructWrappers)
-	stream.append('};\n} // vk\n')
+	stream.append('};\n')
+	stream.append(blobChecker)
+	stream.append('} // vk\n')
 	writeInlFile(filename, INL_HEADER, stream)
 
 def genericDeviceFeaturesWriter(dfDefs, pattern, filename):
 	stream = []
-	for sType, sSuffix, extStruct, _, _, _ in dfDefs:
+	for _, _, _, extStruct, _, _, _ in dfDefs:
 		nameSubStr = extStruct.replace("VkPhysicalDevice", "").replace("KHR", "").replace("NV", "")
 		stream.append(pattern.format(extStruct, nameSubStr))
 	writeInlFile(filename, INL_HEADER, indentLines(stream))
@@ -1983,7 +2159,7 @@ def writeDeviceFeaturesContextDefs(dfDefs, filename):
 
 def genericDevicePropertiesWriter(dfDefs, pattern, filename):
 	stream = []
-	for _, _, extStruct, _, _, _ in dfDefs:
+	for _, _, _, extStruct, _, _, _ in dfDefs:
 		nameSubStr = extStruct.replace("VkPhysicalDevice", "").replace("KHR", "").replace("NV", "")
 		if extStruct == "VkPhysicalDeviceRayTracingPropertiesNV":
 			nameSubStr += "NV"
@@ -1991,7 +2167,7 @@ def genericDevicePropertiesWriter(dfDefs, pattern, filename):
 	writeInlFile(filename, INL_HEADER, indentLines(stream))
 
 def writeDevicePropertiesDefaultDeviceDefs(dfDefs, filename):
-	pattern = "const {0}&\tget{1}\t(void) const {{ return m_devicePropertiesFull.getPropertyType<{0}>();\t}}"
+	pattern = "const {0}&\tget{1}\t(void) const {{ return m_deviceProperties.getPropertyType<{0}>();\t}}"
 	genericDevicePropertiesWriter(dfDefs, pattern, filename)
 
 def writeDevicePropertiesContextDecl(dfDefs, filename):
@@ -2147,7 +2323,8 @@ if __name__ == "__main__":
 	writeDeviceFeaturesContextDefs			(dfd, os.path.join(VULKAN_DIR, "vkDeviceFeaturesForContextDefs.inl"))
 
 	dpd										= generateDevicePropertiesDefs(src)
-	writeDeviceProperties					(dpd, os.path.join(VULKAN_DIR, "vkDeviceProperties.inl"))
+	writeDeviceProperties					(api, dpd, os.path.join(VULKAN_DIR, "vkDeviceProperties.inl"))
+
 	writeDevicePropertiesDefaultDeviceDefs	(dpd, os.path.join(VULKAN_DIR, "vkDevicePropertiesForDefaultDeviceDefs.inl"))
 	writeDevicePropertiesContextDecl		(dpd, os.path.join(VULKAN_DIR, "vkDevicePropertiesForContextDecl.inl"))
 	writeDevicePropertiesContextDefs		(dpd, os.path.join(VULKAN_DIR, "vkDevicePropertiesForContextDefs.inl"))
@@ -2185,3 +2362,5 @@ if __name__ == "__main__":
 	writeMandatoryFeatures					(     os.path.join(VULKAN_DIR, "vkMandatoryFeatures.inl"))
 	writeExtensionList						(     os.path.join(VULKAN_DIR, "vkInstanceExtensions.inl"),				'INSTANCE')
 	writeExtensionList						(     os.path.join(VULKAN_DIR, "vkDeviceExtensions.inl"),				'DEVICE')
+	writeDriverIds							(     os.path.join(VULKAN_DIR, "vkKnownDriverIds.inl"))
+	writeObjTypeImpl						(api, os.path.join(VULKAN_DIR, "vkObjTypeImpl.inl"))

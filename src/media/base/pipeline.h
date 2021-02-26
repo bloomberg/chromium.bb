@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
-#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/media_status.h"
 #include "media/base/media_track.h"
@@ -27,6 +26,7 @@
 
 namespace media {
 
+class CdmContext;
 class Demuxer;
 
 class MEDIA_EXPORT Pipeline {
@@ -225,6 +225,10 @@ class MEDIA_EXPORT Pipeline {
   // can choose its own default.
   virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
 
+  // Sets whether pitch adjustment should be applied when the playback rate is
+  // different than 1.0.
+  virtual void SetPreservesPitch(bool preserves_pitch) = 0;
+
   // Returns the current media playback time, which progresses from 0 until
   // GetMediaDuration().
   virtual base::TimeDelta GetMediaTime() const = 0;
@@ -243,6 +247,7 @@ class MEDIA_EXPORT Pipeline {
   // Gets the current pipeline statistics.
   virtual PipelineStatistics GetStatistics() const = 0;
 
+  using CdmAttachedCB = base::OnceCallback<void(bool)>;
   virtual void SetCdm(CdmContext* cdm_context,
                       CdmAttachedCB cdm_attached_cb) = 0;
 };

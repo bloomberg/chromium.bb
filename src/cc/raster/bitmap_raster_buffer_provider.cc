@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/memory/shared_memory_mapping.h"
 #include "base/strings/stringprintf.h"
@@ -79,6 +80,8 @@ class BitmapRasterBufferImpl : public RasterBuffer {
         raster_full_rect, playback_rect, transform, color_space_,
         /*gpu_compositing=*/false, playback_settings);
   }
+
+  bool SupportsBackgroundThreadPriority() const override { return true; }
 
  private:
   const gfx::Size resource_size_;

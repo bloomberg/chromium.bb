@@ -36,6 +36,8 @@ class CC_EXPORT ThroughputUkmReporter {
   void ReportAggregateThroughput(AggregationType aggregation_type,
                                  int throughput);
 
+  uint32_t GetSamplesToNextEventForTesting(int index);
+
  private:
   // Sampling control. We sample the event here to not throttle the UKM system.
   // Currently, the same sampling rate is applied to all existing trackers. We
@@ -46,9 +48,7 @@ class CC_EXPORT ThroughputUkmReporter {
 
   // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is
   // initialized right after the LayerTreeHostImpl is created. So when this
-  // pointer is initialized, there should be no trackers yet. Moreover, the
-  // LayerTreeHostImpl::ukm_manager_ lives as long as the LayerTreeHostImpl, so
-  // this pointer should never be null as long as LayerTreeHostImpl is alive.
+  // pointer is initialized, there should be no trackers yet.
   UkmManager* const ukm_manager_;
 };
 

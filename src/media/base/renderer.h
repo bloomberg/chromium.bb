@@ -11,13 +11,13 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
-#include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
 
+class CdmContext;
 class MediaResource;
 class RendererClient;
 
@@ -38,9 +38,10 @@ class MEDIA_EXPORT Renderer {
                           PipelineStatusCallback init_cb) = 0;
 
   // Associates the |cdm_context| with this Renderer for decryption (and
-  // decoding) of media data, then fires |cdm_attached_cb| with the result.
-  virtual void SetCdm(CdmContext* cdm_context,
-                      CdmAttachedCB cdm_attached_cb) = 0;
+  // decoding) of media data, then fires |cdm_attached_cb| with whether the
+  // operation succeeded.
+  using CdmAttachedCB = base::OnceCallback<void(bool)>;
+  virtual void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb);
 
   // Specifies a latency hint from the site. Renderers should clamp the hint
   // value to reasonable min and max and use the resulting value as a target
@@ -49,6 +50,10 @@ class MEDIA_EXPORT Renderer {
   // their preference and the renderer should restore its default buffering
   // thresholds.
   virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
+
+  // Sets whether pitch adjustment should be applied when the playback rate is
+  // different than 1.0.
+  virtual void SetPreservesPitch(bool preserves_pitch);
 
   // The following functions must be called after Initialize().
 

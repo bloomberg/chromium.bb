@@ -10,7 +10,7 @@ TODO: Move away from tables.
 | **Distro** | **Contact** | **URL for packages** | **URL for distro-specific patches** |
 |:-----------|:------------|:---------------------|:------------------------------------|
 | Ubuntu     | Olivier Tilloy `olivier.tilloy@canonical.com` | https://launchpad.net/ubuntu/+source/chromium-browser | https://code.launchpad.net/~chromium-team |
-| Debian     | [see package page](http://packages.debian.org/sid/chromium) | in standard repo     | [debian patch tracker](http://patch-tracker.debian.org/package/chromium-browser/) |
+| Debian     | chromium@packages.debian.org | https://tracker.debian.org/pkg/chromium | [debian sources](https://sources.debian.org/patches/chromium/) |
 | openSUSE   | Raymond Wooninck  `tittiatcoke@gmail.com` | http://software.opensuse.org/search?baseproject=ALL&p=1&q=chromium | ??                                  |
 | Arch       | Evangelos Foutras `evangelos@foutrelis.com` | http://www.archlinux.org/packages/extra/x86_64/chromium/ | [link](http://projects.archlinux.org/svntogit/packages.git/tree/trunk?h=packages/chromium) |
 | Gentoo     | [project page](http://www.gentoo.org/proj/en/desktop/chromium/index.xml) | Available in portage, [www-client/chromium](http://packages.gentoo.org/package/www-client/chromium) | http://sources.gentoo.org/viewcvs.py/gentoo-x86/www-client/chromium/files/ |
@@ -40,12 +40,14 @@ Packages in this section are not part of the distro's official repositories.
 ## Updating the list
 
 Are you packaging Chromium for a Linux distro? Is the information above out of
-date? Please contact `thestig@chromium.org` with updates.
+date? Please contact the folks in
+[//build/linux/OWNERS](../../build/linux/OWNERS) with updates or
+[contribute](../contributing.md) an update.
 
-Before emailing, please note:
+Before contacting, please note:
 
-*   This is not a support email address
-*   If you ask about a Linux distro that is not listed above, the answer will be
-    "I don't know"
+*   This is not the channel for technical support
+*   The answer to questions about Linux distros not listed above is
+    "We don't know"
 *   Linux distros supported by Google Chrome are listed here:
     https://support.google.com/chrome/answer/95411

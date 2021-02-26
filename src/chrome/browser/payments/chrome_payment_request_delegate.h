@@ -11,10 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/content_payment_request_delegate.h"
+#include "components/payments/content/secure_payment_confirmation_controller.h"
+#include "content/public/browser/global_routing_id.h"
 
 namespace content {
-class WebContents;
-}
+class BrowserContext;
+}  // namespace content
 
 namespace payments {
 
@@ -22,18 +24,19 @@ class PaymentRequestDialog;
 
 class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
  public:
-  explicit ChromePaymentRequestDelegate(content::WebContents* web_contents);
+  explicit ChromePaymentRequestDelegate(
+      content::RenderFrameHost* render_frame_host);
   ~ChromePaymentRequestDelegate() override;
 
   // PaymentRequestDelegate:
-  void ShowDialog(PaymentRequest* request) override;
+  void ShowDialog(base::WeakPtr<PaymentRequest> request) override;
   void RetryDialog() override;
   void CloseDialog() override;
   void ShowErrorMessage() override;
   void ShowProcessingSpinner() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
-  bool IsIncognito() const override;
+  bool IsOffTheRecord() const override;
   const GURL& GetLastCommittedURL() const override;
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,
@@ -47,6 +50,8 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   bool IsBrowserWindowActive() const override;
 
   // ContentPaymentRequestDelegate:
+  std::unique_ptr<autofill::InternalAuthenticator> CreateInternalAuthenticator()
+      const override;
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
   PaymentRequestDisplayManager* GetDisplayManager() override;
@@ -56,17 +61,24 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   bool IsInteractive() const override;
   std::string GetInvalidSslCertificateErrorMessage() override;
   bool SkipUiForBasicCard() const override;
+  std::string GetTwaPackageName() const override;
+  PaymentRequestDialog* GetDialogForTesting() override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This
   // reference is invalid once CloseDialog() has been called on it, because the
-  // dialog will be destroyed. Owned by the views:: dialog machinery. Protected
-  // for testing.
+  // dialog will be destroyed. Some implementations are owned by the views::
+  // dialog machinery. Protected for testing.
   base::WeakPtr<PaymentRequestDialog> shown_dialog_;
 
  private:
-  // Not owned but outlives the PaymentRequest object that owns this.
-  content::WebContents* web_contents_;
+  // Returns the browser context of the `render_frame_host_` or null if not
+  // available.
+  content::BrowserContext* GetBrowserContextOrNull() const;
+
+  std::unique_ptr<SecurePaymentConfirmationController> spc_dialog_;
+
+  content::GlobalFrameRoutingId frame_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePaymentRequestDelegate);
 };

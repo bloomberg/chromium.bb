@@ -19,11 +19,13 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/host_id.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_injection_callback.h"
 #include "extensions/renderer/scripts_run_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -45,11 +47,10 @@ const int64_t kInvalidRequestId = -1;
 // The id of the next pending injection.
 int64_t g_next_pending_id = 0;
 
-// Gets the isolated world ID to use for the given |injection_host|
-// in the given |frame|. If no isolated world has been created for that
-// |injection_host| one will be created and initialized.
-int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
-                                  blink::WebLocalFrame* frame) {
+// Gets the isolated world ID to use for the given |injection_host|. If no
+// isolated world has been created for that |injection_host| one will be created
+// and initialized.
+int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host) {
   static int g_next_isolated_world_id =
       ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId();
 
@@ -67,19 +68,20 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
     isolated_worlds[key] = id;
   }
 
-  // We need to set the isolated world origin and CSP even if it's not a new
-  // world since these are stored per frame, and we might not have used this
-  // isolated world in this frame before.
   blink::WebIsolatedWorldInfo info;
   info.security_origin =
       blink::WebSecurityOrigin::Create(injection_host->url());
   info.human_readable_name = blink::WebString::FromUTF8(injection_host->name());
+  info.stable_id = blink::WebString::FromUTF8(key);
 
   const std::string* csp = injection_host->GetContentSecurityPolicy();
   if (csp)
     info.content_security_policy = blink::WebString::FromUTF8(*csp);
 
-  frame->SetIsolatedWorldInfo(id, info);
+  // Even though there may be an existing world for this |injection_host|'s key,
+  // the properties may have changed (e.g. due to an extension update).
+  // Overwrite any existing entries.
+  blink::SetIsolatedWorldInfo(id, info);
 
   return id;
 }
@@ -129,7 +131,7 @@ class ScriptInjection::FrameWatcher : public content::RenderFrameObserver {
   ~FrameWatcher() override {}
 
  private:
-  void FrameDetached() override { injection_->invalidate_render_frame(); }
+  void WillDetach() override { injection_->invalidate_render_frame(); }
   void OnDestruct() override { injection_->invalidate_render_frame(); }
 
   ScriptInjection* injection_;
@@ -164,6 +166,8 @@ ScriptInjection::ScriptInjection(
       injection_host_(std::move(injection_host)),
       run_location_(run_location),
       request_id_(kInvalidRequestId),
+      ukm_source_id_(ukm::SourceIdObj::FromInt64(
+          render_frame_->GetWebFrame()->GetDocument().GetUkmSourceId())),
       complete_(false),
       did_inject_js_(false),
       log_activity_(log_activity),
@@ -252,26 +256,28 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   DCHECK(!complete_);
   bool should_inject_js = injector_->ShouldInjectJs(
       run_location_, scripts_run_info->executing_scripts[host_id().id()]);
-  bool should_inject_css = injector_->ShouldInjectCss(
+  bool should_inject_or_remove_css = injector_->ShouldInjectOrRemoveCss(
       run_location_, scripts_run_info->injected_stylesheets[host_id().id()]);
 
   // This can happen if the extension specified a script to
   // be run in multiple rules, and the script has already run.
   // See crbug.com/631247.
-  if (!should_inject_js && !should_inject_css) {
+  if (!should_inject_js && !should_inject_or_remove_css) {
     return INJECTION_FINISHED;
   }
 
   if (should_inject_js)
     InjectJs(&(scripts_run_info->executing_scripts[host_id().id()]),
              &(scripts_run_info->num_js));
-  if (should_inject_css)
-    InjectCss(&(scripts_run_info->injected_stylesheets[host_id().id()]),
-              &(scripts_run_info->num_css));
+  if (should_inject_or_remove_css)
+    InjectOrRemoveCss(&(scripts_run_info->injected_stylesheets[host_id().id()]),
+                      &(scripts_run_info->num_css));
 
   complete_ = did_inject_js_ || !should_inject_js;
 
   if (complete_) {
+    if (host_id().type() == HostID::EXTENSIONS)
+      RecordContentScriptInjection(ukm_source_id_, host_id().id());
     injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
   } else {
@@ -284,12 +290,10 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
 void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
                                size_t* num_injected_js_scripts) {
   DCHECK(!did_inject_js_);
-  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   std::vector<blink::WebScriptSource> sources = injector_->GetJsSources(
       run_location_, executing_scripts, num_injected_js_scripts);
   DCHECK(!sources.empty());
-  int world_id =
-      GetIsolatedWorldIdForInstance(injection_host_.get(), web_frame);
+  int world_id = GetIsolatedWorldIdForInstance(injection_host_.get());
   bool is_user_gesture = injector_->IsUserGesture();
 
   std::unique_ptr<blink::WebScriptExecutionCallback> callback(
@@ -314,7 +318,8 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
       should_execute_asynchronously
           ? blink::WebLocalFrame::kAsynchronousBlockingOnload
           : blink::WebLocalFrame::kSynchronous;
-  web_frame->RequestExecuteScriptInIsolatedWorld(
+
+  render_frame_->GetWebFrame()->RequestExecuteScriptInIsolatedWorld(
       world_id, &sources.front(), sources.size(), is_user_gesture,
       execution_option, callback.release());
 }
@@ -361,6 +366,8 @@ void ScriptInjection::OnJsInjectionCompleted(
       execution_result_ = std::make_unique<base::Value>();
   }
   did_inject_js_ = true;
+  if (host_id().type() == HostID::EXTENSIONS)
+    RecordContentScriptInjection(ukm_source_id_, host_id().id());
 
   // If |async_completion_callback_| is set, it means the script finished
   // asynchronously, and we should run it.
@@ -373,8 +380,9 @@ void ScriptInjection::OnJsInjectionCompleted(
   }
 }
 
-void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
-                                size_t* num_injected_stylesheets) {
+void ScriptInjection::InjectOrRemoveCss(
+    std::set<std::string>* injected_stylesheets,
+    size_t* num_injected_stylesheets) {
   std::vector<blink::WebString> css_sources = injector_->GetCssSources(
       run_location_, injected_stylesheets, num_injected_stylesheets);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
@@ -388,9 +396,28 @@ void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
   if (const base::Optional<std::string>& injection_key =
           injector_->GetInjectionKey())
     style_sheet_key = blink::WebString::FromASCII(*injection_key);
-  for (const blink::WebString& css : css_sources)
-    web_frame->GetDocument().InsertStyleSheet(css, &style_sheet_key,
-                                              blink_css_origin);
+  // CSS deletion can be thought of as the inverse of CSS injection
+  // (i.e. x - y = x + -y and x | y = ~(~x & ~y)), so it is handled here in the
+  // injection function.
+  //
+  // TODO(https://crbug.com/1116061): Extend this API's capabilities to also
+  // remove CSS added by content scripts?
+  bool adding_css = injector_->IsAddingCSS();
+  bool removing_css = injector_->IsRemovingCSS();
+  DCHECK(!(adding_css && removing_css)) << "Operations are mutually exclusive.";
+  DCHECK(adding_css || removing_css)
+      << "At least one of the operations must happen for InjectOrRemoveCss() "
+         "to be called.";
+
+  if (removing_css) {
+    web_frame->GetDocument().RemoveInsertedStyleSheet(style_sheet_key,
+                                                      blink_css_origin);
+  } else {
+    DCHECK(adding_css);
+    for (const blink::WebString& css : css_sources)
+      web_frame->GetDocument().InsertStyleSheet(css, &style_sheet_key,
+                                                blink_css_origin);
+  }
 }
 
 }  // namespace extensions

@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -20,12 +20,12 @@ import static org.mockito.Mockito.inOrder;
 
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -39,6 +39,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
@@ -55,8 +56,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -100,8 +101,8 @@ public class AutofillAssistantUiTest {
      * @see CustomTabsTestUtils#createMinimalCustomTabIntent(Context, String).
      */
     private Intent createMinimalCustomTabIntent() {
-        return CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(), mTestPage);
+        return AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
+                mTestPage, /* startImmediately = */ true);
     }
 
     private CustomTabActivity getActivity() {
@@ -123,18 +124,20 @@ public class AutofillAssistantUiTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         BottomSheetController bottomSheetController =
                 TestThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
-        AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> new AssistantCoordinator(getActivity(), bottomSheetController,
-                                getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null,
-                                /* keyboardCoordinatorDelegate= */ null,
-                                /* bottomSheetDelegate= */ null));
+        AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AssistantCoordinator coordinator = new AssistantCoordinator(getActivity(),
+                    bottomSheetController, getActivity().getTabObscuringHandler(),
+                    /* overlayCoordinator= */ null,
+                    /* keyboardCoordinatorDelegate= */ null);
+            coordinator.show();
+            return coordinator;
+        });
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
-        ViewGroup bottomSheetContent =
-                bottomSheetController.getBottomSheetViewForTesting().findViewById(
-                        R.id.autofill_assistant);
+        View contentView = AutofillAssistantUiTestUtil.getBottomSheetController(getActivity())
+                                   .getCurrentSheetContent()
+                                   .getContentView();
+        ViewGroup bottomSheetContent = contentView.findViewById(R.id.autofill_assistant);
         Assert.assertNotNull(bottomSheetContent);
 
         // Disable bottom sheet content animations. This is a workaround for http://crbug/943483.
@@ -154,8 +157,14 @@ public class AutofillAssistantUiTest {
                 ()
                         -> assistantCoordinator.getModel().getOverlayModel().set(
                                 AssistantOverlayModel.STATE, AssistantOverlayState.FULL));
-        View scrim = getActivity().getScrim();
-        Assert.assertTrue(scrim.isShown());
+
+        View scrim = getActivity()
+                             .getRootUiCoordinatorForTesting()
+                             .getScrimCoordinator()
+                             .getViewForTesting();
+        CriteriaHelper.pollUiThread(
+                () -> scrim.getVisibility() == View.VISIBLE, "Scrim should be visible.");
+        Assert.assertNotEquals("The scrim should not be transparent.", scrim.getAlpha(), 0f);
 
         // TODO(crbug.com/806868): Fix test of actions carousel. This is currently broken as chips
         // are displayed in the reversed order in the actions carousel and calling
@@ -224,13 +233,15 @@ public class AutofillAssistantUiTest {
 
     private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,
             AssistantActionsCarouselCoordinator carouselCoordinator) {
-        List<AssistantChip> chips = Arrays.asList(
-                new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
-                        "chip 0",
-                        /* disabled= */ false, /* sticky= */ false, "", () -> {/* do nothing */}),
-                new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
-                        "chip 1",
-                        /* disabled= */ false, /* sticky= */ false, "", mRunnableMock));
+        List<AssistantChip> chips =
+                Arrays.asList(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE,
+                                      AssistantChip.Icon.NONE, "chip 0",
+                                      /* disabled= */ false, /* sticky= */ false,
+                                      /* visible= */ true, () -> {/* do nothing */}),
+                        new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE,
+                                AssistantChip.Icon.NONE, "chip 1",
+                                /* disabled= */ false, /* sticky= */ false, /* visible= */ true,
+                                mRunnableMock));
         TestThreadUtils.runOnUiThreadBlocking(() -> carouselModel.setChips(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
@@ -249,18 +260,20 @@ public class AutofillAssistantUiTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         BottomSheetController bottomSheetController =
                 TestThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
-        AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> new AssistantCoordinator(getActivity(), bottomSheetController,
-                                getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null,
-                                /* keyboardCoordinatorDelegate= */ null,
-                                /* bottomSheetDelegate= */ null));
+        AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AssistantCoordinator coordinator = new AssistantCoordinator(getActivity(),
+                    bottomSheetController, getActivity().getTabObscuringHandler(),
+                    /* overlayCoordinator= */ null,
+                    /* keyboardCoordinatorDelegate= */ null);
+            coordinator.show();
+            return coordinator;
+        });
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
-        ViewGroup bottomSheetContent =
-                bottomSheetController.getBottomSheetViewForTesting().findViewById(
-                        R.id.autofill_assistant);
+        View contentView = AutofillAssistantUiTestUtil.getBottomSheetController(getActivity())
+                                   .getCurrentSheetContent()
+                                   .getContentView();
+        ViewGroup bottomSheetContent = contentView.findViewById(R.id.autofill_assistant);
         Assert.assertNotNull(bottomSheetContent);
 
         // Disable bottom sheet content animations. This is a workaround for http://crbug/943483.

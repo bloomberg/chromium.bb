@@ -20,6 +20,7 @@ android_library("net_java") {
     "java/src/org/chromium/net/HttpUtil.java",
     "java/src/org/chromium/net/MimeTypeFilter.java",
     "java/src/org/chromium/net/NetStringUtil.java",
+    "java/src/org/chromium/net/NetworkActivationRequest.java",
     "java/src/org/chromium/net/NetworkChangeNotifier.java",
     "java/src/org/chromium/net/NetworkChangeNotifierAutoDetect.java",
     "java/src/org/chromium/net/ProxyBroadcastReceiver.java",
@@ -40,6 +41,7 @@ android_library("net_java") {
     ":net_android_java_enums_srcjar",
     ":net_errors_java",
   ]
+  resources_package = "org.chromium.native_test"
 }
 
 android_library("net_thread_stats_uid_java") {
@@ -139,6 +141,9 @@ android_apk("net_test_support_apk") {
   # just disable it.
   enable_multidex = false
 
+  # Required on Android Q+ to read from /sdcard when installing certs.
+  target_sdk_version = 28
+
   deps = [
     ":net_java_test_support",
     ":net_java_test_support_provider",
@@ -159,7 +164,6 @@ android_resources("net_unittests_apk_resources") {
     "unittest_support/res/xml/dummy_spnego_account_preferences.xml",
     "unittest_support/res/xml/dummy_spnego_authenticator.xml",
   ]
-  custom_package = "org.chromium.native_test"
 }
 
 android_library("net_javatests") {
@@ -183,6 +187,7 @@ android_library("net_javatests") {
     ":net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -192,7 +197,6 @@ android_library("net_javatests") {
 }
 
 java_cpp_template("net_errors_java") {
-  package_path = "org/chromium/net"
   sources = [ "java/NetError.template" ]
   inputs = [ "../base/net_error_list.h" ]
 }

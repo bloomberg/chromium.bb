@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -501,7 +501,7 @@ void FeedStore::RemoveActions(std::vector<LocalActionId> ids,
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<
           std::vector<std::pair<std::string, feedstore::Record>>>(),
-      /*key_to_remove=*/std::move(keys), std::move(callback));
+      /*keys_to_remove=*/std::move(keys), std::move(callback));
 }
 
 void FeedStore::Write(std::vector<feedstore::Record> records,

@@ -64,7 +64,7 @@ class ModuleComparer {
   // FastSourceLineResolver loads its module using the serialized memory chunk,
   // Then, traverse both modules together and compare underlying data
   // return true if both modules contain exactly same data.
-  bool Compare(const string &symbol_data);
+  bool Compare(const string& symbol_data);
 
  private:
   typedef BasicSourceLineResolver::Module BasicModule;

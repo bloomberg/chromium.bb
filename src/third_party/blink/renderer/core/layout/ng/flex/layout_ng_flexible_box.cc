@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -29,7 +30,8 @@ bool LayoutNGFlexibleBox::HasLeftOverflow() const {
     return StyleRef().IsLeftToRightDirection() ==
            StyleRef().ResolvedIsRowReverseFlexDirection();
   }
-  return StyleRef().ResolvedIsColumnReverseFlexDirection();
+  return (StyleRef().GetWritingMode() == WritingMode::kVerticalLr) ==
+         StyleRef().ResolvedIsColumnReverseFlexDirection();
 }
 
 void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
@@ -55,12 +57,26 @@ void MergeAnonymousFlexItems(LayoutObject* remove_child) {
   LayoutObject* next = remove_child->NextSibling();
   if (!next || !next->IsAnonymousBlock())
     return;
-  ToLayoutBoxModelObject(next)->MoveAllChildrenTo(ToLayoutBoxModelObject(prev));
+  To<LayoutBoxModelObject>(next)->MoveAllChildrenTo(
+      To<LayoutBoxModelObject>(prev));
   To<LayoutBlockFlow>(next)->DeleteLineBoxTree();
   next->Destroy();
 }
 
 }  // namespace
+
+// See LayoutFlexibleBox::IsChildAllowed().
+bool LayoutNGFlexibleBox::IsChildAllowed(LayoutObject* object,
+                                         const ComputedStyle& style) const {
+  const auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (UNLIKELY(select && select->UsesMenuList())) {
+    // For a size=1 <select>, we only render the active option label through the
+    // InnerElement. We do not allow adding layout objects for options and
+    // optgroups.
+    return object->GetNode() == &select->InnerElement();
+  }
+  return LayoutNGMixin<LayoutBlock>::IsChildAllowed(object, style);
+}
 
 void LayoutNGFlexibleBox::RemoveChild(LayoutObject* child) {
   if (!DocumentBeingDestroyed() &&

@@ -20,11 +20,13 @@ GpuMemoryBufferFactoryDXGI::~GpuMemoryBufferFactoryDXGI() {}
 gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
   TRACE_EVENT0("gpu", "GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer");
+  DCHECK_EQ(framebuffer_size, size);
 
   gfx::GpuMemoryBufferHandle handle;
 
@@ -64,12 +66,11 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
 
-  if (FAILED(d3d11_device->CreateTexture2D(&desc, nullptr,
-                                           d3d11_texture.GetAddressOf())))
+  if (FAILED(d3d11_device->CreateTexture2D(&desc, nullptr, &d3d11_texture)))
     return handle;
 
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
-  if (FAILED(d3d11_texture.CopyTo(dxgi_resource.GetAddressOf())))
+  if (FAILED(d3d11_texture.As(&dxgi_resource)))
     return handle;
 
   HANDLE texture_handle;

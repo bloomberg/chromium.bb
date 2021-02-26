@@ -45,7 +45,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
   VideoFrameSubmitter(WebContextProviderCallback,
-                      cc::PlaybackRoughnessReportingCallback,
+                      cc::VideoPlaybackRoughnessReporter::ReportingCallback,
                       std::unique_ptr<VideoFrameResourceProvider>);
   ~VideoFrameSubmitter() override;
 
@@ -59,9 +59,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*, bool is_media_stream) override;
   void SetRotation(media::VideoRotation) override;
-  void EnableSubmission(
-      viz::SurfaceId,
-      base::TimeTicks local_surface_id_allocation_time) override;
+  void EnableSubmission(viz::SurfaceId) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
   void SetForceBeginFrames(bool force_begin_frames) override;
@@ -75,8 +73,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       const WTF::Vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(
       const viz::BeginFrameArgs&,
-      WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>)
-      override;
+      const WTF::HashMap<uint32_t, viz::FrameTimingDetails>&) override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) override;

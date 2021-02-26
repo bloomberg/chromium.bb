@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -51,12 +51,12 @@ enum NetworkStatus {
 const bool kDefaultAutoUpdateDisabled = false;
 
 NetworkStatus GetNetworkStatus(bool interactive,
-                               const chromeos::NetworkState* network) {
+                               const chromeos::NetworkState* network,
+                               bool metered) {
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
 
-  // Treats tethered networks as cellular networks.
-  if (network->IsUsingMobileData() &&
+  if (metered &&
       !help_utils_chromeos::IsUpdateOverCellularAllowed(interactive)) {
     return NETWORK_STATUS_DISALLOWED;
   }
@@ -76,10 +76,11 @@ bool IsAutoUpdateDisabled() {
   return update_disabled;
 }
 
-base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
+base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network,
+                                        bool metered) {
   const std::string type = network->type();
   if (chromeos::NetworkTypePattern::WiFi().MatchesType(type)) {
-    if (network->IsUsingMobileData())
+    if (metered)
       return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_METERED_WIFI);
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
   }
@@ -99,7 +100,8 @@ base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
 bool EnsureCanUpdate(bool interactive,
                      const VersionUpdater::StatusCallback& callback) {
   if (IsAutoUpdateDisabled()) {
-    callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0, false, std::string(), 0,
+    callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0, false, false,
+                 std::string(), 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY));
     return false;
   }
@@ -108,19 +110,19 @@ bool EnsureCanUpdate(bool interactive,
       chromeos::NetworkHandler::Get()->network_state_handler();
   const chromeos::NetworkState* network =
       network_state_handler->DefaultNetwork();
-
+  const bool metered = network_state_handler->default_network_is_metered();
   // Don't allow an update if we're currently offline or connected
   // to a network for which updates are disallowed.
-  NetworkStatus status = GetNetworkStatus(interactive, network);
+  NetworkStatus status = GetNetworkStatus(interactive, network, metered);
   if (status == NETWORK_STATUS_OFFLINE) {
-    callback.Run(VersionUpdater::FAILED_OFFLINE, 0, false, std::string(), 0,
-                 l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
+    callback.Run(VersionUpdater::FAILED_OFFLINE, 0, false, false, std::string(),
+                 0, l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
     return false;
   } else if (status == NETWORK_STATUS_DISALLOWED) {
     base::string16 message = l10n_util::GetStringFUTF16(
-        IDS_UPGRADE_DISALLOWED, GetConnectionTypeAsUTF16(network));
+        IDS_UPGRADE_DISALLOWED, GetConnectionTypeAsUTF16(network, metered));
     callback.Run(VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED, 0, false,
-                 std::string(), 0, message);
+                 false, std::string(), 0, message);
     return false;
   }
 
@@ -214,7 +216,7 @@ void VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission(
     // TODO(https://crbug.com/927452): invoke callback to signal about page to
     // show appropriate error message.
     LOG(ERROR) << "Error setting update over cellular one time permission.";
-    callback_.Run(VersionUpdater::FAILED, 0, false, std::string(), 0,
+    callback_.Run(VersionUpdater::FAILED, 0, false, false, std::string(), 0,
                   base::string16());
   }
 }
@@ -318,8 +320,8 @@ void VersionUpdaterCros::UpdateStatusChanged(
       NOTREACHED();
   }
 
-  callback_.Run(my_status, progress, status.is_enterprise_rollback(), version,
-                size, message);
+  callback_.Run(my_status, progress, status.is_enterprise_rollback(),
+                status.will_powerwash_after_reboot(), version, size, message);
   last_operation_ = status.current_operation();
 
   if (check_for_update_when_idle_ &&
@@ -333,5 +335,5 @@ void VersionUpdaterCros::OnUpdateCheck(
   // If version updating is not implemented, this binary is the most up-to-date
   // possible with respect to automatic updating.
   if (result == UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED)
-    callback_.Run(UPDATED, 0, false, std::string(), 0, base::string16());
+    callback_.Run(UPDATED, 0, false, false, std::string(), 0, base::string16());
 }

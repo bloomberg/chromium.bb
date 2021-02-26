@@ -20,7 +20,7 @@
 namespace ui_devtools {
 
 // TODO(lgrey): Hopefully temporary while we figure out why this doesn't work.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_ConnectionToViewsServer DISABLED_ConnectionToViewsServer
 #else
 #define MAYBE_ConnectionToViewsServer ConnectionToViewsServer
@@ -50,7 +50,7 @@ TEST(UIDevToolsServerTest, MAYBE_ConnectionToViewsServer) {
   net::AddressList addr(
       net::IPEndPoint(net::IPAddress(127, 0, 0, 1), fake_port));
   auto client_socket = std::make_unique<net::TCPClientSocket>(
-      addr, nullptr, nullptr, net::NetLogSource());
+      addr, nullptr, nullptr, nullptr, net::NetLogSource());
   net::TestCompletionCallback callback;
   int connect_result =
       callback.GetResult(client_socket->Connect(callback.callback()));

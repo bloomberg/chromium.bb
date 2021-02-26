@@ -11,6 +11,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -64,13 +67,7 @@ void OnSetArcVmCpuRestriction(
     LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
 }
 
-void DoSetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state,
-                              bool concierge_started) {
-  if (!concierge_started) {
-    LOG(ERROR) << "Concierge D-Bus service is not available";
-    return;
-  }
-
+void SetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state) {
   auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
   if (!client) {
     LOG(ERROR) << "ConciergeClient is not available";
@@ -92,17 +89,6 @@ void DoSetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state,
 
   client->SetVmCpuRestriction(request,
                               base::BindOnce(&OnSetArcVmCpuRestriction));
-}
-
-void SetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state) {
-  auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  if (!client) {
-    LOG(WARNING) << "DebugDaemonClient is not available";
-    return;
-  }
-  // TODO(wvk): Call StartConcierge() only when the service is not running.
-  client->StartConcierge(
-      base::BindOnce(&DoSetArcVmCpuRestriction, cpu_restriction_state));
 }
 
 void SetArcContainerCpuRestriction(CpuRestrictionState cpu_restriction_state) {
@@ -151,6 +137,11 @@ bool IsArcAvailable() {
 bool IsArcVmEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableArcVm);
+}
+
+bool IsArcVmDevConfIgnored() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kIgnoreArcVmDevConf);
 }
 
 bool ShouldArcAlwaysStart() {
@@ -303,7 +294,6 @@ bool IsArcPlayAutoInstallDisabled() {
       chromeos::switches::kArcDisablePlayAutoInstall);
 }
 
-// static
 int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kArcScale)) {
@@ -319,6 +309,8 @@ int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
   constexpr float kEpsilon = 0.001;
   if (std::abs(device_scale_factor - display::kDsf_2_252) < kEpsilon)
     return 280;
+  if (std::abs(device_scale_factor - 2.4f) < kEpsilon)
+    return 280;
   if (std::abs(device_scale_factor - 1.6f) < kEpsilon)
     return 213;  // TVDPI
   if (std::abs(device_scale_factor - display::kDsf_1_777) < kEpsilon)
@@ -331,6 +323,28 @@ int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
   return static_cast<int32_t>(
       std::max(1.0f, device_scale_factor * kChromeScaleToAndroidScaleRatio) *
       kDefaultDensityDpi);
+}
+
+bool GenerateFirstStageFstab(const base::FilePath& combined_property_file_name,
+                             const base::FilePath& fstab_path) {
+  DCHECK(IsArcVmEnabled());
+  // The file is exposed to the guest by crosvm via /sys/firmware/devicetree,
+  // which in turn allows the guest's init process to mount /vendor very early,
+  // in its first stage (device) initialization step. crosvm also special-cases
+  // #dt-vendor line and expose |combined_property_file_name| via the device
+  // tree file system too. This also allow the init process to load the expanded
+  // properties very early even before all file systems are mounted.
+  //
+  // The device name for /vendor has to match what arc_vm_client_adapter.cc
+  // configures.
+  constexpr const char kFirstStageFstabTemplate[] =
+      "/dev/block/vdb /vendor squashfs ro,noatime,nosuid,nodev "
+      "wait,check,formattable,reservedsize=128M\n"
+      "#dt-vendor build.prop %s default default\n";
+  return base::WriteFile(
+      fstab_path,
+      base::StringPrintf(kFirstStageFstabTemplate,
+                         combined_property_file_name.value().c_str()));
 }
 
 }  // namespace arc

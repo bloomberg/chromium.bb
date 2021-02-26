@@ -69,6 +69,7 @@ GIT_REPOS = {
     'compiler-rt': 'pnacl-compiler-rt.git',
     'subzero': 'pnacl-subzero.git',
     'binutils-x86': 'nacl-binutils.git',
+    'llvm-saigo': 'nacl-llvm-project-v10.git',
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
@@ -584,6 +585,11 @@ def HostToolsSources(GetGitSyncCmds):
           'output_dirname': 'binutils-x86',
           'commands': GetGitSyncCmds('binutils-x86'),
       },
+      'llvm_saigo_src': {
+          'type': 'source',
+          'output_dirname': 'llvm-saigo',
+          'commands': GetGitSyncCmds('llvm-saigo'),
+      },
   }
   return sources
 
@@ -816,7 +822,7 @@ def HostTools(host, options):
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
-                  pnacl_commands.PrebuiltCmake(), '-G', 'Ninja'] +
+                  pnacl_commands.PrebuiltCMakeBin(), '-G', 'Ninja'] +
                   llvm_host_arch_flags + asan_flags +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
@@ -1095,6 +1101,60 @@ def HostToolsDirectToNacl(host, options):
   return tools
 
 
+def HostToolsSaigo(host, options):
+  def H(component_name):
+    return FlavoredName(component_name, host, options)
+
+  tools = {}
+  tool_flags, tool_deps = HostArchToolFlags(host, [], options)
+  llvm_cmake_config_env = {'LDFLAGS': ' '.join(tool_flags['LDFLAGS'])}
+  llvm_host_arch_flags, llvm_inputs, llvm_deps = CmakeHostArchFlags(
+      host, options)
+  llvm_deps = list(set(tool_deps + llvm_deps))
+
+  build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
+  tools.update({
+      H('llvm-saigo'): {
+          'dependencies': ['llvm_saigo_src'] + llvm_deps,
+          'inputs': llvm_inputs,
+          'type': 'build',
+          'commands': [
+              command.SkipForIncrementalCommand([
+                  pnacl_commands.PrebuiltCMakeBin(), '-G', 'Ninja'] +
+                  llvm_host_arch_flags +
+                  [
+                  '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
+                                           else 'Release'),
+                  '-DCMAKE_INSTALL_PREFIX=%(output)s',
+                  '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
+                  '-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON', # TODO(crbug.com/1134798)
+                  '-DLLVM_APPEND_VC_REV=ON',
+                  '-DLLVM_BUILD_TESTS=ON',
+                  '-DLLVM_ENABLE_ASSERTIONS=ON',
+                  '-DLLVM_ENABLE_LIBCXX=OFF',
+                  '-DLLVM_ENABLE_ZLIB=OFF',
+                  '-DLLVM_ENABLE_Z3_SOLVER=OFF',
+                  '-DLLVM_INSTALL_UTILS=ON',
+                  '-DLLVM_ENABLE_LIBXML2=OFF',
+                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM',
+                  '-DLLVM_ENABLE_PROJECTS=clang',
+                  '-DLLVM_BUILD_LLVM_DYLIB=' + build_dylib,
+                  '-DLLVM_LINK_LLVM_DYLIB=' + build_dylib,
+                  '-DLLVM_CCACHE_BUILD=' + ('ON' if ProgramPath('ccache') and
+                                            not options.goma else 'OFF'),
+                  '%(llvm_saigo_src)s/llvm'],
+                  env=llvm_cmake_config_env,
+                  path_dirs=GomaPathDirs(host, options))] +
+              [command.Command(NinjaCommand(host, options) + ['-v'],
+                               path_dirs=GomaPathDirs(host, options),
+                               env=AflFuzzEnvMap(host, options)),
+               command.Command(NinjaCommand(host, options) + ['install'])] +
+              CreateSymLinksToDirectToNaClTools(host)
+      },
+  })
+  return tools
+
+
 def ParseComponentRevisionsFile(filename):
   ''' Parse a simple-format deps file, with fields of the form:
 key=value
@@ -1317,7 +1377,7 @@ def main():
   if pynacl.platform.IsWindows():
     InstallMinGWHostCompiler()
   else:
-    pnacl_commands.InstallPrebuiltCMake()
+    pnacl_commands.SyncPrebuiltCMake()
 
   packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
   if args.testsuite_sync:
@@ -1334,6 +1394,8 @@ def main():
     if not args.pnacl_in_pnacl:
       packages.update(HostLibs(host, args))
     packages.update(HostToolsDirectToNacl(host, args))
+    if TripleIsLinux(host):
+      packages.update(HostToolsSaigo(host, args))
   if not args.pnacl_in_pnacl:
     packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
   # Don't build the target libs on Windows because of pathname issues.

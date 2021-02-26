@@ -31,8 +31,9 @@ PublicKeyCredential::PublicKeyCredential(
     const String& id,
     DOMArrayBuffer* raw_id,
     AuthenticatorResponse* response,
-    const AuthenticationExtensionsClientOutputs* extension_outputs)
-    : Credential(id, kPublicKeyCredentialType),
+    const AuthenticationExtensionsClientOutputs* extension_outputs,
+    const String& type)
+    : Credential(id, type.IsEmpty() ? kPublicKeyCredentialType : type),
       raw_id_(raw_id),
       response_(response),
       extension_outputs_(extension_outputs) {}
@@ -70,7 +71,7 @@ PublicKeyCredential::getClientExtensionResults() const {
       extension_outputs_.Get());
 }
 
-void PublicKeyCredential::Trace(Visitor* visitor) {
+void PublicKeyCredential::Trace(Visitor* visitor) const {
   visitor->Trace(raw_id_);
   visitor->Trace(response_);
   visitor->Trace(extension_outputs_);

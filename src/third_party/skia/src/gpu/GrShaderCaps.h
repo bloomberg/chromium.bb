@@ -15,7 +15,8 @@
 
 namespace SkSL {
 class ShaderCapsFactory;
-}
+class SharedCompiler;
+}  // namespace SkSL
 
 struct GrContextOptions;
 class SkJSONWriter;
@@ -72,8 +73,6 @@ public:
 
     bool sampleMaskSupport() const { return fSampleMaskSupport; }
 
-    bool tessellationSupport() const { return fTessellationSupport; }
-
     bool externalTextureSupport() const { return fExternalTextureSupport; }
 
     bool vertexIDSupport() const { return fVertexIDSupport; }
@@ -89,6 +88,8 @@ public:
 
     // SkSL only.
     bool builtinFMASupport() const { return fBuiltinFMASupport; }
+
+    bool builtinDeterminantSupport() const { return fBuiltinDeterminantSupport; }
 
     AdvBlendEqInteraction advBlendEqInteraction() const { return fAdvBlendEqInteraction; }
 
@@ -175,6 +176,10 @@ public:
     // http://skbug.com/8921
     bool canOnlyUseSampleMaskWithStencil() const { return fCanOnlyUseSampleMaskWithStencil; }
 
+    // ANGLE disallows do loops altogether, and we're seeing crashes on Tegra3 with do loops in at
+    // least some cases.
+    bool canUseDoLoops() const { return fCanUseDoLoops; }
+
     // Returns the string of an extension that must be enabled in the shader to support
     // derivatives. If nullptr is returned then no extension needs to be enabled. Before calling
     // this function, the caller should check that shaderDerivativeSupport exists.
@@ -244,7 +249,10 @@ public:
 
     int maxFragmentSamplers() const { return fMaxFragmentSamplers; }
 
-    bool textureSwizzleAppliedInShader() const { return fTextureSwizzleAppliedInShader; }
+    // Maximum number of segments a tessellation edge can be divided into.
+    int maxTessellationSegments() const { return fMaxTessellationSegments; }
+
+    bool tessellationSupport() const { return SkToBool(fMaxTessellationSegments);}
 
     GrGLSLGeneration generation() const { return fGLSLGeneration; }
 
@@ -267,17 +275,16 @@ private:
     bool fPreferFlatInterpolation           : 1;
     bool fNoPerspectiveInterpolationSupport : 1;
     bool fSampleMaskSupport                 : 1;
-    bool fTessellationSupport               : 1;
     bool fExternalTextureSupport            : 1;
     bool fVertexIDSupport                   : 1;
     bool fFPManipulationSupport             : 1;
     bool fFloatIs32Bits                     : 1;
     bool fHalfIs32Bits                      : 1;
     bool fHasLowFragmentPrecision           : 1;
-    bool fTextureSwizzleAppliedInShader     : 1;
 
     // Used by SkSL to know when to generate polyfills.
     bool fBuiltinFMASupport : 1;
+    bool fBuiltinDeterminantSupport : 1;
 
     // Used for specific driver bug work arounds
     bool fCanUseAnyFunctionInShader                   : 1;
@@ -301,6 +308,7 @@ private:
     bool fNoDefaultPrecisionForExternalSamplers       : 1;
     bool fCanOnlyUseSampleMaskWithStencil             : 1;
     bool fColorSpaceMathNeedsFloat                    : 1;
+    bool fCanUseDoLoops                               : 1;
 
     const char* fVersionDeclString;
 
@@ -319,6 +327,7 @@ private:
     const char* fFBFetchExtensionString;
 
     int fMaxFragmentSamplers;
+    int fMaxTessellationSegments;
 
     AdvBlendEqInteraction fAdvBlendEqInteraction;
 
@@ -330,6 +339,7 @@ private:
     friend class GrMtlCaps;
     friend class GrVkCaps;
     friend class SkSL::ShaderCapsFactory;
+    friend class SkSL::SharedCompiler;
 };
 
 #endif

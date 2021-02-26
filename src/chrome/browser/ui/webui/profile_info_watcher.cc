@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/profile_info_watcher.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,8 +26,10 @@ ProfileInfoWatcher::ProfileInfoWatcher(
   if (profile_manager)
     profile_manager->GetProfileAttributesStorage().AddObserver(this);
 
-  signin_allowed_pref_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&ProfileInfoWatcher::RunCallback, base::Unretained(this)));
+  signin_allowed_pref_.Init(
+      prefs::kSigninAllowed, profile_->GetPrefs(),
+      base::BindRepeating(&ProfileInfoWatcher::RunCallback,
+                          base::Unretained(this)));
 }
 
 ProfileInfoWatcher::~ProfileInfoWatcher() {

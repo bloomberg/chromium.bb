@@ -22,13 +22,15 @@ std::string GetIdFromImeSpec(const std::string& ime_spec) {
              : std::string();
 }
 
-uint8_t GenerateModifierValueForRulebased(bool shift, bool altgr, bool caps) {
+uint8_t GenerateModifierValueForRulebased(
+    const mojom::ModifierStatePtr& modifier_state,
+    bool isAltRightDown) {
   uint8_t modifiers = 0;
-  if (shift)
+  if (modifier_state->shift)
     modifiers |= rulebased::MODIFIER_SHIFT;
-  if (altgr)
+  if (modifier_state->alt_graph || isAltRightDown)
     modifiers |= rulebased::MODIFIER_ALTGR;
-  if (caps)
+  if (modifier_state->caps_lock)
     modifiers |= rulebased::MODIFIER_CAPSLOCK;
   return modifiers;
 }
@@ -105,8 +107,31 @@ void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
   NOTIMPLEMENTED();  // Protobuf message is not used in the rulebased engine.
 }
 
+void InputEngine::OnInputMethodChanged(const std::string& engine_id) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::OnFocus(mojom::InputFieldInfoPtr input_field_info) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::OnBlur() {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::OnSurroundingTextChanged(
+    const std::string& text,
+    uint32_t offset,
+    mojom::SelectionRangePtr selection_range) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::OnCompositionCanceled() {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
 void InputEngine::ProcessKeypressForRulebased(
-    mojom::KeypressInfoForRulebasedPtr keypress_info,
+    mojom::PhysicalKeyEventPtr event,
     ProcessKeypressForRulebasedCallback callback) {
   auto& context = channel_receivers_.current_context();
   auto& engine = context.get()->engine;
@@ -120,19 +145,18 @@ void InputEngine::ProcessKeypressForRulebased(
   // [1] https://www.w3.org/TR/uievents-key/#keys-modifier
   // TODO(https://crbug.com/1014778): Change the base layouts for the
   // rule-based input methods so that |altKey| is false when AltGr is pressed.
-  if (keypress_info->code == "AltRight") {
-    isAltRightDown_ = keypress_info->type == "keydown";
+  if (event->code == "AltRight") {
+    isAltRightDown_ = event->type == mojom::KeyEventType::kKeyDown;
   }
 
-  const bool isAltDown = keypress_info->alt && !isAltRightDown_;
+  const bool isAltDown = event->modifier_state->alt && !isAltRightDown_;
 
   // - Shift/AltRight/Caps/Ctrl are modifier keys for the characters which the
   // Mojo service may accept, but don't send the keys themselves to Mojo.
   // - Ctrl+? and Alt+? are shortcut keys, so don't send them to the rule based
   // engine.
-  if (!engine || keypress_info->type.empty() ||
-      keypress_info->type != "keydown" ||
-      (IsModifierKey(keypress_info->code) || keypress_info->ctrl ||
+  if (!engine || event->type != mojom::KeyEventType::kKeyDown ||
+      (IsModifierKey(event->code) || event->modifier_state->control ||
        isAltDown)) {
     std::move(callback).Run(mojom::KeypressResponseForRulebased::New(
         false, std::vector<mojom::OperationForRulebasedPtr>(0)));
@@ -140,14 +164,17 @@ void InputEngine::ProcessKeypressForRulebased(
   }
 
   rulebased::ProcessKeyResult process_key_result = engine->ProcessKey(
-      keypress_info->code,
-      GenerateModifierValueForRulebased(keypress_info->shift,
-                                        keypress_info->altgr || isAltRightDown_,
-                                        keypress_info->caps));
+      event->code, GenerateModifierValueForRulebased(event->modifier_state,
+                                                     isAltRightDown_));
   mojom::KeypressResponseForRulebasedPtr keypress_response =
       GenerateKeypressResponseForRulebased(process_key_result);
 
   std::move(callback).Run(std::move(keypress_response));
+}
+
+void InputEngine::OnKeyEvent(mojom::PhysicalKeyEventPtr event,
+                             OnKeyEventCallback callback) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
 }
 
 void InputEngine::ResetForRulebased() {
@@ -166,6 +193,27 @@ void InputEngine::GetRulebasedKeypressCountForTesting(
   auto& context = channel_receivers_.current_context();
   auto& engine = context.get()->engine;
   std::move(callback).Run(engine ? engine->process_key_count() : -1);
+}
+
+void InputEngine::CommitText(const std::string& text) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::SetComposition(const std::string& text) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::SetCompositionRange(uint32_t start, uint32_t end) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::FinishComposition() {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::DeleteSurroundingText(uint32_t num_bytes_before_cursor,
+                                        uint32_t num_bytes_after_cursor) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
 }
 
 }  // namespace ime

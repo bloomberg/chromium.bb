@@ -4,7 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
 #elif defined(OS_ANDROID)
 #include "services/device/generic_sensor/platform_sensor_provider_android.h"
@@ -15,6 +15,8 @@
 #include "services/device/generic_sensor/platform_sensor_provider_win.h"
 #include "services/device/generic_sensor/platform_sensor_provider_winrt.h"
 #include "services/device/public/cpp/device_features.h"
+#elif defined(OS_CHROMEOS)
+#include "services/device/generic_sensor/platform_sensor_provider_chromeos.h"
 #elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
 #endif
@@ -23,7 +25,7 @@ namespace device {
 
 // static
 std::unique_ptr<PlatformSensorProvider> PlatformSensorProvider::Create() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return std::make_unique<PlatformSensorProviderMac>();
 #elif defined(OS_ANDROID)
   return std::make_unique<PlatformSensorProviderAndroid>();
@@ -33,6 +35,8 @@ std::unique_ptr<PlatformSensorProvider> PlatformSensorProvider::Create() {
   } else {
     return std::make_unique<PlatformSensorProviderWin>();
   }
+#elif defined(OS_CHROMEOS)
+  return std::make_unique<PlatformSensorProviderChromeOS>();
 #elif defined(OS_LINUX) && defined(USE_UDEV)
   return std::make_unique<PlatformSensorProviderLinux>();
 #else

@@ -37,6 +37,14 @@ bool SchemaRegistryTrackingPolicyProvider::IsInitializationComplete(
   return state_ == READY;
 }
 
+bool SchemaRegistryTrackingPolicyProvider::IsFirstPolicyLoadComplete(
+    PolicyDomain domain) const {
+  if (domain == POLICY_DOMAIN_CHROME)
+    return delegate_->IsFirstPolicyLoadComplete(domain);
+  // This provider keeps its own state for all the other domains.
+  return state_ == READY;
+}
+
 void SchemaRegistryTrackingPolicyProvider::RefreshPolicies() {
   delegate_->RefreshPolicies();
 }
@@ -85,7 +93,8 @@ void SchemaRegistryTrackingPolicyProvider::OnUpdatePolicy(
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   if (state_ == READY) {
     bundle->CopyFrom(delegate_->policies());
-    schema_map()->FilterBundle(bundle.get());
+    schema_map()->FilterBundle(bundle.get(),
+                               /*drop_invalid_component_policies=*/true);
   } else {
     // Always pass on the Chrome policy, even if the components are not ready
     // yet.

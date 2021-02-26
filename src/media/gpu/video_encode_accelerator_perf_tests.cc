@@ -29,6 +29,7 @@ namespace {
 // TODO(dstaessens): Add video_encoder_perf_test_usage.md
 constexpr const char* usage_msg =
     "usage: video_encode_accelerator_perf_tests\n"
+    "           [--codec=<codec>]\n"
     "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
     "           [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
@@ -42,6 +43,8 @@ constexpr const char* help_msg =
     "containing the video's metadata. By default <video path>.json will be\n"
     "used.\n"
     "\nThe following arguments are supported:\n"
+    "  --codec              codec profile to encode, \"h264 (baseline)\",\n"
+    "                       \"h264main, \"h264high\", \"vp8\" and \"vp9\"\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "  --output_folder      overwrite the output folder used to store\n"
@@ -115,11 +118,8 @@ class PerformanceEvaluator : public BitstreamProcessor {
   // Create a new performance evaluator.
   PerformanceEvaluator() {}
 
-  // Interface BitstreamProcessor
-  void ProcessBitstreamBuffer(
-      int32_t bitstream_buffer_id,
-      const BitstreamBufferMetadata& metadata,
-      const base::UnsafeSharedMemoryRegion* shm) override;
+  void ProcessBitstream(scoped_refptr<BitstreamRef> bitstream,
+                        size_t frame_index) override;
   bool WaitUntilDone() override { return true; }
 
   // Start/Stop collecting performance metrics.
@@ -141,10 +141,9 @@ class PerformanceEvaluator : public BitstreamProcessor {
   PerformanceMetrics perf_metrics_;
 };
 
-void PerformanceEvaluator::ProcessBitstreamBuffer(
-    int32_t bitstream_buffer_id,
-    const BitstreamBufferMetadata& metadata,
-    const base::UnsafeSharedMemoryRegion* shm) {
+void PerformanceEvaluator::ProcessBitstream(
+    scoped_refptr<BitstreamRef> bitstream,
+    size_t frame_index) {
   base::TimeTicks now = base::TimeTicks::Now();
 
   base::TimeDelta delivery_time = (now - prev_bitstream_delivery_time_);
@@ -152,7 +151,8 @@ void PerformanceEvaluator::ProcessBitstreamBuffer(
       delivery_time.InMillisecondsF());
   prev_bitstream_delivery_time_ = now;
 
-  base::TimeDelta encode_time = now.since_origin() - metadata.timestamp;
+  base::TimeDelta encode_time =
+      now.since_origin() - bitstream->metadata.timestamp;
   perf_metrics_.bitstream_encode_times_.push_back(
       encode_time.InMillisecondsF());
 }
@@ -270,7 +270,9 @@ void PerformanceMetrics::WriteToFile() const {
 class VideoEncoderTest : public ::testing::Test {
  public:
   // Create a new video encoder instance.
-  std::unique_ptr<VideoEncoder> CreateVideoEncoder(const Video* video) {
+  std::unique_ptr<VideoEncoder> CreateVideoEncoder(const Video* video,
+                                                   VideoCodecProfile profile,
+                                                   uint32_t bitrate) {
     LOG_ASSERT(video);
 
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
@@ -278,10 +280,12 @@ class VideoEncoderTest : public ::testing::Test {
     performance_evaluator_ = performance_evaluator.get();
     bitstream_processors.push_back(std::move(performance_evaluator));
 
-    VideoEncoderClientConfig config;
-    config.framerate = video->FrameRate();
+    constexpr size_t kNumTemporalLayers = 1u;
+    VideoEncoderClientConfig config(video, profile, kNumTemporalLayers,
+                                    bitrate);
     auto video_encoder =
-        VideoEncoder::Create(config, std::move(bitstream_processors));
+        VideoEncoder::Create(config, g_env->GetGpuMemoryBufferFactory(),
+                             std::move(bitstream_processors));
     LOG_ASSERT(video_encoder);
     LOG_ASSERT(video_encoder->Initialize(video));
 
@@ -297,7 +301,8 @@ class VideoEncoderTest : public ::testing::Test {
 // test will encode a video as fast as possible, and gives an idea about the
 // maximum output of the encoder.
 TEST_F(VideoEncoderTest, MeasureUncappedPerformance) {
-  auto encoder = CreateVideoEncoder(g_env->Video());
+  auto encoder =
+      CreateVideoEncoder(g_env->Video(), g_env->Profile(), g_env->Bitrate());
 
   performance_evaluator_->StartMeasuring();
   encoder->Encode();
@@ -336,6 +341,7 @@ int main(int argc, char** argv) {
                          : base::FilePath(media::test::kDefaultTestVideoPath);
   base::FilePath video_metadata_path =
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
+  std::string codec = "h264";
 
   // Parse command line arguments.
   base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
@@ -349,6 +355,8 @@ int main(int argc, char** argv) {
 
     if (it->first == "output_folder") {
       output_folder = it->second;
+    } else if (it->first == "codec") {
+      codec = it->second;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -361,7 +369,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
-          video_path, video_metadata_path, base::FilePath(output_folder));
+          video_path, video_metadata_path, false, base::FilePath(output_folder),
+          codec, 1u /* num_temporal_layers */, false /* output_bitstream */);
   if (!test_environment)
     return EXIT_FAILURE;
 

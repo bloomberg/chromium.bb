@@ -21,7 +21,7 @@
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/ninja/ninja_log_parser.h"
 #include "src/trace_processor/importers/proto/proto_trace_parser.h"
-#include "src/trace_processor/importers/proto/proto_trace_tokenizer.h"
+#include "src/trace_processor/importers/proto/proto_trace_reader.h"
 #include "src/trace_processor/trace_sorter.h"
 
 namespace perfetto {
@@ -35,8 +35,7 @@ inline bool isspace(unsigned char c) {
   return ::isspace(c);
 }
 
-std::string RemoveWhitespace(const std::string& input) {
-  std::string str(input);
+std::string RemoveWhitespace(std::string str) {
   str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
   return str;
 }
@@ -82,7 +81,7 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
         PERFETTO_DLOG("Proto trace detected");
         // This will be reduced once we read the trace config and we see flush
         // period being set.
-        reader_.reset(new ProtoTraceTokenizer(context_));
+        reader_.reset(new ProtoTraceReader(context_));
         context_->sorter.reset(new TraceSorter(
             std::unique_ptr<TraceParser>(new ProtoTraceParser(context_)),
             kMaxWindowSize));
@@ -131,7 +130,9 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
           return util::ErrStatus(kNoZlibErr);
         }
       case kUnknownTraceType:
-        return util::ErrStatus("Unknown trace type provided");
+        // If renaming this error message don't remove the "(ERR:fmt)" part.
+        // The UI's error_dialog.ts uses it to make the dialog more graceful.
+        return util::ErrStatus("Unknown trace type provided (ERR:fmt)");
     }
   }
 
@@ -148,7 +149,8 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
   std::string start(reinterpret_cast<const char*>(data),
                     std::min<size_t>(size, 20));
   if (size >= 8) {
-    uint64_t first_word = *reinterpret_cast<const uint64_t*>(data);
+    uint64_t first_word;
+    memcpy(&first_word, data, sizeof(first_word));
     if (first_word == kFuchsiaMagicNumber)
       return kFuchsiaTraceType;
   }
@@ -159,7 +161,7 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
     return kJsonTraceType;
 
   // Systrace with header but no leading HTML.
-  if (base::StartsWith(start, "# tracer"))
+  if (start.find("# tracer") != std::string::npos)
     return kSystraceTraceType;
 
   // Systrace with leading HTML.
@@ -183,7 +185,10 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
   if (base::StartsWith(start, "\x1f\x8b"))
     return kGzipTraceType;
 
-  return kProtoTraceType;
+  if (base::StartsWith(start, "\x0a"))
+    return kProtoTraceType;
+
+  return kUnknownTraceType;
 }
 
 }  // namespace trace_processor

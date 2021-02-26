@@ -1,0 +1,15 @@
+<style include="diagnostics-shared">
+</style>
+
+<div id="routineSection">
+  <cr-button id="runTestsButton" class="action-button" on-click="onRunTestsClicked_"
+      disabled="[[isRunTestsDisabled_]]">
+    <!-- TODO(zentaro): Localize this string. -->
+    Run Tests
+  </cr-button>
+  <cr-button id="toggleReportButton" class="action-button" on-click="onToggleReportClicked_"
+      hidden="[[isReportButtonHidden_(executionStatus_)]]">
+    [[getReportToggleButtonText_(isReportListHidden_)]]
+  </cr-button>
+  <routine-result-list id="resultList" hidden="[[isReportListHidden_]]"></routine-result-list>
+</div>

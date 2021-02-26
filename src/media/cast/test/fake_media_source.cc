@@ -87,7 +87,7 @@ FakeMediaSource::FakeMediaSource(
       clock_(clock),
       audio_frame_count_(0),
       video_frame_count_(0),
-      av_format_context_(NULL),
+      av_format_context_(nullptr),
       audio_stream_index_(-1),
       playback_rate_(1.0),
       video_stream_index_(-1),
@@ -419,7 +419,7 @@ base::TimeDelta FakeMediaSource::VideoFrameTime(int frame_number) {
 }
 
 base::TimeDelta FakeMediaSource::ScaleTimestamp(base::TimeDelta timestamp) {
-  return base::TimeDelta::FromSecondsD(timestamp.InSecondsF() / playback_rate_);
+  return timestamp / playback_rate_;
 }
 
 base::TimeDelta FakeMediaSource::AudioFrameTime(int frame_number) {

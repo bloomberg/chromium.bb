@@ -51,12 +51,12 @@ bool CanCauseSignal(int sig) {
 #endif  // !defined(ARCH_CPU_ARM64)
 #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL)
          sig == SIGILL ||
-#endif  // defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL
+#endif  // defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL)
          sig == SIGPIPE ||
          sig == SIGSEGV ||
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
          sig == SIGSYS ||
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM64)
          sig == SIGTRAP ||
 #endif  // defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM64)
@@ -177,7 +177,7 @@ void CauseSignal(int sig) {
       break;
     }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     case SIGSYS: {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -189,7 +189,7 @@ void CauseSignal(int sig) {
       }
       break;
     }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM64)
     case SIGTRAP: {
@@ -465,16 +465,20 @@ TEST(Signals, Raise_HandlerReraisesToDefault) {
       continue;
     }
 
-#if defined(OS_MACOSX)
-    if (sig == SIGBUS) {
-      // Signal handlers can’t distinguish between SIGBUS arising out of a
-      // hardware fault and SIGBUS raised asynchronously.
-      // Signals::RestoreHandlerAndReraiseSignalOnReturn() assumes that SIGBUS
-      // comes from a hardware fault, but this test uses raise(), so the
-      // re-raise test must be skipped.
+#if defined(OS_APPLE)
+    if (sig == SIGBUS
+#if defined(ARCH_CPU_ARM64)
+        || sig == SIGILL || sig == SIGSEGV
+#endif  // defined(ARCH_CPU_ARM64)
+       ) {
+      // Signal handlers can’t distinguish between these signals arising out of
+      // hardware faults and raised asynchronously.
+      // Signals::RestoreHandlerAndReraiseSignalOnReturn() assumes that they
+      // come from hardware faults, but this test uses raise(), so the re-raise
+      // test must be skipped.
       continue;
     }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
     SignalsTest test(SignalsTest::TestType::kHandlerReraisesToDefault,
                      SignalsTest::SignalSource::kRaise,
@@ -492,16 +496,20 @@ TEST(Signals, Raise_HandlerReraisesToPrevious) {
       continue;
     }
 
-#if defined(OS_MACOSX)
-    if (sig == SIGBUS) {
-      // Signal handlers can’t distinguish between SIGBUS arising out of a
-      // hardware fault and SIGBUS raised asynchronously.
-      // Signals::RestoreHandlerAndReraiseSignalOnReturn() assumes that SIGBUS
-      // comes from a hardware fault, but this test uses raise(), so the
-      // re-raise test must be skipped.
+#if defined(OS_APPLE)
+    if (sig == SIGBUS
+#if defined(ARCH_CPU_ARM64)
+        || sig == SIGILL || sig == SIGSEGV
+#endif  // defined(ARCH_CPU_ARM64)
+       ) {
+      // Signal handlers can’t distinguish between these signals arising out of
+      // hardware faults and raised asynchronously.
+      // Signals::RestoreHandlerAndReraiseSignalOnReturn() assumes that they
+      // come from hardware faults, but this test uses raise(), so the re-raise
+      // test must be skipped.
       continue;
     }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
     SignalsTest test(SignalsTest::TestType::kHandlerReraisesToPrevious,
                      SignalsTest::SignalSource::kRaise,

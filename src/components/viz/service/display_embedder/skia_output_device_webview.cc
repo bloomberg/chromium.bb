@@ -9,20 +9,25 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 
 namespace viz {
 
+namespace {
+constexpr auto kSurfaceColorType = kRGBA_8888_SkColorType;
+}
+
 SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
     gpu::SharedContextState* context_state,
     scoped_refptr<gl::GLSurface> gl_surface,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker,
+    : SkiaOutputDevice(context_state->gr_context(),
+                       memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
@@ -36,19 +41,10 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
   DCHECK(context_state_->gr_context());
   DCHECK(context_state_->context());
 
-  // Get alpha bits from the default frame buffer.
-  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-  context_state_->gr_context()->resetContext(kRenderTarget_GrGLBackendState);
-  GLint alpha_bits = 0;
-  glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
-  CHECK_GL_ERROR();
-  supports_alpha_ = alpha_bits > 0;
-
-  capabilities_.sk_color_type =
-      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
-  capabilities_.gr_backend_format =
-      context_state_->gr_context()->defaultBackendFormat(
-          capabilities_.sk_color_type, GrRenderable::kYes);
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
+      kSurfaceColorType;
+  capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRA_8888)] =
+      kSurfaceColorType;
 }
 
 SkiaOutputDeviceWebView::~SkiaOutputDeviceWebView() = default;
@@ -80,8 +76,9 @@ void SkiaOutputDeviceWebView::SwapBuffers(
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
-  FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)), surface_size,
-                    std::move(latency_info));
+  FinishSwapBuffers(
+      gfx::SwapCompletionResult(gl_surface_->SwapBuffers(std::move(feedback))),
+      surface_size, std::move(latency_info));
 }
 
 SkSurface* SkiaOutputDeviceWebView::BeginPaint(
@@ -103,14 +100,12 @@ void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
   last_frame_buffer_object_ = fbo;
 
   SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+      skia::LegacyDisplayGlobals::GetSkSurfaceProps();
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = fbo;
-  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
-  DCHECK_EQ(capabilities_.gr_backend_format.asGLFormat(),
-            supports_alpha_ ? GrGLFormat::kRGBA8 : GrGLFormat::kRGB8);
-  SkColorType color_type = capabilities_.sk_color_type;
+  framebuffer_info.fFormat = GL_RGBA8;
+  SkColorType color_type = kSurfaceColorType;
 
   GrBackendRenderTarget render_target(size_.width(), size_.height(),
                                       /*sampleCnt=*/0,

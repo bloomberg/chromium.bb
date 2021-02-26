@@ -4,14 +4,13 @@
 
 #include "public/fpdf_edit.h"
 
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include "core/fpdfapi/page/cpdf_path.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fxcrt/fx_system.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
 
@@ -49,7 +48,7 @@ CPDF_PathObject* CPDFPathObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
 
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewPath(float x,
                                                                     float y) {
-  auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+  auto pPathObj = std::make_unique<CPDF_PathObject>();
   pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo);
   pPathObj->DefaultStates();
 
@@ -61,7 +60,7 @@ FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewRect(float x,
                                                                     float y,
                                                                     float w,
                                                                     float h) {
-  auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+  auto pPathObj = std::make_unique<CPDF_PathObject>();
   pPathObj->path().AppendRect(x, y, x + w, y + h);
   pPathObj->DefaultStates();
 

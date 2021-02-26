@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import './grid.js';
+import 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
 import './mini_page.js';
-import './untrusted_iframe.js';
+import './iframe.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
+import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog_types.js';
 
 /** Element that lets the user configure the background. */
 class CustomizeBackgroundsElement extends PolymerElement {
@@ -153,14 +153,14 @@ class CustomizeBackgroundsElement extends PolymerElement {
   onCollectionClick_(e) {
     this.selectedCollection = this.$.collectionsRepeat.itemForElement(e.target);
     this.pageHandler_.onCustomizeDialogAction(
-        newTabPage.mojom.CustomizeDialogAction.BACKGROUNDS_COLLECTION_OPENED);
+        newTabPage.mojom.CustomizeDialogAction.kBackgroundsCollectionOpened);
   }
 
   /** @private */
   async onUploadFromDeviceClick_() {
     this.pageHandler_.onCustomizeDialogAction(
         newTabPage.mojom.CustomizeDialogAction
-            .BACKGROUNDS_UPLOAD_FROM_DEVICE_CLICKED);
+            .kBackgroundsUploadFromDeviceClicked);
     const {success} = await this.pageHandler_.chooseLocalCustomBackground();
     if (success) {
       // The theme update is asynchronous. Close the dialog and allow ntp-app
@@ -175,7 +175,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
         BackgroundSelectionType.NO_BACKGROUND) {
       this.pageHandler_.onCustomizeDialogAction(
           newTabPage.mojom.CustomizeDialogAction
-              .BACKGROUNDS_NO_BACKGROUND_SELECTED);
+              .kBackgroundsNoBackgroundSelected);
     }
     this.backgroundSelection = {type: BackgroundSelectionType.NO_BACKGROUND};
   }
@@ -189,7 +189,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
     if (this.backgroundSelection.type !== BackgroundSelectionType.IMAGE ||
         this.backgroundSelection.image !== image) {
       this.pageHandler_.onCustomizeDialogAction(
-          newTabPage.mojom.CustomizeDialogAction.BACKGROUNDS_IMAGE_SELECTED);
+          newTabPage.mojom.CustomizeDialogAction.kBackgroundsImageSelected);
     }
     this.backgroundSelection = {
       type: BackgroundSelectionType.IMAGE,

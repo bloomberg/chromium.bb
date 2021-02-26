@@ -677,7 +677,7 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
   if (connect(sockfd, reinterpret_cast<sockaddr*>(&serv_addr),
               sizeof(serv_addr)) < 0) {
     fprintf(stderr, "Failed to connect to localhost:%d\n",
-            Shell::options.read_from_tcp_port);
+            Shell::options.read_from_tcp_port.get());
     close(sockfd);
     return nullptr;
   }
@@ -705,7 +705,7 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
     ssize_t sent_now = send(sockfd, name + sent_len, name_len - sent_len, 0);
     if (sent_now < 0) {
       fprintf(stderr, "Failed to send %s to localhost:%d\n", name,
-              Shell::options.read_from_tcp_port);
+              Shell::options.read_from_tcp_port.get());
       close(sockfd);
       return nullptr;
     }
@@ -722,7 +722,7 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
   // We need those 4 bytes to read off the file length.
   if (received < 4) {
     fprintf(stderr, "Failed to receive %s's length from localhost:%d\n", name,
-            Shell::options.read_from_tcp_port);
+            Shell::options.read_from_tcp_port.get());
     close(sockfd);
     return nullptr;
   }
@@ -731,7 +731,7 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
 
   if (file_length < 0) {
     fprintf(stderr, "Received length %d for %s from localhost:%d\n",
-            file_length, name, Shell::options.read_from_tcp_port);
+            file_length, name, Shell::options.read_from_tcp_port.get());
     close(sockfd);
     return nullptr;
   }
@@ -746,7 +746,7 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
         recv(sockfd, chars + total_received, file_length - total_received, 0);
     if (received < 0) {
       fprintf(stderr, "Failed to receive %s from localhost:%d\n", name,
-              Shell::options.read_from_tcp_port);
+              Shell::options.read_from_tcp_port.get());
       close(sockfd);
       delete[] chars;
       return nullptr;
@@ -761,20 +761,18 @@ char* Shell::ReadCharsFromTcpPort(const char* name, int* size_out) {
 
 void Shell::AddOSMethods(Isolate* isolate, Local<ObjectTemplate> os_templ) {
   if (options.enable_os_system) {
-    os_templ->Set(String::NewFromUtf8Literal(isolate, "system"),
-                  FunctionTemplate::New(isolate, System));
+    os_templ->Set(isolate, "system", FunctionTemplate::New(isolate, System));
   }
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "chdir"),
+  os_templ->Set(isolate, "chdir",
                 FunctionTemplate::New(isolate, ChangeDirectory));
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "setenv"),
+  os_templ->Set(isolate, "setenv",
                 FunctionTemplate::New(isolate, SetEnvironment));
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "unsetenv"),
+  os_templ->Set(isolate, "unsetenv",
                 FunctionTemplate::New(isolate, UnsetEnvironment));
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "umask"),
-                FunctionTemplate::New(isolate, SetUMask));
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "mkdirp"),
+  os_templ->Set(isolate, "umask", FunctionTemplate::New(isolate, SetUMask));
+  os_templ->Set(isolate, "mkdirp",
                 FunctionTemplate::New(isolate, MakeDirectory));
-  os_templ->Set(String::NewFromUtf8Literal(isolate, "rmdir"),
+  os_templ->Set(isolate, "rmdir",
                 FunctionTemplate::New(isolate, RemoveDirectory));
 }
 

@@ -46,9 +46,8 @@ class DialogDelegate : public ui::WebDialogDelegate {
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
   GURL GetDialogContentURL() const override;
-  bool CanCloseDialog() const override;
-  bool CanResizeDialog() const override;
   void GetDialogSize(gfx::Size* size) const override;
+  bool OnDialogCloseRequested() override;
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   std::string GetDialogArgs() const override;
@@ -59,6 +58,7 @@ class DialogDelegate : public ui::WebDialogDelegate {
   bool ShouldCloseDialogOnEscape() const override;
   bool ShouldShowDialogTitle() const override;
   bool ShouldCenterDialogTitleText() const override;
+  bool ShouldShowCloseButton() const override;
 
  private:
   const std::string extension_name_;

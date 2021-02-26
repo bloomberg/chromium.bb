@@ -2,27 +2,30 @@ export const description = `
 Tests for AsyncMutex.
 `;
 
-import { TestGroup } from '../common/framework/test_group.js';
+import { makeTestGroup } from '../common/framework/test_group.js';
 import { AsyncMutex } from '../common/framework/util/async_mutex.js';
 import { objectEquals } from '../common/framework/util/util.js';
 
 import { UnitTest } from './unit_test.js';
 
-export const g = new TestGroup(UnitTest);
+export const g = makeTestGroup(UnitTest);
 
-g.test('basic', async t => {
+/* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+g.test('basic').fn(async t => {
   const mutex = new AsyncMutex();
   await mutex.with(async () => {});
 });
 
-g.test('serial', async t => {
+/* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+g.test('serial').fn(async t => {
   const mutex = new AsyncMutex();
   await mutex.with(async () => {});
   await mutex.with(async () => {});
   await mutex.with(async () => {});
 });
 
-g.test('parallel', async t => {
+/* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
+g.test('parallel').fn(async t => {
   const mutex = new AsyncMutex();
   await Promise.all([
     mutex.with(async () => {}),
@@ -31,7 +34,7 @@ g.test('parallel', async t => {
   ]);
 });
 
-g.test('parallel/many', async t => {
+g.test('parallel,many').fn(async t => {
   const mutex = new AsyncMutex();
   const actual: number[] = [];
   const expected = [];
@@ -45,13 +48,13 @@ g.test('parallel/many', async t => {
   t.expect(objectEquals(actual, expected));
 });
 
-g.test('return', async t => {
+g.test('return').fn(async t => {
   const mutex = new AsyncMutex();
   const ret = await mutex.with(async () => 123);
   t.expect(ret === 123);
 });
 
-g.test('return/parallel', async t => {
+g.test('return,parallel').fn(async t => {
   const mutex = new AsyncMutex();
   const ret = await Promise.all([
     mutex.with(async () => 1),

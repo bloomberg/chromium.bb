@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -38,6 +39,9 @@ class MockPresubmitError(object):
         self.message = message
         self.items = items
         self.long_text = long_text
+
+    def __repr__(self):
+        return self.message + "\n" + self.long_text
 
 
 class MockPresubmitWarning(object):
@@ -76,9 +80,13 @@ class MockFile(object):
 class LintWPTTest(unittest.TestCase):
     def setUp(self):
         self._test_file = os.path.join(os.path.dirname(__file__), 'wpt', '_DO_NOT_SUBMIT_.html')
+        self._ignored_directory = os.path.join(os.path.dirname(__file__), 'wpt', 'css', '_DNS_')
 
     def tearDown(self):
-        os.remove(self._test_file)
+        if os.path.exists(self._test_file):
+            os.remove(self._test_file)
+        if os.path.exists(self._ignored_directory):
+            shutil.rmtree(self._ignored_directory)
 
     def testWPTLintSuccess(self):
         with open(self._test_file, 'w') as f:
@@ -87,7 +95,7 @@ class LintWPTTest(unittest.TestCase):
         mock_output = MockOutputApi()
         mock_input.affected_paths = [os.path.abspath(self._test_file)]
         errors = PRESUBMIT._LintWPT(mock_input, mock_output)
-        self.assertEqual(len(errors), 0)
+        self.assertEqual(errors, [])
 
     def testWPTLintErrors(self):
         # Private LayoutTests APIs are not allowed.
@@ -98,6 +106,20 @@ class LintWPTTest(unittest.TestCase):
         mock_input.affected_paths = [os.path.abspath(self._test_file)]
         errors = PRESUBMIT._LintWPT(mock_input, mock_output)
         self.assertEqual(len(errors), 1)
+        self.assertTrue(isinstance(errors[0], MockPresubmitError))
+
+    def testWPTLintIgnore(self):
+        os.mkdir(self._ignored_directory)
+        files = []
+        for f in ['DIR_METADATA', 'OWNERS', 'test-expected.txt']:
+            path = os.path.abspath(os.path.join(self._ignored_directory, f))
+            files.append(path)
+            open(path, 'w').close()
+        mock_input = MockInputApi()
+        mock_output = MockOutputApi()
+        mock_input.affected_paths = files
+        errors = PRESUBMIT._LintWPT(mock_input, mock_output)
+        self.assertEqual(errors, [])
 
 
 class DontModifyIDLFilesTest(unittest.TestCase):
@@ -114,14 +136,14 @@ class DontModifyIDLFilesTest(unittest.TestCase):
         mock_output = MockOutputApi()
         mock_input.affected_paths = [os.path.join(mock_input.PresubmitLocalPath(), 'wpt', 'css', 'foo.html')]
         errors = PRESUBMIT._DontModifyIDLFiles(mock_input, mock_output)
-        self.assertEqual(len(errors), 0)
+        self.assertEqual(errors, [])
 
     def testModifiesInterfaceDirOutsideOfWPT(self):
         mock_input = MockInputApi()
         mock_output = MockOutputApi()
         mock_input.affected_paths = [os.path.join(mock_input.PresubmitLocalPath(), 'other', 'interfaces', 'test.idl')]
         errors = PRESUBMIT._DontModifyIDLFiles(mock_input, mock_output)
-        self.assertEqual(len(errors), 0)
+        self.assertEqual(errors, [])
 
 
 if __name__ == '__main__':

@@ -54,6 +54,10 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   void StopRuntime() override;
   void OnSessionStart() override;
   bool UsesInputEventing() override;
+  device::mojom::XREnvironmentBlendMode GetEnvironmentBlendMode(
+      device::mojom::XRSessionMode session_mode) override;
+  device::mojom::XRInteractionMode GetInteractionMode(
+      device::mojom::XRSessionMode session_mode) override;
 
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
@@ -103,6 +107,7 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   std::unique_ptr<MixedRealityWindow> window_;
   mojom::VRDisplayInfoPtr current_display_info_;
+  mojom::VRStageParametersPtr current_stage_parameters_;
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
       on_display_info_changed_;
 

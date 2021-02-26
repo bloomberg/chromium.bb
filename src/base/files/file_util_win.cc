@@ -352,6 +352,9 @@ DWORD DoDeleteFile(const FilePath& path, bool recursive) {
              : ReturnLastErrorOrSuccessOnNotFound();
 }
 
+// Deletes the file/directory at |path| (recursively if |recursive| and |path|
+// names a directory), returning true on success. Sets the Windows last-error
+// code and returns false on failure.
 bool DeleteFileAndRecordMetrics(const FilePath& path, bool recursive) {
   static constexpr char kRecursive[] = "DeleteFile.Recursive";
   static constexpr char kNonRecursive[] = "DeleteFile.NonRecursive";
@@ -369,6 +372,8 @@ bool DeleteFileAndRecordMetrics(const FilePath& path, bool recursive) {
     return true;
 
   RecordFilesystemError(operation, error);
+
+  ::SetLastError(error);
   return false;
 }
 
@@ -382,11 +387,11 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
   return FilePath(file_path);
 }
 
-bool DeleteFile(const FilePath& path, bool recursive) {
-  return DeleteFileAndRecordMetrics(path, recursive);
+bool DeleteFile(const FilePath& path) {
+  return DeleteFileAndRecordMetrics(path, /*recursive=*/false);
 }
 
-bool DeleteFileRecursively(const FilePath& path) {
+bool DeletePathRecursively(const FilePath& path) {
   return DeleteFileAndRecordMetrics(path, /*recursive=*/true);
 }
 
@@ -458,17 +463,39 @@ bool PathExists(const FilePath& path) {
   return (GetFileAttributes(path.value().c_str()) != INVALID_FILE_ATTRIBUTES);
 }
 
-bool PathIsWritable(const FilePath& path) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  HANDLE dir =
-      CreateFile(path.value().c_str(), FILE_ADD_FILE, kFileShareAll, NULL,
-                 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+namespace {
 
-  if (dir == INVALID_HANDLE_VALUE)
+bool PathHasAccess(const FilePath& path,
+                   DWORD dir_desired_access,
+                   DWORD file_desired_access) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+
+  const wchar_t* const path_str = path.value().c_str();
+  DWORD fileattr = GetFileAttributes(path_str);
+  if (fileattr == INVALID_FILE_ATTRIBUTES)
     return false;
 
-  CloseHandle(dir);
-  return true;
+  bool is_directory = fileattr & FILE_ATTRIBUTE_DIRECTORY;
+  DWORD desired_access =
+      is_directory ? dir_desired_access : file_desired_access;
+  DWORD flags_and_attrs =
+      is_directory ? FILE_FLAG_BACKUP_SEMANTICS : FILE_ATTRIBUTE_NORMAL;
+
+  win::ScopedHandle file(CreateFile(path_str, desired_access, kFileShareAll,
+                                    nullptr, OPEN_EXISTING, flags_and_attrs,
+                                    nullptr));
+
+  return file.IsValid();
+}
+
+}  // namespace
+
+bool PathIsReadable(const FilePath& path) {
+  return PathHasAccess(path, FILE_LIST_DIRECTORY, GENERIC_READ);
+}
+
+bool PathIsWritable(const FilePath& path) {
+  return PathHasAccess(path, FILE_ADD_FILE, GENERIC_WRITE);
 }
 
 bool DirectoryExists(const FilePath& path) {
@@ -531,8 +558,7 @@ File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // Although it is nearly impossible to get a duplicate name with GUID, we
   // still use a loop here in case it happens.
   for (int i = 0; i < 100; ++i) {
-    temp_name =
-        dir.Append(UTF8ToWide(GenerateGUID()) + FILE_PATH_LITERAL(".tmp"));
+    temp_name = dir.Append(FormatTemporaryFileName(UTF8ToWide(GenerateGUID())));
     file.Initialize(temp_name, kFlags);
     if (file.IsValid())
       break;
@@ -559,6 +585,10 @@ File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   return CreateAndOpenTemporaryFileInDir(dir, temp_file).IsValid();
+}
+
+FilePath FormatTemporaryFileName(FilePath::StringPieceType identifier) {
+  return FilePath(StrCat({identifier, FILE_PATH_LITERAL(".tmp")}));
 }
 
 ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
@@ -969,15 +999,15 @@ using PrefetchVirtualMemoryPtr = decltype(&::PrefetchVirtualMemory);
 // Returns null if ::PrefetchVirtualMemory() is not available.
 PrefetchVirtualMemoryPtr GetPrefetchVirtualMemoryPtr() {
   HMODULE kernel32_dll = ::GetModuleHandleA("kernel32.dll");
-  return reinterpret_cast<decltype(&::PrefetchVirtualMemory)>(
+  return reinterpret_cast<PrefetchVirtualMemoryPtr>(
       GetProcAddress(kernel32_dll, "PrefetchVirtualMemory"));
 }
 
 }  // namespace
 
-bool PreReadFile(const FilePath& file_path,
-                 bool is_executable,
-                 int64_t max_bytes) {
+PrefetchResult PreReadFile(const FilePath& file_path,
+                           bool is_executable,
+                           int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
   // On Win8 and higher use ::PrefetchVirtualMemory(). This is better than a
@@ -988,12 +1018,14 @@ bool PreReadFile(const FilePath& file_path,
       GetPrefetchVirtualMemoryPtr();
 
   if (prefetch_virtual_memory == nullptr)
-    return internal::PreReadFileSlow(file_path, max_bytes);
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kSlowSuccess}
+               : PrefetchResult{PrefetchResultCode::kSlowFailed};
 
   if (max_bytes == 0) {
     // PrefetchVirtualMemory() fails when asked to read zero bytes.
     // base::MemoryMappedFile::Initialize() fails on an empty file.
-    return true;
+    return PrefetchResult{PrefetchResultCode::kSuccess};
   }
 
   // PrefetchVirtualMemory() fails if the file is opened with write access.
@@ -1001,16 +1033,23 @@ bool PreReadFile(const FilePath& file_path,
                                         ? MemoryMappedFile::READ_CODE_IMAGE
                                         : MemoryMappedFile::READ_ONLY;
   MemoryMappedFile mapped_file;
-  if (!mapped_file.Initialize(file_path, access))
-    return false;
-
+  if (!mapped_file.Initialize(file_path, access)) {
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kMemoryMapFailedSlowUsed}
+               : PrefetchResult{PrefetchResultCode::kMemoryMapFailedSlowFailed};
+  }
   const ::SIZE_T length =
       std::min(base::saturated_cast<::SIZE_T>(max_bytes),
                base::saturated_cast<::SIZE_T>(mapped_file.length()));
   ::_WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(), length};
-  return (*prefetch_virtual_memory)(::GetCurrentProcess(),
-                                    /*NumberOfEntries=*/1, &address_range,
-                                    /*Flags=*/0);
+  if (!prefetch_virtual_memory(::GetCurrentProcess(),
+                               /*NumberOfEntries=*/1, &address_range,
+                               /*Flags=*/0)) {
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kFastFailedSlowUsed}
+               : PrefetchResult{PrefetchResultCode::kFastFailedSlowFailed};
+  }
+  return PrefetchResult{PrefetchResultCode::kSuccess};
 }
 
 // -----------------------------------------------------------------------------
@@ -1055,7 +1094,7 @@ bool CopyAndDeleteDirectory(const FilePath& from_path,
                             const FilePath& to_path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   if (CopyDirectory(from_path, to_path, true)) {
-    if (DeleteFileRecursively(from_path))
+    if (DeletePathRecursively(from_path))
       return true;
 
     // Like Move, this function is not transactional, so we just

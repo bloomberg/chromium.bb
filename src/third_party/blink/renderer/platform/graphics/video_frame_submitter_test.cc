@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -89,7 +89,7 @@ class VideoMockCompositorFrameSink
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& id,
       viz::CompositorFrame frame,
-      viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
       uint64_t submit_time) override {
     last_submitted_compositor_frame_ = std::move(frame);
     DoSubmitCompositorFrame(id, &last_submitted_compositor_frame_);
@@ -97,7 +97,7 @@ class VideoMockCompositorFrameSink
   void SubmitCompositorFrameSync(
       const viz::LocalSurfaceId& id,
       viz::CompositorFrame frame,
-      viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       const SubmitCompositorFrameSyncCallback callback) override {
     last_submitted_compositor_frame_ = std::move(frame);
@@ -135,7 +135,7 @@ class MockVideoFrameResourceProvider
   MOCK_METHOD2(Initialize,
                void(viz::RasterContextProvider*, viz::SharedBitmapReporter*));
   MOCK_METHOD4(AppendQuads,
-               void(viz::RenderPass*,
+               void(viz::CompositorRenderPass*,
                     scoped_refptr<media::VideoFrame>,
                     media::VideoRotation,
                     bool));
@@ -167,7 +167,8 @@ class VideoFrameSubmitterTest : public testing::Test {
 
   void MakeSubmitter() { MakeSubmitter(base::DoNothing()); }
 
-  void MakeSubmitter(cc::PlaybackRoughnessReportingCallback reporting_cb) {
+  void MakeSubmitter(
+      cc::VideoPlaybackRoughnessReporter::ReportingCallback reporting_cb) {
     resource_provider_ = new StrictMock<MockVideoFrameResourceProvider>(
         context_provider_.get(), nullptr);
     submitter_ = std::make_unique<VideoFrameSubmitter>(
@@ -192,8 +193,7 @@ class VideoFrameSubmitterTest : public testing::Test {
                             base::UnguessableToken::Deserialize(0x111111, 0)));
     submitter_->frame_sink_id_ = surface_id.frame_sink_id();
     submitter_->child_local_surface_id_allocator_.UpdateFromParent(
-        viz::LocalSurfaceIdAllocation(surface_id.local_surface_id(),
-                                      base::TimeTicks::Now()));
+        surface_id.local_surface_id());
   }
 
   bool IsRendering() const { return submitter_->is_rendering_; }
@@ -688,9 +688,7 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
 TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
     viz::LocalSurfaceId local_surface_id =
-        child_local_surface_id_allocator()
-            .GetCurrentLocalSurfaceIdAllocation()
-            .local_surface_id();
+        child_local_surface_id_allocator().GetCurrentLocalSurfaceId();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
@@ -709,9 +707,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
 
   {
     viz::LocalSurfaceId local_surface_id =
-        child_local_surface_id_allocator()
-            .GetCurrentLocalSurfaceIdAllocation()
-            .local_surface_id();
+        child_local_surface_id_allocator().GetCurrentLocalSurfaceId();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
@@ -735,9 +731,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
 
   {
     viz::LocalSurfaceId local_surface_id =
-        child_local_surface_id_allocator()
-            .GetCurrentLocalSurfaceIdAllocation()
-            .local_surface_id();
+        child_local_surface_id_allocator().GetCurrentLocalSurfaceId();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber + 1,
@@ -959,14 +953,15 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
   int reports = 0;
   base::TimeDelta frame_duration = base::TimeDelta::FromSecondsD(1.0 / fps);
   int frames_to_run =
-      (fps / 2) *
-      (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
-  WTF::HashMap<uint32_t, viz::mojom::blink::FrameTimingDetailsPtr>
-      timing_details;
+      fps * (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
+  WTF::HashMap<uint32_t, viz::FrameTimingDetails> timing_details;
 
-  MakeSubmitter(
-      base::BindLambdaForTesting([&](int frames, base::TimeDelta duration,
-                                     double roughness) { reports++; }));
+  MakeSubmitter(base::BindLambdaForTesting(
+      [&](const cc::VideoPlaybackRoughnessReporter::Measurement& measurement) {
+        ASSERT_EQ(measurement.frame_size.width(), 8);
+        ASSERT_EQ(measurement.frame_size.height(), 8);
+        reports++;
+      }));
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
   task_environment_.RunUntilIdle();
@@ -975,14 +970,13 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
   auto sink_submit = [&](const viz::LocalSurfaceId&,
                          viz::CompositorFrame* frame) {
     auto token = frame->metadata.frame_token;
-    viz::mojom::blink::FrameTimingDetailsPtr details =
-        viz::mojom::blink::FrameTimingDetails::New();
-    details->presentation_feedback =
-        gfx::mojom::blink::PresentationFeedback::New();
-    details->presentation_feedback->timestamp =
+    viz::FrameTimingDetails details;
+    details.presentation_feedback.timestamp =
         base::TimeTicks() + frame_duration * token;
+    details.presentation_feedback.flags =
+        gfx::PresentationFeedback::kHWCompletion;
     timing_details.clear();
-    timing_details.Set(token, std::move(details));
+    timing_details.Set(token, details);
   };
 
   EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame)
@@ -998,14 +992,13 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
     auto frame = media::VideoFrame::CreateFrame(
         media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
         gfx::Size(8, 8), i * frame_duration);
-    frame->metadata()->SetTimeDelta(
-        media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION, frame_duration);
+    frame->metadata()->wallclock_frame_duration = frame_duration;
     EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
         .WillRepeatedly(Return(frame));
 
     auto args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                                           now_src_.get());
-    submitter_->OnBeginFrame(args, std::move(timing_details));
+    submitter_->OnBeginFrame(args, timing_details);
     task_environment_.RunUntilIdle();
     AckSubmittedFrame();
   }

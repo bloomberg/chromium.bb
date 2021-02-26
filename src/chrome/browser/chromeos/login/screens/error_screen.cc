@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -205,6 +205,48 @@ void ErrorScreen::DoHide() {
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
 }
 
+void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
+                                          NetworkError::ErrorReason reason) {
+  const std::string network_path = network_state_informer_->network_path();
+  const std::string network_name =
+      NetworkStateInformer::GetNetworkName(network_path);
+
+  const bool is_behind_captive_portal =
+      NetworkStateInformer::IsBehindCaptivePortal(state, reason);
+  const bool is_proxy_error = NetworkStateInformer::IsProxyError(state, reason);
+  const bool is_loading_timeout =
+      (reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT);
+
+  if (!is_behind_captive_portal)
+    HideCaptivePortal();
+
+  if (is_proxy_error) {
+    SetErrorState(NetworkError::ERROR_STATE_PROXY, std::string());
+  } else if (is_behind_captive_portal) {
+    if (GetErrorState() != NetworkError::ERROR_STATE_PORTAL) {
+      LoginDisplayHost::default_host()->HandleDisplayCaptivePortal();
+    }
+    SetErrorState(NetworkError::ERROR_STATE_PORTAL, network_name);
+  } else if (is_loading_timeout) {
+    SetErrorState(NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT, network_name);
+  } else {
+    SetErrorState(NetworkError::ERROR_STATE_OFFLINE, std::string());
+  }
+
+  const bool guest_signin_allowed =
+      user_manager::UserManager::Get()->IsGuestSessionAllowed();
+  const bool offline_login_allowed =
+      GetErrorState() != NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
+  AllowGuestSignin(guest_signin_allowed);
+  AllowOfflineLogin(offline_login_allowed);
+
+  // No need to show the screen again if it is already shown.
+  if (is_hidden()) {
+    SetUIState(NetworkError::UI_STATE_SIGNIN);
+    Show(nullptr /*wizard_context*/);
+  }
+}
+
 void ErrorScreen::ShowImpl() {
   if (!on_hide_callback_) {
     SetHideCallback(base::BindOnce(&ErrorScreen::DefaultHideCallback,
@@ -260,19 +302,15 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   RestartChrome(command_line);
 }
 
-void ErrorScreen::OnPasswordChangeDetected() {
+void ErrorScreen::OnPasswordChangeDetected(const UserContext& user_context) {
   LOG(FATAL);
 }
 
-void ErrorScreen::WhiteListCheckFailed(const std::string& email) {
+void ErrorScreen::AllowlistCheckFailed(const std::string& email) {
   LOG(FATAL);
 }
 
 void ErrorScreen::PolicyLoadFailed() {
-  LOG(FATAL);
-}
-
-void ErrorScreen::SetAuthFlowOffline(bool offline) {
   LOG(FATAL);
 }
 
@@ -303,7 +341,7 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
 
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceChromeInternal));

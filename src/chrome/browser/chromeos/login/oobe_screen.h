@@ -17,9 +17,8 @@ namespace chromeos {
 enum OobeScreenPriority {
   SCREEN_DEVICE_DISABLED = 1,
   SCREEN_RESET,
-  SCREEN_WRONG_HWID,
-  SCREEN_ENABLE_DEBUGGING,
-  SCREEN_ADB_SIDELOADING,
+  SCREEN_HARDWARE_ERROR,
+  SCREEN_DEVICE_DEVELOPER_MODIFICATION,
   SCREEN_UPDATE_REQUIRED,
   DEFAULT
 };
@@ -55,19 +54,10 @@ struct StaticOobeScreenId {
 struct OobeScreen {
   constexpr static StaticOobeScreenId SCREEN_ACCOUNT_PICKER{"account-picker"};
 
-  constexpr static StaticOobeScreenId SCREEN_TPM_ERROR{"tpm-error-message"};
-  constexpr static StaticOobeScreenId SCREEN_PASSWORD_CHANGED{
-      "password-changed"};
   constexpr static StaticOobeScreenId
       SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED{"supervised-user-creation"};
   constexpr static StaticOobeScreenId SCREEN_CONFIRM_PASSWORD{
-      "confirm-password"};
-  constexpr static StaticOobeScreenId SCREEN_FATAL_ERROR{"fatal-error"};
-  constexpr static StaticOobeScreenId SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE{
-      "ad-password-change"};
-
-  // Special "first screen" that initiates full OOBE flow.
-  constexpr static StaticOobeScreenId SCREEN_SPECIAL_OOBE{"oobe"};
+      "saml-confirm-password"};
 
   constexpr static StaticOobeScreenId SCREEN_UNKNOWN{"unknown"};
 };

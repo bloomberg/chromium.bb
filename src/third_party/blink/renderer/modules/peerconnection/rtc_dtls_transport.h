@@ -35,7 +35,6 @@ class MODULES_EXPORT RTCDtlsTransport final
       public ExecutionContextClient,
       public DtlsTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCDtlsTransport);
 
  public:
   RTCDtlsTransport(
@@ -60,7 +59,7 @@ class MODULES_EXPORT RTCDtlsTransport final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   // For garbage collection.
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
   // Others
   void ChangeState(webrtc::DtlsTransportInformation info);
   webrtc::DtlsTransportInterface* native_transport();

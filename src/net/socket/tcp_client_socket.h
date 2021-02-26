@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
@@ -44,6 +45,7 @@ class IPEndPoint;
 class NetLog;
 struct NetLogSource;
 class SocketPerformanceWatcher;
+class NetworkQualityEstimator;
 
 // A client socket that uses TCP as the transport layer.
 class NET_EXPORT TCPClientSocket : public TransportClientSocket,
@@ -55,6 +57,7 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   TCPClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetworkQualityEstimator* network_quality_estimator,
       net::NetLog* net_log,
       const net::NetLogSource& source);
 
@@ -67,7 +70,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   static std::unique_ptr<TCPClientSocket> CreateFromBoundSocket(
       std::unique_ptr<TCPSocket> bound_socket,
       const AddressList& addresses,
-      const IPEndPoint& bound_address);
+      const IPEndPoint& bound_address,
+      NetworkQualityEstimator* network_quality_estimator);
 
   ~TCPClientSocket() override;
 
@@ -135,7 +139,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   TCPClientSocket(std::unique_ptr<TCPSocket> socket,
                   const AddressList& addresses,
                   int current_address_index,
-                  std::unique_ptr<IPEndPoint> bind_address);
+                  std::unique_ptr<IPEndPoint> bind_address,
+                  NetworkQualityEstimator* network_quality_estimator);
 
   // A helper method shared by Read() and ReadIfReady(). If |read_if_ready| is
   // set to true, ReadIfReady() will be used instead of Read().
@@ -148,6 +153,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   int DoConnectLoop(int result);
   int DoConnect();
   int DoConnectComplete(int result);
+
+  void OnConnectAttemptTimeout();
 
   // Calls the connect method of |socket_|. Used in tests, to ensure a socket
   // never connects.
@@ -167,6 +174,16 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   // Emits histograms for TCP metrics, at the time the socket is
   // disconnected.
   void EmitTCPMetricsHistogramsOnDisconnect();
+
+  // Emits histograms for the TCP connect attempt that just completed with
+  // |result|.
+  void EmitConnectAttemptHistograms(int result);
+
+  // Gets the timeout to use for the next TCP connect attempt. This is an
+  // experimentally controlled value based on the estimated transport round
+  // trip time. If no timeout is to be enforced, returns
+  // base::TimeDelta::Max().
+  base::TimeDelta GetConnectAttemptTimeout();
 
   std::unique_ptr<TCPSocket> socket_;
 
@@ -206,6 +223,15 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   // Once set, read/write operations return ERR_NETWORK_IO_SUSPENDED, until
   // Connect() or Disconnect() is called.
   bool was_disconnected_on_suspend_;
+
+  // The time when the latest connect attempt was started.
+  base::Optional<base::TimeTicks> start_connect_attempt_;
+
+  // The NetworkQualityEstimator for the context this socket is associated with.
+  // Can be nullptr.
+  NetworkQualityEstimator* network_quality_estimator_;
+
+  base::OneShotTimer connect_attempt_timer_;
 
   base::WeakPtrFactory<TCPClientSocket> weak_ptr_factory_{this};
 

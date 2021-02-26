@@ -75,8 +75,6 @@ class TextTrack;
 // HTMLMediaElement.
 class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
                                                public MediaControls {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlsImpl);
-
  public:
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
 
@@ -158,7 +156,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   const MediaControlRemainingTimeDisplayElement& RemainingTimeDisplay() const;
   MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Track the state of the controls.
   enum ControlsState {

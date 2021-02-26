@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_draw.h"
 
 #include "fxjs/xfa/cjx_draw.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -57,6 +57,8 @@ CXFA_Draw::CXFA_Draw(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Draw,
                 kDrawPropertyData,
                 kDrawAttributeData,
-                pdfium::MakeUnique<CJX_Draw>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Draw>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Draw::~CXFA_Draw() = default;

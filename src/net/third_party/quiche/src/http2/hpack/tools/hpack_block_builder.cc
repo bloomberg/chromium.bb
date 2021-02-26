@@ -4,9 +4,9 @@
 
 #include "net/third_party/quiche/src/http2/hpack/tools/hpack_block_builder.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_encoder.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_bug_tracker.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -55,7 +55,7 @@ void HpackBlockBuilder::AppendEntryTypeAndVarint(HpackEntryType entry_type,
 }
 
 void HpackBlockBuilder::AppendString(bool is_huffman_encoded,
-                                     quiche::QuicheStringPiece str) {
+                                     absl::string_view str) {
   uint8_t high_bits = is_huffman_encoded ? 0x80 : 0;
   uint8_t prefix_length = 7;
   AppendHighBitsAndVarint(high_bits, prefix_length, str.size());

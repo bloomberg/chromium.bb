@@ -6,18 +6,22 @@
 #define MOJO_PUBLIC_TOOLS_FUZZERS_MOJOLPM_H_
 
 #include <map>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
+#include "base/check.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojolpm.pb.h"
+#include "mojo/public/tools/fuzzers/mojolpm.pb.h"
 
 #define MOJOLPM_DBG 0
 #if MOJOLPM_DBG
@@ -30,6 +34,7 @@ namespace mojolpm {
 
 typedef void* TypeId;
 
+// Returns a unique TypeId for every different typename T.
 template <typename T>
 TypeId type_id() {
   static std::remove_reference<T>* ptr = nullptr;
@@ -44,14 +49,114 @@ std::string type_name() {
 }
 #endif
 
-class TestcaseBase {
- public:
-  virtual ~TestcaseBase() = default;
-  virtual bool IsFinished() = 0;
-  virtual void NextAction() = 0;
-};
-
+// Common state shared between generated MojoLPM code and fuzzer-specific
+// testcases.
+//
+// The main state is (various) object instances used as parameters and response
+// parameters to Mojo method calls, along with the instances of Mojo Remote and
+// Receiver objects.
+//
+// At code-generation time we don't have access to all of the types used, we
+// can't know ahead of time all of the types that might be stored. This is
+// further complicated by the move-only and sequence-bound semantics of some
+// Mojo objects.
+//
+// The interface
+//   AddInstance<T>(), GetInstance<T>(), RemoveInstance<T>(), etc.
+// implements a per-type mapping from integer id to instance of type T. Adding a
+// new instance can be performed with or without providing an id; in the case
+// that a fuzzer attempts to store two instances of the same type with the same
+// id at once, the second instance will be immediately destroyed.
+//
+// We want most calls to GetInstance to return a valid object, even if there
+// wasn't an object previously stored with the given id (lookup ids are
+// randomly generated during fuzzing), so GetInstance does a very fuzzy lookup.
+//
+// The details of the algorithms used to generate a new id, and match the id
+// when there is no exact match should not be depended on. If a fuzzer needs to
+// know the id that will be used to store an object, but does not have a
+// testcase-supplied id, then the function NextId<T>() should be used to choose
+// an id.
+//
+// All methods should only be called from the fuzzer sequence.
 class Context {
+ public:
+  Context();
+  Context(const Context&) = delete;
+  ~Context();
+
+  // Lookup the previously stored instance of type T using a fuzzy-match on the
+  // provided id. Returns nullptr if there's no matching instance.
+  template <typename T>
+  T* GetInstance(uint32_t id);
+
+  // Lookup the previously stored instance of type T using a fuzzy-match on
+  // the provided id, and remove that instance from the object storage, passing
+  // ownership of that instance to the caller. Returns nullptr if there's no
+  // matching instance.
+  template <typename T>
+  std::unique_ptr<T> GetAndRemoveInstance(uint32_t id);
+
+  // Lookup the previously stored instance of type T using a fuzzy-match on
+  // the provided id, and remove that instance from the object storage.
+  template <typename T>
+  void RemoveInstance(uint32_t id);
+
+  // Adds an instance of type T to the object storage using an automatically
+  // chosen id, which it returns. Equivalent to calling
+  //   AddInstance<T>(NextId<T>(), instance);
+  template <typename T>
+  uint32_t AddInstance(T instance);
+
+  // Adds an instance of type T to the object storage using the provided id. If
+  // the provided id already exists in the object storage, the existing instance
+  // is not modified, and the implementation will assign a new id. Returns the
+  // id that can be used to lookup the instance.
+  template <typename T>
+  uint32_t AddInstance(uint32_t id, T instance);
+
+  // Returns an instance id for the given type T that is guaranteed to be
+  // available for storing an instance of type T at the time of calling.
+  //
+  // NB: This does NOT reserve the id; so the following snippet is not correct.
+  //
+  // uint32_t id = NextId<T>();
+  // AddInstance<T>(some_t);
+  // CHECK_EQ(id, AddInstance<T>(id, some_t));
+  template <typename T>
+  uint32_t NextId();
+
+  // Starts a deserialization section. This is needed because associated binding
+  // types will only become valid once they are sent over a message pipe, and
+  // this means that we need to be able to rollback any instances added if later
+  // deserialization fails.
+  void StartDeserialization();
+
+  // Enum used to make the expected behaviour of EndDeserialization calls clear
+  // from the callsites.
+  enum class Rollback {
+    kNoRollback,
+    kRollback,
+  };
+
+  // Ends a deserialization section. If `kRollback`, then any associated binding
+  // instances added since the last call to StartDeserialization will be removed
+  // from the instance storage.
+  void EndDeserialization(Rollback rollback);
+
+  void StartTestcase();
+  void EndTestcase();
+
+ private:
+  // Lookup the previously stored instance of type T using a fuzzy-match on
+  // the provided id, and remove that instance from the object storage.
+  void RemoveInstance(TypeId type_id, uint32_t id);
+
+  // mojolpm::Context::Storage implements generic storage for all possible
+  // object types that might be created during fuzzing. This allows the fuzzer
+  // to reference objects by id, even when the possible types of those objects
+  // are only known at fuzzer compile time.
+
   struct Storage {
     Storage();
 
@@ -91,73 +196,91 @@ class Context {
     std::unique_ptr<StorageWrapperBase> wrapper_;
   };
 
-  TestcaseBase* testcase_;
-  std::map<TypeId, std::map<uint32_t, Storage>> instances_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::Message message_;
-
- public:
-  explicit Context();
-  Context(const Context&) = delete;
-  ~Context();
+  // mojolpm::Context::StorageTraits implements type-specific details in the
+  // handling of stored instances. In particular, we need to guarantee that
+  // certain types are destroyed before other types - all fuzzer-owned
+  // mojo::Remote and mojo::Receiver objects need to be destroyed before any
+  // callbacks can be safely destroyed.
 
   template <typename T>
-  T* GetInstance(uint32_t id);
+  class StorageTraits {
+   public:
+    explicit StorageTraits(Context* context) {}
+    void OnInstanceAdded(uint32_t id) {}
+  };
 
   template <typename T>
-  std::unique_ptr<T> GetAndRemoveInstance(uint32_t id);
+  class StorageTraits<::mojo::Remote<T>> {
+   public:
+    explicit StorageTraits(Context* context) : context_(context) {}
+    void OnInstanceAdded(uint32_t id);
+
+   private:
+    Context* context_;
+  };
 
   template <typename T>
-  void RemoveInstance(uint32_t id);
+  class StorageTraits<::mojo::AssociatedRemote<T>> {
+   public:
+    explicit StorageTraits(Context* context) : context_(context) {}
+    void OnInstanceAdded(uint32_t id);
+
+   private:
+    Context* context_;
+  };
 
   template <typename T>
-  uint32_t AddInstance(T&& instance);
+  class StorageTraits<std::unique_ptr<::mojo::Receiver<T>>> {
+   public:
+    explicit StorageTraits(Context* context) : context_(context) {}
+    void OnInstanceAdded(uint32_t id);
+
+   private:
+    Context* context_;
+  };
 
   template <typename T>
-  uint32_t AddInstance(uint32_t id, T&& instance);
+  class StorageTraits<std::unique_ptr<::mojo::AssociatedReceiver<T>>> {
+   public:
+    explicit StorageTraits(Context* context) : context_(context) {}
+    void OnInstanceAdded(uint32_t id);
 
-  template <typename T>
-  uint32_t NextId();
+   private:
+    Context* context_;
+  };
 
-  void StartTestcase(TestcaseBase* testcase,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner);
-  void EndTestcase();
-  bool IsFinished();
-  void NextAction();
-  void PostNextAction();
+  std::map<TypeId, std::map<uint32_t, Storage>> instances_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  std::set<TypeId> interface_type_ids_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::vector<std::pair<TypeId, uint32_t>> rollback_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
-    return task_runner_;
-  }
-
-  mojo::Message& message() { return message_; }
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 Context* GetContext();
-void SetContext(Context* context);
 
 template <typename T>
 Context::Storage::Storage(T&& value) {
-  wrapper_ = std::make_unique<StorageWrapper<T>>(std::move(value));
+  wrapper_ = std::make_unique<StorageWrapper<T>>(std::forward<T>(value));
 }
 
 template <typename T>
 T& Context::Storage::Storage::get() {
-  // DCHECK(wrapper_->type() == type_id<T>());
+  DCHECK(wrapper_->type() == type_id<T>());
   DCHECK(static_cast<StorageWrapper<T>*>(wrapper_.get()));
   return static_cast<StorageWrapper<T>*>(wrapper_.get())->value();
 }
 
 template <typename T>
 const T& Context::Storage::Storage::get() const {
-  // DCHECK(wrapper_->type() == type_id<T>());
+  DCHECK(wrapper_->type() == type_id<T>());
   DCHECK(static_cast<StorageWrapper<T>*>(wrapper_.get()));
   return static_cast<StorageWrapper<T>*>(wrapper_.get())->value();
 }
 
 template <typename T>
 std::unique_ptr<T> Context::Storage::Storage::release() {
-  // DCHECK(wrapper_->type() == type_id<T>());
+  DCHECK(wrapper_->type() == type_id<T>());
   DCHECK(static_cast<StorageWrapper<T>*>(wrapper_.get()));
   return std::make_unique<T>(
       std::move(static_cast<StorageWrapper<T>*>(wrapper_.get())->value()));
@@ -183,8 +306,65 @@ const T& Context::Storage::StorageWrapper<T>::value() const {
 }
 
 template <typename T>
+void Context::StorageTraits<::mojo::Remote<T>>::OnInstanceAdded(uint32_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(context_->sequence_checker_);
+  context_->interface_type_ids_.insert(type_id<::mojo::Remote<T>>());
+  auto instance = context_->GetInstance<::mojo::Remote<T>>(id);
+  context_->rollback_.emplace_back(type_id<::mojo::Remote<T>>(), id);
+  CHECK(instance);
+  // Unretained is safe here since context_ owns instance.
+  instance->set_disconnect_handler(
+      base::BindOnce(&Context::RemoveInstance<::mojo::Remote<T>>,
+                     base::Unretained(context_), id));
+}
+
+template <typename T>
+void Context::StorageTraits<::mojo::AssociatedRemote<T>>::OnInstanceAdded(
+    uint32_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(context_->sequence_checker_);
+  context_->interface_type_ids_.insert(type_id<::mojo::AssociatedRemote<T>>());
+  auto instance = context_->GetInstance<::mojo::AssociatedRemote<T>>(id);
+  context_->rollback_.emplace_back(type_id<::mojo::AssociatedRemote<T>>(), id);
+  CHECK(instance);
+  // Unretained is safe here since context_ owns instance.
+  instance->set_disconnect_handler(
+      base::BindOnce(&Context::RemoveInstance<::mojo::AssociatedRemote<T>>,
+                     base::Unretained(context_), id));
+}
+
+template <typename T>
+void Context::StorageTraits<
+    std::unique_ptr<::mojo::Receiver<T>>>::OnInstanceAdded(uint32_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(context_->sequence_checker_);
+  context_->interface_type_ids_.insert(
+      type_id<std::unique_ptr<::mojo::Receiver<T>>>());
+  auto instance =
+      context_->GetInstance<std::unique_ptr<::mojo::Receiver<T>>>(id);
+  CHECK(instance);
+  // Unretained is safe here since context_ owns instance.
+  (*instance)->set_disconnect_handler(base::BindOnce(
+      &Context::RemoveInstance<std::unique_ptr<::mojo::Receiver<T>>>,
+      base::Unretained(context_), id));
+}
+
+template <typename T>
+void Context::StorageTraits<std::unique_ptr<::mojo::AssociatedReceiver<T>>>::
+    OnInstanceAdded(uint32_t id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(context_->sequence_checker_);
+  context_->interface_type_ids_.insert(
+      type_id<std::unique_ptr<::mojo::AssociatedReceiver<T>>>());
+  auto instance =
+      context_->GetInstance<std::unique_ptr<::mojo::AssociatedReceiver<T>>>(id);
+  CHECK(instance);
+  // Unretained is safe here since context_ owns instance.
+  (*instance)->set_disconnect_handler(base::BindOnce(
+      &Context::RemoveInstance<std::unique_ptr<::mojo::AssociatedReceiver<T>>>,
+      base::Unretained(context_), id));
+}
+
+template <typename T>
 T* Context::GetInstance(uint32_t id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mojolpmdbg("getInstance(%s, %i) = ", type_name<T>().c_str(), id);
   auto instances_iter = instances_.find(type_id<T>());
   if (instances_iter == instances_.end()) {
@@ -212,7 +392,7 @@ T* Context::GetInstance(uint32_t id) {
 
 template <typename T>
 std::unique_ptr<T> Context::GetAndRemoveInstance(uint32_t id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mojolpmdbg("getAndRemoveInstance(%s, %i) = ", type_name<T>().c_str(), id);
   auto instances_iter = instances_.find(type_id<T>());
   if (instances_iter == instances_.end()) {
@@ -242,59 +422,26 @@ std::unique_ptr<T> Context::GetAndRemoveInstance(uint32_t id) {
 
 template <typename T>
 void Context::RemoveInstance(uint32_t id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojolpmdbg("RemoveInstance(%s, %u) = ", type_name<T>().c_str(), id);
-  auto instances_iter = instances_.find(type_id<T>());
-  if (instances_iter != instances_.end()) {
-    auto& instance_map = instances_iter->second;
-
-    // normalize id to [0, max_id]
-    if (instance_map.size() > 0 && instance_map.rbegin()->first < id) {
-      id = id % (instance_map.rbegin()->first + 1);
-    }
-
-    // choose the first valid entry after id
-    auto instance = instance_map.lower_bound(id);
-    if (instance == instance_map.end()) {
-      mojolpmdbg("failed!\n");
-      return;
-    }
-
-    instance_map.erase(instance);
-  } else {
-    mojolpmdbg("failed!\n");
-  }
+  RemoveInstance(type_id<T>(), id);
 }
 
 template <typename T>
-uint32_t Context::AddInstance(T&& instance) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  auto instances_iter = instances_.find(type_id<T>());
-  uint32_t id = 1;
-  if (instances_iter == instances_.end()) {
-    instances_[type_id<T>()].emplace(id, std::move(instance));
-  } else {
-    auto& instance_map = instances_iter->second;
-    auto instance_map_iter = instance_map.begin();
-    while (instance_map_iter != instance_map.end()) {
-      id = instance_map_iter->first + 1;
-      instance_map_iter = instance_map.find(id);
-    }
-    instance_map.emplace(id, std::move(instance));
-  }
-  mojolpmdbg("addInstance(%s, %u)\n", type_name<T>().c_str(), id);
-  return id;
+uint32_t Context::AddInstance(T instance) {
+  return AddInstance(1, std::move(instance));
 }
 
 template <typename T>
-uint32_t Context::AddInstance(uint32_t id, T&& instance) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+uint32_t Context::AddInstance(uint32_t id, T instance) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto instances_iter = instances_.find(type_id<T>());
   if (instances_iter == instances_.end()) {
     instances_[type_id<T>()].emplace(id, std::move(instance));
   } else {
     auto& instance_map = instances_iter->second;
     auto instance_map_iter = instance_map.find(id);
+    // if this id is a collision with an existing entry, loop until we find a
+    // free id.
     while (instance_map_iter != instance_map.end()) {
       id = instance_map_iter->first + 1;
       instance_map_iter = instance_map.find(id);
@@ -302,33 +449,27 @@ uint32_t Context::AddInstance(uint32_t id, T&& instance) {
     instance_map.emplace(id, std::move(instance));
   }
   mojolpmdbg("addInstance(%s, %u)\n", type_name<T>().c_str(), id);
+  StorageTraits<T> traits(this);
+  traits.OnInstanceAdded(id);
   return id;
 }
 
 template <typename T>
 uint32_t Context::NextId() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   uint32_t id = 1;
   auto instances_iter = instances_.find(type_id<T>());
   if (instances_iter != instances_.end()) {
     auto& instance_map = instances_iter->second;
-    if (instance_map.size() > 0) {
-      id = instance_map.rbegin()->first + 1;
+    auto instance_map_iter = instance_map.find(id);
+    // if this id is a collision with an existing entry, loop until we find a
+    // free id.
+    while (instance_map_iter != instance_map.end()) {
+      id = instance_map_iter->first + 1;
+      instance_map_iter = instance_map.find(id);
     }
   }
   return id;
-}
-
-template <typename T>
-std::unique_ptr<mojo::InterfacePtr<T>> NewInstance() {
-  // mojolpmdbg("default NewInstance<>\n");
-  return nullptr;
-}
-
-template <typename T>
-std::unique_ptr<mojo::AssociatedInterfacePtr<T>> NewAssociatedInstance() {
-  // mojolpmdbg("default NewInstanceA<>\n");
-  return nullptr;
 }
 
 template <typename T>
@@ -346,47 +487,6 @@ std::unique_ptr<mojo::AssociatedRemote<T>> NewAssociatedRemote() {
 template <typename T>
 uint32_t NextId() {
   return GetContext()->NextId<T>();
-}
-
-template <typename T>
-void ResetRemote(uint32_t remote_id) {
-  auto remote_ref = GetContext()->GetInstance<mojo::Remote<T>>(remote_id);
-  if (remote_ref) {
-    remote_ref->reset();
-  }
-}
-
-template <typename T>
-uint32_t AddRemote(uint32_t remote_id, mojo::Remote<T>&& remote) {
-  remote_id =
-      GetContext()->AddInstance<mojo::Remote<T>>(remote_id, std::move(remote));
-  auto remote_ref = GetContext()->GetInstance<mojo::Remote<T>>(remote_id);
-  CHECK(remote_ref);
-  remote_ref->set_disconnect_handler(
-      base::BindOnce(&ResetRemote<T>, remote_id));
-  return remote_id;
-}
-
-template <typename T>
-void ResetAssociatedRemote(uint32_t remote_id) {
-  auto remote_ref =
-      GetContext()->GetInstance<mojo::AssociatedRemote<T>>(remote_id);
-  if (remote_ref) {
-    remote_ref->reset();
-  }
-}
-
-template <typename T>
-uint32_t AddAssociatedRemote(uint32_t remote_id,
-                             mojo::AssociatedRemote<T>&& remote) {
-  remote_id = GetContext()->AddInstance<mojo::AssociatedRemote<T>>(
-      remote_id, std::move(remote));
-  auto remote_ref =
-      GetContext()->GetInstance<mojo::AssociatedRemote<T>>(remote_id);
-  CHECK(remote_ref);
-  remote_ref->set_disconnect_handler(
-      base::BindOnce(&ResetAssociatedRemote<T>, remote_id));
-  return remote_id;
 }
 
 bool FromProto(const bool& input, bool& output);

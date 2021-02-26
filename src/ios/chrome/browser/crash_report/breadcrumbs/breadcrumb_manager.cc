@@ -7,8 +7,19 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
+#include "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_constants.h"
 
 namespace {
+
+// The maximum number of breadcrumbs which are expected to be useful to store.
+// NOTE: Events are "bucketed" into groups by short time intervals to make it
+// more efficient to manage the continuous dropping of old events. Since events
+// are only dropped at the bucket level, it is expected that the total number of
+// stored breadcrumbs will exceed this value. This value should be close to the
+// upper limit of useful events. (Most events + timestamp breadcrumbs are
+// currently longer than 10 characters.)
+constexpr unsigned long kMaxUsefulBreadcrumbEvents =
+    kMaxBreadcrumbsDataLength / 10;
 
 // The minimum number of event buckets to keep, even if they are expired.
 const int kMinEventsBuckets = 2;
@@ -28,8 +39,20 @@ base::Time EventBucket(const base::Time& time) {
 
 }  // namespace
 
-BreadcrumbManager::BreadcrumbManager() = default;
+BreadcrumbManager::BreadcrumbManager() : start_time_(base::Time::Now()) {}
+
 BreadcrumbManager::~BreadcrumbManager() = default;
+
+size_t BreadcrumbManager::GetEventCount() {
+  DropOldEvents();
+
+  size_t count = 0;
+  for (auto it = event_buckets_.rbegin(); it != event_buckets_.rend(); ++it) {
+    std::list<std::string> bucket_events = it->second;
+    count += bucket_events.size();
+  }
+  return count;
+}
 
 const std::list<std::string> BreadcrumbManager::GetEvents(
     size_t event_count_limit) {
@@ -69,24 +92,47 @@ void BreadcrumbManager::AddEvent(const std::string& event) {
       base::StringPrintf("%s %s", timestamp.c_str(), event.c_str());
   event_buckets_.back().second.push_back(event_log);
 
-  DropOldEvents();
-
   for (auto& observer : observers_) {
     observer.EventAdded(this, event_log);
   }
+
+  DropOldEvents();
 }
 
 void BreadcrumbManager::DropOldEvents() {
   static const base::TimeDelta kMessageExpirationTime =
       base::TimeDelta::FromMinutes(20);
 
+  bool old_buckets_dropped = false;
   base::Time now = base::Time::Now();
+  // Drop buckets which are more than kMessageExpirationTime old.
   while (event_buckets_.size() > kMinEventsBuckets) {
     base::Time oldest_bucket_time = event_buckets_.front().first;
     if (now - oldest_bucket_time < kMessageExpirationTime) {
       break;
     }
     event_buckets_.pop_front();
+    old_buckets_dropped = true;
+  }
+
+  // Drop buckets if the data is unlikely to ever be needed.
+  unsigned long newer_event_count = 0;
+  auto event_bucket_it = event_buckets_.rbegin();
+  while (event_bucket_it != event_buckets_.rend()) {
+    std::list<std::string> bucket_events = event_bucket_it->second;
+    if (newer_event_count > kMaxUsefulBreadcrumbEvents) {
+      event_buckets_.erase(event_buckets_.begin(), event_bucket_it.base());
+      old_buckets_dropped = true;
+      break;
+    }
+    newer_event_count += bucket_events.size();
+    ++event_bucket_it;
+  }
+
+  if (old_buckets_dropped) {
+    for (auto& observer : observers_) {
+      observer.OldEventsRemoved(this);
+    }
   }
 }
 

@@ -30,6 +30,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
@@ -95,26 +96,11 @@ Polymer({
     },
 
     /** @private */
-    enableNativeFileSystemWriteContentSetting_: {
+    enableFontAccessContentSetting_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean(
-            'enableNativeFileSystemWriteContentSetting');
+        return loadTimeData.getBoolean('enableFontAccessContentSetting');
       }
-    },
-
-    /** @private */
-    enableInsecureContentContentSetting_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
-      }
-    },
-
-    /** @private */
-    storagePressureFlagEnabled_: {
-      type: Boolean,
-      value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
     },
 
     /** @private */
@@ -123,12 +109,6 @@ Polymer({
       value: () =>
           loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
     },
-  },
-
-  /** @private */
-  enableWebXrContentSetting_: {
-    type: Boolean,
-    value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
   },
 
   /** @private {string} */
@@ -168,7 +148,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route) {
-    if (route != routes.SITE_SETTINGS_SITE_DETAILS) {
+    if (route !== routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
     }
     const site = Router.getInstance().getQueryParameters().get('site');
@@ -198,8 +178,8 @@ Polymer({
    * @private
    */
   onPermissionChanged_(category, origin, embeddingOrigin) {
-    if (this.origin_ === undefined || this.origin_ == '' ||
-        origin === undefined || origin == '') {
+    if (this.origin_ === undefined || this.origin_ === '' ||
+        origin === undefined || origin === '') {
       return;
     }
     if (!this.getCategoryList().includes(category)) {
@@ -296,11 +276,7 @@ Polymer({
    */
   onConfirmClearStorage_(e) {
     e.preventDefault();
-    if (this.storagePressureFlagEnabled_) {
-      this.$.confirmClearStorageNew.showModal();
-    } else {
-      this.$.confirmClearStorage.showModal();
-    }
+    this.$.confirmClearStorageNew.showModal();
   },
 
   /**
@@ -310,9 +286,6 @@ Polymer({
   onResetSettings_(e) {
     this.browserProxy.setOriginPermissions(
         this.origin_, this.getCategoryList(), ContentSetting.DEFAULT);
-    if (this.getCategoryList().includes(ContentSettingsTypes.PLUGINS)) {
-      this.browserProxy.clearFlashPref(this.origin_);
-    }
 
     this.onCloseDialog_(e);
   },
@@ -322,6 +295,8 @@ Polymer({
    * @private
    */
   onClearStorage_(e) {
+    MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
+        PrivacyElementInteractions.SITE_DETAILS_CLEAR_DATA);
     if (this.hasUsage_(this.storedData_, this.numCookies_)) {
       this.websiteUsageProxy_.clearUsage(this.toUrl(this.origin_).href);
       this.storedData_ = '';
@@ -338,7 +313,7 @@ Polymer({
    * @private
    */
   hasUsage_(storage, cookies) {
-    return storage != '' || cookies != '';
+    return storage !== '' || cookies !== '';
   },
 
   /**
@@ -348,7 +323,7 @@ Polymer({
    * @private
    */
   hasDataAndCookies_(storage, cookies) {
-    return storage != '' && cookies != '';
+    return storage !== '' && cookies !== '';
   },
 
   /** @private */

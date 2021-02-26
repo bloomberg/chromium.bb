@@ -47,16 +47,16 @@ void LogRemoteDeviceCountMetrics(
   // v1 devices. Race conditions might occur when a user adds a new device
   // because v1 and v2 devices are retrieved in different RPC calls; however,
   // this is only meant to be a rough estimate.
-  base::UmaHistogramPercentage(
+  base::UmaHistogramPercentageObsoleteDoNotUse(
       "CryptAuth.DeviceSyncV2.RemoteDeviceProvider.RatioOfV2ToV1Devices",
       (v2_devices.size() * 100) / v1_devices.size());
 
-  base::UmaHistogramPercentage(
+  base::UmaHistogramPercentageObsoleteDoNotUse(
       "CryptAuth.DeviceSyncV2.RemoteDeviceProvider."
       "PercentageOfV2DevicesWithDecryptedPublicKey",
       (num_v2_devices_with_decrypted_public_key * 100) / v2_devices.size());
 
-  base::UmaHistogramPercentage(
+  base::UmaHistogramPercentageObsoleteDoNotUse(
       "CryptAuth.DeviceSyncV2.RemoteDeviceProvider."
       "PercentageOfV1DevicesReplacedByV2Devices",
       (num_v1_devices_replaced_by_v2_devices * 100) / v1_devices.size());
@@ -147,8 +147,8 @@ void RemoteDeviceProviderImpl::LoadV1RemoteDevices() {
       v1_device_manager_->GetSyncedDevices(), user_email_, user_private_key_,
       multidevice::SecureMessageDelegateImpl::Factory::Create());
   remote_device_v1_loader_->Load(
-      base::Bind(&RemoteDeviceProviderImpl::OnV1RemoteDevicesLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteDeviceProviderImpl::OnV1RemoteDevicesLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteDeviceProviderImpl::LoadV2RemoteDevices() {

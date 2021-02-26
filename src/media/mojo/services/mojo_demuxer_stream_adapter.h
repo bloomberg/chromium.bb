@@ -35,12 +35,11 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   // NOTE: Illegal to call any methods until |stream_ready_cb| is invoked.
   MojoDemuxerStreamAdapter(
       mojo::PendingRemote<mojom::DemuxerStream> demuxer_stream,
-      const base::Closure& stream_ready_cb);
+      base::OnceClosure stream_ready_cb);
   ~MojoDemuxerStreamAdapter() override;
 
   // DemuxerStream implementation.
   void Read(ReadCB read_cb) override;
-  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -67,7 +66,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
   // See constructor for descriptions.
   mojo::Remote<mojom::DemuxerStream> demuxer_stream_;
-  base::Closure stream_ready_cb_;
+  base::OnceClosure stream_ready_cb_;
 
   // The last ReadCB received through a call to Read().
   // Used to store the results of OnBufferReady() in the event it is called

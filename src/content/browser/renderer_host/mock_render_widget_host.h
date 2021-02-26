@@ -9,12 +9,11 @@
 
 #include "content/browser/renderer_host/input/mock_input_router.h"
 #include "content/common/input/event_with_latency_info.h"
-#include "content/common/input/input_handler.mojom.h"
-#include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace content {
 
@@ -59,13 +58,18 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   InputRouter* input_router() { return input_router_.get(); }
 
-  uint32_t processed_frame_messages_count();
+  static MockRenderWidgetHost* Create(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t routing_id);
 
-  static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
-                                      RenderProcessHost* process,
-                                      int32_t routing_id);
+  static MockRenderWidgetHost* Create(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t routing_id,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget);
 
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
 
   MockWidgetInputHandler mock_widget_input_handler_;
 
@@ -76,13 +80,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   blink::WebInputEvent::Type acked_touch_event_type_;
 
  private:
-  MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                       RenderProcessHost* process,
-                       int routing_id,
-                       std::unique_ptr<MockWidgetImpl> widget_impl,
-                       mojo::PendingRemote<mojom::Widget> widget);
-
-  std::unique_ptr<MockWidgetImpl> widget_impl_;
+  MockRenderWidgetHost(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t routing_id,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget);
 
   std::unique_ptr<FlingScheduler> fling_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);

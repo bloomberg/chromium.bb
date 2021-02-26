@@ -52,8 +52,7 @@ base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
 }
 
 views::Widget::InitParams CreateAutoclickOverlayWidgetParams(
-    aura::Window* target) {
-  aura::Window* root_window = target->GetRootWindow();
+    aura::Window* root_window) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = false;
@@ -128,7 +127,7 @@ void AutoclickController::SetEnabled(bool enabled,
     menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
     if (event_type_ == AutoclickEventType::kScroll) {
       InitializeScrollLocation();
-      UpdateScrollPosition(scroll_location_);
+      UpdateScrollPosition();
     }
     enabled_ = enabled;
   } else {
@@ -138,8 +137,7 @@ void AutoclickController::SetEnabled(bool enabled,
         return;
       // Show a confirmation dialog before disabling autoclick.
       auto* dialog = new AccessibilityFeatureDisableDialog(
-          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE,
-          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_BODY,
+          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TEXT,
           // Callback for if the user accepts the dialog
           base::BindOnce([]() {
             // If they accept, actually disable autoclick.
@@ -150,7 +148,8 @@ void AutoclickController::SetEnabled(bool enabled,
           // feature as enabled again in prefs.
           base::BindOnce([]() {
             // If they cancel, ensure autoclick is enabled.
-            Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+            Shell::Get()->accessibility_controller()->autoclick().SetEnabled(
+                true);
           }));
       disable_dialog_ = dialog->GetWeakPtr();
     } else {
@@ -177,11 +176,6 @@ bool AutoclickController::IsEnabled() const {
 void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   delay_ = delay;
   InitClickTimers();
-  if (enabled_) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Accessibility.CrosAutoclickDelay", delay,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(3000), 50);
-  }
 }
 
 void AutoclickController::SetAutoclickEventType(AutoclickEventType type) {
@@ -190,7 +184,7 @@ void AutoclickController::SetAutoclickEventType(AutoclickEventType type) {
 
   if (type == AutoclickEventType::kScroll) {
     InitializeScrollLocation();
-    UpdateScrollPosition(scroll_location_);
+    UpdateScrollPosition();
   } else {
     over_scroll_button_ = false;
     HideScrollPosition();
@@ -275,7 +269,7 @@ void AutoclickController::OnExitedScrollButton() {
                                 -kDefaultAutoclickMovementThreshold);
 }
 
-void AutoclickController::OnAutoclickScrollableBoundsFound(
+void AutoclickController::HandleAutoclickScrollableBoundsFound(
     gfx::Rect& bounds_in_screen) {
   // The very first time scrollable bounds are found, the default first
   // position of the scrollbar to be next to the menu bubble.
@@ -290,32 +284,12 @@ void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
     menu_bubble_controller_->SetPosition(menu_position_);
 }
 
-void AutoclickController::CreateAutoclickRingWidget(
-    const gfx::Point& point_in_screen) {
-  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
-  SetTapDownTarget(target);
-  ring_widget_.reset(new views::Widget);
-  ring_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
-  ring_widget_->SetOpacity(1.f);
-}
-
-void AutoclickController::CreateAutoclickScrollPositionWidget(
-    const gfx::Point& point_in_screen) {
-  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
-  SetTapDownTarget(target);
-  scroll_position_widget_.reset(new views::Widget);
-  scroll_position_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
-}
-
 void AutoclickController::UpdateAutoclickWidgetPosition(
-    views::Widget* widget,
-    const gfx::Point& point_in_screen) {
-  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
-  SetTapDownTarget(target);
-  aura::Window* root_window = target->GetRootWindow();
-  if (widget->GetNativeView()->GetRootWindow() != root_window) {
+    gfx::NativeView native_view,
+    aura::Window* root_window) {
+  if (native_view->GetRootWindow() != root_window) {
     views::Widget::ReparentNativeView(
-        widget->GetNativeView(),
+        native_view,
         Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
   }
 }
@@ -356,7 +330,7 @@ void AutoclickController::DoAutoclickAction() {
     } else {
       scroll_location_ = gesture_anchor_location_;
       is_initial_scroll_location_ = false;
-      UpdateScrollPosition(scroll_location_);
+      UpdateScrollPosition();
       Shell::Get()
           ->accessibility_controller()
           ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
@@ -500,11 +474,17 @@ void AutoclickController::InitClickTimers() {
                           base::Unretained(this)));
 }
 
-void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
-  if (!ring_widget_) {
-    CreateAutoclickRingWidget(point_in_screen);
+void AutoclickController::UpdateRingWidget() {
+  aura::Window* const target =
+      window_util::GetRootWindowAt(last_mouse_location_);
+  SetTapDownTarget(target);
+  aura::Window* const root_window = target->GetRootWindow();
+  if (ring_widget_) {
+    UpdateAutoclickWidgetPosition(ring_widget_->GetNativeView(), root_window);
   } else {
-    UpdateAutoclickWidgetPosition(ring_widget_.get(), point_in_screen);
+    ring_widget_ = std::make_unique<views::Widget>(
+        CreateAutoclickOverlayWidgetParams(root_window));
+    ring_widget_->SetOpacity(1.0f);
   }
 }
 
@@ -522,29 +502,28 @@ void AutoclickController::InitializeScrollLocation() {
       ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
 }
 
-void AutoclickController::UpdateScrollPosition(
-    const gfx::Point& point_in_screen) {
+void AutoclickController::UpdateScrollPosition() {
   if (!enabled_)
     return;
-  if (!scroll_position_widget_) {
-    CreateAutoclickScrollPositionWidget(point_in_screen);
+
+  aura::Window* const target = window_util::GetRootWindowAt(scroll_location_);
+  SetTapDownTarget(target);
+  aura::Window* const root_window = target->GetRootWindow();
+  if (autoclick_scroll_position_handler_) {
+    UpdateAutoclickWidgetPosition(
+        autoclick_scroll_position_handler_->GetNativeView(), root_window);
+  } else {
     autoclick_scroll_position_handler_ =
         std::make_unique<AutoclickScrollPositionHandler>(
-            scroll_location_, scroll_position_widget_.get());
-  } else {
-    UpdateAutoclickWidgetPosition(scroll_position_widget_.get(),
-                                  point_in_screen);
-    autoclick_scroll_position_handler_->SetCenter(
-        scroll_location_, scroll_position_widget_.get());
+            std::make_unique<views::Widget>(
+                CreateAutoclickOverlayWidgetParams(root_window)));
   }
+  autoclick_scroll_position_handler_->SetScrollPointCenterInScreen(
+      scroll_location_);
 }
 
 void AutoclickController::HideScrollPosition() {
-  // Hide the scroll position UI if it exists.
-  if (autoclick_scroll_position_handler_)
-    autoclick_scroll_position_handler_.reset();
-  if (scroll_position_widget_)
-    scroll_position_widget_.reset();
+  autoclick_scroll_position_handler_.reset();
 
   // TODO(katie): Clear any Autoclick scroll focus rings here.
 }
@@ -611,7 +590,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
         drag_event_rewriter_->IsEnabled()))) {
     mouse_event_flags_ = event->flags();
     // Update the point even if the animation is not currently being shown.
-    UpdateRingWidget(last_mouse_location_);
+    UpdateRingWidget();
 
     // The distance between the mouse location and the anchor location
     // must exceed a certain threshold to initiate a new autoclick countdown.

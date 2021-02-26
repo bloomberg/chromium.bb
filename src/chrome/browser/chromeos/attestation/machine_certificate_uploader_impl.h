@@ -9,7 +9,9 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/attestation/machine_certificate_uploader.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 
 namespace policy {
@@ -17,8 +19,6 @@ class CloudPolicyClient;
 }
 
 namespace chromeos {
-
-class CryptohomeClient;
 
 namespace attestation {
 
@@ -30,10 +30,9 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   explicit MachineCertificateUploaderImpl(
       policy::CloudPolicyClient* policy_client);
 
-  // A constructor which allows custom CryptohomeClient and AttestationFlow
-  // implementations.  Useful for testing.
+  // A constructor which allows custom AttestationFlow implementations. Useful
+  // for testing.
   MachineCertificateUploaderImpl(policy::CloudPolicyClient* policy_client,
-                                 CryptohomeClient* cryptohome_client,
                                  AttestationFlow* attestation_flow);
 
   ~MachineCertificateUploaderImpl() override;
@@ -43,14 +42,20 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   // Sets the retry delay in seconds; useful in testing.
   void set_retry_delay(int retry_delay) { retry_delay_ = retry_delay; }
 
-  using UploadCallback = base::OnceCallback<void(bool)>;
+  using UploadCallback =
+      base::OnceCallback<void(bool /*certificate_uploaded*/)>;
 
   // Checks if the machine certificate has been uploaded, and if not, do so.
   // A certificate will be obtained if needed.
   void UploadCertificateIfNeeded(UploadCallback callback) override;
 
-  // Refreshs a fresh machine certificate and uploads it.
+  // Refreshes a fresh machine certificate and uploads it.
   void RefreshAndUploadCertificate(UploadCallback callback) override;
+
+  // Non-blocking wait for a certificate to be uploaded. Calls the |callback|
+  // immediately if the certificate was already uploaded or wait for the next
+  // attempt to do so.
+  void WaitForUploadComplete(UploadCallback callback) override;
 
  private:
   // Starts certificate obtention and upload.
@@ -59,31 +64,30 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   // Gets a new certificate for the Enterprise Machine Key (EMK).
   void GetNewCertificate();
 
-  // Gets the existing EMK certificate and sends it to CheckCertificateExpiry.
-  void GetExistingCertificate();
+  // Called when `GetKeyInfo()` returned to check the existing certificate.
+  // There are 3 cases by the status replied from attestation service:
+  //     1. If the existing EMK is found, calls `CheckCertificateExpiry()`.
+  //     2. If the key does not exist, calls `GetNewCertificate()`.
+  //     3. Otherwise, there is an error and `Reschedule()` is called to retry.
+  void OnGetExistingCertificate(const ::attestation::GetKeyInfoReply& reply);
 
-  // Checks if any certificate in the given pem_certificate_chain is expired
-  // and, if so, gets a new one. If not renewing, calls CheckIfUploaded.
-  void CheckCertificateExpiry(const std::string& pem_certificate_chain);
+  // Checks if any certificate in the given `reply` is expired and, if so, gets
+  // a new one. If not renewing, calls `CheckIfUploaded()`.
+  void CheckCertificateExpiry(const ::attestation::GetKeyInfoReply& reply);
 
   // Uploads a machine certificate to the policy server.
   void UploadCertificate(const std::string& pem_certificate_chain);
 
-  // Checks if a certificate has already been uploaded and, if not, upload.
-  void CheckIfUploaded(const std::string& pem_certificate_chain,
-                       const std::string& key_payload);
-
-  // Gets the payload associated with the EMK and sends it to |callback|,
-  // or call |on_failure| with no arguments if the payload cannot be obtained.
-  void GetKeyPayload(base::RepeatingCallback<void(const std::string&)> callback,
-                     base::RepeatingCallback<void()> on_failure);
+  // Checks if a certificate in `reply` has already been uploaded and, if not,
+  // upload.
+  void CheckIfUploaded(const ::attestation::GetKeyInfoReply& reply);
 
   // Called when a certificate upload operation completes.  On success, |status|
   // will be true.
   void OnUploadComplete(bool status);
 
   // Marks a key as uploaded in the payload proto.
-  void MarkAsUploaded(const std::string& key_payload);
+  void MarkAsUploaded(const ::attestation::GetKeyInfoReply& reply);
 
   // Handles failure of getting a certificate.
   void HandleGetCertificateFailure(AttestationStatus status);
@@ -93,15 +97,17 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   // indicates the system is ready to process this task. See crbug.com/256845.
   void Reschedule();
 
-  policy::CloudPolicyClient* policy_client_;
-  CryptohomeClient* cryptohome_client_;
-  AttestationFlow* attestation_flow_;
+  void RunCallbacks(bool status);
+
+  policy::CloudPolicyClient* policy_client_ = nullptr;
+  AttestationFlow* attestation_flow_ = nullptr;
   std::unique_ptr<AttestationFlow> default_attestation_flow_;
-  bool refresh_certificate_;
-  UploadCallback callback_;
-  int num_retries_;
-  int retry_limit_;
-  int retry_delay_;
+  bool refresh_certificate_ = false;
+  std::vector<UploadCallback> callbacks_;
+  int num_retries_ = {};
+  int retry_limit_ = {};
+  int retry_delay_ = {};
+  base::Optional<bool> certificate_uploaded_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -11,7 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
+#include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -37,7 +40,7 @@ namespace extensions {
 
 class DebuggerApiTest : public ExtensionApiTest {
  protected:
-  ~DebuggerApiTest() override {}
+  ~DebuggerApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
@@ -50,6 +53,8 @@ class DebuggerApiTest : public ExtensionApiTest {
 
   const Extension* extension() const { return extension_.get(); }
   base::CommandLine* command_line() const { return command_line_; }
+
+  void AdvanceClock(base::TimeDelta time) { clock_.Advance(time); }
 
  private:
   testing::AssertionResult RunAttachFunctionOnTarget(
@@ -65,6 +70,7 @@ class DebuggerApiTest : public ExtensionApiTest {
   // A temporary directory in which to create and load from the
   // |extension_|.
   TestExtensionDir test_extension_dir_;
+  base::SimpleTestTickClock clock_;
 };
 
 void DebuggerApiTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -209,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   scoped_refptr<DebuggerDetachFunction> detach_function;
 
   Browser* another_browser =
-      new Browser(Browser::CreateParams(profile(), true));
+      Browser::Create(Browser::CreateParams(profile(), true));
   AddBlankTabAndShow(another_browser);
   AddBlankTabAndShow(another_browser);
   int tab_id2 = sessions::SessionTabHelper::IdForTab(
@@ -326,18 +332,110 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(1u, service1->infobar_count());
 }
 
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBarIsRemovedAfterFiveSeconds) {
+  int tab_id = sessions::SessionTabHelper::IdForTab(
+                   browser()->tab_strip_model()->GetActiveWebContents())
+                   .id();
+  InfoBarService* service = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Attaching to the tab should create an infobar.
+  auto attach_function = base::MakeRefCounted<DebuggerAttachFunction>();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      attach_function.get(),
+      base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id), browser(),
+      api_test_utils::NONE));
+  EXPECT_EQ(1u, service->infobar_count());
+
+  // Detaching from the tab should remove the infobar after 5 seconds.
+  auto detach_function = base::MakeRefCounted<DebuggerDetachFunction>();
+  detach_function->set_extension(extension());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+      browser(), api_test_utils::NONE));
+
+  // Even though the extension detached, the infobar should not detach
+  // immediately, and should remain visible for 5 seconds to ensure the user
+  // has an opportunity to see it.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      ExtensionDevToolsInfoBarDelegate::kAutoCloseDelay);
+  EXPECT_EQ(1u, service->infobar_count());  // Infobar is still shown.
+
+  // Advance the clock by 5 seconds, and verify the infobar is removed.
+  AdvanceClock(ExtensionDevToolsInfoBarDelegate::kAutoCloseDelay);
+  run_loop.Run();
+
+  EXPECT_EQ(0u, service->infobar_count());
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
+                       InfoBarIsNotRemovedIfAttachAgainBeforeFiveSeconds) {
+  int tab_id = sessions::SessionTabHelper::IdForTab(
+                   browser()->tab_strip_model()->GetActiveWebContents())
+                   .id();
+  InfoBarService* service = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Attaching to the tab should create an infobar.
+  auto attach_function = base::MakeRefCounted<DebuggerAttachFunction>();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      attach_function.get(),
+      base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id), browser(),
+      api_test_utils::NONE));
+  EXPECT_EQ(1u, service->infobar_count());
+
+  // Detaching from the tab and attaching it again before 5 seconds should not
+  // remove the infobar.
+  auto detach_function = base::MakeRefCounted<DebuggerDetachFunction>();
+  detach_function->set_extension(extension());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+      browser(), api_test_utils::NONE));
+  EXPECT_EQ(1u, service->infobar_count());
+
+  attach_function = base::MakeRefCounted<DebuggerAttachFunction>();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      attach_function.get(),
+      base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id), browser(),
+      api_test_utils::NONE));
+  // Verify that only one infobar is created.
+  EXPECT_EQ(1u, service->infobar_count());
+
+  // Verify that infobar is not closed after 5 seconds.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      ExtensionDevToolsInfoBarDelegate::kAutoCloseDelay);
+  AdvanceClock(ExtensionDevToolsInfoBarDelegate::kAutoCloseDelay);
+  run_loop.Run();
+
+  EXPECT_EQ(1u, service->infobar_count());
+}
+
 class DebuggerExtensionApiTest : public ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(StartEmbeddedTestServer());
   }
 };
 
 IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, Debugger) {
   ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, ParentTargetPermissions) {
+  // Run test with file access disabled.
+  ASSERT_TRUE(RunExtensionTestWithFlags("parent_target_permissions", kFlagNone,
+                                        kFlagNone))
+      << message_;
 }
 
 // Tests that an extension is not allowed to inspect a worker through the
@@ -351,6 +449,10 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest,
   EXPECT_TRUE(
       RunExtensionTestWithArg("debugger_inspect_worker", url.spec().c_str()))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToEmptyUrls) {
+  ASSERT_TRUE(RunExtensionTest("debugger_attach_to_empty_urls")) << message_;
 }
 
 class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
@@ -374,11 +476,36 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
                                ui::PAGE_TRANSITION_LINK, std::string());
   navigation_manager.WaitForNavigationFinished();
   navigation_manager_iframe.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ASSERT_TRUE(
       RunExtensionTestWithArg("debugger", "oopif.html;oopif_frame.html"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
+                       NavigateSubframe) {
+  GURL url(embedded_test_server()->GetURL(
+      "a.com",
+      "/extensions/api_test/debugger_navigate_subframe/inspected_page.html"));
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("debugger_navigate_subframe", url.spec().c_str()))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
+                       AutoAttachPermissions) {
+  GURL url(embedded_test_server()->GetURL(
+      "a.com",
+      "/extensions/api_test/debugger_auto_attach_permissions/page.html"));
+  ASSERT_TRUE(RunExtensionTestWithArg("debugger_auto_attach_permissions",
+                                      url.spec().c_str()))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
+                       DebuggerCheckInnerUrl) {
+  ASSERT_TRUE(RunExtensionTest("debugger_check_inner_url")) << message_;
 }
 
 }  // namespace extensions

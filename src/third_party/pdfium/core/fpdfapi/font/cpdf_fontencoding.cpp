@@ -6,8 +6,6 @@
 
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
 
-#include <utility>
-
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -15,7 +13,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -1656,7 +1654,7 @@ uint32_t PDF_FindCode(const uint16_t* pCodes, uint16_t unicode) {
 }  // namespace
 
 int CPDF_FontEncoding::CharCodeFromUnicode(wchar_t unicode) const {
-  for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
+  for (size_t i = 0; i < pdfium::size(m_Unicodes); i++) {
     if (m_Unicodes[i] == unicode)
       return i;
   }
@@ -1666,7 +1664,7 @@ int CPDF_FontEncoding::CharCodeFromUnicode(wchar_t unicode) const {
 CPDF_FontEncoding::CPDF_FontEncoding(int PredefinedEncoding) {
   const uint16_t* pSrc = PDF_UnicodesForPredefinedCharSet(PredefinedEncoding);
   if (pSrc) {
-    for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++)
+    for (size_t i = 0; i < pdfium::size(m_Unicodes); i++)
       m_Unicodes[i] = pSrc[i];
   } else {
     memset(m_Unicodes, 0, sizeof(m_Unicodes));
@@ -1684,7 +1682,7 @@ RetainPtr<CPDF_Object> CPDF_FontEncoding::Realize(
        cs++) {
     const uint16_t* pSrc = PDF_UnicodesForPredefinedCharSet(cs);
     bool match = true;
-    for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
+    for (size_t i = 0; i < pdfium::size(m_Unicodes); i++) {
       if (m_Unicodes[i] != pSrc[i]) {
         match = false;
         break;
@@ -1711,7 +1709,7 @@ RetainPtr<CPDF_Object> CPDF_FontEncoding::Realize(
   const uint16_t* pStandard =
       PDF_UnicodesForPredefinedCharSet(PDFFONT_ENCODING_WINANSI);
   auto pDiff = pdfium::MakeRetain<CPDF_Array>();
-  for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
+  for (size_t i = 0; i < pdfium::size(m_Unicodes); i++) {
     if (pStandard[i] == m_Unicodes[i])
       continue;
 

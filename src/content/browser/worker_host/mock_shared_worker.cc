@@ -52,6 +52,10 @@ bool MockSharedWorker::CheckReceivedTerminate() {
   return true;
 }
 
+void MockSharedWorker::Disconnect() {
+  receiver_.reset();
+}
+
 void MockSharedWorker::Connect(int connection_request_id,
                                blink::MessagePortDescriptor port) {
   connect_received_.emplace(connection_request_id,
@@ -86,25 +90,34 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
   if (!CheckEquality(expected_content_security_policy_type,
                      create_params->info->content_security_policy_type))
     return false;
+  if (!CheckEquality(ukm::SourceIdType::WORKER_ID,
+                     ukm::GetSourceIdType(create_params->ukm_source_id))) {
+    return false;
+  }
   host->Bind(std::move(create_params->host));
   *receiver = std::move(create_params->receiver);
   return true;
 }
 
+void MockSharedWorkerFactory::Disconnect() {
+  receiver_.reset();
+}
+
 void MockSharedWorkerFactory::CreateSharedWorker(
     blink::mojom::SharedWorkerInfoPtr info,
+    const blink::SharedWorkerToken& token,
     const url::Origin& constructor_origin,
     const std::string& user_agent,
     const blink::UserAgentMetadata& ua_metadata,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
-    blink::mojom::RendererPreferencesPtr renderer_preferences,
+    const blink::RendererPreferences& renderer_preferences,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr
+        service_worker_container_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -113,7 +126,8 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-        browser_interface_broker) {
+        browser_interface_broker,
+    ukm::SourceId ukm_source_id) {
   DCHECK(!create_params_);
   create_params_ = std::make_unique<CreateParams>();
   create_params_->info = std::move(info);
@@ -121,6 +135,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
   create_params_->content_settings = std::move(content_settings);
   create_params_->host = std::move(host);
   create_params_->receiver = std::move(receiver);
+  create_params_->ukm_source_id = ukm_source_id;
 }
 
 MockSharedWorkerFactory::CreateParams::CreateParams() = default;
@@ -176,6 +191,10 @@ bool MockSharedWorkerClient::CheckReceivedOnScriptLoadFailed() {
     return false;
   on_script_load_failed_ = false;
   return true;
+}
+
+void MockSharedWorkerClient::ResetReceiver() {
+  receiver_.reset();
 }
 
 void MockSharedWorkerClient::OnCreated(

@@ -1129,6 +1129,9 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
     else
         sample_fmt          = AV_SAMPLE_FMT_S32P;
 
+    if (wc->ch_offset && avctx->sample_fmt != sample_fmt)
+        return AVERROR_INVALIDDATA;
+
     bpp            = av_get_bytes_per_sample(sample_fmt);
     orig_bpp       = ((s->frame_flags & 0x03) + 1) << 3;
     multiblock     = (s->frame_flags & WV_SINGLE_BLOCK) != WV_SINGLE_BLOCK;
@@ -1359,7 +1362,10 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
                 bytestream2_skip(&gb, ssize);
                 continue;
             }
-            rate_x = 1 << bytestream2_get_byte(&gb);
+            rate_x = bytestream2_get_byte(&gb);
+            if (rate_x > 30)
+                return AVERROR_INVALIDDATA;
+            rate_x = 1 << rate_x;
             dsd_mode = bytestream2_get_byte(&gb);
             if (dsd_mode && dsd_mode != 1 && dsd_mode != 3) {
                 av_log(avctx, AV_LOG_ERROR, "Invalid DSD encoding mode: %d\n",
@@ -1498,9 +1504,13 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
                 av_log(avctx, AV_LOG_ERROR, "Custom sample rate missing.\n");
                 return AVERROR_INVALIDDATA;
             }
-            new_samplerate = sample_rate * rate_x;
+            new_samplerate = sample_rate;
         } else
-            new_samplerate = wv_rates[sr] * rate_x;
+            new_samplerate = wv_rates[sr];
+
+        if (new_samplerate * (uint64_t)rate_x > INT_MAX)
+            return AVERROR_INVALIDDATA;
+        new_samplerate *= rate_x;
 
         if (multiblock) {
             if (chan)

@@ -22,12 +22,12 @@
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/open_search_description_document_handler.mojom.h"
-#include "chrome/common/prerender_messages.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/web_page_metadata.mojom.h"
+#include "chrome/renderer/chrome_content_settings_agent_delegate.h"
 #include "chrome/renderer/media/media_feeds.h"
-#include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/web_apps.h"
+#include "chrome/renderer/web_page_metadata_extraction.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/no_state_prefetch/renderer/prerender_helper.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
@@ -62,12 +62,16 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+#include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier_delegate.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/common/mhtml_page_notifier.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #endif
 
 using blink::WebDocumentLoader;
@@ -124,17 +128,19 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
       translate_agent_(nullptr),
       web_cache_impl_(web_cache_impl) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
+          base::Unretained(this)));
+
   // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())
     return;
 
-#if BUILDFLAG(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
-    SetClientSidePhishingDetection(true);
+    SetClientSidePhishingDetection();
 #endif
   if (!translate::IsSubFrameTranslationEnabled()) {
     translate_agent_ =
@@ -171,53 +177,130 @@ bool ChromeRenderFrameObserver::OnAssociatedInterfaceRequestForFrame(
   return associated_interfaces_.TryBindInterface(interface_name, handle);
 }
 
-bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
-  // Filter only.
-  bool handled = true;
-  // Messages in this message map have multiple handlers. Please do not add more
-  // messages here.
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return false;
+void ChromeRenderFrameObserver::ReadyToCommitNavigation(
+    WebDocumentLoader* document_loader) {
+  // Execute cache clear operations that were postponed until a navigation
+  // event (including tab reload).
+  if (render_frame()->IsMainFrame() && web_cache_impl_)
+    web_cache_impl_->ExecutePendingClearCache();
 
-  // Normal message handlers. Legacy IPC is deprecated, but leaving this as a
-  // placeholder in case new messages are added before legacy IPC handling is
-  // wholly removed from this class.
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  // Let translate_agent do any preparatory work for loading a URL.
+  if (!translate_agent_)
+    return;
 
-  return handled;
+  translate_agent_->PrepareForUrl(
+      render_frame()->GetWebFrame()->GetDocument().Url());
 }
 
-void ChromeRenderFrameObserver::OnSetIsPrerendering(
-    prerender::PrerenderMode mode,
-    const std::string& histogram_prefix) {
-  if (mode != prerender::NO_PRERENDER) {
-    // If the PrerenderHelper for this frame already exists, don't create it. It
-    // can already be created for subframes during handling of
-    // RenderFrameCreated, if the parent frame was prerendering at time of
-    // subframe creation.
-    if (prerender::PrerenderHelper::Get(render_frame()))
-      return;
-
-    // The PrerenderHelper will destroy itself either after recording histograms
-    // or on destruction of the RenderView.
-    new prerender::PrerenderHelper(render_frame(), mode, histogram_prefix);
-  }
-}
-
-void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
+void ChromeRenderFrameObserver::DidFinishLoad() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  // TODO(dglazkov): This code is clearly in the wrong place. Need
-  // to investigate what it is doing and fix (http://crbug.com/606164).
-  WebNode context_node = frame->ContextMenuNode();
-  if (!context_node.IsNull()) {
-    frame->ReloadImage(context_node);
+  // Don't do anything for subframes.
+  if (frame->Parent())
+    return;
+
+  GURL osdd_url = frame->GetDocument().OpenSearchDescriptionURL();
+  if (!osdd_url.is_empty()) {
+    mojo::AssociatedRemote<chrome::mojom::OpenSearchDescriptionDocumentHandler>
+        osdd_handler;
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &osdd_handler);
+    osdd_handler->PageHasOpenSearchDescriptionDocument(
+        frame->GetDocument().Url(), osdd_url);
   }
+}
+
+void ChromeRenderFrameObserver::DidCreateNewDocument() {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  DCHECK(render_frame());
+  if (!render_frame()->IsMainFrame())
+    return;
+
+  DCHECK(render_frame()->GetWebFrame());
+  blink::WebDocumentLoader* doc_loader =
+      render_frame()->GetWebFrame()->GetDocumentLoader();
+  DCHECK(doc_loader);
+
+  if (!doc_loader->HasBeenLoadedAsWebArchive())
+    return;
+
+  // Connect to Mojo service on browser to notify it of the page's archive
+  // properties.
+  mojo::AssociatedRemote<offline_pages::mojom::MhtmlPageNotifier>
+      mhtml_notifier;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      &mhtml_notifier);
+  DCHECK(mhtml_notifier);
+  blink::WebArchiveInfo info = doc_loader->GetArchiveInfo();
+
+  mhtml_notifier->NotifyMhtmlPageLoadAttempted(info.load_result, info.url,
+                                               info.date);
+#endif
+}
+
+void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
+    ui::PageTransition transition) {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // Don't do anything for subframes.
+  if (frame->Parent())
+    return;
+
+  static crash_reporter::CrashKeyString<8> view_count_key("view-count");
+  view_count_key.Set(
+      base::NumberToString(content::RenderView::GetRenderViewCount()));
+
+#if !defined(OS_ANDROID)
+  if (render_frame()->GetEnabledBindings() &
+      content::kWebUIBindingsPolicyMask) {
+    for (const auto& script : webui_javascript_)
+      render_frame()->ExecuteJavaScript(script);
+    webui_javascript_.clear();
+  }
+#endif
+}
+
+void ChromeRenderFrameObserver::DidClearWindowObject() {
+#if !defined(OS_ANDROID)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kInstantProcess))
+    SearchBoxExtension::Install(render_frame()->GetWebFrame());
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeRenderFrameObserver::DidMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
+  // Don't do any work for subframes.
+  if (!render_frame()->IsMainFrame())
+    return;
+
+  switch (layout_type) {
+    case blink::WebMeaningfulLayout::kFinishedParsing:
+      CapturePageText(PRELIMINARY_CAPTURE);
+      break;
+    case blink::WebMeaningfulLayout::kFinishedLoading:
+      CapturePageText(FINAL_CAPTURE);
+      break;
+    default:
+      break;
+  }
+}
+
+void ChromeRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
+void ChromeRenderFrameObserver::SetWindowFeatures(
+    blink::mojom::WindowFeaturesPtr window_features) {
+  render_frame()->GetRenderView()->GetWebView()->SetWindowFeatures(
+      content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
+}
+
+void ChromeRenderFrameObserver::ExecuteWebUIJavaScript(
+    const base::string16& javascript) {
+#if !defined(OS_ANDROID)
+  webui_javascript_.push_back(javascript);
+#endif
 }
 
 void ChromeRenderFrameObserver::RequestImageForContextNode(
@@ -294,16 +377,27 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
   std::move(callback).Run(image_data, original_size, image_extension);
 }
 
-void ChromeRenderFrameObserver::GetWebApplicationInfo(
-    GetWebApplicationInfoCallback callback) {
+void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  // TODO(dglazkov): This code is clearly in the wrong place. Need
+  // to investigate what it is doing and fix (http://crbug.com/606164).
+  WebNode context_node = frame->ContextMenuNode();
+  if (!context_node.IsNull()) {
+    frame->ReloadImage(context_node);
+  }
+}
+
+void ChromeRenderFrameObserver::GetWebPageMetadata(
+    GetWebPageMetadataCallback callback) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
-  WebApplicationInfo web_app_info;
-  web_apps::ParseWebAppFromWebDocument(frame, &web_app_info);
+  chrome::mojom::WebPageMetadataPtr web_page_metadata =
+      chrome::ExtractWebPageMetadata(frame);
 
   // The warning below is specific to mobile but it doesn't hurt to show it even
   // if the Chromium build is running on a desktop. It will get more exposition.
-  if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
+  if (web_page_metadata->mobile_capable ==
+      chrome::mojom::WebPageMobileCapable::ENABLED_APPLE) {
     blink::WebConsoleMessage message(
         blink::mojom::ConsoleMessageLevel::kWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
@@ -316,21 +410,22 @@ void ChromeRenderFrameObserver::GetWebApplicationInfo(
   // any icon with a data URL to have originated from a favicon.  We don't want
   // to decode arbitrary data URLs in the browser process.  See
   // http://b/issue?id=1162972
-  for (auto it = web_app_info.icon_infos.begin();
-       it != web_app_info.icon_infos.end();) {
-    if (it->url.SchemeIs(url::kDataScheme))
-      it = web_app_info.icon_infos.erase(it);
+  for (auto it = web_page_metadata->icons.begin();
+       it != web_page_metadata->icons.end();) {
+    if ((*it)->url.SchemeIs(url::kDataScheme))
+      it = web_page_metadata->icons.erase(it);
     else
       ++it;
   }
 
   // Truncate the strings we send to the browser process.
-  web_app_info.title =
-      web_app_info.title.substr(0, chrome::kMaxMetaTagAttributeLength);
-  web_app_info.description =
-      web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
+  web_page_metadata->application_name =
+      web_page_metadata->application_name.substr(
+          0, chrome::kMaxMetaTagAttributeLength);
+  web_page_metadata->description = web_page_metadata->description.substr(
+      0, chrome::kMaxMetaTagAttributeLength);
 
-  std::move(callback).Run(web_app_info);
+  std::move(callback).Run(std::move(web_page_metadata));
 }
 
 #if defined(OS_ANDROID)
@@ -345,114 +440,35 @@ void ChromeRenderFrameObserver::GetMediaFeedURL(
   std::move(callback).Run(MediaFeeds::GetMediaFeedURL(render_frame()));
 }
 
-void ChromeRenderFrameObserver::SetClientSidePhishingDetection(
-    bool enable_phishing_detection) {
-#if BUILDFLAG(SAFE_BROWSING_CSD)
-  phishing_classifier_ =
-      enable_phishing_detection
-          ? safe_browsing::PhishingClassifierDelegate::Create(render_frame(),
-                                                              nullptr)
-          : nullptr;
+void ChromeRenderFrameObserver::LoadBlockedPlugins(
+    const std::string& identifier) {
+  // Record that this plugin is temporarily allowed and notify all placeholders.
+
+  ChromeContentSettingsAgentDelegate::Get(render_frame())
+      ->AllowPluginTemporarily(identifier);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  ChromePluginPlaceholder::ForEach(
+      render_frame(), base::BindRepeating(
+                          [](const std::string& identifier,
+                             ChromePluginPlaceholder* placeholder) {
+                            placeholder->MaybeLoadBlockedPlugin(identifier);
+                          },
+                          identifier));
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+}
+
+void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+  phishing_classifier_ = safe_browsing::PhishingClassifierDelegate::Create(
+      render_frame(), nullptr);
 #endif
 }
 
-void ChromeRenderFrameObserver::ExecuteWebUIJavaScript(
-    const base::string16& javascript) {
-#if !defined(OS_ANDROID)
-  webui_javascript_.push_back(javascript);
-#endif
-}
-
-void ChromeRenderFrameObserver::DidFinishLoad() {
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
-  // Don't do anything for subframes.
-  if (frame->Parent())
-    return;
-
-  GURL osdd_url = frame->GetDocument().OpenSearchDescriptionURL();
-  if (!osdd_url.is_empty()) {
-    mojo::AssociatedRemote<chrome::mojom::OpenSearchDescriptionDocumentHandler>
-        osdd_handler;
-    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &osdd_handler);
-    osdd_handler->PageHasOpenSearchDescriptionDocument(
-        frame->GetDocument().Url(), osdd_url);
-  }
-}
-
-void ChromeRenderFrameObserver::DidCreateNewDocument() {
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  DCHECK(render_frame());
-  if (!render_frame()->IsMainFrame())
-    return;
-
-  DCHECK(render_frame()->GetWebFrame());
-  blink::WebDocumentLoader* doc_loader =
-      render_frame()->GetWebFrame()->GetDocumentLoader();
-  DCHECK(doc_loader);
-
-  if (!doc_loader->HasBeenLoadedAsWebArchive())
-    return;
-
-  // Connect to Mojo service on browser to notify it of the page's archive
-  // properties.
-  mojo::AssociatedRemote<offline_pages::mojom::MhtmlPageNotifier>
-      mhtml_notifier;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &mhtml_notifier);
-  DCHECK(mhtml_notifier);
-  blink::WebArchiveInfo info = doc_loader->GetArchiveInfo();
-
-  mhtml_notifier->NotifyMhtmlPageLoadAttempted(info.load_result, info.url,
-                                               info.date);
-#endif
-}
-
-void ChromeRenderFrameObserver::ReadyToCommitNavigation(
-    WebDocumentLoader* document_loader) {
-  // Execute cache clear operations that were postponed until a navigation
-  // event (including tab reload).
-  if (render_frame()->IsMainFrame() && web_cache_impl_)
-    web_cache_impl_->ExecutePendingClearCache();
-
-  // Let translate_agent do any preparatory work for loading a URL.
-  if (!translate_agent_)
-    return;
-
-  translate_agent_->PrepareForUrl(
-      render_frame()->GetWebFrame()->GetDocument().Url());
-}
-
-void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
-    ui::PageTransition transition) {
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
-
-  // Don't do anything for subframes.
-  if (frame->Parent())
-    return;
-
-  static crash_reporter::CrashKeyString<8> view_count_key("view-count");
-  view_count_key.Set(
-      base::NumberToString(content::RenderView::GetRenderViewCount()));
-
-#if !defined(OS_ANDROID)
-  if (render_frame()->GetEnabledBindings() &
-      content::kWebUIBindingsPolicyMask) {
-    for (const auto& script : webui_javascript_)
-      render_frame()->ExecuteJavaScript(script);
-    webui_javascript_.clear();
-  }
-#endif
-}
-
-void ChromeRenderFrameObserver::DidClearWindowObject() {
-#if !defined(OS_ANDROID)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kInstantProcess))
-    SearchBoxExtension::Install(render_frame()->GetWebFrame());
-#endif  // !defined(OS_ANDROID)
+void ChromeRenderFrameObserver::OnRenderFrameObserverRequest(
+    mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
@@ -479,7 +495,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
     // Don't capture contents unless there is either a translate agent or a
     // phishing classifier to consume them.
-#if BUILDFLAG(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   if (!translate_agent_ && !phishing_classifier_)
     return;
 #else
@@ -509,7 +525,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
   TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
 
-#if BUILDFLAG(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // Will swap out the string.
   if (phishing_classifier_)
     phishing_classifier_->PageCaptured(&contents,
@@ -517,39 +533,6 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 #endif
 }
 
-void ChromeRenderFrameObserver::DidMeaningfulLayout(
-    blink::WebMeaningfulLayout layout_type) {
-  // Don't do any work for subframes.
-  if (!render_frame()->IsMainFrame())
-    return;
-
-  switch (layout_type) {
-    case blink::WebMeaningfulLayout::kFinishedParsing:
-      CapturePageText(PRELIMINARY_CAPTURE);
-      break;
-    case blink::WebMeaningfulLayout::kFinishedLoading:
-      CapturePageText(FINAL_CAPTURE);
-      break;
-    default:
-      break;
-  }
-}
-
-void ChromeRenderFrameObserver::OnDestruct() {
-  delete this;
-}
-
-void ChromeRenderFrameObserver::OnRenderFrameObserverRequest(
-    mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>
-        receiver) {
-  receivers_.Add(this, std::move(receiver));
-}
-
-void ChromeRenderFrameObserver::SetWindowFeatures(
-    blink::mojom::WindowFeaturesPtr window_features) {
-  render_frame()->GetRenderView()->GetWebView()->SetWindowFeatures(
-      content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
-}
 
 // static
 bool ChromeRenderFrameObserver::NeedsDownscale(

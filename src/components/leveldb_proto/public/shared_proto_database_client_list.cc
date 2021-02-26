@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 
+#include "base/notreached.h"
 #include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
 
 namespace leveldb_proto {
@@ -79,10 +80,14 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "PrintJobDatabase";
     case ProtoDbType::FEED_STREAM_DATABASE:
       return "FeedStreamDatabase";
-    case ProtoDbType::TAB_STATE_DATABASE:
-      return "TabStateDatabase";
+    case ProtoDbType::PERSISTED_STATE_DATABASE:
+      return "PersistedStateDatabase";
     case ProtoDbType::UPBOARDING_QUERY_TILE_STORE:
       return "UpboardingQueryTileStore";
+    case ProtoDbType::NEARBY_SHARE_PUBLIC_CERTIFICATE_DATABASE:
+      return "NearbySharePublicCertificateDatabase";
+    case ProtoDbType::VIDEO_TUTORIALS_DATABASE:
+      return "VideoTutorialsDatabase";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

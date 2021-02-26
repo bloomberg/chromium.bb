@@ -13,12 +13,14 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -27,6 +29,7 @@
 #include "cc/benchmarks/micro_benchmark_controller.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/input/compositor_input_interfaces.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_selection_bound.h"
@@ -34,7 +37,6 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
-#include "cc/metrics/event_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/node_id.h"
@@ -49,8 +51,9 @@
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/target_property.h"
 #include "cc/trees/viewport_layers.h"
+#include "components/viz/common/delegated_ink_metadata.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
@@ -61,6 +64,7 @@ struct PresentationFeedback;
 
 namespace cc {
 
+class RasterDarkModeFilter;
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostImpl;
@@ -78,7 +82,7 @@ class TaskGraphRunner;
 class UIResourceManager;
 class UkmRecorderFactory;
 struct RenderingStats;
-struct ScrollAndScaleSet;
+struct CompositorCommitData;
 
 // Returned from LayerTreeHost::DeferMainFrameUpdate. Automatically un-defers on
 // destruction.
@@ -106,6 +110,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     MutatorHost* mutator_host = nullptr;
+    RasterDarkModeFilter* dark_mode_filter = nullptr;
 
     // The image worker task runner is used to schedule image decodes. The
     // compositor thread may make sync calls to this thread, analogous to the
@@ -179,8 +184,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   SwapPromiseManager* GetSwapPromiseManager();
 
   std::unique_ptr<EventsMetricsManager::ScopedMonitor>
-  GetScopedEventMetricsMonitor(std::unique_ptr<EventMetrics> event_metrics);
+  GetScopedEventMetricsMonitor(
+      EventsMetricsManager::ScopedMonitor::DoneCallback done_callback);
   void ClearEventsMetrics();
+
+  size_t saved_events_metrics_count_for_testing() const {
+    return events_metrics_manager_.saved_events_metrics_count_for_testing();
+  }
 
   // Visibility and LayerTreeFrameSink -------------------------------
 
@@ -214,6 +224,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // main frame update is run on the next tick without pre-emptively forcing a
   // full commit synchronization or layer updates.
   void SetNeedsAnimate();
+
+  // Calls SetNeedsAnimate() if there is no main frame already in progress.
+  void SetNeedsAnimateIfNotInsideMainFrame();
 
   // Requests a main frame update and also ensure that the host pulls layer
   // updates from the client, even if no content might have changed, without
@@ -270,7 +283,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Synchronously performs a complete main frame update, commit and compositor
   // frame. Used only in single threaded mode when the compositor's internal
   // scheduling is disabled.
-  void Composite(base::TimeTicks frame_begin_time, bool raster);
+  void CompositeForTest(base::TimeTicks frame_begin_time, bool raster);
 
   // Requests a redraw (compositor frame) for the given rect.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
@@ -287,9 +300,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                   BrowserControlsState current,
                                   bool animate);
 
-  // Returns a reference to the InputHandler used to respond to input events on
-  // the compositor thread.
-  const base::WeakPtr<InputHandler>& GetInputHandler() const;
+  // Returns the delegate that the input handler uses to communicate with the
+  // LayerTreeHostImpl on the compositor thread. Must be dereferenced only on
+  // the input handling thread.
+  const base::WeakPtr<CompositorDelegateForInput>& GetDelegateForInput() const;
 
   // Debugging and benchmarks ---------------------------------
   void SetDebugState(const LayerTreeDebugState& debug_state);
@@ -316,6 +330,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
+  // Registers a callback that is run when any ongoing scroll-animation ends. If
+  // there are no ongoing animations, then the callback is run immediately.
+  void RequestScrollAnimationEndNotification(base::OnceClosure callback);
+
   // Layer tree accessors and modifiers ------------------------
 
   // Sets or gets the root of the Layer tree. Children of the root Layer are
@@ -324,14 +342,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetRootLayer(scoped_refptr<Layer> root_layer);
   Layer* root_layer() { return root_layer_.get(); }
   const Layer* root_layer() const { return root_layer_.get(); }
-
-  // Sets the root layer which is not managed by blink, and we will initialize
-  // its paint properties using PropertyTreeBuilder. For ui::Compositor, because
-  // for now we always use PropertyTreeBulder, this function is equivalent to
-  // SetRootLayer().
-  // TODO(crbug.com/925855): This is temporary. Eventually we should let the
-  // caller inform blink about the layer and remove the function.
-  void SetNonBlinkManagedRootLayer(scoped_refptr<Layer> root_layer);
 
   struct ViewportPropertyIds {
     int overscroll_elasticity_transform = TransformTree::kInvalidNodeId;
@@ -351,6 +361,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
   Layer* InnerViewportScrollLayerForTesting() const;
   Layer* OuterViewportScrollLayerForTesting() const;
+
+  ElementId OuterViewportScrollElementId() const;
 
   // Sets or gets the position of touch handles for a text selection. These are
   // submitted to the display compositor along with the Layer tree's contents
@@ -381,14 +393,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
-  void SetViewportRectAndScale(const gfx::Rect& device_viewport_rect,
-                               float device_scale_factor,
-                               const viz::LocalSurfaceIdAllocation&
-                                   local_surface_id_allocation_from_parent);
+  // Indicates that its acceptable to throttle the frame rate for this content
+  // to prioritize lower power/CPU use.
+  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
+
+  void SetViewportRectAndScale(
+      const gfx::Rect& device_viewport_rect,
+      float device_scale_factor,
+      const viz::LocalSurfaceId& local_surface_id_from_parent);
 
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-
-  gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
 
   gfx::Rect device_viewport_rect() const { return device_viewport_rect_; }
 
@@ -433,13 +447,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
   // be deferred until a valid viz::LocalSurfaceId is provided.
-  void SetLocalSurfaceIdAllocationFromParent(
-      const viz::LocalSurfaceIdAllocation&
-          local_surface_id_allocation_from_parent);
+  void SetLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceId& local_surface_id_from_parent);
 
-  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
-      const {
-    return local_surface_id_allocation_from_parent_;
+  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
+    return local_surface_id_from_parent_;
   }
 
   // Requests the allocation of a new LocalSurfaceId on the compositor thread.
@@ -452,9 +464,14 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return new_local_surface_id_request_;
   }
 
-  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
-  const gfx::ColorSpace& raster_color_space() const {
-    return raster_color_space_;
+  void SetDisplayColorSpaces(
+      const gfx::DisplayColorSpaces& display_color_spaces);
+  const gfx::DisplayColorSpaces& display_color_spaces() const {
+    return display_color_spaces_;
+  }
+
+  bool HasCompositorDrivenScrollAnimationForTesting() const {
+    return scroll_animation_.in_progress;
   }
 
   // This layer tree may be embedded in a hierarchy that has page scale
@@ -503,7 +520,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // These are internal methods, called from the Layer itself when changing a
   // property or completing a PushPropertiesTo.
   void AddLayerShouldPushProperties(Layer* layer);
-  void RemoveLayerShouldPushProperties(Layer* layer);
   void ClearLayersThatShouldPushProperties();
   // The current set of all Layers attached to the LayerTreeHost's tree that
   // have been marked as needing PushPropertiesTo in the next commit.
@@ -587,7 +603,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       const gfx::PresentationFeedback& feedback);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
-  void ApplyScrollAndScale(ScrollAndScaleSet* info);
+  void ApplyCompositorChanges(CompositorCommitData* commit_data);
   void ApplyMutatorEvents(std::unique_ptr<MutatorEvents> events);
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
@@ -672,6 +688,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float recording_scale_factor() const { return recording_scale_factor_; }
 
   void SetSourceURL(ukm::SourceId source_id, const GURL& url);
+  base::ReadOnlySharedMemoryRegion CreateSharedMemoryForSmoothnessUkm();
 
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
@@ -679,8 +696,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::string LayersAsString() const;
 
   // Captures the on-screen text content, if success, fills the associated
-  // NodeId in |content| and return true, otherwise return false.
-  bool CaptureContent(std::vector<NodeId>* content);
+  // NodeInfo in |content| and return true, otherwise return false.
+  bool CaptureContent(std::vector<NodeInfo>* content);
 
   std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics() {
     return std::move(begin_main_frame_metrics_);
@@ -692,6 +709,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetImplCommitStartTime(base::TimeTicks commit_start_time) {
     impl_commit_start_time_ = commit_start_time;
   }
+
+  void SetDelegatedInkMetadata(
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
+    delegated_ink_metadata_ = std::move(metadata);
+  }
+  viz::DelegatedInkMetadata* DelegatedInkMetadataForTesting() {
+    return delegated_ink_metadata_.get();
+  }
+
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+                                  base::TimeTicks first_scroll_timestamp);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
@@ -720,7 +748,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   MicroBenchmarkController micro_benchmark_controller_;
 
-  base::WeakPtr<InputHandler> input_handler_weak_ptr_;
+  // The pointer that input uses to communicate with the layer tree host impl.
+  // Must be dereferenced only from the input-handling thread.
+  base::WeakPtr<CompositorDelegateForInput> compositor_delegate_weak_ptr_;
 
   scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner_;
   std::unique_ptr<UkmRecorderFactory> ukm_recorder_factory_;
@@ -733,16 +763,23 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // free of slow-paths before toggling the flag.
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
-  void ApplyViewportChanges(const ScrollAndScaleSet& info);
-  void RecordManipulationTypeCounts(const ScrollAndScaleSet& scroll_info);
+  void ApplyViewportChanges(const CompositorCommitData& commit_data);
+  void RecordManipulationTypeCounts(const CompositorCommitData& commit_data);
   void SendOverscrollAndScrollEndEventsFromImplSide(
-      const ScrollAndScaleSet& info);
+      const CompositorCommitData& commit_data);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 
   bool DoUpdateLayers();
 
   void UpdateDeferMainFrameUpdateInternal();
+
+  // Preemptively applies the scroll offset and delta before sending it to the
+  // client. This lets the client skip a commit if the value does not change.
+  void UpdateScrollOffsetFromImpl(
+      const ElementId&,
+      const gfx::ScrollOffset& delta,
+      const base::Optional<TargetSnapAreaElementIds>&);
 
   const CompositorMode compositor_mode_;
 
@@ -810,10 +847,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to track the out-bound state for ApplyViewportChanges.
   bool is_pinch_gesture_active_from_impl_ = false;
 
-  gfx::ColorSpace raster_color_space_;
+  gfx::DisplayColorSpaces display_color_spaces_;
 
   bool clear_caches_on_next_commit_ = false;
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
+  viz::LocalSurfaceId local_surface_id_from_parent_;
   bool new_local_surface_id_request_ = false;
   uint32_t defer_main_frame_update_count_ = 0;
 
@@ -868,14 +905,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // for every layer during property tree building.
   bool has_copy_request_ = false;
 
-  // When settings_.use_layer_lists is true, paint properties are generated by
-  // blink and we don't use PropertyTreeBuilder, except that the root layer
-  // is set by SetNonBlinkManagedRootLayer().
-  // TODO(crbug.com/925855): Remove this field when removing
-  // SetNonBlinkManagedRootLayer().
-  bool force_use_property_tree_builder_ = false;
-
   MutatorHost* mutator_host_;
+
+  RasterDarkModeFilter* dark_mode_filter_;
 
   std::vector<std::pair<PaintImage, base::OnceCallback<void(bool)>>>
       queued_image_decodes_;
@@ -885,6 +917,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Presentation time callbacks requested for the next frame are initially
   // added here.
   std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
+
+  struct ScrollAnimationState {
+    ScrollAnimationState();
+    ~ScrollAnimationState();
+
+    // Tracks whether there is an ongoing compositor-driven scroll animation.
+    bool in_progress = false;
+
+    // Callback to run when the scroll-animation ends.
+    base::OnceClosure end_notification;
+  } scroll_animation_;
 
   // Latency information for work done in ProxyMain::BeginMainFrame. The
   // unique_ptr is allocated in RequestMainFrameUpdate, and passed to Blink's
@@ -898,6 +941,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   base::TimeTicks impl_commit_start_time_;
 
   EventsMetricsManager events_metrics_manager_;
+
+  // Metadata required for drawing a delegated ink trail onto the end of a
+  // stroke. std::unique_ptr was specifically chosen so that it would be cleared
+  // as it is forwarded along the pipeline to avoid old information incorrectly
+  // sticking around and potentially being reused.
+  std::unique_ptr<viz::DelegatedInkMetadata> delegated_ink_metadata_;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

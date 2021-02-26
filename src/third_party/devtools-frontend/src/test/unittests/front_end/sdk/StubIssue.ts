@@ -15,6 +15,7 @@ export class StubIssue extends Issue {
   }
 
   getDescription() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ({} as any);
   }
 
@@ -40,5 +41,18 @@ export class StubIssue extends Issue {
 
   static createFromCookieNames(cookieNames: string[]) {
     return new StubIssue('StubIssue', [], cookieNames);
+  }
+}
+
+export class ThirdPartyStubIssue extends StubIssue {
+  private isThirdParty: boolean;
+
+  constructor(code: string, isThirdParty: boolean) {
+    super(code, [], []);
+    this.isThirdParty = isThirdParty;
+  }
+
+  isCausedByThirdParty() {
+    return this.isThirdParty;
   }
 }

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
@@ -140,8 +141,8 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   }
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
+- (void)willMoveToParentViewController:(UIViewController*)parent {
+  [super willMoveToParentViewController:parent];
   [self.navigationController setToolbarHidden:YES animated:YES];
 }
 
@@ -195,6 +196,18 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   if ([self.tableViewModel footerForSection:section])
     return UITableViewAutomaticDimension;
   return kDefaultHeaderFooterHeight;
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    item.useCustomSeparator = YES;
+  }
+
+  return [super tableView:tableView cellForRowAtIndexPath:indexPath];
 }
 
 #pragma mark - TableViewLinkHeaderFooterItemDelegate

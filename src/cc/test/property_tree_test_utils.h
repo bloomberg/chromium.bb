@@ -62,6 +62,16 @@ EffectNode& CreateEffectNode(PropertyTrees*,
                              int transform_id,
                              int clip_id);
 
+// This creates a scroll node that looks like a scroller that wasn't composited
+// (isn't connected to a Layer). This function will also create a matching
+// transform node that is a child of the parent's transform node.
+ScrollNode& CreateScrollNodeForUncompositedScroller(
+    PropertyTrees* property_trees,
+    int parent_id,
+    ElementId element_id,
+    const gfx::Size& bounds,
+    const gfx::Size& scroll_container_bounds);
+
 void SetupMaskProperties(LayerImpl* masked_layer, PictureLayerImpl* mask_layer);
 void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer);
 
@@ -97,6 +107,16 @@ void SetLocalTransformChanged(const LayerType* layer) {
   DCHECK(layer->has_transform_node());
   auto* transform_node = GetTransformNode(layer);
   transform_node->needs_local_transform_update = true;
+  transform_node->transform_changed = true;
+  GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
+}
+
+template <typename LayerType>
+void SetWillChangeTransform(const LayerType* layer,
+                            bool will_change_transform) {
+  DCHECK(layer->has_transform_node());
+  auto* transform_node = GetTransformNode(layer);
+  transform_node->will_change_transform = will_change_transform;
   transform_node->transform_changed = true;
   GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
 }

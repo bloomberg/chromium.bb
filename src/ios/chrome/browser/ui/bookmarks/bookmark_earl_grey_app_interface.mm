@@ -9,6 +9,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/prefs/pref_service.h"
+#include "components/query_parser/query_parser.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -137,13 +138,28 @@
 
   // Verify the correct number of bookmarks exist.
   base::string16 matchString = base::SysNSStringToUTF16(title);
-  std::vector<bookmarks::TitledUrlMatch> matches;
-  int const kMaxCountOfBoomarks = 50;
-  bookmarkModel->GetBookmarksMatching(matchString, kMaxCountOfBoomarks,
-                                      &matches);
+  int const kMaxCountOfBookmarks = 50;
+  std::vector<bookmarks::TitledUrlMatch> matches =
+      bookmarkModel->GetBookmarksMatching(
+          matchString, kMaxCountOfBookmarks,
+          query_parser::MatchingAlgorithm::DEFAULT);
   if (matches.size() != expectedCount)
     return testing::NSErrorWithLocalizedDescription(
         @"Unexpected number of bookmarks");
+
+  return nil;
+}
+
++ (NSError*)addBookmarkWithTitle:(NSString*)title URL:(NSString*)url {
+  if (![BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded:YES])
+    return testing::NSErrorWithLocalizedDescription(
+        @"Bookmark model was not loaded");
+
+  GURL bookmarkURL = GURL(base::SysNSStringToUTF8(url));
+  bookmarks::BookmarkModel* bookmark_model =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::SysNSStringToUTF16(title), bookmarkURL);
 
   return nil;
 }
@@ -308,16 +324,6 @@
 + (int)numberOfTimesPromoAlreadySeen {
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   return prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount);
-}
-
-+ (NSString*)setupFakeIdentity {
-  FakeChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
-                                     gaiaID:@"foo1ID"
-                                       name:@"Fake Foo 1"];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-  return identity.userEmail;
 }
 
 #pragma mark - Helpers

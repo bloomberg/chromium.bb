@@ -28,7 +28,7 @@ class LRUDict(object):
 
     Can be substituted in individual LRUDict instances, especially for tests.
     """
-    return round(time.time())
+    return int(round(time.time()))
 
   def __init__(self):
     # Ordered key -> (value, timestamp) mapping,
@@ -120,7 +120,7 @@ class LRUDict(object):
           'version': CURRENT_VERSION,
           'items': list(self._items.items()),
       }
-      json.dump(contents, f, separators=(',', ':'))
+      json.dump(contents, f, sort_keys=True, separators=(',', ':'))
 
     self._dirty = False
     return True

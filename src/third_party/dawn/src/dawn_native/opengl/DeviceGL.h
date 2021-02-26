@@ -19,6 +19,7 @@
 
 #include "common/Platform.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/QuerySet.h"
 #include "dawn_native/opengl/Forward.h"
 #include "dawn_native/opengl/GLFormat.h"
 #include "dawn_native/opengl/OpenGLFunctions.h"
@@ -61,6 +62,14 @@ namespace dawn_native { namespace opengl {
                                            uint64_t destinationOffset,
                                            uint64_t size) override;
 
+        MaybeError CopyFromStagingToTexture(const StagingBufferBase* source,
+                                            const TextureDataLayout& src,
+                                            TextureCopy* dst,
+                                            const Extent3D& copySizePixels) override;
+
+        uint32_t GetOptimalBytesPerRowAlignment() const override;
+        uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
+
       private:
         Device(AdapterBase* adapter,
                const DeviceDescriptor* descriptor,
@@ -70,11 +79,14 @@ namespace dawn_native { namespace opengl {
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
-        ResultOrError<BufferBase*> CreateBufferImpl(const BufferDescriptor* descriptor) override;
+        ResultOrError<Ref<BufferBase>> CreateBufferImpl(
+            const BufferDescriptor* descriptor) override;
         ResultOrError<ComputePipelineBase*> CreateComputePipelineImpl(
             const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
+        ResultOrError<QuerySetBase*> CreateQuerySetImpl(
+            const QuerySetDescriptor* descriptor) override;
         ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
@@ -93,11 +105,11 @@ namespace dawn_native { namespace opengl {
             const TextureViewDescriptor* descriptor) override;
 
         void InitTogglesFromDriver();
-        Serial CheckAndUpdateCompletedSerials() override;
+        ExecutionSerial CheckAndUpdateCompletedSerials() override;
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;
 
-        std::queue<std::pair<GLsync, Serial>> mFencesInFlight;
+        std::queue<std::pair<GLsync, ExecutionSerial>> mFencesInFlight;
 
         GLFormatTable mFormatTable;
     };

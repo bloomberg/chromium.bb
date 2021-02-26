@@ -32,35 +32,26 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   explicit SingleChildLocalFrameClient() = default;
 
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(child_);
+  void Trace(Visitor* visitor) const override {
     EmptyLocalFrameClient::Trace(visitor);
   }
 
   // LocalFrameClient overrides:
-  LocalFrame* FirstChild() const override { return child_.Get(); }
   LocalFrame* CreateFrame(const AtomicString& name,
                           HTMLFrameOwnerElement*) override;
-
-  void DidDetachChild() { child_ = nullptr; }
-
- private:
-  Member<LocalFrame> child_;
 };
 
 class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }
 
   // FrameClient overrides:
   void Detached(FrameDetachType) override;
-  LocalFrame* Parent() const override { return parent_.Get(); }
-  LocalFrame* Top() const override { return parent_.Get(); }
 
  private:
   Member<LocalFrame> parent_;
@@ -149,13 +140,17 @@ class RenderingTest : public PageTestBase {
     return element ? element->GetLayoutObject() : nullptr;
   }
 
+  LayoutBox* GetLayoutBoxByElementId(const char* id) const {
+    return To<LayoutBox>(GetLayoutObjectByElementId(id));
+  }
+
   PaintLayer* GetPaintLayerByElementId(const char* id) {
-    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
+    return To<LayoutBoxModelObject>(GetLayoutObjectByElementId(id))->Layer();
   }
 
   const DisplayItemClient* GetDisplayItemClientFromLayoutObject(
       LayoutObject* obj) const {
-    LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlowOrNull(obj);
+    auto* block_flow = DynamicTo<LayoutNGBlockFlow>(obj);
     if (block_flow && block_flow->PaintFragment())
       return block_flow->PaintFragment();
     return obj;

@@ -1,9 +1,11 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Next MinVersion: 5
+// Next MinVersion: 8
 
 module arc.mojom;
+
+import "mojo/public/mojom/base/time.mojom";
 
 [Extensible]
 enum BootType {
@@ -37,6 +39,17 @@ struct BootProgressEvent {
   // event by comparing the uptime with the ARC start time from
   // the same clock source MONOTONIC_CLOCK in session manager.
   int64 uptimeMillis;
+};
+
+// Describes a GFX metrics.
+struct GfxMetrics {
+  // Total frames rendered, it includes janky frames below.
+  uint64 framesTotal;
+  // Janky frames.
+  uint64 framesJanky;
+  // Maximum frame time in milliseconds of 95% of frames sorted from the
+  // shortest to longest.
+  uint32 frameTimePercentile95;
 };
 
 [Extensible]
@@ -92,7 +105,39 @@ enum CompanionLibApiId {
   IS_CLIPPING_TO_TASK_DISABLED = 23,
 };
 
-// Next method ID: 3
+// Describes the type of app kill being reported.
+[Extensible]
+enum AppKillType {
+  LMKD_KILL = 0,
+  OOM_KILL = 1,
+};
+
+// Describes an app kill from ARC instance.
+struct AppKill {
+  // Type of kill being reported.
+  AppKillType type;
+  // Number of kills. For LMKD kills, this is always 1. For OOM kills, this is
+  // the total oom_kill count from /proc/vm_stat.
+  uint32 count;
+};
+
+// Outlines the various states that can arise while performing Primary ABI
+// Migration on a ChromeOS device.
+[Extensible]
+enum ArcCorePriAbiMigEvent {
+  // If an unknown event is reported, it will be recorded as UNSUPPORTED.
+  kUnsupported = 0,
+
+  kMigrationCompleted = 1,
+  kGmsNoDowngrade = 2,
+  kGmsDowngradeSuccess = 3,
+  kGmsDowngradeFailure = 4,
+  kWebviewNoDowngrade = 5,
+  kWebviewDowngradeSuccess = 6,
+  kWebviewDowngradeFailure = 7,
+};
+
+// Next method ID: 8
 interface MetricsHost {
   // Reports boot progress events from ARC instance.
   ReportBootProgress@0(array<BootProgressEvent> events,
@@ -103,13 +148,32 @@ interface MetricsHost {
 
   // Reports api usage by ChromeOS Companion Library.
   [MinVersion=4] ReportCompanionLibApiUsage@2(CompanionLibApiId api_id);
+
+  // Reports LMKD and OOM kills from ARC.
+  [MinVersion=6] ReportAppKill@3(AppKill app_kill);
+
+  // Reports migration event by ARC Metrics Service.
+  [MinVersion=7] ReportArcCorePriAbiMigEvent@4(ArcCorePriAbiMigEvent event);
+
+  // Reports number of failed ABI Migration attempts by ARC Metrics Service.
+  [MinVersion=7] ReportArcCorePriAbiMigFailedTries@5(uint32 failed_attempts);
+
+  // Reports ABI Migration system packages downgrade delay by ArcMetricsService.
+  [MinVersion=7] ReportArcCorePriAbiMigDowngradeDelay@6(mojo_base.mojom.TimeDelta delay);
+
+  // Reports boot time during ABI Migration by ARC Metrics Service.
+  [MinVersion=7] ReportArcCorePriAbiMigBootTime@7(mojo_base.mojom.TimeDelta duration);
 };
 
-// Next method ID: 2
+// Next method ID: 3
 interface MetricsInstance {
   // DEPRECATED: Please use Init@1 instead.
-  InitDeprecated@0(MetricsHost host_ptr);
+  InitDeprecated@0(pending_remote<MetricsHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=2] Init@1(MetricsHost host_ptr) => ();
+  [MinVersion=2] Init@1(pending_remote<MetricsHost> host_remote) => ();
+
+  // Requests GFX metrics for the specified package. In case of error, null is
+  // returned.
+  [MinVersion=5] GetGfxMetrics@2(string packageName) => (GfxMetrics? metrics);
 };

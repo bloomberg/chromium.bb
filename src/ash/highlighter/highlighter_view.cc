@@ -8,6 +8,7 @@
 
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -49,19 +50,26 @@ void DrawSegment(gfx::Canvas& canvas,
                  const gfx::PointF& p1,
                  const gfx::PointF& p2,
                  int height,
-                 const cc::PaintFlags& flags) {
+                 const cc::PaintFlags& flags,
+                 float stroke_width) {
   const float y_offset = height / 2;
-  SkPath path;
-  // When drawn with a thick round-joined outline, starting in the middle
-  // of a vertical edge ensures smooth joining with the last edge.
-  path.moveTo(p1.x(), p1.y());
-  path.lineTo(p1.x(), p1.y() - y_offset);
-  path.lineTo(p2.x(), p2.y() - y_offset);
-  path.lineTo(p2.x(), p2.y() + y_offset);
-  path.lineTo(p1.x(), p1.y() + y_offset);
-  path.lineTo(p1.x(), p1.y() - y_offset);
-  path.lineTo(p1.x(), p1.y());
-  canvas.DrawPath(path, flags);
+  SkPath frame;
+  frame.moveTo(p1.x(), p1.y() - y_offset);
+  frame.lineTo(p2.x(), p2.y() - y_offset);
+  frame.lineTo(p2.x(), p2.y() + y_offset);
+  frame.lineTo(p1.x(), p1.y() + y_offset);
+  frame.close();
+
+  SkPaint paint;
+  paint.setStroke(true);
+  paint.setStrokeWidth(stroke_width);
+  paint.setStrokeJoin(SkPaint::kRound_Join);
+  paint.setStrokeCap(SkPaint::kRound_Cap);
+
+  SkPath fill;
+  paint.getFillPath(frame, &fill);
+  fill.addPath(frame);
+  canvas.DrawPath(fill, flags);
 }
 
 }  // namespace
@@ -71,14 +79,20 @@ const SkColor HighlighterView::kPenColor =
 
 const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
-HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
-                                 aura::Window* container)
-    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
-      points_(base::TimeDelta()),
+HighlighterView::HighlighterView(base::TimeDelta presentation_delay)
+    : points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay) {}
 
 HighlighterView::~HighlighterView() = default;
+
+// static
+views::UniqueWidgetPtr HighlighterView::Create(
+    const base::TimeDelta presentation_delay,
+    aura::Window* container) {
+  return fast_ink::FastInkView::CreateWidgetWithContents(
+      base::WrapUnique(new HighlighterView(presentation_delay)), container);
+}
 
 void HighlighterView::AddNewPoint(const gfx::PointF& point,
                                   const base::TimeTicks& time) {
@@ -208,12 +222,10 @@ void HighlighterView::Draw(gfx::Canvas& canvas) {
     return;
 
   cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(kPenColor);
   flags.setBlendMode(SkBlendMode::kSrc);
-  flags.setStrokeWidth(kPenTipWidth);
-  flags.setStrokeJoin(cc::PaintFlags::kRound_Join);
 
   // Decrease the segment height by the outline stroke width,
   // so that the vertical cross-section of the drawn segment
@@ -237,7 +249,7 @@ void HighlighterView::Draw(gfx::Canvas& canvas) {
       // Only draw the segment if it is touching the clip rect.
       if (clip_rect.Intersects(damage_rect)) {
         DrawSegment(canvas, previous_point.location, current_point.location,
-                    height, flags);
+                    height, flags, kPenTipWidth);
       }
     }
 

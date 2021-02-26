@@ -4,23 +4,30 @@
 
 #include "fuchsia/engine/context_provider_main.h"
 
-#include <fuchsia/feedback/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/sys/cpp/outgoing_directory.h>
 
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "components/version_info/version_info.h"
+#include "fuchsia/base/feedback_registration.h"
 #include "fuchsia/base/init_logging.h"
+#include "fuchsia/base/inspect.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/engine/context_provider_impl.h"
 
 namespace {
+
+constexpr char kFeedbackAnnotationsNamespace[] = "web-engine";
+constexpr char kCrashProductName[] = "FuchsiaWebEngine";
+// TODO(https://fxbug.dev/51490): Use a programmatic mechanism to obtain this.
+constexpr char kComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cmx";
 
 std::string GetVersionString() {
   std::string version_string = version_info::GetVersionNumber();
@@ -30,23 +37,13 @@ std::string GetVersionString() {
   return version_string;
 }
 
-// TODO(https://crbug.com/1010222): Add annotations at Context startup, once
-// Contexts are moved out to run in their own components.
-void RegisterFeedbackAnnotations() {
-  fuchsia::feedback::ComponentData component_data;
-  component_data.set_namespace_("web-engine");
-  component_data.mutable_annotations()->push_back(
-      {"version", version_info::GetVersionNumber()});
-  base::fuchsia::ComponentContextForCurrentProcess()
-      ->svc()
-      ->Connect<fuchsia::feedback::ComponentDataRegister>()
-      ->Upsert(std::move(component_data), []() {});
-}
-
 }  // namespace
 
 int ContextProviderMain() {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+
+  cr_fuchsia::RegisterProductDataForCrashReporting(kComponentUrl,
+                                                   kCrashProductName);
 
   if (!cr_fuchsia::InitLoggingFromCommandLine(
           *base::CommandLine::ForCurrentProcess())) {
@@ -54,7 +51,9 @@ int ContextProviderMain() {
   }
 
   // Populate feedback annotations for this component.
-  RegisterFeedbackAnnotations();
+  // TODO(crbug.com/1010222): Add annotations at Context startup, once Contexts
+  // are moved out to run in their own components.
+  cr_fuchsia::RegisterProductDataForFeedback(kFeedbackAnnotationsNamespace);
 
   LOG(INFO) << "Starting WebEngine " << GetVersionString();
 
@@ -62,11 +61,14 @@ int ContextProviderMain() {
 
   // Publish the ContextProvider and Debug services.
   sys::OutgoingDirectory* const directory =
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get();
+      base::ComponentContextForProcess()->outgoing().get();
   base::fuchsia::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
       directory->debug_dir(), &context_provider);
+
+  // Publish version information for this component to Inspect.
+  cr_fuchsia::PublishVersionInfoToInspect(base::ComponentInspectorForProcess());
 
   // Publish the Lifecycle service, used by the framework to request that the
   // service terminate.

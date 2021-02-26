@@ -37,7 +37,7 @@ std::vector<TextCharPos> GetCharPosList(pdfium::span<const uint32_t> char_codes,
     text_char_pos.m_GlyphIndex =
         font->GlyphFromCharCode(char_code, &is_vertical_glyph);
     uint32_t glyph_id = text_char_pos.m_GlyphIndex;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     text_char_pos.m_ExtGID = font->GlyphFromCharCodeExt(char_code);
     glyph_id = text_char_pos.m_ExtGID != static_cast<uint32_t>(-1)
                    ? text_char_pos.m_ExtGID
@@ -73,7 +73,7 @@ std::vector<TextCharPos> GetCharPosList(pdfium::span<const uint32_t> char_codes,
     if (use_fallback_font) {
       current_font =
           font->GetFontFallback(text_char_pos.m_FallbackFontPosition);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       text_char_pos.m_ExtGID = text_char_pos.m_GlyphIndex;
 #endif
     } else {
@@ -92,8 +92,8 @@ std::vector<TextCharPos> GetCharPosList(pdfium::span<const uint32_t> char_codes,
     float scaling_factor = 1.0f;
     if (!font->IsEmbedded() && font->HasFontWidths() && !is_vertical_writing &&
         !current_font->GetSubstFont()->m_bFlagMM) {
-      uint32_t pdf_glyph_width = font->GetCharWidthF(char_code);
-      uint32_t font_glyph_width =
+      int pdf_glyph_width = font->GetCharWidthF(char_code);
+      int font_glyph_width =
           current_font ? current_font->GetGlyphWidth(text_char_pos.m_GlyphIndex)
                        : 0;
       if (font_glyph_width && pdf_glyph_width > font_glyph_width + 1) {
@@ -118,11 +118,9 @@ std::vector<TextCharPos> GetCharPosList(pdfium::span<const uint32_t> char_codes,
     if (is_vertical_writing) {
       text_char_pos.m_Origin = CFX_PointF(0, text_char_pos.m_Origin.x);
 
-      short vx;
-      short vy;
-      cid_font->GetVertOrigin(cid, vx, vy);
-      text_char_pos.m_Origin.x -= font_size * vx / 1000;
-      text_char_pos.m_Origin.y -= font_size * vy / 1000;
+      CFX_Point16 vertical_origin = cid_font->GetVertOrigin(cid);
+      text_char_pos.m_Origin.x -= font_size * vertical_origin.x / 1000;
+      text_char_pos.m_Origin.y -= font_size * vertical_origin.y / 1000;
     }
 
     const uint8_t* cid_transform = cid_font->GetCIDTransform(cid);

@@ -60,7 +60,7 @@ AbstractTts = class {
      */
     this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
 
-    if (AbstractTts.substitutionDictionaryRegexp_ == undefined) {
+    if (AbstractTts.substitutionDictionaryRegexp_ === undefined) {
       // Create an expression that matches all words in the substitution
       // dictionary.
       const symbols = [];
@@ -129,23 +129,23 @@ AbstractTts = class {
     }
     if (properties) {
       const tts = AbstractTts;
-      if (typeof (properties[tts.VOLUME]) == 'number') {
+      if (typeof (properties[tts.VOLUME]) === 'number') {
         mergedProperties[tts.VOLUME] = properties[tts.VOLUME];
       }
-      if (typeof (properties[tts.PITCH]) == 'number') {
+      if (typeof (properties[tts.PITCH]) === 'number') {
         mergedProperties[tts.PITCH] = properties[tts.PITCH];
       }
-      if (typeof (properties[tts.RATE]) == 'number') {
+      if (typeof (properties[tts.RATE]) === 'number') {
         mergedProperties[tts.RATE] = properties[tts.RATE];
       }
-      if (typeof (properties[tts.LANG]) == 'string') {
+      if (typeof (properties[tts.LANG]) === 'string') {
         mergedProperties[tts.LANG] = properties[tts.LANG];
       }
 
       const context = this;
       const mergeRelativeProperty = function(abs, rel) {
-        if (typeof (properties[rel]) == 'number' &&
-            typeof (mergedProperties[abs]) == 'number') {
+        if (typeof (properties[rel]) === 'number' &&
+            typeof (mergedProperties[abs]) === 'number') {
           mergedProperties[abs] += properties[rel];
           const min = context.propertyMin[abs];
           const max = context.propertyMax[abs];
@@ -188,17 +188,21 @@ AbstractTts = class {
    * @protected
    */
   preprocess(text, properties) {
-    if (text.length == 1 && text >= 'A' && text <= 'Z') {
+    if (text.length === 1 && text >= 'A' && text <= 'Z') {
       // Describe capital letters according to user's setting.
-      if (localStorage['capitalStrategy'] == 'increasePitch') {
+      if (localStorage['capitalStrategy'] === 'increasePitch') {
         for (const prop in AbstractTts.PERSONALITY_CAPITAL) {
           if (properties[prop] === undefined) {
             properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
           }
         }
-      } else if (localStorage['capitalStrategy'] == 'announceCapitals') {
+      } else if (localStorage['capitalStrategy'] === 'announceCapitals') {
         text = Msgs.getMsg('announce_capital_letter', [text]);
       }
+    }
+
+    if (localStorage['usePitchChanges'] === 'false') {
+      delete properties.relativePitch;
     }
 
     // Substitute all symbols in the substitution dictionary. This is pretty
@@ -210,7 +214,7 @@ AbstractTts = class {
         });
 
     // Handle single characters that we want to make sure we pronounce.
-    if (text.length == 1) {
+    if (text.length === 1) {
       return AbstractTts.CHARACTER_DICTIONARY[text] ?
           (new goog.i18n.MessageFormat(
                Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[text])))
@@ -293,6 +297,39 @@ AbstractTts.FONT_WEIGHT = 'fontWeight';
 
 /** TTS punctuation-echo property. @type {string} */
 AbstractTts.PUNCTUATION_ECHO = 'punctuationEcho';
+
+/**
+ * List of punctuation echoes that the user can cycle through.
+ * @type {!Array<{name:(string),
+ * msg:(string),
+ * regexp:(RegExp),
+ * clear:(boolean)}>}
+ */
+AbstractTts.PUNCTUATION_ECHOES = [
+  // Punctuation echoed for the 'none' option.
+  {
+    name: 'none',
+    msg: 'no_punctuation',
+    regexp: /[-$#"()*;:<>\n\\\/+='~`@_]/g,
+    clear: true
+  },
+
+  // Punctuation echoed for the 'some' option.
+  {
+    name: 'some',
+    msg: 'some_punctuation',
+    regexp: /[$#"*<>\\\/\{\}+=~`%\u2022]/g,
+    clear: false
+  },
+
+  // Punctuation echoed for the 'all' option.
+  {
+    name: 'all',
+    msg: 'all_punctuation',
+    regexp: /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022]/g,
+    clear: false
+  }
+];
 
 /** TTS pause property. @type {string} */
 AbstractTts.PAUSE = 'pause';
@@ -520,3 +557,6 @@ AbstractTts.substitutionDictionaryRegexp_;
  */
 AbstractTts.repetitionRegexp_ =
     /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{2,}/g;
+
+/** TTS phonetic-characters property. @type {string} */
+AbstractTts.PHONETIC_CHARACTERS = 'phoneticCharacters';

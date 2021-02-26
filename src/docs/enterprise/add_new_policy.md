@@ -37,10 +37,12 @@ Usually you need a policy when
         sure you get the version and feature flags (such as dynamic_refresh and
         supported_on) right.
     -   Here are the most used attributes. Please note that, all attributes
-        below other than `supported_on` and `default_for_enterprise_users` do
-        not change the code behavior.
-        -   `supported_on`: It controls the platform and Chrome milestone the
-            policy supports.
+        below other than `supported_on`, `future_on' and
+        `default_for_enterprise_users` do not change the code behavior.
+        -   `supported_on` and `future_on`: They control the platforms that the
+            policy supports. `supported_on` is used for released platforms with
+            milestone range while `future_on` is used for unreleased platforms.
+            See **Launch a policy** below for more information.
         -   `default_for_enterprise_users`: Its value is applied as a mandatory
             policy for managed users on Chrome OS unless a different setting is
             explicitly set.
@@ -51,9 +53,6 @@ Usually you need a policy when
         -   `can_be_recommended`: It tells the admin whether they can mark the
             policy as recommended and allow the user to override it in the UI,
             using a command line switch or an extension.
-        -   `future`: It hides the policy from auto-generated templates and
-            documentation. It's used when your policy needs multiple milestone
-            development.
     - The complete list of attributes and their expected values can be found in
       the
       [policy_templates.json](https://cs.chromium.org/chromium/src/components/policy/resources/policy_templates.json).
@@ -66,6 +65,9 @@ Usually you need a policy when
             traditionally, and we've seen requests from organizations to
             explicitly spell out the behavior for all possible values and for
             when the policy is unset.
+    -   See [description_guidelines.md](https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/enterprise/description_guidelines.md)
+        for additional guidelines when creating a description, including how
+        various products should be referenced.
 3.  Create a preference and map the policy value to it.
     -   All policy values need to be mapped into a prefs value before being used
         unless the policy is needed before PrefService initialization.
@@ -152,6 +154,83 @@ Usually you need a policy when
 10. If your policy has interactions with other policies, make sure to document,
     test and cover these by automated tests.
 
+## Launch a policy
+1.  When adding a new policy, put the platforms it will be supported in the
+    `future_on` list.
+    - The policy is hidden from any auto-generated template or documentation on
+      those platforms.
+    - The policy will also be unavailable on Beta and Stable channel unless it's
+      enabled specifically by
+      [EnableExperimentalPolicies](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableExperimentalPolicies)
+      policy.
+2.  Implement the policy, get launch approval if necessary.
+3.  If the policy needs to be tested with small set of users first, keep the
+    platforms in the `future_on` list and running the tester program with the
+    [EnableExperimentalPolicies](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableExperimentalPolicies)
+    policy.
+4.  Move the launched platforms from `future_on` to `supported_on` and set the
+    'since_version' of those platforms to the milestone for which the launch
+    approval was granted.
+5.  If the 'since_version' is set to a earlier milestone, you need to merge
+    back all necessary commits.
+
+**Do not use finch to control policy launch process.**
+
+Policies are inherently switches that admins will turn on if they need. Getting
+inconsistent behavior based on factors outside of their control only causes
+confusion and is source for support requests. Use the step 3 above if the policy
+needs external testers before being officially announced.
+
+## Deprecating a policy
+
+A policy is deprecated when admins should stop using it. This is often because
+a new policy was been released that should be used instead.
+
+When marking a policy as deprecated, it still needs to work the same as before
+in Chrome. If you wish to remove the functionality, you'll need to changed the
+supported_on field. See "Removing support for a policy" below for more details.
+
+### Steps
+1. Update policy_templates.json, marking the policy as deprecated and updating
+   the description to describe when and why the policy as deprecated and what
+   admins should be doing instead.
+1. Update the policy handling code. This is generally ensuring that if the old
+   policy is set, the values are propagated to the new policies if they were
+   unset.
+1. Notify chromium-enterprise@chromium.org to ensure this deprecation is
+   mentioned in the enterprise release notes.
+
+## Removing support for a policy
+
+Generally speaking, policies shouldn't be removed from Chrome. Although they can
+be deprecated fairly easily, removing support for a policy is a much bigger
+issue, because admins might be relying on that functionality.
+
+The two main reasons for removing support for a policy are:
+1.  It was a policy that was always documented as having a limited lifespan,
+    such as an escape hatch policy.
+1.  The feature this policy impacts was removed from Chrome.
+
+If the policy was never launched, it can also be deleted from
+policy_templates.json instead of just being marked as no longer supported.
+In this case, please remember to add the deleted id to deleted_policy_ids.
+
+If you want to remove support for another reason, please reach out to someone in [ENTERPRISE_POLICY_OWNERS](https://cs.chromium.org/chromium/src/components/policy/resources/ENTERPRISE_POLICY_OWNERS)
+to ensure this is okay. The general preference is to leave policies as
+deprecated, but still supported.
+
+When removing support for a policy, update `supported_on` to correctly list the
+last milestone the policy is supported on. Please also set 'deprecated' to True
+if the policy skipped past the deprecation state.
+
+### Steps
+1. Update policy_templates.json, marking the policy as no longer supported.
+   Also marking as deprecated if not previously done.
+1. Remove the related policy_test_case.json code one milestone before support is removed.
+1. Remove the policy handling code.
+1. Notify chromium-enterprise@chromium.org to ensure this removal of support is
+   mentioned in the enterprise release notes.
+
 ## Examples
 
 Here is an example based on the instructions above. It's a good, simple place to
@@ -221,6 +300,7 @@ The presubmit checks perform the following verifications:
             before a new stable release has rolled out. Normally such a change
             should eventually be merged into the stable branch before the
             release.
+    3. `supported_on` list is empty.
 
 2.  If the policy is considered **unreleased**, all changes to it are allowed.
 
@@ -261,6 +341,15 @@ The presubmit checks perform the following verifications:
         1.  Dictionary policies can have some of their "required" fields removed
             in order to be less restrictive.
 
+4.  A policy is **partially released**  if both `supported_on` and
+    `future_on` list are not empty.
+
+5.  The **partially released** policy is considered as a **released** policy
+    and only the `future_on` list can be modified freely. However, any
+    platform in the `supported_on` list cannot be moved back to the `future_on`
+    list.
+
+
 ## Cloud Policy
 
 **For Googlers only**: The Cloud Policy will be maintained by the Admin console
@@ -292,4 +381,7 @@ than regular consumer behavior.
 
 ### Additional Notes
 
-1. policy_templates.json is actually a Python dictionary even though the file name contains *json*.
+1. policy_templates.json is actually a Python dictionary even though the file
+   name contains *json*.
+2. The `future_on` flag can disable policy on Beta of Stable channel only if the
+   policy value is copied to `PrefService` in Step 3 of **Adding a new policy**.

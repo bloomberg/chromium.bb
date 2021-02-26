@@ -13,7 +13,8 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
@@ -45,7 +47,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -331,6 +332,35 @@ public class TabSuspensionTest {
             TabTestUtils.simulateCrash(mTab, true);
             assertSuspendedTabHidden(mTab);
         });
+    }
+
+    @Test
+    @MediumTest
+    public void testSuspendNullCurrentTab() {
+        mActivityTestRule.loadUrl(mStartingUrl);
+        ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(), mActivity);
+
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+        suspendDomain(STARTING_FQDN);
+
+        // We can't use loadUrlInNewTab because the site being suspended will prevent loading from
+        // completing, and loadUrlInNewTab expects loading to succeed.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Tab tab2 = mActivity.getActivityTab();
+
+        startLoadingUrl(tab2, mStartingUrl);
+        waitForSuspendedTabToShow(tab2, STARTING_FQDN);
+    }
+
+    @Test
+    @MediumTest
+    public void testSuspendUninitializedCurrentTab() {
+        mActivityTestRule.loadUrl(mStartingUrl);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTab.destroy());
+
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+        suspendDomain(STARTING_FQDN);
     }
 
     private void startLoadingUrl(Tab tab, String url) {

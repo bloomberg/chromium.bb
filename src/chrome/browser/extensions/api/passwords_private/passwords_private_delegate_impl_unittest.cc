@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -23,19 +23,22 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -46,12 +49,15 @@
 
 using MockReauthCallback = base::MockCallback<
     password_manager::PasswordAccessAuthenticator::ReauthCallback>;
-using PasswordFormList = std::vector<std::unique_ptr<autofill::PasswordForm>>;
+using PasswordFormList =
+    std::vector<std::unique_ptr<password_manager::PasswordForm>>;
 using password_manager::ReauthPurpose;
 using password_manager::TestPasswordStore;
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Ne;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::StrictMock;
 namespace extensions {
 
@@ -62,10 +68,14 @@ constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
 
-scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
+scoped_refptr<TestPasswordStore> CreateAndUseTestAccountPasswordStore(
     Profile* profile) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    return nullptr;
+  }
   return base::WrapRefCounted(static_cast<TestPasswordStore*>(
-      PasswordStoreFactory::GetInstance()
+      AccountPasswordStoreFactory::GetInstance()
           ->SetTestingFactoryAndUse(
               profile,
               base::BindRepeating(&password_manager::BuildPasswordStore<
@@ -84,7 +94,8 @@ class MockPasswordManagerClient : public ChromePasswordManagerClient {
   // ChromePasswordManagerClient overrides.
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
-              (base::OnceCallback<void(ReauthSucceeded)>),
+              (signin_metrics::ReauthAccessPoint,
+               base::OnceCallback<void(ReauthSucceeded)>),
               (override));
   const password_manager::MockPasswordFeatureManager*
   GetPasswordFeatureManager() const override {
@@ -165,10 +176,10 @@ std::unique_ptr<KeyedService> BuildPasswordsPrivateEventRouter(
       PasswordsPrivateEventRouter::Create(context));
 }
 
-autofill::PasswordForm CreateSampleForm() {
-  autofill::PasswordForm form;
+password_manager::PasswordForm CreateSampleForm() {
+  password_manager::PasswordForm form;
   form.signon_realm = "http://abc1.com";
-  form.origin = GURL("http://abc1.com");
+  form.url = GURL("http://abc1.com");
   form.username_value = base::ASCIIToUTF16("test@gmail.com");
   form.password_value = base::ASCIIToUTF16("test");
   return form;
@@ -182,7 +193,7 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   ~PasswordsPrivateDelegateImplTest() override;
 
   // Sets up a testing password store and fills it with |forms|.
-  void SetUpPasswordStore(std::vector<autofill::PasswordForm> forms);
+  void SetUpPasswordStore(std::vector<password_manager::PasswordForm> forms);
 
   // Sets up a testing EventRouter with a production
   // PasswordsPrivateEventRouter.
@@ -196,6 +207,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   extensions::TestEventRouter* event_router_ = nullptr;
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
+  scoped_refptr<TestPasswordStore> account_store_ =
+      CreateAndUseTestAccountPasswordStore(&profile_);
   ui::TestClipboard* test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
 
@@ -213,8 +226,8 @@ PasswordsPrivateDelegateImplTest::~PasswordsPrivateDelegateImplTest() {
 }
 
 void PasswordsPrivateDelegateImplTest::SetUpPasswordStore(
-    std::vector<autofill::PasswordForm> forms) {
-  for (const autofill::PasswordForm& form : forms) {
+    std::vector<password_manager::PasswordForm> forms) {
+  for (const password_manager::PasswordForm& form : forms) {
     store_->AddLogin(form);
   }
   // Spin the loop to allow PasswordStore tasks being processed.
@@ -238,13 +251,43 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
   delegate.GetSavedPasswordsList(callback.Get());
 
   PasswordFormList list;
-  list.push_back(std::make_unique<autofill::PasswordForm>());
+  list.push_back(std::make_unique<password_manager::PasswordForm>());
 
   EXPECT_CALL(callback, Run);
   delegate.SetPasswordList(list);
 
   EXPECT_CALL(callback, Run);
   delegate.GetSavedPasswordsList(callback.Get());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       PasswordsDuplicatedInStoresHaveSameFrontendId) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto account_password = std::make_unique<password_manager::PasswordForm>();
+  account_password->in_store =
+      password_manager::PasswordForm::Store::kAccountStore;
+  auto profile_password = std::make_unique<password_manager::PasswordForm>();
+  profile_password->in_store =
+      password_manager::PasswordForm::Store::kProfileStore;
+
+  PasswordFormList list;
+  list.push_back(std::move(account_password));
+  list.push_back(std::move(profile_password));
+
+  delegate.SetPasswordList(list);
+
+  base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback> callback;
+  int first_frontend_id, second_frontend_id;
+  EXPECT_CALL(callback, Run(SizeIs(2)))
+      .WillOnce([&](const PasswordsPrivateDelegate::UiEntries& passwords) {
+        first_frontend_id = passwords[0].frontend_id;
+        second_frontend_id = passwords[1].frontend_id;
+      });
+
+  delegate.GetSavedPasswordsList(callback.Get());
+
+  EXPECT_EQ(first_frontend_id, second_frontend_id);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
@@ -256,7 +299,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
   delegate.GetPasswordExceptionsList(callback.Get());
 
   PasswordFormList list;
-  list.push_back(std::make_unique<autofill::PasswordForm>());
+  list.push_back(std::make_unique<password_manager::PasswordForm>());
 
   EXPECT_CALL(callback, Run);
   delegate.SetPasswordExceptionList(list);
@@ -265,8 +308,42 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
   delegate.GetPasswordExceptionsList(callback.Get());
 }
 
+TEST_F(PasswordsPrivateDelegateImplTest,
+       ExceptionsDuplicatedInStoresHaveSameFrontendId) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto account_exception = std::make_unique<password_manager::PasswordForm>();
+  account_exception->blocked_by_user = true;
+  account_exception->in_store =
+      password_manager::PasswordForm::Store::kAccountStore;
+  auto profile_exception = std::make_unique<password_manager::PasswordForm>();
+  profile_exception->blocked_by_user = true;
+  profile_exception->in_store =
+      password_manager::PasswordForm::Store::kProfileStore;
+
+  PasswordFormList list;
+  list.push_back(std::move(account_exception));
+  list.push_back(std::move(profile_exception));
+
+  delegate.SetPasswordExceptionList(list);
+
+  base::MockCallback<PasswordsPrivateDelegate::ExceptionEntriesCallback>
+      callback;
+  int first_frontend_id, second_frontend_id;
+  EXPECT_CALL(callback, Run(SizeIs(2)))
+      .WillOnce(
+          [&](const PasswordsPrivateDelegate::ExceptionEntries& exceptions) {
+            first_frontend_id = exceptions[0].frontend_id;
+            second_frontend_id = exceptions[1].frontend_id;
+          });
+
+  delegate.GetPasswordExceptionsList(callback.Get());
+
+  EXPECT_EQ(first_frontend_id, second_frontend_id);
+}
+
 TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
-  autofill::PasswordForm sample_form = CreateSampleForm();
+  password_manager::PasswordForm sample_form = CreateSampleForm();
   SetUpPasswordStore({sample_form});
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
@@ -285,11 +362,12 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
                   base::UTF8ToUTF16(password_list[0].username));
       }));
   EXPECT_TRUE(got_passwords);
-
   int sample_form_id = delegate.GetPasswordIdGeneratorForTesting().GenerateId(
       password_manager::CreateSortKey(sample_form));
-  delegate.ChangeSavedPassword(sample_form_id, base::ASCIIToUTF16("new_user"),
-                               base::ASCIIToUTF16("new_pass"));
+
+  EXPECT_TRUE(delegate.ChangeSavedPassword({sample_form_id},
+                                           base::ASCIIToUTF16("new_user"),
+                                           base::ASCIIToUTF16("new_pass")));
 
   // Spin the loop to allow PasswordStore tasks posted when changing the
   // password to be completed.
@@ -301,8 +379,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
       [&](const PasswordsPrivateDelegate::UiEntries& password_list) {
         got_passwords = true;
         ASSERT_EQ(1u, password_list.size());
-        EXPECT_EQ(base::ASCIIToUTF16("new_user"),
-                  base::UTF8ToUTF16(password_list[0].username));
+        EXPECT_EQ("new_user", password_list[0].username);
       }));
   EXPECT_TRUE(got_passwords);
 }
@@ -310,7 +387,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
 // Checking callback result of RequestPlaintextPassword with reason Copy.
 // By implementation for Copy, callback will receive empty string.
 TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
-  autofill::PasswordForm form = CreateSampleForm();
+  password_manager::PasswordForm form = CreateSampleForm();
   SetUpPasswordStore({form});
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
@@ -329,7 +406,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
       nullptr);
 
   base::string16 result;
-  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(form.password_value, result);
 
   histogram_tester().ExpectUniqueSample(
@@ -348,7 +426,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
   ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
       .WillByDefault(Return(false));
 
-  EXPECT_CALL(*client, TriggerReauthForPrimaryAccount);
+  EXPECT_CALL(*client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _));
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
   delegate.SetAccountStorageOptIn(true, web_contents.get());
@@ -368,7 +448,10 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   ON_CALL(*feature_manager, IsOptedInForAccountStorage)
       .WillByDefault(Return(true));
 
-  EXPECT_CALL(*client, TriggerReauthForPrimaryAccount).Times(0);
+  EXPECT_CALL(*client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _))
+      .Times(0);
   EXPECT_CALL(*feature_manager, OptOutOfAccountStorageAndClearSettings);
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
@@ -396,7 +479,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
       nullptr);
   // Clipboard should not be modifiend in case Reauth failed
   base::string16 result;
-  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(base::string16(), result);
   EXPECT_EQ(before_call, test_clipboard_->GetLastModifiedTime());
 
@@ -495,37 +579,36 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthFailedOnExport) {
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
 }
 
-// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword
+// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextInsecurePassword
 // fails if the re-auth fails.
 TEST_F(PasswordsPrivateDelegateImplTest,
-       TestReauthOnGetPlaintextCompromisedPasswordFails) {
+       TestReauthOnGetPlaintextInsecurePasswordFails) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
   MockReauthCallback reauth_callback;
   delegate.set_os_reauth_call(reauth_callback.Get());
 
   base::MockCallback<
-      PasswordsPrivateDelegate::PlaintextCompromisedPasswordCallback>
+      PasswordsPrivateDelegate::PlaintextInsecurePasswordCallback>
       credential_callback;
 
   EXPECT_CALL(reauth_callback, Run(ReauthPurpose::VIEW_PASSWORD))
       .WillOnce(Return(false));
   EXPECT_CALL(credential_callback, Run(Eq(base::nullopt)));
 
-  delegate.GetPlaintextCompromisedPassword(
-      api::passwords_private::CompromisedCredential(),
+  delegate.GetPlaintextInsecurePassword(
+      api::passwords_private::InsecureCredential(),
       api::passwords_private::PLAINTEXT_REASON_VIEW, nullptr,
       credential_callback.Get());
 }
 
-// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword
+// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextInsecurePassword
 // succeeds if the re-auth succeeds and there is a matching compromised
 // credential in the store.
-TEST_F(PasswordsPrivateDelegateImplTest,
-       TestReauthOnGetPlaintextCompromisedPassword) {
+TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnGetPlaintextCompPassword) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
-  autofill::PasswordForm form = CreateSampleForm();
+  password_manager::PasswordForm form = CreateSampleForm();
   password_manager::CompromisedCredentials compromised_credentials;
   compromised_credentials.signon_realm = form.signon_realm;
   compromised_credentials.username = form.username_value;
@@ -533,22 +616,22 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   store_->AddCompromisedCredentials(compromised_credentials);
   base::RunLoop().RunUntilIdle();
 
-  api::passwords_private::CompromisedCredential credential =
+  api::passwords_private::InsecureCredential credential =
       std::move(delegate.GetCompromisedCredentials().at(0));
 
   MockReauthCallback reauth_callback;
   delegate.set_os_reauth_call(reauth_callback.Get());
 
   base::MockCallback<
-      PasswordsPrivateDelegate::PlaintextCompromisedPasswordCallback>
+      PasswordsPrivateDelegate::PlaintextInsecurePasswordCallback>
       credential_callback;
 
-  base::Optional<api::passwords_private::CompromisedCredential> opt_credential;
+  base::Optional<api::passwords_private::InsecureCredential> opt_credential;
   EXPECT_CALL(reauth_callback, Run(ReauthPurpose::VIEW_PASSWORD))
       .WillOnce(Return(true));
   EXPECT_CALL(credential_callback, Run).WillOnce(MoveArg(&opt_credential));
 
-  delegate.GetPlaintextCompromisedPassword(
+  delegate.GetPlaintextInsecurePassword(
       std::move(credential), api::passwords_private::PLAINTEXT_REASON_VIEW,
       nullptr, credential_callback.Get());
 

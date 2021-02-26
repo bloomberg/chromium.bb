@@ -13,7 +13,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT DefaultDecoderFactory : public DecoderFactory {
+class MEDIA_EXPORT DefaultDecoderFactory final : public DecoderFactory {
  public:
   // |external_decoder_factory| is optional decoder factory that provides
   // additional decoders.
@@ -22,12 +22,12 @@ class MEDIA_EXPORT DefaultDecoderFactory : public DecoderFactory {
   ~DefaultDecoderFactory() final;
 
   void CreateAudioDecoders(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       MediaLog* media_log,
       std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) final;
 
   void CreateVideoDecoders(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log,
       RequestOverlayInfoCB request_overlay_info_cb,

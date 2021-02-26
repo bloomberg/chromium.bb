@@ -26,12 +26,7 @@ void PressTranslate(Browser* browser) {
   TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
   DCHECK(bubble);
 
-  views::LabelButton button(nullptr, base::string16());
-  button.SetID(TranslateBubbleView::BUTTON_ID_TRANSLATE);
-
-  bubble->ButtonPressed(&button,
-                        ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
-                                     ui::DomCode::ENTER, ui::EF_NONE));
+  bubble->TabSelectedAt(1);
 }
 
 void PressRevert(Browser* browser) {
@@ -39,12 +34,7 @@ void PressRevert(Browser* browser) {
   TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
   DCHECK(bubble);
 
-  views::LabelButton button(nullptr, base::string16());
-  button.SetID(TranslateBubbleView::BUTTON_ID_SHOW_ORIGINAL);
-
-  bubble->ButtonPressed(&button,
-                        ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
-                                     ui::DomCode::ENTER, ui::EF_NONE));
+  bubble->TabSelectedAt(0);
 }
 
 void SelectTargetLanguageByDisplayName(Browser* browser,
@@ -71,8 +61,7 @@ void SelectTargetLanguageByDisplayName(Browser* browser,
 
   // Simulate selecting the correct index of the target language combo box.
   bubble->target_language_combobox_->SetSelectedIndex(language_index);
-  bubble->HandleComboboxPerformAction(
-      TranslateBubbleView::COMBOBOX_ID_TARGET_LANGUAGE);
+  bubble->TargetLanguageChanged();
 }
 
 }  // namespace test_utils

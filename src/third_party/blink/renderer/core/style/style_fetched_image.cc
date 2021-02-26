@@ -109,7 +109,7 @@ bool StyleFetchedImage::ErrorOccurred() const {
 FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size,
+    const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = image_->GetImage();
   if (image_->HasDevicePixelRatioHeaderValue()) {
@@ -187,7 +187,8 @@ void StyleFetchedImage::LoadDeferredImage(const Document& document) {
   image_->LoadDeferredImage(document_->Fetcher());
 }
 
-bool StyleFetchedImage::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
+bool StyleFetchedImage::GetImageAnimationPolicy(
+    mojom::blink::ImageAnimationPolicy& policy) {
   if (!document_ || !document_->GetSettings()) {
     return false;
   }
@@ -195,7 +196,7 @@ bool StyleFetchedImage::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
   return true;
 }
 
-void StyleFetchedImage::Trace(Visitor* visitor) {
+void StyleFetchedImage::Trace(Visitor* visitor) const {
   visitor->Trace(image_);
   visitor->Trace(document_);
   StyleImage::Trace(visitor);

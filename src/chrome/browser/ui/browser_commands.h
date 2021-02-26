@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -140,6 +141,10 @@ void BookmarkCurrentTab(Browser* browser);
 bool CanBookmarkCurrentTab(const Browser* browser);
 void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
+bool CanMoveActiveTabToReadLater(Browser* browser);
+bool MoveCurrentTabToReadLater(Browser* browser);
+bool MarkCurrentTabAsReadInReadLater(Browser* browser);
+bool IsCurrentTabUnreadInReadLater(Browser* browser);
 void SaveCreditCard(Browser* browser);
 void MigrateLocalCards(Browser* browser);
 void MaybeShowSaveLocalCardSignInPromo(Browser* browser);
@@ -161,13 +166,13 @@ bool CanRouteMedia(Browser* browser);
 // from the app menu. That will need to be changed if this is to be invoked from
 // elsewhere.
 void RouteMediaInvokedFromAppMenu(Browser* browser);
-void EmailPageLocation(Browser* browser);
-bool CanEmailPageLocation(const Browser* browser);
 void CutCopyPaste(Browser* browser, int command_id);
 void Find(Browser* browser);
 void FindNext(Browser* browser);
 void FindPrevious(Browser* browser);
 void FindInPage(Browser* browser, bool find_next, bool forward_direction);
+void ShowTabSearch(Browser* browser);
+void CloseTabSearch(Browser* browser);
 bool CanCloseFind(Browser* browser);
 void CloseFind(Browser* browser);
 void Zoom(Browser* browser, content::PageZoom zoom);
@@ -179,10 +184,15 @@ void FocusBookmarksToolbar(Browser* browser);
 void FocusInactivePopupForAccessibility(Browser* browser);
 void FocusNextPane(Browser* browser);
 void FocusPreviousPane(Browser* browser);
-void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action);
+void ToggleDevToolsWindow(Browser* browser,
+                          DevToolsToggleAction action,
+                          DevToolsOpenedByAction opened_by);
 bool CanOpenTaskManager();
 void OpenTaskManager(Browser* browser);
-void OpenFeedbackDialog(Browser* browser, FeedbackSource source);
+void OpenFeedbackDialog(
+    Browser* browser,
+    FeedbackSource source,
+    const std::string& description_template = std::string());
 void ToggleBookmarkBar(Browser* browser);
 void ToggleShowFullURLs(Browser* browser);
 void ShowAppMenu(Browser* browser);
@@ -204,6 +214,10 @@ void CopyURL(Browser* browser);
 // the tabbed Browser.
 Browser* OpenInChrome(Browser* hosted_app_browser);
 bool CanViewSource(const Browser* browser);
+bool CanToggleCaretBrowsing(Browser* browser);
+void ToggleCaretBrowsing(Browser* browser);
+void PromptToNameWindow(Browser* browser);
+void ToggleCommander(Browser* browser);
 
 base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser);
 

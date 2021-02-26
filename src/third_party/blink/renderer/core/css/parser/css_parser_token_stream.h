@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_TOKEN_STREAM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_TOKEN_STREAM_H_
 
-#include "base/macros.h"
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -47,15 +47,36 @@ class CORE_EXPORT CSSParserTokenStream {
     explicit BlockGuard(CSSParserTokenStream& stream) : stream_(stream) {
       const CSSParserToken next = stream.ConsumeInternal();
       DCHECK_EQ(next.GetBlockType(), CSSParserToken::kBlockStart);
+      initial_stack_depth_ = stream_.BlockStackDepth();
+      DCHECK_GT(initial_stack_depth_, 0u);
     }
 
     ~BlockGuard() {
       stream_.EnsureLookAhead();
       stream_.UncheckedSkipToEndOfBlock();
+      DCHECK(AtEndOfBlock());
+    }
+
+    bool AtEndOfBlock() const {
+      return (stream_.BlockStackDepth() == initial_stack_depth_ - 1) ||
+             stream_.AtEnd();
     }
 
    private:
     CSSParserTokenStream& stream_;
+    wtf_size_t initial_stack_depth_;
+  };
+
+  // Instantiate this to set a short-term boundary for range extraction.
+  class RangeBoundary {
+   public:
+    RangeBoundary(CSSParserTokenStream& stream,
+                  CSSParserTokenType boundary_type)
+        : auto_reset_(&stream.boundary_type_, boundary_type) {}
+    ~RangeBoundary() = default;
+
+   private:
+    base::AutoReset<CSSParserTokenType> auto_reset_;
   };
 
   // We found that this value works well empirically by printing out the
@@ -72,6 +93,8 @@ class CORE_EXPORT CSSParserTokenStream {
   }
 
   CSSParserTokenStream(CSSParserTokenStream&&) = default;
+  CSSParserTokenStream(const CSSParserTokenStream&) = delete;
+  CSSParserTokenStream& operator=(const CSSParserTokenStream&) = delete;
 
   inline void EnsureLookAhead() {
     if (!HasLookAhead()) {
@@ -132,6 +155,12 @@ class CORE_EXPORT CSSParserTokenStream {
     return tokenizer_.PreviousOffset();
   }
 
+  // Returns a view on a range of characters in the original string.
+  StringView StringRangeAt(wtf_size_t start, wtf_size_t length) const;
+
+  // Returns the block stack depth for the underlying tokenizer.
+  wtf_size_t BlockStackDepth() const;
+
   void ConsumeWhitespace();
   CSSParserToken ConsumeIncludingWhitespace();
   void UncheckedConsumeComponentValue();
@@ -140,7 +169,7 @@ class CORE_EXPORT CSSParserTokenStream {
   // token and return false.
   bool ConsumeCommentOrNothing();
 
-  // Invalidates any ranges created by previous calls to this function
+  // Invalidates any ranges created by previous calls to ConsumeUntil*()
   template <CSSParserTokenType... Types>
   CSSParserTokenRange ConsumeUntilPeekedTypeIs() {
     EnsureLookAhead();
@@ -148,24 +177,39 @@ class CORE_EXPORT CSSParserTokenStream {
     buffer_.Shrink(0);
     while (!UncheckedAtEnd() &&
            !detail::IsTokenTypeOneOf<Types...>(UncheckedPeek().GetType())) {
-      // Have to use internal consume/peek in here because they can read past
-      // start/end of blocks
-      unsigned nesting_level = 0;
-      do {
-        const CSSParserToken& token = UncheckedConsumeInternal();
-        buffer_.push_back(token);
-
-        if (token.GetBlockType() == CSSParserToken::kBlockStart)
-          nesting_level++;
-        else if (token.GetBlockType() == CSSParserToken::kBlockEnd)
-          nesting_level--;
-      } while (!PeekInternal().IsEOF() && nesting_level);
+      ConsumeTokenOrBlockAndAppendToBuffer();
     }
 
     return CSSParserTokenRange(buffer_);
   }
 
+  // Invalidates any ranges created by previous calls to ConsumeUntil*()
+  CSSParserTokenRange ConsumeUntilPeekedBoundary() {
+    EnsureLookAhead();
+
+    buffer_.Shrink(0);
+    while (!UncheckedAtEnd() && UncheckedPeek().GetType() != boundary_type_)
+      ConsumeTokenOrBlockAndAppendToBuffer();
+
+    return CSSParserTokenRange(buffer_);
+  }
+
  private:
+  inline void ConsumeTokenOrBlockAndAppendToBuffer() {
+    // Have to use internal consume/peek in here because they can read past
+    // start/end of blocks
+    unsigned nesting_level = 0;
+    do {
+      const CSSParserToken& token = UncheckedConsumeInternal();
+      buffer_.push_back(token);
+
+      if (token.GetBlockType() == CSSParserToken::kBlockStart)
+        nesting_level++;
+      else if (token.GetBlockType() == CSSParserToken::kBlockEnd)
+        nesting_level--;
+    } while (!PeekInternal().IsEOF() && nesting_level);
+  }
+
   const CSSParserToken& PeekInternal() {
     EnsureLookAhead();
     return UncheckedPeekInternal();
@@ -195,7 +239,7 @@ class CORE_EXPORT CSSParserTokenStream {
   CSSParserToken next_;
   wtf_size_t offset_ = 0;
   bool has_look_ahead_ = false;
-  DISALLOW_COPY_AND_ASSIGN(CSSParserTokenStream);
+  CSSParserTokenType boundary_type_ = kEOFToken;
 };
 
 }  // namespace blink

@@ -45,6 +45,9 @@ mojom::DeviceInfoPtr Device::ConstructDeviceInfoStruct(
     device_info->rssi->value = device->GetInquiryRSSI().value();
   }
 
+  for (auto const& it : device->GetServiceData())
+    device_info->service_data_map.insert_or_assign(it.first, it.second);
+
   return device_info;
 }
 
@@ -180,7 +183,7 @@ void Device::WriteValueForCharacteristic(
   }
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  characteristic->WriteRemoteCharacteristic(
+  characteristic->DeprecatedWriteRemoteCharacteristic(
       value,
       base::BindOnce(&Device::OnWriteRemoteCharacteristic,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback),

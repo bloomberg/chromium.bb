@@ -136,7 +136,7 @@ struct BioEnrollmentRequest {
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentSubCommand> subcommand;
   base::Optional<cbor::Value::MapValue> params;
-  base::Optional<uint8_t> pin_protocol;
+  base::Optional<PINUVAuthProtocol> pin_protocol;
   base::Optional<std::vector<uint8_t>> pin_auth;
   base::Optional<bool> get_modality;
 
@@ -145,7 +145,7 @@ struct BioEnrollmentRequest {
   ~BioEnrollmentRequest();
 
  private:
-  BioEnrollmentRequest(Version);
+  explicit BioEnrollmentRequest(Version);
 };
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentResponse {

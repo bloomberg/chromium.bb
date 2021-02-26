@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/media_router/cloud_services_dialog_view.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/media_router/cloud_services_dialog.h"
@@ -12,9 +13,9 @@
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_router/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,32 +66,18 @@ CloudServicesDialogView* CloudServicesDialogView::GetDialogForTest() {
   return instance_;
 }
 
-bool CloudServicesDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
-base::string16 CloudServicesDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
-}
-
 void CloudServicesDialogView::OnDialogAccepted() {
   PrefService* pref_service = browser_->profile()->GetPrefs();
-  pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices, true);
-  pref_service->SetBoolean(::prefs::kMediaRouterCloudServicesPrefSet, true);
-}
-
-gfx::Size CloudServicesDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
+  pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices, true);
+  pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
 }
 
 CloudServicesDialogView::CloudServicesDialogView(views::View* anchor_view,
                                                  Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser) {
+  SetShowCloseButton(true);
+  SetTitle(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE));
@@ -99,8 +86,11 @@ CloudServicesDialogView::CloudServicesDialogView(views::View* anchor_view,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL));
   SetAcceptCallback(base::BindOnce(&CloudServicesDialogView::OnDialogAccepted,
                                    base::Unretained(this)));
+
   set_close_on_deactivate(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 }
 
 CloudServicesDialogView::~CloudServicesDialogView() = default;
@@ -118,25 +108,25 @@ void CloudServicesDialogView::Init() {
   gfx::Range learn_more_range(offsets[1], text.length());
 
   views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
+      views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+          [](Browser* browser) {
+            chrome::AddSelectedTabWithURL(
+                browser, GURL(chrome::kCastCloudServicesHelpURL),
+                ui::PAGE_TRANSITION_LINK);
+          },
+          base::Unretained(browser_)));
   link_style.disable_line_wrapping = false;
 
-  views::StyledLabel* body_text = new views::StyledLabel(text, this);
+  views::StyledLabel* body_text =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  body_text->SetText(text);
   body_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body_text->AddStyleRange(learn_more_range, link_style);
-  AddChildView(body_text);
 }
 
 void CloudServicesDialogView::WindowClosing() {
   if (instance_ == this)
     instance_ = nullptr;
-}
-
-void CloudServicesDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                     const gfx::Range& range,
-                                                     int event_flags) {
-  const GURL url = GURL(chrome::kCastCloudServicesHelpURL);
-  chrome::AddSelectedTabWithURL(browser_, url, ui::PAGE_TRANSITION_LINK);
 }
 
 // static

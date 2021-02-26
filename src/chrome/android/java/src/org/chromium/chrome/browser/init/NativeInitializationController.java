@@ -76,9 +76,11 @@ class NativeInitializationController {
             return;
         }
 
-        assert mBackgroundTasksComplete == null;
+        // This is a fairly low cost way to check if fetching the variations seed is needed. It can
+        // produces false positives, but that's okay. There's a later mechanism that checks a
+        // dedicated durable field to make sure the actual network request is only made once.
         boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                mActivityDelegate.getInitialIntent(), false);
+                false, mActivityDelegate.getInitialIntent());
 
         mBackgroundTasksComplete = false;
         new AsyncInitTaskRunner() {

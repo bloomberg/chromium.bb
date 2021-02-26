@@ -35,6 +35,8 @@
 #include "gpu/config/gpu_util.h"
 #include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_surface_egl.h"
 
 namespace gpu {
 
@@ -83,6 +85,32 @@ OverlaySupport FlagsToOverlaySupport(bool overlays_supported, UINT flags) {
   return OverlaySupport::kNone;
 }
 
+bool GetActiveAdapterLuid(LUID* luid) {
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device)
+    return false;
+
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  if (FAILED(d3d11_device.As(&dxgi_device)))
+    return false;
+
+  Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+  if (FAILED(dxgi_device->GetAdapter(&adapter)))
+    return false;
+
+  DXGI_ADAPTER_DESC desc;
+  if (FAILED(adapter->GetDesc(&desc)))
+    return false;
+
+  // Zero isn't a valid LUID.
+  if (desc.AdapterLuid.HighPart == 0 && desc.AdapterLuid.LowPart == 0)
+    return false;
+
+  *luid = desc.AdapterLuid;
+  return true;
+}
+
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
@@ -118,14 +146,22 @@ void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
         overlay_info->supports_overlays,
         gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
             DXGI_FORMAT_YUY2));
+    overlay_info->bgra8_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_B8G8R8A8_UNORM));
+    overlay_info->rgb10a2_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_R10G10B10A2_UNORM));
   }
 }
 
 bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
-  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
+  Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
+  HRESULT hr = ::CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
   if (FAILED(hr))
     return false;
 
@@ -144,6 +180,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     device.device_id = desc.DeviceId;
     device.sub_sys_id = desc.SubSysId;
     device.revision = desc.Revision;
+    device.luid = desc.AdapterLuid;
 
     LARGE_INTEGER umd_version;
     hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),
@@ -199,15 +236,13 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
 }
 
 // DirectX 12 are included with Windows 10 and Server 2016.
-void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
+uint32_t GetGpuSupportedD3D12Version() {
   TRACE_EVENT0("gpu", "GetGpuSupportedD3D12Version");
-  info->supports_dx12 = false;
-  info->d3d12_feature_level = 0;
 
   base::ScopedNativeLibrary d3d12_library(
       base::FilePath(FILE_PATH_LITERAL("d3d12.dll")));
   if (!d3d12_library.is_valid())
-    return;
+    return 0;
 
   // The order of feature levels to attempt to create in D3D CreateDevice
   const D3D_FEATURE_LEVEL feature_levels[] = {
@@ -224,14 +259,19 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
     for (auto level : feature_levels) {
       if (SUCCEEDED(D3D12CreateDevice(nullptr, level, _uuidof(ID3D12Device),
                                       nullptr))) {
-        info->d3d12_feature_level = level;
-        info->supports_dx12 = (level >= D3D_FEATURE_LEVEL_12_0) ? true : false;
-        break;
+        return level;
       }
     }
   }
+  return 0;
 }
 
+// The old graphics drivers are installed to the Windows system directory
+// c:\windows\system32 or SysWOW64. Those versions can be detected without
+// specifying the absolute directory. For a newer version (>= ~2018), this won't
+// work. The newer graphics drivers are located in
+// c:\windows\system32\DriverStore\FileRepository\xxx.infxxx which contains a
+// different number at each installation
 bool BadAMDVulkanDriverVersion() {
   // Both 32-bit and 64-bit dll are broken. If 64-bit doesn't exist,
   // 32-bit dll will be used to detect the AMD Vulkan driver.
@@ -256,6 +296,31 @@ bool BadAMDVulkanDriverVersion() {
   // CompareTo() returns -1, 0, 1 for <, ==, >.
   if (amd_version.CompareTo(kBadAMDVulkanDriverVersion) != 1)
     return true;
+
+  return false;
+}
+
+// Vulkan 1.1 was released by the Khronos Group on March 7, 2018.
+// Blocklist all driver versions without Vulkan 1.1 support and those that cause
+// lots of crashes.
+bool BadGraphicsDriverVersions(const gpu::GPUInfo::GPUDevice& gpu_device) {
+  // GPU Device info is not available in gpu_integration_test.info-collection
+  // with --no-delay-for-dx12-vulkan-info-collection.
+  if (gpu_device.driver_version.empty())
+    return false;
+
+  base::Version driver_version(gpu_device.driver_version);
+  if (!driver_version.IsValid())
+    return true;
+
+  // AMD Vulkan drivers - amdvlk64.dll
+  constexpr uint32_t kAMDVendorId = 0x1002;
+  if (gpu_device.vendor_id == kAMDVendorId) {
+    // 26.20.12028.2 (2019)- number of crashes 1,188,048 as of 5/14/2020.
+    // Returns -1, 0, 1 for <, ==, >.
+    if (driver_version.CompareTo(base::Version("26.20.12028.2")) == 0)
+      return true;
+  }
 
   return false;
 }
@@ -340,11 +405,9 @@ bool InitVulkanInstanceProc(
   return false;
 }
 
-void GetGpuSupportedVulkanVersionAndExtensions(
-    Dx12VulkanVersionInfo* info,
-    const std::vector<const char*>& requested_vulkan_extensions,
-    std::vector<bool>* extension_support) {
-  TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersionAndExtensions");
+uint32_t GetGpuSupportedVulkanVersion(
+    const gpu::GPUInfo::GPUDevice& gpu_device) {
+  TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersion");
 
   base::NativeLibrary vulkan_library;
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
@@ -353,20 +416,26 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   PFN_vkEnumerateDeviceExtensionProperties vkEnumerateDeviceExtensionProperties;
   VkInstance vk_instance = VK_NULL_HANDLE;
   uint32_t physical_device_count = 0;
-  info->supports_vulkan = false;
-  info->vulkan_version = 0;
 
   // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
   // amdvlk32.dll which crashes when vkCreateInstance() is called. This bug has
   // been fixed in the latest AMD driver.
+  // Detected by the file version of amdvlk64.dll.
   if (BadAMDVulkanDriverVersion()) {
-    return;
+    return 0;
   }
 
+  // Don't collect any info if the graphics vulkan driver is blocklisted or
+  // doesn't support Vulkan 1.1
+  // Detected by the graphic driver version returned by DXGI
+  if (BadGraphicsDriverVersions(gpu_device))
+    return 0;
+
   // Only supports a version >= 1.1.0.
+  uint32_t vulkan_version = 0;
   if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance,
-                  &info->vulkan_version)) {
-    return;
+                  &vulkan_version)) {
+    return 0;
   }
 
   VkApplicationInfo app_info = {};
@@ -382,7 +451,7 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   create_info.ppEnabledExtensionNames = enabled_instance_extensions.data();
 
   // Get the Vulkan API version supported in the GPU driver
-  int highest_minor_version = VK_VERSION_MINOR(info->vulkan_version);
+  int highest_minor_version = VK_VERSION_MINOR(vulkan_version);
   for (int minor_version = highest_minor_version; minor_version >= 1;
        --minor_version) {
     app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
@@ -394,46 +463,13 @@ void GetGpuSupportedVulkanVersionAndExtensions(
       result = vkEnumeratePhysicalDevices(vk_instance, &physical_device_count,
                                           nullptr);
       if (result == VK_SUCCESS && physical_device_count > 0) {
-        info->supports_vulkan = true;
-        info->vulkan_version = app_info.apiVersion;
-        break;
+        return app_info.apiVersion;
       } else {
         // Skip destroy here. GPU process shutdown will unload all loaded DLLs.
         // vkDestroyInstance(vk_instance, nullptr);
         vk_instance = VK_NULL_HANDLE;
       }
     }
-  }
-
-  // Check whether the requested_vulkan_extensions are supported
-  if (info->supports_vulkan) {
-    std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
-    vkEnumeratePhysicalDevices(vk_instance, &physical_device_count,
-                               physical_devices.data());
-
-    // physical_devices[0]: Only query the default device for now
-    uint32_t property_count;
-    vkEnumerateDeviceExtensionProperties(physical_devices[0], nullptr,
-                                         &property_count, nullptr);
-
-    std::vector<VkExtensionProperties> extension_properties(property_count);
-    if (property_count > 0) {
-      vkEnumerateDeviceExtensionProperties(physical_devices[0], nullptr,
-                                           &property_count,
-                                           extension_properties.data());
-    }
-
-    for (size_t i = 0; i < requested_vulkan_extensions.size(); ++i) {
-      for (size_t p = 0; p < property_count; ++p) {
-        if (strcmp(requested_vulkan_extensions[i],
-                   extension_properties[p].extensionName) == 0) {
-          (*extension_support)[i] = true;
-          break;
-        }
-      }
-    }
-  } else {
-    info->vulkan_version = VK_MAKE_VERSION(1, 0, 0);
   }
 
   // From the crash reports, calling the following two functions might cause a
@@ -444,40 +480,22 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   //   vkDestroyInstance(vk_instance, nullptr);
   // }
   // base::UnloadNativeLibrary(vulkan_library);
+  return 0;
 }
 
-void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
-  // D3D
-  GetGpuSupportedD3D12Version(info);
-  UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDX12", info->supports_dx12);
+void RecordGpuSupportedDx12VersionHistograms(uint32_t d3d12_feature_level) {
+  bool supports_dx12 =
+      (d3d12_feature_level >= D3D_FEATURE_LEVEL_12_0) ? true : false;
+  UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDX12", supports_dx12);
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.D3D12FeatureLevel",
-      ConvertToHistogramFeatureLevel(info->d3d12_feature_level));
-
-  // Vulkan
-  const std::vector<const char*> vulkan_extensions = {
-      "VK_KHR_external_memory_win32", "VK_KHR_external_semaphore_win32",
-      "VK_KHR_win32_keyed_mutex"};
-  std::vector<bool> extension_support(vulkan_extensions.size(), false);
-  GetGpuSupportedVulkanVersionAndExtensions(info, vulkan_extensions,
-                                            &extension_support);
-
-  UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", info->supports_vulkan);
-  UMA_HISTOGRAM_ENUMERATION(
-      "GPU.VulkanVersion",
-      ConvertToHistogramVulkanVersion(info->vulkan_version));
-
-  for (size_t i = 0; i < vulkan_extensions.size(); ++i) {
-    std::string name = "GPU.VulkanExtSupport.";
-    name.append(vulkan_extensions[i]);
-    base::UmaHistogramBoolean(name, extension_support[i]);
-  }
+      ConvertToHistogramFeatureLevel(d3d12_feature_level));
 }
 
 bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
                              bool* has_discrete_gpu) {
-  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  if (FAILED(::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory))))
+  Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
+  if (FAILED(::CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory))))
     return false;
 
   base::ScopedNativeLibrary d3d11_library(
@@ -612,6 +630,32 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
   return CollectDriverInfoD3D(gpu_info);
+}
+
+bool IdentifyActiveGPUWithLuid(GPUInfo* gpu_info) {
+  LUID luid;
+  if (!GetActiveAdapterLuid(&luid))
+    return false;
+
+  gpu_info->gpu.active = false;
+  for (size_t i = 0; i < gpu_info->secondary_gpus.size(); i++)
+    gpu_info->secondary_gpus[i].active = false;
+
+  if (gpu_info->gpu.luid.HighPart == luid.HighPart &&
+      gpu_info->gpu.luid.LowPart == luid.LowPart) {
+    gpu_info->gpu.active = true;
+    return true;
+  }
+
+  for (size_t i = 0; i < gpu_info->secondary_gpus.size(); i++) {
+    if (gpu_info->secondary_gpus[i].luid.HighPart == luid.HighPart &&
+        gpu_info->secondary_gpus[i].luid.LowPart == luid.LowPart) {
+      gpu_info->secondary_gpus[i].active = true;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace gpu

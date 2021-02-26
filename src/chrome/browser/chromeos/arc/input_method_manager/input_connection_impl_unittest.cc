@@ -9,10 +9,10 @@
 #include "chrome/browser/chromeos/arc/input_method_manager/test_input_method_manager_bridge.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 
@@ -21,7 +21,7 @@ namespace arc {
 namespace {
 
 class DummyInputMethodEngineObserver
-    : public input_method::InputMethodEngineBase::Observer {
+    : public chromeos::InputMethodEngineBase::Observer {
  public:
   DummyInputMethodEngineObserver() = default;
   ~DummyInputMethodEngineObserver() override = default;
@@ -32,7 +32,7 @@ class DummyInputMethodEngineObserver
   void OnBlur(int context_id) override {}
   void OnKeyEvent(
       const std::string& engine_id,
-      const input_method::InputMethodEngineBase::KeyboardEvent& event,
+      const chromeos::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {}
@@ -48,10 +48,13 @@ class DummyInputMethodEngineObserver
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
-      input_method::InputMethodEngineBase::MouseButtonEvent button) override {}
+      chromeos::InputMethodEngineBase::MouseButtonEvent button) override {}
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {}
+  void OnInputMethodOptionsChanged(const std::string& engine_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethodEngineObserver);
@@ -235,11 +238,12 @@ TEST_F(InputConnectionImplTest, CommitText) {
   context_handler()->Reset();
   connection->CommitText(base::ASCIIToUTF16("\n"), 1);
   EXPECT_EQ(0, context_handler()->commit_text_call_count());
-  EXPECT_EQ(2, context_handler()->send_key_event_call_count());
-  EXPECT_EQ(ui::VKEY_RETURN,
-            context_handler()->last_sent_key_event().key_code());
-  EXPECT_EQ(ui::ET_KEY_RELEASED,
-            context_handler()->last_sent_key_event().type());
+  const std::vector<ui::KeyEvent>& sent_key_events =
+      context_handler()->sent_key_events();
+  EXPECT_EQ(2u, sent_key_events.size());
+  const ui::KeyEvent& last_sent_key_event = sent_key_events.back();
+  EXPECT_EQ(ui::VKEY_RETURN, last_sent_key_event.key_code());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, last_sent_key_event.type());
 
   engine()->FocusOut();
 }
@@ -344,47 +348,42 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
   context_handler()->Reset();
 
   {
-    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
-    data->pressed = true;
-    data->key_code = ui::VKEY_RETURN;
-    data->is_shift_down = false;
-    data->is_control_down = false;
-    data->is_alt_down = false;
-    data->is_capslock_on = false;
-
-    connection->SendKeyEvent(std::move(data));
-    EXPECT_EQ(1, context_handler()->send_key_event_call_count());
-    const auto& event = context_handler()->last_sent_key_event();
-    EXPECT_EQ(ui::VKEY_RETURN, event.key_code());
-    EXPECT_EQ(ui::DomCode::ENTER, event.code());
-    EXPECT_EQ("Enter", event.GetCodeString());
-    EXPECT_EQ(ui::ET_KEY_PRESSED, event.type());
-    EXPECT_EQ(0, ui::EF_SHIFT_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_CONTROL_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_ALT_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_CAPS_LOCK_ON & event.flags());
+    auto sent = std::make_unique<ui::KeyEvent>(ui::ET_KEY_PRESSED,
+                                               ui::VKEY_RETURN, ui::EF_NONE);
+    connection->SendKeyEvent(std::move(sent));
+    const std::vector<ui::KeyEvent>& sent_key_events =
+        context_handler()->sent_key_events();
+    EXPECT_EQ(1u, sent_key_events.size());
+    const ui::KeyEvent& received = sent_key_events.back();
+    EXPECT_EQ(ui::VKEY_RETURN, received.key_code());
+    EXPECT_EQ(ui::DomCode::ENTER, received.code());
+    EXPECT_EQ("Enter", received.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_PRESSED, received.type());
+    EXPECT_EQ(0, ui::EF_SHIFT_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_CONTROL_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_ALT_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_CAPS_LOCK_ON & received.flags());
   }
 
   {
-    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
-    data->pressed = false;
-    data->key_code = ui::VKEY_A;
-    data->is_shift_down = true;
-    data->is_control_down = true;
-    data->is_alt_down = true;
-    data->is_capslock_on = true;
+    auto sent = std::make_unique<ui::KeyEvent>(
+        ui::ET_KEY_RELEASED, ui::VKEY_A,
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
+            ui::EF_CAPS_LOCK_ON);
 
-    connection->SendKeyEvent(std::move(data));
-    EXPECT_EQ(2, context_handler()->send_key_event_call_count());
-    const auto& event = context_handler()->last_sent_key_event();
-    EXPECT_EQ(ui::VKEY_A, event.key_code());
-    EXPECT_EQ(ui::DomCode::US_A, event.code());
-    EXPECT_EQ("KeyA", event.GetCodeString());
-    EXPECT_EQ(ui::ET_KEY_RELEASED, event.type());
-    EXPECT_NE(0, ui::EF_SHIFT_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_CONTROL_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_ALT_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_CAPS_LOCK_ON & event.flags());
+    connection->SendKeyEvent(std::move(sent));
+    const std::vector<ui::KeyEvent>& sent_key_events =
+        context_handler()->sent_key_events();
+    EXPECT_EQ(2u, sent_key_events.size());
+    const ui::KeyEvent& received = sent_key_events.back();
+    EXPECT_EQ(ui::VKEY_A, received.key_code());
+    EXPECT_EQ(ui::DomCode::US_A, received.code());
+    EXPECT_EQ("KeyA", received.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_RELEASED, received.type());
+    EXPECT_NE(0, ui::EF_SHIFT_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_CONTROL_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_ALT_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_CAPS_LOCK_ON & received.flags());
   }
   engine()->FocusOut();
 }

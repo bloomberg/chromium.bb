@@ -23,14 +23,21 @@ class ASH_EXPORT SwitchAccessBackButtonBubbleController
   SwitchAccessBackButtonBubbleController& operator=(
       const SwitchAccessBackButtonBubbleController&) = delete;
 
-  void ShowBackButton(const gfx::Rect& anchor);
+  // A different icon is used when showing for the menu.
+  void ShowBackButton(const gfx::Rect& anchor,
+                      bool show_focus_ring,
+                      bool for_menu);
+  void HideFocusRing();
   void Hide();
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
 
  private:
+  friend class SwitchAccessBackButtonBubbleControllerTest;
   friend class SwitchAccessMenuBubbleControllerTest;
+
+  gfx::Rect AdjustAnchorRect(const gfx::Rect& anchor);
 
   // Owned by views hierarchy.
   SwitchAccessBackButtonView* back_button_view_ = nullptr;

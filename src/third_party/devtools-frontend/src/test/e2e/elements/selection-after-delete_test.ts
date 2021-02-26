@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {describe, it} from 'mocha';
-
-import {click, getBrowserAndPages, resourcesPath, waitForElementWithTextContent} from '../../shared/helper.js';
-import {assertContentOfSelectedElementsNode, expandSelectedNodeRecursively, getContentOfSelectedNode, waitForElementsStyleSection, waitForSelectedNodeChange} from '../helpers/elements-helpers.js';
+import {click, getBrowserAndPages, goToResource, waitForElementWithTextContent} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
+import {expandSelectedNodeRecursively, getContentOfSelectedNode, waitForContentOfSelectedElementsNode, waitForElementsStyleSection, waitForSelectedNodeChange} from '../helpers/elements-helpers.js';
 
 describe('The Elements tab', async () => {
   // Flaky test
   it.skip('[crbug.com/1071851]: can delete elements in the tree', async () => {
-    const {target, frontend} = getBrowserAndPages();
+    const {frontend} = getBrowserAndPages();
 
-    await target.goto(`${resourcesPath}/elements/selection-after-delete.html`);
+    await goToResource('elements/selection-after-delete.html');
 
     // Wait for the file to be loaded and selectors to be shown
     await waitForElementsStyleSection();
 
     // Sanity check to make sure we have the correct node selected after opening a file
-    await assertContentOfSelectedElementsNode('<body>\u200B');
+    await waitForContentOfSelectedElementsNode('<body>\u200B');
     await expandSelectedNodeRecursively();
 
     // Wait for the expansion and select the final child in the tree.
@@ -41,7 +40,7 @@ describe('The Elements tab', async () => {
       await frontend.keyboard.press('Backspace');
       await waitForSelectedNodeChange(initialValue);
 
-      await assertContentOfSelectedElementsNode(nextVal);
+      await waitForContentOfSelectedElementsNode(nextVal);
     } while (expected.length);
   });
 });

@@ -11,6 +11,7 @@ import json
 from telemetry import project_config
 from telemetry import decorators
 from telemetry.core import util
+from telemetry.internal.util import binary_manager
 from telemetry.testing import run_tests
 from telemetry.testing import unittest_runner
 
@@ -107,7 +108,10 @@ class RunTestsUnitTest(unittest.TestCase):
       if no_browser:
         passed_args.append('--no-browser')
       passed_args.append('--write-full-results-to=%s' % temp_file_name)
-      ret = unittest_runner.Run(config, passed_args=passed_args + extra_args)
+      args = unittest_runner.ProcessConfig(config, passed_args + extra_args)
+      test_runner = run_tests.RunTestsCommand()
+      with binary_manager.TemporarilyReplaceBinaryManager(None):
+        ret = test_runner.main(args=args)
       assert ret == expected_return_code, (
           'actual return code %d, does not equal the expected return code %d' %
           (ret, expected_return_code))
@@ -151,7 +155,10 @@ class RunTestsUnitTest(unittest.TestCase):
       passed_args = ([full_test_name, '--no-browser',
                       ('--write-full-results-to=%s' % results.name)] +
                      ['--tag=%s' % tag for tag in test_tags.split()])
-      ret = unittest_runner.Run(config, passed_args=passed_args + extra_args)
+      args = unittest_runner.ProcessConfig(config, passed_args + extra_args)
+      test_runner = run_tests.RunTestsCommand()
+      with binary_manager.TemporarilyReplaceBinaryManager(None):
+        ret = test_runner.main(args=args)
       self.assertEqual(ret, expected_exit_code)
       with open(results.name) as f:
         self._test_result = json.load(f)

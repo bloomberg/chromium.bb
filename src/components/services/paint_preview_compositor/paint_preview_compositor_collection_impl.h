@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "components/services/font/public/cpp/font_loader.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #endif
@@ -66,17 +66,20 @@ class PaintPreviewCompositorCollectionImpl
 
   mojo::Receiver<mojom::PaintPreviewCompositorCollection> receiver_{this};
 
-  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
-
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PaintPreviewCompositorImpl>>
       compositors_;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
+
+  const bool initialize_environment_;
+
+  // Ensure the discardable memory manager is the last thing to get destructed.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
 
   base::WeakPtrFactory<PaintPreviewCompositorCollectionImpl> weak_ptr_factory_{
       this};

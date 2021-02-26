@@ -164,6 +164,28 @@ class PeerConnectionRtpTestUnifiedPlan : public PeerConnectionRtpBaseTest {
  protected:
   PeerConnectionRtpTestUnifiedPlan()
       : PeerConnectionRtpBaseTest(SdpSemantics::kUnifiedPlan) {}
+
+  // Helper to emulate an SFU that rejects an offered media section
+  // in answer.
+  bool ExchangeOfferAnswerWhereRemoteStopsTransceiver(
+      PeerConnectionWrapper* caller,
+      PeerConnectionWrapper* callee,
+      size_t mid_to_stop) {
+    auto offer = caller->CreateOffer();
+    caller->SetLocalDescription(CloneSessionDescription(offer.get()));
+    callee->SetRemoteDescription(std::move(offer));
+    EXPECT_LT(mid_to_stop, callee->pc()->GetTransceivers().size());
+    // Must use StopInternal in order to do instant reject.
+    callee->pc()->GetTransceivers()[mid_to_stop]->StopInternal();
+    auto answer = callee->CreateAnswer();
+    EXPECT_TRUE(answer);
+    bool set_local_answer =
+        callee->SetLocalDescription(CloneSessionDescription(answer.get()));
+    EXPECT_TRUE(set_local_answer);
+    bool set_remote_answer = caller->SetRemoteDescription(std::move(answer));
+    EXPECT_TRUE(set_remote_answer);
+    return set_remote_answer;
+  }
 };
 
 // These tests cover |webrtc::PeerConnectionObserver| callbacks firing upon
@@ -370,19 +392,25 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, SetDirectionCallsOnTrack) {
   auto callee = CreatePeerConnection();
 
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
-  transceiver->SetDirection(RtpTransceiverDirection::kInactive);
+  EXPECT_TRUE(
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive)
+          .ok());
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
   EXPECT_EQ(0u, caller->observer()->on_track_transceivers_.size());
   EXPECT_EQ(0u, callee->observer()->on_track_transceivers_.size());
 
-  transceiver->SetDirection(RtpTransceiverDirection::kSendOnly);
+  EXPECT_TRUE(
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kSendOnly)
+          .ok());
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
   EXPECT_EQ(0u, caller->observer()->on_track_transceivers_.size());
   EXPECT_EQ(1u, callee->observer()->on_track_transceivers_.size());
 
   // If the direction changes but it is still receiving on the remote side, then
   // OnTrack should not be fired again.
-  transceiver->SetDirection(RtpTransceiverDirection::kSendRecv);
+  EXPECT_TRUE(
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kSendRecv)
+          .ok());
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
   EXPECT_EQ(0u, caller->observer()->on_track_transceivers_.size());
   EXPECT_EQ(1u, callee->observer()->on_track_transceivers_.size());
@@ -401,8 +429,10 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, SetDirectionHoldCallsOnTrackTwice) {
   EXPECT_EQ(1u, callee->observer()->on_track_transceivers_.size());
 
   // Put the call on hold by no longer receiving the track.
-  callee->pc()->GetTransceivers()[0]->SetDirection(
-      RtpTransceiverDirection::kInactive);
+  EXPECT_TRUE(callee->pc()
+                  ->GetTransceivers()[0]
+                  ->SetDirectionWithError(RtpTransceiverDirection::kInactive)
+                  .ok());
 
   ASSERT_TRUE(callee->ExchangeOfferAnswerWith(caller.get()));
   EXPECT_EQ(0u, caller->observer()->on_track_transceivers_.size());
@@ -410,8 +440,10 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, SetDirectionHoldCallsOnTrackTwice) {
 
   // Resume the call by changing the direction to recvonly. This should call
   // OnTrack again on the callee side.
-  callee->pc()->GetTransceivers()[0]->SetDirection(
-      RtpTransceiverDirection::kRecvOnly);
+  EXPECT_TRUE(callee->pc()
+                  ->GetTransceivers()[0]
+                  ->SetDirectionWithError(RtpTransceiverDirection::kRecvOnly)
+                  .ok());
 
   ASSERT_TRUE(callee->ExchangeOfferAnswerWith(caller.get()));
   EXPECT_EQ(0u, caller->observer()->on_track_transceivers_.size());
@@ -470,7 +502,9 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   EXPECT_EQ(0u, callee->observer()->remove_track_events_.size());
 
   auto callee_transceiver = callee->pc()->GetTransceivers()[0];
-  callee_transceiver->SetDirection(RtpTransceiverDirection::kSendOnly);
+  EXPECT_TRUE(callee_transceiver
+                  ->SetDirectionWithError(RtpTransceiverDirection::kSendOnly)
+                  .ok());
 
   ASSERT_TRUE(callee->SetLocalDescription(callee->CreateAnswer()));
   EXPECT_EQ(1u, callee->observer()->add_track_events_.size());
@@ -1133,12 +1167,15 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   RtpTransceiverInit init;
   init.direction = RtpTransceiverDirection::kInactive;
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   ASSERT_TRUE(caller->AddAudioTrack("a"));
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   EXPECT_EQ(RtpTransceiverDirection::kSendOnly, transceiver->direction());
 }
@@ -1153,12 +1190,15 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   RtpTransceiverInit init;
   init.direction = RtpTransceiverDirection::kRecvOnly;
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   ASSERT_TRUE(caller->AddAudioTrack("a"));
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   EXPECT_EQ(RtpTransceiverDirection::kSendRecv, transceiver->direction());
 }
@@ -1182,10 +1222,12 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, AddTrackErrorIfClosed) {
   auto audio_track = caller->CreateAudioTrack("a");
   caller->pc()->Close();
 
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   auto result = caller->pc()->AddTrack(audio_track, std::vector<std::string>());
   EXPECT_EQ(RTCErrorType::INVALID_STATE, result.error().type());
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 }
 
 TEST_F(PeerConnectionRtpTestUnifiedPlan, AddTrackErrorIfTrackAlreadyHasSender) {
@@ -1194,10 +1236,12 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, AddTrackErrorIfTrackAlreadyHasSender) {
   auto audio_track = caller->CreateAudioTrack("a");
   ASSERT_TRUE(caller->AddTrack(audio_track));
 
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   auto result = caller->pc()->AddTrack(audio_track, std::vector<std::string>());
   EXPECT_EQ(RTCErrorType::INVALID_PARAMETER, result.error().type());
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 }
 
 // Unified Plan RemoveTrack tests.
@@ -1224,13 +1268,16 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   init.direction = RtpTransceiverDirection::kSendRecv;
   auto transceiver =
       caller->AddTransceiver(caller->CreateAudioTrack("a"), init);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
 
   ASSERT_TRUE(caller->pc()->RemoveTrack(transceiver->sender()));
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   EXPECT_EQ(RtpTransceiverDirection::kRecvOnly, transceiver->direction());
 }
@@ -1246,13 +1293,16 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   init.direction = RtpTransceiverDirection::kSendOnly;
   auto transceiver =
       caller->AddTransceiver(caller->CreateAudioTrack("a"), init);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
 
   ASSERT_TRUE(caller->pc()->RemoveTrack(transceiver->sender()));
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   EXPECT_EQ(RtpTransceiverDirection::kInactive, transceiver->direction());
 }
@@ -1266,9 +1316,11 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, RemoveTrackWithNullSenderTrackIsNoOp) {
   auto transceiver = caller->pc()->GetTransceivers()[0];
   ASSERT_TRUE(sender->SetTrack(nullptr));
 
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   ASSERT_TRUE(caller->pc()->RemoveTrack(sender));
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 
   EXPECT_EQ(RtpTransceiverDirection::kSendRecv, transceiver->direction());
 }
@@ -1281,9 +1333,11 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan, RemoveTrackErrorIfClosed) {
   auto sender = caller->AddAudioTrack("a");
   caller->pc()->Close();
 
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   EXPECT_FALSE(caller->pc()->RemoveTrack(sender));
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 }
 
 TEST_F(PeerConnectionRtpTestUnifiedPlan,
@@ -1293,9 +1347,11 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   auto sender = caller->AddAudioTrack("a");
   ASSERT_TRUE(caller->pc()->RemoveTrack(sender));
 
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
   EXPECT_TRUE(caller->pc()->RemoveTrack(sender));
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 }
 
 // Test that setting offers that add/remove/add a track repeatedly without
@@ -1401,16 +1457,20 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
        RenegotiationNeededAfterTransceiverSetDirection) {
   auto caller = CreatePeerConnection();
   auto callee = CreatePeerConnection();
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
 
-  transceiver->SetDirection(RtpTransceiverDirection::kInactive);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive);
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 }
 
 // Test that OnRenegotiationNeeded is not fired if SetDirection is called on an
@@ -1421,9 +1481,11 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
 
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
 
-  caller->observer()->clear_negotiation_needed();
-  transceiver->SetDirection(transceiver->direction());
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
+  transceiver->SetDirectionWithError(transceiver->direction());
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
 }
 
 // Test that OnRenegotiationNeeded is not fired if SetDirection is called on a
@@ -1433,11 +1495,140 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   auto caller = CreatePeerConnection();
 
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
-  transceiver->Stop();
+  transceiver->StopInternal();
 
-  caller->observer()->clear_negotiation_needed();
-  transceiver->SetDirection(RtpTransceiverDirection::kInactive);
-  EXPECT_FALSE(caller->observer()->negotiation_needed());
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
+  transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive);
+  EXPECT_FALSE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_FALSE(caller->observer()->has_negotiation_needed_event());
+}
+
+// Test that currentDirection returnes "stopped" if the transceiver was stopped.
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       CheckStoppedCurrentDirectionOnStoppedTransceiver) {
+  auto caller = CreatePeerConnection();
+
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  transceiver->StopInternal();
+
+  EXPECT_TRUE(transceiver->stopping());
+  EXPECT_TRUE(transceiver->stopped());
+  EXPECT_EQ(RtpTransceiverDirection::kStopped,
+            transceiver->current_direction());
+}
+
+// Test that InvalidState is thrown on a stopping transceiver.
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       CheckForInvalidStateOnStoppingTransceiver) {
+  auto caller = CreatePeerConnection();
+
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  transceiver->StopStandard();
+
+  EXPECT_TRUE(transceiver->stopping());
+  EXPECT_FALSE(transceiver->stopped());
+  EXPECT_EQ(
+      RTCErrorType::INVALID_STATE,
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive)
+          .type());
+}
+
+// Test that InvalidState is thrown on a stopped transceiver.
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       CheckForInvalidStateOnStoppedTransceiver) {
+  auto caller = CreatePeerConnection();
+
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  transceiver->StopInternal();
+
+  EXPECT_TRUE(transceiver->stopping());
+  EXPECT_TRUE(transceiver->stopped());
+  EXPECT_EQ(
+      RTCErrorType::INVALID_STATE,
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive)
+          .type());
+}
+
+// Test that TypeError is thrown if the direction is set to "stopped".
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       CheckForTypeErrorForStoppedOnTransceiver) {
+  auto caller = CreatePeerConnection();
+
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  EXPECT_EQ(
+      RTCErrorType::INVALID_PARAMETER,
+      transceiver->SetDirectionWithError(RtpTransceiverDirection::kStopped)
+          .type());
+}
+
+// Test that you can do createOffer/setLocalDescription with a stopped
+// media section.
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       SetLocalDescriptionWithStoppedMediaSection) {
+  auto caller = CreatePeerConnection();
+  auto callee = CreatePeerConnection();
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  callee->pc()->GetTransceivers()[0]->StopStandard();
+  ASSERT_TRUE(callee->ExchangeOfferAnswerWith(caller.get()));
+  EXPECT_EQ(RtpTransceiverDirection::kStopped,
+            transceiver->current_direction());
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+}
+
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       StopAndNegotiateCausesTransceiverToDisappear) {
+  auto caller = CreatePeerConnection();
+  auto callee = CreatePeerConnection();
+  auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  callee->pc()->GetTransceivers()[0]->StopStandard();
+  ASSERT_TRUE(callee->ExchangeOfferAnswerWith(caller.get()));
+  EXPECT_EQ(RtpTransceiverDirection::kStopped,
+            transceiver->current_direction());
+  EXPECT_EQ(0U, caller->pc()->GetTransceivers().size());
+  EXPECT_EQ(0U, callee->pc()->GetTransceivers().size());
+  EXPECT_EQ(0U, caller->pc()->GetSenders().size());
+  EXPECT_EQ(0U, callee->pc()->GetSenders().size());
+  EXPECT_EQ(0U, caller->pc()->GetReceivers().size());
+  EXPECT_EQ(0U, callee->pc()->GetReceivers().size());
+}
+
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       SetLocalDescriptionWorksAfterRepeatedAddRemove) {
+  auto caller = CreatePeerConnection();
+  auto callee = CreatePeerConnection();
+  auto video_track = caller->CreateVideoTrack("v");
+  auto track = caller->CreateAudioTrack("a");
+  caller->AddTransceiver(video_track);
+  auto transceiver = caller->AddTransceiver(track);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->pc()->RemoveTrack(transceiver->sender());
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->AddTrack(track);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->pc()->RemoveTrack(transceiver->sender());
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+}
+
+// This is a repro of Chromium bug https://crbug.com/1134686
+TEST_F(PeerConnectionRtpTestUnifiedPlan,
+       SetLocalDescriptionWorksAfterRepeatedAddRemoveWithRemoteReject) {
+  auto caller = CreatePeerConnection();
+  auto callee = CreatePeerConnection();
+  auto video_track = caller->CreateVideoTrack("v");
+  auto track = caller->CreateAudioTrack("a");
+  caller->AddTransceiver(video_track);
+  auto transceiver = caller->AddTransceiver(track);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->pc()->RemoveTrack(transceiver->sender());
+  ExchangeOfferAnswerWhereRemoteStopsTransceiver(caller.get(), callee.get(), 1);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->AddTrack(track);
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+  caller->pc()->RemoveTrack(transceiver->sender());
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
 }
 
 // Test that AddTransceiver fails if trying to use unimplemented RTP encoding
@@ -1722,6 +1913,19 @@ TEST_F(SdpFormatReceivedTest, ComplexPlanBIsReportedAsComplexPlanB) {
       ElementsAre(Pair(kSdpFormatReceivedComplexPlanB, 1)));
 }
 
+TEST_F(SdpFormatReceivedTest, AnswerIsReported) {
+  auto caller = CreatePeerConnectionWithPlanB();
+  caller->AddAudioTrack("audio");
+  caller->AddVideoTrack("video");
+  auto callee = CreatePeerConnectionWithUnifiedPlan();
+
+  ASSERT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
+  ASSERT_TRUE(caller->SetRemoteDescription(callee->CreateAnswer()));
+  EXPECT_METRIC_THAT(
+      metrics::Samples("WebRTC.PeerConnection.SdpFormatReceivedAnswer"),
+      ElementsAre(Pair(kSdpFormatReceivedSimple, 1)));
+}
+
 // Sender setups in a call.
 
 TEST_P(PeerConnectionRtpTest, CreateTwoSendersWithSameTrack) {
@@ -1759,13 +1963,16 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   init.direction = RtpTransceiverDirection::kSendRecv;
   auto transceiver =
       caller->AddTransceiver(caller->CreateAudioTrack("a"), init);
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
-  caller->observer()->clear_negotiation_needed();
+  caller->observer()->clear_legacy_renegotiation_needed();
+  caller->observer()->clear_latest_negotiation_needed_event();
 
   transceiver->sender()->SetStreams({"stream3", "stream4", "stream5"});
-  EXPECT_TRUE(caller->observer()->negotiation_needed());
+  EXPECT_TRUE(caller->observer()->legacy_renegotiation_needed());
+  EXPECT_TRUE(caller->observer()->has_negotiation_needed_event());
 
   ASSERT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
   auto callee_streams = callee->pc()->GetReceivers()[0]->streams();

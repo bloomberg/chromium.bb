@@ -7,6 +7,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -94,7 +95,6 @@ MenuController* MenuHostRootView::GetMenuControllerForInputEvents() {
              : nullptr;
 }
 
-BEGIN_METADATA(MenuHostRootView)
-METADATA_PARENT_CLASS(RootView)
-END_METADATA()
+BEGIN_METADATA(MenuHostRootView, internal::RootView)
+END_METADATA
 }  // namespace views

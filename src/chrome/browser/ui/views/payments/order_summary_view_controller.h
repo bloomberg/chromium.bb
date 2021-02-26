@@ -6,13 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_ORDER_SUMMARY_VIEW_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
-
-namespace views {
-class Button;
-}
 
 namespace payments {
 
@@ -25,9 +22,10 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
                                    public PaymentRequestState::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  OrderSummaryViewController(PaymentRequestSpec* spec,
-                             PaymentRequestState* state,
-                             PaymentRequestDialogView* dialog);
+  // The `spec` and `state` parameters should not be null.
+  OrderSummaryViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                             base::WeakPtr<PaymentRequestState> state,
+                             base::WeakPtr<PaymentRequestDialogView> dialog);
   ~OrderSummaryViewController() override;
 
   // PaymentRequestSpec::Observer:
@@ -39,13 +37,11 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
 
  private:
   // PaymentRequestSheetController:
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
   bool ShouldShowSecondaryButton() override;
   base::string16 GetSheetTitle() override;
   void FillContentView(views::View* content_view) override;
-  void UpdatePayButtonState(bool enabled);
 
-  views::Button* pay_button_;
+  base::WeakPtrFactory<OrderSummaryViewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OrderSummaryViewController);
 };

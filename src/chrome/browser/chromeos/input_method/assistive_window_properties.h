@@ -5,13 +5,23 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ASSISTIVE_WINDOW_PROPERTIES_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ASSISTIVE_WINDOW_PROPERTIES_H_
 
-#include "ui/chromeos/ime/assistive_delegate.h"
+#include <vector>
+#include "base/strings/string16.h"
+#include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
 
 namespace chromeos {
 struct AssistiveWindowProperties {
-  ui::ime::AssistiveWindowType type;
-  bool visible;
+  AssistiveWindowProperties();
+  ~AssistiveWindowProperties();
+
+  ui::ime::AssistiveWindowType type = ui::ime::AssistiveWindowType::kNone;
+  bool visible = false;
+  std::string announce_string;
+  std::vector<base::string16> candidates;
+  bool show_indices = false;
+  bool show_setting_link = false;
 };
+
 }  // namespace chromeos
 
 #endif  //  CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ASSISTIVE_WINDOW_PROPERTIES_H_

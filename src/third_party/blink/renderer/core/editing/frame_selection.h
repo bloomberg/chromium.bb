@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class DisplayItemClient;
+class CaretDisplayItemClient;
 class Element;
 class LayoutBlock;
 class LayoutText;
@@ -126,8 +126,6 @@ struct LayoutTextSelectionStatus {
 class CORE_EXPORT FrameSelection final
     : public GarbageCollected<FrameSelection>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
-
  public:
   explicit FrameSelection(LocalFrame&);
   ~FrameSelection();
@@ -168,6 +166,8 @@ class CORE_EXPORT FrameSelection final
                               const SetSelectionOptions&);
   void DidSetSelectionDeprecated(const SelectionInDOMTree&,
                                  const SetSelectionOptions&);
+  void SetSelectionForAccessibility(const SelectionInDOMTree&,
+                                    const SetSelectionOptions&);
 
   // Call this after doing user-triggered selections to make it easy to delete
   // the frame you entirely selected.
@@ -216,12 +216,11 @@ class CORE_EXPORT FrameSelection final
 
   void DidLayout();
   void CommitAppearanceIfNeeded();
-  void SetCaretVisible(bool caret_is_visible);
+  void SetCaretEnabled(bool caret_is_visible);
   void ScheduleVisualUpdate() const;
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded() const;
 
   // Paint invalidation methods delegating to FrameCaret.
-  void ClearPreviousCaretVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
@@ -287,7 +286,7 @@ class CORE_EXPORT FrameSelection final
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGInlineCursor& cursor) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class CaretDisplayItemClientTest;
@@ -295,11 +294,7 @@ class CORE_EXPORT FrameSelection final
   friend class PaintControllerPaintTestBase;
   friend class SelectionControllerTest;
 
-  const DisplayItemClient& CaretDisplayItemClientForTesting() const;
-
-  // Note: We have |selectionInFlatTree()| for unit tests, we should
-  // use |visibleSelection<EditingInFlatTreeStrategy>()|.
-  VisibleSelectionInFlatTree GetSelectionInFlatTree() const;
+  const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const;
 
   void NotifyAccessibilityForSelectionChange();
   void NotifyCompositorForSelectionChange();

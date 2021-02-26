@@ -7,6 +7,8 @@
 #include <list>
 #include <utility>
 
+#include "absl/strings/numbers.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -15,11 +17,10 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
-using spdy::SpdyHeaderBlock;
+using spdy::Http2HeaderBlock;
 
 namespace quic {
 
@@ -109,7 +110,7 @@ void QuicSimpleServerStream::OnBodyAvailable() {
 }
 
 void QuicSimpleServerStream::PushResponse(
-    SpdyHeaderBlock push_request_headers) {
+    Http2HeaderBlock push_request_headers) {
   if (QuicUtils::IsClientInitiatedStreamId(session()->transport_version(),
                                            id())) {
     QUIC_BUG << "Client initiated stream shouldn't be used as promised stream.";
@@ -208,7 +209,7 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
   std::string request_url = request_headers_[":authority"].as_string() +
                             request_headers_[":path"].as_string();
   int response_code;
-  const SpdyHeaderBlock& response_headers = response->headers();
+  const Http2HeaderBlock& response_headers = response->headers();
   if (!ParseHeaderStatusCode(response_headers, &response_code)) {
     auto status = response_headers.find(":status");
     if (status == response_headers.end()) {
@@ -254,25 +255,15 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
     return;
   }
 
-  if (response->response_type() == QuicBackendResponse::STOP_SENDING) {
-    QUIC_DVLOG(1)
-        << "Stream " << id()
-        << " sending an incomplete response, i.e. no trailer, no fin.";
-    SendIncompleteResponse(response->headers().Clone(), response->body());
-    SendStopSending(response->stop_sending_code());
-    return;
-  }
-
   if (response->response_type() == QuicBackendResponse::GENERATE_BYTES) {
     QUIC_DVLOG(1) << "Stream " << id() << " sending a generate bytes response.";
     std::string path = request_headers_[":path"].as_string().substr(1);
-    if (!quiche::QuicheTextUtils::StringToUint64(path,
-                                                 &generate_bytes_length_)) {
+    if (!absl::SimpleAtoi(path, &generate_bytes_length_)) {
       QUIC_LOG(ERROR) << "Path is not a number.";
       SendNotFoundResponse();
       return;
     }
-    SpdyHeaderBlock headers = response->headers().Clone();
+    Http2HeaderBlock headers = response->headers().Clone();
     headers["content-length"] =
         quiche::QuicheTextUtils::Uint64ToString(generate_bytes_length_);
 
@@ -306,7 +297,7 @@ void QuicSimpleServerStream::WriteGeneratedBytes() {
 
 void QuicSimpleServerStream::SendNotFoundResponse() {
   QUIC_DVLOG(1) << "Stream " << id() << " sending not found response.";
-  SpdyHeaderBlock headers;
+  Http2HeaderBlock headers;
   headers[":status"] = "404";
   headers["content-length"] =
       quiche::QuicheTextUtils::Uint64ToString(strlen(kNotFoundResponseBody));
@@ -319,7 +310,7 @@ void QuicSimpleServerStream::SendErrorResponse() {
 
 void QuicSimpleServerStream::SendErrorResponse(int resp_code) {
   QUIC_DVLOG(1) << "Stream " << id() << " sending error response.";
-  SpdyHeaderBlock headers;
+  Http2HeaderBlock headers;
   if (resp_code <= 0) {
     headers[":status"] = "500";
   } else {
@@ -331,8 +322,8 @@ void QuicSimpleServerStream::SendErrorResponse(int resp_code) {
 }
 
 void QuicSimpleServerStream::SendIncompleteResponse(
-    SpdyHeaderBlock response_headers,
-    quiche::QuicheStringPiece body) {
+    Http2HeaderBlock response_headers,
+    absl::string_view body) {
   QUIC_DLOG(INFO) << "Stream " << id() << " writing headers (fin = false) : "
                   << response_headers.DebugString();
   WriteHeaders(std::move(response_headers), /*fin=*/false, nullptr);
@@ -345,16 +336,16 @@ void QuicSimpleServerStream::SendIncompleteResponse(
 }
 
 void QuicSimpleServerStream::SendHeadersAndBody(
-    SpdyHeaderBlock response_headers,
-    quiche::QuicheStringPiece body) {
+    Http2HeaderBlock response_headers,
+    absl::string_view body) {
   SendHeadersAndBodyAndTrailers(std::move(response_headers), body,
-                                SpdyHeaderBlock());
+                                Http2HeaderBlock());
 }
 
 void QuicSimpleServerStream::SendHeadersAndBodyAndTrailers(
-    SpdyHeaderBlock response_headers,
-    quiche::QuicheStringPiece body,
-    SpdyHeaderBlock response_trailers) {
+    Http2HeaderBlock response_headers,
+    absl::string_view body,
+    Http2HeaderBlock response_trailers) {
   // Send the headers, with a FIN if there's nothing else to send.
   bool send_fin = (body.empty() && response_trailers.empty());
   QUIC_DLOG(INFO) << "Stream " << id() << " writing headers (fin = " << send_fin

@@ -10,14 +10,15 @@ namespace weblayer {
 // This enum represents actions or UI conditions that affect the visibility of
 // top UI, and is used to track concurrent concerns and to allow native and Java
 // code to coordinate.
+//
+// WARNING: only a subset of these are used if OnlyExpandTopControlsAtPageTop
+// is true.
+//
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplControlsVisibilityReason
 enum class ControlsVisibilityReason {
   // Browser controls are hidden when fullscreen is active.
   kFullscreen = 0,
-
-  // Browser controls are always shown for a few seconds after a navigation.
-  kPostNavigation,
 
   // Find in page forces browser controls to be visible.
   kFindInPage,
@@ -27,6 +28,21 @@ enum class ControlsVisibilityReason {
 
   // If accessibility is enabled, controls are forced shown.
   kAccessibility,
+
+  // Browser controls visibility can be set to force them to animate in/out when
+  // being set or cleared.
+  kAnimation,
+
+  // If the renderer isn't able to update the controls position because it is
+  // being destroyed, crashed, or is unresponsive, show the controls.
+  kRendererUnavailable,
+
+  // Miscellaneous reasons for showing the controls, including:
+  //  * User entering text
+  //  * The URL being dangerous or having a warning
+  //  * An interstitial is showing
+  //  * chrome:// URL
+  kOther,
 
   kReasonCount,
 };

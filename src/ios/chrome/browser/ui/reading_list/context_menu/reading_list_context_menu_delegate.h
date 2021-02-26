@@ -16,13 +16,13 @@
 // Opens |param|'s online in a new incognito tab.
 - (void)openURLInNewIncognitoTabForContextMenuWithParams:
     (ReadingListContextMenuParams*)params;
+// Opens |param|'s online URL in a new window.
+- (void)openURLInNewWindowForContextMenuWithParams:
+    (ReadingListContextMenuParams*)params;
 // Copies |param|'s online URL to the pasteboard.
 - (void)copyURLForContextMenuWithParams:(ReadingListContextMenuParams*)params;
 // Opens the offline page at |offlineURL| in a new tab.
 - (void)openOfflineURLInNewTabForContextMenuWithParams:
-    (ReadingListContextMenuParams*)params;
-// Cancels the context menu created with |params|.
-- (void)cancelReadingListContextMenuWithParams:
     (ReadingListContextMenuParams*)params;
 @end
 

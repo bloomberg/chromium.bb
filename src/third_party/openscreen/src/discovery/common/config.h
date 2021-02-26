@@ -5,6 +5,8 @@
 #ifndef DISCOVERY_COMMON_CONFIG_H_
 #define DISCOVERY_COMMON_CONFIG_H_
 
+#include <vector>
+
 #include "platform/base/interface_info.h"
 
 namespace openscreen {
@@ -90,6 +92,10 @@ struct Config {
   // prevent a malicious or misbehaving mDNS client from causing the memory
   // used by mDNS to grow in an unbounded fashion.
   int querier_max_records_cached = 1024;
+
+  // Sets the querier to ignore all NSEC negative response records received as
+  // responses to outgoing queries.
+  bool ignore_nsec_responses = false;
 };
 
 inline Config::NetworkInfo::AddressFamilies operator&(

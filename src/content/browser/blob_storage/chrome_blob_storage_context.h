@@ -35,6 +35,7 @@ class BlobStorageContext;
 namespace content {
 class BlobHandle;
 class BrowserContext;
+class StoragePartition;
 
 // A context class that keeps track of BlobStorageController used by the chrome.
 // There is an instance associated with each BrowserContext. There could be
@@ -80,7 +81,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   // Must be called on the UI thread.
   static scoped_refptr<network::SharedURLLoaderFactory>
   URLLoaderFactoryForToken(
-      BrowserContext* browser_context,
+      StoragePartition* storage_partition,
       mojo::PendingRemote<blink::mojom::BlobURLToken> token);
 
   // Similar to the above method this also returns a factory capable of loading
@@ -93,7 +94,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   // holding on to the URL has no such guarantees.
   // Must be called on the UI thread.
   static scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactoryForUrl(
-      BrowserContext* browser_context,
+      StoragePartition* storage_partition,
       const GURL& url);
 
   // Must be called on the UI thread.

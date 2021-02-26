@@ -24,6 +24,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,6 +44,10 @@ class BaseRequestsServerTest : public testing::Test {
         network_service_remote.BindNewPipeAndPassReceiver());
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_service_remote->CreateNetworkContext(
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
@@ -76,10 +81,9 @@ class BaseRequestsServerTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(test_server_.InitializeAndListen());
-    test_server_.RegisterRequestHandler(
-        base::Bind(&test_util::HandleDownloadFileRequest,
-                   test_server_.base_url(),
-                   base::Unretained(&http_request_)));
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &test_util::HandleDownloadFileRequest, test_server_.base_url(),
+        base::Unretained(&http_request_)));
     test_server_.StartAcceptingConnections();
   }
 
@@ -127,7 +131,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 
   std::string contents;
   base::ReadFileToString(temp_file, &contents);
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);

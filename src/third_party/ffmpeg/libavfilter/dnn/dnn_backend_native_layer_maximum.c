@@ -27,7 +27,7 @@
 #include "libavutil/avassert.h"
 #include "dnn_backend_native_layer_maximum.h"
 
-int dnn_load_layer_maximum(Layer *layer, AVIOContext *model_file_context, int file_size)
+int dnn_load_layer_maximum(Layer *layer, AVIOContext *model_file_context, int file_size, int operands_num)
 {
     DnnLayerMaximumParams *params;
     int dnn_size = 0;
@@ -42,11 +42,15 @@ int dnn_load_layer_maximum(Layer *layer, AVIOContext *model_file_context, int fi
     layer->output_operand_index = (int32_t)avio_rl32(model_file_context);
     dnn_size += 8;
 
+    if (layer->input_operand_indexes[0] >= operands_num || layer->output_operand_index >= operands_num) {
+        return 0;
+    }
+
     return dnn_size;
 }
 
 int dnn_execute_layer_maximum(DnnOperand *operands, const int32_t *input_operand_indexes,
-                              int32_t output_operand_index, const void *parameters)
+                              int32_t output_operand_index, const void *parameters, NativeContext *ctx)
 {
     const DnnOperand *input = &operands[input_operand_indexes[0]];
     DnnOperand *output = &operands[output_operand_index];
@@ -60,9 +64,15 @@ int dnn_execute_layer_maximum(DnnOperand *operands, const int32_t *input_operand
 
     output->data_type = input->data_type;
     output->length = calculate_operand_data_length(output);
-    output->data = av_realloc(output->data, output->length);
-    if (!output->data)
+    if (output->length <= 0) {
+        av_log(ctx, AV_LOG_ERROR, "The output data length overflow\n");
         return DNN_ERROR;
+    }
+    output->data = av_realloc(output->data, output->length);
+    if (!output->data) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to reallocate memory for output\n");
+        return DNN_ERROR;
+    }
 
     dims_count = calculate_operand_dims_count(output);
     src = input->data;

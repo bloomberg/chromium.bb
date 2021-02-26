@@ -4,6 +4,7 @@
 
 #include "components/permissions/test/test_permissions_client.h"
 
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
 
 namespace permissions {
@@ -12,8 +13,9 @@ namespace {
 scoped_refptr<HostContentSettingsMap> CreateSettingsMap(
     sync_preferences::TestingPrefServiceSyncable* prefs) {
   HostContentSettingsMap::RegisterProfilePrefs(prefs->registry());
-  return base::MakeRefCounted<HostContentSettingsMap>(prefs, false, false,
-                                                      false, false);
+  return base::MakeRefCounted<HostContentSettingsMap>(
+      prefs, false /* is_off_the_record */, false /* store_last_modified */,
+      false /* restore_session */);
 }
 
 }  // namespace
@@ -29,6 +31,18 @@ TestPermissionsClient::~TestPermissionsClient() {
 HostContentSettingsMap* TestPermissionsClient::GetSettingsMap(
     content::BrowserContext* browser_context) {
   return settings_map_.get();
+}
+
+scoped_refptr<content_settings::CookieSettings>
+TestPermissionsClient::GetCookieSettings(
+    content::BrowserContext* browser_context) {
+  return nullptr;
+}
+
+bool TestPermissionsClient::IsSubresourceFilterActivated(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  return false;
 }
 
 PermissionDecisionAutoBlocker*

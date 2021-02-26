@@ -85,17 +85,17 @@ void ViewportStyleResolver::Reset() {
 void ViewportStyleResolver::CollectViewportRulesFromUASheets() {
   CSSDefaultStyleSheets& default_style_sheets =
       CSSDefaultStyleSheets::Instance();
-  WebViewportStyle viewport_style =
+  mojom::blink::ViewportStyle viewport_style =
       document_->GetSettings() ? document_->GetSettings()->GetViewportStyle()
-                               : WebViewportStyle::kDefault;
+                               : mojom::blink::ViewportStyle::kDefault;
   StyleSheetContents* viewport_contents = nullptr;
   switch (viewport_style) {
-    case WebViewportStyle::kDefault:
+    case mojom::blink::ViewportStyle::kDefault:
       break;
-    case WebViewportStyle::kMobile:
+    case mojom::blink::ViewportStyle::kMobile:
       viewport_contents = default_style_sheets.EnsureMobileViewportStyleSheet();
       break;
-    case WebViewportStyle::kTelevision:
+    case mojom::blink::ViewportStyle::kTelevision:
       viewport_contents =
           default_style_sheets.EnsureTelevisionViewportStyleSheet();
       break;
@@ -381,7 +381,7 @@ void ViewportStyleResolver::UpdateViewport(
     return;
   }
   if (!initial_style_)
-    initial_style_ = StyleResolver::StyleForViewport(*document_);
+    initial_style_ = document_->GetStyleResolver().StyleForViewport();
   if (needs_update_ == kCollectRules) {
     Reset();
     CollectViewportRulesFromUASheets();
@@ -390,7 +390,7 @@ void ViewportStyleResolver::UpdateViewport(
   needs_update_ = kNoUpdate;
 }
 
-void ViewportStyleResolver::Trace(Visitor* visitor) {
+void ViewportStyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(property_set_);
   visitor->Trace(initial_viewport_medium_);

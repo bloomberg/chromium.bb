@@ -33,13 +33,16 @@ namespace {
 #if defined(OS_WIN)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   std::vector<base::FilePath> installation_locations;
-  base::FilePath local_app_data, program_files, program_files_x86;
+  base::FilePath local_app_data, program_files, program_files_x86,
+      program_files_64_32;
   if (base::PathService::Get(base::DIR_LOCAL_APP_DATA, &local_app_data))
     installation_locations.push_back(local_app_data);
   if (base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files))
     installation_locations.push_back(program_files);
   if (base::PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files_x86))
     installation_locations.push_back(program_files_x86);
+  if (base::PathService::Get(base::DIR_PROGRAM_FILES6432, &program_files_64_32))
+    installation_locations.push_back(program_files_64_32);
 
   for (size_t i = 0; i < installation_locations.size(); ++i) {
     locations->push_back(
@@ -50,7 +53,7 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
         installation_locations[i].Append(L"Chromium\\Application"));
   }
 }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   // TODO: Respect users' PATH variables.
   // Until then, we use an approximation of the most common defaults.
@@ -127,16 +130,16 @@ bool FindExe(
 
 }  // namespace internal
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void GetApplicationDirs(std::vector<base::FilePath>* locations);
 #endif
 
 bool FindChrome(base::FilePath* browser_exe) {
   base::FilePath browser_exes_array[] = {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
     base::FilePath(chrome::kBrowserProcessExecutablePath),
     base::FilePath(chrome::kBrowserProcessExecutablePathChromium)
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
     base::FilePath("google-chrome"),
     base::FilePath(chrome::kBrowserProcessExecutablePath),
     base::FilePath(chrome::kBrowserProcessExecutablePathChromium),

@@ -163,7 +163,8 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
       : SafeBrowsingUIManager(nullptr), report_sent_(false) {}
 
   // When the serialized report is sent, this is called.
-  void SendSerializedThreatDetails(const std::string& serialized) override {
+  void SendSerializedThreatDetails(content::BrowserContext* browser_context,
+                                   const std::string& serialized) override {
     report_sent_ = true;
     serialized_ = serialized;
   }
@@ -205,8 +206,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    ASSERT_TRUE(profile()->CreateHistoryService(true /* delete_file */,
-                                                false /* no_db */));
+    ASSERT_TRUE(profile()->CreateHistoryService());
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
@@ -371,7 +371,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     history_service()->AddPage(url, base::Time::Now(),
                                reinterpret_cast<history::ContextID>(1), 0,
                                GURL(), *redirects, ui::PAGE_TRANSITION_TYPED,
-                               history::SOURCE_BROWSED, false);
+                               history::SOURCE_BROWSED, false, false);
   }
 
   void WriteCacheEntry(const std::string& url,

@@ -5,6 +5,7 @@
 #include "discovery/mdns/mdns_querier.h"
 
 #include <memory>
+#include <utility>
 
 #include "discovery/common/config.h"
 #include "discovery/common/testing/mock_reporting_client.h"
@@ -109,6 +110,15 @@ class MdnsQuerierTest : public testing::Test {
   }
 
  protected:
+  template <typename... DnsTypes>
+  MdnsRecord CreateNsec(DomainName name, DnsTypes... types) {
+    NsecRecordRdata rdata(name, types...);
+    return MdnsRecord(std::move(name), nsec_record_created_.dns_type(),
+                      nsec_record_created_.dns_class(),
+                      nsec_record_created_.record_type(),
+                      nsec_record_created_.ttl(), std::move(rdata));
+  }
+
   UdpPacket CreatePacketWithRecords(
       const std::vector<MdnsRecord::ConstRef>& records,
       std::vector<MdnsRecord::ConstRef> additional_records) {
@@ -468,6 +478,243 @@ TEST_F(MdnsQuerierTest, MessagesForUnknownKnownRecordsAllowsAdditionalRecords) {
   testing::Mock::VerifyAndClearExpectations(&callback);
 }
 
+TEST_F(MdnsQuerierTest, NsecDroppedWhenCorrespondsToNonNsec) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  auto packet = CreatePacketWithRecords(
+      {record0_created_, nsec_record_created_, record2_created_});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record2_created_)));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{2});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), record2_created_, DnsType::kAAAA));
+
+  // Do it again in the another record order.
+  querier = CreateQuerier();
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  packet = CreatePacketWithRecords(
+      {nsec_record_created_, record2_created_, record0_created_});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record2_created_)));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{2});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), record2_created_, DnsType::kAAAA));
+}
+
+TEST_F(MdnsQuerierTest, MultipleNsecCombinedWhenSameName) {
+  DomainName alternate_name{"poking", "local"};
+  MdnsRecord multi_type_nsec =
+      CreateNsec(nsec_record_created_.name(), DnsType::kA, DnsType::kAAAA);
+  MdnsRecord aaaa_nsec =
+      CreateNsec(nsec_record_created_.name(), DnsType::kAAAA);
+  MdnsRecord srv_nsec = CreateNsec(alternate_name, DnsType::kSRV);
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  querier->StartQuery(alternate_name, DnsType::kANY, DnsClass::kIN, &callback);
+  auto packet =
+      CreatePacketWithRecords({nsec_record_created_, srv_nsec, aaaa_nsec});
+
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{3});
+  EXPECT_TRUE(ContainsRecord(querier.get(), multi_type_nsec, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), multi_type_nsec, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), srv_nsec, DnsType::kSRV));
+}
+
+TEST_F(MdnsQuerierTest, NsecBitsUnSetWhenCorrespondsToExistingRecord) {
+  MdnsRecord multi_type_nsec =
+      CreateNsec(nsec_record_created_.name(), DnsType::kA, DnsType::kAAAA);
+  MdnsRecord aaaa_nsec =
+      CreateNsec(nsec_record_created_.name(), DnsType::kAAAA);
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  auto packet = CreatePacketWithRecords({multi_type_nsec, record0_created_});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{2});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa_nsec, DnsType::kAAAA));
+
+  // Do it again in the another record order.
+  querier = CreateQuerier();
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  packet = CreatePacketWithRecords({record0_created_, multi_type_nsec});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{2});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa_nsec, DnsType::kAAAA));
+}
+
+TEST_F(MdnsQuerierTest, NsecDroppedWhenAllBitsUnset) {
+  MdnsRecord multi_type_nsec =
+      CreateNsec(nsec_record_created_.name(), DnsType::kA, DnsType::kAAAA);
+  MdnsRecord aaaa(record0_created_.name(), DnsType::kAAAA,
+                  record0_created_.dns_class(), record0_created_.record_type(),
+                  record0_created_.ttl(),
+                  AAAARecordRdata(IPAddress{172, 0, 0, 0, 0, 0, 0, 1}));
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  auto packet =
+      CreatePacketWithRecords({multi_type_nsec, record0_created_, aaaa});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(aaaa)));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{2});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa, DnsType::kAAAA));
+}
+
+TEST_F(MdnsQuerierTest, NsecUpdatesMultipleRecords) {
+  const DomainName& first_name = record0_created_.name();
+  const DomainName alternate_name{"poking", "local"};
+  const DomainName third_name{"third", "local"};
+  MdnsRecord nsec_first_name =
+      CreateNsec(first_name, DnsType::kA, DnsType::kAAAA, DnsType::kSRV);
+  MdnsRecord aaaa(alternate_name, DnsType::kAAAA, record0_created_.dns_class(),
+                  record0_created_.record_type(), record0_created_.ttl(),
+                  AAAARecordRdata(IPAddress{172, 0, 0, 0, 0, 0, 0, 1}));
+  MdnsRecord nsec_second_name =
+      CreateNsec(alternate_name, DnsType::kA, DnsType::kAAAA, DnsType::kSRV);
+
+  MdnsRecord srv(third_name, DnsType::kSRV, record0_created_.dns_class(),
+                 record0_created_.record_type(), record0_created_.ttl(),
+                 SrvRecordRdata(1, 2, 3, third_name));
+  MdnsRecord nsec_third_name =
+      CreateNsec(third_name, DnsType::kA, DnsType::kAAAA, DnsType::kSRV);
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(first_name, DnsType::kANY, DnsClass::kIN, &callback);
+  querier->StartQuery(alternate_name, DnsType::kANY, DnsClass::kIN, &callback);
+  querier->StartQuery(third_name, DnsType::kANY, DnsClass::kIN, &callback);
+  auto packet =
+      CreatePacketWithRecords({nsec_first_name, nsec_second_name,
+                               nsec_third_name, record0_created_, aaaa, srv});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .Times(3);
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{9});
+
+  MdnsRecord new_first_nsec =
+      CreateNsec(first_name, DnsType::kAAAA, DnsType::kSRV);
+  MdnsRecord new_second_nsec =
+      CreateNsec(alternate_name, DnsType::kA, DnsType::kSRV);
+  MdnsRecord new_third_nsec =
+      CreateNsec(third_name, DnsType::kA, DnsType::kAAAA);
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_first_nsec, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_first_nsec, DnsType::kSRV));
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_second_nsec, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_second_nsec, DnsType::kSRV));
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_third_nsec, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), new_third_nsec, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), srv, DnsType::kSRV));
+}
+
+TEST_F(MdnsQuerierTest, NsecDeletesMultipleRecords) {
+  const DomainName& first_name = record0_created_.name();
+  const DomainName alternate_name{"poking", "local"};
+  MdnsRecord nsec_first = CreateNsec(first_name, DnsType::kA);
+
+  MdnsRecord aaaa(alternate_name, DnsType::kAAAA, record0_created_.dns_class(),
+                  record0_created_.record_type(), record0_created_.ttl(),
+                  AAAARecordRdata(IPAddress{172, 0, 0, 0, 0, 0, 0, 1}));
+  MdnsRecord srv(alternate_name, DnsType::kSRV, record0_created_.dns_class(),
+                 record0_created_.record_type(), record0_created_.ttl(),
+                 SrvRecordRdata(1, 2, 3, first_name));
+  MdnsRecord nsec_second =
+      CreateNsec(alternate_name, DnsType::kAAAA, DnsType::kSRV);
+  MdnsRecord nsec_third = CreateNsec(alternate_name, DnsType::kAAAA);
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(first_name, DnsType::kANY, DnsClass::kIN, &callback);
+  querier->StartQuery(alternate_name, DnsType::kANY, DnsClass::kIN, &callback);
+  auto packet = CreatePacketWithRecords(
+      {record0_created_, aaaa, srv, nsec_first, nsec_second, nsec_third});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .Times(3);
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{3});
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), srv, DnsType::kSRV));
+}
+
+TEST_F(MdnsQuerierTest, NsecCreatesUpdatesAndDeletesMultipleRecords) {
+  const DomainName& first_name = record0_created_.name();
+  const DomainName alternate_name{"poking", "local"};
+  const DomainName third_name{"third", "local"};
+  MdnsRecord nsec_first_name = CreateNsec(first_name, DnsType::kA);
+
+  MdnsRecord aaaa(alternate_name, DnsType::kAAAA, record0_created_.dns_class(),
+                  record0_created_.record_type(), record0_created_.ttl(),
+                  AAAARecordRdata(IPAddress{172, 0, 0, 0, 0, 0, 0, 1}));
+  MdnsRecord nsec_second_name =
+      CreateNsec(alternate_name, DnsType::kAAAA, DnsType::kSRV);
+  MdnsRecord srv(alternate_name, DnsType::kSRV, record0_created_.dns_class(),
+                 record0_created_.record_type(), record0_created_.ttl(),
+                 SrvRecordRdata(1, 2, 3, third_name));
+
+  MdnsRecord nsec_third_name = CreateNsec(third_name, DnsType::kA);
+
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(first_name, DnsType::kANY, DnsClass::kIN, &callback);
+  querier->StartQuery(alternate_name, DnsType::kANY, DnsClass::kIN, &callback);
+  querier->StartQuery(third_name, DnsType::kANY, DnsClass::kIN, &callback);
+  auto packet =
+      CreatePacketWithRecords({nsec_first_name, nsec_second_name,
+                               nsec_third_name, record0_created_, aaaa, srv});
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .Times(3);
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{4});
+
+  MdnsRecord new_second_nsec = CreateNsec(alternate_name, DnsType::kSRV);
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), aaaa, DnsType::kAAAA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), srv, DnsType::kSRV));
+
+  EXPECT_TRUE(ContainsRecord(querier.get(), nsec_third_name, DnsType::kA));
+}
+
 TEST_F(MdnsQuerierTest, CallbackNotCalledOnStartQueryForNsecRecords) {
   std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
 
@@ -548,6 +795,31 @@ TEST_F(MdnsQuerierTest, CorrectCallbackCalledWhenNsecRecordReplacesNonNsec) {
   receiver_.OnRead(&socket_, std::move(packet));
   EXPECT_FALSE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
   EXPECT_TRUE(ContainsRecord(querier.get(), nsec_record_created_, DnsType::kA));
+}
+
+TEST_F(MdnsQuerierTest,
+       NoCallbackCalledWhenNsecRecordWouldReplaceNonNsecButNsecDisabled) {
+  config_.ignore_nsec_responses = true;
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+
+  // Set up so an A record has been received
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsClass::kIN, &callback);
+  EXPECT_CALL(callback,
+              OnRecordChanged(record0_created_, RecordChangedEvent::kCreated));
+  auto packet = CreatePacketWithRecord(record0_created_);
+  receiver_.OnRead(&socket_, std::move(packet));
+  testing::Mock::VerifyAndClearExpectations(&callback);
+  ASSERT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_FALSE(
+      ContainsRecord(querier.get(), nsec_record_created_, DnsType::kA));
+
+  packet = CreatePacketWithRecord(nsec_record_created_);
+  receiver_.OnRead(&socket_, std::move(packet));
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_FALSE(
+      ContainsRecord(querier.get(), nsec_record_created_, DnsType::kA));
 }
 
 TEST_F(MdnsQuerierTest, CorrectCallbackCalledWhenNonNsecRecordReplacesNsec) {

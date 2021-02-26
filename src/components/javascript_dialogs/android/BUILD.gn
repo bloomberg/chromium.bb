@@ -4,6 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//tools/grit/grit_rule.gni")
 
 android_library("java") {
   sources = [
@@ -14,6 +15,7 @@ android_library("java") {
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.javascript_dialogs"
 
   deps = [
     ":java_resources",
@@ -22,12 +24,12 @@ android_library("java") {
     "//base:jni_java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.javascript_dialogs"
   sources = [ "java/res/layout/js_modal_dialog.xml" ]
 
   deps = [

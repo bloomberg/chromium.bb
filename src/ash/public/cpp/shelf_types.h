@@ -39,7 +39,14 @@ enum class HotseatState {
 
   // Hotseat is shown above the shelf.
   kExtended,
+
+  // No value,
+  kNone
 };
+
+// Defines the density of hotseat. Hotseat is "denser" if it can accommodate
+// more shelf buttons without scrolling for the given available space.
+enum class HotseatDensity { kNormal, kSemiDense, kDense };
 
 enum class ShelfAutoHideBehavior {
   kAlways,        // Always auto-hide.

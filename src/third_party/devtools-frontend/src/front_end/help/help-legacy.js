@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as Common from '../common/common.js';
 
 import * as HelpModule from './help.js';
@@ -14,7 +16,8 @@ Help._innerShowReleaseNoteIfNeeded = HelpModule.Help.innerShowReleaseNoteIfNeede
 Help._showReleaseNoteIfNeeded = HelpModule.Help.showReleaseNoteIfNeeded;
 
 /** @type {!Common.Settings.Setting} */
-Help._releaseNoteVersionSetting = Common.Settings.Settings.instance().createSetting('releaseNoteVersionSeen', 0);
+Help._releaseNoteVersionSetting =
+    Common.Settings.Settings.instance().createSetting(HelpModule.Help.releaseVersionSeen, 0);
 
 /**
  * @constructor

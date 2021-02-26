@@ -23,11 +23,22 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-keyboard',
 
+    behaviors: [
+      DeepLinkingBehavior,
+      settings.RouteObserverBehavior,
+    ],
+
     properties: {
       /** Preferences state. */
       prefs: {
         type: Object,
         notify: true,
+      },
+
+      /** @private {!Map<string, (string|Function)>} */
+      focusConfig: {
+        type: Object,
+        observer: 'onFocusConfigChange_',
       },
 
       /** @private Whether to show Caps Lock options. */
@@ -80,6 +91,30 @@ cr.define('settings', function() {
         value: [2000, 1000, 500, 300, 200, 100, 50, 30, 20],
         readOnly: true,
       },
+
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set([
+          chromeos.settings.mojom.Setting.kKeyboardFunctionKeys,
+          chromeos.settings.mojom.Setting.kKeyboardAutoRepeat,
+          chromeos.settings.mojom.Setting.kKeyboardShortcuts,
+        ]),
+      },
+
+      /**
+       * This is enabled when language settings update feature flag is enabled.
+       * @private
+       */
+      languageSettingsV2Enabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableLanguageSettingsV2');
+        },
+      },
     },
 
     /** @override */
@@ -88,6 +123,19 @@ cr.define('settings', function() {
           'show-keys-changed', this.onShowKeysChange_.bind(this));
       settings.DevicePageBrowserProxyImpl.getInstance().initializeKeyboard();
       this.setUpKeyMapTargets_();
+    },
+
+    /**
+     * @param {!settings.Route} route
+     * @param {settings.Route} oldRoute
+     */
+    currentRouteChanged(route, oldRoute) {
+      // Does not apply to this page.
+      if (route !== settings.routes.KEYBOARD) {
+        return;
+      }
+
+      this.attemptDeepLink();
     },
 
     /**
@@ -132,6 +180,24 @@ cr.define('settings', function() {
       ];
     },
 
+    /** @private */
+    onFocusConfigChange_() {
+      let path, id;
+      if (this.languageSettingsV2Enabled_) {
+        path = settings.routes.OS_LANGUAGES_INPUT.path;
+        id = '#showLanguagesInput';
+      } else {
+        path = settings.routes.OS_LANGUAGES_DETAILS.path;
+        id = '#showLanguagesDetails';
+      }
+
+      this.focusConfig.set(path, () => {
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          cr.ui.focusWithoutInk(assert(this.$$(id)));
+        });
+      });
+    },
+
     /**
      * Handler for updating which keys to show.
      * @param {Object} keyboardParams
@@ -145,22 +211,33 @@ cr.define('settings', function() {
       this.showAppleCommandKey_ = keyboardParams['showAppleCommandKey'];
     },
 
+    /** @private */
     onShowKeyboardShortcutViewerTap_() {
       settings.DevicePageBrowserProxyImpl.getInstance()
           .showKeyboardShortcutViewer();
     },
 
+    /** @private */
     onShowLanguageInputTap_() {
       settings.Router.getInstance().navigateTo(
           settings.routes.OS_LANGUAGES_DETAILS,
-          /* dynamicParams */ null, /* removeSearch */ true);
+          /*dynamicParams=*/ null, /*removeSearch=*/ true);
     },
 
+    /** @private */
+    onShowInputSettingsTap_() {
+      settings.Router.getInstance().navigateTo(
+          settings.routes.OS_LANGUAGES_INPUT,
+          /*dynamicParams=*/ null, /*removeSearch=*/ true);
+    },
+
+    /** @private */
     getExternalMetaKeyLabel_(hasInternalKeyboard) {
       return loadTimeData.getString(
           hasInternalKeyboard ? 'keyboardKeyExternalMeta' : 'keyboardKeyMeta');
     },
 
+    /** @private */
     getExternalCommandKeyLabel_(hasInternalKeyboard) {
       return loadTimeData.getString(
           hasInternalKeyboard ? 'keyboardKeyExternalCommand' :

@@ -10,16 +10,17 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/win/registry.h"
 #include "build/branding_buildflags.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/initial_preferences.h"
+#include "chrome/installer/util/initial_preferences_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -29,7 +30,7 @@ namespace {
 
 // Returns the boolean value of the distribution preference in |prefs| named
 // |pref_name|, or |default_value| if not set.
-bool GetMasterPreference(const MasterPreferences& prefs,
+bool GetMasterPreference(const InitialPreferences& prefs,
                          const char* pref_name,
                          bool default_value) {
   bool value;
@@ -41,47 +42,44 @@ bool GetMasterPreference(const MasterPreferences& prefs,
 InstallerState::InstallerState()
     : operation_(UNINITIALIZED),
       level_(UNKNOWN_LEVEL),
-      root_key_(NULL),
+      root_key_(nullptr),
       msi_(false),
       verbose_logging_(false) {}
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
       level_(UNKNOWN_LEVEL),
-      root_key_(NULL),
+      root_key_(nullptr),
       msi_(false),
       verbose_logging_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
 
-InstallerState::~InstallerState() {
-}
+InstallerState::~InstallerState() {}
 
 void InstallerState::Initialize(const base::CommandLine& command_line,
-                                const MasterPreferences& prefs,
+                                const InitialPreferences& prefs,
                                 const InstallationState& machine_state) {
   Clear();
 
-  set_level(GetMasterPreference(prefs, master_preferences::kSystemLevel, false)
+  set_level(GetMasterPreference(prefs, initial_preferences::kSystemLevel, false)
                 ? SYSTEM_LEVEL
                 : USER_LEVEL);
 
   verbose_logging_ =
-      GetMasterPreference(prefs, master_preferences::kVerboseLogging, false);
+      GetMasterPreference(prefs, initial_preferences::kVerboseLogging, false);
 
-  msi_ = GetMasterPreference(prefs, master_preferences::kMsi, false);
+  msi_ = GetMasterPreference(prefs, initial_preferences::kMsi, false);
   if (!msi_) {
     const ProductState* product_state =
         machine_state.GetProductState(system_install());
-    if (product_state != NULL)
+    if (product_state != nullptr)
       msi_ = product_state->is_msi();
   }
 
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
-  // TODO(grt): Infer target_path_ from an existing install in support of
-  // varying install locations; see https://crbug.com/380177.
   target_path_ = GetChromeInstallPath(system_install());
   state_key_ = install_static::GetClientStateKeyPath();
 
@@ -116,38 +114,34 @@ bool InstallerState::system_install() const {
   return level_ == SYSTEM_LEVEL;
 }
 
-base::Version* InstallerState::GetCurrentVersion(
+base::Version InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
-  std::unique_ptr<base::Version> current_version;
+  base::Version current_version;
   const ProductState* product_state =
       machine_state.GetProductState(level_ == SYSTEM_LEVEL);
 
-  if (product_state != NULL) {
-    const base::Version* version = NULL;
-
+  if (product_state) {
     // Be aware that there might be a pending "new_chrome.exe" already in the
     // installation path.  If so, we use old_version, which holds the version of
     // "chrome.exe" itself.
-    if (base::PathExists(target_path().Append(kChromeNewExe)))
-      version = product_state->old_version();
-
-    if (version == NULL)
-      version = &product_state->version();
-
-    current_version.reset(new base::Version(*version));
+    if (base::PathExists(target_path().Append(kChromeNewExe)) &&
+        product_state->old_version()) {
+      current_version = *(product_state->old_version());
+    } else {
+      current_version = product_state->version();
+    }
   }
 
-  return current_version.release();
+  return current_version;
 }
 
 base::Version InstallerState::DetermineCriticalVersion(
-    const base::Version* current_version,
+    const base::Version& current_version,
     const base::Version& new_version) const {
-  DCHECK(current_version == NULL || current_version->IsValid());
   DCHECK(new_version.IsValid());
   if (critical_update_version_.IsValid() &&
-      (current_version == NULL ||
-       (current_version->CompareTo(critical_update_version_) < 0)) &&
+      (!current_version.IsValid() ||
+       (current_version.CompareTo(critical_update_version_) < 0)) &&
       new_version.CompareTo(critical_update_version_) >= 0) {
     return critical_update_version_;
   }
@@ -165,7 +159,7 @@ void InstallerState::Clear() {
   state_key_.clear();
   critical_update_version_ = base::Version();
   level_ = UNKNOWN_LEVEL;
-  root_key_ = NULL;
+  root_key_ = nullptr;
   msi_ = false;
   verbose_logging_ = false;
 }

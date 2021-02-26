@@ -31,8 +31,8 @@
 #include "extensions/test/extension_test_message_listener.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
+#include "components/media_router/browser/media_routes_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #endif
 
@@ -159,7 +159,7 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), LaunchContainer::kLaunchContainerNone,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceTest));
@@ -168,7 +168,7 @@ void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
+      ->LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           browser()->profile(), extension,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceCommandLine));

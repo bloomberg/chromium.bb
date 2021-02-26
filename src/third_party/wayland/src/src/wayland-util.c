@@ -131,7 +131,7 @@ wl_array_add(struct wl_array *array, size_t size)
 		array->alloc = alloc;
 	}
 
-	p = array->data + array->size;
+	p = (char *)array->data + array->size;
 	array->size += size;
 
 	return p;

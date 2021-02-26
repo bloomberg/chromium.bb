@@ -27,11 +27,17 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
+  static LayoutUnit ComputeLegendInlineOffset(
+      const ComputedStyle& legend_style,
+      LayoutUnit legend_border_box_inline_size,
+      const NGBoxStrut& legend_margins,
+      const ComputedStyle& fieldset_style,
+      LayoutUnit fieldset_border_padding_inline_start,
+      LayoutUnit fieldset_content_inline_size);
+
  private:
   NGBreakStatus LayoutChildren();
-  NGBreakStatus LayoutLegend(
-      NGBlockNode& legend,
-      scoped_refptr<const NGBlockBreakToken> legend_break_token);
+  void LayoutLegend(NGBlockNode& legend);
   NGBreakStatus LayoutFieldsetContent(
       NGBlockNode& fieldset_content,
       scoped_refptr<const NGBlockBreakToken> content_break_token,
@@ -41,24 +47,18 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
       LogicalSize available_size,
-      LogicalSize percentage_size,
-      LayoutUnit block_offset);
+      LogicalSize percentage_size);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
       NGBlockNode fieldset_content,
       LogicalSize padding_box_size,
-      LayoutUnit block_offset);
-
+      LayoutUnit block_offset,
+      NGCacheSlot slot);
   bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
-  const WritingMode writing_mode_;
+  const WritingDirectionMode writing_direction_;
 
-  const NGBoxStrut border_padding_;
   NGBoxStrut borders_;
   NGBoxStrut padding_;
-
-  // The border and padding after adjusting to ensure that the leading border
-  // and padding are only applied to the first fragment.
-  NGBoxStrut adjusted_border_padding_;
 
   LayoutUnit intrinsic_block_size_;
   const LayoutUnit consumed_block_size_;
@@ -69,13 +69,12 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   // the legend.
   LayoutUnit minimum_border_box_block_size_;
 
-  // The amount of the border block-start that was consumed in previous
-  // fragments.
-  LayoutUnit consumed_border_block_start_;
-
-  // If true, this indicates that the legend broke during the current layout
-  // pass.
-  bool legend_broke_ = false;
+  // If true, the legend is taller than the block-start border, so that it
+  // sticks below it, allowing for a class C breakpoint [1] before any fieldset
+  // content.
+  //
+  // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+  bool is_legend_past_border_ = false;
 };
 
 }  // namespace blink

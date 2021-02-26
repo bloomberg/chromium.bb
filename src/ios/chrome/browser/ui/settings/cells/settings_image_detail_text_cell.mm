@@ -61,7 +61,6 @@
   _detailTextLabel.font =
       [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
   _detailTextLabel.adjustsFontForContentSizeCategory = YES;
-  _detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
 }
 
 // Sets constraints on subviews.
@@ -110,6 +109,10 @@
         constraintGreaterThanOrEqualToAnchor:textStackView.bottomAnchor
                                     constant:
                                         kTableViewTwoLabelsCellVerticalSpacing],
+
+    // Leading constraint for |customSepartor|.
+    [self.customSeparator.leadingAnchor
+        constraintEqualToAnchor:self.textLabel.leadingAnchor],
   ]];
 }
 

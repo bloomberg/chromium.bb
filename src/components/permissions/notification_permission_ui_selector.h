@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_uma_util.h"
 
 namespace permissions {
 
@@ -23,10 +24,13 @@ class NotificationPermissionUiSelector {
     kEnabledInPrefs,
     kTriggeredByCrowdDeny,
     kTriggeredDueToAbusiveRequests,
+    kTriggeredDueToAbusiveContent,
+    kPredictedVeryUnlikelyGrant,
   };
 
   enum class WarningReason {
     kAbusiveRequests,
+    kAbusiveContent,
   };
 
   struct Decision {
@@ -60,6 +64,10 @@ class NotificationPermissionUiSelector {
 
   virtual ~NotificationPermissionUiSelector() {}
 
+  // Determines whether animations should be suppressed because we're very
+  // confident the user does not want notifications (e.g. they're abusive).
+  static bool ShouldSuppressAnimation(QuietUiReason reason);
+
   // Determines the UI to use for the given |request|, and invokes |callback|
   // when done, either synchronously or asynchronously. The |callback| is
   // guaranteed never to be invoked after |this| goes out of scope. Only one
@@ -69,8 +77,15 @@ class NotificationPermissionUiSelector {
 
   // Cancel the pending request, if any. After this, the |callback| is
   // guaranteed not to be invoked anymore, and another call to SelectUiToUse()
-  // can be issued.
+  // can be issued. Can be called when there is no pending request which will
+  // simply be a no-op.
   virtual void Cancel() {}
+
+  // Will return the selector's discretized prediction value, if any is
+  // applicable to be recorded in UKMs. This is specific only to a selector that
+  // makes use of the Web Permission Predictions Service to make decisions.
+  virtual base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
+  PredictedGrantLikelihoodForUKM();
 };
 
 }  // namespace permissions

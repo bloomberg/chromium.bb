@@ -71,7 +71,7 @@ class CaptivePortalTabReloader {
   };
 
   // Function to open a login tab, if there isn't one already.
-  typedef base::Callback<void()> OpenLoginTabCallback;
+  using OpenLoginTabCallback = base::RepeatingCallback<void()>;
 
   // |captive_portal_service| and |web_contents| will only be dereferenced in
   // ReloadTab, MaybeOpenCaptivePortalLoginTab, and CheckForCaptivePortal, so
@@ -96,10 +96,6 @@ class CaptivePortalTabReloader {
   // about any hostname resolution error. For an error page, the entire 3-step
   // process of getting the error, starting a new provisional load for the error
   // page, and committing the error page is treated as a single commit.
-  //
-  // The Link Doctor page will typically be one OnLoadCommitted with an error
-  // code, followed by another OnLoadCommitted with net::OK for the Link Doctor
-  // page.
   virtual void OnLoadCommitted(int net_error,
                                net::ResolveErrorInfo resolve_error_info);
 

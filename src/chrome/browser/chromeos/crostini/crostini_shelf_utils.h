@@ -6,11 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHELF_UTILS_H_
 
 #include <string>
+#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 
 class Profile;
 
 namespace crostini {
+
+// The installer/upgrader should set the id on the window so that it will appear
+// on the shelf.
+extern const char kCrostiniInstallerShelfId[];
+extern const char kCrostiniUpgraderShelfId[];
 
 // Returns a shelf app id for an exo window startup id or app id.
 //
@@ -32,6 +38,9 @@ bool IsUnmatchedCrostiniShelfAppId(base::StringPiece shelf_app_id);
 // Returns whether the app_id is a Crostini app id.
 bool IsCrostiniShelfAppId(const Profile* profile,
                           base::StringPiece shelf_app_id);
+
+// Returns the title for the specified app.
+base::string16 GetCrostiniShelfTitle(base::StringPiece shelf_app_id);
 
 }  // namespace crostini
 

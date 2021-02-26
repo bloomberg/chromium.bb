@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/fuchsia/mixer_output_stream_fuchsia.h"
 
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,14 +33,13 @@ TEST_F(MixerOutputStreamFuchsiaTest, StartAndStop) {
 TEST_F(MixerOutputStreamFuchsiaTest, Play1s) {
   EXPECT_TRUE(output_.Start(kSampleRate, kNumChannels));
 
-  constexpr base::TimeDelta kTestStreamDuration =
-      base::TimeDelta::FromMilliseconds(300);
+  constexpr auto kTestStreamDuration = base::TimeDelta::FromMilliseconds(300);
   constexpr float kSignalFrequencyHz = 1000;
 
   auto started = base::TimeTicks::Now();
 
   int samples_to_play =
-      kSampleRate * kTestStreamDuration / base::TimeDelta::FromSeconds(1);
+      base::ClampFloor(kSampleRate * kTestStreamDuration.InSecondsF());
   int pos = 0;
   while (pos < samples_to_play) {
     std::vector<float> buffer;

@@ -6,6 +6,7 @@
 
 #include "tools/traffic_annotation/auditor/auditor_result.h"
 
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 const int AuditorResult::kNoCodeLineSpecified = -1;
@@ -23,7 +24,8 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_REPEATED_ID ||
          type == AuditorResult::Type::ERROR_MERGE_FAILED ||
          type == AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE ||
-         type == AuditorResult::Type::ERROR_INVALID_OS);
+         type == AuditorResult::Type::ERROR_INVALID_OS ||
+         type == AuditorResult::Type::ERROR_INVALID_ADDED_IN);
   DCHECK(!message.empty() || type == AuditorResult::Type::RESULT_OK ||
          type == AuditorResult::Type::RESULT_IGNORE ||
          type == AuditorResult::Type::ERROR_MISSING_TAG_USED ||
@@ -32,6 +34,7 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT ||
          type == AuditorResult::Type::ERROR_TEST_ANNOTATION ||
          type == AuditorResult::Type::ERROR_INVALID_OS ||
+         type == AuditorResult::Type::ERROR_INVALID_ADDED_IN ||
          type == AuditorResult::Type::ERROR_MUTABLE_TAG);
   if (!message.empty())
     details_.push_back(message);
@@ -137,6 +140,14 @@ std::string AuditorResult::ToText() const {
           "Annotation at '%s:%i' has the following inconsistencies: %s",
           file_path_.c_str(), line_, details_[0].c_str());
 
+    case AuditorResult::Type::ERROR_MISSING_GROUPING:
+      DCHECK(!details_.empty());
+      return base::StringPrintf(
+          "Annotation at '%s:%i' with unique_id '%s' does not appear in "
+          "summary/grouping.xml. Add the annotation to an existing "
+          "group in summary/grouping.xml",
+          file_path_.c_str(), line_, details_[0].c_str());
+
     case AuditorResult::Type::ERROR_MERGE_FAILED:
       DCHECK(details_.size() == 3);
       return base::StringPrintf(
@@ -181,6 +192,11 @@ std::string AuditorResult::ToText() const {
           "at %s.",
           details_[0].c_str(), file_path_.c_str());
 
+    case AuditorResult::Type::ERROR_INVALID_ADDED_IN:
+      return base::StringPrintf(
+          "Invalid or missing added_in_milestone '%s' in annotation '%s' at %s",
+          details_[0].c_str(), details_[1].c_str(), file_path_.c_str());
+
     case AuditorResult::Type::ERROR_MUTABLE_TAG:
       return base::StringPrintf(
           "Calling CreateMutableNetworkTrafficAnnotationTag() is not "
@@ -203,6 +219,9 @@ std::string AuditorResult::ToShortText() const {
       DCHECK(!details_.empty());
       return base::StringPrintf("the following inconsistencies: %s",
                                 details_[0].c_str());
+
+    case AuditorResult::Type::ERROR_MISSING_GROUPING:
+      return base::StringPrintf("missing from summary/grouping.xml");
 
     default:
       NOTREACHED();

@@ -28,14 +28,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
+import * as Root from '../root/root.js';                                  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
 import {ElementsTreeElement, InitialChildrenLimit} from './ElementsTreeElement.js';
-import {HrefSymbol, ImagePreviewPopover} from './ImagePreviewPopover.js';
+import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 
 /**
  * @unrestricted
@@ -48,9 +52,12 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
    */
   constructor(omitRootDOMNode, selectEnabled, hideGutter) {
     super();
-    this._treeElementSymbol = Symbol('treeElement');
+    /** @type {!WeakMap<!SDK.DOMModel.DOMNode, !ElementsTreeElement>} */
+    this.treeElementByNode = new WeakMap();
     const shadowContainer = createElement('div');
-    this._shadowRoot = UI.Utils.createShadowRootWithCoreStyles(shadowContainer, 'elements/elementsTreeOutline.css');
+    this._shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        shadowContainer,
+        {cssFile: 'elements/elementsTreeOutline.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const outlineDisclosureElement = this._shadowRoot.createChild('div', 'elements-disclosure');
 
     this._element = this.element;
@@ -91,13 +98,13 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
         this.contentElement,
         event => {
           let link = event.target;
-          while (link && !link[HrefSymbol]) {
+          while (link && !ImagePreviewPopover.getImageURL(link)) {
             link = link.parentElementOrShadowHost();
           }
           return link;
         },
         link => {
-          const listItem = link.enclosingNodeOrSelfWithNodeName('li');
+          const listItem = UI.UIUtils.enclosingNodeOrSelfWithNodeName(link, 'li');
           if (!listItem) {
             return null;
           }
@@ -108,6 +115,9 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     this._updateRecords = new Map();
     /** @type {!Set<!ElementsTreeElement>} */
     this._treeElementsBeingUpdated = new Set();
+
+    /** @type {?Array<!Root.Runtime.Extension>} */
+    this.decoratorExtensions = null;
 
     this._showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('showHTMLComments');
     this._showHTMLCommentsSetting.addChangeListener(this._onShowHTMLCommentsChange.bind(this));
@@ -129,14 +139,6 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     }
     this.update();
   }
-
-  /**
-   * @return {symbol}
-   */
-  treeElementSymbol() {
-    return this._treeElementSymbol;
-  }
-
 
   /**
    * @param {boolean} wrap
@@ -475,7 +477,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
       return null;
     }
 
-    const cachedElement = node[this._treeElementSymbol];
+    const cachedElement = this.treeElementByNode.get(node);
     if (cachedElement) {
       return cachedElement;
     }
@@ -485,8 +487,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     let currentNode;
     for (currentNode = node.parentNode; currentNode; currentNode = currentNode.parentNode) {
       ancestors.push(currentNode);
-      if (currentNode[this._treeElementSymbol])  // stop climbing as soon as we hit
-      {
+      if (this.treeElementByNode.has(currentNode)) {  // stop climbing as soon as we hit
         break;
       }
     }
@@ -498,7 +499,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     // Walk down to populate each ancestor's children, to fill in the tree and the cache.
     for (let i = ancestors.length - 1; i >= 0; --i) {
       const child = ancestors[i - 1] || node;
-      const treeElement = ancestors[i][this._treeElementSymbol];
+      const treeElement = this.treeElementByNode.get(ancestors[i]);
       if (treeElement) {
         treeElement.onpopulate();  // fill the cache with the children of treeElement
         if (child.index >= treeElement.expandedChildrenLimit()) {
@@ -507,7 +508,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
       }
     }
 
-    return node[this._treeElementSymbol];
+    return this.treeElementByNode.get(node);
   }
 
   /**
@@ -827,7 +828,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
   async _saveNodeToTempVariable(node) {
     const remoteObjectForConsole = await node.resolveToObject();
     await SDK.ConsoleModel.ConsoleModel.instance().saveToTempVariable(
-        self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext), remoteObjectForConsole);
+        UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext), remoteObjectForConsole);
   }
 
   runPendingUpdates() {
@@ -846,7 +847,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     if (!node) {
       return;
     }
-    const treeElement = node[this._treeElementSymbol];
+    const treeElement = this.treeElementByNode.get(node);
     if (!treeElement) {
       return;
     }
@@ -872,7 +873,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
    * @param {function()=} callback
    */
   toggleEditAsHTML(node, startEditing, callback) {
-    const treeElement = node[this._treeElementSymbol];
+    const treeElement = this.treeElementByNode.get(node);
     if (!treeElement || !treeElement.hasEditableNode()) {
       return;
     }
@@ -901,6 +902,10 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
 
       // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
       this.runPendingUpdates();
+
+      if (!index) {
+        return;
+      }
 
       const newNode = parentNode ? parentNode.children()[index] || parentNode : null;
       if (!newNode) {
@@ -1551,7 +1556,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
    */
   _markersChanged(event) {
     const node = /** @type {!SDK.DOMModel.DOMNode} */ (event.data);
-    const treeElement = node[this._treeElementSymbol];
+    const treeElement = this.treeElementByNode.get(node);
     if (treeElement) {
       treeElement.updateDecorations();
     }
@@ -1733,7 +1738,7 @@ export class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
     title.textContent = '\u21AA ' + text;
 
     const link = linkifyDeferredNodeReference(nodeShortcut.deferredNode);
-    this.listItemElement.createTextChild(' ');
+    UI.UIUtils.createTextChild(this.listItemElement, ' ');
     link.classList.add('elements-tree-shortcut-link');
     link.textContent = Common.UIString.UIString('reveal');
     this.listItemElement.appendChild(link);

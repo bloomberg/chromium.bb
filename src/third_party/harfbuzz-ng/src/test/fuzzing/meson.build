@@ -6,12 +6,23 @@ tests = [
 ]
 
 foreach file_name : tests
-  test_name = file_name.split('.')[0].underscorify()
+  test_name = file_name.split('.')[0]
 
-  exe = executable(test_name, [file_name, 'main.cc'],
-    cpp_args: cpp_args,
+  sources = [file_name]
+  fuzzer_ldflags = []
+  extra_cpp_args = []
+
+  if get_option('fuzzer_ldflags') == ''
+    sources += 'main.cc'
+  else
+    fuzzer_ldflags += get_option('fuzzer_ldflags').split()
+    extra_cpp_args += '-DHB_IS_IN_FUZZER'
+  endif
+
+  exe = executable(test_name, sources,
+    cpp_args: cpp_args + extra_cpp_args,
     include_directories: [incconfig, incsrc],
-    dependencies: deps,
+    link_args: fuzzer_ldflags,
     link_with: [libharfbuzz, libharfbuzz_subset],
     install: false,
   )
@@ -20,14 +31,18 @@ endforeach
 
 env = environment()
 env.set('srcdir', meson.current_source_dir())
+env.set('HB_TEST_SUBSET_FUZZER_TIMEOUT', '50')
 
 test('shape_fuzzer', find_program('run-shape-fuzzer-tests.py'),
   args: [
     hb_shape_fuzzer_exe,
   ],
+  timeout: 60,
   depends: [hb_shape_fuzzer_exe, libharfbuzz, libharfbuzz_subset],
   workdir: join_paths(meson.current_build_dir(), '..', '..'),
-  env: env)
+  env: env,
+  suite: ['fuzzing', 'slow'],
+)
 
 test('subset_fuzzer', find_program('run-subset-fuzzer-tests.py'),
   args: [
@@ -35,13 +50,17 @@ test('subset_fuzzer', find_program('run-subset-fuzzer-tests.py'),
   ],
   # as the tests are ran concurrently let's raise acceptable time here
   # ideally better to break and let meson handles them in parallel
-  timeout: 120,
+  timeout: 300,
   workdir: join_paths(meson.current_build_dir(), '..', '..'),
-  env: env)
+  env: env,
+  suite: ['fuzzing', 'slow'],
+)
 
 test('draw_fuzzer', find_program('run-draw-fuzzer-tests.py'),
   args: [
     hb_draw_fuzzer_exe,
   ],
   workdir: join_paths(meson.current_build_dir(), '..', '..'),
-  env: env)
+  env: env,
+  suite: ['fuzzing'],
+)

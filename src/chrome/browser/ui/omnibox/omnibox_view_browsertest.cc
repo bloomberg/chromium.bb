@@ -8,14 +8,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,7 +46,6 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/search_engines/template_url.h"
@@ -143,7 +140,7 @@ void SetClipboardText(const base::string16& text) {
   writer.WriteText(text);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
 #else
 const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
@@ -421,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
   EXPECT_EQ(ASCIIToUTF16("Hello worlds"), omnibox_view->GetText());
 
   // Try ctrl-x to cut text.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac uses alt-left/right to select a word.
   ASSERT_NO_FATAL_FAILURE(
       SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN));
@@ -433,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_X, kCtrlOrCmdMask));
   EXPECT_EQ(ASCIIToUTF16("Hello "), omnibox_view->GetText());
 
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
   // Try alt-f4 to close the browser.
   ExpectBrowserClosed(browser(), ui::VKEY_F4, ui::EF_ALT_DOWN);
 #endif
@@ -473,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PopupAccelerators) {
   EXPECT_EQ(ASCIIToUTF16("Hello world"), omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
   // Try alt-f4 to close the popup.
   ExpectBrowserClosed(popup, ui::VKEY_F4, ui::EF_ALT_DOWN);
 #endif
@@ -518,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
 
   // Move cursor to the beginning of the search text.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Home doesn't work on Mac trybot.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN));
 #else
@@ -740,24 +737,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       RendererInitiatedFocusPreservesUserText) {
-  OmniboxView* omnibox_view = nullptr;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-
-  // Type a single character.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("a"), omnibox_view->GetText());
-
-  // Simulate a renderer-initated focus event.
-  browser()->SetFocusToLocationBar();
-
-  // Type an additional character and verify that we didn't clobber the
-  // character we already typed.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_B, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("ab"), omnibox_view->GetText());
-}
-
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
@@ -779,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   EXPECT_EQ(old_text.size(), end);
 
   // Move the cursor to the end.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // End doesn't work on Mac trybot.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_E, ui::EF_CONTROL_DOWN));
 #else
@@ -833,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
 
   // Check that reverting clamps the cursor to the bounds of the new text.
   // Move the cursor to the end.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // End doesn't work on Mac trybot.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_E, ui::EF_CONTROL_DOWN));
 #else
@@ -890,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
   policy::PolicyMap policies;
   policies.Set("DefaultSearchProviderEnabled", policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-               std::make_unique<base::Value>(false), nullptr);
+               base::Value(false), nullptr);
   policy_provider()->UpdateChromePolicy(policies);
   base::RunLoop().RunUntilIdle();
 
@@ -916,7 +895,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
 #define MAYBE_AcceptKeywordBySpace AcceptKeywordBySpace
 #endif
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
-  OmniboxView* omnibox_view = NULL;
+  // AcceptKeywordBySpace is disabled when keyword search button is enabled.
+  if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
+    return;
+
+  OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
   base::string16 search_keyword(ASCIIToUTF16(kSearchKeyword));
@@ -1022,7 +1005,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   // end of text.
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->OnInlineAutocompleteTextMaybeChanged(
-      search_keyword + ASCIIToUTF16("  "), search_keyword.length());
+      search_keyword + ASCIIToUTF16("  "),
+      {{search_keyword.length() + 2, search_keyword.length()}},
+      search_keyword.length());
   omnibox_view->OnAfterPossibleChange(true);
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
@@ -1308,94 +1293,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabAcceptKeyword) {
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-#if !defined(OS_MACOSX)
-// Mac intentionally does not support this behavior.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, WrappingTabTraverseResultsTest) {
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    return;
-  }
-
-  OmniboxView* omnibox_view = nullptr;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
-  ASSERT_TRUE(popup_model);
-
-  // Input something to trigger results.
-  const ui::KeyboardCode kKeys[] = {ui::VKEY_B, ui::VKEY_A, ui::VKEY_R,
-                                    ui::VKEY_UNKNOWN};
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kKeys));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-  ASSERT_TRUE(popup_model->IsOpen());
-
-  size_t old_selected_line = popup_model->selected_line();
-  EXPECT_EQ(0U, old_selected_line);
-
-  // Move down the results.
-  for (size_t size = popup_model->result().size();
-       popup_model->selected_line() < size - 1;
-       old_selected_line = popup_model->selected_line()) {
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-    ASSERT_LT(old_selected_line, popup_model->selected_line());
-  }
-
-  // Wrap to top.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_EQ(0U, popup_model->selected_line());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Wrap to bottom.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-  ASSERT_EQ(old_selected_line, popup_model->selected_line());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Move back up the results.
-  for (; popup_model->selected_line() > 0U;
-       old_selected_line = popup_model->selected_line()) {
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-    ASSERT_GT(old_selected_line, popup_model->selected_line());
-  }
-
-  const TestHistoryEntry kHistoryFoo = {"http://foo/", "Page foo", 1, 1, false};
-
-  // Add a history entry so "foo" gets multiple matches.
-  ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(
-      kHistoryFoo, base::Time::Now() - base::TimeDelta::FromHours(1)));
-
-  // Load results.
-  ASSERT_NO_FATAL_FAILURE(omnibox_view->SelectAll(false));
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-
-  // Trigger keyword mode by tab.
-  base::string16 text = ASCIIToUTF16(kSearchKeyword);
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_EQ(text, omnibox_view->model()->keyword());
-  ASSERT_TRUE(omnibox_view->GetText().empty());
-
-  // The location bar should still have focus.
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Pressing tab again should move to the next result and clear keyword
-  // mode.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_EQ(1U, omnibox_view->model()->popup_model()->selected_line());
-  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_NE(text, omnibox_view->model()->keyword());
-
-  // The location bar should still have focus.
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Moving back up should not show keyword mode.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-  ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_EQ(text, omnibox_view->model()->keyword());
-
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PersistKeywordModeOnTabSwitch) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -1538,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceDeleteHalfWidthKatakana) {
   // Backspace should delete the character. In http://crbug.com/192743, the bug
   // was that nothing was deleted.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Cocoa text fields attach the sound mark and delete the whole thing. This
   // behavior should remain on Mac even when using a toolkit-views browser
   // window.
@@ -1656,7 +1553,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   // Highlight the last 2 words and the omnibox text should not change.
   // Simulating Ctrl-shift-left only once does not seem to highlight anything
   // on Linux.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac uses alt-left/right to select a word.
   const int modifiers = ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN;
 #else

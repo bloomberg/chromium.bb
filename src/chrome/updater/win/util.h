@@ -7,10 +7,14 @@
 
 #include <winerror.h>
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/win/atl.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 
 namespace updater {
@@ -26,9 +30,8 @@ template <typename Error>
 HRESULT HRESULTFromUpdaterError(Error error) {
   constexpr ULONG kCustomerBit = 0x20000000;
   constexpr ULONG kFacilityOmaha = 67;
-  return static_cast<HRESULT>(static_cast<ULONG>(SEVERITY_ERROR) |
-                              kCustomerBit | (kFacilityOmaha << 16) |
-                              static_cast<ULONG>(error));
+  return HRESULT{ULONG{SEVERITY_ERROR} | kCustomerBit | (kFacilityOmaha << 16) |
+                 ULONG{error}};
 }
 
 // Checks whether a process is running with the image |executable|. Returns true
@@ -97,6 +100,20 @@ base::string16 GetRegistryKeyClientsUpdater();
 // Returns the registry path for the Updater app id under the |ClientState|
 // subkey. The path does not include the registry root hive prefix.
 base::string16 GetRegistryKeyClientStateUpdater();
+
+// Returns a value in the [0, 100] range or -1 if the progress could not
+// be computed.
+int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
+
+// Reads installer progress for |app_id| from registry. The installer progress
+// is written by the application installer. Returns a value in the [0, 100]
+// range or -1 if the install progress is not available.
+int GetInstallerProgress(const std::string& app_id);
+
+bool DeleteInstallerProgress(const std::string& app_id);
+
+// Returns a logged on user token handle from the current session.
+base::win::ScopedHandle GetUserTokenFromCurrentSessionId();
 
 }  // namespace updater
 

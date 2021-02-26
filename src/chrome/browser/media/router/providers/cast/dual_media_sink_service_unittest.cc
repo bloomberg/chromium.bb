@@ -5,7 +5,7 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 
 #include "base/bind.h"
-#include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,11 +16,15 @@ class DualMediaSinkServiceTest : public testing::Test {
   DualMediaSinkServiceTest() {
     auto cast_media_sink_service = std::make_unique<MockCastMediaSinkService>();
     auto dial_media_sink_service = std::make_unique<MockDialMediaSinkService>();
+    auto cast_app_discovery_service =
+        std::make_unique<MockCastAppDiscoveryService>();
     cast_media_sink_service_ = cast_media_sink_service.get();
     dial_media_sink_service_ = dial_media_sink_service.get();
+    cast_app_discovery_service_ = cast_app_discovery_service.get();
     dual_media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
         new DualMediaSinkService(std::move(cast_media_sink_service),
-                                 std::move(dial_media_sink_service)));
+                                 std::move(dial_media_sink_service),
+                                 std::move(cast_app_discovery_service)));
   }
 
   ~DualMediaSinkServiceTest() override = default;
@@ -42,6 +46,7 @@ class DualMediaSinkServiceTest : public testing::Test {
  private:
   MockCastMediaSinkService* cast_media_sink_service_;
   MockDialMediaSinkService* dial_media_sink_service_;
+  MockCastAppDiscoveryService* cast_app_discovery_service_;
   std::unique_ptr<DualMediaSinkService> dual_media_sink_service_;
 };
 

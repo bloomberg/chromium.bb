@@ -13,12 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -72,12 +73,12 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
  protected:
   // Callback to get output device params (for tests).
   using OutputDeviceParamsCallback = base::OnceCallback<media::AudioParameters(
-      int frame_id,
+      const blink::LocalFrameToken& frame_token,
       const base::UnguessableToken& session_id,
       const std::string& device_id)>;
 
-  // Callback get render frame ID for current context (for tests).
-  using RenderFrameIdCallback = base::OnceCallback<int()>;
+  // Callback get render frame token for current context (for tests).
+  using RenderFrameTokenCallback = base::OnceCallback<blink::LocalFrameToken()>;
 
   RendererWebAudioDeviceImpl(media::ChannelLayout layout,
                              int channels,
@@ -85,7 +86,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
                              blink::WebAudioDevice::RenderCallback* callback,
                              const base::UnguessableToken& session_id,
                              OutputDeviceParamsCallback device_params_cb,
-                             RenderFrameIdCallback render_frame_id_cb);
+                             RenderFrameTokenCallback render_frame_token_cb);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> GetSuspenderTaskRunner();
@@ -96,6 +97,9 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
   // Weak reference to the callback into WebKit code.
   blink::WebAudioDevice::RenderCallback* const client_callback_;
+
+  // Used to wrap AudioBus to be passed into |client_callback_|.
+  blink::WebVector<float*> web_audio_dest_data_;
 
   // To avoid the need for locking, ensure the control methods of the
   // blink::WebAudioDevice implementation are called on the same thread.
@@ -110,8 +114,8 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   // Used to suspend |sink_| usage when silence has been detected for too long.
   std::unique_ptr<media::SilentSinkSuspender> webaudio_suspender_;
 
-  // Render frame routing ID for the current context.
-  int frame_id_;
+  // Render frame token for the current context.
+  blink::LocalFrameToken frame_token_;
 
   // Allow unit tests to set a custom TaskRunner for |webaudio_suspender_|.
   scoped_refptr<base::SingleThreadTaskRunner> suspender_task_runner_;

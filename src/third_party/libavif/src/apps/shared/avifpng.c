@@ -135,7 +135,10 @@ avifBool avifPNGRead(avifImage * avif, const char * inputFilename, avifPixelForm
         rowPointers[y] = &rgb.pixels[y * rgb.rowBytes];
     }
     png_read_image(png, rowPointers);
-    avifImageRGBToYUV(avif, &rgb);
+    if (avifImageRGBToYUV(avif, &rgb) != AVIF_RESULT_OK) {
+        fprintf(stderr, "Conversion to YUV failed: %s\n", inputFilename);
+        goto cleanup;
+    }
     readResult = AVIF_TRUE;
 
 cleanup:
@@ -152,17 +155,36 @@ cleanup:
     return readResult;
 }
 
-avifBool avifPNGWrite(avifImage * avif, const char * outputFilename, uint32_t requestedDepth)
+avifBool avifPNGWrite(avifImage * avif, const char * outputFilename, uint32_t requestedDepth, avifChromaUpsampling chromaUpsampling)
 {
     volatile avifBool writeResult = AVIF_FALSE;
     png_structp png = NULL;
     png_infop info = NULL;
     png_bytep * volatile rowPointers = NULL;
+    FILE * volatile f = NULL;
 
     avifRGBImage rgb;
     memset(&rgb, 0, sizeof(avifRGBImage));
 
-    FILE * f = fopen(outputFilename, "wb");
+    int rgbDepth = requestedDepth;
+    if (rgbDepth == 0) {
+        if (avif->depth > 8) {
+            rgbDepth = 16;
+        } else {
+            rgbDepth = 8;
+        }
+    }
+
+    avifRGBImageSetDefaults(&rgb, avif);
+    rgb.depth = rgbDepth;
+    rgb.chromaUpsampling = chromaUpsampling;
+    avifRGBImageAllocatePixels(&rgb);
+    if (avifImageYUVToRGB(avif, &rgb) != AVIF_RESULT_OK) {
+        fprintf(stderr, "Conversion to RGB failed: %s\n", outputFilename);
+        goto cleanup;
+    }
+
+    f = fopen(outputFilename, "wb");
     if (!f) {
         fprintf(stderr, "Can't open PNG file for write: %s\n", outputFilename);
         goto cleanup;
@@ -186,32 +208,23 @@ avifBool avifPNGWrite(avifImage * avif, const char * outputFilename, uint32_t re
 
     png_init_io(png, f);
 
-    int rgbDepth = requestedDepth;
-    if (rgbDepth == 0) {
-        if (avif->depth > 8) {
-            rgbDepth = 16;
-        } else {
-            rgbDepth = 8;
-        }
-    }
+    // Don't bother complaining about ICC profile's contents when transferring from AVIF to PNG.
+    // It is up to the enduser to decide if they want to keep their ICC profiles or not.
+    png_set_option(png, PNG_SKIP_sRGB_CHECK_PROFILE, 1);
 
     png_set_IHDR(
-        png, info, avif->width, avif->height, rgbDepth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+        png, info, avif->width, avif->height, rgb.depth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     if (avif->icc.data && (avif->icc.size > 0)) {
         png_set_iCCP(png, info, "libavif", 0, avif->icc.data, (png_uint_32)avif->icc.size);
     }
     png_write_info(png, info);
 
-    avifRGBImageSetDefaults(&rgb, avif);
-    rgb.depth = rgbDepth;
-    avifRGBImageAllocatePixels(&rgb);
-    avifImageYUVToRGB(avif, &rgb);
     rowPointers = (png_bytep *)malloc(sizeof(png_bytep) * rgb.height);
     for (uint32_t y = 0; y < rgb.height; ++y) {
         rowPointers[y] = &rgb.pixels[y * rgb.rowBytes];
     }
 
-    if (rgbDepth > 8) {
+    if (rgb.depth > 8) {
         png_set_swap(png);
     }
 

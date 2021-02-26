@@ -360,6 +360,9 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
  * \param[in]    data         Metadata contents
  * \param[in]    sz           Metadata contents size
  * \param[in]    insert_flag  Metadata insert flag
+ *
+ * \return Returns 0 on success. If img or data is NULL, sz is 0, or memory
+ * allocation fails, it returns -1.
  */
 int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
                          size_t sz, aom_metadata_insert_flags_t insert_flag);
@@ -410,6 +413,9 @@ void aom_img_remove_metadata(aom_image_t *img);
  * \param[in]    data         Metadata data pointer
  * \param[in]    sz           Metadata size
  * \param[in]    insert_flag  Metadata insert flag
+ *
+ * \return Returns the newly allocated aom_metadata struct. If data is NULL,
+ * sz is 0, or memory allocation fails, it returns NULL.
  */
 aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
                                        size_t sz,

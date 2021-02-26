@@ -5,7 +5,7 @@
 # that can be found in the LICENSE file.
 
 """Runs hello_world.py, through hello_world.isolate, remotely on a Swarming
-slave.
+bot.
 
 It compiles and archives via 'isolate.py archive', then discard the local files.
 After, it triggers and finally collects the results.

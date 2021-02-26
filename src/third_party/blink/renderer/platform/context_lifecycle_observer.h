@@ -18,7 +18,7 @@ class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
   virtual void ContextDestroyed() = 0;
 
   // Call before clearing an observer list.
-  void ObserverListWillBeCleared();
+  void ObserverSetWillBeCleared();
 
   ContextLifecycleNotifier* GetContextLifecycleNotifier() const {
     return notifier_;
@@ -27,7 +27,7 @@ class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
 
   virtual bool IsExecutionContextLifecycleObserver() const { return false; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   ContextLifecycleObserver() = default;

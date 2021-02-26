@@ -13,7 +13,7 @@ static_library("elf_loader") {
   ]
 }
 
-if (is_linux || is_nacl) {
+if (is_linux || is_nacl || is_chromeos) {
   executable("nonsfi_loader") {
     sources = [
       "elf_loader_main.c",

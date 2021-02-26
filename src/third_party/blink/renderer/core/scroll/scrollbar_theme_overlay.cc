@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -44,14 +43,15 @@ ScrollbarThemeOverlay& ScrollbarThemeOverlay::GetInstance() {
       (Platform::Current()
            ->ThemeEngine()
            ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
-           .width,
+           .width(),
        0));
   return theme;
 }
 
-ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness,
-                                             int scrollbar_margin)
-    : thumb_thickness_(thumb_thickness), scrollbar_margin_(scrollbar_margin) {}
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness_dip,
+                                             int scrollbar_margin_dip)
+    : thumb_thickness_dip_(thumb_thickness_dip),
+      scrollbar_margin_dip_(scrollbar_margin_dip) {}
 
 bool ScrollbarThemeOverlay::ShouldRepaintAllPartsOnInvalidation() const {
   return false;
@@ -64,13 +64,12 @@ ScrollbarPart ScrollbarThemeOverlay::PartsToInvalidateOnThumbPositionChange(
   return kNoPart;
 }
 
-int ScrollbarThemeOverlay::ScrollbarThickness(
-    ScrollbarControlSize control_size) {
-  return thumb_thickness_ + scrollbar_margin_;
+int ScrollbarThemeOverlay::ScrollbarThickness(float scale_from_dip) {
+  return ThumbThickness(scale_from_dip) + ScrollbarMargin(scale_from_dip);
 }
 
-int ScrollbarThemeOverlay::ScrollbarMargin() const {
-  return scrollbar_margin_;
+int ScrollbarThemeOverlay::ScrollbarMargin(float scale_from_dip) const {
+  return scrollbar_margin_dip_ * scale_from_dip;
 }
 
 bool ScrollbarThemeOverlay::UsesOverlayScrollbars() const {
@@ -120,26 +119,22 @@ IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&) {
 IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar) {
   IntRect rect = scrollbar.FrameRect();
   if (scrollbar.Orientation() == kHorizontalScrollbar)
-    rect.InflateX(-scrollbar_margin_);
+    rect.InflateX(-ScrollbarMargin(scrollbar.ScaleFromDIP()));
   else
-    rect.InflateY(-scrollbar_margin_);
+    rect.InflateY(-ScrollbarMargin(scrollbar.ScaleFromDIP()));
   return rect;
 }
 
 IntRect ScrollbarThemeOverlay::ThumbRect(const Scrollbar& scrollbar) {
   IntRect rect = ScrollbarTheme::ThumbRect(scrollbar);
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
-    rect.SetHeight(thumb_thickness_);
+    rect.SetHeight(ThumbThickness(scrollbar.ScaleFromDIP()));
   } else {
     if (scrollbar.IsLeftSideVerticalScrollbar())
-      rect.Move(scrollbar_margin_, 0);
-    rect.SetWidth(thumb_thickness_);
+      rect.Move(ScrollbarMargin(scrollbar.ScaleFromDIP()), 0);
+    rect.SetWidth(ThumbThickness(scrollbar.ScaleFromDIP()));
   }
   return rect;
-}
-
-int ScrollbarThemeOverlay::ThumbThickness(const Scrollbar&) {
-  return thumb_thickness_;
 }
 
 void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
@@ -149,7 +144,8 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           rect);
 
   WebThemeEngine::State state = WebThemeEngine::kStateNormal;
 
@@ -178,8 +174,9 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
     canvas->scale(-1, 1);
   }
 
-  Platform::Current()->ThemeEngine()->Paint(
-      canvas, part, state, WebRect(rect), &params, scrollbar.UsedColorScheme());
+  Platform::Current()->ThemeEngine()->Paint(canvas, part, state,
+                                            gfx::Rect(rect), &params,
+                                            scrollbar.UsedColorScheme());
 
   if (scrollbar.IsLeftSideVerticalScrollbar())
     canvas->restore();
@@ -211,7 +208,7 @@ IntSize ScrollbarThemeOverlay::NinePatchThumbCanvasSize(
           : WebThemeEngine::kPartScrollbarHorizontalThumb;
 
   DCHECK(Platform::Current()->ThemeEngine());
-  return Platform::Current()->ThemeEngine()->NinePatchCanvasSize(part);
+  return IntSize(Platform::Current()->ThemeEngine()->NinePatchCanvasSize(part));
 }
 
 IntRect ScrollbarThemeOverlay::NinePatchThumbAperture(
@@ -223,7 +220,7 @@ IntRect ScrollbarThemeOverlay::NinePatchThumbAperture(
     part = WebThemeEngine::kPartScrollbarVerticalThumb;
 
   DCHECK(Platform::Current()->ThemeEngine());
-  return Platform::Current()->ThemeEngine()->NinePatchAperture(part);
+  return IntRect(Platform::Current()->ThemeEngine()->NinePatchAperture(part));
 }
 
 int ScrollbarThemeOverlay::MinimumThumbLength(const Scrollbar& scrollbar) {
@@ -231,13 +228,13 @@ int ScrollbarThemeOverlay::MinimumThumbLength(const Scrollbar& scrollbar) {
     return Platform::Current()
         ->ThemeEngine()
         ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
-        .height;
+        .height();
   }
 
   return Platform::Current()
       ->ThemeEngine()
       ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
-      .width;
+      .width();
 }
 
 }  // namespace blink

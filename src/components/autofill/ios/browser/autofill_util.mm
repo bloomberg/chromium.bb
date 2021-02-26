@@ -19,13 +19,15 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+using base::NumberToString;
+using base::StringToUint;
 
 namespace {
 // The timeout for any JavaScript call in this file.
@@ -50,17 +52,11 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
 }
 
 std::unique_ptr<base::Value> ParseJson(NSString* json_string) {
-  // Convert JSON string to JSON object |JSONValue|.
-  int error_code = 0;
-  std::string error_message;
-  std::unique_ptr<base::Value> json_value(
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          base::SysNSStringToUTF8(json_string), base::JSON_PARSE_RFC,
-          &error_code, &error_message));
-  if (error_code)
+  base::Optional<base::Value> json_value =
+      base::JSONReader::Read(base::SysNSStringToUTF8(json_string));
+  if (!json_value)
     return nullptr;
-
-  return json_value;
+  return base::Value::ToUniquePtrValue(std::move(*json_value));
 }
 
 bool ExtractFormsData(NSString* forms_json,
@@ -123,9 +119,9 @@ bool ExtractFormData(const base::Value& form_value,
 
   std::string unique_renderer_id;
   form_dictionary->GetString("unique_renderer_id", &unique_renderer_id);
-  if (!unique_renderer_id.empty()) {
-    base::StringToUint(unique_renderer_id,
-                       &form_data->unique_renderer_id.value());
+  if (!unique_renderer_id.empty() &&
+      unique_renderer_id != NumberToString(kNotSetRendererID)) {
+    StringToUint(unique_renderer_id, &form_data->unique_renderer_id.value());
   } else {
     form_data->unique_renderer_id = FormRendererId();
   }
@@ -141,6 +137,7 @@ bool ExtractFormData(const base::Value& form_value,
   form_dictionary->GetBoolean("is_form_tag", &form_data->is_form_tag);
   form_dictionary->GetBoolean("is_formless_checkout",
                               &form_data->is_formless_checkout);
+  form_dictionary->GetString("frame_id", &form_data->frame_id);
 
   // Field list (mandatory) is extracted.
   const base::ListValue* fields_list = nullptr;
@@ -169,9 +166,9 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
 
   std::string unique_renderer_id;
   field.GetString("unique_renderer_id", &unique_renderer_id);
-  if (!unique_renderer_id.empty()) {
-    base::StringToUint(unique_renderer_id,
-                       &field_data->unique_renderer_id.value());
+  if (!unique_renderer_id.empty() &&
+      unique_renderer_id != NumberToString(kNotSetRendererID)) {
+    StringToUint(unique_renderer_id, &field_data->unique_renderer_id.value());
   } else {
     field_data->unique_renderer_id = FieldRendererId();
   }
@@ -230,12 +227,32 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   return field_data->option_values.size() == field_data->option_contents.size();
 }
 
+JavaScriptResultCallback CreateStringCallback(
+    void (^completionHandler)(NSString*)) {
+  return base::BindOnce(^(const base::Value* res) {
+    NSString* result = nil;
+    if (res && res->is_string()) {
+      result = base::SysUTF8ToNSString(res->GetString());
+    }
+    completionHandler(result);
+  });
+}
+
+JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL)) {
+  return base::BindOnce(^(const base::Value* res) {
+    BOOL result = NO;
+    if (res && res->is_bool()) {
+      result = res->GetBool();
+    }
+    completionHandler(result);
+  });
+}
+
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               CRWJSInjectionReceiver* js_injection_receiver,
-                               base::OnceCallback<void(NSString*)> callback) {
-  __block base::OnceCallback<void(NSString*)> cb = std::move(callback);
+                               JavaScriptResultCallback callback) {
+  __block JavaScriptResultCallback cb = std::move(callback);
 
   if (!frame) {
     if (!cb.is_null()) {
@@ -247,11 +264,7 @@ void ExecuteJavaScriptFunction(const std::string& name,
   if (!cb.is_null()) {
     bool called = frame->CallJavaScriptFunction(
         name, parameters, base::BindOnce(^(const base::Value* res) {
-          NSString* result = nil;
-          if (res && res->is_string()) {
-            result = base::SysUTF8ToNSString(res->GetString());
-          }
-          std::move(cb).Run(result);
+          std::move(cb).Run(res);
         }),
         base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
     if (!called) {
@@ -260,6 +273,51 @@ void ExecuteJavaScriptFunction(const std::string& name,
   } else {
     frame->CallJavaScriptFunction(name, parameters);
   }
+}
+
+bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids) {
+  DCHECK(ids);
+  std::unique_ptr<base::Value> ids_value = ParseJson(json_string);
+  if (!ids_value)
+    return false;
+
+  const base::ListValue* ids_list = nullptr;
+  if (!ids_value->GetAsList(&ids_list))
+    return false;
+
+  for (const auto& unique_id : *ids_list) {
+    std::string id_string;
+    if (!unique_id.GetAsString(&id_string))
+      return false;
+    uint32_t id_num = 0;
+    StringToUint(id_string, &id_num);
+    ids->push_back(id_num);
+  }
+  return true;
+}
+
+bool ExtractFillingResults(
+    NSString* json_string,
+    std::map<uint32_t, base::string16>* filling_results) {
+  DCHECK(filling_results);
+  std::unique_ptr<base::Value> ids_value = ParseJson(json_string);
+  if (!ids_value)
+    return false;
+
+  // Returned data should be a list of forms.
+  const base::DictionaryValue* results = nullptr;
+  if (!ids_value->GetAsDictionary(&results))
+    return false;
+
+  for (const auto& result : results->DictItems()) {
+    std::string id_string = result.first;
+    uint32_t id_num = 0;
+    StringToUint(id_string, &id_num);
+    base::string16 value;
+    result.second.GetAsString(&value);
+    (*filling_results)[id_num] = value;
+  }
+  return true;
 }
 
 }  // namespace autofill

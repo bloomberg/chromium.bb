@@ -11,15 +11,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -29,18 +28,17 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
-#include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
-#include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -98,6 +96,10 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
  public:
   explicit TestPendingAppInstallFinalizer(TestAppRegistrar* registrar)
       : registrar_(registrar) {}
+  TestPendingAppInstallFinalizer(const TestPendingAppInstallFinalizer&) =
+      delete;
+  TestPendingAppInstallFinalizer& operator=(
+      const TestPendingAppInstallFinalizer&) = delete;
   ~TestPendingAppInstallFinalizer() override = default;
 
   // Returns what would be the AppId if an app is installed with |url|.
@@ -134,9 +136,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   const std::vector<GURL>& uninstall_external_web_app_urls() const {
     return uninstall_external_web_app_urls_;
   }
-  size_t num_add_app_to_quick_launch_bar_calls() {
-    return num_add_app_to_quick_launch_bar_calls_;
-  }
+
   size_t num_reparent_tab_calls() { return num_reparent_tab_calls_; }
 
   // InstallFinalizer
@@ -144,7 +144,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override {
     DCHECK(
-        base::Contains(next_finalize_install_results_, web_app_info.app_url));
+        base::Contains(next_finalize_install_results_, web_app_info.start_url));
 
     web_app_info_list_.push_back(web_app_info);
     finalize_options_list_.push_back(options);
@@ -152,9 +152,9 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     AppId app_id;
     InstallResultCode code;
     std::tie(app_id, code) =
-        next_finalize_install_results_[web_app_info.app_url];
-    next_finalize_install_results_.erase(web_app_info.app_url);
-    const GURL& url = web_app_info.app_url;
+        next_finalize_install_results_[web_app_info.start_url];
+    next_finalize_install_results_.erase(web_app_info.start_url);
+    const GURL& url = web_app_info.start_url;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -164,12 +164,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
                   app_id, {url, ExternalInstallSource::kExternalPolicy});
               std::move(callback).Run(app_id, code);
             }));
-  }
-
-  void FinalizeFallbackInstallAfterSync(
-      const AppId& app_id,
-      InstallFinalizedCallback callback) override {
-    NOTREACHED();
   }
 
   void FinalizeUninstallAfterSync(const AppId& app_id,
@@ -240,12 +234,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     return false;
   }
 
-  bool CanAddAppToQuickLaunchBar() const override { return true; }
-
-  void AddAppToQuickLaunchBar(const AppId& app_id) override {
-    ++num_add_app_to_quick_launch_bar_calls_;
-  }
-
   bool CanReparentTab(const AppId& app_id,
                       bool shortcut_created) const override {
     return true;
@@ -264,7 +252,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   std::vector<FinalizeOptions> finalize_options_list_;
   std::vector<GURL> uninstall_external_web_app_urls_;
 
-  size_t num_add_app_to_quick_launch_bar_calls_ = 0;
   size_t num_reparent_tab_calls_ = 0;
 
   std::map<GURL, std::pair<AppId, InstallResultCode>>
@@ -275,18 +262,16 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   std::map<GURL, std::pair<AppId, bool>>
       next_uninstall_external_web_app_results_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPendingAppInstallFinalizer);
 };
 
 }  // namespace
 
 class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
  public:
-  PendingAppInstallTaskTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kDesktopPWAsWithoutExtensions});
-  }
-
+  PendingAppInstallTaskTest() = default;
+  PendingAppInstallTaskTest(const PendingAppInstallTaskTest&) = delete;
+  PendingAppInstallTaskTest& operator=(const PendingAppInstallTaskTest&) =
+      delete;
   ~PendingAppInstallTaskTest() override = default;
 
   void SetUp() override {
@@ -304,12 +289,10 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     auto install_manager = std::make_unique<WebAppInstallManager>(profile());
     install_manager_ = install_manager.get();
 
-    auto shortcut_manager = std::make_unique<TestAppShortcutManager>(profile());
-    shortcut_manager_ = shortcut_manager.get();
-
-    auto file_handler_manager =
-        std::make_unique<TestFileHandlerManager>(profile());
-    file_handler_manager_ = file_handler_manager.get();
+    auto os_integration_manager = std::make_unique<TestOsIntegrationManager>(
+        profile(), /*app_shortcut_manager=*/nullptr,
+        /*file_handler_manager=*/nullptr);
+    os_integration_manager_ = os_integration_manager.get();
 
     auto ui_manager = std::make_unique<TestWebAppUiManager>();
     ui_manager_ = ui_manager.get();
@@ -318,19 +301,20 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     provider->SetInstallManager(std::move(install_manager));
     provider->SetInstallFinalizer(std::move(install_finalizer));
     provider->SetWebAppUiManager(std::move(ui_manager));
-    provider->SetShortcutManager(std::move(shortcut_manager));
-    provider->SetFileHandlerManager(std::move(file_handler_manager));
+    provider->SetOsIntegrationManager(std::move(os_integration_manager));
 
     provider->Start();
+    // Start only WebAppInstallManager for real.
+    install_manager_->Start();
   }
 
  protected:
   TestWebAppUiManager* ui_manager() { return ui_manager_; }
   TestAppRegistrar* registrar() { return registrar_; }
   TestPendingAppInstallFinalizer* finalizer() { return install_finalizer_; }
-  TestAppShortcutManager* shortcut_manager() { return shortcut_manager_; }
-  TestFileHandlerManager* file_handler_manager() {
-    return file_handler_manager_;
+  WebAppInstallManager* install_manager() { return install_manager_; }
+  TestOsIntegrationManager* os_integration_manager() {
+    return os_integration_manager_;
   }
 
   TestDataRetriever* data_retriever() { return data_retriever_; }
@@ -353,7 +337,8 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     install_manager_->SetDataRetrieverFactoryForTesting(
         GetFactoryForRetriever(std::move(data_retriever)));
     auto manifest = std::make_unique<blink::Manifest>();
-    manifest->start_url = options.url;
+    manifest->start_url = options.install_url;
+    manifest->name = base::ASCIIToUTF16("Manifest Name");
 
     data_retriever_->SetRendererWebApplicationInfo(
         std::make_unique<WebApplicationInfo>());
@@ -363,29 +348,38 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     data_retriever_->SetIcons(IconsMap{});
 
     install_finalizer_->SetNextFinalizeInstallResult(
-        options.url, InstallResultCode::kSuccessNewInstall);
+        options.install_url, InstallResultCode::kSuccessNewInstall);
 
-    shortcut_manager_->SetNextCreateShortcutsResult(
-        install_finalizer_->GetAppIdForUrl(options.url), true);
+    os_integration_manager_->SetNextCreateShortcutsResult(
+        install_finalizer_->GetAppIdForUrl(options.install_url), true);
 
     auto task = std::make_unique<PendingAppInstallTask>(
-        profile(), registrar_, shortcut_manager_, file_handler_manager_,
-        ui_manager_, install_finalizer_, std::move(options));
+        profile(), registrar_, os_integration_manager_, ui_manager_,
+        install_finalizer_, install_manager_, std::move(options));
     return task;
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   WebAppInstallManager* install_manager_ = nullptr;
   TestAppRegistrar* registrar_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
   TestPendingAppInstallFinalizer* install_finalizer_ = nullptr;
   TestWebAppUiManager* ui_manager_ = nullptr;
-  TestAppShortcutManager* shortcut_manager_ = nullptr;
-  TestFileHandlerManager* file_handler_manager_ = nullptr;
+  TestOsIntegrationManager* os_integration_manager_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(PendingAppInstallTaskTest);
+};
+
+class PendingAppInstallTaskWithRunOnOsLoginTest
+    : public PendingAppInstallTaskTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsRunOnOsLogin},
+                                          {});
+    PendingAppInstallTaskTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PendingAppInstallTaskTest,
@@ -410,10 +404,12 @@ TEST_F(PendingAppInstallTaskTest,
 
         EXPECT_EQ(result.app_id.value(), id.value());
 
-        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
-        EXPECT_TRUE(shortcut_manager()->did_add_to_desktop().value());
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(os_integration_manager()->did_add_to_desktop().value());
 
-        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(
+            1u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
 
         EXPECT_FALSE(web_app_info().open_as_window);
@@ -469,10 +465,12 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
-        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
-        EXPECT_FALSE(shortcut_manager()->did_add_to_desktop().value());
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_FALSE(os_integration_manager()->did_add_to_desktop().value());
 
-        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(
+            1u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
 
         run_loop.Quit();
@@ -496,10 +494,12 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
-        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
-        EXPECT_TRUE(shortcut_manager()->did_add_to_desktop().value());
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(os_integration_manager()->did_add_to_desktop().value());
 
-        EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(
+            0u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
 
         run_loop.Quit();
@@ -525,10 +525,12 @@ TEST_F(
         EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
-        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
-        EXPECT_FALSE(shortcut_manager()->did_add_to_desktop().value());
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_FALSE(os_integration_manager()->did_add_to_desktop().value());
 
-        EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(
+            0u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
 
         run_loop.Quit();
@@ -634,7 +636,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), WebAppUrl()));
 
-        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
         EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);
@@ -642,10 +644,10 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
             finalizer()->web_app_info_list().at(0);
 
         EXPECT_EQ(base::UTF8ToUTF16(WebAppUrl().spec()), web_app_info.title);
-        EXPECT_EQ(WebAppUrl(), web_app_info.app_url);
+        EXPECT_EQ(WebAppUrl(), web_app_info.start_url);
         EXPECT_TRUE(web_app_info.open_as_window);
         EXPECT_TRUE(web_app_info.icon_infos.empty());
-        EXPECT_TRUE(web_app_info.icon_bitmaps.empty());
+        EXPECT_TRUE(web_app_info.icon_bitmaps_any.empty());
 
         run_loop.Quit();
       }));
@@ -659,7 +661,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(std::move(options));
-  shortcut_manager()->set_can_create_shortcuts(false);
+  os_integration_manager()->set_can_create_shortcuts(false);
 
   base::RunLoop run_loop;
   task->Install(
@@ -670,7 +672,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), WebAppUrl()));
 
-        EXPECT_EQ(0u, shortcut_manager()->num_create_shortcuts_calls());
+        EXPECT_EQ(0u, os_integration_manager()->num_create_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
         EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);
@@ -678,10 +680,10 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
             finalizer()->web_app_info_list().at(0);
 
         EXPECT_EQ(base::UTF8ToUTF16(WebAppUrl().spec()), web_app_info.title);
-        EXPECT_EQ(WebAppUrl(), web_app_info.app_url);
+        EXPECT_EQ(WebAppUrl(), web_app_info.start_url);
         EXPECT_TRUE(web_app_info.open_as_window);
         EXPECT_TRUE(web_app_info.icon_infos.empty());
-        EXPECT_TRUE(web_app_info.icon_bitmaps.empty());
+        EXPECT_TRUE(web_app_info.icon_bitmaps_any.empty());
 
         run_loop.Quit();
       }));
@@ -849,7 +851,7 @@ TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
     run_loop.Run();
   }
   {
-    // Migration shouldn't run on subsequent installs of the same app.
+    // Migration should run on every install of the app.
     options.uninstall_and_replace = {"app3"};
 
     base::RunLoop run_loop;
@@ -860,7 +862,7 @@ TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
           EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           EXPECT_EQ(app_id, *result.app_id);
 
-          EXPECT_FALSE(ui_manager()->DidUninstallAndReplace("app3", app_id));
+          EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app3", app_id));
 
           run_loop.Quit();
         }));
@@ -886,8 +888,8 @@ TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
         GURL(), DisplayMode::kStandalone,
         ExternalInstallSource::kInternalDefault);
     PendingAppInstallTask install_task(
-        profile(), registrar(), shortcut_manager(), file_handler_manager(),
-        ui_manager(), finalizer(), install_options);
+        profile(), registrar(), os_integration_manager(), ui_manager(),
+        finalizer(), install_manager(), install_options);
 
     install_task.Install(
         web_contents(), result_pair.loader_result,
@@ -904,9 +906,9 @@ TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
   ExternalInstallOptions install_options(
       GURL(), DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
-  PendingAppInstallTask install_task(profile(), registrar(), shortcut_manager(),
-                                     file_handler_manager(), ui_manager(),
-                                     finalizer(), install_options);
+  PendingAppInstallTask install_task(
+      profile(), registrar(), os_integration_manager(), ui_manager(),
+      finalizer(), install_manager(), install_options);
 
   install_task.Install(
       web_contents(), WebAppUrlLoader::Result::kFailedWebContentsDestroyed,
@@ -914,6 +916,73 @@ TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
           [&](PendingAppInstallTask::Result) { NOTREACHED(); }));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PendingAppInstallTaskWithRunOnOsLoginTest,
+       WebAppOrShortcutFromContents_RunOnOsLogin) {
+  ExternalInstallOptions install_options(
+      WebAppUrl(), DisplayMode::kStandalone,
+      ExternalInstallSource::kInternalDefault);
+  install_options.run_on_os_login = true;
+
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
+
+  base::RunLoop run_loop;
+
+  task->Install(
+      web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+      base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+        EXPECT_TRUE(result.app_id.has_value());
+
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(os_integration_manager()->did_add_to_desktop().value());
+
+        EXPECT_EQ(
+            1u, os_integration_manager()->num_register_run_on_os_login_calls());
+
+        EXPECT_EQ(
+            1u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(PendingAppInstallTaskWithRunOnOsLoginTest,
+       WebAppOrShortcutFromContents_NoRunOnOsLogin) {
+  ExternalInstallOptions install_options(
+      WebAppUrl(), DisplayMode::kStandalone,
+      ExternalInstallSource::kInternalDefault);
+  install_options.run_on_os_login = false;
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
+
+  base::RunLoop run_loop;
+
+  task->Install(
+      web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+      base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+        EXPECT_TRUE(result.app_id.has_value());
+
+        EXPECT_EQ(1u, os_integration_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(os_integration_manager()->did_add_to_desktop().value());
+
+        EXPECT_EQ(
+            0u, os_integration_manager()->num_register_run_on_os_login_calls());
+
+        EXPECT_EQ(
+            1u,
+            os_integration_manager()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
 }
 
 }  // namespace web_app

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,8 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -28,7 +27,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -51,6 +49,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
@@ -68,11 +67,11 @@ class LoaderBrowserTest : public ContentBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -241,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
 // downloadable) would trigger download and hang the renderer process,
 // if executed while navigating to a new page.
 // Disabled on Mac: see http://crbug.com/56264
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_SyncXMLHttpRequest_DuringUnload \
   DISABLED_SyncXMLHttpRequest_DuringUnload
 #else
@@ -281,8 +280,8 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
   if (request.relative_url != relative_url)
     return nullptr;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 crash_network_service_callback);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               crash_network_service_callback);
 
   return std::make_unique<net::test_server::HungResponse>();
 }
@@ -292,7 +291,13 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // Tests the case where the request is cancelled by a layer above the
 // URLRequest, which passes the error on ResourceLoader teardown, rather than in
 // response to call to AsyncResourceHandler::OnResponseComplete.
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
+// Failed on Android M builder. See crbug/1111427.
+#if defined(OS_ANDROID)
+#define MAYBE_SyncXMLHttpRequest_Cancelled DISABLED_SyncXMLHttpRequest_Cancelled
+#else
+#define MAYBE_SyncXMLHttpRequest_Cancelled SyncXMLHttpRequest_Cancelled
+#endif
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_SyncXMLHttpRequest_Cancelled) {
   // If network service is running in-process, we can't simulate a crash.
   if (IsInProcessNetworkService())
     return;
@@ -402,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
 // app isn't stripped of debug symbols, this takes about five minutes to
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_CrossSiteAfterCrash DISABLED_CrossSiteAfterCrash
 #else
 #define MAYBE_CrossSiteAfterCrash CrossSiteAfterCrash
@@ -926,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
       &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());
@@ -970,7 +975,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
       &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());

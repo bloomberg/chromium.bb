@@ -11,14 +11,15 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -30,9 +31,11 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -1233,9 +1236,6 @@ TEST_F(ToolbarActionsModelUnitTest, AddUserScriptExtension) {
 }
 
 TEST_F(ToolbarActionsModelUnitTest, IsActionPinnedCorrespondsToPinningState) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1253,9 +1253,6 @@ TEST_F(ToolbarActionsModelUnitTest, IsActionPinnedCorrespondsToPinningState) {
 
 TEST_F(ToolbarActionsModelUnitTest,
        TogglingVisibilityAppendsToPinnedExtensions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1290,9 +1287,6 @@ TEST_F(ToolbarActionsModelUnitTest,
 }
 
 TEST_F(ToolbarActionsModelUnitTest, ChangesToPinningNotifiesObserver) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1310,9 +1304,6 @@ TEST_F(ToolbarActionsModelUnitTest, ChangesToPinningNotifiesObserver) {
 }
 
 TEST_F(ToolbarActionsModelUnitTest, ChangesToPinningSavedInExtensionPrefs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1346,9 +1337,6 @@ TEST_F(ToolbarActionsModelUnitTest, ChangesToPinningSavedInExtensionPrefs) {
 }
 
 TEST_F(ToolbarActionsModelUnitTest, ChangesToExtensionPrefsReflectedInModel) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1373,9 +1361,6 @@ TEST_F(ToolbarActionsModelUnitTest, ChangesToExtensionPrefsReflectedInModel) {
 
 TEST_F(ToolbarActionsModelUnitTest,
        MismatchInPinnedExtensionPreferencesNotReflectedInModel) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1405,9 +1390,6 @@ TEST_F(ToolbarActionsModelUnitTest,
 }
 
 TEST_F(ToolbarActionsModelUnitTest, PinnedExtensionsFilteredOnInitialization) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1446,9 +1428,6 @@ TEST_F(ToolbarActionsModelUnitTest, PinnedExtensionsFilteredOnInitialization) {
 }
 
 TEST_F(ToolbarActionsModelUnitTest, ChangesToPinnedOrderSavedInExtensionPrefs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
   ASSERT_TRUE(AddBrowserActionExtensions());
 
@@ -1497,15 +1476,16 @@ TEST_F(ToolbarActionsModelUnitTest,
   // Add the three browser action extensions.
   ASSERT_TRUE(AddBrowserActionExtensions());
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(extension_prefs->IsPinnedExtensionsMigrationComplete());
+
   // Initialization of the toolbar model triggers migration of the visible
   // extensions to pinned extensions.
   InitToolbarModelAndObserver();
 
   // Verify that the extensions that were visible are now the pinned extensions.
-  extensions::ExtensionPrefs* const extension_prefs =
-      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(extension_prefs->IsPinnedExtensionsMigrationComplete());
   EXPECT_THAT(
       extension_prefs->GetPinnedExtensions(),
       testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id(),
@@ -1520,24 +1500,22 @@ TEST_F(ToolbarActionsModelUnitTest,
   // Add the three browser action extensions.
   ASSERT_TRUE(AddBrowserActionExtensions());
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(extension_prefs->IsPinnedExtensionsMigrationComplete());
+
   // Initialization of the toolbar model triggers migration of the visible
   // extensions to pinned extensions.
   InitToolbarModelAndObserver();
 
   // Verify that the extensions that were visible are now the pinned extensions.
-  extensions::ExtensionPrefs* const extension_prefs =
-      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(extension_prefs->IsPinnedExtensionsMigrationComplete());
   EXPECT_THAT(
       extension_prefs->GetPinnedExtensions(),
       testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id()));
 }
 
 TEST_F(ToolbarActionsModelUnitTest, PinStateErasedOnUninstallation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
-
   Init();
 
   scoped_refptr<const extensions::Extension> extension =
@@ -1569,4 +1547,38 @@ TEST_F(ToolbarActionsModelUnitTest, PinStateErasedOnUninstallation) {
   EXPECT_TRUE(AddExtension(extension));
   EXPECT_FALSE(toolbar_model()->IsActionPinned(extension->id()));
   EXPECT_THAT(prefs->GetPinnedExtensions(), testing::IsEmpty());
+}
+
+TEST_F(ToolbarActionsModelUnitTest, ForcePinnedByPolicy) {
+  Init();
+
+  // Set the extension to force-pin via enterprise policy.
+  std::string extension_id = crx_file::id_util::GenerateId("qwertyuiop");
+  std::string json = base::StringPrintf(
+      R"({
+        "%s": {
+          "toolbar_pin": "force_pinned"
+        }
+      })",
+      extension_id.c_str());
+  base::Optional<base::Value> parsed = base::JSONReader::Read(json);
+  policy::PolicyMap map;
+  map.Set("ExtensionSettings", policy::POLICY_LEVEL_MANDATORY,
+          policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
+          std::move(parsed), nullptr);
+  policy_provider()->UpdateChromePolicy(map);
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .SetID(extension_id)
+          .Build();
+
+  // Add an extension. It should auto-pin because of the ExtensionSettings
+  // policy.
+  EXPECT_TRUE(AddExtension(extension));
+  EXPECT_TRUE(toolbar_model()->IsActionPinned(extension->id()));
+  auto* prefs = extensions::ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(base::Contains(prefs->GetPinnedExtensions(), extension_id));
 }

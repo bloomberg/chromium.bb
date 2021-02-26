@@ -14,6 +14,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -108,9 +109,9 @@ DownloadProtectionService::DownloadProtectionService(
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
-          sb_service_ ? sb_service_->GetURLLoaderFactory() : nullptr,
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})
+          this,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
               .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate),
       weak_ptr_factory_(this) {
@@ -181,18 +182,17 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
       content::DownloadItemUtils::GetBrowserContext(item));
   bool safe_browsing_enabled =
       profile && IsSafeBrowsingEnabled(*profile->GetPrefs());
-  bool deep_scanning_enabled =
-      DeepScanningRequest::ShouldUploadItemByPolicy(item);
 
   if (safe_browsing_enabled) {
     CheckClientDownload(item, std::move(callback));
     return true;
   }
 
-  if (deep_scanning_enabled) {
+  auto settings = DeepScanningRequest::ShouldUploadBinary(item);
+  if (settings.has_value()) {
     UploadForDeepScanning(item, std::move(callback),
                           DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-                          DeepScanningRequest::AllScans());
+                          std::move(settings.value()));
     return true;
   }
 
@@ -222,8 +222,8 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, std::move(callback), ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
 }
 
 bool DownloadProtectionService::MaybeCheckDownloadUrl(
@@ -411,7 +411,7 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
     report.set_show_download_in_folder(show_download_in_folder);
     std::string serialized_report;
     if (report.SerializeToString(&serialized_report)) {
-      sb_service_->SendSerializedDownloadReport(serialized_report);
+      sb_service_->SendSerializedDownloadReport(profile, serialized_report);
     } else {
       DCHECK(false)
           << "Unable to serialize the dangerous download opened report.";
@@ -569,7 +569,8 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
   bool is_extended_reporting =
       ExtendedReportingPrefExists(*prefs) && IsExtendedReportingEnabled(*prefs);
   if (!profile->IsOffTheRecord() && is_extended_reporting) {
-    feedback_service_->BeginFeedbackForDownload(download, download_command);
+    feedback_service_->BeginFeedbackForDownload(profile, download,
+                                                download_command);
     return true;
   }
   return false;
@@ -579,10 +580,10 @@ void DownloadProtectionService::UploadForDeepScanning(
     download::DownloadItem* item,
     CheckDownloadRepeatingCallback callback,
     DeepScanningRequest::DeepScanTrigger trigger,
-    std::vector<DeepScanningRequest::DeepScanType> allowed_scans) {
+    enterprise_connectors::AnalysisSettings analysis_settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto request = std::make_unique<DeepScanningRequest>(item, trigger, callback,
-                                                       this, allowed_scans);
+  auto request = std::make_unique<DeepScanningRequest>(
+      item, trigger, callback, this, std::move(analysis_settings));
   DeepScanningRequest* request_raw = request.get();
   auto insertion_result = deep_scanning_requests_.insert(
       std::make_pair(request_raw, std::move(request)));

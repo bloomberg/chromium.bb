@@ -4,6 +4,10 @@
 
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <dom-module id="security-token-pin">
   <template>
     <style include="oobe-dialog-host"></style>
@@ -42,9 +46,12 @@
           </pin-keyboard>
         </div>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button id="back" on-tap="onBackClicked_"></oobe-back-button>
-        <oobe-next-button id="submit" on-tap="onSubmit_"
+      <div slot="back-navigation">
+        <oobe-back-button id="back" on-click="onBackClicked_">
+        </oobe-back-button>
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-next-button id="submit" on-click="onSubmit_"
             disabled="[[!canSubmit_]]"></oobe-next-button>
       </div>
     </oobe-dialog>

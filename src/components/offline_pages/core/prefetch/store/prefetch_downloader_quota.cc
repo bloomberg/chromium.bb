@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -86,7 +88,8 @@ int64_t PrefetchDownloaderQuota::GetAvailableQuotaBytes() {
 
   int64_t remaining_quota =
       available_quota +
-      (GetMaxDailyQuotaBytes() * (clock_->Now() - update_time)) / kQuotaPeriod;
+      base::ClampFloor<int64_t>(GetMaxDailyQuotaBytes() *
+                                ((clock_->Now() - update_time) / kQuotaPeriod));
 
   if (remaining_quota < 0)
     SetAvailableQuotaBytes(0);

@@ -32,6 +32,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+class SharedImageStub;
+}
+
 namespace media {
 
 // Video decoder interface.
@@ -150,7 +154,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
     // The CDM that the VDA should use to decode encrypted streams. Must be
     // set to a valid ID if |is_encrypted|.
-    int cdm_id = CdmContext::kInvalidCdmId;
+    base::Optional<base::UnguessableToken> cdm_id;
 
     // Whether the client supports deferred initialization.
     bool is_deferred_initialization_allowed = false;
@@ -183,7 +187,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     gfx::ColorSpace target_color_space;
 
     // HDR metadata specified by the container.
-    base::Optional<HDRMetadata> hdr_metadata;
+    base::Optional<gfx::HDRMetadata> hdr_metadata;
   };
 
   // Interface for collaborating with picture interface to provide memory for
@@ -253,6 +257,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Initialize() will not be reported here, but will instead be indicated by
     // a false return value there.
     virtual void NotifyError(Error error) = 0;
+
+    // Return the SharedImageStub through which SharedImages may be created.
+    // Default implementation returns nullptr.
+    virtual gpu::SharedImageStub* GetSharedImageStub() const;
 
    protected:
     virtual ~Client() {}
@@ -405,6 +413,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // Windows creates a BGRA texture.
   // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
   virtual GLenum GetSurfaceInternalFormat() const;
+
+  // Returns true if the decoder supports SharedImage backed picture buffers.
+  // May be called on any thread at any time.
+  virtual bool SupportsSharedImagePictureBuffers() const;
 
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which

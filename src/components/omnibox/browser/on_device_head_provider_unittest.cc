@@ -17,6 +17,7 @@
 #include "components/omnibox/browser/on_device_head_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,8 +76,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
 
 TEST_F(OnDeviceHeadProviderTest, ModelInstanceNotCreated) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -98,8 +100,9 @@ TEST_F(OnDeviceHeadProviderTest, ModelInstanceNotCreated) {
 
 TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -118,29 +121,8 @@ TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
 
-  // By default incognito request will be rejected.
+  // By default incognito request will be accepted.
   {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        omnibox::kOnDeviceHeadProviderNonIncognito);
-    ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input));
-  }
-
-  // Now enable for incognito.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        omnibox::kOnDeviceHeadProviderIncognito);
-    ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input));
-  }
-
-  // Test enable for both.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {omnibox::kOnDeviceHeadProviderNonIncognito,
-         omnibox::kOnDeviceHeadProviderIncognito},
-        {});
     ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input));
   }
 
@@ -157,13 +139,14 @@ TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
 
 TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
@@ -173,8 +156,9 @@ TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
 
 TEST_F(OnDeviceHeadProviderTest, NoMatches) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input(base::UTF8ToUTF16("b"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -195,8 +179,9 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
 
 TEST_F(OnDeviceHeadProviderTest, HasMatches) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -220,8 +205,9 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
 
 TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      omnibox::kOnDeviceHeadProviderNonIncognito);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnDeviceHeadProviderNonIncognito,
+      {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
   AutocompleteInput input1(base::UTF8ToUTF16("g"),
                            metrics::OmniboxEventProto::OTHER,
                            TestSchemeClassifier());

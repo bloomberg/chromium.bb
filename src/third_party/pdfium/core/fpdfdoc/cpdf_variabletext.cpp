@@ -17,7 +17,6 @@
 #include "core/fpdfdoc/ipvt_fontmap.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -36,10 +35,10 @@ CPDF_VariableText::Provider::Provider(IPVT_FontMap* pFontMap)
   ASSERT(m_pFontMap);
 }
 
-CPDF_VariableText::Provider::~Provider() {}
+CPDF_VariableText::Provider::~Provider() = default;
 
-uint32_t CPDF_VariableText::Provider::GetCharWidth(int32_t nFontIndex,
-                                                   uint16_t word) {
+int CPDF_VariableText::Provider::GetCharWidth(int32_t nFontIndex,
+                                              uint16_t word) {
   RetainPtr<CPDF_Font> pPDFFont = m_pFontMap->GetPDFFont(nFontIndex);
   if (!pPDFFont)
     return 0;
@@ -87,7 +86,7 @@ int32_t CPDF_VariableText::Provider::GetDefaultFontIndex() {
 CPDF_VariableText::Iterator::Iterator(CPDF_VariableText* pVT)
     : m_CurPos(-1, -1, -1), m_pVT(pVT) {}
 
-CPDF_VariableText::Iterator::~Iterator() {}
+CPDF_VariableText::Iterator::~Iterator() = default;
 
 void CPDF_VariableText::Iterator::SetAt(int32_t nWordIndex) {
   m_CurPos = m_pVT->WordIndexToWordPlace(nWordIndex);
@@ -544,7 +543,7 @@ CPVT_WordPlace CPDF_VariableText::AddSection(const CPVT_WordPlace& place) {
   int32_t nSecIndex = pdfium::clamp(
       place.nSecIndex, 0, pdfium::CollectionSize<int32_t>(m_SectionArray));
 
-  auto pSection = pdfium::MakeUnique<CSection>(this);
+  auto pSection = std::make_unique<CSection>(this);
   pSection->m_Rect = CPVT_FloatRect();
   pSection->SecPlace.nSecIndex = nSecIndex;
   m_SectionArray.insert(m_SectionArray.begin() + nSecIndex,
@@ -863,9 +862,9 @@ CPVT_FloatRect CPDF_VariableText::RearrangeSections(
   return rcRet;
 }
 
-uint32_t CPDF_VariableText::GetCharWidth(int32_t nFontIndex,
-                                         uint16_t Word,
-                                         uint16_t SubWord) {
+int CPDF_VariableText::GetCharWidth(int32_t nFontIndex,
+                                    uint16_t Word,
+                                    uint16_t SubWord) {
   if (!m_pVTProvider)
     return 0;
   uint16_t word = SubWord ? SubWord : Word;
@@ -898,7 +897,7 @@ bool CPDF_VariableText::IsLatinWord(uint16_t word) {
 
 CPDF_VariableText::Iterator* CPDF_VariableText::GetIterator() {
   if (!m_pVTIterator)
-    m_pVTIterator = pdfium::MakeUnique<CPDF_VariableText::Iterator>(this);
+    m_pVTIterator = std::make_unique<CPDF_VariableText::Iterator>(this);
   return m_pVTIterator.get();
 }
 

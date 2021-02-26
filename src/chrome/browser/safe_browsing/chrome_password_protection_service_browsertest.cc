@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -40,6 +41,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/user_manager/user_names.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -84,7 +86,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 
   ChromePasswordProtectionService* GetService(bool is_incognito) {
     return ChromePasswordProtectionService::GetPasswordProtectionService(
-        is_incognito ? browser()->profile()->GetOffTheRecordProfile()
+        is_incognito ? browser()->profile()->GetPrimaryOTRProfile()
                      : browser()->profile());
   }
 
@@ -121,13 +123,12 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    will_create_browser_context_services_subscription_ =
+    create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(
-                    &ChromePasswordProtectionServiceBrowserTest::
-                        OnWillCreateBrowserContextServices,
-                    base::Unretained(this)));
+            ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+                &ChromePasswordProtectionServiceBrowserTest::
+                    OnWillCreateBrowserContextServices,
+                base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -171,12 +172,28 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionServiceBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       VerifyIsInExcludedCountry) {
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  const std::string non_excluded_countries[] = {"be", "br", "ca", "de", "es",
+                                                "fr", "ie", "in", "jp", "nl",
+                                                "ru", "se", "us"};
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  for (auto country : non_excluded_countries) {
+    variations_service->OverrideStoredPermanentCountry(country);
+    EXPECT_FALSE(service->IsInExcludedCountry());
+  }
+  variations_service->OverrideStoredPermanentCountry("cn");
+  EXPECT_TRUE(service->IsInExcludedCountry());
+}
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        SuccessfullyChangeSignInPassword) {

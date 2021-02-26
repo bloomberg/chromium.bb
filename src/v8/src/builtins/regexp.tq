@@ -155,10 +155,8 @@ transitioning macro RegExpPrototypeExecBody(implicit context: Context)(
       regexp, matchIndices, string, lastIndex);
 }
 
-macro LoadRegExpFunction(implicit context: Context)(
-    nativeContext: NativeContext): JSFunction {
-  return UnsafeCast<JSFunction>(
-      nativeContext[NativeContextSlot::REGEXP_FUNCTION_INDEX]);
+macro LoadRegExpFunction(nativeContext: NativeContext): JSFunction {
+  return *NativeContextSlot(nativeContext, ContextSlot::REGEXP_FUNCTION_INDEX);
 }
 
 // Note this doesn't guarantee const-ness of object properties, just
@@ -187,7 +185,7 @@ extern enum Flag constexpr 'JSRegExp::Flag' {
   kSticky,
   kUnicode,
   kDotAll,
-  kInvalid
+  kLinear
 }
 
 const kRegExpPrototypeOldFlagGetter: constexpr int31
@@ -245,6 +243,13 @@ transitioning javascript builtin RegExpPrototypeMultilineGetter(
   return FlagGetter(
       receiver, Flag::kMultiline, kRegExpPrototypeOldFlagGetter,
       'RegExp.prototype.multiline');
+}
+
+transitioning javascript builtin RegExpPrototypeLinearGetter(
+    js-implicit context: NativeContext, receiver: JSAny)(): JSAny {
+  return FlagGetter(
+      receiver, Flag::kLinear, kRegExpPrototypeOldFlagGetter,
+      'RegExp.prototype.linear');
 }
 
 // ES #sec-get-regexp.prototype.dotAll

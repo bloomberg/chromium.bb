@@ -50,14 +50,13 @@ const base::win::i18n::LanguageSelector& GetLanguageSelector() {
   return *instance;
 }
 
-installer::TranslationDelegate* g_translation_delegate = NULL;
+installer::TranslationDelegate* g_translation_delegate = nullptr;
 
 }  // namespace
 
 namespace installer {
 
-TranslationDelegate::~TranslationDelegate() {
-}
+TranslationDelegate::~TranslationDelegate() {}
 
 void SetTranslationDelegate(TranslationDelegate* delegate) {
   g_translation_delegate = delegate;
@@ -73,8 +72,8 @@ std::wstring GetLocalizedString(int base_message_id) {
   std::wstring localized_string;
 
   int message_id = base_message_id + GetLanguageSelector().offset();
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-      _AtlBaseModule.GetModuleInstance(), message_id);
+  const ATLSTRINGRESOURCEIMAGE* image =
+      AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(), message_id);
   if (image) {
     localized_string = std::wstring(image->achString, image->nLength);
   } else {
@@ -86,17 +85,16 @@ std::wstring GetLocalizedString(int base_message_id) {
 
 base::string16 GetLocalizedStringF(int base_message_id,
                                    const base::string16& a) {
-  return base::ReplaceStringPlaceholders(
-      GetLocalizedString(base_message_id),
-      std::vector<base::string16>(1, a),
-      NULL);
+  return base::ReplaceStringPlaceholders(GetLocalizedString(base_message_id),
+                                         std::vector<base::string16>(1, a),
+                                         nullptr);
 }
 
 // Here we generate the url spec with the Microsoft res:// scheme which is
 // explained here : http://support.microsoft.com/kb/220830
 std::wstring GetLocalizedEulaResource() {
   wchar_t full_exe_path[MAX_PATH];
-  int len = ::GetModuleFileName(NULL, full_exe_path, MAX_PATH);
+  int len = ::GetModuleFileName(nullptr, full_exe_path, MAX_PATH);
   if (len == 0 || len == MAX_PATH)
     return L"";
 
@@ -109,7 +107,7 @@ std::wstring GetLocalizedEulaResource() {
   resource.append(language).append(L".HTML");
 
   // Fall back on "en" if we don't have a resource for this language.
-  if (NULL == FindResource(NULL, resource.c_str(), RT_HTML))
+  if (nullptr == FindResource(nullptr, resource.c_str(), RT_HTML))
     resource = L"IDR_OEMPG_EN.HTML";
 
   // Spaces and DOS paths must be url encoded.
@@ -121,8 +119,8 @@ std::wstring GetLocalizedEulaResource() {
   DCHECK(std::numeric_limits<uint32_t>::max() > (url_path.size() * 3));
   DWORD count = static_cast<DWORD>(url_path.size() * 3);
   std::unique_ptr<wchar_t[]> url_canon(new wchar_t[count]);
-  HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(),
-                                  &count, URL_ESCAPE_UNSAFE);
+  HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(), &count,
+                                  URL_ESCAPE_UNSAFE);
   if (SUCCEEDED(hr))
     return std::wstring(url_canon.get());
   return url_path;

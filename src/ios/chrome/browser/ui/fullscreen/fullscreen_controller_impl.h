@@ -47,6 +47,7 @@ class FullscreenControllerImpl : public FullscreenController {
   UIEdgeInsets GetCurrentViewportInsets() const override;
   void EnterFullscreen() override;
   void ExitFullscreen() override;
+  void ResizeHorizontalViewport() override;
 
  private:
 

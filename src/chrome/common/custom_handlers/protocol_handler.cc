@@ -7,11 +7,12 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
@@ -39,31 +40,15 @@ bool ProtocolHandler::IsValidDict(const base::DictionaryValue* value) {
 bool ProtocolHandler::IsValid() const {
   // TODO(https://crbug.com/977083): Consider limiting to secure contexts.
 
-  // This matches SupportedSchemes() in blink's NavigatorContentUtils.
-
-  // Although not enforced in the spec the spec gives freedom to do additional
-  // security checks. Bugs have arisen from allowing non-http/https URLs, e.g.
-  // https://crbug.com/971917 so we check this here.
+  // This matches VerifyCustomHandlerURLSecurity() in blink's
+  // NavigatorContentUtils.
   if (!url_.SchemeIsHTTPOrHTTPS() &&
       !url_.SchemeIs(extensions::kExtensionScheme)) {
     return false;
   }
 
-  // From:
-  // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
-  static constexpr const char* const kProtocolSafelist[] = {
-      "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-      "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-      "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp"};
-  static constexpr const char kWebPrefix[] = "web+";
-
-  bool has_web_prefix =
-      base::StartsWith(protocol_, kWebPrefix,
-                       base::CompareCase::INSENSITIVE_ASCII) &&
-      protocol_ != kWebPrefix;
-
-  return has_web_prefix ||
-         base::Contains(kProtocolSafelist, base::ToLowerASCII(protocol_));
+  bool has_custom_scheme_prefix;
+  return blink::IsValidCustomHandlerScheme(protocol_, has_custom_scheme_prefix);
 }
 
 bool ProtocolHandler::IsSameOrigin(
@@ -86,10 +71,11 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
   base::Time time;
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
-  const base::Value* time_value = value->FindKey("last_modified");
+  base::Optional<base::Time> time_value =
+      util::ValueToTime(value->FindKey("last_modified"));
   // Treat invalid times as the default value.
   if (time_value)
-    ignore_result(base::GetValueAsTime(*time_value, &time));
+    time = *time_value;
   return ProtocolHandler(protocol, GURL(url), time);
 }
 
@@ -97,7 +83,7 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
   std::string translatedUrlSpec(url_.spec());
   base::ReplaceFirstSubstringAfterOffset(
       &translatedUrlSpec, 0, "%s",
-      net::EscapeQueryParamValue(url.spec(), true));
+      net::EscapeQueryParamValue(url.spec(), false));
   return GURL(translatedUrlSpec);
 }
 
@@ -105,7 +91,7 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
-  d->SetKey("last_modified", base::CreateTimeValue(last_modified_));
+  d->SetKey("last_modified", util::TimeToValue(last_modified_));
   return d;
 }
 

@@ -333,8 +333,23 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // must be opaque or visual errors can occur. This applies only to this layer
   // and not to children, and does not imply the layer should be composited
   // opaquely, as effects may be applied such as opacity() or filters().
+  // Note that this also calls SetContentsOpaqueForText(opaque) internally.
+  // To override a different contents_opaque_for_text, the client should call
+  // SetContentsOpaqueForText() after SetContentsOpaque().
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return inputs_.contents_opaque; }
+
+  // Whether the contents area containing text is known to be opaque.
+  // For example, blink will SetContentsOpaque(false) but
+  // SetContentsOpaqueForText(true) for the following case:
+  //   <div style="overflow: hidden; border-radius: 10px; background: white">
+  //     TEXT
+  //   </div>
+  // See also the note for SetContentsOpaque().
+  void SetContentsOpaqueForText(bool opaque);
+  bool contents_opaque_for_text() const {
+    return inputs_.contents_opaque_for_text;
+  }
 
   // Set or get whether this layer should be a hit test target
   void SetHitTestable(bool should_hit_test);
@@ -436,6 +451,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.touch_action_region;
   }
 
+  // Set or get the set of blocking wheel rects of this layer. The
+  // |wheel_event_region| is the set of rects for which there is a non-passive
+  // wheel event listener that paints into this layer. Mouse wheel messages
+  // that intersect these rects must execute their relevant JS handler before we
+  // can start scrolling.
+  void SetWheelEventRegion(Region wheel_event_region);
+  const Region& wheel_event_region() const {
+    return inputs_.wheel_event_region;
+  }
+
   // For layer tree mode only.
   // In layer list mode, use ScrollTree::SetScrollCallbacks() instead.
   // Sets a RepeatingCallback that is run during a main frame, before layers are
@@ -531,20 +556,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 
-  // Sets or gets a hint that the transform on this layer (including its
-  // position) may be changed often in the future. The layer may change its
-  // strategy for generating content as a result. PictureLayers will not attempt
-  // to raster crisply as the transform changes, allowing the client to trade
-  // off crisp content at each scale for a smoother visual and cheaper
-  // animation.
-  void SetHasWillChangeTransformHint(bool has_will_change);
-  bool has_will_change_transform_hint() const {
-    return inputs_.has_will_change_transform_hint;
-  }
-
-  void SetFrameElementId(ElementId frame_element_id);
-  ElementId frame_element_id() const { return inputs_.frame_element_id; }
-
   // For layer tree mode only.
   // Sets or gets if trilinear filtering should be used to scaling the contents
   // of this layer and its subtree. When set the layer and its subtree will be
@@ -569,9 +580,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
 
   // Captures text content within the given |rect| and returns the associated
-  // NodeId in |content|.
+  // NodeInfo in |content|.
   virtual void CaptureContent(const gfx::Rect& rect,
-                              std::vector<NodeId>* content);
+                              std::vector<NodeInfo>* content);
 
   // For tracing. Gets a recorded rasterization of this layer's contents that
   // can be displayed inside representations of this layer. May return null, in
@@ -732,11 +743,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // (the full tree is synced over).
   void SetNeedsFullTreeSync();
 
-  // Called when the next commit should wait until the pending tree is activated
-  // before finishing the commit and unblocking the main thread. Used to ensure
-  // unused resources on the impl thread are returned before commit completes.
-  void SetNextCommitWaitsForActivation();
-
   // Will recalculate whether the layer draws content and set draws_content_
   // appropriately.
   void UpdateDrawsContent(bool has_drawable_content);
@@ -829,20 +835,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool hit_testable : 1;
 
     bool contents_opaque : 1;
+    bool contents_opaque_for_text : 1;
     bool is_drawable : 1;
 
     bool double_sided : 1;
-
-    bool has_will_change_transform_hint : 1;
 
     SkColor background_color;
 
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
+    Region wheel_event_region;
 
     ElementId element_id;
-    // ElementId of the document that this layer was created by.
-    ElementId frame_element_id;
   };
 
   // These inputs are used in layer tree mode (ui compositor) only. Most of them

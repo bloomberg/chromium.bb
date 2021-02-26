@@ -109,6 +109,7 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   DataRate target_rate() const;
   DataRate stable_target_rate() const;
   DataRate padding_rate() const;
+  void UpdateBitrateConstraints(const BitrateConstraints& constraints);
 
   void OnPacketReceived(EmulatedIpPacket packet) override;
   std::unique_ptr<RtcEventLogOutput> GetLogWriter(std::string name);
@@ -156,6 +157,8 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   std::map<uint32_t, MediaType> ssrc_media_types_;
   // Defined last so it's destroyed first.
   TaskQueueForTest task_queue_;
+
+  rtc::scoped_refptr<SharedModuleThread> module_thread_;
 
   const FieldTrialBasedConfig field_trials_;
 };

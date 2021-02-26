@@ -3,17 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "cc/base/features.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 #if defined(OS_ANDROID)
@@ -146,12 +149,15 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
 #define MAYBE_WheelEventTarget WheelEventTarget
 #endif
 IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
+  base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides(
+      nullptr);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(::features::kWheelEventRegions);
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
-  MainThreadFrameObserver frame_observer(
-      shell()->web_contents()->GetRenderViewHost()->GetWidget());
+  MainThreadFrameObserver frame_observer(GetWidgetHost());
 
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
@@ -167,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
   float delta_x = 0;
   float delta_y = -0.6 * scrollable_div_top;
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(
+      blink::SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, delta_x, delta_y, 0,
           ui::ScrollGranularity::kScrollByPrecisePixel);
 
@@ -221,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   float delta_x = 0;
   float delta_y = -0.6 * scrollable_div_top;
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(
+      blink::SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, delta_x, delta_y, 0,
           ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
@@ -257,16 +263,10 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
 
-// crbug.com/777258 Flaky on Android and Chrome OS.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
-  DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved
-#else
-#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
-  WheelScrollingRelatchWhenLatchedScrollerRemoved
-#endif
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+// crbug.com/777258 Flaky everywhere.
+IN_PROC_BROWSER_TEST_F(
+    WheelScrollLatchingBrowserTest,
+    DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(
       ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"), 0);
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
              ExecuteScriptAndExtractDouble(
                  "scrollableDiv.getBoundingClientRect().bottom")) /
             2;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool precise = true;
 #else
   bool precise = false;
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   auto wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(
+      blink::SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, 1, 1, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,

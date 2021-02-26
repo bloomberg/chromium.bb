@@ -7,10 +7,11 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
@@ -115,12 +116,12 @@ namespace test {
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the plaintext.
 QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
-                           quiche::QuicheStringPiece nonce,
-                           quiche::QuicheStringPiece associated_data,
-                           quiche::QuicheStringPiece ciphertext) {
+                           absl::string_view nonce,
+                           absl::string_view associated_data,
+                           absl::string_view ciphertext) {
   uint64_t packet_number;
-  quiche::QuicheStringPiece nonce_prefix(nonce.data(),
-                                         nonce.size() - sizeof(packet_number));
+  absl::string_view nonce_prefix(nonce.data(),
+                                 nonce.size() - sizeof(packet_number));
   decrypter->SetNoncePrefix(nonce_prefix);
   memcpy(&packet_number, nonce.data() + nonce_prefix.size(),
          sizeof(packet_number));
@@ -143,15 +144,14 @@ TEST_F(ChaCha20Poly1305DecrypterTest, Decrypt) {
     bool has_pt = test_vectors[i].pt;
 
     // Decode the test vector.
-    std::string key = quiche::QuicheTextUtils::HexDecode(test_vectors[i].key);
-    std::string iv = quiche::QuicheTextUtils::HexDecode(test_vectors[i].iv);
-    std::string fixed =
-        quiche::QuicheTextUtils::HexDecode(test_vectors[i].fixed);
-    std::string aad = quiche::QuicheTextUtils::HexDecode(test_vectors[i].aad);
-    std::string ct = quiche::QuicheTextUtils::HexDecode(test_vectors[i].ct);
+    std::string key = absl::HexStringToBytes(test_vectors[i].key);
+    std::string iv = absl::HexStringToBytes(test_vectors[i].iv);
+    std::string fixed = absl::HexStringToBytes(test_vectors[i].fixed);
+    std::string aad = absl::HexStringToBytes(test_vectors[i].aad);
+    std::string ct = absl::HexStringToBytes(test_vectors[i].ct);
     std::string pt;
     if (has_pt) {
-      pt = quiche::QuicheTextUtils::HexDecode(test_vectors[i].pt);
+      pt = absl::HexStringToBytes(test_vectors[i].pt);
     }
 
     ChaCha20Poly1305Decrypter decrypter;
@@ -160,8 +160,7 @@ TEST_F(ChaCha20Poly1305DecrypterTest, Decrypt) {
         &decrypter, fixed + iv,
         // This deliberately tests that the decrypter can handle an AAD that
         // is set to nullptr, as opposed to a zero-length, non-nullptr pointer.
-        quiche::QuicheStringPiece(aad.length() ? aad.data() : nullptr,
-                                  aad.length()),
+        absl::string_view(aad.length() ? aad.data() : nullptr, aad.length()),
         ct));
     if (!decrypted) {
       EXPECT_FALSE(has_pt);

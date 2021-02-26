@@ -10,6 +10,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -17,10 +19,14 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -28,11 +34,12 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
@@ -46,7 +53,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
 #endif
 
@@ -67,6 +74,8 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const std::string& email_address,
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
+  SetHasWindowSizeControls(true);
+  SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
@@ -74,7 +83,20 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   web_view_->GetWebContents()->SetDelegate(this);
+
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      web_view_->GetWebContents(),
+      autofill::ChromeAutofillClient::FromWebContents(
+          web_view_->GetWebContents()));
+
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      web_view_->GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(
+      web_view_->GetWebContents())
+      ->SetDelegate(this);
+
   web_view_->LoadInitialURL(url);
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER_PROFILE);
 }
 
@@ -89,17 +111,31 @@ void UserManagerProfileDialogDelegate::DisplayErrorMessage() {
   web_view_->LoadInitialURL(GURL(chrome::kChromeUISigninErrorURL));
 }
 
-bool UserManagerProfileDialogDelegate::CanResize() const {
-  return true;
+web_modal::WebContentsModalDialogHost*
+UserManagerProfileDialogDelegate::GetWebContentsModalDialogHost() {
+  return this;
 }
 
-bool UserManagerProfileDialogDelegate::CanMaximize() const {
-  return true;
+gfx::NativeView UserManagerProfileDialogDelegate::GetHostView() const {
+  return GetWidget()->GetNativeView();
 }
 
-bool UserManagerProfileDialogDelegate::CanMinimize() const {
-  return true;
+gfx::Point UserManagerProfileDialogDelegate::GetDialogPosition(
+    const gfx::Size& size) {
+  gfx::Size widget_size = GetWidget()->GetWindowBoundsInScreen().size();
+  return gfx::Point(std::max(0, (widget_size.width() - size.width()) / 2),
+                    std::max(0, (widget_size.height() - size.height()) / 2));
 }
+
+gfx::Size UserManagerProfileDialogDelegate::GetMaximumDialogSize() {
+  return GetWidget()->GetWindowBoundsInScreen().size();
+}
+
+void UserManagerProfileDialogDelegate::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
+
+void UserManagerProfileDialogDelegate::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
 
 ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
@@ -108,10 +144,6 @@ ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
 void UserManagerProfileDialogDelegate::DeleteDelegate() {
   OnDialogDestroyed();
   delete this;
-}
-
-base::string16 UserManagerProfileDialogDelegate::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PROFILES_GAIA_SIGNIN_TITLE);
 }
 
 views::View* UserManagerProfileDialogDelegate::GetInitiallyFocusedView() {
@@ -138,12 +170,24 @@ void UserManager::Show(
     profiles::UserManagerAction user_manager_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
+  if (!signin_util::IsForceSigninEnabled() &&
+      (user_manager_action == profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION ||
+       user_manager_action == profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE) &&
+      base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
+    // Use the new profile picker instead.
+    ProfilePicker::Show(
+        user_manager_action == profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE
+            ? ProfilePicker::EntryPoint::kProfileMenuAddNewProfile
+            : ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
+    return;
+  }
+
   if (g_user_manager_view) {
     // If we are showing the User Manager after locking a profile, change the
     // active profile to Guest.
     profiles::SetActiveProfileToGuestIfLocked();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     app_controller_mac::CreateGuestProfileIfNeeded();
 #endif
 
@@ -168,21 +212,25 @@ void UserManager::Show(
   user_manager->set_user_manager_started_showing(base::Time::Now());
   profiles::CreateSystemProfileForUserManager(
       profile_path_to_focus, user_manager_action,
-      base::Bind(&UserManagerView::OnSystemProfileCreated,
-                 base::Passed(base::WrapUnique(user_manager)),
-                 base::Owned(new base::AutoReset<bool>(
-                     &g_is_user_manager_view_under_construction, true))));
+      base::BindRepeating(
+          &UserManagerView::OnSystemProfileCreated,
+          base::Passed(base::WrapUnique(user_manager)),
+          base::Owned(new base::AutoReset<bool>(
+              &g_is_user_manager_view_under_construction, true))));
 }
 
 // static
 void UserManager::Hide() {
+  // Hide the profile picker, in case it was opened by UserManager::Show().
+  ProfilePicker::Hide();
+
   if (g_user_manager_view)
     g_user_manager_view->GetWidget()->Close();
 }
 
 // static
 bool UserManager::IsShowing() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Widget activation works differently on Mac: the UserManager is a child
   // widget, so it is not active in the IsActive() sense even when showing
   // and interactable. Test for IsVisible instead - this is what the Cocoa
@@ -219,6 +267,9 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
 
 // static
 base::FilePath UserManager::GetSigninProfilePath() {
+  if (!g_user_manager_view)
+    return base::FilePath();
+
   return g_user_manager_view->GetSigninProfilePath();
 }
 
@@ -295,6 +346,8 @@ UserManagerView::UserManagerView()
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetHasWindowSizeControls(true);
+  SetTitle(IDS_PRODUCT_NAME);
   set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
@@ -315,7 +368,7 @@ void UserManagerView::OnSystemProfileCreated(
   // active profile to Guest.
   profiles::SetActiveProfileToGuestIfLocked();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   app_controller_mac::CreateGuestProfileIfNeeded();
 #endif
 
@@ -356,6 +409,11 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_F4, ui::EF_ALT_DOWN));
+
+  // Make the user manager WebContents show up in the task manager.
+  content::WebContents* web_contents = web_view_->GetWebContents();
+  task_manager::WebContentsTags::CreateForToolContents(
+      web_contents, IDS_PROFILES_MANAGE_USERS_BUTTON);
 
   // If the user manager is being displayed from an existing profile, use
   // its last active browser to determine where the user manager should be
@@ -398,14 +456,13 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
 #if defined(OS_WIN)
   // Set the app id for the user manager to the app id of its parent.
   ui::win::SetAppIdForWindow(
-      shell_integration::win::GetChromiumModelIdForProfile(
+      shell_integration::win::GetAppUserModelIdForBrowser(
           system_profile->GetPath()),
       views::HWNDForWidget(GetWidget()));
 #endif
 
   web_view_->LoadInitialURL(url);
-  content::RenderWidgetHostView* rwhv =
-      web_view_->GetWebContents()->GetRenderWidgetHostView();
+  content::RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetBackgroundColor(profiles::kUserManagerBackgroundColor);
 
@@ -441,22 +498,6 @@ bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 gfx::Size UserManagerView::CalculatePreferredSize() const {
   return gfx::Size(UserManager::kWindowWidth, UserManager::kWindowHeight);
-}
-
-bool UserManagerView::CanResize() const {
-  return true;
-}
-
-bool UserManagerView::CanMaximize() const {
-  return true;
-}
-
-bool UserManagerView::CanMinimize() const {
-  return true;
-}
-
-base::string16 UserManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 void UserManagerView::WindowClosing() {

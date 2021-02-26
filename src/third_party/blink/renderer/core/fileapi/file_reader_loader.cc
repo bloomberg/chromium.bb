@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -212,14 +212,12 @@ void FileReaderLoader::Cleanup() {
 }
 
 void FileReaderLoader::Failed(FileErrorCode error_code, FailureType type) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, failure_histogram,
-                                  ("Storage.Blob.FileReaderLoader.FailureType",
-                                   static_cast<int>(FailureType::kCount)));
   // If an error was already reported, don't report this error again.
   if (error_code_ != FileErrorCode::kOK)
     return;
   error_code_ = error_code;
-  failure_histogram.Count(static_cast<int>(type));
+  base::UmaHistogramEnumeration("Storage.Blob.FileReaderLoader.FailureType",
+                                type);
   Cleanup();
   if (client_)
     client_->DidFail(error_code_);
@@ -328,10 +326,8 @@ void FileReaderLoader::OnCalculatedSize(uint64_t total_size,
 }
 
 void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
-                                  file_reader_loader_read_errors_histogram,
-                                  ("Storage.Blob.FileReaderLoader.ReadError"));
-  file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
+  base::UmaHistogramSparse("Storage.Blob.FileReaderLoader.ReadError",
+                           std::max(0, -net_error_));
 
   if (status != net::OK) {
     net_error_ = status;

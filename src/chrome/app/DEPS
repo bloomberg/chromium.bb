@@ -11,6 +11,7 @@ include_rules = [
   "+chrome/utility/chrome_content_utility_client.h",
   "+chromeos/constants",
   "+chromeos/hugepage_text/hugepage_text.h",
+  "+chromeos/lacros",
   "+chromeos/memory",
   "+components/browser_watcher",
   "+components/component_updater",
@@ -31,6 +32,7 @@ include_rules = [
   "+components/version_info",
   "+content/public/app",
   "+content/public/browser/browser_main_runner.h",
+  "+content/public/common",
   "+extensions/common/constants.h",
   "+headless/public",
   "+native_client/src/trusted/service_runtime/osx",
@@ -41,29 +43,4 @@ include_rules = [
   "+third_party/breakpad/breakpad",
   "+third_party/crashpad/crashpad",
 ]
-
-specific_include_rules = {
-  "chrome_content_browser_overlay_manifest\.cc": [
-    "+chrome/services/app_service",
-    "+chromeos/services/cellular_setup",
-    "+chromeos/services/device_sync",
-    "+chromeos/services/ime/public",
-    "+chromeos/services/media_perception/public",
-    "+chromeos/services/multidevice_setup",
-    "+chromeos/services/network_config",
-    "+components/autofill/content/common",
-    "+components/chromeos_camera/common",
-    "+components/contextual_search/content/common",
-    "+components/data_reduction_proxy/core/common",
-    "+components/metrics/public",
-    "+components/rappor/public",
-    "+components/translate/content/common",
-    "+extensions/buildflags",
-    "+extensions/common",
-    "+media/capture/video/chromeos/mojom",
-    "+services/image_annotation/public",
-    "+services/resource_coordinator/public",
-    "+third_party/blink/public/mojom",
-  ],
-}
 

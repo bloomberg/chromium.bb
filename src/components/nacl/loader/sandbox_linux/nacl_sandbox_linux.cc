@@ -22,6 +22,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
@@ -34,7 +35,7 @@
 #include "sandbox/linux/services/resource_limits.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 namespace nacl {
 
@@ -54,7 +55,7 @@ bool MaybeSetProcessNonDumpable() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(
-          service_manager::switches::kAllowSandboxDebugging)) {
+          sandbox::policy::switches::kAllowSandboxDebugging)) {
     return true;
   }
 
@@ -126,6 +127,11 @@ bool NaClSandbox::HasOpenDirectory() {
 void NaClSandbox::InitializeLayerOneSandbox() {
   // Check that IsSandboxed() works. We should not be sandboxed at this point.
   CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
+
+  // Open /dev/urandom while we can. This enables `base::RandBytes` to work. We
+  // don't need to store the resulting file descriptor; it's a singleton and
+  // subsequent calls to `GetUrandomFD` will return it.
+  CHECK_GE(base::GetUrandomFD(), 0);
 
   if (setuid_sandbox_client_->IsSuidSandboxChild()) {
     setuid_sandbox_client_->CloseDummyFile();

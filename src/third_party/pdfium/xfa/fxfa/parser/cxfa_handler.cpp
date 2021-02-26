@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_handler.h"
 
 #include "fxjs/xfa/cjx_handler.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -29,6 +29,8 @@ CXFA_Handler::CXFA_Handler(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Handler,
                 {},
                 kHandlerAttributeData,
-                pdfium::MakeUnique<CJX_Handler>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Handler>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Handler::~CXFA_Handler() = default;

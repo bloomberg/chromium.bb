@@ -56,7 +56,8 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   auto url_loader_factory =
       std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
-          g_browser_process->safe_browsing_service()->GetURLLoaderFactory());
+          g_browser_process->safe_browsing_service()->GetURLLoaderFactory(
+              profile));
   const policy::BrowserPolicyConnector* browser_policy_connector =
       g_browser_process->browser_policy_connector();
   bool is_under_advanced_protection = false;
@@ -71,7 +72,8 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile), profile->GetPrefs(),
       GetProfileManagementStatus(browser_policy_connector),
-      is_under_advanced_protection, profile->IsOffTheRecord());
+      is_under_advanced_protection, profile->IsOffTheRecord(),
+      g_browser_process->variations_service());
 }
 
 }  // namespace safe_browsing

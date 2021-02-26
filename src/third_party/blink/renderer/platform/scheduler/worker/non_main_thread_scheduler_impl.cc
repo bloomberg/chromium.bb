@@ -71,9 +71,14 @@ void NonMainThreadSchedulerImpl::PostDelayedIdleTask(
                      std::move(task)));
 }
 
-std::unique_ptr<blink::PageScheduler>
-NonMainThreadSchedulerImpl::CreatePageScheduler(
-    PageScheduler::Delegate* delegate) {
+std::unique_ptr<WebAgentGroupScheduler>
+NonMainThreadSchedulerImpl::CreateAgentGroupScheduler() {
+  NOTREACHED();
+  return nullptr;
+}
+
+WebAgentGroupScheduler*
+NonMainThreadSchedulerImpl::GetCurrentAgentGroupScheduler() {
   NOTREACHED();
   return nullptr;
 }

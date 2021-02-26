@@ -46,19 +46,13 @@
         no-set-pref>
     </settings-toggle-button>
 </if><!-- not chromeos -->
-    <settings-toggle-button class="hr"
+    <settings-toggle-button id="searchSuggestToggle"
+        class="hr"
         hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
         label="$i18n{searchSuggestPref}"
         sub-label="$i18n{searchSuggestPrefDesc}">
     </settings-toggle-button>
-  <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-    <settings-toggle-button id="linkDoctor" class="hr"
-        pref="{{prefs.alternate_error_pages.enabled}}"
-        label="$i18n{linkDoctorPref}"
-        sub-label="$i18n{linkDoctorPrefDesc}">
-    </settings-toggle-button>
-  </template>
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button class="hr"
@@ -83,7 +77,7 @@
     </settings-toggle-button>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-    <settings-toggle-button
+    <settings-toggle-button id="urlCollectionToggle"
         class="hr"
         pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
         label="$i18n{urlKeyedAnonymizedDataCollection}"
@@ -115,7 +109,7 @@
     </template>
 
 <if expr="not chromeos">
-    <cr-toast id="toast" open="[[showRestartToast_]]">
+    <cr-toast id="toast">
       <div>$i18n{restartToApplyChanges}</div>
       <cr-button on-click="onRestartTap_">$i18n{restart}</cr-button>
     </cr-toast>

@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/win/conflicts/module_load_attempt_log_listener.h"
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #include "chrome/chrome_elf/third_party_dlls/public_api.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -438,8 +436,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
     // disabled at run-time, the |third_party_conflicts_manager_| instance must
     // be destroyed. Since prefs can only be read on the UI thread, the
     // registrar is initialized there.
-    auto ui_task_runner =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+    auto ui_task_runner = content::GetUIThreadTaskRunner({});
     pref_change_registrar_ =
         std::unique_ptr<PrefChangeRegistrar, base::OnTaskRunnerDeleter>(
             new PrefChangeRegistrar(),

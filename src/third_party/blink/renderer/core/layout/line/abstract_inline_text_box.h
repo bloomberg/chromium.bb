@@ -42,7 +42,6 @@
 namespace blink {
 
 class InlineTextBox;
-class NGOffsetMapping;
 
 // High-level abstraction of InlineTextBox to allow the accessibility module to
 // get information about InlineTextBoxes without tight coupling.
@@ -67,7 +66,12 @@ class CORE_EXPORT AbstractInlineTextBox
   virtual scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const = 0;
   virtual LayoutRect LocalBounds() const = 0;
   virtual unsigned Len() const = 0;
-  virtual unsigned TextOffsetInContainer(unsigned) const = 0;
+  // Given a text offset in this inline text box, returns the equivalent text
+  // offset in this box's formatting context. The formatting context is the
+  // deepest block flow ancestor, e.g. the enclosing paragraph. A "text offset",
+  // in contrast to a "DOM offset", is an offset in the box's text after any
+  // collapsible white space in the DOM has been collapsed.
+  virtual unsigned TextOffsetInFormattingContext(unsigned) const = 0;
   virtual Direction GetDirection() const = 0;
   Node* GetNode() const;
   virtual void CharacterWidths(Vector<float>&) const = 0;
@@ -78,6 +82,7 @@ class CORE_EXPORT AbstractInlineTextBox
   virtual scoped_refptr<AbstractInlineTextBox> NextOnLine() const = 0;
   virtual scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const = 0;
   virtual bool IsLineBreak() const = 0;
+  virtual bool NeedsTrailingSpace() const = 0;
 
  protected:
   explicit AbstractInlineTextBox(LineLayoutText line_layout_item);
@@ -114,7 +119,7 @@ class CORE_EXPORT LegacyAbstractInlineTextBox final
   scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const final;
   LayoutRect LocalBounds() const final;
   unsigned Len() const final;
-  unsigned TextOffsetInContainer(unsigned offset) const final;
+  unsigned TextOffsetInFormattingContext(unsigned offset) const final;
   Direction GetDirection() const final;
   void CharacterWidths(Vector<float>&) const final;
   String GetText() const final;
@@ -123,7 +128,7 @@ class CORE_EXPORT LegacyAbstractInlineTextBox final
   scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
   scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
   bool IsLineBreak() const final;
-  const NGOffsetMapping* GetOffsetMapping() const;
+  bool NeedsTrailingSpace() const final;
 
   InlineTextBox* inline_text_box_;
 

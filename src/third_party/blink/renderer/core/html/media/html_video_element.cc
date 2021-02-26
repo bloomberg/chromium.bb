@@ -27,7 +27,7 @@
 
 #include <memory>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
@@ -86,8 +86,8 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
       in_overlay_fullscreen_video_(false),
       is_effectively_fullscreen_(false),
       is_default_overridden_intrinsic_size_(
-          !document.IsMediaDocument() &&
-          !document.IsFeatureEnabled(
+          !document.IsMediaDocument() && GetExecutionContext() &&
+          !GetExecutionContext()->IsFeatureEnabled(
               mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       video_has_played_(false),
       mostly_filling_viewport_(false) {
@@ -105,7 +105,7 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
   UpdateStateIfNeeded();
 }
 
-void HTMLVideoElement::Trace(Visitor* visitor) {
+void HTMLVideoElement::Trace(Visitor* visitor) const {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);
   visitor->Trace(wake_lock_);
@@ -151,17 +151,25 @@ LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&,
 
 void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
   HTMLMediaElement::AttachLayoutTree(context);
+  UpdatePosterImage();
+}
 
-  UpdateDisplayState();
-  if (ShouldDisplayPosterImage()) {
+void HTMLVideoElement::UpdatePosterImage() {
+  ImageResourceContent* image_content = nullptr;
+
+  // Load the poster if set, |VideoLayout| will decide whether to draw it.
+  if (!PosterImageURL().IsEmpty()) {
     if (!image_loader_)
       image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
-    if (GetLayoutObject()) {
-      ToLayoutImage(GetLayoutObject())
-          ->ImageResource()
-          ->SetImageResource(image_loader_->GetContent());
-    }
+    image_content = image_loader_->GetContent();
+  }
+
+  if (GetLayoutObject()) {
+    To<LayoutImage>(GetLayoutObject())
+        ->ImageResource()
+        ->SetImageResource(image_content);
+    UpdateLayoutObject();
   }
 }
 
@@ -187,25 +195,8 @@ bool HTMLVideoElement::IsPresentationAttribute(
 void HTMLVideoElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kPosterAttr) {
-    // In case the poster attribute is set after playback, don't update the
-    // display state, post playback the correct state will be picked up.
-    if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
-      // Force a poster recalc by setting display_mode_ to kUnknown directly
-      // before calling UpdateDisplayState.
-      HTMLMediaElement::SetDisplayMode(kUnknown);
-      UpdateDisplayState();
-    }
-    if (!PosterImageURL().IsEmpty()) {
-      if (!image_loader_)
-        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
-      image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
-    } else {
-      if (GetLayoutObject()) {
-        ToLayoutImage(GetLayoutObject())
-            ->ImageResource()
-            ->SetImageResource(nullptr);
-      }
-    }
+    UpdatePosterImage();
+
     // Notify the player when the poster image URL changes.
     if (GetWebMediaPlayer())
       GetWebMediaPlayer()->SetPoster(PosterImageURL());
@@ -262,25 +253,6 @@ const AtomicString HTMLVideoElement::ImageSourceURL() const {
   if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
   return default_poster_url_;
-}
-
-void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
-  DisplayMode old_mode = GetDisplayMode();
-  KURL poster = PosterImageURL();
-
-  if (!poster.IsEmpty()) {
-    // We have a poster path, but only show it until the user triggers display
-    // by playing or seeking and the media engine has something to display.
-    // Don't show the poster if there is a seek operation or the video has
-    // restarted because of loop attribute
-    if (mode == kVideo && old_mode == kPoster && !HasAvailableVideoFrame())
-      return;
-  }
-
-  HTMLMediaElement::SetDisplayMode(mode);
-
-  if (GetLayoutObject() && GetDisplayMode() != old_mode)
-    GetLayoutObject()->UpdateFromElement();
 }
 
 void HTMLVideoElement::UpdatePictureInPictureAvailability() {
@@ -342,18 +314,11 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
   }
 
   if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+    GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
 }
 
 bool HTMLVideoElement::IsPersistent() const {
   return is_persistent_;
-}
-
-void HTMLVideoElement::UpdateDisplayState() {
-  if (PosterImageURL().IsEmpty() || HasAvailableVideoFrame())
-    SetDisplayMode(kVideo);
-  else if (GetDisplayMode() < kPoster)
-    SetDisplayMode(kPoster);
 }
 
 void HTMLVideoElement::OnPlay() {
@@ -367,7 +332,10 @@ void HTMLVideoElement::OnPlay() {
     return;
   }
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  // TODO(mustaq): This is problematic, see https://crbug.com/1082258.
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(),
+      mojom::blink::UserActivationNotificationType::kMedia);
   webkitEnterFullscreen();
 }
 
@@ -382,7 +350,8 @@ void HTMLVideoElement::OnLoadFinished() {
     lazy_load_intersection_observer_ = IntersectionObserver::Create(
         {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
         WTF::BindRepeating(&HTMLVideoElement::OnIntersectionChangedForLazyLoad,
-                           WrapWeakPersistent(this)));
+                           WrapWeakPersistent(this)),
+        LocalFrameUkmAggregator::kMediaIntersectionObserver);
     lazy_load_intersection_observer_->observe(this);
   }
 
@@ -495,7 +464,7 @@ void HTMLVideoElement::webkitEnterFullscreen() {
     FullscreenOptions* options = FullscreenOptions::Create();
     options->setNavigationUI("hide");
     Fullscreen::RequestFullscreen(*this, options,
-                                  Fullscreen::RequestType::kPrefixed);
+                                  FullscreenRequestType::kPrefixed);
   }
 }
 
@@ -523,7 +492,7 @@ bool HTMLVideoElement::UsesOverlayFullscreenVideo() const {
 void HTMLVideoElement::DidEnterFullscreen() {
   UpdateControlsVisibility();
 
-  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture) {
+  if (GetDisplayType() == DisplayType::kPictureInPicture && !IsInAutoPIP()) {
     PictureInPictureController::From(GetDocument())
         .ExitPictureInPicture(this, nullptr);
   }
@@ -532,7 +501,7 @@ void HTMLVideoElement::DidEnterFullscreen() {
     // FIXME: There is no embedder-side handling in web test mode.
     if (!WebTestSupport::IsRunningWebTest())
       GetWebMediaPlayer()->EnteredFullscreen();
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+    GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
   }
 
   // Cache this in case the player is destroyed before leaving fullscreen.
@@ -550,7 +519,7 @@ void HTMLVideoElement::DidExitFullscreen() {
 
   if (GetWebMediaPlayer()) {
     GetWebMediaPlayer()->ExitedFullscreen();
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+    GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
   }
 
   if (in_overlay_fullscreen_video_) {
@@ -598,7 +567,6 @@ KURL HTMLVideoElement::PosterImageURL() const {
 
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint,
     const FloatSize&) {
   if (!HasAvailableVideoFrame()) {
     *status = kInvalidSourceImageStatus;
@@ -607,11 +575,10 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
   // TODO(fserb): this should not be default software.
-  // FIXME: Not sure if we should we be doing anything with the AccelerationHint
-  // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateBitmapProvider(
-          intrinsic_size, kLow_SkFilterQuality, CanvasColorParams());
+          intrinsic_size, kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kNo);
   if (!resource_provider) {
     *status = kInvalidSourceImageStatus;
     return nullptr;
@@ -654,7 +621,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
         "The provided element has not retrieved data.");
     return ScriptPromise();
   }
-  if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
+  if (!HasAvailableVideoFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The provided element's player has no current data.");
@@ -689,16 +656,16 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
          PictureInPictureController::Status::kEnabled;
 }
 
-WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
+DisplayType HTMLVideoElement::GetDisplayType() const {
   if (is_auto_picture_in_picture_ ||
       PictureInPictureController::IsElementInPictureInPicture(this)) {
-    return WebMediaPlayer::DisplayType::kPictureInPicture;
+    return DisplayType::kPictureInPicture;
   }
 
   if (is_effectively_fullscreen_)
-    return WebMediaPlayer::DisplayType::kFullscreen;
+    return DisplayType::kFullscreen;
 
-  return HTMLMediaElement::DisplayType();
+  return HTMLMediaElement::GetDisplayType();
 }
 
 bool HTMLVideoElement::IsInAutoPIP() const {
@@ -717,8 +684,7 @@ void HTMLVideoElement::RequestExitPictureInPicture() {
 }
 
 void HTMLVideoElement::OnPictureInPictureStateChange() {
-  if (DisplayType() != WebMediaPlayer::DisplayType::kPictureInPicture ||
-      IsInAutoPIP()) {
+  if (GetDisplayType() != DisplayType::kPictureInPicture || IsInAutoPIP()) {
     return;
   }
 
@@ -741,7 +707,7 @@ void HTMLVideoElement::OnEnteredPictureInPicture() {
     PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
 
   DCHECK(GetWebMediaPlayer());
-  GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+  GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
 }
 
 void HTMLVideoElement::OnExitedPictureInPicture() {
@@ -752,7 +718,7 @@ void HTMLVideoElement::OnExitedPictureInPicture() {
     PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
 
   if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+    GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
 }
 
 void HTMLVideoElement::SetIsEffectivelyFullscreen(
@@ -761,7 +727,7 @@ void HTMLVideoElement::SetIsEffectivelyFullscreen(
       status != blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen;
   if (GetWebMediaPlayer()) {
     GetWebMediaPlayer()->SetIsEffectivelyFullscreen(status);
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+    GetWebMediaPlayer()->OnDisplayTypeChanged(GetDisplayType());
   }
 }
 
@@ -771,6 +737,10 @@ void HTMLVideoElement::SetIsDominantVisibleContent(bool is_dominant) {
     auto* player = GetWebMediaPlayer();
     if (player)
       player->BecameDominantVisibleContent(mostly_filling_viewport_);
+
+    auto* local_frame_view = GetDocument().View();
+    if (local_frame_view)
+      local_frame_view->NotifyVideoIsDominantVisibleStatus(this, is_dominant);
   }
 }
 

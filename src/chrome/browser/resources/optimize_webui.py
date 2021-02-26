@@ -58,25 +58,33 @@ _POLYMER_PATH = os.path.join(
 
 # These files are already combined and minified.
 _BASE_EXCLUDES = [
-  # Common excludes for both Polymer 2 and 3.
-  'chrome://resources/polymer/v1_0/web-animations-js/' +
-      'web-animations-next-lite.min.js',
-  'chrome://resources/css/roboto.css',
-  'chrome://resources/css/text_defaults.css',
-  'chrome://resources/css/text_defaults_md.css',
-  'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html',
-
   # Excludes applying only to Polymer 2.
   'chrome://resources/html/polymer.html',
   'chrome://resources/polymer/v1_0/polymer/polymer.html',
   'chrome://resources/polymer/v1_0/polymer/polymer-micro.html',
   'chrome://resources/polymer/v1_0/polymer/polymer-mini.html',
-  'chrome://resources/js/load_time_data.js',
+  'chrome://resources/js/load_time_data.js'
+]
+for excluded_file in [
+  # Common excludes for both Polymer 2 and 3.
+  'resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js',
+  'resources/css/roboto.css',
+  'resources/css/text_defaults.css',
+  'resources/css/text_defaults_md.css',
+  'resources/mojo/mojo/public/js/mojo_bindings_lite.html',
+  'resources/mojo/mojo/public/mojom/base/time.mojom.html',
+  'resources/mojo/mojo/public/mojom/base/time.mojom-lite.js',
+  'resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom.html',
+  'resources/mojo/services/network/public/mojom/ip_address.mojom.html',
 
   # Excludes applying only to Polymer 3.
-  'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js',
-  'chrome://resources/js/load_time_data.m.js',
-]
+  'resources/polymer/v3_0/polymer/polymer_bundled.min.js',
+  'resources/js/load_time_data.m.js',
+]:
+     # Exclude both the chrome://resources form and the scheme-relative form for
+     # files used in Polymer 3.
+     _BASE_EXCLUDES.append("chrome://" + excluded_file)
+     _BASE_EXCLUDES.append("//" + excluded_file)
 
 _VULCANIZE_BASE_ARGS = [
   '--inline-css',
@@ -85,19 +93,23 @@ _VULCANIZE_BASE_ARGS = [
   '--strip-comments',
 ]
 
-_URL_MAPPINGS = [
-    ('chrome://resources/cr_components/', _CR_COMPONENTS_PATH),
-    ('chrome://resources/cr_elements/', _CR_ELEMENTS_PATH),
-    ('chrome://resources/css/', _CSS_RESOURCES_PATH),
-    ('chrome://resources/html/', _HTML_RESOURCES_PATH),
-    ('chrome://resources/js/', _JS_RESOURCES_PATH),
-    ('chrome://resources/polymer/v1_0/', _POLYMER_PATH),
-    ('chrome://resources/images/', _IMAGES_RESOURCES_PATH)
-]
+_URL_MAPPINGS = []
+for (redirect_url, file_path) in [
+    ('resources/cr_components/', _CR_COMPONENTS_PATH),
+    ('resources/cr_elements/', _CR_ELEMENTS_PATH),
+    ('resources/css/', _CSS_RESOURCES_PATH),
+    ('resources/html/', _HTML_RESOURCES_PATH),
+    ('resources/js/', _JS_RESOURCES_PATH),
+    ('resources/polymer/v1_0/', _POLYMER_PATH),
+    ('resources/images/', _IMAGES_RESOURCES_PATH),
+]:
+  # Redirect both the chrome://resources form and the scheme-relative form.
+  _URL_MAPPINGS.append(('chrome://' + redirect_url, file_path))
+  _URL_MAPPINGS.append(('//' + redirect_url, file_path))
 
 
 _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
-    lambda m: ['--redirect', '"%s|%s"' % (m[0], m[1])], _URL_MAPPINGS)))
+    lambda m: ['--redirect', '%s|%s' % (m[0], m[1])], _URL_MAPPINGS)))
 
 
 def _undo_mapping(mappings, url):
@@ -123,7 +135,7 @@ def _update_dep_file(in_folder, args, manifest):
   # Add a slash in front of every dependency that is not a chrome:// URL, so
   # that we can map it to the correct source file path below.
   request_list = map(
-      lambda dep: '/' + dep if not dep.startswith('chrome://') else dep,
+      lambda dep: '/' + dep if not (dep.startswith('chrome://') or dep.startswith('//')) else dep,
       request_list)
 
   # Undo the URL mappings applied by vulcanize to get file paths relative to
@@ -136,12 +148,6 @@ def _update_dep_file(in_folder, args, manifest):
   deps = [_undo_mapping(url_mappings, u) for u in request_list]
   deps = map(os.path.normpath, deps)
 
-  # If the input was a folder holding an unpacked .pak file, the generated
-  # depfile should not list files already in the .pak file.
-  if args.input.endswith('.unpak'):
-    filter_url = args.input
-    deps = [d for d in deps if not d.startswith(filter_url)]
-
   out_file_name = args.html_out_files[0] if args.html_out_files else \
                   args.js_out_files[0]
 
@@ -153,7 +159,7 @@ def _update_dep_file(in_folder, args, manifest):
 # pass it information about the location of the directories and files to exclude
 # from the bundle.
 def _generate_rollup_config(tmp_out_dir, path_to_plugin, in_path, host,
-                            excludes):
+                            excludes, gen_dir_relpath):
   rollup_config_file = os.path.join(tmp_out_dir, 'rollup.config.js')
   excludes_string = '[\'' + '\', \''.join(excludes) + '\']'
   with open(rollup_config_file, 'w') as f:
@@ -162,7 +168,7 @@ def _generate_rollup_config(tmp_out_dir, path_to_plugin, in_path, host,
     f.write('export default({\n')
     f.write('  plugins: [ plugin(\'%s\', \'%s\', \'%s\', \'%s\', %s) ]\n' % (
         _SRC_PATH.replace('\\', '/'),
-        os.path.join(_CWD, 'gen').replace('\\', '/'),
+        os.path.join(_CWD, gen_dir_relpath).replace('\\', '/'),
         in_path.replace('\\', '/'), host, excludes_string))
     f.write('});')
     f.close()
@@ -201,7 +207,8 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
   path_to_plugin = os.path.join(
       os.path.abspath(_HERE_PATH), 'tools', 'rollup_plugin.js')
   rollup_config_file = _generate_rollup_config(tmp_out_dir, path_to_plugin,
-                                               in_path, args.host, excludes)
+                                               in_path, args.host, excludes,
+                                               args.gen_dir_relpath)
   rollup_args = [os.path.join(in_path, f) for f in args.js_module_in_files]
 
   # Confirm names are as expected. This is necessary to avoid having to replace
@@ -210,9 +217,10 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
   # arbitrary names?
   bundled_paths = []
   for index, js_file in enumerate(args.js_module_in_files):
-    expected_name = '%s.rollup.js' % js_file[:-len('.js')]
+    base_file_name = os.path.basename(js_file)
+    expected_name = '%s.rollup.js' % base_file_name[:-len('.js')]
     assert args.js_out_files[index] == expected_name, \
-           'Output file corresponding to %s should be named %s.rollup.js' % \
+           'Output file corresponding to %s should be named %s' % \
            (js_file, expected_name)
     bundled_paths.append(os.path.join(tmp_out_dir, expected_name))
 
@@ -244,6 +252,13 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
          'unexpected number of bundles - %s - generated by rollup' % \
          (len(generated_paths))
 
+  for bundled_file in bundled_paths:
+    with open(bundled_file, 'r') as f:
+      output = f.read()
+      assert "<if expr" not in output, \
+          'Unexpected <if expr> found in bundled output. Check that all ' + \
+          'input files using such expressions are preprocessed.'
+
   return bundled_paths
 
 def _bundle_v2(tmp_out_dir, in_path, out_path, manifest_out_path, args,
@@ -263,7 +278,7 @@ def _bundle_v2(tmp_out_dir, in_path, out_path, manifest_out_path, args,
       [
        '--manifest-out', manifest_out_path,
        '--root', in_path,
-       '--redirect', '"chrome://%s/|%s"' % (args.host, in_path + '/'),
+       '--redirect', 'chrome://%s/|%s' % (args.host, in_path + '/'),
        '--out-dir', os.path.relpath(tmp_out_dir, _CWD).replace('\\', '/'),
        '--shell', args.html_in_files[0],
       ] + in_html_args)
@@ -326,6 +341,8 @@ def _optimize(in_folder, args):
       bundled_paths = _bundle_v3(tmp_out_dir, in_path, out_path,
                                  manifest_out_path, args, excludes)
     else:
+      # Ensure Polymer 2 and Polymer 3 request lists don't collide.
+      manifest_out_path = _request_list_path(out_path, args.host + '-v2')
       pcb_out_paths = [os.path.join(out_path, f) for f in args.html_out_files]
       bundled_paths = _bundle_v2(tmp_out_dir, in_path, out_path,
                                  manifest_out_path, args, excludes)
@@ -339,9 +356,9 @@ def _optimize(in_folder, args):
     # Pass the JS files through Uglify and write the output to its final
     # destination.
     for index, js_out_file in enumerate(args.js_out_files):
-      node.RunNode([node_modules.PathToUglify(),
+      node.RunNode([node_modules.PathToTerser(),
                     os.path.join(tmp_out_dir, js_out_file),
-                    '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
+                    '--comments', '/Copyright|license|LICENSE|\<\/?if/',
                     '--output', os.path.join(out_path, js_out_file)])
   finally:
     shutil.rmtree(tmp_out_dir)
@@ -359,6 +376,10 @@ def main(argv):
   parser.add_argument('--js_out_files', nargs='*', required=True)
   parser.add_argument('--out_folder', required=True)
   parser.add_argument('--js_module_in_files', nargs='*')
+  parser.add_argument('--out-manifest')
+  parser.add_argument('--gen_dir_relpath', default='gen', help='Path of the '
+      'gen directory relative to the out/. If running in the default '
+      'toolchain, the path is gen, otherwise $toolchain_name/gen')
   args = parser.parse_args(argv)
 
   # Either JS module input files (for Polymer 3) or HTML input and output files
@@ -386,6 +407,19 @@ def main(argv):
     raise Exception(
         'polymer-bundler could not find files for the following URLs:\n' +
         '\n'.join(manifest['_missing']))
+
+
+  # Output a manifest file that will be used to auto-generate a grd file later.
+  if args.out_manifest:
+    manifest_data = {}
+    manifest_data['base_dir'] = '%s' % args.out_folder
+    if (is_polymer3):
+      manifest_data['files'] = manifest.keys()
+    else:
+      manifest_data['files'] = args.html_out_files + args.js_out_files
+    manifest_file = open(
+        os.path.normpath(os.path.join(_CWD, args.out_manifest)), 'wb')
+    json.dump(manifest_data, manifest_file)
 
   _update_dep_file(args.input, args, manifest)
 

@@ -5,11 +5,11 @@
 package org.chromium.android_webview.test;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -1269,8 +1269,9 @@ public class CookieManagerTest {
     private String makeCookieStoreSetFragment(String name, String value, String finallyAction) {
         return "try {"
                 + "  await window.cookieStore.set("
-                + "      " + name + ", " + value + ", "
-                + "      { expires: Date.now() + 3600*1000,"
+                + "      { name: " + name + ","
+                + "        value: " + value + ","
+                + "        expires: Date.now() + 3600*1000,"
                 + "        sameSite: 'none' });"
                 + "} finally {"
                 + "  " + finallyAction + "}\n";

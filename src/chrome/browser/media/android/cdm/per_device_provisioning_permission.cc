@@ -97,7 +97,8 @@ class PerDeviceProvisioningPermissionRequest
 
   GURL GetOrigin() const final { return origin_.GetURL(); }
 
-  void PermissionGranted() final {
+  void PermissionGranted(bool is_one_time) final {
+    DCHECK(!is_one_time);
     UpdateLastResponse(true);
     std::move(callback_).Run(true);
   }
@@ -177,6 +178,7 @@ void RequestPerDeviceProvisioningPermission(
   // The created PerDeviceProvisioningPermissionRequest deletes itself once
   // complete. See PerDeviceProvisioningPermissionRequest::RequestFinished().
   permission_request_manager->AddRequest(
+      render_frame_host,
       new PerDeviceProvisioningPermissionRequest(
           render_frame_host->GetLastCommittedOrigin(), std::move(callback)));
 }

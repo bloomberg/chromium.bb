@@ -16,15 +16,13 @@ class SourceBuffer;
 class SourceBufferTrackBaseSupplement
     : public GarbageCollected<SourceBufferTrackBaseSupplement>,
       public Supplement<TrackBase> {
-  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferTrackBaseSupplement);
-
  public:
   static const char kSupplementName[];
 
   static SourceBuffer* sourceBuffer(TrackBase&);
   static void SetSourceBuffer(TrackBase&, SourceBuffer*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static SourceBufferTrackBaseSupplement& From(TrackBase&);

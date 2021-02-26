@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
@@ -19,7 +19,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -69,7 +68,6 @@ bool IsSimpleActivationFlow(const chromeos::NetworkState* network) {
 MobileActivator::MobileActivator()
     : state_(PLAN_ACTIVATION_PAGE_LOADING),
       terminated_(true),
-      pending_activation_request_(false),
       connection_retry_count_(0),
       initial_OTASP_attempts_(0),
       trying_OTASP_attempts_(0),
@@ -187,8 +185,8 @@ void MobileActivator::GetPropertiesFailure(
 }
 
 void MobileActivator::OnSetTransactionStatus(bool success) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
                                 weak_ptr_factory_.GetWeakPtr(), success));
 }
 
@@ -197,7 +195,6 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
   // again.
   if (success && state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
     SignalCellularPlanPayment();
-    UMA_HISTOGRAM_COUNTS_1M("Cellular.PaymentReceived", 1);
     const NetworkState* network = GetNetworkState(service_path_);
     if (network && IsSimpleActivationFlow(network)) {
       state_ = PLAN_ACTIVATION_DONE;
@@ -206,14 +203,12 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     } else {
       StartOTASP();
     }
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("Cellular.PaymentFailed", 1);
   }
 }
 
 void MobileActivator::OnPortalLoaded(bool success) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&MobileActivator::HandlePortalLoaded,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MobileActivator::HandlePortalLoaded,
                                 weak_ptr_factory_.GetWeakPtr(), success));
 }
 
@@ -254,14 +249,12 @@ void MobileActivator::HandlePortalLoaded(bool success) {
 }
 
 void MobileActivator::StartOTASPTimer() {
-  pending_activation_request_ = false;
   state_duration_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kOTASPRetryDelay), this,
       &MobileActivator::HandleOTASPTimeout);
 }
 
 void MobileActivator::StartActivation() {
-  UMA_HISTOGRAM_COUNTS_1M("Cellular.MobileSetupStart", 1);
   const NetworkState* network = GetNetworkState(service_path_);
   // Check if we can start activation process.
   if (!network) {
@@ -659,10 +652,8 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
       // Just ignore any changes until the OTASP retry timer kicks in.
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
-      if (pending_activation_request_) {
-        VLOG(1) << "Waiting for pending activation attempt to finish";
-      } else if (activation == shill::kActivationStateActivated ||
-                 activation == shill::kActivationStatePartiallyActivated) {
+      if (activation == shill::kActivationStateActivated ||
+          activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_START;
       } else if (activation == shill::kActivationStateNotActivated ||
                  activation == shill::kActivationStateActivating) {
@@ -674,10 +665,8 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
     }
     case PLAN_ACTIVATION_OTASP:
     case PLAN_ACTIVATION_TRYING_OTASP:
-      if (pending_activation_request_) {
-        VLOG(1) << "Waiting for pending activation attempt to finish";
-      } else if (activation == shill::kActivationStateNotActivated ||
-                 activation == shill::kActivationStateActivating) {
+      if (activation == shill::kActivationStateNotActivated ||
+          activation == shill::kActivationStateActivating) {
         VLOG(1) << "Waiting for the OTASP to finish and the service to "
                 << "come back online";
       } else if (activation == shill::kActivationStateActivated) {
@@ -761,44 +750,6 @@ bool MobileActivator::RunningActivation() const {
            state_ == PLAN_ACTIVATION_PAGE_LOADING);
 }
 
-void MobileActivator::HandleActivationFailure(
-    const std::string& service_path,
-    PlanActivationState new_state,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  pending_activation_request_ = false;
-  const NetworkState* network = GetNetworkState(service_path);
-  if (!network) {
-    NET_LOG(ERROR) << "Cellular network no longer exists: "
-                   << NetworkPathId(service_path);
-    return;
-  }
-  UMA_HISTOGRAM_COUNTS_1M("Cellular.ActivationFailure", 1);
-  NET_LOG(ERROR) << "Failed to call Activate() on "
-                 << NetworkPathId(service_path);
-  if (new_state == PLAN_ACTIVATION_OTASP) {
-    ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, ActivationError::kNone);
-  } else {
-    ChangeState(network, PLAN_ACTIVATION_ERROR,
-                ActivationError::kActivationFailed);
-  }
-}
-
-void MobileActivator::RequestCellularActivation(
-    const NetworkState* network,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  DCHECK(network);
-  NET_LOG(EVENT) << "Activating cellular service: "
-                 << NetworkPathId(network->path());
-  UMA_HISTOGRAM_COUNTS_1M("Cellular.ActivationTry", 1);
-  pending_activation_request_ = true;
-  NetworkHandler::Get()->network_activation_handler()->Activate(
-      network->path(),
-      "",  // carrier
-      success_callback, error_callback);
-}
-
 void MobileActivator::ChangeState(const NetworkState* network,
                                   PlanActivationState new_state,
                                   ActivationError error) {
@@ -845,8 +796,8 @@ void MobileActivator::ChangeState(const NetworkState* network,
       break;
     case PLAN_ACTIVATION_DELAY_OTASP: {
       UMA_HISTOGRAM_COUNTS_1M("Cellular.RetryOTASP", 1);
-      base::PostDelayedTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&MobileActivator::RetryOTASP,
                          weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kOTASPRetryDelay));
@@ -856,17 +807,12 @@ void MobileActivator::ChangeState(const NetworkState* network,
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
     case PLAN_ACTIVATION_TRYING_OTASP:
-    case PLAN_ACTIVATION_OTASP: {
-      DCHECK(network);
-      network_handler::ErrorCallback on_activation_error = base::BindRepeating(
-          &MobileActivator::HandleActivationFailure,
-          weak_ptr_factory_.GetWeakPtr(), network->path(), new_state);
-      RequestCellularActivation(
-          network,
-          base::BindRepeating(&MobileActivator::StartOTASPTimer,
-                              weak_ptr_factory_.GetWeakPtr()),
-          on_activation_error);
-    } break;
+    case PLAN_ACTIVATION_OTASP:
+      // This used to call Shill.Service.ActivateCellularModem, however that
+      // method is no longer implemented. Instead this just starts the timer
+      // waiting for activation state changes. https://crbug.com/1021688.
+      StartOTASPTimer();
+      break;
     case PLAN_ACTIVATION_PAGE_LOADING:
       return;
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
@@ -915,7 +861,6 @@ void MobileActivator::ChangeState(const NetworkState* network,
     case PLAN_ACTIVATION_DONE:
       DCHECK(network);
       CompleteActivation();
-      UMA_HISTOGRAM_COUNTS_1M("Cellular.MobileSetupSucceeded", 1);
       break;
     case PLAN_ACTIVATION_ERROR:
       CompleteActivation();

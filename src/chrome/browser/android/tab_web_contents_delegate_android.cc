@@ -18,38 +18,45 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
-#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroid_jni.h"
+#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/installable/installed_webapp_bridge.h"
+#include "chrome/browser/installable/installed_webapp_geolocation_context.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
-#include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker.h"
-#include "chrome/browser/ui/blocked_content/popup_tracker.h"
+#include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
+#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/blocked_content/popup_blocker.h"
+#include "components/blocked_content/popup_tracker.h"
+#include "components/browser_ui/sms/android/sms_infobar.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/find_in_page/find_notification_details.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -57,6 +64,7 @@
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/file_select_listener.h"
@@ -86,32 +94,25 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::mojom::FileChooserParams;
-using content::BluetoothChooser;
 using content::WebContents;
 
 namespace {
 
-ScopedJavaLocalRef<jobject> JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(
-    JNIEnv* env,
-    const gfx::RectF& rect) {
+ScopedJavaLocalRef<jobject>
+JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(JNIEnv* env,
+                                                      const gfx::RectF& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_TabWebContentsDelegateAndroid_createRectF(env,
-                                                        rect.x(),
-                                                        rect.y(),
-                                                        rect.right(),
-                                                        rect.bottom()));
+      Java_TabWebContentsDelegateAndroidImpl_createRectF(
+          env, rect.x(), rect.y(), rect.right(), rect.bottom()));
 }
 
-ScopedJavaLocalRef<jobject> JNI_TabWebContentsDelegateAndroid_CreateJavaRect(
-    JNIEnv* env,
-    const gfx::Rect& rect) {
+ScopedJavaLocalRef<jobject>
+JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRect(JNIEnv* env,
+                                                     const gfx::Rect& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_TabWebContentsDelegateAndroid_createRect(
-          env,
-          static_cast<int>(rect.x()),
-          static_cast<int>(rect.y()),
-          static_cast<int>(rect.right()),
-          static_cast<int>(rect.bottom())));
+      Java_TabWebContentsDelegateAndroidImpl_createRect(
+          env, static_cast<int>(rect.x()), static_cast<int>(rect.y()),
+          static_cast<int>(rect.right()), static_cast<int>(rect.bottom())));
 }
 
 infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
@@ -160,16 +161,25 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   // helpers that are unprepared for portal activation to transition them.
   // See https://crbug.com/1042323
   autofill::ChromeAutofillClient::CreateForWebContents(portal_contents);
+  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+      portal_contents,
+      autofill::ChromeAutofillClient::FromWebContents(portal_contents),
+      g_browser_process->GetApplicationLocale(),
+      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       portal_contents,
       autofill::ChromeAutofillClient::FromWebContents(portal_contents));
   HistoryTabHelper::CreateForWebContents(portal_contents);
   InfoBarService::CreateForWebContents(portal_contents);
+  PrefsTabHelper::CreateForWebContents(portal_contents);
+  DataReductionProxyTabHelper::CreateForWebContents(portal_contents);
+  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
+      portal_contents);
 }
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           WebContents::FromRenderFrameHost(render_frame_host),
@@ -181,18 +191,6 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
                                    params);
 }
 
-std::unique_ptr<BluetoothChooser>
-TabWebContentsDelegateAndroid::RunBluetoothChooser(
-    content::RenderFrameHost* frame,
-    const BluetoothChooser::EventHandler& event_handler) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          WebContents::FromRenderFrameHost(frame),
-          vr::UiSuppressedElement::kBluetoothChooser)) {
-    return nullptr;
-  }
-  return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
-}
-
 void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     content::RenderFrameHost* host,
     const url::Origin& origin,
@@ -200,15 +198,10 @@ void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
-  SmsInfoBar::Create(web_contents, origin, one_time_code, std::move(on_confirm),
-                     std::move(on_cancel));
-}
-
-std::unique_ptr<content::BluetoothScanningPrompt>
-TabWebContentsDelegateAndroid::ShowBluetoothScanningPrompt(
-    content::RenderFrameHost* frame,
-    const content::BluetoothScanningPrompt::EventHandler& event_handler) {
-  return std::make_unique<BluetoothScanningPromptAndroid>(frame, event_handler);
+  sms::SmsInfoBar::Create(
+      web_contents, InfoBarService::FromWebContents(web_contents),
+      ChromeConfirmInfoBar::GetResourceIdMapper(), origin, one_time_code,
+      std::move(on_confirm), std::move(on_cancel));
 }
 
 bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
@@ -236,7 +229,7 @@ blink::mojom::DisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
     return blink::mojom::DisplayMode::kUndefined;
 
   return static_cast<blink::mojom::DisplayMode>(
-      Java_TabWebContentsDelegateAndroid_getDisplayMode(env, obj));
+      Java_TabWebContentsDelegateAndroidImpl_getDisplayMode(env, obj));
 }
 
 void TabWebContentsDelegateAndroid::FindReply(
@@ -270,19 +263,20 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_TabWebContentsDelegateAndroid_createFindMatchRectsDetails(
+      Java_TabWebContentsDelegateAndroidImpl_createFindMatchRectsDetails(
           env, version, rects.size(),
-          JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(env, active_rect));
+          JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(env,
+                                                                active_rect));
 
   // Add the rects
   for (size_t i = 0; i < rects.size(); ++i) {
-    Java_TabWebContentsDelegateAndroid_setMatchRectByIndex(
+    Java_TabWebContentsDelegateAndroidImpl_setMatchRectByIndex(
         env, details_object, i,
-        JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(env, rects[i]));
+        JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(env, rects[i]));
   }
 
-  Java_TabWebContentsDelegateAndroid_onFindMatchRectsAvailable(env, obj,
-                                                               details_object);
+  Java_TabWebContentsDelegateAndroidImpl_onFindMatchRectsAvailable(
+      env, obj, details_object);
 }
 
 content::JavaScriptDialogManager*
@@ -297,9 +291,9 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
 
 void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
     content::WebContents* web_contents,
-    content::PreviewsState* previews_state) {
+    blink::PreviewsState* previews_state) {
   if (GetDisplayMode(web_contents) != blink::mojom::DisplayMode::kBrowser) {
-    *previews_state = content::PREVIEWS_OFF;
+    *previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   }
 }
 
@@ -325,7 +319,8 @@ void TabWebContentsDelegateAndroid::SetOverlayMode(bool use_overlay_mode) {
   if (obj.is_null())
     return;
 
-  Java_TabWebContentsDelegateAndroid_setOverlayMode(env, obj, use_overlay_mode);
+  Java_TabWebContentsDelegateAndroidImpl_setOverlayMode(env, obj,
+                                                        use_overlay_mode);
 }
 
 void TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
@@ -355,29 +350,27 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = source;
   nav_params.window_action = NavigateParams::SHOW_WINDOW;
-  if (ConsiderForPopupBlocking(params.disposition) &&
-      MaybeBlockPopup(source, nullptr, &nav_params, &params,
-                      blink::mojom::WindowFeatures())) {
-    return nullptr;
+  auto popup_delegate =
+      std::make_unique<ChromePopupNavigationDelegate>(std::move(nav_params));
+  if (blocked_content::ConsiderForPopupBlocking(params.disposition)) {
+    popup_delegate.reset(static_cast<ChromePopupNavigationDelegate*>(
+        blocked_content::MaybeBlockPopup(
+            source, nullptr, std::move(popup_delegate), &params,
+            blink::mojom::WindowFeatures(),
+            HostContentSettingsMapFactory::GetForProfile(
+                source->GetBrowserContext()))
+            .release()));
+    if (!popup_delegate)
+      return nullptr;
   }
 
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-    // Only prerender for a current-tab navigation to avoid session storage
-    // namespace issues.
-    prerender::PrerenderManager::Params prerender_params(&nav_params, source);
-    prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
-    if (prerender_manager && prerender_manager->MaybeUsePrerenderedPage(
-                                 params.url, &prerender_params)) {
-      return prerender_params.replaced_contents;
-    }
-
     // Ask the parent to handle in-place opening.
     return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
   }
 
-  nav_params.created_with_opener = true;
-  TabModelList::HandlePopupNavigation(&nav_params);
+  popup_delegate->nav_params()->created_with_opener = true;
+  TabModelList::HandlePopupNavigation(popup_delegate->nav_params());
   return nullptr;
 }
 
@@ -387,7 +380,7 @@ bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
   if (obj.is_null())
     return true;
 
-  return Java_TabWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
+  return Java_TabWebContentsDelegateAndroidImpl_shouldResumeRequestsForCreatedWindow(
       env, obj);
 }
 
@@ -406,8 +399,10 @@ void TabWebContentsDelegateAndroid::AddNewContents(
 
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
-  if (source && ConsiderForPopupBlocking(disposition))
-    PopupTracker::CreateForWebContents(new_contents.get(), source, disposition);
+  if (source && blocked_content::ConsiderForPopupBlocking(disposition)) {
+    blocked_content::PopupTracker::CreateForWebContents(new_contents.get(),
+                                                        source, disposition);
+  }
 
   TabHelpers::AttachTabHelpers(new_contents.get());
 
@@ -422,7 +417,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     if (new_contents)
       jnew_contents = new_contents->GetJavaWebContents();
 
-    handled = Java_TabWebContentsDelegateAndroid_addNewContents(
+    handled = Java_TabWebContentsDelegateAndroidImpl_addNewContents(
         env, obj, jsource, jnew_contents, static_cast<jint>(disposition),
         nullptr, user_gesture);
   }
@@ -487,6 +482,18 @@ TabWebContentsDelegateAndroid::ActivatePortalWebContents(
                         /* did_finish_load */ !is_loading);
 }
 
+device::mojom::GeolocationContext*
+TabWebContentsDelegateAndroid::GetInstalledWebappGeolocationContext() {
+  if (!IsInstalledWebappDelegateGeolocation())
+    return nullptr;
+
+  if (!installed_webapp_geolocation_context_) {
+    installed_webapp_geolocation_context_ =
+        std::make_unique<InstalledWebappGeolocationContext>();
+  }
+  return installed_webapp_geolocation_context_.get();
+}
+
 #if BUILDFLAG(ENABLE_PRINTING)
 void TabWebContentsDelegateAndroid::PrintCrossProcessSubframe(
     content::WebContents* web_contents,
@@ -500,15 +507,15 @@ void TabWebContentsDelegateAndroid::PrintCrossProcessSubframe(
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-void TabWebContentsDelegateAndroid::CapturePaintPreviewOfCrossProcessSubframe(
+void TabWebContentsDelegateAndroid::CapturePaintPreviewOfSubframe(
     content::WebContents* web_contents,
     const gfx::Rect& rect,
     const base::UnguessableToken& guid,
     content::RenderFrameHost* render_frame_host) {
   auto* client =
       paint_preview::PaintPreviewClient::FromWebContents(web_contents);
-  DCHECK(client);
-  client->CaptureSubframePaintPreview(guid, rect, render_frame_host);
+  if (client)
+    client->CaptureSubframePaintPreview(guid, rect, render_frame_host);
 }
 #endif
 
@@ -523,17 +530,17 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
       find_in_page::FindTabHelper::FromWebContents(web_contents)->find_result();
 
   ScopedJavaLocalRef<jobject> selection_rect =
-      JNI_TabWebContentsDelegateAndroid_CreateJavaRect(
+      JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRect(
           env, find_result.selection_rect());
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_TabWebContentsDelegateAndroid_createFindNotificationDetails(
+      Java_TabWebContentsDelegateAndroidImpl_createFindNotificationDetails(
           env, find_result.number_of_matches(), selection_rect,
           find_result.active_match_ordinal(), find_result.final_update());
 
-  Java_TabWebContentsDelegateAndroid_onFindResultAvailable(env, obj,
-                                                           details_object);
+  Java_TabWebContentsDelegateAndroidImpl_onFindResultAvailable(env, obj,
+                                                               details_object);
 }
 
 void TabWebContentsDelegateAndroid::OnFindTabHelperDestroyed(
@@ -547,7 +554,7 @@ bool TabWebContentsDelegateAndroid::ShouldEnableEmbeddedMediaExperience()
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_shouldEnableEmbeddedMediaExperience(
+  return Java_TabWebContentsDelegateAndroidImpl_shouldEnableEmbeddedMediaExperience(
       env, obj);
 }
 
@@ -556,7 +563,8 @@ bool TabWebContentsDelegateAndroid::IsPictureInPictureEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isPictureInPictureEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isPictureInPictureEnabled(env,
+                                                                          obj);
 }
 
 bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
@@ -564,7 +572,7 @@ bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isNightModeEnabled(env, obj);
 }
 
 bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
@@ -572,7 +580,7 @@ bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_canShowAppBanners(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_canShowAppBanners(env, obj);
 }
 
 const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
@@ -581,7 +589,7 @@ const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
   if (obj.is_null())
     return GURL();
   const JavaRef<jstring>& scope =
-      Java_TabWebContentsDelegateAndroid_getManifestScope(env, obj);
+      Java_TabWebContentsDelegateAndroidImpl_getManifestScope(env, obj);
   return scope.is_null() ? GURL()
                          : GURL(base::android::ConvertJavaStringToUTF8(scope));
 }
@@ -591,12 +599,27 @@ bool TabWebContentsDelegateAndroid::IsCustomTab() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isCustomTab(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isCustomTab(env, obj);
+}
+
+bool TabWebContentsDelegateAndroid::IsInstalledWebappDelegateGeolocation()
+    const {
+  if (!base::FeatureList::IsEnabled(
+          chrome::android::kTrustedWebActivityLocationDelegation)) {
+    return false;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroidImpl_isInstalledWebappDelegateGeolocation(
+      env, obj);
 }
 
 }  // namespace android
 
-void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
+void JNI_TabWebContentsDelegateAndroidImpl_OnRendererUnresponsive(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents) {
   // Rate limit the number of stack dumps so we don't overwhelm our crash
@@ -618,7 +641,7 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
       infobar_service, web_contents->GetMainFrame()->GetProcess());
 }
 
-void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
+void JNI_TabWebContentsDelegateAndroidImpl_OnRendererResponsive(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
@@ -636,7 +659,7 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
   infobar_service->RemoveInfoBar(hung_renderer_infobar);
 }
 
-void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(
+void JNI_TabWebContentsDelegateAndroidImpl_ShowFramebustBlockInfoBar(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents,
     const JavaParamRef<jstring>& java_url) {

@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_client.h"
@@ -206,6 +208,7 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
 void FakeBluetoothGattCharacteristicClient::WriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
+    base::StringPiece type_option,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!authenticated_) {
@@ -324,7 +327,7 @@ void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
 
 void FakeBluetoothGattCharacteristicClient::StartNotify(
     const dbus::ObjectPath& object_path,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     device::BluetoothGattCharacteristic::NotificationType notification_type,
 #endif
     base::OnceClosure callback,

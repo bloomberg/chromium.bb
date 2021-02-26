@@ -14,7 +14,6 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
@@ -41,10 +40,6 @@
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/referrer.h"
-#include "content/public/common/referrer_type_converters.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -52,14 +47,16 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::CacheStorageError;
@@ -129,6 +126,83 @@ proto::CacheResponse::ResponseType FetchResponseTypeToProtoResponseType(
   NOTREACHED();
   return proto::CacheResponse::OPAQUE_TYPE;
 }
+
+// Assert that ConnectionInfo does not change since we cast it to
+// an integer in order to serialize it to disk.
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN == 0,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1 == 1,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2 == 2,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3 == 3,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP2 == 4,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION == 5,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14 == 6,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15 == 7,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9 == 8,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0 == 9,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_32 == 10,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_33 == 11,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_34 == 12,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35 == 13,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_36 == 14,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_37 == 15,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_38 == 16,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_39 == 17,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_40 == 18,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_41 == 19,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_42 == 20,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_43 == 21,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q099 == 22,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_44 == 23,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_45 == 24,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_46 == 25,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_47 == 26,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_999 == 27,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q048 == 28,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q049 == 29,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q050 == 30,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T048 == 31,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T049 == 32,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T050 == 33,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T099 == 34,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_25 == 35,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_27 == 36,
+              "ConnectionInfo enum is stable");
 
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
@@ -339,12 +413,30 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
     headers.insert(std::make_pair(header.name(), header.value()));
   }
 
+  std::string alpn_negotiated_protocol =
+      metadata.response().has_alpn_negotiated_protocol()
+          ? metadata.response().alpn_negotiated_protocol()
+          : "unknown";
+
+  base::Optional<std::string> mime_type;
+  if (metadata.response().has_mime_type())
+    mime_type = metadata.response().mime_type();
+
+  base::Optional<std::string> request_method;
+  if (metadata.response().has_request_method())
+    request_method = metadata.response().request_method();
+
+  // Note that |has_range_requested| can be safely set to false since it only
+  // affects HTTP 206 (Partial) responses, which are blocked from cache storage.
+  // See https://fetch.spec.whatwg.org/#main-fetch for usage of
+  // |has_range_requested|.
   return blink::mojom::FetchAPIResponse::New(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
-      network::mojom::FetchResponseSource::kCacheStorage, headers,
-      nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
+      network::mojom::FetchResponseSource::kCacheStorage, headers, mime_type,
+      request_method, nullptr /* blob */,
+      blink::mojom::ServiceWorkerResponseError::kUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       cache_name,
       std::vector<std::string>(
@@ -352,7 +444,12 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
           metadata.response().cors_exposed_header_names().end()),
       nullptr /* side_data_blob */, nullptr /* side_data_blob_for_cache_put */,
       network::mojom::ParsedHeaders::New(),
-      metadata.response().loaded_with_credentials());
+      // Default proto value of 0 maps to CONNECTION_INFO_UNKNOWN.
+      static_cast<net::HttpResponseInfo::ConnectionInfo>(
+          metadata.response().connection_info()),
+      alpn_negotiated_protocol, metadata.response().loaded_with_credentials(),
+      metadata.response().was_fetched_via_spdy(),
+      /* has_range_requested */ false);
 }
 
 // The size of opaque (non-cors) resource responses are padded in order
@@ -393,8 +490,12 @@ int64_t CalculateResponsePaddingInternal(
   const std::string& url = response->url_list(response->url_list_size() - 1);
   bool loaded_with_credentials = response->has_loaded_with_credentials() &&
                                  response->loaded_with_credentials();
+  const std::string& request_method = response->has_request_method()
+                                          ? response->request_method()
+                                          : net::HttpRequestHeaders::kGetMethod;
   return storage::ComputeResponsePadding(url, padding_key, side_data_size > 0,
-                                         loaded_with_credentials);
+                                         loaded_with_credentials,
+                                         request_method);
 }
 
 net::RequestPriority GetDiskCachePriority(
@@ -980,7 +1081,8 @@ void LegacyCacheStorageCache::QueryCache(
 
   if (owner_ != CacheStorageOwner::kBackgroundFetch &&
       (!options || !options->ignore_method) && request &&
-      !request->method.empty() && request->method != "GET") {
+      !request->method.empty() &&
+      request->method != net::HttpRequestHeaders::kGetMethod) {
     std::move(callback).Run(CacheStorageError::kSuccess,
                             std::make_unique<QueryCacheResults>());
     return;
@@ -1250,9 +1352,16 @@ int64_t LegacyCacheStorageCache::CalculateResponsePadding(
   DCHECK_GE(side_data_size, 0);
   if (!ShouldPadResourceSize(response))
     return 0;
-  return storage::ComputeResponsePadding(response.url_list.back().spec(),
-                                         padding_key, side_data_size > 0,
-                                         response.loaded_with_credentials);
+  // Going forward we should always have a request method here since its
+  // impossible to create a no-cors Response via the constructor.  We must
+  // handle a missing method, however, since we may get a Response loaded
+  // from an old cache_storage instance without the data.
+  std::string request_method = response.request_method.has_value()
+                                   ? response.request_method.value()
+                                   : net::HttpRequestHeaders::kGetMethod;
+  return storage::ComputeResponsePadding(
+      response.url_list.back().spec(), padding_key, side_data_size > 0,
+      response.loaded_with_credentials, request_method);
 }
 
 // static
@@ -1674,8 +1783,6 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   // via WritingCompleted.
   put_context->cache_entry.reset(result.ReleaseEntry());
 
-  base::UmaHistogramSparse("ServiceWorkerCache.DiskCacheCreateEntryResult",
-                           std::abs(rv));
   if (rv != net::OK) {
     quota_manager_proxy_->NotifyWriteFailed(origin_);
     PutComplete(std::move(put_context), CacheStorageError::kErrorExists);
@@ -1695,6 +1802,7 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   }
 
   proto::CacheResponse* response_metadata = metadata.mutable_response();
+  DCHECK_NE(put_context->response->status_code, net::HTTP_PARTIAL_CONTENT);
   response_metadata->set_status_code(put_context->response->status_code);
   response_metadata->set_status_text(put_context->response->status_text);
   response_metadata->set_response_type(FetchResponseTypeToProtoResponseType(
@@ -1703,6 +1811,18 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
     response_metadata->add_url_list(url.spec());
   response_metadata->set_loaded_with_credentials(
       put_context->response->loaded_with_credentials);
+  response_metadata->set_connection_info(
+      put_context->response->connection_info);
+  response_metadata->set_alpn_negotiated_protocol(
+      put_context->response->alpn_negotiated_protocol);
+  response_metadata->set_was_fetched_via_spdy(
+      put_context->response->was_fetched_via_spdy);
+  if (put_context->response->mime_type.has_value())
+    response_metadata->set_mime_type(put_context->response->mime_type.value());
+  if (put_context->response->request_method.has_value()) {
+    response_metadata->set_request_method(
+        put_context->response->request_method.value());
+  }
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ResponseHeaderMap::const_iterator it =

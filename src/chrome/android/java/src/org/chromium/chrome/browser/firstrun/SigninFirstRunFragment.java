@@ -6,14 +6,18 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 
 import androidx.fragment.app.Fragment;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SigninFragmentBase;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -42,6 +46,10 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
             mArguments = createArgumentsForForcedSigninFlow(forceAccountTo, childAccountStatus);
         }
 
+        // Records if there are {0, 1, 2+} accounts on device for default/non-default flows.
+        int numAccounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().size();
+        RecordHistogram.recordCountHistogram(
+                "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", Math.min(numAccounts, 2));
         RecordUserAction.record("MobileFre.SignInShown");
         RecordUserAction.record("Signin_Signin_FromStartPage");
         SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
@@ -76,5 +84,14 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
     @Override
     protected int getNegativeButtonTextId() {
         return R.string.no_thanks;
+    }
+
+    @Override
+    public void setInitialA11yFocus() {
+        // Ignore calls before view is created.
+        if (getView() == null) return;
+
+        final View title = getView().findViewById(R.id.signin_title);
+        title.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 }

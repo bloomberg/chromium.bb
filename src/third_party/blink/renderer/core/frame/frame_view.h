@@ -5,10 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
-#include "third_party/blink/public/platform/viewport_intersection_state.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
-#include "third_party/blink/renderer/core/frame/sticky_frame_tracker.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -17,13 +16,9 @@ namespace blink {
 class Frame;
 struct IntrinsicSizingInfo;
 
-// clang::lto_visibility_public is necessary to prevent the compiler from
-// performing a vtable optimization that crashes the renderer. See
-// crbug.com/1062006.
-class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
-    : public EmbeddedContentView {
+class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
-  FrameView(const IntRect& frame_rect) : EmbeddedContentView(frame_rect) {}
+  explicit FrameView(const IntRect& frame_rect);
   ~FrameView() override = default;
 
   // parent_flags is the result of calling GetIntersectionObservationFlags on
@@ -64,11 +59,10 @@ class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
  protected:
   virtual bool NeedsViewportOffset() const { return false; }
   virtual void SetViewportIntersection(
-      const ViewportIntersectionState& intersection_state) = 0;
+      const mojom::blink::ViewportIntersectionState& intersection_state) = 0;
   virtual void VisibilityForThrottlingChanged() = 0;
   virtual bool LifecycleUpdatesThrottled() const { return false; }
-  // Returns whether we can skip tracking sticky frames.
-  bool UpdateViewportIntersection(unsigned, bool);
+  void UpdateViewportIntersection(unsigned, bool);
   // FrameVisibility is tracked by the browser process, which may suppress
   // lifecycle updates for a frame outside the viewport.
   void UpdateFrameVisibility(bool);
@@ -78,15 +72,11 @@ class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
   virtual void VisibilityChanged(blink::mojom::FrameVisibility visibilty) = 0;
 
  private:
-  StickyFrameTracker* GetStickyFrameTracker();
-
   PhysicalRect rect_in_parent_;
   base::TimeTicks rect_in_parent_stable_since_;
-  blink::mojom::FrameVisibility frame_visibility_ =
-      blink::mojom::FrameVisibility::kRenderedInViewport;
+  blink::mojom::FrameVisibility frame_visibility_;
   bool hidden_for_throttling_;
   bool subtree_throttled_;
-  std::unique_ptr<StickyFrameTracker> sticky_frame_tracker_;
 };
 
 template <>

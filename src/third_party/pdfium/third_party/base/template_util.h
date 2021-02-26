@@ -36,7 +36,7 @@
 #define CR_USE_FALLBACKS_FOR_GCC_WITH_LIBCXX
 #endif
 
-namespace base {
+namespace pdfium {
 
 template <class T> struct is_non_const_reference : std::false_type {};
 template <class T> struct is_non_const_reference<T&> : std::true_type {};
@@ -44,7 +44,7 @@ template <class T> struct is_non_const_reference<const T&> : std::false_type {};
 
 namespace internal {
 
-// Implementation detail of base::void_t below.
+// Implementation detail of pdfium::void_t below.
 template <typename...>
 struct make_void {
   using type = void;
@@ -52,14 +52,14 @@ struct make_void {
 
 }  // namespace internal
 
-// base::void_t is an implementation of std::void_t from C++17.
+// pdfium::void_t is an implementation of std::void_t from C++17.
 //
-// We use |base::internal::make_void| as a helper struct to avoid a C++14
+// We use |pdfium::internal::make_void| as a helper struct to avoid a C++14
 // defect:
 //   http://en.cppreference.com/w/cpp/types/void_t
 //   http://open-std.org/JTC1/SC22/WG21/docs/cwg_defects.html#1558
 template <typename... Ts>
-using void_t = typename ::base::internal::make_void<Ts...>::type;
+using void_t = typename ::pdfium::internal::make_void<Ts...>::type;
 
 namespace internal {
 
@@ -145,7 +145,31 @@ template <typename T>
 using is_trivially_copy_constructible = std::is_trivially_copy_constructible<T>;
 #endif
 
-}  // namespace base
+// pdfium::in_place_t is an implementation of std::in_place_t from
+// C++17. A tag type used to request in-place construction in template vararg
+// constructors.
+
+// Specification:
+// https://en.cppreference.com/w/cpp/utility/in_place
+struct in_place_t {};
+constexpr in_place_t in_place = {};
+
+// C++14 implementation of C++17's std::disjunction.
+//
+// Reference: https://en.cppreference.com/w/cpp/types/disjunction
+// Specification: https://wg21.link/meta.logical#itemdecl:2
+template <typename...>
+struct disjunction : std::false_type {};
+
+template <typename B1>
+struct disjunction<B1> : B1 {};
+
+template <typename B1, typename... Bn>
+struct disjunction<B1, Bn...>
+    : std::conditional_t<static_cast<bool>(B1::value), B1, disjunction<Bn...>> {
+};
+
+}  // namespace pdfium
 
 #undef CR_USE_FALLBACKS_FOR_GCC_WITH_LIBCXX
 #undef CR_USE_FALLBACKS_FOR_OLD_EXPERIMENTAL_GLIBCXX

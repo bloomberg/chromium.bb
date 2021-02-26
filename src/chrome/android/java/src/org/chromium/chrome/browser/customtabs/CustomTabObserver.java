@@ -20,13 +20,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
-import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.components.security_state.SecurityStateModel;
+import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 
@@ -75,7 +74,7 @@ public class CustomTabObserver extends EmptyTabObserver {
                     R.dimen.custom_tabs_screenshot_width);
             float desiredHeight = appContext.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_screenshot_height);
-            Rect bounds = ExternalPrerenderHandler.estimateContentSize(appContext, false);
+            Rect bounds = TabUtils.estimateContentSize(appContext);
             if (bounds.width() == 0 || bounds.height() == 0) {
                 mContentBitmapWidth = Math.round(desiredWidth);
                 mContentBitmapHeight = Math.round(desiredHeight);
@@ -178,14 +177,6 @@ public class CustomTabObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onDidAttachInterstitialPage(Tab tab) {
-        if (SecurityStateModel.isContentDangerous(tab.getWebContents())) {
-            return;
-        }
-        resetPageLoadTracking();
-    }
-
-    @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         resetPageLoadTracking();
     }
@@ -212,12 +203,15 @@ public class CustomTabObserver extends EmptyTabObserver {
         if (mCustomTabsConnection == null) return;
         if (!mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) return;
         if (tab.getWebContents() == null) return;
+        String title = tab.getTitle();
+        if (TextUtils.isEmpty(title)) return;
+        String urlString = tab.getUrlString();
 
         ShareImageFileUtils.captureScreenshotForContents(tab.getWebContents(), mContentBitmapWidth,
                 mContentBitmapHeight, (Uri snapshotPath) -> {
-                    if (TextUtils.isEmpty(tab.getTitle()) && snapshotPath == null) return;
+                    if (snapshotPath == null) return;
                     mCustomTabsConnection.sendNavigationInfo(
-                            mSession, tab.getUrlString(), tab.getTitle(), snapshotPath);
+                            mSession, urlString, title, snapshotPath);
                 });
     }
 }

@@ -13,13 +13,14 @@
 #include "base/callback_forward.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -28,6 +29,12 @@
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace blink {
+namespace scheduler {
+class WebAgentGroupScheduler;
+}  // namespace scheduler
+namespace web_pref {
+struct WebPreferences;
+}  // namespace web_pref
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 class BrowserInterfaceBrokerProxy;
@@ -42,7 +49,6 @@ struct WebRect;
 namespace gfx {
 class Range;
 class RectF;
-class Size;
 }  // namespace gfx
 
 namespace network {
@@ -53,21 +59,15 @@ namespace service_manager {
 class InterfaceProvider;
 }  // namespace service_manager
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace content {
 
 class ContextMenuClient;
-class PluginInstanceThrottler;
 class RenderAccessibility;
 struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
 class RenderView;
 struct UntrustworthyContextMenuParams;
 struct WebPluginInfo;
-struct WebPreferences;
 
 // A class that takes a snapshot of the accessibility tree. Accessibility
 // support in Blink is enabled for the lifetime of this object, which can
@@ -88,7 +88,8 @@ class AXTreeSnapshotter {
 // navigation. It provides communication with a corresponding RenderFrameHost
 // in the browser process.
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
-                                   public IPC::Sender {
+                                   public IPC::Sender,
+                                   public base::SupportsUserData {
  public:
   // These numeric values are used in UMA logs; do not change them.
   enum PeripheralContentStatus {
@@ -143,7 +144,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual blink::WebLocalFrame* GetWebFrame() = 0;
 
   // Gets WebKit related preferences associated with this frame.
-  virtual const WebPreferences& GetWebkitPreferences() = 0;
+  virtual const blink::web_pref::WebPreferences& GetBlinkPreferences() = 0;
 
   // Shows a context menu with the given information. The given client will
   // be called with the result.
@@ -167,11 +168,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void ShowVirtualKeyboard() = 0;
 
   // Create a new Pepper plugin depending on |info|. Returns NULL if no plugin
-  // was found. |throttler| may be empty.
+  // was found.
   virtual blink::WebPlugin* CreatePlugin(
       const WebPluginInfo& info,
-      const blink::WebPluginParams& params,
-      std::unique_ptr<PluginInstanceThrottler> throttler) = 0;
+      const blink::WebPluginParams& params) = 0;
 
   // Execute a string of JavaScript in this frame's context.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
@@ -209,39 +209,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   GetRemoteAssociatedInterfaces() = 0;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // Registers a plugin that has been marked peripheral. If the origin
-  // allowlist is later updated and includes |content_origin|, then
-  // |unthrottle_callback| will be called.
-  virtual void RegisterPeripheralPlugin(
-      const url::Origin& content_origin,
-      base::OnceClosure unthrottle_callback) = 0;
-
-  // Returns the peripheral content heuristic decision.
-  //
-  // Power Saver is enabled for plugin content that are cross-origin and
-  // heuristically determined to be not essential to the web page content.
-  //
-  // Plugin content is defined to be cross-origin when the plugin source's
-  // origin differs from the top level frame's origin. For example:
-  //  - Cross-origin:  a.com -> b.com/plugin.swf
-  //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
-  //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
-  //
-  // |main_frame_origin| is the origin of the main frame.
-  //
-  // |content_origin| is the origin of the plugin content.
-  //
-  // |unobscured_size| are zoom and device scale independent logical pixels.
-  virtual PeripheralContentStatus GetPeripheralContentStatus(
-      const url::Origin& main_frame_origin,
-      const url::Origin& content_origin,
-      const gfx::Size& unobscured_size,
-      RecordPeripheralDecision record_decision) = 0;
-
-  // Allowlists a |content_origin| so its content will never be throttled in
-  // this RenderFrame. Allowlist is cleared by top level navigation.
-  virtual void AllowlistContentOrigin(const url::Origin& content_origin) = 0;
-
   // Used by plugins that load data in this RenderFrame to update the loading
   // notifications.
   virtual void PluginDidStartLoading() = 0;
@@ -262,7 +229,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the PreviewsState of this frame, a bitmask of potentially several
   // Previews optimizations.
-  virtual PreviewsState GetPreviewsState() = 0;
+  virtual blink::PreviewsState GetPreviewsState() = 0;
 
   // Whether or not this frame is currently pasting.
   virtual bool IsPasting() = 0;
@@ -304,12 +271,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) = 0;
 
-  // Synchronously performs the complete set of document lifecycle phases,
-  // including updates to the compositor state and rasterization, then sending
-  // a frame to the viz display compositor. Does nothing if RenderFrame is not
-  // a local root.
-  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
-
   // Sets that cross browsing instance frame lookup is allowed.
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 
@@ -326,6 +287,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the device scale factor of the display the render frame is in.
   virtual float GetDeviceScaleFactor() = 0;
+
+  // Return the dedicated scheduler for the AgentSchedulingGroup associated with
+  // this RenderFrame.
+  virtual blink::scheduler::WebAgentGroupScheduler&
+  GetAgentGroupScheduler() = 0;
 
  protected:
   ~RenderFrame() override {}

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -34,8 +33,11 @@
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/url_index_private_data.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -284,6 +286,8 @@ class SearchTermsDataSnapshot : public SearchTermsData {
  public:
   explicit SearchTermsDataSnapshot(const SearchTermsData* search_terms_data);
   ~SearchTermsDataSnapshot() override;
+  SearchTermsDataSnapshot(const SearchTermsDataSnapshot&) = delete;
+  SearchTermsDataSnapshot& operator=(const SearchTermsDataSnapshot&) = delete;
 
   std::string GoogleBaseURLValue() const override;
   std::string GetApplicationLocale() const override;
@@ -301,8 +305,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   base::string16 rlz_parameter_value_;
   std::string search_client_;
   std::string google_image_search_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
 };
 
 SearchTermsDataSnapshot::SearchTermsDataSnapshot(
@@ -376,6 +378,9 @@ class HistoryURLProvider::VisitClassifier {
                   const AutocompleteInput& input,
                   history::URLDatabase* db);
 
+  VisitClassifier(const VisitClassifier&) = delete;
+  VisitClassifier& operator=(const VisitClassifier&) = delete;
+
   // Returns the type of visit for the specified input.
   Type type() const { return type_; }
 
@@ -389,8 +394,6 @@ class HistoryURLProvider::VisitClassifier {
   history::URLDatabase* db_;
   Type type_;
   history::URLRow url_row_;
-
-  DISALLOW_COPY_AND_ASSIGN(VisitClassifier);
 };
 
 HistoryURLProvider::VisitClassifier::VisitClassifier(
@@ -507,7 +510,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   matches_.clear();
 
-  if (input.from_omnibox_focus() ||
+  if (input.focus_type() != OmniboxFocusType::DEFAULT ||
       (input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 
@@ -745,6 +748,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
   if (search_url_database_) {
     const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
+    const bool hide_visits_from_cct =
+        base::FeatureList::IsEnabled(omnibox::kHideVisitsFromCct);
     for (auto i(prefixes.begin()); i != prefixes.end(); ++i) {
       if (params->cancel_flag.IsSet())
         return;  // Canceled in the middle of a query, give up.
@@ -761,6 +766,12 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                                 !backend, &url_matches);
       for (history::URLRows::const_iterator j(url_matches.begin());
            j != url_matches.end(); ++j) {
+        if (hide_visits_from_cct && backend) {
+          history::VisitVector visits;
+          if (db->GetVisitsForUrl2(j->id(), &visits) &&
+              URLIndexPrivateData::ShouldExcludeBecauseOfCctVisits(visits))
+            continue;
+        }
         const GURL& row_url = j->url();
         const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
             base::UTF8ToUTF16(row_url.spec()), base::string16());
@@ -959,7 +970,10 @@ bool HistoryURLProvider::FixupExactSuggestion(
       DCHECK_EQ(VisitClassifier::VISITED, classifier.type());
       // We have data for this match, use it.
       params->what_you_typed_match.deletable = true;
-      params->what_you_typed_match.description = classifier.url_row().title();
+      auto title = classifier.url_row().title();
+      if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+        params->what_you_typed_match.fill_into_edit_additional_text = title;
+      params->what_you_typed_match.description = title;
       params->what_you_typed_match.destination_url = classifier.url_row().url();
       RecordAdditionalInfoFromUrlRow(classifier.url_row(),
                                      &params->what_you_typed_match);
@@ -1236,20 +1250,6 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
-  // |inline_autocomplete_offset| was guaranteed not to be npos before the call
-  // to FormatUrl().  If it is npos now, that means the represented location no
-  // longer exists as such in the formatted string, e.g. if the offset pointed
-  // into the middle of a punycode sequence fixed up to Unicode.  In this case,
-  // there can be no inline autocompletion, and the match must not be allowed to
-  // be default.
-  const bool autocomplete_offset_valid =
-      inline_autocomplete_offset != base::string16::npos;
-  if (autocomplete_offset_valid) {
-    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
-    match.inline_autocompletion =
-        match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.SetAllowedToBeDefault(params.input_before_fixup);
-  }
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(
       params.input.parts().scheme.len > 0 || !params.trim_http ||
@@ -1267,6 +1267,22 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   match.description = info.title();
   match.description_class =
       ClassifyDescription(params.input.text(), match.description);
+
+  // |inline_autocomplete_offset| was guaranteed not to be npos before the call
+  // to FormatUrl().  If it is npos now, that means the represented location no
+  // longer exists as such in the formatted string, e.g. if the offset pointed
+  // into the middle of a punycode sequence fixed up to Unicode.  In this case,
+  // there can be no inline autocompletion, and the match must not be allowed to
+  // be default.
+  if (match.TryRichAutocompletion(match.contents, match.description,
+                                  params.input_before_fixup)) {
+    // If rich autocompletion applies, we skip trying the alternatives below.
+  } else if (inline_autocomplete_offset != base::string16::npos) {
+    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
+    match.SetAllowedToBeDefault(params.input_before_fixup);
+  }
 
   RecordAdditionalInfoFromUrlRow(info, &match);
   return match;

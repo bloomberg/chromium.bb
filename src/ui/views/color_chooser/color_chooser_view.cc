@@ -364,6 +364,8 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
     : listener_(listener) {
   DCHECK(listener_);
 
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+
   SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
   SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
@@ -432,21 +434,20 @@ void ColorChooserView::OnSaturationValueChosen(SkScalar saturation,
   textfield_->SetText(GetColorText(color));
 }
 
-bool ColorChooserView::CanMinimize() const {
-  return false;
+View* ColorChooserView::hue_view_for_testing() {
+  return hue_;
 }
 
-View* ColorChooserView::GetInitiallyFocusedView() {
+View* ColorChooserView::saturation_value_view_for_testing() {
+  return saturation_value_;
+}
+
+Textfield* ColorChooserView::textfield_for_testing() {
   return textfield_;
 }
 
-ui::ModalType ColorChooserView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-void ColorChooserView::WindowClosing() {
-  if (listener_)
-    listener_->OnColorChooserDialogClosed();
+View* ColorChooserView::selected_color_patch_for_testing() {
+  return selected_color_patch_;
 }
 
 void ColorChooserView::ContentsChanged(Textfield* sender,
@@ -472,6 +473,19 @@ bool ColorChooserView::HandleKeyEvent(Textfield* sender,
 
   GetWidget()->Close();
   return true;
+}
+
+bool ColorChooserView::CanMinimize() const {
+  return false;
+}
+
+View* ColorChooserView::GetInitiallyFocusedView() {
+  return textfield_;
+}
+
+void ColorChooserView::WindowClosing() {
+  if (listener_)
+    listener_->OnColorChooserDialogClosed();
 }
 
 }  // namespace views

@@ -53,12 +53,22 @@ AXNode* TestAXTreeManager::GetNodeFromTree(const AXNode::AXID node_id) const {
   return tree_ ? tree_->GetFromId(node_id) : nullptr;
 }
 
+void TestAXTreeManager::AddObserver(AXTreeObserver* observer) {
+  if (tree_)
+    tree_->AddObserver(observer);
+}
+
+void TestAXTreeManager::RemoveObserver(AXTreeObserver* observer) {
+  if (tree_)
+    tree_->RemoveObserver(observer);
+}
+
 AXTreeID TestAXTreeManager::GetTreeID() const {
   return tree_ ? tree_->data().tree_id : AXTreeIDUnknown();
 }
 
 AXTreeID TestAXTreeManager::GetParentTreeID() const {
-  return AXTreeIDUnknown();
+  return tree_ ? tree_->data().parent_tree_id : AXTreeIDUnknown();
 }
 
 AXNode* TestAXTreeManager::GetRootAsAXNode() const {
@@ -66,6 +76,22 @@ AXNode* TestAXTreeManager::GetRootAsAXNode() const {
 }
 
 AXNode* TestAXTreeManager::GetParentNodeFromParentTreeAsAXNode() const {
+  ui::AXTreeID parent_tree_id = GetParentTreeID();
+  TestAXTreeManager* parent_manager = static_cast<TestAXTreeManager*>(
+      ui::AXTreeManagerMap::GetInstance().GetManager(parent_tree_id));
+  if (!parent_manager)
+    return nullptr;
+
+  std::set<int32_t> host_node_ids =
+      parent_manager->GetTree()->GetNodeIdsForChildTreeId(GetTreeID());
+
+  for (int32_t host_node_id : host_node_ids) {
+    ui::AXNode* parent_node =
+        parent_manager->GetNodeFromTree(parent_tree_id, host_node_id);
+    if (parent_node)
+      return parent_node;
+  }
+
   return nullptr;
 }
 

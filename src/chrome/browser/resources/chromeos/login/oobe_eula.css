@@ -17,7 +17,7 @@ a {
   height: 300px;
 }
 
-#installationSettings,
+#securitySettings,
 #logging {
   font-size: 13px;
   min-height: unset;
@@ -28,7 +28,7 @@ a {
 }
 
 #additionalTerms,
-#installationSettings,
+#securitySettings,
 #logging {
   margin-top: 16px;
 }
@@ -37,14 +37,13 @@ a {
   color: rgba(0, 0, 0, 0.54);
 }
 
-cr-toggle {
-  align-self: center;
+cr-checkbox {
+  --cr-checkbox-label-padding-start: 16px;
 }
 
 #usageStatsLabelContainer {
   color: var(--google-grey-refresh-700); /* #5F6368 */
   line-height: 20px;
-  margin-inline-start: 16px;
 }
 
 #usageStatsLabel {
@@ -55,16 +54,3 @@ cr-toggle {
   padding-inline-end: 18px;
 }
 
-.tpm-password > div {
-  margin-top: 18px;
-}
-
-.password-row div {
-  color: rgb(66, 133, 244);
-  font-size: 24px;
-  margin-top: 82px;
-}
-
-.installation-settings-spinner {
-  margin-inline-end: 5px;
-}

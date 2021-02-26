@@ -422,13 +422,30 @@ Status GetActiveElement(Session* session,
   return status;
 }
 
+Status HasFocus(Session* session, WebView* web_view, bool* hasFocus) {
+  std::unique_ptr<base::Value> value;
+  Status status = web_view->EvaluateScript(
+      session->GetCurrentFrameId(), "document.hasFocus()", false, &value);
+  if (status.IsError())
+    return status;
+  if (!value->is_bool())
+    return Status(kUnknownError, "document.hasFocus() returns non-boolean");
+  *hasFocus = value->GetBool();
+  return Status(kOk);
+}
+
 Status IsElementFocused(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
     bool* is_focused) {
   std::unique_ptr<base::Value> result;
-  Status status = GetActiveElement(session, web_view, &result);
+  Status status = HasFocus(session, web_view, is_focused);
+  if (status.IsError())
+    return status;
+  if (!(*is_focused))
+    return status;
+  status = GetActiveElement(session, web_view, &result);
   if (status.IsError())
     return status;
   std::unique_ptr<base::Value> element_dict(CreateElement(element_id));
@@ -887,5 +904,47 @@ Status GetElementLocationInViewCenter(Session* session,
     center_location.Offset(frame_offset.x, frame_offset.y);
   }
   *location = center_location;
+  return Status(kOk);
+}
+
+Status GetAXNodeByElementId(Session* session,
+                            WebView* web_view,
+                            const std::string& element_id,
+                            std::unique_ptr<base::Value>* axNode) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
+
+  int node_id;
+  std::unique_ptr<base::DictionaryValue> element(CreateElement(element_id));
+  status = web_view->GetNodeIdByElement(session->GetCurrentFrameId(), *element,
+                                        &node_id);
+
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue body;
+  body.SetInteger("nodeId", node_id);
+  body.SetBoolean("fetchRelatives", false);
+
+  std::unique_ptr<base::Value> result;
+
+  status = web_view->SendCommandAndGetResult("Accessibility.getPartialAXTree",
+                                             body, &result);
+  if (status.IsError())
+    return status;
+
+  base::Optional<base::Value> nodes = result->ExtractKey("nodes");
+  if (!nodes)
+    return Status(kUnknownError, "No `nodes` found in CDP response");
+
+  base::Value::ListView nodesList = nodes->GetList();
+  if (nodesList.size() < 1)
+    return Status(kUnknownError, "Empty nodes list in CDP response");
+
+  if (nodesList.size() > 1)
+    return Status(kUnknownError, "Non-unique node in CDP response");
+
+  *axNode = std::make_unique<base::Value>(std::move(nodesList[0]));
   return Status(kOk);
 }

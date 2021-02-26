@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -45,6 +45,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,6 +92,33 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
 
   std::string WaitAndGetTitle() {
     return base::UTF16ToUTF8(watcher_->WaitAndGetTitle());
+  }
+
+  // Triggers a WebSocket connection to the given |url| in the context of the
+  // main frame of the active WebContents.
+  void MakeWebSocketConnection(
+      const GURL& url,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client) {
+    content::RenderFrameHost* const frame =
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    content::RenderProcessHost* const process = frame->GetProcess();
+
+    const std::vector<std::string> requested_protocols;
+    const net::SiteForCookies site_for_cookies;
+    // The actual value of this doesn't actually matter, it just can't be empty,
+    // to avoid a DCHECK.
+    const net::IsolationInfo isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(url::Origin::Create(url));
+    std::vector<network::mojom::HttpHeaderPtr> additional_headers;
+    const url::Origin origin;
+
+    process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
+        url, requested_protocols, site_for_cookies, isolation_info,
+        std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
+        origin, network::mojom::kWebSocketOptionNone,
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+        std::move(handshake_client), mojo::NullRemote(), mojo::NullRemote());
   }
 
   net::SpawnedTestServer ws_server_;
@@ -194,16 +222,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SecureWebSocketSplitRecords) {
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
-// Flaky failing on Win10 only.  http://crbug.com/616958
-#if defined(OS_WIN)
-#define MAYBE_SendCloseFrameWhenTabIsClosed \
-    DISABLED_SendCloseFrameWhenTabIsClosed
-#else
-#define MAYBE_SendCloseFrameWhenTabIsClosed SendCloseFrameWhenTabIsClosed
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
-                       MAYBE_SendCloseFrameWhenTabIsClosed) {
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendCloseFrameWhenTabIsClosed) {
   // Launch a WebSocket server.
   ASSERT_TRUE(ws_server_.Start());
 
@@ -409,8 +428,6 @@ class ExpectInvalidUtf8Client : public network::mojom::WebSocketClient {
     NOTREACHED();
   }
 
-  void AddSendFlowControlQuota(int64_t quota) override {}
-
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override {
@@ -465,6 +482,10 @@ class InvalidUtf8HandshakeClient
   void OnOpeningHandshakeStarted(
       network::mojom::WebSocketHandshakeRequestPtr) override {}
 
+  void OnFailure(const std::string& message,
+                 int net_error,
+                 int response_code) override {}
+
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
@@ -507,7 +528,6 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
   ASSERT_TRUE(ws_server_.Start());
 
   base::RunLoop run_loop;
-
   bool failed = false;
 
   // This is a repeating closure for convenience so that we can use it in two
@@ -519,35 +539,94 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
 
   auto client = std::make_unique<ExpectInvalidUtf8Client>(
       run_loop.QuitClosure(), fail_closure);
-
-  content::RenderFrameHost* const frame =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  content::RenderProcessHost* const process = frame->GetProcess();
-
-  const GURL url = ws_server_.GetURL("close");
-  const std::vector<std::string> requested_protocols;
-  const net::SiteForCookies site_for_cookies;
-  // The actual value of this doesn't actually matter, it just can't be empty,
-  // to avoid a DCHECK.
-  const net::IsolationInfo isolation_info =
-      net::IsolationInfo::CreateForInternalRequest(url::Origin::Create(url));
-  std::vector<network::mojom::HttpHeaderPtr> additional_headers;
-  const url::Origin origin;
   auto handshake_client = std::make_unique<InvalidUtf8HandshakeClient>(
       std::move(client), fail_closure);
-  mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
-      handshake_client_remote = handshake_client->Bind();
 
-  process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, isolation_info,
-      std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
-      origin, network::mojom::kWebSocketOptionNone,
-      std::move(handshake_client_remote), mojo::NullRemote(),
-      mojo::NullRemote());
+  MakeWebSocketConnection(ws_server_.GetURL("close"), handshake_client->Bind());
 
   run_loop.Run();
 
   EXPECT_FALSE(failed);
+}
+
+class FailureMonitoringHandshakeClient
+    : public network::mojom::WebSocketHandshakeClient {
+ public:
+  struct Result {
+    bool failure_reported = false;
+    int net_error = -1;
+    int response_code = -1;
+  };
+
+  explicit FailureMonitoringHandshakeClient(base::Closure quit)
+      : quit_(std::move(quit)) {}
+
+  FailureMonitoringHandshakeClient(const FailureMonitoringHandshakeClient&) =
+      delete;
+  FailureMonitoringHandshakeClient& operator=(
+      const FailureMonitoringHandshakeClient&) = delete;
+
+  mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> Bind() {
+    CHECK(quit_);
+    auto pending_remote = handshake_client_receiver_.BindNewPipeAndPassRemote();
+    handshake_client_receiver_.set_disconnect_handler(std::move(quit_));
+    return pending_remote;
+  }
+
+  const Result& result() const { return result_; }
+
+  // Implementation of WebSocketHandshakeClient
+  void OnOpeningHandshakeStarted(
+      network::mojom::WebSocketHandshakeRequestPtr) override {}
+
+  void OnFailure(const std::string& message,
+                 int net_error,
+                 int response_code) override {
+    result_.failure_reported = true;
+    result_.net_error = net_error;
+    result_.response_code = response_code;
+  }
+
+  void OnConnectionEstablished(
+      mojo::PendingRemote<network::mojom::WebSocket> websocket,
+      mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
+      network::mojom::WebSocketHandshakeResponsePtr,
+      mojo::ScopedDataPipeConsumerHandle readable,
+      mojo::ScopedDataPipeProducerHandle writable) override {}
+
+ private:
+  Result result_;
+  base::Closure quit_;
+  mojo::Receiver<network::mojom::WebSocketHandshakeClient>
+      handshake_client_receiver_{this};
+};
+
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, FailuresReported) {
+  ASSERT_TRUE(ws_server_.Start());
+
+  {
+    // The OnFailure method should not be called for a successful connection.
+    base::RunLoop run_loop;
+    auto handshake_client = std::make_unique<FailureMonitoringHandshakeClient>(
+        run_loop.QuitClosure());
+    MakeWebSocketConnection(ws_server_.GetURL("echo-with-no-extension"),
+                            handshake_client->Bind());
+    run_loop.Run();
+    EXPECT_FALSE(handshake_client->result().failure_reported);
+  }
+
+  {
+    // If the server returns a 404 status, that should be surfaced via
+    // OnFailure.
+    base::RunLoop run_loop;
+    auto handshake_client = std::make_unique<FailureMonitoringHandshakeClient>(
+        run_loop.QuitClosure());
+    MakeWebSocketConnection(ws_server_.GetURL("nonsensedoesntexist"),
+                            handshake_client->Bind());
+    run_loop.Run();
+    EXPECT_TRUE(handshake_client->result().failure_reported);
+    EXPECT_EQ(404, handshake_client->result().response_code);
+  }
 }
 
 }  // namespace

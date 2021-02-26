@@ -46,7 +46,7 @@ public:
 
     /** Called as ops are executed. Must be called in the same order as the ops were prepared. */
     void executeDrawsAndUploadsForMeshDrawOp(const GrOp* op, const SkRect& chainBounds,
-                                             const GrPipeline*);
+                                             const GrPipeline*, const GrUserStencilSettings*);
 
     GrOpsRenderPass* opsRenderPass() { return fOpsRenderPass; }
     void setOpsRenderPass(GrOpsRenderPass* renderPass) { fOpsRenderPass = renderPass; }
@@ -59,12 +59,14 @@ public:
     struct OpArgs {
         // TODO: why does OpArgs have the op we're going to pass it to as a member? Remove it.
         explicit OpArgs(GrOp* op, GrSurfaceProxyView* surfaceView, GrAppliedClip* appliedClip,
-                        const GrXferProcessor::DstProxyView& dstProxyView)
+                        const GrXferProcessor::DstProxyView& dstProxyView,
+                        GrXferBarrierFlags renderPassXferBarriers)
                 : fOp(op)
                 , fSurfaceView(surfaceView)
                 , fRenderTargetProxy(surfaceView->asRenderTargetProxy())
                 , fAppliedClip(appliedClip)
-                , fDstProxyView(dstProxyView) {
+                , fDstProxyView(dstProxyView)
+                , fRenderPassXferBarriers(renderPassXferBarriers) {
             SkASSERT(surfaceView->asRenderTargetProxy());
         }
 
@@ -77,6 +79,7 @@ public:
         GrAppliedClip* appliedClip() { return fAppliedClip; }
         const GrAppliedClip* appliedClip() const { return fAppliedClip; }
         const GrXferProcessor::DstProxyView& dstProxyView() const { return fDstProxyView; }
+        GrXferBarrierFlags renderPassBarriers() const { return fRenderPassXferBarriers; }
 
 #ifdef SK_DEBUG
         void validate() const {
@@ -91,6 +94,7 @@ public:
         GrRenderTargetProxy*          fRenderTargetProxy;
         GrAppliedClip*                fAppliedClip;
         GrXferProcessor::DstProxyView fDstProxyView;   // TODO: do we still need the dst proxy here?
+        GrXferBarrierFlags            fRenderPassXferBarriers;
     };
 
     void setOpArgs(OpArgs* opArgs) { fOpArgs = opArgs; }
@@ -151,15 +155,22 @@ public:
     const GrXferProcessor::DstProxyView& dstProxyView() const final {
         return this->drawOpArgs().dstProxyView();
     }
+
+    GrXferBarrierFlags renderPassBarriers() const final {
+        return this->drawOpArgs().renderPassBarriers();
+    }
+
     GrDeferredUploadTarget* deferredUploadTarget() final { return this; }
     const GrCaps& caps() const final;
+    GrThreadSafeCache* threadSafeCache() const final;
     GrResourceProvider* resourceProvider() const final { return fResourceProvider; }
 
     GrStrikeCache* strikeCache() const final;
 
-    // At this point we know we're flushing so full access to the GrAtlasManager is required (and
-    // permissible).
+    // At this point we know we're flushing so full access to the GrAtlasManager and
+    // GrSmallPathAtlasMgr is required (and permissible).
     GrAtlasManager* atlasManager() const final;
+    GrSmallPathAtlasMgr* smallPathAtlasManager() const final;
 
     /** GrMeshDrawOp::Target override. */
     SkArenaAlloc* allocator() override { return &fArena; }
@@ -198,10 +209,11 @@ public:
                       const GrSurfaceProxy* const primProcTextures[], const GrPipeline& pipeline) {
         fOpsRenderPass->bindTextures(primProc, primProcTextures, pipeline);
     }
-    void bindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
-                     const GrBuffer* vertexBuffer,
+    void bindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
+                     sk_sp<const GrBuffer> vertexBuffer,
                      GrPrimitiveRestart primitiveRestart = GrPrimitiveRestart::kNo) {
-        fOpsRenderPass->bindBuffers(indexBuffer, instanceBuffer, vertexBuffer, primitiveRestart);
+        fOpsRenderPass->bindBuffers(std::move(indexBuffer), std::move(instanceBuffer),
+                                    std::move(vertexBuffer), primitiveRestart);
     }
     void draw(int vertexCount, int baseVertex) {
         fOpsRenderPass->draw(vertexCount, baseVertex);
@@ -260,7 +272,7 @@ private:
     };
 
     // Storage for ops' pipelines, draws, and inline uploads.
-    SkArenaAlloc fArena{sizeof(GrPipeline) * 100};
+    SkArenaAllocWithReset fArena{sizeof(GrPipeline) * 100};
 
     // Store vertex and index data on behalf of ops that are flushed.
     GrVertexBufferAllocPool fVertexPool;

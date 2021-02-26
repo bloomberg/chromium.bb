@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 
 using blink::frame_test_helpers::LoadFrame;
 using blink::test::RunPendingTasks;
@@ -27,8 +28,10 @@ class ImeRequestTrackingWebWidgetClient
   ImeRequestTrackingWebWidgetClient() : virtual_keyboard_request_count_(0) {}
 
   // WebWidgetClient methods
-  void ShowVirtualKeyboardOnElementFocus() override {
-    ++virtual_keyboard_request_count_;
+  void TextInputStateChanged(
+      ui::mojom::blink::TextInputStatePtr state) override {
+    if (state->show_ime_if_needed)
+      ++virtual_keyboard_request_count_;
   }
 
   // Local methds
@@ -49,7 +52,7 @@ class ImeOnFocusTest : public testing::Test {
   }
 
  protected:
-  void SendGestureTap(WebView*, IntPoint);
+  void SendGestureTap(WebViewImpl*, IntPoint);
   void Focus(const AtomicString& element);
   void RunImeOnFocusTest(String file_name,
                          int,
@@ -62,7 +65,8 @@ class ImeOnFocusTest : public testing::Test {
   Persistent<Document> document_;
 };
 
-void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
+void ImeOnFocusTest::SendGestureTap(WebViewImpl* web_view,
+                                    IntPoint client_point) {
   WebGestureEvent web_gesture_event(WebInputEvent::Type::kGestureTap,
                                     WebInputEvent::kNoModifiers,
                                     WebInputEvent::GetStaticTimeStampForTests(),
@@ -74,7 +78,7 @@ void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
   web_gesture_event.data.tap.width = 10;
   web_gesture_event.data.tap.height = 10;
 
-  web_view->MainFrameWidget()->HandleInputEvent(
+  web_view->MainFrameViewWidget()->HandleInputEvent(
       WebCoalescedInputEvent(web_gesture_event, ui::LatencyInfo()));
   RunPendingTasks();
 }
@@ -94,7 +98,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
                                 WebString(file_name));
   WebViewImpl* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
-  web_view->MainFrameWidget()->Resize(WebSize(800, 1200));
+  web_view->MainFrameViewWidget()->Resize(gfx::Size(800, 1200));
   LoadFrame(web_view->MainFrameImpl(), base_url_.Utf8() + file_name.Utf8());
   document_ = web_view_helper_.GetWebView()
                   ->MainFrameImpl()
@@ -118,8 +122,15 @@ void ImeOnFocusTest::RunImeOnFocusTest(
 
   if (!focus_element.IsNull())
     Focus(focus_element);
-  EXPECT_EQ(expected_virtual_keyboard_request_count,
-            client.VirtualKeyboardRequestCount());
+  RunPendingTasks();
+  if (expected_virtual_keyboard_request_count == 0) {
+    EXPECT_EQ(0, client.VirtualKeyboardRequestCount());
+  } else {
+    // Some builds (Aura, android) request the virtual keyboard on
+    // gesture tap.
+    EXPECT_LE(expected_virtual_keyboard_request_count,
+              client.VirtualKeyboardRequestCount());
+  }
 
   web_view_helper_.Reset();
 }

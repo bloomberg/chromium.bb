@@ -7,7 +7,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/linux_util.h"
 #endif
 
@@ -18,7 +18,7 @@ namespace remoting {
 std::string GetHostOperatingSystemName() {
 #if defined(OS_WIN)
   return "Windows";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return "Mac";
 #elif defined(OS_CHROMEOS)
   return "ChromeOS";
@@ -34,7 +34,7 @@ std::string GetHostOperatingSystemName() {
 // Get the host Operating System Version, removing the need to check for OS
 // definitions and keeps the format used consistent.
 std::string GetHostOperatingSystemVersion() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   return base::GetLinuxDistro();
 #else
   return base::SysInfo::OperatingSystemVersion();

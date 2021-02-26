@@ -21,15 +21,12 @@ constexpr base::FilePath::CharType kManifestResourcesDirectoryName[] =
 constexpr base::FilePath::CharType kTempDirectoryName[] =
     FILE_PATH_LITERAL("Temp");
 
-bool AreWebAppsEnabled(Profile* profile) {
-  if (!profile)
+bool AreWebAppsEnabled(const Profile* profile) {
+  if (!profile || profile->IsSystemProfile())
     return false;
 
-  Profile* original_profile = profile->GetOriginalProfile();
+  const Profile* original_profile = profile->GetOriginalProfile();
   DCHECK(!original_profile->IsOffTheRecord());
-
-  if (original_profile->IsSystemProfile())
-    return false;
 
 #if defined(OS_CHROMEOS)
   // Web Apps should not be installed to the ChromeOS system profiles.
@@ -50,7 +47,7 @@ bool AreWebAppsEnabled(Profile* profile) {
 
 bool AreWebAppsUserInstallable(Profile* profile) {
   return AreWebAppsEnabled(profile) && !profile->IsGuestSession() &&
-         !profile->IsOffTheRecord();
+         !profile->IsEphemeralGuestProfile() && !profile->IsOffTheRecord();
 }
 
 content::BrowserContext* GetBrowserContextForWebApps(
@@ -66,8 +63,10 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
   // Use original profile to create only one KeyedService instance.
   Profile* original_profile =
       Profile::FromBrowserContext(context)->GetOriginalProfile();
-  const bool is_web_app_metrics_enabled = AreWebAppsEnabled(original_profile) &&
-                                          !original_profile->IsGuestSession();
+  const bool is_web_app_metrics_enabled =
+      AreWebAppsEnabled(original_profile) &&
+      !original_profile->IsGuestSession() &&
+      !original_profile->IsEphemeralGuestProfile();
   return is_web_app_metrics_enabled ? original_profile : nullptr;
 }
 

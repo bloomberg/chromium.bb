@@ -14,7 +14,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,14 +29,12 @@ import org.mockito.Mockito;
 import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for IsReadyToPayServiceHelper.
@@ -44,8 +43,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class IsReadyToPayServiceHelperTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -187,12 +185,8 @@ public class IsReadyToPayServiceHelperTest {
                         mErrorReceived = true;
                     }
                 });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        helper.query();
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -200,7 +194,7 @@ public class IsReadyToPayServiceHelperTest {
     @Feature({"Payments"})
     public void onResponseTest() throws Throwable {
         mResponseReceived = false;
-        mRule.runOnUiThread(() -> {
+        mActivityTestRule.runOnUiThread(() -> {
             Intent intent = new Intent();
             intent.setClassName("mock.package.name", "mock.service.name");
             Context context = createContext(createAlwaysReadyService());
@@ -215,13 +209,9 @@ public class IsReadyToPayServiceHelperTest {
                             Assert.fail();
                         }
                     });
+            helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mResponseReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mResponseReceived);
     }
 
     @Test
@@ -229,7 +219,7 @@ public class IsReadyToPayServiceHelperTest {
     @Feature({"Payments"})
     public void unresponsiveServiceTest() throws Throwable {
         mErrorReceived = false;
-        mRule.runOnUiThread(() -> {
+        mActivityTestRule.runOnUiThread(() -> {
             Intent intent = new Intent();
             intent.setClassName("mock.package.name", "mock.service.name");
             Context context = createContext(createUnresponsiveService());
@@ -244,13 +234,9 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -258,7 +244,7 @@ public class IsReadyToPayServiceHelperTest {
     @Feature({"Payments"})
     public void noServiceTest() throws Throwable {
         mErrorReceived = false;
-        mRule.runOnUiThread(() -> {
+        mActivityTestRule.runOnUiThread(() -> {
             Intent intent = new Intent();
             intent.setClassName("mock.package.name", "mock.service.name");
             Context context = createContext(/*serviceBinder=*/null);
@@ -273,13 +259,9 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -287,7 +269,7 @@ public class IsReadyToPayServiceHelperTest {
     @Feature({"Payments"})
     public void serviceConnectionTimeoutTest() throws Throwable {
         mErrorReceived = false;
-        mRule.runOnUiThread(() -> {
+        mActivityTestRule.runOnUiThread(() -> {
             Intent intent = new Intent();
             intent.setClassName("mock.package.name", "mock.service.name");
             Context context = createContextThatNeverConnectToService();
@@ -302,14 +284,10 @@ public class IsReadyToPayServiceHelperTest {
                             mErrorReceived = true;
                         }
                     });
+            helper.query();
         });
         // Assuming CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL >
         // IsReadyToPayServiceHelper.SERVICE_CONNECTION_TIMEOUT_MS.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 }

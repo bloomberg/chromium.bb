@@ -82,16 +82,18 @@ button{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "button",
     "idValue": "button",
     "nodeWidth": "41.9219",
     "nodeHeight": "21",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
-    "accessibleRole": "button"
+    "accessibleRole": "button",
+    "layoutObjectName": "LayoutNGButton",
+    "showAccessibilityInfo": true
   }
 }
 input{
@@ -176,16 +178,18 @@ input{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "input",
     "idValue": "input",
     "nodeWidth": "153",
     "nodeHeight": "21",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "",
-    "accessibleRole": "textbox"
+    "accessibleRole": "textbox",
+    "layoutObjectName": "LayoutNGTextControlSingleLine",
+    "showAccessibilityInfo": true
   }
 }
 div{
@@ -270,16 +274,18 @@ div{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "div",
     "nodeWidth": "784",
     "nodeHeight": "18",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
-    "accessibleRole": "button"
+    "accessibleRole": "button",
+    "layoutObjectName": "LayoutNGBlockFlow",
+    "showAccessibilityInfo": true
   }
 }
 

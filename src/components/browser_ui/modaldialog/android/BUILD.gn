@@ -18,12 +18,13 @@ android_library("java") {
     "//components/browser_ui/widget/android:java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.modaldialog"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.modaldialog"
   sources = [
     "java/res/layout/modal_dialog_container.xml",
     "java/res/layout/modal_dialog_title.xml",
@@ -55,28 +56,27 @@ android_library("javatests") {
     ":java_test_resources",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_deps:espresso_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]
+  resources_package = "org.chromium.components.browser_ui.modaldialog.test"
 }
 
 android_resources("java_test_resources") {
   testonly = true
 
-  custom_package = "org.chromium.components.browser_ui.modaldialog.test"
-  sources = [
-    "test/java/res/drawable/ic_add.xml",
-    "test/java/res/values/ids.xml",
-    "test/java/res/values/strings.xml",
-  ]
+  sources = [ "test/java/res/values/ids.xml" ]
   deps = [
     ":java_resources",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//ui/android:ui_java_resources",
   ]
 }

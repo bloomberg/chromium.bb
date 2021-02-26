@@ -8,7 +8,6 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -17,7 +16,6 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/status.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/ac3/ac3_util.h"
@@ -34,7 +32,6 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       channel_layout_(CHANNEL_LAYOUT_NONE),
       sample_rate_(0),
       media_crypto_context_(nullptr),
-      cdm_registration_id_(0),
       pool_(new AudioBufferMemoryPool()) {
   DVLOG(1) << __func__;
 }
@@ -44,15 +41,9 @@ MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
 
   codec_loop_.reset();
 
-  if (media_crypto_context_) {
-    DCHECK(cdm_registration_id_);
-
-    // Cancel previously registered callback (if any).
-    media_crypto_context_->SetMediaCryptoReadyCB(
-        MediaCryptoContext::MediaCryptoReadyCB());
-
-    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
-  }
+  // Cancel previously registered callback (if any).
+  if (media_crypto_context_)
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
 
   ClearInputQueue(DecodeStatus::ABORTED);
 }
@@ -115,9 +106,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   SetInitialConfiguration();
 
   if (config_.is_encrypted() && !media_crypto_) {
-    media_crypto_context_ =
-        cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
-    if (!media_crypto_context_) {
+    if (!cdm_context || !cdm_context->GetMediaCryptoContext()) {
       LOG(ERROR) << "The stream is encrypted but there is no CdmContext or "
                     "MediaCryptoContext is not supported";
       SetState(STATE_ERROR);
@@ -129,7 +118,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     // Postpone initialization after MediaCrypto is available.
     // SetCdm uses init_cb in a method that's already bound to the current loop.
     SetState(STATE_WAITING_FOR_MEDIA_CRYPTO);
-    SetCdm(std::move(init_cb));
+    SetCdm(cdm_context, std::move(init_cb));
     return;
   }
 
@@ -173,13 +162,13 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
 }
 
 void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
+                                    DecodeCB decode_cb) {
+  DecodeCB bound_decode_cb = BindToCurrentLoop(std::move(decode_cb));
 
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp) {
     DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": no timestamp, skipping this buffer";
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -189,7 +178,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": Error state, returning decode error for all buffers";
     ClearInputQueue(DecodeStatus::DECODE_ERROR);
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -203,7 +192,8 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   // time".
   DCHECK(input_queue_.empty());
 
-  input_queue_.push_back(std::make_pair(std::move(buffer), bound_decode_cb));
+  input_queue_.push_back(
+      std::make_pair(std::move(buffer), std::move(bound_decode_cb)));
 
   codec_loop_->ExpectWork();
 }
@@ -233,29 +223,28 @@ bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {
   return config_.codec() == kCodecAAC;
 }
 
-void MediaCodecAudioDecoder::SetCdm(InitCB init_cb) {
-  DCHECK(media_crypto_context_);
+void MediaCodecAudioDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
+  DVLOG(1) << __func__;
+  DCHECK(cdm_context) << "No CDM provided";
+  DCHECK(cdm_context->GetMediaCryptoContext());
 
-  // Register CDM callbacks. The callbacks registered will be posted back to
-  // this thread via BindToCurrentLoop.
+  media_crypto_context_ = cdm_context->GetMediaCryptoContext();
 
-  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
-  // destructed, UnregisterPlayer() must have been called and |this| has been
-  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
-  // called.
-  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
-      media::BindToCurrentLoop(base::Bind(&MediaCodecAudioDecoder::OnKeyAdded,
-                                          weak_factory_.GetWeakPtr())),
-      base::DoNothing());
+  // CdmContext will always post the registered callback back to this thread.
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &MediaCodecAudioDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
 
+  // The callback will be posted back to this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::BindOnce(&MediaCodecAudioDecoder::OnMediaCryptoReady,
                      weak_factory_.GetWeakPtr(), std::move(init_cb))));
 }
 
-void MediaCodecAudioDecoder::OnKeyAdded() {
+void MediaCodecAudioDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DVLOG(1) << __func__;
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
 
   // We don't register |codec_loop_| directly with the DRM bridge, since it's
   // subject to replacement.
@@ -339,16 +328,16 @@ void MediaCodecAudioDecoder::OnInputDataQueued(bool success) {
   if (input_queue_.front().first->end_of_stream() && success)
     return;
 
-  input_queue_.front().second.Run(success ? DecodeStatus::OK
-                                          : DecodeStatus::DECODE_ERROR);
+  std::move(input_queue_.front().second)
+      .Run(success ? DecodeStatus::OK : DecodeStatus::DECODE_ERROR);
   input_queue_.pop_front();
 }
 
 void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
   DVLOG(2) << __func__;
 
-  for (const auto& entry : input_queue_)
-    entry.second.Run(decode_status);
+  for (auto& entry : input_queue_)
+    std::move(entry.second).Run(decode_status);
 
   input_queue_.clear();
 }
@@ -384,7 +373,7 @@ bool MediaCodecAudioDecoder::OnDecodedEos(
   // So, we shouldn't be in that state.  So, just DCHECK here.
   DCHECK_NE(state_, STATE_ERROR);
 
-  input_queue_.front().second.Run(DecodeStatus::OK);
+  std::move(input_queue_.front()).second.Run(DecodeStatus::OK);
   input_queue_.pop_front();
 
   return true;

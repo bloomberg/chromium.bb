@@ -13,20 +13,21 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "build/config/compiler/compiler_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/metrics/authenticator_utility.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
@@ -57,6 +58,7 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"
 #endif
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -67,10 +69,15 @@
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_WIN)
+#include "base/win/base_win_buildflags.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration_win.h"
 #endif  // defined(OS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/cpp/crosapi_constants.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -78,9 +85,9 @@ void RecordMemoryMetrics();
 
 // Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&RecordMemoryMetrics),
-                        memory_instrumentation::GetDelayForNextMemoryLog());
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&RecordMemoryMetrics),
+      memory_instrumentation::GetDelayForNextMemoryLog());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.
@@ -119,37 +126,6 @@ enum UMALinuxGlibcVersion {
   // To log newer versions, just update tools/metrics/histograms/histograms.xml.
 };
 
-enum UMALinuxWindowManager {
-  UMA_LINUX_WINDOW_MANAGER_OTHER,
-  UMA_LINUX_WINDOW_MANAGER_BLACKBOX,
-  UMA_LINUX_WINDOW_MANAGER_CHROME_OS,  // Deprecated.
-  UMA_LINUX_WINDOW_MANAGER_COMPIZ,
-  UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT,
-  UMA_LINUX_WINDOW_MANAGER_ICE_WM,
-  UMA_LINUX_WINDOW_MANAGER_KWIN,
-  UMA_LINUX_WINDOW_MANAGER_METACITY,
-  UMA_LINUX_WINDOW_MANAGER_MUFFIN,
-  UMA_LINUX_WINDOW_MANAGER_MUTTER,
-  UMA_LINUX_WINDOW_MANAGER_OPENBOX,
-  UMA_LINUX_WINDOW_MANAGER_XFWM4,
-  UMA_LINUX_WINDOW_MANAGER_AWESOME,
-  UMA_LINUX_WINDOW_MANAGER_I3,
-  UMA_LINUX_WINDOW_MANAGER_ION3,
-  UMA_LINUX_WINDOW_MANAGER_MATCHBOX,
-  UMA_LINUX_WINDOW_MANAGER_NOTION,
-  UMA_LINUX_WINDOW_MANAGER_QTILE,
-  UMA_LINUX_WINDOW_MANAGER_RATPOISON,
-  UMA_LINUX_WINDOW_MANAGER_STUMPWM,
-  UMA_LINUX_WINDOW_MANAGER_WMII,
-  UMA_LINUX_WINDOW_MANAGER_FLUXBOX,
-  UMA_LINUX_WINDOW_MANAGER_XMONAD,
-  UMA_LINUX_WINDOW_MANAGER_UNNAMED,
-  // NOTE: Append new window managers to the list above this line (i.e. don't
-  // renumber) and update LinuxWindowManagerName in
-  // tools/metrics/histograms/histograms.xml accordingly.
-  UMA_LINUX_WINDOW_MANAGER_COUNT
-};
-
 enum UMATouchEventFeatureDetectionState {
   UMA_TOUCH_EVENT_FEATURE_DETECTION_ENABLED,
   UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_ENABLED,
@@ -161,12 +137,44 @@ enum UMATouchEventFeatureDetectionState {
   UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT
 };
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum class ChromeOSChannel {
+  kUnknown = 0,
+  kCanary = 1,
+  kDev = 2,
+  kBeta = 3,
+  kStable = 4,
+  kMaxValue = kStable,
+};
+
+// Records the underlying Chrome OS release channel, which may be different than
+// the Lacros browser's release channel.
+void RecordChromeOSChannel() {
+  ChromeOSChannel os_channel = ChromeOSChannel::kUnknown;
+  std::string release_track;
+  if (base::SysInfo::GetLsbReleaseValue(crosapi::kChromeOSReleaseTrack,
+                                        &release_track)) {
+    if (release_track == crosapi::kReleaseChannelStable)
+      os_channel = ChromeOSChannel::kStable;
+    else if (release_track == crosapi::kReleaseChannelBeta)
+      os_channel = ChromeOSChannel::kBeta;
+    else if (release_track == crosapi::kReleaseChannelDev)
+      os_channel = ChromeOSChannel::kDev;
+    else if (release_track == crosapi::kReleaseChannelCanary)
+      os_channel = ChromeOSChannel::kCanary;
+  }
+  base::UmaHistogramEnumeration("ChromeOS.Lacros.OSChannel", os_channel);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 void RecordMicroArchitectureStats() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
   base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
-  UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
-                            base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
+  base::UmaHistogramEnumeration("Platform.IntelMaxMicroArchitecture", arch,
+                                base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
   base::UmaHistogramSparse("Platform.LogicalCpuCount",
                            base::SysInfo::NumberOfProcessors());
@@ -181,11 +189,6 @@ bool IsApplockerRunning();
 void RecordStartupMetrics() {
 #if defined(OS_WIN)
   const base::win::OSInfo& os_info = *base::win::OSInfo::GetInstance();
-  UMA_HISTOGRAM_ENUMERATION("Windows.GetVersionExVersion", os_info.version(),
-                            base::win::Version::WIN_LAST);
-  UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
-                            os_info.Kernel32Version(),
-                            base::win::Version::WIN_LAST);
   int patch = os_info.version_number().patch;
   int build = os_info.version_number().build;
   int patch_level = 0;
@@ -195,12 +198,20 @@ void RecordStartupMetrics() {
   DCHECK(patch_level) << "Windows version too high!";
   base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
-  UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
-                        base::TimeTicks::IsHighResolution());
+  int kernel32_patch = os_info.Kernel32VersionNumber().patch;
+  int kernel32_build = os_info.Kernel32VersionNumber().build;
+  int kernel32_patch_level = 0;
+  if (kernel32_patch < 65536 && kernel32_build < 65536)
+    kernel32_patch_level = MAKELONG(kernel32_patch, kernel32_build);
+  DCHECK(kernel32_patch_level) << "Windows kernel32.dll version too high!";
+  base::UmaHistogramSparse("Windows.PatchLevelKernel32", kernel32_patch_level);
+
+  base::UmaHistogramBoolean("Windows.HasHighResolutionTimeTicks",
+                            base::TimeTicks::IsHighResolution());
 
   // Determine if Applocker is enabled and running. This does not check if
   // Applocker rules are being enforced.
-  UMA_HISTOGRAM_BOOLEAN("Windows.ApplockerRunning", IsApplockerRunning());
+  base::UmaHistogramBoolean("Windows.ApplockerRunning", IsApplockerRunning());
 #endif  // defined(OS_WIN)
 
   bluetooth_utility::ReportBluetoothAvailability();
@@ -208,8 +219,14 @@ void RecordStartupMetrics() {
   // Record whether Chrome is the default browser or not.
   shell_integration::DefaultWebClientState default_state =
       shell_integration::GetDefaultBrowser();
-  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
-                            shell_integration::NUM_DEFAULT_STATES);
+  base::UmaHistogramEnumeration("DefaultBrowser.State", default_state,
+                                shell_integration::NUM_DEFAULT_STATES);
+
+  authenticator_utility::ReportUVPlatformAuthenticatorAvailability();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  RecordChromeOSChannel();
+#endif
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -315,61 +332,6 @@ void RecordLinuxGlibcVersion() {
 #endif
 }
 
-#if defined(USE_X11)
-UMALinuxWindowManager GetLinuxWindowManager() {
-  switch (ui::GuessWindowManager()) {
-    case ui::WM_OTHER:
-      return UMA_LINUX_WINDOW_MANAGER_OTHER;
-    case ui::WM_UNNAMED:
-      return UMA_LINUX_WINDOW_MANAGER_UNNAMED;
-    case ui::WM_AWESOME:
-      return UMA_LINUX_WINDOW_MANAGER_AWESOME;
-    case ui::WM_BLACKBOX:
-      return UMA_LINUX_WINDOW_MANAGER_BLACKBOX;
-    case ui::WM_COMPIZ:
-      return UMA_LINUX_WINDOW_MANAGER_COMPIZ;
-    case ui::WM_ENLIGHTENMENT:
-      return UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT;
-    case ui::WM_FLUXBOX:
-      return UMA_LINUX_WINDOW_MANAGER_FLUXBOX;
-    case ui::WM_I3:
-      return UMA_LINUX_WINDOW_MANAGER_I3;
-    case ui::WM_ICE_WM:
-      return UMA_LINUX_WINDOW_MANAGER_ICE_WM;
-    case ui::WM_ION3:
-      return UMA_LINUX_WINDOW_MANAGER_ION3;
-    case ui::WM_KWIN:
-      return UMA_LINUX_WINDOW_MANAGER_KWIN;
-    case ui::WM_MATCHBOX:
-      return UMA_LINUX_WINDOW_MANAGER_MATCHBOX;
-    case ui::WM_METACITY:
-      return UMA_LINUX_WINDOW_MANAGER_METACITY;
-    case ui::WM_MUFFIN:
-      return UMA_LINUX_WINDOW_MANAGER_MUFFIN;
-    case ui::WM_MUTTER:
-      return UMA_LINUX_WINDOW_MANAGER_MUTTER;
-    case ui::WM_NOTION:
-      return UMA_LINUX_WINDOW_MANAGER_NOTION;
-    case ui::WM_OPENBOX:
-      return UMA_LINUX_WINDOW_MANAGER_OPENBOX;
-    case ui::WM_QTILE:
-      return UMA_LINUX_WINDOW_MANAGER_QTILE;
-    case ui::WM_RATPOISON:
-      return UMA_LINUX_WINDOW_MANAGER_RATPOISON;
-    case ui::WM_STUMPWM:
-      return UMA_LINUX_WINDOW_MANAGER_STUMPWM;
-    case ui::WM_WMII:
-      return UMA_LINUX_WINDOW_MANAGER_WMII;
-    case ui::WM_XFWM4:
-      return UMA_LINUX_WINDOW_MANAGER_XFWM4;
-    case ui::WM_XMONAD:
-      return UMA_LINUX_WINDOW_MANAGER_XMONAD;
-  }
-  NOTREACHED();
-  return UMA_LINUX_WINDOW_MANAGER_OTHER;
-}
-#endif
-
 void RecordTouchEventState() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -397,8 +359,8 @@ void RecordTouchEventState() {
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled", state,
-                            UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
+  base::UmaHistogramEnumeration("Touchscreen.TouchEventsEnabled", state,
+                                UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
 }
 
 #if defined(USE_OZONE) || defined(USE_X11)
@@ -435,7 +397,7 @@ void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
 
 #if defined(OS_WIN)
 void RecordPinnedToTaskbarProcessError(bool error) {
-  UMA_HISTOGRAM_BOOLEAN("Windows.IsPinnedToTaskbar.ProcessError", error);
+  base::UmaHistogramBoolean("Windows.IsPinnedToTaskbar.ProcessError", error);
 }
 
 void OnShellHandlerConnectionError() {
@@ -443,16 +405,25 @@ void OnShellHandlerConnectionError() {
 }
 
 // Record the UMA histogram when a response is received.
-void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
+void OnIsPinnedToTaskbarResult(bool succeeded,
+                               bool is_pinned_to_taskbar,
+                               bool is_pinned_to_taskbar_verb_check) {
   RecordPinnedToTaskbarProcessError(false);
 
   // Used for histograms; do not reorder.
   enum Result { NOT_PINNED = 0, PINNED = 1, FAILURE = 2, NUM_RESULTS };
 
-  Result result = FAILURE;
-  if (succeeded)
-    result = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
-  UMA_HISTOGRAM_ENUMERATION("Windows.IsPinnedToTaskbar", result, NUM_RESULTS);
+  Result result_no_verb_check = FAILURE;
+  Result result_verb_check = FAILURE;
+  if (succeeded) {
+    result_no_verb_check = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
+    result_verb_check = is_pinned_to_taskbar_verb_check ? PINNED : NOT_PINNED;
+  }
+
+  base::UmaHistogramEnumeration("Windows.IsPinnedToTaskbar", result_verb_check,
+                                NUM_RESULTS);
+  base::UmaHistogramEnumeration("Windows.IsPinnedToTaskbar2",
+                                result_no_verb_check, NUM_RESULTS);
 }
 
 // Records the pinned state of the current executable into a histogram. Should
@@ -460,8 +431,8 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
 // startup.
 void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
-      base::Bind(&OnShellHandlerConnectionError),
-      base::Bind(&OnIsPinnedToTaskbarResult));
+      base::BindOnce(&OnShellHandlerConnectionError),
+      base::BindOnce(&OnIsPinnedToTaskbarResult));
 }
 
 class ScHandleTraits {
@@ -531,9 +502,51 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   // Log once here at browser start rather than at each renderer launch.
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ClangPGO",
 #if BUILDFLAG(CLANG_PGO)
+#if BUILDFLAG(USE_THIN_LTO)
+                                                            "EnabledWithThinLTO"
+#else
+                                                            "Enabled"
+#endif
+#else
+                                                            "Disabled"
+#endif
+  );
+
+  // Records whether or not the Segment heap is in use.
+#if defined(OS_WIN)
+
+  if (base::win::GetVersion() >= base::win::Version::WIN10_20H1) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
+#if BUILDFLAG(ENABLE_SEGMENT_HEAP)
+                                                              "OptedIn"
+#else
+                                                              "OptedOut"
+#endif
+    );
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
+                                                              "NotSupported");
+  }
+
+  // Records whether or not CFG indirect call dispatch guards are present
+  // or not.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinCFG",
+#if BUILDFLAG(WIN_ENABLE_CFG_GUARDS)
                                                             "Enabled"
 #else
                                                             "Disabled"
+#endif
+  );
+
+#endif  // defined(OS_WIN)
+
+  // Records whether or not PartitionAlloc is used as the default allocator.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "PartitionAllocEverywhere",
+#if BUILDFLAG(USE_PARTITION_ALLOC_EVERYWHERE)
+      "Enabled"
+#else
+      "Disabled"
 #endif
   );
 }
@@ -542,8 +555,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
-  UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
-                            UMA_LINUX_WINDOW_MANAGER_COUNT);
+  if (!features::IsUsingOzonePlatform()) {
+    // Ozone writes this histogram upon platform initialisation.
+    base::UmaHistogramEnumeration("Linux.WindowManager",
+                                  ui::GetWindowManagerUMA());
+  }
 #endif
 
   constexpr base::TaskTraits kBestEffortTaskTraits = {
@@ -568,9 +584,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordTouchEventState();
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   RecordMacMetrics();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
   // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),
@@ -595,7 +611,8 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
-  UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
+  base::UmaHistogramCounts100("Hardware.Display.Count.OnStartup",
+                              display_count_);
   display::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
 
@@ -617,10 +634,10 @@ void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
     // Enable I/O jank monitoring for the browser process.
     base::EnableIOJankMonitoringForProcess(base::BindRepeating(
         [](int janky_intervals_per_minute, int total_janks_per_minute) {
-          UMA_HISTOGRAM_COUNTS_100(
+          base::UmaHistogramCounts100(
               "Browser.Responsiveness.IOJankyIntervalsPerMinute",
               janky_intervals_per_minute);
-          UMA_HISTOGRAM_COUNTS_1000(
+          base::UmaHistogramCounts1000(
               "Browser.Responsiveness.IOJanksTotalPerMinute",
               total_janks_per_minute);
         }));
@@ -641,14 +658,15 @@ void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
   int display_count = display::Screen::GetScreen()->GetNumDisplays();
   if (display_count != display_count_) {
     display_count_ = display_count;
-    UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnChange", display_count_);
+    base::UmaHistogramCounts100("Hardware.Display.Count.OnChange",
+                                display_count_);
   }
 }
 
 namespace chrome {
 
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsMetrics());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsMetrics>());
 }
 
 }  // namespace chrome

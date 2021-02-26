@@ -8,6 +8,8 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -19,9 +21,9 @@
 
 namespace ios {
 
-namespace {
+const char kNTPPromoFinchExperiment[] = "IOSDefaultBrowerNTPPromotion";
 
-const char kNTPPromoFinchExperiment[] = "IOSNTPPromotion";
+namespace {
 
 // The name of the preference that stores the promotion object.
 const char kPrefPromoObject[] = "ios.ntppromo";

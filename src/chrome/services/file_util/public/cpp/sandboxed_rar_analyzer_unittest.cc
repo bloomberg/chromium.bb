@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
@@ -175,7 +174,10 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeBenignRar) {
 
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
-  EXPECT_TRUE(results.archived_binary.empty());
+  EXPECT_EQ(results.archived_binary.size(), 1);
+  EXPECT_EQ(results.archived_binary[0].file_basename(), "limerick.txt");
+  EXPECT_FALSE(results.archived_binary[0].is_executable());
+  EXPECT_FALSE(results.archived_binary[0].is_archive());
   EXPECT_TRUE(results.archived_archive_filenames.empty());
 }
 
@@ -190,7 +192,10 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarWithPassword) {
 
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
-  EXPECT_TRUE(results.archived_binary.empty());
+  EXPECT_EQ(results.archived_binary.size(), 1);
+  EXPECT_EQ(results.archived_binary[0].file_basename(), "file1.txt");
+  EXPECT_FALSE(results.archived_binary[0].is_executable());
+  EXPECT_FALSE(results.archived_binary[0].is_archive());
   EXPECT_TRUE(results.archived_archive_filenames.empty());
 }
 
@@ -252,10 +257,13 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarContainingAssortmentOfFiles) {
 
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
-  EXPECT_EQ(3, results.archived_binary.size());
+  EXPECT_EQ(4, results.archived_binary.size());
   ExpectBinary(kSignedExe, results.archived_binary.Get(0));
   ExpectBinary(kNotARar, results.archived_binary.Get(1));
-  ExpectBinary(kEmptyZip, results.archived_binary.Get(2));
+  EXPECT_EQ(results.archived_binary[2].file_basename(), "text.txt");
+  EXPECT_FALSE(results.archived_binary[2].is_executable());
+  EXPECT_FALSE(results.archived_binary[2].is_archive());
+  ExpectBinary(kEmptyZip, results.archived_binary.Get(3));
   EXPECT_EQ(2u, results.archived_archive_filenames.size());
 
   EXPECT_THAT(

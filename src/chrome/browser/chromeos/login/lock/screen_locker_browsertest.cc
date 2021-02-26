@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
@@ -109,14 +109,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBadThenGoodPassword) {
       1, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
 
-// Makes sure Chrome doesn't crash if we lock the screen during an add-user
-// flow. Regression test for crbug.com/467111.
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
-  UserAddingScreen::Get()->Start();
-  base::RunLoop().RunUntilIdle();
-  ScreenLocker::HandleShowLockScreenRequest();
-}
-
 // Test how locking the screen affects an active fullscreen window.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // 1) If the active browser window is in fullscreen and the fullscreen window
@@ -164,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
-        ->EnterFullscreenModeForTab(web_contents, GURL());
+        ->EnterFullscreenModeForTab(web_contents->GetMainFrame());
     fullscreen_waiter.Wait();
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_TRUE(window_state->GetHideShelfWhenFullscreen());

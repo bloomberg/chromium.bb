@@ -17,23 +17,20 @@ import androidx.core.app.NotificationCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 /**
  * Provides common functionality for handling sharing notifications.
  */
 public final class SharingNotificationUtil {
-    // TODO(himanshujaju) - We have only two small icons, one for error and one for non error. We
-    // could avoid passing them around.
-
     /**
      * Shows a notification with a configuration common to all sharing notifications.
      *
@@ -51,9 +48,9 @@ public final class SharingNotificationUtil {
             @DrawableRes int smallIconId, @DrawableRes int largeIconId, int color) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(/*preferCompat=*/true,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
                                 ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
@@ -70,7 +67,7 @@ public final class SharingNotificationUtil {
             Bitmap largeIcon = BitmapFactory.decodeResource(resources, largeIconId);
             if (largeIcon != null) builder.setLargeIcon(largeIcon);
         }
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
 
         new NotificationManagerProxyImpl(context).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
@@ -96,9 +93,9 @@ public final class SharingNotificationUtil {
         Resources resources = context.getResources();
         String contentTitle =
                 resources.getString(R.string.sharing_sending_notification_title, targetName);
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(/*preferCompat=*/true,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
                                 ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
@@ -111,7 +108,7 @@ public final class SharingNotificationUtil {
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
                         .setOngoing(true)
                         .setDefaults(Notification.DEFAULT_ALL);
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
 
         new NotificationManagerProxyImpl(context).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
@@ -133,9 +130,9 @@ public final class SharingNotificationUtil {
             @Nullable PendingIntentProvider tryAgainIntent) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(/*preferCompat=*/true,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
                                 ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
@@ -154,7 +151,7 @@ public final class SharingNotificationUtil {
                             tryAgainIntent, NotificationUmaTracker.ActionType.SHARING_TRY_AGAIN);
         }
 
-        ChromeNotification notification = builder.buildWithBigTextStyle(contentText);
+        NotificationWrapper notification = builder.buildWithBigTextStyle(contentText);
 
         new NotificationManagerProxyImpl(context).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

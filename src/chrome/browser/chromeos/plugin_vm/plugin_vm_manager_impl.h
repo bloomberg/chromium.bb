@@ -22,6 +22,20 @@ class Profile;
 
 namespace plugin_vm {
 
+// Native Parallels error codes.
+constexpr int PRL_ERR_SUCCESS = 0;
+constexpr int PRL_ERR_DISP_SHUTDOWN_IN_PROCESS = 0x80000404;
+constexpr int PRL_ERR_LICENSE_NOT_VALID = 0x80011000;
+constexpr int PRL_ERR_LICENSE_EXPIRED = 0x80011001;
+constexpr int PRL_ERR_LICENSE_WRONG_VERSION = 0x80011002;
+constexpr int PRL_ERR_LICENSE_WRONG_PLATFORM = 0x80011004;
+constexpr int PRL_ERR_LICENSE_BETA_KEY_RELEASE_PRODUCT = 0x80011011;
+constexpr int PRL_ERR_LICENSE_RELEASE_KEY_BETA_PRODUCT = 0x80011013;
+constexpr int PRL_ERR_LICENSE_SUBSCR_EXPIRED = 0x80011074;
+constexpr int PRL_ERR_JLIC_WRONG_HWID = 0x80057005;
+constexpr int PRL_ERR_JLIC_LICENSE_DISABLED = 0x80057010;
+constexpr int PRL_ERR_JLIC_WEB_PORTAL_ACCESS_REQUIRED = 0x80057012;
+
 // The PluginVmManagerImpl is responsible for connecting to the D-Bus services
 // to manage the Plugin Vm.
 
@@ -34,9 +48,12 @@ class PluginVmManagerImpl
   explicit PluginVmManagerImpl(Profile* profile);
   ~PluginVmManagerImpl() override;
 
+  void OnPrimaryUserSessionStarted() override;
+
   // TODO(juwa): Don't allow launch/stop/uninstall to run simultaneously.
   // |callback| is called either when VM tools are ready or if an error occurs.
   void LaunchPluginVm(LaunchPluginVmCallback callback) override;
+  void RelaunchPluginVm() override;
   void StopPluginVm(const std::string& name, bool force) override;
   void UninstallPluginVm() override;
 
@@ -55,6 +72,8 @@ class PluginVmManagerImpl
 
   vm_tools::plugin_dispatcher::VmState vm_state() const override;
 
+  bool IsRelaunchNeededForNewPermissions() const override;
+
   void AddVmStartingObserver(chromeos::VmStartingObserver* observer) override;
   void RemoveVmStartingObserver(
       chromeos::VmStartingObserver* observer) override;
@@ -65,6 +84,13 @@ class PluginVmManagerImpl
   }
 
  private:
+  void InstallDlcAndUpdateVmState(
+      base::OnceCallback<void(bool default_vm_exists)> success_callback,
+      base::OnceClosure error_callback);
+  void OnInstallPluginVmDlc(
+      base::OnceCallback<void(bool default_vm_exists)> success_callback,
+      base::OnceClosure error_callback,
+      const chromeos::DlcserviceClient::InstallResult& install_result);
   void OnStartDispatcher(
       base::OnceCallback<void(bool default_vm_exists)> success_callback,
       base::OnceClosure error_callback,
@@ -77,9 +103,6 @@ class PluginVmManagerImpl
   // The flow to launch a Plugin Vm. We'll probably want to add additional
   // abstraction around starting the services in the future but this is
   // sufficient for now.
-  void InstallPluginVmDlc();
-  void OnInstallPluginVmDlc(
-      const chromeos::DlcserviceClient::InstallResult& install_result);
   void OnListVmsForLaunch(bool default_vm_exists);
   void StartVm();
   void OnStartVm(
@@ -97,6 +120,11 @@ class PluginVmManagerImpl
   // Called when LaunchPluginVm() is unsuccessful.
   void LaunchFailed(PluginVmLaunchResult result = PluginVmLaunchResult::kError);
 
+  // The flow to relaunch Plugin Vm.
+  void OnSuspendVmForRelaunch(
+      base::Optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply);
+  void OnRelaunchVmComplete(bool success);
+
   // The flow to uninstall Plugin Vm.
   void OnListVmsForUninstall(bool default_vm_exists);
   void StopVmForUninstall();
@@ -107,7 +135,9 @@ class PluginVmManagerImpl
       base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
 
   // Called when UninstallPluginVm() is unsuccessful.
-  void UninstallFailed();
+  void UninstallFailed(
+      PluginVmUninstallerNotification::FailedReason reason =
+          PluginVmUninstallerNotification::FailedReason::kUnknown);
 
   Profile* profile_;
   std::string owner_id_;
@@ -121,9 +151,23 @@ class PluginVmManagerImpl
   vm_tools::plugin_dispatcher::VmState vm_state_ =
       vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN;
 
+  // Indicates that we are attempting to start the VM. This fact may not yet
+  // be reflected in VM state as the dispatcher may not have had a chance
+  // to update it, or maybe it even is not yet aware that we issued StartVm
+  // request.
+  bool vm_is_starting_ = false;
+
+  // Indicates that we are executing VM relaunch.
+  bool relaunch_in_progress_ = false;
+
   // We can't immediately start the VM when it is in states like suspending, so
   // delay until an in progress operation finishes.
   bool pending_start_vm_ = false;
+
+  // If we receive second or third relaunch request while already in the middle
+  // of relaunch, we need to repeat it to ensure that privileges are set up
+  // according to the latest settings.
+  bool pending_relaunch_vm_ = false;
 
   // We can't immediately destroy the VM when it is in states like
   // suspending, so delay until an in progress operation finishes.

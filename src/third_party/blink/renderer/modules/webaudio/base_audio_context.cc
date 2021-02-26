@@ -141,10 +141,8 @@ void BaseAudioContext::Initialize() {
 }
 
 void BaseAudioContext::Clear() {
-  destination_node_.Clear();
-  // The audio rendering thread is dead.  Nobody will schedule AudioHandler
-  // deletion.  Let's do it ourselves.
-  GetDeferredTaskHandler().ClearHandlersToBeDeleted();
+  // Make a note that we've cleared out the context so that there's no pending
+  // activity.
   is_cleared_ = true;
 }
 
@@ -808,7 +806,7 @@ void BaseAudioContext::StartRendering() {
   }
 }
 
-void BaseAudioContext::Trace(Visitor* visitor) {
+void BaseAudioContext::Trace(Visitor* visitor) const {
   visitor->Trace(destination_node_);
   visitor->Trace(listener_);
   visitor->Trace(resume_resolvers_);

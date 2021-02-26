@@ -8,9 +8,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,13 +21,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -33,10 +36,8 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -50,7 +51,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@RetryOnFailure
 public class WebappModeTest {
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
@@ -94,7 +94,7 @@ public class WebappModeTest {
 
         InstrumentationRegistry.getTargetContext().startActivity(intent);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ApplicationTestUtils.waitUntilChromeInForeground();
+        ChromeApplicationTestUtils.waitUntilChromeInForeground();
     }
 
     @Before
@@ -141,29 +141,25 @@ public class WebappModeTest {
 
         // Firing a different Intent should start a new WebappActivity instance.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!isWebappActivityReady(lastActivity)) return false;
+        CriteriaHelper.pollUiThread(() -> {
+            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+            Criteria.checkThat(isWebappActivityReady(lastActivity), Matchers.is(true));
 
-                WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
-                return lastWebappActivity.getActivityTab().getId() != firstTabId;
-            }
+            WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
+            Criteria.checkThat(
+                    lastWebappActivity.getActivityTab().getId(), Matchers.not(firstTabId));
         });
 
         // Firing the first Intent should bring back the first WebappActivity instance, or at least
         // a WebappActivity with the same tab if the other one was killed by Android mid-test.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!isWebappActivityReady(lastActivity)) return false;
+        CriteriaHelper.pollUiThread(() -> {
+            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+            Criteria.checkThat(isWebappActivityReady(lastActivity), Matchers.is(true));
 
-                WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
-                return lastWebappActivity.getActivityTab().getId() == firstTabId;
-            }
+            WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
+            Criteria.checkThat(
+                    lastWebappActivity.getActivityTab().getId(), Matchers.is(firstTabId));
         });
     }
 
@@ -199,7 +195,7 @@ public class WebappModeTest {
 
         // Return home.
         final Context context = InstrumentationRegistry.getTargetContext();
-        ApplicationTestUtils.fireHomeScreenIntent(context);
+        ChromeApplicationTestUtils.fireHomeScreenIntent(context);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Bring the WebappActivity back via an Intent.
@@ -211,16 +207,14 @@ public class WebappModeTest {
         // Because of Android killing Activities willy-nilly, it may not be the same Activity, but
         // it should have the same Tab ID.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ApplicationTestUtils.waitUntilChromeInForeground();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!isWebappActivityReady(lastActivity)) return false;
+        ChromeApplicationTestUtils.waitUntilChromeInForeground();
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+            Criteria.checkThat(isWebappActivityReady(lastActivity), Matchers.is(true));
 
-                WebappActivity webappActivity = (WebappActivity) lastActivity;
-                return webappActivity.getActivityTab().getId() == webappTabId;
-            }
+            WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
+            Criteria.checkThat(
+                    lastWebappActivity.getActivityTab().getId(), Matchers.is(webappTabId));
         });
     }
 
@@ -234,12 +228,9 @@ public class WebappModeTest {
     public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                return lastActivity instanceof ChromeTabbedActivity;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+            Criteria.checkThat(lastActivity, Matchers.instanceOf(ChromeTabbedActivity.class));
         });
         ChromeActivity chromeActivity =
                 (ChromeActivity) ApplicationStatus.getLastTrackedFocusedActivity();
@@ -247,11 +238,8 @@ public class WebappModeTest {
 
         // Firing a correct Intent should start a WebappActivity instance instead of the browser.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
         });
     }
 
@@ -262,12 +250,9 @@ public class WebappModeTest {
      */
     private WebappActivity startWebappActivity(String id, String url, String title, String icon) {
         fireWebappIntent(id, url, title, icon, true);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                return isWebappActivityReady(lastActivity);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+            return isWebappActivityReady(lastActivity);
         }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }

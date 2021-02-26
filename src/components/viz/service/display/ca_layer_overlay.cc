@@ -7,13 +7,14 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "third_party/skia/include/core/SkDeferredDisplayList.h"
 
 namespace viz {
 
@@ -85,10 +86,10 @@ bool FilterOperationSupported(const cc::FilterOperation& operation) {
 
 CALayerResult FromRenderPassQuad(
     DisplayResourceProvider* resource_provider,
-    const RenderPassDrawQuad* quad,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
+    const AggregatedRenderPassDrawQuad* quad,
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_filters,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_backdrop_filters,
     CALayerOverlay* ca_layer_overlay) {
   if (render_pass_backdrop_filters.count(quad->render_pass_id)) {
@@ -185,9 +186,9 @@ class CALayerOverlayProcessorInternal {
       DisplayResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const DrawQuad* quad,
-      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_filters,
-      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_backdrop_filters,
       CALayerOverlay* ca_layer_overlay,
       bool* skip,
@@ -207,10 +208,10 @@ class CALayerOverlayProcessorInternal {
     // possible to make rounded corner rects independent of clip rect (by adding
     // another CALayer to the tree). Handling non-single border radii is also,
     // but requires APIs not supported on all macOS versions.
-    if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty()) {
+    if (quad->shared_quad_state->mask_filter_info.HasRoundedCorners()) {
       DCHECK(quad->shared_quad_state->is_clipped);
-      if (quad->shared_quad_state->rounded_corner_bounds.GetType() >
-          gfx::RRectF::Type::kSingle) {
+      if (quad->shared_quad_state->mask_filter_info.rounded_corner_bounds()
+              .GetType() > gfx::RRectF::Type::kSingle) {
         return CA_LAYER_FAILED_QUAD_ROUNDED_CORNER_NOT_UNIFORM;
       }
     }
@@ -237,7 +238,7 @@ class CALayerOverlayProcessorInternal {
       most_recent_overlay_shared_state_->clip_rect =
           gfx::RectF(quad->shared_quad_state->clip_rect);
       most_recent_overlay_shared_state_->rounded_corner_bounds =
-          quad->shared_quad_state->rounded_corner_bounds;
+          quad->shared_quad_state->mask_filter_info.rounded_corner_bounds();
 
       most_recent_overlay_shared_state_->opacity =
           quad->shared_quad_state->opacity;
@@ -248,7 +249,8 @@ class CALayerOverlayProcessorInternal {
 
     ca_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
 
-    *render_pass_draw_quad = quad->material == DrawQuad::Material::kRenderPass;
+    *render_pass_draw_quad =
+        quad->material == DrawQuad::Material::kAggregatedRenderPass;
     switch (quad->material) {
       case DrawQuad::Material::kTextureContent:
         return FromTextureQuad(resource_provider,
@@ -268,9 +270,9 @@ class CALayerOverlayProcessorInternal {
         return CA_LAYER_FAILED_DEBUG_BORDER;
       case DrawQuad::Material::kPictureContent:
         return CA_LAYER_FAILED_PICTURE_CONTENT;
-      case DrawQuad::Material::kRenderPass:
+      case DrawQuad::Material::kAggregatedRenderPass:
         return FromRenderPassQuad(
-            resource_provider, RenderPassDrawQuad::MaterialCast(quad),
+            resource_provider, AggregatedRenderPassDrawQuad::MaterialCast(quad),
             render_pass_filters, render_pass_backdrop_filters,
             ca_layer_overlay);
       case DrawQuad::Material::kSurfaceContent:
@@ -295,15 +297,18 @@ CALayerOverlay::CALayerOverlay() : filter(GL_LINEAR) {}
 
 CALayerOverlay::CALayerOverlay(const CALayerOverlay& other) = default;
 
-CALayerOverlay::~CALayerOverlay() {}
+CALayerOverlay::~CALayerOverlay() = default;
+
+CALayerOverlay& CALayerOverlay::operator=(const CALayerOverlay& other) =
+    default;
 
 bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_filters,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_backdrop_filters,
     CALayerOverlayList* ca_layer_overlays) const {
   CALayerResult result = CA_LAYER_SUCCESS;

@@ -4,7 +4,6 @@
 
 module blink.mojom;
 
-import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -14,7 +13,7 @@ import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/loader/request_context_frame_type.mojom";
-import "third_party/blink/public/mojom/referrer.mojom";
+import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "url/mojom/url.mojom";
 
 
@@ -121,12 +120,8 @@ struct FetchAPIDataElement {
   network.mojom.DataElementType type;
   // For kBytes.
   array<uint8> buf;
-  // For kFile and kRawFile
+  // For kFile
   mojo_base.mojom.FilePath path;
-  // For kRawFile
-  mojo_base.mojom.File? file;
-  // For kBlob
-  string? blob_uuid;
   // For kDataPipe
   pending_remote<network.mojom.DataPipeGetter>? data_pipe_getter;
   // For kChunkedDataPipe
@@ -201,4 +196,10 @@ struct FetchAPIRequest {
   bool keepalive = false;
   bool is_reload = false;
   bool is_history_navigation = false;
+
+  // A V8 stack id string describing where the request was initiated.
+  // DevTools can use this to display the initiator call stack when debugging
+  // a process that later intercepts the request, e.g., in a service worker
+  // fetch event handler.
+  string? devtools_stack_id;
 };

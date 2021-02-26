@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -12,7 +14,6 @@
 #include "components/find_in_page/find_result_observer.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/paint_preview/buildflags/buildflags.h"
-#include "content/public/browser/bluetooth_chooser.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 
@@ -44,20 +45,13 @@ class TabWebContentsDelegateAndroid
 
   void PortalWebContentsCreated(content::WebContents* portal_contents) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
+                      scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
-  std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
-      content::RenderFrameHost* frame,
-      const content::BluetoothChooser::EventHandler& event_handler) override;
   void CreateSmsPrompt(content::RenderFrameHost*,
                        const url::Origin&,
                        const std::string& one_time_code,
                        base::OnceClosure on_confirm,
                        base::OnceClosure on_cancel) override;
-  std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
-      content::RenderFrameHost* frame,
-      const content::BluetoothScanningPrompt::EventHandler& event_handler)
-      override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
   blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
@@ -75,7 +69,7 @@ class TabWebContentsDelegateAndroid
       content::WebContents* source) override;
   void AdjustPreviewsStateForNavigation(
       content::WebContents* web_contents,
-      content::PreviewsState* previews_state) override;
+      blink::PreviewsState* previews_state) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -118,6 +112,8 @@ class TabWebContentsDelegateAndroid
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
+  device::mojom::GeolocationContext* GetInstalledWebappGeolocationContext()
+      override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(
@@ -128,7 +124,7 @@ class TabWebContentsDelegateAndroid
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-  void CapturePaintPreviewOfCrossProcessSubframe(
+  void CapturePaintPreviewOfSubframe(
       content::WebContents* web_contents,
       const gfx::Rect& rect,
       const base::UnguessableToken& guid,
@@ -149,8 +145,12 @@ class TabWebContentsDelegateAndroid
   // might change over the lifetime of the tab.
   bool IsCustomTab() const;
   const GURL GetManifestScope() const;
+  bool IsInstalledWebappDelegateGeolocation() const;
 
  private:
+  std::unique_ptr<device::mojom::GeolocationContext>
+      installed_webapp_geolocation_context_;
+
   ScopedObserver<find_in_page::FindTabHelper, find_in_page::FindResultObserver>
       find_result_observer_{this};
 

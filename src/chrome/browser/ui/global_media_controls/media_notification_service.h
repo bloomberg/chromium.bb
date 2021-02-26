@@ -9,18 +9,22 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
-#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
+#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager_impl.h"
+#include "chrome/browser/ui/global_media_controls/presentation_request_notification_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/media_message_center/media_notification_controller.h"
+#include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -28,12 +32,17 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
+class StartPresentationContext;
 class WebContents;
 }  // namespace content
 
 namespace media_message_center {
 class MediaSessionNotificationItem;
 }  // namespace media_message_center
+
+namespace media_router {
+class CastDialogController;
+}
 
 class MediaDialogDelegate;
 class MediaNotificationContainerImpl;
@@ -45,7 +54,7 @@ class MediaNotificationService
       public media_message_center::MediaNotificationController,
       public MediaNotificationContainerObserver {
  public:
-  explicit MediaNotificationService(Profile* profile);
+  MediaNotificationService(Profile* profile, bool show_from_all_profiles);
   MediaNotificationService(const MediaNotificationService&) = delete;
   MediaNotificationService& operator=(const MediaNotificationService&) = delete;
   ~MediaNotificationService() override;
@@ -69,16 +78,23 @@ class MediaNotificationService
       media_session::mojom::MediaSessionAction action) override;
 
   // MediaNotificationContainerObserver implementation.
-  void OnContainerExpanded(bool expanded) override {}
+  void OnContainerSizeChanged() override {}
   void OnContainerMetadataChanged() override {}
   void OnContainerActionsChanged() override {}
   void OnContainerClicked(const std::string& id) override;
   void OnContainerDismissed(const std::string& id) override;
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
+  void OnAudioSinkChosen(const std::string& id,
+                         const std::string& sink_id) override;
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // Adds a "suppplemental" notification, which should only be shown if there is
+  // no other notification associated with the same web contents.
+  void AddSupplementalNotification(const std::string& id,
+                                   content::WebContents* web_contents);
 
   // Called by the |overlay_media_notifications_manager_| when an overlay
   // notification is closed.
@@ -103,6 +119,35 @@ class MediaNotificationService
 
   // Called by a |MediaNotificationService::Session| when it becomes inactive.
   void OnSessionBecameInactive(const std::string& id);
+
+  // Used by a |MediaNotificationDeviceSelectorView| to query the system
+  // for connected audio output devices.
+  std::unique_ptr<MediaNotificationDeviceProvider::
+                      GetOutputDevicesCallbackList::Subscription>
+  RegisterAudioOutputDeviceDescriptionsCallback(
+      MediaNotificationDeviceProvider::GetOutputDevicesCallback callback);
+
+  // Used by a |MediaNotificationAudioDeviceSelectorView| to become notified of
+  // audio device switching capabilities. The callback will be immediately run
+  // with the current availability.
+  std::unique_ptr<base::RepeatingCallbackList<void(bool)>::Subscription>
+  RegisterIsAudioOutputDeviceSwitchingSupportedCallback(
+      const std::string& id,
+      base::RepeatingCallback<void(bool)> callback);
+
+  void OnPresentationRequestCreated(
+      std::unique_ptr<media_router::StartPresentationContext> context);
+
+  void OnStartPresentationContextCreated(
+      std::unique_ptr<media_router::StartPresentationContext> context);
+
+  void set_device_provider_for_testing(
+      std::unique_ptr<MediaNotificationDeviceProvider> device_provider);
+
+  // Instantiates a MediaRouterViewsUI object associated with the Session with
+  // the given |session_id|.
+  std::unique_ptr<media_router::CastDialogController>
+  CreateCastDialogControllerForSession(const std::string& session_id);
 
  private:
   friend class MediaNotificationServiceTest;
@@ -153,7 +198,7 @@ class MediaNotificationService
     }
     void MediaSessionActionsChanged(
         const std::vector<media_session::mojom::MediaSessionAction>& actions)
-        override {}
+        override;
     void MediaSessionChanged(
         const base::Optional<base::UnguessableToken>& request_id) override {}
     void MediaSessionPositionChanged(
@@ -184,6 +229,16 @@ class MediaNotificationService
     void OnSessionOverlayStateChanged(bool is_in_overlay);
 
     bool IsPlaying();
+
+    void SetAudioSinkId(const std::string& id);
+
+    std::unique_ptr<base::RepeatingCallbackList<void(bool)>::Subscription>
+    RegisterIsAudioDeviceSwitchingSupportedCallback(
+        base::RepeatingCallback<void(bool)> callback);
+
+    void SetPresentationManagerForTesting(
+        base::WeakPtr<media_router::WebContentsPresentationManager>
+            presentation_manager);
 
    private:
     static void RecordDismissReason(GlobalMediaControlsDismissReason reason);
@@ -217,9 +272,19 @@ class MediaNotificationService
     // True if we're in an overlay notification.
     bool is_in_overlay_ = false;
 
+    // True if the audio output device can be switched.
+    bool is_audio_device_switching_supported_ = true;
+
+    // Used to notify changes in audio output device switching capabilities.
+    base::RepeatingCallbackList<void(bool)>
+        is_audio_device_switching_supported_callback_list_;
+
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
         observer_receiver_{this};
+
+    // Used to request audio output be routed to a different device.
+    mojo::Remote<media_session::mojom::MediaController> controller_;
 
     base::WeakPtr<media_router::WebContentsPresentationManager>
         presentation_manager_;
@@ -230,12 +295,31 @@ class MediaNotificationService
   void OnReceivedAudioFocusRequests(
       std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions);
 
+  // Looks up a notification from any source.  Returns null if not found.
   base::WeakPtr<media_message_center::MediaNotificationItem>
   GetNotificationItem(const std::string& id);
 
+  // Looks up a Session object by its ID.  Returns null if not found.
+  Session* GetSession(const std::string& id);
+
+  // Looks up a notification item not associated with a Session object.  Returns
+  // null if not found.
+  //
+  // TODO(crbug.com/1021643): Treat audio sessions the same way we treat others.
+  base::WeakPtr<media_message_center::MediaNotificationItem>
+  GetNonSessionNotificationItem(const std::string& id);
+
+  // Called after changing anything about a notification to notify any observers
+  // and update the visibility of supplemental notifications.  If the change is
+  // associated with a particular notification ID, that ID should be passed as
+  // the argument, otherwise the argument should be nullptr.
+  void OnNotificationChanged(const std::string* changed_notification_id);
+
+  bool HasSessionForWebContents(content::WebContents* web_contents) const;
+
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
-  OverlayMediaNotificationsManager overlay_media_notifications_manager_;
+  OverlayMediaNotificationsManagerImpl overlay_media_notifications_manager_;
 
   // Used to track whether there are any active controllable sessions. If not,
   // then there's nothing to show in the dialog and we can hide the toolbar
@@ -257,6 +341,14 @@ class MediaNotificationService
   // again (e.g. by playing the session).
   std::unordered_set<std::string> inactive_session_ids_;
 
+  // A mapping of supplemental notification IDs to their associated web
+  // contents.  See MediaNotificationController::AddSupplementalNotification for
+  // a description of supplemental notifications.
+  //
+  // This map should usually have at most one item.
+  base::flat_map<std::string, content::WebContents*>
+      supplemental_notifications_;
+
   // Stores a Session for each media session keyed by its |request_id| in string
   // format.
   std::map<std::string, Session> sessions_;
@@ -273,12 +365,16 @@ class MediaNotificationService
       audio_focus_observer_receiver_{this};
 
   std::unique_ptr<CastMediaNotificationProvider> cast_notification_provider_;
+  std::unique_ptr<PresentationRequestNotificationProvider>
+      presentation_request_notification_provider_;
 
   base::ObserverList<MediaNotificationServiceObserver> observers_;
 
   // Tracks the number of times we have recorded an action for a specific
   // source. We use this to cap the number of UKM recordings per site.
   std::map<ukm::SourceId, int> actions_recorded_to_ukm_;
+
+  std::unique_ptr<MediaNotificationDeviceProvider> device_provider_;
 
   base::WeakPtrFactory<MediaNotificationService> weak_ptr_factory_{this};
 };

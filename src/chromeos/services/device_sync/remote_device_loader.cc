@@ -91,14 +91,14 @@ RemoteDeviceLoader::RemoteDeviceLoader(
 
 RemoteDeviceLoader::~RemoteDeviceLoader() {}
 
-void RemoteDeviceLoader::Load(const RemoteDeviceCallback& callback) {
+void RemoteDeviceLoader::Load(RemoteDeviceCallback callback) {
   DCHECK(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
   PA_LOG(VERBOSE) << "Loading " << remaining_devices_.size()
                   << " remote devices";
 
   if (remaining_devices_.empty()) {
-    callback_.Run(remote_devices_);
+    std::move(callback_).Run(remote_devices_);
     return;
   }
 
@@ -108,8 +108,8 @@ void RemoteDeviceLoader::Load(const RemoteDeviceCallback& callback) {
   for (const auto& device : all_devices_to_convert) {
     secure_message_delegate_->DeriveKey(
         user_private_key_, device.public_key(),
-        base::Bind(&RemoteDeviceLoader::OnPSKDerived,
-                   weak_ptr_factory_.GetWeakPtr(), device));
+        base::BindOnce(&RemoteDeviceLoader::OnPSKDerived,
+                       weak_ptr_factory_.GetWeakPtr(), device));
   }
 }
 
@@ -138,14 +138,15 @@ void RemoteDeviceLoader::OnPSKDerived(
       user_email_, std::string() /* instance_id */,
       device.friendly_device_name(), device.no_pii_device_name(),
       device.public_key(), psk, device.last_update_time_millis(),
-      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds);
+      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds,
+      device.bluetooth_address());
 
   remote_devices_.push_back(remote_device);
 
   if (remaining_devices_.empty()) {
     PA_LOG(VERBOSE) << "Derived keys for " << remote_devices_.size()
                     << " devices.";
-    callback_.Run(remote_devices_);
+    std::move(callback_).Run(remote_devices_);
   }
 }
 

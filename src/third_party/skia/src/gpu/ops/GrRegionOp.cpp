@@ -38,21 +38,21 @@ private:
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
-                                          GrPaint&& paint,
-                                          const SkMatrix& viewMatrix,
-                                          const SkRegion& region,
-                                          GrAAType aaType,
-                                          const GrUserStencilSettings* stencilSettings = nullptr) {
+    static GrOp::Owner Make(GrRecordingContext* context,
+                            GrPaint&& paint,
+                            const SkMatrix& viewMatrix,
+                            const SkRegion& region,
+                            GrAAType aaType,
+                            const GrUserStencilSettings* stencilSettings = nullptr) {
         return Helper::FactoryHelper<RegionOp>(context, std::move(paint), viewMatrix, region,
                                                aaType, stencilSettings);
     }
 
-    RegionOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+    RegionOp(GrProcessorSet* processorSet, const SkPMColor4f& color,
              const SkMatrix& viewMatrix, const SkRegion& region, GrAAType aaType,
              const GrUserStencilSettings* stencilSettings)
             : INHERITED(ClassID())
-            , fHelper(helperArgs, aaType, stencilSettings)
+            , fHelper(processorSet, aaType, stencilSettings)
             , fViewMatrix(viewMatrix) {
         RegionInfo& info = fRegions.push_back();
         info.fColor = color;
@@ -72,21 +72,6 @@ public:
         }
     }
 
-#ifdef SK_DEBUG
-    SkString dumpInfo() const override {
-        SkString str;
-        str.appendf("# combined: %d\n", fRegions.count());
-        for (int i = 0; i < fRegions.count(); ++i) {
-            const RegionInfo& info = fRegions[i];
-            str.appendf("%d: Color: 0x%08x, Region with %d rects\n", i, info.fColor.toBytes_RGBA(),
-                        info.fRegion.computeRegionComplexity());
-        }
-        str += fHelper.dumpInfo();
-        str += INHERITED::dumpInfo();
-        return str;
-    }
-#endif
-
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
     GrProcessorSet::Analysis finalize(
@@ -104,7 +89,8 @@ private:
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView* writeView,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView) override {
+                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             GrXferBarrierFlags renderPassXferBarriers) override {
         GrGeometryProcessor* gp = make_gp(arena, fViewMatrix, fWideColor);
         if (!gp) {
             SkDebugf("Couldn't create GrGeometryProcessor\n");
@@ -113,7 +99,8 @@ private:
 
         fProgramInfo = fHelper.createProgramInfoWithStencil(caps, arena, writeView,
                                                             std::move(appliedClip), dstProxyView,
-                                                            gp, GrPrimitiveType::kTriangles);
+                                                            gp, GrPrimitiveType::kTriangles,
+                                                            renderPassXferBarriers);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -165,8 +152,7 @@ private:
         flushState->drawMesh(*fMesh);
     }
 
-    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*,
-                                      const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, SkArenaAlloc*, const GrCaps& caps) override {
         RegionOp* that = t->cast<RegionOp>();
         if (!fHelper.isCompatible(that->fHelper, caps, this->bounds(), that->bounds())) {
             return CombineResult::kCannotCombine;
@@ -181,6 +167,19 @@ private:
         return CombineResult::kMerged;
     }
 
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override {
+        SkString str = SkStringPrintf("# combined: %d\n", fRegions.count());
+        for (int i = 0; i < fRegions.count(); ++i) {
+            const RegionInfo& info = fRegions[i];
+            str.appendf("%d: Color: 0x%08x, Region with %d rects\n", i, info.fColor.toBytes_RGBA(),
+                        info.fRegion.computeRegionComplexity());
+        }
+        str += fHelper.dumpInfo();
+        return str;
+    }
+#endif
+
     struct RegionInfo {
         SkPMColor4f fColor;
         SkRegion fRegion;
@@ -194,25 +193,25 @@ private:
     GrSimpleMesh*  fMesh = nullptr;
     GrProgramInfo* fProgramInfo = nullptr;
 
-    typedef GrMeshDrawOp INHERITED;
+    using INHERITED = GrMeshDrawOp;
 };
 
 }  // anonymous namespace
 
 namespace GrRegionOp {
 
-std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
-                               GrPaint&& paint,
-                               const SkMatrix& viewMatrix,
-                               const SkRegion& region,
-                               GrAAType aaType,
-                               const GrUserStencilSettings* stencilSettings) {
+GrOp::Owner Make(GrRecordingContext* context,
+                 GrPaint&& paint,
+                 const SkMatrix& viewMatrix,
+                 const SkRegion& region,
+                 GrAAType aaType,
+                 const GrUserStencilSettings* stencilSettings) {
     if (aaType != GrAAType::kNone && aaType != GrAAType::kMSAA) {
         return nullptr;
     }
     return RegionOp::Make(context, std::move(paint), viewMatrix, region, aaType, stencilSettings);
 }
-}
+}  // namespace GrRegionOp
 
 #if GR_TEST_UTILS
 

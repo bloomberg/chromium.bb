@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
@@ -126,14 +127,16 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   }
 
   if (response_source == ResponseSource::kFromMemoryCache) {
-    ResourceRequest request(resource->GetResourceRequest());
+    ResourceRequest resource_request(resource->GetResourceRequest());
 
-    if (!request.Url().ProtocolIs(url::kDataScheme)) {
-      frame_client->DispatchDidLoadResourceFromMemoryCache(request, response);
+    if (!resource_request.Url().ProtocolIs(url::kDataScheme)) {
+      frame_client->DispatchDidLoadResourceFromMemoryCache(resource_request,
+                                                           response);
       frame->GetLocalFrameHostRemote().DidLoadResourceFromMemoryCache(
-          request.Url(), String::FromUTF8(request.HttpMethod().Utf8()),
+          resource_request.Url(),
+          String::FromUTF8(resource_request.HttpMethod().Utf8()),
           String::FromUTF8(response.MimeType().Utf8()),
-          request.GetRequestDestination());
+          resource_request.GetRequestDestination());
     }
 
     // Note: probe::WillSendRequest needs to precede before this probe method.
@@ -142,8 +145,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       return;
   }
 
-  MixedContentChecker::CheckMixedPrivatePublic(frame,
-                                               response.RemoteIPAddress());
+  MixedContentChecker::CheckMixedPrivatePublic(frame, response);
 
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternate_resource_info;
 
@@ -153,13 +155,13 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
     CountUsage(WebFeature::kLinkRelPrefetchForSignedExchanges);
 
     if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-            document_) &&
-        resource->LastResourceResponse()) {
+            document_->GetExecutionContext()) &&
+        resource->RedirectChainSize() > 0) {
       // See if the outer response (which must be the last response in
       // the redirect chain) had provided alternate links for the prefetch.
       alternate_resource_info =
           AlternateSignedExchangeResourceInfo::CreateIfValid(
-              resource->LastResourceResponse()->HttpHeaderField(
+              resource->LastResourceResponse().HttpHeaderField(
                   http_names::kLink),
               response.HttpHeaderField(http_names::kLink));
     }
@@ -176,8 +178,10 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       base::OptionalOrNullptr(response.RecursivePrefetchToken()));
 
   if (response.HasMajorCertificateErrors()) {
-    MixedContentChecker::HandleCertificateError(frame, response,
-                                                request.GetRequestContext());
+    MixedContentChecker::HandleCertificateError(
+        response, request.GetRequestContext(),
+        MixedContentChecker::DecideCheckModeForPlugin(frame->GetSettings()),
+        document_loader_->GetContentSecurityNotifier());
   }
 
   if (response.IsLegacyTLSVersion()) {
@@ -250,7 +254,9 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   frame->Loader().Progress().CompleteProgress(identifier);
-  probe::DidFailLoading(GetProbe(), identifier, document_loader_, error);
+
+  probe::DidFailLoading(GetProbe(), identifier, document_loader_, error,
+                        frame->GetDevToolsFrameToken());
 
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
@@ -268,7 +274,14 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   document_->CheckCompleted();
 }
 
-void ResourceLoadObserverForFrame::Trace(Visitor* visitor) {
+void ResourceLoadObserverForFrame::EvictFromBackForwardCache(
+    mojom::blink::RendererEvictionReason reason) {
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  frame->EvictFromBackForwardCache(reason);
+}
+
+void ResourceLoadObserverForFrame::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(fetcher_properties_);

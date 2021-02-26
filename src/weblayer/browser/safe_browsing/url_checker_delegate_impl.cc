@@ -5,22 +5,36 @@
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
+#include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
 namespace weblayer {
 
+namespace {
+
+// Destroys the prerender contents associated with the web_contents, if any.
+void DestroyPrerenderContents(
+    content::WebContents::OnceGetter web_contents_getter) {
+  content::WebContents* web_contents = std::move(web_contents_getter).Run();
+
+  auto* prerender_contents = PrerenderContentsFromWebContents(web_contents);
+  if (prerender_contents)
+    prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
+}
+
+}  // namespace
+
 UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    bool disabled)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
-      safe_browsing_disabled_(disabled),
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
           {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
@@ -30,7 +44,12 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    content::WebContents::OnceGetter web_contents_getter) {}
+    content::WebContents::OnceGetter web_contents_getter) {
+  // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DestroyPrerenderContents,
+                                std::move(web_contents_getter)));
+}
 
 void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,
@@ -38,8 +57,8 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
           base::Unretained(this), resource));
@@ -61,18 +80,14 @@ void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
   }
 
   // Report back that it is not ok to proceed with loading the URL.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false /* proceed */,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(resource.callback, false /* proceed */,
                                 false /* showed_interstitial */));
 }
 
-bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
-  // TODO(timvolodine): false for now, we may want whitelisting support later.
+bool UrlCheckerDelegateImpl::IsUrlAllowlisted(const GURL& url) {
+  // TODO(timvolodine): false for now, we may want allowlisting support later.
   return false;
-}
-
-void UrlCheckerDelegateImpl::SetSafeBrowsingDisabled(bool disabled) {
-  safe_browsing_disabled_ = disabled;
 }
 
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
@@ -81,7 +96,7 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  return safe_browsing_disabled_ ? true : false;
+  return false;
 }
 
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

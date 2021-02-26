@@ -7,7 +7,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -25,7 +25,7 @@ void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
 views::ViewsDelegate::ProcessMenuAcceleratorResult
 ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     const ui::Accelerator& accelerator) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   if (ash::AcceleratorController::Get()->OnMenuAccelerator(accelerator)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -37,8 +37,8 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 }
 
-views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ChromeViewsDelegate::CreateDefaultNonClientFrameView(views::Widget* widget) {
   return ash::Shell::Get()->CreateDefaultNonClientFrameView(widget);
 }
 

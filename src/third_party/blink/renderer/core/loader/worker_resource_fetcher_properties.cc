@@ -23,7 +23,7 @@ WorkerResourceFetcherProperties::WorkerResourceFetcherProperties(
   DCHECK(web_context_);
 }
 
-void WorkerResourceFetcherProperties::Trace(Visitor* visitor) {
+void WorkerResourceFetcherProperties::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
   visitor->Trace(fetch_client_settings_object_);
   ResourceFetcherProperties::Trace(visitor);
@@ -36,6 +36,14 @@ WorkerResourceFetcherProperties::GetControllerServiceWorkerMode() const {
 
 bool WorkerResourceFetcherProperties::IsPaused() const {
   return global_scope_->IsContextPaused();
+}
+
+WebURLLoader::DeferType WorkerResourceFetcherProperties::DeferType() const {
+  return global_scope_->DeferType();
+}
+
+bool WorkerResourceFetcherProperties::IsLoadDeferred() const {
+  return global_scope_->IsLoadDeferred();
 }
 
 const KURL& WorkerResourceFetcherProperties::WebBundlePhysicalUrl() const {

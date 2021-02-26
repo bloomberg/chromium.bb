@@ -34,7 +34,7 @@ class ScrollSnapTest : public SimTest {
 
 void ScrollSnapTest::SetUpForDiv() {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -137,8 +137,10 @@ void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
 
 void ScrollSnapTest::SetInitialScrollOffset(double x, double y) {
   Element* scroller = GetDocument().getElementById("scroller");
-  scroller->GetScrollableArea()->ScrollToAbsolutePosition(
-      FloatPoint(x, y), mojom::blink::ScrollBehavior::kAuto);
+  scroller->GetLayoutBoxForScrolling()
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(x, y),
+                                 mojom::blink::ScrollBehavior::kAuto);
   ASSERT_EQ(scroller->scrollLeft(), x);
   ASSERT_EQ(scroller->scrollTop(), y);
 }
@@ -206,7 +208,7 @@ TEST_F(ScrollSnapTest, AnimateFlingToArriveAtSnapPoint) {
 
 TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -272,7 +274,7 @@ TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
 
 TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -339,7 +341,7 @@ TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
 
 TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(

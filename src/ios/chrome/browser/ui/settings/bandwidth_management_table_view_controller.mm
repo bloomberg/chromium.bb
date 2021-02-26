@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -73,10 +75,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Register to observe any changes on Perf backed values displayed by the
     // screen.
     _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kNetworkPredictionEnabled,
-        &_prefChangeRegistrarApplicationContext);
-    _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kNetworkPredictionWifiOnly,
+        prefs::kNetworkPredictionSetting,
         &_prefChangeRegistrarApplicationContext);
   }
   return self;
@@ -108,6 +107,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
       forSectionWithIdentifier:SectionIdentifierActions];
 }
 
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileBandwidthSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileBandwidthSettingsBack"));
+}
+
 #pragma mark - UITableViewDelegate
 
 - (UIView*)tableView:(UITableView*)tableView
@@ -131,8 +140,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
     UIViewController* controller = [[DataplanUsageTableViewController alloc]
         initWithPrefs:_browserState->GetPrefs()
-             basePref:prefs::kNetworkPredictionEnabled
-             wifiPref:prefs::kNetworkPredictionWifiOnly
+          settingPref:prefs::kNetworkPredictionSetting
                 title:preloadTitle];
     [self.navigationController pushViewController:controller animated:YES];
   }
@@ -141,12 +149,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
-  if (preferenceName == prefs::kNetworkPredictionEnabled ||
-      preferenceName == prefs::kNetworkPredictionWifiOnly) {
+  if (preferenceName == prefs::kNetworkPredictionSetting) {
     NSString* detailText = [DataplanUsageTableViewController
         currentLabelForPreference:_browserState->GetPrefs()
-                         basePref:prefs::kNetworkPredictionEnabled
-                         wifiPref:prefs::kNetworkPredictionWifiOnly];
+                      settingPref:prefs::kNetworkPredictionSetting];
 
     _preloadWebpagesDetailItem.detailText = detailText;
 
@@ -161,8 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (TableViewDetailIconItem*)preloadWebpagesItem {
   NSString* detailText = [DataplanUsageTableViewController
       currentLabelForPreference:_browserState->GetPrefs()
-                       basePref:prefs::kNetworkPredictionEnabled
-                       wifiPref:prefs::kNetworkPredictionWifiOnly];
+                    settingPref:prefs::kNetworkPredictionSetting];
   _preloadWebpagesDetailItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypePreload];
 

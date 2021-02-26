@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -34,11 +33,11 @@ EPKPChallengeKey::~EPKPChallengeKey() = default;
 
 void EPKPChallengeKey::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kAttestationExtensionWhitelist);
+  registry->RegisterListPref(prefs::kAttestationExtensionAllowlist);
 }
 
-// Check if the extension is whitelisted in the user policy.
-bool EPKPChallengeKey::IsExtensionWhitelisted(
+// Check if the extension is allowisted in the user policy.
+bool EPKPChallengeKey::IsExtensionAllowed(
     Profile* profile,
     scoped_refptr<const Extension> extension) {
   if (!chromeos::ProfileHelper::Get()->GetUserByProfile(profile)) {
@@ -49,11 +48,11 @@ bool EPKPChallengeKey::IsExtensionWhitelisted(
   }
   if (Manifest::IsComponentLocation(extension->location())) {
     // Note: For this to even be called, the component extension must also be
-    // whitelisted in chrome/common/extensions/api/_permission_features.json
+    // allowed in chrome/common/extensions/api/_permission_features.json
     return true;
   }
   const base::ListValue* list =
-      profile->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
+      profile->GetPrefs()->GetList(prefs::kAttestationExtensionAllowlist);
   base::Value value(extension->id());
   return list->Find(value) != list->end();
 }
@@ -66,11 +65,11 @@ void EPKPChallengeKey::Run(
     bool register_key) {
   Profile* profile = ChromeExtensionFunctionDetails(caller.get()).GetProfile();
 
-  if (!IsExtensionWhitelisted(profile, caller->extension())) {
+  if (!IsExtensionAllowed(profile, caller->extension())) {
     std::move(callback).Run(
         chromeos::attestation::TpmChallengeKeyResult::MakeError(
             chromeos::attestation::TpmChallengeKeyResultCode::
-                kExtensionNotWhitelistedError));
+                kExtensionNotAllowedError));
     return;
   }
 
@@ -116,7 +115,7 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
       chromeos::attestation::KEY_DEVICE, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), challenge,
       /*register_key=*/false);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 
@@ -161,7 +160,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
       &EPKPChallengeKey::Run, base::Unretained(&impl_),
       chromeos::attestation::KEY_USER, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), challenge, params->register_key);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 

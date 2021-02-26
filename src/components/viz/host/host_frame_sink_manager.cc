@@ -7,16 +7,19 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/host/renderer_settings_creation.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "services/viz/privileged/mojom/compositing/renderer_settings.mojom.h"
 
 namespace viz {
 
-HostFrameSinkManager::HostFrameSinkManager() = default;
+HostFrameSinkManager::HostFrameSinkManager()
+    : debug_renderer_settings_(CreateDefaultDebugRendererSettings()) {}
 
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 
@@ -192,6 +195,11 @@ bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
     return false;
   }
 
+  // TODO(crbug.com/1115094): Convert to DCHECKs after root cause of the
+  // deserialization error is identified.
+  CHECK(parent_frame_sink_id.is_valid()) << parent_frame_sink_id;
+  CHECK(child_frame_sink_id.is_valid()) << child_frame_sink_id;
+
   // Register and store the parent.
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
@@ -286,6 +294,17 @@ void HostFrameSinkManager::RequestCopyOfOutput(
     const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> request) {
   frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
+}
+
+void HostFrameSinkManager::StartThrottling(
+    const std::vector<FrameSinkId>& frame_sink_ids,
+    base::TimeDelta interval) {
+  DCHECK_GT(interval, base::TimeDelta());
+  frame_sink_manager_->StartThrottling(frame_sink_ids, interval);
+}
+
+void HostFrameSinkManager::EndThrottling() {
+  frame_sink_manager_->EndThrottling();
 }
 
 void HostFrameSinkManager::AddHitTestRegionObserver(
@@ -400,6 +419,12 @@ void HostFrameSinkManager::EvictCachedBackBuffer(uint32_t cache_id) {
   // platform window is destroyed.
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   frame_sink_manager_remote_->EvictBackBuffer(cache_id);
+}
+
+void HostFrameSinkManager::UpdateDebugRendererSettings(
+    const DebugRendererSettings& debug_settings) {
+  debug_renderer_settings_ = debug_settings;
+  frame_sink_manager_->UpdateDebugRendererSettings(debug_settings);
 }
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;

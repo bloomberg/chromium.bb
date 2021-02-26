@@ -27,7 +27,8 @@ a subprocess intends to outlive its parent, it MUST make its own copy of the
 `LUCI_CONTEXT` file.
 
 Example contents:
-```
+
+```json
 {
   "local_auth": {
     "rpc_port": 10000,
@@ -39,6 +40,10 @@ Example contents:
   },
   "luciexe": {
     "cache_dir": "/b/s/w/ir/cache"
+  },
+  "deadline": {
+    "soft_deadline": 1600883265.1039423,
+    "grace_period": 30
   }
 }
 ```
@@ -68,7 +73,7 @@ calling other services. It is a reference to a local RPC port, along with
 some configuration of what this RPC service (called "local auth service") can
 provide.
 
-```
+```proto
 message LocalAuth {
   message Account {
     string id = 1;
@@ -104,7 +109,7 @@ TODO(vadimsh): Finish this.
 This section describes data passed down from the
 [swarming service](../appengine/swarming) to scripts running within swarming.
 
-```
+```proto
 message Swarming {
   // The user-supplied secret bytes specified for the task, if any. This can be
   // used to pass application or task-specific secret keys, JSON, etc. from the
@@ -128,19 +133,96 @@ message LUCIExe {
 }
 ```
 
+## `realm`
+
+This section describes data passed from LUCI Realms integration.
+
+```proto
+message Realm {
+  // Realm name of the task.
+  // e.g. infra:ci
+  string name = 1;
+}
+```
+
 ## `resultdb`
 
-This section describes data passed from resultdb-related services.
+This section describes data passed from ResultDB integrations.
 
-```
+```proto
 message ResultDB {
-  message TestResults {
-    // The port that the test results server will listen on.
-    int64 port = 1;
-    // The secret token to send to the server for the handshake.
-    string auth_token = 2;
+  string hostname = 1; // e.g. results.api.cr.dev
+
+  message Invocation {
+    string name = 1;         // e.g. "invocations/build:1234567890"
+    string update_token = 2; // required in all mutation requests
   }
 
-  TestResults test_results = 1;
+  // The invocation in the current context.
+  // For example, in a Buildbucket build context, it is the build's invocation.
+  //
+  // This is the recommended way to propagate invocation name and update token
+  // to subprocesses.
+  Invocation current_invocation = 1;
+}
+```
+
+## `result_sink`
+
+This section describes the ResultSink available in the environment.
+
+```proto
+message ResultSink {
+  // TCP address (e.g. "localhost:62115") where a ResultSink pRPC server is hosted.
+  string address = 1;
+
+  // secret string required in all ResultSink requests in HTTP header
+  // `Authorization: ResultSink <auth-token>`
+  string auth_token = 2;
+}
+```
+
+## `deadline`
+
+The Deadline represents an externally-imposed termination criteria for the
+process observing the `LUCI_CONTEXT`.
+
+Additionally, this contains `grace_period` which can be used to communicate how
+long the external process will allow for clean up once it sends
+SIGTERM/Ctrl-Break.
+
+Intermediate applications SHOULD NOT increase `soft_deadline` or `grace_period`.
+
+If the entire Deadline is missing from `LUCI_CONTEXT`, it should be assumed to
+be:
+    {soft_deadline: infinity, grace_period: 30}
+
+```
+message Deadline {
+  // The absolute soft deadline for execution for this context (as a 'float'
+  // unix timestamp; integer part is seconds, fractional part is fractions of
+  // a second. This is the same as python's `time.time()` representation).
+  //
+  // Processes reading this value SHOULD choose to terminate and clean
+  // themselves up before this deadline.
+  //
+  // This is a 'soft' deadline because the parent process will give
+  // `grace_period` seconds past this before sending SIGKILL/Terminate.
+  //
+  // Parent processes MUST send SIGTERM/Ctrl-Break to subprocesses which
+  // exceed this deadline. They should attempt to do this as close to
+  // `soft_deadline` as possible.
+  //
+  // If `soft_deadline` is 0 consider there to be no stated deadline (i.e.
+  // infinite).
+  double soft_deadline = 1 [json_name = "soft_deadline"];
+
+  // The amount of time (in fractional seconds), processes in this context have
+  // time to react to a SIGTERM/Ctrl-Break before being SIGKILL/Terminated.
+  //
+  // If an intermediate process has a lot of cleanup work to do after its child
+  // quits (e.g. flushing stats/writing output files/etc.) it SHOULD reduce this
+  // value for the child process by an appropriate margin.
+  double grace_period = 2 [json_name = "grace_period"];
 }
 ```

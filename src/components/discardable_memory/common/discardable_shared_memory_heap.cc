@@ -6,9 +6,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/bits.h"
 #include "base/format_macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -17,10 +20,6 @@
 
 namespace discardable_memory {
 namespace {
-
-bool IsPowerOfTwo(size_t x) {
-  return (x & (x - 1)) == 0;
-}
 
 bool IsInFreeList(DiscardableSharedMemoryHeap::Span* span) {
   return span->previous() || span->next();
@@ -92,10 +91,10 @@ void DiscardableSharedMemoryHeap::ScopedMemorySegment::OnMemoryDump(
   heap_->OnMemoryDump(shared_memory_.get(), size_, id_, pmd);
 }
 
-DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap(size_t block_size)
-    : block_size_(block_size), num_blocks_(0), num_free_blocks_(0) {
+DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap()
+    : block_size_(base::GetPageSize()) {
   DCHECK_NE(block_size_, 0u);
-  DCHECK(IsPowerOfTwo(block_size_));
+  DCHECK(base::bits::IsPowerOfTwo(block_size_));
 }
 
 DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
@@ -116,10 +115,8 @@ DiscardableSharedMemoryHeap::Grow(
     int32_t id,
     base::OnceClosure deleted_callback) {
   // Memory must be aligned to block size.
-  DCHECK_EQ(
-      reinterpret_cast<size_t>(shared_memory->memory()) & (block_size_ - 1),
-      0u);
-  DCHECK_EQ(size & (block_size_ - 1), 0u);
+  DCHECK(base::IsAligned(shared_memory->memory(), block_size_));
+  DCHECK(base::IsAligned(size, block_size_));
 
   std::unique_ptr<Span> span(
       new Span(shared_memory.get(),
@@ -254,11 +251,40 @@ size_t DiscardableSharedMemoryHeap::GetSizeOfFreeLists() const {
 }
 
 bool DiscardableSharedMemoryHeap::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  std::for_each(memory_segments_.begin(), memory_segments_.end(),
-                [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
-                  segment->OnMemoryDump(pmd);
-                });
+  // Keep track of some metrics that are specific to the
+  // DiscardableSharedMemoryHeap, which aren't covered by the individual dumps
+  // for each segment below.
+  auto* total_dump = pmd->CreateAllocatorDump(base::StringPrintf(
+      "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this)));
+  const size_t freelist_size = GetSizeOfFreeLists();
+  total_dump->AddScalar("freelist_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        freelist_size);
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    // These metrics (size and virtual size) are also reported by each
+    // individual segment. If we report both, then the counts are artificially
+    // inflated in detailed dumps, depending on aggregation (for instance, in
+    // about:tracing's UI).
+    const size_t total_size = GetSize();
+    total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          total_size - freelist_size);
+    total_dump->AddScalar("virtual_size",
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          total_size);
+  } else {
+    // This iterates over all the memory allocated by the heap, and calls
+    // |OnMemoryDump| for each. It does not contain any information about the
+    // DiscardableSharedMemoryHeap itself.
+    std::for_each(memory_segments_.begin(), memory_segments_.end(),
+                  [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
+                    segment->OnMemoryDump(pmd);
+                  });
+  }
+
   return true;
 }
 

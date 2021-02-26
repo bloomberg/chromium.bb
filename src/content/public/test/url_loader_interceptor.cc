@@ -13,13 +13,13 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -104,32 +104,6 @@ class URLLoaderInterceptor::IOState
     if (!parent_)
       return false;
     return parent_->Intercept(params);
-  }
-
-  bool BeginNavigationCallback(
-      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& url_request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-    RequestParams params;
-    params.process_id = 0;
-    params.receiver = std::move(*receiver);
-    params.routing_id = routing_id;
-    params.request_id = request_id;
-    params.options = options;
-    params.url_request = url_request;
-    params.client.Bind(std::move(*client));
-    params.traffic_annotation = traffic_annotation;
-
-    if (Intercept(&params))
-      return true;
-
-    *receiver = std::move(params.receiver);
-    *client = params.client.Unbind();
-    return false;
   }
 
   // Callback on IO thread whenever NavigationURLLoaderImpl needs a
@@ -479,8 +453,8 @@ URLLoaderInterceptor::URLLoaderInterceptor(
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
       base::RunLoop run_loop;
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
                          run_loop.QuitClosure()));
@@ -488,12 +462,12 @@ URLLoaderInterceptor::URLLoaderInterceptor(
     } else {
       base::OnceClosure wrapped_callback = base::BindOnce(
           [](base::OnceClosure callback) {
-            base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+            GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
           },
           std::move(ready_callback));
 
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
                          std::move(wrapped_callback)));
@@ -523,20 +497,53 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   if (use_runloop_) {
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
                                   io_thread_, run_loop.QuitClosure()));
     run_loop.Run();
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
                                   io_thread_, base::OnceClosure()));
   }
 }
 
+// static
+std::unique_ptr<URLLoaderInterceptor>
+URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
+    const std::string& relative_base_path,
+    const GURL& origin,
+    base::RepeatingCallback<void(const GURL&)> callback) {
+  return std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
+      [=](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+        // Ignore requests for other origins.
+        if (params->url_request.url.GetOrigin() != origin.GetOrigin())
+          return false;
+
+        // Remove the leading slash from the url path, so that it can be
+        // treated as a relative path by base::FilePath::AppendASCII.
+        auto path = base::TrimString(params->url_request.url.path_piece(), "/",
+                                     base::TRIM_LEADING);
+
+        // URLLoaderInterceptor insists that all files exist unless
+        // explicitly said to be failing.  Many browsertests fetch
+        // nonessential urls like favicons, so just ignore missing files
+        // entirely, to behave more like net::test::EmbeddedTestServer.
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        auto full_path = GetDataFilePath(relative_base_path).AppendASCII(path);
+        if (!base::PathExists(full_path))
+          return false;
+
+        callback.Run(params->url_request.url);
+        content::URLLoaderInterceptor::WriteResponse(full_path,
+                                                     params->client.get());
+        return true;
+      }));
+}
+
 void URLLoaderInterceptor::WriteResponse(
-    const std::string& headers,
-    const std::string& body,
+    base::StringPiece headers,
+    base::StringPiece body,
     network::mojom::URLLoaderClient* client,
     base::Optional<net::SSLInfo> ssl_info) {
   net::HttpResponseInfo info;
@@ -548,17 +555,7 @@ void URLLoaderInterceptor::WriteResponse(
   response->ssl_info = std::move(ssl_info);
   client->OnReceiveResponse(std::move(response));
 
-  uint32_t bytes_written = body.size();
-  mojo::DataPipe data_pipe(body.size());
-  CHECK_EQ(MOJO_RESULT_OK,
-           data_pipe.producer_handle->WriteData(
-               body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-  client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-  network::URLLoaderCompletionStatus status;
-  status.decoded_body_length = body.size();
-  status.error_code = net::OK;
-  client->OnComplete(status);
+  CHECK_EQ(WriteResponseBody(body, client), MOJO_RESULT_OK);
 }
 
 void URLLoaderInterceptor::WriteResponse(
@@ -580,16 +577,8 @@ void URLLoaderInterceptor::WriteResponse(
   if (headers) {
     headers_str = *headers;
   } else {
-    base::FilePath::StringPieceType mock_headers_extension;
-#if defined(OS_WIN)
-    base::string16 temp =
-        base::ASCIIToUTF16(net::test_server::kMockHttpHeadersExtension);
-    mock_headers_extension = temp;
-#else
-    mock_headers_extension = net::test_server::kMockHttpHeadersExtension;
-#endif
-
-    base::FilePath headers_path(file_path.AddExtension(mock_headers_extension));
+    base::FilePath headers_path(
+        file_path.AddExtension(net::test_server::kMockHttpHeadersExtension));
     if (base::PathExists(headers_path)) {
       headers_str = ReadFile(headers_path);
     } else {
@@ -600,13 +589,48 @@ void URLLoaderInterceptor::WriteResponse(
   WriteResponse(headers_str, ReadFile(file_path), client, std::move(ssl_info));
 }
 
+MojoResult URLLoaderInterceptor::WriteResponseBody(
+    base::StringPiece body,
+    network::mojom::URLLoaderClient* client) {
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = body.size();
+
+  MojoResult result =
+      CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  if (result != MOJO_RESULT_OK) {
+    return result;
+  }
+
+  uint32_t bytes_written = body.size();
+  result = producer_handle->WriteData(body.data(), &bytes_written,
+                                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+  if (result != MOJO_RESULT_OK) {
+    return result;
+  }
+
+  client->OnStartLoadingResponseBody(std::move(consumer_handle));
+
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = body.size();
+  status.error_code = net::OK;
+  client->OnComplete(status);
+
+  return MOJO_RESULT_OK;
+}
+
 void URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int process_id,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost,
             base::Unretained(this), std::move(receiver), process_id,

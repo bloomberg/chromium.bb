@@ -68,6 +68,7 @@ ONC_EXPORT extern const char kIPConfigTypeStatic[];
 ONC_EXPORT extern const char kSavedIPConfig[];
 ONC_EXPORT extern const char kStaticIPConfig[];
 ONC_EXPORT extern const char kMacAddress[];
+ONC_EXPORT extern const char kMetered[];
 ONC_EXPORT extern const char kNameServersConfigType[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kPriority[];
@@ -235,7 +236,6 @@ ONC_EXPORT extern const char kBSSID[];
 ONC_EXPORT extern const char kEAP[];
 ONC_EXPORT extern const char kFrequency[];
 ONC_EXPORT extern const char kFrequencyList[];
-ONC_EXPORT extern const char kFTEnabled[];
 ONC_EXPORT extern const char kHexSSID[];
 ONC_EXPORT extern const char kHiddenSSID[];
 ONC_EXPORT extern const char kPassphrase[];
@@ -491,7 +491,8 @@ namespace global_network_config {
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToConnect[];
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToConnectIfAvailable[];
-ONC_EXPORT extern const char kBlacklistedHexSSIDs[];
+ONC_EXPORT extern const char kBlacklistedHexSSIDs[];  // Deprecated
+ONC_EXPORT extern const char kBlockedHexSSIDs[];
 ONC_EXPORT extern const char kDisableNetworkTypes[];
 }  // global_network_config
 

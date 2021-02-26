@@ -13,6 +13,10 @@
 namespace feed {
 
 extern const base::Feature kInterestFeedContentSuggestions;
+extern const base::Feature kInterestFeedV2;
+
+bool IsV1Enabled();
+bool IsV2Enabled();
 
 extern const base::FeatureParam<std::string> kDisableTriggerTypes;
 extern const base::FeatureParam<int> kSuppressRefreshDurationMinutes;
@@ -20,15 +24,18 @@ extern const base::FeatureParam<int> kTimeoutDurationSeconds;
 extern const base::FeatureParam<bool> kThrottleBackgroundFetches;
 extern const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess;
 
-extern const base::Feature kInterestFeedNotifications;
-
-extern const base::Feature kInterestFeedFeedback;
-
 // Indicates if user card clicks and views in Chrome's feed should be reported
 // for personalization. Also enables the feed header menu to manage the feed.
 extern const base::Feature kReportFeedUserActions;
 
-extern const base::Feature kInterestFeedV2;
+extern const base::Feature kInterestFeedV1ClicksAndViewsConditionalUpload;
+extern const base::Feature kInterestFeedV2ClicksAndViewsConditionalUpload;
+
+extern const base::Feature kInterestFeedNoticeCardAutoDismiss;
+
+extern const base::Feature kInterestFeedSpinnerAlwaysAnimate;
+
+std::string GetFeedReferrerUrl();
 
 }  // namespace feed
 

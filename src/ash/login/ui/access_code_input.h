@@ -5,8 +5,14 @@
 #ifndef ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 #define ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+
+namespace gfx {
+class Range;
+}
 
 namespace ash {
 
@@ -34,6 +40,10 @@ class AccessCodeInput : public views::View, public views::TextfieldController {
 
   virtual void SetInputEnabled(bool input_enabled) = 0;
 
+  // Makes the internal fields read only. In contrast to 'SetInputEnabled',
+  // the focus remain on the element.
+  virtual void SetReadOnly(bool read_only) = 0;
+
   // Clears the input field(s).
   virtual void ClearInput() = 0;
 };
@@ -45,19 +55,22 @@ class FlexCodeInput : public AccessCodeInput {
   using OnEscape = base::RepeatingClosure;
 
   // Builds the view for an access code that consists out of an unknown number
-  // of digits. |on_input_change| will be called upon digit insertion, deletion
-  // or change. |on_enter| will be called when code is complete and user presses
-  // enter to submit it for validation. |on_escape| will be called when pressing
-  // the escape key. |obscure_pin| determines whether the entered pin is
-  // displayed as clear text or as bullet points.
+  // of characters. |on_input_change| will be called upon character insertion,
+  // deletion or change. |on_enter| will be called when code is complete and
+  // user presses enter to submit it for validation. |on_escape| will be called
+  // when pressing the escape key. |obscure_pin| determines whether the entered
+  // pin is displayed as clear text or as bullet points.
   FlexCodeInput(OnInputChange on_input_change,
                 OnEnter on_enter,
                 OnEscape on_escape,
-                bool obscure_pin);
+                bool obscure_pin,
+                SkColor text_color);
 
   FlexCodeInput(const FlexCodeInput&) = delete;
   FlexCodeInput& operator=(const FlexCodeInput&) = delete;
   ~FlexCodeInput() override;
+
+  void SetAccessibleName(const base::string16& name);
 
   // Appends |value| to the code
   void InsertDigit(int value) override;
@@ -72,6 +85,8 @@ class FlexCodeInput : public AccessCodeInput {
   void SetInputColor(SkColor color) override;
 
   void SetInputEnabled(bool input_enabled) override;
+
+  void SetReadOnly(bool read_only) override;
 
   // Clears text in input text field.
   void ClearInput() override;
@@ -89,8 +104,8 @@ class FlexCodeInput : public AccessCodeInput {
  private:
   views::Textfield* code_field_;
 
-  // To be called when access input code changes (digit is inserted, deleted or
-  // updated). Passes true when code non-empty.
+  // To be called when access input code changes (character is inserted, deleted
+  // or updated). Passes true when code non-empty.
   OnInputChange on_input_change_;
 
   // To be called when user pressed enter to submit.
@@ -107,19 +122,11 @@ class AccessibleInputField : public views::Textfield {
   AccessibleInputField() = default;
   ~AccessibleInputField() override = default;
 
-  void set_accessible_description(const base::string16& description) {
-    accessible_description_ = description;
-  }
-
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool IsGroupFocusTraversable() const override;
   View* GetSelectedViewForGroup(int group) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  base::string16 accessible_description_;
-
   DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
 };
 
@@ -159,7 +166,8 @@ class FixedLengthCodeInput : public AccessCodeInput {
                        OnInputChange on_input_change,
                        OnEnter on_enter,
                        OnEscape on_escape,
-                       bool obscure_pin);
+                       bool obscure_pin,
+                       SkColor text_color);
 
   ~FixedLengthCodeInput() override;
   FixedLengthCodeInput(const FixedLengthCodeInput&) = delete;
@@ -186,6 +194,12 @@ class FixedLengthCodeInput : public AccessCodeInput {
 
   void RequestFocus() override;
 
+  // Resets the |text_value_for_a11y_| when input fields have changed.
+  void ResetTextValueForA11y();
+
+  // Returns current selected text range of |text_value_for_a11y_|.
+  gfx::Range GetSelectedRangeOfTextValueForA11y();
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::TextfieldController:
@@ -198,23 +212,40 @@ class FixedLengthCodeInput : public AccessCodeInput {
   bool HandleGestureEvent(views::Textfield* sender,
                           const ui::GestureEvent& gesture_event) override;
 
-  // Enables/disables entering a PIN. Currently, there is no use-case the uses
+  // Enables/disables entering a PIN. Currently, there is no use-case that uses
   // this with fixed length PINs.
   void SetInputEnabled(bool input_enabled) override;
 
-  // Clears the PIN fields. Currently, there is no use-case the uses this with
-  // fixed length PINs.
+  void SetReadOnly(bool read_only) override;
+
+  // Clears the PIN fields.
   void ClearInput() override;
 
+  // Whether all fields are empty.
+  bool IsEmpty() const;
+
+ protected:
+  // Allow subclasses to control whether the fields can be navigated with
+  // arrows.
+  void SetAllowArrowNavigation(bool allowed);
+
+  int active_input_index() { return active_input_index_; }
+
  private:
+  // Moves focus to the current input field.
+  void FocusActiveField();
+
   // Moves focus to the previous input field if it exists.
   void FocusPreviousField();
 
   // Moves focus to the next input field if it exists.
   void FocusNextField();
 
-  // Returns whether last input field is currently active.
+  // Returns whether first/last input field is currently active.
+  bool IsFirstFieldActive() const;
   bool IsLastFieldActive() const;
+
+  bool HasEmptyFieldToTheLeft() const;
 
   // Returns pointer to the active input field.
   AccessibleInputField* ActiveField() const;
@@ -237,6 +268,19 @@ class FixedLengthCodeInput : public AccessCodeInput {
 
   // Unowned input textfields ordered from the first to the last digit.
   std::vector<AccessibleInputField*> input_fields_;
+
+  // Value of current input, associate with AX event. The value will be the
+  // concat string of input fields. i.e. [1][2][3][|][][], text_value_for_a11y_
+  // = "123   ".
+  base::string16 text_value_for_a11y_;
+
+  // Whether the user can navigate the input fields with the arrow keys.
+  bool arrow_navigation_allowed_ = true;
+
+  // Whether the digits should be rendered as '*' (bullets) instead of digits.
+  // This also affects the ChromeVox behaviour, preventing the digits from
+  // being read out loud.
+  bool is_obscure_pin_ = true;
 
   base::WeakPtrFactory<FixedLengthCodeInput> weak_ptr_factory_{this};
 };

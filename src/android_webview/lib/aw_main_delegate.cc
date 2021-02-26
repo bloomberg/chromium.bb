@@ -8,11 +8,12 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
+#include "android_webview/browser/gfx/aw_draw_fn_impl.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
 #include "android_webview/browser/scoped_add_feature_flags.h"
-#include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
+#include "android_webview/browser/tracing/aw_trace_event_args_allowlist.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_paths.h"
@@ -28,6 +29,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/cpu_affinity_posix.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
@@ -37,6 +39,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
+#include "components/metrics/unsent_log_store_metrics.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -49,6 +52,7 @@
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/cpu_affinity.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -127,6 +131,17 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
+  // WebView does not support origin trials and so needs to force appcache
+  // to be enabled during the removal origin trial, until it is finally
+  // removed entirely.  See: http://crbug.com/582750
+  cl->AppendSwitch(switches::kAppCacheForceEnabled);
+
+  // We have crash dumps to diagnose regressions in remote font analysis or cc
+  // serialization errors but most of their utility is in identifying URLs where
+  // the regression occurs. This info is not available for webview so there
+  // isn't much point in having the crash dumps there.
+  cl->AppendSwitch(switches::kDisableOoprDebugCrashDump);
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
@@ -153,6 +168,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(false, file_type));
+
+    if (AwDrawFnImpl::IsUsingVulkan())
+      cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
   }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
@@ -167,13 +185,28 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     features.EnableIfNotSet(spellcheck::kAndroidSpellCheckerNonLowEnd);
 #endif  // ENABLE_SPELLCHECK
-
-    features.EnableIfNotSet(
-        autofill::features::kAutofillSkipComparingInferredLabels);
+    if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+        base::android::SDK_VERSION_OREO) {
+      features.EnableIfNotSet(autofill::features::kAutofillExtractAllDatalists);
+      features.EnableIfNotSet(
+          autofill::features::kAutofillSkipComparingInferredLabels);
+      features.DisableIfNotSet(
+          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    }
 
     if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
       features.EnableIfNotSet(::features::kLogJsConsoleMessages);
     }
+
+    if (cl->HasSwitch(switches::kWebViewDrawFunctorUsesVulkan)) {
+      // When draw functor uses vulkan, assume that it is safe to enable viz
+      // which depends on shared images.
+      features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
+    }
+
+    // WebView uses kWebViewVulkan to control vulkan. Pre-emptively disable
+    // kVulkan in case it becomes enabled by default.
+    features.DisableIfNotSet(::features::kVulkan);
 
     features.DisableIfNotSet(::features::kWebPayments);
 
@@ -201,16 +234,14 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView does not support Picture-in-Picture yet.
     features.DisableIfNotSet(media::kPictureInPictureAPI);
 
-    features.DisableIfNotSet(
-        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-
     features.DisableIfNotSet(::features::kBackgroundFetch);
 
-    features.EnableIfNotSet(::features::kDisableSurfaceControlForWebview);
+    // SurfaceControl is not supported on webview.
+    features.DisableIfNotSet(::features::kAndroidSurfaceControl);
 
-    // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
+    // TODO(https://crbug.com/963653): WebOTP is not yet supported on
     // WebView.
-    features.DisableIfNotSet(::features::kSmsReceiver);
+    features.DisableIfNotSet(::features::kWebOTP);
 
     // TODO(https://crbug.com/1012899): WebXR is not yet supported on WebView.
     features.DisableIfNotSet(::features::kWebXr);
@@ -224,12 +255,16 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // De-jelly is never supported on WebView.
     features.EnableIfNotSet(::features::kDisableDeJelly);
 
-    // COEP is not supported on WebView.
-    // See
+    // COOP is not supported on WebView yet. See:
     // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/XBKAGb2_7uAi.
-    features.DisableIfNotSet(network::features::kCrossOriginEmbedderPolicy);
+    features.DisableIfNotSet(network::features::kCrossOriginOpenerPolicy);
 
     features.DisableIfNotSet(::features::kInstalledApp);
+
+    features.EnableIfNotSet(
+        metrics::UnsentLogStoreMetrics::kRecordLastUnsentLogMetadataMetrics);
+
+    features.DisableIfNotSet(::features::kPeriodicBackgroundSync);
   }
 
   android_webview::RegisterPathProvider();
@@ -242,9 +277,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Used only if the argument filter is enabled in tracing config,
   // as is the case by default in aw_tracing_controller.cc
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::BindRepeating(&IsTraceEventArgsWhitelisted));
+      base::BindRepeating(&IsTraceEventArgsAllowlisted));
   base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
-      base::BindRepeating(&IsTraceMetadataWhitelisted));
+      base::BindRepeating(&IsTraceMetadataAllowlisted));
 
   // The TLS slot used by the memlog allocator shim needs to be initialized
   // early to ensure that it gets assigned a low slot number. If it gets
@@ -347,6 +382,15 @@ void AwMainDelegate::PostFieldTrialInitialization() {
 
   ALLOW_UNUSED_LOCAL(is_canary_dev);
   ALLOW_UNUSED_LOCAL(is_browser_process);
+
+  // Enable LITTLE-cores only mode if the feature is enabled, but only for child
+  // processes, as the browser process is shared with the hosting app.
+  if (!is_browser_process &&
+      base::FeatureList::IsEnabled(
+          android_webview::features::
+              kWebViewCpuAffinityRestrictToLittleCores)) {
+    content::EnforceProcessCpuAffinity(base::CpuAffinityMode::kLittleCoresOnly);
+  }
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,

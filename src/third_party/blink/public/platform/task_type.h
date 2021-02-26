@@ -48,6 +48,9 @@ enum class TaskType : unsigned char {
   // This is a part of Networking task source used to annotate tasks which are
   // posted from the loading stack (i.e. WebURLLoader).
   kNetworkingWithURLLoaderAnnotation = 50,
+  // This is a part of Networking task that should not be frozen when a page is
+  // frozen.
+  kNetworkingUnfreezable = 75,
   // This task source is used for control messages between kNetworking tasks.
   kNetworkingControl = 4,
   // This task source is used to queue calls to history.back() and similar APIs.
@@ -73,9 +76,17 @@ enum class TaskType : unsigned char {
   kMicrotask = 9,
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#timers
-  // This task source is used to queue tasks queued by setInterval() and similar
-  // APIs.
-  kJavascriptTimer = 10,
+  // For tasks queued by setTimeout() or setInterval().
+  //
+  // Task nesting level is < 5 and timeout is zero.
+  kJavascriptTimerImmediate = 72,
+  // Task nesting level is < 5 and timeout is > 0.
+  kJavascriptTimerDelayedLowNesting = 73,
+  // Task nesting level is >= 5.
+  kJavascriptTimerDelayedHighNesting = 10,
+  // Note: The timeout is increased to be at least 4ms when the task nesting
+  // level is >= 5. Therefore, the timeout is necessarily > 0 for
+  // kJavascriptTimerDelayedHighNesting.
 
   // https://html.spec.whatwg.org/multipage/comms.html#sse-processing-model
   // This task source is used for any tasks that are queued by EventSource
@@ -237,6 +248,9 @@ enum class TaskType : unsigned char {
   // Tasks used for find-in-page.
   kInternalFindInPage = 70,
 
+  // Tasks that come in on the HighPriorityLocalFrame interface.
+  kInternalHighPriorityLocalFrame = 71,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -250,18 +264,21 @@ enum class TaskType : unsigned char {
   kMainThreadTaskQueueDefault = 39,
   kMainThreadTaskQueueInput = 40,
   kMainThreadTaskQueueIdle = 41,
-  kMainThreadTaskQueueIPC = 42,
+  // Removed:
+  // kMainThreadTaskQueueIPC = 42,
   kMainThreadTaskQueueControl = 43,
-  kMainThreadTaskQueueCleanup = 52,
+  // Removed:
+  // kMainThreadTaskQueueCleanup = 52,
   kMainThreadTaskQueueMemoryPurge = 62,
   kMainThreadTaskQueueNonWaking = 69,
+  kMainThreadTaskQueueIPCTracking = 74,
   kCompositorThreadTaskQueueDefault = 45,
   kCompositorThreadTaskQueueInput = 49,
   kWorkerThreadTaskQueueDefault = 46,
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 71,
+  kCount = 76,
 };
 
 }  // namespace blink

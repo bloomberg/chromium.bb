@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint for a cron job to automatically run bisects."""
 from __future__ import print_function
 from __future__ import division
@@ -24,11 +23,12 @@ class NotBisectableError(Exception):
   pass
 
 
-def StartNewBisectForBug(bug_id):
+def StartNewBisectForBug(bug_id, project_id):
   """Tries to trigger a bisect job for the alerts associated with a bug.
 
   Args:
     bug_id: A bug ID number.
+    project_id: A Monorail project ID.
 
   Returns:
     If successful, a dict containing "issue_id" and "issue_url" for the
@@ -36,15 +36,15 @@ def StartNewBisectForBug(bug_id):
     of the reason why a job wasn't started.
   """
   try:
-    return _StartBisectForBug(bug_id)
+    return _StartBisectForBug(bug_id, project_id)
   except NotBisectableError as e:
     logging.info('New bisect errored out with message: ' + e.message)
     return {'error': e.message}
 
 
-def _StartBisectForBug(bug_id):
+def _StartBisectForBug(bug_id, project_id):
   anomalies, _, _ = anomaly.Anomaly.QueryAsync(
-      bug_id=bug_id, limit=500).get_result()
+      bug_id=bug_id, project_id=project_id, limit=500).get_result()
   if not anomalies:
     raise NotBisectableError('No Anomaly alerts found for this bug.')
 
@@ -58,18 +58,19 @@ def _StartBisectForBug(bug_id):
   bot_configurations = namespaced_stored_object.Get('bot_configurations')
 
   if test.bot_name not in list(bot_configurations.keys()):
-    raise NotBisectableError(
-        'Bot: %s has no corresponding Pinpoint bot.' % test.bot_name)
-  return _StartPinpointBisect(bug_id, test_anomaly, test)
+    raise NotBisectableError('Bot: %s has no corresponding Pinpoint bot.' %
+                             test.bot_name)
+  return _StartPinpointBisect(bug_id, project_id, test_anomaly, test)
 
 
-def _StartPinpointBisect(bug_id, test_anomaly, test):
+def _StartPinpointBisect(bug_id, project_id, test_anomaly, test):
   # Convert params to Pinpoint compatible
   params = {
       'test_path': test.test_path,
       'start_commit': test_anomaly.start_revision - 1,
       'end_commit': test_anomaly.end_revision,
       'bug_id': bug_id,
+      'project_id': project_id,
       'bisect_mode': 'performance',
       'story_filter': test.unescaped_story_name,
       'alerts': json.dumps([test_anomaly.key.urlsafe()])
@@ -118,25 +119,25 @@ def _ChooseTest(anomalies):
     An Anomaly entity, or None if no valid entity could be chosen.
 
   Raises:
-    NotBisectableError: The only matching tests are on masters that have been
-        blacklisted for automatic bisects on alert triage.
+    NotBisectableError: The only matching tests are on domains that have been
+        excluded for automatic bisects on alert triage.
   """
   if not anomalies:
     return None
   anomalies.sort(cmp=_CompareAnomalyBisectability)
-  found_blacklisted_master = False
+  found_excluded_domain = False
   for anomaly_entity in anomalies:
     if can_bisect.IsValidTestForBisect(
         utils.TestPath(anomaly_entity.GetTestMetadataKey())):
-      if can_bisect.MasterNameIsBlacklistedForTriageBisects(
+      if can_bisect.DomainIsExcludedFromTriageBisects(
           anomaly_entity.master_name):
-        found_blacklisted_master = True
+        found_excluded_domain = True
         continue
       return anomaly_entity
-  if found_blacklisted_master:
+  if found_excluded_domain:
     raise NotBisectableError(
-        'Did not kick off bisect because only available masters are '
-        'blacklisted from automatic bisects on triage.')
+        'Did not kick off bisect because only available domains are '
+        'excluded from automatic bisects on triage.')
   return None
 
 

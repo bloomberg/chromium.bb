@@ -38,6 +38,10 @@ static float get_expected(float f1, float f2, DNNMathBinaryOperation op)
         return f1 * f2;
     case DMBO_REALDIV:
         return f1 / f2;
+    case DMBO_MINIMUM:
+        return (f1 < f2) ? f1 : f2;
+    case DMBO_FLOORMOD:
+        return (float)((int)(f1) % (int)(f2));
     default:
         av_assert0(!"not supported yet");
         return 0.f;
@@ -67,7 +71,7 @@ static int test_broadcast_input0(DNNMathBinaryOperation op)
     operands[1].data = NULL;
 
     input_indexes[0] = 0;
-    dnn_execute_layer_math_binary(operands, input_indexes, 1, &params);
+    dnn_execute_layer_math_binary(operands, input_indexes, 1, &params, NULL);
 
     output = operands[1].data;
     for (int i = 0; i < sizeof(input) / sizeof(float); i++) {
@@ -107,7 +111,7 @@ static int test_broadcast_input1(DNNMathBinaryOperation op)
     operands[1].data = NULL;
 
     input_indexes[0] = 0;
-    dnn_execute_layer_math_binary(operands, input_indexes, 1, &params);
+    dnn_execute_layer_math_binary(operands, input_indexes, 1, &params, NULL);
 
     output = operands[1].data;
     for (int i = 0; i < sizeof(input) / sizeof(float); i++) {
@@ -155,7 +159,7 @@ static int test_no_broadcast(DNNMathBinaryOperation op)
 
     input_indexes[0] = 0;
     input_indexes[1] = 1;
-    dnn_execute_layer_math_binary(operands, input_indexes, 2, &params);
+    dnn_execute_layer_math_binary(operands, input_indexes, 2, &params, NULL);
 
     output = operands[2].data;
     for (int i = 0; i < sizeof(input0) / sizeof(float); i++) {
@@ -198,6 +202,12 @@ int main(int argc, char **argv)
         return 1;
 
     if (test(DMBO_REALDIV))
+        return 1;
+
+    if (test(DMBO_MINIMUM))
+        return 1;
+
+    if (test(DMBO_FLOORMOD))
         return 1;
 
     return 0;

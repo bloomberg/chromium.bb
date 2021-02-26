@@ -20,6 +20,7 @@
 #include "utils/TextureFormatUtils.h"
 #include "utils/WGPUHelpers.h"
 
+#include <cmath>
 #include <type_traits>
 
 // An expectation for float buffer content that can correctly compare different NaN values and
@@ -112,8 +113,8 @@ class ExpectFloat16 : public detail::Expectation {
 
 class TextureFormatTest : public DawnTest {
   protected:
-    void TestSetUp() {
-        DawnTest::TestSetUp();
+    void SetUp() {
+        DawnTest::SetUp();
     }
 
     // Structure containing all the information that tests need to know about the format.
@@ -127,44 +128,16 @@ class TextureFormatTest : public DawnTest {
     // Returns a reprensentation of a format that can be used to contain the "uncompressed" values
     // of the format. That the equivalent format with all channels 32bit-sized.
     FormatTestInfo GetUncompressedFormatInfo(FormatTestInfo formatInfo) {
-        std::array<wgpu::TextureFormat, 4> floatFormats = {
-            wgpu::TextureFormat::R32Float,
-            wgpu::TextureFormat::RG32Float,
-            wgpu::TextureFormat::RGBA32Float,
-            wgpu::TextureFormat::RGBA32Float,
-        };
-        std::array<wgpu::TextureFormat, 4> sintFormats = {
-            wgpu::TextureFormat::R32Sint,
-            wgpu::TextureFormat::RG32Sint,
-            wgpu::TextureFormat::RGBA32Sint,
-            wgpu::TextureFormat::RGBA32Sint,
-        };
-        std::array<wgpu::TextureFormat, 4> uintFormats = {
-            wgpu::TextureFormat::R32Uint,
-            wgpu::TextureFormat::RG32Uint,
-            wgpu::TextureFormat::RGBA32Uint,
-            wgpu::TextureFormat::RGBA32Uint,
-        };
-        std::array<uint32_t, 4> componentCounts = {1, 2, 4, 4};
-
-        ASSERT(formatInfo.componentCount > 0 && formatInfo.componentCount <= 4);
-        wgpu::TextureFormat format;
         switch (formatInfo.type) {
             case wgpu::TextureComponentType::Float:
-                format = floatFormats[formatInfo.componentCount - 1];
-                break;
+                return {wgpu::TextureFormat::RGBA32Float, 16, formatInfo.type, 4};
             case wgpu::TextureComponentType::Sint:
-                format = sintFormats[formatInfo.componentCount - 1];
-                break;
+                return {wgpu::TextureFormat::RGBA32Sint, 16, formatInfo.type, 4};
             case wgpu::TextureComponentType::Uint:
-                format = uintFormats[formatInfo.componentCount - 1];
-                break;
+                return {wgpu::TextureFormat::RGBA32Uint, 16, formatInfo.type, 4};
             default:
                 UNREACHABLE();
         }
-
-        uint32_t componentCount = componentCounts[formatInfo.componentCount - 1];
-        return {format, 4 * componentCount, formatInfo.type, componentCount};
     }
 
     // Return a pipeline that can be used in a full-texture draw to sample from the texture in the
@@ -224,7 +197,7 @@ class TextureFormatTest : public DawnTest {
         ASSERT(sampleDataSize % sampleFormatInfo.texelByteSize == 0);
         uint32_t width = sampleDataSize / sampleFormatInfo.texelByteSize;
 
-        // The input data must be a multiple of 4 byte in length for setSubData
+        // The input data must be a multiple of 4 byte in length for WriteBuffer
         ASSERT(sampleDataSize % 4 == 0);
         ASSERT(expectedRenderDataSize % 4 == 0);
 
@@ -242,7 +215,7 @@ class TextureFormatTest : public DawnTest {
         ASSERT(expectedRenderDataSize == width * renderFormatInfo.texelByteSize);
 
         wgpu::TextureDescriptor renderTargetDesc;
-        renderTargetDesc.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::OutputAttachment;
+        renderTargetDesc.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment;
         renderTargetDesc.size = {width, 1, 1};
         renderTargetDesc.format = renderFormatInfo.format;
 
@@ -251,7 +224,7 @@ class TextureFormatTest : public DawnTest {
         // Create the readback buffer for the data in renderTarget
         wgpu::BufferDescriptor readbackBufferDesc;
         readbackBufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc;
-        readbackBufferDesc.size = 4 * width * sampleFormatInfo.componentCount;
+        readbackBufferDesc.size = expectedRenderDataSize;
         wgpu::Buffer readbackBuffer = device.CreateBuffer(&readbackBufferDesc);
 
         // Prepare objects needed to sample from texture in the renderpass
@@ -267,9 +240,9 @@ class TextureFormatTest : public DawnTest {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
         {
-            wgpu::BufferCopyView bufferView = utils::CreateBufferCopyView(uploadBuffer, 0, 256, 0);
+            wgpu::BufferCopyView bufferView = utils::CreateBufferCopyView(uploadBuffer, 0, 256);
             wgpu::TextureCopyView textureView =
-                utils::CreateTextureCopyView(sampleTexture, 0, 0, {0, 0, 0});
+                utils::CreateTextureCopyView(sampleTexture, 0, {0, 0, 0});
             wgpu::Extent3D extent{width, 1, 1};
             encoder.CopyBufferToTexture(&bufferView, &textureView, &extent);
         }
@@ -282,10 +255,9 @@ class TextureFormatTest : public DawnTest {
         renderPass.EndPass();
 
         {
-            wgpu::BufferCopyView bufferView =
-                utils::CreateBufferCopyView(readbackBuffer, 0, 256, 0);
+            wgpu::BufferCopyView bufferView = utils::CreateBufferCopyView(readbackBuffer, 0, 256);
             wgpu::TextureCopyView textureView =
-                utils::CreateTextureCopyView(renderTarget, 0, 0, {0, 0, 0});
+                utils::CreateTextureCopyView(renderTarget, 0, {0, 0, 0});
             wgpu::Extent3D extent{width, 1, 1};
             encoder.CopyTextureToBuffer(&textureView, &bufferView, &extent);
         }
@@ -305,6 +277,25 @@ class TextureFormatTest : public DawnTest {
         }
     }
 
+    template <typename Data>
+    std::vector<Data> ExpandDataTo4Component(const std::vector<Data>& originalData,
+                                             uint32_t originalComponentCount,
+                                             const std::array<Data, 4>& defaultValues) {
+        std::vector<Data> result;
+
+        for (size_t i = 0; i < originalData.size() / originalComponentCount; i++) {
+            for (size_t component = 0; component < 4; component++) {
+                if (component < originalComponentCount) {
+                    result.push_back(originalData[i * originalComponentCount + component]);
+                } else {
+                    result.push_back(defaultValues[component]);
+                }
+            }
+        }
+
+        return result;
+    }
+
     // Helper functions used to run tests that convert the typeful test objects to typeless void*
 
     template <typename TextureData, typename RenderData>
@@ -313,9 +304,17 @@ class TextureFormatTest : public DawnTest {
                               const std::vector<RenderData>& expectedRenderData,
                               detail::Expectation* customExpectation = nullptr) {
         FormatTestInfo renderFormatInfo = GetUncompressedFormatInfo(formatInfo);
+
+        // Expand the expected data to be 4 component wide with the default sampling values of
+        // (0, 0, 0, 1)
+        std::array<RenderData, 4> defaultValues = {RenderData(0), RenderData(0), RenderData(0),
+                                                   RenderData(1)};
+        std::vector<RenderData> expandedRenderData =
+            ExpandDataTo4Component(expectedRenderData, formatInfo.componentCount, defaultValues);
+
         DoSampleTest(formatInfo, textureData.data(), textureData.size() * sizeof(TextureData),
-                     renderFormatInfo, expectedRenderData.data(),
-                     expectedRenderData.size() * sizeof(RenderData), customExpectation);
+                     renderFormatInfo, expandedRenderData.data(),
+                     expandedRenderData.size() * sizeof(RenderData), customExpectation);
     }
 
     template <typename TextureData>
@@ -323,9 +322,15 @@ class TextureFormatTest : public DawnTest {
                                    const std::vector<TextureData>& textureData,
                                    const std::vector<float>& expectedRenderData,
                                    float floatTolerance = 0.0f) {
+        // Expand the expected data to be 4 component wide with the default sampling values of
+        // (0, 0, 0, 1)
+        std::array<float, 4> defaultValues = {0.0f, 0.0f, 0.0f, 1.0f};
+        std::vector<float> expandedRenderData =
+            ExpandDataTo4Component(expectedRenderData, formatInfo.componentCount, defaultValues);
+
         // Use a special expectation that understands how to compare NaNs and supports a tolerance.
         DoFormatSamplingTest(formatInfo, textureData, expectedRenderData,
-                             new ExpectFloatWithTolerance(expectedRenderData, floatTolerance));
+                             new ExpectFloatWithTolerance(expandedRenderData, floatTolerance));
     }
 
     template <typename TextureData, typename RenderData>
@@ -334,9 +339,18 @@ class TextureFormatTest : public DawnTest {
                                const std::vector<RenderData>& expectedRenderData,
                                detail::Expectation* customExpectation = nullptr) {
         FormatTestInfo sampleFormatInfo = GetUncompressedFormatInfo(formatInfo);
-        DoSampleTest(sampleFormatInfo, textureData.data(), textureData.size() * sizeof(TextureData),
-                     formatInfo, expectedRenderData.data(),
-                     expectedRenderData.size() * sizeof(RenderData), customExpectation);
+
+        // Expand the sampling texture data to contain garbage data for unused components to check
+        // that they don't influence the rendering result.
+        std::array<TextureData, 4> garbageValues;
+        garbageValues.fill(13);
+        std::vector<TextureData> expandedTextureData =
+            ExpandDataTo4Component(textureData, formatInfo.componentCount, garbageValues);
+
+        DoSampleTest(sampleFormatInfo, expandedTextureData.data(),
+                     expandedTextureData.size() * sizeof(TextureData), formatInfo,
+                     expectedRenderData.data(), expectedRenderData.size() * sizeof(RenderData),
+                     customExpectation);
     }
 
     // Below are helper functions for types that are very similar to one another so the logic is
@@ -364,8 +378,9 @@ class TextureFormatTest : public DawnTest {
 
         T maxValue = std::numeric_limits<T>::max();
         T minValue = std::numeric_limits<T>::min();
-        std::vector<T> textureData = {0, 1, maxValue, minValue};
-        std::vector<float> uncompressedData = {0.0f, 1.0f / maxValue, 1.0f, -1.0f};
+        std::vector<T> textureData = {0, 1, -1, maxValue, minValue, T(minValue + 1), 0, 0};
+        std::vector<float> uncompressedData = {
+            0.0f, 1.0f / maxValue, -1.0f / maxValue, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f};
 
         DoFloatFormatSamplingTest(formatInfo, textureData, uncompressedData, 0.0001f / maxValue);
         // Snorm formats aren't renderable because they are not guaranteed renderable in Vulkan
@@ -404,7 +419,7 @@ class TextureFormatTest : public DawnTest {
         ASSERT(sizeof(float) * formatInfo.componentCount == formatInfo.texelByteSize);
         ASSERT(formatInfo.type == wgpu::TextureComponentType::Float);
 
-        std::vector<float> textureData = {+0.0f,  -0.0f, 1.0f,     1.0e-29f,
+        std::vector<float> textureData = {+0.0f,   -0.0f, 1.0f,     1.0e-29f,
                                           1.0e29f, NAN,   INFINITY, -INFINITY};
 
         DoFloatFormatSamplingTest(formatInfo, textureData, textureData);
@@ -685,8 +700,8 @@ TEST_P(TextureFormatTest, RGB10A2Unorm) {
         uncompressedData, textureData);
 }
 
-// Test the RG11B10Float format
-TEST_P(TextureFormatTest, RG11B10Float) {
+// Test the RG11B10Ufloat format
+TEST_P(TextureFormatTest, RG11B10Ufloat) {
     constexpr uint32_t kFloat11Zero = 0;
     constexpr uint32_t kFloat11Infinity = 0x7C0;
     constexpr uint32_t kFloat11Nan = 0x7C1;
@@ -714,7 +729,7 @@ TEST_P(TextureFormatTest, RG11B10Float) {
     };
 
     // This is one of the only 3-channel formats, so we don't have specific testing for them. Alpha
-    // should slways be sampled as 1
+    // should always be sampled as 1
     // clang-format off
     std::vector<float> uncompressedData = {
         0.0f,     INFINITY, NAN,      1.0f,
@@ -725,7 +740,54 @@ TEST_P(TextureFormatTest, RG11B10Float) {
     // clang-format on
 
     DoFloatFormatSamplingTest(
-        {wgpu::TextureFormat::RG11B10Float, 4, wgpu::TextureComponentType::Float, 4}, textureData,
+        {wgpu::TextureFormat::RG11B10Ufloat, 4, wgpu::TextureComponentType::Float, 4}, textureData,
+        uncompressedData);
+    // This format is not renderable.
+}
+
+// Test the RGB9E5Ufloat format
+TEST_P(TextureFormatTest, RGB9E5Ufloat) {
+    // RGB9E5 is different from other floating point formats because the mantissa doesn't index in
+    // the window defined by the exponent but is instead treated as a pure multiplier. There is
+    // also no Infinity or NaN. The OpenGL 4.6 spec has the best explanation I've found in section
+    // 8.25 "Shared Exponent Texture Color Conversion":
+    //
+    //   red = reduint * 2^(expuint - B - N) = reduint * 2^(expuint - 24)
+    //
+    // Where reduint and expuint are the integer values when considering the E5 as a 5bit uint, and
+    // the r9 as a 9bit uint. B the number of bits of the mantissa (9), and N the offset for the
+    // exponent (15).
+
+    float smallestExponent = std::pow(2.0f, -24.0f);
+    float largestExponent = std::pow(2.0f, float(31 - 24));
+
+    auto MakeRGB9E5 = [](uint32_t r, uint32_t g, uint32_t b, uint32_t e) {
+        ASSERT((r & 0x1FF) == r);
+        ASSERT((g & 0x1FF) == g);
+        ASSERT((b & 0x1FF) == b);
+        ASSERT((e & 0x1F) == e);
+        return r | g << 9 | b << 18 | e << 27;
+    };
+
+    // Test the smallest largest, and "1" exponents
+    std::vector<uint32_t> textureData = {
+        MakeRGB9E5(0, 1, 2, 0b00000),
+        MakeRGB9E5(2, 1, 0, 0b11111),
+        MakeRGB9E5(0, 1, 2, 0b11000),
+    };
+
+    // This is one of the only 3-channel formats, so we don't have specific testing for them. Alpha
+    // should always be sampled as 1
+    // clang-format off
+    std::vector<float> uncompressedData = {
+        0.0f, smallestExponent, 2.0f * smallestExponent, 1.0f,
+        2.0f * largestExponent, largestExponent, 0.0f, 1.0f,
+        0.0f, 1.0f, 2.0f, 1.0f,
+    };
+    // clang-format on
+
+    DoFloatFormatSamplingTest(
+        {wgpu::TextureFormat::RGB9E5Ufloat, 4, wgpu::TextureComponentType::Float, 4}, textureData,
         uncompressedData);
     // This format is not renderable.
 }
@@ -733,4 +795,8 @@ TEST_P(TextureFormatTest, RG11B10Float) {
 // TODO(cwallez@chromium.org): Add tests for depth-stencil formats when we know if they are copyable
 // in WebGPU.
 
-DAWN_INSTANTIATE_TEST(TextureFormatTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(TextureFormatTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
-import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -13,12 +14,36 @@ import {DatabaseModel} from './DatabaseModel.js';
 import {DOMStorageModel} from './DOMStorageModel.js';
 import {IndexedDBModel} from './IndexedDBModel.js';
 
+export const UIStrings = {
+  /**
+   * @description Text in the Storage View that expresses the amout of used and available storage quota
+   * @example {1.5 MB} PH1
+   * @example {123.1 MB} PH2
+   */
+  storageQuotaUsed: '{PH1} used out of {PH2} storage quota',
+  /**
+   * @description Tooltip in the Storage View that expresses the precise amout of used and available storage quota
+   * @example {200} PH1
+   * @example {400} PH2
+   */
+  storageQuotaUsedWithBytes: '{PH1} bytes used out of {PH2} bytes storage quota',
+  /**
+   * @description Fragment indicating that a certain data size has been custom configured
+   * @example {1.5 MB} PH1
+   */
+  storageWithCustomMarker: '{PH1} (custom)',
+};
+const str_ = i18n.i18n.registerUIStrings('resources/ClearStorageView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+
 /**
  * @implements {SDK.SDKModel.Observer}
  */
 export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true, 1000);
+    this.registerRequiredCSS('resources/clearStorageView.css', {enableLegacyPatching: true});
+    this.contentElement.classList.add('clear-storage-container');
     const types = Protocol.Storage.StorageType;
     this._pieColors = new Map([
       [types.Appcache, 'rgb(110, 161, 226)'],        // blue
@@ -30,8 +55,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
       [types.Websql, 'rgb(203, 220, 56)'],           // lime
     ]);
 
-    this._reportView = new UI.ReportView.ReportView(Common.UIString.UIString('Clear storage'));
-    this._reportView.registerRequiredCSS('resources/clearStorageView.css');
+    this._reportView = new UI.ReportView.ReportView(Common.UIString.UIString('Storage'));
+    this._reportView.registerRequiredCSS('resources/clearStorageView.css', {enableLegacyPatching: true});
     this._reportView.element.classList.add('clear-storage-header');
     this._reportView.show(this.contentElement);
     /** @type {?SDK.SDKModel.Target} */
@@ -46,17 +71,44 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     const quota = this._reportView.appendSection(Common.UIString.UIString('Usage'));
     this._quotaRow = quota.appendSelectableRow();
+    this._quotaRow.classList.add('quota-usage-row');
     const learnMoreRow = quota.appendRow();
     const learnMore = UI.XLink.XLink.create(
         'https://developers.google.com/web/tools/chrome-devtools/progressive-web-apps#opaque-responses',
         ls`Learn more`);
     learnMoreRow.appendChild(learnMore);
     this._quotaUsage = null;
-    this._pieChart = new PerfUI.PieChart(
-        {chartName: ls`Storage Usage`, size: 110, formatter: Platform.NumberUtilities.bytesToString, showLegend: true});
+    this._pieChart = PerfUI.PieChart.createPieChart();
+    this._populatePieChart(0, []);
     const usageBreakdownRow = quota.appendRow();
     usageBreakdownRow.classList.add('usage-breakdown-row');
-    usageBreakdownRow.appendChild(this._pieChart.element);
+    usageBreakdownRow.appendChild(this._pieChart);
+
+    /** @type {string} */
+    this._previousOverrideFieldValue = '';
+    const quotaOverrideCheckboxRow = quota.appendRow();
+    this._quotaOverrideCheckbox = UI.UIUtils.CheckboxLabel.create('Simulate custom storage quota', false, '');
+    quotaOverrideCheckboxRow.appendChild(this._quotaOverrideCheckbox);
+    this._quotaOverrideCheckbox.checkboxElement.addEventListener('click', this._onClickCheckbox.bind(this), false);
+    this._quotaOverrideControlRow = quota.appendRow();
+    /** @type {!HTMLInputElement} */
+    this._quotaOverrideEditor = /** @type {!HTMLInputElement} */ (
+        this._quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor'));
+    this._quotaOverrideControlRow.appendChild(UI.UIUtils.createLabel(Common.UIString.UIString('MB')));
+    this._quotaOverrideControlRow.classList.add('hidden');
+    this._quotaOverrideEditor.addEventListener('keyup', event => {
+      if (isEnterKey(event)) {
+        this._applyQuotaOverrideFromInputField();
+        event.consume(true);
+      }
+    });
+    this._quotaOverrideEditor.addEventListener('focusout', event => {
+      this._applyQuotaOverrideFromInputField();
+      event.consume(true);
+    });
+
+    const errorMessageRow = quota.appendRow();
+    this._quotaOverrideErrorMessage = errorMessageRow.createChild('div', 'quota-override-error');
 
     const clearButtonSection = this._reportView.appendSection('', 'clear-storage-button').appendRow();
     this._clearButton = UI.UIUtils.createTextButton(ls`Clear site data`, this._clear.bind(this));
@@ -100,7 +152,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
       return;
     }
     this._target = target;
-    const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
+    const securityOriginManager = /** @type {!SDK.SecurityOriginManager.SecurityOriginManager} */ (
+        target.model(SDK.SecurityOriginManager.SecurityOriginManager));
     this._updateOrigin(
         securityOriginManager.mainSecurityOrigin(), securityOriginManager.unreachableMainSecurityOrigin());
     securityOriginManager.addEventListener(
@@ -115,7 +168,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
     if (this._target !== target) {
       return;
     }
-    const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
+    const securityOriginManager = /** @type {!SDK.SecurityOriginManager.SecurityOriginManager} */ (
+        target.model(SDK.SecurityOriginManager.SecurityOriginManager));
     securityOriginManager.removeEventListener(
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this._originChanged, this);
   }
@@ -131,9 +185,10 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
   /**
    * @param {string} mainOrigin
-   * @param {string} unreachableMainOrigin
+   * @param {?string} unreachableMainOrigin
    */
-  _updateOrigin(mainOrigin, unreachableMainOrigin) {
+  async _updateOrigin(mainOrigin, unreachableMainOrigin) {
+    const oldOrigin = this._securityOrigin;
     if (unreachableMainOrigin) {
       this._securityOrigin = unreachableMainOrigin;
       this._reportView.setSubtitle(ls`${unreachableMainOrigin} (failed to load)`);
@@ -142,7 +197,64 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
       this._reportView.setSubtitle(mainOrigin);
     }
 
+    if (oldOrigin !== this._securityOrigin) {
+      this._quotaOverrideControlRow.classList.add('hidden');
+      this._quotaOverrideCheckbox.checkboxElement.checked = false;
+      this._quotaOverrideErrorMessage.textContent = '';
+    }
     this.doUpdate();
+  }
+
+  async _applyQuotaOverrideFromInputField() {
+    if (!this._target || !this._securityOrigin) {
+      this._quotaOverrideErrorMessage.textContent = ls`Internal error`;
+      return;
+    }
+    this._quotaOverrideErrorMessage.textContent = '';
+    const editorString = this._quotaOverrideEditor.value;
+    if (editorString === '') {
+      await this._clearQuotaForOrigin(this._target, this._securityOrigin);
+      this._previousOverrideFieldValue = '';
+      return;
+    }
+    const quota = parseFloat(editorString);
+    if (!Number.isFinite(quota)) {
+      this._quotaOverrideErrorMessage.textContent = ls`Please enter a number`;
+      return;
+    }
+    if (quota < 0) {
+      this._quotaOverrideErrorMessage.textContent = ls`Number must be non-negative`;
+      return;
+    }
+    const bytesPerMB = 1000 * 1000;
+    const quotaInBytes = Math.round(quota * bytesPerMB);
+    const quotaFieldValue = `${quotaInBytes / bytesPerMB}`;
+    this._quotaOverrideEditor.value = quotaFieldValue;
+    this._previousOverrideFieldValue = quotaFieldValue;
+    await this._target.storageAgent().invoke_overrideQuotaForOrigin(
+        {origin: this._securityOrigin, quotaSize: quotaInBytes});
+  }
+
+  /**
+   * @param {!SDK.SDKModel.Target} target
+   * @param {string} origin
+   */
+  async _clearQuotaForOrigin(target, origin) {
+    await target.storageAgent().invoke_overrideQuotaForOrigin({origin});
+  }
+
+  async _onClickCheckbox() {
+    if (this._quotaOverrideControlRow.classList.contains('hidden')) {
+      this._quotaOverrideControlRow.classList.remove('hidden');
+      this._quotaOverrideCheckbox.checkboxElement.checked = true;
+      this._quotaOverrideEditor.value = this._previousOverrideFieldValue;
+      this._quotaOverrideEditor.focus();
+    } else if (this._target && this._securityOrigin) {
+      this._quotaOverrideControlRow.classList.add('hidden');
+      this._quotaOverrideCheckbox.checkboxElement.checked = false;
+      await this._clearQuotaForOrigin(this._target, this._securityOrigin);
+      this._quotaOverrideErrorMessage.textContent = '';
+    }
   }
 
   _clear() {
@@ -176,7 +288,8 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
    * @param {!Array<string>} selectedStorageTypes
    */
   static clear(target, securityOrigin, selectedStorageTypes) {
-    target.storageAgent().clearDataForOrigin(securityOrigin, selectedStorageTypes.join(','));
+    target.storageAgent().invoke_clearDataForOrigin(
+        {origin: securityOrigin, storageTypes: selectedStorageTypes.join(',')});
 
     const set = new Set(selectedStorageTypes);
     const hasAll = set.has(Protocol.Storage.StorageType.All);
@@ -232,28 +345,41 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
    * @return {!Promise<?>}
    */
   async doUpdate() {
-    if (!this._securityOrigin) {
+    if (!this._securityOrigin || !this._target) {
+      this._quotaRow.textContent = '';
+      this._populatePieChart(0, []);
       return;
     }
 
     const securityOrigin = /** @type {string} */ (this._securityOrigin);
     const response = await this._target.storageAgent().invoke_getUsageAndQuota({origin: securityOrigin});
-    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
-      this._quotaRow.textContet = '';
-      this._resetPieChart(0);
+    this._quotaRow.textContent = '';
+    if (response.getError()) {
+      this._populatePieChart(0, []);
       return;
     }
-    this._quotaRow.textContent = Common.UIString.UIString(
-        '%s used out of %s storage quota.\xA0', Platform.NumberUtilities.bytesToString(response.usage),
-        Platform.NumberUtilities.bytesToString(response.quota));
-    if (response.quota < 125829120) {  // 120 MB
+    const quotaOverridden = response.overrideActive;
+    const quotaAsString = Platform.NumberUtilities.bytesToString(response.quota);
+    const usageAsString = Platform.NumberUtilities.bytesToString(response.usage);
+    const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, {PH1: quotaAsString});
+    const quota =
+        quotaOverridden ? UI.Fragment.Fragment.build`<b>${formattedQuotaAsString}</b>`.element() : quotaAsString;
+    const element =
+        i18n.i18n.getFormatLocalizedString(str_, UIStrings.storageQuotaUsed, {PH1: usageAsString, PH2: quota});
+    this._quotaRow.appendChild(element);
+    this._quotaRow.title = i18nString(
+        UIStrings.storageQuotaUsedWithBytes,
+        {PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString()});
+
+    if (!response.overrideActive && response.quota < 125829120) {  // 120 MB
       this._quotaRow.title = ls`Storage quota is limited in Incognito mode`;
       this._quotaRow.appendChild(UI.Icon.Icon.create('smallicon-info'));
     }
 
     if (this._quotaUsage === null || this._quotaUsage !== response.usage) {
       this._quotaUsage = response.usage;
-      this._resetPieChart(response.usage);
+      /** @type {!Array<!PerfUI.PieChart.Slice>} */
+      const slices = [];
       for (const usageForType of response.usageBreakdown.sort((a, b) => b.usage - a.usage)) {
         const value = usageForType.usage;
         if (!value) {
@@ -261,8 +387,9 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
         }
         const title = this._getStorageTypeName(usageForType.storageType);
         const color = this._pieColors.get(usageForType.storageType) || '#ccc';
-        this._pieChart.addSlice(value, color, title);
+        slices.push({value, color, title});
       }
+      this._populatePieChart(response.usage, slices);
     }
 
     this._usageUpdatedForTest(response.usage, response.quota, response.usageBreakdown);
@@ -271,9 +398,17 @@ export class ClearStorageView extends UI.ThrottledWidget.ThrottledWidget {
 
   /**
    * @param {number} total
+   * @param {!Array<!PerfUI.PieChart.Slice>} slices
    */
-  _resetPieChart(total) {
-    this._pieChart.initializeWithTotal(total);
+  _populatePieChart(total, slices) {
+    this._pieChart.data = {
+      chartName: ls`Storage usage`,
+      size: 110,
+      formatter: Platform.NumberUtilities.bytesToString,
+      showLegend: true,
+      total,
+      slices
+    };
   }
 
   /**

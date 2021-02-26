@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -35,7 +35,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_manager.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "url/gurl.h"
@@ -124,6 +124,11 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest::Delegate
 
+int URLRequest::Delegate::OnConnected(URLRequest* request,
+                                      const TransportInfo& info) {
+  return OK;
+}
+
 void URLRequest::Delegate::OnReceivedRedirect(URLRequest* request,
                                               const RedirectInfo& redirect_info,
                                               bool* defer_redirect) {}
@@ -165,8 +170,8 @@ URLRequest::~URLRequest() {
 
   Cancel();
 
-  if (network_delegate_) {
-    network_delegate_->NotifyURLRequestDestroyed(this);
+  if (network_delegate()) {
+    network_delegate()->NotifyURLRequestDestroyed(this);
     if (job_.get())
       job_->NotifyURLRequestDestroyed();
   }
@@ -395,11 +400,12 @@ int URLRequest::GetResponseCode() const {
   return job_->GetResponseCode();
 }
 
-void URLRequest::set_maybe_sent_cookies(CookieStatusList cookies) {
+void URLRequest::set_maybe_sent_cookies(CookieAccessResultList cookies) {
   maybe_sent_cookies_ = std::move(cookies);
 }
 
-void URLRequest::set_maybe_stored_cookies(CookieAndLineStatusList cookies) {
+void URLRequest::set_maybe_stored_cookies(
+    CookieAndLineAccessResultList cookies) {
   maybe_stored_cookies_ = std::move(cookies);
 }
 
@@ -433,7 +439,7 @@ void URLRequest::set_site_for_cookies(const SiteForCookies& site_for_cookies) {
 }
 
 void URLRequest::set_first_party_url_policy(
-    FirstPartyURLPolicy first_party_url_policy) {
+    RedirectInfo::FirstPartyURLPolicy first_party_url_policy) {
   DCHECK(!is_pending_);
   first_party_url_policy_ = first_party_url_policy;
 }
@@ -473,12 +479,11 @@ void URLRequest::set_referrer_policy(ReferrerPolicy referrer_policy) {
 }
 
 void URLRequest::set_allow_credentials(bool allow_credentials) {
+  allow_credentials_ = allow_credentials;
   if (allow_credentials) {
-    load_flags_ &= ~(LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
-                     LOAD_DO_NOT_SEND_AUTH_DATA);
+    load_flags_ &= ~LOAD_DO_NOT_SAVE_COOKIES;
   } else {
-    load_flags_ |= (LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
-                    LOAD_DO_NOT_SEND_AUTH_DATA);
+    load_flags_ |= LOAD_DO_NOT_SAVE_COOKIES;
   }
 }
 
@@ -502,9 +507,9 @@ void URLRequest::Start() {
   load_timing_info_.request_start_time = response_info_.request_time;
   load_timing_info_.request_start = base::TimeTicks::Now();
 
-  if (network_delegate_) {
+  if (network_delegate()) {
     OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST);
-    int error = network_delegate_->NotifyBeforeURLRequest(
+    int error = network_delegate()->NotifyBeforeURLRequest(
         this,
         base::BindOnce(&URLRequest::BeforeRequestComplete,
                        base::Unretained(this)),
@@ -516,8 +521,7 @@ void URLRequest::Start() {
     return;
   }
 
-  StartJob(
-      URLRequestJobManager::GetInstance()->CreateJob(this, network_delegate_));
+  StartJob(context_->job_factory()->CreateJob(this));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -526,20 +530,20 @@ URLRequest::URLRequest(const GURL& url,
                        RequestPriority priority,
                        Delegate* delegate,
                        const URLRequestContext* context,
-                       NetworkDelegate* network_delegate,
                        NetworkTrafficAnnotationTag traffic_annotation)
     : context_(context),
-      network_delegate_(network_delegate ? network_delegate
-                                         : context->network_delegate()),
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
       force_ignore_site_for_cookies_(false),
       method_("GET"),
-      referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
-      first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
+      referrer_policy_(
+          ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      first_party_url_policy_(
+          RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL),
       load_flags_(LOAD_NORMAL),
-      privacy_mode_(PRIVACY_MODE_ENABLED),
+      allow_credentials_(true),
+      privacy_mode_(PRIVACY_MODE_DISABLED),
       disable_secure_dns_(false),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_upload_depth_(0),
@@ -581,25 +585,23 @@ void URLRequest::BeforeRequestComplete(int error) {
   if (error != OK) {
     net_log_.AddEventWithStringParams(NetLogEventType::CANCELLED, "source",
                                       "delegate");
-    StartJob(new URLRequestErrorJob(this, network_delegate_, error));
+    StartJob(std::make_unique<URLRequestErrorJob>(this, error));
   } else if (!delegate_redirect_url_.is_empty()) {
     GURL new_url;
     new_url.Swap(&delegate_redirect_url_);
 
-    URLRequestRedirectJob* job = new URLRequestRedirectJob(
-        this, network_delegate_, new_url,
+    StartJob(std::make_unique<URLRequestRedirectJob>(
+        this, new_url,
         // Use status code 307 to preserve the method, so POST requests work.
-        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Delegate");
-    StartJob(job);
+        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Delegate"));
   } else {
-    StartJob(URLRequestJobManager::GetInstance()->CreateJob(this,
-                                                            network_delegate_));
+    StartJob(context_->job_factory()->CreateJob(this));
   }
 }
 
-void URLRequest::StartJob(URLRequestJob* job) {
+void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(!is_pending_);
-  DCHECK(!job_.get());
+  DCHECK(!job_);
 
   privacy_mode_ = DeterminePrivacyMode();
 
@@ -610,7 +612,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 
-  job_.reset(job);
+  job_ = std::move(job);
   job_->SetExtraRequestHeaders(extra_request_headers_);
   job_->SetPriority(priority_);
   job_->SetRequestHeadersCallback(request_headers_callback_);
@@ -633,8 +635,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
   if (referrer_url !=
       URLRequestJob::ComputeReferrerForPolicy(
           referrer_policy_, referrer_url, url(), &same_origin_for_metrics)) {
-    if (!network_delegate_ ||
-        !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
+    if (!network_delegate() ||
+        !network_delegate()->CancelURLRequestWithPolicyViolatingReferrerHeader(
             *this, url(), referrer_url)) {
       referrer_.clear();
     } else {
@@ -643,8 +645,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
       referrer_.clear();
       net_log_.AddEventWithStringParams(NetLogEventType::CANCELLED, "source",
                                         "delegate");
-      RestartWithJob(new URLRequestErrorJob(this, network_delegate_,
-                                            ERR_BLOCKED_BY_CLIENT));
+      RestartWithJob(
+          std::make_unique<URLRequestErrorJob>(this, ERR_BLOCKED_BY_CLIENT));
       return;
     }
   }
@@ -661,10 +663,10 @@ void URLRequest::StartJob(URLRequestJob* job) {
   job_->Start();
 }
 
-void URLRequest::RestartWithJob(URLRequestJob* job) {
+void URLRequest::RestartWithJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(job->request() == this);
   PrepareToRestart();
-  StartJob(job);
+  StartJob(std::move(job));
 }
 
 int URLRequest::Cancel() {
@@ -766,6 +768,10 @@ bool URLRequest::failed() const {
   return (status_ != OK && status_ != ERR_IO_PENDING);
 }
 
+int URLRequest::NotifyConnected(const TransportInfo& info) {
+  return delegate_->OnConnected(this, info);
+}
+
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
                                         bool* defer_redirect) {
   is_redirecting_ = true;
@@ -791,8 +797,8 @@ void URLRequest::NotifyResponseStarted(int net_error) {
   // In some cases (e.g. an event was canceled), we might have sent the
   // completion event and receive a NotifyResponseStarted() later.
   if (!has_notified_completion_ && net_error == OK) {
-    if (network_delegate_)
-      network_delegate_->NotifyResponseStarted(this, net_error);
+    if (network_delegate())
+      network_delegate()->NotifyResponseStarted(this, net_error);
   }
 
   // Notify in case the entire URL Request has been finished.
@@ -897,8 +903,8 @@ void URLRequest::Redirect(
         redirect_info.new_url.possibly_invalid_spec());
   }
 
-  if (network_delegate_)
-    network_delegate_->NotifyBeforeRedirect(this, redirect_info.new_url);
+  if (network_delegate())
+    network_delegate()->NotifyBeforeRedirect(this, redirect_info.new_url);
 
   if (!final_upload_progress_.position() && upload_data_stream_)
     final_upload_progress_ = upload_data_stream_->GetUploadProgress();
@@ -926,6 +932,10 @@ void URLRequest::Redirect(
 
 const URLRequestContext* URLRequest::context() const {
   return context_;
+}
+
+NetworkDelegate* URLRequest::network_delegate() const {
+  return context_->network_delegate();
 }
 
 int64_t URLRequest::GetExpectedContentSize() const {
@@ -983,13 +993,12 @@ void URLRequest::NotifySSLCertificateError(int net_error,
   delegate_->OnSSLCertificateError(this, net_error, ssl_info, fatal);
 }
 
-bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
-  DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
+bool URLRequest::CanGetCookies() const {
+  DCHECK_EQ(PrivacyMode::PRIVACY_MODE_DISABLED, privacy_mode_);
   bool can_get_cookies = g_default_can_use_cookies;
-  if (network_delegate_) {
+  if (network_delegate()) {
     can_get_cookies =
-        network_delegate_->CanGetCookies(*this, cookie_list,
-                                         /*allowed_from_caller=*/true);
+        network_delegate()->CanGetCookies(*this, /*allowed_from_caller=*/true);
   }
 
   if (!can_get_cookies)
@@ -1001,21 +1010,25 @@ bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
                               CookieOptions* options) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   bool can_set_cookies = g_default_can_use_cookies;
-  if (network_delegate_) {
+  if (network_delegate()) {
     can_set_cookies =
-        network_delegate_->CanSetCookie(*this, cookie, options,
-                                        /*allowed_from_caller=*/true);
+        network_delegate()->CanSetCookie(*this, cookie, options,
+                                         /*allowed_from_caller=*/true);
   }
   if (!can_set_cookies)
     net_log_.AddEvent(NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
   return can_set_cookies;
 }
 
-net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
-  // Enable privacy mode if flags tell us not send or save cookies.
-  if ((load_flags_ & LOAD_DO_NOT_SEND_COOKIES) ||
-      (load_flags_ & LOAD_DO_NOT_SAVE_COOKIES)) {
-    return PRIVACY_MODE_ENABLED;
+PrivacyMode URLRequest::DeterminePrivacyMode() const {
+  if (!allow_credentials_) {
+    // |allow_credentials_| implies LOAD_DO_NOT_SAVE_COOKIES.
+    DCHECK(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES);
+
+    // TODO(https://crbug.com/775438): Client certs should always be
+    // affirmatively omitted for these requests.
+    return send_client_certs_ ? PRIVACY_MODE_ENABLED
+                              : PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS;
   }
 
   // Otherwise, check with the delegate if present, or base it off of
@@ -1023,8 +1036,8 @@ net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
   // TODO(mmenke): Looks like |g_default_can_use_cookies| is not too useful,
   // with the network service - remove it.
   bool enable_privacy_mode = !g_default_can_use_cookies;
-  if (network_delegate_) {
-    enable_privacy_mode = network_delegate_->ForcePrivacyMode(
+  if (network_delegate()) {
+    enable_privacy_mode = network_delegate()->ForcePrivacyMode(
         url(), site_for_cookies_, isolation_info_.top_frame_origin());
   }
   return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
@@ -1085,8 +1098,8 @@ void URLRequest::NotifyRequestCompleted() {
   is_pending_ = false;
   is_redirecting_ = false;
   has_notified_completion_ = true;
-  if (network_delegate_)
-    network_delegate_->NotifyCompleted(this, job_.get() != nullptr, status_);
+  if (network_delegate())
+    network_delegate()->NotifyCompleted(this, job_.get() != nullptr, status_);
 }
 
 void URLRequest::OnCallToDelegate(NetLogEventType type) {
@@ -1118,14 +1131,14 @@ void URLRequest::RecordReferrerGranularityMetrics(
   if (request_is_same_origin) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin", referrer_policy_,
-        MAX_REFERRER_POLICY + 1);
+        static_cast<int>(ReferrerPolicy::MAX) + 1);
     UMA_HISTOGRAM_BOOLEAN(
         "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
         referrer_more_descriptive_than_its_origin);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin", referrer_policy_,
-        MAX_REFERRER_POLICY + 1);
+        static_cast<int>(ReferrerPolicy::MAX) + 1);
     UMA_HISTOGRAM_BOOLEAN(
         "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin",
         referrer_more_descriptive_than_its_origin);

@@ -32,8 +32,7 @@ class CORE_EXPORT ModuleRecordResolverImpl final
       : ExecutionContextLifecycleObserver(execution_context),
         modulator_(modulator) {}
 
-  void Trace(Visitor*) override;
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleRecordResolverImpl);
+  void Trace(Visitor*) const override;
 
  private:
   // Implements ModuleRecordResolver:

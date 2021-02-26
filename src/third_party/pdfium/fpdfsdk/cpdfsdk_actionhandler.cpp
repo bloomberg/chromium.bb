@@ -16,7 +16,7 @@
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fxjs/ijs_event_context.h"
 #include "fxjs/ijs_runtime.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 bool CPDFSDK_ActionHandler::DoAction_DocOpen(
@@ -105,7 +105,7 @@ bool CPDFSDK_ActionHandler::DoAction_Destination(
 
 bool CPDFSDK_ActionHandler::DoAction_Page(
     const CPDF_Action& action,
-    enum CPDF_AAction::AActionType eType,
+    CPDF_AAction::AActionType eType,
     CPDFSDK_FormFillEnvironment* pFormFillEnv) {
   std::set<const CPDF_Dictionary*> visited;
   return ExecuteDocumentPageAction(action, eType, pFormFillEnv, &visited);
@@ -113,7 +113,7 @@ bool CPDFSDK_ActionHandler::DoAction_Page(
 
 bool CPDFSDK_ActionHandler::DoAction_Document(
     const CPDF_Action& action,
-    enum CPDF_AAction::AActionType eType,
+    CPDF_AAction::AActionType eType,
     CPDFSDK_FormFillEnvironment* pFormFillEnv) {
   std::set<const CPDF_Dictionary*> visited;
   return ExecuteDocumentPageAction(action, eType, pFormFillEnv, &visited);
@@ -135,7 +135,7 @@ bool CPDFSDK_ActionHandler::ExecuteDocumentOpenAction(
     CPDFSDK_FormFillEnvironment* pFormFillEnv,
     std::set<const CPDF_Dictionary*>* visited) {
   const CPDF_Dictionary* pDict = action.GetDict();
-  if (pdfium::ContainsKey(*visited, pDict))
+  if (pdfium::Contains(*visited, pDict))
     return false;
 
   visited->insert(pDict);
@@ -167,7 +167,7 @@ bool CPDFSDK_ActionHandler::ExecuteDocumentPageAction(
     CPDFSDK_FormFillEnvironment* pFormFillEnv,
     std::set<const CPDF_Dictionary*>* visited) {
   const CPDF_Dictionary* pDict = action.GetDict();
-  if (pdfium::ContainsKey(*visited, pDict))
+  if (pdfium::Contains(*visited, pDict))
     return false;
 
   visited->insert(pDict);
@@ -212,7 +212,7 @@ bool CPDFSDK_ActionHandler::ExecuteFieldAction(
     CPDFSDK_FieldAction* data,
     std::set<const CPDF_Dictionary*>* visited) {
   const CPDF_Dictionary* pDict = action.GetDict();
-  if (pdfium::ContainsKey(*visited, pDict))
+  if (pdfium::Contains(*visited, pDict))
     return false;
 
   visited->insert(pDict);

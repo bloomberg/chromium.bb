@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -34,11 +33,7 @@ WakeLock::WakeLock(LocalDOMWindow& window)
       managers_{
           MakeGarbageCollected<WakeLockManager>(&window, WakeLockType::kScreen),
           MakeGarbageCollected<WakeLockManager>(&window,
-                                                WakeLockType::kSystem)} {
-  window.GetScheduler()->RegisterStickyFeature(
-      SchedulingPolicy::Feature::kWakeLock,
-      {SchedulingPolicy::RecordMetricsForBackForwardCache()});
-}
+                                                WakeLockType::kSystem)} {}
 
 WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
     : ExecutionContextLifecycleObserver(&worker_scope),
@@ -61,9 +56,9 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // https://w3c.github.io/wake-lock/#the-request-method
+  // https://w3c.github.io/screen-wake-lock/#the-request-method
   auto* context = ExecutionContext::From(script_state);
-  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
+  DCHECK(context->IsWindow() || context->IsDedicatedWorkerGlobalScope());
 
   if (type == "screen" &&
       !RuntimeEnabledFeatures::ScreenWakeLockEnabled(context)) {
@@ -162,7 +157,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
 }
 
 void WakeLock::DoRequest(WakeLockType type, ScriptPromiseResolver* resolver) {
-  // https://w3c.github.io/wake-lock/#the-request-method
+  // https://w3c.github.io/screen-wake-lock/#the-request-method
   // 5.1. Let state be the result of awaiting obtain permission steps with type:
   ObtainPermission(
       type, WTF::Bind(&WakeLock::DidReceivePermissionResponse,
@@ -172,7 +167,7 @@ void WakeLock::DoRequest(WakeLockType type, ScriptPromiseResolver* resolver) {
 void WakeLock::DidReceivePermissionResponse(WakeLockType type,
                                             ScriptPromiseResolver* resolver,
                                             PermissionStatus status) {
-  // https://w3c.github.io/wake-lock/#the-request-method
+  // https://w3c.github.io/screen-wake-lock/#the-request-method
   DCHECK(status == PermissionStatus::GRANTED ||
          status == PermissionStatus::DENIED);
   DCHECK(resolver);
@@ -203,7 +198,7 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
 }
 
 void WakeLock::ContextDestroyed() {
-  // https://w3c.github.io/wake-lock/#handling-document-loss-of-full-activity
+  // https://w3c.github.io/screen-wake-lock/#handling-document-loss-of-full-activity
   // 1. Let document be the responsible document of the current settings object.
   // 2. Let screenRecord be the platform wake lock's state record associated
   // with document and wake lock type "screen".
@@ -220,7 +215,7 @@ void WakeLock::ContextDestroyed() {
 }
 
 void WakeLock::PageVisibilityChanged() {
-  // https://w3c.github.io/wake-lock/#handling-document-loss-of-visibility
+  // https://w3c.github.io/screen-wake-lock/#handling-document-loss-of-visibility
   // 1. Let document be the Document of the top-level browsing context.
   // 2. If document's visibility state is "visible", abort these steps.
   if (GetPage() && GetPage()->IsPageVisible())
@@ -238,7 +233,7 @@ void WakeLock::PageVisibilityChanged() {
 void WakeLock::ObtainPermission(
     WakeLockType type,
     base::OnceCallback<void(PermissionStatus)> callback) {
-  // https://w3c.github.io/wake-lock/#dfn-obtain-permission
+  // https://w3c.github.io/screen-wake-lock/#dfn-obtain-permission
   // Note we actually implement a simplified version of the "obtain permission"
   // algorithm that essentially just calls the "request permission to use"
   // algorithm from the Permissions spec (i.e. we bypass all the steps covering
@@ -279,7 +274,7 @@ PermissionService* WakeLock::GetPermissionService() {
   return permission_service_.get();
 }
 
-void WakeLock::Trace(Visitor* visitor) {
+void WakeLock::Trace(Visitor* visitor) const {
   for (const WakeLockManager* manager : managers_)
     visitor->Trace(manager);
   visitor->Trace(permission_service_);

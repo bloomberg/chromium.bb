@@ -24,25 +24,16 @@
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/events/protocol_event.h"
-#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/syncable/change_record.h"
 #include "url/gurl.h"
-
-namespace base {
-namespace trace_event {
-class ProcessMemoryDump;
-}  // namespace trace_event
-}  // namespace base
 
 namespace syncer {
 
-class BaseTransaction;
 class CancelationSignal;
 class DataTypeDebugInfoListener;
 class EngineComponentsFactory;
@@ -52,107 +43,11 @@ class JsEventHandler;
 class ProtocolEvent;
 class SyncCycleSnapshot;
 class SyncStatusObserver;
-class TypeDebugInfoObserver;
-class UnrecoverableErrorHandler;
-struct UserShare;
 
-namespace syncable {
-class NigoriHandler;
-}  // namespace syncable
-
-// SyncManager encapsulates syncable::Directory and serves as the parent of all
-// other objects in the sync API.  If multiple threads interact with the same
-// local sync repository (i.e. the same sqlite database), they should share a
-// single SyncManager instance.  The caller should typically create one
-// SyncManager for the lifetime of a user session.
-//
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
 class SyncManager {
  public:
-  // An interface the embedding application implements to be notified
-  // on change events.  Note that these methods may be called on *any*
-  // thread.
-  class ChangeDelegate {
-   public:
-    // Notify the delegate that changes have been applied to the sync model.
-    //
-    // This will be invoked on the same thread as on which ApplyChanges was
-    // called. |changes| is an array of size |change_count|, and contains the
-    // ID of each individual item that was changed. |changes| exists only for
-    // the duration of the call. If items of multiple data types change at
-    // the same time, this method is invoked once per data type and |changes|
-    // is restricted to items of the ModelType indicated by |model_type|.
-    // Because the observer is passed a |trans|, the observer can assume a
-    // read lock on the sync model that will be released after the function
-    // returns.
-    //
-    // The SyncManager constructs |changes| in the following guaranteed order:
-    //
-    // 1. Deletions, from leaves up to parents.
-    // 2. Updates to existing items with synced parents & predecessors.
-    // 3. New items with synced parents & predecessors.
-    // 4. Items with parents & predecessors in |changes|.
-    // 5. Repeat #4 until all items are in |changes|.
-    //
-    // Thus, an implementation of OnChangesApplied should be able to
-    // process the change records in the order without having to worry about
-    // forward dependencies.  But since deletions come before reparent
-    // operations, a delete may temporarily orphan a node that is
-    // updated later in the list.
-    virtual void OnChangesApplied(ModelType model_type,
-                                  int64_t model_version,
-                                  const BaseTransaction* trans,
-                                  const ImmutableChangeRecordList& changes) = 0;
-
-    // OnChangesComplete gets called when the TransactionComplete event is
-    // posted (after OnChangesApplied finishes), after the transaction lock
-    // and the change channel mutex are released.
-    //
-    // The purpose of this function is to support processors that require
-    // split-transactions changes. For example, if a model processor wants to
-    // perform blocking I/O due to a change, it should calculate the changes
-    // while holding the transaction lock (from within OnChangesApplied), buffer
-    // those changes, let the transaction fall out of scope, and then commit
-    // those changes from within OnChangesComplete (postponing the blocking
-    // I/O to when it no longer holds any lock).
-    virtual void OnChangesComplete(ModelType model_type) = 0;
-
-   protected:
-    virtual ~ChangeDelegate();
-  };
-
-  // Like ChangeDelegate, except called only on the sync thread and
-  // not while a transaction is held.  For objects that want to know
-  // when changes happen, but don't need to process them.
-  class ChangeObserver {
-   public:
-    // Ids referred to in |changes| may or may not be in the write
-    // transaction specified by |write_transaction_id|.  If they're
-    // not, that means that the node didn't actually change, but we
-    // marked them as changed for some other reason (e.g., siblings of
-    // re-ordered nodes).
-    //
-    // TODO(sync, long-term): Ideally, ChangeDelegate/Observer would
-    // be passed a transformed version of EntryKernelMutation instead
-    // of a transaction that would have to be used to look up the
-    // changed nodes.  That is, ChangeDelegate::OnChangesApplied()
-    // would still be called under the transaction, but all the needed
-    // data will be passed down.
-    //
-    // Even more ideally, we would have sync semantics such that we'd
-    // be able to apply changes without being under a transaction.
-    // But that's a ways off...
-    virtual void OnChangesApplied(ModelType model_type,
-                                  int64_t write_transaction_id,
-                                  const ImmutableChangeRecordList& changes) = 0;
-
-    virtual void OnChangesComplete(ModelType model_type) = 0;
-
-   protected:
-    virtual ~ChangeObserver();
-  };
-
   // An interface the embedding application implements to receive
   // notifications from the SyncManager.  Register an observer via
   // SyncManager::AddObserver.  All methods are called only on the
@@ -196,10 +91,6 @@ class SyncManager {
     InitArgs();
     ~InitArgs();
 
-    // Path in which to create or open sync's sqlite database (aka the
-    // directory).
-    base::FilePath database_location;
-
     // Used to propagate events to chrome://sync-internals.  Optional.
     WeakHandle<JsEventHandler> event_handler;
 
@@ -214,15 +105,10 @@ class SyncManager {
     // Used to communicate with the sync server.
     std::unique_ptr<HttpPostProviderFactory> post_factory;
 
-    std::vector<scoped_refptr<ModelSafeWorker>> workers;
-
     std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
 
     // Must outlive SyncManager.
     ExtensionsActivity* extensions_activity;
-
-    // Must outlive SyncManager.
-    ChangeDelegate* change_delegate;
 
     CoreAccountId authenticated_account_id;
 
@@ -232,16 +118,7 @@ class SyncManager {
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
 
     // Must outlive SyncManager.
-    UserShare* user_share;
-
-    // Must outlive SyncManager.
     SyncEncryptionHandler* encryption_handler;
-
-    // Must outlive SyncManager.
-    syncable::NigoriHandler* nigori_handler;
-
-    WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    base::RepeatingClosure report_unrecoverable_error_function;
 
     // Carries shutdown requests across threads and will be used to cut short
     // any network I/O and tell the syncer to exit early.
@@ -277,23 +154,7 @@ class SyncManager {
 
   virtual ModelTypeSet InitialSyncEndedTypes() = 0;
 
-  // Returns those types within |types| that have an empty progress marker
-  // token.
-  virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet types) = 0;
-
-  // Purge from the directory those types with non-empty progress markers
-  // but without initial synced ended set.
-  // Returns false if an error occurred, true otherwise.
-  virtual void PurgePartiallySyncedTypes() = 0;
-
-  // Purge those disabled types as specified by |to_purge|. |to_journal| and
-  // |to_unapply| specify subsets that require special handling. |to_journal|
-  // types are saved into the delete journal, while |to_unapply| have only
-  // their local data deleted, while their server data is preserved.
-  virtual void PurgeDisabledTypes(ModelTypeSet to_purge,
-                                  ModelTypeSet to_journal,
-                                  ModelTypeSet to_unapply) = 0;
+  virtual ModelTypeSet GetEnabledTypes() = 0;
 
   // Update tokens that we're using in Sync. Email must stay the same.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
@@ -336,15 +197,7 @@ class SyncManager {
   // potentially dereference garbage.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Call periodically from a database-safe thread to persist recent changes
-  // to the syncapi model.
-  virtual void SaveChanges() = 0;
-
-  // Issue a final SaveChanges, and close sqlite handles.
   virtual void ShutdownOnSyncThread() = 0;
-
-  // May be called from any thread.
-  virtual UserShare* GetUserShare() = 0;
 
   // Returns non-owning pointer to ModelTypeConnector. In contrast with
   // ModelTypeConnectorProxy all calls are executed synchronously, thus the
@@ -380,28 +233,16 @@ class SyncManager {
   virtual std::vector<std::unique_ptr<ProtocolEvent>>
   GetBufferedProtocolEvents() = 0;
 
-  // Functions to manage registrations of DebugInfoObservers.
-  virtual void RegisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
-  virtual void UnregisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
-  virtual bool HasDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
-
-  // Request that all current counter values be emitted as though they had just
-  // been updated.  Useful for initializing new observers' state.
-  virtual void RequestEmitDebugInfo() = 0;
-
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.
   virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
 
-  // Adds memory usage statistics to |pmd| for chrome://tracing.
-  virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) = 0;
-
   // Updates invalidation client id.
   virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
+
+  // Notifies SyncManager that there are no other known active devices.
+  virtual void UpdateSingleClientStatus(bool single_client) = 0;
 };
 
 }  // namespace syncer

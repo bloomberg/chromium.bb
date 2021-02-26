@@ -12,14 +12,11 @@
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace password_manager {
 
 struct CompromisedCredentials;
 struct InteractionsStats;
+struct PasswordForm;
 class PasswordFormMetricsRecorder;
 
 // Interface that contains all methods from PasswordFormManager that are used in
@@ -28,21 +25,19 @@ class PasswordFormManagerForUI {
  public:
   virtual ~PasswordFormManagerForUI() = default;
 
-  // Returns origin of the initially observed form.
-  virtual const GURL& GetOrigin() const = 0;
+  // Returns URL of the initially observed form.
+  virtual const GURL& GetURL() const = 0;
 
   // Returns the best saved matches for the observed form.
-  virtual const std::vector<const autofill::PasswordForm*>& GetBestMatches()
-      const = 0;
+  virtual const std::vector<const PasswordForm*>& GetBestMatches() const = 0;
 
   // Returns the federated saved matches for the observed form.
   // TODO(crbug.com/831123): merge with GetBestMatches.
-  virtual std::vector<const autofill::PasswordForm*> GetFederatedMatches()
-      const = 0;
+  virtual std::vector<const PasswordForm*> GetFederatedMatches() const = 0;
 
   // Returns credentials that are ready to be written (saved or updated) to a
   // password store.
-  virtual const autofill::PasswordForm& GetPendingCredentials() const = 0;
+  virtual const PasswordForm& GetPendingCredentials() const = 0;
 
   // Returns who created this PasswordFormManager. The Credential Management API
   // uses a derived class of the PasswordFormManager that can indicate its
@@ -63,6 +58,9 @@ class PasswordFormManagerForUI {
   // Determines if the user opted to 'never remember' passwords for this form.
   virtual bool IsBlacklisted() const = 0;
 
+  // Checks if the user unblacklisted the origin of the form for saving.
+  virtual bool WasUnblacklisted() const = 0;
+
   // Determines whether the submitted credentials returned by
   // GetPendingCredentials() can be moved to the signed in account store.
   // Returns true if the submitted credentials are stored in the profile store
@@ -76,7 +74,7 @@ class PasswordFormManagerForUI {
   // password from the pending credentials. It modifies the pending credentials.
   // |credentials_to_update| should be one of the best matches or the pending
   // credentials.
-  virtual void Update(const autofill::PasswordForm& credentials_to_update) = 0;
+  virtual void Update(const PasswordForm& credentials_to_update) = 0;
 
   // Updates the username value. Called when user edits the username and clicks
   // the save button. Updates the username and modifies internal state

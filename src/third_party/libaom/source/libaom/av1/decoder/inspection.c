@@ -99,7 +99,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       mi->compound_type = mbmi->interinter_comp.type;
 
       // Block Size
-      mi->sb_type = mbmi->sb_type;
+      mi->bsize = mbmi->bsize;
       // Skip Flag
       mi->skip = mbmi->skip_txfm;
       mi->filter[0] = av1_extract_interp_filter(mbmi->interp_filters, 0);
@@ -109,7 +109,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       // Transform
       // TODO(anyone): extract tx type info from mbmi->txk_type[].
 
-      const BLOCK_SIZE bsize = mbmi->sb_type;
+      const BLOCK_SIZE bsize = mbmi->bsize;
       const int c = i % mi_size_wide[bsize];
       const int r = j % mi_size_high[bsize];
       if (is_inter_block(mbmi) || is_intrabc_block(mbmi))

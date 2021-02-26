@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -34,7 +35,7 @@ const char kExternalDataPathUpdated[] =
     "policy/printers_configuration_updated.json";
 
 // The name of an External Data Policy in Device Policy.
-const char* const kPolicyName = key::kDeviceNativePrinters;
+const char* const kPolicyName = key::kDevicePrinters;
 
 class MockDeviceCloudExternalDataPolicyObserverDelegate
     : public DeviceCloudExternalDataPolicyObserver::Delegate {

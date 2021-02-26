@@ -569,15 +569,17 @@ public:
 	{
 		bool Matrix : 1;
 		bool Shader : 1;
+		bool StorageImageMultisample : 1;
 		bool ClipDistance : 1;
 		bool CullDistance : 1;
+		bool ImageCubeArray : 1;
 		bool InputAttachment : 1;
 		bool Sampled1D : 1;
 		bool Image1D : 1;
-		bool ImageCubeArray : 1;
 		bool SampledBuffer : 1;
 		bool SampledCubeArray : 1;
 		bool ImageBuffer : 1;
+		bool ImageMSArray : 1;
 		bool StorageImageExtendedFormats : 1;
 		bool ImageQuery : 1;
 		bool DerivativeControl : 1;
@@ -798,7 +800,7 @@ private:
 	HandleMap<Function> functions;
 	std::unordered_map<StringID, String> strings;
 	HandleMap<Extension> extensionsByID;
-	std::unordered_set<Extension::Name> extensionsImported;
+	std::unordered_set<uint32_t> extensionsImported;
 	Function::ID entryPoint;
 	mutable bool imageWriteEmitted = false;
 
@@ -1066,6 +1068,8 @@ private:
 
 			return SIMD::UInt(constant[i]);
 		}
+
+		bool isConstantZero() const;
 
 	private:
 		RR_PRINT_ONLY(friend struct rr::PrintValue::Ty<Operand>;)
@@ -1366,7 +1370,7 @@ public:
 	// are only used when debugging. See b/146486064 for more information.
 	// Give careful consideration to the runtime performance loss before adding
 	// more state here.
-	SIMD::Int windowSpacePosition[2];
+	std::array<SIMD::Int, 2> windowSpacePosition;
 	Int viewID;  // slice offset into input attachments for multiview, even if the shader doesn't use ViewIndex
 	Int instanceID;
 	SIMD::Int vertexIndex;

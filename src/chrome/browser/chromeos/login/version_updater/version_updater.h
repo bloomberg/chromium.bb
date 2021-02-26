@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VERSION_UPDATER_VERSION_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VERSION_UPDATER_VERSION_UPDATER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -12,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/version_updater/update_time_estimator.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
@@ -22,7 +24,7 @@ class DefaultTickClock;
 namespace chromeos {
 
 // Tries to update system, interacting with UpdateEnglineClient and
-// NetworkPortalDetector. Uses callbacks - methods of |delegate_|, which may
+// NetworkPortalDetector. Uses callbacks - methods of `delegate_`, which may
 // interact with user, change UI etc.
 class VersionUpdater : public UpdateEngineClient::Observer,
                        public NetworkPortalDetector::Observer {
@@ -30,6 +32,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   enum class Result {
     UPDATE_NOT_REQUIRED,
     UPDATE_ERROR,
+    UPDATE_SKIPPED,
   };
 
   enum class State {
@@ -47,7 +50,13 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
     update_engine::StatusResult status;
 
-    // Estimated time left, in seconds.
+    // Time left for an update to finish in seconds.
+    base::TimeDelta total_time_left;
+    // Progress of an update which is based on total time left expectation.
+    int better_update_progress = 0;
+
+    // Estimated time left for only downloading stage, in seconds.
+    // TODO(crbug.com/1101317): Remove when better update is launched.
     int estimated_time_left_in_secs = 0;
     bool show_estimated_time_left = false;
 
@@ -95,19 +104,21 @@ class VersionUpdater : public UpdateEngineClient::Observer,
     virtual void DelayErrorMessage() = 0;
   };
 
-  // Callback type for |GetEOLInfo|
+  // Callback type for `GetEOLInfo`
   using EolInfoCallback =
       base::OnceCallback<void(const UpdateEngineClient::EolInfo& eol_info)>;
 
   explicit VersionUpdater(VersionUpdater::Delegate* delegate);
   ~VersionUpdater() override;
 
-  // Resets |VersionUpdater| to initial state.
+  // Resets `VersionUpdater` to initial state.
   void Init();
 
   // Starts network check. If success, starts update check.
   void StartNetworkCheck();
   void StartUpdateCheck();
+
+  void RefreshTimeLeftEstimation();
 
   void SetUpdateOverCellularOneTimePermission();
   void RejectUpdateOverCellular();
@@ -121,6 +132,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
+    time_estimator_.set_tick_clock_for_testing(tick_clock);
   }
 
   void set_wait_for_reboot_time_for_testing(
@@ -139,14 +151,10 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   // UpdateEngineClient::Observer implementation:
   void UpdateStatusChanged(const update_engine::StatusResult& status) override;
 
-  // Updates downloading stats (remaining time and downloading
-  // progress), which are stored in update_info_.
-  void UpdateDownloadingStats(const update_engine::StatusResult& status);
-
   // NetworkPortalDetector::Observer implementation:
   void OnPortalDetectionCompleted(
       const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state) override;
+      const NetworkPortalDetector::CaptivePortalStatus status) override;
 
   void OnWaitForRebootTimeElapsed();
 
@@ -157,7 +165,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   // Callback to UpdateEngineClient::SetUpdateOverCellularOneTimePermission
   // called in response to user confirming that the OS update can proceed
   // despite being over cellular charges.
-  // |success|: whether the update engine accepted the user permission.
+  // `success`: whether the update engine accepted the user permission.
   void OnSetUpdateOverCellularOneTimePermission(bool success);
 
   // Callback for UpdateEngineClient::RequestUpdateCheck() called from
@@ -167,21 +175,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   // Pointer to delegate that owns this VersionUpdater instance.
   Delegate* delegate_;
 
-  // Time of the first notification from the downloading stage.
-  base::TimeTicks download_start_time_;
-  double download_start_progress_ = 0;
-
-  // Time of the last notification from the downloading stage.
-  base::TimeTicks download_last_time_;
-  double download_last_progress_ = 0;
-
-  bool is_download_average_speed_computed_ = false;
-  double download_average_speed_ = 0;
-
-  // Flag that is used to detect when update download has just started.
-  bool is_downloading_update_ = false;
-  // Ignore fist IDLE status that is sent before VersionUpdater initiated check.
-  bool ignore_idle_status_ = true;
+  std::unique_ptr<base::RepeatingTimer> refresh_timer_;
 
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
@@ -195,10 +189,15 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   // about state for the default network.
   bool is_first_detection_notification_ = true;
 
+  // Ignore fist IDLE status that is sent before VersionUpdater initiated check.
+  bool ignore_idle_status_ = true;
+
   // Stores information about current downloading process, update progress and
   // state. It is sent to Delegate on each UpdateInfoChanged call, and also can
   // be obtained with corresponding getter.
   UpdateInfo update_info_;
+
+  UpdateTimeEstimator time_estimator_;
 
   const base::TickClock* tick_clock_;
 

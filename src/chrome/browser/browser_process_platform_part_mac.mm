@@ -14,36 +14,16 @@
 #include "chrome/browser/apps/platform_apps/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/common/chrome_features.h"
-#include "components/metal_util/test_shader.h"
-
-namespace {
-
-void TestShaderCallback(metal::TestShaderResult result,
-                        const base::TimeDelta& method_time,
-                        const base::TimeDelta& compile_time) {
-  switch (result) {
-    case metal::TestShaderResult::kNotAttempted:
-    case metal::TestShaderResult::kFailed:
-      // Don't include data if no Metal device was created (e.g, due to hardware
-      // or macOS version reasons).
-      return;
-    case metal::TestShaderResult::kTimedOut:
-      DCHECK_EQ(compile_time, metal::kTestShaderTimeForever);
-      break;
-    case metal::TestShaderResult::kSucceeded:
-      break;
-  }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Browser.Metal.TestShaderMethodTime", method_time);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Browser.Metal.TestShaderCompileTime",
-                             compile_time);
-}
-
-}  // namespace
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
 }
 
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
+}
+
+void BrowserProcessPlatformPart::BeginStartTearDown() {
+  if (app_shim_manager_)
+    app_shim_manager_->OnBeginTearDown();
 }
 
 void BrowserProcessPlatformPart::StartTearDown() {
@@ -94,9 +74,6 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   // domain socket will cause the just-created socket to be unlinked.
   DCHECK(!app_shim_listener_.get());
   app_shim_listener_ = new AppShimListener;
-
-  // Launch a test Metal shader compile once the run loop starts.
-  metal::TestShader(base::BindOnce(&TestShaderCallback));
 }
 
 apps::AppShimManager* BrowserProcessPlatformPart::app_shim_manager() {
@@ -105,4 +82,12 @@ apps::AppShimManager* BrowserProcessPlatformPart::app_shim_manager() {
 
 AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {
   return app_shim_listener_.get();
+}
+
+GeolocationSystemPermissionManager*
+BrowserProcessPlatformPart::location_permission_manager() {
+  if (!location_permission_manager_)
+    location_permission_manager_ = GeolocationSystemPermissionManager::Create();
+
+  return location_permission_manager_.get();
 }

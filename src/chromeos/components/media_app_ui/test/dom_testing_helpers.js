@@ -12,7 +12,7 @@
  *
  * @param {string} query
  * @param {!Array<string>=} opt_path
- * @return {Promise<!Element>}
+ * @return {!Promise<!Element>}
  */
 async function waitForNode(query, opt_path) {
   /** @type {!HTMLElement|!ShadowRoot} */
@@ -38,6 +38,6 @@ async function waitForNode(query, opt_path) {
         observer.disconnect();
       }
     });
-    observer.observe(node, {childList: true, subtree: true});
+    observer.observe(node, {attributes: true, childList: true, subtree: true});
   });
 }

@@ -11,20 +11,41 @@
 
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/values.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
 class OmniboxPedal;
+class AutocompleteInput;
 class AutocompleteProviderClient;
 
+// Note: This is not an autocomplete provider; it doesn't produce suggestions
+// but rather "annotates" suggestions by attaching pedals to matches from other
+// providers (search in particular).
 class OmniboxPedalProvider {
  public:
   explicit OmniboxPedalProvider(AutocompleteProviderClient& client);
   ~OmniboxPedalProvider();
+  OmniboxPedalProvider(const OmniboxPedalProvider&) = delete;
+  OmniboxPedalProvider& operator=(const OmniboxPedalProvider&) = delete;
 
   // Returns the Pedal triggered by given |match_text| or nullptr if none
-  // trigger.
-  OmniboxPedal* FindPedalMatch(const base::string16& match_text) const;
+  // trigger. The |input| is used to determine suitability for current context.
+  OmniboxPedal* FindPedalMatch(const AutocompleteInput& input,
+                               const base::string16& match_text);
+
+  // "Fake" implementation of AutocompleteProvider AddProviderInfo, though this
+  // class is not a true subclass of AutocompleteProvider. This is used
+  // for logging and reporting for our field trial.
+  void AddProviderInfo(ProvidersInfo* provider_info) const;
+
+  // "Fake" implementation of AutocompleteProvider::ResetSession. Resets the
+  // field trial flags.
+  void ResetSession();
+
+  void set_field_trial_triggered(bool triggered) {
+    field_trial_triggered_ = triggered;
+  }
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
@@ -68,7 +89,9 @@ class OmniboxPedalProvider {
   // text before giving up and treating it as non-match for all Pedals.
   size_t max_tokens_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPedalProvider);
+  // Whether a field trial has triggered for this query and this session
+  bool field_trial_triggered_ = false;
+  bool field_trial_triggered_in_session_ = false;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_PROVIDER_H_

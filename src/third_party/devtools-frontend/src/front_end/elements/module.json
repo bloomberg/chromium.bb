@@ -288,6 +288,17 @@
       "order": 10,
       "persistence": "permanent",
       "className": "Elements.NodeStackTraceWidget"
+    },
+    {
+      "type": "view",
+      "experiment": "cssGridFeatures",
+      "location": "elements-sidebar",
+      "id": "elements.layout",
+      "title": "Layout",
+      "order": 4,
+      "hasToolbar": false,
+      "persistence": "permanent",
+      "className": "Elements.LayoutSidebarPane"
     }
   ],
   "dependencies": [
@@ -296,18 +307,16 @@
     "inline_editor",
     "color_picker",
     "event_listeners"
-  ],
-  "scripts": [],
-  "modules": [
+  ],  "modules": [
     "elements.js",
     "elements-legacy.js",
     "InspectElementModeController.js",
     "ColorSwatchPopoverIcon.js",
     "ComputedStyleModel.js",
     "Adorner.js",
+    "CSSPropertyIconResolver.js",
     "DOMLinkifier.js",
     "DOMPath.js",
-    "ElementsBreadcrumbs.js",
     "ElementsSidebarPane.js",
     "ElementsTreeElement.js",
     "ElementsTreeOutline.js",
@@ -321,14 +330,24 @@
     "StylesSidebarPane.js",
     "StylePropertyTreeElement.js",
     "ComputedStyleWidget.js",
+    "ComputedStyleProperty_bridge.js",
+    "ComputedStyleTrace_bridge.js",
+    "PropertyNameCategories.js",
     "ElementsPanel.js",
     "ClassesPaneWidget.js",
     "ElementStatePaneWidget.js",
     "ElementsTreeElementHighlighter.js",
-    "ImagePreviewPopover.js"
+    "ImagePreviewPopover.js",
+    "Icon_bridge.js",
+    "ElementsBreadcrumbs_bridge.js",
+    "ElementsPanelLink_bridge.js",
+    "LayoutSidebarPane.js",
+    "LayoutPane_bridge.js"
+  ],
+  "skip_compilation": [
+    "NodeText.js"
   ],
   "resources": [
-    "breadcrumbs.css",
     "classesPaneWidget.css",
     "computedStyleSidebarPane.css",
     "computedStyleWidgetTree.css",
@@ -336,8 +355,10 @@
     "elementsPanel.css",
     "elementStatePaneWidget.css",
     "elementsTreeOutline.css",
+    "layoutPane.css",
     "metricsSidebarPane.css",
     "platformFontsWidget.css",
+    "propertiesWidget.css",
     "nodeStackTraceWidget.css",
     "stylesSectionTree.css",
     "stylesSidebarPane.css"

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -32,7 +31,13 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   static WebAppUiManagerImpl* Get(Profile* profile);
 
   explicit WebAppUiManagerImpl(Profile* profile);
+  WebAppUiManagerImpl(const WebAppUiManagerImpl&) = delete;
+  WebAppUiManagerImpl& operator=(const WebAppUiManagerImpl&) = delete;
   ~WebAppUiManagerImpl() override;
+
+  void SetSubsystems(AppRegistryController* app_registry_controller) override;
+  void Start() override;
+  void Shutdown() override;
 
   WebAppDialogManager& dialog_manager();
 
@@ -41,11 +46,12 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
-  void UninstallAndReplace(const std::vector<AppId>& from_apps,
-                           const AppId& to_app) override;
+  void UninstallAndReplaceIfExists(const std::vector<AppId>& from_apps,
+                                   const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
-  bool IsInAppWindow(content::WebContents* web_contents) const override;
+  bool IsInAppWindow(content::WebContents* web_contents,
+                     const AppId* app_id) const override;
   void NotifyOnAssociatedAppChanged(content::WebContents* web_contents,
                                     const AppId& previous_app_id,
                                     const AppId& new_app_id) const override;
@@ -71,12 +77,14 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
 
   Profile* const profile_;
 
+  AppRegistryController* app_registry_controller_ = nullptr;
+
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;
+  bool started_ = false;
 
   base::WeakPtrFactory<WebAppUiManagerImpl> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppUiManagerImpl);
 };
 
 }  // namespace web_app

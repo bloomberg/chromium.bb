@@ -43,11 +43,25 @@ component("stack_unwinder") {
     ":jni_headers",
     ":jni_registration",
     "//base",
-    "//chrome/android/features/stack_unwinder/public:memory_regions_map",
+    "//base:native_unwinder_android",
+    "//chrome/android/features/stack_unwinder/public:native",
   ]
 
   # stack unwinder native entrypoints belong in the partition.
   if (use_native_partitions) {
     cflags = [ "-fsymbol-partition=stack_unwinder_partition" ]
   }
+}
+
+# Since loading of a partitioned library is not supported in an APK, a separate
+# target without partition is necessary for testing.
+source_set("stack_unwinder_for_testing") {
+  testonly = true
+  sources = [ "stack_unwinder_module_contents_impl.cc" ]
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//base:native_unwinder_android",
+    "//chrome/android/features/stack_unwinder/public:native",
+  ]
 }

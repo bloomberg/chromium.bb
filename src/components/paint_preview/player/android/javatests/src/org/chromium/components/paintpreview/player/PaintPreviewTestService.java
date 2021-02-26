@@ -4,6 +4,7 @@
 
 package org.chromium.components.paintpreview.player;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
@@ -13,10 +14,11 @@ import org.chromium.components.paintpreview.browser.NativePaintPreviewServicePro
  */
 @JNINamespace("paint_preview")
 public class PaintPreviewTestService implements NativePaintPreviewServiceProvider {
+    private static final String TAG = "PPTestService";
     private long mNativePaintPreviewTestService;
 
-    public PaintPreviewTestService(String testDataDir) {
-        mNativePaintPreviewTestService = PaintPreviewTestServiceJni.get().getInstance(testDataDir);
+    public PaintPreviewTestService(String path) {
+        mNativePaintPreviewTestService = PaintPreviewTestServiceJni.get().getInstance(path);
     }
 
     @Override
@@ -24,8 +26,41 @@ public class PaintPreviewTestService implements NativePaintPreviewServiceProvide
         return mNativePaintPreviewTestService;
     }
 
+    public boolean createFramesForKey(String key, String url, FrameData rootFrameData) {
+        if (mNativePaintPreviewTestService == 0) {
+            Log.e(TAG, "No native service.");
+            return false;
+        }
+
+        createFrames(rootFrameData, 0);
+
+        boolean ret = PaintPreviewTestServiceJni.get().serializeFrames(
+                mNativePaintPreviewTestService, key, url);
+
+        if (!ret) {
+            Log.e(TAG, "Native failed to setup files for testing.");
+        }
+        return ret;
+    }
+
+    private void createFrames(FrameData frameData, int id) {
+        int[] childIds = PaintPreviewTestServiceJni.get().createSingleSkp(
+                mNativePaintPreviewTestService, id, frameData.getWidth(), frameData.getHeight(),
+                frameData.getFlattenedLinkRects(), frameData.getLinks(),
+                frameData.getFlattenedChildRects());
+
+        FrameData[] childFrames = frameData.getChildFrames();
+        assert childIds.length == childFrames.length;
+        for (int i = 0; i < childIds.length; i++) {
+            createFrames(childFrames[i], childIds[i]);
+        }
+    }
+
     @NativeMethods
     interface Natives {
-        long getInstance(String testDataDir);
+        long getInstance(String path);
+        int[] createSingleSkp(long nativePaintPreviewTestService, int id, int width, int height,
+                int[] flattenedLinkRects, String[] links, int[] flattenedChildRects);
+        boolean serializeFrames(long nativePaintPreviewTestService, String key, String url);
     }
 }

@@ -35,7 +35,8 @@ TEST_F(HTMLPortalElementTest, PortalsDisabledInDocument) {
   Document& document = GetDocument();
   auto* portal = MakeGarbageCollected<HTMLPortalElement>(document);
   ScopedPortalsForTest disable_portals(false);
-  ASSERT_FALSE(RuntimeEnabledFeatures::PortalsEnabled(&document));
+  ASSERT_FALSE(
+      RuntimeEnabledFeatures::PortalsEnabled(document.GetExecutionContext()));
 
   DummyExceptionStateForTesting exception_state;
   ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());
@@ -81,7 +82,7 @@ TEST_F(HTMLPortalElementTest, PortalsDisabledInDocument) {
       client_remote.InitWithNewEndpointAndPassReceiver();
 
   auto* activate_event = PortalActivateEvent::Create(
-      &GetFrame(), base::UnguessableToken::Create(), std::move(portal_remote),
+      &GetFrame(), PortalToken(), std::move(portal_remote),
       std::move(client_receiver), nullptr, nullptr, base::NullCallback());
   activate_event->adoptPredecessor(exception_state);
   EXPECT_TRUE(exception_state.HadException());

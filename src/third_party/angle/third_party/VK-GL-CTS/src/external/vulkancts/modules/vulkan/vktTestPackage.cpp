@@ -90,7 +90,6 @@
 #include "vktProtectedMemTests.hpp"
 #include "vktDeviceGroupTests.hpp"
 #include "vktMemoryModelTests.hpp"
-#include "vktAmberExampleTests.hpp"
 #include "vktAmberGraphicsFuzzTests.hpp"
 #include "vktAmberGlslTests.hpp"
 #include "vktImagelessFramebufferTests.hpp"
@@ -100,6 +99,8 @@
 #include "vktFragmentShaderInterlockTests.hpp"
 #include "vktShaderClockTests.hpp"
 #include "vktShaderClockTests.hpp"
+#include "vktModifiersTests.hpp"
+#include "vktPostmortemTests.hpp"
 
 #include <vector>
 #include <sstream>
@@ -180,10 +181,10 @@ using tcu::TestLog;
 namespace
 {
 
-MovePtr<vk::DebugReportRecorder> createDebugReportRecorder (const vk::PlatformInterface& vkp, const vk::InstanceInterface& vki, vk::VkInstance instance)
+MovePtr<vk::DebugReportRecorder> createDebugReportRecorder (const vk::PlatformInterface& vkp, const vk::InstanceInterface& vki, vk::VkInstance instance, bool printValidationErrors)
 {
 	if (isDebugReportSupported(vkp))
-		return MovePtr<vk::DebugReportRecorder>(new vk::DebugReportRecorder(vki, instance));
+		return MovePtr<vk::DebugReportRecorder>(new vk::DebugReportRecorder(vki, instance, printValidationErrors));
 	else
 		TCU_THROW(NotSupportedError, "VK_EXT_debug_report is not supported");
 }
@@ -241,7 +242,8 @@ TestCaseExecutor::TestCaseExecutor (tcu::TestContext& testCtx)
 	, m_debugReportRecorder	(testCtx.getCommandLine().isValidationEnabled()
 							 ? createDebugReportRecorder(m_library->getPlatformInterface(),
 														 m_context.getInstanceInterface(),
-														 m_context.getInstance())
+														 m_context.getInstance(),
+														 testCtx.getCommandLine().printValidationErrors())
 							 : MovePtr<vk::DebugReportRecorder>(DE_NULL))
 	, m_renderDoc			(testCtx.getCommandLine().isRenderDocEnabled()
 							 ? MovePtr<vk::RenderDocUtil>(new vk::RenderDocUtil())
@@ -477,8 +479,17 @@ void createGlslTests (tcu::TestCaseGroup* glslTests)
 
 // TestPackage
 
+BaseTestPackage::BaseTestPackage (tcu::TestContext& testCtx, const char* name, const char* desc)
+	: tcu::TestPackage(testCtx, name, desc)
+{
+}
+
+BaseTestPackage::~BaseTestPackage (void)
+{
+}
+
 TestPackage::TestPackage (tcu::TestContext& testCtx)
-	: tcu::TestPackage(testCtx, "dEQP-VK", "dEQP Vulkan Tests")
+	: BaseTestPackage(testCtx, "dEQP-VK", "dEQP Vulkan Tests")
 {
 }
 
@@ -486,7 +497,16 @@ TestPackage::~TestPackage (void)
 {
 }
 
-tcu::TestCaseExecutor* TestPackage::createExecutor (void) const
+ExperimentalTestPackage::ExperimentalTestPackage (tcu::TestContext& testCtx)
+	: BaseTestPackage(testCtx, "dEQP-VK-experimental", "dEQP Vulkan Experimental Tests")
+{
+}
+
+ExperimentalTestPackage::~ExperimentalTestPackage (void)
+{
+}
+
+tcu::TestCaseExecutor* BaseTestPackage::createExecutor (void) const
 {
 	return new TestCaseExecutor(m_testCtx);
 }
@@ -526,12 +546,17 @@ void TestPackage::init (void)
 	addChild(DeviceGroup::createTests			(m_testCtx));
 	addChild(MemoryModel::createTests			(m_testCtx));
 	addChild(conditional::createTests			(m_testCtx));
-	addChild(cts_amber::createExampleTests		(m_testCtx));
 	addChild(cts_amber::createGraphicsFuzzTests	(m_testCtx));
 	addChild(imageless::createTests				(m_testCtx));
 	addChild(TransformFeedback::createTests		(m_testCtx));
 	addChild(DescriptorIndexing::createTests	(m_testCtx));
 	addChild(FragmentShaderInterlock::createTests(m_testCtx));
+	addChild(modifiers::createTests				(m_testCtx));
+}
+
+void ExperimentalTestPackage::init (void)
+{
+	addChild(postmortem::createTests			(m_testCtx));
 }
 
 } // vkt

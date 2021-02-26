@@ -10,14 +10,15 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "services/service_manager/sandbox/sandbox.h"
+#include "sandbox/policy/sandbox.h"
 
 namespace content {
 
 const char kTestServiceUrl[] = "system:content_test_service";
 
-TestService::TestService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {
+TestService::TestService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_receiver_(this, std::move(receiver)) {
   registry_.AddInterface<mojom::TestService>(
       base::BindRepeating(&TestService::Create, base::Unretained(this)));
 }
@@ -77,7 +78,7 @@ void TestService::CreateUnsafeSharedMemoryRegion(
 }
 
 void TestService::IsProcessSandboxed(IsProcessSandboxedCallback callback) {
-  std::move(callback).Run(service_manager::Sandbox::IsProcessSandboxed());
+  std::move(callback).Run(sandbox::policy::Sandbox::IsProcessSandboxed());
 }
 
 }  // namespace content

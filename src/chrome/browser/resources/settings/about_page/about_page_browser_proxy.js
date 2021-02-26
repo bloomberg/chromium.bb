@@ -19,15 +19,16 @@
  *   url: string,
  * }}
  */
-let RegulatoryInfo;
+/* #export */ let RegulatoryInfo;
 
 /**
  * @typedef {{
  *   currentChannel: BrowserChannel,
  *   targetChannel: BrowserChannel,
+ *   isLts: boolean,
  * }}
  */
-let ChannelInfo;
+/* #export */ let ChannelInfo;
 
 /**
  * @typedef {{
@@ -36,7 +37,7 @@ let ChannelInfo;
  *   osVersion: string,
  * }}
  */
-let VersionInfo;
+/* #export */ let VersionInfo;
 
 /**
  * @typedef {{
@@ -44,7 +45,7 @@ let VersionInfo;
  *   size: (string|undefined),
  * }}
  */
-let AboutPageUpdateInfo;
+/* #export */ let AboutPageUpdateInfo;
 
 /**
  * @typedef {{
@@ -58,7 +59,7 @@ let EndOfLifeInfo;
  * Enumeration of all possible browser channels.
  * @enum {string}
  */
-const BrowserChannel = {
+/* #export */ const BrowserChannel = {
   BETA: 'beta-channel',
   CANARY: 'canary-channel',
   DEV: 'dev-channel',
@@ -70,7 +71,7 @@ const BrowserChannel = {
  *   updateAvailable: boolean,
  * }}
  */
-let TPMFirmwareUpdateStatusChangedEvent;
+/* #export */ let TPMFirmwareUpdateStatusChangedEvent;
 // </if>
 
 /**
@@ -120,9 +121,14 @@ let TPMFirmwareUpdateStatusChangedEvent;
 cr.define('settings', function() {
   /**
    * @param {!BrowserChannel} channel
+   * @param {boolean} isLts
    * @return {string}
    */
-  function browserChannelToI18nId(channel) {
+  /* #export */ function browserChannelToI18nId(channel, isLts) {
+    if (isLts) {
+      return 'aboutChannelLongTermStable';
+    }
+
     switch (channel) {
       case BrowserChannel.BETA:
         return 'aboutChannelBeta';
@@ -143,7 +149,8 @@ cr.define('settings', function() {
    * @return {boolean} Whether the target channel is more stable than the
    *     current channel.
    */
-  function isTargetChannelMoreStable(currentChannel, targetChannel) {
+  /* #export */ function isTargetChannelMoreStable(
+      currentChannel, targetChannel) {
     // List of channels in increasing stability order.
     const channelList = [
       BrowserChannel.CANARY,
@@ -252,12 +259,6 @@ cr.define('settings', function() {
 
     // <if expr="chromeos">
     /**
-     * Checks if the device has release notes enabled.
-     * @return {!Promise<boolean>}
-     */
-    getEnabledReleaseNotes() {}
-
-    /**
      * Checks if the device is connected to the internet.
      * @return {!Promise<boolean>}
      */
@@ -349,11 +350,6 @@ cr.define('settings', function() {
     /** @override */
     getEndOfLifeInfo() {
       return cr.sendWithPromise('getEndOfLifeInfo');
-    }
-
-    /** @override */
-    getEnabledReleaseNotes() {
-      return cr.sendWithPromise('getEnabledReleaseNotes');
     }
 
     /** @override */

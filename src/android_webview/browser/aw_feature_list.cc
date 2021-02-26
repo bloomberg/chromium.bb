@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/safe_browsing/core/features.h"
 
@@ -19,12 +20,15 @@ namespace android_webview {
 
 namespace {
 
-// Array of features exposed through the Java ChromeFeatureList API. Entries in
+// Array of features exposed through the Java AwFeatureList API. Entries in
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. content/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
-    &features::kWebViewCollectNonembeddedMetrics,
     &features::kWebViewConnectionlessSafeBrowsing,
+    &features::kWebViewDisplayCutout,
+    &features::kWebViewMixedContentAutoupgrades,
+    &features::kWebViewTestFeature,
+    &features::kWebViewMeasureScreenCoverage,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

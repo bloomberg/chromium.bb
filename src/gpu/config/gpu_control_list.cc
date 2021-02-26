@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -15,6 +16,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_util.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -159,6 +161,33 @@ bool GpuControlList::Version::Contains(const std::string& version_string,
       if (op == kBetween)
         ref_version2.erase(ref_version2.begin());
     }
+  } else if (schema == kVersionSchemaNvidiaDriver) {
+    // The driver version we get from the os is "XX.XX.XXXA.BBCC", while the
+    // workaround is of the form "ABB.CC".  Drop the first two stanzas from the
+    // detected version, erase all but the last character of the third, and move
+    // "B" to the previous stanza.
+    if (version.size() != 4)
+      return false;
+    // Remember that the detected version might not have leading zeros, so we
+    // have to be a bit careful.  [2] is of the form "001A", where A > 0, so we
+    // just care that there's at least one digit.  However, if there's less than
+    // that, the splitter stops anyway on that stanza, and the check for four
+    // stanzas will fail instead.
+    version.erase(version.begin(), version.begin() + 2);
+    version[0].erase(0, version[0].length() - 1);
+    // The last stanza may be missing leading zeros, so handle them.
+    if (version[1].length() < 3) {
+      // Two or more removed leading zeros, so BB are both zero.
+      version[0] += "00";
+    } else if (version[1].length() < 4) {
+      // One removed leading zero.  BB is 0[1-9].
+      version[0] += "0" + version[1].substr(0, 1);
+      version[1].erase(0, 1);
+    } else {
+      // No leading zeros.
+      version[0] += version[1].substr(0, 2);
+      version[1].erase(0, 2);
+    }
   }
   int relation = Version::Compare(version, ref_version1, style);
   switch (op) {
@@ -245,11 +274,11 @@ bool GpuControlList::More::GLVersionInfoMismatch(
 
 // static
 GpuControlList::GLType GpuControlList::More::GetDefaultGLType() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   return kGLTypeGL;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kGLTypeGL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return kGLTypeGL;
 #elif defined(OS_WIN)
   return kGLTypeANGLE;
@@ -418,9 +447,9 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
         }
       }
     } else if (intel_gpu_generation.IsSpecified()) {
-      for (size_t ii = 0; ii < candidates.size(); ++ii) {
-        std::string candidate_generation = GetIntelGpuGeneration(
-            candidates[ii].vendor_id, candidates[ii].device_id);
+      for (auto& candidate : candidates) {
+        std::string candidate_generation =
+            GetIntelGpuGeneration(candidate.vendor_id, candidate.device_id);
         if (candidate_generation.empty())
           continue;
         if (intel_gpu_generation.Contains(candidate_generation)) {
@@ -429,24 +458,29 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
         }
       }
     } else {
-      GPUInfo::GPUDevice gpu;
-      gpu.vendor_id = vendor_id;
-      if (device_id_size == 0) {
-        for (size_t ii = 0; ii < candidates.size(); ++ii) {
-          if (gpu.vendor_id == candidates[ii].vendor_id) {
+      if (device_size == 0) {
+        for (auto& candidate : candidates) {
+          if (vendor_id == candidate.vendor_id) {
             found = true;
             break;
           }
         }
       } else {
-        for (size_t ii = 0; ii < device_id_size; ++ii) {
-          gpu.device_id = device_ids[ii];
-          for (size_t jj = 0; jj < candidates.size(); ++jj) {
-            if (gpu.vendor_id == candidates[jj].vendor_id &&
-                gpu.device_id == candidates[jj].device_id) {
-              found = true;
-              break;
-            }
+        for (size_t ii = 0; !found && ii < device_size; ++ii) {
+          uint32_t device_id = devices[ii].device_id;
+#if defined(OS_WIN)
+          uint32_t revision = devices[ii].revision;
+#endif  // OS_WIN
+          for (auto& candidate : candidates) {
+            if (vendor_id != candidate.vendor_id ||
+                device_id != candidate.device_id)
+              continue;
+#if defined(OS_WIN)
+            if (revision && revision != candidate.revision)
+              continue;
+#endif  // OS_WIN
+            found = true;
+            break;
           }
         }
       }
@@ -740,7 +774,7 @@ uint32_t GpuControlList::max_entry_id() const {
 
 // static
 GpuControlList::OsType GpuControlList::GetOsType() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
@@ -750,7 +784,7 @@ GpuControlList::OsType GpuControlList::GetOsType() {
   return kOsFuchsia;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return kOsMacosx;
 #else
   return kOsAny;

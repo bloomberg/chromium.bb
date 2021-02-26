@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,6 +26,18 @@
 
 namespace chromeos {
 
+namespace {
+
+class MockDetectorObserver : public DemoModeDetector::Observer {
+ public:
+  MockDetectorObserver() = default;
+  virtual ~MockDetectorObserver() = default;
+
+  MOCK_METHOD(void, OnShouldStartDemoMode, (), (override));
+};
+
+}  // namespace
+
 class DemoModeDetectorTest : public testing::Test {
  protected:
   DemoModeDetectorTest();
@@ -41,7 +54,7 @@ class DemoModeDetectorTest : public testing::Test {
 
  private:
   TestingPrefServiceSimple local_state_;
-  MockLoginDisplayHost login_display_host_;
+  MockDetectorObserver observer_;
   ui::UserActivityDetector user_activity_detector_;
   std::unique_ptr<DemoModeDetector> demo_mode_detector_;
   std::unique_ptr<base::ThreadTaskRunnerHandle> runner_handle_;
@@ -64,17 +77,16 @@ DemoModeDetectorTest::~DemoModeDetectorTest() {
 }
 
 void DemoModeDetectorTest::ExpectDemoModeWillLaunch() {
-  EXPECT_CALL(login_display_host_, StartDemoAppLaunch());
+  EXPECT_CALL(observer_, OnShouldStartDemoMode());
 }
 
 void DemoModeDetectorTest::ExpectDemoModeWillNotLaunch() {
-  EXPECT_CALL(login_display_host_, StartDemoAppLaunch()).Times(0);
+  EXPECT_CALL(observer_, OnShouldStartDemoMode()).Times(0);
 }
 
 void DemoModeDetectorTest::StartDemoModeDetection() {
-  demo_mode_detector_ = std::make_unique<DemoModeDetector>();
-  demo_mode_detector_->SetTickClockForTest(runner_->GetMockTickClock());
-  demo_mode_detector_->InitDetection();
+  demo_mode_detector_ = std::make_unique<DemoModeDetector>(
+      runner_->GetMockTickClock(), &observer_);
 }
 
 void DemoModeDetectorTest::SetTimeOnOobePref(base::TimeDelta time_on_oobe) {

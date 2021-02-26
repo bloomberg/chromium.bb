@@ -228,48 +228,6 @@ class CRWWebControllerTest : public WebTestWithWebController {
   NSURL* test_url_;
 };
 
-// Tests that AllowCertificateError is called with correct arguments if
-// WKWebView fails to load a page with bad SSL cert.
-TEST_F(CRWWebControllerTest, SslCertError) {
-  // Last arguments passed to AllowCertificateError must be in default state.
-  ASSERT_FALSE(GetWebClient()->last_cert_error_code());
-  ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().is_valid());
-  ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().cert_status);
-  ASSERT_FALSE(GetWebClient()->last_cert_error_request_url().is_valid());
-  ASSERT_TRUE(GetWebClient()->last_cert_error_overridable());
-
-  scoped_refptr<net::X509Certificate> cert =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  ASSERT_TRUE(cert);
-  base::ScopedCFTypeRef<CFMutableArrayRef> chain(
-      net::x509_util::CreateSecCertificateArrayForX509Certificate(cert.get()));
-  ASSERT_TRUE(chain);
-
-  GURL url("https://chromium.test");
-  NSError* error =
-      [NSError errorWithDomain:NSURLErrorDomain
-                          code:NSURLErrorServerCertificateHasUnknownRoot
-                      userInfo:@{
-                        kNSErrorPeerCertificateChainKey :
-                            base::mac::CFToNSCast(chain.get()),
-                        kNSErrorFailingURLKey : net::NSURLWithGURL(url),
-                      }];
-  NSObject* navigation = [[NSObject alloc] init];
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
-  [navigation_delegate_ webView:mock_web_view_
-      didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
-                         withError:error];
-
-  // Verify correctness of AllowCertificateError method call.
-  EXPECT_EQ(net::ERR_CERT_INVALID, GetWebClient()->last_cert_error_code());
-  EXPECT_TRUE(GetWebClient()->last_cert_error_ssl_info().is_valid());
-  EXPECT_EQ(net::CERT_STATUS_INVALID,
-            GetWebClient()->last_cert_error_ssl_info().cert_status);
-  EXPECT_EQ(url, GetWebClient()->last_cert_error_request_url());
-  EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
-}
-
 // Tests that when a committed but not-yet-finished navigation is cancelled,
 // the navigation item's ErrorRetryStateMachine is updated correctly.
 TEST_F(CRWWebControllerTest, CancelCommittedNavigation) {
@@ -377,8 +335,27 @@ TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
   }
 }
 
+// Tests that the WebView is correctly removed/added from the view hierarchy.
+TEST_F(CRWWebControllerTest, RemoveWebViewFromViewHierarchy) {
+  // Make sure that the WebController view has a window to avoid stashing the
+  // WebView once created.
+  [UIApplication.sharedApplication.keyWindow addSubview:web_controller().view];
+
+  // Get the web view.
+  [web_controller() removeWebView];
+  WKWebView* web_view = [web_controller() ensureWebViewCreated];
+
+  ASSERT_EQ(web_controller().view, web_view.superview.superview);
+
+  [web_controller() removeWebViewFromViewHierarchy];
+  EXPECT_EQ(nil, web_view.superview.superview);
+
+  [web_controller() addWebViewToViewHierarchy];
+  EXPECT_EQ(web_controller().view, web_view.superview.superview);
+}
+
 // Test fixture to test JavaScriptDialogPresenter.
-class JavaScriptDialogPresenterTest : public WebTestWithWebState {
+class JavaScriptDialogPresenterTest : public WebTestWithWebController {
  protected:
   JavaScriptDialogPresenterTest() : page_url_("https://chromium.test/") {}
   void SetUp() override {
@@ -466,6 +443,26 @@ TEST_F(JavaScriptDialogPresenterTest, Prompt) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog->java_script_dialog_type);
   EXPECT_NSEQ(@"Yes?", dialog->message_text);
   EXPECT_NSEQ(@"No", dialog->default_prompt_text);
+}
+
+// Tests that window.alert, window.confirm and window.prompt dialogs are not
+// shown if URL of presenting main frame is different from visible URL.
+TEST_F(JavaScriptDialogPresenterTest, DifferentVisibleUrl) {
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  // Change visible URL.
+  AddPendingItem(GURL("https://pending.test/"), ui::PAGE_TRANSITION_TYPED);
+  web_controller().webStateImpl->SetIsLoading(true);
+  ASSERT_NE(page_url().GetOrigin(), web_state()->GetVisibleURL().GetOrigin());
+
+  ExecuteJavaScript(@"alert('test')");
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  EXPECT_NSEQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
+  ASSERT_TRUE(requested_dialogs().empty());
 }
 
 // Test fixture for testing visible security state.
@@ -1245,10 +1242,9 @@ TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   // Change last committed URL to app-specific URL.
   NavigationManagerImpl& nav_manager =
       [web_controller() webStateImpl]->GetNavigationManagerImpl();
-  nav_manager.AddPendingItem(
-      GURL(kTestAppSpecificURL), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      NavigationInitiationType::BROWSER_INITIATED,
-      NavigationManager::UserAgentOverrideOption::INHERIT);
+  nav_manager.AddPendingItem(GURL(kTestAppSpecificURL), Referrer(),
+                             ui::PAGE_TRANSITION_TYPED,
+                             NavigationInitiationType::BROWSER_INITIATED);
   nav_manager.CommitPendingItem();
 
   NSError* error = nil;

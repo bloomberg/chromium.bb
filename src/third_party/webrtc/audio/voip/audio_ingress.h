@@ -26,9 +26,9 @@
 #include "modules/audio_coding/include/audio_coding_module.h"
 #include "modules/rtp_rtcp/include/receive_statistics.h"
 #include "modules/rtp_rtcp/include/remote_ntp_time_estimator.h"
-#include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
-#include "rtc_base/critical_section.h"
+#include "modules/rtp_rtcp/source/rtp_rtcp_interface.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
@@ -44,14 +44,14 @@ namespace webrtc {
 // smaller footprint.
 class AudioIngress : public AudioMixer::Source {
  public:
-  AudioIngress(RtpRtcp* rtp_rtcp,
+  AudioIngress(RtpRtcpInterface* rtp_rtcp,
                Clock* clock,
                ReceiveStatistics* receive_statistics,
                rtc::scoped_refptr<AudioDecoderFactory> decoder_factory);
   ~AudioIngress() override;
 
   // Start or stop receiving operation of AudioIngress.
-  void StartPlay() { playing_ = true; }
+  bool StartPlay();
   void StopPlay() {
     playing_ = false;
     output_audio_level_.ResetLevelFullRange();
@@ -75,6 +75,11 @@ class AudioIngress : public AudioMixer::Source {
   int GetSpeechOutputLevelFullRange() const {
     return output_audio_level_.LevelFullRange();
   }
+  // Retrieves the total duration for all samples played so far as explained in
+  // audio/AudioLevel.h.
+  double GetTotalDuration() const {
+    return output_audio_level_.TotalDuration();
+  }
 
   // Returns network round trip time (RTT) measued by RTCP exchange with
   // remote media endpoint. RTT value -1 indicates that it's not initialized.
@@ -82,12 +87,8 @@ class AudioIngress : public AudioMixer::Source {
 
   NetworkStatistics GetNetworkStatistics() const {
     NetworkStatistics stats;
-    acm_receiver_.GetNetworkStatistics(&stats);
-    return stats;
-  }
-  AudioDecodingCallStats GetDecodingStatistics() const {
-    AudioDecodingCallStats stats;
-    acm_receiver_.GetDecodingCallStatistics(&stats);
+    acm_receiver_.GetNetworkStatistics(&stats,
+                                       /*get_and_clear_legacy_stats=*/false);
     return stats;
   }
 
@@ -122,8 +123,8 @@ class AudioIngress : public AudioMixer::Source {
   // Synchronizaton is handled internally by ReceiveStatistics.
   ReceiveStatistics* const rtp_receive_statistics_;
 
-  // Synchronizaton is handled internally by RtpRtcp.
-  RtpRtcp* const rtp_rtcp_;
+  // Synchronizaton is handled internally by RtpRtcpInterface.
+  RtpRtcpInterface* const rtp_rtcp_;
 
   // Synchronizaton is handled internally by acm2::AcmReceiver.
   acm2::AcmReceiver acm_receiver_;
@@ -131,7 +132,7 @@ class AudioIngress : public AudioMixer::Source {
   // Synchronizaton is handled internally by voe::AudioLevel.
   voe::AudioLevel output_audio_level_;
 
-  rtc::CriticalSection lock_;
+  Mutex lock_;
 
   RemoteNtpTimeEstimator ntp_estimator_ RTC_GUARDED_BY(lock_);
 

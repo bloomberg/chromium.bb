@@ -4,13 +4,11 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_event_watcher.h"
 
-#include <wayland-client-core.h>
-#include <wayland-client-protocol.h>
-
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "ui/events/event.h"
+#include "ui/ozone/platform/wayland/common/wayland.h"
 
 namespace ui {
 
@@ -21,6 +19,12 @@ WaylandEventWatcher::WaylandEventWatcher(wl_display* display)
 
 WaylandEventWatcher::~WaylandEventWatcher() {
   StopProcessingEvents();
+}
+
+void WaylandEventWatcher::SetShutdownCb(
+    base::OnceCallback<void()> shutdown_cb) {
+  DCHECK(shutdown_cb_.is_null());
+  shutdown_cb_ = std::move(shutdown_cb);
 }
 
 bool WaylandEventWatcher::StartProcessingEvents() {
@@ -38,12 +42,17 @@ bool WaylandEventWatcher::StopProcessingEvents() {
   if (!watching_)
     return false;
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   watching_ = false;
   return controller_.StopWatchingFileDescriptor();
 }
 
 void WaylandEventWatcher::OnFileCanReadWithoutBlocking(int fd) {
+  if (!CheckForErrors()) {
+    StopProcessingEvents();
+    return;
+  }
+
   if (prepared_) {
     prepared_ = false;
     if (wl_display_read_events(display_) == -1)
@@ -85,9 +94,9 @@ bool WaylandEventWatcher::StartWatchingFd(
     DCHECK(!watching_);
   }
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   int display_fd = wl_display_get_fd(display_);
-  watching_ = base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+  watching_ = base::CurrentUIThread::Get()->WatchFileDescriptor(
       display_fd, true, mode, &controller_, this);
   return watching_;
 }
@@ -102,6 +111,17 @@ void WaylandEventWatcher::MaybePrepareReadQueue() {
   }
   // Nothing to read, send events to the queue.
   wl_display_dispatch_pending(display_);
+}
+
+bool WaylandEventWatcher::CheckForErrors() {
+  int err = wl_display_get_error(display_);
+  if (err == EPROTO) {
+    // This can be null in tests.
+    if (!shutdown_cb_.is_null())
+      std::move(shutdown_cb_).Run();
+    return false;
+  }
+  return true;
 }
 
 }  // namespace ui

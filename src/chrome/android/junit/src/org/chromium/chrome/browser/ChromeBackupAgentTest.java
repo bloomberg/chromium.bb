@@ -48,8 +48,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -95,11 +95,13 @@ public class ChromeBackupAgentTest {
     @Rule
     public JniMocker mocker = new JniMocker();
     @Mock
-    private ChromeBackupAgent.Natives mChromeBackupAgentJniMock;
+    private ChromeBackupAgentImpl.Natives mChromeBackupAgentJniMock;
     @Mock
     private IdentityManager mIdentityManagerMock;
+    @Mock
+    private Profile mProfile;
 
-    private ChromeBackupAgent mAgent;
+    private ChromeBackupAgentImpl mAgent;
     private AsyncInitTaskRunner mTaskRunner;
 
     private final CoreAccountInfo mAccountInfo =
@@ -117,7 +119,7 @@ public class ChromeBackupAgentTest {
     public void setUp() {
         // Create the agent to test; override fetching the task runner, and spy on the agent to
         // allow us to validate calls to these methods.
-        mAgent = spy(new ChromeBackupAgent() {
+        mAgent = spy(new ChromeBackupAgentImpl() {
             @Override
             AsyncInitTaskRunner createAsyncInitTaskRunner(CountDownLatch latch) {
                 latch.countDown();
@@ -126,7 +128,8 @@ public class ChromeBackupAgentTest {
         });
 
         MockitoAnnotations.initMocks(this);
-        mocker.mock(ChromeBackupAgentJni.TEST_HOOKS, mChromeBackupAgentJniMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        mocker.mock(ChromeBackupAgentImplJni.TEST_HOOKS, mChromeBackupAgentJniMock);
 
         when(mChromeBackupAgentJniMock.getBoolBackupNames(mAgent))
                 .thenReturn(new String[] {"pref1"});
@@ -135,7 +138,7 @@ public class ChromeBackupAgentTest {
 
         IdentityServicesProvider identityServicesProvider = mock(IdentityServicesProvider.class);
         IdentityServicesProvider.setInstanceForTests(identityServicesProvider);
-        when(identityServicesProvider.getIdentityManager()).thenReturn(mIdentityManagerMock);
+        when(identityServicesProvider.getIdentityManager(any())).thenReturn(mIdentityManagerMock);
         when(mIdentityManagerMock.getPrimaryAccountInfo(ConsentLevel.SYNC)).thenReturn(null);
 
         // Mock initializing the browser
@@ -181,7 +184,7 @@ public class ChromeBackupAgentTest {
         verify(backupData).writeEntityData(new byte[] {0}, 1);
         byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         verify(backupData)
-                .writeEntityHeader("AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY,
+                .writeEntityHeader("AndroidDefault." + ChromeBackupAgentImpl.SIGNED_IN_ACCOUNT_KEY,
                         unameBytes.length);
         verify(backupData).writeEntityData(unameBytes, unameBytes.length);
 
@@ -196,8 +199,7 @@ public class ChromeBackupAgentTest {
                 names, hasItem("AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE));
         assertThat(names,
                 hasItem("AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP));
-        assertThat(
-                names, hasItem("AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY));
+        assertThat(names, hasItem("AndroidDefault." + ChromeBackupAgentImpl.SIGNED_IN_ACCOUNT_KEY));
         ArrayList<byte[]> values = (ArrayList<byte[]>) newStateStream.readObject();
         assertThat(values.size(), equalTo(4));
         assertThat(values, hasItem(unameBytes));
@@ -354,12 +356,12 @@ public class ChromeBackupAgentTest {
         verifyNoMoreInteractions(backupData);
         verifyNoMoreInteractions(mockState);
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        assertThat(prefs.getInt(ChromeBackupAgent.BACKUP_FAILURE_COUNT, 0), equalTo(1));
+        assertThat(prefs.getInt(ChromeBackupAgentImpl.BACKUP_FAILURE_COUNT, 0), equalTo(1));
 
         // Check that the backup agent gives up retrying after too many failures
         prefs.edit()
-                .putInt(ChromeBackupAgent.BACKUP_FAILURE_COUNT,
-                        ChromeBackupAgent.MAX_BACKUP_FAILURES)
+                .putInt(ChromeBackupAgentImpl.BACKUP_FAILURE_COUNT,
+                        ChromeBackupAgentImpl.MAX_BACKUP_FAILURES)
                 .apply();
         mAgent.onBackup(null, backupData, mockState);
         assertThat(BackupManagerShadow.getDataChangedCalls(), equalTo(1));
@@ -372,7 +374,7 @@ public class ChromeBackupAgentTest {
                 ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
 
         mAgent.onBackup(null, backupData, newState);
-        assertThat(prefs.getInt(ChromeBackupAgent.BACKUP_FAILURE_COUNT, 0), equalTo(0));
+        assertThat(prefs.getInt(ChromeBackupAgentImpl.BACKUP_FAILURE_COUNT, 0), equalTo(0));
     }
 
     private BackupDataInput createMockBackupData() throws IOException {
@@ -382,7 +384,7 @@ public class ChromeBackupAgentTest {
         final String[] keys = {"native.pref1", "native.pref2",
                 "AndroidDefault." + ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
                 "AndroidDefault.junk",
-                "AndroidDefault." + ChromeSigninController.SIGNED_IN_ACCOUNT_KEY};
+                "AndroidDefault." + ChromeBackupAgentImpl.SIGNED_IN_ACCOUNT_KEY};
         byte[] unameBytes = ApiCompatibilityUtils.getBytesUtf8(mAccountInfo.getEmail());
         final byte[][] values = {{0}, {1}, {1}, {23, 42}, unameBytes};
         when(backupData.getKey()).thenAnswer(new Answer<String>() {
@@ -456,8 +458,8 @@ public class ChromeBackupAgentTest {
                         false /* allocateChildConnection */, true /* initVariationSeed */);
 
         // Test that the status of the restore has been recorded.
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_COMPLETED));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_COMPLETED));
     }
 
     /**
@@ -487,8 +489,8 @@ public class ChromeBackupAgentTest {
                         false /* allocateChildConnection */, true /* initVariationSeed */);
 
         // Test that the status of the restore has been recorded.
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.NOT_SIGNED_IN));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.NOT_SIGNED_IN));
     }
 
     /**
@@ -512,8 +514,8 @@ public class ChromeBackupAgentTest {
         assertFalse(prefs.contains(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE));
 
         // Test that the status of the restore has been recorded.
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.BROWSER_STARTUP_FAILED));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.BROWSER_STARTUP_FAILED));
     }
 
     /**
@@ -537,8 +539,8 @@ public class ChromeBackupAgentTest {
         assertTrue(prefs.contains(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE));
 
         // Test that the status of the restore has been recorded.
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_AFTER_FIRST_RUN));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_AFTER_FIRST_RUN));
     }
 
     /**
@@ -547,35 +549,39 @@ public class ChromeBackupAgentTest {
     @Test
     public void testGetRestoreStatus() {
         // Test default value
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.NO_RESTORE));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.NO_RESTORE));
 
         // Test that the value can be changed
-        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RestoreStatus.RESTORE_AFTER_FIRST_RUN);
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_AFTER_FIRST_RUN));
+        ChromeBackupAgentImpl.setRestoreStatus(
+                ChromeBackupAgentImpl.RestoreStatus.RESTORE_AFTER_FIRST_RUN);
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_AFTER_FIRST_RUN));
 
         // Prove that the value equalTo held in the app preferences (and not, for example, in a
         // static).
         ContextUtils.getAppSharedPreferences().edit().clear().apply();
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.NO_RESTORE));
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.NO_RESTORE));
 
-        // Test that ChromeBackupAgent.setRestoreStatus really looks at the argument.
-        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RestoreStatus.BROWSER_STARTUP_FAILED);
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.BROWSER_STARTUP_FAILED));
+        // Test that ChromeBackupAgentImpl.setRestoreStatus really looks at the argument.
+        ChromeBackupAgentImpl.setRestoreStatus(
+                ChromeBackupAgentImpl.RestoreStatus.BROWSER_STARTUP_FAILED);
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.BROWSER_STARTUP_FAILED));
 
         // Test the remaining values are implemented
-        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RestoreStatus.NOT_SIGNED_IN);
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.NOT_SIGNED_IN));
-        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RestoreStatus.RESTORE_COMPLETED);
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_COMPLETED));
-        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RestoreStatus.RESTORE_STATUS_RECORDED);
-        assertThat(ChromeBackupAgent.getRestoreStatus(),
-                equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_STATUS_RECORDED));
+        ChromeBackupAgentImpl.setRestoreStatus(ChromeBackupAgentImpl.RestoreStatus.NOT_SIGNED_IN);
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.NOT_SIGNED_IN));
+        ChromeBackupAgentImpl.setRestoreStatus(
+                ChromeBackupAgentImpl.RestoreStatus.RESTORE_COMPLETED);
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_COMPLETED));
+        ChromeBackupAgentImpl.setRestoreStatus(
+                ChromeBackupAgentImpl.RestoreStatus.RESTORE_STATUS_RECORDED);
+        assertThat(ChromeBackupAgentImpl.getRestoreStatus(),
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_STATUS_RECORDED));
     }
 
     /**
@@ -586,7 +592,7 @@ public class ChromeBackupAgentTest {
      */
     @Test
     public void testInitializeBrowser_normal() {
-        ChromeBackupAgent agent = new ChromeBackupAgent();
+        ChromeBackupAgentImpl agent = new ChromeBackupAgentImpl();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
         assertTrue(agent.initializeBrowser());
@@ -599,7 +605,7 @@ public class ChromeBackupAgentTest {
     @Test
     public void testInitializeBrowser_childProcess() {
         ContentProcessInfo.setInChildProcess(true);
-        ChromeBackupAgent agent = new ChromeBackupAgent();
+        ChromeBackupAgentImpl agent = new ChromeBackupAgentImpl();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
         assertFalse(agent.initializeBrowser());

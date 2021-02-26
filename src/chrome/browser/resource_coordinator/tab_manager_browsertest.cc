@@ -18,7 +18,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -54,20 +54,14 @@
 
 using content::OpenURLParams;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 
 namespace resource_coordinator {
 
 namespace {
 
-constexpr char kBlinkPageLifecycleFeature[] = "PageLifecycle";
 constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
-
-constexpr char kMainFrameFrozenStateJS[] =
-    "window.domAutomationController.send(mainFrameFreezeCount);";
-constexpr char kChildFrameFrozenStateJS[] =
-    "window.domAutomationController.send(childFrameFreezeCount);";
 
 bool ObserveNavEntryCommitted(const GURL& expected_url,
                               const content::NotificationSource& source,
@@ -157,14 +151,13 @@ class TabManagerTest : public InProcessBrowserTest {
     test_clock_.Advance(kShortDelay);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    kBlinkPageLifecycleFeature);
-  }
-
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+
+    // To avoid flakes when focus changes, set the active tab strip model
+    // explicitly.
+    GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(tsm());
   }
 
   void OpenTwoTabs(const GURL& first_url, const GURL& second_url) {
@@ -177,8 +170,6 @@ class TabManagerTest : public InProcessBrowserTest {
                         ui::PAGE_TRANSITION_TYPED, false);
     content::WebContents* web_contents = browser()->OpenURL(open1);
     load1.Wait();
-    if (URLShouldBeStoredInLocalDatabase(first_url))
-      testing::ExpireLocalDBObservationWindows(web_contents);
 
     content::WindowedNotificationObserver load2(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
@@ -188,110 +179,8 @@ class TabManagerTest : public InProcessBrowserTest {
                         ui::PAGE_TRANSITION_TYPED, false);
     web_contents = browser()->OpenURL(open2);
     load2.Wait();
-    // Expire all the observation windows to prevent the discarding and freezing
-    // interventions to fail because of a lack of observations.
-    if (URLShouldBeStoredInLocalDatabase(second_url))
-      testing::ExpireLocalDBObservationWindows(web_contents);
 
     ASSERT_EQ(2, tsm()->count());
-  }
-
-  // Opens 2 tabs. Calls Freeze() on the background tab. Verifies that it
-  // transitions to the PENDING_FREEZE, and that onfreeze callbacks runs on the
-  // page. The background tab is PENDING_FREEZE when this returns.
-  void TestTransitionFromActiveToPendingFreeze() {
-    // Setup the embedded_test_server to serve a cross-site frame.
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    // Opening two tabs, where the second tab is backgrounded.
-    GURL main_url(
-        embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html"));
-    OpenTwoTabs(GURL(chrome::kChromeUIAboutURL), main_url);
-    constexpr int kFreezingIndex = 1;
-    LifecycleUnit* const lifecycle_unit = GetLifecycleUnitAt(kFreezingIndex);
-    content::WebContents* const content = GetWebContentsAt(kFreezingIndex);
-
-    // Grab the frames.
-    content::RenderFrameHost* main_frame = content->GetMainFrame();
-    ASSERT_EQ(3u, content->GetAllFrames().size());
-    // The page has 2 iframes, we will use the first one.
-    content::RenderFrameHost* child_frame = content->GetAllFrames()[1];
-    // Verify that the main frame and subframe are cross-site.
-    EXPECT_NE(main_frame->GetLastCommittedURL().GetOrigin(),
-              child_frame->GetLastCommittedURL().GetOrigin());
-    if (content::AreAllSitesIsolatedForTesting()) {
-      EXPECT_NE(main_frame->GetSiteInstance(), child_frame->GetSiteInstance());
-      EXPECT_NE(main_frame->GetProcess()->GetID(),
-                child_frame->GetProcess()->GetID());
-    }
-
-    // Ensure that the tab is hidden or backgrounded.
-    bool hidden_state_result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        main_frame,
-        "window.domAutomationController.send("
-        "window.document.hidden);",
-        &hidden_state_result));
-    EXPECT_TRUE(hidden_state_result);
-
-    EXPECT_TRUE(content::ExecuteScript(
-        main_frame,
-        "if (window.location.pathname != '/iframe_cross_site.html')"
-        "  throw 'Incorrect frame';"
-        "mainFrameFreezeCount = 0;"
-        "window.document.onfreeze = function(){ mainFrameFreezeCount++; };"));
-
-    EXPECT_TRUE(content::ExecuteScript(
-        child_frame,
-        "if (window.location.pathname != '/title1.html') throw 'Incorrect "
-        "frame';"
-        "childFrameFreezeCount = 0;"
-        "window.document.onfreeze = function(){ childFrameFreezeCount++; };"));
-
-    // freeze_count_result should be 0 for both frames, if it is undefined then
-    // we are in the wrong frame/tab.
-    int freeze_count_result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        main_frame, kMainFrameFrozenStateJS, &freeze_count_result));
-    EXPECT_EQ(0, freeze_count_result);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        child_frame, kChildFrameFrozenStateJS, &freeze_count_result));
-    EXPECT_EQ(0, freeze_count_result);
-
-    // Freeze the tab. If it fails then we might be freezing a visible tab.
-    EXPECT_EQ(LifecycleUnitState::ACTIVE, lifecycle_unit->GetState());
-    EXPECT_TRUE(lifecycle_unit->Freeze());
-    EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE, lifecycle_unit->GetState());
-  }
-
-  // Opens 2 tabs. Calls Freeze() on the background tab. Verifies that it
-  // transitions to the PENDING_FREEZE and FROZEN states, and that onfreeze
-  // callbacks runs on the page. The background tabs is FROZEN when this
-  // returns.
-  void TestTransitionFromActiveToFrozen() {
-    TestTransitionFromActiveToPendingFreeze();
-
-    {
-      ExpectStateTransitionObserver expect_state_transition(
-          GetLifecycleUnitAt(1), LifecycleUnitState::FROZEN);
-      expect_state_transition.Wait();
-    }
-
-    content::WebContents* const content = GetWebContentsAt(1);
-    content::RenderFrameHost* main_frame = content->GetMainFrame();
-    content::RenderFrameHost* child_frame = content->GetAllFrames()[1];
-
-    // freeze_count_result should be exactly 1 for both frames. The value is
-    // incremented in the onfreeze callback. If it is >1, then the callback was
-    // called more than once.
-    int freeze_count_result = 0;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        main_frame, kMainFrameFrozenStateJS, &freeze_count_result));
-    EXPECT_EQ(1, freeze_count_result);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        child_frame, kChildFrameFrozenStateJS, &freeze_count_result));
-    EXPECT_EQ(1, freeze_count_result);
   }
 
   TabManager* tab_manager() { return g_browser_process->GetTabManager(); }
@@ -321,7 +210,6 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Open 2 tabs with default URLs in a focused tab strip.
-    GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(tsm());
     OpenTwoTabs(embedded_test_server()->GetURL("/title2.html"),
                 embedded_test_server()->GetURL("/title3.html"));
   }
@@ -654,7 +542,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           tab, video_devices);
   video_stream_ui->OnStarted(base::OnceClosure(),
-                             content::MediaStreamUI::SourceCallback());
+                             content::MediaStreamUI::SourceCallback(),
+                             /*label=*/std::string(), /*screen_capture_ids=*/{},
+                             content::MediaStreamUI::StateChangeCallback());
 
   // Should not be able to discard a tab.
   ASSERT_FALSE(
@@ -698,8 +588,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectDevToolsTabsFromDiscarding) {
   EXPECT_TRUE(devtool);
   EXPECT_FALSE(
       tab_manager()->DiscardTabImpl(LifecycleUnitDiscardReason::EXTERNAL));
-
-  // TODO(sebmarchand): Also ensure that the tab can't be frozen.
 
   // Close the DevTools window, ensure that the tab can be discarded.
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtool);
@@ -853,99 +741,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 #endif  // OS_CHROMEOS
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
-}
-
-// Verifies the following state transitions for a tab:
-// - Initial state: ACTIVE
-// - Freeze(): ACTIVE->PENDING_FREEZE
-// - Freeze happens in renderer: PENDING_FREEZE->FROZEN
-// - Tab is made visible: FROZEN->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndMakeVisible) {
-  TestTransitionFromActiveToFrozen();
-
-  // Make the tab visible. It should transition to the ACTIVE state.
-  GetWebContentsAt(1)->WasShown();
-  {
-    ExpectStateTransitionObserver expect_state_transition(
-        GetLifecycleUnitAt(1), LifecycleUnitState::ACTIVE);
-    expect_state_transition.Wait();
-  }
-}
-
-// Verifies the following state transitions for a tab:
-// - Initial state: ACTIVE
-// - Freeze(): ACTIVE->PENDING_FREEZE
-// - Freeze happens in renderer: PENDING_FREEZE->FROZEN
-// - Unfreeze(): FROZEN->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
-  TestTransitionFromActiveToFrozen();
-
-  // Unfreeze the tab. It should immediately transition to the PENDING_FREEZE
-  // state. Then, it shuold transition to the ACTIVE state once the "onresume"
-  // callback has run.
-  EXPECT_TRUE(GetLifecycleUnitAt(1)->Unfreeze());
-  EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
-            GetLifecycleUnitAt(1)->GetState());
-  {
-    ExpectStateTransitionObserver expect_state_transition(
-        GetLifecycleUnitAt(1), LifecycleUnitState::ACTIVE);
-    expect_state_transition.Wait();
-  }
-}
-
-// Verifies the following state transitions for a tab:
-// - Initial state: ACTIVE
-// - Freeze(): ACTIVE->PENDING_FREEZE
-// - Unfreeze(): PENDING_FREEZE->FROZEN
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabPendingFreezeAndUnfreeze) {
-  TestTransitionFromActiveToPendingFreeze();
-
-  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE,
-            GetLifecycleUnitAt(1)->GetState());
-
-  {
-    ExpectStateTransitionObserver expect_state_transition(
-        GetLifecycleUnitAt(1), LifecycleUnitState::FROZEN);
-    expect_state_transition.Wait();
-  }
-}
-
-// Verifies the following state transitions for a tab:
-// - Initial state: ACTIVE
-// - Freeze(): ACTIVE->PENDING_FREEZE
-// - Discard(kUrgent): PENDING_FREEZE->DISCARDED
-IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
-                       TabFreezeAndUrgentDiscardBeforeFreezeCompletes) {
-  // Advance time so everything is urgent discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  // Freeze the background tab.
-  EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
-  EXPECT_TRUE(GetLifecycleUnitAt(1)->Freeze());
-  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE,
-            GetLifecycleUnitAt(1)->GetState());
-
-  // Urgently discard the background tab.
-  EXPECT_TRUE(
-      GetLifecycleUnitAt(1)->Discard(LifecycleUnitDiscardReason::URGENT));
-  EXPECT_EQ(LifecycleUnitState::DISCARDED, GetLifecycleUnitAt(1)->GetState());
-}
-
-// Verifies the following state transitions for a tab:
-// - Initial state: ACTIVE
-// - Freeze(): ACTIVE->PENDING_FREEZE
-// - Freeze happens in renderer: PENDING_FREEZE->FROZEN
-// - Discard(kUrgent): FROZEN->DISCARDED
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUrgentDiscard) {
-  // Advance time so everything is urgent discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  TestTransitionFromActiveToFrozen();
-
-  // Urgently discard the background tab.
-  EXPECT_TRUE(
-      GetLifecycleUnitAt(1)->Discard(LifecycleUnitDiscardReason::URGENT));
-  EXPECT_EQ(LifecycleUnitState::DISCARDED, GetLifecycleUnitAt(1)->GetState());
 }
 
 // Verifies the following state transitions for a tab:
@@ -1148,25 +943,33 @@ Browser* CreateBrowserWithTabs(int num_tabs) {
   chrome::NewWindow(current_browser);
   Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
   EXPECT_NE(new_browser, current_browser);
+
+  // To avoid flakes when focus changes, set the active tab strip model
+  // explicitly.
+  GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(
+      new_browser->tab_strip_model());
+
   EnsureTabsInBrowser(new_browser, num_tabs);
   return new_browser;
 }
 
 }  // namespace
 
-// Do not run in debug builds to avoid timeouts due to multiple navigations.
-#if !defined(NDEBUG)
+// Do not run in debug or ASAN builds to avoid timeouts due to multiple
+// navigations. https://crbug.com/1106485
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DiscardTabsWithMinimizedWindow \
   DISABLED_DiscardTabsWithMinimizedWindow
 #else
 #define MAYBE_DiscardTabsWithMinimizedWindow DiscardTabsWithMinimizedWindow
 #endif
 IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithMinimizedWindow) {
+  // Do not override the focused TabStripModel.
+  GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(nullptr);
+
   // Minimized browser.
   EnsureTabsInBrowser(browser(), 2);
   browser()->window()->Minimize();
-  // Other browser that will be last active. This browser exists because the
-  // last active tab cannot be discarded on
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -1189,10 +992,17 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithMinimizedWindow) {
   // Non-active tabs can be discarded on all platforms.
   EXPECT_TRUE(
       IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(1)));
+
+  // Showing the browser again should reload the active tab.
+  browser()->window()->Show();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(0)));
 }
 
-// Do not run in debug builds to avoid timeouts due to multiple navigations.
-#if !defined(NDEBUG)
+// Do not run in debug or ASAN builds to avoid timeouts due to multiple
+// navigations. https://crbug.com/1106485
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DiscardTabsWithOccludedWindow \
   DISABLED_DiscardTabsWithOccludedWindow
 #else
@@ -1230,21 +1040,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithOccludedWindow) {
       IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(1)));
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, UnfreezeTabOnNavigationEvent) {
-  TestTransitionFromActiveToFrozen();
-
-  browser()->tab_strip_model()->GetWebContentsAt(1)->GetController().Reload(
-      content::ReloadType::NORMAL, false);
-
-  ExpectStateTransitionObserver expect_state_transition(
-      GetLifecycleUnitAt(1), LifecycleUnitState::ACTIVE);
-  expect_state_transition.AllowState(LifecycleUnitState::PENDING_UNFREEZE);
-  expect_state_transition.AllowState(LifecycleUnitState::FROZEN);
-  expect_state_transition.Wait();
-}
-
 // On Linux, memory pressure listener is not implemented yet.
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 class TabManagerMemoryPressureTest : public TabManagerTest {
  public:
@@ -1390,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerMemoryPressureTest,
   EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(2)));
 }
 
-#endif  // !OS_LINUX
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 }  // namespace resource_coordinator
 

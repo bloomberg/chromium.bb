@@ -135,6 +135,7 @@
     "smaller",
     "larger",
     "-webkit-xxx-large",
+    // math
 
     //
     // font-family (<generic-family> in CSS 2.1)
@@ -155,7 +156,6 @@
     "fallback",
     "optional",
 
-    //
     //
     // *-color
     //
@@ -227,6 +227,141 @@
     // Value used to implement the behavior in:
     // https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
     "-internal-quirk-inherit",
+
+    //
+    // "Extended" named colors
+    //
+    "aliceblue",
+    "antiquewhite",
+    "aquamarine",
+    "azure",
+    "beige",
+    "bisque",
+    "blanchedalmond",
+    "blueviolet",
+    "brown",
+    "burlywood",
+    "cadetblue",
+    "chartreuse",
+    "chocolate",
+    "coral",
+    "cornflowerblue",
+    "cornsilk",
+    "crimson",
+    "cyan",
+    "darkblue",
+    "darkcyan",
+    "darkgoldenrod",
+    "darkgray",
+    "darkgreen",
+    "darkgrey",
+    "darkkhaki",
+    "darkmagenta",
+    "darkolivegreen",
+    "darkorange",
+    "darkorchid",
+    "darkred",
+    "darksalmon",
+    "darkseagreen",
+    "darkslateblue",
+    "darkslategray",
+    "darkslategrey",
+    "darkturquoise",
+    "darkviolet",
+    "deeppink",
+    "deepskyblue",
+    "dimgray",
+    "dimgrey",
+    "dodgerblue",
+    "firebrick",
+    "floralwhite",
+    "forestgreen",
+    "gainsboro",
+    "ghostwhite",
+    "gold",
+    "goldenrod",
+    "greenyellow",
+    "honeydew",
+    "hotpink",
+    "indianred",
+    "indigo",
+    "ivory",
+    "khaki",
+    "lavender",
+    "lavenderblush",
+    "lawngreen",
+    "lemonchiffon",
+    "lightblue",
+    "lightcoral",
+    "lightcyan",
+    "lightgoldenrodyellow",
+    "lightgray",
+    "lightgreen",
+    "lightgrey",
+    "lightpink",
+    "lightsalmon",
+    "lightseagreen",
+    "lightskyblue",
+    "lightslategray",
+    "lightslategrey",
+    "lightsteelblue",
+    "lightyellow",
+    "limegreen",
+    "linen",
+    "magenta",
+    "mediumaquamarine",
+    "mediumblue",
+    "mediumorchid",
+    "mediumpurple",
+    "mediumseagreen",
+    "mediumslateblue",
+    "mediumspringgreen",
+    "mediumturquoise",
+    "mediumvioletred",
+    "midnightblue",
+    "mintcream",
+    "mistyrose",
+    "moccasin",
+    "navajowhite",
+    "oldlace",
+    "olivedrab",
+    "orangered",
+    "orchid",
+    "palegoldenrod",
+    "palegreen",
+    "paleturquoise",
+    "palevioletred",
+    "papayawhip",
+    "peachpuff",
+    "peru",
+    "pink",
+    "plum",
+    "powderblue",
+    "rebeccapurple",
+    "rosybrown",
+    "royalblue",
+    "saddlebrown",
+    "salmon",
+    "sandybrown",
+    "seagreen",
+    "seashell",
+    "sienna",
+    "skyblue",
+    "slateblue",
+    "slategray",
+    "slategrey",
+    "snow",
+    "springgreen",
+    "steelblue",
+    "tan",
+    "thistle",
+    "tomato",
+    "turquoise",
+    "violet",
+    "wheat",
+    "whitesmoke",
+    "yellowgreen",
+
     //
     // background-repeat
     //
@@ -354,16 +489,19 @@
     "katakana-iroha",
     //none
     //
-    // display
-    // The order of this enum must match the order found in CSSParserFastPaths::IsValidKeywordPropertyAndValue().
-    //
+    // The order must match the order found in IsDisplayOutside().
     "inline",
     "block",
+    // The order must match the order found in IsDisplayInside().
     "flow-root",
-    "list-item",
-    "inline-block",
     "table",
-    "inline-table",
+    "flex",
+    "grid",
+    "math",
+    // The order must match the order found in IsDisplayBox().
+    "contents",
+    //none
+    // The order must match the order found in IsDisplayInternal().
     "table-row-group",
     "table-header-group",
     "table-footer-group",
@@ -372,20 +510,18 @@
     "table-column",
     "table-cell",
     "table-caption",
+    // The order must match the order found in IsDisplayLegacy().
+    "inline-block",
+    "inline-table",
+    "inline-flex",
+    "inline-grid",
     "-webkit-box",
     "-webkit-inline-box",
-    "flex",
-    "inline-flex",
-    "grid",
-    "inline-grid",
-    "math",
-    "inline-math",
-    "contents",
-    //none
     "-webkit-flex",
     "-webkit-inline-flex",
     "layout",
     "inline-layout",
+    "list-item",
     //
     // cursor
     // The order of this enum must match the order found in CSSPropertyParser::ConsumeCursor().
@@ -506,11 +642,13 @@
     "wavy",
     "-webkit-nowrap",
 
-    //
+    // math-shift
+    // normal
+    "compact",
+
     // math-style
-    //
-    // inline
-    "display",
+    // normal
+    // compact
 
     // CSS3 Values
     // box-align
@@ -791,7 +929,6 @@
     //
     "document",
     "reset",
-    "-internal-reset-effective",
 
     //
     // user-zoom
@@ -977,7 +1114,7 @@
 
     // text-indent
     "each-line",
-    //hanging   // hanging exists in SVGCSSValueKeywords.in
+    "hanging",
 
     // (scan:) media feature
     "progressive",
@@ -990,6 +1127,53 @@
     // fill
     // stroke
     "markers",
+
+    // mask-type
+    "alpha",
+    "luminance",
+
+    // color-interpolation / color-interpolation-filters
+    // auto
+    "srgb",
+    "linearrgb",
+
+    // stroke-linecap
+    "butt",
+    // round
+    // square
+
+    // stroke-linejoin
+    "miter",
+    // round
+    "bevel",
+
+    // alignment-baseline
+    // auto
+    // baseline
+    "before-edge",
+    "after-edge",
+    // middle
+    "central",
+    "text-before-edge",
+    "text-after-edge",
+    "ideographic",
+    // hanging
+    "mathematical",
+
+    // dominant-baseline
+    // auto
+    "use-script",
+    "no-change",
+    "reset-size",
+
+    // buffered-rendering
+    // auto
+    // static
+    "dynamic",
+
+    // vector-effect
+    // none
+    "non-scaling-stroke",
 
     //
     // CSS3 viewport-length keywords
@@ -1185,14 +1369,14 @@
     "verso",
     "avoid-column",
 
-    // shape
-    // rect
-    // round
-
     // color-gamut
     // srgb
     "p3",
     "rec2020",
+
+    // math-depth
+    "add",
+    "auto-add",
 
     // overscroll-behavior
     // auto,
@@ -1224,6 +1408,7 @@
     "only",
 
     // (prefers-reduced-motion:) media feature
+    // (prefers-reduced-data:) media feature
     "reduce",
 
     // (forced-colors:) media feature
@@ -1249,5 +1434,18 @@
     // none
     "single-fold-vertical",
     "single-fold-horizontal",
+
+    // scrollbar-gutter
+    // auto
+    "stable",
+    // always
+    // both
+    "force",
+
+    // (prefers-contrast:) media feature
+    // no-preference
+    "more",
+    "less",
+    "forced",
   ],
 }

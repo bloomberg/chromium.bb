@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
@@ -24,8 +25,8 @@ namespace bluez {
 void BluetoothAdapterProfileBlueZ::Register(
     const device::BluetoothUUID& uuid,
     const bluez::BluetoothProfileManagerClient::Options& options,
-    const ProfileRegisteredCallback& success_callback,
-    const bluez::BluetoothProfileManagerClient::ErrorCallback& error_callback) {
+    ProfileRegisteredCallback success_callback,
+    bluez::BluetoothProfileManagerClient::ErrorCallback error_callback) {
   std::unique_ptr<BluetoothAdapterProfileBlueZ> profile(
       new BluetoothAdapterProfileBlueZ(uuid));
 
@@ -33,9 +34,10 @@ void BluetoothAdapterProfileBlueZ::Register(
   const dbus::ObjectPath& object_path = profile->object_path();
   bluez::BluezDBusManager::Get()
       ->GetBluetoothProfileManagerClient()
-      ->RegisterProfile(object_path, uuid.canonical_value(), options,
-                        base::Bind(success_callback, base::Passed(&profile)),
-                        error_callback);
+      ->RegisterProfile(
+          object_path, uuid.canonical_value(), options,
+          base::BindOnce(std::move(success_callback), std::move(profile)),
+          std::move(error_callback));
 }
 
 BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(
@@ -71,7 +73,7 @@ bool BluetoothAdapterProfileBlueZ::SetDelegate(
 
 void BluetoothAdapterProfileBlueZ::RemoveDelegate(
     const dbus::ObjectPath& device_path,
-    const base::Closure& unregistered_callback) {
+    base::OnceClosure unregistered_callback) {
   DVLOG(1) << object_path_.value() << " dev " << device_path.value()
            << ": RemoveDelegate";
 
@@ -86,23 +88,26 @@ void BluetoothAdapterProfileBlueZ::RemoveDelegate(
   DVLOG(1) << device_path.value() << " No delegates left, unregistering.";
 
   // No users left, release the profile.
+  auto copyable_callback =
+      base::AdaptCallbackForRepeating(std::move(unregistered_callback));
   bluez::BluezDBusManager::Get()
       ->GetBluetoothProfileManagerClient()
       ->UnregisterProfile(
-          object_path_, unregistered_callback,
-          base::Bind(&BluetoothAdapterProfileBlueZ::OnUnregisterProfileError,
-                     weak_ptr_factory_.GetWeakPtr(), unregistered_callback));
+          object_path_, copyable_callback,
+          base::BindOnce(
+              &BluetoothAdapterProfileBlueZ::OnUnregisterProfileError,
+              weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void BluetoothAdapterProfileBlueZ::OnUnregisterProfileError(
-    const base::Closure& unregistered_callback,
+    base::OnceClosure unregistered_callback,
     const std::string& error_name,
     const std::string& error_message) {
   LOG(WARNING) << this->object_path().value()
                << ": Failed to unregister profile: " << error_name << ": "
                << error_message;
 
-  unregistered_callback.Run();
+  std::move(unregistered_callback).Run();
 }
 
 // bluez::BluetoothProfileServiceProvider::Delegate:

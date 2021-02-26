@@ -403,3 +403,30 @@
 
 # This comes from https://crbug.com/1075515.
 "FilEsysteM:htTp:E=/."
+
+# This comes from https://crbug.com/1128999.
+"file:///.//"
+"file:////"
+
+# string declared from url/url_constants.cc
+"://"
+"about"
+"about:blank"
+"about:srcdoc"
+"blank"
+"blob"
+"cid"
+"content"
+"data"
+"file"
+"filesystem"
+"ftp"
+"http"
+"https"
+"javascript"
+"mailto"
+"quic-transport"
+"srcdoc"
+"tel"
+"ws"
+"wss"

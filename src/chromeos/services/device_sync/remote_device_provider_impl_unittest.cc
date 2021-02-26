@@ -41,6 +41,7 @@ const char kTestRemoteDeviceNamePrefix[] = "name-";
 const char kTestRemoteDevicePiiFreeNamePrefix[] = "piiFreeName-";
 const char kTestRemoteDevicePublicKeyPrefix[] = "publicKey-";
 const char kTestRemoteDevicePskPrefix[] = "psk-";
+const char kTestRemoteDeviceBluetoothPublicAddressPrefix[] = "address-";
 
 multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
                                                     bool has_instance_id,
@@ -62,7 +63,8 @@ multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
       kTestRemoteDevicePskPrefix + suffix, 100L /* last_update_time_millis */,
       {} /* software_features */,
       {multidevice::BeaconSeed(beacon_seed_data, base::Time::FromJavaTime(200L),
-                               base::Time::FromJavaTime(300L))});
+                               base::Time::FromJavaTime(300L))},
+      kTestRemoteDeviceBluetoothPublicAddressPrefix + suffix);
 }
 
 // Provide four fake RemoteDevices associated with a v1 DeviceSync. These
@@ -196,16 +198,15 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
             devices.push_back(remote_device);
         }
       }
-      callback_.Run(devices);
-      callback_.Reset();
+      std::move(callback_).Run(devices);
     }
 
     // Fetch is only started if the change result passed to OnSyncFinished() is
     // CHANGED and sync is SUCCESS.
     bool HasQueuedCallback() { return !callback_.is_null(); }
 
-    void QueueCallback(const RemoteDeviceCallback& callback) {
-      callback_ = callback;
+    void QueueCallback(RemoteDeviceCallback callback) {
+      callback_ = std::move(callback);
     }
 
    private:
@@ -222,8 +223,8 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
 
   TestRemoteDeviceLoaderFactory* remote_device_loader_factory_;
 
-  void Load(const RemoteDeviceCallback& callback) override {
-    remote_device_loader_factory_->QueueCallback(callback);
+  void Load(RemoteDeviceCallback callback) override {
+    remote_device_loader_factory_->QueueCallback(std::move(callback));
   }
 };
 

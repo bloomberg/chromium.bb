@@ -5,10 +5,9 @@
 #include "device/gamepad/nintendo_data_fetcher.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_uma.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {
 

@@ -22,10 +22,6 @@ class Canvas;
 class Point;
 }
 
-namespace ui {
-class Event;
-}
-
 namespace views {
 class ImageButton;
 class Widget;
@@ -34,8 +30,7 @@ class Widget;
 namespace apps {
 
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
-class AppWindowFrameView : public views::NonClientFrameView,
-                           public views::ButtonListener {
+class AppWindowFrameView : public views::NonClientFrameView {
  public:
   static const char kViewClassName[];
 
@@ -52,6 +47,8 @@ class AppWindowFrameView : public views::NonClientFrameView,
                      bool draw_frame,
                      const SkColor& active_frame_color,
                      const SkColor& inactive_frame_color);
+  AppWindowFrameView(const AppWindowFrameView&) = delete;
+  AppWindowFrameView& operator=(const AppWindowFrameView&) = delete;
   ~AppWindowFrameView() override;
 
   void Init();
@@ -81,9 +78,6 @@ class AppWindowFrameView : public views::NonClientFrameView,
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
 
-  // views::ButtonListener implementation.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // Some button images we use depend on the color of the frame. This
   // will set these images based on the color of the frame.
   void SetButtonImagesForFrame();
@@ -109,8 +103,6 @@ class AppWindowFrameView : public views::NonClientFrameView,
 
   // Size in pixels of the lower-right corner resize handle.
   int resize_area_corner_size_ = 16;
-
-  DISALLOW_COPY_AND_ASSIGN(AppWindowFrameView);
 };
 
 }  // namespace apps

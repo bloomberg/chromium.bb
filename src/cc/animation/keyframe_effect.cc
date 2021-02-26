@@ -214,14 +214,28 @@ void KeyframeEffect::UpdateTickingState() {
   }
 }
 
-void KeyframeEffect::Pause(base::TimeDelta pause_offset) {
-  for (auto& keyframe_model : keyframe_models_)
+void KeyframeEffect::Pause(base::TimeDelta pause_offset,
+                           PauseCondition pause_condition) {
+  bool did_pause = false;
+  for (auto& keyframe_model : keyframe_models_) {
+    // TODO(crbug.com/1076012): KeyframeEffect is paused with local time for
+    // scroll-linked animations. To make sure the start event of a keyframe
+    // model is sent to blink, we should not set its run state to PAUSED until
+    // such event is sent. This should be revisited once KeyframeEffect is able
+    // to tick scroll-linked keyframe models directly.
+    if (pause_condition == PauseCondition::kAfterStart &&
+        (keyframe_model->run_state() ==
+             KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY ||
+         keyframe_model->run_state() == KeyframeModel::STARTING))
+      continue;
     keyframe_model->Pause(pause_offset);
-
-  if (has_bound_element_animations()) {
-    animation_->SetNeedsCommit();
-    SetNeedsPushProperties();
+    did_pause = true;
   }
+
+  if (!did_pause || !has_bound_element_animations())
+    return;
+  animation_->SetNeedsCommit();
+  SetNeedsPushProperties();
 }
 
 void KeyframeEffect::AddKeyframeModel(
@@ -456,14 +470,6 @@ bool KeyframeEffect::HasTickingKeyframeModel() const {
       return true;
   }
   return false;
-}
-
-size_t KeyframeEffect::TickingKeyframeModelsCount() const {
-  size_t ticking_keyframe_models_count = 0;
-  for (const auto& it : keyframe_models_)
-    if (!it->is_finished())
-      ticking_keyframe_models_count++;
-  return ticking_keyframe_models_count;
 }
 
 bool KeyframeEffect::AffectsCustomProperty() const {
@@ -771,8 +777,12 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
     // the host as well.
     if (keyframe_effect_impl->has_attached_element())
       keyframe_effect_impl->animation_->DetachElement();
-    if (element_id_)
-      keyframe_effect_impl->animation_->AttachElement(element_id_);
+    if (element_id_) {
+      if (element_id_.GetStableId() == ElementId::kReservedElementId)
+        keyframe_effect_impl->animation_->AttachNoElement();
+      else
+        keyframe_effect_impl->animation_->AttachElement(element_id_);
+    }
   }
 
   keyframe_effect_impl->scroll_offset_animation_was_interrupted_ =

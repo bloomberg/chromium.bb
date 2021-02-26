@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
@@ -70,6 +69,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
         logical_width_(logical_width),
         bitfields_(first_line, constructed, dirty, extracted, is_horizontal) {}
 
+  InlineBox(const InlineBox&) = delete;
+  InlineBox& operator=(const InlineBox&) = delete;
   ~InlineBox() override;
 
   virtual void Destroy();
@@ -98,7 +99,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   }
 
   virtual void Paint(const PaintInfo&,
-                     const LayoutPoint&,
+                     const PhysicalOffset&,
                      LayoutUnit line_top,
                      LayoutUnit line_bottom) const;
   virtual bool NodeAtPoint(HitTestResult&,
@@ -129,8 +130,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // DisplayItemClient methods
   String DebugName() const override;
-  IntRect VisualRect() const override;
-  IntRect PartialInvalidationVisualRect() const override;
   DOMNodeId OwnerNodeId() const override;
 
   bool IsText() const { return bitfields_.IsText(); }
@@ -506,8 +505,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 #if DCHECK_IS_ON()
   bool has_bad_parent_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(InlineBox);
 };
 
 #if !DCHECK_IS_ON()
@@ -519,10 +516,6 @@ inline void InlineBox::SetHasBadParent() {
   has_bad_parent_ = true;
 }
 #endif
-
-#define DEFINE_INLINE_BOX_TYPE_CASTS(typeName)                     \
-  DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->Is##typeName(), \
-                    box.Is##typeName())
 
 // Allow equality comparisons of InlineBox's by reference or pointer,
 // interchangeably.

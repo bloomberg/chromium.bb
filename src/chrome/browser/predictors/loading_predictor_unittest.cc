@@ -19,7 +19,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/network_isolation_key.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -208,26 +207,34 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseClearsNavigations) {
   const SessionID tab_id = SessionID::FromSerializedValue(12);
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
+  const auto& active_urls_to_navigations =
+      predictor_->active_urls_to_navigations_;
 
   auto navigation_id = CreateNavigationID(tab_id, url);
 
   predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
+  EXPECT_NE(active_urls_to_navigations.find(GURL(url)),
+            active_urls_to_navigations.end());
 
   predictor_->OnNavigationFinished(navigation_id, navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
+  EXPECT_TRUE(active_urls_to_navigations.empty());
 
   // With redirects.
   predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
+  EXPECT_NE(active_urls_to_navigations.find(GURL(url)),
+            active_urls_to_navigations.end());
 
   auto new_navigation_id = CreateNavigationID(tab_id, redirected);
   predictor_->OnNavigationFinished(navigation_id, new_navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
+  EXPECT_TRUE(active_urls_to_navigations.empty());
 }
 
 TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {
@@ -526,8 +533,8 @@ TEST_F(LoadingPredictorPreconnectTest,
       main_frame_url, HintOrigin::OPTIMIZATION_GUIDE, false, prediction));
 }
 
-// Checks that the predictor doesn't use the provided prediction if there is
-// already in flight and there was a local preconnect prediction.
+// Checks that the predictor uses a prediction even if there is already a local
+// initiated one in flight.
 TEST_F(
     LoadingPredictorPreconnectTest,
     TestPrepareForPageLoadPredictionProvidedButHasLocalPreconnectPrediction) {
@@ -567,7 +574,16 @@ TEST_F(
         network_isolation_key},
        {url::Origin::Create(GURL("http://cdn3.search.com")), 1,
         network_isolation_key}});
-  EXPECT_CALL(*mock_preconnect_manager_, StartProxy(_, _)).Times(0);
+  EXPECT_CALL(
+      *mock_preconnect_manager_,
+      StartProxy(main_frame_url,
+                 std::vector<PreconnectRequest>(
+                     {{url::Origin::Create(GURL("http://cdn1.search.com")), 1,
+                       network_isolation_key},
+                      {url::Origin::Create(GURL("http://cdn2.search.com")), 1,
+                       network_isolation_key},
+                      {url::Origin::Create(GURL("http://cdn3.search.com")), 1,
+                       network_isolation_key}})));
   EXPECT_TRUE(predictor_->PrepareForPageLoad(
       main_frame_url, HintOrigin::OPTIMIZATION_GUIDE, false, prediction));
 }

@@ -46,7 +46,7 @@ class IconWrapper : public views::View {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
     // Make sure hovering over the icon also hovers the |HoverButton|.
-    set_can_process_events_within_subtree(false);
+    SetCanProcessEventsWithinSubtree(false);
     // Don't cover |icon| when the ink drops are being painted.
     // |MenuButton| already does this with its own image.
     SetPaintToLayer();
@@ -71,11 +71,10 @@ class IconWrapper : public views::View {
 
 }  // namespace
 
-HoverButton::HoverButton(views::ButtonListener* button_listener,
-                         const base::string16& text)
-    : views::LabelButton(button_listener, text, views::style::CONTEXT_BUTTON) {
+HoverButton::HoverButton(PressedCallback callback, const base::string16& text)
+    : views::LabelButton(callback, text, views::style::CONTEXT_BUTTON) {
   SetButtonController(std::make_unique<HoverButtonController>(
-      this, button_listener,
+      this, std::move(callback),
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
 
   views::InstallRectHighlightPathGenerator(this);
@@ -90,27 +89,27 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
   SetInkDropMode(InkDropMode::ON);
 
-  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                              ui::EF_RIGHT_MOUSE_BUTTON);
+  SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
+                           ui::EF_RIGHT_MOUSE_BUTTON);
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnRelease);
 }
 
-HoverButton::HoverButton(views::ButtonListener* button_listener,
+HoverButton::HoverButton(PressedCallback callback,
                          const gfx::ImageSkia& icon,
                          const base::string16& text)
-    : HoverButton(button_listener, text) {
+    : HoverButton(std::move(callback), text) {
   SetImage(STATE_NORMAL, icon);
 }
 
-HoverButton::HoverButton(views::ButtonListener* button_listener,
+HoverButton::HoverButton(PressedCallback callback,
                          std::unique_ptr<views::View> icon_view,
                          const base::string16& title,
                          const base::string16& subtitle,
                          std::unique_ptr<views::View> secondary_view,
                          bool resize_row_for_secondary_view,
                          bool secondary_view_can_process_events)
-    : HoverButton(button_listener, base::string16()) {
+    : HoverButton(std::move(callback), base::string16()) {
   label()->SetHandlesTooltips(false);
 
   // Set the layout manager to ignore the ink_drop_container to ensure the ink
@@ -133,14 +132,14 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   // |label_wrapper| will hold both the title and subtitle if it exists.
   auto label_wrapper = std::make_unique<views::View>();
 
-  title_ = label_wrapper->AddChildView(
-      std::make_unique<views::StyledLabel>(title, nullptr));
+  title_ = label_wrapper->AddChildView(std::make_unique<views::StyledLabel>());
+  title_->SetText(title);
   // Allow the StyledLabel for title to assume its preferred size on a single
   // line and let the flex layout attenuate its width if necessary.
   title_->SizeToFit(0);
   // Hover the whole button when hovering |title_|. This is OK because |title_|
   // will never have a link in it.
-  title_->set_can_process_events_within_subtree(false);
+  title_->SetCanProcessEventsWithinSubtree(false);
 
   if (!subtitle.empty()) {
     auto subtitle_label = std::make_unique<views::Label>(
@@ -157,7 +156,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
-  label_wrapper->set_can_process_events_within_subtree(false);
+  label_wrapper->SetCanProcessEventsWithinSubtree(false);
   label_wrapper->SetProperty(views::kMarginsKey,
                              gfx::Insets(vertical_spacing, 0));
   label_wrapper_ = AddChildView(std::move(label_wrapper));
@@ -166,7 +165,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   observed_label_.Add(label_wrapper_);
 
   if (secondary_view) {
-    secondary_view->set_can_process_events_within_subtree(
+    secondary_view->SetCanProcessEventsWithinSubtree(
         secondary_view_can_process_events);
     // |secondary_view| needs a layer otherwise it's obscured by the layer
     // used in drawing ink drops.
@@ -232,10 +231,10 @@ void HoverButton::SetTooltipAndAccessibleName() {
           : base::JoinString({title_->GetText(), subtitle_->GetText()},
                              base::ASCIIToUTF16("\n"));
 
-  // |views::StyledLabel|s only add tooltips for any links they may have.
-  // However, since |HoverButton| will never insert a link inside its child
-  // |StyledLabel|, decide whether it needs a tooltip by checking whether the
-  // available space is smaller than its preferred size.
+  // views::StyledLabels only add tooltips for any links they may have. However,
+  // since HoverButton will never insert a link inside its child StyledLabel,
+  // decide whether it needs a tooltip by checking whether the available space
+  // is smaller than its preferred size.
   const bool needs_tooltip =
       label_wrapper_->GetPreferredSize().width() > label_wrapper_->width();
   SetTooltipText(needs_tooltip ? accessible_name : base::string16());
@@ -258,9 +257,9 @@ void HoverButton::StateChanged(ButtonState old_state) {
 
   // |HoverButtons| are designed for use in a list, so ensure only one button
   // can have a hover background at any time by requesting focus on hover.
-  if (state() == STATE_HOVERED && old_state != STATE_PRESSED) {
+  if (GetState() == STATE_HOVERED && old_state != STATE_PRESSED) {
     RequestFocus();
-  } else if (state() == STATE_NORMAL && HasFocus()) {
+  } else if (GetState() == STATE_NORMAL && HasFocus()) {
     GetFocusManager()->SetFocusedView(nullptr);
   }
 }

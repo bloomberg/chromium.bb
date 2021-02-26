@@ -86,11 +86,30 @@ source_set("fuzzer_init") {
   deps = [ "../../:pdfium_public_headers" ]
 }
 
+if (pdf_enable_xfa) {
+  assert(pdf_enable_v8)
+  source_set("fuzzer_xfa_process_state") {
+    testonly = !is_component_build
+    sources = [
+      "xfa_process_state.cc",
+      "xfa_process_state.h",
+    ]
+    configs += [ ":fuzzer_config" ]
+    deps = [
+      "../../fxjs:gc",
+      "//v8",
+    ]
+  }
+}
+
 source_set("fuzzer_init_public") {
   testonly = true
   sources = [ "pdf_fuzzer_init_public.cc" ]
   include_dirs = [ "../.." ]
-  deps = [ "../../:pdfium_public_headers" ]
+  deps = [
+    ":fuzzer_utils",
+    "../../:pdfium_public_headers",
+  ]
   if (pdf_enable_v8) {
     configs += [ "//v8:external_startup_data" ]
     deps += [
@@ -98,6 +117,9 @@ source_set("fuzzer_init_public") {
       "//v8",
       "//v8:v8_libplatform",
     ]
+    if (pdf_enable_xfa) {
+      deps += [ ":fuzzer_xfa_process_state" ]
+    }
   }
 }
 
@@ -106,6 +128,9 @@ if (is_component_build) {
     deps = []
     foreach(fuzzer, fuzzer_list) {
       deps += [ ":${fuzzer}_impl" ]
+    }
+    if (pdf_enable_xfa) {
+      deps += [ ":fuzzer_xfa_process_state" ]
     }
   }
 }
@@ -137,7 +162,8 @@ source_set("fuzzer_utils") {
 }
 
 template("pdfium_fuzzer") {
-  if (defined(invoker.public_fuzzer) && invoker.public_fuzzer) {
+  is_public = defined(invoker.public_fuzzer) && invoker.public_fuzzer
+  if (is_public) {
     init_dep = ":fuzzer_init_public"
   } else {
     init_dep = ":fuzzer_init"
@@ -192,6 +218,9 @@ template("pdfium_fuzzer") {
         init_dep,
       ]
     }
+    if (is_public && pdf_enable_xfa) {
+      deps += [ ":fuzzer_xfa_process_state" ]
+    }
   }
 }
 
@@ -218,7 +247,7 @@ if (pdf_enable_v8) {
         "../../:freetype_common",
         "../../core/fxcrt",
         "../../core/fxge",
-        "../../xfa/fgas",
+        "../../xfa/fgas/font",
         "../../xfa/fgas/layout",
         "//third_party/icu:icuuc",
       ]
@@ -227,10 +256,13 @@ if (pdf_enable_v8) {
     pdfium_fuzzer("pdf_cfgas_stringformatter_fuzzer") {
       sources = [ "pdf_cfgas_stringformatter_fuzzer.cc" ]
       deps = [
+        ":fuzzer_utils",
         "../../core/fxcrt",
-        "../../xfa/fgas",
+        "../../fxjs:gc",
+        "../../xfa/fgas/crt",
         "../../xfa/fxfa/parser",
       ]
+      public_fuzzer = true
     }
 
     pdfium_fuzzer("pdf_cfx_barcode_fuzzer") {
@@ -334,9 +366,11 @@ if (pdf_enable_v8) {
     pdfium_fuzzer("pdf_fm2js_fuzzer") {
       sources = [ "pdf_fm2js_fuzzer.cc" ]
       deps = [
+        ":fuzzer_utils",
         "../../core/fxcrt",
         "../../fxjs",
       ]
+      public_fuzzer = true
     }
 
     pdfium_fuzzer("pdf_formcalc_context_fuzzer") {
@@ -356,9 +390,12 @@ if (pdf_enable_v8) {
     pdfium_fuzzer("pdf_formcalc_fuzzer") {
       sources = [ "pdf_formcalc_fuzzer.cc" ]
       deps = [
+        ":fuzzer_utils",
         "../../core/fxcrt",
+        "../../fxjs:gc",
         "../../xfa/fxfa/fm2js",
       ]
+      public_fuzzer = true
     }
 
     pdfium_fuzzer("pdfium_xfa_fuzzer") {
@@ -485,6 +522,7 @@ pdfium_fuzzer("pdf_scanlinecompositor_fuzzer") {
   sources = [ "pdf_scanlinecompositor_fuzzer.cc" ]
   deps = [
     ":fuzzer_utils",
+    "../../core/fxcrt",
     "../../core/fxge",
     "../../third_party:pdfium_base",
   ]

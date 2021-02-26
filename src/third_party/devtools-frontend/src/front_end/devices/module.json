@@ -15,9 +15,9 @@
     "platform",
     "ui",
     "host",
+    "i18n",
     "components"
   ],
-  "scripts": [],
   "modules": [
     "devices.js",
     "DevicesView.js"

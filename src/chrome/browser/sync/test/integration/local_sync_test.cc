@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/test/browser_test.h"
@@ -65,8 +66,8 @@ class LocalSyncTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LocalSyncTest);
 };
 
-// The local sync backend is currently only supported on Windows.
-#if defined(OS_WIN)
+// The local sync backend is currently only supported on Windows, Mac and Linux.
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
@@ -76,10 +77,40 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ASSERT_TRUE(SyncTransportActiveChecker(service).Wait());
 
   EXPECT_TRUE(service->IsLocalSyncEnabled());
+  EXPECT_FALSE(service->IsSyncFeatureEnabled());
+  EXPECT_FALSE(service->IsSyncFeatureActive());
+
+  // Verify that the expected set of data types successfully started up.
+  // If this test fails after adding a new data type, carefully consider whether
+  // the type should be enabled in Local Sync mode, i.e. for roaming profiles on
+  // Windows.
+  // TODO(crbug.com/1109640): Consider whether all of these types should really
+  // be enabled in Local Sync mode.
+  syncer::ModelTypeSet expected_active_data_types = syncer::ModelTypeSet(
+      syncer::BOOKMARKS, syncer::PREFERENCES, syncer::PASSWORDS,
+      syncer::AUTOFILL_PROFILE, syncer::AUTOFILL, syncer::AUTOFILL_WALLET_DATA,
+      syncer::AUTOFILL_WALLET_METADATA, syncer::THEMES, syncer::TYPED_URLS,
+      syncer::EXTENSIONS, syncer::SEARCH_ENGINES, syncer::SESSIONS,
+      syncer::APPS, syncer::APP_SETTINGS, syncer::EXTENSION_SETTINGS,
+      syncer::HISTORY_DELETE_DIRECTIVES, syncer::DEVICE_INFO,
+      syncer::PRIORITY_PREFERENCES, syncer::WEB_APPS, syncer::PROXY_TABS,
+      syncer::NIGORI);
+
+  // The dictionary is currently only synced on Windows and Linux.
+#if defined(OS_WIN) || defined(OS_LINUX)
+  expected_active_data_types.Put(syncer::DICTIONARY);
+#endif
+
+  EXPECT_EQ(service->GetActiveDataTypes(), expected_active_data_types);
 
   // Verify certain features are disabled.
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::USER_CONSENTS));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::USER_EVENTS));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::SECURITY_EVENTS));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::SEND_TAB_TO_SELF));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE));
   EXPECT_FALSE(send_tab_to_self::IsUserSyncTypeActive(browser()->profile()));
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 }  // namespace

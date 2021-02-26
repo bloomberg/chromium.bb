@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -79,7 +79,7 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       QuicTransportVersion transport_version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -97,6 +97,11 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
   // for some implementations) that provides useful information for the
   // verifier, e.g. logging handles.
   //
+  // If certificate verification fails, a TLS alert will be sent when closing
+  // the connection. This alert defaults to certificate_unknown. By setting
+  // |*out_alert|, a different alert can be sent to provide a more specific
+  // reason why verification failed.
+  //
   // This function may also return QUIC_PENDING, in which case the ProofVerifier
   // will call back, on the original thread, via |callback| when complete.
   // In this case, the ProofVerifier will take ownership of |callback|.
@@ -109,6 +114,7 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
       const ProofVerifyContext* context,
       std::string* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
+      uint8_t* out_alert,
       std::unique_ptr<ProofVerifierCallback> callback) = 0;
 
   // Returns a ProofVerifyContext instance which can be use for subsequent

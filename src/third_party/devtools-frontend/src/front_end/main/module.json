@@ -100,7 +100,7 @@
       "category": "Global",
       "title": "Restore last dock position",
       "actionId": "main.toggle-dock",
-      "className": "Components.DockController.ToggleDockActionDelegate",
+      "className": "UI.DockController.ToggleDockActionDelegate",
       "bindings": [
         {
           "platform": "windows,linux",
@@ -122,7 +122,10 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+Plus",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -139,7 +142,10 @@
         {
           "platform": "mac",
           "shortcut": "Meta+Plus",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
@@ -165,7 +171,10 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+Minus",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -182,7 +191,10 @@
         {
           "platform": "mac",
           "shortcut": "Meta+Minus",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
@@ -233,12 +245,18 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+F",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
           "shortcut": "Meta+F",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
@@ -268,7 +286,11 @@
       "bindings": [
         {
           "platform": "mac",
-          "shortcut": "Meta+G"
+          "shortcut": "Meta+G",
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -277,7 +299,10 @@
         {
           "platform": "windows,linux",
           "shortcut": "F3",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -291,7 +316,10 @@
         {
           "platform": "mac",
           "shortcut": "Meta+Shift+G",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -300,7 +328,10 @@
         {
           "platform": "windows,linux",
           "shortcut": "Shift+F3",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -330,7 +361,7 @@
     },
     {
       "type": "@UI.ToolbarItem.Provider",
-      "className": "Components.DockController.CloseButtonProvider",
+      "className": "UI.DockController.CloseButtonProvider",
       "order": 100,
       "location": "main-toolbar-right"
     },
@@ -341,6 +372,7 @@
       "settingName": "uiTheme",
       "settingType": "enum",
       "defaultValue": "systemPreferred",
+      "reloadRequired": true,
       "options": [
         {
           "title": "Switch to system preferred color theme",
@@ -480,6 +512,12 @@
       ]
     },
     {
+      "type": "setting",
+      "settingName": "userShortcuts",
+      "settingType": "array",
+      "defaultValue": []
+    },
+    {
       "type": "@UI.ViewLocationResolver",
       "name": "drawer-view",
       "category": "Drawer",
@@ -501,16 +539,15 @@
   "dependencies": [
     "extensions",
     "host",
+    "i18n",
     "platform",
     "sdk",
     "persistence"
   ],
-  "scripts": [],
   "modules": [
-    "main.js",
-    "main-legacy.js",
-    "SimpleApp.js",
-    "ExecutionContextSelector.js",
-    "MainImpl.js"
+    "main-legacy.js"
+  ],
+  "skip_compilation": [
+    "main-legacy.js"
   ]
 }

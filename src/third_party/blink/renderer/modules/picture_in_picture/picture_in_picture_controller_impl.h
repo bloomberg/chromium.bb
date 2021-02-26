@@ -35,8 +35,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
       public PageVisibilityObserver,
       public ExecutionContextClient,
       public blink::mojom::blink::PictureInPictureSessionObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
-
  public:
   explicit PictureInPictureControllerImpl(Document&);
   ~PictureInPictureControllerImpl() override = default;
@@ -90,7 +88,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool IsSessionObserverReceiverBoundForTesting() {
     return session_observer_receiver_.is_bound();

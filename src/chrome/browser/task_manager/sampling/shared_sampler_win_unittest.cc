@@ -36,8 +36,8 @@ class SharedSamplerTest : public testing::Test {
         shared_sampler_(new SharedSampler(blocking_pool_runner_)) {
     shared_sampler_->RegisterCallback(
         base::GetCurrentProcId(),
-        base::Bind(&SharedSamplerTest::OnSamplerRefreshDone,
-                   base::Unretained(this)));
+        base::BindRepeating(&SharedSamplerTest::OnSamplerRefreshDone,
+                            base::Unretained(this)));
   }
 
   ~SharedSamplerTest() override {}
@@ -88,7 +88,7 @@ class SharedSamplerTest : public testing::Test {
 
   int64_t expected_refresh_type_ = 0;
   int64_t finished_refresh_type_ = 0;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   int idle_wakeups_per_second_ = -1;
   base::Time start_time_;
@@ -170,9 +170,8 @@ TEST_F(SharedSamplerTest, MultipleRefreshTypes) {
 static int ReturnZeroThreadProcessInformation(unsigned char* buffer,
                                               int buffer_size) {
   // Calculate the number of bytes required for the structure, and ImageName.
-  base::FilePath current_exe;
-  CHECK(base::PathService::Get(base::FILE_EXE, &current_exe));
-  base::string16 image_name = current_exe.BaseName().value();
+  base::string16 image_name =
+      base::PathService::CheckedGet(base::FILE_EXE).BaseName().value();
 
   const int kImageNameBytes = image_name.length() * sizeof(base::char16);
   const int kRequiredBytes = sizeof(SYSTEM_PROCESS_INFORMATION) +

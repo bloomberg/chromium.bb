@@ -37,6 +37,8 @@ def validate_property(prop):
         'Only longhands can be valid_for_cue [%s]' % name
     assert not prop['valid_for_marker'] or prop['is_longhand'], \
         'Only longhands can be valid_for_marker [%s]' % name
+    assert not prop['valid_for_highlight'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_highlight [%s]' % name
 
 
 def validate_alias(alias):
@@ -70,6 +72,7 @@ class CSSProperties(object):
         # 1: CSSPropertyID::kVariable
         self._first_enum_value = 2
         self._last_used_enum_value = self._first_enum_value
+        self._last_high_priority_property = None
 
         self._properties_by_id = {}
         self._properties_by_name = {}
@@ -141,8 +144,7 @@ class CSSProperties(object):
         for property_ in self._longhands + self._shorthands:
             self.expand_parameters(property_)
             validate_property(property_)
-            # This order must match the order in CSSPropertyPriority.h.
-            priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
+            priority_numbers = {'High': 0, 'Low': 1}
             priority = priority_numbers[property_['priority']]
             name_without_leading_dash = property_['name'].original
             if name_without_leading_dash.startswith('-'):
@@ -170,6 +172,8 @@ class CSSProperties(object):
                 ('property with ID {} appears more than once in the '
                  'properties list'.format(property_['property_id']))
             self._properties_by_id[property_['property_id']] = property_
+            if property_['priority'] == 'High':
+                self._last_high_priority_property = property_
 
         self.expand_aliases()
         self._properties_including_aliases = self._longhands + \
@@ -240,7 +244,6 @@ class CSSProperties(object):
         if not method_name:
             method_name = name.to_upper_camel_case().replace('Webkit', '')
         set_if_none(property_, 'inherited', False)
-        set_if_none(property_, 'affected_by_forced_colors', False)
 
         # Initial function, Getters and Setters for ComputedStyle.
         set_if_none(property_, 'initial', 'Initial' + method_name)
@@ -354,6 +357,10 @@ class CSSProperties(object):
         ]
 
     @property
+    def properties_by_name(self):
+        return self._properties_by_name
+
+    @property
     def properties_by_id(self):
         return self._properties_by_id
 
@@ -372,6 +379,14 @@ class CSSProperties(object):
     @property
     def last_unresolved_property_id(self):
         return self._last_unresolved_property_id
+
+    @property
+    def last_high_priority_property_id(self):
+        return self._last_high_priority_property['enum_key']
+
+    @property
+    def property_id_bit_length(self):
+        return int.bit_length(self._last_unresolved_property_id)
 
     @property
     def alias_offset(self):

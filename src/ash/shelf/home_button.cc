@@ -13,6 +13,9 @@
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
+#include "ash/style/default_colors.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
@@ -44,7 +47,7 @@ HomeButton::HomeButton(Shelf* shelf)
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
-  set_has_ink_drop_action_on_click(false);
+  SetHasInkDropActionOnClick(false);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   layer()->SetName("shelf/Homebutton");
@@ -107,6 +110,15 @@ bool HomeButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
 }
 
+void HomeButton::HandleLocaleChange() {
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
+  TooltipTextChanged();
+  // Reset the bounds rect so the child layer bounds get updated on next shelf
+  // layout if the RTL changed.
+  SetBoundsRect(gfx::Rect());
+}
+
 int64_t HomeButton::GetDisplayId() const {
   aura::Window* window = GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
@@ -131,7 +143,9 @@ void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
     cc::PaintFlags fg_flags;
     fg_flags.setAntiAlias(true);
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
-    fg_flags.setColor(ShelfConfig::Get()->shelf_icon_color());
+    fg_flags.setColor(DeprecatedGetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonIconColor,
+        kShelfButtonColor));
 
     if (controller_.IsAssistantAvailable()) {
       // active: 100% alpha, inactive: 54% alpha

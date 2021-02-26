@@ -56,7 +56,6 @@ Ozone moves platform-specific code behind the following interfaces:
   access to IPC between the browser & GPU processes. Some platforms need this
   to provide additional services in the GPU process such as display
   configuration.
-* `CursorFactoryOzone` is used to load & set platform cursors.
 * `OverlayManagerOzone` is used to manage overlays.
 * `InputController` allows to control input devices such as keyboard, mouse or
   touchpad.
@@ -91,7 +90,7 @@ Users of the Ozone abstraction need to do the following, at minimum:
   invoke `PlatformWindowDelegate::DispatchEvent` to dispatch each event.
 * Write a subclass of `SurfaceFactoryOzone` that handles allocating accelerated
   surfaces. I'll call this `SurfaceFactoryOzoneImpl`.
-* Write a subclass of `CursorFactoryOzone` to manage cursors, or use the
+* Write a subclass of `CursorFactory` to manage cursors, or use the
   `BitmapCursorFactoryOzone` implementation if only bitmap cursors need to be
   supported.
 * Write a subclass of `OverlayManagerOzone` or just use `StubOverlayManager` if
@@ -156,20 +155,26 @@ Then to run for example the headless platform:
                                   --ozone-dump-file=/tmp/
 ```
 
-### Linux Desktop - ([waterfall](https://build.chromium.org/p/chromium.fyi/builders/Ozone%20Linux/))
+### Linux Desktop - ([waterfall](https://ci.chromium.org/p/chromium/builders/try/linux-ozone-rel))
 
-**Warning: Experimental support for Linux Desktop is available since m57 and still under
-  development. The work is purely done in the upstream, but you can still find some Ozone/X11
-  patches in the the old [ozone-wayland-dev](https://github.com/Igalia/chromium/tree/ozone-wayland-dev) branch.**
+**Warning: Experimental Ozone feature is available in the official Chrome distributions since m87.
+  It is not required to build Ozone for Linux anymore for the purpose of testing. It is enough
+  to start Chrome with the following flags - ./chrome --enable-features=UseOzonePlatform
+  --ozone-platform={x11/wayland}.**
 
-To build `chrome`, do this from the `src` directory:
+To build `chrome` with Ozone support, it is no longer required to pass any additional
+gn arguments. One can just follow the manual about how to build Chromium for Linux as both
+(Aura/X11) 'use\_x11=true' and (Linux/Ozone) 'use\_ozone=true' are set by default.
+
+If you want to disable Aura/X11 in the build, do this from the `src` directory:
 
 ``` shell
-gn args out/OzoneLinuxDesktop --args="use_ozone=true use_system_minigbm=true use_system_libdrm=true"
+gn args out/OzoneLinuxDesktop --args="use_x11=false"
 ninja -C out/OzoneLinuxDesktop chrome
 ```
 
-Then to run for example the X11 platform:
+Then to run for example the X11 platform (note that passing --enable-features=UseOzonePlatform
+is not required if Aura/X11 is disabled):
 
 ``` shell
 ./out/OzoneLinuxDesktop/chrome --ozone-platform=x11
@@ -181,12 +186,19 @@ Or run for example the Wayland platform:
 ./out/OzoneLinuxDesktop/chrome --ozone-platform=wayland
 ```
 
+If you want to disable Linux/Ozone in the build, do this from the `src` directory:
+
+``` shell
+gn args out/LinuxDesktop --args="use_ozone=false"
+ninja -C out/LinuxDesktop chrome
+```
+
 ### GN Configuration notes
 
 You can turn properly implemented ozone platforms on and off by setting the
 corresponding flags in your GN configuration. For example
-`ozone_platform_headless=false ozone_platform_gbm=false` will turn off the
-headless and DRM/GBM platforms.
+`ozone_platform_headless=false ozone_platform_drm=false` will turn off the
+headless and DRM (GBM) platforms.
 This will result in a smaller binary and faster builds. To turn ALL platforms
 off by default, set `ozone_auto_platforms=false`.
 
@@ -199,16 +211,16 @@ by default.
 ## Running with Ozone
 
 Specify the platform you want to use at runtime using the `--ozone-platform`
-flag. For example, to run `content_shell` with the GBM platform:
+flag. For example, to run `content_shell` with the DRM (GBM) platform:
 
 ``` shell
-content_shell --ozone-platform=gbm
+content_shell --ozone-platform=drm
 ```
 
 Caveats:
 
 * `content_shell` always runs at 800x600 resolution.
-* For the GBM platform, you may need to terminate your X server (or any other
+* For the DRM (GBM) platform, you may need to terminate your X server (or any other
   display server) prior to testing.
 * During development, you may need to configure
   [sandboxing](linux/sandboxing.md) or to disable it.

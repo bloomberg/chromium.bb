@@ -88,7 +88,7 @@ void StartTPMFirmwareUpdate(
 }
 
 // Checks if powerwash is allowed based on update modes and passes the result
-// to |callback|.
+// to `callback`.
 void OnUpdateModesAvailable(
     base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
         callback,
@@ -192,7 +192,7 @@ void ResetScreen::ShowImpl() {
   if (view_)
     view_->Show();
 
-  // Guest sugn-in button should be disabled as sign-in is not possible while
+  // Guest sign-in button should be disabled as sign-in is not possible while
   // reset screen is shown.
   if (!scoped_guest_button_blocker_) {
     scoped_guest_button_blocker_ =
@@ -422,7 +422,7 @@ void ResetScreen::UpdateStatusChanged(
     view_->SetScreenState(ResetView::State::kError);
     // Show error screen.
     error_screen_->SetUIState(NetworkError::UI_STATE_ROLLBACK_ERROR);
-    error_screen_->Show();
+    error_screen_->Show(nullptr);
   } else if (status.current_operation() ==
              update_engine::Operation::UPDATED_NEED_REBOOT) {
     PowerManagerClient::Get()->RequestRestart(

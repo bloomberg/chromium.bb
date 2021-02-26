@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
@@ -258,6 +258,12 @@ void DownloadUIAdapter::GetShareInfoForItem(const ContentId& id,
 void DownloadUIAdapter::RenameItem(const ContentId& id,
                                    const std::string& name,
                                    RenameCallback callback) {
+  NOTREACHED();
+}
+
+void DownloadUIAdapter::ChangeSchedule(
+    const ContentId& id,
+    base::Optional<OfflineItemSchedule> schedule) {
   NOTREACHED();
 }
 

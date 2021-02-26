@@ -21,9 +21,9 @@ constexpr uint32_t kRTSize = 16;
 constexpr wgpu::TextureFormat kFormat = wgpu::TextureFormat::RGBA8Unorm;
 
 class RenderPassTest : public DawnTest {
-protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+  protected:
+    void SetUp() override {
+        DawnTest::SetUp();
 
         // Shaders to draw a bottom-left triangle in blue.
         mVSModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
@@ -45,7 +45,7 @@ protected:
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = mVSModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
         descriptor.cColorStates[0].format = kFormat;
 
         pipeline = device.CreateRenderPipeline(&descriptor);
@@ -57,11 +57,10 @@ protected:
         descriptor.size.width = kRTSize;
         descriptor.size.height = kRTSize;
         descriptor.size.depth = 1;
-        descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
         descriptor.format = kFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+        descriptor.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         return device.CreateTexture(&descriptor);
     }
 
@@ -72,9 +71,9 @@ protected:
 // Test using two different render passes in one commandBuffer works correctly.
 TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
     if (IsOpenGL() || IsMetal()) {
-      // crbug.com/950768
-      // This test is consistently failing on OpenGL and flaky on Metal.
-      return;
+        // crbug.com/950768
+        // This test is consistently failing on OpenGL and flaky on Metal.
+        return;
     }
 
     wgpu::Texture renderTarget1 = CreateDefault2DTexture();
@@ -146,7 +145,7 @@ TEST_P(RenderPassTest, NoCorrespondingFragmentShaderOutputs) {
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = mVSModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
         descriptor.cColorStates[0].format = kFormat;
 
         wgpu::RenderPipeline pipelineWithNoFragmentOutput =

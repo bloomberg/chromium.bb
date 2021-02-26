@@ -11,20 +11,21 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/mock_log.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_session_client_impl.h"
+#include "chrome/browser/media/router/providers/cast/mock_app_activity.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
-#include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -71,32 +72,29 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
 
 }  // namespace
 
+#define EXPECT_ERROR_LOG(matcher)                                \
+  if (DLOG_IS_ON(ERROR)) {                                       \
+    EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _, matcher)) \
+        .WillOnce(Return(true)); /* suppress logging */          \
+  }
+
 class CastSessionClientImplTest : public testing::Test {
  public:
-  CastSessionClientImplTest() { activity_.set_session_id("theSessionId"); }
+  CastSessionClientImplTest() { activity_.SetSessionIdForTest("theSessionId"); }
 
   ~CastSessionClientImplTest() override { RunUntilIdle(); }
 
  protected:
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
-  template <typename T>
-  void ExpectErrorLog(const T& matcher) {
-    if (DLOG_IS_ON(ERROR)) {
-      EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
-                            matcher))
-          .WillOnce(Return(true));  // suppress logging
-    }
-  }
-
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   cast_channel::MockCastSocketService socket_service_{
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
+      content::GetUIThreadTaskRunner({})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   url::Origin origin_;
   MediaRoute route_;
-  MockCastActivityRecord activity_{route_, "theAppId"};
+  MockAppActivity activity_{route_, "theAppId"};
   std::unique_ptr<CastSessionClientImpl> client_ =
       std::make_unique<CastSessionClientImpl>("theClientId",
                                               origin_,
@@ -111,7 +109,7 @@ class CastSessionClientImplTest : public testing::Test {
 TEST_F(CastSessionClientImplTest, OnInvalidJson) {
   // TODO(crbug.com/905002): Check UMA calls instead of logging (here and
   // below).
-  ExpectErrorLog(HasSubstr("Failed to parse Cast client message"));
+  EXPECT_ERROR_LOG(HasSubstr("Failed to parse Cast client message"));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -119,8 +117,8 @@ TEST_F(CastSessionClientImplTest, OnInvalidJson) {
 }
 
 TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
-  ExpectErrorLog(AllOf(HasSubstr("Failed to parse Cast client message"),
-                       HasSubstr("Not a Cast message")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Failed to parse Cast client message"),
+                         HasSubstr("Not a Cast message")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -128,9 +126,9 @@ TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
-  ExpectErrorLog(AllOf(HasSubstr("Client ID mismatch"),
-                       HasSubstr("theClientId"),
-                       HasSubstr("theWrongClientId")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Client ID mismatch"),
+                         HasSubstr("theClientId"),
+                         HasSubstr("theWrongClientId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -145,9 +143,9 @@ TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongSessionId) {
-  ExpectErrorLog(AllOf(HasSubstr("Session ID mismatch"),
-                       HasSubstr("theSessionId"),
-                       HasSubstr("theWrongSessionId")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Session ID mismatch"),
+                         HasSubstr("theSessionId"),
+                         HasSubstr("theWrongSessionId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -159,6 +157,39 @@ TEST_F(CastSessionClientImplTest, OnMessageWrongSessionId) {
           "type": "MEDIA_GET_STATUS"
         }
       })"));
+}
+
+TEST_F(CastSessionClientImplTest, NullFieldsAreRemoved) {
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver)
+      .WillOnce([](const auto& message) {
+        // TODO(crbug.com/961081): Use IsCastInternalMessage as argument to
+        // SendMediaRequestToReceiver when bug is fixed.
+        EXPECT_THAT(message, IsCastInternalMessage(R"({
+          "type": "v2_message",
+          "clientId": "theClientId",
+          "sequenceNumber": 123,
+          "message": {
+             "sessionId": "theSessionId",
+             "type": "MEDIA_GET_STATUS",
+             "array": [{"in_array": true}]
+          }
+        })"));
+        return 0;
+      });
+
+  client_->OnMessage(
+      blink::mojom::PresentationConnectionMessage::NewMessage(R"({
+        "type": "v2_message",
+        "clientId": "theClientId",
+        "sequenceNumber": 123,
+        "message": {
+          "sessionId": "theSessionId",
+          "type": "MEDIA_GET_STATUS",
+          "array": [{"in_array": true, "is_null": null}],
+          "dummy": null
+        }
+      })"));
+  RunUntilIdle();
 }
 
 TEST_F(CastSessionClientImplTest, AppMessageFromClient) {

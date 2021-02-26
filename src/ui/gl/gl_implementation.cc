@@ -32,7 +32,7 @@ const struct {
 } kGLImplementationNamePairs[] = {
     {kGLImplementationDesktopName, kGLImplementationDesktopGL},
     {kGLImplementationSwiftShaderName, kGLImplementationSwiftShaderGL},
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     {kGLImplementationAppleName, kGLImplementationAppleGL},
 #endif
     {kGLImplementationEGLName, kGLImplementationEGLGLES2},
@@ -98,10 +98,6 @@ base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls = NULL;
 
 #if defined(USE_EGL)
 EGLApi* g_current_egl_context;
-#endif
-
-#if defined(OS_WIN)
-WGLApi* g_current_wgl_context;
 #endif
 
 #if defined(USE_GLX)

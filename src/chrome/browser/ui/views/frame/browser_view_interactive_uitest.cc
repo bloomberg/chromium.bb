@@ -13,10 +13,13 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "ui/views/buildflags.h"
+#include "ui/views/test/ax_event_counter.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #endif
@@ -27,11 +30,13 @@ namespace {
 
 class BrowserViewTest : public InProcessBrowserTest {
  public:
-  BrowserViewTest() = default;
+  BrowserViewTest() : ax_observer_(views::AXEventManager::Get()) {}
   ~BrowserViewTest() override = default;
+  BrowserViewTest(const BrowserViewTest&) = delete;
+  BrowserViewTest& operator=(const BrowserViewTest&) = delete;
 
   void SetUpOnMainThread() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Set the preference to true so we expect to see the top view in
     // fullscreen mode.
     PrefService* prefs = browser()->profile()->GetPrefs();
@@ -44,8 +49,8 @@ class BrowserViewTest : public InProcessBrowserTest {
 #endif
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
+ protected:
+  views::test::AXEventCounter ax_observer_;
 };
 
 }  // namespace
@@ -80,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   EXPECT_TRUE(browser_view->IsFullscreen());
 
   bool top_view_in_browser_fullscreen = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The top view should show up by default.
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   // The 'Always Show Bookmarks Bar' should be enabled.
@@ -119,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
       browser()->exclusive_access_manager()->fullscreen_controller();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  controller->EnterFullscreenModeForTab(web_contents, GURL());
+  controller->EnterFullscreenModeForTab(web_contents->GetMainFrame());
   EXPECT_TRUE(browser_view->IsFullscreen());
   bool top_view_in_tab_fullscreen =
       browser_view->immersive_mode_controller()->IsEnabled() ? true : false;
@@ -162,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TabFullscreenShowTopView) {
       browser()->exclusive_access_manager()->fullscreen_controller();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  controller->EnterFullscreenModeForTab(web_contents, GURL());
+  controller->EnterFullscreenModeForTab(web_contents->GetMainFrame());
   EXPECT_TRUE(browser_view->IsFullscreen());
 
   // The top view should not show up.
@@ -182,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
   // its state.
   if (!browser_view->IsBookmarkBarVisible())
     chrome::ToggleBookmarkBar(browser());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Disable showing toolbar in fullscreen mode to make its bahavior similar to
   // other platforms.
   chrome::ToggleFullscreenToolbar(browser());
@@ -201,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
   else
     EXPECT_FALSE(browser_view->IsBookmarkBarVisible());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Test toggling toolbar state in fullscreen mode would also affect bookmark
   // bar state.
   chrome::ToggleFullscreenToolbar(browser());
@@ -219,3 +224,26 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsBookmarkBarVisible());
 }
+
+// TODO(crbug.com/897177): Only Aura platforms use the WindowActivated
+// accessibility event. We need to harmonize the firing of accessibility events
+// between platforms.
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, WindowActivatedAccessibleEvent) {
+  // Wait for window activated event from the first browser window.
+  // This event is asynchronous, it is emitted as a response to a system window
+  // event. It is possible that we haven't received it yet when we run this test
+  // and we need to explicitly wait for it.
+  if (ax_observer_.GetCount(ax::mojom::Event::kWindowActivated) == 0)
+    ax_observer_.WaitForEvent(ax::mojom::Event::kWindowActivated);
+  ASSERT_EQ(1, ax_observer_.GetCount(ax::mojom::Event::kWindowActivated));
+
+  // Create a new browser window and wait for event again.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  if (ax_observer_.GetCount(ax::mojom::Event::kWindowActivated) == 1)
+    ax_observer_.WaitForEvent(ax::mojom::Event::kWindowActivated);
+  ASSERT_EQ(2, ax_observer_.GetCount(ax::mojom::Event::kWindowActivated));
+}
+#endif

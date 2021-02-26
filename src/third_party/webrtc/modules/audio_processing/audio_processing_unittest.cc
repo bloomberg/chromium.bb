@@ -45,6 +45,7 @@
 #include "rtc_base/system/arch.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/thread.h"
+#include "system_wrappers/include/cpu_features_wrapper.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
 
@@ -348,6 +349,19 @@ bool ReadChunk(FILE* file,
   return true;
 }
 
+// Returns the reference file name that matches the current CPU
+// architecture/optimizations.
+std::string GetReferenceFilename() {
+#if defined(WEBRTC_AUDIOPROC_FIXED_PROFILE)
+  return test::ResourcePath("audio_processing/output_data_fixed", "pb");
+#elif defined(WEBRTC_AUDIOPROC_FLOAT_PROFILE)
+  if (GetCPUInfo(kAVX2) != 0) {
+    return test::ResourcePath("audio_processing/output_data_float_avx2", "pb");
+  }
+  return test::ResourcePath("audio_processing/output_data_float", "pb");
+#endif
+}
+
 class ApmTest : public ::testing::Test {
  protected:
   ApmTest();
@@ -415,13 +429,7 @@ class ApmTest : public ::testing::Test {
 
 ApmTest::ApmTest()
     : output_path_(test::OutputPath()),
-#if defined(WEBRTC_AUDIOPROC_FIXED_PROFILE)
-      ref_filename_(
-          test::ResourcePath("audio_processing/output_data_fixed", "pb")),
-#elif defined(WEBRTC_AUDIOPROC_FLOAT_PROFILE)
-      ref_filename_(
-          test::ResourcePath("audio_processing/output_data_float", "pb")),
-#endif
+      ref_filename_(GetReferenceFilename()),
       output_sample_rate_hz_(0),
       num_output_channels_(0),
       far_file_(NULL),
@@ -962,49 +970,51 @@ TEST_F(ApmTest, GainControl) {
 }
 
 #if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-TEST_F(ApmTest, GainControlDiesOnTooLowTargetLevelDbfs) {
+using ApmDeathTest = ApmTest;
+
+TEST_F(ApmDeathTest, GainControlDiesOnTooLowTargetLevelDbfs) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.target_level_dbfs = -1;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnTooHighTargetLevelDbfs) {
+TEST_F(ApmDeathTest, GainControlDiesOnTooHighTargetLevelDbfs) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.target_level_dbfs = 32;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnTooLowCompressionGainDb) {
+TEST_F(ApmDeathTest, GainControlDiesOnTooLowCompressionGainDb) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.compression_gain_db = -1;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnTooHighCompressionGainDb) {
+TEST_F(ApmDeathTest, GainControlDiesOnTooHighCompressionGainDb) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.compression_gain_db = 91;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnTooLowAnalogLevelLowerLimit) {
+TEST_F(ApmDeathTest, GainControlDiesOnTooLowAnalogLevelLowerLimit) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.analog_level_minimum = -1;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnTooHighAnalogLevelUpperLimit) {
+TEST_F(ApmDeathTest, GainControlDiesOnTooHighAnalogLevelUpperLimit) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.analog_level_maximum = 65536;
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, GainControlDiesOnInvertedAnalogLevelLimits) {
+TEST_F(ApmDeathTest, GainControlDiesOnInvertedAnalogLevelLimits) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.analog_level_minimum = 512;
@@ -1012,7 +1022,7 @@ TEST_F(ApmTest, GainControlDiesOnInvertedAnalogLevelLimits) {
   EXPECT_DEATH(apm_->ApplyConfig(config), "");
 }
 
-TEST_F(ApmTest, ApmDiesOnTooLowAnalogLevel) {
+TEST_F(ApmDeathTest, ApmDiesOnTooLowAnalogLevel) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.analog_level_minimum = 255;
@@ -1021,7 +1031,7 @@ TEST_F(ApmTest, ApmDiesOnTooLowAnalogLevel) {
   EXPECT_DEATH(apm_->set_stream_analog_level(254), "");
 }
 
-TEST_F(ApmTest, ApmDiesOnTooHighAnalogLevel) {
+TEST_F(ApmDeathTest, ApmDiesOnTooHighAnalogLevel) {
   auto config = apm_->GetConfig();
   config.gain_controller1.enabled = true;
   config.gain_controller1.analog_level_minimum = 255;
@@ -1773,7 +1783,7 @@ TEST_F(ApmTest, Process) {
                   max_output_average - kMaxOutputAverageOffset,
                   kMaxOutputAverageNear);
 #if defined(WEBRTC_AUDIOPROC_FLOAT_PROFILE)
-      const double kFloatNear = 0.0005;
+      const double kFloatNear = 0.002;
       EXPECT_NEAR(test->rms_dbfs_average(), rms_dbfs_average, kFloatNear);
 #endif
     } else {
@@ -2407,6 +2417,10 @@ void RunApmRateAndChannelTest(
   }
 }
 
+constexpr void Toggle(bool& b) {
+  b ^= true;
+}
+
 }  // namespace
 
 TEST(RuntimeSettingTest, TestDefaultCtor) {
@@ -2414,7 +2428,7 @@ TEST(RuntimeSettingTest, TestDefaultCtor) {
   EXPECT_EQ(AudioProcessing::RuntimeSetting::Type::kNotSpecified, s.type());
 }
 
-TEST(RuntimeSettingTest, TestCapturePreGain) {
+TEST(RuntimeSettingDeathTest, TestCapturePreGain) {
   using Type = AudioProcessing::RuntimeSetting::Type;
   {
     auto s = AudioProcessing::RuntimeSetting::CreateCapturePreGain(1.25f);
@@ -2429,7 +2443,7 @@ TEST(RuntimeSettingTest, TestCapturePreGain) {
 #endif
 }
 
-TEST(RuntimeSettingTest, TestCaptureFixedPostGain) {
+TEST(RuntimeSettingDeathTest, TestCaptureFixedPostGain) {
   using Type = AudioProcessing::RuntimeSetting::Type;
   {
     auto s = AudioProcessing::RuntimeSetting::CreateCaptureFixedPostGain(1.25f);
@@ -2867,6 +2881,248 @@ TEST(ApmConfiguration, SelfAssignment) {
   AudioProcessing::Config* config2 = &config;
   *config2 = *config2;  // Workaround -Wself-assign-overloaded
   SUCCEED();  // Real success is absence of defects from asan/msan/ubsan.
+}
+
+TEST(AudioProcessing, GainController1ConfigEqual) {
+  AudioProcessing::Config::GainController1 a;
+  AudioProcessing::Config::GainController1 b;
+  EXPECT_EQ(a, b);
+
+  Toggle(a.enabled);
+  b.enabled = a.enabled;
+  EXPECT_EQ(a, b);
+
+  a.mode = AudioProcessing::Config::GainController1::Mode::kAdaptiveDigital;
+  b.mode = a.mode;
+  EXPECT_EQ(a, b);
+
+  a.target_level_dbfs++;
+  b.target_level_dbfs = a.target_level_dbfs;
+  EXPECT_EQ(a, b);
+
+  a.compression_gain_db++;
+  b.compression_gain_db = a.compression_gain_db;
+  EXPECT_EQ(a, b);
+
+  Toggle(a.enable_limiter);
+  b.enable_limiter = a.enable_limiter;
+  EXPECT_EQ(a, b);
+
+  a.analog_level_minimum++;
+  b.analog_level_minimum = a.analog_level_minimum;
+  EXPECT_EQ(a, b);
+
+  a.analog_level_maximum--;
+  b.analog_level_maximum = a.analog_level_maximum;
+  EXPECT_EQ(a, b);
+
+  auto& a_analog = a.analog_gain_controller;
+  auto& b_analog = b.analog_gain_controller;
+
+  Toggle(a_analog.enabled);
+  b_analog.enabled = a_analog.enabled;
+  EXPECT_EQ(a, b);
+
+  a_analog.startup_min_volume++;
+  b_analog.startup_min_volume = a_analog.startup_min_volume;
+  EXPECT_EQ(a, b);
+
+  a_analog.clipped_level_min++;
+  b_analog.clipped_level_min = a_analog.clipped_level_min;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_analog.enable_agc2_level_estimator);
+  b_analog.enable_agc2_level_estimator = a_analog.enable_agc2_level_estimator;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_analog.enable_digital_adaptive);
+  b_analog.enable_digital_adaptive = a_analog.enable_digital_adaptive;
+  EXPECT_EQ(a, b);
+}
+
+// Checks that one differing parameter is sufficient to make two configs
+// different.
+TEST(AudioProcessing, GainController1ConfigNotEqual) {
+  AudioProcessing::Config::GainController1 a;
+  const AudioProcessing::Config::GainController1 b;
+
+  Toggle(a.enabled);
+  EXPECT_NE(a, b);
+  a.enabled = b.enabled;
+
+  a.mode = AudioProcessing::Config::GainController1::Mode::kAdaptiveDigital;
+  EXPECT_NE(a, b);
+  a.mode = b.mode;
+
+  a.target_level_dbfs++;
+  EXPECT_NE(a, b);
+  a.target_level_dbfs = b.target_level_dbfs;
+
+  a.compression_gain_db++;
+  EXPECT_NE(a, b);
+  a.compression_gain_db = b.compression_gain_db;
+
+  Toggle(a.enable_limiter);
+  EXPECT_NE(a, b);
+  a.enable_limiter = b.enable_limiter;
+
+  a.analog_level_minimum++;
+  EXPECT_NE(a, b);
+  a.analog_level_minimum = b.analog_level_minimum;
+
+  a.analog_level_maximum--;
+  EXPECT_NE(a, b);
+  a.analog_level_maximum = b.analog_level_maximum;
+
+  auto& a_analog = a.analog_gain_controller;
+  const auto& b_analog = b.analog_gain_controller;
+
+  Toggle(a_analog.enabled);
+  EXPECT_NE(a, b);
+  a_analog.enabled = b_analog.enabled;
+
+  a_analog.startup_min_volume++;
+  EXPECT_NE(a, b);
+  a_analog.startup_min_volume = b_analog.startup_min_volume;
+
+  a_analog.clipped_level_min++;
+  EXPECT_NE(a, b);
+  a_analog.clipped_level_min = b_analog.clipped_level_min;
+
+  Toggle(a_analog.enable_agc2_level_estimator);
+  EXPECT_NE(a, b);
+  a_analog.enable_agc2_level_estimator = b_analog.enable_agc2_level_estimator;
+
+  Toggle(a_analog.enable_digital_adaptive);
+  EXPECT_NE(a, b);
+  a_analog.enable_digital_adaptive = b_analog.enable_digital_adaptive;
+}
+
+TEST(AudioProcessing, GainController2ConfigEqual) {
+  AudioProcessing::Config::GainController2 a;
+  AudioProcessing::Config::GainController2 b;
+  EXPECT_EQ(a, b);
+
+  Toggle(a.enabled);
+  b.enabled = a.enabled;
+  EXPECT_EQ(a, b);
+
+  a.fixed_digital.gain_db += 1.f;
+  b.fixed_digital.gain_db = a.fixed_digital.gain_db;
+  EXPECT_EQ(a, b);
+
+  auto& a_adaptive = a.adaptive_digital;
+  auto& b_adaptive = b.adaptive_digital;
+
+  Toggle(a_adaptive.enabled);
+  b_adaptive.enabled = a_adaptive.enabled;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.vad_probability_attack += 1.f;
+  b_adaptive.vad_probability_attack = a_adaptive.vad_probability_attack;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.level_estimator =
+      AudioProcessing::Config::GainController2::LevelEstimator::kPeak;
+  b_adaptive.level_estimator = a_adaptive.level_estimator;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.level_estimator_adjacent_speech_frames_threshold++;
+  b_adaptive.level_estimator_adjacent_speech_frames_threshold =
+      a_adaptive.level_estimator_adjacent_speech_frames_threshold;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_adaptive.use_saturation_protector);
+  b_adaptive.use_saturation_protector = a_adaptive.use_saturation_protector;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.initial_saturation_margin_db += 1.f;
+  b_adaptive.initial_saturation_margin_db =
+      a_adaptive.initial_saturation_margin_db;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.extra_saturation_margin_db += 1.f;
+  b_adaptive.extra_saturation_margin_db = a_adaptive.extra_saturation_margin_db;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.gain_applier_adjacent_speech_frames_threshold++;
+  b_adaptive.gain_applier_adjacent_speech_frames_threshold =
+      a_adaptive.gain_applier_adjacent_speech_frames_threshold;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.max_gain_change_db_per_second += 1.f;
+  b_adaptive.max_gain_change_db_per_second =
+      a_adaptive.max_gain_change_db_per_second;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.max_output_noise_level_dbfs -= 1.f;
+  b_adaptive.max_output_noise_level_dbfs =
+      a_adaptive.max_output_noise_level_dbfs;
+  EXPECT_EQ(a, b);
+}
+
+// Checks that one differing parameter is sufficient to make two configs
+// different.
+TEST(AudioProcessing, GainController2ConfigNotEqual) {
+  AudioProcessing::Config::GainController2 a;
+  const AudioProcessing::Config::GainController2 b;
+
+  Toggle(a.enabled);
+  EXPECT_NE(a, b);
+  a.enabled = b.enabled;
+
+  a.fixed_digital.gain_db += 1.f;
+  EXPECT_NE(a, b);
+  a.fixed_digital.gain_db = b.fixed_digital.gain_db;
+
+  auto& a_adaptive = a.adaptive_digital;
+  const auto& b_adaptive = b.adaptive_digital;
+
+  Toggle(a_adaptive.enabled);
+  EXPECT_NE(a, b);
+  a_adaptive.enabled = b_adaptive.enabled;
+
+  a_adaptive.vad_probability_attack += 1.f;
+  EXPECT_NE(a, b);
+  a_adaptive.vad_probability_attack = b_adaptive.vad_probability_attack;
+
+  a_adaptive.level_estimator =
+      AudioProcessing::Config::GainController2::LevelEstimator::kPeak;
+  EXPECT_NE(a, b);
+  a_adaptive.level_estimator = b_adaptive.level_estimator;
+
+  a_adaptive.level_estimator_adjacent_speech_frames_threshold++;
+  EXPECT_NE(a, b);
+  a_adaptive.level_estimator_adjacent_speech_frames_threshold =
+      b_adaptive.level_estimator_adjacent_speech_frames_threshold;
+
+  Toggle(a_adaptive.use_saturation_protector);
+  EXPECT_NE(a, b);
+  a_adaptive.use_saturation_protector = b_adaptive.use_saturation_protector;
+
+  a_adaptive.initial_saturation_margin_db += 1.f;
+  EXPECT_NE(a, b);
+  a_adaptive.initial_saturation_margin_db =
+      b_adaptive.initial_saturation_margin_db;
+
+  a_adaptive.extra_saturation_margin_db += 1.f;
+  EXPECT_NE(a, b);
+  a_adaptive.extra_saturation_margin_db = b_adaptive.extra_saturation_margin_db;
+
+  a_adaptive.gain_applier_adjacent_speech_frames_threshold++;
+  EXPECT_NE(a, b);
+  a_adaptive.gain_applier_adjacent_speech_frames_threshold =
+      b_adaptive.gain_applier_adjacent_speech_frames_threshold;
+
+  a_adaptive.max_gain_change_db_per_second += 1.f;
+  EXPECT_NE(a, b);
+  a_adaptive.max_gain_change_db_per_second =
+      b_adaptive.max_gain_change_db_per_second;
+
+  a_adaptive.max_output_noise_level_dbfs -= 1.f;
+  EXPECT_NE(a, b);
+  a_adaptive.max_output_noise_level_dbfs =
+      b_adaptive.max_output_noise_level_dbfs;
 }
 
 }  // namespace webrtc

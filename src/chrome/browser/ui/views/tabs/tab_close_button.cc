@@ -20,77 +20,82 @@
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
 
 namespace {
-constexpr int kGlyphWidth = 16;
-constexpr int kTouchGlyphWidth = 24;
-
-class TabCloseButtonHighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  TabCloseButtonHighlightPathGenerator() = default;
-
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    const gfx::Rect bounds = view->GetContentsBounds();
-    const gfx::Point center = bounds.CenterPoint();
-    const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-        views::EMPHASIS_MAXIMUM, bounds.size());
-    return SkPath().addCircle(center.x(), center.y(), radius);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButtonHighlightPathGenerator);
-};
+constexpr int kGlyphSize = 16;
+constexpr int kTouchGlyphSize = 24;
 
 }  //  namespace
 
-TabCloseButton::TabCloseButton(views::ButtonListener* listener,
+TabCloseButton::TabCloseButton(PressedCallback pressed_callback,
                                MouseEventCallback mouse_event_callback)
-    : views::ImageButton(listener),
+    : views::ImageButton(std::move(pressed_callback)),
       mouse_event_callback_(std::move(mouse_event_callback)) {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   SetInkDropMode(InkDropMode::ON);
-  set_ink_drop_highlight_opacity(0.16f);
-  set_ink_drop_visible_opacity(0.14f);
+  SetInkDropHighlightOpacity(0.16f);
+  SetInkDropVisibleOpacity(0.14f);
 
   // Disable animation so that the hover indicator shows up immediately to help
   // avoid mis-clicks.
   SetAnimationDuration(base::TimeDelta());
   GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
 
+  // The ink drop highlight path is the same as the focus ring highlight path,
+  // but needs to be explicitly mirrored for RTL.
+  // TODO(http://crbug.com/1056490): Make ink drops in RTL work the same way as
+  // focus rings.
+  auto ink_drop_highlight_path =
+      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
+  ink_drop_highlight_path->set_use_contents_bounds(true);
+  ink_drop_highlight_path->set_use_mirrored_rect(true);
+  views::HighlightPathGenerator::Install(this,
+                                         std::move(ink_drop_highlight_path));
+
   SetInstallFocusRingOnFocus(true);
-  views::HighlightPathGenerator::Install(
-      this, std::make_unique<TabCloseButtonHighlightPathGenerator>());
+  // TODO(http://crbug.com/1056490): Once this bug is solved and explicit
+  // mirroring for ink drops is not needed, we can combine these two.
+  auto ring_highlight_path =
+      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
+  ring_highlight_path->set_use_contents_bounds(true);
+  focus_ring()->SetPathGenerator(std::move(ring_highlight_path));
+
+  // Always have a value on this property so we can modify it directly without
+  // a heap allocation.
+  SetProperty(views::kInternalPaddingKey, gfx::Insets());
 }
 
 TabCloseButton::~TabCloseButton() {}
 
 // static
-int TabCloseButton::GetWidth() {
-  return ui::TouchUiController::Get()->touch_ui() ? kTouchGlyphWidth
-                                                  : kGlyphWidth;
+int TabCloseButton::GetGlyphSize() {
+  return ui::TouchUiController::Get()->touch_ui() ? kTouchGlyphSize
+                                                  : kGlyphSize;
 }
 
 void TabCloseButton::SetIconColors(SkColor foreground_color,
                                    SkColor background_color) {
   icon_color_ = foreground_color;
-  set_ink_drop_base_color(
-      color_utils::GetColorWithMaxContrast(background_color));
+  SetInkDropBaseColor(color_utils::GetColorWithMaxContrast(background_color));
+}
+
+void TabCloseButton::SetButtonPadding(const gfx::Insets& padding) {
+  *GetProperty(views::kInternalPaddingKey) = padding;
 }
 
 const char* TabCloseButton::GetClassName() const {
@@ -133,27 +138,20 @@ void TabCloseButton::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-gfx::Size TabCloseButton::CalculatePreferredSize() const {
-  int width = GetWidth();
-  gfx::Size size(width, width);
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  return size;
+gfx::Insets TabCloseButton::GetInsets() const {
+  return ImageButton::GetInsets() + *GetProperty(views::kInternalPaddingKey);
 }
 
-std::unique_ptr<views::InkDropMask> TabCloseButton::CreateInkDropMask() const {
-  const gfx::Rect bounds = GetContentsBounds();
-  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, bounds.size());
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetMirroredRect(bounds).CenterPoint(), radius);
+gfx::Size TabCloseButton::CalculatePreferredSize() const {
+  const int glyph_size = GetGlyphSize();
+  return gfx::Size(glyph_size, glyph_size) + GetInsets().size();
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   constexpr float kStrokeWidth = 1.5f;
-  float touch_scale = float{GetWidth()} / kGlyphWidth;
-  float size = (kGlyphWidth - 8) * touch_scale - kStrokeWidth;
+  float touch_scale = float{GetGlyphSize()} / kGlyphSize;
+  float size = (kGlyphSize - 8) * touch_scale - kStrokeWidth;
   gfx::RectF glyph_bounds(GetContentsBounds());
   glyph_bounds.ClampToCenteredSize(gfx::SizeF(size, size));
   flags.setAntiAlias(true);

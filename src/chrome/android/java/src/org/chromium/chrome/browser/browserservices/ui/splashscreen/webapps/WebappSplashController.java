@@ -16,12 +16,12 @@ import android.widget.ImageView;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashController;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashDelegate;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.SplashController;
-import org.chromium.chrome.browser.webapps.SplashDelegate;
 import org.chromium.chrome.browser.webapps.WebApkSplashNetworkErrorObserver;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappInfo;
@@ -59,14 +59,6 @@ public class WebappSplashController implements SplashDelegate {
                     new WebApkSplashNetworkErrorObserver(activity, mWebappInfo.name());
             mTabObserverRegistrar.registerTabObserver(mWebApkNetworkErrorObserver);
         }
-    }
-
-    /**
-     * Called once the Activity's main layout is inflated and added to the content view.
-     */
-    public void onInitialLayoutInflationComplete() {
-        // TODO: TWAs do this in onPostInflationStart(). Determine if there is a visual difference.
-        mSplashController.bringSplashBackToFront();
     }
 
     @Override

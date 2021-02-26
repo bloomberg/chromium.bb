@@ -13,10 +13,10 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -24,7 +24,7 @@
 #include "services/device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_ASH)
 #error "Only used on ChromeOS"
 #endif
 

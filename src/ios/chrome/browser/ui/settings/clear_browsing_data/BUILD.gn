@@ -23,7 +23,6 @@ source_set("clear_browsing_data") {
     "resources:clear_browsing_data_cached_images",
     "resources:clear_browsing_data_cookies",
     "resources:clear_browsing_data_history",
-    "resources:clear_browsing_data_passwords",
     "//components/browsing_data/core",
     "//components/feature_engagement/public",
     "//components/history/core/browser",
@@ -48,6 +47,7 @@ source_set("clear_browsing_data") {
     "//ios/chrome/browser/ui/elements:elements_internal",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/resources:password_key",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view",
@@ -120,21 +120,6 @@ source_set("test_support") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "clear_browsing_data_egtest.mm" ]
-  deps = [
-    "//base/test:test_support",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/settings/cells:clear_browsing_data_constants",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ui/base",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -152,5 +137,5 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

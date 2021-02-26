@@ -89,7 +89,7 @@ class NGInlineNodeTest : public NGLayoutTest {
 
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
-    layout_block_flow_ = ToLayoutNGBlockFlow(GetLayoutObjectByElementId(id));
+    layout_block_flow_ = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId(id));
     layout_object_ = layout_block_flow_->FirstChild();
     style_ = layout_object_ ? layout_object_->Style() : nullptr;
   }
@@ -114,7 +114,8 @@ class NGInlineNodeTest : public NGLayoutTest {
         .ComputeMinMaxSizes(
             node.Style().GetWritingMode(),
             MinMaxSizesInput(
-                /* percentage_resolution_block_size */ LayoutUnit()))
+                /* percentage_resolution_block_size */ LayoutUnit(),
+                MinMaxSizesType::kContent))
         .sizes;
   }
 
@@ -140,13 +141,23 @@ class NGInlineNodeTest : public NGLayoutTest {
     return end_offsets;
   }
 
-  void TestFirstLineIsDirty(LayoutBlockFlow* block_flow, bool expected) {
-    const NGFragmentItems* items = block_flow->FragmentItems();
-    items->DirtyLinesFromNeedsLayout(block_flow);
-    const NGFragmentItem* end_reusable_item = items->EndOfReusableItems();
-    NGInlineCursor cursor(*items);
-    cursor.MoveToFirstLine();
-    EXPECT_EQ(cursor.Current().Item() == end_reusable_item, expected);
+  void TestAnyItemsAreDirty(const LayoutBlockFlow& block_flow, bool expected) {
+    NGFragmentItems::DirtyLinesFromNeedsLayout(block_flow);
+    for (const NGPhysicalBoxFragment& fragment :
+         block_flow.PhysicalFragments()) {
+      if (const NGFragmentItems* items = fragment.Items()) {
+        // Check |NGFragmentItem::IsDirty| directly without using
+        // |EndOfReusableItems|. This is different from the line cache logic,
+        // but some items may not be reusable even if |!IsDirty()|.
+        for (const NGFragmentItem& item : items->Items()) {
+          if (item.IsDirty()) {
+            EXPECT_TRUE(expected);
+            return;
+          }
+        }
+      }
+    }
+    EXPECT_FALSE(expected);
   }
 
   scoped_refptr<const ComputedStyle> style_;
@@ -471,6 +482,29 @@ TEST_F(NGInlineNodeTest, MinMaxSizesFloatsClearance) {
   EXPECT_EQ(160, sizes.max_size);
 }
 
+// For http://crbug.com/1112560
+TEST_F(NGInlineNodeTest, MinMaxSizesSaturated) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+    b {
+        display: inline-block;
+        border-inline-start: groove;
+        width:1e8px;
+    }
+    #t {
+        float: left;
+        font: 10px Ahem;
+    }
+    </style>
+    <div id=t><b></b> <img></div>)HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
+  EXPECT_EQ(LayoutUnit(33554431), sizes.min_size.Round());
+  // Note: |sizes.max_size.Round()| isn't |LayoutUnit::Max()| on some platform.
+}
+
 TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
   LoadAhem();
   SetupHtml("t", R"HTML(
@@ -490,10 +524,29 @@ TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
   EXPECT_EQ(170, sizes.max_size);
 }
 
+// For http://crbug.com/1116713
+TEST_F(NGInlineNodeTest, MinMaxSizesNeedsLayout) {
+  LoadAhem();
+  SetupHtml("t",
+            "<style>#t { width: 2ch; }</style>"
+            "<div id=t> a <b>b</b></div>");
+
+  auto& text = To<Text>(*GetElementById("t")->firstChild());
+  LayoutText& layout_text = *text.GetLayoutObject();
+  EXPECT_FALSE(layout_text.NeedsLayout());
+
+  text.replaceData(0, 1, u"X", ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(layout_text.NeedsLayout());
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  ComputeMinMaxSizes(node);
+  EXPECT_TRUE(layout_text.NeedsLayout());
+}
+
 TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   SetBodyInnerHTML(
       "<pre id=t style='-webkit-rtl-ordering:visual'>ab\nde</pre>");
-  LayoutText* const layout_text = ToLayoutText(
+  auto* const layout_text = To<LayoutText>(
       GetDocument().getElementById("t")->firstChild()->GetLayoutObject());
   ASSERT_TRUE(layout_text->HasValidInlineItems());
   Vector<const NGInlineItem*> items;
@@ -552,12 +605,16 @@ struct StyleChangeData {
   };
   unsigned needs_collect_inlines;
   base::Optional<bool> is_line_dirty;
+  base::Optional<bool> invalidate_ink_overflow;
 } style_change_data[] = {
-    // Changing color, text-decoration, etc. should not re-run
+    // Changing color, text-decoration, outline, etc. should not re-run
     // |CollectInlines()|.
     {"#parent.after { color: red; }", StyleChangeData::kNone, false},
     {"#parent.after { text-decoration-line: underline; }",
-     StyleChangeData::kNone, false},
+     StyleChangeData::kNone, false, true},
+    {"#parent { background: orange; }"  // Make sure it's not culled.
+     "#parent.after { outline: auto; }",
+     StyleChangeData::kNone, false, false},
     // Changing fonts should re-run |CollectInlines()|.
     {"#parent.after { font-size: 200%; }", StyleChangeData::kAll, true},
     // Changing from/to out-of-flow should re-rerun |CollectInlines()|.
@@ -636,8 +693,25 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
 
   if (data.is_line_dirty &&
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    TestFirstLineIsDirty(To<LayoutBlockFlow>(container->GetLayoutObject()),
+    TestAnyItemsAreDirty(*To<LayoutBlockFlow>(container->GetLayoutObject()),
                          *data.is_line_dirty);
+  }
+
+  if (data.invalidate_ink_overflow &&
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    const LayoutObject* parent_layout_object = parent->GetLayoutObject();
+    for (const LayoutObject* child = parent_layout_object->SlowFirstChild();
+         child; child = child->NextInPreOrder(parent_layout_object)) {
+      if (child->IsText()) {
+        NGInlineCursor cursor;
+        for (cursor.MoveTo(*child); cursor;
+             cursor.MoveToNextForSameLayoutObject()) {
+          const NGFragmentItem* item = cursor.CurrentItem();
+          EXPECT_EQ(item->IsInkOverflowComputed(),
+                    !*data.invalidate_ink_overflow);
+        }
+      }
+    }
   }
 
   ForceLayout();  // Ensure running layout does not crash.
@@ -820,6 +894,30 @@ TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
   }
 }
 
+TEST_F(NGInlineNodeTest, SegmentBidiChangeSetsNeedsLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" dir="rtl">
+      abc-<span id="span">xyz</span>
+    </div>
+  )HTML");
+
+  // Because "-" is a neutral character, changing the following character to RTL
+  // will change its bidi level.
+  Element* span = GetElementById("span");
+  span->setTextContent(u"\u05D1");
+
+  // |NGInlineNode::SegmentBidiRuns| sets |NeedsLayout|. Run the lifecycle only
+  // up to |PrepareLayout|.
+  GetDocument().UpdateStyleAndLayoutTree();
+  LayoutBlockFlow* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  NGInlineNode node(container);
+  node.PrepareLayoutIfNeeded();
+
+  LayoutText* abc = To<LayoutText>(container->FirstChild());
+  EXPECT_TRUE(abc->NeedsLayout());
+}
+
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
@@ -875,7 +973,7 @@ TEST_F(NGInlineNodeTest, InvalidateSetText) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
 
-  LayoutText* text = ToLayoutText(layout_block_flow_->FirstChild());
+  auto* text = To<LayoutText>(layout_block_flow_->FirstChild());
   text->SetTextIfNeeded(String("after").Impl());
   EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
 }
@@ -1035,9 +1133,11 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // Keep the text fragment to compare later.
   Element* inner_span = GetElementById("inner_span");
   Node* text = inner_span->firstChild();
-  scoped_refptr<NGPaintFragment> text_fragment_before_split =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split.get(), nullptr);
+  NGInlineCursor before_split;
+  before_split.MoveTo(*text->GetLayoutObject());
+  EXPECT_TRUE(before_split);
+  scoped_refptr<const NGPaintFragment> text_fragment_before_split =
+      before_split.Current().PaintFragment();
 
   // Append <div> to <span>. causing SplitFlow().
   Element* outer_span = GetElementById("outer_span");
@@ -1053,23 +1153,32 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // destroyed, and should not be accessible.
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_FALSE(text->GetLayoutObject()->IsInLayoutNGInlineFormattingContext());
-  scoped_refptr<NGPaintFragment> text_fragment_before_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_EQ(text_fragment_before_layout, nullptr);
+  EXPECT_FALSE(text->GetLayoutObject()->HasInlineFragments());
 
   // Update layout. There should be a different instance of the text fragment.
   UpdateAllLifecyclePhasesForTest();
-  scoped_refptr<NGPaintFragment> text_fragment_after_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split, text_fragment_after_layout);
+  NGInlineCursor after_layout;
+  after_layout.MoveTo(*text->GetLayoutObject());
+  EXPECT_TRUE(after_layout);
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    EXPECT_NE(text_fragment_before_split.get(),
+              after_layout.Current().PaintFragment());
+  }
 
   // Check it is the one owned by the new root inline formatting context.
   LayoutBlock* anonymous_block =
       inner_span->GetLayoutObject()->ContainingBlock();
   EXPECT_TRUE(anonymous_block->IsAnonymous());
-  const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
-  const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
-  EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
+  NGInlineCursor anonymous_block_cursor(*To<LayoutBlockFlow>(anonymous_block));
+  anonymous_block_cursor.MoveToFirstLine();
+  anonymous_block_cursor.MoveToFirstChild();
+  EXPECT_TRUE(anonymous_block_cursor);
+  EXPECT_EQ(anonymous_block_cursor.Current().GetLayoutObject(),
+            text->GetLayoutObject());
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    EXPECT_EQ(anonymous_block_cursor.Current().PaintFragment(),
+              after_layout.Current().PaintFragment());
+  }
 }
 
 TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {
@@ -1251,6 +1360,101 @@ TEST_F(NGInlineNodeTest, ReusingWithCollapsed) {
   GetElementById("remove")->remove();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(String(u"abc \uFFFCx"), GetText());
+}
+
+// https://crbug.com/109654
+TEST_F(NGInlineNodeTest, ReusingRTLAsLTR) {
+  SetupHtml("container",
+            "<div id=container>"
+            "<span id='text' dir=rtl>"
+            "[Text]text"
+            "</span>"
+            "</div>");
+  EXPECT_EQ(String(u"\u2067[Text]text\u2069"), GetText());
+  EXPECT_EQ(Items().size(), 8u);
+  TEST_ITEM_OFFSET_DIR(Items()[0], 0u, 1u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[1], 1u, 1u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(Items()[2], 1u, 2u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(Items()[3], 2u, 6u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[4], 6u, 7u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(Items()[5], 7u, 11u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[6], 11u, 11u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[7], 11u, 12u, TextDirection::kLtr);
+  GetElementById("text")->removeAttribute(html_names::kDirAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(String("[Text]text"), GetText());
+  EXPECT_EQ(Items().size(), 3u);
+  TEST_ITEM_OFFSET_DIR(Items()[0], 0u, 0u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[1], 0u, 10u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(Items()[2], 10u, 10u, TextDirection::kLtr);
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterFalse) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center">
+      text
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  EXPECT_FALSE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterCenterTextIndent) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center; text-indent: 1em">
+      text
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterCenterPadding) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: center; padding-left: 1em">
+      text
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterRight) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em; text-align: right; margin-right: -1em">
+      text
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      p->FirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterBorder) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em">
+      <span id="span" style="border:1px solid; padding-left:1em">span</span>
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  const LayoutObject* span = GetLayoutObjectByElementId("span");
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      span->SlowFirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, LetterSpacingUseCounterUnderline) {
+  SetBodyInnerHTML(R"HTML(
+    <p id="p" style="letter-spacing: 1em">
+      <span id="span" style="text-decoration: underline">span</span>
+    </p>
+  )HTML");
+  auto* p = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  const LayoutObject* span = GetLayoutObjectByElementId("span");
+  EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
+      span->SlowFirstChild(), /* first_line */ false, p));
 }
 
 }  // namespace blink

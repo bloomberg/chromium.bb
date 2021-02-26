@@ -12,8 +12,6 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/range/range.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
 class BluetoothStatusContainer;
@@ -29,9 +27,7 @@ class Throbber;
 // Used for WebUSB/WebBluetooth device selection for Chrome and extensions.
 class DeviceChooserContentView : public views::View,
                                  public ui::TableModel,
-                                 public ChooserController::View,
-                                 public views::StyledLabelListener,
-                                 public views::ButtonListener {
+                                 public ChooserController::View {
  public:
   DeviceChooserContentView(
       views::TableViewObserver* table_view_observer,
@@ -55,14 +51,9 @@ class DeviceChooserContentView : public views::View,
   void OnAdapterEnabledChanged(bool enabled) override;
   void OnRefreshStateChanged(bool refreshing) override;
 
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
+  // Note that there is no way to update the window title - for any given
+  // instance of DeviceChooserContentView, this method is only called once to
+  // initially set the window title.
   base::string16 GetWindowTitle() const;
   std::unique_ptr<views::View> CreateExtraView();
   bool IsDialogButtonEnabled(ui::DialogButton button) const;

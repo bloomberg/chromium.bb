@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
+#include "components/site_engagement/core/mojom/site_engagement_details.mojom.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -45,40 +45,38 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationThrottle:
   ThrottleCheckResult WillProcessResponse() override;
-  ThrottleCheckResult WillRedirectRequest() override;
   const char* GetNameForLogging() override;
 
   static std::unique_ptr<LookalikeUrlNavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
- private:
-  // Checks whether the navigation to |url| can proceed. If
-  // |check_safe_redirect| is true, will check if a safe redirect led to |url|.
-  ThrottleCheckResult HandleThrottleRequest(const GURL& url,
-                                            bool check_safe_redirect);
+  // The throttle normally ignores testing profiles and returns PROCEED. This
+  // function forces unit tests to not ignore them .
+  void SetUseTestProfileForTesting() { use_test_profile_ = true; }
 
+ private:
   // Performs synchronous top domain and engaged site checks on the navigated
-  // |url|. Uses |engaged_sites| for the engaged site checks.
+  // and redirected urls. Uses |engaged_sites| for the engaged site checks.
   ThrottleCheckResult PerformChecks(
-      const GURL& url,
-      const DomainInfo& navigated_domain,
-      bool check_safe_redirect,
       const std::vector<DomainInfo>& engaged_sites);
 
   // A void-returning variant, only used with deferred throttle results.
-  void PerformChecksDeferred(const GURL& url,
-                             const DomainInfo& navigated_domain,
-                             bool check_safe_redirect,
-                             const std::vector<DomainInfo>& engaged_sites);
+  void PerformChecksDeferred(const std::vector<DomainInfo>& engaged_sites);
+
+  // Returns whether |url| is a lookalike, setting |match_type| and
+  // |suggested_url| appropriately. Used in PerformChecks() on a per-URL basis.
+  bool IsLookalikeUrl(const GURL& url,
+                      const std::vector<DomainInfo>& engaged_sites,
+                      LookalikeUrlMatchType* match_type,
+                      GURL* suggested_url);
 
   ThrottleCheckResult ShowInterstitial(const GURL& safe_domain,
                                        const GURL& url,
                                        ukm::SourceId source_id,
                                        LookalikeUrlMatchType match_type);
 
-  bool interstitials_enabled_;
-
   Profile* profile_;
+  bool use_test_profile_ = false;
   base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_{this};
 };
 

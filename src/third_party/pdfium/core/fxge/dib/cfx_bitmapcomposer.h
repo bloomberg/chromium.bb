@@ -10,11 +10,12 @@
 #include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_scanlinecompositor.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "core/fxge/dib/scanlinecomposer_iface.h"
-#include "core/fxge/fx_dib.h"
 
 class CFX_ClipRgn;
 class CFX_DIBitmap;
@@ -33,13 +34,13 @@ class CFX_BitmapComposer final : public ScanlineComposerIface {
                bool bFlipX,
                bool bFlipY,
                bool bRgbByteOrder,
-               BlendMode blend_type);
+               BlendMode blend_mode);
 
-  // ScanlineComposerIface
+  // ScanlineComposerIface:
   bool SetInfo(int width,
                int height,
                FXDIB_Format src_format,
-               uint32_t* pSrcPalette) override;
+               pdfium::span<const uint32_t> src_palette) override;
 
   void ComposeScanline(int line,
                        const uint8_t* scanline,
@@ -71,7 +72,7 @@ class CFX_BitmapComposer final : public ScanlineComposerIface {
   bool m_bFlipX;
   bool m_bFlipY;
   bool m_bRgbByteOrder = false;
-  BlendMode m_BlendType = BlendMode::kNormal;
+  BlendMode m_BlendMode = BlendMode::kNormal;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pScanlineV;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pClipScanV;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pAddClipScan;

@@ -50,9 +50,9 @@ BOT_ASSIGNMENT = {
         ' --sanitize address --skip-tests',
 
     # PNaCl.
-    'oneiric_32-newlib-arm_hw-pnacl-panda-dbg':
+    'odroid_32-newlib-arm_hw-pnacl-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
-    'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
+    'odroid_32-newlib-arm_hw-pnacl-opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'linux_64-newlib-arm_qemu-pnacl-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
@@ -73,7 +73,7 @@ BOT_ASSIGNMENT = {
     # PNaCl Spec
     'linux_64-newlib-arm_qemu-pnacl-buildonly-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
-    'oneiric_32-newlib-arm_hw-pnacl-panda-spec':
+    'odroid_32-newlib-arm_hw-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-hw',
     'linux_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8632',
@@ -117,9 +117,9 @@ BOT_ASSIGNMENT = {
          python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-precise_64-newlib-mips-pnacl':
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
-    'nacl-arm_opt_panda':
+    'nacl-arm_opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
-    'nacl-arm_hw_opt_panda':
+    'nacl-arm_hw_opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     'nacl-mac_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
@@ -130,9 +130,9 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
     'nacl-precise_64-newlib-x86_64-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8664',
-    'nacl-arm_perf_panda':
+    'nacl-arm_perf':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-arm-buildonly',
-    'nacl-arm_hw_perf_panda':
+    'nacl-arm_hw_perf':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-arm-hw',
     # Toolchain glibc.
     'precise64-glibc': bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
@@ -312,6 +312,7 @@ def Main():
   build_revision = os.environ.get('BUILDBOT_GOT_REVISION',
                                   os.environ.get('BUILDBOT_REVISION'))
   slave_type = os.environ.get('BUILDBOT_SLAVE_TYPE')
+  bot_type = os.environ.get('BOT_TYPE')
   cmd = BOT_ASSIGNMENT.get(builder)
   if not cmd:
     sys.stderr.write('ERROR - unset/invalid builder name\n')
@@ -324,7 +325,9 @@ def Main():
   # This avoids the need for admin changes on the bots in this case.
   env['PYTHONDONTWRITEBYTECODE'] = '1'
 
-  env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py', require_executable=False)
+  if bot_type != 'arm_hw_bot':
+    env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py',
+                                            require_executable=False)
 
   # When running from cygwin, we sometimes want to use a native python.
   # The native python will use the depot_tools version by invoking python.bat.

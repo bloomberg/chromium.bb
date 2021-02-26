@@ -33,8 +33,10 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/tablet_state.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
@@ -47,7 +49,6 @@
 #include "chromeos/system/devicemode.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_configurator.h"
-#include "ui/display/manager/display_util.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/devices/touchscreen_device.h"
 #endif
@@ -985,6 +986,16 @@ void DisplayManager::UpdateDisplaysWith(
       if (current_display.rotation() != new_display.rotation())
         metrics |= DisplayObserver::DISPLAY_METRIC_ROTATION;
 
+      if (!WithinEpsilon(current_display.display_frequency(),
+                         new_display.display_frequency())) {
+        metrics |= DisplayObserver::DISPLAY_METRIC_REFRESH_RATE;
+      }
+
+      if (current_display_info.is_interlaced() !=
+          new_display_info.is_interlaced()) {
+        metrics |= DisplayObserver::DISPLAY_METRIC_INTERLACED;
+      }
+
       if (metrics != DisplayObserver::DISPLAY_METRIC_NONE) {
         display_changes.insert(
             std::pair<size_t, uint32_t>(new_displays.size(), metrics));
@@ -1404,11 +1415,13 @@ void DisplayManager::AddRemoveDisplay(
 
     const int kVerticalOffsetPx = 100;
     // Layout the 2nd display below the primary as with the real device.
-    ManagedDisplayInfo display = ManagedDisplayInfo::CreateFromSpec(
+    ManagedDisplayInfo display = ManagedDisplayInfo::CreateFromSpecWithID(
         base::StringPrintf("%d+%d-%dx%d", host_bounds.x(),
                            host_bounds.bottom() + kVerticalOffsetPx,
                            native_display_mode->size().width(),
-                           native_display_mode->size().height()));
+                           native_display_mode->size().height()),
+        first_display.id() + 1);
+
     display.SetManagedDisplayModes(std::move(display_modes));
     new_display_info_list.push_back(std::move(display));
   }
@@ -2178,6 +2191,12 @@ void DisplayManager::NotifyDisplayAdded(const Display& display) {
 void DisplayManager::NotifyDisplayRemoved(const Display& display) {
   for (auto& observer : observers_)
     observer.OnDisplayRemoved(display);
+}
+
+void DisplayManager::NotifyDisplayTabletStateChanged(
+    const TabletState& tablet_state) {
+  for (auto& observer : observers_)
+    observer.OnDisplayTabletStateChanged(tablet_state);
 }
 
 void DisplayManager::AddObserver(DisplayObserver* observer) {

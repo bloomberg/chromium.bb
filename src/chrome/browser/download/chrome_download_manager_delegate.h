@@ -34,7 +34,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/download/android/download_location_dialog_bridge.h"
+#include "chrome/browser/download/android/download_dialog_bridge.h"
 #endif
 
 class DownloadPrefs;
@@ -61,18 +61,21 @@ class ChromeDownloadManagerDelegate
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(download::DownloadItem* item);
 
+  // True when |danger_type| is one that is blocked for policy reasons (e.g.
+  // "file too large") as opposed to malicious content reasons.
+  static bool IsDangerTypeBlocked(download::DownloadDangerType danger_type);
+
   void SetDownloadManager(content::DownloadManager* dm);
 
 #if defined(OS_ANDROID)
-  void ChooseDownloadLocation(
-      gfx::NativeWindow native_window,
-      int64_t total_bytes,
-      DownloadLocationDialogType dialog_type,
-      const base::FilePath& suggested_path,
-      DownloadLocationDialogBridge::LocationCallback callback);
+  void ShowDownloadDialog(gfx::NativeWindow native_window,
+                          int64_t total_bytes,
+                          DownloadLocationDialogType dialog_type,
+                          const base::FilePath& suggested_path,
+                          bool supports_later_dialog,
+                          DownloadDialogBridge::DialogCallback callback);
 
-  void SetDownloadLocationDialogBridgeForTesting(
-      DownloadLocationDialogBridge* bridge);
+  void SetDownloadDialogBridgeForTesting(DownloadDialogBridge* bridge);
 #endif
 
   // Callbacks passed to GetNextId() will not be called until the returned
@@ -156,6 +159,9 @@ class ChromeDownloadManagerDelegate
                                safe_browsing::DownloadCheckResult result);
 
   base::WeakPtr<ChromeDownloadManagerDelegate> GetWeakPtr();
+
+  static void ConnectToQuarantineService(
+      mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver);
 
  protected:
   virtual safe_browsing::DownloadProtectionService*
@@ -277,10 +283,13 @@ class ChromeDownloadManagerDelegate
       const base::FilePath& target_path);
 #endif
 
+  // Returns whether to show download later dialog.
+  bool ShouldShowDownloadLaterDialog() const;
+
   Profile* profile_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<DownloadLocationDialogBridge> location_dialog_bridge_;
+  std::unique_ptr<DownloadDialogBridge> download_dialog_bridge_;
 #endif
 
   // If history database fails to initialize, this will always be kInvalidId.

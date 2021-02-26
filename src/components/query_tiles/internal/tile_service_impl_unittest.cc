@@ -6,14 +6,17 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/test/bind_test_util.h"
+#include "base/callback_helpers.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
+#include "components/query_tiles/test/empty_logger.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -30,20 +33,31 @@ namespace {
 class MockTileManager : public TileManager {
  public:
   MockTileManager() = default;
-  MOCK_METHOD1(Init, void(TileGroupStatusCallback));
-  MOCK_METHOD1(GetTiles, void(GetTilesCallback));
-  MOCK_METHOD2(GetTile, void(const std::string&, TileCallback));
-  MOCK_METHOD2(SaveTiles,
-               void(std::unique_ptr<TileGroup>, TileGroupStatusCallback));
-  MOCK_METHOD1(SetAcceptLanguagesForTesting, void(const std::string&));
+  MOCK_METHOD(void, Init, (TileGroupStatusCallback));
+  MOCK_METHOD(void, GetTiles, (GetTilesCallback));
+  MOCK_METHOD(void, GetTile, (const std::string&, TileCallback));
+  MOCK_METHOD(void,
+              SaveTiles,
+              (std::unique_ptr<TileGroup>, TileGroupStatusCallback));
+  MOCK_METHOD(void, SetAcceptLanguagesForTesting, (const std::string&));
+  MOCK_METHOD(TileGroupStatus, PurgeDb, ());
+  MOCK_METHOD(TileGroup*, GetTileGroup, ());
+  MOCK_METHOD(void, OnTileClicked, (const std::string&));
+  MOCK_METHOD(void,
+              OnQuerySelected,
+              (const base::Optional<std::string>&, const base::string16&));
 };
 
 class MockTileServiceScheduler : public TileServiceScheduler {
  public:
   MockTileServiceScheduler() = default;
-  MOCK_METHOD1(OnFetchCompleted, void(TileInfoRequestStatus));
-  MOCK_METHOD1(OnTileManagerInitialized, void(TileGroupStatus));
-  MOCK_METHOD0(CancelTask, void());
+  MOCK_METHOD(void, OnFetchStarted, ());
+  MOCK_METHOD(void, OnFetchCompleted, (TileInfoRequestStatus));
+  MOCK_METHOD(void, OnTileManagerInitialized, (TileGroupStatus));
+  MOCK_METHOD(void, CancelTask, ());
+  MOCK_METHOD(void, OnDbPurged, (TileGroupStatus));
+  MOCK_METHOD(void, OnGroupDataSaved, (TileGroupStatus));
+  MOCK_METHOD(void, SetDelegate, (TileServiceScheduler::Delegate*));
 };
 
 class MockImagePrefetcher : public ImagePrefetcher {
@@ -84,9 +98,11 @@ class TileServiceImplTest : public testing::Test {
           EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());
           last_resource_request_ = request;
         }));
+    auto logger = std::make_unique<test::EmptyLogger>();
     tile_service_impl_ = std::make_unique<TileServiceImpl>(
         std::move(image_prefetcher), std::move(tile_manager),
-        std::move(scheduler), std::move(tile_fetcher), &clock_);
+        std::move(scheduler), std::move(tile_fetcher), &clock_,
+        std::move(logger));
   }
 
   void Initialize(bool expected_result) {
@@ -102,6 +118,15 @@ class TileServiceImplTest : public testing::Test {
                      bool success) {
     EXPECT_EQ(expected_result, success);
     std::move(closure).Run();
+  }
+
+  void OnGetTileDone(const std::string& expected_id,
+                     base::Optional<Tile> actual_tile) {
+    EXPECT_EQ(expected_id, actual_tile->id);
+  }
+
+  void OnGetTilesDone(size_t expected_size, std::vector<Tile> tiles) {
+    EXPECT_EQ(expected_size, tiles.size());
   }
 
   void FetchForTilesSuceeded() {
@@ -137,6 +162,7 @@ class TileServiceImplTest : public testing::Test {
   MockTileServiceScheduler* scheduler() { return scheduler_; }
   MockTileManager* tile_manager() { return tile_manager_; }
   MockImagePrefetcher* image_prefetcher() { return image_prefetcher_; }
+  TileService* query_tiles_service() { return tile_service_impl_.get(); }
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -197,6 +223,46 @@ TEST_F(TileServiceImplTest, FetchForTilesSucceeded) {
 // Tests that tiles failed to fetch.
 TEST_F(TileServiceImplTest, FetchForTilesFailed) {
   FetchForTilesWithError();
+}
+
+TEST_F(TileServiceImplTest, CancelTask) {
+  EXPECT_CALL(*scheduler(), CancelTask());
+  query_tiles_service()->CancelTask();
+}
+
+TEST_F(TileServiceImplTest, GetTiles) {
+  int expected_size = 5;
+  EXPECT_CALL(*tile_manager(), GetTiles(_))
+      .WillOnce(Invoke([&](GetTilesCallback callback) {
+        std::vector<Tile> out = std::vector<Tile>(expected_size, Tile());
+        std::move(callback).Run(std::move(out));
+      }));
+  query_tiles_service()->GetQueryTiles(
+      base::BindOnce(&TileServiceImplTest::OnGetTilesDone,
+                     base::Unretained(this), expected_size));
+}
+
+TEST_F(TileServiceImplTest, GetTile) {
+  std::string tile_id = "test-id";
+  EXPECT_CALL(*tile_manager(), GetTile(tile_id, _))
+      .WillOnce(Invoke([&](const std::string& id, TileCallback callback) {
+        EXPECT_EQ(id, tile_id);
+        Tile out;
+        out.id = tile_id;
+        std::move(callback).Run(std::move(out));
+      }));
+  query_tiles_service()->GetTile(
+      tile_id, base::BindOnce(&TileServiceImplTest::OnGetTileDone,
+                              base::Unretained(this), tile_id));
+}
+
+TEST_F(TileServiceImplTest, PurgeDb) {
+  EXPECT_CALL(*tile_manager(), PurgeDb());
+  EXPECT_CALL(*tile_manager(), GetTiles(_));
+  EXPECT_CALL(*scheduler(), OnDbPurged(_));
+  query_tiles_service()->PurgeDb();
+  query_tiles_service()->GetQueryTiles(base::BindOnce(
+      &TileServiceImplTest::OnGetTilesDone, base::Unretained(this), 0));
 }
 
 }  // namespace query_tiles

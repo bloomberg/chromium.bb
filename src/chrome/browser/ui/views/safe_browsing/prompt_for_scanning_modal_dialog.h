@@ -9,9 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/timer/timer.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -22,9 +20,7 @@ namespace safe_browsing {
 
 // A tab modal dialog that provides more information to the user about the
 // prompt for deep scanning.
-class PromptForScanningModalDialog : public views::DialogDelegateView,
-                                     public views::ButtonListener,
-                                     public views::StyledLabelListener {
+class PromptForScanningModalDialog : public views::DialogDelegateView {
  public:
   // Show this dialog for the given |web_contents|.
   static void ShowForWebContents(content::WebContents* web_contents,
@@ -48,29 +44,9 @@ class PromptForScanningModalDialog : public views::DialogDelegateView,
   bool ShouldShowCloseButton() const override;
 
   // views::WidgetDelegate implementation:
-  base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 
-  // views::ButtonListener implementation:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener implementation:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
-
  private:
-  // The WebContents this dialog is attached to. This is unowned.
-  content::WebContents* web_contents_;
-
-  // The name of the file that this prompt was created for.
-  base::string16 filename_;
-
-  // The open now button for this dialog. The pointer is unowned, but this is a
-  // child View of this dialog's View, so it has the same lifetime.
-  views::Button* open_now_button_;
-
-  // The callbacks to trigger on each way the dialog is resolved.
   base::OnceClosure open_now_callback_;
 };
 

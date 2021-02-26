@@ -32,6 +32,7 @@ import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';
@@ -42,8 +43,19 @@ import * as Workspace from '../workspace/workspace.js';
 import {AddSourceMapURLDialog} from './AddSourceMapURLDialog.js';
 import {BreakpointEditDialog, LogpointPrefix} from './BreakpointEditDialog.js';
 import {Plugin} from './Plugin.js';
+import {ScriptFormatterEditorAction} from './ScriptFormatterEditorAction.js';
 import {resolveExpression, resolveScopeInObject} from './SourceMapNamesResolver.js';
 import {SourcesPanel} from './SourcesPanel.js';
+import {EditorAction} from './SourcesView.js';
+
+// eslint-disable-next-line no-unused-vars
+class DecoratorWidget extends HTMLDivElement {
+  constructor() {
+    super();
+    /** @type {!Map<string,!HTMLElement>} */
+    this.__nameToToken;
+  }
+}
 
 export class DebuggerPlugin extends Plugin {
   /**
@@ -60,6 +72,7 @@ export class DebuggerPlugin extends Plugin {
     /** @type {?Workspace.UISourceCode.UILocation} */
     this._executionLocation = null;
     this._controlDown = false;
+    /** @type {?number} */
     this._asyncStepInHoveredLine = 0;
     this._asyncStepInHovered = false;
     /** @type {?number} */
@@ -108,7 +121,7 @@ export class DebuggerPlugin extends Plugin {
         const breakpoints = this._lineBreakpointDecorations(selection.startLine)
                                 .map(decoration => decoration.breakpoint)
                                 .filter(breakpoint => !!breakpoint);
-        let breakpoint;
+        let breakpoint = null;
         if (breakpoints.length) {
           breakpoint = breakpoints[0];
         }
@@ -117,27 +130,25 @@ export class DebuggerPlugin extends Plugin {
         return true;
       }
     };
-    self.UI.shortcutRegistry.addShortcutListener(this._textEditor.element, shortcutHandlers);
-    this._boundKeyDown = /** @type {function(!Event)} */ (this._onKeyDown.bind(this));
+    UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this._textEditor.element, shortcutHandlers);
+    this._boundKeyDown = /** @type {function(!Event): void} */ (this._onKeyDown.bind(this));
     this._textEditor.element.addEventListener('keydown', this._boundKeyDown, true);
-    this._boundKeyUp = /** @type {function(!Event)} */ (this._onKeyUp.bind(this));
+    this._boundKeyUp = /** @type {function(!Event): void} */ (this._onKeyUp.bind(this));
     this._textEditor.element.addEventListener('keyup', this._boundKeyUp, true);
-    this._boundMouseMove = /** @type {function(!Event)} */ (this._onMouseMove.bind(this));
+    this._boundMouseMove = /** @type {function(!Event): void} */ (this._onMouseMove.bind(this));
     this._textEditor.element.addEventListener('mousemove', this._boundMouseMove, false);
-    this._boundMouseDown = /** @type {function(!Event)} */ (this._onMouseDown.bind(this));
+    this._boundMouseDown = /** @type {function(!Event): void} */ (this._onMouseDown.bind(this));
     this._textEditor.element.addEventListener('mousedown', this._boundMouseDown, true);
-    this._boundBlur = this._onBlur.bind(this);
+    this._boundBlur = /** @type {function(!Event): void} */ (this._onBlur.bind(this));
     this._textEditor.element.addEventListener('focusout', this._boundBlur, false);
-    this._boundWheel = event => {
-      if (this._executionLocation && UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-        event.preventDefault();
-      }
-    };
+    this._boundWheel = /** @type {function(!Event): void} */ (this._onWheel.bind(this));
     this._textEditor.element.addEventListener('wheel', this._boundWheel, true);
 
-    this._textEditor.addEventListener(SourceFrame.SourcesTextEditor.Events.GutterClick, event => {
-      this._handleGutterClick(event);
-    }, this);
+    this._boundGutterClick =
+        /** @type {function(!Common.EventTarget.EventTargetEvent): void} */ (e => {
+          this._handleGutterClick(e);
+        });
+    this._textEditor.addEventListener(SourceFrame.SourcesTextEditor.Events.GutterClick, this._boundGutterClick, this);
 
     this._breakpointManager.addEventListener(
         Bindings.BreakpointManager.Events.BreakpointAdded, this._breakpointAdded, this);
@@ -166,12 +177,12 @@ export class DebuggerPlugin extends Plugin {
         .moduleSetting('skipContentScripts')
         .addChangeListener(this._showBlackboxInfobarIfNeeded, this);
 
-    /** @type {!Map.<number, !Element>} */
+    /** @type {!Map.<number, !DecoratorWidget>} */
     this._valueWidgets = new Map();
-    /** @type {?Map<!Object, !Function>} */
+    /** @type {?Map<!CodeMirror.TextMarker, !Function>} */
     this._continueToLocationDecorations = null;
 
-    self.UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameChanged, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameChanged, this);
     this._liveLocationPool = new Bindings.LiveLocation.LiveLocationPool();
     this._callFrameChanged();
 
@@ -288,59 +299,61 @@ export class DebuggerPlugin extends Plugin {
    * @override
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} editorLineNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
-  populateLineGutterContextMenu(contextMenu, editorLineNumber) {
-    /**
-     * @this {DebuggerPlugin}
-     */
-    function populate(resolve, reject) {
-      const uiLocation = new Workspace.UISourceCode.UILocation(this._uiSourceCode, editorLineNumber, 0);
-      this._scriptsPanel.appendUILocationItems(contextMenu, uiLocation);
-      const breakpoints = this._lineBreakpointDecorations(editorLineNumber)
-                              .map(decoration => decoration.breakpoint)
-                              .filter(breakpoint => !!breakpoint);
-      if (!breakpoints.length) {
-        contextMenu.debugSection().appendItem(
-            Common.UIString.UIString('Add breakpoint'),
-            this._createNewBreakpoint.bind(this, editorLineNumber, '', true));
+  async populateLineGutterContextMenu(contextMenu, editorLineNumber) {
+    const uiLocation = new Workspace.UISourceCode.UILocation(this._uiSourceCode, editorLineNumber, 0);
+    this._scriptsPanel.appendUILocationItems(contextMenu, uiLocation);
+    const breakpoints =
+        /** @type {!Array<!Bindings.BreakpointManager.Breakpoint>} */ (this._lineBreakpointDecorations(editorLineNumber)
+                                                                           .map(decoration => decoration.breakpoint)
+                                                                           .filter(breakpoint => !!breakpoint));
+    const hasOnlyJavaScript = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+                                  .scriptsForUISourceCode(this._uiSourceCode)
+                                  .every(script => script.isJavaScript());
+    if (!breakpoints.length) {
+      contextMenu.debugSection().appendItem(
+          Common.UIString.UIString('Add breakpoint'), this._createNewBreakpoint.bind(this, editorLineNumber, '', true));
+      // Conditional breakpoints, logpoints and 'Never pause here'
+      // are currently only available for JavaScript debugging.
+      if (hasOnlyJavaScript) {
         contextMenu.debugSection().appendItem(
             Common.UIString.UIString('Add conditional breakpoint…'),
-            this._editBreakpointCondition.bind(this, editorLineNumber, null, null));
+            this._editBreakpointCondition.bind(this, editorLineNumber, null, null, false /* preferLogpoint */));
         contextMenu.debugSection().appendItem(
             ls`Add logpoint…`,
             this._editBreakpointCondition.bind(this, editorLineNumber, null, null, true /* preferLogpoint */));
         contextMenu.debugSection().appendItem(
             Common.UIString.UIString('Never pause here'),
             this._createNewBreakpoint.bind(this, editorLineNumber, 'false', true));
-      } else {
-        const hasOneBreakpoint = breakpoints.length === 1;
-        const removeTitle = hasOneBreakpoint ? Common.UIString.UIString('Remove breakpoint') :
-                                               Common.UIString.UIString('Remove all breakpoints in line');
-        contextMenu.debugSection().appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove()));
-        if (hasOneBreakpoint) {
-          contextMenu.debugSection().appendItem(
-              Common.UIString.UIString('Edit breakpoint…'),
-              this._editBreakpointCondition.bind(this, editorLineNumber, breakpoints[0], null));
-        }
-        const hasEnabled = breakpoints.some(breakpoint => breakpoint.enabled());
-        if (hasEnabled) {
-          const title = hasOneBreakpoint ? Common.UIString.UIString('Disable breakpoint') :
-                                           Common.UIString.UIString('Disable all breakpoints in line');
-          contextMenu.debugSection().appendItem(
-              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
-        }
-        const hasDisabled = breakpoints.some(breakpoint => !breakpoint.enabled());
-        if (hasDisabled) {
-          const title = hasOneBreakpoint ? Common.UIString.UIString('Enable breakpoint') :
-                                           Common.UIString.UIString('Enable all breakpoints in line');
-          contextMenu.debugSection().appendItem(
-              title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
-        }
       }
-      resolve();
+    } else {
+      const hasOneBreakpoint = breakpoints.length === 1;
+      const removeTitle = hasOneBreakpoint ? Common.UIString.UIString('Remove breakpoint') :
+                                             Common.UIString.UIString('Remove all breakpoints in line');
+      contextMenu.debugSection().appendItem(removeTitle, () => breakpoints.map(breakpoint => breakpoint.remove(false)));
+      if (hasOneBreakpoint && hasOnlyJavaScript) {
+        // Editing breakpoints only make sense for conditional breakpoints
+        // and logpoints and both are currently only available for JavaScript
+        // debugging.
+        contextMenu.debugSection().appendItem(
+            Common.UIString.UIString('Edit breakpoint…'),
+            this._editBreakpointCondition.bind(
+                this, editorLineNumber, breakpoints[0], null, false /* preferLogpoint */));
+      }
+      const hasEnabled = breakpoints.some(breakpoint => breakpoint.enabled());
+      if (hasEnabled) {
+        const title = hasOneBreakpoint ? Common.UIString.UIString('Disable breakpoint') :
+                                         Common.UIString.UIString('Disable all breakpoints in line');
+        contextMenu.debugSection().appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(false)));
+      }
+      const hasDisabled = breakpoints.some(breakpoint => !breakpoint.enabled());
+      if (hasDisabled) {
+        const title = hasOneBreakpoint ? Common.UIString.UIString('Enable breakpoint') :
+                                         Common.UIString.UIString('Enable all breakpoints in line');
+        contextMenu.debugSection().appendItem(title, () => breakpoints.map(breakpoint => breakpoint.setEnabled(true)));
+      }
     }
-    return new Promise(populate.bind(this));
   }
 
   /**
@@ -348,7 +361,7 @@ export class DebuggerPlugin extends Plugin {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} editorLineNumber
    * @param {number} editorColumnNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateTextAreaContextMenu(contextMenu, editorLineNumber, editorColumnNumber) {
     /**
@@ -454,7 +467,7 @@ export class DebuggerPlugin extends Plugin {
         continue;
       }
       const enabled = decoration.enabled;
-      decoration.breakpoint.remove();
+      decoration.breakpoint.remove(false);
       const location = decoration.handle.resolve();
       if (location) {
         await this._setBreakpoint(location.lineNumber, location.columnNumber, decoration.condition, enabled);
@@ -467,18 +480,19 @@ export class DebuggerPlugin extends Plugin {
    * @return {boolean}
    */
   _isIdentifier(tokenType) {
-    return tokenType.startsWith('js-variable') || tokenType.startsWith('js-property') || tokenType === 'js-def';
+    return tokenType.startsWith('js-variable') || tokenType.startsWith('js-property') || tokenType === 'js-def' ||
+        tokenType === 'variable';
   }
 
   /**
    * @param {!MouseEvent} event
-   * @return {?UI.PopoverRequest}
+   * @return {?UI.PopoverHelper.PopoverRequest}
    */
   _getPopoverRequest(event) {
     if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
       return null;
     }
-    const target = self.UI.context.flavor(SDK.SDKModel.Target);
+    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
     const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
     if (!debuggerModel || !debuggerModel.isPaused()) {
       return null;
@@ -493,22 +507,16 @@ export class DebuggerPlugin extends Plugin {
     const mouseColumn = textPosition.startColumn;
     const textSelection = this._textEditor.selection().normalize();
     let anchorBox;
-    let editorLineNumber;
-    let startHighlight;
-    let endHighlight;
+    let editorLineNumber = -1;
+    let startHighlight = -1;
+    let endHighlight = -1;
 
     const selectedCallFrame =
-        /** @type {!SDK.DebuggerModel.CallFrame} */ (self.UI.context.flavor(SDK.DebuggerModel.CallFrame));
+        /** @type {!SDK.DebuggerModel.CallFrame} */ (UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame));
     if (!selectedCallFrame) {
       return null;
     }
 
-    // Block popover eager evaluation for Wasm frames for now. We don't have
-    // a way to Debug-Evaluate Wasm yet, and the logic below assumes JavaScript
-    // source code. See https://crbug.com/1063875 for details.
-    if (selectedCallFrame.script.isWasm()) {
-      return null;
-    }
 
     if (textSelection && !textSelection.isEmpty()) {
       if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine ||
@@ -519,10 +527,33 @@ export class DebuggerPlugin extends Plugin {
       const leftCorner =
           this._textEditor.cursorPositionToCoordinates(textSelection.startLine, textSelection.startColumn);
       const rightCorner = this._textEditor.cursorPositionToCoordinates(textSelection.endLine, textSelection.endColumn);
+      if (!leftCorner) {
+        throw new Error('Expected leftCorner to not be null.');
+      }
+      if (!rightCorner) {
+        throw new Error('Expected rightCorner to not be null.');
+      }
       anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
       editorLineNumber = textSelection.startLine;
       startHighlight = textSelection.startColumn;
       endHighlight = textSelection.endColumn - 1;
+    } else if (this._uiSourceCode.mimeType() === 'application/wasm') {
+      const token = this._textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
+      if (!token || token.type !== 'variable-2') {
+        return null;
+      }
+      const leftCorner = this._textEditor.cursorPositionToCoordinates(textPosition.startLine, token.startColumn);
+      const rightCorner = this._textEditor.cursorPositionToCoordinates(textPosition.startLine, token.endColumn - 1);
+      if (!leftCorner) {
+        throw new Error('Expected leftCorner to not be null.');
+      }
+      if (!rightCorner) {
+        throw new Error('Expected rightCorner to not be null.');
+      }
+      anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
+      editorLineNumber = textPosition.startLine;
+      startHighlight = token.startColumn;
+      endHighlight = token.endColumn - 1;
     } else {
       const token = this._textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
       if (!token || !token.type) {
@@ -539,6 +570,12 @@ export class DebuggerPlugin extends Plugin {
 
       const leftCorner = this._textEditor.cursorPositionToCoordinates(editorLineNumber, token.startColumn);
       const rightCorner = this._textEditor.cursorPositionToCoordinates(editorLineNumber, token.endColumn - 1);
+      if (!leftCorner) {
+        throw new Error('Expected leftCorner to not be null.');
+      }
+      if (!rightCorner) {
+        throw new Error('Expected rightCorner to not be null.');
+      }
       anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
 
       startHighlight = token.startColumn;
@@ -570,29 +607,61 @@ export class DebuggerPlugin extends Plugin {
       }
     }
 
+    /** @type {?ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper} */
     let objectPopoverHelper;
+    /** @type {?Object} */
     let highlightDescriptor;
+
+    /**
+     * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+     * @param {string} evaluationText
+     * @return {!Promise<?SDK.RuntimeModel.EvaluationResult>}
+     */
+    async function evaluate(uiSourceCode, evaluationText) {
+      if (selectedCallFrame.script.isWasm()) {
+        const sourceScopeChain = await selectedCallFrame.sourceScopeChain;
+        if (sourceScopeChain) {
+          for (const scopeChain of sourceScopeChain) {
+            const object = await /** @type {!Bindings.DebuggerLanguagePlugins.SourceScope}*/ (scopeChain)
+                               .getVariableValue(evaluationText);
+            if (object) {
+              return {object, exceptionDetails: undefined};
+            }
+          }
+          return null;
+        }
+      }
+
+      const resolvedText = await resolveExpression(
+          selectedCallFrame, evaluationText, uiSourceCode, editorLineNumber, startHighlight, endHighlight);
+      return await selectedCallFrame.evaluate({
+        expression: resolvedText || evaluationText,
+        objectGroup: 'popover',
+        includeCommandLineAPI: false,
+        silent: true,
+        returnByValue: false,
+        generatePreview: false,
+        throwOnSideEffect: undefined,
+        timeout: undefined,
+        disableBreaks: undefined,
+        replMode: undefined,
+        allowUnsafeEvalBlockedByCSP: undefined
+      });
+    }
 
     return {
       box: anchorBox,
       show: async popover => {
         const evaluationText = this._textEditor.line(editorLineNumber).substring(startHighlight, endHighlight + 1);
-        const resolvedText = await resolveExpression(
-            selectedCallFrame, evaluationText, this._uiSourceCode, editorLineNumber, startHighlight, endHighlight);
-        const result = await selectedCallFrame.evaluate({
-          expression: resolvedText || evaluationText,
-          objectGroup: 'popover',
-          includeCommandLineAPI: false,
-          silent: true,
-          returnByValue: false,
-          generatePreview: false
-        });
-        if (!result.object || (result.object.type === 'object' && result.object.subtype === 'error')) {
+        const result = await evaluate(this._uiSourceCode, evaluationText);
+
+        if (!result || 'error' in result || !result.object ||
+            (result.object.type === 'object' && result.object.subtype === 'error')) {
           return false;
         }
         objectPopoverHelper =
             await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(result.object, popover);
-        const potentiallyUpdatedCallFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+        const potentiallyUpdatedCallFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
         if (!objectPopoverHelper || selectedCallFrame !== potentiallyUpdatedCallFrame) {
           debuggerModel.runtimeModel().releaseObjectGroup('popover');
           if (objectPopoverHelper) {
@@ -606,18 +675,33 @@ export class DebuggerPlugin extends Plugin {
         return true;
       },
       hide: () => {
-        objectPopoverHelper.dispose();
+        if (objectPopoverHelper) {
+          objectPopoverHelper.dispose();
+        }
         debuggerModel.runtimeModel().releaseObjectGroup('popover');
-        this._textEditor.removeHighlight(highlightDescriptor);
+        if (highlightDescriptor) {
+          this._textEditor.removeHighlight(highlightDescriptor);
+        }
       }
     };
   }
 
   /**
+   * @param {!WheelEvent} event
+   */
+  _onWheel(event) {
+    if (this._executionLocation && UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+      event.preventDefault();
+    }
+  }
+
+  /**
    * @param {!KeyboardEvent} event
    */
-  async _onKeyDown(event) {
-    this._clearControlDown();
+  _onKeyDown(event) {
+    if (!event.ctrlKey || (!event.metaKey && Host.Platform.isMac())) {
+      this._clearControlDown();
+    }
 
     if (event.key === 'Escape') {
       if (this._popoverHelper.isPopoverVisible()) {
@@ -630,7 +714,7 @@ export class DebuggerPlugin extends Plugin {
     if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event) && this._executionLocation) {
       this._controlDown = true;
       if (event.key === (Host.Platform.isMac() ? 'Meta' : 'Control')) {
-        this._controlTimeout = setTimeout(() => {
+        this._controlTimeout = window.setTimeout(() => {
           if (this._executionLocation && this._controlDown) {
             this._showContinueToLocations();
           }
@@ -650,8 +734,9 @@ export class DebuggerPlugin extends Plugin {
       }
     }
     if (this._continueToLocationDecorations) {
+      const target = /** @type {!Element} */ (event.target);
       const textPosition = this._textEditor.coordinatesToCursorPosition(event.x, event.y);
-      const hovering = !!event.target.enclosingNodeOrSelfWithClass('source-frame-async-step-in');
+      const hovering = !!target.enclosingNodeOrSelfWithClass('source-frame-async-step-in');
       this._setAsyncStepInHoveredLine(textPosition ? textPosition.startLine : null, hovering);
     }
   }
@@ -695,7 +780,11 @@ export class DebuggerPlugin extends Plugin {
         continue;
       }
       if (range.from.ch <= textPosition.startColumn && textPosition.startColumn <= range.to.ch) {
-        this._continueToLocationDecorations.get(decoration)();
+        const callback = this._continueToLocationDecorations.get(decoration);
+        if (!callback) {
+          throw new Error('Expected a function');
+        }
+        callback();
         break;
       }
     }
@@ -705,9 +794,6 @@ export class DebuggerPlugin extends Plugin {
    * @param {!Event} event
    */
   _onBlur(event) {
-    if (this._textEditor.element.isAncestor(/** @type {!Node} */ (event.target))) {
-      return;
-    }
     this._clearControlDown();
   }
 
@@ -721,7 +807,9 @@ export class DebuggerPlugin extends Plugin {
   _clearControlDown() {
     this._controlDown = false;
     this._clearContinueToLocations();
-    clearTimeout(this._controlTimeout);
+    if (this._controlTimeout) {
+      clearTimeout(this._controlTimeout);
+    }
   }
 
   /**
@@ -732,7 +820,7 @@ export class DebuggerPlugin extends Plugin {
    */
   async _editBreakpointCondition(editorLineNumber, breakpoint, location, preferLogpoint) {
     const oldCondition = breakpoint ? breakpoint.condition() : '';
-    const decorationElement = createElement('div');
+    const decorationElement = document.createElement('div');
     const dialog = new BreakpointEditDialog(editorLineNumber, oldCondition, !!preferLogpoint, async result => {
       dialog.detach();
       this._textEditor.removeDecoration(decorationElement, editorLineNumber);
@@ -764,8 +852,8 @@ export class DebuggerPlugin extends Plugin {
     }
 
     this._executionLocation = uiLocation;
-    const editorLocation = this._transformer.rawToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
-    this._textEditor.setExecutionLocation(editorLocation[0], editorLocation[1]);
+    const editorLocation = this._transformer.uiLocationToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
+    this._textEditor.setExecutionLocation(editorLocation.lineNumber, editorLocation.columnNumber);
     if (this._textEditor.isShowing()) {
       // We need SourcesTextEditor to be initialized prior to this call. @see crbug.com/506566
       setImmediate(() => {
@@ -782,11 +870,11 @@ export class DebuggerPlugin extends Plugin {
     if (!Common.Settings.Settings.instance().moduleSetting('inlineVariableValues').get()) {
       return;
     }
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return;
     }
-    const callFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     if (!callFrame) {
       return;
     }
@@ -802,11 +890,11 @@ export class DebuggerPlugin extends Plugin {
 
   _showContinueToLocations() {
     this._popoverHelper.hidePopover();
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return;
     }
-    const callFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     if (!callFrame) {
       return;
     }
@@ -822,20 +910,26 @@ export class DebuggerPlugin extends Plugin {
     function renderLocations(locations) {
       this._clearContinueToLocationsNoRestore();
       this._textEditor.hideExecutionLineBackground();
-      this._clearValueWidgets();
       this._continueToLocationDecorations = new Map();
       locations = locations.reverse();
       let previousCallLine = -1;
       for (const location of locations) {
-        const editorLocation = this._transformer.rawToEditorLocation(location.lineNumber, location.columnNumber);
-        let token = this._textEditor.tokenAtTextPosition(editorLocation[0], editorLocation[1]);
-        if (!token) {
+        const editorLocation = this._transformer.uiLocationToEditorLocation(location.lineNumber, location.columnNumber);
+        const tokenThatIsPossiblyNull =
+            this._textEditor.tokenAtTextPosition(editorLocation.lineNumber, editorLocation.columnNumber);
+        if (!tokenThatIsPossiblyNull) {
           continue;
         }
-        const line = this._textEditor.line(editorLocation[0]);
+        let token = /** @type {!TextEditor.CodeMirrorTextEditor.Token} */ (tokenThatIsPossiblyNull);
+
+        const line = this._textEditor.line(editorLocation.lineNumber);
         let tokenContent = line.substring(token.startColumn, token.endColumn);
         if (!token.type && tokenContent === '.') {
-          token = this._textEditor.tokenAtTextPosition(editorLocation[0], token.endColumn + 1);
+          const nextToken = this._textEditor.tokenAtTextPosition(editorLocation.lineNumber, token.endColumn + 1);
+          if (!nextToken) {
+            throw new Error('nextToken should not be null.');
+          }
+          token = nextToken;
           tokenContent = line.substring(token.startColumn, token.endColumn);
         }
         if (!token.type) {
@@ -847,22 +941,27 @@ export class DebuggerPlugin extends Plugin {
         if (!validKeyword && !this._isIdentifier(token.type)) {
           continue;
         }
-        if (previousCallLine === editorLocation[0] && location.type !== Protocol.Debugger.BreakLocationType.Call) {
+        if (previousCallLine === editorLocation.lineNumber &&
+            location.type !== Protocol.Debugger.BreakLocationType.Call) {
           continue;
         }
 
         let highlightRange = new TextUtils.TextRange.TextRange(
-            editorLocation[0], token.startColumn, editorLocation[0], token.endColumn - 1);
+            editorLocation.lineNumber, token.startColumn, editorLocation.lineNumber, token.endColumn - 1);
         let decoration = this._textEditor.highlightRange(highlightRange, 'source-frame-continue-to-location');
         this._continueToLocationDecorations.set(decoration, location.continueToLocation.bind(location));
         if (location.type === Protocol.Debugger.BreakLocationType.Call) {
-          previousCallLine = editorLocation[0];
+          previousCallLine = editorLocation.lineNumber;
         }
 
         let isAsyncCall = (line[token.startColumn - 1] === '.' && tokenContent === 'then') ||
             tokenContent === 'setTimeout' || tokenContent === 'setInterval' || tokenContent === 'postMessage';
         if (tokenContent === 'new') {
-          token = this._textEditor.tokenAtTextPosition(editorLocation[0], token.endColumn + 1);
+          const nextToken = this._textEditor.tokenAtTextPosition(editorLocation.lineNumber, token.endColumn + 1);
+          if (!nextToken) {
+            throw new Error('nextToken should not be null.');
+          }
+          token = nextToken;
           tokenContent = line.substring(token.startColumn, token.endColumn);
           isAsyncCall = tokenContent === 'Worker';
         }
@@ -871,10 +970,10 @@ export class DebuggerPlugin extends Plugin {
             location.columnNumber === this._executionLocation.columnNumber;
         if (location.type === Protocol.Debugger.BreakLocationType.Call && isAsyncCall) {
           const asyncStepInRange =
-              this._findAsyncStepInRange(this._textEditor, editorLocation[0], line, token.endColumn);
+              this._findAsyncStepInRange(this._textEditor, editorLocation.lineNumber, line, token.endColumn);
           if (asyncStepInRange) {
             highlightRange = new TextUtils.TextRange.TextRange(
-                editorLocation[0], asyncStepInRange.from, editorLocation[0], asyncStepInRange.to - 1);
+                editorLocation.lineNumber, asyncStepInRange.from, editorLocation.lineNumber, asyncStepInRange.to - 1);
             decoration = this._textEditor.highlightRange(highlightRange, 'source-frame-async-step-in');
             this._continueToLocationDecorations.set(
                 decoration, this._asyncStepIn.bind(this, location, !!isCurrentPosition));
@@ -897,7 +996,8 @@ export class DebuggerPlugin extends Plugin {
    * @return {?{from: number, to: number}}
    */
   _findAsyncStepInRange(textEditor, editorLineNumber, line, column) {
-    let token;
+    /** @type {?TextEditor.CodeMirrorTextEditor.Token} */
+    let token = null;
     let tokenText;
     let from = column;
     let to = line.length;
@@ -914,7 +1014,7 @@ export class DebuggerPlugin extends Plugin {
       return null;
     }
 
-    nextToken();
+    token = nextToken();
     if (!token) {
       return null;
     }
@@ -925,7 +1025,7 @@ export class DebuggerPlugin extends Plugin {
       if (position >= line.length) {
         return {from: from, to: to};
       }
-      nextToken();
+      token = nextToken();
       if (!token) {
         return {from: from, to: to};
       }
@@ -959,6 +1059,8 @@ export class DebuggerPlugin extends Plugin {
         to = token.endColumn;
         tokenText = line.substring(token.startColumn, token.endColumn);
       }
+
+      return token;
     }
 
     function skipWhitespace() {
@@ -968,6 +1070,9 @@ export class DebuggerPlugin extends Plugin {
           continue;
         }
         const token = textEditor.tokenAtTextPosition(editorLineNumber, position);
+        if (!token) {
+          throw new Error('expected token to not be null');
+        }
         if (token.type === 'js-comment') {
           position = token.endColumn;
           continue;
@@ -1019,12 +1124,12 @@ export class DebuggerPlugin extends Plugin {
     }
 
     const functionEditorLocation =
-        this._transformer.rawToEditorLocation(functionUILocation.lineNumber, functionUILocation.columnNumber);
+        this._transformer.uiLocationToEditorLocation(functionUILocation.lineNumber, functionUILocation.columnNumber);
     const executionEditorLocation =
-        this._transformer.rawToEditorLocation(executionUILocation.lineNumber, executionUILocation.columnNumber);
-    const fromLine = functionEditorLocation[0];
-    const fromColumn = functionEditorLocation[1];
-    const toLine = executionEditorLocation[0];
+        this._transformer.uiLocationToEditorLocation(executionUILocation.lineNumber, executionUILocation.columnNumber);
+    const fromLine = functionEditorLocation.lineNumber;
+    const fromColumn = functionEditorLocation.columnNumber;
+    const toLine = executionEditorLocation.lineNumber;
     if (fromLine >= toLine || toLine - fromLine > 500 || fromLine < 0 || toLine >= this._textEditor.linesCount) {
       return;
     }
@@ -1084,10 +1189,16 @@ export class DebuggerPlugin extends Plugin {
         continue;
       }
 
-      const widget = document.createElement('div');
+      const widget = /** @type {!DecoratorWidget} */ (document.createElement('div'));
       widget.classList.add('text-editor-value-decoration');
       const base = this._textEditor.cursorPositionToCoordinates(i, 0);
+      if (!base) {
+        throw new Error('base is expected to not be null');
+      }
       const offset = this._textEditor.cursorPositionToCoordinates(i, this._textEditor.line(i).length);
+      if (!offset) {
+        throw new Error('offset is expected to not be null');
+      }
       const codeMirrorLinesLeftPadding = 4;
       const left = offset.x - base.x + codeMirrorLinesLeftPadding;
       widget.style.left = left + 'px';
@@ -1098,16 +1209,20 @@ export class DebuggerPlugin extends Plugin {
         if (renderedNameCount > 10) {
           break;
         }
-        if (namesPerLine.get(i - 1) && namesPerLine.get(i - 1).has(name)) {
+        const names = namesPerLine.get(i - 1);
+        if (names && names.has(name)) {
           continue;
         }  // Only render name once in the given continuous block.
         if (renderedNameCount) {
-          widget.createTextChild(', ');
+          UI.UIUtils.createTextChild(widget, ', ');
         }
-        const nameValuePair = widget.createChild('span');
+        const nameValuePair = /** @type {!HTMLElement} */ (widget.createChild('span'));
         widget.__nameToToken.set(name, nameValuePair);
-        nameValuePair.createTextChild(name + ' = ');
+        UI.UIUtils.createTextChild(nameValuePair, name + ' = ');
         const value = valuesMap.get(name);
+        if (!value) {
+          throw new Error('value is expected to be null');
+        }
         const propertyCount = value.preview ? value.preview.properties.length : 0;
         const entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
         if (value.preview && propertyCount + entryCount < 10) {
@@ -1124,8 +1239,10 @@ export class DebuggerPlugin extends Plugin {
       if (oldWidget) {
         widgetChanged = false;
         for (const name of widget.__nameToToken.keys()) {
-          const oldText = oldWidget.__nameToToken.get(name) ? oldWidget.__nameToToken.get(name).textContent : '';
-          const newText = widget.__nameToToken.get(name) ? widget.__nameToToken.get(name).textContent : '';
+          const oldTextElement = oldWidget.__nameToToken.get(name);
+          const newTextElement = widget.__nameToToken.get(name);
+          const oldText = oldTextElement ? oldTextElement.textContent : '';
+          const newText = newTextElement ? newTextElement.textContent : '';
           if (newText !== oldText) {
             widgetChanged = true;
             // value has changed, update it.
@@ -1155,28 +1272,34 @@ export class DebuggerPlugin extends Plugin {
         clearTimeout(this._clearValueWidgetsTimer);
         this._clearValueWidgetsTimer = null;
       }
-      this._clearValueWidgetsTimer = setTimeout(this._clearValueWidgets.bind(this), 1000);
+      this._clearValueWidgetsTimer = window.setTimeout(this._clearValueWidgets.bind(this), 1000);
       this._clearContinueToLocationsNoRestore();
     });
   }
 
   _clearValueWidgets() {
-    clearTimeout(this._clearValueWidgetsTimer);
+    if (this._clearValueWidgetsTimer) {
+      clearTimeout(this._clearValueWidgetsTimer);
+    }
     this._clearValueWidgetsTimer = null;
     this._textEditor.operation(() => {
       for (const line of this._valueWidgets.keys()) {
-        this._textEditor.removeDecoration(this._valueWidgets.get(line), line);
+        const valueWidget = this._valueWidgets.get(line);
+        if (valueWidget) {
+          this._textEditor.removeDecoration(valueWidget, line);
+        }
       }
       this._valueWidgets.clear();
     });
   }
 
   _clearContinueToLocationsNoRestore() {
-    if (!this._continueToLocationDecorations) {
+    const continueToLocationDecorations = this._continueToLocationDecorations;
+    if (!continueToLocationDecorations) {
       return;
     }
     this._textEditor.operation(() => {
-      for (const decoration of this._continueToLocationDecorations.keys()) {
+      for (const decoration of continueToLocationDecorations.keys()) {
         this._textEditor.removeHighlight(decoration);
       }
       this._continueToLocationDecorations = null;
@@ -1332,7 +1455,7 @@ export class DebuggerPlugin extends Plugin {
 
   /**
    * @param {!BreakpointDecoration} decoration
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   async _inlineBreakpointClick(decoration, event) {
     event.consume(true);
@@ -1340,15 +1463,16 @@ export class DebuggerPlugin extends Plugin {
       if (event.shiftKey) {
         decoration.breakpoint.setEnabled(!decoration.breakpoint.enabled());
       } else {
-        decoration.breakpoint.remove();
+        decoration.breakpoint.remove(false);
       }
     } else {
       const editorLocation = decoration.handle.resolve();
       if (!editorLocation) {
         return;
       }
-      const location = this._transformer.editorToRawLocation(editorLocation.lineNumber, editorLocation.columnNumber);
-      await this._setBreakpoint(location[0], location[1], decoration.condition, true);
+      const location =
+          this._transformer.editorLocationToUILocation(editorLocation.lineNumber, editorLocation.columnNumber);
+      await this._setBreakpoint(location.lineNumber, location.columnNumber, decoration.condition, true);
     }
   }
 
@@ -1362,23 +1486,37 @@ export class DebuggerPlugin extends Plugin {
     if (!editorLocation) {
       return;
     }
-    const location = this._transformer.editorToRawLocation(editorLocation[0], editorLocation[1]);
+    if (this._textEditor.hasLineClass(editorLocation.lineNumber, 'cm-non-breakable-line')) {
+      return;
+    }
+    if (!Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+             .scriptsForUISourceCode(this._uiSourceCode)
+             .every(script => script.isJavaScript())) {
+      // Editing breakpoints only make sense for conditional breakpoints
+      // and logpoints and both are currently only available for JavaScript
+      // debugging.
+      return;
+    }
+    const location =
+        this._transformer.editorLocationToUILocation(editorLocation.lineNumber, editorLocation.columnNumber);
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     if (decoration.breakpoint) {
       contextMenu.debugSection().appendItem(
           Common.UIString.UIString('Edit breakpoint…'),
-          this._editBreakpointCondition.bind(this, editorLocation.lineNumber, decoration.breakpoint, null));
+          this._editBreakpointCondition.bind(
+              this, editorLocation.lineNumber, decoration.breakpoint, null, false /* preferLogpoint */));
     } else {
       contextMenu.debugSection().appendItem(
           Common.UIString.UIString('Add conditional breakpoint…'),
-          this._editBreakpointCondition.bind(this, editorLocation.lineNumber, null, editorLocation));
+          this._editBreakpointCondition.bind(
+              this, editorLocation.lineNumber, null, editorLocation, false /* preferLogpoint */));
       contextMenu.debugSection().appendItem(
           ls`Add logpoint…`,
           this._editBreakpointCondition.bind(
               this, editorLocation.lineNumber, null, editorLocation, true /* preferLogpoint */));
       contextMenu.debugSection().appendItem(
           Common.UIString.UIString('Never pause here'),
-          this._setBreakpoint.bind(this, location[0], location[1], 'false', true));
+          this._setBreakpoint.bind(this, location.lineNumber, location.columnNumber, 'false', true));
     }
     contextMenu.show();
   }
@@ -1420,15 +1558,15 @@ export class DebuggerPlugin extends Plugin {
    * @param {!Bindings.BreakpointManager.Breakpoint} breakpoint
    */
   _addBreakpoint(uiLocation, breakpoint) {
-    const editorLocation = this._transformer.rawToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
+    const editorLocation = this._transformer.uiLocationToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
     const lineDecorations = this._lineBreakpointDecorations(uiLocation.lineNumber);
-    let decoration = this._breakpointDecoration(editorLocation[0], editorLocation[1]);
+    let decoration = this._breakpointDecoration(editorLocation.lineNumber, editorLocation.columnNumber);
     if (decoration) {
       decoration.breakpoint = breakpoint;
       decoration.condition = breakpoint.condition();
       decoration.enabled = breakpoint.enabled();
     } else {
-      const handle = this._textEditor.textEditorPositionHandle(editorLocation[0], editorLocation[1]);
+      const handle = this._textEditor.textEditorPositionHandle(editorLocation.lineNumber, editorLocation.columnNumber);
       decoration = new BreakpointDecoration(
           this._textEditor, handle, breakpoint.condition(), breakpoint.enabled(),
           breakpoint.bound() || !breakpoint.hasBoundScript(), breakpoint);
@@ -1440,13 +1578,14 @@ export class DebuggerPlugin extends Plugin {
     this._decorationByBreakpoint.set(breakpoint, decoration);
     this._updateBreakpointDecoration(decoration);
     if (breakpoint.enabled() && !lineDecorations.length) {
-      this._possibleBreakpointsRequested.add(editorLocation[0]);
-      const start = this._transformer.editorToRawLocation(editorLocation[0], 0);
-      const end = this._transformer.editorToRawLocation(editorLocation[0] + 1, 0);
+      this._possibleBreakpointsRequested.add(editorLocation.lineNumber);
+      const start = this._transformer.editorLocationToUILocation(editorLocation.lineNumber, 0);
+      const end = this._transformer.editorLocationToUILocation(editorLocation.lineNumber + 1, 0);
       this._breakpointManager
           .possibleBreakpoints(
-              this._uiSourceCode, new TextUtils.TextRange.TextRange(start[0], start[1], end[0], end[1]))
-          .then(addInlineDecorations.bind(this, editorLocation[0]));
+              this._uiSourceCode,
+              new TextUtils.TextRange.TextRange(start.lineNumber, start.columnNumber, end.lineNumber, end.columnNumber))
+          .then(addInlineDecorations.bind(this, editorLocation.lineNumber));
     }
 
     /**
@@ -1475,14 +1614,15 @@ export class DebuggerPlugin extends Plugin {
       // Only consider the first 100 inline breakpoints, as DevTools might appear to hang while CodeMirror is updating
       // the inline breakpoints. See crbug.com/1060105.
       for (const location of possibleLocations.slice(0, 100)) {
-        const editorLocation = this._transformer.rawToEditorLocation(location.lineNumber, location.columnNumber);
-        if (editorLocation[0] !== editorLineNumber) {
+        const editorLocation = this._transformer.uiLocationToEditorLocation(location.lineNumber, location.columnNumber);
+        if (editorLocation.lineNumber !== editorLineNumber) {
           continue;
         }
-        if (columns.has(editorLocation[1])) {
+        if (columns.has(editorLocation.columnNumber)) {
           continue;
         }
-        const handle = this._textEditor.textEditorPositionHandle(editorLocation[0], editorLocation[1]);
+        const handle =
+            this._textEditor.textEditorPositionHandle(editorLocation.lineNumber, editorLocation.columnNumber);
         const decoration = new BreakpointDecoration(
             this._textEditor, handle, '', /** enabled */ false, /** bound */ false, /** breakpoint */ null);
         decoration.element.addEventListener('click', this._inlineBreakpointClick.bind(this, decoration), true);
@@ -1509,11 +1649,11 @@ export class DebuggerPlugin extends Plugin {
     }
     this._decorationByBreakpoint.delete(breakpoint);
 
-    const editorLocation = this._transformer.rawToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
+    const editorLocation = this._transformer.uiLocationToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
     decoration.breakpoint = null;
     decoration.enabled = false;
 
-    const lineDecorations = this._lineBreakpointDecorations(editorLocation[0]);
+    const lineDecorations = this._lineBreakpointDecorations(editorLocation.lineNumber);
     if (!lineDecorations.some(decoration => !!decoration.breakpoint)) {
       for (const lineDecoration of lineDecorations) {
         this._breakpointDecorations.delete(lineDecoration);
@@ -1529,18 +1669,6 @@ export class DebuggerPlugin extends Plugin {
     for (const breakpointLocation of breakpointLocations) {
       this._addBreakpoint(breakpointLocation.uiLocation, breakpointLocation.breakpoint);
     }
-  }
-
-  _getScriptForCurrentUISourceCode() {
-    for (const scriptFile of this._scriptFileForDebuggerModel.values()) {
-      if (!scriptFile) {
-        continue;
-      }
-      if (scriptFile.uiSourceCode === this._uiSourceCode) {
-        return scriptFile.script;
-      }
-    }
-    return;
   }
 
   _updateLinesWithoutMappingHighlight() {
@@ -1559,17 +1687,6 @@ export class DebuggerPlugin extends Plugin {
         }
       }
       return;
-    }
-
-    // Check to see if it is Wasm Disassembly.
-    const script = this._getScriptForCurrentUISourceCode();
-    if (script && script.hasWasmDisassembly()) {
-      const linesCount = this._textEditor.linesCount;
-      for (let i = 0; i < linesCount; ++i) {
-        if (!script.isWasmDisassemblyBreakableLine(i)) {
-          this._textEditor.toggleLineClass(i, 'cm-non-breakable-line', true);
-        }
-      }
     }
   }
 
@@ -1628,8 +1745,10 @@ export class DebuggerPlugin extends Plugin {
         'Associated files should be added to the file tree. You can debug these resolved source files as regular JavaScript files.'));
     this._sourceMapInfobar.createDetailsRowMessage(Common.UIString.UIString(
         'Associated files are available via file tree or %s.',
-        self.UI.shortcutRegistry.shortcutTitleForAction('quickOpen.show')));
-    this._sourceMapInfobar.setCloseCallback(() => this._sourceMapInfobar = null);
+        UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('quickOpen.show')));
+    this._sourceMapInfobar.setCloseCallback(() => {
+      this._sourceMapInfobar = null;
+    });
     this._textEditor.attachInfobar(this._sourceMapInfobar);
   }
 
@@ -1639,15 +1758,16 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
 
-    const editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
+    const editorActions = await Root.Runtime.Runtime.instance().allInstances(EditorAction);
+    /** @type {(function(): void) | null} */
     let formatterCallback = null;
     for (const editorAction of editorActions) {
-      if (editorAction instanceof Sources.ScriptFormatterEditorAction) {
+      if (editorAction instanceof ScriptFormatterEditorAction) {
         // Check if the source code is formattable the same way the pretty print button does
         if (!editorAction.isCurrentUISourceCodeFormatable()) {
           return;
         }
-        formatterCallback = editorAction.toggleFormatScriptSource.bind(editorAction);
+        formatterCallback = () => editorAction.toggleFormatScriptSource.bind(editorAction);
         break;
       }
     }
@@ -1660,7 +1780,9 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
 
-    this._prettyPrintInfobar.setCloseCallback(() => this._prettyPrintInfobar = null);
+    this._prettyPrintInfobar.setCloseCallback(() => {
+      this._prettyPrintInfobar = null;
+    });
     const toolbar = new UI.Toolbar.Toolbar('');
     const button = new UI.Toolbar.ToolbarButton('', 'largeicon-pretty-print');
     toolbar.appendToolbarItem(button);
@@ -1710,12 +1832,13 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
     const hasDisabled = this._textEditor.hasLineClass(editorLineNumber, 'cm-breakpoint-disabled');
-    const breakpoints = decorations.map(decoration => decoration.breakpoint).filter(breakpoint => !!breakpoint);
+    const breakpoints = /** @type {!Array<!Bindings.BreakpointManager.Breakpoint>} */ (
+        decorations.map(decoration => decoration.breakpoint).filter(breakpoint => !!breakpoint));
     for (const breakpoint of breakpoints) {
       if (onlyDisable) {
         breakpoint.setEnabled(hasDisabled);
       } else {
-        breakpoint.remove();
+        breakpoint.remove(false);
       }
     }
   }
@@ -1726,20 +1849,12 @@ export class DebuggerPlugin extends Plugin {
    * @param {boolean} enabled
    */
   async _createNewBreakpoint(editorLineNumber, condition, enabled) {
-    Host.userMetrics.actionTaken(Host.UserMetrics.Action.ScriptsBreakpointSet);
-    if (editorLineNumber < this._textEditor.linesCount) {
-      const lineLength = Math.min(this._textEditor.line(editorLineNumber).length, 1024);
-      const start = this._transformer.editorToRawLocation(editorLineNumber, 0);
-      const end = this._transformer.editorToRawLocation(editorLineNumber, lineLength);
-      const locations = await this._breakpointManager.possibleBreakpoints(
-          this._uiSourceCode, new TextUtils.TextRange.TextRange(start[0], start[1], end[0], end[1]));
-      if (locations && locations.length) {
-        await this._setBreakpoint(locations[0].lineNumber, locations[0].columnNumber, condition, enabled);
-        return;
-      }
+    if (this._textEditor.hasLineClass(editorLineNumber, 'cm-non-breakable-line')) {
+      return;
     }
-    const origin = this._transformer.editorToRawLocation(editorLineNumber, 0);
-    await this._setBreakpoint(origin[0], origin[1], condition, enabled);
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.ScriptsBreakpointSet);
+    const origin = this._transformer.editorLocationToUILocation(editorLineNumber, 0);
+    await this._setBreakpoint(origin.lineNumber, origin.columnNumber, condition, enabled);
   }
 
   /**
@@ -1749,16 +1864,6 @@ export class DebuggerPlugin extends Plugin {
    * @param {boolean} enabled
    */
   async _setBreakpoint(lineNumber, columnNumber, condition, enabled) {
-    if (!Bindings.CompilerScriptMapping.CompilerScriptMapping.uiLineHasMapping(this._uiSourceCode, lineNumber)) {
-      return;
-    }
-
-    // Check to see if it is Wasm Disassembly.
-    const script = this._getScriptForCurrentUISourceCode();
-    if (script && script.hasWasmDisassembly() && !script.isWasmDisassemblyBreakableLine(lineNumber)) {
-      return;
-    }
-
     Common.Settings.Settings.instance().moduleSetting('breakpointsActive').set(true);
     await this._breakpointManager.setBreakpoint(this._uiSourceCode, lineNumber, columnNumber, condition, enabled);
     this._breakpointWasSetForTest(lineNumber, columnNumber, condition, enabled);
@@ -1776,7 +1881,7 @@ export class DebuggerPlugin extends Plugin {
 
   async _callFrameChanged() {
     this._liveLocationPool.disposeAll();
-    const callFrame = self.UI.context.flavor(SDK.DebuggerModel.CallFrame);
+    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     if (!callFrame) {
       this._clearExecutionLine();
       return;
@@ -1824,9 +1929,8 @@ export class DebuggerPlugin extends Plugin {
     this._textEditor.element.removeEventListener('focusout', this._boundBlur, false);
     this._textEditor.element.removeEventListener('wheel', this._boundWheel, true);
 
-    this._textEditor.removeEventListener(SourceFrame.SourcesTextEditor.Events.GutterClick, event => {
-      this._handleGutterClick(event);
-    }, this);
+    this._textEditor.removeEventListener(
+        SourceFrame.SourcesTextEditor.Events.GutterClick, this._boundGutterClick, this);
     this._popoverHelper.hidePopover();
     this._popoverHelper.dispose();
 
@@ -1848,7 +1952,7 @@ export class DebuggerPlugin extends Plugin {
     super.dispose();
 
     this._clearExecutionLine();
-    self.UI.context.removeFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameChanged, this);
+    UI.Context.Context.instance().removeFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameChanged, this);
     this._liveLocationPool.disposeAll();
   }
 }
@@ -1858,7 +1962,7 @@ export class DebuggerPlugin extends Plugin {
  */
 export class BreakpointDecoration {
   /**
-   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
    * @param {!TextEditor.CodeMirrorTextEditor.TextEditorPositionHandle} handle
    * @param {string} condition
    * @param {boolean} enabled
@@ -1872,7 +1976,7 @@ export class BreakpointDecoration {
     this.enabled = enabled;
     this.bound = bound;
     this.breakpoint = breakpoint;
-    this.element = createElement('span');
+    this.element = document.createElement('span');
     this.element.classList.toggle('cm-inline-breakpoint', true);
 
     /** @type {?TextEditor.CodeMirrorTextEditor.TextEditorBookMark} */
@@ -1915,6 +2019,7 @@ export class BreakpointDecoration {
     }
     this.bookmark = this._textEditor.addBookmark(
         editorLocation.lineNumber, editorLocation.columnNumber, this.element, BreakpointDecoration.bookmarkSymbol);
+    // @ts-ignore Only used for layout tests
     this.bookmark[BreakpointDecoration._elementSymbolForTest] = this.element;
   }
 

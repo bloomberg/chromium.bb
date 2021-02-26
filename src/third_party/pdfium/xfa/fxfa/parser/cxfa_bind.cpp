@@ -8,7 +8,7 @@
 
 #include "fxjs/xfa/cjx_node.h"
 #include "fxjs/xfa/cjx_object.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_picture.h"
 
 namespace {
@@ -41,7 +41,9 @@ CXFA_Bind::CXFA_Bind(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Bind,
                 kBindPropertyData,
                 kBindAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Bind::~CXFA_Bind() = default;
 

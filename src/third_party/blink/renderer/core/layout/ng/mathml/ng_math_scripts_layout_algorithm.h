@@ -22,23 +22,32 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
   explicit NGMathScriptsLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
  private:
+  struct SubSupPair {
+    NGBlockNode sub = nullptr;
+    NGBlockNode sup = nullptr;
+  };
+
   void GatherChildren(NGBlockNode* base,
-                      NGBlockNode* sup,
-                      NGBlockNode* sub,
+                      Vector<SubSupPair>*,
+                      NGBlockNode* prescripts,
+                      unsigned* first_prescript_index,
                       NGBoxFragmentBuilder* = nullptr) const;
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
 
   struct ChildAndMetrics {
-    STACK_ALLOCATED();
+    DISALLOW_NEW();
 
    public:
     scoped_refptr<const NGLayoutResult> result;
     LayoutUnit ascent;
     LayoutUnit descent;
     LayoutUnit inline_size;
+    LayoutUnit base_italic_correction;
     NGBoxStrut margins;
+    NGBlockNode node = nullptr;
   };
+  typedef Vector<ChildAndMetrics, 4> ChildrenAndMetrics;
 
   ChildAndMetrics LayoutAndGetMetrics(NGBlockNode child) const;
 
@@ -52,14 +61,12 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
     LayoutUnit descent;
     NGBoxStrut margins;
   };
-  VerticalMetrics GetVerticalMetrics(const ChildAndMetrics& base_metrics,
-                                     const ChildAndMetrics& sub_metrics,
-                                     const ChildAndMetrics& sup_metrics) const;
+  VerticalMetrics GetVerticalMetrics(
+      const ChildAndMetrics& base_metrics,
+      const ChildrenAndMetrics& sub_metrics,
+      const ChildrenAndMetrics& sup_metrics) const;
 
   scoped_refptr<const NGLayoutResult> Layout() final;
-
-  LogicalSize child_available_size_;
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

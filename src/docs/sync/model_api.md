@@ -197,7 +197,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
-  store_->CommitWriteBatch(std::move(batch), base::Bind(...));
+  store_->CommitWriteBatch(std::move(batch), base::BindOnce(...));
   NotifyModelOfChanges();
   return {};
 }
@@ -230,8 +230,8 @@ void WriteLocalChange(std::string key, ModelData data) {
     change_processor()->Put(key, ModelToEntityData(data),
                             batch->GetMetadataChangeList());
   }
-  batch->WriteData(key, specifics->SerializeAsString());
-  store_->CommitWriteBatch(std::move(batch), base::Bind(...));
+  batch->WriteData(key, data.specifics->SerializeAsString());
+  store_->CommitWriteBatch(std::move(batch), base::BindOnce(...));
 }
 ```
 
@@ -267,8 +267,6 @@ the next client restart.
     [`ProfileSyncServiceFactory`][ProfileSyncServiceFactory].
 *   Add to the [start order list][kStartOrder].
 *   Add an field for encrypted data to [`NigoriSpecifics`][NigoriSpecifics].
-*   Add to two encrypted types translation functions in
-    [`nigori_util.cc`][nigori_util].
 *   If your type should have its own toggle in sync settings, add an entry to
     the [`UserSelectableType`][UserSelectableType] enum, add a
     [preference][pref_names] for tracking whether your type is enabled, and
@@ -289,7 +287,6 @@ the next client restart.
 [ProfileSyncServiceFactory]: https://cs.chromium.org/search/?q=:ProfileSyncServiceFactory%5C(%5C)
 [kStartOrder]: https://cs.chromium.org/search/?q="kStartOrder[]"
 [NigoriSpecifics]: https://cs.chromium.org/chromium/src/components/sync/protocol/nigori_specifics.proto
-[nigori_util]: https://cs.chromium.org/chromium/src/components/sync/syncable/nigori_util.cc
 [UserSelectableType]: https://cs.chromium.org/chromium/src/components/sync/base/user_selectable_type.h?type=cs&q="enum+class+UserSelectableType"
 [pref_names]: https://cs.chromium.org/chromium/src/components/sync/base/pref_names.h
 [GetPrefName]: https://cs.chromium.org/search/?q=GetPrefNameForType+file:sync_prefs.cc

@@ -27,20 +27,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.js';  // eslint-disable-line no-unused-vars
 import {HeapSnapshotWorkerDispatcher} from './HeapSnapshotWorkerDispatcher.js';
 
+/**
+ * @param {*} message
+ */
 function postMessageWrapper(message) {
   postMessage(message);
 }
 
-const dispatcher = new HeapSnapshotWorkerDispatcher(self, postMessageWrapper);
+// @ts-ignore This is a worker, not Window.
+const ctx = /** @type {*} */ (self);
+const ctxSelf = /** @type {!Worker} */ (ctx);
+const dispatcher = new HeapSnapshotWorkerDispatcher(ctxSelf, postMessageWrapper);
 
 /**
- * @param {function(!Event)} listener
+ * @param {!EventListener} listener
  * @suppressGlobalPropertiesCheck
  */
 function installMessageEventListener(listener) {
-  self.addEventListener('message', listener, false);
+  ctxSelf.addEventListener('message', listener, false);
 }
 
-installMessageEventListener(dispatcher.dispatchMessage.bind(dispatcher));
+// @ts-ignore
+installMessageEventListener(/** @type {!EventListener} */ (dispatcher.dispatchMessage.bind(dispatcher)));

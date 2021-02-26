@@ -8,10 +8,15 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
+
+namespace gpu {
+struct Mailbox;
+}
 
 namespace cc {
 
@@ -70,8 +75,9 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(SkImageInfo* info);
   void Read(sk_sp<SkColorSpace>* color_space);
   void Read(SkYUVColorSpace* yuv_color_space);
+  void Read(gpu::Mailbox* mailbox);
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
   void Read(scoped_refptr<SkottieWrapper>* skottie);
 #endif
 
@@ -85,10 +91,10 @@ class CC_PAINT_EXPORT PaintOpReader {
     Read(&value);
     *type = static_cast<PaintCanvas::AnnotationType>(value);
   }
-  void Read(PaintCanvas::SrcRectConstraint* constraint) {
+  void Read(SkCanvas::SrcRectConstraint* constraint) {
     uint8_t value = 0u;
     Read(&value);
-    *constraint = static_cast<PaintCanvas::SrcRectConstraint>(value);
+    *constraint = static_cast<SkCanvas::SrcRectConstraint>(value);
   }
   void Read(SkFilterQuality* quality) {
     uint8_t value = 0u;
@@ -98,6 +104,15 @@ class CC_PAINT_EXPORT PaintOpReader {
       return;
     }
     *quality = static_cast<SkFilterQuality>(value);
+  }
+  void Read(SkBlendMode* blend_mode) {
+    uint8_t value = 0u;
+    Read(&value);
+    if (value > static_cast<uint8_t>(SkBlendMode::kLastMode)) {
+      SetInvalid();
+      return;
+    }
+    *blend_mode = static_cast<SkBlendMode>(value);
   }
   void Read(bool* data) {
     uint8_t value = 0u;

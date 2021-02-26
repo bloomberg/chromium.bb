@@ -10,12 +10,12 @@ Example usage in a browsertest, explained:
 When you navigate to the above URL, the outer document (on a.com) will create a
 single iframe:
 
-  <iframe src="http://b.com:1234/cross_site_iframe_factory.html?b(c(),d())">
+  <iframe id="child-0" src="http://b.com:1234/cross_site_iframe_factory.html?b(c(),d())">
 
 Inside of which, then, are created the two leaf iframes:
 
-  <iframe src="http://c.com:1234/cross_site_iframe_factory.html?c()">
-  <iframe src="http://d.com:1234/cross_site_iframe_factory.html?d()">
+  <iframe id="child-0" src="http://c.com:1234/cross_site_iframe_factory.html?c()">
+  <iframe id="child-1" src="http://d.com:1234/cross_site_iframe_factory.html?d()">
 
 Add iframe options by enclosing them in '{' and '}' characters after the
 hostname (multiple options can be separated with commas):
@@ -24,8 +24,8 @@ hostname (multiple options can be separated with commas):
 
 Will create two iframes:
 
-  <iframe src="http://a.com:1234/cross_site_iframe_factory.html?b()" allowfullscreen>
-  <iframe src="http://c.com:1234/cross_site_iframe_factory.html?c{sandbox-allow-scripts}(d())" sandbox="allow-scripts">
+  <iframe id="child-0" src="http://a.com:1234/cross_site_iframe_factory.html?b()" allowfullscreen>
+  <iframe id="child-1" src="http://c.com:1234/cross_site_iframe_factory.html?c{sandbox-allow-scripts}(d())" sandbox="allow-scripts">
 
 To specify the site for each iframe, you can use a simple identifier like "a"
 or "b", and ".com" will be automatically appended. You can also specify a port
@@ -173,6 +173,19 @@ function shouldRenderText(attributes) {
   return true;
 }
 
+/**
+ * Determines whether or not the frame should be positioned outside of
+ * its parent frame by checking whether "out-of-view" is among the list
+ * of attributes.
+ */
+function renderOutsideParentView(attributes) {
+  for (var attribute of attributes) {
+    if (attribute == "out-of-view") {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Simple recursive layout heuristic, since frames can't size themselves.
@@ -248,6 +261,13 @@ function main() {
     iframe.style.borderColor = borderColorForSite(siteAndPort);
     iframe.width = frameTree.children[i].layoutX;
     iframe.height = frameTree.children[i].layoutY;
+
+    // If needed, position the iframe.
+    if (renderOutsideParentView(frameTree.children[i].attributes)) {
+        iframe.style.position = "fixed";
+        iframe.style.top = "150%";
+        iframe.style.left = "150%";
+    }
 
     // Apply any additional attributes.
     applyIFrameOptions(iframe, frameTree.children[i].attributes);

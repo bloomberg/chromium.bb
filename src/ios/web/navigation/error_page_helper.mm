@@ -78,15 +78,12 @@ NSString* InjectedErrorPageFilePath() {
   if (!_errorPageFileURL) {
     NSURLQueryItem* itemURL = [NSURLQueryItem
         queryItemWithName:base::SysUTF8ToNSString(kOriginalUrlKey)
-                    value:self.failedNavigationURLString];
-    NSURLQueryItem* itemError =
-        [NSURLQueryItem queryItemWithName:@"error"
-                                    value:_error.localizedDescription];
+                    value:EscapeHTMLCharacters(self.failedNavigationURLString)];
     NSURLQueryItem* itemDontLoad = [NSURLQueryItem queryItemWithName:@"dontLoad"
                                                                value:@"true"];
     NSURLComponents* URL = [[NSURLComponents alloc] initWithString:@"file:///"];
     URL.path = LoadedErrorPageFilePath();
-    URL.queryItems = @[ itemURL, itemError, itemDontLoad ];
+    URL.queryItems = @[ itemURL, itemDontLoad ];
     DCHECK(URL.URL) << "file URL should be valid";
     _errorPageFileURL = URL.URL;
   }
@@ -123,6 +120,10 @@ NSString* InjectedErrorPageFilePath() {
   }
 
   return GURL();
+}
+
++ (BOOL)isErrorPageFileURL:(const GURL&)URL {
+  return [self failedNavigationURLFromErrorPageFileURL:URL].is_valid();
 }
 
 - (NSString*)scriptForInjectingHTML:(NSString*)HTML

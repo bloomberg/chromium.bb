@@ -22,7 +22,7 @@ uniform float2 in_center;
 uniform float4 in_colors0;
 uniform float4 in_colors1;
 
-void main(float2 p, inout half4 color) {
+half4 main(float2 p) {
     float2 pp = p - in_center;
     float radius = sqrt(dot(pp, pp));
     radius = sqrt(radius);
@@ -30,7 +30,7 @@ void main(float2 p, inout half4 color) {
     float t = (angle + 3.1415926/2) / (3.1415926);
     t += radius * rad_scale;
     t = fract(t);
-    color = half4(mix(in_colors0, in_colors1, t));
+    return half4(mix(in_colors0, in_colors1, t));
 }`;
 
     // TODO(kjlubick) rewrite testRTShader and callers to use gm.
@@ -40,10 +40,10 @@ void main(float2 p, inout half4 color) {
         if (!surface) {
             return;
         }
-        const spiral = CanvasKit.SkRuntimeEffect.Make(spiralSkSL);
+        const spiral = CanvasKit.RuntimeEffect.Make(spiralSkSL);
         expect(spiral).toBeTruthy('could not compile program');
         const canvas = surface.getCanvas();
-        const paint = new CanvasKit.SkPaint();
+        const paint = new CanvasKit.Paint();
         canvas.clear(CanvasKit.BLACK); // black should not be visible
         const shader = spiral.makeShader([
             0.3,
@@ -67,7 +67,7 @@ void main(float2 p, inout half4 color) {
     });
 
     it('can apply a matrix to the shader', (done) => {
-        testRTShader('rtshader_spiral_translated', done, CanvasKit.SkMatrix.translated(-200, 100));
+        testRTShader('rtshader_spiral_translated', done, CanvasKit.Matrix.translated(-200, 100));
     });
 
     const loadBrick = fetch(
@@ -78,9 +78,9 @@ void main(float2 p, inout half4 color) {
         .then((response) => response.arrayBuffer());
 
     const thresholdSkSL = `
-in fragmentProcessor before_map;
-in fragmentProcessor after_map;
-in fragmentProcessor threshold_map;
+uniform shader before_map;
+uniform shader after_map;
+uniform shader threshold_map;
 
 uniform float cutoff;
 uniform float slope;
@@ -90,12 +90,12 @@ float smooth_cutoff(float x) {
     return clamp(x, 0, 1);
 }
 
-void main(float2 xy, inout half4 color) {
+half4 main(float2 xy) {
     half4 before = sample(before_map, xy);
     half4 after = sample(after_map, xy);
 
     float m = smooth_cutoff(sample(threshold_map, xy).r);
-    color = mix(before, after, half(m));
+    return mix(before, after, half(m));
 }`;
 
     // TODO(kjlubick) rewrite testChildrenShader and callers to use gm.
@@ -108,18 +108,18 @@ void main(float2 xy, inout half4 color) {
                 const mandrillImg = CanvasKit.MakeImageFromEncoded(mandrillData);
                 expect(mandrillImg).toBeTruthy('mandrill image could not be loaded');
 
-                const thresholdEffect = CanvasKit.SkRuntimeEffect.Make(thresholdSkSL);
+                const thresholdEffect = CanvasKit.RuntimeEffect.Make(thresholdSkSL);
                 expect(thresholdEffect).toBeTruthy('threshold did not compile');
-                const spiralEffect = CanvasKit.SkRuntimeEffect.Make(spiralSkSL);
+                const spiralEffect = CanvasKit.RuntimeEffect.Make(spiralSkSL);
                 expect(spiralEffect).toBeTruthy('spiral did not compile');
 
                 const brickShader = brickImg.makeShader(
                     CanvasKit.TileMode.Decal, CanvasKit.TileMode.Decal,
-                    CanvasKit.SkMatrix.scaled(CANVAS_WIDTH/brickImg.width(),
+                    CanvasKit.Matrix.scaled(CANVAS_WIDTH/brickImg.width(),
                                               CANVAS_HEIGHT/brickImg.height()));
                 const mandrillShader = mandrillImg.makeShader(
                     CanvasKit.TileMode.Decal, CanvasKit.TileMode.Decal,
-                    CanvasKit.SkMatrix.scaled(CANVAS_WIDTH/mandrillImg.width(),
+                    CanvasKit.Matrix.scaled(CANVAS_WIDTH/mandrillImg.width(),
                                               CANVAS_HEIGHT/mandrillImg.height()));
                 const spiralShader = spiralEffect.makeShader([
                     0.8,
@@ -134,7 +134,7 @@ void main(float2 xy, inout half4 color) {
                 const surface = CanvasKit.MakeCanvasSurface('test');
                 expect(surface).toBeTruthy('Could not make surface');
                 const canvas = surface.getCanvas();
-                const paint = new CanvasKit.SkPaint();
+                const paint = new CanvasKit.Paint();
                 canvas.clear(CanvasKit.WHITE);
 
                 paint.setShader(blendShader);
@@ -160,6 +160,6 @@ void main(float2 xy, inout half4 color) {
     });
 
     it('apply a local matrix to the children-based shader', (done) => {
-        testChildrenShader('rtshader_children_rotated', done, CanvasKit.SkMatrix.rotated(Math.PI/12));
+        testChildrenShader('rtshader_children_rotated', done, CanvasKit.Matrix.rotated(Math.PI/12));
     });
 });

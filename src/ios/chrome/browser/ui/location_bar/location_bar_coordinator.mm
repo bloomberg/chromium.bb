@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/util.h"
@@ -17,6 +16,9 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -63,18 +65,11 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The histogram recording CLAuthorizationStatus for omnibox queries.
-const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
-    "Omnibox.QueryIosLocationAuthorizationStatus";
-// The number of possible CLAuthorizationStatus values to report.
-const int kLocationAuthorizationStatusCount = 5;
-}  // namespace
-
 @interface LocationBarCoordinator () <LoadQueryCommands,
                                       LocationBarDelegate,
                                       LocationBarViewControllerDelegate,
-                                      LocationBarConsumer> {
+                                      LocationBarConsumer,
+                                      URLDragDataSource> {
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
@@ -102,6 +97,8 @@ const int kLocationAuthorizationStatusCount = 5;
 // delegate call.
 @property(nonatomic, assign) BOOL isCancellingOmniboxEdit;
 
+// Handler for URL drag interactions.
+@property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 @end
 
 @implementation LocationBarCoordinator
@@ -144,7 +141,7 @@ const int kLocationAuthorizationStatusCount = 5;
   // clean up.
   self.viewController.dispatcher =
       static_cast<id<ActivityServiceCommands, BrowserCommands,
-                     ApplicationCommands, LoadQueryCommands>>(
+                     ApplicationCommands, LoadQueryCommands, OmniboxCommands>>(
           self.browser->GetCommandDispatcher());
   self.viewController.voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                                ->GetVoiceSearchProvider()
@@ -214,6 +211,15 @@ const int kLocationAuthorizationStatusCount = 5;
       fullscreenController, self.viewController);
 
   self.started = YES;
+
+  if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[URLDragDropHandler alloc] init];
+    self.dragDropHandler.origin = WindowActivityLocationBarSteadyViewOrigin;
+    self.dragDropHandler.dragDataSource = self;
+    [self.viewController.view
+        addInteraction:[[UIDragInteraction alloc]
+                           initWithDelegate:self.dragDropHandler]];
+  }
 }
 
 - (void)stop {
@@ -254,6 +260,10 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (id<EditViewAnimatee>)editViewAnimatee {
   return self.omniboxCoordinator.animatee;
+}
+
+- (UIResponder<UITextInput>*)omniboxScribbleForwardingTarget {
+  return self.omniboxCoordinator.scribbleInput;
 }
 
 #pragma mark - LoadQueryCommands
@@ -299,13 +309,6 @@ const int kLocationAuthorizationStatusCount = 5;
     UrlLoadParams params = UrlLoadParams::InCurrentTab(web_params);
     params.disposition = disposition;
     UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-
-    if (google_util::IsGoogleSearchUrl(url)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOmniboxQueryLocationAuthorizationStatusHistogram,
-          [CLLocationManager authorizationStatus],
-          kLocationAuthorizationStatusCount);
-    }
   }
   [self cancelOmniboxEdit];
 }
@@ -327,7 +330,11 @@ const int kLocationAuthorizationStatusCount = 5;
     }
   }
   // Dismiss the edit menu.
-  [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
+  if (@available(iOS 13, *)) {
+    [[UIMenuController sharedMenuController] hideMenu];
+  } else {
+    [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
+  }
 
   // When the NTP and fakebox are visible, make the fakebox animates into place
   // before focusing the omnibox.
@@ -370,6 +377,10 @@ const int kLocationAuthorizationStatusCount = 5;
   return [self.delegate locationBarModel];
 }
 
+- (void)locationBarRequestScribbleTargetFocus {
+  [self.omniboxCoordinator focusOmniboxForScribble];
+}
+
 #pragma mark - LocationBarViewControllerDelegate
 
 - (void)locationBarSteadyViewTapped {
@@ -407,6 +418,19 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
   self.viewController.searchByImageEnabled = searchByImageSupported;
+}
+
+#pragma mark - URLDragDataSource
+
+- (URLInfo*)URLInfoForView:(UIView*)view {
+  return [[URLInfo alloc]
+      initWithURL:self.webState->GetVisibleURL()
+            title:base::SysUTF16ToNSString(self.webState->GetTitle())];
+}
+
+- (UIBezierPath*)visiblePathForView:(UIView*)view {
+  return [UIBezierPath bezierPathWithRoundedRect:view.bounds
+                                    cornerRadius:view.bounds.size.height / 2];
 }
 
 #pragma mark - private

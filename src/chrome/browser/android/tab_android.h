@@ -14,9 +14,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/android/tab_state.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
+#include "chrome/browser/tab/web_contents_state.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/sessions/core/session_id.h"
@@ -37,7 +39,7 @@ class DevToolsAgentHost;
 class WebContents;
 }
 
-class TabAndroid {
+class TabAndroid : public base::SupportsUserData {
  public:
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -46,6 +48,12 @@ class TabAndroid {
     DEFAULT_PAGE_LOAD = 1,
     PARTIAL_PRERENDERED_PAGE_LOAD = 2,
     FULL_PRERENDERED_PAGE_LOAD = 3,
+  };
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when WebContents is initialized.
+    virtual void OnInitWebContents(TabAndroid* tab) = 0;
   };
 
   // Convenience method to retrieve the Tab associated with the passed
@@ -61,7 +69,7 @@ class TabAndroid {
   static void AttachTabHelpers(content::WebContents* web_contents);
 
   TabAndroid(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
-  ~TabAndroid();
+  ~TabAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -103,6 +111,24 @@ class TabAndroid {
       bool did_start_load,
       bool did_finish_load);
 
+  bool IsCustomTab();
+  bool IsHidden();
+
+  bool should_add_api2_transition_to_future_navigations() const {
+    return should_add_api2_transition_to_future_navigations_;
+  }
+
+  bool hide_future_navigations() const { return hide_future_navigations_; }
+
+  bool should_block_new_notification_requests() const {
+    return should_block_new_notification_requests_;
+  }
+  // Observers -----------------------------------------------------------------
+
+  // Adds/Removes an Observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Methods called from Java via JNI -----------------------------------------
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -114,12 +140,14 @@ class TabAndroid {
       const base::android::JavaParamRef<jobject>& jweb_contents,
       jint jparent_tab_id,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
-      const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
+      const base::android::JavaParamRef<jobject>&
+          jcontext_menu_populator_factory);
   void UpdateDelegates(
-        JNIEnv* env,
-        const base::android::JavaParamRef<jobject>& obj,
-        const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
-        const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
+      const base::android::JavaParamRef<jobject>&
+          jcontext_menu_populator_factory);
   void DestroyWebContents(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
   void ReleaseWebContents(JNIEnv* env,
@@ -134,7 +162,7 @@ class TabAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jstring>& j_initiator_origin,
+      const base::android::JavaParamRef<jobject>& j_initiator_origin,
       const base::android::JavaParamRef<jstring>& j_extra_headers,
       const base::android::JavaParamRef<jobject>& j_post_data,
       jint page_transition,
@@ -154,12 +182,32 @@ class TabAndroid {
 
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
+  void SetAddApi2TransitionToFutureNavigations(JNIEnv* env,
+                                               jboolean should_add);
+  jboolean GetAddApi2TransitionToFutureNavigations(JNIEnv* env) {
+    return should_add_api2_transition_to_future_navigations_;
+  }
+  void SetHideFutureNavigations(JNIEnv* env, jboolean hide);
+  jboolean GetHideFutureNavigations(JNIEnv* env) {
+    return hide_future_navigations_;
+  }
+  void SetShouldBlockNewNotificationRequests(JNIEnv* env, jboolean value);
+  jboolean GetShouldBlockNewNotificationRequests(JNIEnv* env) {
+    return should_block_new_notification_requests_;
+  }
 
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
 
  private:
+  // Calls set_hide_future_navigations() on the HistoryTabHelper associated
+  // with |web_contents_|.
+  void PropagateHideFutureNavigationsToHistoryTabHelper();
+
+  // Calls SetBlockNewNotificationRequests() on NotificationPermissionContext.
+  void PropagateBlockNewNotificationRequestsToWebContents();
+
   JavaObjectWeakGlobalRef weak_java_tab_;
 
   // Identifier of the window the tab is in.
@@ -172,6 +220,11 @@ class TabAndroid {
       web_contents_delegate_;
   scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
+  bool should_add_api2_transition_to_future_navigations_ = false;
+  bool hide_future_navigations_ = false;
+  bool should_block_new_notification_requests_ = false;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

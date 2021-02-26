@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,12 +35,6 @@ constexpr base::TimeDelta XrBrowserTestBase::kPollCheckIntervalLong;
 constexpr base::TimeDelta XrBrowserTestBase::kPollTimeoutShort;
 constexpr base::TimeDelta XrBrowserTestBase::kPollTimeoutMedium;
 constexpr base::TimeDelta XrBrowserTestBase::kPollTimeoutLong;
-constexpr char XrBrowserTestBase::kVrOverrideEnvVar[];
-constexpr char XrBrowserTestBase::kVrOverrideVal[];
-constexpr char XrBrowserTestBase::kVrConfigPathEnvVar[];
-constexpr char XrBrowserTestBase::kVrConfigPathVal[];
-constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
-constexpr char XrBrowserTestBase::kVrLogPathVal[];
 constexpr char XrBrowserTestBase::kOpenXrConfigPathEnvVar[];
 constexpr char XrBrowserTestBase::kOpenXrConfigPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
@@ -127,17 +120,6 @@ void XrBrowserTestBase::SetUp() {
   XR_CONDITIONAL_SKIP_PRETEST(runtime_requirements_, ignored_requirements_,
                               &test_skipped_at_startup_)
 
-  // Set the environment variable to use the mock OpenVR client.
-  ASSERT_TRUE(
-      env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
-      << "Failed to set OpenVR mock client location environment variable";
-  ASSERT_TRUE(env_->SetVar(kVrConfigPathEnvVar,
-                           MakeExecutableRelative(kVrConfigPathVal)))
-      << "Failed to set OpenVR config location environment variable";
-  ASSERT_TRUE(
-      env_->SetVar(kVrLogPathEnvVar, MakeExecutableRelative(kVrLogPathVal)))
-      << "Failed to set OpenVR log location environment variable";
-
   // Set the environment variable to use the mock OpenXR client.
   // If the kOpenXrConfigPathEnvVar environment variable is set, the OpenXR
   // loader will look for the OpenXR runtime specified in that json file. The
@@ -148,8 +130,8 @@ void XrBrowserTestBase::SetUp() {
                            MakeExecutableRelative(kOpenXrConfigPathVal)))
       << "Failed to set OpenXR JSON location environment variable";
 
-  // Set any command line flags that subclasses have set, e.g. enabling WebVR
-  // and OpenVR support.
+  // Set any command line flags that subclasses have set, e.g. enabling features
+  // or specific runtimes.
   for (const auto& switch_string : append_switches_) {
     cmd_line->AppendSwitch(switch_string);
   }

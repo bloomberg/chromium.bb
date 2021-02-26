@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -34,6 +35,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -45,7 +47,7 @@ using extensions::ExtensionActionRunner;
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
-    ExtensionAction* extension_action,
+    extensions::ExtensionAction* extension_action,
     ExtensionsContainer* extensions_container,
     bool in_overflow_mode)
     : extension_(extension),
@@ -256,7 +258,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
     extensions_container_->CloseOverflowMenuIfOpen();
 
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
-      ExtensionAction::ACTION_SHOW_POPUP) {
+      extensions::ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
         sessions::SessionTabHelper::IdForTab(web_contents).id());
     return GetPreferredPopupViewController()
@@ -270,6 +272,10 @@ void ExtensionActionViewController::RegisterCommand() {
     return;
 
   platform_delegate_->RegisterCommand();
+}
+
+void ExtensionActionViewController::UnregisterCommand() {
+  platform_delegate_->UnregisterCommand();
 }
 
 bool ExtensionActionViewController::DisabledClickOpensMenu() const {
@@ -288,7 +294,7 @@ void ExtensionActionViewController::OnIconUpdated() {
 }
 
 void ExtensionActionViewController::OnExtensionHostDestroyed(
-    const extensions::ExtensionHost* host) {
+    extensions::ExtensionHost* host) {
   OnPopupClosed();
 }
 
@@ -318,7 +324,7 @@ ExtensionActionViewController::GetPageInteractionStatus(
   // access checks.
   if (page_access == extensions::PermissionsData::PageAccess::kWithheld ||
       script_access == extensions::PermissionsData::PageAccess::kWithheld ||
-      HasBeenBlocked(web_contents)) {
+      HasBeenBlocked(web_contents) || HasActiveTabAndCanAccess(url)) {
     return PageInteractionStatus::kPending;
   }
 
@@ -494,6 +500,16 @@ bool ExtensionActionViewController::PageActionWantsToRun(
              extensions::ActionInfo::TYPE_PAGE &&
          extension_action_->GetIsVisible(
              sessions::SessionTabHelper::IdForTab(web_contents).id());
+}
+
+bool ExtensionActionViewController::HasActiveTabAndCanAccess(
+    const GURL& url) const {
+  return extension_->permissions_data()->HasAPIPermission(
+             extensions::APIPermission::kActiveTab) &&
+         !extension_->permissions_data()->IsRestrictedUrl(url,
+                                                          /*error=*/nullptr) &&
+         (!url.SchemeIsFile() || extensions::util::AllowFileAccess(
+                                     extension_->id(), browser_->profile()));
 }
 
 bool ExtensionActionViewController::HasBeenBlocked(

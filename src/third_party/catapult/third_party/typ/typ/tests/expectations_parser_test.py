@@ -280,7 +280,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
             ' were found in multiple tag sets',
             str(context.exception))
 
-    def testDisjoinTagsets(self):
+    def testDisjointTagsets(self):
         raw_data = ('# tags: [ Mac Win Linux ]\n'
                     '# tags: [ Honda BMW ]')
         expectations_parser.TaggedTestListParser(raw_data)
@@ -433,15 +433,16 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertEqual(test_expectations.expectations_for('b1/s1'),
                          Expectation(
                              test='b1/s1', results={ResultType.Failure}, retry_on_failure=True,
-                             is_slow_test=False, reason='crbug.com/23456'))
+                             is_slow_test=False, reason='crbug.com/23456',
+                             tags={'linux'}))
         self.assertEqual(test_expectations.expectations_for('b1/s2'),
                          Expectation(
                              test='b1/s2', results={ResultType.Pass}, retry_on_failure=True,
-                             is_slow_test=False))
+                             is_slow_test=False, tags={'linux'}))
         self.assertEqual(test_expectations.expectations_for('b1/s3'),
                          Expectation(
                              test='b1/s3', results={ResultType.Failure}, retry_on_failure=False,
-                             is_slow_test=False, reason='crbug.com/24341'))
+                             is_slow_test=False, reason='crbug.com/24341', tags={'linux'}))
         self.assertEqual(test_expectations.expectations_for('b1/s4'),
                          Expectation(
                              test='b1/s4', results={ResultType.Pass}, retry_on_failure=False,
@@ -470,23 +471,28 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertEqual(sorted(test_exp1.tags), ['intel', 'linux'])
         self.assertEqual(test_exp1.expectations_for('b1/s2'),
                          Expectation(
-                             test='b1/s2', results={ResultType.Pass, ResultType.Failure},
+                             test='b1/s2',
+                             results={ResultType.Pass, ResultType.Failure},
                              retry_on_failure=True, is_slow_test=False,
                              reason='crbug.com/2431 crbug.com/2432',
-                             trailing_comments=' # c1\n # c2\n'))
+                             trailing_comments=' # c1\n # c2\n',
+                             tags={'linux', 'intel'}))
         self.assertEqual(test_exp1.expectations_for('b1/s1'),
                          Expectation(
                              test='b1/s1', results={ResultType.Pass},
-                             retry_on_failure=True, is_slow_test=False))
+                             retry_on_failure=True, is_slow_test=False,
+                             tags={'intel'}))
         self.assertEqual(test_exp1.expectations_for('b1/s3'),
                          Expectation(
                              test='b1/s3', results={ResultType.Failure},
-                             retry_on_failure=False, is_slow_test=False))
+                             retry_on_failure=False, is_slow_test=False,
+                             tags={'linux'}))
         self.assertEqual(test_exp1.expectations_for('b1/s5'),
                          Expectation(
                              test='b1/s5', results={ResultType.Failure},
                              retry_on_failure=True, is_slow_test=True,
-                             reason='crbug.com/2431 crbug.com/2432'))
+                             reason='crbug.com/2431 crbug.com/2432',
+                             tags={'linux', 'intel'}))
 
     def testMergeExpectationsUsingOverrideResolution(self):
         raw_data1 = (
@@ -514,17 +520,20 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                          Expectation(
                              test='b1/s2', results={ResultType.Pass},
                              retry_on_failure=False, is_slow_test=True,
-                             reason='crbug.com/2432'))
+                             reason='crbug.com/2432', tags={'intel'}))
         self.assertEqual(test_exp1.expectations_for('b1/s1'),
                          Expectation(test='b1/s1', results={ResultType.Pass},
-                                     retry_on_failure=True, is_slow_test=False))
+                                     retry_on_failure=True, is_slow_test=False,
+                                     tags={'intel'}))
         self.assertEqual(test_exp1.expectations_for('b1/s3'),
                          Expectation(test='b1/s3', results={ResultType.Failure},
-                                     retry_on_failure=False, is_slow_test=False))
+                                     retry_on_failure=False, is_slow_test=False,
+                                     tags={'linux'}))
         self.assertEqual(test_exp1.expectations_for('b1/s5'),
                          Expectation(test='b1/s5', results={ResultType.Pass},
                                      retry_on_failure=True, is_slow_test=False,
-                                     reason='crbug.com/2431'))
+                                     reason='crbug.com/2431',
+                                     tags={'intel'}))
 
     def testIsNotTestRetryOnFailureUsingEscapedGlob(self):
         raw_data = (
@@ -552,7 +561,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertEqual(test_expectations.expectations_for('b1/s1'),
                          Expectation(test='b1/s1', results={ResultType.Pass},
                                      retry_on_failure=True, is_slow_test=False,
-                                     reason='crbug.com/23456'))
+                                     reason='crbug.com/23456', tags={'linux'}))
 
     def testGlobsCanExistInMiddleofPatternUsingEscapeCharacter(self):
         raw_data = (
@@ -735,10 +744,10 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         with self.assertRaises(ValueError) as context:
             expectations.set_tags(['Unknown'], raise_ex_for_bad_tags=True)
         self.assertEqual(str(context.exception),
-            'Tag unknown is not declared in the expectations file. '
-            'There may have been a typo in the expectations file. '
-            'Please make sure the aforementioned tag is declared at '
-            'the top of the expectations file.')
+            'Tag unknown is not declared in the expectations file and has not '
+            'been explicitly ignored by the test. There may have been a typo '
+            'in the expectations file. Please make sure the aforementioned tag '
+            'is declared at the top of the expectations file.')
 
     def testNonDeclaredSystemConditionTagsRaisesException_PluralCase(self):
         test_expectations = '''# tags: [ InTel AMD nvidia ]
@@ -753,10 +762,21 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
             expectations.set_tags(['Unknown', 'linux', 'nVidia', 'nvidia-0x1010'],
                                   raise_ex_for_bad_tags=True)
         self.assertEqual(str(context.exception),
-            'Tags linux, nvidia-0x1010 and unknown are not declared '
-            'in the expectations file. There may have been a typo in '
-            'the expectations file. Please make sure the aforementioned '
-            'tags are declared at the top of the expectations file.')
+            'Tags linux, nvidia-0x1010 and unknown are not declared in the '
+            'expectations file and have not been explicitly ignored by the '
+            'test. There may have been a typo in the expectations file. Please '
+            'make sure the aforementioned tags are declared at the top of the '
+            'expectations file.')
+
+    def testIgnoredTags(self):
+        test_expectations = """# tags: [ foo ]
+        # results: [ Failure ]
+        """
+        expectations = expectations_parser.TestExpectations(
+                ignored_tags=['ignored'])
+        _, msg = expectations.parse_tagged_list(test_expectations, 'test.txt')
+        self.assertFalse(msg)
+        expectations.set_tags(['ignored'], raise_ex_for_bad_tags=True)
 
     def testDeclaredSystemConditionTagsDontRaiseAnException(self):
         test_expectations = '''# tags: [ InTel AMD nvidia nvidia-0x1010 ]

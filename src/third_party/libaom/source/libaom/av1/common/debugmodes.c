@@ -52,7 +52,7 @@ void av1_print_modes_and_motion_vectors(AV1_COMMON *cm, const char *file) {
   const int rows = mi_params->mi_rows;
   const int cols = mi_params->mi_cols;
 
-  print_mi_data(cm, mvs, "Partitions:", offsetof(MB_MODE_INFO, sb_type));
+  print_mi_data(cm, mvs, "Partitions:", offsetof(MB_MODE_INFO, bsize));
   print_mi_data(cm, mvs, "Modes:", offsetof(MB_MODE_INFO, mode));
   print_mi_data(cm, mvs, "Ref frame:", offsetof(MB_MODE_INFO, ref_frame[0]));
   print_mi_data(cm, mvs, "Transform:", offsetof(MB_MODE_INFO, tx_size));

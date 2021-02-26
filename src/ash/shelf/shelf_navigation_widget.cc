@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
@@ -18,12 +19,14 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
@@ -63,16 +66,23 @@ gfx::Rect GetSecondButtonBounds() {
                    ShelfConfig::Get()->control_size());
 }
 
-bool IsBackButtonShown() {
+bool IsBackButtonShown(bool horizontal_alignment) {
+  // Back button should only be shown in horizontal shelf.
+  // TODO(https://crbug.com/1102648): Horizontal shelf should be implied by
+  // tablet mode, but this may not be the case during tablet mode transition as
+  // shelf layout may get updated before the correct shelf alignment is set.
+  // Remove this when the linked bug is resolved.
+  if (!horizontal_alignment)
+    return false;
+
   // TODO(https://crbug.com/1058205): Test this behavior.
   if (ShelfConfig::Get()->is_virtual_keyboard_shown())
     return true;
 
   if (!ShelfConfig::Get()->shelf_controls_shown())
     return false;
-  return chromeos::switches::ShouldShowShelfHotseat()
-             ? Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()
-             : Shell::Get()->IsInTabletMode();
+
+  return Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app();
 }
 
 bool IsHomeButtonShown() {
@@ -98,11 +108,37 @@ class AnimationObserverToHideView : public ui::ImplicitAnimationObserver {
   views::View* const view_;
 };
 
+// Tracks the animation smoothness of a view's bounds animation using
+// ui::ThroughputTracker.
+class BoundsAnimationReporter : public gfx::AnimationDelegate {
+ public:
+  BoundsAnimationReporter(views::View* view,
+                          metrics_util::ReportCallback report_callback)
+      : tracker_(
+            view->GetWidget()->GetCompositor()->RequestNewThroughputTracker()) {
+    tracker_.Start(std::move(report_callback));
+  }
+  BoundsAnimationReporter(const BoundsAnimationReporter& other) = delete;
+  BoundsAnimationReporter& operator=(const BoundsAnimationReporter& other) =
+      delete;
+  ~BoundsAnimationReporter() override = default;
+
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override {
+    tracker_.Stop();
+  }
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    tracker_.Cancel();
+  }
+
+ private:
+  ui::ThroughputTracker tracker_;
+};
+
 }  // namespace
+
 // An animation metrics reporter for the shelf navigation buttons.
-class ASH_EXPORT NavigationButtonAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter,
-      public ShelfLayoutManagerObserver {
+class ASH_EXPORT NavigationButtonAnimationMetricsReporter {
  public:
   // The different kinds of navigation buttons.
   enum class NavigationButtonType {
@@ -111,25 +147,19 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
     // The Navigation Widget's home button.
     kHomeButton
   };
-  NavigationButtonAnimationMetricsReporter(
-      Shelf* shelf,
+  explicit NavigationButtonAnimationMetricsReporter(
       NavigationButtonType navigation_button_type)
-      : shelf_(shelf), navigation_button_type_(navigation_button_type) {
-    shelf_->shelf_layout_manager()->AddObserver(this);
-  }
+      : navigation_button_type_(navigation_button_type) {}
 
-  ~NavigationButtonAnimationMetricsReporter() override {
-    shelf_->shelf_layout_manager()->RemoveObserver(this);
-  }
+  ~NavigationButtonAnimationMetricsReporter() = default;
 
   NavigationButtonAnimationMetricsReporter(
       const NavigationButtonAnimationMetricsReporter&) = delete;
   NavigationButtonAnimationMetricsReporter& operator=(
       const NavigationButtonAnimationMetricsReporter&) = delete;
 
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    switch (target_state_) {
+  void ReportSmoothness(HotseatState target_hotseat_state, int smoothness) {
+    switch (target_hotseat_state) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         switch (navigation_button_type_) {
@@ -137,13 +167,13 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.BackButton.AnimationSmoothness."
                 "TransitionToShownHotseat",
-                value);
+                smoothness);
             break;
           case NavigationButtonType::kHomeButton:
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.HomeButton.AnimationSmoothness."
                 "TransitionToShownHotseat",
-                value);
+                smoothness);
             break;
           default:
             NOTREACHED();
@@ -156,13 +186,13 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.BackButton.AnimationSmoothness."
                 "TransitionToExtendedHotseat",
-                value);
+                smoothness);
             break;
           case NavigationButtonType::kHomeButton:
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.HomeButton.AnimationSmoothness."
                 "TransitionToExtendedHotseat",
-                value);
+                smoothness);
             break;
           default:
             NOTREACHED();
@@ -175,13 +205,13 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.BackButton.AnimationSmoothness."
                 "TransitionToHiddenHotseat",
-                value);
+                smoothness);
             break;
           case NavigationButtonType::kHomeButton:
             UMA_HISTOGRAM_PERCENTAGE(
                 "Ash.NavigationWidget.HomeButton.AnimationSmoothness."
                 "TransitionToHiddenHotseat",
-                value);
+                smoothness);
             break;
           default:
             NOTREACHED();
@@ -194,19 +224,20 @@ class ASH_EXPORT NavigationButtonAnimationMetricsReporter
     }
   }
 
-  // ShelfLayoutManagerObserver:
-  void OnHotseatStateChanged(HotseatState old_state,
-                             HotseatState new_state) override {
-    target_state_ = new_state;
+  metrics_util::ReportCallback GetReportCallback(
+      HotseatState target_hotseat_state) {
+    DCHECK_NE(target_hotseat_state, HotseatState::kNone);
+    return metrics_util::ForSmoothness(base::BindRepeating(
+        &NavigationButtonAnimationMetricsReporter::ReportSmoothness,
+        weak_ptr_factory_.GetWeakPtr(), target_hotseat_state));
   }
 
  private:
-  // Owned by RootWindowController
-  Shelf* shelf_;
-  // The state to which the animation is transitioning.
-  HotseatState target_state_ = HotseatState::kShownHomeLauncher;
   // The type of navigation button that is animated.
-  NavigationButtonType navigation_button_type_;
+  const NavigationButtonType navigation_button_type_;
+
+  base::WeakPtrFactory<NavigationButtonAnimationMetricsReporter>
+      weak_ptr_factory_{this};
 };
 
 class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
@@ -230,7 +261,6 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   View* GetDefaultFocusableChild() override;
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override;
   bool CanActivate() const override;
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
@@ -261,7 +291,9 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
 
 ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
     : opaque_background_(ui::LAYER_SOLID_COLOR), shelf_(shelf) {
-  set_owned_by_client();  // Deleted by DeleteDelegate().
+  SetOwnedByWidget(true);
+  set_owned_by_client();
+
   set_allow_deactivate_on_esc(true);
 
   const int control_size = ShelfConfig::Get()->control_size();
@@ -292,13 +324,13 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   opaque_background_.SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
 
   // Hide background if no buttons should be shown.
-  if (!IsHomeButtonShown() && !IsBackButtonShown()) {
+  if (!IsHomeButtonShown() &&
+      !IsBackButtonShown(shelf_->IsHorizontalAlignment())) {
     opaque_background_.SetVisible(false);
     return;
   }
 
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()) {
+  if (Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()) {
     opaque_background_.SetVisible(false);
     return;
   }
@@ -313,11 +345,6 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   // The opaque background does not show up when there are two buttons.
   gfx::Rect opaque_background_bounds =
       GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
-  if (base::i18n::IsRTL() && GetWidget() &&
-      Shelf::ForWindow(GetWidget()->GetNativeWindow())
-          ->IsHorizontalAlignment()) {
-    opaque_background_bounds.set_x(0);
-  }
   opaque_background_.SetBounds(opaque_background_bounds);
   opaque_background_.SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
@@ -327,10 +354,6 @@ bool ShelfNavigationWidget::Delegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
   return Shell::Get()->focus_cycler()->widget_activating() == GetWidget();
-}
-
-void ShelfNavigationWidget::Delegate::DeleteDelegate() {
-  delete this;
 }
 
 views::FocusTraversable*
@@ -405,21 +428,16 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
                                                   /*use_transforms=*/true)),
       back_button_metrics_reporter_(
           std::make_unique<NavigationButtonAnimationMetricsReporter>(
-              shelf,
               NavigationButtonAnimationMetricsReporter::NavigationButtonType::
                   kBackButton)),
       home_button_metrics_reporter_(
           std::make_unique<NavigationButtonAnimationMetricsReporter>(
-              shelf,
               NavigationButtonAnimationMetricsReporter::NavigationButtonType::
                   kHomeButton)) {
   DCHECK(shelf_);
-  ShelfConfig::Get()->AddObserver(this);
 }
 
 ShelfNavigationWidget::~ShelfNavigationWidget() {
-  ShelfConfig::Get()->RemoveObserver(this);
-
   // Cancel animations now so the BoundsAnimator doesn't outlive the metrics
   // reporter associated to it.
   bounds_animator_->Cancel();
@@ -437,43 +455,10 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   Init(std::move(params));
   delegate_->Init(GetLayer());
   set_focus_on_creation(false);
-  GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
+  delegate_->SetEnableArrowKeyTraversal(true);
   SetContentsView(delegate_);
-  SetSize(GetIdealSize());
+  SetSize(CalculateIdealSize(/*only_visible_area=*/false));
   UpdateLayout(/*animate=*/false);
-}
-
-gfx::Size ShelfNavigationWidget::GetIdealSize() const {
-  const int button_count =
-      (IsBackButtonShown() ? 1 : 0) + (IsHomeButtonShown() ? 1 : 0);
-
-  if (button_count == 0)
-    return gfx::Size();
-
-  const int control_size = ShelfConfig::Get()->control_size();
-  const int horizontal_spacing =
-      ShelfConfig::Get()->control_button_edge_spacing(
-          shelf_->IsHorizontalAlignment());
-  const int vertical_spacing = ShelfConfig::Get()->control_button_edge_spacing(
-      !shelf_->IsHorizontalAlignment());
-
-  if (!shelf_->IsHorizontalAlignment()) {
-    return gfx::Size(2 * horizontal_spacing + control_size,
-                     vertical_spacing + control_size);
-  }
-
-  gfx::Size ideal_size(
-      button_count * control_size +
-          (button_count - 1) * ShelfConfig::Get()->button_spacing(),
-      control_size);
-
-  // Enlarge the widget to take up available space, this ensures events which
-  // are outside of the HomeButton bounds can be received.
-  if (IsHomeButtonShown()) {
-    ideal_size.Enlarge(horizontal_spacing, 2 * vertical_spacing);
-  }
-
-  return ideal_size;
 }
 
 void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -517,7 +502,9 @@ void ShelfNavigationWidget::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 BackButton* ShelfNavigationWidget::GetBackButton() const {
-  return IsBackButtonShown() ? delegate_->back_button() : nullptr;
+  return IsBackButtonShown(shelf_->IsHorizontalAlignment())
+             ? delegate_->back_button()
+             : nullptr;
 }
 
 HomeButton* ShelfNavigationWidget::GetHomeButton() const {
@@ -529,22 +516,19 @@ void ShelfNavigationWidget::SetDefaultLastFocusableChild(
   delegate_->set_default_last_focusable_child(default_last_focusable_child);
 }
 
-void ShelfNavigationWidget::OnShelfConfigUpdated() {
-  UpdateLayout(/*animate=*/true);
-}
-
 void ShelfNavigationWidget::CalculateTargetBounds() {
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
 
   gfx::Point nav_origin = gfx::Point(shelf_origin.x(), shelf_origin.y());
-  gfx::Size nav_size = GetIdealSize();
+  gfx::Size nav_size = CalculateIdealSize(/*only_visible_area=*/false);
 
   if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL()) {
     nav_origin.set_x(shelf_->shelf_widget()->GetTargetBounds().size().width() -
                      nav_size.width());
   }
   target_bounds_ = gfx::Rect(nav_origin, nav_size);
+  clip_rect_ = CalculateClipRect();
 }
 
 gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
@@ -552,7 +536,8 @@ gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
 }
 
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
-  const bool back_button_shown = IsBackButtonShown();
+  const bool back_button_shown =
+      IsBackButtonShown(shelf_->IsHorizontalAlignment());
   const bool home_button_shown = IsHomeButtonShown();
 
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
@@ -577,30 +562,51 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   }
 
   // Use the same duration for all parts of the upcoming animation.
-  const auto animation_duration =
+  const base::TimeDelta animation_duration =
       animate ? ShelfConfig::Get()->shelf_animation_duration()
               : base::TimeDelta::FromMilliseconds(0);
-  ui::ScopedLayerAnimationSettings nav_animation_setter(
-      GetNativeView()->layer()->GetAnimator());
-  nav_animation_setter.SetTransitionDuration(animation_duration);
-  nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-  nav_animation_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (animate) {
-    nav_animation_setter.SetAnimationMetricsReporter(
-        shelf_->GetNavigationWidgetAnimationMetricsReporter());
+
+  const HotseatState target_hotseat_state =
+      layout_manager->CalculateHotseatState(layout_manager->visibility_state(),
+                                            layout_manager->auto_hide_state());
+
+  const bool update_opacity = !animate || GetLayer()->GetTargetOpacity() !=
+                                              layout_manager->GetOpacity();
+  const bool update_bounds =
+      !animate || GetLayer()->GetTargetBounds() != target_bounds_;
+
+  if (update_opacity || update_bounds) {
+    ui::ScopedLayerAnimationSettings nav_animation_setter(
+        GetNativeView()->layer()->GetAnimator());
+    nav_animation_setter.SetTransitionDuration(animation_duration);
+    nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    nav_animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+    base::Optional<ui::AnimationThroughputReporter> reporter;
+    if (animate) {
+      reporter.emplace(nav_animation_setter.GetAnimator(),
+                       shelf_->GetNavigationWidgetAnimationReportCallback(
+                           target_hotseat_state));
+    }
+    if (update_opacity)
+      GetLayer()->SetOpacity(layout_manager->GetOpacity());
+    if (update_bounds)
+      SetBounds(target_bounds_);
   }
 
-  GetLayer()->SetOpacity(layout_manager->GetOpacity());
-  SetBounds(target_bounds_);
+  if (update_bounds && Shell::Get()->IsInTabletMode())
+    GetLayer()->SetClipRect(clip_rect_);
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate,
-                         back_button_metrics_reporter_.get());
+                         back_button_metrics_reporter_.get(),
+                         target_hotseat_state);
 
   views::View* const home_button = delegate_->home_button();
   UpdateButtonVisibility(home_button, home_button_shown, animate,
-                         home_button_metrics_reporter_.get());
+                         home_button_metrics_reporter_.get(),
+                         target_hotseat_state);
 
   if (back_button_shown) {
     // TODO(https://crbug.com/1058205): Test this behavior.
@@ -619,12 +625,16 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
                         : GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
 
   if (animate) {
-    bounds_animator_->SetAnimationDuration(animation_duration);
-    bounds_animator_->SetAnimationMetricsReporter(
-        home_button_metrics_reporter_.get());
-    bounds_animator_->AnimateViewTo(home_button, home_button_bounds);
+    if (bounds_animator_->GetTargetBounds(home_button) != home_button_bounds) {
+      bounds_animator_->SetAnimationDuration(animation_duration);
+      bounds_animator_->AnimateViewTo(
+          home_button, home_button_bounds,
+          std::make_unique<BoundsAnimationReporter>(
+              home_button, home_button_metrics_reporter_->GetReportCallback(
+                               target_hotseat_state)));
+    }
   } else {
-    bounds_animator_->StopAnimatingView(home_button);
+    bounds_animator_->Cancel();
     home_button->SetBoundsRect(home_button_bounds);
   }
 
@@ -635,21 +645,42 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
 }
 
 void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
-  if (shelf_->IsHorizontalAlignment()) {
-    if (!Shell::Get()->IsInTabletMode() ||
-        !chromeos::switches::ShouldShowShelfHotseat()) {
-      target_bounds_.set_y(shelf_position);
-    }
-  } else {
+  if (shelf_->IsHorizontalAlignment())
+    target_bounds_.set_y(shelf_position);
+  else
     target_bounds_.set_x(shelf_position);
-  }
+}
+
+gfx::Rect ShelfNavigationWidget::GetVisibleBounds() const {
+  return gfx::Rect(target_bounds_.origin(), clip_rect_.size());
+}
+
+void ShelfNavigationWidget::PrepareForGettingFocus(bool last_element) {
+  SetDefaultLastFocusableChild(last_element);
+
+  // The native view of the navigation widget is not activatable when its target
+  // visibility is false. So show the widget before setting focus.
+
+  // Layer opacity should be set first. Because it is not allowed that a window
+  // is visible but the layers alpha is fully transparent.
+  ui::Layer* layer = GetLayer();
+  if (layer->GetTargetOpacity() != 1.f)
+    GetLayer()->SetOpacity(1.f);
+  if (!IsVisible())
+    ShowInactive();
+}
+
+void ShelfNavigationWidget::HandleLocaleChange() {
+  delegate_->home_button()->HandleLocaleChange();
+  delegate_->back_button()->HandleLocaleChange();
 }
 
 void ShelfNavigationWidget::UpdateButtonVisibility(
     views::View* button,
     bool visible,
     bool animate,
-    ui::AnimationMetricsReporter* reporter) {
+    NavigationButtonAnimationMetricsReporter* metrics_reporter,
+    HotseatState target_hotseat_state) {
   if (animate && button->layer()->GetTargetOpacity() == visible)
     return;
 
@@ -667,12 +698,75 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
       animate ? kButtonOpacityAnimationDuration : base::TimeDelta());
   opacity_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (animate)
-    opacity_settings.SetAnimationMetricsReporter(reporter);
+
+  base::Optional<ui::AnimationThroughputReporter> reporter;
+  if (animate) {
+    reporter.emplace(opacity_settings.GetAnimator(),
+                     metrics_reporter->GetReportCallback(target_hotseat_state));
+  }
+
   if (!visible)
     opacity_settings.AddObserver(new AnimationObserverToHideView(button));
 
   button->layer()->SetOpacity(visible ? 1.0f : 0.0f);
+}
+
+gfx::Rect ShelfNavigationWidget::CalculateClipRect() const {
+  if (Shell::Get()->IsInTabletMode())
+    return gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+
+  return gfx::Rect(target_bounds_.size());
+}
+
+gfx::Size ShelfNavigationWidget::CalculateIdealSize(
+    bool only_visible_area) const {
+  if (!ShelfConfig::Get()->shelf_controls_shown())
+    return gfx::Size();
+
+  int control_button_number;
+  if (Shell::Get()->IsInTabletMode() && !only_visible_area) {
+    // There are home button and back button. So the maximum is 2.
+    control_button_number = 2;
+  } else {
+    control_button_number = CalculateButtonCount();
+  }
+
+  const int control_size = ShelfConfig::Get()->control_size();
+  int controls_space =
+      control_button_number * control_size +
+      (control_button_number - 1) * ShelfConfig::Get()->button_spacing();
+  const int major_axis_spacing =
+      2 * ShelfConfig::Get()->control_button_edge_spacing(
+              shelf_->IsHorizontalAlignment());
+
+  const int major_axis_length = controls_space + major_axis_spacing;
+
+  // Calculate |minor_axis_spacing|.
+  int minor_axis_spacing;
+  if (only_visible_area) {
+    minor_axis_spacing = 2 * ShelfConfig::Get()->control_button_edge_spacing(
+                                 !shelf_->IsHorizontalAlignment());
+  } else {
+    // When calculating the minor axis length of the navigation widget, use
+    // the larger edge spacing between the home launcher state and the in-app
+    // state. It ensures that the widget' size is constant during the transition
+    // between these two states.
+
+    DCHECK_GT(ShelfConfig::Get()->system_shelf_size(),
+              ShelfConfig::Get()->in_app_shelf_size());
+    minor_axis_spacing = ShelfConfig::Get()->system_shelf_size() - control_size;
+  }
+
+  const int minor_axis_length = control_size + minor_axis_spacing;
+
+  return shelf_->IsHorizontalAlignment()
+             ? gfx::Size(major_axis_length, minor_axis_length)
+             : gfx::Size(minor_axis_length, major_axis_length);
+}
+
+int ShelfNavigationWidget::CalculateButtonCount() const {
+  return (IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? 1 : 0) +
+         (IsHomeButtonShown() ? 1 : 0);
 }
 
 }  // namespace ash

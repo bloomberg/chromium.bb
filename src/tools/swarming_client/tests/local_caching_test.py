@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2018 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -50,7 +50,7 @@ def read_tree(path):
 
 
 def _gen_data(size):
-  return (string.digits*((size+9)/10))[:size]
+  return six.ensure_binary(string.digits * ((size + 9) // 10))[:size]
 
 
 class TestCase(auto_stub.TestCase):
@@ -59,8 +59,8 @@ class TestCase(auto_stub.TestCase):
     self.tempdir = tempfile.mkdtemp(prefix=u'local_caching')
     self._algo = hashlib.sha1
     # Time mocking.
-    self._now = 1000.0
-    self.mock(time, 'time', lambda: self._now)
+    self._now = 1000
+    self.mock(time, 'time', lambda: float(self._now))
 
     # Free disk space mocking.
     self._free_disk = 1000
@@ -233,7 +233,7 @@ class ContentAddressedCacheTestMixin(CacheTestMixin):
     cache = self.get_cache(_get_policies())
     h = self._add_one_item(cache, 1)
     with cache.getfileobj(h) as f:
-      self.assertEqual('0', f.read())
+      self.assertEqual(b'0', f.read())
 
   def test_getfileobj_complete_miss(self):
     cache = self.get_cache(_get_policies())
@@ -312,7 +312,7 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
                 'cache=6 bytes (0.000 GiB), 3 items; '
                 '999 bytes (0.000 GiB) free_space')
 
-    self.assertEqual(expected, cm.exception.message)
+    self.assertEqual(expected, str(cm.exception))
 
   def test_save_disk(self):
     cache = self.get_cache(_get_policies())
@@ -337,14 +337,14 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     # cleanup.
     self._free_disk = 1003
     cache = self.get_cache(_get_policies(min_free_space=1000))
-    h_foo = self._algo('foo').hexdigest()
+    h_foo = self._algo(b'foo').hexdigest()
     self.assertEqual([], sorted(cache._lru._items.items()))
-    cache.write(h_foo, ['foo'])
+    cache.write(h_foo, [b'foo'])
     self.assertEqual([], cache.trim())
     self.assertEqual([h_foo], [i[0] for i in cache._lru._items.items()])
 
-    h_a = self._algo('a').hexdigest()
-    local_caching.file_write(os.path.join(cache.cache_dir, h_a), 'a')
+    h_a = self._algo(b'a').hexdigest()
+    local_caching.file_write(os.path.join(cache.cache_dir, h_a), [b'a'])
 
     # file_path.remove() explicitly handle the +R bit on Windows.
     file_path.remove(os.path.join(cache.cache_dir, h_foo))
@@ -361,36 +361,30 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     cache = self.get_cache(_get_policies(min_free_space=1000))
 
     # add a corrupted item
-    h_a = self._algo('a').hexdigest()
-    cache.write(h_a, 'A')
-    h_b = self._algo('b').hexdigest()
-    cache.write(h_b, 'b')
+    h_a = self._algo(b'a').hexdigest()
+    cache.write(h_a, [b'A'])
+    h_b = self._algo(b'b').hexdigest()
+    cache.write(h_b, [b'b'])
 
     mtime_a = self._now
     mtime_b = self._now
     def _get_mtime(h):
-        if h == h_a:
-            return mtime_a
-        if h == h_b:
-            return mtime_b
+      if h == h_a:
+        return mtime_a
+      if h == h_b:
+        return mtime_b
 
     self.mock(cache, '_get_mtime', _get_mtime)
-
-    self.assertEqual(
-        [(h_a, (1, mtime_a)), (h_b, (1, mtime_b))],
-        cache._lru._items.items())
-    self.assertItemsEqual(
-        ([h_a, h_b, cache.STATE_FILE]),
-        (fs.listdir(cache.cache_dir))
-    )
+    self.assertEqual([(h_a, (1, mtime_a)), (h_b, (1, mtime_b))],
+                     list(cache._lru._items.items()))
+    six.assertCountEqual(self, ([h_a, h_b, cache.STATE_FILE]),
+                         (fs.listdir(cache.cache_dir)))
 
     # if the mtime is same with the timestamp in state.json,
     # the varification won't run.
     cache.cleanup()
-    self.assertItemsEqual(
-        ([h_a, h_b, cache.STATE_FILE]),
-        (fs.listdir(cache.cache_dir))
-    )
+    six.assertCountEqual(self, ([h_a, h_b, cache.STATE_FILE]),
+                         (fs.listdir(cache.cache_dir)))
 
     # if the mtime is after the timestamp in the state.json
     # the varification will run and removed the corrupted file.
@@ -398,23 +392,18 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     mtime_b += 1
     self.mock(cache._lru, 'time_fn', lambda: mtime_b)
     cache.cleanup()
-    self.assertItemsEqual(
-        ([h_b, cache.STATE_FILE]),
-        (fs.listdir(cache.cache_dir))
-    )
-    self.assertItemsEqual(
-        [(h_b, (1, mtime_b))],
-        cache._lru._items.items()
-    )
+    six.assertCountEqual(self, ([h_b, cache.STATE_FILE]),
+                         (fs.listdir(cache.cache_dir)))
+    six.assertCountEqual(self, [(h_b, (1, mtime_b))], cache._lru._items.items())
 
   def test_policies_active_trimming(self):
     # Start with a larger cache, add many object.
     # Reload the cache with smaller policies, the cache should be trimmed on
     # load.
-    h_a = self._algo('a').hexdigest()
-    h_b = self._algo('b').hexdigest()
-    h_c = self._algo('c').hexdigest()
-    large = 'b' * 99
+    h_a = self._algo(b'a').hexdigest()
+    h_b = self._algo(b'b').hexdigest()
+    h_c = self._algo(b'c').hexdigest()
+    large = b'b' * 99
     h_large = self._algo(large).hexdigest()
 
     def assertItems(expected):
@@ -427,12 +416,12 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
         max_cache_size=100,
         max_items=2,
         min_free_space=1000))
-    cache.write(h_a, 'a')
-    cache.write(h_large, large)
+    cache.write(h_a, [b'a'])
+    cache.write(h_large, [large])
     # Cache (size and # items) is not enforced while adding items. The
     # rationale is that a task may request more data than the size of the
     # cache policies. As long as there is free space, this is fine.
-    cache.write(h_b, 'b')
+    cache.write(h_b, [b'b'])
     assertItems([(h_a, 1), (h_large, len(large)), (h_b, 1)])
     self.assertEqual(h_a, cache._protected)
     self.assertEqual(1000, cache._free_disk)
@@ -440,13 +429,13 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     # be able to start. In this case, it throws an exception since all items
     # are protected. The item is added since it's detected after the fact.
     with self.assertRaises(local_caching.NoMoreSpace):
-      cache.write(h_c, 'c')
+      cache.write(h_c, [b'c'])
     self.assertEqual([1, 99], cache.trim())
 
     # At this point, after the implicit trim in __exit__(), h_a and h_large were
     # evicted.
     self.assertEqual(
-        sorted([unicode(h_b),
+        sorted([six.ensure_text(h_b),
                 six.text_type(h_c), cache.STATE_FILE]),
         sorted(fs.listdir(cache.cache_dir)))
 
@@ -456,7 +445,7 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
         min_free_space=1000,
         max_items=3,
         max_age_secs=0))
-    cache.write(h_large, large)
+    cache.write(h_large, [large])
     self.assertEqual(3, len(cache))
     self.assertEqual(101, cache.total_size)
     self.assertEqual([], cache.trim())
@@ -488,18 +477,18 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
         max_age_secs=21*24*60*60))
     self._now = 100
     # Test the very limit of 3 weeks:
-    cache.write(self._algo('old').hexdigest(), 'old')
+    cache.write(self._algo(b'old').hexdigest(), [b'old'])
     self._now += 1
-    cache.write(self._algo('recent').hexdigest(), 'recent')
+    cache.write(self._algo(b'recent').hexdigest(), [b'recent'])
     self._now += 21*24*60*60
     self.assertEqual([3], cache.trim())
-    self.assertEqual([self._algo('recent').hexdigest()], list(cache))
+    self.assertEqual([self._algo(b'recent').hexdigest()], list(cache))
 
   def test_some_file_brutally_deleted(self):
-    h_a = self._algo('a').hexdigest()
+    h_a = self._algo(b'a').hexdigest()
     self._free_disk = 1100
     cache = self.get_cache(_get_policies())
-    cache.write(h_a, 'a')
+    cache.write(h_a, [b'a'])
     self.assertTrue(cache.touch(h_a, local_caching.UNKNOWN_FILE_SIZE))
     self.assertTrue(cache.touch(h_a, 1))
     self.assertEqual([], cache.trim())
@@ -544,35 +533,39 @@ class NamedCacheTest(TestCase, CacheTestMixin):
 
     a_path = os.path.join(dest_dir, u'a')
     b_path = os.path.join(dest_dir, u'b')
+    c_path = os.path.join(dest_dir, u'c')
 
     self.assertEqual(0, cache.install(a_path, u'1'))
     self.assertEqual(0, cache.install(b_path, u'2'))
+    self.assertEqual(0, cache.install(c_path, u'3'))
     self.assertEqual(
         False, fs.exists(os.path.join(cache.cache_dir, cache.NAMED_DIR)))
 
-    self.assertEqual({u'a', u'b'}, set(fs.listdir(dest_dir)))
+    self.assertEqual({u'a', u'b', u'c'}, set(fs.listdir(dest_dir)))
     self.assertFalse(cache.available)
     self.assertEqual([cache.STATE_FILE], fs.listdir(cache.cache_dir))
 
-    write_file(os.path.join(a_path, u'x'), u'x')
-    write_file(os.path.join(b_path, u'y'), u'y')
+    write_file(os.path.join(a_path, u'x'), b'x')
+    write_file(os.path.join(b_path, u'y'), b'y')
 
     self.assertEqual(1, cache.uninstall(a_path, u'1'))
     self.assertEqual(1, cache.uninstall(b_path, u'2'))
+    self.assertEqual(0, cache.uninstall(c_path, u'3'))
 
-    self.assertEqual(4, len(fs.listdir(cache.cache_dir)))
+    self.assertEqual(5, len(fs.listdir(cache.cache_dir)))
     path1 = os.path.join(cache.cache_dir, cache._lru['1'][0])
-    self.assertEqual('x', read_file(os.path.join(path1, u'x')))
+    self.assertEqual(b'x', read_file(os.path.join(path1, u'x')))
     path2 = os.path.join(cache.cache_dir, cache._lru['2'][0])
-    self.assertEqual('y', read_file(os.path.join(path2, u'y')))
+    self.assertEqual(b'y', read_file(os.path.join(path2, u'y')))
     self.assertEqual(
         os.path.join(u'..', cache._lru['1'][0]),
         fs.readlink(cache._get_named_path('1')))
     self.assertEqual(
         os.path.join(u'..', cache._lru['2'][0]),
         fs.readlink(cache._get_named_path('2')))
+    # empty cache should be kept for better bot affinity.
     self.assertEqual(
-        [u'1', u'2'],
+        [u'1', u'2', u'3'],
         sorted(fs.listdir(os.path.join(cache.cache_dir, cache.NAMED_DIR))))
 
   def test_existing_cache(self):
@@ -584,7 +577,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     b_path = os.path.join(dest_dir, u'b')
 
     self.assertEqual(0, cache.install(a_path, u'1'))
-    write_file(os.path.join(dest_dir, u'a', u'x'), u'x')
+    write_file(os.path.join(dest_dir, u'a', u'x'), b'x')
     self.assertEqual(1, cache.uninstall(a_path, u'1'))
 
     # Test starts here.
@@ -598,18 +591,18 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     self.assertEqual(
         [], fs.listdir(os.path.join(cache.cache_dir, cache.NAMED_DIR)))
 
-    self.assertEqual('x', read_file(os.path.join(dest_dir, u'a', u'x')))
-    write_file(os.path.join(a_path, 'x'), 'x2')
-    write_file(os.path.join(b_path, 'y'), 'y')
+    self.assertEqual(b'x', read_file(os.path.join(dest_dir, u'a', u'x')))
+    write_file(os.path.join(a_path, 'x'), b'x2')
+    write_file(os.path.join(b_path, 'y'), b'y')
 
     self.assertEqual(2, cache.uninstall(a_path, '1'))
     self.assertEqual(1, cache.uninstall(b_path, '2'))
 
     self.assertEqual(4, len(fs.listdir(cache.cache_dir)))
     path1 = os.path.join(cache.cache_dir, cache._lru['1'][0])
-    self.assertEqual('x2', read_file(os.path.join(path1, 'x')))
+    self.assertEqual(b'x2', read_file(os.path.join(path1, 'x')))
     path2 = os.path.join(cache.cache_dir, cache._lru['2'][0])
-    self.assertEqual('y', read_file(os.path.join(path2, 'y')))
+    self.assertEqual(b'y', read_file(os.path.join(path2, 'y')))
     self.assertEqual(
         os.path.join(u'..', cache._lru['1'][0]),
         fs.readlink(cache._get_named_path('1')))
@@ -663,7 +656,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     dest_dir = os.path.join(self.tempdir, 'dest')
     self.assertEqual(0, cache.install(dest_dir, u'1'))
     with fs.open(os.path.join(dest_dir, u'hi'), 'wb') as f:
-      f.write('hello')
+      f.write(b'hello')
     self.assertEqual(5, cache.uninstall(dest_dir, u'1'))
     self.assertEqual(
         [u'1'], fs.listdir(os.path.join(cache.cache_dir, cache.NAMED_DIR)))
@@ -822,18 +815,18 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     fs.mkdir(self.cache_dir)
     fs.mkdir(os.path.join(self.cache_dir, 'f1'))
     with fs.open(os.path.join(self.cache_dir, 'f1', 'hello'), 'wb') as f:
-      f.write('world')
+      f.write(b'world')
     # v1
     old = {
         'version': lru.CURRENT_VERSION,
-        'items': [['cache1', ['f1', now]],],
+        'items': [['cache1', [['f1', len('world')], now]],],
     }
     c = local_caching.NamedCache
     with fs.open(os.path.join(self.cache_dir, c.STATE_FILE), 'w') as f:
       json.dump(old, f)
     # It automatically upgrades to v2.
     cache = self.get_cache(_get_policies())
-    expected = {u'cache1': ((u'f1', len('world')), now)}
+    expected = {u'cache1': [[u'f1', len('world')], now]}
     self.assertEqual(expected, dict(cache._lru._items.items()))
     self.assertEqual(
         [u'f1', cache.STATE_FILE], sorted(fs.listdir(cache.cache_dir)))
@@ -841,7 +834,8 @@ class NamedCacheTest(TestCase, CacheTestMixin):
 
 def _gen_state(items):
   state = {'items': items, 'version': lru.CURRENT_VERSION}
-  return json.dumps(state, sort_keys=True, separators=(',', ':'))
+  return json.dumps(
+      state, sort_keys=True, separators=(',', ':')).encode('utf-8')
 
 
 class FnTest(TestCase):
@@ -885,11 +879,10 @@ class FnTest(TestCase):
         six.text_type(self._algo(_gen_data(n)).hexdigest()): _gen_data(n)
         for n in items
     }
-    expected[cache.STATE_FILE] = _gen_state(
-        [
-          [unicode(self._algo(_gen_data(n)).hexdigest()), [n, self._now+n-1]]
-          for n in items
-        ])
+    expected[cache.STATE_FILE] = _gen_state([[
+        six.ensure_text(self._algo(_gen_data(n)).hexdigest()),
+        [n, self._now + n - 1]
+    ] for n in items])
     self.assertEqual(expected, read_tree(cache.cache_dir))
 
   def _prepare_named_cache(self, cache):
@@ -913,10 +906,7 @@ class FnTest(TestCase):
         os.path.join(short_names[n], u'hello'): _gen_data(n) for n in items
     }
     expected[cache.STATE_FILE] = _gen_state(
-        [
-          [unicode(n), [[short_names[n], n], self._now+n-1]]
-          for n in items
-        ])
+        [[str(n), [[short_names[n], n], self._now + n - 1]] for n in items])
     self.assertEqual(expected, actual)
 
   def test_clean_caches_disk(self):
@@ -977,7 +967,7 @@ class FnTest(TestCase):
         min_free_space=1000,
         max_age_secs=0)
     # sum(range(1, 15)) == 105, the first value after 100.
-    self.assertEqual(range(1, 15), trimmed)
+    self.assertEqual(list(range(1, 15)), trimmed)
 
   def test_clean_caches_memory_time(self):
     # Test that cleaning is correctly distributed independent of the cache
@@ -990,7 +980,7 @@ class FnTest(TestCase):
         min_free_space=0,
         max_age_secs=10)
     # Only the last 10 items are kept. The first 90 items were trimmed.
-    self.assertEqual(range(1, 91), trimmed)
+    self.assertEqual(list(range(1, 91)), trimmed)
 
   def _check_get_recursive_size(self, symlink='symlink'):
     # Test that _get_recursive_size calculates file size recursively.

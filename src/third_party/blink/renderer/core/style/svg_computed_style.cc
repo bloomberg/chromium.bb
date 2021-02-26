@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
 
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 
@@ -125,6 +126,9 @@ StyleDifference SVGComputedStyle::Diff(const SVGComputedStyle& other) const {
     style_difference.SetNeedsPaintInvalidation();
   }
 
+  if (!DataEquivalent(resources->masker, other.resources->masker))
+    style_difference.SetMaskChanged();
+
   return style_difference;
 }
 
@@ -208,12 +212,8 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
   // Painting related properties only need paint invalidation.
   if (misc.Get() != other.misc.Get()) {
     if (misc->flood_color != other.misc->flood_color ||
-        misc->flood_color_is_current_color !=
-            other.misc->flood_color_is_current_color ||
         misc->flood_opacity != other.misc->flood_opacity ||
-        misc->lighting_color != other.misc->lighting_color ||
-        misc->lighting_color_is_current_color !=
-            other.misc->lighting_color_is_current_color)
+        misc->lighting_color != other.misc->lighting_color)
       return true;
   }
 

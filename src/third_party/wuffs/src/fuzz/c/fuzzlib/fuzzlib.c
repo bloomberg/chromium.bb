@@ -21,18 +21,18 @@
 #error "Wuffs' .h files need to be included before this file"
 #endif
 
-volatile int* intentional_segfault_ptr = NULL;
-
-void intentional_segfault() {
-  *intentional_segfault_ptr = 0;
+void  //
+intentional_segfault() {
+  static volatile int* ptr = NULL;
+  *ptr = 0;
 }
 
-const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash);
-
-static const char* llvmFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Hash input as per https://en.wikipedia.org/wiki/Jenkins_hash_function
-  size_t i = 0;
+// jenkins_hash_u32 implements
+// https://en.wikipedia.org/wiki/Jenkins_hash_function
+static uint32_t  //
+jenkins_hash_u32(const uint8_t* data, size_t size) {
   uint32_t hash = 0;
+  size_t i = 0;
   while (i != size) {
     hash += data[i++];
     hash += hash << 10;
@@ -41,6 +41,19 @@ static const char* llvmFuzzerTestOneInput(const uint8_t* data, size_t size) {
   hash += hash << 3;
   hash ^= hash >> 11;
   hash += hash << 15;
+  return hash;
+}
+
+const char*  //
+fuzz(wuffs_base__io_buffer* src, uint64_t hash);
+
+static const char*  //
+llvmFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Make a 64-bit hash out of two 32-bit hashes, each on half of the data.
+  size_t s2 = size / 2;
+  uint32_t hash0 = jenkins_hash_u32(data, s2);
+  uint32_t hash1 = jenkins_hash_u32(data + s2, size - s2);
+  uint64_t hash = (((uint64_t)hash0) << 32) | ((uint64_t)hash1);
 
   wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
       .data = ((wuffs_base__slice_u8){
@@ -56,9 +69,14 @@ static const char* llvmFuzzerTestOneInput(const uint8_t* data, size_t size) {
   });
 
   const char* msg = fuzz(&src, hash);
-  if (msg && strstr(msg, "internal error:")) {
-    fprintf(stderr, "internal errors shouldn't occur: \"%s\"\n", msg);
-    intentional_segfault();
+  if (msg) {
+    if (strnlen(msg, 2047) >= 2047) {
+      msg = "fuzzlib: internal error: error message is too long";
+    }
+    if (strstr(msg, "internal error:")) {
+      fprintf(stderr, "internal errors shouldn't occur: \"%s\"\n", msg);
+      intentional_segfault();
+    }
   }
   return msg;
 }
@@ -67,7 +85,8 @@ static const char* llvmFuzzerTestOneInput(const uint8_t* data, size_t size) {
 extern "C" {
 #endif
 
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int  //
+LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   llvmFuzzerTestOneInput(data, size);
   return 0;
 }
@@ -75,6 +94,25 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #ifdef __cplusplus
 }  // extern "C"
 #endif
+
+static wuffs_base__io_buffer  //
+make_limited_reader(wuffs_base__io_buffer b, uint64_t limit) {
+  uint64_t n = b.meta.wi - b.meta.ri;
+  bool closed = b.meta.closed;
+  if (n > limit) {
+    n = limit;
+    closed = false;
+  }
+
+  wuffs_base__io_buffer ret;
+  ret.data.ptr = b.data.ptr + b.meta.ri;
+  ret.data.len = n;
+  ret.meta.wi = n;
+  ret.meta.ri = 0;
+  ret.meta.pos = wuffs_base__u64__sat_add(b.meta.pos, b.meta.ri);
+  ret.meta.closed = closed;
+  return ret;
+}
 
 #ifdef WUFFS_CONFIG__FUZZLIB_MAIN
 
@@ -86,31 +124,84 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #include <sys/stat.h>
 #include <unistd.h>
 
-static int num_files_processed;
+struct {
+  int remaining_argc;
+  char** remaining_argv;
+
+  bool color;
+} g_flags = {0};
+
+const char*  //
+parse_flags(int argc, char** argv) {
+  int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
+  for (; c < argc; c++) {
+    char* arg = argv[c];
+    if (*arg++ != '-') {
+      break;
+    }
+
+    // A double-dash "--foo" is equivalent to a single-dash "-foo". As special
+    // cases, a bare "-" is not a flag (some programs may interpret it as
+    // stdin) and a bare "--" means to stop parsing flags.
+    if (*arg == '\x00') {
+      break;
+    } else if (*arg == '-') {
+      arg++;
+      if (*arg == '\x00') {
+        c++;
+        break;
+      }
+    }
+
+    if (!strcmp(arg, "c") || !strcmp(arg, "color")) {
+      g_flags.color = true;
+      continue;
+    }
+
+    return "main: unrecognized flag argument";
+  }
+
+  g_flags.remaining_argc = argc - c;
+  g_flags.remaining_argv = argv + c;
+  return NULL;
+}
+
+static int g_num_files_processed;
 
 static struct {
   char buf[PATH_MAX];
   size_t len;
-} relative_cwd;
+} g_relative_cwd;
 
-static int visit(char* filename);
+void  //
+errorf(const char* msg) {
+  if (g_flags.color) {
+    printf("\e[31m%s\e[0m\n", msg);
+  } else {
+    printf("%s\n", msg);
+  }
+}
 
-static int visit_dir(int fd) {
+static int  //
+visit(char* filename);
+
+static int  //
+visit_dir(int fd) {
   int cwd_fd = open(".", O_RDONLY, 0);
   if (fchdir(fd)) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: fchdir: %s\n", strerror(errno));
     return 1;
   }
 
   DIR* d = fdopendir(fd);
   if (!d) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: fdopendir: %s\n", strerror(errno));
     return 1;
   }
 
-  printf("+dir\n");
+  printf("dir\n");
   while (true) {
     struct dirent* e = readdir(d);
     if (!e) {
@@ -140,9 +231,10 @@ static int visit_dir(int fd) {
   return 0;
 }
 
-static int visit_reg(int fd, off_t size) {
+static int  //
+visit_reg(int fd, off_t size) {
   if ((size < 0) || (0x7FFFFFFF < size)) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: file size out of bounds");
     return 1;
   }
@@ -151,17 +243,20 @@ static int visit_reg(int fd, off_t size) {
   if (size > 0) {
     data = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
-      printf("failed\n");
+      errorf("failed");
       fprintf(stderr, "FAIL: mmap: %s\n", strerror(errno));
       return 1;
     }
   }
 
   const char* msg = llvmFuzzerTestOneInput((const uint8_t*)(data), size);
-  if (!msg) {
-    msg = "+ok";
+  if (msg) {
+    errorf(msg);
+  } else if (g_flags.color) {
+    printf("\e[32mok\e[0m\n");
+  } else {
+    printf("ok\n");
   }
-  printf("%s\n", msg);
 
   if ((size > 0) && munmap(data, size)) {
     fprintf(stderr, "FAIL: mmap: %s\n", strerror(errno));
@@ -174,24 +269,26 @@ static int visit_reg(int fd, off_t size) {
   return 0;
 }
 
-static int visit(char* filename) {
-  num_files_processed++;
+static int  //
+visit(char* filename) {
+  g_num_files_processed++;
   if (!filename || (filename[0] == '\x00')) {
     fprintf(stderr, "FAIL: invalid filename\n");
     return 1;
   }
-  int n = printf("- %s%s", relative_cwd.buf, filename);
+  int n = printf("- %s%s", g_relative_cwd.buf, filename);
   printf("%*s", (60 > n) ? (60 - n) : 1, "");
+  fflush(stdout);
 
   struct stat z;
   int fd = open(filename, O_RDONLY, 0);
   if (fd == -1) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: open: %s\n", strerror(errno));
     return 1;
   }
   if (fstat(fd, &z)) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: fstat: %s\n", strerror(errno));
     return 1;
   }
@@ -203,7 +300,7 @@ static int visit(char* filename) {
     return 0;
   }
 
-  size_t old_len = relative_cwd.len;
+  size_t old_len = g_relative_cwd.len;
   size_t filename_len = strlen(filename);
   size_t new_len = old_len + strlen(filename);
   bool slash = filename[filename_len - 1] != '/';
@@ -211,37 +308,44 @@ static int visit(char* filename) {
     new_len++;
   }
   if ((filename_len >= PATH_MAX) || (new_len >= PATH_MAX)) {
-    printf("failed\n");
+    errorf("failed");
     fprintf(stderr, "FAIL: path is too long\n");
     return 1;
   }
-  memcpy(relative_cwd.buf + old_len, filename, filename_len);
+  memcpy(g_relative_cwd.buf + old_len, filename, filename_len);
 
   if (slash) {
-    relative_cwd.buf[new_len - 1] = '/';
+    g_relative_cwd.buf[new_len - 1] = '/';
   }
-  relative_cwd.buf[new_len] = '\x00';
-  relative_cwd.len = new_len;
+  g_relative_cwd.buf[new_len] = '\x00';
+  g_relative_cwd.len = new_len;
 
   int v = visit_dir(fd);
 
-  relative_cwd.buf[old_len] = '\x00';
-  relative_cwd.len = old_len;
+  g_relative_cwd.buf[old_len] = '\x00';
+  g_relative_cwd.len = old_len;
   return v;
 }
 
-int main(int argc, char** argv) {
-  num_files_processed = 0;
-  relative_cwd.len = 0;
+int  //
+main(int argc, char** argv) {
+  g_num_files_processed = 0;
+  g_relative_cwd.len = 0;
 
+  const char* z = parse_flags(argc, argv);
+  if (z) {
+    fprintf(stderr, "FAIL: %s\n", z);
+    return 1;
+  }
   int i;
-  for (i = 1; i < argc; i++) {
-    int v = visit(argv[i]);
+  for (i = 0; i < g_flags.remaining_argc; i++) {
+    int v = visit(g_flags.remaining_argv[i]);
     if (v) {
       return v;
     }
   }
-  printf("PASS: %d files processed\n", num_files_processed);
+
+  printf("PASS: %d files processed\n", g_num_files_processed);
   return 0;
 }
 

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import androidx.annotation.AnyThread;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
@@ -24,6 +25,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mTrustedVaultKeyRequired;
     private boolean mTrustedVaultKeyRequiredForPreferredDataTypes;
     private boolean mEncryptEverythingEnabled;
+    private boolean mRequiresClientUpgrade;
     private Set<Integer> mChosenTypes = new HashSet<>();
     private boolean mCanSyncFeatureStart;
     @GoogleServiceAuthError.State
@@ -126,16 +128,24 @@ public class FakeProfileSyncService extends ProfileSyncService {
     }
 
     @Override
-    public void enableEncryptEverything() {
-        mEncryptEverythingEnabled = true;
-    }
-
-    @Override
     public boolean canSyncFeatureStart() {
         return mCanSyncFeatureStart;
     }
 
     public void setCanSyncFeatureStart(boolean canSyncFeatureStart) {
         mCanSyncFeatureStart = canSyncFeatureStart;
+    }
+
+    @Override
+    public boolean requiresClientUpgrade() {
+        return mRequiresClientUpgrade;
+    }
+
+    public void setRequiresClientUpgrade(boolean requiresClientUpgrade) {
+        mRequiresClientUpgrade = requiresClientUpgrade;
+    }
+
+    public void setEncryptEverythingEnabled(boolean encryptEverythingEnabled) {
+        mEncryptEverythingEnabled = encryptEverythingEnabled;
     }
 }

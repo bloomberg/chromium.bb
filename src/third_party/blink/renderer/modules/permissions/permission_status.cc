@@ -44,10 +44,6 @@ PermissionStatus::PermissionStatus(ExecutionContext* execution_context,
 
 PermissionStatus::~PermissionStatus() = default;
 
-void PermissionStatus::Dispose() {
-  StopListening();
-}
-
 const AtomicString& PermissionStatus::InterfaceName() const {
   return event_target_names::kPermissionStatus;
 }
@@ -98,7 +94,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
-void PermissionStatus::Trace(Visitor* visitor) {
+void PermissionStatus::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);

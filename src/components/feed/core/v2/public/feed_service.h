@@ -34,6 +34,10 @@ class Record;
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
+namespace offline_pages {
+class OfflinePageModel;
+class PrefetchService;
+}  // namespace offline_pages
 namespace signin {
 class IdentityManager;
 }  // namespace signin
@@ -44,9 +48,11 @@ class MetricsReporter;
 class FeedNetwork;
 class FeedStore;
 class FeedStream;
+class ImageFetcher;
 
 namespace internal {
-bool ShouldClearFeed(const history::DeletionInfo& deletion_info);
+bool ShouldClearFeed(bool is_signed_in,
+                     const history::DeletionInfo& deletion_info);
 }  // namespace internal
 
 class FeedService : public KeyedService {
@@ -59,6 +65,10 @@ class FeedService : public KeyedService {
     virtual std::string GetLanguageTag() = 0;
     // Returns display metrics for the device.
     virtual DisplayMetrics GetDisplayMetrics() = 0;
+    // Clear all stored data.
+    virtual void ClearAll() = 0;
+    // Fetch the image and store it in the disk cache.
+    virtual void PrefetchImage(const GURL& url) = 0;
   };
 
   // Construct a FeedService given an already constructed FeedStream.
@@ -74,6 +84,8 @@ class FeedService : public KeyedService {
       std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
       signin::IdentityManager* identity_manager,
       history::HistoryService* history_service,
+      offline_pages::PrefetchService* prefetch_service,
+      offline_pages::OfflinePageModel* offline_page_model,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& api_key,
@@ -90,10 +102,14 @@ class FeedService : public KeyedService {
     return refresh_task_scheduler_.get();
   }
 
+  // Whether Feedv2 is enabled. If false, the FeedService should not be created.
+  static bool IsEnabled(const PrefService& pref_service);
+
  private:
   class StreamDelegateImpl;
   class NetworkDelegateImpl;
   class HistoryObserverImpl;
+  class IdentityManagerObserverImpl;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
 #endif
@@ -105,9 +121,11 @@ class FeedService : public KeyedService {
   std::unique_ptr<MetricsReporter> metrics_reporter_;
   std::unique_ptr<NetworkDelegateImpl> network_delegate_;
   std::unique_ptr<FeedNetwork> feed_network_;
+  std::unique_ptr<ImageFetcher> image_fetcher_;
   std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
+  std::unique_ptr<IdentityManagerObserverImpl> identity_manager_observer_;
 #if defined(OS_ANDROID)
   bool foregrounded_ = true;
   std::unique_ptr<base::android::ApplicationStatusListener>

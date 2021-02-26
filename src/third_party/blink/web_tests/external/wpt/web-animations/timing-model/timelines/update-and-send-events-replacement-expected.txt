@@ -9,17 +9,17 @@ PASS Removes an animation after updating the fill mode of another animation
 PASS Removes an animation after updating its fill mode
 PASS Removes an animation after updating another animation's effect to one with different timing
 PASS Removes an animation after updating its effect to one with different timing
-FAIL Removes an animation after updating another animation's timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
-FAIL Removes an animation after updating its timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
+PASS Removes an animation after updating another animation's timeline
+PASS Removes an animation after updating its timeline
 PASS Removes an animation after updating another animation's effect's properties
 PASS Removes an animation after updating its effect's properties
 PASS Removes an animation after updating another animation's effect to one with different properties
 PASS Removes an animation after updating its effect to one with different properties
 PASS Removes an animation when another animation uses a shorthand
 PASS Removes an animation that uses a shorthand
-FAIL Removes an animation by another animation using logical properties assert_equals: expected "removed" but got "active"
-FAIL Removes an animation using logical properties assert_equals: expected "removed" but got "active"
-FAIL Removes an animation by another animation using logical properties after updating the context assert_equals: expected "removed" but got "active"
+PASS Removes an animation by another animation using logical properties
+PASS Removes an animation using logical properties
+PASS Removes an animation by another animation using logical properties after updating the context
 PASS Removes an animation after updating another animation's effect's target
 PASS Removes an animation after updating its effect's target
 PASS Removes an animation after updating another animation's effect to one with a different target
@@ -32,13 +32,13 @@ PASS Dispatches an event when removing
 PASS Does NOT dispatch a remove event twice
 PASS Does NOT remove an animation after making a redundant change to another animation's current time
 PASS Does NOT remove an animation after making a redundant change to its current time
-FAIL Does NOT remove an animation after making a redundant change to another animation's timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
-FAIL Does NOT remove an animation after making a redundant change to its timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
+PASS Does NOT remove an animation after making a redundant change to another animation's timeline
+PASS Does NOT remove an animation after making a redundant change to its timeline
 PASS Does NOT remove an animation after making a redundant change to another animation's effect's properties
 PASS Does NOT remove an animation after making a redundant change to its effect's properties
-FAIL Updates ALL timelines before checking for replacement promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<Animation>'"
+PASS Updates ALL timelines before checking for replacement
 PASS Dispatches remove events after finish events
-FAIL Fires remove event before requestAnimationFrame assert_true: Not expecting event, but got remove event expected true got false
+PASS Fires remove event before requestAnimationFrame
 PASS Queues all remove events before running them
 PASS Performs removal in deeply nested iframes
 Harness: the test ran to completion.

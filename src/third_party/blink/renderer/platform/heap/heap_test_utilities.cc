@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/impl/heap_compact.h"
 
 namespace blink {
 
@@ -83,7 +83,8 @@ bool IncrementalMarkingTestDriver::SingleConcurrentStep(
   CHECK(thread_state_->IsIncrementalMarking());
   if (thread_state_->GetGCState() ==
       ThreadState::kIncrementalMarkingStepScheduled) {
-    thread_state_->IncrementalMarkingStep(stack_state, base::TimeDelta());
+    thread_state_->SkipIncrementalMarkingForTesting();
+    thread_state_->IncrementalMarkingStep(stack_state);
     return true;
   }
   return false;

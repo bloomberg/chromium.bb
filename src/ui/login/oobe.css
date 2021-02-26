@@ -38,7 +38,9 @@ body {
   top: 0;
 }
 
-html[full-screen-dialog] body {
+/* Keep full-screen white background even when user signs into session after
+ * oobe */
+html[screen=oobe] body {
   background-color: white;
 }
 
@@ -47,6 +49,7 @@ html {
   --oobe-dialog-footer-height: 96px;
   --oobe-dialog-footer-padding: 32px;
   --oobe-dialog-content-padding: 64px;
+  --oobe-dialog-content-padding-top: 20px;
 
   /* This size fits 675px screen with docked magnifier and shelf. Basically this
    * is calc(675px * (1 - 1 / 3) - 10px - var(--shelf-area-height-base)) where
@@ -57,6 +60,14 @@ html {
   --oobe-dialog-side-margin: 48px;
 
   --oobe-dialog-adaptable-flex-direction: column;
+
+  --oobe-forward-slide-animation: translateX(+100%);
+  --oobe-backward-slide-animation: translateX(-100%);
+}
+
+html[dir=rtl] {
+  --oobe-forward-slide-animation: translateX(-100%);
+  --oobe-backward-slide-animation: translateX(+100%);
 }
 
 html[screen=gaia-signin] {

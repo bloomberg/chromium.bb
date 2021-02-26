@@ -35,7 +35,7 @@ export class BlackboxManager {
         .moduleSetting('skipContentScripts')
         .addChangeListener(this._patternChanged.bind(this));
 
-    /** @type {!Set<function()>} */
+    /** @type {!Set<function():void>} */
     this._listeners = new Set();
 
     /** @type {!Map<string, boolean>} */
@@ -63,14 +63,14 @@ export class BlackboxManager {
   }
 
   /**
-   * @param {function()} listener
+   * @param {function():void} listener
    */
   addChangeListener(listener) {
     this._listeners.add(listener);
   }
 
   /**
-   * @param {function()} listener
+   * @param {function():void} listener
    */
   removeChangeListener(listener) {
     this._listeners.delete(listener);
@@ -104,12 +104,17 @@ export class BlackboxManager {
     }
   }
 
+  _getSkipStackFramesPatternSetting() {
+    return /** @type {!Common.Settings.RegExpSetting} */ (
+        Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern'));
+  }
+
   /**
    * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    * @return {!Promise<boolean>}
    */
   _setBlackboxPatterns(debuggerModel) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = this._getSkipStackFramesPatternSetting().getAsArray();
     const patterns = /** @type {!Array<string>} */ ([]);
     for (const item of regexPatterns) {
       if (!item.disabled && item.pattern) {
@@ -145,7 +150,7 @@ export class BlackboxManager {
     if (isContentScript && Common.Settings.Settings.instance().moduleSetting('skipContentScripts').get()) {
       return true;
     }
-    const regex = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').asRegExp();
+    const regex = this._getSkipStackFramesPatternSetting().asRegExp();
     const isBlackboxed = (regex && regex.test(url)) || false;
     this._isBlackboxedURLCache.set(url, isBlackboxed);
     return isBlackboxed;
@@ -171,7 +176,7 @@ export class BlackboxManager {
   /**
    * @param {!SDK.Script.Script} script
    * @param {?SDK.SourceMap.SourceMap} sourceMap
-   * @return {!Promise<undefined>}
+   * @return {!Promise<void>}
    */
   async _updateScriptRanges(script, sourceMap) {
     let hasBlackboxedMappings = false;
@@ -179,36 +184,43 @@ export class BlackboxManager {
       hasBlackboxedMappings = sourceMap ? sourceMap.sourceURLs().some(url => this.isBlackboxedURL(url)) : false;
     }
     if (!hasBlackboxedMappings) {
-      if (script[_blackboxedRanges] && await script.setBlackboxedRanges([])) {
-        delete script[_blackboxedRanges];
+      if (scriptToRange.get(script) && await script.setBlackboxedRanges([])) {
+        scriptToRange.delete(script);
       }
       await this._debuggerWorkspaceBinding.updateLocations(script);
       return;
     }
 
-    const mappings = sourceMap.mappings();
-    const newRanges = [];
-    let currentBlackboxed = false;
-    if (mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) {
-      newRanges.push({lineNumber: 0, columnNumber: 0});
-      currentBlackboxed = true;
+    if (!sourceMap) {
+      return;
     }
-    for (const mapping of mappings) {
-      if (mapping.sourceURL && currentBlackboxed !== this.isBlackboxedURL(mapping.sourceURL)) {
-        newRanges.push({lineNumber: mapping.lineNumber, columnNumber: mapping.columnNumber});
-        currentBlackboxed = !currentBlackboxed;
+
+    const mappings = sourceMap.mappings();
+    /** @type {!Array<!SourceRange>} */
+    const newRanges = [];
+    if (mappings.length > 0) {
+      let currentBlackboxed = false;
+      if (mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) {
+        newRanges.push({lineNumber: 0, columnNumber: 0});
+        currentBlackboxed = true;
+      }
+      for (const mapping of mappings) {
+        if (mapping.sourceURL && currentBlackboxed !== this.isBlackboxedURL(mapping.sourceURL)) {
+          newRanges.push({lineNumber: mapping.lineNumber, columnNumber: mapping.columnNumber});
+          currentBlackboxed = !currentBlackboxed;
+        }
       }
     }
 
-    const oldRanges = script[_blackboxedRanges] || [];
+    const oldRanges = scriptToRange.get(script) || [];
     if (!isEqual(oldRanges, newRanges) && await script.setBlackboxedRanges(newRanges)) {
-      script[_blackboxedRanges] = newRanges;
+      scriptToRange.set(script, newRanges);
     }
     this._debuggerWorkspaceBinding.updateLocations(script);
 
     /**
-     * @param {!Array<!{lineNumber: number, columnNumber: number}>} rangesA
-     * @param {!Array<!{lineNumber: number, columnNumber: number}>} rangesB
+     * @param {!Array<!SourceRange>} rangesA
+     * @param {!Array<!SourceRange>} rangesB
      * @return {boolean}
      */
     function isEqual(rangesA, rangesB) {
@@ -273,7 +285,7 @@ export class BlackboxManager {
    * @param {string} url
    */
   _blackboxURL(url) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
+    const regexPatterns = this._getSkipStackFramesPatternSetting().getAsArray();
     const regexValue = this._urlToRegExpString(url);
     if (!regexValue) {
       return;
@@ -288,16 +300,16 @@ export class BlackboxManager {
       }
     }
     if (!found) {
-      regexPatterns.push({pattern: regexValue});
+      regexPatterns.push({pattern: regexValue, disabled: undefined});
     }
-    Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    this._getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
   }
 
   /**
    * @param {string} url
    */
   _unblackboxURL(url) {
-    let regexPatterns = Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').getAsArray();
+    let regexPatterns = this._getSkipStackFramesPatternSetting().getAsArray();
     const regexValue = BlackboxManager.instance()._urlToRegExpString(url);
     if (!regexValue) {
       return;
@@ -318,13 +330,13 @@ export class BlackboxManager {
       } catch (e) {
       }
     }
-    Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern').setAsArray(regexPatterns);
+    this._getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
   }
 
   async _patternChanged() {
     this._isBlackboxedURLCache.clear();
 
-    /** @type {!Array<!Promise>} */
+    /** @type {!Array<!Promise<*>>} */
     const promises = [];
     for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       promises.push(this._setBlackboxPatterns(debuggerModel));
@@ -382,4 +394,9 @@ export class BlackboxManager {
   }
 }
 
-const _blackboxedRanges = Symbol('blackboxedRanged');
+/** @typedef {{lineNumber: number, columnNumber: number}} */
+// @ts-ignore
+export let SourceRange;
+
+/** @type {!WeakMap<!SDK.Script.Script, !Array<!SourceRange>>} */
+const scriptToRange = new WeakMap();

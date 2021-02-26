@@ -15,15 +15,7 @@ namespace media {
 
 VideoDecoder::VideoDecoder() = default;
 
-void VideoDecoder::Destroy() {
-  delete this;
-}
-
 VideoDecoder::~VideoDecoder() = default;
-
-bool VideoDecoder::IsPlatformDecoder() const {
-  return false;
-}
 
 bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;
@@ -66,12 +58,3 @@ int VideoDecoder::GetRecommendedThreadCount(int desired_threads) {
 }
 
 }  // namespace media
-
-namespace std {
-
-void default_delete<media::VideoDecoder>::operator()(
-    media::VideoDecoder* ptr) const {
-  ptr->Destroy();
-}
-
-}  // namespace std

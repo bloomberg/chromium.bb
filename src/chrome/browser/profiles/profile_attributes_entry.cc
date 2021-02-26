@@ -3,17 +3,23 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/hash/hash.h"
+#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -24,9 +30,18 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/themes/theme_properties.h"  // nogncheck crbug.com/1125897
 #endif
 
 namespace {
@@ -41,6 +56,11 @@ const char kIsAuthErrorKey[] = "is_auth_error";
 const char kMetricsBucketIndex[] = "metrics_bucket_index";
 const char kSigninRequiredKey[] = "signin_required";
 const char kHostedDomain[] = "hosted_domain";
+
+// Profile colors info.
+const char kProfileHighlightColorKey[] = "profile_highlight_color";
+const char kDefaultAvatarFillColorKey[] = "default_avatar_fill_color";
+const char kDefaultAvatarStrokeColorKey[] = "default_avatar_stroke_color";
 
 // Low-entropy accounts info, for metrics only.
 const char kFirstAccountNameHash[] = "first_account_name_hash";
@@ -77,6 +97,11 @@ int GetLowEntropyHashValue(const std::string& value) {
   return base::PersistentHash(value) % kNumberOfLowEntropyHashValues;
 }
 
+bool ShouldShowGenericColoredAvatar(size_t avatar_icon_index) {
+  return base::FeatureList::IsEnabled(features::kNewProfilePicker) &&
+         avatar_icon_index == profiles::GetPlaceholderAvatarIndex();
+}
+
 }  // namespace
 
 const char ProfileAttributesEntry::kSupervisedUserId[] = "managed_user_id";
@@ -101,10 +126,7 @@ void ProfileAttributesEntry::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(kNextMetricsBucketIndex, 1);
 }
 
-ProfileAttributesEntry::ProfileAttributesEntry()
-    : profile_info_cache_(nullptr),
-      prefs_(nullptr),
-      profile_path_(base::FilePath()) {}
+ProfileAttributesEntry::ProfileAttributesEntry() = default;
 
 void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
                                         const base::FilePath& path,
@@ -136,7 +158,8 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
   if (is_force_signin_enabled_) {
     if (!IsAuthenticated())
       is_force_signin_profile_locked_ = true;
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
   } else if (IsSigninRequired()) {
     // Profiles that require signin in the absence of an enterprise policy are
     // left-overs from legacy supervised users. Just unlock them, so users can
@@ -259,23 +282,44 @@ base::string16 ProfileAttributesEntry::GetUserName() const {
   return GetString16(kUserNameKey);
 }
 
-const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
+gfx::Image ProfileAttributesEntry::GetAvatarIcon(
+    int size_for_placeholder_avatar,
+    bool use_high_res_file) const {
   if (IsUsingGAIAPicture()) {
     const gfx::Image* image = GetGAIAPicture();
     if (image)
       return *image;
   }
 
+  // TODO(crbug.com/1100835): After launch, remove the treatment of placeholder
+  // avatars from GetHighResAvatar() and from any other places.
+  if (ShouldShowGenericColoredAvatar(GetAvatarIconIndex())) {
+    return GetPlaceholderAvatarIcon(size_for_placeholder_avatar);
+  }
+
 #if !defined(OS_ANDROID)
   // Use the high resolution version of the avatar if it exists. Mobile doesn't
   // need the high resolution version so no need to fetch it.
-  const gfx::Image* image = GetHighResAvatar();
-  if (image)
-    return *image;
+  if (use_high_res_file) {
+    const gfx::Image* image = GetHighResAvatar();
+    if (image)
+      return *image;
+  }
 #endif
 
-  int resource_id =
-      profiles::GetDefaultAvatarIconResourceIDAtIndex(GetAvatarIconIndex());
+  const int icon_index = GetAvatarIconIndex();
+#if defined(OS_WIN)
+  if (!profiles::IsModernAvatarIconIndex(icon_index)) {
+    // Return the 2x version of the old avatar, defined specifically for
+    // Windows. No special treatment is needed for modern avatars as they
+    // already have high enough resolution.
+    const int win_resource_id =
+        profiles::GetOldDefaultAvatar2xIconResourceIDAtIndex(icon_index);
+    return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+        win_resource_id);
+  }
+#endif
+  int resource_id = profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
@@ -389,6 +433,47 @@ size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
     DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
   return icon_index;
+}
+
+base::Optional<ProfileThemeColors>
+ProfileAttributesEntry::GetProfileThemeColorsIfSet() const {
+  base::Optional<SkColor> profile_highlight_color =
+      GetProfileThemeColor(kProfileHighlightColorKey);
+  base::Optional<SkColor> default_avatar_fill_color =
+      GetProfileThemeColor(kDefaultAvatarFillColorKey);
+  base::Optional<SkColor> default_avatar_stroke_color =
+      GetProfileThemeColor(kDefaultAvatarStrokeColorKey);
+
+  DCHECK_EQ(profile_highlight_color.has_value(),
+            default_avatar_stroke_color.has_value());
+  DCHECK_EQ(profile_highlight_color.has_value(),
+            default_avatar_fill_color.has_value());
+
+  if (!profile_highlight_color.has_value()) {
+    return base::nullopt;
+  }
+
+  ProfileThemeColors colors;
+  colors.profile_highlight_color = profile_highlight_color.value();
+  colors.default_avatar_fill_color = default_avatar_fill_color.value();
+  colors.default_avatar_stroke_color = default_avatar_stroke_color.value();
+  return colors;
+}
+
+ProfileThemeColors ProfileAttributesEntry::GetProfileThemeColors() const {
+#if defined(OS_ANDROID)
+  // Profile theme colors shouldn't be queried on Android.
+  NOTREACHED();
+  return {SK_ColorRED, SK_ColorRED, SK_ColorRED};
+#else
+  base::Optional<ProfileThemeColors> theme_colors =
+      GetProfileThemeColorsIfSet();
+  if (theme_colors)
+    return *theme_colors;
+
+  return GetDefaultProfileThemeColors(
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors());
+#endif
 }
 
 size_t ProfileAttributesEntry::GetMetricsBucketIndex() {
@@ -513,11 +598,6 @@ void ProfileAttributesEntry::SetIsAuthError(bool value) {
 }
 
 void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
-  if (!profiles::IsDefaultAvatarIconIndex(icon_index)) {
-    DLOG(WARNING) << "Unknown avatar icon index: " << icon_index;
-    // switch to generic avatar
-    icon_index = 0;
-  }
   std::string default_avatar_icon_url =
       profiles::GetDefaultAvatarIconUrl(icon_index);
   if (default_avatar_icon_url == GetString(kAvatarIconKey)) {
@@ -538,6 +618,29 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
   }
 
   profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
+}
+
+void ProfileAttributesEntry::SetProfileThemeColors(
+    const base::Optional<ProfileThemeColors>& colors) {
+  bool changed = false;
+  if (colors.has_value()) {
+    changed |=
+        SetInteger(kProfileHighlightColorKey, colors->profile_highlight_color);
+    changed |= SetInteger(kDefaultAvatarFillColorKey,
+                          colors->default_avatar_fill_color);
+    changed |= SetInteger(kDefaultAvatarStrokeColorKey,
+                          colors->default_avatar_stroke_color);
+  } else {
+    changed |= ClearValue(kProfileHighlightColorKey);
+    changed |= ClearValue(kDefaultAvatarFillColorKey);
+    changed |= ClearValue(kDefaultAvatarStrokeColorKey);
+  }
+
+  if (changed) {
+    profile_info_cache_->NotifyProfileThemeColorsChanged(GetPath());
+    if (ShouldShowGenericColoredAvatar(GetAvatarIconIndex()))
+      profile_info_cache_->NotifyOnProfileAvatarChanged(GetPath());
+  }
 }
 
 void ProfileAttributesEntry::SetHostedDomain(std::string hosted_domain) {
@@ -625,6 +728,13 @@ const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
   return profile_info_cache_->LoadAvatarPictureFromPath(GetPath(), key,
                                                         image_path);
+}
+
+gfx::Image ProfileAttributesEntry::GetPlaceholderAvatarIcon(int size) const {
+  ProfileThemeColors colors = GetProfileThemeColors();
+  return profiles::GetPlaceholderAvatarIconWithColors(
+      colors.default_avatar_fill_color, colors.default_avatar_stroke_color,
+      size);
 }
 
 bool ProfileAttributesEntry::HasMultipleAccountNames() const {
@@ -719,6 +829,14 @@ int ProfileAttributesEntry::GetInteger(const char* key) const {
   const base::Value* value = GetValue(key);
   if (!value || !value->is_int())
     return kIntegerNotSet;
+  return value->GetInt();
+}
+
+base::Optional<SkColor> ProfileAttributesEntry::GetProfileThemeColor(
+    const char* key) const {
+  const base::Value* value = GetValue(key);
+  if (!value || !value->is_int())
+    return base::nullopt;
   return value->GetInt();
 }
 

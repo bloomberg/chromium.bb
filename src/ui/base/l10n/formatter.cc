@@ -7,9 +7,11 @@
 #include <limits.h>
 
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "base/check.h"
+#include "base/component_export.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,7 +19,7 @@
 
 namespace ui {
 
-UI_BASE_EXPORT bool formatter_force_fallback = false;
+COMPONENT_EXPORT(UI_BASE) bool formatter_force_fallback = false;
 
 struct Pluralities {
   int id;
@@ -232,7 +234,7 @@ void Formatter::Format(Unit unit,
                        int value,
                        icu::UnicodeString* formatted_string) const {
   DCHECK(simple_format_[unit]);
-  DCHECK(formatted_string->isEmpty() == TRUE);
+  DCHECK(formatted_string->isEmpty());
   UErrorCode error = U_ZERO_ERROR;
   FormatNumberInPlural(*simple_format_[unit],
                         value, formatted_string, &error);
@@ -248,7 +250,7 @@ void Formatter::Format(TwoUnits units,
       << "Detailed() not implemented for your (format, length) combination!";
   DCHECK(detailed_format_[units][1])
       << "Detailed() not implemented for your (format, length) combination!";
-  DCHECK(formatted_string->isEmpty() == TRUE);
+  DCHECK(formatted_string->isEmpty());
   UErrorCode error = U_ZERO_ERROR;
   FormatNumberInPlural(*detailed_format_[units][0], value_1,
                        formatted_string, &error);
@@ -281,7 +283,7 @@ std::unique_ptr<icu::MessageFormat> Formatter::InitFormat(
     base::string16 pattern = l10n_util::GetStringUTF16(pluralities.id);
     UErrorCode error = U_ZERO_ERROR;
     std::unique_ptr<icu::MessageFormat> format(new icu::MessageFormat(
-        icu::UnicodeString(FALSE, pattern.data(), pattern.length()), error));
+        icu::UnicodeString(false, pattern.data(), pattern.length()), error));
     DCHECK(U_SUCCESS(error));
     if (format.get())
       return format;

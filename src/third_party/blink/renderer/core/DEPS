@@ -2,7 +2,7 @@ include_rules = [
     "+base/atomic_sequence_num.h",
     "+base/barrier_closure.h",
     "+base/bits.h",
-    "+base/callback_helpers.h",
+    "+base/cancelable_callback.h",
     "+base/files/file.h",
     "+base/mac/foundation_util.h",
     "+base/mac/mac_util.h",
@@ -17,7 +17,7 @@ include_rules = [
     "+base/synchronization/waitable_event.h",
     "+base/values.h",
     "+base/task/sequence_manager/task_time_observer.h",
-    "+base/test/bind_test_util.h",
+    "+base/test/bind.h",
     "+base/test/simple_test_tick_clock.h",
     "+base/time",
     "+base/unguessable_token.h",
@@ -29,12 +29,14 @@ include_rules = [
     "+cc/animation/scroll_offset_animation_curve.h",
     "+cc/animation/scroll_state.h",
     "+cc/animation/scroll_timeline.h",
+    "+cc/base/features.h",
     "+cc/base/region.h",
     "+cc/input/browser_controls_state.h",
     "+cc/input/event_listener_properties.h",
     "+cc/input/layer_selection_bound.h",
     "+cc/input/main_thread_scrolling_reason.h",
     "+cc/input/overscroll_behavior.h",
+    "+cc/input/scroll_utils.h",
     "+cc/input/scrollbar.h",
     "+cc/input/scroll_snap_data.h",
     "+cc/input/scroll_state.h",
@@ -73,6 +75,7 @@ include_rules = [
     "+services/metrics/public",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/features.h",
+    "+services/network/public/cpp/ip_address_space_util.h",
     "+services/network/public/cpp/request_destination.h",
     "+services/network/public/cpp/request_mode.h",
     "+services/network/public/cpp/web_sandbox_flags.h",
@@ -81,6 +84,7 @@ include_rules = [
     "+services/service_manager/public",
     "+skia/public/mojom",
     "+skia/ext/image_operations.h",
+    "+skia/ext/legacy_display_globals.h",
     "+skia/ext/skia_utils_mac.h",
     "+third_party/blink/public/common",
     "+third_party/blink/public/mojom",
@@ -96,12 +100,16 @@ include_rules = [
     "+ui/accessibility/ax_event.h",
     "+ui/accessibility/ax_event_intent.h",
     "+ui/base/cursor/cursor.h",
+    "+ui/base/ime/ime_text_span.h",
     "+ui/base/ime/mojom/ime_types.mojom-blink.h",
     "+ui/base/ime/mojom/ime_types.mojom-blink-forward.h",
+    "+ui/base/ime/mojom/text_input_state.mojom-blink.h",
+    "+ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h",
+    "+ui/base/ime/mojom/virtual_keyboard_types.mojom-blink-forward.h",
+    "+ui/base/mojom/attributed_string.mojom-blink.h",
     "+ui/base/resource/scale_factor.h",
     "+ui/base/ui_base_features.h",
     "+ui/display/mojom/display.mojom-blink.h",
-    "+ui/gfx/mac/cocoa_scrollbar_painter.h",
     "+ui/gfx/geometry",
     "+ui/gfx/range/range.h",
     "+ui/gfx/skia_util.h",
@@ -117,7 +125,7 @@ include_rules = [
 
 specific_include_rules = {
     # Additional allowed includes for tests.
-    ".*_test(_.*)?\.(cc|h)" : [
+    ".*_test(_.*)?\.(cc|h|mm)" : [
         "+base/message_loop/message_loop.h",
         "+base/test/test_mock_time_task_runner.h",
         # Test harness may use cc directly instead of going through WebViewImpl etc.
@@ -160,5 +168,13 @@ specific_include_rules = {
     "local_dom_window.cc" : [
         "+net/base/registry_controlled_domains/registry_controlled_domain.h",
     ],
-    "(computed_style|computed_style_test)\.cc" : [ "+ui/base/ui_base_features.h" ]
+    "(computed_style|computed_style_test)\.cc" : [
+        "+ui/base/ui_base_features.h"
+    ],
+    "media_query_evaluator.cc": [
+        "+ui/base/pointer/pointer_device.h",
+    ],
+    "media_values.h": [
+        "+ui/base/pointer/pointer_device.h",
+    ],
 }

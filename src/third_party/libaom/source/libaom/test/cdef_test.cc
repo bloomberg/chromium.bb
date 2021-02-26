@@ -53,8 +53,10 @@ class CDEFBlockTest : public ::testing::TestWithParam<cdef_dir_param_t> {
   cdef_filter_block_func cdef;
   cdef_filter_block_func ref_cdef;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFBlockTest);
 
 typedef CDEFBlockTest CDEFSpeedTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFSpeedTest);
 
 void test_cdef(int bsize, int iterations, cdef_filter_block_func cdef,
                cdef_filter_block_func ref_cdef, int boundary, int depth) {
@@ -202,8 +204,10 @@ class CDEFFindDirTest : public ::testing::TestWithParam<find_dir_param_t> {
   find_dir_t finddir;
   find_dir_t ref_finddir;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirTest);
 
 typedef CDEFFindDirTest CDEFFindDirSpeedTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirSpeedTest);
 
 void test_finddir(int (*finddir)(const uint16_t *img, int stride, int32_t *var,
                                  int coeff_shift),

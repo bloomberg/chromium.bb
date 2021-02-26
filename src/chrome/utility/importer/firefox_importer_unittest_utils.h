@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "chrome/utility/importer/nss_decryptor.h"
-#include "components/autofill/core/common/password_form.h"
 
 class FFDecryptorServerChannelListener;
 
@@ -37,23 +37,23 @@ class FFUnitTestDecryptorProxy {
   bool DecryptorInit(const base::FilePath& dll_path,
                      const base::FilePath& db_path);
   base::string16 Decrypt(const std::string& crypt);
-  std::vector<autofill::PasswordForm> ParseSignons(
+  std::vector<importer::ImportedPasswordForm> ParseSignons(
       const base::FilePath& signons_path);
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::Process child_process_;
   std::unique_ptr<FFDecryptorServerChannelListener> listener_;
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 #else
   NSSDecryptor decryptor_;
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
   DISALLOW_COPY_AND_ASSIGN(FFUnitTestDecryptorProxy);
 };
 
 // On Non-OSX platforms FFUnitTestDecryptorProxy simply calls through to
 // NSSDecryptor.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 }
 
@@ -73,15 +73,15 @@ base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   return decryptor_.Decrypt(crypt);
 }
 
-std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
-    const base::FilePath& signons_path) {
-  std::vector<autofill::PasswordForm> signons;
+std::vector<importer::ImportedPasswordForm>
+FFUnitTestDecryptorProxy::ParseSignons(const base::FilePath& signons_path) {
+  std::vector<importer::ImportedPasswordForm> signons;
   if (decryptor_.ReadAndParseSignons(signons_path, &signons))
     return signons;
 
-  return std::vector<autofill::PasswordForm>();
+  return std::vector<importer::ImportedPasswordForm>();
 }
 
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
 #endif  // CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_

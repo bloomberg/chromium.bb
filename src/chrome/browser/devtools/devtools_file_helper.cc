@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -155,7 +155,8 @@ std::string RegisterFileSystem(WebContents* web_contents,
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  RenderViewHost* render_view_host =
+      web_contents->GetMainFrame()->GetRenderViewHost();
   int renderer_id = render_view_host->GetProcess()->GetID();
   policy->GrantReadFileSystem(renderer_id, file_system.id());
   policy->GrantWriteFileSystem(renderer_id, file_system.id());
@@ -245,9 +246,9 @@ void DevToolsFileHelper::Save(const std::string& url,
 
   const base::Value* path_value;
   if (file_map->Get(base::MD5String(url), &path_value)) {
-    // Ignore base::GetValueAsFilePath() failure since we handle empty
-    // |initial_path| below.
-    ignore_result(base::GetValueAsFilePath(*path_value, &initial_path));
+    base::Optional<base::FilePath> path = util::ValueToFilePath(*path_value);
+    if (path)
+      initial_path = std::move(*path);
   }
 
   if (initial_path.empty()) {
@@ -301,7 +302,7 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsEditedFiles);
   base::DictionaryValue* files_map = update.Get();
-  files_map->SetKey(base::MD5String(url), base::CreateFilePathValue(path));
+  files_map->SetKey(base::MD5String(url), util::FilePathToValue(path));
   std::string file_system_path = path.AsUTF8Unsafe();
   callback.Run(file_system_path);
   file_task_runner_->PostTask(FROM_HERE, BindOnce(&WriteToFile, path, content));
@@ -413,7 +414,7 @@ void DevToolsFileHelper::RemoveFileSystem(const std::string& file_system_path) {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsFileSystemPaths);
   base::DictionaryValue* file_systems_paths_value = update.Get();
-  file_systems_paths_value->RemoveWithoutPathExpansion(file_system_path, NULL);
+  file_systems_paths_value->RemoveKey(file_system_path);
 }
 
 bool DevToolsFileHelper::IsFileSystemAdded(

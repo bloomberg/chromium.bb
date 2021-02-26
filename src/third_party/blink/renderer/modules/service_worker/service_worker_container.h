@@ -62,7 +62,6 @@ class MODULES_EXPORT ServiceWorkerContainer final
       public ExecutionContextLifecycleObserver,
       public WebServiceWorkerProviderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 
  public:
   using RegistrationCallbacks =
@@ -79,7 +78,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   explicit ServiceWorkerContainer(LocalDOMWindow&);
   ~ServiceWorkerContainer() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ServiceWorker* controller() { return controller_; }
   ScriptPromise ready(ScriptState*, ExceptionState&);

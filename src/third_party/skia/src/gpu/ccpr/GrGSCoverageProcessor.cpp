@@ -23,10 +23,7 @@ protected:
 
     virtual bool hasCoverage(const GrGSCoverageProcessor& proc) const { return false; }
 
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&,
-                 const CoordTransformRange& transformRange) final {
-        this->setTransformDataHelper(SkMatrix::I(), pdman, transformRange);
-    }
+    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&) final {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) final {
         const GrGSCoverageProcessor& proc = args.fGP.cast<GrGSCoverageProcessor>();
@@ -37,7 +34,7 @@ protected:
 
         // Geometry shader.
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
-        this->emitGeometryShader(proc, varyingHandler, args.fGeomBuilder, args.fRTAdjustName);
+        this->emitGeometryShader(proc, varyingHandler, args.fGeomBuilder);
         varyingHandler->emitAttributes(proc);
         varyingHandler->setNoPerspective();
         SkASSERT(!*args.fFPCoordTransformHandler);
@@ -52,7 +49,7 @@ protected:
 
     void emitGeometryShader(
             const GrGSCoverageProcessor& proc, GrGLSLVaryingHandler* varyingHandler,
-            GrGLSLGeometryBuilder* g, const char* rtAdjust) const {
+            GrGLSLGeometryBuilder* g) const {
         int numInputPoints = proc.numInputPoints();
         SkASSERT(3 == numInputPoints || 4 == numInputPoints);
 
@@ -70,7 +67,7 @@ protected:
             g->codeAppendf("%s *= half(sk_in[0].sk_Position.w);", wind.c_str());
         }
 
-        SkString emitVertexFn;
+        SkString emitVertexFn = g->getMangledFunctionName("emitVertex");
         SkSTArray<3, GrShaderVar> emitArgs;
         const char* corner = emitArgs.emplace_back("corner", kFloat2_GrSLType).c_str();
         const char* bloatdir = emitArgs.emplace_back("bloatdir", kFloat2_GrSLType).c_str();
@@ -82,7 +79,8 @@ protected:
         if (Subpass::kCorners == proc.fSubpass) {
             cornerCoverage = emitArgs.emplace_back("corner_coverage", kHalf2_GrSLType).c_str();
         }
-        g->emitFunction(kVoid_GrSLType, "emitVertex", emitArgs.count(), emitArgs.begin(), [&]() {
+        g->emitFunction(kVoid_GrSLType, emitVertexFn.c_str(),
+                        {&emitArgs.front(), emitArgs.size()}, [&] {
             SkString fnBody;
             fnBody.appendf("float2 vertexpos = fma(%s, float2(bloat), %s);", bloatdir, corner);
             const char* coverage = inputCoverage;
@@ -104,9 +102,9 @@ protected:
             }
             fShader->emitVaryings(varyingHandler, GrGLSLVarying::Scope::kGeoToFrag, &fnBody,
                                   "vertexpos", coverage, cornerCoverage, wind.c_str());
-            g->emitVertex(&fnBody, "vertexpos", rtAdjust);
+            g->emitVertex(&fnBody, "vertexpos");
             return fnBody;
-        }().c_str(), &emitVertexFn);
+        }().c_str());
 
         float bloat = kAABloatRadius;
 #ifdef SK_DEBUG
@@ -138,7 +136,7 @@ protected:
     const std::unique_ptr<Shader> fShader;
     const GrShaderVar fEdgeDistanceEquation{"edge_distance_equation", kFloat3_GrSLType};
 
-    typedef GrGLSLGeometryProcessor INHERITED;
+    using INHERITED = GrGLSLGeometryProcessor;
 };
 
 /**
@@ -434,8 +432,8 @@ void GrGSCoverageProcessor::reset(PrimitiveType primitiveType, int subpassIdx,
 }
 
 void GrGSCoverageProcessor::bindBuffers(GrOpsRenderPass* renderPass,
-                                        const GrBuffer* instanceBuffer) const {
-    renderPass->bindBuffers(nullptr, nullptr, instanceBuffer);
+                                        sk_sp<const GrBuffer> instanceBuffer) const {
+    renderPass->bindBuffers(nullptr, nullptr, std::move(instanceBuffer));
 }
 
 void GrGSCoverageProcessor::drawInstances(GrOpsRenderPass* renderPass, int instanceCount,

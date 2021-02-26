@@ -163,7 +163,8 @@ void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
     for (const std::unique_ptr<Alarm>& alarm : *alarms)
       alarms_value->Append(alarm->js_alarm->ToValue());
   }
-  Respond(OneArgument(std::move(alarms_value)));
+  Respond(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(alarms_value))));
 }
 
 ExtensionFunction::ResponseAction AlarmsClearFunction::Run() {
@@ -181,7 +182,7 @@ ExtensionFunction::ResponseAction AlarmsClearFunction::Run() {
 }
 
 void AlarmsClearFunction::Callback(const std::string& name, bool success) {
-  Respond(OneArgument(std::make_unique<base::Value>(success)));
+  Respond(OneArgument(base::Value(success)));
 }
 
 ExtensionFunction::ResponseAction AlarmsClearAllFunction::Run() {
@@ -194,7 +195,7 @@ ExtensionFunction::ResponseAction AlarmsClearAllFunction::Run() {
 }
 
 void AlarmsClearAllFunction::Callback() {
-  Respond(OneArgument(std::make_unique<base::Value>(true)));
+  Respond(OneArgument(base::Value(true)));
 }
 
 }  // namespace extensions

@@ -35,7 +35,7 @@ class HTMLVideoElement;
 
 class LayoutVideo final : public LayoutMedia {
  public:
-  LayoutVideo(HTMLVideoElement*);
+  explicit LayoutVideo(HTMLVideoElement*);
   ~LayoutVideo() override;
 
   static LayoutSize DefaultSize();
@@ -44,24 +44,33 @@ class LayoutVideo final : public LayoutMedia {
 
   bool SupportsAcceleratedRendering() const;
 
-  bool ShouldDisplayVideo() const;
+  enum DisplayMode { kPoster, kVideo };
+  DisplayMode GetDisplayMode() const;
+
   HTMLVideoElement* VideoElement() const;
 
-  const char* GetName() const override { return "LayoutVideo"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutVideo";
+  }
 
   void IntrinsicSizeChanged() override;
 
-  bool ComputeShouldClipOverflow() const final { return true; }
+  OverflowClipAxes ComputeOverflowClipAxes() const final {
+    NOT_DESTROYED();
+    return kOverflowClipBothAxis;
+  }
 
  private:
   void UpdateFromElement() override;
 
-  LayoutSize CalculateIntrinsicSize();
+  LayoutSize CalculateIntrinsicSize(float scale);
   void UpdateIntrinsicSize(bool is_in_layout);
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectVideo || LayoutMedia::IsOfType(type);
   }
 
@@ -76,7 +85,10 @@ class LayoutVideo final : public LayoutMedia {
       LayoutUnit estimated_used_width = LayoutUnit()) const override;
   LayoutUnit MinimumReplacedHeight() const override;
 
-  bool CanHaveAdditionalCompositingReasons() const override { return true; }
+  bool CanHaveAdditionalCompositingReasons() const override {
+    NOT_DESTROYED();
+    return true;
+  }
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void UpdatePlayer(bool is_in_layout);

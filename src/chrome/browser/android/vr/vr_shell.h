@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -150,10 +151,6 @@ class VrShell : VoiceResultDelegate,
   void RequestToExitVr(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        int reason);
-  void LogUnsupportedModeUserMetric(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      int mode);
 
   void ShowSoftInput(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj,
@@ -176,7 +173,7 @@ class VrShell : VoiceResultDelegate,
   void ContentSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
   void ContentOverlaySurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture);
-  void GvrDelegateReady(gvr::ViewerType viewer_type);
+  void GvrDelegateReady();
   void SendRequestPresentReply(device::mojom::XRSessionPtr);
 
   void DialogSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
@@ -191,7 +188,6 @@ class VrShell : VoiceResultDelegate,
   void ForceExitVr();
   void ExitPresent();
   void ExitFullscreen();
-  void LogUnsupportedModeUserMetric(UiUnsupportedMode mode);
   void OnUnsupportedMode(UiUnsupportedMode mode);
   void OnExitVrPromptResult(UiUnsupportedMode reason,
                             ExitVrPromptChoice choice);

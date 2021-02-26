@@ -4,6 +4,7 @@
 
 #include "services/network/cookie_settings.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "net/base/features.h"
@@ -14,6 +15,9 @@
 
 namespace network {
 namespace {
+
+constexpr char kAllowedRequestsHistogram[] =
+    "API.StorageAccess.AllowedRequests";
 
 constexpr char kDomainURL[] = "http://example.com";
 constexpr char kURL[] = "http://foo.com";
@@ -90,6 +94,9 @@ TEST_F(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
 }
 
 TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
+
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
@@ -97,6 +104,11 @@ TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
   ContentSetting setting;
   settings.GetCookieSetting(GURL(kURL), GURL(kOtherURL), nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::ACCESS_ALLOWED),
+      1);
 }
 
 TEST_F(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
@@ -126,6 +138,9 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAUnblocks) {
   GURL url = GURL(kOtherURL);
   GURL third_url = GURL(kDomainURL);
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
+
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
@@ -140,11 +155,27 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAUnblocks) {
   ContentSetting setting;
   settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::
+                           ACCESS_ALLOWED_STORAGE_ACCESS_GRANT),
+      1);
 
   // Invalid pair the |top_level_url| granting access to |url| is now
   // being loaded under |url| as the top level url.
   settings.GetCookieSetting(top_level_url, url, nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 2);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::
+                           ACCESS_ALLOWED_STORAGE_ACCESS_GRANT),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::ACCESS_BLOCKED),
+      1);
 
   // Invalid pairs where a |third_url| is used.
   settings.GetCookieSetting(url, third_url, nullptr, &setting);
@@ -468,46 +499,6 @@ TEST_F(CookieSettingsTest,
   for (const auto& test : kTestCases) {
     EXPECT_EQ(test.status,
               settings.GetCookieAccessSemanticsForDomain(test.cookie_domain));
-  }
-}
-
-TEST_F(CookieSettingsTest, CookieAccessSemanticsEmergencyOverride) {
-  base::test::ScopedFeatureList feature_list;
-
-  feature_list.InitWithFeaturesAndParameters(
-      {{net::features::kSameSiteByDefaultCookies, {}},
-       {features::kEmergencyLegacyCookieAccess,
-        {{features::kEmergencyLegacyCookieAccessParamName,
-          "example.org, [*.]example.gov"}}}},
-      {} /* disabled_features*/);
-  CookieSettings settings;
-  settings.set_content_settings_for_legacy_cookie_access(
-      {CreateSetting(kDomainWildcardPattern, "*", CONTENT_SETTING_ALLOW)});
-
-  const struct {
-    net::CookieAccessSemantics status;
-    std::string cookie_domain;
-  } kTestCases[] = {
-      // These three test cases are LEGACY because they match the setting.
-      {net::CookieAccessSemantics::LEGACY, kDomain},
-      {net::CookieAccessSemantics::LEGACY, kDotDomain},
-      // Subdomain also matches pattern.
-      {net::CookieAccessSemantics::LEGACY, kSubDomain},
-      // This test case defaults into NONLEGACY.
-      {net::CookieAccessSemantics::NONLEGACY, kOtherDomain},
-
-      // things that got pushed via experiment config.
-      {net::CookieAccessSemantics::LEGACY, "example.org"},
-      {net::CookieAccessSemantics::NONLEGACY, "sub.example.org"},
-      {net::CookieAccessSemantics::LEGACY, "example.gov"},
-      {net::CookieAccessSemantics::LEGACY, "sub.example.gov"},
-      {net::CookieAccessSemantics::NONLEGACY, "example.gov.uk"},
-  };
-
-  for (const auto& test : kTestCases) {
-    EXPECT_EQ(test.status,
-              settings.GetCookieAccessSemanticsForDomain(test.cookie_domain))
-        << test.cookie_domain;
   }
 }
 

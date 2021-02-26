@@ -8,11 +8,16 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace views {
 
@@ -53,14 +58,20 @@ SkPath GetHighlightPathInternal(const View* view) {
 }  // namespace
 
 // static
-std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
+FocusRing* FocusRing::Install(View* parent) {
+  if (IsViewClass<Button>(parent)) {
+    // Ensure we don't install dual focus rings on a button.
+    Button* button = static_cast<Button*>(parent);
+    if (button->GetInstallFocusRingOnFocus())
+      button->SetInstallFocusRingOnFocus(false);
+  }
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
-  ring->set_owned_by_client();
-  parent->AddChildView(ring.get());
   ring->InvalidateLayout();
   ring->SchedulePaint();
-  return ring;
+  return parent->AddChildView(std::move(ring));
 }
+
+FocusRing::~FocusRing() = default;
 
 void FocusRing::SetPathGenerator(
     std::unique_ptr<HighlightPathGenerator> generator) {
@@ -92,7 +103,7 @@ void FocusRing::Layout() {
 
   // Need to match canvas direction with the parent. This is required to ensure
   // asymmetric focus ring shapes match their respective buttons in RTL mode.
-  EnableCanvasFlippingForRTLUI(parent()->flip_canvas_on_paint_for_rtl_ui());
+  SetFlipCanvasOnPaintForRTLUI(parent()->GetFlipCanvasOnPaintForRTLUI());
 }
 
 void FocusRing::ViewHierarchyChanged(
@@ -102,14 +113,14 @@ void FocusRing::ViewHierarchyChanged(
 
   if (details.is_add) {
     // Need to start observing the parent.
-    details.parent->AddObserver(this);
-  } else {
+    view_observer_.Add(details.parent);
+    RefreshLayer();
+  } else if (view_observer_.IsObserving(details.parent)) {
     // This view is being removed from its parent. It needs to remove itself
-    // from its parent's observer list. Otherwise, since its |parent_| will
-    // become a nullptr, it won't be able to do so in its destructor.
-    details.parent->RemoveObserver(this);
+    // from its parent's observer list in the case where the FocusView is
+    // removed from its parent but not deleted.
+    view_observer_.Remove(details.parent);
   }
-  RefreshLayer();
 }
 
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
@@ -139,8 +150,8 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     path = GetHighlightPathInternal(parent());
 
   DCHECK(IsPathUsable(path));
-  DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
-            parent()->flip_canvas_on_paint_for_rtl_ui());
+  DCHECK_EQ(GetFlipCanvasOnPaintForRTLUI(),
+            parent()->GetFlipCanvasOnPaintForRTLUI());
   SkRect bounds;
   SkRRect rbounds;
   if (path.isRect(&bounds)) {
@@ -155,6 +166,12 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void FocusRing::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // Mark the focus ring in the accessibility tree as invisible so that it will
+  // not be accessed by assistive technologies.
+  node_data->AddState(ax::mojom::State::kInvisible);
+}
+
 void FocusRing::OnViewFocused(View* view) {
   RefreshLayer();
 }
@@ -165,12 +182,7 @@ void FocusRing::OnViewBlurred(View* view) {
 
 FocusRing::FocusRing() {
   // Don't allow the view to process events.
-  set_can_process_events_within_subtree(false);
-}
-
-FocusRing::~FocusRing() {
-  if (parent())
-    parent()->RemoveObserver(this);
+  SetCanProcessEventsWithinSubtree(false);
 }
 
 void FocusRing::RefreshLayer() {
@@ -218,7 +230,7 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
 
 SkPath GetHighlightPath(const View* view) {
   SkPath path = GetHighlightPathInternal(view);
-  if (view->flip_canvas_on_paint_for_rtl_ui() && base::i18n::IsRTL()) {
+  if (view->GetFlipCanvasOnPaintForRTLUI() && base::i18n::IsRTL()) {
     gfx::Point center = view->GetLocalBounds().CenterPoint();
     SkMatrix flip;
     flip.setScale(-1, 1, center.x(), center.y());
@@ -227,8 +239,7 @@ SkPath GetHighlightPath(const View* view) {
   return path;
 }
 
-BEGIN_METADATA(FocusRing)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(FocusRing, View)
+END_METADATA
 
 }  // namespace views

@@ -953,6 +953,18 @@ OPENSSL_EXPORT size_t SSL_get0_certificate_types(const SSL *ssl,
 OPENSSL_EXPORT size_t
 SSL_get0_peer_verify_algorithms(const SSL *ssl, const uint16_t **out_sigalgs);
 
+// SSL_get0_peer_delegation_algorithms sets |*out_sigalgs| to an array
+// containing the signature algorithms the peer is willing to use with delegated
+// credentials.  It returns the length of the array. If not sent, the empty
+// array is returned.
+//
+// The behavior of this function is undefined except during the callbacks set by
+// by |SSL_CTX_set_cert_cb| and |SSL_CTX_set_client_cert_cb| or when the
+// handshake is paused because of them.
+OPENSSL_EXPORT size_t
+SSL_get0_peer_delegation_algorithms(const SSL *ssl,
+                                    const uint16_t **out_sigalgs);
+
 // SSL_certs_clear resets the private key, leaf certificate, and certificate
 // chain of |ssl|.
 OPENSSL_EXPORT void SSL_certs_clear(SSL *ssl);
@@ -1281,8 +1293,8 @@ OPENSSL_EXPORT const SSL_CIPHER *SSL_get_cipher_by_value(uint16_t value);
 // cast to a |uint16_t| to get it.
 OPENSSL_EXPORT uint32_t SSL_CIPHER_get_id(const SSL_CIPHER *cipher);
 
-// SSL_CIPHER_get_value returns |cipher|'s IANA-assigned number.
-OPENSSL_EXPORT uint16_t SSL_CIPHER_get_value(const SSL_CIPHER *cipher);
+// SSL_CIPHER_get_protocol_id returns |cipher|'s IANA-assigned number.
+OPENSSL_EXPORT uint16_t SSL_CIPHER_get_protocol_id(const SSL_CIPHER *cipher);
 
 // SSL_CIPHER_is_aead returns one if |cipher| uses an AEAD cipher.
 OPENSSL_EXPORT int SSL_CIPHER_is_aead(const SSL_CIPHER *cipher);
@@ -2197,6 +2209,20 @@ struct ssl_ticket_aead_method_st {
 OPENSSL_EXPORT void SSL_CTX_set_ticket_aead_method(
     SSL_CTX *ctx, const SSL_TICKET_AEAD_METHOD *aead_method);
 
+// SSL_process_tls13_new_session_ticket processes an unencrypted TLS 1.3
+// NewSessionTicket message from |buf| and returns a resumable |SSL_SESSION|,
+// or NULL on error. The caller takes ownership of the returned session and
+// must call |SSL_SESSION_free| to free it.
+//
+// |buf| contains |buf_len| bytes that represents a complete NewSessionTicket
+// message including its header, i.e., one byte for the type (0x04) and three
+// bytes for the length. |buf| must contain only one such message.
+//
+// This function may be used to process NewSessionTicket messages in TLS 1.3
+// clients that are handling the record layer externally.
+OPENSSL_EXPORT SSL_SESSION *SSL_process_tls13_new_session_ticket(
+    SSL *ssl, const uint8_t *buf, size_t buf_len);
+
 
 // Elliptic curve Diffie-Hellman.
 //
@@ -2450,7 +2476,7 @@ OPENSSL_EXPORT int SSL_CTX_set_default_verify_paths(SSL_CTX *ctx);
 // one on success and zero on failure.
 //
 // See
-// https://www.openssl.org/docs/manmaster/ssl/SSL_CTX_load_verify_locations.html
+// https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_load_verify_locations.html
 // for documentation on the directory format.
 OPENSSL_EXPORT int SSL_CTX_load_verify_locations(SSL_CTX *ctx,
                                                  const char *ca_file,
@@ -2748,6 +2774,51 @@ OPENSSL_EXPORT void SSL_get0_alpn_selected(const SSL *ssl,
 // |SSL_CTX_set_alpn_protos|.
 OPENSSL_EXPORT void SSL_CTX_set_allow_unknown_alpn_protos(SSL_CTX *ctx,
                                                           int enabled);
+
+
+// Application-layer protocol settings
+//
+// The ALPS extension (draft-vvv-tls-alps) allows exchanging application-layer
+// settings in the TLS handshake for applications negotiated with ALPN. Note
+// that, when ALPS is negotiated, the client and server each advertise their own
+// settings, so there are functions to both configure setting to send and query
+// received settings.
+
+// SSL_add_application_settings configures |ssl| to enable ALPS with ALPN
+// protocol |proto|, sending an ALPS value of |settings|. It returns one on
+// success and zero on error. If |proto| is negotiated via ALPN and the peer
+// supports ALPS, |settings| will be sent to the peer. The peer's ALPS value can
+// be retrieved with |SSL_get0_peer_application_settings|.
+//
+// On the client, this function should be called before the handshake, once for
+// each supported ALPN protocol which uses ALPS. |proto| must be included in the
+// client's ALPN configuration (see |SSL_CTX_set_alpn_protos| and
+// |SSL_set_alpn_protos|). On the server, ALPS can be preconfigured for each
+// protocol as in the client, or configuration can be deferred to the ALPN
+// callback (see |SSL_CTX_set_alpn_select_cb|), in which case only the selected
+// protocol needs to be configured.
+//
+// ALPS can be independently configured from 0-RTT, however changes in protocol
+// settings will fallback to 1-RTT to negotiate the new value, so it is
+// recommended for |settings| to be relatively stable.
+OPENSSL_EXPORT int SSL_add_application_settings(SSL *ssl, const uint8_t *proto,
+                                                size_t proto_len,
+                                                const uint8_t *settings,
+                                                size_t settings_len);
+
+// SSL_get0_peer_application_settings sets |*out_data| and |*out_len| to a
+// buffer containing the peer's ALPS value, or the empty string if ALPS was not
+// negotiated. Note an empty string could also indicate the peer sent an empty
+// settings value. Use |SSL_has_application_settings| to check if ALPS was
+// negotiated. The output buffer is owned by |ssl| and is valid until the next
+// time |ssl| is modified.
+OPENSSL_EXPORT void SSL_get0_peer_application_settings(const SSL *ssl,
+                                                       const uint8_t **out_data,
+                                                       size_t *out_len);
+
+// SSL_has_application_settings returns one if ALPS was negotiated on this
+// connection and zero otherwise.
+OPENSSL_EXPORT int SSL_has_application_settings(const SSL *ssl);
 
 
 // Certificate compression.
@@ -3153,12 +3224,15 @@ OPENSSL_EXPORT int SSL_delegated_credential_used(const SSL *ssl);
 // QUIC may impose similar restrictions, for example HTTP/3's restrictions on
 // SETTINGS frames.
 //
-// BoringSSL imposes a stricter check on the server to enforce these
-// restrictions. BoringSSL requires that the transport parameters and
-// application protocol state be a byte-for-byte match between the connection
-// where the ticket was issued and the connection where it is used for 0-RTT. If
-// there is a mismatch, BoringSSL will reject early data (but not reject the
-// resumption attempt).
+// BoringSSL implements this check by doing a byte-for-byte comparison of an
+// opaque context passed in by the server. This context must be the same on the
+// connection where the ticket was issued and the connection where that ticket
+// is used for 0-RTT. If there is a mismatch, or the context was not set,
+// BoringSSL will reject early data (but not reject the resumption attempt).
+// This context is set via |SSL_set_quic_early_data_context| and should cover
+// both transport parameters and any application state.
+// |SSL_set_quic_early_data_context| must be called on the server with a
+// non-empty context if the server is to support 0-RTT in QUIC.
 //
 // BoringSSL does not perform any client-side checks on the transport
 // parameters received from a server that also accepted early data. It is up to
@@ -3166,12 +3240,6 @@ OPENSSL_EXPORT int SSL_delegated_credential_used(const SSL *ssl);
 // limits, and to close the QUIC connection if that is not the case. The same
 // holds for any application protocol state remembered for 0-RTT, e.g. HTTP/3
 // SETTINGS.
-//
-// The transport parameter check happens automatically with
-// |SSL_set_quic_transport_params|. QUIC servers must set application state via
-// |SSL_set_quic_early_data_context| to configure the application protocol
-// check. No other mechanisms are provided to have BoringSSL reject early data
-// because of QUIC transport or application protocol restrictions.
 
 // ssl_encryption_level_t represents a specific QUIC encryption level used to
 // transmit handshake messages.
@@ -3321,8 +3389,12 @@ OPENSSL_EXPORT void SSL_get_peer_quic_transport_params(
 // SSL_set_quic_early_data_context configures a context string in QUIC servers
 // for accepting early data. If a resumption connection offers early data, the
 // server will check if the value matches that of the connection which minted
-// the ticket. If not, resumption still succeeds but early data is rejected. For
-// HTTP/3, this should be the serialized server SETTINGS frame.
+// the ticket. If not, resumption still succeeds but early data is rejected.
+// This should include all QUIC Transport Parameters except ones specified that
+// the client MUST NOT remember. This should also include any application
+// protocol-specific state. For HTTP/3, this should be the serialized server
+// SETTINGS frame and the QUIC Transport Parameters (except the stateless reset
+// token).
 //
 // This function may be called before |SSL_do_handshake| or during server
 // certificate selection. It returns 1 on success and 0 on failure.
@@ -3466,14 +3538,21 @@ enum ssl_early_data_reason_t BORINGSSL_ENUM_INT {
   ssl_early_data_ticket_age_skew = 12,
   // QUIC parameters differ between this connection and the original.
   ssl_early_data_quic_parameter_mismatch = 13,
+  // The application settings did not match the session.
+  ssl_early_data_alps_mismatch = 14,
   // The value of the largest entry.
-  ssl_early_data_reason_max_value = ssl_early_data_quic_parameter_mismatch,
+  ssl_early_data_reason_max_value = ssl_early_data_alps_mismatch,
 };
 
 // SSL_get_early_data_reason returns details why 0-RTT was accepted or rejected
 // on |ssl|. This is primarily useful on the server.
 OPENSSL_EXPORT enum ssl_early_data_reason_t SSL_get_early_data_reason(
     const SSL *ssl);
+
+// SSL_early_data_reason_string returns a string representation for |reason|, or
+// NULL if |reason| is unknown. This function may be used for logging.
+OPENSSL_EXPORT const char *SSL_early_data_reason_string(
+    enum ssl_early_data_reason_t reason);
 
 
 // Alerts.
@@ -3589,11 +3668,13 @@ OPENSSL_EXPORT int SSL_get_ivs(const SSL *ssl, const uint8_t **out_read_iv,
                                const uint8_t **out_write_iv,
                                size_t *out_iv_len);
 
-// SSL_get_key_block_len returns the length of |ssl|'s key block.
+// SSL_get_key_block_len returns the length of |ssl|'s key block. It is an error
+// to call this function during a handshake.
 OPENSSL_EXPORT size_t SSL_get_key_block_len(const SSL *ssl);
 
 // SSL_generate_key_block generates |out_len| bytes of key material for |ssl|'s
-// current connection state.
+// current connection state. It is an error to call this function during a
+// handshake.
 OPENSSL_EXPORT int SSL_generate_key_block(const SSL *ssl, uint8_t *out,
                                           size_t out_len);
 
@@ -4304,7 +4385,7 @@ OPENSSL_EXPORT int SSL_set1_sigalgs(SSL *ssl, const int *values,
 // SSL_CTX_set1_sigalgs_list takes a textual specification of a set of signature
 // algorithms and configures them on |ctx|. It returns one on success and zero
 // on error. See
-// https://www.openssl.org/docs/man1.1.0/ssl/SSL_CTX_set1_sigalgs_list.html for
+// https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set1_sigalgs_list.html for
 // a description of the text format. Also note that TLS 1.3 names (e.g.
 // "rsa_pkcs1_md5_sha1") can also be used (as in OpenSSL, although OpenSSL
 // doesn't document that).
@@ -4317,7 +4398,7 @@ OPENSSL_EXPORT int SSL_CTX_set1_sigalgs_list(SSL_CTX *ctx, const char *str);
 // SSL_set1_sigalgs_list takes a textual specification of a set of signature
 // algorithms and configures them on |ssl|. It returns one on success and zero
 // on error. See
-// https://www.openssl.org/docs/man1.1.0/ssl/SSL_CTX_set1_sigalgs_list.html for
+// https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set1_sigalgs_list.html for
 // a description of the text format. Also note that TLS 1.3 names (e.g.
 // "rsa_pkcs1_md5_sha1") can also be used (as in OpenSSL, although OpenSSL
 // doesn't document that).
@@ -4670,6 +4751,30 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_cb(SSL_CTX *ctx,
 // SSL_CTX_set_tlsext_status_arg sets additional data for
 // |SSL_CTX_set_tlsext_status_cb|'s callback and returns one.
 OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
+
+// The following symbols are compatibility aliases for reason codes used when
+// receiving an alert from the peer. Use the other names instead, which fit the
+// naming convention.
+//
+// TODO(davidben): Fix references to |SSL_R_TLSV1_CERTIFICATE_REQUIRED| and
+// remove the compatibility value. The others come from OpenSSL.
+#define SSL_R_TLSV1_UNSUPPORTED_EXTENSION \
+  SSL_R_TLSV1_ALERT_UNSUPPORTED_EXTENSION
+#define SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE \
+  SSL_R_TLSV1_ALERT_CERTIFICATE_UNOBTAINABLE
+#define SSL_R_TLSV1_UNRECOGNIZED_NAME SSL_R_TLSV1_ALERT_UNRECOGNIZED_NAME
+#define SSL_R_TLSV1_BAD_CERTIFICATE_STATUS_RESPONSE \
+  SSL_R_TLSV1_ALERT_BAD_CERTIFICATE_STATUS_RESPONSE
+#define SSL_R_TLSV1_BAD_CERTIFICATE_HASH_VALUE \
+  SSL_R_TLSV1_ALERT_BAD_CERTIFICATE_HASH_VALUE
+#define SSL_R_TLSV1_CERTIFICATE_REQUIRED SSL_R_TLSV1_ALERT_CERTIFICATE_REQUIRED
+
+// SSL_CIPHER_get_value calls |SSL_CIPHER_get_protocol_id|.
+//
+// TODO(davidben): |SSL_CIPHER_get_value| was our name for this function, but
+// upstream added it as |SSL_CIPHER_get_protocol_id|. Switch callers to the new
+// name and remove this one.
+OPENSSL_EXPORT uint16_t SSL_CIPHER_get_value(const SSL_CIPHER *cipher);
 
 
 // Nodejs compatibility section (hidden).
@@ -5162,6 +5267,10 @@ BSSL_NAMESPACE_END
 #define SSL_R_INCONSISTENT_CLIENT_HELLO 303
 #define SSL_R_CIPHER_MISMATCH_ON_EARLY_DATA 304
 #define SSL_R_QUIC_TRANSPORT_PARAMETERS_MISCONFIGURED 305
+#define SSL_R_UNEXPECTED_COMPATIBILITY_MODE 306
+#define SSL_R_MISSING_ALPN 307
+#define SSL_R_NEGOTIATED_ALPS_WITHOUT_ALPN 308
+#define SSL_R_ALPS_MISMATCH_ON_EARLY_DATA 309
 #define SSL_R_SSLV3_ALERT_CLOSE_NOTIFY 1000
 #define SSL_R_SSLV3_ALERT_UNEXPECTED_MESSAGE 1010
 #define SSL_R_SSLV3_ALERT_BAD_RECORD_MAC 1020
@@ -5187,12 +5296,13 @@ BSSL_NAMESPACE_END
 #define SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK 1086
 #define SSL_R_TLSV1_ALERT_USER_CANCELLED 1090
 #define SSL_R_TLSV1_ALERT_NO_RENEGOTIATION 1100
-#define SSL_R_TLSV1_UNSUPPORTED_EXTENSION 1110
-#define SSL_R_TLSV1_CERTIFICATE_UNOBTAINABLE 1111
-#define SSL_R_TLSV1_UNRECOGNIZED_NAME 1112
-#define SSL_R_TLSV1_BAD_CERTIFICATE_STATUS_RESPONSE 1113
-#define SSL_R_TLSV1_BAD_CERTIFICATE_HASH_VALUE 1114
-#define SSL_R_TLSV1_UNKNOWN_PSK_IDENTITY 1115
-#define SSL_R_TLSV1_CERTIFICATE_REQUIRED 1116
+#define SSL_R_TLSV1_ALERT_UNSUPPORTED_EXTENSION 1110
+#define SSL_R_TLSV1_ALERT_CERTIFICATE_UNOBTAINABLE 1111
+#define SSL_R_TLSV1_ALERT_UNRECOGNIZED_NAME 1112
+#define SSL_R_TLSV1_ALERT_BAD_CERTIFICATE_STATUS_RESPONSE 1113
+#define SSL_R_TLSV1_ALERT_BAD_CERTIFICATE_HASH_VALUE 1114
+#define SSL_R_TLSV1_ALERT_UNKNOWN_PSK_IDENTITY 1115
+#define SSL_R_TLSV1_ALERT_CERTIFICATE_REQUIRED 1116
+#define SSL_R_TLSV1_ALERT_NO_APPLICATION_PROTOCOL 1120
 
 #endif  // OPENSSL_HEADER_SSL_H

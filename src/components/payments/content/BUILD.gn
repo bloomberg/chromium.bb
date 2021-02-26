@@ -2,16 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
-
-jumbo_static_library("content") {
+static_library("content") {
   sources = [
+    "android_app_communication.cc",
+    "android_app_communication.h",
+    "android_payment_app.cc",
+    "android_payment_app.h",
+    "android_payment_app_factory.cc",
+    "android_payment_app_factory.h",
+    "autofill_payment_app.cc",
+    "autofill_payment_app.h",
     "autofill_payment_app_factory.cc",
     "autofill_payment_app_factory.h",
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
     "initialization_task.cc",
     "initialization_task.h",
+    "payment_app.cc",
+    "payment_app.h",
     "payment_app_factory.cc",
     "payment_app_factory.h",
     "payment_app_service.cc",
@@ -28,6 +36,11 @@ jumbo_static_library("content") {
     "payment_request_converter.h",
     "payment_request_spec.cc",
     "payment_request_spec.h",
+    "secure_payment_confirmation_app.cc",
+    "secure_payment_confirmation_app.h",
+    "secure_payment_confirmation_app_factory.cc",
+    "secure_payment_confirmation_app_factory.h",
+    "secure_payment_confirmation_view.h",
     "service_worker_payment_app.cc",
     "service_worker_payment_app.h",
     "service_worker_payment_app_factory.cc",
@@ -37,6 +50,7 @@ jumbo_static_library("content") {
   deps = [
     ":content_common",
     ":utils",
+    "//base",
     "//components/autofill/core/browser",
     "//components/keyed_service/content",
     "//components/payments/content/utility",
@@ -48,14 +62,37 @@ jumbo_static_library("content") {
     "//components/strings:components_strings_grit",
     "//components/ukm/content",
     "//components/url_formatter",
+    "//components/webdata/common",
     "//content/public/browser",
+    "//crypto",
+    "//device/fido",
+    "//services/data_decoder/public/cpp",
     "//third_party/blink/public:blink_headers",
     "//url",
   ]
 
-  if (!is_android) {
+  if (is_chromeos) {
+    sources += [ "android_app_communication_chrome_os.cc" ]
+
+    deps += [
+      "//ash/public/cpp/external_arc:external_arc",
+      "//components/arc",
+      "//components/arc/mojom",
+    ]
+  }
+
+  if (!is_chromeos) {
+    sources += [ "android_app_communication_stub.cc" ]
+  }
+
+  if (is_android) {
+    sources += [ "secure_payment_confirmation_view_stub.cc" ]
+  } else {
     sources += [
+      "content_payment_request_delegate.cc",
       "content_payment_request_delegate.h",
+      "payment_credential.cc",
+      "payment_credential.h",
       "payment_request.cc",
       "payment_request.h",
       "payment_request_dialog.h",
@@ -67,12 +104,16 @@ jumbo_static_library("content") {
       "payment_request_web_contents_manager.h",
       "payment_response_helper.cc",
       "payment_response_helper.h",
+      "secure_payment_confirmation_controller.cc",
+      "secure_payment_confirmation_controller.h",
+      "secure_payment_confirmation_model.cc",
+      "secure_payment_confirmation_model.h",
     ]
   }
 }
 
 # Files used by content and utility.
-jumbo_static_library("content_common") {
+static_library("content_common") {
   sources = [
     "web_app_manifest.cc",
     "web_app_manifest.h",
@@ -84,7 +125,7 @@ jumbo_static_library("content_common") {
   ]
 }
 
-jumbo_static_library("utils") {
+static_library("utils") {
   sources = [
     "developer_console_logger.cc",
     "developer_console_logger.h",
@@ -125,23 +166,30 @@ jumbo_static_library("utils") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
+    "android_app_communication_test_support.h",
+    "android_app_communication_unittest.cc",
+    "android_payment_app_factory_unittest.cc",
+    "android_payment_app_unittest.cc",
     "payment_method_manifest_table_unittest.cc",
     "service_worker_payment_app_finder_unittest.cc",
-    "test_content_payment_request_delegate.cc",
-    "test_content_payment_request_delegate.h",
     "web_app_manifest_section_table_unittest.cc",
   ]
 
   if (!is_android) {
     sources += [
+      "autofill_payment_app_unittest.cc",
       "payment_app_unittest.cc",
       "payment_request_spec_unittest.cc",
       "payment_request_state_unittest.cc",
       "payment_response_helper_unittest.cc",
+      "secure_payment_confirmation_app_unittest.cc",
+      "secure_payment_confirmation_model_unittest.cc",
       "service_worker_payment_app_unittest.cc",
+      "test_content_payment_request_delegate.cc",
+      "test_content_payment_request_delegate.h",
     ]
   }
 
@@ -154,15 +202,33 @@ jumbo_source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
     "//components/payments/core:error_strings",
+    "//components/payments/core:method_strings",
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
     "//components/webdata/common",
     "//content/test:test_support",
+    "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/network:test_support",
     "//sql",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
     "//third_party/icu",
     "//third_party/libaddressinput:test_support",
   ]
+
+  if (is_chromeos) {
+    sources += [ "android_app_communication_test_support_chrome_os.cc" ]
+
+    deps += [
+      "//ash/public/cpp/external_arc:external_arc",
+      "//components/arc",
+      "//components/arc:arc_test_support",
+      "//components/arc/mojom",
+    ]
+  }
+
+  if (!is_chromeos) {
+    sources += [ "android_app_communication_test_support_stub.cc" ]
+  }
 }

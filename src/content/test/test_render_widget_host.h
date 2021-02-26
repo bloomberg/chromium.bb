@@ -6,7 +6,6 @@
 #define CONTENT_TEST_TEST_RENDER_WIDGET_HOST_H_
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -19,25 +18,22 @@ class TestRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   static std::unique_ptr<RenderWidgetHostImpl> Create(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden);
   ~TestRenderWidgetHost() override;
 
   // RenderWidgetHostImpl overrides.
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
 
   MockWidgetInputHandler* GetMockWidgetInputHandler();
 
  private:
   TestRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                       RenderProcessHost* process,
+                       AgentSchedulingGroupHost& agent_scheduling_group,
                        int32_t routing_id,
-                       std::unique_ptr<MockWidgetImpl> widget_impl,
-                       mojo::PendingRemote<mojom::Widget> widget,
                        bool hidden);
-
-  std::unique_ptr<MockWidgetImpl> widget_impl_;
+  MockWidgetInputHandler input_handler_;
 };
 
 }  // namespace content

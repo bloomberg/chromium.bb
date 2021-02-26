@@ -47,6 +47,8 @@ class NativeIOFile final : public ScriptWrappable {
   ~NativeIOFile() override;
 
   ScriptPromise close(ScriptState*);
+  ScriptPromise getLength(ScriptState*, ExceptionState&);
+  ScriptPromise setLength(ScriptState*, uint64_t length, ExceptionState&);
   ScriptPromise read(ScriptState*,
                      MaybeShared<DOMArrayBufferView> buffer,
                      uint64_t file_offset,
@@ -55,9 +57,10 @@ class NativeIOFile final : public ScriptWrappable {
                       MaybeShared<DOMArrayBufferView> buffer,
                       uint64_t file_offset,
                       ExceptionState&);
+  ScriptPromise flush(ScriptState*, ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // Data accessed on the threads that do file I/O.
@@ -79,10 +82,26 @@ class NativeIOFile final : public ScriptWrappable {
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
       NativeIOFile::FileState* file_state,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
-  // Performs the post file-I/O part of close(), on the main thread.
+  // Performs the post file I/O part of close(), on the main thread.
   void DidClose(CrossThreadPersistent<ScriptPromiseResolver> resolver);
 
-  // Performs the file I/O part of read().
+  // Performs the file I/O part of getLength(), off the main thread.
+  static void DoGetLength(
+      CrossThreadPersistent<NativeIOFile> native_io_file,
+      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+      NativeIOFile::FileState* file_state,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  // Performs the post file I/O part of getLength(), on the main thread.
+  void DidGetLength(CrossThreadPersistent<ScriptPromiseResolver> resolver,
+                    int64_t length,
+                    base::File::Error get_length_error);
+
+  // Performs the post file I/O part of setLength(), on the main thread.
+  void DidSetLength(ScriptPromiseResolver* resolver,
+                    bool backend_success,
+                    base::File backing_file);
+
+  // Performs the file I/O part of read(), off the main thread.
   static void DoRead(
       CrossThreadPersistent<NativeIOFile> native_io_file,
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
@@ -92,12 +111,12 @@ class NativeIOFile final : public ScriptWrappable {
       char* read_buffer,
       uint64_t file_offset,
       int read_size);
-  // Performs the post file-I/O part of read(), on the main thread.
+  // Performs the post file I/O part of read(), on the main thread.
   void DidRead(CrossThreadPersistent<ScriptPromiseResolver> resolver,
                int read_bytes,
                base::File::Error read_error);
 
-  // Performs the file I/O part of write().
+  // Performs the file I/O part of write(), off the main thread.
   static void DoWrite(
       CrossThreadPersistent<NativeIOFile> native_io_file,
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
@@ -107,10 +126,20 @@ class NativeIOFile final : public ScriptWrappable {
       const char* write_data,
       uint64_t file_offset,
       int write_size);
-  // Performs the post file-I/O part of write(), on the main thread.
+  // Performs the post file I/O part of write(), on the main thread.
   void DidWrite(CrossThreadPersistent<ScriptPromiseResolver> resolver,
                 int written_bytes,
                 base::File::Error write_error);
+
+  // Performs the file I/O part of flush().
+  static void DoFlush(
+      CrossThreadPersistent<NativeIOFile> native_io_file,
+      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+      NativeIOFile::FileState* file_state,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  // Performs the post file-I/O part of flush(), on the main thread.
+  void DidFlush(CrossThreadPersistent<ScriptPromiseResolver> resolver,
+                bool success);
 
   // Kicks off closing the file from the main thread.
   void CloseBackingFile();
@@ -118,7 +147,11 @@ class NativeIOFile final : public ScriptWrappable {
   // True when an I/O operation other than close is underway.
   //
   // Checked before kicking off any I/O operation except for close(). This
-  // ensures that at most one I/O operation is underway at any given time.
+  // ensures that at most one I/O operation is underway at any given
+  // time. |io_pending_| is meant to only be accessed on the main (JS)
+  // thread. At a high level, it's true when the mutex guarding the actual file
+  // object (within |file_state_|) is held, but it's also true during thread
+  // hops, when the mutex is not held.
   bool io_pending_ = false;
 
   // Non-null when a close() I/O is queued behind another I/O operation.

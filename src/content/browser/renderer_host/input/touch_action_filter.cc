@@ -34,66 +34,22 @@ bool IsXAxisActionDisallowed(cc::TouchAction action) {
          ((action & cc::TouchAction::kPanX) == cc::TouchAction::kNone);
 }
 
-// Report how often the gesture event is or is not dropped due to the current
-// allowed touch action state not matching the gesture event.
-void ReportGestureEventFiltered(bool event_filtered) {
-  UMA_HISTOGRAM_BOOLEAN("TouchAction.GestureEventFiltered", event_filtered);
-}
+void SetCursorControlIfNecessary(WebGestureEvent* event,
+                                 cc::TouchAction action) {
+  if (event->data.scroll_begin.pointer_count != 1)
+    return;
+  const float abs_delta_x = fabs(event->data.scroll_begin.delta_x_hint);
+  const float abs_delta_y = fabs(event->data.scroll_begin.delta_y_hint);
+  if (abs_delta_x <= abs_delta_y)
+    return;
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class GestureEventFilterResults {
-  kGSBAllowedByMain = 0,
-  kGSBAllowedByCC = 1,
-  kGSBFilteredByMain = 2,
-  kGSBFilteredByCC = 3,
-  kGSBDeferred = 4,
-  kGSUAllowedByMain = 5,
-  kGSUAllowedByCC = 6,
-  kGSUFilteredByMain = 7,
-  kGSUFilteredByCC = 8,
-  kGSUDeferred = 9,
-  kFilterResultsCount = 10,
-  kMaxValue = kFilterResultsCount
-};
+  // We shouldn't reach here if kPanX is not allowed for horizontal scroll.
+  DCHECK_NE(action & cc::TouchAction::kPanX, cc::TouchAction::kNone);
+  if ((action & cc::TouchAction::kInternalPanXScrolls) ==
+      cc::TouchAction::kInternalPanXScrolls)
+    return;
 
-void ReportGestureEventFilterResults(bool is_gesture_scroll_begin,
-                                     bool active_touch_action_known,
-                                     FilterGestureEventResult result) {
-  GestureEventFilterResults report_type;
-  if (is_gesture_scroll_begin) {
-    if (result == FilterGestureEventResult::kFilterGestureEventAllowed) {
-      if (active_touch_action_known)
-        report_type = GestureEventFilterResults::kGSBAllowedByMain;
-      else
-        report_type = GestureEventFilterResults::kGSBAllowedByCC;
-    } else if (result ==
-               FilterGestureEventResult::kFilterGestureEventFiltered) {
-      if (active_touch_action_known)
-        report_type = GestureEventFilterResults::kGSBFilteredByMain;
-      else
-        report_type = GestureEventFilterResults::kGSBFilteredByCC;
-    } else {
-      report_type = GestureEventFilterResults::kGSBDeferred;
-    }
-  } else {
-    if (result == FilterGestureEventResult::kFilterGestureEventAllowed) {
-      if (active_touch_action_known)
-        report_type = GestureEventFilterResults::kGSUAllowedByMain;
-      else
-        report_type = GestureEventFilterResults::kGSUAllowedByCC;
-    } else if (result ==
-               FilterGestureEventResult::kFilterGestureEventFiltered) {
-      if (active_touch_action_known)
-        report_type = GestureEventFilterResults::kGSUFilteredByMain;
-      else
-        report_type = GestureEventFilterResults::kGSUFilteredByCC;
-    } else {
-      report_type = GestureEventFilterResults::kGSUDeferred;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION("TouchAction.GestureEventFilterResults",
-                            report_type, GestureEventFilterResults::kMaxValue);
+  event->data.scroll_begin.cursor_control = true;
 }
 
 }  // namespace
@@ -112,13 +68,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
   if (has_deferred_events_) {
     TRACE_EVENT_INSTANT0("input", "Has Deferred", TRACE_EVENT_SCOPE_THREAD);
-    WebInputEvent::Type type = gesture_event->GetType();
-    if (type == WebInputEvent::Type::kGestureScrollBegin ||
-        type == WebInputEvent::Type::kGestureScrollUpdate) {
-      ReportGestureEventFilterResults(
-          type == WebInputEvent::Type::kGestureScrollBegin, false,
-          FilterGestureEventResult::kFilterGestureEventDelayed);
-    }
     return FilterGestureEventResult::kFilterGestureEventDelayed;
   }
 
@@ -132,13 +81,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       (allowed_touch_action_.has_value()
            ? cc::TouchActionToString(allowed_touch_action_.value())
            : "n/a"));
-  TRACE_EVENT_INSTANT1("input", "whitelisted_action", TRACE_EVENT_SCOPE_THREAD,
-                       "action",
-                       cc::TouchActionToString(white_listed_touch_action_));
+  TRACE_EVENT_INSTANT1(
+      "input", "compositor_allowed_action", TRACE_EVENT_SCOPE_THREAD, "action",
+      cc::TouchActionToString(compositor_allowed_touch_action_));
 
   cc::TouchAction touch_action = active_touch_action_.has_value()
                                      ? active_touch_action_.value()
-                                     : white_listed_touch_action_;
+                                     : compositor_allowed_touch_action_;
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
@@ -150,9 +99,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       // filtering out the GestureTapDown due to tap suppression (i.e. tapping
       // during a fling should stop the fling, not be sent to the page). We
       // should not reset the touch action in this case! We currently work
-      // around this by resetting the whitelisted touch action from the
-      // compositor in this case as well but we should investigate not
-      // filtering the TapDown.
+      // around this by resetting the compositor allowed touch action in this
+      // case as well but we should investigate not filtering the TapDown.
       if (!gesture_sequence_in_progress_) {
         TRACE_EVENT_INSTANT0("input", "No Sequence at GSB!",
                              TRACE_EVENT_SCOPE_THREAD);
@@ -161,13 +109,16 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           active_touch_action_ = allowed_touch_action_;
           touch_action = allowed_touch_action_.value();
         } else {
-          touch_action = white_listed_touch_action_;
+          touch_action = compositor_allowed_touch_action_;
         }
       }
-      drop_scroll_events_ =
-          ShouldSuppressScrolling(*gesture_event, touch_action);
+      drop_scroll_events_ = ShouldSuppressScrolling(
+          *gesture_event, touch_action, active_touch_action_.has_value());
       FilterGestureEventResult res;
       if (!drop_scroll_events_) {
+        SetCursorControlIfNecessary(gesture_event, touch_action);
+        UMA_HISTOGRAM_BOOLEAN("Blink.Input.GestureScrollBeginAsCursorControl",
+                              gesture_event->data.scroll_begin.cursor_control);
         res = FilterGestureEventResult::kFilterGestureEventAllowed;
       } else if (active_touch_action_.has_value()) {
         res = FilterGestureEventResult::kFilterGestureEventFiltered;
@@ -177,17 +128,12 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         has_deferred_events_ = true;
         res = FilterGestureEventResult::kFilterGestureEventDelayed;
       }
-      ReportGestureEventFilterResults(true, active_touch_action_.has_value(),
-                                      res);
       return res;
     }
 
     case WebInputEvent::Type::kGestureScrollUpdate: {
       if (drop_scroll_events_) {
         TRACE_EVENT_INSTANT0("input", "Drop Events", TRACE_EVENT_SCOPE_THREAD);
-        ReportGestureEventFilterResults(
-            false, active_touch_action_.has_value(),
-            FilterGestureEventResult::kFilterGestureEventFiltered);
         return FilterGestureEventResult::kFilterGestureEventFiltered;
       }
 
@@ -206,9 +152,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           TRACE_EVENT_INSTANT0("input", "Defer Due to YAxis",
                                TRACE_EVENT_SCOPE_THREAD);
           has_deferred_events_ = true;
-          ReportGestureEventFilterResults(
-              false, active_touch_action_.has_value(),
-              FilterGestureEventResult::kFilterGestureEventDelayed);
           return FilterGestureEventResult::kFilterGestureEventDelayed;
         }
         gesture_event->data.scroll_update.delta_y = 0;
@@ -219,17 +162,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           TRACE_EVENT_INSTANT0("input", "Defer Due to XAxis",
                                TRACE_EVENT_SCOPE_THREAD);
           has_deferred_events_ = true;
-          ReportGestureEventFilterResults(
-              false, active_touch_action_.has_value(),
-              FilterGestureEventResult::kFilterGestureEventDelayed);
           return FilterGestureEventResult::kFilterGestureEventDelayed;
         }
         gesture_event->data.scroll_update.delta_x = 0;
         gesture_event->data.scroll_update.velocity_x = 0;
       }
-      ReportGestureEventFilterResults(
-          false, active_touch_action_.has_value(),
-          FilterGestureEventResult::kFilterGestureEventAllowed);
       break;
     }
 
@@ -243,12 +180,12 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (gesture_sequence_.size() >= 1000)
         gesture_sequence_.erase(gesture_sequence_.begin(),
                                 gesture_sequence_.end() - 250);
-      // Do not reset |white_listed_touch_action_|. In the fling cancel case,
-      // the ack for the second touch sequence start, which sets the white
-      // listed touch action, could arrive before the GSE of the first fling
-      // sequence, we do not want to reset the white listed touch action.
+      // Do not reset |compositor_allowed_touch_action_|. In the fling cancel
+      // case, the ack for the second touch sequence start, which sets the
+      // compositor allowed touch action, could arrive before the GSE of the
+      // first fling sequence, we do not want to reset the compositor allowed
+      // touch action.
       gesture_sequence_in_progress_ = false;
-      ReportGestureEventFiltered(drop_scroll_events_);
       return FilterScrollEventAndResetState();
 
     // Evaluate the |drop_pinch_events_| here instead of GSB because pinch
@@ -267,7 +204,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       }
       return FilterGestureEventResult::kFilterGestureEventFiltered;
     case WebInputEvent::Type::kGesturePinchEnd:
-      ReportGestureEventFiltered(drop_pinch_events_);
       return FilterPinchEventAndResetState();
 
     // The double tap gesture is a tap ending event. If a double-tap gesture is
@@ -361,7 +297,7 @@ void TouchActionFilter::SetTouchAction(cc::TouchAction touch_action) {
                cc::TouchActionToString(touch_action));
   allowed_touch_action_ = touch_action;
   active_touch_action_ = allowed_touch_action_;
-  white_listed_touch_action_ = touch_action;
+  compositor_allowed_touch_action_ = touch_action;
 }
 
 FilterGestureEventResult TouchActionFilter::FilterPinchEventAndResetState() {
@@ -434,31 +370,8 @@ void TouchActionFilter::ReportAndResetTouchAction() {
     gesture_sequence_.append("RY");
   else
     gesture_sequence_.append("RN");
-  ReportTouchAction();
   if (num_of_active_touches_ <= 0)
     ResetTouchAction();
-}
-
-void TouchActionFilter::ReportTouchAction() {
-  // Report the effective touch action computed by blink such as
-  // TouchAction::kNone, TouchAction::kPanX, etc.
-  // Since |cc::TouchAction::kAuto| is equivalent to |cc::TouchAction::kMax|, we
-  // must add one to the upper bound to be able to visualize the number of
-  // times |cc::TouchAction::kAuto| is hit.
-  // https://crbug.com/879511, remove this temporary fix.
-  if (!active_touch_action_.has_value())
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION("TouchAction.EffectiveTouchAction",
-                            active_touch_action_.value(),
-                            static_cast<int>(cc::TouchAction::kMax) + 1);
-
-  // Report how often the effective touch action computed by blink is or is
-  // not equivalent to the whitelisted touch action computed by the
-  // compositor.
-  UMA_HISTOGRAM_BOOLEAN(
-      "TouchAction.EquivalentEffectiveAndWhiteListed",
-      active_touch_action_.value() == white_listed_touch_action_);
 }
 
 void TouchActionFilter::AppendToGestureSequenceForDebugging(const char* str) {
@@ -468,11 +381,10 @@ void TouchActionFilter::AppendToGestureSequenceForDebugging(const char* str) {
 void TouchActionFilter::ResetTouchAction() {
   TRACE_EVENT0("input", "TouchActionFilter::ResetTouchAction");
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
-  // their begin event(s) suppressed will be suppressed until the next
-  // sequenceo.
+  // their begin event(s) suppressed will be suppressed until the next sequence.
   if (has_touch_event_handler_) {
     allowed_touch_action_.reset();
-    white_listed_touch_action_ = cc::TouchAction::kAuto;
+    compositor_allowed_touch_action_ = cc::TouchAction::kAuto;
   } else {
     // Lack of a touch handler indicates that the page either has no
     // touch-action modifiers or that all its touch-action modifiers are auto.
@@ -482,21 +394,26 @@ void TouchActionFilter::ResetTouchAction() {
   }
 }
 
-void TouchActionFilter::OnSetWhiteListedTouchAction(
-    cc::TouchAction white_listed_touch_action) {
-  TRACE_EVENT2("input", "TouchActionFilter::OnSetWhiteListedTouchAction",
-               "action", cc::TouchActionToString(white_listed_touch_action),
-               "current", cc::TouchActionToString(white_listed_touch_action_));
+void TouchActionFilter::OnSetCompositorAllowedTouchAction(
+    cc::TouchAction allowed_touch_action) {
+  TRACE_EVENT2("input", "TouchActionFilter::OnSetCompositorAllowedTouchAction",
+               "action", cc::TouchActionToString(allowed_touch_action),
+               "current", cc::TouchActionToString(allowed_touch_action));
   // We use '&' here to account for the multiple-finger case, which is the same
   // as OnSetTouchAction.
-  white_listed_touch_action_ =
-      white_listed_touch_action_ & white_listed_touch_action;
+  compositor_allowed_touch_action_ =
+      compositor_allowed_touch_action_ & allowed_touch_action;
 }
 
 bool TouchActionFilter::ShouldSuppressScrolling(
     const blink::WebGestureEvent& gesture_event,
-    cc::TouchAction touch_action) {
+    cc::TouchAction touch_action,
+    bool is_active_touch_action) {
   DCHECK(gesture_event.GetType() == WebInputEvent::Type::kGestureScrollBegin);
+  // If kInternalPanXScrolls is true, kPanX must be true;
+  DCHECK((touch_action & cc::TouchAction::kInternalPanXScrolls) ==
+             cc::TouchAction::kNone ||
+         (touch_action & cc::TouchAction::kPanX) != cc::TouchAction::kNone);
 
   if (gesture_event.data.scroll_begin.pointer_count >= 2) {
     // Any GestureScrollBegin with more than one fingers is like a pinch-zoom
@@ -516,13 +433,21 @@ bool TouchActionFilter::ShouldSuppressScrolling(
   const float absDeltaYHint = fabs(deltaYHint);
 
   cc::TouchAction minimal_conforming_touch_action = cc::TouchAction::kNone;
-  if (absDeltaXHint >= absDeltaYHint) {
+  if (absDeltaXHint > absDeltaYHint) {
+    // If we're performing a horizontal gesture over a region that could
+    // potentially activate cursor control, we need to wait for the real
+    // main-thread touch action before making a decision since we'll need to set
+    // the cursor control bit correctly.
+    if (!is_active_touch_action &&
+        (touch_action & cc::TouchAction::kInternalPanXScrolls) !=
+            cc::TouchAction::kInternalPanXScrolls)
+      return true;
+
     if (deltaXHint > 0)
       minimal_conforming_touch_action |= cc::TouchAction::kPanLeft;
     else if (deltaXHint < 0)
       minimal_conforming_touch_action |= cc::TouchAction::kPanRight;
-  }
-  if (absDeltaYHint >= absDeltaXHint) {
+  } else {
     if (deltaYHint > 0)
       minimal_conforming_touch_action |= cc::TouchAction::kPanUp;
     else if (deltaYHint < 0)
@@ -539,7 +464,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
                "has handlers", has_handlers);
   // The has_touch_event_handler_ is default to false which is why we have the
   // "&&" condition here, to ensure that touch actions will be set if there is
-  // no touch event handler on a page.
+  // no touch event consumers.
   if (has_handlers && has_touch_event_handler_ == has_handlers)
     return;
   has_touch_event_handler_ = has_handlers;

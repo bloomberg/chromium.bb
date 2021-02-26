@@ -41,6 +41,8 @@ GLenum GetSizedFormatInternal(GLenum format, GLenum type)
             {
                 case GL_UNSIGNED_BYTE:
                     return GL_BGRA8_EXT;
+                case GL_UNSIGNED_INT_2_10_10_10_REV:
+                    return GL_BGR10_A2_ANGLEX;
                 case GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT:
                     return GL_BGR5_A1_ANGLEX;
                 case GL_UNSIGNED_SHORT_4_4_4_4_REV_EXT:
@@ -606,6 +608,7 @@ bool ValidES3Format(GLenum format)
         case GL_RG_INTEGER:
         case GL_SRGB_ALPHA_EXT:
         case GL_SRGB_EXT:
+        case GL_STENCIL_INDEX:
             return true;
 
         default:
@@ -1395,6 +1398,37 @@ bool ValidES3FormatCombination(GLenum format, GLenum type, GLenum internalFormat
             }
             break;
 
+        case GL_DEPTH_STENCIL:
+            switch (type)
+            {
+                case GL_UNSIGNED_INT_24_8:
+                {
+                    switch (internalFormat)
+                    {
+                        case GL_DEPTH_STENCIL:
+                        case GL_DEPTH24_STENCIL8:
+                            return true;
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+                {
+                    switch (internalFormat)
+                    {
+                        case GL_DEPTH32F_STENCIL8:
+                            return true;
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+
         case GL_RED:
             switch (type)
             {
@@ -1541,26 +1575,14 @@ bool ValidES3FormatCombination(GLenum format, GLenum type, GLenum internalFormat
             }
             break;
 
-        case GL_DEPTH_STENCIL:
+        case GL_STENCIL_INDEX:
             switch (type)
             {
-                case GL_UNSIGNED_INT_24_8:
+                case GL_UNSIGNED_BYTE:
                 {
                     switch (internalFormat)
                     {
-                        case GL_DEPTH_STENCIL:
-                        case GL_DEPTH24_STENCIL8:
-                            return true;
-                        default:
-                            break;
-                    }
-                    break;
-                }
-                case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
-                {
-                    switch (internalFormat)
-                    {
-                        case GL_DEPTH32F_STENCIL8:
+                        case GL_STENCIL_INDEX8:
                             return true;
                         default:
                             break;

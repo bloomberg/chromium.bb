@@ -489,3 +489,10 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
       wallpaperPickerWindow.contentWindow.dispatchEvent(event);
     }
 });
+
+chrome.wallpaperPrivate.onClosePreviewWallpaper.addListener(function() {
+  if (wallpaperPickerWindow) {
+    var event = new CustomEvent(Constants.ClosePreviewWallpaper);
+    wallpaperPickerWindow.contentWindow.dispatchEvent(event);
+  }
+});

@@ -95,7 +95,7 @@ class TestStaticAddressMap : public ::testing::Test {
     int address_test;
     string entry;
     string entry_test;
-    const char *entry_cstring = NULL;
+    const char* entry_cstring = NULL;
     bool found;
     bool found_test;
 
@@ -143,11 +143,11 @@ class TestStaticAddressMap : public ::testing::Test {
   // Test data sets:
   static const int kNumberTestCases = 4;
   static const int testsize[];
-  int *testdata[kNumberTestCases];
+  int* testdata[kNumberTestCases];
 
   AddrMap addr_map[kNumberTestCases];
   TestMap test_map[kNumberTestCases];
-  char *map_data[kNumberTestCases];
+  char* map_data[kNumberTestCases];
   google_breakpad::AddressMapSerializer<int, string> serializer;
 };
 
@@ -229,7 +229,7 @@ TEST_F(TestStaticAddressMap, Test1000RandomElementsMap) {
   }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();

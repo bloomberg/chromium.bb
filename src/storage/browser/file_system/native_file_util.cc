@@ -11,6 +11,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_mount_option.h"
@@ -24,7 +25,7 @@ namespace {
 //
 // TODO(benchan): Find a better place outside webkit to host this function.
 bool SetPlatformSpecificDirectoryPermissions(const base::FilePath& dir_path) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // System daemons on Chrome OS may run as a user different than the Chrome
   // process but need to access files under the directories created here.
   // Because of that, grant the execute permission on the created directory
@@ -147,6 +148,10 @@ base::File::Error NativeFileUtil::EnsureFileExists(const base::FilePath& path,
     // If its parent does not exist, should return NOT_FOUND error.
     return base::File::FILE_ERROR_NOT_FOUND;
 
+  // If |path| is a directory, return an error.
+  if (base::DirectoryExists(path))
+    return base::File::FILE_ERROR_NOT_A_FILE;
+
   // Tries to create the |path| exclusively.  This should fail
   // with base::File::FILE_ERROR_EXISTS if the path already exists.
   base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_READ);
@@ -180,7 +185,7 @@ base::File::Error NativeFileUtil::CreateDirectory(const base::FilePath& path,
 
   // If file exists at the path.
   if (path_exists && !base::DirectoryExists(path))
-    return base::File::FILE_ERROR_EXISTS;
+    return base::File::FILE_ERROR_NOT_A_DIRECTORY;
 
   if (!base::CreateDirectory(path))
     return base::File::FILE_ERROR_FAILED;
@@ -305,7 +310,7 @@ base::File::Error NativeFileUtil::DeleteFile(const base::FilePath& path) {
     return base::File::FILE_ERROR_NOT_FOUND;
   if (base::DirectoryExists(path))
     return base::File::FILE_ERROR_NOT_A_FILE;
-  if (!base::DeleteFile(path, false))
+  if (!base::DeleteFile(path))
     return base::File::FILE_ERROR_FAILED;
   return base::File::FILE_OK;
 }
@@ -317,7 +322,7 @@ base::File::Error NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
     return base::File::FILE_ERROR_NOT_A_DIRECTORY;
   if (!base::IsDirectoryEmpty(path))
     return base::File::FILE_ERROR_NOT_EMPTY;
-  if (!base::DeleteFile(path, false))
+  if (!base::DeleteFile(path))
     return base::File::FILE_ERROR_FAILED;
   return base::File::FILE_OK;
 }

@@ -12,13 +12,14 @@ from google.appengine.ext import ndb
 
 from dashboard.common import namespaced_stored_object
 
-
 BOT_CONFIGURATIONS_KEY = 'bot_configurations'
 
 
 def Get(name):
-  configurations = namespaced_stored_object.Get(BOT_CONFIGURATIONS_KEY)
-  configuration = configurations[name]
+  configurations = namespaced_stored_object.Get(BOT_CONFIGURATIONS_KEY) or {}
+  configuration = configurations.get(name)
+  if configuration is None:
+    raise ValueError('Bot configuration not found: "%s"' % (name,))
   if 'alias' in configuration:
     return configurations[configuration['alias']]
   return configuration
@@ -42,6 +43,7 @@ def GetAliasesAsync(bot):
 
 def List():
   bot_configurations = namespaced_stored_object.Get(BOT_CONFIGURATIONS_KEY)
-  canonical_names = [name for name, value in bot_configurations.items()
-                     if 'alias' not in value]
+  canonical_names = [
+      name for name, value in bot_configurations.items() if 'alias' not in value
+  ]
   return sorted(canonical_names, key=string.lower)

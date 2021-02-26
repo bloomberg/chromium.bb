@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -30,7 +30,6 @@ void EventPageRequestManager::RunOrDefer(
     base::OnceClosure request,
     MediaRouteProviderWakeReason wake_reason) {
   if (mojo_connections_ready_) {
-    DCHECK(!media_route_provider_extension_id_.empty());
     std::move(request).Run();
   } else {
     EnqueueRequest(std::move(request));
@@ -43,8 +42,6 @@ void EventPageRequestManager::RunOrDefer(
 
 void EventPageRequestManager::OnMojoConnectionsReady() {
   if (IsEventPageSuspended()) {
-    DVLOG(1)
-        << "OnMojoConnectionsReady was called while extension is suspended.";
     SetWakeReason(MediaRouteProviderWakeReason::REGISTER_MEDIA_ROUTE_PROVIDER);
     AttemptWakeEventPage();
     return;
@@ -71,14 +68,13 @@ void EventPageRequestManager::OnMojoConnectionError() {
   // connection to media route provider. Since we do not know whether the error
   // is transient, reattempt the wakeup.
   if (!pending_requests_.empty()) {
-    DLOG(ERROR) << "A connection error while there are pending requests.";
     SetWakeReason(MediaRouteProviderWakeReason::CONNECTION_ERROR);
     AttemptWakeEventPage();
   }
 }
 
 content::WebContents* EventPageRequestManager::GetEventPageWebContents() {
-  if (!extension_process_manager_)
+  if (!extension_process_manager_ || media_route_provider_extension_id_.empty())
     return nullptr;
 
   extensions::ExtensionHost* extension_host =
@@ -97,16 +93,11 @@ EventPageRequestManager::EventPageRequestManager(
 void EventPageRequestManager::EnqueueRequest(base::OnceClosure request) {
   pending_requests_.push_back(std::move(request));
   if (pending_requests_.size() > kMaxPendingRequests) {
-    DLOG(ERROR) << "Reached max queue size. Dropping oldest request.";
     pending_requests_.pop_front();
   }
-  DVLOG(2) << "EnqueueRequest (queue-length=" << pending_requests_.size()
-           << ")";
 }
 
 void EventPageRequestManager::DrainPendingRequests() {
-  DLOG(ERROR) << "Draining request queue. (queue-length="
-              << pending_requests_.size() << ")";
   pending_requests_.clear();
 }
 
@@ -119,14 +110,19 @@ void EventPageRequestManager::SetWakeReason(
 
 bool EventPageRequestManager::IsEventPageSuspended() const {
   return !extension_process_manager_ ||
+         media_route_provider_extension_id_.empty() ||
          extension_process_manager_->IsEventPageSuspended(
              media_route_provider_extension_id_);
 }
 
 void EventPageRequestManager::AttemptWakeEventPage() {
+  if (!extension_process_manager_ ||
+      media_route_provider_extension_id_.empty()) {
+    return;
+  }
+
   ++wakeup_attempt_count_;
   if (wakeup_attempt_count_ > kMaxWakeupAttemptCount) {
-    DLOG(ERROR) << "Attempted too many times to wake up event page.";
     DrainPendingRequests();
     wakeup_attempt_count_ = 0;
     MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
@@ -134,23 +130,13 @@ void EventPageRequestManager::AttemptWakeEventPage() {
     return;
   }
 
-  DVLOG(1) << "Attempting to wake up event page: attempt "
-           << wakeup_attempt_count_;
-  if (!extension_process_manager_) {
-    DLOG(ERROR) << "Attempted to wake up event page without a valid event page"
-                   "tracker";
-    return;
-  }
-
   // This return false if the extension is already awake.
   // Callback is bound using WeakPtr because |extension_process_manager_|
   // outlives |this|.
-  if (!extension_process_manager_->WakeEventPage(
-          media_route_provider_extension_id_,
-          base::BindOnce(&EventPageRequestManager::OnWakeComplete,
-                         weak_factory_.GetWeakPtr()))) {
-    DLOG(ERROR) << "Failed to schedule a wakeup for event page.";
-  }
+  extension_process_manager_->WakeEventPage(
+      media_route_provider_extension_id_,
+      base::BindOnce(&EventPageRequestManager::OnWakeComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void EventPageRequestManager::OnWakeComplete(bool success) {
@@ -169,7 +155,6 @@ void EventPageRequestManager::OnWakeComplete(bool success) {
   }
 
   // This is likely an non-retriable error. Drop the pending requests.
-  DLOG(ERROR) << "An error encountered while waking the event page.";
   ClearWakeReason();
   DrainPendingRequests();
   MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(

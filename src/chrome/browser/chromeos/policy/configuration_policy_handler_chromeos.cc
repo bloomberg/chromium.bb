@@ -22,14 +22,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/magnifier_type.h"
-#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
-#include "components/arc/arc_prefs.h"
 #include "components/crx_file/id_util.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
@@ -42,8 +40,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "crypto/sha2.h"
 #include "url/gurl.h"
-
-namespace apu = arc::policy_util;
 
 namespace policy {
 
@@ -192,9 +188,9 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (!value)
     return true;
 
-  std::unique_ptr<base::Value> root_dict =
+  base::Value root_dict =
       chromeos::onc::ReadDictionaryFromJson(value->GetString());
-  if (!root_dict) {
+  if (!root_dict.is_dict()) {
     errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
     errors->SetDebugInfo(policy_name(), "ERROR: JSON parse error");
     return false;
@@ -212,8 +208,8 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
 
   // ONC policies are always unencrypted.
   chromeos::onc::Validator::Result validation_result;
-  root_dict = validator.ValidateAndRepairObject(
-      &chromeos::onc::kToplevelConfigurationSignature, *root_dict,
+  validator.ValidateAndRepairObject(
+      &chromeos::onc::kToplevelConfigurationSignature, root_dict,
       &validation_result);
 
   // Pass error/warning message and non-localized debug_info to PolicyErrorMap.
@@ -266,10 +262,11 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   const PolicyMap::Entry* entry = policies->Get(policy_name());
   if (!entry)
     return;
-  std::unique_ptr<base::Value> sanitized_config =
-      SanitizeNetworkConfig(entry->value.get());
-  if (!sanitized_config)
-    sanitized_config = std::make_unique<base::Value>();
+  base::Optional<base::Value> sanitized_config =
+      SanitizeNetworkConfig(entry->value());
+
+  if (!sanitized_config.has_value())
+    sanitized_config = base::Value();
 
   policies->Set(policy_name(), entry->level, entry->scope, entry->source,
                 std::move(sanitized_config), nullptr);
@@ -284,30 +281,28 @@ NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
       pref_path_(pref_path) {}
 
 // static
-std::unique_ptr<base::Value>
+base::Optional<base::Value>
 NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     const base::Value* config) {
   if (!config->is_string())
-    return nullptr;
+    return base::nullopt;
 
-  std::unique_ptr<base::DictionaryValue> toplevel_dict =
-      base::DictionaryValue::From(
-          chromeos::onc::ReadDictionaryFromJson(config->GetString()));
-  if (!toplevel_dict)
-    return nullptr;
+  base::Value toplevel_dict =
+      chromeos::onc::ReadDictionaryFromJson(config->GetString());
+  if (!toplevel_dict.is_dict())
+    return base::nullopt;
 
   // Placeholder to insert in place of the filtered setting.
   const char kPlaceholder[] = "********";
 
   toplevel_dict = chromeos::onc::MaskCredentialsInOncObject(
-      chromeos::onc::kToplevelConfigurationSignature,
-      *toplevel_dict,
+      chromeos::onc::kToplevelConfigurationSignature, toplevel_dict,
       kPlaceholder);
 
   std::string json_string;
   base::JSONWriter::WriteWithOptions(
-      *toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
-  return std::make_unique<base::Value>(json_string);
+      toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
+  return base::Value(json_string);
 }
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()
@@ -554,34 +549,6 @@ void ArcServicePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   } else if (value->GetInt() ==
              static_cast<int>(ArcServicePolicyValue::kEnabled)) {
     prefs->SetBoolean(pref_, true);
-  }
-}
-
-EcryptfsMigrationStrategyPolicyHandler::EcryptfsMigrationStrategyPolicyHandler()
-    : IntRangePolicyHandlerBase(
-          key::kEcryptfsMigrationStrategy,
-          static_cast<int>(apu::EcryptfsMigrationAction::kDisallowMigration),
-          static_cast<int>(apu::EcryptfsMigrationAction::
-                               kAskForEcryptfsArcUsersNoLongerSupported),
-          false /* clamp */) {}
-
-void EcryptfsMigrationStrategyPolicyHandler::ApplyPolicySettings(
-    const PolicyMap& policies,
-    PrefValueMap* prefs) {
-  const base::Value* const value = policies.GetValue(policy_name());
-  if (!value || !EnsureInRange(value, nullptr, nullptr)) {
-    return;
-  }
-  if (value->GetInt() ==
-          static_cast<int>(apu::EcryptfsMigrationAction::kAskUser) ||
-      value->GetInt() ==
-          static_cast<int>(apu::EcryptfsMigrationAction::
-                               kAskForEcryptfsArcUsersNoLongerSupported)) {
-    // Alias obsolete values to apu::kMigrate.
-    prefs->SetInteger(arc::prefs::kEcryptfsMigrationStrategy,
-                      static_cast<int>(apu::EcryptfsMigrationAction::kMigrate));
-  } else {
-    prefs->SetValue(arc::prefs::kEcryptfsMigrationStrategy, value->Clone());
   }
 }
 

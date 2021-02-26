@@ -70,9 +70,6 @@ const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely-treat-insecure-origin-as-secure";
 
-// Disable OOR-CORS in child processes regardless of the base::Feature flag.
-const char kForceToDisableOutOfBlinkCors[] = "disable-oor-cors";
-
 // Manually sets additional Trust Tokens key commitments in the network service
 // to the given value, which should be a JSON dictionary satisfying the
 // requirements of TrustTokenKeyCommitmentParser::ParseMultipleIssuers.
@@ -89,6 +86,11 @@ const char kForceToDisableOutOfBlinkCors[] = "disable-oor-cors";
 // runs.
 const char kAdditionalTrustTokenKeyCommitments[] =
     "additional-trust-token-key-commitments";
+
+// Allows the manual specification of a First-Party Set, as a comma-separated
+// list of origins. The first origin in the list is treated as the owner of the
+// set.
+const char kUseFirstPartySet[] = "use-first-party-set";
 
 }  // namespace switches
 

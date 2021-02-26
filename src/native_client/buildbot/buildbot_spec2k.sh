@@ -25,11 +25,6 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly SPEC_BASE="tests/spec2k"
 readonly ARCHIVE_NAME=$(${SPEC_BASE}/run_all.sh GetTestArchiveName)
 
-readonly NAME_ARM_TRY_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_UPLOAD)
-readonly NAME_ARM_TRY_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_DOWNLOAD)
-readonly NAME_ARM_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_UPLOAD)
-readonly NAME_ARM_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_DOWNLOAD)
-
 readonly QEMU_TOOL="$(pwd)/toolchain/linux_x86/arm_trusted/run_under_qemu_arm"
 
 # Note: the tool for updating the canned nexes lives at:
@@ -143,32 +138,14 @@ run-tests() {
 
 upload-test-binaries() {
   local tests="$1"
-  local try="$2" # set to "try" if this is a try run
 
   pushd ${SPEC_BASE}
   echo "@@@BUILD_STEP spec2k archive@@@"
   ./run_all.sh PackageArmBinaries ${tests}
   popd
-  echo "@@@BUILD_STEP spec2k upload@@@"
-  if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${NAME_ARM_TRY_UPLOAD} \
-        ${ARCHIVE_NAME}
-  else
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${NAME_ARM_UPLOAD} \
-        ${ARCHIVE_NAME}
-  fi
 }
 
 download-test-binaries() {
-  local try="$1"
-  echo "@@@BUILD_STEP spec2k download@@@"
-  if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${NAME_ARM_TRY_DOWNLOAD} \
-        ${ARCHIVE_NAME}
-  else
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${NAME_ARM_DOWNLOAD} \
-        ${ARCHIVE_NAME}
-  fi
   echo "@@@BUILD_STEP spec2k untar@@@"
   pushd ${SPEC_BASE}
   ./run_all.sh UnpackArmBinaries
@@ -266,15 +243,15 @@ pnacl-trybot-arm-buildonly() {
   clobber
   download-spec2k-harness
   build-prerequisites "arm" "bitcode" "arm-ncval-core"
-  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
+  ${BUILDBOT_PNACL} archive-for-hw-bots
   build-tests SetupPnaclPexeOpt "${TRYBOT_TESTS}" 0 1
-  upload-test-binaries "${TRYBOT_TESTS}" try
+  upload-test-binaries "${TRYBOT_TESTS}"
 }
 
 pnacl-trybot-arm-hw() {
   clobber
-  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_TRY_DOWNLOAD}" try
-  download-test-binaries try
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots
+  download-test-binaries
   build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorArmOptSzHW "${TRYBOT_TESTS}" 1 1
@@ -364,15 +341,15 @@ pnacl-arm-buildonly() {
   clobber
   download-spec2k-harness
   build-prerequisites "arm" "bitcode"
-  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_UPLOAD}" regular
+  ${BUILDBOT_PNACL} archive-for-hw-bots
   build-tests SetupPnaclPexeOpt all 0 1
-  upload-test-binaries all regular
+  upload-test-binaries all
 }
 
 pnacl-arm-hw() {
   clobber
-  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" regular
-  download-test-binaries regular
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots
+  download-test-binaries
   build-tests SetupPnaclTranslatorArmOptHW all 1 1
   run-tests SetupPnaclTranslatorArmOptHW all 1 2
   build-tests SetupPnaclTranslatorArmOptSzHW all 1 1

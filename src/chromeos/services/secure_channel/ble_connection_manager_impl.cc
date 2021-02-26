@@ -16,11 +16,10 @@
 #include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/ble_scanner_impl.h"
-#include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "chromeos/services/secure_channel/ble_weave_client_connection.h"
-#include "chromeos/services/secure_channel/latency_metrics_logger.h"
+#include "chromeos/services/secure_channel/connection_metrics_logger.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "chromeos/services/secure_channel/secure_channel_disconnector_impl.h"
+#include "chromeos/services/secure_channel/secure_channel_disconnector.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace chromeos {
@@ -58,16 +57,21 @@ BleConnectionManagerImpl::Factory*
 // static
 std::unique_ptr<BleConnectionManager> BleConnectionManagerImpl::Factory::Create(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    BleServiceDataHelper* ble_service_data_helper,
+    BluetoothHelper* bluetooth_helper,
+    BleSynchronizerBase* ble_synchronizer,
+    BleScanner* ble_scanner,
+    SecureChannelDisconnector* secure_channel_disconnector,
     TimerFactory* timer_factory,
     base::Clock* clock) {
   if (test_factory_) {
     return test_factory_->CreateInstance(
-        bluetooth_adapter, ble_service_data_helper, timer_factory, clock);
+        bluetooth_adapter, bluetooth_helper, ble_synchronizer, ble_scanner,
+        secure_channel_disconnector, timer_factory, clock);
   }
 
   return base::WrapUnique(new BleConnectionManagerImpl(
-      bluetooth_adapter, ble_service_data_helper, timer_factory, clock));
+      bluetooth_adapter, bluetooth_helper, ble_synchronizer, ble_scanner,
+      secure_channel_disconnector, timer_factory, clock));
 }
 
 // static
@@ -203,26 +207,26 @@ void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
 
 BleConnectionManagerImpl::BleConnectionManagerImpl(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    BleServiceDataHelper* ble_service_data_helper,
+    BluetoothHelper* bluetooth_helper,
+    BleSynchronizerBase* ble_synchronizer,
+    BleScanner* ble_scanner,
+    SecureChannelDisconnector* secure_channel_disconnector,
     TimerFactory* timer_factory,
     base::Clock* clock)
     : bluetooth_adapter_(bluetooth_adapter),
-      ble_service_data_helper_(ble_service_data_helper),
       clock_(clock),
-      ble_synchronizer_(BleSynchronizer::Factory::Create(bluetooth_adapter)),
-      ble_advertiser_(
-          BleAdvertiserImpl::Factory::Create(this /* delegate */,
-                                             ble_service_data_helper_,
-                                             ble_synchronizer_.get(),
-                                             timer_factory)),
-      ble_scanner_(BleScannerImpl::Factory::Create(this /* delegate */,
-                                                   ble_service_data_helper_,
-                                                   ble_synchronizer_.get(),
-                                                   bluetooth_adapter)),
-      secure_channel_disconnector_(
-          SecureChannelDisconnectorImpl::Factory::Create()) {}
+      ble_scanner_(ble_scanner),
+      secure_channel_disconnector_(secure_channel_disconnector),
+      ble_advertiser_(BleAdvertiserImpl::Factory::Create(this /* delegate */,
+                                                         bluetooth_helper,
+                                                         ble_synchronizer,
+                                                         timer_factory)) {
+  ble_scanner_->AddObserver(this);
+}
 
-BleConnectionManagerImpl::~BleConnectionManagerImpl() = default;
+BleConnectionManagerImpl::~BleConnectionManagerImpl() {
+  ble_scanner_->RemoveObserver(this);
+}
 
 void BleConnectionManagerImpl::PerformAttemptBleInitiatorConnection(
     const DeviceIdPair& device_id_pair,
@@ -234,8 +238,9 @@ void BleConnectionManagerImpl::PerformAttemptBleInitiatorConnection(
       device_id_pair.remote_device_id(), ConnectionRole::kInitiatorRole);
 
   ble_advertiser_->AddAdvertisementRequest(device_id_pair, connection_priority);
-  ble_scanner_->AddScanFilter(
-      BleScanner::ScanFilter(device_id_pair, ConnectionRole::kInitiatorRole));
+  ble_scanner_->AddScanRequest(ConnectionAttemptDetails(
+      device_id_pair, ConnectionMedium::kBluetoothLowEnergy,
+      ConnectionRole::kInitiatorRole));
 }
 
 void BleConnectionManagerImpl::PerformUpdateBleInitiatorConnectionPriority(
@@ -266,8 +271,9 @@ void BleConnectionManagerImpl::PerformCancelBleInitiatorConnectionAttempt(
     return;
 
   ble_advertiser_->RemoveAdvertisementRequest(device_id_pair);
-  ble_scanner_->RemoveScanFilter(
-      BleScanner::ScanFilter(device_id_pair, ConnectionRole::kInitiatorRole));
+  ble_scanner_->RemoveScanRequest(ConnectionAttemptDetails(
+      device_id_pair, ConnectionMedium::kBluetoothLowEnergy,
+      ConnectionRole::kInitiatorRole));
 }
 
 void BleConnectionManagerImpl::PerformAttemptBleListenerConnection(
@@ -279,8 +285,9 @@ void BleConnectionManagerImpl::PerformAttemptBleListenerConnection(
   StartConnectionAttemptTimerMetricsIfNecessary(
       device_id_pair.remote_device_id(), ConnectionRole::kListenerRole);
 
-  ble_scanner_->AddScanFilter(
-      BleScanner::ScanFilter(device_id_pair, ConnectionRole::kListenerRole));
+  ble_scanner_->AddScanRequest(ConnectionAttemptDetails(
+      device_id_pair, ConnectionMedium::kBluetoothLowEnergy,
+      ConnectionRole::kListenerRole));
 }
 
 void BleConnectionManagerImpl::PerformUpdateBleListenerConnectionPriority(
@@ -306,8 +313,9 @@ void BleConnectionManagerImpl::PerformCancelBleListenerConnectionAttempt(
   if (notifying_remote_device_id_ == device_id_pair.remote_device_id())
     return;
 
-  ble_scanner_->RemoveScanFilter(
-      BleScanner::ScanFilter(device_id_pair, ConnectionRole::kListenerRole));
+  ble_scanner_->RemoveScanRequest(ConnectionAttemptDetails(
+      device_id_pair, ConnectionMedium::kBluetoothLowEnergy,
+      ConnectionRole::kListenerRole));
 }
 
 void BleConnectionManagerImpl::OnAdvertisingSlotEnded(
@@ -330,7 +338,12 @@ void BleConnectionManagerImpl::OnFailureToGenerateAdvertisement(
 void BleConnectionManagerImpl::OnReceivedAdvertisement(
     multidevice::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
+    ConnectionMedium connection_medium,
     ConnectionRole connection_role) {
+  // Only process advertisements received as part of the BLE connection flow.
+  if (connection_medium != ConnectionMedium::kBluetoothLowEnergy)
+    return;
+
   remote_device_id_to_timestamps_map_[remote_device.GetDeviceId()]
       ->RecordAdvertisementReceived();
 

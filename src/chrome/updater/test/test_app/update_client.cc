@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,11 +29,10 @@ bool UpdateClient::CanCheckForUpdate() {
   return CanDialIPC();
 }
 
-void UpdateClient::Register(base::RepeatingCallback<void(int)> callback) {
-  registration_callback_ = std::move(callback);
-
+void UpdateClient::Register(base::OnceCallback<void(int)> callback) {
   BeginRegister({}, {}, TEST_APP_VERSION_STRING,
-                base::BindOnce(&UpdateClient::RegistrationCompleted, this));
+                base::BindOnce(&UpdateClient::RegistrationCompleted, this,
+                               std::move(callback)));
 }
 
 void UpdateClient::CheckForUpdate(StatusCallback callback) {
@@ -83,15 +83,14 @@ void UpdateClient::HandleStatusUpdate(UpdateService::UpdateState update_state) {
                                 base::string16()));
 }
 
-void UpdateClient::RegistrationCompleted(UpdateService::Result result) {
+void UpdateClient::RegistrationCompleted(base::OnceCallback<void(int)> callback,
+                                         UpdateService::Result result) {
   if (result != UpdateService::Result::kSuccess) {
-    LOG(ERROR) << "Updater registration error: "
-               << base::NumberToString(static_cast<int>(result));
+    LOG(ERROR) << "Updater registration error: " << result;
   }
 
   callback_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(registration_callback_, static_cast<int>(result)));
+      FROM_HERE, base::BindOnce(std::move(callback), static_cast<int>(result)));
 }
 
 void UpdateClient::UpdateCompleted(UpdateService::Result result) {

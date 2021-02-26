@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "content/common/content_export.h"
@@ -67,6 +67,7 @@ using DownloadTargetCallback = base::OnceCallback<void(
     download::DownloadDangerType danger_type,
     download::DownloadItem::MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
+    base::Optional<download::DownloadSchedule> download_schedule,
     download::DownloadInterruptReason interrupt_reason)>;
 
 // Called when a download delayed by the delegate has completed.

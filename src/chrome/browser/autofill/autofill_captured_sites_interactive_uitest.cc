@@ -225,6 +225,7 @@ class AutofillCapturedSitesInteractiveTest
     // Allow access exception to live Autofill Server for
     // overriding cache replay behavior.
     host_resolver()->AllowDirectLookup("clients1.google.com");
+    host_resolver()->AllowDirectLookup("content-autofill.googleapis.com");
     AutofillUiTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -235,8 +236,7 @@ class AutofillCapturedSitesInteractiveTest
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillShowTypePredictions},
-        /*disabled_features=*/{features::kAutofillCacheQueryResponses,
-                               features::kAutofillUseApi});
+        /*disabled_features=*/{features::kAutofillCacheQueryResponses});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
                                     "AutofillFieldMetadata/Enabled/");

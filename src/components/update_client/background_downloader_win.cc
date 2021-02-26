@@ -19,7 +19,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
@@ -37,10 +37,10 @@ using base::win::ScopedCoMem;
 
 // The class BackgroundDownloader in this module is an adapter between
 // the CrxDownloader interface and the BITS service interfaces.
-// The interface exposed on the CrxDownloader code runs on the main thread,
-// while the BITS specific code runs on a separate thread passed in by the
-// client. For every url to download, a BITS job is created, unless there is
-// already an existing job for that url, in which case, the downloader
+// The interface exposed on the CrxDownloader code runs on the main sequence,
+// while the BITS specific code runs in a separate sequence bound to a
+// COM apartment. For every url to download, a BITS job is created, unless
+// there is already an existing job for that url, in which case, the downloader
 // connects to it. Once a job is associated with the url, the code looks for
 // changes in the BITS job state. The checks are triggered by a timer.
 // The BITS job contains just one file to download. There could only be one
@@ -140,8 +140,7 @@ const int kMaxQueuedJobs = 10;
 // Retrieves the singleton instance of GIT for this process.
 HRESULT GetGit(ComPtr<IGlobalInterfaceTable>* git) {
   return ::CoCreateInstance(CLSID_StdGlobalInterfaceTable, nullptr,
-                            CLSCTX_INPROC_SERVER,
-                            IID_PPV_ARGS(git->GetAddressOf()));
+                            CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*git)));
 }
 
 // Retrieves an interface pointer from the process GIT for a given |cookie|.
@@ -177,7 +176,7 @@ int GetHttpStatusFromBitsError(HRESULT error) {
 HRESULT GetFilesInJob(const ComPtr<IBackgroundCopyJob>& job,
                       std::vector<ComPtr<IBackgroundCopyFile>>* files) {
   ComPtr<IEnumBackgroundCopyFiles> enum_files;
-  HRESULT hr = job->EnumFiles(enum_files.GetAddressOf());
+  HRESULT hr = job->EnumFiles(&enum_files);
   if (FAILED(hr))
     return hr;
 
@@ -188,7 +187,7 @@ HRESULT GetFilesInJob(const ComPtr<IBackgroundCopyJob>& job,
 
   for (ULONG i = 0; i != num_files; ++i) {
     ComPtr<IBackgroundCopyFile> file;
-    if (enum_files->Next(1, file.GetAddressOf(), nullptr) == S_OK && file.Get())
+    if (enum_files->Next(1, &file, nullptr) == S_OK && file.Get())
       files->push_back(file);
   }
 
@@ -279,7 +278,7 @@ HRESULT GetJobError(const ComPtr<IBackgroundCopyJob>& job,
                     HRESULT* error_code_out) {
   *error_code_out = S_OK;
   ComPtr<IBackgroundCopyError> copy_error;
-  HRESULT hr = job->GetError(copy_error.GetAddressOf());
+  HRESULT hr = job->GetError(&copy_error);
   if (FAILED(hr))
     return hr;
 
@@ -301,7 +300,7 @@ HRESULT FindBitsJobIf(Predicate pred,
                       const ComPtr<IBackgroundCopyManager>& bits_manager,
                       std::vector<ComPtr<IBackgroundCopyJob>>* jobs) {
   ComPtr<IEnumBackgroundCopyJobs> enum_jobs;
-  HRESULT hr = bits_manager->EnumJobs(0, enum_jobs.GetAddressOf());
+  HRESULT hr = bits_manager->EnumJobs(0, &enum_jobs);
   if (FAILED(hr))
     return hr;
 
@@ -314,7 +313,7 @@ HRESULT FindBitsJobIf(Predicate pred,
   // the job description matches the component updater jobs.
   for (ULONG i = 0; i != job_count; ++i) {
     ComPtr<IBackgroundCopyJob> current_job;
-    if (enum_jobs->Next(1, current_job.GetAddressOf(), nullptr) == S_OK &&
+    if (enum_jobs->Next(1, &current_job, nullptr) == S_OK &&
         pred(current_job)) {
       base::string16 job_name;
       hr = GetJobDisplayName(current_job, &job_name);
@@ -396,36 +395,34 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 }  // namespace
 
 BackgroundDownloader::BackgroundDownloader(
-    std::unique_ptr<CrxDownloader> successor)
+    scoped_refptr<CrxDownloader> successor)
     : CrxDownloader(std::move(successor)),
       com_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
           kTaskTraitsBackgroundDownloader)),
       git_cookie_bits_manager_(0),
       git_cookie_job_(0) {}
 
-BackgroundDownloader::~BackgroundDownloader() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  timer_.reset();
-}
+BackgroundDownloader::~BackgroundDownloader() = default;
 
 void BackgroundDownloader::StartTimer() {
-  timer_.reset(new base::OneShotTimer);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timer_ = std::make_unique<base::OneShotTimer>();
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(kJobPollingIntervalSec),
                 this, &BackgroundDownloader::OnTimer);
 }
 
 void BackgroundDownloader::OnTimer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timer_ = nullptr;
   com_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloading,
-                                base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloading, this));
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   com_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::BeginDownload,
-                                base::Unretained(this), url));
+      FROM_HERE,
+      base::BindOnce(&BackgroundDownloader::BeginDownload, this, url));
 }
 
 // Called one time when this class is asked to do a download.
@@ -444,9 +441,8 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
   VLOG(1) << "Starting BITS download for: " << url.spec();
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(FROM_HERE,
-                               base::BindOnce(&BackgroundDownloader::StartTimer,
-                                              base::Unretained(this)));
+  main_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::StartTimer, this));
 }
 
 // Creates or opens an existing BITS job to download the |url|, and handles
@@ -535,9 +531,8 @@ void BackgroundDownloader::OnDownloading() {
     return;
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(FROM_HERE,
-                               base::BindOnce(&BackgroundDownloader::StartTimer,
-                                              base::Unretained(this)));
+  main_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::StartTimer, this));
 }
 
 // Completes the BITS download, picks up the file path of the response, and
@@ -582,13 +577,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   if (!result.error)
     result.response = response_;
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete,
-                                base::Unretained(this), is_handled, result,
-                                download_metrics));
-
-  // Once the task is posted to the the main thread, this object may be deleted
-  // by its owner. It is not safe to access members of this object on this task
-  // runner from now on.
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete, this,
+                                is_handled, result, download_metrics));
 }
 
 // Called when the BITS job has been transferred successfully. Completes the
@@ -666,9 +656,8 @@ bool BackgroundDownloader::OnStateTransferring() {
   GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
 
   main_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
-                     base::Unretained(this), downloaded_bytes, total_bytes));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress, this,
+                                downloaded_bytes, total_bytes));
   return false;
 }
 
@@ -726,7 +715,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
 
   GUID guid = {0};
   hr = bits_manager_->CreateJob(kJobName, BG_JOB_TYPE_DOWNLOAD, &guid,
-                                local_job.GetAddressOf());
+                                &local_job);
   if (FAILED(hr)) {
     CleanupJob(local_job);
     return hr;
@@ -824,12 +813,11 @@ HRESULT BackgroundDownloader::UpdateInterfacePointers() {
     return hr;
 
   hr = GetInterfaceFromGit(git, git_cookie_bits_manager_,
-                           IID_PPV_ARGS(bits_manager_.GetAddressOf()));
+                           IID_PPV_ARGS(&bits_manager_));
   if (FAILED(hr))
     return hr;
 
-  hr = GetInterfaceFromGit(git, git_cookie_job_,
-                           IID_PPV_ARGS(job_.GetAddressOf()));
+  hr = GetInterfaceFromGit(git, git_cookie_job_, IID_PPV_ARGS(&job_));
   if (FAILED(hr))
     return hr;
 

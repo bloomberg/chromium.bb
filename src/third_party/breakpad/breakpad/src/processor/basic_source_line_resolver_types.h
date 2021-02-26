@@ -57,7 +57,7 @@ namespace google_breakpad {
 
 struct
 BasicSourceLineResolver::Function : public SourceLineResolverBase::Function {
-  Function(const string &function_name,
+  Function(const string& function_name,
            MemAddr function_address,
            MemAddr code_size,
            int set_parameter_size,
@@ -75,7 +75,7 @@ BasicSourceLineResolver::Function : public SourceLineResolverBase::Function {
 
 class BasicSourceLineResolver::Module : public SourceLineResolverBase::Module {
  public:
-  explicit Module(const string &name) : name_(name), is_corrupt_(false) { }
+  explicit Module(const string& name) : name_(name), is_corrupt_(false) { }
   virtual ~Module() { }
 
   // Loads a map from the given buffer in char* type.
@@ -83,7 +83,7 @@ class BasicSourceLineResolver::Module : public SourceLineResolverBase::Module {
   // The passed in |memory buffer| is of size |memory_buffer_size|.  If it is
   // not null terminated, LoadMapFromMemory() will null terminate it by
   // modifying the passed in buffer.
-  virtual bool LoadMapFromMemory(char *memory_buffer,
+  virtual bool LoadMapFromMemory(char* memory_buffer,
                                  size_t memory_buffer_size);
 
   // Tells whether the loaded symbol data is corrupt.  Return value is
@@ -92,20 +92,20 @@ class BasicSourceLineResolver::Module : public SourceLineResolverBase::Module {
 
   // Looks up the given relative address, and fills the StackFrame struct
   // with the result.
-  virtual void LookupAddress(StackFrame *frame) const;
+  virtual void LookupAddress(StackFrame* frame) const;
 
   // If Windows stack walking information is available covering ADDRESS,
   // return a WindowsFrameInfo structure describing it. If the information
   // is not available, returns NULL. A NULL return value does not indicate
   // an error. The caller takes ownership of any returned WindowsFrameInfo
   // object.
-  virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) const;
+  virtual WindowsFrameInfo* FindWindowsFrameInfo(const StackFrame* frame) const;
 
   // If CFI stack walking information is available covering ADDRESS,
   // return a CFIFrameInfo structure describing it. If the information
   // is not available, return NULL. The caller takes ownership of any
   // returned CFIFrameInfo object.
-  virtual CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame) const;
+  virtual CFIFrameInfo* FindCFIFrameInfo(const StackFrame* frame) const;
 
  private:
   // Friend declarations.
@@ -118,29 +118,29 @@ class BasicSourceLineResolver::Module : public SourceLineResolverBase::Module {
   // Logs parse errors.  |*num_errors| is increased every time LogParseError is
   // called.
   static void LogParseError(
-      const string &message,
+      const string& message,
       int line_number,
-      int *num_errors);
+      int* num_errors);
 
   // Parses a file declaration
-  bool ParseFile(char *file_line);
+  bool ParseFile(char* file_line);
 
   // Parses a function declaration, returning a new Function object.
-  Function* ParseFunction(char *function_line);
+  Function* ParseFunction(char* function_line);
 
   // Parses a line declaration, returning a new Line object.
-  Line* ParseLine(char *line_line);
+  Line* ParseLine(char* line_line);
 
   // Parses a PUBLIC symbol declaration, storing it in public_symbols_.
   // Returns false if an error occurs.
-  bool ParsePublicSymbol(char *public_line);
+  bool ParsePublicSymbol(char* public_line);
 
   // Parses a STACK WIN or STACK CFI frame info declaration, storing
   // it in the appropriate table.
-  bool ParseStackInfo(char *stack_info_line);
+  bool ParseStackInfo(char* stack_info_line);
 
   // Parses a STACK CFI record, storing it in cfi_frame_info_.
-  bool ParseCFIFrameInfo(char *stack_info_line);
+  bool ParseCFIFrameInfo(char* stack_info_line);
 
   string name_;
   FileMap files_;

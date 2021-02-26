@@ -4,7 +4,7 @@
 //
 // SystemStorage eject API browser tests.
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -34,7 +34,7 @@ using storage_monitor::TestStorageMonitor;
 
 class SystemStorageEjectApiTest : public extensions::ShellApiTest {
  public:
-  SystemStorageEjectApiTest() : monitor_(NULL) {}
+  SystemStorageEjectApiTest() : monitor_(nullptr) {}
   ~SystemStorageEjectApiTest() override {}
 
  protected:

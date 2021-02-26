@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -19,9 +20,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
@@ -38,6 +39,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/log/net_log_util.h"
+#include "services/cert_verifier/cert_verifier_service_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -121,7 +123,7 @@ void CreateInProcessNetworkService(
     GetNetworkServiceDedicatedThread().StartWithOptions(options);
     task_runner = GetNetworkServiceDedicatedThread().task_runner();
   } else {
-    task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    task_runner = GetIOThreadTaskRunner({});
   }
 
   GetNetworkTaskRunnerStorage() = std::move(task_runner);
@@ -172,6 +174,7 @@ void CreateNetworkServiceOnIOForTesting(
   GetLocalNetworkService() = std::make_unique<network::NetworkService>(
       nullptr /* registry */, std::move(receiver),
       true /* delay_initialization_until_set_client */);
+  GetLocalNetworkService()->StopMetricsTimerForTesting();
   GetLocalNetworkService()->Initialize(
       network::mojom::NetworkServiceParams::New(),
       true /* mock_network_change_notifier */);
@@ -232,12 +235,32 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
   return net::NetLogCaptureMode::kDefault;
 }
 
+static NetworkServiceClient* g_client = nullptr;
+
 }  // namespace
+
+class NetworkServiceInstancePrivate {
+ public:
+  // Opens the specified file, blocking until the file is open. Used to open
+  // files specified by network::switches::kLogNetLog or
+  // network::switches::kSSLKeyLogFile. Since these arguments can be used to
+  // debug startup behavior, asynchronously opening the file on another thread
+  // would result in losing data, hence the need for blocking open operations.
+  // |file_flags| specifies the flags passed to the base::File constructor call.
+  //
+  // ThreadRestrictions needs to be able to friend the class/method to allow
+  // blocking, but can't friend CONTENT_EXPORT methods, so have it friend
+  // NetworkServiceInstancePrivate instead of GetNetworkService().
+  static base::File BlockingOpenFile(const base::FilePath& path,
+                                     int file_flags) {
+    base::ScopedAllowBlocking allow_blocking;
+    return base::File(path, file_flags);
+  }
+};
 
 network::mojom::NetworkService* GetNetworkService() {
   if (!g_network_service_remote)
     g_network_service_remote = new mojo::Remote<network::mojom::NetworkService>;
-  static NetworkServiceClient* g_client;
   if (!g_network_service_remote->is_bound() ||
       !g_network_service_remote->is_connected()) {
     bool service_was_bound = g_network_service_remote->is_bound();
@@ -275,8 +298,8 @@ network::mojom::NetworkService* GetNetworkService() {
               /*completion_event=*/nullptr);
         } else {
           base::WaitableEvent event;
-          base::PostTask(
-              FROM_HERE, {BrowserThread::IO},
+          GetIOThreadTaskRunner({})->PostTask(
+              FROM_HERE,
               base::BindOnce(
                   CreateNetworkServiceOnIOForTesting,
                   g_network_service_remote->BindNewPipeAndPassReceiver(),
@@ -317,18 +340,16 @@ network::mojom::NetworkService* GetNetworkService() {
         base::FilePath log_path =
             command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
-        base::DictionaryValue client_constants =
-            GetContentClient()->GetNetLogConstants();
-
-        base::File file(
+        base::File file = NetworkServiceInstancePrivate::BlockingOpenFile(
             log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
         if (!file.IsValid()) {
           LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
         } else {
           (*g_network_service_remote)
-              ->StartNetLog(std::move(file),
-                            GetNetCaptureModeFromCommandLine(*command_line),
-                            std::move(client_constants));
+              ->StartNetLog(
+                  std::move(file),
+                  GetNetCaptureModeFromCommandLine(*command_line),
+                  GetContentClient()->browser()->GetNetLogConstants());
         }
       }
 
@@ -357,8 +378,9 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       if (!ssl_key_log_path.empty()) {
-        base::File file(ssl_key_log_path,
-                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+        base::File file = NetworkServiceInstancePrivate::BlockingOpenFile(
+            ssl_key_log_path,
+            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
         if (!file.IsValid()) {
           LOG(ERROR) << "Failed opening SSL key log file: "
                      << ssl_key_log_path.value();
@@ -409,9 +431,10 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
 
 void GetNetworkConnectionTrackerFromUIThread(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTaskAndReplyWithResult(FROM_HERE,
+                                   base::BindOnce(&GetNetworkConnectionTracker),
+                                   std::move(callback));
 }
 
 network::NetworkConnectionTrackerAsyncGetter
@@ -443,6 +466,8 @@ void ResetNetworkServiceForTesting() {
 void ShutDownNetworkService() {
   delete g_network_service_remote;
   g_network_service_remote = nullptr;
+  delete g_client;
+  g_client = nullptr;
   if (g_in_process_instance) {
     GetNetworkTaskRunner()->DeleteSoon(FROM_HERE, g_in_process_instance);
     g_in_process_instance = nullptr;
@@ -478,6 +503,113 @@ void PingNetworkService(base::OnceClosure closure) {
           std::move(closure).Run();
       },
       base::Passed(std::move(closure))));
+}
+
+namespace {
+
+mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+GetNewCertVerifierServiceRemote(
+    cert_verifier::mojom::CertVerifierServiceFactory*
+        cert_verifier_service_factory,
+    network::mojom::CertVerifierCreationParamsPtr creation_params) {
+  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+      cert_verifier_remote;
+  cert_verifier_service_factory->GetNewCertVerifier(
+      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
+      std::move(creation_params));
+  return cert_verifier_remote;
+}
+
+void CreateInProcessCertVerifierServiceOnThread(
+    mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
+        receiver) {
+  // Except in tests, our CertVerifierServiceFactoryImpl is a singleton.
+  static base::NoDestructor<cert_verifier::CertVerifierServiceFactoryImpl>
+      cv_service_factory(std::move(receiver));
+}
+
+// Owns the CertVerifierServiceFactory used by the browser.
+// Lives on the UI thread.
+class CertVerifierServiceFactoryOwner {
+ public:
+  CertVerifierServiceFactoryOwner() = default;
+  CertVerifierServiceFactoryOwner(const CertVerifierServiceFactoryOwner&) =
+      delete;
+  CertVerifierServiceFactoryOwner& operator=(
+      const CertVerifierServiceFactoryOwner&) = delete;
+  ~CertVerifierServiceFactoryOwner() = delete;
+
+  static CertVerifierServiceFactoryOwner* Get() {
+    static base::NoDestructor<CertVerifierServiceFactoryOwner>
+        cert_verifier_service_factory_owner;
+    return &*cert_verifier_service_factory_owner;
+  }
+
+  // Passing nullptr will reset the current remote.
+  void SetCertVerifierServiceFactoryForTesting(
+      cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
+    if (service_factory) {
+      DCHECK(!service_factory_);
+    }
+    service_factory_ = service_factory;
+    service_factory_remote_.reset();
+  }
+
+  // Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.
+  cert_verifier::mojom::CertVerifierServiceFactory*
+  GetCertVerifierServiceFactory() {
+    if (!service_factory_) {
+#if defined(OS_CHROMEOS)
+      // ChromeOS's in-process CertVerifierService should run on the IO thread
+      // because it interacts with IO-bound NSS and ChromeOS user slots.
+      // See for example InitializeNSSForChromeOSUser().
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CreateInProcessCertVerifierServiceOnThread,
+                         service_factory_remote_.BindNewPipeAndPassReceiver()));
+#else
+      CreateInProcessCertVerifierServiceOnThread(
+          service_factory_remote_.BindNewPipeAndPassReceiver());
+#endif
+      service_factory_ = service_factory_remote_.get();
+    }
+    return service_factory_;
+  }
+
+ private:
+  // Bound to UI thread.
+  mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>
+      service_factory_remote_;
+  cert_verifier::mojom::CertVerifierServiceFactory* service_factory_ = nullptr;
+};
+
+}  // namespace
+
+network::mojom::CertVerifierParamsPtr GetCertVerifierParams(
+    network::mojom::CertVerifierCreationParamsPtr
+        cert_verifier_creation_params) {
+  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService)) {
+    return network::mojom::CertVerifierParams::NewCreationParams(
+        std::move(cert_verifier_creation_params));
+  }
+
+  auto cv_service_remote_params =
+      network::mojom::CertVerifierServiceRemoteParams::New();
+
+  // Create a cert verifier service.
+  cv_service_remote_params
+      ->cert_verifier_service = GetNewCertVerifierServiceRemote(
+      CertVerifierServiceFactoryOwner::Get()->GetCertVerifierServiceFactory(),
+      std::move(cert_verifier_creation_params));
+
+  return network::mojom::CertVerifierParams::NewRemoteParams(
+      std::move(cv_service_remote_params));
+}
+
+void SetCertVerifierServiceFactoryForTesting(
+    cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
+  CertVerifierServiceFactoryOwner::Get()
+      ->SetCertVerifierServiceFactoryForTesting(service_factory);
 }
 
 }  // namespace content

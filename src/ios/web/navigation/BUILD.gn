@@ -17,6 +17,7 @@ source_set("navigation") {
     ":core",
     ":navigation_manager_util",
     "//base",
+    "//components/shared_highlighting/core/common",
     "//ios/net",
     "//ios/web:core",
     "//ios/web/common",
@@ -35,6 +36,8 @@ source_set("navigation") {
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//ios/web/web_state/ui:web_view_handler",
     "//ios/web/web_view:util",
+    "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//ui/base",
     "//url",
   ]
@@ -46,6 +49,8 @@ source_set("navigation") {
     "crw_navigation_item_holder.mm",
     "crw_pending_navigation_info.h",
     "crw_pending_navigation_info.mm",
+    "crw_text_fragments_handler.h",
+    "crw_text_fragments_handler.mm",
     "crw_web_view_navigation_observer.h",
     "crw_web_view_navigation_observer.mm",
     "crw_web_view_navigation_observer_delegate.h",
@@ -57,8 +62,6 @@ source_set("navigation") {
     "navigation_item_impl_list.mm",
     "navigation_item_storage_builder.h",
     "navigation_item_storage_builder.mm",
-    "nscoder_util.h",
-    "nscoder_util.mm",
     "serializable_user_data_manager_impl.h",
     "serializable_user_data_manager_impl.mm",
     "session_storage_builder.h",
@@ -86,6 +89,7 @@ source_set("core") {
     "//base",
     "//components/url_formatter:url_formatter",
     "//ios/web/common:features",
+    "//ios/web/common:user_agent",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/deprecated:deprecated_navigation_util",
@@ -119,6 +123,8 @@ source_set("wk_navigation_util") {
   ]
 
   sources = [
+    "nscoder_util.h",
+    "nscoder_util.mm",
     "wk_navigation_util.h",
     "wk_navigation_util.mm",
   ]

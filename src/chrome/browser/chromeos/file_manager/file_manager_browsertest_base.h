@@ -13,11 +13,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/file_manager/devtools_listener.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 
 class NotificationDisplayServiceTester;
 class SelectFileDialogExtensionTestFactory;
@@ -25,6 +27,10 @@ class SelectFileDialogExtensionTestFactory;
 namespace arc {
 class FakeFileSystemInstance;
 }  // namespace arc
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace file_manager {
 
@@ -40,10 +46,88 @@ class DocumentsProviderTestVolume;
 class MediaViewTestVolume;
 class SmbfsTestVolume;
 
-class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
+class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
+                                   public extensions::ExtensionApiTest {
+ public:
+  struct Options {
+    Options();
+    Options(const Options&);
+
+    // Should test run in Guest or Incognito mode?
+    GuestMode guest_mode = NOT_IN_GUEST_MODE;
+
+    // Whether test runs in tablet mode.
+    bool tablet_mode = false;
+
+    // Whether test requires Android documents providers.
+    bool documents_provider = false;
+
+    // Whether test requires ARC++.
+    bool arc = false;
+
+    // Whether test requires a browser to be started.
+    bool browser = false;
+
+    // Whether test requires zip/unzip support.
+    // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
+    bool zip = false;
+
+    // Whether test uses the new ZIP system.
+    // TODO(crbug.com/912236) Remove once transition to new ZIP system is done.
+    bool zip_no_nacl = false;
+
+    // Whether test should enable drive dss pinning.
+    bool drive_dss_pin = false;
+
+    // Whether Drive should act as if offline.
+    bool offline = false;
+
+    // Whether test needs the files-ng feature.
+    bool files_ng = true;
+
+    // Whether test needs the files-swa feature.
+    bool files_swa = false;
+
+    // Whether test needs the media-swa apps.
+    bool media_swa = false;
+
+    // Whether test needs a native SMB file system provider.
+    bool native_smb = true;
+
+    // Whether test needs smbfs for native SMB integration.
+    bool smbfs = false;
+
+    // Whether test needs trash.
+    bool trash = false;
+
+    // Whether test needs the unified media view feature.
+    bool unified_media_view = false;
+
+    // Whether FilesApp should start with volumes mounted.
+    bool mount_volumes = true;
+
+    // Whether test should observe file tasks.
+    bool observe_file_tasks = true;
+
+    // Whether test should enable sharesheet.
+    bool enable_sharesheet = false;
+
+    // Whether test needs the single partition format feature.
+    bool single_partition_format = false;
+  };
+
  protected:
   FileManagerBrowserTestBase();
   ~FileManagerBrowserTestBase() override;
+
+  // content::DevToolsAgentHostObserver:
+  bool ShouldForceDevToolsAgentHostCreation() override;
+  void DevToolsAgentHostCreated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostAttached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostNavigated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostDetached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostCrashed(content::DevToolsAgentHost* host,
+                                base::TerminationStatus status) override;
 
   // extensions::ExtensionApiTest:
   void SetUp() override;
@@ -55,24 +139,10 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void TearDown() override;
 
   // Mandatory overrides for each File Manager test extension type.
-  virtual GuestMode GetGuestMode() const = 0;
+  virtual Options GetOptions() const = 0;
   virtual const char* GetTestCaseName() const = 0;
   virtual std::string GetFullTestCaseName() const = 0;
   virtual const char* GetTestExtensionManifestName() const = 0;
-
-  // Optional overrides for each File Manager test extension type.
-  virtual bool GetTabletMode() const;
-  virtual bool GetEnableDocumentsProvider() const;
-  virtual bool GetEnableArc() const;
-  virtual bool GetRequiresStartupBrowser() const;
-  virtual bool GetNeedsZipSupport() const;
-  virtual bool GetIsOffline() const;
-  virtual bool GetEnableFilesNg() const;
-  virtual bool GetEnableNativeSmb() const;
-  virtual bool GetEnableSmbfs() const;
-  virtual bool GetEnableUnifiedMediaView() const;
-  virtual bool GetStartWithNoVolumesMounted() const;
-  virtual bool GetStartWithFileTasksObserver() const;
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
   // it to drive the testing the actual FileManager component extension under
@@ -81,44 +151,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
  private:
   class MockFileTasksObserver;
-
-  // Returns true if the test requires incognito mode.
-  bool IsIncognitoModeTest() const { return GetGuestMode() == IN_INCOGNITO; }
-
-  // Returns true if the test requires in guest mode.
-  bool IsGuestModeTest() const { return GetGuestMode() == IN_GUEST_MODE; }
-
-  // Returns true if the test runs in tablet mode.
-  bool IsTabletModeTest() const { return GetTabletMode(); }
-
-  // Returns true if the test requires Android documents providers.
-  bool IsDocumentsProviderTest() const { return GetEnableDocumentsProvider(); }
-
-  // Returns true if the test requires ARC++.
-  bool IsArcTest() const { return GetEnableArc(); }
-
-  // Returns true if the test requires zip/unzip support.
-  bool IsZipTest() const { return GetNeedsZipSupport(); }
-
-  // Returns true if Drive should act as if offline.
-  bool IsOfflineTest() const { return GetIsOffline(); }
-
-  // Returns true if the test needs the files-ng feature.
-  bool IsFilesNgTest() const { return GetEnableFilesNg(); }
-
-  // Returns true if the test needs a native SMB file system provider.
-  bool IsNativeSmbTest() const { return GetEnableNativeSmb(); }
-
-  // Returns true if the test needs smbfs for native SMB integration.
-  bool IsSmbfsTest() const { return GetEnableSmbfs(); }
-
-  // Returns true if the test needs the unified media view feature.
-  bool IsUnifiedMediaViewTest() const { return GetEnableUnifiedMediaView(); }
-
-  // Returns true if FilesApp should start with no volumes mounted.
-  bool DoesTestStartWithNoVolumesMounted() const {
-    return GetStartWithNoVolumesMounted();
-  }
 
   // Launches the test extension with manifest |manifest_name|. The extension
   // manifest_name file should reside in the specified |path| relative to the
@@ -153,6 +185,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Called during tests to determine if SMB file shares is enabled.
   bool IsSmbEnabled() const;
 
+  web_app::AppId files_app_swa_id_;
+  content::WebContents* files_app_web_contents_ = nullptr;
+
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   crostini::FakeCrostiniFeatures crostini_features_;
 
@@ -177,19 +212,26 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
 
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<arc::FakeFileSystemInstance> arc_file_system_instance_;
 
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<MockFileTasksObserver> file_tasks_observer_;
+  SelectFileDialogExtensionTestFactory* select_factory_;  // Not owned.
 
   base::HistogramTester histograms_;
   base::UserActionTester user_actions_;
 
-  // Not owned.
-  SelectFileDialogExtensionTestFactory* select_factory_;
+  bool devtools_code_coverage_ = false;
+  std::map<content::DevToolsAgentHost*, std::unique_ptr<DevToolsListener>>
+      devtools_agent_;
+  uint32_t process_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestBase);
 };
+
+std::ostream& operator<<(std::ostream& out, GuestMode mode);
+std::ostream& operator<<(std::ostream& out,
+                         const FileManagerBrowserTestBase::Options& options);
 
 }  // namespace file_manager
 

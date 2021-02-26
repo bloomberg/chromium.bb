@@ -12,12 +12,13 @@ import android.support.test.rule.ActivityTestRule;
 
 import androidx.fragment.app.Fragment;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 /**
  * Activity test rule that launch {@link SettingsActivity} in tests.
  *
@@ -90,13 +91,9 @@ public class SettingsActivityTestRule<T extends Fragment>
     public void waitTillActivityIsDestroyed() {
         SettingsActivity activity = getActivity();
         if (activity != null) {
-            CriteriaHelper.pollUiThread(new Criteria("Activity should be destroyed, current state: "
-                    + ApplicationStatus.getStateForActivity(activity)) {
-                @Override
-                public boolean isSatisfied() {
-                    return ApplicationStatus.getStateForActivity(activity)
-                            == ActivityState.DESTROYED;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(ApplicationStatus.getStateForActivity(activity),
+                        Matchers.is(ActivityState.DESTROYED));
             });
         }
     }

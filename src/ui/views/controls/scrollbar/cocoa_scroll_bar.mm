@@ -14,8 +14,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
-
-using gfx::CocoaScrollbarPainter;
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -100,9 +99,14 @@ gfx::Size CocoaScrollBarThumb::CalculatePreferredSize() const {
 void CocoaScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
   auto params = cocoa_scroll_bar_->GetPainterParams();
   // Set the hover state based only on the thumb.
-  params.hovered = IsStateHovered() || IsStatePressed();
-  CocoaScrollbarPainter::PaintThumb(
-      canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
+  params.scrollbar_extra.is_hovering = IsStateHovered() || IsStatePressed();
+  ui::NativeTheme::Part thumb_part =
+      params.scrollbar_extra.orientation ==
+              ui::NativeTheme::ScrollbarOrientation::kHorizontal
+          ? ui::NativeTheme::kScrollbarHorizontalThumb
+          : ui::NativeTheme::kScrollbarVerticalThumb;
+  GetNativeTheme()->Paint(canvas->sk_canvas(), thumb_part,
+                          ui::NativeTheme::kNormal, GetLocalBounds(), params);
 }
 
 bool CocoaScrollBarThumb::OnMousePressed(const ui::MouseEvent& event) {
@@ -208,16 +212,21 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   auto params = GetPainterParams();
   // Transparency of the track is handled by the View opacity, so always draw
   // using the non-overlay path.
-  params.overlay = false;
-  CocoaScrollbarPainter::PaintTrack(
-      canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
+  params.scrollbar_extra.is_overlay = false;
+  ui::NativeTheme::Part track_part =
+      params.scrollbar_extra.orientation ==
+              ui::NativeTheme::ScrollbarOrientation::kHorizontal
+          ? ui::NativeTheme::kScrollbarHorizontalTrack
+          : ui::NativeTheme::kScrollbarVerticalTrack;
+  GetNativeTheme()->Paint(canvas->sk_canvas(), track_part,
+                          ui::NativeTheme::kNormal, GetLocalBounds(), params);
 }
 
-bool CocoaScrollBar::CanProcessEventsWithinSubtree() const {
+bool CocoaScrollBar::GetCanProcessEventsWithinSubtree() const {
   // If using overlay scrollbars, do not process events when fully hidden.
   return scroller_style_ == NSScrollerStyleOverlay
              ? !IsScrollbarFullyHidden()
-             : ScrollBar::CanProcessEventsWithinSubtree();
+             : ScrollBar::GetCanProcessEventsWithinSubtree();
 }
 
 bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {
@@ -400,16 +409,20 @@ bool CocoaScrollBar::IsScrollbarFullyHidden() const {
   return layer()->opacity() == 0.0f;
 }
 
-CocoaScrollbarPainter::Params CocoaScrollBar::GetPainterParams() const {
-  CocoaScrollbarPainter::Params params;
-  if (IsHorizontal())
-    params.orientation = CocoaScrollbarPainter::Orientation::kHorizontal;
-  else if (base::i18n::IsRTL())
-    params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnLeft;
-  else
-    params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnRight;
-  params.overlay = GetScrollerStyle() == NSScrollerStyleOverlay;
-  params.dark_mode = GetNativeTheme()->ShouldUseDarkColors();
+ui::NativeTheme::ExtraParams CocoaScrollBar::GetPainterParams() const {
+  ui::NativeTheme::ExtraParams params;
+  if (IsHorizontal()) {
+    params.scrollbar_extra.orientation =
+        ui::NativeTheme::ScrollbarOrientation::kHorizontal;
+  } else if (base::i18n::IsRTL()) {
+    params.scrollbar_extra.orientation =
+        ui::NativeTheme::ScrollbarOrientation::kVerticalOnLeft;
+  } else {
+    params.scrollbar_extra.orientation =
+        ui::NativeTheme::ScrollbarOrientation::kVerticalOnRight;
+  }
+  params.scrollbar_extra.is_overlay =
+      GetScrollerStyle() == NSScrollerStyleOverlay;
   return params;
 }
 
@@ -496,8 +509,7 @@ base::RetainingOneShotTimer* ScrollBar::GetHideTimerForTesting(
   return &static_cast<CocoaScrollBar*>(scroll_bar)->hide_scrollbar_timer_;
 }
 
-BEGIN_METADATA(CocoaScrollBar)
-METADATA_PARENT_CLASS(ScrollBar)
-END_METADATA()
+BEGIN_METADATA(CocoaScrollBar, ScrollBar)
+END_METADATA
 
 }  // namespace views

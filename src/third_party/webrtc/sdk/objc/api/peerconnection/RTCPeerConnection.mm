@@ -29,7 +29,6 @@
 
 #include "api/jsep_ice_candidate.h"
 #include "api/rtc_event_log_output_file.h"
-#include "api/transport/media/media_transport_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_conversions.h"
 
@@ -359,19 +358,27 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
 }
 
 - (RTC_OBJC_TYPE(RTCSessionDescription) *)localDescription {
-  const webrtc::SessionDescriptionInterface *description =
-      _peerConnection->local_description();
-  return description ?
-      [[RTC_OBJC_TYPE(RTCSessionDescription) alloc] initWithNativeDescription:description] :
-      nil;
+  // It's only safe to operate on SessionDescriptionInterface on the signaling thread.
+  return _peerConnection->signaling_thread()->Invoke<RTC_OBJC_TYPE(RTCSessionDescription) *>(
+      RTC_FROM_HERE, [self] {
+        const webrtc::SessionDescriptionInterface *description =
+            _peerConnection->local_description();
+        return description ?
+            [[RTC_OBJC_TYPE(RTCSessionDescription) alloc] initWithNativeDescription:description] :
+            nil;
+      });
 }
 
 - (RTC_OBJC_TYPE(RTCSessionDescription) *)remoteDescription {
-  const webrtc::SessionDescriptionInterface *description =
-      _peerConnection->remote_description();
-  return description ?
-      [[RTC_OBJC_TYPE(RTCSessionDescription) alloc] initWithNativeDescription:description] :
-      nil;
+  // It's only safe to operate on SessionDescriptionInterface on the signaling thread.
+  return _peerConnection->signaling_thread()->Invoke<RTC_OBJC_TYPE(RTCSessionDescription) *>(
+      RTC_FROM_HERE, [self] {
+        const webrtc::SessionDescriptionInterface *description =
+            _peerConnection->remote_description();
+        return description ?
+            [[RTC_OBJC_TYPE(RTCSessionDescription) alloc] initWithNativeDescription:description] :
+            nil;
+      });
 }
 
 - (RTCSignalingState)signalingState {
@@ -559,12 +566,12 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
 - (BOOL)setBweMinBitrateBps:(nullable NSNumber *)minBitrateBps
           currentBitrateBps:(nullable NSNumber *)currentBitrateBps
               maxBitrateBps:(nullable NSNumber *)maxBitrateBps {
-  webrtc::PeerConnectionInterface::BitrateParameters params;
+  webrtc::BitrateSettings params;
   if (minBitrateBps != nil) {
     params.min_bitrate_bps = absl::optional<int>(minBitrateBps.intValue);
   }
   if (currentBitrateBps != nil) {
-    params.current_bitrate_bps = absl::optional<int>(currentBitrateBps.intValue);
+    params.start_bitrate_bps = absl::optional<int>(currentBitrateBps.intValue);
   }
   if (maxBitrateBps != nil) {
     params.max_bitrate_bps = absl::optional<int>(maxBitrateBps.intValue);

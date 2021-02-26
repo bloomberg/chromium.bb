@@ -59,6 +59,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // A way of converting an HWND into a content window.
   static aura::Window* GetContentWindowForHWND(HWND hwnd);
 
+  // Set to true when DesktopDragDropClientWin starts a touch-initiated drag
+  // drop and false when it finishes. While in touch drag, if pointer events are
+  // received, the equivalent mouse events are generated, because ole32
+  // ::DoDragDrop does not seem to handle pointer events.
+  void SetInTouchDrag(bool in_touch_drag);
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -107,7 +113,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
-  NonClientFrameView* CreateNonClientFrameView() override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
@@ -169,7 +175,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool WidgetSizeIsClientSize() const override;
   bool IsModal() const override;
   int GetInitialShowState() const override;
-  bool WillProcessWorkAreaChange() const override;
   int GetNonClientComponent(const gfx::Point& point) const override;
   void GetWindowMask(const gfx::Size& size, SkPath* path) override;
   bool GetClientAreaInsets(gfx::Insets* insets,
@@ -311,6 +316,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // used to generate the OccludedWindowMouseEvents stat and can be removed
   // when that stat is no longer tracked.
   gfx::Point occluded_window_mouse_event_loc_;
+
+  bool in_touch_drag_ = false;
 
   // The z-order level of the window; the window exhibits "always on top"
   // behavior if > 0.

@@ -44,25 +44,26 @@ class DecodeTimestamp {
     return ts_ - rhs.ts_;
   }
 
-  DecodeTimestamp& operator+=(const base::TimeDelta& rhs) {
+  DecodeTimestamp& operator+=(base::TimeDelta rhs) {
     ts_ += rhs;
     return *this;
   }
 
-  DecodeTimestamp& operator-=(const base::TimeDelta& rhs)  {
+  DecodeTimestamp& operator-=(base::TimeDelta rhs) {
     ts_ -= rhs;
     return *this;
   }
 
-  DecodeTimestamp operator+(const base::TimeDelta& rhs) const {
+  DecodeTimestamp operator+(base::TimeDelta rhs) const {
     return DecodeTimestamp(ts_ + rhs);
   }
 
-  DecodeTimestamp operator-(const base::TimeDelta& rhs) const {
+  DecodeTimestamp operator-(base::TimeDelta rhs) const {
     return DecodeTimestamp(ts_ - rhs);
   }
 
-  int64_t operator/(const base::TimeDelta& rhs) const { return ts_ / rhs; }
+  double operator/(base::TimeDelta rhs) const { return ts_ / rhs; }
+  int64_t IntDiv(base::TimeDelta rhs) const { return ts_.IntDiv(rhs); }
 
   static DecodeTimestamp FromSecondsD(double seconds) {
     return DecodeTimestamp(base::TimeDelta::FromSecondsD(seconds));

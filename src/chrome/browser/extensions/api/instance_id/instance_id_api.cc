@@ -61,17 +61,7 @@ ExtensionFunction::ResponseAction InstanceIDApiFunction::Run() {
     return RespondNow(Error(
         "chrome.instanceID not supported in incognito mode"));
   }
-
-  if (!IsEnabled()) {
-    return RespondNow(Error(
-        InstanceIDResultToError(instance_id::InstanceID::DISABLED)));
-  }
-
   return DoWork();
-}
-
-bool InstanceIDApiFunction::IsEnabled() const {
-  return instance_id::InstanceIDProfileService::IsInstanceIDEnabled();
 }
 
 instance_id::InstanceID* InstanceIDApiFunction::GetInstanceID() const {
@@ -91,7 +81,7 @@ ExtensionFunction::ResponseAction InstanceIDGetIDFunction::DoWork() {
 }
 
 void InstanceIDGetIDFunction::GetIDCompleted(const std::string& id) {
-  Respond(OneArgument(std::make_unique<base::Value>(id)));
+  Respond(OneArgument(base::Value(id)));
 }
 
 InstanceIDGetCreationTimeFunction::InstanceIDGetCreationTimeFunction() {}
@@ -106,8 +96,7 @@ ExtensionFunction::ResponseAction InstanceIDGetCreationTimeFunction::DoWork() {
 
 void InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted(
     const base::Time& creation_time) {
-  Respond(
-      OneArgument(std::make_unique<base::Value>(creation_time.ToDoubleT())));
+  Respond(OneArgument(base::Value(creation_time.ToDoubleT())));
 }
 
 InstanceIDGetTokenFunction::InstanceIDGetTokenFunction() {}
@@ -140,7 +129,7 @@ void InstanceIDGetTokenFunction::GetTokenCompleted(
     const std::string& token,
     instance_id::InstanceID::Result result) {
   if (result == instance_id::InstanceID::SUCCESS)
-    Respond(OneArgument(std::make_unique<base::Value>(token)));
+    Respond(OneArgument(base::Value(token)));
   else
     Respond(Error(InstanceIDResultToError(result)));
 }

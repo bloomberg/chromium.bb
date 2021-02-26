@@ -213,15 +213,17 @@ bool OnCriticalMemoryPressure(size_t length) {
 VirtualMemory::VirtualMemory() = default;
 
 VirtualMemory::VirtualMemory(v8::PageAllocator* page_allocator, size_t size,
-                             void* hint, size_t alignment)
+                             void* hint, size_t alignment, JitPermission jit)
     : page_allocator_(page_allocator) {
   DCHECK_NOT_NULL(page_allocator);
   DCHECK(IsAligned(size, page_allocator_->CommitPageSize()));
   size_t page_size = page_allocator_->AllocatePageSize();
   alignment = RoundUp(alignment, page_size);
-  Address address = reinterpret_cast<Address>(
-      AllocatePages(page_allocator_, hint, RoundUp(size, page_size), alignment,
-                    PageAllocator::kNoAccess));
+  PageAllocator::Permission permissions =
+      jit == kMapAsJittable ? PageAllocator::kNoAccessWillJitLater
+                            : PageAllocator::kNoAccess;
+  Address address = reinterpret_cast<Address>(AllocatePages(
+      page_allocator_, hint, RoundUp(size, page_size), alignment, permissions));
   if (address != kNullAddress) {
     DCHECK(IsAligned(address, alignment));
     region_ = base::AddressRegion(address, size);
@@ -270,6 +272,19 @@ void VirtualMemory::Free() {
   v8::PageAllocator* page_allocator = page_allocator_;
   base::AddressRegion region = region_;
   Reset();
+  // FreePages expects size to be aligned to allocation granularity however
+  // ReleasePages may leave size at only commit granularity. Align it here.
+  CHECK(FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),
+                  RoundUp(region.size(), page_allocator->AllocatePageSize())));
+}
+
+void VirtualMemory::FreeReadOnly() {
+  DCHECK(IsReserved());
+  // The only difference to Free is that it doesn't call Reset which would write
+  // to the VirtualMemory object.
+  v8::PageAllocator* page_allocator = page_allocator_;
+  base::AddressRegion region = region_;
+
   // FreePages expects size to be aligned to allocation granularity however
   // ReleasePages may leave size at only commit granularity. Align it here.
   CHECK(FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),

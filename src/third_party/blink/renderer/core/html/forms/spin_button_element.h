@@ -36,8 +36,6 @@ namespace blink {
 
 class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
                                             public PopupOpeningObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SpinButtonElement);
-
  public:
   enum UpDownState {
     kDown,
@@ -74,7 +72,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
 
   void ForwardEvent(Event&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DetachLayoutTree(bool performing_reattach) override;

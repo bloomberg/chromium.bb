@@ -138,7 +138,7 @@ typedef aom_codec_err_t (*aom_codec_get_si_fn_t)(aom_codec_alg_priv_t *ctx,
  * function, so plugins implementing this interface may trust the input
  * parameters to be properly initialized. However,  this interface does not
  * provide type safety for the exchanged data or assign meanings to the
- * control codes. Those details should be specified in the algorithm's
+ * control IDs. Those details should be specified in the algorithm's
  * header file. In particular, the ctrl_id parameter is guaranteed to exist
  * in the algorithm's control mapping table, and the data parameter may be NULL.
  *
@@ -157,17 +157,23 @@ typedef aom_codec_err_t (*aom_codec_control_fn_t)(aom_codec_alg_priv_t *ctx,
  *
  * This structure stores the mapping between control identifiers and
  * implementing functions. Each algorithm provides a list of these
- * mappings. This list is searched by the aom_codec_control() wrapper
+ * mappings. This list is searched by the aom_codec_control()
  * function to determine which function to invoke. The special
- * value {0, NULL} is used to indicate end-of-list, and must be
- * present. The special value {0, <non-null>} can be used as a catch-all
- * mapping. This implies that ctrl_id values chosen by the algorithm
- * \ref MUST be non-zero.
+ * value defined by CTRL_MAP_END is used to indicate end-of-list, and must be
+ * present. It can be tested with the at_ctrl_map_end function. Note that
+ * ctrl_id values \ref MUST be non-zero.
  */
 typedef const struct aom_codec_ctrl_fn_map {
   int ctrl_id;
   aom_codec_control_fn_t fn;
 } aom_codec_ctrl_fn_map_t;
+
+#define CTRL_MAP_END \
+  { 0, NULL }
+
+static AOM_INLINE int at_ctrl_map_end(aom_codec_ctrl_fn_map_t *e) {
+  return e->ctrl_id == 0 && e->fn == NULL;
+}
 
 /*!\brief decode data function pointer prototype
  *
@@ -307,15 +313,7 @@ struct aom_codec_priv {
   } enc;
 };
 
-#undef AOM_CTRL_USE_TYPE
-#define AOM_CTRL_USE_TYPE(id, typ) \
-  static AOM_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
-
-#undef AOM_CTRL_USE_TYPE_DEPRECATED
-#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ) \
-  static AOM_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
-
-#define CAST(id, arg) id##__value(arg)
+#define CAST(id, arg) va_arg((arg), aom_codec_control_type_##id)
 
 /* Internal Utility Functions
  *

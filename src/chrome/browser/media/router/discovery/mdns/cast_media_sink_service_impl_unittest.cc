@@ -8,17 +8,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -606,14 +605,16 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnSinkAddedOrUpdated) {
   // Channel 1, 2 opened.
   EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint1, _))
       .WillOnce(WithArgs<1>(
-          [&socket1](
-              const base::Callback<void(cast_channel::CastSocket * socket)>&
-                  callback) { callback.Run(&socket1); }));
+          [&socket1](const base::RepeatingCallback<void(
+                         cast_channel::CastSocket * socket)>& callback) {
+            callback.Run(&socket1);
+          }));
   EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint2, _))
       .WillOnce(WithArgs<1>(
-          [&socket2](
-              const base::Callback<void(cast_channel::CastSocket * socket)>&
-                  callback) { callback.Run(&socket2); }));
+          [&socket2](const base::RepeatingCallback<void(
+                         cast_channel::CastSocket * socket)>& callback) {
+            callback.Run(&socket2);
+          }));
 
   // Add DIAL sinks to |dial_media_sink_service_|, which in turn notifies
   // |media_sink_service_impl_| via the Observer interface.
@@ -651,10 +652,11 @@ TEST_F(CastMediaSinkServiceImplTest,
 
   EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint1, _))
       .Times(1)
-      .WillOnce(WithArgs<1>(Invoke(
-          [&socket1](
-              const base::Callback<void(cast_channel::CastSocket * socket)>&
-                  callback) { std::move(callback).Run(&socket1); })));
+      .WillOnce(WithArgs<1>(
+          Invoke([&socket1](const base::RepeatingCallback<void(
+                                cast_channel::CastSocket * socket)>& callback) {
+            std::move(callback).Run(&socket1);
+          })));
   media_sink_service_impl_.OnSinkAddedOrUpdated(dial_sink1);
 
   // We don't trigger retries, thus each iteration will only increment the
@@ -664,9 +666,10 @@ TEST_F(CastMediaSinkServiceImplTest,
     EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint1, _))
         .Times(1)
         .WillOnce(WithArgs<1>(Invoke(
-            [&socket1](
-                const base::Callback<void(cast_channel::CastSocket * socket)>&
-                    callback) { std::move(callback).Run(&socket1); })));
+            [&socket1](const base::RepeatingCallback<void(
+                           cast_channel::CastSocket * socket)>& callback) {
+              std::move(callback).Run(&socket1);
+            })));
     media_sink_service_impl_.OnSinkAddedOrUpdated(dial_sink1);
   }
 

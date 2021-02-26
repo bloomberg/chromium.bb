@@ -18,6 +18,7 @@
 #include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
+#include "components/exo/test/exo_test_file_helper.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -61,7 +62,11 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
     return out->size();
   }
   Surface* entered_surface() const { return entered_surface_; }
-  void DeleteDataOffer() { data_offer_.reset(); }
+  void DeleteDataOffer(bool finished) {
+    if (finished)
+      data_offer_->Finish();
+    data_offer_.reset();
+  }
   void set_can_accept_data_events_for_surface(bool value) {
     can_accept_data_events_for_surface_ = value;
   }
@@ -70,9 +75,9 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
   void OnDataDeviceDestroying(DataDevice* data_device) override {
     events_.push_back(DataEvent::kDestroy);
   }
-  DataOffer* OnDataOffer(DataOffer::Purpose purpose) override {
+  DataOffer* OnDataOffer() override {
     events_.push_back(DataEvent::kOffer);
-    data_offer_.reset(new DataOffer(new TestDataOfferDelegate, purpose));
+    data_offer_.reset(new DataOffer(new TestDataOfferDelegate));
     return data_offer_.get();
   }
   void OnEnter(Surface* surface,
@@ -101,26 +106,6 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
   bool can_accept_data_events_for_surface_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataDeviceDelegate);
-};
-
-class TestFileHelper : public FileHelper {
- public:
-  TestFileHelper() = default;
-
-  // Overridden from FileHelper:
-  std::string GetMimeTypeForUriList() const override { return ""; }
-  bool GetUrlFromPath(const std::string& app_id,
-                      const base::FilePath& path,
-                      GURL* out) override {
-    return true;
-  }
-  bool HasUrlsInPickle(const base::Pickle& pickle) override { return false; }
-  void GetUrlsFromPickle(const std::string& app_id,
-                         const base::Pickle& pickle,
-                         UrlsFromPickleCallback callback) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFileHelper);
 };
 
 class TestSeat : public Seat {
@@ -186,7 +171,12 @@ TEST_F(DataDeviceTest, DataEventsDrop) {
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kMotion, events[0]);
 
-  device_->OnPerformDrop(event);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
+                                base::Unretained(&delegate_), true));
+
+  int result = device_->OnPerformDrop(event);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_LINK, result);
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kDrop, events[0]);
 }
@@ -222,13 +212,38 @@ TEST_F(DataDeviceTest, DeleteDataOfferDuringDrag) {
   EXPECT_EQ(DataEvent::kOffer, events[0]);
   EXPECT_EQ(DataEvent::kEnter, events[1]);
 
-  delegate_.DeleteDataOffer();
+  delegate_.DeleteDataOffer(false);
 
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, device_->OnDragUpdated(event));
   EXPECT_EQ(0u, delegate_.PopEvents(&events));
 
   device_->OnPerformDrop(event);
   EXPECT_EQ(0u, delegate_.PopEvents(&events));
+}
+
+TEST_F(DataDeviceTest, DataOfferNotFinished) {
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
+                            ui::DragDropTypes::DRAG_MOVE);
+  ui::Event::DispatcherApi(&event).set_target(surface_->window());
+
+  std::vector<DataEvent> events;
+  device_->OnDragEntered(event);
+  ASSERT_EQ(2u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kOffer, events[0]);
+  EXPECT_EQ(DataEvent::kEnter, events[1]);
+
+  EXPECT_EQ(ui::DragDropTypes::DRAG_LINK, device_->OnDragUpdated(event));
+  ASSERT_EQ(1u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kMotion, events[0]);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
+                                base::Unretained(&delegate_), false));
+
+  int result = device_->OnPerformDrop(event);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
+  ASSERT_EQ(1u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kDrop, events[0]);
 }
 
 TEST_F(DataDeviceTest, NotAcceptDataEventsForSurface) {

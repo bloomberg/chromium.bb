@@ -7,8 +7,8 @@
 
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/global_routing_id.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
 
@@ -20,35 +20,35 @@ class CONTENT_EXPORT DedicatedWorkerService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called when a dedicated worker has started/stopped.
-    virtual void OnWorkerStarted(
-        DedicatedWorkerId dedicated_worker_id,
+    // Called when a dedicated worker is created/destroyed. Note that it is not
+    // yet started in the renderer since its script still has to be downloaded
+    // and evaluated.
+    virtual void OnWorkerCreated(
+        const blink::DedicatedWorkerToken& worker_token,
         int worker_process_id,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
-    virtual void OnBeforeWorkerTerminated(
-        DedicatedWorkerId dedicated_worker_id,
+    virtual void OnBeforeWorkerDestroyed(
+        const blink::DedicatedWorkerToken& worker_token,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
 
     // Called when the final response URL (the URL after redirects) was
     // determined when fetching the worker's script.
-    //
-    // TODO(pmonette): Implement this in derived classes and make it pure.
     virtual void OnFinalResponseURLDetermined(
-        DedicatedWorkerId dedicated_worker_id,
-        const GURL& url) {}
+        const blink::DedicatedWorkerToken& worker_token,
+        const GURL& url) = 0;
   };
 
   // Adds/removes an observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Invokes OnWorkerStarted() on |observer| for all existing dedicated workers.
+  // Invokes OnWorkerCreated() on |observer| for all existing dedicated workers.
   //
   // This function must be invoked in conjunction with AddObserver(). It is
   // meant to be used by an observer that dynamically subscribes to the
   // DedicatedWorkerService while some workers are already running. It avoids
-  // receiving a OnBeforeWorkerTerminated() event without having received the
-  // corresponding OnWorkerStart() event.
+  // receiving a OnBeforeWorkerDestroyed() event without having received the
+  // corresponding OnWorkerCreated() event.
   virtual void EnumerateDedicatedWorkers(Observer* observer) = 0;
 
  protected:

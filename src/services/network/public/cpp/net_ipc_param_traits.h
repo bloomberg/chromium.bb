@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
@@ -15,20 +16,25 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/ct_verify_result.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_version.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
 
@@ -67,16 +73,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::AuthCredentials> {
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::CertVerifyResult> {
   typedef net::CertVerifyResult param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::ct::CTVerifyResult> {
-  typedef net::ct::CTVerifyResult param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -272,8 +268,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::SSLClientCertType,
 IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
 
-IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
-                          net::URLRequest::MAX_REFERRER_POLICY)
+IPC_ENUM_TRAITS_MAX_VALUE(net::ReferrerPolicy, net::ReferrerPolicy::MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(net::HttpRequestHeaders::HeaderKeyValuePair)
   IPC_STRUCT_TRAITS_MEMBER(key)

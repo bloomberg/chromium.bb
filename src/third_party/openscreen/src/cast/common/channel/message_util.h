@@ -5,6 +5,8 @@
 #ifndef CAST_COMMON_CHANNEL_MESSAGE_UTIL_H_
 #define CAST_COMMON_CHANNEL_MESSAGE_UTIL_H_
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
@@ -48,7 +50,9 @@ static constexpr char kMessageKeyProtocolVersionList[] = "protocolVersionList";
 static constexpr char kMessageKeyReasonCode[] = "reasonCode";
 static constexpr char kMessageKeyAppId[] = "appId";
 static constexpr char kMessageKeyRequestId[] = "requestId";
-static constexpr char kMessageKeyAvailability[] = "availability";
+static constexpr char kMessageKeyResponseType[] = "responseType";
+static constexpr char kMessageKeyTransportId[] = "transportId";
+static constexpr char kMessageKeySessionId[] = "sessionId";
 
 // JSON message field values.
 static constexpr char kMessageTypeConnect[] = "CONNECT";
@@ -56,6 +60,33 @@ static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
 static constexpr char kMessageValueAppAvailable[] = "APP_AVAILABLE";
 static constexpr char kMessageValueAppUnavailable[] = "APP_UNAVAILABLE";
+
+// JSON message key strings specific to application control messages.
+static constexpr char kMessageKeyAvailability[] = "availability";
+static constexpr char kMessageKeyAppParams[] = "appParams";
+static constexpr char kMessageKeyApplications[] = "applications";
+static constexpr char kMessageKeyControlType[] = "controlType";
+static constexpr char kMessageKeyDisplayName[] = "displayName";
+static constexpr char kMessageKeyIsIdleScreen[] = "isIdleScreen";
+static constexpr char kMessageKeyLaunchedFromCloud[] = "launchedFromCloud";
+static constexpr char kMessageKeyLevel[] = "level";
+static constexpr char kMessageKeyMuted[] = "muted";
+static constexpr char kMessageKeyName[] = "name";
+static constexpr char kMessageKeyNamespaces[] = "namespaces";
+static constexpr char kMessageKeyReason[] = "reason";
+static constexpr char kMessageKeyStatus[] = "status";
+static constexpr char kMessageKeyStepInterval[] = "stepInterval";
+static constexpr char kMessageKeyUniversalAppId[] = "universalAppId";
+static constexpr char kMessageKeyUserEq[] = "userEq";
+static constexpr char kMessageKeyVolume[] = "volume";
+
+// JSON message field value strings specific to application control messages.
+static constexpr char kMessageValueAttenuation[] = "attenuation";
+static constexpr char kMessageValueBadParameter[] = "BAD_PARAMETER";
+static constexpr char kMessageValueInvalidSessionId[] = "INVALID_SESSION_ID";
+static constexpr char kMessageValueInvalidCommand[] = "INVALID_COMMAND";
+static constexpr char kMessageValueNotFound[] = "NOT_FOUND";
+static constexpr char kMessageValueSystemError[] = "SYSTEM_ERROR";
 
 // TODO(crbug.com/openscreen/111): Add validation that each message type is
 // received on the correct namespace.  This will probably involve creating a
@@ -197,6 +228,11 @@ inline bool IsTransportNamespace(absl::string_view namespace_) {
 ::cast::channel::CastMessage MakeCloseMessage(
     const std::string& source_id,
     const std::string& destination_id);
+
+// Returns a session/transport ID string that is unique within this application
+// instance, having the format "prefix-12345". For example, calling this with a
+// |prefix| of "sender" will result in a string like "sender-12345".
+std::string MakeUniqueSessionId(const char* prefix);
 
 }  // namespace cast
 }  // namespace openscreen

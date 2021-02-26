@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
@@ -115,6 +115,13 @@ void ClientControlDispatcher::SelectDesktopDisplay(
     const SelectDesktopDisplayRequest& select_display) {
   ControlMessage message;
   message.mutable_select_display()->CopyFrom(select_display);
+  message_pipe()->Send(&message, {});
+}
+
+void ClientControlDispatcher::ControlPeerConnection(
+    const protocol::PeerConnectionParameters& parameters) {
+  ControlMessage message;
+  message.mutable_peer_connection_parameters()->CopyFrom(parameters);
   message_pipe()->Send(&message, {});
 }
 

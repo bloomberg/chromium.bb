@@ -181,6 +181,15 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
         Cleared Chrome data
       </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_TITLE" desc="Title of the default browser promotion modal. [iOS only]">
+        Make Chrome Your Default
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_DESCRIPTION" desc="Description of the default browser promotion modal. [iOS only]">
+        To make Chrome your default, Open Settings, tap Default Browser App, and select Chrome.
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE" desc="Message when the user taps the addition information button in the default browser promotion modal. [iOS only]">
+          You can now use Chrome any time you tap links in messages, documents, and other apps.
+      </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chrome?
       </message>
@@ -204,6 +213,9 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_LOCATION_AUTHORIZATION_ALERT" desc="Specifies the reason for sending the user's location to Google [Length: unlimited] [iOS only].">
           Get a better Google experience in Chrome based on your location.
+      </message>
+      <message name="IDS_IOS_LOCATION_MODAL_DESCRIPTION" desc="The description of the location permissions modal [Length: unlimited] [iOS only].">
+          If you allow Chrome to know your location, Chrome sends it to your default search engine and any sites that you allow. Sites may ask for your location when they have local info to show you, like nearby shops or news.
       </message>
       <message name="IDS_IOS_LOCATION_WHEN_IN_USE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's location information while the app is in use [Length: unlimited] [iOS only].">
         Get a better experience in Chrome based on your location.
@@ -241,29 +253,26 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN" desc="The title of the Import Data settings screen when signing in. [30em]">
         Sign in to Chrome
       </message>
+      <message name="IDS_IOS_PAGE_INFO_CHROME_PAGE_LABEL" desc="Label to display at the top of the site information screen when the page you are on is a Google Chrome page.">
+        Google Chrome Page
+      </message>
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
         Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
       </message>
       <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome
       </message>
-      <message name="IDS_IOS_QR_SCANNER_CAMERA_IN_USE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is in use by another application. [Length: 140em] [iOS only]">
-        Google Chrome can't use your camera because it's in use by another application
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_EMPTY_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is signed in and has activated Tabs synchronization only on this device.">
+          To see your tabs from wherever you use Chrome, sign in on all your devices
       </message>
-      <message name="IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL" desc="Body of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The text instructs the user how to change the permissions setting. [Length: 140em] [iOS only]">
-        Open Settings &gt; Privacy &gt; Camera &gt; Google Chrome and turn on the camera.
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_SIGNED_OUT_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is not signed in.">
+          To see your tabs from wherever you use Chrome, sign in and turn on sync
       </message>
-      <message name="IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE" desc="Title of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The body of this dialog instructs the user how to change the permissions setting. [Length: 50em] [iOS only]">
-        Start using Google Chrome QR scanner
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_SYNC_IS_OFF_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is signed in, but Tabs synchronization is turned off.">
+          To see your tabs from wherever you use Chrome, turn on sync
       </message>
-      <message name="IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS" desc="Title of modal dialog shown when the user tries to open the QR or credit card scanner but the application lacks permission to use the camera. [Length: 40em] [iOS only]">
-        Chrome Would Like to Access the Camera
-      </message>
-      <message name="IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is unavailable. [Length: 140em] [iOS only]">
-        Google Chrome can't use your camera right now
-      </message>
-      <message name="IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner in a Split View mode, when the camera is unavailable. [Length: 140em] [iOS only]">
-        Google Chrome can't use your camera in Split View mode
+      <message name="IDS_IOS_REMOVE_ACCOUNT_CONFIRMATION_MESSAGE" desc="Dialog message to emphasize the effects of removing an account.">
+      This account and any unsaved data will be removed from Chrome and other Google apps on this device.
       </message>
       <message name="IDS_IOS_SAFE_MODE_NAMED_TWEAKS_FOUND" desc="The message indicating a 3rd party tweak has been found that is known to crash Chrome.  After the ':', we will list the names of the libraries. [Length: 140em]">
         Some add-ons cause Chrome to crash. Please uninstall:
@@ -274,8 +283,26 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings. Directs user to adjust Privacy Settings for Chrome. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
         Google Chrome does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.
       </message>
-      <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS" desc="Body of the alert shown when the user tries to save an image but we lack permission to use the photos. This body tells the user he'll be redirected to the Settings app. [Length: 100em] [iOS only].">
-        To save images, tap on Settings to let Chrome use your photos
+      <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS" desc="Body of the alert shown when the user tries to save an image but we lack permission to add to photos. This body tells the user he'll be redirected to the Settings app. [Length: 100em] [iOS only].">
+        To save images, tap on Settings to let Chrome add to your photos
+      </message>
+      <message name="IDS_IOS_SCANNER_CAMERA_IN_USE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is in use by another application. [Length: 140em] [iOS only]">
+        Google Chrome can't use your camera because it's in use by another application
+      </message>
+      <message name="IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL" desc="Body of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The text instructs the user how to change the permissions setting. [Length: 140em] [iOS only]">
+        Open Settings &gt; Privacy &gt; Camera &gt; Google Chrome and turn on the camera.
+      </message>
+      <message name="IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE" desc="Title of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The body of this dialog instructs the user how to change the permissions setting. [Length: 50em] [iOS only]">
+        Start using Google Chrome QR scanner
+      </message>
+      <message name="IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS" desc="Title of modal dialog shown when the user tries to open the QR or credit card scanner but the application lacks permission to use the camera. [Length: 40em] [iOS only]">
+        Chrome Would Like to Access the Camera
+      </message>
+      <message name="IDS_IOS_SCANNER_CAMERA_UNAVAILABLE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is unavailable. [Length: 140em] [iOS only]">
+        Google Chrome can't use your camera right now
+      </message>
+      <message name="IDS_IOS_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner in a Split View mode, when the camera is unavailable. [Length: 140em] [iOS only]">
+        Google Chrome can't use your camera in Split View mode
       </message>
       <message name="IDS_IOS_SHORT_PRODUCT_NAME" desc="The Chrome application short name">
         Chrome
@@ -297,6 +324,66 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chrome just got better! A new version is available.
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PAGE_HEADER" desc="Informational header at the top of the safety check page">
+        Chrome can help keep you safe from data breaches, unsafe websites and more.
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_DESCRIPTION" desc="Description text on the update element describing what the update check does.">
+        Keep Chrome up to date
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_CHANNEL_CANARY_DESC" desc="Description text for when the app is on Canary and unable to run the check">
+        Not supported on Chrome Canary
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_CHANNEL_BETA_DESC" desc="Description text for when the app is on Beta and unable to run the check">
+        Not supported on Chrome Beta
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_UP_TO_DATE_DESC" desc="Description text for when Chrome is up to date">
+        Google Chrome is up to date
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_OUT_OF_DATE_DESC" desc="Description text for when Chrome is out of date">
+        Google Chrome is out of date
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_OFFLINE_DESC" desc="Description text for when updates can't be checked because the user is offline">
+        Offline, Chrome can't check for updates
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_OFFLINE_INFO" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has no internet connection and can't check for updates.">
+        Chrome couldn't check for updates. Try checking your internet connection.
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_ERROR_DESC" desc="Description text for when updates can't be checked because there was an issue with the check">
+        Chrome can't check for updates
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_ERROR_INFO" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="An error occured while performing the update check.">
+        Chrome couldn't check for updates. Try again later.
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_UNABLE_DESC" desc="Description text for when the device is not able to update to the newest version">
+        Chrome can't update
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_UNABLE_INFO" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The device is not able to update to the newest version.">
+        Chrome is out of date. If no update is available in the <ph name="BEGIN_LINK">BEGIN_LINK</ph>App Store<ph name="END_LINK">END_LINK</ph>, it's possible that your device doesn't support new versions of Chrome anymore.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR" desc="Description of the password check cell, explaining that Password Check failed. [iOS only]" meaning="Password Check failed due to some error.">
+        Chrome can't check your passwords
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_NO_PASSWORDS" desc="Description text for when password check cannot be run because the user has no saved passwords">
+        No saved passwords. Chrome can check your passwords when you save them.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OFFLINE" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has no internet connection and can't check passwords.">
+        Chrome couldn't check your passwords. Try checking your internet connection.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_SIGNED_OUT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user is not signed in and can't check passwords.">
+        Chrome can check your passwords when you sign in with your Google Account.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check.">
+        Chrome couldn't check all passwords. Try again tomorrow.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT_VISIT_GOOGLE" desc="Text with link inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check but he can check in Google Account.">
+        Chrome couldn't check all passwords. Try again tomorrow or <ph name="BEGIN_LINK">BEGIN_LINK</ph>check passwords in your Google Account.<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
+        Chrome couldn't check all passwords. Try again later.
+      </message>
+      <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION" desc="Text inside Password Details screen shown when password was compromised. [iOS only]" meaning="Text which explains the user that current password is compromised and it should be changed.">
+        Your password was exposed in a data breach. Chrome recommends changing the password now.
       </message>
     </messages>
   </release>

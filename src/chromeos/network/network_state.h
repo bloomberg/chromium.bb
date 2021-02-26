@@ -40,18 +40,28 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   explicit NetworkState(const std::string& path);
   ~NetworkState() override;
 
-  struct CaptivePortalProviderInfo {
-    // The id used by chrome to identify the provider (i.e. an extension id).
-    std::string id;
-    // The display name for the captive portal provider (i.e. extension name).
-    std::string name;
-  };
-
   struct VpnProviderInfo {
     // The id used by chrome to identify the provider (i.e. an extension id).
     std::string id;
     // The VPN type, provided by the VPN provider/extension.
     std::string type;
+  };
+
+  enum class PortalState {
+    // The network is not connected or the portal state is not available.
+    kUnknown,
+    // The network is connected and no portal is detected.
+    kOnline,
+    // A portal is suspected but no redirect was provided.
+    kPortalSuspected,
+    // The network is in a portal state with a redirect URL.
+    kPortal,
+    // A proxy requiring authentication is detected.
+    kProxyAuthRequired,
+    // The network is connected but no internet is available and no proxy was
+    // detected.
+    kNoInternet,
+    kMaxValue = kNoInternet  // For UMA_HISTOGRAM_ENUMERATION
   };
 
   // ManagedState overrides
@@ -100,8 +110,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   int priority() const { return priority_; }
 
-  const base::Value* proxy_config() const { return proxy_config_.get(); }
-  const base::Value* ipv4_config() const { return ipv4_config_.get(); }
+  const base::Value& proxy_config() const { return proxy_config_; }
+  const base::Value& ipv4_config() const { return ipv4_config_; }
   std::string GetIpAddress() const;
   std::string GetGateway() const;
   GURL GetWebProxyAutoDiscoveryUrl() const;
@@ -109,11 +119,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Wireless property accessors
   bool connectable() const { return connectable_; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
-  bool is_captive_portal() const { return is_captive_portal_; }
-  const CaptivePortalProviderInfo* captive_portal_provider() const {
-    return captive_portal_provider_.get();
-  }
-  void SetCaptivePortalProvider(const std::string& id, const std::string& name);
   int signal_strength() const { return signal_strength_; }
   void set_signal_strength(int signal_strength) {
     signal_strength_ = signal_strength;
@@ -162,6 +167,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   bool connect_requested() const { return connect_requested_; }
 
+  PortalState portal_state() const { return portal_state_; }
+
   // Returns true if the network is managed by policy (determined by
   // |onc_source_|).
   bool IsManagedByPolicy() const;
@@ -169,9 +176,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Returns true if the network is romaing and the provider does not require
   // roaming.
   bool IndicateRoaming() const;
-
-  // Returns true if the current connection is using mobile data.
-  bool IsUsingMobileData() const;
 
   // Returns true if the network securty is WEP_8021x (Dynamic WEP)
   bool IsDynamicWep() const;
@@ -198,12 +202,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // NetworkStateHandler::EnsureCellularNetwork()).
   bool IsDefaultCellular() const;
 
+  // Returns true if Shill has detected a captive portal state.
+  bool IsShillCaptivePortal() const;
+
   // Returns true if Shill or Chrome have detected a captive portal state.
-  // The Chrome network portal detection is different from Shill's so the
-  // results may differ; this method tests both and should be preferred in UI.
-  // (NetworkState is already conservative in interpreting Shill's captive
-  // portal state, see IsCaptivePortalState in the .cc file).
   bool IsCaptivePortal() const;
+
+  // Returns true if the security type is non-empty and not 'none'.
+  bool IsSecure() const;
 
   // Returns the |raw_ssid| as a hex-encoded string
   std::string GetHexSsid() const;
@@ -226,6 +232,20 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   network_config::mojom::ActivationStateType GetMojoActivationState() const;
   network_config::mojom::SecurityType GetMojoSecurity() const;
 
+  // Helper for UMA stats. Corresponds to NetworkTechnology in enums.xml
+  // which is also used by Shill metrics.
+  enum class NetworkTechnologyType {
+    kCellular = 0,
+    kEthernet = 1,
+    kEthernetEap = 2,
+    kWiFi = 3,
+    kTether = 4,
+    kVPN = 5,
+    kUnknown = 6,
+    kMaxValue = kUnknown,
+  };
+  NetworkTechnologyType GetNetworkTechnologyType() const;
+
   // Setters for testing.
   void set_connection_state_for_testing(const std::string& connection_state) {
     connection_state_ = connection_state;
@@ -241,10 +261,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
   static bool StateIsPortalled(const std::string& connection_state);
-  static bool NetworkStateIsCaptivePortal(const base::Value& shill_properties);
   static bool ErrorIsValid(const std::string& error);
   static std::unique_ptr<NetworkState> CreateDefaultCellular(
       const std::string& device_path);
+
+  // Ignore changes to signal strength less than this value.
+  constexpr static const int kSignalStrengthChangeThreshold = 5;
 
  private:
   friend class MobileActivatorTest;
@@ -254,6 +276,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // be of type DICTIONARY, if the key exists, and validates |name_|. Returns
   // true if |name_| changes.
   bool UpdateName(const base::Value& properties);
+
+  void UpdateCaptivePortalState(const base::Value& properties);
 
   void SetVpnProvider(const std::string& id, const std::string& type);
 
@@ -284,12 +308,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   // Cached copy of the Shill Service IPConfig object. For ipv6 properties use
   // the ip_configs_ property in the corresponding DeviceState.
-  std::unique_ptr<base::Value> ipv4_config_;
+  base::Value ipv4_config_;
 
   // Wireless properties, used for icons and Connect logic.
   bool connectable_ = false;
-  bool is_captive_portal_ = false;
-  std::unique_ptr<CaptivePortalProviderInfo> captive_portal_provider_;
   int signal_strength_ = 0;
   std::string bssid_;
   int frequency_ = 0;
@@ -315,6 +337,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string tether_carrier_;
   int battery_percentage_ = 0;
 
+  // Portal state is derived from connection_state_ and Shill portal properties.
+  PortalState portal_state_ = PortalState::kUnknown;
+  int portal_status_code_ = 0;
+
   // Whether the current device has already connected to the tether host device
   // providing the hotspot corresponding to this NetworkState.
   // Note: this means that the current device has already connected to the
@@ -324,7 +350,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   // TODO(pneubeck): Remove this once (Managed)NetworkConfigurationHandler
   // provides proxy configuration. crbug.com/241775
-  std::unique_ptr<base::Value> proxy_config_;
+  base::Value proxy_config_;
 
   // Set while a network connect request is queued. Cleared on connect or
   // if the request is aborted.

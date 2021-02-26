@@ -8,13 +8,16 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time_to_iso8601.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_test_utils.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,6 +27,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/cookie_access_result.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -32,12 +36,128 @@
 
 namespace media_feeds {
 
+using SafeSearchCheckedType =
+    media_history::MediaHistoryKeyedService::SafeSearchCheckedType;
+
 namespace {
 
 constexpr size_t kCacheSize = 2;
 
-constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
-    FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
+constexpr base::FilePath::CharType kMediaFeedsTestSpecDir[] =
+    FILE_PATH_LITERAL("chrome/test/data/media/feeds/spec");
+
+const char kTestData[] = R"END({
+    "@context": "https://schema.org",
+    "@type": "CompleteDataFeed",
+    "dataFeedElement": [
+      {
+        "@context": "https://schema.org/",
+        "@type": "VideoObject",
+        "@id": "https://www.youtube.com/watch?v=lXm6jOQLe1Y",
+        "author": {
+          "@type": "Person",
+          "name": "Google Chrome Developers",
+          "url": "https://www.youtube.com/user/ChromeDevelopers"
+        },
+        "datePublished": "2019-05-09",
+        "duration": "PT34M41S",
+        "isFamilyFriendly": "https://schema.org/True",
+        "name": "Anatomy of a Web Media Experience",
+        "potentialAction": {
+          "@type": "WatchAction",
+          "target": "https://www.youtube.com/watch?v=lXm6jOQLe1Y"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 336,
+          "height": 188,
+          "url": "https://beccahughes.github.io/media/media-feeds/video1.webp"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "TVSeries",
+        "@id": "https://beccahughes.github.io/media/media-feeds/chrome-release",
+        "datePublished": "2019-11-10",
+        "isFamilyFriendly": "https://schema.org/True",
+        "name": "Chrome Releases",
+        "containsSeason": {
+          "@type": "TVSeason",
+          "numberOfEpisodes": 80,
+          "episode": {
+            "@type": "TVEpisode",
+            "@id": "https://www.youtube.com/watch?v=L0OB0_bO5I0",
+            "duration": "PT4M16S",
+            "episodeNumber": 79,
+            "potentialAction": {
+                "@type": "WatchAction",
+                "actionStatus": "https://schema.org/ActiveActionStatus",
+                "startTime": "00:04:14",
+                "target": "https://www.youtube.com/watch?v=L0OB0_bO5I0?t=254"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "width": 1874,
+                "height": 970,
+                "url": "https://beccahughes.github.io/media/media-feeds/chrome79_current.png"
+            },
+            "name": "New in Chrome 79"
+          },
+          "seasonNumber": 1
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 336,
+          "height": 188,
+          "url": "https://beccahughes.github.io/media/media-feeds/chromerel.webp"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Movie",
+        "@id": "https://beccahughes.github.io/media/media-feeds/big-buck-bunny",
+        "datePublished": "2008-01-01",
+        "duration": "PT12M",
+        "isFamilyFriendly": "https://schema.org/False",
+        "name": "Big Buck Bunny",
+        "potentialAction": {
+          "@type": "WatchAction",
+          "target": "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 1392,
+          "height": 749,
+          "url": "https://beccahughes.github.io/media/media-feeds/big_buck_bunny.jpg"
+        }
+      }
+    ],
+    "provider": {
+      "@type": "Organization",
+      "name": "Chromium Developers",
+      "logo": [{
+        "@type": "ImageObject",
+        "width": 1113,
+        "height": 245,
+        "url": "https://beccahughes.github.io/media/media-feeds/chromium_logo_white.png",
+        "additionalProperty": {
+          "@type": "PropertyValue",
+          "name": "contentAttributes",
+          "value": ["forDarkBackground", "hasTitle", "transparentBackground"]
+        }
+      }, {
+        "@type": "ImageObject",
+        "width": 600,
+        "height": 315,
+        "url": "https://beccahughes.github.io/media/media-feeds/chromium_card.png",
+        "additionalProperty": {
+          "@type": "PropertyValue",
+          "name": "contentAttributes",
+          "value": ["forLightBackground", "hasTitle", "centered"]
+        }
+      }]
+    }
+})END";
 
 const char kFirstItemActionURL[] = "https://www.example.com/action";
 const char kFirstItemPlayNextActionURL[] = "https://www.example.com/next";
@@ -46,15 +166,23 @@ const char kFirstItemPlayNextActionURL[] = "https://www.example.com/next";
 
 class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
  public:
-  MediaFeedsServiceTest() = default;
+  MediaFeedsServiceTest()
+      : ChromeRenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     features_.InitWithFeatures(
-        {media::kMediaFeeds, media::kMediaFeedsSafeSearch}, {});
+        {media::kMediaFeeds, media::kMediaFeedsSafeSearch,
+         media::kMediaFeedsBackgroundFetching},
+        {});
 
     ChromeRenderViewHostTestHarness::SetUp();
 
     stub_url_checker_ = std::make_unique<safe_search_api::StubURLChecker>();
+
+    test_clock_.SetNow(base::Time::Now());
+
+    GetMediaFeedsService()->SetClockForTesting(&test_clock_);
 
     GetMediaFeedsService()->SetSafeSearchURLCheckerForTest(
         stub_url_checker_->BuildURLChecker(kCacheSize));
@@ -64,22 +192,31 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
             &url_loader_factory_);
   }
 
+  void AdvanceTime(base::TimeDelta time_delta) {
+    test_clock_.SetNow(test_clock_.Now() + time_delta);
+    task_environment()->FastForwardBy(time_delta);
+  }
+
+  base::Time Now() { return test_clock_.Now(); }
+
   void WaitForDB() {
     base::RunLoop run_loop;
     GetMediaHistoryService()->PostTaskToDBForTest(run_loop.QuitClosure());
     run_loop.Run();
   }
 
-  void SimulateOnCheckURLDone(const int64_t id,
-                              const GURL& url,
-                              safe_search_api::Classification classification,
-                              bool uncertain) {
+  void SimulateOnCheckURLDone(
+      const media_history::MediaHistoryKeyedService::SafeSearchID id,
+      const GURL& url,
+      safe_search_api::Classification classification,
+      bool uncertain) {
     GetMediaFeedsService()->OnCheckURLDone(id, url, url, classification,
                                            uncertain);
   }
 
-  bool AddInflightSafeSearchCheck(const int64_t id,
-                                  const std::set<GURL>& urls) {
+  bool AddInflightSafeSearchCheck(
+      const media_history::MediaHistoryKeyedService::SafeSearchID id,
+      const std::set<GURL>& urls) {
     return GetMediaFeedsService()->AddInflightSafeSearchCheck(id, urls);
   }
 
@@ -117,13 +254,35 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return out;
   }
 
+  void DiscoverFeedAndPerformSafeSearchCheck(const GURL& feed_url) {
+    SetSafeSearchEnabled(true);
+    safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+        run_loop.QuitClosure());
+
+    // Store a Media Feed.
+    GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+    WaitForDB();
+
+    // Wait for the service and DB to finish.
+    run_loop.Run();
+    WaitForDB();
+
+    // Return to the default state.
+    safe_search_checker()->ClearResponses();
+    SetSafeSearchEnabled(false);
+  }
+
   std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForMediaFeedSync(
       const int64_t feed_id) {
     base::RunLoop run_loop;
     std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
 
-    GetMediaHistoryService()->GetItemsForMediaFeedForDebug(
-        feed_id,
+    GetMediaHistoryService()->GetMediaFeedItems(
+        media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForDebug(feed_id),
         base::BindLambdaForTesting(
             [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> rows) {
               out = std::move(rows);
@@ -157,23 +316,26 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
                                       enabled);
   }
 
+  void SetBackgroundFetchingEnabled(bool enabled) {
+    profile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsBackgroundFetching,
+                                      enabled);
+  }
+
   bool RespondToPendingFeedFetch(const GURL& feed_url,
                                  bool from_cache = false) {
-    base::FilePath file;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &file);
-    file = file.Append(kMediaFeedsTestFileName);
+    return RespondToPendingFeedFetchWithData(feed_url, kTestData, from_cache);
+  }
 
-    std::string response_body;
-    base::ReadFileToString(file, &response_body);
-
+  bool RespondToPendingFeedFetchWithData(const GURL& feed_url,
+                                         const std::string& data,
+                                         bool from_cache = false) {
     auto response_head =
         ::network::CreateURLResponseHead(net::HttpStatusCode::HTTP_OK);
     response_head->was_fetched_via_cache = from_cache;
 
-    bool rv = url_loader_factory_.SimulateResponseForPendingRequest(
+    return url_loader_factory_.SimulateResponseForPendingRequest(
         feed_url, network::URLLoaderCompletionStatus(net::OK),
-        std::move(response_head), response_body);
-    return rv;
+        std::move(response_head), data);
   }
 
   bool RespondToPendingFeedFetchWithStatus(const GURL& feed_url,
@@ -182,6 +344,11 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
         feed_url, network::URLLoaderCompletionStatus(net::OK),
         network::CreateURLResponseHead(code), std::string());
     return rv;
+  }
+
+  void SetAutomaticSelectionEnabled() {
+    profile()->GetPrefs()->SetBoolean(
+        kaleidoscope::prefs::kKaleidoscopeAutoSelectMediaFeeds, true);
   }
 
   safe_search_api::StubURLChecker* safe_search_checker() {
@@ -196,8 +363,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return media_history::MediaHistoryKeyedService::Get(profile());
   }
 
-  static media_feeds::mojom::MediaFeedItemPtr GetSingleExpectedItem() {
+  static media_feeds::mojom::MediaFeedItemPtr GetSingleExpectedItem(
+      int id_start = 0) {
     auto item = media_feeds::mojom::MediaFeedItem::New();
+    item->id = ++id_start;
     item->name = base::ASCIIToUTF16("The Movie");
     item->type = media_feeds::mojom::MediaFeedItemType::kMovie;
     item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
@@ -213,12 +382,16 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return item;
   }
 
-  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems(
+      int id_start = 0) {
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
-    items.push_back(GetSingleExpectedItem());
+
+    items.push_back(GetSingleExpectedItem(id_start));
+    id_start++;
 
     {
       auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->id = ++id_start;
       item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
       item->name = base::ASCIIToUTF16("The TV Series");
       item->action_status =
@@ -232,6 +405,7 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
     {
       auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->id = ++id_start;
       item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
       item->name = base::ASCIIToUTF16("The Live TV Series");
       item->action_status =
@@ -264,7 +438,7 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
         cookie_line.push_back("Domain=" + url.host());
 
       if (expired)
-        cookie_line.push_back("Expires=Wed, 21 Oct 2015 07:28:00 GMT");
+        cookie_line.push_back("Expires=Wed, 31 Dec 1969 07:28:00 GMT");
 
       std::unique_ptr<net::CanonicalCookie> cookie =
           net::CanonicalCookie::Create(url, base::JoinString(cookie_line, ";"),
@@ -273,11 +447,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(domain_cookies, cookie->IsDomainCookie());
       EXPECT_EQ(!domain_cookies, cookie->IsHostCookie());
 
-      net::CookieOptions options;
       GetCookieManager()->SetCanonicalCookie(
-          *cookie, url, options,
+          *cookie, url, net::CookieOptions::MakeAllInclusive(),
           base::BindLambdaForTesting(
-              [&](net::CanonicalCookie::CookieInclusionStatus status) {
+              [&](net::CookieAccessResult access_result) {
                 if (--tasks == 0)
                   run_loop.Quit();
               }));
@@ -321,12 +494,14 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<safe_search_api::StubURLChecker> stub_url_checker_;
 
   data_decoder::test::InProcessDataDecoder data_decoder_;
+
+  base::SimpleTestClock test_clock_;
 };
 
 TEST_F(MediaFeedsServiceTest, GetForProfile) {
   EXPECT_NE(nullptr, MediaFeedsServiceFactory::GetForProfile(profile()));
 
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = profile()->GetPrimaryOTRProfile();
   EXPECT_EQ(nullptr, MediaFeedsServiceFactory::GetForProfile(otr_profile));
 }
 
@@ -336,12 +511,14 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
   run_loop.Run();
@@ -361,12 +538,14 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_SuccessFromCache) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url, true));
   run_loop.Run();
@@ -386,12 +565,14 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_BackendError) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(
       feed_url, net::HTTP_INTERNAL_SERVER_ERROR));
@@ -411,12 +592,14 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(feed_url, net::HTTP_OK));
   run_loop.Run();
@@ -429,15 +612,11 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -482,15 +661,11 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ true);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -535,15 +710,11 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpFailedResponse();
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -588,12 +759,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -637,13 +804,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -682,13 +846,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -733,13 +894,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -756,10 +914,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::UNSAFE,
                          /*uncertain=*/false);
 
@@ -779,13 +939,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -802,10 +959,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/true);
 
@@ -825,13 +984,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -848,10 +1004,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::UNSAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/true);
 
@@ -871,17 +1029,14 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
 
   base::test::ScopedFeatureList features;
   features.InitAndDisableFeature(media::kMediaFeedsSafeSearch);
 
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -926,13 +1081,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
 
 TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   const GURL feed_url("https://www.google.com/feed");
+  DiscoverFeedAndPerformSafeSearchCheck(feed_url);
 
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
 
   base::RunLoop run_loop;
   GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
@@ -941,7 +1093,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   {
     // Fetch the Media Feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        1, base::BindLambdaForTesting(
+               [&](const std::string& ignored) { run_loop.Quit(); }));
     WaitForDB();
     ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
     run_loop.Run();
@@ -959,7 +1113,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
 
   // Check the items were updated.
   auto items = GetItemsForMediaFeedSync(1);
-  EXPECT_EQ(7u, items.size());
+  EXPECT_EQ(3u, items.size());
 
   for (auto& item : items) {
     EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
@@ -969,12 +1123,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
 
 TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
   const GURL feed_url("https://www.google.com/feed");
+  DiscoverFeedAndPerformSafeSearchCheck(feed_url);
 
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -1034,16 +1185,20 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldSupportMultipleFetchesForSameFeed) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the same feed twice.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
 
   base::RunLoop run_loop_alt;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop_alt.Quit(); }));
   WaitForDB();
 
   // Respond and make sure both run loop quit closures were called.
@@ -1059,7 +1214,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1081,14 +1236,16 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
   // Start fetching the feed but do not resolve the request.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
 
   // The last request was successful so we can hit the cache.
   EXPECT_FALSE(GetCurrentRequestHasBypassCacheFlag());
 
   // Reset the feed.
-  GetMediaHistoryService()->ResetMediaFeed(
+  GetMediaFeedsService()->ResetMediaFeed(
       url::Origin::Create(feed_url), media_feeds::mojom::ResetReason::kVisit);
   WaitForDB();
 
@@ -1124,7 +1281,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
   // Start fetching the feed but do not resolve the request.
   base::RunLoop run_loop_alt;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop_alt.Quit(); }));
   WaitForDB();
 
   // The last request failed so we should not hit the cache.
@@ -1155,7 +1314,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_ExplicitDeletion_All) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1201,7 +1360,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1249,7 +1408,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1296,7 +1455,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Expired) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1335,61 +1494,6 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Expired) {
 }
 
 TEST_F(MediaFeedsServiceTest,
-       ResetOnCookieChange_ExplicitDeletion_AssociatedHostMatch) {
-  if (!GetMediaFeedsService()->HasCookieObserverForTest())
-    return;
-
-  const GURL feed_url("https://www.google.com/feed");
-  const GURL alt_url("https://www.example.com");
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
-
-  std::set<url::Origin> origins;
-  origins.insert(url::Origin::Create(alt_url));
-
-  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
-  result.associated_origins = origins;
-
-  // Store some media feed items.
-  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
-                                                      base::DoNothing());
-  WaitForDB();
-
-  {
-    auto feeds = GetMediaFeedsSync();
-    ASSERT_EQ(1u, feeds.size());
-    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-  }
-
-  base::RunLoop run_loop;
-  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
-      run_loop.QuitClosure());
-
-  {
-    // Store some cookies on the feed URL and another URL.
-    std::vector<GURL> cookie_urls;
-    cookie_urls.push_back(feed_url);
-    cookie_urls.push_back(alt_url);
-    CreateCookies(cookie_urls);
-  }
-
-  auto filter = network::mojom::CookieDeletionFilter::New();
-  filter->url = alt_url;
-  EXPECT_EQ(1u, DeleteCookies(std::move(filter)));
-  run_loop.Run();
-  WaitForDB();
-
-  {
-    auto feeds = GetMediaFeedsSync();
-    ASSERT_EQ(1u, feeds.size());
-    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
-              feeds[0]->reset_reason);
-  }
-}
-
-TEST_F(MediaFeedsServiceTest,
        ResetOnCookieChange_ExplicitDeletion_SingleHostNoMatch) {
   if (!GetMediaFeedsService()->HasCookieObserverForTest())
     return;
@@ -1398,7 +1502,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL alt_url("https://www.example.com");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1436,7 +1540,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Overwrite) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1475,7 +1579,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1520,7 +1624,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1565,7 +1669,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1603,58 +1707,6 @@ TEST_F(MediaFeedsServiceTest,
 }
 
 TEST_F(MediaFeedsServiceTest,
-       ResetOnCookieChange_ExplicitDeletion_DomainMatch_AssociatedDomain) {
-  if (!GetMediaFeedsService()->HasCookieObserverForTest())
-    return;
-
-  const GURL feed_url("https://www.google.com/feed");
-  const GURL alt_url("https://www.example.com");
-
-  // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
-
-  std::set<url::Origin> origins;
-  origins.insert(url::Origin::Create(alt_url));
-
-  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
-  result.associated_origins = origins;
-
-  // Store some media feed items.
-  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
-                                                      base::DoNothing());
-  WaitForDB();
-
-  {
-    auto feeds = GetMediaFeedsSync();
-    ASSERT_EQ(1u, feeds.size());
-    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-  }
-
-  base::RunLoop run_loop;
-  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
-      run_loop.QuitClosure());
-
-  {
-    // Store some domain cookies.
-    std::vector<GURL> cookie_urls;
-    cookie_urls.push_back(alt_url);
-    CreateCookies(cookie_urls, true);
-  }
-
-  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
-  run_loop.Run();
-  WaitForDB();
-
-  {
-    auto feeds = GetMediaFeedsSync();
-    ASSERT_EQ(1u, feeds.size());
-    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
-              feeds[0]->reset_reason);
-  }
-}
-
-TEST_F(MediaFeedsServiceTest,
        ResetOnCookieChange_ExplicitDeletion_DomainMatch_NoMatch) {
   if (!GetMediaFeedsService()->HasCookieObserverForTest())
     return;
@@ -1662,7 +1714,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1696,6 +1748,690 @@ TEST_F(MediaFeedsServiceTest,
     ASSERT_EQ(1u, feeds.size());
     EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
   }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_WithCookieFilter_Match) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+  }
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.cookie_name_filter = "A";
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  EXPECT_EQ(2u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should have been reset because we have a cookie filter that
+    // matches.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_WithCookieFilter_NoMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+  }
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.cookie_name_filter = "B";
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  EXPECT_EQ(2u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should not have been reset because the cookie filter does not
+    // match.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_Creation_WithCookieFilter_Match) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.cookie_name_filter = "A";
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    CreateCookies(cookie_urls);
+  }
+
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should have been reset because we have a cookie filter that
+    // matches.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_Creation_WithCookieFilter_NoMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.cookie_name_filter = "B";
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    CreateCookies(cookie_urls);
+  }
+
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should not have been reset because the cookie filter does not
+    // match.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_Creation_WithoutCookieFilter) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    CreateCookies(cookie_urls);
+  }
+
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should not have been reset because the cookie filter was not
+    // present and therefore we only reset on deletion/expiration.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest, DiscoverFeed_SafeSearch_Enabled) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(true);
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+      run_loop.QuitClosure());
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Wait for the service and DB to finish.
+  run_loop.Run();
+  WaitForDB();
+
+  // The feed should have been updated to be safe.
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+            feeds[0]->safe_search_result);
+}
+
+TEST_F(MediaFeedsServiceTest, DiscoverFeed_SafeSearch_Disabled) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(false);
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+            feeds[0]->safe_search_result);
+}
+
+// Runs the Media Feeds tests from the spec. The file names start with success
+// if the feed is valid and bad if they are not.
+class MediaFeedsSpecTest : public MediaFeedsServiceTest,
+                           public testing::WithParamInterface<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaFeedsSpecTest,
+    testing::Values("bad-member.json",
+                    "bad-missing-logo-content-attributes.json",
+                    "bad-provider-missing-name.json",
+                    "success-allow-http-schema.org.json",
+                    "success-empty.json",
+                    "success-ignore-bad-content-attribute.json",
+                    "success-member-opt-image-and-email.json",
+                    "bad-image-as-url.json",
+                    "bad-missing-logo.json",
+                    "success-associated-origin-backwards-compat.json",
+                    "success-full-feed.json",
+                    "success-ignore-bad-element.json",
+                    "success-minimal-feed.json"));
+
+TEST_P(MediaFeedsSpecTest, RunOpenSourceTest) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Get the path of the test data.
+  base::FilePath file;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
+  file = file.Append(kMediaFeedsTestSpecDir).AppendASCII(GetParam());
+
+  // Read the test file to a string.
+  std::string test_data;
+  base::ReadFileToString(file, &test_data);
+  ASSERT_TRUE(test_data.size());
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Fetch the Media Feed.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
+  WaitForDB();
+  ASSERT_TRUE(RespondToPendingFeedFetchWithData(feed_url, test_data));
+  run_loop.Run();
+
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+
+  if (base::Contains(GetParam(), "success")) {
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+              feeds[0]->last_fetch_result);
+  } else {
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kInvalidFeed,
+              feeds[0]->last_fetch_result);
+  }
+}
+
+// FetchTopMediaFeeds should fetch a feed with enough watchtime on that origin
+// even if it hasn't been fetched before.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_SuccessNewFetch) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  // FetchTopMediaFeeds should ignore the feed, as the origin does not have
+  // enough watchtime.
+  ASSERT_FALSE(RespondToPendingFeedFetch(feed_url));
+
+  // Set the watchtime higher than the minimum threshold for top feeds.
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Now that there is high watchtime, the fetch should occur the next time
+  // background fetching happens.
+  AdvanceTime(MediaFeedsService::kTimeBetweenBackgroundFetches);
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 1);
+}
+
+// Fetch top feeds should periodically fetch the feed from cache if available.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_SuccessFromCache) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Set the watchtime higher than the minimum threshold for top feeds.
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Fetch the Media Feed an initial time.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
+  WaitForDB();
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop.Run();
+
+  // After some time, background fetching should refresh the feed from the
+  // cached initial fetch.
+  AdvanceTime(MediaFeedsService::kTimeBetweenBackgroundFetches);
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  EXPECT_FALSE(GetCurrentRequestHasBypassCacheFlag());
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 2);
+}
+
+// FetchTopMediaFeeds should back off if the feed fails to fetch. But after 24
+// hours, it should fetch regardless of failures, bypassing the cache.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_BacksOffFailedFetches) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+  const int times_to_fail = 10;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Set the watchtime higher than the minimum threshold for top feeds.
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Fetch the Media Feed unsuccessfully several times.
+  for (int i = 0; i < times_to_fail; i++) {
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->FetchMediaFeed(
+        1, base::BindLambdaForTesting(
+               [&](const std::string& ignored) { run_loop.Quit(); }));
+    WaitForDB();
+    ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(
+        feed_url, net::HTTP_INTERNAL_SERVER_ERROR));
+    run_loop.Run();
+  }
+
+  AdvanceTime(base::TimeDelta::FromHours(1));
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  // No fetch should happen because of the backoff from failures.
+  ASSERT_FALSE(RespondToPendingFeedFetch(feed_url));
+
+  // After 24 hours, the feed should be fetched regardless of failure count.
+  AdvanceTime(MediaFeedsService::kTimeBetweenNonCachedBackgroundFetches);
+  task_environment()->RunUntilIdle();
+
+  // If we bypass failure count, we should also bypass cache.
+  EXPECT_TRUE(GetCurrentRequestHasBypassCacheFlag());
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 1);
+}
+
+// After 24 hours, FetchTopMediaFeeds should fetch the feed and bypass the
+// cache.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_SuccessBypassCache) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Set the watchtime higher than the minimum threshold for top feeds.
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Fetch the Media Feed an initial time.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
+  WaitForDB();
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop.Run();
+
+  AdvanceTime(base::TimeDelta::FromHours(24));
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  // After a long time between fetches, we should bypass the cache.
+  EXPECT_TRUE(GetCurrentRequestHasBypassCacheFlag());
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 2);
+}
+
+// After a feed reset, FetchTopMediaFeeds should fetch anyway.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_SuccessResetFeed) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Fetch the Media Feed.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
+  WaitForDB();
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop.Run();
+
+  GetMediaFeedsService()->ResetMediaFeed(url::Origin::Create(feed_url),
+                                         mojom::ResetReason::kVisit);
+  WaitForDB();
+
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 2);
+}
+
+// After enabling the pref, top feeds should fetch immediately and then again
+// after 15 minutes.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_SuccessRepeatsPeriodically) {
+  SetAutomaticSelectionEnabled();
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Set the watchtime higher than the minimum threshold for top feeds.
+  auto watchtime = base::TimeDelta::FromMinutes(45);
+  content::MediaPlayerWatchTime watch_time(
+      feed_url, feed_url.GetOrigin(), watchtime, base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  // Once we set this, background fetching should start automatically.
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  // There should be only one fetch ready.
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  ASSERT_FALSE(RespondToPendingFeedFetch(feed_url));
+
+  // Wait 15 minutes and the next fetch should be queued up.
+  AdvanceTime(MediaFeedsService::kTimeBetweenBackgroundFetches);
+  task_environment()->RunUntilIdle();
+
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+
+  auto feeds = GetMediaFeedsSync();
+
+  EXPECT_EQ(1u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 2);
+}
+
+// FetchTopMediaFeeds should fetch a feed with enough watchtime on that origin
+// even if it hasn't been fetched before.
+TEST_F(MediaFeedsServiceTest, FetchTopMediaFeeds_DisableAutoSelection) {
+  base::HistogramTester histogram_tester;
+
+  const GURL feed_url_a("https://www.google.com/feed");
+  const GURL feed_url_b("https://www.google.co.uk/feed");
+
+  // Store a couple of Media Feeds.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url_a);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url_b);
+  WaitForDB();
+
+  // The first feed we should opt into.
+  GetMediaHistoryService()->UpdateFeedUserStatus(
+      1, media_feeds::mojom::FeedUserStatus::kEnabled);
+  WaitForDB();
+
+  SetBackgroundFetchingEnabled(true);
+  task_environment()->RunUntilIdle();
+
+  // The first feed should be fetched and the second one should be ignored since
+  // the user has not enabled it.
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url_a));
+  ASSERT_FALSE(RespondToPendingFeedFetch(feed_url_b));
+
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(2u, feeds.size());
+  EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+            feeds[0]->last_fetch_result);
+  EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+            feeds[1]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 1);
+}
+
+TEST_F(MediaFeedsServiceTest, AggregateWatchtimeHistogram) {
+  base::HistogramTester histogram_tester;
+
+  task_environment()->RunUntilIdle();
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  content::MediaPlayerWatchTime watch_time(feed_url, feed_url.GetOrigin(),
+                                           base::TimeDelta::FromMinutes(30),
+                                           base::TimeDelta(), true, true);
+  GetMediaHistoryService()->SavePlayback(watch_time);
+  WaitForDB();
+
+  GetMediaFeedsService()->RecordFeedWatchtimes();
+  WaitForDB();
+
+  histogram_tester.ExpectUniqueTimeSample(
+      MediaFeedsService::kAggregateWatchtimeHistogramName,
+      base::TimeDelta::FromMinutes(30), 1);
 }
 
 }  // namespace media_feeds

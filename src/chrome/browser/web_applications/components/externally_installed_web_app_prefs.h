@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -46,11 +45,16 @@ class ExternallyInstalledWebAppPrefs {
       ExternalInstallSource install_source);
 
   explicit ExternallyInstalledWebAppPrefs(PrefService* pref_service);
+  ExternallyInstalledWebAppPrefs(const ExternallyInstalledWebAppPrefs&) =
+      delete;
+  ExternallyInstalledWebAppPrefs& operator=(
+      const ExternallyInstalledWebAppPrefs&) = delete;
 
   void Insert(const GURL& url,
               const AppId& app_id,
               ExternalInstallSource install_source);
   base::Optional<AppId> LookupAppId(const GURL& url) const;
+  bool HasNoApps() const;
 
   // Returns an id if there is a placeholder app for |url|. Note that nullopt
   // does not mean that there is no app for |url| just that there is no
@@ -62,7 +66,6 @@ class ExternallyInstalledWebAppPrefs {
  private:
   PrefService* const pref_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternallyInstalledWebAppPrefs);
 };
 
 }  // namespace web_app

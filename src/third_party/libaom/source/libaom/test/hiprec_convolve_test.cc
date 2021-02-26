@@ -17,8 +17,10 @@
 using libaom_test::ACMRandom;
 #if CONFIG_AV1_HIGHBITDEPTH
 using libaom_test::AV1HighbdHiprecConvolve::AV1HighbdHiprecConvolveTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HighbdHiprecConvolveTest);
 #endif
 using libaom_test::AV1HiprecConvolve::AV1HiprecConvolveTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HiprecConvolveTest);
 using std::make_tuple;
 using std::tuple;
 

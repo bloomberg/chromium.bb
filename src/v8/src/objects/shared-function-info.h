@@ -19,8 +19,8 @@
 #include "src/objects/struct.h"
 #include "src/roots/roots.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "torque-generated/bit-fields-tq.h"
-#include "torque-generated/field-offsets-tq.h"
+#include "torque-generated/bit-fields.h"
+#include "torque-generated/field-offsets.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -37,6 +37,8 @@ class IsCompiledScope;
 class WasmCapiFunctionData;
 class WasmExportedFunctionData;
 class WasmJSFunctionData;
+
+#include "torque-generated/src/objects/shared-function-info-tq.inc"
 
 // Data collected by the pre-parser storing information about scopes and inner
 // functions.
@@ -195,11 +197,8 @@ class SharedFunctionInfo : public HeapObject {
   // a Code object or a BytecodeArray.
   inline AbstractCode abstract_code();
 
-  // Tells whether or not this shared function info is interpreted.
-  //
-  // Note: function->IsInterpreted() does not necessarily return the same value
-  // as function->shared()->IsInterpreted() because the closure might have been
-  // optimized.
+  // Tells whether or not this shared function info has an attached
+  // BytecodeArray.
   inline bool IsInterpreted() const;
 
   // Set up the link between shared function info and the script. The shared
@@ -218,12 +217,14 @@ class SharedFunctionInfo : public HeapObject {
 
   static const int kNotFound = -1;
 
-  // [scope_info]: Scope info.
-  DECL_ACCESSORS(scope_info, ScopeInfo)
+  DECL_GETTER(scope_info, ScopeInfo)
 
   // Set scope_info without moving the existing name onto the ScopeInfo.
   inline void set_raw_scope_info(ScopeInfo scope_info,
                                  WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+
+  inline void SetScopeInfo(ScopeInfo scope_info,
+                           WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
 
   inline bool is_script() const;
   inline bool needs_script_context() const;
@@ -260,7 +261,8 @@ class SharedFunctionInfo : public HeapObject {
   // Returns an IsCompiledScope which reports whether the function is compiled,
   // and if compiled, will avoid the function becoming uncompiled while it is
   // held.
-  inline IsCompiledScope is_compiled_scope() const;
+  template <typename LocalIsolate>
+  inline IsCompiledScope is_compiled_scope(LocalIsolate* isolate) const;
 
   // [length]: The function length - usually the number of declared parameters.
   // Use up to 2^16-2 parameters (16 bits of values, where one is reserved for
@@ -306,7 +308,7 @@ class SharedFunctionInfo : public HeapObject {
   //  - a UncompiledDataWithPreparseData for lazy compilation
   //    [HasUncompiledDataWithPreparseData()]
   //  - a WasmExportedFunctionData for Wasm [HasWasmExportedFunctionData()]
-  DECL_ACCESSORS(function_data, Object)
+  DECL_RELEASE_ACQUIRE_ACCESSORS(function_data, Object)
 
   inline bool IsApiFunction() const;
   inline bool is_class_constructor() const;
@@ -339,7 +341,8 @@ class SharedFunctionInfo : public HeapObject {
       UncompiledDataWithPreparseData data);
   inline bool HasUncompiledDataWithoutPreparseData() const;
   inline bool HasWasmExportedFunctionData() const;
-  WasmExportedFunctionData wasm_exported_function_data() const;
+  V8_EXPORT_PRIVATE WasmExportedFunctionData
+  wasm_exported_function_data() const;
   inline bool HasWasmJSFunctionData() const;
   WasmJSFunctionData wasm_js_function_data() const;
   inline bool HasWasmCapiFunctionData() const;
@@ -375,7 +378,7 @@ class SharedFunctionInfo : public HeapObject {
   // [script_or_debug_info]: One of:
   //  - Script from which the function originates.
   //  - a DebugInfo which holds the actual script [HasDebugInfo()].
-  DECL_ACCESSORS(script_or_debug_info, HeapObject)
+  DECL_RELEASE_ACQUIRE_ACCESSORS(script_or_debug_info, HeapObject)
 
   inline HeapObject script() const;
   inline void set_script(HeapObject script);
@@ -409,6 +412,19 @@ class SharedFunctionInfo : public HeapObject {
   // private instance methdos.
   DECL_BOOLEAN_ACCESSORS(class_scope_has_private_brand)
   DECL_BOOLEAN_ACCESSORS(has_static_private_methods_or_accessors)
+
+  // True if this SFI has been (non-OSR) optimized in the past. This is used to
+  // guide native-context-independent codegen.
+  DECL_BOOLEAN_ACCESSORS(has_optimized_at_least_once)
+
+  // True if a Code object associated with this SFI has been inserted into the
+  // compilation cache. Note that the cache entry may be removed by aging,
+  // hence the 'may'.
+  DECL_BOOLEAN_ACCESSORS(may_have_cached_code)
+
+  // Returns the cached Code object for this SFI if it exists, an empty handle
+  // otherwise.
+  MaybeHandle<Code> TryGetCachedCode(Isolate* isolate);
 
   // Is this function a top-level function (scripts, evals).
   DECL_BOOLEAN_ACCESSORS(is_toplevel)
@@ -451,17 +467,6 @@ class SharedFunctionInfo : public HeapObject {
 
   // Whether or not the number of expected properties may change.
   DECL_BOOLEAN_ACCESSORS(are_properties_final)
-
-  // Indicates that the function represented by the shared function info
-  // cannot observe the actual parameters passed at a call site, which
-  // means the function doesn't use the arguments object, doesn't use
-  // rest parameters, and is also in strict mode (meaning that there's
-  // no way to get to the actual arguments via the non-standard "arguments"
-  // accessor on sloppy mode functions). This can be used to speed up calls
-  // to this function even in the presence of arguments mismatch.
-  // See http://bit.ly/v8-faster-calls-with-arguments-mismatch for more
-  // information on this.
-  DECL_BOOLEAN_ACCESSORS(is_safe_to_skip_arguments_adaptor)
 
   // Indicates that the function has been reported for binary code coverage.
   DECL_BOOLEAN_ACCESSORS(has_reported_binary_coverage)
@@ -596,7 +601,9 @@ class SharedFunctionInfo : public HeapObject {
   // Dispatched behavior.
   DECL_PRINTER(SharedFunctionInfo)
   DECL_VERIFIER(SharedFunctionInfo)
-  void SharedFunctionInfoVerify(OffThreadIsolate* isolate);
+#ifdef VERIFY_HEAP
+  void SharedFunctionInfoVerify(LocalIsolate* isolate);
+#endif
 #ifdef OBJECT_PRINT
   void PrintSourceCode(std::ostream& os);
 #endif
@@ -606,6 +613,8 @@ class SharedFunctionInfo : public HeapObject {
    public:
     V8_EXPORT_PRIVATE ScriptIterator(Isolate* isolate, Script script);
     explicit ScriptIterator(Handle<WeakFixedArray> shared_function_infos);
+    ScriptIterator(const ScriptIterator&) = delete;
+    ScriptIterator& operator=(const ScriptIterator&) = delete;
     V8_EXPORT_PRIVATE SharedFunctionInfo Next();
     int CurrentIndex() const { return index_ - 1; }
 
@@ -615,7 +624,6 @@ class SharedFunctionInfo : public HeapObject {
    private:
     Handle<WeakFixedArray> shared_function_infos_;
     int index_;
-    DISALLOW_COPY_AND_ASSIGN(ScriptIterator);
   };
 
   DECL_CAST(SharedFunctionInfo)
@@ -646,11 +654,13 @@ class SharedFunctionInfo : public HeapObject {
   inline bool needs_home_object() const;
 
  private:
+#ifdef VERIFY_HEAP
   void SharedFunctionInfoVerify(ReadOnlyRoots roots);
+#endif
 
   // [name_or_scope_info]: Function name string, kNoSharedNameSentinel or
   // ScopeInfo.
-  DECL_ACCESSORS(name_or_scope_info, Object)
+  DECL_RELEASE_ACQUIRE_ACCESSORS(name_or_scope_info, Object)
 
   // [outer scope info] The outer scope info, needed to lazily parse this
   // function.
@@ -692,6 +702,8 @@ struct SourceCodeOf {
 class IsCompiledScope {
  public:
   inline IsCompiledScope(const SharedFunctionInfo shared, Isolate* isolate);
+  inline IsCompiledScope(const SharedFunctionInfo shared,
+                         LocalIsolate* isolate);
   inline IsCompiledScope() : retain_bytecode_(), is_compiled_(false) {}
 
   inline bool is_compiled() const { return is_compiled_; }

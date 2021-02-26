@@ -23,10 +23,12 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/animation/ink_drop.h"
@@ -37,6 +39,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -55,19 +58,21 @@ SkColor GetDefaultTextColor(const ui::ThemeProvider* theme_provider) {
 
 }  // namespace
 
-ToolbarButton::ToolbarButton(views::ButtonListener* listener)
-    : ToolbarButton(listener, nullptr, nullptr) {}
+ToolbarButton::ToolbarButton(PressedCallback callback)
+    : ToolbarButton(std::move(callback), nullptr, nullptr) {}
 
-ToolbarButton::ToolbarButton(views::ButtonListener* listener,
+ToolbarButton::ToolbarButton(PressedCallback callback,
                              std::unique_ptr<ui::MenuModel> model,
                              TabStripModel* tab_strip_model,
                              bool trigger_menu_on_long_press)
-    : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
+    : views::LabelButton(std::move(callback),
+                         base::string16(),
+                         CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
       trigger_menu_on_long_press_(trigger_menu_on_long_press),
       highlight_color_animation_(this) {
-  set_has_ink_drop_action_on_click(true);
+  SetHasInkDropActionOnClick(true);
   set_context_menu_controller(this);
 
   if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {
@@ -81,9 +86,9 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
 
   // Make sure icons are flipped by default so that back, forward, etc. follows
   // UI direction.
-  EnableCanvasFlippingForRTLUI(true);
+  SetFlipCanvasOnPaintForRTLUI(true);
 
-  set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
+  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
 
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
@@ -95,13 +100,11 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
   UpdateColorsAndInsets();
+
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 ToolbarButton::~ToolbarButton() {}
-
-void ToolbarButton::Init() {
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-}
 
 void ToolbarButton::SetHighlight(const base::string16& highlight_text,
                                  base::Optional<SkColor> highlight_color) {
@@ -147,7 +150,7 @@ void ToolbarButton::UpdateColorsAndInsets() {
   }
 
   gfx::Insets target_insets =
-      layout_insets_.value_or(GetLayoutInsets(TOOLBAR_BUTTON)) +
+      layout_insets_.value_or(::GetLayoutInsets(TOOLBAR_BUTTON)) +
       layout_inset_delta_ + *GetProperty(views::kInternalPaddingKey);
   base::Optional<SkColor> border_color =
       highlight_color_animation_.GetBorderColor();
@@ -200,14 +203,14 @@ void ToolbarButton::UpdateIconsWithColors(const gfx::VectorIcon& icon,
                                           SkColor hovered_color,
                                           SkColor pressed_color,
                                           SkColor disabled_color) {
-  SetImage(ButtonState::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, normal_color));
-  SetImage(ButtonState::STATE_HOVERED,
-           gfx::CreateVectorIcon(icon, hovered_color));
-  SetImage(ButtonState::STATE_PRESSED,
-           gfx::CreateVectorIcon(icon, pressed_color));
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, disabled_color));
+  SetImageModel(ButtonState::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(icon, normal_color));
+  SetImageModel(ButtonState::STATE_HOVERED,
+                ui::ImageModel::FromVectorIcon(icon, hovered_color));
+  SetImageModel(ButtonState::STATE_PRESSED,
+                ui::ImageModel::FromVectorIcon(icon, pressed_color));
+  SetImageModel(Button::STATE_DISABLED,
+                ui::ImageModel::FromVectorIcon(icon, disabled_color));
 }
 
 void ToolbarButton::UpdateIconsWithStandardColors(const gfx::VectorIcon& icon) {
@@ -265,7 +268,11 @@ bool ToolbarButton::IsMenuShowing() const {
   return menu_showing_;
 }
 
-void ToolbarButton::SetLayoutInsets(const gfx::Insets& insets) {
+base::Optional<gfx::Insets> ToolbarButton::GetLayoutInsets() const {
+  return layout_insets_;
+}
+
+void ToolbarButton::SetLayoutInsets(const base::Optional<gfx::Insets>& insets) {
   if (layout_insets_ == insets)
     return;
   layout_insets_ = insets;
@@ -279,9 +286,12 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void ToolbarButton::OnThemeChanged() {
-  LabelButton::OnThemeChanged();
   if (installable_ink_drop_)
     installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
+  UpdateIcon();
+
+  // Call this after UpdateIcon() to properly reset images.
+  LabelButton::OnThemeChanged();
 }
 
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
@@ -351,7 +361,7 @@ void ToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
   // remain in a PUSHED state until the drop down menu closes.
-  if (state() != STATE_DISABLED && !InDrag() && state() != STATE_PRESSED)
+  if (GetState() != STATE_DISABLED && !InDrag() && GetState() != STATE_PRESSED)
     SetState(STATE_NORMAL);
 }
 
@@ -498,7 +508,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   menu_model_adapter_ = std::make_unique<views::MenuModelAdapter>(
       model_.get(), base::BindRepeating(&ToolbarButton::OnMenuClosed,
                                         base::Unretained(this)));
-  menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
+  menu_model_adapter_->set_triggerable_event_flags(GetTriggerableEventFlags());
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
   menu_runner_->RunMenuAt(GetWidget(), nullptr, menu_anchor_bounds,
@@ -511,17 +521,13 @@ void ToolbarButton::OnMenuClosed() {
   menu_showing_ = false;
 
   // Set the state back to normal after the drop down menu is closed.
-  if (state() != STATE_DISABLED) {
+  if (GetState() != STATE_DISABLED) {
     GetInkDrop()->SetHovered(IsMouseHovered());
     SetState(STATE_NORMAL);
   }
 
   menu_runner_.reset();
   menu_model_adapter_.reset();
-}
-
-const char* ToolbarButton::GetClassName() const {
-  return "ToolbarButton";
 }
 
 namespace {
@@ -646,3 +652,7 @@ void ToolbarButton::HighlightColorAnimation::ClearHighlightColor() {
   highlight_color_.reset();
   parent_->UpdateColorsAndInsets();
 }
+
+BEGIN_METADATA(ToolbarButton, views::LabelButton)
+ADD_PROPERTY_METADATA(base::Optional<gfx::Insets>, LayoutInsets)
+END_METADATA

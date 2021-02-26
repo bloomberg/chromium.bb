@@ -64,6 +64,10 @@ int ff_qsv_codec_id_to_mfx(enum AVCodecID codec_id)
     case AV_CODEC_ID_VP9:
         return MFX_CODEC_VP9;
 #endif
+#if QSV_VERSION_ATLEAST(1, 34)
+    case AV_CODEC_ID_AV1:
+        return MFX_CODEC_AV1;
+#endif
 
     default:
         break;
@@ -195,6 +199,12 @@ enum AVPixelFormat ff_qsv_map_fourcc(uint32_t fourcc)
     case MFX_FOURCC_NV12: return AV_PIX_FMT_NV12;
     case MFX_FOURCC_P010: return AV_PIX_FMT_P010;
     case MFX_FOURCC_P8:   return AV_PIX_FMT_PAL8;
+#if CONFIG_VAAPI
+    case MFX_FOURCC_YUY2: return AV_PIX_FMT_YUYV422;
+#if QSV_VERSION_ATLEAST(1, 27)
+    case MFX_FOURCC_Y210: return AV_PIX_FMT_Y210;
+#endif
+#endif
     }
     return AV_PIX_FMT_NONE;
 }
@@ -211,6 +221,18 @@ int ff_qsv_map_pixfmt(enum AVPixelFormat format, uint32_t *fourcc)
     case AV_PIX_FMT_P010:
         *fourcc = MFX_FOURCC_P010;
         return AV_PIX_FMT_P010;
+#if CONFIG_VAAPI
+    case AV_PIX_FMT_YUV422P:
+    case AV_PIX_FMT_YUYV422:
+        *fourcc = MFX_FOURCC_YUY2;
+        return AV_PIX_FMT_YUYV422;
+#if QSV_VERSION_ATLEAST(1, 27)
+    case AV_PIX_FMT_YUV422P10:
+    case AV_PIX_FMT_Y210:
+        *fourcc = MFX_FOURCC_Y210;
+        return AV_PIX_FMT_Y210;
+#endif
+#endif
     default:
         return AVERROR(ENOSYS);
     }

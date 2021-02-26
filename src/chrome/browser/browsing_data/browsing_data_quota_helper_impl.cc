@@ -12,12 +12,12 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -37,16 +37,16 @@ void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread,
                      this, std::move(callback)));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread,
                      this, host));
 }
@@ -77,8 +77,8 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
                      base::Owned(pending_hosts)));
 
   for (const StorageType& type : types) {
-    quota_manager_->GetOriginsModifiedSince(
-        type, base::Time(),
+    quota_manager_->GetOriginsModifiedBetween(
+        type, base::Time(), base::Time::Max(),
         base::BindOnce(&BrowsingDataQuotaHelperImpl::GotOrigins,
                        weak_factory_.GetWeakPtr(), pending_hosts, completion));
   }
@@ -114,7 +114,7 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
   for (const auto& itr : *pending_hosts) {
     const std::string& host = itr.first;
     StorageType type = itr.second;
-    quota_manager_->GetHostUsage(
+    quota_manager_->GetHostUsageWithBreakdown(
         host, type,
         base::BindOnce(&BrowsingDataQuotaHelperImpl::GotHostUsage,
                        weak_factory_.GetWeakPtr(), quota_info, completion, host,
@@ -122,11 +122,13 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
   }
 }
 
-void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
-                                               base::OnceClosure completion,
-                                               const std::string& host,
-                                               StorageType type,
-                                               int64_t usage) {
+void BrowsingDataQuotaHelperImpl::GotHostUsage(
+    QuotaInfoMap* quota_info,
+    base::OnceClosure completion,
+    const std::string& host,
+    StorageType type,
+    int64_t usage,
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (type) {
     case StorageType::kTemporary:
@@ -161,8 +163,8 @@ void BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete(
     result.push_back(info);
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(

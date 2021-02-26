@@ -13,7 +13,6 @@
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
@@ -36,8 +35,6 @@ class MODULES_EXPORT ManifestManager
       public Supplement<LocalDOMWindow>,
       public mojom::blink::ManifestManager,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
-
  public:
   static const char kSupplementName[];
 
@@ -62,7 +59,7 @@ class MODULES_EXPORT ManifestManager
   void RequestManifestDebugInfo(
       RequestManifestDebugInfoCallback callback) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   enum ResolveState { ResolveStateSuccess, ResolveStateFailure };

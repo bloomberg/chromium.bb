@@ -5,9 +5,9 @@
 #include "chrome/chrome_cleaner/engines/broker/cleaner_engine_requests_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
@@ -69,7 +69,7 @@ void CleanerEngineRequestsImpl::SandboxDeleteFilePostReboot(
 }
 
 void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryKey(
-    const String16EmbeddedNulls& key,
+    const WStringEmbeddedNulls& key,
     SandboxNtDeleteRegistryKeyCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -79,15 +79,15 @@ void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryKey(
 }
 
 bool CleanerEngineRequestsImpl::NtDeleteRegistryKey(
-    const String16EmbeddedNulls& key) {
+    const WStringEmbeddedNulls& key) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxNtDeleteRegistryKey(key);
 }
 
 void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryValue(
-    const String16EmbeddedNulls& key,
-    const String16EmbeddedNulls& value_name,
+    const WStringEmbeddedNulls& key,
+    const WStringEmbeddedNulls& value_name,
     SandboxNtDeleteRegistryValueCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -97,17 +97,17 @@ void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryValue(
 }
 
 bool CleanerEngineRequestsImpl::NtDeleteRegistryValue(
-    const String16EmbeddedNulls& key,
-    const String16EmbeddedNulls& value_name) {
+    const WStringEmbeddedNulls& key,
+    const WStringEmbeddedNulls& value_name) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxNtDeleteRegistryValue(key, value_name);
 }
 
 void CleanerEngineRequestsImpl::SandboxNtChangeRegistryValue(
-    const String16EmbeddedNulls& key,
-    const String16EmbeddedNulls& value_name,
-    const String16EmbeddedNulls& new_value,
+    const WStringEmbeddedNulls& key,
+    const WStringEmbeddedNulls& value_name,
+    const WStringEmbeddedNulls& new_value,
     SandboxNtChangeRegistryValueCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -117,9 +117,9 @@ void CleanerEngineRequestsImpl::SandboxNtChangeRegistryValue(
 }
 
 bool CleanerEngineRequestsImpl::NtChangeRegistryValue(
-    const String16EmbeddedNulls& key,
-    const String16EmbeddedNulls& value_name,
-    const String16EmbeddedNulls& new_value) {
+    const WStringEmbeddedNulls& key,
+    const WStringEmbeddedNulls& value_name,
+    const WStringEmbeddedNulls& new_value) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxNtChangeRegistryValue(
@@ -129,7 +129,7 @@ bool CleanerEngineRequestsImpl::NtChangeRegistryValue(
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteService(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -138,14 +138,14 @@ void CleanerEngineRequestsImpl::SandboxDeleteService(
       std::move(result_callback));
 }
 
-bool CleanerEngineRequestsImpl::DeleteService(const base::string16& name) {
+bool CleanerEngineRequestsImpl::DeleteService(const std::wstring& name) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxDeleteService(name);
 }
 
 void CleanerEngineRequestsImpl::SandboxDeleteTask(
-    const base::string16& name,
+    const std::wstring& name,
     SandboxDeleteServiceCallback result_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -154,7 +154,7 @@ void CleanerEngineRequestsImpl::SandboxDeleteTask(
       std::move(result_callback));
 }
 
-bool CleanerEngineRequestsImpl::DeleteTask(const base::string16& name) {
+bool CleanerEngineRequestsImpl::DeleteTask(const std::wstring& name) {
   if (metadata_observer_)
     metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
   return chrome_cleaner_sandbox::SandboxDeleteTask(name);

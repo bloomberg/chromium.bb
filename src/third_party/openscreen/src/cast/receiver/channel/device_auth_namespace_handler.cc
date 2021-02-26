@@ -6,6 +6,9 @@
 
 #include <openssl/evp.h>
 
+#include <memory>
+#include <utility>
+
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
@@ -54,6 +57,9 @@ DeviceAuthNamespaceHandler::~DeviceAuthNamespaceHandler() = default;
 void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
                                            CastSocket* socket,
                                            CastMessage message) {
+  if (!socket) {
+    return;  // Don't handle auth messages from local senders. That's nonsense.
+  }
   if (message.payload_type() !=
       ::cast::channel::CastMessage_PayloadType_BINARY) {
     return;

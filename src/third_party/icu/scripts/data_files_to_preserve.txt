@@ -1,19 +1,7 @@
-curr/reslocal.mk
-brkitr/brklocal.mk
-lang/reslocal.mk
-coll/collocal.mk
-mappings/ucmlocal.mk
 mappings/convrtrs.txt
 mappings/*html.ucm
 mappings/windows-936-2000.ucm
 mappings/gb18030.ucm
-zone/reslocal.mk
-translit/trnslocal.mk
-rbnf/rbnflocal.mk
-region/reslocal.mk
-locales/reslocal.mk
-unit/reslocal.mk
-sprep/spreplocal.mk
 brkitr/dictionaries/khmerdict.txt
 brkitr/rules/word_ja.txt
 brkitr/root.txt
@@ -28,4 +16,3 @@ lang/an.txt
 lang/ku.txt
 lang/tg.txt
 lang/wa.txt
-translit/root_subset.txt

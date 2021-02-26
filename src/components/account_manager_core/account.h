@@ -1,0 +1,58 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_H_
+#define COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_H_
+
+#include <ostream>
+#include <string>
+
+#include "base/component_export.h"
+
+namespace account_manager {
+
+// Type of an account, based on the authentication backend of the account.
+// Loosely based on //chromeos/components/account_manager/tokens.proto
+enum class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountType : int {
+  // Gaia account (aka Google account) - including enterprise and consumer
+  // accounts.
+  kGaia = 1,
+  // Microsoft Active Directory accounts.
+  kActiveDirectory = 2,
+};
+
+// Uniquely identifies an account.
+struct COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountKey {
+  // |id| is obfuscated GAIA id for |AccountType::kGaia|.
+  // |id| is object GUID (|AccountId::GetObjGuid|) for
+  // |AccountType::kActiveDirectory|.
+  std::string id;
+  AccountType account_type;
+
+  bool IsValid() const;
+
+  bool operator<(const AccountKey& other) const;
+  bool operator==(const AccountKey& other) const;
+  bool operator!=(const AccountKey& other) const;
+};
+
+// Publicly viewable information about an account.
+struct COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) Account {
+  // A unique identifier for this account.
+  AccountKey key;
+
+  // The raw, un-canonicalized email id for this account.
+  std::string raw_email;
+};
+
+// For logging.
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+std::ostream& operator<<(std::ostream& os, const AccountType& account_type);
+
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+std::ostream& operator<<(std::ostream& os, const AccountKey& account_key);
+
+}  // namespace account_manager
+
+#endif  // COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_H_

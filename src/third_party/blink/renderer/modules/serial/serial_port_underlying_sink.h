@@ -37,10 +37,11 @@ class SerialPortUnderlyingSink final : public UnderlyingSinkBase {
   // rejected with this DOMException.
   void SignalErrorOnClose(DOMException*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);
+  void OnFlushOrDrain();
   void WriteData();
   void PipeClosed();
 
@@ -51,7 +52,11 @@ class SerialPortUnderlyingSink final : public UnderlyingSinkBase {
 
   ArrayBufferOrArrayBufferView buffer_source_;
   uint32_t offset_ = 0;
-  Member<ScriptPromiseResolver> pending_write_;
+
+  // Only one outstanding call to write(), close() or abort() is allowed at a
+  // time. This holds the ScriptPromiseResolver for the Promise returned by any
+  // of these functions.
+  Member<ScriptPromiseResolver> pending_operation_;
 };
 
 }  // namespace blink

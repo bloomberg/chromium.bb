@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -17,19 +18,24 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #endif
 
 namespace device {
 class FidoAuthenticator;
-}
+class FidoDiscoveryFactory;
+}  // namespace device
 
 namespace url {
 class Origin;
 }
 
 namespace content {
+
+#if defined(OS_CHROMEOS)
+class RenderFrameHost;
+#endif
 
 // Interface that the embedder should implement to provide the //content layer
 // with embedder-specific configuration for a single Web Authentication API [1]
@@ -50,6 +56,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     kAuthenticatorRemovedDuringPINEntry,
     kAuthenticatorMissingResidentKeys,
     kAuthenticatorMissingUserVerification,
+    kAuthenticatorMissingLargeBlob,
+    kNoCommonAlgorithms,
     // kStorageFull indicates that a resident credential could not be created
     // because the authenticator has insufficient storage.
     kStorageFull,
@@ -113,12 +121,17 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // to receive attestation certificates from the provided FidoAuthenticator.
   // Otherwise invokes |callback| with |false|.
   //
+  // If |is_enterprise_attestation| is true then that authenticator has asserted
+  // that |relying_party_id| is known to it and the attesation has no
+  // expectations of privacy.
+  //
   // Since these certificates may uniquely identify the authenticator, the
   // embedder may choose to show a permissions prompt to the user, and only
   // invoke |callback| afterwards. This may hairpin |callback|.
   virtual void ShouldReturnAttestation(
       const std::string& relying_party_id,
       const device::FidoAuthenticator* authenticator,
+      bool is_enterprise_attestation,
       base::OnceCallback<void(bool)> callback);
 
   // SupportsResidentKeys returns true if this implementation of
@@ -133,43 +146,16 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // authenticator and thus has privacy implications.
   void SetMightCreateResidentCredential(bool v) override;
 
-  // ShouldPermitCableExtension returns true if the given |origin| may set a
-  // caBLE extension. This extension contains website-chosen BLE pairing
-  // information that will be broadcast by the device and so should not be
-  // accepted if the embedder UI does not indicate that this is happening.
-  virtual bool ShouldPermitCableExtension(const url::Origin& origin);
-
-  // SetCableTransportInfo configures the embedder for handling Cloud-assisted
-  // Bluetooth Low Energy transports (i.e. using a phone as an authenticator).
-  // The |cable_extension_provided| argument is true if the site provided
-  // explicit caBLE discovery information. This is a hint that the UI may wish
-  // to advance to directly to guiding the user to check their phone as the site
-  // is strongly indicating that it will work.
-  //
-  // have_paired_phones is true if a previous call to |GetCablePairings|
-  // returned one or more caBLE pairings.
-  //
-  // |qr_generator_key| is a random AES-256 key that can be used to
-  // encrypt a coarse timestamp with |CableDiscoveryData::DeriveQRKeyMaterial|.
-  // The UI may display a QR code with the resulting secret which, if
-  // decoded and transmitted over BLE by an authenticator, will be accepted for
-  // caBLE pairing.
-  //
-  // This function returns true if the embedder will provide UI support for
-  // caBLE. If it returns false, all caBLE will be disabled because BLE
-  // broadcasting should not occur without user notification and accepting QR
-  // handshakes is irrelevant if the UI is not displaying the QR codes.
-  virtual bool SetCableTransportInfo(
-      bool cable_extension_provided,
-      bool have_paired_phones,
-      base::Optional<device::QRGeneratorKey> qr_generator_key);
-
-  // GetCablePairings returns any known caBLE pairing data. For example, the
-  // embedder may know of pairings because it configured the
-  // |FidoDiscoveryFactory| (using |CustomizeDiscoveryFactory|) to make a
-  // callback when a phone offered long-term pairing data. Additionally, it may
-  // know of pairings via some cloud-based service or sync feature.
-  virtual std::vector<device::CableDiscoveryData> GetCablePairings();
+  // ConfigureCable optionally configures Cloud-assisted Bluetooth Low Energy
+  // transports. |origin| is the origin of the calling site and
+  // |pairings_from_extension| are caBLEv1 pairings that have been provided in
+  // an extension to the WebAuthn get() call. If the embedder wishes, it may use
+  // this to configure caBLE on the |FidoDiscoveryFactory| for use in this
+  // request.
+  virtual void ConfigureCable(
+      const url::Origin& origin,
+      base::span<const device::CableDiscoveryData> pairings_from_extension,
+      device::FidoDiscoveryFactory* fido_discovery_factory);
 
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified
@@ -193,7 +179,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // that testing is possible.
   virtual bool IsFocused();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
   // Returns configuration data for the built-in Touch ID platform
@@ -202,16 +188,25 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // unavailable.
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
+
+#if defined(OS_CHROMEOS)
+  // Callback that should generate and return a unique request id.
+  using ChromeOSGenerateRequestIdCallback = base::RepeatingCallback<uint32_t()>;
+
+  // Returns a callback to generate a request id for |render_frame_host|. The
+  // request id has two purposes: 1. ChromeOS UI will use the request id to
+  // find the source window and show a dialog accordingly; 2. The authenticator
+  // will include the request id when asking ChromeOS platform to cancel the
+  // request.
+  virtual ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
+      RenderFrameHost* render_frame_host);
+#endif  // defined(OS_CHROMEOS)
 
   // Returns a bool if the result of the isUserVerifyingPlatformAuthenticator
   // API call should be overridden with that value, or base::nullopt otherwise.
   virtual base::Optional<bool>
   IsUserVerifyingPlatformAuthenticatorAvailableOverride();
-
-  // Returns a FidoDiscoveryFactory that has been configured for the current
-  // environment.
-  virtual device::FidoDiscoveryFactory* GetDiscoveryFactory();
 
   // Saves transport type the user used during WebAuthN API so that the
   // WebAuthN UI will default to the same transport type during next API call.
@@ -251,17 +246,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void OnRetryUserVerification(int attempts) override;
   void OnInternalUserVerificationLocked() override;
 
- protected:
-  // CustomizeDiscoveryFactory may be overridden in order to configure
-  // |discovery_factory|.
-  virtual void CustomizeDiscoveryFactory(
-      device::FidoDiscoveryFactory* discovery_factory);
-
  private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
-#endif  // !defined(OS_ANDROID)
-
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);
 };
 

@@ -71,21 +71,6 @@ constexpr int kSelectionHandleBarMinHeight = 5;
 // boundaries.
 constexpr int kSelectionHandleBarBottomAllowance = 3;
 
-// Creates a widget to host SelectionHandleView.
-views::Widget* CreateTouchSelectionPopupWidget(
-    gfx::NativeView parent,
-    views::WidgetDelegate* widget_delegate) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
-  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = parent;
-  params.delegate = widget_delegate;
-  widget->Init(std::move(params));
-  return widget;
-}
-
 gfx::Image* GetCenterHandleImage() {
   static gfx::Image* handle_image = nullptr;
   if (!handle_image) {
@@ -209,8 +194,7 @@ namespace views {
 using EditingHandleView = TouchSelectionControllerImpl::EditingHandleView;
 
 // A View that displays the text selection handle.
-class TouchSelectionControllerImpl::EditingHandleView
-    : public WidgetDelegateView {
+class TouchSelectionControllerImpl::EditingHandleView : public View {
  public:
   EditingHandleView(TouchSelectionControllerImpl* controller,
                     gfx::NativeView parent,
@@ -218,26 +202,31 @@ class TouchSelectionControllerImpl::EditingHandleView
       : controller_(controller),
         image_(GetCenterHandleImage()),
         is_cursor_handle_(is_cursor_handle),
-        draw_invisible_(false) {
-    widget_.reset(CreateTouchSelectionPopupWidget(parent, this));
+        draw_invisible_(false),
+        widget_(new views::Widget) {
+    // Create a widget to host EditingHandleView.
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+    params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
+    params.parent = parent;
+    widget_->Init(std::move(params));
 
-    targeter_ = new aura::WindowTargeter();
-    aura::Window* window = widget_->GetNativeWindow();
-    window->SetEventTargeter(std::unique_ptr<aura::WindowTargeter>(targeter_));
-
-    // We are owned by the TouchSelectionControllerImpl.
-    set_owned_by_client();
+    widget_->GetNativeWindow()->SetEventTargeter(
+        std::make_unique<aura::WindowTargeter>());
+    widget_->SetContentsView(this);
   }
 
-  ~EditingHandleView() override { SetWidgetVisible(false, false); }
+  EditingHandleView(const EditingHandleView&) = delete;
+  EditingHandleView& operator=(const EditingHandleView&) = delete;
+  ~EditingHandleView() override = default;
+
+  void CloseHandleWidget() {
+    SetWidgetVisible(false);
+    widget_->CloseNow();
+  }
 
   gfx::SelectionBound::Type selection_bound_type() {
     return selection_bound_.type();
-  }
-
-  // WidgetDelegateView:
-  void DeleteDelegate() override {
-    // We are owned and deleted by TouchSelectionControllerImpl.
   }
 
   // View:
@@ -271,14 +260,7 @@ class TouchSelectionControllerImpl::EditingHandleView
       }
       case ui::ET_GESTURE_SCROLL_END:
       case ui::ET_SCROLL_FLING_START: {
-        // Use a weak pointer to the handle to make sure the handle and its
-        // owning selection controller is not destroyed by the capture release
-        // to diagnose a crash on Windows (see crbug.com/459423)
-        // TODO(mohsen): Delete the diagnostics code when the crash is fixed.
-        base::WeakPtr<EditingHandleView> weak_ptr =
-            weak_ptr_factory_.GetWeakPtr();
         widget_->ReleaseCapture();
-        CHECK(weak_ptr);
         controller_->SetDraggingHandle(nullptr);
         break;
       }
@@ -297,11 +279,9 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   bool IsWidgetVisible() const { return widget_->IsVisible(); }
 
-  void SetWidgetVisible(bool visible, bool quick) {
+  void SetWidgetVisible(bool visible) {
     if (widget_->IsVisible() == visible)
       return;
-    widget_->SetVisibilityAnimationDuration(
-        quick ? base::TimeDelta::FromMilliseconds(50) : base::TimeDelta());
     if (visible)
       widget_->Show();
     else
@@ -349,7 +329,10 @@ class TouchSelectionControllerImpl::EditingHandleView
     const gfx::Insets insets(
         selection_bound_.GetHeight() + kSelectionHandleVerticalVisualOffset, 0,
         0, 0);
-    targeter_->SetInsets(insets, insets);
+
+    // Shifts the hit-test target below the apparent bounds to make dragging
+    // easier.
+    widget_->GetNativeWindow()->targeter()->SetInsets(insets, insets);
   }
 
   void SetDrawInvisible(bool draw_invisible) {
@@ -360,14 +343,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
  private:
-  std::unique_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
-
-  // A WindowTargeter that shifts the hit-test target below the apparent bounds
-  // to make dragging easier. The |widget_|'s NativeWindow takes ownership over
-  // the |targeter_| but since the |widget_|'s lifetime is known to this class,
-  // it can safely access the |targeter_|.
-  aura::WindowTargeter* targeter_;
 
   // In local coordinates
   gfx::SelectionBound selection_bound_;
@@ -388,9 +364,8 @@ class TouchSelectionControllerImpl::EditingHandleView
   // handle.
   bool draw_invisible_;
 
-  base::WeakPtrFactory<EditingHandleView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
+  // Owning widget.
+  Widget* widget_ = nullptr;
 };
 
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(
@@ -423,6 +398,11 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   aura::Env::GetInstance()->RemoveEventObserver(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
+  // Close the owning Widgets to clean up the EditingHandleViews.
+  selection_handle_1_->CloseHandleWidget();
+  selection_handle_2_->CloseHandleWidget();
+  cursor_handle_->CloseHandleWidget();
+  CHECK(!IsInObserverList());
 }
 
 void TouchSelectionControllerImpl::SelectionChanged() {
@@ -477,11 +457,11 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // TODO(varunjain): Fix this: crbug.com/269003
     dragging_handle_->SetDrawInvisible(!ShouldShowHandleFor(focus));
 
-    if (dragging_handle_ != cursor_handle_.get()) {
+    if (dragging_handle_ != cursor_handle_) {
       // The non-dragging-handle might have recently become visible.
-      EditingHandleView* non_dragging_handle = selection_handle_1_.get();
-      if (dragging_handle_ == selection_handle_1_.get()) {
-        non_dragging_handle = selection_handle_2_.get();
+      EditingHandleView* non_dragging_handle = selection_handle_1_;
+      if (dragging_handle_ == selection_handle_1_) {
+        non_dragging_handle = selection_handle_2_;
         // if handle 1 is being dragged, it is corresponding to the end of
         // selection and the other handle to the start of selection.
         selection_bound_1_ = screen_bound_focus;
@@ -497,28 +477,16 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // Check if there is any selection at all.
     if (screen_bound_anchor.edge_start() == screen_bound_focus.edge_start() &&
         screen_bound_anchor.edge_end() == screen_bound_focus.edge_end()) {
-      selection_handle_1_->SetWidgetVisible(false, false);
-      selection_handle_2_->SetWidgetVisible(false, false);
-      SetHandleBound(cursor_handle_.get(), anchor, screen_bound_anchor_clipped);
+      selection_handle_1_->SetWidgetVisible(false);
+      selection_handle_2_->SetWidgetVisible(false);
+      SetHandleBound(cursor_handle_, anchor, screen_bound_anchor_clipped);
       return;
     }
 
-    cursor_handle_->SetWidgetVisible(false, false);
-    SetHandleBound(selection_handle_1_.get(), anchor,
-                   screen_bound_anchor_clipped);
-    SetHandleBound(selection_handle_2_.get(), focus,
-                   screen_bound_focus_clipped);
+    cursor_handle_->SetWidgetVisible(false);
+    SetHandleBound(selection_handle_1_, anchor, screen_bound_anchor_clipped);
+    SetHandleBound(selection_handle_2_, focus, screen_bound_focus_clipped);
   }
-}
-
-bool TouchSelectionControllerImpl::IsHandleDragInProgress() {
-  return !!dragging_handle_;
-}
-
-void TouchSelectionControllerImpl::HideHandles(bool quick) {
-  selection_handle_1_->SetWidgetVisible(false, quick);
-  selection_handle_2_->SetWidgetVisible(false, quick);
-  cursor_handle_->SetWidgetVisible(false, quick);
 }
 
 void TouchSelectionControllerImpl::ShowQuickMenuImmediatelyForTesting() {
@@ -543,15 +511,15 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   gfx::Point drag_pos_in_client = drag_pos;
   ConvertPointToClientView(dragging_handle_, &drag_pos_in_client);
 
-  if (dragging_handle_ == cursor_handle_.get()) {
+  if (dragging_handle_ == cursor_handle_) {
     client_view_->MoveCaretTo(drag_pos_in_client);
     return;
   }
 
   // Find the stationary selection handle.
-  gfx::SelectionBound anchor_bound =
-      selection_handle_1_.get() == dragging_handle_ ? selection_bound_2_
-                                                    : selection_bound_1_;
+  gfx::SelectionBound anchor_bound = selection_handle_1_ == dragging_handle_
+                                         ? selection_bound_2_
+                                         : selection_bound_1_;
 
   // Find selection end points in client_view's coordinate system.
   gfx::Point p2 = anchor_bound.edge_start_rounded();
@@ -575,7 +543,7 @@ void TouchSelectionControllerImpl::SetHandleBound(
     EditingHandleView* handle,
     const gfx::SelectionBound& bound,
     const gfx::SelectionBound& bound_in_screen) {
-  handle->SetWidgetVisible(ShouldShowHandleFor(bound), false);
+  handle->SetWidgetVisible(ShouldShowHandleFor(bound));
   handle->SetBoundInScreen(bound_in_screen, handle->IsWidgetVisible());
 }
 
@@ -750,12 +718,12 @@ gfx::Rect TouchSelectionControllerImpl::GetExpectedHandleBounds(
   return GetSelectionWidgetBounds(bound);
 }
 
-WidgetDelegateView* TouchSelectionControllerImpl::GetHandle1View() {
-  return selection_handle_1_.get();
+View* TouchSelectionControllerImpl::GetHandle1View() {
+  return selection_handle_1_;
 }
 
-WidgetDelegateView* TouchSelectionControllerImpl::GetHandle2View() {
-  return selection_handle_2_.get();
+View* TouchSelectionControllerImpl::GetHandle2View() {
+  return selection_handle_2_;
 }
 
 }  // namespace views

@@ -19,6 +19,7 @@
 namespace content {
 
 class BrowserAccessibility;
+class DumpAccessibilityTestHelper;
 
 // Base class for an accessibility browsertest that takes an HTML file as
 // input, loads it into a tab, dumps some accessibility data in text format,
@@ -58,8 +59,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   // Add the default filters that are applied to all tests.
   virtual void AddDefaultFilters(
-      std::vector<AccessibilityTreeFormatter::PropertyFilter>*
-          property_filters) = 0;
+      std::vector<ui::AXPropertyFilter>* property_filters) = 0;
 
   // This gets called if the diff didn't match; the test can print
   // additional useful info.
@@ -75,7 +75,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   // Dump the whole accessibility tree, without applying any filters,
   // and return it as a string.
-  base::string16 DumpUnfilteredAccessibilityTreeAsString();
+  std::string DumpUnfilteredAccessibilityTreeAsString();
 
   // Parse the test html file and parse special directives, usually
   // beginning with an '@' and inside an HTML comment, that control how the
@@ -96,11 +96,14 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   // indicating that the test is done, and this framework will wait for that
   // string to appear before comparing the results. There can be multiple
   // @WAIT-FOR: directives.
-  void ParseHtmlForExtraDirectives(const std::string& test_html,
-                                   std::vector<std::string>* wait_for,
-                                   std::vector<std::string>* execute,
-                                   std::vector<std::string>* run_until,
-                                   std::vector<std::string>* default_action_on);
+  void ParseHtmlForExtraDirectives(
+      const DumpAccessibilityTestHelper& test_helper,
+      const std::string& test_html,
+      std::vector<std::string>* no_load_expected,
+      std::vector<std::string>* wait_for,
+      std::vector<std::string>* execute,
+      std::vector<std::string>* run_until,
+      std::vector<std::string>* default_action_on);
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
@@ -116,17 +119,17 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   // The default property filters plus the property filters loaded from the test
   // file.
-  std::vector<AccessibilityTreeFormatter::PropertyFilter> property_filters_;
+  std::vector<ui::AXPropertyFilter> property_filters_;
 
   // The node filters loaded from the test file.
-  std::vector<AccessibilityTreeFormatter::NodeFilter> node_filters_;
+  std::vector<ui::AXNodeFilter> node_filters_;
 
   // The current tree-formatter and event-recorder factories.
   AccessibilityTreeFormatter::FormatterFactory formatter_factory_;
   AccessibilityEventRecorder::EventRecorderFactory event_recorder_factory_;
 
-  // The current AccessibilityTreeFormatter.
-  std::unique_ptr<AccessibilityTreeFormatter> formatter_;
+  // The current AXTreeFormatter.
+  std::unique_ptr<ui::AXTreeFormatter> formatter_;
 
   // Whether we should enable accessibility after navigating to the page,
   // otherwise we enable it first.
@@ -139,6 +142,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
                                           const std::string& name);
 
   void WaitForAXTreeLoaded(WebContentsImpl* web_contents,
+                           const std::vector<std::string>& no_load_expected,
                            const std::vector<std::string>& wait_for);
 };
 

@@ -99,9 +99,11 @@ bool RunTest(const DeviceCertTest& test_case) {
   std::unique_ptr<TrustStore> crl_trust_store;
   std::unique_ptr<TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
-    crl_trust_store = testing::CreateTrustStoreFromPemFile(
+    crl_trust_store = std::make_unique<TrustStore>();
+    cast_trust_store = std::make_unique<TrustStore>();
+    *crl_trust_store = TrustStore::CreateInstanceFromPemFile(
         GetSpecificTestDataPath() + "certificates/cast_crl_test_root_ca.pem");
-    cast_trust_store = testing::CreateTrustStoreFromPemFile(
+    *cast_trust_store = TrustStore::CreateInstanceFromPemFile(
         GetSpecificTestDataPath() + "certificates/cast_test_root_ca.pem");
 
     EXPECT_FALSE(crl_trust_store->certs.empty());

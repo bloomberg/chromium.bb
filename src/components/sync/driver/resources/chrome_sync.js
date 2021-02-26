@@ -42,28 +42,14 @@ cr.define('chrome.sync', function() {
   }
 
   /**
-   * Registers to receive a stream of events through
-   * chrome.sync.dispatchEvent().
+   * Requests the sync state, which is sent via onAboutInfoUpdated and
+   * onEntityCountsUpdated events. New events will be emitted whenever the
+   * state changes.
    */
-  function registerForEvents() {
-    chrome.send('registerForEvents');
+  function requestDataAndRegisterForUpdates() {
+    chrome.send('requestDataAndRegisterForUpdates');
   }
 
-  /**
-   * Registers to receive a stream of status counter update events
-   * chrome.sync.dispatchEvent().
-   */
-  function registerForPerTypeCounters() {
-    chrome.send('registerForPerTypeCounters');
-  }
-
-  /**
-   * Asks the browser to refresh our snapshot of sync state. Should result
-   * in an onAboutInfoUpdated event being emitted.
-   */
-  function requestUpdatedAboutInfo() {
-    chrome.send('requestUpdatedAboutInfo');
-  }
 
   /**
    * Asks the browser to send us the list of registered types. Should result
@@ -118,14 +104,14 @@ cr.define('chrome.sync', function() {
   }
 
   /**
-   * Triggers a RequestStop(KEEP_DATA) call on the SyncService.
+   * Stops the SyncService while keeping the sync data around.
    */
   function requestStopKeepData() {
     chrome.send('requestStopKeepData');
   }
 
   /**
-   * Triggers a RequestStop(CLEAR_DATA) call on the SyncService.
+   * Stops the SyncService and clears the sync data.
    */
   function requestStopClearData() {
     chrome.send('requestStopClearData');
@@ -184,9 +170,7 @@ cr.define('chrome.sync', function() {
     events: document.createElement('div'),
     getAllNodes: getAllNodes,
     getAllNodesCallback: getAllNodesCallback,
-    registerForEvents: registerForEvents,
-    registerForPerTypeCounters: registerForPerTypeCounters,
-    requestUpdatedAboutInfo: requestUpdatedAboutInfo,
+    requestDataAndRegisterForUpdates: requestDataAndRegisterForUpdates,
     requestIncludeSpecificsInitialState: requestIncludeSpecificsInitialState,
     requestListOfTypes: requestListOfTypes,
     requestUserEventsVisibility: requestUserEventsVisibility,

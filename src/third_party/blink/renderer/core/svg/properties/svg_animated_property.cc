@@ -58,7 +58,7 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() = default;
 
-void SVGAnimatedPropertyBase::Trace(Visitor* visitor) {
+void SVGAnimatedPropertyBase::Trace(Visitor* visitor) const {
   visitor->Trace(context_element_);
 }
 
@@ -79,8 +79,7 @@ void SVGAnimatedPropertyBase::BaseValueChanged() {
   DCHECK(context_element_);
   DCHECK(attribute_name_ != QualifiedName::Null());
   base_value_needs_synchronization_ = true;
-  context_element_->InvalidateSVGAttributes();
-  context_element_->SvgAttributeBaseValChanged(attribute_name_);
+  context_element_->BaseValueChanged(*this);
 }
 
 void SVGAnimatedPropertyBase::EnsureAnimValUpdated() {

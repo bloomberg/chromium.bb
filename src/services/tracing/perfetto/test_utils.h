@@ -144,7 +144,7 @@ class MockConsumer : public perfetto::Consumer {
   // perfetto::Consumer implementation
   void OnConnect() override;
   void OnDisconnect() override;
-  void OnTracingDisabled() override;
+  void OnTracingDisabled(const std::string& error) override;
 
   void OnTraceData(std::vector<perfetto::TracePacket> packets,
                    bool has_more) override;
@@ -224,6 +224,31 @@ class MockProducer {
   std::unique_ptr<TestDataSource> data_source_;
   std::unique_ptr<MockProducerClient::Handle> producer_client_;
   std::unique_ptr<MockProducerHost> producer_host_;
+};
+
+// A proxy task runner which can be dynamically pointed to route tasks into a
+// different task runner.
+class RebindableTaskRunner : public base::SequencedTaskRunner {
+ public:
+  RebindableTaskRunner();
+
+  void set_task_runner(scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    task_runner_ = task_runner;
+  }
+
+  // base::SequecedTaskRunner implementation.
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override;
+  bool RunsTasksInCurrentSequence() const override;
+
+ private:
+  ~RebindableTaskRunner() override;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace tracing

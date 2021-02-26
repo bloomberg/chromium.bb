@@ -10,14 +10,15 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -42,12 +43,13 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -124,6 +126,7 @@ void WebAppsChromeOs::LaunchAppWithIntent(
 }
 
 void WebAppsChromeOs::Uninstall(const std::string& app_id,
+                                apps::mojom::UninstallSource uninstall_source,
                                 bool clear_site_data,
                                 bool report_abuse) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
@@ -134,8 +137,12 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
   DCHECK(provider());
   DCHECK(provider()->install_finalizer().CanUserUninstallExternalApp(app_id));
 
+  auto origin = url::Origin::Create(web_app->start_url());
+  // TODO(crbug.com/1104696): Update web_app::InstallFinalizer to accommodate
+  // when install_source == apps::mojom::UninstallSource::kMigration.
   provider()->install_finalizer().UninstallExternalAppByUser(app_id,
                                                              base::DoNothing());
+  web_app = nullptr;
 
   if (!clear_site_data) {
     // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
@@ -152,8 +159,7 @@ void WebAppsChromeOs::Uninstall(const std::string& app_id,
                                return browser_context;
                              },
                              base::Unretained(profile())),
-                         url::Origin::Create(web_app->launch_url()),
-                         kClearCookies, kClearStorage, kClearCache,
+                         origin, kClearCookies, kClearStorage, kClearCache,
                          kAvoidClosingConnections, base::DoNothing());
 }
 
@@ -204,7 +210,7 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
   if (!is_system_web_app) {
     CreateOpenNewSubmenu(
         menu_type,
-        web_app->display_mode() == web_app::DisplayMode::kStandalone
+        web_app->user_display_mode() == web_app::DisplayMode::kStandalone
             ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
             : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
         &menu_items);
@@ -227,12 +233,21 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
   std::move(callback).Run(std::move(menu_items));
 }
 
+void WebAppsChromeOs::ExecuteContextMenuCommand(const std::string& app_id,
+                                                int command_id,
+                                                const std::string& shortcut_id,
+                                                int64_t display_id) {
+  // TODO(crbug.com/1129721) Implement it for shortcut menu in web apps.
+  NOTIMPLEMENTED();
+}
+
 void WebAppsChromeOs::OnWebAppUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
     return;
   }
 
+  app_notifications_.RemoveNotificationsForApp(app_id);
   paused_apps_.MaybeRemoveApp(app_id);
 
   WebAppsBase::OnWebAppUninstalled(app_id);
@@ -292,21 +307,18 @@ void WebAppsChromeOs::OnNotificationDisplayed(
 }
 
 void WebAppsChromeOs::OnNotificationClosed(const std::string& notification_id) {
-  const std::string& app_id =
-      app_notifications_.GetAppIdForNotification(notification_id);
-  if (app_id.empty()) {
-    return;
-  }
-
-  const web_app::WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  auto app_ids = app_notifications_.GetAppIdsForNotification(notification_id);
+  if (app_ids.empty()) {
     return;
   }
 
   app_notifications_.RemoveNotification(notification_id);
-  Publish(app_notifications_.GetAppWithHasBadgeStatus(
-              apps::mojom::AppType::kWeb, app_id),
-          subscribers());
+
+  for (const auto& app_id : app_ids) {
+    Publish(app_notifications_.GetAppWithHasBadgeStatus(
+                apps::mojom::AppType::kWeb, app_id),
+            subscribers());
+  }
 }
 
 void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
@@ -314,17 +326,18 @@ void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
   notification_display_service_.Remove(service);
 }
 
-void WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
+bool WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
                                            const std::string& notification_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
-    return;
+    return false;
   }
 
   app_notifications_.AddNotification(app_id, notification_id);
   Publish(app_notifications_.GetAppWithHasBadgeStatus(
               apps::mojom::AppType::kWeb, app_id),
           subscribers());
+  return true;
 }
 
 void WebAppsChromeOs::MaybeAddWebPageNotifications(
@@ -348,9 +361,13 @@ void WebAppsChromeOs::MaybeAddWebPageNotifications(
     // under the origin url.
     DCHECK(provider());
     auto app_ids = provider()->registrar().FindAppsInScope(url);
+    int count = 0;
     for (const auto& app_id : app_ids) {
-      MaybeAddNotification(app_id, notification.id());
+      if (MaybeAddNotification(app_id, notification.id())) {
+        ++count;
+      }
     }
+    RecordAppsPerNotification(count);
   }
 }
 
@@ -366,6 +383,9 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const web_app::WebApp* web_app,
   app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused, is_disabled));
 
+  app->has_badge = app_notifications_.HasNotification(web_app->app_id())
+                       ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
   return app;
@@ -375,23 +395,24 @@ IconEffects WebAppsChromeOs::GetIconEffects(const web_app::WebApp* web_app,
                                             bool paused,
                                             bool is_disabled) {
   IconEffects icon_effects = IconEffects::kNone;
-  icon_effects =
-      static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    icon_effects |= web_app->is_generated_icon()
+                        ? IconEffects::kCrOsStandardMask
+                        : IconEffects::kCrOsStandardIcon;
+  } else {
+    icon_effects |= IconEffects::kResizeAndPad;
+  }
   if (extensions::util::ShouldApplyChromeBadgeToWebApp(profile(),
                                                        web_app->app_id())) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kChromeBadge);
+    icon_effects |= IconEffects::kChromeBadge;
   }
-  icon_effects = static_cast<IconEffects>(icon_effects |
-                                          WebAppsBase::GetIconEffects(web_app));
+  icon_effects |= WebAppsBase::GetIconEffects(web_app);
   if (paused) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
+    icon_effects |= IconEffects::kPaused;
   }
 
   if (is_disabled) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
+    icon_effects |= IconEffects::kBlocked;
   }
 
   return icon_effects;

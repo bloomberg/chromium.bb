@@ -4,15 +4,22 @@
 
 #include "chrome/browser/password_manager/password_store_utils.h"
 
-#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 
+namespace {
+using password_manager::metrics_util::IsPasswordChanged;
+using password_manager::metrics_util::IsUsernameChanged;
+}  // namespace
+
+// TODO(crbug.com/1136815): Drop this, once Android no longer use it.
 void EditSavedPasswords(
     Profile* profile,
-    const base::span<const std::unique_ptr<autofill::PasswordForm>>
+    const base::span<const std::unique_ptr<password_manager::PasswordForm>>
         forms_to_change,
     const base::string16& new_username,
     const base::Optional<base::string16>& new_password) {
@@ -20,8 +27,10 @@ void EditSavedPasswords(
 
   const std::string signon_realm = forms_to_change[0]->signon_realm;
 
-  const bool username_changed =
-      new_username != forms_to_change[0]->username_value;
+  IsUsernameChanged username_changed(new_username !=
+                                     forms_to_change[0]->username_value);
+  IsPasswordChanged password_changed(new_password !=
+                                     forms_to_change[0]->password_value);
 
   // An updated username implies a change in the primary key, thus we need to
   // make sure to call the right API. Update every entry in the equivalence
@@ -33,7 +42,7 @@ void EditSavedPasswords(
     if (!store) {
       continue;
     }
-    autofill::PasswordForm new_form = *old_form;
+    password_manager::PasswordForm new_form = *old_form;
     new_form.username_value = new_username;
 
     // The desktop logic allows to edit usernames even in cases when the
@@ -47,6 +56,8 @@ void EditSavedPasswords(
       store->UpdateLogin(new_form);
     }
   }
+  password_manager::metrics_util::LogPasswordEditResult(username_changed,
+                                                        password_changed);
 }
 
 scoped_refptr<password_manager::PasswordStore> GetPasswordStore(

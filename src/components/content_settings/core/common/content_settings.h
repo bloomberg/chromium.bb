@@ -12,6 +12,7 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -76,14 +77,11 @@ struct RendererContentSettingRules {
   ~RendererContentSettingRules();
   ContentSettingsForOneType image_rules;
   ContentSettingsForOneType script_rules;
-  ContentSettingsForOneType client_hints_rules;
   ContentSettingsForOneType popup_redirect_rules;
   ContentSettingsForOneType mixed_content_rules;
 };
 
 namespace content_settings {
-
-typedef std::string ResourceIdentifier;
 
 // Enum containing the various source for content settings. Settings can be
 // set by policy, extension, the user or by the custodian of a supervised user.
@@ -106,6 +104,7 @@ struct SettingInfo {
   SettingSource source;
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
+  SessionModel session_model;
 };
 
 }  // namespace content_settings

@@ -226,78 +226,72 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
 Frame* CreateNewWindow(LocalFrame& opener_frame,
                        FrameLoadRequest& request,
                        const AtomicString& frame_name) {
+  LocalDOMWindow& opener_window = *opener_frame.DomWindow();
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
-         opener_frame.GetDocument()->Url().IsEmpty());
+         opener_window.Url().IsEmpty());
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 
-  // Exempting window.open() from this check here is necessary to support a
-  // special policy that will be removed in Chrome 88.
-  // See https://crbug.com/937569
-  if (!request.IsWindowOpen() &&
-      opener_frame.GetDocument()->PageDismissalEventBeingDispatched() !=
-          Document::kNoDismissal) {
+  if (opener_window.document()->PageDismissalEventBeingDispatched() !=
+      Document::kNoDismissal) {
     return nullptr;
   }
 
   request.SetFrameType(mojom::RequestContextFrameType::kAuxiliary);
 
   const KURL& url = request.GetResourceRequest().Url();
-  if (url.ProtocolIsJavaScript() &&
-      opener_frame.DomWindow()->GetContentSecurityPolicy() &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(opener_frame.DomWindow())) {
+  auto* csp_for_world = opener_window.GetContentSecurityPolicyForCurrentWorld();
+  if (url.ProtocolIsJavaScript() && csp_for_world) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-    if (!opener_frame.DomWindow()->GetContentSecurityPolicy()->AllowInline(
+    if (!csp_for_world->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
-            opener_frame.GetDocument()->Url(), OrdinalNumber())) {
+            opener_window.Url(), OrdinalNumber())) {
       return nullptr;
     }
   }
 
-  if (!opener_frame.GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    opener_frame.GetDocument()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kSecurity,
-            mojom::ConsoleMessageLevel::kError,
-            "Not allowed to load local resource: " + url.ElidedString()));
+  if (!opener_window.GetSecurityOrigin()->CanDisplay(url)) {
+    opener_window.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Not allowed to load local resource: " + url.ElidedString()));
     return nullptr;
   }
 
   const WebWindowFeatures& features = request.GetWindowFeatures();
   request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
-  probe::WindowOpen(opener_frame.GetDocument(), url, frame_name, features,
+  probe::WindowOpen(&opener_window, url, frame_name, features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
 
   // Sandboxed frames cannot open new auxiliary browsing contexts.
-  if (opener_frame.GetDocument()->IsSandboxed(
+  if (opener_window.IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kPopups)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    opener_frame.GetDocument()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kSecurity,
-            mojom::ConsoleMessageLevel::kError,
-            "Blocked opening '" + url.ElidedString() +
-                "' in a new window because the request was made in a sandboxed "
-                "frame whose 'allow-popups' permission is not set."));
+    opener_window.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Blocked opening '" + url.ElidedString() +
+            "' in a new window because the request was made in a sandboxed "
+            "frame whose 'allow-popups' permission is not set."));
     return nullptr;
   }
 
-  bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
-      network::mojom::blink::WebSandboxFlags::
-          kPropagatesToAuxiliaryBrowsingContexts);
+  bool propagate_sandbox =
+      opener_window.IsSandboxed(network::mojom::blink::WebSandboxFlags::
+                                    kPropagatesToAuxiliaryBrowsingContexts);
   network::mojom::blink::WebSandboxFlags sandbox_flags =
-      propagate_sandbox ? opener_frame.GetDocument()->GetSandboxFlags()
+      propagate_sandbox ? opener_window.GetSandboxFlags()
                         : network::mojom::blink::WebSandboxFlags::kNone;
-  bool not_sandboxed = opener_frame.GetDocument()->GetSandboxFlags() ==
+  bool not_sandboxed = opener_window.GetSandboxFlags() ==
                        network::mojom::blink::WebSandboxFlags::kNone;
-  FeaturePolicy::FeatureState opener_feature_state =
-      (not_sandboxed || propagate_sandbox) ? opener_frame.GetSecurityContext()
-                                                 ->GetFeaturePolicy()
+  FeaturePolicyFeatureState opener_feature_state =
+      (not_sandboxed || propagate_sandbox) ? opener_window.GetSecurityContext()
+                                                 .GetFeaturePolicy()
                                                  ->GetFeatureState()
-                                           : FeaturePolicy::FeatureState();
+                                           : FeaturePolicyFeatureState();
 
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();
@@ -309,33 +303,27 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   CoreInitializer::GetInstance().CloneSessionStorage(old_page,
                                                      new_namespace_id);
 
+  bool consumed_user_gesture = false;
   Page* page = old_page->GetChromeClient().CreateWindow(
       &opener_frame, request, frame_name, features, sandbox_flags,
-      opener_feature_state, new_namespace_id);
+      opener_feature_state, new_namespace_id, consumed_user_gesture);
   if (!page)
     return nullptr;
-
-  auto* new_local_frame = DynamicTo<LocalFrame>(page->MainFrame());
-  if (request.GetShouldSendReferrer() == kMaybeSendReferrer) {
-    // TODO(japhet): Does network::mojom::ReferrerPolicy need to be proagated
-    // for RemoteFrames?
-    if (new_local_frame) {
-      new_local_frame->GetDocument()->SetReferrerPolicy(
-          opener_frame.GetDocument()->GetReferrerPolicy());
-    }
-  }
 
   if (page == old_page) {
     Frame* frame = &opener_frame.Tree().Top();
     if (!opener_frame.CanNavigate(*frame))
       return nullptr;
     if (!features.noopener)
-      frame->Client()->SetOpener(&opener_frame);
+      frame->SetOpener(&opener_frame);
     return frame;
   }
 
   DCHECK(page->MainFrame());
   LocalFrame& frame = *To<LocalFrame>(page->MainFrame());
+
+  if (request.GetShouldSendReferrer() == kMaybeSendReferrer)
+    frame.DomWindow()->SetReferrerPolicy(opener_window.GetReferrerPolicy());
 
   page->SetWindowFeatures(features);
 
@@ -351,9 +339,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (features.height_set)
     window_rect.SetHeight(features.height);
 
-  page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
-  page->GetChromeClient().Show(request.GetNavigationPolicy());
-
+  IntRect rect = page->GetChromeClient().CalculateWindowRectWithAdjustment(
+      window_rect, frame, opener_frame);
+  page->GetChromeClient().Show(opener_frame.GetFrameToken(),
+                               request.GetNavigationPolicy(), rect,
+                               consumed_user_gesture);
   MaybeLogWindowOpen(opener_frame);
   return &frame;
 }

@@ -13,12 +13,14 @@ import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 
 import javax.inject.Named;
@@ -85,5 +87,10 @@ public class ChromeAppModule {
     @Provides
     public SystemNightModeMonitor provideSystemNightModeMonitor() {
         return SystemNightModeMonitor.getInstance();
+    }
+
+    @Provides
+    public AsyncTabParamsManager provideAsyncTabParamsManager() {
+        return AsyncTabParamsManagerSingleton.getInstance();
     }
 }

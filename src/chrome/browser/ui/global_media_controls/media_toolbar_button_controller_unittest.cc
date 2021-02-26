@@ -73,6 +73,7 @@ class MockMediaDialogDelegate : public MediaDialogDelegate {
   MOCK_METHOD2(PopOut,
                std::unique_ptr<OverlayMediaNotification>(const std::string& id,
                                                          gfx::Rect bounds));
+  MOCK_METHOD0(HideMediaDialog, void());
 
  private:
   MediaNotificationService* service_;
@@ -87,7 +88,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   MediaToolbarButtonControllerTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
                           base::test::TaskEnvironment::MainThreadType::UI),
-        service_(&profile_) {}
+        service_(&profile_, false) {}
   ~MediaToolbarButtonControllerTest() override = default;
 
   void SetUp() override {

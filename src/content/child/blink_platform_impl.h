@@ -29,18 +29,16 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  public:
   BlinkPlatformImpl();
   explicit BlinkPlatformImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~BlinkPlatformImpl() override;
 
-  // Platform methods (partial implementation):
+  // blink::Platform implementation.
   blink::WebThemeEngine* ThemeEngine() override;
   bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
-
+  bool IsURLSavableForSavableResource(const blink::WebURL& url) override;
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;
   void RecordAction(const blink::UserMetricsAction&) override;
-
   blink::WebData GetDataResource(int resource_id,
                                  ui::ScaleFactor scale_factor) override;
   blink::WebData UncompressDataResource(int resource_id) override;
@@ -52,18 +50,14 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
-  bool AllowScriptExtensionForServiceWorker(
-      const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
   blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker()
       override;
-
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
       const override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   const scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_proxy_;

@@ -5,6 +5,8 @@
 # found in the LICENSE file.
 
 import argparse
+from collections import defaultdict
+import logging
 import os
 import re
 import shutil
@@ -12,6 +14,8 @@ import sys
 import tempfile
 import zipfile
 
+import dex
+import dex_jdk_libs
 from util import build_utils
 from util import diff_utils
 
@@ -25,97 +29,27 @@ _API_LEVEL_VERSION_CODE = [
     (27, 'OMR1'),
     (28, 'P'),
     (29, 'Q'),
+    (30, 'R'),
 ]
-_CHECKDISCARD_RE = re.compile(r'-checkdiscard[\s\S]*?}')
-_DIRECTIVE_RE = re.compile(r'^-', re.MULTILINE)
-
-
-class _ProguardOutputFilter(object):
-  """ProGuard outputs boring stuff to stdout (ProGuard version, jar path, etc)
-  as well as interesting stuff (notes, warnings, etc). If stdout is entirely
-  boring, this class suppresses the output.
-  """
-
-  IGNORE_RE = re.compile(
-      r'Pro.*version|Note:|Reading|Preparing|Printing|ProgramClass:|Searching|'
-      r'jar \[|\d+ class path entries checked')
-
-  def __init__(self):
-    self._last_line_ignored = False
-    self._ignore_next_line = False
-
-  def __call__(self, output):
-    ret = []
-    for line in output.splitlines(True):
-      if self._ignore_next_line:
-        self._ignore_next_line = False
-        continue
-
-      if '***BINARY RUN STATS***' in line:
-        self._last_line_ignored = True
-        self._ignore_next_line = True
-      elif not line.startswith(' '):
-        self._last_line_ignored = bool(self.IGNORE_RE.match(line))
-      elif 'You should check if you need to specify' in line:
-        self._last_line_ignored = True
-
-      if not self._last_line_ignored:
-        ret.append(line)
-    return ''.join(ret)
-
-
-class ProguardProcessError(build_utils.CalledProcessError):
-  """Wraps CalledProcessError and enables adding extra output to failures."""
-
-  def __init__(self, cpe, output):
-    super(ProguardProcessError, self).__init__(cpe.cwd, cpe.args,
-                                               cpe.output + output)
-
-
-def _ValidateAndFilterCheckDiscards(configs):
-  """Check for invalid -checkdiscard rules and filter out -checkdiscards.
-
-  -checkdiscard assertions often don't work for test APKs and are not actually
-  helpful. Additionally, test APKs may pull in dependency proguard configs which
-  makes filtering out these rules difficult in GN. Instead, we enforce that
-  configs that use -checkdiscard do not contain any other rules so that we can
-  filter out the undesired -checkdiscard rule files here.
-
-  Args:
-    configs: List of paths to proguard configuration files.
-
-  Returns:
-    A list of configs with -checkdiscard-containing-configs removed.
-  """
-  valid_configs = []
-  for config_path in configs:
-    with open(config_path) as f:
-      contents = f.read()
-      if _CHECKDISCARD_RE.search(contents):
-        contents = _CHECKDISCARD_RE.sub('', contents)
-        if _DIRECTIVE_RE.search(contents):
-          raise Exception('Proguard configs containing -checkdiscards cannot '
-                          'contain other directives so that they can be '
-                          'disabled in test APKs ({}).'.format(config_path))
-      else:
-        valid_configs.append(config_path)
-
-  return valid_configs
 
 
 def _ParseOptions():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
-  group = parser.add_mutually_exclusive_group(required=True)
-  group.add_argument('--proguard-path', help='Path to the proguard.jar to use.')
-  group.add_argument('--r8-path', help='Path to the R8.jar to use.')
+  parser.add_argument('--r8-path',
+                      required=True,
+                      help='Path to the R8.jar to use.')
   parser.add_argument(
       '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
   parser.add_argument('--input-paths',
                       action='append',
                       required=True,
                       help='GN-list of .jar files to optimize.')
+  parser.add_argument('--desugar-jdk-libs-jar',
+                      help='Path to desugar_jdk_libs.jar.')
+  parser.add_argument('--desugar-jdk-libs-configuration-jar',
+                      help='Path to desugar_jdk_libs_configuration.jar.')
   parser.add_argument('--output-path', help='Path to the generated .jar file.')
   parser.add_argument(
       '--proguard-configs',
@@ -131,26 +65,6 @@ def _ParseOptions():
   parser.add_argument(
       '--extra-mapping-output-paths',
       help='GN-list of additional paths to copy output mapping file to.')
-  parser.add_argument(
-      '--output-config',
-      help='Path to write the merged ProGuard config file to.')
-  parser.add_argument(
-      '--expected-configs-file',
-      help='Path to a file containing the expected merged ProGuard configs')
-  parser.add_argument(
-      '--proguard-expectations-failure-file',
-      help='Path to file written to if the expected merged ProGuard configs '
-      'differ from the generated merged ProGuard configs.')
-  parser.add_argument(
-      '--fail-on-expectations',
-      action="store_true",
-      help='When passed fails the build on proguard config expectation '
-      'mismatches.')
-  parser.add_argument(
-      '--only-verify-expectations',
-      action='store_true',
-      help='If passed only verifies that the proguard configs match '
-      'expectations but does not do any optimization with proguard/R8.')
   parser.add_argument(
       '--classpath',
       action='append',
@@ -171,9 +85,9 @@ def _ParseOptions():
       action='store_true',
       help='Disable the outlining optimization provided by R8.')
   parser.add_argument(
-      '--disable-checkdiscard',
-      action='store_true',
-      help='Disable -checkdiscard directives')
+    '--disable-checks',
+    action='store_true',
+    help='Disable -checkdiscard directives and missing symbols check')
   parser.add_argument('--sourcefile', help='Value for source file attribute')
   parser.add_argument(
       '--force-enable-assertions',
@@ -194,30 +108,32 @@ def _ParseOptions():
       dest='feature_names',
       help='The name of the feature module.')
   parser.add_argument(
+      '--uses-split',
+      action='append',
+      help='List of name pairs separated by : mapping a feature module to a '
+      'dependent feature module.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
+  parser.add_argument('--show-desugar-default-interface-warnings',
+                      action='store_true',
+                      help='Enable desugaring warnings.')
+  parser.add_argument(
       '--stamp',
       help='File to touch upon success. Mutually exclusive with --output-path')
+  parser.add_argument('--desugared-library-keep-rule-output',
+                      help='Path to desugared library keep rule output file.')
 
+  diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
 
   if options.feature_names:
     if options.output_path:
       parser.error('Feature splits cannot specify an output in GN.')
-    if not options.stamp:
+    if not options.actual_file and not options.stamp:
       parser.error('Feature splits require a stamp file as output.')
   elif not options.output_path:
     parser.error('Output path required when feature splits aren\'t used')
-
-  if options.main_dex_rules_path and not options.r8_path:
-    parser.error('R8 must be enabled to pass main dex rules.')
-
-  if options.expected_configs_file and not options.output_config:
-    parser.error('--expected-configs-file requires --output-config')
-
-  if options.proguard_path and options.disable_outlining:
-    parser.error('--disable-outlining requires --r8-path')
-
-  if options.only_verify_expectations and not options.stamp:
-    parser.error('--only-verify-expectations requires --stamp')
 
   options.classpath = build_utils.ParseGnList(options.classpath)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
@@ -236,28 +152,17 @@ def _ParseOptions():
         build_utils.ParseGnList(x) for x in options.feature_jars
     ]
 
+  split_map = {}
+  if options.uses_split:
+    for split_pair in options.uses_split:
+      child, parent = split_pair.split(':')
+      for name in (child, parent):
+        if name not in options.feature_names:
+          parser.error('"%s" referenced in --uses-split not present.' % name)
+      split_map[child] = parent
+  options.uses_split = split_map
+
   return options
-
-
-def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path,
-                           fail_on_mismatch):
-  msg = diff_utils.DiffFileContents(expected_path, actual_path)
-  if not msg:
-    return
-
-  msg_header = """\
-ProGuard flag expectations file needs updating. For details see:
-https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-"""
-  sys.stderr.write(msg_header)
-  sys.stderr.write(msg)
-  if failure_file_path:
-    build_utils.MakeDirectory(os.path.dirname(failure_file_path))
-    with open(failure_file_path, 'w') as f:
-      f.write(msg_header)
-      f.write(msg)
-  if fail_on_mismatch:
-    sys.exit(1)
 
 
 class _DexPathContext(object):
@@ -268,12 +173,18 @@ class _DexPathContext(object):
     self.staging_dir = os.path.join(work_dir, name)
     os.mkdir(self.staging_dir)
 
-  def CreateOutput(self):
+  def CreateOutput(self, has_imported_lib=False, keep_rule_output=None):
     found_files = build_utils.FindInDirectory(self.staging_dir)
     if not found_files:
       raise Exception('Missing dex outputs in {}'.format(self.staging_dir))
 
     if self._final_output_path.endswith('.dex'):
+      if has_imported_lib:
+        raise Exception(
+            'Trying to create a single .dex file, but a dependency requires '
+            'JDK Library Desugaring (which necessitates a second file).'
+            'Refer to %s to see what desugaring was required' %
+            keep_rule_output)
       if len(found_files) != 1:
         raise Exception('Expected exactly 1 dex file output, found: {}'.format(
             '\t'.join(found_files)))
@@ -321,10 +232,16 @@ def _OptimizeWithR8(options,
       base_dex_context = _DexPathContext('base', options.output_path,
                                          options.input_paths, tmp_output)
 
-    cmd = [
-        build_utils.JAVA_PATH,
-        '-jar',
+    cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+        '-Dcom.android.tools.r8.allowTestProguardOptions=1',
+        '-Dcom.android.tools.r8.verticalClassMerging=1',
+    ]
+    if options.disable_outlining:
+      cmd += ['-Dcom.android.tools.r8.disableOutlining=1']
+    cmd += [
+        '-cp',
         options.r8_path,
+        'com.android.tools.r8.R8',
         '--no-data-resources',
         '--output',
         base_dex_context.staging_dir,
@@ -332,8 +249,17 @@ def _OptimizeWithR8(options,
         tmp_mapping_path,
     ]
 
+    if options.disable_checks:
+      # Info level priority logs are not printed by default.
+      cmd += ['--map-diagnostics:CheckDiscardDiagnostic', 'error', 'info']
+
     if options.desugar_jdk_libs_json:
-      cmd += ['--desugared-lib', options.desugar_jdk_libs_json]
+      cmd += [
+          '--desugared-lib',
+          options.desugar_jdk_libs_json,
+          '--desugared-lib-pg-conf-output',
+          options.desugared_library_keep_rule_output,
+      ]
 
     if options.min_api:
       cmd += ['--min-api', options.min_api]
@@ -351,38 +277,74 @@ def _OptimizeWithR8(options,
       for main_dex_rule in options.main_dex_rules_path:
         cmd += ['--main-dex-rules', main_dex_rule]
 
-    module_input_jars = set(base_dex_context.input_paths)
+    base_jars = set(base_dex_context.input_paths)
+    input_path_map = defaultdict(set)
     for feature in feature_contexts:
+      parent = options.uses_split.get(feature.name, feature.name)
+      input_path_map[parent].update(feature.input_paths)
+
+    # If a jar is present in multiple features, it should be moved to the base
+    # module.
+    all_feature_jars = set()
+    for input_paths in input_path_map.values():
+      base_jars.update(all_feature_jars.intersection(input_paths))
+      all_feature_jars.update(input_paths)
+
+    module_input_jars = base_jars.copy()
+    for feature in feature_contexts:
+      input_paths = input_path_map.get(feature.name)
+      # Input paths can be missing for a child feature present in the uses_split
+      # map. These features get their input paths added to the parent, and are
+      # split out later with DexSplitter.
+      if input_paths is None:
+        continue
       feature_input_jars = [
-          p for p in feature.input_paths if p not in module_input_jars
+          p for p in input_paths if p not in module_input_jars
       ]
       module_input_jars.update(feature_input_jars)
-      cmd += [
-          '--feature-jar',
-          feature.staging_dir + ':' + ':'.join(feature_input_jars)
-      ]
+      for in_jar in feature_input_jars:
+        cmd += ['--feature', in_jar, feature.staging_dir]
 
-    cmd += base_dex_context.input_paths
+    cmd += sorted(base_jars)
     # Add any extra input jars to the base module (e.g. desugar runtime).
     extra_jars = set(options.input_paths) - module_input_jars
     cmd += sorted(extra_jars)
 
-    env = os.environ.copy()
-    stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
-    env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
-    if options.disable_outlining:
-      env['_JAVA_OPTIONS'] += ' -Dcom.android.tools.r8.disableOutlining=1'
-
     try:
-      build_utils.CheckOutput(
-          cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+      stderr_filter = dex.CreateStderrFilter(
+          options.show_desugar_default_interface_warnings)
+      logging.debug('Running R8')
+      build_utils.CheckOutput(cmd,
+                              print_stdout=print_stdout,
+                              stderr_filter=stderr_filter,
+                              fail_on_output=options.warnings_as_errors)
     except build_utils.CalledProcessError as err:
-      debugging_link = ('R8 failed. Please see {}.'.format(
+      debugging_link = ('\n\nR8 failed. Please see {}.'.format(
           'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'
           'android/docs/java_optimization.md#Debugging-common-failures\n'))
-      raise ProguardProcessError(err, debugging_link)
+      raise build_utils.CalledProcessError(err.cwd, err.args,
+                                           err.output + debugging_link)
 
-    base_dex_context.CreateOutput()
+    if options.uses_split:
+      _SplitChildFeatures(options, feature_contexts, tmp_dir, tmp_mapping_path,
+                          print_stdout)
+
+    base_has_imported_lib = False
+    if options.desugar_jdk_libs_json:
+      logging.debug('Running L8')
+      existing_files = build_utils.FindInDirectory(base_dex_context.staging_dir)
+      jdk_dex_output = os.path.join(base_dex_context.staging_dir,
+                                    'classes%d.dex' % (len(existing_files) + 1))
+      base_has_imported_lib = dex_jdk_libs.DexJdkLibJar(
+          options.r8_path, options.min_api, options.desugar_jdk_libs_json,
+          options.desugar_jdk_libs_jar,
+          options.desugar_jdk_libs_configuration_jar,
+          options.desugared_library_keep_rule_output, jdk_dex_output,
+          options.warnings_as_errors)
+
+    logging.debug('Collecting ouputs')
+    base_dex_context.CreateOutput(base_has_imported_lib,
+                                  options.desugared_library_keep_rule_output)
     for feature in feature_contexts:
       feature.CreateOutput()
 
@@ -393,78 +355,180 @@ def _OptimizeWithR8(options,
       out_file.writelines(l for l in in_file if not l.startswith('#'))
 
 
-def _OptimizeWithProguard(options,
-                          config_paths,
-                          libraries,
-                          dynamic_config_data,
-                          print_stdout=False):
-  with build_utils.TempDir() as tmp_dir:
-    combined_injars_path = os.path.join(tmp_dir, 'injars.jar')
-    combined_libjars_path = os.path.join(tmp_dir, 'libjars.jar')
-    combined_proguard_configs_path = os.path.join(tmp_dir, 'includes.txt')
-    tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
-    tmp_output_jar = os.path.join(tmp_dir, 'output.jar')
+def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
+  cmd = build_utils.JavaCmd(warnings_as_errors) + [
+      '-cp', r8_path, 'com.android.tools.r8.tracereferences.TraceReferences',
+      '--map-diagnostics:MissingDefinitionsDiagnostic', 'error', 'warning',
+      '--check'
+  ]
 
-    build_utils.MergeZips(combined_injars_path, options.input_paths)
-    build_utils.MergeZips(combined_libjars_path, libraries)
-    with open(combined_proguard_configs_path, 'w') as f:
-      f.write(_CombineConfigs(config_paths, dynamic_config_data))
+  for path in classpath:
+    cmd += ['--lib', path]
+  for path in dex_files:
+    cmd += ['--source', path]
 
-    if options.proguard_path.endswith('.jar'):
-      cmd = [
-          build_utils.JAVA_PATH, '-jar', options.proguard_path, '-include',
-          combined_proguard_configs_path
-      ]
-    else:
-      cmd = [options.proguard_path, '@' + combined_proguard_configs_path]
+  def stderr_filter(stderr):
+    ignored_lines = [
+        # Summary contains warning count, which our filtering makes wrong.
+        'Warning: Tracereferences found',
 
-    cmd += [
-        '-forceprocessing',
-        '-libraryjars',
-        combined_libjars_path,
-        '-injars',
-        combined_injars_path,
-        '-outjars',
-        tmp_output_jar,
-        '-printmapping',
-        tmp_mapping_path,
+        # TODO(agrieve): Create interface jars for these missing classes rather
+        #     than allowlisting here.
+        'dalvik/system',
+        'libcore/io',
+        'sun/misc/Unsafe',
+
+        # Found in: com/facebook/fbui/textlayoutbuilder/StaticLayoutHelper
+        ('android/text/StaticLayout;<init>(Ljava/lang/CharSequence;IILandroid'
+         '/text/TextPaint;ILandroid/text/Layout$Alignment;Landroid/text/'
+         'TextDirectionHeuristic;FFZLandroid/text/TextUtils$TruncateAt;II)V'),
+
+        # Found in
+        # com/google/android/gms/cast/framework/media/internal/ResourceProvider
+        # Missing due to setting "strip_resources = true".
+        'com/google/android/gms/cast/framework/R',
+
+        # Found in com/google/android/gms/common/GoogleApiAvailability
+        # Missing due to setting "strip_drawables = true".
+        'com/google/android/gms/base/R$drawable',
+
+        # Explicictly guarded by try (NoClassDefFoundError) in Flogger's
+        # PlatformProvider.
+        'com/google/common/flogger/backend/google/GooglePlatform',
+        'com/google/common/flogger/backend/system/DefaultPlatform',
+
+        # trichrome_webview_google_bundle contains this missing reference.
+        # TODO(crbug.com/1142530): Fix this missing reference properly.
+        'org/chromium/base/library_loader/NativeLibraries',
+
+        # Currently required when enable_chrome_android_internal=true.
+        'com/google/protos/research/ink/InkEventProto',
+        'ink_sdk/com/google/protobuf/Internal$EnumVerifier',
+        'ink_sdk/com/google/protobuf/MessageLite',
+        'com/google/protobuf/GeneratedMessageLite$GeneratedExtension',
+
+        # Definition and usage in currently unused lens sdk in doubledown.
+        ('com/google/android/apps/gsa/search/shared/service/proto/'
+         'PublicStopClientEvent'),
+
+        # Referenced from GeneratedExtensionRegistryLite.
+        # Exists only for Chrome Modern (not Monochrome nor Trichrome).
+        # TODO(agrieve): Figure out why. Perhaps related to Feed V2.
+        ('com/google/wireless/android/play/playlog/proto/ClientAnalytics$'
+         'ClientInfo'),
+
+        # TODO(agrieve): Exclude these only when use_jacoco_coverage=true.
+        'Ljava/lang/instrument/ClassFileTransformer',
+        'Ljava/lang/instrument/IllegalClassFormatException',
+        'Ljava/lang/instrument/Instrumentation',
+        'Ljava/lang/management/ManagementFactory',
+        'Ljavax/management/MBeanServer',
+        'Ljavax/management/ObjectInstance',
+        'Ljavax/management/ObjectName',
+        'Ljavax/management/StandardMBean',
     ]
 
-    # Warning: and Error: are sent to stderr, but messages and Note: are sent
-    # to stdout.
-    stdout_filter = None
-    stderr_filter = None
-    if print_stdout:
-      stdout_filter = _ProguardOutputFilter()
-      stderr_filter = _ProguardOutputFilter()
-    build_utils.CheckOutput(
-        cmd,
-        print_stdout=True,
-        print_stderr=True,
-        stdout_filter=stdout_filter,
-        stderr_filter=stderr_filter)
+    had_unfiltered_items = '  ' in stderr
+    stderr = build_utils.FilterLines(
+        stderr, '|'.join(re.escape(x) for x in ignored_lines))
+    if stderr:
+      if '  ' in stderr:
+        stderr = """
+DEX contains references to non-existent symbols after R8 optimization.
+Tip: Build with:
+        is_java_debug=false
+        treat_warnings_as_errors=false
+        enable_proguard_obfuscation=false
+     and then use dexdump to see which class(s) reference them.
 
-    # ProGuard will skip writing if the file would be empty.
-    build_utils.Touch(tmp_mapping_path)
+     E.g.:
+       third_party/android_sdk/public/build-tools/*/dexdump -d \
+out/Release/apks/YourApk.apk > dex.txt
+""" + stderr
+      elif had_unfiltered_items:
+        # Left only with empty headings. All indented items filtered out.
+        stderr = ''
+    return stderr
 
-    # Copy output files to correct locations.
-    shutil.move(tmp_output_jar, options.output_path)
-    shutil.move(tmp_mapping_path, options.mapping_output)
+  logging.debug('cmd: %s', ' '.join(cmd))
+  build_utils.CheckOutput(cmd,
+                          print_stdout=True,
+                          stderr_filter=stderr_filter,
+                          fail_on_output=warnings_as_errors)
+
+
+def _SplitChildFeatures(options, feature_contexts, tmp_dir, mapping_path,
+                        print_stdout):
+  feature_map = {f.name: f for f in feature_contexts}
+  parent_to_child = defaultdict(list)
+  for child, parent in options.uses_split.items():
+    parent_to_child[parent].append(child)
+  for parent, children in parent_to_child.items():
+    split_output = os.path.join(tmp_dir, 'split_%s' % parent)
+    os.mkdir(split_output)
+    # DexSplitter is not perfect and can cause issues related to inlining and
+    # class merging (see crbug.com/1032609). If strange class loading errors
+    # happen in DFMs specifying uses_split, this may be the cause.
+    split_cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+        '-cp',
+        options.r8_path,
+        'com.android.tools.r8.dexsplitter.DexSplitter',
+        '--output',
+        split_output,
+        '--proguard-map',
+        mapping_path,
+    ]
+
+    parent_jars = set(feature_map[parent].input_paths)
+    for base_jar in sorted(parent_jars):
+      split_cmd += ['--base-jar', base_jar]
+
+    for child in children:
+      for feature_jar in feature_map[child].input_paths:
+        if feature_jar not in parent_jars:
+          split_cmd += ['--feature-jar', '%s:%s' % (feature_jar, child)]
+
+    # The inputs are the outputs for the parent from the original R8 call.
+    parent_dir = feature_map[parent].staging_dir
+    for file_name in os.listdir(parent_dir):
+      split_cmd += ['--input', os.path.join(parent_dir, file_name)]
+    logging.debug('Running R8 DexSplitter')
+    build_utils.CheckOutput(split_cmd,
+                            print_stdout=print_stdout,
+                            fail_on_output=options.warnings_as_errors)
+
+    # Copy the parent dex back into the parent's staging dir.
+    base_split_output = os.path.join(split_output, 'base')
+    shutil.rmtree(parent_dir)
+    os.mkdir(parent_dir)
+    for dex_file in os.listdir(base_split_output):
+      shutil.move(os.path.join(base_split_output, dex_file),
+                  os.path.join(parent_dir, dex_file))
+
+    # Copy each child dex back into the child's staging dir.
+    for child in children:
+      child_split_output = os.path.join(split_output, child)
+      child_staging_dir = feature_map[child].staging_dir
+      shutil.rmtree(child_staging_dir)
+      os.mkdir(child_staging_dir)
+      for dex_file in os.listdir(child_split_output):
+        shutil.move(os.path.join(child_split_output, dex_file),
+                    os.path.join(child_staging_dir, dex_file))
 
 
 def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
   ret = []
 
-  def add_header(name):
-    ret.append('#' * 80)
-    ret.append('# ' + name)
-    ret.append('#' * 80)
+  # Sort in this way so //clank versions of the same libraries will sort
+  # to the same spot in the file.
+  def sort_key(path):
+    return tuple(reversed(path.split(os.path.sep)))
 
-  for config in sorted(configs):
+  for config in sorted(configs, key=sort_key):
     if exclude_generated and config.endswith('.resources.proguard.txt'):
       continue
 
-    add_header(config)
+    ret.append('# File: ' + config)
     with open(config) as config_file:
       contents = config_file.read().rstrip()
 
@@ -477,7 +541,7 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
     ret.append('')
 
   if dynamic_config_data:
-    add_header('Dynamically generated from build/android/gyp/proguard.py')
+    ret.append('# File: //build/android/gyp/proguard.py (generated rules)')
     ret.append(dynamic_config_data)
     ret.append('')
   return '\n'.join(ret)
@@ -485,14 +549,6 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
 
 def _CreateDynamicConfig(options):
   ret = []
-  if not options.r8_path and options.min_api:
-    # R8 adds this option automatically, and uses -assumenosideeffects instead
-    # (which ProGuard doesn't support doing).
-    ret.append("""\
--assumevalues class android.os.Build$VERSION {
-  public static final int SDK_INT return %s..9999;
-}""" % options.min_api)
-
   if options.sourcefile:
     ret.append("-renamesourcefileattribute '%s' # OMIT FROM EXPECTATIONS" %
                options.sourcefile)
@@ -508,11 +564,14 @@ def _CreateDynamicConfig(options):
     if api_level > _min_api:
       ret.append('-keep @interface %s' % annotation_name)
       ret.append("""\
--keep,allowobfuscation,allowoptimization @%s class ** {
-  <methods>;
+-if @%s class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }""" % annotation_name)
       ret.append("""\
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @%s <methods>;
 }""" % annotation_name)
   return '\n'.join(ret)
@@ -545,28 +604,15 @@ def _MaybeWriteStampAndDepFile(options, inputs):
     build_utils.Touch(options.stamp)
     output = options.stamp
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, output, inputs=inputs, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, output, inputs=inputs)
 
 
 def main():
+  build_utils.InitLogging('PROGUARD_DEBUG')
   options = _ParseOptions()
 
-  libraries = []
-  for p in options.classpath:
-    # TODO(bjoyce): Remove filter once old android support libraries are gone.
-    # Fix for having Library class extend program class dependency problem.
-    if 'com_android_support' in p or 'android_support_test' in p:
-      continue
-    # If a jar is part of input no need to include it as library jar.
-    if p not in libraries and p not in options.input_paths:
-      libraries.append(p)
-
-  _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
-
+  logging.debug('Preparing configs')
   proguard_configs = options.proguard_configs
-  if options.disable_checkdiscard:
-    proguard_configs = _ValidateAndFilterCheckDiscards(proguard_configs)
 
   # ProGuard configs that are derived from flags.
   dynamic_config_data = _CreateDynamicConfig(options)
@@ -576,35 +622,39 @@ def main():
       proguard_configs, dynamic_config_data, exclude_generated=True)
   print_stdout = _ContainsDebuggingConfig(merged_configs) or options.verbose
 
+  if options.expected_file:
+    diff_utils.CheckExpectations(merged_configs, options)
+    if options.only_verify_expectations:
+      build_utils.WriteDepfile(options.depfile,
+                               options.actual_file,
+                               inputs=options.proguard_configs)
+      return
 
-  if options.expected_configs_file:
-    with tempfile.NamedTemporaryFile() as f:
-      f.write(merged_configs)
-      f.flush()
-      _VerifyExpectedConfigs(options.expected_configs_file, f.name,
-                             options.proguard_expectations_failure_file,
-                             options.fail_on_expectations)
-  if options.only_verify_expectations:
-    _MaybeWriteStampAndDepFile(options, options.proguard_configs)
-    return
+  logging.debug('Looking for embedded configs')
+  libraries = []
+  for p in options.classpath:
+    # TODO(bjoyce): Remove filter once old android support libraries are gone.
+    # Fix for having Library class extend program class dependency problem.
+    if 'com_android_support' in p or 'android_support_test' in p:
+      continue
+    # If a jar is part of input no need to include it as library jar.
+    if p not in libraries and p not in options.input_paths:
+      libraries.append(p)
+  _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
 
-  # Writing the config output before we know ProGuard is going to succeed isn't
-  # great, since then a failure will result in one of the outputs being updated.
-  # We do it anyways though because the error message prints out the path to the
-  # config. Ninja will still know to re-run the command because of the other
-  # stale outputs.
-  if options.output_config:
-    with open(options.output_config, 'w') as f:
-      f.write(merged_configs)
+  _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
+                  print_stdout)
 
-  if options.r8_path:
-    _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
-                    print_stdout)
-  else:
-    _OptimizeWithProguard(options, proguard_configs, libraries,
-                          dynamic_config_data, print_stdout)
+  if not options.disable_checks:
+    logging.debug('Running tracereferences')
+    all_dex_files = []
+    if options.output_path:
+      all_dex_files.append(options.output_path)
+    if options.dex_dests:
+      all_dex_files.extend(options.dex_dests)
+    _CheckForMissingSymbols(options.r8_path, all_dex_files, options.classpath,
+                            options.warnings_as_errors)
 
-  # After ProGuard / R8 has run:
   for output in options.extra_mapping_output_paths:
     shutil.copy(options.mapping_output, output)
 

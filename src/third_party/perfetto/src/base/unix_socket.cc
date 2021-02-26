@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -37,7 +38,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/utils.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #include <sys/ucred.h>
 #endif
 
@@ -46,7 +47,7 @@ namespace base {
 
 // The CMSG_* macros use NULL instead of nullptr.
 #pragma GCC diagnostic push
-#if !PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 
@@ -54,7 +55,7 @@ namespace {
 
 // MSG_NOSIGNAL is not supported on Mac OS X, but in that case the socket is
 // created with SO_NOSIGPIPE (See InitializeSocket()).
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 constexpr int kNoSigPipe = 0;
 #else
 constexpr int kNoSigPipe = MSG_NOSIGNAL;
@@ -92,18 +93,25 @@ inline int GetSockFamily(SockFamily family) {
       return AF_UNIX;
     case SockFamily::kInet:
       return AF_INET;
+    case SockFamily::kInet6:
+      return AF_INET6;
   }
   PERFETTO_CHECK(false);  // For GCC.
 }
 
 inline int GetSockType(SockType type) {
+#ifdef SOCK_CLOEXEC
+  constexpr int kSockCloExec = SOCK_CLOEXEC;
+#else
+  constexpr int kSockCloExec = 0;
+#endif
   switch (type) {
     case SockType::kStream:
-      return SOCK_STREAM;
+      return SOCK_STREAM | kSockCloExec;
     case SockType::kDgram:
-      return SOCK_DGRAM;
+      return SOCK_DGRAM | kSockCloExec;
     case SockType::kSeqPacket:
-      return SOCK_SEQPACKET;
+      return SOCK_SEQPACKET | kSockCloExec;
   }
   PERFETTO_CHECK(false);  // For GCC.
 }
@@ -135,6 +143,23 @@ SockaddrAny MakeSockAddr(SockFamily family, const std::string& socket_name) {
       PERFETTO_CHECK(getaddrinfo(parts[0].c_str(), parts[1].c_str(), &hints,
                                  &addr_info) == 0);
       PERFETTO_CHECK(addr_info->ai_family == AF_INET);
+      SockaddrAny res(addr_info->ai_addr, addr_info->ai_addrlen);
+      freeaddrinfo(addr_info);
+      return res;
+    }
+    case SockFamily::kInet6: {
+      auto parts = SplitString(socket_name, "]");
+      PERFETTO_CHECK(parts.size() == 2);
+      auto address = SplitString(parts[0], "[");
+      PERFETTO_CHECK(address.size() == 1);
+      auto port = SplitString(parts[1], ":");
+      PERFETTO_CHECK(port.size() == 1);
+      struct addrinfo* addr_info = nullptr;
+      struct addrinfo hints {};
+      hints.ai_family = AF_INET6;
+      PERFETTO_CHECK(getaddrinfo(address[0].c_str(), port[0].c_str(), &hints,
+                                 &addr_info) == 0);
+      PERFETTO_CHECK(addr_info->ai_family == AF_INET6);
       SockaddrAny res(addr_info->ai_addr, addr_info->ai_addrlen);
       freeaddrinfo(addr_info);
       return res;
@@ -203,15 +228,19 @@ UnixSocketRaw::UnixSocketRaw(SockFamily family, SockType type)
 UnixSocketRaw::UnixSocketRaw(ScopedFile fd, SockFamily family, SockType type)
     : fd_(std::move(fd)), family_(family), type_(type) {
   PERFETTO_CHECK(fd_);
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
   const int no_sigpipe = 1;
   setsockopt(*fd_, SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe));
 #endif
 
-  if (family == SockFamily::kInet) {
+  if (family == SockFamily::kInet || family == SockFamily::kInet6) {
     int flag = 1;
     PERFETTO_CHECK(
         !setsockopt(*fd_, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)));
+    flag = 1;
+    // Disable Nagle's algorithm, optimize for low-latency.
+    // See https://github.com/google/perfetto/issues/70.
+    setsockopt(*fd_, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
   }
 
   // There is no reason why a socket should outlive the process in case of

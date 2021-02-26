@@ -16,10 +16,10 @@ namespace payments {
 // static
 constexpr char PaymentRequestRowView::kClassName[];
 
-PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
+PaymentRequestRowView::PaymentRequestRowView(PressedCallback callback,
                                              bool clickable,
                                              const gfx::Insets& insets)
-    : views::Button(listener),
+    : views::Button(std::move(callback)),
       clickable_(clickable),
       insets_(insets),
       previous_row_(nullptr) {
@@ -71,13 +71,13 @@ void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
   }
 }
 
-// views::Button:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
+  Button::StateChanged(old_state);
   if (!clickable())
     return;
 
-  SetIsHighlighted(state() == views::Button::STATE_HOVERED ||
-                   state() == views::Button::STATE_PRESSED);
+  SetIsHighlighted(GetState() == views::Button::STATE_HOVERED ||
+                   GetState() == views::Button::STATE_PRESSED);
 }
 
 void PaymentRequestRowView::OnFocus() {

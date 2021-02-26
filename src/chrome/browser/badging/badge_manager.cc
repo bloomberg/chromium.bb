@@ -28,7 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/badging/badge_manager_delegate_mac.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/badging/badge_manager_delegate_win.h"
@@ -37,7 +37,7 @@
 namespace badging {
 
 BadgeManager::BadgeManager(Profile* profile) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   SetDelegate(std::make_unique<BadgeManagerDelegateMac>(profile, this));
 #elif defined(OS_WIN)
   SetDelegate(std::make_unique<BadgeManagerDelegateWin>(profile, this));
@@ -215,7 +215,7 @@ BadgeManager::FrameBindingContext::GetAppIdsAndUrlsForBadging() const {
   if (!app_id)
     return std::vector<std::tuple<web_app::AppId, GURL>>{};
   return std::vector<std::tuple<web_app::AppId, GURL>>{std::make_tuple(
-      app_id.value(), registrar.GetAppLaunchURL(app_id.value()))};
+      app_id.value(), registrar.GetAppStartUrl(app_id.value()))};
 }
 
 std::vector<std::tuple<web_app::AppId, GURL>>
@@ -234,7 +234,7 @@ BadgeManager::ServiceWorkerBindingContext::GetAppIdsAndUrlsForBadging() const {
   std::vector<std::tuple<web_app::AppId, GURL>> app_ids_urls{};
   for (const auto& app_id : registrar.FindAppsInScope(scope_)) {
     app_ids_urls.push_back(
-        std::make_tuple(app_id, registrar.GetAppLaunchURL(app_id)));
+        std::make_tuple(app_id, registrar.GetAppStartUrl(app_id)));
   }
   return app_ids_urls;
 }

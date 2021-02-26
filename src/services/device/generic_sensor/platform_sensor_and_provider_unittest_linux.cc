@@ -12,10 +12,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
@@ -56,10 +57,6 @@ constexpr double kMagnetometerFrequencyValue = 7.0;
 constexpr double kMagnetometerOffsetValue = 3.0;
 constexpr double kMagnetometerScalingValue = 0.000001;
 
-void DeleteFile(const base::FilePath& file) {
-  EXPECT_TRUE(base::DeleteFileRecursively(file));
-}
-
 void WriteValueToFile(const base::FilePath& path, double value) {
   const std::string str = base::NumberToString(value);
   int bytes_written = base::WriteFile(path, str.data(), str.size());
@@ -90,9 +87,40 @@ double RoundGyroscopeValue(double value) {
 // to SensorDeviceManager.
 class MockSensorDeviceManager : public SensorDeviceManager {
  public:
-  MockSensorDeviceManager(base::WeakPtr<SensorDeviceManager::Delegate> delegate)
-      : SensorDeviceManager(std::move(delegate)) {}
-  ~MockSensorDeviceManager() override {}
+  ~MockSensorDeviceManager() override = default;
+
+  // static
+  static std::unique_ptr<NiceMock<MockSensorDeviceManager>> Create(
+      base::WeakPtr<SensorDeviceManager::Delegate> delegate) {
+    auto device_manager =
+        std::make_unique<NiceMock<MockSensorDeviceManager>>(delegate);
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      if (!device_manager->sensors_dir_.CreateUniqueTempDir())
+        return nullptr;
+    }
+
+    const base::FilePath& base_path = device_manager->GetSensorsBasePath();
+
+    ON_CALL(*device_manager, GetUdevDeviceGetSubsystem(IsNull()))
+        .WillByDefault(Invoke([](udev_device*) { return "iio"; }));
+
+    ON_CALL(*device_manager, GetUdevDeviceGetSyspath(IsNull()))
+        .WillByDefault(
+            Invoke([base_path](udev_device*) { return base_path.value(); }));
+
+    ON_CALL(*device_manager, GetUdevDeviceGetDevnode(IsNull()))
+        .WillByDefault(Invoke([](udev_device*) { return "/dev/test"; }));
+
+    ON_CALL(*device_manager, GetUdevDeviceGetSysattrValue(IsNull(), _))
+        .WillByDefault(
+            Invoke([base_path](udev_device*, const std::string& attribute) {
+              base::ScopedAllowBlockingForTesting allow_blocking;
+              return ReadValueFromFile(base_path, attribute);
+            }));
+
+    return device_manager;
+  }
 
   MOCK_METHOD1(GetUdevDeviceGetSubsystem, std::string(udev_device*));
   MOCK_METHOD1(GetUdevDeviceGetSyspath, std::string(udev_device*));
@@ -100,6 +128,10 @@ class MockSensorDeviceManager : public SensorDeviceManager {
   MOCK_METHOD2(GetUdevDeviceGetSysattrValue,
                std::string(udev_device*, const std::string&));
   MOCK_METHOD0(Start, void());
+
+  const base::FilePath& GetSensorsBasePath() const {
+    return sensors_dir_.GetPath();
+  }
 
   void EnumerationReady() {
     bool success = delegate_task_runner_->PostTask(
@@ -117,7 +149,14 @@ class MockSensorDeviceManager : public SensorDeviceManager {
     SensorDeviceManager::OnDeviceRemoved(nullptr /* unused */);
   }
 
+ protected:
+  explicit MockSensorDeviceManager(
+      base::WeakPtr<SensorDeviceManager::Delegate> delegate)
+      : SensorDeviceManager(std::move(delegate)) {}
+
  private:
+  base::ScopedTempDir sensors_dir_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSensorDeviceManager);
 };
 
@@ -154,27 +193,16 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
  public:
   void SetUp() override {
     provider_ = base::WrapUnique(new PlatformSensorProviderLinux);
-
-    auto manager = std::make_unique<NiceMock<MockSensorDeviceManager>>(
-        provider_->weak_ptr_factory_.GetWeakPtr());
-    manager_ = manager.get();
-    provider_->SetSensorDeviceManagerForTesting(std::move(manager));
-
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
-    }
-  }
-
-  void TearDown() override {
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(sensors_dir_.Delete());
-    }
-    base::RunLoop().RunUntilIdle();
+    provider_->SetSensorDeviceManagerForTesting(MockSensorDeviceManager::Create(
+        provider_->weak_ptr_factory_.GetWeakPtr()));
   }
 
  protected:
+  MockSensorDeviceManager* mock_sensor_device_manager() const {
+    return static_cast<MockSensorDeviceManager*>(
+        provider_->sensor_device_manager_.get());
+  }
+
   // Sensor creation is asynchronous, therefore inner loop is used to wait for
   // PlatformSensorProvider::CreateSensorCallback completion.
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
@@ -204,7 +232,8 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
 
-      base::FilePath sensor_dir = sensors_dir_.GetPath();
+      const base::FilePath& sensor_dir =
+          mock_sensor_device_manager()->GetSensorsBasePath();
       if (!data.sensor_scale_name.empty() && scaling != 0) {
         base::FilePath sensor_scale_file =
             base::FilePath(sensor_dir).Append(data.sensor_scale_name);
@@ -239,34 +268,13 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     }
   }
 
-  // Initializes mock udev methods that emulate system methods by
-  // just reading values from files, which SensorDeviceService has specified
-  // calling udev methods.
-  void InitializeMockUdevMethods(const base::FilePath& sensor_dir) {
-    ON_CALL(*manager_, GetUdevDeviceGetSubsystem(IsNull()))
-        .WillByDefault(Invoke([](udev_device* dev) { return "iio"; }));
-
-    ON_CALL(*manager_, GetUdevDeviceGetSyspath(IsNull()))
-        .WillByDefault(Invoke(
-            [sensor_dir](udev_device* dev) { return sensor_dir.value(); }));
-
-    ON_CALL(*manager_, GetUdevDeviceGetDevnode(IsNull()))
-        .WillByDefault(Invoke([](udev_device* dev) { return "/dev/test"; }));
-
-    ON_CALL(*manager_, GetUdevDeviceGetSysattrValue(IsNull(), _))
-        .WillByDefault(Invoke(
-            [sensor_dir](udev_device* dev, const std::string& attribute) {
-              base::ScopedAllowBlockingForTesting allow_blocking;
-              return ReadValueFromFile(sensor_dir, attribute);
-            }));
-  }
-
   // Emulates device enumerations and initial udev events. Once all
   // devices are added, tells manager its ready.
   void SetServiceStart() {
-    EXPECT_CALL(*manager_, Start()).WillOnce(Invoke([this]() {
-      manager_->DeviceAdded();
-      manager_->EnumerationReady();
+    auto* manager = mock_sensor_device_manager();
+    EXPECT_CALL(*manager, Start()).WillOnce(Invoke([manager]() {
+      manager->DeviceAdded();
+      manager->EnumerationReady();
     }));
   }
 
@@ -292,8 +300,9 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // been added.
   void GenerateDeviceAddedEvent() {
     bool success = provider_->blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceAdded,
-                                  base::Unretained(manager_)));
+        FROM_HERE,
+        base::BindOnce(&MockSensorDeviceManager::DeviceAdded,
+                       base::Unretained(mock_sensor_device_manager())));
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device addition).
@@ -305,11 +314,12 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   void GenerateDeviceRemovedEvent(const base::FilePath& sensor_dir) {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      DeleteFile(sensor_dir);
+      EXPECT_TRUE(base::DeletePathRecursively(sensor_dir));
     }
     bool success = provider_->blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
-                                  base::Unretained(manager_)));
+        FROM_HERE,
+        base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
+                       base::Unretained(mock_sensor_device_manager())));
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device removal).
@@ -318,10 +328,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
-  MockSensorDeviceManager* manager_;
   std::unique_ptr<PlatformSensorProviderLinux> provider_;
-  // Holds base dir where a sensor dir is located.
-  base::ScopedTempDir sensors_dir_;
 
   // Used to simulate the non-test scenario where we're running in an IO thread
   // that forbids blocking operations.
@@ -351,7 +358,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorIsSupported) {
   double sensor_value[3] = {5};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -365,7 +371,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, StartFails) {
   double sensor_value[3] = {5};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -383,7 +388,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorStarted) {
   double sensor_value[3] = {5};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -402,7 +406,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorRemoved) {
   double sensor_value[3] = {1};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -412,7 +415,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorRemoved) {
       std::make_unique<NiceMock<LinuxMockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(5);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  GenerateDeviceRemovedEvent(sensors_dir_.GetPath());
+  GenerateDeviceRemovedEvent(
+      mock_sensor_device_manager()->GetSensorsBasePath());
   WaitOnSensorErrorEvent(client.get());
 }
 
@@ -422,7 +426,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorAddedAndRemoved) {
   double sensor_value[3] = {1, 2, 4};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto als_sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -453,7 +456,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAllSupportedSensors) {
   InitializeSupportedSensor(
       SensorType::MAGNETOMETER, kMagnetometerFrequencyValue,
       kMagnetometerOffsetValue, kMagnetometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto als_sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -487,7 +489,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, GetMaximumSupportedFrequency) {
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ACCELEROMETER);
@@ -503,7 +504,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   double sensor_value[3] = {5};
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -524,7 +524,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAmbientLightReadings) {
   InitializeSupportedSensor(SensorType::AMBIENT_LIGHT, kZero, kZero, kZero,
                             sensor_value);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -566,7 +565,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
                             kAccelerometerOffsetValue,
                             kAccelerometerScalingValue, sensor_values);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ACCELEROMETER);
@@ -582,7 +580,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   double scaling = base::kMeanGravityDouble / kAccelerometerScalingValue;
   EXPECT_THAT(buffer->reading.accel.x,
               RoundAccelerometerValue(scaling * sensor_values[0]));
@@ -610,7 +608,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
 // not available.
 TEST_F(PlatformSensorAndProviderLinuxTest,
        CheckLinearAccelerationSensorNotCreatedIfNoAccelerometer) {
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::LINEAR_ACCELERATION);
@@ -623,7 +620,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckLinearAcceleration) {
   mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
       sizeof(SensorReadingSharedBuffer),
       SensorReadingSharedBuffer::GetOffset(SensorType::LINEAR_ACCELERATION));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // CrOS has a different axes plane and scale, see crbug.com/501184.
   double sensor_values[3] = {0, 0, 1};
 #else
@@ -633,7 +630,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckLinearAcceleration) {
                             kAccelerometerFrequencyValue, kZero, kZero,
                             sensor_values);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::LINEAR_ACCELERATION);
@@ -679,7 +675,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   InitializeSupportedSensor(SensorType::GYROSCOPE, kZero, kGyroscopeOffsetValue,
                             kGyroscopeScalingValue, sensor_values);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::GYROSCOPE);
@@ -695,7 +690,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   double scaling =
       gfx::DegToRad(base::kMeanGravityDouble) / kGyroscopeScalingValue;
   EXPECT_THAT(buffer->reading.gyro.x,
@@ -740,7 +735,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
                             kMagnetometerOffsetValue, kMagnetometerScalingValue,
                             sensor_values);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::MAGNETOMETER);
@@ -784,7 +778,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
                             kAmbientLightFrequencyValue, kZero, kZero,
                             sensor_value);
 
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
@@ -812,7 +805,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
 TEST_F(
     PlatformSensorAndProviderLinuxTest,
     CheckAbsoluteOrientationSensorNotCreatedIfNoAccelerometerAndNoMagnetometer) {
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   {
@@ -834,7 +826,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::MAGNETOMETER, kMagnetometerFrequencyValue,
       kMagnetometerOffsetValue, kMagnetometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   {
@@ -856,7 +847,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   {
@@ -880,7 +870,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::MAGNETOMETER, kMagnetometerFrequencyValue,
       kMagnetometerOffsetValue, kMagnetometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
@@ -897,7 +886,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::MAGNETOMETER, kMagnetometerFrequencyValue,
       kMagnetometerOffsetValue, kMagnetometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION_QUATERNION);
@@ -909,7 +897,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
 TEST_F(
     PlatformSensorAndProviderLinuxTest,
     CheckRelativeOrientationSensorNotCreatedIfNoAccelerometerAndNoGyroscope) {
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   {
@@ -931,7 +918,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(SensorType::GYROSCOPE, kGyroscopeFrequencyValue,
                             kGyroscopeOffsetValue, kGyroscopeScalingValue,
                             sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   {
@@ -957,7 +943,6 @@ TEST_F(
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
@@ -972,7 +957,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
@@ -990,7 +974,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::RELATIVE_ORIENTATION_QUATERNION);
@@ -1005,7 +988,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   InitializeSupportedSensor(
       SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
       kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_value);
-  InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::RELATIVE_ORIENTATION_QUATERNION);

@@ -24,8 +24,10 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_image_element.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 
 namespace blink {
 
@@ -36,37 +38,39 @@ LayoutSVGResourceFilter::~LayoutSVGResourceFilter() = default;
 
 bool LayoutSVGResourceFilter::IsChildAllowed(LayoutObject* child,
                                              const ComputedStyle&) const {
+  NOT_DESTROYED();
   return child->IsSVGFilterPrimitive();
 }
 
 void LayoutSVGResourceFilter::RemoveAllClientsFromCache() {
-  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
-                                SVGResourceClient::kBoundariesInvalidation);
+  NOT_DESTROYED();
+  MarkAllClientsForInvalidation(SVGResourceClient::kPaintInvalidation |
+                                SVGResourceClient::kFilterCacheInvalidation);
 }
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
     const FloatRect& reference_box) const {
+  NOT_DESTROYED();
   const auto* filter_element = To<SVGFilterElement>(GetElement());
   return SVGLengthContext::ResolveRectangle(filter_element, FilterUnits(),
                                             reference_box);
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::FilterUnits() const {
-  return To<SVGFilterElement>(GetElement())
-      ->filterUnits()
-      ->CurrentValue()
-      ->EnumValue();
+  NOT_DESTROYED();
+  return To<SVGFilterElement>(GetElement())->filterUnits()->CurrentEnumValue();
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
+  NOT_DESTROYED();
   return To<SVGFilterElement>(GetElement())
       ->primitiveUnits()
-      ->CurrentValue()
-      ->EnumValue();
+      ->CurrentEnumValue();
 }
 
 bool LayoutSVGResourceFilter::FindCycleFromSelf(
     SVGResourcesCycleSolver& solver) const {
+  NOT_DESTROYED();
   // Traverse and check all <feImage> 'href' element references.
   for (auto& feimage_element :
        Traversal<SVGFEImageElement>::ChildrenOf(*GetElement())) {

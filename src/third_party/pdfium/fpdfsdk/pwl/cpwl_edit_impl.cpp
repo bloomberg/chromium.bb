@@ -18,6 +18,7 @@
 #include "core/fpdfdoc/ipvt_fontmap.h"
 #include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -26,7 +27,6 @@
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -57,7 +57,7 @@ CPWL_EditImpl_Iterator::CPWL_EditImpl_Iterator(
     CPDF_VariableText::Iterator* pVTIterator)
     : m_pEdit(pEdit), m_pVTIterator(pVTIterator) {}
 
-CPWL_EditImpl_Iterator::~CPWL_EditImpl_Iterator() {}
+CPWL_EditImpl_Iterator::~CPWL_EditImpl_Iterator() = default;
 
 bool CPWL_EditImpl_Iterator::NextWord() {
   return m_pVTIterator->NextWord();
@@ -104,14 +104,13 @@ CPWL_EditImpl_Provider::CPWL_EditImpl_Provider(IPVT_FontMap* pFontMap)
   ASSERT(m_pFontMap);
 }
 
-CPWL_EditImpl_Provider::~CPWL_EditImpl_Provider() {}
+CPWL_EditImpl_Provider::~CPWL_EditImpl_Provider() = default;
 
 IPVT_FontMap* CPWL_EditImpl_Provider::GetFontMap() const {
   return m_pFontMap;
 }
 
-uint32_t CPWL_EditImpl_Provider::GetCharWidth(int32_t nFontIndex,
-                                              uint16_t word) {
+int CPWL_EditImpl_Provider::GetCharWidth(int32_t nFontIndex, uint16_t word) {
   RetainPtr<CPDF_Font> pPDFFont = m_pFontMap->GetPDFFont(nFontIndex);
   if (!pPDFFont)
     return 0;
@@ -150,9 +149,9 @@ bool CPWL_EditImpl_Provider::IsLatinWord(uint16_t word) {
   return FX_EDIT_ISLATINWORD(word);
 }
 
-CPWL_EditImpl_Refresh::CPWL_EditImpl_Refresh() {}
+CPWL_EditImpl_Refresh::CPWL_EditImpl_Refresh() = default;
 
-CPWL_EditImpl_Refresh::~CPWL_EditImpl_Refresh() {}
+CPWL_EditImpl_Refresh::~CPWL_EditImpl_Refresh() = default;
 
 void CPWL_EditImpl_Refresh::BeginRefresh() {
   m_OldLineRects = std::move(m_NewLineRects);
@@ -193,7 +192,7 @@ void CPWL_EditImpl_Refresh::Add(const CFX_FloatRect& new_rect) {
 CPWL_EditImpl_Undo::CPWL_EditImpl_Undo()
     : m_nCurUndoPos(0), m_bWorking(false) {}
 
-CPWL_EditImpl_Undo::~CPWL_EditImpl_Undo() {}
+CPWL_EditImpl_Undo::~CPWL_EditImpl_Undo() = default;
 
 bool CPWL_EditImpl_Undo::CanUndo() const {
   return m_nCurUndoPos > 0;
@@ -267,7 +266,7 @@ CFXEU_InsertWord::CFXEU_InsertWord(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_InsertWord::~CFXEU_InsertWord() {}
+CFXEU_InsertWord::~CFXEU_InsertWord() = default;
 
 int CFXEU_InsertWord::Redo() {
   m_pEdit->SelectNone();
@@ -290,7 +289,7 @@ CFXEU_InsertReturn::CFXEU_InsertReturn(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_InsertReturn::~CFXEU_InsertReturn() {}
+CFXEU_InsertReturn::~CFXEU_InsertReturn() = default;
 
 int CFXEU_InsertReturn::Redo() {
   m_pEdit->SelectNone();
@@ -312,7 +311,7 @@ CFXEU_ReplaceSelection::CFXEU_ReplaceSelection(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_ReplaceSelection::~CFXEU_ReplaceSelection() {}
+CFXEU_ReplaceSelection::~CFXEU_ReplaceSelection() = default;
 
 int CFXEU_ReplaceSelection::Redo() {
   m_pEdit->SelectNone();
@@ -344,7 +343,7 @@ CFXEU_Backspace::CFXEU_Backspace(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_Backspace::~CFXEU_Backspace() {}
+CFXEU_Backspace::~CFXEU_Backspace() = default;
 
 int CFXEU_Backspace::Redo() {
   m_pEdit->SelectNone();
@@ -378,7 +377,7 @@ CFXEU_Delete::CFXEU_Delete(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_Delete::~CFXEU_Delete() {}
+CFXEU_Delete::~CFXEU_Delete() = default;
 
 int CFXEU_Delete::Redo() {
   m_pEdit->SelectNone();
@@ -404,7 +403,7 @@ CFXEU_Clear::CFXEU_Clear(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_Clear::~CFXEU_Clear() {}
+CFXEU_Clear::~CFXEU_Clear() = default;
 
 int CFXEU_Clear::Redo() {
   m_pEdit->SelectNone();
@@ -434,7 +433,7 @@ CFXEU_InsertText::CFXEU_InsertText(CPWL_EditImpl* pEdit,
   ASSERT(m_pEdit);
 }
 
-CFXEU_InsertText::~CFXEU_InsertText() {}
+CFXEU_InsertText::~CFXEU_InsertText() = default;
 
 int CFXEU_InsertText::Redo() {
   m_pEdit->SelectNone();
@@ -521,7 +520,7 @@ void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
                                line.ptLine.y + line.fLineAscent);
 
           pDevice->DrawPath(&pathSelBK, &mtUser2Device, nullptr, crSelBK, 0,
-                            FXFILL_WINDING);
+                            CFX_FillRenderOptions::WindingOptions());
         }
       }
 
@@ -565,7 +564,7 @@ void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
 }
 
 CPWL_EditImpl::CPWL_EditImpl()
-    : m_pVT(pdfium::MakeUnique<CPDF_VariableText>()),
+    : m_pVT(std::make_unique<CPDF_VariableText>()),
       m_bEnableScroll(false),
       m_nAlignment(0),
       m_bNotifyFlag(false),
@@ -573,7 +572,7 @@ CPWL_EditImpl::CPWL_EditImpl()
       m_bEnableRefresh(true),
       m_bEnableUndo(true) {}
 
-CPWL_EditImpl::~CPWL_EditImpl() {}
+CPWL_EditImpl::~CPWL_EditImpl() = default;
 
 void CPWL_EditImpl::Initialize() {
   m_pVT->Initialize();
@@ -582,7 +581,7 @@ void CPWL_EditImpl::Initialize() {
 }
 
 void CPWL_EditImpl::SetFontMap(IPVT_FontMap* pFontMap) {
-  m_pVTProvider = pdfium::MakeUnique<CPWL_EditImpl_Provider>(pFontMap);
+  m_pVTProvider = std::make_unique<CPWL_EditImpl_Provider>(pFontMap);
   m_pVT->SetProvider(m_pVTProvider.get());
 }
 
@@ -597,7 +596,7 @@ void CPWL_EditImpl::SetOperationNotify(CPWL_Edit* pOperationNotify) {
 CPWL_EditImpl_Iterator* CPWL_EditImpl::GetIterator() {
   if (!m_pIterator) {
     m_pIterator =
-        pdfium::MakeUnique<CPWL_EditImpl_Iterator>(this, m_pVT->GetIterator());
+        std::make_unique<CPWL_EditImpl_Iterator>(this, m_pVT->GetIterator());
   }
   return m_pIterator.get();
 }
@@ -1538,7 +1537,7 @@ bool CPWL_EditImpl::InsertWord(uint16_t word,
     return false;
 
   if (bAddUndo && m_bEnableUndo) {
-    AddEditUndoItem(pdfium::MakeUnique<CFXEU_InsertWord>(
+    AddEditUndoItem(std::make_unique<CFXEU_InsertWord>(
         this, m_wpOldCaret, m_wpCaret, word, charset));
   }
   if (bPaint)
@@ -1562,7 +1561,7 @@ bool CPWL_EditImpl::InsertReturn(bool bAddUndo, bool bPaint) {
 
   if (bAddUndo && m_bEnableUndo) {
     AddEditUndoItem(
-        pdfium::MakeUnique<CFXEU_InsertReturn>(this, m_wpOldCaret, m_wpCaret));
+        std::make_unique<CFXEU_InsertReturn>(this, m_wpOldCaret, m_wpCaret));
   }
   if (bPaint) {
     RearrangePart(CPVT_WordRange(m_wpOldCaret, m_wpCaret));
@@ -1594,7 +1593,7 @@ bool CPWL_EditImpl::Backspace(bool bAddUndo, bool bPaint) {
     return false;
 
   if (bAddUndo && m_bEnableUndo) {
-    AddEditUndoItem(pdfium::MakeUnique<CFXEU_Backspace>(
+    AddEditUndoItem(std::make_unique<CFXEU_Backspace>(
         this, m_wpOldCaret, m_wpCaret, word.Word, word.nCharset));
   }
   if (bPaint) {
@@ -1626,10 +1625,10 @@ bool CPWL_EditImpl::Delete(bool bAddUndo, bool bPaint) {
   m_SelState.Set(m_wpCaret, m_wpCaret);
   if (bAddUndo && m_bEnableUndo) {
     if (bSecEnd) {
-      AddEditUndoItem(pdfium::MakeUnique<CFXEU_Delete>(
+      AddEditUndoItem(std::make_unique<CFXEU_Delete>(
           this, m_wpOldCaret, m_wpCaret, word.Word, word.nCharset, bSecEnd));
     } else {
-      AddEditUndoItem(pdfium::MakeUnique<CFXEU_Delete>(
+      AddEditUndoItem(std::make_unique<CFXEU_Delete>(
           this, m_wpOldCaret, m_wpCaret, word.Word, word.nCharset, bSecEnd));
     }
   }
@@ -1664,7 +1663,7 @@ bool CPWL_EditImpl::Clear(bool bAddUndo, bool bPaint) {
   CPVT_WordRange range = m_SelState.ConvertToWordRange();
   if (bAddUndo && m_bEnableUndo) {
     AddEditUndoItem(
-        pdfium::MakeUnique<CFXEU_Clear>(this, range, GetSelectedText()));
+        std::make_unique<CFXEU_Clear>(this, range, GetSelectedText()));
   }
 
   SelectNone();
@@ -1697,7 +1696,7 @@ bool CPWL_EditImpl::InsertText(const WideString& sText,
     return false;
 
   if (bAddUndo && m_bEnableUndo) {
-    AddEditUndoItem(pdfium::MakeUnique<CFXEU_InsertText>(
+    AddEditUndoItem(std::make_unique<CFXEU_InsertText>(
         this, m_wpOldCaret, m_wpCaret, sText, charset));
   }
   if (bPaint)
@@ -1721,10 +1720,10 @@ void CPWL_EditImpl::PaintInsertText(const CPVT_WordPlace& wpOld,
 }
 
 void CPWL_EditImpl::ReplaceSelection(const WideString& text) {
-  AddEditUndoItem(pdfium::MakeUnique<CFXEU_ReplaceSelection>(this, false));
+  AddEditUndoItem(std::make_unique<CFXEU_ReplaceSelection>(this, false));
   ClearSelection();
   InsertText(text, FX_CHARSET_Default);
-  AddEditUndoItem(pdfium::MakeUnique<CFXEU_ReplaceSelection>(this, true));
+  AddEditUndoItem(std::make_unique<CFXEU_ReplaceSelection>(this, true));
 }
 
 bool CPWL_EditImpl::Redo() {
@@ -1890,7 +1889,7 @@ ByteString CPWL_EditImpl::GetPDFWordString(int32_t nFontIndex,
   return sWord;
 }
 
-CPWL_EditImpl_Select::CPWL_EditImpl_Select() {}
+CPWL_EditImpl_Select::CPWL_EditImpl_Select() = default;
 
 CPWL_EditImpl_Select::CPWL_EditImpl_Select(const CPVT_WordRange& range) {
   Set(range.BeginPos, range.EndPos);

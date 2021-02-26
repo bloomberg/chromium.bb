@@ -7,10 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -26,9 +24,8 @@ ProxyLookupClientImpl::ProxyLookupClientImpl(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network_context->LookUpProxyForURL(
       url, network_isolation_key,
-      receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
-          {content::BrowserThread::UI,
-           content::BrowserTaskType::kPreconnect})));
+      receiver_.BindNewPipeAndPassRemote(content::GetUIThreadTaskRunner(
+          {content::BrowserTaskType::kPreconnect})));
   receiver_.set_disconnect_handler(
       base::BindOnce(&ProxyLookupClientImpl::OnProxyLookupComplete,
                      base::Unretained(this), net::ERR_ABORTED, base::nullopt));

@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -37,17 +36,17 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/test/ui_controls.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "chrome/app/chrome_crash_reporter_client.h"
 #endif
 
@@ -60,27 +59,22 @@
 #include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
 #include "chrome/browser/upgrade_detector/installed_version_poller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #endif
 
-ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
-ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
-
 int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   ChromeTestSuite test_suite(argc, argv);
-  // Browser tests are expected not to tear-down various globals and may
-  // complete with the thread priority being above NORMAL.
+  // Browser tests are expected not to tear-down various globals.
   test_suite.DisableCheckForLeakedGlobals();
-  test_suite.DisableCheckForThreadPriorityAtTestEnd();
 #if defined(OS_ANDROID)
   // Android browser tests run child processes as threads instead.
   content::ContentTestSuiteBase::RegisterInProcessThreads();
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   InstalledVersionPoller::ScopedDisableForTesting disable_polling(
       InstalledVersionPoller::MakeScopedDisableForTesting());
@@ -104,6 +98,8 @@ class ChromeTestLauncherDelegate::ScopedFirewallRules {
         << "Failed to add Windows firewall rules -- Windows firewall dialogs "
            "may appear.";
   }
+  ScopedFirewallRules(const ScopedFirewallRules&) = delete;
+  ScopedFirewallRules& operator=(const ScopedFirewallRules&) = delete;
 
   ~ScopedFirewallRules() {
     if (rules_added_)
@@ -114,7 +110,6 @@ class ChromeTestLauncherDelegate::ScopedFirewallRules {
   base::win::ScopedCOMInitializer com_initializer_;
   std::unique_ptr<installer::FirewallManager> firewall_manager_;
   bool rules_added_ = false;
-  DISALLOW_COPY_AND_ASSIGN(ScopedFirewallRules);
 };
 
 #endif  // defined(OS_WIN)
@@ -179,7 +174,7 @@ int LaunchChromeTests(size_t parallel_jobs,
                       content::TestLauncherDelegate* delegate,
                       int argc,
                       char** argv) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Set up the path to the framework so resources can be loaded. This is also
   // performed in ChromeTestSuite, but in browser tests that only affects the
   // browser process. Child processes need access to the Framework bundle too.
@@ -203,7 +198,7 @@ int LaunchChromeTests(size_t parallel_jobs,
   if (command_line.HasSwitch(switches::kLaunchAsBrowser))
     sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   ChromeCrashReporterClient::Create();
 #elif defined(OS_WIN)
   // We leak this pointer intentionally. The crash client needs to outlive
@@ -230,7 +225,7 @@ int LaunchChromeTests(size_t parallel_jobs,
         network_service_test_helper.get()));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // Cause a test failure for any test that triggers an unexpected relaunch.
   // Tests that fail here should likely be restructured to put the "before

@@ -175,17 +175,15 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // For switching send algorithm mid connection.
   friend class Bbr2Sender;
 
-  typedef WindowedFilter<QuicBandwidth,
-                         MaxFilter<QuicBandwidth>,
-                         QuicRoundTripCount,
-                         QuicRoundTripCount>
-      MaxBandwidthFilter;
+  using MaxBandwidthFilter = WindowedFilter<QuicBandwidth,
+                                            MaxFilter<QuicBandwidth>,
+                                            QuicRoundTripCount,
+                                            QuicRoundTripCount>;
 
-  typedef WindowedFilter<QuicByteCount,
-                         MaxFilter<QuicByteCount>,
-                         QuicRoundTripCount,
-                         QuicRoundTripCount>
-      MaxAckHeightFilter;
+  using MaxAckHeightFilter = WindowedFilter<QuicByteCount,
+                                            MaxFilter<QuicByteCount>,
+                                            QuicRoundTripCount,
+                                            QuicRoundTripCount>;
 
   // Returns whether the connection has achieved full bandwidth required to exit
   // the slow start.
@@ -243,10 +241,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // recovery.
   void CalculateRecoveryWindow(QuicByteCount bytes_acked,
                                QuicByteCount bytes_lost);
-
-  // Returns true if there are enough bytes in flight to ensure more bandwidth
-  // will be observed if present.
-  bool IsPipeSufficientlyFull() const;
 
   // Called right before exiting STARTUP.
   void OnExitStartup(QuicTime now);
@@ -326,13 +320,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The number of RTTs to stay in STARTUP mode.  Defaults to 3.
   QuicRoundTripCount num_startup_rtts_;
 
-  // Latched value of --quic_bbr_default_exit_startup_on_loss.
-  // If true, exit startup if all of the following conditions are met:
-  // - 1RTT has passed with no bandwidth increase,
-  // - Some number of congestion events happened with loss, in the last round.
-  // - Some amount of inflight bytes (at the start of the last round) are lost.
-  bool exit_startup_on_loss_;
-
   // Number of round-trips in PROBE_BW mode, used for determining the current
   // pacing gain cycle.
   int cycle_current_offset_;
@@ -361,9 +348,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   bool last_sample_is_app_limited_;
   // Indicates whether any non app-limited samples have been recorded.
   bool has_non_app_limited_sample_;
-  // Indicates app-limited calls should be ignored as long as there's
-  // enough data inflight to see more bandwidth when necessary.
-  bool flexible_app_limited_;
 
   // Current state of recovery.
   RecoveryState recovery_state_;
@@ -391,15 +375,17 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // or it's time for high gain mode.
   bool drain_to_target_;
 
-  // True if network parameters are adjusted, and this will be reset if
-  // overshooting is detected and pacing rate gets slowed.
-  bool network_parameters_adjusted_;
-  // Bytes lost after network parameters gets adjusted.
-  QuicByteCount bytes_lost_with_network_parameters_adjusted_;
-  // Decrease pacing rate after parameters adjusted if
-  // bytes_lost_with_network_parameters_adjusted_ *
-  // bytes_lost_multiplier_with_network_parameters_adjusted_ > IW.
-  uint8_t bytes_lost_multiplier_with_network_parameters_adjusted_;
+  // If true, slow down pacing rate in STARTUP when overshooting is detected.
+  bool detect_overshooting_;
+  // Bytes lost while detect_overshooting_ is true.
+  QuicByteCount bytes_lost_while_detecting_overshooting_;
+  // Slow down pacing rate if
+  // bytes_lost_while_detecting_overshooting_ *
+  // bytes_lost_multiplier_while_detecting_overshooting_ > IW.
+  uint8_t bytes_lost_multiplier_while_detecting_overshooting_;
+  // When overshooting is detected, do not drop pacing_rate_ below this value /
+  // min_rtt.
+  QuicByteCount cwnd_to_calculate_min_pacing_rate_;
 
   // Max congestion window when adjusting network parameters.
   QuicByteCount max_congestion_window_with_network_parameters_adjusted_;

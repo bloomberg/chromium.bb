@@ -82,11 +82,19 @@ struct GL_EXPORT GLContextAttribs {
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
   bool global_texture_share_group = false;
+  bool global_semaphore_share_group = false;
   bool robust_resource_initialization = false;
   bool robust_buffer_access = false;
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
   bool can_skip_validation = false;
+
+  // If true, and if supported (for EGL, this requires the robustness
+  // extension), set the reset notification strategy to lose context on reset.
+  // This setting can be changed independently of robust_buffer_access.
+  // (True by default to match previous behavior.)
+  bool lose_context_on_reset = true;
+
   ContextPriority context_priority = ContextPriorityMedium;
 };
 
@@ -117,7 +125,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
                           const GLContextAttribs& attribs) = 0;
 
   // Makes the GL context and a surface current on the current thread.
-  virtual bool MakeCurrent(GLSurface* surface) = 0;
+  bool MakeCurrent(GLSurface* surface);
 
   // Releases this GL context and surface as current on the current thread.
   virtual void ReleaseCurrent(GLSurface* surface) = 0;
@@ -182,7 +190,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   // other than GL_NO_ERROR, that value is returned until the context is
   // destroyed.
   // The context must be current.
-  virtual unsigned int CheckStickyGraphicsResetStatus();
+  unsigned int CheckStickyGraphicsResetStatus();
 
   // Make this context current when used for context virtualization.
   bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);
@@ -222,7 +230,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   // context is made current.
   void DirtyVirtualContextState();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Create a fence for all work submitted to this context so far, and return a
   // monotonically increasing handle to it. This returned handle never needs to
   // be freed. This method is used to create backpressure to throttle GL work
@@ -266,11 +274,13 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   // Returns the last real (non-virtual) GLContext made current.
   static GLContext* GetRealCurrent();
 
+  virtual bool MakeCurrentImpl(GLSurface* surface) = 0;
+  virtual unsigned int CheckStickyGraphicsResetStatusImpl();
   virtual void ResetExtensions() = 0;
 
   GLApi* gl_api() { return gl_api_wrapper_->api(); }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Child classes are responsible for calling DestroyBackpressureFences during
   // their destruction while a context is current.
   bool HasBackpressureFences() const;
@@ -309,8 +319,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   bool state_dirtied_externally_ = false;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;
+  // This bit allows us to avoid virtual context state restoration in the case
+  // where this underlying context becomes lost.  https://crbug.com/1061442
+  bool context_lost_ = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   std::map<uint64_t, std::unique_ptr<GLFence>> backpressure_fences_;
   uint64_t next_backpressure_fence_ = 0;
 #endif

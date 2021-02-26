@@ -6,13 +6,11 @@
 
 #include "core/fxcrt/fx_string.h"
 
-#include <limits>
-#include <vector>
-
 #include "core/fxcrt/cfx_utf8decoder.h"
 #include "core/fxcrt/cfx_utf8encoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "third_party/base/compiler_specific.h"
+#include "third_party/base/stl_util.h"
 
 ByteString FX_UTF8Encode(WideStringView wsStr) {
   CFX_UTF8Encoder encoder;
@@ -139,7 +137,7 @@ size_t ToString(T value, int (*round_func)(T), char* buf) {
 
 float StringToFloat(ByteStringView strc) {
   return StringTo<float>(strc, kFractionScalesFloat,
-                         FX_ArraySize(kFractionScalesFloat));
+                         pdfium::size(kFractionScalesFloat));
 }
 
 float StringToFloat(WideStringView wsStr) {
@@ -152,7 +150,7 @@ size_t FloatToString(float f, char* buf) {
 
 double StringToDouble(ByteStringView strc) {
   return StringTo<double>(strc, kFractionScalesDouble,
-                          FX_ArraySize(kFractionScalesDouble));
+                          pdfium::size(kFractionScalesDouble));
 }
 
 double StringToDouble(WideStringView wsStr) {

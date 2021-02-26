@@ -25,19 +25,10 @@ struct DrawCallPerfParams : public RenderTestParams
 
     double runTimeSeconds;
     int numTris;
-    bool offscreen;
 };
 
 namespace params
 {
-template <typename ParamsT>
-ParamsT D3D9(const ParamsT &in)
-{
-    ParamsT out       = in;
-    out.eglParameters = angle::egl_platform::D3D9();
-    return out;
-}
-
 template <typename ParamsT>
 ParamsT D3D11(const ParamsT &in)
 {
@@ -71,6 +62,22 @@ ParamsT Vulkan(const ParamsT &in)
 }
 
 template <typename ParamsT>
+ParamsT VulkanMockICD(const ParamsT &in)
+{
+    ParamsT out       = in;
+    out.eglParameters = angle::egl_platform::VULKAN_NULL();
+    return out;
+}
+
+template <typename ParamsT>
+ParamsT VulkanSwiftShader(const ParamsT &in)
+{
+    ParamsT out       = in;
+    out.eglParameters = angle::egl_platform::VULKAN_SWIFTSHADER();
+    return out;
+}
+
+template <typename ParamsT>
 ParamsT WGL(const ParamsT &in)
 {
     ParamsT out = in;
@@ -84,6 +91,16 @@ ParamsT EGL(const ParamsT &in)
     ParamsT out = in;
     out.driver  = angle::GLESDriverType::SystemEGL;
     return out;
+}
+
+template <typename ParamsT>
+ParamsT Native(const ParamsT &in)
+{
+#if defined(ANGLE_PLATFORM_WINDOWS)
+    return WGL(in);
+#else
+    return EGL(in);
+#endif
 }
 }  // namespace params
 

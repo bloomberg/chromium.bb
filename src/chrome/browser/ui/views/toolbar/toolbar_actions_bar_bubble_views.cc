@@ -66,18 +66,6 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
 
 ToolbarActionsBarBubbleViews::~ToolbarActionsBarBubbleViews() {}
 
-void ToolbarActionsBarBubbleViews::Show() {
-  // Passing the Widget pointer (via GetWidget()) below in the lambda is safe
-  // because the controller, which eventually invokes the callback passed to
-  // OnBubbleShown, will never outlive the bubble view. This is because the
-  // ToolbarActionsBarBubbleView owns the ToolbarActionsBarBubbleDelegate.
-  // The ToolbarActionsBarBubbleDelegate is an ExtensionMessageBubbleBridge,
-  // which owns the ExtensionMessageBubbleController.
-  delegate_->OnBubbleShown(
-      base::Bind([](views::Widget* widget) { widget->Close(); }, GetWidget()));
-  GetWidget()->Show();
-}
-
 std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() {
   return delegate_->GetAnchorActionId();
 }
@@ -103,8 +91,9 @@ ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   if (!text.empty()) {
     if (extra_view_info->is_learn_more) {
       auto image_button = views::CreateVectorImageButtonWithNativeTheme(
-          this, vector_icons::kHelpOutlineIcon);
-      image_button->SetFocusForPlatform();
+          base::BindRepeating(&ToolbarActionsBarBubbleViews::ButtonPressed,
+                              base::Unretained(this)),
+          vector_icons::kHelpOutlineIcon);
       image_button->SetTooltipText(text);
       learn_more_button_ = image_button.get();
       extra_view = std::move(image_button);
@@ -126,6 +115,15 @@ ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   return icon ? std::move(icon) : std::move(extra_view);
 }
 
+void ToolbarActionsBarBubbleViews::ButtonPressed() {
+  NotifyDelegateOfClose(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
+  // Note that the Widget may or may not already be closed at this point,
+  // depending on delegate_->ShouldCloseOnDeactivate(). Widget::Close() protects
+  // against multiple calls (so long as they are not nested), and Widget
+  // destruction is asynchronous, so it is safe to call Close() again.
+  GetWidget()->Close();
+}
+
 void ToolbarActionsBarBubbleViews::NotifyDelegateOfClose(
     ToolbarActionsBarBubbleDelegate::CloseAction action) {
   if (delegate_notified_of_close_)
@@ -142,6 +140,21 @@ bool ToolbarActionsBarBubbleViews::ShouldShowCloseButton() const {
   return true;
 }
 
+void ToolbarActionsBarBubbleViews::AddedToWidget() {
+  // This is currently never added to a widget when the widget is already
+  // visible. If this changed, delegate_->OnBubbleShown() would also need to be
+  // called here.
+  DCHECK(!GetWidget()->IsVisible());
+  DCHECK(!observer_notified_of_show_);
+
+  GetWidget()->AddObserver(this);
+  BubbleDialogDelegateView::AddedToWidget();
+}
+
+void ToolbarActionsBarBubbleViews::RemovedFromWidget() {
+  GetWidget()->RemoveObserver(this);
+}
+
 void ToolbarActionsBarBubbleViews::Init() {
   base::string16 body_text_string = delegate_->GetBodyText(anchored_to_action_);
   base::string16 item_list = delegate_->GetItemListText();
@@ -153,9 +166,9 @@ void ToolbarActionsBarBubbleViews::Init() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  int width = provider->GetDistanceMetric(
-                  ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-              margins().width();
+  int width =
+      provider->GetDistanceMetric(views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+      margins().width();
 
   if (!body_text_string.empty()) {
     body_text_ = new views::Label(body_text_string);
@@ -178,12 +191,24 @@ void ToolbarActionsBarBubbleViews::Init() {
   }
 }
 
-void ToolbarActionsBarBubbleViews::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  NotifyDelegateOfClose(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
-  // Note that the Widget may or may not already be closed at this point,
-  // depending on delegate_->ShouldCloseOnDeactivate(). Widget::Close() protects
-  // against multiple calls (so long as they are not nested), and Widget
-  // destruction is asynchronous, so it is safe to call Close() again.
-  GetWidget()->Close();
+void ToolbarActionsBarBubbleViews::OnWidgetVisibilityChanged(
+    views::Widget* widget,
+    bool visible) {
+  DCHECK_EQ(GetWidget(), widget);
+  if (!visible)
+    return;
+
+  GetWidget()->RemoveObserver(this);
+  if (observer_notified_of_show_)
+    return;
+
+  observer_notified_of_show_ = true;
+  // Using Unretained is safe here because the controller, which eventually
+  // invokes the callback passed to OnBubbleShown, will never outlive the
+  // bubble view. This is because the ToolbarActionsBarBubbleView owns the
+  // ToolbarActionsBarBubbleDelegate. The ToolbarActionsBarBubbleDelegate is
+  // an ExtensionMessageBubbleBridge, which owns the
+  // ExtensionMessageBubbleController.
+  delegate_->OnBubbleShown(base::BindRepeating(&views::Widget::Close,
+                                               base::Unretained(GetWidget())));
 }

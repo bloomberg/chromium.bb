@@ -11,6 +11,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
@@ -18,7 +19,7 @@
 namespace views {
 
 RadioButton::RadioButton(const base::string16& label, int group_id)
-    : Checkbox(label, nullptr) {
+    : Checkbox(label) {
   SetGroup(group_id);
 }
 
@@ -108,8 +109,7 @@ void RadioButton::GetViewsInGroupFromParent(int group, Views* views) {
     parent()->GetViewsInGroup(group, views);
 }
 
-BEGIN_METADATA(RadioButton)
-METADATA_PARENT_CLASS(Checkbox)
-END_METADATA()
+BEGIN_METADATA(RadioButton, Checkbox)
+END_METADATA
 
 }  // namespace views

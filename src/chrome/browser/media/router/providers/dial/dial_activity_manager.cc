@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "net/base/url_util.h"
 
 namespace media_router {
@@ -38,7 +39,6 @@ GURL GetApplicationInstanceURL(
   std::string location_header;
   if (!response_info.headers->EnumerateHeader(nullptr, "LOCATION",
                                               &location_header)) {
-    DVLOG(2) << "Missing LOCATION header";
     return GURL();
   }
 
@@ -69,7 +69,7 @@ std::unique_ptr<DialActivity> DialActivity::From(
     const std::string& presentation_id,
     const MediaSinkInternal& sink,
     const MediaSource::Id& source_id,
-    bool incognito) {
+    bool off_the_record) {
   MediaSource source(source_id);
   GURL url = source.url();
   if (!url.is_valid())
@@ -105,17 +105,20 @@ std::unique_ptr<DialActivity> DialActivity::From(
       sink_id, app_name,
       /* is_local */ true, /* for_display */ true);
   route.set_presentation_id(presentation_id);
-  route.set_incognito(incognito);
-  return std::make_unique<DialActivity>(launch_info, route);
+  route.set_off_the_record(off_the_record);
+  return std::make_unique<DialActivity>(launch_info, route, sink);
 }
 
 DialActivity::DialActivity(const DialLaunchInfo& launch_info,
-                           const MediaRoute& route)
-    : launch_info(launch_info), route(route) {}
+                           const MediaRoute& route,
+                           const MediaSinkInternal& sink)
+    : launch_info(launch_info), route(route), sink(sink) {}
 
 DialActivity::~DialActivity() = default;
 
-DialActivityManager::DialActivityManager() = default;
+DialActivityManager::DialActivityManager(
+    DialAppDiscoveryService* app_discovery_service)
+    : app_discovery_service_(app_discovery_service) {}
 
 DialActivityManager::~DialActivityManager() = default;
 
@@ -162,7 +165,6 @@ void DialActivityManager::LaunchApp(
     return;
 
   if (!message.do_launch) {
-    DVLOG(2) << "Launch will be handled by SDK client; skipping launch.";
     record->state = DialActivityManager::Record::State::kLaunched;
     std::move(callback).Run(true);
     return;
@@ -174,8 +176,6 @@ void DialActivityManager::LaunchApp(
   const base::Optional<std::string>& post_data = message.launch_parameter
                                                      ? message.launch_parameter
                                                      : launch_info.post_data;
-  DVLOG(2) << "Launching app on " << route_id;
-
   auto fetcher =
       CreateFetcher(base::BindOnce(&DialActivityManager::OnLaunchSuccess,
                                    base::Unretained(this), route_id),
@@ -213,7 +213,6 @@ void DialActivityManager::StopApp(
   // haven't received the launch response yet. In this case we will treat it
   // as if it never launched.
   if (record->state != DialActivityManager::Record::State::kLaunched) {
-    DVLOG(2) << "App didn't launch; not issuing DELETE request.";
     records_.erase(record_it);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
     return;
@@ -257,7 +256,6 @@ std::unique_ptr<DialURLFetcher> DialActivityManager::CreateFetcher(
 void DialActivityManager::OnLaunchSuccess(const MediaRoute::Id& route_id,
                                           const std::string& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -277,8 +275,6 @@ void DialActivityManager::OnLaunchError(const MediaRoute::Id& route_id,
                                         int response_code,
                                         const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DVLOG(2) << "Response code: " << response_code << ", message: " << message;
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -292,7 +288,6 @@ void DialActivityManager::OnLaunchError(const MediaRoute::Id& route_id,
 void DialActivityManager::OnStopSuccess(const MediaRoute::Id& route_id,
                                         const std::string& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -308,17 +303,42 @@ void DialActivityManager::OnStopError(const MediaRoute::Id& route_id,
                                       int response_code,
                                       const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DVLOG(2) << "Response code: " << response_code << ", message: " << message;
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
 
-  // Move the callback out of the record since we are erasing the record.
+  // The vast majority of failures to stop a DIAL session is due to the session
+  // no longer existing on the receiver device. So we make another request to
+  // the receiver to determine if the session is already terminated.
+  app_discovery_service_->FetchDialAppInfo(
+      record_it->second->activity.sink,
+      record_it->second->activity.launch_info.app_name,
+      base::BindOnce(&DialActivityManager::OnInfoFetchedAfterStopError,
+                     base::Unretained(this), route_id, message));
+}
+
+void DialActivityManager::OnInfoFetchedAfterStopError(
+    const MediaRoute::Id& route_id,
+    const std::string& message,
+    const MediaSink::Id& sink_id,
+    const std::string& app_name,
+    DialAppInfoResult result) {
+  auto record_it = records_.find(route_id);
+  if (record_it == records_.end())
+    return;
+
   auto& record = record_it->second;
   auto cb = std::move(record->pending_stop_request->callback);
-  record->pending_stop_request.reset();
-  std::move(cb).Run(message, RouteRequestResult::UNKNOWN_ERROR);
+  if (result.app_info && result.app_info->state != DialAppState::kRunning) {
+    // The app is no longer running, so we remove the record and the MediaRoute
+    // associated with it.
+    records_.erase(record_it);
+    std::move(cb).Run(message, RouteRequestResult::ROUTE_ALREADY_TERMINATED);
+  } else {
+    // The app might still be running, so we don't remove the record.
+    record->pending_stop_request.reset();
+    std::move(cb).Run(message, RouteRequestResult::UNKNOWN_ERROR);
+  }
 }
 
 DialActivityManager::Record::Record(const DialActivity& activity)

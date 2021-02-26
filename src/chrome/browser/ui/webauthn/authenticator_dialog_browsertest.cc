@@ -5,8 +5,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
-#include "base/test/bind_test_util.h"
+#include "base/callback_helpers.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -42,7 +42,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
     model->set_cable_transport_info(/*cable_extension_provided=*/true,
                                     /*have_paired_phones=*/false,
-                                    device::CableDiscoveryData::NewQRKey());
+                                    "fido://qrcode");
     model->StartFlow(std::move(transport_availability), base::nullopt);
 
     // The dialog should immediately close as soon as it is displayed.
@@ -75,6 +75,12 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "cable_activate") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kCableActivate);
+    } else if (name == "cable_v2_activate") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kCableV2Activate);
+    } else if (name == "cable_v2_pair") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kCableV2QRCode);
     } else if (name == "set_pin") {
       model->CollectPIN(base::nullopt, base::BindOnce([](std::string pin) {}));
     } else if (name == "get_pin") {
@@ -90,12 +96,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->CollectPIN(8, base::BindOnce([](std::string pin) {}));
     } else if (name == "inline_bio_enrollment") {
       model->StartInlineBioEnrollment(base::DoNothing());
-      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
-                   base::BindLambdaForTesting([&, weak_model = model.get()] {
-                     weak_model->OnSampleCollected(--bio_samples_remaining_);
-                     if (bio_samples_remaining_ <= 0)
-                       timer_.Stop();
-                   }));
+      timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(2),
+          base::BindLambdaForTesting([&, weak_model = model->GetWeakPtr()] {
+            if (!weak_model || weak_model->current_step() !=
+                                   AuthenticatorRequestDialogModel::Step::
+                                       kInlineBioEnrollment) {
+              return;
+            }
+            weak_model->OnSampleCollected(--bio_samples_remaining_);
+            if (bio_samples_remaining_ <= 0)
+              timer_.Stop();
+          }));
     } else if (name == "retry_uv") {
       model->OnRetryUserVerification(5);
     } else if (name == "retry_uv_two_tries_remaining") {
@@ -152,8 +164,6 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           base::BindOnce([](device::AuthenticatorGetAssertionResponse) {}));
     } else if (name == "request_attestation_permission") {
       model->RequestAttestationPermission(base::DoNothing());
-    } else if (name == "qr_code") {
-      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kQRCode);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -209,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_power_on_manual) {
   ShowAndVerifyUi();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
   ShowAndVerifyUi();
 }
@@ -217,9 +227,17 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid_incognito) {
   ShowAndVerifyUi();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_activate) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_v2_activate) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_v2_pair) {
   ShowAndVerifyUi();
 }
 
@@ -300,9 +318,5 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_request_attestation_permission) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_qr_code) {
   ShowAndVerifyUi();
 }

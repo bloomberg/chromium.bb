@@ -5,18 +5,22 @@
 #ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_X11_H_
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_X11_H_
 
+#include "base/component_export.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 
 namespace ui {
 
 // OSExchangeDataProvider implementation for x11 linux.
-class UI_BASE_EXPORT OSExchangeDataProviderX11 : public XOSExchangeDataProvider,
-                                                 public XEventDispatcher {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderX11
+    : public XOSExchangeDataProvider,
+      public XEventDispatcher {
  public:
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
-  OSExchangeDataProviderX11(XID x_window, const SelectionFormatMap& selection);
+  OSExchangeDataProviderX11(x11::Window x_window,
+                            const SelectionFormatMap& selection);
 
   // Creates a Provider for sending drag information. This creates its own,
   // hidden X11 window to own send data.
@@ -30,11 +34,12 @@ class UI_BASE_EXPORT OSExchangeDataProviderX11 : public XOSExchangeDataProvider,
 
   // OSExchangeDataProvider:
   std::unique_ptr<OSExchangeDataProvider> Clone() const override;
-  void SetFileContents(const base::FilePath& filename,
-                       const std::string& file_contents) override;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
+
+  void SetSource(std::unique_ptr<DataTransferEndpoint> data_source) override;
+  DataTransferEndpoint* GetSource() const override;
 
  private:
   friend class OSExchangeDataProviderX11Test;

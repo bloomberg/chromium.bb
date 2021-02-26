@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -28,7 +29,7 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/recently_audible_helper.h"
 #endif
 
@@ -37,7 +38,7 @@ namespace {
 // Tab strip bounds depend on the window frame sizes.
 gfx::Point ExpectedTabStripRegionOrigin(BrowserView* browser_view) {
   gfx::Rect tabstrip_bounds(browser_view->frame()->GetBoundsForTabStripRegion(
-      browser_view->tabstrip()));
+      browser_view->tab_strip_region_view()->GetMinimumSize()));
   gfx::Point tabstrip_region_origin(tabstrip_bounds.origin());
   views::View::ConvertPointToTarget(browser_view->parent(), browser_view,
                                     &tabstrip_region_origin);
@@ -165,7 +166,7 @@ TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
 }
 
 // TODO(https://crbug.com/1020758): Flaky on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_FindBarBoundingBoxLocationBar \
   DISABLED_FindBarBoundingBoxLocationBar
 #else
@@ -212,7 +213,7 @@ TEST_F(BrowserViewTest, FindBarBoundingBoxNoLocationBar) {
 }
 
 // On macOS, most accelerators are handled by CommandDispatcher.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Test that repeated accelerators are processed or ignored depending on the
 // commands that they refer to. The behavior for different commands is dictated
 // by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
@@ -231,11 +232,11 @@ TEST_F(BrowserViewTest, DISABLED_RepeatedAccelerators) {
       ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kNextTabRepeatAccel));
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Test that bookmark bar view becomes invisible when closing the browser.
 // TODO(https://crbug.com/1000251): Flaky on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_BookmarkBarInvisibleOnShutdown \
   DISABLED_BookmarkBarInvisibleOnShutdown
 #else
@@ -308,7 +309,7 @@ TEST_F(BrowserViewTest, DISABLED_AccessibleWindowTitle) {
           TestingProfile::Builder().BuildIncognito(profile)));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Tests that audio playing state is reflected in the "Window" menu on Mac.
 TEST_F(BrowserViewTest, TitleAudioIndicators) {
   base::string16 playing_icon = base::WideToUTF16(L"\U0001F50A");

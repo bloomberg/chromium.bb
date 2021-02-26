@@ -17,6 +17,7 @@ namespace blink {
 
 class IDBAny;
 class IDBKeyRange;
+class IDBValue;
 class ScriptState;
 
 class IDBObservation final : public ScriptWrappable {
@@ -32,7 +33,7 @@ class IDBObservation final : public ScriptWrappable {
   ~IDBObservation() override;
 
   void SetIsolate(v8::Isolate* isolate);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Implement the IDL
   ScriptValue key(ScriptState*);

@@ -19,7 +19,6 @@
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -30,7 +29,6 @@ namespace {
 constexpr int64_t kStubDisplayId = 1;
 constexpr char kCastGraphicsHeight[] = "cast-graphics-height";
 constexpr char kCastGraphicsWidth[] = "cast-graphics-width";
-constexpr char kDisplayRotation[] = "display-rotation";
 
 gfx::Size GetDefaultScreenResolution() {
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
@@ -64,18 +62,18 @@ gfx::Size GetScreenResolution() {
   return GetDefaultScreenResolution();
 }
 
-display::Display::Rotation GetRotationFromCommandLine() {
-  std::string rotation =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          kDisplayRotation);
-  if (rotation == "90")
-    return display::Display::ROTATE_90;
-  else if (rotation == "180")
-    return display::Display::ROTATE_180;
-  else if (rotation == "270")
-    return display::Display::ROTATE_270;
-  else
-    return display::Display::ROTATE_0;
+display::Display::Rotation RotationFromPanelOrientation(
+    display::PanelOrientation orientation) {
+  switch (orientation) {
+    case display::kNormal:
+      return display::Display::ROTATE_0;
+    case display::kRightUp:
+      return display::Display::ROTATE_90;
+    case display::kBottomUp:
+      return display::Display::ROTATE_180;
+    case display::kLeftUp:
+      return display::Display::ROTATE_270;
+  }
 }
 
 gfx::Rect GetScreenBounds(const gfx::Size& size_in_pixels,
@@ -128,10 +126,40 @@ void CastDisplayConfigurator::OnConfigurationChanged() {
       false /* force_initial_configure */));
 }
 
+void CastDisplayConfigurator::OnDisplaySnapshotsInvalidated() {
+  display_ = nullptr;
+}
+
+void CastDisplayConfigurator::EnableDisplay(
+    display::ConfigureCallback callback) {
+  if (!delegate_ || !display_)
+    return;
+
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), gfx::Point(), display_->native_mode());
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
+  delegate_->Configure(config_request, std::move(callback));
+}
+
+void CastDisplayConfigurator::DisableDisplay(
+    display::ConfigureCallback callback) {
+  if (!delegate_ || !display_)
+    return;
+
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), gfx::Point(), nullptr);
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
+  delegate_->Configure(config_request, std::move(callback));
+}
+
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
   const gfx::Size size = GetScreenResolution();
   UpdateScreen(kStubDisplayId, gfx::Rect(size), GetDeviceScaleFactor(size),
-               GetRotationFromCommandLine());
+               display::Display::ROTATE_0);
 }
 
 void CastDisplayConfigurator::SetColorMatrix(
@@ -187,11 +215,16 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
     // during the first queries to display::Screen.
     UpdateScreen(display_->display_id(), gfx::Rect(origin, native_size),
                  GetDeviceScaleFactor(native_size),
-                 GetRotationFromCommandLine());
+                 RotationFromPanelOrientation(display_->panel_orientation()));
   }
 
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), origin, display_->native_mode());
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
   delegate_->Configure(
-      *display_, display_->native_mode(), origin,
+      config_request,
       base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
                           weak_factory_.GetWeakPtr(), display_,
                           display_->native_mode(), origin));
@@ -201,12 +234,14 @@ void CastDisplayConfigurator::OnDisplayConfigured(
     display::DisplaySnapshot* display,
     const display::DisplayMode* mode,
     const gfx::Point& origin,
-    bool success) {
+    const base::flat_map<int64_t, bool>& statuses) {
   DCHECK(display);
   DCHECK(mode);
   DCHECK_EQ(display, display_);
+  DCHECK_EQ(statuses.size(), 1UL);
 
   const gfx::Rect bounds(origin, mode->size());
+  bool success = statuses.at(display_->display_id());
   DVLOG(1) << __func__ << " success=" << success
            << " bounds=" << bounds.ToString();
   if (success) {
@@ -216,7 +251,7 @@ void CastDisplayConfigurator::OnDisplayConfigured(
 
     UpdateScreen(display_->display_id(), bounds,
                  GetDeviceScaleFactor(display->native_mode()->size()),
-                 GetRotationFromCommandLine());
+                 RotationFromPanelOrientation(display_->panel_orientation()));
   } else {
     LOG(FATAL) << "Failed to configure display";
   }

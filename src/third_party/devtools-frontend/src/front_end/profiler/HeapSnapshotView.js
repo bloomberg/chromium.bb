@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
@@ -77,6 +80,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     this._parentDataDisplayDelegate = dataDisplayDelegate;
 
     this._searchableView = new UI.SearchableView.SearchableView(this);
+    this._searchableView.setPlaceholder(ls`Find`, ls`Find`);
     this._searchableView.show(this.element);
 
     this._splitWidget = new UI.SplitWidget.SplitWidget(false, true, 'heapSnapshotSplitViewState', 200, 200);
@@ -316,12 +320,15 @@ export class HeapSnapshotView extends UI.View.SimpleView {
    */
   async _retrieveStatistics(heapSnapshotProxy) {
     const statistics = await heapSnapshotProxy.getStatistics();
-    this._statisticsView.setTotal(statistics.total);
-    this._statisticsView.addRecord(statistics.code, Common.UIString.UIString('Code'), '#f77');
-    this._statisticsView.addRecord(statistics.strings, Common.UIString.UIString('Strings'), '#5e5');
-    this._statisticsView.addRecord(statistics.jsArrays, Common.UIString.UIString('JS Arrays'), '#7af');
-    this._statisticsView.addRecord(statistics.native, Common.UIString.UIString('Typed Arrays'), '#fc5');
-    this._statisticsView.addRecord(statistics.system, Common.UIString.UIString('System Objects'), '#98f');
+
+    const records = [
+      {value: statistics.code, color: '#f77', title: ls`Code`},
+      {value: statistics.strings, color: '#5e5', title: ls`Strings`},
+      {value: statistics.jsArrays, color: '#7af', title: ls`JS arrays`},
+      {value: statistics.native, color: '#fc5', title: ls`Typed arrays`},
+      {value: statistics.system, color: '#98f', title: ls`System objects`},
+    ];
+    this._statisticsView.setTotalAndRecords(statistics.total, records);
     return statistics;
   }
 
@@ -684,16 +691,22 @@ export class HeapSnapshotView extends UI.View.SimpleView {
 
   /**
    * @param {!Event} event
-   * @return {?UI.PopoverRequest}
+   * @return {?UI.PopoverHelper.PopoverRequest}
    */
   _getPopoverRequest(event) {
-    const span = event.target.enclosingNodeOrSelfWithNodeName('span');
-    const row = event.target.enclosingNodeOrSelfWithNodeName('tr');
-    const heapProfilerModel = this._profile.heapProfilerModel();
-    if (!row || !span || !heapProfilerModel) {
+    const span = UI.UIUtils.enclosingNodeOrSelfWithNodeName(/** @type {!Node} */ (event.target), 'span');
+    const row = UI.UIUtils.enclosingNodeOrSelfWithNodeName(/** @type {!Node} */ (event.target), 'row');
+    if (!row) {
       return null;
     }
-    const node = row._dataGridNode;
+    const node = this._dataGrid.dataGridNodeFromNode(row) || this._containmentDataGrid.dataGridNodeFromNode(row) ||
+        this._constructorsDataGrid.dataGridNodeFromNode(row) || this._diffDataGrid.dataGridNodeFromNode(row) ||
+        (this._allocationDataGrid && this._allocationDataGrid.dataGridNodeFromNode(row)) ||
+        this._retainmentDataGrid.dataGridNodeFromNode(row);
+    const heapProfilerModel = this._profile.heapProfilerModel();
+    if (!node || !span || !heapProfilerModel) {
+      return null;
+    }
     let objectPopoverHelper;
     return {
       box: span.boxInWindow(),
@@ -1200,7 +1213,7 @@ export class HeapSnapshotProfileType extends ProfileType {
     if (this.profileBeingRecorded()) {
       return;
     }
-    const heapProfilerModel = self.UI.context.flavor(SDK.HeapProfilerModel.HeapProfilerModel);
+    const heapProfilerModel = UI.Context.Context.instance().flavor(SDK.HeapProfilerModel.HeapProfilerModel);
     if (!heapProfilerModel) {
       return;
     }
@@ -1407,7 +1420,7 @@ export class TrackingHeapSnapshotProfileType extends HeapSnapshotProfileType {
    * @return {?SDK.HeapProfilerModel.HeapProfilerModel}
    */
   _addNewProfile() {
-    const heapProfilerModel = self.UI.context.flavor(SDK.HeapProfilerModel.HeapProfilerModel);
+    const heapProfilerModel = UI.Context.Context.instance().flavor(SDK.HeapProfilerModel.HeapProfilerModel);
     if (!heapProfilerModel) {
       return null;
     }
@@ -1524,11 +1537,11 @@ export class HeapProfileHeader extends ProfileHeader {
     /** @type {?HeapSnapshotProxy} */
     this._snapshotProxy = null;
     /** @type {!Promise<!HeapSnapshotProxy>} */
-    this._loadPromise = new Promise(resolve => this._fulfillLoad = resolve);
+    this._loadPromise = new Promise(resolve => {
+      this._fulfillLoad = resolve;
+    });
     this._totalNumberOfChunks = 0;
     this._bufferedWriter = null;
-    /** @type {?Bindings.TempFile.TempFile} */
-    this._tempFile = null;
   }
 
   /**
@@ -1590,7 +1603,7 @@ export class HeapProfileHeader extends ProfileHeader {
       }
       return;
     }
-    this._tempFile = tempFile;
+    this.tempFile = tempFile;
     if (!tempFile) {
       this._failedToCreateTempFile = true;
     }
@@ -1696,7 +1709,8 @@ export class HeapProfileHeader extends ProfileHeader {
    */
   saveToFile() {
     const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
-    this._fileName = this._fileName || 'Heap-' + new Date().toISO8601Compact() + this.profileType().fileExtension();
+    this._fileName = this._fileName ||
+        'Heap-' + Platform.DateUtilities.toISO8601Compact(new Date()) + this.profileType().fileExtension();
     fileOutputStream.open(this._fileName).then(onOpen.bind(this));
 
     /**
@@ -1712,8 +1726,8 @@ export class HeapProfileHeader extends ProfileHeader {
         fileOutputStream.close();
         return;
       }
-      if (this._tempFile) {
-        const error = await this._tempFile.copyToOutputStream(fileOutputStream, this._onChunkTransferred.bind(this));
+      if (this.tempFile) {
+        const error = await this.tempFile.copyToOutputStream(fileOutputStream, this._onChunkTransferred.bind(this));
         if (error) {
           Common.Console.Console.instance().error('Failed to read heap snapshot from temp file: ' + error.message);
         }
@@ -1765,14 +1779,10 @@ export class HeapSnapshotStatisticsView extends UI.Widget.VBox {
   constructor() {
     super();
     this.element.classList.add('heap-snapshot-statistics-view');
-    this._pieChart = new PerfUI.PieChart.PieChart({
-      chartName: ls`Heap memory usage`,
-      size: 150,
-      formatter: HeapSnapshotStatisticsView._valueFormatter,
-      showLegend: true
-    });
-    this._pieChart.element.classList.add('heap-snapshot-stats-pie-chart');
-    this.element.appendChild(this._pieChart.element);
+    this._pieChart = PerfUI.PieChart.createPieChart();
+    this.setTotalAndRecords(0, []);
+    this._pieChart.classList.add('heap-snapshot-stats-pie-chart');
+    this.element.appendChild(this._pieChart);
   }
 
   /**
@@ -1780,23 +1790,22 @@ export class HeapSnapshotStatisticsView extends UI.Widget.VBox {
    * @return {string}
    */
   static _valueFormatter(value) {
-    return Common.UIString.UIString('%s KB', Number.withThousandsSeparator(Math.round(value / 1024)));
+    return Common.UIString.UIString('%s kB', Number.withThousandsSeparator(Math.round(value / 1000)));
   }
 
   /**
-   * @param {number} value
+   * @param {number} total
+   * @param {!Array<!PerfUI.PieChart.Slice>} records
    */
-  setTotal(value) {
-    this._pieChart.initializeWithTotal(value);
-  }
-
-  /**
-   * @param {number} value
-   * @param {string} name
-   * @param {string} color
-   */
-  addRecord(value, name, color) {
-    this._pieChart.addSlice(value, color, name);
+  setTotalAndRecords(total, records) {
+    this._pieChart.data = {
+      chartName: ls`Heap memory usage`,
+      size: 150,
+      formatter: HeapSnapshotStatisticsView._valueFormatter,
+      showLegend: true,
+      total,
+      slices: records
+    };
   }
 }
 
@@ -1879,8 +1888,10 @@ export class HeapAllocationStackView extends UI.Widget.Widget {
 
     if (!frames) {
       const stackDiv = this.element.createChild('div', 'no-heap-allocation-stack');
-      stackDiv.createTextChild(Common.UIString.UIString(
-          'Stack was not recorded for this object because it had been allocated before this profile recording started.'));
+      UI.UIUtils.createTextChild(
+          stackDiv,
+          Common.UIString.UIString(
+              'Stack was not recorded for this object because it had been allocated before this profile recording started.'));
       return;
     }
 

@@ -14,6 +14,7 @@
 #include "include/private/GrTypesPriv.h"
 
 class GrD3DGpu;
+class GrD3DPipelineState;
 
 class GrD3DOpsRenderPass : public GrOpsRenderPass {
 public:
@@ -21,7 +22,7 @@ public:
 
     ~GrD3DOpsRenderPass() override;
 
-    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {}
+    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override;
 
     void onExecuteDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler>) override {}
 
@@ -36,33 +37,41 @@ private:
     void onBegin() override;
 
     bool onBindPipeline(const GrProgramInfo&, const SkRect& drawBounds) override;
-    void onSetScissorRect(const SkIRect&) override {}
+    void onSetScissorRect(const SkIRect&) override;
     bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
-                        const GrPipeline&) override {
-        return true;
+                        const GrPipeline&) override;
+    void onBindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
+                       sk_sp<const GrBuffer> vertexBuffer, GrPrimitiveRestart) override;
+    void onDraw(int vertexCount, int baseVertex) override {
+        this->onDrawInstanced(1, 0, vertexCount, baseVertex);
     }
-    void onBindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
-                       const GrBuffer* vertexBuffer, GrPrimitiveRestart) override {}
-    void onDraw(int vertexCount, int baseVertex) override {}
     void onDrawIndexed(int indexCount, int baseIndex, uint16_t minIndexValue,
-                       uint16_t maxIndexValue, int baseVertex) override {}
+                       uint16_t maxIndexValue, int baseVertex) override {
+        this->onDrawIndexedInstanced(indexCount, baseIndex, 1, 0, baseVertex);
+    }
     void onDrawInstanced(int instanceCount, int baseInstance, int vertexCount,
-                         int baseVertex) override {}
+                         int baseVertex) override;
     void onDrawIndexedInstanced(int indexCount, int baseIndex, int instanceCount, int baseInstance,
-                                int baseVertex) override {}
+                                int baseVertex) override;
+    void onDrawIndirect(const GrBuffer*, size_t offset, int drawCount) override;
+    void onDrawIndexedIndirect(const GrBuffer*, size_t offset, int drawCount) override;
 
-    void onClear(const GrFixedClip&, const SkPMColor4f& color) override;
+    void onClear(const GrScissorState& scissor, const SkPMColor4f& color) override;
 
-    void onClearStencilClip(const GrFixedClip&, bool insideStencilMask) override {}
+    void onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) override;
 
     GrD3DGpu* fGpu;
+
+    sk_sp<GrD3DPipelineState> fCurrentPipelineState;
+
     SkIRect fBounds;
     SkIRect fCurrentPipelineBounds;
 
     GrLoadOp fColorLoadOp;
     SkPMColor4f fClearColor;
+    GrLoadOp fStencilLoadOp;
 
-    typedef GrOpsRenderPass INHERITED;
+    using INHERITED = GrOpsRenderPass;
 };
 
 #endif

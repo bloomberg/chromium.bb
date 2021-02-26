@@ -7,15 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "absl/base/macros.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/http/http_frames.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 using ::testing::_;
@@ -62,7 +64,7 @@ class MockVisitor : public HttpDecoder::Visitor {
               (override));
   MOCK_METHOD(bool,
               OnDataFramePayload,
-              (quiche::QuicheStringPiece payload),
+              (absl::string_view payload),
               (override));
   MOCK_METHOD(bool, OnDataFrameEnd, (), (override));
 
@@ -72,7 +74,7 @@ class MockVisitor : public HttpDecoder::Visitor {
               (override));
   MOCK_METHOD(bool,
               OnHeadersFramePayload,
-              (quiche::QuicheStringPiece payload),
+              (absl::string_view payload),
               (override));
   MOCK_METHOD(bool, OnHeadersFrameEnd, (), (override));
 
@@ -88,7 +90,7 @@ class MockVisitor : public HttpDecoder::Visitor {
               (override));
   MOCK_METHOD(bool,
               OnPushPromiseFramePayload,
-              (quiche::QuicheStringPiece payload),
+              (absl::string_view payload),
               (override));
   MOCK_METHOD(bool, OnPushPromiseFrameEnd, (), (override));
 
@@ -109,7 +111,7 @@ class MockVisitor : public HttpDecoder::Visitor {
               (override));
   MOCK_METHOD(bool,
               OnUnknownFramePayload,
-              (quiche::QuicheStringPiece payload),
+              (absl::string_view payload),
               (override));
   MOCK_METHOD(bool, OnUnknownFrameEnd, (), (override));
 };
@@ -147,13 +149,13 @@ class HttpDecoderTest : public QuicTest {
   }
 
   // Process |input| in a single call to HttpDecoder::ProcessInput().
-  QuicByteCount ProcessInput(quiche::QuicheStringPiece input) {
+  QuicByteCount ProcessInput(absl::string_view input) {
     return decoder_.ProcessInput(input.data(), input.size());
   }
 
   // Feed |input| to |decoder_| one character at a time,
   // verifying that each character gets processed.
-  void ProcessInputCharByChar(quiche::QuicheStringPiece input) {
+  void ProcessInputCharByChar(absl::string_view input) {
     for (char c : input) {
       EXPECT_EQ(1u, decoder_.ProcessInput(&c, 1));
     }
@@ -161,8 +163,7 @@ class HttpDecoderTest : public QuicTest {
 
   // Append garbage to |input|, then process it in a single call to
   // HttpDecoder::ProcessInput().  Verify that garbage is not read.
-  QuicByteCount ProcessInputWithGarbageAppended(
-      quiche::QuicheStringPiece input) {
+  QuicByteCount ProcessInputWithGarbageAppended(absl::string_view input) {
     std::string input_with_garbage_appended =
         quiche::QuicheStrCat(input, "blahblah");
     QuicByteCount processed_bytes = ProcessInput(input_with_garbage_appended);
@@ -192,7 +193,7 @@ TEST_F(HttpDecoderTest, UnknownFrame) {
   const QuicByteCount payload_lengths[] = {0, 14, 100};
   const uint64_t frame_types[] = {
       0x21, 0x40, 0x5f, 0x7e, 0x9d,  // some reserved frame types
-      0x06, 0x6f, 0x14               // some unknown, not reserved frame types
+      0x6f, 0x14                     // some unknown, not reserved frame types
   };
 
   for (auto payload_length : payload_lengths) {
@@ -230,7 +231,7 @@ TEST_F(HttpDecoderTest, UnknownFrame) {
 
 TEST_F(HttpDecoderTest, CancelPush) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "03"    // type (CANCEL_PUSH)
       "01"    // length
       "01");  // Push Id
@@ -258,16 +259,16 @@ TEST_F(HttpDecoderTest, CancelPush) {
 TEST_F(HttpDecoderTest, PushPromiseFrame) {
   InSequence s;
   std::string input = quiche::QuicheStrCat(
-      quiche::QuicheTextUtils::HexDecode("05"  // type (PUSH PROMISE)
-                                         "0f"  // length
-                                         "C000000000000101"),  // push id 257
-      "Headers");                                              // headers
+      absl::HexStringToBytes("05"                  // type (PUSH PROMISE)
+                             "0f"                  // length
+                             "C000000000000101"),  // push id 257
+      "Headers");                                  // headers
 
   // Visitor pauses processing.
   EXPECT_CALL(visitor_, OnPushPromiseFrameStart(2)).WillOnce(Return(false));
   EXPECT_CALL(visitor_, OnPushPromiseFramePushId(257, 8, 7))
       .WillOnce(Return(false));
-  quiche::QuicheStringPiece remaining_input(input);
+  absl::string_view remaining_input(input);
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(2u, processed_bytes);
@@ -276,8 +277,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
   EXPECT_EQ(8u, processed_bytes);
   remaining_input = remaining_input.substr(processed_bytes);
 
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("Headers")))
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("Headers")))
       .WillOnce(Return(false));
   processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(remaining_input.size(), processed_bytes);
@@ -291,7 +291,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
   EXPECT_CALL(visitor_, OnPushPromiseFrameStart(2));
   EXPECT_CALL(visitor_, OnPushPromiseFramePushId(257, 8, 7));
   EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("Headers")));
+              OnPushPromiseFramePayload(absl::string_view("Headers")));
   EXPECT_CALL(visitor_, OnPushPromiseFrameEnd());
   EXPECT_EQ(input.size(), ProcessInput(input));
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -300,20 +300,13 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
   // Process the frame incrementally.
   EXPECT_CALL(visitor_, OnPushPromiseFrameStart(2));
   EXPECT_CALL(visitor_, OnPushPromiseFramePushId(257, 8, 7));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("H")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("e")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("a")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("d")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("e")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("r")));
-  EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("s")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("H")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("e")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("a")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("d")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("e")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("r")));
+  EXPECT_CALL(visitor_, OnPushPromiseFramePayload(absl::string_view("s")));
   EXPECT_CALL(visitor_, OnPushPromiseFrameEnd());
   ProcessInputCharByChar(input);
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -323,7 +316,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
   EXPECT_CALL(visitor_, OnPushPromiseFrameStart(2));
   EXPECT_CALL(visitor_, OnPushPromiseFramePushId(257, 8, 7));
   EXPECT_CALL(visitor_,
-              OnPushPromiseFramePayload(quiche::QuicheStringPiece("Headers")));
+              OnPushPromiseFramePayload(absl::string_view("Headers")));
   EXPECT_CALL(visitor_, OnPushPromiseFrameEnd());
   ProcessInputCharByChar(input.substr(0, 9));
   EXPECT_EQ(8u, ProcessInput(input.substr(9)));
@@ -334,7 +327,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
 TEST_F(HttpDecoderTest, CorruptPushPromiseFrame) {
   InSequence s;
 
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "05"    // type (PUSH_PROMISE)
       "01"    // length
       "40");  // first byte of two-byte varint push id
@@ -365,7 +358,7 @@ TEST_F(HttpDecoderTest, CorruptPushPromiseFrame) {
 
 TEST_F(HttpDecoderTest, MaxPushId) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "0D"    // type (MAX_PUSH_ID)
       "01"    // length
       "01");  // Push Id
@@ -392,7 +385,7 @@ TEST_F(HttpDecoderTest, MaxPushId) {
 
 TEST_F(HttpDecoderTest, SettingsFrame) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "04"    // type (SETTINGS)
       "07"    // length
       "01"    // identifier (SETTINGS_QPACK_MAX_TABLE_CAPACITY)
@@ -408,7 +401,7 @@ TEST_F(HttpDecoderTest, SettingsFrame) {
   frame.values[256] = 4;
 
   // Visitor pauses processing.
-  quiche::QuicheStringPiece remaining_input(input);
+  absl::string_view remaining_input(input);
   EXPECT_CALL(visitor_, OnSettingsFrameStart(2)).WillOnce(Return(false));
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
@@ -472,7 +465,7 @@ TEST_F(HttpDecoderTest, CorruptSettingsFrame) {
 }
 
 TEST_F(HttpDecoderTest, DuplicateSettingsIdentifier) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "04"    // type (SETTINGS)
       "04"    // length
       "01"    // identifier
@@ -492,20 +485,20 @@ TEST_F(HttpDecoderTest, DuplicateSettingsIdentifier) {
 
 TEST_F(HttpDecoderTest, DataFrame) {
   InSequence s;
-  std::string input = quiche::QuicheStrCat(
-      quiche::QuicheTextUtils::HexDecode("00"    // type (DATA)
-                                         "05"),  // length
-      "Data!");                                  // data
+  std::string input =
+      quiche::QuicheStrCat(absl::HexStringToBytes("00"    // type (DATA)
+                                                  "05"),  // length
+                           "Data!");                      // data
 
   // Visitor pauses processing.
   EXPECT_CALL(visitor_, OnDataFrameStart(2, 5)).WillOnce(Return(false));
-  quiche::QuicheStringPiece remaining_input(input);
+  absl::string_view remaining_input(input);
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(2u, processed_bytes);
   remaining_input = remaining_input.substr(processed_bytes);
 
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("Data!")))
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("Data!")))
       .WillOnce(Return(false));
   processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(remaining_input.size(), processed_bytes);
@@ -517,7 +510,7 @@ TEST_F(HttpDecoderTest, DataFrame) {
 
   // Process the full frame.
   EXPECT_CALL(visitor_, OnDataFrameStart(2, 5));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("Data!")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("Data!")));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
   EXPECT_EQ(input.size(), ProcessInput(input));
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -525,11 +518,11 @@ TEST_F(HttpDecoderTest, DataFrame) {
 
   // Process the frame incrementally.
   EXPECT_CALL(visitor_, OnDataFrameStart(2, 5));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("D")));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("a")));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("t")));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("a")));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("!")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("D")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("a")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("t")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("a")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("!")));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
   ProcessInputCharByChar(input);
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -557,7 +550,7 @@ TEST_F(HttpDecoderTest, FrameHeaderPartialDelivery) {
   EXPECT_EQ("", decoder_.error_detail());
 
   // Send data.
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece(input)));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view(input)));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
   EXPECT_EQ(2048u, decoder_.ProcessInput(input.data(), 2048));
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -594,10 +587,10 @@ TEST_F(HttpDecoderTest, PartialDeliveryOfLargeFrameType) {
 
 TEST_F(HttpDecoderTest, GoAway) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "07"    // type (GOAWAY)
       "01"    // length
-      "01");  // StreamId
+      "01");  // ID
 
   // Visitor pauses processing.
   EXPECT_CALL(visitor_, OnGoAwayFrame(GoAwayFrame({1})))
@@ -621,21 +614,20 @@ TEST_F(HttpDecoderTest, GoAway) {
 
 TEST_F(HttpDecoderTest, HeadersFrame) {
   InSequence s;
-  std::string input = quiche::QuicheStrCat(
-      quiche::QuicheTextUtils::HexDecode("01"    // type (HEADERS)
-                                         "07"),  // length
-      "Headers");                                // headers
+  std::string input =
+      quiche::QuicheStrCat(absl::HexStringToBytes("01"    // type (HEADERS)
+                                                  "07"),  // length
+                           "Headers");                    // headers
 
   // Visitor pauses processing.
   EXPECT_CALL(visitor_, OnHeadersFrameStart(2, 7)).WillOnce(Return(false));
-  quiche::QuicheStringPiece remaining_input(input);
+  absl::string_view remaining_input(input);
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(2u, processed_bytes);
   remaining_input = remaining_input.substr(processed_bytes);
 
-  EXPECT_CALL(visitor_,
-              OnHeadersFramePayload(quiche::QuicheStringPiece("Headers")))
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("Headers")))
       .WillOnce(Return(false));
   processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(remaining_input.size(), processed_bytes);
@@ -647,8 +639,7 @@ TEST_F(HttpDecoderTest, HeadersFrame) {
 
   // Process the full frame.
   EXPECT_CALL(visitor_, OnHeadersFrameStart(2, 7));
-  EXPECT_CALL(visitor_,
-              OnHeadersFramePayload(quiche::QuicheStringPiece("Headers")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("Headers")));
   EXPECT_CALL(visitor_, OnHeadersFrameEnd());
   EXPECT_EQ(input.size(), ProcessInput(input));
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -656,13 +647,13 @@ TEST_F(HttpDecoderTest, HeadersFrame) {
 
   // Process the frame incrementally.
   EXPECT_CALL(visitor_, OnHeadersFrameStart(2, 7));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("H")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("e")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("a")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("d")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("e")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("r")));
-  EXPECT_CALL(visitor_, OnHeadersFramePayload(quiche::QuicheStringPiece("s")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("H")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("e")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("a")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("d")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("e")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("r")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("s")));
   EXPECT_CALL(visitor_, OnHeadersFrameEnd());
   ProcessInputCharByChar(input);
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
@@ -671,7 +662,7 @@ TEST_F(HttpDecoderTest, HeadersFrame) {
 
 TEST_F(HttpDecoderTest, EmptyDataFrame) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "00"    // type (DATA)
       "00");  // length
 
@@ -701,7 +692,7 @@ TEST_F(HttpDecoderTest, EmptyDataFrame) {
 
 TEST_F(HttpDecoderTest, EmptyHeadersFrame) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "01"    // type (HEADERS)
       "00");  // length
 
@@ -731,7 +722,7 @@ TEST_F(HttpDecoderTest, EmptyHeadersFrame) {
 
 TEST_F(HttpDecoderTest, PushPromiseFrameNoHeaders) {
   InSequence s;
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "05"    // type (PUSH_PROMISE)
       "01"    // length
       "01");  // Push Id
@@ -765,7 +756,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrameNoHeaders) {
 }
 
 TEST_F(HttpDecoderTest, MalformedFrameWithOverlyLargePayload) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "03"    // type (CANCEL_PUSH)
       "10"    // length
       "15");  // malformed payload
@@ -786,27 +777,41 @@ TEST_F(HttpDecoderTest, MalformedSettingsFrame) {
 
   writer.WriteStringPiece("Malformed payload");
   EXPECT_CALL(visitor_, OnError(&decoder_));
-  EXPECT_EQ(5u, decoder_.ProcessInput(input, QUICHE_ARRAYSIZE(input)));
+  EXPECT_EQ(5u, decoder_.ProcessInput(input, ABSL_ARRAYSIZE(input)));
   EXPECT_THAT(decoder_.error(), IsError(QUIC_HTTP_FRAME_TOO_LARGE));
   EXPECT_EQ("Frame is too large.", decoder_.error_detail());
 }
 
+TEST_F(HttpDecoderTest, Http2Frame) {
+  SetQuicReloadableFlag(quic_reject_spdy_frames, true);
+  std::string input = absl::HexStringToBytes(
+      "06"    // PING in HTTP/2 but not supported in HTTP/3.
+      "05"    // length
+      "15");  // random payload
+
+  // Process the full frame.
+  EXPECT_CALL(visitor_, OnError(&decoder_));
+  EXPECT_EQ(1u, ProcessInput(input));
+  EXPECT_THAT(decoder_.error(), IsError(QUIC_HTTP_RECEIVE_SPDY_FRAME));
+  EXPECT_EQ("HTTP/2 frame received in a HTTP/3 connection: 6",
+            decoder_.error_detail());
+}
+
 TEST_F(HttpDecoderTest, HeadersPausedThenData) {
   InSequence s;
-  std::string input = quiche::QuicheStrCat(
-      quiche::QuicheTextUtils::HexDecode("01"    // type (HEADERS)
-                                         "07"),  // length
-      "Headers",                                 // headers
-      quiche::QuicheTextUtils::HexDecode("00"    // type (DATA)
-                                         "05"),  // length
-      "Data!");                                  // data
+  std::string input =
+      quiche::QuicheStrCat(absl::HexStringToBytes("01"    // type (HEADERS)
+                                                  "07"),  // length
+                           "Headers",                     // headers
+                           absl::HexStringToBytes("00"    // type (DATA)
+                                                  "05"),  // length
+                           "Data!");                      // data
 
   // Visitor pauses processing, maybe because header decompression is blocked.
   EXPECT_CALL(visitor_, OnHeadersFrameStart(2, 7));
-  EXPECT_CALL(visitor_,
-              OnHeadersFramePayload(quiche::QuicheStringPiece("Headers")));
+  EXPECT_CALL(visitor_, OnHeadersFramePayload(absl::string_view("Headers")));
   EXPECT_CALL(visitor_, OnHeadersFrameEnd()).WillOnce(Return(false));
-  quiche::QuicheStringPiece remaining_input(input);
+  absl::string_view remaining_input(input);
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(9u, processed_bytes);
@@ -814,7 +819,7 @@ TEST_F(HttpDecoderTest, HeadersPausedThenData) {
 
   // Process DATA frame.
   EXPECT_CALL(visitor_, OnDataFrameStart(2, 5));
-  EXPECT_CALL(visitor_, OnDataFramePayload(quiche::QuicheStringPiece("Data!")));
+  EXPECT_CALL(visitor_, OnDataFramePayload(absl::string_view("Data!")));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
 
   processed_bytes = ProcessInput(remaining_input);
@@ -851,7 +856,7 @@ TEST_F(HttpDecoderTest, CorruptFrame) {
                    {"\x07"   // type (GOAWAY)
                     "\x01"   // length
                     "\x40",  // first byte of two-byte varint stream id
-                    "Unable to read GOAWAY stream_id."},
+                    "Unable to read GOAWAY ID."},
                    {"\x07"  // type (GOAWAY)
                     "\x04"  // length
                     "\x05"  // valid stream id
@@ -863,7 +868,7 @@ TEST_F(HttpDecoderTest, CorruptFrame) {
       HttpDecoder decoder(&visitor_);
       EXPECT_CALL(visitor_, OnError(&decoder));
 
-      quiche::QuicheStringPiece input(test_data.input);
+      absl::string_view input(test_data.input);
       decoder.ProcessInput(input.data(), input.size());
       EXPECT_THAT(decoder.error(), IsError(QUIC_HTTP_FRAME_ERROR));
       EXPECT_EQ(test_data.error_message, decoder.error_detail());
@@ -872,7 +877,7 @@ TEST_F(HttpDecoderTest, CorruptFrame) {
       HttpDecoder decoder(&visitor_);
       EXPECT_CALL(visitor_, OnError(&decoder));
 
-      quiche::QuicheStringPiece input(test_data.input);
+      absl::string_view input(test_data.input);
       for (auto c : input) {
         decoder.ProcessInput(&c, 1);
       }
@@ -883,7 +888,7 @@ TEST_F(HttpDecoderTest, CorruptFrame) {
 }
 
 TEST_F(HttpDecoderTest, EmptyCancelPushFrame) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "03"    // type (CANCEL_PUSH)
       "00");  // frame length
 
@@ -894,7 +899,7 @@ TEST_F(HttpDecoderTest, EmptyCancelPushFrame) {
 }
 
 TEST_F(HttpDecoderTest, EmptySettingsFrame) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "04"    // type (SETTINGS)
       "00");  // frame length
 
@@ -910,7 +915,7 @@ TEST_F(HttpDecoderTest, EmptySettingsFrame) {
 
 // Regression test for https://crbug.com/1001823.
 TEST_F(HttpDecoderTest, EmptyPushPromiseFrame) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "05"    // type (PUSH_PROMISE)
       "00");  // frame length
 
@@ -921,18 +926,18 @@ TEST_F(HttpDecoderTest, EmptyPushPromiseFrame) {
 }
 
 TEST_F(HttpDecoderTest, EmptyGoAwayFrame) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "07"    // type (GOAWAY)
       "00");  // frame length
 
   EXPECT_CALL(visitor_, OnError(&decoder_));
   EXPECT_EQ(input.size(), ProcessInput(input));
   EXPECT_THAT(decoder_.error(), IsError(QUIC_HTTP_FRAME_ERROR));
-  EXPECT_EQ("Unable to read GOAWAY stream_id.", decoder_.error_detail());
+  EXPECT_EQ("Unable to read GOAWAY ID.", decoder_.error_detail());
 }
 
 TEST_F(HttpDecoderTest, EmptyMaxPushIdFrame) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "0d"    // type (MAX_PUSH_ID)
       "00");  // frame length
 
@@ -944,7 +949,7 @@ TEST_F(HttpDecoderTest, EmptyMaxPushIdFrame) {
 
 TEST_F(HttpDecoderTest, LargeStreamIdInGoAway) {
   GoAwayFrame frame;
-  frame.stream_id = 1 << 30;
+  frame.id = 1ull << 60;
   std::unique_ptr<char[]> buffer;
   uint64_t length = HttpEncoder::SerializeGoAwayFrame(frame, &buffer);
   EXPECT_CALL(visitor_, OnGoAwayFrame(frame));
@@ -956,7 +961,7 @@ TEST_F(HttpDecoderTest, LargeStreamIdInGoAway) {
 
 TEST_F(HttpDecoderTest, PriorityUpdateFrame) {
   InSequence s;
-  std::string input1 = quiche::QuicheTextUtils::HexDecode(
+  std::string input1 = absl::HexStringToBytes(
       "0f"    // type (PRIORITY_UPDATE)
       "02"    // length
       "00"    // prioritized element type: REQUEST_STREAM
@@ -968,7 +973,7 @@ TEST_F(HttpDecoderTest, PriorityUpdateFrame) {
 
   // Visitor pauses processing.
   EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(2)).WillOnce(Return(false));
-  quiche::QuicheStringPiece remaining_input(input1);
+  absl::string_view remaining_input(input1);
   QuicByteCount processed_bytes =
       ProcessInputWithGarbageAppended(remaining_input);
   EXPECT_EQ(2u, processed_bytes);
@@ -995,8 +1000,8 @@ TEST_F(HttpDecoderTest, PriorityUpdateFrame) {
   EXPECT_THAT(decoder_.error(), IsQuicNoError());
   EXPECT_EQ("", decoder_.error_detail());
 
-  std::string input2 = quiche::QuicheTextUtils::HexDecode(
-      "0f"        // type (PRIORIRTY)
+  std::string input2 = absl::HexStringToBytes(
+      "0f"        // type (PRIORITY_UPDATE)
       "05"        // length
       "80"        // prioritized element type: PUSH_STREAM
       "05"        // prioritized element id
@@ -1036,12 +1041,96 @@ TEST_F(HttpDecoderTest, PriorityUpdateFrame) {
   EXPECT_EQ("", decoder_.error_detail());
 }
 
+TEST_F(HttpDecoderTest, NewPriorityUpdateFrame) {
+  if (!GetQuicReloadableFlag(quic_new_priority_update_frame)) {
+    return;
+  }
+
+  InSequence s;
+  std::string input1 = absl::HexStringToBytes(
+      "800f0700"  // type (PRIORITY_UPDATE)
+      "01"        // length
+      "03");      // prioritized element id
+
+  PriorityUpdateFrame priority_update1;
+  priority_update1.prioritized_element_type = REQUEST_STREAM;
+  priority_update1.prioritized_element_id = 0x03;
+
+  // Visitor pauses processing.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5)).WillOnce(Return(false));
+  absl::string_view remaining_input(input1);
+  QuicByteCount processed_bytes =
+      ProcessInputWithGarbageAppended(remaining_input);
+  EXPECT_EQ(5u, processed_bytes);
+  remaining_input = remaining_input.substr(processed_bytes);
+
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update1))
+      .WillOnce(Return(false));
+  processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
+  EXPECT_EQ(remaining_input.size(), processed_bytes);
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Process the full frame.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5));
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update1));
+  EXPECT_EQ(input1.size(), ProcessInput(input1));
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Process the frame incrementally.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5));
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update1));
+  ProcessInputCharByChar(input1);
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  std::string input2 = absl::HexStringToBytes(
+      "800f0700"  // type (PRIORITY_UPDATE)
+      "04"        // length
+      "05"        // prioritized element id
+      "666f6f");  // priority field value: "foo"
+
+  PriorityUpdateFrame priority_update2;
+  priority_update2.prioritized_element_type = REQUEST_STREAM;
+  priority_update2.prioritized_element_id = 0x05;
+  priority_update2.priority_field_value = "foo";
+
+  // Visitor pauses processing.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5)).WillOnce(Return(false));
+  remaining_input = input2;
+  processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
+  EXPECT_EQ(5u, processed_bytes);
+  remaining_input = remaining_input.substr(processed_bytes);
+
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update2))
+      .WillOnce(Return(false));
+  processed_bytes = ProcessInputWithGarbageAppended(remaining_input);
+  EXPECT_EQ(remaining_input.size(), processed_bytes);
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Process the full frame.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5));
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update2));
+  EXPECT_EQ(input2.size(), ProcessInput(input2));
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Process the frame incrementally.
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(5));
+  EXPECT_CALL(visitor_, OnPriorityUpdateFrame(priority_update2));
+  ProcessInputCharByChar(input2);
+  EXPECT_THAT(decoder_.error(), IsQuicNoError());
+  EXPECT_EQ("", decoder_.error_detail());
+}
+
 TEST_F(HttpDecoderTest, CorruptPriorityUpdateFrame) {
-  std::string payload1 = quiche::QuicheTextUtils::HexDecode(
+  std::string payload1 = absl::HexStringToBytes(
       "80"      // prioritized element type: PUSH_STREAM
       "4005");  // prioritized element id
-  std::string payload2 = quiche::QuicheTextUtils::HexDecode(
-      "42");  // invalid prioritized element type
+  std::string payload2 =
+      absl::HexStringToBytes("42");  // invalid prioritized element type
   struct {
     const char* const payload;
     size_t payload_length;
@@ -1072,8 +1161,42 @@ TEST_F(HttpDecoderTest, CorruptPriorityUpdateFrame) {
   }
 }
 
+TEST_F(HttpDecoderTest, CorruptNewPriorityUpdateFrame) {
+  if (!GetQuicReloadableFlag(quic_new_priority_update_frame)) {
+    return;
+  }
+
+  std::string payload =
+      absl::HexStringToBytes("4005");  // prioritized element id
+  struct {
+    size_t payload_length;
+    const char* const error_message;
+  } kTestData[] = {
+      {0, "Unable to read prioritized element id."},
+      {1, "Unable to read prioritized element id."},
+  };
+
+  for (const auto& test_data : kTestData) {
+    std::string input =
+        absl::HexStringToBytes("800f0700");  // type PRIORITY_UPDATE
+    input.push_back(test_data.payload_length);
+    size_t header_length = input.size();
+    input.append(payload.data(), test_data.payload_length);
+
+    HttpDecoder decoder(&visitor_);
+    EXPECT_CALL(visitor_, OnPriorityUpdateFrameStart(header_length));
+    EXPECT_CALL(visitor_, OnError(&decoder));
+
+    QuicByteCount processed_bytes =
+        decoder.ProcessInput(input.data(), input.size());
+    EXPECT_EQ(input.size(), processed_bytes);
+    EXPECT_THAT(decoder.error(), IsError(QUIC_HTTP_FRAME_ERROR));
+    EXPECT_EQ(test_data.error_message, decoder.error_detail());
+  }
+}
+
 TEST_F(HttpDecoderTest, DecodeSettings) {
-  std::string input = quiche::QuicheTextUtils::HexDecode(
+  std::string input = absl::HexStringToBytes(
       "04"    // type (SETTINGS)
       "07"    // length
       "01"    // identifier (SETTINGS_QPACK_MAX_TABLE_CAPACITY)
@@ -1093,7 +1216,7 @@ TEST_F(HttpDecoderTest, DecodeSettings) {
   EXPECT_EQ(frame, out);
 
   // non-settings frame.
-  input = quiche::QuicheTextUtils::HexDecode(
+  input = absl::HexStringToBytes(
       "0D"    // type (MAX_PUSH_ID)
       "01"    // length
       "01");  // Push Id
@@ -1101,7 +1224,7 @@ TEST_F(HttpDecoderTest, DecodeSettings) {
   EXPECT_FALSE(HttpDecoder::DecodeSettings(input.data(), input.size(), &out));
 
   // Corrupt SETTINGS.
-  input = quiche::QuicheTextUtils::HexDecode(
+  input = absl::HexStringToBytes(
       "04"    // type (SETTINGS)
       "01"    // length
       "42");  // First byte of setting identifier, indicating a 2-byte varint62.

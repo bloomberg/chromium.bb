@@ -13,6 +13,13 @@ then
 fi
 
 version="$1"
+
+# Makes ("68" "1") from "68-1".
+readonly major_minor_version=(${version//-/ })
+
+# Just the major part of the ICU version number, e.g. "68".
+readonly major_version="${major_minor_version[0]}"
+
 repoprefix="https://github.com/unicode-org/icu/tags/release-"
 repo="${repoprefix}${version}/icu4c"
 treeroot="$(dirname "$0")/.."
@@ -60,16 +67,16 @@ git status source | sed -n '/^Untracked/,$ p' | grep source | xargs git add
 
 cd "${treeroot}"
 
-echo "Updating BUILD.gn"
+echo "Updating sources.gni"
 
 find  source/i18n -maxdepth 1  ! -type d  | egrep  '\.(c|cpp|h)$' |sort | \
-  sed 's/^\(.*\)$/    "\1",/' > i18n_src.list
-ls source/i18n/unicode/*h | sort | sed 's/^\(.*\)$/    "\1",/' > i18n_hdr.list
+  sed 's/^\(.*\)$/  "\1",/' > i18n_src.list
+ls source/i18n/unicode/*h | sort | sed 's/^\(.*\)$/  "\1",/' > i18n_hdr.list
 
 find  source/common -maxdepth 1  ! -type d  | egrep  '\.(c|cpp|h)$' |sort | \
-  sed 's/^\(.*\)$/    "\1",/' > common_src.list
+  sed 's/^\(.*\)$/  "\1",/' > common_src.list
 ls source/common/unicode/*h | sort | \
-  sed 's/^\(.*\)$/    "\1",/' > common_hdr.list
+  sed 's/^\(.*\)$/  "\1",/' > common_hdr.list
 
 sed   -i \
   '/I18N_SRC_START/,/I18N_SRC_END/ {
@@ -87,7 +94,7 @@ sed   -i \
    /COMMON_HDR_START/,/COMMON_HDR_END/ {
       /COMMON_HDR_START/ r common_hdr.list
       /source.common/ d
-   }' BUILD.gn
+   }' sources.gni
 
 echo "Updating icu.gyp* files"
 
@@ -122,5 +129,18 @@ sed   -i \
       /source\/common/ d
    }' icu.gypi
 
+# Update the major version number registered in version.gni.
+cat << EOF > version.gni
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  # Contains the major version number of the ICU library, for dependencies that
+  # need different configuration based on the library version. Currently this
+  # is only useful in Fuchsia.
+  icu_major_version_number = "${major_version}"
+}
+EOF
 
 echo "Done"

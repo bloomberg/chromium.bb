@@ -27,12 +27,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import mock
 import sys
 import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests import run_web_tests
+from blinkpy.web_tests.controllers.test_result_sink import CreateTestResultSink
 from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner, Worker, Sharder, TestRunInterruptedException
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -73,10 +75,11 @@ class FakePrinter(object):
 
 
 class LockCheckingRunner(WebTestRunner):
-    def __init__(self, port, options, printer, tester, http_lock):
-        super(LockCheckingRunner, self).__init__(options, port, printer,
-                                                 port.results_directory(),
-                                                 lambda test_name: False)
+    def __init__(self, port, options, printer, tester, http_lock, sink):
+        super(LockCheckingRunner,
+              self).__init__(options, port, printer,
+                             port.results_directory(), lambda test_name: False,
+                             sink)
         self._finished_list_called = False
         self._tester = tester
         self._should_have_http_lock = http_lock
@@ -101,7 +104,8 @@ class WebTestRunnerTests(unittest.TestCase):
 
         host = MockHost()
         port = port or host.port_factory.get(options.platform, options=options)
-        return LockCheckingRunner(port, options, FakePrinter(), self, True)
+        return LockCheckingRunner(port, options, FakePrinter(), self, True,
+                                  CreateTestResultSink(port))
 
     def _run_tests(self, runner, tests):
         test_inputs = [TestInput(test, timeout_ms=6000) for test in tests]
@@ -117,8 +121,8 @@ class WebTestRunnerTests(unittest.TestCase):
             TestInput(test_name, timeout_ms=6000) for test_name in test_names
         ]
 
-        run_results = TestRunResults(
-            TestExpectations(runner._port), len(test_names))
+        run_results = TestRunResults(TestExpectations(runner._port),
+                                     len(test_names), None)
         run_results.unexpected_failures = 100
         run_results.unexpected_crashes = 50
         run_results.unexpected_timeouts = 50
@@ -150,7 +154,7 @@ class WebTestRunnerTests(unittest.TestCase):
         expectations = TestExpectations(runner._port)
         runner._expectations = expectations
 
-        run_results = TestRunResults(expectations, 1)
+        run_results = TestRunResults(expectations, 1, None)
         result = TestResult(
             test_name=test,
             failures=[
@@ -162,11 +166,47 @@ class WebTestRunnerTests(unittest.TestCase):
         self.assertEqual(1, run_results.expected)
         self.assertEqual(0, run_results.unexpected)
 
-        run_results = TestRunResults(expectations, 1)
+        run_results = TestRunResults(expectations, 1, None)
         result = TestResult(test_name=test, failures=[], reftest_type=['=='])
         runner._update_summary_with_result(run_results, result)
         self.assertEqual(0, run_results.expected)
         self.assertEqual(1, run_results.unexpected)
+
+    def test_skipped_tests_are_sinked(self):
+        runner = self._runner()
+        runner._options.derived_batch_size = 1
+        runner._options.must_use_derived_batch_size = True
+        with mock.patch.object(runner, "_test_result_sink") as rdb:
+            runner.run_tests(
+                TestExpectations(runner._port),
+                [],
+                tests_to_skip=['skips/image.html'],
+                num_workers=1,
+                retry_attempt=0,
+            )
+            rdb.sink.assert_called_with(
+                True, TestResult(test_name='skips/image.html'))
+
+    def test_results_are_sinked(self):
+        runner = self._runner()
+        runner._options.derived_batch_size = 1
+        runner._options.must_use_derived_batch_size = True
+        test_names = ['passes/text.html', 'passes/image.html']
+        test_inputs = [
+            TestInput(test_name, timeout_ms=6000) for test_name in test_names
+        ]
+        with mock.patch.object(runner, "_test_result_sink") as rdb:
+            runner.run_tests(
+                TestExpectations(runner._port),
+                test_inputs,
+                tests_to_skip=[],
+                num_workers=1,
+                retry_attempt=0,
+            )
+            rdb.sink.assert_has_calls(
+                '', [True, TestResult(test_name='passes/text.html')])
+            rdb.sink.assert_has_calls(
+                '', [True, TestResult(test_name='passes/images.html')])
 
 
 class SharderTests(unittest.TestCase):

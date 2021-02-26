@@ -70,6 +70,7 @@ struct client {
 struct client *client_connect(void);
 void client_disconnect(struct client *);
 int stop_display(struct client *, int);
+void noop_request(struct client *);
 
 /**
  * Usual workflow:
@@ -89,11 +90,20 @@ struct display *display_create(void);
 void display_destroy(struct display *d);
 void display_run(struct display *d);
 
+/* This function posts the display_resumed event to all waiting clients,
+ * so that after flushing events the clients will stop waiting and continue.
+ *
+ * (Calling `display_run` after this function will resume the display loop.)
+ */
+void display_post_resume_events(struct display *d);
 /* After n clients called stop_display(..., n), the display
  * is stopped and can process the code after display_run().
- * This function rerun the display again and send display_resumed
- * event to waiting clients, so the clients will stop waiting and continue */
+ *
+ * This function posts the display_resumed event to the waiting
+ * clients, so that the clients will stop waiting and continue;
+ * it then reruns the display. */
 void display_resume(struct display *d);
+
 
 struct client_info *client_create_with_name(struct display *d,
 					    void (*client_main)(void *data),

@@ -4,7 +4,6 @@
 
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 
-#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <memory>
@@ -17,9 +16,10 @@
 #include "base/no_destructor.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 #include <pthread.h>
 #endif
 
@@ -29,7 +29,7 @@ using allocator::AllocatorDispatch;
 
 namespace {
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 
 // The macOS implementation of libmalloc sometimes calls malloc recursively,
 // delegating allocations between zones. That causes our hooks being called
@@ -135,6 +135,19 @@ std::atomic_bool g_hooks_installed;
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
   ReentryGuard guard;
   void* address = self->next->alloc_function(self->next, size, context);
+  if (LIKELY(guard)) {
+    PoissonAllocationSampler::RecordAlloc(
+        address, size, PoissonAllocationSampler::kMalloc, nullptr);
+  }
+  return address;
+}
+
+void* AllocUncheckedFn(const AllocatorDispatch* self,
+                       size_t size,
+                       void* context) {
+  ReentryGuard guard;
+  void* address =
+      self->next->alloc_unchecked_function(self->next, size, context);
   if (LIKELY(guard)) {
     PoissonAllocationSampler::RecordAlloc(
         address, size, PoissonAllocationSampler::kMalloc, nullptr);
@@ -275,6 +288,7 @@ static void AlignedFreeFn(const AllocatorDispatch* self,
 }
 
 AllocatorDispatch g_allocator_dispatch = {&AllocFn,
+                                          &AllocUncheckedFn,
                                           &AllocZeroInitializedFn,
                                           &AllocAlignedFn,
                                           &ReallocFn,
@@ -557,8 +571,7 @@ void PoissonAllocationSampler::SuppressRandomnessForTest(bool suppress) {
 void PoissonAllocationSampler::AddSamplesObserver(SamplesObserver* observer) {
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
-  DCHECK(std::find(observers_.begin(), observers_.end(), observer) ==
-         observers_.end());
+  DCHECK(ranges::find(observers_, observer) == observers_.end());
   observers_.push_back(observer);
   InstallAllocatorHooksOnce();
   g_running = !observers_.empty();
@@ -568,7 +581,7 @@ void PoissonAllocationSampler::RemoveSamplesObserver(
     SamplesObserver* observer) {
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
-  auto it = std::find(observers_.begin(), observers_.end(), observer);
+  auto it = ranges::find(observers_, observer);
   DCHECK(it != observers_.end());
   observers_.erase(it);
   g_running = !observers_.empty();

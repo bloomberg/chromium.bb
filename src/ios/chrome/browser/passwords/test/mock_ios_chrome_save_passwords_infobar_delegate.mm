@@ -15,14 +15,13 @@
 
 namespace {
 std::unique_ptr<password_manager::PasswordFormManagerForUI> CreateFormManager(
-    autofill::PasswordForm* form,
+    password_manager::PasswordForm* form,
     GURL* url) {
   std::unique_ptr<password_manager::MockPasswordFormManagerForUI> form_manager =
       std::make_unique<password_manager::MockPasswordFormManagerForUI>();
   EXPECT_CALL(*form_manager, GetPendingCredentials())
       .WillRepeatedly(testing::ReturnRef(*form));
-  EXPECT_CALL(*form_manager, GetOrigin())
-      .WillRepeatedly(testing::ReturnRef(*url));
+  EXPECT_CALL(*form_manager, GetURL()).WillRepeatedly(testing::ReturnRef(*url));
   EXPECT_CALL(*form_manager, GetMetricsRecorder())
       .WillRepeatedly(testing::Return(nullptr));
   EXPECT_CALL(*form_manager, GetCredentialSource())
@@ -37,8 +36,8 @@ std::unique_ptr<MockIOSChromeSavePasswordInfoBarDelegate>
 MockIOSChromeSavePasswordInfoBarDelegate::Create(NSString* username,
                                                  NSString* password,
                                                  const GURL& url) {
-  std::unique_ptr<autofill::PasswordForm> form =
-      std::make_unique<autofill::PasswordForm>();
+  std::unique_ptr<password_manager::PasswordForm> form =
+      std::make_unique<password_manager::PasswordForm>();
   form->username_value = base::SysNSStringToUTF16(username);
   form->password_value = base::SysNSStringToUTF16(password);
   return base::WrapUnique(new MockIOSChromeSavePasswordInfoBarDelegate(
@@ -47,7 +46,7 @@ MockIOSChromeSavePasswordInfoBarDelegate::Create(NSString* username,
 
 MockIOSChromeSavePasswordInfoBarDelegate::
     MockIOSChromeSavePasswordInfoBarDelegate(
-        std::unique_ptr<autofill::PasswordForm> form,
+        std::unique_ptr<password_manager::PasswordForm> form,
         std::unique_ptr<GURL> url)
     : IOSChromeSavePasswordInfoBarDelegate(
           /*is_sync_user=*/false,

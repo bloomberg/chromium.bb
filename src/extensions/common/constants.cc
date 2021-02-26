@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 
 namespace extensions {
 
@@ -100,7 +101,7 @@ const char kMimeTypePng[] = "image/png";
 
 namespace extension_misc {
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] = "mndnfokpggljbaajbnioimlmbfngpief";
 #else
@@ -124,14 +125,15 @@ const char kLacrosAppId[] = "jaimifaeiicidiikhmjedcgdimealfbh";
 const char kFilesManagerAppId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
 const char kCalculatorAppId[] = "joodangkbfjnajiiifokapkpmhfnpleo";
 const char kCalendarDemoAppId[] = "fpgfohogebplgnamlafljlcidjedbdeb";
+const char kGMailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char kGoogleDocsDemoAppId[] = "chdaoodbokekbiiphekbfjdmiodccljl";
+const char kGoogleDriveAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
 const char kGoogleSheetsDemoAppId[] = "nifkmgcdokhkjghdlgflonppnefddien";
 const char kGoogleSlidesDemoAppId[] = "hdmobeajeoanbanmdlabnbnlopepchip";
 const char kGoogleKeepAppId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
-const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(michaelpg): Deprecate old app IDs before adding new ones to avoid bloat.
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
 const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
@@ -142,6 +144,7 @@ const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
 const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 const char kScreensaverAtlasAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
 const char kScreensaverKukuiAppId[] = "fafhbhdboeiciklpkminlncemohljlkj";
+const char kSigninProfileTestExtensionId[] = "mecfefiddjlmabpeilblgegnbioikfmp";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
@@ -166,7 +169,7 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
   }
   return false;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
 const char* const kHangoutsExtensionIds[6] = {
@@ -186,5 +189,8 @@ const char kPolicyBlockedScripting[] =
 const int kContentVerificationDefaultBlockSize = 4096;
 
 const logging::LogSeverity kMinimumSeverityToReportError = logging::LOG_WARNING;
+
+const char kCastExtensionIdRelease[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+const char kCastExtensionIdDev[] = "enhhojjnijigcajfphajepfemndkmdlo";
 
 }  // namespace extension_misc

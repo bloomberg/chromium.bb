@@ -11,8 +11,10 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chromeos/dbus/shill/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
 #include "dbus/bus.h"
@@ -53,7 +55,7 @@ class ShillThirdPartyVpnDriverClientImpl
       const std::string& object_path_value) override;
 
   void SetParameters(const std::string& object_path_value,
-                     const base::DictionaryValue& parameters,
+                     const base::Value& parameters,
                      StringCallback callback,
                      ErrorCallback error_callback) override;
 
@@ -203,7 +205,7 @@ void ShillThirdPartyVpnDriverClientImpl::DeleteHelper(
 
 void ShillThirdPartyVpnDriverClientImpl::SetParameters(
     const std::string& object_path_value,
-    const base::DictionaryValue& parameters,
+    const base::Value& parameters,
     StringCallback callback,
     ErrorCallback error_callback) {
   dbus::MethodCall method_call(shill::kFlimflamThirdPartyVpnInterface,
@@ -211,21 +213,19 @@ void ShillThirdPartyVpnDriverClientImpl::SetParameters(
   dbus::MessageWriter writer(&method_call);
   dbus::MessageWriter array_writer(nullptr);
   writer.OpenArray("{ss}", &array_writer);
-  for (base::DictionaryValue::Iterator it(parameters); !it.IsAtEnd();
-       it.Advance()) {
-    if (valid_keys_.find(it.key()) == valid_keys_.end()) {
-      LOG(WARNING) << "Unknown key " << it.key();
+  for (auto it : parameters.DictItems()) {
+    if (valid_keys_.find(it.first) == valid_keys_.end()) {
+      LOG(WARNING) << "Unknown key " << it.first;
       continue;
     }
-    std::string value;
-    if (!it.value().GetAsString(&value)) {
-      LOG(WARNING) << "Non string value " << it.value();
+    if (!it.second.is_string()) {
+      LOG(WARNING) << "Non string value " << it.second;
       continue;
     }
     dbus::MessageWriter entry_writer(nullptr);
     array_writer.OpenDictEntry(&entry_writer);
-    entry_writer.AppendString(it.key());
-    entry_writer.AppendString(value);
+    entry_writer.AppendString(it.first);
+    entry_writer.AppendString(it.second.GetString());
     array_writer.CloseContainer(&entry_writer);
   }
   writer.CloseContainer(&array_writer);

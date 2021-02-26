@@ -38,15 +38,18 @@ class NativeIOFileSync final : public ScriptWrappable {
   ~NativeIOFileSync() override;
 
   void close();
-  int read(MaybeShared<DOMArrayBufferView> buffer,
-           uint64_t file_offset,
-           ExceptionState&);
-  int write(MaybeShared<DOMArrayBufferView> buffer,
-            uint64_t file_offset,
-            ExceptionState&);
+  uint64_t getLength(ExceptionState&);
+  void setLength(uint64_t length, ExceptionState&);
+  uint64_t read(MaybeShared<DOMArrayBufferView> buffer,
+                uint64_t file_offset,
+                ExceptionState&);
+  uint64_t write(MaybeShared<DOMArrayBufferView> buffer,
+                 uint64_t file_offset,
+                 ExceptionState&);
+  void flush(ExceptionState&);
 
   // GarbageCollected
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   // Called when the mojo backend disconnects.

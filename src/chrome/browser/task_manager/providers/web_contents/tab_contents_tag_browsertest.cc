@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -115,7 +117,7 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
 
   favicon::ContentFaviconDriver* driver_;
   GURL target_favicon_url_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconWaiter);
 };
@@ -313,6 +315,14 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
   // Navigate to a page without a favicon.
   GURL no_favicon_page_url = GetUrlOfFile("/title1.html");
   ui_test_utils::NavigateToURL(browser(), no_favicon_page_url);
+
+  if (content::CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+    // same-site main frame navigations, we'll get a new task because we are
+    // changing RenderFrameHosts.
+    ASSERT_EQ(1U, task_manager.tasks().size());
+    task = task_manager.tasks().back();
+  }
   ASSERT_EQ(GetDefaultTitleForUrl(no_favicon_page_url), task->title());
 
   // Check that the task manager uses the default favicon for the page.

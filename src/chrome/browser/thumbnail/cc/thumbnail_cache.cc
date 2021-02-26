@@ -17,7 +17,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -159,6 +158,7 @@ ThumbnailCache::ThumbnailCache(size_t default_cache_size,
       ui_resource_provider_(nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   memory_pressure_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE,
       base::Bind(&ThumbnailCache::OnMemoryPressure, base::Unretained(this)));
 }
 
@@ -388,10 +388,10 @@ void ThumbnailCache::RemoveFromDisk(TabId tab_id) {
 void ThumbnailCache::RemoveFromDiskTask(TabId tab_id) {
   base::FilePath file_path = GetFilePath(tab_id);
   if (base::PathExists(file_path))
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
   base::FilePath jpeg_file_path = GetJpegFilePath(tab_id);
   if (base::PathExists(jpeg_file_path))
-    base::DeleteFile(jpeg_file_path, false);
+    base::DeleteFile(jpeg_file_path);
 }
 
 void ThumbnailCache::WriteThumbnailIfNecessary(
@@ -638,9 +638,9 @@ void ThumbnailCache::WriteTask(TabId tab_id,
   file.Close();
 
   if (!success)
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, post_write_task);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, post_write_task);
 }
 
 void ThumbnailCache::WriteJpegTask(
@@ -663,9 +663,9 @@ void ThumbnailCache::WriteJpegTask(
   }
 
   if (!success)
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, post_write_task);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, post_write_task);
 }
 
 void ThumbnailCache::PostWriteTask() {
@@ -709,8 +709,8 @@ void ThumbnailCache::CompressionTask(
     }
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(post_compression_task,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(post_compression_task,
                                 std::move(compressed_data), content_size));
 }
 
@@ -740,8 +740,8 @@ void ThumbnailCache::JpegProcessingTask(
       gfx::JPEGCodec::Encode(result_bitmap, kCompressionQuality, &data);
   DCHECK(result);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(post_processing_task, std::move(data)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(post_processing_task, std::move(data)));
 }
 
 void ThumbnailCache::PostCompressionTask(TabId tab_id,
@@ -887,7 +887,7 @@ void ThumbnailCache::ReadTask(
       content_size.SetSize(0, 0);
       scale = 0.f;
       compressed_data.reset();
-      base::DeleteFile(file_path, false);
+      base::DeleteFile(file_path);
     }
   }
 
@@ -897,8 +897,8 @@ void ThumbnailCache::ReadTask(
         base::BindOnce(post_read_task, std::move(compressed_data), scale,
                        content_size));
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(post_read_task, std::move(compressed_data),
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(post_read_task, std::move(compressed_data),
                                   scale, content_size));
   }
 }
@@ -967,9 +967,8 @@ void ThumbnailCache::DecompressionTask(
         gfx::Size(compressed_data->width(), compressed_data->height());
 
     SkBitmap raw_data;
-    raw_data.allocPixels(
-        SkImageInfo::Make(buffer_size.width(), buffer_size.height(),
-                          kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
+    raw_data.allocPixels(SkImageInfo::MakeN32(
+        buffer_size.width(), buffer_size.height(), kOpaque_SkAlphaType));
     success = etc1_decode_image(
         reinterpret_cast<unsigned char*>(compressed_data->pixels()),
         reinterpret_cast<unsigned char*>(raw_data.getPixels()),
@@ -985,17 +984,16 @@ void ThumbnailCache::DecompressionTask(
     } else {
       // The content size is smaller than the buffer size (likely because of
       // a power-of-two rounding), so deep copy the bitmap.
-      raw_data_small.allocPixels(
-          SkImageInfo::Make(content_size.width(), content_size.height(),
-                            kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
+      raw_data_small.allocPixels(SkImageInfo::MakeN32(
+          content_size.width(), content_size.height(), kOpaque_SkAlphaType));
       SkCanvas small_canvas(raw_data_small);
       small_canvas.drawBitmap(raw_data, 0, 0);
       raw_data_small.setImmutable();
     }
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(post_decompression_callback, success, raw_data_small));
 }
 

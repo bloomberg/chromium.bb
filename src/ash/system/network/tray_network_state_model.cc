@@ -10,7 +10,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/system/network/vpn_list.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -131,7 +131,7 @@ class TrayNetworkStateModel::Impl
 
 TrayNetworkStateModel::TrayNetworkStateModel()
     : update_frequency_(kUpdateFrequencyMs) {
-  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
+  if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() !=
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
     update_frequency_ = 0;  // Send updates immediately for tests.
   }
@@ -164,7 +164,7 @@ const DeviceStateProperties* TrayNetworkStateModel::GetDevice(
   return iter->second.get();
 }
 
-DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
+DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) const {
   const DeviceStateProperties* device = GetDevice(type);
   return device ? device->device_state : DeviceStateType::kUnavailable;
 }
@@ -172,6 +172,12 @@ DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
                                                        bool enabled) {
   impl_->SetNetworkTypeEnabledState(type, enabled);
+}
+
+bool TrayNetworkStateModel::IsBuiltinVpnEnabled() const {
+  return TrayNetworkStateModel::GetDeviceState(
+             chromeos::network_config::mojom::NetworkType::kVPN) ==
+         chromeos::network_config::mojom::DeviceStateType::kEnabled;
 }
 
 chromeos::network_config::mojom::CrosNetworkConfig*

@@ -48,7 +48,7 @@ namespace dawn_native { namespace d3d12 {
     }
 
     ExternalImageDescriptorDXGISharedHandle::ExternalImageDescriptorDXGISharedHandle()
-        : ExternalImageDescriptor(ExternalImageDescriptorType::DXGISharedHandle) {
+        : ExternalImageDescriptor(ExternalImageType::DXGISharedHandle) {
     }
 
     uint64_t SetExternalMemoryReservation(WGPUDevice device,
@@ -64,9 +64,12 @@ namespace dawn_native { namespace d3d12 {
                                  const ExternalImageDescriptorDXGISharedHandle* descriptor) {
         Device* backendDevice = reinterpret_cast<Device*>(device);
         Ref<TextureBase> texture = backendDevice->WrapSharedHandle(
-            descriptor, descriptor->sharedHandle, descriptor->acquireMutexKey,
+            descriptor, descriptor->sharedHandle, ExternalMutexSerial(descriptor->acquireMutexKey),
             descriptor->isSwapChainTexture);
         return reinterpret_cast<WGPUTexture>(texture.Detach());
     }
 
+    AdapterDiscoveryOptions::AdapterDiscoveryOptions(ComPtr<IDXGIAdapter> adapter)
+        : AdapterDiscoveryOptionsBase(WGPUBackendType_D3D12), dxgiAdapter(std::move(adapter)) {
+    }
 }}  // namespace dawn_native::d3d12

@@ -5,9 +5,18 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+
+#if defined(OS_ANDROID)
+class TabAndroid;
+#endif  // defined(OS_ANDROID)
 
 class Profile;
 
@@ -28,6 +37,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   // AutocompleteProviderClient:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   PrefService* GetPrefs() override;
+  PrefService* GetLocalState() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   history::HistoryService* GetHistoryService() override;
@@ -53,6 +63,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   query_tiles::TileService* GetQueryTileService() const override;
+  OmniboxTriggeredFeatureService* GetOmniboxTriggeredFeatureService()
+      const override;
 
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
@@ -74,7 +86,9 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   void StartServiceWorker(const GURL& destination_url) override;
   bool IsTabOpenWithURL(const GURL& url,
                         const AutocompleteInput* input) override;
-  bool IsBrowserUpdateAvailable() const override;
+  bool IsIncognitoModeAvailable() const override;
+  void OnAutocompleteControllerResultReady(
+      AutocompleteController* controller) override;
 
   // For testing.
   void set_storage_partition(content::StoragePartition* storage_partition) {
@@ -91,6 +105,12 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   bool IsStrippedURLEqualToWebContentsURL(const GURL& stripped_url,
                                           content::WebContents* web_contents);
 
+#if defined(OS_ANDROID)
+  // Returns a TabAndroid has opened same URL as |url|.
+  TabAndroid* GetTabOpenWithURL(const GURL& url,
+                                const AutocompleteInput* input);
+#endif  // defined(OS_ANDROID)
+
  private:
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
@@ -100,6 +120,9 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   // Injectable storage partitiion, used for testing.
   content::StoragePartition* storage_partition_;
+
+  std::unique_ptr<OmniboxTriggeredFeatureService>
+      omnibox_triggered_feature_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutocompleteProviderClient);
 };

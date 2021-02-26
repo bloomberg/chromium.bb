@@ -112,6 +112,12 @@ inline std::string ToHex(const std::string& s) {
   return ToHex(s.c_str(), s.size());
 }
 std::string IntToHexString(uint32_t number);
+std::string Uint64ToHexString(uint64_t number);
+std::string Uint64ToHexStringNoPrefix(uint64_t number);
+std::string ReplaceAll(std::string str,
+                       const std::string& to_replace,
+                       const std::string& replacement);
+std::string TrimLeading(const std::string& str);
 
 }  // namespace base
 }  // namespace perfetto

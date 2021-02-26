@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
@@ -86,11 +87,11 @@ struct MODULES_EXPORT StructTraits<blink::mojom::IDBIndexMetadataDataView,
 };
 
 template <>
-struct MODULES_EXPORT UnionTraits<blink::mojom::IDBKeyDataDataView,
-                                  std::unique_ptr<blink::IDBKey>> {
-  static blink::mojom::IDBKeyDataDataView::Tag GetTag(
+struct MODULES_EXPORT
+    UnionTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>> {
+  static blink::mojom::IDBKeyDataView::Tag GetTag(
       const std::unique_ptr<blink::IDBKey>& key);
-  static bool Read(blink::mojom::IDBKeyDataDataView data,
+  static bool Read(blink::mojom::IDBKeyDataView data,
                    std::unique_ptr<blink::IDBKey>* out);
   static const Vector<std::unique_ptr<blink::IDBKey>>& key_array(
       const std::unique_ptr<blink::IDBKey>& key);
@@ -113,15 +114,6 @@ struct MODULES_EXPORT UnionTraits<blink::mojom::IDBKeyDataDataView,
   static bool other_none(const std::unique_ptr<blink::IDBKey>& key) {
     return key->GetType() == blink::mojom::IDBKeyType::None;
   }
-};
-
-template <>
-struct MODULES_EXPORT
-    StructTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>> {
-  static const std::unique_ptr<blink::IDBKey>& data(
-      const std::unique_ptr<blink::IDBKey>& key);
-  static bool Read(blink::mojom::IDBKeyDataView data,
-                   std::unique_ptr<blink::IDBKey>* out);
 };
 
 template <>

@@ -127,16 +127,16 @@ class MockMinidumpMemoryRegion : public MinidumpMemoryRegion {
   uint64_t GetBase() const { return region_.GetBase(); }
   uint32_t GetSize() const { return region_.GetSize(); }
 
-  bool GetMemoryAtAddress(uint64_t address, uint8_t  *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint8_t*  value) const {
     return region_.GetMemoryAtAddress(address, value);
   }
-  bool GetMemoryAtAddress(uint64_t address, uint16_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint16_t* value) const {
     return region_.GetMemoryAtAddress(address, value);
   }
-  bool GetMemoryAtAddress(uint64_t address, uint32_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint32_t* value) const {
     return region_.GetMemoryAtAddress(address, value);
   }
-  bool GetMemoryAtAddress(uint64_t address, uint64_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint64_t* value) const {
     return region_.GetMemoryAtAddress(address, value);
   }
 
@@ -188,11 +188,11 @@ using ::testing::Property;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
-static const char *kSystemInfoOS = "Windows NT";
-static const char *kSystemInfoOSShort = "windows";
-static const char *kSystemInfoOSVersion = "5.1.2600 Service Pack 2";
-static const char *kSystemInfoCPU = "x86";
-static const char *kSystemInfoCPUInfo =
+static const char* kSystemInfoOS = "Windows NT";
+static const char* kSystemInfoOSShort = "windows";
+static const char* kSystemInfoOSVersion = "5.1.2600 Service Pack 2";
+static const char* kSystemInfoCPU = "x86";
+static const char* kSystemInfoCPUInfo =
     "GenuineIntel family 6 model 13 stepping 8";
 
 #define ASSERT_TRUE_ABORT(cond) \
@@ -204,7 +204,7 @@ static const char *kSystemInfoCPUInfo =
 #define ASSERT_EQ_ABORT(e1, e2) ASSERT_TRUE_ABORT((e1) == (e2))
 
 static string GetTestDataPath() {
-  char *srcdir = getenv("srcdir");
+  char* srcdir = getenv("srcdir");
 
   return string(srcdir ? srcdir : ".") + "/src/processor/testdata/";
 }
@@ -213,35 +213,35 @@ class TestSymbolSupplier : public SymbolSupplier {
  public:
   TestSymbolSupplier() : interrupt_(false) {}
 
-  virtual SymbolResult GetSymbolFile(const CodeModule *module,
-                                     const SystemInfo *system_info,
-                                     string *symbol_file);
+  virtual SymbolResult GetSymbolFile(const CodeModule* module,
+                                     const SystemInfo* system_info,
+                                     string* symbol_file);
 
-  virtual SymbolResult GetSymbolFile(const CodeModule *module,
-                                     const SystemInfo *system_info,
-                                     string *symbol_file,
-                                     string *symbol_data);
+  virtual SymbolResult GetSymbolFile(const CodeModule* module,
+                                     const SystemInfo* system_info,
+                                     string* symbol_file,
+                                     string* symbol_data);
 
-  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
-                                            const SystemInfo *system_info,
-                                            string *symbol_file,
-                                            char **symbol_data,
-                                            size_t *symbol_data_size);
+  virtual SymbolResult GetCStringSymbolData(const CodeModule* module,
+                                            const SystemInfo* system_info,
+                                            string* symbol_file,
+                                            char** symbol_data,
+                                            size_t* symbol_data_size);
 
-  virtual void FreeSymbolData(const CodeModule *module);
+  virtual void FreeSymbolData(const CodeModule* module);
 
   // When set to true, causes the SymbolSupplier to return INTERRUPT
   void set_interrupt(bool interrupt) { interrupt_ = interrupt; }
 
  private:
   bool interrupt_;
-  map<string, char *> memory_buffers_;
+  map<string, char*> memory_buffers_;
 };
 
 SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
-    const CodeModule *module,
-    const SystemInfo *system_info,
-    string *symbol_file) {
+    const CodeModule* module,
+    const SystemInfo* system_info,
+    string* symbol_file) {
   ASSERT_TRUE_ABORT(module);
   ASSERT_TRUE_ABORT(system_info);
   ASSERT_EQ_ABORT(system_info->cpu, kSystemInfoCPU);
@@ -264,10 +264,10 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
 }
 
 SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
-    const CodeModule *module,
-    const SystemInfo *system_info,
-    string *symbol_file,
-    string *symbol_data) {
+    const CodeModule* module,
+    const SystemInfo* system_info,
+    string* symbol_file,
+    string* symbol_data) {
   SymbolSupplier::SymbolResult s = GetSymbolFile(module, system_info,
                                                  symbol_file);
   if (s == FOUND) {
@@ -281,11 +281,11 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
 }
 
 SymbolSupplier::SymbolResult TestSymbolSupplier::GetCStringSymbolData(
-    const CodeModule *module,
-    const SystemInfo *system_info,
-    string *symbol_file,
-    char **symbol_data,
-    size_t *symbol_data_size) {
+    const CodeModule* module,
+    const SystemInfo* system_info,
+    string* symbol_file,
+    char** symbol_data,
+    size_t* symbol_data_size) {
   string symbol_data_string;
   SymbolSupplier::SymbolResult s = GetSymbolFile(module,
                                                  system_info,
@@ -307,8 +307,8 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetCStringSymbolData(
   return s;
 }
 
-void TestSymbolSupplier::FreeSymbolData(const CodeModule *module) {
-  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+void TestSymbolSupplier::FreeSymbolData(const CodeModule* module) {
+  map<string, char*>::iterator it = memory_buffers_.find(module->code_file());
   if (it != memory_buffers_.end()) {
     delete [] it->second;
     memory_buffers_.erase(it);
@@ -523,7 +523,7 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   EXPECT_EQ(1171480435U, state.time_date_stamp());
   EXPECT_EQ(1171480435U, state.process_create_time());
 
-  CallStack *stack = state.threads()->at(0);
+  CallStack* stack = state.threads()->at(0);
   ASSERT_TRUE(stack);
   ASSERT_EQ(stack->frames()->size(), 4U);
 
@@ -763,7 +763,7 @@ TEST_F(MinidumpProcessorTest, Test32BitCrashingAddress) {
 
 }  // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

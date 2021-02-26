@@ -31,6 +31,7 @@
 class GURL;
 
 namespace url {
+struct Component;
 struct Parsed;
 }
 
@@ -56,6 +57,12 @@ struct IDNConversionResult {
   // E.g. IDNToUnicodeWithDetails("googlé.com") will fill |result| with
   // "xn--googl-fsa.com" and |matching_top_domain.domain| with "google.com".
   TopDomainEntry matching_top_domain;
+  // Result of the spoof check. If the domain was converted to unicode, this
+  // must be kSafe. Otherwise, this will be the failure reason
+  // for the domain component (i.e. label) that failed the spoof checks. If
+  // multiple labels fail the checks, this will be the result of the first
+  // component that failed, counting from the left in the punycode form.
+  IDNSpoofChecker::Result spoof_check_result = IDNSpoofChecker::Result::kNone;
 };
 
 // Nothing is omitted.
@@ -181,19 +188,28 @@ base::string16 IDNToUnicode(base::StringPiece host);
 // DO NOT use this for displaying URLs.
 IDNConversionResult UnsafeIDNToUnicodeWithDetails(base::StringPiece host);
 
-// If |text| starts with "www." it is removed, otherwise |text| is returned
-// unmodified.
-base::string16 StripWWW(const base::string16& text);
+// Strips a "www." prefix from |host| if present and if |host| is eligible.
+// |host| is only eligible for www-stripping if it is not a private or intranet
+// hostname, and if "www." is part of the subdomain (not the eTLD+1).
+std::string StripWWW(const std::string& host);
 
-// Runs |url|'s host through StripWWW().  |url| must be valid.
-base::string16 StripWWWFromHost(const GURL& url);
+// If the |host| component of |url| begins with a "www." prefix (and meets the
+// conditions described for StripWWW), then updates |host| to strip the "www."
+// prefix.
+void StripWWWFromHostComponent(const std::string& url, url::Component* host);
 
 // Returns skeleton strings computed from |host| for spoof checking.
 Skeletons GetSkeletons(const base::string16& host);
 
 // Returns a domain from the top 10K list matching the given skeleton. Used for
-// spoof checking.
-TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton);
+// spoof checking. Different types of skeletons are saved in the skeleton trie.
+// Providing |type| makes sure the right type of skeletons are looked up. For
+// example if |skeleton|="googlecorn", |type|="kFull", no match would be found
+// even though the skeleton is saved in the trie, because the type of this
+// skeleton in the trie is "kSeparatorsRemoved".
+TopDomainEntry LookupSkeletonInTopDomains(
+    const std::string& skeleton,
+    const SkeletonType type = SkeletonType::kFull);
 
 }  // namespace url_formatter
 

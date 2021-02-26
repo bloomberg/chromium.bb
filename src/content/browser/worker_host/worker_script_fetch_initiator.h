@@ -14,12 +14,13 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/dedicated_worker_id.h"
-#include "content/public/browser/shared_worker_id.h"
+#include "content/public/browser/service_worker_client_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -41,6 +42,7 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class AppCacheHost;
+class DevToolsAgentHostImpl;
 class BrowserContext;
 class RenderFrameHost;
 class ServiceWorkerContextWrapper;
@@ -68,8 +70,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
   // thread. |callback| will be called with the result on the UI thread.
   static void Start(
       int worker_process_id,
-      DedicatedWorkerId dedicated_worker_id,
-      SharedWorkerId shared_worker_id,
+      const DedicatedOrSharedWorkerToken& worker_token,
       const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
       const net::SiteForCookies& site_for_cookies,
@@ -78,7 +79,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
       network::mojom::CredentialsMode credentials_mode,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
@@ -87,19 +88,24 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
           url_loader_factory_override,
       StoragePartitionImpl* storage_partition,
       const std::string& storage_domain,
+      ukm::SourceId worker_source_id,
+      DevToolsAgentHostImpl* devtools_agent_host,
+      const base::UnguessableToken& devtools_worker_token,
       CompletionCallback callback);
 
   // Used for specifying how URLLoaderFactoryBundle is used.
   enum class LoaderType { kMainResource, kSubResource };
 
-  // Creates a loader factory bundle. Must be called on the UI thread.
+  // Creates a loader factory bundle. Must be called on the UI thread. For
+  // nested workers, |creator_render_frame_host| can be null.
   static std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateFactoryBundle(LoaderType loader_type,
                       int worker_process_id,
                       StoragePartitionImpl* storage_partition,
                       const std::string& storage_domain,
                       bool file_support,
-                      bool filesystem_url_support);
+                      bool filesystem_url_support,
+                      RenderFrameHost* creator_render_frame_host);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkerScriptFetchInitiatorTest,
@@ -113,8 +119,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
 
   static void CreateScriptLoader(
       int worker_process_id,
-      DedicatedWorkerId dedicated_worker_id,
-      SharedWorkerId shared_worker_id,
+      const DedicatedOrSharedWorkerToken& worker_token,
       const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
       const net::IsolationInfo& trusted_isolation_info,
@@ -129,6 +134,9 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_override,
+      ukm::SourceId worker_source_id,
+      DevToolsAgentHostImpl* devtools_agent_host,
+      const base::UnguessableToken& devtools_worker_token,
       CompletionCallback callback);
 
   static void DidCreateScriptLoader(

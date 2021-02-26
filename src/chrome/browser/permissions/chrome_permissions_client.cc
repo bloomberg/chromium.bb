@@ -4,23 +4,38 @@
 
 #include "chrome/browser/permissions/chrome_permissions_client.h"
 
+#include <vector>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
+#include "chrome/browser/permissions/abusive_origin_permission_revocation_request.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/browser/permissions/prediction_based_permission_ui_selector.h"
+#include "chrome/browser/permissions/pref_notification_permission_ui_selector.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/permissions/features.h"
+#include "components/prefs/pref_service.h"
+#include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
+#include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -56,12 +71,31 @@ HostContentSettingsMap* ChromePermissionsClient::GetSettingsMap(
       Profile::FromBrowserContext(browser_context));
 }
 
+scoped_refptr<content_settings::CookieSettings>
+ChromePermissionsClient::GetCookieSettings(
+    content::BrowserContext* browser_context) {
+  return CookieSettingsFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+}
+
+bool ChromePermissionsClient::IsSubresourceFilterActivated(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  return SubresourceFilterProfileContextFactory::GetForProfile(
+             Profile::FromBrowserContext(browser_context))
+      ->settings_manager()
+      ->GetSiteActivationFromMetadata(url);
+}
+
 permissions::ChooserContextBase* ChromePermissionsClient::GetChooserContext(
     content::BrowserContext* browser_context,
     ContentSettingsType type) {
   switch (type) {
     case ContentSettingsType::USB_CHOOSER_DATA:
       return UsbChooserContextFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+    case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
+      return BluetoothChooserContextFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
     default:
       NOTREACHED();
@@ -165,23 +199,67 @@ ChromePermissionsClient::GetOverrideIconId(ContentSettingsType type) {
   return PermissionsClient::GetOverrideIconId(type);
 }
 
-std::unique_ptr<permissions::NotificationPermissionUiSelector>
-ChromePermissionsClient::CreateNotificationPermissionUiSelector(
+std::vector<std::unique_ptr<permissions::NotificationPermissionUiSelector>>
+ChromePermissionsClient::CreateNotificationPermissionUiSelectors(
     content::BrowserContext* browser_context) {
-  return std::make_unique<ContextualNotificationPermissionUiSelector>(
-      Profile::FromBrowserContext(browser_context));
+  std::vector<std::unique_ptr<permissions::NotificationPermissionUiSelector>>
+      selectors;
+  selectors.emplace_back(
+      std::make_unique<ContextualNotificationPermissionUiSelector>());
+  selectors.emplace_back(std::make_unique<PrefNotificationPermissionUiSelector>(
+      Profile::FromBrowserContext(browser_context)));
+  selectors.emplace_back(std::make_unique<PredictionBasedPermissionUiSelector>(
+      Profile::FromBrowserContext(browser_context)));
+  return selectors;
 }
 
 void ChromePermissionsClient::OnPromptResolved(
     content::BrowserContext* browser_context,
     permissions::PermissionRequestType request_type,
-    permissions::PermissionAction action) {
+    permissions::PermissionAction action,
+    const GURL& origin,
+    base::Optional<QuietUiReason> quiet_ui_reason) {
   if (request_type ==
       permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS) {
-    AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(
-        Profile::FromBrowserContext(browser_context))
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+
+    AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile)
         ->RecordPermissionPromptOutcome(action);
+
+    if (action == permissions::PermissionAction::GRANTED &&
+        quiet_ui_reason.has_value() &&
+        (quiet_ui_reason.value() ==
+             QuietUiReason::kTriggeredDueToAbusiveRequests ||
+         quiet_ui_reason.value() ==
+             QuietUiReason::kTriggeredDueToAbusiveContent)) {
+      AbusiveOriginPermissionRevocationRequest::
+          ExemptOriginFromFutureRevocations(profile, origin);
+    }
   }
+}
+
+base::Optional<bool>
+ChromePermissionsClient::HadThreeConsecutiveNotificationPermissionDenies(
+    content::BrowserContext* browser_context) {
+  if (!QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled())
+    return base::nullopt;
+  return Profile::FromBrowserContext(browser_context)
+      ->GetPrefs()
+      ->GetBoolean(prefs::kHadThreeConsecutiveNotificationPermissionDenies);
+}
+
+base::Optional<bool>
+ChromePermissionsClient::HasPreviouslyAutoRevokedPermission(
+    content::BrowserContext* browser_context,
+    const GURL& origin,
+    ContentSettingsType permission) {
+  if (permission != ContentSettingsType::NOTIFICATIONS) {
+    return base::nullopt;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return AbusiveOriginPermissionRevocationRequest::
+      HasPreviouslyRevokedPermission(profile, origin);
 }
 
 base::Optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {
@@ -231,11 +309,10 @@ base::Optional<GURL> ChromePermissionsClient::OverrideCanonicalOrigin(
   // when in embedded in non-secure contexts. This is unfortunate and we
   // should remove this at some point, but for now always use the requesting
   // origin for embedded extensions. https://crbug.com/530507.
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kPermissionDelegation) &&
-      requesting_origin.SchemeIs(extensions::kExtensionScheme)) {
+  if (requesting_origin.SchemeIs(extensions::kExtensionScheme)) {
     return requesting_origin;
   }
+
   return base::nullopt;
 }
 

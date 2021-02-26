@@ -8,18 +8,33 @@ import core.path_util
 
 core.path_util.AddTelemetryToPath()
 
+# Initialize the duration of all stories to be shard to 10 seconds.
+# The reasons are:
+# 1) Even if the stories are skipped, they still have non negligible
+#    overhead.
+# 2) For a case of sharding a set of benchmarks with no existing data about
+#    timing, initializing the stories time within a single repeat to 1 leads
+#    to a roughly equal distribution of stories on the shards, whereas
+#    initializing them to zero will make the algorithm put all the stories
+#    into the first shard.
+# 3) For the case  of adding a new benchmark to a builder that hasn't run
+#    it before but has run other benchmarks, 10 seconds is a reasonable
+#    amount of time to guess that it would take the stories to run and
+#    creates reasonably balanced shard maps.
+DEFAULT_STORY_DURATION = 10
+
 
 def generate_sharding_map(benchmarks_to_shard, timing_data, num_shards, debug):
   """Generate sharding map.
 
     Args:
-      benchmarks_to_shard is a list of bot_platforms.BenchmarkConfig and
+      benchmarks_to_shard: a list of bot_platforms.BenchmarkConfig and
       ExecutableConfig objects.
-
-      The "stories" field contains a list of ordered story names. Notes that
-      this should match the actual order of how the benchmark stories are
-      executed for the sharding algorithm to be effective.
-
+      timing_data: The timing data in json with 'name' and 'duration'
+      num_shards: the total number of shards
+      debug: if true, print out full list of stories of each shard in shard map.
+    Return:
+      The shard map.
   """
   # Sort the list of benchmarks to be sharded by benchmark's name to make the
   # execution of this algorithm deterministic.
@@ -29,86 +44,84 @@ def generate_sharding_map(benchmarks_to_shard, timing_data, num_shards, debug):
   story_timing_list = _gather_timing_data(
       benchmarks_to_shard, timing_data, True)
 
-  all_stories = {}
+  stories_by_benchmark = {}
   for b in benchmarks_to_shard:
-    all_stories[b.name] = b.stories
+    stories_by_benchmark[b.name] = b.stories
 
-  total_time = sum(p[1] for p in story_timing_list)
-  expected_time_per_shard = total_time/num_shards
-
-  total_time_scheduled = 0
   sharding_map = collections.OrderedDict()
-  debug_map = collections.OrderedDict()
+  num_stories = len(story_timing_list)
   min_shard_time = sys.maxint
   min_shard_index = None
   max_shard_time = 0
   max_shard_index = None
-  num_stories = len(story_timing_list)
   predicted_shard_timings = []
+  debug_timing = collections.OrderedDict()
 
   # The algorithm below removes all the stories from |story_timing_list| one by
   # one and add them to the current shard until the shard's total time is
-  # approximately equals to |expected_time_per_shard|. After that point,
+  # approximately equals to |expected_shard_time|. After that point,
   # it moves to the next shard.
   # For efficient removal of |story_timing_list|'s elements & to keep the
   # ordering of benchmark alphabetically sorted in the shards' assignment, we
   # reverse the |story_timing_list|.
+  total_time = sum(p[1] for p in story_timing_list)
+  expected_shard_time = total_time / num_shards
   story_timing_list.reverse()
-  num_stories = len(story_timing_list)
-  final_shard_index = num_shards - 1
   for i in range(num_shards):
     shard_name = 'shard #%i' % i
     sharding_map[str(i)] = {'benchmarks': collections.OrderedDict()}
-    debug_map[shard_name] = collections.OrderedDict()
-    time_per_shard = 0
+    debug_timing[shard_name] = collections.OrderedDict()
+    shard_time = 0
     stories_in_shard = []
-    expected_total_time = expected_time_per_shard * (i + 1)
-    last_diff = abs(total_time_scheduled - expected_total_time)
-    # Keep adding story to the current shard until either:
-    # * The absolute difference between the total time of shards so far and
-    #   expected total time is minimal.
-    # * The shard is final shard, and there is no more stories to add.
-    #
-    # Note: we do check for the final shard in case due to rounding error,
-    # the last_diff can be minimal even if we don't add all the stories to the
-    # final shard.
+
+    # Keep adding stories to the current shard if:
+    # 1. Adding the next story does not makes the shard time further from
+    # the expected;
+    # Or
+    # 2. The current shard is the last shard.
     while story_timing_list:
-      candidate_story, candidate_story_duration = story_timing_list[-1]
-      new_diff = abs(total_time_scheduled + candidate_story_duration -
-                     expected_total_time)
-      if new_diff <= last_diff or i == final_shard_index:
-        story_timing_list.pop()
-        total_time_scheduled += candidate_story_duration
-        time_per_shard += candidate_story_duration
-        stories_in_shard.append(candidate_story)
-        debug_map[shard_name][candidate_story] = candidate_story_duration
-        last_diff = abs(total_time_scheduled - expected_total_time)
-        _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories,
-                                 benchmark_name_to_config)
-      else:
+      # Add one story anyway to avoid empty shard
+      current_story, current_duration = story_timing_list[-1]
+      story_timing_list.pop()
+      shard_time += current_duration
+      stories_in_shard.append(current_story)
+      debug_timing[shard_name][current_story] = current_duration
+      _add_benchmarks_to_shard(sharding_map, i, stories_in_shard,
+                               stories_by_benchmark, benchmark_name_to_config)
+
+      if not story_timing_list:
+        # All stories sharded
         break
-    # Double time_per_shard to account for reference benchmark run.
-    debug_map[shard_name]['expected_total_time'] = time_per_shard * 2
-    if time_per_shard > max_shard_time:
-      max_shard_time = time_per_shard
+
+      _, next_duration = story_timing_list[-1]
+      if (abs(shard_time + next_duration - expected_shard_time) >
+          abs(shard_time - expected_shard_time)) and i != num_shards - 1:
+        # it is not the last shard and we should not add the next story
+        break
+
+    if i != num_shards - 1:
+      total_time -= shard_time
+      expected_shard_time = total_time / (num_shards - i - 1)
+    if shard_time > max_shard_time:
+      max_shard_time = shard_time
       max_shard_index = i
-    if time_per_shard < min_shard_time:
-      min_shard_time = time_per_shard
+    if shard_time < min_shard_time:
+      min_shard_time = shard_time
       min_shard_index = i
 
-    predicted_shard_timings.append((shard_name, time_per_shard * 2))
+    predicted_shard_timings.append((shard_name, shard_time))
+    debug_timing[shard_name]['expected_total_time'] = shard_time
 
   sharding_map['extra_infos'] = collections.OrderedDict([
       ('num_stories', num_stories),
-      # Double all the time stats by 2 to account for reference build.
-      ('predicted_min_shard_time', min_shard_time * 2),
+      ('predicted_min_shard_time', min_shard_time),
       ('predicted_min_shard_index', min_shard_index),
-      ('predicted_max_shard_time', max_shard_time * 2),
+      ('predicted_max_shard_time', max_shard_time),
       ('predicted_max_shard_index', max_shard_index),
-      ])
+  ])
 
   if debug:
-    sharding_map['extra_infos'].update(debug_map)
+    sharding_map['extra_infos'].update(debug_timing)
   else:
     sharding_map['extra_infos'].update(predicted_shard_timings)
   return sharding_map
@@ -150,42 +163,25 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
 
 
 def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
-  story_timing_dict = {}
-  benchmarks_data_by_name = {}
-  for b in benchmarks_to_shard:
-    story_list = b.stories
-    benchmarks_data_by_name[b.name] = b
-    # Initialize the duration of all stories to be shard to 10 seconds.
-    # The reasons are:
-    # 1) Even if the stories are skipped, they still have non negligible
-    #    overhead.
-    # 2) For a case of sharding a set of benchmarks with no existing data about
-    #    timing, initializing the stories time within a single repeat to 1 leads
-    #    to a roughly equal distribution of stories on the shards, whereas
-    #    initializing them to zero will make the algorithm put all the stories
-    #    into the first shard.
-    # 3) For the case  of adding a new benchmark to a builder that hasn't run
-    #    it before but has run other benchmarks, 10 seconds is a reasonable
-    #    amount of time to guess that it would take the stories to run and
-    #    creates reasonably balanced shard maps.
-    for story in story_list:
-      story_timing_dict[b.name + '/' + story] = 10
+  """Generates a list of story and duration in order.
+  Return:
+    A list of tuples of (story_name, story_duration), sorted by the order of
+    benchmark name + story order within the benchmark.
+  """
+  timing_data_dict = {}
   for run in timing_data:
-    benchmark = run['name'].split('/', 1)[0]
-    if run['name'] in story_timing_dict:
-      if run['duration']:
-        if repeat:
-          story_timing_dict[run['name']] = (float(run['duration'])
-              * benchmarks_data_by_name[benchmark].repeat)
-        else:
-          story_timing_dict[run['name']] = float(run['duration'])
-  story_timing_list = []
-  for entry in benchmarks_to_shard:
-    benchmark_name = entry.name
-    for story_name in entry.stories:
-      test_name = '%s/%s' % (benchmark_name, story_name)
-      story_timing_list.append((test_name, story_timing_dict[test_name]))
-  return story_timing_list
+    if run['duration']:
+      timing_data_dict[run['name']] = float(run['duration'])
+  timing_data_list = []
+  for b in benchmarks_to_shard:
+    run_count = b.repeat if repeat else 1
+    for s in b.stories:
+      test_name = '%s/%s' % (b.name, s)
+      test_duration = DEFAULT_STORY_DURATION
+      if test_name in timing_data_dict:
+        test_duration = timing_data_dict[test_name] * run_count
+      timing_data_list.append((test_name, test_duration))
+  return timing_data_list
 
 
 def _generate_empty_sharding_map(num_shards):

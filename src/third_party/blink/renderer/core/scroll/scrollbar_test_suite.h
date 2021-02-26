@@ -38,8 +38,6 @@ class MockPlatformChromeClient : public EmptyChromeClient {
 
 class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
                            public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
-
  public:
   static MockScrollableArea* Create() {
     return MakeGarbageCollected<MockScrollableArea>();
@@ -73,7 +71,7 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   MOCK_CONST_METHOD0(VerticalScrollbar, Scrollbar*());
   MOCK_CONST_METHOD0(ScrollbarsHiddenIfOverlay, bool());
   MOCK_METHOD0(ScheduleAnimation, bool());
-  MOCK_CONST_METHOD0(UsedColorScheme, WebColorScheme());
+  MOCK_CONST_METHOD0(UsedColorScheme, mojom::blink::ColorScheme());
 
   bool UserInputScrollable(ScrollbarOrientation) const override { return true; }
   bool ScrollbarsCanBeActive() const override { return true; }
@@ -125,7 +123,7 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   using ScrollableArea::ShowNonMacOverlayScrollbars;
   using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(chrome_client_);
     ScrollableArea::Trace(visitor);
   }

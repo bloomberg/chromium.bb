@@ -8,6 +8,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/scoped_raster_flags.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 
@@ -24,7 +25,8 @@ SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
 
 SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  ImageProvider* image_provider)
-    : canvas_(new SkCanvas(bitmap)),
+    : canvas_(new SkCanvas(bitmap,
+                           skia::LegacyDisplayGlobals::GetSkSurfaceProps())),
       bitmap_(bitmap),
       owned_(canvas_),
       image_provider_(image_provider) {}
@@ -274,7 +276,7 @@ void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
                                     const SkRect& src,
                                     const SkRect& dst,
                                     const PaintFlags* flags,
-                                    SrcRectConstraint constraint) {
+                                    SkCanvas::SrcRectConstraint constraint) {
   base::Optional<ScopedRasterFlags> scoped_flags;
   if (flags) {
     scoped_flags.emplace(flags, image_provider_, canvas_->getTotalMatrix(),

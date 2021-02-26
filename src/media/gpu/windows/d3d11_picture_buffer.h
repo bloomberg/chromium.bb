@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/media_log.h"
+#include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
@@ -47,39 +48,51 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
  public:
   // |texture_wrapper| is responsible for controlling mailbox access to
   // the ID3D11Texture2D,
-  // |level| is the picturebuffer index inside the Array-type ID3D11Texture2D.
+  // |array_slice| is the picturebuffer index inside the Array-type
+  // ID3D11Texture2D.  |picture_index| is a unique id used to identify this
+  // picture to the decoder.  If a texture array is used, then it might as well
+  // be equal to the texture array index.  Otherwise, any 0-based index is
+  // probably okay, though sequential makes sense.
   D3D11PictureBuffer(
       scoped_refptr<base::SequencedTaskRunner> delete_task_runner,
       ComD3D11Texture2D texture,
+      size_t array_slice,
       std::unique_ptr<Texture2DWrapper> texture_wrapper,
       gfx::Size size,
-      size_t level);
+      size_t picture_index);
 
-  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-            GetCommandBufferHelperCB get_helper_cb,
-            ComD3D11VideoDevice video_device,
-            const GUID& decoder_guid,
-            std::unique_ptr<MediaLog> media_log);
+  Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+              GetCommandBufferHelperCB get_helper_cb,
+              ComD3D11VideoDevice video_device,
+              const GUID& decoder_guid,
+              std::unique_ptr<MediaLog> media_log);
 
   // Set the contents of a mailbox holder array, return true if successful.
   // |input_color_space| is the color space of our input texture, and
   // |output_color_space| will be set, on success, to the color space that the
   // processed texture has.
-  bool ProcessTexture(const gfx::ColorSpace& input_color_space,
-                      MailboxHolderArray* mailbox_dest,
-                      gfx::ColorSpace* output_color_space);
+  Status ProcessTexture(const gfx::ColorSpace& input_color_space,
+                        MailboxHolderArray* mailbox_dest,
+                        gfx::ColorSpace* output_color_space);
   ComD3D11Texture2D Texture() const;
 
   const gfx::Size& size() const { return size_; }
-  size_t level() const { return level_; }
+  size_t picture_index() const { return picture_index_; }
 
   // Is this PictureBuffer backing a VideoFrame right now?
-  bool in_client_use() const { return in_client_use_; }
+  bool in_client_use() const { return in_client_use_ > 0; }
 
   // Is this PictureBuffer holding an image that's in use by the decoder?
   bool in_picture_use() const { return in_picture_use_; }
 
-  void set_in_client_use(bool use) { in_client_use_ = use; }
+  void add_client_use() {
+    in_client_use_++;
+    DCHECK_GT(in_client_use_, 0);
+  }
+  void remove_client_use() {
+    DCHECK_GT(in_client_use_, 0);
+    in_client_use_--;
+  }
   void set_in_picture_use(bool use) { in_picture_use_ = use; }
 
   const ComD3D11VideoDecoderOutputView& output_view() const {
@@ -97,11 +110,13 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   friend class base::DeleteHelper<D3D11PictureBuffer>;
 
   ComD3D11Texture2D texture_;
+  uint32_t array_slice_;
+
   std::unique_ptr<Texture2DWrapper> texture_wrapper_;
   gfx::Size size_;
   bool in_picture_use_ = false;
-  bool in_client_use_ = false;
-  size_t level_;
+  int in_client_use_ = 0;
+  size_t picture_index_;
 
   ComD3D11VideoDecoderOutputView output_view_;
 

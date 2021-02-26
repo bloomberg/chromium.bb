@@ -26,24 +26,19 @@ const wchar_t* const kModifiers[] = {
     kSfxFull,
 };
 
-enum ModifierIndex {
-  MOD_STATS_DEFAULT,
-  MOD_STAGE,
-  SFX_FULL,
-  NUM_MODIFIERS
-};
+enum ModifierIndex { MOD_STATS_DEFAULT, MOD_STAGE, SFX_FULL, NUM_MODIFIERS };
 
 static_assert(NUM_MODIFIERS == base::size(kModifiers),
               "kModifiers disagrees with ModifierIndex; they must match!");
 
 // Returns true if the modifier is found, in which case |position| holds the
 // location at which the modifier was found.  The number of characters in the
-// modifier is returned in |length|, if non-NULL.
+// modifier is returned in |length|, if non-nullptr.
 bool FindModifier(ModifierIndex index,
                   const base::string16& ap_value,
                   base::string16::size_type* position,
                   base::string16::size_type* length) {
-  DCHECK(position != NULL);
+  DCHECK_NE(position, nullptr);
   base::string16::size_type mod_position = base::string16::npos;
   base::string16::size_type mod_length =
       base::string16::traits_type::length(kModifiers[index]);
@@ -67,7 +62,7 @@ bool FindModifier(ModifierIndex index,
   } while (pos != ap_value.size() && ap_value[pos] != L'-');
   DCHECK_NE(mod_position, base::string16::npos);
   *position = mod_position;
-  if (length != NULL)
+  if (length != nullptr)
     *length = pos - mod_position;
   return true;
 }
@@ -75,7 +70,7 @@ bool FindModifier(ModifierIndex index,
 bool HasModifier(ModifierIndex index, const base::string16& ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
   base::string16::size_type position;
-  return FindModifier(index, ap_value, &position, NULL);
+  return FindModifier(index, ap_value, &position, nullptr);
 }
 
 base::string16::size_type FindInsertionPoint(ModifierIndex index,
@@ -84,8 +79,10 @@ base::string16::size_type FindInsertionPoint(ModifierIndex index,
   base::string16::size_type result;
 
   for (int scan = index + 1; scan < NUM_MODIFIERS; ++scan) {
-    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result, NULL))
+    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result,
+                     nullptr)) {
       return result;
+    }
   }
 
   return ap_value.size();
@@ -137,15 +134,15 @@ namespace installer {
 bool ChannelInfo::Initialize(const RegKey& key) {
   LONG result = key.ReadValue(google_update::kRegApField, &value_);
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
-      result == ERROR_INVALID_HANDLE;
+         result == ERROR_INVALID_HANDLE;
 }
 
 bool ChannelInfo::Write(RegKey* key) const {
   DCHECK(key);
   // Google Update deletes the value when it is empty, so we may as well, too.
-  LONG result = value_.empty() ?
-      key->DeleteValue(google_update::kRegApField) :
-      key->WriteValue(google_update::kRegApField, value_.c_str());
+  LONG result = value_.empty() ? key->DeleteValue(google_update::kRegApField)
+                               : key->WriteValue(google_update::kRegApField,
+                                                 value_.c_str());
   if (result != ERROR_SUCCESS) {
     LOG(ERROR) << "Failed writing channel info; result: " << result;
     return false;

@@ -1,0 +1,16 @@
+Name: distro
+Short Name: distro
+URL: https://github.com/nir0s/distro/archive/v1.5.0.tar.gz
+Version: 1.5.0
+Revision: d93643a066f72b1fea3864d30a407c2ee7ec7b44
+License: Apache License 2.0
+
+Description:
+A much more elaborate, renewed alternative implementation for Python's
+platform.linux_distribution()
+
+Local Modifications: See update.sh.
+
+How to update:
+Run update script and update this file.
+$ ./update.sh <version>

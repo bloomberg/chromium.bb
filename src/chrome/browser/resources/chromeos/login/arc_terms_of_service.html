@@ -2,17 +2,25 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
-<dom-module id="arc-tos-root">
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+<link rel="import" href="/components/throbber_notice.html">
+
+<dom-module id="arc-tos-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="arc_terms_of_service.css">
     <!-- As this dialog have pre-loading logic that require access to elements,
          dialog is marked as no-lazy. -->
     <oobe-dialog id="arcTosDialog" has-buttons class="arc-tos-loading"
+        role="dialog"
+        aria-label$="[[i18nDynamic(locale, 'arcTermsOfServiceScreenHeading')]]"
         title-key="arcTermsOfServiceScreenHeading"
         subtitle-key="arcTermsOfServiceScreenDescription" no-lazy>
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
@@ -23,14 +31,16 @@
               class="oobe-tos-webview"></webview>
         </div>
         <div id="arcPolicyLink" class="arc-tos-content">
-          <a href="#">[[i18nDynamic(locale, 'arcPolicyLink')]]</a>
+          <a class="oobe-local-link" is="action-link">
+            [[i18nDynamic(locale, 'arcPolicyLink')]]
+          </a>
         </div>
         <div class="parameter-section arc-tos-content"
             hidden="[[isMetricsHidden]]">
           <p>
             <span>[[i18nDynamic(locale, metricsTextKey)]]</span>
-            <a href="#" id="learnMoreLinkMetrics"
-                on-tap="onMetricsLearnMoreTap_">
+            <a id="learnMoreLinkMetrics" class="oobe-local-link"
+                on-click="onMetricsLearnMoreTap_" is="action-link">
               [[i18nDynamic(locale, 'arcLearnMoreText')]]
             </a>
           </p>
@@ -45,12 +55,13 @@
             disabled="[[backupRestoreManaged]]"
             hidden="[[demoMode]]">
           <cr-checkbox id="arcEnableBackupRestore"
+              class="layout start"
               checked="{{backupRestore}}"
               disabled="[[backupRestoreManaged]]">
             <p>
               <span>[[i18nDynamic(locale, 'arcTextBackupRestore')]]</span>
-              <a href="#" id="learnMoreLinkBackupRestore"
-                on-tap="onBackupRestoreLearnMoreTap_">
+              <a id="learnMoreLinkBackupRestore" class="oobe-local-link"
+                  on-click="onBackupRestoreLearnMoreTap_" is="action-link">
                 [[i18nDynamic(locale, 'arcLearnMoreText')]]
               </a>
             </p>
@@ -62,12 +73,13 @@
               disabled="[[locationServiceManaged]]"
               hidden="[[demoMode]]">
             <cr-checkbox id="arcEnableLocationService"
+                class="layout start"
                 checked="{{locationService}}"
                 disabled="[[locationServiceManaged]]">
               <p>
                 <span>[[i18nDynamic(locale, 'arcTextLocationService')]]</span>
-                <a href="#" id="learnMoreLinkLocationService"
-                    on-tap="onLocationServiceLearnMoreTap_">
+                <a id="learnMoreLinkLocationService" class="oobe-local-link"
+                    on-click="onLocationServiceLearnMoreTap_" is="action-link">
                   [[i18nDynamic(locale, 'arcLearnMoreText')]]
                 </a>
               </p>
@@ -77,7 +89,7 @@
             <p>
               <span>[[i18nDynamic(locale, 'arcTextPaiService')]]</span>
               <a href="#" id="learnMoreLinkPai"
-                  on-tap="onPaiLearnMoreTap_">
+                  on-click="onPaiLearnMoreTap_">
                 [[i18nDynamic(locale, 'arcLearnMoreText')]]
               </a>
             </p>
@@ -90,34 +102,36 @@
             class="parameter-section arc-tos-content"
             hidden="[[demoMode]]">
             <cr-checkbox id="arcReviewSettingsCheckbox"
+                class="layout start"
                 checked="{{reviewSettings}}">
               <p>[[i18nDynamic(locale, 'arcTextReviewSettings')]]</p>
             </cr-checkbox>
           </div>
         </div>
-        <div class="arc-tos-loading">
-          <p>[[i18nDynamic(locale, 'arcTermsOfServiceLoading')]]</p>
+        <div class="arc-tos-loading flex layout center-justified vertical">
+          <throbber-notice text-key="arcTermsOfServiceLoading">
+          </throbber-notice>
         </div>
         <div class="arc-tos-error">
           <p>[[i18nDynamic(locale, 'arcTermsOfServiceError')]]</p>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal">
+      <div slot="back-navigation">
         <oobe-back-button id="arcTosBackButton" hidden="[[!demoMode]]"
             on-click="onBack_"></oobe-back-button>
-        <div class="flex">
-        </div>
+      </div>
+      <div slot="bottom-buttons">
         <oobe-text-button id="arcTosRetryButton"
-            inverse on-tap="onRetry_"
+            inverse on-click="onRetry_"
             disabled="[[arcTosButtonsDisabled]]"
             text-key="arcTermsOfServiceRetryButton"></oobe-text-button>
         <oobe-text-button id="arcTosNextButton"
-            inverse on-tap="onNext_"
+            inverse on-click="onNext_"
             disabled="[[arcTosButtonsDisabled]]"
             hidden="[[showFullDialog]]"
             text-key="arcTermsOfServiceNextButton"></oobe-text-button>
         <oobe-text-button id="arcTosAcceptButton"
-            inverse on-tap="onAccept_"
+            inverse on-click="onAccept_"
             disabled="[[arcTosButtonsDisabled]]"
             hidden="[[!showFullDialog]]"
             text-key="[[acceptTextKey]]"></oobe-text-button>

@@ -4,23 +4,23 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.assertion.PositionAssertions.isAbove;
-import static android.support.test.espresso.assertion.PositionAssertions.isBelow;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.contrib.PickerActions.setDate;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.assertion.PositionAssertions.isAbove;
+import static androidx.test.espresso.assertion.PositionAssertions.isBelow;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.PickerActions.setDate;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -37,11 +37,12 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
-import android.support.test.espresso.matcher.ViewMatchers.Visibility;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TextView;
+
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -613,10 +614,10 @@ public class AutofillAssistantCollectUserDataUiTest {
     @MediumTest
     public void testNonEmptyPaymentRequest() throws Exception {
         /* Add complete profile and credit card to the personal data manager. */
-        PersonalDataManager.AutofillProfile profile =
-                new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
-                        "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "UZ", "555 123-4567", "maggie@simpson.com", "");
+        PersonalDataManager.AutofillProfile profile = new PersonalDataManager.AutofillProfile(
+                "GUID", "https://www.example.com", /* honorificPrefix= */ "", "Maggie Simpson",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "UZ",
+                "555 123-4567", "maggie@simpson.com", "");
         PersonalDataManager.CreditCard creditCard =
                 new PersonalDataManager.CreditCard("", "https://example.com", true, true, "Jon Doe",
                         "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
@@ -740,21 +741,22 @@ public class AutofillAssistantCollectUserDataUiTest {
     @Test
     @MediumTest
     public void testContactDetailsCustomSummary() throws Exception {
-        AutofillContact contactFull = AssistantCollectUserDataModel.createAutofillContact(
-                mTestRule.getActivity(),
-                new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
-                        "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "UZ", "555 123-4567", "maggie@simpson.com", ""),
-                /* requestName= */ true,
-                /* requestPhone= */ true, /* requestEmail= */ true);
-
-        AutofillContact contactWithoutEmail =
+        AutofillContact contactFull =
                 AssistantCollectUserDataModel.createAutofillContact(mTestRule.getActivity(),
                         new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
-                                "John Simpson", "Acme Inc.", "123 Main", "California",
-                                "Los Angeles", "", "90210", "", "UZ", "555 123-4567", "", ""),
+                                /* honorificPrefix= */ "", "Maggie Simpson", "Acme Inc.",
+                                "123 Main", "California", "Los Angeles", "", "90210", "", "UZ",
+                                "555 123-4567", "maggie@simpson.com", ""),
                         /* requestName= */ true,
                         /* requestPhone= */ true, /* requestEmail= */ true);
+
+        AutofillContact contactWithoutEmail = AssistantCollectUserDataModel.createAutofillContact(
+                mTestRule.getActivity(),
+                new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
+                        /* honorificPrefix= */ "", "John Simpson", "Acme Inc.", "123 Main",
+                        "California", "Los Angeles", "", "90210", "", "UZ", "555 123-4567", "", ""),
+                /* requestName= */ true,
+                /* requestPhone= */ true, /* requestEmail= */ true);
 
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
@@ -969,20 +971,24 @@ public class AutofillAssistantCollectUserDataUiTest {
     }
 
     /**
-     * For expired credit cards, an error message should be displayed.
+     * Check the order in which errors are shown:
+     * - Incomplete card / missing or incomplete address -> Generic information missing
+     * - Missing required zip code
+     * - Expired card
      */
     @Test
     @MediumTest
-    public void testExpiredCreditCard() throws Exception {
-        // add credit card without postcode.
+    public void testOrderOfCreditCardErrorMessages() throws Exception {
         PersonalDataManager.AutofillProfile profile =
-                mHelper.createDummyProfile("John Doe", "john@gmail.com", "");
+                mHelper.createDummyProfile("John Doe", "john@gmail.com", /* postcode= */ "");
         String profileId = mHelper.setProfile(profile);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(profileId);
-        creditCard.setYear("2019");
+        creditCard.setYear("2000");
 
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
@@ -990,26 +996,60 @@ public class AutofillAssistantCollectUserDataUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT,
+                    "Missing Zip Code");
+            model.set(AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE, true);
             model.set(AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT, "Card is expired");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
-            AutofillPaymentInstrument expiredPaymentInstrument =
+            AutofillPaymentInstrument paymentInstrument =
+                    AssistantCollectUserDataModel.createAutofillPaymentInstrument(
+                            mTestRule.getWebContents(), creditCard, /* billingProfile= */ null);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
+        });
+
+        // Without billing profile, a generic information missing error should be shown.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Information missing")));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AutofillPaymentInstrument paymentInstrument =
                     AssistantCollectUserDataModel.createAutofillPaymentInstrument(
                             mTestRule.getWebContents(), creditCard, profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
-                    Collections.singletonList(expiredPaymentInstrument));
-            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT,
-                    expiredPaymentInstrument);
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
         });
 
-        // check that the card is not accepted (i.e. an error message is shown).
+        // A missing zip code with an otherwise valid billing address should show a specialized
+        // error message.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Missing Zip Code")));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            profile.setPostalCode("90210");
+            AutofillPaymentInstrument validPaymentInstrument =
+                    AssistantCollectUserDataModel.createAutofillPaymentInstrument(
+                            mTestRule.getWebContents(), creditCard, profile);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(validPaymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT,
+                    validPaymentInstrument);
+        });
+
+        // An expired card should only show a specialized error message if everything else is
+        // complete.
         onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
         onView(is(getPaymentSummaryErrorView(viewHolder)))
                 .check(matches(withText("Card is expired")));
 
-        creditCard.setYear("2050");
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            creditCard.setYear("2050");
             AutofillPaymentInstrument validPaymentInstrument =
                     AssistantCollectUserDataModel.createAutofillPaymentInstrument(
                             mTestRule.getWebContents(), creditCard, profile);

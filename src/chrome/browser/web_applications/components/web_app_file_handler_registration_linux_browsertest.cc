@@ -10,7 +10,8 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/test/bind_test_util.h"
+#include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,8 +21,6 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/test/web_app_test.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "content/public/test/browser_test.h"
@@ -51,22 +50,11 @@ apps::FileHandler GetTestFileHandler(const std::string& action,
 }  // namespace
 
 class WebAppFileHandlerRegistrationLinuxBrowserTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<ProviderType> {
+    : public InProcessBrowserTest {
  protected:
   WebAppFileHandlerRegistrationLinuxBrowserTest() {
-    if (GetParam() == ProviderType::kWebApps) {
-      scoped_feature_list_.InitWithFeatures(
-          {blink::features::kNativeFileSystemAPI,
-           blink::features::kFileHandlingAPI,
-           features::kDesktopPWAsWithoutExtensions},
-          {});
-    } else if (GetParam() == ProviderType::kBookmarkApps) {
-      scoped_feature_list_.InitWithFeatures(
-          {blink::features::kNativeFileSystemAPI,
-           blink::features::kFileHandlingAPI},
-          {features::kDesktopPWAsWithoutExtensions});
-    }
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kFileHandlingAPI);
   }
 
   AppRegistrar& registrar() {
@@ -85,7 +73,7 @@ class WebAppFileHandlerRegistrationLinuxBrowserTest
 
 // Verify that the MIME type registration callback is called and that
 // the caller behaves as expected.
-IN_PROC_BROWSER_TEST_P(WebAppFileHandlerRegistrationLinuxBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlerRegistrationLinuxBrowserTest,
                        RegisterMimeTypesOnLinuxCallbackCalledSuccessfully) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
@@ -103,25 +91,21 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlerRegistrationLinuxBrowserTest,
       shell_integration_linux::GetMimeTypesRegistrationFileContents(
           file_handlers);
   bool path_reached = false;
-
+  base::RunLoop run_loop;
   RegisterMimeTypesOnLinuxCallback callback = base::BindLambdaForTesting(
-      [&expected_file_contents, &path_reached](base::FilePath filename,
-                                               std::string file_contents) {
+      [&expected_file_contents, &path_reached, &run_loop](
+          base::FilePath filename, std::string file_contents) {
         EXPECT_EQ(file_contents, expected_file_contents);
         path_reached = true;
+        run_loop.Quit();
         return true;
       });
   SetRegisterMimeTypesOnLinuxCallbackForTesting(std::move(callback));
 
   InstallApp(CreateInstallOptions(url));
+  run_loop.Run();
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   ASSERT_TRUE(path_reached);
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         WebAppFileHandlerRegistrationLinuxBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
 
 }  // namespace web_app

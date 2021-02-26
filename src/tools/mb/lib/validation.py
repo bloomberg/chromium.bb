@@ -6,6 +6,7 @@
 import ast
 import collections
 import json
+import os
 import re
 
 
@@ -54,32 +55,30 @@ def CheckAllConfigsAndMixinsReferenced(errs, all_configs, configs, mixins):
   return errs
 
 
-def EnsureNoProprietaryMixins(errs, default_config, config_file, masters,
-                              configs, mixins):
+def EnsureNoProprietaryMixins(errs, masters, configs, mixins):
   """If we're checking the Chromium config, check that the 'chromium' bots
   which build public artifacts do not include the chrome_with_codecs mixin.
   """
-  if config_file == default_config:
-    if 'chromium' in masters:
-      for builder in masters['chromium']:
-        config = masters['chromium'][builder]
+  if 'chromium' in masters:
+    for builder in masters['chromium']:
+      config = masters['chromium'][builder]
 
-        def RecurseMixins(current_mixin):
-          if current_mixin == 'chrome_with_codecs':
-            errs.append('Public artifact builder "%s" can not contain the '
-                        '"chrome_with_codecs" mixin.' % builder)
-            return
-          if not 'mixins' in mixins[current_mixin]:
-            return
-          for mixin in mixins[current_mixin]['mixins']:
-            RecurseMixins(mixin)
-
-        for mixin in configs[config]:
+      def RecurseMixins(current_mixin):
+        if current_mixin == 'chrome_with_codecs':
+          errs.append('Public artifact builder "%s" can not contain the '
+                      '"chrome_with_codecs" mixin.' % builder)
+          return
+        if not 'mixins' in mixins[current_mixin]:
+          return
+        for mixin in mixins[current_mixin]['mixins']:
           RecurseMixins(mixin)
-    else:
-      errs.append('Missing "chromium" master. Please update this '
-                  'proprietary codecs check with the name of the master '
-                  'responsible for public build artifacts.')
+
+      for mixin in configs[config]:
+        RecurseMixins(mixin)
+  else:
+    errs.append('Missing "chromium" master. Please update this '
+                'proprietary codecs check with the name of the master '
+                'responsible for public build artifacts.')
 
 
 def _GetConfigsByBuilder(masters):
@@ -136,3 +135,24 @@ def CheckDuplicateConfigs(errs, config_pool, mixin_pool, grouping,
           'following configs are all equivalent: %s. Please '
           'consolidate these configs into only one unique name per '
           'configuration value.' % (', '.join(sorted('%r' % val for val in v))))
+
+
+def CheckExpectations(mbw, jsonish_blob, expectations_dir):
+  """Checks that the expectation files match the config file.
+
+  Returns: True if expectations are up-to-date. False otherwise.
+  """
+  # Assert number of masters == number of expectation files.
+  if len(mbw.ListDir(expectations_dir)) != len(jsonish_blob):
+    return False
+  for master, builders in jsonish_blob.items():
+    if not mbw.Exists(os.path.join(expectations_dir, master + '.json')):
+      return False  # No expecation file for the master.
+    expectation = mbw.ReadFile(os.path.join(expectations_dir, master + '.json'))
+    builders_json = json.dumps(builders,
+                               indent=2,
+                               sort_keys=True,
+                               separators=(',', ': '))
+    if builders_json != expectation:
+      return False  # Builders' expectation out of sync.
+  return True

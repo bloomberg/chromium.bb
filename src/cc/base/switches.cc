@@ -97,14 +97,17 @@ const char kHighlightNonLCDTextLayers[] = "highlight-non-lcd-text-layers";
 // Switches the ui compositor to use layer lists instead of layer trees.
 const char kUIEnableLayerLists[] = "ui-enable-layer-lists";
 
+// Allows scaling clipped images in GpuImageDecodeCache. Note that this may
+// cause color-bleeding.
+// TODO(crbug.com/1157548): Remove this workaround flag once the underlying
+// cache problems are solved.
+const char kEnableClippedImageScaling[] = "enable-scaling-clipped-images";
+
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 
 // Increases timeout for memory checkers.
 const char kCCLayerTreeTestLongTimeout[] = "cc-layer-tree-test-long-timeout";
-
-// Makes pixel tests write their output instead of read it.
-const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 
 // Controls the duration of the scroll animation curve.
 const char kCCScrollAnimationDurationForTesting[] =

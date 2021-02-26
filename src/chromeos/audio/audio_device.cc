@@ -18,19 +18,11 @@ namespace {
 // Get the priority for a particular device type. The priority returned
 // will be between 0 to 3, the higher number meaning a higher priority.
 uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
-  // Lower the priority of bluetooth wide band mic. Although the quality is
-  // better than narrow band(AUDIO_TYPE_BLUETOOTH_NB_MIC), we still want
-  // to avoid auto-selecting Bluetooth mic when there is another audio input
-  // option.
-  if (type == AUDIO_TYPE_BLUETOOTH && is_input)
-    return 0;
   switch (type) {
     case AUDIO_TYPE_HEADPHONE:
     case AUDIO_TYPE_LINEOUT:
     case AUDIO_TYPE_MIC:
     case AUDIO_TYPE_USB:
-    // This is for bluetooth output node. Bluetooth inputs(wide band and narrow
-    // band mic) are handled separately.
     case AUDIO_TYPE_BLUETOOTH:
       return 3;
     case AUDIO_TYPE_HDMI:
@@ -50,6 +42,7 @@ uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
     case AUDIO_TYPE_HOTWORD:
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
+    case AUDIO_TYPE_ALSA_LOOPBACK:
     case AUDIO_TYPE_OTHER:
     default:
       return 0;
@@ -91,6 +84,8 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "POST_MIX_LOOPBACK";
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
       return "POST_DSP_LOOPBACK";
+    case AUDIO_TYPE_ALSA_LOOPBACK:
+      return "ALSA_LOOPBACK";
     case AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
@@ -134,6 +129,8 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_POST_MIX_LOOPBACK;
   else if (node_type.find("POST_DSP_LOOPBACK") != std::string::npos)
     return AUDIO_TYPE_POST_DSP_LOOPBACK;
+  else if (node_type.find("ALSA_LOOPBACK") != std::string::npos)
+    return AUDIO_TYPE_ALSA_LOOPBACK;
   else
     return AUDIO_TYPE_OTHER;
 }
@@ -153,10 +150,10 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   else
     display_name = node.device_name;
   device_name = node.device_name;
-  mic_positions = node.mic_positions;
   priority = GetDevicePriority(type, node.is_input);
   active = node.active;
   plugged_time = node.plugged_time;
+  max_supported_channels = node.max_supported_channels;
 }
 
 AudioDevice::AudioDevice(const AudioDevice& other) = default;
@@ -191,7 +188,6 @@ std::string AudioDevice::ToString() const {
                       active ? "true" : "false");
   base::StringAppendF(&result, "plugged_time= %s ",
                       base::NumberToString(plugged_time).c_str());
-  base::StringAppendF(&result, "mic_positions = %s ", mic_positions.c_str());
 
   return result;
 }

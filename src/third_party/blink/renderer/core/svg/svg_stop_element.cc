@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -40,7 +41,7 @@ SVGStopElement::SVGStopElement(Document& document)
   DCHECK(HasCustomStyleCallbacks());
 }
 
-void SVGStopElement::Trace(Visitor* visitor) {
+void SVGStopElement::Trace(Visitor* visitor) const {
   visitor->Trace(offset_);
   SVGElement::Trace(visitor);
 }

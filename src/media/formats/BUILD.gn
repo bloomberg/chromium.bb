@@ -12,9 +12,9 @@ source_set("formats") {
     "//media",
     "//media/base/android/",
     "//media/cdm",
+    "//media/ffmpeg",
     "//media/filters",
     "//media/muxers",
-    "//media/ffmpeg",
   ]
 
   sources = [
@@ -94,13 +94,22 @@ source_set("formats") {
       "mp4/aac.h",
       "mp4/avc.cc",
       "mp4/avc.h",
+      "mp4/h264_annex_b_to_avc_bitstream_converter.cc",
+      "mp4/h264_annex_b_to_avc_bitstream_converter.h",
       "mpeg/adts_constants.cc",
       "mpeg/adts_constants.h",
       "mpeg/adts_stream_parser.cc",
       "mpeg/adts_stream_parser.h",
     ]
-  }
 
+    # We need this to make h264_annex_b_to_avc_bitstream_converter.h accessible
+    # from video_encode_accelerator_adapter.cc, unfortunately we can't move
+    # h264_annex_b_to_avc_bitstream_converter.h since it depends on
+    # box_definitions.h
+    # TODO(eugene): consider moving media/video/h264_parser.(h|cc) to
+    # media/formats. It might help to break this dependency cycle.
+    allow_circular_includes_from = [ "//media/video" ]
+  }
   if (proprietary_codecs && enable_platform_hevc) {
     sources += [
       "mp4/hevc.cc",
@@ -237,6 +246,7 @@ source_set("unit_tests") {
       "mp4/avc_unittest.cc",
       "mp4/box_reader_unittest.cc",
       "mp4/es_descriptor_unittest.cc",
+      "mp4/h264_annex_b_to_avc_bitstream_converter_unittest.cc",
       "mp4/mp4_stream_parser_unittest.cc",
       "mp4/sample_to_group_iterator_unittest.cc",
       "mp4/track_run_iterator_unittest.cc",
@@ -263,5 +273,17 @@ source_set("unit_tests") {
     if (enable_platform_hevc) {
       sources += [ "mp4/hevc_unittest.cc" ]
     }
+  }
+}
+
+if (proprietary_codecs) {
+  fuzzer_test("h264_annex_b_converter_fuzzer") {
+    sources = [ "mp4/h264_annex_b_to_avc_bitstream_converter_fuzztest.cc" ]
+    seed_corpus = "mp4/h264_annex_b_fuzz_corpus"
+    deps = [
+      "//base",
+      "//media",
+      "//ui/gfx/geometry",
+    ]
   }
 }

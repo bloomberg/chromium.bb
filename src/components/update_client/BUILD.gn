@@ -58,8 +58,6 @@ static_library("update_client") {
     "action_runner.cc",
     "action_runner.h",
     "activity_data_service.h",
-    "background_downloader_win.cc",
-    "background_downloader_win.h",
     "command_line_config_policy.cc",
     "command_line_config_policy.h",
     "component.cc",
@@ -73,6 +71,8 @@ static_library("update_client") {
     "configurator.h",
     "crx_downloader.cc",
     "crx_downloader.h",
+    "crx_downloader_factory.cc",
+    "crx_downloader_factory.h",
     "crx_update_item.h",
     "network.cc",
     "network.h",
@@ -96,6 +96,8 @@ static_library("update_client") {
     "request_sender.cc",
     "request_sender.h",
     "task.h",
+    "task_send_registration_ping.cc",
+    "task_send_registration_ping.h",
     "task_send_uninstall_ping.cc",
     "task_send_uninstall_ping.h",
     "task_traits.h",
@@ -116,8 +118,6 @@ static_library("update_client") {
     "update_query_params_delegate.h",
     "updater_state.cc",
     "updater_state.h",
-    "updater_state_mac.mm",
-    "updater_state_win.cc",
     "url_fetcher_downloader.cc",
     "url_fetcher_downloader.h",
     "utils.cc",
@@ -135,6 +135,18 @@ static_library("update_client") {
     "//crypto",
     "//url",
   ]
+
+  if (is_win) {
+    sources += [
+      "background_downloader_win.cc",
+      "background_downloader_win.h",
+      "updater_state_win.cc",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [ "updater_state_mac.mm" ]
+  }
 }
 
 static_library("test_support") {

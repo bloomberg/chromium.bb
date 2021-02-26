@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/sync_util.h"
+#include "components/sync/base/sync_util.h"
 #include "components/sync_device_info/device_info_sync_client.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"
@@ -40,6 +40,11 @@ const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   local_device_info_->set_send_tab_to_self_receiving_enabled(
       sync_client_->GetSendTabToSelfReceivingEnabled());
   local_device_info_->set_sharing_info(sync_client_->GetLocalSharingInfo());
+  local_device_info_->set_fcm_registration_token(
+      sync_client_->GetFCMRegistrationToken());
+  local_device_info_->set_interested_data_types(
+      sync_client_->GetInterestedDataTypes());
+
   return local_device_info_.get();
 }
 
@@ -54,7 +59,8 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
     const std::string& client_name,
-    const base::SysInfo::HardwareInfo& hardware_info) {
+    const std::string& manufacturer_name,
+    const std::string& model_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
 
@@ -63,11 +69,13 @@ void LocalDeviceInfoProviderImpl::Initialize(
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, client_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
-      hardware_info,
+      manufacturer_name, model_name,
       /*last_updated_timestamp=*/base::Time(),
       DeviceInfoUtil::GetPulseInterval(),
       sync_client_->GetSendTabToSelfReceivingEnabled(),
-      sync_client_->GetLocalSharingInfo());
+      sync_client_->GetLocalSharingInfo(),
+      sync_client_->GetFCMRegistrationToken(),
+      sync_client_->GetInterestedDataTypes());
 
   // Notify observers.
   callback_list_.Notify();

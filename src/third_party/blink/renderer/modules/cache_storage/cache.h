@@ -40,15 +40,17 @@ struct TypeConverter<CacheQueryOptionsPtr, const blink::CacheQueryOptions*> {
 
 namespace blink {
 
+class AbortController;
 class CacheStorageBlobClientList;
 class ExceptionState;
 class Response;
 class Request;
+class ScriptPromiseResolver;
 class ScriptState;
 
 typedef RequestOrUSVString RequestInfo;
 
-class MODULES_EXPORT Cache final : public ScriptWrappable {
+class MODULES_EXPORT Cache : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -84,14 +86,18 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                      const CacheQueryOptions*,
                      ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
+
+ protected:
+  // Virtual for testing.
+  virtual AbortController* CreateAbortController(ExecutionContext* context);
 
  private:
-  class BarrierCallbackForPut;
-  class BlobHandleCallbackForPut;
+  class BarrierCallbackForPutResponse;
+  class BarrierCallbackForPutComplete;
   class CodeCacheHandleCallbackForPut;
-  class FetchResolvedForAdd;
-  friend class FetchResolvedForAdd;
+  class ResponseBodyLoader;
+  class FetchHandler;
 
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
@@ -106,12 +112,13 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   ScriptPromise DeleteImpl(ScriptState*,
                            const Request*,
                            const CacheQueryOptions*);
-  ScriptPromise PutImpl(ScriptState*,
-                        const String& method_name,
-                        const HeapVector<Member<Request>>&,
-                        const HeapVector<Member<Response>>&,
-                        ExceptionState&,
-                        int64_t trace_id);
+  void PutImpl(ScriptPromiseResolver*,
+               const String& method_name,
+               const HeapVector<Member<Request>>&,
+               const HeapVector<Member<Response>>&,
+               const WTF::Vector<scoped_refptr<BlobDataHandle>>& blob_list,
+               ExceptionState&,
+               int64_t trace_id);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions*);

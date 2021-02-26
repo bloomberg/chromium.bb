@@ -13,31 +13,29 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/sequence_checker.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/event.h"
+#include "ui/gfx/x/shm.h"
 
 namespace ui {
 
-// Base class that creates XImages using shared memory that will be sent to
-// XServer for processing. As Ozone and non-Ozone X11 have different
-// PlatformEvent types, Ozone and non-Ozone provide own implementations that
-// handles events. See AddEventDispatcher and RemoveEventDispatcher below.
-class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
-    : public base::RefCountedThreadSafe<XShmImagePool>,
-      public XEventDispatcher {
+// Creates XImages backed by shared memory that will be shared with the X11
+// server for processing.
+class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
  public:
-  XShmImagePool(scoped_refptr<base::SequencedTaskRunner> host_task_runner,
-                scoped_refptr<base::SequencedTaskRunner> event_task_runner,
-                XDisplay* display,
-                XID drawable,
-                Visual* visual,
+  XShmImagePool(x11::Connection* connection,
+                x11::Drawable drawable,
+                x11::VisualId visual,
                 int depth,
-                std::size_t max_frames_pending);
+                std::size_t max_frames_pending,
+                bool enable_multibuffering);
+
+  ~XShmImagePool() override;
 
   bool Resize(const gfx::Size& pixel_size);
 
@@ -47,33 +45,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   // Obtain state for the current frame.
   SkBitmap& CurrentBitmap();
   SkCanvas* CurrentCanvas();
-  XImage* CurrentImage();
+  x11::Shm::Seg CurrentSegment();
 
   // Switch to the next cached frame.  CurrentBitmap() and CurrentImage() will
   // change to reflect the new frame.
   void SwapBuffers(base::OnceCallback<void(const gfx::Size&)> callback);
 
-  // Part of setup and teardown must be done on the event task runner.  Posting
-  // the tasks cannot be done in the constructor/destructor because because this
-  // would cause subtle problems with the reference count for this object.  So
-  // Initialize() must be called after constructing and Teardown() must be
-  // called before destructing.
-  void Initialize();
-  void Teardown();
-
  protected:
-  ~XShmImagePool() override;
-
-  void DispatchShmCompletionEvent(XShmCompletionEvent event);
-
-  bool CanDispatchXEvent(XEvent* xev);
-
-  const scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
-  const scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
-
-#ifndef NDEBUG
-  bool dispatcher_registered_ = false;
-#endif
+  void DispatchShmCompletionEvent(x11::Shm::CompletionEvent event);
 
  private:
   friend class base::RefCountedThreadSafe<XShmImagePool>;
@@ -82,9 +61,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
     FrameState();
     ~FrameState();
 
-    XShmSegmentInfo shminfo_{};
-    bool shmem_attached_to_server_ = false;
-    XScopedImage image;
+    x11::Shm::Seg shmseg{};
+    int shmid = 0;
+    void* shmaddr = nullptr;
+    bool shmem_attached_to_server = false;
     SkBitmap bitmap;
     std::unique_ptr<SkCanvas> canvas;
   };
@@ -94,21 +74,19 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
     ~SwapClosure();
 
     base::OnceClosure closure;
-    ShmSeg shmseg;
+    x11::Shm::Seg shmseg{};
   };
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
-
-  void InitializeOnGpu();
-  void TeardownOnGpu();
+  bool DispatchXEvent(x11::Event* xev) override;
 
   void Cleanup();
 
-  XDisplay* const display_;
-  const XID drawable_;
-  Visual* const visual_;
+  x11::Connection* const connection_;
+  const x11::Drawable drawable_;
+  const x11::VisualId visual_;
   const int depth_;
+  const bool enable_multibuffering_;
 
   bool ready_ = false;
   gfx::Size pixel_size_;
@@ -116,6 +94,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   std::vector<FrameState> frame_states_;
   std::size_t current_frame_index_ = 0;
   std::list<SwapClosure> swap_closures_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(XShmImagePool);
 };

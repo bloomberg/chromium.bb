@@ -14,6 +14,9 @@
 #include "src/image/SkImage_Base.h"
 
 #if SK_SUPPORT_GPU
+#include "include/core/SkYUVAIndex.h"
+#include "include/core/SkYUVAPixmaps.h"
+#include "include/core/SkYUVASizeInfo.h"
 #include "src/gpu/GrTextureMaker.h"
 #endif
 
@@ -22,47 +25,39 @@ class SharedGenerator;
 class SkImage_Lazy : public SkImage_Base {
 public:
     struct Validator {
-        Validator(sk_sp<SharedGenerator>, const SkIRect* subset, const SkColorType* colorType,
-                  sk_sp<SkColorSpace> colorSpace);
+        Validator(sk_sp<SharedGenerator>, const SkColorType*, sk_sp<SkColorSpace>);
 
         operator bool() const { return fSharedGenerator.get(); }
 
         sk_sp<SharedGenerator> fSharedGenerator;
         SkImageInfo            fInfo;
-        SkIPoint               fOrigin;
         sk_sp<SkColorSpace>    fColorSpace;
         uint32_t               fUniqueID;
     };
 
     SkImage_Lazy(Validator* validator);
 
-    SkIRect onGetSubset() const override {
-        return SkIRect::MakeXYWH(fOrigin.fX, fOrigin.fY, this->width(), this->height());
-    }
-
-    bool onReadPixels(const SkImageInfo&, void*, size_t, int srcX, int srcY,
+    bool onReadPixels(GrDirectContext*, const SkImageInfo&, void*, size_t, int srcX, int srcY,
                       CachingHint) const override;
 #if SK_SUPPORT_GPU
-    GrSurfaceProxyView refView(GrRecordingContext*, GrMipMapped) const override;
-    sk_sp<SkCachedData> getPlanes(SkYUVASizeInfo*, SkYUVAIndex[4],
-                                  SkYUVColorSpace*, const void* planes[4]) override;
+    GrSurfaceProxyView refView(GrRecordingContext*, GrMipmapped) const override;
 #endif
     sk_sp<SkData> onRefEncoded() const override;
-    sk_sp<SkImage> onMakeSubset(GrRecordingContext*, const SkIRect&) const override;
-    bool getROPixels(SkBitmap*, CachingHint) const override;
+    sk_sp<SkImage> onMakeSubset(const SkIRect&, GrDirectContext*) const override;
+    bool getROPixels(GrDirectContext*, SkBitmap*, CachingHint) const override;
     bool onIsLazyGenerated() const override { return true; }
-    sk_sp<SkImage> onMakeColorTypeAndColorSpace(GrRecordingContext*,
-                                                SkColorType, sk_sp<SkColorSpace>) const override;
+    sk_sp<SkImage> onMakeColorTypeAndColorSpace(SkColorType, sk_sp<SkColorSpace>,
+                                                GrDirectContext*) const override;
     sk_sp<SkImage> onReinterpretColorSpace(sk_sp<SkColorSpace>) const final;
 
-    bool onIsValid(GrContext*) const override;
+    bool onIsValid(GrRecordingContext*) const override;
 
 #if SK_SUPPORT_GPU
     // Returns the texture proxy. CachingHint refers to whether the generator's output should be
     // cached in CPU memory. We will always cache the generated texture on success.
     GrSurfaceProxyView lockTextureProxyView(GrRecordingContext*,
                                             GrImageTexGenPolicy,
-                                            GrMipMapped) const;
+                                            GrMipmapped) const;
 
     // Returns the GrColorType to use with the GrTextureProxy returned from lockTextureProxy. This
     // may be different from the color type on the image in the case where we need up upload CPU
@@ -73,6 +68,11 @@ public:
 
 private:
     void addUniqueIDListener(sk_sp<SkIDChangeListener>) const;
+#if SK_SUPPORT_GPU
+    sk_sp<SkCachedData> getPlanes(const SkYUVAPixmapInfo::SupportedDataTypes& supportedDataTypes,
+                                  SkYUVAPixmaps* pixmaps) const;
+    GrSurfaceProxyView textureProxyViewFromPlanes(GrRecordingContext*, SkBudgeted) const;
+#endif
 
     class ScopedGenerator;
 
@@ -80,9 +80,6 @@ private:
     // cropped by onMakeSubset and its color type/space may be changed by
     // onMakeColorTypeAndColorSpace.
     sk_sp<SharedGenerator> fSharedGenerator;
-    const SkIPoint         fOrigin;
-
-    uint32_t fUniqueID;
 
     // Repeated calls to onMakeColorTypeAndColorSpace will result in a proliferation of unique IDs
     // and SkImage_Lazy instances. Cache the result of the last successful call.
@@ -95,7 +92,7 @@ private:
     mutable SkIDChangeListener::List fUniqueIDListeners;
 #endif
 
-    typedef SkImage_Base INHERITED;
+    using INHERITED = SkImage_Base;
 };
 
 #endif

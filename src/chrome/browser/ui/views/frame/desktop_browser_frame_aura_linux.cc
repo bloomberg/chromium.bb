@@ -21,8 +21,9 @@ DesktopBrowserFrameAuraLinux::DesktopBrowserFrameAuraLinux(
   use_custom_frame_pref_.Init(
       prefs::kUseCustomChromeFrame,
       browser_view->browser()->profile()->GetPrefs(),
-      base::Bind(&DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged,
+          base::Unretained(this)));
 }
 
 DesktopBrowserFrameAuraLinux::~DesktopBrowserFrameAuraLinux() {}
@@ -68,8 +69,9 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
   return false;
 }
 
-void DesktopBrowserFrameAuraLinux::TabDraggingStatusChanged(bool is_dragging) {
-  host_->TabDraggingStatusChanged(is_dragging);
+void DesktopBrowserFrameAuraLinux::TabDraggingKindChanged(
+    TabDragKind tab_drag_kind) {
+  host_->TabDraggingKindChanged(tab_drag_kind);
 }
 
 void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {

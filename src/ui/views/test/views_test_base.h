@@ -42,6 +42,13 @@ class ViewsTestBase : public PlatformTest {
     kDesktop,
   };
 
+  // This class can be used as a deleter for std::unique_ptr<Widget>
+  // to call function Widget::CloseNow automatically.
+  struct WidgetCloser {
+    void operator()(Widget* widget) const;
+  };
+  using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
+
   // Constructs a ViewsTestBase with |traits| being forwarded to its
   // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
@@ -82,6 +89,10 @@ class ViewsTestBase : public PlatformTest {
 
   // Simulate an OS-level destruction of the native window held by |widget|.
   void SimulateNativeDestroy(Widget* widget);
+
+  // Get the system reserved height at the top of the screen. On Mac, this
+  // includes the menu bar and title bar.
+  static int GetSystemReservedHeightAtTopOfScreen();
 
  protected:
   base::test::TaskEnvironment* task_environment() {

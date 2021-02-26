@@ -15,9 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -40,7 +37,7 @@ class TwoPhaseUploaderImpl : public TwoPhaseUploader {
       const GURL& base_url,
       const std::string& metadata,
       const base::FilePath& file_path,
-      const FinishCallback& finish_callback,
+      FinishCallback finish_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~TwoPhaseUploaderImpl() override;
 
@@ -75,7 +72,7 @@ TwoPhaseUploaderImpl::TwoPhaseUploaderImpl(
     const GURL& base_url,
     const std::string& metadata,
     const base::FilePath& file_path,
-    const FinishCallback& finish_callback,
+    FinishCallback finish_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : state_(STATE_NONE),
       url_loader_factory_(url_loader_factory),
@@ -83,7 +80,7 @@ TwoPhaseUploaderImpl::TwoPhaseUploaderImpl(
       base_url_(base_url),
       metadata_(metadata),
       file_path_(file_path),
-      finish_callback_(finish_callback),
+      finish_callback_(std::move(finish_callback)),
       traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -187,7 +184,7 @@ void TwoPhaseUploaderImpl::Finish(int net_error,
                                   int response_code,
                                   const std::string& response) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  finish_callback_.Run(state_, net_error, response_code, response);
+  std::move(finish_callback_).Run(state_, net_error, response_code, response);
 }
 
 }  // namespace
@@ -202,14 +199,14 @@ std::unique_ptr<TwoPhaseUploader> TwoPhaseUploader::Create(
     const GURL& base_url,
     const std::string& metadata,
     const base::FilePath& file_path,
-    const FinishCallback& finish_callback,
+    FinishCallback finish_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   if (!factory_) {
     return base::WrapUnique(new TwoPhaseUploaderImpl(
         url_loader_factory, file_task_runner, base_url, metadata, file_path,
-        finish_callback, traffic_annotation));
+        std::move(finish_callback), traffic_annotation));
   }
   return TwoPhaseUploader::factory_->CreateTwoPhaseUploader(
       url_loader_factory, file_task_runner, base_url, metadata, file_path,
-      finish_callback, traffic_annotation);
+      std::move(finish_callback), traffic_annotation);
 }

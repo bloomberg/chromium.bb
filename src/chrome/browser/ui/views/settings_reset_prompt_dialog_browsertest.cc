@@ -112,11 +112,11 @@ class MockSettingsResetPromptModel
   ~MockSettingsResetPromptModel() override {}
 
   void PerformReset(std::unique_ptr<BrandcodedDefaultSettings> default_settings,
-                    const base::Closure& callback) override {
-    MockPerformReset(default_settings.get(), callback);
+                    base::OnceClosure callback) override {
+    MockPerformReset(default_settings.get(), std::move(callback));
   }
   MOCK_METHOD2(MockPerformReset,
-               void(BrandcodedDefaultSettings*, const base::Closure&));
+               void(BrandcodedDefaultSettings*, base::OnceClosure));
   MOCK_CONST_METHOD0(ShouldPromptForReset, bool());
   MOCK_METHOD0(DialogShown, void());
   MOCK_CONST_METHOD0(homepage, GURL());
@@ -180,9 +180,10 @@ class SettingsResetPromptDialogCloseTest : public DialogBrowserTest {
         ModelParams{SettingType::DEFAULT_SEARCH_ENGINE, 0});
 
     dialog_ = new SettingsResetPromptDialog(
+        browser(),
         new safe_browsing::SettingsResetPromptController(
             std::move(model), std::make_unique<BrandcodedDefaultSettings>()));
-    dialog_->Show(browser());
+    dialog_->Show();
   }
   void DismissUi() override { dialog_->Close(); }
 

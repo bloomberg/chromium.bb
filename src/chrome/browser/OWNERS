@@ -45,6 +45,7 @@ per-file chrome_service_worker_browsertest.cc=file://content/browser/service_wor
 per-file chrome_webusb_browser_client*=file://chrome/browser/usb/OWNERS
 
 per-file chrome_worker_browsertest.cc=file://content/browser/worker_host/OWNERS
+per-file ukm_worker_browsertest.cc=file://content/browser/worker_host/OWNERS
 
 per-file exo_parts.*=dcastagna@chromium.org
 per-file exo_parts.*=oshima@chromium.org
@@ -83,6 +84,10 @@ per-file service_sandbox_type.h=file://ipc/SECURITY_OWNERS
 per-file chrome_back_forward_cache_browsertest.cc=arthursonzogni@chromium.org
 per-file chrome_back_forward_cache_browsertest.cc=altimin@chromium.org
 per-file chrome_back_forward_cache_browsertest.cc=file://content/OWNERS
+
+# Cross-Origin-Opener-Policy:
+per-file chrome_cross_origin_opener_policy_browsertest.cc=file://content/OWNERS
+per-file chrome_cross_origin_opener_policy_browsertest.cc=arthursonzogni@chromium.org
 
 # COMPONENT: UI>Browser
 # TEAM: chromium-reviews@chromium.org

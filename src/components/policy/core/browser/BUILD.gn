@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 
 group("browser") {
   if (is_component_build) {
@@ -13,7 +12,7 @@ group("browser") {
   }
 }
 
-jumbo_source_set("internal") {
+source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
     "browser_policy_connector.cc",
@@ -36,10 +35,10 @@ jumbo_source_set("internal") {
     "policy_error_map.h",
     "proxy_policy_handler.cc",
     "proxy_policy_handler.h",
-    "url_blacklist_manager.cc",
-    "url_blacklist_manager.h",
-    "url_blacklist_policy_handler.cc",
-    "url_blacklist_policy_handler.h",
+    "url_blocklist_manager.cc",
+    "url_blocklist_manager.h",
+    "url_blocklist_policy_handler.cc",
+    "url_blocklist_policy_handler.h",
     "url_util.cc",
     "url_util.h",
   ]
@@ -65,16 +64,6 @@ jumbo_source_set("internal") {
     "//url",
   ]
 
-  if (is_android) {
-    sources += [
-      "android/android_combined_policy_provider.cc",
-      "android/android_combined_policy_provider.h",
-      "android/policy_converter.cc",
-      "android/policy_converter.h",
-    ]
-    deps += [ "//components/policy/android:jni_headers" ]
-  }
-
   public_deps += [ "//components/policy/core/common:internal" ]
   deps += [
     "//components/proxy_config",
@@ -84,7 +73,7 @@ jumbo_source_set("internal") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "configuration_policy_pref_store_test.cc",
@@ -119,14 +108,13 @@ jumbo_static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "android/android_combined_policy_provider_unittest.cc",
-    "android/policy_converter_unittest.cc",
     "browser_policy_connector_unittest.cc",
+    "configuration_policy_handler_list_unittest.cc",
     "configuration_policy_handler_unittest.cc",
     "configuration_policy_pref_store_unittest.cc",
     "proxy_policy_handler_unittest.cc",
-    "url_blacklist_manager_unittest.cc",
-    "url_blacklist_policy_handler_unittest.cc",
+    "url_blocklist_manager_unittest.cc",
+    "url_blocklist_policy_handler_unittest.cc",
     "url_util_unittest.cc",
   ]
   deps = [

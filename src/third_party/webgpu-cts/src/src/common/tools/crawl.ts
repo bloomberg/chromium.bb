@@ -2,59 +2,58 @@
 // This crawls the file tree under src/suites/${suite} to generate a (non-hierarchical) static
 // listing file that can then be used in the browser to load the modules containing the tests.
 
-// tslint:disable: no-console
-
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { SpecFile } from '../framework/file_loader.js';
+import { TestSuiteListingEntry, TestSuiteListing } from '../framework/test_suite_listing.js';
+import { assert, unreachable } from '../framework/util/util.js';
+
 const fg = require('fast-glob');
 
-import { TestSuiteListingEntry } from '../framework/listing.js';
-import { TestSpec } from '../framework/loader.js';
-import { assert } from '../framework/util/util.js';
-
-const specSuffix = '.spec.ts';
+const specFileSuffix = '.spec.ts';
 
 export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
-  const specDir = 'src/' + suite;
-  if (!fs.existsSync(specDir)) {
-    console.error(`Could not find ${specDir}`);
+  const suiteDir = 'src/' + suite;
+  if (!fs.existsSync(suiteDir)) {
+    console.error(`Could not find ${suiteDir}`);
     process.exit(1);
   }
 
-  const specFiles = await fg(`${specDir}/**/{README.txt,*${specSuffix}}`, { onlyFiles: true });
-  specFiles.sort();
+  const glob = `${suiteDir}/**/{README.txt,*${specFileSuffix}}`;
+  const filesToEnumerate: string[] = await fg(glob, { onlyFiles: true });
+  filesToEnumerate.sort();
 
-  const groups: TestSuiteListingEntry[] = [];
-  for (const file of specFiles) {
-    const f = file.substring((specDir + '/').length);
-    if (f.endsWith(specSuffix)) {
-      const testPath = f.substring(0, f.length - specSuffix.length);
-      const filename = `../../../${specDir}/${testPath}.spec.js`;
-      const mod = (await import(filename)) as TestSpec;
+  const entries: TestSuiteListingEntry[] = [];
+  for (const file of filesToEnumerate) {
+    const f = file.substring((suiteDir + '/').length); // Suite-relative file path
+    if (f.endsWith(specFileSuffix)) {
+      const filepathWithoutExtension = f.substring(0, f.length - specFileSuffix.length);
+      const filename = `../../../${suiteDir}/${filepathWithoutExtension}.spec.js`;
+
+      const mod = (await import(filename)) as SpecFile;
       assert(mod.description !== undefined, 'Test spec file missing description: ' + filename);
       assert(mod.g !== undefined, 'Test spec file missing TestGroup definition: ' + filename);
-      groups.push({
-        path: testPath,
-        description: mod.description.trim(),
-      });
+
+      mod.g.validate();
+
+      const path = filepathWithoutExtension.split('/');
+      entries.push({ file: path, description: mod.description.trim() });
     } else if (path.basename(file) === 'README.txt') {
-      const group = f.substring(0, f.length - 'README.txt'.length);
-      const description = fs.readFileSync(file, 'utf8').trim();
-      groups.push({
-        path: group,
-        description,
-      });
+      const filepathWithoutExtension = f.substring(0, f.length - '/README.txt'.length);
+      const readme = fs.readFileSync(file, 'utf8').trim();
+
+      const path = filepathWithoutExtension ? filepathWithoutExtension.split('/') : [];
+      entries.push({ file: path, readme });
     } else {
-      console.error('Unrecognized file: ' + file);
-      process.exit(1);
+      unreachable(`glob ${glob} matched an unrecognized filename ${file}`);
     }
   }
 
-  return groups;
+  return entries;
 }
 
-export function makeListing(filename: string): Promise<TestSuiteListingEntry[]> {
+export function makeListing(filename: string): Promise<TestSuiteListing> {
   const suite = path.basename(path.dirname(filename));
   return crawl(suite);
 }

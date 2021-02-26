@@ -22,10 +22,12 @@ android_library("java") {
     "//net/android:net_java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:chromium_play_services_availability_java",
     "//ui/android:ui_java",
   ]
 
   sources = [
+    "java/src/org/chromium/components/signin/AccessTokenData.java",
     "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/AccountManagerDelegateException.java",
     "java/src/org/chromium/components/signin/AccountManagerFacade.java",
@@ -38,7 +40,6 @@ android_library("java") {
     "java/src/org/chromium/components/signin/AuthException.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
-    "java/src/org/chromium/components/signin/ChromeSigninController.java",
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/MutableObservableValue.java",
@@ -66,8 +67,16 @@ java_library("components_signin_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//testing/android/junit:junit_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_deps:robolectric_all_java",
+    "//third_party/android_sdk:android_test_base_java",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/guava:guava_android_java",
     "//third_party/junit",
+    "//third_party/mockito:mockito_java",
   ]
 }
 
@@ -80,6 +89,7 @@ android_library("signin_javatests") {
     "//base:base_java_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -93,17 +103,27 @@ android_library("signin_java_test_support") {
   testonly = true
   deps = [
     ":java",
+    ":signin_test_resources",
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/junit",
   ]
 
   sources = [
     "javatests/src/org/chromium/components/signin/test/util/AccountHolder.java",
-    "javatests/src/org/chromium/components/signin/test/util/AccountManagerTestRule.java",
     "javatests/src/org/chromium/components/signin/test/util/FakeAccountManagerDelegate.java",
+    "javatests/src/org/chromium/components/signin/test/util/FakeAccountManagerFacade.java",
     "javatests/src/org/chromium/components/signin/test/util/FakeProfileDataSource.java",
   ]
+  resources_package = "org.chromium.components.signin.core.browser.javatests"
+}
+
+android_resources("signin_test_resources") {
+  testonly = true
+
+  create_srcjar = false
+  sources = [ "javatests/res/drawable/test_profile_picture.xml" ]
 }

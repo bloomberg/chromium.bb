@@ -18,7 +18,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -51,18 +51,17 @@ const int kMaxLaunchAttempt = 5;
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
-                                       bool diagnostic_mode,
                                        StartupAppLauncher::Delegate* delegate)
-    : profile_(profile),
-      app_id_(app_id),
-      diagnostic_mode_(diagnostic_mode),
-      delegate_(delegate) {
+    : KioskAppLauncher(delegate), profile_(profile), app_id_(app_id) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
   kiosk_app_manager_observer_.Add(KioskAppManager::Get());
 }
 
-StartupAppLauncher::~StartupAppLauncher() = default;
+StartupAppLauncher::~StartupAppLauncher() {
+  if (waiting_for_window_)
+    window_registry_->RemoveObserver(this);
+}
 
 void StartupAppLauncher::Initialize() {
   MaybeInitializeNetwork();
@@ -95,7 +94,7 @@ void StartupAppLauncher::RestartLauncher() {
   // notify the delegate that kiosk app is ready to launch, in case the launch
   // was delayed, for example by network config dialog.
   if (ready_to_launch_) {
-    delegate_->OnReadyToLaunch();
+    delegate_->OnAppPrepared();
     return;
   }
 
@@ -255,12 +254,16 @@ void StartupAppLauncher::OnExtensionUpdateCheckFinished(bool update_found) {
   SYSLOG(INFO) << "OnExtensionUpdateCheckFinished";
   update_checker_.reset();
   if (update_found) {
+    SYSLOG(INFO) << "Start to reload extension with id " << app_id_;
+
     // Reload the primary app to make sure any reference to the previous version
     // of the shared module, extension, etc will be cleaned up andthe new
     // version will be loaded.
     extensions::ExtensionSystem::Get(profile_)
             ->extension_service()
             ->ReloadExtension(app_id_);
+
+    SYSLOG(INFO) << "Finish to reload extension with id " << app_id_;
   }
 
   MaybeLaunchApp();
@@ -426,7 +429,7 @@ void StartupAppLauncher::LaunchApp() {
   // Always open the app in a window.
   apps::AppServiceProxyFactory::GetForProfile(profile_)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceKiosk));
@@ -434,14 +437,29 @@ void StartupAppLauncher::LaunchApp() {
   KioskAppManager::Get()->InitSession(profile_, app_id_);
   session_manager::SessionManager::Get()->SessionStarted();
 
-  if (diagnostic_mode_)
-    KioskDiagnosisRunner::Run(profile_, app_id_);
-
   OnLaunchSuccess();
 }
 
 void StartupAppLauncher::OnLaunchSuccess() {
-  delegate_->OnLaunchSucceeded();
+  delegate_->OnAppLaunched();
+
+  window_registry_ = extensions::AppWindowRegistry::Get(profile_);
+  // Start waiting for app window.
+  if (!window_registry_->GetAppWindowsForApp(app_id_).empty()) {
+    delegate_->OnAppWindowCreated();
+    return;
+  } else {
+    waiting_for_window_ = true;
+    window_registry_->AddObserver(this);
+  }
+}
+
+void StartupAppLauncher::OnAppWindowAdded(extensions::AppWindow* app_window) {
+  if (app_window->extension_id() == app_id_) {
+    waiting_for_window_ = false;
+    window_registry_->RemoveObserver(this);
+    delegate_->OnAppWindowCreated();
+  }
 }
 
 void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
@@ -461,7 +479,7 @@ void StartupAppLauncher::BeginInstall() {
           ->extension_service()
           ->pending_extension_manager()
           ->IsIdPending(app_id_)) {
-    delegate_->OnInstallingApp();
+    delegate_->OnAppInstalling();
     // Observe the crx installation events.
     install_observer_.Add(
         extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
@@ -507,7 +525,7 @@ void StartupAppLauncher::MaybeInstallSecondaryApps() {
 
   KioskAppManager::Get()->UpdateSecondaryAppsLoaderPrefs(secondary_app_ids);
   if (IsAnySecondaryAppPending()) {
-    delegate_->OnInstallingApp();
+    delegate_->OnAppInstalling();
     // Observe the crx installation events.
     install_observer_.Add(
         extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
@@ -526,7 +544,7 @@ void StartupAppLauncher::OnReadyToLaunch() {
   DCHECK(ready_to_launch_);
   SYSLOG(INFO) << "Kiosk app is ready to launch.";
   MaybeUpdateAppData();
-  delegate_->OnReadyToLaunch();
+  delegate_->OnAppPrepared();
 }
 
 void StartupAppLauncher::MaybeUpdateAppData() {

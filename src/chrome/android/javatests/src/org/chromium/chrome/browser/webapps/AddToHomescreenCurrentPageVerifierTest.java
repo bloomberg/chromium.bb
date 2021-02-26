@@ -8,7 +8,8 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.test.filters.LargeTest;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,11 +21,10 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.common.ContentSwitches;
 
 /**
@@ -35,15 +35,12 @@ import org.chromium.content_public.common.ContentSwitches;
 public final class AddToHomescreenCurrentPageVerifierTest {
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     public MockCertVerifierRuleAndroid mCertVerifierRule =
-            new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
+            new MockCertVerifierRuleAndroid(0 /* net::OK */);
 
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mActivityTestRule)
-                                          .around(mNativeLibraryTestRule)
                                           .around(mCertVerifierRule);
 
     @Before

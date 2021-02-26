@@ -5,17 +5,15 @@
 #include "cast/streaming/receiver.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "absl/types/span.h"
 #include "cast/streaming/constants.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/session_config.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/std_util.h"
-
-using std::chrono::duration_cast;
-using std::chrono::microseconds;
-using std::chrono::milliseconds;
 
 namespace openscreen {
 namespace cast {
@@ -31,9 +29,10 @@ namespace cast {
 
 Receiver::Receiver(Environment* environment,
                    ReceiverPacketRouter* packet_router,
-                   const SessionConfig& config)
+                   SessionConfig config)
     : now_(environment->now_function()),
       packet_router_(packet_router),
+      config_(config),
       rtcp_session_(config.sender_ssrc, config.receiver_ssrc, now_()),
       rtcp_parser_(&rtcp_session_),
       rtcp_builder_(&rtcp_session_),
@@ -148,14 +147,14 @@ EncodedFrame Receiver::ConsumeNextFrame(absl::Span<uint8_t> buffer) {
   frame.reference_time =
       *entry.estimated_capture_time + ResolveTargetPlayoutDelay(frame_id);
 
-  RECEIVER_VLOG
-      << "ConsumeNextFrame → " << frame.frame_id << ": " << frame.data.size()
-      << " payload bytes, RTP Timestamp "
-      << frame.rtp_timestamp.ToTimeSinceOrigin<microseconds>(rtp_timebase_)
-             .count()
-      << " µs, to play-out "
-      << duration_cast<microseconds>(frame.reference_time - now_()).count()
-      << " µs from now.";
+  RECEIVER_VLOG << "ConsumeNextFrame → " << frame.frame_id << ": "
+                << frame.data.size() << " payload bytes, RTP Timestamp "
+                << frame.rtp_timestamp
+                       .ToTimeSinceOrigin<microseconds>(rtp_timebase_)
+                       .count()
+                << " µs, to play-out "
+                << to_microseconds(frame.reference_time - now_()).count()
+                << " µs from now.";
 
   entry.Reset();
   last_frame_consumed_ = frame_id;
@@ -310,7 +309,7 @@ void Receiver::OnReceivedRtcpPacket(Clock::time_point arrival_time,
   smoothed_clock_offset_.Update(arrival_time, measured_offset);
   RECEIVER_VLOG
       << "Received Sender Report: Local clock is ahead of Sender's by "
-      << duration_cast<microseconds>(smoothed_clock_offset_.Current()).count()
+      << to_microseconds(smoothed_clock_offset_.Current()).count()
       << " µs (minus one-way network transit time).";
 
   RtcpReportBlock report;

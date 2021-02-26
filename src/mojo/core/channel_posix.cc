@@ -8,23 +8,28 @@
 #include <sys/socket.h>
 
 #include <algorithm>
+#include <atomic>
 #include <limits>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 #if !defined(OS_NACL)
+#include <limits.h>
 #include <sys/uio.h>
 #endif
 
@@ -32,6 +37,10 @@ namespace mojo {
 namespace core {
 
 namespace {
+
+#if !defined(OS_NACL)
+std::atomic<bool> g_use_writev{false};
+#endif
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
@@ -47,11 +56,16 @@ class MessageView {
     DCHECK(!message_->data_num_bytes() || message_->data_num_bytes() > offset_);
   }
 
-  MessageView(MessageView&& other) { *this = std::move(other); }
+  MessageView(MessageView&& other) = default;
 
   MessageView& operator=(MessageView&& other) = default;
 
-  ~MessageView() {}
+  ~MessageView() {
+    if (message_) {
+      UMA_HISTOGRAM_TIMES("Mojo.Channel.WriteMessageLatency",
+                          base::TimeTicks::Now() - start_time_);
+    }
+  }
 
   const void* data() const {
     return static_cast<const char*>(message_->data()) + offset_;
@@ -70,7 +84,6 @@ class MessageView {
   std::vector<PlatformHandleInTransit> TakeHandles() {
     return std::move(handles_);
   }
-  Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
   void SetHandles(std::vector<PlatformHandleInTransit> handles) {
     handles_ = std::move(handles);
@@ -82,17 +95,23 @@ class MessageView {
     num_handles_sent_ = num_handles_sent;
   }
 
+  size_t num_handles_remaining() const {
+    return handles_.size() - num_handles_sent_;
+  }
+
  private:
   Channel::MessagePtr message_;
   size_t offset_;
   std::vector<PlatformHandleInTransit> handles_;
   size_t num_handles_sent_ = 0;
 
+  base::TimeTicks start_time_ = base::TimeTicks::Now();
+
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 
 class ChannelPosix : public Channel,
-                     public base::MessageLoopCurrent::DestructionObserver,
+                     public base::CurrentThread::DestructionObserver,
                      public base::MessagePumpForIO::FdWatcher {
  public:
   ChannelPosix(Delegate* delegate,
@@ -126,7 +145,13 @@ class ChannelPosix : public Channel,
   }
 
   void Write(MessagePtr message) override {
+    UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.WriteMessageSize",
+                                message->data_num_bytes());
+    UMA_HISTOGRAM_COUNTS_100("Mojo.Channel.WriteMessageHandles",
+                             message->NumHandlesForTransit());
+
     bool write_error = false;
+    bool queued = false;
     {
       base::AutoLock lock(write_lock_);
       if (reject_writes_)
@@ -137,6 +162,7 @@ class ChannelPosix : public Channel,
       } else {
         outgoing_messages_.emplace_back(std::move(message), 0);
       }
+      queued = !outgoing_messages_.empty();
     }
     if (write_error) {
       // Invoke OnWriteError() asynchronously on the IO thread, in case Write()
@@ -145,6 +171,7 @@ class ChannelPosix : public Channel,
           FROM_HERE, base::BindOnce(&ChannelPosix::OnWriteError, this,
                                     Error::kDisconnected));
     }
+    UMA_HISTOGRAM_BOOLEAN("Mojo.Channel.WriteQueued", queued);
   }
 
   void LeakHandle() override {
@@ -184,15 +211,15 @@ class ChannelPosix : public Channel,
     DCHECK(!write_watcher_);
     read_watcher_.reset(
         new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+    base::CurrentThread::Get()->AddDestructionObserver(this);
     if (server_.is_valid()) {
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           server_.platform_handle().GetFD().get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
     } else {
       write_watcher_.reset(
           new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_.get(), true /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
       base::AutoLock lock(write_lock_);
@@ -212,7 +239,7 @@ class ChannelPosix : public Channel,
       return;
     if (io_task_runner_->RunsTasksInCurrentSequence()) {
       pending_write_ = true;
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_.get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
@@ -223,7 +250,7 @@ class ChannelPosix : public Channel,
   }
 
   void ShutDownOnIOThread() {
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+    base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
     read_watcher_.reset();
     write_watcher_.reset();
@@ -242,7 +269,7 @@ class ChannelPosix : public Channel,
     self_ = nullptr;
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
@@ -255,7 +282,7 @@ class ChannelPosix : public Channel,
       CHECK_EQ(fd, server_.platform_handle().GetFD().get());
 #if !defined(OS_NACL)
       read_watcher_.reset();
-      base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+      base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
       AcceptSocketConnection(server_.platform_handle().GetFD().get(), &socket_);
       ignore_result(server_.TakePlatformHandle());
@@ -430,8 +457,18 @@ class ChannelPosix : public Channel,
   }
 
   bool FlushOutgoingMessagesNoLock() {
+#if !defined(OS_NACL)
+    if (g_use_writev)
+      return FlushOutgoingMessagesWritevNoLock();
+#endif
+
     base::circular_deque<MessageView> messages;
     std::swap(outgoing_messages_, messages);
+
+    if (!messages.empty()) {
+      UMA_HISTOGRAM_COUNTS_1000("Mojo.Channel.WriteQueuePendingMessages",
+                                messages.size());
+    }
 
     while (!messages.empty()) {
       if (!WriteNoLock(std::move(messages.front())))
@@ -455,6 +492,112 @@ class ChannelPosix : public Channel,
 
     return true;
   }
+
+#if !defined(OS_NACL)
+  bool WriteOutgoingMessagesWithWritev() {
+    if (outgoing_messages_.empty())
+      return true;
+
+    // If all goes well we can submit a writev(2) with a iovec of size
+    // outgoing_messages_.size() but never more than the kernel allows.
+    size_t num_messages_to_send =
+        std::min<size_t>(IOV_MAX, outgoing_messages_.size());
+    iovec iov[num_messages_to_send];
+    memset(&iov[0], 0, sizeof(iov));
+
+    // Populate the iov.
+    size_t num_iovs_set = 0;
+    for (auto it = outgoing_messages_.begin();
+         num_iovs_set < num_messages_to_send; ++it) {
+      if (it->num_handles_remaining() > 0) {
+        // We can't send handles with writev(2) so stop at this message.
+        break;
+      }
+
+      iov[num_iovs_set].iov_base = const_cast<void*>(it->data());
+      iov[num_iovs_set].iov_len = it->data_num_bytes();
+      num_iovs_set++;
+    }
+
+    UMA_HISTOGRAM_COUNTS_1000("Mojo.Channel.WritevBatchedMessages",
+                              num_iovs_set);
+
+    size_t iov_offset = 0;
+    while (iov_offset < num_iovs_set) {
+      ssize_t bytes_written = SocketWritev(socket_.get(), &iov[iov_offset],
+                                           num_iovs_set - iov_offset);
+      if (bytes_written < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+          WaitForWriteOnIOThreadNoLock();
+          return true;
+        }
+        return false;
+      }
+
+      // Let's walk our outgoing_messages_ popping off outgoing_messages_
+      // that were fully written.
+      size_t bytes_remaining = bytes_written;
+      while (bytes_remaining > 0) {
+        if (bytes_remaining >= outgoing_messages_.front().data_num_bytes()) {
+          // This message was fully written.
+          bytes_remaining -= outgoing_messages_.front().data_num_bytes();
+          outgoing_messages_.pop_front();
+          iov_offset++;
+        } else {
+          // This message was partially written, account for what was
+          // already written.
+          outgoing_messages_.front().advance_data_offset(bytes_remaining);
+          bytes_remaining = 0;
+
+          // Update the iov too as we will call writev again.
+          iov[iov_offset].iov_base =
+              const_cast<void*>(outgoing_messages_.front().data());
+          iov[iov_offset].iov_len = outgoing_messages_.front().data_num_bytes();
+        }
+      }
+    }
+
+    return true;
+  }
+
+  // FlushOutgoingMessagesWritevNoLock is equivalent to
+  // FlushOutgoingMessagesNoLock except it looks for opportunities to make only
+  // a single write syscall by using writev(2) instead of write(2). In most
+  // situations this is very straight forward; however, when a handle needs to
+  // be transferred we cannot use writev(2) and instead will fall back to the
+  // standard write.
+  bool FlushOutgoingMessagesWritevNoLock() {
+    do {
+      // If the first message contains a handle we will flush it first using a
+      // standard write, we will also use the standard write if we only have a
+      // single message.
+      while (!outgoing_messages_.empty() &&
+             (outgoing_messages_.front().num_handles_remaining() > 0 ||
+              outgoing_messages_.size() == 1)) {
+        MessageView message = std::move(outgoing_messages_.front());
+
+        outgoing_messages_.pop_front();
+        size_t messages_before_write = outgoing_messages_.size();
+        if (!WriteNoLock(std::move(message)))
+          return false;
+
+        if (outgoing_messages_.size() > messages_before_write) {
+          // It was re-queued by WriteNoLock.
+          return true;
+        }
+      }
+
+      if (!WriteOutgoingMessagesWithWritev())
+        return false;
+
+      // At this point if we have more messages then it's either because we
+      // exceeded IOV_MAX OR it's because we ran into a FileHandle. Either way
+      // we just start the process all over again and it will flush any
+      // FileHandles before attempting writev(2) again.
+    } while (!outgoing_messages_.empty());
+    return true;
+  }
+#endif  // !defined(OS_NACL)
 
 #if defined(OS_IOS)
   bool OnControlMessage(Message::MessageType message_type,
@@ -577,6 +720,13 @@ class ChannelPosix : public Channel,
 };
 
 }  // namespace
+
+// static
+#if !defined(OS_NACL)
+void Channel::set_posix_use_writev(bool use_writev) {
+  g_use_writev = use_writev;
+}
+#endif
 
 // static
 scoped_refptr<Channel> Channel::Create(

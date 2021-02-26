@@ -138,7 +138,9 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   av1_loop_filter_init(cm);
 
   av1_qm_init(&cm->quant_params, av1_num_planes(cm));
+#if !CONFIG_REALTIME_ONLY
   av1_loop_restoration_precal();
+#endif
 #if CONFIG_ACCOUNTING
   pbi->acct_enabled = 1;
   aom_accounting_init(&pbi->accounting);
@@ -216,7 +218,9 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 
   if (pbi->num_workers > 0) {
     av1_loop_filter_dealloc(&pbi->lf_row_sync);
+#if !CONFIG_REALTIME_ONLY
     av1_loop_restoration_dealloc(&pbi->lr_row_sync, pbi->num_workers);
+#endif
     av1_dealloc_dec_jobs(&pbi->tile_mt_info);
   }
 

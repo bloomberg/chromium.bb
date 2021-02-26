@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_operation.h"
 
 #include "fxjs/xfa/cjx_textnode.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -30,6 +30,8 @@ CXFA_Operation::CXFA_Operation(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Operation,
                 {},
                 kOperationAttributeData,
-                pdfium::MakeUnique<CJX_TextNode>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_TextNode>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Operation::~CXFA_Operation() = default;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -16,21 +17,19 @@ namespace blink {
 
 FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
                                           LocalFrame& frame,
-                                          bool same_document_navigation,
                                           bool should_scroll) {
   DCHECK(frame.GetDocument());
 
   FragmentAnchor* anchor = nullptr;
   const bool text_fragment_identifiers_enabled =
-      RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
-          frame.GetDocument());
+      RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(frame.DomWindow());
 
   // The text fragment anchor will be created if we successfully parsed the
   // text directive but we only do the text matching later on.
   bool text_fragment_anchor_created = false;
   if (text_fragment_identifiers_enabled) {
-    anchor = TextFragmentAnchor::TryCreateFragmentDirective(
-        url, frame, same_document_navigation, should_scroll);
+    anchor = TextFragmentAnchor::TryCreateFragmentDirective(url, frame,
+                                                            should_scroll);
     text_fragment_anchor_created = anchor;
   }
 

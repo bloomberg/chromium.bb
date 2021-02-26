@@ -25,13 +25,7 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
   const void* DataMaybeShared() const { return contents_.DataMaybeShared(); }
   void* DataMaybeShared() { return contents_.DataMaybeShared(); }
 
-  size_t ByteLengthAsSizeT() const { return contents_.DataLength(); }
-
-  // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
-  // instead.
-  unsigned DeprecatedByteLengthAsUnsigned() const {
-    return base::checked_cast<unsigned>(contents_.DataLength());
-  }
+  size_t ByteLength() const { return contents_.DataLength(); }
 
   bool IsDetached() const { return is_detached_; }
 

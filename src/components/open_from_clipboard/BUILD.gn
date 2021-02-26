@@ -2,12 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
 static_library("open_from_clipboard") {
   sources = [
     "clipboard_recent_content.cc",
@@ -15,7 +9,6 @@ static_library("open_from_clipboard") {
   ]
 
   deps = [
-    ":feature_flags",
     ":open_from_clipboard_impl",
     "//base",
     "//components/variations",
@@ -37,14 +30,6 @@ static_library("open_from_clipboard") {
     ]
     configs += [ "//build/config/compiler:enable_arc" ]
   }
-}
-
-source_set("feature_flags") {
-  sources = [
-    "clipboard_recent_content_features.cc",
-    "clipboard_recent_content_features.h",
-  ]
-  deps = [ "//base" ]
 }
 
 # Helper classes used by "open_from_clipboard" target. These classes must have
@@ -86,6 +71,7 @@ source_set("unit_tests") {
     ":open_from_clipboard",
     ":open_from_clipboard_impl",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//ui/base:test_support",
     "//url",
@@ -94,7 +80,6 @@ source_set("unit_tests") {
   if (!is_ios) {
     sources += [ "clipboard_recent_content_generic_unittest.cc" ]
     deps += [
-      ":feature_flags",
       "//base/test:test_support",
       "//ui/base/clipboard:clipboard_test_support",
     ]

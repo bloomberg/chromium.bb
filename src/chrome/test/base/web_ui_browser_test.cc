@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -43,6 +43,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/resource/resource_handle.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -100,6 +101,8 @@ class WebUITestMessageHandler : public content::WebUIMessageHandler,
                                 public WebUITestHandler {
  public:
   WebUITestMessageHandler() = default;
+  WebUITestMessageHandler(const WebUITestMessageHandler&) = delete;
+  WebUITestMessageHandler& operator=(const WebUITestMessageHandler&) = delete;
   ~WebUITestMessageHandler() override = default;
 
   // Receives testResult messages.
@@ -125,9 +128,6 @@ class WebUITestMessageHandler : public content::WebUIMessageHandler,
   }
 
   content::WebUI* GetWebUI() override { return web_ui(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebUITestMessageHandler);
 };
 
 }  // namespace
@@ -295,7 +295,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 
   void Wait() {
     message_loop_runner_->Run();
-    content::WaitForLoadStop(preview_dialog_);
+    EXPECT_TRUE(content::WaitForLoadStop(preview_dialog_));
   }
 
  private:
@@ -375,6 +375,8 @@ const GURL& DummyUrl() {
 class MockWebUIDataSource : public content::URLDataSource {
  public:
   MockWebUIDataSource() = default;
+  MockWebUIDataSource(const MockWebUIDataSource&) = delete;
+  MockWebUIDataSource& operator=(const MockWebUIDataSource&) = delete;
   ~MockWebUIDataSource() override = default;
 
  private:
@@ -397,11 +399,18 @@ class MockWebUIDataSource : public content::URLDataSource {
   // Append 'unsave-eval' to the default script-src CSP policy, since it is
   // needed by some tests using chrome://dummyurl (because they depend on
   // Mock4JS, see crbug.com/844820).
-  std::string GetContentSecurityPolicyScriptSrc() override {
-    return "script-src chrome://resources 'self' 'unsafe-eval';";
-  }
+  std::string GetContentSecurityPolicy(
+      const network::mojom::CSPDirectiveName directive) override {
+    if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+      return "script-src chrome://resources 'self' 'unsafe-eval';";
+    } else if (directive ==
+                   network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+               directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+      return std::string();
+    }
 
-  DISALLOW_COPY_AND_ASSIGN(MockWebUIDataSource);
+    return content::URLDataSource::GetContentSecurityPolicy(directive);
+  }
 };
 
 // WebUIProvider to allow attaching the DataSource for the dummy URL when
@@ -410,6 +419,8 @@ class MockWebUIProvider
     : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
   MockWebUIProvider() = default;
+  MockWebUIProvider(const MockWebUIProvider&) = delete;
+  MockWebUIProvider& operator=(const MockWebUIProvider&) = delete;
   ~MockWebUIProvider() override = default;
 
   // Returns a new WebUI
@@ -419,9 +430,6 @@ class MockWebUIProvider
                                 std::make_unique<MockWebUIDataSource>());
     return std::make_unique<content::WebUIController>(web_ui);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
 };
 
 base::LazyInstance<MockWebUIProvider>::DestructorAtExit mock_provider_ =

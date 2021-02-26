@@ -21,12 +21,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -38,26 +38,40 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/media_router_extension_access_logger.h"
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/privacy_budget/scoped_identifiability_test_sample_collector.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 using blink::mojom::ResourceType;
 using extensions::ExtensionRegistry;
 using network::mojom::URLLoader;
+using testing::_;
+using testing::StrictMock;
 
 namespace extensions {
 namespace {
+
+// Default extension id to use for extension generation when none is set.
+constexpr char kEmptyExtensionId[] = "";
 
 base::FilePath GetTestPath(const std::string& name) {
   base::FilePath path;
@@ -73,7 +87,8 @@ base::FilePath GetContentVerifierTestPath() {
 }
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,
-                                             bool incognito_split_mode) {
+                                             bool incognito_split_mode,
+                                             const ExtensionId& extension_id) {
   base::DictionaryValue manifest;
   manifest.SetString("name", name);
   manifest.SetString("version", "1");
@@ -84,10 +99,15 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, Manifest::INTERNAL, manifest,
-                        Extension::NO_FLAGS, &error));
+      Extension::Create(path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
+                        extension_id, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
+}
+
+scoped_refptr<Extension> CreateTestExtension(const std::string& name,
+                                             bool incognito_split_mode) {
+  return CreateTestExtension(name, incognito_split_mode, kEmptyExtensionId);
 }
 
 scoped_refptr<Extension> CreateWebStoreExtension() {
@@ -132,12 +152,20 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
       net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking.
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator set.
-  request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
+  request.referrer_policy = blink::ReferrerUtils::GetDefaultNetReferrerPolicy();
   request.resource_type = static_cast<int>(resource_type);
   request.is_main_frame =
       resource_type == blink::mojom::ResourceType::kMainFrame;
   return request;
 }
+
+class MockMediaRouterExtensionAccessLogger
+    : public MediaRouterExtensionAccessLogger {
+ public:
+  ~MockMediaRouterExtensionAccessLogger() override = default;
+  MOCK_CONST_METHOD2(LogMediaRouterComponentExtensionUse,
+                     void(const url::Origin&, content::BrowserContext*));
+};
 
 // The result of either a URLRequest of a URLLoader response (but not both)
 // depending on the on test type.
@@ -174,7 +202,8 @@ class ExtensionProtocolsTestBase : public testing::Test {
   explicit ExtensionProtocolsTestBase(bool force_incognito)
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         rvh_test_enabler_(new content::RenderViewHostTestEnabler()),
-        force_incognito_(force_incognito) {}
+        force_incognito_(force_incognito),
+        test_ukm_id_(ukm::SourceIdObj::New()) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -190,6 +219,10 @@ class ExtensionProtocolsTestBase : public testing::Test {
         browser_context(),
         std::make_unique<ChromeContentVerifierDelegate>(browser_context()));
     info_map()->SetContentVerifier(content_verifier_.get());
+
+    // Set up mocks.
+    ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
+        &media_router_access_logger_);
   }
 
   void TearDown() override {
@@ -197,11 +230,15 @@ class ExtensionProtocolsTestBase : public testing::Test {
     content_verifier_->Shutdown();
     // Shut down the PowerMonitor if initialized.
     base::PowerMonitor::ShutdownForTesting();
+
+    // Remove mocks.
+    ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
+        nullptr);
   }
 
   void SetProtocolHandler(bool is_incognito) {
-    loader_factory_ = extensions::CreateExtensionNavigationURLLoaderFactory(
-        browser_context(), false);
+    loader_factory_.Bind(extensions::CreateExtensionNavigationURLLoaderFactory(
+        browser_context(), test_ukm_id_, false));
   }
 
   GetResult RequestOrLoad(const GURL& url, ResourceType resource_type) {
@@ -249,7 +286,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
   }
 
   content::BrowserContext* browser_context() {
-    return force_incognito_ ? testing_profile_->GetOffTheRecordProfile()
+    return force_incognito_ ? testing_profile_->GetPrimaryOTRProfile()
                             : testing_profile_.get();
   }
 
@@ -259,8 +296,42 @@ class ExtensionProtocolsTestBase : public testing::Test {
         std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
   }
 
+  void AddExtensionAndPerformResourceLoad(const ExtensionId& extension_id) {
+    // Register a non-incognito extension protocol handler.
+    SetProtocolHandler(false);
+
+    scoped_refptr<Extension> extension =
+        CreateTestExtension("foo", false, extension_id);
+    AddExtension(extension, false, false);
+    ASSERT_EQ(extension->id(), extension_id);
+
+    // Load the extension.
+    {
+      auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
+                                      blink::mojom::ResourceType::kMainFrame);
+      EXPECT_EQ(net::OK, get_result.result());
+    }
+  }
+
+  void ExpectExtensionAccessResult(
+      scoped_refptr<Extension> extension,
+      const std::vector<
+          blink::test::ScopedIdentifiabilityTestSampleCollector::Entry>&
+          entries,
+      ExtensionResourceAccessResult expected) {
+    ASSERT_EQ(1u, entries.size());
+    EXPECT_EQ(test_ukm_id_.ToInt64(), entries[0].source);
+    ASSERT_EQ(1u, entries[0].metrics.size());
+    EXPECT_EQ(blink::IdentifiableSurface::FromTypeAndToken(
+                  blink::IdentifiableSurface::Type::kExtensionFileAccess,
+                  base::as_bytes(base::make_span(extension->id()))),
+              entries[0].metrics[0].surface);
+    EXPECT_EQ(blink::IdentifiableToken(expected), entries[0].metrics[0].value);
+  }
+
  protected:
   scoped_refptr<ContentVerifier> content_verifier_;
+  StrictMock<MockMediaRouterExtensionAccessLogger> media_router_access_logger_;
 
  private:
   GetResult LoadURL(const GURL& url, ResourceType resource_type) {
@@ -299,10 +370,11 @@ class ExtensionProtocolsTestBase : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
-  std::unique_ptr<network::mojom::URLLoaderFactory> loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<content::WebContents> contents_;
   const bool force_incognito_;
+  const ukm::SourceIdObj test_ukm_id_;
 
   // |power_monitor_source_| is owned by the global PowerMonitor.
   base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
@@ -338,10 +410,10 @@ TEST_F(ExtensionProtocolsIncognitoTest, IncognitoRequest) {
     bool should_allow_main_frame_load;
     bool should_allow_sub_frame_load;
   } cases[] = {
-    {"spanning disabled", false, false, false, false},
-    {"split disabled", true, false, false, false},
-    {"spanning enabled", false, true, false, false},
-    {"split enabled", true, true, true, false},
+      {"spanning disabled", false, false, false, false},
+      {"split disabled", true, false, false, false},
+      {"spanning enabled", false, true, false, false},
+      {"split enabled", true, true, true, false},
   };
 
   for (size_t i = 0; i < base::size(cases); ++i) {
@@ -351,6 +423,8 @@ TEST_F(ExtensionProtocolsIncognitoTest, IncognitoRequest) {
 
     // First test a main frame request.
     {
+      blink::test::ScopedIdentifiabilityTestSampleCollector metrics;
+
       // It doesn't matter that the resource doesn't exist. If the resource
       // is blocked, we should see BLOCKED_BY_CLIENT. Otherwise, the request
       // should just fail because the file doesn't exist.
@@ -364,6 +438,10 @@ TEST_F(ExtensionProtocolsIncognitoTest, IncognitoRequest) {
         EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, get_result.result())
             << cases[i].name;
       }
+
+      // Either way it's a failure to the outside.
+      ExpectExtensionAccessResult(extension, metrics.entries(),
+                                  ExtensionResourceAccessResult::kFailure);
     }
 
     // Subframe navigation requests are blocked in ExtensionNavigationThrottle
@@ -383,42 +461,6 @@ void CheckForContentLengthHeader(const GetResult& get_result) {
   EXPECT_GT(length_value, 0);
 }
 
-#if defined(OS_CHROMEOS)
-// Tests getting a resource for a component extension works correctly where
-// there is no mime type. Such a resource currently only exists for Chrome OS
-// build.
-TEST_F(ExtensionProtocolsTest, ComponentResourceRequestNoMimeType) {
-  SetProtocolHandler(false);
-  std::unique_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder()
-          .Set("name", "pdf")
-          .Set("version", "1")
-          .Set("manifest_version", 2)
-          .Set("web_accessible_resources",
-               // Registered by chrome_component_extension_resource_manager.cc
-               ListBuilder().Append("ink/glcore_base.js.mem").Build())
-          .Build();
-
-  base::FilePath path;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &path));
-  path = path.AppendASCII("pdf");
-
-  std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      path, Manifest::COMPONENT, *manifest, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension.get()) << error;
-  AddExtension(extension, false, false);
-
-  auto get_result =
-      RequestOrLoad(extension->GetResourceURL("ink/glcore_base.js.mem"),
-                    blink::mojom::ResourceType::kXhr);
-  EXPECT_EQ(net::OK, get_result.result());
-  CheckForContentLengthHeader(get_result);
-  EXPECT_EQ("", get_result.GetResponseHeaderByName(
-                    net::HttpRequestHeaders::kContentType));
-}
-#endif
-
 // Tests getting a resource for a component extension works correctly, both when
 // the extension is enabled and when it is disabled.
 TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
@@ -430,6 +472,8 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
 
   // First test it with the extension enabled.
   {
+    blink::test::ScopedIdentifiabilityTestSampleCollector metrics;
+
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
                       blink::mojom::ResourceType::kMedia);
@@ -437,11 +481,16 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
                                net::HttpRequestHeaders::kContentType));
+
+    ExpectExtensionAccessResult(extension, metrics.entries(),
+                                ExtensionResourceAccessResult::kSuccess);
   }
 
   // And then test it with the extension disabled.
   RemoveExtension(extension, UnloadedExtensionReason::DISABLE);
   {
+    blink::test::ScopedIdentifiabilityTestSampleCollector metrics;
+
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
                       blink::mojom::ResourceType::kMedia);
@@ -449,6 +498,9 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
                                net::HttpRequestHeaders::kContentType));
+
+    ExpectExtensionAccessResult(extension, metrics.entries(),
+                                ExtensionResourceAccessResult::kSuccess);
   }
 }
 
@@ -496,9 +548,14 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
   // explicitly listed in web_accessible_resources or same-origin to the parent
   // should not succeed.
   {
+    blink::test::ScopedIdentifiabilityTestSampleCollector metrics;
+
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
                                     blink::mojom::ResourceType::kMainFrame);
     EXPECT_EQ(net::OK, get_result.result());
+
+    ExpectExtensionAccessResult(extension, metrics.entries(),
+                                ExtensionResourceAccessResult::kSuccess);
   }
 
   // Subframe navigation requests are blocked in ExtensionNavigationThrottle
@@ -507,9 +564,14 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
 
   // And subresource types, such as media, should fail.
   {
+    blink::test::ScopedIdentifiabilityTestSampleCollector metrics;
+
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
                                     blink::mojom::ResourceType::kMedia);
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, get_result.result());
+
+    ExpectExtensionAccessResult(extension, metrics.entries(),
+                                ExtensionResourceAccessResult::kFailure);
   }
 }
 
@@ -518,9 +580,8 @@ TEST_F(ExtensionProtocolsTest, MetadataFolder) {
 
   base::FilePath extension_dir = GetTestPath("metadata_folder");
   std::string error;
-  scoped_refptr<Extension> extension =
-      file_util::LoadExtension(extension_dir, Manifest::INTERNAL,
-                               Extension::NO_FLAGS, &error);
+  scoped_refptr<Extension> extension = file_util::LoadExtension(
+      extension_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
   ASSERT_NE(extension.get(), nullptr) << "error: " << error;
 
   // Loading "/test.html" should succeed.
@@ -793,7 +854,22 @@ TEST_F(ExtensionProtocolsTest, MAYBE_ExtensionRequestsNotAborted) {
                 .result());
 
   // Request the background.js file. Ensure the request completes successfully.
-  EXPECT_EQ(net::OK, DoRequestOrLoad(extension.get(), "background.js").result());
+  EXPECT_EQ(net::OK,
+            DoRequestOrLoad(extension.get(), "background.js").result());
+}
+
+TEST_F(ExtensionProtocolsTest, MetricGeneratedForReleaseCastExtension) {
+  ExtensionId extension_id(extension_misc::kCastExtensionIdRelease);
+  EXPECT_CALL(media_router_access_logger_,
+              LogMediaRouterComponentExtensionUse(_, _));
+  AddExtensionAndPerformResourceLoad(extension_id);
+}
+
+TEST_F(ExtensionProtocolsTest, MetricGeneratedForDevCastExtension) {
+  ExtensionId extension_id(extension_misc::kCastExtensionIdDev);
+  EXPECT_CALL(media_router_access_logger_,
+              LogMediaRouterComponentExtensionUse(_, _));
+  AddExtensionAndPerformResourceLoad(extension_id);
 }
 
 }  // namespace extensions

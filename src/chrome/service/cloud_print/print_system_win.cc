@@ -64,8 +64,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   bool Start(const std::string& printer_name, Delegate* delegate) {
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(nullptr,
-                                               /*locale=*/std::string()));
+        printing::PrintBackend::CreateInstance(/*locale=*/std::string()));
     printer_info_ = print_backend->GetPrinterDriverInfo(printer_name);
     crash_keys::ScopedPrinterInfo crash_key(printer_info_);
 
@@ -240,8 +239,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
              JobSpooler::Delegate* delegate) override {
     // TODO(gene): add tags handling.
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(nullptr,
-                                               /*locale=*/std::string()));
+        printing::PrintBackend::CreateInstance(/*locale=*/std::string()));
     crash_keys::ScopedPrinterInfo crash_key(
         print_backend->GetPrinterDriverInfo(printer_name));
     return core_->Spool(print_ticket, print_ticket_mime_type,
@@ -273,58 +271,42 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return false;
       }
 
-      // We only support PDF and XPS documents for now.
-      if (print_data_mime_type == kContentTypePDF) {
-        base::string16 printer_wide = base::UTF8ToWide(printer_name);
-        std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
-        if (print_ticket_mime_type == kContentTypeJSON) {
-          dev_mode = CjtToDevMode(printer_wide, print_ticket);
-        } else {
-          DCHECK_EQ(kContentTypeXML, print_ticket_mime_type);
-          dev_mode = printing::XpsTicketToDevMode(printer_wide, print_ticket);
-        }
-
-        if (!dev_mode) {
-          NOTREACHED();
-          return false;
-        }
-
-        HDC dc = CreateDC(L"WINSPOOL", printer_wide.c_str(), nullptr,
-                          dev_mode.get());
-        if (!dc) {
-          NOTREACHED();
-          return false;
-        }
-        DOCINFO di = {0};
-        di.cbSize = sizeof(DOCINFO);
-        base::string16 doc_name = base::UTF8ToUTF16(job_title);
-        DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
-        di.lpszDocName = doc_name.c_str();
-        job_id_ = StartDoc(dc, &di);
-        if (job_id_ <= 0)
-          return false;
-
-        printer_dc_.Set(dc);
-        saved_dc_ = SaveDC(printer_dc_.Get());
-        delegate_ = delegate;
-        RenderPDFPages(print_data_file_path,
-                       printing::IsDevModeWithColor(dev_mode.get()));
-        return true;
+      // We only support PDF documents.
+      if (print_data_mime_type != kContentTypePDF ||
+          print_ticket_mime_type != kContentTypeJSON) {
+        NOTREACHED();
+        return false;
       }
 
-      if (print_data_mime_type == kContentTypeXPS) {
-        DCHECK(print_ticket_mime_type == kContentTypeXML);
-        bool ret = PrintXPSDocument(printer_name,
-                                    job_title,
-                                    print_data_file_path,
-                                    print_ticket);
-        if (ret)
-          delegate_ = delegate;
-        return ret;
+      base::string16 printer_wide = base::UTF8ToWide(printer_name);
+      std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+          CjtToDevMode(printer_wide, print_ticket);
+      if (!dev_mode) {
+        NOTREACHED();
+        return false;
       }
 
-      NOTREACHED();
-      return false;
+      HDC dc =
+          CreateDC(L"WINSPOOL", printer_wide.c_str(), nullptr, dev_mode.get());
+      if (!dc) {
+        NOTREACHED();
+        return false;
+      }
+      DOCINFO di = {0};
+      di.cbSize = sizeof(DOCINFO);
+      base::string16 doc_name = base::UTF8ToUTF16(job_title);
+      DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
+      di.lpszDocName = doc_name.c_str();
+      job_id_ = StartDoc(dc, &di);
+      if (job_id_ <= 0)
+        return false;
+
+      printer_dc_.Set(dc);
+      saved_dc_ = SaveDC(printer_dc_.Get());
+      delegate_ = delegate;
+      RenderPDFPages(print_data_file_path,
+                     printing::IsDevModeWithColor(dev_mode.get()));
+      return true;
     }
 
     void PreparePageDCForPrinting(HDC, float scale_factor) {
@@ -482,9 +464,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
               base::UTF8ToWide(printer_name).c_str(),
               base::UTF8ToWide(job_title).c_str(), nullptr,
-              job_progress_event_.Get(), nullptr, nullptr, 0,
-              xps_print_job_.GetAddressOf(), doc_stream.GetAddressOf(),
-              print_ticket_stream.GetAddressOf()))) {
+              job_progress_event_.Get(), nullptr, nullptr, 0, &xps_print_job_,
+              &doc_stream, &print_ticket_stream))) {
         return false;
       }
 
@@ -656,31 +637,15 @@ class PrintSystemWin : public PrintSystem {
   std::string GetPrinterDriverInfo(const std::string& printer_name) const;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
-  bool use_cdd_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(PrintSystemWin);
 };
 
 PrintSystemWin::PrintSystemWin()
     : print_backend_(
-          printing::PrintBackend::CreateInstance(nullptr,
-                                                 /*locale=*/std::string())) {}
+          printing::PrintBackend::CreateInstance(/*locale=*/std::string())) {}
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
-  use_cdd_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrintXps);
-
-  if (!use_cdd_)
-    use_cdd_ = !printing::XPSModule::Init();
-
-  if (!use_cdd_) {
-    HPTPROVIDER provider = nullptr;
-    HRESULT hr = printing::XPSModule::OpenProvider(L"", 1, &provider);
-    if (provider)
-      printing::XPSModule::CloseProvider(provider);
-    // Use cdd if error is different from expected.
-    use_cdd_ = (hr != HRESULT_FROM_WIN32(ERROR_INVALID_PRINTER_NAME));
-  }
-
   return PrintSystemResult(true, std::string());
 }
 
@@ -699,10 +664,7 @@ void PrintSystemWin::GetPrinterCapsAndDefaults(
   PrinterCapsHandler* handler =
       new PrinterCapsHandler(printer_name, std::move(callback));
   handler->AddRef();
-  if (use_cdd_)
-    handler->StartGetPrinterSemanticCapsAndDefaults();
-  else
-    handler->StartGetPrinterCapsAndDefaults();
+  handler->StartGetPrinterSemanticCapsAndDefaults();
 }
 
 bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
@@ -715,42 +677,8 @@ bool PrintSystemWin::ValidatePrintTicket(
     const std::string& print_ticket_data_mime_type) {
   crash_keys::ScopedPrinterInfo crash_key(GetPrinterDriverInfo(printer_name));
 
-  if (use_cdd_) {
-    return print_ticket_data_mime_type == kContentTypeJSON &&
-           IsValidCjt(print_ticket_data);
-  }
-  DCHECK(print_ticket_data_mime_type == kContentTypeXML);
-
-  printing::ScopedXPSInitializer xps_initializer;
-  CHECK(xps_initializer.initialized());
-
-  HPTPROVIDER provider = nullptr;
-  printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name), 1,
-                                    &provider);
-  if (!provider)
-    return false;
-
-  bool ret;
-  {
-    Microsoft::WRL::ComPtr<IStream> print_ticket_stream;
-    CreateStreamOnHGlobal(nullptr, TRUE, print_ticket_stream.GetAddressOf());
-    ULONG bytes_written = 0;
-    print_ticket_stream->Write(print_ticket_data.c_str(),
-                               print_ticket_data.length(),
-                               &bytes_written);
-    DCHECK(bytes_written == print_ticket_data.length());
-    LARGE_INTEGER pos = {};
-    ULARGE_INTEGER new_pos = {};
-    print_ticket_stream->Seek(pos, STREAM_SEEK_SET, &new_pos);
-    base::win::ScopedBstr error;
-    Microsoft::WRL::ComPtr<IStream> result_ticket_stream;
-    CreateStreamOnHGlobal(nullptr, TRUE, result_ticket_stream.GetAddressOf());
-    ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
-        provider, print_ticket_stream.Get(), nullptr, kPTJobScope,
-        result_ticket_stream.Get(), error.Receive()));
-    printing::XPSModule::CloseProvider(provider);
-  }
-  return ret;
+  return print_ticket_data_mime_type == kContentTypeJSON &&
+         IsValidCjt(print_ticket_data);
 }
 
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
@@ -814,17 +742,11 @@ PrintSystem::JobSpooler* PrintSystemWin::CreateJobSpooler() {
 }
 
 bool PrintSystemWin::UseCddAndCjt() {
-  return use_cdd_;
+  return true;
 }
 
 std::string PrintSystemWin::GetSupportedMimeTypes() {
-  std::string result;
-  if (!use_cdd_) {
-    result = kContentTypeXPS;
-    result += ",";
-  }
-  result += kContentTypePDF;
-  return result;
+  return kContentTypePDF;
 }
 
 std::string PrintSystemWin::GetPrinterDriverInfo(

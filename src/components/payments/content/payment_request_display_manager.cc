@@ -23,9 +23,10 @@ PaymentRequestDisplayManager::DisplayHandle::~DisplayHandle() {
 }
 
 void PaymentRequestDisplayManager::DisplayHandle::Show(
-    PaymentRequest* request) {
+    base::WeakPtr<PaymentRequest> request) {
   DCHECK(request);
   DCHECK(delegate_);
+  was_shown_ = true;
   delegate_->ShowDialog(request);
 }
 

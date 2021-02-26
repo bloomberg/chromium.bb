@@ -2,18 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-action("histograms_xml") {
+import("//build/config/python.gni")
+
+# TODO(crbug.com/1118214) - Make work under Python 3.
+python2_action("histograms_xml") {
   script = "histograms/merge_xml.py"
-  sources = [
-    "histograms/enums.xml",
-    "histograms/histograms.xml",
-  ]
   output = "$root_out_dir/histograms.xml"
   outputs = [ output ]
-  args = rebase_path(sources, root_build_dir) + [
-           "--output",
-           rebase_path(output, root_build_dir),
-         ]
+  args = [
+    "--output",
+    rebase_path(output, root_build_dir),
+  ]
 }
 
 copy("actions_xml") {
@@ -74,7 +73,8 @@ group("metrics_python_tests") {
     "//tools/metrics/metrics_python_tests.py",
 
     "//tools/metrics/actions/action_utils.py",
-    "//tools/metrics/actions/actions_print_style.py",
+    "//tools/metrics/actions/actions_model.py",
+    "//tools/metrics/actions/actions_model_test.py",
     "//tools/metrics/actions/extract_actions.py",
     "//tools/metrics/actions/extract_actions_test.py",
 
@@ -85,17 +85,25 @@ group("metrics_python_tests") {
     "//tools/metrics/common/pretty_print_xml.py",
     "//tools/metrics/common/etree_util.py",
 
+    "//tools/metrics/histograms/test_data/enums.xml",
+    "//tools/metrics/histograms/test_data/histograms.xml",
+    "//tools/metrics/histograms/test_data/ukm.xml",
     "//tools/metrics/histograms/enums.xml",
     "//tools/metrics/histograms/expand_owners.py",
     "//tools/metrics/histograms/expand_owners_unittest.py",
     "//tools/metrics/histograms/extract_histograms.py",
+    "//tools/metrics/histograms/extract_histograms_test.py",
     "//tools/metrics/histograms/generate_expired_histograms_array.py",
     "//tools/metrics/histograms/generate_expired_histograms_array_unittest.py",
     "//tools/metrics/histograms/histogram_ownership.py",
     "//tools/metrics/histograms/histograms.xml",
+    "//tools/metrics/histograms/histogram_configuration_model.py",
+    "//tools/metrics/histograms/histogram_configuration_model_test_enums.py",
+    "//tools/metrics/histograms/histogram_configuration_model_test_histograms.py",
     "//tools/metrics/histograms/histogram_paths.py",
-    "//tools/metrics/histograms/histograms_print_style.py",
     "//tools/metrics/histograms/merge_xml.py",
+    "//tools/metrics/histograms/merge_xml_test.py",
+    "//tools/metrics/histograms/populate_enums.py",
     "//tools/metrics/histograms/pretty_print.py",
     "//tools/metrics/histograms/pretty_print_test.py",
 

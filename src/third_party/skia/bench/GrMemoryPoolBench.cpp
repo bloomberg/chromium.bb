@@ -15,13 +15,17 @@
 namespace {
 
 // sizeof is a multiple of GrMemoryPool::kAlignment for 4, 8, or 16 byte alignment
-using Aligned = std::aligned_storage<32, GrMemoryPool::kAlignment>::type;
+struct alignas(GrMemoryPool::kAlignment) Aligned {
+    char buf[32];
+};
 static_assert(sizeof(Aligned) == 32);
 static_assert(sizeof(Aligned) % GrMemoryPool::kAlignment == 0);
 
 // sizeof is not a multiple of GrMemoryPool::kAlignment (will not be a multiple of max_align_t
 // if it's 4, 8, or 16, as desired).
-using Unaligned = std::aligned_storage<30, 2>::type;
+struct alignas(2) Unaligned {
+    char buf[30];
+};
 static_assert(sizeof(Unaligned) == 30);
 static_assert(sizeof(Unaligned) % GrMemoryPool::kAlignment != 0);
 
@@ -32,7 +36,7 @@ static_assert(GrAlignTo(sizeof(Unaligned), GrMemoryPool::kAlignment) == sizeof(A
 // of operations, the size of the objects being allocated, and the size of the pool.
 typedef void (*RunBenchProc)(GrMemoryPool*, int);
 
-}
+}  // namespace
 
 // N objects are created, and then destroyed in reverse order (fully unwinding the cursor within
 // each block of the memory pool).
@@ -178,7 +182,7 @@ protected:
     int          fPoolSize;
     RunBenchProc fProc;
 
-    typedef Benchmark INHERITED;
+    using INHERITED = Benchmark;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

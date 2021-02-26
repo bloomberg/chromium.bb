@@ -18,7 +18,7 @@
 #include <sys/resource.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
@@ -37,9 +37,9 @@ ProcessMetrics::~ProcessMetrics() = default;
 
 #if !defined(OS_FUCHSIA)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 static const rlim_t kSystemDefaultMaxFds = 8192;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 static const rlim_t kSystemDefaultMaxFds = 256;
 #elif defined(OS_SOLARIS)
 static const rlim_t kSystemDefaultMaxFds = 8192;
@@ -73,7 +73,7 @@ size_t GetMaxFds() {
 }
 
 size_t GetHandleLimit() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Taken from a small test that allocated ports in a loop.
   return static_cast<size_t>(1 << 18);
 #else
@@ -115,11 +115,11 @@ size_t GetPageSize() {
 }
 
 size_t ProcessMetrics::GetMallocUsage() {
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   malloc_statistics_t stats = {0};
   malloc_zone_statistics(nullptr, &stats);
   return stats.size_in_use;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   struct mallinfo minfo = mallinfo();
 #if BUILDFLAG(USE_TCMALLOC)
   return minfo.uordblks;

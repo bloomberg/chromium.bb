@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 
 namespace media {
@@ -21,8 +20,8 @@ MediaResourceShim::MediaResourceShim(
 
   for (auto& s : streams) {
     streams_.emplace_back(new MojoDemuxerStreamAdapter(
-        std::move(s), base::Bind(&MediaResourceShim::OnStreamReady,
-                                 weak_factory_.GetWeakPtr())));
+        std::move(s), base::BindOnce(&MediaResourceShim::OnStreamReady,
+                                     weak_factory_.GetWeakPtr())));
   }
 }
 

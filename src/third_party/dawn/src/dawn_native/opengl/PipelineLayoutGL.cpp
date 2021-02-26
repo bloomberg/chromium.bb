@@ -26,11 +26,13 @@ namespace dawn_native { namespace opengl {
         GLuint samplerIndex = 0;
         GLuint sampledTextureIndex = 0;
         GLuint ssboIndex = 0;
+        GLuint storageTextureIndex = 0;
 
-        for (uint32_t group : IterateBitSet(GetBindGroupLayoutsMask())) {
+        for (BindGroupIndex group : IterateBitSet(GetBindGroupLayoutsMask())) {
             const BindGroupLayoutBase* bgl = GetBindGroupLayout(group);
+            mIndexInfo[group].resize(bgl->GetBindingCount());
 
-            for (BindingIndex bindingIndex = 0; bindingIndex < bgl->GetBindingCount();
+            for (BindingIndex bindingIndex{0}; bindingIndex < bgl->GetBindingCount();
                  ++bindingIndex) {
                 switch (bgl->GetBindingInfo(bindingIndex).type) {
                     case wgpu::BindingType::UniformBuffer:
@@ -43,6 +45,7 @@ namespace dawn_native { namespace opengl {
                         samplerIndex++;
                         break;
                     case wgpu::BindingType::SampledTexture:
+                    case wgpu::BindingType::MultisampledTexture:
                         mIndexInfo[group][bindingIndex] = sampledTextureIndex;
                         sampledTextureIndex++;
                         break;
@@ -53,13 +56,11 @@ namespace dawn_native { namespace opengl {
                         ssboIndex++;
                         break;
 
-                    case wgpu::BindingType::StorageTexture:
                     case wgpu::BindingType::ReadonlyStorageTexture:
                     case wgpu::BindingType::WriteonlyStorageTexture:
-                        UNREACHABLE();
+                        mIndexInfo[group][bindingIndex] = storageTextureIndex;
+                        storageTextureIndex++;
                         break;
-
-                        // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset
                 }
             }
         }

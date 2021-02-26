@@ -309,7 +309,8 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value,
+                         kAllowPercentageValues, kDontAllowZeroValues);
   } else if (name == html_names::kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == html_names::kBorderAttr) {
@@ -329,11 +330,11 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
           WebFeature::kHTMLTableElementPresentationAttributeBackground);
       CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
           AtomicString(url), GetDocument().CompleteURL(url),
-          Referrer(GetDocument().OutgoingReferrer(),
-                   GetDocument().GetReferrerPolicy()),
+          Referrer(GetExecutionContext()->OutgoingReferrer(),
+                   GetExecutionContext()->GetReferrerPolicy()),
           OriginClean::kTrue, false /* is_ad_related */);
-      style->SetProperty(
-          CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
+      style->SetProperty(CSSPropertyValue(
+          CSSPropertyName(CSSPropertyID::kBackgroundImage), *image_value));
     }
   } else if (name == html_names::kValignAttr) {
     if (!value.IsEmpty()) {
@@ -633,7 +634,7 @@ const AtomicString& HTMLTableElement::Summary() const {
   return FastGetAttribute(html_names::kSummaryAttr);
 }
 
-void HTMLTableElement::Trace(Visitor* visitor) {
+void HTMLTableElement::Trace(Visitor* visitor) const {
   visitor->Trace(shared_cell_style_);
   HTMLElement::Trace(visitor);
 }

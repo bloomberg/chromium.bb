@@ -160,6 +160,7 @@ enum class ComponentState {
   kUpToDate,
   kUpdateError,
   kUninstalled,
+  kRegistration,
   kRun,
   kLastStatus
 };
@@ -314,6 +315,11 @@ struct CrxComponent {
   // For extensions, this information is inferred from the extension
   // registry.
   std::string install_location;
+
+  // Information about the channel to send to the update server when updating
+  // the component. This optional field is typically populated by policy and is
+  // only populated on managed devices.
+  std::string channel;
 };
 
 // Called when a non-blocking call of UpdateClient completes.
@@ -323,8 +329,14 @@ using Callback = base::OnceCallback<void(Error error)>;
 // instance of this class is created, the reference to it must be released
 // only after the thread pools of the browser process have been destroyed and
 // the browser process has gone single-threaded.
-class UpdateClient : public base::RefCounted<UpdateClient> {
+class UpdateClient : public base::RefCountedThreadSafe<UpdateClient> {
  public:
+  // Returns `CrxComponent` instances corresponding to the component ids
+  // passed as an argument to the callback. The order of components in the input
+  // and output vectors must match. If the instance of the `CrxComponent` is not
+  // available for some reason, implementors of the callback must not skip
+  // skip the component, and instead, they must insert a `nullopt` value in
+  // the output vector.
   using CrxDataCallback =
       base::OnceCallback<std::vector<base::Optional<CrxComponent>>(
           const std::vector<std::string>& ids)>;
@@ -436,6 +448,14 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
                                  int reason,
                                  Callback callback) = 0;
 
+  // Sends a registration ping for the CRX identified by |id| and |version|.
+  // The current implementation of this function only sends a best-effort,
+  // fire-and-forget ping. It has no other side effects regarding installs or
+  // updates done through an instance of this class.
+  virtual void SendRegistrationPing(const std::string& id,
+                                    const base::Version& version,
+                                    Callback callback) = 0;
+
   // Returns status details about a CRX update. The function returns true in
   // case of success and false in case of errors, such as |id| was
   // invalid or not known.
@@ -452,7 +472,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   virtual void Stop() = 0;
 
  protected:
-  friend class base::RefCounted<UpdateClient>;
+  friend class base::RefCountedThreadSafe<UpdateClient>;
 
   virtual ~UpdateClient() = default;
 };

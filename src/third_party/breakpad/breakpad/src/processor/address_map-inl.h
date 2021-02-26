@@ -45,8 +45,8 @@
 namespace google_breakpad {
 
 template<typename AddressType, typename EntryType>
-bool AddressMap<AddressType, EntryType>::Store(const AddressType &address,
-                                               const EntryType &entry) {
+bool AddressMap<AddressType, EntryType>::Store(const AddressType& address,
+                                               const EntryType& entry) {
   // Ensure that the specified address doesn't conflict with something already
   // in the map.
   if (map_.find(address) != map_.end()) {
@@ -61,8 +61,8 @@ bool AddressMap<AddressType, EntryType>::Store(const AddressType &address,
 
 template<typename AddressType, typename EntryType>
 bool AddressMap<AddressType, EntryType>::Retrieve(
-    const AddressType &address,
-    EntryType *entry, AddressType *entry_address) const {
+    const AddressType& address,
+    EntryType* entry, AddressType* entry_address) const {
   BPLOG_IF(ERROR, !entry) << "AddressMap::Retrieve requires |entry|";
   assert(entry);
 

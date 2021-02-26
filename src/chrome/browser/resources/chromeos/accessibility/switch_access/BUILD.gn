@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import(
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/run_jsbundler.gni")
+    "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
@@ -25,10 +25,11 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
+    "action_manager.js",
     "auto_scan_manager.js",
     "background.js",
+    "cache.js",
     "commands.js",
-    "event_helper.js",
     "focus_ring_manager.js",
     "history.js",
     "icons/back.svg",
@@ -58,23 +59,21 @@ run_jsbundler("switch_access_copied_files") {
     "icons/textSelectionEnd.svg",
     "icons/textSelectionStart.svg",
     "menu_manager.js",
-    "menu_panel.css",
-    "menu_panel.html",
-    "menu_panel.js",
-    "menu_panel_interface.js",
     "metrics.js",
     "navigation_manager.js",
     "nodes/back_button_node.js",
+    "nodes/basic_node.js",
+    "nodes/combo_box_node.js",
     "nodes/desktop_node.js",
     "nodes/editable_text_node.js",
     "nodes/group_node.js",
     "nodes/keyboard_node.js",
-    "nodes/node_wrapper.js",
+    "nodes/modal_dialog_node.js",
+    "nodes/slider_node.js",
     "nodes/switch_access_node.js",
-    "nodes/system_menu_node.js",
     "nodes/tab_node.js",
-    "preferences.js",
-    "rect_helper.js",
+    "nodes/window_node.js",
+    "preference_manager.js",
     "switch_access.js",
     "switch_access_constants.js",
     "switch_access_predicate.js",
@@ -93,7 +92,7 @@ source_set("browser_tests") {
   deps = [ ":switch_access_extjs_tests" ]
 
   data = [
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/",
+    "//chrome/browser/resources/chromeos/accessibility/common/",
     "//chrome/browser/resources/chromeos/accessibility/switch_access/",
     "//ui/webui/resources/js/cr.js",
   ]
@@ -105,14 +104,16 @@ js2gtest("switch_access_extjs_tests") {
   sources = [
     "auto_scan_manager_test.js",
     "navigation_manager_test.js",
+    "nodes/basic_node_test.js",
     "nodes/desktop_node_test.js",
-    "nodes/node_wrapper_test.js",
+    "nodes/group_node_test.js",
     "nodes/tab_node_test.js",
     "switch_access_predicate_test.js",
     "text_navigation_manager_test.js",
   ]
   gen_include_files = [
-    "../chromevox/testing/callback_helper.js",
+    "../common/testing/assert_additions.js",
+    "../common/testing/callback_helper.js",
     "switch_access_e2e_test_base.js",
   ]
 
@@ -130,36 +131,52 @@ js2gtest("switch_access_extjs_tests") {
 
 js_type_check("closure_compile") {
   deps = [
+    ":action_manager",
     ":auto_scan_manager",
     ":back_button_node",
     ":background",
+    ":basic_node",
+    ":cache",
+    ":combo_box_node",
     ":commands",
     ":desktop_node",
     ":editable_text_node",
-    ":event_helper",
     ":focus_ring_manager",
     ":group_node",
     ":history",
     ":keyboard_node",
     ":menu_manager",
-    ":menu_panel",
-    ":menu_panel_interface",
     ":metrics",
+    ":modal_dialog_node",
     ":navigation_manager",
-    ":node_wrapper",
-    ":preferences",
-    ":rect_helper",
+    ":preference_manager",
+    ":slider_node",
     ":switch_access",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    ":system_menu_node",
     ":tab_node",
     ":text_navigation_manager",
+    ":window_node",
+    "../common:automation_predicate",
     "../common:closure_shim",
     "../common:constants",
+    "../common:event_generator",
+    "../common:key_code",
+    "../common:rect_util",
+    "../common:repeated_event_handler",
+    "../common:repeated_tree_change_handler",
     "../common:tree_walker",
   ]
+}
+
+js_library("action_manager") {
+  deps = [
+    ":switch_access_constants",
+    ":switch_access_node",
+    "../common:array_util",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("auto_scan_manager") {
@@ -167,16 +184,19 @@ js_library("auto_scan_manager") {
 }
 
 js_library("background") {
-  deps = [ ":switch_access" ]
+  deps = [
+    ":switch_access",
+    "../common:instance_checker",
+  ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("back_button_node") {
   sources = [ "nodes/back_button_node.js" ]
   deps = [
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -184,20 +204,40 @@ js_library("back_button_node") {
   ]
 }
 
+js_library("cache") {
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
+js_library("combo_box_node") {
+  sources = [ "nodes/combo_box_node.js" ]
+  deps = [
+    ":basic_node",
+    ":switch_access_constants",
+    "../common:event_generator",
+    "../common:key_code",
+  ]
+  externs_list = []
+}
+
 js_library("commands") {
+  deps = [
+    ":action_manager",
+    ":auto_scan_manager",
+    ":navigation_manager",
+  ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("desktop_node") {
   sources = [ "nodes/desktop_node.js" ]
-  deps = [ ":node_wrapper" ]
+  deps = [ ":basic_node" ]
   externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("editable_text_node") {
   sources = [ "nodes/editable_text_node.js" ]
   deps = [
-    ":node_wrapper",
+    ":basic_node",
     ":switch_access_constants",
     ":switch_access_node",
   ]
@@ -207,14 +247,10 @@ js_library("editable_text_node") {
   ]
 }
 
-js_library("event_helper") {
-  externs_list = [ "$externs_path/accessibility_private.js" ]
-}
-
 js_library("focus_ring_manager") {
   deps = [
-    ":menu_panel_interface",
-    ":node_wrapper",
+    ":basic_node",
+    ":switch_access_constants",
     ":switch_access_node",
   ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
@@ -224,10 +260,10 @@ js_library("group_node") {
   sources = [ "nodes/group_node.js" ]
   deps = [
     ":back_button_node",
-    ":node_wrapper",
-    ":rect_helper",
+    ":basic_node",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -237,8 +273,9 @@ js_library("group_node") {
 
 js_library("history") {
   deps = [
+    ":basic_node",
+    ":cache",
     ":desktop_node",
-    ":node_wrapper",
     ":switch_access_node",
     ":switch_access_predicate",
   ]
@@ -248,14 +285,14 @@ js_library("history") {
 js_library("keyboard_node") {
   sources = [ "nodes/keyboard_node.js" ]
   deps = [
-    ":event_helper",
+    ":basic_node",
     ":group_node",
-    ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
     "../common:constants",
+    "../common:event_generator",
+    "../common:rect_util",
     "../common:tree_walker",
   ]
   externs_list = [
@@ -266,34 +303,14 @@ js_library("keyboard_node") {
 
 js_library("menu_manager") {
   deps = [
-    ":event_helper",
-    ":menu_panel_interface",
-    ":metrics",
-    ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
-    ":switch_access_predicate",
-    ":text_navigation_manager",
-    "../common:constants",
-    "../common:tree_walker",
+    "../common:array_util",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
-    "$externs_path/clipboard.js",
   ]
-}
-
-js_library("menu_panel") {
-  deps = [
-    ":menu_manager",
-    ":switch_access_constants",
-  ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
-}
-
-js_library("menu_panel_interface") {
 }
 
 js_library("metrics") {
@@ -301,19 +318,35 @@ js_library("metrics") {
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
+js_library("modal_dialog_node") {
+  sources = [ "nodes/modal_dialog_node.js" ]
+  deps = [
+    ":basic_node",
+    ":switch_access_constants",
+    ":switch_access_node",
+    "../common:event_generator",
+    "../common:key_code",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
 js_library("navigation_manager") {
   deps = [
+    ":action_manager",
+    ":basic_node",
     ":desktop_node",
     ":focus_ring_manager",
+    ":history",
     ":keyboard_node",
     ":menu_manager",
-    ":menu_panel_interface",
     ":metrics",
-    ":node_wrapper",
+    ":modal_dialog_node",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    ":system_menu_node",
+    "../common:automation_util",
+    "../common:event_handler",
+    "../common:repeated_event_handler",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -321,14 +354,17 @@ js_library("navigation_manager") {
   ]
 }
 
-js_library("node_wrapper") {
-  sources = [ "nodes/node_wrapper.js" ]
+js_library("basic_node") {
+  sources = [ "nodes/basic_node.js" ]
   deps = [
     ":back_button_node",
+    ":cache",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../common:automation_predicate",
     "../common:constants",
+    "../common:repeated_event_handler",
     "../common:tree_walker",
   ]
   externs_list = [
@@ -337,13 +373,20 @@ js_library("node_wrapper") {
   ]
 }
 
-js_library("preferences") {
+js_library("preference_manager") {
   deps = [ ":switch_access_constants" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
-js_library("rect_helper") {
-  externs_list = [ "$externs_path/accessibility_private.js" ]
+js_library("slider_node") {
+  sources = [ "nodes/slider_node.js" ]
+  deps = [
+    ":basic_node",
+    ":switch_access_constants",
+    "../common:event_generator",
+    "../common:key_code",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("switch_access") {
@@ -351,9 +394,8 @@ js_library("switch_access") {
     ":auto_scan_manager",
     ":commands",
     ":menu_manager",
-    ":menu_panel_interface",
     ":navigation_manager",
-    ":preferences",
+    ":preference_manager",
     ":switch_access_constants",
     "../common:constants",
     "../common:tree_walker",
@@ -362,6 +404,7 @@ js_library("switch_access") {
     "$externs_path/automation.js",
     "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
+    "$externs_path/virtual_keyboard_private.js",
   ]
 }
 
@@ -379,19 +422,10 @@ js_library("switch_access_node") {
 
 js_library("switch_access_predicate") {
   deps = [
+    ":cache",
     ":switch_access_constants",
     ":switch_access_node",
-  ]
-  externs_list = [ "$externs_path/automation.js" ]
-}
-
-js_library("system_menu_node") {
-  sources = [ "nodes/system_menu_node.js" ]
-  deps = [
-    ":event_helper",
-    ":node_wrapper",
-    ":switch_access_constants",
-    ":switch_access_node",
+    "../common:automation_predicate",
   ]
   externs_list = [ "$externs_path/automation.js" ]
 }
@@ -399,18 +433,32 @@ js_library("system_menu_node") {
 js_library("tab_node") {
   sources = [ "nodes/tab_node.js" ]
   deps = [
-    ":node_wrapper",
-    ":rect_helper",
+    ":basic_node",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("text_navigation_manager") {
-  deps = [ ":event_helper" ]
+  deps = [
+    "../common:event_generator",
+    "../common:key_code",
+  ]
   externs_list = [
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
+    "$externs_path/clipboard.js",
   ]
+}
+
+js_library("window_node") {
+  sources = [ "nodes/window_node.js" ]
+  deps = [
+    ":basic_node",
+    ":switch_access_constants",
+    ":switch_access_node",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }

@@ -37,6 +37,13 @@ class ChromeBluetoothDelegate : public content::BluetoothDelegate {
   ChromeBluetoothDelegate& operator=(const ChromeBluetoothDelegate&) = delete;
 
   // BluetoothDelegate implementation:
+  std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
+      content::RenderFrameHost* frame,
+      const content::BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
+      content::RenderFrameHost* frame,
+      const content::BluetoothScanningPrompt::EventHandler& event_handler)
+      override;
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       content::RenderFrameHost* frame,
       const std::string& device_address) override;
@@ -59,6 +66,10 @@ class ChromeBluetoothDelegate : public content::BluetoothDelegate {
   bool IsAllowedToAccessAtLeastOneService(
       content::RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) override;
+  bool IsAllowedToAccessManufacturerData(
+      content::RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id,
+      uint16_t manufacturer_code) override;
   std::vector<blink::mojom::WebBluetoothDevicePtr> GetPermittedDevices(
       content::RenderFrameHost* frame) override;
 };

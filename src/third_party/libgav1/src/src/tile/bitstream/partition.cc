@@ -132,13 +132,13 @@ bool Tile::ReadPartition(int row4x4, int column4x4, BlockSize block_size,
           reader_.ReadSymbol<kMaxPartitionTypes>(partition_cdf));
     }
   } else if (has_columns) {
-    uint16_t cdf[3] = {
-        PartitionCdfGatherVerticalAlike(partition_cdf, block_size), 0, 0};
+    const uint16_t cdf =
+        PartitionCdfGatherVerticalAlike(partition_cdf, block_size);
     *partition = reader_.ReadSymbolWithoutCdfUpdate(cdf) ? kPartitionSplit
                                                          : kPartitionHorizontal;
   } else {
-    uint16_t cdf[3] = {
-        PartitionCdfGatherHorizontalAlike(partition_cdf, block_size), 0, 0};
+    const uint16_t cdf =
+        PartitionCdfGatherHorizontalAlike(partition_cdf, block_size);
     *partition = reader_.ReadSymbolWithoutCdfUpdate(cdf) ? kPartitionSplit
                                                          : kPartitionVertical;
   }

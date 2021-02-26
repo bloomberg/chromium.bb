@@ -14,11 +14,11 @@
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/view_class_properties.h"
 
-AppMenuButton::AppMenuButton(views::ButtonListener* button_listener)
-    : ToolbarButton(nullptr) {
+AppMenuButton::AppMenuButton(PressedCallback callback)
+    : ToolbarButton(PressedCallback()) {
   std::unique_ptr<views::MenuButtonController> menu_button_controller =
       std::make_unique<views::MenuButtonController>(
-          this, button_listener,
+          this, std::move(callback),
           std::make_unique<views::Button::DefaultButtonControllerDelegate>(
               this));
   menu_button_controller_ = menu_button_controller.get();
@@ -43,6 +43,7 @@ void AppMenuButton::CloseMenu() {
 }
 
 void AppMenuButton::OnMenuClosed() {
+  HandleMenuClosed();
   for (AppMenuButtonObserver& observer : observer_list_)
     observer.AppMenuClosed();
 }
@@ -68,3 +69,5 @@ void AppMenuButton::RunMenu(std::unique_ptr<AppMenuModel> menu_model,
   for (AppMenuButtonObserver& observer : observer_list_)
     observer.AppMenuShown();
 }
+
+void AppMenuButton::HandleMenuClosed() {}

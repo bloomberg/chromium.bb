@@ -21,14 +21,16 @@ enum class PreviewsType {
   // Used to indicate that there is no preview type.
   NONE = 0,
 
-  // The user is shown an offline page as a preview.
-  OFFLINE = 1,
+  // The user is shown an offline page as a preview. Deprecated, and should not
+  // be used.
+  DEPRECATED_OFFLINE = 1,
 
   // Replace images with placeholders. Deprecated, and should not be used.
   DEPRECATED_LOFI = 2,
 
-  // The user is shown a server lite page.
-  LITE_PAGE = 3,
+  // The user is shown a server lite page. Deprecated, and should not
+  // be used.
+  DEPRECATED_LITE_PAGE = 3,
 
   // AMP version of the page is shown as a preview. Deprecated, and should not
   // be used.
@@ -76,37 +78,33 @@ std::string GetStringNameForType(PreviewsType type);
 
 namespace params {
 
-// The maximum number of recent previews navigations the black list looks at to
-// determine if a host is blacklisted.
-size_t MaxStoredHistoryLengthForPerHostBlackList();
+// The maximum number of recent previews navigations the block list looks at to
+// determine if a host is blocklisted.
+size_t MaxStoredHistoryLengthForPerHostBlockList();
 
-// The maximum number of recent previews navigations the black list looks at to
+// The maximum number of recent previews navigations the block list looks at to
 // determine if all previews navigations are disallowed.
-size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
+size_t MaxStoredHistoryLengthForHostIndifferentBlockList();
 
-// The maximum number of hosts allowed in the in memory black list.
-size_t MaxInMemoryHostsInBlackList();
+// The maximum number of hosts allowed in the in memory block list.
+size_t MaxInMemoryHostsInBlockList();
 
 // The number of recent navigations that were opted out of for a given host that
-// would trigger that host to be blacklisted.
-int PerHostBlackListOptOutThreshold();
+// would trigger that host to be blocklisted.
+int PerHostBlockListOptOutThreshold();
 
 // The number of recent navigations that were opted out of that would trigger
 // all previews navigations to be disallowed.
-int HostIndifferentBlackListOptOutThreshold();
+int HostIndifferentBlockListOptOutThreshold();
 
-// The amount of time a host remains blacklisted due to opt outs.
-base::TimeDelta PerHostBlackListDuration();
+// The amount of time a host remains blocklisted due to opt outs.
+base::TimeDelta PerHostBlockListDuration();
 
 // The amount of time all previews navigations are disallowed due to opt outs.
-base::TimeDelta HostIndifferentBlackListPerHostDuration();
+base::TimeDelta HostIndifferentBlockListPerHostDuration();
 
 // The amount of time after any opt out that no previews should be shown.
 base::TimeDelta SingleOptOutDuration();
-
-// The amount of time that an offline page is considered fresh enough to be
-// shown as a preview.
-base::TimeDelta OfflinePreviewFreshnessDuration();
 
 // The default EffectiveConnectionType threshold where preview |type| will be
 // triggered.
@@ -123,13 +121,11 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold();
 bool ArePreviewsAllowed();
 
 // Whether the preview type is enabled.
-bool IsOfflinePreviewsEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsDeferAllScriptPreviewsEnabled();
 
-// The blacklist version for each preview type.
-int OfflinePreviewsVersion();
+// The blocklist version for each preview type.
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();

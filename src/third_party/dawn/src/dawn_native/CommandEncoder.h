@@ -22,11 +22,14 @@
 #include "dawn_native/ObjectBase.h"
 #include "dawn_native/PassResourceUsage.h"
 
+#include <map>
 #include <string>
 
 namespace dawn_native {
 
     struct BeginRenderPassCmd;
+
+    using UsedQueryMap = std::map<QuerySetBase*, std::vector<bool>>;
 
     class CommandEncoder final : public ObjectBase {
       public:
@@ -34,6 +37,10 @@ namespace dawn_native {
 
         CommandIterator AcquireCommands();
         CommandBufferResourceUsage AcquireResourceUsages();
+
+        void TrackUsedQuerySet(QuerySetBase* querySet);
+        void TrackUsedQueryIndex(QuerySetBase* querySet, uint32_t queryIndex);
+        const UsedQueryMap& GetUsedQueryIndices() const;
 
         // Dawn API
         ComputePassEncoder* BeginComputePass(const ComputePassDescriptor* descriptor);
@@ -58,7 +65,14 @@ namespace dawn_native {
         void PopDebugGroup();
         void PushDebugGroup(const char* groupLabel);
 
-        CommandBufferBase* Finish(const CommandBufferDescriptor* descriptor);
+        void ResolveQuerySet(QuerySetBase* querySet,
+                             uint32_t firstQuery,
+                             uint32_t queryCount,
+                             BufferBase* destination,
+                             uint64_t destinationOffset);
+        void WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
+
+        CommandBufferBase* Finish(const CommandBufferDescriptor* descriptor = nullptr);
 
       private:
         MaybeError ValidateFinish(CommandIterator* commands,
@@ -67,6 +81,8 @@ namespace dawn_native {
         EncodingContext mEncodingContext;
         std::set<BufferBase*> mTopLevelBuffers;
         std::set<TextureBase*> mTopLevelTextures;
+        std::set<QuerySetBase*> mUsedQuerySets;
+        UsedQueryMap mUsedQueryIndices;
     };
 
 }  // namespace dawn_native

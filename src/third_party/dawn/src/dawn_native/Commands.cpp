@@ -18,6 +18,7 @@
 #include "dawn_native/Buffer.h"
 #include "dawn_native/CommandAllocator.h"
 #include "dawn_native/ComputePipeline.h"
+#include "dawn_native/QuerySet.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/Texture.h"
@@ -127,6 +128,11 @@ namespace dawn_native {
                     cmd->~PushDebugGroupCmd();
                     break;
                 }
+                case Command::ResolveQuerySet: {
+                    ResolveQuerySetCmd* cmd = commands->NextCommand<ResolveQuerySetCmd>();
+                    cmd->~ResolveQuerySetCmd();
+                    break;
+                }
                 case Command::SetComputePipeline: {
                     SetComputePipelineCmd* cmd = commands->NextCommand<SetComputePipelineCmd>();
                     cmd->~SetComputePipelineCmd();
@@ -175,9 +181,15 @@ namespace dawn_native {
                     cmd->~SetVertexBufferCmd();
                     break;
                 }
+                case Command::WriteTimestamp: {
+                    WriteTimestampCmd* cmd = commands->NextCommand<WriteTimestampCmd>();
+                    cmd->~WriteTimestampCmd();
+                    break;
+                }
             }
         }
-        commands->DataWasDestroyed();
+
+        commands->MakeEmptyAsDataWasDestroyed();
     }
 
     void SkipCommand(CommandIterator* commands, Command type) {
@@ -260,6 +272,11 @@ namespace dawn_native {
                 break;
             }
 
+            case Command::ResolveQuerySet: {
+                commands->NextCommand<ResolveQuerySetCmd>();
+                break;
+            }
+
             case Command::SetComputePipeline:
                 commands->NextCommand<SetComputePipelineCmd>();
                 break;
@@ -298,6 +315,11 @@ namespace dawn_native {
 
             case Command::SetVertexBuffer: {
                 commands->NextCommand<SetVertexBufferCmd>();
+                break;
+            }
+
+            case Command::WriteTimestamp: {
+                commands->NextCommand<WriteTimestampCmd>();
                 break;
             }
         }

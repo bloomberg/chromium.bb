@@ -9,6 +9,7 @@
 #include "base/check_op.h"
 #include "base/hash/hash.h"
 #include "base/notreached.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -21,11 +22,16 @@ using content::WebContents;
 
 namespace android_webview {
 
+namespace {
+
+const int kLargestIconSize = 192;
+
+}  // namespace
+
 IconHelper::IconHelper(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      listener_(NULL),
-      missing_favicon_urls_() {
-}
+      listener_(nullptr),
+      missing_favicon_urls_() {}
 
 IconHelper::~IconHelper() {
 }
@@ -54,12 +60,20 @@ void IconHelper::DownloadFaviconCallback(
   // in different sizes. We need more fine grain API spec
   // to let clients pick out the frame they want.
 
-  // TODO(acleung): Pick the best icon to return based on size.
-  if (listener_)
-    listener_->OnReceivedIcon(image_url, bitmaps[0]);
+  if (listener_) {
+    std::vector<size_t> best_indices;
+    SelectFaviconFrameIndices(original_bitmap_sizes,
+                              std::vector<int>(1U, kLargestIconSize),
+                              &best_indices, nullptr);
+
+    listener_->OnReceivedIcon(
+        image_url,
+        bitmaps[best_indices.size() == 0 ? 0 : best_indices.front()]);
+  }
 }
 
 void IconHelper::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& candidate : candidates) {
@@ -75,10 +89,10 @@ void IconHelper::DidUpdateFaviconURL(
         }
         web_contents()->DownloadImage(
             candidate->icon_url,
-            true,   // Is a favicon
-            0,      // No preferred size
-            0,      // No maximum size
-            false,  // Normal cache policy
+            true,              // Is a favicon
+            0,                 // No preferred size
+            kLargestIconSize,  // Max bitmap size
+            false,             // Normal cache policy
             base::BindOnce(&IconHelper::DownloadFaviconCallback,
                            base::Unretained(this)));
         break;

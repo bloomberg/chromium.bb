@@ -10,6 +10,7 @@
  **************************************************************************************************/
 #include "GrCircleEffect.h"
 
+#include "src/core/SkUtils.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -33,20 +34,32 @@ public:
         circleVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
                                                      kFloat4_GrSLType, "circle");
         fragBuilder->codeAppendf(
-                "float2 prevCenter;\nfloat prevRadius = %f;\nhalf d;\n@if (%d == 2 || %d == 3) {\n "
-                "   d = half((length((%s.xy - sk_FragCoord.xy) * %s.w) - 1.0) * %s.z);\n} else {\n "
-                "   d = half((1.0 - length((%s.xy - sk_FragCoord.xy) * %s.w)) * %s.z);\n}\n@if "
-                "((%d == 1 || %d == 3) || %d == 4) {\n    %s = %s * clamp(d, 0.0, 1.0);\n} else "
-                "{\n    %s = d > 0.5 ? %s : half4(0.0);\n}\n",
+                R"SkSL(float2 prevCenter;
+float prevRadius = %f;
+half d;
+@if (%d == 2 || %d == 3) {
+    d = half((length((%s.xy - sk_FragCoord.xy) * %s.w) - 1.0) * %s.z);
+} else {
+    d = half((1.0 - length((%s.xy - sk_FragCoord.xy) * %s.w)) * %s.z);
+})SkSL",
                 prevRadius, (int)_outer.edgeType, (int)_outer.edgeType,
                 args.fUniformHandler->getUniformCStr(circleVar),
                 args.fUniformHandler->getUniformCStr(circleVar),
                 args.fUniformHandler->getUniformCStr(circleVar),
                 args.fUniformHandler->getUniformCStr(circleVar),
                 args.fUniformHandler->getUniformCStr(circleVar),
-                args.fUniformHandler->getUniformCStr(circleVar), (int)_outer.edgeType,
-                (int)_outer.edgeType, (int)_outer.edgeType, args.fOutputColor, args.fInputColor,
-                args.fOutputColor, args.fInputColor);
+                args.fUniformHandler->getUniformCStr(circleVar));
+        SkString _sample0 = this->invokeChild(0, args);
+        fragBuilder->codeAppendf(
+                R"SkSL(
+half4 inputColor = %s;
+@if (%d == 1 || %d == 3) {
+    return inputColor * clamp(d, 0.0, 1.0);
+} else {
+    return d > 0.5 ? inputColor : half4(0.0);
+}
+)SkSL",
+                _sample0.c_str(), (int)_outer.edgeType, (int)_outer.edgeType);
     }
 
 private:
@@ -87,7 +100,7 @@ GrGLSLFragmentProcessor* GrCircleEffect::onCreateGLSLInstance() const {
 }
 void GrCircleEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                            GrProcessorKeyBuilder* b) const {
-    b->add32((int32_t)edgeType);
+    b->add32((uint32_t)edgeType);
 }
 bool GrCircleEffect::onIsEqual(const GrFragmentProcessor& other) const {
     const GrCircleEffect& that = other.cast<GrCircleEffect>();
@@ -97,14 +110,23 @@ bool GrCircleEffect::onIsEqual(const GrFragmentProcessor& other) const {
     if (radius != that.radius) return false;
     return true;
 }
+bool GrCircleEffect::usesExplicitReturn() const { return true; }
 GrCircleEffect::GrCircleEffect(const GrCircleEffect& src)
         : INHERITED(kGrCircleEffect_ClassID, src.optimizationFlags())
         , edgeType(src.edgeType)
         , center(src.center)
-        , radius(src.radius) {}
-std::unique_ptr<GrFragmentProcessor> GrCircleEffect::clone() const {
-    return std::unique_ptr<GrFragmentProcessor>(new GrCircleEffect(*this));
+        , radius(src.radius) {
+    this->cloneAndRegisterAllChildProcessors(src);
 }
+std::unique_ptr<GrFragmentProcessor> GrCircleEffect::clone() const {
+    return std::make_unique<GrCircleEffect>(*this);
+}
+#if GR_TEST_UTILS
+SkString GrCircleEffect::onDumpInfo() const {
+    return SkStringPrintf("(edgeType=%d, center=float2(%f, %f), radius=%f)", (int)edgeType,
+                          center.fX, center.fY, radius);
+}
+#endif
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrCircleEffect);
 #if GR_TEST_UTILS
 std::unique_ptr<GrFragmentProcessor> GrCircleEffect::TestCreate(GrProcessorTestData* testData) {
@@ -112,10 +134,12 @@ std::unique_ptr<GrFragmentProcessor> GrCircleEffect::TestCreate(GrProcessorTestD
     center.fX = testData->fRandom->nextRangeScalar(0.f, 1000.f);
     center.fY = testData->fRandom->nextRangeScalar(0.f, 1000.f);
     SkScalar radius = testData->fRandom->nextRangeF(1.f, 1000.f);
-    GrClipEdgeType et;
+    bool success;
+    std::unique_ptr<GrFragmentProcessor> fp = testData->inputFP();
     do {
-        et = (GrClipEdgeType)testData->fRandom->nextULessThan(kGrClipEdgeTypeCnt);
-    } while (GrClipEdgeType::kHairlineAA == et);
-    return GrCircleEffect::Make(et, center, radius);
+        GrClipEdgeType et = (GrClipEdgeType)testData->fRandom->nextULessThan(kGrClipEdgeTypeCnt);
+        std::tie(success, fp) = GrCircleEffect::Make(std::move(fp), et, center, radius);
+    } while (!success);
+    return fp;
 }
 #endif

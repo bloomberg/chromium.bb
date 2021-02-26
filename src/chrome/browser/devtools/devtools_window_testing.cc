@@ -5,7 +5,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -195,6 +195,7 @@ void DevToolsWindowCreationObserver::Wait() {
     return;
   runner_ = new content::MessageLoopRunner();
   runner_->Run();
+  runner_ = nullptr;
 }
 
 void DevToolsWindowCreationObserver::WaitForLoad() {
@@ -206,10 +207,8 @@ void DevToolsWindowCreationObserver::WaitForLoad() {
 void DevToolsWindowCreationObserver::DevToolsWindowCreated(
     DevToolsWindow* devtools_window) {
   devtools_windows_.push_back(devtools_window);
-  if (runner_.get()) {
+  if (runner_.get())
     runner_->QuitClosure().Run();
-    runner_ = nullptr;
-  }
 }
 
 DevToolsWindow* DevToolsWindowCreationObserver::devtools_window() {

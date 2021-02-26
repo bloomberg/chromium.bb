@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache_entry.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
@@ -19,7 +20,6 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/signed_exchange_validity_pinger.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/origin_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -32,6 +32,7 @@
 #include "services/network/public/cpp/source_stream_to_data_pipe.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
@@ -59,9 +60,11 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeReporter> reporter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
+    const net::NetworkIsolationKey& network_isolation_key,
     int frame_tree_node_id,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
-    const std::string& accept_langs)
+    const std::string& accept_langs,
+    bool keep_entry_for_prefetch_cache)
     : outer_request_(outer_request),
       outer_response_head_(std::move(outer_response_head)),
       forwarding_client_(std::move(forwarding_client)),
@@ -71,10 +74,17 @@ SignedExchangeLoader::SignedExchangeLoader(
       reporter_(std::move(reporter)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
+      network_isolation_key_(network_isolation_key),
       frame_tree_node_id_(frame_tree_node_id),
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs) {
   DCHECK(outer_request_.url.is_valid());
+
+  if (keep_entry_for_prefetch_cache) {
+    cache_entry_ = std::make_unique<PrefetchedSignedExchangeCacheEntry>();
+    cache_entry_->SetOuterUrl(outer_request_.url);
+    cache_entry_->SetOuterResponse(outer_response_head_->Clone());
+  }
 
   // |metric_recorder_| could be null in some tests.
   if (!(outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
@@ -143,7 +153,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       (outer_request_.trusted_params &&
        !outer_request_.trusted_params->isolation_info.IsEmpty())
           ? net::IsolationInfo::Create(
-                net::IsolationInfo::RedirectMode::kUpdateNothing,
+                net::IsolationInfo::RequestType::kOther,
                 *outer_request_.trusted_params->isolation_info
                      .top_frame_origin(),
                 *outer_request_.trusted_params->isolation_info.frame_origin(),
@@ -162,14 +172,15 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
   }
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
-      IsOriginSecure(outer_request_.url),
+      blink::network_utils::IsOriginSecure(outer_request_.url),
       signed_exchange_utils::HasNoSniffHeader(*outer_response_head_),
       content_type_,
       std::make_unique<network::DataPipeToSourceStream>(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(cert_fetcher_factory), outer_request_.load_flags,
+      std::move(cert_fetcher_factory), network_isolation_key_,
+      outer_request_.load_flags,
       std::make_unique<blink::WebPackageRequestMatcher>(outer_request_.headers,
                                                         accept_langs_),
       std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_);
@@ -211,17 +222,10 @@ void SignedExchangeLoader::ConnectToClient(
   mojo::FusePipes(std::move(pending_client_receiver_), std::move(client));
 }
 
-base::Optional<net::SHA256HashValue>
-SignedExchangeLoader::ComputeHeaderIntegrity() const {
-  if (!signed_exchange_handler_)
-    return base::nullopt;
-  return signed_exchange_handler_->ComputeHeaderIntegrity();
-}
-
-base::Time SignedExchangeLoader::GetSignatureExpireTime() const {
-  if (!signed_exchange_handler_)
-    return base::Time();
-  return signed_exchange_handler_->GetSignatureExpireTime();
+std::unique_ptr<PrefetchedSignedExchangeCacheEntry>
+SignedExchangeLoader::TakePrefetchedSignedExchangeCacheEntry() {
+  DCHECK(cache_entry_);
+  return std::move(cache_entry_);
 }
 
 void SignedExchangeLoader::OnHTTPExchangeFound(
@@ -256,6 +260,18 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
   DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
+
+  if (cache_entry_) {
+    cache_entry_->SetInnerUrl(*inner_request_url_);
+    auto inner_response_for_cache = resource_response->Clone();
+    inner_response_for_cache->was_fetched_via_cache = true;
+    inner_response_for_cache->was_in_prefetch_cache = true;
+    cache_entry_->SetInnerResponse(std::move(inner_response_for_cache));
+    const bool get_info_result =
+        signed_exchange_handler_->GetSignedExchangeInfoForPrefetchCache(
+            *cache_entry_);
+    DCHECK(get_info_result);
+  }
 
   forwarding_client_->OnReceiveRedirect(
       signed_exchange_utils::CreateRedirectInfo(
@@ -387,7 +403,7 @@ void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
   }
 
   if (reporter_)
-    reporter_->ReportResultAndFinish(result);
+    reporter_->ReportLoadResultAndFinish(result);
 }
 
 void SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(

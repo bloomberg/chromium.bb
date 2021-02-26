@@ -258,8 +258,9 @@ void NativeWidgetMac::OnWidgetInitDone() {
   ns_window_host_->OnWidgetInitDone();
 }
 
-NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
-  return new NativeFrameView(GetWidget());
+std::unique_ptr<NonClientFrameView>
+NativeWidgetMac::CreateNonClientFrameView() {
+  return std::make_unique<NativeFrameView>(GetWidget());
 }
 
 bool NativeWidgetMac::ShouldUseNativeFrame() const {
@@ -675,7 +676,7 @@ void NativeWidgetMac::RunShellDrag(View* view,
                                    std::unique_ptr<ui::OSExchangeData> data,
                                    const gfx::Point& location,
                                    int operation,
-                                   ui::DragDropTypes::DragEventSource source) {
+                                   ui::mojom::DragEventSource source) {
   ns_window_host_->drag_drop_client()->StartDragAndDrop(view, std::move(data),
                                                         operation, source);
 }

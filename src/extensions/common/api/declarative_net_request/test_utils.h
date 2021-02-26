@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/url_pattern.h"
 
 namespace base {
@@ -107,13 +108,16 @@ struct TestRuleRedirect : public DictionarySource {
 };
 
 struct TestHeaderInfo : public DictionarySource {
-  TestHeaderInfo(std::string header, std::string operation);
+  TestHeaderInfo(std::string header,
+                 std::string operation,
+                 base::Optional<std::string> value);
   ~TestHeaderInfo() override;
   TestHeaderInfo(const TestHeaderInfo&);
   TestHeaderInfo& operator=(const TestHeaderInfo&);
 
   base::Optional<std::string> header;
   base::Optional<std::string> operation;
+  base::Optional<std::string> value;
 
   std::unique_ptr<base::DictionaryValue> ToValue() const override;
 };
@@ -147,7 +151,7 @@ struct TestRule : public DictionarySource {
 };
 
 // Helper function to build a generic TestRule.
-TestRule CreateGenericRule();
+TestRule CreateGenericRule(int id = kMinValidID);
 
 // Bitmasks to configure the extension under test.
 enum ConfigFlag {
@@ -204,7 +208,8 @@ struct TestRulesetInfo {
 std::unique_ptr<base::DictionaryValue> CreateManifest(
     const std::vector<TestRulesetInfo>& ruleset_info,
     const std::vector<std::string>& hosts = {},
-    unsigned flags = ConfigFlag::kConfig_None);
+    unsigned flags = ConfigFlag::kConfig_None,
+    const std::string& extension_name = "Test Extension");
 
 // Returns a ListValue corresponding to a vector of strings.
 std::unique_ptr<base::ListValue> ToListValue(
@@ -218,17 +223,21 @@ std::unique_ptr<base::ListValue> ToListValue(
 // together with the manifest file. |hosts| specifies the host permissions, the
 // extensions should have. |flags| is a bitmask of ConfigFlag to configure the
 // extension.
-void WriteManifestAndRulesets(const base::FilePath& extension_dir,
-                              const std::vector<TestRulesetInfo>& ruleset_info,
-                              const std::vector<std::string>& hosts,
-                              unsigned flags = ConfigFlag::kConfig_None);
+void WriteManifestAndRulesets(
+    const base::FilePath& extension_dir,
+    const std::vector<TestRulesetInfo>& ruleset_info,
+    const std::vector<std::string>& hosts,
+    unsigned flags = ConfigFlag::kConfig_None,
+    const std::string& extension_name = "Test Extension");
 
 // Specialization of WriteManifestAndRulesets above for an extension with a
 // single static ruleset.
-void WriteManifestAndRuleset(const base::FilePath& extension_dir,
-                             const TestRulesetInfo& ruleset_info,
-                             const std::vector<std::string>& hosts,
-                             unsigned flags = ConfigFlag::kConfig_None);
+void WriteManifestAndRuleset(
+    const base::FilePath& extension_dir,
+    const TestRulesetInfo& ruleset_info,
+    const std::vector<std::string>& hosts,
+    unsigned flags = ConfigFlag::kConfig_None,
+    const std::string& extension_name = "Test Extension");
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -136,6 +136,15 @@ OobeTypes.SecurityTokenPinDialogErrorType = {
 OobeTypes.SecurityTokenPinDialogParameters;
 
 /**
+ * Event sent from inner webview to enclosing Recommended apps screen.
+ * @typedef {{
+ *   type: (string|undefined),
+ *   numOfSelected: number,
+ * }}
+ */
+OobeTypes.RecommendedAppsSelectionEventData;
+
+/**
  * Specifies the mechanism for calculating oobe-dialog inner padding.
  * @enum {string}
  */
@@ -143,4 +152,15 @@ OobeTypes.DialogPaddingMode = {
   AUTO: 'auto',
   NARROW: 'narrow',
   WIDE: 'wide',
+};
+
+/**
+ * Fatal Error Codes from SignInFatalErrorScreen
+ * @enum {number}
+ */
+OobeTypes.FatalErrorCode = {
+  UNKNOWN: 0,
+  SCRAPED_PASSWORD_VERIFICATION_FAILURE: 1,
+  INSECURE_CONTENT_BLOCKED: 2,
+  MISSING_GAIA_INFO: 3,
 };

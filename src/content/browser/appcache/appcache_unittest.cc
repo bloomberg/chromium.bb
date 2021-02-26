@@ -35,15 +35,23 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
 
   mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend1;
   ignore_result(frontend1.InitWithNewPipeAndPassReceiver());
-  AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
-                     /*process_id=*/1, /*render_frame_id=*/1,
-                     std::move(frontend1), &service);
+  const int kMockProcessId1 = 1;
+  const int kMockProcessId2 = 2;
+  AppCacheHost host1(
+      /*host_id=*/base::UnguessableToken::Create(), kMockProcessId1,
+      /*render_frame_id=*/1,
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+          kMockProcessId1),
+      std::move(frontend1), &service);
 
   mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend2;
   ignore_result(frontend2.InitWithNewPipeAndPassReceiver());
-  AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
-                     /*process_id=*/2, /*render_frame_id=*/2,
-                     std::move(frontend2), &service);
+  AppCacheHost host2(
+      /*host_id=*/base::UnguessableToken::Create(), kMockProcessId2,
+      /*render_frame_id=*/2,
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+          kMockProcessId2),
+      std::move(frontend2), &service);
 
   host1.AssociateCompleteCache(cache.get());
   host2.AssociateCompleteCache(cache.get());
@@ -110,8 +118,8 @@ TEST_F(AppCacheTest, InitializeWithManifest) {
 
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   EXPECT_TRUE(cache->fallback_namespaces_.empty());
-  EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-  EXPECT_FALSE(cache->online_whitelist_all_);
+  EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+  EXPECT_FALSE(cache->online_safelist_all_);
 
   AppCacheManifest manifest;
   manifest.explicit_urls.insert("http://one.com");
@@ -119,11 +127,11 @@ TEST_F(AppCacheTest, InitializeWithManifest) {
   manifest.fallback_namespaces.push_back(
       AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, GURL("http://fb1.com"),
                         GURL("http://fbone.com")));
-  manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
+  manifest.online_safelist_namespaces.push_back(AppCacheNamespace(
       APPCACHE_NETWORK_NAMESPACE, GURL("http://w1.com"), GURL()));
-  manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
+  manifest.online_safelist_namespaces.push_back(AppCacheNamespace(
       APPCACHE_NETWORK_NAMESPACE, GURL("http://w2.com"), GURL()));
-  manifest.online_whitelist_all = true;
+  manifest.online_safelist_all = true;
 
   cache->InitializeWithManifest(&manifest);
   const std::vector<AppCacheNamespace>& fallbacks =
@@ -132,18 +140,18 @@ TEST_F(AppCacheTest, InitializeWithManifest) {
   EXPECT_EQ(expected, fallbacks.size());
   EXPECT_EQ(GURL("http://fb1.com"), fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://fbone.com"), fallbacks[0].target_url);
-  const std::vector<AppCacheNamespace>& whitelist =
-      cache->online_whitelist_namespaces_;
+  const std::vector<AppCacheNamespace>& safelist =
+      cache->online_safelist_namespaces_;
   expected = 2;
-  EXPECT_EQ(expected, whitelist.size());
-  EXPECT_EQ(GURL("http://w1.com"), whitelist[0].namespace_url);
-  EXPECT_EQ(GURL("http://w2.com"), whitelist[1].namespace_url);
-  EXPECT_TRUE(cache->online_whitelist_all_);
+  EXPECT_EQ(expected, safelist.size());
+  EXPECT_EQ(GURL("http://w1.com"), safelist[0].namespace_url);
+  EXPECT_EQ(GURL("http://w2.com"), safelist[1].namespace_url);
+  EXPECT_TRUE(cache->online_safelist_all_);
 
   // Ensure collections in manifest were taken over by the cache rather than
   // copied.
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
-  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_TRUE(manifest.online_safelist_namespaces.empty());
 }
 
 TEST_F(AppCacheTest, FindResponseForRequest) {
@@ -177,9 +185,9 @@ TEST_F(AppCacheTest, FindResponseForRequest) {
   const int64_t kInterceptResponseId = 6;
 
   AppCacheManifest manifest;
-  manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
+  manifest.online_safelist_namespaces.push_back(AppCacheNamespace(
       APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl, GURL()));
-  manifest.online_whitelist_namespaces.push_back(
+  manifest.online_safelist_namespaces.push_back(
       AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
                         kOnlineNamespaceWithinOtherNamespaces, GURL()));
   manifest.fallback_namespaces.push_back(AppCacheNamespace(
@@ -363,8 +371,8 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   const std::string kManifestScope = kManifestUrl.GetWithoutFilename().path();
   const GURL kInterceptUrl("http://foo.com/intercept.html");
   const GURL kFallbackUrl("http://foo.com/fallback.html");
-  const GURL kPatternWhitelistUrl("http://foo.com/patternwhitelist*");
-  const GURL kWhitelistUrl("http://foo.com/whitelist");
+  const GURL kPatternSafelistUrl("http://foo.com/patternsafelist*");
+  const GURL kSafelistUrl("http://foo.com/safelist");
   const std::string kData(
       "CACHE MANIFEST\r"
       "CHROMIUM-INTERCEPT:\r"
@@ -372,8 +380,8 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
       "FALLBACK:\r"
       "/ /fallback.html\r"
       "NETWORK:\r"
-      "/patternwhitelist* isPattern\r"
-      "/whitelist\r"
+      "/patternsafelist* isPattern\r"
+      "/safelist\r"
       "*\r");
 
   MockAppCacheService service;
@@ -386,13 +394,12 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
                     PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
-            cache->online_whitelist_namespaces_[0].type);
-  EXPECT_EQ(kPatternWhitelistUrl,
-            cache->online_whitelist_namespaces_[0].namespace_url);
+            cache->online_safelist_namespaces_[0].type);
+  EXPECT_EQ(kPatternSafelistUrl,
+            cache->online_safelist_namespaces_[0].namespace_url);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
-            cache->online_whitelist_namespaces_[1].type);
-  EXPECT_EQ(kWhitelistUrl,
-            cache->online_whitelist_namespaces_[1].namespace_url);
+            cache->online_safelist_namespaces_[1].type);
+  EXPECT_EQ(kSafelistUrl, cache->online_safelist_namespaces_[1].namespace_url);
   cache->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
                                               /*response_id=*/1,
                                               /*response_size=*/1000,
@@ -411,13 +418,9 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   std::vector<AppCacheDatabase::EntryRecord> entries;
   std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
   std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-  std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-  cache->ToDatabaseRecords(group.get(),
-                           &cache_record,
-                           &entries,
-                           &intercepts,
-                           &fallbacks,
-                           &whitelists);
+  std::vector<AppCacheDatabase::OnlineSafeListRecord> safelists;
+  cache->ToDatabaseRecords(group.get(), &cache_record, &entries, &intercepts,
+                           &fallbacks, &safelists);
   EXPECT_EQ(kCacheId, cache_record.cache_id);
   EXPECT_EQ(kGroupId, cache_record.group_id);
   EXPECT_TRUE(cache_record.online_wildcard);
@@ -426,15 +429,14 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(1u, intercepts.size());
   EXPECT_EQ(1u, fallbacks.size());
-  EXPECT_EQ(2u, whitelists.size());
+  EXPECT_EQ(2u, safelists.size());
   cache = nullptr;
 
   // Create a new AppCache and populate it with those records and verify.
   cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
-  cache->InitializeWithDatabaseRecords(
-      cache_record, entries, intercepts,
-      fallbacks, whitelists);
-  EXPECT_TRUE(cache->online_whitelist_all_);
+  cache->InitializeWithDatabaseRecords(cache_record, entries, intercepts,
+                                       fallbacks, safelists);
+  EXPECT_TRUE(cache->online_safelist_all_);
   EXPECT_EQ(3u, cache->entries().size());
   EXPECT_TRUE(cache->GetEntry(kManifestUrl));
   EXPECT_TRUE(cache->GetEntry(kInterceptUrl));
@@ -446,13 +448,12 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(1000 + 10000 + 100000, cache->cache_size());
   EXPECT_EQ(0 + 10 + 100, cache->padding_size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
-            cache->online_whitelist_namespaces_[0].type);
-  EXPECT_EQ(kPatternWhitelistUrl,
-            cache->online_whitelist_namespaces_[0].namespace_url);
+            cache->online_safelist_namespaces_[0].type);
+  EXPECT_EQ(kPatternSafelistUrl,
+            cache->online_safelist_namespaces_[0].namespace_url);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
-            cache->online_whitelist_namespaces_[1].type);
-  EXPECT_EQ(kWhitelistUrl,
-            cache->online_whitelist_namespaces_[1].namespace_url);
+            cache->online_safelist_namespaces_[1].type);
+  EXPECT_EQ(kSafelistUrl, cache->online_safelist_namespaces_[1].namespace_url);
 }
 
 TEST_F(AppCacheTest, IsNamespaceMatch) {

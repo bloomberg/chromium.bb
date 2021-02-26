@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.customtabs.CustomButtonParams;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.webapps.WebApkExtras;
 import org.chromium.chrome.browser.webapps.WebappExtras;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,6 +48,7 @@ public abstract class BrowserServicesIntentDataProvider {
         int READER_MODE = 4;
         int MINIMAL_UI_WEBAPP = 5;
         int OFFLINE_PAGE = 6;
+        int READ_LATER = 7;
     }
 
     // The type of Disclosure for TWAs to use.
@@ -167,6 +169,14 @@ public abstract class BrowserServicesIntentDataProvider {
      */
     @Nullable
     public Integer getNavigationBarColor() {
+        return null;
+    }
+
+    /**
+     * @return The navigation bar divider color specified in the intent, or null if not specified.
+     */
+    @Nullable
+    public Integer getNavigationBarDividerColor() {
         return null;
     }
 
@@ -352,6 +362,13 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * Returns {@link ScreenOrientationLockType} supplied in the intent.
+     */
+    public int getDefaultOrientation() {
+        return ScreenOrientationLockType.DEFAULT;
+    }
+
+    /**
      * @return The component name of the module entry point, or null if not specified.
      */
     @Nullable
@@ -483,5 +500,52 @@ public abstract class BrowserServicesIntentDataProvider {
     @TwaDisclosureUi
     public int getTwaDisclosureUi() {
         return TwaDisclosureUi.DEFAULT;
+    }
+
+    @Nullable
+    public int[] getGsaExperimentIds() {
+        return null;
+    }
+
+    /**
+     * Returns true if omnibox should hide cct related visits.
+     */
+    public boolean shouldHideOmniboxSuggestionsForCctVisits() {
+        return false;
+    }
+
+    /**
+     * Returns true if visits from cct should be hidden.
+     */
+    public boolean shouldHideCctVisits() {
+        return false;
+    }
+
+    /**
+     * Returns true if new notification requests from cct should be blocked.
+     */
+    public boolean shouldBlockNewNotificationRequests() {
+        return false;
+    }
+
+    /**
+     * Returns true if 'open in chrome' should be shown in the tab context menu.
+     */
+    public boolean shouldShowOpenInChromeMenuItemInContextMenu() {
+        return true;
+    }
+
+    /**
+     * Returns true if 'open in chrome' should be shown in the app menu.
+     */
+    public boolean shouldShowOpenInChromeMenuItem() {
+        return true;
+    }
+
+    /**
+     * @return Whether the incognito icon in the toolbar should be hidden in cct-incognito mode.
+     */
+    public boolean shouldHideIncognitoIconOnToolbarInCct() {
+        return false;
     }
 }

@@ -48,7 +48,7 @@ namespace google_breakpad {
 RangeMapSerializer< MemAddr, linked_ptr<BasicSourceLineResolver::Line> >
 SimpleSerializer<BasicSourceLineResolver::Function>::range_map_serializer_;
 
-size_t ModuleSerializer::SizeOf(const BasicSourceLineResolver::Module &module) {
+size_t ModuleSerializer::SizeOf(const BasicSourceLineResolver::Module& module) {
   size_t total_size_alloc_ = 0;
 
   // Size of the "is_corrupt" flag.
@@ -80,8 +80,8 @@ size_t ModuleSerializer::SizeOf(const BasicSourceLineResolver::Module &module) {
   return total_size_alloc_;
 }
 
-char *ModuleSerializer::Write(const BasicSourceLineResolver::Module &module,
-                              char *dest) {
+char* ModuleSerializer::Write(const BasicSourceLineResolver::Module& module,
+                              char* dest) {
   // Write the is_corrupt flag.
   dest = SimpleSerializer<bool>::Write(module.is_corrupt_, dest);
   // Write header.
@@ -101,12 +101,12 @@ char *ModuleSerializer::Write(const BasicSourceLineResolver::Module &module,
 }
 
 char* ModuleSerializer::Serialize(
-    const BasicSourceLineResolver::Module &module, unsigned int *size) {
+    const BasicSourceLineResolver::Module& module, unsigned int* size) {
   // Compute size of memory to allocate.
   unsigned int size_to_alloc = SizeOf(module);
 
   // Allocate memory for serialized data.
-  char *serialized_data = new char[size_to_alloc];
+  char* serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(ERROR) << "ModuleSerializer: memory allocation failed, "
                  << "size to alloc: " << size_to_alloc;
@@ -115,7 +115,7 @@ char* ModuleSerializer::Serialize(
   }
 
   // Write serialized data to allocated memory chunk.
-  char *end_address = Write(module, serialized_data);
+  char* end_address = Write(module, serialized_data);
   // Verify the allocated memory size is equal to the size of data been written.
   unsigned int size_written =
       static_cast<unsigned int>(end_address - serialized_data);
@@ -131,8 +131,8 @@ char* ModuleSerializer::Serialize(
 }
 
 bool ModuleSerializer::SerializeModuleAndLoadIntoFastResolver(
-    const BasicSourceLineResolver::ModuleMap::const_iterator &iter,
-    FastSourceLineResolver *fast_resolver) {
+    const BasicSourceLineResolver::ModuleMap::const_iterator& iter,
+    FastSourceLineResolver* fast_resolver) {
   BPLOG(INFO) << "Converting symbol " << iter->first.c_str();
 
   // Cast SourceLineResolverBase::Module* to BasicSourceLineResolver::Module*.
@@ -161,8 +161,8 @@ bool ModuleSerializer::SerializeModuleAndLoadIntoFastResolver(
 }
 
 void ModuleSerializer::ConvertAllModules(
-    const BasicSourceLineResolver *basic_resolver,
-    FastSourceLineResolver *fast_resolver) {
+    const BasicSourceLineResolver* basic_resolver,
+    FastSourceLineResolver* fast_resolver) {
   // Check for NULL pointer.
   if (!basic_resolver || !fast_resolver)
     return;
@@ -175,9 +175,9 @@ void ModuleSerializer::ConvertAllModules(
 }
 
 bool ModuleSerializer::ConvertOneModule(
-    const string &moduleid,
-    const BasicSourceLineResolver *basic_resolver,
-    FastSourceLineResolver *fast_resolver) {
+    const string& moduleid,
+    const BasicSourceLineResolver* basic_resolver,
+    FastSourceLineResolver* fast_resolver) {
   // Check for NULL pointer.
   if (!basic_resolver || !fast_resolver)
     return false;
@@ -191,7 +191,7 @@ bool ModuleSerializer::ConvertOneModule(
 }
 
 char* ModuleSerializer::SerializeSymbolFileData(
-    const string &symbol_data, unsigned int *size) {
+    const string& symbol_data, unsigned int* size) {
   scoped_ptr<BasicSourceLineResolver::Module> module(
       new BasicSourceLineResolver::Module("no name"));
   scoped_array<char> buffer(new char[symbol_data.size() + 1]);

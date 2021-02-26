@@ -13,7 +13,6 @@ import android.annotation.TargetApi;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
 import android.text.InputType;
 import android.text.Spannable;
 import android.text.style.SuggestionSpan;
@@ -23,17 +22,21 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
+
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
@@ -83,8 +86,9 @@ public class WebContentsAccessibilityTest {
         wcax.setState(true);
         wcax.setAccessibilityEnabledForTesting();
 
-        CriteriaHelper.pollUiThread(
-                () -> Assert.assertNotNull(wcax.getAccessibilityNodeProvider()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(wcax.getAccessibilityNodeProvider(), Matchers.notNullValue());
+        });
 
         return wcax.getAccessibilityNodeProvider();
     }
@@ -140,10 +144,10 @@ public class WebContentsAccessibilityTest {
      */
     private int waitForNodeMatching(
             AccessibilityNodeProvider provider, AccessibilityNodeInfoMatcher matcher) {
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertNotEquals(
-                                View.NO_ID, findNodeMatching(provider, View.NO_ID, matcher)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    findNodeMatching(provider, View.NO_ID, matcher), Matchers.not(View.NO_ID));
+        });
 
         int virtualViewId = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> findNodeMatching(provider, View.NO_ID, matcher));
@@ -248,6 +252,32 @@ public class WebContentsAccessibilityTest {
     }
 
     /**
+     * Helper method to build a web page with a contenteditable for our set of tests, and find the
+     * virtualViewId of that given div and return it
+     *
+     * @param htmlContent String                content of the web page
+     * @param contenteditableText String        value of the contenteditable div to find
+     * @return int                              virtualViewId of the contenteditable identified
+     */
+    private int buildWebPageWithContentEditable(String htmlContent, String contenteditableText) {
+        // Load a simple page with an input and the text "Testing"
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(htmlContent));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        mNodeProvider = enableAccessibilityAndWaitForNodeProvider();
+
+        // Find a node in the accessibility tree with input type TYPE_CLASS_TEXT.
+        int contenteditableVirtualViewId =
+                waitForNodeWithClassName(mNodeProvider, "android.widget.EditText");
+        mNodeInfo = mNodeProvider.createAccessibilityNodeInfo(contenteditableVirtualViewId);
+
+        // Assert we have got the correct node.
+        Assert.assertNotEquals(mNodeInfo, null);
+        Assert.assertEquals(contenteditableText, mNodeInfo.getText().toString());
+
+        return contenteditableVirtualViewId;
+    }
+
+    /**
      * Helper method to set up delegates on an edit text for testing. This is used in the tests
      * below that check our accessibility events are properly indexed. The editTextVirtualViewId
      * parameter should be the value returned from buildWebPageWithEditText
@@ -258,8 +288,10 @@ public class WebContentsAccessibilityTest {
     private void setUpEditTextDelegate(int editTextVirtualViewId) throws Throwable {
         // Add an accessibility delegate to capture TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY and
         // TYPE_VIEW_TEXT_SELECTION_CHANGED events and store their ToIndex and FromIndex.
-        mActivityTestRule.getContainerView().setAccessibilityDelegate(
-                new View.AccessibilityDelegate() {
+        // The delegate is set on the parent as WebContentsAccessibilityImpl sends events using the
+        // parent.
+        ((ViewGroup) mActivityTestRule.getContainerView().getParent())
+                .setAccessibilityDelegate(new View.AccessibilityDelegate() {
                     @Override
                     public boolean onRequestSendAccessibilityEvent(
                             ViewGroup host, View child, AccessibilityEvent event) {
@@ -297,6 +329,15 @@ public class WebContentsAccessibilityTest {
     }
 
     /**
+     * Helper method to refresh the |mNodeInfo| object by recycling, waiting 1 sec, then refresh.
+     */
+    private void refreshMNodeInfo(int virtualViewId) throws InterruptedException {
+        mNodeInfo.recycle();
+        Thread.sleep(1000);
+        mNodeInfo = mNodeProvider.createAccessibilityNodeInfo(virtualViewId);
+    }
+
+    /**
      * Helper method to tear down the setup of our tests so we can start the next test clean
      */
     private void tearDown() {
@@ -315,9 +356,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_CharacterGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -361,10 +399,8 @@ public class WebContentsAccessibilityTest {
      * field by character with selection mode on
      */
     @Test
-    @MediumTest
-    @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @LargeTest
+    @Ignore("Skipping due to long run time")
     public void testEventIndices_SelectionON_CharacterGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -387,6 +423,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(i, mTraverseToIndex.value);
             Assert.assertEquals(7, mSelectionFromIndex.value);
             Assert.assertEquals(i - 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(i - 1, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(7, mNodeInfo.getTextSelectionEnd());
         }
 
         // Simulate swiping right (forward) (removes from selection)
@@ -398,6 +440,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(i + 1, mTraverseToIndex.value);
             Assert.assertEquals(7, mSelectionFromIndex.value);
             Assert.assertEquals(i + 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(i + 1, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(7, mNodeInfo.getTextSelectionEnd());
         }
 
         // Turn selection mode off and traverse to beginning so we can select forwards
@@ -419,6 +467,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(i + 1, mTraverseToIndex.value);
             Assert.assertEquals(0, mSelectionFromIndex.value);
             Assert.assertEquals(i + 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(i + 1, mNodeInfo.getTextSelectionEnd());
         }
 
         // Simulate swiping left (backward) (removes from selections)
@@ -430,6 +484,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(i, mTraverseToIndex.value);
             Assert.assertEquals(0, mSelectionFromIndex.value);
             Assert.assertEquals(i - 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(i - 1, mNodeInfo.getTextSelectionEnd());
         }
 
         tearDown();
@@ -441,9 +501,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_WordGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing this output is correct"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -491,10 +548,8 @@ public class WebContentsAccessibilityTest {
      * field by word with selection mode on
      */
     @Test
-    @MediumTest
-    @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @LargeTest
+    @Ignore("Skipping due to long run time")
     public void testEventIndices_SelectionON_WordGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing this output is correct"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -521,6 +576,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(wordEnds[i], mTraverseToIndex.value);
             Assert.assertEquals(30, mSelectionFromIndex.value);
             Assert.assertEquals(wordStarts[i], mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(wordStarts[i], mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(30, mNodeInfo.getTextSelectionEnd());
         }
 
         // Simulate swiping right (forward, removes selection) through all 5 words, check indices
@@ -532,6 +593,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(wordEnds[i], mTraverseToIndex.value);
             Assert.assertEquals(30, mSelectionFromIndex.value);
             Assert.assertEquals(wordEnds[i], mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(wordEnds[i], mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(30, mNodeInfo.getTextSelectionEnd());
         }
 
         // Turn selection mode off and traverse to beginning so we can select forwards
@@ -553,6 +620,12 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(wordEnds[i], mTraverseToIndex.value);
             Assert.assertEquals(0, mSelectionFromIndex.value);
             Assert.assertEquals(wordEnds[i], mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(wordEnds[i], mNodeInfo.getTextSelectionEnd());
         }
 
         // Simulate swiping left (backward) (removes from selections)
@@ -564,6 +637,122 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(wordEnds[i], mTraverseToIndex.value);
             Assert.assertEquals(0, mSelectionFromIndex.value);
             Assert.assertEquals(wordStarts[i], mSelectionToIndex.value);
+
+            refreshMNodeInfo(editTextVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(wordStarts[i], mNodeInfo.getTextSelectionEnd());
+        }
+
+        tearDown();
+    }
+
+    /**
+     * Ensure traverse events and selection events are properly indexed when navigating a
+     * contenteditable by character with selection mode on.
+     */
+    @Test
+    @LargeTest
+    @Ignore("Skipping due to long run time")
+    public void testEventIndices_contenteditable_SelectionON_CharacterGranularity()
+            throws Throwable {
+        int contentEditableVirtualViewId =
+                buildWebPageWithContentEditable("<div contenteditable>Testing</div>", "Testing");
+
+        setUpEditTextDelegate(contentEditableVirtualViewId);
+
+        // Move cursor to the end of the field for consistency.
+        Bundle moveArgs = new Bundle();
+        moveArgs.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
+                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER);
+        for (int i = 7; i > 0; i--) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY, moveArgs);
+        }
+
+        // Set granularity to CHARACTER, with selection TRUE
+        Bundle args = new Bundle();
+        args.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
+                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER);
+        args.putBoolean(AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, true);
+
+        // Simulate swiping left (backward) (adds to selections)
+        for (int i = 7; i > 0; i--) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, args);
+
+            Assert.assertEquals(i - 1, mTraverseFromIndex.value);
+            Assert.assertEquals(i, mTraverseToIndex.value);
+            Assert.assertEquals(7, mSelectionFromIndex.value);
+            Assert.assertEquals(i - 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(contentEditableVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(i - 1, mNodeInfo.getTextSelectionEnd());
+            Assert.assertEquals(7, mNodeInfo.getTextSelectionStart());
+        }
+
+        // Simulate swiping right (forward) (removes from selection)
+        for (int i = 0; i < 7; i++) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY, args);
+
+            Assert.assertEquals(i, mTraverseFromIndex.value);
+            Assert.assertEquals(i + 1, mTraverseToIndex.value);
+            Assert.assertEquals(7, mSelectionFromIndex.value);
+            Assert.assertEquals(i + 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(contentEditableVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(i + 1, mNodeInfo.getTextSelectionEnd());
+            Assert.assertEquals(7, mNodeInfo.getTextSelectionStart());
+        }
+
+        // Turn selection mode off and traverse to beginning so we can select forwards
+        args.putBoolean(AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, false);
+        for (int i = 7; i > 0; i--) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, args);
+        }
+
+        // Turn selection mode on
+        args.putBoolean(AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, true);
+
+        // Simulate swiping right (forward) (adds to selection)
+        for (int i = 0; i < 7; i++) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY, args);
+
+            Assert.assertEquals(i, mTraverseFromIndex.value);
+            Assert.assertEquals(i + 1, mTraverseToIndex.value);
+            Assert.assertEquals(0, mSelectionFromIndex.value);
+            Assert.assertEquals(i + 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(contentEditableVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(i + 1, mNodeInfo.getTextSelectionEnd());
+        }
+
+        // Simulate swiping left (backward) (removes from selections)
+        for (int i = 7; i > 0; i--) {
+            performActionOnUiThread(contentEditableVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, args);
+
+            Assert.assertEquals(i - 1, mTraverseFromIndex.value);
+            Assert.assertEquals(i, mTraverseToIndex.value);
+            Assert.assertEquals(0, mSelectionFromIndex.value);
+            Assert.assertEquals(i - 1, mSelectionToIndex.value);
+
+            refreshMNodeInfo(contentEditableVirtualViewId);
+
+            Assert.assertTrue(mNodeInfo.isEditable());
+            Assert.assertEquals(0, mNodeInfo.getTextSelectionStart());
+            Assert.assertEquals(i - 1, mNodeInfo.getTextSelectionEnd());
         }
 
         tearDown();
@@ -574,8 +763,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTextFieldExposesActionSetText() {
         // Load a web page with a text field.
         final String data = "<h1>Simple test page</h1>"
@@ -598,8 +785,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testContentEditableClassName() {
         final String data = "<div contenteditable>Edit This</div>";
 
@@ -620,8 +805,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidTrueErrorMessage() {
         final String data = "<form>\n"
                 + "  First name:<br>\n"
@@ -645,8 +828,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidSpellingErrorMessage() {
         final String data = "<input type='text' aria-invalid='spelling'><br>\n";
 
@@ -667,8 +848,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidGrammarErrorMessage() {
         final String data = "<input type='text' aria-invalid='grammar'><br>\n";
 
@@ -688,8 +867,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldValidNoErrorMessage() {
         final String data = "<input type='text'><br>\n";
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -699,9 +876,9 @@ public class WebContentsAccessibilityTest {
 
         AccessibilityNodeInfo textNode =
                 provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
-        Assert.assertNotEquals(textNode, null);
-        Assert.assertEquals(textNode.isContentInvalid(), false);
-        Assert.assertEquals(textNode.getError(), "");
+        Assert.assertNotEquals(null, textNode);
+        Assert.assertFalse(textNode.isContentInvalid());
+        Assert.assertNull(textNode.getError());
     }
 
     /**
@@ -709,8 +886,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testSpellingError() {
         // Load a web page containing a text field with one misspelling.
         // Note that for content_shell, no spelling suggestions are enabled
@@ -812,8 +987,8 @@ public class WebContentsAccessibilityTest {
             Bundle textNodeExtras = textNode.getExtras();
             RectF[] textNodeResults = (RectF[]) textNodeExtras.getParcelableArray(
                     EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
-            Assert.assertThat(textNodeResults, Matchers.arrayWithSize(4));
-            Assert.assertNotEquals(textNodeResults[0], textNodeResults[1]);
+            Criteria.checkThat(textNodeResults, Matchers.arrayWithSize(4));
+            Criteria.checkThat(textNodeResults[0], Matchers.not(textNodeResults[1]));
         });
 
         // The final result should be the separate bounding box of all four characters.
@@ -852,7 +1027,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @TargetApi(Build.VERSION_CODES.M)
     public void testAccessibilityNodeInfo_Actions_OverflowHidden() throws Throwable {
@@ -916,7 +1090,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @TargetApi(Build.VERSION_CODES.M)
     public void testAccessibilityNodeInfo_Actions_OverflowScroll() throws Throwable {

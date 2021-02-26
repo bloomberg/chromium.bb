@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -35,6 +36,7 @@
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/account_id/account_id.h"
+#include "components/account_manager_core/account.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -59,23 +61,21 @@ constexpr char kMigrationResultMetricName[] =
 // Maximum number of times migrations should be run.
 constexpr int kMaxMigrationRuns = 1;
 
-AccountManager::AccountKey GetDeviceAccount(const Profile* profile) {
+::account_manager::AccountKey GetDeviceAccount(const Profile* profile) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   const AccountId& account_id = user->GetAccountId();
   switch (account_id.GetAccountType()) {
     case AccountType::ACTIVE_DIRECTORY:
-      return AccountManager::AccountKey{
+      return ::account_manager::AccountKey{
           account_id.GetObjGuid(),
-          account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
+          account_manager::AccountType::kActiveDirectory};
     case AccountType::GOOGLE:
-      return AccountManager::AccountKey{
-          account_id.GetGaiaId(),
-          account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+      return ::account_manager::AccountKey{account_id.GetGaiaId(),
+                                           account_manager::AccountType::kGaia};
     case AccountType::UNKNOWN:
-      return AccountManager::AccountKey{
-          std::string(),
-          account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED};
+      return ::account_manager::AccountKey{std::string(),
+                                           account_manager::AccountType::kGaia};
   }
 }
 
@@ -96,10 +96,9 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
   ~AccountMigrationBaseStep() override = default;
 
  protected:
-  bool IsAccountWithNonDummyTokenPresentInAccountManager(
-      const AccountManager::AccountKey& account) const {
-    return base::Contains(account_manager_accounts_, account) &&
-           !account_manager_->HasDummyGaiaToken(account);
+  bool IsAccountPresentInAccountManager(
+      const ::account_manager::AccountKey& account) const {
+    return base::Contains(account_manager_accounts_, account);
   }
 
   bool IsAccountManagerEmpty() const {
@@ -108,18 +107,17 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 
   void MigrateSecondaryAccount(const std::string& gaia_id,
                                const std::string& email) {
-    if (base::Contains(
-            account_manager_accounts_,
-            AccountManager::AccountKey{
-                gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
+    if (base::Contains(account_manager_accounts_,
+                       ::account_manager::AccountKey{
+                           gaia_id, account_manager::AccountType::kGaia})) {
       // Do not overwrite any existing account in |AccountManager|.
       VLOG(1) << "Ignoring migration of existing account: " << email;
       return;
     }
 
     account_manager_->UpsertAccount(
-        AccountManager::AccountKey{
-            gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        ::account_manager::AccountKey{gaia_id,
+                                      account_manager::AccountType::kGaia},
         email, AccountManager::kInvalidToken);
     VLOG(1) << "Successfully migrated: " << email;
   }
@@ -142,10 +140,10 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
         &AccountMigrationBaseStep::OnGetAccounts, weak_factory_.GetWeakPtr()));
   }
 
-  void OnGetAccounts(const std::vector<AccountManager::Account>& accounts) {
+  void OnGetAccounts(const std::vector<::account_manager::Account>& accounts) {
     account_manager_accounts_.clear();
     account_manager_accounts_.reserve(accounts.size());
-    for (const AccountManager::Account& account : accounts) {
+    for (const ::account_manager::Account& account : accounts) {
       account_manager_accounts_.emplace_back(account.key);
     }
     StartMigration();
@@ -159,7 +157,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 
   // A temporary cache of accounts in |AccountManager|, guaranteed to be
   // up-to-date when |StartMigration| is called.
-  std::vector<AccountManager::AccountKey> account_manager_accounts_;
+  std::vector<::account_manager::AccountKey> account_manager_accounts_;
 
   base::WeakPtrFactory<AccountMigrationBaseStep> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountMigrationBaseStep);
@@ -170,7 +168,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 class DeviceAccountMigration : public AccountMigrationBaseStep,
                                public WebDataServiceConsumer {
  public:
-  DeviceAccountMigration(const AccountManager::AccountKey& device_account,
+  DeviceAccountMigration(const ::account_manager::AccountKey& device_account,
                          const std::string& device_account_raw_email,
                          AccountManager* account_manager,
                          signin::IdentityManager* identity_manager,
@@ -185,20 +183,33 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
  private:
   void StartMigration() override {
-    if (IsAccountWithNonDummyTokenPresentInAccountManager(device_account_)) {
+    if (!IsAccountPresentInAccountManager(device_account_)) {
+      MigrateDeviceAccount();
+      return;
+    }
+
+    account_manager()->HasDummyGaiaToken(
+        device_account_,
+        base::BindOnce(&DeviceAccountMigration::OnHasDummyGaiaToken,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void OnHasDummyGaiaToken(bool has_dummy_token) {
+    if (!has_dummy_token) {
       FinishWithSuccess();
       return;
     }
 
+    MigrateDeviceAccount();
+  }
+
+  void MigrateDeviceAccount() {
     switch (device_account_.account_type) {
-      case account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY:
+      case account_manager::AccountType::kActiveDirectory:
         MigrateActiveDirectoryAccount();
         break;
-      case account_manager::AccountType::ACCOUNT_TYPE_GAIA:
+      case account_manager::AccountType::kGaia:
         MigrateGaiaAccount();
-        break;
-      case account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED:
-        NOTREACHED();
         break;
     }
   }
@@ -263,12 +274,14 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
   scoped_refptr<TokenWebData> token_web_data_;
 
   // Device Account on Chrome OS.
-  const AccountManager::AccountKey device_account_;
+  const ::account_manager::AccountKey device_account_;
 
   // Raw, un-canonicalized email for the device account.
   const std::string device_account_raw_email_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<DeviceAccountMigration> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAccountMigration);
 };
@@ -348,7 +361,7 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
 // potentially waiting forever to get a callback from ARC. If we do not have a
 // timeout, this |Step| can make the rest of migration |Step|s wait forever.
 class ArcAccountsMigration : public AccountMigrationBaseStep,
-                             public arc::ArcSessionManager::Observer {
+                             public arc::ArcSessionManagerObserver {
  public:
   ArcAccountsMigration(AccountManager* account_manager,
                        signin::IdentityManager* identity_manager,
@@ -526,8 +539,7 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
   }
 
   // Do not run migrations if the Device Account is invalid.
-  if (GetDeviceAccount(profile_).account_type ==
-      account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED) {
+  if (GetDeviceAccount(profile_).id.empty()) {
     // Unfortunately this is a valid case for tests. See
     // https://crbug.com/915628. Early exit here because if the Device Account
     // itself is invalid, we should not attempt any migration.

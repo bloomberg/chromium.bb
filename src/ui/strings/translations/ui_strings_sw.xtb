@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Imeshindwa kushiriki <ph name="CONTENT_TYPE" /></translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> na <ph name="SECOND_ITEM_TITLE" /> zimebadilishana nafasi</translation>
 <translation id="1498028757988366001">Ulitafuta hoja hii awali. Ukifuta "<ph name="QUERY" />" kwenye historia ya utafutaji, itaondolewa kabisa kwenye akaunti yako katika vifaa vyako vyote.</translation>
+<translation id="1510238584712386396">Kizindua</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Dakika 1 na }other{Dakika # na }}</translation>
 <translation id="1643823602425662293">Arifa</translation>
 <translation id="169515659049020177">Hama</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">chagua</translation>
 <translation id="1859234291848436338">Mwelekeo wa Maandishi</translation>
 <translation id="1860796786778352021">Funga arifa</translation>
+<translation id="186476001994626254">Maudhui ya Ubandikaji Mahiri wa Wavuti</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chagua &amp;yote</translation>
+<translation id="19085484004813472">Hiki ni kipengele kipya</translation>
 <translation id="2006524834898217237">Hakikisha kwamba kifaa hiki kimeunganishwa kwenye intaneti.</translation>
 <translation id="208586643495776849">Tafadhali jaribu tena</translation>
-<translation id="2090963878406559571">Ili utume nambari kutoka <ph name="ORIGIN" /> kwenda kwenye simu yako ya Android, <ph name="TROUBLESHOOT_LINK" /> katika vifaa vyote viwili kwenye mipangilio.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{Siku 1}other{Siku #}}</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2161656808144014275">Maandishi</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Imemaliza kurekebisha usahihi</translation>
 <translation id="252373100621549798">Onyesho Lisilojulikana</translation>
 <translation id="2545651323591713692">Ahirisha</translation>
+<translation id="2570734079541893434">Dhibiti mipangilio</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{saa 1}other{saa #}}</translation>
 <translation id="2583543531130364912">Rekebisha usahihi wa skrini yako ya kugusa</translation>
+<translation id="2586657967955657006">Ubao wa kunakili</translation>
 <translation id="2666092431469916601">Ya Juu</translation>
 <translation id="2701330563083355633">Umepokea kutoka <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Mpya</translation>
 <translation id="2743387203779672305">Nakili kwenye ubao wa kunakili</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Fungua folda</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Mwaka 1 uliopita}other{Miaka # iliyopita}}</translation>
+<translation id="2878511608894704031">Futa Vyote</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{siku 1}other{siku #}}</translation>
 <translation id="2931838996092594335">bofya</translation>
 <translation id="2981684127883932071">Inaonyesha mapendekezo</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418">Faili ya <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Angalia “<ph name="LOOKUP_STRING" />”</translation>
+<translation id="3622035490309591977">Historia ya ubao wa kunakili</translation>
 <translation id="364720409959344976">Chagua Folda ya Kupakia</translation>
 <translation id="3660179305079774227">Mshale Juu</translation>
 <translation id="3670030362669914947">Nambari</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Anza Kuzungumza</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> imehamishiwa kwenye folda ya <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">PROGRAMU ZOTE</translation>
+<translation id="4491109536499578614">Picha</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Ukadiriaji wa nyota <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Pendekezo la programu</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650">PB <ph name="QUANTITY" /></translation>
 <translation id="5266161281976477809">Pembe tatu ya ufumbuzi</translation>
 <translation id="5278860589123563674">Imeshindwa kutuma</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> inakuomba ushughulikie jambo fulani.</translation>
 <translation id="528468243742722775">Mwisho</translation>
-<translation id="5327567770033251652">washa kipengele cha kusawazisha</translation>
 <translation id="5329858601952122676">&amp;Futa</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> iko juu ya <ph name="IN_PLACE_APP" />, achilia ili ufungue folda mpya.</translation>
 <translation id="5463830097259460683">Emoji na Ishara</translation>
 <translation id="5476505524087279545">toa tiki</translation>
 <translation id="547979256943495781">Rafu iko upande wa kulia</translation>
+<translation id="5528053674512161860">Imeshindwa kupakia ukurasa kwa sababu sehemu ya kiolesura cha msanidi programu (dev_ui) haijasakinishwa</translation>
 <translation id="5574202486608032840">Mfumo wa <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> inakuomba ushughulikie jambo fulani.</translation>
 <translation id="5675363643668471212">Kipengee cha kabati</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Kimetumika leo}=1{Kilitumika siku 1 iliyopita}other{Kilitumika ziku # zilizopita}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{Siku 1 na }other{Siku # na }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">Picha.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{mwaka 1}other{miaka #}}</translation>
+<translation id="588258955323874662">Skrini nzima</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Imesalia sekunde 1}other{Zimesalia  sekunde #}}</translation>
 <translation id="5941711191222866238">Punguza</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{Saa 1}other{Saa #}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6119846243427417423">wezesha</translation>
 <translation id="6129953537138746214">Nafasi</translation>
+<translation id="6134259848159370930">Tafuta kwenye wavuti, programu, mipangilio na kifaa chako.</translation>
 <translation id="6135826906199951471">Futa</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Ziangalie programu zote</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6166852626429024716">Tafuta kwenye programu, mipangilio, wavuti, kifaa chako...</translation>
 <translation id="6264365405983206840">Chagua &amp;Zote</translation>
 <translation id="6351032674660237738">MAPENDEKEZO YA PROGRAMU</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Mratibu wa Google</translation>
 <translation id="6430678249303439055">Zuia arifa zote kutoka programu hii</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
+<translation id="6503257047630241175">Maudhui ya Muundo wa Maandishi Anuai (RTF)</translation>
 <translation id="6539092367496845964">Hitilafu fulani imetokea. Jaribu tena baadaye.</translation>
 <translation id="654149438358937226">Zuia arifa zote</translation>
 <translation id="6567071839949112727">bofya kipengee</translation>
 <translation id="6578407462441924264">Isiyo na jina</translation>
 <translation id="6612467943526193239">Ili kuacha kupima, bonyeza Esc.</translation>
 <translation id="6620110761915583480">Hifadhi Faili</translation>
-<translation id="6656912866303152668">Hakikisha kwamba umewasha kipengele cha usawazishaji katika <ph name="TARGET_DEVICE_NAME" /> kwenye Chrome kisha ujaribu kutuma tena.</translation>
 <translation id="6699343763173986273">Wimbo Unaofuata kwenye Media</translation>
-<translation id="6710213216561001401">Iliyotangulia</translation>
-<translation id="6779314412797872738">Ili utume nambari kutoka hapa hadi kwenye simu yako ya Android, <ph name="TROUBLESHOOT_LINK" /> kwenye vifaa vyote viwili katika mipangilio.</translation>
+<translation id="6710213216561001401">Iliyopita</translation>
 <translation id="6786750046913594791">Funga Folda</translation>
 <translation id="6808150112686056157">Simamisha Media</translation>
 <translation id="6845383723252244143">Chagua Folda</translation>
 <translation id="6845533974506654842">bofya</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Imesalia saa 1}other{Zimesalia saa #}}</translation>
 <translation id="688711909580084195">Ukurasa wa Wavuti usio na Kichwa</translation>
+<translation id="6902419395050653510">Maudhui ya HTML.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Umesalia mwaka 1}other{Imesalia miaka #}}</translation>
 <translation id="6945221475159498467">Chagua</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7319740667687257810">Kifungua programu, mwonekano mdogo</translation>
-<translation id="7352651011704765696">Hitilafu fulani imetokea</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Imehamishiwa kwenye Ukurasa wa <ph name="PAGE_NUMBER" />, safu mlalo ya <ph name="ROW_NUMBER" />, safu wima ya <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Usizuie</translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
+<translation id="7952747673138230804">Mfumo wa Uendeshaji wa Chrome huonyesha mapendekezo ya maudhui mapya ya kugundua. Hutuma takwimu za kuimarisha ubora iwapo tu umechagua kushiriki data ya matumizi. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Amri</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Hujasoma zaidi ya arifa 1}other{Hujasoma zaidi ya arifa #}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dak 1}other{dak #}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623">Faili ya <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Rafu inaonyeshwa kila wakati</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Tafuta kwenye programu, mipangilio, wavuti na kifaa chako. Tumia vitufe vya vishale ili upitie programu zako.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> zaidi</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{Saa 1}other{Saa #}}</translation>

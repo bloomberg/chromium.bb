@@ -9,16 +9,13 @@
 
 #include "cast/streaming/constants.h"
 #include "cast/streaming/packet_util.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/saturate_cast.h"
 #include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
-
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 
 SenderPacketRouter::SenderPacketRouter(Environment* environment,
                                        int max_burst_bitrate)
@@ -227,8 +224,7 @@ int SenderPacketRouter::SendJustTheRtpPackets(Clock::time_point send_time,
 
 namespace {
 constexpr int kBitsPerByte = 8;
-constexpr auto kOneSecondInMilliseconds =
-    duration_cast<milliseconds>(seconds(1));
+constexpr auto kOneSecondInMilliseconds = to_microseconds(seconds(1));
 }  // namespace
 
 // static

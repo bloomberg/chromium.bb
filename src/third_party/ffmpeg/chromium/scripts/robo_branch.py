@@ -56,7 +56,7 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
                              "branch",
                              "--no-track",
                              branch_name,
-                             "origin/master"]):
+                             cfg.origin_merge_base()]):
     raise Exception("Could not create branch")
 
   # NOTE: we could push the remote branch back to origin and start tracking it
@@ -94,7 +94,7 @@ def GetMergeParentsIfAny(cfg):
   HEAD and where it joins up with origin/master.  Otherwise, return []."""
   # Get all sha1s between us and origin/master
   sha1s = check_output(["git", "log", "--format=%H",
-          "origin/master..%s" % cfg.branch_name()]).split()
+          "%s..%s" % (cfg.origin_merge_base(), cfg.branch_name())]).split()
   for sha1 in sha1s:
     # Does |sha1| have more than one parent commit?
     parents = check_output(["git", "show", "--no-patch", "--format=%P",
@@ -152,9 +152,10 @@ def WriteConfigChangesFile(cfg):
   cfg.chdir_to_ffmpeg_home();
   # This looks for things that were added / deleted that look like #define or
   # %define (for asm) ending in 0 or 1, that have changed in any of the configs.
-  os.system("git diff origin/master --unified=0 -- chromium/config/* |"
-            "grep '^[+-].*[01]$' | sed -e 's/[%#]define//g' |sort |"
-            "uniq -s 1 >chromium/patches/config_flag_changes.txt")
+  os.system("git diff %s --unified=0 -- chromium/config/* |"
+            "grep '^[+-].*[01]$' | sed -e 's/[%%#]define//g' |sort |"
+            "uniq -s 1 >chromium/patches/config_flag_changes.txt" %
+            cfg.origin_merge_base())
 
 def AddAndCommit(cfg, commit_title):
   """Add everything, and commit locally with |commit_title|"""

@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                          spdy::SpdyStreamId parent_stream_id,
                          bool exclusive,
                          bool fin,
-                         spdy::SpdyHeaderBlock headers,
+                         spdy::Http2HeaderBlock headers,
                          base::TimeTicks recv_first_byte_time) = 0;
 
   // Called when a data frame header is received.
@@ -101,7 +101,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   // Called when a PUSH_PROMISE frame has been parsed.
   virtual void OnPushPromise(spdy::SpdyStreamId stream_id,
                              spdy::SpdyStreamId promised_stream_id,
-                             spdy::SpdyHeaderBlock headers) = 0;
+                             spdy::Http2HeaderBlock headers) = 0;
 
   // Called when an ALTSVC frame has been parsed.
   virtual void OnAltSvc(
@@ -147,8 +147,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void set_debug_visitor(spdy::SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // spdy::SpdyFramerVisitorInterface
-  void OnError(
-      http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
+  void OnError(http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error,
+               std::string detailed_error) override;
   void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
@@ -181,7 +181,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                      spdy::SpdyStreamId promised_stream_id,
                      bool end) override;
   void OnAltSvc(spdy::SpdyStreamId stream_id,
-                base::StringPiece origin,
+                absl::string_view origin,
                 const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override;
   void OnDataFrameHeader(spdy::SpdyStreamId stream_id,
@@ -231,6 +231,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   }
 
   int frames_received() const { return frames_received_; }
+
+  // Updates the maximum size of the header encoder compression table.
+  void UpdateHeaderEncoderTableSize(uint32_t value);
+  // Returns the maximum size of the header encoder compression table.
+  uint32_t header_encoder_table_size() const;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;

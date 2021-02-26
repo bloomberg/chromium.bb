@@ -16,6 +16,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class LocatedEvent;
+}
+
 namespace ash {
 
 class WindowCycleEventFilter;
@@ -30,6 +34,8 @@ class WindowCycleList;
 // order.
 class ASH_EXPORT WindowCycleController {
  public:
+  using WindowList = std::vector<aura::Window*>;
+
   enum Direction { FORWARD, BACKWARD };
 
   WindowCycleController();
@@ -39,8 +45,13 @@ class ASH_EXPORT WindowCycleController {
   // certain times, such as when the lock screen is visible.
   static bool CanCycle();
 
-  // Cycles between windows in the given |direction|.
+  // Cycles between windows in the given |direction|. This moves the focus ring
+  // to the window in the given |direction| and also scrolls the list.
   void HandleCycleWindow(Direction direction);
+
+  // Scrolls the windows in the given |direction|. This does not move the focus
+  // ring.
+  void Scroll(Direction direction);
 
   // Returns true if we are in the middle of a window cycling gesture.
   bool IsCycling() const { return window_cycle_list_.get() != NULL; }
@@ -56,12 +67,36 @@ class ASH_EXPORT WindowCycleController {
   void CompleteCycling();
   void CancelCycling();
 
+  // If the window cycle list is open, re-construct it. Do nothing if not
+  // cycling.
+  void MaybeResetCycleList();
+
+  // Moves the focus ring to |window|. Does not scroll the list. Do nothing if
+  // not cycling.
+  void SetFocusedWindow(aura::Window* window);
+
+  // Checks whether |event| occurs within the cycle view.
+  bool IsEventInCycleView(ui::LocatedEvent* event);
+
+  // Returns whether or not the window cycle view is visible.
+  bool IsWindowListVisible();
+
   // Returns the WindowCycleList.
   const WindowCycleList* window_cycle_list() const {
     return window_cycle_list_.get();
   }
 
  private:
+  // Gets a list of windows from the currently open windows, removing windows
+  // with transient roots already in the list. The returned list of windows
+  // is used to populate the window cycle list.
+  WindowList CreateWindowList();
+
+  // Populates |active_desk_container_id_before_cycle_| and
+  // |active_window_before_window_cycle_| when the window cycle list is
+  // initialized.
+  void SaveCurrentActiveDeskAndWindow(const WindowList& window_list);
+
   // Cycles to the next or previous window based on |direction|.
   void Step(Direction direction);
 

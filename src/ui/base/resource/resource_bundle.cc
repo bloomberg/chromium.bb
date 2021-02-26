@@ -12,10 +12,13 @@
 
 #include "base/big_endian.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,11 +43,11 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/strings/grit/app_locale_settings.h"
+#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -69,7 +72,7 @@ const size_t kPngChunkMetadataSize = 12;  // length, type, crc32
 const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
 const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 const char kPakFileExtension[] = ".pak";
 #endif
 
@@ -82,7 +85,7 @@ base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 
   // Return just the name of the pak file.
 #if defined(OS_WIN)
-  return base::FilePath(base::ASCIIToUTF16(pak_name));
+  return base::FilePath(base::ASCIIToWide(pak_name));
 #else
   return base::FilePath(pak_name.c_str());
 #endif  // OS_WIN
@@ -204,10 +207,9 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     if (fell_back_to_1x) {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
       image = skia::ImageOperations::Resize(
-          image,
-          skia::ImageOperations::RESIZE_LANCZOS3,
-          gfx::ToCeiledInt(image.width() * scale),
-          gfx::ToCeiledInt(image.height() * scale));
+          image, skia::ImageOperations::RESIZE_LANCZOS3,
+          base::ClampCeil(image.width() * scale),
+          base::ClampCeil(image.height() * scale));
     } else {
       scale = GetScaleForScaleFactor(scale_factor);
     }
@@ -257,7 +259,9 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
   InitSharedInstance(delegate);
   if (load_resources == LOAD_COMMON_RESOURCES)
     g_shared_instance_->LoadCommonResources();
-  std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  std::string result =
+      g_shared_instance_->LoadLocaleResources(pref_locale,
+                                              /*crash_on_failure=*/true);
   g_shared_instance_->InitDefaultFontList();
   return result;
 }
@@ -326,7 +330,8 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 #if !defined(OS_ANDROID)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  return !GetLocaleFilePath(locale).empty();
+  const auto path = GetLocaleFilePath(locale);
+  return !path.empty() && base::PathExists(path);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -370,7 +375,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
   }
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // static
 base::FilePath ResourceBundle::GetLocaleFilePath(
     const std::string& app_locale) {
@@ -378,10 +383,7 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
     return base::FilePath();
 
   base::FilePath locale_file_path;
-
-  base::PathService::Get(ui::DIR_LOCALES, &locale_file_path);
-
-  if (!locale_file_path.empty()) {
+  if (base::PathService::Get(ui::DIR_LOCALES, &locale_file_path)) {
 #if defined(OS_ANDROID)
     if (locale_file_path.value().find("chromium_tests") == std::string::npos) {
       std::string extracted_file_suffix =
@@ -410,20 +412,14 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
         locale_file_path, app_locale);
   }
 
-  // Don't try to load empty values or values that are not absolute paths.
-  if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
-    return base::FilePath();
-
-  if (base::PathExists(locale_file_path))
-    return locale_file_path;
-
-  return base::FilePath();
+  // Don't try to load from paths that are not absolute.
+  return locale_file_path.IsAbsolute() ? locale_file_path : base::FilePath();
 }
 #endif
 
 #if !defined(OS_ANDROID)
-std::string ResourceBundle::LoadLocaleResources(
-    const std::string& pref_locale) {
+std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale,
+                                                bool crash_on_failure) {
   DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   base::FilePath locale_file_path = GetOverriddenPakPath();
@@ -437,10 +433,18 @@ std::string ResourceBundle::LoadLocaleResources(
   }
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->LoadFromPath(locale_file_path)) {
-    LOG(ERROR) << "failed to load locale file: " << locale_file_path;
-    NOTREACHED();
-    return std::string();
+  if (!data_pack->LoadFromPath(locale_file_path) && crash_on_failure) {
+    // https://crbug.com/1076423: Chrome can't start when the locale file cannot
+    // be loaded. Crash early and gather some data.
+#if defined(OS_WIN)
+    const auto last_error = ::GetLastError();
+    base::debug::Alias(&last_error);
+    wchar_t path_copy[MAX_PATH];
+    base::wcslcpy(path_copy, locale_file_path.value().c_str(),
+                  base::size(path_copy));
+    base::debug::Alias(path_copy);
+#endif  // defined(OS_WIN)
+    CHECK(false);
   }
 
   locale_resources_data_ = std::move(data_pack);
@@ -452,18 +456,22 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {
   is_test_resources_ = true;
   DCHECK(!ui::GetSupportedScaleFactors().empty());
-  const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
   // Use the given resource pak for both common and localized resources.
-  std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
-  if (!path.empty() && data_pack->LoadFromPath(path))
-    AddDataPack(std::move(data_pack));
 
-  data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
+  if (!path.empty()) {
+    const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
+    auto data_pack = std::make_unique<DataPack>(scale_factor);
+    CHECK(data_pack->LoadFromPath(path));
+    AddDataPack(std::move(data_pack));
+  }
+
+  auto data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_ = std::move(data_pack);
   } else {
     locale_resources_data_ = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   }
+
   // This is necessary to initialize ICU since we won't be calling
   // LoadLocaleResources in this case.
   l10n_util::GetApplicationLocale(std::string());
@@ -484,12 +492,12 @@ void ResourceBundle::OverrideLocaleStringResource(
   overridden_locale_strings_[resource_id] = string;
 }
 
-const base::FilePath& ResourceBundle::GetOverriddenPakPath() {
+const base::FilePath& ResourceBundle::GetOverriddenPakPath() const {
   return overridden_pak_path_;
 }
 
 base::string16 ResourceBundle::MaybeMangleLocalizedString(
-    const base::string16& str) {
+    const base::string16& str) const {
   if (!mangle_localized_strings_)
     return str;
 
@@ -498,6 +506,12 @@ base::string16 ResourceBundle::MaybeMangleLocalizedString(
   // impossible to parse.
   int ignored;
   if (base::StringToInt(str, &ignored))
+    return str;
+
+  // IDS_WEBSTORE_URL and some other resources are localization "strings" that
+  // are actually URLs, where the "localized" part is actually just the language
+  // code embedded in the URL. Don't mangle any URL.
+  if (GURL(str).is_valid())
     return str;
 
   // For a string S, produce [[ --- S --- ]], where the number of dashes is 1/4
@@ -518,7 +532,7 @@ std::string ResourceBundle::ReloadLocaleResources(
   overridden_locale_strings_.clear();
 
   UnloadLocaleResources();
-  return LoadLocaleResources(pref_locale);
+  return LoadLocaleResources(pref_locale, /*crash_on_failure=*/false);
 }
 
 gfx::ImageSkia* ResourceBundle::GetImageSkiaNamed(int resource_id) {
@@ -645,6 +659,13 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
 }
 
 std::string ResourceBundle::LoadDataResourceString(int resource_id) const {
+  if (delegate_) {
+    base::Optional<std::string> data =
+        delegate_->LoadDataResourceString(resource_id);
+    if (data)
+      return data.value();
+  }
+
   return LoadDataResourceStringForScale(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
@@ -706,7 +727,7 @@ base::string16 ResourceBundle::GetLocalizedString(int resource_id) {
 }
 
 base::RefCountedMemory* ResourceBundle::LoadLocalizedResourceBytes(
-    int resource_id) {
+    int resource_id) const {
   {
     base::AutoLock lock_scope(*locale_resources_data_lock_);
     base::StringPiece data;
@@ -830,7 +851,7 @@ void ResourceBundle::ReloadFonts() {
 }
 
 ScaleFactor ResourceBundle::GetMaxScaleFactor() const {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return max_scale_factor_;
 #else
   return GetSupportedScaleFactors().back();
@@ -883,7 +904,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   // On platforms other than iOS, 100P is always a supported scale factor.
   // For Windows we have a separate case in this function.
   supported_scale_factors.push_back(SCALE_FACTOR_100P);
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #endif
 #endif
@@ -1040,7 +1062,7 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
   return empty_image_;
 }
 
-base::string16 ResourceBundle::GetLocalizedStringImpl(int resource_id) {
+base::string16 ResourceBundle::GetLocalizedStringImpl(int resource_id) const {
   base::string16 string;
   if (delegate_ && delegate_->GetLocalizedString(resource_id, &string))
     return MaybeMangleLocalizedString(string);

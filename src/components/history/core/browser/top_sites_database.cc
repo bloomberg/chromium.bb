@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -564,7 +565,7 @@ bool TopSitesDatabase::RemoveURLNoTransaction(const MostVisitedURL& url) {
 
 sql::Database* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   std::unique_ptr<sql::Database> db(new sql::Database());
-  // Settings copied from ThumbnailDatabase.
+  // Settings copied from FaviconDatabase.
   db->set_histogram_tag("TopSites");
   db->set_error_callback(
       base::BindRepeating(&DatabaseErrorCallback, db.get(), db_name));

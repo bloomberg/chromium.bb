@@ -45,6 +45,9 @@
 <message desc="Example of a word highlight on a light background in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_LIGHT">
   Light background
 </message>
+<message desc="Label for option to fade the background outside of the focus ring to improve focus on what is being spoken." name="IDS_SELECT_TO_SPEAK_OPTIONS_BACKGROUND_SHADING_DESCRIPTION">
+  Shade background content
+</message>
 <message desc="Link to the Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_OPTIONS_TEXT_TO_SPEECH_SETTINGS">
   Personalize Text-to-Speech settings
 </message>
@@ -71,5 +74,8 @@
 </message>
 <message desc="Description of a radio button that is selected" name="IDS_SELECT_TO_SPEAK_RADIOBUTTON_MIXED">
   partially selected
+</message>
+<message desc="Sample text around which will be drawn a Select to Speak visual preview. This should be less than one line long." name="IDS_SELECT_TO_SPEAK_OPTIONS_SAMPLE_TEXT">
+  The quick brown fox jumped over the lazy dog.
 </message>
 </grit-part>

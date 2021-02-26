@@ -23,6 +23,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ვერ ზიარდება</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> ჩანაცვლდა შემდეგით: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">თქვენ უკვე ეძებდით ამას. ისტორიიდან „<ph name="QUERY" />“-ის წაშლის შემთხვევაში, ის ამოიშლება თქვენი ანგარიშიდან თქვენს ყველა მოწყობილობაზე.</translation>
+<translation id="1510238584712386396">გამშვები</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 წუთი და }other{# წუთი და }}</translation>
 <translation id="1643823602425662293">შეტყობინება</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">არჩევა</translation>
 <translation id="1859234291848436338">წერის მიმართულება</translation>
 <translation id="1860796786778352021">შეტყობინების დახურვა</translation>
+<translation id="186476001994626254">Web Smart Paste კონტენტი</translation>
 <translation id="1871244248791675517">ჩასმა</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;ყველას არჩევა</translation>
+<translation id="19085484004813472">ეს ახალი ფუნქციაა</translation>
 <translation id="2006524834898217237">დარწმუნდით, რომ ეს მოწყობილობა დაკავშირებულია ინტერნეტთან.</translation>
 <translation id="208586643495776849">გთხოვთ, ცადოთ ხელახლა</translation>
-<translation id="2090963878406559571">ტელეფონის ნომრის <ph name="ORIGIN" />-დან თქვენს Android ტელეფონზე გასაგზავნად საჭიროა, პარამეტრებიდან ორივე მოწყობილობისთვის <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 დღ}other{# დღ}}</translation>
 <translation id="2148716181193084225">დღეს</translation>
 <translation id="2161656808144014275">ტექსტი</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">კალიბრაცია დასრულდა</translation>
 <translation id="252373100621549798">უცნობი ეკრანი</translation>
 <translation id="2545651323591713692">ჩაჩუმება</translation>
+<translation id="2570734079541893434">პარამეტრების მართვა</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 სთ-ში}other{# სთ-ში}}</translation>
 <translation id="2583543531130364912">განახორციელეთ თქვენი სენსორული ეკრანის კალიბრაცია</translation>
+<translation id="2586657967955657006">გაცვლის ბუფერი</translation>
 <translation id="2666092431469916601">ზედა</translation>
 <translation id="2701330563083355633">გაზიარებულია <ph name="DEVICE_NAME" />-დან</translation>
+<translation id="271033894570825754">ახალი</translation>
 <translation id="2743387203779672305">კოპირება გაცვლის ბუფერში</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">გახსენით საქაღალდე</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 წლის წინ}other{# წლის წინ}}</translation>
+<translation id="2878511608894704031">ყველაფრის წაშლა</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 დღეში}other{# დღეში}}</translation>
 <translation id="2931838996092594335">დაწკაპუნება</translation>
 <translation id="2981684127883932071">ნაჩვენებია შემოთავაზებები</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ფაილი</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">„<ph name="LOOKUP_STRING" />“-ის მოძიება</translation>
+<translation id="3622035490309591977">გაცვლის ბუფერის ისტორია</translation>
 <translation id="364720409959344976">აირჩიეთ საქაღალდე ატვირთვისთვის</translation>
 <translation id="3660179305079774227">ზემოთ მიმართული ისარი</translation>
 <translation id="3670030362669914947">ნომერი</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">დაიწყეთ ლაპარაკი</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> გადატანილია საქაღალდეში <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
+<translation id="4491109536499578614">გამოსახულება</translation>
 <translation id="4588090240171750605">გადაადგილება მარჯვნივ</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, შეფასებულია <ph name="RATING_SCORE" /> ვარსკვლავით</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, აპის რეკომენდაცია</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> პბაიტი</translation>
 <translation id="5266161281976477809">გაშლის სამკუთხედი</translation>
 <translation id="5278860589123563674">გაგზავნა ვერ მოხერხდა</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> საჭიროებს ყურადღების მიქცევას.</translation>
 <translation id="528468243742722775">დასასრული</translation>
-<translation id="5327567770033251652">ჩართეთ სინქრონიზაცია</translation>
 <translation id="5329858601952122676">&amp;წაშლა</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> არის <ph name="IN_PLACE_APP" />-ის ზემოდან, აუშვით საქაღალდის შესაქმნელად.</translation>
 <translation id="5463830097259460683">Emoji-ები და სიმბოლოები</translation>
 <translation id="5476505524087279545">მონიშვნის მოხსნა</translation>
 <translation id="547979256943495781">თარო მდებარეობს მარჯვენა ნაწილში</translation>
+<translation id="5528053674512161860">გვერდის ჩატვირთვა ვერ მოხერხდა, რადგან დეველოპერული UI-მოდული (dev_ui) დაინსტალირებული არ არის</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> სისტემა</translation>
 <translation id="5583640892426849032">უკუშლა</translation>
 <translation id="5613020302032141669">მარცხენა ისარი</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> საჭიროებს ყურადღების მიქცევას.</translation>
 <translation id="5675363643668471212">თაროს ელემენტი</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 წთ}other{# წთ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{აქტიური იყო დღეს}=1{აქტიური იყო 1 დღის წინ}other{აქტიური იყო # დღის წინ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 დღე და }other{# დღე და }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">სურათი.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 წ.-ში}other{# წ.-ში}}</translation>
+<translation id="588258955323874662">სრული ეკრანი</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{დარჩენილია 1 წამი}other{დარჩენილია # წამი}}</translation>
 <translation id="5941711191222866238">ჩაკეცვა</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 საათი}other{# საათი}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="6119846243427417423">გააქტიურება</translation>
 <translation id="6129953537138746214">ინტერვალი</translation>
+<translation id="6134259848159370930">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> ბაიტი/წმ</translation>
 <translation id="6156262341071374681">გაშლა ყველა აპის გამოსაჩენად</translation>
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
+<translation id="6166852626429024716">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში...</translation>
 <translation id="6264365405983206840">ყ&amp;ველას არჩევა</translation>
 <translation id="6351032674660237738">აპების შემოთავაზებები</translation>
 <translation id="6364916375976753737">გადაადგილება მარცხნივ</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google ასისტენტი</translation>
 <translation id="6430678249303439055">ამ აპის ყველა შეტყობინების დაბლოკვა</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 წამის წინ}other{# წამის წინ}}</translation>
+<translation id="6503257047630241175">RTF კონტენტი</translation>
 <translation id="6539092367496845964">წარმოიქმნა შეფერხება. ცადეთ მოგვიანებით.</translation>
 <translation id="654149438358937226">ყველა შეტყობინების დაბლოკვა</translation>
 <translation id="6567071839949112727">დაწკაპუნება წინამორბედზე</translation>
 <translation id="6578407462441924264">უსახელო</translation>
 <translation id="6612467943526193239">კალიბრაციიდან გამოსასვლელად, დააჭირეთ კლავიშს „Esc“.</translation>
 <translation id="6620110761915583480">ფაილის შენახვა</translation>
-<translation id="6656912866303152668">დარწმუნდით, რომ <ph name="TARGET_DEVICE_NAME" />-ისთვის Chrome-ში ჩართულია სინქრონიზაცია, შემდეგ კი ხელახლა ცადეთ გაგზავნა.</translation>
 <translation id="6699343763173986273">შემდეგი მედია ჩანაწერი</translation>
 <translation id="6710213216561001401">წინა</translation>
-<translation id="6779314412797872738">ტელეფონის ნომრის აქედან თქვენს Android ტელეფონზე გასაგზავნად საჭიროა, პარამეტრებიდან ორივე მოწყობილობისთვის <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">საქაღალდის დახურვა</translation>
 <translation id="6808150112686056157">მედიის შეწყვეტა</translation>
 <translation id="6845383723252244143">აირჩიეთ საქაღალდე</translation>
 <translation id="6845533974506654842">დაჭერა</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{დარჩენილია 1 საათი}other{დარჩენილია # საათი}}</translation>
 <translation id="688711909580084195">უსათაურო ვებგვერდი</translation>
+<translation id="6902419395050653510">HTML კონტენტი.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> პბაიტი/წმ</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{დარჩენილია 1 წელი}other{დარჩენილია # წელი}}</translation>
 <translation id="6945221475159498467">არჩევა</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{დარჩენილია 1 წთ}other{დარჩენილია # წთ}}</translation>
 <translation id="7319740667687257810">გამშვები, ნაწილობრივი ხედი</translation>
-<translation id="7352651011704765696">რაღაც არასწორად წარიმართა</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 წუთის წინ}other{# წუთის წინ}}</translation>
 <translation id="7389409599945284130">— <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{დარჩენილია 1 წუთი}other{დარჩენილია # წუთი}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">გადატანილია გვერდზე <ph name="PAGE_NUMBER" />, მწკრივზე <ph name="ROW_NUMBER" />, სვეტზე <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">არ დაიბლოკოს</translation>
 <translation id="7907591526440419938">ფაილის გახსნა</translation>
+<translation id="7952747673138230804">Chrome OS გთავაზობთ ახალ კონტენტს. ხარისხის გაუმჯობესების მიზნით, გაგზავნის სტატისტიკას (მხოლოდ იმ შემთხვევაში, თუ არჩეული გაქვთ გამოყენების მონაცემების გაზიარება). <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1-ზე მეტი წაუკითხავი შეტყობინება}other{#-ზე მეტი წაუკითხავი შეტყობინება}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 წუთში}other{# წუთში}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ფაილი (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">თარო ყოველთვის გამოჩნდება</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> კბ/წ</translation>
+<translation id="8685326675965865247">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში. აპებში ნავიგაციისთვის გამოიყენეთ ისრიანი კლავიშები.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> სხვა</translation>
 <translation id="8730621377337864115">მზადაა</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 სთ}other{# სთ}}</translation>

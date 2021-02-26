@@ -33,7 +33,6 @@ namespace blink {
 class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
                                            private StyleElement {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 
  public:
   HTMLStyleElement(Document&, const CreateElementFlags);
@@ -44,7 +43,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   bool disabled() const;
   void setDisabled(bool);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Always call this asynchronously because this can cause synchronous

@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 
+#import <MaterialComponents/MaterialDialogs.h>
+#import <MaterialComponents/MaterialTypography.h>
+
 #import "base/mac/foundation_util.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -27,8 +29,6 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -119,6 +119,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
+
+    // If the account with a refresh token is invalidated during this operation
+    // then |identity| will be nil. Do not process it in this case.
+    if (!identity) {
+      continue;
+    }
     CollectionViewItem* item = [self accountItem:identity];
     [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];
@@ -200,23 +206,9 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
-
-  PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
-  if (prevSessionInfo.isFirstSessionAfterUpgrade &&
-      [prevSessionInfo.previousSessionVersion hasPrefix:@"77."]) {
-    // In M77, showing the signed-in account view was disabled due to the fact
-    // that the preferences used to compute
-    // authService->HaveAccountsChangedWhileInBackground() were not correctly
-    // updated (see crbug.com/1006717). To avoid user confusion, it is important
-    // to avoid showing the signed-in accounts dialog on the first session after
-    // an update from M77 in order to allow the authentication service to update
-    // its internal preferences.
-    //
-    // TODO(crbug.com/1007990) Remove this code after M81 (revert
-    // https://chromium-review.googlesource.com/c/chromium/src/+/1824259 ).
-    return NO;
-  }
-
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identityService->WaitUntilCacheIsPopulated();
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   return !gSignedInAccountsViewControllerIsShown &&

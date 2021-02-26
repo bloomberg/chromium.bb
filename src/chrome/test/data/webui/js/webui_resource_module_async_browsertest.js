@@ -75,6 +75,18 @@ TEST_F('ParseHtmlSubsetModuleTest', 'All', function() {
   mocha.run();
 });
 
+var ParseHtmlSubsetTrustedTypesTest =
+    class extends WebUIResourceModuleAsyncTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=js/parse_html_subset_trusted_types_test.js';
+  }
+};
+
+TEST_F('ParseHtmlSubsetTrustedTypesTest', 'All', function() {
+  mocha.run();
+});
+
 var UtilModuleTest = class extends WebUIResourceModuleAsyncTest {
   /** @override */
   get browsePreload() {
@@ -105,5 +117,16 @@ var I18nBehaviorModuleTest = class extends WebUIResourceModuleAsyncTest {
 };
 
 TEST_F('I18nBehaviorModuleTest', 'All', function() {
+  mocha.run();
+});
+
+var ColorUtilsModuleTest = class extends WebUIResourceModuleAsyncTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=js/color_utils_test.js';
+  }
+};
+
+TEST_F('ColorUtilsModuleTest', 'All', function() {
   mocha.run();
 });

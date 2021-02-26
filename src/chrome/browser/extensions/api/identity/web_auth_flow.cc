@@ -80,7 +80,7 @@ WebAuthFlow::WebAuthFlow(Delegate* delegate,
 }
 
 WebAuthFlow::~WebAuthFlow() {
-  DCHECK(delegate_ == NULL);
+  DCHECK(!delegate_);
 
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
@@ -134,13 +134,13 @@ void WebAuthFlow::Start() {
 }
 
 void WebAuthFlow::DetachDelegateAndDelete() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 content::StoragePartition* WebAuthFlow::GetGuestPartition() {
-  return content::BrowserContext::GetStoragePartitionForSite(
-      profile_, GetWebViewSiteURL(partition_));
+  return content::BrowserContext::GetStoragePartition(
+      profile_, GetWebViewPartitionConfig(partition_, profile_));
 }
 
 const std::string& WebAuthFlow::GetAppWindowKey() const {
@@ -148,10 +148,21 @@ const std::string& WebAuthFlow::GetAppWindowKey() const {
 }
 
 // static
-GURL WebAuthFlow::GetWebViewSiteURL(Partition partition) {
-  return extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
+content::StoragePartitionConfig WebAuthFlow::GetWebViewPartitionConfig(
+    Partition partition,
+    content::BrowserContext* browser_context) {
+  // This has to mirror the logic in WebViewGuest::CreateWebContents for
+  // creating the correct StoragePartitionConfig.
+  auto result = content::StoragePartitionConfig::Create(
       extension_misc::kIdentityApiUiAppId, GetPartitionName(partition),
       /*in_memory=*/true);
+  result.set_fallback_to_partition_domain_for_blob_urls(
+      browser_context->IsOffTheRecord()
+          ? content::StoragePartitionConfig::FallbackMode::
+                kFallbackPartitionInMemory
+          : content::StoragePartitionConfig::FallbackMode::
+                kFallbackPartitionOnDisk);
+  return result;
 }
 
 void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {
@@ -170,7 +181,7 @@ void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {
 void WebAuthFlow::OnAppWindowRemoved(AppWindow* app_window) {
   if (app_window->window_key() == app_window_key_ &&
       app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {
-    app_window_ = NULL;
+    app_window_ = nullptr;
     registrar_.RemoveAll();
     WebContentsObserver::Observe(nullptr);
 

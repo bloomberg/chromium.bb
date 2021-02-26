@@ -25,7 +25,7 @@ class IconWrapper : public views::View {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
     // Make sure hovering over the icon also hovers the |HoverButton|.
-    set_can_process_events_within_subtree(false);
+    SetCanProcessEventsWithinSubtree(false);
     // Don't cover |icon| when the ink drops are being painted.
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -38,13 +38,13 @@ class IconWrapper : public views::View {
 }  // namespace
 
 WebAuthnHoverButton::WebAuthnHoverButton(
-    views::ButtonListener* listener,
+    PressedCallback callback,
     std::unique_ptr<views::ImageView> icon,
     const base::string16& title_text,
     const base::string16& subtitle_text,
     std::unique_ptr<views::View> secondary_icon,
     bool force_two_line)
-    : HoverButton(listener, base::string16()) {
+    : HoverButton(std::move(callback), base::string16()) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
   views::GridLayout* grid_layout =

@@ -44,8 +44,8 @@ namespace google_breakpad {
 
 template<typename AddressType, typename EntryType>
 bool StaticAddressMap<AddressType, EntryType>::Retrieve(
-    const AddressType &address,
-    const EntryType *&entry, AddressType *entry_address) const {
+    const AddressType& address,
+    const EntryType*& entry, AddressType* entry_address) const {
 
   // upper_bound gives the first element whose key is greater than address,
   // but we want the first element whose key is less than or equal to address.

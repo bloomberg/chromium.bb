@@ -10,37 +10,33 @@
 
 [
   {
-    'project': 'chrome',
-    'bucket': 'ci',
     'name': 'chrome',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
+      'chromeos-arm-generic-beta': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-arm-generic-cfi-thin-lto-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
       },
-      'chromeos-betty-cfi-thin-lto-chrome': {
+      'chromeos-arm-generic-ltc': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
       },
-      'chromeos-betty-chrome': {
+      'chromeos-arm-generic-lts': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
-            },
-          ],
-        },
+      },
+      'chromeos-arm-generic-stable': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
       },
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': {
         'additional_compile_targets': [
@@ -49,32 +45,68 @@
         'test_suites': {
           'gtest_tests': 'chromeos_browser_integration_tests',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
-            },
-          ],
-        },
+        'mixins': [
+          'chromeos-betty',
+        ],
       },
       'chromeos-betty-pi-arc-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'mixins': [
+          'chromeos-betty',
+        ],
         'test_suites': {
           'gtest_tests': 'chromeos_vm_gtests',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
-            },
-          ],
+      },
+      'chromeos-betty-pi-arc-chrome-beta': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+      },
+      'chromeos-betty-pi-arc-chrome-ltc': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+      },
+      'chromeos-betty-pi-arc-chrome-lts': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+      },
+      'chromeos-betty-pi-arc-chrome-stable': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
       'chromeos-eve-chrome': {
@@ -90,7 +122,83 @@
             {
               'os': 'ChromeOS',
               'device_type': 'eve',
-              'pool': 'luci.chrome.cros-dut.template',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-eve-chrome-beta': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-eve-chrome-ltc': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-eve-chrome-lts': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-eve-chrome-stable': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'chrome.tests',
             },
           ],
         },
@@ -108,11 +216,94 @@
             {
               'os': 'ChromeOS',
               'device_type': 'kevin',
-              'pool': 'luci.chrome.cros-dut.template',
+              'pool': 'chrome.tests',
             },
           ],
         },
         'os_type': 'chromeos'
+      },
+      'chromeos-kevin-chrome-beta': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-kevin-chrome-ltc': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-kevin-chrome-lts': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'chromeos-kevin-chrome-stable': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'lacros-chrome': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes',
+        },
       },
       'linux-chrome': {
         'additional_compile_targets': [
@@ -124,6 +315,28 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_sizes',
+        },
+      },
+      'linux-chromeos-beta': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'linux-chromeos-chrome': {
@@ -147,6 +360,72 @@
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
           'isolated_scripts': 'chrome_sizes',
+        },
+      },
+      'linux-chromeos-ltc': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-chromeos-lts': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-chromeos-stable': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'mac-chrome': {
@@ -190,8 +469,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -201,6 +478,16 @@
         ],
       },
       'android-archive-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'android-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'fuchsia-official': {
         'additional_compile_targets': [
           'all',
         ],
@@ -221,6 +508,11 @@
           'scripts': 'public_build_scripts',
         },
       },
+      'linux-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'mac-archive-dbg': {
         'additional_compile_targets': [
           'all',
@@ -235,6 +527,11 @@
           'scripts': 'public_build_scripts',
         },
       },
+      'mac-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'win-archive-dbg': {
         'additional_compile_targets': [
           'all',
@@ -247,6 +544,11 @@
         'test_suites': {
           'scripts': 'public_build_scripts',
         },
+      },
+      'win-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'win32-archive-dbg': {
         'additional_compile_targets': [
@@ -261,11 +563,14 @@
           'scripts': 'public_build_scripts',
         },
       },
+      'win32-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
     }
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.android',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -325,6 +630,7 @@
               'os': 'Android',
             },
           ],
+          'expiration': 10800,
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -336,6 +642,9 @@
         ],
         'test_suites': {
           'gtest_tests': 'webview_bot_all_gtests',
+        },
+        'swarming': {
+          'expiration': 10800,
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -392,7 +701,8 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'LMY48I',
+              # TODO(crbug.com/1091539): Move these over to LMY48M.
+              'device_os': 'LMY48M|LMY48I',
               'device_type': 'hammerhead',
               'os': 'Android',
             },
@@ -503,9 +813,19 @@
         'test_suites': {
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
           'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
+          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
         },
         'os_type': 'android',
+      },
+      'android-bfcache-rel': {
+        'mixins': [
+          'lollipop',
+          'hammerhead',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'bfcache_android_gtests',
+        }
       },
       'android-cronet-arm-dbg': {
         'mixins': [
@@ -529,6 +849,26 @@
         'test_suites': {
           'isolated_scripts': 'cronet_rel_isolated_scripts',
         },
+      },
+      'android-cronet-arm-rel-kitkat-tests': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
+      },
+      'android-cronet-arm-rel-lollipop-tests': {
+        'mixins': [
+          'lollipop',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
       },
       'android-cronet-arm64-dbg': {
         'additional_compile_targets': [
@@ -562,34 +902,24 @@
           'isolated_scripts': 'cronet_rel_isolated_scripts',
         },
       },
+      'android-cronet-arm64-rel-marshmallow-tests': {
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
+      },
       'android-cronet-asan-arm-rel': {
         'mixins': [
-          'hammerhead',
-          'kitkat',
+          'bullhead',
+          'marshmallow',
         ],
         'additional_compile_targets': [
           'cronet_package',
           'cronet_perf_test_apk',
-        ],
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'os_type': 'android',
-      },
-      'android-cronet-kitkat-arm-rel': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'os_type': 'android',
-      },
-      'android-cronet-lollipop-arm-rel': {
-        'mixins': [
-          'lollipop',
-          'hammerhead',
         ],
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
@@ -659,7 +989,9 @@
           'lollipop',
         ],
         'additional_compile_targets': [
+          'android_lint_test',
           'cronet_test_instrumentation_apk',
+          'errorprone_plugin_tests',
           'monochrome_static_initializers',
         ],
         'test_suites': {
@@ -684,6 +1016,46 @@
         },
         'os_type': 'android',
       },
+      'android-marshmallow-x86-rel': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_marshmallow_emulator_gtests',
+        }
+      },
+      'android-marshmallow-x86-rel-non-cq': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_marshmallow_wpr_gtests',
+          'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
+        }
+      },
+      'android-nougat-arm64-rel': {
+        'mixins': [
+          'nougat',
+          'sailfish',
+        ],
+        'additional_compile_targets': [
+          'monochrome_static_initializers',
+          'weblayer_shell',
+        ],
+        'test_suites': {
+          'gtest_tests': 'android_nougat_rel_gtests',
+          'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
+        },
+        'os_type': 'android',
+      },
       'android-pie-arm64-dbg': {
         'mixins': [
           'pie_fleet',
@@ -700,16 +1072,16 @@
           'walleye',
         ],
         'additional_compile_targets': [
-          'chrome_modern_public_bundle__base_libs_and_assets_expectations',
-          'monochrome_public_bundle__base_libs_and_assets_expectations',
+          'validate_expectations',
           'monochrome_static_initializers',
-          'trichrome_chrome_bundle__base_libs_and_assets_expectations',
-          'trichrome_library_apk_libs_and_assets_expectations',
           'weblayer_shell',
         ],
         'test_suites': {
-          'gtest_tests': 'android_pie_rel_non_skia_renderer_gtests',
-          'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
+          #'gtest_tests': 'android_pie_rel_non_skia_renderer_gtests',
+          #'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
+          # TODO(crbug.com/1111436): Remove this if/when additional capacity
+          # has been deployed.
+          'gtest_tests': 'android_pie_rel_reduced_capacity_gtests',
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -717,6 +1089,7 @@
       'android-pie-x86-rel': {
         'mixins': [
           'pie-x86-emulator',
+          'emulator-4-cores',
           'linux-xenial',
           'x86-64',
         ],
@@ -728,37 +1101,9 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.android.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Android WebLayer P FYI (rel)': {
-        'mixins': [
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
-      },
-      'Android WebView P Blink-CORS FYI (rel)': {
-        'mixins': [
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'webview_bot_blink_cors_gtests',
-          'isolated_scripts': 'android_wpt_scripts',
-        },
-        'args': [
-          '--disable-features=OutOfBlinkCors',
-        ],
-        'use_swarming': True,
-        'os_type': 'android',
-      },
       'Android WebView P FYI (rel)': {
         'mixins': [
           'pie_fleet',
@@ -766,36 +1111,60 @@
         ],
         'test_suites': {
           'gtest_tests': 'webview_bot_instrumentation_test_apk_gtest',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
+      'android-inverse-fieldtrials-pie-x86-fyi-rel': {
+        'mixins': [
+          'pie-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'android_pie_rel_gtests',
+        },
+      },
+      'android-pie-arm64-wpt-rel-non-cq': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
           'isolated_scripts': 'android_wpt_scripts',
         },
         'use_swarming': True,
         'os_type': 'android',
       },
-      'android-bfcache-rel': {
+      'android-weblayer-10-x86-rel-tests': {
         'mixins': [
-          'lollipop',
-          'hammerhead',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'bfcache_android_gtests',
-        }
-      },
-      'android-marshmallow-x86-fyi-rel': {
-        'mixins': [
-          'marshmallow-x86-emulator',
+          '10-x86-emulator',
+          'emulator-4-cores',
           'linux-xenial',
           'x86-64',
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_lollipop_marshmallow_gtests',
-          'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
+          'gtest_tests': 'android_weblayer_x86_gtests',
         }
       },
-      'android-weblayer-pie-x86-fyi-rel': {
+      'android-weblayer-marshmallow-x86-rel-tests': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_gtests',
+        }
+      },
+      'android-weblayer-pie-x86-rel-tests': {
         'mixins': [
           'pie-x86-emulator',
+          'emulator-4-cores',
           'linux-xenial',
           'x86-64',
         ],
@@ -807,11 +1176,43 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.chromiumos',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'Linux ChromiumOS Full': {
+        'additional_compile_targets': [
+          'app_list_unittests',
+          'base_unittests',
+          'browser_tests',
+          'chromeos_unittests',
+          'components_unittests',
+          'compositor_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'crypto_unittests',
+          'dbus_unittests',
+          'device_unittests',
+          'gcm_unit_tests',
+          'google_apis_unittests',
+          'gpu_unittests',
+          'interactive_ui_tests',
+          'ipc_tests',
+          'jingle_unittests',
+          'media_unittests',
+          'message_center_unittests',
+          'nacl_loader_unittests',
+          'net_unittests',
+          'ppapi_unittests',
+          'printing_unittests',
+          'remoting_unittests',
+          'sandbox_linux_unittests',
+          'sql_unittests',
+          'ui_base_unittests',
+          'unit_tests',
+          'url_unittests',
+          'views_unittests',
+        ],
+      },
       'chromeos-amd64-generic-asan-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -825,6 +1226,11 @@
       'chromeos-amd64-generic-dbg': {
         'additional_compile_targets': [
           'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-lacros-dbg': {
+        'additional_compile_targets': [
+          'chrome',
         ],
       },
       'chromeos-amd64-generic-rel': {
@@ -885,14 +1291,36 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
       },
+      'linux-lacros-rel': {
+        'additional_compile_targets': [
+          'gn_all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_cq_gtests',
+        },
+      },
+      'linux-lacros-tester-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_gtests',
+        },
+      },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.clang',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'CFI Linux CF': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
       'CFI Linux ToT': {
         'mixins': [
           'linux-xenial',
@@ -909,6 +1337,9 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
       },
       'CrWinAsan(dll)': {
         'mixins': [
@@ -918,6 +1349,9 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
       },
       'ToTAndroid': {
         'mixins': [
@@ -931,9 +1365,14 @@
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
+          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
         },
         'os_type': 'android',
+      },
+      'ToTAndroid (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTAndroid x64': {
         'swarming': {
@@ -947,6 +1386,9 @@
         'test_suites': {
           # TODO(crbug.com/807966): Re-enable tests once there are devices to run them on.
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTAndroid64': {
         'additional_compile_targets': [
@@ -968,6 +1410,9 @@
           ],
         },
         'os_type': 'android',
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTAndroidCFI': {
         'swarming': {
@@ -1091,6 +1536,14 @@
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'ToTMac (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTMacASan': {
         'test_suites': {
@@ -1098,6 +1551,9 @@
         },
         'args': [
           '--test-launcher-print-test-stdio=always',
+        ],
+        'additional_compile_targets': [
+          'all',
         ],
       },
       # Used on an internal builder.
@@ -1109,6 +1565,9 @@
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin': {
         'mixins': ['chrome-tester-service-account'],
@@ -1116,6 +1575,9 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin(dbg)': {
         'test_suites': {
@@ -1123,12 +1585,18 @@
           # Doesn't run win_specific_isolated_scripts because the mini
           # installer isn't hooked up in 32-bit debug builds.
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin(dll)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin64': {
         'mixins': [
@@ -1140,6 +1608,9 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin64(dbg)': {
         'mixins': [
@@ -1150,6 +1621,9 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWin64(dll)': {
         'mixins': [
@@ -1160,18 +1634,32 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'ToTWinASanLibfuzzer': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWinCFI': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWinCFI64': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'ToTWinOfficial': {
         'mixins': [
@@ -1181,6 +1669,9 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'chrome_official_builder',
+        ],
       },
       'ToTWinThinLTO64': {
         'mixins': [
@@ -1190,6 +1681,9 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'chrome_official_builder',
+        ],
       },
       'ToTiOS': {
         'additional_compile_targets': [
@@ -1199,7 +1693,8 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_sim_tests'
@@ -1226,10 +1721,13 @@
           'url_unittests'
         ],
         'mixins': [
+          'ios_restart_device',
+          'limited_capacity_bot',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_device_tests'
@@ -1252,12 +1750,13 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
+        'additional_compile_targets': [
+          'all',
+        ],
       },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.dawn',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -1270,7 +1769,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1281,7 +1780,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1292,7 +1791,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1303,7 +1802,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1316,7 +1815,7 @@
           'mac_retina_amd_gpu_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1327,7 +1826,7 @@
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1338,7 +1837,7 @@
           'mac_retina_amd_gpu_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1349,8 +1848,20 @@
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
+        },
+      },
+      'Dawn Win10 x64 ASAN Release': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable_dimension_set',
+          'win10_1803_intel_hd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_integration_asan_gtests_passthrough',
+          'isolated_scripts': 'gpu_dawn_asan_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Builder' : {},
@@ -1359,10 +1870,10 @@
         'os_type': 'win',
         'browser_config': 'release_x64',
         'mixins': [
-          'win10_intel_hd_630_stable',
+          'win10_1803_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1373,7 +1884,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1381,10 +1892,10 @@
         'os_type': 'win',
         'browser_config': 'release_x64',
         'mixins': [
-          'win10_intel_hd_630_stable',
+          'win10_1803_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1395,7 +1906,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1405,10 +1916,12 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
-          'win10_intel_hd_630_stable',
+          # Some tests flakily fail on Windows 10 1709, but not Windows 10 1803,
+          # so explicitly target 1803 until the fleet is upgraded.
+          'win10_1803_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1419,7 +1932,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1427,10 +1940,10 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
-          'win10_intel_hd_630_stable',
+          'win10_1803_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1441,21 +1954,18 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
     }
   },
   {
-    'project': 'chrome',
-    'bucket': 'ci',
     'name': 'chromium.dev',
     'mixins': ['chromium-tester-dev-service-account'],
     'machines': {
       'android-lollipop-arm-rel-swarming': {
         'mixins': [
-          'chromium-template-pool',
           'lollipop',
           'hammerhead',
         ],
@@ -1468,9 +1978,6 @@
         'os_type': 'android',
       },
       'android-marshmallow-arm64-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
         },
@@ -1489,7 +1996,6 @@
       'linux-rel-swarming': {
         'mixins': [
           'linux-xenial',
-          'chromium-template-pool',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
@@ -1498,24 +2004,22 @@
       'linux-rel-swarming-staging': {
         'mixins': [
           'linux-xenial',
-          'chromium-template-pool',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
       'mac-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
       },
       'win-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_desktop_gtests',
+        },
+      },
+      'win-rel-swarming-staging': {
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
@@ -1523,8 +2027,6 @@
     },
   },
   {
-    'project': 'devtools-frontend',
-    'bucket': 'ci',
     'name': 'chromium.devtools-frontend',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -1532,6 +2034,7 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
@@ -1540,8 +2043,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.fuzz',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -1633,8 +2134,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -1658,50 +2157,20 @@
           'scripts': 'chromium_mac_scripts',
         }
       },
-      'Mac10.15 Tests': {
+      'Mac11.0 Tests': {
         'mixins': [
-            'mac_10.15',
+            'mac_11.0_beta',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests_no_nacl',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
-      'Mojo Android': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-          'hard_timeout': 3600,
-        },
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'mojo_android_gtests',
-        },
-      },
-      'Mojo ChromiumOS': {
-        'test_suites': {
-          'gtest_tests': 'mojo_chromiumos_fyi_gtests',
-        },
-      },
-      'Mojo Linux': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'mojo_linux_gtests',
-        },
-      },
-      'Mojo Windows': {
-        'test_suites': {
-          'gtest_tests': 'mojo_windows_gtests',
-        },
-      },
       'Site Isolation Android': {
+        'additional_compile_targets': [
+          'content_browsertests',
+          'content_unittests',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -1721,7 +2190,6 @@
         ],
         'additional_compile_targets': [
           'vr_common_perftests',
-          'vr_testapp',
         ],
         'test_suites': {
           'gtest_tests': 'vr_platform_specific_chromium_gtests',
@@ -1730,6 +2198,9 @@
       'WebKit Linux composite_after_paint Dummy Builder': {
         'mixins': [
           'linux-xenial',
+        ],
+        'additional_compile_targets': [
+          'blink_tests',
         ],
         'swarming': {
           'hard_timeout': 900,
@@ -1741,6 +2212,9 @@
       'WebKit Linux layout_ng_disabled Builder': {
         'mixins': [
           'linux-xenial',
+        ],
+        'additional_compile_targets': [
+          'blink_tests',
         ],
         'swarming': {
           'hard_timeout': 900,
@@ -1756,16 +2230,6 @@
         },
         'use_swarming': False,
       },
-      'Win10 Tests x64 1803': {
-        'mixins': [
-          'x86-64',
-          'win10-1803',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-        },
-      },
       'android-code-coverage': {
         'mixins': [
           'bullhead',
@@ -1773,7 +2237,7 @@
           'marshmallow',
         ],
         'test_suites': {
-          'gtest_tests': 'android_lollipop_marshmallow_gtests',
+          'gtest_tests': 'android_lollipop_marshmallow_coverage_gtests',
           'junit_tests': 'chromium_junit_tests',
         },
         'os_type': 'android',
@@ -1790,66 +2254,56 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'android-mojo-webview-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
+      'android-paeverywhere-arm-fyi-dbg': {
         'test_suites': {
-          'gtest_tests': 'network_service_android_gtests',
+          'gtest_tests': 'paeverywhere_gtests',
         },
+        'mixins': [
+          'walleye',
+        ],
+      },
+      'android-paeverywhere-arm-fyi-rel': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'walleye',
+        ],
+      },
+      'android-paeverywhere-arm64-fyi-dbg': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'walleye',
+        ],
+      },
+      'android-paeverywhere-arm64-fyi-rel': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'walleye',
+        ],
       },
       'chromeos-amd64-generic-lacros-rel': {
         'additional_compile_targets': [
           'chrome',
         ],
       },
-      'chromeos-amd64-generic-rel-vm-tests': {
+      'fuchsia-fyi-arm64-dbg': {
         'additional_compile_targets': [
-          'chromiumos_preflight',
+          'all',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_system_friendly_gtests_experimental',
+          'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chromium.tests.cros.vm.template',
-            },
-          ],
-          'hard_timeout': 3600,
-          'io_timeout': 3600,
-        },
-      },
-      'chromeos-kevin-rel-hw-tests': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
+        'mixins': [
+          'arm64',
+          'docker',
+          'linux-xenial',
         ],
-        'browser_config': 'cros-chrome',
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              # Special pool is needed for the devices since they also run
-              # swarmbucket builds.
-              'pool': 'chrome-cros-dut.template',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_all_chrome_tast_tests_informational',
-          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
-        },
-        'os_type': 'chromeos',
       },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
@@ -1857,6 +2311,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
         'mixins': [
           'arm64',
@@ -1880,6 +2335,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
       },
       'fuchsia-fyi-x64-rel': {
@@ -1900,20 +2356,47 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'isolated_scripts': 'fuchsia_x64_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
+      'ios-asan': {
+        'mixins': [
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a7209',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_asan_tests',
+        }
+      },
       'ios-simulator-code-coverage': {
+        'mixins': [
+          'ios_output_disabled_tests',
+          'isolate_profile_data',
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a7209',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_code_coverage_tests',
+        },
+      },
+      'ios-simulator-coverage-exp': {
         'mixins': [
           'isolate_profile_data',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146'
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
-          'isolated_scripts': 'ios_code_coverage_tests',
+          'isolated_scripts': 'ios_simulator_tests',
         },
       },
       'ios-simulator-cronet': {
@@ -1921,18 +2404,33 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146'
+          'xcode_11e146',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_cronet_tests',
         }
+      },
+      'ios-simulator-full-configs-coverage-exp': {
+        'mixins': [
+          'isolate_profile_data',
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a7209',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_full_configs_tests',
+        },
       },
       'ios-simulator-multi-window': {
         'mixins': [
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146'
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_multi_window_tests',
@@ -1944,7 +2442,8 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146'
+          'xcode_11e608c',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_webkit_tot_tests',
@@ -1954,15 +2453,6 @@
         'additional_compile_targets': [
           'all',
         ],
-        'mixins': [
-          'mac_10.15',
-          'mac_toolchain',
-          'out_dir_arg',
-          'xcode_11e146',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'ios13_beta_simulator_tests'
-        },
       },
       'ios13-sdk-device': {
         'additional_compile_targets': [
@@ -1973,14 +2463,39 @@
         'additional_compile_targets': [
           'all',
         ],
+      },
+      # ios14-beta-sim compiles with xcode version n-1, but
+      # runs testers with xcode n during an xcode roll.
+      'ios14-beta-simulator': {
+        'additional_compile_targets': [
+          'all',
+        ],
         'mixins': [
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12b5035g',
+          'xctest',
         ],
         'test_suites': {
-          'isolated_scripts': 'ios13_sdk_simulator_tests'
+          'isolated_scripts': 'ios14_beta_simulator_tests'
+        },
+      },
+      # ios14-sdk-sim compiles with xcode version n, and runs
+      # testers with xcode n during an xcode roll.
+      'ios14-sdk-simulator': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12b5035g',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios14_sdk_simulator_tests'
         },
       },
       'linux-annotator-rel': {
@@ -1988,14 +2503,10 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         },
       },
-      'linux-bfcache-rel': {
-        'mixins': [
-          'linux-xenial',
+      'linux-ash-chromium-builder-fyi-rel': {
+        'additional_compile_targets': [
+          'chrome',
         ],
-        'test_suites': {
-          'gtest_tests': 'bfcache_linux_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
       },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
@@ -2006,15 +2517,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'linux-blink-cors-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'blink_cors_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
@@ -2038,6 +2540,14 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'linux-blink-optional-highdpi-rel-dummy': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
+        },
+      },
       'linux-blink-rel-dummy': {
         'mixins': [
           'linux-xenial',
@@ -2056,6 +2566,15 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-chromeos-js-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'js_code_coverage_browser_tests'
         },
       },
       'linux-chromium-tests-staging-builder': {
@@ -2094,6 +2613,35 @@
           'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
+      'linux-inverse-fieldtrials-fyi-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+        },
+      },
+      'linux-lacros-tester-fyi-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_gtests',
+        },
+      },
       'linux-perfetto-rel': {
         'additional_compile_targets': [ 'chrome' ],
         'mixins': [
@@ -2118,11 +2666,35 @@
           'isolated_scripts': 'wpt_web_tests',
         },
       },
+      'linux-wpt-identity-fyi-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_identity',
+        },
+      },
+      'linux-wpt-payments-fyi-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_payments',
+        },
+      },
+      'mac-arm64-rel-tests': {
+        'mixins': [
+            'mac_arm64_apple_dtk_experimental',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests_no_nacl_no_nocompile',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+        },
+      },
       'mac-code-coverage': {
         'mixins': [
           'isolate_profile_data',
           'mac_10.13',
-          'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -2133,17 +2705,11 @@
           'all',
         ],
       },
-      'mac-mojo-rel': {
-        'mixins': [
-          'mac_10.13',
-          'no_gpu',
-        ],
-      },
       'mac-osxbeta-rel': {
         'mixins': [
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.15_beta',
+          'mac_11.0_beta',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',
@@ -2156,32 +2722,6 @@
           'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
-      },
-      'mac10.10-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.10 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.10.5',
-            },
-          ],
-        },
-      },
-      'mac10.11-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.10 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.11.6',
-            },
-          ],
-        },
       },
       'mac10.12-blink-rel-dummy': {
         'test_suites': {
@@ -2214,32 +2754,11 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'mac10.13_retina-blink-rel-dummy': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu.template',
-            },
-          ],
-        },
-      },
       'mac10.14-blink-rel-dummy': {
+        'mixins': [
+          'mac_mini_10.14',
+        ],
         'swarming': {
-          'dimension_sets': [
-            {
-              # This matches the dimensions for "Chromium Mac10.14" in
-              # chromium_fyi.py.
-              'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.14.6',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -2263,19 +2782,68 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'mac11.0-blink-rel-dummy': {
+        'mixins': [
+            'mac_11.0_beta',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+            },
+          ],
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'win-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
         },
       },
-      'win-pixel-tester-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
+      'win-paeverywhere-x64-fyi-dbg': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
         },
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+      },
+      'win-paeverywhere-x64-fyi-rel': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+      },
+      'win-paeverywhere-x86-fyi-dbg': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+      },
+      'win-paeverywhere-x86-fyi-rel': {
+        'test_suites': {
+          'gtest_tests': 'paeverywhere_gtests',
+        },
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+      },
+      'win-pixel-tester-rel': {
+        'mixins': [
+            'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'pixel_browser_tests_gtests',
         }
@@ -2288,12 +2856,10 @@
         'use_swarming': False,
       },
       'win10-blink-rel-dummy': {
+        'mixins': [
+            'win10',
+        ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -2303,6 +2869,14 @@
       'win10-code-coverage': {
         'mixins': [
           'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+      },
+      'win10-inverse-fieldtrials-fyi-rel': {
+        'mixins': [
+          'win10',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -2324,8 +2898,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'goma',
     'name': 'chromium.goma',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -2449,11 +3021,23 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      # ChromeOS (simple chrome) builders.
+      # Note:
+      # chromeos-amd64-generic-rel-goma-* builders mirror targets of
+      # chromeos-amd64-generic-rel.
+      'chromeos-amd64-generic-rel-goma-rbe-staging': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-rel-goma-rbe-tot': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'goma',
     'name': 'chromium.goma.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -2530,6 +3114,33 @@
       'android-archive-dbg-goma-canary': {
         'additional_compile_targets': [
           'all',
+          # This was copied over from recipe config, 'all' was already present
+          'chromedriver_webview_shell_apk',
+        ],
+      },
+      'android-archive-dbg-goma-latest': {
+        'additional_compile_targets': [
+          'chromedriver_webview_shell_apk',
+        ],
+      },
+      'android-archive-dbg-goma-rbe-ats-canary': {
+        'additional_compile_targets': [
+          'chromedriver_webview_shell_apk',
+        ],
+      },
+      'android-archive-dbg-goma-rbe-ats-latest': {
+        'additional_compile_targets': [
+          'chromedriver_webview_shell_apk',
+        ],
+      },
+      'android-archive-dbg-goma-rbe-canary': {
+        'additional_compile_targets': [
+          'chromedriver_webview_shell_apk',
+        ],
+      },
+      'android-archive-dbg-goma-rbe-latest': {
+        'additional_compile_targets': [
+          'chromedriver_webview_shell_apk',
         ],
       },
       # Note:
@@ -2617,6 +3228,11 @@
           'gtest_tests': 'goma_mac_gtests',
         },
       },
+      'mac-archive-rel-goma-latest-localoutputcache': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
       'win32-archive-rel-goma-canary-localoutputcache': {
         'additional_compile_targets': [
           'all',
@@ -2628,8 +3244,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.gpu',
     'forbid_script_tests': True,
     'mixins': [
@@ -2654,11 +3268,6 @@
       'GPU Linux Builder (dbg)': {},
       'GPU Mac Builder': {},
       'GPU Mac Builder (dbg)': {},
-      'GPU Mac Builder Code Coverage': {
-        'mixins': [
-          'code-coverage',
-        ],
-      },
       'Linux Debug (NVIDIA)': {
         'browser_config': 'debug',
         'os_type': 'linux',
@@ -2667,7 +3276,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_linux_telemetry_tests',
         },
       },
       'Linux Release (NVIDIA)': {
@@ -2678,7 +3287,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_linux_telemetry_tests',
         },
       },
       'Mac Debug (Intel)': {
@@ -2696,19 +3305,6 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
-        },
-      },
-      'Mac Release (Intel) Code Coverage': {
-        'browser_config': 'release',
-        'os_type': 'mac',
-        'mixins': [
-          'isolate_profile_data',
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
@@ -2740,19 +3336,6 @@
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
-      'Mac Retina Release (AMD) Code Coverage': {
-        'browser_config': 'release',
-        'os_type': 'mac',
-        'mixins': [
-          'isolate_profile_data',
-          'mac_retina_amd_gpu_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
-        },
-      },
       'Win10 x64 Debug (NVIDIA)': {
         'browser_config': 'debug_x64',
         'os_type': 'win',
@@ -2761,46 +3344,24 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
         },
       },
       'Win10 x64 Release (NVIDIA)': {
         'browser_config': 'release_x64',
         'os_type': 'win',
         'mixins': [
-          'isolate_profile_data',
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
-      },
-      # TODO(crbug.com/1004523) Delete 'Win10 x64 Release (NVIDIA) Code Coverage'
-      # when 'Win10 x64 Release (NVIDIA)' has code coverage enabled by default.
-      'Win10 x64 Release (NVIDIA) Code Coverage': {
-        'browser_config': 'release_x64',
-        'os_type': 'win',
-        'mixins': [
-          'isolate_profile_data',
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
-        },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.gpu.fyi',
     'forbid_script_tests': True,
     'mixins': [
@@ -2819,8 +3380,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
         },
       },
       'ANGLE GPU Linux Release (Intel HD 630)': {
@@ -2831,8 +3392,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Linux Release (NVIDIA)': {
@@ -2843,8 +3404,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Release (Intel)': {
@@ -2888,8 +3449,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Win10 x64 Release (NVIDIA)': {
@@ -2900,8 +3461,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers
@@ -2909,7 +3470,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'android_q',
           'walleye',
         ],
@@ -2918,14 +3479,14 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'android_q',
           'walleye',
         ],
@@ -2936,7 +3497,7 @@
       'Android FYI 64 Perf (Pixel 2)': {
         'os_type': 'android',
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'android_q',
           'walleye',
         ],
@@ -2948,7 +3509,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'android_q',
           'walleye',
         ],
@@ -2957,14 +3518,14 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'android_q',
           'walleye',
         ],
@@ -2978,12 +3539,11 @@
         'skip_merge_script': True,
         'mixins': [
           'foster',
-          'gpu_pool',
-          'nougat',
+          'gpu-swarming-pool',
+          'nougat_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
+          'gtest_tests': 'gpu_fyi_android_shieldtv_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2992,12 +3552,12 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'hammerhead',
           'lollipop_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -3010,7 +3570,7 @@
           'bullhead',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
@@ -3021,12 +3581,12 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
+          'gpu-swarming-pool',
           'lollipop_generic',
           'shamu',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3037,11 +3597,11 @@
         'skip_merge_script': True,
         'mixins': [
           'angler',
-          'gpu_pool',
+          'gpu-swarming-pool',
           'marshmallow_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3052,11 +3612,11 @@
         'skip_merge_script': True,
         'mixins': [
           'flounder',
-          'gpu_pool',
+          'gpu-swarming-pool',
           'marshmallow_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3122,7 +3682,8 @@
           'chromeos-amd64-generic',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_chromeos_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
       'ChromeOS FYI Release (kevin)': {
@@ -3137,7 +3698,8 @@
           'limited_capacity_bot',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_chromeos_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
       'GPU FYI Fuchsia Builder' : {
@@ -3191,13 +3753,15 @@
         'browser_config': 'release',
         'mixins': [
           'limited_capacity_bot',
-          'linux_nvidia_quadro_p400_experimental',
+          'linux_nvidia_gtx_1660_experimental',
         ],
-        # Currently the experimental driver is identical to the stable
-        # driver. If it's upgraded, change these test_suites to be the same as
-        # 'Linux FYI Release (NVIDIA)'.
+        # If the experimental configuration is the same as stable, this should
+        # only be running 'gpu_noop_sleep_telemetry_test'. Otherwise, this
+        # should be running the same tests as 'Linux FYI Release (NVIDIA)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_linux_release_and_dawn_gtests',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
       'Linux FYI GPU TSAN Release': {
@@ -3240,6 +3804,20 @@
           'gpu_telemetry_tests': 'gpu_fyi_linux_release_telemetry_tests',
         },
       },
+      'Linux FYI Release (AMD RX 5500 XT)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        # There are only two bots of this type in the Swarming pool right now,
+        # so we have to increase the default expiration time of 1 hour
+        # to prevent webgl2_conformance_tests' shards from timing out.
+        'mixins': [
+          'limited_capacity_bot',
+          'linux_amd_rx_5500_xt',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
       'Linux FYI Release (Intel HD 630)': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -3249,6 +3827,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_restricted_trace_gold_isolated_scripts',
         },
       },
       'Linux FYI Release (Intel UHD 630)': {
@@ -3260,6 +3839,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_restricted_trace_gold_isolated_scripts',
         },
       },
       'Linux FYI Release (NVIDIA)': {
@@ -3270,8 +3850,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'Linux FYI SkiaRenderer Dawn Release (Intel HD 630)': {
@@ -3347,10 +3927,11 @@
           'limited_capacity_bot',
           'mac_mini_intel_gpu_experimental',
         ],
+        # When the experimental OS version is identical to the stable version,
+        # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
+        # should have the same test_suites as 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {
@@ -3384,25 +3965,25 @@
       'Mac FYI GPU ASAN Release': {
         'os_type': 'mac',
         'browser_config': 'release',
-        'swarming': {
-          'dimension_sets': [
-            # This bot spawns jobs on multiple GPU types.
-            # TODO(kbr): figure out how to use mixins for these.
-            {
-              'gpu': '8086:0a2e',
-              'os': 'Mac-10.14.6',
-            },
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.14.6',
-              'pool': 'chromium.tests.gpu.template',
-            },
-          ],
-        },
+        'mixins': [
+          'mac_mini_intel_gpu_stable_dimension_set',
+          'mac_retina_amd_gpu_stable_dimension_set',
+        ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+        },
+      },
+      'Mac FYI Release (Intel UHD 630)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_mini_intel_uhd_630_gpu_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Release (Intel)': {
@@ -3462,6 +4043,18 @@
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
+      'Mac FYI arm64 Release (Apple DTK)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_arm64_apple_dtk_experimental',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
+        },
+      },
       'Mac FYI dEQP Release AMD': {
         'os_type': 'mac',
         'mixins': [
@@ -3493,7 +4086,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_pro_release_telemetry_tests',
         },
       },
       # BEGIN Fake builder used as mirror targets for Optional GPU tryservers
@@ -3590,8 +4183,6 @@
           'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       # END Fake builder used as mirror targets for Optional GPU tryservers
       'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)': {
@@ -3647,11 +4238,14 @@
           'limited_capacity_bot',
           'win10_nvidia_quadro_p400_experimental',
         ],
-        # Currently the experimental driver is identical to the stable
-        # driver. If it's upgraded, change these test_suites to be the same as
-        # 'Win10 FYI x64 Release (NVIDIA)'.
+        # When the experimental driver is identical to the stable driver, this
+        # should be running the gpu_noop_sleep_telemetry_test. Otherwise, it
+        # should be running the same test_suites as
+        # 'Win10 FYI x64 Release (NVIDIA)'
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'isolated_scripts': 'gpu_fyi_win_nvidia_release_x64_isolated_scripts',
         },
       },
       'Win10 FYI x64 Release (AMD RX 550)': {
@@ -3666,6 +4260,19 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
+        },
+      },
+      'Win10 FYI x64 Release (AMD RX 5500 XT)': {
+        # This bot currently only has two pieces of hardware behind it,
+        # and is being qualified for potential scale-out.
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'limited_capacity_bot',
+          'win10_amd_rx_5500_xt',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Win10 FYI x64 Release (Intel HD 630)': {
@@ -3714,11 +4321,9 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'isolated_scripts': 'gpu_fyi_win_nvidia_release_x64_isolated_scripts',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       'Win10 FYI x64 Release XR Perf (NVIDIA)': {
         'os_type': 'win',
@@ -3741,23 +4346,6 @@
           'gpu_telemetry_tests': 'gpu_skia_renderer_dawn_telemetry_tests',
         },
       },
-      'Win10 FYI x64 SkiaRenderer GL (NVIDIA)': {
-        'browser_config': 'release_x64',
-        'os_type': 'win',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          # UseSkiaRenderer is enabled through fieldtrial_testing_config.json on
-          # Windows. Telemetry tests now run with SkiaRenderer by default, so
-          # this bot runs them with GLRenderer to maintain coverage. Other
-          # content based tests still run with GLRenderer by default so this bot
-          # runs them with SkiaRenderer.
-          'gtest_tests': 'skia_renderer_gtests',
-          'isolated_scripts': 'gpu_blink_web_tests_skia_renderer',
-          'gpu_telemetry_tests': 'gpu_gl_renderer_full_telemetry_tests',
-        },
-      },
      'Win10 FYI x64 dEQP Release (Intel HD 630)': {
         'os_type': 'win',
         'mixins': [
@@ -3775,7 +4363,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
         },
-        'use_multi_dimension_trigger_script': True,
       },
       'Win10 FYI x86 Release (NVIDIA)': {
         'browser_config': 'release',
@@ -3788,8 +4375,6 @@
           'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       # This tryserver doesn't actually exist; it's a separate
       # configuration from the Win AMD bot on this waterfall because we
@@ -3842,7 +4427,6 @@
           'gtest_tests': 'gpu_fyi_win7_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
       },
       'Win7 FYI dEQP Release (AMD)': {
         'os_type': 'win',
@@ -3870,7 +4454,7 @@
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chromium.tests.gpu.template',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       },
@@ -3882,22 +4466,20 @@
           'win7_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
+          'gtest_tests': 'gpu_angle_deqp_win7_nvidia_gtests',
         },
         'use_multi_dimension_trigger_script': True,
         'alternate_swarming_dimensions': [
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chromium.tests.gpu.template',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       }
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.linux',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -3931,6 +4513,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
         },
         'mixins': [
           'arm64',
@@ -3945,7 +4528,6 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
-          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {
@@ -3957,7 +4539,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'isolated_scripts': 'fuchsia_x64_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
@@ -4015,6 +4597,30 @@
          'gtest_tests': 'linux_ozone_x11_tests',
         },
       },
+      'Linux Tester (Ozone Headless)': {
+        'mixins': [
+          'linux-xenial',
+         ],
+        'test_suites': {
+         'gtest_tests': 'linux_ozone_headless_tests',
+        },
+      },
+      'Linux Tester (Ozone Wayland)': {
+        'mixins': [
+          'linux-xenial',
+         ],
+        'test_suites': {
+         'gtest_tests': 'linux_ozone_wayland_tests',
+        },
+      },
+      'Linux Tester (Ozone X11)': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+         'gtest_tests': 'linux_ozone_x11_tests',
+        },
+      },
       'Linux Tests': {
         'mixins': [
           'isolate_profile_data',
@@ -4059,6 +4665,15 @@
           'all',
         ],
       },
+      'linux-bfcache-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'bfcache_linux_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'linux-gcc-rel': {
         'additional_compile_targets': [
           'empty_main',
@@ -4085,8 +4700,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.mac',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4102,24 +4715,6 @@
         'additional_compile_targets': [
           'all',
         ],
-      },
-      'Mac Builder Code Coverage': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'additional_compile_targets': [
-          'pdf_fuzzers',
-        ],
-      },
-      'Mac10.10 Tests': {
-        'mixins': [
-            'mac_10.10',
-            'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests_no_nacl',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
       },
       'Mac10.11 Tests': {
         'mixins': [
@@ -4142,8 +4737,8 @@
       },
       'Mac10.13 Tests': {
         'mixins': [
-            'mac_10.13',
-            'no_gpu',
+            'isolate_profile_data',
+            'mac_10.15',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',
@@ -4153,22 +4748,10 @@
       'Mac10.13 Tests (dbg)': {
         'mixins': [
             'mac_10.13',
-            'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
-        },
-      },
-      'Mac10.13 Tests Code Coverage': {
-        'mixins': [
-            'isolate_profile_data',
-            'mac_10.13',
-            'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Mac10.14 Tests': {
@@ -4181,19 +4764,13 @@
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
-      'WebKit Mac10.13 (retina)': {
+      'Mac10.15 Tests': {
+        'mixins': [
+            'mac_10.15',
+        ],
         'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu.template',
-            }
-          ],
+          'gtest_tests': 'chromium_mac_gtests_no_nacl',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'ios-device': {
@@ -4209,7 +4786,8 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_tests',
@@ -4223,17 +4801,36 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12a7209',
+          'xctest',
         ],
         'test_suites': {
-          'isolated_scripts': 'ios_simulator_full_configs_test'
+          'isolated_scripts': 'ios_simulator_full_configs_tests'
         },
+      },
+      'ios-simulator-noncq': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'mixins': [
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a7209',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_noncq_tests'
+        },
+      },
+      'mac-arm64-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.memory',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4299,7 +4896,9 @@
           'x86-64',
         ],
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
+          # TODO(crbug.com/1071693): Use the main 'linux_chromeos_gtests' suite
+          # when OOBE tests no longer fail on MSAN.
+          'gtest_tests': 'linux_chromeos_gtests_oobe',
         },
         'args': [
           '--test-launcher-print-test-stdio=always',
@@ -4351,6 +4950,9 @@
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
       },
       'WebKit Linux MSAN': {
         'mixins': [
@@ -4365,8 +4967,8 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
-          'hammerhead',
-          'kitkat',
+          'bullhead',
+          'marshmallow',
         ],
         'os_type': 'android',
       },
@@ -4385,78 +4987,191 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
+    'name': 'chromium.mojo',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'Mojo Android': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+          'hard_timeout': 3600,
+        },
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'mojo_android_gtests',
+        },
+      },
+      'Mojo ChromiumOS': {
+        'test_suites': {
+          'gtest_tests': 'mojo_chromiumos_fyi_gtests',
+        },
+      },
+      'Mojo Linux': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'mojo_linux_gtests',
+        },
+      },
+      'Mojo Windows': {
+        'test_suites': {
+          'gtest_tests': 'mojo_windows_gtests',
+        },
+      },
+      'android-mojo-webview-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'network_service_android_gtests',
+        },
+      },
+      'mac-mojo-rel': {
+        'mixins': [
+          'mac_10.13',
+        ],
+      },
+    },
+  },
+  {
     'name': 'chromium.swangle',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'linux-swangle-chromium-x64' : {},
-      'linux-swangle-tot-angle-x64' : {
+      'linux-swangle-chromium-x64' : {
+        'os_type': 'linux',
+        'browser_config': 'release',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_swangle_telemetry_tests',
+        },
+      },
+      'linux-swangle-tot-angle-x64' : {
+        'os_type': 'linux',
+        'mixins': [
+          'gpu-swarming-pool',
+          'isolate_profile_data',
+          'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
       'linux-swangle-tot-angle-x86' : {
+        'os_type': 'linux',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
       'linux-swangle-tot-swiftshader-x64' : {
+        'os_type': 'linux',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
       'linux-swangle-tot-swiftshader-x86' : {
+        'os_type': 'linux',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
       'linux-swangle-x64' : {
+        'os_type': 'linux',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
       'linux-swangle-x86' : {
+        'os_type': 'linux',
         'mixins': [
+          'gpu-swarming-pool',
           'isolate_profile_data',
           'linux-xenial',
+          'no_gpu',
           'timeout_15m',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
         },
       },
-      'mac-swangle-chromium-x64' : {},
-      'win-swangle-chromium-x86' : {},
-      'win-swangle-tot-angle-x64' : {
+      'mac-swangle-chromium-x64' : {
+        'os_type': 'mac',
+        'browser_config': 'release',
         'mixins': [
-          'x86-64',
-          'win10',
+          'mac_retina_amd_gpu_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_swangle_telemetry_tests',
+        },
+      },
+      'win-swangle-chromium-x86' : {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_gce_gpu_pool',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_swangle_telemetry_tests',
+        },
+      },
+      'win-swangle-tot-angle-x64' : {
+        'os_type': 'win',
+        'mixins': [
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4464,9 +5179,9 @@
         },
       },
       'win-swangle-tot-angle-x86' : {
+        'os_type': 'win',
         'mixins': [
-          'x86-64',
-          'win10',
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4474,9 +5189,9 @@
         },
       },
       'win-swangle-tot-swiftshader-x64' : {
+        'os_type': 'win',
         'mixins': [
-          'x86-64',
-          'win10',
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4484,9 +5199,9 @@
         },
       },
       'win-swangle-tot-swiftshader-x86' : {
+        'os_type': 'win',
         'mixins': [
-          'x86-64',
-          'win10',
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4494,9 +5209,9 @@
         },
       },
       'win-swangle-x64' : {
+        'os_type': 'win',
         'mixins': [
-          'x86-64',
-          'win10',
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4504,9 +5219,9 @@
         },
       },
       'win-swangle-x86' : {
+        'os_type': 'win',
         'mixins': [
-          'x86-64',
-          'win10',
+          'win10_gce_gpu_pool',
           'timeout_15m',
         ],
         'test_suites': {
@@ -4516,8 +5231,91 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'webrtc',
+    'name': 'chromium.updater',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'mac10.11-updater-tester-rel': {
+        'mixins': [
+            'mac_10.11',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'mac10.12-updater-tester-rel': {
+        'mixins': [
+            'mac_mini_10.12',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'mac10.13-updater-tester-rel': {
+        'mixins': [
+            'mac_10.13',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'mac10.14-updater-tester-rel': {
+        'mixins': [
+            'mac_10.14',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'mac10.15-updater-tester-rel': {
+        'mixins': [
+            'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+      },
+      'win10-updater-tester-rel': {
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ]
+        },
+      },
+      'win7-updater-tester-rel': {
+        'mixins': [
+          'win7',
+          'x86-64'
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+          'isolated_scripts': 'updater_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ]
+        },
+      },
+    }
+  },
+  {
     'name': 'chromium.webrtc',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4577,8 +5375,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'webrtc.fyi',
     'name': 'chromium.webrtc.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4692,8 +5488,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'ci',
     'name': 'chromium.win',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4722,22 +5516,6 @@
         },
       },
       'Win x64 Builder': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'additional_compile_targets': [
-          'pdf_fuzzers'
-        ],
-        'test_suites': {
-          'scripts': 'check_network_annotations_script',
-        },
-      },
-      # TODO(crbug.com/1004523) Delete 'Win x64 Builder Code Coverage' when
-      # coverage is turned on in 'Win x64 Builder' by default.
-      'Win x64 Builder Code Coverage': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
         'additional_compile_targets': [
           'pdf_fuzzers'
         ],
@@ -4752,6 +5530,7 @@
         'mixins': [
           'x86-64',
           'win10',
+          'isolate_profile_data',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win10_gtests',
@@ -4767,20 +5546,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_dbg_isolated_scripts',
-        },
-      },
-      # TODO(crbug.com/1004523) Delete 'Win10 Tests x64 Code Coverage' when
-      # coverage is turned on in 'Win10 Tests x64' by default.
-      'Win10 Tests x64 Code Coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'x86-64',
-          'win10',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_win10_gtests',
-          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-          'scripts': 'chromium_scripts',
         },
       },
       'Win7 (32) Tests': {
@@ -4808,8 +5573,6 @@
     },
   },
   {
-    'project': 'devtools-frontend',
-    'bucket': 'ci',
     'name': 'client.devtools-frontend.integration',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4817,28 +5580,56 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
-          'gtest_tests': 'layout_ng_gtests',
+          'gtest_tests': 'devtools_gtests',
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
         },
       },
     },
   },
   {
-    'project': 'openscreen',
-    'bucket': 'ci',
     'name': 'client.openscreen.chromium',
-    'machines': {},
+    'machines': {
+      'chromium_linux64_debug': {
+        'additional_compile_targets': [
+          'chrome/browser/media/router',
+          'chrome/browser/media/router:openscreen_unittests',
+          'chrome/browser/media/router:unittests',
+          'components/cast_certificate',
+          'components/cast_certificate:unit_tests',
+          'components/cast_channel',
+          'components/cast_channel:unit_tests',
+          'components/mirroring/browser',
+          'components/mirroring/service:mirroring_service',
+          'components/mirroring:mirroring_tests',
+          'components/mirroring:mirroring_unittests',
+          'components/openscreen_platform',
+        ],
+      },
+      'chromium_mac_debug': {
+        'additional_compile_targets': [
+          'chrome/browser/media/router',
+          'chrome/browser/media/router:openscreen_unittests',
+          'chrome/browser/media/router:unittests',
+          'components/cast_certificate',
+          'components/cast_certificate:unit_tests',
+          'components/cast_channel',
+          'components/cast_channel:unit_tests',
+          'components/mirroring/browser',
+          'components/mirroring/service:mirroring_service',
+          'components/mirroring:mirroring_tests',
+          'components/mirroring:mirroring_unittests',
+          'components/openscreen_platform',
+        ],
+      },
+    },
   },
   {
-    'project': 'v8',
-    'bucket': 'ci',
     'name': 'client.v8.branches',
     'machines': {},
   },
   {
-    'project': 'v8',
-    'bucket': 'ci',
     'name': 'client.v8.chromium',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4846,6 +5637,7 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['all'],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
           'isolated_scripts': 'client_v8_chromium_isolated_scripts',
@@ -4855,16 +5647,18 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['all'],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
           'isolated_scripts': 'client_v8_chromium_isolated_scripts',
         },
       },
+      'Linux V8 API Stability': {
+        'additional_compile_targets': ['all'],
+      },
     },
   },
   {
-    'project': 'v8',
-    'bucket': 'ci',
     'name': 'client.v8.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -4880,6 +5674,13 @@
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests_v8',
         },
       },
+      'Linux ASAN Builder': {
+        'additional_compile_targets': [
+          'extensions_browsertests',
+          'net_unittests',
+          'unit_tests',
+        ],
+      },
       'Linux V8 FYI Release (NVIDIA)': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -4887,7 +5688,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
@@ -4897,7 +5698,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
       'Mac V8 FYI Release (Intel)': {
@@ -4907,18 +5708,22 @@
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_validating_telemetry_tests',
         },
       },
       'V8 Android GN (dbg)': {
         'additional_compile_targets': [
-          'chrome_public_apk'
+          'chrome_public_apk',
+          'blink_tests',
+          'gin_unittests',
+          'net_unittests',
         ],
       },
       'V8 Blink Linux': {
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -4928,6 +5733,7 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -4937,6 +5743,7 @@
         'mixins': [
           'linux-xenial',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -4964,6 +5771,7 @@
             },
           ],
         },
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -4973,6 +5781,7 @@
         'mixins': [
           'win10',
         ],
+        'additional_compile_targets': ['blink_tests'],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
@@ -4981,8 +5790,8 @@
         'additional_compile_targets': [
           'accessibility_unittests',
           'aura_unittests',
+          'blink_tests',
           'browser_tests',
-          'cacheinvalidation_unittests',
           'capture_unittests',
           'cast_unittests',
           'cc_unittests',
@@ -5000,6 +5809,7 @@
           'extensions_unittests',
           'gcm_unit_tests',
           'gfx_unittests',
+          'gin_unittests',
           'google_apis_unittests',
           'gpu_unittests',
           'interactive_ui_tests',
@@ -5011,6 +5821,8 @@
           'nacl_loader_unittests',
           'net_unittests',
           'pdf_unittests',
+          'pdfium_test',
+          'postmortem-metadata',
           'ppapi_unittests',
           'printing_unittests',
           'remoting_unittests',
@@ -5034,14 +5846,67 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'try',
+    'project': 'chrome',
+    'bucket': 'ci',
+    'name': 'internal.chromeos.fyi',
+    'mixins': ['chrome-tester-service-account'],
+    'machines': {
+      'chromeos-betty-arc-r-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_browser_integration_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests',
+              # Due to the nature of the ARC VM inside CrOS, betty-arc-r tests
+              # can't run on GCE images. GCE VM -> CrOS VM -> Android VM proves
+              # to be too many layers of virtualization for the tests. However,
+              # we can use KVM-enable baremetal machines in the lab, which
+              # avoids the GCE VM layer and makes the tests happier. Use the
+              # device hosts in the CrOS device pool for this purpose since
+              # they're all running CrOS tests anyway.
+              'os': 'ChromeOS',
+              # The eve-arc-r and kevin pools aren't very busy, use those. Note
+              # that the devices themselves will be unused for the duration of
+              # these tests.
+              # FIXME: Allocate dedicated baremetal machines for these tests
+              # rather than using CrOS device bots.
+              'device_type': 'eve-arc-r|kevin',
+            },
+          ],
+        },
+      },
+      'chromeos-eve-arc-r-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve-arc-r',
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+    },
+  },
+  {
     'name': 'tryserver.chromium.android',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -5069,8 +5934,6 @@
     },
   },
   {
-    'project': 'chromium',
-    'bucket': 'try',
     'name': 'tryserver.chromium.linux',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -5081,6 +5944,17 @@
         'mixins': [
           'linux-xenial',
         ],
+      },
+      'linux-blink-web-tests-force-accessibility-rel': {
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
       },
       'linux-layout-tests-edit-ng': {
         'additional_compile_targets': [
@@ -5107,8 +5981,6 @@
     },
   },
   {
-    'project': 'devtools-frontend',
-    'bucket': 'try',
     'name': 'tryserver.devtools-frontend',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -5117,6 +5989,7 @@
           'linux-xenial',
         ],
         'test_suites': {
+          'gtest_tests': 'devtools_browser_tests',
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
         },
       },
@@ -5131,8 +6004,6 @@
     }
   },
   {
-    'project': 'webrtc',
-    'bucket': 'try',
     'name': 'tryserver.webrtc',
     'mixins': ['chromium-tester-service-account'],
     'machines': {

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -60,9 +61,17 @@ struct SameSizeAsHarfBuzzRunGlyphData {
   float advance;
 };
 
-static_assert(sizeof(HarfBuzzRunGlyphData) ==
-                  sizeof(SameSizeAsHarfBuzzRunGlyphData),
-              "HarfBuzzRunGlyphData should stay small");
+ASSERT_SIZE(HarfBuzzRunGlyphData, SameSizeAsHarfBuzzRunGlyphData);
+
+struct SameSizeAsShapeResult : public RefCounted<SameSizeAsShapeResult> {
+  float floats[5];
+  Vector<int> vector;
+  void* pointers[2];
+  unsigned integers[2];
+  unsigned bitfields : 32;
+};
+
+ASSERT_SIZE(ShapeResult, SameSizeAsShapeResult);
 
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);
@@ -371,7 +380,8 @@ ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
       num_characters_(num_characters),
       num_glyphs_(0),
       direction_(static_cast<unsigned>(direction)),
-      has_vertical_offsets_(0) {}
+      has_vertical_offsets_(false),
+      is_applied_spacing_(false) {}
 
 ShapeResult::ShapeResult(const Font* font,
                          unsigned start_index,
@@ -387,7 +397,8 @@ ShapeResult::ShapeResult(const ShapeResult& other)
       num_characters_(other.num_characters_),
       num_glyphs_(other.num_glyphs_),
       direction_(other.direction_),
-      has_vertical_offsets_(other.has_vertical_offsets_) {
+      has_vertical_offsets_(other.has_vertical_offsets_),
+      is_applied_spacing_(other.is_applied_spacing_) {
   runs_.ReserveCapacity(other.runs_.size());
   for (const auto& run : other.runs_)
     runs_.push_back(run->Create(*run.get()));
@@ -401,12 +412,6 @@ size_t ShapeResult::ByteSize() const {
     self_byte_size += runs_[i]->ByteSize();
   }
   return self_byte_size;
-}
-
-scoped_refptr<ShapeResult> ShapeResult::MutableUnique() const {
-  if (HasOneRef())
-    return const_cast<ShapeResult*>(this);
-  return ShapeResult::Create(*this);
 }
 
 unsigned ShapeResult::NextSafeToBreakOffset(unsigned index) const {
@@ -745,6 +750,8 @@ unsigned ShapeResult::CountGraphemesInCluster(base::span<const UChar> str,
   uint16_t length = end_index - start_index;
   TextBreakIterator* cursor_pos_iterator =
       CursorMovementIterator(str.subspan(start_index, length));
+  if (!cursor_pos_iterator)
+    return 0;
 
   int cursor_pos = cursor_pos_iterator->current();
   int num_graphemes = -1;
@@ -854,8 +861,13 @@ void ShapeResult::ApplySpacingImpl(
         continue;
       }
 
-      space = spacing.ComputeSpacing(
-          run_start_index + glyph_data.character_index, offset);
+      typename ShapeResultSpacing<TextContainerType>::ComputeSpacingParameters
+          parameters{.index = run_start_index + glyph_data.character_index,
+                     .advance_override = run->font_data_->GetAdvanceOverride(),
+                     .original_advance = glyph_data.advance,
+                     .advance_proportional_override =
+                         run->font_data_->GetAdvanceProportionalOverride()};
+      space = spacing.ComputeSpacing(parameters, offset);
       glyph_data.advance += space;
       total_space_for_run += space;
 
@@ -892,6 +904,10 @@ void ShapeResult::ApplySpacingImpl(
 
 void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
                                int text_start_offset) {
+  // For simplicity, we apply spacing once only. If you want to do multiple
+  // time, please get rid of below |DCHECK()|.
+  DCHECK(!is_applied_spacing_) << this;
+  is_applied_spacing_ = true;
   ApplySpacingImpl(spacing, text_start_offset);
 }
 
@@ -914,14 +930,27 @@ float HarfBuzzPositionToFloat(hb_position_t value) {
 
 // Checks whether it's safe to break without reshaping before the given glyph.
 bool IsSafeToBreakBefore(const hb_glyph_info_t* glyph_infos,
-                         unsigned i) {
-  // Before the first glyph is safe to break.
-  if (!i)
-    return true;
+                         unsigned i,
+                         unsigned num_glyph,
+                         TextDirection direction) {
+  if (direction == TextDirection::kLtr) {
+    // Before the first glyph is safe to break.
+    if (!i)
+      return true;
 
-  // Not at a cluster boundary.
-  if (glyph_infos[i].cluster == glyph_infos[i - 1].cluster)
-    return false;
+    // Not at a cluster boundary.
+    if (glyph_infos[i].cluster == glyph_infos[i - 1].cluster)
+      return false;
+  } else {
+    DCHECK_EQ(direction, TextDirection::kRtl);
+    // Before the first glyph is safe to break.
+    if (i == num_glyph - 1)
+      return true;
+
+    // Not at a cluster boundary.
+    if (glyph_infos[i].cluster == glyph_infos[i + 1].cluster)
+      return false;
+  }
 
   // The HB_GLYPH_FLAG_UNSAFE_TO_BREAK flag is set for all glyphs in a
   // given cluster so we only need to check the last one.
@@ -1077,7 +1106,8 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
     uint16_t character_index = glyph.cluster - start_cluster;
     DCHECK_LE(character_index, HarfBuzzRunGlyphData::kMaxCharacterIndex);
     run->glyph_data_[i] = {glyph.codepoint, character_index,
-                           IsSafeToBreakBefore(glyph_infos + start_glyph, i),
+                           IsSafeToBreakBefore(glyph_infos + start_glyph, i,
+                                               num_glyphs, Direction()),
                            advance};
     run->glyph_data_.SetOffsetAt(i, offset);
 
@@ -1242,6 +1272,8 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
   unsigned target_num_characters_before = target->num_characters_;
 #endif
 
+  target->is_applied_spacing_ |= is_applied_spacing_;
+
   // When |target| is empty, its character indexes are the specified sub range
   // of |this|. Otherwise the character indexes are renumbered to be continuous.
   //
@@ -1259,6 +1291,7 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
       std::min(end_offset, EndIndex()) - std::max(start_offset, StartIndex());
 
   unsigned target_run_size_before = target->runs_.size();
+  bool should_merge = !target->runs_.IsEmpty();
   for (; run_index < runs_.size(); run_index++) {
     const auto& run = runs_[run_index];
     unsigned run_start = run->start_index_;
@@ -1273,7 +1306,14 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
       sub_run->start_index_ += index_diff;
       target->width_ += sub_run->width_;
       target->num_glyphs_ += sub_run->glyph_data_.size();
-      target->runs_.push_back(std::move(sub_run));
+      if (auto merged_run =
+              should_merge ? target->runs_.back()->MergeIfPossible(*sub_run)
+                           : scoped_refptr<RunInfo>()) {
+        target->runs_.back() = std::move(merged_run);
+      } else {
+        target->runs_.push_back(std::move(sub_run));
+      }
+      should_merge = false;
 
       // No need to process runs after the end of the range.
       if ((!Rtl() && end_offset <= run_end) ||
@@ -1872,7 +1912,7 @@ void ShapeResult::ComputeRunInkBounds(const ShapeResult::RunInfo& run,
   auto glyph_offsets = run.glyph_data_.GetOffsets<has_non_zero_glyph_offsets>();
   const SimpleFontData& current_font_data = *run.font_data_;
   unsigned num_glyphs = run.glyph_data_.size();
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   Vector<Glyph, 256> glyphs(num_glyphs);
   unsigned i = 0;
   for (const auto& glyph_data : run.glyph_data_)
@@ -1884,7 +1924,7 @@ void ShapeResult::ComputeRunInkBounds(const ShapeResult::RunInfo& run,
   GlyphBoundsAccumulator bounds(run_advance);
   for (unsigned j = 0; j < num_glyphs; ++j) {
     const HarfBuzzRunGlyphData& glyph_data = run.glyph_data_[j];
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     FloatRect glyph_bounds = current_font_data.BoundsForGlyph(glyph_data.glyph);
 #else
     FloatRect glyph_bounds(bounds_list[j]);

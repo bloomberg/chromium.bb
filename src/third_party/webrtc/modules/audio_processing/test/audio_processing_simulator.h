@@ -24,7 +24,6 @@
 #include "modules/audio_processing/test/api_call_statistics.h"
 #include "modules/audio_processing/test/fake_recording_device.h"
 #include "modules/audio_processing/test/test_utils.h"
-#include "rtc_base/constructor_magic.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/time_utils.h"
 
@@ -150,9 +149,14 @@ struct SimulationSettings {
 // Provides common functionality for performing audioprocessing simulations.
 class AudioProcessingSimulator {
  public:
-
   AudioProcessingSimulator(const SimulationSettings& settings,
+                           rtc::scoped_refptr<AudioProcessing> audio_processing,
                            std::unique_ptr<AudioProcessingBuilder> ap_builder);
+
+  AudioProcessingSimulator() = delete;
+  AudioProcessingSimulator(const AudioProcessingSimulator&) = delete;
+  AudioProcessingSimulator& operator=(const AudioProcessingSimulator&) = delete;
+
   virtual ~AudioProcessingSimulator();
 
   // Processes the data in the input.
@@ -174,8 +178,8 @@ class AudioProcessingSimulator {
  protected:
   void ProcessStream(bool fixed_interface);
   void ProcessReverseStream(bool fixed_interface);
-  void CreateAudioProcessor();
-  void DestroyAudioProcessor();
+  void ConfigureAudioProcessor();
+  void DetachAecDump();
   void SetupBuffersConfigsOutputs(int input_sample_rate_hz,
                                   int output_sample_rate_hz,
                                   int reverse_input_sample_rate_hz,
@@ -186,8 +190,7 @@ class AudioProcessingSimulator {
                                   int reverse_output_num_channels);
 
   const SimulationSettings settings_;
-  std::unique_ptr<AudioProcessing> ap_;
-  std::unique_ptr<AudioProcessingBuilder> ap_builder_;
+  rtc::scoped_refptr<AudioProcessing> ap_;
 
   std::unique_ptr<ChannelBuffer<float>> in_buf_;
   std::unique_ptr<ChannelBuffer<float>> out_buf_;
@@ -223,8 +226,6 @@ class AudioProcessingSimulator {
   FakeRecordingDevice fake_recording_device_;
 
   TaskQueueForTest worker_queue_;
-
-  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(AudioProcessingSimulator);
 };
 
 }  // namespace test

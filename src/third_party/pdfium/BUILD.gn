@@ -43,6 +43,16 @@ config("pdfium_common_config") {
     # Assume UTF-8 by default to avoid code page dependencies.
     cflags += [ "/utf-8" ]
   }
+
+  if (is_clang) {
+    # Override -Wno-c++11-narrowing.
+    cflags += [ "-Wc++11-narrowing" ]
+  }
+
+  if (!is_win && !is_clang) {
+    # Override -Wno-narrowing.
+    cflags += [ "-Wnarrowing" ]
+  }
 }
 
 config("pdfium_implementation_config") {
@@ -86,7 +96,7 @@ config("pdfium_core_config") {
     "//build/config/compiler:noshadowing",
   ]
   defines = []
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     if (current_cpu == "x64") {
       defines += [ "_FX_CPU_=_FX_X64_" ]
       cflags += [ "-fPIC" ]
@@ -122,6 +132,7 @@ source_set("pdfium_public_headers_impl") {
     "public/fpdf_progressive.h",
     "public/fpdf_save.h",
     "public/fpdf_searchex.h",
+    "public/fpdf_signature.h",
     "public/fpdf_structtree.h",
     "public/fpdf_sysfontinfo.h",
     "public/fpdf_text.h",
@@ -180,7 +191,7 @@ component("pdfium") {
   }
 
   if (is_mac) {
-    libs += [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
     ]
@@ -208,7 +219,7 @@ group("pdfium_unittest_deps") {
   testonly = true
   public_deps = [
     "core/fxcrt",
-    "testing:test_support",
+    "testing:unit_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -238,7 +249,6 @@ test("pdfium_unittests") {
     "core/fxcrt:unittests",
     "core/fxge:unittests",
     "fpdfsdk:unittests",
-    "testing:test_support",
     "testing:unit_test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -255,19 +265,19 @@ test("pdfium_unittests") {
       "fxjs:unittests",
       "//v8",
     ]
-  }
 
-  if (pdf_enable_xfa) {
-    deps += [
-      "core/fxcrt/css:unittests",
-      "fxbarcode:unittests",
-      "xfa/fde:unittests",
-      "xfa/fgas:unittests",
-      "xfa/fgas/layout:unittests",
-      "xfa/fxfa:unittests",
-      "xfa/fxfa/fm2js:unittests",
-      "xfa/fxfa/parser:unittests",
-    ]
+    if (pdf_enable_xfa) {
+      deps += [
+        "core/fxcrt/css:unittests",
+        "fxbarcode:unittests",
+        "xfa/fde:unittests",
+        "xfa/fgas/crt:unittests",
+        "xfa/fgas/layout:unittests",
+        "xfa/fxfa:unittests",
+        "xfa/fxfa/fm2js:unittests",
+        "xfa/fxfa/parser:unittests",
+      ]
+    }
   }
 }
 
@@ -277,7 +287,6 @@ group("pdfium_embeddertest_deps") {
     ":pdfium_public_headers",
     "core/fxcrt",
     "testing:embedder_test_support",
-    "testing:test_support",
     "third_party:pdfium_base_test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -294,6 +303,7 @@ test("pdfium_embeddertests") {
   testonly = true
   sources = [ "testing/embedder_test_main.cpp" ]
   deps = [
+    ":pdfium_embeddertest_deps",
     "core/fpdfapi/edit:embeddertests",
     "core/fpdfapi/parser:embeddertests",
     "core/fpdfapi/render:embeddertests",
@@ -302,7 +312,6 @@ test("pdfium_embeddertests") {
     "core/fxge:embeddertests",
     "fpdfsdk:embeddertests",
     "fpdfsdk/pwl:embeddertests",
-    "testing:test_support",
     "testing/image_diff",
     "//testing/gmock",
     "//testing/gtest",
@@ -338,6 +347,7 @@ executable("pdfium_diff") {
   sources = [ "testing/image_diff/image_diff.cpp" ]
   deps = [
     "core/fxcrt",
+    "testing:path_service",
     "testing/image_diff",
     "//build/win:default_exe_manifest",
   ]

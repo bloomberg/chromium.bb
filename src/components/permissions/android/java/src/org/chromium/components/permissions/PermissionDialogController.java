@@ -5,16 +5,13 @@
 package org.chromium.components.permissions;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.provider.Settings;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -144,12 +141,14 @@ public class PermissionDialogController
         assert mState == State.NOT_SHOWING;
 
         mDialogDelegate = mRequestQueue.remove(0);
-        Activity activity = mDialogDelegate.getWindow().getActivity().get();
+        // Use the context to access resources instead of the activity because the activity may not
+        // have the correct resources in some cases (e.g. WebLayer).
+        Context context = mDialogDelegate.getWindow().getContext().get();
 
         // It's possible for the activity to be null if we reach here just after the user
         // backgrounds the browser and cleanup has happened. In that case, we can't show a prompt,
         // so act as though the user dismissed it.
-        if (activity == null) {
+        if (ContextUtils.activityFromContext(context) == null) {
             // TODO(timloh): This probably doesn't work, as this happens synchronously when creating
             // the PermissionPromptAndroid, so the PermissionRequestManager won't be ready yet.
             mDialogDelegate.onDismiss();
@@ -167,29 +166,25 @@ public class PermissionDialogController
         mModalDialogManager = mDialogDelegate.getWindow().getModalDialogManager();
 
         mDialogModel = PermissionDialogModel.getModel(
-                this, mDialogDelegate, () -> showFilteredTouchEventDialog(activity));
+                this, mDialogDelegate, () -> showFilteredTouchEventDialog(context));
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
         mState = State.PROMPT_OPEN;
     }
 
     /**
      * Displays the dialog explaining that Chrome has detected an overlay. Offers the user to close
-     * overlay window or revoke "Draw on top" permission in Android settings.
+     * the overlay window and try again.
      */
     private void showFilteredTouchEventDialog(Context context) {
-        // Settings.ACTION_MANAGE_OVERLAY_PERMISSION is only supported on M+ therefore we shouldn't
-        // display this dialog on L. The function won't be called on L anyway because touch
-        // filtering was introduced in M.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
-
         // Don't show another dialog if one is already displayed.
         if (mOverlayDetectedDialogModel != null) return;
 
         ModalDialogProperties.Controller overlayDetectedDialogController =
                 new SimpleModalDialogController(mModalDialogManager, (Integer dismissalCause) -> {
-                    if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
-                        context.startActivity(
-                                new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+                    if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED
+                            && mDialogModel != null) {
+                        mModalDialogManager.dismissDialog(
+                                mDialogModel, DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
                     }
                     mOverlayDetectedDialogModel = null;
                 });
@@ -202,7 +197,7 @@ public class PermissionDialogController
                         .with(ModalDialogProperties.MESSAGE, context.getResources(),
                                 R.string.overlay_detected_dialog_message)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
-                                R.string.open_settings)
+                                R.string.cancel)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
                                 R.string.try_again)
                         .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)

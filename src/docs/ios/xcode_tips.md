@@ -5,8 +5,9 @@ to develop Chrome for iOS.
 
 ## Background
 
-### .xcworkspace and .xcproject
+### .xcodeproj
 
+*   Open all.xcodeproj only.
 *   Generated from BUILD.gn files.
 *   Don't make changes to it as it is a "fake" representation of the project
     -   changes will not be committed
@@ -30,7 +31,7 @@ to develop Chrome for iOS.
 
 ## Xcode
 
-*   Project location is `src/out/build/`, open `all.workspace`
+*   Project location is `src/out/build/`, open `all.xcodeproj`
 *   Choose "Automatically generate targets" after a `gclient sync`
 *   Start typing while dropdowns are presented to filter the displayed items
 

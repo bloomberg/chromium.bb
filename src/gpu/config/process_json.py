@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate data struct from GPU blacklist and driver bug workarounds json."""
+"""Generate data struct from GPU blocklist and driver bug workarounds json."""
 
 import json
 import os
@@ -56,6 +56,16 @@ Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
 Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
 '''
 
+NVIDIA_DRIVER_VERSION_SCHEMA = '''
+The version format used by Nvidia is ABC.DE, where A-E are any digit.  When
+queried by Chrome, it will detect XX.XX.XXXA.BCDE, where 'X' is any digit and
+can be ignored.  Chrome will re-format this to ABC.DE, and compare to the
+version listed here.
+
+So, Chrome might detect 26.21.0014.4575, which would be given here as 445.75 in
+the Nvidia version schema.  The 26.21.001 is ignored.
+'''
+
 
 def check_intel_driver_version(version):
   ver_list = version.split('.')
@@ -68,6 +78,20 @@ def check_intel_driver_version(version):
     return False
   return True
 
+def check_nvidia_driver_version(version):
+  ver_list = version.split('.')
+  # Allow "456" to match "456.*", so allow a single-entry list.
+  if len(ver_list) == 0 or len(ver_list) > 2:
+    return False;
+  elif len(ver_list) == 2 and len(ver_list[1]) != 2:
+    return False
+  # Must start with three digits, whether it's "456.*" or "456.78".
+  if len(ver_list[0]) != 3:
+    return False
+  for ver in ver_list:
+    if not ver.isdigit():
+      return False
+  return True
 
 def load_software_rendering_list_features(feature_type_filename):
   header_file = open(feature_type_filename, 'r')
@@ -236,6 +260,7 @@ def write_version(version_info, name_tag, data_file):
   schema_map = {
     'common': 'Common',
     'intel_driver': 'IntelDriver',
+    'nvidia_driver': 'NvidiaDriver',
     '': 'Common',
   }
   assert schema in schema_map
@@ -299,8 +324,47 @@ def write_string_value(string, name_tag, data_file):
 def write_boolean_value(value, name_tag, data_file):
   data_file.write('%s,  // %s\n' % (str(value).lower(), name_tag))
 
+
 def write_integer_value(value, name_tag, data_file):
   data_file.write('%s,  // %s\n' % (str(value), name_tag))
+
+
+def write_device_list(entry_id, device_id, device_revision, is_exception,
+                      exception_id, unique_symbol_id, data_file,
+                      data_helper_file):
+  if device_id:
+    # It's one of the three ways to specify devices:
+    #  1) only specify device IDs
+    #  2) specify one device ID, associated with multiple revisions
+    #  3) specify k device IDs associated with k device revisions.
+    device_size = len(device_id)
+    if device_size == 1 and device_revision and len(device_revision) > 1:
+      device_size = len(device_revision)
+      for ii in range(device_size - 1):
+        device_id.append(device_id[0])
+    if device_revision is None:
+      device_revision = []
+      for ii in range(device_size):
+        device_revision.append('0x0')
+    assert len(device_id) == len(device_revision)
+    var_name = 'kDevicesFor%sEntry%d' % (unique_symbol_id, entry_id)
+    if is_exception:
+      var_name += 'Exception' + str(exception_id)
+    # define the list
+    data_helper_file.write('const GpuControlList::Device %s[%d] = {\n' %
+                           (var_name, len(device_id)))
+    for ii in range(device_size):
+      data_helper_file.write('{%s, %s},\n' %
+                             (device_id[ii], device_revision[ii]))
+    data_helper_file.write('};\n\n')
+    # reference the list
+    data_file.write('base::size(%s),  // Devices size\n' % var_name)
+    data_file.write('%s,  // Devices\n' % var_name)
+  else:
+    assert not device_revision
+    data_file.write('0,  // Devices size\n')
+    data_file.write('nullptr,  // Devices\n')
+
 
 def write_machine_model_info(entry_id, is_exception, exception_id,
                              machine_model_name, machine_model_version,
@@ -348,55 +412,56 @@ def write_os_type(os_type, data_file):
 
 
 def write_multi_gpu_category(multi_gpu_category, data_file):
-  map = {
+  suffix_for_category = {
     'primary': 'Primary',
     'secondary': 'Secondary',
     'active': 'Active',
     'any': 'Any',
     '': 'None',
   }
-  assert multi_gpu_category in map
+  assert multi_gpu_category in suffix_for_category
   data_file.write(
     'GpuControlList::kMultiGpuCategory%s,  // multi_gpu_category\n' %
-    map[multi_gpu_category])
+    suffix_for_category[multi_gpu_category])
 
 
 def write_multi_gpu_style(multi_gpu_style, data_file):
-  map = {
+  suffix_for_style = {
     'optimus': 'Optimus',
     'amd_switchable': 'AMDSwitchable',
     'amd_switchable_discrete': 'AMDSwitchableDiscrete',
     'amd_switchable_integrated': 'AMDSwitchableIntegrated',
     '': 'None',
   }
-  assert multi_gpu_style in map
+  assert multi_gpu_style in suffix_for_style
   data_file.write(
     'GpuControlList::kMultiGpuStyle%s,  // multi_gpu_style\n' %
-    map[multi_gpu_style])
+    suffix_for_style[multi_gpu_style])
 
 
 def write_gl_type(gl_type, data_file):
-  map = {
+  suffix_for_type = {
     'gl': 'GL',
     'gles': 'GLES',
     'angle': 'ANGLE',
     '': 'None',
   }
-  assert gl_type in map
-  data_file.write('GpuControlList::kGLType%s,  // gl_type\n' % map[gl_type])
+  assert gl_type in suffix_for_type
+  data_file.write('GpuControlList::kGLType%s,  // gl_type\n' %
+                  suffix_for_type[gl_type])
 
 
 def write_supported_or_not(feature_value, feature_name, data_file):
   if feature_value is None:
     feature_value = 'dont_care'
-  map = {
+  suffix_for_value = {
     'supported': 'Supported',
     'unsupported': 'Unsupported',
     'dont_care': 'DontCare',
   }
-  assert feature_value in map
+  assert feature_value in suffix_for_value
   data_file.write('GpuControlList::k%s,  // %s\n' %
-                  (map[feature_value], feature_name))
+                  (suffix_for_value[feature_value], feature_name))
 
 
 def write_conditions(entry_id, is_exception, exception_id, entry,
@@ -406,6 +471,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   os_version = None
   vendor_id = 0
   device_id = None
+  device_revision = None
   multi_gpu_category = ''
   multi_gpu_style = ''
   intel_gpu_series_list = None
@@ -467,6 +533,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       vendor_id = int(entry[key], 0)
     elif key == 'device_id':
       device_id = entry[key]
+    elif key == 'device_revision':
+      device_revision = entry[key]
     elif key == 'multi_gpu_category':
       multi_gpu_category = entry[key]
     elif key == 'multi_gpu_style':
@@ -523,15 +591,14 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_version(os_version, 'os_version', data_file)
   data_file.write(format(vendor_id, '#04x'))
   data_file.write(',  // vendor_id\n')
-  write_number_list(entry_id, 'uint32_t', 'DeviceIDs', device_id, is_exception,
+  write_device_list(entry_id, device_id, device_revision, is_exception,
                     exception_id, unique_symbol_id, data_file,
                     data_helper_file)
   write_multi_gpu_category(multi_gpu_category, data_file)
   write_multi_gpu_style(multi_gpu_style, data_file)
   # group driver info
   if driver_vendor != '' or driver_version != None:
-    if (driver_version and driver_version.has_key('schema') and
-        driver_version['schema'] == 'intel_driver'):
+    if driver_version and driver_version.get('schema') == 'intel_driver':
       assert os_type == 'win', 'Intel driver schema is only for Windows'
       is_intel = (format(vendor_id, '#04x') == '0x8086' or
                   intel_gpu_series_list or
@@ -543,6 +610,16 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
         valid_version = (valid_version and
                          check_intel_driver_version(driver_version['value2']))
       assert valid_version, INTEL_DRIVER_VERSION_SCHEMA
+
+    if driver_version and driver_version.get('schema') == 'nvidia_driver':
+      assert os_type == 'win', 'Nvidia driver schema is only for Windows'
+      is_nvidia = (format(vendor_id, '#04x') == '0x10de')
+      assert is_nvidia, 'Nvidia driver schema is only for Nvidia GPUs'
+      valid_version = check_nvidia_driver_version(driver_version['value'])
+      if driver_version.has_key('value2'):
+        valid_version = (valid_version and
+                         check_nvidia_driver_version(driver_version['value2']))
+      assert valid_version, NVIDIA_DRIVER_VERSION_SCHEMA
 
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
                       driver_version, unique_symbol_id,
@@ -739,13 +816,13 @@ def format_files(generated_files):
     call([formatter, "-i", "-style=chromium", filename])
 
 
-def write_header_file_guard(file, filename, path, begin):
+def write_header_file_guard(out_file, filename, path, begin):
   token = (path.upper().replace('/', '_') + '_' +
            filename.upper().replace('.', '_') + '_')
   if begin:
-    file.write('#ifndef %s\n#define %s\n\n' % (token, token))
+    out_file.write('#ifndef %s\n#define %s\n\n' % (token, token))
   else:
-    file.write('\n#endif  // %s\n' % token)
+    out_file.write('\n#endif  // %s\n' % token)
 
 
 def process_json_file(json_filepath, list_tag,

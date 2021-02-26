@@ -41,7 +41,7 @@ class ReportGenerateTest(testing_common.TestCase):
     self.SetUpApp([
         ('/api/report/generate', report_generate.ReportGenerateHandler),
     ])
-    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_ALLOWLIST[0])
 
   def _Post(self, **params):
     return json.loads(self.Post('/api/report/generate', params).body)
@@ -63,8 +63,10 @@ class ReportGenerateTest(testing_common.TestCase):
 
   def testAnonymous_GetReport(self):
     self.SetCurrentUserOAuth(None)
-    self.Post('/api/report/generate', dict(
-        revisions='latest', id=577335040), status=404)
+    self.Post(
+        '/api/report/generate',
+        dict(revisions='latest', id=577335040),
+        status=404)
     response = self._Post(revisions='latest', id=421533545)
     self.assertEqual({'url': 'external'}, response['report'])
     self.assertEqual(421533545, response['id'])

@@ -5,6 +5,7 @@
 #include "components/sync/protocol/proto_enum_conversions.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 
@@ -40,6 +41,23 @@ const char* ProtoEnumToString(sync_pb::AppSpecifics::LaunchType launch_type) {
     ENUM_CASE(sync_pb::AppSpecifics, REGULAR);
     ENUM_CASE(sync_pb::AppSpecifics, FULLSCREEN);
     ENUM_CASE(sync_pb::AppSpecifics, WINDOW);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::AutofillProfileSpecifics::VerificationStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::AutofillProfileSpecifics, VerificationStatus,
+                     VERIFICATION_STATUS_UNSPECIFIED, SERVER_PARSED);
+  switch (status) {
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics,
+              VERIFICATION_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, PARSED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, FORMATTED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, OBSERVED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, USER_VERIFIED);
+    ENUM_CASE(sync_pb::AutofillProfileSpecifics, SERVER_PARSED);
   }
   NOTREACHED();
   return "";
@@ -265,7 +283,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_ACCEPTED);
     ENUM_CASE(sync_pb::SyncEnums, INITIALIZATION_COMPLETE);
     ENUM_CASE(sync_pb::SyncEnums, STOP_SYNCING_PERMANENTLY);
-    ENUM_CASE(sync_pb::SyncEnums, ENCRYPTION_COMPLETE);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_ENCRYPTION_COMPLETE);
     ENUM_CASE(sync_pb::SyncEnums, ACTIONABLE_ERROR);
     ENUM_CASE(sync_pb::SyncEnums, ENCRYPTED_TYPES_CHANGED);
     ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_TYPE_CHANGED);
@@ -429,11 +447,12 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::FlocIdComputed::EventTrigger trigger) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::FlocIdComputed, EventTrigger,
-                     UNSPECIFIED, REFRESHED);
+                     UNSPECIFIED, HISTORY_DELETE);
   switch (trigger) {
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, UNSPECIFIED);
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, NEW);
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, REFRESHED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, HISTORY_DELETE);
   }
   NOTREACHED();
   return "";
@@ -494,9 +513,10 @@ const char* ProtoEnumToString(
 
 const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, UserDisplayMode, BROWSER,
+  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, UserDisplayMode, UNSPECIFIED,
                      STANDALONE);
   switch (user_display_mode) {
+    ENUM_CASE(sync_pb::WebAppSpecifics, UNSPECIFIED);
     ENUM_CASE(sync_pb::WebAppSpecifics, BROWSER);
     ENUM_CASE(sync_pb::WebAppSpecifics, STANDALONE);
   }

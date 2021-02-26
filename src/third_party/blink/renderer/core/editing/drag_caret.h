@@ -42,14 +42,11 @@ struct PaintInvalidatorContext;
 
 class DragCaret final : public GarbageCollected<DragCaret>,
                         public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
-
  public:
   DragCaret();
   virtual ~DragCaret();
 
   // Paint invalidation methods delegating to CaretDisplayItemClient.
-  void ClearPreviousVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
@@ -66,7 +63,7 @@ class DragCaret final : public GarbageCollected<DragCaret>,
   void SetCaretPosition(const PositionWithAffinity&);
   void Clear() { SetCaretPosition(PositionWithAffinity()); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implementations of |SynchronousMutationObserver|

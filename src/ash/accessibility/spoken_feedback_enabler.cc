@@ -6,6 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/events/base_event_utils.h"
 
 namespace ash {
@@ -32,8 +33,7 @@ SpokenFeedbackEnabler::~SpokenFeedbackEnabler() {}
 
 void SpokenFeedbackEnabler::OnTimer() {
   base::TimeTicks now = ui::EventTimeForNow();
-  double tick_count_f = (now - start_time_) / kTimerDelay;
-  int tick_count = roundf(tick_count_f);
+  int tick_count = base::ClampRound((now - start_time_) / kTimerDelay);
 
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
@@ -42,8 +42,8 @@ void SpokenFeedbackEnabler::OnTimer() {
       tick_count < kTimerTicksToToggleSpokenFeedback) {
     controller->PlaySpokenFeedbackToggleCountdown(tick_count);
   } else if (tick_count == kTimerTicksToToggleSpokenFeedback) {
-    controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
-                                         A11Y_NOTIFICATION_SHOW);
+    controller->SetSpokenFeedbackEnabled(
+        !controller->spoken_feedback().enabled(), A11Y_NOTIFICATION_SHOW);
     timer_.Stop();
   }
 }

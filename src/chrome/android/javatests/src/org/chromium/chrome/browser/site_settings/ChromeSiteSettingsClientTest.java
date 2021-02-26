@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.site_settings;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,11 +18,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -32,8 +34,8 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ChromeSiteSettingsClientTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    ChromeSiteSettingsClient mSiteSettingsClient;
 
     @Before
     public void setUp() throws Exception {
@@ -45,13 +47,17 @@ public class ChromeSiteSettingsClientTest {
     @Test
     @SmallTest
     public void testFallbackFaviconLoads() throws TimeoutException {
-        ChromeSiteSettingsClient client =
-                new ChromeSiteSettingsClient(mActivityTestRule.getActivity());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSiteSettingsClient = new ChromeSiteSettingsClient(
+                    mActivityTestRule.getActivity(), Profile.getLastUsedRegularProfile());
+        });
 
+        // Hold the Bitmap in an array because it gets assigned to in a closure, and all captured
+        // variables have to be effectively final.
         Bitmap[] holder = new Bitmap[1];
         CallbackHelper helper = new CallbackHelper();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            client.getFaviconImageForURL("url.with.no.favicon", favicon -> {
+            mSiteSettingsClient.getFaviconImageForURL("url.with.no.favicon", favicon -> {
                 holder[0] = favicon;
                 helper.notifyCalled();
             });

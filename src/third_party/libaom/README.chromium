@@ -2,9 +2,9 @@ Name: Alliance for Open Media Video Codec
 Short Name: libaom
 URL: https://aomedia.googlesource.com/aom/
 Version: 0
-Date: Friday May 01 2020
+Date: Monday November 02 2020
 Branch: master
-Commit: c810066815b80dd1ac8ade15170ce962d6646368
+Commit: 87c414ed32b50cc41ec54db9653f61b556450d41
 License: BSD
 License File: source/libaom/LICENSE
 Security Critical: yes

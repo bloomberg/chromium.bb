@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/smb_client/discovery/host_locator.h"
 

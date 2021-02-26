@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
@@ -24,13 +26,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -43,7 +45,7 @@ class FtpBrowserTest : public InProcessBrowserTest {
   explicit FtpBrowserTest(FtpState ftp_state = FtpState::ENABLED)
       : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
                     base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp"))) {
-    scoped_feature_list_.InitWithFeatureState(features::kFtpProtocol,
+    scoped_feature_list_.InitWithFeatureState(blink::features::kFtpProtocol,
                                               ftp_state == FtpState::ENABLED);
   }
 
@@ -67,10 +69,8 @@ void WaitForTitle(content::WebContents* contents, const char* expected_title) {
 class FakeDefaultProtocolClientWorker
     : public shell_integration::DefaultProtocolClientWorker {
  public:
-  FakeDefaultProtocolClientWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol)
-      : DefaultProtocolClientWorker(callback, protocol) {}
+  explicit FakeDefaultProtocolClientWorker(const std::string& protocol)
+      : DefaultProtocolClientWorker(protocol) {}
 
  private:
   ~FakeDefaultProtocolClientWorker() override = default;
@@ -78,9 +78,9 @@ class FakeDefaultProtocolClientWorker
     return shell_integration::DefaultWebClientState::NOT_DEFAULT;
   }
 
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     on_finished_callback);
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_finished_callback));
   }
 
   DISALLOW_COPY_AND_ASSIGN(FakeDefaultProtocolClientWorker);
@@ -98,11 +98,8 @@ class FakeProtocolHandlerDelegate : public ExternalProtocolHandler::Delegate {
 
  private:
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol) override {
-    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(callback,
-                                                                 protocol);
+  CreateShellWorker(const std::string& protocol) override {
+    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(protocol);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
@@ -253,6 +250,6 @@ IN_PROC_BROWSER_TEST_F(FtpDisabledFeatureBrowserTest, ExternalProtocolHandler) {
 IN_PROC_BROWSER_TEST_F(FtpEnabledBySwitchBrowserTest, SwitchWorks) {
   ASSERT_TRUE(
       base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kFtpProtocol.name,
+          blink::features::kFtpProtocol.name,
           base::FeatureList::OVERRIDE_ENABLE_FEATURE));
 }

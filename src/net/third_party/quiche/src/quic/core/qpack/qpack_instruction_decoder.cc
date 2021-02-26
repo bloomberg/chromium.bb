@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -33,7 +33,7 @@ QpackInstructionDecoder::QpackInstructionDecoder(const QpackLanguage* language,
       error_detected_(false),
       state_(State::kStartInstruction) {}
 
-bool QpackInstructionDecoder::Decode(quiche::QuicheStringPiece data) {
+bool QpackInstructionDecoder::Decode(absl::string_view data) {
   DCHECK(!data.empty());
   DCHECK(!error_detected_);
 
@@ -77,8 +77,8 @@ bool QpackInstructionDecoder::Decode(quiche::QuicheStringPiece data) {
 
     DCHECK_LE(bytes_consumed, data.size());
 
-    data = quiche::QuicheStringPiece(data.data() + bytes_consumed,
-                                     data.size() - bytes_consumed);
+    data = absl::string_view(data.data() + bytes_consumed,
+                             data.size() - bytes_consumed);
 
     // Stop processing if no more data but next state would require it.
     if (data.empty() && (state_ != State::kStartField) &&
@@ -94,8 +94,7 @@ bool QpackInstructionDecoder::AtInstructionBoundary() const {
   return state_ == State::kStartInstruction;
 }
 
-bool QpackInstructionDecoder::DoStartInstruction(
-    quiche::QuicheStringPiece data) {
+bool QpackInstructionDecoder::DoStartInstruction(absl::string_view data) {
   DCHECK(!data.empty());
 
   instruction_ = LookupOpcode(data[0]);
@@ -133,7 +132,7 @@ bool QpackInstructionDecoder::DoStartField() {
   }
 }
 
-bool QpackInstructionDecoder::DoReadBit(quiche::QuicheStringPiece data) {
+bool QpackInstructionDecoder::DoReadBit(absl::string_view data) {
   DCHECK(!data.empty());
 
   switch (field_->type) {
@@ -163,7 +162,7 @@ bool QpackInstructionDecoder::DoReadBit(quiche::QuicheStringPiece data) {
   }
 }
 
-bool QpackInstructionDecoder::DoVarintStart(quiche::QuicheStringPiece data,
+bool QpackInstructionDecoder::DoVarintStart(absl::string_view data,
                                             size_t* bytes_consumed) {
   DCHECK(!data.empty());
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
@@ -184,7 +183,7 @@ bool QpackInstructionDecoder::DoVarintStart(quiche::QuicheStringPiece data,
       state_ = State::kVarintResume;
       return true;
     case http2::DecodeStatus::kDecodeError:
-      OnError("Encoded integer too large.");
+      OnError(ErrorCode::INTEGER_TOO_LARGE, "Encoded integer too large.");
       return false;
     default:
       QUIC_BUG << "Unknown decode status " << status;
@@ -192,7 +191,7 @@ bool QpackInstructionDecoder::DoVarintStart(quiche::QuicheStringPiece data,
   }
 }
 
-bool QpackInstructionDecoder::DoVarintResume(quiche::QuicheStringPiece data,
+bool QpackInstructionDecoder::DoVarintResume(absl::string_view data,
                                              size_t* bytes_consumed) {
   DCHECK(!data.empty());
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
@@ -213,7 +212,7 @@ bool QpackInstructionDecoder::DoVarintResume(quiche::QuicheStringPiece data,
       DCHECK(buffer.Empty());
       return true;
     case http2::DecodeStatus::kDecodeError:
-      OnError("Encoded integer too large.");
+      OnError(ErrorCode::INTEGER_TOO_LARGE, "Encoded integer too large.");
       return false;
     default:
       QUIC_BUG << "Unknown decode status " << status;
@@ -245,7 +244,7 @@ bool QpackInstructionDecoder::DoVarintDone() {
 
   string_length_ = varint_decoder_.value();
   if (string_length_ > kStringLiteralLengthLimit) {
-    OnError("String literal too long.");
+    OnError(ErrorCode::STRING_LITERAL_TOO_LONG, "String literal too long.");
     return false;
   }
 
@@ -265,7 +264,7 @@ bool QpackInstructionDecoder::DoVarintDone() {
   return true;
 }
 
-bool QpackInstructionDecoder::DoReadString(quiche::QuicheStringPiece data,
+bool QpackInstructionDecoder::DoReadString(absl::string_view data,
                                            size_t* bytes_consumed) {
   DCHECK(!data.empty());
   DCHECK(field_->type == QpackInstructionFieldType::kName ||
@@ -299,7 +298,8 @@ bool QpackInstructionDecoder::DoReadStringDone() {
     std::string decoded_value;
     huffman_decoder_.Decode(*string, &decoded_value);
     if (!huffman_decoder_.InputProperlyTerminated()) {
-      OnError("Error in Huffman-encoded string.");
+      OnError(ErrorCode::HUFFMAN_ENCODING_ERROR,
+              "Error in Huffman-encoded string.");
       return false;
     }
     *string = std::move(decoded_value);
@@ -323,11 +323,12 @@ const QpackInstruction* QpackInstructionDecoder::LookupOpcode(
   return nullptr;
 }
 
-void QpackInstructionDecoder::OnError(quiche::QuicheStringPiece error_message) {
+void QpackInstructionDecoder::OnError(ErrorCode error_code,
+                                      absl::string_view error_message) {
   DCHECK(!error_detected_);
 
   error_detected_ = true;
-  delegate_->OnError(error_message);
+  delegate_->OnInstructionDecodingError(error_code, error_message);
 }
 
 }  // namespace quic

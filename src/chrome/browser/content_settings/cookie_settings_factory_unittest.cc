@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -34,7 +35,7 @@ class CookieSettingsFactoryTest : public testing::Test {
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
   scoped_refptr<content_settings::CookieSettings> incognito_settings =
-      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile());
 
   // Modify the regular cookie settings after the incognito cookie settings have
   // been instantiated.
@@ -56,7 +57,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
   scoped_refptr<content_settings::CookieSettings> incognito_settings =
-      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile());
 
   // Apply the general blocking to the regular profile.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -82,5 +83,49 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
       incognito_settings->IsCookieAccessAllowed(kHttpsSite, kHttpsSite));
   EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kHttpsSite));
 }
+
+// Android does not have guest profiles.
+#if !defined(OS_ANDROID)
+class GuestCookieSettingsFactoryTest
+    : public CookieSettingsFactoryTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  GuestCookieSettingsFactoryTest() : is_ephemeral_(GetParam()) {
+    // Change the value if Ephemeral is not supported.
+    is_ephemeral_ &=
+        TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+            scoped_feature_list_, is_ephemeral_);
+  }
+
+  bool is_ephemeral() const { return is_ephemeral_; }
+
+ private:
+  bool is_ephemeral_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that cookie blocking is not enabled by default for guest profiles.
+TEST_P(GuestCookieSettingsFactoryTest, GuestProfile) {
+  TestingProfile::Builder guest_profile_builder;
+  guest_profile_builder.SetGuestSession();
+  std::unique_ptr<Profile> guest_profile = guest_profile_builder.Build();
+  Profile* profile_to_use = is_ephemeral()
+                                ? guest_profile.get()
+                                : guest_profile->GetPrimaryOTRProfile();
+  scoped_refptr<content_settings::CookieSettings> guest_settings =
+      CookieSettingsFactory::GetForProfile(profile_to_use);
+  EXPECT_FALSE(guest_settings->ShouldBlockThirdPartyCookies());
+
+  // OTOH, cookie blocking is default for an incognito profile.
+  EXPECT_TRUE(
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile())
+          ->ShouldBlockThirdPartyCookies());
+}
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestCookieSettingsFactoryTest,
+                         /*is_ephemeral=*/testing::Bool());
+
+#endif
 
 }  // namespace

@@ -8,7 +8,7 @@
 #include "base/ios/block_types.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#include "components/autofill/core/common/renderer_id.h"
 
 namespace web {
 class WebFrame;
@@ -31,32 +31,38 @@ class WebFrame;
 // |frame|, then executes the |completionHandler|.
 - (void)fillActiveFormField:(std::unique_ptr<base::Value>)data
                     inFrame:(web::WebFrame*)frame
-          completionHandler:(ProceduralBlock)completionHandler;
+          completionHandler:(void (^)(BOOL))completionHandler;
 
 // Fills a number of fields in the same named form for full-form Autofill.
 // Applies Autofill CSS (i.e. yellow background) to filled elements.
 // Only empty fields will be filled, except that field named
-// |forceFillFieldIdentifier| will always be filled even if non-empty.
-// |forceFillFieldIdentifier| may be null.
+// Field identified by |forceFillFieldIdentifier|/|forceFillFieldUniqueID| will
+// always be filled even if non-empty. |forceFillFieldIdentifier| may be null.
 // Fields must be contained in |frame|.
-// |completionHandler| is called after the forms are filled. |completionHandler|
-// cannot be nil.
+// |completionHandler| is called after the forms are filled with the JSON
+// string containing pairs of unique renderer ids of filled fields and
+// corresponding filled values. |completionHandler| cannot be nil.
 - (void)fillForm:(std::unique_ptr<base::Value>)data
     forceFillFieldIdentifier:(NSString*)forceFillFieldIdentifier
+      forceFillFieldUniqueID:(autofill::FieldRendererId)forceFillFieldUniqueID
                      inFrame:(web::WebFrame*)frame
-           completionHandler:(ProceduralBlock)completionHandler;
+           completionHandler:(void (^)(NSString*))completionHandler;
 
 // Clear autofilled fields of the specified form and frame. Fields that are not
 // currently autofilled are not modified. Field contents are cleared, and
 // Autofill flag and styling are removed. 'change' events are sent for fields
 // whose contents changed.
-// |fieldIdentifier| identifies the field that initiated the clear action.
-// |completionHandler| is called after the forms are filled. |completionHandler|
-// cannot be nil.
-- (void)clearAutofilledFieldsForFormName:(NSString*)formName
-                         fieldIdentifier:(NSString*)fieldIdentifier
-                                 inFrame:(web::WebFrame*)frame
-                       completionHandler:(ProceduralBlock)completionHandler;
+// |fieldIdentifier|/|fieldUniqueID| identify the field that initiated the clear
+// action. |completionHandler| is called after the forms are filled with the
+// JSON string containing a list of unique renderer ids of cleared fields.
+// |completionHandler| cannot be nil.
+- (void)
+    clearAutofilledFieldsForFormName:(NSString*)formName
+                        formUniqueID:(autofill::FormRendererId)formRendererID
+                     fieldIdentifier:(NSString*)fieldIdentifier
+                       fieldUniqueID:(autofill::FieldRendererId)fieldRendererID
+                             inFrame:(web::WebFrame*)frame
+                   completionHandler:(void (^)(NSString*))completionHandler;
 
 // Marks up the form with autofill field prediction data (diagnostic tool).
 - (void)fillPredictionData:(std::unique_ptr<base::Value>)data
@@ -71,12 +77,6 @@ class WebFrame;
 // Toggles tracking the source of the input events in the frame.
 - (void)toggleTrackingUserEditedFields:(BOOL)state
                                inFrame:(web::WebFrame*)frame;
-
-// Designated initializer. |receiver| should not be nil.
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -14,7 +14,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
+#include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/permissions/attestation_permission_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -36,6 +38,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -43,6 +46,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -110,9 +115,9 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     std::map<std::string, std::string> params;
     params[permissions::PermissionUtil::GetPermissionString(
         content_settings_type)] = kPermissionsKillSwitchBlockedValue;
-    variations::AssociateVariationParams(
-        kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,
-        params);
+    variations::AssociateVariationParams(kPermissionsKillSwitchFieldStudy,
+                                         kPermissionsKillSwitchTestGroup,
+                                         params);
     base::FieldTrialList::CreateFieldTrial(kPermissionsKillSwitchFieldStudy,
                                            kPermissionsKillSwitchTestGroup);
   }
@@ -182,6 +187,10 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  content::RenderFrameHost* GetActiveMainFrame() {
+    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<permissions::MockPermissionPromptFactory>
@@ -201,7 +210,8 @@ class PermissionDialogTest
   void SetUpOnMainThread() override {
     // Skip super: It will install a mock permission UI factory, but for this
     // test we want to show "real" UI.
-    ui_test_utils::NavigateToURL(browser(), GetUrl());
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL("https://toplevel.example.com"));
   }
 
   GURL GetUrl() { return GURL("https://example.com"); }
@@ -209,6 +219,8 @@ class PermissionDialogTest
   permissions::PermissionRequest* MakeRegisterProtocolHandlerRequest();
   permissions::PermissionRequest* MakePermissionRequest(
       ContentSettingsType permission);
+
+  void AddRequestForContentSetting(const std::string& name);
 
   // TestBrowserDialog:
   void ShowUi(const std::string& name) override;
@@ -219,6 +231,20 @@ class PermissionDialogTest
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PermissionDialogTest);
+};
+
+class PermissionRequestManagerWithBackForwardCacheBrowserTest
+    : public PermissionRequestManagerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PermissionRequestManagerBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache,
+        {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 permissions::PermissionRequest*
@@ -238,16 +264,17 @@ PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
 permissions::PermissionRequest* PermissionDialogTest::MakePermissionRequest(
     ContentSettingsType permission) {
   bool user_gesture = true;
-  auto decided = [](ContentSetting) {};
+  auto decided = [](ContentSetting, bool) {};
   auto cleanup = [] {};  // Leave cleanup to test harness destructor.
   owned_requests_.push_back(
       std::make_unique<permissions::PermissionRequestImpl>(
-          GetUrl(), GetUrl(), permission, user_gesture, base::BindOnce(decided),
+          GetUrl(), permission, user_gesture, base::BindOnce(decided),
           base::BindOnce(cleanup)));
   return owned_requests_.back().get();
 }
 
-void PermissionDialogTest::ShowUi(const std::string& name) {
+void PermissionDialogTest::AddRequestForContentSetting(
+    const std::string& name) {
   constexpr const char* kMultipleName = "multiple";
   constexpr struct {
     const char* name;
@@ -261,6 +288,8 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
       {"camera", ContentSettingsType::MEDIASTREAM_CAMERA},
       {"protocol_handlers", ContentSettingsType::PROTOCOL_HANDLERS},
       {"midi", ContentSettingsType::MIDI_SYSEX},
+      {"storage_access", ContentSettingsType::STORAGE_ACCESS},
+      {"downloads", ContentSettingsType::AUTOMATIC_DOWNLOADS},
       {kMultipleName, ContentSettingsType::DEFAULT}};
   const auto* it = std::begin(kNameToType);
   for (; it != std::end(kNameToType); ++it) {
@@ -273,12 +302,15 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
   }
   permissions::PermissionRequestManager* manager =
       GetPermissionRequestManager();
+  content::RenderFrameHost* source_frame = GetActiveMainFrame();
   switch (it->type) {
     case ContentSettingsType::PROTOCOL_HANDLERS:
-      manager->AddRequest(MakeRegisterProtocolHandlerRequest());
+      manager->AddRequest(source_frame, MakeRegisterProtocolHandlerRequest());
       break;
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
-      // TODO(tapted): Prompt for downloading multiple files.
+      manager->AddRequest(source_frame,
+                          new DownloadPermissionRequest(
+                              nullptr, url::Origin::Create(GetUrl())));
       break;
     case ContentSettingsType::DURABLE_STORAGE:
       // TODO(tapted): Prompt for quota request.
@@ -291,21 +323,36 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:  // ChromeOS only.
     case ContentSettingsType::PPAPI_BROKER:
     case ContentSettingsType::PLUGINS:  // Flash.
-      manager->AddRequest(MakePermissionRequest(it->type));
+    case ContentSettingsType::STORAGE_ACCESS:
+      manager->AddRequest(source_frame, MakePermissionRequest(it->type));
       break;
     case ContentSettingsType::DEFAULT:
       // Permissions to request for a "multiple" request. Only mic/camera
       // requests are grouped together.
       EXPECT_EQ(kMultipleName, name);
       manager->AddRequest(
+          source_frame,
           MakePermissionRequest(ContentSettingsType::MEDIASTREAM_MIC));
       manager->AddRequest(
+          source_frame,
           MakePermissionRequest(ContentSettingsType::MEDIASTREAM_CAMERA));
 
       break;
     default:
       ADD_FAILURE() << "Not a permission type, or one that doesn't prompt.";
       return;
+  }
+}
+
+void PermissionDialogTest::ShowUi(const std::string& name) {
+  if (name == "security_key") {
+    // This one doesn't have a ContentSettingsType.
+    GetPermissionRequestManager()->AddRequest(
+        GetActiveMainFrame(),
+        NewAttestationPermissionRequest(url::Origin::Create(GetUrl()),
+                                        base::BindOnce([](bool) {})));
+  } else {
+    AddRequestForContentSetting(name);
   }
   base::RunLoop().RunUntilIdle();
 }
@@ -409,18 +456,14 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      1);
+      browser(), embedded_test_server()->GetURL("/empty.html"), 1);
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html#0"),
-      1);
+      browser(), embedded_test_server()->GetURL("/empty.html#0"), 1);
 
   // Request 'geolocation' permission.
   ExecuteScriptAndGetValue(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      GetActiveMainFrame(),
       "navigator.geolocation.getCurrentPosition(function(){});");
   bubble_factory()->WaitForPermissionBubble();
 
@@ -704,8 +747,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       1);
   bubble_factory()->WaitForPermissionBubble();
 
-  content::RenderFrameHost* main_frame =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  content::RenderFrameHost* main_frame = GetActiveMainFrame();
   int main_frame_process_id = main_frame->GetProcess()->GetID();
   int main_frame_routing_id = main_frame->GetRoutingID();
 
@@ -747,12 +789,13 @@ class PermissionRequestManagerQuietUiBrowserTest
 // Quiet permission requests are cancelled when a new request is made.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
                        DISABLED_QuietPendingRequestsKilledOnNewRequest) {
+  content::RenderFrameHost* source_frame = GetActiveMainFrame();
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   permissions::MockPermissionRequest request_quiet(
       "quiet", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       permissions::PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request_quiet);
+  GetPermissionRequestManager()->AddRequest(source_frame, &request_quiet);
   base::RunLoop().RunUntilIdle();
 
   // Add a second permission request. This ones should cause the initial
@@ -760,7 +803,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
   permissions::MockPermissionRequest request_loud(
       "loud", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
       permissions::PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request_loud);
+  GetPermissionRequestManager()->AddRequest(source_frame, &request_loud);
   base::RunLoop().RunUntilIdle();
 
   // The first dialog should now have been decided.
@@ -789,6 +832,11 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
        permissions::kAbusiveNotificationRequestsEnforcementMessage},
       {UiDecision::UseNormalUi(), WarningReason::kAbusiveRequests,
        permissions::kAbusiveNotificationRequestsWarningMessage},
+      {QuietUiReason::kTriggeredDueToAbusiveContent,
+       UiDecision::ShowNoWarning(),
+       permissions::kAbusiveNotificationContentEnforcementMessage},
+      {UiDecision::UseNormalUi(), WarningReason::kAbusiveContent,
+       permissions::kAbusiveNotificationContentWarningMessage},
   };
 
   constexpr char kCounterVerificationPattern[] = "NOTHING";
@@ -805,7 +853,8 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
     permissions::MockPermissionRequest request_quiet(
         "quiet", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
         permissions::PermissionRequestGestureType::UNKNOWN);
-    GetPermissionRequestManager()->AddRequest(&request_quiet);
+    GetPermissionRequestManager()->AddRequest(web_contents->GetMainFrame(),
+                                              &request_quiet);
 
     bubble_factory()->WaitForPermissionBubble();
     GetPermissionRequestManager()->Closing();
@@ -833,17 +882,18 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
 // Two loud requests are simply queued one after another.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        LoudPendingRequestsQueued) {
+  content::RenderFrameHost* source_frame = GetActiveMainFrame();
   permissions::MockPermissionRequest request1(
       "request1",
       permissions::PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE,
       permissions::PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request1);
+  GetPermissionRequestManager()->AddRequest(source_frame, &request1);
   base::RunLoop().RunUntilIdle();
 
   permissions::MockPermissionRequest request2(
       "request2", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
       permissions::PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request2);
+  GetPermissionRequestManager()->AddRequest(source_frame, &request2);
   base::RunLoop().RunUntilIdle();
 
   // Both requests are still pending (though only one is active).
@@ -913,8 +963,11 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(VerifyUi());
 
   // Simulate a render process crash while the permission prompt is pending.
-  content::RenderViewHost* render_view_host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+  content::RenderViewHost* render_view_host = browser()
+                                                  ->tab_strip_model()
+                                                  ->GetActiveWebContents()
+                                                  ->GetMainFrame()
+                                                  ->GetRenderViewHost();
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
@@ -974,6 +1027,21 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_midi) {
   ShowAndVerifyUi();
 }
 
+// Host wants to access storage from the site in which it's embedded.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_storage_access) {
+  ShowAndVerifyUi();
+}
+
+// Host wants to trigger multiple downloads.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_downloads) {
+  ShowAndVerifyUi();
+}
+
+// Host wants to access data about your security key.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_security_key) {
+  ShowAndVerifyUi();
+}
+
 // Shows a permissions bubble with multiple requests.
 IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_multiple) {
   ShowAndVerifyUi();
@@ -987,6 +1055,89 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_multiple) {
 #endif
 IN_PROC_BROWSER_TEST_F(PermissionDialogTest, MAYBE_InvokeUi_protected_media) {
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
+                       NoPermissionBubbleShownForPagesInCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), url_a);
+  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
+  content::RenderFrameDeletedObserver a_observer(rfh_a);
+
+  ui_test_utils::NavigateToURL(browser(), url_b);
+  ASSERT_FALSE(a_observer.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  permissions::MockPermissionRequest req;
+  GetPermissionRequestManager()->AddRequest(rfh_a, &req);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, bubble_factory()->show_count());
+  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
+  // Page gets evicted if bubble would have been showed
+  EXPECT_TRUE(a_observer.deleted());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
+                       RequestsForPagesInCacheNotGrouped) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), url_a);
+  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
+  content::RenderFrameDeletedObserver a_observer(rfh_a);
+
+  ui_test_utils::NavigateToURL(browser(), url_b);
+  ASSERT_FALSE(a_observer.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  content::RenderFrameHost* rfh_b = GetActiveMainFrame();
+
+  // PERMISSION_MEDIASTREAM_MIC, PERMISSION_MEDIASTREAM_CAMERA, and
+  // PERMISSION_CAMERA_PAN_TILT_ZOOM requests are grouped if they come from the
+  // same origin. Make sure this will not include requests from a cached frame.
+  // Note pages will not be cached when navigating within the same origin, so we
+  // have different urls in the navigations above but use the same url (default)
+  // for the MockPermissionRequest here.
+  permissions::MockPermissionRequest req_a_1(
+      "req_a_1",
+      permissions::PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_a_2(
+      "req_a_2",
+      permissions::PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_b_1(
+      "req_b_1",
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_b_2(
+      "req_b_2", permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
+      permissions::PermissionRequestGestureType::GESTURE);
+  GetPermissionRequestManager()->AddRequest(rfh_a,
+                                            &req_a_1);  // Should be skipped
+  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_1);
+  GetPermissionRequestManager()->AddRequest(rfh_a,
+                                            &req_a_2);  // Should be skipped
+  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_2);
+
+  bubble_factory()->WaitForPermissionBubble();
+
+  // One bubble with the two grouped requests and none of the skipped ones.
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(2, bubble_factory()->TotalRequestCount());
+  EXPECT_TRUE(req_a_1.cancelled());
+  EXPECT_TRUE(req_a_2.cancelled());
+
+  // Page gets evicted if bubble would have been showed.
+  EXPECT_TRUE(a_observer.deleted());
+
+  // Cleanup before we delete the requests.
+  GetPermissionRequestManager()->Closing();
 }
 
 }  // anonymous namespace

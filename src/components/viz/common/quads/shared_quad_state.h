@@ -11,6 +11,7 @@
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/mask_filter_info.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
@@ -34,9 +35,9 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   ~SharedQuadState();
 
   void SetAll(const gfx::Transform& quad_to_target_transform,
-              const gfx::Rect& layer_rect,
+              const gfx::Rect& quad_layer_rect,
               const gfx::Rect& visible_layer_rect,
-              const gfx::RRectF& rounded_corner_bounds,
+              const gfx::MaskFilterInfo& mask_filter_info,
               const gfx::Rect& clip_rect,
               bool is_clipped,
               bool are_contents_opaque,
@@ -55,9 +56,9 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
   gfx::Rect visible_quad_layer_rect;
-  // This rect lives in the target content space. It defines the corner radius
-  // to clip the quads with.
-  gfx::RRectF rounded_corner_bounds;
+  // This mask filter's coordinates is in the target content space. It defines
+  // the corner radius to clip the quads with.
+  gfx::MaskFilterInfo mask_filter_info;
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
   bool is_clipped = false;
@@ -71,13 +72,17 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // render passes as much as possible.
   bool is_fast_rounded_corner = false;
   // This is for underlay optimization and used only in the SurfaceAggregator
-  // and the OverlayProcessor. This damage rect contains union of damage from
-  // occluding surfaces and is only for quads that are the only quad in
-  // their surface. SetAll() doesn't update this data.
-  base::Optional<gfx::Rect> occluding_damage_rect;
-
+  // and the OverlayProcessor. Do not set the value in CompositorRenderPass.
+  // This index points to the damage rect in the surface damage rect list where
+  // the overlay quad belongs to. SetAll() doesn't update this data.
+  base::Optional<size_t> overlay_damage_index;
   // The amount to skew quads in this layer. For experimental de-jelly effect.
   float de_jelly_delta_y = 0.0f;
+
+  // If true, indicates that the quads do not contribute damage to their
+  // render pass's damage; if false, whether or not the quads contribute
+  // damage is unknown. Only meaningful in root render passes.
+  bool no_damage = false;
 };
 
 }  // namespace viz

@@ -11,7 +11,6 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/window_state_observer.h"
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -36,8 +35,7 @@ class OverviewItemView;
 class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public views::ButtonListener,
-                                public aura::WindowObserver,
+class ASH_EXPORT OverviewItem : public aura::WindowObserver,
                                 public WindowStateObserver {
  public:
   OverviewItem(aura::Window* window,
@@ -140,19 +138,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Increases the bounds of the dragged item.
   void ScaleUpSelectedItem(OverviewAnimationType animation_type);
 
-  // Shift the window item up and then animates it to its original spot. Used
-  // to transition from the home launcher.
-  void SlideWindowIn();
-
-  // Translate and fade the window (or minimized widget) and |item_widget_|. It
-  // should remain in the same spot relative to the grids origin, which is given
-  // by |new_grid_y|. Returns the settings object of the layer the caller should
-  // observe.
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
-      float new_grid_y,
-      float opacity,
-      OverviewSession::UpdateAnimationSettingsCallback callback);
-
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
 
@@ -196,12 +181,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Handles events forwarded from |overview_item_view_|.
   void HandleMouseEvent(const ui::MouseEvent& event);
   void HandleGestureEvent(ui::GestureEvent* event);
-  bool ShouldIgnoreGestureEvents();
   void OnHighlightedViewActivated();
   void OnHighlightedViewClosed();
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -215,9 +196,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // WindowStateObserver:
   void OnPreWindowStateTypeChange(WindowState* window_state,
-                                  WindowStateType old_type) override;
+                                  chromeos::WindowStateType old_type) override;
   void OnPostWindowStateTypeChange(WindowState* window_state,
-                                   WindowStateType old_type) override;
+                                   chromeos::WindowStateType old_type) override;
 
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
@@ -262,8 +243,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
-  void set_activate_on_unminimized(bool val) { activate_on_unminimized_ = val; }
-
   void set_unclipped_size(base::Optional<gfx::Size> unclipped_size) {
     unclipped_size_ = unclipped_size;
   }
@@ -283,6 +262,10 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Returns the target bounds of |window_|. Same as |target_bounds_|, with some
   // insets.
   gfx::RectF GetWindowTargetBoundsWithInsets() const;
+
+  // The shadow should match the size of the transformed window or preview
+  // window if unclipped.
+  gfx::RectF GetUnclippedShadowBounds() const;
 
   // Functions to be called back when their associated animations complete.
   void OnWindowCloseAnimationCompleted();
@@ -322,6 +305,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
   void StartDrag();
+
+  void CloseButtonPressed();
 
   // TODO(sammiequon): Current events go from OverviewItemView to
   // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
@@ -416,13 +401,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   bool prepared_for_overview_ = false;
 
-  // If true, the next time |window_| is uniminimized, we will activate it (and
-  // end overview). Done this way because some windows (ARC app windows) have
-  // their window states changed async, so we need to wait until the window is
-  // fully unminimized before activation as opposed to having two consecutive
-  // calls.
-  bool activate_on_unminimized_ = false;
-
   // This has a value when there is a snapped window, or a window about to be
   // snapped (triggering a splitview preview area). This will be set when items
   // are positioned in OverviewGrid. The bounds delivered in |SetBounds| are the
@@ -431,11 +409,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // we transform the window not to |target_bounds_| but to this value, and then
   // apply clipping on the window to |target_bounds_|.
   base::Optional<gfx::Size> unclipped_size_ = base::nullopt;
-
-  // Stores the last translations of the windows affected by |SetBounds|. Used
-  // for ease of calculations when swiping away overview mode using home
-  // launcher gesture.
-  base::flat_map<aura::Window*, float> translation_y_map_;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

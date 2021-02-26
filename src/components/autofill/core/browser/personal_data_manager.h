@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_profile_validator.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
@@ -260,6 +261,9 @@ class PersonalDataManager : public KeyedService,
   // Returns the credit card cloud token data.
   virtual std::vector<CreditCardCloudTokenData*> GetCreditCardCloudTokenData()
       const;
+
+  // Returns the credit card offer data.
+  virtual std::vector<AutofillOfferData*> GetCreditCardOffers() const;
 
   // Updates the validity states of |profiles| according to server validity map.
   void UpdateProfilesServerValidityMapsIfNeeded(
@@ -541,6 +545,9 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved UPI IDs from the web database.
   virtual void LoadUpiIds();
 
+  // Loads the offer data from the web database.
+  virtual void LoadCreditCardOffers();
+
   // Cancels a pending query to the local web database.  |handle| is a pointer
   // to the query handle.
   void CancelPendingLocalQuery(WebDataServiceBase::Handle* handle);
@@ -554,8 +561,12 @@ class PersonalDataManager : public KeyedService,
   void LogStoredProfileMetrics() const;
 
   // The first time this is called, logs an UMA metric about the user's autofill
-  // credit cardss. On subsequent calls, does nothing.
+  // credit cards. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
+
+  // The first time this is called, logs UMA metrics about the users's autofill
+  // offer data. On subsequent calls, does nothing.
+  void LogStoredOfferMetrics() const;
 
   // Whether the server cards are enabled and should be suggested to the user.
   virtual bool ShouldSuggestServerCards() const;
@@ -606,6 +617,9 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCardCloudTokenData>>
       server_credit_card_cloud_token_data_;
 
+  // Offer data for user's credit cards.
+  std::vector<std::unique_ptr<AutofillOfferData>> autofill_offer_data_;
+
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
@@ -618,6 +632,7 @@ class PersonalDataManager : public KeyedService,
       0;
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
   WebDataServiceBase::Handle pending_upi_ids_query_ = 0;
+  WebDataServiceBase::Handle pending_offer_data_query_ = 0;
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
@@ -752,6 +767,12 @@ class PersonalDataManager : public KeyedService,
   // migrating from using email to Gaia ID as th account identifier.
   void MigrateUserOptedInWalletSyncTransportIfNeeded();
 
+  // Return a nickname for the |card| to display. This is generally the nickname
+  // stored in |card|, unless |card| exists as a local and a server copy. In
+  // this case, we prefer the nickname of the local if it is defined. If only
+  // one copy has a nickname, take that.
+  base::string16 GetDisplayNicknameForCreditCard(const CreditCard& card) const;
+
   // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
 
@@ -800,6 +821,9 @@ class PersonalDataManager : public KeyedService,
 
   // Whether we have already logged the stored credit card metrics this session.
   mutable bool has_logged_stored_credit_card_metrics_ = false;
+
+  // Whether we have already logged the stored offer metrics this session.
+  mutable bool has_logged_stored_offer_metrics_ = false;
 
   // An observer to listen for changes to prefs::kAutofillCreditCardEnabled.
   std::unique_ptr<BooleanPrefMember> credit_card_enabled_pref_;

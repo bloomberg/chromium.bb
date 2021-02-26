@@ -1,0 +1,130 @@
+Unreleased:
+  Tracing service and probes:
+    *
+  Trace Processor:
+    *
+  UI:
+    *
+
+v9.0 - 2020-11-01:
+  Tracing service and probes:
+    * Added support for recording traces from a system service through the
+      client API.
+    * The client library now reconnects producers automatically if the
+      connection to the tracing service is lost. Also fixed crashes in ongoing
+      tracing sessions when a disconnect occurs.
+    * Added support for dpu and g2d ftrace events.
+    * Enabled commit batching and producer side patching of chunks.
+    * Add support for symbolizing kernel symbols for ftrace events.
+  Trace Processor:
+    * Fixed type affinity of string columns.
+  UI:
+    * Added initial support for running metrics from the UI.
+    * Added support for displaying all flows when a slice or area is selected.
+    * Highlight nodes that match the 'focus' string in the flamegraph.
+    * Added search within slice args.
+    * Fixed details panel height and moved query panel into details panel.
+    * Enabled re-sharing of postMessage traces by echoing back the original URL.
+    * Improved record page error messages.
+
+
+v8.0 - 2020-10-01:
+  Tracing service and probes:
+    * Added API for querying registered data sources and their capabilities.
+    * Added support for profiling heap allocations on Linux via LD_PRELOAD.
+    * Fixed possible race when initializing the consumer library.
+    * Fixed subtle bugs on systems with 16KB system pages.
+  Trace Processor:
+    * Added a table which lists available metrics.
+    * Added Python bindings on PyPi in the 'perfetto' package.
+    * Added support for running trace_processor_shell on Android.
+    * Added per-process metrics for GPU memory usage.
+    * Added support for exporting flow events to JSON.
+    * Added dynamic tables for navigating between slices of flows.
+  UI:
+    * Changed time marking: horizontal selection doesn't gray out anymore,
+      pressing 'm' marks the range.
+    * Added initial support for displaying flow event arrows.
+    * Improved ordering of all thread tracks under process grouping.
+    * Fixed UI crashes due to metric errors
+    * Fixed selection of thread state slices.
+
+
+v7.0 - 2020-09-01:
+  Tracing service and probes:
+    * Added auto-reconnection to the SDK. Tracing::Initialize() now retries in
+      the background, instead of failing, if the tracing service is unrechable.
+    * Added support for recording cpuhp (CPU hotplug) ftrace events.
+    * Fixed heap profiling unwinding on multi-ABI systems.
+    * Fixed reporting of live objects in the native heap profiler when using
+      --dump-at-max.
+    * Fixed crash when writing trace events with field nesting level > 10.
+  Trace Processor:
+    * Added Python bindings, see
+      https://perfetto.dev/docs/analysis/trace-processor#python-api .
+    * Added ingestion for Chrome instant events and Chrome flow events.
+    * Added ingestion for Android GPU memory events and sched_blocked_reason.
+    * Added WebView power metric.
+    * Added support for WSL1 where Async I/O is not available.
+    * Improved detection of Android suspend/resume events.
+  UI:
+    * Added GPU memory recording controls and ingestion code. Requires a recent
+      Android 12+ kernel.
+    * Added details panel for flow events, showed when the user selects a slice
+      involved in a flow (arrows in the UI are still being worked on).
+    * Added instant events rendering.
+    * Added Google Analytics.
+    * Fixed I/O thread-states in 4.14 kernels to deal with the removal of
+      wake-kill using sched_blocked_reason.
+    * Fixed "Perfetto UI started debugging this browser" showing when opening
+      the UI and the Chrome extension is installed.
+  Misc:
+    * Update language to comply with Android's inclusive language guidance.
+
+
+v6.0 - 2020-08-01:
+  Tracing service and probes:
+    * Added ftrace thermal events.
+    * Added support for custom allocators to the heap profiler. Allows
+      developers to report memory allocations that are not done through malloc.
+    * Added detailed timestamping of key tracing session events.
+    * Added support for building tracing services on CrOS (system-wide tracing).
+    * Fixed filtering out of stale ftrace data that predates the beginning of
+      the tracing session.
+  Trace Processor:
+    * Improved profile symbolizer. PERFETTO_SYMBOLIZER_MODE=index discovers
+      symbol files by build id rather than name.
+    * Added screen-state Android metrics.
+  UI:
+    * Added 'Info and stats' page to debug data losses and trace stats.
+    * Added full cmdline to process detail panel.
+    * Improved performance of async tracks using quantized queries.
+    * Improved performance of counter and slice tracks for long traces by
+      pre-caching quantized track data.
+    * Improved actionablility of crash dialog when the Wasm module OOMs.
+
+
+v5.0 - 2020-07-01:
+  Tracing service and probes:
+    * Added gpu_mem_total ftrace event.
+    * Added TrustZone (scm start/end) event.
+    * Added protos for GPU memory tracking and updated render stages proto.
+    * Added time_in_state probe for Android (CPU time broken down by frequency).
+
+  Trace Processor:
+    * Added ingestion of IRQ and SoftIRQ events.
+    * Added ingestion of workqueue events. KAddr symbolization still missing.
+    * Added ingestion of voltage regulators and board clock change events.
+    * Added ingestion of new ION ion_buffer_create/destroy events.
+    * Added ingestion of TrustZone (scm start/end) events.
+    * Added SurfaceFlinger derived events (tracking of missed frames).
+    * Changed parsing of scheduler task state on 4.14 kernels.
+    * Changed importing of Java heap graphs: allow partial dumps.
+    * Improved performance of the SQL query engine.
+
+  UI:
+    * Added dedicated query page for custom SQL queries.
+    * Added navigation links for Binder slices.
+    * Removed overview summary mode when zoomed out.
+    * Fixed recording page when targeting Android P.
+    * Improved slice pan/zoom performance by quantizing.

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace base {
 class Time;
@@ -33,8 +34,8 @@ class ASH_PUBLIC_EXPORT AmbientClient {
 
   static AmbientClient* Get();
 
-  // Return whether the ambient mode is allowed for the active user.
-  virtual bool IsAmbientModeAllowedForActiveUser() = 0;
+  // Return whether the ambient mode is allowed for the user.
+  virtual bool IsAmbientModeAllowed() = 0;
 
   // Return the gaia and access token associated with the active user's profile.
   virtual void RequestAccessToken(GetAccessTokenCallback callback) = 0;
@@ -42,6 +43,14 @@ class ASH_PUBLIC_EXPORT AmbientClient {
   // Return the URL loader factory associated with the active user's profile.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Requests a connection to the device service's |WakeLockProvider|
+  // from the browser.
+  virtual void RequestWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) = 0;
+
+  // Whether to use backend production server.
+  virtual bool ShouldUseProdServer() = 0;
 
  protected:
   AmbientClient();

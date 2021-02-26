@@ -1,18 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2013-2020 The Khronos Group Inc.
+# Copyright 2013-2020 The Khronos Group Inc.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
+
 """Types and classes for manipulating an API registry."""
 
 import copy
@@ -21,6 +12,16 @@ import sys
 import xml.etree.ElementTree as etree
 from collections import defaultdict, namedtuple
 from generator import OutputGenerator, GeneratorOptions, write
+import pdb
+
+def apiNameMatch(str, supported):
+    """Return whether a required api name matches a pattern specified for an
+    XML <feature> 'api' attribute or <extension> 'supported' attribute.
+
+    - str - api name such as 'vulkan' or 'openxr'
+    - supported - comma-separated list of XML API names"""
+
+    return (str is not None and str in supported.split(','))
 
 
 def matchAPIProfile(api, profile, elem):
@@ -252,6 +253,12 @@ class FeatureInfo(BaseInfo):
                 self.number = 0
             self.supported = elem.get('supported')
 
+class SpirvInfo(BaseInfo):
+    """Registry information about an API <spirvextensions>
+    or <spirvcapability>."""
+
+    def __init__(self, elem):
+        BaseInfo.__init__(self, elem)
 
 class Registry:
     """Object representing an API registry, loaded from an XML file."""
@@ -298,6 +305,12 @@ class Registry:
         self.extdict = {}
         "dictionary of FeatureInfo objects for `<extension>` elements keyed by extension name"
 
+        self.spirvextdict = {}
+        "dictionary of FeatureInfo objects for `<spirvextension>` elements keyed by spirv extension name"
+
+        self.spirvcapdict = {}
+        "dictionary of FeatureInfo objects for `<spirvcapability>` elements keyed by spirv capability name"
+
         self.emitFeatures = False
         """True to actually emit features for a version / extension,
         or False to just treat them as emitted"""
@@ -343,10 +356,10 @@ class Registry:
 
         Intended for internal use only.
 
-        - elem - `<type>`/`<enums>`/`<enum>`/`<command>`/`<feature>`/`<extension>` Element
-        - info - corresponding {Type|Group|Enum|Cmd|Feature}Info object
-        - infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' / 'extension'
-        - dictionary - self.{type|group|enum|cmd|api|ext}dict
+        - elem - `<type>`/`<enums>`/`<enum>`/`<command>`/`<feature>`/`<extension>`/`<spirvextension>`/`<spirvcapability>` Element
+        - info - corresponding {Type|Group|Enum|Cmd|Feature|Spirv}Info object
+        - infoName - 'type' / 'group' / 'enum' / 'command' / 'feature' / 'extension' / 'spirvextension' / 'spirvcapability'
+        - dictionary - self.{type|group|enum|cmd|api|ext|spirvext|spirvcap}dict
 
         If the Element has an 'api' attribute, the dictionary key is the
         tuple (name,api). If not, the key is the name. 'name' is an
@@ -463,7 +476,6 @@ class Registry:
         # name - if it exists.
         for (name, alias, cmd) in cmdAlias:
             if alias in self.cmddict:
-                # @ pdb.set_trace()
                 aliasInfo = self.cmddict[alias]
                 cmdElem = copy.deepcopy(aliasInfo.elem)
                 cmdElem.find('proto/name').text = name
@@ -487,24 +499,13 @@ class Registry:
             self.addElementInfo(feature, featureInfo, 'feature', self.apidict)
 
             # Add additional enums defined only in <feature> tags
-            # to the corresponding core type.
+            # to the corresponding enumerated type.
             # When seen here, the <enum> element, processed to contain the
             # numeric enum value, is added to the corresponding <enums>
-            # element, as well as adding to the enum dictionary. It is
-            # *removed* from the <require> element it is introduced in.
-            # Not doing this will cause spurious genEnum()
-            # calls to be made in output generation, and it's easier
-            # to handle here than in genEnum().
-            #
-            # In lxml.etree, an Element can have only one parent, so the
-            # append() operation also removes the element. But in Python's
-            # ElementTree package, an Element can have multiple parents. So
-            # it must be explicitly removed from the <require> tag, leading
-            # to the nested loop traversal of <require>/<enum> elements
-            # below.
-            #
-            # This code also adds a 'version' attribute containing the
-            # api version.
+            # element, as well as adding to the enum dictionary. It is no
+            # longer removed from the <require> element it is introduced in.
+            # Instead, generateRequiredInterface ignores <enum> elements
+            # that extend enumerated types.
             #
             # For <enum> tags which are actually just constants, if there's
             # no 'extends' tag but there is a 'value' or 'bitpos' tag, just
@@ -525,17 +526,7 @@ class Registry:
                             # self.gen.logMsg('diag', 'Matching group',
                             #     groupName, 'found, adding element...')
                             gi = self.groupdict[groupName]
-                            gi.elem.append(enum)
-
-                            if self.genOpts.reparentEnums:
-                                # Remove element from parent <require> tag
-                                # This is already done by lxml.etree, so
-                                # allow for it to fail.
-                                try:
-                                    elem.remove(enum)
-                                except ValueError:
-                                    # Must be lxml.etree
-                                    pass
+                            gi.elem.append(copy.deepcopy(enum))
                         else:
                             self.gen.logMsg('warn', 'NO matching group',
                                             groupName, 'for enum', enum.get('name'), 'found.')
@@ -582,17 +573,7 @@ class Registry:
                             # self.gen.logMsg('diag', 'Matching group',
                             #     groupName, 'found, adding element...')
                             gi = self.groupdict[groupName]
-                            gi.elem.append(enum)
-
-                            if self.genOpts.reparentEnums:
-                                # Remove element from parent <require> tag
-                                # This is already done by lxml.etree, so
-                                # allow for it to fail.
-                                try:
-                                    elem.remove(enum)
-                                except ValueError:
-                                    # Must be lxml.etree
-                                    pass
+                            gi.elem.append(copy.deepcopy(enum))
                         else:
                             self.gen.logMsg('warn', 'NO matching group',
                                             groupName, 'for enum', enum.get('name'), 'found.')
@@ -621,6 +602,15 @@ class Registry:
         # Sort the lists so they don't depend on the XML order
         for parent in self.validextensionstructs:
             self.validextensionstructs[parent].sort()
+
+        # Parse out all spirv tags in dictionaries
+        # Use addElementInfo to catch duplicates
+        for spirv in self.reg.findall('spirvextensions/spirvextension'):
+            spirvInfo = SpirvInfo(spirv)
+            self.addElementInfo(spirv, spirvInfo, 'spirvextension', self.spirvextdict)
+        for spirv in self.reg.findall('spirvcapabilities/spirvcapability'):
+            spirvInfo = SpirvInfo(spirv)
+            self.addElementInfo(spirv, spirvInfo, 'spirvcapability', self.spirvcapdict)
 
     def dumpReg(self, maxlen=120, filehandle=sys.stdout):
         """Dump all the dictionaries constructed from the Registry object.
@@ -654,6 +644,13 @@ class Registry:
         for key in self.extdict:
             write('    Extension', key, '->',
                   etree.tostring(self.extdict[key].elem)[0:maxlen], file=filehandle)
+        write('// SPIR-V', file=filehandle)
+        for key in self.spirvextdict:
+            write('    SPIR-V Extension', key, '->',
+                  etree.tostring(self.spirvextdict[key].elem)[0:maxlen], file=filehandle)
+        for key in self.spirvcapdict:
+            write('    SPIR-V Capability', key, '->',
+                  etree.tostring(self.spirvcapdict[key].elem)[0:maxlen], file=filehandle)
 
     def markTypeRequired(self, typename, required):
         """Require (along with its dependencies) or remove (but not its dependencies) a type.
@@ -667,7 +664,7 @@ class Registry:
         if typeinfo is not None:
             if required:
                 # Tag type dependencies in 'alias' and 'required' attributes as
-                # required. This DOES NOT un-tag dependencies in a <remove>
+                # required. This does not un-tag dependencies in a <remove>
                 # tag. See comments in markRequired() below for the reason.
                 for attrib_name in ['requires', 'alias']:
                     depname = typeinfo.elem.get(attrib_name)
@@ -715,9 +712,37 @@ class Registry:
 
         - enumname - name of enum
         - required - boolean (to tag features as required or not)"""
+
         self.gen.logMsg('diag', 'tagging enum:', enumname, '-> required =', required)
         enum = self.lookupElementInfo(enumname, self.enumdict)
         if enum is not None:
+            # If the enum is part of a group, and is being removed, then
+            # look it up in that <group> tag and remove it there, so that it
+            # isn't visible to generators (which traverse the <group> tag
+            # elements themselves).
+            # This isn't the most robust way of doing this, since a removed
+            # enum that's later required again will no longer have a group
+            # element, but it makes the change non-intrusive on generator
+            # code.
+            if required is False:
+                groupName = enum.elem.get('extends')
+                if groupName is not None:
+                    # Look up the Info with matching groupName
+                    if groupName in self.groupdict:
+                        gi = self.groupdict[groupName]
+                        gienum = gi.elem.find("enum[@name='" + enumname + "']")
+                        if gienum is not None:
+                            # Remove copy of this enum from the group
+                            gi.elem.remove(gienum)
+                        else:
+                            self.gen.logMsg('warn', 'Cannot remove enum',
+                                            enumname, 'not found in group',
+                                            groupName)
+                    else:
+                        self.gen.logMsg('warn', 'Cannot remove enum',
+                                        enumname, 'from nonexistent group',
+                                        groupName)
+
             enum.required = required
             # Tag enum dependencies in 'alias' attribute as required
             depname = enum.elem.get('alias')
@@ -945,9 +970,6 @@ class Registry:
         - fname - name of feature (`<type>`/`<enum>`/`<command>`)
         - ftype - type of feature, 'type' | 'enum' | 'command'
         - dictionary - of *Info objects - self.{type|enum|cmd}dict"""
-        # @ # Break to debugger on matching name pattern
-        # @ if self.breakPat and re.match(self.breakPat, fname):
-        # @    pdb.set_trace()
 
         self.gen.logMsg('diag', 'generateFeature: generating', ftype, fname)
         f = self.lookupElementInfo(fname, dictionary)
@@ -1123,9 +1145,27 @@ class Registry:
             for t in features.findall('type'):
                 self.generateFeature(t.get('name'), 'type', self.typedict)
             for e in features.findall('enum'):
-                self.generateFeature(e.get('name'), 'enum', self.enumdict)
+                # If this is an enum extending an enumerated type, don't
+                # generate it - this has already been done in reg.parseTree,
+                # by copying this element into the enumerated type.
+                enumextends = e.get('extends')
+                if not enumextends:
+                    self.generateFeature(e.get('name'), 'enum', self.enumdict)
             for c in features.findall('command'):
                 self.generateFeature(c.get('name'), 'command', self.cmddict)
+
+    def generateSpirv(self, spirv, dictionary):
+        if spirv is None:
+            self.gen.logMsg('diag', 'No entry found for element', name,
+                            'returning!')
+            return
+
+        name = spirv.elem.get('name')
+        # No known alias for spirv elements
+        alias = None
+        if spirv.emit:
+            genProc = self.gen.genSpirv
+            genProc(spirv, name, alias)
 
     def apiGen(self):
         """Generate interface for specified versions using the current
@@ -1146,6 +1186,7 @@ class Registry:
         regAddExtensions = re.compile(self.genOpts.addExtensions)
         regRemoveExtensions = re.compile(self.genOpts.removeExtensions)
         regEmitExtensions = re.compile(self.genOpts.emitExtensions)
+        regEmitSpirv = re.compile(self.genOpts.emitSpirv)
 
         # Get all matching API feature names & add to list of FeatureInfo
         # Note we used to select on feature version attributes, not names.
@@ -1154,7 +1195,7 @@ class Registry:
         for key in self.apidict:
             fi = self.apidict[key]
             api = fi.elem.get('api')
-            if api == self.genOpts.apiname:
+            if apiNameMatch(self.genOpts.apiname, api):
                 apiMatch = True
                 if regVersions.match(fi.name):
                     # Matches API & version #s being generated. Mark for
@@ -1191,13 +1232,10 @@ class Registry:
             extName = ei.name
             include = False
 
-            # Include extension if defaultExtensions is not None and if the
-            # 'supported' attribute matches defaultExtensions. The regexp in
-            # 'supported' must exactly match defaultExtensions, so bracket
-            # it with ^(pat)$.
-            pat = '^(' + ei.elem.get('supported') + ')$'
-            if (self.genOpts.defaultExtensions
-                    and re.match(pat, self.genOpts.defaultExtensions)):
+            # Include extension if defaultExtensions is not None and is
+            # exactly matched by the 'supported' attribute.
+            if apiNameMatch(self.genOpts.defaultExtensions,
+                            ei.elem.get('supported')):
                 self.gen.logMsg('diag', 'Including extension',
                                 extName, "(defaultExtensions matches the 'supported' attribute)")
                 include = True
@@ -1237,6 +1275,20 @@ class Registry:
                 self.gen.logMsg('diag', 'NOT including extension',
                                 extName, '(does not match api attribute or explicitly requested extensions)')
 
+        # Add all spirv elements to list
+        # generators decide to emit them all or not
+        # Currently no filtering as no client of these elements needs filtering
+        spirvexts = []
+        for key in self.spirvextdict:
+            si = self.spirvextdict[key]
+            si.emit = (regEmitSpirv.match(key) is not None)
+            spirvexts.append(si)
+        spirvcaps = []
+        for key in self.spirvcapdict:
+            si = self.spirvcapdict[key]
+            si.emit = (regEmitSpirv.match(key) is not None)
+            spirvcaps.append(si)
+
         # Sort the features list, if a sort procedure is defined
         if self.genOpts.sortProcedure:
             self.genOpts.sortProcedure(features)
@@ -1275,6 +1327,11 @@ class Registry:
             self.gen.beginFeature(f.elem, emit)
             self.generateRequiredInterface(f.elem)
             self.gen.endFeature()
+        # Generate spirv elements
+        for s in spirvexts:
+            self.generateSpirv(s, self.spirvextdict)
+        for s in spirvcaps:
+            self.generateSpirv(s, self.spirvcapdict)
         self.gen.endFile()
 
     def apiReset(self):

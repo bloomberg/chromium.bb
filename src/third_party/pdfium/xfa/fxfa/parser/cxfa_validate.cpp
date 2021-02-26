@@ -8,7 +8,7 @@
 
 #include "fxjs/xfa/cjx_node.h"
 #include "fxjs/xfa/cjx_object.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_message.h"
 #include "xfa/fxfa/parser/cxfa_picture.h"
 #include "xfa/fxfa/parser/cxfa_script.h"
@@ -51,7 +51,9 @@ CXFA_Validate::CXFA_Validate(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Validate,
           kValidatePropertyData,
           kValidateAttributeData,
-          pdfium::MakeUnique<CJX_Node>(this)) {}
+          cppgc::MakeGarbageCollected<CJX_Node>(
+              doc->GetHeap()->GetAllocationHandle(),
+              this)) {}
 
 CXFA_Validate::~CXFA_Validate() = default;
 
@@ -138,8 +140,7 @@ void CXFA_Validate::SetMessageText(const WideString& wsMessageType,
 
   CXFA_Node* pTextNode = pNode->CreateSamePacketNode(XFA_Element::Text);
   pNode->InsertChildAndNotify(pTextNode, nullptr);
-  pTextNode->JSObject()->SetCData(XFA_Attribute::Name, wsMessageType, false,
-                                  false);
+  pTextNode->JSObject()->SetCData(XFA_Attribute::Name, wsMessageType);
   pTextNode->JSObject()->SetContent(wsMessage, wsMessage, false, false, true);
 }
 

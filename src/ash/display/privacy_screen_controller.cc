@@ -7,10 +7,12 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/display/manager/display_configurator.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 
 namespace ash {
@@ -32,22 +34,32 @@ void PrivacyScreenController::RegisterProfilePrefs(
 }
 
 bool PrivacyScreenController::IsSupported() const {
-  return Shell::Get()
-      ->display_configurator()
-      ->IsPrivacyScreenSupportedOnInternalDisplay();
+  return GetSupportedDisplayId() != display::kInvalidDisplayId;
 }
 
 bool PrivacyScreenController::IsManaged() const {
-  return active_user_pref_service_->IsManagedPreference(
-      prefs::kDisplayPrivacyScreenEnabled);
+  return dlp_enforced_ || (active_user_pref_service_ &&
+                           active_user_pref_service_->IsManagedPreference(
+                               prefs::kDisplayPrivacyScreenEnabled));
 }
 
 bool PrivacyScreenController::GetEnabled() const {
-  return active_user_pref_service_ && active_user_pref_service_->GetBoolean(
-                                          prefs::kDisplayPrivacyScreenEnabled);
+  if (!active_user_pref_service_)
+    return dlp_enforced_;
+  const bool actual_user_pref = active_user_pref_service_->GetBoolean(
+      prefs::kDisplayPrivacyScreenEnabled);
+  // If managed by policy, return the pref value.
+  if (active_user_pref_service_->IsManagedPreference(
+          prefs::kDisplayPrivacyScreenEnabled)) {
+    return actual_user_pref;
+  }
+  // Otherwise return true if enforced by DLP or return the last state set by
+  // the user.
+  return dlp_enforced_ || actual_user_pref;
 }
 
-void PrivacyScreenController::SetEnabled(bool enabled) {
+void PrivacyScreenController::SetEnabled(bool enabled,
+                                         ToggleUISurface ui_surface) {
   if (!IsSupported()) {
     LOG(ERROR) << "Attempted to set privacy-screen on an unsupported device.";
     return;
@@ -56,14 +68,26 @@ void PrivacyScreenController::SetEnabled(bool enabled) {
   // Do not set the policy if it is managed by policy. However, we still want to
   // notify observers that a change was attempted in order to show a toast.
   if (IsManaged()) {
+    const bool currently_enabled = GetEnabled();
     for (Observer& observer : observers_)
-      observer.OnPrivacyScreenSettingChanged(GetEnabled());
+      observer.OnPrivacyScreenSettingChanged(currently_enabled);
     return;
   }
 
   if (active_user_pref_service_) {
     active_user_pref_service_->SetBoolean(prefs::kDisplayPrivacyScreenEnabled,
                                           enabled);
+  }
+
+  if (ui_surface == kToggleUISurfaceCount)
+    return;
+
+  if (enabled) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.PrivacyScreen.Toggled.Enabled",
+                              ui_surface, kToggleUISurfaceCount);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.PrivacyScreen.Toggled.Disabled",
+                              ui_surface, kToggleUISurfaceCount);
   }
 }
 
@@ -73,6 +97,11 @@ void PrivacyScreenController::AddObserver(Observer* observer) {
 
 void PrivacyScreenController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void PrivacyScreenController::SetEnforced(bool enforced) {
+  dlp_enforced_ = enforced;
+  OnStateChanged(true);
 }
 
 void PrivacyScreenController::OnActiveUserPrefServiceChanged(
@@ -96,25 +125,27 @@ void PrivacyScreenController::OnSigninScreenPrefServiceInitialized(
 void PrivacyScreenController::OnDisplayModeChanged(
     const std::vector<display::DisplaySnapshot*>& displays) {
   // OnDisplayModeChanged() may fire many times during Chrome's lifetime. We
-  // limit it to when applying login screen prefs.
+  // limit automatic user pref initialization to login screen only.
   if (applying_login_screen_prefs_) {
     InitFromUserPrefs();
     applying_login_screen_prefs_ = false;
   }
 }
 
-void PrivacyScreenController::OnEnabledPrefChanged(bool notify_observers) {
-  if (IsSupported()) {
-    const bool is_enabled = GetEnabled();
-    Shell::Get()->display_configurator()->SetPrivacyScreenOnInternalDisplay(
-        is_enabled);
+void PrivacyScreenController::OnStateChanged(bool notify_observers) {
+  const int64_t display_id = GetSupportedDisplayId();
+  if (display_id == display::kInvalidDisplayId)
+    return;
 
-    if (!notify_observers)
-      return;
+  const bool is_enabled = GetEnabled();
+  Shell::Get()->display_configurator()->SetPrivacyScreen(display_id,
+                                                         is_enabled);
 
-    for (Observer& observer : observers_)
-      observer.OnPrivacyScreenSettingChanged(is_enabled);
-  }
+  if (!notify_observers)
+    return;
+
+  for (Observer& observer : observers_)
+    observer.OnPrivacyScreenSettingChanged(is_enabled);
 }
 
 void PrivacyScreenController::InitFromUserPrefs() {
@@ -124,13 +155,28 @@ void PrivacyScreenController::InitFromUserPrefs() {
   pref_change_registrar_->Init(active_user_pref_service_);
   pref_change_registrar_->Add(
       prefs::kDisplayPrivacyScreenEnabled,
-      base::BindRepeating(&PrivacyScreenController::OnEnabledPrefChanged,
+      base::BindRepeating(&PrivacyScreenController::OnStateChanged,
                           base::Unretained(this),
                           /*notify_observers=*/true));
 
   // We don't want to notify observers upon initialization or on account change
   // because changes will trigger a toast to show up.
-  OnEnabledPrefChanged(/*notify_observers=*/false);
+  OnStateChanged(/*notify_observers=*/false);
+}
+
+int64_t PrivacyScreenController::GetSupportedDisplayId() const {
+  const auto& cached_displays =
+      Shell::Get()->display_configurator()->cached_displays();
+
+  for (auto* display : cached_displays) {
+    if (display->type() == display::DISPLAY_CONNECTION_TYPE_INTERNAL &&
+        display->privacy_screen_state() != display::kNotSupported &&
+        display->current_mode()) {
+      return display->display_id();
+    }
+  }
+
+  return display::kInvalidDisplayId;
 }
 
 }  // namespace ash

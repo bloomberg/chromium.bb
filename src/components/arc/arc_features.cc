@@ -6,11 +6,6 @@
 
 namespace arc {
 
-// Controls whether ARC++ app runtime performance statistics collection is
-// enabled.
-const base::Feature kAppRuntimePerormanceStatistics{
-    "AppRuntimePerormanceStatistics", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 const base::Feature kBootCompletedBroadcastFeature {
@@ -25,11 +20,7 @@ const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
 
 // Controls experimental Custom Tabs feature for ARC.
 const base::Feature kCustomTabsExperimentFeature{
-    "ArcCustomTabsExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether ARC applications support zoom in/out.
-const base::Feature kEnableApplicationZoomFeature{
-    "ArcEnableApplicationZoomFeature", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ArcCustomTabsExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether ARC handles child->regular account transition.
 const base::Feature kEnableChildToRegularTransitionFeature{
@@ -44,6 +35,10 @@ const base::Feature kEnableDocumentsProviderInFilesAppFeature{
 const base::Feature kEnableRegularToChildTransitionFeature{
     "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether secondary accounts are added to ARC++ for child user.
+const base::Feature kEnableSecondaryAccountsForChild{
+    "ArcEnableSecondaryAccountForChild", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether we should delegate audio focus requests from ARC to Chrome.
 const base::Feature kEnableUnifiedAudioFocusFeature{
     "ArcEnableUnifiedAudioFocus", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -52,27 +47,22 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls experimental 64-bit native bridge support for ARC on boards that
+// have 64-bit native bridge support available but not yet enabled.
+const base::Feature kNativeBridge64BitSupportExperimentFeature{
+    "ArcNativeBridge64BitSupportExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Toggles between native bridge implementations for ARC.
 // Note, that we keep the original feature name to preserve
 // corresponding metrics.
 const base::Feature kNativeBridgeToggleFeature{
-    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ArcNativeBridgeExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls ARC picture-in-picture feature. If this is enabled, then Android
 // will control which apps can enter PIP. If this is disabled, then ARC PIP
 // will be disabled.
 const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls experimental print spooler feature for ARC.
-const base::Feature kPrintSpoolerExperimentFeature{
-    "ArcPrintSpoolerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls Smart Text Selection for Chrome.
-// When enabled, the context menu will show contextual quick actions based on
-// the current text selection.
-const base::Feature kSmartTextSelectionFeature{
-    "ArcSmartTextSelection", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARC USB host integration.
 // When enabled, Android apps will be able to use usb host features.

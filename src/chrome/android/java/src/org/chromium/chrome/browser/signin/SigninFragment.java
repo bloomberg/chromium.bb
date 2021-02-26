@@ -140,7 +140,9 @@ public class SigninFragment extends SigninFragmentBase {
             callback.run();
             return;
         }
-        IdentityServicesProvider.get().getSigninManager().signIn(
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
+        signinManager.signinAndEnableSync(
                 mSigninAccessPoint, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {

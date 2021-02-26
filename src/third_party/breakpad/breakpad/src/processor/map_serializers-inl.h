@@ -53,7 +53,7 @@ namespace google_breakpad {
 
 template<typename Key, typename Value>
 size_t StdMapSerializer<Key, Value>::SizeOf(
-    const std::map<Key, Value> &m) const {
+    const std::map<Key, Value>& m) const {
   size_t size = 0;
   size_t header_size = (1 + m.size()) * sizeof(uint32_t);
   size += header_size;
@@ -67,22 +67,22 @@ size_t StdMapSerializer<Key, Value>::SizeOf(
 }
 
 template<typename Key, typename Value>
-char *StdMapSerializer<Key, Value>::Write(const std::map<Key, Value> &m,
-                                          char *dest) const {
+char* StdMapSerializer<Key, Value>::Write(const std::map<Key, Value>& m,
+                                          char* dest) const {
   if (!dest) {
     BPLOG(ERROR) << "StdMapSerializer failed: write to NULL address.";
     return NULL;
   }
-  char *start_address = dest;
+  char* start_address = dest;
 
   // Write header:
   // Number of nodes.
   dest = SimpleSerializer<uint32_t>::Write(m.size(), dest);
   // Nodes offsets.
-  uint32_t *offsets = reinterpret_cast<uint32_t*>(dest);
+  uint32_t* offsets = reinterpret_cast<uint32_t*>(dest);
   dest += sizeof(uint32_t) * m.size();
 
-  char *key_address = dest;
+  char* key_address = dest;
   dest += sizeof(Key) * m.size();
 
   // Traverse map.
@@ -97,12 +97,12 @@ char *StdMapSerializer<Key, Value>::Write(const std::map<Key, Value> &m,
 }
 
 template<typename Key, typename Value>
-char *StdMapSerializer<Key, Value>::Serialize(
-    const std::map<Key, Value> &m, unsigned int *size) const {
+char* StdMapSerializer<Key, Value>::Serialize(
+    const std::map<Key, Value>& m, unsigned int* size) const {
   // Compute size of memory to be allocated.
   unsigned int size_to_alloc = SizeOf(m);
   // Allocate memory.
-  char *serialized_data = new char[size_to_alloc];
+  char* serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "StdMapSerializer memory allocation failed.";
     if (size) *size = 0;
@@ -117,7 +117,7 @@ char *StdMapSerializer<Key, Value>::Serialize(
 
 template<typename Address, typename Entry>
 size_t RangeMapSerializer<Address, Entry>::SizeOf(
-    const RangeMap<Address, Entry> &m) const {
+    const RangeMap<Address, Entry>& m) const {
   size_t size = 0;
   size_t header_size = (1 + m.map_.size()) * sizeof(uint32_t);
   size += header_size;
@@ -135,22 +135,22 @@ size_t RangeMapSerializer<Address, Entry>::SizeOf(
 }
 
 template<typename Address, typename Entry>
-char *RangeMapSerializer<Address, Entry>::Write(
-    const RangeMap<Address, Entry> &m, char *dest) const {
+char* RangeMapSerializer<Address, Entry>::Write(
+    const RangeMap<Address, Entry>& m, char* dest) const {
   if (!dest) {
     BPLOG(ERROR) << "RangeMapSerializer failed: write to NULL address.";
     return NULL;
   }
-  char *start_address = dest;
+  char* start_address = dest;
 
   // Write header:
   // Number of nodes.
   dest = SimpleSerializer<uint32_t>::Write(m.map_.size(), dest);
   // Nodes offsets.
-  uint32_t *offsets = reinterpret_cast<uint32_t*>(dest);
+  uint32_t* offsets = reinterpret_cast<uint32_t*>(dest);
   dest += sizeof(uint32_t) * m.map_.size();
 
-  char *key_address = dest;
+  char* key_address = dest;
   dest += sizeof(Address) * m.map_.size();
 
   // Traverse map.
@@ -166,12 +166,12 @@ char *RangeMapSerializer<Address, Entry>::Write(
 }
 
 template<typename Address, typename Entry>
-char *RangeMapSerializer<Address, Entry>::Serialize(
-    const RangeMap<Address, Entry> &m, unsigned int *size) const {
+char* RangeMapSerializer<Address, Entry>::Serialize(
+    const RangeMap<Address, Entry>& m, unsigned int* size) const {
   // Compute size of memory to be allocated.
   unsigned int size_to_alloc = SizeOf(m);
   // Allocate memory.
-  char *serialized_data = new char[size_to_alloc];
+  char* serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "RangeMapSerializer memory allocation failed.";
     if (size) *size = 0;
@@ -188,7 +188,7 @@ char *RangeMapSerializer<Address, Entry>::Serialize(
 
 template<class AddrType, class EntryType>
 size_t ContainedRangeMapSerializer<AddrType, EntryType>::SizeOf(
-    const ContainedRangeMap<AddrType, EntryType> *m) const {
+    const ContainedRangeMap<AddrType, EntryType>* m) const {
   size_t size = 0;
   size_t header_size = addr_serializer_.SizeOf(m->base_)
                        + entry_serializer_.SizeOf(m->entry_)
@@ -209,8 +209,8 @@ size_t ContainedRangeMapSerializer<AddrType, EntryType>::SizeOf(
 }
 
 template<class AddrType, class EntryType>
-char *ContainedRangeMapSerializer<AddrType, EntryType>::Write(
-    const ContainedRangeMap<AddrType, EntryType> *m, char *dest) const {
+char* ContainedRangeMapSerializer<AddrType, EntryType>::Write(
+    const ContainedRangeMap<AddrType, EntryType>* m, char* dest) const {
   if (!dest) {
     BPLOG(ERROR) << "StdMapSerializer failed: write to NULL address.";
     return NULL;
@@ -221,15 +221,15 @@ char *ContainedRangeMapSerializer<AddrType, EntryType>::Write(
   dest = entry_serializer_.Write(m->entry_, dest);
 
   // Write map<<AddrType, ContainedRangeMap*>:
-  char *map_address = dest;
+  char* map_address = dest;
   if (m->map_ == NULL) {
     dest = SimpleSerializer<uint32_t>::Write(0, dest);
   } else {
     dest = SimpleSerializer<uint32_t>::Write(m->map_->size(), dest);
-    uint32_t *offsets = reinterpret_cast<uint32_t*>(dest);
+    uint32_t* offsets = reinterpret_cast<uint32_t*>(dest);
     dest += sizeof(uint32_t) * m->map_->size();
 
-    char *key_address = dest;
+    char* key_address = dest;
     dest += sizeof(AddrType) * m->map_->size();
 
     // Traverse map.
@@ -246,11 +246,11 @@ char *ContainedRangeMapSerializer<AddrType, EntryType>::Write(
 }
 
 template<class AddrType, class EntryType>
-char *ContainedRangeMapSerializer<AddrType, EntryType>::Serialize(
-    const ContainedRangeMap<AddrType, EntryType> *m, unsigned int *size) const {
+char* ContainedRangeMapSerializer<AddrType, EntryType>::Serialize(
+    const ContainedRangeMap<AddrType, EntryType>* m, unsigned int* size) const {
   unsigned int size_to_alloc = SizeOf(m);
   // Allocating memory.
-  char *serialized_data = new char[size_to_alloc];
+  char* serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "ContainedRangeMapSerializer memory allocation failed.";
     if (size) *size = 0;

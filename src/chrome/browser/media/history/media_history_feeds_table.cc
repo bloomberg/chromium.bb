@@ -5,6 +5,8 @@
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
@@ -26,6 +28,14 @@ const int kMaxLogoCount = 5;
 base::UnguessableToken ProtoToUnguessableToken(
     const media_feeds::FeedResetToken& proto) {
   return base::UnguessableToken::Deserialize(proto.high(), proto.low());
+}
+
+void AssignStatement(sql::Statement* statement,
+                     sql::Database* db,
+                     const sql::StatementID& id,
+                     const std::vector<std::string>& sql) {
+  statement->Assign(
+      db->GetCachedStatement(id, base::JoinString(sql, " ").c_str()));
 }
 
 }  // namespace
@@ -66,6 +76,8 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "last_display_time_s INTEGER, "
                          "reset_reason INTEGER DEFAULT 0, "
                          "reset_token BLOB, "
+                         "cookie_name_filter TEXT, "
+                         "safe_search_result INTEGER DEFAULT 0, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -87,6 +99,31 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
     success = DB()->Execute(
         "CREATE INDEX IF NOT EXISTS mediaFeed_fetch_time_index ON "
         "mediaFeed (last_fetch_time_s)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_safe_search_result ON "
+        "mediaFeed (safe_search_result)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_last_fetch_content_types_index "
+        "ON "
+        "mediaFeed (last_fetch_content_types)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_top_feeds_index ON "
+        "mediaFeed (last_fetch_content_types, safe_search_result)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_user_status_index ON "
+        "mediaFeed (user_status)");
   }
 
   if (!success) {
@@ -185,29 +222,44 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.display_name, "
       "mediaFeed.last_display_time_s, "
       "mediaFeed.reset_reason, "
-      "mediaFeed.user_identifier");
+      "mediaFeed.user_identifier, "
+      "mediaFeed.cookie_name_filter, "
+      "mediaFeed.safe_search_result, "
+      "mediaFeed.reset_token ");
 
   sql::Statement statement;
 
   if (top_feeds) {
     // Check the request has the right parameters.
     DCHECK(request.limit.has_value());
-    DCHECK(request.audio_video_watchtime_min.has_value());
 
     if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::Type::
                             kTopFeedsForDisplay) {
       DCHECK(request.fetched_items_min.has_value());
+    } else if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::
+                                   Type::kTopFeedsForFetch) {
+      DCHECK(request.audio_video_watchtime_min.has_value());
     }
 
     // If we need the top feeds we should select rows from the origin table and
     // LEFT JOIN mediaFeed. This means there should be a row for each origin
     // and if there is a media feed that will be included.
     sql.push_back(
+        ",origin.aggregate_watchtime_audio_video_s "
         "FROM origin "
         "LEFT JOIN mediaFeed "
-        "ON origin.id = mediaFeed.origin_id "
-        "WHERE origin.aggregate_watchtime_audio_video_s >= ? "
-        "ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
+        "ON origin.id = mediaFeed.origin_id");
+
+    // If we have an audio/video watchtime requirement we should add that.
+    if (request.audio_video_watchtime_min.has_value())
+      sql.push_back("WHERE origin.aggregate_watchtime_audio_video_s >= ?");
+
+    // If we have a content type filter then we should add that.
+    if (request.filter_by_type.has_value())
+      sql.push_back("WHERE mediaFeed.last_fetch_content_types & ?");
+
+    // Finally, order the results by watchtime.
+    sql.push_back("ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
 
     // Get the total count of the origins so we can calculate a percentile.
     sql::Statement origin_statement(DB()->GetCachedStatement(
@@ -220,10 +272,40 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
 
     DCHECK(origin_count.has_value());
 
+    // For each different query combination we should have an assign statement
+    // call that will generate a unique SQL_FROM_HERE value.
+    if (request.audio_video_watchtime_min.has_value() &&
+        request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.audio_video_watchtime_min.has_value()) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    }
+
+    // Now bind all the parameters to the query.
+    int bind_index = 0;
+
+    if (request.audio_video_watchtime_min.has_value()) {
+      statement.BindInt64(bind_index++,
+                          request.audio_video_watchtime_min->InSeconds());
+    }
+
+    if (request.filter_by_type.has_value()) {
+      statement.BindInt64(bind_index++,
+                          static_cast<int>(*request.filter_by_type));
+    }
+  } else if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::
+                                 Type::kSelectedFeedsForFetch) {
+    sql.push_back("FROM mediaFeed WHERE user_status = ?");
+
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
 
-    statement.BindInt64(0, request.audio_video_watchtime_min->InSeconds());
+    statement.BindInt64(
+        0, static_cast<int>(media_feeds::mojom::FeedUserStatus::kEnabled));
   } else {
     sql.push_back("FROM mediaFeed");
 
@@ -261,6 +343,9 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
         static_cast<media_feeds::mojom::FetchResult>(statement.ColumnInt64(5));
     feed->reset_reason =
         static_cast<media_feeds::mojom::ResetReason>(statement.ColumnInt64(15));
+    feed->safe_search_result =
+        static_cast<media_feeds::mojom::SafeSearchResult>(
+            statement.ColumnInt64(18));
 
     if (!IsKnownEnumValue(feed->user_status)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
@@ -277,6 +362,12 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     if (!IsKnownEnumValue(feed->reset_reason)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
                                     FeedReadResult::kBadResetReason);
+      continue;
+    }
+
+    if (!IsKnownEnumValue(feed->safe_search_result)) {
+      base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
+                                    FeedReadResult::kBadSafeSearchResult);
       continue;
     }
 
@@ -349,6 +440,20 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
         feed->user_identifier->image = ProtoToMediaImage(identifier.image());
     }
 
+    if (statement.GetColumnType(17) == sql::ColumnType::kText)
+      feed->cookie_name_filter = statement.ColumnString(17);
+
+    if (statement.GetColumnType(19) == sql::ColumnType::kBlob) {
+      media_feeds::FeedResetToken token;
+      if (GetProto(statement, 19, token))
+        feed->reset_token = ProtoToUnguessableToken(token);
+    }
+
+    if (top_feeds) {
+      feed->aggregate_watchtime =
+          base::TimeDelta::FromSeconds(statement.ColumnInt64(20));
+    }
+
     feeds.push_back(std::move(feed));
 
     // If we are returning top feeds then we should apply a limit here.
@@ -370,7 +475,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
     const media_feeds::mojom::UserIdentifier* user_identifier,
     const std::string& display_name,
-    const int item_safe_count) {
+    const int item_safe_count,
+    const std::string& cookie_name_filter) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
     return false;
@@ -400,7 +506,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "user_identifier = ? WHERE id = ?"));
+        "user_identifier = ?, cookie_name_filter = ? WHERE id = ?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
@@ -408,7 +514,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "user_identifier = ?, last_fetch_time_not_cache_hit_s = ? "
+        "user_identifier = ?, cookie_name_filter = ?, "
+        "last_fetch_time_not_cache_hit_s = ? "
         "WHERE id = ?"));
   }
 
@@ -444,12 +551,18 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     statement.BindNull(9);
   }
 
+  if (!cookie_name_filter.empty()) {
+    statement.BindString(10, cookie_name_filter);
+  } else {
+    statement.BindNull(10);
+  }
+
   if (was_fetched_from_cache) {
-    statement.BindInt64(10, feed_id);
+    statement.BindInt64(11, feed_id);
   } else {
     statement.BindInt64(
-        10, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(11, feed_id);
+        11, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(12, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -561,28 +674,6 @@ bool MediaHistoryFeedsTable::Delete(const int64_t feed_id) {
   return statement.Run() && DB()->GetLastChangeCount() >= 1;
 }
 
-base::Optional<url::Origin> MediaHistoryFeedsTable::GetOrigin(
-    const int64_t feed_id) {
-  DCHECK_LT(0, DB()->transaction_nesting());
-  if (!CanAccessDatabase())
-    return base::nullopt;
-
-  sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE, "SELECT url FROM mediaFeed WHERE id = ?"));
-  statement.BindInt64(0, feed_id);
-
-  while (statement.Step()) {
-    GURL url(statement.ColumnString(0));
-
-    if (!url.is_valid())
-      break;
-
-    return url::Origin::Create(url);
-  }
-
-  return base::nullopt;
-}
-
 bool MediaHistoryFeedsTable::ClearResetReason(const int64_t feed_id) {
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE, "UPDATE mediaFeed SET reset_reason = ? WHERE id = ?"));
@@ -590,6 +681,127 @@ bool MediaHistoryFeedsTable::ClearResetReason(const int64_t feed_id) {
                       static_cast<int>(media_feeds::mojom::ResetReason::kNone));
   statement.BindInt64(1, feed_id);
   return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+std::string MediaHistoryFeedsTable::GetCookieNameFilter(const int64_t feed_id) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return std::string();
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT cookie_name_filter FROM mediaFeed WHERE id = ?"));
+  statement.BindInt64(0, feed_id);
+
+  while (statement.Step())
+    return statement.ColumnString(0);
+
+  return std::string();
+}
+
+std::set<int64_t> MediaHistoryFeedsTable::GetFeedsForOriginSubdomain(
+    const url::Origin& origin) {
+  std::set<int64_t> feeds;
+  if (!CanAccessDatabase())
+    return feeds;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT id, url FROM mediaFeed WHERE url LIKE ? AND (last_fetch_result > "
+      "0 OR reset_reason > 0)"));
+
+  std::vector<std::string> wildcard_parts = base::SplitString(
+      MediaHistoryOriginTable::GetOriginForStorage(origin),
+      url::kStandardSchemeSeparator, base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+
+  if (wildcard_parts.size() != 2)
+    return feeds;
+
+  statement.BindString(
+      0, base::StrCat({wildcard_parts[0], url::kStandardSchemeSeparator, "%.",
+                       wildcard_parts[1], "/%"}));
+
+  while (statement.Step()) {
+    // This shouldn't happen but is a backup so we don't accidentally reset
+    // feeds that we should not.
+    auto url = GURL(statement.ColumnString(1));
+    if (!url.DomainIs(origin.host()))
+      continue;
+
+    feeds.insert(statement.ColumnInt64(0));
+  }
+
+  return feeds;
+}
+
+base::Optional<int64_t> MediaHistoryFeedsTable::GetFeedForOrigin(
+    const url::Origin& origin) {
+  if (!CanAccessDatabase())
+    return base::nullopt;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT mediaFeed.id FROM origin LEFT JOIN mediaFeed ON "
+      "mediaFeed.origin_id = origin.id WHERE origin.origin = ? AND "
+      "(mediaFeed.last_fetch_result > 0 OR mediaFeed.reset_reason > 0)"));
+  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(origin));
+
+  while (statement.Step())
+    return statement.ColumnInt64(0);
+
+  return base::nullopt;
+}
+
+MediaHistoryKeyedService::PendingSafeSearchCheckList
+MediaHistoryFeedsTable::GetPendingSafeSearchCheckItems() {
+  MediaHistoryKeyedService::PendingSafeSearchCheckList items;
+
+  if (!CanAccessDatabase())
+    return items;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      "SELECT id, url FROM mediaFeed WHERE safe_search_result = ?"));
+  statement.BindInt64(
+      0, static_cast<int>(media_feeds::mojom::SafeSearchResult::kUnknown));
+
+  DCHECK(statement.is_valid());
+
+  while (statement.Step()) {
+    auto check =
+        std::make_unique<MediaHistoryKeyedService::PendingSafeSearchCheck>(
+            MediaHistoryKeyedService::SafeSearchCheckedType::kFeed,
+            statement.ColumnInt64(0));
+
+    GURL url(statement.ColumnString(1));
+    if (url.is_valid())
+      check->urls.insert(url);
+
+    if (!check->urls.empty())
+      items.push_back(std::move(check));
+  }
+
+  return items;
+}
+
+bool MediaHistoryFeedsTable::StoreSafeSearchResult(
+    int64_t feed_id,
+    media_feeds::mojom::SafeSearchResult result) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeed SET safe_search_result = ? WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(result));
+  statement.BindInt64(1, feed_id);
+  return statement.Run();
+}
+
+bool MediaHistoryFeedsTable::UpdateFeedUserStatus(
+    const int64_t feed_id,
+    media_feeds::mojom::FeedUserStatus status) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE mediaFeed SET user_status = ? WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(status));
+  statement.BindInt64(1, feed_id);
+  return statement.Run();
 }
 
 }  // namespace media_history

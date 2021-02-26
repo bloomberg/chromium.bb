@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
+#include "base/containers/span.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
@@ -58,9 +59,9 @@ const char kSocketNotConnectedError[] = "Socket not connected";
 const char kWildcardAddress[] = "*";
 const uint16_t kWildcardPort = 0;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kFirewallFailure[] = "Failed to open firewall port";
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool IsPortValid(int port) {
   return port >= 0 && port <= 65535;
@@ -112,7 +113,7 @@ void SocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
 void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
                                               int socket_id,
                                               Socket* socket) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!net::HostStringIsLocalhost(address)) {
     net::IPEndPoint local_address;
     if (!socket->GetLocalAddress(&local_address)) {
@@ -127,8 +128,8 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
                                          ? AppFirewallHole::PortType::TCP
                                          : AppFirewallHole::PortType::UDP;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SocketAsyncApiFunction::OpenFirewallHoleOnUIThread,
                        this, type, local_address.port(), socket_id));
     return;
@@ -137,7 +138,7 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
   AsyncWorkCompleted();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
     AppFirewallHole::PortType type,
@@ -148,8 +149,8 @@ void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
       AppFirewallHoleManager::Get(browser_context());
   std::unique_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole(
       manager->Open(type, port, extension_id()).release());
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SocketAsyncApiFunction::OnFirewallHoleOpened,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SocketAsyncApiFunction::OnFirewallHoleOpened,
                                 this, socket_id, std::move(hole)));
 }
 
@@ -176,7 +177,7 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
   AsyncWorkCompleted();
 }
 
-#endif  // OS_CHROMEOS
+#endif  // IS_CHROMEOS_ASH
 
 SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction() =
     default;
@@ -565,16 +566,14 @@ void SocketReadFunction::AsyncWorkStart() {
 void SocketReadFunction::OnCompleted(int bytes_read,
                                      scoped_refptr<net::IOBuffer> io_buffer,
                                      bool socket_destroying) {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetInteger(kResultCodeKey, bytes_read);
-  if (bytes_read > 0) {
-    result->Set(kDataKey, base::Value::CreateWithCopiedBuffer(io_buffer->data(),
-                                                              bytes_read));
-  } else {
-    result->Set(kDataKey,
-                std::make_unique<base::Value>(base::Value::Type::BINARY));
-  }
-  SetResult(std::move(result));
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetIntKey(kResultCodeKey, bytes_read);
+  base::span<const uint8_t> data_span;
+  if (bytes_read > 0)
+    data_span = base::as_bytes(base::make_span(io_buffer->data(), bytes_read));
+  result.SetKey(kDataKey, base::Value(data_span));
+  SetResult(base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(result))));
 
   AsyncWorkCompleted();
 }
@@ -647,18 +646,16 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
                                          bool socket_destroying,
                                          const std::string& address,
                                          uint16_t port) {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetInteger(kResultCodeKey, bytes_read);
-  if (bytes_read > 0) {
-    result->Set(kDataKey, base::Value::CreateWithCopiedBuffer(io_buffer->data(),
-                                                              bytes_read));
-  } else {
-    result->Set(kDataKey,
-                std::make_unique<base::Value>(base::Value::Type::BINARY));
-  }
-  result->SetString(kAddressKey, address);
-  result->SetInteger(kPortKey, port);
-  SetResult(std::move(result));
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetIntKey(kResultCodeKey, bytes_read);
+  base::span<const uint8_t> data_span;
+  if (bytes_read > 0)
+    data_span = base::as_bytes(base::make_span(io_buffer->data(), bytes_read));
+  result.SetKey(kDataKey, base::Value(data_span));
+  result.SetStringKey(kAddressKey, address);
+  result.SetIntKey(kPortKey, port);
+  SetResult(base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(result))));
 
   AsyncWorkCompleted();
 }

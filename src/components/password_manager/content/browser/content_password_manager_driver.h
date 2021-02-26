@@ -53,7 +53,8 @@ class ContentPasswordManagerDriver
   int GetId() const override;
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  void InformNoSavedCredentials() override;
+  void InformNoSavedCredentials(
+      bool should_show_popup_without_passwords) override;
   void FormEligibleForGenerationFound(
       const autofill::PasswordFormGenerationData& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
@@ -80,9 +81,9 @@ class ContentPasswordManagerDriver
   void AnnotateFieldsWithParsingResult(
       const autofill::ParsingResult& parsing_result) override;
 
-  // Notify the renderer that the user wants to generate password manually.
+  // Notify the renderer that the user wants to trigger password generation.
   void GeneratePassword(autofill::mojom::PasswordGenerationAgent::
-                            UserTriggeredGeneratePasswordCallback callback);
+                            TriggeredGeneratePasswordCallback callback);
 
   content::RenderFrameHost* render_frame_host() const {
     return render_frame_host_;
@@ -99,11 +100,10 @@ class ContentPasswordManagerDriver
       const std::vector<autofill::FormData>& visible_forms_data,
       bool did_stop_loading) override;
   void PasswordFormSubmitted(const autofill::FormData& form_data) override;
-  void ShowManualFallbackForSaving(
-      const autofill::FormData& form_data) override;
-  void HideManualFallbackForSaving() override;
+  void InformAboutUserInput(const autofill::FormData& form_data) override;
   void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
                                   submission_indication_event) override;
+  void PasswordFormCleared(const autofill::FormData& form_data) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void UserModifiedNonPasswordField(autofill::FieldRendererId renderer_id,

@@ -7,7 +7,11 @@
 
 #include "build/build_config.h"
 
-// Field trial configuration for the quiet notificaiton permission request UI.
+namespace base {
+class TimeDelta;
+}
+
+// Field trial configuration for the quiet notification permission request UI.
 class QuietNotificationPermissionUiConfig {
  public:
   enum class InfobarLinkTextVariation { kDetails = 0, kManage = 1 };
@@ -16,6 +20,14 @@ class QuietNotificationPermissionUiConfig {
   // notification permission prompt UI should be enabled adaptively after three
   // consecutive prompt denies.
   static const char kEnableAdaptiveActivation[];
+
+  // Name of the boolean variation parameter that determines if the adaptive
+  // activation quiet UI dry run study is enabled.
+  static const char kEnableAdaptiveActivationDryRun[];
+
+  // Name of the integer variation parameter that determines history windows
+  // size in days in which 3 consecutive denies should be monitored.
+  static const char kAdaptiveActivationActionWindowSizeInDays[];
 
   // Name of the boolean variation parameter that determines if the quiet
   // notification permission prompt UI should be enabled as a one-off based on
@@ -32,6 +44,16 @@ class QuietNotificationPermissionUiConfig {
   // message in Developer Tools should be printed on sites that are on the
   // warning list for abusive permission request flows.
   static const char kEnableAbusiveRequestWarning[];
+
+  // Name of the boolean variation parameter that determines if the quiet
+  // notification permission prompt UI should be enabled as a one-off on sites
+  // that are on the blocking list for showing abusive notification content.
+  static const char kEnableAbusiveContentTriggeredRequestBlocking[];
+
+  // Name of the boolean variation parameter that determines if a console
+  // message in Developer Tools should be printed on sites that are on the
+  // warning list for showing abusive notification content.
+  static const char kEnableAbusiveContentTriggeredRequestWarning[];
 
   // Name of the variation parameter that represents the chance that a
   // quiet notifications permission prompt UI triggered by crowd deny will be
@@ -50,6 +72,16 @@ class QuietNotificationPermissionUiConfig {
   // that quiet notifications permission prompts will be turned on after three
   // consecutive prompt denies.
   static bool IsAdaptiveActivationEnabled();
+
+  // Whether or not adaptive activation dry run is enabled. Adaptive activation
+  // dry run means that UKM `Permission` events will be annotated with the
+  // `SatisfiedAdaptiveTriggers` metric indicating whether the user had three
+  // consecutive prompt denies.
+  static bool IsAdaptiveActivationDryRunEnabled();
+
+  // How long the window extends into the past, in which the user needs to make
+  // 3 consecutive permission denies.
+  static base::TimeDelta GetAdaptiveActivationWindowSize();
 
   // Whether or not triggering via crowd deny is enabled. This means that on
   // sites with a low notification permission grant rate, the quiet UI will be
@@ -71,8 +103,18 @@ class QuietNotificationPermissionUiConfig {
   static bool IsAbusiveRequestBlockingEnabled();
 
   // Whether or not showing a console message in Developer Tools is enabled for
-  // sites on the abusive requests warning list is enabled.
+  // sites on the abusive requests warning list.
   static bool IsAbusiveRequestWarningEnabled();
+
+  // Whether or not triggering via the abusive notification content list is
+  // enabled. This means that on sites with abusive notification content, the
+  // quiet UI will be shown as a one-off, even when it is not turned on for all
+  // sites in prefs.
+  static bool IsAbusiveContentTriggeredRequestBlockingEnabled();
+
+  // Whether or not showing a console message in Developer Tools is enabled for
+  // sites on the abusive content warning list.
+  static bool IsAbusiveContentTriggeredRequestWarningEnabled();
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_

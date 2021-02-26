@@ -42,7 +42,7 @@ PushMessagingBridge* PushMessagingBridge::From(
 PushMessagingBridge::PushMessagingBridge(
     ServiceWorkerRegistration& registration)
     : Supplement<ServiceWorkerRegistration>(registration),
-      permission_service_(nullptr) {}
+      permission_service_(registration.GetExecutionContext()) {}
 
 PushMessagingBridge::~PushMessagingBridge() = default;
 
@@ -80,7 +80,7 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
   return promise;
 }
 
-void PushMessagingBridge::Trace(Visitor* visitor) {
+void PushMessagingBridge::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }

@@ -112,24 +112,27 @@ class CPWL_Wnd : public Observable {
     CreateParams(const CreateParams& other);
     ~CreateParams();
 
-    CFX_FloatRect rcRectWnd;                        // required
-    UnownedPtr<TimerHandlerIface> pTimerHandler;    // required
-    UnownedPtr<IPWL_SystemHandler> pSystemHandler;  // required
-    UnownedPtr<IPVT_FontMap> pFontMap;              // required
-    ObservedPtr<ProviderIface> pProvider;           // required
-    UnownedPtr<FocusHandlerIface> pFocusHandler;    // optional
-    uint32_t dwFlags = 0;                           // optional
-    CFX_Color sBackgroundColor;                     // optional
-    BorderStyle nBorderStyle = BorderStyle::SOLID;  // optional
-    int32_t dwBorderWidth = 1;                      // optional
-    CFX_Color sBorderColor;                         // optional
-    CFX_Color sTextColor;                           // optional
-    int32_t nTransparency = 255;                    // optional
-    float fFontSize;                                // optional
-    CPWL_Dash sDash;                                // optional
-    CPWL_MsgControl* pMsgControl = nullptr;         // ignore
-    int32_t eCursorType = FXCT_ARROW;               // ignore
-    CFX_Matrix mtChild;                             // ignore
+    // Required:
+    CFX_FloatRect rcRectWnd;
+    ObservedPtr<CFX_Timer::HandlerIface> pTimerHandler;
+    UnownedPtr<IPWL_SystemHandler> pSystemHandler;
+    UnownedPtr<IPVT_FontMap> pFontMap;
+    ObservedPtr<ProviderIface> pProvider;
+    // Optional:
+    UnownedPtr<FocusHandlerIface> pFocusHandler;
+    uint32_t dwFlags = 0;
+    CFX_Color sBackgroundColor;
+    BorderStyle nBorderStyle = BorderStyle::kSolid;
+    int32_t dwBorderWidth = 1;
+    CFX_Color sBorderColor;
+    CFX_Color sTextColor;
+    int32_t nTransparency = 255;
+    float fFontSize;
+    CPWL_Dash sDash;
+    // Ignore:
+    CPWL_MsgControl* pMsgControl = nullptr;
+    int32_t eCursorType = FXCT_ARROW;
+    CFX_Matrix mtChild;
   };
 
   static bool IsSHIFTKeyDown(uint32_t nFlag);
@@ -141,7 +144,7 @@ class CPWL_Wnd : public Observable {
   virtual ~CPWL_Wnd();
 
   // Returns |true| iff this instance is still allocated.
-  virtual bool InvalidateRect(CFX_FloatRect* pRect);
+  virtual bool InvalidateRect(const CFX_FloatRect* pRect);
 
   virtual bool OnKeyDown(uint16_t nChar, uint32_t nFlag);
   virtual bool OnChar(uint16_t nChar, uint32_t nFlag);
@@ -172,6 +175,7 @@ class CPWL_Wnd : public Observable {
   virtual WideString GetText();
   virtual WideString GetSelectedText();
   virtual void ReplaceSelection(const WideString& text);
+  virtual bool SelectAllText();
 
   virtual bool CanUndo();
   virtual bool CanRedo();
@@ -270,7 +274,7 @@ class CPWL_Wnd : public Observable {
   bool IsNotifying() const { return m_bNotifying; }
   bool IsValid() const { return m_bCreated; }
   CreateParams* GetCreationParams() { return &m_CreationParams; }
-  TimerHandlerIface* GetTimerHandler() const {
+  CFX_Timer::HandlerIface* GetTimerHandler() const {
     return m_CreationParams.pTimerHandler.Get();
   }
   IPWL_SystemHandler* GetSystemHandler() const {

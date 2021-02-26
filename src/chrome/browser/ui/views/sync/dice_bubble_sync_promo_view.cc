@@ -29,7 +29,7 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     bool signin_button_prominent,
     int text_style)
     : delegate_(delegate) {
-  DCHECK(!profile->IsGuestSession());
+  DCHECK(!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile());
   AccountInfo account;
   // Signin promos can be shown in incognito, they use an empty account list.
   if (profile->IsRegularProfile())
@@ -47,53 +47,43 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
 
   if (title_resource_id) {
     base::string16 title_text = l10n_util::GetStringUTF16(title_resource_id);
-    views::Label* title =
-        new views::Label(title_text, CONTEXT_BODY_TEXT_LARGE, text_style);
+    views::Label* title = new views::Label(
+        title_text, views::style::CONTEXT_DIALOG_BODY_TEXT, text_style);
     title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     title->SetMultiLine(true);
     AddChildView(title);
   }
 
+  views::Button::PressedCallback callback = base::BindRepeating(
+      &DiceBubbleSyncPromoView::EnableSync, base::Unretained(this));
+
   if (account.IsEmpty()) {
-    signin_button_view_ =
-        new DiceSigninButtonView(this, signin_button_prominent);
+    signin_button_view_ = AddChildView(std::make_unique<DiceSigninButtonView>(
+        std::move(callback), signin_button_prominent));
   } else {
     gfx::Image account_icon = account.account_image;
     if (account_icon.IsEmpty()) {
       account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           profiles::GetPlaceholderAvatarIconResourceID());
     }
-    signin_button_view_ =
-        new DiceSigninButtonView(account, account_icon, this,
-                                 /*use_account_name_as_title=*/true);
+    signin_button_view_ = AddChildView(std::make_unique<DiceSigninButtonView>(
+        account, account_icon, std::move(callback),
+        /*use_account_name_as_title=*/true));
   }
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(access_point);
   signin_metrics::RecordSigninImpressionWithAccountUserActionForAccessPoint(
       access_point, !account.IsEmpty() /* with_account */);
-  AddChildView(signin_button_view_);
 }
 
 DiceBubbleSyncPromoView::~DiceBubbleSyncPromoView() = default;
-
-void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
-                                            const ui::Event& event) {
-  if (sender == signin_button_view_->signin_button()) {
-    EnableSync(true /* is_default_promo_account */,
-               signin_button_view_->account());
-    return;
-  }
-  NOTREACHED();
-}
 
 views::View* DiceBubbleSyncPromoView::GetSigninButtonForTesting() {
   return signin_button_view_ ? signin_button_view_->signin_button() : nullptr;
 }
 
-void DiceBubbleSyncPromoView::EnableSync(
-    bool is_default_promo_account,
-    const base::Optional<AccountInfo>& account) {
-  delegate_->OnEnableSync(account.value_or(AccountInfo()),
-                          is_default_promo_account);
+void DiceBubbleSyncPromoView::EnableSync() {
+  base::Optional<AccountInfo> account = signin_button_view_->account();
+  delegate_->OnEnableSync(account.value_or(AccountInfo()));
 }
 
 const char* DiceBubbleSyncPromoView::GetClassName() const {

@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,8 +22,15 @@
 
 namespace features {
 // Feature to control preconnect to search.
-const base::Feature kPreconnectToSearch{"PreconnectToSearch",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPreconnectToSearch {
+  "PreconnectToSearch",
+
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Feature to limit experimentation to Google search only.
 const base::Feature kPreconnectToSearchNonGoogle{
@@ -43,13 +52,12 @@ void SearchEnginePreconnector::StopPreconnecting() {
 void SearchEnginePreconnector::StartPreconnecting(bool with_startup_delay) {
   timer_.Stop();
   if (with_startup_delay) {
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            base::GetFieldTrialParamByFeatureAsInt(
-                features::kPreconnectToSearch, "startup_delay_ms", 1000)),
-        base::BindOnce(&SearchEnginePreconnector::PreconnectDSE,
-                       base::Unretained(this)));
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(
+                     base::GetFieldTrialParamByFeatureAsInt(
+                         features::kPreconnectToSearch, "startup_delay_ms", 0)),
+                 base::BindOnce(&SearchEnginePreconnector::PreconnectDSE,
+                                base::Unretained(this)));
     return;
   }
 
@@ -98,7 +106,10 @@ void SearchEnginePreconnector::PreconnectDSE() {
 
   // The delay beyond the idle socket timeout that net uses when
   // re-preconnecting. If negative, no retries occur.
-  constexpr base::TimeDelta kRelayDelay = base::TimeDelta::FromMilliseconds(50);
+  const base::TimeDelta retry_delay =
+      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kNavigationPredictorPreconnectSocketCompletionTime,
+          "preconnect_socket_completion_time_msec", 50));
 
   // Set/Reset the timer to fire after the preconnect times out. Add an extra
   // delay to make sure the preconnect has expired if it wasn't used.
@@ -107,7 +118,7 @@ void SearchEnginePreconnector::PreconnectDSE() {
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
           net::features::kNetUnusedIdleSocketTimeout,
           "unused_idle_socket_timeout_seconds", 60)) +
-          kRelayDelay,
+          retry_delay,
       base::BindOnce(&SearchEnginePreconnector::PreconnectDSE,
                      base::Unretained(this)));
 }

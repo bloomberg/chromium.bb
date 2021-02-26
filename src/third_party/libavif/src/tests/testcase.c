@@ -23,6 +23,8 @@ static const char * choiceToString(avifCodecChoice choice)
             return "libgav1";
         case AVIF_CODEC_CHOICE_RAV1E:
             return "rav1e";
+        case AVIF_CODEC_CHOICE_SVT:
+            return "svt";
     }
     return "unknown";
 }
@@ -37,6 +39,8 @@ static avifCodecChoice stringToChoice(const char * str)
         return AVIF_CODEC_CHOICE_LIBGAV1;
     } else if (!strcmp(str, "rav1e")) {
         return AVIF_CODEC_CHOICE_RAV1E;
+    } else if (!strcmp(str, "svt")) {
+        return AVIF_CODEC_CHOICE_SVT;
     }
     return AVIF_CODEC_CHOICE_AUTO;
 }
@@ -203,7 +207,7 @@ int testCaseRun(TestCase * tc, const char * dataDir, avifBool generating)
     y4mFilename[sizeof(y4mFilename) - 1] = 0;
 
     avifImage * image = avifImageCreateEmpty();
-    if (!y4mRead(image, y4mFilename)) {
+    if (!y4mRead(image, y4mFilename, NULL)) {
         avifImageDestroy(image);
         printf("ERROR[%s]: Can't read y4m: %s\n", tc->name, y4mFilename);
         return AVIF_FALSE;
@@ -225,7 +229,8 @@ int testCaseRun(TestCase * tc, const char * dataDir, avifBool generating)
 
     decoder = avifDecoderCreate();
     decoder->codecChoice = tc->decodeChoice;
-    avifResult decodeResult = avifDecoderParse(decoder, (avifROData *)&encodedData);
+    avifDecoderSetIOMemory(decoder, encodedData.data, encodedData.size);
+    avifResult decodeResult = avifDecoderParse(decoder);
     if (decodeResult != AVIF_RESULT_OK) {
         printf("ERROR[%s]: Decode failed\n", tc->name);
         result = AVIF_FALSE;

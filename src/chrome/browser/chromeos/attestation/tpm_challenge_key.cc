@@ -4,26 +4,21 @@
 
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
 
-#include "base/base64.h"
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
-#include "base/check_op.h"
-#include "base/compiler_specific.h"
-#include "base/strings/stringprintf.h"
-#include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
-#include "chrome/browser/profiles/profile.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_subtle.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/tpm/install_attributes.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
+
+class Profile;
+class AttestationFlow;
 
 namespace chromeos {
 namespace attestation {
@@ -63,9 +58,10 @@ TpmChallengeKeyImpl::TpmChallengeKeyImpl() {
 }
 
 TpmChallengeKeyImpl::TpmChallengeKeyImpl(
-    AttestationFlow* attestation_flow_for_testing) {
-  tpm_challenge_key_subtle_ =
-      std::make_unique<TpmChallengeKeySubtleImpl>(attestation_flow_for_testing);
+    AttestationFlow* attestation_flow_for_testing,
+    MachineCertificateUploader* certificate_uploader_for_testing) {
+  tpm_challenge_key_subtle_ = std::make_unique<TpmChallengeKeySubtleImpl>(
+      attestation_flow_for_testing, certificate_uploader_for_testing);
 }
 
 TpmChallengeKeyImpl::~TpmChallengeKeyImpl() {
@@ -77,17 +73,14 @@ void TpmChallengeKeyImpl::BuildResponse(AttestationKeyType key_type,
                                         TpmChallengeKeyCallback callback,
                                         const std::string& challenge,
                                         bool register_key,
-                                        const std::string& key_name_for_spkac) {
+                                        const std::string& key_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
 
-  // For device key: if |register_key| is true, |key_name_for_spkac| should not
-  // be empty; if |register_key| is false, |key_name_for_spkac| is not used.
-  DCHECK((key_type != KEY_DEVICE) ||
-         (register_key == !key_name_for_spkac.empty()))
-      << "Invalid arguments: " << register_key << " "
-      << !key_name_for_spkac.empty();
+  // For device key: if |register_key| is true, |key_name| should not be empty.
+  DCHECK((key_type != KEY_DEVICE) || (register_key == !key_name.empty()))
+      << "Invalid arguments: " << register_key << " " << !key_name.empty();
 
   register_key_ = register_key;
   challenge_ = challenge;
@@ -95,7 +88,7 @@ void TpmChallengeKeyImpl::BuildResponse(AttestationKeyType key_type,
 
   // Empty |key_name| means that some default name will be used.
   tpm_challenge_key_subtle_->StartPrepareKeyStep(
-      key_type, /*key_name=*/std::string(), profile, key_name_for_spkac,
+      key_type, /*will_register_key=*/register_key_, key_name, profile,
       base::BindOnce(&TpmChallengeKeyImpl::OnPrepareKeyDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -110,9 +103,8 @@ void TpmChallengeKeyImpl::OnPrepareKeyDone(
   }
 
   tpm_challenge_key_subtle_->StartSignChallengeStep(
-      challenge_, /*include_signed_public_key=*/register_key_,
-      base::BindOnce(&TpmChallengeKeyImpl::OnSignChallengeDone,
-                     weak_factory_.GetWeakPtr()));
+      challenge_, base::BindOnce(&TpmChallengeKeyImpl::OnSignChallengeDone,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeyImpl::OnSignChallengeDone(

@@ -34,7 +34,7 @@ suite('SettingsToggleButton', () => {
     document.body.appendChild(testElement);
   });
 
-  test('value changes on tap', () => {
+  test('value changes on click', () => {
     assertTrue(testElement.checked);
     assertTrue(testElement.pref.value);
 
@@ -219,5 +219,19 @@ suite('SettingsToggleButton', () => {
     Polymer.dom.flush();
 
     assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
+  });
+
+  test('user control disabled pref', () => {
+    const pref = {
+      key: 'test',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: false,
+      userControlDisabled: true
+    };
+
+    assertFalse(testElement.$.control.disabled);
+    testElement.set('pref', pref);
+    Polymer.dom.flush();
+    assertTrue(testElement.$.control.disabled);
   });
 });

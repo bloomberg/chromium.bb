@@ -11,6 +11,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -19,7 +20,6 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
@@ -44,19 +44,18 @@ void GetPluginContentSettingInternal(
   bool uses_plugin_specific_setting = false;
   if (use_javascript_setting) {
     value = host_content_settings_map->GetWebsiteSetting(
-        main_frame_url, main_frame_url, ContentSettingsType::JAVASCRIPT,
-        std::string(), &info);
+        main_frame_url, main_frame_url, ContentSettingsType::JAVASCRIPT, &info);
   } else {
     content_settings::SettingInfo specific_info;
     std::unique_ptr<base::Value> specific_setting =
         host_content_settings_map->GetWebsiteSetting(
-            main_frame_url, plugin_url, ContentSettingsType::PLUGINS, resource,
+            main_frame_url, plugin_url, ContentSettingsType::PLUGINS,
             &specific_info);
     content_settings::SettingInfo general_info;
     std::unique_ptr<base::Value> general_setting =
         host_content_settings_map->GetWebsiteSetting(
             main_frame_url, plugin_url, ContentSettingsType::PLUGINS,
-            std::string(), &general_info);
+            &general_info);
     // If there is a plugin-specific setting, we use it, unless the general
     // setting was set by policy, in which case it takes precedence.
     uses_plugin_specific_setting =
@@ -153,19 +152,6 @@ ContentSetting PluginUtils::UnsafeGetRawDefaultFlashContentSetting(
   return plugin_setting;
 }
 
-// static
-void PluginUtils::RememberFlashChangedForSite(
-    HostContentSettingsMap* host_content_settings_map,
-    const GURL& top_level_url) {
-  // A |base::DictionaryValue| is set here but for now, clients only check this
-  // is a non-nullptr value.
-  auto dict = std::make_unique<base::DictionaryValue>();
-  constexpr char kFlagKey[] = "flashPreviouslyChanged";
-  dict->SetKey(kFlagKey, base::Value(true));
-  host_content_settings_map->SetWebsiteSettingDefaultScope(
-      top_level_url, top_level_url, ContentSettingsType::PLUGINS_DATA,
-      std::string(), std::move(dict));
-}
 
 // static
 std::string PluginUtils::GetExtensionIdForMimeType(
@@ -184,15 +170,16 @@ PluginUtils::GetMimeTypeToExtensionIdMap(
   base::flat_map<std::string, std::string> mime_type_to_extension_id_map;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
-  // Go through the white-listed extensions and try to use them to intercept
+  const std::vector<std::string>& allowlist =
+      MimeTypesHandler::GetMIMETypeAllowlist();
+  // Go through the allowed extensions and try to use them to intercept
   // the URL request.
-  for (const std::string& extension_id : whitelist) {
+  for (const std::string& extension_id : allowlist) {
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(browser_context)
             ->enabled_extensions()
             .GetByID(extension_id);
-    // The white-listed extension may not be installed, so we have to nullptr
+    // The allowed extension may not be installed, so we have to nullptr
     // check |extension|.
     if (!extension ||
         (profile->IsOffTheRecord() && !extensions::util::IsIncognitoEnabled(
@@ -208,8 +195,10 @@ PluginUtils::GetMimeTypeToExtensionIdMap(
 
     if (MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension)) {
       for (const auto& supported_mime_type : handler->mime_type_set()) {
-        DCHECK(!base::Contains(mime_type_to_extension_id_map,
-                               supported_mime_type));
+        // If multiple are installed, Quickoffice extensions may clobber ones
+        // earlier in the allowlist. Silently allow this (logging causes ~100
+        // lines of output since this function is invoked 3 times during startup
+        // for ~30 mime types).
         mime_type_to_extension_id_map[supported_mime_type] = extension_id;
       }
     }

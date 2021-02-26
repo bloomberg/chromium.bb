@@ -46,14 +46,23 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
+  bool SetProgressActiveStepIdentifier(
+      const std::string& active_step_identifier) override;
+  void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetProgressBarErrorState(bool error) override;
+  void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
+                                            collect_user_data_options) override;
+  const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
+      const override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
-  void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
@@ -66,20 +75,28 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   UserModel* GetUserModel() override;
   EventHandler* GetEventHandler() override;
+  void ExpectNavigation() override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;
-  void AddListener(NavigationListener* listener) override;
-  void RemoveListener(NavigationListener* listener) override;
+  void AddNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void RemoveNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
+  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
   void SetExpandSheetForPromptAction(bool expand) override;
-  void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
-
+  void SetBrowseDomainsAllowlist(std::vector<std::string> domains) override;
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback) override;
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override;
   void ClearGenericUi() override;
+  void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
+  void SetBrowseModeInvisible(bool invisible) override;
+  void SetShowFeedbackChip(bool show_feedback_chip) override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }
 
@@ -100,7 +117,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::vector<AutofillAssistantState> GetStateHistory() {
     return state_history_;
   }
-  AutofillAssistantState GetState() {
+  AutofillAssistantState GetState() const {
     return state_history_.empty() ? AutofillAssistantState::INACTIVE
                                   : state_history_.back();
   }
@@ -117,10 +134,12 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     navigating_to_new_document_ = navigating;
     navigation_error_ = error;
 
-    for (auto* listener : listeners_) {
+    for (auto* listener : navigation_listeners_) {
       listener->OnNavigationStateChanged();
     }
   }
+
+  bool HasNavigationListeners() { return !navigation_listeners_.empty(); }
 
   bool HasListeners() { return !listeners_.empty(); }
 
@@ -137,11 +156,13 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
+  std::unique_ptr<CollectUserDataOptions> last_payment_request_options_;
   CollectUserDataOptions* payment_request_options_;
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
-  std::set<ScriptExecutorDelegate::NavigationListener*> listeners_;
+  std::set<ScriptExecutorDelegate::NavigationListener*> navigation_listeners_;
+  std::set<ScriptExecutorDelegate::Listener*> listeners_;
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;

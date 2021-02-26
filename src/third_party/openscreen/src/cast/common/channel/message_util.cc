@@ -4,6 +4,9 @@
 
 #include "cast/common/channel/message_util.h"
 
+#include <sstream>
+#include <utility>
+
 #include "util/osp_logging.h"
 
 namespace openscreen {
@@ -65,6 +68,14 @@ CastMessage MakeCloseMessage(const std::string& source_id,
       ::cast::channel::CastMessage_PayloadType_STRING);
   close_message.set_payload_utf8(R"!({"type": "CLOSE"})!");
   return close_message;
+}
+
+std::string MakeUniqueSessionId(const char* prefix) {
+  static int next_id = 10000;
+
+  std::ostringstream oss;
+  oss << prefix << '-' << (next_id++);
+  return oss.str();
 }
 
 }  // namespace cast

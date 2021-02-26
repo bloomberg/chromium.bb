@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/documents_provider_root_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
@@ -111,7 +111,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       base::FilePath mount_path,
       const std::string& root_document_id);
   static std::unique_ptr<Volume> CreateForSshfsCrostini(
-      const base::FilePath& crostini_path);
+      const base::FilePath& crostini_path,
+      const base::FilePath& remote_mount_path);
   static std::unique_ptr<Volume> CreateForAndroidFiles(
       const base::FilePath& mount_path);
   static std::unique_ptr<Volume> CreateForDocumentsProvider(
@@ -147,6 +148,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   chromeos::DeviceType device_type() const { return device_type_; }
   const base::FilePath& source_path() const { return source_path_; }
   const base::FilePath& mount_path() const { return mount_path_; }
+  const base::FilePath& remote_mount_path() const { return remote_mount_path_; }
   chromeos::disks::MountCondition mount_condition() const {
     return mount_condition_;
   }
@@ -212,6 +214,10 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // - /media/archive/zip1
   base::FilePath mount_path_;
 
+  // The path on the remote host where this volume is mounted, for crostini this
+  // is the user's homedir (/home/<username>).
+  base::FilePath remote_mount_path_;
+
   // The mounting condition. See the enum for the details.
   chromeos::disks::MountCondition mount_condition_;
 
@@ -270,7 +276,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 // - Android/Arc++ file system.
 // - File System Providers.
 class VolumeManager : public KeyedService,
-                      public arc::ArcSessionManager::Observer,
+                      public arc::ArcSessionManagerObserver,
                       public drive::DriveIntegrationServiceObserver,
                       public chromeos::disks::DiskMountManager::Observer,
                       public chromeos::file_system_provider::Observer,
@@ -320,7 +326,8 @@ class VolumeManager : public KeyedService,
   base::WeakPtr<Volume> FindVolumeById(const std::string& volume_id);
 
   // Add sshfs crostini volume mounted at specified path.
-  void AddSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
+  void AddSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path,
+                              const base::FilePath& remote_mount_path);
 
   // Removes specified sshfs crostini mount. Runs |callback| with true if the
   // mount was removed successfully or wasn't mounted to begin with. Runs
@@ -391,6 +398,10 @@ class VolumeManager : public KeyedService,
                      chromeos::FormatError error_code,
                      const std::string& device_path,
                      const std::string& device_label) override;
+  void OnPartitionEvent(chromeos::disks::DiskMountManager::PartitionEvent event,
+                        chromeos::PartitionError error_code,
+                        const std::string& device_path,
+                        const std::string& device_label) override;
   void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
                      chromeos::RenameError error_code,
                      const std::string& device_path,
@@ -407,7 +418,7 @@ class VolumeManager : public KeyedService,
           file_system_info,
       base::File::Error error) override;
 
-  // arc::ArcSessionManager::Observer overrides.
+  // arc::ArcSessionManagerObserver overrides.
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // Called on change to kExternalStorageDisabled pref.

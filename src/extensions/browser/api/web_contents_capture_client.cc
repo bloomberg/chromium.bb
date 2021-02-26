@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -34,7 +35,7 @@ WebContentsCaptureClient::CaptureResult WebContentsCaptureClient::CaptureAsync(
   if (!view)
     return FAILURE_REASON_VIEW_INVISIBLE;
 
-  if (!IsScreenshotEnabled())
+  if (!IsScreenshotEnabled(web_contents))
     return FAILURE_REASON_SCREEN_SHOTS_DISABLED;
 
   // The default format and quality setting used when encoding jpegs.
@@ -56,7 +57,7 @@ WebContentsCaptureClient::CaptureResult WebContentsCaptureClient::CaptureAsync(
                         gfx::Size(),  // Result contains device-level detail.
                         std::move(callback));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SYSLOG(INFO) << "Screenshot taken";
 #endif
 

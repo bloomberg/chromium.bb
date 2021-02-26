@@ -41,7 +41,7 @@ class ContentCapabilitiesTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         crx_file::id_util::GenerateIdForPath(
             base::MakeAbsoluteFilePath(test_extension_dir_.UnpackedPath())));
   }
@@ -57,7 +57,7 @@ class ContentCapabilitiesTest : public extensions::ExtensionApiTest {
   }
 
   // Builds an extension manifest with the given content_capabilities matches
-  // and permissions. The extension always has the same (whitelisted) ID.
+  // and permissions. The extension always has the same (allowlisted) ID.
   scoped_refptr<const Extension> LoadExtensionWithCapabilities(
       const std::string& matches,
       const std::string& permissions,

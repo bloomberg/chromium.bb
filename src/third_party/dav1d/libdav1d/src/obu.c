@@ -112,6 +112,8 @@ static int parse_seq_hdr(Dav1dContext *const c, GetBits *const gb,
             struct Dav1dSequenceHeaderOperatingPoint *const op =
                 &hdr->operating_points[i];
             op->idc = dav1d_get_bits(gb, 12);
+            if (op->idc && (!(op->idc & 0xff) || !(op->idc & 0xf00)))
+                goto error;
             op->major_level = 2 + dav1d_get_bits(gb, 3);
             op->minor_level = dav1d_get_bits(gb, 2);
             op->tier = op->major_level > 3 ? dav1d_get_bits(gb, 1) : 0;
@@ -1198,7 +1200,6 @@ int dav1d_parse_obus(Dav1dContext *const c, Dav1dData *const in, const int globa
 
     const unsigned init_bit_pos = dav1d_get_bits_pos(&gb);
     const unsigned init_byte_pos = init_bit_pos >> 3;
-    const unsigned pkt_bytelen = init_byte_pos + len;
 
     // We must have read a whole number of bytes at this point (1 byte
     // for the header and whole bytes at a time when reading the
@@ -1342,6 +1343,7 @@ int dav1d_parse_obus(Dav1dContext *const c, Dav1dData *const in, const int globa
         // The current bit position is a multiple of 8 (because we
         // just aligned it) and less than 8*pkt_bytelen because
         // otherwise the overrun check would have fired.
+        const unsigned pkt_bytelen = init_byte_pos + len;
         const unsigned bit_pos = dav1d_get_bits_pos(&gb);
         assert((bit_pos & 7) == 0);
         assert(pkt_bytelen >= (bit_pos >> 3));
@@ -1368,17 +1370,12 @@ int dav1d_parse_obus(Dav1dContext *const c, Dav1dData *const in, const int globa
         const enum ObuMetaType meta_type = dav1d_get_uleb128(&gb);
         const int meta_type_len = (dav1d_get_bits_pos(&gb) - init_bit_pos) >> 3;
         if (gb.error) goto error;
-        Dav1dRef *ref;
-        Dav1dContentLightLevel *content_light;
-        Dav1dMasteringDisplay *mastering_display;
-        Dav1dITUTT35 *itut_t35_metadata;
 
         switch (meta_type) {
-        case OBU_META_HDR_CLL:
-            ref = dav1d_ref_create(sizeof(Dav1dContentLightLevel));
+        case OBU_META_HDR_CLL: {
+            Dav1dRef *ref = dav1d_ref_create(sizeof(Dav1dContentLightLevel));
             if (!ref) return DAV1D_ERR(ENOMEM);
-            content_light = ref->data;
-            memset(content_light, 0, sizeof(*content_light));
+            Dav1dContentLightLevel *const content_light = ref->data;
 
             content_light->max_content_light_level = dav1d_get_bits(&gb, 16);
             content_light->max_frame_average_light_level = dav1d_get_bits(&gb, 16);
@@ -1395,11 +1392,11 @@ int dav1d_parse_obus(Dav1dContext *const c, Dav1dData *const in, const int globa
             c->content_light = content_light;
             c->content_light_ref = ref;
             break;
+        }
         case OBU_META_HDR_MDCV: {
-            ref = dav1d_ref_create(sizeof(Dav1dMasteringDisplay));
+            Dav1dRef *ref = dav1d_ref_create(sizeof(Dav1dMasteringDisplay));
             if (!ref) return DAV1D_ERR(ENOMEM);
-            mastering_display = ref->data;
-            memset(mastering_display, 0, sizeof(*mastering_display));
+            Dav1dMasteringDisplay *const mastering_display = ref->data;
 
             for (int i = 0; i < 3; i++) {
                 mastering_display->primaries[i][0] = dav1d_get_bits(&gb, 16);
@@ -1447,9 +1444,9 @@ int dav1d_parse_obus(Dav1dContext *const c, Dav1dData *const in, const int globa
                 goto error;
             }
 
-            ref = dav1d_ref_create(sizeof(Dav1dITUTT35) + payload_size * sizeof(uint8_t));
+            Dav1dRef *ref = dav1d_ref_create(sizeof(Dav1dITUTT35) + payload_size * sizeof(uint8_t));
             if (!ref) return DAV1D_ERR(ENOMEM);
-            itut_t35_metadata = ref->data;
+            Dav1dITUTT35 *const itut_t35_metadata = ref->data;
 
             // We need our public headers to be C++ compatible, so payload can't be
             // a flexible array member

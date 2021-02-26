@@ -4,6 +4,7 @@
 
 """Classes and functions for generic network communication over HTTP."""
 
+import functools
 import io
 import itertools
 import json
@@ -743,6 +744,42 @@ class HttpResponse(object):
     return self.get_header('Content-Type') or ''
 
 
+class _UserAgentHolder(object):
+
+  def __init__(self):
+    # TODO(crbug/1084410): Consider guarding it with a RWLock
+    self._user_agent = None
+
+  @property
+  def user_agent(self):
+    return self._user_agent
+
+  @user_agent.setter
+  def user_agent(self, val):
+    self._user_agent = val
+
+
+_user_agent_holder = _UserAgentHolder()
+
+
+def maybe_inject_user_agent(func):
+  """Decorates an HTTP engine class to conditionally inject a UserAgent."""
+
+  @functools.wraps(func)
+  def wrapped(engine, request, **kwargs):
+    ua = _user_agent_holder.user_agent
+    if ua is not None:
+      request.headers['User-Agent'] = ua
+    return func(engine, request, **kwargs)
+
+  return wrapped
+
+
+def set_user_agent(user_agent):
+  """Globally changes a UserAgent to use to execute HTTP requests."""
+  _user_agent_holder.user_agent = user_agent
+
+
 class RequestsLibEngine(object):
   """Class that knows how to execute HttpRequests via requests library."""
 
@@ -774,6 +811,7 @@ class RequestsLibEngine(object):
           max_retries=0,
           pool_block=False))
 
+  @maybe_inject_user_agent
   def perform_request(self, request):
     """Sends a HttpRequest to the server and reads back the response.
 
@@ -813,19 +851,6 @@ class RequestsLibEngine(object):
       raise HttpError(resp, e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
-
-
-def set_user_agent(useragent):
-  """Globally changes a useragent to use to execute HTTP requests."""
-
-  class UserAgentRequestsLibEngine(get_engine_class()):
-
-    def perform_request(self, request):
-      request.headers['User-Agent'] = useragent
-      return super(UserAgentRequestsLibEngine, self).perform_request(request)
-
-  set_engine_class(UserAgentRequestsLibEngine)
-
 
 class RetryAttempt(object):
   """Contains information about current retry attempt.

@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
 #include "third_party/blink/renderer/core/html/link_manifest.h"
+#include "third_party/blink/renderer/core/html/link_web_bundle.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
@@ -61,6 +61,9 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),
+      resources_(
+          MakeGarbageCollected<DOMTokenList>(*this,
+                                             html_names::kResourcesAttr)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement::~HTMLLinkElement() = default;
@@ -72,23 +75,22 @@ void HTMLLinkElement::ParseAttribute(
   if (name == html_names::kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
     if (rel_attribute_.IsImport()) {
-      if (RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument())) {
-        Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
+      if (RuntimeEnabledFeatures::HTMLImportsEnabled()) {
+        Deprecation::CountDeprecation(GetExecutionContext(),
+                                      WebFeature::kHTMLImports);
       } else {
         // Show a warning that HTML Imports (<link rel=import>) were detected,
         // but HTML Imports have been disabled. Without this, the failure would
         // be silent.
         if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
-          if (LocalFrame* frame = window->GetFrame()) {
-            frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-                mojom::ConsoleMessageSource::kRendering,
-                mojom::ConsoleMessageLevel::kWarning,
-                "HTML Imports is deprecated and has now been removed as of "
-                "M80. See "
-                "https://www.chromestatus.com/features/5144752345317376 "
-                "and https://developers.google.com/web/updates/2019/07/"
-                "web-components-time-to-upgrade for more details."));
-          }
+          window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kRendering,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "HTML Imports is deprecated and has now been removed as of "
+              "M80. See "
+              "https://www.chromestatus.com/features/5144752345317376 "
+              "and https://developers.google.com/web/updates/2019/07/"
+              "web-components-time-to-upgrade for more details."));
         }
       }
     }
@@ -138,15 +140,45 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == html_names::kIntegrityAttr) {
     integrity_ = value;
   } else if (name == html_names::kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(
+                 GetExecutionContext())) {
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
+  } else if (name == html_names::kResourcesAttr &&
+             RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
+                 GetExecutionContext())) {
+    resources_->DidUpdateAttributeValue(params.old_value, value);
+
+    // Parse the attribute value as a space-separated list of urls
+    SpaceSplitString urls(value);
+    valid_resource_urls_.clear();
+    valid_resource_urls_.ReserveCapacityForSize(
+        SafeCast<wtf_size_t>(urls.size()));
+    for (wtf_size_t i = 0; i < urls.size(); ++i) {
+      KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+      if (url.IsValid()) {
+        valid_resource_urls_.insert(std::move(url));
+      }
+    }
+    Process();
   } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
     if (params.reason == AttributeModificationReason::kByParser)
       UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabledByParser);
-    if (LinkStyle* link = GetLinkStyle())
+    // TODO(crbug.com/1087043): Remove this if() condition once the feature has
+    // landed and no compat issues are reported.
+    if (RuntimeEnabledFeatures::LinkDisabledNewSpecBehaviorEnabled(
+            GetExecutionContext())) {
+      LinkStyle* link = GetLinkStyle();
+      if (!link) {
+        link = MakeGarbageCollected<LinkStyle>(this);
+        link_ = link;
+      }
       link->SetDisabledState(!value.IsNull());
+    } else {
+      if (LinkStyle* link = GetLinkStyle())
+        link->SetDisabledState(!value.IsNull());
+    }
   } else {
     if (name == html_names::kTitleAttr) {
       if (LinkStyle* link = GetLinkStyle())
@@ -208,9 +240,16 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   if (!link_) {
     if (rel_attribute_.IsImport()) {
       // Only create an import link when HTML imports are enabled.
-      if (!RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument()))
+      if (!RuntimeEnabledFeatures::HTMLImportsEnabled())
         return nullptr;
       link_ = MakeGarbageCollected<LinkImport>(this);
+    } else if (rel_attribute_.IsWebBundle()) {
+      // Only create a webbundle link when SubresourceWebBundles are enabled.
+      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
+              GetExecutionContext())) {
+        return nullptr;
+      }
+      link_ = MakeGarbageCollected<LinkWebBundle>(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = MakeGarbageCollected<LinkManifest>(this);
     } else {
@@ -438,11 +477,16 @@ DOMTokenList* HTMLLinkElement::sizes() const {
   return sizes_.Get();
 }
 
-void HTMLLinkElement::Trace(Visitor* visitor) {
+DOMTokenList* HTMLLinkElement::resources() const {
+  return resources_.Get();
+}
+
+void HTMLLinkElement::Trace(Visitor* visitor) const {
   visitor->Trace(link_);
   visitor->Trace(sizes_);
   visitor->Trace(link_loader_);
   visitor->Trace(rel_list_);
+  visitor->Trace(resources_);
   HTMLElement::Trace(visitor);
   LinkLoaderClient::Trace(visitor);
 }

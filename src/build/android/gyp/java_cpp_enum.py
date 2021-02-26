@@ -124,15 +124,20 @@ class EnumDefinition(object):
 
 def _TransformKeys(d, func):
   """Normalize keys in |d| and update references to old keys in |d| values."""
-  normal_keys = {k: func(k) for k in d}
+  keys_map = {k: func(k) for k in d}
   ret = collections.OrderedDict()
   for k, v in d.items():
     # Need to transform values as well when the entry value was explicitly set
     # (since it could contain references to other enum entry values).
     if isinstance(v, str):
-      for normal_key in normal_keys:
-        v = v.replace(normal_key, normal_keys[normal_key])
-    ret[normal_keys[k]] = v
+      # First check if a full replacement is available. This avoids issues when
+      # one key is a substring of another.
+      if v in d:
+        v = keys_map[v]
+      else:
+        for old_key, new_key in keys_map.items():
+          v = v.replace(old_key, new_key)
+    ret[keys_map[k]] = v
   return ret
 
 
@@ -328,9 +333,8 @@ def DoGenerate(source_paths):
                       '"// GENERATED_JAVA_ENUM_PACKAGE: foo"?' %
                       source_path)
     for enum_definition in enum_definitions:
-      package_path = enum_definition.enum_package.replace('.', os.path.sep)
-      file_name = enum_definition.class_name + '.java'
-      output_path = os.path.join(package_path, file_name)
+      output_path = java_cpp_utils.GetJavaFilePath(enum_definition.enum_package,
+                                                   enum_definition.class_name)
       output = GenerateOutput(source_path, enum_definition)
       yield output_path, output
 
@@ -412,7 +416,6 @@ ${ENUM_ENTRIES}
 def DoMain(argv):
   usage = 'usage: %prog [options] [output_dir] input_file(s)...'
   parser = optparse.OptionParser(usage=usage)
-  build_utils.AddDepfileOption(parser)
 
   parser.add_option('--srcjar',
                     help='When specified, a .srcjar at the given path is '
@@ -428,9 +431,6 @@ def DoMain(argv):
     with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
       for output_path, data in DoGenerate(input_paths):
         build_utils.AddToZipHermetic(srcjar, output_path, data=data)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.srcjar, add_pydeps=False)
 
 
 if __name__ == '__main__':

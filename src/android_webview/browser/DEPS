@@ -4,6 +4,7 @@ include_rules = [
   "+android_webview/browser_jni_headers",
   "+android_webview/common",
   "+android_webview/grit",
+  "+android_webview/proto",
   "+android_webview/test/android_webview_unittests_jni",
   "+cc",
   "+components/autofill/android",
@@ -16,6 +17,8 @@ include_rules = [
   "+components/crash/core",
   "+components/download/public/common",
   "+components/embedder_support/android/metrics",
+  "+components/favicon_base",
+  "+components/flags_ui",
   "+components/heap_profiling",
   "+components/keyed_service/core",
   "+components/minidump_uploader",
@@ -24,6 +27,7 @@ include_rules = [
   "+components/policy/core/browser",
   "+components/policy/core/common",
   "+components/policy/content",
+  "+components/power_metrics",
   "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",
@@ -58,6 +62,8 @@ include_rules = [
 
   "+printing",
 
+  "+services/metrics/public/cpp/ukm_source_id.h",
+
   "+services/network/public",
   # This is needed for the CookieManager to configure the CookieStore directly.
   "+services/network/cookie_access_delegate_impl.h",
@@ -73,9 +79,13 @@ include_rules = [
   "+mojo/core/embedder/embedder.h",
   "+mojo/public/cpp/system",
 
+  # Background tracing support
+  "+services/tracing/public/cpp",
+
   "+storage/browser/quota",
   "+storage/common/quota",
 
+  "+third_party/blink/public/common/page_state/page_state.h",
   "+third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h",
   "+third_party/crashpad/crashpad/client",
   "+third_party/crashpad/crashpad/util",
@@ -100,8 +110,6 @@ include_rules = [
   # QuotaStatusCode required by AwQuotaManagerBridge.
   "+third_party/blink/public/mojom/quota",
   "+third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h",
-  # Interface required for in-process input event handling.
-  "+third_party/blink/public/web/WebCompositorInputHandler.h",
   # For favicon url
   "+third_party/blink/public/mojom/favicon",
   # For find-in-page
@@ -109,7 +117,8 @@ include_rules = [
   # Required for the Web Speech API.
   "+third_party/blink/public/mojom/speech",
   # Required by AwSettings.
-  "+third_party/blink/public/mojom/renderer_preferences.mojom.h",
+  "+third_party/blink/public/common/renderer_preferences/renderer_preferences.h",
+  "+third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h",
   # For the content_browser overlay manifest
   "+third_party/blink/public/mojom/input",
 ]

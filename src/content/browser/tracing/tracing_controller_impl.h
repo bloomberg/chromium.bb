@@ -21,6 +21,14 @@
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class TracePacket;
+}  // namespace pbzero
+}  // namespace protos
+}  // namespace perfetto
+
 namespace base {
 
 namespace trace_event {
@@ -69,7 +77,7 @@ class TracingControllerImpl : public TracingController,
 
   // tracing::mojom::TracingSessionClient implementation:
   void OnTracingEnabled() override;
-  void OnTracingDisabled() override;
+  void OnTracingDisabled(bool tracing_succeeded) override;
 
   void OnTracingFailed();
 
@@ -100,6 +108,8 @@ class TracingControllerImpl : public TracingController,
   void AddAgents();
   void ConnectToServiceIfNeeded();
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();
+  void GenerateMetadataPacket(perfetto::protos::pbzero::TracePacket* packet,
+                              bool privacy_filtering_enabled);
 
   // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override;

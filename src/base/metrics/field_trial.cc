@@ -54,7 +54,7 @@ const char kAllocatorName[] = "FieldTrialAllocator";
 // processes and possibly causing crashes (see crbug.com/661617).
 const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 constexpr MachPortsForRendezvous::key_type kFieldTrialRendezvousKey = 'fldt';
 #endif
 
@@ -719,9 +719,7 @@ void FieldTrialList::GetInitiallyActiveFieldTrials(
 }
 
 // static
-bool FieldTrialList::CreateTrialsFromString(
-    const std::string& trials_string,
-    const std::set<std::string>& ignored_trial_names) {
+bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string) {
   DCHECK(global_);
   if (trials_string.empty() || !global_)
     return true;
@@ -733,14 +731,6 @@ bool FieldTrialList::CreateTrialsFromString(
   for (const auto& entry : entries) {
     const std::string trial_name = entry.trial_name.as_string();
     const std::string group_name = entry.group_name.as_string();
-
-    if (Contains(ignored_trial_names, trial_name)) {
-      // This is to warn that the field trial forced through command-line
-      // input is unforcable.
-      // Use --enable-logging or --enable-logging=stderr to see this warning.
-      LOG(WARNING) << "Field trial: " << trial_name << " cannot be forced.";
-      continue;
-    }
 
     FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     if (!trial)
@@ -762,8 +752,7 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     int fd_key) {
   global_->create_trials_from_command_line_called_ = true;
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC)
   if (cmd_line.HasSwitch(field_trial_handle_switch)) {
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
@@ -787,8 +776,7 @@ void FieldTrialList::CreateTrialsFromCommandLine(
 
   if (cmd_line.HasSwitch(switches::kForceFieldTrials)) {
     bool result = FieldTrialList::CreateTrialsFromString(
-        cmd_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-        std::set<std::string>());
+        cmd_line.GetSwitchValueASCII(switches::kForceFieldTrials));
     UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromSwitchSuccess",
                           result);
     DCHECK(result);
@@ -824,7 +812,7 @@ void FieldTrialList::AppendFieldTrialHandleIfNeeded(
 }
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Implement shared-memory configuration (crbug.com/752368).
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 // static
 void FieldTrialList::InsertFieldTrialHandleIfNeeded(
     MachPortsForRendezvous* rendezvous_ports) {
@@ -1159,7 +1147,7 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
   ss << uintptr_handle << ",";
 #elif defined(OS_FUCHSIA)
   ss << shm.GetPlatformHandle()->get() << ",";
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   // The handle on Mac is looked up directly by the child, rather than being
   // transferred to the child over the command line.
   ss << kFieldTrialRendezvousKey << ",";
@@ -1173,8 +1161,7 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
   return ss.str();
 }
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC)
 
 // static
 ReadOnlySharedMemoryRegion
@@ -1207,7 +1194,7 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
     CloseHandle(parent_handle);
   }
   win::ScopedHandle scoped_handle(handle);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   auto* rendezvous = MachPortRendezvousClient::GetInstance();
   if (!rendezvous)
     return ReadOnlySharedMemoryRegion();
@@ -1261,8 +1248,7 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
 
 #endif
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC)
 // static
 bool FieldTrialList::CreateTrialsFromSwitchValue(
     const std::string& switch_value) {

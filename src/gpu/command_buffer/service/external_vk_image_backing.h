@@ -9,16 +9,15 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory_mapping.h"
-#include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/external_semaphore.h"
+#include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -35,25 +34,29 @@ struct VulkanImageUsageCache {
 class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
-      SharedContextState* context_state,
+      scoped_refptr<SharedContextState> context_state,
       VulkanCommandPool* command_pool,
       const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       const VulkanImageUsageCache* image_usage_cache,
       base::span<const uint8_t> pixel_data,
       bool using_gmb = false);
 
   static std::unique_ptr<ExternalVkImageBacking> CreateFromGMB(
-      SharedContextState* context_state,
+      scoped_refptr<SharedContextState> context_state,
       VulkanCommandPool* command_pool,
       const Mailbox& mailbox,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat buffer_format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       const VulkanImageUsageCache* image_usage_cache);
 
@@ -62,76 +65,86 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
-                         SharedContextState* context_state,
+                         scoped_refptr<SharedContextState> context_state,
                          std::unique_ptr<VulkanImage> image,
-                         VulkanCommandPool* command_pool);
+                         VulkanCommandPool* command_pool,
+                         bool use_separate_gl_texture);
 
   ~ExternalVkImageBacking() override;
 
-  SharedContextState* context_state() const { return context_state_; }
+  SharedContextState* context_state() const { return context_state_.get(); }
   const GrBackendTexture& backend_texture() const { return backend_texture_; }
   VulkanImage* image() const { return image_.get(); }
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
       const {
     return texture_passthrough_;
   }
+  viz::VulkanContextProvider* context_provider() const {
+    return context_state()->vk_context_provider();
+  }
   VulkanImplementation* vulkan_implementation() const {
-    return context_state()->vk_context_provider()->GetVulkanImplementation();
+    return context_provider()->GetVulkanImplementation();
   }
-  VkDevice device() const {
-    return context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanDevice();
+  VulkanFenceHelper* fence_helper() const {
+    return context_provider()->GetDeviceQueue()->GetFenceHelper();
   }
+  ExternalSemaphorePool* external_semaphore_pool() {
+    return context_state()->external_semaphore_pool();
+  }
+  bool use_separate_gl_texture() const { return use_separate_gl_texture_; }
   bool need_synchronization() const {
     if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
       return true;
     }
 
     if (usage() & SHARED_IMAGE_USAGE_GLES2) {
-      return !use_separate_gl_texture();
+      return !use_separate_gl_texture() && (texture_ || texture_passthrough_);
     }
+
+    if (usage() & SHARED_IMAGE_USAGE_SCANOUT) {
+      return true;
+    }
+
     return false;
   }
-  bool use_separate_gl_texture() const {
-    return !context_state()->support_vulkan_external_object();
-  }
+  uint32_t reads_in_progress() const { return reads_in_progress_; }
+  uint32_t gl_reads_in_progress() const { return gl_reads_in_progress_; }
 
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
-  // and semaphore handles which will be waited on before accessing.
+  // and semaphores which will be waited on before accessing.
   bool BeginAccess(bool readonly,
-                   std::vector<SemaphoreHandle>* semaphore_handles,
+                   std::vector<ExternalSemaphore>* external_semaphores,
                    bool is_gl);
 
   // Notifies the backing that an access has ended. The representation must
   // provide a semaphore handle that has been signaled at the end of the write
   // access.
-  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle, bool is_gl);
+  void EndAccess(bool readonly,
+                 ExternalSemaphore external_semaphore,
+                 bool is_gl);
 
   // SharedImageBacking implementation.
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
+
+  // Add semaphores to a pending list for reusing or being released immediately.
+  void AddSemaphoresToPendingListOrRelease(
+      std::vector<ExternalSemaphore> semaphores);
+  // Return |pending_semaphores_| and passed in |semaphores| to
+  // ExternalSemaphorePool for reusing.
+  void ReturnPendingSemaphoresWithFenceHelper(
+      std::vector<ExternalSemaphore> semaphores);
 
  protected:
-  static std::unique_ptr<ExternalVkImageBacking> CreateInternal(
-      SharedContextState* context_state,
-      VulkanCommandPool* command_pool,
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      const VulkanImageUsageCache* image_usage_cache,
-      base::span<const uint8_t> pixel_data,
-      bool using_gmb);
-
   void UpdateContent(uint32_t content_flags);
   bool BeginAccessInternal(bool readonly,
-                           std::vector<SemaphoreHandle>* semaphore_handles);
-  void EndAccessInternal(bool readonly, SemaphoreHandle semaphore_handle);
+                           std::vector<ExternalSemaphore>* external_semaphores);
+  void EndAccessInternal(bool readonly, ExternalSemaphore external_semaphore);
 
   // SharedImageBacking implementation.
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
@@ -148,46 +161,44 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
+  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override;
 
  private:
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  // Extract file descriptor from image
-  int GetMemoryFd(const GrVkImageInfo& image_info);
-#endif
-
   // Install a shared memory GMB to the backing.
-  void InstallSharedMemory(
-      base::WritableSharedMemoryMapping shared_memory_mapping,
-      size_t stride,
-      size_t memory_offset);
+  void InstallSharedMemory(SharedMemoryRegionWrapper shared_memory_wrapper);
   // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
   GLuint ProduceGLTextureInternal();
 
   using FillBufferCallback = base::OnceCallback<void(void* buffer)>;
-  bool WritePixels(size_t data_size,
-                   size_t stride,
-                   FillBufferCallback callback);
+  // TODO(penghuang): Remove it when GrContext::updateBackendTexture() supports
+  // compressed texture and callback.
+  bool WritePixelsWithCallback(size_t data_size,
+                               size_t stride,
+                               FillBufferCallback callback);
+  bool WritePixelsWithData(base::span<const uint8_t> pixel_data, size_t stride);
+  bool WritePixels();
   void CopyPixelsFromGLTextureToVkImage();
   void CopyPixelsFromShmToGLTexture();
 
-  SharedContextState* const context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<VulkanImage> image_;
   GrBackendTexture backend_texture_;
   VulkanCommandPool* const command_pool_;
+  const bool use_separate_gl_texture_;
 
-  SemaphoreHandle write_semaphore_handle_;
-  std::vector<SemaphoreHandle> read_semaphore_handles_;
+  ExternalSemaphore write_semaphore_;
+  std::vector<ExternalSemaphore> read_semaphores_;
 
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
+  uint32_t gl_reads_in_progress_ = 0;
   gles2::Texture* texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
   // GMB related stuff.
-  base::WritableSharedMemoryMapping shared_memory_mapping_;
-  size_t stride_ = 0;
-  size_t memory_offset_ = 0;
+  SharedMemoryRegionWrapper shared_memory_wrapper_;
 
   enum LatestContent {
     kInVkImage = 1 << 0,
@@ -195,6 +206,11 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
     kInGLTexture = 1 << 2,
   };
   uint32_t latest_content_ = 0;
+
+  // Semaphores pending for returning to ExternalSemaphorePool.
+  // When the backing is accessed by the vulkan device for GrContext, they can
+  // be returned to ExternalSemaphorePool through VulkanFenceHelper.
+  std::vector<ExternalSemaphore> pending_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };

@@ -20,11 +20,15 @@ network::OptionalTrustTokenParams ConvertTrustTokenParams(
   out->refresh_policy = in.refresh_policy;
   out->sign_request_data = in.sign_request_data;
   out->include_timestamp_header = in.include_timestamp_header;
-  // Optional value:
-  if (in.issuer)
-    out->issuer = in.issuer->ToUrlOrigin();
+  for (const scoped_refptr<const SecurityOrigin>& issuer : in.issuers) {
+    out->issuers.push_back(issuer->ToUrlOrigin());
+  }
   for (const String& additional_header : in.additional_signed_headers) {
     out->additional_signed_headers.push_back(additional_header.Latin1());
+  }
+  if (!in.possibly_unsafe_additional_signing_data.IsNull()) {
+    out->possibly_unsafe_additional_signing_data =
+        in.possibly_unsafe_additional_signing_data.Utf8();
   }
 
   return network::OptionalTrustTokenParams(std::move(out));

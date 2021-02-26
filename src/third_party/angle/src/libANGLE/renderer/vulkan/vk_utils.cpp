@@ -36,6 +36,10 @@ namespace rx
 {
 namespace
 {
+// Pick an arbitrary value to initialize non-zero memory for sanitization.  Note that 0x3F3F3F3F
+// as float is about 0.75.
+constexpr int kNonZeroInitValue = 0x3F;
+
 VkImageUsageFlags GetStagingBufferUsageFlags(vk::StagingUsage usage)
 {
     switch (usage)
@@ -52,6 +56,28 @@ VkImageUsageFlags GetStagingBufferUsageFlags(vk::StagingUsage usage)
     }
 }
 
+bool FindCompatibleMemory(const VkPhysicalDeviceMemoryProperties &memoryProperties,
+                          const VkMemoryRequirements &memoryRequirements,
+                          VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                          VkMemoryPropertyFlags *memoryPropertyFlagsOut,
+                          uint32_t *typeIndexOut)
+{
+    for (size_t memoryIndex : angle::BitSet32<32>(memoryRequirements.memoryTypeBits))
+    {
+        ASSERT(memoryIndex < memoryProperties.memoryTypeCount);
+
+        if ((memoryProperties.memoryTypes[memoryIndex].propertyFlags &
+             requestedMemoryPropertyFlags) == requestedMemoryPropertyFlags)
+        {
+            *memoryPropertyFlagsOut = memoryProperties.memoryTypes[memoryIndex].propertyFlags;
+            *typeIndexOut           = static_cast<uint32_t>(memoryIndex);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 angle::Result FindAndAllocateCompatibleMemory(vk::Context *context,
                                               const vk::MemoryProperties &memoryProperties,
                                               VkMemoryPropertyFlags requestedMemoryPropertyFlags,
@@ -60,9 +86,6 @@ angle::Result FindAndAllocateCompatibleMemory(vk::Context *context,
                                               const void *extraAllocationInfo,
                                               vk::DeviceMemory *deviceMemoryOut)
 {
-    // Pick an arbitrary value to initialize non-zero memory for sanitization.
-    constexpr int kNonZeroInitValue = 55;
-
     VkDevice device = context->getDevice();
 
     uint32_t memoryTypeIndex = 0;
@@ -333,6 +356,19 @@ void MemoryProperties::destroy()
     mMemoryProperties = {};
 }
 
+bool MemoryProperties::hasLazilyAllocatedMemory() const
+{
+    for (uint32_t typeIndex = 0; typeIndex < mMemoryProperties.memoryTypeCount; ++typeIndex)
+    {
+        const VkMemoryType &memoryType = mMemoryProperties.memoryTypes[typeIndex];
+        if ((memoryType.propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 angle::Result MemoryProperties::findCompatibleMemoryIndex(
     Context *context,
     const VkMemoryRequirements &memoryRequirements,
@@ -346,39 +382,27 @@ angle::Result MemoryProperties::findCompatibleMemoryIndex(
     // Not finding a valid memory pool means an out-of-spec driver, or internal error.
     // TODO(jmadill): Determine if it is possible to cache indexes.
     // TODO(jmadill): More efficient memory allocation.
-    for (size_t memoryIndex : angle::BitSet32<32>(memoryRequirements.memoryTypeBits))
+    if (FindCompatibleMemory(mMemoryProperties, memoryRequirements, requestedMemoryPropertyFlags,
+                             memoryPropertyFlagsOut, typeIndexOut))
     {
-        ASSERT(memoryIndex < mMemoryProperties.memoryTypeCount);
-
-        if ((mMemoryProperties.memoryTypes[memoryIndex].propertyFlags &
-             requestedMemoryPropertyFlags) == requestedMemoryPropertyFlags)
-        {
-            *memoryPropertyFlagsOut = mMemoryProperties.memoryTypes[memoryIndex].propertyFlags;
-            *typeIndexOut           = static_cast<uint32_t>(memoryIndex);
-            return angle::Result::Continue;
-        }
+        return angle::Result::Continue;
     }
 
-    // We did not find a compatible memory type, the Vulkan spec says the following -
-    //     There must be at least one memory type with both the
-    //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    //     bits set in its propertyFlags
-    constexpr VkMemoryPropertyFlags fallbackMemoryPropertyFlags =
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-    // If the caller wanted a host visible memory, just return the memory index
-    // with the fallback memory flags.
+    // We did not find a compatible memory type.  If the caller wanted a host visible memory, just
+    // return the memory index with fallback, guaranteed, memory flags.
     if (requestedMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
     {
-        for (size_t memoryIndex : angle::BitSet32<32>(memoryRequirements.memoryTypeBits))
+        // The Vulkan spec says the following -
+        //     There must be at least one memory type with both the
+        //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        //     bits set in its propertyFlags
+        constexpr VkMemoryPropertyFlags fallbackMemoryPropertyFlags =
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+        if (FindCompatibleMemory(mMemoryProperties, memoryRequirements, fallbackMemoryPropertyFlags,
+                                 memoryPropertyFlagsOut, typeIndexOut))
         {
-            if ((mMemoryProperties.memoryTypes[memoryIndex].propertyFlags &
-                 fallbackMemoryPropertyFlags) == fallbackMemoryPropertyFlags)
-            {
-                *memoryPropertyFlagsOut = mMemoryProperties.memoryTypes[memoryIndex].propertyFlags;
-                *typeIndexOut           = static_cast<uint32_t>(memoryIndex);
-                return angle::Result::Continue;
-            }
+            return angle::Result::Continue;
         }
     }
 
@@ -409,17 +433,28 @@ angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUs
     createInfo.queueFamilyIndexCount = 0;
     createInfo.pQueueFamilyIndices   = nullptr;
 
-    VkMemoryPropertyFlags memoryPropertyOutFlags;
     VkMemoryPropertyFlags preferredFlags = 0;
     VkMemoryPropertyFlags requiredFlags =
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-    mAllocation.createBufferAndMemory(
-        context->getRenderer()->getAllocator(), &createInfo, requiredFlags, preferredFlags,
-        context->getRenderer()->getFeatures().persistentlyMappedBuffers.enabled, &mBuffer,
-        &memoryPropertyOutFlags);
+    RendererVk *renderer           = context->getRenderer();
+    const vk::Allocator &allocator = renderer->getAllocator();
 
+    uint32_t memoryTypeIndex = 0;
+    ANGLE_VK_TRY(context,
+                 allocator.createBuffer(createInfo, requiredFlags, preferredFlags,
+                                        renderer->getFeatures().persistentlyMappedBuffers.enabled,
+                                        &memoryTypeIndex, &mBuffer, &mAllocation));
     mSize = static_cast<size_t>(size);
+
+    // Wipe memory to an invalid value when the 'allocateNonZeroMemory' feature is enabled. The
+    // invalid values ensures our testing doesn't assume zero-initialized memory.
+    if (renderer->getFeatures().allocateNonZeroMemory.enabled)
+    {
+        ANGLE_TRY(vk::InitMappableAllocation(context, allocator, &mAllocation, size,
+                                             kNonZeroInitValue, requiredFlags));
+    }
+
     return angle::Result::Continue;
 }
 
@@ -441,14 +476,15 @@ void StagingBuffer::collectGarbage(RendererVk *renderer, Serial serial)
     renderer->collectGarbage(std::move(sharedUse), std::move(garbageList));
 }
 
-angle::Result InitMappableAllocation(VmaAllocator allocator,
+angle::Result InitMappableAllocation(Context *context,
+                                     const vk::Allocator &allocator,
                                      Allocation *allocation,
                                      VkDeviceSize size,
                                      int value,
                                      VkMemoryPropertyFlags memoryPropertyFlags)
 {
     uint8_t *mapPointer;
-    allocation->map(allocator, &mapPointer);
+    ANGLE_VK_TRY(context, allocation->map(allocator, &mapPointer));
     memset(mapPointer, value, static_cast<size_t>(size));
 
     if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
@@ -503,13 +539,13 @@ angle::Result AllocateBufferMemory(vk::Context *context,
 
 angle::Result AllocateImageMemory(vk::Context *context,
                                   VkMemoryPropertyFlags memoryPropertyFlags,
+                                  VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                   const void *extraAllocationInfo,
                                   Image *image,
                                   DeviceMemory *deviceMemoryOut,
                                   VkDeviceSize *sizeOut)
 {
-    VkMemoryPropertyFlags memoryPropertyFlagsOut = 0;
-    return AllocateBufferOrImageMemory(context, memoryPropertyFlags, &memoryPropertyFlagsOut,
+    return AllocateBufferOrImageMemory(context, memoryPropertyFlags, memoryPropertyFlagsOut,
                                        extraAllocationInfo, image, deviceMemoryOut, sizeOut);
 }
 
@@ -591,6 +627,7 @@ GarbageObject &GarbageObject::operator=(GarbageObject &&rhs)
 //  which fails to compile with reinterpret_cast, requiring static_cast.
 void GarbageObject::destroy(RendererVk *renderer)
 {
+    ANGLE_TRACE_EVENT0("gpu.angle", "GarbageObject::destroy");
     VkDevice device = renderer->getDevice();
     switch (mHandleType)
     {
@@ -653,7 +690,7 @@ void GarbageObject::destroy(RendererVk *renderer)
             vkDestroyQueryPool(device, (VkQueryPool)mHandle, nullptr);
             break;
         case HandleType::Allocation:
-            vma::FreeMemory(renderer->getAllocator(), (VmaAllocation)mHandle);
+            vma::FreeMemory(renderer->getAllocator().getHandle(), (VmaAllocation)mHandle);
             break;
         default:
             UNREACHABLE();
@@ -702,18 +739,52 @@ void ClearValuesArray::store(uint32_t index,
     if ((aspectFlags & VK_IMAGE_ASPECT_STENCIL_BIT) != 0)
     {
         // Ensure for packed DS we're writing to the depth index.
-        ASSERT(index == kClearValueDepthIndex ||
-               (index == kClearValueStencilIndex && aspectFlags == VK_IMAGE_ASPECT_STENCIL_BIT));
-        mValues[kClearValueStencilIndex] = clearValue;
-        mEnabled.set(kClearValueStencilIndex);
+        ASSERT(index == kUnpackedDepthIndex ||
+               (index == kUnpackedStencilIndex && aspectFlags == VK_IMAGE_ASPECT_STENCIL_BIT));
+
+        storeNoDepthStencil(kUnpackedStencilIndex, clearValue);
     }
 
     if (aspectFlags != VK_IMAGE_ASPECT_STENCIL_BIT)
     {
-        mValues[index] = clearValue;
-        mEnabled.set(index);
+        storeNoDepthStencil(index, clearValue);
     }
 }
+
+void ClearValuesArray::storeNoDepthStencil(uint32_t index, const VkClearValue &clearValue)
+{
+    mValues[index] = clearValue;
+    mEnabled.set(index);
+}
+
+gl::DrawBufferMask ClearValuesArray::getColorMask() const
+{
+    constexpr uint32_t kColorBuffersMask =
+        angle::Bit<uint32_t>(gl::IMPLEMENTATION_MAX_DRAW_BUFFERS) - 1;
+    return gl::DrawBufferMask(mEnabled.bits() & kColorBuffersMask);
+}
+
+// ResourceSerialFactory implementation.
+ResourceSerialFactory::ResourceSerialFactory() : mCurrentUniqueSerial(1) {}
+
+ResourceSerialFactory::~ResourceSerialFactory() {}
+
+uint32_t ResourceSerialFactory::issueSerial()
+{
+    uint32_t newSerial = ++mCurrentUniqueSerial;
+    // make sure serial does not wrap
+    ASSERT(newSerial > 0);
+    return newSerial;
+}
+
+#define ANGLE_DEFINE_GEN_VK_SERIAL(Type)                         \
+    Type##Serial ResourceSerialFactory::generate##Type##Serial() \
+    {                                                            \
+        return Type##Serial(issueSerial());                      \
+    }
+
+ANGLE_VK_SERIAL_OP(ANGLE_DEFINE_GEN_VK_SERIAL)
+
 }  // namespace vk
 
 #if !defined(ANGLE_SHARED_LIBVULKAN)
@@ -729,8 +800,9 @@ PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT   = nullptr;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
 
 // VK_KHR_get_physical_device_properties2
-PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = nullptr;
-PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR     = nullptr;
+PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR             = nullptr;
+PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR                 = nullptr;
+PFN_vkGetPhysicalDeviceMemoryProperties2KHR vkGetPhysicalDeviceMemoryProperties2KHR = nullptr;
 
 // VK_KHR_external_semaphore_fd
 PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR = nullptr;
@@ -746,8 +818,13 @@ PFN_vkCmdBeginQueryIndexedEXT vkCmdBeginQueryIndexedEXT                       = 
 PFN_vkCmdEndQueryIndexedEXT vkCmdEndQueryIndexedEXT                           = nullptr;
 PFN_vkCmdDrawIndirectByteCountEXT vkCmdDrawIndirectByteCountEXT               = nullptr;
 
+// VK_KHR_get_memory_requirements2
 PFN_vkGetBufferMemoryRequirements2KHR vkGetBufferMemoryRequirements2KHR = nullptr;
 PFN_vkGetImageMemoryRequirements2KHR vkGetImageMemoryRequirements2KHR   = nullptr;
+
+// VK_KHR_bind_memory2
+PFN_vkBindBufferMemory2KHR vkBindBufferMemory2KHR = nullptr;
+PFN_vkBindImageMemory2KHR vkBindImageMemory2KHR   = nullptr;
 
 // VK_KHR_external_fence_capabilities
 PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR vkGetPhysicalDeviceExternalFencePropertiesKHR =
@@ -760,6 +837,13 @@ PFN_vkImportFenceFdKHR vkImportFenceFdKHR = nullptr;
 // VK_KHR_external_semaphore_capabilities
 PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR
     vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = nullptr;
+
+// VK_KHR_sampler_ycbcr_conversion
+PFN_vkCreateSamplerYcbcrConversionKHR vkCreateSamplerYcbcrConversionKHR   = nullptr;
+PFN_vkDestroySamplerYcbcrConversionKHR vkDestroySamplerYcbcrConversionKHR = nullptr;
+
+// VK_KHR_create_renderpass2
+PFN_vkCreateRenderPass2KHR vkCreateRenderPass2KHR = nullptr;
 
 #    if defined(ANGLE_PLATFORM_FUCHSIA)
 // VK_FUCHSIA_imagepipe_surface
@@ -821,6 +905,19 @@ void InitTransformFeedbackEXTFunctions(VkDevice device)
     GET_DEVICE_FUNC(vkCmdDrawIndirectByteCountEXT);
 }
 
+// VK_KHR_sampler_ycbcr_conversion
+void InitSamplerYcbcrKHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkCreateSamplerYcbcrConversionKHR);
+    GET_DEVICE_FUNC(vkDestroySamplerYcbcrConversionKHR);
+}
+
+// VK_KHR_create_renderpass2
+void InitRenderPass2KHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkCreateRenderPass2KHR);
+}
+
 #    if defined(ANGLE_PLATFORM_FUCHSIA)
 void InitImagePipeSurfaceFUCHSIAFunctions(VkInstance instance)
 {
@@ -876,6 +973,30 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance)
 #    undef GET_DEVICE_FUNC
 
 #endif  // !defined(ANGLE_SHARED_LIBVULKAN)
+
+GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, const vk::Format &format)
+{
+    const bool formatSupportsLinearFiltering = contextVk->getRenderer()->hasImageFormatFeatureBits(
+        format.vkImageFormat, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+    const bool hintFastest = contextVk->getState().getGenerateMipmapHint() == GL_FASTEST;
+
+    return formatSupportsLinearFiltering && !hintFastest ? GL_LINEAR : GL_NEAREST;
+}
+
+// Return the log of samples.  Assumes |sampleCount| is a power of 2.  The result can be used to
+// index an array based on sample count.  See for example TextureVk::PerSampleCountArray.
+size_t PackSampleCount(GLint sampleCount)
+{
+    if (sampleCount == 0)
+    {
+        sampleCount = 1;
+    }
+
+    // We currently only support up to 16xMSAA.
+    ASSERT(sampleCount <= VK_SAMPLE_COUNT_16_BIT);
+    ASSERT(gl::isPow2(sampleCount));
+    return gl::ScanForward(static_cast<uint32_t>(sampleCount));
+}
 
 namespace gl_vk
 {
@@ -1005,6 +1126,8 @@ VkSampleCountFlagBits GetSamples(GLint sampleCount)
     switch (sampleCount)
     {
         case 0:
+            UNREACHABLE();
+            return VK_SAMPLE_COUNT_1_BIT;
         case 1:
             return VK_SAMPLE_COUNT_1_BIT;
         case 2:
@@ -1094,6 +1217,7 @@ VkImageType GetImageType(gl::TextureType textureType)
         case gl::TextureType::_2DMultisample:
         case gl::TextureType::_2DMultisampleArray:
         case gl::TextureType::CubeMap:
+        case gl::TextureType::CubeMapArray:
         case gl::TextureType::External:
             return VK_IMAGE_TYPE_2D;
         case gl::TextureType::_3D:
@@ -1120,6 +1244,8 @@ VkImageViewType GetImageViewType(gl::TextureType textureType)
             return VK_IMAGE_VIEW_TYPE_3D;
         case gl::TextureType::CubeMap:
             return VK_IMAGE_VIEW_TYPE_CUBE;
+        case gl::TextureType::CubeMapArray:
+            return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
         default:
             // We will need to implement all the texture types for ES3+.
             UNIMPLEMENTED();
@@ -1181,6 +1307,7 @@ void GetExtentsAndLayerCount(gl::TextureType textureType,
 
         case gl::TextureType::_2DArray:
         case gl::TextureType::_2DMultisampleArray:
+        case gl::TextureType::CubeMapArray:
             extentsOut->depth = 1;
             *layerCountOut    = extents.depth;
             break;
@@ -1190,6 +1317,12 @@ void GetExtentsAndLayerCount(gl::TextureType textureType,
             *layerCountOut    = 1;
             break;
     }
+}
+
+vk::LevelIndex GetLevelIndex(gl::LevelIndex levelGL, gl::LevelIndex baseLevel)
+{
+    ASSERT(baseLevel <= levelGL);
+    return vk::LevelIndex(levelGL.get() - baseLevel.get());
 }
 }  // namespace gl_vk
 
@@ -1228,6 +1361,11 @@ GLuint GetSampleCount(VkSampleCountFlags supportedCounts, GLuint requestedCount)
 
     UNREACHABLE();
     return 0;
+}
+
+gl::LevelIndex GetLevelIndex(vk::LevelIndex levelVk, gl::LevelIndex baseLevel)
+{
+    return gl::LevelIndex(levelVk.get() + baseLevel.get());
 }
 }  // namespace vk_gl
 }  // namespace rx

@@ -9,8 +9,10 @@
 goog.provide('GestureCommandHandler');
 
 goog.require('CommandHandler');
+goog.require('EventGenerator');
 goog.require('EventSourceState');
 goog.require('GestureCommandData');
+goog.require('PointerHandler');
 
 goog.scope(function() {
 const RoleType = chrome.automation.RoleType;
@@ -37,12 +39,17 @@ GestureCommandHandler.getEnabled = function() {
  *     ax::mojom::Gesture enum defined in ui/accessibility/ax_enums.mojom
  * @private
  */
-GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
+GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
   if (!GestureCommandHandler.enabled_) {
     return;
   }
 
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
+
+  if (gesture === 'touchExplore') {
+    GestureCommandHandler.pointerHandler_.onTouchMove(x, y);
+    return;
+  }
 
   const commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
   if (!commandData) {
@@ -51,23 +58,41 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
 
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
-  // Map gestures to arrow keys while within menus belonging to the desktop or
-  // generally in the ChromeVox Panel.
+  // Check first for an accelerator action.
+  if (commandData.acceleratorAction) {
+    chrome.accessibilityPrivate.performAcceleratorAction(
+        commandData.acceleratorAction);
+    return;
+  }
+
+  // Handle gestures mapped to keys. Global keys are handled in place of
+  // commands, and menu key overrides are handled only in menus.
+  let key;
   if (ChromeVoxState.instance.currentRange) {
     const range = ChromeVoxState.instance.currentRange;
     if (commandData.menuKeyOverride && range.start && range.start.node &&
-        ((range.start.node.role == RoleType.MENU_ITEM &&
-          range.start.node.root.role == RoleType.DESKTOP) ||
+        ((range.start.node.role === RoleType.MENU_ITEM &&
+          range.start.node.root.role === RoleType.DESKTOP) ||
          range.start.node.root.docUrl.indexOf(
-             chrome.extension.getURL('chromevox/panel/panel.html')) == 0)) {
-      const key = commandData.menuKeyOverride;
-      BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
-      return;
+             chrome.extension.getURL('chromevox/panel/panel.html')) === 0)) {
+      key = commandData.menuKeyOverride;
     }
   }
 
-  if (!ChromeVoxState.instance.currentRange && commandData.shouldRecoverRange) {
-    const recoverTo = DesktopAutomationHandler.instance.lastHoverTarget;
+  if (!key) {
+    key = commandData.globalKey;
+  }
+
+  if (key) {
+    EventGenerator.sendKeyPress(key.keyCode, key.modifiers);
+    return;
+  }
+
+  // Always try to recover the range to the previous hover target, if there's no
+  // range.
+  if (!ChromeVoxState.instance.currentRange) {
+    const recoverTo = GestureCommandHandler.pointerHandler_
+                          .lastValidNodeBeforePointerInvalidation;
     if (recoverTo) {
       ChromeVoxState.instance.setCurrentRange(
           cursors.Range.fromNode(recoverTo));
@@ -87,6 +112,8 @@ GestureCommandHandler.enabled_ = true;
 GestureCommandHandler.init_ = function() {
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       GestureCommandHandler.onAccessibilityGesture_);
+
+  GestureCommandHandler.pointerHandler_ = new PointerHandler();
 };
 
 /**

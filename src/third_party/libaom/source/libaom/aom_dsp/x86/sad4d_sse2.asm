@@ -312,9 +312,21 @@ SECTION .text
 ; void aom_sadNxNx4d_sse2(uint8_t *src,    int src_stride,
 ;                         uint8_t *ref[4], int ref_stride,
 ;                         uint32_t res[4]);
-; where NxN = 64x64, 32x32, 16x16, 16x8, 8x16, 8x8, 8x4, 4x8 and 4x4
-%macro SADNXN4D 2-3 0
-%if %3 == 0
+; Macro Arguments:
+;   1: Width
+;   2: Height
+;   3: If 0, then normal sad, else avg
+;   4: If 0, then normal sad, else skip rows
+%macro SADNXN4D 2-4 0,0
+%if %4 == 1  ; skip rows
+%if UNIX64
+cglobal sad_skip_%1x%2x4d, 5, 8, 8, src, src_stride, ref1, ref_stride, \
+                              res, ref2, ref3, ref4
+%else
+cglobal sad_skip_%1x%2x4d, 4, 7, 8, src, src_stride, ref1, ref_stride, \
+                              ref2, ref3, ref4
+%endif
+%elif %3 == 0  ; normal sad
 %if UNIX64
 cglobal sad%1x%2x4d, 5, 8, 8, src, src_stride, ref1, ref_stride, \
                               res, ref2, ref3, ref4
@@ -323,7 +335,6 @@ cglobal sad%1x%2x4d, 4, 7, 8, src, src_stride, ref1, ref_stride, \
                               ref2, ref3, ref4
 %endif
 %else ; avg
-
 %if UNIX64
 cglobal sad%1x%2x4d_avg, 6, 10, 8, src, src_stride, ref1, ref_stride, \
                                   second_pred, res, ref2, ref3, ref4
@@ -336,6 +347,10 @@ cglobal sad%1x%2x4d_avg, 5, 7, 8, src, ref4, ref1, ref_stride, \
 %endif
 
   %define mflag ((1 - UNIX64) & %3)
+%if %4 == 1
+  lea          src_strided, [2*src_strided]
+  lea          ref_strided, [2*ref_strided]
+%endif
   movsxdifnidn src_strideq, src_strided
   movsxdifnidn ref_strideq, ref_strided
 
@@ -345,9 +360,15 @@ cglobal sad%1x%2x4d_avg, 5, 7, 8, src, ref4, ref1, ref_stride, \
   mov                ref1q, [ref1q+gprsize*0]
 
   PROCESS_%1x2x4 1, 0, 0, 0, ref_strideq, %3, 0, 1, 2
-%rep (%2-4)/2
+%if %4 == 1  ; downsample number of rows by 2
+%define num_rep (%2-8)/4
+%else
+%define num_rep (%2-4)/2
+%endif
+%rep num_rep
   PROCESS_%1x2x4 0, 0, 0, 0, ref_strideq, %3, 0, 1, 2
 %endrep
+%undef num_rep
   PROCESS_%1x2x4 0, 0, 0, 0, ref_strideq, %3, 0, 1, 2
 
 %if %3 == 0
@@ -368,12 +389,19 @@ cglobal sad%1x%2x4d_avg, 5, 7, 8, src, ref4, ref1, ref_stride, \
   punpcklqdq            m4, m6
   punpckhqdq            m5, m7
   paddd                 m4, m5
+%if %4 == 1
+  pslld                 m4, 1
+%endif
   movifnidn             resultq, resultmp
   movu                [resultq], m4
   RET
 %else
   pshufd            m6, m6, 0x08
   pshufd            m7, m7, 0x08
+%if %4 == 1
+  pslld                 m6, 1
+  pslld                 m7, 1
+%endif
   movifnidn             resultq, resultmp
   movq              [resultq+0], m6
   movq              [resultq+8], m7
@@ -383,46 +411,70 @@ cglobal sad%1x%2x4d_avg, 5, 7, 8, src, ref4, ref1, ref_stride, \
 
 INIT_XMM sse2
 SADNXN4D 128, 128
-SADNXN4D 128, 64
-SADNXN4D 64,  128
-SADNXN4D 64, 64
-SADNXN4D 64, 32
-SADNXN4D 32, 64
-SADNXN4D 32, 32
-SADNXN4D 32, 16
-SADNXN4D 16, 32
-SADNXN4D 16, 16
-SADNXN4D 16,  8
-SADNXN4D  8, 16
-SADNXN4D  8,  8
-SADNXN4D  8,  4
-SADNXN4D  4,  8
-SADNXN4D  4,  4
-SADNXN4D  4, 16
-SADNXN4D 16,  4
-SADNXN4D  8, 32
-SADNXN4D 32,  8
-SADNXN4D 16, 64
-SADNXN4D 64, 16
+SADNXN4D 128,  64
+SADNXN4D  64, 128
+SADNXN4D  64,  64
+SADNXN4D  64,  32
+SADNXN4D  32,  64
+SADNXN4D  32,  32
+SADNXN4D  32,  16
+SADNXN4D  16,  32
+SADNXN4D  16,  16
+SADNXN4D  16,   8
+SADNXN4D   8,  16
+SADNXN4D   8,   8
+SADNXN4D   8,   4
+SADNXN4D   4,   8
+SADNXN4D   4,   4
+SADNXN4D   4,  16
+SADNXN4D  16,   4
+SADNXN4D   8,  32
+SADNXN4D  32,   8
+SADNXN4D  16,  64
+SADNXN4D  64,  16
 SADNXN4D 128, 128, 1
-SADNXN4D 128, 64, 1
-SADNXN4D 64,  128, 1
-SADNXN4D 64, 64, 1
-SADNXN4D 64, 32, 1
-SADNXN4D 32, 64, 1
-SADNXN4D 32, 32, 1
-SADNXN4D 32, 16, 1
-SADNXN4D 16, 32, 1
-SADNXN4D 16, 16, 1
-SADNXN4D 16,  8, 1
-SADNXN4D  8, 16, 1
-SADNXN4D  8,  8, 1
-SADNXN4D  8,  4, 1
-SADNXN4D  4,  8, 1
-SADNXN4D  4,  4, 1
-SADNXN4D  4, 16, 1
-SADNXN4D 16,  4, 1
-SADNXN4D  8, 32, 1
-SADNXN4D 32,  8, 1
-SADNXN4D 16, 64, 1
-SADNXN4D 64, 16, 1
+SADNXN4D 128,  64, 1
+SADNXN4D  64, 128, 1
+SADNXN4D  64,  64, 1
+SADNXN4D  64,  32, 1
+SADNXN4D  32,  64, 1
+SADNXN4D  32,  32, 1
+SADNXN4D  32,  16, 1
+SADNXN4D  16,  32, 1
+SADNXN4D  16,  16, 1
+SADNXN4D  16,   8, 1
+SADNXN4D   8,  16, 1
+SADNXN4D   8,   8, 1
+SADNXN4D   8,   4, 1
+SADNXN4D   4,   8, 1
+SADNXN4D   4,   4, 1
+SADNXN4D   4,  16, 1
+SADNXN4D  16,   4, 1
+SADNXN4D   8,  32, 1
+SADNXN4D  32,   8, 1
+SADNXN4D  16,  64, 1
+SADNXN4D  64,  16, 1
+SADNXN4D 128, 128, 0, 1
+SADNXN4D 128,  64, 0, 1
+SADNXN4D  64, 128, 0, 1
+SADNXN4D  64,  64, 0, 1
+SADNXN4D  64,  32, 0, 1
+SADNXN4D  32,  64, 0, 1
+SADNXN4D  32,  32, 0, 1
+SADNXN4D  32,  16, 0, 1
+SADNXN4D  16,  32, 0, 1
+SADNXN4D  16,  16, 0, 1
+SADNXN4D  16,   8, 0, 1
+SADNXN4D   8,  16, 0, 1
+SADNXN4D   8,   8, 0, 1
+SADNXN4D   4,   8, 0, 1
+SADNXN4D   4,  16, 0, 1
+SADNXN4D   8,  32, 0, 1
+SADNXN4D  32,   8, 0, 1
+SADNXN4D  16,  64, 0, 1
+SADNXN4D  64,  16, 0, 1
+
+; Different assembly is needed when the height gets subsampled to 2
+; SADNXN4D 16,  4, 0, 1
+; SADNXN4D  8,  4, 0, 1
+; SADNXN4D  4,  4, 0, 1

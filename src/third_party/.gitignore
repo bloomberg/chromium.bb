@@ -39,14 +39,15 @@
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
+/barhopper
 /bazel/desugar/*.jar
+/binutils
 /bison
 /boringssl/src
 /bouncycastle/lib/
 /breakpad/breakpad
 /byte_buddy/android_sdk_build_tools_25_0_2
 /byte_buddy/lib/
-/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /cardboard-java/src
 /catapult
 /ced/src
@@ -77,10 +78,11 @@
 /flac
 /flatbuffers/src
 /fontconfig/src
+/freetype-testing/src
 /freetype/src
 /fuchsia-sdk/images
+/fuchsia-sdk/images-internal
 /fuchsia-sdk/sdk
-/fuchsia-sdk-arm64
 /gles2_conform
 /glfw/src
 /glslang/src
@@ -159,6 +161,7 @@
 /mockito/src
 /nacl_sdk_binaries/
 /nasm
+/nearby/src
 /netty-tcnative/src
 /netty4/src
 /node/linux
@@ -179,6 +182,7 @@
 /perl
 /ppapi
 /proguard/lib/
+/protobuf/java/lite/target/
 /protoc_javalite/protoc-gen-javalite
 /psyco_win32
 /pthreads-win32
@@ -200,10 +204,13 @@
 /robolectric/robolectric
 /scan-build/src
 /scons-2.0.1
+/securemessage/src
 /shaderc/src
+/shaka-player/dist/
 /skia
 /smhasher/src
 /snappy/src
+/soda
 /speex
 /spirv-cross/spirv-cross
 /spirv-headers/src
@@ -214,10 +221,13 @@
 /swiftshader/
 /syzygy
 /syzygy/binaries
+/text-fragments-polyfill/src
+/tint/src
 /tsan/
 /turbine/src
 /turbine/*.jar
 /ub-uiautomator/lib
+/ukey2/src
 /usb_ids
 /usrsctp/usrsctplib
 /v8-i18n
@@ -231,7 +241,7 @@
 /webgl
 /webgl/src
 /webgpu-cts/src
-/webpagereplay/
+/webpagereplay
 /webrtc
 /weston/src
 /widevine/cdm/chromeos
@@ -247,3 +257,4 @@
 /xdg-utils
 /xstream/lib/
 /xulrunner-sdk
+/zstd

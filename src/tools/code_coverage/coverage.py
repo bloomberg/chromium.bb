@@ -74,17 +74,12 @@ import json
 import logging
 import multiprocessing
 import os
+import platform
 import re
 import shlex
 import shutil
 import subprocess
 import urllib2
-
-sys.path.append(
-    os.path.join(
-        os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'tools',
-        'clang', 'scripts'))
-import update
 
 sys.path.append(
     os.path.join(
@@ -96,12 +91,15 @@ import coverage_utils
 
 # Absolute path to the code coverage tools binary. These paths can be
 # overwritten by user specified coverage tool paths.
-LLVM_BIN_DIR = os.path.join(update.LLVM_BUILD_DIR, 'bin')
+# Absolute path to the root of the checkout.
+SRC_ROOT_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                             os.path.pardir, os.path.pardir)
+LLVM_BIN_DIR = os.path.join(
+    os.path.join(SRC_ROOT_PATH, 'third_party', 'llvm-build', 'Release+Asserts'),
+    'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
 LLVM_PROFDATA_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-profdata')
 
-# Absolute path to the root of the checkout.
-SRC_ROOT_PATH = None
 
 # Build directory, the value is parsed from command line arguments.
 BUILD_DIR = None
@@ -147,7 +145,6 @@ FILE_BUG_MESSAGE = (
 # String to replace with actual llvm profile path.
 LLVM_PROFILE_FILE_PATH_SUBSTITUTION = '<llvm_profile_file_path>'
 
-
 def _ConfigureLLVMCoverageTools(args):
   """Configures llvm coverage tools."""
   if args.coverage_tools_dir:
@@ -157,7 +154,8 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
+    subprocess.check_call(
+        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
 
   if coverage_utils.GetHostPlatform() == 'win':
     LLVM_COV_PATH += '.exe'
@@ -399,6 +397,13 @@ def _GetEnvironmentVars(profraw_file_path):
   return env
 
 
+def _SplitCommand(command):
+  """Split a command string into parts in a platform-specific way."""
+  if coverage_utils.GetHostPlatform() == 'win':
+    return command.split()
+  return shlex.split(command)
+
+
 def _ExecuteCommand(target, command, output_file_path):
   """Runs a single command and generates a profraw data file."""
   # Per Clang "Source-based Code Coverage" doc:
@@ -433,11 +438,10 @@ def _ExecuteCommand(target, command, output_file_path):
   try:
     # Some fuzz targets or tests may write into stderr, redirect it as well.
     with open(output_file_path, 'wb') as output_file_handle:
-      subprocess.check_call(
-          shlex.split(command),
-          stdout=output_file_handle,
-          stderr=subprocess.STDOUT,
-          env=_GetEnvironmentVars(expected_profraw_file_path))
+      subprocess.check_call(_SplitCommand(command),
+                            stdout=output_file_handle,
+                            stderr=subprocess.STDOUT,
+                            env=_GetEnvironmentVars(expected_profraw_file_path))
   except subprocess.CalledProcessError as e:
     logging.warning('Command: "%s" exited with non-zero return code.', command)
 
@@ -473,11 +477,10 @@ def _ExecuteIOSCommand(command, output_file_path):
 
   try:
     with open(output_file_path, 'wb') as output_file_handle:
-      subprocess.check_call(
-          shlex.split(command),
-          stdout=output_file_handle,
-          stderr=subprocess.STDOUT,
-          env=_GetEnvironmentVars(iossim_profraw_file_path))
+      subprocess.check_call(_SplitCommand(command),
+                            stdout=output_file_handle,
+                            stderr=subprocess.STDOUT,
+                            env=_GetEnvironmentVars(iossim_profraw_file_path))
   except subprocess.CalledProcessError as e:
     # iossim emits non-zero return code even if tests run successfully, so
     # ignore the return code.
@@ -591,6 +594,9 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
   # and the rest are specified as keyword argument.
   logging.debug('Generating per-file code coverage summary using "llvm-cov '
                 'export -summary-only" command.')
+  for path in binary_paths:
+    if not os.path.exists(path):
+      logging.error("Binary %s does not exist", path)
   subprocess_cmd = [
       LLVM_COV_PATH, 'export', '-summary-only',
       '-instr-profile=' + profdata_file_path, binary_paths[0]
@@ -643,7 +649,7 @@ def _GetBinaryPath(command):
   """
   xvfb_script_name = os.extsep.join(['xvfb', 'py'])
 
-  command_parts = shlex.split(command)
+  command_parts = _SplitCommand(command)
   if os.path.basename(command_parts[0]) == 'python':
     assert os.path.basename(command_parts[1]) == xvfb_script_name, (
         'This tool doesn\'t understand the command: "%s".' % command)
@@ -659,12 +665,16 @@ def _GetBinaryPath(command):
     app_name = os.path.splitext(os.path.basename(app_path))[0]
     return os.path.join(app_path, app_name)
 
+  if coverage_utils.GetHostPlatform() == 'win' \
+     and not command_parts[0].endswith('.exe'):
+    return command_parts[0] + '.exe'
+
   return command_parts[0]
 
 
 def _IsIOSCommand(command):
   """Returns true if command is used to run tests on iOS platform."""
-  return os.path.basename(shlex.split(command)[0]) == 'iossim'
+  return os.path.basename(_SplitCommand(command)[0]) == 'iossim'
 
 
 def _VerifyTargetExecutablesAreInBuildDirectory(commands):
@@ -948,18 +958,17 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
+
+  # Change directory to source root to aid in relative paths calculations.
+  os.chdir(SRC_ROOT_PATH)
+
   # Setup coverage binaries even when script is called with empty params. This
   # is used by coverage bot for initial setup.
   if len(sys.argv) == 1:
-    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
+    subprocess.check_call(
+        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
     print(__doc__)
     return
-
-  # Change directory to source root to aid in relative paths calculations.
-  global SRC_ROOT_PATH
-  SRC_ROOT_PATH = coverage_utils.GetFullPath(
-      os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
-  os.chdir(SRC_ROOT_PATH)
 
   args = _ParseCommandArguments()
   coverage_utils.ConfigureLogging(verbose=args.verbose, log_file=args.log_file)

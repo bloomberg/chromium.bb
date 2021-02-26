@@ -8,6 +8,7 @@
 #include <lib/zx/vmo.h>
 #include <vector>
 
+#include "base/bits.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/system/sys_info.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -47,11 +48,12 @@ class ClientNativePixmapFuchsia : public gfx::ClientNativePixmap {
 
     // Round mapping size to align with the page size.
     size_t page_size = base::SysInfo::VMAllocationGranularity();
-    mapping_size_ = (mapping_size_ + page_size - 1) & ~(page_size - 1);
+    mapping_size_ = base::bits::Align(mapping_size_, page_size);
 
     zx_status_t status =
-        zx::vmar::root_self()->map(0, handle_.planes[0].vmo, 0, mapping_size_,
-                                   ZX_VM_PERM_READ | ZX_VM_PERM_WRITE, &addr);
+        zx::vmar::root_self()->map(ZX_VM_PERM_READ | ZX_VM_PERM_WRITE, 0,
+                                   handle_.planes[0].vmo, 0, mapping_size_,
+                                   &addr);
     if (status != ZX_OK) {
       ZX_DLOG(ERROR, status) << "zx_vmar_map";
       return false;

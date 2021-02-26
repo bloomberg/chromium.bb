@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -36,20 +37,18 @@ class XRAnchor : public ScriptWrappable {
 
   void Update(const device::mojom::blink::XRAnchorData& anchor_data);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
-  void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);
-
   const uint64_t id_;
 
   bool is_deleted_;
 
   Member<XRSession> session_;
 
-  // Anchor's pose in device (mojo) space. Nullptr if the pose of the anchor is
+  // Anchor's pose in device (mojo) space. Nullopt if the pose of the anchor is
   // unknown in the current frame.
-  std::unique_ptr<TransformationMatrix> mojo_from_anchor_;
+  base::Optional<device::Pose> mojo_from_anchor_;
 
   // Cached anchor space - it will be created by `anchorSpace()` if it's not
   // set.

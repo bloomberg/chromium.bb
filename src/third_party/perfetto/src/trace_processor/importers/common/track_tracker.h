@@ -37,6 +37,9 @@ class TrackTracker {
   // Interns a Fuchsia async track into the storage.
   TrackId InternFuchsiaAsyncTrack(StringId name, int64_t correlation_id);
 
+  // Interns a global track keyed by CPU + name into the storage.
+  TrackId InternCpuTrack(StringId name, uint32_t cpu);
+
   // Interns a given GPU track into the storage.
   TrackId InternGpuTrack(const tables::GpuTrackTable::Row& row);
 
@@ -47,13 +50,8 @@ class TrackTracker {
                                        bool source_id_is_process_scoped,
                                        StringId source_scope);
 
-  // Interns a Android async track into the storage.
-  TrackId InternAndroidAsyncTrack(StringId name,
-                                  UniquePid upid,
-                                  int64_t cookie);
-
-  // Interns a track for perf event stack samples, with process-wide grouping.
-  TrackId InternPerfStackTrack(UniquePid upid);
+  // Creates and inserts a Android async track into the storage.
+  TrackId CreateAndroidAsyncTrack(StringId name, UniquePid upid);
 
   // Interns a track for legacy Chrome process-scoped instant events into the
   // storage.
@@ -131,9 +129,12 @@ class TrackTracker {
   // This is called during parsing. The first call to GetDescriptorTrack() for
   // each |uuid| resolves and inserts the track (and its parent tracks,
   // following the parent_uuid chain recursively) based on reservations made for
-  // the |uuid|. Returns nullopt if no track for a descriptor with this |uuid|
-  // has been reserved.
-  base::Optional<TrackId> GetDescriptorTrack(uint64_t uuid);
+  // the |uuid|. If the track is a child track and doesn't have a name yet,
+  // updates the track's name to event_name. Returns nullopt if no track for a
+  // descriptor with this |uuid| has been reserved.
+  base::Optional<TrackId> GetDescriptorTrack(
+      uint64_t uuid,
+      StringId event_name = kNullStringId);
 
   // Returns the ID of the implicit trace-global default TrackDescriptor track.
   TrackId GetOrCreateDefaultDescriptorTrack();
@@ -143,7 +144,9 @@ class TrackTracker {
   TrackId GetOrCreateTriggerTrack();
 
   // Interns a global counter track into the storage.
-  TrackId InternGlobalCounterTrack(StringId name);
+  TrackId InternGlobalCounterTrack(StringId name,
+                                   StringId unit = kNullStringId,
+                                   StringId description = kNullStringId);
 
   // Interns a counter track associated with a cpu into the storage.
   TrackId InternCpuCounterTrack(StringId name, uint32_t cpu);
@@ -152,7 +155,10 @@ class TrackTracker {
   TrackId InternThreadCounterTrack(StringId name, UniqueTid utid);
 
   // Interns a counter track associated with a process into the storage.
-  TrackId InternProcessCounterTrack(StringId name, UniquePid upid);
+  TrackId InternProcessCounterTrack(StringId name,
+                                    UniquePid upid,
+                                    StringId unit = kNullStringId,
+                                    StringId description = kNullStringId);
 
   // Interns a counter track associated with an irq into the storage.
   TrackId InternIrqCounterTrack(StringId name, int32_t irq);
@@ -179,7 +185,7 @@ class TrackTracker {
       uint32_t packet_sequence_id,
       int64_t value);
 
-  // Called by ProtoTraceTokenizer whenever incremental state is cleared on a
+  // Called by ProtoTraceReader whenever incremental state is cleared on a
   // packet sequence. Resets counter values for any incremental counters of
   // the sequence identified by |packet_sequence_id|.
   void OnIncrementalStateCleared(uint32_t packet_sequence_id);
@@ -204,17 +210,6 @@ class TrackTracker {
                           const ChromeTrackTuple& r) {
       return std::tie(l.source_id, l.upid, l.source_scope) <
              std::tie(r.source_id, r.upid, r.source_scope);
-    }
-  };
-  struct AndroidAsyncTrackTuple {
-    UniquePid upid;
-    int64_t cookie;
-    StringId name;
-
-    friend bool operator<(const AndroidAsyncTrackTuple& l,
-                          const AndroidAsyncTrackTuple& r) {
-      return std::tie(l.upid, l.cookie, l.name) <
-             std::tie(r.upid, r.cookie, r.name);
     }
   };
   struct DescriptorTrackReservation {
@@ -256,9 +251,11 @@ class TrackTracker {
   std::map<UniqueTid, TrackId> thread_tracks_;
   std::map<UniquePid, TrackId> process_tracks_;
   std::map<int64_t /* correlation_id */, TrackId> fuchsia_async_tracks_;
+
+  std::map<std::pair<StringId, uint32_t /* cpu */>, TrackId> cpu_tracks_;
+
   std::map<GpuTrackTuple, TrackId> gpu_tracks_;
   std::map<ChromeTrackTuple, TrackId> chrome_tracks_;
-  std::map<AndroidAsyncTrackTuple, TrackId> android_async_tracks_;
   std::map<UniquePid, TrackId> chrome_process_instant_tracks_;
   base::Optional<TrackId> chrome_global_instant_track_id_;
   std::map<uint64_t /* uuid */, DescriptorTrackReservation>

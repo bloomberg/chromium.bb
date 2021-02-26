@@ -226,6 +226,70 @@ class TestGitClBasic(unittest.TestCase):
     actual = set(git_cl.get_cl_statuses(changes, True))
     self.assertEqual(set(zip(changes, statuses)), actual)
 
+  def test_upload_to_non_default_branch_no_retry(self):
+    m = mock.patch('git_cl.Changelist._CMDUploadChange',
+                   side_effect=[git_cl.GitPushError(), None]).start()
+    mock.patch('git_cl.Changelist.GetRemoteBranch',
+               return_value=('foo', 'bar')).start()
+    mock.patch('git_cl.Changelist._GetGerritProject',
+               return_value='foo').start()
+    mock.patch('git_cl.gerrit_util.GetProjectHead',
+               return_value='refs/heads/main').start()
+
+    cl = git_cl.Changelist()
+    options = optparse.Values()
+    with self.assertRaises(SystemExitMock):
+      cl.CMDUploadChange(options, [], 'foo', git_cl.ChangeDescription('bar'))
+
+    # ensure upload is called once
+    self.assertEqual(len(m.mock_calls), 1)
+    sys.exit.assert_called_once_with(1)
+    # option not set as retry didn't happen
+    self.assertFalse(hasattr(options, 'force'))
+    self.assertFalse(hasattr(options, 'edit_description'))
+
+  def test_upload_to_old_default_still_active(self):
+    m = mock.patch('git_cl.Changelist._CMDUploadChange',
+                   side_effect=[git_cl.GitPushError(), None]).start()
+    mock.patch('git_cl.Changelist.GetRemoteBranch',
+               return_value=('foo', git_cl.DEFAULT_OLD_BRANCH)).start()
+    mock.patch('git_cl.Changelist._GetGerritProject',
+               return_value='foo').start()
+    mock.patch('git_cl.gerrit_util.GetProjectHead',
+               return_value='refs/heads/old_default').start()
+
+    cl = git_cl.Changelist()
+    options = optparse.Values()
+    with self.assertRaises(SystemExitMock):
+      cl.CMDUploadChange(options, [], 'foo', git_cl.ChangeDescription('bar'))
+
+    # ensure upload is called once
+    self.assertEqual(len(m.mock_calls), 1)
+    sys.exit.assert_called_once_with(1)
+    # option not set as retry didn't happen
+    self.assertFalse(hasattr(options, 'force'))
+    self.assertFalse(hasattr(options, 'edit_description'))
+
+  def test_upload_to_old_default_retry_on_failure(self):
+    m = mock.patch('git_cl.Changelist._CMDUploadChange',
+                   side_effect=[git_cl.GitPushError(), None]).start()
+    mock.patch('git_cl.Changelist.GetRemoteBranch',
+               return_value=('foo', git_cl.DEFAULT_OLD_BRANCH)).start()
+    mock.patch('git_cl.Changelist._GetGerritProject',
+               return_value='foo').start()
+    mock.patch('git_cl.gerrit_util.GetProjectHead',
+               return_value='refs/heads/main').start()
+    mock.patch('git_cl.RunGit').start()
+
+    cl = git_cl.Changelist()
+    options = optparse.Values()
+    cl.CMDUploadChange(options, [], 'foo', git_cl.ChangeDescription('bar'))
+    # ensure upload is called twice
+    self.assertEqual(len(m.mock_calls), 2)
+    # option overrides on retry
+    self.assertEqual(options.force, True)
+    self.assertEqual(options.edit_description, False)
+
   def test_get_cl_statuses_no_changes(self):
     self.assertEqual([], list(git_cl.get_cl_statuses([], True)))
 
@@ -296,9 +360,15 @@ class TestGitClBasic(unittest.TestCase):
     f = lambda p, bugs: list(git_cl._get_bug_line_values(p, bugs))
     self.assertEqual(f('', ''), [])
     self.assertEqual(f('', '123,v8:456'), ['123', 'v8:456'])
+    # Prefix that ends with colon.
+    self.assertEqual(f('v8:', '456'), ['v8:456'])
+    self.assertEqual(f('v8:', 'chromium:123,456'), ['v8:456', 'chromium:123'])
+    # Prefix that ends without colon.
     self.assertEqual(f('v8', '456'), ['v8:456'])
     self.assertEqual(f('v8', 'chromium:123,456'), ['v8:456', 'chromium:123'])
     # Not nice, but not worth carying.
+    self.assertEqual(f('v8:', 'chromium:123,456,v8:123'),
+                     ['v8:456', 'chromium:123', 'v8:123'])
     self.assertEqual(f('v8', 'chromium:123,456,v8:123'),
                      ['v8:456', 'chromium:123', 'v8:123'])
 
@@ -420,7 +490,6 @@ class GitCookiesCheckerTest(unittest.TestCase):
     self.assertEqual(set(), self.c.get_conflicting_hosts())
     self.assertEqual(set(), self.c.get_duplicated_hosts())
     self.assertEqual(set(), self.c.get_partially_configured_hosts())
-    self.assertEqual(set(), self.c.get_hosts_with_wrong_identities())
 
   def test_analysis(self):
     self.mock_hosts_creds([
@@ -446,9 +515,6 @@ class GitCookiesCheckerTest(unittest.TestCase):
     self.assertEqual(set(['partial.googlesource.com',
                           'gpartial-review.googlesource.com']),
                      self.c.get_partially_configured_hosts())
-    self.assertEqual(set(['chromium.googlesource.com',
-                          'chrome-internal.googlesource.com']),
-                     self.c.get_hosts_with_wrong_identities())
 
   def test_report_no_problems(self):
     self.test_analysis_nothing()
@@ -641,7 +707,7 @@ class TestGitCl(unittest.TestCase):
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
                          custom_cl_base=None, short_hostname='chromium',
-                         change_id=None):
+                         change_id=None, new_default=False):
     calls = []
     if custom_cl_base:
       ancestor_revision = custom_cl_base
@@ -649,8 +715,8 @@ class TestGitCl(unittest.TestCase):
       # Determine ancestor_revision to be merge base.
       ancestor_revision = 'fake_ancestor_sha'
       calls += [
-        (('get_or_create_merge_base', 'master', 'refs/remotes/origin/master'),
-         ancestor_revision),
+        (('get_or_create_merge_base', 'master',
+          'refs/remotes/origin/master'), ancestor_revision),
       ]
 
     if issue:
@@ -676,6 +742,10 @@ class TestGitCl(unittest.TestCase):
           [ancestor_revision, 'HEAD']),),
        '+dat'),
     ]
+    calls += [
+      ((['git', 'show-branch', 'refs/remotes/origin/main'], ),
+         '1' if new_default else callError(1)),
+    ]
 
     return calls
 
@@ -687,7 +757,9 @@ class TestGitCl(unittest.TestCase):
                            short_hostname='chromium',
                            labels=None, change_id=None,
                            final_description=None, gitcookies_exists=True,
-                           force=False, edit_description=None):
+                           force=False, edit_description=None,
+                           new_default=False):
+    default_branch = 'main' if new_default else 'master';
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -716,14 +788,14 @@ class TestGitCl(unittest.TestCase):
 
       if custom_cl_base is None:
         calls += [
-          (('get_or_create_merge_base', 'master', 'refs/remotes/origin/master'),
-           'origin/master'),
+          (('get_or_create_merge_base', 'master',
+            'refs/remotes/origin/master'), 'origin/' + default_branch),
         ]
-        parent = 'origin/master'
+        parent = 'origin/' + default_branch
       else:
         calls += [
           ((['git', 'merge-base', '--is-ancestor', custom_cl_base,
-             'refs/remotes/origin/master'],),
+             'refs/remotes/origin/' + default_branch],),
            callError(1)),   # Means not ancenstor.
           (('ask_for_data',
             'Do you take responsibility for cleaning up potential mess '
@@ -742,7 +814,7 @@ class TestGitCl(unittest.TestCase):
       ]
     else:
       ref_to_push = 'HEAD'
-      parent = 'origin/refs/heads/master'
+      parent = 'origin/refs/heads/' + default_branch
 
     calls += [
       (('SaveDescriptionBackup',), None),
@@ -828,7 +900,7 @@ class TestGitCl(unittest.TestCase):
       (('time.time',), 1000,),
       ((['git', 'push',
          'https://%s.googlesource.com/my/repo' % short_hostname,
-         ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
+         ref_to_push + ':refs/for/refs/heads/' + default_branch + ref_suffix],),
        (('remote:\n'
          'remote: Processing changes: (\)\n'
          'remote: Processing changes: (|)\n'
@@ -842,8 +914,8 @@ class TestGitCl(unittest.TestCase):
              ' XXX\n'
          'remote:\n'
          'To https://%s.googlesource.com/my/repo\n'
-         ' * [new branch]      hhhh -> refs/for/refs/heads/master\n'
-         ) % (short_hostname, short_hostname)),),
+         ' * [new branch]      hhhh -> refs/for/refs/heads/%s\n'
+         ) % (short_hostname, short_hostname, default_branch)),),
       (('time.time',), 2000,),
       (('add_repeated',
         'sub_commands',
@@ -984,7 +1056,8 @@ class TestGitCl(unittest.TestCase):
       force=False,
       log_description=None,
       edit_description=None,
-      fetched_description=None):
+      fetched_description=None,
+      new_default=False):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1004,7 +1077,7 @@ class TestGitCl(unittest.TestCase):
     mock.patch('git_cl.gclient_utils.RunEditor',
               lambda *_, **__: self._mocked_call(['RunEditor'])).start()
     mock.patch('git_cl.DownloadGerritHook', lambda force: self._mocked_call(
-      'DownloadGerritHook', force)).start()
+               'DownloadGerritHook', force)).start()
     mock.patch('git_cl.gclient_utils.FileRead',
               lambda path: self._mocked_call(['FileRead', path])).start()
     mock.patch('git_cl.gclient_utils.FileWrite',
@@ -1054,7 +1127,8 @@ class TestGitCl(unittest.TestCase):
         other_cl_owner=other_cl_owner,
         custom_cl_base=custom_cl_base,
         short_hostname=short_hostname,
-        change_id=change_id)
+        change_id=change_id,
+        new_default=new_default)
     if fetched_status != 'ABANDONED':
       mock.patch(
           'gclient_utils.temporary_file', TemporaryFileMock()).start()
@@ -1072,7 +1146,8 @@ class TestGitCl(unittest.TestCase):
           final_description=final_description,
           gitcookies_exists=gitcookies_exists,
           force=force,
-          edit_description=edit_description)
+          edit_description=edit_description,
+          new_default=new_default)
     # Uncomment when debugging.
     # print('\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls))))
     git_cl.main(['upload'] + upload_args)
@@ -1438,6 +1513,10 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(expected, actual)
 
   def test_get_hash_tags(self):
+    self.calls = [
+        ((['git', 'show-branch', 'refs/remotes/origin/main'], ),
+            callError(1)),
+    ] * 9
     cases = [
       ('', []),
       ('a', []),
@@ -2146,7 +2225,9 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(0, cl.CMDLand(force=True,
                                    bypass_hooks=True,
                                    verbose=True,
-                                   parallel=False))
+                                   parallel=False,
+                                   resultdb=False,
+                                   realm=None))
     self.assertIn(
         'Issue chromium-review.googlesource.com/123 has been submitted',
         sys.stdout.getvalue())
@@ -2651,6 +2732,16 @@ class TestGitCl(unittest.TestCase):
     cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
 
+  def test_gerrit_new_default(self):
+    self._run_gerrit_upload_test(
+        [],
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789\n',
+        [],
+        squash=False,
+        squash_mode='override_nosquash',
+        change_id='I123456789',
+        new_default=True)
+
 
 class ChangelistTest(unittest.TestCase):
   def setUp(self):
@@ -2669,6 +2760,8 @@ class ChangelistTest(unittest.TestCase):
     mock.patch('git_cl.time_time').start()
     mock.patch('metrics.collector').start()
     mock.patch('subprocess2.Popen').start()
+    mock.patch('git_cl.Changelist._GetGerritProject',
+        return_value='https://chromium-review.googlesource.com').start()
     self.addCleanup(mock.patch.stopall)
     self.temp_count = 0
 
@@ -2691,7 +2784,8 @@ class ChangelistTest(unittest.TestCase):
         parallel=True,
         upstream='upstream',
         description='description',
-        all_files=True)
+        all_files=True,
+        resultdb=False)
 
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_called_once_with([
@@ -2709,6 +2803,7 @@ class ChangelistTest(unittest.TestCase):
         '--all_files',
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
+        '--gerrit_project', 'https://chromium-review.googlesource.com',
     ])
     gclient_utils.FileWrite.assert_called_once_with(
         '/tmp/fake-temp1', 'description')
@@ -2742,7 +2837,8 @@ class ChangelistTest(unittest.TestCase):
         parallel=False,
         upstream='upstream',
         description='description',
-        all_files=False)
+        all_files=False,
+        resultdb=False)
 
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_called_once_with([
@@ -2752,6 +2848,7 @@ class ChangelistTest(unittest.TestCase):
         '--upload',
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
+        '--gerrit_project', 'https://chromium-review.googlesource.com',
     ])
     gclient_utils.FileWrite.assert_called_once_with(
         '/tmp/fake-temp1', 'description')
@@ -2760,6 +2857,46 @@ class ChangelistTest(unittest.TestCase):
       'execution_time': 100,
       'exit_code': 0,
     })
+
+  def testRunHook_FewerOptionsResultDB(self):
+    expected_results = {
+      'more_cc': ['more@example.com', 'cc@example.com'],
+      'should_continue': True,
+    }
+    gclient_utils.FileRead.return_value = json.dumps(expected_results)
+    git_cl.time_time.side_effect = [100, 200]
+    mockProcess = mock.Mock()
+    mockProcess.wait.return_value = 0
+    subprocess2.Popen.return_value = mockProcess
+
+    git_cl.Changelist.GetAuthor.return_value = None
+    git_cl.Changelist.GetIssue.return_value = None
+    git_cl.Changelist.GetPatchset.return_value = None
+    git_cl.Changelist.GetCodereviewServer.return_value = None
+
+    cl = git_cl.Changelist()
+    results = cl.RunHook(
+        committing=False,
+        may_prompt=False,
+        verbose=0,
+        parallel=False,
+        upstream='upstream',
+        description='description',
+        all_files=False,
+        resultdb=True,
+        realm='chromium:public')
+
+    self.assertEqual(expected_results, results)
+    subprocess2.Popen.assert_called_once_with([
+        'rdb', 'stream', '-new', '-realm', 'chromium:public', '--',
+        'vpython', 'PRESUBMIT_SUPPORT',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--upload',
+        '--json_output', '/tmp/fake-temp2',
+        '--description_file', '/tmp/fake-temp1',
+        '--gerrit_project', 'https://chromium-review.googlesource.com',
+    ])
 
   @mock.patch('sys.exit', side_effect=SystemExitMock)
   def testRunHook_Failure(self, _mock):
@@ -2777,7 +2914,8 @@ class ChangelistTest(unittest.TestCase):
           parallel=True,
           upstream='upstream',
           description='description',
-          all_files=True)
+          all_files=True,
+          resultdb=False)
 
     sys.exit.assert_called_once_with(2)
 
@@ -2889,7 +3027,9 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         parallel=None,
         upstream='upstream',
         description='fetch description',
-        all_files=None)
+        all_files=None,
+        resultdb=None,
+        realm=None)
 
   def testNoIssue(self):
     git_cl.Changelist.GetIssue.return_value = None
@@ -2901,7 +3041,9 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         parallel=None,
         upstream='upstream',
         description='get description',
-        all_files=None)
+        all_files=None,
+        resultdb=None,
+        realm=None)
 
   def testCustomBranch(self):
     self.assertEqual(0, git_cl.main(['presubmit', 'custom_branch']))
@@ -2912,11 +3054,14 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         parallel=None,
         upstream='custom_branch',
         description='fetch description',
-        all_files=None)
+        all_files=None,
+        resultdb=None,
+        realm=None)
 
   def testOptions(self):
     self.assertEqual(
-        0, git_cl.main(['presubmit', '-v', '-v', '--all', '--parallel', '-u']))
+        0, git_cl.main(['presubmit', '-v', '-v', '--all', '--parallel', '-u',
+                          '--resultdb', '--realm', 'chromium:public']))
     git_cl.Changelist.RunHook.assert_called_once_with(
         committing=False,
         may_prompt=False,
@@ -2924,8 +3069,9 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         parallel=True,
         upstream='upstream',
         description='fetch description',
-        all_files=True)
-
+        all_files=True,
+        resultdb=True,
+        realm='chromium:public')
 
 class CMDTryResultsTestCase(CMDTestCaseBase):
   _DEFAULT_REQUEST = {

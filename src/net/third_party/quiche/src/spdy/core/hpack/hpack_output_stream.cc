@@ -41,7 +41,7 @@ void HpackOutputStream::AppendPrefix(HpackPrefix prefix) {
   AppendBits(prefix.bits, prefix.bit_size);
 }
 
-void HpackOutputStream::AppendBytes(quiche::QuicheStringPiece buffer) {
+void HpackOutputStream::AppendBytes(absl::string_view buffer) {
   DCHECK_EQ(bit_offset_, 0u);
   buffer_.append(buffer.data(), buffer.size());
 }
@@ -61,6 +61,12 @@ void HpackOutputStream::AppendUint32(uint32_t I) {
     }
     AppendBits(static_cast<uint8_t>(I), 8);
   }
+  DCHECK_EQ(bit_offset_, 0u);
+}
+
+std::string* HpackOutputStream::MutableString() {
+  DCHECK_EQ(bit_offset_, 0u);
+  return &buffer_;
 }
 
 void HpackOutputStream::TakeString(std::string* output) {

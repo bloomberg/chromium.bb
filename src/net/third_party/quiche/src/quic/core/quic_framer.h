@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
@@ -17,7 +18,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -106,9 +106,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // the entire RETRY packet except the Retry Integrity Tag field.
   virtual void OnRetryPacket(QuicConnectionId original_connection_id,
                              QuicConnectionId new_connection_id,
-                             quiche::QuicheStringPiece retry_token,
-                             quiche::QuicheStringPiece retry_integrity_tag,
-                             quiche::QuicheStringPiece retry_without_tag) = 0;
+                             absl::string_view retry_token,
+                             absl::string_view retry_integrity_tag,
+                             absl::string_view retry_without_tag) = 0;
 
   // Called when all fields except packet number has been parsed, but has not
   // been authenticated. If it returns false, framing for this packet will
@@ -218,6 +218,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a handshake done frame has been parsed.
   virtual bool OnHandshakeDoneFrame(const QuicHandshakeDoneFrame& frame) = 0;
 
+  // Called when an AckFrequencyFrame has been parsed.
+  virtual bool OnAckFrequencyFrame(const QuicAckFrequencyFrame& frame) = 0;
+
   // Called when a packet has been completely processed.
   virtual void OnPacketComplete() = 0;
 
@@ -234,6 +237,25 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
 
   // Called when an IETF StreamsBlocked frame has been parsed.
   virtual bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) = 0;
+
+  // Called when a Key Phase Update has been initiated. This is called for both
+  // locally and peer initiated key updates. If the key update was locally
+  // initiated, this does not indicate the peer has received the key update yet.
+  virtual void OnKeyUpdate(KeyUpdateReason reason) = 0;
+
+  // Called on the first decrypted packet in each key phase (including the
+  // first key phase.)
+  virtual void OnDecryptedFirstPacketInKeyPhase() = 0;
+
+  // Called when the framer needs to generate a decrypter for the next key
+  // phase. Each call should generate the key for phase n+1.
+  virtual std::unique_ptr<QuicDecrypter>
+  AdvanceKeysAndCreateCurrentOneRttDecrypter() = 0;
+
+  // Called when the framer needs to generate an encrypter. The key corresponds
+  // to the key phase of the last decrypter returned by
+  // AdvanceKeysAndCreateCurrentOneRttDecrypter().
+  virtual std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() = 0;
 };
 
 // Class for parsing and constructing QUIC packets.  It has a
@@ -297,6 +319,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // ignored.
   bool ProcessPacket(const QuicEncryptedPacket& packet);
 
+  // Whether we are in the middle of a call to this->ProcessPacket.
+  bool is_processing_packet() const { return is_processing_packet_; }
+
   // Largest size in bytes of all stream frame fields without the payload.
   static size_t GetMinStreamFrameSize(QuicTransportVersion version,
                                       QuicStreamId stream_id,
@@ -321,6 +346,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes of all reset stream frame fields.
   static size_t GetRstStreamFrameSize(QuicTransportVersion version,
                                       const QuicRstStreamFrame& frame);
+  // Size in bytes of all ack frenquency frame fields.
+  static size_t GetAckFrequencyFrameSize(const QuicAckFrequencyFrame& frame);
   // Size in bytes of all connection close frame fields, including the error
   // details.
   static size_t GetConnectionCloseFrameSize(
@@ -380,7 +407,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns the associated data from the encrypted packet |encrypted| as a
   // stringpiece.
-  static quiche::QuicheStringPiece GetAssociatedDataFromEncryptedPacket(
+  static absl::string_view GetAssociatedDataFromEncryptedPacket(
       QuicTransportVersion version,
       const QuicEncryptedPacket& encrypted,
       QuicConnectionIdLength destination_connection_id_length,
@@ -392,7 +419,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       uint64_t retry_token_length,
       QuicVariableLengthIntegerLength length_length);
 
-  // Parses the unencryoted fields in a QUIC header using |reader| as input,
+  // Parses the unencrypted fields in a QUIC header using |reader| as input,
   // stores the result in the other parameters.
   // |expected_destination_connection_id_length| is only used for short headers.
   static QuicErrorCode ParsePublicHeader(
@@ -409,10 +436,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionId* source_connection_id,
       QuicLongHeaderType* long_packet_type,
       QuicVariableLengthIntegerLength* retry_token_length_length,
-      quiche::QuicheStringPiece* retry_token,
+      absl::string_view* retry_token,
       std::string* detailed_error);
 
-  // Parses the unencryoted fields in |packet| and stores them in the other
+  // Parses the unencrypted fields in |packet| and stores them in the other
   // parameters. This can only be called on the server.
   // |expected_destination_connection_id_length| is only used for short headers.
   static QuicErrorCode ParsePublicHeaderDispatcher(
@@ -427,7 +454,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionId* destination_connection_id,
       QuicConnectionId* source_connection_id,
       bool* retry_token_present,
-      quiche::QuicheStringPiece* retry_token,
+      absl::string_view* retry_token,
       std::string* detailed_error);
 
   // Serializes a packet containing |frames| into |buffer|.
@@ -481,14 +508,16 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendTypeByte(const QuicFrame& frame,
                       bool last_frame_in_packet,
                       QuicDataWriter* writer);
-  bool AppendIetfTypeByte(const QuicFrame& frame,
-                          bool last_frame_in_packet,
-                          QuicDataWriter* writer);
+  bool AppendIetfFrameType(const QuicFrame& frame,
+                           bool last_frame_in_packet,
+                           QuicDataWriter* writer);
   size_t AppendIetfFrames(const QuicFrames& frames, QuicDataWriter* writer);
   bool AppendStreamFrame(const QuicStreamFrame& frame,
                          bool last_frame_in_packet,
                          QuicDataWriter* writer);
   bool AppendCryptoFrame(const QuicCryptoFrame& frame, QuicDataWriter* writer);
+  bool AppendAckFrequencyFrame(const QuicAckFrequencyFrame& frame,
+                               QuicDataWriter* writer);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists.
   // If an alternative decrypter is in place then the function DCHECKs. This is
@@ -511,6 +540,17 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   void InstallDecrypter(EncryptionLevel level,
                         std::unique_ptr<QuicDecrypter> decrypter);
   void RemoveDecrypter(EncryptionLevel level);
+
+  // Enables key update support.
+  void SetKeyUpdateSupportForConnection(bool enabled);
+  // Discard the decrypter for the previous key phase.
+  void DiscardPreviousOneRttKeys();
+  // Update the key phase.
+  bool DoKeyUpdate(KeyUpdateReason reason);
+  // Returns the count of packets received that appeared to attempt a key
+  // update but failed decryption which have been received since the last
+  // successfully decrypted packet.
+  QuicPacketCount PotentialPeerKeyUpdateAttemptCount() const;
 
   const QuicDecrypter* GetDecrypter(EncryptionLevel level) const;
   const QuicDecrypter* decrypter() const;
@@ -552,6 +592,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // to ciphertext no larger than |ciphertext_size|.
   size_t GetMaxPlaintextSize(size_t ciphertext_size);
 
+  // Returns the maximum number of packets that can be safely encrypted with
+  // the active AEAD. 1-RTT keys must be set before calling this method.
+  QuicPacketCount GetOneRttEncrypterConfidentialityLimit() const;
+
   const std::string& detailed_error() { return detailed_error_; }
 
   // The minimum packet number length required to represent |packet_number|.
@@ -571,6 +615,15 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns true if encrypter of |level| is available.
   bool HasEncrypterOfEncryptionLevel(EncryptionLevel level) const;
+  // Returns true if decrypter of |level| is available.
+  bool HasDecrypterOfEncryptionLevel(EncryptionLevel level) const;
+
+  // Returns true if an encrypter of |space| is available.
+  bool HasAnEncrypterForSpace(PacketNumberSpace space) const;
+
+  // Returns the encryption level to send application data. This should be only
+  // called with available encrypter for application data.
+  EncryptionLevel GetEncryptionLevelToSendApplicationData() const;
 
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
@@ -625,10 +678,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // WriteClientVersionNegotiationProbePacket. |packet_bytes| must point to
   // |packet_length| bytes in memory which represent the response.
   // |packet_length| must be greater or equal to 6. This method will fill in
-  // |source_connection_id_bytes| which must point to at least 18 bytes in
-  // memory. |source_connection_id_length_out| will contain the length of the
-  // received source connection ID, which on success will match the contents of
-  // the destination connection ID passed in to
+  // |source_connection_id_bytes| which must point to at least
+  // |*source_connection_id_length_out| bytes in memory.
+  // |*source_connection_id_length_out| must be at least 18.
+  // |*source_connection_id_length_out| will contain the length of the received
+  // source connection ID, which on success will match the contents of the
+  // destination connection ID passed in to
   // WriteClientVersionNegotiationProbePacket. In the case of a failure,
   // |detailed_error| will be filled in with an explanation of what failed.
   static bool ParseServerVersionNegotiationProbeResponse(
@@ -653,7 +708,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
  private:
   friend class test::QuicFramerPeer;
 
-  typedef std::map<QuicPacketNumber, uint8_t> NackRangeMap;
+  using NackRangeMap = std::map<QuicPacketNumber, uint8_t>;
 
   struct QUIC_EXPORT_PRIVATE AckFrameInfo {
     AckFrameInfo();
@@ -794,8 +849,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                            bool no_message_length,
                            QuicMessageFrame* frame);
 
-  bool DecryptPayload(quiche::QuicheStringPiece encrypted,
-                      quiche::QuicheStringPiece associated_data,
+  bool DecryptPayload(absl::string_view encrypted,
+                      absl::string_view associated_data,
                       const QuicPacketHeader& header,
                       char* decrypted_buffer,
                       size_t buffer_length,
@@ -915,7 +970,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessCryptoFrame(QuicDataReader* reader,
                           EncryptionLevel encryption_level,
                           QuicCryptoFrame* frame);
-
+  bool ProcessAckFrequencyFrame(QuicDataReader* reader,
+                                QuicAckFrequencyFrame* frame);
   // IETF frame appending methods.  All methods append the type byte as well.
   bool AppendIetfStreamFrame(const QuicStreamFrame& frame,
                              bool last_frame_in_packet,
@@ -997,6 +1053,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                               QuicIetfFrameType type,
                               QuicStreamId* id);
 
+  bool ProcessPacketInternal(const QuicEncryptedPacket& packet);
+
   std::string detailed_error_;
   QuicFramerVisitorInterface* visitor_;
   QuicErrorCode error_;
@@ -1044,6 +1102,27 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // The last timestamp received if process_timestamps_ is true.
   QuicTime::Delta last_timestamp_;
 
+  // Whether IETF QUIC Key Update is supported on this connection.
+  bool support_key_update_for_connection_;
+  // The value of the current key phase bit, which is toggled when the keys are
+  // changed.
+  bool current_key_phase_bit_;
+  // Tracks the first packet received in the current key phase. Will be
+  // uninitialized before the first one-RTT packet has been received or after a
+  // locally initiated key update but before the first packet from the peer in
+  // the new key phase is received.
+  QuicPacketNumber current_key_phase_first_received_packet_number_;
+  // Counts the number of packets received that might have been failed key
+  // update attempts. Reset to zero every time a packet is successfully
+  // decrypted.
+  QuicPacketCount potential_peer_key_update_attempt_count_;
+  // Decrypter for the previous key phase. Will be null if in the first key
+  // phase or previous keys have been discarded.
+  std::unique_ptr<QuicDecrypter> previous_decrypter_;
+  // Decrypter for the next key phase. May be null if next keys haven't been
+  // generated yet.
+  std::unique_ptr<QuicDecrypter> next_decrypter_;
+
   // If this is a framer of a connection, this is the packet number of first
   // sending packet. If this is a framer of a framer of dispatcher, this is the
   // packet number of sent packets (for those which have packet number).
@@ -1052,6 +1131,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // If not null, framer asks data_producer_ to write stream frame data. Not
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
+
+  // Whether we are in the middle of a call to this->ProcessPacket.
+  bool is_processing_packet_ = false;
 
   // If true, framer infers packet header type (IETF/GQUIC) from version_.
   // Otherwise, framer infers packet header type from first byte of a received

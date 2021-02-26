@@ -28,11 +28,13 @@
 #include "base/path_service.h"
 #include "base/scoped_generic.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 
 #if !BUILDFLAG(SUPPORTS_CODE_ORDERING)
 #error Code ordering support is required for the reached code profiler.
@@ -60,7 +62,7 @@ constexpr const char kDumpToFileFlag[] = "reached-code-profiler-dump-to-file";
 
 constexpr uint64_t kIterationsBeforeSkipping = 50;
 constexpr uint64_t kIterationsBetweenUpdates = 100;
-constexpr int kProfilerSignal = SIGURG;
+constexpr int kProfilerSignal = SIGWINCH;
 
 constexpr base::TimeDelta kSamplingInterval =
     base::TimeDelta::FromMilliseconds(10);
@@ -71,7 +73,11 @@ void HandleSignal(int signal, siginfo_t* info, void* context) {
     return;
 
   ucontext_t* ucontext = reinterpret_cast<ucontext_t*>(context);
-  uint32_t address = ucontext->uc_mcontext.arm_pc;
+#if defined(ARCH_CPU_ARM64)
+  uintptr_t address = ucontext->uc_mcontext.pc;
+#else
+  uintptr_t address = ucontext->uc_mcontext.arm_pc;
+#endif
   ReachedAddressesBitset::GetTextBitset()->RecordAddress(address);
 }
 
@@ -117,7 +123,8 @@ class ReachedCodeProfiler {
   }
 
   // Starts to periodically send |kProfilerSignal| to all threads.
-  void Start(LibraryProcessType library_process_type) {
+  void Start(LibraryProcessType library_process_type,
+             base::TimeDelta sampling_interval) {
     if (is_enabled_)
       return;
 
@@ -154,7 +161,7 @@ class ReachedCodeProfiler {
     // Start the interval timer.
     struct itimerspec its;
     memset(&its, 0, sizeof(its));
-    its.it_interval.tv_nsec = kSamplingInterval.InNanoseconds();
+    its.it_interval.tv_nsec = sampling_interval.InNanoseconds();
     its.it_value = its.it_interval;
     ret = timer_settime(timerid, 0, &its, nullptr);
     if (ret) {
@@ -268,7 +275,17 @@ void InitReachedCodeProfilerAtStartup(LibraryProcessType library_process_type) {
   if (!ShouldEnableReachedCodeProfiler())
     return;
 
-  ReachedCodeProfiler::GetInstance()->Start(library_process_type);
+  int interval_us = 0;
+  base::TimeDelta sampling_interval = kSamplingInterval;
+  if (base::StringToInt(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+              switches::kReachedCodeSamplingIntervalUs),
+          &interval_us) &&
+      interval_us > 0) {
+    sampling_interval = base::TimeDelta::FromMicroseconds(interval_us);
+  }
+  ReachedCodeProfiler::GetInstance()->Start(library_process_type,
+                                            sampling_interval);
 }
 
 bool IsReachedCodeProfilerEnabled() {

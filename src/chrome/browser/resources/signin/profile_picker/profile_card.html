@@ -1,0 +1,101 @@
+<style include="profile-picker-shared">
+  #profileCardContainer {
+    border-radius: inherit;
+    /* Allows descendants to be absolute positioned relatively to the
+       container */
+    position: relative
+  }
+
+  cr-button {
+    --card-background-color: var(--md-background-color);
+    background-color: var(--card-background-color);
+    border: none;
+    border-radius: inherit;
+    box-shadow: none;
+    flex-direction: column;
+    height: inherit;
+    padding: 0;
+    width: inherit;
+  }
+
+  :host-context(.focus-outline-visible) cr-button:focus {
+    box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
+  }
+
+  .profile-avatar {
+    border-radius: 37px;
+    flex-shrink: 0;
+    height: var(--avatar-icon-size);
+    width: var(--avatar-icon-size);
+  }
+
+  #avatarContainer {
+    height: var(--avatar-icon-size);
+    position: relative;
+  }
+
+  #iconContainer {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+    --domain-icon-size: 24px;
+    --domain-icon-border-size: 2px;
+    align-items: center;
+    background-color: white;
+    border: var(--domain-icon-border-size) solid var(--card-background-color);
+    border-radius: 50%;
+    box-shadow: 0 0 2px rgba(60, 64, 67, 0.12), 0 0 6px rgba(60, 64, 67, 0.15);
+    display: flex;
+    justify-content: center;
+    height: var(--domain-icon-size);
+    position: absolute;
+    right: -6px;
+    top: calc(var(--avatar-icon-size) - var(--domain-icon-size)
+      - var(--domain-icon-border-size));
+    width: var(--domain-icon-size);
+  }
+
+  :host-context([dir='rtl']) #iconContainer {
+    left: -6px;
+    right: initial;
+  }
+
+  #iconContainer[hidden] {
+    display: none;
+  }
+
+  iron-icon {
+    --iron-icon-fill-color: var(--google-grey-refresh-700);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    cr-button {
+      --card-background-color: var(--google-grey-800);
+    }
+
+    #iconContainer {
+      background-color: var(--md-background-color);
+      box-shadow: 0 0 2px rgba(60, 64, 67, 0.12), 0 0 6px
+        rgba(60, 64, 67, 0.15);
+    }
+
+    iron-icon {
+      --iron-icon-fill-color: var(--google-grey-500);
+    }
+  }
+</style>
+
+<div id="profileCardContainer">
+  <cr-button on-click="onProfileClick_"
+      aria-label="[[profileState.localProfileName]]">
+    <!-- TODO(msalama): Implement editing local profile name in place -->
+    <div class="profile-card-info">[[profileState.localProfileName]]</div>
+    <div id="avatarContainer">
+      <img class="profile-avatar" alt="" src="[[profileState.avatarIcon]]">
+      <div id="iconContainer" hidden="[[!profileState.isManaged]]">
+        <iron-icon icon="cr:domain"></iron-icon>
+      </div>
+    </div>
+    <div class="profile-card-info">[[profileState.gaiaName]]</div>
+  </cr-button>
+  <profile-card-menu profile-state="[[profileState]]"></profile-card-menu>
+</div>

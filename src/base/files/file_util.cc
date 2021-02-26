@@ -27,6 +27,14 @@
 namespace base {
 
 #if !defined(OS_NACL_NONSFI)
+OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
+  return BindOnce(IgnoreResult(&DeleteFile));
+}
+
+OnceCallback<void(const FilePath&)> GetDeletePathRecursivelyCallback() {
+  return BindOnce(IgnoreResult(&DeletePathRecursively));
+}
+
 int64_t ComputeDirectorySize(const FilePath& root_path) {
   int64_t running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);

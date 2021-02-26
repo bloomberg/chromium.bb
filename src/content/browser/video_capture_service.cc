@@ -5,11 +5,11 @@
 #include "content/public/browser/video_capture_service.h"
 
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_process_host.h"
@@ -38,8 +38,7 @@ video_capture::mojom::VideoCaptureService* g_service_override = nullptr;
 void BindInProcessInstance(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   static base::NoDestructor<video_capture::VideoCaptureServiceImpl> service(
-      std::move(receiver),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+      std::move(receiver), GetUIThreadTaskRunner({}));
 }
 
 mojo::Remote<video_capture::mojom::VideoCaptureService>& GetUIThreadRemote() {
@@ -85,9 +84,8 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
         storage;
     auto& remote = storage->GetOrCreateValue();
     if (!remote.is_bound()) {
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI})
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(&BindProxyRemoteOnUIThread,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&BindProxyRemoteOnUIThread,
                                     remote.BindNewPipeAndPassReceiver()));
     }
     return *remote.get();
@@ -112,8 +110,7 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
           std::move(receiver),
           ServiceProcessHost::Options()
               .WithDisplayName("Video Capture")
-              .WithSandboxType(service_manager::SandboxType::kVideoCapture)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
               // On Mac, the service requires a CFRunLoop which is provided by a
               // UI message loop. See https://crbug.com/834581.
               .WithExtraCommandLineSwitches({switches::kMessageLoopTypeUi})

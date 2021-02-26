@@ -83,6 +83,11 @@ Error ValidateCreatePbufferFromClientBuffer(Display *display,
                                             Config *config,
                                             const AttributeMap &attributes);
 
+Error ValidateCreatePixmapSurface(Display *display,
+                                  Config *config,
+                                  EGLNativePixmapType pixmap,
+                                  const AttributeMap &attributes);
+
 Error ValidateMakeCurrent(Display *display, Surface *draw, Surface *read, gl::Context *context);
 
 Error ValidateCreateImage(const Display *display,
@@ -331,6 +336,9 @@ Error ValidateQueryDisplayAttribANGLE(const Display *display, const EGLint attri
 // EGL_ANDROID_get_native_client_buffer
 Error ValidateGetNativeClientBufferANDROID(const struct AHardwareBuffer *buffer);
 
+// EGL_ANDROID_create_native_client_buffer
+Error ValidateCreateNativeClientBufferANDROID(const egl::AttributeMap &attribMap);
+
 // EGL_ANDROID_native_fence_sync
 Error ValidateDupNativeFenceFDANDROID(const Display *display, const Sync *sync);
 
@@ -338,6 +346,9 @@ Error ValidateDupNativeFenceFDANDROID(const Display *display, const Sync *sync);
 Error ValidateSwapBuffersWithFrameTokenANGLE(const Display *display,
                                              const Surface *surface,
                                              EGLFrameTokenANGLE frametoken);
+
+// EGL_KHR_reusable_sync
+Error ValidateSignalSyncKHR(const Display *display, const Sync *sync, EGLint mode);
 
 }  // namespace egl
 

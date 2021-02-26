@@ -54,7 +54,6 @@ class MODULES_EXPORT ServiceWorker final
       public ActiveScriptWrappable<ServiceWorker>,
       public mojom::blink::ServiceWorkerObject {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 
  public:
   static ServiceWorker* From(ExecutionContext*,
@@ -73,7 +72,7 @@ class MODULES_EXPORT ServiceWorker final
 
   ServiceWorker(ExecutionContext*, WebServiceWorkerObjectInfo);
   ~ServiceWorker() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,

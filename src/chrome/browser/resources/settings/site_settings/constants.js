@@ -11,37 +11,37 @@
  * @enum {string}
  */
 export const ContentSettingsTypes = {
-  COOKIES: 'cookies',
-  IMAGES: 'images',
-  JAVASCRIPT: 'javascript',
-  SOUND: 'sound',
-  PLUGINS: 'plugins',  // AKA Flash.
-  POPUPS: 'popups',
-  GEOLOCATION: 'location',
-  NOTIFICATIONS: 'notifications',
-  MIC: 'media-stream-mic',  // AKA Microphone.
-  CAMERA: 'media-stream-camera',
-  PROTOCOL_HANDLERS: 'register-protocol-handler',
-  UNSANDBOXED_PLUGINS: 'ppapi-broker',
+  ADS: 'ads',
+  AR: 'ar',
   AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
   BACKGROUND_SYNC: 'background-sync',
-  MIDI_DEVICES: 'midi-sysex',
-  USB_DEVICES: 'usb-devices',
-  SERIAL_PORTS: 'serial-ports',
   BLUETOOTH_DEVICES: 'bluetooth-devices',
-  ZOOM_LEVELS: 'zoom-levels',
-  PROTECTED_CONTENT: 'protected-content',
-  ADS: 'ads',
-  CLIPBOARD: 'clipboard',
-  SENSORS: 'sensors',
-  PAYMENT_HANDLER: 'payment-handler',
-  MIXEDSCRIPT: 'mixed-script',
   BLUETOOTH_SCANNING: 'bluetooth-scanning',
-  NATIVE_FILE_SYSTEM_WRITE: 'native-file-system-write',
+  CAMERA: 'media-stream-camera',
+  CLIPBOARD: 'clipboard',
+  COOKIES: 'cookies',
+  FILE_SYSTEM_WRITE: 'file-system-write',
+  FONT_ACCESS: 'font-access',
+  GEOLOCATION: 'location',
   HID_DEVICES: 'hid-devices',
-  AR: 'ar',
+  IDLE_DETECTION: 'idle-detection',
+  IMAGES: 'images',
+  JAVASCRIPT: 'javascript',
+  MIC: 'media-stream-mic',  // AKA Microphone.
+  MIDI_DEVICES: 'midi-sysex',
+  MIXEDSCRIPT: 'mixed-script',
+  NOTIFICATIONS: 'notifications',
+  PAYMENT_HANDLER: 'payment-handler',
+  POPUPS: 'popups',
+  PROTECTED_CONTENT: 'protected-content',
+  PROTOCOL_HANDLERS: 'register-protocol-handler',
+  SENSORS: 'sensors',
+  SERIAL_PORTS: 'serial-ports',
+  SOUND: 'sound',
+  USB_DEVICES: 'usb-devices',
   VR: 'vr',
   WINDOW_PLACEMENT: 'window-placement',
+  ZOOM_LEVELS: 'zoom-levels',
 };
 
 /**
@@ -92,6 +92,7 @@ export const CookieControlsMode = {
  * @enum {string}
  */
 export const SiteSettingSource = {
+  ALLOWLIST: 'allowlist',
   ADS_FILTER_BLACKLIST: 'ads-filter-blacklist',
   DEFAULT: 'default',
   // This source is for the Protected Media Identifier / Protected Content
@@ -106,6 +107,18 @@ export const SiteSettingSource = {
 };
 
 /**
+ * Enumeration of states for the notification default setting generated pref.
+ * Must be kept in sync with the enum of the same name located in:
+ * chrome/browser/content_settings/generated_notification_pref.h
+ * @enum {number}
+ */
+export const NotificationSetting = {
+  ASK: 0,
+  QUIETER_MESSAGING: 1,
+  BLOCK: 2,
+};
+
+/**
  * A category value to use for the All Sites list.
  * @type {string}
  */
@@ -116,20 +129,6 @@ const ALL_SITES = 'all-sites';
  * @type {string}
  */
 export const INVALID_CATEGORY_SUBTYPE = '';
-
-/**
- * Contains the record action types logged before M82.
- * This should be kept in sync with the |AllSitesAction| enum in
- * chrome/browser/ui/webui/settings/site_settings_handler.cc
- * @enum {number}
- */
-export const AllSitesAction = {
-  LOAD_PAGE: 0,
-  RESET_PERMISSIONS: 1,
-  CLEAR_DATA: 2,
-  ENTER_SITE_DETAILS: 3,
-};
-
 
 /**
  * Contains the possible record action types.

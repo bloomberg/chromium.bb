@@ -25,8 +25,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -167,8 +165,9 @@ ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
 
 class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebAppPolicyManagerTest() {}
-
+  WebAppPolicyManagerTest() = default;
+  WebAppPolicyManagerTest(const WebAppPolicyManagerTest&) = delete;
+  WebAppPolicyManagerTest& operator=(const WebAppPolicyManagerTest&) = delete;
   ~WebAppPolicyManagerTest() override = default;
 
   void SetUp() override {
@@ -209,8 +208,6 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   WebAppPolicyManager* web_app_policy_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManagerTest);
 };
 
 TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {

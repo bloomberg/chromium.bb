@@ -17,8 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -26,14 +25,12 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1015113): The EG2 macro is breaking indexing for some reason
 // without the trailing semicolon.  For now, disable the extra semi warning
 // so Xcode indexing works for the egtest.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(InfobarManagerAppInterface);
-#endif  // defined(CHROME_EARL_GREY_2)
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 
@@ -45,20 +42,6 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
   NSString* condition_name =
       visible ? @"Waiting for infobar to show" : @"Waiting for infobar to hide";
   id<GREYMatcher> expected_visibility = visible ? grey_notNil() : grey_nil();
-#if defined(CHROME_EARL_GREY_1)
-  CFTimeInterval kTimeout = 4.0;
-  [[GREYCondition
-      conditionWithName:condition_name
-                  block:^BOOL {
-                    NSError* error = nil;
-                    [[EarlGrey
-                        selectElementWithMatcher:
-                            chrome_test_util::StaticTextWithAccessibilityLabel(
-                                message)] assertWithMatcher:expected_visibility
-                                                      error:&error];
-                    return error == nil;
-                  }] waitWithTimeout:kTimeout];
-#elif defined(CHROME_EARL_GREY_2)
   BOOL bannerShown = WaitUntilConditionOrTimeout(
       kInfobarBannerDefaultPresentationDurationInSeconds, ^{
         NSError* error = nil;
@@ -73,9 +56,6 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
       });
 
   GREYAssertTrue(bannerShown, condition_name);
-#else
-#error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
-#endif
 }
 
 }  // namespace
@@ -95,11 +75,15 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
   return config;
 }
 
+- (void)setUp {
+  [super setUp];
+  GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
+}
+
 // Tests that page infobars don't persist on navigation.
 - (void)testInfobarsDismissOnNavigate {
   // Open a new tab and navigate to the test page.
-  const GURL testURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -126,10 +110,8 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 // Tests that page infobars persist only on the tabs they are opened on, and
 // that navigation in other tabs doesn't affect them.
 - (void)testInfobarTabSwitch {
-  const GURL destinationURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/destination.html");
-  const GURL ponyURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
+  const GURL destinationURL = self.testServer->GetURL("/destination.html");
+  const GURL ponyURL = self.testServer->GetURL("/pony.html");
 
   // Create the first tab and navigate to the test page.
   [ChromeEarlGrey loadURL:destinationURL];
@@ -170,8 +152,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 // Tests that the Infobar dissapears once the "OK" button is tapped.
 - (void)testInfobarButtonDismissal {
   // Open a new tab and navigate to the test page.
-  const GURL testURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -199,16 +180,8 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 
 // Tests adding an Infobar on top of an existing one.
 - (void)testInfobarTopMostVisible {
-// Turn on Messages UI.
-#if defined(CHROME_EARL_GREY_1)
-  _featureList.InitWithFeatures(
-      /*enabled_features=*/{kIOSInfobarUIReboot},
-      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
-#endif
-
   // Open a new tab and navigate to the test page.
-  const GURL testURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -245,16 +218,8 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 
 // Tests that a taller Infobar layout is correct and the OK button is tappable.
 - (void)testInfobarTallerLayout {
-  // Turn on Messages UI.
-#if defined(CHROME_EARL_GREY_1)
-  _featureList.InitWithFeatures(
-      /*enabled_features=*/{kIOSInfobarUIReboot},
-      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
-#endif
-
   // Open a new tab and navigate to the test page.
-  const GURL testURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 

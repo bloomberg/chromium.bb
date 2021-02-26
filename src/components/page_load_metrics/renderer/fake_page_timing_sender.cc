@@ -23,11 +23,15 @@ void FakePageTimingSender::SendTiming(
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data,
-    const mojom::InputTimingPtr new_input_timing) {
+    const mojom::InputTimingPtr new_input_timing,
+    const blink::MobileFriendliness& mobile_friendliness) {
   validator_->UpdateTiming(timing, metadata, new_features, resources,
                            render_data, cpu_timing, new_deferred_resource_data,
-                           new_input_timing);
+                           new_input_timing, mobile_friendliness);
 }
+
+void FakePageTimingSender::SetUpSmoothnessReporting(
+    base::ReadOnlySharedMemoryRegion shared_memory) {}
 
 FakePageTimingSender::PageTimingValidator::PageTimingValidator()
     : expected_input_timing(mojom::InputTiming::New()),
@@ -78,6 +82,17 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedInputTiming()
             actual_input_timing->total_input_delay);
   ASSERT_EQ(expected_input_timing->total_adjusted_input_delay,
             actual_input_timing->total_adjusted_input_delay);
+}
+
+void FakePageTimingSender::PageTimingValidator::
+    UpdateExpectedMobileFriendliness(
+        const blink::MobileFriendliness& mobile_friendliness) {
+  expected_mobile_friendliness = mobile_friendliness;
+}
+
+void FakePageTimingSender::PageTimingValidator::
+    VerifyExpectedMobileFriendliness() const {
+  ASSERT_EQ(expected_mobile_friendliness, actual_mobile_friendliness);
 }
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedCpuTimings()
@@ -139,7 +154,9 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedCssProperties()
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedRenderData()
     const {
-  EXPECT_FLOAT_EQ(expected_render_data_.layout_shift_delta,
+  EXPECT_FLOAT_EQ(expected_render_data_.is_null()
+                      ? 0.0
+                      : expected_render_data_->layout_shift_delta,
                   actual_render_data_.layout_shift_delta);
 }
 
@@ -160,7 +177,8 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
     const mojom::DeferredResourceCountsPtr& new_deferred_resource_data,
-    const mojom::InputTimingPtr& new_input_timing) {
+    const mojom::InputTimingPtr& new_input_timing,
+    const blink::MobileFriendliness& mobile_friendliness) {
   actual_timings_.push_back(timing.Clone());
   if (!cpu_timing->task_time.is_zero()) {
     actual_cpu_timings_.push_back(cpu_timing.Clone());
@@ -184,6 +202,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
   actual_input_timing->total_input_delay += new_input_timing->total_input_delay;
   actual_input_timing->total_adjusted_input_delay +=
       new_input_timing->total_adjusted_input_delay;
+  actual_mobile_friendliness = mobile_friendliness;
 
   VerifyExpectedTimings();
   VerifyExpectedCpuTimings();
@@ -191,6 +210,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
   VerifyExpectedCssProperties();
   VerifyExpectedRenderData();
   VerifyExpectedFrameIntersectionUpdate();
+  VerifyExpectedMobileFriendliness();
 }
 
 }  // namespace page_load_metrics

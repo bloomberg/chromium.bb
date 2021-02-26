@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 test_namespace_rewrites = [
+  "cellularSetup.PSimUIState|PSimUIState",
+  "cellularSetup.CellularSetupPageName|CellularSetupPageName",
   "global.traceAssertionsForTesting|window.traceAssertionsForTesting",
   "MockInteractions.blur|blur",
   "MockInteractions.downAndUp|downAndUp",
@@ -10,6 +12,7 @@ test_namespace_rewrites = [
   "MockInteractions.keyDownOn|keyDownOn",
   "MockInteractions.keyEventOn|keyEventOn",
   "MockInteractions.keyUpOn|keyUpOn",
+  "MockInteractions.move|move",
   "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
   "MockInteractions.tap|tap",
   "MockInteractions.up|up",

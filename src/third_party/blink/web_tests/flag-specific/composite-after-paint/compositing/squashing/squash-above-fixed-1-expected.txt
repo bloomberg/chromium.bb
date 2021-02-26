@@ -12,11 +12,6 @@ CASE 1, original layer tree:
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "VerticalScrollbar",
-      "position": [785, 0],
-      "bounds": [15, 600]
-    },
-    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited background'",
       "bounds": [300, 300],
       "contentsOpaque": true,
@@ -27,8 +22,12 @@ CASE 1, original layer tree:
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
       "position": [0, 100],
       "bounds": [200, 1300],
-      "contentsOpaque": true,
-      "backgroundColor": "#00FF00"
+      "contentsOpaque": true
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
     }
   ],
   "transforms": [
@@ -58,11 +57,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "transform": 1
     },
     {
-      "name": "VerticalScrollbar",
-      "position": [785, 0],
-      "bounds": [15, 600]
-    },
-    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited background'",
       "bounds": [300, 300],
       "contentsOpaque": true,
@@ -74,11 +68,15 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "position": [0, 200],
       "bounds": [200, 1200],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF",
       "invalidations": [
         [0, 0, 200, 1200]
       ],
       "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
     }
   ],
   "transforms": [
@@ -114,11 +112,6 @@ CASE 3, scrolling y to 120, no repaints expected:
       "transform": 1
     },
     {
-      "name": "VerticalScrollbar",
-      "position": [785, 0],
-      "bounds": [15, 600]
-    },
-    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited background'",
       "bounds": [300, 300],
       "contentsOpaque": true,
@@ -130,8 +123,12 @@ CASE 3, scrolling y to 120, no repaints expected:
       "position": [0, 200],
       "bounds": [200, 1200],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF",
       "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
     }
   ],
   "transforms": [
@@ -170,11 +167,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "transform": 1
     },
     {
-      "name": "VerticalScrollbar",
-      "position": [785, 0],
-      "bounds": [15, 600]
-    },
-    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited background'",
       "bounds": [300, 300],
       "contentsOpaque": true,
@@ -186,11 +178,15 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "position": [0, 300],
       "bounds": [200, 1100],
       "contentsOpaque": true,
-      "backgroundColor": "#00FF00",
       "invalidations": [
         [0, 0, 200, 1100]
       ],
       "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
     }
   ],
   "transforms": [

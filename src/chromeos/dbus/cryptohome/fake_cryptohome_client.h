@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -99,86 +100,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   void InstallAttributesIsReady(DBusMethodCallback<bool> callback) override;
   bool InstallAttributesIsInvalid(bool* is_invalid) override;
   bool InstallAttributesIsFirstInstall(bool* is_first_install) override;
-  void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override;
-  void TpmAttestationGetEnrollmentId(
-      bool ignore_cache,
-      DBusMethodCallback<TpmAttestationDataResult> callback) override;
-  void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override;
-  void AsyncTpmAttestationCreateEnrollRequest(
-      chromeos::attestation::PrivacyCAType pca_type,
-      AsyncMethodCallback callback) override;
-  void AsyncTpmAttestationEnroll(chromeos::attestation::PrivacyCAType pca_type,
-                                 const std::string& pca_response,
-                                 AsyncMethodCallback callback) override;
-  void AsyncTpmAttestationCreateCertRequest(
-      chromeos::attestation::PrivacyCAType pca_type,
-      attestation::AttestationCertificateProfile certificate_profile,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& request_origin,
-      AsyncMethodCallback callback) override;
-  void AsyncTpmAttestationFinishCertRequest(
-      const std::string& pca_response,
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      AsyncMethodCallback callback) override;
-  void TpmAttestationDoesKeyExist(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      DBusMethodCallback<bool> callback) override;
-  void TpmAttestationGetCertificate(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      DBusMethodCallback<TpmAttestationDataResult> callback) override;
-  void TpmAttestationGetPublicKey(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      DBusMethodCallback<TpmAttestationDataResult> callback) override;
-  void TpmAttestationRegisterKey(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      AsyncMethodCallback callback) override;
-  void TpmAttestationSignEnterpriseChallenge(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      const std::string& domain,
-      const std::string& device_id,
-      attestation::AttestationChallengeOptions options,
-      const std::string& challenge,
-      const std::string& key_name_for_spkac,
-      AsyncMethodCallback callback) override;
-  void TpmAttestationSignSimpleChallenge(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      const std::string& challenge,
-      AsyncMethodCallback callback) override;
-  void TpmAttestationGetKeyPayload(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      DBusMethodCallback<TpmAttestationDataResult> callback) override;
-  void TpmAttestationSetKeyPayload(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      const std::string& payload,
-      DBusMethodCallback<bool> callback) override;
-  void TpmAttestationDeleteKeysByPrefix(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_prefix,
-      DBusMethodCallback<bool> callback) override;
-  void TpmAttestationDeleteKey(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      DBusMethodCallback<bool> callback) override;
   void TpmGetVersion(DBusMethodCallback<TpmVersionInfo> callback) override;
   void GetKeyDataEx(
       const cryptohome::AccountIdentifier& cryptohome_id,
@@ -251,6 +172,13 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
                              DBusMethodCallback<int64_t> callback) override;
   void CheckHealth(const cryptohome::CheckHealthRequest& request,
                    DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void StartFingerprintAuthSession(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::StartFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void EndFingerprintAuthSession(
+      const cryptohome::EndFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
 
   /////////// Test helpers ////////////
 
@@ -289,10 +217,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // format used by SystemSaltGetter::ConvertRawSaltToHexString()).
   static std::vector<uint8_t> GetStubSystemSalt();
 
-  // Sets the needs dircrypto migration value.
-  void set_needs_dircrypto_migration(bool needs_migration) {
-    needs_dircrypto_migration_ = needs_migration;
-  }
+  // Marks |cryptohome_id| as using ecryptfs (|use_ecryptfs|=true) or dircrypto
+  // (|use_ecryptfs|=false).
+  void SetEcryptfsUserHome(const cryptohome::AccountIdentifier& cryptohome_id,
+                           bool use_ecryptfs);
 
   // Sets whether dircrypto migration update should be run automatically.
   // If set to false, the client will not send any dircrypto migration progress
@@ -307,32 +235,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     cryptohome_error_ = error;
   }
 
-  void set_tpm_attestation_enrollment_id(bool ignore_cache,
-                                         const std::string& eid) {
-    if (ignore_cache) {
-      tpm_attestation_enrollment_id_ignore_cache_ = eid;
-    } else {
-      tpm_attestation_enrollment_id_ = eid;
-    }
-  }
-
-  void set_tpm_attestation_is_enrolled(bool enrolled) {
-    tpm_attestation_is_enrolled_ = enrolled;
-  }
-
-  void set_tpm_attestation_is_prepared(bool prepared) {
-    tpm_attestation_is_prepared_ = prepared;
-  }
-
-  void set_tpm_attestation_does_key_exist_should_succeed(bool should_succeed) {
-    tpm_attestation_does_key_exist_should_succeed_ = should_succeed;
-  }
-
-  void set_tpm_attestation_public_key(
-      base::Optional<TpmAttestationDataResult> value) {
-    tpm_attestation_public_key_ = value;
-  }
-
   void set_supports_low_entropy_credentials(bool supports) {
     supports_low_entropy_credentials_ = supports;
   }
@@ -344,20 +246,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   void set_rsu_device_id(const std::string& rsu_device_id) {
     rsu_device_id_ = rsu_device_id;
   }
-
-  void SetTpmAttestationUserCertificate(
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
-      const std::string& certificate);
-
-  void SetTpmAttestationDeviceCertificate(const std::string& key_name,
-                                          const std::string& certificate);
-
-  base::Optional<std::string> GetTpmAttestationDeviceKeyPayload(
-      const std::string& key_name) const;
-
-  void SetTpmAttestationDeviceKeyPayload(const std::string& key_name,
-                                         const std::string& payload);
 
   // Calls TpmInitStatusUpdated() on Observer instances.
   void NotifyTpmInitStatusUpdated(bool ready,
@@ -445,6 +333,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // Loads install attributes from the stub file.
   bool LoadInstallAttributes();
 
+  // Returns true if |cryptohome_id| has been marked as being an ecryptfs user
+  // home using SetEcryptfsUserHome.
+  bool IsEcryptfsUserHome(const cryptohome::AccountIdentifier& cryptohome_id);
+
   // Finds a key matching the given label. Wildcard labels are supported.
   std::map<std::string, cryptohome::Key>::const_iterator FindKey(
       const std::map<std::string, cryptohome::Key>& keys,
@@ -475,34 +367,19 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
            std::map<std::string, cryptohome::Key>>
       key_data_map_;
 
-  // User attestation certificate mapped by cryptohome_id and key_name.
-  std::map<std::pair<cryptohome::AccountIdentifier, std::string>, std::string>
-      user_certificate_map_;
-
-  // Device attestation certificate mapped by key_name.
-  std::map<std::string, std::string> device_certificate_map_;
-
-  // Device key payload data mapped by key_name.
-  std::map<std::string, std::string> device_key_payload_map_;
+  // Set of account identifiers whose user homes use ecryptfs. User homes not
+  // mentioned here use dircrypto.
+  std::set<cryptohome::AccountIdentifier> ecryptfs_user_homes_;
 
   base::RepeatingTimer dircrypto_migration_progress_timer_;
   uint64_t dircrypto_migration_progress_ = 0;
 
-  bool needs_dircrypto_migration_ = false;
   bool run_default_dircrypto_migration_ = true;
-  std::string tpm_attestation_enrollment_id_ignore_cache_ =
-      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
-  std::string tpm_attestation_enrollment_id_ =
-      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
-  bool tpm_attestation_is_enrolled_ = true;
-  bool tpm_attestation_is_prepared_ = true;
-  bool tpm_attestation_does_key_exist_should_succeed_ = true;
   bool supports_low_entropy_credentials_ = false;
   // Controls if CheckKeyEx actually checks the key.
   bool enable_auth_check_ = false;
   bool tpm_is_ready_ = true;
   bool tpm_is_enabled_ = true;
-  base::Optional<TpmAttestationDataResult> tpm_attestation_public_key_;
 
   // Reply to GetRsuDeviceId().
   std::string rsu_device_id_;

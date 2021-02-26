@@ -211,9 +211,9 @@ foreach my $s (keys(%strings)) {
     } else {
 	$enumvals{$v} = $es;
     }
-    $max_enum = $v if ($v > $max_enum || !defined($max_enum));
-    $tbloffs = $v if ($v < $tbloffs || !defined($tbloffs));
-    $tbllen = $v+1 if ($v >= $tbllen || !defined($tbllen));
+    $max_enum = $v if (!defined($max_enum) || $v > $max_enum);
+    $tbloffs = $v if (!defined($tbloffs) || $v < $tbloffs);
+    $tbllen = $v+1 if (!defined($tbllen) || $v >= $tbllen);
 }
 foreach my $s (keys(%specials)) {
     my $es = $prefix . $s;	# No string mangling here
@@ -334,18 +334,18 @@ if ($output eq 'h') {
     }
     print F "\n};\n\n";
 
-    print F "#define UNUSED (65536/3)\n\n";
+    print F "#define UNUSED_HASH_ENTRY (65536/3)\n\n";
 
     printf F "static const int16_t %s_hashvals[%d] = ", $name, $n*2;
     $c = '{';
     for (my $i = 0; $i < $n; $i++) {
 	my $h = ${$g}[$i*2+0];
-	print F "$c\n    ", defined($h) ? $h : 'UNUSED';
+	print F "$c\n    ", defined($h) ? $h : 'UNUSED_HASH_ENTRY';
 	$c = ',';
     }
     for (my $i = 0; $i < $n; $i++) {
 	my $h = ${$g}[$i*2+1];
-	print F "$c\n    ", defined($h) ? $h : 'UNUSED';
+	print F "$c\n    ", defined($h) ? $h : 'UNUSED_HASH_ENTRY';
 	$c = ',';
     }
     print F "\n};\n\n";

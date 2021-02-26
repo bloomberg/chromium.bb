@@ -32,9 +32,9 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -101,20 +101,33 @@ static void ReportGeolocationViolation(LocalDOMWindow* window) {
 
 }  // namespace
 
-Geolocation* Geolocation::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<Geolocation>(context);
+// static
+const char Geolocation::kSupplementName[] = "Geolocation";
+
+// static
+Geolocation* Geolocation::geolocation(Navigator& navigator) {
+  if (!navigator.DomWindow())
+    return nullptr;
+
+  Geolocation* supplement = Supplement<Navigator>::From<Geolocation>(navigator);
+  if (!supplement) {
+    supplement = MakeGarbageCollected<Geolocation>(navigator);
+    ProvideTo(navigator, supplement);
+  }
+  return supplement;
 }
 
-Geolocation::Geolocation(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context),
-      PageVisibilityObserver(GetFrame()->GetPage()),
+Geolocation::Geolocation(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      ExecutionContextLifecycleObserver(navigator.DomWindow()),
+      PageVisibilityObserver(navigator.DomWindow()->GetFrame()->GetPage()),
       watchers_(MakeGarbageCollected<GeolocationWatchers>()),
-      geolocation_(context),
-      geolocation_service_(context) {}
+      geolocation_(navigator.DomWindow()),
+      geolocation_service_(navigator.DomWindow()) {}
 
 Geolocation::~Geolocation() = default;
 
-void Geolocation::Trace(Visitor* visitor) {
+void Geolocation::Trace(Visitor* visitor) const {
   visitor->Trace(one_shots_);
   visitor->Trace(watchers_);
   visitor->Trace(one_shots_being_invoked_);
@@ -123,16 +136,13 @@ void Geolocation::Trace(Visitor* visitor) {
   visitor->Trace(geolocation_);
   visitor->Trace(geolocation_service_);
   ScriptWrappable::Trace(visitor);
+  Supplement<Navigator>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 
-LocalDOMWindow* Geolocation::GetWindow() const {
-  return To<LocalDOMWindow>(GetExecutionContext());
-}
-
 LocalFrame* Geolocation::GetFrame() const {
-  return GetWindow() ? GetWindow()->GetFrame() : nullptr;
+  return DomWindow() ? DomWindow()->GetFrame() : nullptr;
 }
 
 void Geolocation::ContextDestroyed() {
@@ -148,14 +158,14 @@ void Geolocation::ContextDestroyed() {
 void Geolocation::RecordOriginTypeAccess() const {
   DCHECK(GetFrame());
 
-  LocalDOMWindow* window = GetWindow();
+  LocalDOMWindow* window = DomWindow();
 
   // It is required by isSecureContext() but isn't actually used. This could be
   // used later if a warning is shown in the developer console.
   String insecure_origin_msg;
   if (window->IsSecureContext(insecure_origin_msg)) {
     UseCounter::Count(window, WebFeature::kGeolocationSecureOrigin);
-    window->document()->CountUseOnlyInCrossOriginIframe(
+    window->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGeolocationSecureOriginIframe);
   } else if (GetFrame()
                  ->GetSettings()
@@ -165,13 +175,13 @@ void Geolocation::RecordOriginTypeAccess() const {
     Deprecation::CountDeprecation(
         window, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *window->document(),
+        window,
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
   } else {
     Deprecation::CountDeprecation(window,
                                   WebFeature::kGeolocationInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *window->document(), WebFeature::kGeolocationInsecureOriginIframe);
+        window, WebFeature::kGeolocationInsecureOriginIframe);
   }
 }
 
@@ -236,7 +246,7 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     return;
   }
 
-  ReportGeolocationViolation(GetWindow());
+  ReportGeolocationViolation(DomWindow());
 
   if (HaveSuitableCachedPosition(notifier->Options())) {
     notifier->SetUseCachedPosition();

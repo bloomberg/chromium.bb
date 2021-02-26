@@ -38,6 +38,12 @@ namespace test {
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
  public:
+  // This mode can be specified for PSNR and SSIM VideoFrameValidator.
+  enum class ValidationMode {
+    kThreshold,  // Each frame's quality need to pass the specified threshold.
+    kAverage,    // The average quality needs to pass the specified value.
+  };
+
   // Get the model frame from |frame_index|.
   using GetModelFrameCB =
       base::RepeatingCallback<scoped_refptr<const VideoFrame>(size_t)>;
@@ -87,6 +93,9 @@ class VideoFrameValidator : public VideoFrameProcessor {
   virtual std::unique_ptr<MismatchedFrameInfo> Validate(
       scoped_refptr<const VideoFrame> frame,
       size_t frame_index) = 0;
+
+  // Returns whether the overall validation passed.
+  virtual bool Passed() const;
 
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
@@ -154,8 +163,8 @@ class RawVideoFrameValidator : public VideoFrameValidator {
 
   static std::unique_ptr<RawVideoFrameValidator> Create(
       const GetModelFrameCB& get_model_frame_cb,
-      uint8_t tolerance = kDefaultTolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr,
+      uint8_t tolerance = kDefaultTolerance);
   ~RawVideoFrameValidator() override;
 
  private:
@@ -163,8 +172,8 @@ class RawVideoFrameValidator : public VideoFrameValidator {
 
   RawVideoFrameValidator(
       const GetModelFrameCB& get_model_frame_cb,
-      uint8_t tolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+      uint8_t tolerance);
 
   std::unique_ptr<MismatchedFrameInfo> Validate(
       scoped_refptr<const VideoFrame> frame,
@@ -183,8 +192,10 @@ class PSNRVideoFrameValidator : public VideoFrameValidator {
 
   static std::unique_ptr<PSNRVideoFrameValidator> Create(
       const GetModelFrameCB& get_model_frame_cb,
-      double tolerance = kDefaultTolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr,
+      ValidationMode validation_mode = ValidationMode::kThreshold,
+      double tolerance = kDefaultTolerance);
+  const std::map<size_t, double>& GetPSNRValues() { return psnr_; }
   ~PSNRVideoFrameValidator() override;
 
  private:
@@ -192,15 +203,20 @@ class PSNRVideoFrameValidator : public VideoFrameValidator {
 
   PSNRVideoFrameValidator(
       const GetModelFrameCB& get_model_frame_cb,
-      double tolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+      ValidationMode validation_mode,
+      double tolerance);
 
   std::unique_ptr<MismatchedFrameInfo> Validate(
       scoped_refptr<const VideoFrame> frame,
       size_t frame_index) override;
 
+  bool Passed() const override;
+
   const GetModelFrameCB get_model_frame_cb_;
   const double tolerance_;
+  const ValidationMode validation_mode_;
+  std::map<size_t, double> psnr_;
 };
 
 // Validate by computing SSIM from the frame to be validated and the model frame
@@ -212,8 +228,10 @@ class SSIMVideoFrameValidator : public VideoFrameValidator {
 
   static std::unique_ptr<SSIMVideoFrameValidator> Create(
       const GetModelFrameCB& get_model_frame_cb,
-      double tolerance = kDefaultTolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr,
+      ValidationMode validation_mode = ValidationMode::kThreshold,
+      double tolerance = kDefaultTolerance);
+  const std::map<size_t, double>& GetSSIMValues() { return ssim_; }
   ~SSIMVideoFrameValidator() override;
 
  private:
@@ -221,15 +239,20 @@ class SSIMVideoFrameValidator : public VideoFrameValidator {
 
   SSIMVideoFrameValidator(
       const GetModelFrameCB& get_model_frame_cb,
-      double tolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+      ValidationMode validation_mode,
+      double tolerance);
 
   std::unique_ptr<MismatchedFrameInfo> Validate(
       scoped_refptr<const VideoFrame> frame,
       size_t frame_index) override;
 
+  bool Passed() const override;
+
   const GetModelFrameCB get_model_frame_cb_;
   const double tolerance_;
+  const ValidationMode validation_mode_;
+  std::map<size_t, double> ssim_;
 };
 }  // namespace test
 }  // namespace media

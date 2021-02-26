@@ -10,7 +10,7 @@
 
 #include "src/gpu/GrOpsRenderPass.h"
 
-#include "src/gpu/GrTexturePriv.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/mock/GrMockGpu.h"
 
 class GrMockOpsRenderPass : public GrOpsRenderPass {
@@ -37,23 +37,25 @@ private:
     void onSetScissorRect(const SkIRect&) override {}
     bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
                         const GrPipeline&) override { return true; }
-    void onBindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
-                       const GrBuffer* vertexBuffer, GrPrimitiveRestart) override {}
+    void onBindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
+                       sk_sp<const GrBuffer> vertexBuffer, GrPrimitiveRestart) override {}
     void onDraw(int, int) override { this->dummyDraw(); }
     void onDrawIndexed(int, int, uint16_t, uint16_t, int) override { this->dummyDraw(); }
     void onDrawInstanced(int, int, int, int) override { this->dummyDraw(); }
     void onDrawIndexedInstanced(int, int, int, int, int) override { this->dummyDraw(); }
     void onDrawIndirect(const GrBuffer*, size_t, int) override { this->dummyDraw(); }
     void onDrawIndexedIndirect(const GrBuffer*, size_t, int) override { this->dummyDraw(); }
-    void onClear(const GrFixedClip&, const SkPMColor4f&) override { this->markRenderTargetDirty(); }
-    void onClearStencilClip(const GrFixedClip&, bool insideStencilMask) override {}
+    void onClear(const GrScissorState& scissor, const SkPMColor4f&) override {
+        this->markRenderTargetDirty();
+    }
+    void onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) override {}
     void dummyDraw() {
         this->markRenderTargetDirty();
         ++fNumDraws;
     }
     void markRenderTargetDirty() {
         if (auto* tex = fRenderTarget->asTexture()) {
-            tex->texturePriv().markMipMapsDirty();
+            tex->markMipmapsDirty();
         }
     }
 
@@ -61,7 +63,7 @@ private:
     GrLoadOp fColorLoadOp;
     int fNumDraws = 0;
 
-    typedef GrOpsRenderPass INHERITED;
+    using INHERITED = GrOpsRenderPass;
 };
 
 #endif

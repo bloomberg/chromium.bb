@@ -32,8 +32,7 @@ LibLouis = class {
      * Path to translation tables.
      * @private {?string}
      */
-    this.tablesDir_ = goog.isDef(opt_tablesDir) ? opt_tablesDir : null;
-
+    this.tablesDir_ = (opt_tablesDir !== undefined) ? opt_tablesDir : null;
 
     /**
      * Whether liblouis is loaded.
@@ -268,7 +267,7 @@ LibLouis.Translator = class {
       callback(null /*text*/);
       return;
     }
-    if (cells.byteLength == 0) {
+    if (cells.byteLength === 0) {
       // liblouis doesn't handle empty input, so handle that trivially
       // here.
       callback('');

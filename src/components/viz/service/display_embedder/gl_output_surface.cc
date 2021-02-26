@@ -50,6 +50,7 @@ GLOutputSurface::GLOutputSurface(
       context_provider->GetGpuFeatureInfo()
           .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
+  capabilities_.max_render_target_size = context_capabilities.max_texture_size;
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -88,6 +89,11 @@ void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
   has_set_draw_rectangle_since_last_resize_ = true;
   context_provider()->ContextGL()->SetDrawRectangleCHROMIUM(
       rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+void GLOutputSurface::SetEnableDCLayers(bool enable) {
+  DCHECK(capabilities_.supports_dc_layers);
+  context_provider()->ContextGL()->SetEnableDCLayersCHROMIUM(enable);
 }
 
 void GLOutputSurface::Reshape(const gfx::Size& size,
@@ -246,17 +252,12 @@ gpu::SurfaceHandle GLOutputSurface::GetSurfaceHandle() const {
   return surface_handle_;
 }
 
-scoped_refptr<gpu::GpuTaskSchedulerHelper>
-GLOutputSurface::GetGpuTaskSchedulerHelper() {
-  return viz_context_provider_->GetGpuTaskSchedulerHelper();
-}
-
-gpu::MemoryTracker* GLOutputSurface::GetMemoryTracker() {
-  return viz_context_provider_->GetMemoryTracker();
-}
-
 void GLOutputSurface::SetFrameRate(float frame_rate) {
   viz_context_provider_->ContextSupport()->SetFrameRate(frame_rate);
+}
+
+void GLOutputSurface::SetNeedsMeasureNextDrawLatency() {
+  viz_context_provider_->SetNeedsMeasureNextDrawLatency();
 }
 
 }  // namespace viz

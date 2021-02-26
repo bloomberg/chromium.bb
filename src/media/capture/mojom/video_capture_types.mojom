@@ -5,9 +5,9 @@
 module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
+import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/color_space.mojom";
@@ -97,6 +97,13 @@ enum VideoCaptureBufferType {
   kMailboxHolder,
 
   kGpuMemoryBuffer
+};
+
+// Represents capture device's support for different controls.
+struct VideoCaptureControlSupport {
+  bool pan;
+  bool tilt;
+  bool zoom;
 };
 
 enum VideoCaptureError {
@@ -222,6 +229,7 @@ enum VideoCaptureError {
   kFuchsiaSysmemInvalidBufferSize,
   kFuchsiaUnsupportedPixelFormat,
   kFuchsiaFailedToMapSysmemBuffer,
+  kCrosHalV3DeviceContextDuplicatedClient,
 };
 
 enum VideoCaptureFrameDropReason {
@@ -267,6 +275,27 @@ struct VideoCaptureParams {
   bool enable_face_detection;
 };
 
+// |resource_utilization| reports that the frame incurred some fractional
+// utilization of the downstream pipeline's per-frame processing capacity.
+// See code comments in media::base::VideoFrameMetadata for a discussion of
+// how utilization is interpreted. The capturer uses this information to
+// auto-adjust the capture resolution based on performance variances in the
+// live system environment.
+// -1.0 means no value present.
+//
+// |max_framerate_fps| reports requested maximum frame-rate
+// float::inifinty used to signal no limit.
+//
+// |max_pixels| reports requested maximum resolution (in sense of image area).
+// int::max used to signal no limit.
+struct VideoFrameFeedback {
+  double resource_utilization;
+
+  float max_framerate_fps;
+
+  int32 max_pixels;
+};
+
 // Contains one stride value per image plane. Stride means the number of bytes
 // per row. If the image format uses fewer than kMaxPlanes planes, the values
 // for higher plane indices are ignored. For example, for a YUV format, plane
@@ -279,7 +308,7 @@ struct PlaneStrides {
 
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
-  mojo_base.mojom.DictionaryValue metadata;
+  VideoFrameMetadata metadata;
   VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
@@ -293,15 +322,22 @@ struct VideoFrameInfo{
   PlaneStrides? strides;
 };
 
+// Represents information about a capture device.
+// |device_id| represents a unique id of a physical device. Since the same
+// physical device may be accessible through different APIs |capture_api|
+// disambiguates the API.
 struct VideoCaptureDeviceDescriptor {
   string display_name;
   string device_id;
   string model_id;
   VideoFacingMode facing_mode;
   VideoCaptureApi capture_api;
+  VideoCaptureControlSupport control_support;
   VideoCaptureTransportType transport_type;
 };
 
+// Bundles a VideoCaptureDeviceDescriptor with corresponding supported
+// video formats.
 struct VideoCaptureDeviceInfo {
   VideoCaptureDeviceDescriptor descriptor;
   array<VideoCaptureFormat> supported_formats;

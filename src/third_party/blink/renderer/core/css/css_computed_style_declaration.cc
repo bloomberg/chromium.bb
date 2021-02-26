@@ -61,12 +61,12 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kAnimationDelay, CSSPropertyID::kAnimationDirection,
     CSSPropertyID::kAnimationDuration, CSSPropertyID::kAnimationFillMode,
     CSSPropertyID::kAnimationIterationCount, CSSPropertyID::kAnimationName,
-    CSSPropertyID::kAnimationPlayState, CSSPropertyID::kAnimationTimingFunction,
-    CSSPropertyID::kAppearance, CSSPropertyID::kBackdropFilter,
-    CSSPropertyID::kBackfaceVisibility, CSSPropertyID::kBackgroundAttachment,
-    CSSPropertyID::kBackgroundBlendMode, CSSPropertyID::kBackgroundClip,
-    CSSPropertyID::kBackgroundColor, CSSPropertyID::kBackgroundImage,
-    CSSPropertyID::kBackgroundOrigin,
+    CSSPropertyID::kAnimationPlayState, CSSPropertyID::kAnimationTimeline,
+    CSSPropertyID::kAnimationTimingFunction, CSSPropertyID::kAppearance,
+    CSSPropertyID::kBackdropFilter, CSSPropertyID::kBackfaceVisibility,
+    CSSPropertyID::kBackgroundAttachment, CSSPropertyID::kBackgroundBlendMode,
+    CSSPropertyID::kBackgroundClip, CSSPropertyID::kBackgroundColor,
+    CSSPropertyID::kBackgroundImage, CSSPropertyID::kBackgroundOrigin,
     // more-specific background-position-x/y are non-standard
     CSSPropertyID::kBackgroundPosition, CSSPropertyID::kBackgroundRepeat,
     CSSPropertyID::kBackgroundSize, CSSPropertyID::kBaselineShift,
@@ -138,24 +138,23 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kMarginLeft, CSSPropertyID::kMarginRight,
     CSSPropertyID::kMarginTop, CSSPropertyID::kMarkerEnd,
     CSSPropertyID::kMarkerMid, CSSPropertyID::kMarkerStart,
-    CSSPropertyID::kMask, CSSPropertyID::kMaskSourceType,
-    CSSPropertyID::kMaskType, CSSPropertyID::kMathStyle,
-    CSSPropertyID::kMathSuperscriptShiftStyle, CSSPropertyID::kMaxBlockSize,
-    CSSPropertyID::kMaxHeight, CSSPropertyID::kMaxInlineSize,
-    CSSPropertyID::kMaxWidth, CSSPropertyID::kMinBlockSize,
-    CSSPropertyID::kMinHeight, CSSPropertyID::kMinInlineSize,
-    CSSPropertyID::kMinWidth, CSSPropertyID::kMixBlendMode,
-    CSSPropertyID::kObjectFit, CSSPropertyID::kObjectPosition,
-    CSSPropertyID::kOffsetAnchor, CSSPropertyID::kOffsetDistance,
-    CSSPropertyID::kOffsetPath, CSSPropertyID::kOffsetPosition,
-    CSSPropertyID::kOffsetRotate, CSSPropertyID::kOpacity,
-    CSSPropertyID::kOrder, CSSPropertyID::kOrphans,
+    CSSPropertyID::kMaskType, CSSPropertyID::kMathDepth,
+    CSSPropertyID::kMathShift, CSSPropertyID::kMathStyle,
+    CSSPropertyID::kMaxBlockSize, CSSPropertyID::kMaxHeight,
+    CSSPropertyID::kMaxInlineSize, CSSPropertyID::kMaxWidth,
+    CSSPropertyID::kMinBlockSize, CSSPropertyID::kMinHeight,
+    CSSPropertyID::kMinInlineSize, CSSPropertyID::kMinWidth,
+    CSSPropertyID::kMixBlendMode, CSSPropertyID::kObjectFit,
+    CSSPropertyID::kObjectPosition, CSSPropertyID::kOffsetAnchor,
+    CSSPropertyID::kOffsetDistance, CSSPropertyID::kOffsetPath,
+    CSSPropertyID::kOffsetPosition, CSSPropertyID::kOffsetRotate,
+    CSSPropertyID::kOpacity, CSSPropertyID::kOrder, CSSPropertyID::kOrphans,
     CSSPropertyID::kOutlineColor, CSSPropertyID::kOutlineOffset,
     CSSPropertyID::kOutlineStyle, CSSPropertyID::kOutlineWidth,
     CSSPropertyID::kOverflowAnchor, CSSPropertyID::kOverflowBlock,
-    CSSPropertyID::kOverflowInline, CSSPropertyID::kOverflowWrap,
-    CSSPropertyID::kOverflowX, CSSPropertyID::kOverflowY,
-    CSSPropertyID::kOverscrollBehaviorBlock,
+    CSSPropertyID::kOverflowClipMargin, CSSPropertyID::kOverflowInline,
+    CSSPropertyID::kOverflowWrap, CSSPropertyID::kOverflowX,
+    CSSPropertyID::kOverflowY, CSSPropertyID::kOverscrollBehaviorBlock,
     CSSPropertyID::kOverscrollBehaviorInline, CSSPropertyID::kPaddingBlockEnd,
     CSSPropertyID::kPaddingBlockStart, CSSPropertyID::kPaddingBottom,
     CSSPropertyID::kPaddingInlineEnd, CSSPropertyID::kPaddingInlineStart,
@@ -173,25 +172,25 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kScrollPaddingBlockEnd,
     CSSPropertyID::kScrollPaddingBlockStart,
     CSSPropertyID::kScrollPaddingInlineEnd,
-    CSSPropertyID::kScrollPaddingInlineStart,
-    CSSPropertyID::kShapeImageThreshold, CSSPropertyID::kShapeMargin,
-    CSSPropertyID::kShapeOutside, CSSPropertyID::kShapeRendering,
-    CSSPropertyID::kSpeak, CSSPropertyID::kStopColor,
-    CSSPropertyID::kStopOpacity, CSSPropertyID::kStroke,
-    CSSPropertyID::kStrokeDasharray, CSSPropertyID::kStrokeDashoffset,
-    CSSPropertyID::kStrokeLinecap, CSSPropertyID::kStrokeLinejoin,
-    CSSPropertyID::kStrokeMiterlimit, CSSPropertyID::kStrokeOpacity,
-    CSSPropertyID::kStrokeWidth, CSSPropertyID::kTabSize,
-    CSSPropertyID::kTableLayout, CSSPropertyID::kTextAlign,
-    CSSPropertyID::kTextAlignLast, CSSPropertyID::kTextAnchor,
-    CSSPropertyID::kTextDecoration, CSSPropertyID::kTextDecorationColor,
-    CSSPropertyID::kTextDecorationLine, CSSPropertyID::kTextDecorationSkipInk,
-    CSSPropertyID::kTextDecorationStyle, CSSPropertyID::kTextIndent,
-    CSSPropertyID::kTextJustify, CSSPropertyID::kTextOverflow,
-    CSSPropertyID::kTextRendering, CSSPropertyID::kTextShadow,
-    CSSPropertyID::kTextSizeAdjust, CSSPropertyID::kTextTransform,
-    CSSPropertyID::kTextUnderlinePosition, CSSPropertyID::kTop,
-    CSSPropertyID::kTouchAction, CSSPropertyID::kTransform,
+    CSSPropertyID::kScrollPaddingInlineStart, CSSPropertyID::kScrollbarGutter,
+    CSSPropertyID::kScrollbarWidth, CSSPropertyID::kShapeImageThreshold,
+    CSSPropertyID::kShapeMargin, CSSPropertyID::kShapeOutside,
+    CSSPropertyID::kShapeRendering, CSSPropertyID::kSpeak,
+    CSSPropertyID::kStopColor, CSSPropertyID::kStopOpacity,
+    CSSPropertyID::kStroke, CSSPropertyID::kStrokeDasharray,
+    CSSPropertyID::kStrokeDashoffset, CSSPropertyID::kStrokeLinecap,
+    CSSPropertyID::kStrokeLinejoin, CSSPropertyID::kStrokeMiterlimit,
+    CSSPropertyID::kStrokeOpacity, CSSPropertyID::kStrokeWidth,
+    CSSPropertyID::kTabSize, CSSPropertyID::kTableLayout,
+    CSSPropertyID::kTextAlign, CSSPropertyID::kTextAlignLast,
+    CSSPropertyID::kTextAnchor, CSSPropertyID::kTextDecoration,
+    CSSPropertyID::kTextDecorationColor, CSSPropertyID::kTextDecorationLine,
+    CSSPropertyID::kTextDecorationSkipInk, CSSPropertyID::kTextDecorationStyle,
+    CSSPropertyID::kTextIndent, CSSPropertyID::kTextJustify,
+    CSSPropertyID::kTextOverflow, CSSPropertyID::kTextRendering,
+    CSSPropertyID::kTextShadow, CSSPropertyID::kTextSizeAdjust,
+    CSSPropertyID::kTextTransform, CSSPropertyID::kTextUnderlinePosition,
+    CSSPropertyID::kTop, CSSPropertyID::kTouchAction, CSSPropertyID::kTransform,
     CSSPropertyID::kTransformOrigin, CSSPropertyID::kTransformStyle,
     CSSPropertyID::kTransitionDelay, CSSPropertyID::kTransitionDuration,
     CSSPropertyID::kTransitionProperty,
@@ -273,7 +272,7 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
     : CSSStyleDeclaration(n ? n->GetExecutionContext() : nullptr),
       node_(n),
       pseudo_element_specifier_(
-          CSSSelector::ParsePseudoId(pseudo_element_name)),
+          CSSSelector::ParsePseudoId(pseudo_element_name, n)),
       allow_visited_style_(allow_visited_style) {}
 
 CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() = default;
@@ -520,10 +519,10 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSProperty& property = *properties[i];
-    const CSSValue* value = GetPropertyCSSValue(property.GetCSSPropertyName());
+    CSSPropertyName name = properties[i]->GetCSSPropertyName();
+    const CSSValue* value = GetPropertyCSSValue(name);
     if (value)
-      list.push_back(CSSPropertyValue(property, *value, false));
+      list.push_back(CSSPropertyValue(name, *value, false));
   }
   return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
                                                           list.size());
@@ -620,7 +619,7 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
           "' property is read-only.");
 }
 
-void CSSComputedStyleDeclaration::Trace(Visitor* visitor) {
+void CSSComputedStyleDeclaration::Trace(Visitor* visitor) const {
   visitor->Trace(node_);
   CSSStyleDeclaration::Trace(visitor);
 }

@@ -15,9 +15,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 
-#if defined(USE_OZONE) || defined(OS_LINUX)
+#if defined(USE_OZONE) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "ui/gfx/native_pixmap_handle.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include "ui/gfx/mac/io_surface.h"
 #elif defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -69,10 +69,10 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   base::UnsafeSharedMemoryRegion region;
   uint32_t offset = 0;
   int32_t stride = 0;
-#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  ScopedRefCountedIOSurfaceMachPort mach_port;
+#elif defined(OS_MAC)
+  gfx::ScopedIOSurface io_surface;
 #elif defined(OS_WIN)
   base::win::ScopedHandle dxgi_handle;
 #elif defined(OS_ANDROID)

@@ -26,34 +26,55 @@ class CppTypeGeneratorTest(unittest.TestCase):
   def setUp(self):
     self.models = defaultdict(model.Model)
 
-    self.forbidden_json = CachedLoad('test/forbidden.json')
-    self.forbidden = self.models['forbidden'].AddNamespace(
-        self.forbidden_json[0], 'path/to/forbidden.json')
-    self.permissions_json = CachedLoad('test/permissions.json')
+    forbidden_json = CachedLoad('test/forbidden.json')
+    self.models['forbidden'].AddNamespace(
+        forbidden_json[0], 'path/to/forbidden.json')
+
+    permissions_json = CachedLoad('test/permissions.json')
     self.permissions = self.models['permissions'].AddNamespace(
-        self.permissions_json[0], 'path/to/permissions.json')
+        permissions_json[0], 'path/to/permissions.json')
+
     self.windows_json = CachedLoad('test/windows.json')
     self.windows = self.models['windows'].AddNamespace(self.windows_json[0],
                                                        'path/to/window.json')
     self.tabs_json = CachedLoad('test/tabs.json')
     self.tabs = self.models['tabs'].AddNamespace(self.tabs_json[0],
                                                  'path/to/tabs.json')
+
     self.browser_action_json = CachedLoad('test/browser_action.json')
     self.browser_action = self.models['browser_action'].AddNamespace(
         self.browser_action_json[0], 'path/to/browser_action.json')
+
     self.font_settings_json = CachedLoad('test/font_settings.json')
     self.font_settings = self.models['font_settings'].AddNamespace(
         self.font_settings_json[0], 'path/to/font_settings.json')
+
     self.dependency_tester_json = CachedLoad('test/dependency_tester.json')
-    self.dependency_tester = self.models['dependency_tester'].AddNamespace(
+    self.models['dependency_tester'].AddNamespace(
         self.dependency_tester_json[0], 'path/to/dependency_tester.json')
-    self.content_settings_json = CachedLoad('test/content_settings.json')
-    self.content_settings = self.models['content_settings'].AddNamespace(
-        self.content_settings_json[0], 'path/to/content_settings.json')
-    self.objects_movable_idl = idl_schema.Load('test/objects_movable.idl')
+
+    content_settings_json = CachedLoad('test/content_settings.json')
+    self.models['content_settings'].AddNamespace(
+        content_settings_json[0], 'path/to/content_settings.json')
+
+    objects_movable_idl = idl_schema.Load('test/objects_movable.idl')
     self.objects_movable = self.models['objects_movable'].AddNamespace(
-        self.objects_movable_idl[0], 'path/to/objects_movable.idl',
+        objects_movable_idl[0], 'path/to/objects_movable.idl',
         include_compiler_options=True)
+
+    self.simple_api_json = CachedLoad('test/simple_api.json')
+    self.models['simple_api'].AddNamespace(
+        self.simple_api_json[0], 'path/to/simple_api.json')
+
+    self.crossref_enums_json = CachedLoad('test/crossref_enums.json')
+    self.models['crossref_enums'].AddNamespace(
+        self.crossref_enums_json[0], 'path/to/crossref_enums.json')
+
+    self.crossref_enums_array_json = CachedLoad(
+        'test/crossref_enums_array.json')
+    self.models['crossref_enums_array'].AddNamespace(
+        self.crossref_enums_array_json[0],
+        'path/to/crossref_enums_array.json')
 
   def testGenerateIncludesAndForwardDeclarations(self):
     m = model.Model()
@@ -150,7 +171,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals(
         'std::vector<Window>',
         manager.GetCppType(
-            self.windows.functions['getAll'].callback.params[0].type_))
+            self.windows.functions['getAll'].returns_async.params[0].type_))
     manager = CppTypeGenerator(self.models.get('permissions'),
                                _FakeSchemaLoader(None))
     self.assertEquals(
@@ -170,7 +191,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator(self.models.get('tabs'), _FakeSchemaLoader(None))
     self.assertEquals(
         'Tab',
-        manager.GetCppType(self.tabs.functions['get'].callback.params[0].type_))
+        manager.GetCppType(
+            self.tabs.functions['get'].returns_async.params[0].type_))
 
   def testGetCppTypeIncludedRef(self):
     m = model.Model()
@@ -197,10 +219,46 @@ class CppTypeGeneratorTest(unittest.TestCase):
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_,
             is_in_container=True))
-    self.assertEquals('bool',
-        manager.GetCppType(
-            self.permissions.functions['contains'].callback.params[0].type_,
-        is_in_container=True))
+    self.assertEquals(
+        'bool',
+        manager.GetCppType(self.permissions.functions['contains'].returns_async.
+                           params[0].type_, is_in_container=True))
+
+  def testHardIncludesForEnums(self):
+    """Tests that enums generate hard includes. Note that it's important to use
+    use a separate file (cross_enums) here to isolate the test case so that
+    other types don't cause the hard-dependency.
+    """
+    m = model.Model()
+    m.AddNamespace(self.crossref_enums_json[0],
+                   'path/to/crossref_enums.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    m.AddNamespace(self.simple_api_json[0],
+                   'path/to/simple_api.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    manager = CppTypeGenerator(self.models.get('crossref_enums'),
+                               _FakeSchemaLoader(m))
+
+    self.assertEquals('#include "path/to/simple_api.h"',
+                      manager.GenerateIncludes().Render())
+
+  def testHardIncludesForEnumArrays(self):
+    """Tests that enums in arrays generate hard includes. Note that it's
+    important to use a separate file (cross_enums_array) here to isolate the
+    test case so that other types don't cause the hard-dependency.
+    """
+    m = model.Model()
+    m.AddNamespace(self.crossref_enums_array_json[0],
+                   'path/to/crossref_enums_array.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    m.AddNamespace(self.simple_api_json[0],
+                   'path/to/simple_api.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    manager = CppTypeGenerator(self.models.get('crossref_enums_array'),
+                               _FakeSchemaLoader(m))
+
+    self.assertEquals('#include "path/to/simple_api.h"',
+                      manager.GenerateIncludes().Render())
 
 if __name__ == '__main__':
   unittest.main()

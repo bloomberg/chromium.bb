@@ -198,7 +198,7 @@ struct elem_to_channel {
 
 static int assign_pair(struct elem_to_channel e2c_vec[MAX_ELEM_ID],
                        uint8_t (*layout_map)[3], int offset, uint64_t left,
-                       uint64_t right, int pos)
+                       uint64_t right, int pos, uint64_t *layout)
 {
     if (layout_map[offset][0] == TYPE_CPE) {
         e2c_vec[offset] = (struct elem_to_channel) {
@@ -207,6 +207,9 @@ static int assign_pair(struct elem_to_channel e2c_vec[MAX_ELEM_ID],
             .elem_id      = layout_map[offset][1],
             .aac_position = pos
         };
+        if (e2c_vec[offset].av_position != UINT64_MAX)
+            *layout |= e2c_vec[offset].av_position;
+
         return 1;
     } else {
         e2c_vec[offset] = (struct elem_to_channel) {
@@ -221,6 +224,12 @@ static int assign_pair(struct elem_to_channel e2c_vec[MAX_ELEM_ID],
             .elem_id      = layout_map[offset + 1][1],
             .aac_position = pos
         };
+        if (left != UINT64_MAX)
+            *layout |= left;
+
+        if (right != UINT64_MAX)
+            *layout |= right;
+
         return 2;
     }
 }
@@ -257,12 +266,13 @@ static int count_paired_channels(uint8_t (*layout_map)[3], int tags, int pos,
     return num_pos_channels;
 }
 
+#define PREFIX_FOR_22POINT2 (AV_CH_LAYOUT_7POINT1_WIDE_BACK|AV_CH_BACK_CENTER|AV_CH_SIDE_LEFT|AV_CH_SIDE_RIGHT|AV_CH_LOW_FREQUENCY_2)
 static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
 {
     int i, n, total_non_cc_elements;
     struct elem_to_channel e2c_vec[4 * MAX_ELEM_ID] = { { 0 } };
     int num_front_channels, num_side_channels, num_back_channels;
-    uint64_t layout;
+    uint64_t layout = 0;
 
     if (FF_ARRAY_ELEMS(e2c_vec) < tags)
         return 0;
@@ -294,6 +304,7 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
             .elem_id      = layout_map[i][1],
             .aac_position = AAC_CHANNEL_FRONT
         };
+        layout |= e2c_vec[i].av_position;
         i++;
         num_front_channels--;
     }
@@ -301,21 +312,21 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
         i += assign_pair(e2c_vec, layout_map, i,
                          AV_CH_FRONT_LEFT_OF_CENTER,
                          AV_CH_FRONT_RIGHT_OF_CENTER,
-                         AAC_CHANNEL_FRONT);
+                         AAC_CHANNEL_FRONT, &layout);
         num_front_channels -= 2;
     }
     if (num_front_channels >= 2) {
         i += assign_pair(e2c_vec, layout_map, i,
                          AV_CH_FRONT_LEFT,
                          AV_CH_FRONT_RIGHT,
-                         AAC_CHANNEL_FRONT);
+                         AAC_CHANNEL_FRONT, &layout);
         num_front_channels -= 2;
     }
     while (num_front_channels >= 2) {
         i += assign_pair(e2c_vec, layout_map, i,
                          UINT64_MAX,
                          UINT64_MAX,
-                         AAC_CHANNEL_FRONT);
+                         AAC_CHANNEL_FRONT, &layout);
         num_front_channels -= 2;
     }
 
@@ -323,14 +334,14 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
         i += assign_pair(e2c_vec, layout_map, i,
                          AV_CH_SIDE_LEFT,
                          AV_CH_SIDE_RIGHT,
-                         AAC_CHANNEL_FRONT);
+                         AAC_CHANNEL_FRONT, &layout);
         num_side_channels -= 2;
     }
     while (num_side_channels >= 2) {
         i += assign_pair(e2c_vec, layout_map, i,
                          UINT64_MAX,
                          UINT64_MAX,
-                         AAC_CHANNEL_SIDE);
+                         AAC_CHANNEL_SIDE, &layout);
         num_side_channels -= 2;
     }
 
@@ -338,14 +349,14 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
         i += assign_pair(e2c_vec, layout_map, i,
                          UINT64_MAX,
                          UINT64_MAX,
-                         AAC_CHANNEL_BACK);
+                         AAC_CHANNEL_BACK, &layout);
         num_back_channels -= 2;
     }
     if (num_back_channels >= 2) {
         i += assign_pair(e2c_vec, layout_map, i,
                          AV_CH_BACK_LEFT,
                          AV_CH_BACK_RIGHT,
-                         AAC_CHANNEL_BACK);
+                         AAC_CHANNEL_BACK, &layout);
         num_back_channels -= 2;
     }
     if (num_back_channels) {
@@ -355,6 +366,7 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
             .elem_id      = layout_map[i][1],
             .aac_position = AAC_CHANNEL_BACK
         };
+        layout |= e2c_vec[i].av_position;
         i++;
         num_back_channels--;
     }
@@ -366,6 +378,17 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
             .elem_id      = layout_map[i][1],
             .aac_position = AAC_CHANNEL_LFE
         };
+        layout |= e2c_vec[i].av_position;
+        i++;
+    }
+    if (i < tags && layout_map[i][2] == AAC_CHANNEL_LFE) {
+        e2c_vec[i] = (struct elem_to_channel) {
+            .av_position  = AV_CH_LOW_FREQUENCY_2,
+            .syn_ele      = TYPE_LFE,
+            .elem_id      = layout_map[i][1],
+            .aac_position = AAC_CHANNEL_LFE
+        };
+        layout |= e2c_vec[i].av_position;
         i++;
     }
     while (i < tags && layout_map[i][2] == AAC_CHANNEL_LFE) {
@@ -378,26 +401,95 @@ static uint64_t sniff_channel_order(uint8_t (*layout_map)[3], int tags)
         i++;
     }
 
-    // Must choose a stable sort
-    total_non_cc_elements = n = i;
-    do {
-        int next_n = 0;
-        for (i = 1; i < n; i++)
-            if (e2c_vec[i - 1].av_position > e2c_vec[i].av_position) {
-                FFSWAP(struct elem_to_channel, e2c_vec[i - 1], e2c_vec[i]);
-                next_n = i;
-            }
-        n = next_n;
-    } while (n > 0);
+    // The previous checks would end up at 8 at this point for 22.2
+    if (layout == PREFIX_FOR_22POINT2 && tags == 16 && i == 8) {
+        const uint8_t (*reference_layout_map)[3] = aac_channel_layout_map[12];
+        for (int j = 0; j < tags; j++) {
+            if (layout_map[j][0] != reference_layout_map[j][0] ||
+                layout_map[j][2] != reference_layout_map[j][2])
+                goto end_of_layout_definition;
+        }
 
-    layout = 0;
+        e2c_vec[i] = (struct elem_to_channel) {
+            .av_position  = AV_CH_TOP_FRONT_CENTER,
+            .syn_ele      = layout_map[i][0],
+            .elem_id      = layout_map[i][1],
+            .aac_position = layout_map[i][2]
+        }; layout |= e2c_vec[i].av_position; i++;
+        i += assign_pair(e2c_vec, layout_map, i,
+                         AV_CH_TOP_FRONT_LEFT,
+                         AV_CH_TOP_FRONT_RIGHT,
+                         AAC_CHANNEL_FRONT,
+                         &layout);
+        i += assign_pair(e2c_vec, layout_map, i,
+                         AV_CH_TOP_SIDE_LEFT,
+                         AV_CH_TOP_SIDE_RIGHT,
+                         AAC_CHANNEL_SIDE,
+                         &layout);
+        e2c_vec[i] = (struct elem_to_channel) {
+            .av_position  = AV_CH_TOP_CENTER,
+            .syn_ele      = layout_map[i][0],
+            .elem_id      = layout_map[i][1],
+            .aac_position = layout_map[i][2]
+        }; layout |= e2c_vec[i].av_position; i++;
+        i += assign_pair(e2c_vec, layout_map, i,
+                         AV_CH_TOP_BACK_LEFT,
+                         AV_CH_TOP_BACK_RIGHT,
+                         AAC_CHANNEL_BACK,
+                         &layout);
+        e2c_vec[i] = (struct elem_to_channel) {
+            .av_position  = AV_CH_TOP_BACK_CENTER,
+            .syn_ele      = layout_map[i][0],
+            .elem_id      = layout_map[i][1],
+            .aac_position = layout_map[i][2]
+        }; layout |= e2c_vec[i].av_position; i++;
+        e2c_vec[i] = (struct elem_to_channel) {
+            .av_position  = AV_CH_BOTTOM_FRONT_CENTER,
+            .syn_ele      = layout_map[i][0],
+            .elem_id      = layout_map[i][1],
+            .aac_position = layout_map[i][2]
+        }; layout |= e2c_vec[i].av_position; i++;
+        i += assign_pair(e2c_vec, layout_map, i,
+                         AV_CH_BOTTOM_FRONT_LEFT,
+                         AV_CH_BOTTOM_FRONT_RIGHT,
+                         AAC_CHANNEL_FRONT,
+                         &layout);
+    }
+
+end_of_layout_definition:
+
+    total_non_cc_elements = n = i;
+
+    if (layout == AV_CH_LAYOUT_22POINT2) {
+        // For 22.2 reorder the result as needed
+        FFSWAP(struct elem_to_channel, e2c_vec[2], e2c_vec[0]);   // FL & FR first (final), FC third
+        FFSWAP(struct elem_to_channel, e2c_vec[2], e2c_vec[1]);   // FC second (final), FLc & FRc third
+        FFSWAP(struct elem_to_channel, e2c_vec[6], e2c_vec[2]);   // LFE1 third (final), FLc & FRc seventh
+        FFSWAP(struct elem_to_channel, e2c_vec[4], e2c_vec[3]);   // BL & BR fourth (final), SiL & SiR fifth
+        FFSWAP(struct elem_to_channel, e2c_vec[6], e2c_vec[4]);   // FLc & FRc fifth (final), SiL & SiR seventh
+        FFSWAP(struct elem_to_channel, e2c_vec[7], e2c_vec[6]);   // LFE2 seventh (final), SiL & SiR eight (final)
+        FFSWAP(struct elem_to_channel, e2c_vec[9], e2c_vec[8]);   // TpFL & TpFR ninth (final), TFC tenth (final)
+        FFSWAP(struct elem_to_channel, e2c_vec[11], e2c_vec[10]); // TC eleventh (final), TpSiL & TpSiR twelth
+        FFSWAP(struct elem_to_channel, e2c_vec[12], e2c_vec[11]); // TpBL & TpBR twelth (final), TpSiL & TpSiR thirteenth (final)
+    } else {
+        // For everything else, utilize the AV channel position define as a
+        // stable sort.
+        do {
+            int next_n = 0;
+            for (i = 1; i < n; i++)
+                if (e2c_vec[i - 1].av_position > e2c_vec[i].av_position) {
+                    FFSWAP(struct elem_to_channel, e2c_vec[i - 1], e2c_vec[i]);
+                    next_n = i;
+                }
+            n = next_n;
+        } while (n > 0);
+
+    }
+
     for (i = 0; i < total_non_cc_elements; i++) {
         layout_map[i][0] = e2c_vec[i].syn_ele;
         layout_map[i][1] = e2c_vec[i].elem_id;
         layout_map[i][2] = e2c_vec[i].aac_position;
-        if (e2c_vec[i].av_position != UINT64_MAX) {
-            layout |= e2c_vec[i].av_position;
-        }
     }
 
     return layout;
@@ -520,14 +612,14 @@ static void flush(AVCodecContext *avctx)
  *
  * @return  Returns error status. 0 - OK, !0 - error
  */
-static int set_default_channel_config(AACContext *ac,
+static int set_default_channel_config(AACContext *ac, AVCodecContext *avctx,
                                       uint8_t (*layout_map)[3],
                                       int *tags,
                                       int channel_config)
 {
     if (channel_config < 1 || (channel_config > 7 && channel_config < 11) ||
-        channel_config > 12) {
-        av_log(ac->avctx, AV_LOG_ERROR,
+        channel_config > 13) {
+        av_log(avctx, AV_LOG_ERROR,
                "invalid default channel configuration (%d)\n",
                channel_config);
         return AVERROR_INVALIDDATA;
@@ -547,8 +639,8 @@ static int set_default_channel_config(AACContext *ac,
      * As actual intended 7.1(wide) streams are very rare, default to assuming a
      * 7.1 layout was intended.
      */
-    if (channel_config == 7 && ac->avctx->strict_std_compliance < FF_COMPLIANCE_STRICT && !ac->warned_71_wide++) {
-        av_log(ac->avctx, AV_LOG_INFO, "Assuming an incorrectly encoded 7.1 channel layout"
+    if (channel_config == 7 && avctx->strict_std_compliance < FF_COMPLIANCE_STRICT && (!ac || !ac->warned_71_wide++)) {
+        av_log(avctx, AV_LOG_INFO, "Assuming an incorrectly encoded 7.1 channel layout"
                " instead of a spec-compliant 7.1(wide) layout, use -strict %d to decode"
                " according to the specification instead.\n", FF_COMPLIANCE_STRICT);
         layout_map[2][2] = AAC_CHANNEL_SIDE;
@@ -573,7 +665,7 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
 
         av_log(ac->avctx, AV_LOG_DEBUG, "mono with CPE\n");
 
-        if (set_default_channel_config(ac, layout_map,
+        if (set_default_channel_config(ac, ac->avctx, layout_map,
                                        &layout_map_tags, 2) < 0)
             return NULL;
         if (output_configure(ac, layout_map, layout_map_tags,
@@ -592,7 +684,7 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
 
         av_log(ac->avctx, AV_LOG_DEBUG, "stereo with SCE\n");
 
-        if (set_default_channel_config(ac, layout_map,
+        if (set_default_channel_config(ac, ac->avctx, layout_map,
                                        &layout_map_tags, 1) < 0)
             return NULL;
         if (output_configure(ac, layout_map, layout_map_tags,
@@ -606,6 +698,13 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
     /* For indexed channel configurations map the channels solely based
      * on position. */
     switch (ac->oc[1].m4ac.chan_config) {
+    case 13:
+        if (ac->tags_mapped > 3 && ((type == TYPE_CPE && elem_id < 8) ||
+                                    (type == TYPE_SCE && elem_id < 6) ||
+                                    (type == TYPE_LFE && elem_id < 2))) {
+            ac->tags_mapped++;
+            return ac->tag_che_map[type][elem_id] = ac->che[type][elem_id];
+        }
     case 12:
     case 7:
         if (ac->tags_mapped == 3 && type == TYPE_CPE) {
@@ -841,7 +940,7 @@ static int decode_ga_specific_config(AACContext *ac, AVCodecContext *avctx,
         if (tags < 0)
             return tags;
     } else {
-        if ((ret = set_default_channel_config(ac, layout_map,
+        if ((ret = set_default_channel_config(ac, avctx, layout_map,
                                               &tags, channel_config)))
             return ret;
     }
@@ -937,7 +1036,7 @@ static int decode_eld_specific_config(AACContext *ac, AVCodecContext *avctx,
         skip_bits_long(gb, 8 * len);
     }
 
-    if ((ret = set_default_channel_config(ac, layout_map,
+    if ((ret = set_default_channel_config(ac, avctx, layout_map,
                                           &tags, channel_config)))
         return ret;
 
@@ -1200,7 +1299,7 @@ static av_cold int aac_decode_init(AVCodecContext *avctx)
         ac->oc[1].m4ac.chan_config = i;
 
         if (ac->oc[1].m4ac.chan_config) {
-            int ret = set_default_channel_config(ac, layout_map,
+            int ret = set_default_channel_config(ac, avctx, layout_map,
                 &layout_map_tags, ac->oc[1].m4ac.chan_config);
             if (!ret)
                 output_configure(ac, layout_map, layout_map_tags,
@@ -3002,7 +3101,7 @@ static int parse_adts_frame_header(AACContext *ac, GetBitContext *gb)
         push_output_configuration(ac);
         if (hdr_info.chan_config) {
             ac->oc[1].m4ac.chan_config = hdr_info.chan_config;
-            if ((ret = set_default_channel_config(ac,
+            if ((ret = set_default_channel_config(ac, ac->avctx,
                                                   layout_map,
                                                   &layout_map_tags,
                                                   hdr_info.chan_config)) < 0)
@@ -3213,7 +3312,7 @@ static int aac_decode_frame_int(AVCodecContext *avctx, void *data,
             break;
 
         case TYPE_PCE: {
-            uint8_t layout_map[MAX_ELEM_ID*4][3];
+            uint8_t layout_map[MAX_ELEM_ID*4][3] = {{0}};
             int tags;
 
             int pushed = push_output_configuration(ac);

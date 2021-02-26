@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
+#include "extensions/browser/api/declarative_net_request/global_rules_tracker.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -100,6 +101,11 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   const ActionTracker& action_tracker() const { return action_tracker_; }
   ActionTracker& action_tracker() { return action_tracker_; }
 
+  const GlobalRulesTracker& global_rules_tracker() const {
+    return global_rules_tracker_;
+  }
+  GlobalRulesTracker& global_rules_tracker() { return global_rules_tracker_; }
+
   void SetObserverForTest(TestObserver* observer) { test_observer_ = observer; }
 
  private:
@@ -117,6 +123,10 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
 
   // ExtensionRegistryObserver implementation.
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  const std::string& old_name) override;
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -183,8 +193,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // RulesetManager had an extra headers matcher before the update.
   void AdjustExtraHeaderListenerCountIfNeeded(bool had_extra_headers_matcher);
 
-  // Updates ruleset checksum in preferences from |load_data|.
-  void UpdateRulesetChecksumsIfNeeded(const LoadRequestData& load_data);
+  // Logs metrics related to the result of loading rulesets and updates ruleset
+  // checksum in preferences from |load_data|.
+  void LogMetricsAndUpdateChecksumsIfNeeded(const LoadRequestData& load_data);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};
@@ -202,6 +213,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   declarative_net_request::RulesetManager ruleset_manager_;
 
   ActionTracker action_tracker_;
+
+  GlobalRulesTracker global_rules_tracker_;
 
   // Non-owned pointer.
   TestObserver* test_observer_ = nullptr;

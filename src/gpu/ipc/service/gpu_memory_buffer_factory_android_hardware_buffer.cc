@@ -12,7 +12,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
-#include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
 namespace gpu {
@@ -29,7 +29,7 @@ AHardwareBuffer_Desc GetBufferDescription(const gfx::Size& size,
   hwb_desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
                    AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
   if (usage == gfx::BufferUsage::SCANOUT)
-    hwb_desc.usage |= gl::SurfaceControl::RequiredUsage();
+    hwb_desc.usage |= gfx::SurfaceControl::RequiredUsage();
 
   // Number of images in an image array.
   hwb_desc.layers = 1;
@@ -54,10 +54,12 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
+  DCHECK_EQ(framebuffer_size, size);
   auto buffer = GpuMemoryBufferImplAndroidHardwareBuffer::Create(
       id, size, format, usage, GpuMemoryBufferImpl::DestructionCallback());
   if (!buffer) {

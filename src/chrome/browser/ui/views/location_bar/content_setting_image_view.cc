@@ -13,7 +13,8 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
-#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
@@ -80,7 +81,7 @@ ContentSettingImageView::ContentSettingImageView(
       bubble_view_(nullptr) {
   DCHECK(delegate_);
   SetUpForInOutAnimation();
-  image()->EnableCanvasFlippingForRTLUI(true);
+  image()->SetFlipCanvasOnPaintForRTLUI(true);
 
   base::Optional<ViewID> view_id =
       GetViewID(content_setting_image_model_->image_type());
@@ -88,8 +89,7 @@ ContentSettingImageView::ContentSettingImageView(
     SetID(*view_id);
 }
 
-ContentSettingImageView::~ContentSettingImageView() {
-}
+ContentSettingImageView::~ContentSettingImageView() {}
 
 void ContentSettingImageView::Update() {
   content::WebContents* web_contents =
@@ -208,24 +208,19 @@ ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
 }
 
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
-  if (indicator_promo_ && indicator_promo_->GetWidget() == widget) {
-    SetHighlighted(false);
-    observer_.Remove(widget);
-    indicator_promo_ = nullptr;
-    // The highlighted icon needs to be recolored.
-    SchedulePaint();
-  } else if (bubble_view_ && bubble_view_->GetWidget() == widget) {
-    observer_.Remove(widget);
-    bubble_view_ = nullptr;
-    UnpauseAnimation();
-  }
+  if (!bubble_view_ || bubble_view_->GetWidget() != widget)
+    return;
+
+  observer_.Remove(widget);
+  bubble_view_ = nullptr;
+  UnpauseAnimation();
 }
 
 void ContentSettingImageView::UpdateImage() {
   gfx::Image icon = content_setting_image_model_->GetIcon(icon_color_.value_or(
       color_utils::DeriveDefaultIconColor(GetForegroundColor())));
   if (!icon.IsEmpty())
-    SetImage(icon.AsImageSkia());
+    SetImageModel(ui::ImageModel::FromImage(icon));
 }
 
 void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
@@ -238,16 +233,17 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
   // directly after the animation is shown.
   if (web_contents &&
       content_setting_image_model_->ShouldShowPromo(web_contents)) {
-    // Owned by its native widget. Will be destroyed as its widget is destroyed.
-    indicator_promo_ = FeaturePromoBubbleView::CreateOwned(
-        this, views::BubbleBorder::TOP_RIGHT,
-        FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-        IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO, promo_width,
-        base::nullopt, base::nullopt);
+    FeaturePromoBubbleParams bubble_params;
+    bubble_params.body_string_specifier =
+        IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO;
+    bubble_params.anchor_view = this;
+    bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
+    bubble_params.allow_focus = true;
+    bubble_params.persist_on_blur = false;
+    bubble_params.preferred_width = promo_width;
 
-    SetHighlighted(true);
-    observer_.Add(indicator_promo_->GetWidget());
-    SchedulePaint();
-    content_setting_image_model_->SetPromoWasShown(web_contents);
+    auto* promo_controller = FeaturePromoControllerViews::GetForView(this);
+    DCHECK(promo_controller);
+    promo_controller->ShowCriticalPromo(bubble_params);
   }
 }

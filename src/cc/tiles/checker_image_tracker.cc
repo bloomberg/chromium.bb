@@ -4,6 +4,8 @@
 
 #include "cc/tiles/checker_image_tracker.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -367,6 +369,7 @@ void CheckerImageTracker::UpdateDecodeState(const DrawImage& draw_image,
   decode_state->scale = SkSize::Make(
       std::max(decode_state->scale.fWidth, draw_image.scale().fWidth),
       std::max(decode_state->scale.fHeight, draw_image.scale().fHeight));
+  decode_state->use_dark_mode = draw_image.use_dark_mode();
   decode_state->filter_quality =
       std::max(decode_state->filter_quality, draw_image.filter_quality());
   decode_state->color_space = draw_image.target_color_space();
@@ -405,10 +408,10 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
       continue;
 
     draw_image = DrawImage(
-        candidate, SkIRect::MakeWH(candidate.width(), candidate.height()),
+        candidate, it->second.use_dark_mode,
+        SkIRect::MakeWH(candidate.width(), candidate.height()),
         it->second.filter_quality,
-        SkMatrix::MakeScale(it->second.scale.width(),
-                            it->second.scale.height()),
+        SkMatrix::Scale(it->second.scale.width(), it->second.scale.height()),
         it->second.frame_index, it->second.color_space);
     outstanding_image_decode_.emplace(candidate);
     break;

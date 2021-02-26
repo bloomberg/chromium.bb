@@ -227,7 +227,14 @@ function startTesting() {
     setTimeout(startTesting, 1000);
     return;
   }
-  continueTesting();
+
+  if (window.HTMLImports && window.HTMLImports.whenReady) {
+    /// When there is a HTML Import polyfill wait all imports to finish before
+    // starting the test.
+    window.HTMLImports.whenReady(continueTesting);
+  } else {
+    continueTesting();
+  }
 }
 
 /**
@@ -236,7 +243,7 @@ function startTesting() {
  * @param {boolean=} opt_asyncTestFailure Optional parameter indicated if the
  *     last asynchronous test failed.
  */
-function continueTesting(opt_asyncTestFailure) {
+async function continueTesting(opt_asyncTestFailure) {
   const now = performance.now();
   if (testName) {
     console.log(
@@ -263,7 +270,7 @@ function continueTesting(opt_asyncTestFailure) {
         testHarness.setUp();
       }
       pendingTearDown = testHarness.tearDown || null;
-      testScope[testName](continueTesting);
+      await testScope[testName](continueTesting);
     } catch (err) {
       console.error('Failure in test ' + testName + '\n' + err);
       console.log(err.stack);

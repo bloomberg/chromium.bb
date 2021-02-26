@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_POINTER_EVENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_POINTER_EVENT_MANAGER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -28,7 +27,9 @@ class CORE_EXPORT PointerEventManager final
     : public GarbageCollected<PointerEventManager> {
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);
-  void Trace(Visitor*);
+  PointerEventManager(const PointerEventManager&) = delete;
+  PointerEventManager& operator=(const PointerEventManager&) = delete;
+  void Trace(Visitor*) const;
 
   // This is the unified path for handling all input device events. This may
   // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
@@ -108,11 +109,9 @@ class CORE_EXPORT PointerEventManager final
   WebInputEventResult FlushEvents();
 
  private:
-  class EventTargetAttributes {
-    DISALLOW_NEW();
-
+  class EventTargetAttributes : public GarbageCollected<EventTargetAttributes> {
    public:
-    void Trace(Visitor* visitor) { visitor->Trace(target); }
+    void Trace(Visitor* visitor) const { visitor->Trace(target); }
     Member<Element> target;
     EventTargetAttributes() : target(nullptr) {}
     EventTargetAttributes(Element* target) : target(target) {}
@@ -126,11 +125,15 @@ class CORE_EXPORT PointerEventManager final
                   WTF::IntHash<int64_t>,
                   WTF::UnsignedWithZeroKeyHashTraits<int64_t>>;
   using PointerCapturingMap = PointerIdKeyMap<Member<Element>>;
-  using ElementUnderPointerMap = PointerIdKeyMap<EventTargetAttributes>;
+  using ElementUnderPointerMap = PointerIdKeyMap<Member<EventTargetAttributes>>;
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:
     PointerEventBoundaryEventDispatcher(PointerEventManager*, PointerEvent*);
+    PointerEventBoundaryEventDispatcher(
+        const PointerEventBoundaryEventDispatcher&) = delete;
+    PointerEventBoundaryEventDispatcher& operator=(
+        const PointerEventBoundaryEventDispatcher&) = delete;
 
    protected:
     void DispatchOut(EventTarget*, EventTarget* related_target) override;
@@ -151,7 +154,6 @@ class CORE_EXPORT PointerEventManager final
                   bool check_for_listener);
     PointerEventManager* pointer_event_manager_;
     PointerEvent* pointer_event_;
-    DISALLOW_COPY_AND_ASSIGN(PointerEventBoundaryEventDispatcher);
   };
 
   // Sends pointercancels for existing PointerEvents that are interrupted.
@@ -278,8 +280,6 @@ class CORE_EXPORT PointerEventManager final
   // main thread, or all events (touch start/end/move).
   bool skip_touch_filter_discrete_ = false;
   bool skip_touch_filter_all_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PointerEventManager);
 };
 
 }  // namespace blink

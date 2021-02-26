@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "chromecast/media/api/cast_audio_decoder.h"
 #include "chromecast/media/audio/mixer_service/output_stream_connection.h"
@@ -102,6 +101,7 @@ class AudioDecoderForMixer
   bool pending_buffer_complete_ = false;
   bool mixer_error_ = false;
   bool paused_ = false;
+  float playback_rate_ = 1.0f;
   bool reported_ready_for_playback_ = false;
   RenderingDelay mixer_delay_;
 

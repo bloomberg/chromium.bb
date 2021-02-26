@@ -114,15 +114,24 @@ class InfraFormatter(logging.Formatter):  # pragma: no cover
 
   This object processes fields added by :class:`InfraFilter`.
   """
-  def __init__(self):
+
+  def __init__(self, max_length=None):
     super(InfraFormatter, self).__init__(
         '[%(severity)s%(iso8601)s %(process)d %(thread)d '
         '%(fullModuleName)s:%(lineno)s] %(message)s')
+    self._max_length = max_length
+
+  def format(self, record):
+    return _truncate_if_long(
+        super(InfraFormatter, self).format(record), self._max_length)
 
 
-def add_handler(logger, handler=None, timezone='UTC',
+def add_handler(logger,
+                handler=None,
+                timezone='UTC',
                 level=logging.WARNING,
-                module_name_blacklist=None):  # pragma: no cover
+                module_name_blacklist=None,
+                max_length=None):  # pragma: no cover
   """Configures and adds a handler to a logger the standard way for infra.
 
   Args:
@@ -135,6 +144,8 @@ def add_handler(logger, handler=None, timezone='UTC',
     level (int): logging level. Could be one of DEBUG, INFO, WARNING, CRITICAL
     module_name_blacklist (str): do not print log lines from modules whose name
       matches this regular expression.
+    max_length (int): truncates formatted entry to this many bytes. 0 or None
+      means unlimited.
 
   Example usage::
 
@@ -152,7 +163,7 @@ def add_handler(logger, handler=None, timezone='UTC',
   handler = handler or logging.StreamHandler()
   handler.addFilter(InfraFilter(timezone,
                                 module_name_blacklist=module_name_blacklist))
-  handler.setFormatter(InfraFormatter())
+  handler.setFormatter(InfraFormatter(max_length))
   handler.setLevel(level=level)
   logger.addHandler(handler)
 
@@ -219,6 +230,14 @@ def add_argparse_options(parser,
       action='store_true',
       help='by default only INFO, WARNING and ERROR log files are written to '
            'disk.  This flag causes a DEBUG log to be written as well.')
+  parser.add_argument(
+      '--logs-max-length',
+      default=None,
+      type=int,
+      help='truncate formatted log entries to this many bytes from their end. '
+      'Defaults to no truncation. Useful for streaming logs into Cloud '
+      'Logging, see its limits https://cloud.google.com/logging/quotas. '
+      'Truncating to less than 256 bytes is not recommended.')
 
 
 def process_argparse_options(options, logger=None):  # pragma: no cover
@@ -246,8 +265,11 @@ def process_argparse_options(options, logger=None):  # pragma: no cover
   if logger is None:
     logger = logging.root
 
-  add_handler(logger, level=options.log_level,
-              module_name_blacklist=options.logs_black_list)
+  add_handler(
+      logger,
+      level=options.log_level,
+      module_name_blacklist=options.logs_black_list,
+      max_length=options.logs_max_length)
 
   if options.logs_directory:
     _add_file_handlers(options, logger)
@@ -295,3 +317,12 @@ def _add_file_handlers(options, logger):  # pragma: no cover
             backupCount=10,
             delay=True),
         level=level)
+
+
+def _truncate_if_long(l, max_length):
+  if not max_length or len(l) <= max_length:
+    return l
+  if max_length < 100:
+    return l[:max_length]
+  suffix = '... [TRUNCATED TOO LONG LOG ENTRY: %d B]' % len(l)
+  return l[:max_length - len(suffix)] + suffix

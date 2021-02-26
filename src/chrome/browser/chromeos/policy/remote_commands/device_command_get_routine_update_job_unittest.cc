@@ -10,12 +10,13 @@
 #include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,9 +168,8 @@ DeviceCommandGetRoutineUpdateJobTest::DeviceCommandGetRoutineUpdateJobTest() {
 DeviceCommandGetRoutineUpdateJobTest::~DeviceCommandGetRoutineUpdateJobTest() {
   chromeos::CrosHealthdClient::Shutdown();
 
-  // Wait for DeviceCommandGetRoutineUpdateJobTest to observe the
-  // destruction of the client.
-  base::RunLoop().RunUntilIdle();
+  // Wait for ServiceConnection to observe the destruction of the client.
+  chromeos::cros_healthd::ServiceConnection::GetInstance()->FlushForTesting();
 }
 
 void DeviceCommandGetRoutineUpdateJobTest::InitializeJob(

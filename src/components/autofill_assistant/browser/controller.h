@@ -10,20 +10,22 @@
 #include <string>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/metrics.h"
+#include "components/autofill_assistant/browser/public/runtime_manager_impl.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
-#include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
@@ -55,12 +57,13 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver,
                    public UserModel::Observer {
  public:
-  // |web_contents|, |client| and |tick_clock| must remain valid for the
-  // lifetime of the instance. Controller will take ownership of |service| if
-  // specified, otherwise will create and own the default service.
+  // |web_contents|, |client|, |tick_clock| and |runtime_manager| must remain
+  // valid for the lifetime of the instance. Controller will take ownership of
+  // |service| if specified, otherwise will create and own the default service.
   Controller(content::WebContents* web_contents,
              Client* client,
              const base::TickClock* tick_clock,
+             base::WeakPtr<RuntimeManagerImpl> runtime_manager,
              std::unique_ptr<Service> service);
   ~Controller() override;
 
@@ -119,7 +122,14 @@ class Controller : public ScriptExecutorDelegate,
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
+  bool SetProgressActiveStepIdentifier(
+      const std::string& active_step_identifier) override;
+  void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetProgressBarErrorState(bool error) override;
+  void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetViewportMode(ViewportMode mode) override;
@@ -130,41 +140,57 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
+  void ExpectNavigation() override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback) override;
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override;
   void ClearGenericUi() override;
+  void SetBrowseModeInvisible(bool invisible) override;
+  void SetShowFeedbackChip(bool show_feedback_chip) override;
 
   // Show the UI if it's not already shown. This is only meaningful while in
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
   void RequireUI() override;
+  void SetUiShown(bool shown) override;
 
-  void AddListener(NavigationListener* listener) override;
-  void RemoveListener(NavigationListener* listener) override;
+  void AddNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void RemoveNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
+  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void SetExpandSheetForPromptAction(bool expand) override;
-  void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
+  void SetBrowseDomainsAllowlist(std::vector<std::string> domains) override;
 
   bool EnterState(AutofillAssistantState state) override;
+  void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
+                                            collect_user_data_options) override;
+  const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
+      const override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
-  void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 
   // Overrides autofill_assistant::UiDelegate:
-  AutofillAssistantState GetState() override;
+  AutofillAssistantState GetState() const override;
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
+  base::Optional<int> GetProgressActiveStep() const override;
   bool GetProgressVisible() const override;
+  bool GetProgressBarErrorState() const override;
+  base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  GetStepProgressBarConfiguration() const override;
   const std::vector<UserAction>& GetUserActions() const override;
   bool PerformUserActionWithContext(
       int index,
@@ -197,11 +223,17 @@ class Controller : public ScriptExecutorDelegate,
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
+                    bool show_feedback_chip,
                     Metrics::DropOutReason reason) override;
-  void PerformDelayedShutdownIfNecessary();
+  void OnStop(const std::string& message,
+              const std::string& button_label) override;
   void MaybeReportFirstCheckDone();
   ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  BottomSheetState GetBottomSheetState() override;
+  void SetBottomSheetState(BottomSheetState state) override;
+  bool IsTabSelected() override;
+  void SetTabSelected(bool selected) override;
   void GetOverlayColors(OverlayColors* colors) const override;
   const ClientSettings& GetClientSettings() const override;
   const FormProto* GetForm() const override;
@@ -218,6 +250,10 @@ class Controller : public ScriptExecutorDelegate,
   bool ShouldPromptActionExpandSheet() const override;
   BasicInteractions* GetBasicInteractions() override;
   const GenericUserInterfaceProto* GetGenericUiProto() const override;
+  bool ShouldShowOverlay() const override;
+  void ShutdownIfNecessary() override;
+  bool IsRunningLiteScript() const override;
+  void OnKeyboardVisibilityChanged(bool visible) override;
 
  private:
   friend ControllerTest;
@@ -235,7 +271,9 @@ class Controller : public ScriptExecutorDelegate,
   // once right now and schedule regular checks. Otherwise, do nothing.
   void GetOrCheckScripts();
 
-  void OnGetScripts(const GURL& url, bool result, const std::string& response);
+  void OnGetScripts(const GURL& url,
+                    int http_status,
+                    const std::string& response);
 
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
   // call |on_success|.
@@ -279,7 +317,6 @@ class Controller : public ScriptExecutorDelegate,
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
   // Overrides content::WebContentsObserver:
-  void DidAttachInterstitialPage() override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void DidStartNavigation(
@@ -309,15 +346,27 @@ class Controller : public ScriptExecutorDelegate,
   void ShowFirstMessageAndStart();
 
   // Clear out visible state and enter the stopped state.
-  void EnterStoppedState();
+  // If |show_feedback_chip| is true, a "Send feedback" chip will be added to
+  // the bottom sheet.
+  void EnterStoppedState(bool show_feedback_chip);
+
+  void OnFeedbackChipClicked();
 
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
   bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
 
+  void RecordDropOutOrShutdown(Metrics::DropOutReason reason);
+  void PerformDelayedShutdownIfNecessary();
+
+  bool StateNeedsUI(AutofillAssistantState state);
+
+  void SetVisibilityAndUpdateUserActions();
+
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
+  base::WeakPtr<RuntimeManagerImpl> runtime_manager_;
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
@@ -327,6 +376,7 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<TriggerContext> trigger_context_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
+  bool can_recover_from_stopped_ = false;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
   // Note that this is the deeplink passed by a caller.
@@ -373,9 +423,13 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current progress.
   int progress_ = 0;
+  base::Optional<int> progress_active_step_;
 
   // Current visibility of the progress bar. It is initially visible.
   bool progress_visible_ = true;
+  bool progress_bar_error_state_ = false;
+  base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+      step_progress_bar_configuration_;
 
   // Current set of user actions. May be null, but never empty.
   std::unique_ptr<std::vector<UserAction>> user_actions_;
@@ -388,8 +442,17 @@ class Controller : public ScriptExecutorDelegate,
       ConfigureBottomSheetProto::HANDLE;
   bool auto_change_peek_mode_ = false;
 
+  // The latest bottom sheet state stored.
+  BottomSheetState bottom_sheet_state_ = BottomSheetState::UNDEFINED;
+
+  // Whether the tab associated with this controller is currently selected.
+  bool tab_selected_ = true;
+
   std::unique_ptr<OverlayColors> overlay_colors_;
 
+  // A copy of the most recently set user data options. Can be used to determine
+  // which information was requested.
+  std::unique_ptr<CollectUserDataOptions> last_collect_user_data_options_;
   CollectUserDataOptions* collect_user_data_options_ = nullptr;
   std::unique_ptr<UserData> user_data_;
 
@@ -409,7 +472,13 @@ class Controller : public ScriptExecutorDelegate,
 
   // Value for ScriptExecutorDelegate::HasNavigationError()
   bool navigation_error_ = false;
-  base::ObserverList<NavigationListener> navigation_listeners_;
+  base::ObserverList<ScriptExecutorDelegate::NavigationListener>
+      navigation_listeners_;
+
+  base::ObserverList<ScriptExecutorDelegate::Listener> listeners_;
+
+  // The next DidStartNavigation will not cause an error.
+  bool expect_navigation_ = false;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script
@@ -434,10 +503,17 @@ class Controller : public ScriptExecutorDelegate,
   // Whether the controller is in a state in which a UI should be shown.
   bool needs_ui_ = false;
 
+  // Whether UI is shown.
+  bool ui_shown_ = false;
+
   // True once the controller has run the first set of scripts and have either
   // declared it invalid - and entered stopped state - or have processed its
   // result - and updated the state and set of available actions.
   bool has_run_first_check_ = false;
+
+  // Whether the overlay should be set according to state or always hidden.
+  ConfigureUiStateProto::OverlayBehavior overlay_behavior_ =
+      ConfigureUiStateProto::DEFAULT;
 
   // Callbacks to call when |has_run_first_check_| becomes true.
   std::vector<base::OnceCallback<void()>> on_has_run_first_check_;
@@ -452,7 +528,10 @@ class Controller : public ScriptExecutorDelegate,
   BasicInteractions basic_interactions_{this};
 
   bool expand_sheet_for_prompt_action_ = true;
-  std::vector<std::string> browse_domains_whitelist_;
+  std::vector<std::string> browse_domains_allowlist_;
+  bool browse_mode_invisible_ = false;
+  bool is_keyboard_showing_ = false;
+  bool show_feedback_chip_on_graceful_shutdown_ = false;
 
   // Only set during a ShowGenericUiAction.
   std::unique_ptr<GenericUserInterfaceProto> generic_user_interface_;

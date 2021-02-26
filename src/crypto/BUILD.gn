@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/crypto.gni")
 import("//testing/test.gni")
 
@@ -10,11 +11,6 @@ component("crypto") {
   sources = [
     "aead.cc",
     "aead.h",
-    "apple_keychain.h",
-    "apple_keychain_ios.mm",
-    "apple_keychain_mac.mm",
-    "capi_util.cc",
-    "capi_util.h",
     "crypto_export.h",
     "ec_private_key.cc",
     "ec_private_key.h",
@@ -28,21 +24,6 @@ component("crypto") {
     "hkdf.h",
     "hmac.cc",
     "hmac.h",
-    "mac_security_services_lock.cc",
-    "mac_security_services_lock.h",
-
-    # TODO(brettw) these mocks should be moved to a test_support_crypto target
-    # if possible.
-    "mock_apple_keychain.cc",
-    "mock_apple_keychain.h",
-    "mock_apple_keychain_ios.cc",
-    "mock_apple_keychain_mac.cc",
-    "nss_crypto_module_delegate.h",
-    "nss_key_util.cc",
-    "nss_key_util.h",
-    "nss_util.cc",
-    "nss_util.h",
-    "nss_util_internal.h",
     "openssl_util.cc",
     "openssl_util.h",
     "p224.cc",
@@ -77,44 +58,68 @@ component("crypto") {
 
   public_deps = [ "//third_party/boringssl" ]
 
-  if (!is_mac && !is_ios) {
-    sources -= [
+  if (is_apple) {
+    sources += [
       "apple_keychain.h",
+
+      # TODO(brettw): these mocks should be moved to a test_support_crypto
+      # target if possible.
       "mock_apple_keychain.cc",
       "mock_apple_keychain.h",
     ]
-  } else {
-    libs = [
+
+    if (is_mac) {
+      sources += [
+        "apple_keychain_mac.mm",
+
+        # TODO(brettw): these mocks should be moved to a test_support_crypto
+        # target if possible.
+        "mock_apple_keychain_mac.cc",
+      ]
+    }
+    if (is_ios) {
+      sources += [
+        "apple_keychain_ios.mm",
+
+        # TODO(brettw): these mocks should be moved to a test_support_crypto
+        # target if possible.
+        "mock_apple_keychain_ios.cc",
+      ]
+    }
+
+    frameworks = [
       "CoreFoundation.framework",
       "Security.framework",
     ]
   }
 
-  if (!is_mac) {
-    sources -= [
+  if (is_mac) {
+    sources += [
       "mac_security_services_lock.cc",
       "mac_security_services_lock.h",
     ]
   }
-  if (!is_win) {
-    sources -= [
+  if (is_win) {
+    sources += [
       "capi_util.cc",
       "capi_util.h",
     ]
   }
 
   # Some files are built when NSS is used for the platform certificate library.
-  if (!use_nss_certs) {
-    sources -= [
+  if (use_nss_certs) {
+    sources += [
+      "nss_crypto_module_delegate.h",
       "nss_key_util.cc",
       "nss_key_util.h",
       "nss_util.cc",
       "nss_util.h",
       "nss_util_internal.h",
     ]
+    deps += [ "//build:chromeos_buildflags" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [ "nss_util_chromeos.cc" ]
   }
 
@@ -132,8 +137,6 @@ test("crypto_unittests") {
     "ec_signature_creator_unittest.cc",
     "encryptor_unittest.cc",
     "hmac_unittest.cc",
-    "nss_key_util_unittest.cc",
-    "nss_util_unittest.cc",
     "p224_spake_unittest.cc",
     "p224_unittest.cc",
     "random_unittest.cc",
@@ -146,8 +149,8 @@ test("crypto_unittests") {
   ]
 
   # Some files are built when NSS is used for the platform certificate library.
-  if (!use_nss_certs) {
-    sources -= [
+  if (use_nss_certs) {
+    sources += [
       "nss_key_util_unittest.cc",
       "nss_util_unittest.cc",
     ]
@@ -177,7 +180,7 @@ source_set("test_support") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "scoped_test_nss_chromeos_user.cc",
       "scoped_test_nss_chromeos_user.h",

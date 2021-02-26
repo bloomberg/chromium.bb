@@ -227,6 +227,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   virtual bool IsClipboardEvent() const;
   virtual bool IsBeforeTextInsertedEvent() const;
 
+  virtual bool IsBeforeCreatePolicyEvent() const;
   virtual bool IsBeforeUnloadEvent() const;
   virtual bool IsErrorEvent() const;
 
@@ -307,7 +308,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   virtual void ReceivedTarget();

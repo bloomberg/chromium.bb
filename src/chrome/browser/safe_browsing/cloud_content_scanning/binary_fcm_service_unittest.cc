@@ -5,20 +5,21 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 
 #include "base/base64.h"
-#include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/callback_helpers.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -126,51 +127,53 @@ TEST_F(BinaryFCMServiceTest, GetsInstanceID) {
 }
 
 TEST_F(BinaryFCMServiceTest, RoutesMessages) {
-  DeepScanningClientResponse response1;
-  DeepScanningClientResponse response2;
+  enterprise_connectors::ContentAnalysisResponse response1;
+  enterprise_connectors::ContentAnalysisResponse response2;
 
   binary_fcm_service_->SetCallbackForToken(
-      "token1", base::BindRepeating(
-                    [](DeepScanningClientResponse* target_response,
-                       DeepScanningClientResponse response) {
-                      *target_response = response;
-                    },
-                    &response1));
+      "token1",
+      base::BindRepeating(
+          [](enterprise_connectors::ContentAnalysisResponse* target_response,
+             enterprise_connectors::ContentAnalysisResponse response) {
+            *target_response = response;
+          },
+          &response1));
   binary_fcm_service_->SetCallbackForToken(
-      "token2", base::BindRepeating(
-                    [](DeepScanningClientResponse* target_response,
-                       DeepScanningClientResponse response) {
-                      *target_response = response;
-                    },
-                    &response2));
+      "token2",
+      base::BindRepeating(
+          [](enterprise_connectors::ContentAnalysisResponse* target_response,
+             enterprise_connectors::ContentAnalysisResponse response) {
+            *target_response = response;
+          },
+          &response2));
 
-  DeepScanningClientResponse message;
+  enterprise_connectors::ContentAnalysisResponse message;
   std::string serialized_message;
   gcm::IncomingMessage incoming_message;
 
   // Test that a message with token1 is routed only to the first callback.
-  message.set_token("token1");
+  message.set_request_token("token1");
   ASSERT_TRUE(message.SerializeToString(&serialized_message));
   base::Base64Encode(serialized_message, &serialized_message);
   incoming_message.data["proto"] = serialized_message;
   binary_fcm_service_->OnMessage("app_id", incoming_message);
-  EXPECT_EQ(response1.token(), "token1");
-  EXPECT_EQ(response2.token(), "");
+  EXPECT_EQ(response1.request_token(), "token1");
+  EXPECT_EQ(response2.request_token(), "");
 
   // Test that a message with token2 is routed only to the second callback.
-  message.set_token("token2");
+  message.set_request_token("token2");
   ASSERT_TRUE(message.SerializeToString(&serialized_message));
   base::Base64Encode(serialized_message, &serialized_message);
   incoming_message.data["proto"] = serialized_message;
   binary_fcm_service_->OnMessage("app_id", incoming_message);
-  EXPECT_EQ(response1.token(), "token1");
-  EXPECT_EQ(response2.token(), "token2");
+  EXPECT_EQ(response1.request_token(), "token1");
+  EXPECT_EQ(response2.request_token(), "token2");
 
   // Test that I can clear a callback
-  response2.clear_token();
+  response2.clear_request_token();
   binary_fcm_service_->ClearCallbackForToken("token2");
   binary_fcm_service_->OnMessage("app_id", incoming_message);
-  EXPECT_EQ(response2.token(), "");
+  EXPECT_EQ(response2.request_token(), "");
 }
 
 TEST_F(BinaryFCMServiceTest, EmitsHasKeyHistogram) {
@@ -217,7 +220,7 @@ TEST_F(BinaryFCMServiceTest, EmitsMessageParsedHistogram) {
   {
     base::HistogramTester histograms;
     gcm::IncomingMessage incoming_message;
-    DeepScanningClientResponse message;
+    enterprise_connectors::ContentAnalysisResponse message;
     std::string serialized_message;
 
     ASSERT_TRUE(message.SerializeToString(&serialized_message));
@@ -233,9 +236,9 @@ TEST_F(BinaryFCMServiceTest, EmitsMessageParsedHistogram) {
 
 TEST_F(BinaryFCMServiceTest, EmitsMessageHasValidTokenHistogram) {
   gcm::IncomingMessage incoming_message;
-  DeepScanningClientResponse message;
+  enterprise_connectors::ContentAnalysisResponse message;
 
-  message.set_token("token1");
+  message.set_request_token("token1");
   std::string serialized_message;
   ASSERT_TRUE(message.SerializeToString(&serialized_message));
   base::Base64Encode(serialized_message, &serialized_message);
@@ -429,6 +432,68 @@ TEST_F(BinaryFCMServiceTest, UnregisterTwoTokensTwoCalls) {
   binary_fcm_service_->UnregisterInstanceID(second_id, base::DoNothing());
 
   content::RunAllTasksUntilIdle();
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterTwoTokenConflict) {
+  MockInstanceIDDriver driver;
+  MockInstanceID instance_id;
+  ON_CALL(driver, GetInstanceID(_)).WillByDefault(Return(&instance_id));
+  binary_fcm_service_.reset();
+  binary_fcm_service_ = std::make_unique<BinaryFCMService>(
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
+      &driver);
+  binary_fcm_service_->SetQueuedOperationDelayForTesting(base::TimeDelta());
+  std::string first_id = BinaryFCMService::kInvalidId;
+  std::string second_id = BinaryFCMService::kInvalidId;
+
+  // Both calls to GetToken return the same value since we mock a case where the
+  // second GetToken call happens before the first DeleteToken call resolves.
+  EXPECT_CALL(instance_id, GetToken(_, _, _, _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .WillOnce(
+          Invoke([this, &second_id](
+                     const std::string&, const std::string&,
+                     instance_id::InstanceID::DeleteTokenCallback callback) {
+            // Call the second GetInstanceID here to have a conflict.
+            binary_fcm_service_->GetInstanceID(base::BindLambdaForTesting(
+                [&second_id](const std::string& instance_id) {
+                  second_id = instance_id;
+                }));
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  // Get the first token.
+  binary_fcm_service_->GetInstanceID(base::BindLambdaForTesting(
+      [&first_id](const std::string& instance_id) { first_id = instance_id; }));
+
+  // Get the second token and unregister the first token. This is a conflict as
+  // they are the same token.
+  binary_fcm_service_->UnregisterInstanceID(
+      first_id,
+      base::BindOnce([](bool unregister) { EXPECT_TRUE(unregister); }));
+  task_environment_.RunUntilIdle();
+
+  // Unregister the second token.
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&,
+                    instance_id::InstanceID::DeleteTokenCallback callback) {
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+  binary_fcm_service_->UnregisterInstanceID(
+      second_id,
+      base::BindOnce([](bool unregister) { EXPECT_TRUE(unregister); }));
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(BinaryFCMServiceTest, QueuesGetInstanceIDOnRetriableError) {

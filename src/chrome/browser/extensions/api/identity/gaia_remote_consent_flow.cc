@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/gaia_remote_consent_flow.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,15 @@
 
 namespace extensions {
 
+namespace {
+
+void RecordResultHistogram(GaiaRemoteConsentFlow::Failure failure) {
+  base::UmaHistogramEnumeration("Signin.Extensions.GaiaRemoteConsentFlowResult",
+                                failure);
+}
+
+}  // namespace
+
 GaiaRemoteConsentFlow::Delegate::~Delegate() = default;
 
 GaiaRemoteConsentFlow::GaiaRemoteConsentFlow(
@@ -33,7 +43,7 @@ GaiaRemoteConsentFlow::GaiaRemoteConsentFlow(
     const RemoteConsentResolutionData& resolution_data)
     : delegate_(delegate),
       profile_(profile),
-      account_id_(token_key.account_id),
+      account_id_(token_key.account_info.account_id),
       resolution_data_(resolution_data),
       web_flow_started_(false),
       scoped_observer_(this) {}
@@ -61,7 +71,7 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
   }
 
   if (result != signin::SetAccountsInCookieResult::kSuccess) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(
+    GaiaRemoteConsentFlowFailed(
         GaiaRemoteConsentFlow::Failure::SET_ACCOUNTS_IN_COOKIE_FAILED);
     return;
   }
@@ -80,8 +90,8 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
       IdentityAPI::GetFactoryInstance()
           ->Get(profile_)
           ->RegisterOnSetConsentResultCallback(
-              base::Bind(&GaiaRemoteConsentFlow::OnConsentResultSet,
-                         base::Unretained(this)));
+              base::BindRepeating(&GaiaRemoteConsentFlow::OnConsentResultSet,
+                                  base::Unretained(this)));
 
   scoped_observer_.Add(IdentityManagerFactory::GetForProfile(profile_));
   web_flow_->Start();
@@ -100,16 +110,16 @@ void GaiaRemoteConsentFlow::OnConsentResultSet(
   std::string gaia_id;
   if (!gaia::ParseOAuth2MintTokenConsentResult(consent_result,
                                                &consent_approved, &gaia_id)) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(
-        GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
+    GaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
     return;
   }
 
   if (!consent_approved) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::NO_GRANT);
+    GaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::NO_GRANT);
     return;
   }
 
+  RecordResultHistogram(GaiaRemoteConsentFlow::NONE);
   delegate_->OnGaiaRemoteConsentFlowApproved(consent_result, gaia_id);
 }
 
@@ -129,7 +139,7 @@ void GaiaRemoteConsentFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       break;
   }
 
-  delegate_->OnGaiaRemoteConsentFlowFailed(gaia_failure);
+  GaiaRemoteConsentFlowFailed(gaia_failure);
 }
 
 std::unique_ptr<GaiaAuthFetcher>
@@ -146,7 +156,15 @@ GaiaRemoteConsentFlow::GetCookieManagerForPartition() {
 }
 
 void GaiaRemoteConsentFlow::OnEndBatchOfRefreshTokenStateChanges() {
+// On ChromeOS, new accounts are added through the account manager. They need to
+// be pushed to the partition used by this flow explicitly.
+// On Desktop, sign-in happens on the Web and a new account is directly added to
+// this partition's cookie jar. An extra update triggered from here might change
+// cookies order in the middle of the flow. This may lead to a bug like
+// https://crbug.com/1112343.
+#if defined(OS_CHROMEOS)
   SetAccountsInCookie();
+#endif
 }
 
 void GaiaRemoteConsentFlow::SetWebAuthFlowForTesting(
@@ -194,6 +212,11 @@ void GaiaRemoteConsentFlow::SetAccountsInCookie() {
                accounts},
               base::BindOnce(&GaiaRemoteConsentFlow::OnSetAccountsComplete,
                              base::Unretained(this)));
+}
+
+void GaiaRemoteConsentFlow::GaiaRemoteConsentFlowFailed(Failure failure) {
+  RecordResultHistogram(failure);
+  delegate_->OnGaiaRemoteConsentFlowFailed(failure);
 }
 
 }  // namespace extensions

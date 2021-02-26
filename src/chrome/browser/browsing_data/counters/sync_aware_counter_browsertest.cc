@@ -8,6 +8,7 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -109,8 +110,8 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing autofill, and this should restart the counter.
@@ -168,12 +169,14 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       sync_service);
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing passwords, and this should restart the counter.
@@ -238,14 +241,14 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
 
   browsing_data::HistoryCounter counter(
       HistoryServiceFactory::GetForProfileWithoutCreating(browser()->profile()),
-      base::Bind(&SyncAwareCounterTest::GetFakeWebHistoryService,
-                 base::Unretained(this), base::Unretained(profile)),
+      base::BindRepeating(&SyncAwareCounterTest::GetFakeWebHistoryService,
+                          base::Unretained(this), base::Unretained(profile)),
       sync_service);
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing history deletion, and this should restart the counter.

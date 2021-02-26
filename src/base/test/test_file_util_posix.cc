@@ -77,7 +77,9 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 bool DieFileDie(const FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
-  return DeleteFile(file, recurse);
+  if (recurse)
+    return DeletePathRecursively(file);
+  return DeleteFile(file);
 }
 
 void SyncPageCacheToDisk() {
@@ -85,7 +87,8 @@ void SyncPageCacheToDisk() {
   sync();
 }
 
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_APPLE) && \
+    !defined(OS_ANDROID)
 bool EvictFileFromSystemCache(const FilePath& file) {
   // There doesn't seem to be a POSIX way to cool the disk cache.
   NOTIMPLEMENTED();

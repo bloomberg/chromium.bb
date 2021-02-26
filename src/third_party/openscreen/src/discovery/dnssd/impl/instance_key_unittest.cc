@@ -96,5 +96,15 @@ TEST(DnsSdInstanceKeyTest, CreateFromRecordTest) {
   EXPECT_EQ(key.domain_id(), FakeDnsRecordFactory::kDomainName);
 }
 
+TEST(DnsSdInstanceKeyTest, GetNameTest) {
+  InstanceKey key("instance", "_service._udp", "domain");
+  DomainName expected{"instance", "_service", "_udp", "domain"};
+  EXPECT_EQ(expected, key.GetName());
+
+  key = InstanceKey("foo", "_bar._tcp", "local");
+  expected = DomainName{"foo", "_bar", "_tcp", "local"};
+  EXPECT_EQ(expected, key.GetName());
+}
+
 }  // namespace discovery
 }  // namespace openscreen

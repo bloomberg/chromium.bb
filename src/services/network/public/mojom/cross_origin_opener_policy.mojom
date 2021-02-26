@@ -4,6 +4,32 @@
 
 module network.mojom;
 
+import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/source_location.mojom";
+
+enum CoopAccessReportType {
+  kAccessFromCoopPageToOpener,
+  kAccessFromCoopPageToOpenee,
+  kAccessFromCoopPageToOther,
+  kAccessToCoopPageFromOpener,
+  kAccessToCoopPageFromOpenee,
+  kAccessToCoopPageFromOther,
+};
+
+// Reports potential COOP violations. Implemented in the browser process.
+interface CrossOriginOpenerPolicyReporter {
+  // Sends a report when two browsing contexts from different virtual browsing
+  // context groups tries to access each other.
+  // - |property| is the name of the access property (postMessage, open, ...).
+  // - |source_location| represents the line of code that triggered the access.
+  // - |reported_window_url| the sanitized URL of the second window. Empty when
+  //   cross-origin with the reporting window.
+  QueueAccessReport(CoopAccessReportType report_type, string property,
+                    SourceLocation source_location,
+                    string reported_window_url);
+};
+
 // Cross-Origin-Opener-Policy enum representing parsed values.
 enum CrossOriginOpenerPolicyValue {
   // Severs the opener relationship with openers/opened documents that are not
@@ -17,7 +43,10 @@ enum CrossOriginOpenerPolicyValue {
 
   // No restriction is applied, the relationship is kept with openers and
   // opened documents.
-  kUnsafeNone
+  kUnsafeNone,
+
+  // Same origin with Cross-Origin-Embedder-Policy: require-corp.
+  kSameOriginPlusCoep,
 };
 
 // Cross-Origin-Opener-Policy enum representing parsed values.
@@ -35,4 +64,3 @@ struct CrossOriginOpenerPolicy {
     // The reporting endpoint for the "report only" mode.
     string? report_only_reporting_endpoint;
 };
-

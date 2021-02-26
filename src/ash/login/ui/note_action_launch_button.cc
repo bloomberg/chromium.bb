@@ -178,21 +178,23 @@ class BubbleTargeterDelegate : public views::MaskedTargeterDelegate {
 // The action button foreground - an image button with actionable area matching
 // the (small) bubble shape centered in the top right corner of the action
 // button bounds.
-class NoteActionLaunchButton::ActionButton : public views::ImageButton,
-                                             public views::ButtonListener {
+class NoteActionLaunchButton::ActionButton : public views::ImageButton {
  public:
   explicit ActionButton(NoteActionLaunchButton::BackgroundView* background)
-      : views::ImageButton(this),
+      : views::ImageButton(base::BindRepeating(&ActionButton::ButtonPressed,
+                                               base::Unretained(this))),
         background_(background),
         event_targeter_delegate_(kLargeBubbleRadiusDp, kSmallBubbleRadiusDp) {
     SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
     SetImage(views::Button::STATE_NORMAL,
-             CreateVectorIcon(kTrayActionNewLockScreenNoteIcon,
-                              ShelfConfig::Get()->shelf_icon_color()));
+             CreateVectorIcon(
+                 kTrayActionNewLockScreenNoteIcon,
+                 AshColorProvider::Get()->GetContentLayerColor(
+                     AshColorProvider::ContentLayerType::kButtonIconColor)));
     SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetFocusPainter(nullptr);
-    EnableCanvasFlippingForRTLUI(true);
+    SetFlipCanvasOnPaintForRTLUI(true);
     SetPreferredSize(gfx::Size(kLargeBubbleRadiusDp, kLargeBubbleRadiusDp));
     SetEventTargeter(
         std::make_unique<views::ViewTargeter>(&event_targeter_delegate_));
@@ -221,6 +223,7 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
     canvas->Restore();
   }
   void StateChanged(ButtonState old_state) override {
+    ImageButton::StateChanged(old_state);
     UpdateBubbleRadiusAndOpacity();
   }
   void OnFocus() override {
@@ -268,8 +271,19 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
       views::ImageButton::OnGestureEvent(event);
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+ private:
+  // Updates the background view size and opacity depending on the current note
+  // action button state.
+  void UpdateBubbleRadiusAndOpacity() {
+    bool show_large_bubble = HasFocus() || GetState() == STATE_HOVERED ||
+                             GetState() == STATE_PRESSED ||
+                             tracking_activation_gesture_;
+    background_->SetBubbleRadiusAndOpacity(
+        show_large_bubble ? kLargeBubbleRadiusDp : kSmallBubbleRadiusDp,
+        show_large_bubble ? kLargeBubbleOpacity : kSmallBubbleOpacity);
+  }
+
+  void ButtonPressed(const ui::Event& event) {
     UserMetricsRecorder::RecordUserClickOnTray(
         LoginMetricsRecorder::TrayClickTarget::kTrayActionNoteButton);
     if (event.IsKeyEvent()) {
@@ -279,18 +293,6 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
       Shell::Get()->tray_action()->RequestNewLockScreenNote(
           mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
     }
-  }
-
- private:
-  // Updates the background view size and opacity depending on the current note
-  // action button state.
-  void UpdateBubbleRadiusAndOpacity() {
-    bool show_large_bubble = HasFocus() || state() == STATE_HOVERED ||
-                             state() == STATE_PRESSED ||
-                             tracking_activation_gesture_;
-    background_->SetBubbleRadiusAndOpacity(
-        show_large_bubble ? kLargeBubbleRadiusDp : kSmallBubbleRadiusDp,
-        show_large_bubble ? kLargeBubbleOpacity : kSmallBubbleOpacity);
   }
 
   // Called when a fling is detected - if the gesture direction was bottom-left,

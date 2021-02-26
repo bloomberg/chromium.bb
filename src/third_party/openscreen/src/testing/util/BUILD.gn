@@ -7,10 +7,13 @@ source_set("util") {
   sources = [
     "read_file.cc",
     "read_file.h",
+    "task_util.h",
   ]
 
   public_deps = [
+    "../../platform",
     "../../third_party/abseil",
+    "../../util",
   ]
 
   public_configs = [ "../../build:openscreen_include_dirs" ]

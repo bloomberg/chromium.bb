@@ -13,6 +13,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -95,55 +96,6 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(
 }
 
 }  // namespace
-
-// Class used to convert the placement only |PaymentInstrument| to
-// GarbageCollected, so it can be used in WTF::Bind. Otherwise, on-heap objects
-// referenced by |PaymentInstrument| will not be traced through the callback and
-// can be prematurely destroyed.
-// TODO(keishi): Remove this conversion if IDLDictionaryBase situation changes.
-class PaymentInstrumentParameter final
-    : public GarbageCollected<PaymentInstrumentParameter> {
- public:
-  explicit PaymentInstrumentParameter(const PaymentInstrument* instrument)
-      : has_icons_(instrument->hasIcons()),
-        has_capabilities_(instrument->hasCapabilities()),
-        has_method_(instrument->hasMethod()),
-        has_name_(instrument->hasName()),
-        capabilities_(instrument->capabilities()),
-        method_(instrument->method()),
-        name_(instrument->name()) {
-    if (has_icons_)
-      icons_ = instrument->icons();
-  }
-
-  bool has_capabilities() const { return has_capabilities_; }
-  ScriptValue capabilities() const { return capabilities_; }
-
-  bool has_icons() const { return has_icons_; }
-  const HeapVector<Member<ImageObject>>& icons() const { return icons_; }
-
-  bool has_method() const { return has_method_; }
-  const String& method() const { return method_; }
-
-  bool has_name() const { return has_name_; }
-  const String& name() const { return name_; }
-
-  void Trace(Visitor* visitor) {
-    visitor->Trace(icons_);
-    visitor->Trace(capabilities_);
-  }
-
- private:
-  bool has_icons_;
-  bool has_capabilities_;
-  bool has_method_;
-  bool has_name_;
-
-  ScriptValue capabilities_;
-  HeapVector<Member<ImageObject>> icons_;
-  String method_;
-  String name_;
-};
 
 PaymentInstruments::PaymentInstruments(
     const HeapMojoRemote<payments::mojom::blink::PaymentManager,
@@ -261,11 +213,9 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
               mojom::blink::PermissionName::PAYMENT_HANDLER),
           LocalFrame::HasTransientUserActivation(
               LocalDOMWindow::From(script_state)->GetFrame()),
-          WTF::Bind(
-              &PaymentInstruments::OnRequestPermission, WrapPersistent(this),
-              WrapPersistent(resolver), instrument_key,
-              WrapPersistent(
-                  MakeGarbageCollected<PaymentInstrumentParameter>(details))));
+          WTF::Bind(&PaymentInstruments::OnRequestPermission,
+                    WrapPersistent(this), WrapPersistent(resolver),
+                    instrument_key, WrapPersistent(details)));
   return resolver->Promise();
 }
 
@@ -289,7 +239,7 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state,
   return promise;
 }
 
-void PaymentInstruments::Trace(Visitor* visitor) {
+void PaymentInstruments::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   ScriptWrappable::Trace(visitor);
 }
@@ -309,7 +259,7 @@ mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
 void PaymentInstruments::OnRequestPermission(
     ScriptPromiseResolver* resolver,
     const String& instrument_key,
-    PaymentInstrumentParameter* details,
+    const PaymentInstrument* details,
     mojom::blink::PermissionStatus status) {
   DCHECK(resolver);
   if (!resolver->GetExecutionContext() ||
@@ -327,9 +277,8 @@ void PaymentInstruments::OnRequestPermission(
 
   payments::mojom::blink::PaymentInstrumentPtr instrument =
       payments::mojom::blink::PaymentInstrument::New();
-  instrument->name =
-      details->has_name() ? details->name() : WTF::g_empty_string;
-  if (details->has_icons()) {
+  instrument->name = details->hasName() ? details->name() : WTF::g_empty_string;
+  if (details->hasIcons()) {
     ExecutionContext* context =
         ExecutionContext::From(resolver->GetScriptState());
     for (const ImageObject* image_object : details->icons()) {
@@ -356,9 +305,9 @@ void PaymentInstruments::OnRequestPermission(
   }
 
   instrument->method =
-      details->has_method() ? details->method() : WTF::g_empty_string;
+      details->hasMethod() ? details->method() : WTF::g_empty_string;
 
-  if (details->has_capabilities()) {
+  if (details->hasCapabilities()) {
     v8::Local<v8::String> value;
     if (!v8::JSON::Stringify(resolver->GetScriptState()->GetContext(),
                              details->capabilities().V8Value().As<v8::Object>())

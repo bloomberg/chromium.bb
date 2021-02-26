@@ -5,146 +5,34 @@
 package org.chromium.android_webview.test.services;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+import static org.chromium.android_webview.test.services.MetricsBridgeServiceUnitTest.RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
-import android.support.test.filters.MediumTest;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
-import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecordList;
 import org.chromium.android_webview.services.MetricsBridgeService;
-import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.base.ContextUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.concurrent.FutureTask;
+import java.util.List;
 
 /**
- * Test MetricsBridgeService.
+ * Instrumentation tests MetricsBridgeService. These tests are not batched to make sure all unbinded
+ * services are properly killed between tests.
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class MetricsBridgeServiceTest {
-    private File mTempFile;
-
-    @Before
-    public void setUp() throws IOException {
-        mTempFile = File.createTempFile("test_webview_metrics_bridge_logs", null);
-    }
-
-    @After
-    public void tearDown() {
-        if (mTempFile.exists()) {
-            Assert.assertTrue("Failed to delete \"" + mTempFile + "\"", mTempFile.delete());
-        }
-    }
-
-    @Test
-    @MediumTest
-    // Test that the service saves metrics records to file
-    public void testSaveToFile() throws Throwable {
-        HistogramRecord recordBooleanProto = HistogramRecord.newBuilder()
-                                                     .setRecordType(RecordType.HISTOGRAM_BOOLEAN)
-                                                     .setHistogramName("testSaveToFile.boolean")
-                                                     .setSample(1)
-                                                     .build();
-        HistogramRecord recordLinearProto = HistogramRecord.newBuilder()
-                                                    .setRecordType(RecordType.HISTOGRAM_LINEAR)
-                                                    .setHistogramName("testSaveToFile.linear")
-                                                    .setSample(123)
-                                                    .setMin(1)
-                                                    .setMax(1000)
-                                                    .setNumBuckets(50)
-                                                    .build();
-        HistogramRecordList expectedListProto = HistogramRecordList.newBuilder()
-                                                        .addRecords(recordBooleanProto)
-                                                        .addRecords(recordLinearProto)
-                                                        .addRecords(recordBooleanProto)
-                                                        .build();
-
-        // Cannot bind to service using real connection since we need to inject test file name.
-        MetricsBridgeService service = new MetricsBridgeService(mTempFile);
-        // Simulate starting the service by calling onCreate()
-        service.onCreate();
-
-        IBinder binder = service.onBind(null);
-        IMetricsBridgeService stub = IMetricsBridgeService.Stub.asInterface(binder);
-        stub.recordMetrics(recordBooleanProto.toByteArray());
-        stub.recordMetrics(recordLinearProto.toByteArray());
-        stub.recordMetrics(recordBooleanProto.toByteArray());
-
-        // Block until all tasks are finished to make sure all records are written to file.
-        FutureTask<Object> blockTask = service.addTaskToBlock();
-        AwActivityTestRule.waitForFuture(blockTask);
-
-        HistogramRecordList resultListProto = readProtoFromFile(mTempFile);
-        Assert.assertEquals(
-                "constructed list proto from file is different from the expected list proto",
-                resultListProto, expectedListProto);
-    }
-
-    @Test
-    @MediumTest
-    // Test that service recovers saved data from file, appends new records to it and
-    // clears the file after a retrieve call.
-    public void testRetrieveFromFile() throws Throwable {
-        HistogramRecord recordBooleanProto =
-                HistogramRecord.newBuilder()
-                        .setRecordType(RecordType.HISTOGRAM_BOOLEAN)
-                        .setHistogramName("testRecoverFromFile.boolean")
-                        .setSample(1)
-                        .build();
-        HistogramRecord recordLinearProto = HistogramRecord.newBuilder()
-                                                    .setRecordType(RecordType.HISTOGRAM_LINEAR)
-                                                    .setHistogramName("testRecoverFromFile.linear")
-                                                    .setSample(123)
-                                                    .setMin(1)
-                                                    .setMax(1000)
-                                                    .setNumBuckets(50)
-                                                    .build();
-        HistogramRecordList initialListProto = HistogramRecordList.newBuilder()
-                                                       .addRecords(recordBooleanProto)
-                                                       .addRecords(recordLinearProto)
-                                                       .addRecords(recordBooleanProto)
-                                                       .build();
-        HistogramRecordList expectedListProto =
-                initialListProto.toBuilder().addRecords(recordBooleanProto).build();
-        writeProtoToFile(initialListProto, mTempFile);
-
-        // Cannot bind to service using real connection since we need to inject test file name.
-        MetricsBridgeService service = new MetricsBridgeService(mTempFile);
-        // Simulate starting the service by calling onCreate()
-        service.onCreate();
-
-        IBinder binder = service.onBind(null);
-        IMetricsBridgeService stub = IMetricsBridgeService.Stub.asInterface(binder);
-        stub.recordMetrics(recordBooleanProto.toByteArray());
-        byte[] retrievedData = stub.retrieveNonembeddedMetrics();
-
-        // Assert file is deleted after the retrieve call
-        Assert.assertFalse(
-                "file should be deleted after retrieve metrics call", mTempFile.exists());
-        Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
-        Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                expectedListProto.toByteArray(), retrievedData);
-    }
-
     @Test
     @MediumTest
     // Test sending data to the service and retrieving it back.
@@ -155,8 +43,8 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testRecordAndRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        HistogramRecordList expectedListProto =
-                HistogramRecordList.newBuilder().addRecords(recordProto).build();
+        byte[][] expectedData = new byte[][] {
+                recordProto.toByteArray(), RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -165,11 +53,10 @@ public class MetricsBridgeServiceTest {
             IMetricsBridgeService service =
                     IMetricsBridgeService.Stub.asInterface(helper.getBinder());
             service.recordMetrics(recordProto.toByteArray());
-            byte[] retrievedData = service.retrieveNonembeddedMetrics();
+            List<byte[]> retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
             Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                    expectedListProto.toByteArray(), retrievedData);
+                    expectedData, retrievedDataList.toArray());
         }
     }
 
@@ -183,8 +70,8 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testClearAfterRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        HistogramRecordList expectedListProto =
-                HistogramRecordList.newBuilder().addRecords(recordProto).build();
+        byte[][] expectedData = new byte[][] {
+                recordProto.toByteArray(), RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -193,40 +80,18 @@ public class MetricsBridgeServiceTest {
             IMetricsBridgeService service =
                     IMetricsBridgeService.Stub.asInterface(helper.getBinder());
             service.recordMetrics(recordProto.toByteArray());
-            byte[] retrievedData = service.retrieveNonembeddedMetrics();
+            List<byte[]> retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
+            Assert.assertNotNull("retrieved byte data from the service is null", retrievedDataList);
             Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                    expectedListProto.toByteArray(), retrievedData);
+                    expectedData, retrievedDataList.toArray());
 
             // Retrieve data a second time to make sure it has been cleared after the first call
-            retrievedData = service.retrieveNonembeddedMetrics();
+            retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertTrue(
-                    "metrics kept by the service hasn't been cleared", retrievedData.length == 0);
+            Assert.assertArrayEquals("metrics kept by the service hasn't been cleared",
+                    new byte[][] {RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD},
+                    retrievedDataList.toArray());
         }
     }
-
-    private static void writeProtoToFile(HistogramRecordList recordList, File file)
-            throws IOException {
-        FileOutputStream out = new FileOutputStream(file);
-        for (HistogramRecord record : recordList.getRecordsList()) {
-            record.writeDelimitedTo(out);
-        }
-        out.close();
-    }
-
-    private static HistogramRecordList readProtoFromFile(File file)
-            throws IOException, InvalidProtocolBufferException {
-        FileInputStream in = new FileInputStream(file);
-        HistogramRecordList.Builder listBuilder = HistogramRecordList.newBuilder();
-        HistogramRecord savedProto = HistogramRecord.parseDelimitedFrom(in);
-        while (savedProto != null) {
-            listBuilder.addRecords(savedProto);
-            savedProto = HistogramRecord.parseDelimitedFrom(in);
-        }
-        in.close();
-        return listBuilder.build();
-    }
-
 }

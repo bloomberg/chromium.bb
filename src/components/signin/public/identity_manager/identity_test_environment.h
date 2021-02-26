@@ -6,6 +6,8 @@
 #define COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -20,6 +22,10 @@ class FakeProfileOAuth2TokenService;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
+
+namespace chromeos {
+class AccountManagerFactory;
+}
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -44,6 +50,19 @@ class TestIdentityManagerObserver;
 // requirement.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
  public:
+  struct PendingRequest {
+    PendingRequest(CoreAccountId account_id,
+                   std::string client_id,
+                   std::string client_secret,
+                   OAuth2AccessTokenManager::ScopeSet scopes);
+    PendingRequest(const PendingRequest&);
+    ~PendingRequest();
+    CoreAccountId account_id;
+    std::string client_id;
+    std::string client_secret;
+    OAuth2AccessTokenManager::ScopeSet scopes;
+  };
+
   // Preferred constructor: constructs an IdentityManager object and its
   // dependencies internally. Cannot be used if the client of this class
   // is still interacting directly with those dependencies (e.g., if
@@ -124,6 +143,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Like MakeAccountAvailable(), but adds an "unconsented" primary account. See
   // ./README.md for the distinction between primary account and unconsented
   // primary account.
+  // TODO(crbug.com/1046746): Rename/Refactor |*PrimaryAccount*| functions to
+  // take |ConsentLevel| instead.
   AccountInfo MakeUnconsentedPrimaryAccountAvailable(const std::string& email);
 
   // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
@@ -272,6 +293,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns whether there is a access token request pending.
   bool IsAccessTokenRequestPending();
 
+  // Returns the pending access token requests.
+  std::vector<PendingRequest> GetPendingAccessTokenRequests();
+
   // Sets whether the list of accounts in Gaia cookie jar is fresh and does not
   // need to be updated.
   void SetFreshnessOfAccountsInGaiaCookie(bool accounts_are_fresh);
@@ -338,6 +362,37 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(IdentityManager* identity_manager,
                           SigninClient* signin_client);
 
+  // Shared constructor initialization logic.
+  void Initialize();
+
+  // Create an IdentityManager instance for tests.
+#if defined(OS_CHROMEOS)
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      chromeos::AccountManagerFactory* chromeos_account_manager_factory,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+#else
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+#endif
+
+  static std::unique_ptr<IdentityManager> FinishBuildIdentityManagerForTests(
+      IdentityManager::InitParameters&& init_params,
+      std::unique_ptr<AccountTrackerService> account_tracker_service,
+      std::unique_ptr<ProfileOAuth2TokenService> token_service,
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
+
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
@@ -384,17 +439,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
-
-  // Create an IdentityManager instance for tests.
-  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
-      SigninClient* signin_client,
-      PrefService* pref_service,
-      base::FilePath user_data_dir,
-      AccountConsistencyMethod account_consistency =
-          AccountConsistencyMethod::kDisabled);
-
-  // Shared constructor initialization logic.
-  void Initialize();
 
   base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_{this};
 

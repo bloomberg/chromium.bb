@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/rel_list.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -49,7 +50,6 @@ struct LinkLoadParameters;
 class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
                                           public LinkLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 
  public:
   HTMLLinkElement(Document&, const CreateElementFlags);
@@ -97,6 +97,13 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   DOMTokenList* sizes() const;
 
+  // IDL method.
+  DOMTokenList* resources() const;
+
+  const HashSet<KURL>& ValidResourceUrls() const {
+    return valid_resource_urls_;
+  }
+
   void ScheduleEvent();
 
   // From LinkLoaderClient
@@ -110,14 +117,21 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
                       FetchParameters::DeferOption,
                       ResourceClient*);
   bool IsAlternate() const {
-    return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate();
+    // TODO(crbug.com/1087043): Remove this if() condition once the feature has
+    // landed and no compat issues are reported.
+    bool not_explicitly_enabled =
+        !GetLinkStyle()->IsExplicitlyEnabled() ||
+        !RuntimeEnabledFeatures::LinkDisabledNewSpecBehaviorEnabled(
+            GetExecutionContext());
+    return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate() &&
+           not_explicitly_enabled;
   }
   bool ShouldProcessStyle() {
     return LinkResourceToProcess() && GetLinkStyle();
   }
   bool IsCreatedByParser() const { return created_by_parser_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   LinkStyle* GetLinkStyle() const;
@@ -168,6 +182,8 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   Member<RelList> rel_list_;
   LinkRelAttribute rel_attribute_;
   String scope_;
+  Member<DOMTokenList> resources_;
+  HashSet<KURL> valid_resource_urls_;
 
   bool created_by_parser_;
 };

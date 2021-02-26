@@ -141,7 +141,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
   aom_image_t *frame_to_encode;
 
   if (aom_codec_enc_init(&codec, encoder, cfg, flags))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
   if (aom_codec_control(&codec, AOME_SET_ENABLEAUTOALTREF, 0))
     die_codec(&codec, "Failed to turn off auto altref");
   if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 0))
@@ -254,7 +254,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   if (!writer) die("Failed to open %s for writing", outfile_name);
 
   if (aom_codec_enc_init(&codec, encoder, cfg, flags))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
   if (aom_codec_control(&codec, AOME_SET_ENABLEAUTOALTREF, 0))
     die_codec(&codec, "Failed to turn off auto altref");
   if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 0))

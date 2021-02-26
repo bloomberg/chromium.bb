@@ -22,8 +22,8 @@ _MANIFEST_MERGER_JARS = [
     os.path.join('common', 'common.jar'),
     os.path.join('sdk-common', 'sdk-common.jar'),
     os.path.join('sdklib', 'sdklib.jar'),
-    os.path.join('external', 'com', 'google', 'guava', 'guava', '27.1-jre',
-                 'guava-27.1-jre.jar'),
+    os.path.join('external', 'com', 'google', 'guava', 'guava', '28.1-jre',
+                 'guava-28.1-jre.jar'),
     os.path.join('external', 'kotlin-plugin-ij', 'Kotlin', 'kotlinc', 'lib',
                  'kotlin-stdlib.jar'),
     os.path.join('external', 'com', 'google', 'code', 'gson', 'gson', '2.8.5',
@@ -85,13 +85,15 @@ def main(argv):
   parser.add_argument(
       '--manifest-package',
       help='Package name of the merged AndroidManifest.xml.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(args.android_sdk_cmdline_tools)
 
   with build_utils.AtomicOutput(args.output) as output:
-    cmd = [
-        build_utils.JAVA_PATH,
+    cmd = build_utils.JavaCmd(args.warnings_as_errors) + [
         '-cp',
         classpath,
         _MANIFEST_MERGER_MAIN_CLASS,
@@ -123,11 +125,13 @@ def main(argv):
           '--property',
           'PACKAGE=' + package,
       ]
-      build_utils.CheckOutput(cmd,
-        # https://issuetracker.google.com/issues/63514300:
-        # The merger doesn't set a nonzero exit code for failures.
-        fail_func=lambda returncode, stderr: returncode != 0 or
-          build_utils.IsTimeStale(output.name, [root_manifest] + extras))
+      build_utils.CheckOutput(
+          cmd,
+          # https://issuetracker.google.com/issues/63514300:
+          # The merger doesn't set a nonzero exit code for failures.
+          fail_func=lambda returncode, stderr: returncode != 0 or build_utils.
+          IsTimeStale(output.name, [root_manifest] + extras),
+          fail_on_output=args.warnings_as_errors)
 
     # Check for correct output.
     _, manifest, _ = manifest_utils.ParseManifest(output.name)
@@ -137,8 +141,7 @@ def main(argv):
 
   if args.depfile:
     inputs = extras + classpath.split(':')
-    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs)
 
 
 if __name__ == '__main__':

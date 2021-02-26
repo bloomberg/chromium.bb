@@ -18,24 +18,6 @@ const gnPath = path.resolve(__dirname, '..', 'BUILD.gn');
 const gnFile = fs.readFileSync(gnPath, 'utf-8');
 const gnLines = gnFile.split('\n');
 
-function main() {
-  const errors = [
-    ...checkNonAutostartNonRemoteModules(),
-    ...checkAllDevToolsFiles(),
-    ...checkAllDevToolsModules(),
-    ...checkDevtoolsModuleEntrypoints(),
-  ];
-  if (errors.length) {
-    console.log('DevTools BUILD.gn checker detected errors!');
-    console.log(`There's an issue with: ${gnPath}`);
-    console.log(errors.join('\n'));
-    process.exit(1);
-  }
-  console.log('DevTools BUILD.gn checker passed');
-}
-
-main();
-
 /**
  * Ensures that generated module files are in the right list in BUILD.gn.
  * This is primarily to avoid remote modules from accidentally getting
@@ -52,7 +34,7 @@ function checkNonAutostartNonRemoteModules() {
     ];
   }
   const text = lines.join('\n');
-  const modules = manifestModules.filter(m => m.type !== 'autostart' && m.type !== 'remote').map(m => m.name);
+  const modules = manifestModules.filter(m => m.type !== 'autostart').map(m => m.name);
 
   const missingModules = modules.filter(m => !text.includes(`${m}/${m}_module.js`));
   if (missingModules.length) {
@@ -75,49 +57,24 @@ function checkNonAutostartNonRemoteModules() {
  * listed in BUILD.gn.
  */
 function checkAllDevToolsFiles() {
-  return checkGNVariable('all_devtools_files', moduleJSON => {
-    const scripts = moduleJSON.scripts || [];
+  return checkGNVariable('all_devtools_files', 'all_devtools_files', moduleJSON => {
     const resources = moduleJSON.resources || [];
     return [
       'module.json',
-      ...scripts,
       ...resources,
     ];
   });
 }
 
-function checkAllDevToolsModules() {
-  return checkGNVariable(
-      'all_devtools_modules',
-      (moduleJSON, folderName) => {
-        return (moduleJSON.modules || []).filter(fileName => {
-          return fileName !== `${folderName}.js` && fileName !== `${folderName}-legacy.js`;
-        });
-      },
-      buildGNPath => filename => {
-        const relativePath = path.normalize(`${buildGNPath}/${filename}`);
-        return `"${relativePath}",`;
-      });
-}
+function checkGNVariable(fileName, gnVariable, obtainFiles, obtainRelativePath) {
+  const filePath = path.resolve(__dirname, '..', `${fileName}.gni`);
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  const linesToCheck = fileContent.split('\n');
 
-function checkDevtoolsModuleEntrypoints() {
-  return checkGNVariable(
-      'devtools_module_entrypoints',
-      (moduleJSON, folderName) => {
-        return (moduleJSON.modules || []).filter(fileName => {
-          return fileName === `${folderName}.js` || fileName === `${folderName}-legacy.js`;
-        });
-      },
-      buildGNPath => filename => {
-        const relativePath = path.normalize(`${buildGNPath}/${filename}`);
-        return `"${relativePath}",`;
-      });
-}
-
-function checkGNVariable(gnVariable, obtainFiles, obtainRelativePath) {
   const errors = [];
-  const excludedFiles = ['axe.js', 'formatter_worker/', 'third_party/lighthouse/'].map(path.normalize);
-  const lines = selectGNLines(`${gnVariable} = [`, ']').map(path.normalize);
+  const excludedFiles =
+      ['axe.js', 'formatter_worker/', 'third_party/lighthouse/', 'third_party/i18n/'].map(path.normalize);
+  const lines = selectGNLines(`${gnVariable} = [`, ']', linesToCheck).map(path.normalize);
   if (!lines.length) {
     return [
       `Could not identify ${gnVariable} list in gn file`,
@@ -168,8 +125,8 @@ function checkGNVariable(gnVariable, obtainFiles, obtainRelativePath) {
   return errors;
 }
 
-function selectGNLines(startLine, endLine) {
-  const lines = gnLines.map(line => line.trim());
+function selectGNLines(startLine, endLine, linesToCheck = gnLines) {
+  const lines = linesToCheck.map(line => line.trim());
   const startIndex = lines.indexOf(startLine);
   if (startIndex === -1) {
     return [];
@@ -180,3 +137,19 @@ function selectGNLines(startLine, endLine) {
   }
   return lines.slice(startIndex + 1, endIndex);
 }
+
+function main() {
+  const errors = [
+    ...checkNonAutostartNonRemoteModules(),
+    ...checkAllDevToolsFiles(),
+  ];
+  if (errors.length) {
+    console.log('DevTools BUILD.gn checker detected errors!');
+    console.log(`There's an issue with: ${gnPath}`);
+    console.log(errors.join('\n'));
+    process.exit(1);
+  }
+  console.log('DevTools BUILD.gn checker passed');
+}
+
+main();

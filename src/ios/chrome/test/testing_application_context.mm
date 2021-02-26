@@ -11,7 +11,8 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/safe_browsing/core/features.h"
+#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
+#include "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -190,8 +191,6 @@ TestingApplicationContext::GetComponentUpdateService() {
 
 SafeBrowsingService* TestingApplicationContext::GetSafeBrowsingService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(
-      base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingAvailableOnIOS));
   if (!fake_safe_browsing_service_) {
     fake_safe_browsing_service_ =
         base::MakeRefCounted<FakeSafeBrowsingService>();
@@ -209,7 +208,16 @@ BrowserPolicyConnectorIOS*
 TestingApplicationContext::GetBrowserPolicyConnector() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(crbug.com/1055318): Determine what level of support is needed for
-  // unittesting and return a mock or fake here.
+  if (!browser_policy_connector_.get()) {
+    browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
+        base::BindRepeating(&BuildPolicyHandlerList, true));
+  }
+
+  return browser_policy_connector_.get();
+}
+
+BreadcrumbPersistentStorageManager*
+TestingApplicationContext::GetBreadcrumbPersistentStorageManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }

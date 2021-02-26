@@ -303,6 +303,7 @@ enum class DnsType : uint16_t {
   kTXT = 16,
   kAAAA = 28,
   kSRV = 33,
+  kOPT = 41,
   kNSEC = 47,
   kANY = 255,  // Only allowed for QTYPE
 };
@@ -319,6 +320,8 @@ inline std::ostream& operator<<(std::ostream& output, DnsType type) {
       return output << "AAAA";
     case DnsType::kSRV:
       return output << "SRV";
+    case DnsType::kOPT:
+      return output << "OPT";
     case DnsType::kNSEC:
       return output << "NSEC";
     case DnsType::kANY:
@@ -429,11 +432,31 @@ constexpr uint8_t kTXTEmptyRdata = 0;
 // RFC 6762 section 8.1 specifies that a probe should wait 250 ms between
 // subsequent probe queries.
 constexpr Clock::duration kDelayBetweenProbeQueries =
-    std::chrono::duration_cast<Clock::duration>(std::chrono::milliseconds{250});
+    Clock::to_duration(std::chrono::milliseconds(250));
 
 // RFC 6762 section 8.1 specifies that the probing phase should send out probe
 // requests 3 times before treating the probe as completed.
 constexpr int kProbeIterationCountBeforeSuccess = 3;
+
+// ============================================================================
+// OPT Pseudo-Record Constants
+// ============================================================================
+
+// For OPT records, the TTL field has been re-purposed as follows:
+//
+//                   +0 (MSB)                            +1 (LSB)
+//        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+//     0: |         EXTENDED-RCODE        |            VERSION            |
+//        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+//     2: | DO|                           Z                               |
+//        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+constexpr uint32_t kExtendedRcodeMask = 0xFF000000;
+constexpr int kExtendedRcodeShift = 24;
+constexpr uint32_t kVersionMask = 0x00FF0000;
+constexpr int kVersionShift = 16;
+constexpr uint32_t kDnssecOkBitMask = 0x00008000;
+constexpr uint8_t kVersionBadvers = 0x10;
 
 }  // namespace discovery
 }  // namespace openscreen

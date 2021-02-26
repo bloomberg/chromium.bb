@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">aftanmálsgrein</translation>
 <translation id="1281252709823657822">gluggi</translation>
 <translation id="1306460908038601864">Slökkt</translation>
+<translation id="1311894908970423688">Gildi verður að vera <ph name="VALUE_DATE_OR_TIME" />.</translation>
 <translation id="1335095011850992622">samstarfsaðilar</translation>
 <translation id="1342835525016946179">grein</translation>
 <translation id="1359897965706325498">borði</translation>
+<translation id="145015347812617860"><ph name="COUNT" /> atriði</translation>
+<translation id="1480676835519562650">hægt að velja mörg atriði, <ph name="SELECTED" /> af <ph name="COUNT" /> valin.</translation>
 <translation id="1589122976691792535">svæði</translation>
 <translation id="1591562245178063882">Þessi mánuður</translation>
 <translation id="1637811476055996098">Veldu skrár</translation>
 <translation id="1650423536718072820">útdregin tilvitnun</translation>
+<translation id="1681022320378710418">núverandi tími</translation>
+<translation id="1727839386348365796">Dropateljari</translation>
 <translation id="1727886345390570319">fela valmynd skjátexta</translation>
 <translation id="1729654308190250600">Sláðu inn gilt netfang.</translation>
 <translation id="1758486001363313524">Annað...</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">viðvörunargluggi</translation>
 <translation id="1821985195704844674">trjátafla</translation>
 <translation id="1822429046913737220">f.h./e.h.</translation>
+<translation id="1823704031293214298">síðufótur</translation>
 <translation id="1832974991323546415">spila í fjartengdu tæki</translation>
 <translation id="190587075670221089">eyðing</translation>
 <translation id="1907737156431278478">dæmi</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033">Vika <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Hljóðrás <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">gátreitur</translation>
+<translation id="2307576640803031502">á lista, atriði <ph name="INDEX" /> af <ph name="COUNT" /></translation>
 <translation id="2311842470354187719">síðuskil</translation>
 <translation id="2335594187091864976">val á dagsetningu og tíma</translation>
 <translation id="2393030564806080191">Sextándakerfisgildi litar</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">Dagur</translation>
 <translation id="2507943997699731163">Fylltu þennan reit út.</translation>
 <translation id="2508569020611168319">flipalisti</translation>
+<translation id="2530182415807757784">hægt að velja mörg atriði, ekkert valið.</translation>
 <translation id="2561842179657104141">sýna fleiri stjórntæki miðlaefnis</translation>
 <translation id="2572483411312390101">spila</translation>
 <translation id="2613802280814924224">Sláðu inn gilt gildi. Nálægasta gilda gildi er <ph name="VALID_VALUE" />.</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">Sláðu inn vefslóð.</translation>
 <translation id="3175736971608411871">teljari</translation>
 <translation id="3199563858620722075">fellivalmynd</translation>
+<translation id="3220661731597678625">núverandi skref</translation>
 <translation id="3329013043687509092">Mettun</translation>
 <translation id="3450233048674729344">Gildið þarf að vera minna en eða jafnt og <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">skilgreining</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">Sýna fyrri mánuð</translation>
 <translation id="421884353938374759">litaval</translation>
 <translation id="4248100235867064564">valmyndarstika</translation>
+<translation id="4293574643247337246">síðuhaus</translation>
 <translation id="4360991593054037559">Sláðu inn gilt gildi. Næstu tvö gildu gildi eru <ph name="VALID_VALUE_LOW" /> og <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4384249794467006333">Þessi mynd er ekki merkt. Opnaðu valmyndina „Fleiri valkostir“ efst til hægri til að fá lýsingar á myndum.</translation>
 <translation id="4384583879834880242">Spurt og svarað</translation>
-<translation id="4413860115965805769">valmyndarhnappur</translation>
 <translation id="4444765639179266822">Þarna virðist standa: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">tilvísun í orðalista</translation>
 <translation id="4522570452068850558">Upplýsingar</translation>
+<translation id="4576178047100686001">Þessi mynd er ekki merkt. Opnaðu valmyndina „Fleiri valkostir“ efst til vinstri til að fá lýsingar á myndum.</translation>
 <translation id="4597532268155981612">eyðublað</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Hlutinn sem kemur á eftir „<ph name="ATSIGN" />“ ætti ekki að innihalda táknið „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">myndskeið</translation>
 <translation id="479989351350248267">leita</translation>
 <translation id="4812940957355064477">Sláðu inn tölu.</translation>
+<translation id="4912200001568447310">núverandi atriði</translation>
 <translation id="4912536737030637138">færsla í heimildaskrá</translation>
 <translation id="4915360478455618802">Sýna tímaval</translation>
 <translation id="492244087561876220">athugasemd</translation>
@@ -140,6 +152,7 @@
 <translation id="5334352251556557839">Ekki er hægt að spila efni.</translation>
 <translation id="537648784377940524">Lágmarksdagsetning (<ph name="MIN_DATE_OR_TIME" />) verður að vera á undan hámarksdagsetningu (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">mynd</translation>
+<translation id="5425179576310518467">núverandi dagsetning</translation>
 <translation id="5453733299334684579">trjáatriði</translation>
 <translation id="5466621249238537318">Veldu eina eða fleiri skrár.</translation>
 <translation id="5468998798572797635">hætta að nota allan skjáinn</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">fleiri valkostir</translation>
 <translation id="576709008726043716">inngangur</translation>
 <translation id="57838592816432529">Þagga</translation>
+<translation id="5860033963881614850">Slökkt</translation>
 <translation id="588258955323874662">Allur skjárinn</translation>
 <translation id="5888666972993069672">Sendir út á <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">leitarreitur</translation>
+<translation id="5916664084637901428">Kveikt</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
 <translation id="5966707198760109579">Vika</translation>
 <translation id="5987525920412732405">snúningshnappur</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">mælir</translation>
 <translation id="6166809985690652833">eftirmáli</translation>
 <translation id="6209276755895393898">Virðist vera: <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">núverandi síða</translation>
 <translation id="6213469881011901533">orðalisti</translation>
 <translation id="6281588256137006900">Ljósleiki</translation>
 <translation id="6281763101136022427">vefslóð</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">Hreinsa</translation>
 <translation id="668171684555832681">Annað...</translation>
 <translation id="6692633176391053278">skrefastýring</translation>
+<translation id="6709093583001123835">Gildi verður að vera <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Léleg spilunargæði</translation>
 <translation id="6755330956360078551">ábending</translation>
 <translation id="6790428901817661496">Spila</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">Lengdu þennan texta í <ph name="MIN_CHARACTERS" /> stafi eða meira (sem stendur notarðu einn staf).</translation>
 <translation id="7034405885550056553">tillaga</translation>
 <translation id="709897737746224366">Fylgdu umbeðnu sniði.</translation>
+<translation id="7102274145889307184">núverandi staðsetning</translation>
 <translation id="7118469954320184356">Engin lýsing tiltæk.</translation>
 <translation id="7139483182332611405">formáli</translation>
 <translation id="7214187073215825913">upplýsingar um efni</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" />, hefst <ph name="WEEK_START_DATE" /></translation>
 <translation id="916607977885256133">Mynd í mynd</translation>
 <translation id="9168329111483466115">neðanmálsgrein</translation>
+<translation id="945780513535800434">Merkt að hluta</translation>
 <translation id="954003015749068518">skoða mynd í mynd</translation>
 <translation id="966787709310836684">valmynd</translation>
 </translationbundle>

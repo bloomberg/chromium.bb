@@ -6,17 +6,15 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import androidx.annotation.Nullable;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,19 +27,25 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -64,23 +68,20 @@ public class CustomTabTabPersistencePolicyTest {
     private AdvancedMockContext mAppContext;
     private SequencedTaskRunner mSequencedTaskRunner =
             PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE);
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         // CustomTabsConnection needs a true context, not the mock context set below.
-        CustomTabsConnection.getInstance();
+        TestThreadUtils.runOnUiThreadBlocking(() -> CustomTabsConnection.getInstance());
 
         mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                       .getTargetContext()
                                                       .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
 
-        mMockDirectory = new TestTabModelDirectory(
-                mAppContext, "CustomTabTabPersistencePolicyTest",
-                CustomTabTabPersistencePolicy.SAVED_STATE_DIRECTORY);
-        TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
+        mMockDirectory = new TestTabModelDirectory(mAppContext, "CustomTabTabPersistencePolicyTest",
+                TabStateDirectory.CUSTOM_TABS_DIRECTORY);
+        TabStateDirectory.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
     }
 
     @After
@@ -159,7 +160,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testExistingMetadataFileDeletedIfNoRestore() throws Exception {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(7, false);
@@ -182,48 +183,43 @@ public class CustomTabTabPersistencePolicyTest {
     @Test
     @Feature("TabPersistentStore")
     @SmallTest
+    @UiThreadTest
     public void testGettingTabAndTaskIds() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
+        Set<Integer> tabIds = new HashSet<>();
+        Set<Integer> taskIds = new HashSet<>();
+        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+        Assert.assertThat(tabIds, Matchers.emptyIterable());
+        Assert.assertThat(taskIds, Matchers.emptyIterable());
+
+        tabIds.clear();
+        taskIds.clear();
+
+        CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
+        ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
+
+        CustomTabActivity cct2 = buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
+        ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
+
+        // Add a tabbed mode activity to ensure that its IDs are not included in the
+        // returned CCT ID sets.
+        final TabModelSelectorImpl tabbedSelector =
+                buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
+        ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
             @Override
-            public void run() {
-                Set<Integer> tabIds = new HashSet<>();
-                Set<Integer> taskIds = new HashSet<>();
-                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-                Assert.assertThat(tabIds, Matchers.emptyIterable());
-                Assert.assertThat(taskIds, Matchers.emptyIterable());
-
-                tabIds.clear();
-                taskIds.clear();
-
-                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
-                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
-
-                CustomTabActivity cct2 =
-                        buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
-                ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
-
-                // Add a tabbed mode activity to ensure that its IDs are not included in the
-                // returned CCT ID sets.
-                final TabModelSelectorImpl tabbedSelector =
-                        buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
-                ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
-                    @Override
-                    public int getTaskId() {
-                        return 888;
-                    }
-
-                    @Override
-                    public TabModelSelector getTabModelSelector() {
-                        return tabbedSelector;
-                    }
-                };
-                ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
-
-                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-                Assert.assertThat(tabIds, Matchers.containsInAnyOrder(4, 8, 9, 458, 9878));
-                Assert.assertThat(taskIds, Matchers.containsInAnyOrder(1, 5));
+            public int getTaskId() {
+                return 888;
             }
-        });
+
+            @Override
+            public TabModelSelector getTabModelSelector() {
+                return tabbedSelector;
+            }
+        };
+        ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
+
+        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+        Assert.assertThat(tabIds, Matchers.containsInAnyOrder(4, 8, 9, 458, 9878));
+        Assert.assertThat(taskIds, Matchers.containsInAnyOrder(1, 5));
     }
 
     /**
@@ -233,7 +229,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testCleanupTask() throws Throwable {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, false);
@@ -256,19 +252,16 @@ public class CustomTabTabPersistencePolicyTest {
         Assert.assertThat(filesToDelete.get(), Matchers.emptyIterable());
 
         // Create an unreferenced tab state file and ensure it is marked for deletion.
-        File tab999File = TabState.getTabStateFile(stateDirectory, 999, false);
+        File tab999File = TabStateFileManager.getTabStateFile(stateDirectory, 999, false);
         Assert.assertTrue(tab999File.createNewFile());
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(1);
         Assert.assertThat(filesToDelete.get(), Matchers.containsInAnyOrder(tab999File.getName()));
 
         // Reference the tab state file and ensure it is no longer marked for deletion.
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
-                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
+            ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
         });
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(2);
@@ -293,11 +286,11 @@ public class CustomTabTabPersistencePolicyTest {
         } finally {
             StreamUtil.closeQuietly(fos);
         }
-        File tab111File = TabState.getTabStateFile(stateDirectory, 111, false);
+        File tab111File = TabStateFileManager.getTabStateFile(stateDirectory, 111, false);
         Assert.assertTrue(tab111File.createNewFile());
-        File tab222File = TabState.getTabStateFile(stateDirectory, 222, false);
+        File tab222File = TabStateFileManager.getTabStateFile(stateDirectory, 222, false);
         Assert.assertTrue(tab222File.createNewFile());
-        File tab333File = TabState.getTabStateFile(stateDirectory, 333, false);
+        File tab333File = TabStateFileManager.getTabStateFile(stateDirectory, 333, false);
         Assert.assertTrue(tab333File.createNewFile());
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(3);
@@ -320,7 +313,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testMetadataTimestampRefreshed() throws Exception {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, true);
@@ -416,8 +409,7 @@ public class CustomTabTabPersistencePolicyTest {
 
             @Override
             public File getOrCreateStateDirectory() {
-                return new File(
-                        TabPersistentStore.getOrCreateBaseStateDirectory(), "cct_tests_zor");
+                return new File(TabStateDirectory.getOrCreateBaseStateDirectory(), "cct_tests_zor");
             }
 
             @Override
@@ -463,8 +455,13 @@ public class CustomTabTabPersistencePolicyTest {
 
         CustomTabActivity activity = new CustomTabActivity();
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
-        TabModelSelectorImpl selector = new TabModelSelectorImpl(
-                activity, activity, buildTestPersistencePolicy(), false, false, false);
+
+        NextTabPolicySupplier nextTabPolicySupplier = () -> NextTabPolicy.LOCATIONAL;
+
+        TabModelSelectorImpl selector = new TabModelSelectorImpl(activity,
+                activity::getWindowAndroid, activity, buildTestPersistencePolicy(),
+                new ChromeTabModelFilterFactory(), nextTabPolicySupplier,
+                AsyncTabParamsManagerSingleton.getInstance(), false, false, false);
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         return selector;

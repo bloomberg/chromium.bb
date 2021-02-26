@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_remote_gatt_service.h"
 
@@ -135,6 +136,11 @@ std::string FakePeripheral::GetAddress() const {
   return address_;
 }
 
+device::BluetoothDevice::AddressType FakePeripheral::GetAddressType() const {
+  NOTREACHED();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 device::BluetoothDevice::VendorIDSource FakePeripheral::GetVendorIDSource()
     const {
   NOTREACHED();
@@ -211,13 +217,13 @@ bool FakePeripheral::ExpectingConfirmation() const {
   return false;
 }
 
-void FakePeripheral::GetConnectionInfo(const ConnectionInfoCallback& callback) {
+void FakePeripheral::GetConnectionInfo(ConnectionInfoCallback callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::SetConnectionLatency(ConnectionLatency connection_latency,
-                                          const base::Closure& callback,
-                                          const ErrorCallback& error_callback) {
+                                          base::OnceClosure callback,
+                                          ErrorCallback error_callback) {
   NOTREACHED();
 }
 
@@ -247,27 +253,27 @@ void FakePeripheral::CancelPairing() {
   NOTREACHED();
 }
 
-void FakePeripheral::Disconnect(const base::Closure& callback,
-                                const ErrorCallback& error_callback) {
+void FakePeripheral::Disconnect(base::OnceClosure callback,
+                                ErrorCallback error_callback) {
   NOTREACHED();
 }
 
-void FakePeripheral::Forget(const base::Closure& callback,
-                            const ErrorCallback& error_callback) {
+void FakePeripheral::Forget(base::OnceClosure callback,
+                            ErrorCallback error_callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::ConnectToService(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::ConnectToServiceInsecurely(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTREACHED();
 }
 
@@ -353,15 +359,14 @@ void FakePeripheral::DispatchDiscoveryResponse() {
 void FakePeripheral::DisconnectGatt() {
 }
 
-#if defined(OS_CHROMEOS)
-void FakePeripheral::ExecuteWrite(
-    const base::Closure& callback,
-    const ExecuteWriteErrorCallback& error_callback) {
+#if BUILDFLAG(IS_ASH)
+void FakePeripheral::ExecuteWrite(base::OnceClosure callback,
+                                  ExecuteWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
-void FakePeripheral::AbortWrite(const base::Closure& callback,
-                                const AbortWriteErrorCallback& error_callback) {
+void FakePeripheral::AbortWrite(base::OnceClosure callback,
+                                AbortWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 #endif

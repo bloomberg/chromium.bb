@@ -6,7 +6,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -16,7 +16,9 @@
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/connection_holder.h"
@@ -46,7 +48,12 @@ namespace extensions {
 
 class AutotestPrivateApiTest : public ExtensionApiTest {
  public:
-  AutotestPrivateApiTest() = default;
+  AutotestPrivateApiTest() {
+    // SplitSettingsSync makes an untitled Play Store icon appear in the shelf
+    // due to app pin syncing code. Sync isn't relevant to this test, so skip
+    // pinned app sync. https://crbug.com/1085597
+    SkipPinnedAppsFromSyncForTest();
+  }
   ~AutotestPrivateApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -235,8 +242,7 @@ class AutotestPrivateWithPolicyApiTest : public AutotestPrivateApiTest {
     policy::PolicyMap policy;
     policy.Set(policy::key::kAllowDinosaurEasterEgg,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
     provider_.UpdateChromePolicy(policy);
     base::RunLoop().RunUntilIdle();
   }
@@ -325,6 +331,25 @@ class AutotestPrivateStartStopTracing : public AutotestPrivateApiTest {
 IN_PROC_BROWSER_TEST_F(AutotestPrivateStartStopTracing, StartStopTracing) {
   ASSERT_TRUE(
       RunComponentExtensionTestWithArg("autotest_private", "startStopTracing"))
+      << message_;
+}
+
+class AutotestPrivateSystemWebAppsTest : public AutotestPrivateApiTest {
+ public:
+  AutotestPrivateSystemWebAppsTest() {
+    installation_ =
+        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
+            true);
+  }
+  ~AutotestPrivateSystemWebAppsTest() override = default;
+
+ private:
+  std::unique_ptr<web_app::TestSystemWebAppInstallation> installation_;
+};
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateSystemWebAppsTest, SystemWebApps) {
+  ASSERT_TRUE(
+      RunComponentExtensionTestWithArg("autotest_private", "systemWebApps"))
       << message_;
 }
 

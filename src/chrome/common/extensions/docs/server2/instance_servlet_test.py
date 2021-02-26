@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import unittest
 
 from instance_servlet import InstanceServlet
@@ -20,15 +21,13 @@ class _TestDelegate(InstanceServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateGithubFileSystemProvider(self, object_store_creator):
-    return GithubFileSystemProvider.ForEmpty()
-
 class InstanceServletTest(unittest.TestCase):
   '''Tests that if the file systems underlying the docserver's data fail,
   the instance servlet still returns 404s or 301s with a best-effort.
   It should never return a 500 (i.e. crash).
   '''
 
+  @unittest.skipIf(os.name == 'nt', "crbug.com/1114884")
   @DisableLogging('warning')
   def testHostFileSystemNotAccessed(self):
     delegate = _TestDelegate(FailOnAccessFileSystem)

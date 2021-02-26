@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -22,10 +21,7 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
  public:
   PermissionDelegationBrowserTest()
       : geolocation_overrider_(
-            std::make_unique<device::ScopedGeolocationOverrider>(0, 0)) {
-    scoped_feature_list_.InitAndEnableFeature(
-        permissions::features::kPermissionDelegation);
-  }
+            std::make_unique<device::ScopedGeolocationOverrider>(0, 0)) {}
 
   ~PermissionDelegationBrowserTest() override = default;
 
@@ -73,7 +69,6 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
       mock_permission_prompt_factory_;
   std::unique_ptr<net::EmbeddedTestServer> https_embedded_test_server_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionDelegationBrowserTest);
 };

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -76,11 +76,11 @@ struct AccessTokenInfo;
 //       // Choose the mode in which to fetch the access token:
 //       // see AccessTokenFetcher::Mode below for definitions.
 //       auto mode =
-//         signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable;
+//         PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable;
 
 //       // Create the fetcher.
 //       access_token_fetcher_ =
-//           std::make_unique<PrimaryAccountAccessTokenFetcher(
+//           std::make_unique<PrimaryAccountAccessTokenFetcher>(
 //               /*consumer_name=*/"MyClass",
 //               identity_manager_,
 //               scopes,
@@ -91,7 +91,7 @@ struct AccessTokenInfo;
 //                              mode);
 //
 //     }
-//     MyClass::OnAccessTokenRequestCompleted(
+//     void MyClass::OnAccessTokenRequestCompleted(
 //         GoogleServiceAuthError error, AccessTokenInfo access_token_info) {
 //       // It is safe to destroy |access_token_fetcher_| from this callback.
 //       access_token_fetcher_.reset();
@@ -202,8 +202,8 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   // code.
   AccessTokenFetcher::TokenCallback callback_;
 
-  ScopedObserver<IdentityManager, IdentityManager::Observer>
-      identity_manager_observer_{this};
+  base::ScopedObservation<IdentityManager, IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   // Internal fetcher that does the actual access token request.
   std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;

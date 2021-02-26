@@ -25,7 +25,15 @@ bool GpuMemoryBufferTracker::Init(const gfx::Size& dimensions,
                  << VideoPixelFormatToString(format);
     return false;
   }
-  buffer_ = buffer_factory_.CreateGpuMemoryBuffer(dimensions, *gfx_format);
+  // There's no consumer information here to determine the precise buffer usage,
+  // so we try the usage flag that covers all use cases.
+  // JPEG capture buffer is backed by R8 pixel buffer.
+  const gfx::BufferUsage usage =
+      *gfx_format == gfx::BufferFormat::R_8
+          ? gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE
+          : gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
+  buffer_ =
+      buffer_factory_.CreateGpuMemoryBuffer(dimensions, *gfx_format, usage);
   if (!buffer_) {
     NOTREACHED() << "Failed to create GPU memory buffer";
     return false;
@@ -64,7 +72,19 @@ mojo::ScopedSharedBufferHandle GpuMemoryBufferTracker::DuplicateAsMojoBuffer() {
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferTracker::GetGpuMemoryBufferHandle() {
   DCHECK(buffer_);
-  return buffer_->CloneHandle();
+  // Overriding the GpuMemoryBuffer id to an invalid id to avoid buffer
+  // collision in GpuMemoryBufferFactoryNativePixmap when we pass the handle
+  // to a different process. (crbug.com/993265)
+  //
+  // This will force the GPU process to look up the real native pixmap handle
+  // through the DMA-buf fds in [1] when creating SharedImage, instead of
+  // re-using a wrong pixmap handle in the cache.
+  //
+  // [1]: https://tinyurl.com/yymtv22y
+  constexpr int kInvalidId = -1;
+  gfx::GpuMemoryBufferHandle handle = buffer_->CloneHandle();
+  handle.id = gfx::GpuMemoryBufferId(kInvalidId);
+  return handle;
 }
 
 uint32_t GpuMemoryBufferTracker::GetMemorySizeInBytes() {

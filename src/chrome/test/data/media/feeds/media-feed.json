@@ -31,8 +31,7 @@
           "userInteractionCount": "4"
         }
       ],
-      "isFamilyFriendly": "https://schema.org/True",
-      "name": "Anatomy of a Web Media Experience",
+      "name": "Anatomy of a Web Media Experience 😊",
       "potentialAction": {
         "@type": "WatchAction",
         "target": "https://www.youtube.com/watch?v=lXm6jOQLe1Y"
@@ -427,9 +426,13 @@
       }
     }]
   },
-  "additionalProperty": {
+  "additionalProperty": [{
     "@type": "PropertyValue",
     "name": "associatedOrigin",
-    "value": ["https://www.github.com"]
-  }
+    "value": ["%s"]
+  }, {
+    "@type": "PropertyValue",
+    "name": "cookieNameFilter",
+    "value": "TEST"
+  }]
 }

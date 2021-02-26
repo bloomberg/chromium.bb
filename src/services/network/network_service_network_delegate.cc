@@ -11,16 +11,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/monitor.h"
+#include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_proxy_delegate.h"
 #include "services/network/pending_callback_chain.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 
@@ -56,12 +57,12 @@ void NetworkServiceNetworkDelegate::MaybeTruncateReferrer(
     const GURL& effective_url) {
   if (!enable_referrers_) {
     request->SetReferrer(std::string());
-    request->set_referrer_policy(net::URLRequest::NO_REFERRER);
+    request->set_referrer_policy(net::ReferrerPolicy::NO_REFERRER);
     return;
   }
 
   if (base::FeatureList::IsEnabled(
-          features::kCapReferrerToOriginOnCrossOrigin)) {
+          net::features::kCapReferrerToOriginOnCrossOrigin)) {
     url::Origin destination_origin = url::Origin::Create(effective_url);
     url::Origin source_origin = url::Origin::Create(GURL(request->referrer()));
     if (!destination_origin.IsSameOriginWith(source_origin))
@@ -186,7 +187,6 @@ void NetworkServiceNetworkDelegate::OnPACScriptError(
 
 bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list,
     bool allowed_from_caller) {
   bool allowed =
       allowed_from_caller &&
@@ -194,9 +194,7 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
           ->cookie_settings()
           .IsCookieAccessAllowed(request.url(),
                                  request.site_for_cookies().RepresentativeUrl(),
-                                 request.isolation_info()
-                                     .network_isolation_key()
-                                     .GetTopFrameOrigin());
+                                 request.isolation_info().top_frame_origin());
 
   if (!allowed)
     return false;

@@ -27,8 +27,6 @@ private:
 
     String getTypeName(const Type& type) override;
 
-    void writeBinaryExpression(const BinaryExpression& b, Precedence parentPrecedence) override;
-
     void writeFunctionCall(const FunctionCall& c) override;
 
     void writeIntLiteral(const IntLiteral& i) override;
@@ -37,6 +35,8 @@ private:
 
     void writeIfStatement(const IfStatement& s) override;
 
+    void writeReturnStatement(const ReturnStatement& r) override;
+
     void writeSwitchStatement(const SwitchStatement& s) override;
 
     void writeFunction(const FunctionDefinition& f) override;
@@ -44,11 +44,12 @@ private:
     void writeProgramElement(const ProgramElement& p) override;
 
     PipelineStageArgs* fArgs;
+    bool fCastReturnsToHalf = false;
 
-    typedef GLSLCodeGenerator INHERITED;
+    using INHERITED = GLSLCodeGenerator;
 };
 
-}
+}  // namespace SkSL
 
 #endif
 

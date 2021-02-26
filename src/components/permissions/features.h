@@ -13,9 +13,18 @@ namespace features {
 extern const base::Feature kBlockPromptsIfDismissedOften;
 extern const base::Feature kBlockPromptsIfIgnoredOften;
 extern const base::Feature kBlockRepeatedNotificationPermissionPrompts;
-extern const base::Feature kPermissionDelegation;
+extern const base::Feature kOneTimeGeolocationPermission;
+extern const base::Feature kPermissionChip;
+extern const base::Feature kPermissionPredictionServiceUseUrlOverride;
 
 }  // namespace features
+namespace feature_params {
+
+extern const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways;
+extern const base::FeatureParam<std::string>
+    kPermissionPredictionServiceUrlOverride;
+
+}  // namespace feature_params
 }  // namespace permissions
 
 #endif  // COMPONENTS_PERMISSIONS_FEATURES_H_

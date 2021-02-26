@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.moveActivityToFront;
@@ -23,15 +25,16 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -44,8 +47,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
 /** Tests for Multi-window related behavior in grid tab switcher. */
@@ -61,19 +62,13 @@ public class TabSwitcherMultiWindowTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
-
     @Before
     public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
 
     @Test
@@ -241,6 +236,38 @@ public class TabSwitcherMultiWindowTest {
         verifyTabStripFaviconCount(cta1, 3);
         verifyTabModelTabCount(cta1, 3, 3);
         verifyTabModelTabCount(cta2, 2, 2);
+    }
+
+    @Test
+    @MediumTest
+    @TargetApi(Build.VERSION_CODES.N)
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+        ChromeFeatureList.TAB_REPARENTING})
+    public void testMoveLastIncognitoTab() {
+        // clang-format on
+        // Initially, we have 1 normal tab and 1 incognito tab in cta1.
+        final ChromeTabbedActivity cta1 = mActivityTestRule.getActivity();
+        createTabs(cta1, false, 1);
+        createTabs(cta1, true, 1);
+        verifyTabModelTabCount(cta1, 1, 1);
+
+        // Move the incognito tab to cta2.
+        assertTrue(cta1.getTabModelSelector().getCurrentModel().isIncognito());
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(), cta1,
+                org.chromium.chrome.R.id.move_to_other_window_menu_id);
+        final ChromeTabbedActivity cta2 = waitForSecondChromeTabbedActivity();
+
+        assertThat(cta1.getTabModelSelector()
+                           .getTabModelFilterProvider()
+                           .getTabModelFilter(true)
+                           .getCount(),
+                is(0));
+        assertThat(cta2.getTabModelSelector()
+                           .getTabModelFilterProvider()
+                           .getTabModelFilter(true)
+                           .getCount(),
+                is(1));
     }
 
     private void moveTabsToOtherWindow(ChromeTabbedActivity cta, int number) {

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -38,7 +38,7 @@ gfx::ImageSkia CreateEnclosedFaviconImage(gfx::Size size,
   // Create a bitmap.
   SkBitmap result;
   result.allocN32Pixels(size.width(), size.height(), false);
-  SkCanvas canvas(result);
+  SkCanvas canvas(result, SkSurfaceProps{});
   canvas.clear(SK_ColorTRANSPARENT);
 
   // Draw the favicon image into the center of result image. If the favicon is

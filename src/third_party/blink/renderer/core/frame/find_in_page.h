@@ -36,7 +36,8 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
                     bool wrap_within_frame,
                     bool* active_now = nullptr);
 
-  void SetTickmarks(const WebVector<WebRect>&);
+  void SetTickmarks(const WebElement& target,
+                    const WebVector<WebRect>& tickmarks);
 
   int FindMatchMarkersVersion() const;
 
@@ -93,7 +94,7 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
 
   void Dispose();
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
   }

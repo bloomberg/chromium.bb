@@ -6,12 +6,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -64,8 +63,8 @@ void RequestProxyResolvingSocketFactory(
     base::WeakPtr<gcm::GCMProfileService> service,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                                 profile, service, std::move(receiver)));
 }
 
@@ -84,11 +83,10 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
-      std::unique_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}))),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      std::unique_ptr<gcm::GCMClientFactory>(
+          new gcm::FakeGCMClientFactory(content::GetUIThreadTaskRunner({}),
+                                        content::GetIOThreadTaskRunner({}))),
+      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}),
       blocking_task_runner);
 }
 
@@ -111,12 +109,12 @@ class GCMProfileServiceTest : public testing::Test {
   void UnregisterAndWaitForCompletion();
   void SendAndWaitForCompletion(const OutgoingMessage& message);
 
-  void RegisterCompleted(const base::Closure& callback,
+  void RegisterCompleted(base::OnceClosure callback,
                          const std::string& registration_id,
                          GCMClient::Result result);
-  void UnregisterCompleted(const base::Closure& callback,
+  void UnregisterCompleted(base::OnceClosure callback,
                            GCMClient::Result result);
-  void SendCompleted(const base::Closure& callback,
+  void SendCompleted(base::OnceClosure callback,
                      const std::string& message_id,
                      GCMClient::Result result);
 
@@ -145,11 +143,10 @@ class GCMProfileServiceTest : public testing::Test {
 };
 
 GCMProfileServiceTest::GCMProfileServiceTest()
-    : gcm_profile_service_(NULL),
+    : gcm_profile_service_(nullptr),
       gcm_app_handler_(new FakeGCMAppHandler),
       registration_result_(GCMClient::UNKNOWN_ERROR),
-      send_result_(GCMClient::UNKNOWN_ERROR) {
-}
+      send_result_(GCMClient::UNKNOWN_ERROR) {}
 
 GCMProfileServiceTest::~GCMProfileServiceTest() {
 }
@@ -211,28 +208,26 @@ void GCMProfileServiceTest::SendAndWaitForCompletion(
 }
 
 void GCMProfileServiceTest::RegisterCompleted(
-     const base::Closure& callback,
-     const std::string& registration_id,
-     GCMClient::Result result) {
+    base::OnceClosure callback,
+    const std::string& registration_id,
+    GCMClient::Result result) {
   registration_id_ = registration_id;
   registration_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void GCMProfileServiceTest::UnregisterCompleted(
-    const base::Closure& callback,
-    GCMClient::Result result) {
+void GCMProfileServiceTest::UnregisterCompleted(base::OnceClosure callback,
+                                                GCMClient::Result result) {
   unregistration_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void GCMProfileServiceTest::SendCompleted(
-    const base::Closure& callback,
-    const std::string& message_id,
-    GCMClient::Result result) {
+void GCMProfileServiceTest::SendCompleted(base::OnceClosure callback,
+                                          const std::string& message_id,
+                                          GCMClient::Result result) {
   send_message_id_ = message_id;
   send_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 TEST_F(GCMProfileServiceTest, RegisterAndUnregister) {

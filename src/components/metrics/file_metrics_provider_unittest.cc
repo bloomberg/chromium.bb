@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
@@ -74,7 +75,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
             base::StatisticsRecorder::CreateTemporaryForTesting()),
         prefs_(new TestingPrefServiceSimple) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FileMetricsProvider::RegisterPrefs(prefs_->registry(), kMetricsName);
+    FileMetricsProvider::RegisterSourcePrefs(prefs_->registry(), kMetricsName);
     FileMetricsProvider::SetTaskRunnerForTesting(task_runner_);
   }
 

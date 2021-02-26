@@ -17,6 +17,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-forward.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -43,12 +45,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final
                       const GURL& request_url);
   ~URLLoaderClientImpl() override;
 
-  // Sets |is_deferred_|. From now, the received messages are not dispatched
-  // to clients until UnsetDefersLoading is called.
-  void SetDefersLoading();
-
-  // Unsets |is_deferred_|.
-  void UnsetDefersLoading();
+  // Set the defer status. If loading is deferred, received messages are not
+  // dispatched to clients until it is set not deferred.
+  void SetDefersLoading(blink::WebURLLoader::DeferType value);
 
   // Dispatches the messages received after SetDefersLoading is called.
   void FlushDeferredMessages();
@@ -76,7 +75,16 @@ class CONTENT_EXPORT URLLoaderClientImpl final
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason reason);
+  bool IsDeferredWithBackForwardCache() {
+    return deferred_state_ ==
+           blink::WebURLLoader::DeferType::kDeferredWithBackForwardCache;
+  }
+
+  const GURL& last_loaded_url() const { return last_loaded_url_; }
+
  private:
+  class BodyBuffer;
   class DeferredMessage;
   class DeferredOnReceiveResponse;
   class DeferredOnReceiveRedirect;
@@ -89,12 +97,19 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   void StoreAndDispatch(std::unique_ptr<DeferredMessage> message);
   void OnConnectionClosed();
 
+  void EvictFromBackForwardCacheDueToTimeout();
+  void StopBackForwardCacheEvictionTimer();
+
   std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
+  std::unique_ptr<BodyBuffer> body_buffer_;
+  base::OneShotTimer back_forward_cache_eviction_timer_;
+  base::TimeDelta back_forward_cache_timeout_;
   const int request_id_;
   bool has_received_response_head_ = false;
   bool has_received_response_body_ = false;
   bool has_received_complete_ = false;
-  bool is_deferred_ = false;
+  blink::WebURLLoader::DeferType deferred_state_ =
+      blink::WebURLLoader::DeferType::kNotDeferred;
   int32_t accumulated_transfer_size_diff_during_deferred_ = 0;
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

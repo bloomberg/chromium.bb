@@ -65,6 +65,22 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void renderFrameCreated(int renderProcessId, int renderFrameId) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().renderFrameCreated(renderProcessId, renderFrameId);
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void renderFrameDeleted(int renderProcessId, int renderFrameId) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().renderFrameDeleted(renderProcessId, renderFrameId);
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void renderViewReady() {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().renderViewReady();
@@ -220,22 +236,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
     public void navigationEntriesChanged() {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().navigationEntriesChanged();
-        }
-    }
-
-    @Override
-    @CalledByNative
-    public void didAttachInterstitialPage() {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didAttachInterstitialPage();
-        }
-    }
-
-    @Override
-    @CalledByNative
-    public void didDetachInterstitialPage() {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didDetachInterstitialPage();
         }
     }
 

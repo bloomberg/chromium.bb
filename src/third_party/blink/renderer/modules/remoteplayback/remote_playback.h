@@ -48,7 +48,6 @@ class MODULES_EXPORT RemotePlayback final
       public mojom::blink::PresentationConnection,
       public RemotePlaybackController {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
   // Result of WatchAvailabilityInternal that means availability is not
@@ -136,7 +135,7 @@ class MODULES_EXPORT RemotePlayback final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class V8RemotePlayback;

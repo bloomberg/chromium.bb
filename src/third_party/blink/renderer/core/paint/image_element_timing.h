@@ -20,7 +20,7 @@
 namespace blink {
 
 class ImageResourceContent;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class StyleFetchedImage;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
@@ -28,8 +28,6 @@ class StyleFetchedImage;
 class CORE_EXPORT ImageElementTiming final
     : public GarbageCollected<ImageElementTiming>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageElementTiming);
-
  public:
   static const char kSupplementName[];
 
@@ -38,6 +36,8 @@ class CORE_EXPORT ImageElementTiming final
   static constexpr const unsigned kInlineImageMaxChars = 100;
 
   explicit ImageElementTiming(LocalDOMWindow&);
+  ImageElementTiming(const ImageElementTiming&) = delete;
+  ImageElementTiming& operator=(const ImageElementTiming&) = delete;
   virtual ~ImageElementTiming() = default;
 
   static ImageElementTiming& From(LocalDOMWindow&);
@@ -52,18 +52,19 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImagePainted(
       const LayoutObject*,
       const ImageResourceContent* cached_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
+      const IntRect& image_border);
 
   void NotifyBackgroundImagePainted(
       Node*,
       const StyleFetchedImage* background_image,
-      const PropertyTreeState& current_paint_chunk_properties,
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       const IntRect& image_border);
 
   void NotifyImageRemoved(const LayoutObject*,
                           const ImageResourceContent* image);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class ImageElementTimingTest;
@@ -72,9 +73,9 @@ class CORE_EXPORT ImageElementTiming final
       Node*,
       const LayoutObject&,
       const ImageResourceContent& cached_image,
-      const PropertyTreeState& current_paint_chunk_properties,
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       base::TimeTicks load_time,
-      const IntRect* image_border);
+      const IntRect& image_border);
 
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebSwapResult, base::TimeTicks timestamp);
@@ -96,9 +97,11 @@ class CORE_EXPORT ImageElementTiming final
           intrinsic_size(intrinsic_size),
           id(id),
           element(element) {}
+    ElementTimingInfo(const ElementTimingInfo&) = delete;
+    ElementTimingInfo& operator=(const ElementTimingInfo&) = delete;
     ~ElementTimingInfo() = default;
 
-    void Trace(Visitor* visitor) { visitor->Trace(element); }
+    void Trace(Visitor* visitor) const { visitor->Trace(element); }
 
     String url;
     FloatRect rect;
@@ -107,9 +110,6 @@ class CORE_EXPORT ImageElementTiming final
     IntSize intrinsic_size;
     AtomicString id;
     Member<Element> element;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ElementTimingInfo);
   };
 
   // Vector containing the element timing infos that will be reported during the
@@ -133,8 +133,6 @@ class CORE_EXPORT ImageElementTiming final
   // of the background image.
   HeapHashMap<WeakMember<const StyleFetchedImage>, base::TimeTicks>
       background_image_timestamps_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };
 
 }  // namespace blink

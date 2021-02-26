@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {BrowserChannel, UpdateStatus} from 'chrome://settings/settings.js';
+// clang-format off
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {BrowserChannel,UpdateStatus} from 'chrome://os-settings/chromeos/os_settings.js';
+// clang-format on
 
 /** @implements {settings.AboutPageBrowserProxy} */
 /* #export */ class TestAboutPageBrowserProxyChromeOS extends TestBrowserProxy {
@@ -18,7 +20,6 @@
       'getVersionInfo',
       'getRegulatoryInfo',
       'checkInternetConnection',
-      'getEnabledReleaseNotes',
       'getEndOfLifeInfo',
       'launchReleaseNotes',
       'openOsHelpPage',
@@ -126,11 +127,6 @@
     this.endOfLifeInfo_ = endOfLifeInfo;
   }
 
-  /** @param {boolean|Promise} hasReleaseNotes */
-  setReleaseNotes(hasEnabledReleaseNotes) {
-    this.hasReleaseNotes_ = hasEnabledReleaseNotes;
-  }
-
   /** @param {boolean|Promise} hasInternetConnection */
   setInternetConnection(hasInternetConnection) {
     this.hasInternetConnection_ = hasInternetConnection;
@@ -152,12 +148,6 @@
   canChangeChannel() {
     this.methodCalled('canChangeChannel');
     return Promise.resolve(this.canChangeChannel_);
-  }
-
-  /** @override */
-  getEnabledReleaseNotes() {
-    this.methodCalled('getEnabledReleaseNotes');
-    return Promise.resolve(this.hasReleaseNotes_);
   }
 
   /** @override */

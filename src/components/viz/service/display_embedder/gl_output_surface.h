@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/output_surface.h"
@@ -29,6 +30,7 @@ class GLOutputSurface : public OutputSurface {
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
+  void SetEnableDCLayers(bool enabled) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -52,10 +54,8 @@ class GLOutputSurface : public OutputSurface {
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
 
   gpu::SurfaceHandle GetSurfaceHandle() const override;
-  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
-      override;
-  gpu::MemoryTracker* GetMemoryTracker() override;
   void SetFrameRate(float frame_rate) override;
+  void SetNeedsMeasureNextDrawLatency() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

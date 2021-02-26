@@ -52,6 +52,7 @@ class AV1FrameErrorTest : public ::testing::TestWithParam<FrameErrorParam> {
   void RunSpeedTest(frame_error_func test_impl, int width, int height);
   libaom_test::ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1FrameErrorTest);
 
 void AV1FrameErrorTest::RandomValues(frame_error_func test_impl, int width,
                                      int height) {

@@ -20,7 +20,7 @@
 
 namespace media {
 class VideoFrame;
-class VideoFrameMetadata;
+struct VideoFrameFeedback;
 }  // namespace media
 
 namespace mirroring {
@@ -48,6 +48,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
 
   void Resume(FrameDeliverCallback deliver_callback);
 
+  // Feedback callback.
+  void ProcessFeedback(const media::VideoFrameFeedback& feedback);
+
   // Requests to receive a refreshed captured video frame. Do nothing if the
   // capturing device is not started or the capturing is paused.
   void RequestRefreshFrame();
@@ -61,16 +64,13 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   void OnBufferDestroyed(int32_t buffer_id) override;
 
  private:
-  using BufferFinishedCallback =
-      base::OnceCallback<void(double consumer_resource_utilization)>;
+  using BufferFinishedCallback = base::OnceCallback<void()>;
   // Called by the VideoFrame destructor.
-  static void DidFinishConsumingFrame(const media::VideoFrameMetadata* metadata,
-                                      BufferFinishedCallback callback);
+  static void DidFinishConsumingFrame(BufferFinishedCallback callback);
 
   // Reports the utilization, unmaps the shared memory, and returns the buffer.
   void OnClientBufferFinished(int buffer_id,
-                              base::ReadOnlySharedMemoryMapping mapping,
-                              double consumer_resource_utilization);
+                              base::ReadOnlySharedMemoryMapping mapping);
 
   const media::VideoCaptureParams params_;
   const mojo::Remote<media::mojom::VideoCaptureHost> video_capture_host_;
@@ -103,6 +103,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   // time the mapping is done or a larger size is requested.
   // |buffer_id| is the key to this map.
   MappingMap mapped_buffers_;
+
+  // Latest received feedback.
+  media::VideoFrameFeedback feedback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

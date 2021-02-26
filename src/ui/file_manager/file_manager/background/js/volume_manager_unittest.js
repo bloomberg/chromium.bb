@@ -36,7 +36,9 @@ function setUp() {
       onDriveConnectionStatusChangedListeners_: [],
       driveConnectionState_: 'ONLINE',
       volumeMetadataList_: [],
-      addMount: function(fileUrl, callback) {
+      password: undefined,
+      addMount: function(fileUrl, password, callback) {
+        mockChrome.fileManagerPrivate.password = password;
         callback(mockChrome.fileManagerPrivate.mountSourcePath_);
       },
       removeMount: function(volumeId) {
@@ -205,9 +207,11 @@ function testMountArchiveAndUnmount(callback) {
     const numberOfVolumes = volumeManager.volumeInfoList.length;
 
     // Mount an archive
+    const password = 'My Password';
     const mounted = volumeManager.mountArchive(
         'filesystem:chrome-extension://extensionid/external/' +
-        'Downloads-test/foobar.zip');
+            'Downloads-test/foobar.zip',
+        password);
 
     mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
       eventType: 'mount',
@@ -228,6 +232,7 @@ function testMountArchiveAndUnmount(callback) {
     await mounted;
 
     assertEquals(numberOfVolumes + 1, volumeManager.volumeInfoList.length);
+    assertEquals(password, mockChrome.fileManagerPrivate.password);
 
     // Unmount the mounted archive
     const entry = MockFileEntry.create(
@@ -413,8 +418,9 @@ function testWhenReady(callback) {
         /* watchable */ true,
         /* source */ VolumeManagerCommon.Source.FILE,
         /* diskFileSystemType */ VolumeManagerCommon.FileSystemType.UNKNOWN,
-        /* iconSet*/ {},
-        /* driveLabel*/ 'TEST_DRIVE_LABEL');
+        /* iconSet */ {},
+        /* driveLabel */ 'TEST_DRIVE_LABEL',
+        /* remoteMountPath*/ '');
     volumeManager.volumeInfoList.add(volumeInfo);
     const promiseAfterAdd = volumeManager.whenVolumeInfoReady('volumeId');
     reportPromise(
@@ -544,7 +550,7 @@ async function testDriveWithNullFilesystem(done) {
       (driveVolumeMetadata.source),
       /** @type {VolumeManagerCommon.FileSystemType} */
       (driveVolumeMetadata.diskFileSystemType), driveVolumeMetadata.iconSet,
-      (driveVolumeMetadata.driveLabel));
+      driveVolumeMetadata.driveLabel, driveVolumeMetadata.remoteMountPath);
 
   // Wait for trying to resolve display root, it should fail with
   // |expectedError| if not re-throw to make the test fail.

@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
+#include "components/sync/invalidations/invalidations_listener.h"
 #include "components/sync/js/js_controller.h"
 #include "components/sync/js/js_event_handler.h"
 #include "components/version_info/channel.h"
@@ -21,6 +21,8 @@
 
 namespace syncer {
 class SyncService;
+class SyncInvalidationsService;
+struct TypeEntitiesCount;
 }  //  namespace syncer
 
 // The implementation for the chrome://sync-internals page.
@@ -28,7 +30,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
                                     public syncer::JsEventHandler,
                                     public syncer::SyncServiceObserver,
                                     public syncer::ProtocolEventObserver,
-                                    public syncer::TypeDebugInfoObserver {
+                                    public syncer::InvalidationsListener {
  public:
   SyncInternalsMessageHandler();
   ~SyncInternalsMessageHandler() override;
@@ -37,14 +39,9 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
 
-  // Sets up observers to receive events and forward them to the UI.
-  void HandleRegisterForEvents(const base::ListValue* args);
-
-  // Sets up observers to receive per-type counters and forward them to the UI.
-  void HandleRegisterForPerTypeCounters(const base::ListValue* args);
-
-  // Fires an event to send updated info back to the page.
-  void HandleRequestUpdatedAboutInfo(const base::ListValue* args);
+  // Fires an event to send updated data to the About page and registers
+  // observers to notify the page upon updates.
+  void HandleRequestDataAndRegisterForUpdates(const base::ListValue* args);
 
   // Fires an event to send the list of types back to the page.
   void HandleRequestListOfTypes(const base::ListValue* args);
@@ -91,22 +88,8 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // syncer::ProtocolEventObserver implementation.
   void OnProtocolEvent(const syncer::ProtocolEvent& e) override;
 
-  // syncer::TypeDebugInfoObserver implementation.
-  void OnCommitCountersUpdated(syncer::ModelType type,
-                               const syncer::CommitCounters& counters) override;
-  void OnUpdateCountersUpdated(syncer::ModelType type,
-                               const syncer::UpdateCounters& counters) override;
-  void OnStatusCountersUpdated(syncer::ModelType type,
-                               const syncer::StatusCounters& counters) override;
-
-  // Helper to emit counter updates.
-  //
-  // Used in implementation of On*CounterUpdated methods.  Emits the given
-  // dictionary value with additional data to specify the model type and
-  // counter type.
-  void EmitCounterUpdate(syncer::ModelType type,
-                         const std::string& counter_type,
-                         std::unique_ptr<base::DictionaryValue> value);
+  // syncer::InvalidationsListener implementation.
+  void OnInvalidationReceived(const std::string& payload) override;
 
  protected:
   using AboutSyncDataDelegate =
@@ -119,13 +102,22 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
       AboutSyncDataDelegate about_sync_data_delegate);
 
  private:
-  // Fetches updated aboutInfo and sends it to the page in the form of an
-  // onAboutInfoUpdated event.
-  void SendAboutInfo();
+  // Synchronously fetches updated aboutInfo and sends it to the page in the
+  // form of an onAboutInfoUpdated event. The entity counts for each data type
+  // are retrieved asynchronously and sent via an onEntityCountsUpdated event
+  // once they are retrieved.
+  void SendAboutInfoAndEntityCounts();
+
+  void OnGotEntityCounts(
+      const std::vector<syncer::TypeEntitiesCount>& entity_counts);
 
   // Gets the ProfileSyncService of the underlying original profile. May return
-  // nullptr (e.g., if sync is disabled on the command line).
+  // nullptr (e.g. if sync is disabled on the command line).
   syncer::SyncService* GetSyncService();
+
+  // Gets the SyncInvalidationsService of the underlying original profile. May
+  // return nullptr (e.g. if sync invalidations are not enabled).
+  syncer::SyncInvalidationsService* GetSyncInvalidationsService();
 
   // Sends a dispatch event to the UI. Javascript must be enabled.
   void DispatchEvent(const std::string& name, const base::Value& details_value);
@@ -138,10 +130,6 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
 
   // A flag used to prevent double-registration with ProfileSyncService.
   bool is_registered_ = false;
-
-  // A flag used to prevent double-registration as TypeDebugInfoObserver with
-  // ProfileSyncService.
-  bool is_registered_for_counters_ = false;
 
   // Whether specifics should be included when converting protocol events to a
   // human readable format.

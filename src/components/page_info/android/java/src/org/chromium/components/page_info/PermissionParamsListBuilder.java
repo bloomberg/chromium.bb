@@ -77,6 +77,10 @@ public class PermissionParamsListBuilder {
         mEntries.add(new PageInfoPermissionEntry(name, type, value));
     }
 
+    public void clearPermissionEntries() {
+        mEntries.clear();
+    }
+
     public PageInfoView.PermissionParams build() {
         List<PageInfoView.PermissionRowParams> rowParams = new ArrayList<>();
         for (PermissionParamsListBuilder.PageInfoPermissionEntry permission : mEntries) {
@@ -146,27 +150,28 @@ public class PermissionParamsListBuilder {
         final TextAppearanceSpan span =
                 new TextAppearanceSpan(mContext, R.style.TextAppearance_TextMediumThick_Primary);
         nameString.setSpan(span, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        permissionParams.name = nameString;
 
         builder.append(nameString);
         builder.append(" – "); // en-dash.
         String status_text = "";
 
         String managedBy = null;
-        if (permission.type == ContentSettingsType.NOTIFICATIONS) {
-            Origin origin = Origin.create(mFullUrl);
-            if (origin != null) {
-                managedBy = mDelegate.getDelegateAppName(origin);
-            }
+        Origin origin = Origin.create(mFullUrl);
+        if (origin != null) {
+            managedBy = mDelegate.getDelegateAppName(origin, permission.type);
         }
         if (managedBy != null) {
             status_text = String.format(
-                    mContext.getString(R.string.website_notification_managed_by_app), managedBy);
+                    mContext.getString(R.string.website_setting_managed_by_app), managedBy);
         } else {
             switch (permission.setting) {
                 case ContentSettingValues.ALLOW:
+                    permissionParams.allowed = true;
                     status_text = mContext.getString(R.string.page_info_permission_allowed);
                     break;
                 case ContentSettingValues.BLOCK:
+                    permissionParams.allowed = false;
                     status_text = mContext.getString(R.string.page_info_permission_blocked);
                     break;
                 default:

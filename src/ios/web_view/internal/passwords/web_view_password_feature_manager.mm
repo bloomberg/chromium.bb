@@ -20,7 +20,7 @@ WebViewPasswordFeatureManager::WebViewPasswordFeatureManager(
     : pref_service_(pref_service), sync_service_(sync_service) {}
 
 bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
-  return false;
+  return true;
 }
 
 bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {
@@ -35,7 +35,8 @@ bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {
   return false;
 }
 
-bool WebViewPasswordFeatureManager::ShouldShowAccountStorageReSignin() const {
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageReSignin(
+    const GURL& current_page_url) const {
   return false;
 }
 
@@ -47,18 +48,18 @@ void WebViewPasswordFeatureManager::OptOutOfAccountStorageAndClearSettings() {
   NOTREACHED();
 }
 
-bool WebViewPasswordFeatureManager::ShouldShowPasswordStorePicker() const {
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageBubbleUi() const {
   return false;
 }
 
-autofill::PasswordForm::Store
+password_manager::PasswordForm::Store
 WebViewPasswordFeatureManager::GetDefaultPasswordStore() const {
   // ios/web_view should never write to the profile password store.
-  return autofill::PasswordForm::Store::kAccountStore;
+  return password_manager::PasswordForm::Store::kAccountStore;
 }
 
 void WebViewPasswordFeatureManager::SetDefaultPasswordStore(
-    const autofill::PasswordForm::Store& store) {
+    const password_manager::PasswordForm::Store& store) {
   NOTREACHED();
 }
 
@@ -68,6 +69,15 @@ WebViewPasswordFeatureManager::ComputePasswordAccountStorageUsageLevel() const {
   // the account-scoped storage is the only option.
   return password_manager::metrics_util::PasswordAccountStorageUsageLevel::
       kUsingAccountStorage;
+}
+
+void WebViewPasswordFeatureManager::RecordMoveOfferedToNonOptedInUser() {
+  NOTREACHED();
+}
+
+int WebViewPasswordFeatureManager::GetMoveOfferedToNonOptedInUserCount() const {
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace ios_web_view

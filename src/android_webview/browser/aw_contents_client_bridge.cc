@@ -15,7 +15,7 @@
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -116,7 +116,7 @@ AwContentsClientBridge* AwContentsClientBridge::FromID(int render_process_id,
 AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env,
                                                const JavaRef<jobject>& obj)
     : java_ref_(env, obj) {
-  DCHECK(!obj.is_null());
+  DCHECK(obj);
   Java_AwContentsClientBridge_setNativeContentsClientBridge(
       env, obj, reinterpret_cast<intptr_t>(this));
 }
@@ -125,7 +125,7 @@ AwContentsClientBridge::~AwContentsClientBridge() {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null()) {
+  if (obj) {
     // Clear the weak reference from the java peer to the native object since
     // it is possible that java object lifetime can exceed the AwContens.
     Java_AwContentsClientBridge_setNativeContentsClientBridge(env, obj, 0);
@@ -141,7 +141,7 @@ void AwContentsClientBridge::AllowCertificateError(int cert_error,
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   base::StringPiece der_string =
@@ -180,7 +180,8 @@ void AwContentsClientBridge::ProceedSslError(JNIEnv* env,
 }
 
 // This method is inspired by SelectClientCertificate() in
-// chrome/browser/ui/android/ssl_client_certificate_request.cc
+// components/browser_ui/client_certificate/android/
+// ssl_client_certificate_request.cc
 void AwContentsClientBridge::SelectClientCertificate(
     net::SSLCertRequestInfo* cert_request_info,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
@@ -188,7 +189,7 @@ void AwContentsClientBridge::SelectClientCertificate(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   // Build the |key_types| JNI parameter, as a String[]
@@ -209,7 +210,7 @@ void AwContentsClientBridge::SelectClientCertificate(
 
   ScopedJavaLocalRef<jobjectArray> key_types_ref =
       base::android::ToJavaArrayOfStrings(env, key_types);
-  if (key_types_ref.is_null()) {
+  if (!key_types_ref) {
     LOG(ERROR) << "Could not create key types array (String[])";
     return;
   }
@@ -218,7 +219,7 @@ void AwContentsClientBridge::SelectClientCertificate(
   ScopedJavaLocalRef<jobjectArray> principals_ref =
       base::android::ToJavaArrayOfByteArray(
           env, cert_request_info->cert_authorities);
-  if (principals_ref.is_null()) {
+  if (!principals_ref) {
     LOG(ERROR) << "Could not create principals array (byte[][])";
     return;
   }
@@ -237,7 +238,8 @@ void AwContentsClientBridge::SelectClientCertificate(
 }
 
 // This method is inspired by OnSystemRequestCompletion() in
-// chrome/browser/ui/android/ssl_client_certificate_request.cc
+// components/browser_ui/client_certificate/android/
+// ssl_client_certificate_request.cc
 void AwContentsClientBridge::ProvideClientCertificateResponse(
     JNIEnv* env,
     const JavaRef<jobject>& obj,
@@ -251,7 +253,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
   pending_client_cert_request_delegates_.Remove(request_id);
   DCHECK(delegate);
 
-  if (encoded_chain_ref.is_null() || private_key_ref.is_null()) {
+  if (!encoded_chain_ref || !private_key_ref) {
     LOG(ERROR) << "No client certificate selected";
     delegate->ContinueWithCertificate(nullptr, nullptr);
     return;
@@ -259,7 +261,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
 
   // Convert the encoded chain to a vector of strings.
   std::vector<std::string> encoded_chain_strings;
-  if (!encoded_chain_ref.is_null()) {
+  if (encoded_chain_ref) {
     base::android::JavaArrayOfByteArrayToStringVector(env, encoded_chain_ref,
                                                       &encoded_chain_strings);
   }
@@ -298,7 +300,7 @@ void AwContentsClientBridge::RunJavaScriptDialog(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) {
+  if (!obj) {
     std::move(callback).Run(false, base::string16());
     return;
   }
@@ -344,7 +346,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) {
+  if (!obj) {
     std::move(callback).Run(false, base::string16());
     return;
   }
@@ -373,7 +375,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
   *ignore_navigation = false;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return true;
   ScopedJavaLocalRef<jstring> jurl = ConvertUTF16ToJavaString(env, url);
   devtools_instrumentation::ScopedEmbedderCallbackTask(
@@ -384,7 +386,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
     // Tell the chromium message loop to not perform any tasks after the current
     // one - we want to make sure we return to Java cleanly without first making
     // any new JNI calls.
-    base::MessageLoopCurrentForUI::Get()->Abort();
+    base::CurrentUIThread::Get()->Abort();
     // If we crashed we don't want to continue the navigation.
     *ignore_navigation = true;
     return false;
@@ -400,7 +402,7 @@ void AwContentsClientBridge::NewDownload(const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   ScopedJavaLocalRef<jstring> jstring_url =
@@ -423,7 +425,7 @@ void AwContentsClientBridge::NewLoginRequest(const std::string& realm,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
@@ -446,7 +448,7 @@ void AwContentsClientBridge::OnReceivedError(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   ScopedJavaLocalRef<jstring> jstring_description =
@@ -473,7 +475,7 @@ void AwContentsClientBridge::OnSafeBrowsingHit(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
@@ -492,7 +494,7 @@ void AwContentsClientBridge::OnReceivedHttpError(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return;
 
   AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
@@ -552,7 +554,7 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
     return;
   }
   base::string16 prompt_text;
-  if (!prompt.is_null()) {
+  if (prompt) {
     prompt_text = ConvertJavaStringToUTF16(env, prompt);
   }
   std::move(*callback).Run(true, prompt_text);

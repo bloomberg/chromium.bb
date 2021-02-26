@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_TEST_UTIL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
-#include "base/macros.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 
 class Browser;
@@ -21,7 +21,8 @@ class ExtensionsToolbarContainer;
 class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
  public:
   ExtensionsMenuTestUtil(Browser* browser, bool is_real_window);
-
+  ExtensionsMenuTestUtil(const ExtensionsMenuTestUtil&) = delete;
+  ExtensionsMenuTestUtil& operator=(const ExtensionsMenuTestUtil&) = delete;
   ~ExtensionsMenuTestUtil() override;
 
   // ExtensionActionTestHelper:
@@ -39,6 +40,7 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   void SetWidth(int width) override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
   ExtensionsContainer* GetExtensionsContainer() override;
+  void WaitForExtensionsContainerLayout() override;
   std::unique_ptr<ExtensionActionTestHelper> CreateOverflowBar(
       Browser* browser) override;
   void LayoutForOverflowBar() override;
@@ -49,6 +51,7 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
   gfx::Size GetToolbarActionSize() override;
+  gfx::Size GetMaxAvailableSizeToFitBubbleOnScreen(int action_index) override;
 
  private:
   class Wrapper;
@@ -64,10 +67,8 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   std::unique_ptr<Wrapper> wrapper_;
 
   Browser* const browser_;
-  ExtensionsToolbarContainer* extensions_container_;
+  ExtensionsToolbarContainer* extensions_container_ = nullptr;
   std::unique_ptr<ExtensionsMenuView> menu_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuTestUtil);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_TEST_UTIL_H_

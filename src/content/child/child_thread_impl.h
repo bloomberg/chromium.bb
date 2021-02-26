@@ -62,15 +62,11 @@ class BackgroundTracingAgentProviderImpl;
 
 namespace content {
 class InProcessChildThreadParams;
-class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThreadImpl
-    : public IPC::Listener,
-      virtual public ChildThread,
-      private base::FieldTrialList::Observer,
-      public mojom::RouteProvider,
-      public blink::mojom::AssociatedInterfaceProvider {
+class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
+                                       virtual public ChildThread,
+                                       private base::FieldTrialList::Observer {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -112,17 +108,8 @@ class CONTENT_EXPORT ChildThreadImpl
 
   IPC::MessageRouter* GetRouter();
 
-  mojom::RouteProvider* GetRemoteRouteProvider();
-
   IPC::SyncMessageFilter* sync_message_filter() const {
     return sync_message_filter_.get();
-  }
-
-  // The getter should only be called on the main thread, however the
-  // IPC::Sender it returns may be safely called on any thread including
-  // the main thread.
-  ThreadSafeSender* thread_safe_sender() const {
-    return thread_safe_sender_.get();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner() const {
@@ -175,6 +162,13 @@ class CONTENT_EXPORT ChildThreadImpl
   bool IsInBrowserProcess() const;
 
  private:
+  // TODO(crbug.com/1111231): This class is a friend so that it can call our
+  // private mojo implementation methods, acting as a pass-through. This is only
+  // necessary during the associated interface migration, after which,
+  // AgentSchedulingGroup will not act as a pass-through to the private methods
+  // here. At that point we'll remove this friend class.
+  friend class AgentSchedulingGroup;
+
   class IOThreadState;
 
   class ChildThreadMessageRouter : public IPC::MessageRouter {
@@ -196,30 +190,12 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
-  // mojom::RouteProvider:
-  void GetRoute(
-      int32_t routing_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
-          receiver) override;
-
-  // blink::mojom::AssociatedInterfaceProvider:
-  void GetAssociatedInterface(
-      const std::string& name,
-      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
-          receiver) override;
-
 #if defined(OS_WIN)
   const mojo::Remote<mojom::FontCacheWin>& GetFontCacheWin();
 #endif
 
   base::Thread mojo_ipc_thread_{"Mojo IPC"};
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
-
-  mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
-  mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
-                              int32_t>
-      associated_interface_provider_receivers_;
-  mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
 #if defined(OS_WIN)
   mutable mojo::Remote<mojom::FontCacheWin> font_cache_win_;
 #endif
@@ -228,8 +204,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // Allows threads other than the main thread to send sync messages.
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
-
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Implements message routing functionality to the consumers of
   // ChildThreadImpl.
@@ -260,7 +234,7 @@ class CONTENT_EXPORT ChildThreadImpl
   // An interface to the browser's process host object.
   mojo::SharedRemote<mojom::ChildProcessHost> child_process_host_;
 
-  // ChlidThreadImpl state which lives on the IO thread, including its
+  // ChildThreadImpl state which lives on the IO thread, including its
   // implementation of the mojom ChildProcess interface.
   scoped_refptr<IOThreadState> io_thread_state_;
 

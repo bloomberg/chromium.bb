@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/optional.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 
 #include "base/bind.h"
@@ -16,9 +17,9 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
-#include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -48,6 +49,11 @@ InstallManager::InstallParams CreateSyncInstallParams(
   return params;
 }
 
+bool TaskExpectsAppId(const WebAppInstallTask* task, const AppId& app_id) {
+  return task && task->app_id_to_expect().has_value() &&
+         task->app_id_to_expect().value() == app_id;
+}
+
 }  // namespace
 
 WebAppInstallManager::WebAppInstallManager(Profile* profile)
@@ -59,18 +65,38 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile)
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
-void WebAppInstallManager::LoadWebAppAndCheckInstallability(
+void WebAppInstallManager::Start() {
+  DCHECK(!started_);
+  started_ = true;
+
+  MaybeEnqueuePendingAppSyncInstalls();
+}
+
+void WebAppInstallManager::Shutdown() {
+  tasks_.clear();
+  {
+    TaskQueue empty;
+    task_queue_.swap(empty);
+  }
+  web_contents_.reset();
+
+  started_ = false;
+}
+
+void WebAppInstallManager::LoadWebAppAndCheckManifest(
     const GURL& web_app_url,
     WebappInstallSource install_source,
-    WebAppInstallabilityCheckCallback callback) {
-  auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+    WebAppManifestCheckCallback callback) {
+  DCHECK(started_);
 
-  task->LoadWebAppAndCheckInstallability(
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
+
+  task->LoadWebAppAndCheckManifest(
       web_app_url, install_source, url_loader_.get(),
       base::BindOnce(
-          &WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted,
+          &WebAppInstallManager::OnLoadWebAppAndCheckManifestCompleted,
           base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
@@ -78,14 +104,18 @@ void WebAppInstallManager::LoadWebAppAndCheckInstallability(
 
 void WebAppInstallManager::InstallWebAppFromManifest(
     content::WebContents* contents,
+    bool bypass_service_worker_check,
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
   task->InstallWebAppFromManifest(
-      contents, install_source, std::move(dialog_callback),
+      contents, bypass_service_worker_check, install_source,
+      std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
@@ -98,9 +128,11 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -114,9 +146,24 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
+  InstallWebAppFromInfo(std::move(web_application_info), for_installable_site,
+                        base::nullopt, install_source, std::move(callback));
+}
+
+void WebAppInstallManager::InstallWebAppFromInfo(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    ForInstallableSite for_installable_site,
+    const base::Optional<InstallParams>& install_params,
+    WebappInstallSource install_source,
+    OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
+  if (install_params) {
+    task->SetInstallParams(install_params.value());
+  }
   task->InstallWebAppFromInfo(
       std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -130,9 +177,11 @@ void WebAppInstallManager::InstallWebAppWithParams(
     const InstallParams& install_params,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
   task->InstallWebAppWithParams(
       web_contents, install_params, install_source,
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -145,39 +194,65 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
     const AppId& bookmark_app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
-  // Skip sync update if app exists.
-  // All manifest fields will be set locally via update (see crbug.com/926083)
-  // so we must not sync them in order to avoid a device-to-device sync war.
-  if (registrar()->IsInstalled(bookmark_app_id)) {
-    std::move(callback).Run(bookmark_app_id,
+  if (disable_bookmark_app_sync_install_for_testing())
+    return;
+
+  // This method can be called by
+  // ExtensionSyncService::ApplyBookmarkAppSyncData() while |this| is not
+  // |started_|.
+  if (started_) {
+    EnqueueInstallAppFromSync(bookmark_app_id, std::move(web_application_info),
+                              std::move(callback));
+  } else {
+    AppSyncInstallRequest request;
+    request.sync_app_id = bookmark_app_id;
+    request.web_application_info = std::move(web_application_info);
+    request.callback = std::move(callback);
+
+    pending_app_sync_installs_.push_back(std::move(request));
+  }
+}
+
+void WebAppInstallManager::EnqueueInstallAppFromSync(
+    const AppId& sync_app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  DCHECK(started_);
+
+  if (registrar()->IsInstalled(sync_app_id) ||
+      // Note that we call the callback too early here: an enqueued task has not
+      // yet installed the app. This is fine (for now) because |callback| is
+      // only used in tests.
+      IsAppIdAlreadyEnqueued(sync_app_id)) {
+    std::move(callback).Run(sync_app_id,
                             InstallResultCode::kSuccessAlreadyInstalled);
     return;
   }
 
-  // If bookmark_app_id is not installed enqueue full background installation
+  // If sync_app_id is not installed enqueue full background installation
   // flow. This install may produce a web app or an extension-based bookmark
   // app, depending on the BMO flag.
-  GURL launch_url = web_application_info->app_url;
+  GURL start_url = web_application_info->start_url;
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
 
-  task->ExpectAppId(bookmark_app_id);
+  task->ExpectAppId(sync_app_id);
   task->SetInstallParams(CreateSyncInstallParams(
-      launch_url, web_application_info->title,
+      start_url, web_application_info->title,
       web_application_info->open_as_window ? DisplayMode::kStandalone
                                            : DisplayMode::kBrowser));
 
   OnceInstallCallback task_completed_callback = base::BindOnce(
       &WebAppInstallManager::
-          LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForBookmarkAppSync,
-      base::Unretained(this), bookmark_app_id, std::move(web_application_info),
+          LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForAppSync,
+      base::Unretained(this), sync_app_id, std::move(web_application_info),
       std::move(callback));
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
-      base::Unretained(task.get()), launch_url, EnsureWebContentsCreated(),
+      task->GetWeakPtr(), start_url, EnsureWebContentsCreated(),
       base::Unretained(url_loader_.get()), WebappInstallSource::SYNC,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(),
@@ -186,16 +261,30 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
+bool WebAppInstallManager::IsAppIdAlreadyEnqueued(const AppId& app_id) const {
+  if (TaskExpectsAppId(current_queued_task_, app_id))
+    return true;
+
+  for (const std::unique_ptr<WebAppInstallTask>& task : tasks_) {
+    if (TaskExpectsAppId(task.get(), app_id))
+      return true;
+  }
+
+  return false;
+}
+
 void WebAppInstallManager::UpdateWebAppFromInfo(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
 
   base::OnceClosure start_task = base::BindOnce(
-      &WebAppInstallTask::UpdateWebAppFromInfo, base::Unretained(task.get()),
+      &WebAppInstallTask::UpdateWebAppFromInfo, task->GetWeakPtr(),
       EnsureWebContentsCreated(), app_id, std::move(web_application_info),
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
@@ -203,50 +292,38 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
-void WebAppInstallManager::Shutdown() {
-  tasks_.clear();
-  {
-    TaskQueue empty;
-    task_queue_.swap(empty);
-  }
-  web_contents_.reset();
-}
-
 void WebAppInstallManager::InstallWebAppsAfterSync(
     std::vector<WebApp*> web_apps,
     RepeatingInstallCallback callback) {
+  DCHECK(started_);
+
+  if (disable_web_app_sync_install_for_testing())
+    return;
+
   for (WebApp* web_app : web_apps) {
     DCHECK(web_app->is_in_sync_install());
 
-    auto task = std::make_unique<WebAppInstallTask>(
-        profile(), registrar(), shortcut_manager(), file_handler_manager(),
-        finalizer(), data_retriever_factory_.Run());
+    auto web_application_info = std::make_unique<WebApplicationInfo>();
+    web_application_info->start_url = web_app->start_url();
+    web_application_info->title =
+        base::UTF8ToUTF16(web_app->sync_fallback_data().name);
+    web_application_info->scope = web_app->sync_fallback_data().scope;
+    web_application_info->theme_color =
+        web_app->sync_fallback_data().theme_color;
+    web_application_info->open_as_window =
+        web_app->user_display_mode() != DisplayMode::kBrowser;
+    web_application_info->icon_infos = web_app->sync_fallback_data().icon_infos;
 
-    task->ExpectAppId(web_app->app_id());
-    task->SetInstallParams(CreateSyncInstallParams(
-        web_app->launch_url(), base::UTF8ToUTF16(web_app->sync_data().name),
-        web_app->user_display_mode()));
-
-    OnceInstallCallback sync_install_callback =
-        base::BindOnce(&WebAppInstallManager::OnWebAppInstalledAfterSync,
-                       base::Unretained(this), web_app->app_id(), callback);
-
-    base::OnceClosure start_task = base::BindOnce(
-        &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
-        base::Unretained(task.get()), web_app->launch_url(),
-        EnsureWebContentsCreated(), base::Unretained(url_loader_.get()),
-        WebappInstallSource::SYNC,
-        base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
-                       base::Unretained(this), task.get(),
-                       std::move(sync_install_callback)));
-
-    EnqueueTask(std::move(task), std::move(start_task));
+    EnqueueInstallAppFromSync(web_app->app_id(),
+                              std::move(web_application_info), callback);
   }
 }
 
 void WebAppInstallManager::UninstallWebAppsAfterSync(
     std::vector<std::unique_ptr<WebApp>> web_apps,
     RepeatingUninstallCallback callback) {
+  DCHECK(started_);
+
   for (std::unique_ptr<WebApp>& web_app : web_apps) {
     const AppId& app_id = web_app->app_id();
 
@@ -263,9 +340,19 @@ void WebAppInstallManager::SetUrlLoaderForTesting(
   url_loader_ = std::move(url_loader);
 }
 
+void WebAppInstallManager::MaybeEnqueuePendingAppSyncInstalls() {
+  for (AppSyncInstallRequest& request : pending_app_sync_installs_) {
+    EnqueueInstallAppFromSync(request.sync_app_id,
+                              std::move(request.web_application_info),
+                              std::move(request.callback));
+  }
+
+  pending_app_sync_installs_.clear();
+}
+
 void WebAppInstallManager::
-    LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForBookmarkAppSync(
-        const AppId& bookmark_app_id,
+    LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForAppSync(
+        const AppId& sync_app_id,
         std::unique_ptr<WebApplicationInfo> web_application_info,
         OnceInstallCallback callback,
         const AppId& web_app_id,
@@ -273,15 +360,20 @@ void WebAppInstallManager::
   // TODO(loyso): Record |code| for this specific case in
   // Webapp.BookmarkAppInstalledAfterSyncResult UMA.
   if (IsSuccess(code)) {
-    DCHECK_EQ(bookmark_app_id, web_app_id);
+    DCHECK_EQ(sync_app_id, web_app_id);
     std::move(callback).Run(web_app_id, code);
     return;
   }
 
+  // The web contents getting destroyed indicates we could be shutting down;
+  // don't enqueue another task.
+  if (code == InstallResultCode::kWebContentsDestroyed)
+    return;
+
   // Install failed. Do the fallback install from info fetching just icon URLs.
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run(), registrar());
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = WebappInstallSource::SYNC;
@@ -289,7 +381,7 @@ void WebAppInstallManager::
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons,
-      base::Unretained(task.get()), EnsureWebContentsCreated(),
+      task->GetWeakPtr(), EnsureWebContentsCreated(),
       std::move(web_application_info), finalize_options,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
@@ -301,26 +393,33 @@ void WebAppInstallManager::EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
                                        base::OnceClosure start_task) {
   DCHECK(web_contents_);
 
-  tasks_.insert(std::move(task));
-  task_queue_.push(std::move(start_task));
+  PendingTask pending_task;
+  pending_task.task = task.get();
+  pending_task.start = std::move(start_task);
+  task_queue_.push(std::move(pending_task));
 
-  if (web_contents_ready_)
-    MaybeStartQueuedTask();
+  tasks_.insert(std::move(task));
+
+  MaybeStartQueuedTask();
 }
 
 void WebAppInstallManager::MaybeStartQueuedTask() {
-  DCHECK(web_contents_ready_);
-  DCHECK(!task_queue_.empty());
+  DCHECK(web_contents_);
 
-  if (is_running_queued_task_)
+  if (current_queued_task_)
     return;
 
-  is_running_queued_task_ = true;
-
-  base::OnceClosure task_closure = std::move(task_queue_.front());
+  DCHECK(!task_queue_.empty());
+  PendingTask pending_task = std::move(task_queue_.front());
   task_queue_.pop();
+  current_queued_task_ = pending_task.task;
 
-  std::move(task_closure).Run();
+  // Load about:blank to ensure ready and clean up any left over state.
+  url_loader_->LoadUrl(
+      GURL("about:blank"), web_contents_.get(),
+      WebAppUrlLoader::UrlComparison::kExact,
+      base::BindOnce(&WebAppInstallManager::OnWebContentsReadyRunTask,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(pending_task)));
 }
 
 void WebAppInstallManager::SetDataRetrieverFactoryForTesting(
@@ -346,27 +445,23 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
                                                  OnceInstallCallback callback,
                                                  const AppId& app_id,
                                                  InstallResultCode code) {
-  DCHECK(is_running_queued_task_);
-  is_running_queued_task_ = false;
+  DCHECK(current_queued_task_);
+  DCHECK_EQ(current_queued_task_, task);
+  current_queued_task_ = nullptr;
 
   OnInstallTaskCompleted(task, std::move(callback), app_id, code);
+  // |task| is now destroyed.
   task = nullptr;
 
-  // |callback| may have started another task.
-  if (is_running_queued_task_)
-    return;
-
-  if (task_queue_.empty()) {
+  if (task_queue_.empty() && !current_queued_task_)
     web_contents_.reset();
-    web_contents_ready_ = false;
-  } else {
+  else
     MaybeStartQueuedTask();
-  }
 }
 
-void WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted(
+void WebAppInstallManager::OnLoadWebAppAndCheckManifestCompleted(
     WebAppInstallTask* task,
-    WebAppInstallabilityCheckCallback callback,
+    WebAppManifestCheckCallback callback,
     std::unique_ptr<content::WebContents> web_contents,
     const AppId& app_id,
     InstallResultCode code) {
@@ -388,23 +483,6 @@ void WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted(
   std::move(callback).Run(std::move(web_contents), result, opt_app_id);
 }
 
-void WebAppInstallManager::OnWebAppInstalledAfterSync(
-    const AppId& app_in_sync_install_id,
-    OnceInstallCallback callback,
-    const AppId& installed_app_id,
-    InstallResultCode code) {
-  // TODO(loyso): Record |code| for this specific case in
-  // Webapp.SyncInitiatedFullInstallResult UMA.
-  if (IsSuccess(code)) {
-    DCHECK_EQ(app_in_sync_install_id, installed_app_id);
-    std::move(callback).Run(installed_app_id, code);
-  } else {
-    // Install failed. Do the fallback install to generate icons.
-    finalizer()->FinalizeFallbackInstallAfterSync(app_in_sync_install_id,
-                                                  std::move(callback));
-  }
-}
-
 void WebAppInstallManager::OnWebAppUninstalledAfterSync(
     std::unique_ptr<WebApp> web_app,
     OnceUninstallCallback callback,
@@ -415,27 +493,29 @@ void WebAppInstallManager::OnWebAppUninstalledAfterSync(
 }
 
 content::WebContents* WebAppInstallManager::EnsureWebContentsCreated() {
-  if (web_contents_)
-    return web_contents_.get();
-
-  DCHECK(!web_contents_ready_);
-
-  web_contents_ = WebAppInstallTask::CreateWebContents(profile());
-
-  // Load about:blank so that the process actually starts.
-  url_loader_->LoadUrl(GURL("about:blank"), web_contents_.get(),
-                       WebAppUrlLoader::UrlComparison::kExact,
-                       base::BindOnce(&WebAppInstallManager::OnWebContentsReady,
-                                      weak_ptr_factory_.GetWeakPtr()));
-
+  if (!web_contents_)
+    web_contents_ = WebAppInstallTask::CreateWebContents(profile());
   return web_contents_.get();
 }
 
-void WebAppInstallManager::OnWebContentsReady(WebAppUrlLoader::Result result) {
+void WebAppInstallManager::OnWebContentsReadyRunTask(
+    PendingTask pending_task,
+    WebAppUrlLoader::Result result) {
   DCHECK_EQ(WebAppUrlLoader::Result::kUrlLoaded, result);
-  web_contents_ready_ = true;
-
-  MaybeStartQueuedTask();
+  std::move(pending_task.start).Run();
 }
+
+WebAppInstallManager::PendingTask::PendingTask() = default;
+
+WebAppInstallManager::PendingTask::PendingTask(PendingTask&&) = default;
+
+WebAppInstallManager::PendingTask::~PendingTask() = default;
+
+WebAppInstallManager::AppSyncInstallRequest::AppSyncInstallRequest() = default;
+
+WebAppInstallManager::AppSyncInstallRequest::AppSyncInstallRequest(
+    AppSyncInstallRequest&&) = default;
+
+WebAppInstallManager::AppSyncInstallRequest::~AppSyncInstallRequest() = default;
 
 }  // namespace web_app

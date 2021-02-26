@@ -289,7 +289,8 @@ TEST_P(UberQuicStreamIdManagerTest, OnStreamsBlockedFrame) {
                                 /*unidirectional=*/false);
   EXPECT_CALL(delegate_,
               SendMaxStreams(manager_.max_incoming_bidirectional_streams(),
-                             frame.unidirectional));
+                             frame.unidirectional))
+      .Times(0);
   EXPECT_TRUE(manager_.OnStreamsBlockedFrame(frame, nullptr));
 
   stream_count = manager_.advertised_max_incoming_unidirectional_streams() - 1;
@@ -298,7 +299,8 @@ TEST_P(UberQuicStreamIdManagerTest, OnStreamsBlockedFrame) {
 
   EXPECT_CALL(delegate_,
               SendMaxStreams(manager_.max_incoming_unidirectional_streams(),
-                             frame.unidirectional));
+                             frame.unidirectional))
+      .Times(0);
   EXPECT_TRUE(manager_.OnStreamsBlockedFrame(frame, nullptr));
 }
 

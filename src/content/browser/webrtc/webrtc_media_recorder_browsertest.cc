@@ -39,7 +39,7 @@ namespace content {
 
 // All tests in this fixture experience flaky DCHECK failures on macOS; see
 // https://crbug.com/810321.
-#if defined(OS_MACOSX) && DCHECK_IS_ON()
+#if defined(OS_MAC) && DCHECK_IS_ON()
 #define MAYBE_WebRtcMediaRecorderTest DISABLED_WebRtcMediaRecorderTest
 #else
 #define MAYBE_WebRtcMediaRecorderTest WebRtcMediaRecorderTest
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, Pause) {
 }
 
 // TODO(crbug.com/571389): Flaky on TSAN bots.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_PauseStop DISABLED_PauseStop
 #else
 #define MAYBE_PauseStop PauseStop
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 }
 
 // TODO (crbug.com/736268): Flaky on Linux TSan bots.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_IllegalPauseThrowsDOMError DISABLED_IllegalPauseThrowsDOMError
 #else
 #define MAYBE_IllegalPauseThrowsDOMError IllegalPauseThrowsDOMError
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 }
 
 // Flaky on Linux Tsan (crbug.com/736268)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_IllegalRequestDataThrowsDOMError \
   DISABLED_IllegalRequestDataThrowsDOMError
 #else
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 // These tests are flakily timing out on emulators (https://crbug.com/716691)
 // and/or under Android ASAN (https://crbug.com/693565);
 #define MAYBE_PeerConnection DISABLED_PeerConnection
-#elif defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 // Flaky on Linux TSan, https://crbug.com/694373.
 #define MAYBE_PeerConnection DISABLED_PeerConnection
 #elif defined(OS_WIN) && !defined(NDEBUG)
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcMediaRecorderTest, MAYBE_PeerConnection) {
 }
 
 // Flaky on Linux Tsan (crbug.com/736268)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_AddingTrackToMediaStreamFiresErrorEvent \
   DISABLED_AddingTrackToMediaStreamFiresErrorEvent
 #else

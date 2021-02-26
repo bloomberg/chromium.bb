@@ -22,16 +22,19 @@ import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -40,6 +43,7 @@ import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -49,6 +53,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
 
@@ -107,10 +112,12 @@ public class SearchActivity extends AsyncInitializationActivity
 
     /** The View that represents the search box. */
     private SearchActivityLocationBarLayout mSearchBox;
+    private LocationBarCoordinator mLocationBarCoordinator;
 
     private SnackbarManager mSnackbarManager;
     private SearchBoxDataProvider mSearchBoxDataProvider;
     private Tab mTab;
+    private ObservableSupplierImpl<Profile> mProfileSupplier = new ObservableSupplierImpl<>();
 
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
@@ -160,9 +167,13 @@ public class SearchActivity extends AsyncInitializationActivity
         mSearchBox = (SearchActivityLocationBarLayout) mContentView.findViewById(
                 R.id.search_location_bar);
         mSearchBox.setDelegate(this);
-        mSearchBox.setToolbarDataProvider(mSearchBoxDataProvider);
-        mSearchBox.initializeControls(
-                new WindowDelegate(getWindow()), getWindowAndroid(), null, null, null, null);
+        mLocationBarCoordinator = new LocationBarCoordinator(mSearchBox, mProfileSupplier,
+                mSearchBoxDataProvider, null, new WindowDelegate(getWindow()), getWindowAndroid(),
+                /*activityTabProvider=*/null, /*modalDialogManagerSupplier=*/null,
+                /*shareDelegateSupplier=*/null, /*incognitoStateProvider=*/null,
+                getLifecycleDispatcher(), /*overrideUrlLoadingDelegate=*/
+                (String url, @PageTransition int transition, String postDataType, byte[] postData,
+                        boolean incognito) -> false);
 
         // Kick off everything needed for the user to type into the box.
         beginQuery();
@@ -186,7 +197,12 @@ public class SearchActivity extends AsyncInitializationActivity
         TabDelegateFactory factory = new TabDelegateFactory() {
             @Override
             public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
-                return new TabWebContentsDelegateAndroid(tab) {
+                return new TabWebContentsDelegateAndroid() {
+                    @Override
+                    protected int getDisplayMode() {
+                        return WebDisplayMode.BROWSER;
+                    }
+
                     @Override
                     protected boolean shouldResumeRequestsForCreatedWindow() {
                         return false;
@@ -215,7 +231,7 @@ public class SearchActivity extends AsyncInitializationActivity
             }
 
             @Override
-            public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
+            public ContextMenuPopulatorFactory createContextMenuPopulatorFactory(Tab tab) {
                 return null;
             }
 
@@ -231,16 +247,18 @@ public class SearchActivity extends AsyncInitializationActivity
                 return null;
             }
         };
+
+        WebContents webContents = WebContentsFactory.createWebContents(false, false);
         mTab = new TabBuilder()
                        .setWindow(getWindowAndroid())
                        .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
-                       .setWebContents(WebContentsFactory.createWebContents(false, false))
+                       .setWebContents(webContents)
                        .setDelegateFactory(factory)
                        .build();
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);
-        mSearchBox.onNativeLibraryReady();
+        mProfileSupplier.set(Profile.fromWebContents(webContents));
 
         // Force the user to choose a search engine if they have to.
         final Callback<Boolean> onSearchEngineFinalizedCallback = new Callback<Boolean>() {

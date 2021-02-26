@@ -20,7 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/version.h"
@@ -136,8 +136,7 @@ class TestVariationsService : public VariationsService {
         fetch_attempted_(false),
         seed_stored_(false),
         delta_compressed_seed_(false),
-        gzip_compressed_seed_(false),
-        insecurely_fetched_seed_(false) {
+        gzip_compressed_seed_(false) {
     interception_url_ =
         GetVariationsServerURL(use_secure_url ? USE_HTTPS : USE_HTTP);
     set_variations_server_url(interception_url_);
@@ -160,7 +159,6 @@ class TestVariationsService : public VariationsService {
   const std::string& stored_country() const { return stored_country_; }
   bool delta_compressed_seed() const { return delta_compressed_seed_; }
   bool gzip_compressed_seed() const { return gzip_compressed_seed_; }
-  bool insecurely_fetched_seed() const { return insecurely_fetched_seed_; }
 
   bool CallMaybeRetryOverHTTP() { return CallMaybeRetryOverHTTPForTesting(); }
 
@@ -188,14 +186,12 @@ class TestVariationsService : public VariationsService {
                  const std::string& country_code,
                  base::Time date_fetched,
                  bool is_delta_compressed,
-                 bool is_gzip_compressed,
-                 bool fetched_insecurely) override {
+                 bool is_gzip_compressed) override {
     seed_stored_ = true;
     stored_seed_data_ = seed_data;
     stored_country_ = country_code;
     delta_compressed_seed_ = is_delta_compressed;
     gzip_compressed_seed_ = is_gzip_compressed;
-    insecurely_fetched_seed_ = fetched_insecurely;
     RecordSuccessfulFetch();
     return true;
   }
@@ -223,7 +219,6 @@ class TestVariationsService : public VariationsService {
   std::string stored_country_;
   bool delta_compressed_seed_;
   bool gzip_compressed_seed_;
-  bool insecurely_fetched_seed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
 };
@@ -663,7 +658,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
        LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
       {"us", "20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
-      {"ca", nullptr, "20.0.0.0", nullptr, nullptr, "ca",
+      {"ca", "", "20.0.0.0", "", "", "ca",
        LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
 
       // Existing pref value present for this version.
@@ -671,7 +666,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
        LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ},
       {"", "20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ},
-      {"", "20.0.0.0,us", "20.0.0.0", nullptr, "20.0.0.0,us", "us",
+      {"", "20.0.0.0,us", "20.0.0.0", "", "20.0.0.0,us", "us",
        LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ},
 
       // Existing pref value present for a different version.
@@ -679,29 +674,29 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
        LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ},
       {"", "19.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ},
-      {"", "19.0.0.0,ca", "20.0.0.0", nullptr, "19.0.0.0,ca", "",
+      {"", "19.0.0.0,ca", "20.0.0.0", "", "19.0.0.0,ca", "",
        LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ},
 
       // No existing pref value present.
-      {"", nullptr, "20.0.0.0", "us", "20.0.0.0,us", "us",
-       LOAD_COUNTRY_NO_PREF_HAS_SEED},
-      {"", nullptr, "20.0.0.0", nullptr, "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
       {"", "", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_NO_PREF_HAS_SEED},
-      {"", "", "20.0.0.0", nullptr, "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
+      {"", "", "20.0.0.0", "", "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
+      {"", "", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_NO_PREF_HAS_SEED},
+      {"", "", "20.0.0.0", "", "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
 
       // Invalid existing pref value.
       {"", "20.0.0.0", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"", "20.0.0.0", "20.0.0.0", nullptr, "", "",
+      {"", "20.0.0.0", "20.0.0.0", "", "", "",
        LOAD_COUNTRY_INVALID_PREF_NO_SEED},
       {"", "20.0.0.0,us,element3", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"", "20.0.0.0,us,element3", "20.0.0.0", nullptr, "", "",
+      {"", "20.0.0.0,us,element3", "20.0.0.0", "", "", "",
        LOAD_COUNTRY_INVALID_PREF_NO_SEED},
       {"", "badversion,ca", "20.0.0.0", "us", "20.0.0.0,us", "us",
        LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"", "badversion,ca", "20.0.0.0", nullptr, "", "",
+      {"", "badversion,ca", "20.0.0.0", "", "", "",
        LOAD_COUNTRY_INVALID_PREF_NO_SEED},
   };
 
@@ -942,43 +937,6 @@ TEST_F(VariationsServiceTest, FieldTrialCreatorInitializedCorrectly) {
   // Call will crash in service's VariationsFieldTrialCreator if not initialized
   // correctly.
   service.GetClientFilterableStateForVersionCalledForTesting();
-}
-
-TEST_F(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP) {
-  std::string serialized_seed = SerializeSeed(CreateTestSeed());
-  VariationsService::EnableFetchForTesting();
-  TestVariationsService service(
-      std::make_unique<web_resource::TestRequestAllowedNotifier>(
-          &prefs_, network_tracker_),
-      &prefs_, GetMetricsStateManager(), false);
-  service.set_intercepts_fetch(false);
-  service.test_url_loader_factory()->AddResponse(
-      service.interception_url().spec(), serialized_seed);
-  base::HistogramTester histogram_tester;
-  // Note: We call DoFetchFromURL() here instead of DoActualFetch() since the
-  // latter doesn't pass true to |http_retry|.
-  service.DoFetchFromURL(service.interception_url(), true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(service.insecurely_fetched_seed());
-  histogram_tester.ExpectUniqueSample(
-      "Variations.SeedFetchResponseOrErrorCode.HTTP", net::HTTP_OK, 1);
-}
-
-TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
-  std::string serialized_seed = SerializeSeed(CreateTestSeed());
-  TestVariationsService service(
-      std::make_unique<web_resource::TestRequestAllowedNotifier>(
-          &prefs_, network_tracker_),
-      &prefs_, GetMetricsStateManager(), true);
-  VariationsService::EnableFetchForTesting();
-  service.set_intercepts_fetch(false);
-  service.test_url_loader_factory()->AddResponse(
-      service.interception_url().spec(), serialized_seed);
-  base::HistogramTester histogram_tester;
-  service.DoActualFetch();
-  EXPECT_FALSE(service.insecurely_fetched_seed());
-  histogram_tester.ExpectUniqueSample("Variations.SeedFetchResponseOrErrorCode",
-                                      net::HTTP_OK, 1);
 }
 
 TEST_F(VariationsServiceTest, RetryOverHTTPIfURLisSet) {

@@ -10,10 +10,8 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "content/common/content_to_visible_time_reporter.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -24,53 +22,9 @@
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
-#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
-#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
-
-void ParamTraits<content::WebCursor>::Write(base::Pickle* m,
-                                            const param_type& p) {
-  WriteParam(m, p.cursor().type());
-  if (p.cursor().type() == ui::mojom::CursorType::kCustom) {
-    WriteParam(m, p.cursor().custom_hotspot());
-    WriteParam(m, p.cursor().image_scale_factor());
-    WriteParam(m, p.cursor().custom_bitmap());
-  }
-}
-
-bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
-                                           base::PickleIterator* iter,
-                                           param_type* r) {
-  ui::mojom::CursorType type;
-  if (!ReadParam(m, iter, &type))
-    return false;
-
-  ui::Cursor cursor(type);
-  if (cursor.type() == ui::mojom::CursorType::kCustom) {
-    gfx::Point hotspot;
-    float image_scale_factor;
-    SkBitmap bitmap;
-    if (!ReadParam(m, iter, &hotspot) ||
-        !ReadParam(m, iter, &image_scale_factor) ||
-        !ReadParam(m, iter, &bitmap)) {
-      return false;
-    }
-
-    cursor.set_custom_hotspot(hotspot);
-    cursor.set_image_scale_factor(image_scale_factor);
-    cursor.set_custom_bitmap(bitmap);
-  }
-
-  return r->SetCursor(cursor);
-}
-
-void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
-  l->append("<WebCursor>");
-}
 
 void ParamTraits<blink::MessagePortChannel>::Write(base::Pickle* m,
                                                    const param_type& p) {
@@ -100,6 +54,9 @@ void ParamTraits<blink::PolicyValue>::Write(base::Pickle* m,
       break;
     case blink::mojom::PolicyValueType::kDecDouble:
       WriteParam(m, p.DoubleValue());
+      break;
+    case blink::mojom::PolicyValueType::kEnum:
+      WriteParam(m, p.IntValue());
       break;
     case blink::mojom::PolicyValueType::kNull:
       break;
@@ -158,7 +115,14 @@ bool ParamTraits<blink::PolicyValue>::Read(const base::Pickle* m,
       double d;
       if (!ReadParam(m, iter, &d))
         return false;
-      r->SetDoubleValue(d, type);
+      r->SetDoubleValue(d);
+      break;
+    }
+    case blink::mojom::PolicyValueType::kEnum: {
+      int32_t i;
+      if (!ReadParam(m, iter, &i))
+        return false;
+      r->SetIntValue(i);
       break;
     }
     case blink::mojom::PolicyValueType::kNull:
@@ -237,81 +201,6 @@ struct ParamTraits<
   }
 };
 
-void ParamTraits<scoped_refptr<base::RefCountedData<
-    blink::TransferableMessage>>>::Write(base::Pickle* m, const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(p->data.encoded_message.data()),
-               p->data.encoded_message.size());
-  WriteParam(m, p->data.blobs);
-  WriteParam(m, p->data.stack_trace_id);
-  WriteParam(m, p->data.stack_trace_debugger_id_first);
-  WriteParam(m, p->data.stack_trace_debugger_id_second);
-  WriteParam(m, p->data.stack_trace_should_pause);
-  WriteParam(m, p->data.locked_agent_cluster_id);
-  WriteParam(m, p->data.ports);
-  WriteParam(m, p->data.stream_channels);
-  WriteParam(m, !!p->data.user_activation);
-  WriteParam(m, p->data.transfer_user_activation);
-  WriteParam(m, p->data.allow_autoplay);
-  WriteParam(m, p->data.sender_origin);
-  WriteParam(m, p->data.native_file_system_tokens);
-  if (p->data.user_activation) {
-    WriteParam(m, p->data.user_activation->has_been_active);
-    WriteParam(m, p->data.user_activation->was_active);
-  }
-}
-
-bool ParamTraits<
-    scoped_refptr<base::RefCountedData<blink::TransferableMessage>>>::
-    Read(const base::Pickle* m, base::PickleIterator* iter, param_type* r) {
-  *r = new base::RefCountedData<blink::TransferableMessage>();
-
-  const char* data;
-  int length;
-  if (!iter->ReadData(&data, &length))
-    return false;
-  // This just makes encoded_message point into the IPC message buffer. Usually
-  // code receiving a TransferableMessage will synchronously process the message
-  // so this avoids an unnecessary copy. If a receiver needs to hold on to the
-  // message longer, it should make sure to call EnsureDataIsOwned on the
-  // returned message.
-  (*r)->data.encoded_message =
-      base::make_span(reinterpret_cast<const uint8_t*>(data), length);
-  bool has_activation = false;
-  if (!ReadParam(m, iter, &(*r)->data.blobs) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_id) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_should_pause) ||
-      !ReadParam(m, iter, &(*r)->data.locked_agent_cluster_id) ||
-      !ReadParam(m, iter, &(*r)->data.ports) ||
-      !ReadParam(m, iter, &(*r)->data.stream_channels) ||
-      !ReadParam(m, iter, &has_activation) ||
-      !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
-      !ReadParam(m, iter, &(*r)->data.allow_autoplay) ||
-      !ReadParam(m, iter, &(*r)->data.sender_origin) ||
-      !ReadParam(m, iter, &(*r)->data.native_file_system_tokens)) {
-    return false;
-  }
-
-  if (has_activation) {
-    bool has_been_active;
-    bool was_active;
-    if (!ReadParam(m, iter, &has_been_active) ||
-        !ReadParam(m, iter, &was_active)) {
-      return false;
-    }
-    (*r)->data.user_activation =
-        blink::mojom::UserActivationSnapshot::New(has_been_active, was_active);
-  }
-  return true;
-}
-
-void ParamTraits<scoped_refptr<
-    base::RefCountedData<blink::TransferableMessage>>>::Log(const param_type& p,
-                                                            std::string* l) {
-  l->append("<blink::TransferableMessage>");
-}
-
 void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
                                           const param_type& p) {
   DCHECK(p.is_valid());
@@ -378,38 +267,6 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
   LogParam(p.child_sequence_number(), l);
   l->append(", ");
   LogParam(p.embed_token(), l);
-  l->append(")");
-}
-
-void ParamTraits<viz::LocalSurfaceIdAllocation>::Write(base::Pickle* m,
-                                                       const param_type& p) {
-  DCHECK(p.IsValid());
-  WriteParam(m, p.local_surface_id());
-  WriteParam(m, p.allocation_time());
-}
-
-bool ParamTraits<viz::LocalSurfaceIdAllocation>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* p) {
-  viz::LocalSurfaceId local_surface_id;
-  if (!ReadParam(m, iter, &local_surface_id))
-    return false;
-
-  base::TimeTicks allocation_time;
-  if (!ReadParam(m, iter, &allocation_time))
-    return false;
-
-  *p = viz::LocalSurfaceIdAllocation(local_surface_id, allocation_time);
-  return p->IsValid();
-}
-
-void ParamTraits<viz::LocalSurfaceIdAllocation>::Log(const param_type& p,
-                                                     std::string* l) {
-  l->append("viz::LocalSurfaceIdAllocation(");
-  LogParam(p.local_surface_id(), l);
-  l->append(", ");
-  LogParam(p.allocation_time(), l);
   l->append(")");
 }
 
@@ -502,39 +359,6 @@ bool ParamTraits<net::SHA256HashValue>::Read(const base::Pickle* m,
 void ParamTraits<net::SHA256HashValue>::Log(const param_type& p,
                                             std::string* l) {
   l->append("<SHA256HashValue>");
-}
-
-void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p.event_start_time);
-  WriteParam(m, p.destination_is_loaded);
-  WriteParam(m, p.destination_is_frozen);
-  WriteParam(m, p.show_reason_tab_switching);
-  WriteParam(m, p.show_reason_unoccluded);
-  WriteParam(m, p.show_reason_bfcache_restore);
-}
-
-bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  if (!ReadParam(m, iter, &r->event_start_time) ||
-      !ReadParam(m, iter, &r->destination_is_loaded) ||
-      !ReadParam(m, iter, &r->destination_is_frozen) ||
-      !ReadParam(m, iter, &r->show_reason_tab_switching) ||
-      !ReadParam(m, iter, &r->show_reason_unoccluded) ||
-      !ReadParam(m, iter, &r->show_reason_bfcache_restore)) {
-    return false;
-  }
-
-  return true;
-}
-
-void ParamTraits<content::RecordContentToVisibleTimeRequest>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("<content::RecordContentToVisibleTimeRequest>");
 }
 
 }  // namespace IPC

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/printing/common/print.mojom.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -42,8 +43,8 @@ class TestPrintViewManager : public PrintViewManagerBase {
   // Mostly copied from PrintViewManager::PrintPreviewNow(). We can't override
   // PrintViewManager since it is a user data class.
   bool PrintPreviewNow(content::RenderFrameHost* rfh, bool has_selection) {
-    // Don't print / print preview interstitials or crashed tabs.
-    if (IsInterstitialOrCrashed())
+    // Don't print / print preview crashed tabs.
+    if (IsCrashed())
       return false;
 
     mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame;
@@ -93,7 +94,7 @@ class TestPrintViewManager : public PrintViewManagerBase {
 
  private:
   TestPrintJob* test_job() {
-    return reinterpret_cast<TestPrintJob*>(print_job_.get());
+    return static_cast<TestPrintJob*>(print_job_.get());
   }
 
   base::RunLoop* run_loop_ = nullptr;
@@ -140,6 +141,9 @@ TEST_F(PrintViewManagerTest, PostScriptHasCorrectOffsets) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
+
+  content::RemoveWebContentsReceiverSet(web_contents,
+                                        mojom::PrintManagerHost::Name_);
 
   std::unique_ptr<TestPrintViewManager> print_view_manager =
       std::make_unique<TestPrintViewManager>(web_contents);

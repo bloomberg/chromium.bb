@@ -8,14 +8,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prefetch/no_state_prefetch/chrome_prerender_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/no_state_prefetch/browser/prerender_contents.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -36,11 +36,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/process_manager.h"
+#endif
 #include "ipc/ipc_message.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/ssl/ssl_info.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -115,18 +114,41 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   prerender::PrerenderContents* prerender_contents =
-      web_contents ? prerender::PrerenderContents::FromWebContents(web_contents)
-                   : nullptr;
+      web_contents
+          ? prerender::ChromePrerenderContentsDelegate::FromWebContents(
+                web_contents)
+          : nullptr;
   if (!web_contents || prerender_contents) {
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
     }
     // Tab is gone or it's being prerendered.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(resource.callback, false /*proceed*/,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(resource.callback, false /*proceed*/,
                                   false /*showed_interstitial*/));
     return;
   }
+
+// We don't show interstitials for extension triggered SB errors, since they
+// might not be visible, and cause the extension to hang. The request is just
+// cancelled instead.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::ProcessManager* extension_manager =
+      extensions::ProcessManager::Get(web_contents->GetBrowserContext());
+  if (extension_manager) {
+    extensions::ExtensionHost* extension_host =
+        extension_manager->GetExtensionHostForRenderFrameHost(
+            web_contents->GetMainFrame());
+    if (extension_host) {
+      if (!resource.callback.is_null()) {
+        resource.callback_thread->PostTask(
+            FROM_HERE, base::BindOnce(resource.callback, false /* proceed */,
+                                      false /* showed_interstitial */));
+      }
+      return;
+    }
+  }
+#endif
 
   // With committed interstitials, if this is a main frame load, we need to
   // get the navigation URL and referrer URL from the navigation entry now,
@@ -175,7 +197,10 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
   DVLOG(1) << "ReportSafeBrowsingHit: " << hit_report.malicious_url << " "
            << hit_report.page_url << " " << hit_report.referrer_url << " "
            << hit_report.is_subresource << " " << hit_report.threat_type;
-  sb_service_->ping_manager()->ReportSafeBrowsingHit(hit_report);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  sb_service_->ping_manager()->ReportSafeBrowsingHit(
+      sb_service_->GetURLLoaderFactory(profile), hit_report);
 }
 
 // Static.
@@ -215,6 +240,7 @@ const GURL SafeBrowsingUIManager::default_safe_page() const {
 // If the user had opted-in to send ThreatDetails, this gets called
 // when the report is ready.
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -225,7 +251,10 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized threat details.";
-    sb_service_->ping_manager()->ReportThreatDetails(serialized);
+    sb_service_->ping_manager()->ReportThreatDetails(
+        sb_service_->GetURLLoaderFactory(
+            Profile::FromBrowserContext(browser_context)),
+        serialized);
   }
 }
 

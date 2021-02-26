@@ -18,7 +18,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace android_webview {
@@ -27,13 +27,21 @@ namespace android_webview {
 scoped_refptr<AwRenderThreadContextProvider>
 AwRenderThreadContextProvider::Create(
     scoped_refptr<gl::GLSurface> surface,
-    gpu::CommandBufferTaskExecutor* task_executor) {
-  return new AwRenderThreadContextProvider(surface, task_executor);
+    gpu::CommandBufferTaskExecutor* task_executor,
+    gpu::GpuTaskSchedulerHelper* gpu_task_scheduler_helper,
+    gpu::DisplayCompositorMemoryAndTaskControllerOnGpu*
+        display_compositor_controller_on_gpu) {
+  return new AwRenderThreadContextProvider(
+      surface, task_executor, gpu_task_scheduler_helper,
+      display_compositor_controller_on_gpu);
 }
 
 AwRenderThreadContextProvider::AwRenderThreadContextProvider(
     scoped_refptr<gl::GLSurface> surface,
-    gpu::CommandBufferTaskExecutor* task_executor) {
+    gpu::CommandBufferTaskExecutor* task_executor,
+    gpu::GpuTaskSchedulerHelper* gpu_task_scheduler_helper,
+    gpu::DisplayCompositorMemoryAndTaskControllerOnGpu*
+        display_compositor_controller_on_gpu) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // This is an onscreen context, wrapping the GLSurface given to us from
@@ -67,7 +75,8 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_ = std::make_unique<gpu::GLInProcessContext>();
   context_->Initialize(task_executor, surface, surface->IsOffscreen(),
                        gpu::kNullSurfaceHandle, attributes, limits, nullptr,
-                       nullptr, nullptr);
+                       nullptr, gpu_task_scheduler_helper,
+                       display_compositor_controller_on_gpu, nullptr);
 
   context_->GetImplementation()->SetLostContextCallback(base::BindOnce(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
@@ -135,7 +144,7 @@ gpu::ContextSupport* AwRenderThreadContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-class GrContext* AwRenderThreadContextProvider::GrContext() {
+class GrDirectContext* AwRenderThreadContextProvider::GrContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
@@ -143,7 +152,7 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
 
   sk_sp<GrGLInterface> interface(skia_bindings::CreateGLES2InterfaceBindings(
       ContextGL(), ContextSupport()));
-  gr_context_ = GrContext::MakeGL(std::move(interface));
+  gr_context_ = GrDirectContext::MakeGL(std::move(interface));
   cache_controller_->SetGrContext(gr_context_.get());
   return gr_context_.get();
 }

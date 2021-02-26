@@ -5,13 +5,13 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_QUIC_SPDY_STREAM_BODY_MANAGER_H_
 #define QUICHE_QUIC_CORE_HTTP_QUIC_SPDY_STREAM_BODY_MANAGER_H_
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_iovec.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_macros.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -38,18 +38,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStreamBodyManager {
   // sequencer (provided that all previous body fragments are consumed) is
   // received.  |length| must be positive.  Returns number of bytes the caller
   // must mark consumed, which might be zero.
-  QUIC_MUST_USE_RESULT size_t OnNonBody(QuicByteCount length);
+  ABSL_MUST_USE_RESULT size_t OnNonBody(QuicByteCount length);
 
   // Called when body is received.  |body| is added to |fragments_|.  The data
   // pointed to by |body| must be kept alive until an OnBodyConsumed() or
   // ReadBody() call consumes it.  |body| must not be empty.
-  void OnBody(quiche::QuicheStringPiece body);
+  void OnBody(absl::string_view body);
 
   // Internally marks |num_bytes| of body consumed.  |num_bytes| might be zero.
   // Returns the number of bytes that the caller should mark consumed with the
   // sequencer, which is the sum of |num_bytes| for body, and the number of any
   // interleaving or immediately trailing non-body bytes.
-  QUIC_MUST_USE_RESULT size_t OnBodyConsumed(size_t num_bytes);
+  ABSL_MUST_USE_RESULT size_t OnBodyConsumed(size_t num_bytes);
 
   // Set up to |iov_len| elements of iov[] to point to available bodies: each
   // iov[i].iov_base will point to a body fragment, and iov[i].iov_len will be
@@ -63,7 +63,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStreamBodyManager {
   // preassigned and will not be changed.  Returns the total number of bytes the
   // caller shall mark consumed.  Sets |*total_bytes_read| to the total number
   // of body bytes read.
-  QUIC_MUST_USE_RESULT size_t ReadBody(const struct iovec* iov,
+  ABSL_MUST_USE_RESULT size_t ReadBody(const struct iovec* iov,
                                        size_t iov_len,
                                        size_t* total_bytes_read);
 
@@ -79,7 +79,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStreamBodyManager {
   // consumed as soon as all of the body fragment is read.
   struct QUIC_EXPORT_PRIVATE Fragment {
     // |body| must not be empty.
-    quiche::QuicheStringPiece body;
+    absl::string_view body;
     // Might be zero.
     QuicByteCount trailing_non_body_byte_count;
   };

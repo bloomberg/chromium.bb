@@ -124,6 +124,9 @@ interface GpuService {
   // Tells GPU that host has seen a monitor being unplugged.
   DisplayRemoved();
 
+  // Tells GPU that host has seen the display metrics changed.
+  DisplayMetricsChanged();
+
   // Tells GPU that all GPU channels are to be destroyed.
   DestroyAllChannels();
 
@@ -153,7 +156,7 @@ interface GpuService {
 
   // Write out the accumulated code profiling profile to the configured file.
   // The callback is invoked once the profile has been flushed to disk.
-  [EnableIf=use_clang_profiling]
+  [EnableIf=use_clang_profiling_inside_sandbox]
   WriteClangProfilingProfile() => ();
 
   Crash();

@@ -12,7 +12,7 @@
 
   // More details about the real-world understanding APIs can be found here:
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
-  [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldInformation worldInformation;
+  [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldInformation worldInformation;
 
   [RuntimeEnabled=WebXRAnchors]
   readonly attribute XRAnchorSet trackedAnchors;
@@ -27,6 +27,12 @@
   [RuntimeEnabled=WebXRHitTest, RaisesException]
   FrozenArray<XRTransientInputHitTestResult> getHitTestResultsForTransientInput(XRTransientInputHitTestSource hitTestSource);
 
-  [RuntimeEnabled=WebXRLightEstimation, RaisesException]
+  [RuntimeEnabled=WebXRLightEstimation, RaisesException, MeasureAs=XRFrameGetLightEstimate]
   XRLightEstimate? getLightEstimate(XRLightProbe lightProbe);
+
+  [RuntimeEnabled=WebXRDepth, RaisesException, MeasureAs=XRFrameGetDepthInformation]
+  XRDepthInformation getDepthInformation(XRView view);
+
+  [RuntimeEnabled=WebXRImageTracking, RaisesException]
+  FrozenArray<XRImageTrackingResult> getImageTrackingResults();
 };

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -116,6 +116,7 @@ ModelTypeStoreServiceImpl::ModelTypeStoreServiceImpl(
 
 ModelTypeStoreServiceImpl::~ModelTypeStoreServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
+  backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(store_backend_));
 }
 
 const base::FilePath& ModelTypeStoreServiceImpl::GetSyncDataPath() const {

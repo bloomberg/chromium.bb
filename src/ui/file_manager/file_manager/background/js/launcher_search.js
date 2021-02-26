@@ -163,16 +163,16 @@ class LauncherSearch {
               {currentDirectoryURL: entry.toURL()}, undefined, /* App ID */
               LaunchType.FOCUS_SAME_OR_CREATE);
         } else {
-          // getFileTasks supports only native entries.
-          if (!util.isNativeEntry(entry)) {
+          // getFileTasks does not support fake entries.
+          if (util.isFakeEntry(entry)) {
             return;
           }
           // If the file is not directory, try to execute default task.
           chrome.fileManagerPrivate.getFileTasks([entry], tasks => {
             // Select default task.
             let defaultTask = null;
-            for (var i = 0; i < tasks.length; i++) {
-              var task = tasks[i];
+            for (let i = 0; i < tasks.length; i++) {
+              const task = tasks[i];
               if (task.isDefault) {
                 defaultTask = task;
                 break;
@@ -183,8 +183,8 @@ class LauncherSearch {
             // one which is not generic file handler as default task.
             // TODO(yawano) Share task execution logic with file_tasks.js.
             if (!defaultTask) {
-              for (var i = 0; i < tasks.length; i++) {
-                var task = tasks[i];
+              for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
                 if (!task.isGenericFileHandler) {
                   defaultTask = task;
                   break;
@@ -320,16 +320,11 @@ class LauncherSearch {
   createSearchResult_(entry) {
     // TODO(yawano): Use filetype_folder_shared.png for a shared
     //     folder.
-    // TODO(yawano): Add archive launcher filetype icon.
     let icon = FileType.getIcon(entry);
-    if (icon === 'UNKNOWN' || icon === 'archive') {
+
+    if (icon === 'UNKNOWN') {
       icon = 'generic';
     }
-
-    const useHighDpiIcon = window.devicePixelRatio > 1.0;
-    const iconUrl = chrome.runtime.getURL(
-        'foreground/images/launcher_filetypes/' +
-        (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' + icon + '.png');
 
     // Hide extensions for hosted files.
     const title = FileType.isHosted(entry) ?
@@ -340,7 +335,7 @@ class LauncherSearch {
     return {
       itemId: entry.toURL(),
       title: title,
-      iconUrl: iconUrl,
+      iconType: icon,
       // Relevance is set as 2 for all results as a temporary
       // implementation. 2 is the middle value.
       // TODO(yawano): Implement practical relevance calculation.

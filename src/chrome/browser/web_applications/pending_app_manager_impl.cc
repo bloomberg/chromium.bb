@@ -100,23 +100,23 @@ std::unique_ptr<PendingAppInstallTask>
 PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
   return std::make_unique<PendingAppInstallTask>(
-      profile_, registrar(), shortcut_manager(), file_handler_manager(),
-      ui_manager(), finalizer(), std::move(install_options));
+      profile_, registrar(), os_integration_manager(), ui_manager(),
+      finalizer(), install_manager(), std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>
-PendingAppManagerImpl::StartRegistration(GURL launch_url) {
+PendingAppManagerImpl::StartRegistration(GURL install_url) {
   return std::make_unique<PendingAppRegistrationTask>(
-      launch_url, url_loader_.get(), web_contents_.get(),
+      install_url, url_loader_.get(), web_contents_.get(),
       base::BindOnce(&PendingAppManagerImpl::OnRegistrationFinished,
-                     weak_ptr_factory_.GetWeakPtr(), launch_url));
+                     weak_ptr_factory_.GetWeakPtr(), install_url));
 }
 
 void PendingAppManagerImpl::OnRegistrationFinished(
-    const GURL& launch_url,
+    const GURL& install_url,
     RegistrationResultCode result) {
-  DCHECK_EQ(current_registration_->launch_url(), launch_url);
-  PendingAppManager::OnRegistrationFinished(launch_url, result);
+  DCHECK_EQ(current_registration_->install_url(), install_url);
+  PendingAppManager::OnRegistrationFinished(install_url, result);
 
   current_registration_.reset();
   PostMaybeStartNext();
@@ -145,8 +145,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
       return;
     }
 
-    base::Optional<AppId> app_id =
-        externally_installed_app_prefs_.LookupAppId(install_options.url);
+    base::Optional<AppId> app_id = externally_installed_app_prefs_.LookupAppId(
+        install_options.install_url);
 
     // If the URL is not in ExternallyInstalledWebAppPrefs, then no external
     // source has installed it.
@@ -170,7 +170,7 @@ void PendingAppManagerImpl::MaybeStartNext() {
       // placeholder app and the client asked for it to be reinstalled.
       if (install_options.reinstall_placeholder &&
           externally_installed_app_prefs_
-              .LookupPlaceholderAppId(install_options.url)
+              .LookupPlaceholderAppId(install_options.install_url)
               .has_value()) {
         StartInstallationTask(std::move(front));
         return;
@@ -178,7 +178,7 @@ void PendingAppManagerImpl::MaybeStartNext() {
 
       // Otherwise no need to do anything.
       std::move(front->callback)
-          .Run(install_options.url,
+          .Run(install_options.install_url,
                InstallResultCode::kSuccessAlreadyInstalled);
       continue;
     }
@@ -189,7 +189,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
     if (finalizer()->WasExternalAppUninstalledByUser(app_id.value()) &&
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
-          .Run(install_options.url, InstallResultCode::kPreviouslyUninstalled);
+          .Run(install_options.install_url,
+               InstallResultCode::kPreviouslyUninstalled);
       continue;
     }
 
@@ -212,15 +213,30 @@ void PendingAppManagerImpl::StartInstallationTask(
   DCHECK(!current_install_);
   if (current_registration_) {
     // Preempt current registration.
-    pending_registrations_.push_front(current_registration_->launch_url());
+    pending_registrations_.push_front(current_registration_->install_url());
     current_registration_.reset();
   }
-
   current_install_ = std::move(task);
+
+  if (current_install_->task->install_options().only_use_app_info_factory) {
+    DCHECK(current_install_->task->install_options().app_info_factory);
+    current_install_->task->InstallFromInfo(base::BindOnce(
+        &PendingAppManagerImpl::OnInstalled, weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
   CreateWebContentsIfNecessary();
 
-  url_loader_->LoadUrl(current_install_->task->install_options().url,
+  url_loader_->PrepareForLoad(
+      web_contents_.get(),
+      base::BindOnce(&PendingAppManagerImpl::OnWebContentsReady,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PendingAppManagerImpl::OnWebContentsReady(WebAppUrlLoader::Result) {
+  // TODO(crbug.com/1098139): Handle the scenario where WebAppUrlLoader fails to
+  // load about:blank and flush WebContents states.
+  url_loader_->LoadUrl(current_install_->task->install_options().install_url,
                        web_contents_.get(),
                        WebAppUrlLoader::UrlComparison::kSameOrigin,
                        base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
@@ -228,8 +244,11 @@ void PendingAppManagerImpl::StartInstallationTask(
 }
 
 bool PendingAppManagerImpl::RunNextRegistration() {
-  if (pending_registrations_.empty())
+  if (pending_registrations_.empty()) {
+    if (registrations_complete_callback_)
+      std::move(registrations_complete_callback_).Run();
     return false;
+  }
 
   GURL url_to_check = std::move(pending_registrations_.front());
   pending_registrations_.pop_front();
@@ -260,15 +279,9 @@ void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
 void PendingAppManagerImpl::CurrentInstallationFinished(
     const base::Optional<AppId>& app_id,
     InstallResultCode code) {
-  if (app_id && code == InstallResultCode::kSuccessNewInstall &&
-      base::FeatureList::IsEnabled(
-          features::kDesktopPWAsCacheDuringDefaultInstall)) {
-    const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
-    bool is_local_resource =
-        launch_url.scheme() == content::kChromeUIScheme ||
-        launch_url.scheme() == content::kChromeUIUntrustedScheme;
-    if (!launch_url.is_empty() && !is_local_resource)
-      pending_registrations_.push_back(launch_url);
+  if (app_id && IsSuccess(code)) {
+    MaybeEnqueueServiceWorkerRegistration(
+        current_install_->task->install_options());
   }
 
   // Post a task to avoid InstallableManager crashing and do so before
@@ -279,7 +292,41 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_install_);
   std::move(task_and_callback->callback)
-      .Run(task_and_callback->task->install_options().url, code);
+      .Run(task_and_callback->task->install_options().install_url, code);
+}
+
+void PendingAppManagerImpl::MaybeEnqueueServiceWorkerRegistration(
+    const ExternalInstallOptions& install_options) {
+  if (!base::FeatureList::IsEnabled(
+          features::kDesktopPWAsCacheDuringDefaultInstall)) {
+    return;
+  }
+
+  if (install_options.only_use_app_info_factory)
+    return;
+
+  if (!install_options.load_and_await_service_worker_registration)
+    return;
+
+  // TODO(crbug.com/809304): Call CreateWebContentsIfNecessary() instead of
+  // checking web_contents_ once major migration of default hosted apps to web
+  // apps has completed.
+  // Temporarily using offline manifest migrations (in which |web_contents_|
+  // is nullptr) in order to avoid overwhelming migrated-to web apps with hits
+  // for service worker registrations.
+  if (!web_contents_)
+    return;
+
+  GURL url = install_options.service_worker_registration_url.value_or(
+      install_options.install_url);
+  if (url.is_empty())
+    return;
+  if (url.scheme() == content::kChromeUIScheme)
+    return;
+  if (url.scheme() == content::kChromeUIUntrustedScheme)
+    return;
+
+  pending_registrations_.push_back(url);
 }
 
 }  // namespace web_app

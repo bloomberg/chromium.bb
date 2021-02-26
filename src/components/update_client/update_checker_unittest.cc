@@ -21,7 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -227,9 +227,9 @@ void UpdateCheckerTest::UpdateCheckComplete(
 scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
-      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateClient::CrxStateChangeCallback(),
       UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
-      nullptr, nullptr);
+      nullptr);
 }
 
 std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {
@@ -492,10 +492,10 @@ TEST_P(UpdateCheckerTest, UpdateCheckDownloadPreference) {
 
   // The request must contain dlpref="cacheable".
   const auto request = post_interceptor_->GetRequestBody(0);
-    const auto root = base::JSONReader().Read(request);
-    ASSERT_TRUE(root);
-    EXPECT_EQ("cacheable",
-              root->FindKey("request")->FindKey("dlpref")->GetString());
+  const auto root = base::JSONReader::Read(request);
+  ASSERT_TRUE(root);
+  EXPECT_EQ("cacheable",
+            root->FindKey("request")->FindKey("dlpref")->GetString());
 }
 
 // This test is checking that an update check signed with CUP fails, since there

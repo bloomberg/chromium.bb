@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_area.h"
 
 #include "fxjs/xfa/cjx_container.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -40,6 +40,8 @@ CXFA_Area::CXFA_Area(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Area,
           kAreaPropertyData,
           kAreaAttributeData,
-          pdfium::MakeUnique<CJX_Container>(this)) {}
+          cppgc::MakeGarbageCollected<CJX_Container>(
+              doc->GetHeap()->GetAllocationHandle(),
+              this)) {}
 
 CXFA_Area::~CXFA_Area() = default;

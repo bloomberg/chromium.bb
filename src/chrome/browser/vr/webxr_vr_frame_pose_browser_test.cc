@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -9,8 +11,6 @@
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
-
-#include <memory>
 
 namespace vr {
 
@@ -101,7 +101,7 @@ void MyXRMock::OnFrameSubmitted(
     wait_loop_ = nullptr;
   }
 
-  ASSERT_TRUE(!!last_immersive_frame_data)
+  ASSERT_TRUE(last_immersive_frame_data)
       << "Frame submitted without any frame data provided";
 
   // We expect a waitGetPoses, then 2 submits (one for each eye), so after 2
@@ -143,7 +143,7 @@ void MyXRMock::WaitGetPresentingPose(
 }
 
 std::string GetMatrixAsString(const gfx::Transform& m) {
-  // Dump the transpose of the matrix due to openvr vs. webxr matrix format
+  // Dump the transpose of the matrix due to device vs. webxr matrix format
   // differences.
   return base::StringPrintf(
       "[%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]",

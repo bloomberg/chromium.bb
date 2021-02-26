@@ -13,6 +13,8 @@
 @class NSMutableArray;
 
 namespace ios {
+// Email suffix used for managed accounts.
+extern NSString* const kManagedIdentityEmailSuffix;
 
 // A fake ChromeIdentityService used for testing.
 class FakeChromeIdentityService : public ChromeIdentityService {
@@ -37,12 +39,11 @@ class FakeChromeIdentityService : public ChromeIdentityService {
       ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
-  bool IsValidIdentity(ChromeIdentity* identity) const override;
-  ChromeIdentity* GetIdentityWithGaiaID(
-      const std::string& gaia_id) const override;
-  bool HasIdentities() const override;
-  NSArray* GetAllIdentities() const override;
-  NSArray* GetAllIdentitiesSortedForDisplay() const override;
+  bool IsValidIdentity(ChromeIdentity* identity) override;
+  ChromeIdentity* GetIdentityWithGaiaID(const std::string& gaia_id) override;
+  bool HasIdentities() override;
+  NSArray* GetAllIdentities() override;
+  NSArray* GetAllIdentitiesSortedForDisplay() override;
   void ForgetIdentity(ChromeIdentity* identity,
                       ForgetIdentityCallback callback) override;
 
@@ -85,14 +86,12 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // is already added.
   void AddIdentity(ChromeIdentity* identity);
 
-  // Removes |identity| from the available identities. No-op if the identity
-  // is unknown.
-  void RemoveIdentity(ChromeIdentity* identity);
-
   // When set to true, call to GetAccessToken() fakes a MDM error.
   void SetFakeMDMError(bool fakeMDMError);
 
-  bool HasPendingCallback();
+  // Waits until all asynchronous callbacks have been completed by the service.
+  // Returns true on successful completion.
+  bool WaitForServiceCallbacksToComplete();
 
  private:
   NSMutableArray* identities_;

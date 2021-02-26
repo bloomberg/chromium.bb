@@ -5,9 +5,11 @@
 module device.mojom;
 
 import "device/gamepad/public/mojom/gamepad.mojom";
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
+import "skia/public/mojom/bitmap.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/gpu_fence_handle.mojom";
@@ -22,14 +24,14 @@ import "ui/gfx/mojom/transform.mojom";
 
 // TODO(https://crbug.com/966099): Use EnableIf to only define values on
 // platforms that have implementations.
-// XRDeviceId is used in metrics, so don't reorder.
+// XRDeviceId is used in metrics, so don't reorder or reuse.
 enum XRDeviceId {
   WEB_TEST_DEVICE_ID = 0, // Fake device used by web_tests.
   FAKE_DEVICE_ID = 1, // Fake device used in unit tests.
   ORIENTATION_DEVICE_ID = 2,
   GVR_DEVICE_ID = 3,
-  [EnableIf=enable_openvr] OPENVR_DEVICE_ID = 4,
-  [EnableIf=enable_oculus_vr] OCULUS_DEVICE_ID = 5,
+  // OPENVR_DEVICE_ID = 4,
+  // OCULUS_DEVICE_ID = 5,
   [EnableIf=enable_windows_mr] WINDOWS_MIXED_REALITY_ID = 6,
   ARCORE_DEVICE_ID = 7,
   [EnableIf=enable_openxr] OPENXR_DEVICE_ID = 8,
@@ -59,7 +61,11 @@ enum XRSessionFeature {
   DOM_OVERLAY = 6,
   HIT_TEST = 7,
   LIGHT_ESTIMATION = 8, // Experimental feature.
-  ANCHORS = 9,  // Experimental feature.
+  ANCHORS = 9,
+  CAMERA_ACCESS = 10, // Experimental feature.
+  PLANE_DETECTION = 11, // Experimental feature.
+  DEPTH = 12, // Experimental feature.
+  IMAGE_TRACKING = 13, // Experimental feature.
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -83,6 +89,33 @@ enum XRSessionMode {
   kImmersiveAr = 3,
 };
 
+// These enum names come from the WebXR spec:
+// https://immersive-web.github.io/webxr-ar-module/#enumdef-xrenvironmentblendmode
+// When presenting content to the XR device, the XR Compositor MUST apply the
+// appropriate blend technique to combine virtual pixels with the
+// real-world environment.
+enum XREnvironmentBlendMode {
+  kOpaque = 1,
+  kAlphaBlend = 2,
+  kAdditive = 3,
+};
+
+// These enum names come from the WebXR spec:
+// https://immersive-web.github.io/webxr-ar-module/#enumdef-xrinteractionmode
+// The interactionMode attribute describes the best space
+// (according to the user agent) for the application to draw interactive
+// UI for the current session.
+enum XRInteractionMode {
+  kScreenSpace = 1,
+  kWorldSpace = 2,
+};
+
+struct XRTrackedImage {
+  skia.mojom.Bitmap bitmap;
+  gfx.mojom.Size size_in_pixels;
+  float width_in_meters;
+};
+
 struct XRSessionOptions {
   // Represents the type of session that is being requested.
   XRSessionMode mode;
@@ -96,12 +129,37 @@ struct XRSessionOptions {
   // the feature will not be added to the enabled_features set on the XRSession
   // struct that is returned.
   array<XRSessionFeature> optional_features;
+
+  array<XRTrackedImage> tracked_images;
+};
+
+// This structure contains a description of the device's active configuration
+// for the session being established.
+struct XRSessionDeviceConfig {
+  // Indicates whether the device backing this session sends input events solely
+  // via eventing (as opposed to polling).
+  bool uses_input_eventing;
+
+  // The default scale that should be applied to the native framebuffer size
+  // unless overridden by the developer.
+  float default_framebuffer_scale = 1.0;
+
+  // Indicates whether the device supports dynamic viewport scaling via
+  // XRView.requestViewportScale which results in UpdateLayerBounds mojo calls.
+  // This is opt-in to avoid problems with devices that assume default bounds,
+  // this would result in broken rendering due to inconsistency between the
+  // drawn and displayed viewports.
+  bool supports_viewport_scaling;
+
+  // Indicates whether we should enable anti-aliasing for WebGL layers. Value
+  // comes from the underlying XR runtime.
+  bool enable_anti_aliasing = true;
 };
 
 // This structure contains all the mojo interfaces for different kinds of
 // XRSession. The only interface required by all sessions is the
 // XRFrameDataProvider. It must always be present. Other interfaces are set as
-// apropriate based on the session creation options. (for example, an immersive
+// appropriate based on the session creation options. (for example, an immersive
 // session ought to have a XRPresentationConnection to submit the frames to the
 // immersive environment).
 // The XRSessionClient receiver must be fulfilled for the session to get
@@ -122,9 +180,11 @@ struct XRSession {
   // runtime, and have been consented to by the user.
   array<XRSessionFeature> enabled_features;
 
-  // Indicates whether the device backing this session sends input events solely
-  // via eventing (as opposed to polling).
-  bool uses_input_eventing;
+  // Description of the device's active configuration.
+  XRSessionDeviceConfig device_config;
+
+  XREnvironmentBlendMode enviroment_blend_mode;
+  XRInteractionMode interaction_mode;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -261,7 +321,7 @@ struct XRRay {
 };
 
 struct XRHitResult {
-  gfx.mojom.Transform hit_matrix;
+  Pose mojo_from_result;  // Pose of the result (aka intersection point).
   uint64 plane_id;  // If the hit test result was computed based off of a plane,
                     // the plane ID will be stored here. 0 signifies no plane.
                     // TODO(https://crbug.com/657632) - make it optional once
@@ -283,7 +343,7 @@ struct VREyeParameters {
 };
 
 struct VRStageParameters {
-  gfx.mojom.Transform standing_transform;
+  gfx.mojom.Transform mojo_from_floor;
 
   // If present, indicates that the device supports a bounded reference space
   // (https://immersive-web.github.io/webxr/#xrboundedreferencespace-interface).
@@ -294,13 +354,10 @@ struct VRStageParameters {
 };
 
 struct VRDisplayInfo {
-  XRDeviceId id;
-  VRStageParameters? stage_parameters;
   // Parameters required to distort a scene for viewing in a VR headset. Only
   // required for devices which have the can_present capability.
   VREyeParameters? left_eye;
   VREyeParameters? right_eye;
-  float webxr_default_framebuffer_scale = 1.0;
 };
 
 // Frame transport method from the Renderer's point of view.
@@ -329,14 +386,14 @@ struct XRPresentationTransportOptions {
   bool wait_for_gpu_fence;
 };
 
-// Native origins that are reference spaces are identified by their category.
-// Currently, the device needs to know about 3 reference space categories.
-enum XRReferenceSpaceCategory {
-  LOCAL,
-  LOCAL_FLOOR,
-  VIEWER,
-  BOUNDED_FLOOR,
-  UNBOUNDED
+// Native origins that are reference spaces are identified by their type.
+// Used for metrics, don't remove or change values.
+enum XRReferenceSpaceType {
+  kViewer = 0,
+  kLocal = 1,
+  kLocalFloor = 2,
+  kBoundedFloor = 3,
+  kUnbounded = 4,
 };
 
 // Native origin represents a reference space that is known to the device and
@@ -346,12 +403,12 @@ enum XRReferenceSpaceCategory {
 // XRReferenceSpaceType, XRBoundedReferenceSpace) or returns an XRSpace (for
 // example XRAnchor, XRPlane, XRInputSource). Native origin can be identified,
 // depending on its type, by the id of the entity (this is the case for planes,
-// anchors and input sources), or by reference space category.
+// anchors and input sources), or by reference space type.
 union XRNativeOriginInformation {
   uint32 input_source_id;
   uint64 plane_id;
   uint64 anchor_id;
-  XRReferenceSpaceCategory reference_space_category;
+  XRReferenceSpaceType reference_space_type;
 };
 
 enum XRPlaneOrientation {
@@ -533,6 +590,65 @@ struct XRLightEstimationData {
   XRReflectionProbe? reflection_probe;
 };
 
+// Structure that signifies that the depth data is still valid, no additional
+// information is provided. See |XRDepthData| for more details.
+struct XRDepthDataStillValid {};
+
+// Structure that signifies that the Depth data was updated. Provides
+// information about current depth data. See |XRDepthData| for more details.
+struct XRDepthDataUpdated {
+  // Timestamp of the returned data, in unspecified base.
+  mojo_base.mojom.TimeDelta time_delta;
+  // Array of 16-bit numbers representing depth in millimeters from the camera
+  // plane.
+  mojo_base.mojom.BigBuffer pixel_data;
+  // Transform that needs to be applied when indexing into pixel_data when using
+  // normalized view coordinates (with origin at bottom left corner of the
+  // screen).
+  gfx.mojom.Transform norm_texture_from_norm_view;
+  // Size of the pixel array. Valid iff pixel_data is not null.
+  gfx.mojom.Size size;
+};
+
+// Depth data may be the same as the one returned in the previous frame - it is
+// represented as a union of (empty) XRDepthDataStillValid structure that
+// conveys no additional information except that the previously returned depth
+// data is still valid, and the XRDepthDataUpdated structure that signifies that
+// the depth data was updated & carries all information about it.
+union XRDepthData {
+  XRDepthDataStillValid data_still_valid;
+  XRDepthDataUpdated updated_depth_data;
+};
+
+struct XRTrackedImageData {
+  // Index of the image within the tracked images array passed to requestSession
+  uint32 index;
+
+  // Pose of the image. Must be non-null, images are only included in results
+  // if they have a pose.
+  Pose mojo_from_image;
+
+  // If true, the image is currently actively tracked. If false, the pose is
+  // inferred from previous tracking results. In that case, it's likely
+  // accurate for stationary images, but may be stale for a moving image.
+  bool actively_tracked;
+
+  // The best-effort measured width in meters for the physical image. Zero
+  // if the width is unknown due to the image never having been tracked
+  // successfully.
+  float width_in_meters;
+};
+
+struct XRTrackedImagesData {
+  array<XRTrackedImageData> images_data;
+
+  // The first returned result includes an array of trackable/untrackable
+  // scores, in the same order as tracked_images in the session request.
+  // (This is unambiguous since only used for immersive sessions, and
+  // there can only be one immersive session at a time.)
+  array<bool>? image_trackable_scores;
+};
+
 // The data needed for each animation frame of an XRSession.
 struct XRFrameData {
   // General XRSession value
@@ -540,15 +656,22 @@ struct XRFrameData {
   // The pose may be null if the device lost tracking. The XRFrameData can still
   // have other data, such as pass through camera image.
   VRPose? pose;
-  // TODO(https://crbug.com/838515): Is this delta since the last
-  // frame? OR an unspecified origin? Something else?
+  // Time delta from an unspecified origin.
   mojo_base.mojom.TimeDelta time_delta;
-  // The buffer_holder is used for sending data imagery back and forth across
-  // the process boundary. For application with pass through camera, it holds
-  // the camera image to be passed to the renderer. For immersive sessions, it
-  // is the place for the renderer to draw into to pass imagery to the device
-  // for rendering.
+  // The buffer_holder is used for sending imagery data back and forth across
+  // the process boundary.
   gpu.mojom.MailboxHolder? buffer_holder;
+
+  // The camera_image_buffer_holder is used to send a copy of the camera image
+  // across the process boundary for immersive-ar sessions. This assumes that
+  // there exists a single camera.
+  gpu.mojom.MailboxHolder? camera_image_buffer_holder;
+
+  // Depth data (if the device supports it and the environment integration is
+  // enabled). This assumes that depth information is provided from a single
+  // sensor. If for any reason the latest depth data could not be obtained, it
+  // will be set to null.
+  XRDepthData? depth_data;
 
   // Indicates that there has been a significant discontinuity in the mojo space
   // coordinate system, and that poses from this point forward with the same
@@ -590,8 +713,9 @@ struct XRFrameData {
   // periodically.  However, setting the stage parameters to null is perfectly
   // valid in some cases (e.g. we've lost tracking), so we can't just use
   // whether they are present or not to indicate that they have been updated
-  // so we have an extra flag to indicate to us that they have been updated.
-  bool stage_parameters_updated;
+  // so we compare IDs against the value sent in the XRFrameDataRequestOptions
+  // to determine when updates are needed.
+  uint32 stage_parameters_id;
   VRStageParameters? stage_parameters;
 
   // Detected plane information. Only present if plane detection is enabled.
@@ -606,6 +730,16 @@ struct XRFrameData {
   // Hit test subscription results. Only present if the session supports
   // environment integration.
   XRHitTestSubscriptionResultsData? hit_test_subscription_results;
+
+  // If nonzero, an estimate of how much of the available render time budget
+  // was used for GPU rendering for the most recent measured frame. A value
+  // above 1.0 means that the application is dropping frames due to GPU load,
+  // and a value well below 1.0 means that GPU utilization is low. This is
+  // intended to be used as input for renderer-side adaptive viewport sizing.
+  // A value of zero means the ratio is unknown and must not be used.
+  float rendering_time_ratio;
+
+  XRTrackedImagesData? tracked_images;
 };
 
 // Used primarily in logging to indicate why a session was rejecting to aid
@@ -655,6 +789,20 @@ union RequestSessionResult {
   RequestSessionError failure_reason;
 };
 
+// Return value for VRService.MakeXrCompatible() to indicate whether the GPU
+// process is compatible with the active VR headset.
+enum XrCompatibleResult {
+  // Compatibility results where the GPU process was not restarted.
+  kAlreadyCompatible,         // GPU process is already on a compatible GPU.
+  kNoDeviceAvailable,         // No WebXR device is available.
+  kWebXrFeaturePolicyBlocked, // WebXR is blocked by feature policy.
+
+  // Compatibility results where the GPU process was restarted. Context lost and
+  // restored for existing WebGL contexts must be handled before using for XR.
+  kCompatibleAfterRestart,    // XR compatible, GPU process was restarted.
+  kNotCompatibleAfterRestart, // Not XR compatible, GPU process was restarted.
+};
+
 // Interface for requesting XRDevice interfaces and registering for
 // notifications that the XRDevice has changed. Implemented in the browser
 // process and consumed in the renderer process.
@@ -681,6 +829,17 @@ interface VRService {
   // renderer can (and may) still decide to submit frames and that should not be
   // treated as illegal or clear the throttled state.
   SetFramesThrottled(bool throttled);
+
+  // Request for the GPU process to be compatible with the active VR headset.
+  // This will trigger the initialization of the XR process if it isn't already
+  // initialized and then restart the GPU process if it's not using the same GPU
+  // as the VR headset. The Sync attribute is needed because there are two ways
+  // for WebXR to trigger this - WebGLRenderingContext.makeXRCompatible()
+  // which returns a promise and is asynchronous, and
+  // HTMLCanvasElement.getContext('webgl', { xrCompatible: true }) which is
+  // synchronous and must return a context that is already xr compatible.
+  [Sync]
+  MakeXrCompatible() => (XrCompatibleResult xr_compatible_result);
 };
 
 // Any metrics that must be recorded throughout the duration of an XR session
@@ -770,7 +929,11 @@ interface XREnvironmentIntegrationProvider {
   // ignored.
   UnsubscribeFromHitTest(uint64 subscription_id);
 
-  // Issues a request to create an anchor attached to a session.
+  // Issues a request to create a free-floating anchor (not attached to any
+  // particular real world entity).
+  // |native_origin_information| specifies native origin relative to which the
+  // anchor is supposed to be created. |native_origin_from_anchor| describes the
+  // desired pose of the newly created anchor.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
   CreateAnchor(
@@ -782,11 +945,18 @@ interface XREnvironmentIntegrationProvider {
   // not interested in obtaining detailed error information from the device.
 
   // Issues a request to create an anchor attached to a plane.
+  // |native_origin_information| specifies native origin relative to which the
+  // anchor is supposed to be created. |native_origin_from_anchor| describes the
+  // desired pose of the newly created anchor. |plane_id| identifies which plane
+  // the anchor will be attached to.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(Pose plane_from_anchor, uint64 plane_id) =>
-    (CreateAnchorResult result, uint64 anchor_id);
-  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
+  CreatePlaneAnchor(
+    XRNativeOriginInformation native_origin_information,
+    Pose native_origin_from_anchor,
+    uint64 plane_id)
+      => (CreateAnchorResult result, uint64 anchor_id);
+  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer.
 
   // Detaches an existing anchor. The |anchor_id| must be a valid id of an
   // anchor created by one of the CreateAnchor calls, otherwise the call will be
@@ -802,13 +972,15 @@ interface XRInputSourceButtonListener {
 };
 
 struct XRFrameDataRequestOptions {
-  // Controls whether |XRFrameData.detected_planes| should be populated by the
-  // request to |XRFrameDataProvider.GetFrameData()|.
-  bool include_plane_data;
-
   // Controls whether |XRFrameData.light_estimation_data| should be populated
   // by the request to |XRFrameDataProvider.GetFrameData()|.
   bool include_lighting_estimation_data;
+
+  // The ID of the last known stage parameters set sent to the requesting
+  // session. The XRFrameData should only send new stage parameters if it has
+  // a higher ID. (Zero would indicate that the stage parameters should always
+  // sent.)
+  uint32 stage_parameters_id;
 };
 
 // Provides the necessary functionality for a WebXR session to get data for

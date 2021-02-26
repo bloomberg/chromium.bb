@@ -78,9 +78,8 @@ export class JavaScriptCompilerPlugin extends Plugin {
         return debuggerModels[i].runtimeModel();
       }
     }
-    return SDK.SDKModel.TargetManager.instance().mainTarget() ?
-        SDK.SDKModel.TargetManager.instance().mainTarget().model(SDK.RuntimeModel.RuntimeModel) :
-        null;
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    return mainTarget ? mainTarget.model(SDK.RuntimeModel.RuntimeModel) : null;
   }
 
   async _compile() {
@@ -88,7 +87,7 @@ export class JavaScriptCompilerPlugin extends Plugin {
     if (!runtimeModel) {
       return;
     }
-    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!currentExecutionContext) {
       return;
     }

@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -51,9 +53,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeExpirationMonth,
   ItemTypeExpirationYear,
   ItemTypeCopiedToChrome,
+  ItemTypeNickname,
 };
 
 }  // namespace
+
+@interface AutofillCreditCardEditTableViewController () <
+    TableViewTextEditItemDelegate>
+@end
 
 @implementation AutofillCreditCardEditTableViewController {
   autofill::PersonalDataManager* _personalDataManager;  // weak
@@ -123,10 +130,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                               inSection:section];
       AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
           [model itemAtIndexPath:path]);
-      _creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
-                              item.autofillUIType)),
-                          base::SysNSStringToUTF16(item.textFieldValue),
-                          GetApplicationContext()->GetApplicationLocale());
+      if ([self.tableViewModel itemTypeForIndexPath:path] == ItemTypeNickname) {
+        NSString* trimmedNickname = [item.textFieldValue
+            stringByTrimmingCharactersInSet:
+                [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        _creditCard.SetNickname(base::SysNSStringToUTF16(trimmedNickname));
+      } else {
+        _creditCard.SetInfo(
+            autofill::AutofillType(
+                AutofillTypeFromAutofillUIType(item.autofillUIType)),
+            base::SysNSStringToUTF16(item.textFieldValue),
+            GetApplicationContext()->GetApplicationLocale());
+      }
     }
 
     _personalDataManager->UpdateCreditCard(_creditCard);
@@ -148,69 +163,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   BOOL isEditing = self.tableView.editing;
 
-  [model addSectionWithIdentifier:SectionIdentifierFields];
-  AutofillEditItem* cardholderNameitem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
-  cardholderNameitem.textFieldName =
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
-  cardholderNameitem.textFieldValue = autofill::GetCreditCardName(
-      _creditCard, GetApplicationContext()->GetApplicationLocale());
-  cardholderNameitem.textFieldEnabled = isEditing;
-  cardholderNameitem.autofillUIType = AutofillUITypeCreditCardHolderFullName;
-  cardholderNameitem.hideIcon = !isEditing;
-  [model addItem:cardholderNameitem
-      toSectionWithIdentifier:SectionIdentifierFields];
-
-  // Card number (PAN).
-  AutofillEditItem* cardNumberItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
-  cardNumberItem.textFieldName =
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
-  // Never show full card number for Wallet cards, even if copied locally.
-  cardNumberItem.textFieldValue =
-      autofill::IsCreditCardLocal(_creditCard)
-          ? base::SysUTF16ToNSString(_creditCard.number())
-          : base::SysUTF16ToNSString(_creditCard.NetworkAndLastFourDigits());
-  cardNumberItem.textFieldEnabled = isEditing;
-  cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
-  cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;
-  cardNumberItem.hideIcon = !isEditing;
-  // Hide credit card icon when editing.
-  if (!isEditing) {
-    cardNumberItem.identifyingIcon =
-        [self cardTypeIconFromNetwork:_creditCard.network().c_str()];
+  NSArray<AutofillEditItem*>* editItems;
+  if ([self isCardNicknameManagementEnabled]) {
+    editItems = @[
+      [self cardNumberItem:isEditing],
+      [self expirationMonthItem:isEditing],
+      [self expirationYearItem:isEditing],
+      [self cardholderNameItem:isEditing],
+      [self nicknameItem:isEditing],
+    ];
+  } else {
+    editItems = @[
+      [self cardholderNameItem:isEditing],
+      [self cardNumberItem:isEditing],
+      [self expirationMonthItem:isEditing],
+      [self expirationYearItem:isEditing],
+    ];
   }
-  [model addItem:cardNumberItem
-      toSectionWithIdentifier:SectionIdentifierFields];
 
-  // Expiration month.
-  AutofillEditItem* expirationMonthItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
-  expirationMonthItem.textFieldName =
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
-  expirationMonthItem.textFieldValue =
-      [NSString stringWithFormat:@"%02d", _creditCard.expiration_month()];
-  expirationMonthItem.textFieldEnabled = isEditing;
-  expirationMonthItem.autofillUIType = AutofillUITypeCreditCardExpMonth;
-  expirationMonthItem.keyboardType = UIKeyboardTypeNumberPad;
-  expirationMonthItem.hideIcon = !isEditing;
-  [model addItem:expirationMonthItem
-      toSectionWithIdentifier:SectionIdentifierFields];
-
-  // Expiration year.
-  AutofillEditItem* expirationYearItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
-  expirationYearItem.textFieldName =
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
-  expirationYearItem.textFieldValue =
-      [NSString stringWithFormat:@"%04d", _creditCard.expiration_year()];
-  expirationYearItem.textFieldEnabled = isEditing;
-  expirationYearItem.autofillUIType = AutofillUITypeCreditCardExpYear;
-  expirationYearItem.keyboardType = UIKeyboardTypeNumberPad;
-  expirationYearItem.returnKeyType = UIReturnKeyDone;
-  expirationYearItem.hideIcon = !isEditing;
-  [model addItem:expirationYearItem
-      toSectionWithIdentifier:SectionIdentifierFields];
+  [model addSectionWithIdentifier:SectionIdentifierFields];
+  for (AutofillEditItem* item in editItems) {
+    [model addItem:item toSectionWithIdentifier:SectionIdentifierFields];
+  }
 
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD) {
     // Add CopiedToChrome cell in its own section.
@@ -222,37 +196,52 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - UITextFieldDelegate
+#pragma mark - TableViewTextEditItemDelegate
 
-// This method is called as the text is being typed in, pasted, or deleted. Asks
-// the delegate if the text should be changed. Should always return YES. During
-// typing/pasting text, |newText| contains one or more new characters. When user
-// deletes text, |newText| is empty. |range| is the range of characters to be
-// replaced.
-- (BOOL)textField:(UITextField*)textField
-    shouldChangeCharactersInRange:(NSRange)range
-                replacementString:(NSString*)newText {
-  // Find the respective item for the text field.
-  NSIndexPath* indexPath = [self indexPathForCurrentTextField];
-  DCHECK(indexPath);
-  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-      [self.tableViewModel itemAtIndexPath:indexPath]);
+- (void)tableViewItemDidBeginEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // No op.
+}
 
-  // If the user is typing in the credit card number field, update the card type
-  // icon (e.g. "Visa") to reflect the number being typed.
-  if (item.autofillUIType == AutofillUITypeCreditCardNumber) {
-    // Obtain the text being typed.
-    NSString* updatedText =
-        [textField.text stringByReplacingCharactersInRange:range
-                                                withString:newText];
-    const char* network = autofill::CreditCard::GetCardNetwork(
-        base::SysNSStringToUTF16(updatedText));
-    item.identifyingIcon = [self cardTypeIconFromNetwork:network];
-    // Update the cell.
-    [self reconfigureCellsForItems:@[ item ]];
+- (void)tableViewItemDidChange:(TableViewTextEditItem*)tableViewTextEditItem {
+  if ([tableViewTextEditItem isKindOfClass:[AutofillEditItem class]]) {
+    AutofillEditItem* item = (AutofillEditItem*)tableViewTextEditItem;
+
+    // If the user is typing in the credit card number field, update the card
+    // type icon (e.g. "Visa") to reflect the number being typed.
+    if (item.autofillUIType == AutofillUITypeCreditCardNumber) {
+      const char* network = autofill::CreditCard::GetCardNetwork(
+          base::SysNSStringToUTF16(item.textFieldValue));
+      item.identifyingIcon = [self cardTypeIconFromNetwork:network];
+      [self reconfigureCellsForItems:@[ item ]];
+    }
+
+    if (item.type == ItemTypeNickname) {
+      NSString* trimmedText = [item.textFieldValue
+          stringByTrimmingCharactersInSet:
+              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+      BOOL newNicknameIsValid = autofill::CreditCard::IsNicknameValid(
+          base::SysNSStringToUTF16(trimmedText));
+      self.navigationItem.rightBarButtonItem.enabled = newNicknameIsValid;
+      [item setHasValidText:newNicknameIsValid];
+      [self reconfigureCellsForItems:@[ item ]];
+    }
+  }
+}
+
+- (void)tableViewItemDidEndEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // If the table view has already been dismissed or the editing stopped
+  // ignore call as the item might no longer be in the cells (crbug/1125094).
+  if (!self.tableView.isEditing) {
+    return;
   }
 
-  return YES;
+  if ([tableViewTextEditItem isKindOfClass:[AutofillEditItem class]]) {
+    AutofillEditItem* item = (AutofillEditItem*)tableViewTextEditItem;
+    // Reconfigure to trigger appropiate icon change.
+    [self reconfigureCellsForItems:@[ item ]];
+  }
 }
 
 #pragma mark - UITableViewDataSource
@@ -272,6 +261,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeCardNumber:
     case ItemTypeExpirationMonth:
     case ItemTypeExpirationYear:
+    case ItemTypeNickname:
       break;
     case ItemTypeCopiedToChrome: {
       CopiedToChromeCell* copiedToChromeCell =
@@ -336,6 +326,94 @@ typedef NS_ENUM(NSInteger, ItemType) {
   } else {
     return nil;
   }
+}
+
+- (AutofillEditItem*)cardholderNameItem:(bool)isEditing {
+  AutofillEditItem* cardholderNameItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
+  cardholderNameItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
+  cardholderNameItem.textFieldValue = autofill::GetCreditCardName(
+      _creditCard, GetApplicationContext()->GetApplicationLocale());
+  cardholderNameItem.textFieldEnabled = isEditing;
+  cardholderNameItem.autofillUIType = AutofillUITypeCreditCardHolderFullName;
+  cardholderNameItem.hideIcon = !isEditing;
+  return cardholderNameItem;
+}
+
+- (AutofillEditItem*)cardNumberItem:(bool)isEditing {
+  AutofillEditItem* cardNumberItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
+  cardNumberItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
+  // Never show full card number for Wallet cards, even if copied locally.
+  cardNumberItem.textFieldValue =
+      autofill::IsCreditCardLocal(_creditCard)
+          ? base::SysUTF16ToNSString(_creditCard.number())
+          : base::SysUTF16ToNSString(_creditCard.NetworkAndLastFourDigits());
+  cardNumberItem.textFieldEnabled = isEditing;
+  cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
+  cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;
+  cardNumberItem.hideIcon = !isEditing;
+  cardNumberItem.delegate = self;
+  // Hide credit card icon when editing.
+  if (!isEditing) {
+    cardNumberItem.identifyingIcon =
+        [self cardTypeIconFromNetwork:_creditCard.network().c_str()];
+  }
+  return cardNumberItem;
+}
+
+- (AutofillEditItem*)expirationMonthItem:(bool)isEditing {
+  AutofillEditItem* expirationMonthItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
+  expirationMonthItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
+  expirationMonthItem.textFieldValue =
+      [NSString stringWithFormat:@"%02d", _creditCard.expiration_month()];
+  expirationMonthItem.textFieldEnabled = isEditing;
+  expirationMonthItem.autofillUIType = AutofillUITypeCreditCardExpMonth;
+  expirationMonthItem.keyboardType = UIKeyboardTypeNumberPad;
+  expirationMonthItem.hideIcon = !isEditing;
+  return expirationMonthItem;
+}
+
+- (AutofillEditItem*)expirationYearItem:(bool)isEditing {
+  // Expiration year.
+  AutofillEditItem* expirationYearItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
+  expirationYearItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
+  expirationYearItem.textFieldValue =
+      [NSString stringWithFormat:@"%04d", _creditCard.expiration_year()];
+  expirationYearItem.textFieldEnabled = isEditing;
+  expirationYearItem.autofillUIType = AutofillUITypeCreditCardExpYear;
+  expirationYearItem.keyboardType = UIKeyboardTypeNumberPad;
+  expirationYearItem.returnKeyType = UIReturnKeyDone;
+  expirationYearItem.hideIcon = !isEditing;
+  return expirationYearItem;
+}
+
+- (AutofillEditItem*)nicknameItem:(bool)isEditing {
+  AutofillEditItem* nicknameItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeNickname];
+  nicknameItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_NICKNAME);
+  nicknameItem.textFieldValue =
+      autofill::GetCreditCardNicknameString(_creditCard);
+  nicknameItem.textFieldPlaceholder =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_NICKNAME);
+  nicknameItem.textFieldEnabled = isEditing;
+  nicknameItem.keyboardType = UIKeyboardTypeDefault;
+  nicknameItem.hideIcon = !isEditing;
+  nicknameItem.delegate = self;
+  return nicknameItem;
+}
+
+// Returns whether card nickname managment feature is enabled.
+- (BOOL)isCardNicknameManagementEnabled {
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillEnableCardNicknameManagement);
 }
 
 @end

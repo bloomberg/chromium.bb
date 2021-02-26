@@ -6,13 +6,13 @@ import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
 /**
- * @implements {UI.ListWidget.Delegate}
+ * @implements {UI.ListWidget.Delegate<Item>}
  * @unrestricted
  */
 export class LocationsSettingsTab extends UI.Widget.VBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('emulation/locationsSettingsTab.css');
+    this.registerRequiredCSS('emulation/locationsSettingsTab.css', {enableLegacyPatching: true});
 
     this.contentElement.createChild('div', 'header').textContent = Common.UIString.UIString('Custom locations');
 
@@ -22,7 +22,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
 
     this._list = new UI.ListWidget.ListWidget(this);
     this._list.element.classList.add('locations-list');
-    this._list.registerRequiredCSS('emulation/locationsSettingsTab.css');
+    this._list.registerRequiredCSS('emulation/locationsSettingsTab.css', {enableLegacyPatching: true});
     this._list.show(this.contentElement);
 
     this._customSetting = Common.Settings.Settings.instance().moduleSetting('emulation.locations');
@@ -56,12 +56,11 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
 
   /**
    * @override
-   * @param {*} item
+   * @param {!Item} location
    * @param {boolean} editable
    * @return {!Element}
    */
-  renderItem(item, editable) {
-    const location = /** @type {!Item} */ (item);
+  renderItem(location, editable) {
     const element = document.createElement('div');
     element.classList.add('locations-list-item');
     const title = element.createChild('div', 'locations-list-text locations-list-title');
@@ -69,9 +68,9 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     titleText.textContent = location.title;
     titleText.title = location.title;
     element.createChild('div', 'locations-list-separator');
-    element.createChild('div', 'locations-list-text').textContent = location.lat;
+    element.createChild('div', 'locations-list-text').textContent = String(location.lat);
     element.createChild('div', 'locations-list-separator');
-    element.createChild('div', 'locations-list-text').textContent = location.long;
+    element.createChild('div', 'locations-list-text').textContent = String(location.long);
     element.createChild('div', 'locations-list-separator');
     element.createChild('div', 'locations-list-text').textContent = location.timezoneId;
     element.createChild('div', 'locations-list-separator');
@@ -92,12 +91,11 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
 
   /**
    * @override
-   * @param {*} item
-   * @param {!UI.ListWidget.Editor} editor
+   * @param {!Item} location
+   * @param {!UI.ListWidget.Editor<!Item>} editor
    * @param {boolean} isNew
    */
-  commitEdit(item, editor, isNew) {
-    const location = /** @type {?Item} */ (item);
+  commitEdit(location, editor, isNew) {
     location.title = editor.control('title').value.trim();
     const lat = editor.control('lat').value.trim();
     location.lat = lat ? parseFloat(lat) : 0;
@@ -117,11 +115,10 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
 
   /**
    * @override
-   * @param {*} item
-   * @return {!UI.ListWidget.Editor}
+   * @param {!Item} location
+   * @return {!UI.ListWidget.Editor<!Item>}
    */
-  beginEdit(item) {
-    const location = /** @type {?Item} */ (item);
+  beginEdit(location) {
     const editor = this._createEditor();
     editor.control('title').value = location.title;
     editor.control('lat').value = String(location.lat);
@@ -132,7 +129,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
   }
 
   /**
-   * @return {!UI.ListWidget.Editor}
+   * @return {!UI.ListWidget.Editor<!Item>}
    */
   _createEditor() {
     if (this._editor) {
@@ -197,7 +194,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       if (errorMessage) {
         return {valid: false, errorMessage};
       }
-      return {valid: true};
+      return {valid: true, errorMessage: undefined};
     }
 
     /**
@@ -213,7 +210,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       const parsedValue = Number(value);
 
       if (!value) {
-        return {valid: true};
+        return {valid: true, errorMessage: undefined};
       }
 
       let errorMessage;
@@ -228,7 +225,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       if (errorMessage) {
         return {valid: false, errorMessage};
       }
-      return {valid: true};
+      return {valid: true, errorMessage: undefined};
     }
 
     /**
@@ -244,7 +241,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       const parsedValue = Number(value);
 
       if (!value) {
-        return {valid: true};
+        return {valid: true, errorMessage: undefined};
       }
 
       let errorMessage;
@@ -259,7 +256,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       if (errorMessage) {
         return {valid: false, errorMessage};
       }
-      return {valid: true};
+      return {valid: true, errorMessage: undefined};
     }
 
     /**
@@ -278,7 +275,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       // alphabetic character. The empty string resets the override,
       // and is accepted as well.
       if (value === '' || /[a-zA-Z]/.test(value)) {
-        return {valid: true};
+        return {valid: true, errorMessage: undefined};
       }
       const errorMessage = ls`Timezone ID must contain alphabetic characters`;
       return {valid: false, errorMessage};
@@ -299,7 +296,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
       // The empty string resets the override, and is accepted as
       // well.
       if (value === '' || /[a-zA-Z]{2}/.test(value)) {
-        return {valid: true};
+        return {valid: true, errorMessage: undefined};
       }
       const errorMessage = ls`Locale must contain alphabetic characters`;
       return {valid: false, errorMessage};
@@ -307,5 +304,6 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
   }
 }
 
-/** @typedef {{title: string, lat: number, long: number}} */
+/** @typedef {{title: string, lat: number, long: number, timezoneId: string, locale: string}} */
+// @ts-ignore typedef
 export let Item;

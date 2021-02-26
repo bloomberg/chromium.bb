@@ -30,7 +30,6 @@ class MojoInterfaceInterceptor final
       public ActiveScriptWrappable<MojoInterfaceInterceptor>,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MojoInterfaceInterceptor);
 
  public:
   static MojoInterfaceInterceptor* Create(ExecutionContext*,
@@ -48,7 +47,7 @@ class MojoInterfaceInterceptor final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest, kInterfacerequest)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // EventTargetWithInlineData
   const AtomicString& InterfaceName() const override;

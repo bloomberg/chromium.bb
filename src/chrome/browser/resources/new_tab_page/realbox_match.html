@@ -58,27 +58,27 @@
 
   :host([has-image]) #description,
   .dim {
-    color: var(--search-box-results-dim, var(--google-grey-600));
+    color: var(--search-box-results-dim, var(--google-grey-refresh-700));
   }
 
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)):host([has-image]) #description,
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .dim {
-    color: var(--search-box-results-dim-selected, var(--google-grey-600));
+    color: var(--search-box-results-dim-selected, var(--google-grey-refresh-700));
   }
 
   .url {
-    color: var(--search-box-results-url, var(--google-grey-600));
+    color: var(--search-box-results-url, var(--google-blue-refresh-700));
   }
 
   :host-context(ntp-realbox-match:-webkit-any(:focus-within, .selected)) .url {
-    color: var(--search-box-results-url-selected, var(--google-grey-600));
+    color: var(--search-box-results-url-selected, var(--google-blue-refresh-700));
   }
 
 </style>
 <ntp-realbox-icon id="icon" match="[[match]]"></ntp-realbox-icon>
 <div id="container">
   <span id="contents" inner-h-t-m-l="[[contentsHtml_]]"></span>
-  <span id="separator">[[separatorText_]]</span>
+  <span id="separator" class="dim">[[separatorText_]]</span>
   <span id="description" inner-h-t-m-l="[[descriptionHtml_]]"></span>
 </div>
 <ntp-realbox-button id="remove" tabindex="0" role="button"

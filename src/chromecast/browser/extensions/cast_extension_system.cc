@@ -12,26 +12,21 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chromecast/browser/extensions/api/tts/tts_extension_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
-#include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/api/app_runtime.h"
@@ -41,8 +36,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
-
 namespace {
 
 std::unique_ptr<base::DictionaryValue> LoadManifestFromString(
@@ -52,7 +45,7 @@ std::unique_ptr<base::DictionaryValue> LoadManifestFromString(
   std::unique_ptr<base::Value> root(deserializer.Deserialize(nullptr, error));
   if (!root.get()) {
     if (error->empty()) {
-      // If |error| is empty, than the file could not be read.
+      // If |error| is empty, then the file could not be read.
       // It would be cleaner to have the JSON reader give a specific error
       // in this case, but other code tests for a file error with
       // error->empty().  For now, be consistent.
@@ -138,8 +131,8 @@ const Extension* CastExtensionSystem::LoadExtension(
       LOG(WARNING) << warning.message;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CastExtensionSystem::PostLoadExtension,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CastExtensionSystem::PostLoadExtension,
                                 base::Unretained(this), extension));
 
   return extension.get();
@@ -167,10 +160,6 @@ void CastExtensionSystem::Init() {
 
   // Inform the rest of the extensions system to start.
   ready_.Signal();
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-      content::Source<BrowserContext>(browser_context_),
-      content::NotificationService::NoDetails());
 }
 
 void CastExtensionSystem::LaunchApp(const ExtensionId& extension_id) {
@@ -197,8 +186,8 @@ void CastExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_);
 
-  shared_user_script_master_ =
-      std::make_unique<SharedUserScriptMaster>(browser_context_);
+  shared_user_script_manager_ =
+      std::make_unique<SharedUserScriptManager>(browser_context_);
 
   extension_registrar_ =
       std::make_unique<ExtensionRegistrar>(browser_context_, this);
@@ -220,8 +209,8 @@ ServiceWorkerManager* CastExtensionSystem::service_worker_manager() {
   return service_worker_manager_.get();
 }
 
-SharedUserScriptMaster* CastExtensionSystem::shared_user_script_master() {
-  return shared_user_script_master_.get();
+SharedUserScriptManager* CastExtensionSystem::shared_user_script_manager() {
+  return shared_user_script_manager_.get();
 }
 
 StateStore* CastExtensionSystem::state_store() {
@@ -253,11 +242,12 @@ AppSorting* CastExtensionSystem::app_sorting() {
 void CastExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     base::OnceClosure callback) {
-  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                         base::BindOnce(&InfoMap::AddExtension, info_map(),
-                                        base::RetainedRef(extension),
-                                        base::Time::Now(), false, false),
-                         std::move(callback));
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&InfoMap::AddExtension, info_map(),
+                     base::RetainedRef(extension), base::Time::Now(), false,
+                     false),
+      std::move(callback));
 }
 
 void CastExtensionSystem::UnregisterExtensionWithRequestContexts(
@@ -266,6 +256,10 @@ void CastExtensionSystem::UnregisterExtensionWithRequestContexts(
 
 const base::OneShotEvent& CastExtensionSystem::ready() const {
   return ready_;
+}
+
+bool CastExtensionSystem::is_ready() const {
+  return ready_.is_signaled();
 }
 
 ContentVerifier* CastExtensionSystem::content_verifier() {

@@ -33,7 +33,7 @@ source_set("sessions") {
     "//net",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("restoration_observer") {
@@ -52,6 +52,7 @@ source_set("restoration_agent") {
     ":serialisation",
     ":session_service",
     "//components/favicon/ios",
+    "//components/previous_session_info",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
@@ -151,7 +152,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 bundle_data("resources_unit_tests") {

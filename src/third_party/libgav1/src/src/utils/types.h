@@ -28,8 +28,8 @@
 namespace libgav1 {
 
 struct MotionVector : public Allocable {
-  static const int kRow = 0;
-  static const int kColumn = 1;
+  static constexpr int kRow = 0;
+  static constexpr int kColumn = 1;
 
   MotionVector() = default;
   MotionVector(const MotionVector& mv) = default;
@@ -268,6 +268,10 @@ struct LoopFilter {
   // Whether the filter level depends on the mode and reference frame used to
   // predict a block.
   bool delta_enabled;
+  // Whether additional syntax elements were read that specify which mode and
+  // reference frame deltas are to be updated. loop_filter_delta_update field in
+  // Section 5.9.11 of the spec.
+  bool delta_update;
   // Contains the adjustment needed for the filter level based on the chosen
   // reference frame, in the range of [-64, 63].
   std::array<int8_t, kNumReferenceFrameTypes> ref_deltas;
@@ -283,8 +287,10 @@ struct Delta {
 };
 
 struct Cdef {
-  uint8_t damping;
+  uint8_t damping;  // damping value from the spec + (bitdepth - 8).
   uint8_t bits;
+  // All the strength values are the values from the spec and left shifted by
+  // (bitdepth - 8).
   uint8_t y_primary_strength[kMaxCdefStrengths];
   uint8_t y_secondary_strength[kMaxCdefStrengths];
   uint8_t uv_primary_strength[kMaxCdefStrengths];
@@ -299,16 +305,22 @@ struct TileInfo {
   int tile_columns_log2;
   int tile_columns;
   int tile_column_start[kMaxTileColumns + 1];
+  // This field is not used by libgav1, but is populated for use by some
+  // hardware decoders. So it must not be removed.
+  int tile_column_width_in_superblocks[kMaxTileColumns + 1];
   int tile_rows_log2;
   int tile_rows;
   int tile_row_start[kMaxTileRows + 1];
+  // This field is not used by libgav1, but is populated for use by some
+  // hardware decoders. So it must not be removed.
+  int tile_row_height_in_superblocks[kMaxTileRows + 1];
   int16_t context_update_id;
   uint8_t tile_size_bytes;
 };
 
 struct LoopRestoration {
   LoopRestorationType type[kMaxPlanes];
-  int unit_size[kMaxPlanes];
+  int unit_size_log2[kMaxPlanes];
 };
 
 // Stores the quantization parameters of Section 5.9.12.
@@ -464,6 +476,7 @@ struct ObuFrameHeader {
   uint8_t order_hint;
   int8_t primary_reference_frame;
   bool render_and_frame_size_different;
+  bool use_superres;
   uint8_t superres_scale_denominator;
   bool allow_screen_content_tools;
   bool allow_intrabc;

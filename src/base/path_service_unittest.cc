@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ bool ReturnsValidPath(int dir_type) {
   if (dir_type == DIR_CACHE)
     check_path_exists = false;
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // On the linux try-bots: a path is returned (e.g. /home/chrome-bot/Desktop),
   // but it doesn't exist.
   if (dir_type == DIR_USER_DESKTOP)
@@ -47,7 +48,7 @@ bool ReturnsValidPath(int dir_type) {
   if (dir_type == DIR_TASKBAR_PINS)
     check_path_exists = false;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (dir_type != DIR_EXE && dir_type != DIR_MODULE && dir_type != FILE_EXE &&
       dir_type != FILE_MODULE) {
     if (path.ReferencesParent()) {
@@ -124,7 +125,7 @@ TEST_F(PathServiceTest, Get) {
     else
       EXPECT_PRED1(ReturnsInvalidPath, key);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   for (int key = PATH_MAC_START + 1; key < PATH_MAC_END; ++key) {
     EXPECT_PRED1(ReturnsValidPath, key);
   }
@@ -140,6 +141,26 @@ TEST_F(PathServiceTest, Get) {
   }
 #endif
 }
+
+// Tests that CheckedGet returns the same path as Get.
+TEST_F(PathServiceTest, CheckedGet) {
+  constexpr int kKey = DIR_CURRENT;
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(kKey, &path));
+  EXPECT_EQ(path, PathService::CheckedGet(kKey));
+}
+
+#if defined(GTEST_HAS_DEATH_TEST)
+
+// Tests that CheckedGet CHECKs on failure.
+TEST_F(PathServiceTest, CheckedGetFailure) {
+  constexpr int kBadKey = PATH_END;
+  FilePath path;
+  EXPECT_FALSE(PathService::Get(kBadKey, &path));
+  EXPECT_DEATH(PathService::CheckedGet(kBadKey), "Failed to get the path");
+}
+
+#endif  // GTEST_HAS_DEATH_TEST
 
 // Test that all versions of the Override function of PathService do what they
 // are supposed to do.

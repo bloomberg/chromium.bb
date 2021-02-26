@@ -22,17 +22,16 @@ constexpr SkColor kTrackIconColor = SK_ColorWHITE;
 
 namespace views {
 
-TrackImageButton::TrackImageButton(ButtonListener* listener,
+TrackImageButton::TrackImageButton(PressedCallback callback,
                                    const gfx::VectorIcon& icon,
                                    base::string16 label)
-    : ImageButton(listener),
+    : ImageButton(std::move(callback)),
       image_(gfx::CreateVectorIcon(icon, kTrackImageSize, kTrackIconColor)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetImage(views::Button::STATE_NORMAL, image_);
 
   // Accessibility.
-  SetFocusForPlatform();
   SetAccessibleName(label);
   SetTooltipText(label);
   SetInstallFocusRingOnFocus(true);

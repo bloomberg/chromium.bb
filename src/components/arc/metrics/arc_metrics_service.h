@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -50,6 +52,13 @@ class ArcMetricsService : public KeyedService,
   using HistogramNamer =
       base::RepeatingCallback<std::string(const std::string& base_name)>;
 
+  class AppKillObserver : public base::CheckedObserver {
+   public:
+    virtual void OnArcLowMemoryKill() = 0;
+    virtual void OnArcOOMKillCount(unsigned long count) = 0;
+    virtual void OnArcMetricsServiceDestroyed() {}
+  };
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcMetricsService* GetForBrowserContext(
@@ -64,6 +73,9 @@ class ArcMetricsService : public KeyedService,
                     ArcBridgeService* bridge_service);
   ~ArcMetricsService() override;
 
+  // KeyedService overrides.
+  void Shutdown() override;
+
   // Sets the histogram namer. Required to not have a dependency on browser
   // codebase.
   void SetHistogramNamer(HistogramNamer histogram_namer);
@@ -77,6 +89,12 @@ class ArcMetricsService : public KeyedService,
                           mojom::BootType boot_type) override;
   void ReportNativeBridge(mojom::NativeBridgeType native_bridge_type) override;
   void ReportCompanionLibApiUsage(mojom::CompanionLibApiId api_id) override;
+  void ReportAppKill(mojom::AppKillPtr app_kill) override;
+  void ReportArcCorePriAbiMigEvent(
+      mojom::ArcCorePriAbiMigEvent event_type) override;
+  void ReportArcCorePriAbiMigFailedTries(uint32_t failed_attempts) override;
+  void ReportArcCorePriAbiMigDowngradeDelay(base::TimeDelta delay) override;
+  void ReportArcCorePriAbiMigBootTime(base::TimeDelta duration) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.
@@ -94,6 +112,9 @@ class ArcMetricsService : public KeyedService,
                      const std::string& activity,
                      const std::string& intent);
   void OnTaskDestroyed(int32_t task_id);
+
+  void AddAppKillObserver(AppKillObserver* obs);
+  void RemoveAppKillObserver(AppKillObserver* obs);
 
  private:
   // Adapter to be able to also observe ProcessInstance events.
@@ -169,6 +190,13 @@ class ArcMetricsService : public KeyedService,
   void OnArcStartTimeRetrieved(std::vector<mojom::BootProgressEventPtr> events,
                                mojom::BootType boot_type,
                                base::Optional<base::TimeTicks> arc_start_time);
+  void OnArcStartTimeForPriAbiMigration(
+      base::TimeTicks durationTicks,
+      base::Optional<base::TimeTicks> arc_start_time);
+
+  // Notify AppKillObservers.
+  void NotifyLowMemoryKill();
+  void NotifyOOMKillCount(unsigned long count);
 
   THREAD_CHECKER(thread_checker_);
 
@@ -192,6 +220,8 @@ class ArcMetricsService : public KeyedService,
   std::vector<int32_t> task_ids_;
 
   bool gamepad_interaction_recorded_ = false;
+
+  base::ObserverList<AppKillObserver> app_kill_observers_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

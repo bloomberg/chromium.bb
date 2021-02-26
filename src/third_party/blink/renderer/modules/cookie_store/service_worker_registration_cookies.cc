@@ -7,6 +7,8 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -15,8 +17,6 @@ namespace {
 class ServiceWorkerRegistrationCookiesImpl final
     : public GarbageCollected<ServiceWorkerRegistrationCookiesImpl>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationCookiesImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -45,26 +45,19 @@ class ServiceWorkerRegistrationCookiesImpl final
           registration_->GetExecutionContext();
       DCHECK(execution_context);
 
-      // TODO(crbug.com/839117): Remove once Expose on partial interface is
-      // supported or Origin Trial as ended.
-      if (!execution_context->IsDocument() &&
-          !execution_context->IsServiceWorkerGlobalScope()) {
-        return nullptr;
-      }
-
-      mojo::Remote<mojom::blink::CookieStore> backend;
-      // TODO(pwnall): Replace TaskType::kInternalDefault with the task queue in
-      //               the Cookie Store spec, once that spec is finalized.
+      HeapMojoRemote<mojom::blink::CookieStore,
+                     HeapMojoWrapperMode::kWithoutContextObserver>
+          backend(execution_context);
       execution_context->GetBrowserInterfaceBroker().GetInterface(
           backend.BindNewPipeAndPassReceiver(
-              execution_context->GetTaskRunner(TaskType::kInternalDefault)));
+              execution_context->GetTaskRunner(TaskType::kDOMManipulation)));
       cookie_store_manager_ = MakeGarbageCollected<CookieStoreManager>(
           registration_, std::move(backend));
     }
     return cookie_store_manager_.Get();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(registration_);
     visitor->Trace(cookie_store_manager_);
     Supplement<ServiceWorkerRegistration>::Trace(visitor);

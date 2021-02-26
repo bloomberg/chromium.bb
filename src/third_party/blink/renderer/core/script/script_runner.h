@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_RUNNER_H_
 
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
@@ -46,10 +45,10 @@ class CORE_EXPORT ScriptRunner final
     : public GarbageCollected<ScriptRunner>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptRunner);
-
  public:
   explicit ScriptRunner(Document*);
+  ScriptRunner(const ScriptRunner&) = delete;
+  ScriptRunner& operator=(const ScriptRunner&) = delete;
 
   void QueueScriptForExecution(PendingScript*);
   bool HasPendingScripts() const {
@@ -58,7 +57,7 @@ class CORE_EXPORT ScriptRunner final
   }
   void SetForceDeferredExecution(bool force_deferred);
   void NotifyScriptReady(PendingScript*);
-
+  void NotifyDelayedAsyncScriptsMilestoneReached();
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}
 
@@ -68,7 +67,7 @@ class CORE_EXPORT ScriptRunner final
     task_runner_ = task_runner;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
  private:
@@ -77,6 +76,11 @@ class CORE_EXPORT ScriptRunner final
   void MovePendingScript(ScriptRunner*, PendingScript*);
   bool RemovePendingInOrderScript(PendingScript*);
   void ScheduleReadyInOrderScripts();
+
+  // Used to delay async scripts. These scripts are delayed until
+  // |NotifyDelayedAsyncScriptsMilestoneReached()| is called.
+  bool CanDelayAsyncScripts();
+  void DelayAsyncScriptUntilMilestoneReached(PendingScript*);
 
   void PostTask(const base::Location&);
   void PostTasksForReadyScripts(const base::Location&);
@@ -97,6 +101,7 @@ class CORE_EXPORT ScriptRunner final
 
   HeapDeque<Member<PendingScript>> pending_in_order_scripts_;
   HeapHashSet<Member<PendingScript>> pending_async_scripts_;
+  HeapDeque<Member<PendingScript>> pending_delayed_async_scripts_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
   HeapDeque<Member<PendingScript>> async_scripts_to_execute_soon_;
@@ -111,7 +116,13 @@ class CORE_EXPORT ScriptRunner final
   // with HTMLParserScriptRunner::suspended_async_script_execution_.
   bool is_force_deferred_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ScriptRunner);
+  // Scripts in |pending_delayed_async_scripts_| are delayed until the
+  // |NotifyDelayedAsyncScriptsMilestoneReached()| is called. After this point,
+  // the ScriptRunner no longer delays async scripts. This bool is used to
+  // ensure we don't continue delaying async scripts after this point. See the
+  // design doc:
+  // https://docs.google.com/document/u/1/d/1G-IUrT4enARZlsIrFQ4d4cRVe9MRTJASfWwolV09JZE/edit.
+  bool delay_async_script_milestone_reached_ = false;
 };
 
 }  // namespace blink

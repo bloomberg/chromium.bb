@@ -334,7 +334,7 @@ class FormKeyGenerator final : public GarbageCollected<FormKeyGenerator> {
  public:
   FormKeyGenerator() = default;
 
-  void Trace(Visitor* visitor) { visitor->Trace(form_to_key_map_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(form_to_key_map_); }
   const AtomicString& FormKey(const ListedElement&);
   void WillDeleteForm(HTMLFormElement*);
 
@@ -427,7 +427,7 @@ void FormKeyGenerator::WillDeleteForm(HTMLFormElement* form) {
 
 DocumentState::DocumentState(Document& document) : document_(document) {}
 
-void DocumentState::Trace(Visitor* visitor) {
+void DocumentState::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(control_list_);
 }
@@ -499,7 +499,7 @@ FormController::FormController(Document& document)
 
 FormController::~FormController() = default;
 
-void FormController::Trace(Visitor* visitor) {
+void FormController::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(document_state_);
   visitor->Trace(form_key_generator_);
@@ -629,7 +629,7 @@ void FormController::RestoreImmediately() {
 }
 
 void FormController::RestoreAllControlsInDocumentOrder() {
-  if (!document_->IsActive())
+  if (!document_->IsActive() || did_restore_all_)
     return;
   HeapHashSet<Member<HTMLFormElement>> finished_forms;
   EventQueueScope scope;

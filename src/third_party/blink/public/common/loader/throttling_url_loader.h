@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -40,6 +41,9 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // Reason used when resetting the URLLoader to follow a redirect.
   static const char kFollowRedirectReason[];
 
+  // |url_request| can be mutated by this function, and doesn't need to stay
+  // alive after calling this function.
+  //
   // |client| must stay alive during the lifetime of the returned object. Please
   // note that the request may not start immediately since it could be deferred
   // by throttles.
@@ -52,7 +56,9 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
       network::ResourceRequest* url_request,
       network::mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::Optional<std::vector<std::string>> cors_exempt_header_list =
+          base::nullopt);
 
   ~ThrottlingURLLoader() override;
 
@@ -112,7 +118,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
              int32_t request_id,
              uint32_t options,
              network::ResourceRequest* url_request,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             base::Optional<std::vector<std::string>> cors_exempt_header_list);
 
   void StartNow();
   void RestartWithFlagsNow();
@@ -134,6 +141,13 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
 
   // Restart the request using |original_url_|.
   void RestartWithURLResetAndFlags(int additional_load_flags);
+
+  // Restart the request immediately if the response has not started yet.
+  void RestartWithURLResetAndFlagsNow(int additional_load_flags);
+
+  // Restart the request immediately with modified headers.
+  void RestartWithModifiedHeadersNow(
+      const net::HttpRequestHeaders& modified_headers);
 
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
@@ -182,6 +196,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
   bool loader_completed_ = false;
+  bool did_receive_response_ = false;
 
   struct ThrottleEntry {
     ThrottleEntry(ThrottlingURLLoader* loader,
@@ -219,7 +234,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
         int32_t in_request_id,
         uint32_t in_options,
         network::ResourceRequest* in_url_request,
-        scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
+        scoped_refptr<base::SingleThreadTaskRunner> in_task_runner,
+        base::Optional<std::vector<std::string>> in_cors_exempt_header_list);
     ~StartInfo();
 
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -230,6 +246,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
     network::ResourceRequest url_request;
     // |task_runner| is used to set up |client_receiver_|.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+    base::Optional<std::vector<std::string>> cors_exempt_header_list;
   };
   // Holds any info needed to start or restart the request. Used when start is
   // deferred or when FollowRedirectForcingRestart() is called.

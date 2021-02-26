@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -109,8 +109,8 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
       UpdateUI();
   } else {
     list_available_ = false;
-    upload_list_->Load(base::Bind(&CrashesDOMHandler::OnUploadListAvailable,
-                                  base::Unretained(this)));
+    upload_list_->Load(base::BindOnce(&CrashesDOMHandler::OnUploadListAvailable,
+                                      base::Unretained(this)));
   }
 }
 

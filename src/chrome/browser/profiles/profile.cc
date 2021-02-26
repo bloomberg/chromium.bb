@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -17,10 +19,12 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/media_router/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -28,8 +32,10 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/variations/proto/study.pb.h"
+#include "components/variations/variations.mojom.h"
 #include "components/variations/variations_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -60,6 +66,10 @@
 #include "extensions/browser/pref_names.h"
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#endif
+
 #if DCHECK_IS_ON()
 
 #include <set>
@@ -87,13 +97,14 @@ class ChromeVariationsClient : public variations::VariationsClient {
 
   ~ChromeVariationsClient() override = default;
 
-  bool IsIncognito() const override {
+  bool IsOffTheRecord() const override {
     return browser_context_->IsOffTheRecord();
   }
 
-  std::string GetVariationsHeader() const override {
-    return variations::VariationsHttpHeaderProvider::GetInstance()
-        ->GetClientDataHeader(IsSignedIn());
+  variations::mojom::VariationsHeadersPtr GetVariationsHeaders()
+      const override {
+    return variations::VariationsIdsProvider::GetInstance()
+        ->GetClientDataHeaders(IsSignedIn());
   }
 
  private:
@@ -107,10 +118,24 @@ class ChromeVariationsClient : public variations::VariationsClient {
   content::BrowserContext* browser_context_;
 };
 
+const char kDevToolsOTRProfileIDPrefix[] = "Devtools::BrowserContext";
+const char kMediaRouterOTRProfileIDPrefix[] = "MediaRouter::Presentation";
+
 }  // namespace
 
 Profile::OTRProfileID::OTRProfileID(const std::string& profile_id)
     : profile_id_(profile_id) {}
+
+bool Profile::OTRProfileID::AllowsBrowserWindows() const {
+  // Non-Primary OTR profiles are not supposed to create Browser windows.
+  // DevTools::BrowserContext and MediaRouter::Presentation are an
+  // exception to this ban.
+  return *this == PrimaryID() ||
+         base::StartsWith(profile_id_, kDevToolsOTRProfileIDPrefix,
+                          base::CompareCase::SENSITIVE) ||
+         base::StartsWith(profile_id_, kMediaRouterOTRProfileIDPrefix,
+                          base::CompareCase::SENSITIVE);
+}
 
 // static
 const Profile::OTRProfileID Profile::OTRProfileID::PrimaryID() {
@@ -125,6 +150,16 @@ Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
     const std::string& profile_id_prefix) {
   return OTRProfileID(base::StringPrintf("%s-%i", profile_id_prefix.c_str(),
                                          first_unused_index_++));
+}
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForDevTools() {
+  return CreateUnique(kDevToolsOTRProfileIDPrefix);
+}
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForMediaRouter() {
+  return CreateUnique(kMediaRouterOTRProfileIDPrefix);
 }
 
 const std::string& Profile::OTRProfileID::ToString() const {
@@ -166,12 +201,7 @@ JNI_OTRProfileID_CreateUniqueOTRProfileID(
 }
 #endif
 
-Profile::Profile()
-    : restored_last_session_(false),
-      sent_destroyed_notification_(false),
-      accessibility_pause_level_(0),
-      is_guest_profile_(false),
-      is_system_profile_(false) {
+Profile::Profile() {
 #if DCHECK_IS_ON()
   base::AutoLock lock(g_profile_instances_lock.Get());
   g_profile_instances.Get().insert(this);
@@ -318,44 +348,52 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 #endif
 
+#if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(
-      prefs::kMediaRouterCloudServicesPrefSet,
-      false,
+      media_router::prefs::kMediaRouterCloudServicesPrefSet, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kMediaRouterEnableCloudServices,
-      false,
+      media_router::prefs::kMediaRouterEnableCloudServices, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kMediaRouterFirstRunFlowAcknowledged,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kMediaRouterMediaRemotingEnabled, true);
-  registry->RegisterListPref(prefs::kMediaRouterTabMirroringSources);
+      media_router::prefs::kMediaRouterMediaRemotingEnabled, true);
+  registry->RegisterListPref(
+      media_router::prefs::kMediaRouterTabMirroringSources);
+#endif
 
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
   registry->RegisterDictionaryPref(
       prefs::kProtocolHandlerPerOriginAllowedProtocols);
+
+  registry->RegisterListPref(prefs::kAutoLaunchProtocolsFromOrigins);
 
   // Instead of registering new prefs here, please create a static method and
   // invoke it from RegisterProfilePrefs() in
   // chrome/browser/prefs/browser_prefs.cc.
 }
 
-std::string Profile::GetDebugName() {
+std::string Profile::GetDebugName() const {
   std::string name = GetPath().BaseName().MaybeAsASCII();
-  if (name.empty()) {
-    name = "UnknownProfile";
-  }
-  return name;
+  return name.empty() ? "UnknownProfile" : name;
 }
 
 bool Profile::IsRegularProfile() const {
-  return GetProfileType() == REGULAR_PROFILE;
+  return !IsOffTheRecord();
 }
 
 bool Profile::IsIncognitoProfile() const {
-  return GetProfileType() == INCOGNITO_PROFILE;
+  return IsPrimaryOTRProfile() && !IsGuestSession() && !IsSystemProfile();
+}
+
+// static
+bool Profile::IsEphemeralGuestProfileEnabled() {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || \
+    defined(OS_MAC)
+  return base::FeatureList::IsEnabled(
+      features::kEnableEphemeralGuestProfilesOnDesktop);
+#else
+  return false;
+#endif
 }
 
 bool Profile::IsGuestSession() const {
@@ -365,15 +403,28 @@ bool Profile::IsGuestSession() const {
           chromeos::switches::kGuestSession);
   return is_guest_session;
 #else
-  return is_guest_profile_;
-#endif
+#if BUILDFLAG(IS_LACROS)
+  DCHECK(chromeos::LacrosChromeServiceImpl::Get());
+  if (chromeos::LacrosChromeServiceImpl::Get()->init_params()->session_type !=
+      crosapi::mojom::SessionType::kUnknown) {
+    return chromeos::LacrosChromeServiceImpl::Get()
+               ->init_params()
+               ->session_type == crosapi::mojom::SessionType::kGuestSession;
+  }
+#endif  // BUILDFLAG(IS_LACROS)
+  return is_guest_profile_ && !IsEphemeralGuestProfileEnabled();
+#endif  // defined(OS_CHROMEOS)
+}
+
+bool Profile::IsEphemeralGuestProfile() const {
+  return is_guest_profile_ && IsEphemeralGuestProfileEnabled();
 }
 
 bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
-bool Profile::IsPrimaryOTRProfile() {
+bool Profile::IsPrimaryOTRProfile() const {
   return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::PrimaryID();
 }
 
@@ -388,11 +439,11 @@ bool Profile::CanUseDiskWhenOffTheRecord() {
 #endif
 }
 
-bool Profile::ShouldRestoreOldSessionCookies() {
+bool Profile::ShouldRestoreOldSessionCookies() const {
   return false;
 }
 
-bool Profile::ShouldPersistSessionCookies() {
+bool Profile::ShouldPersistSessionCookies() const {
   return false;
 }
 
@@ -407,7 +458,7 @@ void Profile::ConfigureNetworkContextParams(
                                       cert_verifier_creation_params);
 }
 
-bool Profile::IsNewProfile() {
+bool Profile::IsNewProfile() const {
 #if !defined(OS_ANDROID)
   // The profile is new if the preference files has just been created, except on
   // first run, because the installer may create a preference file. See
@@ -453,7 +504,7 @@ PrefStore* Profile::CreateExtensionPrefStore(Profile* profile,
 
 bool ProfileCompare::operator()(Profile* a, Profile* b) const {
   DCHECK(a && b);
-  if (a->IsSameProfile(b))
+  if (a->IsSameOrParent(b))
     return false;
   return a->GetOriginalProfile() < b->GetOriginalProfile();
 }
@@ -492,11 +543,4 @@ variations::VariationsClient* Profile::GetVariationsClient() {
   if (!chrome_variations_client_)
     chrome_variations_client_ = std::make_unique<ChromeVariationsClient>(this);
   return chrome_variations_client_.get();
-}
-
-void Profile::DestroyOffTheRecordProfile() {
-  OTRProfileID primary_otr_id = OTRProfileID::PrimaryID();
-  if (!HasOffTheRecordProfile(primary_otr_id))
-    return;
-  DestroyOffTheRecordProfile(GetOffTheRecordProfile(primary_otr_id));
 }

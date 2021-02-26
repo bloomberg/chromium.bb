@@ -90,7 +90,17 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBu
 				x -= *Pointer<Float4>(constants + OFFSET(Constants, X) + q * sizeof(float4));
 			}
 
-			z[q] = interpolate(x, Dz[q], z[q], primitive + OFFSET(Primitive, z), false, false, state.depthClamp);
+			z[q] = interpolate(x, Dz[q], z[q], primitive + OFFSET(Primitive, z), false, false);
+
+			if(state.depthBias)
+			{
+				z[q] += *Pointer<Float4>(primitive + OFFSET(Primitive, zBias), 16);
+			}
+
+			if(state.depthClamp)
+			{
+				z[q] = Min(Max(z[q], Float4(0.0f)), Float4(1.0f));
+			}
 		}
 	}
 
@@ -133,7 +143,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBu
 
 		if(interpolateW())
 		{
-			w = interpolate(xxxx, Dw, rhw, primitive + OFFSET(Primitive, w), false, false, false);
+			w = interpolate(xxxx, Dw, rhw, primitive + OFFSET(Primitive, w), false, false);
 			rhw = reciprocal(w, false, false, true);
 
 			if(state.centroid)
@@ -161,7 +171,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBu
 						routine.inputs[interpolant] =
 						    interpolate(xxxx, Dv[interpolant], rhw,
 						                primitive + OFFSET(Primitive, V[interpolant]),
-						                input.Flat, !input.NoPerspective, false);
+						                input.Flat, !input.NoPerspective);
 					}
 				}
 			}
@@ -172,7 +182,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBu
 			{
 				auto distance = interpolate(xxxx, DclipDistance[i], rhw,
 				                            primitive + OFFSET(Primitive, clipDistance[i]),
-				                            false, true, false);
+				                            false, true);
 
 				auto clipMask = SignMask(CmpGE(distance, SIMD::Float(0)));
 				for(auto ms = 0u; ms < state.multiSampleCount; ms++)
@@ -208,7 +218,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBu
 							routine.getVariable(it->second.Id)[it->second.FirstComponent + i] =
 							    interpolate(xxxx, DcullDistance[i], rhw,
 							                primitive + OFFSET(Primitive, cullDistance[i]),
-							                false, true, false);
+							                false, true);
 						}
 					}
 				}
@@ -400,9 +410,7 @@ Bool PixelRoutine::depthTest32F(const Pointer<Byte> &zBuffer, int q, const Int &
 
 	if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 	{
-		// FIXME: Properly optimizes?
-		zValue.xy = *Pointer<Float4>(buffer);
-		zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
+		zValue = Float4(*Pointer<Float2>(buffer), *Pointer<Float2>(buffer + pitch));
 	}
 
 	Int4 zTest;
@@ -479,9 +487,8 @@ Bool PixelRoutine::depthTest16(const Pointer<Byte> &zBuffer, int q, const Int &x
 
 	if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 	{
-		// FIXME: Properly optimizes?
-		zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
-		zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
+		zValue = As<Short4>(Insert(As<Int2>(zValue), *Pointer<Int>(buffer), 0));
+		zValue = As<Short4>(Insert(As<Int2>(zValue), *Pointer<Int>(buffer + pitch), 1));
 	}
 
 	Int4 zTest;
@@ -549,9 +556,13 @@ Bool PixelRoutine::depthTest(const Pointer<Byte> &zBuffer, int q, const Int &x, 
 	}
 
 	if(state.depthFormat == VK_FORMAT_D16_UNORM)
+	{
 		return depthTest16(zBuffer, q, x, z, sMask, zMask, cMask);
+	}
 	else
+	{
 		return depthTest32F(zBuffer, q, x, z, sMask, zMask, cMask);
+	}
 }
 
 void PixelRoutine::alphaToCoverage(Int cMask[4], const Float4 &alpha)
@@ -593,16 +604,13 @@ void PixelRoutine::writeDepth32F(Pointer<Byte> &zBuffer, int q, const Int &x, co
 
 	if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 	{
-		// FIXME: Properly optimizes?
-		zValue.xy = *Pointer<Float4>(buffer);
-		zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
+		zValue = Float4(*Pointer<Float2>(buffer), *Pointer<Float2>(buffer + pitch));
 	}
 
 	Z = As<Float4>(As<Int4>(Z) & *Pointer<Int4>(constants + OFFSET(Constants, maskD4X) + zMask * 16, 16));
 	zValue = As<Float4>(As<Int4>(zValue) & *Pointer<Int4>(constants + OFFSET(Constants, invMaskD4X) + zMask * 16, 16));
 	Z = As<Float4>(As<Int4>(Z) | As<Int4>(zValue));
 
-	// FIXME: Properly optimizes?
 	*Pointer<Float2>(buffer) = Float2(Z.xy);
 	*Pointer<Float2>(buffer + pitch) = Float2(Z.zw);
 }
@@ -628,20 +636,16 @@ void PixelRoutine::writeDepth16(Pointer<Byte> &zBuffer, int q, const Int &x, con
 
 	if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 	{
-		// FIXME: Properly optimizes?
-		zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
-		zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
+		zValue = As<Short4>(Insert(As<Int2>(zValue), *Pointer<Int>(buffer), 0));
+		zValue = As<Short4>(Insert(As<Int2>(zValue), *Pointer<Int>(buffer + pitch), 1));
 	}
 
 	Z = Z & *Pointer<Short4>(constants + OFFSET(Constants, maskW4Q) + zMask * 8, 8);
 	zValue = zValue & *Pointer<Short4>(constants + OFFSET(Constants, invMaskW4Q) + zMask * 8, 8);
 	Z = Z | zValue;
 
-	// FIXME: Properly optimizes?
-	*Pointer<Short>(buffer) = Extract(Z, 0);
-	*Pointer<Short>(buffer + 2) = Extract(Z, 1);
-	*Pointer<Short>(buffer + pitch) = Extract(Z, 2);
-	*Pointer<Short>(buffer + pitch + 2) = Extract(Z, 3);
+	*Pointer<Int>(buffer) = Extract(As<Int2>(Z), 0);
+	*Pointer<Int>(buffer + pitch) = Extract(As<Int2>(Z), 1);
 }
 
 void PixelRoutine::writeDepth(Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &zMask)
@@ -652,9 +656,13 @@ void PixelRoutine::writeDepth(Pointer<Byte> &zBuffer, int q, const Int &x, const
 	}
 
 	if(state.depthFormat == VK_FORMAT_D16_UNORM)
+	{
 		writeDepth16(zBuffer, q, x, z, zMask);
+	}
 	else
+	{
 		writeDepth32F(zBuffer, q, x, z, zMask);
+	}
 }
 
 void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, int q, const Int &x, const Int &sMask, const Int &zMask, const Int &cMask)

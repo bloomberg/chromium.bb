@@ -437,6 +437,13 @@ static const GLenum valid_g_l_state_table_es3[] = {
     GL_UNPACK_SKIP_IMAGES,
     GL_UNPACK_SKIP_PIXELS,
     GL_UNPACK_SKIP_ROWS,
+    GL_BLEND_EQUATION_RGB,
+    GL_BLEND_EQUATION_ALPHA,
+    GL_BLEND_SRC_RGB,
+    GL_BLEND_SRC_ALPHA,
+    GL_BLEND_DST_RGB,
+    GL_BLEND_DST_ALPHA,
+    GL_COLOR_WRITEMASK,
 };
 
 bool Validators::GetMaxIndexTypeValidator::IsValid(const GLenum value) const {
@@ -483,6 +490,7 @@ static const GLenum valid_image_internal_format_table[] = {
     GL_RGB_YCRCB_420_CHROMIUM,
     GL_RGB_YCBCR_422_CHROMIUM,
     GL_RGB_YCBCR_420V_CHROMIUM,
+    GL_RGB_YCBCR_P010_CHROMIUM,
     GL_RGBA,
 };
 
@@ -512,6 +520,13 @@ static const GLenum valid_indexed_g_l_state_table[] = {
     GL_UNIFORM_BUFFER_BINDING,
     GL_UNIFORM_BUFFER_SIZE,
     GL_UNIFORM_BUFFER_START,
+    GL_BLEND_EQUATION_RGB,
+    GL_BLEND_EQUATION_ALPHA,
+    GL_BLEND_SRC_RGB,
+    GL_BLEND_SRC_ALPHA,
+    GL_BLEND_DST_RGB,
+    GL_BLEND_DST_ALPHA,
+    GL_COLOR_WRITEMASK,
 };
 
 bool Validators::InternalFormatParameterValidator::IsValid(
@@ -773,6 +788,7 @@ bool Validators::ShaderTypeValidator::IsValid(const GLenum value) const {
 bool Validators::SharedImageAccessModeValidator::IsValid(
     const GLenum value) const {
   switch (value) {
+    case GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM:
     case GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM:
     case GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM:
       return true;
@@ -895,6 +911,16 @@ static const GLenum valid_texture_depth_renderable_internal_format_table_es3[] =
     {
         GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32F,
         GL_DEPTH24_STENCIL8,  GL_DEPTH32F_STENCIL8,
+};
+
+static const GLenum valid_texture_fbo_target_table[] = {
+    GL_TEXTURE_2D,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 };
 
 static const GLenum valid_texture_format_table[] = {
@@ -1113,6 +1139,7 @@ static const GLenum
         GL_RGB_YCRCB_420_CHROMIUM,
         GL_RGB_YCBCR_422_CHROMIUM,
         GL_RGB_YCBCR_420V_CHROMIUM,
+        GL_RGB_YCBCR_P010_CHROMIUM,
         GL_R16_EXT,
 };
 
@@ -1333,6 +1360,8 @@ Validators::Validators()
       texture_compare_mode(valid_texture_compare_mode_table,
                            base::size(valid_texture_compare_mode_table)),
       texture_depth_renderable_internal_format(),
+      texture_fbo_target(valid_texture_fbo_target_table,
+                         base::size(valid_texture_fbo_target_table)),
       texture_format(valid_texture_format_table,
                      base::size(valid_texture_format_table)),
       texture_internal_format(valid_texture_internal_format_table,

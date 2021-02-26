@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import {Dialog} from './Dialog.js';
 import {SizeBehavior} from './GlassPane.js';
@@ -17,7 +14,7 @@ export class RemoteDebuggingTerminatedScreen extends VBox {
    */
   constructor(reason) {
     super(true);
-    this.registerRequiredCSS('ui/remoteDebuggingTerminatedScreen.css');
+    this.registerRequiredCSS('ui/remoteDebuggingTerminatedScreen.css', {enableLegacyPatching: true});
     const message = this.contentElement.createChild('div', 'message');
     const reasonElement = message.createChild('span', 'reason');
     reasonElement.textContent = reason;

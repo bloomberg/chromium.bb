@@ -6,14 +6,16 @@
 #define QUICHE_QUIC_CORE_STREAM_DELEGATE_INTERFACE_H_
 
 #include <cstddef>
+#include "absl/types/optional.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace quic {
 
 class QuicStream;
 
+// Pure virtual class to get notified when particular QuicStream events
+// occurred.
 class QUIC_EXPORT_PRIVATE StreamDelegateInterface {
  public:
   virtual ~StreamDelegateInterface() {}
@@ -24,13 +26,15 @@ class QUIC_EXPORT_PRIVATE StreamDelegateInterface {
   // Called when the stream needs to write data. If |level| is present, the data
   // will be written at the specified |level|. The data will be written
   // at specified transmission |type|.
+  // TODO(fayang): Change absl::optional<EncryptionLevel> to EncryptionLevel
+  // when deprecating quic_use_write_or_buffer_data_at_level.
   virtual QuicConsumedData WritevData(
       QuicStreamId id,
       size_t write_length,
       QuicStreamOffset offset,
       StreamSendingState state,
       TransmissionType type,
-      quiche::QuicheOptional<EncryptionLevel> level) = 0;
+      absl::optional<EncryptionLevel> level) = 0;
   // Called to write crypto data.
   virtual size_t SendCryptoData(EncryptionLevel level,
                                 size_t write_length,

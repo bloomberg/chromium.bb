@@ -32,6 +32,7 @@ class FakeBluetoothLEDeviceWinrt
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice2,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3,
+          ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice4,
           ABI::Windows::Foundation::IClosable> {
  public:
   explicit FakeBluetoothLEDeviceWinrt(BluetoothTestWinrt* bluetooth_test_winrt);
@@ -111,6 +112,10 @@ class FakeBluetoothLEDeviceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               GattDeviceServicesResult*>** operation) override;
 
+  // IBluetoothLEDevice4:
+  IFACEMETHODIMP get_BluetoothDeviceId(
+      ABI::Windows::Devices::Bluetooth::IBluetoothDeviceId** value) override;
+
   // IClosable:
   IFACEMETHODIMP Close() override;
 
@@ -129,7 +134,9 @@ class FakeBluetoothLEDeviceWinrt
   void SimulateGattDisconnection();
   void SimulateDeviceBreaksConnection();
   void SimulateGattNameChange(const std::string& new_name);
-  void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
+  void SimulateGattServicesDiscovered(
+      const std::vector<std::string>& uuids,
+      const std::vector<std::string>& blocked_uuids);
   void SimulateGattServicesChanged();
   void SimulateStatusChangeToDisconnect();
   void SimulateGattServiceRemoved(BluetoothRemoteGattService* service);

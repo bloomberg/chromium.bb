@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_assist.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -33,6 +33,8 @@ CXFA_Assist::CXFA_Assist(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Assist,
                 kAssistPropertyData,
                 kAssistAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Assist::~CXFA_Assist() = default;

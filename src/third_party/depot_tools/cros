@@ -19,8 +19,7 @@ import sys
 # Min version of Python that we *want*.  We warn for older versions.
 MIN_PYTHON_VER_SOFT = (3, 6)
 # Min version of Python that we *require*.  We abort for older versions.
-# TODO(vapier): Hard require Python 3.6 by end of 2020.
-MIN_PYTHON_VER_HARD = (3, 4)
+MIN_PYTHON_VER_HARD = (3, 6)
 
 
 def _FindChromite(path):
@@ -59,9 +58,10 @@ def _CheckPythonVersion():
     return
 
   progname = os.path.basename(sys.argv[0])
-  print('%s: Chrome OS requires Python-%s+, but found "%s"' %
+  print('%s: Chrome OS requires Python-%s+, but "%s" is "%s"' %
         (progname, '.'.join(str(x) for x in MIN_PYTHON_VER_SOFT),
-         sys.version.replace('\n', ' ')), file=sys.stderr)
+         sys.executable, sys.version.replace('\n', ' ')),
+        file=sys.stderr)
   if sys.version_info < MIN_PYTHON_VER_HARD:
     print('%s: fatal: giving up since Python is too old.' % (progname,),
           file=sys.stderr)

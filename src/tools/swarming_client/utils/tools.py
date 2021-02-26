@@ -17,11 +17,6 @@ import time
 import utils
 from . import zip_package
 
-if sys.version_info.major == 2:
-  import cStringIO
-else:
-  import io as cStringIO
-
 # Path to (possibly extracted from zip) cacert.pem bundle file.
 # See get_cacerts_bundle().
 _ca_certs = None
@@ -374,13 +369,15 @@ def format_json(data, dense):
 
   If dense is True, the json is packed. Otherwise, it is human readable.
   """
-  buf = cStringIO.StringIO()
+  import six
+
+  buf = six.StringIO()
   write_json(buf, data, dense)
   return buf.getvalue()
 
 
-def gen_blacklist(regexes):
-  """Returns a lambda to be used as a blacklist."""
+def gen_denylist(regexes):
+  """Returns a lambda to be used as a denylist."""
   compiled = [re.compile(i) for i in regexes or []]
   return lambda f: any(j.match(f) for j in compiled)
 
@@ -398,13 +395,7 @@ def is_headless():
 
   Examines os.environ for presence of SWARMING_HEADLESS var.
   """
-  headless_env_keys = (
-    # This is Chromium specific. Set when running under buildbot slave.
-    'CHROME_HEADLESS',
-    # Set when running under swarm bot.
-    'SWARMING_HEADLESS',
-  )
-  return any(get_bool_env_var(key) for key in headless_env_keys)
+  return get_bool_env_var('SWARMING_HEADLESS')
 
 
 def get_cacerts_bundle():

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
 
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 
 namespace policy {
 
@@ -41,7 +41,7 @@ bool MinimumVersionPolicyHandlerDelegateImpl::IsUserLoggedIn() const {
          user_manager::UserManager::Get()->IsUserLoggedIn();
 }
 
-bool MinimumVersionPolicyHandlerDelegateImpl::IsUserManaged() const {
+bool MinimumVersionPolicyHandlerDelegateImpl::IsUserEnterpriseManaged() const {
   if (!IsUserLoggedIn())
     return false;
   Profile* const profile = ProfileManager::GetPrimaryUserProfile();
@@ -50,7 +50,8 @@ bool MinimumVersionPolicyHandlerDelegateImpl::IsUserManaged() const {
   // TODO(https://crbug.com/1048607): Handle the case when |IsUserLoggedIn|
   // returns true after Auth success but |IsManaged| returns false before user
   // policy fetched.
-  return profile->GetProfilePolicyConnector()->IsManaged();
+  return profile->GetProfilePolicyConnector()->IsManaged() &&
+         !profile->IsChild();
 }
 
 bool MinimumVersionPolicyHandlerDelegateImpl::IsLoginSessionState() const {
@@ -85,16 +86,16 @@ void MinimumVersionPolicyHandlerDelegateImpl::
       WizardController::default_controller();
   if (!wizard_controller)
     return;
-  chromeos::BaseScreen* screen = wizard_controller->current_screen();
-  if (screen &&
-      screen->screen_id() == chromeos::UpdateRequiredView::kScreenId) {
-    chromeos::LoginDisplayHost::default_host()->StartSignInScreen();
-  }
+  chromeos::UpdateRequiredScreen* screen =
+      wizard_controller->GetScreen<chromeos::UpdateRequiredScreen>();
+  if (screen->is_hidden())
+    return;
+  screen->Exit();
 }
 
-const base::Version&
-MinimumVersionPolicyHandlerDelegateImpl::GetCurrentVersion() const {
-  return version_info::GetVersion();
+base::Version MinimumVersionPolicyHandlerDelegateImpl::GetCurrentVersion()
+    const {
+  return base::Version(base::SysInfo::OperatingSystemVersion());
 }
 
 }  // namespace policy

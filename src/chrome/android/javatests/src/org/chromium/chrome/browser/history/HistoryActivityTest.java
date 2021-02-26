@@ -4,30 +4,28 @@
 
 package org.chromium.chrome.browser.history;
 
-import static android.support.test.espresso.intent.Intents.intended;
-import static android.support.test.espresso.intent.Intents.times;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.times;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
-import android.accounts.Account;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Browser;
-import android.support.test.espresso.intent.rule.IntentsTestRule;
-import android.support.test.filters.SmallTest;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,8 +35,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -46,21 +45,20 @@ import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.browser_ui.widget.DateDividedAdapter;
+import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
@@ -77,8 +75,11 @@ import java.util.concurrent.TimeUnit;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityTest {
     @Rule
-    public IntentsTestRule<HistoryActivity> mActivityTestRule =
+    public final IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;
@@ -92,10 +93,10 @@ public class HistoryActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        // Account not signed in by default. The clear browsing data header, one date view, and two
+        // Account not signed in by default with AccountManagerTestRule.
+        // The clear browsing data header, one date view, and two
         // history item views should be shown, but the info header should not. We enforce a default
         // state because the number of headers shown depends on the signed-in state.
-        SigninTestUtil.setUpAuthForTesting();
 
         mHistoryProvider = new StubbedHistoryProvider();
 
@@ -114,11 +115,6 @@ public class HistoryActivityTest {
         Assert.assertEquals(4, mAdapter.getItemCount());
     }
 
-    @After
-    public void tearDown() {
-        SigninTestUtil.tearDownAuthForTesting();
-    }
-
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
@@ -126,7 +122,7 @@ public class HistoryActivityTest {
         mTestObserver = new TestObserver();
         mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
         mAdapter.registerAdapterDataObserver(mTestObserver);
-        mRecyclerView = ((RecyclerView) activity.findViewById(R.id.recycler_view));
+        mRecyclerView = activity.findViewById(R.id.recycler_view);
     }
 
     @Test
@@ -182,7 +178,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         setHasOtherFormsOfBrowsingData(false);
 
@@ -192,7 +188,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSynced() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         setHasOtherFormsOfBrowsingData(false);
 
@@ -202,7 +198,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         setHasOtherFormsOfBrowsingData(true);
 
@@ -223,7 +219,6 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure(message = "crbug.com/718689")
     public void testOpenSelectedItems() throws Exception {
         toggleItemSelection(2);
         toggleItemSelection(3);
@@ -390,7 +385,7 @@ public class HistoryActivityTest {
         Assert.assertEquals(1, headerGroup.size());
 
         // Signed in but not synced and history has items. The info button should be hidden.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         setHasOtherFormsOfBrowsingData(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onSignInStateChange());
         Assert.assertFalse(infoMenuItem.isVisible());
@@ -447,7 +442,7 @@ public class HistoryActivityTest {
 
         // Sign in and set has other forms of browsing data to true.
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         setHasOtherFormsOfBrowsingData(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             toolbar.onSignInStateChange();
@@ -518,12 +513,8 @@ public class HistoryActivityTest {
                                             .getMenu()
                                             .performIdentifierAction(
                                                     R.id.selection_mode_copy_link, 0)));
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return TextUtils.equals(mItem1.getUrl(), clipboardManager.getText());
-                }
-            });
+            CriteriaHelper.pollUiThread(
+                    () -> Criteria.checkThat(mItem1.getUrl(), is(clipboardManager.getText())));
 
             // Check that the copy link item is not visible when more than one item is selected.
             toggleItemSelection(2);
@@ -568,33 +559,32 @@ public class HistoryActivityTest {
 
         // Sign in to account. Note that if supervised user is set before sign in, the supervised
         // user setting will be reset.
-        final Account account = SigninTestUtil.addTestAccount();
+        final CoreAccountInfo coreAccountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get().getSigninManager().onFirstRunCheckDone();
-            IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(mTestObserver);
-            IdentityServicesProvider.get().getSigninManager().signIn(
-                    SigninAccessPoint.UNKNOWN, account, null);
+            Profile profile = Profile.getLastUsedRegularProfile();
+            IdentityServicesProvider.get().getSigninManager(profile).onFirstRunCheckDone();
+            IdentityServicesProvider.get().getSigninManager(profile).addSignInStateObserver(
+                    mTestObserver);
+            IdentityServicesProvider.get().getSigninManager(profile).signinAndEnableSync(
+                    SigninAccessPoint.UNKNOWN, coreAccountInfo, null);
         });
 
         mTestObserver.onSigninStateChangedCallback.waitForCallback(
                 0, 1, SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(coreAccountInfo, mAccountManagerTestRule.getCurrentSignedInAccount());
 
         // Wait for recycler view changes after sign in.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mRecyclerView.isAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !mRecyclerView.isAnimating());
 
         // Set supervised user.
         int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
-            return Profile.getLastUsedRegularProfile().isChild()
-                    && !PrefServiceBridge.getInstance().getBoolean(
-                            Pref.ALLOW_DELETING_BROWSER_HISTORY)
+            Profile profile = Profile.getLastUsedRegularProfile();
+            UserPrefs.get(profile).setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
+            return profile.isChild()
+                    && !UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
                     && !IncognitoUtils.isIncognitoModeEnabled();
         }));
 
@@ -605,12 +595,7 @@ public class HistoryActivityTest {
         // Wait until animator finish removing history item delete icon
         // TODO(twellington): Figure out a better way to do this (e.g. listen for RecyclerView
         // data changes or add a testing callback)
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mRecyclerView.isAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !mRecyclerView.isAnimating());
 
         // Clean up PrefChangeRegistrar for test.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -622,22 +607,25 @@ public class HistoryActivityTest {
     private void signOut() throws Exception {
         // Clear supervised user id.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, ""));
+                ()
+                        -> UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .setString(Pref.SUPERVISED_USER_ID, ""));
 
         // Sign out of account.
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.get().getSigninManager().signOut(
-                                SignoutReason.SIGNOUT_TEST));
+                        -> IdentityServicesProvider.get()
+                                   .getSigninManager(Profile.getLastUsedRegularProfile())
+                                   .signOut(SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
 
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> IdentityServicesProvider.get()
-                                   .getSigninManager()
+                                   .getSigninManager(Profile.getLastUsedRegularProfile())
                                    .removeSignInStateObserver(mTestObserver));
     }
 }

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -90,6 +90,16 @@ void MediaStreamDispatcherHost::OnDeviceChanged(
                                                   new_device);
 }
 
+void MediaStreamDispatcherHost::OnDeviceRequestStateChange(
+    const std::string& label,
+    const blink::MediaStreamDevice& device,
+    const blink::mojom::MediaStreamStateChange new_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  GetMediaStreamDeviceObserver()->OnDeviceRequestStateChange(label, device,
+                                                             new_state);
+}
+
 const mojo::Remote<blink::mojom::MediaStreamDeviceObserver>&
 MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -102,8 +112,8 @@ MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   media_stream_device_observer_.set_disconnect_handler(base::BindOnce(
       &MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError,
       weak_factory_.GetWeakPtr()));
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BindMediaStreamDeviceObserverReceiver, render_process_id_,
                      render_frame_id_, std::move(dispatcher_receiver)));
   return media_stream_device_observer_;
@@ -138,7 +148,7 @@ void MediaStreamDispatcherHost::GenerateStream(
   }
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
+      GetUIThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
@@ -159,8 +169,8 @@ void MediaStreamDispatcherHost::DoGenerateStream(
                                            salt_and_origin.origin)) {
     std::move(callback).Run(
         blink::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN,
-        std::string(), blink::MediaStreamDevices(),
-        blink::MediaStreamDevices());
+        std::string(), blink::MediaStreamDevices(), blink::MediaStreamDevices(),
+        /*pan_tilt_zoom_allowed=*/false);
     return;
   }
 
@@ -171,7 +181,10 @@ void MediaStreamDispatcherHost::DoGenerateStream(
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceChanged,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &MediaStreamDispatcherHost::OnDeviceRequestStateChange,
+          weak_factory_.GetWeakPtr()));
 }
 
 void MediaStreamDispatcherHost::CancelRequest(int page_request_id) {
@@ -196,9 +209,16 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
                                            blink::mojom::MediaStreamType type,
                                            OpenDeviceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // OpenDevice is only supported for microphone or webcam capture.
+  if (type != blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+      type != blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+    bad_message::ReceivedBadMessage(
+        render_process_id_, bad_message::MDDH_INVALID_DEVICE_TYPE_REQUEST);
+    return;
+  }
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
+      GetUIThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoOpenDevice,

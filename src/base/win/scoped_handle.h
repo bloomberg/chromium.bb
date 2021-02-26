@@ -8,11 +8,13 @@
 #include "base/win/windows_types.h"
 
 #include "base/base_export.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 
 // TODO(rvargas): remove this with the rest of the verifier.
 #if defined(COMPILER_MSVC)
@@ -101,8 +103,8 @@ class GenericScopedHandle {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierWrongOwner);
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierUntrackedHandle);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierWrongOwner);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierUntrackedHandle);
   Handle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericScopedHandle);
@@ -166,7 +168,15 @@ class BASE_EXPORT VerifierTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VerifierTraits);
 };
 
-using ScopedHandle = GenericScopedHandle<HandleTraits, VerifierTraits>;
+using UncheckedScopedHandle =
+    GenericScopedHandle<HandleTraits, DummyVerifierTraits>;
+using CheckedScopedHandle = GenericScopedHandle<HandleTraits, VerifierTraits>;
+
+#if DCHECK_IS_ON() && !defined(ARCH_CPU_64_BITS)
+using ScopedHandle = CheckedScopedHandle;
+#else
+using ScopedHandle = UncheckedScopedHandle;
+#endif
 
 // This function may be called by the embedder to disable the use of
 // VerifierTraits at runtime. It has no effect if DummyVerifierTraits is used

@@ -8,11 +8,10 @@ from __future__ import absolute_import
 
 from dashboard.api import api_request_handler
 from dashboard.common import namespaced_stored_object
-from dashboard import chart_handler
+from dashboard import revision_info_client
 
-
-WHITELIST = [
-    chart_handler.REVISION_INFO_KEY,
+ALLOWLIST = [
+    revision_info_client.REVISION_INFO_KEY,
 ]
 
 
@@ -23,6 +22,6 @@ class ConfigHandler(api_request_handler.ApiRequestHandler):
 
   def Post(self):
     key = self.request.get('key')
-    if key not in WHITELIST:
+    if key not in ALLOWLIST:
       return
     return namespaced_stored_object.Get(key)

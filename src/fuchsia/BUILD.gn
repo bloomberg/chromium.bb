@@ -4,8 +4,6 @@
 
 assert(is_fuchsia)
 
-import("//build/buildflag_header.gni")
-import("//fuchsia/release_channel.gni")
 import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
 
 fidl_library("cast_fidl") {
@@ -17,6 +15,7 @@ fidl_library("cast_fidl") {
     "fidl/cast/application_context.fidl",
     "fidl/cast/application_controller.fidl",
     "fidl/cast/cors_exempt_headers.fidl",
+    "fidl/cast/data_reset.fidl",
     "fidl/cast/url_request_rewriter.fidl",
   ]
 

@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
@@ -315,12 +316,9 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Automatic) {
   EXPECT_EQ(0u, overrides.search->size());
   EXPECT_TRUE(overrides.attempts.has_value());
   EXPECT_EQ(1, overrides.attempts.value());
-  EXPECT_TRUE(overrides.randomize_ports.has_value());
-  EXPECT_FALSE(overrides.randomize_ports.value());
 
   EXPECT_TRUE(overrides.secure_dns_mode.has_value());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            overrides.secure_dns_mode.value());
+  EXPECT_EQ(net::SecureDnsMode::kOff, overrides.secure_dns_mode.value());
   EXPECT_FALSE(overrides.dns_over_https_servers.has_value());
 }
 
@@ -341,12 +339,9 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Secure) {
   EXPECT_EQ(0u, overrides.search->size());
   EXPECT_TRUE(overrides.attempts.has_value());
   EXPECT_EQ(1, overrides.attempts.value());
-  EXPECT_TRUE(overrides.randomize_ports.has_value());
-  EXPECT_FALSE(overrides.randomize_ports.value());
 
   EXPECT_TRUE(overrides.secure_dns_mode.has_value());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE,
-            overrides.secure_dns_mode.value());
+  EXPECT_EQ(net::SecureDnsMode::kSecure, overrides.secure_dns_mode.value());
   EXPECT_TRUE(overrides.dns_over_https_servers.has_value());
   ASSERT_EQ(2u, overrides.dns_over_https_servers->size());
   EXPECT_EQ(kDohTemplateGet,

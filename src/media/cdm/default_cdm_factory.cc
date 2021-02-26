@@ -5,7 +5,7 @@
 #include "media/cdm/default_cdm_factory.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -34,20 +34,12 @@ static bool ShouldCreateAesDecryptor(const std::string& key_system) {
 
 void DefaultCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     CdmCreatedCB cdm_created_cb) {
-  if (security_origin.opaque()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(cdm_created_cb), nullptr, "Invalid origin."));
-    return;
-  }
-
   if (!ShouldCreateAesDecryptor(key_system)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(cdm_created_cb), nullptr,

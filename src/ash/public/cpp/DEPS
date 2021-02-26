@@ -1,6 +1,7 @@
 include_rules = [
   "+chromeos/services",
-  "+components/arc/mojom",
+  "+chromeos/ui/base/chromeos_ui_constants.h",
+  "+cc/metrics",
   "+components/prefs",
   "+services/data_decoder/public",
   "+services/device/public",

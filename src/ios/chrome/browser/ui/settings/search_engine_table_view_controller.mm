@@ -8,6 +8,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -169,6 +171,11 @@ const char kUmaSelectDefaultSearchEngine[] =
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  if (editing) {
+    base::RecordAction(
+        base::UserMetricsAction("IOS.SearchEngines.RecentlyViewed.Edit"));
+  }
+
   [super setEditing:editing animated:animated];
 
   // Disable prepopulated engines and remove the checkmark in editing mode, and
@@ -213,9 +220,22 @@ const char kUmaSelectDefaultSearchEngine[] =
   }
 }
 
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(
+      base::UserMetricsAction("MobileSearchEngineSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileSearchEngineSettingsBack"));
+}
+
 #pragma mark - SettingsRootTableViewController
 
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
+  base::RecordAction(
+      base::UserMetricsAction("IOS.SearchEngines.RecentlyViewed.Delete"));
   // Do not call super as this also deletes the section if it is empty.
   [self deleteItemAtIndexPaths:indexPaths];
 }

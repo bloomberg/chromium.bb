@@ -53,21 +53,12 @@
     <!-- Infobar dimensions -->
     <!-- Text size of descriptive controls on an infobar. -->
     <dimen name="infobar_descriptive_text_size">14sp</dimen>
-    <!-- Maximum width of an infobar. -->
-    <dimen name="infobar_max_width">600dp</dimen>
-    <!-- Width of side shadows on floating infobars. -->
-    <dimen name="infobar_shadow_width">8dp</dimen>
-    <!-- Height of top shadow on each infobar. -->
-    <dimen name="infobar_shadow_height">8dp</dimen>
-    <!-- Distance that a back infobar peeks out above the front infobar. -->
-    <dimen name="infobar_peeking_height">10dp</dimen>
 
     <!-- Dimension applied to SyncErrorInfoBar icon. -->
     <dimen name="sync_error_infobar_icon_size">48dp</dimen>
 
     <!-- Dimensions for compact translate infobar. -->
     <dimen name="infobar_translate_fade_edge_length">18dp</dimen>
-    <dimen name="infobar_translate_menu_width">260dp</dimen>
 
     <!-- Overlay Panel dimensions -->
     <dimen name="overlay_panel_end_buttons_width">94dp</dimen>
@@ -95,12 +86,10 @@
     <dimen name="contextual_search_bubble_y_inset">-3dp</dimen>
 
     <!-- Overlay panel dimensions -->
-    <dimen name="overlay_panel_bar_height_legacy">56dp</dimen>
     <dimen name="overlay_panel_bar_height">70dp</dimen>
 
     <!-- Preview tab dimensions -->
     <dimen name="preview_tab_favicon_size">24dp</dimen>
-    <dimen name="preview_tab_security_icon_size">22dp</dimen>
 
     <!-- Sheet tab toolbar dimensions -->
     <dimen name="sheet_tab_toolbar_height">70dp</dimen>
@@ -157,11 +146,24 @@
     <!-- First Run Experience dimensions -->
     <dimen name="fre_content_margin">24dp</dimen>
     <dimen name="fre_vertical_spacing">32dp</dimen>
-    <dimen name="fre_button_bar_height">52dp</dimen>
-    <dimen name="fre_button_padding">12dp</dimen>
+    <dimen name="fre_landscape_top_padding">72dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
+
+    <dimen name="fre_image_bottom_margin">36dp</dimen>
     <dimen name="fre_image_height">120dp</dimen>
+    <dimen name="fre_tos_image_height">110dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
+    <dimen name="fre_tos_bottom_margin">16dp</dimen>
+    <dimen name="fre_loading_spinner_size">48dp</dimen>
+    <dimen name="fre_button_padding">12dp</dimen>
+    <dimen name="fre_bottom_loading_spinner_size">24dp</dimen>
+
+    <dimen name="fre_button_vertical_margin">24dp</dimen>
+    <dimen name="fre_button_bar_height">62dp</dimen>
+    <!-- fre_button_bar_height = button_height(48dp) + fre_button_vertical_margin * 2-->
+    <dimen name="fre_tos_button_bar_height">96dp</dimen>
+    <!-- fre_bottom_loading_spinner_margin = (fre_tos_button_bar_height - fre_bottom_loading_spinner_size) / 2-->
+    <dimen name='fre_bottom_loading_spinner_margin'>36dp</dimen>
 
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
@@ -212,7 +214,7 @@
          83dp -->
     <dimen name="webapk_adaptive_icon_size">83dp</dimen>
 
-    <dimen name="webapk_badge_icon_size">24dp</dimen>
+    <dimen name="webapk_monochrome_icon_size">24dp</dimen>
 
     <!-- Toolbar dimensions -->
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>
@@ -222,6 +224,7 @@
     <dimen name="toolbar_button_width">48dp</dimen>
     <dimen name="toolbar_identity_disc_size">24dp</dimen>
     <dimen name="toolbar_identity_disc_size_duet">32dp</dimen>
+    <dimen name="toolbar_url_focus_translation_x">10dp</dimen>
 
     <!-- Bottom Toolbar -->
     <dimen name="split_toolbar_button_height">56dp</dimen>
@@ -233,8 +236,7 @@
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_icon_width">28dp</dimen>
     <dimen name="location_bar_action_icon_width">48dp</dimen>
-    <dimen name="location_bar_start_icon_width">28dp</dimen>
-    <dimen name="location_bar_start_icon_margin_end">4dp</dimen>
+    <dimen name="location_bar_icon_margin_end">4dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
     <!--  When the url action container is shown, the location bar end padding is built in to its
     actions, so the action container itself uses a negative offset to properly align with the end
@@ -263,19 +265,10 @@
     <dimen name="sei_location_bar_status_extra_padding_width">4dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
-    <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
 
-    <!-- Bottom toolbar dimensions -->
-    <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
-    <dimen name="bottom_toolbar_height_with_shadow">56dp</dimen>
-    <dimen name="labeled_bottom_toolbar_height">68dp</dimen>
-    <dimen name="labeled_bottom_toolbar_height_with_shadow">76dp</dimen>
-    <dimen name="bottom_toolbar_padding">12dp</dimen>
-    <dimen name="search_accelerator_width">64dp</dimen>
-    <dimen name="search_accelerator_height">36dp</dimen>
-    <dimen name="search_accelerator_height_padding">6dp</dimen>
-    <dimen name="search_accelerator_width_margin">4dp</dimen>
+    <!-- Bottom controls dimensions -->
+    <dimen name="bottom_controls_height">@dimen/min_touch_target_size</dimen>
 
     <!-- Start surface toolbar dimensions -->
     <dimen name="start_surface_toolbar_button_padding_to_button">8dp</dimen>
@@ -293,10 +286,7 @@
     <dimen name="omnibox_suggestion_semicompact_padding">8dp</dimen>
     <dimen name="omnibox_suggestion_compact_padding">6dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
-    <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>
-    <dimen name="omnibox_suggestion_second_line_text_size">14sp</dimen>
     <dimen name="omnibox_suggestion_start_offset_without_icon">18dp</dimen>
-    <dimen name="omnibox_suggestion_start_offset_with_icon">56dp</dimen>
 
     <dimen name="omnibox_suggestion_36dp_icon_size">36dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_size">24dp</dimen>
@@ -305,12 +295,12 @@
     <dimen name="omnibox_suggestion_24dp_icon_margin_start">16dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_margin_end">16dp</dimen>
     <dimen name="omnibox_suggestion_favicon_size">24dp</dimen>
-    <dimen name="omnibox_suggestion_entity_icon_size">36dp</dimen>
+    <dimen name="omnibox_suggestion_decoration_image_size">36dp</dimen>
     <dimen name="omnibox_suggestion_icon_area_size">56dp</dimen>
 
     <dimen name="omnibox_suggestion_action_icon_width">48dp</dimen>
-    <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
+    <dimen name="omnibox_suggestion_carousel_horizontal_spacing">8dp</dimen>
 
     <!-- Adding search engine logo to the omnibox. -->
     <!-- Max size which will fit completely in the composed/rounded bg. -->
@@ -327,6 +317,7 @@
     <dimen name="tile_view_bg_corner_radius">2dp</dimen>
     <dimen name="tile_view_width">80dp</dimen>
     <dimen name="tile_view_width_condensed">64dp</dimen>
+    <dimen name="tile_view_min_height">86dp</dimen>
     <dimen name="tile_view_icon_size">48dp</dimen>
     <dimen name="tile_view_icon_size_modern">24dp</dimen>
     <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
@@ -363,11 +354,22 @@
          (matches toolbar_height_no_shadow). -->
     <dimen name="ntp_search_box_bounds_vertical_inset_modern">-4dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
+    <dimen name="ntp_wide_card_lateral_margins_v2">36dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
+    <dimen name="snippets_article_header_menu_size">48dp</dimen>
+    <dimen name="feed_v2_header_menu_width">33dp</dimen>
+    <dimen name="feed_v2_header_menu_touch_padding">4dp</dimen>
+    <dimen name="feed_v2_header_menu_disabled_padding">11dp</dimen>
+    <!-- This should match |ntp_header_lateral_margins_v2|. -->
+    <dimen name="ntp_header_lateral_margins_v2">16dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
     <dimen name="content_suggestions_card_modern_margin">12dp</dimen>
+    <dimen name="content_suggestions_card_modern_margin_v2">0dp</dimen>
+    <dimen name="content_suggestions_card_modern_padding_v2">16dp</dimen>
     <dimen name="md_incognito_ntp_line_spacing">6sp</dimen>
     <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
+    <dimen name="cryptid_height_in_logo_wrapper">60dp</dimen>
+    <dimen name="cryptid_width_in_logo_wrapper">90dp</dimen>
 
     <!-- NTP Feed dimensions -->
     <dimen name="feed_header_menu_max_width">225dp</dimen>
@@ -396,7 +398,6 @@
     <dimen name="explore_sites_dense_title_right_icon_margin_start">4dp</dimen>
     <dimen name="explore_sites_dense_title_right_tile_view_width">108dp</dimen>
     <dimen name="explore_sites_dense_title_right_tile_view_height">40dp</dimen>
-    <dimen name="explore_sites_dense_title_right_title_height">32dp</dimen>
     <dimen name="explore_sites_dense_title_right_title_margin_start">40dp</dimen>
     <dimen name="explore_sites_dense_title_right_title_margin_top">4dp</dimen>
 
@@ -436,16 +437,6 @@
     <dimen name="custom_tabs_screenshot_height">300dp</dimen>
     <dimen name="custom_tabs_screenshot_width">190dp</dimen>
 
-    <!-- Contact Picker dimensions -->
-    <dimen name="contact_picker_icon_size">36dp</dimen>
-
-    <!-- Photo Picker dimensions -->
-    <dimen name="photo_picker_label_gap">10dp</dimen>
-    <dimen name="photo_picker_tile_min_size">100dp</dimen>
-    <dimen name="photo_picker_tile_gap">4dp</dimen>
-    <dimen name="photo_picker_grainy_thumbnail_size">12dp</dimen>
-    <dimen name="photo_picker_video_duration_offset">16dp</dimen>
-
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
     <dimen name="account_chooser_dialog_item_margin">24dp</dimen>
@@ -456,63 +447,6 @@
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_button_margin">16dp</dimen>
 
-    <!-- Editor dialog UI -->
-    <dimen name="editor_dialog_section_small_spacing">8dp</dimen>
-    <dimen name="editor_dialog_section_large_spacing">16dp</dimen>
-    <dimen name="editor_dialog_section_buttons_vertical_padding">10dp</dimen>
-    <dimen name="editable_option_section_logo_width">38dp</dimen>
-
-    <!-- Payments UI
-         * payments_section_checking_spacing:
-           The spec says that the "Checking" text should be 32dp above the bottom of its section.
-           We improvise by using 6dp because sections also have a 10dp padding, so we end up with
-           a 16dp bottom margin on the "Checking" text + 10dp section padding + 6dp leftover.
-    -->
-    <dimen name="payments_section_vertical_spacing">10dp</dimen>
-    <dimen name="payments_section_largest_spacing">32dp</dimen>
-    <dimen name="payments_section_checking_spacing">6dp</dimen>
-    <dimen name="payments_section_descriptive_item_spacing">40dp</dimen>
-    <dimen name="payments_section_add_button_height">48dp</dimen>
-    <dimen name="payments_section_dropdown_top_padding">5dp</dimen>
-    <dimen name="payments_ui_max_dialog_width">0dp</dimen>
-    <dimen name="payments_ui_translation">100dp</dimen>
-    <dimen name="payments_favicon_size">24dp</dimen>
-    <dimen name="payments_handler_window_minimum_height">500dp</dimen>
-    <dimen name="payments_request_bottom_bar_vertical_padding">10dp</dimen>
-    <dimen name="payments_request_bottom_bar_horizontal_padding">16dp</dimen>
-
-    <!-- Payment minimal UI spacing -->
-    <dimen name="payment_minimal_ui_amount_currency_spacing">4dp</dimen>
-    <dimen name="payment_minimal_ui_app_icon_bottom_spacing">20dp</dimen>
-    <dimen name="payment_minimal_ui_app_icon_horizontal_spacing">10dp</dimen>
-    <dimen name="payment_minimal_ui_content_bottom_spacing">26dp</dimen>
-    <dimen name="payment_minimal_ui_content_icon_spacing">8dp</dimen>
-    <dimen name="payment_minimal_ui_content_top_spacing">78dp</dimen>
-    <dimen name="payment_minimal_ui_drag_handle_spacing">8dp</dimen>
-    <dimen name="payment_minimal_ui_large_text_vertical_spacing">8dp</dimen>
-    <dimen name="payment_minimal_ui_spacing">16dp</dimen>
-    <dimen name="payment_minimal_ui_toolbar_small_status_text_top_spacing">2dp</dimen>
-
-    <!-- Payment minimal UI element sizes -->
-    <dimen name="payment_minimal_ui_content_icon_size">56dp</dimen>
-    <dimen name="payment_minimal_ui_separator_width">0.5dp</dimen>
-    <dimen name="payment_minimal_ui_toolbar_icon_size">36dp</dimen>
-
-    <!-- Preferences dimensions
-         pref_autofill_field_horizontal_padding exists because TextInputLayouts have an internal
-         padding set.
-    -->
-    <dimen name="pref_autofill_content_spacing">12dp</dimen>
-    <dimen name="pref_autofill_field_horizontal_padding">4dp</dimen>
-    <dimen name="pref_autofill_field_top_margin">8dp</dimen>
-    <dimen name="pref_autofill_field_large_top_margin">16dp</dimen>
-    <dimen name="pref_autofill_field_bottom_margin">8dp</dimen>
-    <!-- The dropdown element has no embedded bottom padding like the TextView has so the margin
-         is doubled. -->
-    <dimen name="pref_autofill_dropdown_bottom_margin">16dp</dimen>
-    <dimen name="pref_autofill_touch_target_padding">15dp</dimen>
-
-    <dimen name="pref_list_padding_kitkat">16dp</dimen>
     <dimen name="pref_spinner_padding_end">8dp</dimen>
 
     <dimen name="pref_languages_add_button_padding">24dp</dimen>
@@ -525,12 +459,6 @@
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
 
-    <!-- Bottom Sheet dimensions -->
-    <dimen name="bottom_sheet_min_full_half_distance">140dp</dimen>
-    <dimen name="bottom_sheet_peek_height">56dp</dimen>
-    <dimen name="bottom_sheet_toolbar_shadow_height">16dp</dimen>
-    <dimen name="bottom_sheet_shadow_top_offset">10dp</dimen>
-
     <!--  Miscellaneous dimensions -->
     <dimen name="text_bubble_menu_anchor_y_inset">14dp</dimen>
     <!--  Used as a margin to force the shadow view to overlap other views. -->
@@ -542,6 +470,14 @@
     <dimen name="history_item_remove_button_lateral_padding">18dp</dimen>
 
     <!-- Revamped Context Menu Dimensions -->
+    <!-- Prevent the chip from reaching the edges of the screen for long translations. -->
+    <dimen name="context_menu_chip_max_width">338dp</dimen>
+    <dimen name="context_menu_chip_vertical_margin">24dp</dimen>
+    <!-- The chip touch target is 48dp. This reduces the chip size by 8dp to get to the desired
+         40dp height (24dp for content + 4dp of padding at the top and bottom. -->
+    <dimen name="context_menu_chip_vertical_inset">4dp</dimen>
+    <dimen name="context_menu_chip_icon_size">24dp</dimen>
+
     <dimen name="context_menu_max_width">500dp</dimen>
     <dimen name="revamped_context_menu_lateral_margin">40dp</dimen>
     <dimen name="revamped_context_menu_vertical_margin">20dp</dimen>
@@ -573,8 +509,6 @@
     <dimen name="download_manager_horizontal_margin">16dp</dimen>
     <dimen name="download_manager_prefetch_vertical_margin">12dp</dimen>
     <dimen name="download_manager_section_title_padding_top">16dp</dimen>
-    <dimen name="download_manager_section_title_padding_bottom">0dp</dimen>
-    <dimen name="download_manager_section_title_padding_image">8dp</dimen>
     <!-- The corner radius is calculated by subtracting the hairline border width from the
          background card corner radius. -->
     <dimen name="download_manager_thumbnail_corner_radius">7dp</dimen>
@@ -591,8 +525,6 @@
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_size">44dp</dimen>
-    <dimen name="navigation_bubble_radius">22dp</dimen>
-    <dimen name="navigation_bubble_shadow_padding">1dp</dimen>
     <dimen name="navigation_bubble_arrow_size">32dp</dimen>
     <dimen name="navigation_bubble_start_padding">2dp</dimen>
     <dimen name="navigation_bubble_top_padding">4dp</dimen>
@@ -606,10 +538,12 @@
     <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
     <dimen name="navigation_sheet_peek_height">120dp</dimen>
 
+    <!-- RadioButtonWithDescriptionLayout dimensions -->
+    <dimen name="radio_button_accessory_view_padding_start">60dp</dimen>
+    <dimen name="radio_button_accessory_view_padding_end">16dp</dimen>
+
     <!-- Appearance Settings dimensions -->
     <dimen name="theme_preferences_checkbox_margin_end">8dp</dimen>
-    <dimen name="theme_preferences_checkbox_container_padding_start">60dp</dimen>
-    <dimen name="theme_preferences_checkbox_container_padding_end">16dp</dimen>
     <dimen name="homepage_preference_title_lateral_padding">16dp</dimen>
     <dimen name="homepage_preference_title_vertical_padding">10dp</dimen>
 
@@ -622,4 +556,17 @@
     <dimen name="status_indicator_min_height">21dp</dimen>
     <dimen name="status_indicator_icon_padding">8dp</dimen>
     <dimen name="status_indicator_icon_size">12dp</dimen>
+
+    <!-- Overflow Menu Dimensions -->
+    <dimen name="overflow_menu_divider_line_padding">5dp</dimen>
+    <!-- top padding(12dp) + icon size(20dp) + bottom padding(12dp) -->
+    <dimen name="overflow_menu_managed_by_min_height">44dp</dimen>
+    <dimen name="overflow_menu_update_min_height">40sp</dimen>
+    <dimen name="overflow_menu_update_padding">12dp</dimen>
+
+    <!-- Sharing Hub dimensions -->
+    <dimen name="sharing_hub_preview_icon_padding">12dp</dimen>
+    <dimen name="sharing_hub_preview_icon_rounded_corner_radius">4dp</dimen>
+    <dimen name="sharing_hub_preview_icon_size">48dp</dimen>
+    <dimen name="sharing_hub_preview_inner_icon_size">24dp</dimen>
 </resources>

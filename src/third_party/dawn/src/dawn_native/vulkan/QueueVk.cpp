@@ -14,6 +14,11 @@
 
 #include "dawn_native/vulkan/QueueVk.h"
 
+#include "common/Math.h"
+#include "dawn_native/Buffer.h"
+#include "dawn_native/CommandValidation.h"
+#include "dawn_native/Commands.h"
+#include "dawn_native/DynamicUploader.h"
 #include "dawn_native/vulkan/CommandBufferVk.h"
 #include "dawn_native/vulkan/CommandRecordingContext.h"
 #include "dawn_native/vulkan/DeviceVk.h"
@@ -25,6 +30,9 @@ namespace dawn_native { namespace vulkan {
     // static
     Queue* Queue::Create(Device* device) {
         return new Queue(device);
+    }
+
+    Queue::Queue(Device* device) : QueueBase(device) {
     }
 
     Queue::~Queue() {

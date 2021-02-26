@@ -22,7 +22,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/test/test_layout_provider.h"
 #include "ui/views/test/test_views.h"
@@ -33,39 +32,73 @@ using base::ASCIIToUTF16;
 
 namespace views {
 
-class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
+namespace {
+
+Label* LabelAt(StyledLabel* styled,
+               size_t index,
+               std::string expected_classname = Label::kViewClassName) {
+  View* const child = styled->children()[index];
+  EXPECT_EQ(expected_classname, child->GetClassName());
+  return static_cast<Label*>(child);
+}
+
+int StyledLabelContentHeightForWidth(StyledLabel* styled, int w) {
+  return styled->GetHeightForWidth(w) - styled->GetInsets().height();
+}
+
+}  // namespace
+
+class StyledLabelTest : public ViewsTestBase {
  public:
   StyledLabelTest() = default;
+  StyledLabelTest(const StyledLabelTest&) = delete;
+  StyledLabelTest& operator=(const StyledLabelTest&) = delete;
   ~StyledLabelTest() override = default;
 
-  // StyledLabelListener implementation.
-  void StyledLabelLinkClicked(StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override {}
-
  protected:
-  StyledLabel* styled() { return styled_.get(); }
-
-  Label* LabelAt(size_t index,
-                 std::string expected_classname = Label::kViewClassName) {
-    View* const child = styled_->children()[index];
-    EXPECT_EQ(expected_classname, child->GetClassName());
-    return static_cast<Label*>(child);
-  }
+  StyledLabel* styled() const { return styled_.get(); }
 
   void InitStyledLabel(const std::string& ascii_text) {
-    styled_ = std::make_unique<StyledLabel>(ASCIIToUTF16(ascii_text), this);
-    styled_->set_owned_by_client();
-  }
-
-  int StyledLabelContentHeightForWidth(int w) {
-    return styled_->GetHeightForWidth(w) - styled_->GetInsets().height();
+    styled_ = std::make_unique<StyledLabel>();
+    styled_->SetText(ASCIIToUTF16(ascii_text));
   }
 
  private:
   std::unique_ptr<StyledLabel> styled_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(StyledLabelTest);
+class StyledLabelInWidgetTest : public ViewsTestBase {
+ public:
+  StyledLabelInWidgetTest() = default;
+  StyledLabelInWidgetTest(const StyledLabelInWidgetTest&) = delete;
+  StyledLabelInWidgetTest& operator=(const StyledLabelInWidgetTest&) = delete;
+  ~StyledLabelInWidgetTest() override = default;
+
+ protected:
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+
+    widget_ = CreateTestWidget();
+  }
+
+  void TearDown() override {
+    widget_.reset();
+
+    ViewsTestBase::TearDown();
+  }
+
+  StyledLabel* styled() const { return styled_; }
+  Widget* widget() const { return widget_.get(); }
+
+  void InitStyledLabel(const std::string& ascii_text) {
+    View* container = widget_->SetContentsView(std::make_unique<View>());
+    styled_ = container->AddChildView(std::make_unique<StyledLabel>());
+    styled_->SetText(ASCIIToUTF16(ascii_text));
+  }
+
+ private:
+  StyledLabel* styled_;
+  std::unique_ptr<Widget> widget_;
 };
 
 TEST_F(StyledLabelTest, NoWrapping) {
@@ -74,7 +107,8 @@ TEST_F(StyledLabelTest, NoWrapping) {
   Label label(ASCIIToUTF16(text));
   const gfx::Size label_preferred_size = label.GetPreferredSize();
   EXPECT_EQ(label_preferred_size.height(),
-            StyledLabelContentHeightForWidth(label_preferred_size.width() * 2));
+            StyledLabelContentHeightForWidth(styled(),
+                                             label_preferred_size.width() * 2));
 }
 
 TEST_F(StyledLabelTest, TrailingWhitespaceiIgnored) {
@@ -86,7 +120,7 @@ TEST_F(StyledLabelTest, TrailingWhitespaceiIgnored) {
 
   ASSERT_EQ(1u, styled()->children().size());
   EXPECT_EQ(ASCIIToUTF16("This is a test block of text"),
-            LabelAt(0)->GetText());
+            LabelAt(styled(), 0)->GetText());
 }
 
 TEST_F(StyledLabelTest, RespectLeadingWhitespace) {
@@ -98,7 +132,7 @@ TEST_F(StyledLabelTest, RespectLeadingWhitespace) {
 
   ASSERT_EQ(1u, styled()->children().size());
   EXPECT_EQ(ASCIIToUTF16("   This is a test block of text"),
-            LabelAt(0)->GetText());
+            LabelAt(styled(), 0)->GetText());
 }
 
 TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
@@ -108,7 +142,7 @@ TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
   ASSERT_EQ(2u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16(indented_line), LabelAt(1)->GetText());
+  EXPECT_EQ(ASCIIToUTF16(indented_line), LabelAt(styled(), 1)->GetText());
 }
 
 TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
@@ -122,8 +156,8 @@ TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
   styled()->SetBounds(0, 0, label_preferred_size.width(), 1000);
   styled()->Layout();
   ASSERT_EQ(2u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16(first_line), LabelAt(0)->GetText());
-  const auto* label_1 = LabelAt(1);
+  EXPECT_EQ(ASCIIToUTF16(first_line), LabelAt(styled(), 0)->GetText());
+  const auto* label_1 = LabelAt(styled(), 1);
   EXPECT_EQ(ASCIIToUTF16(second_line), label_1->GetText());
   EXPECT_EQ(styled()->GetHeightForWidth(1000), label_1->bounds().bottom());
 }
@@ -139,7 +173,7 @@ TEST_F(StyledLabelTest, FirstLineNotEmptyWhenLeadingWhitespaceTooLong) {
   styled()->Layout();
 
   ASSERT_EQ(1u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16("a"), LabelAt(0)->GetText());
+  EXPECT_EQ(ASCIIToUTF16("a"), LabelAt(styled(), 0)->GetText());
   EXPECT_EQ(label_preferred_size.height(),
             styled()->GetHeightForWidth(label_preferred_size.width() / 2));
 }
@@ -149,8 +183,9 @@ TEST_F(StyledLabelTest, BasicWrapping) {
   InitStyledLabel(text);
   Label label(ASCIIToUTF16(text.substr(0, text.size() * 2 / 3)));
   gfx::Size label_preferred_size = label.GetPreferredSize();
-  EXPECT_EQ(label_preferred_size.height() * 2,
-            StyledLabelContentHeightForWidth(label_preferred_size.width()));
+  EXPECT_EQ(
+      label_preferred_size.height() * 2,
+      StyledLabelContentHeightForWidth(styled(), label_preferred_size.width()));
 
   // Also respect the border.
   styled()->SetBorder(CreateEmptyBorder(3, 3, 3, 3));
@@ -183,8 +218,9 @@ TEST_F(StyledLabelTest, WrapLongWords) {
   InitStyledLabel(text);
   Label label(ASCIIToUTF16(text.substr(0, text.size() * 2 / 3)));
   gfx::Size label_preferred_size = label.GetPreferredSize();
-  EXPECT_EQ(label_preferred_size.height() * 2,
-            StyledLabelContentHeightForWidth(label_preferred_size.width()));
+  EXPECT_EQ(
+      label_preferred_size.height() * 2,
+      StyledLabelContentHeightForWidth(styled(), label_preferred_size.width()));
 
   styled()->SetBounds(
       0, 0, styled()->GetInsets().width() + label_preferred_size.width(),
@@ -193,8 +229,8 @@ TEST_F(StyledLabelTest, WrapLongWords) {
 
   ASSERT_EQ(2u, styled()->children().size());
   ASSERT_EQ(gfx::Point(), styled()->origin());
-  const auto* label_0 = LabelAt(0);
-  const auto* label_1 = LabelAt(1);
+  const auto* label_0 = LabelAt(styled(), 0);
+  const auto* label_1 = LabelAt(styled(), 1);
   EXPECT_EQ(gfx::Point(), label_0->origin());
   EXPECT_EQ(gfx::Point(0, styled()->height() / 2), label_1->origin());
 
@@ -211,14 +247,18 @@ TEST_F(StyledLabelTest, CreateLinks) {
   EXPECT_TRUE(styled()->GetInsets().IsEmpty());
 
   // Now let's add some links.
-  styled()->AddStyleRange(gfx::Range(0, 1),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
-  styled()->AddStyleRange(gfx::Range(1, 2),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
-  styled()->AddStyleRange(gfx::Range(10, 11),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
-  styled()->AddStyleRange(gfx::Range(12, 13),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(
+      gfx::Range(0, 1),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
+  styled()->AddStyleRange(
+      gfx::Range(1, 2),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
+  styled()->AddStyleRange(
+      gfx::Range(10, 11),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
+  styled()->AddStyleRange(
+      gfx::Range(12, 13),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
 
   // Insets shouldn't change when links are added, since the links indicate
   // focus by adding an underline instead.
@@ -236,7 +276,7 @@ TEST_F(StyledLabelTest, DontBreakLinks) {
   InitStyledLabel(text + link_text);
   styled()->AddStyleRange(
       gfx::Range(text.size(), text.size() + link_text.size()),
-      StyledLabel::RangeStyleInfo::CreateForLink());
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
 
   Label label(ASCIIToUTF16(text + link_text.substr(0, link_text.size() / 2)));
   gfx::Size label_preferred_size = label.GetPreferredSize();
@@ -285,7 +325,7 @@ TEST_F(StyledLabelTest, StyledRangeCustomFontUnderlined) {
   StyledLabel::RangeStyleInfo style_info;
   style_info.tooltip = ASCIIToUTF16("tooltip");
   style_info.custom_font =
-      styled()->GetDefaultFontList().DeriveWithStyle(gfx::Font::UNDERLINE);
+      styled()->GetFontList().DeriveWithStyle(gfx::Font::UNDERLINE);
   styled()->AddStyleRange(
       gfx::Range(text.size(), text.size() + underlined_text.size()),
       style_info);
@@ -294,7 +334,8 @@ TEST_F(StyledLabelTest, StyledRangeCustomFontUnderlined) {
   styled()->Layout();
 
   ASSERT_EQ(2u, styled()->children().size());
-  EXPECT_EQ(gfx::Font::UNDERLINE, LabelAt(1)->font_list().GetFontStyle());
+  EXPECT_EQ(gfx::Font::UNDERLINE,
+            LabelAt(styled(), 1)->font_list().GetFontStyle());
 }
 
 TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
@@ -307,7 +348,7 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
   // Pretend disabled text becomes bold for testing.
   bold_provider.SetFont(
       style::CONTEXT_LABEL, style::STYLE_DISABLED,
-      styled()->GetDefaultFontList().DeriveWithWeight(gfx::Font::Weight::BOLD));
+      styled()->GetFontList().DeriveWithWeight(gfx::Font::Weight::BOLD));
 
   StyledLabel::RangeStyleInfo style_info;
   style_info.text_style = style::STYLE_DISABLED;
@@ -330,7 +371,8 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
 
   // Sanity check that |bold_text| with normal font style would fit on a single
   // line in a styled label with width |styled_width|.
-  StyledLabel unstyled(ASCIIToUTF16(bold_text), this);
+  StyledLabel unstyled;
+  unstyled.SetText(ASCIIToUTF16(bold_text));
   unstyled.SetBounds(0, 0, styled_width, pref_height);
   unstyled.Layout();
   EXPECT_EQ(1u, unstyled.children().size());
@@ -341,9 +383,9 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
   ASSERT_EQ(3u, styled()->children().size());
 
   // The bold text should be broken up into two parts.
-  const auto* label_0 = LabelAt(0);
-  const auto* label_1 = LabelAt(1);
-  const auto* label_2 = LabelAt(2);
+  const auto* label_0 = LabelAt(styled(), 0);
+  const auto* label_1 = LabelAt(styled(), 1);
+  const auto* label_2 = LabelAt(styled(), 2);
   EXPECT_EQ(gfx::Font::Weight::BOLD, label_0->font_list().GetFontWeight());
   EXPECT_EQ(gfx::Font::Weight::BOLD, label_1->font_list().GetFontWeight());
   EXPECT_EQ(gfx::Font::NORMAL, label_2->font_list().GetFontStyle());
@@ -354,7 +396,7 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
   EXPECT_EQ(label_1->bounds().right(), label_2->x());
 }
 
-TEST_F(StyledLabelTest, Color) {
+TEST_F(StyledLabelInWidgetTest, Color) {
   const std::string text_blue("BLUE");
   const std::string text_link("link");
   const std::string text("word");
@@ -365,7 +407,7 @@ TEST_F(StyledLabelTest, Color) {
   styled()->AddStyleRange(gfx::Range(0u, text_blue.size()), style_info_blue);
 
   StyledLabel::RangeStyleInfo style_info_link =
-      StyledLabel::RangeStyleInfo::CreateForLink();
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure());
   styled()->AddStyleRange(
       gfx::Range(text_blue.size(), text_blue.size() + text_link.size()),
       style_info_link);
@@ -373,17 +415,10 @@ TEST_F(StyledLabelTest, Color) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
 
-  Widget* widget = new Widget();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(std::move(params));
-  View* container = new View();
-  widget->SetContentsView(container);
-
   // The code below is not prepared to deal with dark mode.
-  widget->GetNativeTheme()->set_use_dark_colors(false);
+  widget()->GetNativeTheme()->set_use_dark_colors(false);
 
-  container->AddChildView(styled());
-
+  auto* container = widget()->GetContentsView();
   // Obtain the default text color for a label.
   Label* label =
       container->AddChildView(std::make_unique<Label>(ASCIIToUTF16(text)));
@@ -394,10 +429,11 @@ TEST_F(StyledLabelTest, Color) {
       container->AddChildView(std::make_unique<Link>(ASCIIToUTF16(text_link)));
   const SkColor kDefaultLinkColor = link->GetEnabledColor();
 
-  EXPECT_EQ(SK_ColorBLUE, LabelAt(0)->GetEnabledColor());
+  ASSERT_EQ(3u, styled()->children().size());
+  EXPECT_EQ(SK_ColorBLUE, LabelAt(styled(), 0)->GetEnabledColor());
   EXPECT_EQ(kDefaultLinkColor,
-            LabelAt(1, Link::kViewClassName)->GetEnabledColor());
-  EXPECT_EQ(kDefaultTextColor, LabelAt(2)->GetEnabledColor());
+            LabelAt(styled(), 1, Link::kViewClassName)->GetEnabledColor());
+  EXPECT_EQ(kDefaultTextColor, LabelAt(styled(), 2)->GetEnabledColor());
 
   // Test adjusted color readability.
   styled()->SetDisplayedOnBackgroundColor(SK_ColorBLACK);
@@ -406,9 +442,7 @@ TEST_F(StyledLabelTest, Color) {
 
   const SkColor kAdjustedTextColor = label->GetEnabledColor();
   EXPECT_NE(kAdjustedTextColor, kDefaultTextColor);
-  EXPECT_EQ(kAdjustedTextColor, LabelAt(2)->GetEnabledColor());
-
-  widget->CloseNow();
+  EXPECT_EQ(kAdjustedTextColor, LabelAt(styled(), 2)->GetEnabledColor());
 }
 
 TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
@@ -427,8 +461,9 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
   styled()->AddStyleRange(
       gfx::Range(tooltip_start, tooltip_start + tooltip_text.size()),
       tooltip_style);
-  styled()->AddStyleRange(gfx::Range(link_start, link_start + link_text.size()),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(
+      gfx::Range(link_start, link_start + link_text.size()),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
 
   // Break line inside the range with the tooltip.
   Label label(
@@ -479,7 +514,7 @@ TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
 
   styled()->Layout();
   ASSERT_EQ(1u, styled()->children().size());
-  Label* sublabel = LabelAt(0);
+  Label* sublabel = LabelAt(styled(), 0);
   EXPECT_EQ(style::CONTEXT_DIALOG_TITLE, sublabel->GetTextContext());
 
   EXPECT_NE(SK_ColorBLACK, label.GetEnabledColor());  // Sanity check,
@@ -506,12 +541,15 @@ TEST_F(StyledLabelTest, LineHeightWithLink) {
   InitStyledLabel(text);
   styled()->SetLineHeight(18);
 
-  styled()->AddStyleRange(gfx::Range(0, 3),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
-  styled()->AddStyleRange(gfx::Range(4, 7),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
-  styled()->AddStyleRange(gfx::Range(8, 13),
-                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(
+      gfx::Range(0, 3),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
+  styled()->AddStyleRange(
+      gfx::Range(4, 7),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
+  styled()->AddStyleRange(
+      gfx::Range(8, 13),
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
   EXPECT_EQ(18 * 3, styled()->GetHeightForWidth(100));
 }
 
@@ -712,7 +750,7 @@ TEST_F(StyledLabelTest, ViewsCenteredWithLinkAndCustomView) {
   InitStyledLabel(text + link_text + custom_view_text);
   styled()->AddStyleRange(
       gfx::Range(text.size(), text.size() + link_text.size()),
-      StyledLabel::RangeStyleInfo::CreateForLink());
+      StyledLabel::RangeStyleInfo::CreateForLink(base::RepeatingClosure()));
 
   int custom_view_height = 25;
   std::unique_ptr<View> custom_view =

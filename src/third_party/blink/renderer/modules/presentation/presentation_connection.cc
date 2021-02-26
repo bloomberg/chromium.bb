@@ -43,7 +43,7 @@ mojom::blink::PresentationConnectionMessagePtr MakeBinaryMessage(
       WTF::Vector<uint8_t>());
   WTF::Vector<uint8_t>& data = message->get_data();
   data.Append(static_cast<const uint8_t*>(buffer->Data()),
-              base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT()));
+              base::checked_cast<wtf_size_t>(buffer->ByteLength()));
   return message;
 }
 
@@ -111,7 +111,7 @@ class PresentationConnection::Message final
   Message(scoped_refptr<BlobDataHandle> blob_data_handle)
       : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
-  void Trace(Visitor* visitor) { visitor->Trace(array_buffer); }
+  void Trace(Visitor* visitor) const { visitor->Trace(array_buffer); }
 
   MessageType type;
   String text;
@@ -148,7 +148,9 @@ class PresentationConnection::BlobLoader final
 
   void Cancel() { loader_->Cancel(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(presentation_connection_); }
+  void Trace(Visitor* visitor) const {
+    visitor->Trace(presentation_connection_);
+  }
 
  private:
   Member<PresentationConnection> presentation_connection_;
@@ -263,7 +265,7 @@ ControllerPresentationConnection::ControllerPresentationConnection(
 
 ControllerPresentationConnection::~ControllerPresentationConnection() {}
 
-void ControllerPresentationConnection::Trace(Visitor* visitor) {
+void ControllerPresentationConnection::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   PresentationConnection::Trace(visitor);
 }
@@ -377,7 +379,7 @@ void ReceiverPresentationConnection::TerminateInternal() {
     target_connection_->DidChangeState(state_);
 }
 
-void ReceiverPresentationConnection::Trace(Visitor* visitor) {
+void ReceiverPresentationConnection::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   PresentationConnection::Trace(visitor);
 }
@@ -429,7 +431,7 @@ void PresentationConnection::CloseConnection() {
   connection_receiver_.reset();
 }
 
-void PresentationConnection::Trace(Visitor* visitor) {
+void PresentationConnection::Trace(Visitor* visitor) const {
   visitor->Trace(connection_receiver_);
   visitor->Trace(target_connection_);
   visitor->Trace(blob_loader_);
@@ -456,8 +458,7 @@ void PresentationConnection::send(DOMArrayBuffer* array_buffer,
   DCHECK(array_buffer);
   if (!CanSendMessage(exception_state))
     return;
-  if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLengthAsSizeT())
-           .IsValid()) {
+  if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLength()).IsValid()) {
     static_assert(
         4294967295 == std::numeric_limits<wtf_size_t>::max(),
         "Change the error message below if this static_assert fails.");
@@ -476,8 +477,7 @@ void PresentationConnection::send(
   DCHECK(array_buffer_view);
   if (!CanSendMessage(exception_state))
     return;
-  if (!base::CheckedNumeric<wtf_size_t>(
-           array_buffer_view.View()->byteLengthAsSizeT())
+  if (!base::CheckedNumeric<wtf_size_t>(array_buffer_view.View()->byteLength())
            .IsValid()) {
     static_assert(
         4294967295 == std::numeric_limits<wtf_size_t>::max(),
@@ -646,8 +646,7 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK(!messages_.IsEmpty());
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   DCHECK(buffer);
-  if (!base::CheckedNumeric<wtf_size_t>(buffer->ByteLengthAsSizeT())
-           .IsValid()) {
+  if (!base::CheckedNumeric<wtf_size_t>(buffer->ByteLength()).IsValid()) {
     // TODO(crbug.com/1036565): generate error message? The problem is that the
     // content of {buffer} is copied into a WTF::Vector, but a DOMArrayBuffer
     // has a bigger maximum size than a WTF::Vector. Ignore the current failed

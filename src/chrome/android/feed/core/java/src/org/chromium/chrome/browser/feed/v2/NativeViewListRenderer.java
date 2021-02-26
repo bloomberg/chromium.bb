@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.feed.v2;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ListContentManager;
 import org.chromium.chrome.browser.xsurface.ListContentManagerObserver;
@@ -53,18 +55,22 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // viewType is same as position.
-        int position = viewType;
-        if (mManager.isNativeView(position)) {
-            View v = mManager.getNativeView(position, parent);
-            return new ViewHolder(v);
+        View v;
+        if (viewType >= 0) {
+            v = mManager.getNativeView(viewType, parent);
+        } else {
+            TextView textView = new TextView(ContextUtils.getApplicationContext());
+            String message = "Unable to render external view";
+            textView.setText(message);
+            v = textView;
         }
-        return null;
+        return new ViewHolder(v);
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position;
+        if (!mManager.isNativeView(position)) return -1;
+        return mManager.getViewType(position);
     }
 
     /* HybridListRenderer methods */
@@ -83,6 +89,8 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
     public void unbind() {
         mManager.removeObserver(this);
         onItemRangeRemoved(0, mManager.getItemCount());
+        mView.setAdapter(null);
+        mView.setLayoutManager(null);
         mManager = null;
     }
 
